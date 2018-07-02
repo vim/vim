@@ -16113,7 +16113,7 @@ Files:      src/edit.c, src/testdir/test_popup.vim
 
 Patch 8.0.0248
 Problem:    vim_strcat() cannot handle overlapping arguments.
-Solution:   Use mch_memmove() instead of strcpy(). (Justin M Keyes,
+Solution:   Use mch_memmove() instead of strcpy(). (Justin M. Keyes,
             closes #1415)
 Files:      src/misc2.c
 
@@ -16363,7 +16363,7 @@ Files:      src/screen.c
 Patch 8.0.0287
 Problem:    Cannot access the arguments of the current function in debug mode.
             (Luc Hermitte)
-Solution:   use get_funccal(). (Lemonboy, closes #1432, closes #1352)
+Solution:   use get_funccal(). (LemonBoy, closes #1432, closes #1352)
 Files:      src/userfunc.c
 
 Patch 8.0.0288 (after 8.0.0284)
@@ -16728,7 +16728,7 @@ Files:      src/gui_gtk_x11.c
 
 Patch 8.0.0350
 Problem:    Not enough test coverage for Perl.
-Solution:   Add more Perl tests. (Dominique Perl, closes #1500)
+Solution:   Add more Perl tests. (Dominique Pelle, closes #1500)
 Files:      src/testdir/test_perl.vim
 
 Patch 8.0.0351
@@ -18229,7 +18229,7 @@ Files:      src/edit.c, src/testdir/test_popup.vim
 
 Patch 8.0.0597
 Problem:    Off-by-one error in buffer size computation.
-Solution:   Use ">=" instead of ">". (Lemonboy, closes #1694)
+Solution:   Use ">=" instead of ">". (LemonBoy, closes #1694)
 Files:      src/quickfix.c
 
 Patch 8.0.0598
@@ -18346,7 +18346,7 @@ Patch 8.0.0616
 Problem:    When setting the cterm background with ":hi Normal" the value of
             'background' may be set wrongly.
 Solution:   Check that the color is less than 16.  Don't set 'background' when
-            it was set explicitly. (Lemonboy, closes #1710)
+            it was set explicitly. (LemonBoy, closes #1710)
 Files:      src/syntax.c, src/testdir/test_syntax.vim
 
 Patch 8.0.0617 (after 8.0.0615)
@@ -18477,8 +18477,8 @@ Files:      src/gui_gtk.c
 
 Patch 8.0.0638
 Problem:    Cannot build with new MSVC version VS2017.
-Solution:   Change the compiler arguments. (Leonardo Manera, closes #1731,
-            closes #1747)
+Solution:   Change the compiler arguments. (Leonardo Valeri Manera,
+	    closes #1731, closes #1747)
 Files:      src/GvimExt/Makefile, src/Make_mvc.mak
 
 Patch 8.0.0639
@@ -19070,7 +19070,7 @@ Files:      src/testdir/test_arglist.vim
 
 Patch 8.0.0724
 Problem:    The message for yanking doesn't indicate the register.
-Solution:   Show the register name in the "N lines yanked" message. (Lemonboy,
+Solution:   Show the register name in the "N lines yanked" message. (LemonBoy,
             closes #1803, closes #1809)
 Files:      src/ops.c, src/Makefile, src/testdir/test_registers.vim,
             src/testdir/Make_all.mak
@@ -21611,7 +21611,7 @@ Files:      src/configure.ac, src/auto/configure
 
 Patch 8.0.1157
 Problem:    Compiler warning on MS-Windows.
-Solution:   Add type cast. (Yasuhiro Matsomoto)
+Solution:   Add type cast. (Yasuhiro Matsumoto)
 Files:      src/main.c
 
 Patch 8.0.1158
@@ -21911,7 +21911,7 @@ Files:      runtime/doc/autocmd.txt, src/ex_getln.c, src/fileio.c, src/vim.h,
 
 Patch 8.0.1207
 Problem:    Profiling skips the first and last script line.
-Solution:   Check for BOM after setting script ID. (Lemonboy, closes #2103,
+Solution:   Check for BOM after setting script ID. (LemonBoy, closes #2103,
             closes #2112) Add a test. List the trailing script lines.
 Files:      src/testdir/test_profile.vim, src/ex_cmds2.c
 
@@ -22108,7 +22108,7 @@ Problem:    Mac features are confusing.
 Solution:   Make feature names more consistent, add "osxdarwin". Rename
             feature flags, cleanup Mac code. (Kazunobu Kuriyama, closes #2178)
             Also includes a fix for when Ruby throws an exception inside
-            :rubyfile.(ujihisa)
+            :rubyfile. (ujihisa)
 Files:      runtime/doc/eval.txt, runtime/doc/os_mac.txt, src/auto/configure,
             src/config.h.in, src/configure.ac, src/digraph.c, src/edit.c,
             src/evalfunc.c, src/feature.h, src/fileio.c, src/getchar.c,
@@ -23256,7 +23256,7 @@ Files:      src/screen.c
 
 Patch 8.0.1423
 Problem:    Error in return not caught by try/catch.
-Solution:   Call update_force_abort(). (Yasuhiro Matsomoto, closes #2483)
+Solution:   Call update_force_abort(). (Yasuhiro Matsumoto, closes #2483)
 Files:      src/testdir/test_eval.in, src/testdir/test_eval_stuff.vim,
             src/Makefile, src/testdir/Make_all.mak, src/userfunc.c
 
@@ -23287,7 +23287,7 @@ Files:      src/ex_getln.c
 
 Patch 8.0.1429
 Problem:    Crash when calling term_start() with empty argument.
-Solution:   Check for invalid argument. (Yasuhiro Matsomoto, closes #2503)
+Solution:   Check for invalid argument. (Yasuhiro Matsumoto, closes #2503)
             Fix memory leak.
 Files:      src/terminal.c, src/testdir/test_terminal.vim
 
@@ -23677,7 +23677,7 @@ Files:      src/misc2.c, src/evalfunc.c
 Patch 8.0.1493
 Problem:    Completion items cannot be annotated.
 Solution:   Add a "user_data" entry to the completion item. (Ben Jackson,
-            coses #2608, closes #2508)
+            closes #2608, closes #2508)
 Files:      runtime/doc/insert.txt, src/edit.c, src/structs.h,
             src/testdir/test_ins_complete.vim
 
@@ -24187,8 +24187,8 @@ Files:      src/os_unix.c
 
 Patch 8.0.1573
 Problem:    getwinpos(1) may cause response to be handled as command.
-Solution:   Handle any cursor position report once one was request. (partly by
-            Hirohito Higashi)
+Solution:   Handle any cursor position report once one was requested. (partly
+	    by Hirohito Higashi)
 Files:      src/term.c
 
 Patch 8.0.1574
@@ -24669,7 +24669,7 @@ Files:      runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
 
 Patch 8.0.1656
 Problem:    No option to have xxd produce upper case variable names.
-Solution:   Add the -C argument. (Matt Panaro closes #2772)
+Solution:   Add the -C argument. (Matt Panaro, closes #2772)
 Files:      src/xxd/xxd.c
 
 Patch 8.0.1657
@@ -25402,7 +25402,7 @@ Files:      src/testdir/test_quickfix.vim, src/fileio.c, src/proto/fileio.pro,
 Patch 8.0.1782
 Problem:    No simple way to label quickfix entries.
 Solution:   Add the "module" item, to be used instead of the file name for
-            display purposes. (Martin Szamotulski, closes #1757)
+            display purposes. (Marcin Szamotulski, closes #1757)
 Files:      runtime/doc/eval.txt, runtime/doc/quickfix.txt, src/alloc.h,
             src/quickfix.c, src/testdir/test_quickfix.vim
 

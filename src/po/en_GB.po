@@ -496,8 +496,8 @@ msgid "E63: invalid use of \\_"
 msgstr "E63: Invalid use of \\_"
 
 #. Can't have a multi follow a multi.
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
-msgstr "E871: (NFA regexp) Cannot have a multi follow a multi !"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
+msgstr "E871: (NFA regexp) Cannot have a multi follow a multi"
 
 #, c-format
 msgid "E384: search hit TOP without match for: %s"

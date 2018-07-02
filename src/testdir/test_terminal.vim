@@ -522,29 +522,6 @@ func Test_terminal_env()
   exe buf . 'bwipe'
 endfunc
 
-" must be last, we can't go back from GUI to terminal
-func Test_zz_terminal_in_gui()
-  if !CanRunGui()
-    return
-  endif
-
-  " Ignore the "failed to create input context" error.
-  call test_ignore_error('E285:')
-
-  gui -f
-
-  call assert_equal(1, winnr('$'))
-  let buf = Run_shell_in_terminal({'term_finish': 'close'})
-  call Stop_shell_in_terminal(buf)
-  call term_wait(buf)
-
-  " closing window wipes out the terminal buffer a with finished job
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-  call assert_equal("", bufname(buf))
-
-  unlet g:job
-endfunc
-
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
   call assert_fails(buf . 'bwipe', 'E517')
@@ -1510,8 +1487,9 @@ func Test_terminal_out_err()
 
   let outfile = 'Xtermstdout'
   let buf = term_start(['./Xechoerrout.sh'], {'out_io': 'file', 'out_name': outfile})
-  call WaitForAssert({-> assert_inrange(1, 2, len(readfile(outfile)))})
-  call assert_equal("this is standard out", readfile(outfile)[0])
+
+  call WaitFor({-> !empty(readfile(outfile)) && !empty(term_getline(buf, 1))})
+  call assert_equal(['this is standard out'], readfile(outfile))
   call assert_equal('this is standard error', term_getline(buf, 1))
 
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
@@ -1545,4 +1523,59 @@ func Test_terminwinscroll()
   endfor
 
   exe buf . 'bwipe!'
+endfunc
+
+" must be nearly the last, we can't go back from GUI to terminal
+func Test_zz1_terminal_in_gui()
+  if !CanRunGui()
+    return
+  endif
+
+  " Ignore the "failed to create input context" error.
+  call test_ignore_error('E285:')
+
+  gui -f
+
+  call assert_equal(1, winnr('$'))
+  let buf = Run_shell_in_terminal({'term_finish': 'close'})
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  " closing window wipes out the terminal buffer a with finished job
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+func Test_zz2_terminal_guioptions_bang()
+  if !has('gui_running')
+    return
+  endif
+  set guioptions+=!
+
+  let filename = 'Xtestscript'
+  if has('win32')
+    let filename .= '.bat'
+    let prefix = ''
+    let contents = ['@echo off', 'exit %1']
+  else
+    let filename .= '.sh'
+    let prefix = './'
+    let contents = ['#!/bin/sh', 'exit $1']
+  endif
+  call writefile(contents, filename)
+  call setfperm(filename, 'rwxrwx---')
+
+  " Check if v:shell_error is equal to the exit status.
+  let exitval = 0
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  let exitval = 9
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  set guioptions&
+  call delete(filename)
 endfunc

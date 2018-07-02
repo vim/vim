@@ -4,6 +4,7 @@ void pum_redraw(void);
 void pum_undisplay(void);
 void pum_clear(void);
 int pum_visible(void);
+void pum_may_redraw(void);
 int pum_get_height(void);
 int split_message(char_u *mesg, pumitem_T **array);
 void ui_remove_balloon(void);

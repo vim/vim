@@ -24,6 +24,8 @@ func WriteScript(name)
   call writefile([
 	\ 'func TextEntered(text)',
 	\ '  if a:text == "exit"',
+	\ '    " Reset &modified to allow the buffer to be closed.',
+	\ '    set nomodified',
 	\ '    stopinsert',
 	\ '    close',
 	\ '  else',

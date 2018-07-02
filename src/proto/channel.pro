@@ -72,4 +72,5 @@ void job_info(job_T *job, dict_T *dict);
 void job_info_all(list_T *l);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 void invoke_prompt_callback(void);
+int invoke_prompt_interrupt(void);
 /* vim: set ft=c : */

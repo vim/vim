@@ -915,7 +915,12 @@ hardcopy_line(
 	if (line[col] == TAB || tab_spaces != 0)
 	{
 	    if (tab_spaces == 0)
+#ifdef FEAT_VARTABS
+		tab_spaces = tabstop_padding(print_pos, curbuf->b_p_ts,
+							curbuf->b_p_vts_array);
+#else
 		tab_spaces = (int)(curbuf->b_p_ts - (print_pos % curbuf->b_p_ts));
+#endif
 
 	    while (tab_spaces > 0)
 	    {
@@ -3372,8 +3377,9 @@ mch_print_start_line(int margin, int page_line)
 }
 
     int
-mch_print_text_out(char_u *p, int len UNUSED)
+mch_print_text_out(char_u *textp, int len UNUSED)
 {
+    char_u	*p = textp;
     int		need_break;
     char_u	ch;
     char_u      ch_buff[8];
@@ -3508,8 +3514,15 @@ mch_print_text_out(char_u *p, int len UNUSED)
 
 #ifdef FEAT_MBYTE
     if (prt_do_conv)
+    {
 	/* Convert from multi-byte to 8-bit encoding */
 	tofree = p = string_convert(&prt_conv, p, &len);
+	if (p == NULL)
+	{
+	    p = (char_u *)"";
+	    len = 0;
+	}
+    }
 
     if (prt_out_mbyte)
     {

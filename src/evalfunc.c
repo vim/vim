@@ -123,6 +123,9 @@ static void f_cosh(typval_T *argvars, typval_T *rettv);
 static void f_count(typval_T *argvars, typval_T *rettv);
 static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
+#ifdef WIN3264
+static void f_debugbreak(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
 static void f_delete(typval_T *argvars, typval_T *rettv);
 static void f_deletebufline(typval_T *argvars, typval_T *rettv);
@@ -298,6 +301,7 @@ static void f_prevnonblank(typval_T *argvars, typval_T *rettv);
 static void f_printf(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_prompt_setcallback(typval_T *argvars, typval_T *rettv);
+static void f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv);
 static void f_prompt_setprompt(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_pumvisible(typval_T *argvars, typval_T *rettv);
@@ -576,6 +580,9 @@ static struct fst
     {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		1, 3, f_cursor},
+#ifdef WIN3264
+    {"debugbreak",	1, 1, f_debugbreak},
+#endif
     {"deepcopy",	1, 2, f_deepcopy},
     {"delete",		1, 2, f_delete},
     {"deletebufline",	2, 3, f_deletebufline},
@@ -754,6 +761,7 @@ static struct fst
     {"printf",		1, 19, f_printf},
 #ifdef FEAT_JOB_CHANNEL
     {"prompt_setcallback", 2, 2, f_prompt_setcallback},
+    {"prompt_setinterrupt", 2, 2, f_prompt_setinterrupt},
     {"prompt_setprompt", 2, 2, f_prompt_setprompt},
 #endif
     {"pumvisible",	0, 0, f_pumvisible},
@@ -2758,6 +2766,33 @@ f_cursor(typval_T *argvars, typval_T *rettv)
     curwin->w_set_curswant = set_curswant;
     rettv->vval.v_number = 0;
 }
+
+#ifdef WIN3264
+/*
+ * "debugbreak()" function
+ */
+    static void
+f_debugbreak(typval_T *argvars, typval_T *rettv)
+{
+    int		pid;
+
+    rettv->vval.v_number = FAIL;
+    pid = (int)get_tv_number(&argvars[0]);
+    if (pid == 0)
+	EMSG(_(e_invarg));
+    else
+    {
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
+
+	if (hProcess != NULL)
+	{
+	    DebugBreakProcess(hProcess);
+	    CloseHandle(hProcess);
+	    rettv->vval.v_number = OK;
+	}
+    }
+}
+#endif
 
 /*
  * "deepcopy()" function
@@ -6401,6 +6436,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"user-commands",    /* was accidentally included in 5.4 */
 	"user_commands",
 #endif
+#ifdef FEAT_VARTABS
+	"vartabs",
+#endif
 #ifdef FEAT_VIMINFO
 	"viminfo",
 #endif
@@ -6571,7 +6609,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_VTP
 	else if (STRICMP(name, "vcon") == 0)
-	    n = has_vtp_working();
+	    n = is_term_win32() && has_vtp_working();
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	else if (STRICMP(name, "netbeans_enabled") == 0)
@@ -8622,6 +8660,35 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * "prompt_setinterrupt({buffer}, {callback})" function
+ */
+    static void
+f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+    char_u	*callback;
+    partial_T	*partial;
+
+    if (check_secure())
+	return;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL)
+	return;
+
+    callback = get_callback(&argvars[1], &partial);
+    if (callback == NULL)
+	return;
+
+    free_callback(buf->b_prompt_interrupt, buf->b_prompt_int_partial);
+    if (partial == NULL)
+	buf->b_prompt_interrupt = vim_strsave(callback);
+    else
+	/* pointer into the partial */
+	buf->b_prompt_interrupt = callback;
+    buf->b_prompt_int_partial = partial;
+}
+
+/*
  * "prompt_setprompt({buffer}, {text})" function
  */
     static void
@@ -10085,7 +10152,8 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
     long	lnum_stop = 0;
     long	time_limit = 0;
 
-    /* Get the three pattern arguments: start, middle, end. */
+    /* Get the three pattern arguments: start, middle, end. Will result in an
+     * error if not a valid argument. */
     spat = get_tv_string_chk(&argvars[0]);
     mpat = get_tv_string_buf_chk(&argvars[1], nbuf1);
     epat = get_tv_string_buf_chk(&argvars[2], nbuf2);
@@ -10122,19 +10190,26 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 	    && skip->v_type != VAR_STRING)
 	{
 	    /* Type error */
+	    EMSG2(_(e_invarg2), get_tv_string(&argvars[4]));
 	    goto theend;
 	}
 	if (argvars[5].v_type != VAR_UNKNOWN)
 	{
 	    lnum_stop = (long)get_tv_number_chk(&argvars[5], NULL);
 	    if (lnum_stop < 0)
+	    {
+		EMSG2(_(e_invarg2), get_tv_string(&argvars[5]));
 		goto theend;
+	    }
 #ifdef FEAT_RELTIME
 	    if (argvars[6].v_type != VAR_UNKNOWN)
 	    {
 		time_limit = (long)get_tv_number_chk(&argvars[6], NULL);
 		if (time_limit < 0)
+		{
+		    EMSG2(_(e_invarg2), get_tv_string(&argvars[6]));
 		    goto theend;
+		}
 	    }
 #endif
 	}
@@ -10621,6 +10696,7 @@ set_qf_ll_list(
     static char *e_invact = N_("E927: Invalid action: '%s'");
     char_u	*act;
     int		action = 0;
+    static int	recursive = 0;
 #endif
 
     rettv->vval.v_number = -1;
@@ -10628,6 +10704,8 @@ set_qf_ll_list(
 #ifdef FEAT_QUICKFIX
     if (list_arg->v_type != VAR_LIST)
 	EMSG(_(e_listreq));
+    else if (recursive != 0)
+	EMSG(_(e_au_recursive));
     else
     {
 	list_T  *l = list_arg->vval.v_list;
@@ -10662,9 +10740,12 @@ set_qf_ll_list(
 	    }
 	}
 
+	++recursive;
 	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
-	  (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"), d) == OK)
+		     (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"),
+		     d) == OK)
 	    rettv->vval.v_number = 0;
+	--recursive;
     }
 #endif
 }
@@ -13020,10 +13101,13 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 		save_starting = -1;
 	    }
 	}
+	else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
+	    nfa_fail_for_testing = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
 	    disable_redraw_for_testing = FALSE;
+	    nfa_fail_for_testing = FALSE;
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;

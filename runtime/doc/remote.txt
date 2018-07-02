@@ -63,7 +63,7 @@ The following command line arguments are available:
    --servername {name}		Become the server {name}.  When used together
 				with one of the --remote commands: connect to
 				server {name} instead of the default (see
-				below).
+				below).  The name used will be uppercase.
 								*--remote-send*
    --remote-send {keys}		Send {keys} to server and exit.  The {keys}
    				are not mapped.  Special key names are

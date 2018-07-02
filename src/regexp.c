@@ -367,7 +367,7 @@ static char_u e_unmatchedp[] = N_("E54: Unmatched %s(");
 static char_u e_unmatchedpar[] = N_("E55: Unmatched %s)");
 #ifdef FEAT_SYN_HL
 static char_u e_z_not_allowed[] = N_("E66: \\z( not allowed here");
-static char_u e_z1_not_allowed[] = N_("E67: \\z1 et al. not allowed here");
+static char_u e_z1_not_allowed[] = N_("E67: \\z1 - \\z9 not allowed here");
 #endif
 static char_u e_missing_sb[] = N_("E69: Missing ] after %s%%[");
 static char_u e_empty_sb[]  = N_("E70: Empty %s%%[]");
@@ -2139,7 +2139,7 @@ regatom(int *flagp)
 	    switch (c)
 	    {
 #ifdef FEAT_SYN_HL
-		case '(': if (reg_do_extmatch != REX_SET)
+		case '(': if ((reg_do_extmatch & REX_SET) == 0)
 			      EMSG_RET_NULL(_(e_z_not_allowed));
 			  if (one_exactly)
 			      EMSG_ONE_RET_NULL;
@@ -2158,7 +2158,7 @@ regatom(int *flagp)
 		case '6':
 		case '7':
 		case '8':
-		case '9': if (reg_do_extmatch != REX_USE)
+		case '9': if ((reg_do_extmatch & REX_USE) == 0)
 			      EMSG_RET_NULL(_(e_z1_not_allowed));
 			  ret = regnode(ZREF + c - '0');
 			  re_has_z = REX_USE;
@@ -8332,8 +8332,8 @@ vim_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col)
 
 /*
  * Match a regexp against multiple lines.
- * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
- * Note: "rmp->regprog" may be freed and changed.
+ * "rmp->regprog" must be a compiled regexp as returned by vim_regcomp().
+ * Note: "rmp->regprog" may be freed and changed, even set to NULL.
  * Uses curbuf for line count and 'iskeyword'.
  *
  * Return zero if there is no match.  Return number of lines contained in the
@@ -8376,7 +8376,16 @@ vim_regexec_multi(
 #ifdef FEAT_EVAL
 	    report_re_switch(pat);
 #endif
+#ifdef FEAT_SYN_HL
+	    // checking for \z misuse was already done when compiling for NFA,
+	    // allow all here
+	    reg_do_extmatch = REX_ALL;
+#endif
 	    rmp->regprog = vim_regcomp(pat, re_flags);
+#ifdef FEAT_SYN_HL
+	    reg_do_extmatch = 0;
+#endif
+
 	    if (rmp->regprog != NULL)
 		result = rmp->regprog->engine->regexec_multi(
 				      rmp, win, buf, lnum, col, tm, timed_out);

@@ -111,22 +111,16 @@ gui_mch_create_beval_area(
 	return NULL;
     }
 
-    beval = (BalloonEval *)alloc(sizeof(BalloonEval));
+    beval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
     if (beval != NULL)
     {
 #ifdef FEAT_GUI_GTK
 	beval->target = GTK_WIDGET(target);
-	beval->balloonShell = NULL;
-	beval->timerID = 0;
 #else
 	beval->target = (Widget)target;
-	beval->balloonShell = NULL;
-	beval->timerID = (XtIntervalId)NULL;
 	beval->appContext = XtWidgetToApplicationContext((Widget)target);
 #endif
 	beval->showState = ShS_NEUTRAL;
-	beval->x = 0;
-	beval->y = 0;
 	beval->msg = mesg;
 	beval->msgCB = mesgCB;
 	beval->clientData = clientData;
@@ -171,6 +165,10 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
     gtk_widget_destroy(beval->balloonShell);
 # else
     XtDestroyWidget(beval->balloonShell);
+# endif
+# ifdef FEAT_VARTABS
+    if (beval->vts)
+	vim_free(beval->vts);
 # endif
     vim_free(beval);
 }

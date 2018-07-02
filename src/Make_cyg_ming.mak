@@ -75,9 +75,10 @@ POSTSCRIPT=no
 # Set to yes to enable OLE support.
 OLE=no
 
-# Set the default $(WINVER) to make it work with WinXP.
+# Set the default $(WINVER).  Use 0x0501 to make it work with WinXP.
 ifndef WINVER
-WINVER = 0x0501
+# WINVER = 0x0501
+WINVER = 0x0600
 endif
 
 # Set to yes to enable Cscope support.
@@ -662,7 +663,7 @@ endif
 CFLAGS += -s
 endif
 
-LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lversion
+LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \

@@ -398,6 +398,9 @@ shift_block(oparg_T *oap, int amount)
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
     int			p_sw = (int)get_sw_value(curbuf);
+#ifdef FEAT_VARTABS
+    int			*p_vts = curbuf->b_p_vts_array;
+#endif
     int			p_ts = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
@@ -459,12 +462,19 @@ shift_block(oparg_T *oap, int amount)
 	}
 	/* OK, now total=all the VWS reqd, and textstart points at the 1st
 	 * non-ws char in the block. */
+#ifdef FEAT_VARTABS
+	if (!curbuf->b_p_et)
+	    tabstop_fromto(ws_vcol, ws_vcol + total, p_ts, p_vts, &i, &j);
+	else
+	    j = total;
+#else
 	if (!curbuf->b_p_et)
 	    i = ((ws_vcol % p_ts) + total) / p_ts; /* number of tabs */
 	if (i)
 	    j = ((ws_vcol % p_ts) + total) % p_ts; /* number of spp */
 	else
 	    j = total;
+#endif
 	/* if we're splitting a TAB, allow for it */
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 	len = (int)STRLEN(bd.textstart) + 1;
@@ -2136,6 +2146,25 @@ mb_adjust_opend(oparg_T *oap)
 #endif
 
 #if defined(FEAT_VISUALEXTRA) || defined(PROTO)
+
+# ifdef FEAT_MBYTE
+/*
+ * Replace the character under the cursor with "c".
+ * This takes care of multi-byte characters.
+ */
+    static void
+replace_character(int c)
+{
+    int n = State;
+
+    State = REPLACE;
+    ins_char(c);
+    State = n;
+    /* Backup to the replaced character. */
+    dec_cursor();
+}
+
+# endif
 /*
  * Replace a whole area with one character.
  */
@@ -2321,12 +2350,7 @@ op_replace(oparg_T *oap, int c)
 		     * with a multi-byte and the other way around. */
 		    if (curwin->w_cursor.lnum == oap->end.lnum)
 			oap->end.col += (*mb_char2len)(c) - (*mb_char2len)(n);
-		    n = State;
-		    State = REPLACE;
-		    ins_char(c);
-		    State = n;
-		    /* Backup to the replaced character. */
-		    dec_cursor();
+		    replace_character(c);
 		}
 		else
 #endif
@@ -2348,7 +2372,7 @@ op_replace(oparg_T *oap, int c)
 			    getvpos(&oap->end, end_vcol);
 		    }
 #endif
-		    PCHAR(curwin->w_cursor, c);
+		    PBYTE(curwin->w_cursor, c);
 		}
 	    }
 #ifdef FEAT_VIRTUALEDIT
@@ -2367,9 +2391,14 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-		    PCHAR(curwin->w_cursor, c);
-		    if (inc(&curwin->w_cursor) == -1)
-			break;
+#ifdef FEAT_MBYTE
+                   if ((*mb_char2len)(c) > 1)
+		       replace_character(c);
+                   else
+ #endif
+			PBYTE(curwin->w_cursor, c);
+		   if (inc(&curwin->w_cursor) == -1)
+		       break;
 		}
 	    }
 #endif
@@ -2609,7 +2638,7 @@ swapchar(int op_type, pos_T *pos)
 	}
 	else
 #endif
-	    PCHAR(*pos, nc);
+	    PBYTE(*pos, nc);
 	return TRUE;
     }
     return FALSE;
@@ -3541,9 +3570,10 @@ do_put(
 	    return;
     }
 
-    /* Autocommands may be executed when saving lines for undo, which may make
-     * y_array invalid.  Start undo now to avoid that. */
-    u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1);
+    /* Autocommands may be executed when saving lines for undo.  This might
+     * make "y_array" invalid, so we start undo now to avoid that. */
+    if (u_save(curwin->w_cursor.lnum, curwin->w_cursor.lnum + 1) == FAIL)
+	goto end;
 
     if (insert_string != NULL)
     {
@@ -3697,10 +3727,19 @@ do_put(
 	{
 	    /* Don't need to insert spaces when "p" on the last position of a
 	     * tab or "P" on the first position. */
+#ifdef FEAT_VARTABS
+	    int viscol = getviscol();
+	    if (dir == FORWARD
+		    ? tabstop_padding(viscol, curbuf->b_p_ts,
+						    curbuf->b_p_vts_array) != 1
+		    : curwin->w_cursor.coladd > 0)
+		coladvance_force(viscol);
+#else
 	    if (dir == FORWARD
 		    ? (int)curwin->w_cursor.coladd < curbuf->b_p_ts - 1
 						: curwin->w_cursor.coladd > 0)
 		coladvance_force(getviscol());
+#endif
 	    else
 		curwin->w_cursor.coladd = 0;
 	}

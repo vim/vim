@@ -3350,3 +3350,26 @@ func Test_qftitle()
   call assert_equal('Errors', w:quickfix_title)
   cclose
 endfunc
+
+func Test_lbuffer_with_bwipe()
+  new
+  new
+  augroup nasty
+    au * * bwipe
+  augroup END
+  lbuffer
+  augroup nasty
+    au!
+  augroup END
+endfunc
+
+func Test_setloclist_in_aucmd()
+  " This was using freed memory.
+  augroup nasty
+    au * * call setloclist(0, [], 'f')
+  augroup END
+  lexpr "x"
+  augroup nasty
+    au!
+  augroup END
+endfunc

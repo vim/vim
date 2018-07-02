@@ -144,7 +144,7 @@ The default value for $VIM is set at compile time and can be determined with >
   :version
 
 The normal value is /boot/home/config/share/vim.  If you don't like it you can
-set the Vim environment variable to override this, or set 'helpfile' in your
+set the VIM environment variable to override this, or set 'helpfile' in your
 .vimrc: >
 
   :if version >= 500

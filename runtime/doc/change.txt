@@ -987,6 +987,11 @@ This replaces each 'E' character with a euro sign.  Read more in |<Char->|.
 			this (that's a good habit anyway).
 			`:retab!` may also change a sequence of spaces by
 			<Tab> characters, which can mess up a printf().
+			If the |+vartabs| feature is enabled then a list of
+			tab widths separated by commas may be used in place of
+			a single tabstop.  Each value in the list represents
+			the width of one tabstop, except the final value which
+			applies to all following tabstops.
 			{not in Vi}
 
 							*retab-example*

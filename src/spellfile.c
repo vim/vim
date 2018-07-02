@@ -2241,7 +2241,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	return NULL;
     }
 
-    vim_snprintf((char *)IObuff, IOSIZE, _("Reading affix file %s ..."), fname);
+    vim_snprintf((char *)IObuff, IOSIZE, _("Reading affix file %s..."), fname);
     spell_message(spin, IObuff);
 
     /* Only do REP lines when not done in another .aff file already. */
@@ -3569,7 +3569,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     hash_init(&ht);
 
     vim_snprintf((char *)IObuff, IOSIZE,
-				  _("Reading dictionary file %s ..."), fname);
+				  _("Reading dictionary file %s..."), fname);
     spell_message(spin, IObuff);
 
     /* start with a message for the first line */
@@ -4149,7 +4149,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	return FAIL;
     }
 
-    vim_snprintf((char *)IObuff, IOSIZE, _("Reading word file %s ..."), fname);
+    vim_snprintf((char *)IObuff, IOSIZE, _("Reading word file %s..."), fname);
     spell_message(spin, IObuff);
 
     /*
@@ -5865,7 +5865,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     }
 
     vim_snprintf((char *)IObuff, IOSIZE,
-				  _("Writing suggestion file %s ..."), fname);
+				  _("Writing suggestion file %s..."), fname);
     spell_message(spin, IObuff);
 
     /*
@@ -6150,7 +6150,7 @@ mkspell(
 	     * Write the info in the spell file.
 	     */
 	    vim_snprintf((char *)IObuff, IOSIZE,
-				      _("Writing spell file %s ..."), wfname);
+				      _("Writing spell file %s..."), wfname);
 	    spell_message(&spin, IObuff);
 
 	    error = write_vim_spell(&spin, wfname) == FAIL;

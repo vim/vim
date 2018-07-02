@@ -36,7 +36,6 @@ SCRIPTS_ALL = \
 SCRIPTS_MORE1 = \
 	test11.out \
 	test52.out \
-	test85.out \
 	test86.out \
 	test87.out
 
@@ -147,8 +146,8 @@ NEW_TESTS = test_arabic.res \
 	    test_perl.res \
 	    test_plus_arg_edit.res \
 	    test_preview.res \
-	    test_prompt_buffer.res \
 	    test_profile.res \
+	    test_prompt_buffer.res \
 	    test_python2.res \
 	    test_python3.res \
 	    test_pyx2.res \
@@ -180,6 +179,7 @@ NEW_TESTS = test_arabic.res \
 	    test_undo.res \
 	    test_user_func.res \
 	    test_usercommands.res \
+	    test_vartabs.res \
 	    test_viminfo.res \
 	    test_vimscript.res \
 	    test_visual.res \

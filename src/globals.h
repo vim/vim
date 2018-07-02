@@ -371,6 +371,11 @@ EXTERN int	highlight_stltermnc[9];		/* On top of user */
 #  endif
 # endif
 #endif
+#ifdef FEAT_TERMINAL
+		// When TRUE skip calling terminal_loop() once.  Used when
+		// typing ':' at the more prompt.
+EXTERN int	skip_term_loop INIT(= FALSE);
+#endif
 #ifdef FEAT_GUI
 EXTERN char_u	*use_gvimrc INIT(= NULL);	/* "-U" cmdline argument */
 #endif
@@ -1126,12 +1131,12 @@ EXTERN char_u	tolower_tab[256];	/* table for tolower() */
 EXTERN char	breakat_flags[256];	/* which characters are in 'breakat' */
 #endif
 
-/* these are in version.c */
+/* These are in version.c, call init_longVersion() before use. */
 extern char *Version;
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
 extern char longVersion[];
 #else
-extern char *longVersion;
+EXTERN char *longVersion;
 #endif
 
 /*
@@ -1629,6 +1634,7 @@ EXTERN int  alloc_fail_repeat INIT(= 0);
 /* flags set by test_override() */
 EXTERN int  disable_char_avail_for_testing INIT(= 0);
 EXTERN int  disable_redraw_for_testing INIT(= 0);
+EXTERN int  nfa_fail_for_testing INIT(= 0);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif

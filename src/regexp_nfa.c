@@ -1482,7 +1482,7 @@ nfa_regatom(void)
 		case '8':
 		case '9':
 		    /* \z1...\z9 */
-		    if (reg_do_extmatch != REX_USE)
+		    if ((reg_do_extmatch & REX_USE) == 0)
 			EMSG_RET_FAIL(_(e_z1_not_allowed));
 		    EMIT(NFA_ZREF1 + (no_Magic(c) - '1'));
 		    /* No need to set nfa_has_backref, the sub-matches don't
@@ -1491,7 +1491,7 @@ nfa_regatom(void)
 		    break;
 		case '(':
 		    /* \z(  */
-		    if (reg_do_extmatch != REX_SET)
+		    if ((reg_do_extmatch & REX_SET) == 0)
 			EMSG_RET_FAIL(_(e_z_not_allowed));
 		    if (nfa_reg(REG_ZPAREN) == FAIL)
 			return FAIL;	    /* cascaded error */
@@ -2232,7 +2232,7 @@ nfa_regpiece(void)
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
 	/* Can't have a multi follow a multi. */
-	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi !"));
+	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi"));
 
     return OK;
 }
@@ -2672,6 +2672,7 @@ nfa_set_code(int c)
 
 #ifdef ENABLE_LOG
 static FILE *log_fd;
+static char_u e_log_open_failed[] = N_("Could not open temporary log file for writing, displaying on stderr... ");
 
 /*
  * Print the postfix notation of the current regexp.
@@ -2687,7 +2688,7 @@ nfa_postfix_dump(char_u *expr, int retval)
     {
 	fprintf(f, "\n-------------------------\n");
 	if (retval == FAIL)
-	    fprintf(f, ">>> NFA engine failed ... \n");
+	    fprintf(f, ">>> NFA engine failed... \n");
 	else if (retval == OK)
 	    fprintf(f, ">>> NFA engine succeeded !\n");
 	fprintf(f, "Regexp: \"%s\"\nPostfix notation (char): \"", expr);
@@ -2988,7 +2989,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    EMSG(_("E874: (NFA) Could not pop the stack !"));
+    EMSG(_("E874: (NFA) Could not pop the stack!"));
 }
 
 /*
@@ -5270,7 +5271,7 @@ recursive_regmatch(
     }
     else
     {
-	EMSG(_("Could not open temporary log file for writing, displaying on stderr ... "));
+	EMSG(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -5592,7 +5593,7 @@ nfa_regmatch(
     debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
     if (debug == NULL)
     {
-	EMSG2(_("(NFA) COULD NOT OPEN %s !"), NFA_REGEXP_DEBUG_LOG);
+	EMSG2("(NFA) COULD NOT OPEN %s!", NFA_REGEXP_DEBUG_LOG);
 	return FALSE;
     }
 #endif
@@ -5620,7 +5621,7 @@ nfa_regmatch(
     }
     else
     {
-	EMSG(_("Could not open temporary log file for writing, displaying on stderr ... "));
+	EMSG(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -5691,7 +5692,12 @@ nfa_regmatch(
 	nextlist->n = 0;	    /* clear nextlist */
 	nextlist->has_pim = FALSE;
 	++nfa_listid;
-	if (prog->re_engine == AUTOMATIC_ENGINE && nfa_listid >= NFA_MAX_STATES)
+	if (prog->re_engine == AUTOMATIC_ENGINE
+		&& (nfa_listid >= NFA_MAX_STATES
+# ifdef FEAT_EVAL
+		    || nfa_fail_for_testing
+# endif
+		    ))
 	{
 	    /* too many states, retry with old engine */
 	    nfa_match = NFA_TOO_EXPENSIVE;
@@ -5704,7 +5710,7 @@ nfa_regmatch(
 #ifdef ENABLE_LOG
 	fprintf(log_fd, "------------------------------------------\n");
 	fprintf(log_fd, ">>> Reginput is \"%s\"\n", reginput);
-	fprintf(log_fd, ">>> Advanced one character ... Current char is %c (code %d) \n", curc, (int)curc);
+	fprintf(log_fd, ">>> Advanced one character... Current char is %c (code %d) \n", curc, (int)curc);
 	fprintf(log_fd, ">>> Thislist has %d states available: ", thislist->n);
 	{
 	    int i;
@@ -5757,7 +5763,7 @@ nfa_regmatch(
 		else
 		    col = (int)(t->subs.norm.list.line[0].start - regline);
 		nfa_set_code(t->state->c);
-		fprintf(log_fd, "(%d) char %d %s (start col %d)%s ... \n",
+		fprintf(log_fd, "(%d) char %d %s (start col %d)%s... \n",
 			abs(t->state->id), (int)t->state->c, code, col,
 			pim_info(&t->pim));
 	    }
@@ -7027,7 +7033,7 @@ nfa_regtry(
 	fclose(f);
     }
     else
-	EMSG(_("Could not open temporary log file for writing "));
+	EMSG("Could not open temporary log file for writing");
 #endif
 
     clear_sub(&subs.norm);
@@ -7282,7 +7288,7 @@ nfa_regcomp(char_u *expr, int re_flags)
 
 	if (f != NULL)
 	{
-	    fprintf(f, "\n*****************************\n\n\n\n\tCompiling regexp \"%s\" ... hold on !\n", expr);
+	    fprintf(f, "\n*****************************\n\n\n\n\tCompiling regexp \"%s\"... hold on !\n", expr);
 	    fclose(f);
 	}
     }

@@ -1878,7 +1878,7 @@ install_start_menu(int idx)
 	add_pathsep(shell_folder_path);
 	strcat(shell_folder_path, "Vim Online.url");
 	if (!WritePrivateProfileString("InternetShortcut", "URL",
-				     "http://vim.sf.net/", shell_folder_path))
+				    "https://www.vim.org/", shell_folder_path))
 	{
 	    printf("Creating the Vim online URL failed\n");
 	    return;

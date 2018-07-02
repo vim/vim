@@ -940,10 +940,6 @@ common_init(mparm_T *paramp)
     /* Init the table of Normal mode commands. */
     init_normal_cmds();
 
-#if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
-    make_version();	/* Construct the long version string. */
-#endif
-
     /*
      * Allocate space for the generic buffers (needed for set_init_1() and
      * EMSG2()).
@@ -1339,7 +1335,8 @@ main_loop(
 #ifdef FEAT_TERMINAL
 	    if (term_use_loop()
 		    && oa.op_type == OP_NOP && oa.regname == NUL
-		    && !VIsual_active)
+		    && !VIsual_active
+		    && !skip_term_loop)
 	    {
 		/* If terminal_loop() returns OK we got a key that is handled
 		 * in Normal model.  With FAIL we first need to position the
@@ -1349,7 +1346,12 @@ main_loop(
 	    }
 	    else
 #endif
+	    {
+#ifdef FEAT_TERMINAL
+		skip_term_loop = FALSE;
+#endif
 		normal_cmd(&oa, TRUE);
+	    }
 	}
     }
 }
@@ -3209,6 +3211,7 @@ mainerr(
     reset_signals();		/* kill us with CTRL-C here, if you like */
 #endif
 
+    init_longVersion();
     mch_errmsg(longVersion);
     mch_errmsg("\n");
     mch_errmsg(_(main_errors[n]));
@@ -3262,8 +3265,9 @@ usage(void)
     reset_signals();		/* kill us with CTRL-C here, if you like */
 #endif
 
+    init_longVersion();
     mch_msg(longVersion);
-    mch_msg(_("\n\nusage:"));
+    mch_msg(_("\n\nUsage:"));
     for (i = 0; ; ++i)
     {
 	mch_msg(_(" vim [arguments] "));
@@ -3320,7 +3324,7 @@ usage(void)
     main_msg(_("-dev <device>\t\tUse <device> for I/O"));
 #endif
 #ifdef FEAT_ARABIC
-    main_msg(_("-A\t\t\tstart in Arabic mode"));
+    main_msg(_("-A\t\t\tStart in Arabic mode"));
 #endif
 #ifdef FEAT_RIGHTLEFT
     main_msg(_("-H\t\t\tStart in Hebrew mode"));

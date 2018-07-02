@@ -37,7 +37,7 @@ char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
     void
-make_version(void)
+init_longVersion(void)
 {
     /*
      * Construct the long version string.  Necessary because
@@ -49,11 +49,34 @@ make_version(void)
     strcat(longVersion, __TIME__);
     strcat(longVersion, ")");
 }
+
 # else
-char	*longVersion = VIM_VERSION_LONG_DATE __DATE__ " " __TIME__ ")";
+    void
+init_longVersion(void)
+{
+    char *date_time = __DATE__ " " __TIME__;
+    char *msg = _("%s (%s, compiled %s)");
+    size_t len = strlen(msg)
+		+ strlen(VIM_VERSION_LONG_ONLY)
+		+ strlen(VIM_VERSION_DATE_ONLY)
+		+ strlen(date_time);
+
+    longVersion = (char *)alloc(len);
+    if (longVersion == NULL)
+	longVersion = VIM_VERSION_LONG;
+    else
+	vim_snprintf(longVersion, len, msg,
+		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+}
 # endif
 #else
 char	*longVersion = VIM_VERSION_LONG;
+
+    void
+init_longVersion(void)
+{
+    // nothing to do
+}
 #endif
 
 static void list_features(void);
@@ -660,6 +683,11 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
+#ifdef FEAT_VARTABS
+	"+vartabs",
+#else
+	"-vartabs",
+#endif
 	"+vertsplit",
 #ifdef FEAT_VIRTUALEDIT
 	"+virtualedit",
@@ -761,6 +789,172 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    138,
+/**/
+    137,
+/**/
+    136,
+/**/
+    135,
+/**/
+    134,
+/**/
+    133,
+/**/
+    132,
+/**/
+    131,
+/**/
+    130,
+/**/
+    129,
+/**/
+    128,
+/**/
+    127,
+/**/
+    126,
+/**/
+    125,
+/**/
+    124,
+/**/
+    123,
+/**/
+    122,
+/**/
+    121,
+/**/
+    120,
+/**/
+    119,
+/**/
+    118,
+/**/
+    117,
+/**/
+    116,
+/**/
+    115,
+/**/
+    114,
+/**/
+    113,
+/**/
+    112,
+/**/
+    111,
+/**/
+    110,
+/**/
+    109,
+/**/
+    108,
+/**/
+    107,
+/**/
+    106,
+/**/
+    105,
+/**/
+    104,
+/**/
+    103,
+/**/
+    102,
+/**/
+    101,
+/**/
+    100,
+/**/
+    99,
+/**/
+    98,
+/**/
+    97,
+/**/
+    96,
+/**/
+    95,
+/**/
+    94,
+/**/
+    93,
+/**/
+    92,
+/**/
+    91,
+/**/
+    90,
+/**/
+    89,
+/**/
+    88,
+/**/
+    87,
+/**/
+    86,
+/**/
+    85,
+/**/
+    84,
+/**/
+    83,
+/**/
+    82,
+/**/
+    81,
+/**/
+    80,
+/**/
+    79,
+/**/
+    78,
+/**/
+    77,
+/**/
+    76,
+/**/
+    75,
+/**/
+    74,
+/**/
+    73,
+/**/
+    72,
+/**/
+    71,
+/**/
+    70,
+/**/
+    69,
+/**/
+    68,
+/**/
+    67,
+/**/
+    66,
+/**/
+    65,
+/**/
+    64,
+/**/
+    63,
+/**/
+    62,
+/**/
+    61,
+/**/
+    60,
+/**/
+    59,
+/**/
+    58,
+/**/
+    57,
+/**/
+    56,
 /**/
     55,
 /**/
@@ -1054,6 +1248,7 @@ list_version(void)
      * When adding features here, don't forget to update the list of
      * internal variables in eval.c!
      */
+    init_longVersion();
     MSG(longVersion);
 #ifdef WIN3264
 # ifdef FEAT_GUI_W32

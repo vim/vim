@@ -29,6 +29,13 @@ static int pum_scrollbar;		/* TRUE when scrollbar present */
 static int pum_row;			/* top row of pum */
 static int pum_col;			/* left column of pum */
 
+static win_T *pum_window = NULL;
+static int pum_win_row;
+static int pum_win_height;
+static int pum_win_col;
+static int pum_win_wcol;
+static int pum_win_width;
+
 static int pum_do_redraw = FALSE;	/* do redraw anyway */
 
 static int pum_set_selected(int n, int repeat);
@@ -81,7 +88,6 @@ pum_display(
 {
     int		def_width;
     int		max_width;
-    int		row;
     int		context_lines;
     int		cursor_col;
     int		above_row;
@@ -103,7 +109,14 @@ pum_display(
 	validate_cursor_col();
 	pum_array = NULL;
 
-	row = curwin->w_wrow + W_WINROW(curwin);
+	// Remember the essential parts of the window position and size, so we
+	// can decide when to reposition the popup menu.
+	pum_window = curwin;
+	pum_win_row = curwin->w_wrow + W_WINROW(curwin);
+	pum_win_height = curwin->w_height;
+	pum_win_col = curwin->w_wincol;
+	pum_win_wcol = curwin->w_wcol;
+	pum_win_width = curwin->w_width;
 
 #if defined(FEAT_QUICKFIX)
 	FOR_ALL_WINDOWS(pvwin)
@@ -128,12 +141,12 @@ pum_display(
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
 
-	/* Put the pum below "row" if possible.  If there are few lines decide
+	/* Put the pum below "pum_win_row" if possible.  If there are few lines decide
 	 * on where there is more room. */
-	if (row + 2 >= below_row - pum_height
-			      && row - above_row > (below_row - above_row) / 2)
+	if (pum_win_row + 2 >= below_row - pum_height
+		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
-	    /* pum above "row" */
+	    /* pum above "pum_win_row" */
 
 	    /* Leave two lines of context if possible */
 	    if (curwin->w_wrow - curwin->w_cline_row >= 2)
@@ -141,15 +154,15 @@ pum_display(
 	    else
 		context_lines = curwin->w_wrow - curwin->w_cline_row;
 
-	    if (row >= size + context_lines)
+	    if (pum_win_row >= size + context_lines)
 	    {
-		pum_row = row - size - context_lines;
+		pum_row = pum_win_row - size - context_lines;
 		pum_height = size;
 	    }
 	    else
 	    {
 		pum_row = 0;
-		pum_height = row - context_lines;
+		pum_height = pum_win_row - context_lines;
 	    }
 	    if (p_ph > 0 && pum_height > p_ph)
 	    {
@@ -159,7 +172,7 @@ pum_display(
 	}
 	else
 	{
-	    /* pum below "row" */
+	    /* pum below "pum_win_row" */
 
 	    /* Leave two lines of context if possible */
 	    if (curwin->w_cline_row
@@ -169,7 +182,7 @@ pum_display(
 		context_lines = curwin->w_cline_row
 				    + curwin->w_cline_height - curwin->w_wrow;
 
-	    pum_row = row + context_lines;
+	    pum_row = pum_win_row + context_lines;
 	    if (size > below_row - pum_row)
 		pum_height = below_row - pum_row;
 	    else
@@ -823,6 +836,43 @@ pum_visible(void)
 }
 
 /*
+ * Reposition the popup menu to adjust for window layout changes.
+ */
+    void
+pum_may_redraw(void)
+{
+    pumitem_T	*array = pum_array;
+    int		len = pum_size;
+    int		selected = pum_selected;
+
+    if (!pum_visible())
+	return;  // nothing to do
+
+    if (pum_window != curwin
+	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
+		&& pum_win_height == curwin->w_height
+		&& pum_win_col == curwin->w_wincol
+		&& pum_win_width == curwin->w_width))
+    {
+	// window position didn't change, redraw in the same position
+	pum_redraw();
+    }
+    else
+    {
+	int wcol = curwin->w_wcol;
+
+	// Window layout changed, recompute the position.
+	// Use the remembered w_wcol value, the cursor may have moved when a
+	// completion was inserted, but we want the menu in the same position.
+	pum_undisplay();
+	curwin->w_wcol = pum_win_wcol;
+	curwin->w_valid |= VALID_WCOL;
+	pum_display(array, len, selected);
+	curwin->w_wcol = wcol;
+    }
+}
+
+/*
  * Return the height of the popup menu, the number of entries visible.
  * Only valid when pum_visible() returns TRUE!
  */
@@ -865,6 +915,9 @@ pum_position_at_mouse(int min_width)
     pum_width = Columns - pum_col;
     if (pum_width > pum_base_width + 1)
 	pum_width = pum_base_width + 1;
+
+    // Do not redraw at cursor position.
+    pum_window = NULL;
 }
 
 # endif

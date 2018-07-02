@@ -221,8 +221,8 @@ The most obvious side effect of this change is that when you source a vimrc
 file twice, the autocommands in it will be defined twice.  To avoid this, do
 one of these:
 
-- Remove any autocommands that might potentially defined twice before
-  defining them.  Example: >
+- Remove any autocommands that might already be defined before defining
+  them.  Example: >
 	:au! * *.ext
 	:au BufEnter *.ext ...
 

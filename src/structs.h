@@ -1345,6 +1345,7 @@ typedef struct
     garray_T	uf_lines;	/* function lines */
 #ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */
+    int		uf_prof_initialized;
     /* profiling the function as a whole */
     int		uf_tm_count;	/* nr of calls */
     proftime_T	uf_tm_total;	/* time spent in function + children */
@@ -2236,6 +2237,13 @@ struct file_buffer
     long	b_p_wm;		/* 'wrapmargin' */
     long	b_p_wm_nobin;	/* b_p_wm saved for binary mode */
     long	b_p_wm_nopaste;	/* b_p_wm saved for paste mode */
+#ifdef FEAT_VARTABS
+    char_u	*b_p_vsts;	/* 'varsofttabstop' */
+    int		*b_p_vsts_array;   /* 'varsofttabstop' in internal format */
+    char_u	*b_p_vsts_nopaste; /* b_p_vsts saved for paste mode */
+    char_u	*b_p_vts;	/* 'vartabstop' */
+    int		*b_p_vts_array;	/* 'vartabstop' in internal format */
+#endif
 #ifdef FEAT_KEYMAP
     char_u	*b_p_keymap;	/* 'keymap' */
 #endif
@@ -2360,6 +2368,8 @@ struct file_buffer
     char_u	*b_prompt_text;	     // set by prompt_setprompt()
     char_u	*b_prompt_callback;  // set by prompt_setcallback()
     partial_T	*b_prompt_partial;   // set by prompt_setcallback()
+    char_u	*b_prompt_interrupt;   // set by prompt_setinterrupt()
+    partial_T	*b_prompt_int_partial; // set by prompt_setinterrupt()
     int		b_prompt_insert;     // value for restart_edit when entering
 				     // a prompt buffer window.
 #endif

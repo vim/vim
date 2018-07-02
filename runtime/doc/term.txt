@@ -111,6 +111,16 @@ have a problem with this, disable bracketed paste by putting this in your
 If this is done while Vim is running the 't_BD' will be sent to the terminal
 to disable bracketed paste.
 
+If your terminal supports bracketed paste, but the options are not set
+automatically, you can try using something like this: >
+
+	if &term =~ "screen"
+	  let &t_BE = "\e[?2004h"
+	  let &t_BD = "\e[?2004l"
+	  exec "set t_PS=\e[200~"
+	  exec "set t_PE=\e[201~"
+	endif
+<
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
 an illegal combination of settings.  This has been reported on Solaris 2.5

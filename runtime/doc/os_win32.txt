@@ -169,7 +169,7 @@ you will need to get a version older than that.
 ==============================================================================
 6. Running under Windows 3.1				*win32-win3.1*
 
-					*win32s* *windows-3.1* *gui-w32s*
+				*win32s* *windows-3.1* *gui-w32s* *win16*
 There was a special version of gvim that runs under Windows 3.1 and 3.11.
 Support was removed in patch 7.4.1363.
 
