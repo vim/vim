@@ -2288,6 +2288,7 @@ test_arglist \
 	test_syn_attr \
 	test_syntax \
 	test_system \
+	test_tab \
 	test_tabline \
 	test_tabpage \
 	test_tagcase \

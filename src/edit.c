@@ -9373,7 +9373,7 @@ ins_bs(
 	    if (p_sta && in_indent)
 		want_vcol = (want_vcol / curbuf->b_p_sw) * curbuf->b_p_sw;
 	    else
-		want_vcol = tabstop_start(want_vcol, curbuf->b_p_sts,
+		want_vcol = tabstop_start(want_vcol, get_sts_value(),
 						     curbuf->b_p_vsts_array);
 #else
 	    want_vcol = (want_vcol / ts) * ts;
@@ -10203,9 +10203,9 @@ ins_tab(void)
 	temp = (int)curbuf->b_p_sw;
 	temp -= get_nolist_virtcol() % temp;
     }
-    else if (tabstop_count(curbuf->b_p_vsts_array) > 0 || curbuf->b_p_sts > 0)
+    else if (tabstop_count(curbuf->b_p_vsts_array) > 0 || curbuf->b_p_sts != 0)
 	                        /* use 'softtabstop' when set */
-	temp = tabstop_padding(get_nolist_virtcol(), curbuf->b_p_sts,
+	temp = tabstop_padding(get_nolist_virtcol(), get_sts_value(),
 						     curbuf->b_p_vsts_array);
     else			/* otherwise use 'tabstop' */
 	temp = tabstop_padding(get_nolist_virtcol(), curbuf->b_p_ts,

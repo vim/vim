@@ -13016,7 +13016,7 @@ get_sw_value(buf_T *buf)
 
 /*
  * Return the effective softtabstop value for the current buffer, using the
- * 'tabstop' value when 'softtabstop' is negative.
+ * 'shiftwidth' value when 'softtabstop' is negative.
  */
     long
 get_sts_value(void)
