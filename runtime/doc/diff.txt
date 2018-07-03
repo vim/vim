@@ -344,8 +344,9 @@ between file1 and file2: >
 
 The ">" is replaced with the value of 'shellredir'.
 
-The output of "diff" must be a normal "ed" style diff.  Do NOT use a context
-diff.  This example explains the format that Vim expects: >
+The output of "diff" can be a normal "ed" style diff or a unified style diff.
+There should be NO context lines!  This example explains the format that Vim expects:
+>
 
 	1a2
 	> bbb

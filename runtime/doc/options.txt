@@ -2645,11 +2645,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 		foldcolumn:{n}	Set the 'foldcolumn' option to {n} when
 				starting diff mode.  Without this 2 is used.
 
+		internal	Use the internal diff library.
+
+		indent-heuristic
+                                 Use the indent heuristic for the internal
+                                 diff library.
+
+                algorithm:{text} Use the specified diff algorithm with the
+				internal diff engine. Currently supported 
+				algorithms are:
+
+				myers:     the default algorithm
+				minimal:   spend extra time to generate the smallest
+					   possible diff
+				patience:  patience diff algorithm
+				histogram: histogram diff algorithm
+
 	Examples: >
 
 		:set diffopt=filler,context:4
 		:set diffopt=
 		:set diffopt=filler,foldcolumn:3
+		:set diffopt+=internal  " use the internal diff parser
 <
 				     *'digraph'* *'dg'* *'nodigraph'* *'nodg'*
 'digraph' 'dg'		boolean	(default off)

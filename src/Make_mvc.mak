@@ -811,6 +811,14 @@ CUI_OBJ = $(OUTDIR)\iscygpty.obj
 !endif
 SUBSYSTEM_TOOLS = console
 
+XDIFF_OBJ = $(OBJDIR)/xdiffi.obj \
+	$(OBJDIR)/xemit.obj \
+	$(OBJDIR)/xprepare.obj \
+	$(OBJDIR)/xutils.obj \
+	$(OBJDIR)/xhistogram.obj \
+	$(OBJDIR)/xpatience.obj
+
+
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 SUBSYSTEM_TOOLS = $(SUBSYSTEM_TOOLS),$(SUBSYSTEM_VER)
@@ -1202,12 +1210,12 @@ all:	$(VIM).exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
 
-$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+$(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
 		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
+	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
 		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
@@ -1333,6 +1341,24 @@ $(OUTDIR)/crypt_zip.obj: $(OUTDIR) crypt_zip.c  $(INCL)
 $(OUTDIR)/dict.obj:	$(OUTDIR) dict.c  $(INCL)
 
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
+
+$(OUTDIR)/xdiffi.obj:	$(OUTDIR) xdiff/xdiffi.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xdiffi.c 
+
+$(OUTDIR)/xemit.obj:	$(OUTDIR) xdiff/xemit.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xemit.c 
+
+$(OUTDIR)/xprepare.obj:	$(OUTDIR) xdiff/xprepare.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xprepare.c 
+
+$(OUTDIR)/xutils.obj:	$(OUTDIR) xdiff/xutils.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xutils.c 
+
+$(OUTDIR)/xhistogram.obj:	$(OUTDIR) xdiff/xhistogram.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xhistogram.c 
+
+$(OUTDIR)/xpatience.obj:	$(OUTDIR) xdiff/xpatience.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) xdiff/xpatience.c 
 
 $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
 

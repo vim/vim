@@ -96,6 +96,9 @@ func RunTheTest(test)
   " mode message.
   set noshowmode
 
+  " Avoid SwapFile Exists Warning
+  set shortmess+=A
+
   " Clear any overrides.
   call test_override('ALL', 0)
 
@@ -280,6 +283,7 @@ let s:flaky = [
       \ 'Test_terminal_noblock()',
       \ 'Test_terminal_redir_file()',
       \ 'Test_terminal_tmap()',
+      \ 'Test_diff_screen()',
       \ 'Test_with_partial_callback()',
       \ ]
 
