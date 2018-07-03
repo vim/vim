@@ -39,6 +39,7 @@ endfunc
 " Test ::vim::beep
 func Test_vim_beep()
   call assert_beeps('tcl ::vim::beep')
+  call assert_fails('tcl ::vim::beep x', 'wrong # args: should be "::vim::beep"')
 endfunc
 
 " Test ::vim::buffer
@@ -66,6 +67,14 @@ func Test_vim_buffer()
   call assert_equal('2',    TclEval('llength [::vim::buffer list]'))
   call assert_equal(b1.' '.b2, TclEval('::vim::buffer list'))
 
+  call assert_fails('tcl ::vim::buffer',
+        \           'wrong # args: should be "::vim::buffer option"')
+  call assert_fails('tcl ::vim::buffer ' . bn1 . ' x',
+        \           'wrong # args: should be "::vim::buffer bufNumber"')
+  call assert_fails('tcl ::vim::buffer 4321', 'invalid buffer number')
+  call assert_fails('tcl ::vim::buffer x',
+        \           'bad option "x": must be exists or list')
+
   %bwipe
 endfunc
 
@@ -82,6 +91,10 @@ func Test_vim_option()
   call assert_equal('+4', &cc)
   call assert_equal('+4', TclEval('::vim::option cc'))
 
+  call assert_fails('tcl ::vim::option xxx', 'unknown vimOption')
+  call assert_fails('tcl ::vim::option',
+        \           'wrong # args: should be "::vim::option vimOption ?value?"')
+
   set cc&
 endfunc
 
@@ -89,6 +102,9 @@ endfunc
 func Test_vim_expr()
   call assert_equal(string(char2nr('X')),
         \           TclEval('::vim::expr char2nr("X")'))
+
+  call assert_fails('tcl ::vim::expr x y',
+        \           'wrong # args: should be "::vim::expr vimExpr"')
 endfunc
 
 " Test ::vim::command
@@ -96,6 +112,12 @@ func Test_vim_command()
   call assert_equal('hello world',
         \           TclEval('::vim::command {echo "hello world"}'))
 
+  " With the -quiet option, the error should silently be ignored.
+  call assert_equal('', TclEval('::vim::command -quiet xyz'))
+
+  call assert_fails('tcl ::vim::command',
+       \            'wrong # args: should be "::vim::command ?-quiet? exCommand"')
+  call assert_fails('tcl ::vim::command -foo xyz', 'unknown flag: -foo')
   call assert_fails('tcl ::vim::command xyz',
         \           'E492: Not an editor command: xyz')
 
@@ -113,6 +135,11 @@ func Test_vim_window_list()
 
   call assert_equal('2', TclEval('llength [::vim::window list]'))
   call assert_equal(w2.' '.w1, TclEval('::vim::window list'))
+
+  call assert_fails('tcl ::vim::window x', 'unknown option')
+  call assert_fails('tcl ::vim::window list x',
+        \           'wrong # args: should be "::vim::window option"')
+
   %bwipe
 endfunc
 
@@ -124,6 +151,9 @@ func Test_output()
   let messages = split(execute('message'), "\n")
   call assert_equal('a message', messages[-2])
   call assert_equal('another message', messages[-1])
+
+  call assert_fails('tcl puts',
+        \           'wrong # args: should be "puts ?-nonewline? ?channelId? string"')
 endfunc
 
 " Test $win height (get and set window height)
@@ -137,6 +167,9 @@ func Test_window_height()
   " Test getting window height
   call assert_equal('2', TclEval('$::vim::current(window) height'))
 
+  call assert_fails('tcl $::vim::current(window) height 2 2', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(window) height x',
+        \ 'expected integer but got "x"')
   bwipe
 endfunc
 
@@ -175,6 +208,8 @@ func Test_window_cursor()
   tcl $win cursor $here(row) $here(column)
   call assert_equal([0, 2, 3, 0], getpos('.'))
 
+  call assert_fails('tcl $win cursor 1 1 1', 'wrong # args:')
+
   tcl unset win here
   bwipe!
 endfunc
@@ -193,6 +228,8 @@ func Test_window_buffer()
   call assert_equal(TclEval('set b2'), TclEval('$w2 buffer'))
   call assert_equal(string(bufnr('Xfoo1')), TclEval('[$w1 buffer] number'))
   call assert_equal(string(bufnr('Xfoo2')), TclEval('[$w2 buffer] number'))
+
+  call assert_fails('tcl $w1 buffer x', 'wrong # args:')
 
   tcl unset b1 b2 w1 w2
   %bwipe
@@ -234,6 +271,9 @@ func Test_window_expr()
   call assert_equal('Xfoo1', TclEval('$w1 expr bufname("%")'))
   call assert_equal('Xfoo2', TclEval('$w2 expr bufname("%")'))
 
+  call assert_fails('tcl $w1 expr', 'wrong # args:')
+  call assert_fails('tcl $w1 expr x x', 'wrong # args:')
+
   tcl unset w1 w2
   %bwipe
 endfunc
@@ -262,6 +302,20 @@ func Test_window_option()
   %bwipe
 endfunc
 
+" Test $win delcmd {cmd}
+func Test_window_delcmd()
+  new
+  tcl $::vim::current(window) delcmd [list set msg "window deleted"]
+  call assert_fails('tcl set msg', "can't read \"msg\": no such variable")
+  q
+  call assert_equal('window deleted', TclEval('set msg'))
+
+  call assert_fails('tcl $::vim::current(window) delcmd', 'wrong # args')
+
+  tcl unset msg
+  bwipe
+endfunc
+
 " Test $buf name
 func Test_buffer_name()
   " Test buffer name with a named buffer
@@ -272,6 +326,9 @@ func Test_buffer_name()
   " Test buffer name with an unnamed buffer
   new
   call assert_equal('', TclEval('$::vim::current(buffer) name'))
+
+  call assert_fails('tcl $::vim::current(buffer) name x', 'wrong # args:')
+
   bwipe
 endfunc
 
@@ -281,7 +338,10 @@ func Test_buffer_number()
   call assert_equal(string(bufnr('%')), TclEval('$::vim::current(buffer) number'))
   new
   call assert_equal(string(bufnr('%')), TclEval('$::vim::current(buffer) number'))
-  bwipe %
+
+  call assert_fails('tcl $::vim::current(buffer) number x', 'wrong # args:')
+
+  %bwipe
 endfunc
 
 " Test $buf count and $buf last
@@ -289,9 +349,17 @@ func Test_buffer_count()
   new
   call setline(1, ['one', 'two', 'three'])
   call assert_equal('3', TclEval('$::vim::current(buffer) count'))
-
-  " "$buf count" and "$buf last" do the same thing. Why 2 commands?
   call assert_equal('3', TclEval('$::vim::current(buffer) last'))
+
+  " Check that $buf count and $buf last differ when ::vim::lbase is 0.
+  tcl set ::vim::lbase 0
+  call assert_equal('3', TclEval('$::vim::current(buffer) count'))
+  call assert_equal('2', TclEval('$::vim::current(buffer) last'))
+
+  call assert_fails('tcl $::vim::current(buffer) count x', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(buffer) last x',  'wrong # args:')
+
+  tcl set ::vim::lbase 1
   bwipe!
 endfunc
 
@@ -306,6 +374,9 @@ func Test_buffer_delete()
   call assert_fails('tcl $::vim::current(buffer) delete -1', 'line number out of range')
   call assert_fails('tcl $::vim::current(buffer) delete  0', 'line number out of range')
   call assert_fails('tcl $::vim::current(buffer) delete  5', 'line number out of range')
+
+  call assert_fails('tcl $::vim::current(buffer) delete', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(buffer) delete 1 2 3', 'wrong # args:')
 
   bwipe!
 endfunc
@@ -344,6 +415,9 @@ func Test_buffer_append()
   call assert_fails('tcl $buf append  0 "x"', 'line number out of range')
   call assert_fails('tcl $buf append  7 "x"', 'line number out of range')
 
+  call assert_fails('tcl $buf append', 'wrong # args:')
+  call assert_fails('tcl $buf append 1 x x', 'wrong # args:')
+
   tcl unset buf
   bwipe!
 endfunc
@@ -359,6 +433,8 @@ func Test_buffer_set()
 
   call assert_fails('tcl $::vim::current(buffer) set 0 "x"', 'line number out of range')
   call assert_fails('tcl $::vim::current(buffer) set 5 "x"', 'line number out of range')
+
+  call assert_fails('tcl $::vim::current(buffer) set', 'wrong # args:')
   bwipe!
 endfunc
 
@@ -387,6 +463,9 @@ func Test_buffer_get()
   call assert_fails('tcl $buf get  5',   'line number out of range')
   call assert_fails('tcl $buf get  0 1', 'line number out of range')
 
+  call assert_fails('tcl $::vim::current(buffer) get x', 'expected integer but got "x"')
+  call assert_fails('tcl $::vim::current(buffer) get 1 1 1', 'wrong # args:')
+
   tcl unset buf
   bwipe!
 endfunc
@@ -399,14 +478,18 @@ func Test_buffer_mark()
   norm! ma
   norm! jllmB
 
-  call assert_equal('row 3 column 1', TclEval('$::vim::current(buffer) mark "a"'))
-  call assert_equal('row 4 column 3', TclEval('$::vim::current(buffer) mark "B"'))
+  call assert_equal('row 3 column 1', TclEval('$::vim::current(buffer) mark a'))
+  call assert_equal('row 4 column 3', TclEval('$::vim::current(buffer) mark B'))
+
+  call assert_fails('tcl $::vim::current(buffer) mark /', 'invalid mark name')
+  call assert_fails('tcl $::vim::current(buffer) mark z', 'mark not set')
+  call assert_fails('tcl $::vim::current(buffer) mark', 'wrong # args:')
 
   delmarks aB
   bwipe!
 endfunc
 
-" Test $buf list
+" Test $buf list (window list of a buffer)
 func Test_buffer_list()
   e Xfoo
   call setline(1, ['foobar'])
@@ -430,6 +513,87 @@ EOF
   %bwipe!
 endfunc
 
+" Test $buf option (test and set option in context of a buffer)
+func Test_buffer_option()
+  new Xfoo1
+  tcl set b1 $::vim::current(buffer)
+  new Xfoo2
+  tcl set b2 $::vim::current(buffer)
+
+  tcl $b1 option foldcolumn 2
+  tcl $b2 option foldcolumn 3
+
+  call assert_equal(3, &foldcolumn)
+  wincmd j
+  call assert_equal(2, &foldcolumn)
+
+  call assert_equal('2', TclEval('$b1 option foldcolumn'))
+  call assert_equal('3', TclEval('$b2 option foldcolumn'))
+
+  call assert_fails('tcl $::vim::current(buffer) option', 'wrong # args:')
+
+  set foldcolumn&
+  tcl unset b1 b2
+  %bwipe
+endfunc
+
+" Test $buf expr (evaluate vim expression)
+func Test_buffer_expr()
+  new Xfoo1
+  norm ifoo1
+  tcl set b1 $::vim::current(buffer)
+
+  new Xfoo2
+  norm ifoo2
+  tcl set b2 $::vim::current(buffer)
+
+  call assert_equal('foo1', TclEval('$b1 expr getline(1)'))
+  call assert_equal('foo2', TclEval('$b2 expr getline(1)'))
+
+  call assert_fails('tcl expr', 'wrong # args:')
+
+  tcl unset b1 b2
+  %bwipe!
+endfunc
+
+" Test $buf delcmd {cmd} (command executed when buffer is deleted)
+func Test_buffer_delcmd()
+  new Xfoo
+  split
+  tcl $::vim::current(buffer) delcmd [list set msg "buffer deleted"]
+  q
+  call assert_fails('tcl set msg', "can't read \"msg\": no such variable")
+  q
+  call assert_equal('buffer deleted', TclEval('set msg'))
+
+  call assert_fails('tcl $::vim::current(window) delcmd', 'wrong # args')
+  call assert_fails('tcl $::vim::current(window) delcmd x x', 'wrong # args')
+
+  tcl unset msg
+  %bwipe
+endfunc
+
+" Test $buf windows (windows list of a buffer)
+func Test_buffer_windows()
+  new Xfoo
+  split
+  new Xbar
+  split
+  vsplit
+
+  tcl set bar_wl [$::vim::current(buffer) windows]
+  2wincmd j
+  tcl set foo_wl [$::vim::current(buffer) windows]
+
+  call assert_equal('2', TclEval('llength $foo_wl'))
+  call assert_equal('3', TclEval('llength $bar_wl'))
+
+  call assert_fails('tcl $::vim::current(buffer) windows x', 'wrong # args:')
+
+  tcl unset bar_wl foo_wl
+  %bwipe
+endfunc
+
 " Test :tclfile
 func Test_tclfile()
   call delete('Xtcl_file')
@@ -440,7 +604,7 @@ func Test_tclfile()
   call assert_equal('3.14', TclEval('set pi'))
 
   tcl unset pi
-  call delete('Xlua_file')
+  call delete('Xtcl_file')
 endfunc
 
 " Test :tclfile with syntax error in tcl script
@@ -451,5 +615,5 @@ func Test_tclfile_error()
 
   call assert_fails('tclfile Xtcl_file', 'invalid command name "xyz"')
 
-  call delete('Xlua_file')
+  call delete('Xtcl_file')
 endfunc
