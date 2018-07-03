@@ -671,7 +671,6 @@ static struct builtin_term builtin_termcaps[] =
 /*
  * VT320 is working as an ANSI terminal compatible DEC terminal.
  * (it covers VT1x0, VT2x0 and VT3x0 up to VT320 on VMS as well)
- * Note: K_F1...K_F5 are for internal use, should not be defined.
  * TODO:- rewrite ESC[ codes to CSI
  *      - keyboard languages (CSI ? 26 n)
  */
@@ -723,6 +722,11 @@ static struct builtin_term builtin_termcaps[] =
     {K_DOWN,		IF_EB("\033[B", ESC_STR "[B")},
     {K_RIGHT,		IF_EB("\033[C", ESC_STR "[C")},
     {K_LEFT,		IF_EB("\033[D", ESC_STR "[D")},
+    /* cursor key sequence for application cursor mode */
+    {K_XUP,		IF_EB("\033OA", ESC_STR "OA")},
+    {K_XDOWN,		IF_EB("\033OB", ESC_STR "OB")},
+    {K_XRIGHT,		IF_EB("\033OC", ESC_STR "OC")},
+    {K_XLEFT,		IF_EB("\033OD", ESC_STR "OD")},
     {K_F1,		IF_EB("\033[11~", ESC_STR "[11~")},
     {K_F2,		IF_EB("\033[12~", ESC_STR "[12~")},
     {K_F3,		IF_EB("\033[13~", ESC_STR "[13~")},
@@ -738,22 +742,32 @@ static struct builtin_term builtin_termcaps[] =
     {K_F13,		IF_EB("\033[25~", ESC_STR "[25~")},
     {K_F14,		IF_EB("\033[26~", ESC_STR "[26~")},
     {K_F15,		IF_EB("\033[28~", ESC_STR "[28~")},	/* Help */
-    {K_F16,		IF_EB("\033[29~", ESC_STR "[29~")},	/* Select */
+    {K_F16,		IF_EB("\033[29~", ESC_STR "[29~")},	/* Do */
     {K_F17,		IF_EB("\033[31~", ESC_STR "[31~")},
     {K_F18,		IF_EB("\033[32~", ESC_STR "[32~")},
     {K_F19,		IF_EB("\033[33~", ESC_STR "[33~")},
     {K_F20,		IF_EB("\033[34~", ESC_STR "[34~")},
-    {K_INS,		IF_EB("\033[2~", ESC_STR "[2~")},
-    {K_DEL,		IF_EB("\033[3~", ESC_STR "[3~")},
-    {K_HOME,		IF_EB("\033[1~", ESC_STR "[1~")},
-    {K_END,		IF_EB("\033[4~", ESC_STR "[4~")},
-    {K_PAGEUP,		IF_EB("\033[5~", ESC_STR "[5~")},
-    {K_PAGEDOWN,	IF_EB("\033[6~", ESC_STR "[6~")},
+    {K_INS,		IF_EB("\033[2~", ESC_STR "[2~")},	/* Insert Here */
+    {K_DEL,		IF_EB("\033[3~", ESC_STR "[3~")},	/* Remove */
+    {K_HOME,		IF_EB("\033[1~", ESC_STR "[1~")},	/* Find */
+    {K_END,		IF_EB("\033[4~", ESC_STR "[4~")},	/* Select */
+    {K_PAGEUP,		IF_EB("\033[5~", ESC_STR "[5~")},	/* Prev Screen */
+    {K_PAGEDOWN,	IF_EB("\033[6~", ESC_STR "[6~")},	/* Next Screen */
     {K_KPLUS,		IF_EB("\033Ok", ESC_STR "Ok")},	/* keypad plus */
     {K_KMINUS,		IF_EB("\033Om", ESC_STR "Om")},	/* keypad minus */
     {K_KDIVIDE,		IF_EB("\033Oo", ESC_STR "Oo")},	/* keypad / */
     {K_KMULTIPLY,	IF_EB("\033Oj", ESC_STR "Oj")},	/* keypad * */
     {K_KENTER,		IF_EB("\033OM", ESC_STR "OM")},	/* keypad Enter */
+    {K_K0,		IF_EB("\033Op", ESC_STR "Op")},	/* keypad 0 */
+    {K_K1,		IF_EB("\033Oq", ESC_STR "Oq")},	/* keypad 1 */
+    {K_K2,		IF_EB("\033Or", ESC_STR "Or")},	/* keypad 2 */
+    {K_K3,		IF_EB("\033Os", ESC_STR "Os")},	/* keypad 3 */
+    {K_K4,		IF_EB("\033Ot", ESC_STR "Ot")},	/* keypad 4 */
+    {K_K5,		IF_EB("\033Ou", ESC_STR "Ou")},	/* keypad 5 */
+    {K_K6,		IF_EB("\033Ov", ESC_STR "Ov")},	/* keypad 6 */
+    {K_K7,		IF_EB("\033Ow", ESC_STR "Ow")},	/* keypad 7 */
+    {K_K8,		IF_EB("\033Ox", ESC_STR "Ox")},	/* keypad 8 */
+    {K_K9,		IF_EB("\033Oy", ESC_STR "Oy")},	/* keypad 9 */
     {K_BS,		"\x7f"},	/* for some reason 0177 doesn't work */
 # endif
 
@@ -960,6 +974,16 @@ static struct builtin_term builtin_termcaps[] =
     {K_KMULTIPLY,	IF_EB("\033O*j", ESC_STR "O*j")},     /* keypad * */
     {K_KENTER,		IF_EB("\033O*M", ESC_STR "O*M")},     /* keypad Enter */
     {K_KPOINT,		IF_EB("\033O*n", ESC_STR "O*n")},     /* keypad . */
+    {K_K0,		IF_EB("\033O*p", ESC_STR "O*p")},     /* keypad 0 */
+    {K_K1,		IF_EB("\033O*q", ESC_STR "O*q")},     /* keypad 1 */
+    {K_K2,		IF_EB("\033O*r", ESC_STR "O*r")},     /* keypad 2 */
+    {K_K3,		IF_EB("\033O*s", ESC_STR "O*s")},     /* keypad 3 */
+    {K_K4,		IF_EB("\033O*t", ESC_STR "O*t")},     /* keypad 4 */
+    {K_K5,		IF_EB("\033O*u", ESC_STR "O*u")},     /* keypad 5 */
+    {K_K6,		IF_EB("\033O*v", ESC_STR "O*v")},     /* keypad 6 */
+    {K_K7,		IF_EB("\033O*w", ESC_STR "O*w")},     /* keypad 7 */
+    {K_K8,		IF_EB("\033O*x", ESC_STR "O*x")},     /* keypad 8 */
+    {K_K9,		IF_EB("\033O*y", ESC_STR "O*y")},     /* keypad 9 */
     {K_KDEL,		IF_EB("\033[3;*~", ESC_STR "[3;*~")}, /* keypad Del */
     {K_PS,		IF_EB("\033[200~", ESC_STR "[200~")}, /* paste start */
     {K_PE,		IF_EB("\033[201~", ESC_STR "[201~")}, /* paste end */
