@@ -1,4 +1,3 @@
-#
 # Ukrainian translation for Vim
 #
 # Original translations

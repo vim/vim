@@ -1,4 +1,4 @@
-# Brazilian Portuguese Translation for Vim	    vim:set foldmethod=marker:
+# Brazilian Portuguese translation for Vim	    vim:set foldmethod=marker:
 #
 msgid ""
 msgstr ""

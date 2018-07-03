@@ -1,4 +1,4 @@
-# French Translation for Vim
+# French translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
@@ -15,7 +15,7 @@ msgstr ""
 "POT-Creation-Date: 2018-05-08 09:00+0200\n"
 "PO-Revision-Date: 2018-05-08 09:17+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
-"Language-Team: \n"
+"Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-15\n"

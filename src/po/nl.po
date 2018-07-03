@@ -1,4 +1,5 @@
-# Dutch Translation for Vim		vim:set foldmethod=marker:
+# Dutch translation for Vim		vim:set foldmethod=marker:
+#
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 # Previous-Translator(s):
@@ -10,7 +11,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-05-29 07:43+0200\n"
 "PO-Revision-Date: 2012-03-28 08:07+0200\n"
-"Last-Translator: YOUR NAME <E-MAIL@ADDRESS>\n"
+"Last-Translator: \n"
 "Language-Team: Dutch <vertaling@vrijschrift.nl>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"

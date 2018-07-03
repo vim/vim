@@ -10,10 +10,10 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding utf-8
+scriptencoding latin1
 
 " Help menu
-menut &Help	HjÃ¦lp
+menut &Help	Hjælp
 
 menut &Overview<Tab><F1>	Overblik<Tab><F1>
 menut &User\ Manual	Brugermanual
@@ -23,19 +23,19 @@ menut &Find\.\.\.	Find\.\.\.
 menut &Credits	Anerkendelser
 menut Co&pying	Kopiering
 menut &Sponsor/Register	Sponsorer/registrer
-menut O&rphans	ForÃ¦ldrelÃ¸se\ bÃ¸rn
+menut O&rphans	Forældreløse\ børn
 " -SEP2-
 menut &Version	Version
 menut &About	Om
 
-let g:menutrans_help_dialog = "Indtast en kommando eller ord for at finde hjÃ¦lp om:\n\nStart med i_ for kommandoer til inputtilstand (f.eks.: i_CTRL-X)\nStart med c_ for kommandoer til redigering af kommandolinje (f.eks.: c_<Del>)\nStart med ' for et tilvalgsnavn (f.eks.: 'shiftwidth')"
+let g:menutrans_help_dialog = "Indtast en kommando eller ord for at finde hjælp om:\n\nStart med i_ for kommandoer til inputtilstand (f.eks.: i_CTRL-X)\nStart med c_ for kommandoer til redigering af kommandolinje (f.eks.: c_<Del>)\nStart med ' for et tilvalgsnavn (f.eks.: 'shiftwidth')"
 
 " File menu
 menut &File	Fil
 
-menut &Open\.\.\.<Tab>:e	Ã…bn\.\.\.<Tab>:e
-menut Sp&lit-Open\.\.\.<Tab>:sp	Opdel-Ã¥bn\.\.\.<Tab>:sp
-menut Open\ Tab\.\.\.<Tab>:tabnew	Ã…bn\ faneblad\.\.\.<Tab>:tabnew
+menut &Open\.\.\.<Tab>:e	Åbn\.\.\.<Tab>:e
+menut Sp&lit-Open\.\.\.<Tab>:sp	Opdel-åbn\.\.\.<Tab>:sp
+menut Open\ Tab\.\.\.<Tab>:tabnew	Åbn\ faneblad\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew	Ny<Tab>:enew
 menut &Close<Tab>:close	Luk<Tab>:close
 " -SEP1-
@@ -54,16 +54,16 @@ menut E&xit<Tab>:qa	Afslut
 menut &Edit	Rediger
 
 menut &Undo<Tab>u	Fortryd<Tab>u
-menut &Redo<Tab>^R	OmgÃ¸r<Tab>^R
+menut &Redo<Tab>^R	Omgør<Tab>^R
 menut Rep&eat<Tab>\.	Gentag<Tab>\.
 " -SEP1-
 menut Cu&t<Tab>"+x	Klip<Tab>"+x
-menut &Copy<Tab>"+y	KopiÃ©r<Tab>"+y
-menut &Paste<Tab>"+gP	IndsÃ¦t<Tab>"+gP
-menut Put\ &Before<Tab>[p	IndsÃ¦t\ inden\ (put)<Tab>[p
-menut Put\ &After<Tab>]p	IndsÃ¦t\ efter\ (put)<Tab>]p
+menut &Copy<Tab>"+y	Kopiér<Tab>"+y
+menut &Paste<Tab>"+gP	Indsæt<Tab>"+gP
+menut Put\ &Before<Tab>[p	Indsæt\ inden\ (put)<Tab>[p
+menut Put\ &After<Tab>]p	Indsæt\ efter\ (put)<Tab>]p
 menut &Delete<Tab>x	Slet<Tab>x
-menut &Select\ all<Tab>ggVG	MarkÃ©r\ alt<Tab>ggVG
+menut &Select\ all<Tab>ggVG	Markér\ alt<Tab>ggVG
 " -SEP2-
 menut &Find\.\.\.	Find\.\.\.
 menut &Find\.\.\.<Tab>/	Find\.\.\.<Tab>/
@@ -74,12 +74,12 @@ menut Find\ and\ Rep&lace\.\.\.<Tab>:s	Find\ og\ erstat\.\.\.<Tab>:s
 menut Settings\ &Window	Indstillinger-vindue
 menut Startup\ &Settings	Opstartsindstillinger
 menut &Global\ Settings	Globale\ indstillinger
-menut Question	SpÃ¸rgsmÃ¥l
+menut Question	Spørgsmål
 
 " Edit
 
-menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	FremhÃ¦vning\ af\ mÃ¸nster\ til/fra<Tab>:set\ hls!
-menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!	Ignorerer\ "forskel\ pÃ¥\ store\ og\ smÃ¥\ bogstaver"\ til/fra<Tab>:set\ ic!
+menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Fremhævning\ af\ mønster\ til/fra<Tab>:set\ hls!
+menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!	Ignorerer\ "forskel\ på\ store\ og\ små\ bogstaver"\ til/fra<Tab>:set\ ic!
 menut Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Viser\ matchende\ par\ til/fra<Tab>:set\ sm!
 
 menut &Context\ lines	Kontekstlinjer
@@ -87,22 +87,22 @@ menut &Context\ lines	Kontekstlinjer
 menut &Virtual\ Edit	Virtuel\ redigering
 menut Never	Aldrig
 menut Block\ Selection	Blokmarkering
-menut Insert\ mode	IndsÃ¦t-tilstand
-menut Block\ and\ Insert	Blok\ og\ indsÃ¦t
+menut Insert\ mode	Indsæt-tilstand
+menut Block\ and\ Insert	Blok\ og\ indsæt
 menut Always	Altid
 
-menut Toggle\ Insert\ &Mode<Tab>:set\ im!	IndsÃ¦t-tilstand\ til/fra<Tab>:set\ im!
+menut Toggle\ Insert\ &Mode<Tab>:set\ im!	Indsæt-tilstand\ til/fra<Tab>:set\ im!
 menut Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Vi-kompatibel\ til/fra<Tab>:set\ cp!
-menut Search\ &Path\.\.\.	SÃ¸gesti\.\.\.
+menut Search\ &Path\.\.\.	Søgesti\.\.\.
 menut Ta&g\ Files\.\.\.	Tag-filer\.\.\.
 " -SEP1-
-menut Toggle\ &Toolbar	VÃ¦rktÃ¸jslinje\ til/fra
-menut Toggle\ &Bottom\ Scrollbar	Nederste\ rullebjÃ¦lke\ til/fra
-menut Toggle\ &Left\ Scrollbar	Venstre\ rullebjÃ¦lke\ til/fra
-menut Toggle\ &Right\ Scrollbar	HÃ¸jre\ rullebjÃ¦lke\ til/fra
+menut Toggle\ &Toolbar	Værktøjslinje\ til/fra
+menut Toggle\ &Bottom\ Scrollbar	Nederste\ rullebjælke\ til/fra
+menut Toggle\ &Left\ Scrollbar	Venstre\ rullebjælke\ til/fra
+menut Toggle\ &Right\ Scrollbar	Højre\ rullebjælke\ til/fra
 
-let g:menutrans_path_dialog = "Indtast sÃ¸gesti til filer.\nSeparer mappenavne med et komma."
-let g:menutrans_tags_dialog = "Indtast navne pÃ¥ tag-filer.\nSeparer navnene med et komma."
+let g:menutrans_path_dialog = "Indtast søgesti til filer.\nSeparer mappenavne med et komma."
+let g:menutrans_tags_dialog = "Indtast navne på tag-filer.\nSeparer navnene med et komma."
 
 " Edit/File Settings
 menut F&ile\ Settings	Filindstillinger
@@ -124,35 +124,35 @@ menut &Shiftwidth	"Shiftwidth"
 " menut &Shiftwidth.5<Tab>:set\ sw=5\ sw?<CR>	"Shiftwidth".5<Tab>:set\ sw=5\ sw?<CR>
 " menut &Shiftwidth.6<Tab>:set\ sw=6\ sw?<CR>	"Shiftwidth".6<Tab>:set\ sw=6\ sw?<CR>
 " menut &Shiftwidth.8<Tab>:set\ sw=8\ sw?<CR>	"Shiftwidth".8<Tab>:set\ sw=8\ sw?<CR>
-menut Soft\ &Tabstop	BlÃ¸dt\ tabulatorstop
-" menut Soft\ &Tabstop.2<Tab>:set\ sts=2\ sts?	BlÃ¸dt\ "Tabstop".2<Tab>:set\ sts=2\ sts?
-" menut Soft\ &Tabstop.3<Tab>:set\ sts=3\ sts?	BlÃ¸dt\ "Tabstop".3<Tab>:set\ sts=3\ sts?
-" menut Soft\ &Tabstop.4<Tab>:set\ sts=4\ sts?	BlÃ¸dt\ "Tabstop".4<Tab>:set\ sts=4\ sts?
-" menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?	BlÃ¸dt\ "Tabstop".5<Tab>:set\ sts=5\ sts?
-" menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?	BlÃ¸dt\ "Tabstop".6<Tab>:set\ sts=6\ sts?
-" menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?	BlÃ¸dt\ "Tabstop".8<Tab>:set\ sts=8\ sts?
+menut Soft\ &Tabstop	Blødt\ tabulatorstop
+" menut Soft\ &Tabstop.2<Tab>:set\ sts=2\ sts?	Blødt\ "Tabstop".2<Tab>:set\ sts=2\ sts?
+" menut Soft\ &Tabstop.3<Tab>:set\ sts=3\ sts?	Blødt\ "Tabstop".3<Tab>:set\ sts=3\ sts?
+" menut Soft\ &Tabstop.4<Tab>:set\ sts=4\ sts?	Blødt\ "Tabstop".4<Tab>:set\ sts=4\ sts?
+" menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?	Blødt\ "Tabstop".5<Tab>:set\ sts=5\ sts?
+" menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?	Blødt\ "Tabstop".6<Tab>:set\ sts=6\ sts?
+" menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?	Blødt\ "Tabstop".8<Tab>:set\ sts=8\ sts?
 menut Te&xt\ Width\.\.\.	Tekstbredde\.\.\.
 menut &File\ Format\.\.\.	Filformat\.\.\.
 
 let g:menutrans_textwidth_dialog = "Indtast ny tekstbredde (0 for at deaktivere formatering): "
-let g:menutrans_fileformat_dialog = "VÃ¦lg format til skrivning af filen"
+let g:menutrans_fileformat_dialog = "Vælg format til skrivning af filen"
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Annuller"
 
 menut Show\ C&olor\ Schemes\ in\ Menu	Vis\ farveskemaer\ i\ menu
 menut C&olor\ Scheme	Farveskema
 
-" menut blue			blÃ¥
-" menut darkblue		mÃ¸rkeblÃ¥
-" menut desert		Ã¸rken
+" menut blue			blå
+" menut darkblue		mørkeblå
+" menut desert		ørken
 " menut elflord		elverherre
 " menut evening		aften
 " menut industry		industri
 " menut morning		morgen
 " menut peachpuff	fersken
-" menut shine		skÃ¦r
+" menut shine		skær
 " menut slate		skiffer
 " menut default		standard
-" menut torte		tÃ¦rte
+" menut torte		tærte
 " menut zellner		???
 " menut delek		???
 " menut koehler		???
@@ -166,11 +166,11 @@ menut &Keymap	Tastaturlayout
 menut None	Intet
 " menut accents	Diakritiske\ tegn
 " menut arabic	arabisk
-" menut armenian-eastern	armensk\ (Ã¸stlig)
+" menut armenian-eastern	armensk\ (østlig)
 " menut armenian-western	armensk\ (vestlig)
 " menut belarusian-jcuken	hviderussisk"\ [belarusian-jcuken]"
 " menut czech	tjekkisk
-" menut greek	grÃ¦sk
+" menut greek	græsk
 " menut hebrew	hebraisk
 " menut hebrewp	hebraisk"\ [hebrewp]"
 " menut magyar	ungarsk
@@ -179,10 +179,10 @@ menut None	Intet
 " menut serbian-latin	serbisk\ (latinsk)
 " menut slovak	slovakisk
 
-menut Select\ Fo&nt\.\.\.	VÃ¦lg\ skrifttype\.\.\.
+menut Select\ Fo&nt\.\.\.	Vælg\ skrifttype\.\.\.
 
 " Programming menu
-menut &Tools	VÃ¦rktÃ¸jer
+menut &Tools	Værktøjer
 
 menut &Jump\ to\ this\ tag<Tab>g^]	Hop\ til\ tagget<Tab>g^]
 menut Jump\ &back<Tab>^T	Hop\ tilbage<Tab>^T
@@ -192,28 +192,28 @@ menut Build\ &Tags\ File	Build\ tags-fil
 menut &Spelling	Stavning
 menut &Spell\ Check\ On	Stavekontrol\ til
 menut Spell\ Check\ &Off	Stavekontrol\ fra
-menut To\ &Next\ error<Tab>]s	Til\ nÃ¦ste\ fejl<Tab>]s
+menut To\ &Next\ error<Tab>]s	Til\ næste\ fejl<Tab>]s
 menut To\ &Previous\ error<Tab>[s	Til\ forrige\ fejl<Tab>[s
-menut Suggest\ &Corrections<Tab>z=	ForeslÃ¥\ rettelse<Tab>z=
+menut Suggest\ &Corrections<Tab>z=	Foreslå\ rettelse<Tab>z=
 menut &Repeat\ correction<Tab>:spellrepall	Gentag\ rettelse<Tab>:spellrepall
-menut Set\ language\ to\ "en"	SÃ¦t\ sprog\ til\ "en"
-menut Set\ language\ to\ "en_au"	SÃ¦t\ sprog\ til\ "en_au"
-menut Set\ language\ to\ "en_ca"	SÃ¦t\ sprog\ til\ "en_ca"
-menut Set\ language\ to\ "en_gb"	SÃ¦t\ sprog\ til\ "en_gb"
-menut Set\ language\ to\ "en_nz"	SÃ¦t\ sprog\ til\ "en_nz"
-menut Set\ language\ to\ "en_us"	SÃ¦t\ sprog\ til\ "en_us"
+menut Set\ language\ to\ "en"	Sæt\ sprog\ til\ "en"
+menut Set\ language\ to\ "en_au"	Sæt\ sprog\ til\ "en_au"
+menut Set\ language\ to\ "en_ca"	Sæt\ sprog\ til\ "en_ca"
+menut Set\ language\ to\ "en_gb"	Sæt\ sprog\ til\ "en_gb"
+menut Set\ language\ to\ "en_nz"	Sæt\ sprog\ til\ "en_nz"
+menut Set\ language\ to\ "en_us"	Sæt\ sprog\ til\ "en_us"
 menut &Find\ More\ Languages	Find\ flere\ sprog
 
 " Tools.Fold Menu
 menut &Folding	Foldning
 " open close folds
-menut &Enable/Disable\ folds<Tab>zi	AktivÃ©r/deaktivÃ©r\ sammenfoldninger<Tab>zi
-menut &View\ Cursor\ Line<Tab>zv	Vis\ markÃ¸rlinje<Tab>zv
-menut Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vis\ kun\ markÃ¸rlinje<Tab>zMzx
+menut &Enable/Disable\ folds<Tab>zi	Aktivér/deaktivér\ sammenfoldninger<Tab>zi
+menut &View\ Cursor\ Line<Tab>zv	Vis\ markørlinje<Tab>zv
+menut Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vis\ kun\ markørlinje<Tab>zMzx
 menut C&lose\ more\ folds<Tab>zm	Luk\ flere\ sammenfoldninger<Tab>zm
 menut &Close\ all\ folds<Tab>zM	Luk\ alle\ sammenfoldninger<Tab>zM
-menut O&pen\ more\ folds<Tab>zr	Ã…bn\ flere\ sammenfoldninger<Tab>zr
-menut &Open\ all\ folds<Tab>zR	Ã…bn\ alle\ sammenfoldninger<Tab>zR
+menut O&pen\ more\ folds<Tab>zr	Åbn\ flere\ sammenfoldninger<Tab>zr
+menut &Open\ all\ folds<Tab>zR	Åbn\ alle\ sammenfoldninger<Tab>zR
 " fold method
 " -SEP1-
 menut Fold\ Met&hod	Sammenfoldningsmetode
@@ -222,7 +222,7 @@ menut I&ndent	Indryk
 menut E&xpression	Udtryk
 menut S&yntax	Syntaks
 menut &Diff	Diff
-menut Ma&rker	MarkÃ¸r
+menut Ma&rker	Markør
 " create and delete folds
 menut Create\ &Fold<Tab>zf	Opret\ sammenfoldning<Tab>zf
 menut &Delete\ Fold<Tab>zd	Slet\ sammenfoldning<Tab>zd
@@ -235,29 +235,29 @@ menut &Diff	Diff
 "
 menut &Update	Opdater
 menut &Get\ Block	Hent\ blok\ (get)
-menut &Put\ Block	IndsÃ¦t\ blok\ (put)
+menut &Put\ Block	Indsæt\ blok\ (put)
 
 " -SEP2-
 menut &Make<Tab>:make	&Make<Tab>:make
 
 menut &List\ Errors<Tab>:cl	Oplist\ fejl<Tab>:cl
 menut L&ist\ Messages<Tab>:cl!	Oplist\ meddelelser<Tab>:cl!
-menut &Next\ Error<Tab>:cn	NÃ¦ste\ fejl<Tab>:cn
+menut &Next\ Error<Tab>:cn	Næste\ fejl<Tab>:cn
 menut &Previous\ Error<Tab>:cp	Forrige\ fejl<Tab>:cp
-menut &Older\ List<Tab>:cold	Ã†ldre\ liste<Tab>:cold
+menut &Older\ List<Tab>:cold	Ældre\ liste<Tab>:cold
 menut N&ewer\ List<Tab>:cnew	Nyere\ liste<Tab>:cnew
 
 menut Error\ &Window	Fejl-vindue
 
 menut &Update<Tab>:cwin	Opdater<Tab>:cwin
-menut &Open<Tab>:copen	Ã…bn<Tab>:copen
+menut &Open<Tab>:copen	Åbn<Tab>:copen
 menut &Close<Tab>:cclose	Luk<Tab>:cclose
 
 " -SEP3-
-menut &Convert\ to\ HEX<Tab>:%!xxd	KonvertÃ©r\ til\ HEX<Tab>:%!xxd
-menut Conve&rt\ back<Tab>:%!xxd\ -r	KonvertÃ©r\ tilbage<Tab>:%!xxd\ -r
+menut &Convert\ to\ HEX<Tab>:%!xxd	Konvertér\ til\ HEX<Tab>:%!xxd
+menut Conve&rt\ back<Tab>:%!xxd\ -r	Konvertér\ tilbage<Tab>:%!xxd\ -r
 
-menut Se&T\ Compiler	SÃ¦t\ kompiler
+menut Se&T\ Compiler	Sæt\ kompiler
 
 " Buffers menu
 menut &Buffers	Buffere
@@ -265,7 +265,7 @@ menut &Buffers	Buffere
 menut &Refresh\ menu	Genopfrisk\ menu
 menut &Delete	Slet
 menut &Alternate	Skift
-menut &Next	NÃ¦ste
+menut &Next	Næste
 menut &Previous	Forrige
 menut [No\ File]	[Ingen\ fil]
 
@@ -273,15 +273,15 @@ menut [No\ File]	[Ingen\ fil]
 menut &Syntax	Syntaks
 
 menut &Show\ File\ Types\ in\ menu	Vis\ filtyper\ i\ menu
-menut Set\ '&syntax'\ only	SÃ¦t\ kun\ 'syntax'
-menut Set\ '&filetype'\ too	SÃ¦t\ ogsÃ¥\ 'filetype'
+menut Set\ '&syntax'\ only	Sæt\ kun\ 'syntax'
+menut Set\ '&filetype'\ too	Sæt\ også\ 'filetype'
 menut &Off	Fra
 menut &Manual	Manuelt
 menut A&utomatic	Automatisk
 menut On/Off\ for\ &This\ File	Til/fra\ for\ denne\ fil
 menut Co&lor\ test	Farvetest
-menut &Highlight\ test	FremhÃ¦vningstest
-menut &Convert\ to\ HTML	KonvertÃ©r\ til\ HTML
+menut &Highlight\ test	Fremhævningstest
+menut &Convert\ to\ HTML	Konvertér\ til\ HTML
 
 let g:menutrans_no_file = "[Ingen fil]"
 
@@ -299,16 +299,16 @@ menut Close\ &Other(s)<Tab>^Wo	Luk\ andre<Tab>^Wo
 " -SEP2-
 menut Move\ &To	Flyt\ til
 
-menut &Top<Tab>^WK	Ã˜verst<Tab>^WK
+menut &Top<Tab>^WK	Øverst<Tab>^WK
 menut &Bottom<Tab>^WJ	Nederst<Tab>^WJ
 menut &Left\ side<Tab>^WH	Venstre\ side<Tab>^WH
-menut &Right\ side<Tab>^WL	HÃ¸jre\ side<Tab>^WL
+menut &Right\ side<Tab>^WL	Højre\ side<Tab>^WL
 menut Rotate\ &Up<Tab>^WR	Roter\ op<Tab>^WR
 menut Rotate\ &Down<Tab>^Wr	Roter\ ned<Tab>^Wr
 " -SEP3-
-menut &Equal\ Size<Tab>^W=	Samme\ stÃ¸rrelse<Tab>^W=
-menut &Max\ Height<Tab>^W_	Maks\.\ hÃ¸jde<Tab>^W_
-menut M&in\ Height<Tab>^W1_	Min\.\ hÃ¸jde<Tab>^W1_
+menut &Equal\ Size<Tab>^W=	Samme\ størrelse<Tab>^W=
+menut &Max\ Height<Tab>^W_	Maks\.\ højde<Tab>^W_
+menut M&in\ Height<Tab>^W1_	Min\.\ højde<Tab>^W1_
 menut Max\ &Width<Tab>^W\|	Maks\.\ bredde<Tab>^W\|
 menut Min\ Widt&h<Tab>^W1\|	Min\.\ bredde<Tab>^W1\|
 
@@ -316,19 +316,19 @@ menut Min\ Widt&h<Tab>^W1\|	Min\.\ bredde<Tab>^W1\|
 menut &Undo	Fortryd
 " -SEP1-
 menut Cu&t	Klip
-menut &Copy	KopiÃ©r
-menut &Paste	IndsÃ¦t
+menut &Copy	Kopiér
+menut &Paste	Indsæt
 menut &Delete	Slet
 " -SEP2-
-menut Select\ Blockwise		MarkÃ©r\ blokvis
-menut Select\ &Word	MarkÃ©r\ ord
+menut Select\ Blockwise		Markér\ blokvis
+menut Select\ &Word	Markér\ ord
 
-menut Select\ &Sentence	MarkÃ©r\ sÃ¦tning
-menut Select\ Pa&ragraph	MarkÃ©r\ afsnit
+menut Select\ &Sentence	Markér\ sætning
+menut Select\ Pa&ragraph	Markér\ afsnit
 
-menut Select\ &Line	MarkÃ©r\ linje
-menut Select\ &Block		MarkÃ©r\ blok
-menut Select\ &All	MarkÃ©r\ alt
+menut Select\ &Line	Markér\ linje
+menut Select\ &Block		Markér\ blok
+menut Select\ &All	Markér\ alt
 
 " The GUI toolbar
 if has("toolbar")
@@ -336,57 +336,57 @@ if has("toolbar")
     delfun Do_toolbar_tmenu
   endif
   fun Do_toolbar_tmenu()
-  tmenu ToolBar.Open		Ã…bn fil
-  tmenu ToolBar.Save		Gem nuvÃ¦rende fil
+  tmenu ToolBar.Open		Åbn fil
+  tmenu ToolBar.Save		Gem nuværende fil
   tmenu ToolBar.SaveAll		Gem alle filer
   tmenu ToolBar.Print		Udskriv
   tmenu ToolBar.Undo		Fortryd
-  tmenu ToolBar.Redo		OmgÃ¸r
+  tmenu ToolBar.Redo		Omgør
   tmenu ToolBar.Cut		Klip til udklipsholder
-  tmenu ToolBar.Copy		KopiÃ©r til udklipsholder
-  tmenu ToolBar.Paste		IndsÃ¦t fra udklipsholder
+  tmenu ToolBar.Copy		Kopiér til udklipsholder
+  tmenu ToolBar.Paste		Indsæt fra udklipsholder
   if !has("gui_athena")
     tmenu ToolBar.Replace	Find/erstat...
-    tmenu ToolBar.FindNext	Find nÃ¦ste
+    tmenu ToolBar.FindNext	Find næste
     tmenu ToolBar.FindPrev	Find forrige
   endif
-  tmenu ToolBar.LoadSesn	VÃ¦lg en session som skal indlÃ¦ses
-  tmenu ToolBar.SaveSesn	Gem nuvÃ¦rende session
-  tmenu ToolBar.RunScript	VÃ¦lg et Vim-script som skal kÃ¸res
-  tmenu ToolBar.Make		Make nuvÃ¦rende projekt (:make)
-  tmenu ToolBar.RunCtags	Build tags i nuvÃ¦rende mappetrÃ¦ (!ctags -R .)
-  tmenu ToolBar.TagJump		Hop til tag under markÃ¸r
-  tmenu ToolBar.Help		Vim hjÃ¦lp
-  tmenu ToolBar.FindHelp	SÃ¸g i Vim hjÃ¦lp
+  tmenu ToolBar.LoadSesn	Vælg en session som skal indlæses
+  tmenu ToolBar.SaveSesn	Gem nuværende session
+  tmenu ToolBar.RunScript	Vælg et Vim-script som skal køres
+  tmenu ToolBar.Make		Make nuværende projekt (:make)
+  tmenu ToolBar.RunCtags	Build tags i nuværende mappetræ (!ctags -R .)
+  tmenu ToolBar.TagJump		Hop til tag under markør
+  tmenu ToolBar.Help		Vim hjælp
+  tmenu ToolBar.FindHelp	Søg i Vim hjælp
   endfun
 endif
 
-let g:menutrans_set_lang_to = "SÃ¦t sprog til"
+let g:menutrans_set_lang_to = "Sæt sprog til"
 
 " stave genvejsmenu pop op ting
-let g:menutrans_spell_change_ARG_to = 'Ã†ndr\ "%s"\ til'
-let g:menutrans_spell_add_ARG_to_word_list = 'TilfÃ¸j\ "%s"\ til\ ordliste'
+let g:menutrans_spell_change_ARG_to = 'Ændr\ "%s"\ til'
+let g:menutrans_spell_add_ARG_to_word_list = 'Tilføj\ "%s"\ til\ ordliste'
 let g:menutrans_spell_ignore_ARG = 'Ignorer "%s"'
 
 
 
-" ForsÃ¸g pÃ¥ at oversÃ¦tte netrw-menuen
-menut Help<tab><F1>					HjÃ¦lp<tab><F1>
+" Forsøg på at oversætte netrw-menuen
+menut Help<tab><F1>					Hjælp<tab><F1>
 " -Sep1-
-menut Go\ Up\ Directory<tab>-					GÃ¥\ mappe\ op<tab>-
+menut Go\ Up\ Directory<tab>-					Gå\ mappe\ op<tab>-
 menut Apply\ Special\ Viewer<tab>x					Anvend\ speciel\ fremviser<tab>x
 
-menut Bookmarks\ and\ History					BogmÃ¦rker\ og\ historik<tab>:echo "(disabled)"
-menut Bookmark\ Current\ Directory<tab>mb					SÃ¦t\ bogmÃ¦rke\ for\ nuvÃ¦rende\ mappe<tab>mb
-menut Goto\ Prev\ Dir\ (History)<tab>u					GÃ¥\ til\ forrige\ mappe\ (historik)<tab>u
-menut Goto\ Next\ Dir\ (History)<tab>U					GÃ¥\ til\ nÃ¦ste\ mappe\ (historik)<tab>U
+menut Bookmarks\ and\ History					Bogmærker\ og\ historik<tab>:echo "(disabled)"
+menut Bookmark\ Current\ Directory<tab>mb					Sæt\ bogmærke\ for\ nuværende\ mappe<tab>mb
+menut Goto\ Prev\ Dir\ (History)<tab>u					Gå\ til\ forrige\ mappe\ (historik)<tab>u
+menut Goto\ Next\ Dir\ (History)<tab>U					Gå\ til\ næste\ mappe\ (historik)<tab>U
 menut List<tab>qb					"Liste/Oplist"<tab>qb
 
 menut Browsing\ Control					"Browsingkontrol/Gennemsynkontrol/Gennemgangskontol"
 menut Horizontal\ Split<tab>o					Vandret\ opdeling<tab>o
 menut Vertical\ Split<tab>v					Lodret\ opdeling<tab>v
 menut New\ Tab<tab>t					Nyt\ faneblad<tab>t
-menut Preview<tab>p					ForhÃ¥ndsvis<tab>p
+menut Preview<tab>p					Forhåndsvis<tab>p
 menut Edit\ File\ Hiding\ List<tab><ctrl-h>               Rediger\ liste\ til\ filskjulning
 menut Edit\ Sorting\ Sequence<tab>S					Rediger\ sorteringssekvens<tab>S
 menut Quick\ Hide/Unhide\ Dot\ Files<tab>gh					Hurtig\ skjul/"vis"\ punktum-filer<tab>gh
@@ -397,8 +397,8 @@ menut Delete\ File/Directory<tab>D	Slet\ fil/mappe<tab>D
 
 menut Edit\ File/Dir					Rediger\ fil/mappe
 menut Create\ New\ File<tab>%					Opret\ ny\ fil<tab>%
-menut In\ Current\ Window<tab><cr>					I\ nuvÃ¦rende\ vindue<tab>
-menut Preview\ File/Directory<tab>p					ForhÃ¥ndsvis\ fil/mappe<tab>p
+menut In\ Current\ Window<tab><cr>					I\ nuværende\ vindue<tab>
+menut Preview\ File/Directory<tab>p					Forhåndsvis\ fil/mappe<tab>p
 menut In\ Previous\ Window<tab>P					I\ forrige\ vindue<tab>P
 menut In\ New\ Window<tab>o					I\ nyt\ vindue<tab>o
 menut In\ New\ Tab<tab>t					I\ nyt\ faneblad<tab>t
@@ -410,27 +410,27 @@ menut Filenames\ Matching\ Pattern\ (curdir\ only)<tab>:Explore\ */					test29<t
 menut Filenames\ Matching\ Pattern\ (+subdirs)<tab>:Explore\ **/					test30<tab>:Explore **/
 menut Files\ Containing\ String\ Pattern\ (curdir\ only)<tab>:Explore\ *//					test31<tab>:Explore *//
 menut Files\ Containing\ String\ Pattern\ (+subdirs)<tab>:Explore\ **//					test32<tab>:Explore **//
-menut Next\ Match<tab>:Nexplore					NÃ¦ste\ match<tab>:Nexplore<cr>
+menut Next\ Match<tab>:Nexplore					Næste\ match<tab>:Nexplore<cr>
 menut Prev\ Match<tab>:Pexplore					Forrige\ match<tab>:Pexplore<cr>
 
 menut Make\ Subdirectory<tab>d					Opret\ undermappe<tab>d
 
-menut Marked\ Files					MÃ¦rkede\ filer
-menut Mark\ File<tab>mf					MÃ¦rk\ fil<tab>mf
-menut Mark\ Files\ by\ Regexp<tab>mr					MÃ¦rk\ filer\ efter\ regulÃ¦rt\ udtrk<tab>mr
+menut Marked\ Files					Mærkede\ filer
+menut Mark\ File<tab>mf					Mærk\ fil<tab>mf
+menut Mark\ Files\ by\ Regexp<tab>mr					Mærk\ filer\ efter\ regulært\ udtrk<tab>mr
 menut Hide-Show-List\ Control<tab>a					test38<tab>a
-menut Copy\ To\ Target<tab>mc					KopiÃ©r\ til\ mÃ¥l<tab>mc
+menut Copy\ To\ Target<tab>mc					Kopiér\ til\ mål<tab>mc
 menut Delete<tab>D					Slet<tab>D
 menut Diff<tab>md					Diff<tab>md
 menut Edit<tab>me					Rediger<tab>me
 menut Exe\ Cmd<tab>mx					test43<tab>mx
-menut Move\ To\ Target<tab>mm					Flyt\ til\ mÃ¥l<tab>mm
+menut Move\ To\ Target<tab>mm					Flyt\ til\ mål<tab>mm
 menut Obtain<tab>O					"Indhent"<tab>O
 menut Print<tab>mp					Udskriv<tab>mp
 menut Replace<tab>R					Erstat<tab>R
-menut Set\ Target<tab>mt					SÃ¦t\ mÃ¥l<tab>mt
+menut Set\ Target<tab>mt					Sæt\ mål<tab>mt
 menut Tag<tab>mT					test49<tab>mT
-menut Zip/Unzip/Compress/Uncompress<tab>mz					Zip/unzip/komprimÃ©r/udpak<tab>mz
+menut Zip/Unzip/Compress/Uncompress<tab>mz					Zip/unzip/komprimér/udpak<tab>mz
 
 menut Obtain\ File<tab>O					"Indhent"\ fil<tab>O
 
@@ -439,23 +439,23 @@ menut Listing				"Listing/Oplisting"
 menut thin<tab>i	tynd
 menut long<tab>i	lang
 menut wide<tab>i	bred
-menut tree<tab>i	trÃ¦
+menut tree<tab>i	træ
 menut Normal-Hide-Show					Normal-skjul-vis
 menut Show\ All<tab>a					Vis\ "alle/alt"<tab>
 menut Normal<tab>a					Normal<tab>
 menut Hidden\ Only<tab>a					Kun\ skulte<tab>
-menut Reverse\ Sorting\ Order<tab>         Omvendt\ sorteringsrÃ¦kkefÃ¸lge
+menut Reverse\ Sorting\ Order<tab>         Omvendt\ sorteringsrækkefølge
 menut Sorting\ Method					Sorteringsmetode
 menut Name<tab>s       Navn
 menut Time<tab>s       Tidspunkt
-menut Size<tab>s       StÃ¸rrelse
+menut Size<tab>s       Størrelse
 menut Exten<tab>s      Endelse
-menut Rename\ File/Directory<tab>R	OmdÃ¸b\ fil/mappe<tab>R
-menut Set\ Current\ Directory<tab>c	SÃ¦t\ nuvÃ¦rende\ mappe<tab>c
+menut Rename\ File/Directory<tab>R	Omdøb\ fil/mappe<tab>R
+menut Set\ Current\ Directory<tab>c	Sæt\ nuværende\ mappe<tab>c
 
 menut History					Historik
 
-menut Targets					MÃ¥l
+menut Targets					Mål
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
