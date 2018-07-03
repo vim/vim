@@ -1385,7 +1385,10 @@ tclvimexpr(
     if (str == NULL)
 	Tcl_SetResult(interp, _("invalid expression"), TCL_STATIC);
     else
+    {
 	Tcl_SetResult(interp, str, TCL_VOLATILE);
+	vim_free(str);
+    }
     err = vimerror(interp);
 #else
     Tcl_SetResult(interp, _("expressions disabled at compile time"), TCL_STATIC);
