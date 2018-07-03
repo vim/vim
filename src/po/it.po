@@ -1,8 +1,8 @@
 # Italian translation for Vim
 #
-# FIRST AUTHOR Antonio Colombo <azc100@gmail.com>, 2000
-# Vlad Sandrini <vlad.gently@gmail.com>
-# Luciano Montanaro <mikelima@cirulla.net>
+# Antonio Colombo <azc100@gmail.com>, 2000
+# Vlad Sandrini <vlad.gently@gmail.com>, 2002
+# Luciano Montanaro <mikelima@cirulla.net>, 2006
 #
 # Ogni commento è benvenuto...
 # Every remark is very welcome...
@@ -15,14 +15,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-19 21:17+0200\n"
-"PO-Revision-Date:  2018-06-19 22:30+0200\n"
-"Last-Translator:   Antonio Colombo   <azc100@gmail.com>\n"
+"POT-Creation-Date: 2018-06-26 09:09+0200\n"
+"PO-Revision-Date: 2018-06-26 15:33+0200\n"
+"Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
-"Language: It\n"
+"Language: it\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO_8859-1\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "E831: bf_key_init() called with empty password"
@@ -460,7 +460,6 @@ msgstr "E734: Tipo di variabile errato per %s="
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: Nome di variabile non ammesso: %s"
 
-# nuovo
 msgid "E806: using Float as a String"
 msgstr "E806: uso di un Numero-a-virgola-mobile come Stringa"
 
@@ -584,7 +583,6 @@ msgstr "E730: uso di Lista come Stringa"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: uso di Dizionario come Stringa"
 
-# nuovo
 msgid "E908: using an invalid value as a String"
 msgstr "E908: uso di un valore non valido come Stringa"
 
@@ -1300,6 +1298,9 @@ msgstr "E784: Non posso chiudere l'ultima linguetta"
 msgid "Already only one tab page"
 msgstr "C'è già una linguetta sola"
 
+msgid "Edit File in new tab page"
+msgstr "Apri il File in una nuova finestra"
+
 msgid "Edit File in new window"
 msgstr "Apri il File in una nuova finestra"
 
@@ -1391,7 +1392,6 @@ msgstr ""
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: nessun numero di riga da usare per \"<slnum>\""
 
-#, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
 
@@ -1877,7 +1877,7 @@ msgid ""
 "--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Auto-Comandi ---"
+"--- Autocomandi ---"
 
 msgid "E680: <buffer=%d>: invalid buffer number "
 msgstr "E680: <buffer=%d>: numero buffer non valido"
@@ -1892,7 +1892,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: nidificazione dell'autocomando troppo estesa"
 
 msgid "%s Autocommands for \"%s\""
-msgstr "%s Auto comandi per \"%s\""
+msgstr "%s Autocomandi per \"%s\""
 
 msgid "Executing %s"
 msgstr "Eseguo %s"
@@ -2742,7 +2742,7 @@ msgid ""
 msgstr ""
 "\n"
 "\n"
-"  uso:"
+"  Uso:"
 
 msgid " vim [arguments] "
 msgstr " vim [argomenti] "
@@ -3898,7 +3898,6 @@ msgstr "libero %ld righe"
 msgid " into \"%c"
 msgstr " in \"%c"
 
-#
 msgid "block of 1 line yanked%s"
 msgstr "blocco di 1 riga messo in registro%s"
 
@@ -4444,7 +4443,7 @@ msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( non consentito qui"
 
 msgid "E67: \\z1 - \\z9 not allowed here"
-msgstr "E67: \\z1 ecc. non consentiti qui"
+msgstr "E67: \\z1 - \\z9 non consentiti qui"
 
 msgid "E69: Missing ] after %s%%["
 msgstr "E69: Manca ] dopo %s%%["
@@ -4552,8 +4551,12 @@ msgstr "E879: (NFA regexp) Troppi \\z("
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA regexp) errore di terminazione corretta"
 
+msgid "Could not open temporary log file for writing, displaying on stderr... "
+msgstr ""
+"Non posso aprire il file temporaneo di log in scrittura, mostro su stderr... "
+
 msgid "E874: (NFA) Could not pop the stack!"
-msgstr "E874: (NFA) Impossibile riprendere lo stack !"
+msgstr "E874: (NFA) Impossibile riprendere lo stack!"
 
 msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
@@ -4567,22 +4570,6 @@ msgstr "E876: (NFA regexp) Non c'è spazio per immagazzinare l'intero NFA "
 
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Non posso allocare memoria per il zigzag di ramo!"
-
-msgid "Could not open temporary log file for writing, displaying on stderr... "
-msgstr ""
-"Non posso aprire il file temporaneo di log in scrittura, mostro su stderr... "
-
-msgid "(NFA) COULD NOT OPEN %s !"
-msgstr "(NFA) IMPOSSIBILE APRIRE %s !"
-
-msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
-msgstr ""
-"Non posso aprire il file temporaneo di log in scrittura, mostro su "
-"stderr ... "
-
-msgid "Could not open temporary log file for writing "
-msgstr "Non posso aprire il log temporaneo in scrittura "
 
 msgid " VREPLACE"
 msgstr " V-SOSTITUISCI"
@@ -5559,6 +5546,9 @@ msgstr "E133: :return fuori da una funzione"
 
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Mancano parentesi: %s"
+
+msgid "%s (%s, compiled %s)"
+msgstr "%s (%s, compilato %s)"
 
 msgid ""
 "\n"

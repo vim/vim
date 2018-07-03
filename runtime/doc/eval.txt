@@ -3629,6 +3629,7 @@ executable({expr})					*executable()*
 			1	exists
 			0	does not exist
 			-1	not implemented on this system
+		|exepath()| can be used to get the full path of an executable.
 
 execute({command} [, {silent}])					*execute()*
 		Execute an Ex command or commands and return the output as a

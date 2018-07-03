@@ -1,7 +1,9 @@
 [Desktop Entry]
 Name=GVim
 GenericName=Text Editor
+GenericName[da]=Tekstredigering
 GenericName[de]=Texteditor
+GenericName[pl]=Edytor tekstu
 Comment=Edit text files
 Comment[af]=Redigeer tekslêers
 Comment[am]=የጽሑፍ ፋይሎች ያስተካክሉ
@@ -14,7 +16,7 @@ Comment[bs]=Izmijeni tekstualne datoteke
 Comment[ca]=Edita fitxers de text
 Comment[cs]=Úprava textových souborů
 Comment[cy]=Golygu ffeiliau testun
-Comment[da]=Redigér tekstfiler
+Comment[da]=Rediger tekstfiler
 Comment[de]=Textdateien bearbeiten
 Comment[el]=Επεξεργασία αρχείων κειμένου
 Comment[en_CA]=Edit text files
@@ -50,7 +52,7 @@ Comment[nn]=Rediger tekstfiler
 Comment[no]=Rediger tekstfiler
 Comment[or]=ପାଠ୍ଯ ଫାଇଲଗୁଡ଼ିକୁ ସମ୍ପାଦନ କରନ୍ତୁ
 Comment[pa]=ਪਾਠ ਫਾਇਲਾਂ ਸੰਪਾਦਨ
-Comment[pl]=Edytor plików tekstowych
+Comment[pl]=Edytuj pliki tekstowe
 Comment[pt]=Editar ficheiros de texto
 Comment[pt_BR]=Edite arquivos de texto
 Comment[ro]=Editare fişiere text

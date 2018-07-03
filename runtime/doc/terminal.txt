@@ -523,9 +523,9 @@ inspects the resulting screen state.
 
 Functions ~
 
-term_sendkeys()		send keystrokes to a terminal (not subject to tmap)
-term_wait()		wait for screen to be updated
-term_scrape()		inspect terminal screen
+|term_sendkeys()|	send keystrokes to a terminal (not subject to tmap)
+|term_wait()|		wait for screen to be updated
+|term_scrape()|		inspect terminal screen
 
 
 ==============================================================================
@@ -552,7 +552,7 @@ src/testdir/test_syntax.vim.  The main parts are:
   characters.  This makes sure the dump is always this size.  The function
   RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
   command.
-- Send any commands to Vim using term_sendkeys().  For example: >
+- Send any commands to Vim using |term_sendkeys()|.  For example: >
 	call term_sendkeys(buf, ":echo &lines &columns\<CR>")
 - Check that the screen is now in the expected state, using
   VerifyScreenDump().  This expects the reference screen dump to be in the
@@ -580,13 +580,13 @@ Creating a screen dump ~
 							*terminal-screendump*
 
 To create the screen dump, run Vim (or any other program) in a terminal and
-make it show the desired state.  Then use the term_dumpwrite() function to
+make it show the desired state.  Then use the |term_dumpwrite()| function to
 create a screen dump file.  For example: >
 	:call term_dumpwrite(77, "mysyntax.dump")
 
 Here "77" is the buffer number of the terminal.  Use `:ls!` to see it.
 
-You can view the screen dump with term_dumpload(): >
+You can view the screen dump with |term_dumpload()|: >
 	:call term_dumpload("mysyntax.dump")
 
 To verify that Vim still shows exactly the same screen, run Vim again with
@@ -594,7 +594,7 @@ exactly the same way to show the desired state.  Then create a screen dump
 again, using a different file name: >
 	:call term_dumpwrite(88, "test.dump")
 
-To assert that the files are exactly the same use assert_equalfile(): >
+To assert that the files are exactly the same use |assert_equalfile()|: >
 	call assert_equalfile("mysyntax.dump", "test.dump")
 
 If there are differences then v:errors will contain the error message.
@@ -603,8 +603,8 @@ If there are differences then v:errors will contain the error message.
 Comparing screen dumps ~
 						*terminal-diffscreendump*
 
-assert_equalfile() does not make it easy to see what is different.
-To spot the problem use term_dumpdiff(): >
+|assert_equalfile()| does not make it easy to see what is different.
+To spot the problem use |term_dumpdiff()|: >
 	call term_dumpdiff("mysyntax.dump", "test.dump")
 
 This will open a window consisting of three parts:
@@ -900,7 +900,7 @@ Vim window width						*termdebug_wide*
 To change the width of the Vim window when debugging starts, and use a
 vertical split: >
   let g:termdebug_wide = 163
-This will set &columns to 163 when :Termdebug is used.  The value is restored
+This will set &columns to 163 when `:Termdebug` is used.  The value is restored
 when quitting the debugger.
 If g:termdebug_wide is set and &columns is already larger than
 g:termdebug_wide then a vertical split will be used without changing &columns.

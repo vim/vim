@@ -5176,6 +5176,7 @@ autocmds-kept	version5.txt	/*autocmds-kept*
 autocommand	autocmd.txt	/*autocommand*
 autocommand-events	autocmd.txt	/*autocommand-events*
 autocommand-pattern	autocmd.txt	/*autocommand-pattern*
+autocommands	autocmd.txt	/*autocommands*
 autoformat	change.txt	/*autoformat*
 autoload	eval.txt	/*autoload*
 autoload-functions	eval.txt	/*autoload-functions*
@@ -5762,6 +5763,7 @@ debug-vs2005	debug.txt	/*debug-vs2005*
 debug-win32	debug.txt	/*debug-win32*
 debug-windbg	debug.txt	/*debug-windbg*
 debug.txt	debug.txt	/*debug.txt*
+debugbreak()	eval.txt	/*debugbreak()*
 debugger-compilation	debugger.txt	/*debugger-compilation*
 debugger-features	debugger.txt	/*debugger-features*
 debugger-integration	debugger.txt	/*debugger-integration*

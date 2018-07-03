@@ -1980,7 +1980,7 @@ Appending to a register didn't insert a line break like Vi.  Added the '>'
 flag to 'cpoptions' for this.
 
 Using "I" in a line with only blanks appended to the line.  This is not Vi
-compatible.  Added the 'H' flag in 'coptions' for this.
+compatible.  Added the 'H' flag in 'cpoptions' for this.
 
 When joining multiple lines the cursor would be at the last joint, but Vi
 leaves it at the position where "J" would put it.  Added the 'q' flag in

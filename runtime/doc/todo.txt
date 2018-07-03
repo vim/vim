@@ -38,6 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+testdir: remove use of lua.vim from makefiles and test1.in
+
 Prompt buffer:
 - Add a command line history.
 - delay next prompt until plugin gives OK?
@@ -89,8 +91,8 @@ Errors found with random data:
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
-Patch to fix duplicate entry in tagfiles() and add a test. (Dominique Pelle,
-#2979)
+Patch to fix that :cexpr no longer jumps to first error. (Yegappan 2018 Jun
+25, #3092)
 
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
@@ -103,13 +105,15 @@ Pull request #2967: Allow white space in sign text. (Ben Jackson)
 Patch for xterm and vt320 builtin termcap. (Kouichi Iwamoto, 2018 May 31,
 #2973)
 
+Patch for matchit and matchparen. (Christian, 2018 Jun 25)
+
 Patch to add more testing for :cd command. (Dominique Pelle, 2018 May 30,
 #2972)
 
 Whenever the file name is "~" then expand('%:p') returns $HOME. (Aidan
-Shafran, 2018 Jun 23, #3072)
+Shafran, 2018 Jun 23, #3072)  Proposed patch by Aidan, 2018 Jun 24.
 
-Patch to set w_curswant when setting the cursor in language interfaces.
+Patch to set w_set_curswant when setting the cursor in language interfaces.
 (David Hotham, 2018 Jun 22, #3060)
 
 Patch to make CTRL-W <CR> work properly in a quickfix window. (Jason Franklin,
@@ -169,8 +173,18 @@ Cursor in wrong position when line wraps. (#2540)
 
 Patch for Lua support. (Kazunobu Kuriyama, 2018 May 26)
 
+Make {skip} argument of searchpair() consistent with other places where we
+pass an expression to evaluate.  Allow passing zero for "never skip".
+
 Add an option similar to 'lazyredraw' to skip redrawing while executing a
 script or function.
+
+Universal solution to detect if t_RS is working, using cursor position.
+Koichi Iwamoto, #2126
+
+When using a menu item while the "more" prompt is displayed doesn't work well.
+E.g. after using help->version.  Have a key that ends the "more" prompt and
+does nothing otherwise?
 
 MS-Windows: write may fail if another program is reading the file.
 If 'readonly' is not set but the file appears to be readonly later, try again
@@ -352,9 +366,6 @@ redrawn properly. (xtal8, 2017 Oct 23, #2241)
 
 In an optional package the "after" directory is not scanned?
 (Renato Fabbri, 2018 Feb 22)
-
-Universal solution to detect if t_RS is working, using cursor position.
-Koichi Iwamoto, #2126
 
 Patch for Neovim concerning restoring when closing help window. (glacambre
 neovim #7431)
@@ -1404,9 +1415,6 @@ Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
 Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 
 :help gives example for z?, but it does not work.  m? and t? do work.
-
-Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
-With tests: Sep 5.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -4664,10 +4672,7 @@ Autocommands:
     command used dos fileformat.  Same for 'fileencoding'.
 -   Add events to autocommands:
     Error	    - When an error happens
-    NormalEnter	    - Entering Normal mode
-    ReplaceEnter    - Entering Replace mode
-    VisualEnter	    - Entering Visual mode
-    *Leave	    - Leaving a mode (in pair with the above *Enter)
+    ModeChange	    - after changing mode (before waiting for a char)
     VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled
 		      when exiting isn't a good idea.
     CursorHoldC     - CursorHold while command-line editing
