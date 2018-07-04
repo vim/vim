@@ -11201,6 +11201,8 @@ makeopens(
     tab_topframe = topframe;
     if ((ssop_flags & SSOP_TABPAGES))
     {
+	int	num_tabs;
+
 	/*
 	 * similar to ses_win_rec() below, populate the tab pages first so
 	 * later local options won't be copied to the new tabs.
@@ -11215,7 +11217,7 @@ makeopens(
 		return FAIL;
 	}
 
-	int	num_tabs = tabnr - 1;
+	num_tabs = tabnr - 1;
 	if (num_tabs > 1 && (fprintf(fd, "tabnext -%d", num_tabs - 1) < 0
 	    || put_eol(fd) == FAIL))
 	{
