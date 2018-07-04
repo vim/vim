@@ -46,11 +46,13 @@ endfunc
 func Test_vim_buffer()
   " Test ::vim::buffer {nr}
   e Xfoo1
+  call setline(1, ['foobar'])
   let bn1 = bufnr('%')
   let b1 = TclEval('::vim::buffer ' . bn1)
   call assert_equal(b1, TclEval('set ::vim::current(buffer)'))
 
   new Xfoo2
+  call setline(1, ['barfoo'])
   let bn2 = bufnr('%')
   let b2 = TclEval('::vim::buffer ' . bn2)
   call assert_equal(b2, TclEval('set ::vim::current(buffer)'))
@@ -66,6 +68,16 @@ func Test_vim_buffer()
   " Test ::vim::buffer list
   call assert_equal('2',    TclEval('llength [::vim::buffer list]'))
   call assert_equal(b1.' '.b2, TclEval('::vim::buffer list'))
+  tcl <<EOF
+    proc eachbuf { cmd } {
+      foreach b [::vim::buffer list] { $b command $cmd }
+    }
+EOF
+  tcl eachbuf %s/foo/FOO/g
+  b! Xfoo1
+  call assert_equal(['FOObar'], getline(1, '$'))
+  b! Xfoo2
+  call assert_equal(['barFOO'], getline(1, '$'))
 
   call assert_fails('tcl ::vim::buffer',
         \           'wrong # args: should be "::vim::buffer option"')
@@ -74,8 +86,15 @@ func Test_vim_buffer()
   call assert_fails('tcl ::vim::buffer 4321', 'invalid buffer number')
   call assert_fails('tcl ::vim::buffer x',
         \           'bad option "x": must be exists or list')
+  call assert_fails('tcl ::vim::buffer exists',
+        \           'wrong # args: should be "::vim::buffer exists bufNumber"')
+  call assert_fails('tcl ::vim::buffer exists x',
+        \           'expected integer but got "x"')
+  call assert_fails('tcl ::vim::buffer list x',
+        \           'wrong # args: should be "::vim::buffer list "')
 
-  %bwipe
+  tcl rename eachbuf ""
+  %bwipe!
 endfunc
 
 " Test ::vim::option
@@ -430,6 +449,8 @@ func Test_buffer_set()
   call assert_equal(['line1', 'a', 'line3', 'line4', 'line5'], getline(1, '$'))
   tcl $::vim::current(buffer) set 3 4 b
   call assert_equal(['line1', 'a', 'b', 'line5'], getline(1, '$'))
+  tcl $::vim::current(buffer) set 4 3 c
+  call assert_equal(['line1', 'a', 'c'], getline(1, '$'))
 
   call assert_fails('tcl $::vim::current(buffer) set 0 "x"', 'line number out of range')
   call assert_fails('tcl $::vim::current(buffer) set 5 "x"', 'line number out of range')
@@ -487,30 +508,6 @@ func Test_buffer_mark()
 
   delmarks aB
   bwipe!
-endfunc
-
-" Test $buf list (window list of a buffer)
-func Test_buffer_list()
-  e Xfoo
-  call setline(1, ['foobar'])
-  new Xbar
-  call setline(1, ['barfoo'])
-
-  call assert_equal('2', TclEval('llength [::vim::buffer list]'))
-
-  tcl <<EOF
-    proc eachbuf { cmd } {
-      foreach b [::vim::buffer list] { $b command $cmd }
-    }
-EOF
-  tcl eachbuf %s/foo/FOO/g
-  b! Xfoo
-  call assert_equal(['FOObar'], getline(1, '$'))
-  b! Xbar
-  call assert_equal(['barFOO'], getline(1, '$'))
-
-  tcl rename eachbuf ""
-  %bwipe!
 endfunc
 
 " Test $buf option (test and set option in context of a buffer)
@@ -573,6 +570,13 @@ func Test_buffer_delcmd()
   %bwipe
 endfunc
 
+func Test_vim_current()
+  " Only test errors as ::vim::current(...) is already indirectly
+  " tested by many other tests.
+  call assert_fails('tcl $::vim::current(buffer)', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(window)', 'wrong # args:')
+endfunc
+
 " Test $buf windows (windows list of a buffer)
 func Test_buffer_windows()
   new Xfoo
@@ -616,4 +620,18 @@ func Test_tclfile_error()
   call assert_fails('tclfile Xtcl_file', 'invalid command name "xyz"')
 
   call delete('Xtcl_file')
+endfunc
+
+" Test exiting current Tcl interprepter and re-creating one.
+func Test_tcl_exit()
+  tcl set foo "foo"
+  call assert_fails('tcl exit 3', 'E572: exit code 3')
+
+  " The Tcl interpreter should have been deleted and a new one
+  " is re-created with the next :tcl command.
+  call assert_fails('tcl set foo', "can't read \"foo\": no such variable")
+  tcl set bar "bar"
+  call assert_equal('bar', TclEval('set bar'))
+
+  tcl unset bar
 endfunc
