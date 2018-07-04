@@ -7,6 +7,7 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		appveyor.yml \
+		src/Make_all.mak \
 		src/appveyor.bat \
 		src/README.txt \
 		src/alloc.h \

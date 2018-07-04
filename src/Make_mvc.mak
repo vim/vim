@@ -693,6 +693,8 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
 !endif # DEBUG
 
+!include Make_all.mak
+
 INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
@@ -1294,6 +1296,14 @@ testgvim:
 testclean:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
+	cd ..
+
+$(NEW_TESTS):
+	cd testdir
+	- if exist $@.res del $@.res
+	$(MAKE) /NOLOGO -f Make_dos.mak nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
+	$(MAKE) /NOLOGO -f Make_dos.mak report
 	cd ..
 
 ###########################################################################
