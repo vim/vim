@@ -710,6 +710,7 @@ RT_NO_UNIX =	\
 
 # runtime for Amiga (also in the extra archive)
 RT_AMI_DOS =	\
+		runtime/doc/evim.man \
 		runtime/doc/vim.man \
 		runtime/doc/vimdiff.man \
 		runtime/doc/vimtutor.man \
