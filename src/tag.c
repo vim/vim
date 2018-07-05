@@ -905,11 +905,11 @@ do_tag(
 			continue;
 		    }
 
-		    dict_add_nr_str(dict, "text", 0L, tag_name);
-		    dict_add_nr_str(dict, "filename", 0L, fname);
-		    dict_add_nr_str(dict, "lnum", lnum, NULL);
+		    dict_add_string(dict, "text", tag_name);
+		    dict_add_string(dict, "filename", fname);
+		    dict_add_number(dict, "lnum", lnum);
 		    if (lnum == 0)
-			dict_add_nr_str(dict, "pattern", 0L, cmd);
+			dict_add_string(dict, "pattern", cmd);
 		}
 
 		vim_snprintf((char *)IObuff, IOSIZE, "ltag %s", tag);
@@ -3923,7 +3923,7 @@ add_tag_field(
 	vim_strncpy(buf, start, len);
     }
     buf[len] = NUL;
-    retval = dict_add_nr_str(dict, field_name, 0L, buf);
+    retval = dict_add_string(dict, field_name, buf);
     vim_free(buf);
     return retval;
 }
@@ -3968,7 +3968,7 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 						       tp.command_end) == FAIL
 		    || add_tag_field(dict, "kind", tp.tagkind,
 						      tp.tagkind_end) == FAIL
-		    || dict_add_nr_str(dict, "static", is_static, NULL) == FAIL)
+		    || dict_add_number(dict, "static", is_static) == FAIL)
 		ret = FAIL;
 
 	    vim_free(full_fname);

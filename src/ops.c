@@ -1723,12 +1723,12 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 
     buf[0] = (char_u)oap->regname;
     buf[1] = NUL;
-    dict_add_nr_str(v_event, "regname", 0, buf);
+    dict_add_string(v_event, "regname", buf);
 
     buf[0] = get_op_char(oap->op_type);
     buf[1] = get_extra_op_char(oap->op_type);
     buf[2] = NUL;
-    dict_add_nr_str(v_event, "operator", 0, buf);
+    dict_add_string(v_event, "operator", buf);
 
     buf[0] = NUL;
     buf[1] = NUL;
@@ -1741,7 +1741,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 			     reglen + 1);
 		break;
     }
-    dict_add_nr_str(v_event, "regtype", 0, buf);
+    dict_add_string(v_event, "regtype", buf);
 
     /* Lock the dictionary and its keys */
     dict_set_items_ro(v_event);
@@ -7641,19 +7641,19 @@ cursor_pos_info(dict_T *dict)
 #if defined(FEAT_EVAL)
     if (dict != NULL)
     {
-	dict_add_nr_str(dict, "words", word_count, NULL);
-	dict_add_nr_str(dict, "chars", char_count, NULL);
-	dict_add_nr_str(dict, "bytes", byte_count
+	dict_add_number(dict, "words", word_count);
+	dict_add_number(dict, "chars", char_count);
+	dict_add_number(dict, "bytes", byte_count
 # ifdef FEAT_MBYTE
 		+ bom_count
 # endif
-		, NULL);
-	dict_add_nr_str(dict, VIsual_active ? "visual_bytes" : "cursor_bytes",
-		byte_count_cursor, NULL);
-	dict_add_nr_str(dict, VIsual_active ? "visual_chars" : "cursor_chars",
-		char_count_cursor, NULL);
-	dict_add_nr_str(dict, VIsual_active ? "visual_words" : "cursor_words",
-		word_count_cursor, NULL);
+		);
+	dict_add_number(dict, VIsual_active ? "visual_bytes" : "cursor_bytes",
+		byte_count_cursor);
+	dict_add_number(dict, VIsual_active ? "visual_chars" : "cursor_chars",
+		char_count_cursor);
+	dict_add_number(dict, VIsual_active ? "visual_words" : "cursor_words",
+		word_count_cursor);
     }
 #endif
 }
