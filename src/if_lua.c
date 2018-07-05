@@ -253,14 +253,23 @@ void (*dll_lua_pushcclosure) (lua_State *L, lua_CFunction fn, int n);
 void (*dll_lua_pushboolean) (lua_State *L, int b);
 void (*dll_lua_pushlightuserdata) (lua_State *L, void *p);
 void (*dll_lua_getfield) (lua_State *L, int idx, const char *k);
+#if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawget) (lua_State *L, int idx);
 void (*dll_lua_rawgeti) (lua_State *L, int idx, int n);
+#else
+int (*dll_lua_rawget) (lua_State *L, int idx);
+int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
+#endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
 void *(*dll_lua_newuserdata) (lua_State *L, size_t sz);
 int (*dll_lua_getmetatable) (lua_State *L, int objindex);
 void (*dll_lua_setfield) (lua_State *L, int idx, const char *k);
 void (*dll_lua_rawset) (lua_State *L, int idx);
+#if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawseti) (lua_State *L, int idx, int n);
+#else
+void (*dll_lua_rawseti) (lua_State *L, int idx, lua_Integer n);
+#endif
 int (*dll_lua_setmetatable) (lua_State *L, int objindex);
 int (*dll_lua_next) (lua_State *L, int idx);
 /* libs */
