@@ -962,7 +962,8 @@ luaV_dict_newindex(lua_State *L)
 	return 0;
     if (*key == NUL)
 	luaL_error(L, "empty key");
-    if (!lua_isnil(L, 3)) { /* read value? */
+    if (!lua_isnil(L, 3)) /* read value? */
+    {
 	luaV_checktypval(L, 3, &v, "setting dict item");
 	if (d->dv_scope == VAR_DEF_SCOPE && v.v_type == VAR_FUNC)
 	    luaL_error(L, "cannot assign funcref to builtin scope");
@@ -1074,7 +1075,8 @@ luaV_funcref_call(lua_State *L)
 	status = FAIL;
     else
     {
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; i++)
+	{
 	    luaV_checktypval(L, i + 2, &v, "calling funcref");
 	    list_append_tv(f->args.vval.v_list, &v);
 	}
@@ -1531,13 +1533,16 @@ luaV_list(lua_State *L)
     else
     {
 	luaV_newlist(L, l);
-	if (initarg) { /* traverse table to init dict */
+	if (initarg) /* traverse table to init list */
+	{
 	    int notnil, i = 0;
 	    typval_T v;
-	    do {
+	    do
+	    {
 		lua_rawgeti(L, 1, ++i);
 		notnil = !lua_isnil(L, -1);
-		if (notnil) {
+		if (notnil)
+		{
 		    luaV_checktypval(L, -1, &v, "vim.list");
 		    list_append_tv(l, &v);
 		}
