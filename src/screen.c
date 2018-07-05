@@ -3141,6 +3141,7 @@ win_line(
     int		change_end = -1;	/* last col of changed area */
 #endif
     colnr_T	trailcol = MAXCOL;	/* start of trailing spaces */
+    colnr_T	leadcol = (colnr_T)0;	/* end of leading spaces */
 #ifdef FEAT_LINEBREAK
     int		need_showbreak = FALSE; /* overlong line, skipping first x
 					   chars */
@@ -3532,7 +3533,7 @@ win_line(
 
     if (wp->w_p_list)
     {
-	if (lcs_space || lcs_trail)
+	if (lcs_space || lcs_trail || lcs_lead)
 	    extra_check = TRUE;
 	/* find start of trailing whitespace */
 	if (lcs_trail)
@@ -3541,6 +3542,13 @@ win_line(
 	    while (trailcol > (colnr_T)0 && VIM_ISWHITE(ptr[trailcol - 1]))
 		--trailcol;
 	    trailcol += (colnr_T) (ptr - line);
+	}
+	if (lcs_lead)
+	{
+	    leadcol = (colnr_T)0;
+	    while (leadcol < (colnr_T)STRLEN(ptr) && VIM_ISWHITE(ptr[leadcol]))
+		++leadcol;
+	    leadcol += (colnr_T) (ptr - line);
 	}
     }
 
@@ -4812,6 +4820,28 @@ win_line(
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
 		{
 		    c = lcs_trail;
+		    if (!attr_pri)
+		    {
+			n_attr = 1;
+			extra_attr = HL_ATTR(HLF_8);
+			saved_attr2 = char_attr; /* save current attr */
+		    }
+#ifdef FEAT_MBYTE
+		    mb_c = c;
+		    if (enc_utf8 && utf_char2len(c) > 1)
+		    {
+			mb_utf8 = TRUE;
+			u8cc[0] = 0;
+			c = 0xc0;
+		    }
+		    else
+			mb_utf8 = FALSE;
+#endif
+		}
+
+		if (leadcol != 0 && ptr <= line + leadcol && c == ' ')
+		{
+		    c = lcs_lead;
 		    if (!attr_pri)
 		    {
 			n_attr = 1;

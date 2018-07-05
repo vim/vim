@@ -5007,6 +5007,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  trail:c	Character to show for trailing spaces.  When omitted,
 			trailing spaces are blank.  Overrides the "space"
 			setting for trailing spaces.
+							*lcs-lead*
+	  lead:c	Character to show for leading spaces. When omitted,
+			trailing spaces are blank. Overrides the "space"
+			setting for leading spaces.
 							*lcs-extends*
 	  extends:c	Character to show in the last column, when 'wrap' is
 			off and the line continues beyond the right of the

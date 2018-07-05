@@ -1790,6 +1790,7 @@ msg_prt_line(char_u *s, int list)
     int		n;
     int		attr = 0;
     char_u	*trail = NULL;
+    char_u	*lead = NULL;
 #ifdef FEAT_MBYTE
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
@@ -1804,6 +1805,13 @@ msg_prt_line(char_u *s, int list)
 	trail = s + STRLEN(s);
 	while (trail > s && VIM_ISWHITE(trail[-1]))
 	    --trail;
+    }
+
+    if (list && lcs_lead)
+    {
+	lead = s;
+	while (lead < s + STRLEN(s) && VIM_ISWHITE(lead))
+	    ++lead;
     }
 
     /* output a space for an empty line, otherwise the line will be
@@ -1894,6 +1902,11 @@ msg_prt_line(char_u *s, int list)
 	    else if (c == ' ' && trail != NULL && s > trail)
 	    {
 		c = lcs_trail;
+		attr = HL_ATTR(HLF_8);
+	    }
+	    else if (c == ' ' && lead != NULL && s < lead)
+	    {
+		c = lcs_lead;
 		attr = HL_ATTR(HLF_8);
 	    }
 	    else if (c == ' ' && list && lcs_space != NUL)
