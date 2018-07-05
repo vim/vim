@@ -9347,20 +9347,12 @@ ins_bs(
 				&& (!*inserted_space_p
 				    || arrow_used))))))
 	{
-#ifndef FEAT_VARTABS
 	    int		ts;
-#endif
 	    colnr_T	vcol;
 	    colnr_T	want_vcol;
 	    colnr_T	start_vcol;
 
 	    *inserted_space_p = FALSE;
-#ifndef FEAT_VARTABS
-	    if (p_sta && in_indent)
-		ts = (int)get_sw_value(curbuf);
-	    else
-		ts = (int)get_sts_value();
-#endif
 	    /* Compute the virtual column where we want to be.  Since
 	     * 'showbreak' may get in the way, need to get the last column of
 	     * the previous character. */
@@ -9371,11 +9363,18 @@ ins_bs(
 	    inc_cursor();
 #ifdef FEAT_VARTABS
 	    if (p_sta && in_indent)
-		want_vcol = (want_vcol / curbuf->b_p_sw) * curbuf->b_p_sw;
+	    {
+		ts = (int)get_sw_value(curbuf);
+		want_vcol = (want_vcol / ts) * ts;
+	    }
 	    else
 		want_vcol = tabstop_start(want_vcol, get_sts_value(),
 						     curbuf->b_p_vsts_array);
 #else
+	    if (p_sta && in_indent)
+		ts = (int)get_sw_value(curbuf);
+	    else
+		ts = (int)get_sts_value();
 	    want_vcol = (want_vcol / ts) * ts;
 #endif
 
@@ -10200,7 +10199,7 @@ ins_tab(void)
 #ifdef FEAT_VARTABS
     if (p_sta && ind)		/* insert tab in indent, use 'shiftwidth' */
     {
-	temp = (int)curbuf->b_p_sw;
+	temp = (int)get_sw_value(curbuf);
 	temp -= get_nolist_virtcol() % temp;
     }
     else if (tabstop_count(curbuf->b_p_vsts_array) > 0 || curbuf->b_p_sts != 0)
