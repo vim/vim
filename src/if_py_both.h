@@ -550,7 +550,7 @@ typedef struct
 {
     PyObject_HEAD
     char	*fullname;
-    PyObject	*target;
+    PyObject	*result;
 } LoaderObject;
 static PyTypeObject LoaderType;
 
@@ -558,7 +558,7 @@ static PyTypeObject LoaderType;
 LoaderDestructor(LoaderObject *self)
 {
     vim_free(self->fullname);
-    Py_DECREF(self->target);
+    Py_XDECREF(self->result);
     DESTRUCTOR_FINISH(self);
 }
 
@@ -566,9 +566,35 @@ LoaderDestructor(LoaderObject *self)
 LoaderLoadModule(LoaderObject *self, PyObject *args UNUSED)
 {
     char	*fullname = self->fullname;
-    PyObject	*target = self->target;
+    PyObject	*result = self->result;
+    PyObject	*module;
 
-    return call_load_module(fullname, (int)STRLEN(fullname), target);
+    if (!fullname)
+    {
+	module = result ? result : Py_None;
+	Py_INCREF(module);
+	return module;
+    }
+
+    module = call_load_module(fullname, (int)STRLEN(fullname), result);
+
+    self->fullname = NULL;
+    self->result = module;
+
+    vim_free(fullname);
+    Py_DECREF(result);
+
+    if (!module)
+    {
+	if (PyErr_Occurred())
+	    return NULL;
+
+	Py_INCREF(Py_None);
+	return Py_None;
+    }
+
+    Py_INCREF(module);
+    return module;
 }
 
 static struct PyMethodDef LoaderMethods[] = {
@@ -1305,7 +1331,7 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 FinderFindModule(PyObject *self, PyObject *args)
 {
     char	*fullname;
-    PyObject	*target;
+    PyObject	*result;
     PyObject	*new_path;
     LoaderObject	*loader;
 
@@ -1315,11 +1341,11 @@ FinderFindModule(PyObject *self, PyObject *args)
     if (!(new_path = Vim_GetPaths(self)))
 	return NULL;
 
-    target = find_module(fullname, fullname, new_path);
+    result = find_module(fullname, fullname, new_path);
 
     Py_DECREF(new_path);
 
-    if (!target)
+    if (!result)
     {
 	if (PyErr_Occurred())
 	    return NULL;
@@ -1328,14 +1354,22 @@ FinderFindModule(PyObject *self, PyObject *args)
 	return Py_None;
     }
 
-    if (!(loader = PyObject_NEW(LoaderObject, &LoaderType)))
+    if (!(fullname = (char *)vim_strsave((char_u *)fullname)))
     {
-	Py_DECREF(target);
+	Py_DECREF(result);
+	PyErr_NoMemory();
 	return NULL;
     }
 
-    loader->fullname = (char *)vim_strsave((char_u *)fullname);
-    loader->target = target;
+    if (!(loader = PyObject_NEW(LoaderObject, &LoaderType)))
+    {
+	vim_free(fullname);
+	Py_DECREF(result);
+	return NULL;
+    }
+
+    loader->fullname = fullname;
+    loader->result = result;
 
     return (PyObject *) loader;
 }
