@@ -4659,17 +4659,21 @@ check_termcode(
 
 			if (version == 95)
 			{
-			    /* Mac Terminal.app sends 1;95;0 */
+			    // Mac Terminal.app sends 1;95;0
 			    if (STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
 			    {
 				is_not_xterm = TRUE;
 				is_mac_terminal = TRUE;
 			    }
 # ifdef FEAT_MOUSE_SGR
-			    /* iTerm2 sends 0;95;0 */
+			    // iTerm2 sends 0;95;0
 			    if (STRNCMP(tp + extra - 2, "0;95;0c", 7) == 0)
 				is_iterm2 = TRUE;
+			    else
 # endif
+			    // old iTerm2 sends 0;95;
+			    if (STRNCMP(tp + extra - 2, "0;95;c", 6) == 0)
+				is_not_xterm = TRUE;
 			}
 
 			/* Only set 'ttymouse' automatically if it was not set
