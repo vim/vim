@@ -1252,7 +1252,11 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 
 	if (!(find_module_result = PyObject_CallFunction(py_find_module,
 			"s#O", tail, partlen, new_path)))
+	{
+	    if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_ImportError))
+		PyErr_Clear();
 	    return NULL;
+	}
 
 	if (!(module = call_load_module(
 			fullname,
@@ -1283,7 +1287,11 @@ find_module(char *fullname, char *tail, PyObject *new_path)
     {
 	if (!(find_module_result = PyObject_CallFunction(py_find_module,
 			"sO", tail, new_path)))
+	{
+	    if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_ImportError))
+		PyErr_Clear();
 	    return NULL;
+	}
 
 	if (!(module = call_load_module(
 			fullname,
@@ -1321,12 +1329,7 @@ FinderFindModule(PyObject *self, PyObject *args)
     if (!module)
     {
 	if (PyErr_Occurred())
-	{
-	    if (PyErr_ExceptionMatches(PyExc_ImportError))
-		PyErr_Clear();
-	    else
-		return NULL;
-	}
+	    return NULL;
 
 	Py_INCREF(Py_None);
 	return Py_None;
