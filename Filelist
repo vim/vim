@@ -851,6 +851,8 @@ IN_README_DIR = \
 
 # generic language files
 LANG_GEN = \
+		runtime/doc/*-da.1 \
+		runtime/doc/*-da.UTF-8.1 \
 		runtime/doc/*-de.1 \
 		runtime/doc/*-de.UTF-8.1 \
 		runtime/doc/*-fr.1 \
