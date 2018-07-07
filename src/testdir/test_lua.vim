@@ -198,11 +198,8 @@ endfunc
 " Test vim.buffer().name and vim.buffer().fname
 func Test_buffer_name()
   new
-  " FIXME: for an unnamed buffer, I would expect
-  " vim.buffer().name to give an empty string, but
-  " it returns 0. Is it a bug?
-  " so this assert_equal is commented out.
-  " call assert_equal('', luaeval('vim.buffer().name'))
+  call assert_equal('', luaeval('vim.buffer().name'))
+  call assert_equal('', luaeval('vim.buffer().fname'))
   bwipe!
 
   new Xfoo
