@@ -4827,7 +4827,8 @@ get_users(expand_T *xp UNUSED, int idx)
  * 1 if name partially matches the beginning of a user name.
  * 2 is name fully matches a user name.
  */
-int match_user(char_u* name)
+    int
+match_user(char_u *name)
 {
     int i;
     int n = (int)STRLEN(name);
