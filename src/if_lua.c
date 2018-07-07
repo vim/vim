@@ -1123,9 +1123,11 @@ luaV_buffer_index(lua_State *L)
     {
 	const char *s = lua_tostring(L, 2);
 	if (strncmp(s, "name", 4) == 0)
-	    lua_pushstring(L, (char *) b->b_sfname);
+	    lua_pushstring(L, (b->b_sfname == NULL)
+					? "" : (char *) b->b_sfname);
 	else if (strncmp(s, "fname", 5) == 0)
-	    lua_pushstring(L, (char *) b->b_ffname);
+	    lua_pushstring(L, (b->b_ffname == NULL)
+					? "" : (char *) b->b_ffname);
 	else if (strncmp(s, "number", 6) == 0)
 	    lua_pushinteger(L, b->b_fnum);
 	/* methods */
