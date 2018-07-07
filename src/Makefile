@@ -1511,6 +1511,12 @@ DEST_MAN_TOP = $(DESTDIR)$(MANDIR)
 # directory first.
 # FreeBSD uses ".../man/xx.ISO8859-1/man1" for latin1, use that one too.
 DEST_MAN = $(DEST_MAN_TOP)$(MAN1DIR)
+DEST_MAN_DA = $(DEST_MAN_TOP)/da$(MAN1DIR)
+DEST_MAN_DA_I = $(DEST_MAN_TOP)/da.ISO8859-1$(MAN1DIR)
+DEST_MAN_DA_U = $(DEST_MAN_TOP)/da.UTF-8$(MAN1DIR)
+DEST_MAN_DE = $(DEST_MAN_TOP)/de$(MAN1DIR)
+DEST_MAN_DE_I = $(DEST_MAN_TOP)/de.ISO8859-1$(MAN1DIR)
+DEST_MAN_DE_U = $(DEST_MAN_TOP)/de.UTF-8$(MAN1DIR)
 DEST_MAN_FR = $(DEST_MAN_TOP)/fr$(MAN1DIR)
 DEST_MAN_FR_I = $(DEST_MAN_TOP)/fr.ISO8859-1$(MAN1DIR)
 DEST_MAN_FR_U = $(DEST_MAN_TOP)/fr.UTF-8$(MAN1DIR)
@@ -2381,6 +2387,12 @@ installtools: $(TOOLS) $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 
 # install the language specific files for tools, if they were unpacked
 install-tool-languages:
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DA) "-da" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DA_I) "-da" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DA_U) "-da.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DE) "-de" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DE_I) "-de" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh xxd $(DEST_MAN_DE_U) "-de.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh xxd $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
@@ -2396,6 +2408,12 @@ install-tool-languages:
 
 # install the language specific files, if they were unpacked
 install-languages: languages $(DEST_LANG) $(DEST_KMAP)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DA) "-da" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_I) "-da" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DA_U) "-da.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DE) "-de" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DE_I) "-de" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh install $(DEST_MAN_DE_U) "-de.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
@@ -2408,6 +2426,18 @@ install-languages: languages $(DEST_LANG) $(DEST_KMAP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE_U) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_FR) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -2582,6 +2612,12 @@ uninstall: uninstall_runtime
 # Note: the "rmdir" will fail if any files were added after "make install"
 uninstall_runtime:
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DA) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DA_I) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DA_U) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DE) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DE_I) "" $(INSTALLMANARGS)
+	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_DE_U) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_FR) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_FR_I) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_FR_U) "" $(INSTALLMANARGS)
@@ -2596,6 +2632,18 @@ uninstall_runtime:
 	-$(SHELL) ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DA_U) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE_I) $(INSTALLMLARGS)
+	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_DE_U) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_FR) $(INSTALLMLARGS)
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
@@ -2621,6 +2669,8 @@ uninstall_runtime:
 	-$(SHELL) ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU_U) $(INSTALLMLARGS)
 	-rm -f $(DEST_MAN)/xxd.1
+	-rm -f $(DEST_MAN_DA)/xxd.1 $(DEST_MAN_DA_I)/xxd.1 $(DEST_MAN_DA_U)/xxd.1
+	-rm -f $(DEST_MAN_DE)/xxd.1 $(DEST_MAN_DE_I)/xxd.1 $(DEST_MAN_DE_U)/xxd.1
 	-rm -f $(DEST_MAN_FR)/xxd.1 $(DEST_MAN_FR_I)/xxd.1 $(DEST_MAN_FR_U)/xxd.1
 	-rm -f $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_IT_I)/xxd.1 $(DEST_MAN_IT_U)/xxd.1
 	-rm -f $(DEST_MAN_JA_U)/xxd.1
