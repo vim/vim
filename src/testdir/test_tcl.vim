@@ -110,6 +110,17 @@ func Test_vim_option()
   call assert_equal('+4', &cc)
   call assert_equal('+4', TclEval('::vim::option cc'))
 
+  " Test boolean option with 'toggle', 'on' and 'off' keywords.
+  call assert_equal('0', TclEval('::vim::option nu toggle'))
+  call assert_equal(1, &nu)
+  call assert_equal('1', TclEval('::vim::option nu toggle'))
+  call assert_equal(0, &nu)
+  call assert_equal('0', TclEval('::vim::option nu on'))
+  call assert_equal(1, &nu)
+  call assert_equal('1', TclEval('::vim::option nu off'))
+  call assert_equal(0, &nu)
+
+  call assert_fails('tcl ::vim::option nu x', 'expected integer but got "x"')
   call assert_fails('tcl ::vim::option xxx', 'unknown vimOption')
   call assert_fails('tcl ::vim::option',
         \           'wrong # args: should be "::vim::option vimOption ?value?"')
@@ -124,12 +135,18 @@ func Test_vim_expr()
 
   call assert_fails('tcl ::vim::expr x y',
         \           'wrong # args: should be "::vim::expr vimExpr"')
+  call assert_fails('tcl ::vim::expr 1-', 'E15: Invalid expression: 1-')
 endfunc
 
 " Test ::vim::command
 func Test_vim_command()
   call assert_equal('hello world',
         \           TclEval('::vim::command {echo "hello world"}'))
+
+  " Check that if ::vim::command created a new Tcl interpreter, it is removed.
+  tcl set foo 123
+  call assert_equal('321', TclEval('::vim::command "tcl set foo 321"'))
+  call assert_equal('123', TclEval('set foo'))
 
   " With the -quiet option, the error should silently be ignored.
   call assert_equal('', TclEval('::vim::command -quiet xyz'))
@@ -142,6 +159,8 @@ func Test_vim_command()
 
   " With the -quiet option, the error should silently be ignored.
   call assert_equal('', TclEval('::vim::command -quiet xyz'))
+
+  tcl unset foo
 endfunc
 
 " Test ::vim::window list
@@ -164,12 +183,15 @@ endfunc
 
 " Test output messages
 func Test_output()
-  call assert_fails('tcl puts vimerr "an error"', 'an error')
-  tcl puts vimout "a message"
-  tcl puts "another message"
+  call assert_fails('tcl puts vimerr "error #1"', 'error #1')
+  call assert_fails('tcl puts stderr "error #2"', 'error #2')
+  tcl puts vimout "message #1"
+  tcl puts stdout "message #2"
+  tcl puts "message #3"
   let messages = split(execute('message'), "\n")
-  call assert_equal('a message', messages[-2])
-  call assert_equal('another message', messages[-1])
+  call assert_equal('message #3', messages[-1])
+  call assert_equal('message #2', messages[-2])
+  call assert_equal('message #1', messages[-3])
 
   call assert_fails('tcl puts',
         \           'wrong # args: should be "puts ?-nonewline? ?channelId? string"')
@@ -447,13 +469,21 @@ func Test_buffer_set()
   call setline(1, ['line1', 'line2', 'line3', 'line4', 'line5'])
   tcl $::vim::current(buffer) set 2 a
   call assert_equal(['line1', 'a', 'line3', 'line4', 'line5'], getline(1, '$'))
+
+  " Test with fewer replacing lines than replaced lines: lines get deleted.
   tcl $::vim::current(buffer) set 3 4 b
   call assert_equal(['line1', 'a', 'b', 'line5'], getline(1, '$'))
   tcl $::vim::current(buffer) set 4 3 c
   call assert_equal(['line1', 'a', 'c'], getline(1, '$'))
 
+  " Test with more replacing lines than replaced lines: lines get added.
+  tcl $::vim::current(buffer) set 2 3 {x y z}
+  call assert_equal(['line1', 'x', 'y', 'z'], getline(1, '$'))
+  tcl $::vim::current(buffer) set 3 2 {X Y Z}
+  call assert_equal(['line1', 'X', 'Y', 'Z', 'z'], getline(1, '$'))
+
   call assert_fails('tcl $::vim::current(buffer) set 0 "x"', 'line number out of range')
-  call assert_fails('tcl $::vim::current(buffer) set 5 "x"', 'line number out of range')
+  call assert_fails('tcl $::vim::current(buffer) set 6 "x"', 'line number out of range')
 
   call assert_fails('tcl $::vim::current(buffer) set', 'wrong # args:')
   bwipe!
@@ -622,7 +652,7 @@ func Test_tclfile_error()
   call delete('Xtcl_file')
 endfunc
 
-" Test exiting current Tcl interprepter and re-creating one.
+" Test exiting current Tcl interpreter and re-creating one.
 func Test_tcl_exit()
   tcl set foo "foo"
   call assert_fails('tcl exit 3', 'E572: exit code 3')
