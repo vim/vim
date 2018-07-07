@@ -4046,6 +4046,18 @@ ResizeConBufAndWindow(
 	}
 #endif
     }
+
+    if (vtp_working && !SetConsoleWindowInfo(g_hConOut, TRUE, &srWindowRect))
+    {
+#ifdef MCH_WRITE_DUMP
+	if (fdDump)
+	{
+	    fprintf(fdDump, "SetConsoleWindowInfo failed: %lx\n",
+		    GetLastError());
+	    fflush(fdDump);
+	}
+#endif
+    }
 }
 
 
