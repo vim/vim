@@ -125,9 +125,9 @@ Vim evaluation and command execution, and others.
 				Non-numeric keys are not used to initialize
 				the list. See also |lua-eval| for conversion
 				rules. Example: >
-					:lua t = {math.pi, false, say = 'hi'}
-					:echo luaeval('vim.list(t)')
-					:" [3.141593, v:false], 'say' is ignored
+				    :lua t = {math.pi, false, say = 'hi'}
+				    :echo luaeval('vim.list(t)')
+				    :" [3.141593, v:false], 'say' is ignored
 <
 	vim.dict([arg])		Returns an empty dictionary or, if "arg" is a
 				Lua table, returns a dict d such that d[k] =
@@ -136,12 +136,14 @@ Vim evaluation and command execution, and others.
 				strings. Keys that are not strings are not
 				used to initialize the dictionary. See also
 				|lua-eval| for conversion rules. Example: >
-					:lua t = {math.pi, false, say = 'hi'}
-					:echo luaeval('vim.dict(t)')
-					:" {'say': 'hi'}, numeric keys ignored
+				    :lua t = {math.pi, false, say = 'hi'}
+				    :echo luaeval('vim.dict(t)')
+				    :" {'1': 3.141593, '2': v:false,
+				    :" 'say': 'hi'}
 <
 	vim.funcref({name})	Returns a Funcref to function {name} (see
-				|Funcref|). It is equivalent to Vim's function().
+				|Funcref|). It is equivalent to Vim's
+				function().
 
 	vim.buffer([arg])	If "arg" is a number, returns buffer with
 				number "arg" in the buffer list or, if "arg"
