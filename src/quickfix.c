@@ -3139,18 +3139,21 @@ qf_list(exarg_T *eap)
 		    sprintf((char *)IObuff, "%2d", i);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
-								i, (char *)fname);
+							     i, (char *)fname);
 	    }
 
 	    // Support for filtering entries using :filter /pat/ clist
-	    filter_entry = 1;
+	    // Match against the module name, file name, search pattern and
+	    // text of the entry.
+	    filter_entry = TRUE;
 	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
 		filter_entry &= message_filtered(qfp->qf_module);
-	    if (fname != NULL)
+	    if (filter_entry && fname != NULL)
 		filter_entry &= message_filtered(fname);
-	    if (qfp->qf_pattern != NULL)
+	    if (filter_entry && qfp->qf_pattern != NULL)
 		filter_entry &= message_filtered(qfp->qf_pattern);
-	    filter_entry &= message_filtered(qfp->qf_text);
+	    if (filter_entry)
+		filter_entry &= message_filtered(qfp->qf_text);
 	    if (filter_entry)
 		goto next_entry;
 
