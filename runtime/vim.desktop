@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Vim
 GenericName=Text Editor
-GenericName[da]=Tekstredigering
+GenericName[da]=Teksteditor
 GenericName[de]=Texteditor
 GenericName[pl]=Edytor tekstu
 Comment=Edit text files
@@ -16,7 +16,7 @@ Comment[bs]=Izmijeni tekstualne datoteke
 Comment[ca]=Edita fitxers de text
 Comment[cs]=Úprava textových souborů
 Comment[cy]=Golygu ffeiliau testun
-Comment[da]=Redigér tekstfiler
+Comment[da]=Rediger tekstfiler
 Comment[de]=Textdateien bearbeiten
 Comment[el]=Επεξεργασία αρχείων κειμένου
 Comment[en_CA]=Edit text files
