@@ -2997,7 +2997,8 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-    {"viminfofile", "vif",  P_STRING|P_ONECOMMA|P_NODUP|P_SECURE|P_VI_DEF,
+    {"viminfofile", "vif",  P_STRING|P_EXPAND|P_ONECOMMA|P_NODUP
+							    |P_SECURE|P_VI_DEF,
 #ifdef FEAT_VIMINFO
 			    (char_u *)&p_viminfofile, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
