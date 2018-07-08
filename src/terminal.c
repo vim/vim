@@ -3134,13 +3134,16 @@ term_update_window(win_T *wp)
 
     if (term->tl_rows != newrows || term->tl_cols != newcols)
     {
-
-
 	term->tl_vterm_size_changed = TRUE;
 	vterm_set_size(vterm, newrows, newcols);
 	ch_log(term->tl_job->jv_channel, "Resizing terminal to %d lines",
 								      newrows);
 	term_report_winsize(term, newrows, newcols);
+
+	// Updating the terminal size will cause the snapshot to be cleared.
+	// When not in terminal_loop() we need to restore it.
+	if (term != in_terminal_loop)
+	    may_move_terminal_to_buffer(term, FALSE);
     }
 
     /* The cursor may have been moved when resizing. */

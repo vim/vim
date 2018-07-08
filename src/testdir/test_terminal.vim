@@ -1525,6 +1525,32 @@ func Test_terminwinscroll()
   exe buf . 'bwipe!'
 endfunc
 
+" Resizing the terminal window caused an ml_get error.
+" TODO: This does not reproduce the original problem.
+func Test_terminal_resize()
+  set statusline=x
+  terminal
+  call assert_equal(2, winnr('$'))
+
+  " Fill the terminal with text.
+  if has('win32')
+    call feedkeys("dir\<CR>", 'xt')
+  else
+    call feedkeys("ls\<CR>", 'xt')
+  endif
+  " Go to Terminal-Normal mode for a moment.
+  call feedkeys("\<C-W>N", 'xt')
+  " Open a new window
+  call feedkeys("i\<C-W>n", 'xt')
+  call assert_equal(3, winnr('$'))
+  redraw
+
+  close
+  call assert_equal(2, winnr('$'))
+  call feedkeys("exit\<CR>", 'xt')
+  set statusline&
+endfunc
+
 " must be nearly the last, we can't go back from GUI to terminal
 func Test_zz1_terminal_in_gui()
   if !CanRunGui()
