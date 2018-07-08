@@ -282,41 +282,11 @@ static int nfa_alt_listid;
 /* 0 for first call to nfa_regmatch(), 1 for recursive call. */
 static int nfa_ll_index = 0;
 
-static int nfa_regcomp_start(char_u *expr, int re_flags);
-static int nfa_get_reganch(nfa_state_T *start, int depth);
-static int nfa_get_regstart(nfa_state_T *start, int depth);
-static char_u *nfa_get_match_text(nfa_state_T *start);
 static int realloc_post_list(void);
-static int nfa_recognize_char_class(char_u *start, char_u *end, int extra_newl);
-static int nfa_emit_equi_class(int c);
-static int nfa_regatom(void);
-static int nfa_regpiece(void);
-static int nfa_regconcat(void);
-static int nfa_regbranch(void);
 static int nfa_reg(int paren);
 #ifdef DEBUG
-static void nfa_set_code(int c);
-static void nfa_postfix_dump(char_u *expr, int retval);
-static void nfa_print_state(FILE *debugf, nfa_state_T *state);
 static void nfa_print_state2(FILE *debugf, nfa_state_T *state, garray_T *indent);
-static void nfa_dump(nfa_regprog_T *prog);
 #endif
-static int *re2post(void);
-static nfa_state_T *alloc_state(int c, nfa_state_T *out, nfa_state_T *out1);
-static void st_error(int *postfix, int *end, int *p);
-static int nfa_max_width(nfa_state_T *startstate, int depth);
-static nfa_state_T *post2nfa(int *postfix, int *end, int nfa_calc_size);
-static void nfa_postprocess(nfa_regprog_T *prog);
-static int check_char_class(int class, int c);
-static void nfa_save_listids(nfa_regprog_T *prog, int *list);
-static void nfa_restore_listids(nfa_regprog_T *prog, int *list);
-static int nfa_re_num_cmp(long_u val, int op, long_u pos);
-static long nfa_regtry(nfa_regprog_T *prog, colnr_T col, proftime_T *tm, int *timed_out);
-static long nfa_regexec_both(char_u *line, colnr_T col, proftime_T *tm, int *timed_out);
-static regprog_T *nfa_regcomp(char_u *expr, int re_flags);
-static void nfa_regfree(regprog_T *prog);
-static int  nfa_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col, int line_lbr);
-static long nfa_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm, int *timed_out);
 static int match_follows(nfa_state_T *startstate, int depth);
 static int failure_chance(nfa_state_T *state, int depth);
 
@@ -2876,13 +2846,6 @@ struct Frag
 };
 typedef struct Frag Frag_T;
 
-static Frag_T frag(nfa_state_T *start, Ptrlist *out);
-static Ptrlist *list1(nfa_state_T **outp);
-static void patch(Ptrlist *l, nfa_state_T *s);
-static Ptrlist *append(Ptrlist *l1, Ptrlist *l2);
-static void st_push(Frag_T s, Frag_T **p, Frag_T *stack_end);
-static Frag_T st_pop(Frag_T **p, Frag_T *stack);
-
 /*
  * Initialize a Frag_T struct and return it.
  */
@@ -3917,9 +3880,7 @@ typedef struct
 } nfa_list_T;
 
 #ifdef ENABLE_LOG
-static void log_subsexpr(regsubs_T *subs);
 static void log_subexpr(regsub_T *sub);
-static char *pim_info(nfa_pim_T *pim);
 
     static void
 log_subsexpr(regsubs_T *subs)
@@ -3974,25 +3935,15 @@ pim_info(nfa_pim_T *pim)
 #endif
 
 /* Used during execution: whether a match has been found. */
-static int nfa_match;
+static int	    nfa_match;
 #ifdef FEAT_RELTIME
 static proftime_T  *nfa_time_limit;
 static int	   *nfa_timed_out;
 static int	    nfa_time_count;
 #endif
 
-static void copy_pim(nfa_pim_T *to, nfa_pim_T *from);
-static void clear_sub(regsub_T *sub);
 static void copy_sub(regsub_T *to, regsub_T *from);
-static void copy_sub_off(regsub_T *to, regsub_T *from);
-static void copy_ze_off(regsub_T *to, regsub_T *from);
-static int sub_equal(regsub_T *sub1, regsub_T *sub2);
-static int match_backref(regsub_T *sub, int subidx, int *bytelen);
-static int has_state_with_pos(nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim);
 static int pim_equal(nfa_pim_T *one, nfa_pim_T *two);
-static int state_in_list(nfa_list_T *l, nfa_state_T *state, regsubs_T *subs);
-static regsubs_T *addstate(nfa_list_T *l, nfa_state_T *state, regsubs_T *subs_arg, nfa_pim_T *pim, int off);
-static void addstate_here(nfa_list_T *l, nfa_state_T *state, regsubs_T *subs, nfa_pim_T *pim, int *ip);
 
 /*
  * Copy postponed invisible match info from "from" to "to".
@@ -5018,8 +4969,6 @@ retempty:
 
 #ifdef FEAT_SYN_HL
 
-static int match_zref(int subidx, int *bytelen);
-
 /*
  * Check for a match with \z subexpression "subidx".
  * Return TRUE if it matches.
@@ -5095,7 +5044,6 @@ nfa_re_num_cmp(long_u val, int op, long_u pos)
     return val == pos;
 }
 
-static int recursive_regmatch(nfa_state_T *state, nfa_pim_T *pim, nfa_regprog_T *prog, regsubs_T *submatch, regsubs_T *m, int **listids);
 static int nfa_regmatch(nfa_regprog_T *prog, nfa_state_T *start, regsubs_T *submatch, regsubs_T *m);
 
 /*
@@ -5110,7 +5058,8 @@ recursive_regmatch(
     nfa_regprog_T   *prog,
     regsubs_T	    *submatch,
     regsubs_T	    *m,
-    int		    **listids)
+    int		    **listids,
+    int		    *listids_len)
 {
     int		save_reginput_col = (int)(reginput - regline);
     int		save_reglnum = reglnum;
@@ -5212,14 +5161,16 @@ recursive_regmatch(
     {
 	/* Already calling nfa_regmatch() recursively.  Save the lastlist[1]
 	 * values and clear them. */
-	if (*listids == NULL)
+	if (*listids == NULL || *listids_len < nstate)
 	{
+	    vim_free(*listids);
 	    *listids = (int *)lalloc(sizeof(int) * nstate, TRUE);
 	    if (*listids == NULL)
 	    {
 		EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
 		return 0;
 	    }
+	    *listids_len = nstate;
 	}
 	nfa_save_listids(prog, *listids);
 	need_restore = TRUE;
@@ -5278,9 +5229,6 @@ recursive_regmatch(
 
     return result;
 }
-
-static int skip_to_start(int c, colnr_T *colp);
-static long find_match_text(colnr_T startcol, int regstart, char_u *match_text);
 
 /*
  * Estimate the chance of a match with "state" failing.
@@ -5570,6 +5518,7 @@ nfa_regmatch(
     nfa_list_T	*thislist;
     nfa_list_T	*nextlist;
     int		*listids = NULL;
+    int		listids_len = 0;
     nfa_state_T *add_state;
     int		add_here;
     int		add_count;
@@ -5898,7 +5847,7 @@ nfa_regmatch(
 			 * follows.
 			 */
 			result = recursive_regmatch(t->state, NULL, prog,
-						       submatch, m, &listids);
+					  submatch, m, &listids, &listids_len);
 			if (result == NFA_TOO_EXPENSIVE)
 			{
 			    nfa_match = result;
@@ -6016,7 +5965,7 @@ nfa_regmatch(
 
 		/* First try matching the pattern. */
 		result = recursive_regmatch(t->state, NULL, prog,
-						       submatch, m, &listids);
+					  submatch, m, &listids, &listids_len);
 		if (result == NFA_TOO_EXPENSIVE)
 		{
 		    nfa_match = result;
@@ -6783,7 +6732,7 @@ nfa_regmatch(
 			fprintf(log_fd, "\n");
 #endif
 			result = recursive_regmatch(pim->state, pim,
-						 prog, submatch, m, &listids);
+				    prog, submatch, m, &listids, &listids_len);
 			pim->result = result ? NFA_PIM_MATCH : NFA_PIM_NOMATCH;
 			/* for \@! and \@<! it is a match when the result is
 			 * FALSE */
