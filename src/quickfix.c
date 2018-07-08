@@ -3051,6 +3051,7 @@ qf_list(exarg_T *eap)
     int		qfFileAttr;
     int		qfSepAttr;
     int		qfLineAttr;
+    int		filter_entry;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
     qf_info_T	*qi = &ql_info;
@@ -3120,7 +3121,6 @@ qf_list(exarg_T *eap)
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
 	{
-	    msg_putchar('\n');
 	    if (got_int)
 		break;
 
@@ -3141,6 +3141,20 @@ qf_list(exarg_T *eap)
 		    vim_snprintf((char *)IObuff, IOSIZE, "%2d %s",
 								i, (char *)fname);
 	    }
+
+	    // Support for filtering entries using :filter /pat/ clist
+	    filter_entry = 1;
+	    if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
+		filter_entry &= message_filtered(qfp->qf_module);
+	    if (fname != NULL)
+		filter_entry &= message_filtered(fname);
+	    if (qfp->qf_pattern != NULL)
+		filter_entry &= message_filtered(qfp->qf_pattern);
+	    filter_entry &= message_filtered(qfp->qf_text);
+	    if (filter_entry)
+		goto next_entry;
+
+	    msg_putchar('\n');
 	    msg_outtrans_attr(IObuff, i == qi->qf_lists[qi->qf_curlist].qf_index
 					   ? HL_ATTR(HLF_QFL) : qfFileAttr);
 
@@ -3175,6 +3189,7 @@ qf_list(exarg_T *eap)
 	    out_flush();		/* show one line at a time */
 	}
 
+next_entry:
 	qfp = qfp->qf_next;
 	if (qfp == NULL)
 	    break;
@@ -4186,6 +4201,7 @@ ex_make(exarg_T *eap)
     }
     if (res >= 0)
 	qf_list_changed(qi, qi->qf_curlist);
+
     // Remember the current quickfix list identifier, so that we can
     // check for autocommands changing the current quickfix list.
     save_qfid = qi->qf_lists[qi->qf_curlist].qf_id;
