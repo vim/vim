@@ -327,16 +327,11 @@ dict_add(dict_T *d, dictitem_T *item)
 }
 
 /*
- * Add a number or string entry to dictionary "d".
- * When "str" is NULL use number "nr", otherwise use "str".
+ * Add a number entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_nr_str(
-    dict_T	*d,
-    char	*key,
-    varnumber_T	nr,
-    char_u	*str)
+dict_add_number(dict_T *d, char *key, varnumber_T nr)
 {
     dictitem_T	*item;
 
@@ -344,16 +339,31 @@ dict_add_nr_str(
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_lock = 0;
-    if (str == NULL)
+    item->di_tv.v_type = VAR_NUMBER;
+    item->di_tv.vval.v_number = nr;
+    if (dict_add(d, item) == FAIL)
     {
-	item->di_tv.v_type = VAR_NUMBER;
-	item->di_tv.vval.v_number = nr;
+	dictitem_free(item);
+	return FAIL;
     }
-    else
-    {
-	item->di_tv.v_type = VAR_STRING;
-	item->di_tv.vval.v_string = vim_strsave(str);
-    }
+    return OK;
+}
+
+/*
+ * Add a string entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_string(dict_T *d, char *key, char_u *str)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_lock = 0;
+    item->di_tv.v_type = VAR_STRING;
+    item->di_tv.vval.v_string = str != NULL ? vim_strsave(str) : NULL;
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);

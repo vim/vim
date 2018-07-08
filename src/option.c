@@ -13223,11 +13223,11 @@ get_winbuf_options(int bufopt)
 	    if (varp != NULL)
 	    {
 		if (opt->flags & P_STRING)
-		    dict_add_nr_str(d, opt->fullname, 0L, *(char_u **)varp);
+		    dict_add_string(d, opt->fullname, *(char_u **)varp);
 		else if (opt->flags & P_NUM)
-		    dict_add_nr_str(d, opt->fullname, *(long *)varp, NULL);
+		    dict_add_number(d, opt->fullname, *(long *)varp);
 		else
-		    dict_add_nr_str(d, opt->fullname, *(int *)varp, NULL);
+		    dict_add_number(d, opt->fullname, *(int *)varp);
 	    }
 	}
     }

@@ -689,7 +689,7 @@ dbg_parsearg(
 }
 
 /*
- * ":breakadd".
+ * ":breakadd".  Also used for ":profile".
  */
     void
 ex_breakadd(exarg_T *eap)
@@ -1497,16 +1497,16 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 	return;
     list_append_dict(list, dict);
 
-    dict_add_nr_str(dict, "id", timer->tr_id, NULL);
-    dict_add_nr_str(dict, "time", (long)timer->tr_interval, NULL);
+    dict_add_number(dict, "id", timer->tr_id);
+    dict_add_number(dict, "time", (long)timer->tr_interval);
 
     profile_start(&now);
     remaining = proftime_time_left(&timer->tr_due, &now);
-    dict_add_nr_str(dict, "remaining", (long)remaining, NULL);
+    dict_add_number(dict, "remaining", (long)remaining);
 
-    dict_add_nr_str(dict, "repeat",
-	       (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1), NULL);
-    dict_add_nr_str(dict, "paused", (long)(timer->tr_paused), NULL);
+    dict_add_number(dict, "repeat",
+		    (long)(timer->tr_repeat < 0 ? -1 : timer->tr_repeat + 1));
+    dict_add_number(dict, "paused", (long)(timer->tr_paused));
 
     di = dictitem_alloc((char_u *)"callback");
     if (di != NULL)
