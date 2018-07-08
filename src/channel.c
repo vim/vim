@@ -5742,7 +5742,6 @@ job_info(job_T *job, dict_T *dict)
     item = dictitem_alloc((char_u *)"channel");
     if (item == NULL)
 	return;
-    item->di_tv.v_lock = 0;
     item->di_tv.v_type = VAR_CHANNEL;
     item->di_tv.vval.v_channel = job->jv_channel;
     if (job->jv_channel != NULL)

@@ -1200,10 +1200,8 @@ perl_to_vim(SV *sv, typval_T *rettv)
 
 		    if ((item = dictitem_alloc((char_u *)key)) == NULL)
 			break;
-
-		    item->di_tv.v_type		= VAR_NUMBER;
-		    item->di_tv.v_lock		= 0;
-		    item->di_tv.vval.v_number	= 0;
+		    item->di_tv.v_type = VAR_NUMBER;
+		    item->di_tv.vval.v_number = 0;
 
 		    if (dict_add(dict, item) == FAIL) {
 			dictitem_free(item);

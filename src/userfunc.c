@@ -2390,7 +2390,6 @@ ex_function(exarg_T *eap)
 		/* overwrite existing dict entry */
 		clear_tv(&fudi.fd_di->di_tv);
 	    fudi.fd_di->di_tv.v_type = VAR_FUNC;
-	    fudi.fd_di->di_tv.v_lock = 0;
 	    fudi.fd_di->di_tv.vval.v_string = vim_strsave(name);
 
 	    /* behave like "dict" was used */
