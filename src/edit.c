@@ -4884,18 +4884,13 @@ ins_compl_insert(int in_compl_func)
     dict = dict_alloc_lock(VAR_FIXED);
     if (dict != NULL)
     {
-	dict_add_nr_str(dict, "word", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_str));
-	dict_add_nr_str(dict, "abbr", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_ABBR]));
-	dict_add_nr_str(dict, "menu", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_MENU]));
-	dict_add_nr_str(dict, "kind", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_KIND]));
-	dict_add_nr_str(dict, "info", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_INFO]));
-	dict_add_nr_str(dict, "user_data", 0L,
-		    EMPTY_IF_NULL(compl_shown_match->cp_text[CPT_USER_DATA]));
+	dict_add_string(dict, "word", compl_shown_match->cp_str);
+	dict_add_string(dict, "abbr", compl_shown_match->cp_text[CPT_ABBR]);
+	dict_add_string(dict, "menu", compl_shown_match->cp_text[CPT_MENU]);
+	dict_add_string(dict, "kind", compl_shown_match->cp_text[CPT_KIND]);
+	dict_add_string(dict, "info", compl_shown_match->cp_text[CPT_INFO]);
+	dict_add_string(dict, "user_data",
+				 compl_shown_match->cp_text[CPT_USER_DATA]);
     }
     set_vim_var_dict(VV_COMPLETED_ITEM, dict);
     if (!in_compl_func)
