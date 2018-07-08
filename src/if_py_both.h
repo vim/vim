@@ -1832,7 +1832,6 @@ DictionaryAssItem(
 	    PyErr_NoMemory();
 	    return -1;
 	}
-	di->di_tv.v_lock = 0;
 	di->di_tv.v_type = VAR_UNKNOWN;
 
 	if (dict_add(dict, di) == FAIL)
@@ -2038,7 +2037,6 @@ DictionaryUpdate(DictionaryObject *self, PyObject *args, PyObject *kwargs)
 		    PyErr_NoMemory();
 		    return NULL;
 		}
-		di->di_tv.v_lock = 0;
 		di->di_tv.v_type = VAR_UNKNOWN;
 
 		valObject = PySequence_Fast_GET_ITEM(fast, 1);
@@ -5852,7 +5850,6 @@ pydict_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    dict_unref(dict);
 	    return -1;
 	}
-	di->di_tv.v_lock = 0;
 
 	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{
@@ -5950,7 +5947,6 @@ pymap_to_tv(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	    PyErr_NoMemory();
 	    return -1;
 	}
-	di->di_tv.v_lock = 0;
 
 	if (_ConvertFromPyObject(valObject, &di->di_tv, lookup_dict) == -1)
 	{

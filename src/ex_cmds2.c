@@ -1524,7 +1524,6 @@ add_timer_info(typval_T *rettv, timer_T *timer)
 	    di->di_tv.v_type = VAR_FUNC;
 	    di->di_tv.vval.v_string = vim_strsave(timer->tr_callback);
 	}
-	di->di_tv.v_lock = 0;
     }
 }
 
