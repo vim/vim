@@ -268,7 +268,7 @@ static int on_text(const char bytes[], size_t len, void *user)
   if(!npoints)
   {
     vterm_allocator_free(state->vt, codepoints);
-    return eaten;
+    return (int)eaten;
   }
 
   if(state->gsingle_set && npoints)
