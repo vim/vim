@@ -2004,7 +2004,8 @@ do_one_cmd(
 
 	if (ea.cmdidx == CMD_catch)
 	    skip = !skip && !(cstack->cs_idx >= 0
-			  && (cstack->cs_flags[cstack->cs_idx] & CSF_THROWN));
+			  && (cstack->cs_flags[cstack->cs_idx] & CSF_THROWN)
+			  && !(cstack->cs_flags[cstack->cs_idx] & CSF_CAUGHT));
 	else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
 	    skip = skip || !(cstack->cs_idx >= 0
 			  && !(cstack->cs_flags[cstack->cs_idx]
