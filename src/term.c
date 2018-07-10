@@ -1483,7 +1483,7 @@ parse_builtin_tcap(char_u *term)
 			    if (term_7to8bit(t))
 			    {
 				*t = term_7to8bit(t);
-				STRCPY(t + 1, t + 2);
+				STRMOVE(t + 1, t + 2);
 			    }
 			term_strings[p->bt_entry] = s;
 			set_term_option_alloced(&term_strings[p->bt_entry]);
