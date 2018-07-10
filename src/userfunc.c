@@ -14,13 +14,14 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-/* function flags */
-#define FC_ABORT    0x01	/* abort function on error */
-#define FC_RANGE    0x02	/* function accepts range */
-#define FC_DICT	    0x04	/* Dict function, uses "self" */
-#define FC_CLOSURE  0x08	/* closure, uses outer scope variables */
-#define FC_DELETED  0x10	/* :delfunction used while uf_refcount > 0 */
-#define FC_REMOVED  0x20	/* function redefined while uf_refcount > 0 */
+// flags used in uf_flags
+#define FC_ABORT    0x01	// abort function on error
+#define FC_RANGE    0x02	// function accepts range
+#define FC_DICT	    0x04	// Dict function, uses "self"
+#define FC_CLOSURE  0x08	// closure, uses outer scope variables
+#define FC_DELETED  0x10	// :delfunction used while uf_refcount > 0
+#define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
+#define FC_SANDBOX  0x40	// function defined in the sandbox
 
 /* From user function to hashitem and back. */
 #define UF2HIKEY(fp) ((fp)->uf_name)
@@ -296,6 +297,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	if (prof_def_func())
 	    func_do_profile(fp);
 #endif
+	if (sandbox)
+	    flags |= FC_SANDBOX;
 	fp->uf_varargs = TRUE;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
@@ -688,6 +691,7 @@ call_user_func(
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
     scid_T	save_current_SID;
+    int		using_sandbox = FALSE;
     funccall_T	*fc;
     int		save_did_emsg;
     static int	depth = 0;
@@ -854,6 +858,13 @@ call_user_func(
     save_sourcing_name = sourcing_name;
     save_sourcing_lnum = sourcing_lnum;
     sourcing_lnum = 1;
+
+    if (fp->uf_flags & FC_SANDBOX)
+    {
+	using_sandbox = TRUE;
+	++sandbox;
+    }
+
     /* need space for function name + ("function " + 3) or "[number]" */
     len = (save_sourcing_name == NULL ? 0 : STRLEN(save_sourcing_name))
 						   + STRLEN(fp->uf_name) + 20;
@@ -1020,6 +1031,8 @@ call_user_func(
     if (do_profiling == PROF_YES)
 	script_prof_restore(&wait_start);
 #endif
+    if (using_sandbox)
+	--sandbox;
 
     if (p_verbose >= 12 && sourcing_name != NULL)
     {
@@ -2429,6 +2442,8 @@ ex_function(exarg_T *eap)
 	func_do_profile(fp);
 #endif
     fp->uf_varargs = varargs;
+    if (sandbox)
+	flags |= FC_SANDBOX;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
     fp->uf_script_ID = current_SID;
