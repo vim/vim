@@ -4019,7 +4019,8 @@ ResizeConBufAndWindow(
 	}
     }
 
-    if (!SetConsoleWindowInfo(g_hConOut, TRUE, &srWindowRect))
+    /* In the case of vtp, execute the following two APIs in reverse order. */
+    if (!vtp_working && !SetConsoleWindowInfo(g_hConOut, TRUE, &srWindowRect))
     {
 #ifdef MCH_WRITE_DUMP
 	if (fdDump)
