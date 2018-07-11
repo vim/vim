@@ -3625,9 +3625,12 @@ ins_compl_bs(void)
 
     /* Deleted more than what was used to find matches or didn't finish
      * finding all matches: need to look for matches all over again. */
-    if (curwin->w_cursor.col <= compl_col + compl_length
-						  || ins_compl_need_restart())
+    if (ctrl_x_mode != CTRL_X_EVAL
+	    && (curwin->w_cursor.col <= compl_col + compl_length
+		|| ins_compl_need_restart())) {
+
 	ins_compl_restart();
+    };
 
     vim_free(compl_leader);
     compl_leader = vim_strnsave(line + compl_col, (int)(p - line) - compl_col);
