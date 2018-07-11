@@ -3618,7 +3618,7 @@ ins_compl_bs(void)
      * Respect the 'backspace' option. */
     if ((int)(p - line) - (int)compl_col < 0
 	    || ((int)(p - line) - (int)compl_col == 0
-		&& ctrl_x_mode != CTRL_X_OMNI) || ctrl_x_mode == CTRL_X_EVAL
+		&& ctrl_x_mode != CTRL_X_OMNI)
 	    || (!can_bs(BS_START) && (int)(p - line) - (int)compl_col
 							- compl_length < 0))
 	return K_BS;
