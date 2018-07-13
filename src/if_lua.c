@@ -958,7 +958,9 @@ luaV_dict_newindex(lua_State *L)
     typval_T v;
     if (d->dv_lock)
 	luaL_error(L, "dict is locked");
-    if (key != NULL && *key == NUL)
+    if (key == NULL)
+	return 0;
+    if (*key == NUL)
 	luaL_error(L, "empty key");
     if (!lua_isnil(L, 3)) { /* read value? */
 	luaV_checktypval(L, 3, &v, "setting dict item");
@@ -968,13 +970,15 @@ luaV_dict_newindex(lua_State *L)
     di = dict_find(d, key, -1);
     if (di == NULL) /* non-existing key? */
     {
-	if (lua_isnil(L, 3)) return 0;
+	if (lua_isnil(L, 3))
+	    return 0;
 	di = dictitem_alloc(key);
-	if (di == NULL) return 0;
+	if (di == NULL)
+	    return 0;
 	if (dict_add(d, di) == FAIL)
 	{
-		vim_free(di);
-		return 0;
+	    vim_free(di);
+	    return 0;
 	}
     }
     else
@@ -1066,15 +1070,21 @@ luaV_funcref_call(lua_State *L)
 
     f->args.vval.v_list = list_alloc();
     rettv.v_type = VAR_UNKNOWN; /* as in clear_tv */
-    for (i = 0; i < n; i++) {
-	luaV_checktypval(L, i + 2, &v, "calling funcref");
-	list_append_tv(f->args.vval.v_list, &v);
+    if (f->args.vval.v_list == NULL)
+	status = FAIL;
+    else
+    {
+	for (i = 0; i < n; i++) {
+	    luaV_checktypval(L, i + 2, &v, "calling funcref");
+	    list_append_tv(f->args.vval.v_list, &v);
+	}
+	status = func_call(f->tv.vval.v_string, &f->args,
+							NULL, f->self, &rettv);
+	if (status == OK)
+	    luaV_pushtypval(L, &rettv);
+	clear_tv(&f->args);
+	clear_tv(&rettv);
     }
-    status = func_call(f->tv.vval.v_string, &f->args, NULL, f->self, &rettv);
-    if (status == OK)
-	luaV_pushtypval(L, &rettv);
-    clear_tv(&f->args);
-    clear_tv(&rettv);
     if (status != OK)
 	luaL_error(L, "cannot call funcref");
     return 1;
@@ -1560,13 +1570,20 @@ luaV_dict(lua_State *L)
 		char_u *key;
 		dictitem_T *di;
 		typval_T v;
+
 		lua_pushvalue(L, -2); /* dup key in case it's a number */
 		key = (char_u *) lua_tostring(L, -1);
-		if (key != NULL && *key == NUL)
+		if (key == NULL)
+		{
+		    lua_pushnil(L);
+		    return 1;
+		}
+		if (*key == NUL)
 		    luaL_error(L, "table has empty key");
 		luaV_checktypval(L, -2, &v, "vim.dict"); /* value */
 		di = dictitem_alloc(key);
-		if (di == NULL || dict_add(d, di) == FAIL) {
+		if (di == NULL || dict_add(d, di) == FAIL)
+		{
 		    vim_free(di);
 		    lua_pushnil(L);
 		    return 1;
