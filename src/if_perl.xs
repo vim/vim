@@ -126,11 +126,6 @@
 # define PERL5101_OR_LATER
 #endif
 
-#if (PERL_REVISION == 5) && ((PERL_VERSION > 27) || \
-    (PERL_VERSION == 27) && (PERL_SUBVERSION >= 3))
-# define PERL5273_OR_LATER
-#endif
-
 #ifndef pTHX
 # define pTHX void
 # define pTHX_
@@ -204,7 +199,7 @@ typedef int perl_key;
 # define Perl_gv_stashpv dll_Perl_gv_stashpv
 # define Perl_markstack_grow dll_Perl_markstack_grow
 # define Perl_mg_find dll_Perl_mg_find
-# ifdef PERL5273_OR_LATER
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
 #  define Perl_mg_get dll_Perl_mg_get
 # endif
 # define Perl_newXS dll_Perl_newXS
@@ -350,7 +345,7 @@ static I32* (*Perl_markstack_grow)(pTHX);
 static void (*Perl_markstack_grow)(pTHX);
 # endif
 static MAGIC* (*Perl_mg_find)(pTHX_ SV*, int);
-# ifdef PERL5273_OR_LATER
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
 static int (*Perl_mg_get)(pTHX_ SV*);
 # endif
 static CV* (*Perl_newXS)(pTHX_ char*, XSUBADDR_t, char*);
@@ -505,7 +500,7 @@ static struct {
     {"Perl_gv_stashpv", (PERL_PROC*)&Perl_gv_stashpv},
     {"Perl_markstack_grow", (PERL_PROC*)&Perl_markstack_grow},
     {"Perl_mg_find", (PERL_PROC*)&Perl_mg_find},
-# ifdef PERL5273_OR_LATER
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
     {"Perl_mg_get", (PERL_PROC*)&Perl_mg_get},
 # endif
     {"Perl_newXS", (PERL_PROC*)&Perl_newXS},
