@@ -729,6 +729,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    return FAIL;
 	if (*s != NUL)  /* check for trailing chars after expr */
 	{
+	    clear_tv(rettv);
 	    EMSG2(_(e_invexpr2), s);
 	    return FAIL;
 	}
