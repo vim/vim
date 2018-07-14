@@ -85,7 +85,6 @@ clean:
 	-if exist tiny.vim del tiny.vim
 	-if exist mbyte.vim del mbyte.vim
 	-if exist mzscheme.vim del mzscheme.vim
-	-if exist lua.vim del lua.vim
 	-if exist Xdir1 rd /s /q Xdir1
 	-if exist Xfind rd /s /q Xfind
 	-if exist XfakeHOME rd /s /q XfakeHOME
