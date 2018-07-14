@@ -75,7 +75,6 @@ clean:
 	-@if exist tiny.vim $(DEL) tiny.vim
 	-@if exist mbyte.vim $(DEL) mbyte.vim
 	-@if exist mzscheme.vim $(DEL) mzscheme.vim
-	-@if exist lua.vim $(DEL) lua.vim
 	-@if exist Xdir1 $(DELDIR) Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
