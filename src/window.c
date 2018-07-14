@@ -738,9 +738,48 @@ win_split(int size, int flags)
     if (ERROR_IF_POPUP_WINDOW)
 	return FAIL;
 
+    win_T	*wp_curwin = NULL;
+    int		fnum_curwin = curbuf->b_fnum;
+
     /* When the ":tab" modifier was used open a new tab page instead. */
     if (may_open_tabpage() == OK)
 	return OK;
+
+    /* When the ":curwin" modifier was used, pick an existing window and use
+     * that instead of making a new one. */
+    if (cmdmod.curwin > 0)
+    {
+	int i;
+	wp_curwin = firstwin;
+	for (i = 1; i < cmdmod.curwin; ++i)
+	{
+	    if (wp_curwin->w_next == NULL)
+		break;
+	    else
+		wp_curwin = wp_curwin->w_next;
+	}
+
+	if (!can_abandon(wp_curwin->w_buffer, cmdmod.curwin_force))
+	{
+	    no_write_message();
+	    return FAIL;
+	}
+
+	if (curwin != wp_curwin)
+	{
+	    win_goto(wp_curwin);
+
+	    /* Use the same buffer as the original window which is similar to what
+	     * win_split() does without cmdmod.curwin. */
+	    if (do_ecmd(fnum_curwin, NULL, NULL, NULL, ECMD_ONE,
+			(cmdmod.curwin_force ? ECMD_FORCEIT : ECMD_HIDE), curwin) == FAIL)
+	    {
+		return FAIL;
+	    }
+	}
+
+	return OK;
+    }
 
     /* Add flags from ":vertical", ":topleft" and ":botright". */
     flags |= cmdmod.split;
@@ -756,7 +795,6 @@ win_split(int size, int flags)
 	make_snapshot(SNAP_HELP_IDX);
     else
 	clear_snapshot(curtab, SNAP_HELP_IDX);
-
     return win_split_ins(size, flags, NULL, 0);
 }
 

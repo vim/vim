@@ -279,6 +279,31 @@ occupy the full height.  Example: >
 Opens a vertically split, full-height window on the "tags" file at the far
 left of the Vim window.
 
+						*:cur* *:curwin*
+:[count]cur[win][!] {cmd}
+		Execute {cmd}.  If it contains a command that splits a window,
+		use the current window instead of opening a new one.
+		Doesn't work for |:all|, |:execute| and |:normal|.
+		This fails when changes have been made to the original buffer
+		and 'autowrite' or 'hidden' are not set. Use [!] to forcefully
+		discard any changes to the original buffer.  If [count] is
+		given the command will pick the window specified by [count]
+		instead of the current window.
+
+		Examples: >
+		    :curwin help    " opens help in the current window
+		    :.curwin help   " as above
+		    :+curwin help   " opens help in the window after the
+				    " current one
+		    :-curwin help   " opens help in the window before the
+				    " current one
+		    :1curwin help   " opens help in the top left window
+		    :$curwin help   " opens help in the bottom right window
+		    :+curwin copen  " opens quickfix in the next window
+		    :3curwin! split " opens current buffer in the 3rd window
+				    " and abandon that window's original
+				    " buffer if needed
+
 
 Closing a window
 ----------------

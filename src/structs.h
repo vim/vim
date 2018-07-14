@@ -588,6 +588,8 @@ typedef struct
 # ifdef FEAT_BROWSE_CMD
     int		browse;			// TRUE to invoke file dialog
 # endif
+    int		curwin;			// > 0 when ":curwin" was used
+    int		curwin_force;		// set for :curwin!
     int		split;			// flags for win_split()
     int		tab;			// > 0 when ":tab" was used
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)

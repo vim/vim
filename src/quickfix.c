@@ -4089,6 +4089,7 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     tabpage_T	*prevtab = curtab;
     int		flags = 0;
     win_T	*win;
+    int		ecmd_flags = ECMD_HIDE;
 
     qf_buf = qf_find_buf(qi);
 
@@ -4115,18 +4116,21 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
 	qi->qf_refcount++;
     }
 
+    if (cmdmod.curwin && cmdmod.curwin_force)
+	ecmd_flags = ECMD_FORCEIT;
+
     if (oldwin != curwin)
 	oldwin = NULL;  // don't store info when in another window
     if (qf_buf != NULL)
     {
 	// Use the existing quickfix buffer
 	(void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
-		ECMD_HIDE + ECMD_OLDBUF, oldwin);
+		ecmd_flags + ECMD_OLDBUF, oldwin);
     }
     else
     {
 	// Create a new quickfix buffer
-	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
+	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ecmd_flags, oldwin);
 
 	// save the number of the new buffer
 	qi->qf_bufnr = curbuf->b_fnum;
@@ -4138,13 +4142,16 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     if (!bt_quickfix(curbuf))
 	qf_set_cwindow_options();
 
-    // Only set the height when still in the same tab page and there is no
-    // window to the side.
-    if (curtab == prevtab && curwin->w_width == Columns)
-	win_setheight(height);
-    curwin->w_p_wfh = TRUE;	    // set 'winfixheight'
-    if (win_valid(win))
-	prevwin = win;
+    if (cmdmod.curwin == 0)
+    {
+	// Only set the height when still in the same tab page and there is no
+	// window to the side.
+	if (curtab == prevtab && curwin->w_width == Columns)
+	    win_setheight(height);
+	curwin->w_p_wfh = TRUE;	    // set 'winfixheight'
+	if (win_valid(win))
+	    prevwin = win;
+    }
 
     return OK;
 }

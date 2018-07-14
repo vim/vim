@@ -170,6 +170,47 @@ func Test_window_split_edit_bufnr()
   %bw!
 endfunc
 
+func Test_window_curwin()
+  call assert_equal(1, winnr('$'))
+  split
+  split
+  split
+  call assert_equal(4, winnr('$'))
+
+  call assert_fails('0curwin help', 'E16:')
+  call assert_fails('5curwin help', 'E16:')
+
+  2wincmd w
+  curwin help
+  call assert_equal(2, winnr())
+  3curwin sp
+  call assert_equal(3, winnr())
+  +curwin sp
+  call assert_equal(4, winnr())
+  1curwin sp
+  call assert_equal(1, winnr())
+  call assert_equal(4, winnr('$'))
+
+  bw
+
+  " Now test whether :curwin! works in discarding changes
+  new
+  new
+  put ='text'
+  let l:bufnr = bufnr('%')
+
+  2wincmd w
+  call assert_fails('1curwin sp', 'E37:')
+  call assert_true(bufloaded(l:bufnr))
+  1curwin! sp
+  call assert_false(bufloaded(l:bufnr))
+  call assert_equal(1, winnr())
+  call assert_equal(3, winnr('$'))
+
+  bw!
+  call assert_equal(1, winnr('$'))
+endfunc
+
 func Test_window_preview()
   " Open a preview window
   pedit Xa

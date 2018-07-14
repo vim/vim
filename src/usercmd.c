@@ -1430,6 +1430,7 @@ uc_check_code(
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    {&cmdmod.confirm, "confirm"},
 #endif
+	    {&cmdmod.curwin, "curwin"},
 	    {&cmdmod.hide, "hide"},
 	    {&cmdmod.keepalt, "keepalt"},
 	    {&cmdmod.keepjumps, "keepjumps"},

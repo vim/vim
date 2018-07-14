@@ -4947,6 +4947,10 @@ do_arg_all(
     need_mouse_correct = TRUE;
 # endif
 
+    /* don't use a current window, since the whole point of this command is to
+     * open multiple splits */
+    cmdmod.curwin = 0;
+
     /*
      * Try closing all windows that are not in the argument list.
      * Also close windows that are not full width;

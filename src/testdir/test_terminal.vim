@@ -436,6 +436,14 @@ func Test_terminal_curwin()
   bwipe!
 
   split dummy
+  split dummy2
+  exe '2curwin terminal ' . cmd
+  call assert_equal(2, winnr())
+  call assert_equal(3, winnr('$'))
+  bwipe!
+  bwipe!
+
+  split dummy
   call term_start(cmd, {'curwin': 1})
   call assert_equal(2, winnr('$'))
   bwipe!

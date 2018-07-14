@@ -1252,6 +1252,7 @@ tag		command		action ~
 |:cunmap|	:cu[nmap]	like ":unmap" but for Command-line mode
 |:cunabbrev|	:cuna[bbrev]	like ":unabbrev" but for Command-line mode
 |:cunmenu|	:cunme[nu]	remove menu for Command-line mode
+|:curwin|	:cur[win]	make new split use current window instead
 |:cwindow|	:cw[indow]	open or close quickfix window
 |:delete|	:d[elete]	delete lines
 |:delmarks|	:delm[arks]	delete marks
