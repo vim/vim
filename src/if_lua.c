@@ -253,14 +253,23 @@ void (*dll_lua_pushcclosure) (lua_State *L, lua_CFunction fn, int n);
 void (*dll_lua_pushboolean) (lua_State *L, int b);
 void (*dll_lua_pushlightuserdata) (lua_State *L, void *p);
 void (*dll_lua_getfield) (lua_State *L, int idx, const char *k);
+#if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawget) (lua_State *L, int idx);
 void (*dll_lua_rawgeti) (lua_State *L, int idx, int n);
+#else
+int (*dll_lua_rawget) (lua_State *L, int idx);
+int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
+#endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
 void *(*dll_lua_newuserdata) (lua_State *L, size_t sz);
 int (*dll_lua_getmetatable) (lua_State *L, int objindex);
 void (*dll_lua_setfield) (lua_State *L, int idx, const char *k);
 void (*dll_lua_rawset) (lua_State *L, int idx);
+#if LUA_VERSION_NUM <= 502
 void (*dll_lua_rawseti) (lua_State *L, int idx, int n);
+#else
+void (*dll_lua_rawseti) (lua_State *L, int idx, lua_Integer n);
+#endif
 int (*dll_lua_setmetatable) (lua_State *L, int objindex);
 int (*dll_lua_next) (lua_State *L, int idx);
 /* libs */
@@ -962,7 +971,8 @@ luaV_dict_newindex(lua_State *L)
 	return 0;
     if (*key == NUL)
 	luaL_error(L, "empty key");
-    if (!lua_isnil(L, 3)) { /* read value? */
+    if (!lua_isnil(L, 3)) /* read value? */
+    {
 	luaV_checktypval(L, 3, &v, "setting dict item");
 	if (d->dv_scope == VAR_DEF_SCOPE && v.v_type == VAR_FUNC)
 	    luaL_error(L, "cannot assign funcref to builtin scope");
@@ -1074,7 +1084,8 @@ luaV_funcref_call(lua_State *L)
 	status = FAIL;
     else
     {
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; i++)
+	{
 	    luaV_checktypval(L, i + 2, &v, "calling funcref");
 	    list_append_tv(f->args.vval.v_list, &v);
 	}
@@ -1531,13 +1542,16 @@ luaV_list(lua_State *L)
     else
     {
 	luaV_newlist(L, l);
-	if (initarg) { /* traverse table to init dict */
+	if (initarg) /* traverse table to init list */
+	{
 	    int notnil, i = 0;
 	    typval_T v;
-	    do {
+	    do
+	    {
 		lua_rawgeti(L, 1, ++i);
 		notnil = !lua_isnil(L, -1);
-		if (notnil) {
+		if (notnil)
+		{
 		    luaV_checktypval(L, -1, &v, "vim.list");
 		    list_append_tv(l, &v);
 		}
