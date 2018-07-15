@@ -2347,7 +2347,7 @@ Added							*added-5.2*
 Support for mapping numeric keypad +,-,*,/ keys. (Negri)
 When not mapped, they produce the normal character.
 
-Win32 GUI: When directory dropped on Gvim, cd there and edit new buffer.
+Win32 GUI: When directory dropped on gVim, cd there and edit new buffer.
 (Negri)
 
 Win32 GUI: Made CTRL-Break work as interrupt, so that CTRL-C can be
@@ -7615,7 +7615,7 @@ VMS doesn't always have lstat(), added an #ifdef around it.
 
 Added a few corrections for the Macintosh. (Axel Kielhorn)
 
-Win32: Gvimext could not edit more than a few files at once, the length of the
+Win32: GvimExt could not edit more than a few files at once, the length of the
 argument was fixed.
 
 

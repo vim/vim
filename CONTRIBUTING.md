@@ -51,4 +51,17 @@ Look in the header of the file for the name and email address.
 The maintainer will take care of issues and send updates to Bram for 
 distribution with Vim.
 
-If the maintainer does not react, contact the vim-dev maillist.
+If the maintainer does not respond, contact the vim-dev maillist.
+
+
+# Translations
+
+Translating messages and runtime files is very much appreciated!  These things can be translated:
+*   Messages in Vim, see src/po/README.txt
+*   Menus, see runtime/lang/README.txt
+*   Vim tutor, see runtime/tutor/README.txt
+*   Manual pages, see runtime/doc/*.1 for examples
+*   Desktop icon, see runtime/vim.desktop and runtime/gvim.desktop
+
+The help files can be translated and made available separately.
+See https://www.vim.org/translations.php for examples.

@@ -4936,6 +4936,9 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 			:let list_is_on = gettabwinvar(1, 2, '&list')
 			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
 <
+		To obtain all window-local variables use: >
+			gettabwinvar({tabnr}, {winnr}, '&')
+
 getwininfo([{winid}])					*getwininfo()*
 		Returns information about windows as a List with Dictionaries.
 
@@ -4949,8 +4952,6 @@ getwininfo([{winid}])					*getwininfo()*
 		Each List item is a Dictionary with the following entries:
 			bufnr		number of buffer in the window
 			height		window height (excluding winbar)
-			winbar		1 if the window has a toolbar, 0
-					otherwise
 			loclist		1 if showing a location list
 					{only with the +quickfix feature}
 			quickfix	1 if quickfix or location list window
@@ -4961,15 +4962,14 @@ getwininfo([{winid}])					*getwininfo()*
 			variables	a reference to the dictionary with
 					window-local variables
 			width		window width
+			winbar		1 if the window has a toolbar, 0
+					otherwise
 			wincol		leftmost screen column of the window,
 					col from |win_screenpos()|
 			winid		|window-ID|
 			winnr		window number
 			winrow		topmost screen column of the window,
 					row from |win_screenpos()|
-
-		To obtain all window-local variables use: >
-			gettabwinvar({tabnr}, {winnr}, '&')
 
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a list with two numbers, the result of
@@ -11580,7 +11580,7 @@ The sandbox is also used for the |:sandbox| command.
 
 These items are not allowed in the sandbox:
 	- changing the buffer text
-	- defining or changing mapping, autocommands, functions, user commands
+	- defining or changing mapping, autocommands, user commands
 	- setting certain options (see |option-summary|)
 	- setting certain v: variables (see |v:var|)  *E794*
 	- executing a shell command
@@ -11602,6 +11602,7 @@ location.  Insecure in this context are:
 - sourcing a .vimrc or .exrc in the current directory
 - while executing in the sandbox
 - value coming from a modeline
+- executing a function that was defined in the sandbox
 
 Note that when in the sandbox and saving an option value and restoring it, the
 option will still be marked as it was set in the sandbox.

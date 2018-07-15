@@ -372,7 +372,7 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 
        ** Type	p  to put previously deleted text after the cursor. **
 
-  1. Move the cursor to the first ---> line below.
+  1. Move the cursor to the first line below marked --->.
 
   2. Type  dd  to delete the line and store it in a Vim register.
 
@@ -447,7 +447,7 @@ Notice that  ce  deletes the word and places you in Insert mode.
 
   2. The motions are the same, such as   w (word) and  $ (end of line).
 
-  3. Move to the first line below marked --->.
+  3. Move the cursor to the first line below marked --->.
 
   4. Move the cursor to the first error.
 
@@ -740,7 +740,7 @@ NOTE:  You can also read the output of an external command.  For example,
 
 	     ** Type  a  to insert text AFTER the cursor. **
 
-  1. Move the cursor to the start of the line below marked --->.
+  1. Move the cursor to the start of the first line below marked --->.
 
   2. Press  e  until the cursor is on the end of  li .
 

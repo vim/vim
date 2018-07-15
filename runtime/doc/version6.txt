@@ -2967,7 +2967,7 @@ DOS and Windows: Expanding *.vim also matched file.vimfoo.  Expand path like
 Unix to avoid problems with Windows dir functions.  Merged the DOS and Win32
 functions.
 
-Win32: Gvimext could not edit more than a few files at once, the length of the
+Win32: GvimExt could not edit more than a few files at once, the length of the
 argument was fixed.
 
 "ls -1 * | xargs vim" worked, but the input was in cooked mode.  Now switch to
