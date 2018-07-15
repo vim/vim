@@ -542,7 +542,7 @@ Nota: ¡Esto es muy útil en la detección de errores en un programa con
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	       Lección 5.3: UN MANDATO DE ESCRITURA SELECTIVO
 
-   ** Para guardar parte del fuchero escriba   :#,# NOMBRE_DEL_FICHERO **
+   ** Para guardar parte del fichero escriba   :#,# NOMBRE_DEL_FICHERO **
 
 
   1. Escriba de nuevo, una vez más,  :!dir  o  :!ls  para obtener una lista
