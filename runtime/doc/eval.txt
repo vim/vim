@@ -2196,7 +2196,7 @@ gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
-getwininfo([{winid}])		List	list of windows
+getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of the Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
 getwinposy()			Number	Y coord in pixels of the Vim window
@@ -4936,6 +4936,41 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 			:let list_is_on = gettabwinvar(1, 2, '&list')
 			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
 <
+getwininfo([{winid}])					*getwininfo()*
+		Returns information about windows as a List with Dictionaries.
+
+		If {winid} is given Information about the window with that ID
+		is returned.  If the window does not exist the result is an
+		empty list.
+
+		Without {winid} information about all the windows in all the
+		tab pages is returned.
+
+		Each List item is a Dictionary with the following entries:
+			bufnr		number of buffer in the window
+			height		window height (excluding winbar)
+			winbar		1 if the window has a toolbar, 0
+					otherwise
+			loclist		1 if showing a location list
+					{only with the +quickfix feature}
+			quickfix	1 if quickfix or location list window
+					{only with the +quickfix feature}
+			terminal	1 if a terminal window
+					{only with the +terminal feature}
+			tabnr		tab page number
+			variables	a reference to the dictionary with
+					window-local variables
+			width		window width
+			wincol		leftmost screen column of the window,
+					col from |win_screenpos()|
+			winid		|window-ID|
+			winnr		window number
+			winrow		topmost screen column of the window,
+					row from |win_screenpos()|
+
+		To obtain all window-local variables use: >
+			gettabwinvar({tabnr}, {winnr}, '&')
+
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a list with two numbers, the result of
 		getwinposx() and getwinposy() combined: 
@@ -4968,39 +5003,6 @@ getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 		a timeout of 100 msec).
 		The result will be -1 if the information is not available.
 		The value can be used with `:winpos`.
-
-getwininfo([{winid}])					*getwininfo()*
-		Returns information about windows as a List with Dictionaries.
-
-		If {winid} is given Information about the window with that ID
-		is returned.  If the window does not exist the result is an
-		empty list.
-
-		Without {winid} information about all the windows in all the
-		tab pages is returned.
-
-		Each List item is a Dictionary with the following entries:
-			bufnr		number of buffer in the window
-			height		window height (excluding winbar)
-			winbar		1 if the window has a toolbar, 0
-					otherwise
-			loclist		1 if showing a location list
-					{only with the +quickfix feature}
-			quickfix	1 if quickfix or location list window
-					{only with the +quickfix feature}
-			terminal	1 if a terminal window
-					{only with the +terminal feature}
-			tabnr		tab page number
-			variables	a reference to the dictionary with
-					window-local variables
-			width		window width
-			wincol		leftmost screen column of the window
-			winid		|window-ID|
-			winnr		window number
-			winrow		topmost screen column of the window
-
-		To obtain all window-local variables use: >
-			gettabwinvar({tabnr}, {winnr}, '&')
 
 getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
 		Like |gettabwinvar()| for the current tabpage.
@@ -9049,7 +9051,7 @@ win_id2win({expr})					*win_id2win()*
 win_screenpos({nr})					*win_screenpos()*
 		Return the screen position of window {nr} as a list with two
 		numbers: [row, col].  The first window always has position
-		[1, 1].
+		[1, 1], unless there is a tabline, then it is [2, 1].
 		{nr} can be the window number or the |window-ID|.
 		Return [0, 0] if the window cannot be found in the current
 		tabpage.
