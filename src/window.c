@@ -18,6 +18,7 @@ static void frame_setwidth(frame_T *curfrp, int width);
 static void win_exchange(long);
 static void win_rotate(int, int);
 static void win_totop(int size, int flags);
+static void win_moveinto(int size, int vert, int above);
 static void win_equal_rec(win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height);
 static win_T *win_free_mem(win_T *win, int *dirp, tabpage_T *tp);
 static frame_T *win_altframe(win_T *win, tabpage_T *tp);
@@ -587,6 +588,16 @@ wingotofile:
 
 		    case 'T':	    // CTRL-W gT: go to previous tab page
 			goto_tabpage(-(int)Prenum1);
+			break;
+
+		    // move window into a new split of another window
+		    case 'k':
+		    case 'j':
+		    case 'h':
+		    case 'l':
+			CHECK_CMDWIN;
+			win_moveinto((int)Prenum, xchar == 'h' || xchar == 'l',
+				xchar == 'h' || xchar == 'k');
 			break;
 
 		    default:
@@ -1697,6 +1708,91 @@ win_totop(int size, int flags)
 #if defined(FEAT_GUI)
     /* When 'guioptions' includes 'L' or 'R' may have to remove or add
      * scrollbars.  Have to update them anyway. */
+    gui_may_update_scrollbars();
+#endif
+}
+
+/*
+ * Move the current window into a split of the window in a given direction
+ */
+    static void
+win_moveinto(int size, int vert, int above)
+{
+    int		dir;
+    int 	flags;
+    win_T	*targetwin;
+    win_T	*wp;
+    int		height = curwin->w_height;
+
+    if (ONE_WINDOW)
+    {
+	beep_flush();
+	return;
+    }
+
+    // target window is the neighbor in the wincmd h,j,k,l direction
+    if (vert)
+	targetwin = win_horz_neighbor(curtab, curwin, above, 1);
+    else
+	targetwin = win_vert_neighbor(curtab, curwin, above, 1);
+
+    // if no target window, behave like wincmd H,J,K,L
+    if (targetwin == curwin)
+    {
+	win_totop(size, (vert ? WSP_VERT : 0)
+				| (above ? WSP_TOP : WSP_BOT));
+	return;
+    }
+
+    // Make the split left/above depending on relative positions;
+    // - If the current window is at least as big as the target then
+    //   compare the cursor position and the midpoint of the target window
+    // - If the current window is smaller than the target
+    //   then compare the midpoints of the current and target windows
+    if (vert)
+    {
+	if (curwin->w_winrow
+		+ (curwin->w_height >= targetwin->w_height
+			? curwin->w_wrow : curwin->w_height / 2)
+		<= targetwin->w_winrow + targetwin->w_height / 2)
+	    flags = WSP_ABOVE;
+	else
+	    flags = WSP_BELOW;
+    }
+    else
+    {
+	if (curwin->w_wincol
+		+ (curwin->w_width >= targetwin->w_width
+			? curwin->w_wcol : curwin->w_width / 2)
+		<= targetwin->w_wincol + targetwin->w_width / 2)
+	    flags = WSP_VERT | WSP_ABOVE;
+	else
+	    flags = WSP_VERT | WSP_BELOW;
+    }
+
+    // jump to the new window but remember the current one
+    wp = curwin;
+    win_goto(targetwin);
+
+    // remove the old window and frame from the tree of frames
+    (void)winframe_remove(wp, &dir, NULL);
+    win_remove(wp, NULL);
+    last_status(FALSE);	    // may need to remove last status line
+    (void)win_comp_pos();   // recompute window positions
+
+    // split a window on the desired side and put the old window there
+    (void)win_split_ins(size, flags, wp, dir);
+
+    if (!(flags & WSP_VERT))
+    {
+	win_setheight(height);
+	if (p_ea)
+	    win_equal(curwin, TRUE, 'v');
+    }
+
+#if defined(FEAT_GUI)
+    // When 'guioptions' includes 'L' or 'R' may have to remove or add
+    // scrollbars.  Have to update them anyway.
     gui_may_update_scrollbars();
 #endif
 }

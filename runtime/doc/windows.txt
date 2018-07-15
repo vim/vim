@@ -508,7 +508,6 @@ CTRL-W H	Move the current window to be at the far left, using the
 		current window and then creating another one with
 		":vert topleft split", except that the current window contents
 		is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
@@ -516,7 +515,38 @@ CTRL-W L	Move the current window to be at the far right, using the full
 		current window and then creating another one with
 		":vert botright split", except that the current window
 		contents is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
+
+						*CTRL-W_gk*
+CTRL-W g k	Move the current window to a new vertical split of the window
+		above the current window.  This is similar to using |CTRL-W_k|
+		to move to a different window, creating a new split using
+		":vsplit" but having the same contents as the previous window,
+		and then closing the previous window.  If there is no window
+		above the current window, this behaves like |CTRL-W_K|.
+
+						*CTRL-W_gj*
+CTRL-W g j	Move the current window to a new vertical split of the window
+		below the current window.  This is similar to using |CTRL-W_j|
+		to move to a different window, creating a new split with
+		":vsplit" but having the same contents as the previous window,
+		and then closing the previous window.  If there is no window
+		below the current window, this behaves like |CTRL-W_J|.
+
+						*CTRL-W_gh*
+CTRL-W g h	Move the current window to a new horizontal split of the window
+		left of the current window.  This is similar to using |CTRL-W_h|
+		to move to a different window, creating a new split with
+		":split" but having the same contents as the previous window,
+		and then closing the previous window.  If there is no window
+		to the left of the current window, this behaves like |CTRL-W_H|.
+
+						*CTRL-W_gl*
+CTRL-W g l	Move the current window to a new horizontal split of the window
+		right of the current window.  This is similar to using |CTRL-W_l|
+		to move to a different window, creating a new split with
+		":split" but having the same contents as the previous window,
+		and then closing the previous window.  If there is no window
+		to the right of the current window, this behaves like |CTRL-W_L|.
 
 						*CTRL-W_T*
 CTRL-W T	Move the current window to a new tab page.  This fails if

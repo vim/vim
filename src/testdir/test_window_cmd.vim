@@ -788,4 +788,32 @@ func Test_winnr()
   only | tabonly
 endfunc
 
+func Test_win_splitmove()
+  edit a
+  leftabove split b
+  leftabove vsplit c
+  leftabove split d
+  wincmd gl
+  call assert_equal(bufname(winbufnr(1)), 'c')
+  call assert_equal(bufname(winbufnr(2)), 'd')
+  call assert_equal(bufname(winbufnr(3)), 'b')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  wincmd gj
+  wincmd gj
+  call assert_equal(bufname(winbufnr(1)), 'c')
+  call assert_equal(bufname(winbufnr(2)), 'b')
+  call assert_equal(bufname(winbufnr(3)), 'd')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  wincmd gk
+  call assert_equal(bufname(winbufnr(1)), 'd')
+  call assert_equal(bufname(winbufnr(2)), 'c')
+  call assert_equal(bufname(winbufnr(3)), 'b')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  wincmd gh
+  call assert_equal(bufname(winbufnr(1)), 'd')
+  call assert_equal(bufname(winbufnr(2)), 'c')
+  call assert_equal(bufname(winbufnr(3)), 'b')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
