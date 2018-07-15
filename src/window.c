@@ -1789,6 +1789,50 @@ win_totop(int size, int flags)
 }
 
 /*
+ * Move the window wp into a new split of targetwin in a given direction
+ */
+    void
+win_move_into_split(win_T *wp, win_T *targetwin, int size, int flags)
+{
+    int	    dir;
+    int	    height = wp->w_height;
+    win_T   *oldwin = curwin;
+
+    if (wp == targetwin)
+	return;
+
+    // Jump to the target window
+    if (curwin != targetwin)
+	win_goto(targetwin);
+
+    // Remove the old window and frame from the tree of frames
+    (void)winframe_remove(wp, &dir, NULL);
+    win_remove(wp, NULL);
+    last_status(FALSE);	    // may need to remove last status line
+    (void)win_comp_pos();   // recompute window positions
+
+    // Split a window on the desired side and put the old window there
+    (void)win_split_ins(size, flags, wp, dir);
+
+    // If splitting horizontally, try to preserve height
+    if (size == 0 && !(flags & WSP_VERT))
+    {
+	win_setheight_win(height, wp);
+	if (p_ea)
+	    win_equal(wp, TRUE, 'v');
+    }
+
+#if defined(FEAT_GUI)
+    // When 'guioptions' includes 'L' or 'R' may have to remove or add
+    // scrollbars.  Have to update them anyway.
+    gui_may_update_scrollbars();
+#endif
+
+    if (oldwin != curwin)
+	win_goto(oldwin);
+}
+
+/*
  * Move window "win1" to below/right of "win2" and make "win1" the current
  * window.  Only works within the same frame!
  */

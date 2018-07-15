@@ -9,6 +9,7 @@ int win_valid_any_tab(win_T *win);
 int win_count(void);
 int make_windows(int count, int vertical);
 void win_move_after(win_T *win1, win_T *win2);
+void win_move_into_split(win_T *wp, win_T *targetwin, int size, int flags);
 void win_equal(win_T *next_curwin, int current, int dir);
 void close_windows(buf_T *buf, int keep_curwin);
 int one_window(void);

@@ -744,6 +744,46 @@ f_win_screenpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "win_splitmove()" function
+ */
+    void
+f_win_splitmove(typval_T *argvars, typval_T *rettv)
+{
+    win_T   *wp;
+    win_T   *targetwin;
+    int     flags = 0, size = 0;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    targetwin = find_win_by_nr_or_id(&argvars[1]);
+
+    if (wp == NULL || targetwin == NULL || wp == targetwin)
+    {
+        emsg(_(e_invalwindow));
+        return;
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+        dict_T      *d;
+        dictitem_T  *di;
+        if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
+        {
+            emsg(_(e_invarg));
+            return;
+        }
+
+        d = argvars[2].vval.v_dict;
+        if (dict_get_number(d, (char_u *)"vertical"))
+            flags |= WSP_VERT;
+        if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
+            flags |= tv_get_number(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+        size = (int)dict_get_number(d, (char_u *)"size");
+    }
+
+    win_move_into_split(wp, targetwin, size, flags);
+}
+
+/*
  * "winbufnr(nr)" function
  */
     void
