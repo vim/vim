@@ -1023,7 +1023,7 @@ msgstr "E148: У global недостаје регуларни израз"
 
 #, c-format
 msgid "Pattern found in every line: %s"
-msgstr "Шаблон је пронаћен у свакој линији: %s"
+msgstr "Шаблон је пронађен у свакој линији: %s"
 
 #, c-format
 msgid "Pattern not found: %s"
@@ -1103,7 +1103,7 @@ msgid "E158: Invalid buffer name: %s"
 msgstr "E158: Неисправно име бафера: %s"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Не може да се скочи на бафер који нема име`"
+msgstr "E934: Не може да се скочи на бафер који нема име"
 
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
@@ -1134,7 +1134,7 @@ msgstr "Старавред = \"%s\""
 
 #, c-format
 msgid "Newval = \"%s\""
-msgstr "Новаавред = \"%s\""
+msgstr "Новавред = \"%s\""
 
 #, c-format
 msgid "line %ld: %s"
@@ -1195,7 +1195,7 @@ msgid "E164: Cannot go before first file"
 msgstr "E164: Не може да се иде испред прве датотеке"
 
 msgid "E165: Cannot go beyond last file"
-msgstr "E165: Не може да се иде испред прве датотеке"
+msgstr "E165: Не може да се иде иза последње датотеке"
 
 #, c-format
 msgid "E666: compiler not supported: %s"
@@ -1232,11 +1232,11 @@ msgstr "Директоријум не може да буде извор: \"%s\""
 
 #, c-format
 msgid "could not source \"%s\""
-msgstr "не може бити извор \"%s\""
+msgstr "не може да се прибави \"%s\""
 
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "линија %ld: не може бити извор \"%s\""
+msgstr "линија %ld: не може да се прибави \"%s\""
 
 #, c-format
 msgid "sourcing \"%s\""
@@ -6404,7 +6404,7 @@ msgid "Edit with existing Vim - "
 msgstr "Уређуј са постојећим Vim - "
 
 msgid "Edits the selected file(s) with Vim"
-msgstr "Уређује селектовауе датотеку(е) са Vim-ом"
+msgstr "Уређује селектовану датотеку(е) са Vim-ом"
 
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
