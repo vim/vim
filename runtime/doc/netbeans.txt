@@ -409,9 +409,9 @@ defineAnnoType typeNum typeName tooltip glyphFile fg bg
 		Vim will define a sign for the annotation.
 		When color is a number, this is the "#rrggbb" Red, Green and
 		Blue values of the color (see |gui-colors|) and the
-		highlighting is only defined for GVim.
+		highlighting is only defined for gVim.
 		When color is a name, this color is defined both for Vim
-		running in a color terminal and for GVim.
+		running in a color terminal and for gVim.
 		When both "fg" and "bg" are "none" no line highlighting is
 		used (new in version 2.1).
 		When "glyphFile" is empty, no text sign is used (new in

@@ -442,7 +442,7 @@ with the Intellimouse driver 2.2 and when "Universal Scrolling" is turned on.
 
 XPM support						*w32-xpm-support*
 
-Gvim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
+GVim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
 See the Make_mvc.mak file for instructions, search for XPM.
 
 To try out if XPM support works do this: >

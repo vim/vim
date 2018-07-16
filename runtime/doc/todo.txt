@@ -38,7 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-testdir: remove use of lua.vim from makefiles and test1.in
+Crash when ui_breakcheck() called from regexec() calls regexec() recursively.
+(Andy Massimino, #3175)
+Make regexp work recursively, store all globals in "rex"?
 
 Prompt buffer:
 - Add a command line history.
@@ -88,11 +90,16 @@ On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
+Patch to fix that +packages is always in output of :version.
+(thinca, #3198)  reported by Takuya Fujiwara
+
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
+
+Patch replacing imp with importlib. (#3163)
 
 Using ":file" in quickfix window during an autocommand doesn't work. 
 (Jason Franklin, 2018 May 23) Allow for using it when there is no argument.
@@ -104,8 +111,6 @@ Shafran, 2018 Jun 23, #3072)  Proposed patch by Aidan, 2018 Jun 24.
 
 Patch to set w_set_curswant when setting the cursor in language interfaces.
 (David Hotham, 2018 Jun 22, #3060)
-
-Patch for Lua 5.3. (Ken Takata, 2018 Jul 5, #3157)
 
 Patch to make CTRL-W <CR> work properly in a quickfix window. (Jason Franklin,
 2018 May 30)
@@ -127,6 +132,8 @@ Patch to make :help work for tags with a ?. (Hirohito Higashi, 2018 May 28)
 Patch to adjust to DPI setting for GTK. (Roel van de Kraats, 2017 Nov 20,
 #2357)
 
+Patch to fix window size when using VTP. (Nobuhiro Takasaki, #3164)
+
 Compiler warnings (geeknik, 2017 Oct 26):
 - signed integer overflow in do_sub() (#2249)
 - signed integer overflow in get_address() (#2248)
@@ -145,6 +152,10 @@ Patch to stack and pop the window title and icon. (IWAMOTO Kouichi, 2018 Jun
     title, which can be slow.  Can also get the title with "<Esc>[21t", no
     need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
 Using title stack probably works better.
+
+When a function is defined in the sandbox (with :function or as a lambda)
+always execute it in the sandbox.  (#3182)
+Remove "safe" argument from call_vim_function(), it's always FALSE.
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -177,6 +188,8 @@ script or function.
 
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
+
+Patch to fix profiling condition lines. (Ozaki Kiichi,, 2017 Dec 26, #2499)
 
 When using a menu item while the "more" prompt is displayed doesn't work well.
 E.g. after using help->version.  Have a key that ends the "more" prompt and
@@ -249,6 +262,7 @@ sequence of these commands. (Andy Stewart, 2018 Mar 16)
 ch_sendraw() with long string does not try to read in between, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
 Bosch, 2018 Jan 13, #2548)
+Perhaps just make chunks of 1024 bytes?
 
 Patch to include a cfilter plugin to filter quickfix/location lists.
 (Yegappan Lakshmanan, 2018 May 12)
@@ -405,9 +419,6 @@ Perhaps use a vimcontext / endvimcontext command block.
 
 After using :noautocmd CursorMoved may still trigger. (Andy Stewart, 2017 Sep
 13, #2084).  Set old position after the command.
-
-Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
-Still happens (2017 Jul 9)
 
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
@@ -720,8 +731,6 @@ Does this also fix #1408 ?
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
-Patch to fix profiling condition lines. (Ozaki Kiichi,, 2017 Dec 26, #2499)
-
 Patch to be able to separately map CTRL-H and BS on Windows.
 (Linwei, 2017 Jul 11, #1833)
 
@@ -1018,9 +1027,6 @@ Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
 Feature request: add the "al" text object, to manipulate a screen line.
 Especially useful when using 'linebreak'
 
-Access to uninitialized memory in match_backref() regexp_nda.c:4882
-(Dominique Pelle, 2015 Nov 6)
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
@@ -1070,7 +1076,7 @@ Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
 Patch to add Error autocommand. (Anton Lindqvist, 2016 Feb 17)
 Only remembers one error.
 
-Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+GVim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
@@ -1854,7 +1860,7 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 Don't call check_restricted() for histadd(), setbufvar(), settabvar(),
 setwinvar().
 
-Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
+Patch for gVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
@@ -2437,7 +2443,7 @@ go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
 
 Windows installer could add a "open in new tab of existing Vim" menu entry.
-Gvimext: patch to add "Edit with single Vim &tabbed" menu entry.
+GvimExt: patch to add "Edit with single Vim &tabbed" menu entry.
 Just have two choices, always using one Vim and selecting between using an
 argument list or opening each file in a separate tab.
 (Erik Falor, 2008 May 21, 2008 Jun 26)
@@ -2513,7 +2519,7 @@ C++ indenting wrong with "=". (James Kanze, 2007 Jan 26)
 When using --remote-silent and the file name matches 'wildignore' get an E479
 error.  without --remote-silent it works fine. (Ben Fritz, 2008 Jun 20)
 
-Gvim: dialog for closing Vim should check if Vim is busy writing a file.  Then
+GVim: dialog for closing Vim should check if Vim is busy writing a file.  Then
 use a different dialog: "busy saving, really quit? yes / no".
 
 Check other interfaces for changing curbuf in a wrong way.  Patch like for
