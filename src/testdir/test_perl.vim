@@ -221,7 +221,7 @@ endfunc
 
 " Run first to get a clean namespace
 func Test_000_SvREFCNT()
-  for i in range(10)
+  for i in range(8)
     exec 'new X'.i
   endfor
   new t
