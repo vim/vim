@@ -169,23 +169,6 @@ if s:ext =~? '\.hr'
   endif
 endif
 
-" Bulgarian is only available in utf-8
-if s:ext =~? '\.bg'
-  let s:ext = ".bg.utf-8"
-endif
-" Latvian is only available in utf-8
-if s:ext =~? '\.lv'
-  let s:ext = ".lv.utf-8"
-endif
-" Vietnamese is only available in utf-8
-if s:ext =~? '\.vi'
-  let s:ext = ".vi.utf-8"
-endif
-" Ukrainian is only available in utf-8
-if s:ext =~? '\.uk'
-  let s:ext = ".uk.utf-8"
-endif
-
 " If 'encoding' is utf-8 s:ext must end in utf-8.
 if &enc == 'utf-8' && s:ext !~ '\.utf-8'
   let s:ext .= '.utf-8'
@@ -198,6 +181,9 @@ let s:tutorxx = $VIMRUNTIME . s:tutorfile . s:ext
 " 3. Finding the file:
 if filereadable(s:tutorxx)
   let $TUTOR = s:tutorxx
+elseif s:ext !~ '\.utf-8' && filereadable(s:tutorxx . ".utf-8")
+  " Fallback to utf-8 if available.
+  let $TUTOR = s:tutorxx . ".utf-8"
 else
   let $TUTOR = $VIMRUNTIME . s:tutorfile
   echo "The file " . s:tutorxx . " does not exist.\n"
