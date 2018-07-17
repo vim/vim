@@ -56,6 +56,9 @@ else
   finish
 endif
 
+let s:keepcpo = &cpo
+set cpo&vim
+
 " The command that starts debugging, e.g. ":Termdebug vim".
 " To end type "quit" in the gdb window.
 command -nargs=* -complete=file -bang Termdebug call s:StartDebug(<bang>0, <f-args>)
@@ -943,3 +946,6 @@ func s:BufUnloaded()
     endif
   endfor
 endfunc
+
+let &cpo = s:keepcpo
+unlet s:keepcpo

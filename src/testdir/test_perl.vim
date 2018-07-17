@@ -219,20 +219,42 @@ EOF
   call assert_equal(['&VIM::Msg', 'STDOUT', 'STDERR'], split(l:out, "\n"))
 endfunc
 
-func Test_SvREFCNT()
+" Run first to get a clean namespace
+func Test_000_SvREFCNT()
+  for i in range(8)
+    exec 'new X'.i
+  endfor
   new t
   perl <<--perl
+#line 5 "Test_000_SvREFCNT()"
   my ($b, $w);
-  $b = $curbuf for 0 .. 10;
-  $w = $curwin for 0 .. 10;
+
+  $b = $curbuf      for 0 .. 100;
+  $w = $curwin      for 0 .. 100;
+  () = VIM::Buffers for 0 .. 100;
+  () = VIM::Windows for 0 .. 100;
+
   VIM::DoCommand('bw! t');
   if (exists &Internals::SvREFCNT) {
       my $cb = Internals::SvREFCNT($$b);
       my $cw = Internals::SvREFCNT($$w);
-      VIM::Eval("assert_equal(2, $cb)");
-      VIM::Eval("assert_equal(2, $cw)");
+      VIM::Eval("assert_equal(2, $cb, 'T1')");
+      VIM::Eval("assert_equal(2, $cw, 'T2')");
+      foreach ( VIM::Buffers, VIM::Windows ) {
+	  my $c = Internals::SvREFCNT($_);
+	  VIM::Eval("assert_equal(2, $c, 'T3')");
+	  $c = Internals::SvREFCNT($$_);
+	  # Why only one ref?
+	  # Look wrong but work.  Maybe not portable...
+	  VIM::Eval("assert_equal(1, $c, 'T4')");
+      }
+      $cb = Internals::SvREFCNT($$curbuf);
+      $cw = Internals::SvREFCNT($$curwin);
+      VIM::Eval("assert_equal(3, $cb, 'T5')");
+      VIM::Eval("assert_equal(3, $cw, 'T6')");
   }
   VIM::Eval("assert_false($$b)");
   VIM::Eval("assert_false($$w)");
 --perl
+  %bw!
 endfunc

@@ -845,6 +845,14 @@ newBUFrv(SV *rv, buf_T *ptr)
     return sv_bless(rv, gv_stashpv("VIBUF", TRUE));
 }
 
+#if 0
+SV *__sv_save[1024];
+int __sv_save_ix;
+#  define D_Save_Sv(sv) do { if (__sv_save_ix < 1024) __sv_save[__sv_save_ix++] = (sv); } while (0)
+#else
+#  define D_Save_Sv(sv) NOOP
+#endif
+
 /*
  * perl_win_free
  *	Remove all references to the window to be destroyed
@@ -852,17 +860,27 @@ newBUFrv(SV *rv, buf_T *ptr)
     void
 perl_win_free(win_T *wp)
 {
-    if (wp->w_perl_private)
-	sv_setiv((SV *)wp->w_perl_private, 0);
-    return;
+    if (wp->w_perl_private && perl_interp != NULL)
+    {
+    	SV *sv = (SV*)wp->w_perl_private;
+    	D_Save_Sv(sv);
+	sv_setiv(sv, 0);
+	SvREFCNT_dec(sv);
+    }
+    wp->w_perl_private = NULL;
 }
 
     void
 perl_buf_free(buf_T *bp)
 {
-    if (bp->b_perl_private)
-	sv_setiv((SV *)bp->b_perl_private, 0);
-    return;
+    if (bp->b_perl_private && perl_interp != NULL)
+    {
+    	SV *sv = (SV *)bp->b_perl_private;
+    	D_Save_Sv(sv);
+	sv_setiv(sv, 0);
+	SvREFCNT_dec(sv);
+    }
+    bp->b_perl_private = NULL;
 }
 
 #ifndef PROTO
@@ -885,12 +903,19 @@ I32 cur_val(IV iv, SV *sv)
 # endif
 {
     SV *rv;
+
     if (iv == 0)
 	rv = newWINrv(newSV(0), curwin);
     else
 	rv = newBUFrv(newSV(0), curbuf);
-    sv_setsv(sv, rv);
-    SvREFCNT_dec(SvRV(rv));
+
+    if (SvRV(sv) == SvRV(rv))
+	SvREFCNT_dec(SvRV(rv));
+    else /* XXX: Not sure if the `else` condition are right
+    	  * Test_SvREFCNT() pass in all case.
+    	  */
+	sv_setsv(sv, rv);
+
     return 0;
 }
 #endif /* !PROTO */
@@ -1539,7 +1564,7 @@ Buffers(...)
 	else
 	{
 	    FOR_ALL_BUFFERS(vimbuf)
-		XPUSHs(newBUFrv(newSV(0), vimbuf));
+		XPUSHs(sv_2mortal(newBUFrv(newSV(0), vimbuf)));
 	}
     }
     else
@@ -1564,7 +1589,7 @@ Buffers(...)
 	    {
 		vimbuf = buflist_findnr(b);
 		if (vimbuf)
-		    XPUSHs(newBUFrv(newSV(0), vimbuf));
+		    XPUSHs(sv_2mortal(newBUFrv(newSV(0), vimbuf)));
 	    }
 	}
     }
@@ -1584,7 +1609,7 @@ Windows(...)
 	else
 	{
 	    FOR_ALL_WINDOWS(vimwin)
-		XPUSHs(newWINrv(newSV(0), vimwin));
+		XPUSHs(sv_2mortal(newWINrv(newSV(0), vimwin)));
 	}
     }
     else
@@ -1594,7 +1619,7 @@ Windows(...)
 	    w = (int) SvIV(ST(i));
 	    vimwin = win_find_nr(w);
 	    if (vimwin)
-		XPUSHs(newWINrv(newSV(0), vimwin));
+		XPUSHs(sv_2mortal(newWINrv(newSV(0), vimwin)));
 	}
     }
 
