@@ -8266,6 +8266,7 @@ vim_regexec_string(
     rex.reg_endpos = NULL;
 
     result = rmp->regprog->engine->regexec_nl(rmp, line, col, nl);
+    rmp->regprog->re_in_use = FALSE;
 
     /* NFA engine aborted because it's very slow. */
     if (rmp->regprog->re_engine == AUTOMATIC_ENGINE
@@ -8284,7 +8285,11 @@ vim_regexec_string(
 #endif
 	    rmp->regprog = vim_regcomp(pat, re_flags);
 	    if (rmp->regprog != NULL)
+	    {
+		rmp->regprog->re_in_use = TRUE;
 		result = rmp->regprog->engine->regexec_nl(rmp, line, col, nl);
+		rmp->regprog->re_in_use = FALSE;
+	    }
 	    vim_free(pat);
 	}
 
@@ -8294,7 +8299,6 @@ vim_regexec_string(
     rex_in_use = rex_in_use_save;
     if (rex_in_use)
 	rex = rex_save;
-    rmp->regprog->re_in_use = FALSE;
 
     return result > 0;
 }
@@ -8382,6 +8386,7 @@ vim_regexec_multi(
 
     result = rmp->regprog->engine->regexec_multi(
 				      rmp, win, buf, lnum, col, tm, timed_out);
+    rmp->regprog->re_in_use = FALSE;
 
     /* NFA engine aborted because it's very slow. */
     if (rmp->regprog->re_engine == AUTOMATIC_ENGINE
@@ -8409,8 +8414,12 @@ vim_regexec_multi(
 #endif
 
 	    if (rmp->regprog != NULL)
+	    {
+		rmp->regprog->re_in_use = TRUE;
 		result = rmp->regprog->engine->regexec_multi(
 				      rmp, win, buf, lnum, col, tm, timed_out);
+		rmp->regprog->re_in_use = FALSE;
+	    }
 	    vim_free(pat);
 	}
 	p_re = save_p_re;
@@ -8419,7 +8428,6 @@ vim_regexec_multi(
     rex_in_use = rex_in_use_save;
     if (rex_in_use)
 	rex = rex_save;
-    rmp->regprog->re_in_use = FALSE;
 
     return result <= 0 ? 0 : result;
 }
