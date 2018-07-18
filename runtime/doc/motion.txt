@@ -1175,7 +1175,7 @@ remembered.
 				>
 
 			The "3g;" command takes you to line 9.  Then the
-			output of ":changes is:
+			output of ":changes" is:
 
 				change line  col text ~
 				>   0     9    8 bla bla bla
