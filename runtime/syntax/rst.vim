@@ -189,8 +189,8 @@ hi def link rstHyperlinkTarget              String
 hi def link rstExDirective                  String
 hi def link rstSubstitutionDefinition       rstDirective
 hi def link rstDelimiter                    Delimiter
-hi def rstEmphasis ctermfg=13 term=italic cterm=italic gui=italic
-hi def rstStrongEmphasis ctermfg=1 term=bold cterm=bold gui=bold
+hi def rstEmphasis                          term=italic cterm=italic gui=italic
+hi def rstStrongEmphasis                    term=bold cterm=bold gui=bold
 hi def link rstInterpretedTextOrHyperlinkReference  Identifier
 hi def link rstInlineLiteral                String
 hi def link rstSubstitutionReference        PreProc
