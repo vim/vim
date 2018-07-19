@@ -68,6 +68,33 @@ func Test_z_equal_on_invalid_utf8_word()
   bwipe!
 endfunc
 
+" Test spellbadword() with argument
+func Test_spellbadword()
+  set spell
+
+  call assert_equal(['bycycle', 'bad'],  spellbadword('My bycycle.'))
+
+  set spelllang=en_us
+  call assert_equal(['centre', 'local'], spellbadword('centre'))
+  call assert_equal(['', ''],            spellbadword('center'))
+  set spelllang=en_gb
+  call assert_equal(['', ''],            spellbadword('centre'))
+  call assert_equal(['center', 'local'], spellbadword('center'))
+  set spelllang=en
+  call assert_equal(['', ''],            spellbadword('centre'))
+  call assert_equal(['', ''],            spellbadword('center'))
+
+  " TODO: can we come up with examples where spellbadword("...")
+  " returns 'caps' or 'rare'?
+
+  " Typo should not be detected without the 'spell' option.
+  set nospell
+  call assert_equal(['', ''], spellbadword('bycycle'))
+
+  set spelllang&
+  set spell&
+endfunc
+
 func Test_spellreall()
   new
   set spell
