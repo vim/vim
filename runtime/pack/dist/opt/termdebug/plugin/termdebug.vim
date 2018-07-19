@@ -566,6 +566,9 @@ endfunc
 
 " Install commands in the current window to control the debugger.
 func s:InstallCommands()
+  let save_cpo = &cpo
+  set cpo&vim
+
   command Break call s:SetBreakpoint()
   command Clear call s:ClearBreakpoint()
   command Step call s:SendCommand('-exec-step')
@@ -603,6 +606,8 @@ func s:InstallCommands()
       an 1.230 PopUp.Evaluate		:Evaluate<CR>
     endif
   endif
+
+  let &cpo = save_cpo
 endfunc
 
 let s:winbar_winids = []
