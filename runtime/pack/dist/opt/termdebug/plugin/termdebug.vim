@@ -200,7 +200,8 @@ func s:StartDebug_term(dict)
     let response = ''
     for lnum in range(1,200)
       if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
-	let response = term_getline(s:gdbbuf, lnum + 1)
+	" response can be in the same line or the next line
+	let response = term_getline(s:gdbbuf, lnum) . term_getline(s:gdbbuf, lnum + 1)
 	if response =~ 'Undefined command'
 	  echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
 	  exe 'bwipe! ' . s:ptybuf
