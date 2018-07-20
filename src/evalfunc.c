@@ -11639,6 +11639,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 		    break;
 		}
 		str += len;
+		capcol -= len;
 	    }
 	}
     }
