@@ -85,7 +85,7 @@ func Test_spellbadword()
   call assert_equal(['', ''],            spellbadword('centre'))
   call assert_equal(['center', 'local'], spellbadword('center'))
 
-  " Create a small word list to test that spellbadword('...'
+  " Create a small word list to test that spellbadword('...')
   " can return ['...', 'rare'].
   e Xwords
   insert
