@@ -3355,8 +3355,11 @@ syn_regexec(
     }
 #endif
 #ifdef FEAT_RELTIME
-    if (timed_out)
+    if (timed_out && !syn_win->w_s->b_syn_slow)
+    {
 	syn_win->w_s->b_syn_slow = TRUE;
+	MSG(_("'redrawtime' exceeded, syntax highlighting disabled"));
+    }
 #endif
 
     if (r > 0)
@@ -3575,11 +3578,13 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
     if (*arg == NUL)
     {
 	MSG_PUTS("\n");
-	MSG_PUTS(_("syntax iskeyword "));
 	if (curwin->w_s->b_syn_isk != empty_option)
+	{
+	    MSG_PUTS(_("syntax iskeyword "));
 	    msg_outtrans(curwin->w_s->b_syn_isk);
+	}
 	else
-	    msg_outtrans((char_u *)"not set");
+	    msg_outtrans((char_u *)_("syntax iskeyword not set"));
     }
     else
     {
