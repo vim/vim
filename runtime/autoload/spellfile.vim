@@ -22,6 +22,7 @@ function! spellfile#LoadFile(lang)
     endif
     return
   endif
+  let lang = tolower(a:lang)
 
   " If the URL changes we try all files again.
   if s:spellfile_URL != g:spellfile_URL
@@ -30,13 +31,13 @@ function! spellfile#LoadFile(lang)
   endif
 
   " I will say this only once!
-  if has_key(s:donedict, a:lang . &enc)
+  if has_key(s:donedict, lang . &enc)
     if &verbose
       echomsg 'spellfile#LoadFile(): Tried this language/encoding before.'
     endif
     return
   endif
-  let s:donedict[a:lang . &enc] = 1
+  let s:donedict[lang . &enc] = 1
 
   " Find spell directories we can write in.
   let [dirlist, dirchoices] = spellfile#GetDirChoices()
@@ -57,14 +58,14 @@ function! spellfile#LoadFile(lang)
     endif
   endif
 
-  let msg = 'Cannot find spell file for "' . a:lang . '" in ' . &enc
+  let msg = 'Cannot find spell file for "' . lang . '" in ' . &enc
   let msg .= "\nDo you want me to try downloading it?"
   if confirm(msg, "&Yes\n&No", 2) == 1
     let enc = &encoding
     if enc == 'iso-8859-15'
       let enc = 'latin1'
     endif
-    let fname = a:lang . '.' . enc . '.spl'
+    let fname = lang . '.' . enc . '.spl'
 
     " Split the window, read the file into a new buffer.
     " Remember the buffer number, we check it below.
@@ -95,7 +96,7 @@ function! spellfile#LoadFile(lang)
 	let newbufnr = winbufnr(0)
       endif
 
-      let fname = a:lang . '.ascii.spl'
+      let fname = lang . '.ascii.spl'
       echo 'Could not find it, trying ' . fname . '...'
       call spellfile#Nread(fname)
       if getline(2) !~ 'VIMspell'
