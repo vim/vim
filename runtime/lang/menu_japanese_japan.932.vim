@@ -5,7 +5,7 @@
 " Last Change:		28-Jan-2016.
 "
 " Copyright (C) 2001-2016 MURAOKA Taro <koron.kaoriya@gmail.com>,
-"			  vim-jp (http://vim-jp.org/)
+"			  vim-jp <http://vim-jp.org/>
 "
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
@@ -174,6 +174,10 @@ menutrans Set\ language\ to\ "en_nz"	言語を\ "en_nz"\ に設定する
 menutrans Set\ language\ to\ "en_us"	言語を\ "en_us"\ に設定する
 menutrans &Find\ More\ Languages	他の言語を検索する(&F)
 
+let g:menutrans_spell_change_ARG_to = '"%s"\ を変更'
+let g:menutrans_spell_add_ARG_to_word_list = '"%s"\ を単語リストに追加'
+let g:menutrans_spell_ignore_ARG = '"%s"\ を無視'
+
 " Tools.Fold Menu
 menutrans &Folding			折畳み(&F)
 " open close folds
@@ -210,8 +214,7 @@ menutrans &Delete		削除(&D)
 menutrans &Alternate		裏へ切替(&A)
 menutrans &Next			次のバッファ(&N)
 menutrans &Previous		前のバッファ(&P)
-menutrans [No\ File]		[無題]
-let g:menutrans_no_file = "[無題]"
+let g:menutrans_no_file = "[無名]"
 
 " Window menu
 menutrans &Window			ウィンドウ(&W)

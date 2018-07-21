@@ -57,11 +57,18 @@ If the maintainer does not respond, contact the vim-dev maillist.
 # Translations
 
 Translating messages and runtime files is very much appreciated!  These things can be translated:
-*   Messages in Vim, see src/po/README.txt
-*   Menus, see runtime/lang/README.txt
-*   Vim tutor, see runtime/tutor/README.txt
-*   Manual pages, see runtime/doc/*.1 for examples
-*   Desktop icon, see runtime/vim.desktop and runtime/gvim.desktop
+*   Messages in Vim, see [src/po/README.txt][1]
+*   Menus, see [runtime/lang/README.txt][2]
+*   Vim tutor, see [runtime/tutor/README.txt][3]
+*   Manual pages, see [runtime/doc/\*.1][4] for examples
+*   Desktop icon, see [runtime/vim.desktop][5] and [runtime/gvim.desktop][6]
 
 The help files can be translated and made available separately.
 See https://www.vim.org/translations.php for examples.
+
+[1]: https://github.com/vim/vim/blob/master/src/po/README.txt
+[2]: https://github.com/vim/vim/blob/master/runtime/lang/README.txt
+[3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
+[4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
+[5]: https://github.com/vim/vim/blob/master/runtime/vim.desktop
+[6]: https://github.com/vim/vim/blob/master/runtime/gvim.desktop
