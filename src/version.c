@@ -493,7 +493,11 @@ static char *(features[]) =
 	"-ole",
 # endif
 #endif
+#ifdef FEAT_EVAL
 	"+packages",
+#else
+	"-packages",
+#endif
 #ifdef FEAT_PATH_EXTRA
 	"+path_extra",
 #else
