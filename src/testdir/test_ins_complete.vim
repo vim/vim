@@ -262,6 +262,19 @@ function Test_CompleteDoneList()
   au! CompleteDone
 endfunc
 
+func Test_CompleteDone_undo()
+  au CompleteDone * call append(0, "prepend1")
+  new
+  call setline(1, ["line1", "line2"])
+  call feedkeys("Go\<C-X>\<C-N>\<CR>\<ESC>", "tx")
+  call assert_equal(["prepend1", "line1", "line2", "line1", ""],
+              \     getline(1, '$'))
+  undo
+  call assert_equal(["line1", "line2"], getline(1, '$'))
+  bwipe!
+  au! CompleteDone
+endfunc
+
 " Check that when using feedkeys() typeahead does not interrupt searching for
 " completions.
 func Test_compl_feedkeys()
