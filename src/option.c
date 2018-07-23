@@ -3316,7 +3316,7 @@ static char_u *set_bool_option(int opt_idx, char_u *varp, int value, int opt_fla
 static char_u *set_num_option(int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags);
 static void check_redraw(long_u flags);
 static int findoption(char_u *);
-static int find_key_option(char_u *);
+static int find_key_option(char_u *arg_arg, int has_lt);
 static void showoptions(int all, int opt_flags);
 static int optval_default(struct vimoption *, char_u *varp);
 static void showoneopt(struct vimoption *, int opt_flags);
@@ -4492,7 +4492,7 @@ do_set(
 		    opt_idx = findoption(arg + 1);
 		arg[len++] = '>';		    /* restore '>' */
 		if (opt_idx == -1)
-		    key = find_key_option(arg + 1);
+		    key = find_key_option(arg + 1, TRUE);
 	    }
 	    else
 	    {
@@ -4510,7 +4510,7 @@ do_set(
 		opt_idx = findoption(arg);
 		arg[len] = nextchar;		    /* restore nextchar */
 		if (opt_idx == -1)
-		    key = find_key_option(arg);
+		    key = find_key_option(arg, FALSE);
 	    }
 
 	    /* remember character after option name */
@@ -5362,7 +5362,7 @@ illegal_char(char_u *errbuf, int c)
 string_to_key(char_u *arg, int multi_byte)
 {
     if (*arg == '<')
-	return find_key_option(arg + 1);
+	return find_key_option(arg + 1, TRUE);
     if (*arg == '^')
 	return Ctrl_chr(arg[1]);
     if (multi_byte)
@@ -9541,7 +9541,7 @@ get_option_value(
 	int key;
 
 	if (STRLEN(name) == 4 && name[0] == 't' && name[1] == '_'
-		&& (key = find_key_option(name)) != 0)
+		&& (key = find_key_option(name, FALSE)) != 0)
 	{
 	    char_u key_name[2];
 	    char_u *p;
@@ -9831,7 +9831,7 @@ set_option_value(
 	int key;
 
 	if (STRLEN(name) == 4 && name[0] == 't' && name[1] == '_'
-		&& (key = find_key_option(name)) != 0)
+		&& (key = find_key_option(name, FALSE)) != 0)
 	{
 	    char_u key_name[2];
 
@@ -9952,12 +9952,15 @@ get_encoding_default(void)
 
 /*
  * Translate a string like "t_xx", "<t_xx>" or "<S-Tab>" to a key number.
+ * When "has_lt" is true there is a '<' before "*arg_arg".
+ * Returns 0 when the key is not recognized.
  */
     static int
-find_key_option(char_u *arg)
+find_key_option(char_u *arg_arg, int has_lt)
 {
-    int		key;
+    int		key = 0;
     int		modifiers;
+    char_u	*arg = arg_arg;
 
     /*
      * Don't use get_special_key_code() for t_xx, we don't want it to call
@@ -9965,7 +9968,7 @@ find_key_option(char_u *arg)
      */
     if (arg[0] == 't' && arg[1] == '_' && arg[2] && arg[3])
 	key = TERMCAP2KEY(arg[2], arg[3]);
-    else
+    else if (has_lt)
     {
 	--arg;			    /* put arg at the '<' */
 	modifiers = 0;

@@ -118,6 +118,7 @@ NEW_TESTS = \
 	test_messages \
 	test_mksession \
 	test_mksession_utf8 \
+	test_modeline \
 	test_nested_function \
 	test_netbeans \
 	test_normal \
