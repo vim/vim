@@ -199,6 +199,9 @@ typedef int perl_key;
 # define Perl_gv_stashpv dll_Perl_gv_stashpv
 # define Perl_markstack_grow dll_Perl_markstack_grow
 # define Perl_mg_find dll_Perl_mg_find
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+#  define Perl_mg_get dll_Perl_mg_get
+# endif
 # define Perl_newXS dll_Perl_newXS
 # define Perl_newSV dll_Perl_newSV
 # define Perl_newSViv dll_Perl_newSViv
@@ -342,6 +345,9 @@ static I32* (*Perl_markstack_grow)(pTHX);
 static void (*Perl_markstack_grow)(pTHX);
 # endif
 static MAGIC* (*Perl_mg_find)(pTHX_ SV*, int);
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+static int (*Perl_mg_get)(pTHX_ SV*);
+# endif
 static CV* (*Perl_newXS)(pTHX_ char*, XSUBADDR_t, char*);
 static SV* (*Perl_newSV)(pTHX_ STRLEN);
 static SV* (*Perl_newSViv)(pTHX_ IV);
@@ -494,6 +500,9 @@ static struct {
     {"Perl_gv_stashpv", (PERL_PROC*)&Perl_gv_stashpv},
     {"Perl_markstack_grow", (PERL_PROC*)&Perl_markstack_grow},
     {"Perl_mg_find", (PERL_PROC*)&Perl_mg_find},
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+    {"Perl_mg_get", (PERL_PROC*)&Perl_mg_get},
+# endif
     {"Perl_newXS", (PERL_PROC*)&Perl_newXS},
     {"Perl_newSV", (PERL_PROC*)&Perl_newSV},
     {"Perl_newSViv", (PERL_PROC*)&Perl_newSViv},
@@ -862,8 +871,8 @@ perl_win_free(win_T *wp)
 {
     if (wp->w_perl_private && perl_interp != NULL)
     {
-    	SV *sv = (SV*)wp->w_perl_private;
-    	D_Save_Sv(sv);
+	SV *sv = (SV*)wp->w_perl_private;
+	D_Save_Sv(sv);
 	sv_setiv(sv, 0);
 	SvREFCNT_dec(sv);
     }
@@ -875,8 +884,8 @@ perl_buf_free(buf_T *bp)
 {
     if (bp->b_perl_private && perl_interp != NULL)
     {
-    	SV *sv = (SV *)bp->b_perl_private;
-    	D_Save_Sv(sv);
+	SV *sv = (SV *)bp->b_perl_private;
+	D_Save_Sv(sv);
 	sv_setiv(sv, 0);
 	SvREFCNT_dec(sv);
     }
@@ -911,9 +920,8 @@ I32 cur_val(IV iv, SV *sv)
 
     if (SvRV(sv) == SvRV(rv))
 	SvREFCNT_dec(SvRV(rv));
-    else /* XXX: Not sure if the `else` condition are right
-    	  * Test_SvREFCNT() pass in all case.
-    	  */
+    else // XXX: Not sure if the `else` condition are right
+	 // Test_SvREFCNT() pass in all case.
 	sv_setsv(sv, rv);
 
     return 0;

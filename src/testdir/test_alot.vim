@@ -37,6 +37,7 @@ source test_mapping.vim
 source test_match.vim
 source test_menu.vim
 source test_messages.vim
+source test_modeline.vim
 source test_partial.vim
 source test_popup.vim
 source test_put.vim
