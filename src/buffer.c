@@ -162,10 +162,10 @@ open_buffer(
 	 */
 	if (curbuf == NULL)
 	{
-	    EMSG(_("E82: Cannot allocate any buffer, exiting..."));
+	    emsg((char_u *)_("E82: Cannot allocate any buffer, exiting..."));
 	    getout(2);
 	}
-	EMSG(_("E83: Cannot allocate buffer, using other one..."));
+	emsg((char_u *)_("E83: Cannot allocate buffer, using other one..."));
 	enter_buffer(curbuf);
 #ifdef FEAT_SYN_HL
 	if (old_tw != curbuf->b_p_tw)
@@ -396,7 +396,7 @@ buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
     if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
-	EMSG(_("E931: Buffer cannot be registered"));
+	emsg((char_u *)_("E931: Buffer cannot be registered"));
 }
 
     static void
@@ -430,7 +430,7 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+	emsg((char_u *)_("E937: Attempt to delete a buffer that is in use"));
     return can_unload;
 }
 
@@ -548,7 +548,7 @@ close_buffer(
 	{
 	    /* Autocommands deleted the buffer. */
 aucmd_abort:
-	    EMSG(_(e_auabort));
+	    emsg((char_u *)_(e_auabort));
 	    return;
 	}
 	--buf->b_locked;
@@ -1202,13 +1202,13 @@ do_bufdel(
 	else if (deleted >= p_report)
 	{
 	    if (command == DOBUF_UNLOAD)
-		smsg((char_u *)NGETTEXT("%d buffer unloaded",
+		smsg(NGETTEXT("%d buffer unloaded",
 			    "%d buffers unloaded", deleted), deleted);
 	    else if (command == DOBUF_DEL)
-		smsg((char_u *)NGETTEXT("%d buffer deleted",
+		smsg(NGETTEXT("%d buffer deleted",
 			    "%d buffers deleted", deleted), deleted);
 	    else
-		smsg((char_u *)NGETTEXT("%d buffer wiped out",
+		smsg(NGETTEXT("%d buffer wiped out",
 			    "%d buffers wiped out", deleted), deleted);
 	}
     }
@@ -1233,7 +1233,7 @@ empty_curbuf(
 
     if (action == DOBUF_UNLOAD)
     {
-	EMSG(_("E90: Cannot unload last buffer"));
+	emsg((char_u *)_("E90: Cannot unload last buffer"));
 	return FAIL;
     }
 
@@ -1307,7 +1307,7 @@ do_buffer(
 	}
 	if (!bufIsChanged(buf))
 	{
-	    EMSG(_("E84: No modified buffer found"));
+	    emsg((char_u *)_("E84: No modified buffer found"));
 	    return FAIL;
 	}
     }
@@ -1346,7 +1346,7 @@ do_buffer(
 	    if (bp == buf)
 	    {
 		/* back where we started, didn't find anything. */
-		EMSG(_("E85: There is no listed buffer"));
+		emsg((char_u *)_("E85: There is no listed buffer"));
 		return FAIL;
 	    }
 	}
@@ -1358,12 +1358,12 @@ do_buffer(
 	{
 	    /* don't warn when deleting */
 	    if (!unload)
-		EMSGN(_(e_nobufnr), count);
+		semsg(_(e_nobufnr), count);
 	}
 	else if (dir == FORWARD)
-	    EMSG(_("E87: Cannot go beyond last buffer"));
+	    emsg((char_u *)_("E87: Cannot go beyond last buffer"));
 	else
-	    EMSG(_("E88: Cannot go before first buffer"));
+	    emsg((char_u *)_("E88: Cannot go before first buffer"));
 	return FAIL;
     }
 
@@ -1407,7 +1407,7 @@ do_buffer(
 	    else
 #endif
 	    {
-		EMSGN(_("E89: No write since last change for buffer %ld (add ! to override)"),
+		semsg(_("E89: No write since last change for buffer %ld (add ! to override)"),
 								 buf->b_fnum);
 		return FAIL;
 	    }
@@ -1832,10 +1832,10 @@ no_write_message(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(curbuf->b_term))
-	EMSG(_("E948: Job still running (add ! to end the job)"));
+	emsg((char_u *)_("E948: Job still running (add ! to end the job)"));
     else
 #endif
-	EMSG(_("E37: No write since last change (add ! to override)"));
+	emsg((char_u *)_("E37: No write since last change (add ! to override)"));
 }
 
     void
@@ -1843,10 +1843,10 @@ no_write_message_nobang(buf_T *buf UNUSED)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(buf->b_term))
-	EMSG(_("E948: Job still running"));
+	emsg((char_u *)_("E948: Job still running"));
     else
 #endif
-	EMSG(_("E37: No write since last change"));
+	emsg((char_u *)_("E37: No write since last change"));
 }
 
 /*
@@ -2057,7 +2057,7 @@ buflist_new(
 	buf->b_fnum = top_file_num++;
 	if (top_file_num < 0)		/* wrap around (may cause duplicates) */
 	{
-	    EMSG(_("W14: Warning: List of file names overflow"));
+	    emsg((char_u *)_("W14: Warning: List of file names overflow"));
 	    if (emsg_silent == 0)
 	    {
 		out_flush();
@@ -2281,9 +2281,9 @@ buflist_getfile(
     if (buf == NULL)
     {
 	if ((options & GETF_ALT) && n == 0)
-	    EMSG(_(e_noalt));
+	    emsg((char_u *)_(e_noalt));
 	else
-	    EMSGN(_("E92: Buffer %ld not found"), n);
+	    semsg(_("E92: Buffer %ld not found"), n);
 	return FAIL;
     }
 
@@ -2568,9 +2568,9 @@ buflist_findpat(
     }
 
     if (match == -2)
-	EMSG2(_("E93: More than one match for %s"), pattern);
+	semsg(_("E93: More than one match for %s"), pattern);
     else if (match < 0)
-	EMSG2(_("E94: No matching buffer for %s"), pattern);
+	semsg(_("E94: No matching buffer for %s"), pattern);
     return match;
 }
 
@@ -3172,7 +3172,7 @@ setfname(
 	    if (obuf->b_ml.ml_mfp != NULL)	/* it's loaded, fail */
 	    {
 		if (message)
-		    EMSG(_("E95: Buffer with this name already exists"));
+		    emsg((char_u *)_("E95: Buffer with this name already exists"));
 		vim_free(ffname);
 		return FAIL;
 	    }
@@ -3298,7 +3298,7 @@ getaltfname(
     if (buflist_name_nr(0, &fname, &dummy) == FAIL)
     {
 	if (errmsg)
-	    EMSG(_(e_noalt));
+	    emsg((char_u *)_(e_noalt));
 	return NULL;
     }
     return fname;
@@ -5730,7 +5730,7 @@ bt_dontwrite_msg(buf_T *buf)
 {
     if (bt_dontwrite(buf))
     {
-	EMSG(_("E382: Cannot write, 'buftype' option is set"));
+	emsg((char_u *)_("E382: Cannot write, 'buftype' option is set"));
 	return TRUE;
     }
     return FALSE;

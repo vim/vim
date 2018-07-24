@@ -1357,7 +1357,7 @@ termgui_get_color(char_u *name)
     t = termgui_mch_get_color(name);
 
     if (t == INVALCOLOR)
-	EMSG2(_("E254: Cannot allocate color %s"), name);
+	semsg(_("E254: Cannot allocate color %s"), name);
     return t;
 }
 
@@ -2369,10 +2369,10 @@ add_termcap_entry(char_u *name, int force)
     {
 #ifdef HAVE_TGETENT
 	if (error_msg != NULL)
-	    EMSG(error_msg);
+	    emsg(error_msg);
 	else
 #endif
-	    EMSG2(_("E436: No \"%s\" entry in termcap"), name);
+	    semsg(_("E436: No \"%s\" entry in termcap"), name);
     }
     return FAIL;
 }
@@ -3055,7 +3055,7 @@ ttest(int pairs)
      * MUST have "cm": cursor motion.
      */
     if (*T_CM == NUL)
-	EMSG(_("E437: terminal capability \"cm\" required"));
+	emsg((char_u *)_("E437: terminal capability \"cm\" required"));
 
     /*
      * if "cs" defined, use a scroll region, it's faster.
@@ -6153,7 +6153,7 @@ replace_termcodes(
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
 		if (current_sctx.sc_sid <= 0)
-		    EMSG(_(e_usingsid));
+		    emsg((char_u *)_(e_usingsid));
 		else
 		{
 		    src += 5;

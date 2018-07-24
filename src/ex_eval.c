@@ -255,7 +255,7 @@ cause_errthrow(
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
-		EMSG(_(e_outofmem));
+		emsg((char_u *)_(e_outofmem));
 	    }
 	    else
 	    {
@@ -264,7 +264,7 @@ cause_errthrow(
 		{
 		    vim_free(elem);
 		    suppress_errthrow = TRUE;
-		    EMSG(_(e_outofmem));
+		    emsg((char_u *)_(e_outofmem));
 		}
 		else
 		{
@@ -513,7 +513,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 		&& (((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':'
 		    || ((char_u *)value)[3] == '('))
 	{
-	    EMSG(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
+	    emsg((char_u *)_("E608: Cannot :throw exceptions with 'Vim' prefix"));
 	    goto fail;
 	}
     }
@@ -554,7 +554,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 
-	smsg((char_u *)_("Exception thrown: %s"), excp->value);
+	smsg(_("Exception thrown: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 
 	if (debug_break_level > 0 || *p_vfile == NUL)
@@ -572,7 +572,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 nomem:
     vim_free(excp);
     suppress_errthrow = TRUE;
-    EMSG(_(e_outofmem));
+    emsg((char_u *)_(e_outofmem));
 fail:
     current_exception = NULL;
     return FAIL;
@@ -606,8 +606,8 @@ discard_exception(except_T *excp, int was_finished)
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 	smsg(was_finished
-		    ? (char_u *)_("Exception finished: %s")
-		    : (char_u *)_("Exception discarded: %s"),
+		    ? _("Exception finished: %s")
+		    : _("Exception discarded: %s"),
 		excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 	if (debug_break_level > 0 || *p_vfile == NUL)
@@ -677,7 +677,7 @@ catch_exception(except_T *excp)
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 
-	smsg((char_u *)_("Exception caught: %s"), excp->value);
+	smsg(_("Exception caught: %s"), excp->value);
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 
 	if (debug_break_level > 0 || *p_vfile == NUL)
@@ -745,7 +745,7 @@ finish_exception(except_T *excp)
     static void
 report_pending(int action, int pending, void *value)
 {
-    char_u	*mesg;
+    char	*mesg;
     char	*s;
     int		save_msg_silent;
 
@@ -753,14 +753,14 @@ report_pending(int action, int pending, void *value)
     switch (action)
     {
 	case RP_MAKE:
-	    mesg = (char_u *)_("%s made pending");
+	    mesg = _("%s made pending");
 	    break;
 	case RP_RESUME:
-	    mesg = (char_u *)_("%s resumed");
+	    mesg = _("%s resumed");
 	    break;
 	/* case RP_DISCARD: */
 	default:
-	    mesg = (char_u *)_("%s discarded");
+	    mesg = _("%s discarded");
 	    break;
     }
 
@@ -786,9 +786,8 @@ report_pending(int action, int pending, void *value)
 	default:
 	    if (pending & CSTP_THROW)
 	    {
-		vim_snprintf((char *)IObuff, IOSIZE,
-						(char *)mesg, _("Exception"));
-		mesg = vim_strnsave(IObuff, (int)STRLEN(IObuff) + 4);
+		vim_snprintf((char *)IObuff, IOSIZE, mesg, _("Exception"));
+		mesg = (char *)vim_strnsave(IObuff, (int)STRLEN(IObuff) + 4);
 		STRCAT(mesg, ": %s");
 		s = (char *)((except_T *)value)->value;
 	    }
@@ -805,7 +804,7 @@ report_pending(int action, int pending, void *value)
 	msg_silent = FALSE;	/* display messages */
     ++no_wait_return;
     msg_scroll = TRUE;		/* always scroll up, don't overwrite */
-    smsg(mesg, (char_u *)s);
+    smsg(mesg, s);
     msg_puts((char_u *)"\n");   /* don't overwrite this either */
     cmdline_row = msg_row;
     --no_wait_return;
@@ -1291,7 +1290,7 @@ ex_throw(exarg_T *eap)
 	value = eval_to_string_skip(arg, &eap->nextcmd, eap->skip);
     else
     {
-	EMSG(_(e_argreq));
+	emsg((char_u *)_(e_argreq));
 	value = NULL;
     }
 
@@ -1443,7 +1442,7 @@ ex_try(exarg_T *eap)
 
 		elem = (eslist_T *)alloc((unsigned)sizeof(struct eslist_elem));
 		if (elem == NULL)
-		    EMSG(_(e_outofmem));
+		    emsg((char_u *)_(e_outofmem));
 		else
 		{
 		    elem->saved_emsg_silent = emsg_silent;
@@ -1537,7 +1536,7 @@ ex_catch(exarg_T *eap)
 	{
 	    if (end != NULL && *end != NUL && !ends_excmd(*skipwhite(end + 1)))
 	    {
-		EMSG(_(e_trailing));
+		emsg((char_u *)_(e_trailing));
 		return;
 	    }
 
@@ -1569,7 +1568,7 @@ ex_catch(exarg_T *eap)
 		    *end = save_char;
 		p_cpo = save_cpo;
 		if (regmatch.regprog == NULL)
-		    EMSG2(_(e_invarg2), pat);
+		    semsg(_(e_invarg2), pat);
 		else
 		{
 		    /*
@@ -2264,7 +2263,7 @@ rewind_conditionals(
     void
 ex_endfunction(exarg_T *eap UNUSED)
 {
-    EMSG(_("E193: :endfunction not inside a function"));
+    emsg((char_u *)_("E193: :endfunction not inside a function"));
 }
 
 /*

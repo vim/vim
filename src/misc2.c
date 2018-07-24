@@ -920,7 +920,7 @@ alloc_check(unsigned size)
     {
 	/* Don't hide this message */
 	emsg_silent = 0;
-	EMSG(_("E340: Line is becoming too long"));
+	emsg((char_u *)_("E340: Line is becoming too long"));
 	return NULL;
     }
 #endif
@@ -960,7 +960,7 @@ lalloc(long_u size, int message)
     {
 	/* Don't hide this message */
 	emsg_silent = 0;
-	IEMSGN(_("E341: Internal error: lalloc(%ld, )"), size);
+	siemsg(_("E341: Internal error: lalloc(%ld, )"), size);
 	return NULL;
     }
 
@@ -1079,7 +1079,7 @@ do_outofmem_msg(long_u size)
 	 * message fails, e.g. when setting v:errmsg. */
 	did_outofmem_msg = TRUE;
 
-	EMSGN(_("E342: Out of memory!  (allocating %lu bytes)"), size);
+	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), size);
     }
 }
 
@@ -3272,7 +3272,7 @@ call_shell(char_u *cmd, int opt)
     if (p_verbose > 3)
     {
 	verbose_enter();
-	smsg((char_u *)_("Calling shell to execute: \"%s\""),
+	smsg(_("Calling shell to execute: \"%s\""),
 						    cmd == NULL ? p_sh : cmd);
 	out_char('\n');
 	cursor_on();
@@ -3286,7 +3286,7 @@ call_shell(char_u *cmd, int opt)
 
     if (*p_sh == NUL)
     {
-	EMSG(_(e_shellempty));
+	emsg((char_u *)_(e_shellempty));
 	retval = -1;
     }
     else
@@ -4385,7 +4385,7 @@ vim_findfile_init(
 	{
 	    if (len + 5 >= MAXPATHL)
 	    {
-		EMSG(_(e_pathtoolong));
+		emsg((char_u *)_(e_pathtoolong));
 		break;
 	    }
 	    if (STRNCMP(wc_part, "**", 2) == 0)
@@ -4404,7 +4404,7 @@ vim_findfile_init(
 		wc_part = (char_u *)errpt;
 		if (*wc_part != NUL && !vim_ispathsep(*wc_part))
 		{
-		    EMSG2(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
+		    semsg(_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."), PATHSEPSTR);
 		    goto error_return;
 		}
 	    }
@@ -4436,7 +4436,7 @@ vim_findfile_init(
     if (STRLEN(search_ctx->ffsc_start_dir)
 			  + STRLEN(search_ctx->ffsc_fix_path) + 3 >= MAXPATHL)
     {
-	EMSG(_(e_pathtoolong));
+	emsg((char_u *)_(e_pathtoolong));
 	goto error_return;
     }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);
@@ -4667,7 +4667,7 @@ vim_findfile(void *search_ctx_arg)
 		if (p_verbose >= 5)
 		{
 		    verbose_enter_scroll();
-		    smsg((char_u *)"Already Searched: %s (%s)",
+		    smsg("Already Searched: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		    /* don't overwrite this either */
 		    msg_puts((char_u *)"\n");
@@ -4681,7 +4681,7 @@ vim_findfile(void *search_ctx_arg)
 	    else if (p_verbose >= 5)
 	    {
 		verbose_enter_scroll();
-		smsg((char_u *)"Searching: %s (%s)",
+		smsg("Searching: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		/* don't overwrite this either */
 		msg_puts((char_u *)"\n");
@@ -4900,7 +4900,7 @@ vim_findfile(void *search_ctx_arg)
 				    if (p_verbose >= 5)
 				    {
 					verbose_enter_scroll();
-					smsg((char_u *)"Already: %s",
+					smsg("Already: %s",
 								   file_path);
 					/* don't overwrite this either */
 					msg_puts((char_u *)"\n");
@@ -4928,7 +4928,7 @@ vim_findfile(void *search_ctx_arg)
 				if (p_verbose >= 5)
 				{
 				    verbose_enter_scroll();
-				    smsg((char_u *)"HIT: %s", file_path);
+				    smsg("HIT: %s", file_path);
 				    /* don't overwrite this either */
 				    msg_puts((char_u *)"\n");
 				    verbose_leave_scroll();
@@ -5128,7 +5128,7 @@ ff_get_visited_list(
 		if (p_verbose >= 5)
 		{
 		    verbose_enter_scroll();
-		    smsg((char_u *)"ff_get_visited_list: FOUND list for %s",
+		    smsg("ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
 		    msg_puts((char_u *)"\n");
@@ -5145,7 +5145,7 @@ ff_get_visited_list(
     if (p_verbose >= 5)
     {
 	verbose_enter_scroll();
-	smsg((char_u *)"ff_get_visited_list: new list for %s", filename);
+	smsg("ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
 	msg_puts((char_u *)"\n");
 	verbose_leave_scroll();
@@ -5766,19 +5766,19 @@ find_file_in_path_option(
 	if (first == TRUE)
 	{
 	    if (find_what == FINDFILE_DIR)
-		EMSG2(_("E344: Can't find directory \"%s\" in cdpath"),
+		semsg(_("E344: Can't find directory \"%s\" in cdpath"),
 			ff_file_to_find);
 	    else
-		EMSG2(_("E345: Can't find file \"%s\" in path"),
+		semsg(_("E345: Can't find file \"%s\" in path"),
 			ff_file_to_find);
 	}
 	else
 	{
 	    if (find_what == FINDFILE_DIR)
-		EMSG2(_("E346: No more directory \"%s\" found in cdpath"),
+		semsg(_("E346: No more directory \"%s\" found in cdpath"),
 			ff_file_to_find);
 	    else
-		EMSG2(_("E347: No more file \"%s\" found in path"),
+		semsg(_("E347: No more file \"%s\" found in path"),
 			ff_file_to_find);
 	}
     }

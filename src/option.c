@@ -5945,8 +5945,8 @@ set_string_option_direct(
 	idx = findoption(name);
 	if (idx < 0)	/* not found (should not happen) */
 	{
-	    EMSG2(_(e_intern2), "set_string_option_direct()");
-	    IEMSG2(_("For option %s"), name);
+	    semsg(_(e_intern2), "set_string_option_direct()");
+	    siemsg(_("For option %s"), name);
 	    return;
 	}
     }
@@ -6475,7 +6475,7 @@ did_set_string_option(
 		if (convert_setup(&input_conv, p_tenc, p_enc) == FAIL
 			|| convert_setup(&output_conv, p_enc, p_tenc) == FAIL)
 		{
-		    EMSG3(_("E950: Cannot convert between %s and %s"),
+		    semsg(_("E950: Cannot convert between %s and %s"),
 			    p_tenc, p_enc);
 		    errmsg = e_invarg;
 		}
@@ -8767,7 +8767,7 @@ set_bool_option(
 	{
 	    char_u	*errmsg = did_set_spelllang(curwin);
 	    if (errmsg != NULL)
-		EMSG(_(errmsg));
+		emsg((char_u *)_(errmsg));
 	}
     }
 #endif
@@ -9975,7 +9975,7 @@ set_option_value(
 	    return NULL;
 	}
 
-	EMSG2(_("E355: Unknown option: %s"), name);
+	semsg(_("E355: Unknown option: %s"), name);
     }
     else
     {
@@ -9984,7 +9984,7 @@ set_option_value(
 	/* Disallow changing some options in the sandbox */
 	if (sandbox > 0 && (flags & P_SECURE))
 	{
-	    EMSG(_(e_sandbox));
+	    emsg((char_u *)_(e_sandbox));
 	    return NULL;
 	}
 #endif
@@ -10008,7 +10008,7 @@ set_option_value(
 			/* There's another character after zeros or the string
 			 * is empty.  In both cases, we are trying to set a
 			 * num option using a string. */
-			EMSG3(_("E521: Number required: &%s = '%s'"),
+			semsg(_("E521: Number required: &%s = '%s'"),
 								name, string);
 			return NULL;     /* do nothing as we hit an error */
 
@@ -11086,7 +11086,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
-	default:	IEMSG(_("E356: get_varp ERROR"));
+	default:	iemsg((char_u *)_("E356: get_varp ERROR"));
     }
     /* always return a valid pointer to avoid a crash! */
     return (char_u *)&(curbuf->b_p_wm);
@@ -12283,7 +12283,7 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		EMSG2(_("E357: 'langmap': Matching character missing for %s"),
+		semsg(_("E357: 'langmap': Matching character missing for %s"),
 							     transchar(from));
 		return;
 	    }
@@ -12307,7 +12307,7 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    EMSG2(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
+			    semsg(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
 			    return;
 			}
 			++p;
@@ -12877,9 +12877,9 @@ tabstop_set(char_u *var, int **array)
 	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
 	    {
 		if (cp != end)
-		    EMSG(_(e_positive));
+		    emsg((char_u *)_(e_positive));
 		else
-		    EMSG(_(e_invarg));
+		    emsg((char_u *)_(e_invarg));
 		return FALSE;
 	    }
 	}
@@ -12891,7 +12891,7 @@ tabstop_set(char_u *var, int **array)
 	    ++valcount;
 	    continue;
 	}
-	EMSG(_(e_invarg));
+	emsg((char_u *)_(e_invarg));
 	return FALSE;
     }
 

@@ -2211,7 +2211,7 @@ op_function(oparg_T *oap UNUSED)
 # endif
 
     if (*p_opfunc == NUL)
-	EMSG(_("E774: 'operatorfunc' is empty"));
+	emsg((char_u *)_("E774: 'operatorfunc' is empty"));
     else
     {
 	/* Set '[ and '] marks to text to be operated on. */
@@ -2243,7 +2243,7 @@ op_function(oparg_T *oap UNUSED)
 # endif
     }
 #else
-    EMSG(_("E775: Eval feature not available"));
+    emsg((char_u *)_("E775: Eval feature not available"));
 #endif
 }
 
@@ -3542,9 +3542,9 @@ find_ident_at_pos(
 	 * didn't find an identifier or string
 	 */
 	if (find_type & FIND_STRING)
-	    EMSG(_("E348: No string under cursor"));
+	    emsg((char_u *)_("E348: No string under cursor"));
 	else
-	    EMSG(_(e_noident));
+	    emsg((char_u *)_(e_noident));
 	return 0;
     }
     ptr += col;
@@ -5016,7 +5016,7 @@ dozet:
 		    deleteFold((linenr_T)1, curbuf->b_ml.ml_line_count,
 								 TRUE, FALSE);
 		else
-		    EMSG(_("E352: Cannot erase folds with current 'foldmethod'"));
+		    emsg((char_u *)_("E352: Cannot erase folds with current 'foldmethod'"));
 		break;
 
 		/* "zn": fold none: reset 'foldenable' */
@@ -5616,7 +5616,7 @@ nv_ident(cmdarg_T *cap)
 						 || STRCMP(kp, ":help") == 0);
     if (kp_help && *skipwhite(ptr) == NUL)
     {
-	EMSG(_(e_noident));	 /* found white space only */
+	emsg((char_u *)_(e_noident));	 /* found white space only */
 	return;
     }
     kp_ex = (*kp == ':');
@@ -5667,7 +5667,7 @@ nv_ident(cmdarg_T *cap)
 		}
 		if (n == 0)
 		{
-		    EMSG(_(e_noident));	 /* found dashes only */
+		    emsg((char_u *)_(e_noident));	 /* found dashes only */
 		    vim_free(buf);
 		    return;
 		}
@@ -7275,7 +7275,7 @@ nv_Replace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    EMSG(_(e_modifiable));
+	    emsg((char_u *)_(e_modifiable));
 	else
 	{
 #ifdef FEAT_VIRTUALEDIT
@@ -7302,7 +7302,7 @@ nv_vreplace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    EMSG(_(e_modifiable));
+	    emsg((char_u *)_(e_modifiable));
 	else
 	{
 	    if (cap->extra_char == Ctrl_V)	/* get another character */
@@ -7629,11 +7629,11 @@ nv_pcmark(cmdarg_T *cap)
 	else if (cap->cmdchar == 'g')
 	{
 	    if (curbuf->b_changelistlen == 0)
-		EMSG(_("E664: changelist is empty"));
+		emsg((char_u *)_("E664: changelist is empty"));
 	    else if (cap->count1 < 0)
-		EMSG(_("E662: At start of changelist"));
+		emsg((char_u *)_("E662: At start of changelist"));
 	    else
-		EMSG(_("E663: At end of changelist"));
+		emsg((char_u *)_("E663: At end of changelist"));
 	}
 	else
 	    clearopbeep(cap->oap);
@@ -9107,7 +9107,7 @@ nv_edit(cmdarg_T *cap)
     else if (!curbuf->b_p_ma && !p_im)
     {
 	/* Only give this error when 'insertmode' is off. */
-	EMSG(_(e_modifiable));
+	emsg((char_u *)_(e_modifiable));
 	clearop(cap->oap);
 	if (cap->cmdchar == K_PS)
 	    /* drop the pasted text */
