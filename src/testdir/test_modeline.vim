@@ -5,4 +5,5 @@ func Test_modeline_invalid()
   call writefile(['vi:0', 'nothing'], 'Xmodeline')
   call assert_fails('split Xmodeline', 'E518:')
   bwipe!
+  call delete('Xmodeline')
 endfunc
