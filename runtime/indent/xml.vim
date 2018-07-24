@@ -55,9 +55,6 @@ fun! <SID>XmlIndentSynCheck(lnum)
 	if '' != syn1 && syn1 !~ 'xml' && '' != syn2 && syn2 !~ 'xml'
 	    " don't indent pure non-xml code
 	    return 0
-	elseif syn1 =~ '^xmlComment' && syn2 =~ '^xmlComment'
-	    " indent comments specially
-	    return -1
 	endif
     endif
     return 1
