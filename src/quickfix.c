@@ -3490,6 +3490,42 @@ qf_types(int c, int nr)
 }
 
 /*
+ * When "split" is FALSE: Open the entry/result under the cursor.
+ * When "split" is TRUE: Open the entry/result under the cursor in a new window.
+ */
+    void
+qf_view_result(int split)
+{
+    qf_info_T   *qi = &ql_info;
+
+    if (!bt_quickfix(curbuf))
+	return;
+
+    if (IS_LL_WINDOW(curwin))
+	qi = GET_LOC_LIST(curwin);
+
+    if (qi == NULL || qi->qf_lists[qi->qf_curlist].qf_count == 0)
+    {
+	EMSG(_(e_quickfix));
+	return;
+    }
+
+    if (split)
+    {
+	char_u      cmd[32];
+
+	vim_snprintf((char *)cmd, sizeof(cmd), "split +%ld%s",
+		(long)curwin->w_cursor.lnum,
+		IS_LL_WINDOW(curwin) ? "ll" : "cc");
+	if (do_cmdline_cmd(cmd) == OK)
+	    do_cmdline_cmd((char_u *) "clearjumps");
+	return;
+    }
+
+    do_cmdline_cmd((char_u *)(IS_LL_WINDOW(curwin) ? ".ll" : ".cc"));
+}
+
+/*
  * ":cwindow": open the quickfix window if we have errors to display,
  *	       close it if not.
  * ":lwindow": open the location list window if we have locations to display,

@@ -6202,18 +6202,12 @@ nv_down(cmdarg_T *cap)
 	cap->arg = FORWARD;
 	nv_page(cap);
     }
-    else
 #if defined(FEAT_QUICKFIX)
-    /* In a quickfix window a <CR> jumps to the error under the cursor. */
-    if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
-    {
-	if (curwin->w_llist_ref == NULL)
-	    do_cmdline_cmd((char_u *)".cc");	/* quickfix window */
-	else
-	    do_cmdline_cmd((char_u *)".ll");	/* location list window */
-    }
-    else
+    /* Quickfix window only: view the result under the cursor. */
+    else if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
+	qf_view_result(FALSE);
 #endif
+    else
     {
 #ifdef FEAT_CMDWIN
 	/* In the cmdline window a <CR> executes the command. */
