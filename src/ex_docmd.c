@@ -10654,6 +10654,7 @@ eval_vars(
     int		resultlen;
     buf_T	*buf;
     int		valid = VALID_HEAD + VALID_PATH;    /* assume valid result */
+    int		tilde_file = FALSE;
     int		spec_idx;
 #ifdef FEAT_MODIFY_FNAME
     int		skip_mod = FALSE;
@@ -10720,7 +10721,10 @@ eval_vars(
 		    valid = 0;	    /* Must have ":p:h" to be valid */
 		}
 		else
+		{
 		    result = curbuf->b_fname;
+		    tilde_file = STRCMP(result, "~") == 0;
+		}
 		break;
 
 	case SPEC_HASH:		/* '#' or "#99": alternate file */
@@ -10784,7 +10788,10 @@ eval_vars(
 			valid = 0;	    /* Must have ":p:h" to be valid */
 		    }
 		    else
+		    {
 			result = buf->b_fname;
+			tilde_file = STRCMP(result, "~") == 0;
+		    }
 		}
 		break;
 
@@ -10877,7 +10884,7 @@ eval_vars(
 #ifdef FEAT_MODIFY_FNAME
 	else if (!skip_mod)
 	{
-	    valid |= modify_fname(src, usedlen, &result, &resultbuf,
+	    valid |= modify_fname(src, tilde_file, usedlen, &result, &resultbuf,
 								  &resultlen);
 	    if (result == NULL)
 	    {

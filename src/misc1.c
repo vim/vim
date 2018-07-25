@@ -4908,7 +4908,7 @@ home_replace(
 	char_u	*fbuf = NULL;
 
 	flen = (int)STRLEN(homedir_env);
-	(void)modify_fname((char_u *)":p", &usedlen,
+	(void)modify_fname((char_u *)":p", FALSE, &usedlen,
 						  &homedir_env, &fbuf, &flen);
 	flen = (int)STRLEN(homedir_env);
 	if (flen > 0 && vim_ispathsep(homedir_env[flen - 1]))

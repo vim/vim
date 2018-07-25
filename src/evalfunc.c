@@ -3801,7 +3801,7 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
     else
     {
 	len = (int)STRLEN(fname);
-	(void)modify_fname(mods, &usedlen, &fname, &fbuf, &len);
+	(void)modify_fname(mods, FALSE, &usedlen, &fname, &fbuf, &len);
     }
 
     rettv->v_type = VAR_STRING;
