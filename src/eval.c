@@ -9387,8 +9387,7 @@ typval_compare(
 }
 
     char_u *
-typval_tostring(arg)
-    typval_T	*arg;
+typval_tostring(typval_T *arg)
 {
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];

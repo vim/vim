@@ -479,9 +479,7 @@ list_append_dict(list_T *list, dict_T *dict)
  * Return FAIL when out of memory.
  */
     int
-list_append_list(list1, list2)
-    list_T	*list1;
-    list_T	*list2;
+list_append_list(list_T *list1, list_T *list2)
 {
     listitem_T	*li = listitem_alloc();
 

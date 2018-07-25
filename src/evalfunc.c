@@ -2857,9 +2857,7 @@ f_delete(typval_T *argvars, typval_T *rettv)
  * "deletebufline()" function
  */
     static void
-f_deletebufline(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+f_deletebufline(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
     linenr_T	first, last;
@@ -10502,9 +10500,7 @@ f_serverlist(typval_T *argvars UNUSED, typval_T *rettv)
  * "setbufline()" function
  */
     static void
-f_setbufline(argvars, rettv)
-    typval_T	*argvars;
-    typval_T	*rettv;
+f_setbufline(typval_T *argvars, typval_T *rettv)
 {
     linenr_T	lnum;
     buf_T	*buf;
