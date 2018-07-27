@@ -283,7 +283,9 @@ endfunc
 
 func Test_Vim_evaluate()
   call assert_equal('123',      RubyEval('Vim::evaluate("123")'))
-  call assert_equal('Integer',  RubyEval('Vim::evaluate("123").class'))
+  " Vim::evaluate("123").class gives Integer or Fixnum depending
+  " on versions of Ruby.
+  call assert_match('^Integer\|Fixnum$', RubyEval('Vim::evaluate("123").class'))
 
   call assert_equal('1.23',     RubyEval('Vim::evaluate("1.23")'))
   call assert_equal('Float',    RubyEval('Vim::evaluate("1.23").class'))
