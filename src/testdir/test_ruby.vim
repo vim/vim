@@ -156,6 +156,19 @@ func Test_buffer_get()
   bwipe!
 endfunc
 
+func Test_buffer_set()
+  new
+  call setline(1, ['one', 'two'])
+  ruby $curbuf[2] = 'TWO'
+  ruby $curbuf[1] = 'ONE'
+
+  call assert_fails('ruby $curbuf[0] = "ZERO"',
+        \           'IndexError: line number 0 out of range')
+  call assert_fails('ruby $curbuf[3] = "THREE"',
+        \           'IndexError: line number 3 out of range')
+  bwipe!
+endfunc
+
 " Test window.width (get or set window height).
 func Test_window_height()
   new
@@ -341,4 +354,10 @@ func Test_print()
   ruby print "Hello World!"
   let messages = split(execute('message'), "\n")
   call assert_equal('Hello World!', messages[-1])
+endfunc
+
+func Test_p()
+  ruby p 'Just a test'
+  let messages = split(execute('message'), "\n")
+  call assert_equal('"Just a test"', messages[-1])
 endfunc
