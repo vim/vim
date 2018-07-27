@@ -4466,6 +4466,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $fail_if_missing" >&5
 $as_echo "$fail_if_missing" >&6; }
 
+with_x_arg="$with_x"
+
 if test -z "$CFLAGS"; then
   CFLAGS="-O"
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall"
@@ -9001,6 +9003,10 @@ $as_echo "$ac_cv_small_wchar_t" >&6; }
     fi
 
   fi
+fi
+
+if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
+    as_fn_error $? "could not configure X" "$LINENO" 5
 fi
 
 test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
