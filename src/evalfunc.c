@@ -6045,6 +6045,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"arabic",
 #endif
 	"autocmd",
+#ifdef FEAT_AUTOCHDIR
+       "autochdir",
+#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"autoservername",
 #endif
