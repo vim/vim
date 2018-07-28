@@ -9685,22 +9685,31 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     int		ret_char = -1;
     int		save_allow_keys = allow_keys;
     int		save_paste = p_paste;
-    int		save_ai = curbuf->b_p_ai;
 
     /* If the end code is too long we can't detect it, read everything. */
     if (STRLEN(end) >= NUMBUFLEN)
 	end = NULL;
     ++no_mapping;
     allow_keys = 0;
-    p_paste = TRUE;
-    curbuf->b_p_ai = FALSE;
+    if (!p_paste)
+	// Also have the side effects of setting 'paste' to make it work much
+	// faster.
+	set_option_value((char_u *)"paste", TRUE, NULL, 0);
 
     for (;;)
     {
-	/* When the end is not defined read everything. */
+	// When the end is not defined read everything there is.
 	if (end == NULL && vpeekc() == NUL)
 	    break;
-	c = plain_vgetc();
+	do
+	{
+	    c = vgetc();
+	} while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
+	if (c == NUL || got_int)
+	    // When CTRL-C was encountered the typeahead will be flushed and we
+	    // won't get the end sequence.
+	    break;
+
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    idx += (*mb_char2bytes)(c, buf + idx);
@@ -9763,8 +9772,8 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 
     --no_mapping;
     allow_keys = save_allow_keys;
-    p_paste = save_paste;
-    curbuf->b_p_ai = save_ai;
+    if (!save_paste)
+	set_option_value((char_u *)"paste", FALSE, NULL, 0);
 
     return ret_char;
 }
