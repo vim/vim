@@ -1375,6 +1375,14 @@ func Test_edit_complete_very_long_name()
   set swapfile&
 endfunc
 
+func Test_edit_backtick()
+  next a\`b c
+  call assert_equal('a`b', expand('%'))
+  next
+  call assert_equal('c', expand('%'))
+  call assert_equal('a\`b c', expand('##'))
+endfunc
+
 func Test_edit_quit()
   edit foo.txt
   split

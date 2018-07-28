@@ -10954,7 +10954,7 @@ arg_all(void)
 #ifndef BACKSLASH_IN_FILENAME
 			    || *p == '\\'
 #endif
-			    )
+			    || *p == '`')
 		    {
 			/* insert a backslash */
 			if (retval != NULL)
