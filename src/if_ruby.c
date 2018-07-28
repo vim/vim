@@ -1085,8 +1085,10 @@ static VALUE vim_to_ruby(typval_T *tv)
     }
     else if (tv->v_type == VAR_SPECIAL)
     {
-	if (tv->vval.v_number <= VVAL_TRUE)
-	    result = INT2NUM(tv->vval.v_number);
+	if (tv->vval.v_number == VVAL_TRUE)
+	    result = Qtrue;
+	else if (tv->vval.v_number == VVAL_FALSE)
+	    result = Qfalse;
     } /* else return Qnil; */
 
     return result;
