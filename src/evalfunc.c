@@ -7988,6 +7988,36 @@ f_match(typval_T *argvars, typval_T *rettv)
     find_some_match(argvars, rettv, MATCH_MATCH);
 }
 
+#ifdef FEAT_SEARCH_EXTRA
+    static int
+matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
+{
+    dictitem_T *di;
+
+    if (tv->v_type != VAR_DICT)
+    {
+	EMSG(_(e_dictreq));
+	return FAIL;
+    }
+
+    if (dict_find(tv->vval.v_dict, (char_u *)"conceal", -1) != NULL)
+	*conceal_char = get_dict_string(tv->vval.v_dict,
+						   (char_u *)"conceal", FALSE);
+
+    if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
+    {
+	*win = find_win_by_nr(&di->di_tv, NULL);
+	if (*win == NULL)
+	{
+	    EMSG(_("E957: Invalid window number"));
+	    return FAIL;
+	}
+    }
+
+    return OK;
+}
+#endif
+
 /*
  * "matchadd()" function
  */
@@ -8002,6 +8032,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int		id = -1;
     int		error = FALSE;
     char_u	*conceal_char = NULL;
+    win_T	*win = curwin;
 
     rettv->vval.v_number = -1;
 
@@ -8013,18 +8044,9 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
 	    id = (int)get_tv_number_chk(&argvars[3], &error);
-	    if (argvars[4].v_type != VAR_UNKNOWN)
-	    {
-		if (argvars[4].v_type != VAR_DICT)
-		{
-		    EMSG(_(e_dictreq));
-		    return;
-		}
-		if (dict_find(argvars[4].vval.v_dict,
-					     (char_u *)"conceal", -1) != NULL)
-		    conceal_char = get_dict_string(argvars[4].vval.v_dict,
-						  (char_u *)"conceal", FALSE);
-	    }
+	    if (argvars[4].v_type != VAR_UNKNOWN
+		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
+		return;
 	}
     }
     if (error == TRUE)
@@ -8035,7 +8057,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     }
 
-    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id, NULL,
+    rettv->vval.v_number = match_add(win, grp, pat, prio, id, NULL,
 								conceal_char);
 #endif
 }
@@ -8054,6 +8076,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int		error = FALSE;
     list_T	*l;
     char_u	*conceal_char = NULL;
+    win_T	*win = curwin;
 
     rettv->vval.v_number = -1;
 
@@ -8076,18 +8099,10 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
 	    id = (int)get_tv_number_chk(&argvars[3], &error);
-	    if (argvars[4].v_type != VAR_UNKNOWN)
-	    {
-		if (argvars[4].v_type != VAR_DICT)
-		{
-		    EMSG(_(e_dictreq));
-		    return;
-		}
-		if (dict_find(argvars[4].vval.v_dict,
-					     (char_u *)"conceal", -1) != NULL)
-		    conceal_char = get_dict_string(argvars[4].vval.v_dict,
-						  (char_u *)"conceal", FALSE);
-	    }
+
+	    if (argvars[4].v_type != VAR_UNKNOWN
+		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
+		return;
 	}
     }
     if (error == TRUE)
@@ -8100,7 +8115,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     }
 
-    rettv->vval.v_number = match_add(curwin, group, NULL, prio, id, l,
+    rettv->vval.v_number = match_add(win, group, NULL, prio, id, l,
 								conceal_char);
 #endif
 }
