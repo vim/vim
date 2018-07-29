@@ -202,4 +202,4 @@ In Vim >
 [.Net remarks provided by Dave Fishburn and Brian Sturk]
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -295,4 +295,4 @@ When starting up, Vim checks for the presence of "sh" anywhere in the 'shell'
 option.  If it is present, Vim sets the 'shellcmdflag' and 'shellquote' or
 'shellxquote' options will be set as described above.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:
