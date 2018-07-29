@@ -5478,4 +5478,4 @@ literal text specify the size of that text (in bytes):
 "<\@1<=span"	Matches the same, but only tries one byte before "span".
 
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

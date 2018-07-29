@@ -1646,4 +1646,4 @@ WORDCHARS	(Hunspell)				*spell-WORDCHARS*
 		is no need to separate words before checking them (using a
 		trie instead of a hashtable).
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
