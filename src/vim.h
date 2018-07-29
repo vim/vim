@@ -675,10 +675,8 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 
 #define REPLACE_FLAG	0x40	/* Replace mode flag */
 #define REPLACE		(REPLACE_FLAG + INSERT)
-#ifdef FEAT_VREPLACE
-# define VREPLACE_FLAG	0x80	/* Virtual-replace mode flag */
-# define VREPLACE	(REPLACE_FLAG + VREPLACE_FLAG + INSERT)
-#endif
+#define VREPLACE_FLAG	0x80	/* Virtual-replace mode flag */
+#define VREPLACE	(REPLACE_FLAG + VREPLACE_FLAG + INSERT)
 #define LREPLACE	(REPLACE_FLAG + LANGMAP)
 
 #define NORMAL_BUSY	(0x100 + NORMAL) /* Normal mode, busy with a command */

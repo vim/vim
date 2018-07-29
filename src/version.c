@@ -714,11 +714,7 @@ static char *(features[]) =
 #else
 	"-viminfo",
 #endif
-#ifdef FEAT_VREPLACE
 	"+vreplace",
-#else
-	"-vreplace",
-#endif
 #ifdef WIN3264
 # ifdef FEAT_VTP
 	"+vtp",
@@ -798,6 +794,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    226,
 /**/
     225,
 /**/

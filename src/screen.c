@@ -10375,12 +10375,9 @@ showmode(void)
 	    else
 #endif
 	    {
-#ifdef FEAT_VREPLACE
 		if (State & VREPLACE_FLAG)
 		    MSG_PUTS_ATTR(_(" VREPLACE"), attr);
-		else
-#endif
-		    if (State & REPLACE_FLAG)
+		else if (State & REPLACE_FLAG)
 		    MSG_PUTS_ATTR(_(" REPLACE"), attr);
 		else if (State & INSERT)
 		{

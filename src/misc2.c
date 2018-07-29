@@ -3766,10 +3766,8 @@ get_shape_idx(int mouse)
 #endif
     if (!mouse && State == SHOWMATCH)
 	return SHAPE_IDX_SM;
-#ifdef FEAT_VREPLACE
     if (State & VREPLACE_FLAG)
 	return SHAPE_IDX_R;
-#endif
     if (State & REPLACE_FLAG)
 	return SHAPE_IDX_R;
     if (State & INSERT)
