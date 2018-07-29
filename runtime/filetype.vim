@@ -1766,6 +1766,9 @@ au BufNewFile,BufRead *.vroom			setf vroom
 " Webmacro
 au BufNewFile,BufRead *.wm			setf webmacro
 
+" WebAssembly
+au BufNewFile,BufRead *.wast,*.wat		setf wast
+
 " Wget config
 au BufNewFile,BufRead .wgetrc,wgetrc		setf wget
 
