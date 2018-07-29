@@ -21,6 +21,7 @@ LANGUAGES = \
 		ja.sjis \
 		ko \
 		ko.UTF-8 \
+		lv \
 		nb \
 		nl \
 		no \
@@ -42,7 +43,6 @@ LANGUAGES = \
 		zh_CN.cp936 \
 		zh_TW \
 		zh_TW.UTF-8 \
-                lv \
 
 
 MOFILES = \
@@ -61,6 +61,7 @@ MOFILES = \
 		ja.mo \
 		ko.UTF-8.mo \
 		ko.mo \
+		lv.mo \
 		nb.mo \
 		nl.mo \
 		no.mo \
@@ -76,7 +77,6 @@ MOFILES = \
 		zh_CN.mo \
 		zh_TW.UTF-8.mo \
 		zh_TW.mo \
-                lv.mo \
 
 
 MOCONVERTED = \
