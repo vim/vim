@@ -317,4 +317,4 @@ it is about 1191K.
 <rhialto@polder.ubc.kun.nl>
 http://polder.ubc.kun.nl/~rhialto/be
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

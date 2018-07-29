@@ -544,4 +544,4 @@ of DYNAMIC_TCL_DLL file what was specified at compile time.  The version of
 the shared library must match the Tcl version Vim was compiled with.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

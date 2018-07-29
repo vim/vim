@@ -1075,4 +1075,4 @@ careful!
 For the Win32 GUI the external commands are executed in a separate window.
 See |gui-shell-win32|.
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
