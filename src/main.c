@@ -911,7 +911,7 @@ vim_main2(void)
 
     /*
      * Call the main command loop.  This never returns.
-    */
+     */
     main_loop(FALSE, FALSE);
 
 #endif /* NO_VIM_MAIN */
@@ -1155,9 +1155,15 @@ main_loop(
 	else if (do_redraw || stuff_empty())
 	{
 #ifdef FEAT_GUI
-	    /* If ui_breakcheck() was used a resize may have been postponed. */
+	    // If ui_breakcheck() was used a resize may have been postponed.
 	    gui_may_resize_shell();
 #endif
+#ifdef HAVE_DROP_FILE
+	    // If files were dropped while text was locked or the curbuf was
+	    // locked, this would be a good time to handle the drop.
+	    handle_any_postponed_drop();
+#endif
+
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
 			has_cursormoved()

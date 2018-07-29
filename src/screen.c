@@ -526,6 +526,12 @@ reset_updating_screen(int may_resize_shell UNUSED)
 #ifdef FEAT_TERMINAL
     term_check_channel_closed_recently();
 #endif
+
+#ifdef HAVE_DROP_FILE
+    // If handle_drop() was called while updating_screen was TRUE need to
+    // handle the drop now.
+    handle_any_postponed_drop();
+#endif
 }
 
 /*
