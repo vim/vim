@@ -8,6 +8,9 @@ if exists("b:current_syntax")
     finish
 endif
 
+let s:cpo_save = &cpo
+set cpo&vim
+
 syn cluster wastCluster       contains=wastModule,wastInstWithType,wastInstGeneral,wastParamInst,wastControlInst,wastString,wastNamedVar,wastUnnamedVar,wastFloat,wastNumber,wastComment,wastList,wastType
 
 " Instructions
@@ -76,3 +79,6 @@ hi def link wastComment       Comment
 hi def link wastType          Type
 
 let b:current_syntax = "wast"
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

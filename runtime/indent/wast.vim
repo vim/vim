@@ -10,7 +10,8 @@ endif
 let b:did_indent = 1
 
 " WebAssembly text format is S-expression. We can reuse LISP indentation
-setlocal lisp
-setlocal indentexpr=
+" logic.
+setlocal indentexpr=lispindent('.')
+setlocal noautoindent nosmartindent
 
 let b:undo_indent = "setl lisp< indentexpr<"
