@@ -1026,15 +1026,11 @@ static void error_print(int state)
 # ifdef RUBY21_OR_LATER
 	bt = rb_funcallv(error, rb_intern("backtrace"), 0, 0);
 	for (i = 0; i < RARRAY_LEN(bt); i++)
-	{
 	    msg_attr(RSTRING_PTR(RARRAY_AREF(bt, i)), attr);
-	}
 # else
 	bt = rb_funcall2(error, rb_intern("backtrace"), 0, 0);
 	for (i = 0; i < RARRAY_LEN(bt); i++)
-	{
 	    msg_attr(RSTRING_PTR(RARRAY_PTR(bt)[i]), attr);
-	}
 # endif
 	break;
     default:
