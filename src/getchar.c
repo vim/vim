@@ -1710,18 +1710,18 @@ vgetc(void)
 	 * its ASCII equivalent */
 	switch (c)
 	{
-	    case K_KPLUS:		c = '+'; break;
-	    case K_KMINUS:		c = '-'; break;
-	    case K_KDIVIDE:		c = '/'; break;
+	    case K_KPLUS:	c = '+'; break;
+	    case K_KMINUS:	c = '-'; break;
+	    case K_KDIVIDE:	c = '/'; break;
 	    case K_KMULTIPLY:	c = '*'; break;
-	    case K_KENTER:		c = CAR; break;
+	    case K_KENTER:	c = CAR; break;
 	    case K_KPOINT:
 #ifdef WIN32
-				    /* Can be either '.' or a ',', *
-				     * depending on the type of keypad. */
-				    c = MapVirtualKey(VK_DECIMAL, 2); break;
+				// Can be either '.' or a ',',
+				// depending on the type of keypad.
+				c = MapVirtualKey(VK_DECIMAL, 2); break;
 #else
-				    c = '.'; break;
+				c = '.'; break;
 #endif
 	    case K_K0:		c = '0'; break;
 	    case K_K1:		c = '1'; break;

@@ -179,4 +179,4 @@ the system clipboard, the darwin feature should be disabled to prevent Vim
 from hanging at runtime.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

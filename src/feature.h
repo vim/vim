@@ -207,13 +207,6 @@
 #endif
 
 /*
- * +vreplace		"gR" and "gr" commands.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_VREPLACE
-#endif
-
-/*
  * +cmdline_info	'showcmd' and 'ruler' options.
  */
 #ifdef FEAT_NORMAL

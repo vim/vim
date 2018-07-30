@@ -258,3 +258,16 @@ func Test_000_SvREFCNT()
 --perl
   %bw!
 endfunc
+
+func Test_set_cursor()
+  " Check that setting the cursor position works.
+  new
+  call setline(1, ['first line', 'second line'])
+  normal gg
+  perldo $curwin->Cursor(1, 5)
+  call assert_equal([1, 6], [line('.'), col('.')])
+
+  " Check that movement after setting cursor position keeps current column.
+  normal j
+  call assert_equal([2, 6], [line('.'), col('.')])
+endfunc

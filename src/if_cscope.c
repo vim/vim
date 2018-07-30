@@ -519,7 +519,7 @@ cs_add_common(
 #ifdef FEAT_MODIFY_FNAME
     len = (int)STRLEN(fname);
     fbuf = (char_u *)fname;
-    (void)modify_fname((char_u *)":p", &usedlen,
+    (void)modify_fname((char_u *)":p", FALSE, &usedlen,
 					      (char_u **)&fname, &fbuf, &len);
     if (fname == NULL)
 	goto add_err;

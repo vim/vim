@@ -101,6 +101,11 @@ static char *(features[]) =
 	"-arabic",
 #endif
 	"+autocmd",
+#ifdef FEAT_AUTOCHDIR
+       "+autochdir",
+#else
+       "-autochdir",
+#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"+autoservername",
 #else
@@ -709,11 +714,7 @@ static char *(features[]) =
 #else
 	"-viminfo",
 #endif
-#ifdef FEAT_VREPLACE
 	"+vreplace",
-#else
-	"-vreplace",
-#endif
 #ifdef WIN3264
 # ifdef FEAT_VTP
 	"+vtp",
@@ -793,6 +794,46 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    229,
+/**/
+    228,
+/**/
+    227,
+/**/
+    226,
+/**/
+    225,
+/**/
+    224,
+/**/
+    223,
+/**/
+    222,
+/**/
+    221,
+/**/
+    220,
+/**/
+    219,
+/**/
+    218,
+/**/
+    217,
+/**/
+    216,
+/**/
+    215,
+/**/
+    214,
+/**/
+    213,
+/**/
+    212,
+/**/
+    211,
+/**/
+    210,
 /**/
     209,
 /**/

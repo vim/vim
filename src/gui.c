@@ -3181,10 +3181,8 @@ button_set:
 	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
-# ifdef FEAT_VREPLACE
 	case VREPLACE:
 	case VREPLACE+LANGMAP:
-# endif
 	case INSERT:
 	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
 	case ASKMORE:
@@ -5385,10 +5383,7 @@ gui_do_findrepl(
 
 #endif
 
-#if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
-	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC) \
-	|| defined(PROTO)
+#if defined(HAVE_DROP_FILE) || defined(PROTO)
 
 static void gui_wingoto_xy(int x, int y);
 
@@ -5408,6 +5403,42 @@ gui_wingoto_xy(int x, int y)
 	if (wp != NULL && wp != curwin)
 	    win_goto(wp);
     }
+}
+
+/*
+ * Function passed to handle_drop() for the actions to be done after the
+ * argument list has been updated.
+ */
+    static void
+drop_callback(void *cookie)
+{
+    char_u	*p = cookie;
+
+    /* If Shift held down, change to first file's directory.  If the first
+     * item is a directory, change to that directory (and let the explorer
+     * plugin show the contents). */
+    if (p != NULL)
+    {
+	if (mch_isdir(p))
+	{
+	    if (mch_chdir((char *)p) == 0)
+		shorten_fnames(TRUE);
+	}
+	else if (vim_chdirfile(p, "drop") == OK)
+	    shorten_fnames(TRUE);
+	vim_free(p);
+    }
+
+    /* Update the screen display */
+    update_screen(NOT_VALID);
+# ifdef FEAT_MENU
+    gui_update_menus(0);
+# endif
+#ifdef FEAT_TITLE
+    maketitle();
+#endif
+    setcursor();
+    out_flush_cursor(FALSE, FALSE);
 }
 
 /*
@@ -5490,33 +5521,8 @@ gui_handle_drop(
 	    vim_free(fnames);
 	}
 	else
-	    handle_drop(count, fnames, (modifiers & MOUSE_CTRL) != 0);
-
-	/* If Shift held down, change to first file's directory.  If the first
-	 * item is a directory, change to that directory (and let the explorer
-	 * plugin show the contents). */
-	if (p != NULL)
-	{
-	    if (mch_isdir(p))
-	    {
-		if (mch_chdir((char *)p) == 0)
-		    shorten_fnames(TRUE);
-	    }
-	    else if (vim_chdirfile(p, "drop") == OK)
-		shorten_fnames(TRUE);
-	    vim_free(p);
-	}
-
-	/* Update the screen display */
-	update_screen(NOT_VALID);
-# ifdef FEAT_MENU
-	gui_update_menus(0);
-# endif
-#ifdef FEAT_TITLE
-	maketitle();
-#endif
-	setcursor();
-	out_flush_cursor(FALSE, FALSE);
+	    handle_drop(count, fnames, (modifiers & MOUSE_CTRL) != 0,
+		    drop_callback, (void *)p);
     }
 
     entered = FALSE;

@@ -784,10 +784,7 @@ open_line(
     char_u	*leader = NULL;		/* copy of comment leader */
 #endif
     char_u	*allocated = NULL;	/* allocated memory */
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_VREPLACE) || defined(FEAT_LISP) \
-	|| defined(FEAT_CINDENT) || defined(FEAT_COMMENTS)
     char_u	*p;
-#endif
     int		saved_char = NUL;	/* init for GCC */
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_COMMENTS)
     pos_T	*pos;
@@ -804,7 +801,7 @@ open_line(
     int		no_si = FALSE;		/* reset did_si afterwards */
     int		first_char = NUL;	/* init for GCC */
 #endif
-#if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     int		vreplace_mode;
 #endif
     int		did_append;		/* appended a new line */
@@ -817,7 +814,6 @@ open_line(
     if (saved_line == NULL)	    /* out of memory! */
 	return FALSE;
 
-#ifdef FEAT_VREPLACE
     if (State & VREPLACE_FLAG)
     {
 	/*
@@ -857,13 +853,8 @@ open_line(
 	}
 	saved_line[curwin->w_cursor.col] = NUL;
     }
-#endif
 
-    if ((State & INSERT)
-#ifdef FEAT_VREPLACE
-	    && !(State & VREPLACE_FLAG)
-#endif
-	    )
+    if ((State & INSERT) && !(State & VREPLACE_FLAG))
     {
 	p_extra = saved_line + curwin->w_cursor.col;
 #ifdef FEAT_SMARTINDENT
@@ -1601,9 +1592,7 @@ open_line(
     old_cursor = curwin->w_cursor;
     if (dir == BACKWARD)
 	--curwin->w_cursor.lnum;
-#ifdef FEAT_VREPLACE
     if (!(State & VREPLACE_FLAG) || old_cursor.lnum >= orig_line_count)
-#endif
     {
 	if (ml_append(curwin->w_cursor.lnum, p_extra, (colnr_T)0, FALSE)
 								      == FAIL)
@@ -1620,7 +1609,6 @@ open_line(
 	    mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 	did_append = TRUE;
     }
-#ifdef FEAT_VREPLACE
     else
     {
 	/*
@@ -1640,7 +1628,6 @@ open_line(
 	curwin->w_cursor.lnum--;
 	did_append = FALSE;
     }
-#endif
 
     if (newindent
 #ifdef FEAT_SMARTINDENT
@@ -1744,7 +1731,7 @@ open_line(
     curwin->w_cursor.coladd = 0;
 #endif
 
-#if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     /*
      * In VREPLACE mode, we are handling the replace stack ourselves, so stop
      * fixthisline() from doing it (via change_indent()) by telling it we're in
@@ -1791,12 +1778,11 @@ open_line(
 	ai_col = (colnr_T)getwhitecols_curline();
     }
 #endif
-#if defined(FEAT_VREPLACE) && (defined(FEAT_LISP) || defined(FEAT_CINDENT))
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     if (vreplace_mode != 0)
 	State = vreplace_mode;
 #endif
 
-#ifdef FEAT_VREPLACE
     /*
      * Finally, VREPLACE gets the stuff on the new line, then puts back the
      * original line, and inserts the new stuff char by char, pushing old stuff
@@ -1821,7 +1807,6 @@ open_line(
 	vim_free(p_extra);
 	next_line = NULL;
     }
-#endif
 
     retval = OK;		/* success! */
 theend:
@@ -2307,7 +2292,6 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last)
     return (count);
 }
 
-#if defined(FEAT_VREPLACE) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Insert string "p" at the cursor position.  Stops at a NUL byte.
  * Handles Replace mode and multi-byte characters.
@@ -2317,10 +2301,7 @@ ins_bytes(char_u *p)
 {
     ins_bytes_len(p, (int)STRLEN(p));
 }
-#endif
 
-#if defined(FEAT_VREPLACE) || defined(FEAT_INS_EXPAND) \
-	|| defined(FEAT_COMMENTS) || defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Insert string "p" with length "len" at the cursor position.
  * Handles Replace mode and multi-byte characters.
@@ -2329,7 +2310,7 @@ ins_bytes(char_u *p)
 ins_bytes_len(char_u *p, int len)
 {
     int		i;
-# ifdef FEAT_MBYTE
+#ifdef FEAT_MBYTE
     int		n;
 
     if (has_mbyte)
@@ -2343,11 +2324,10 @@ ins_bytes_len(char_u *p, int len)
 	    ins_char_bytes(p + i, n);
 	}
     else
-# endif
+#endif
 	for (i = 0; i < len; ++i)
 	    ins_char(p[i]);
 }
-#endif
 
 /*
  * Insert or replace a single character at the cursor position.
@@ -2406,7 +2386,6 @@ ins_char_bytes(char_u *buf, int charlen)
 
     if (State & REPLACE_FLAG)
     {
-#ifdef FEAT_VREPLACE
 	if (State & VREPLACE_FLAG)
 	{
 	    colnr_T	new_vcol = 0;   /* init for GCC */
@@ -2456,7 +2435,6 @@ ins_char_bytes(char_u *buf, int charlen)
 	    curwin->w_p_list = old_list;
 	}
 	else
-#endif
 	    if (oldp[col] != NUL)
 	{
 	    /* normal replace */
@@ -4908,7 +4886,7 @@ home_replace(
 	char_u	*fbuf = NULL;
 
 	flen = (int)STRLEN(homedir_env);
-	(void)modify_fname((char_u *)":p", &usedlen,
+	(void)modify_fname((char_u *)":p", FALSE, &usedlen,
 						  &homedir_env, &fbuf, &flen);
 	flen = (int)STRLEN(homedir_env);
 	if (flen > 0 && vim_ispathsep(homedir_env[flen - 1]))

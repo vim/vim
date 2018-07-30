@@ -1007,6 +1007,55 @@ struct SelectionRange /* for handling kCoreClassEvent:kOpenDocuments:keyAEPositi
     long theDate; // modification date/time
 };
 
+static long drop_numFiles;
+static short drop_gotPosition;
+static SelectionRange drop_thePosition;
+
+    static void
+drop_callback(void *cookie UNUSED)
+{
+    /* TODO: Handle the goto/select line more cleanly */
+    if ((drop_numFiles == 1) & (drop_gotPosition))
+    {
+	if (drop_thePosition.lineNum >= 0)
+	{
+	    lnum = drop_thePosition.lineNum + 1;
+	/*  oap->motion_type = MLINE;
+	    setpcmark();*/
+	    if (lnum < 1L)
+		lnum = 1L;
+	    else if (lnum > curbuf->b_ml.ml_line_count)
+		lnum = curbuf->b_ml.ml_line_count;
+	    curwin->w_cursor.lnum = lnum;
+	    curwin->w_cursor.col = 0;
+	/*  beginline(BL_SOL | BL_FIX);*/
+	}
+	else
+	    goto_byte(drop_thePosition.startRange + 1);
+    }
+
+    /* Update the screen display */
+    update_screen(NOT_VALID);
+
+    /* Select the text if possible */
+    if (drop_gotPosition)
+    {
+	VIsual_active = TRUE;
+	VIsual_select = FALSE;
+	VIsual = curwin->w_cursor;
+	if (drop_thePosition.lineNum < 0)
+	{
+	    VIsual_mode = 'v';
+	    goto_byte(drop_thePosition.endRange);
+	}
+	else
+	{
+	    VIsual_mode = 'V';
+	    VIsual.col = 0;
+	}
+    }
+}
+
 /* The IDE uses the optional keyAEPosition parameter to tell the ed-
    itor the selection range. If lineNum is zero or greater, scroll the text
    to the specified line. If lineNum is less than zero, use the values in
@@ -1113,48 +1162,10 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     }
 
     /* Handle the drop, :edit to get to the file */
-    handle_drop(numFiles, fnames, FALSE);
-
-    /* TODO: Handle the goto/select line more cleanly */
-    if ((numFiles == 1) & (gotPosition))
-    {
-	if (thePosition.lineNum >= 0)
-	{
-	    lnum = thePosition.lineNum + 1;
-	/*  oap->motion_type = MLINE;
-	    setpcmark();*/
-	    if (lnum < 1L)
-		lnum = 1L;
-	    else if (lnum > curbuf->b_ml.ml_line_count)
-		lnum = curbuf->b_ml.ml_line_count;
-	    curwin->w_cursor.lnum = lnum;
-	    curwin->w_cursor.col = 0;
-	/*  beginline(BL_SOL | BL_FIX);*/
-	}
-	else
-	    goto_byte(thePosition.startRange + 1);
-    }
-
-    /* Update the screen display */
-    update_screen(NOT_VALID);
-
-    /* Select the text if possible */
-    if (gotPosition)
-    {
-	VIsual_active = TRUE;
-	VIsual_select = FALSE;
-	VIsual = curwin->w_cursor;
-	if (thePosition.lineNum < 0)
-	{
-	    VIsual_mode = 'v';
-	    goto_byte(thePosition.endRange);
-	}
-	else
-	{
-	    VIsual_mode = 'V';
-	    VIsual.col = 0;
-	}
-    }
+    drop_numFiles = numFiles;
+    drop_gotPosition = gotPosition;
+    drop_thePosition = thePosition;
+    handle_drop(numFiles, fnames, FALSE, drop_callback, NULL);
 
     setcursor();
     out_flush();

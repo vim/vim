@@ -136,7 +136,7 @@ void fill_assert_error(garray_T *gap, typval_T *opt_msg_tv, char_u *exp_str, typ
 int typval_compare(typval_T *typ1, typval_T *typ2, exptype_T type, int type_is, int ic);
 char_u *typval_tostring(typval_T *arg);
 int var_exists(char_u *var);
-int modify_fname(char_u *src, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
+int modify_fname(char_u *src, int tilde_file, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
 char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, typval_T *expr, char_u *flags);
 void filter_map(typval_T *argvars, typval_T *rettv, int map);
 /* vim: set ft=c : */

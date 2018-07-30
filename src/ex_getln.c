@@ -5193,16 +5193,6 @@ expand_shellcmd(
     hash_init(&found_ht);
     for (s = path; ; s = e)
     {
-	if (*s == NUL)
-	{
-	    if (did_curdir)
-		break;
-	    /* Find directories in the current directory, path is empty. */
-	    did_curdir = TRUE;
-	}
-	else if (*s == '.')
-	    did_curdir = TRUE;
-
 #if defined(MSWIN)
 	e = vim_strchr(s, ';');
 #else
@@ -5210,6 +5200,23 @@ expand_shellcmd(
 #endif
 	if (e == NULL)
 	    e = s + STRLEN(s);
+
+	if (*s == NUL)
+	{
+	    if (did_curdir)
+		break;
+	    // Find directories in the current directory, path is empty.
+	    did_curdir = TRUE;
+	    flags |= EW_DIR;
+	}
+	else if (STRNCMP(s, ".", (int)(e - s)) == 0)
+	{
+	    did_curdir = TRUE;
+	    flags |= EW_DIR;
+	}
+	else
+	    // Do not match directories inside a $PATH item.
+	    flags &= ~EW_DIR;
 
 	l = e - s;
 	if (l > MAXPATHL - 5)
@@ -5266,8 +5273,6 @@ expand_shellcmd(
 
 
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
-static void * call_user_expand_func(void *(*user_expand_func)(char_u *, int, typval_T *, int), expand_T	*xp, int *num_file, char_u ***file);
-
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
  * return the result (either a string or a List).

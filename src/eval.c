@@ -9387,8 +9387,7 @@ typval_compare(
 }
 
     char_u *
-typval_tostring(arg)
-    typval_T	*arg;
+typval_tostring(typval_T *arg)
 {
     char_u	*tofree;
     char_u	numbuf[NUMBUFLEN];
@@ -9691,11 +9690,12 @@ shortpath_for_partial(
  */
     int
 modify_fname(
-    char_u	*src,		/* string with modifiers */
-    int		*usedlen,	/* characters after src that are used */
-    char_u	**fnamep,	/* file name so far */
-    char_u	**bufp,		/* buffer for allocated file name or NULL */
-    int		*fnamelen)	/* length of fnamep */
+    char_u	*src,		// string with modifiers
+    int		tilde_file,	// "~" is a file name, not $HOME
+    int		*usedlen,	// characters after src that are used
+    char_u	**fnamep,	// file name so far
+    char_u	**bufp,		// buffer for allocated file name or NULL
+    int		*fnamelen)	// length of fnamep
 {
     int		valid = 0;
     char_u	*tail;
@@ -9725,8 +9725,8 @@ repeat:
 		    || (*fnamep)[1] == '\\'
 # endif
 		    || (*fnamep)[1] == NUL)
-
 #endif
+		&& !(tilde_file && (*fnamep)[1] == NUL)
 	   )
 	{
 	    *fnamep = expand_env_save(*fnamep);

@@ -7,6 +7,7 @@ void qf_list(exarg_T *eap);
 void qf_age(exarg_T *eap);
 void qf_history(exarg_T *eap);
 void qf_mark_adjust(win_T *wp, linenr_T line1, linenr_T line2, long amount, long amount_after);
+void qf_view_result(int split);
 void ex_cwindow(exarg_T *eap);
 void ex_cclose(exarg_T *eap);
 void ex_copen(exarg_T *eap);

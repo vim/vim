@@ -555,3 +555,20 @@ func Test_luafile_error()
   call delete('Xlua_file')
   bwipe!
 endfunc
+
+func Test_set_cursor()
+  " Check that setting the cursor position works.
+  new
+  call setline(1, ['first line', 'second line'])
+  normal gg
+  lua << EOF
+w = vim.window()
+w.line = 1
+w.col = 5
+EOF
+  call assert_equal([1, 5], [line('.'), col('.')])
+
+  " Check that movement after setting cursor position keeps current column.
+  normal j
+  call assert_equal([2, 5], [line('.'), col('.')])
+endfunc

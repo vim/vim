@@ -479,4 +479,4 @@ v2  May 14, 2003 :   extracts name of item to be obtained from the
                      and they became numbers.  Fixes comparison.
 
 ==============================================================================
-vim:tw=78:ts=8:ft=help:fdm=marker
+vim:tw=78:ts=8:noet:ft=help:fdm=marker

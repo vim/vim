@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2018 May 2
+" Last Change: 	2018 Jul 25
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -14,32 +14,47 @@ if &filetype == "man"
     finish
   endif
   let b:did_ftplugin = 1
+endif
 
+let s:cpo_save = &cpo
+set cpo-=C
+
+if &filetype == "man"
   " allow dot and dash in manual page name.
   setlocal iskeyword+=\.,-
+  let b:undo_ftplugin = "setlocal iskeyword<"
 
   " Add mappings, unless the user didn't want this.
   if !exists("no_plugin_maps") && !exists("no_man_maps")
     if !hasmapto('<Plug>ManBS')
       nmap <buffer> <LocalLeader>h <Plug>ManBS
+      let b:undo_ftplugin = b:undo_ftplugin
+	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
     nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
 
     nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
     nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
     nnoremap <buffer> <silent> q :q<CR>
+
+    " Add undo commands for the maps
+    let b:undo_ftplugin = b:undo_ftplugin
+	  \ . '|silent! nunmap <buffer> <Plug>ManBS'
+	  \ . '|silent! nunmap <buffer> <c-]>'
+	  \ . '|silent! nunmap <buffer> <c-t>'
+	  \ . '|silent! nunmap <buffer> q'
   endif
 
   if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
     setlocal foldmethod=indent foldnestmax=1 foldenable
+    let b:undo_ftplugin = b:undo_ftplugin
+	  \ . '|silent! setl fdm< fdn< fen<'
   endif
-
-  let b:undo_ftplugin = "setlocal iskeyword<"
 
 endif
 
 if exists(":Man") != 2
-  com -nargs=+ -complete=shellcmd Man call s:GetPage(<f-args>)
+  com -nargs=+ -complete=shellcmd Man call s:GetPage(<q-mods>, <f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
   nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
@@ -100,7 +115,7 @@ func <SID>FindPage(sect, page)
   return 1
 endfunc
 
-func <SID>GetPage(...)
+func <SID>GetPage(cmdmods, ...)
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -154,7 +169,11 @@ func <SID>GetPage(...)
           new
         endif
       else
-        new
+	if a:cmdmods != ''
+	  exe a:cmdmods . ' new'
+	else
+	  new
+	endif
       endif
       setl nonu fdc=0
     endif
@@ -217,5 +236,8 @@ func <SID>PopPage()
 endfunc
 
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set sw=2 ts=8 noet:

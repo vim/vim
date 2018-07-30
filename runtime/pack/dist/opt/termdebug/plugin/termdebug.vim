@@ -877,7 +877,7 @@ func s:HandleNewBreakpoint(msg)
     return
   endif
 
-  let nr = substitute(a:msg, '.*number="\([0-9]\)*\".*', '\1', '') + 0
+  let nr = substitute(a:msg, '.*number="\([0-9]*\)".*', '\1', '') + 0
   if nr == 0
     return
   endif

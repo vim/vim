@@ -12,4 +12,4 @@ work, there is not enough memory.  The DOS32 version (using DJGPP) might still
 work on older systems.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

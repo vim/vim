@@ -1102,6 +1102,21 @@ func_remove(ufunc_T *fp)
     return FALSE;
 }
 
+    static void
+func_clear_items(ufunc_T *fp)
+{
+    ga_clear_strings(&(fp->uf_args));
+    ga_clear_strings(&(fp->uf_lines));
+#ifdef FEAT_PROFILE
+    vim_free(fp->uf_tml_count);
+    fp->uf_tml_count = NULL;
+    vim_free(fp->uf_tml_total);
+    fp->uf_tml_total = NULL;
+    vim_free(fp->uf_tml_self);
+    fp->uf_tml_self = NULL;
+#endif
+}
+
 /*
  * Free all things that a function contains.  Does not free the function
  * itself, use func_free() for that.
@@ -1115,13 +1130,7 @@ func_clear(ufunc_T *fp, int force)
     fp->uf_cleared = TRUE;
 
     /* clear this function */
-    ga_clear_strings(&(fp->uf_args));
-    ga_clear_strings(&(fp->uf_lines));
-#ifdef FEAT_PROFILE
-    vim_free(fp->uf_tml_count);
-    vim_free(fp->uf_tml_total);
-    vim_free(fp->uf_tml_self);
-#endif
+    func_clear_items(fp);
     funccal_unref(fp->uf_scoped, fp, force);
 }
 
@@ -2312,9 +2321,12 @@ ex_function(exarg_T *eap)
 	    else
 	    {
 		/* redefine existing function */
-		ga_clear_strings(&(fp->uf_args));
-		ga_clear_strings(&(fp->uf_lines));
 		VIM_CLEAR(name);
+		func_clear_items(fp);
+#ifdef FEAT_PROFILE
+		fp->uf_profiling = FALSE;
+		fp->uf_prof_initialized = FALSE;
+#endif
 	    }
 	}
     }
@@ -2434,10 +2446,6 @@ ex_function(exarg_T *eap)
 	fp->uf_scoped = NULL;
 
 #ifdef FEAT_PROFILE
-    fp->uf_tml_count = NULL;
-    fp->uf_tml_total = NULL;
-    fp->uf_tml_self = NULL;
-    fp->uf_profiling = FALSE;
     if (prof_def_func())
 	func_do_profile(fp);
 #endif

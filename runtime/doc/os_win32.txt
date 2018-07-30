@@ -303,4 +303,4 @@ A. Yes, place your favorite icon in bitmaps/vim.ico in a directory of
    'runtimepath'.  For example ~/vimfiles/bitmaps/vim.ico.
 
 
- vim:tw=78:fo=tcq2:ts=8:ft=help:norl:
+ vim:tw=78:fo=tcq2:ts=8:noet:ft=help:norl:

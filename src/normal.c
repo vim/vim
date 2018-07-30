@@ -111,9 +111,7 @@ static void	nv_findpar(cmdarg_T *cap);
 static void	nv_undo(cmdarg_T *cap);
 static void	nv_kundo(cmdarg_T *cap);
 static void	nv_Replace(cmdarg_T *cap);
-#ifdef FEAT_VREPLACE
 static void	nv_vreplace(cmdarg_T *cap);
-#endif
 static void	v_swap_corners(int cmdchar);
 static void	nv_replace(cmdarg_T *cap);
 static void	n_swapchar(cmdarg_T *cap);
@@ -6202,18 +6200,12 @@ nv_down(cmdarg_T *cap)
 	cap->arg = FORWARD;
 	nv_page(cap);
     }
-    else
 #if defined(FEAT_QUICKFIX)
-    /* In a quickfix window a <CR> jumps to the error under the cursor. */
-    if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
-    {
-	if (curwin->w_llist_ref == NULL)
-	    do_cmdline_cmd((char_u *)".cc");	/* quickfix window */
-	else
-	    do_cmdline_cmd((char_u *)".ll");	/* location list window */
-    }
-    else
+    /* Quickfix window only: view the result under the cursor. */
+    else if (bt_quickfix(curbuf) && cap->cmdchar == CAR)
+	qf_view_result(FALSE);
 #endif
+    else
     {
 #ifdef FEAT_CMDWIN
 	/* In the cmdline window a <CR> executes the command. */
@@ -7306,7 +7298,6 @@ nv_Replace(cmdarg_T *cap)
     }
 }
 
-#ifdef FEAT_VREPLACE
 /*
  * "gr".
  */
@@ -7329,15 +7320,14 @@ nv_vreplace(cmdarg_T *cap)
 		cap->extra_char = get_literal();
 	    stuffcharReadbuff(cap->extra_char);
 	    stuffcharReadbuff(ESC);
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 	    if (virtual_active())
 		coladvance(getviscol());
-# endif
+#endif
 	    invoke_edit(cap, TRUE, 'v', FALSE);
 	}
     }
 }
-#endif
 
 /*
  * Swap case for "~" command, when it does not work like an operator.
@@ -7950,7 +7940,6 @@ nv_g_cmd(cmdarg_T *cap)
 	    clearopbeep(oap);
 	break;
 
-#ifdef FEAT_VREPLACE
     /*
      * "gR": Enter virtual replace mode.
      */
@@ -7962,7 +7951,6 @@ nv_g_cmd(cmdarg_T *cap)
     case 'r':
 	nv_vreplace(cap);
 	break;
-#endif
 
     case '&':
 	do_cmdline_cmd((char_u *)"%s//~/&");
