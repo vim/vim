@@ -5627,6 +5627,15 @@ write_viminfo_bufferlist(FILE *fp)
 #endif
 
 /*
+ * Return TRUE if "buf" is a normal buffer, 'buftype' is empty.
+ */
+    int
+bt_normal(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt[0] == NUL;
+}
+
+/*
  * Return TRUE if "buf" is the quickfix buffer.
  */
     int
