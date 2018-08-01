@@ -5279,7 +5279,7 @@ expand_shellcmd(
  */
     static void *
 call_user_expand_func(
-    void	*(*user_expand_func)(char_u *, int, typval_T *, int),
+    void	*(*user_expand_func)(char_u *, int, typval_T *),
     expand_T	*xp,
     int		*num_file,
     char_u	***file)
@@ -5318,7 +5318,7 @@ call_user_expand_func(
     ccline.cmdprompt = NULL;
     current_SID = xp->xp_scriptID;
 
-    ret = user_expand_func(xp->xp_arg, 3, args, FALSE);
+    ret = user_expand_func(xp->xp_arg, 3, args);
 
     ccline = save_ccline;
     current_SID = save_current_SID;

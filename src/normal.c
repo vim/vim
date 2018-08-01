@@ -2248,7 +2248,7 @@ op_function(oparg_T *oap UNUSED)
 	virtual_op = MAYBE;
 # endif
 
-	(void)call_func_retnr(p_opfunc, 1, argv, FALSE);
+	(void)call_func_retnr(p_opfunc, 1, argv);
 
 # ifdef FEAT_VIRTUALEDIT
 	virtual_op = save_virtual_op;
