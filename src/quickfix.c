@@ -4251,7 +4251,8 @@ ex_make(exarg_T *eap)
 	// If autocommands changed the current list, then restore it
 	if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
 	    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-	qf_jump(qi, 0, 0, FALSE);		/* display first error */
+	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	    qf_jump(qi, 0, 0, FALSE);		/* display first error */
     }
 
 cleanup:
@@ -4653,7 +4654,8 @@ ex_cfile(exarg_T *eap)
 	// If autocommands changed the current list, then restore it
 	if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
 	    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
+	if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	    qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
     }
 }
 
@@ -6364,7 +6366,8 @@ ex_cbuffer(exarg_T *eap)
 		// If autocommands changed the current list, then restore it
 		if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
 		    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+		if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+		    qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
 	    }
 	}
     }
@@ -6446,7 +6449,8 @@ ex_cexpr(exarg_T *eap)
 		// If autocommands changed the current list, then restore it
 		if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
 		    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-		qf_jump(qi, 0, 0, eap->forceit);
+		if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+		    qf_jump(qi, 0, 0, eap->forceit);
 	    }
 	}
 	else
