@@ -6583,7 +6583,8 @@ find_help_tags(
     static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
 			       "/*", "/\\*", "\"*", "**",
 			       "cpo-*", "/\\(\\)", "/\\%(\\)",
-			       "?", ":?", "-?", "?<CR>", "g?", "g?g?", "g??",
+			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
 			       "[count]", "[quotex]",
 			       "[range]", ":[range]",
@@ -6593,27 +6594,43 @@ find_help_tags(
     static char *(rtable[]) = {"star", "gstar", "[star", "]star", ":star",
 			       "/star", "/\\\\star", "quotestar", "starstar",
 			       "cpo-star", "/\\\\(\\\\)", "/\\\\%(\\\\)",
-			       "?", ":?", "-?", "?<CR>", "g?", "g?g?", "g??",
+			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]",
 			       "\\[range]", ":\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
 			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
 			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
+    static char *(expr_table[]) = {"!=?", "!~?", "<=?", "<?", "==?", "=~?",
+				">=?", ">?", "is?", "isnot?"};
     int flags;
 
     d = IObuff;		    /* assume IObuff is long enough! */
 
-    /*
-     * Recognize a few exceptions to the rule.	Some strings that contain '*'
-     * with "star".  Otherwise '*' is recognized as a wildcard.
-     */
-    for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
-	if (STRCMP(arg, mtable[i]) == 0)
-	{
-	    STRCPY(d, rtable[i]);
-	    break;
-	}
+    if (STRNICMP(arg, "expr-", 5) == 0)
+    {
+	// When the string starting with "expr-" and containing '?' and matches
+	// the table, it is taken literally.  Otherwise '?' is recognized as a
+	// wildcard.
+	for (i = (int)(sizeof(expr_table) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg + 5, expr_table[i]) == 0)
+	    {
+		STRCPY(d, arg);
+		break;
+	    }
+    }
+    else
+    {
+	// Recognize a few exceptions to the rule.  Some strings that contain
+	// '*' with "star".  Otherwise '*' is recognized as a wildcard.
+	for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg, mtable[i]) == 0)
+	    {
+		STRCPY(d, rtable[i]);
+		break;
+	    }
+    }
 
     if (i < 0)	/* no match in table */
     {
