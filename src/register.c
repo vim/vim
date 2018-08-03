@@ -2111,6 +2111,15 @@ get_register_name(int num)
 }
 
 /*
+ * Return the register "" points to
+ */
+    int
+get_reg_point()
+{
+    return y_previous == NULL ? -1 : y_previous - &y_regs[0];
+}
+
+/*
  * ":dis" and ":registers": Display the contents of the yank registers.
  */
     void

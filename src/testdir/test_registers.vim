@@ -416,4 +416,26 @@ func Test_execute_register()
   call assert_beeps('normal! c@r')
 endfunc
 
+func Test_reginfo()
+  enew
+  call setline(1, ['foo', 'bar'])
+  exe 'norm! "zyy'
+  let info = getreginfo('"')
+  call assert_equal(info.points_to, 'z')
+  call setreg('y', 'baz')
+  call assert_equal(getreginfo('').points_to, 'z')
+  call setreg('y', { 'isunnamed': v:true })
+  call assert_equal(getreginfo('"').points_to, 'y')
+  exe '$put'
+  call assert_equal(getline(3), getreg('y'))
+  call setreg('', 'qux')
+  call assert_equal(getreginfo('').points_to, '0')
+  call setreg('x', 'quux')
+  call assert_equal(getreginfo('').points_to, '0')
+  let info = getreginfo('')
+  call assert_equal(info.regcontents, getreg('', 1, 1))
+  call assert_equal(info.regtype, getregtype(''))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
