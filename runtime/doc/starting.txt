@@ -520,7 +520,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		  'nocompatible': use Vim defaults
 		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
-		- the home directory is excluded from 'runtimepath'
+		- the home directory is excluded from 'runtimepath' (does not
+		  happen with -u DEFAULTS)
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
 		which is then stored in the 'key' option.  All writes will
