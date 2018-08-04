@@ -529,6 +529,8 @@ term_start(
 
     set_string_option_direct((char_u *)"buftype", -1,
 				  (char_u *)"terminal", OPT_FREE|OPT_LOCAL, 0);
+    // Avoid that 'buftype' is reset when this buffer is entered.
+    curbuf->b_p_initialized = TRUE;
 
     /* Mark the buffer as not modifiable. It can only be made modifiable after
      * the job finished. */
