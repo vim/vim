@@ -4,6 +4,9 @@ if !has('perl')
   finish
 end
 
+" FIXME: RunTest don't see any error when Perl abort...
+perl $SIG{__WARN__} = sub { die "Unexpected warnings from perl: @_" };
+
 func Test_change_buffer()
   call setline(line('$'), ['1 line 1'])
   perl VIM::DoCommand("normal /^1\n")
@@ -229,6 +232,15 @@ func Test_000_SvREFCNT()
 #line 5 "Test_000_SvREFCNT()"
   my ($b, $w);
 
+  my $num = 0;
+  for ( 0 .. 100 ) {
+      if ( ++$num >= 8 ) { $num = 0 }
+      VIM::DoCommand("buffer X$num");
+      $b = $curbuf;
+  }
+
+  VIM::DoCommand("buffer t");
+
   $b = $curbuf      for 0 .. 100;
   $w = $curwin      for 0 .. 100;
   () = VIM::Buffers for 0 .. 100;
@@ -240,12 +252,13 @@ func Test_000_SvREFCNT()
       my $cw = Internals::SvREFCNT($$w);
       VIM::Eval("assert_equal(2, $cb, 'T1')");
       VIM::Eval("assert_equal(2, $cw, 'T2')");
+      my $strongref;
       foreach ( VIM::Buffers, VIM::Windows ) {
+	  VIM::DoCommand("%bw!");
 	  my $c = Internals::SvREFCNT($_);
 	  VIM::Eval("assert_equal(2, $c, 'T3')");
 	  $c = Internals::SvREFCNT($$_);
-	  # Why only one ref?
-	  # Look wrong but work.  Maybe not portable...
+	  next if $c == 2 && !$strongref++;
 	  VIM::Eval("assert_equal(1, $c, 'T4')");
       }
       $cb = Internals::SvREFCNT($$curbuf);

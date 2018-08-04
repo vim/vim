@@ -1021,29 +1021,15 @@ call_vim_function(
     char_u      *func,
     int		argc,
     typval_T	*argv,
-    typval_T	*rettv,
-    int		safe)		/* use the sandbox */
+    typval_T	*rettv)
 {
     int		doesrange;
-    void	*save_funccalp = NULL;
     int		ret;
-
-    if (safe)
-    {
-	save_funccalp = save_funccal();
-	++sandbox;
-    }
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
     ret = call_func(func, (int)STRLEN(func), rettv, argc, argv, NULL,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 		    &doesrange, TRUE, NULL, NULL);
-    if (safe)
-    {
-	--sandbox;
-	restore_funccal(save_funccalp);
-    }
-
     if (ret == FAIL)
 	clear_tv(rettv);
 
@@ -1060,13 +1046,12 @@ call_vim_function(
 call_func_retnr(
     char_u      *func,
     int		argc,
-    typval_T	*argv,
-    int		safe)		/* use the sandbox */
+    typval_T	*argv)
 {
     typval_T	rettv;
     varnumber_T	retval;
 
-    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
 	return -1;
 
     retval = get_tv_number_chk(&rettv, NULL);
@@ -1088,13 +1073,12 @@ call_func_retnr(
 call_func_retstr(
     char_u      *func,
     int		argc,
-    typval_T	*argv,
-    int		safe)		/* use the sandbox */
+    typval_T	*argv)
 {
     typval_T	rettv;
     char_u	*retval;
 
-    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
 	return NULL;
 
     retval = vim_strsave(get_tv_string(&rettv));
@@ -1113,12 +1097,11 @@ call_func_retstr(
 call_func_retlist(
     char_u      *func,
     int		argc,
-    typval_T	*argv,
-    int		safe)		/* use the sandbox */
+    typval_T	*argv)
 {
     typval_T	rettv;
 
-    if (call_vim_function(func, argc, argv, &rettv, safe) == FAIL)
+    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
 	return NULL;
 
     if (rettv.v_type != VAR_LIST)

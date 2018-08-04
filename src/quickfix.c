@@ -2487,7 +2487,7 @@ qf_find_win_with_normal_buf(void)
     win_T	*wp;
 
     FOR_ALL_WINDOWS(wp)
-	if (wp->w_buffer->b_p_bt[0] == NUL)
+	if (bt_normal(wp->w_buffer))
 	    return wp;
 
     return NULL;
@@ -2563,7 +2563,7 @@ qf_goto_win_with_ll_file(win_T *use_win, int qf_fnum, qf_info_T *ll_ref)
 	    win = curwin;
 	    do
 	    {
-		if (win->w_buffer->b_p_bt[0] == NUL)
+		if (bt_normal(win->w_buffer))
 		    break;
 		if (win->w_prev == NULL)
 		    win = lastwin;	/* wrap around the top */
@@ -2620,8 +2620,7 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 	}
 
 	/* Remember a usable window. */
-	if (altwin == NULL && !win->w_p_pvw
-		&& win->w_buffer->b_p_bt[0] == NUL)
+	if (altwin == NULL && !win->w_p_pvw && bt_normal(win->w_buffer))
 	    altwin = win;
     }
 

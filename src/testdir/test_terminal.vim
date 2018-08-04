@@ -1605,3 +1605,19 @@ func Test_zz2_terminal_guioptions_bang()
   set guioptions&
   call delete(filename)
 endfunc
+
+func Test_terminal_hidden()
+  if !has('unix')
+    return
+  endif
+  term ++hidden cat
+  let bnr = bufnr('$')
+  call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+  exe 'sbuf ' . bnr
+  call assert_equal('terminal', &buftype)
+  call term_sendkeys(bnr, "asdf\<CR>")
+  call WaitForAssert({-> assert_match('asdf', term_getline(bnr, 2))})
+  call term_sendkeys(bnr, "\<C-D>")
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
+  bwipe!
+endfunc
