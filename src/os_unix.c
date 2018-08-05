@@ -2305,6 +2305,9 @@ mch_restore_title(int which)
     mch_settitle(((which & 1) && did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
 			      ((which & 2) && did_set_icon) ? oldicon : NULL);
+
+    term_restore_title(which);
+    term_savetitle(which);
 }
 
 #endif /* FEAT_TITLE */
@@ -3371,6 +3374,7 @@ mch_exit(int r)
 	settmode(TMODE_COOK);
 #ifdef FEAT_TITLE
 	mch_restore_title(3);	/* restore xterm title and icon name */
+	term_restore_title(3);
 #endif
 	/*
 	 * When t_ti is not empty but it doesn't cause swapping terminal
