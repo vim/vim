@@ -3188,8 +3188,10 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     }
 
     p = (char_u *)getenv("PATH");
-    if (p == NULL || *p == NUL)
+    if (p == NULL)
 	return -1;
+    if (*p == NUL)
+	return FALSE;
     buf = alloc((unsigned)(STRLEN(name) + STRLEN(p) + 2));
     if (buf == NULL)
 	return -1;
