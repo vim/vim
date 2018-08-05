@@ -3131,8 +3131,9 @@ f_executable(typval_T *argvars, typval_T *rettv)
     char_u *name = get_tv_string(&argvars[0]);
 
     /* Check in $PATH and also check directly if there is a directory name. */
-    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE)
-		 || (gettail(name) != name && mch_can_exe(name, NULL, FALSE));
+    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE) == TRUE
+		 || (gettail(name) != name
+			 && mch_can_exe(name, NULL, FALSE) == TRUE);
 }
 
 static garray_T	redir_execute_ga;
