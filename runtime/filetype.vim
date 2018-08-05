@@ -1865,6 +1865,9 @@ au BufNewFile,BufRead */etc/xdg/menus/*.menu	setf xml
 " ATI graphics driver configuration
 au BufNewFile,BufRead fglrxrc			setf xml
 
+" Web Services Description Language (WSDL)
+au BufNewFile,BufRead *.wsdl			setf xml
+
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml
 au BufNewFile,BufRead *.xliff			setf xml
