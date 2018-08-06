@@ -4625,7 +4625,7 @@ ins_compl_get_exp(pos_T *ini)
 	     * If 'infercase' is set, don't use 'smartcase' here
 	     */
 	    save_p_scs = p_scs;
-	    if (ins_buf->b_p_inf)
+	    if (ins_buf != NULL && ins_buf->b_p_inf)
 		p_scs = FALSE;
 
 	    /*	Buffers other than curbuf are scanned from the beginning or the
