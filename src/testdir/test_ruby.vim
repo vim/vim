@@ -363,4 +363,15 @@ func Test_p()
   ruby p 'Just a test'
   let messages = split(execute('message'), "\n")
   call assert_equal('"Just a test"', messages[-1])
+
+  " Check return values of p method
+
+  call assert_equal('123', RubyEval('p(123)'))
+  call assert_equal('[1, 2, 3]', RubyEval('p(1, 2, 3)'))
+
+  messages clear
+  call assert_equal('true', RubyEval('p() == nil'))
+
+  let messages = split(execute('message'), "\n")
+  call assert_equal(0, len(messages))
 endfunc
