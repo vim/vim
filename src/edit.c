@@ -1722,9 +1722,11 @@ ins_redraw(
     {
 	aco_save_T	aco;
 
+#ifdef FEAT_EVAL
 	// Sync undo when the autocommand calls setline() or append(), so that
 	// it can be undone separately.
 	u_sync_once = 2;
+#endif
 
 	// save and restore curwin and curbuf, in case the autocmd changes them
 	aucmd_prepbuf(&aco, curbuf);
@@ -1732,9 +1734,11 @@ ins_redraw(
 	aucmd_restbuf(&aco);
 	curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 
+#ifdef FEAT_EVAL
 	if (u_sync_once == 1)
 	    ins_need_undo = TRUE;
 	u_sync_once = 0;
+#endif
     }
 
 #ifdef FEAT_INS_EXPAND
