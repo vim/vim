@@ -4126,6 +4126,20 @@ qf_id2nr(qf_info_T *qi, int_u qfid)
 }
 
 /*
+ * Jump to the first entry if there is one.
+ */
+    static void
+qf_jump_first(qf_info_T *qi, int_u save_qfid, int forceit)
+{
+    // If autocommands changed the current list, then restore it
+    if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
+	qi->qf_curlist = qf_id2nr(qi, save_qfid);
+
+    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+	qf_jump(qi, 0, 0, forceit);
+}
+
+/*
  * Return TRUE when using ":vimgrep" for ":grep".
  */
     int
@@ -4247,12 +4261,8 @@ ex_make(exarg_T *eap)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
     if (res > 0 && !eap->forceit && qflist_valid(wp, save_qfid))
-    {
-	// If autocommands changed the current list, then restore it
-	if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
-	    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-	qf_jump(qi, 0, 0, FALSE);		/* display first error */
-    }
+	// display the first error
+	qf_jump_first(qi, save_qfid, FALSE);
 
 cleanup:
     mch_remove(fname);
@@ -4650,10 +4660,8 @@ ex_cfile(exarg_T *eap)
     if (res > 0 && (eap->cmdidx == CMD_cfile || eap->cmdidx == CMD_lfile)
 	    && qflist_valid(wp, save_qfid))
     {
-	// If autocommands changed the current list, then restore it
-	if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
-	    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-	qf_jump(qi, 0, 0, eap->forceit);	/* display first error */
+	// display the first error
+	qf_jump_first(qi, save_qfid, eap->forceit);
     }
 }
 
@@ -6361,10 +6369,8 @@ ex_cbuffer(exarg_T *eap)
 						eap->cmdidx == CMD_lbuffer)
 		    && qflist_valid(wp, save_qfid))
 	    {
-		// If autocommands changed the current list, then restore it
-		if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
-		    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
+		// display the first error
+		qf_jump_first(qi, save_qfid, eap->forceit);
 	    }
 	}
     }
@@ -6443,10 +6449,8 @@ ex_cexpr(exarg_T *eap)
 						   || eap->cmdidx == CMD_lexpr)
 		    && qflist_valid(wp, save_qfid))
 	    {
-		// If autocommands changed the current list, then restore it
-		if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
-		    qi->qf_curlist = qf_id2nr(qi, save_qfid);
-		qf_jump(qi, 0, 0, eap->forceit);
+		// display the first error
+		qf_jump_first(qi, save_qfid, eap->forceit);
 	    }
 	}
 	else
