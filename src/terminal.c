@@ -2818,11 +2818,17 @@ term_after_channel_closed(term_T *term)
 	if (term->tl_finish == TL_FINISH_CLOSE)
 	{
 	    aco_save_T	aco;
+	    int		do_set_w_closing = term->tl_buffer->b_nwindows == 0;
 
-	    /* ++close or term_finish == "close" */
+	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
+	    // Avoid closing the window if we temporarily use it.
+	    if (do_set_w_closing)
+		curwin->w_closing = TRUE;
 	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+	    if (do_set_w_closing)
+		curwin->w_closing = FALSE;
 	    aucmd_restbuf(&aco);
 	    return TRUE;
 	}
