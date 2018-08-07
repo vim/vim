@@ -3789,16 +3789,23 @@ scroll_start(void)
 static int cursor_is_off = FALSE;
 
 /*
+ * Enable the cursor without checking if it's already enabled.
+ */
+    void
+cursor_on_force(void)
+{
+    out_str(T_VE);
+    cursor_is_off = FALSE;
+}
+
+/*
  * Enable the cursor.
  */
     void
 cursor_on(void)
 {
     if (cursor_is_off)
-    {
-	out_str(T_VE);
-	cursor_is_off = FALSE;
-    }
+	cursor_on_force();
 }
 
 /*
