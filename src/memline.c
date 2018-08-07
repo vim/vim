@@ -262,9 +262,6 @@ static int fnamecmp_ino(char_u *, char_u *, long);
 #endif
 static void long_to_char(long, char_u *);
 static long char_to_long(char_u *);
-#if defined(UNIX) || defined(WIN3264)
-static char_u *make_percent_swname(char_u *dir, char_u *name);
-#endif
 #ifdef FEAT_CRYPT
 static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading);
 #endif
@@ -2007,18 +2004,18 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
+#if defined(UNIX) || defined(WIN3264) || defined(PROTO)
 /*
+ * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
  * signs, to dir. An unnamed buffer is handled as "" (<currentdir>/"")
  */
-    static char_u *
+    char_u *
 make_percent_swname(char_u *dir, char_u *name)
 {
-    char_u *d, *s, *f;
+    char_u *d = NULL, *s, *f;
 
-    f = fix_fname(name != NULL ? name : (char_u *) "");
-    d = NULL;
+    f = fix_fname(name != NULL ? name : (char_u *)"");
     if (f != NULL)
     {
 	s = alloc((unsigned)(STRLEN(f) + 1));
@@ -4070,8 +4067,6 @@ attention_message(
 }
 
 #if defined(FEAT_EVAL)
-static int do_swapexists(buf_T *buf, char_u *fname);
-
 /*
  * Trigger the SwapExists autocommands.
  * Returns a value for equivalent to do_dialog() (see below):

@@ -3850,6 +3850,9 @@ buf_write(
 	    stat_T	st_new;
 	    char_u	*dirp;
 	    char_u	*rootname;
+#if defined(UNIX) || defined(WIN3264)
+	    char_u      *p;
+#endif
 #if defined(UNIX)
 	    int		did_set_shortname;
 	    mode_t	umask_save;
@@ -3887,6 +3890,17 @@ buf_write(
 		 * Isolate one directory name, using an entry in 'bdir'.
 		 */
 		(void)copy_option_part(&dirp, copybuf, BUFSIZE, ",");
+
+#if defined(UNIX) || defined(WIN3264)
+		p = copybuf + STRLEN(copybuf);
+		if (after_pathsep(copybuf, p) && p[-1] == p[-2])
+		    // Ends with '//', use full path
+		    if ((p = make_percent_swname(copybuf, fname)) != NULL)
+		    {
+			backup = modname(p, backup_ext, FALSE);
+			vim_free(p);
+		    }
+#endif
 		rootname = get_file_in_dir(fname, copybuf);
 		if (rootname == NULL)
 		{
@@ -3904,9 +3918,10 @@ buf_write(
 		for (;;)
 		{
 		    /*
-		     * Make backup file name.
+		     * Make the backup file name.
 		     */
-		    backup = buf_modname((buf->b_p_sn || buf->b_shortname),
+		    if (backup == NULL)
+			backup = buf_modname((buf->b_p_sn || buf->b_shortname),
 						 rootname, backup_ext, FALSE);
 		    if (backup == NULL)
 		    {
@@ -4108,14 +4123,29 @@ buf_write(
 		 * Isolate one directory name and make the backup file name.
 		 */
 		(void)copy_option_part(&dirp, IObuff, IOSIZE, ",");
-		rootname = get_file_in_dir(fname, IObuff);
-		if (rootname == NULL)
-		    backup = NULL;
-		else
+
+#if defined(UNIX) || defined(WIN3264)
+		p = IObuff + STRLEN(IObuff);
+		if (after_pathsep(IObuff, p) && p[-1] == p[-2])
+		    // path ends with '//', use full path
+		    if ((p = make_percent_swname(IObuff, fname)) != NULL)
+		    {
+			backup = modname(p, backup_ext, FALSE);
+			vim_free(p);
+		    }
+#endif
+		if (backup == NULL)
 		{
-		    backup = buf_modname((buf->b_p_sn || buf->b_shortname),
-						 rootname, backup_ext, FALSE);
-		    vim_free(rootname);
+		    rootname = get_file_in_dir(fname, IObuff);
+		    if (rootname == NULL)
+			backup = NULL;
+		    else
+		    {
+			backup = buf_modname(
+				(buf->b_p_sn || buf->b_shortname),
+						rootname, backup_ext, FALSE);
+			vim_free(rootname);
+		    }
 		}
 
 		if (backup != NULL)
@@ -6252,7 +6282,7 @@ shorten_filenames(char_u **fnames, int count)
 #endif
 
 /*
- * add extension to file name - change path/fo.o.h to path/fo.o.h.ext or
+ * Add extension to file name - change path/fo.o.h to path/fo.o.h.ext or
  * fo_o_h.ext for MSDOS or when shortname option set.
  *
  * Assumed that fname is a valid name found in the filesystem we assure that
