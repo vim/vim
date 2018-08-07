@@ -701,7 +701,7 @@ vim.foreach_rtp(FailingCall()):NotImplementedError:('call',)
 vim.foreach_rtp(int, 2):TypeError:('foreach_rtp() takes exactly one argument (2 given)',)
 > import
 import xxx_no_such_module_xxx:ImportError:('No module named xxx_no_such_module_xxx',)
-import failing_import:ImportError:('No module named failing_import',)
+import failing_import:ImportError:()
 import failing:NotImplementedError:()
 > Options
 >> OptionsItem
