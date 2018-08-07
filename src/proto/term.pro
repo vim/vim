@@ -31,6 +31,8 @@ void term_bg_color(int n);
 void term_fg_rgb_color(guicolor_T rgb);
 void term_bg_rgb_color(guicolor_T rgb);
 void term_settitle(char_u *title);
+void term_push_title(int which);
+void term_pop_title(int which);
 void ttest(int pairs);
 void add_long_to_buf(long_u val, char_u *dst);
 void check_shellsize(void);

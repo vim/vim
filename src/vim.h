@@ -2548,4 +2548,16 @@ typedef enum {
 #define TERM_START_FORCEIT	2
 #define TERM_START_SYSTEM	4
 
+#if defined(HAVE_DROP_FILE) \
+	|| (defined(FEAT_GUI_GTK) && defined(FEAT_DND)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC)
+# define HAVE_HANDLE_DROP
+#endif
+
+// Used for icon/title save and restore.
+#define SAVE_RESTORE_TITLE	1
+#define SAVE_RESTORE_ICON	2
+#define SAVE_RESTORE_BOTH	(SAVE_RESTORE_TITLE | SAVE_RESTORE_ICON)
+
 #endif /* VIM__H */

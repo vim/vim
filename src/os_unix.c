@@ -2336,17 +2336,21 @@ mch_settitle(char_u *title, char_u *icon)
 /*
  * Restore the window/icon title.
  * "which" is one of:
- *  1  only restore title
- *  2  only restore icon
- *  3  restore title and icon
+ *  SAVE_RESTORE_TITLE only restore title
+ *  SAVE_RESTORE_ICON  only restore icon
+ *  SAVE_RESTORE_BOTH  restore title and icon
  */
     void
 mch_restore_title(int which)
 {
     /* only restore the title or icon when it has been set */
-    mch_settitle(((which & 1) && did_set_title) ?
+    mch_settitle(((which & SAVE_RESTORE_TITLE) && did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
-			      ((which & 2) && did_set_icon) ? oldicon : NULL);
+	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
+
+    // pop and push from/to the stack
+    term_pop_title(which);
+    term_push_title(which);
 }
 
 #endif /* FEAT_TITLE */
@@ -3412,7 +3416,9 @@ mch_exit(int r)
     {
 	settmode(TMODE_COOK);
 #ifdef FEAT_TITLE
-	mch_restore_title(3);	/* restore xterm title and icon name */
+	// restore xterm title and icon name
+	mch_restore_title(SAVE_RESTORE_BOTH);
+	term_pop_title(SAVE_RESTORE_BOTH);
 #endif
 	/*
 	 * When t_ti is not empty but it doesn't cause swapping terminal

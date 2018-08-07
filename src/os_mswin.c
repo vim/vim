@@ -304,9 +304,9 @@ mch_settitle(
 /*
  * Restore the window/icon title.
  * which is one of:
- *  1: Just restore title
- *  2: Just restore icon (which we don't have)
- *  3: Restore title and icon (which we don't have)
+ *  SAVE_RESTORE_TITLE: Just restore title
+ *  SAVE_RESTORE_ICON:  Just restore icon (which we don't have)
+ *  SAVE_RESTORE_BOTH:  Restore title and icon (which we don't have)
  */
     void
 mch_restore_title(int which UNUSED)

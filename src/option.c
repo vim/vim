@@ -3192,7 +3192,9 @@ static struct vimoption options[] =
     p_term("t_RB", T_RBG)
     p_term("t_RC", T_CRC)
     p_term("t_RI", T_CRI)
+    p_term("t_Ri", T_SRI)
     p_term("t_RS", T_CRS)
+    p_term("t_RT", T_CRT)
     p_term("t_RV", T_CRV)
     p_term("t_Sb", T_CSB)
     p_term("t_SC", T_CSC)
@@ -3200,9 +3202,11 @@ static struct vimoption options[] =
     p_term("t_Sf", T_CSF)
     p_term("t_SH", T_CSH)
     p_term("t_SI", T_CSI)
+    p_term("t_Si", T_SSI)
     p_term("t_so", T_SO)
     p_term("t_SR", T_CSR)
     p_term("t_sr", T_SR)
+    p_term("t_ST", T_CST)
     p_term("t_Te", T_STE)
     p_term("t_te", T_TE)
     p_term("t_ti", T_TI)
@@ -10414,7 +10418,7 @@ clear_termoptions(void)
     mch_setmouse(FALSE);	    /* switch mouse off */
 #endif
 #ifdef FEAT_TITLE
-    mch_restore_title(3);	    /* restore window titles */
+    mch_restore_title(SAVE_RESTORE_BOTH);    /* restore window titles */
 #endif
 #if defined(FEAT_XCLIPBOARD) && defined(FEAT_GUI)
     /* When starting the GUI close the display opened for the clipboard.
@@ -11219,8 +11223,8 @@ buf_copy_options(buf_T *buf, int flags)
 		buf->b_p_isk = NULL;
 	    }
 	    /*
-	     * Always free the allocated strings.
-	     * If not already initialized, set 'readonly' and copy 'fileformat'.
+	     * Always free the allocated strings.  If not already initialized,
+	     * reset 'readonly' and copy 'fileformat'.
 	     */
 	    if (!buf->b_p_initialized)
 	    {

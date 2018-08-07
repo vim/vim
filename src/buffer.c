@@ -3798,7 +3798,8 @@ value_changed(char_u *str, char_u **last)
 	if (str == NULL)
 	{
 	    *last = NULL;
-	    mch_restore_title(last == &lasttitle ? 1 : 2);
+	    mch_restore_title(
+		  last == &lasttitle ? SAVE_RESTORE_TITLE : SAVE_RESTORE_ICON);
 	}
 	else
 	{

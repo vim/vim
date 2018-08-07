@@ -706,6 +706,10 @@ vim_main2(void)
 	scroll_region_reset();		/* In case Rows changed */
     scroll_start();	/* may scroll the screen to the right position */
 
+#ifdef FEAT_TITLE
+    term_push_title(SAVE_RESTORE_BOTH);
+#endif
+
     /*
      * Don't clear the screen when starting in Ex mode, unless using the GUI.
      */

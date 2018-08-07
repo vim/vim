@@ -2695,7 +2695,7 @@ mch_exit(int r)
     if (g_fWindInitCalled)
     {
 #ifdef FEAT_TITLE
-	mch_restore_title(3);
+	mch_restore_title(SAVE_RESTORE_BOTH);
 	/*
 	 * Restore both the small and big icons of the console window to
 	 * what they were at startup.  Don't do this when the window is
