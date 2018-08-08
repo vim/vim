@@ -122,6 +122,38 @@ func Test_nonexistent_file()
   call assert_equal('', getfperm(fname))
 endfunc
 
+func Test_getftype()
+  call assert_equal('file', getftype(v:progpath))
+  call assert_equal('dir',  getftype('.'))
+
+  if !has('unix')
+    return
+  endif
+
+  silent !ln -s Xfile Xlink
+  call assert_equal('link', getftype('Xlink'))
+  call delete('Xlink')
+
+  if executable('mkfifo')
+    silent !mkfifo Xfifo
+    call assert_equal('fifo', getftype('Xfifo'))
+    call delete('Xfifo')
+  endif
+
+  " Test getftype with block and character devices in /dev/
+  for dev in glob('/dev/*', 0, 1)
+    let ftype = system('ls -l ' . dev)[0]
+    if ftype ==# 'b'
+      call assert_equal('bdev', getftype(dev))
+    elseif ftype ==# 'c'
+      call assert_equal('cdev', getftype(dev))
+    endif
+  endfor
+
+  " TODO: file types 'socket' and 'other' are not tested.
+  " How can we test those file types?
+endfunc
+
 func Test_win32_symlink_dir()
   " On Windows, non-admin users cannot create symlinks.
   " So we use an existing symlink for this test.
