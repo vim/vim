@@ -177,6 +177,7 @@ static void ins_compl_restart(void);
 static void ins_compl_set_original_text(char_u *str);
 static void ins_compl_addfrommatch(void);
 static int  ins_compl_prep(int c);
+static void ins_compl_done(void);
 static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static buf_T *ins_compl_next_buf(buf_T *buf, int flag);
 # if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
@@ -4122,15 +4123,11 @@ ins_compl_prep(int c)
 	    if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
 		do_c_expr_indent();
 #endif
-	    /* Trigger the CompleteDone event to give scripts a chance to act
-	     * upon the completion. */
-	    apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
+	    ins_compl_done();
 	}
     }
     else if (ctrl_x_mode == CTRL_X_LOCAL_MSG)
-	/* Trigger the CompleteDone event to give scripts a chance to act
-	 * upon the (possibly failed) completion. */
-	apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
+	ins_compl_done();
 
     /* reset continue_* if we left expansion-mode, if we stay they'll be
      * (re)set properly in ins_complete() */
@@ -4141,6 +4138,19 @@ ins_compl_prep(int c)
     }
 
     return retval;
+}
+
+/*
+ * Trigger the CompleteDone event to give scripts a chance to act upon the
+ * (possibly failed) completion. Save for undo if the buffer is modified.
+ */
+    static void
+ins_compl_done()
+{
+    apply_autocmds(EVENT_COMPLETEDONE, NULL, NULL, FALSE, curbuf);
+
+    if (curbuf->b_last_changedtick != CHANGEDTICK(curbuf))
+        ins_need_undo = TRUE;
 }
 
 /*
