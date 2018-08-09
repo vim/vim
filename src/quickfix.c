@@ -1506,7 +1506,6 @@ qf_list_empty(qf_info_T *qi, int qf_idx)
     return qi->qf_lists[qf_idx].qf_count <= 0;
 }
 
-
 /*
  * Allocate the fields used for parsing lines and populating a quickfix list.
  */
@@ -3717,7 +3716,7 @@ qf_view_result(int split)
     if (IS_LL_WINDOW(curwin))
 	qi = GET_LOC_LIST(curwin);
 
-    if (qi == NULL || qi->qf_lists[qi->qf_curlist].qf_count == 0)
+    if (qf_list_empty(qi, qi->qf_curlist))
     {
 	EMSG(_(e_quickfix));
 	return;
@@ -4349,7 +4348,8 @@ qf_jump_first(qf_info_T *qi, int_u save_qfid, int forceit)
     if (qi->qf_lists[qi->qf_curlist].qf_id != save_qfid)
 	qi->qf_curlist = qf_id2nr(qi, save_qfid);
 
-    if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
+    // Autocommands might have cleared the list, check for it
+    if (!qf_list_empty(qi, qi->qf_curlist))
 	qf_jump(qi, 0, 0, forceit);
 }
 
@@ -4873,10 +4873,8 @@ ex_cfile(exarg_T *eap)
     // free the list.
     if (res > 0 && (eap->cmdidx == CMD_cfile || eap->cmdidx == CMD_lfile)
 	    && qflist_valid(wp, save_qfid))
-    {
 	// display the first error
 	qf_jump_first(qi, save_qfid, eap->forceit);
-    }
 }
 
 /*
@@ -6581,10 +6579,8 @@ ex_cbuffer(exarg_T *eap)
 	    if (res > 0 && (eap->cmdidx == CMD_cbuffer ||
 						eap->cmdidx == CMD_lbuffer)
 		    && qflist_valid(wp, save_qfid))
-	    {
 		// display the first error
 		qf_jump_first(qi, save_qfid, eap->forceit);
-	    }
 	}
     }
 }
@@ -6661,10 +6657,8 @@ ex_cexpr(exarg_T *eap)
 	    if (res > 0 && (eap->cmdidx == CMD_cexpr
 						   || eap->cmdidx == CMD_lexpr)
 		    && qflist_valid(wp, save_qfid))
-	    {
 		// display the first error
 		qf_jump_first(qi, save_qfid, eap->forceit);
-	    }
 	}
 	else
 	    EMSG(_("E777: String or List expected"));
