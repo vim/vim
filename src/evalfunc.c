@@ -5111,7 +5111,7 @@ f_getftype(typval_T *argvars, typval_T *rettv)
 # endif
 # ifdef S_ISSOCK
 	else if (S_ISSOCK(st.st_mode))
-	    t = "fifo";
+	    t = "socket";
 # endif
 	else
 	    t = "other";

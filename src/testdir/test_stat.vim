@@ -140,18 +140,21 @@ func Test_getftype()
     call delete('Xfifo')
   endif
 
-  " Test getftype with block and character devices in /dev/
-  for dev in glob('/dev/*', 0, 1)
-    let ftype = system('ls -l ' . dev)[0]
-    if ftype ==# 'b'
-      call assert_equal('bdev', getftype(dev))
-    elseif ftype ==# 'c'
-      call assert_equal('cdev', getftype(dev))
-    endif
+  for cdevfile in systemlist('find /dev -type c -maxdepth 2 2>/dev/null')
+    call assert_equal('cdev', getftype(cdevfile))
   endfor
 
-  " TODO: file types 'socket' and 'other' are not tested.
-  " How can we test those file types?
+  for bdevfile in systemlist('find /dev -type b -maxdepth 2 2>/dev/null')
+    call assert_equal('bdev', getftype(bdevfile))
+  endfor
+
+  " The /run/ directory typically contains socket files.
+  " If it does not, test won't fail but will not test socket files.
+  for socketfile in systemlist('find /run -type s -maxdepth 2 2>/dev/null')
+    call assert_equal('socket', getftype(socketfile))
+  endfor
+
+  " TODO: file type 'other' is not tested. How can we test it?
 endfunc
 
 func Test_win32_symlink_dir()
