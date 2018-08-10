@@ -581,11 +581,7 @@ staterr:
 
 	i = cs_insert_filelist(fname2, ppath, flags, &statbuf);
     }
-    else if (S_ISREG(statbuf.st_mode)
-#if defined(UNIX)
-	    || S_ISLNK(statbuf.st_mode)
-#endif
-	    )
+    else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode))
     {
 	i = cs_insert_filelist(fname, ppath, flags, &statbuf);
     }
