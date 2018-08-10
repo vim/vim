@@ -2542,8 +2542,8 @@ typedef enum {
 # endif
 #endif
 #ifndef S_ISFIFO
-# ifdef S_IFFIFO
-#  define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFFIFO)
+# ifdef S_IFIFO
+#  define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 # else
 #  define S_ISFIFO(m)	0
 # endif
