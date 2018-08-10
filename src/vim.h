@@ -2290,16 +2290,6 @@ typedef enum {
 
 #endif
 
-/* ISSYMLINK(mode) tests if a file is a symbolic link. */
-#if (defined(S_IFMT) && defined(S_IFLNK)) || defined(S_ISLNK)
-# define HAVE_ISSYMLINK
-# if defined(S_IFMT) && defined(S_IFLNK)
-#  define ISSYMLINK(mode) (((mode) & S_IFMT) == S_IFLNK)
-# else
-#  define ISSYMLINK(mode) S_ISLNK(mode)
-# endif
-#endif
-
 /* stat macros */
 #ifndef S_ISDIR
 # ifdef S_IFDIR
