@@ -299,6 +299,11 @@ static void ruby_vim_init(void);
 #  define rb_string_value_ptr		dll_rb_string_value_ptr
 #  define rb_float_new			dll_rb_float_new
 #  define rb_ary_new			dll_rb_ary_new
+#  ifdef rb_ary_new4
+#    define RB_ARY_NEW4_MACRO 1
+#    undef rb_ary_new4
+#  endif
+#  define rb_ary_new4			dll_rb_ary_new4
 #  define rb_ary_push			dll_rb_ary_push
 #  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #   ifdef __ia64
@@ -441,6 +446,7 @@ static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
 static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
+static VALUE (*dll_rb_ary_new4) (long n, const VALUE *elts);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
 #  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #   ifdef __ia64
@@ -647,6 +653,11 @@ static struct
     {"rb_float_new_in_heap", (RUBY_PROC*)&dll_rb_float_new},
 #  endif
     {"rb_ary_new", (RUBY_PROC*)&dll_rb_ary_new},
+#  ifdef RB_ARY_NEW4_MACRO
+    {"rb_ary_new_from_values", (RUBY_PROC*)&dll_rb_ary_new4},
+#  else
+    {"rb_ary_new4", (RUBY_PROC*)&dll_rb_ary_new4},
+#  endif
     {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
 # endif
 # ifdef RUBY19_OR_LATER
@@ -1577,6 +1588,7 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 {
     int i;
     VALUE str = rb_str_new("", 0);
+    VALUE ret = Qnil;
 
     for (i = 0; i < argc; i++)
     {
@@ -1584,7 +1596,12 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 	rb_str_concat(str, rb_inspect(argv[i]));
     }
     MSG(RSTRING_PTR(str));
-    return Qnil;
+
+    if (argc == 1)
+	ret = argv[0];
+    else if (argc > 1)
+	ret = rb_ary_new4(argc, argv);
+    return ret;
 }
 
 static void ruby_io_init(void)
