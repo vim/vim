@@ -2290,15 +2290,6 @@ typedef enum {
 
 #endif
 
-/* ISSYMLINK(mode) tests if a file is a symbolic link. */
-#if (defined(S_IFMT) && defined(S_IFLNK)) || defined(S_ISLNK)
-# define HAVE_ISSYMLINK
-# if defined(S_IFMT) && defined(S_IFLNK)
-#  define ISSYMLINK(mode) (((mode) & S_IFMT) == S_IFLNK)
-# else
-#  define ISSYMLINK(mode) S_ISLNK(mode)
-# endif
-#endif
 
 #define SIGN_BYTE 1	    /* byte value used where sign is displayed;
 			       attribute value is sign type */
@@ -2517,8 +2508,59 @@ typedef enum {
 
 /* BSD is supposed to cover FreeBSD and similar systems. */
 #if (defined(SUN_SYSTEM) || defined(BSD) || defined(__FreeBSD_kernel__)) \
-	&& defined(S_ISCHR)
+	&& (defined(S_ISCHR) || defined(S_IFCHR))
 # define OPEN_CHR_FILES
+#endif
+
+/* stat macros */
+#ifndef S_ISDIR
+# ifdef S_IFDIR
+#  define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+# else
+#  define S_ISDIR(m)	0
+# endif
+#endif
+#ifndef S_ISREG
+# ifdef S_IFREG
+#  define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+# else
+#  define S_ISREG(m)	0
+# endif
+#endif
+#ifndef S_ISBLK
+# ifdef S_IFBLK
+#  define S_ISBLK(m)	(((m) & S_IFMT) == S_IFBLK)
+# else
+#  define S_ISBLK(m)	0
+# endif
+#endif
+#ifndef S_ISSOCK
+# ifdef S_IFSOCK
+#  define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
+# else
+#  define S_ISSOCK(m)	0
+# endif
+#endif
+#ifndef S_ISFIFO
+# ifdef S_IFIFO
+#  define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
+# else
+#  define S_ISFIFO(m)	0
+# endif
+#endif
+#ifndef S_ISCHR
+# ifdef S_IFCHR
+#  define S_ISCHR(m)	(((m) & S_IFMT) == S_IFCHR)
+# else
+#  define S_ISCHR(m)	0
+# endif
+#endif
+#ifndef S_ISLNK
+# ifdef S_IFLNK
+#  define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
+# else
+#  define S_ISLNK(m)	0
+# endif
 #endif
 
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)

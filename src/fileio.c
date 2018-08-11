@@ -424,12 +424,8 @@ readfile(
 	 */
 	perm = mch_getperm(fname);
 	if (perm >= 0 && !S_ISREG(perm)		    /* not a regular file ... */
-# ifdef S_ISFIFO
 		      && !S_ISFIFO(perm)	    /* ... or fifo */
-# endif
-# ifdef S_ISSOCK
 		      && !S_ISSOCK(perm)	    /* ... or socket */
-# endif
 # ifdef OPEN_CHR_FILES
 		      && !(S_ISCHR(perm) && is_dev_fd_file(fname))
 			/* ... or a character special file named /dev/fd/<n> */
@@ -2497,28 +2493,16 @@ failed:
 	    c = FALSE;
 
 #ifdef UNIX
-# ifdef S_ISFIFO
-	    if (S_ISFIFO(perm))			    /* fifo or socket */
-	    {
-		STRCAT(IObuff, _("[fifo/socket]"));
-		c = TRUE;
-	    }
-# else
-#  ifdef S_IFIFO
-	    if ((perm & S_IFMT) == S_IFIFO)	    /* fifo */
+	    if (S_ISFIFO(perm))			    /* fifo */
 	    {
 		STRCAT(IObuff, _("[fifo]"));
 		c = TRUE;
 	    }
-#  endif
-#  ifdef S_IFSOCK
-	    if ((perm & S_IFMT) == S_IFSOCK)	    /* or socket */
+	    if (S_ISSOCK(perm))			    /* or socket */
 	    {
 		STRCAT(IObuff, _("[socket]"));
 		c = TRUE;
 	    }
-#  endif
-# endif
 # ifdef OPEN_CHR_FILES
 	    if (S_ISCHR(perm))			    /* or character special */
 	    {
