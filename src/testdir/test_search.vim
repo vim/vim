@@ -362,6 +362,58 @@ func Test_search_cmdline3()
   bw!
 endfunc
 
+func Cmdline3_prep()
+  " need to disable char_avail,
+  " so that expansion of commandline works
+  call test_override("char_avail", 1)
+  new
+  call setline(1, ['  1', '  2 the~e', '  3 the theother'])
+  set incsearch
+endfunc
+
+func Cmdline3_cleanup()
+  set noincsearch
+  call test_override("char_avail", 0)
+  bw!
+endfunc
+
+func Test_search_cmdline3s()
+  if !exists('+incsearch')
+    return
+  endif
+  call Cmdline3_prep()
+  1
+  call feedkeys(":%s/the\<c-l>/xxx\<cr>", 'tx')
+  call assert_equal('  2 xxxe', getline('.'))
+
+  call Cmdline3_cleanup()
+endfunc
+
+func Test_search_cmdline3g()
+  if !exists('+incsearch')
+    return
+  endif
+  call Cmdline3_prep()
+  1
+  call feedkeys(":g/the\<c-l>/d\<cr>", 'tx')
+  call assert_equal('  3 the theother', getline(2))
+
+  call Cmdline3_cleanup()
+endfunc
+
+func Test_search_cmdline3v()
+  if !exists('+incsearch')
+    return
+  endif
+  call Cmdline3_prep()
+  1
+  call feedkeys(":v/the\<c-l>/d\<cr>", 'tx')
+  call assert_equal(1, line('$'))
+  call assert_equal('  2 the~e', getline(1))
+
+  call Cmdline3_cleanup()
+endfunc
+
 func Test_search_cmdline4()
   if !exists('+incsearch')
     return

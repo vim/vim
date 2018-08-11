@@ -264,11 +264,78 @@ set_search_match(pos_T *t)
 
 /*
  * Return TRUE when 'incsearch' highlighting is to be done.
+ * Sets search_first_line and search_last_line to the address range.
  */
     static int
-do_incsearch_highlighting(int firstc)
+do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
+						     int *skiplen, int *patlen)
 {
-    return p_is && !cmd_silent && (firstc == '/' || firstc == '?');
+    *skiplen = 0;
+    *patlen = ccline.cmdlen;
+
+    if (p_is && !cmd_silent)
+    {
+	// by default search all lines
+	search_first_line = 0;
+	search_last_line = MAXLNUM;
+
+	if (firstc == '/' || firstc == '?')
+	    return TRUE;
+	if (firstc == ':')
+	{
+	    char_u *cmd = skip_range(ccline.cmdbuff, NULL);
+	    char_u *p;
+	    int	    delim;
+	    char_u *end;
+
+	    if (*cmd == 's' || *cmd == 'g' || *cmd == 'v')
+	    {
+		// Skip over "substitute" to find the pattern separator.
+		for (p = cmd; ASCII_ISALPHA(*p); ++p)
+		    ;
+		if (*p != NUL)
+		{
+		    delim = *p++;
+		    end = skip_regexp(p, delim, p_magic, NULL);
+		    if (end > p)
+		    {
+			char_u  *dummy;
+			exarg_T ea;
+			pos_T	save_cursor = curwin->w_cursor;
+
+			// found a non-empty pattern
+			*skiplen = (int)(p - ccline.cmdbuff);
+			*patlen = (int)(end - p);
+
+			// parse the address range
+			vim_memset(&ea, 0, sizeof(ea));
+			ea.line1 = 1;
+			ea.line2 = 1;
+			ea.cmd = ccline.cmdbuff;
+			ea.addr_type = ADDR_LINES;
+			parse_cmd_address(&ea, &dummy);
+			curwin->w_cursor = is_state->search_start;
+			if (ea.addr_count > 0)
+			{
+			    search_first_line = ea.line1;
+			    search_last_line = ea.line2;
+			}
+			else if (*cmd == 's')
+			{
+			    // :s defaults to the current line
+			    search_first_line = curwin->w_cursor.lnum;
+			    search_last_line = curwin->w_cursor.lnum;
+			}
+
+			curwin->w_cursor = save_cursor;
+			return TRUE;
+		    }
+		}
+	    }
+	}
+    }
+
+    return FALSE;
 }
 
 /*
@@ -280,14 +347,16 @@ may_do_incsearch_highlighting(
 	long		    count,
 	incsearch_state_T   *is_state)
 {
+    int		skiplen, patlen;
     int		i;
     pos_T	end_pos;
     struct cmdline_info	save_ccline;
 #ifdef FEAT_RELTIME
     proftime_T	tm;
 #endif
+    int		c;
 
-    if (!do_incsearch_highlighting(firstc))
+    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
 	return;
 
     // If there is a character waiting, search and redraw later.
@@ -298,12 +367,19 @@ may_do_incsearch_highlighting(
     }
     is_state->incsearch_postponed = FALSE;
 
-    // start at old position
-    curwin->w_cursor = is_state->search_start;
+    if (search_first_line == 0)
+	// start at the original cursor position
+	curwin->w_cursor = is_state->search_start;
+    else
+    {
+	// start at the first line in the range
+	curwin->w_cursor.lnum = search_first_line;
+	curwin->w_cursor.col = 0;
+    }
     save_last_search_pattern();
 
     // If there is no command line, don't do anything.
-    if (ccline.cmdlen == 0)
+    if (patlen == 0)
     {
 	i = 0;
 	set_no_hlsearch(TRUE); // turn off previous highlight
@@ -322,14 +398,23 @@ may_do_incsearch_highlighting(
 #endif
 	if (!p_hls)
 	    search_flags += SEARCH_KEEP;
-	i = do_search(NULL, firstc, ccline.cmdbuff, count, search_flags,
+	c = ccline.cmdbuff[skiplen + patlen];
+	ccline.cmdbuff[skiplen + patlen] = NUL;
+	i = do_search(NULL, firstc == ':' ? '/' : firstc,
+				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
 		&tm, NULL
 #else
 		NULL, NULL
 #endif
 		);
+	ccline.cmdbuff[skiplen + patlen] = c;
 	--emsg_off;
+
+	if (curwin->w_cursor.lnum < search_first_line
+		|| curwin->w_cursor.lnum > search_last_line)
+	    // match outside of address range
+	    i = 0;
 
 	// if interrupted while searching, behave like it failed
 	if (got_int)
@@ -369,8 +454,11 @@ may_do_incsearch_highlighting(
 
     // Disable 'hlsearch' highlighting if the pattern matches everything.
     // Avoids a flash when typing "foo\|".
+    c = ccline.cmdbuff[skiplen + patlen];
+    ccline.cmdbuff[skiplen + patlen] = NUL;
     if (empty_pattern(ccline.cmdbuff))
 	set_no_hlsearch(TRUE);
+    ccline.cmdbuff[skiplen + patlen] = c;
 
     validate_cursor();
     // May redraw the status line to show the cursor position.
@@ -398,25 +486,27 @@ may_do_incsearch_highlighting(
  */
     static int
 may_adjust_incsearch_highlighting(
-	int		firstc,
-	long		count,
+	int			firstc,
+	long			count,
 	incsearch_state_T	*is_state,
-	int		c)
+	int			c)
 {
+    int	    skiplen, patlen;
     pos_T   t;
     char_u  *pat;
     int	    search_flags = SEARCH_NOOF;
     int	    i;
+    int	    save;
 
-    if (!do_incsearch_highlighting(firstc))
+    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
 	return OK;
-    if (ccline.cmdlen == 0)
+    if (patlen == 0 && ccline.cmdbuff[skiplen] == NUL)
 	return FAIL;
 
-    if (firstc == ccline.cmdbuff[0])
+    if (firstc == ccline.cmdbuff[skiplen])
 	pat = last_search_pattern();
     else
-	pat = ccline.cmdbuff;
+	pat = ccline.cmdbuff + skiplen;
 
     save_last_search_pattern();
     cursor_off();
@@ -435,17 +525,20 @@ may_adjust_incsearch_highlighting(
     if (!p_hls)
 	search_flags += SEARCH_KEEP;
     ++emsg_off;
+    save = pat[patlen];
+    pat[patlen] = NUL;
     i = searchit(curwin, curbuf, &t,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
 		 pat, count, search_flags,
 		 RE_SEARCH, 0, NULL, NULL);
     --emsg_off;
+    pat[patlen] = save;
     if (i)
     {
 	is_state->search_start = is_state->match_start;
 	is_state->match_end = t;
 	is_state->match_start = t;
-	if (c == Ctrl_T && firstc == '/')
+	if (c == Ctrl_T && firstc != '?')
 	{
 	    // Move just before the current match, so that when nv_search
 	    // finishes the cursor will be put back on the match.
@@ -493,7 +586,9 @@ may_adjust_incsearch_highlighting(
     static int
 may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 {
-    if (!do_incsearch_highlighting(firstc))
+    int		skiplen, patlen;
+
+    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
 	return FAIL;
 
     // Add a character from under the cursor for 'incsearch'.
@@ -507,7 +602,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	    // If 'ignorecase' and 'smartcase' are set and the
 	    // command line has no uppercase characters, convert
 	    // the character to lowercase.
-	    if (p_ic && p_scs && !pat_has_uppercase(ccline.cmdbuff))
+	    if (p_ic && p_scs && !pat_has_uppercase(ccline.cmdbuff + skiplen))
 		*c = MB_TOLOWER(*c);
 	    if (*c != NUL)
 	    {

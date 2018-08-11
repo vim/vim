@@ -345,9 +345,13 @@ EXTERN int	t_colors INIT(= 0);	    /* int value of T_CCO */
  * a match within one line), search_match_endcol the column number of the
  * character just after the match in the last line.
  */
-EXTERN int	highlight_match INIT(= FALSE);	/* show search match pos */
-EXTERN linenr_T	search_match_lines;		/* lines of of matched string */
-EXTERN colnr_T	search_match_endcol;		/* col nr of match end */
+EXTERN int	highlight_match INIT(= FALSE);	// show search match pos
+EXTERN linenr_T	search_match_lines;		// lines of of matched string
+EXTERN colnr_T	search_match_endcol;		// col nr of match end
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN linenr_T	search_first_line INIT(= 0);	  // for :{FIRST},{last}s/pat
+EXTERN linenr_T	search_last_line INIT(= MAXLNUM); // for :{first},{LAST}s/pat
+#endif
 
 EXTERN int	no_smartcase INIT(= FALSE);	/* don't use 'smartcase' once */
 
