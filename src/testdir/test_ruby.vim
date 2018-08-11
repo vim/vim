@@ -369,6 +369,8 @@ func Test_p()
   call assert_equal('123', RubyEval('p(123)'))
   call assert_equal('[1, 2, 3]', RubyEval('p(1, 2, 3)'))
 
+  " Avoid the "message maintainer" line.
+  let $LANG = ''
   messages clear
   call assert_equal('true', RubyEval('p() == nil'))
 
