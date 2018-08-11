@@ -293,7 +293,10 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 		// Skip over "substitute" to find the pattern separator.
 		for (p = cmd; ASCII_ISALPHA(*p); ++p)
 		    ;
-		if (*p != NUL)
+		if (*p != NUL
+			&& (STRNCMP(cmd, "substitute", p - cmd) == 0
+			    || STRNCMP(cmd, "global", p - cmd) == 0
+			    || STRNCMP(cmd, "vglobal", p - cmd) == 0))
 		{
 		    delim = *p++;
 		    end = skip_regexp(p, delim, p_magic, NULL);
