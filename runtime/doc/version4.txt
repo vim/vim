@@ -352,4 +352,4 @@ this and accidentally hit CTRL-B, it is very difficult to find out how to undo
 it.  Since hardly anybody uses this feature, it is disabled by default.  If
 you want to use it, define RIGHTLEFT in feature.h before compiling. |'revins'|
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

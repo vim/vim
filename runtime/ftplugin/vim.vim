@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Dec 05
+" Last Change:	2018 Aug 07
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -17,19 +17,19 @@ set cpo-=C
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
     setl fo< isk< com< tw< commentstring<
-    if exists(b:did_add_maps)
-      silent! nunmap <buffer> [['
-      silent! vunmap <buffer> [['
-      silent! nunmap <buffer> ]]'
-      silent! vunmap <buffer> ]]'
-      silent! nunmap <buffer> []'
-      silent! vunmap <buffer> []'
-      silent! nunmap <buffer> ]['
-      silent! vunmap <buffer> ]['
-      silent! nunmap <buffer> ]"'
-      silent! vunmap <buffer> ]"'
-      silent! nunmap <buffer> ["'
-      silent! vunmap <buffer> ["'
+    if exists('b:did_add_maps')
+      silent! nunmap <buffer> [[
+      silent! vunmap <buffer> [[
+      silent! nunmap <buffer> ]]
+      silent! vunmap <buffer> ]]
+      silent! nunmap <buffer> []
+      silent! vunmap <buffer> []
+      silent! nunmap <buffer> ][
+      silent! vunmap <buffer> ][
+      silent! nunmap <buffer> ]"
+      silent! vunmap <buffer> ]"
+      silent! nunmap <buffer> ["
+      silent! vunmap <buffer> ["
     endif
     unlet! b:match_ignorecase b:match_words b:match_skip b:did_add_maps
   endfunc

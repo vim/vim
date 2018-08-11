@@ -2111,7 +2111,7 @@ cursor({list})			Number	move cursor to position in {list}
 debugbreak({pid})		Number  interrupt process being debugged
 deepcopy({expr} [, {noref}])	any	make a full copy of {expr}
 delete({fname} [, {flags}])	Number	delete the file or directory {fname}
-deletebufline({expr}, {first}[, {last}])
+deletebufline({expr}, {first} [, {last}])
 				Number	delete lines from buffer {expr}
 did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
@@ -2477,7 +2477,7 @@ tolower({expr})			String	the String {expr} switched to lowercase
 toupper({expr})			String	the String {expr} switched to uppercase
 tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
-trim({text}[, {mask}])		String	trim characters in {mask} from {text}
+trim({text} [, {mask}])		String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
 type({name})			Number	type of variable {name}
 undofile({name})		String	undo file name for {name}
@@ -3529,7 +3529,7 @@ delete({fname} [, {flags}])					*delete()*
 		To delete a line from the buffer use |:delete| or
 		|deletebufline()|.
 
-deletebufline({expr}, {first}[, {last}])		*deletebufline()*
+deletebufline({expr}, {first} [, {last}])		*deletebufline()*
 		Delete lines {first} to {last} (inclusive) from buffer {expr}.
 		If {last} is omitted then delete line {first} only.
 		On success 0 is returned, on failure 1 is returned.
@@ -4307,7 +4307,7 @@ getbufinfo([{dict}])
 			endfor
 <
 		To get buffer-local options use: >
-			getbufvar({bufnr}, '&')
+			getbufvar({bufnr}, '&option_name')
 
 <
 							*getbufline()*
@@ -8591,9 +8591,8 @@ term_start({cmd}, {options})				*term_start()*
 		|job-options|.  However, not all options can be used.  These
 		are supported:
 		   all timeout options
-		   "stoponexit"
-		   "callback", "out_cb", "err_cb"
-		   "exit_cb", "close_cb"
+		   "stoponexit", "cwd", "env"
+		   "callback", "out_cb", "err_cb", "exit_cb", "close_cb"
 		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
 		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
 		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
@@ -8837,7 +8836,7 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 			echo tr("<blob>", "<>", "{}")
 <		returns "{blob}"
 
-trim({text}[, {mask}])						*trim()*
+trim({text} [, {mask}])						*trim()*
 		Return {text} as a String where any character in {mask} is
 		removed from the beginning and  end of {text}.
 		If {mask} is not given, {mask} is all characters up to 0x20,

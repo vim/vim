@@ -487,7 +487,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 		When {vimrc} is equal to "DEFAULTS" (all uppercase), this has
 		the same effect as "NONE", but the |defaults.vim| script is
-		loaded, which will also set 'nocompatible'.
+		loaded, which will also set 'nocompatible'.  Also see
+		|--clean|.
 
 		Using the "-u" argument with another argument than DEFAULTS
 		has the side effect that the 'compatible' option will be on by
@@ -520,7 +521,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		  'nocompatible': use Vim defaults
 		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
-		- the home directory is excluded from 'runtimepath'
+
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
 		which is then stored in the 'key' option.  All writes will

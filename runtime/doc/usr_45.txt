@@ -416,4 +416,4 @@ Don't type the spaces.  See |i_CTRL-V_digit| for the details.
 
 Next chapter: |usr_90.txt|  Installing Vim
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

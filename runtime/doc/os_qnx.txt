@@ -135,4 +135,4 @@ Todo:
 	- Replace usage of fork() with spawn() when launching external
 	  programs.
 
- vim:tw=78:sw=4:ts=8:noet:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

@@ -661,7 +661,7 @@ DirChanged			The working directory has changed in response
 				to the |:cd| or |:lcd| commands, or as a
 				result of the 'autochdir' option.
 				The pattern can be:
-					"window" to trigger on `:lcd
+					"window" to trigger on `:lcd`
 					"global" to trigger on `:cd`
 					"auto"   to trigger on 'autochdir'.
 					"drop"	 to trigger on editing a file
