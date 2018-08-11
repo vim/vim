@@ -2493,9 +2493,14 @@ failed:
 	    c = FALSE;
 
 #ifdef UNIX
-	    if (S_ISFIFO(perm) || S_ISSOCK(perm))   /* fifo or socket */
+	    if (S_ISFIFO(perm))			    /* fifo */
 	    {
-		STRCAT(IObuff, _("[fifo/socket]"));
+		STRCAT(IObuff, _("[fifo]"));
+		c = TRUE;
+	    }
+	    if (S_ISSOCK(perm))			    /* or socket */
+	    {
+		STRCAT(IObuff, _("[socket]"));
 		c = TRUE;
 	    }
 # ifdef OPEN_CHR_FILES
