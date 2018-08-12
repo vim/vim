@@ -686,10 +686,10 @@ Expression syntax summary, from least to most significant:
 	+ expr7			unary plus
 
 |expr8|	expr9
-	expr8[expr1]		byte of a String or item of a |List|
-	expr8[expr1 : expr1]	substring of a String or sublist of a |List|
-	expr8.name		entry in a |Dictionary|
-	expr8(expr1, ...)	function call with |Funcref| variable
+	expr9[expr1]		byte of a String or item of a |List|
+	expr9[expr1 : expr1]	substring of a String or sublist of a |List|
+	expr9.name		entry in a |Dictionary|
+	expr9(expr1, ...)	function call with |Funcref| variable
 
 |expr9|	number			number constant
 	"string"		string constant, backslash is special
@@ -954,10 +954,10 @@ These three can be repeated and mixed.  Examples:
 
 expr8							*expr8*
 -----
-expr8[expr1]		item of String or |List|	*expr-[]* *E111*
+expr9[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
-If expr8 is a Number or String this results in a String that contains the
-expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
+If expr9 is a Number or String this results in a String that contains the
+expr1'th single byte from expr9.  expr9 is used as a String, expr1 as a
 Number.  This doesn't recognize multi-byte encodings, see `byteidx()` for
 an alternative, or use `split()` to turn the string into a list of characters.
 
@@ -970,7 +970,7 @@ If the length of the String is less than the index, the result is an empty
 String.  A negative index always results in an empty string (reason: backward
 compatibility).  Use [-1:] to get the last byte.
 
-If expr8 is a |List| then it results the item at index expr1.  See |list-index|
+If expr9 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
 error.  Example: >
 	:let item = mylist[-1]		" get last item
@@ -980,10 +980,10 @@ Generally, if a |List| index is equal to or higher than the length of the
 error.
 
 
-expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
+expr9[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr8 is a Number or String this results in the substring with the bytes
-from expr1a to and including expr1b.  expr8 is used as a String, expr1a and
+If expr9 is a Number or String this results in the substring with the bytes
+from expr1a to and including expr1b.  expr9 is used as a String, expr1a and
 expr1b are used as a Number.  This doesn't recognize multi-byte encodings, see
 |byteidx()| for computing the indexes.
 
@@ -1003,14 +1003,14 @@ Examples: >
 	:let s = s[:-3]			" remove last two bytes
 <
 							*slice*
-If expr8 is a |List| this results in a new |List| with the items indicated by
+If expr9 is a |List| this results in a new |List| with the items indicated by
 the indexes expr1a and expr1b.  This works like with a String, as explained
 just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
 
-Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
+Using expr9[expr1] or expr9[expr1a : expr1b] on a |Funcref| results in an
 error.
 
 Watch out for confusion between a namespace and a variable followed by a colon
@@ -1019,11 +1019,11 @@ for a sublist: >
 	mylist[s:]     " uses namespace s:, error!
 
 
-expr8.name		entry in a |Dictionary|		*expr-entry*
+expr9.name		entry in a |Dictionary|		*expr-entry*
 
-If expr8 is a |Dictionary| and it is followed by a dot, then the following
+If expr9 is a |Dictionary| and it is followed by a dot, then the following
 name will be used as a key in the |Dictionary|.  This is just like:
-expr8[name].
+expr9[name].
 
 The name must consist of alphanumeric characters, just like a variable name,
 but it may start with a number.  Curly braces cannot be used.
@@ -1039,9 +1039,9 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr8(expr1, ...)	|Funcref| function call
+expr9(expr1, ...)	|Funcref| function call
 
-When expr8 is a |Funcref| type variable, invoke the function it refers to.
+When expr9 is a |Funcref| type variable, invoke the function it refers to.
 
 
 
