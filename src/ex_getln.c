@@ -300,7 +300,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 		{
 		    delim = *p++;
 		    end = skip_regexp(p, delim, p_magic, NULL);
-		    if (end > p)
+		    if (end > p || *end == delim)
 		    {
 			char_u  *dummy;
 			exarg_T ea;
@@ -341,6 +341,37 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     return FALSE;
 }
 
+    static void
+finish_incsearch_highlighting(
+	int gotesc,
+	incsearch_state_T *is_state,
+	int call_update_screen)
+{
+    if (is_state->did_incsearch)
+    {
+	is_state->did_incsearch = FALSE;
+	if (gotesc)
+	    curwin->w_cursor = is_state->save_cursor;
+	else
+	{
+	    if (!EQUAL_POS(is_state->save_cursor, is_state->search_start))
+	    {
+		// put the '" mark at the original position
+		curwin->w_cursor = is_state->save_cursor;
+		setpcmark();
+	    }
+	    curwin->w_cursor = is_state->search_start;
+	}
+	restore_viewstate(&is_state->old_viewstate);
+	highlight_match = FALSE;
+	validate_cursor();	/* needed for TAB */
+	if (call_update_screen)
+	    update_screen(SOME_VALID);
+	else
+	    redraw_all_later(SOME_VALID);
+    }
+}
+
 /*
  * Do 'incsearch' highlighting if desired.
  */
@@ -357,10 +388,14 @@ may_do_incsearch_highlighting(
 #ifdef FEAT_RELTIME
     proftime_T	tm;
 #endif
-    int		c;
+    int		next_char;
+    int		use_last_pat;
 
     if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    {
+	finish_incsearch_highlighting(FALSE, is_state, TRUE);
 	return;
+    }
 
     // If there is a character waiting, search and redraw later.
     if (char_avail())
@@ -381,8 +416,13 @@ may_do_incsearch_highlighting(
     }
     save_last_search_pattern();
 
-    // If there is no command line, don't do anything.
-    if (patlen == 0)
+    // Use the previous pattern for ":s//".
+    next_char = ccline.cmdbuff[skiplen + patlen];
+    use_last_pat = patlen == 0 && skiplen > 0
+				   && ccline.cmdbuff[skiplen - 1] == next_char;
+
+    // If there is no pattern, don't do anything.
+    if (patlen == 0 && !use_last_pat)
     {
 	i = 0;
 	set_no_hlsearch(TRUE); // turn off previous highlight
@@ -403,7 +443,6 @@ may_do_incsearch_highlighting(
 	    search_flags += SEARCH_KEEP;
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
-	c = ccline.cmdbuff[skiplen + patlen];
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 	i = do_search(NULL, firstc == ':' ? '/' : firstc,
 				 ccline.cmdbuff + skiplen, count, search_flags,
@@ -413,7 +452,7 @@ may_do_incsearch_highlighting(
 		NULL, NULL
 #endif
 		);
-	ccline.cmdbuff[skiplen + patlen] = c;
+	ccline.cmdbuff[skiplen + patlen] = next_char;
 	--emsg_off;
 
 	if (curwin->w_cursor.lnum < search_first_line
@@ -459,11 +498,14 @@ may_do_incsearch_highlighting(
 
     // Disable 'hlsearch' highlighting if the pattern matches everything.
     // Avoids a flash when typing "foo\|".
-    c = ccline.cmdbuff[skiplen + patlen];
-    ccline.cmdbuff[skiplen + patlen] = NUL;
-    if (empty_pattern(ccline.cmdbuff))
-	set_no_hlsearch(TRUE);
-    ccline.cmdbuff[skiplen + patlen] = c;
+    if (!use_last_pat)
+    {
+	next_char = ccline.cmdbuff[skiplen + patlen];
+	ccline.cmdbuff[skiplen + patlen] = NUL;
+	if (empty_pattern(ccline.cmdbuff))
+	    set_no_hlsearch(TRUE);
+	ccline.cmdbuff[skiplen + patlen] = next_char;
+    }
 
     validate_cursor();
     // May redraw the status line to show the cursor position.
@@ -627,30 +669,6 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	}
     }
     return OK;
-}
-
-    static void
-finish_incsearch_highlighting(int gotesc, incsearch_state_T *is_state)
-{
-    if (is_state->did_incsearch)
-    {
-	if (gotesc)
-	    curwin->w_cursor = is_state->save_cursor;
-	else
-	{
-	    if (!EQUAL_POS(is_state->save_cursor, is_state->search_start))
-	    {
-		// put the '" mark at the original position
-		curwin->w_cursor = is_state->save_cursor;
-		setpcmark();
-	    }
-	    curwin->w_cursor = is_state->search_start;
-	}
-	restore_viewstate(&is_state->old_viewstate);
-	highlight_match = FALSE;
-	validate_cursor();	/* needed for TAB */
-	redraw_all_later(SOME_VALID);
-    }
 }
 #endif
 
@@ -2301,7 +2319,7 @@ returncmd:
     ccline.xpc = NULL;
 
 #ifdef FEAT_SEARCH_EXTRA
-    finish_incsearch_highlighting(gotesc, &is_state);
+    finish_incsearch_highlighting(gotesc, &is_state, FALSE);
 #endif
 
     if (ccline.cmdbuff != NULL)
