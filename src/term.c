@@ -922,6 +922,10 @@ static struct builtin_term builtin_termcaps[] =
 #  endif
     {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
     {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
+    {(int)KS_CST,	IF_EB("\033[22;2t", ESC_STR "[22;2t")},
+    {(int)KS_CRT,	IF_EB("\033[23;2t", ESC_STR "[23;2t")},
+    {(int)KS_SSI,	IF_EB("\033[22;1t", ESC_STR "[22;1t")},
+    {(int)KS_SRI,	IF_EB("\033[23;1t", ESC_STR "[23;1t")},
 
     {K_UP,		IF_EB("\033O*A", ESC_STR "O*A")},
     {K_DOWN,		IF_EB("\033O*B", ESC_STR "O*B")},
@@ -1600,6 +1604,8 @@ get_term_entries(int *height, int *width)
 			{KS_8F, "8f"}, {KS_8B, "8b"},
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CPS, "PS"}, {KS_CPE, "PE"},
+			{KS_CST, "ST"}, {KS_CRT, "RT"},
+			{KS_SSI, "Si"}, {KS_SRI, "Ri"},
 			{(enum SpecialKey)0, NULL}
 		    };
     int		    i;
@@ -2974,6 +2980,45 @@ term_settitle(char_u *title)
     out_str(T_FS);			/* set title end */
     out_flush();
 }
+
+/*
+ * Tell the terminal to push (save) the title and/or icon, so that it can be
+ * popped (restored) later.
+ */
+    void
+term_push_title(int which)
+{
+    if ((which & SAVE_RESTORE_TITLE) && *T_CST != NUL)
+    {
+	OUT_STR(T_CST);
+	out_flush();
+    }
+
+    if ((which & SAVE_RESTORE_ICON) && *T_SSI != NUL)
+    {
+	OUT_STR(T_SSI);
+	out_flush();
+    }
+}
+
+/*
+ * Tell the terminal to pop the title and/or icon.
+ */
+    void
+term_pop_title(int which)
+{
+    if ((which & SAVE_RESTORE_TITLE) && *T_CRT != NUL)
+    {
+	OUT_STR(T_CRT);
+	out_flush();
+    }
+
+    if ((which & SAVE_RESTORE_ICON) && *T_SRI != NUL)
+    {
+	OUT_STR(T_SRI);
+	out_flush();
+    }
+}
 #endif
 
 /*
@@ -3789,16 +3834,23 @@ scroll_start(void)
 static int cursor_is_off = FALSE;
 
 /*
+ * Enable the cursor without checking if it's already enabled.
+ */
+    void
+cursor_on_force(void)
+{
+    out_str(T_VE);
+    cursor_is_off = FALSE;
+}
+
+/*
  * Enable the cursor.
  */
     void
 cursor_on(void)
 {
     if (cursor_is_off)
-    {
-	out_str(T_VE);
-	cursor_is_off = FALSE;
-    }
+	cursor_on_force();
 }
 
 /*

@@ -7892,6 +7892,13 @@ next_search_hl(
     long	nmatched;
     int		save_called_emsg = called_emsg;
 
+    // for :{range}s/pat only highlight inside the range
+    if (lnum < search_first_line || lnum > search_last_line)
+    {
+	shl->lnum = 0;
+	return;
+    }
+
     if (shl->lnum != 0)
     {
 	/* Check for three situations:

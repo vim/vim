@@ -204,13 +204,8 @@ open_buffer(
 #endif
 #ifdef UNIX
 	perm = mch_getperm(curbuf->b_ffname);
-	if (perm >= 0 && (0
-# ifdef S_ISFIFO
-		      || S_ISFIFO(perm)
-# endif
-# ifdef S_ISSOCK
+	if (perm >= 0 && (S_ISFIFO(perm)
 		      || S_ISSOCK(perm)
-# endif
 # ifdef OPEN_CHR_FILES
 		      || (S_ISCHR(perm) && is_dev_fd_file(curbuf->b_ffname))
 # endif
@@ -3798,7 +3793,8 @@ value_changed(char_u *str, char_u **last)
 	if (str == NULL)
 	{
 	    *last = NULL;
-	    mch_restore_title(last == &lasttitle ? 1 : 2);
+	    mch_restore_title(
+		  last == &lasttitle ? SAVE_RESTORE_TITLE : SAVE_RESTORE_ICON);
 	}
 	else
 	{
@@ -4229,7 +4225,7 @@ build_stl_str_hl(
 
 #ifdef FEAT_EVAL
 	    vim_snprintf((char *)tmp, sizeof(tmp), "%d", curbuf->b_fnum);
-	    set_internal_string_var((char_u *)"actual_curbuf", tmp);
+	    set_internal_string_var((char_u *)"g:actual_curbuf", tmp);
 
 	    save_curbuf = curbuf;
 	    save_curwin = curwin;

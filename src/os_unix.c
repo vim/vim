@@ -1227,7 +1227,23 @@ deathtrap SIGDEFARG(sigarg)
     SIGRETURN;
 }
 
-#if defined(_REENTRANT) && defined(SIGCONT)
+    static void
+after_sigcont(void)
+{
+# ifdef FEAT_TITLE
+    // Set oldtitle to NULL, so the current title is obtained again.
+    VIM_CLEAR(oldtitle);
+# endif
+    settmode(TMODE_RAW);
+    need_check_timestamps = TRUE;
+    did_check_timestamps = FALSE;
+}
+
+#if defined(SIGCONT)
+static RETSIGTYPE sigcont_handler SIGPROTOARG;
+static int in_mch_suspend = FALSE;
+
+# if defined(_REENTRANT) && defined(SIGCONT)
 /*
  * On Solaris with multi-threading, suspending might not work immediately.
  * Catch the SIGCONT signal, which will be used as an indication whether the
@@ -1239,7 +1255,7 @@ deathtrap SIGDEFARG(sigarg)
  * volatile because it is used in signal handler sigcont_handler().
  */
 static volatile int sigcont_received;
-static RETSIGTYPE sigcont_handler SIGPROTOARG;
+# endif
 
 /*
  * signal handler for SIGCONT
@@ -1247,7 +1263,38 @@ static RETSIGTYPE sigcont_handler SIGPROTOARG;
     static RETSIGTYPE
 sigcont_handler SIGDEFARG(sigarg)
 {
-    sigcont_received = TRUE;
+    if (in_mch_suspend)
+    {
+# if defined(_REENTRANT) && defined(SIGCONT)
+	sigcont_received = TRUE;
+# endif
+    }
+    else
+    {
+	// We didn't suspend ourselves, assume we were stopped by a SIGSTOP
+	// signal (which can't be intercepted) and get a SIGCONT.  Need to get
+	// back to a sane mode and redraw.
+	after_sigcont();
+
+	update_screen(CLEAR);
+	if (State & CMDLINE)
+	    redrawcmdline();
+	else if (State == HITRETURN || State == SETWSIZE || State == ASKMORE
+		|| State == EXTERNCMD || State == CONFIRM || exmode_active)
+	    repeat_message();
+	else if (redrawing())
+	    setcursor();
+#if defined(FEAT_INS_EXPAND)
+	if (pum_visible())
+	{
+	    redraw_later(NOT_VALID);
+	    ins_compl_show_pum();
+	}
+#endif
+	cursor_on_force();
+	out_flush();
+    }
+
     SIGRETURN;
 }
 #endif
@@ -1330,6 +1377,8 @@ mch_suspend(void)
 {
     /* BeOS does have SIGTSTP, but it doesn't work. */
 #if defined(SIGTSTP) && !defined(__BEOS__)
+    in_mch_suspend = TRUE;
+
     out_flush();	    /* needed to make cursor visible on some systems */
     settmode(TMODE_COOK);
     out_flush();	    /* needed to disable mouse on some systems */
@@ -1361,16 +1410,9 @@ mch_suspend(void)
 	    mch_delay(wait_time, FALSE);
     }
 # endif
+    in_mch_suspend = FALSE;
 
-# ifdef FEAT_TITLE
-    /*
-     * Set oldtitle to NULL, so the current title is obtained again.
-     */
-    VIM_CLEAR(oldtitle);
-# endif
-    settmode(TMODE_RAW);
-    need_check_timestamps = TRUE;
-    did_check_timestamps = FALSE;
+    after_sigcont();
 #else
     suspend_shell();
 #endif
@@ -1410,7 +1452,7 @@ set_signals(void)
 #ifdef SIGTSTP
     signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
 #endif
-#if defined(_REENTRANT) && defined(SIGCONT)
+#if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
 
@@ -2294,17 +2336,21 @@ mch_settitle(char_u *title, char_u *icon)
 /*
  * Restore the window/icon title.
  * "which" is one of:
- *  1  only restore title
- *  2  only restore icon
- *  3  restore title and icon
+ *  SAVE_RESTORE_TITLE only restore title
+ *  SAVE_RESTORE_ICON  only restore icon
+ *  SAVE_RESTORE_BOTH  restore title and icon
  */
     void
 mch_restore_title(int which)
 {
     /* only restore the title or icon when it has been set */
-    mch_settitle(((which & 1) && did_set_title) ?
+    mch_settitle(((which & SAVE_RESTORE_TITLE) && did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
-			      ((which & 2) && did_set_icon) ? oldicon : NULL);
+	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
+
+    // pop and push from/to the stack
+    term_pop_title(which);
+    term_push_title(which);
 }
 
 #endif /* FEAT_TITLE */
@@ -3092,11 +3138,7 @@ mch_isdir(char_u *name)
 	return FALSE;
     if (stat((char *)name, &statb))
 	return FALSE;
-#ifdef _POSIX_SOURCE
     return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);
-#else
-    return ((statb.st_mode & S_IFMT) == S_IFDIR ? TRUE : FALSE);
-#endif
 }
 
 /*
@@ -3113,11 +3155,7 @@ mch_isrealdir(char_u *name)
 	return FALSE;
     if (mch_lstat((char *)name, &statb))
 	return FALSE;
-#ifdef _POSIX_SOURCE
     return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);
-#else
-    return ((statb.st_mode & S_IFMT) == S_IFDIR ? TRUE : FALSE);
-#endif
 }
 
 static int executable_file(char_u *name);
@@ -3370,7 +3408,9 @@ mch_exit(int r)
     {
 	settmode(TMODE_COOK);
 #ifdef FEAT_TITLE
-	mch_restore_title(3);	/* restore xterm title and icon name */
+	// restore xterm title and icon name
+	mch_restore_title(SAVE_RESTORE_BOTH);
+	term_pop_title(SAVE_RESTORE_BOTH);
 #endif
 	/*
 	 * When t_ti is not empty but it doesn't cause swapping terminal

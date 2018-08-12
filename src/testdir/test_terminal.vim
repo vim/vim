@@ -1621,3 +1621,15 @@ func Test_terminal_hidden()
   call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
   bwipe!
 endfunc
+
+func Test_terminal_hidden_and_close()
+  if !has('unix')
+    return
+  endif
+  call assert_equal(1, winnr('$'))
+  term ++hidden ++close ls
+  let bnr = bufnr('$')
+  call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+  call WaitForAssert({-> assert_false(bufexists(bnr))})
+  call assert_equal(1, winnr('$'))
+endfunc

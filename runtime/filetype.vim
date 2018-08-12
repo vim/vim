@@ -586,7 +586,7 @@ au BufNewFile,BufRead auto.master		setf conf
 au BufNewFile,BufRead *.mas,*.master		setf master
 
 " Forth
-au BufNewFile,BufRead *.fs,*.ft			setf forth
+au BufNewFile,BufRead *.fs,*.ft,*.fth		setf forth
 
 " Reva Forth
 au BufNewFile,BufRead *.frt			setf reva
@@ -1864,6 +1864,9 @@ au BufNewFile,BufRead */etc/xdg/menus/*.menu	setf xml
 
 " ATI graphics driver configuration
 au BufNewFile,BufRead fglrxrc			setf xml
+
+" Web Services Description Language (WSDL)
+au BufNewFile,BufRead *.wsdl			setf xml
 
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml

@@ -635,7 +635,7 @@ Starting ~
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
-To start debugging use `:Termdebug` or `:TermdebugCommand`` followed by the
+To start debugging use `:Termdebug` or `:TermdebugCommand` followed by the
 command name, for example: >
 	:Termdebug vim
 

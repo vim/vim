@@ -2695,7 +2695,7 @@ mch_exit(int r)
     if (g_fWindInitCalled)
     {
 #ifdef FEAT_TITLE
-	mch_restore_title(3);
+	mch_restore_title(SAVE_RESTORE_BOTH);
 	/*
 	 * Restore both the small and big icons of the console window to
 	 * what they were at startup.  Don't do this when the window is
@@ -3967,6 +3967,48 @@ mch_get_shellsize(void)
 }
 
 /*
+ * Resize console buffer to 'COORD'
+ */
+    static void
+ResizeConBuf(
+    HANDLE  hConsole,
+    COORD   coordScreen)
+{
+    if (!SetConsoleScreenBufferSize(hConsole, coordScreen))
+    {
+#ifdef MCH_WRITE_DUMP
+	if (fdDump)
+	{
+	    fprintf(fdDump, "SetConsoleScreenBufferSize failed: %lx\n",
+		    GetLastError());
+	    fflush(fdDump);
+	}
+#endif
+    }
+}
+
+/*
+ * Resize console window size to 'srWindowRect'
+ */
+    static void
+ResizeWindow(
+    HANDLE     hConsole,
+    SMALL_RECT srWindowRect)
+{
+    if (!SetConsoleWindowInfo(hConsole, TRUE, &srWindowRect))
+    {
+#ifdef MCH_WRITE_DUMP
+	if (fdDump)
+	{
+	    fprintf(fdDump, "SetConsoleWindowInfo failed: %lx\n",
+		    GetLastError());
+	    fflush(fdDump);
+	}
+#endif
+    }
+}
+
+/*
  * Set a console window to `xSize' * `ySize'
  */
     static void
@@ -4019,32 +4061,20 @@ ResizeConBufAndWindow(
 	}
     }
 
-    if (!SetConsoleWindowInfo(g_hConOut, TRUE, &srWindowRect))
-    {
-#ifdef MCH_WRITE_DUMP
-	if (fdDump)
-	{
-	    fprintf(fdDump, "SetConsoleWindowInfo failed: %lx\n",
-		    GetLastError());
-	    fflush(fdDump);
-	}
-#endif
-    }
-
-    /* define the new console buffer size */
+    // define the new console buffer size
     coordScreen.X = xSize;
     coordScreen.Y = ySize;
 
-    if (!SetConsoleScreenBufferSize(hConsole, coordScreen))
+    // In the new console call API in reverse order
+    if (!vtp_working)
     {
-#ifdef MCH_WRITE_DUMP
-	if (fdDump)
-	{
-	    fprintf(fdDump, "SetConsoleScreenBufferSize failed: %lx\n",
-		    GetLastError());
-	    fflush(fdDump);
-	}
-#endif
+	ResizeWindow(hConsole, srWindowRect);
+	ResizeConBuf(hConsole, coordScreen);
+    }
+    else
+    {
+	ResizeConBuf(hConsole, coordScreen);
+	ResizeWindow(hConsole, srWindowRect);
     }
 }
 

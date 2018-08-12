@@ -5088,63 +5088,22 @@ f_getftype(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     if (mch_lstat((char *)fname, &st) >= 0)
     {
-#ifdef S_ISREG
 	if (S_ISREG(st.st_mode))
 	    t = "file";
 	else if (S_ISDIR(st.st_mode))
 	    t = "dir";
-# ifdef S_ISLNK
 	else if (S_ISLNK(st.st_mode))
 	    t = "link";
-# endif
-# ifdef S_ISBLK
 	else if (S_ISBLK(st.st_mode))
 	    t = "bdev";
-# endif
-# ifdef S_ISCHR
 	else if (S_ISCHR(st.st_mode))
 	    t = "cdev";
-# endif
-# ifdef S_ISFIFO
 	else if (S_ISFIFO(st.st_mode))
 	    t = "fifo";
-# endif
-# ifdef S_ISSOCK
 	else if (S_ISSOCK(st.st_mode))
-	    t = "fifo";
-# endif
+	    t = "socket";
 	else
 	    t = "other";
-#else
-# ifdef S_IFMT
-	switch (st.st_mode & S_IFMT)
-	{
-	    case S_IFREG: t = "file"; break;
-	    case S_IFDIR: t = "dir"; break;
-#  ifdef S_IFLNK
-	    case S_IFLNK: t = "link"; break;
-#  endif
-#  ifdef S_IFBLK
-	    case S_IFBLK: t = "bdev"; break;
-#  endif
-#  ifdef S_IFCHR
-	    case S_IFCHR: t = "cdev"; break;
-#  endif
-#  ifdef S_IFIFO
-	    case S_IFIFO: t = "fifo"; break;
-#  endif
-#  ifdef S_IFSOCK
-	    case S_IFSOCK: t = "socket"; break;
-#  endif
-	    default: t = "other";
-	}
-# else
-	if (mch_isdir(fname))
-	    t = "dir";
-	else
-	    t = "file";
-# endif
-#endif
 	type = vim_strsave((char_u *)t);
     }
     rettv->vval.v_string = type;

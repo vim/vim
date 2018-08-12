@@ -46,7 +46,7 @@ compiler (see |errorformat| below).
 
 							*quickfix-ID*
 Each quickfix list has a unique identifier called the quickfix ID and this
-number will not change within a Vim session. The getqflist() function can be
+number will not change within a Vim session. The |getqflist()| function can be
 used to get the identifier assigned to a list. There is also a quickfix list
 number which may change whenever more than ten lists are added to a quickfix
 stack.
@@ -68,7 +68,7 @@ the location list is destroyed.
 Every quickfix and location list has a read-only changedtick variable that
 tracks the total number of changes made to the list.  Every time the quickfix
 list is modified, this count is incremented. This can be used to perform an
-action only when the list has changed.  The getqflist() and getloclist()
+action only when the list has changed.  The |getqflist()| and |getloclist()|
 functions can be used to query the current value of changedtick.  You cannot
 change the changedtick variable.
 
@@ -602,7 +602,7 @@ present).  Examples: >
 	echo getloclist(2, {'winid' : 1}).winid
 <
 							*getqflist-examples*
-The getqflist() and getloclist() functions can be used to get the various
+The |getqflist()| and |getloclist()| functions can be used to get the various
 attributes of a quickfix and location list respectively. Some examples for
 using these functions are below:
 >
@@ -659,7 +659,7 @@ using these functions are below:
     :echo getloclist(3, {'winid' : 0}).winid
 <
 							*setqflist-examples*
-The setqflist() and setloclist() functions can be used to set the various
+The |setqflist()| and |setloclist()| functions can be used to set the various
 attributes of a quickfix and location list respectively. Some examples for
 using these functions are below:
 >

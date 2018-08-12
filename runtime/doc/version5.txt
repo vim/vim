@@ -7810,4 +7810,4 @@ Solution:   Allocate the buffer for the shell command.
 Files:	    src/ex_docmd.c
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

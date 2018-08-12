@@ -208,6 +208,21 @@ func Test_simplify()
   call assert_fails('call simplify(1.2)', 'E806:')
 endfunc
 
+func Test_pathshorten()
+  call assert_equal('', pathshorten(''))
+  call assert_equal('foo', pathshorten('foo'))
+  call assert_equal('/foo', pathshorten('/foo'))
+  call assert_equal('f/', pathshorten('foo/'))
+  call assert_equal('f/bar', pathshorten('foo/bar'))
+  call assert_equal('f/b/foobar', pathshorten('foo/bar/foobar'))
+  call assert_equal('/f/b/foobar', pathshorten('/foo/bar/foobar'))
+  call assert_equal('.f/bar', pathshorten('.foo/bar'))
+  call assert_equal('~f/bar', pathshorten('~foo/bar'))
+  call assert_equal('~.f/bar', pathshorten('~.foo/bar'))
+  call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
+  call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
+endfunc
+
 func Test_strpart()
   call assert_equal('de', strpart('abcdefg', 3, 2))
   call assert_equal('ab', strpart('abcdefg', -2, 4))

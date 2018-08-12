@@ -544,27 +544,57 @@ PythonIO_Init_io(void)
 }
 
 #if PY_VERSION_HEX < 0x030700f0
+static PyObject *call_load_module(char *name, int len, PyObject *find_module_result);
+
 typedef struct
 {
     PyObject_HEAD
-    PyObject	*module;
+    char	*fullname;
+    PyObject	*result;
 } LoaderObject;
 static PyTypeObject LoaderType;
 
     static void
 LoaderDestructor(LoaderObject *self)
 {
-    Py_DECREF(self->module);
+    vim_free(self->fullname);
+    Py_XDECREF(self->result);
     DESTRUCTOR_FINISH(self);
 }
 
     static PyObject *
 LoaderLoadModule(LoaderObject *self, PyObject *args UNUSED)
 {
-    PyObject	*ret = self->module;
+    char	*fullname = self->fullname;
+    PyObject	*result = self->result;
+    PyObject	*module;
 
-    Py_INCREF(ret);
-    return ret;
+    if (!fullname)
+    {
+	module = result ? result : Py_None;
+	Py_INCREF(module);
+	return module;
+    }
+
+    module = call_load_module(fullname, (int)STRLEN(fullname), result);
+
+    self->fullname = NULL;
+    self->result = module;
+
+    vim_free(fullname);
+    Py_DECREF(result);
+
+    if (!module)
+    {
+	if (PyErr_Occurred())
+	    return NULL;
+
+	Py_INCREF(Py_None);
+	return Py_None;
+    }
+
+    Py_INCREF(module);
+    return module;
 }
 
 static struct PyMethodDef LoaderMethods[] = {
@@ -1252,7 +1282,11 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 
 	if (!(find_module_result = PyObject_CallFunction(py_find_module,
 			"s#O", tail, partlen, new_path)))
+	{
+	    if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_ImportError))
+		PyErr_Clear();
 	    return NULL;
+	}
 
 	if (!(module = call_load_module(
 			fullname,
@@ -1273,30 +1307,23 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 
 	Py_DECREF(module);
 
-	module = find_module(fullname, dot + 1, newest_path);
+	find_module_result = find_module(fullname, dot + 1, newest_path);
 
 	Py_DECREF(newest_path);
 
-	return module;
+	return find_module_result;
     }
     else
     {
 	if (!(find_module_result = PyObject_CallFunction(py_find_module,
 			"sO", tail, new_path)))
-	    return NULL;
-
-	if (!(module = call_load_module(
-			fullname,
-			(int)STRLEN(fullname),
-			find_module_result)))
 	{
-	    Py_DECREF(find_module_result);
+	    if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_ImportError))
+		PyErr_Clear();
 	    return NULL;
 	}
 
-	Py_DECREF(find_module_result);
-
-	return module;
+	return find_module_result;
     }
 }
 
@@ -1304,7 +1331,7 @@ find_module(char *fullname, char *tail, PyObject *new_path)
 FinderFindModule(PyObject *self, PyObject *args)
 {
     char	*fullname;
-    PyObject	*module;
+    PyObject	*result;
     PyObject	*new_path;
     LoaderObject	*loader;
 
@@ -1314,31 +1341,35 @@ FinderFindModule(PyObject *self, PyObject *args)
     if (!(new_path = Vim_GetPaths(self)))
 	return NULL;
 
-    module = find_module(fullname, fullname, new_path);
+    result = find_module(fullname, fullname, new_path);
 
     Py_DECREF(new_path);
 
-    if (!module)
+    if (!result)
     {
 	if (PyErr_Occurred())
-	{
-	    if (PyErr_ExceptionMatches(PyExc_ImportError))
-		PyErr_Clear();
-	    else
-		return NULL;
-	}
+	    return NULL;
 
 	Py_INCREF(Py_None);
 	return Py_None;
     }
 
-    if (!(loader = PyObject_NEW(LoaderObject, &LoaderType)))
+    if (!(fullname = (char *)vim_strsave((char_u *)fullname)))
     {
-	Py_DECREF(module);
+	Py_DECREF(result);
+	PyErr_NoMemory();
 	return NULL;
     }
 
-    loader->module = module;
+    if (!(loader = PyObject_NEW(LoaderObject, &LoaderType)))
+    {
+	vim_free(fullname);
+	Py_DECREF(result);
+	return NULL;
+    }
+
+    loader->fullname = fullname;
+    loader->result = result;
 
     return (PyObject *) loader;
 }
