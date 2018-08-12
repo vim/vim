@@ -316,8 +316,8 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 			ea.line2 = 1;
 			ea.cmd = ccline.cmdbuff;
 			ea.addr_type = ADDR_LINES;
-			parse_cmd_address(&ea, &dummy);
 			curwin->w_cursor = is_state->search_start;
+			parse_cmd_address(&ea, &dummy);
 			if (ea.addr_count > 0)
 			{
 			    search_first_line = ea.line1;
@@ -401,6 +401,8 @@ may_do_incsearch_highlighting(
 #endif
 	if (!p_hls)
 	    search_flags += SEARCH_KEEP;
+	if (search_first_line != 0)
+	    search_flags += SEARCH_START;
 	c = ccline.cmdbuff[skiplen + patlen];
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 	i = do_search(NULL, firstc == ':' ? '/' : firstc,
