@@ -298,6 +298,13 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 			    || STRNCMP(cmd, "global", p - cmd) == 0
 			    || STRNCMP(cmd, "vglobal", p - cmd) == 0))
 		{
+		    // Check for "global!/".
+		    if (*cmd == 'g' && *p == '!')
+		    {
+			p++;
+			if (*skipwhite(p) == NUL)
+			    return FALSE;
+		    }
 		    p = skipwhite(p);
 		    delim = *p++;
 		    end = skip_regexp(p, delim, p_magic, NULL);
