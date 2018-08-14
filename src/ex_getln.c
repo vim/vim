@@ -580,7 +580,7 @@ may_adjust_incsearch_highlighting(
     {
 	pat = last_search_pattern();
 	skiplen = 0;
-	patlen = STRLEN(pat);
+	patlen = (int)STRLEN(pat);
     }
     else
 	pat = ccline.cmdbuff + skiplen;
