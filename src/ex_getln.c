@@ -231,6 +231,7 @@ typedef struct {
     pos_T       match_end;
     int		did_incsearch;
     int		incsearch_postponed;
+    int		magic_save;
 } incsearch_state_T;
 
     static void
@@ -239,6 +240,7 @@ init_incsearch_state(incsearch_state_T *is_state)
     is_state->match_start = curwin->w_cursor;
     is_state->did_incsearch = FALSE;
     is_state->incsearch_postponed = FALSE;
+    is_state->magic_save = p_magic;
     CLEAR_POS(&is_state->match_end);
     is_state->save_cursor = curwin->w_cursor;  // may be restored later
     is_state->search_start = curwin->w_cursor;
@@ -308,9 +310,16 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 		    ;
 		if (*skipwhite(p) != NUL
 			&& (STRNCMP(cmd, "substitute", p - cmd) == 0
+			    || STRNCMP(cmd, "smagic", p - cmd) == 0
+			    || STRNCMP(cmd, "snomagic", MAX(p - cmd, 3)) == 0
 			    || STRNCMP(cmd, "global", p - cmd) == 0
 			    || STRNCMP(cmd, "vglobal", p - cmd) == 0))
 		{
+		    if (*cmd == 's' && cmd[1] == 'm')
+			p_magic = TRUE;
+		    else if (*cmd == 's' && cmd[1] == 'n')
+			p_magic = FALSE;
+
 		    // Check for "global!/".
 		    if (*cmd == 'g' && *p == '!')
 		    {
@@ -392,6 +401,7 @@ finish_incsearch_highlighting(
 	    update_screen(SOME_VALID);
 	else
 	    redraw_all_later(SOME_VALID);
+	p_magic = is_state->magic_save;
     }
 }
 
