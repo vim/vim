@@ -3010,6 +3010,7 @@ qf_jump_goto_line(
 			++screen_col;
 		}
 	    }
+	    curwin->w_set_curswant = TRUE;
 	    check_cursor();
 	}
 	else
