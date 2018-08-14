@@ -120,6 +120,7 @@ int read_viminfo_varlist(vir_T *virp, int writing);
 void write_viminfo_varlist(FILE *fp);
 int store_session_globals(FILE *fd);
 void last_set_msg(scid_T scriptID);
+void last_set_msg_lnum(scid_T scriptID, linenr_T linenr);
 void reset_v_option_vars(void);
 void prepare_assert_error(garray_T *gap);
 void assert_error(garray_T *gap);
