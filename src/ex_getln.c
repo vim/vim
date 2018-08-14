@@ -480,8 +480,11 @@ may_do_incsearch_highlighting(
 
 	if (curwin->w_cursor.lnum < search_first_line
 		|| curwin->w_cursor.lnum > search_last_line)
+	{
 	    // match outside of address range
 	    i = 0;
+	    curwin->w_cursor = is_state->search_start;
+	}
 
 	// if interrupted while searching, behave like it failed
 	if (got_int)
