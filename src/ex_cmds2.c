@@ -1934,7 +1934,7 @@ script_dump_profile(FILE *fd)
 	si = &SCRIPT_ITEM(id);
 	if (si->sn_prof_on)
 	{
-	    fprintf(fd, "SCRIPT  %s\n", si->sn_name);
+	    fprintf(fd, "SCRIPT  %s (<SNR>_%d)\n", si->sn_name, id);
 	    if (si->sn_pr_count == 1)
 		fprintf(fd, "Sourced 1 time\n");
 	    else
