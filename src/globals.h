@@ -678,8 +678,7 @@ EXTERN int	allbuf_lock INIT(= 0);
 				 * changed, no buffer can be deleted and
 				 * current directory can't be changed.
 				 * Used for SwapExists et al. */
-#ifdef FEAT_EVAL
-# define HAVE_SANDBOX
+#ifdef HAVE_SANDBOX
 EXTERN int	sandbox INIT(= 0);
 				/* Non-zero when evaluating an expression in a
 				 * "sandbox".  Several things are not allowed

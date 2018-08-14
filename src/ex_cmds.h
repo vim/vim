@@ -1792,6 +1792,12 @@ struct exarg
 #ifdef FEAT_EVAL
     struct condstack *cstack;	/* condition stack for ":if" etc. */
 #endif
+    long	verbose_save;	 // saved value of p_verbose
+    int		save_msg_silent; // saved value of msg_silent
+    int		did_esilent;	 // how many times emsg_silent was incremented
+#ifdef HAVE_SANDBOX
+    int		did_sandbox;	// when TRUE did ++sandbox
+#endif
 };
 
 #define FORCE_BIN 1		/* ":edit ++bin file" */
