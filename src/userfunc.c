@@ -1574,7 +1574,7 @@ list_func_head(ufunc_T *fp, int indent)
 	MSG_PUTS(" closure");
     msg_clr_eos();
     if (p_verbose > 0)
-	last_set_msg(fp->uf_script_ID);
+	last_set_msg_lnum(fp->uf_script_ID, fp->uf_script_lnum);
 }
 
 /*
@@ -1986,6 +1986,10 @@ ex_function(exarg_T *eap)
 	}
 	goto ret_free;
     }
+
+/* #ifdef FEAT_PROFILE */
+    linenr_T func_lnum = sourcing_lnum;
+/* #endif */
 
     /*
      * ":function name(arg1, arg2)" Define function.
@@ -2455,6 +2459,7 @@ ex_function(exarg_T *eap)
     fp->uf_flags = flags;
     fp->uf_calls = 0;
     fp->uf_script_ID = current_SID;
+    fp->uf_script_lnum = func_lnum;
     goto ret_free;
 
 erret:
@@ -2546,6 +2551,7 @@ get_expanded_name(char_u *name, int check)
 func_do_profile(ufunc_T *fp)
 {
     int		len = fp->uf_lines.ga_len;
+    // TODO: store lnum here only?
 
     if (!fp->uf_prof_initialized)
     {
@@ -2613,6 +2619,9 @@ func_dump_profile(FILE *fd)
 		    fprintf(fd, "Called %d times\n", fp->uf_tm_count);
 		fprintf(fd, "Total time: %s\n", profile_msg(&fp->uf_tm_total));
 		fprintf(fd, " Self time: %s\n", profile_msg(&fp->uf_tm_self));
+		fprintf(fd, "    Source: %s:%d\n",
+			get_scriptname(fp->uf_script_ID),
+			fp->uf_script_lnum);
 		fprintf(fd, "\n");
 		fprintf(fd, "count  total (s)   self (s)\n");
 

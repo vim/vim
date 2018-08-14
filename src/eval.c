@@ -8747,6 +8747,33 @@ last_set_msg(scid_T scriptID)
     }
 }
 
+/*
+ * Display script name and line number where an item was last set.
+ * Should only be invoked when 'verbose' is non-zero.
+ */
+    void
+last_set_msg_lnum(scid_T scriptID, linenr_T linenr)
+{
+    char_u *p;
+
+    if (scriptID != 0)
+    {
+	p = home_replace_save(NULL, get_scriptname(scriptID));
+	if (p != NULL)
+	{
+	    int len = STRLEN(p) + 1 + linenr/10;
+	    char_u  buf[len];
+	    vim_snprintf((char *)buf, len, "%s:%d", p, linenr);
+
+	    verbose_enter();
+	    MSG_PUTS(_("\n\tLast set from "));
+	    MSG_PUTS(buf);
+	    vim_free(p);
+	    verbose_leave();
+	}
+    }
+}
+
 /* reset v:option_new, v:option_old and v:option_type */
     void
 reset_v_option_vars(void)

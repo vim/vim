@@ -1363,6 +1363,8 @@ typedef struct
 #endif
     scid_T	uf_script_ID;	/* ID of script where function was defined,
 				   used for s: variables */
+    linenr_T	uf_script_lnum;	/* Line number in script where function was defined,
+				   used for s: variables */
     int		uf_refcount;	/* reference count, see func_name_refcount() */
     funccall_T	*uf_scoped;	/* l: local variables for closure */
     char_u	uf_name[1];	/* name of function (actually longer); can
