@@ -12529,6 +12529,20 @@ ex_folddo(exarg_T *eap)
 }
 #endif
 
+#ifdef FEAT_QUICKFIX
+/*
+ * Returns TRUE if the supplied Ex cmdidx is for a location list command
+ * instead of a quickfix command.
+ */
+    int
+is_loclist_cmd(int cmdidx)
+{
+    if (cmdidx < 0 || cmdidx > CMD_SIZE)
+	return FALSE;
+    return cmdnames[cmdidx].cmd_name[0] == 'l';
+}
+#endif
+
 # if defined(FEAT_TIMERS) || defined(PROTO)
     int
 get_pressedreturn(void)
