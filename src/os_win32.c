@@ -223,6 +223,8 @@ static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
 #endif
 
+static void lfn_init(void);
+
 /* This flag is newly created from Windows 10 */
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 # define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
@@ -255,12 +257,19 @@ static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
 typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
 static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
 static BOOL has_csbiex = FALSE;
+#endif
+
+typedef DWORD (WINAPI *PfnGetLongPathNameA)(const LPSTR, LPSTR, DWORD);
+static PfnGetLongPathNameA pGetLongPathNameA;
+typedef DWORD (WINAPI *PfnGetLongPathNameW)(const LPWSTR, LPWSTR, DWORD);
+static PfnGetLongPathNameW pGetLongPathNameW;
+static BOOL has_glpn = FALSE;
 
 /*
  * Get version number including build number
  */
 typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
-# define MAKE_VER(major, minor, build) \
+#define MAKE_VER(major, minor, build) \
     (((major) << 24) | ((minor) << 16) | (build))
 
     static DWORD
@@ -284,6 +293,7 @@ get_build_number(void)
     return ver;
 }
 
+#ifndef FEAT_GUI_W32
 
 /*
  * Version of ReadConsoleInput() that works with IME.
@@ -2175,6 +2185,8 @@ mch_init(void)
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
 #endif
+
+    lfn_init();
 }
 
 
@@ -2672,6 +2684,7 @@ mch_init(void)
 #endif
 
     vtp_init();
+    lfn_init();
 }
 
 /*
@@ -3121,7 +3134,12 @@ mch_dirname(
 
 	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
 	{
-	    char_u  *p = utf16_to_enc(wbuf, NULL);
+	    char_u  *p;
+
+	    if (has_glpn && pGetLongPathNameW(wbuf, wbuf, _MAX_PATH) == 0)
+		return FAIL;
+
+	    p = utf16_to_enc(wbuf, NULL);
 
 	    if (p != NULL)
 	    {
@@ -3133,7 +3151,11 @@ mch_dirname(
 	return FAIL;
     }
 #endif
-    return (GetCurrentDirectory(len, (LPSTR)buf) != 0 ? OK : FAIL);
+    return (GetCurrentDirectory(len, (LPSTR)buf) != 0 ?
+		has_glpn ?
+		    pGetLongPathNameA(buf, buf, len) != 0 ? OK : FAIL
+		: OK
+	    :FAIL);
 }
 
 /*
@@ -7620,6 +7642,34 @@ mch_setenv(char *var, char *value, int x)
     }
 
     return 0;
+}
+
+/* LFN support from Windows XP, Windows 2000 not supported */
+#define GET_LFN_FIRST_SUPPORT_BUILD MAKE_VER(5, 1, 0)
+
+    static void
+lfn_init(void)
+{
+    DWORD   ver;
+    HMODULE hKerneldll;
+
+    ver = get_build_number();
+    if (ver >= GET_LFN_FIRST_SUPPORT_BUILD)
+    {
+	hKerneldll = GetModuleHandle("kernel32.dll");
+	if (hKerneldll != NULL)
+	{
+	    pGetLongPathNameA =
+		    (PfnGetLongPathNameA)GetProcAddress(
+		    hKerneldll, "GetLongPathNameA");
+	    pGetLongPathNameW =
+		    (PfnGetLongPathNameW)GetProcAddress(
+		    hKerneldll, "GetLongPathNameW");
+	    if (pGetLongPathNameA != NULL
+		    && pGetLongPathNameW != NULL)
+		has_glpn = TRUE;
+	}
+    }
 }
 
 #ifndef FEAT_GUI_W32
