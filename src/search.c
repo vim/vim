@@ -4106,9 +4106,10 @@ again:
 	    }
 	curwin->w_cursor = end_pos;
 
-	/* If we now have the same text as before reset "do_include" and try
-	 * again. */
-	if (EQUAL_POS(start_pos, old_start) && EQUAL_POS(end_pos, old_end))
+	// If we are in Visual mode and now have the same text as before set
+	// "do_include" and try again.
+	if (VIsual_active && EQUAL_POS(start_pos, old_start)
+						&& EQUAL_POS(end_pos, old_end))
 	{
 	    do_include = TRUE;
 	    curwin->w_cursor = old_start;
