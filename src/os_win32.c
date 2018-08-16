@@ -3119,7 +3119,8 @@ mch_dirname(
     {
 	WCHAR	wbuf[_MAX_PATH + 1];
 
-	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
+	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0
+		&& GetLongPathNameW(wbuf, wbuf, _MAX_PATH) != 0)
 	{
 	    char_u  *p = utf16_to_enc(wbuf, NULL);
 
@@ -3133,7 +3134,12 @@ mch_dirname(
 	return FAIL;
     }
 #endif
-    return (GetCurrentDirectory(len, (LPSTR)buf) != 0 ? OK : FAIL);
+    if (GetCurrentDirectory(len, (LPSTR)buf) == 0)
+	return FAIL;
+    if (GetLongPathNameA((LPSTR)buf, (LPSTR)buf, len) == 0)
+	return FAIL;
+
+    return OK;
 }
 
 /*
