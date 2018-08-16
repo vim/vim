@@ -355,6 +355,10 @@
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+# define HAVE_SANDBOX
+#endif
+
 /*
  * +profile		Profiling for functions and scripts.
  */

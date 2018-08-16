@@ -4,6 +4,7 @@ int do_cmdline_cmd(char_u *cmd);
 int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int), void *cookie, int flags);
 int getline_equal(char_u *(*fgetline)(int, void *, int), void *cookie, char_u *(*func)(int, void *, int));
 void *getline_cookie(char_u *(*fgetline)(int, void *, int), void *cookie);
+int parse_command_modifiers(exarg_T *eap, char_u **errormsg, int skip_only);
 int parse_cmd_address(exarg_T *eap, char_u **errormsg);
 int checkforcmd(char_u **pp, char *cmd, int len);
 int modifier_len(char_u *cmd);
@@ -69,6 +70,7 @@ char_u *get_behave_arg(expand_T *xp, int idx);
 char_u *get_messages_arg(expand_T *xp, int idx);
 char_u *get_mapclear_arg(expand_T *xp, int idx);
 void set_no_hlsearch(int flag);
+int is_loclist_cmd(int cmdidx);
 int get_pressedreturn(void);
 void set_pressedreturn(int val);
 /* vim: set ft=c : */

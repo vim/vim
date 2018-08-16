@@ -384,6 +384,14 @@ func Test_search_cmdline3s()
   undo
   call feedkeys(":%substitute/the\<c-l>/xxx\<cr>", 'tx')
   call assert_equal('  2 xxxe', getline('.'))
+  undo
+  call feedkeys(":%smagic/the.e/xxx\<cr>", 'tx')
+  call assert_equal('  2 xxx', getline('.'))
+  undo
+  call assert_fails(":%snomagic/the.e/xxx\<cr>", 'E486')
+  "
+  call feedkeys(":%snomagic/the\\.e/xxx\<cr>", 'tx')
+  call assert_equal('  2 xxx', getline('.'))
 
   call Incsearch_cleanup()
 endfunc
@@ -399,6 +407,14 @@ func Test_search_cmdline3g()
   undo
   call feedkeys(":global/the\<c-l>/d\<cr>", 'tx')
   call assert_equal('  3 the theother', getline(2))
+  undo
+  call feedkeys(":g!/the\<c-l>/d\<cr>", 'tx')
+  call assert_equal(1, line('$'))
+  call assert_equal('  2 the~e', getline(1))
+  undo
+  call feedkeys(":global!/the\<c-l>/d\<cr>", 'tx')
+  call assert_equal(1, line('$'))
+  call assert_equal('  2 the~e', getline(1))
 
   call Incsearch_cleanup()
 endfunc
@@ -831,6 +847,7 @@ func Test_incsearch_substitute_dump()
 	\ 'for n in range(1, 10)',
 	\ '  call setline(n, "foo " . n)',
 	\ 'endfor',
+	\ 'call setline(11, "bar 11")',
 	\ '3',
 	\ ], 'Xis_subst_script')
   let buf = RunVimInTerminal('-S Xis_subst_script', {'rows': 9, 'cols': 70})
@@ -862,8 +879,40 @@ func Test_incsearch_substitute_dump()
   call term_sendkeys(buf, "\<BS>")
   sleep 100m
   call VerifyScreenDump(buf, 'Test_incsearch_substitute_03', {})
-
   call term_sendkeys(buf, "\<Esc>")
+
+  " Reverse range is accepted
+  call term_sendkeys(buf, ':5,2s/foo')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_04', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " White space after the command is skipped
+  call term_sendkeys(buf, ':2,3sub  /fo')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_05', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Command modifiers are skipped
+  call term_sendkeys(buf, ':above below browse botr confirm keepmar keepalt keeppat keepjum filter xxx hide lockm leftabove noau noswap rightbel sandbox silent silent! $tab top unsil vert verbose 4,5s/fo.')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_06', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Cursorline highlighting at match
+  call term_sendkeys(buf, ":set cursorline\<CR>")
+  call term_sendkeys(buf, 'G9G')
+  call term_sendkeys(buf, ':9,11s/bar')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_07', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Cursorline highlighting at cursor when no match
+  call term_sendkeys(buf, ':9,10s/bar')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_08', {})
+  call term_sendkeys(buf, "\<Esc>")
+
   call StopVimInTerminal(buf)
   call delete('Xis_subst_script')
 endfunc
