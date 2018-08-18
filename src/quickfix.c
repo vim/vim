@@ -159,6 +159,11 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
 #define IS_QF_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref == NULL)
 /* Location list window check helper macro */
 #define IS_LL_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL)
+
+// Quickfix and location list stack check helper macros
+#define IS_QF_STACK(qi)		(qi == &ql_info)
+#define IS_LL_STACK(qi)		(qi != &ql_info)
+
 /*
  * Return location list for window 'wp'
  * For location list window, return the referenced location list
@@ -1940,7 +1945,7 @@ qf_add_entry(
 	qfp->qf_fnum = bufnum;
 	if (buf != NULL)
 	    buf->b_has_qf_entry |=
-		(qi == &ql_info) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
+		IS_QF_STACK(qi) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     }
     else
 	qfp->qf_fnum = qf_get_fnum(qi, qf_idx, dir, fname);
@@ -2224,7 +2229,7 @@ qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *directory, char_u *fname)
 	return 0;
 
     buf->b_has_qf_entry =
-			(qi == &ql_info) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
+			IS_QF_STACK(qi) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     return buf->b_fnum;
 }
 
@@ -2631,7 +2636,7 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (cmdmod.split == 0 && curwin->w_width != Columns
 		&& curwin->w_width < 80)
 	    flags |= WSP_TOP;
-	if (qi != &ql_info)
+	if (IS_LL_STACK(qi))
 	    flags |= WSP_NEWLOC;  /* don't copy the location list */
 
 	if (win_split(0, flags) == FAIL)
@@ -2642,7 +2647,7 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (curwin->w_height < p_hh)
 	    win_setheight((int)p_hh);
 
-	if (qi != &ql_info)	    /* not a quickfix list */
+	if (IS_LL_STACK(qi))		// not a quickfix list
 	{
 	    /* The new window should use the supplied location list */
 	    curwin->w_llist = qi;
@@ -2918,7 +2923,7 @@ qf_jump_edit_buffer(
 	retval = buflist_getfile(qf_ptr->qf_fnum,
 		(linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
 
-	if (qi != &ql_info)
+	if (IS_LL_STACK(qi))
 	{
 	    /*
 	     * Location list. Check whether the associated window is still
@@ -2939,7 +2944,7 @@ qf_jump_edit_buffer(
 	else if (old_qf_curlist != qi->qf_curlist
 		|| !is_qf_entry_present(qi, qf_ptr))
 	{
-	    if (qi == &ql_info)
+	    if (IS_QF_STACK(qi))
 		EMSG(_("E925: Current quickfix was changed"));
 	    else
 		EMSG(_(e_loc_list_changed));
@@ -4040,8 +4045,8 @@ is_qf_win(win_T *win, qf_info_T *qi)
      * pointing to the location list.
      */
     if (bt_quickfix(win->w_buffer))
-	if ((qi == &ql_info && win->w_llist_ref == NULL)
-		|| (qi != &ql_info && win->w_llist_ref == qi))
+	if ((IS_QF_STACK(qi) && win->w_llist_ref == NULL)
+		|| (IS_LL_STACK(qi) && win->w_llist_ref == qi))
 	    return TRUE;
 
     return FALSE;
@@ -6955,7 +6960,7 @@ ex_helpgrep(exarg_T *eap)
     {
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
-	if (!new_qi && qi != &ql_info && qf_find_buf(qi) == NULL)
+	if (!new_qi && IS_LL_STACK(qi) && qf_find_buf(qi) == NULL)
 	    /* autocommands made "qi" invalid */
 	    return;
     }
