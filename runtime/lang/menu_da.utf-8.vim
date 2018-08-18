@@ -1,6 +1,6 @@
-" Menu Translations:	Danish / Dansk
+" Menu Translations:	Danish
 " Maintainer:		scootergrisen
-" Last Change:		2018 Jun 23
+" Last Change:		2018 Aug 17
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -43,7 +43,7 @@ menut &Save<Tab>:w	Gem<Tab>:w
 menut Save\ &As\.\.\.<Tab>:sav	Gem\ som\.\.\.<Tab>:sav
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.	Opdel\ diff\ med\.\.\.
-menut Split\ Patched\ &By\.\.\.	Opdel\ "patchet\ af"\.\.\.
+menut Split\ Patched\ &By\.\.\.	Opdel\ patchet\ af\.\.\.
 " -SEP3-
 menut &Print	Udskriv
 " -SEP4-
@@ -79,7 +79,7 @@ menut Question	Spørgsmål
 " Edit
 
 menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Fremhævning\ af\ mønster\ til/fra<Tab>:set\ hls!
-menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!	Ignorerer\ "forskel\ på\ store\ og\ små\ bogstaver"\ til/fra<Tab>:set\ ic!
+menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!	Ignorerer\ forskel\ på\ store\ og\ små\ bogstaver\ til/fra<Tab>:set\ ic!
 menut Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Viser\ matchende\ par\ til/fra<Tab>:set\ sm!
 
 menut &Context\ lines	Kontekstlinjer
@@ -117,20 +117,20 @@ menut Toggle\ Tab\ &expanding<Tab>:set\ et!	Udvidelse\ af\ tabulator\ til/fra<Ta
 menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!	Automatisk\ indrykning\ til/fra<Tab>:set\ ai!
 menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indrykning\ i\ &C-stil\ til/fra<Tab>:set\ cin!
 " -SEP2-
-menut &Shiftwidth	"Shiftwidth"
-" menut &Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>	"Shiftwidth".2<Tab>:set\ sw=2\ sw?<CR>
-" menut &Shiftwidth.3<Tab>:set\ sw=3\ sw?<CR>	"Shiftwidth".3<Tab>:set\ sw=3\ sw?<CR>
-" menut &Shiftwidth.4<Tab>:set\ sw=4\ sw?<CR>	"Shiftwidth".4<Tab>:set\ sw=4\ sw?<CR>
-" menut &Shiftwidth.5<Tab>:set\ sw=5\ sw?<CR>	"Shiftwidth".5<Tab>:set\ sw=5\ sw?<CR>
-" menut &Shiftwidth.6<Tab>:set\ sw=6\ sw?<CR>	"Shiftwidth".6<Tab>:set\ sw=6\ sw?<CR>
-" menut &Shiftwidth.8<Tab>:set\ sw=8\ sw?<CR>	"Shiftwidth".8<Tab>:set\ sw=8\ sw?<CR>
+menut &Shiftwidth	Shiftwidth
+" menut &Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>	Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>
+" menut &Shiftwidth.3<Tab>:set\ sw=3\ sw?<CR>	Shiftwidth.3<Tab>:set\ sw=3\ sw?<CR>
+" menut &Shiftwidth.4<Tab>:set\ sw=4\ sw?<CR>	Shiftwidth.4<Tab>:set\ sw=4\ sw?<CR>
+" menut &Shiftwidth.5<Tab>:set\ sw=5\ sw?<CR>	Shiftwidth.5<Tab>:set\ sw=5\ sw?<CR>
+" menut &Shiftwidth.6<Tab>:set\ sw=6\ sw?<CR>	Shiftwidth.6<Tab>:set\ sw=6\ sw?<CR>
+" menut &Shiftwidth.8<Tab>:set\ sw=8\ sw?<CR>	Shiftwidth.8<Tab>:set\ sw=8\ sw?<CR>
 menut Soft\ &Tabstop	Blødt\ tabulatorstop
-" menut Soft\ &Tabstop.2<Tab>:set\ sts=2\ sts?	Blødt\ "Tabstop".2<Tab>:set\ sts=2\ sts?
-" menut Soft\ &Tabstop.3<Tab>:set\ sts=3\ sts?	Blødt\ "Tabstop".3<Tab>:set\ sts=3\ sts?
-" menut Soft\ &Tabstop.4<Tab>:set\ sts=4\ sts?	Blødt\ "Tabstop".4<Tab>:set\ sts=4\ sts?
-" menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?	Blødt\ "Tabstop".5<Tab>:set\ sts=5\ sts?
-" menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?	Blødt\ "Tabstop".6<Tab>:set\ sts=6\ sts?
-" menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?	Blødt\ "Tabstop".8<Tab>:set\ sts=8\ sts?
+" menut Soft\ &Tabstop.2<Tab>:set\ sts=2\ sts?	Blødt\ Tabstop.2<Tab>:set\ sts=2\ sts?
+" menut Soft\ &Tabstop.3<Tab>:set\ sts=3\ sts?	Blødt\ Tabstop.3<Tab>:set\ sts=3\ sts?
+" menut Soft\ &Tabstop.4<Tab>:set\ sts=4\ sts?	Blødt\ Tabstop.4<Tab>:set\ sts=4\ sts?
+" menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?	Blødt\ Tabstop.5<Tab>:set\ sts=5\ sts?
+" menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?	Blødt\ Tabstop.6<Tab>:set\ sts=6\ sts?
+" menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?	Blødt\ Tabstop.8<Tab>:set\ sts=8\ sts?
 menut Te&xt\ Width\.\.\.	Tekstbredde\.\.\.
 menut &File\ Format\.\.\.	Filformat\.\.\.
 
@@ -168,11 +168,11 @@ menut None	Intet
 " menut arabic	arabisk
 " menut armenian-eastern	armensk\ (østlig)
 " menut armenian-western	armensk\ (vestlig)
-" menut belarusian-jcuken	hviderussisk"\ [belarusian-jcuken]"
+" menut belarusian-jcuken	hviderussisk\ [belarusian-jcuken]
 " menut czech	tjekkisk
 " menut greek	græsk
 " menut hebrew	hebraisk
-" menut hebrewp	hebraisk"\ [hebrewp]"
+" menut hebrewp	hebraisk\ [hebrewp]
 " menut magyar	ungarsk
 " menut persian	persisk
 " menut serbian	serbisk
@@ -362,8 +362,10 @@ if has("toolbar")
 endif
 
 let g:menutrans_set_lang_to = "Sæt sprog til"
-let g:menutrans_spell_change_ARG_to = 'Ændr "%s" til'
-let g:menutrans_spell_add_ARG_to_word_list = 'Tilføj "%s" til ordliste'
+
+" stavegenvejsmenu pop op ting
+let g:menutrans_spell_change_ARG_to = 'Ændr\ "%s"\ til'
+let g:menutrans_spell_add_ARG_to_word_list = 'Tilføj\ "%s"\ til\ ordliste'
 let g:menutrans_spell_ignore_ARG = 'Ignorer "%s"'
 
 let &cpo = s:keepcpo
