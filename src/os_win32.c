@@ -3114,6 +3114,9 @@ mch_dirname(
      * But the Win32s known bug list says that getcwd() doesn't work
      * so use the Win32 system call instead. <Negri>
      */
+
+    char_u  abuf[_MAX_PATH + 1];
+
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
@@ -3121,7 +3124,13 @@ mch_dirname(
 
 	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
 	{
-	    char_u  *p = utf16_to_enc(wbuf, NULL);
+	    WCHAR   wcbuf[_MAX_PATH + 1];
+	    char_u  *p;
+
+	    if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
+		p = utf16_to_enc(wcbuf, NULL);
+	    else
+		p = utf16_to_enc(wbuf, NULL);
 
 	    if (p != NULL)
 	    {
@@ -3133,7 +3142,14 @@ mch_dirname(
 	return FAIL;
     }
 #endif
-    return (GetCurrentDirectory(len, (LPSTR)buf) != 0 ? OK : FAIL);
+    if (GetCurrentDirectory(len, (LPSTR)buf) == 0)
+	return FAIL;
+
+    if (GetLongPathNameA((LPSTR)buf, (LPSTR)abuf, _MAX_PATH) == 0)
+	return OK;
+
+    vim_strncpy(abuf, buf, len - 1);
+    return OK;
 }
 
 /*
