@@ -3109,6 +3109,7 @@ mch_dirname(
     int		len)
 {
     char_u  abuf[_MAX_PATH + 1];
+    DWORD   lfnlen;
 
     /*
      * Originally this was:
@@ -3124,11 +3125,19 @@ mch_dirname(
 	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
 	{
 	    WCHAR   wcbuf[_MAX_PATH + 1];
-	    char_u  *p;
+	    char_u  *p = NULL;
 
 	    if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
+	    {
 		p = utf16_to_enc(wcbuf, NULL);
-	    else
+		if (STRLEN(p) >= (size_t)len)
+		{
+		    // long path name is too long, fall back to short one
+		    vim_free(p);
+		    p = NULL;
+		}
+	    }
+	    if (p == NULL)
 		p = utf16_to_enc(wbuf, NULL);
 
 	    if (p != NULL)
@@ -3143,11 +3152,13 @@ mch_dirname(
 #endif
     if (GetCurrentDirectory(len, (LPSTR)buf) == 0)
 	return FAIL;
-    if (GetLongPathNameA((LPSTR)buf, (LPSTR)abuf, _MAX_PATH) == 0)
-	// return the short path name
+    lfnlen = GetLongPathNameA((LPCSTR)buf, (LPSTR)abuf, _MAX_PATH);
+    if (lfnlen == 0 || lfnlen >= (DWORD)len)
+	// Failed to get long path name or it's too long: fall back to the
+	// short path name.
 	return OK;
 
-    vim_strncpy(abuf, buf, len - 1);
+    STRCPY(buf, abuf);
     return OK;
 }
 
