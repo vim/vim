@@ -161,6 +161,7 @@ static int get_x11_title(int);
 static int get_x11_icon(int);
 
 static char_u	*oldtitle = NULL;
+static volatile int oldtitle_outdated = FALSE;
 static int	did_set_title = FALSE;
 static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
@@ -1231,8 +1232,9 @@ deathtrap SIGDEFARG(sigarg)
 after_sigcont(void)
 {
 # ifdef FEAT_TITLE
-    // Set oldtitle to NULL, so the current title is obtained again.
-    VIM_CLEAR(oldtitle);
+    // Don't change "oldtitle" in a signal handler, set a flag to obtain it
+    // again later.
+    oldtitle_outdated = TRUE;
 # endif
     settmode(TMODE_RAW);
     need_check_timestamps = TRUE;
@@ -2281,6 +2283,11 @@ mch_settitle(char_u *title, char_u *icon)
      */
     if ((type || *T_TS != NUL) && title != NULL)
     {
+	if (oldtitle_outdated)
+	{
+	    oldtitle_outdated = FALSE;
+	    VIM_CLEAR(oldtitle);
+	}
 	if (oldtitle == NULL
 #ifdef FEAT_GUI
 		&& !gui.in_use
