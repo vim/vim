@@ -25,7 +25,7 @@ int gui_mch_maximized(void);
 void gui_mch_unmaximize(void);
 void gui_mch_newfont(void);
 void gui_mch_set_shellsize(int width, int height, int min_width, int min_height, int base_width, int base_height, int direction);
-void gui_gtk_get_screen_size_of_win(GtkWidget *wid, int *width, int *height);
+void gui_gtk_get_screen_geom_of_win(GtkWidget *wid, int *screen_x, int *screen_y, int *width, int *height);
 void gui_mch_get_screen_dimensions(int *screen_w, int *screen_h);
 void gui_mch_settitle(char_u *title, char_u *icon);
 void gui_mch_enable_menu(int showit);
