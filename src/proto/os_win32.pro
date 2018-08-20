@@ -73,4 +73,5 @@ void control_console_color_rgb(void);
 int has_vtp_working(void);
 int use_vtp(void);
 int is_term_win32(void);
+int is_vtp_cmdexe(void);
 /* vim: set ft=c : */
