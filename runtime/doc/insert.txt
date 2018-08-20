@@ -1054,10 +1054,11 @@ could be part of the completed item.  The text between this column and the
 cursor column will be replaced with the matches.
 
 Special return values:
-   -1 If no completion can be done, the completion will be cancelled with an
-      error message.
    -2 To cancel silently and stay in completion mode.
    -3 To cancel silently and leave completion mode.
+
+If another value is returned, completion is assumed to start at the cursor
+column.
 
 On the second invocation the arguments are:
    a:findstart  0
