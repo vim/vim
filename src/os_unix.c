@@ -1228,24 +1228,7 @@ deathtrap SIGDEFARG(sigarg)
     SIGRETURN;
 }
 
-    static void
-after_sigcont(void)
-{
-# ifdef FEAT_TITLE
-    // Don't change "oldtitle" in a signal handler, set a flag to obtain it
-    // again later.
-    oldtitle_outdated = TRUE;
-# endif
-    settmode(TMODE_RAW);
-    need_check_timestamps = TRUE;
-    did_check_timestamps = FALSE;
-}
-
-#if defined(SIGCONT)
-static RETSIGTYPE sigcont_handler SIGPROTOARG;
-static int in_mch_suspend = FALSE;
-
-# if defined(_REENTRANT) && defined(SIGCONT)
+#if defined(_REENTRANT) && defined(SIGCONT)
 /*
  * On Solaris with multi-threading, suspending might not work immediately.
  * Catch the SIGCONT signal, which will be used as an indication whether the
@@ -1257,7 +1240,7 @@ static int in_mch_suspend = FALSE;
  * volatile because it is used in signal handler sigcont_handler().
  */
 static volatile int sigcont_received;
-# endif
+static RETSIGTYPE sigcont_handler SIGPROTOARG;
 
 /*
  * signal handler for SIGCONT
@@ -1265,38 +1248,7 @@ static volatile int sigcont_received;
     static RETSIGTYPE
 sigcont_handler SIGDEFARG(sigarg)
 {
-    if (in_mch_suspend)
-    {
-# if defined(_REENTRANT) && defined(SIGCONT)
-	sigcont_received = TRUE;
-# endif
-    }
-    else
-    {
-	// We didn't suspend ourselves, assume we were stopped by a SIGSTOP
-	// signal (which can't be intercepted) and get a SIGCONT.  Need to get
-	// back to a sane mode and redraw.
-	after_sigcont();
-
-	update_screen(CLEAR);
-	if (State & CMDLINE)
-	    redrawcmdline();
-	else if (State == HITRETURN || State == SETWSIZE || State == ASKMORE
-		|| State == EXTERNCMD || State == CONFIRM || exmode_active)
-	    repeat_message();
-	else if (redrawing())
-	    setcursor();
-#if defined(FEAT_INS_EXPAND)
-	if (pum_visible())
-	{
-	    redraw_later(NOT_VALID);
-	    ins_compl_show_pum();
-	}
-#endif
-	cursor_on_force();
-	out_flush();
-    }
-
+    sigcont_received = TRUE;
     SIGRETURN;
 }
 #endif
@@ -1379,8 +1331,6 @@ mch_suspend(void)
 {
     /* BeOS does have SIGTSTP, but it doesn't work. */
 #if defined(SIGTSTP) && !defined(__BEOS__)
-    in_mch_suspend = TRUE;
-
     out_flush();	    /* needed to make cursor visible on some systems */
     settmode(TMODE_COOK);
     out_flush();	    /* needed to disable mouse on some systems */
@@ -1412,9 +1362,16 @@ mch_suspend(void)
 	    mch_delay(wait_time, FALSE);
     }
 # endif
-    in_mch_suspend = FALSE;
 
-    after_sigcont();
+# ifdef FEAT_TITLE
+    /*
+     * Set oldtitle to NULL, so the current title is obtained again.
+     */
+    VIM_CLEAR(oldtitle);
+# endif
+    settmode(TMODE_RAW);
+    need_check_timestamps = TRUE;
+    did_check_timestamps = FALSE;
 #else
     suspend_shell();
 #endif
@@ -1454,7 +1411,7 @@ set_signals(void)
 #ifdef SIGTSTP
     signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
 #endif
-#if defined(SIGCONT)
+#if defined(_REENTRANT) && defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
 
