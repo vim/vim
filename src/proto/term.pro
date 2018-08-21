@@ -52,6 +52,7 @@ void setmouse(void);
 int mouse_has(int c);
 int mouse_model_popup(void);
 void scroll_start(void);
+void cursor_on_force(void);
 void cursor_on(void);
 void cursor_off(void);
 void term_cursor_mode(int forced);

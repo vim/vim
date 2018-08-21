@@ -1228,14 +1228,35 @@ deathtrap SIGDEFARG(sigarg)
     SIGRETURN;
 }
 
-#if defined(_REENTRANT) && defined(SIGCONT)
 /*
- * On Solaris with multi-threading, suspending might not work immediately.
- * Catch the SIGCONT signal, which will be used as an indication whether the
- * suspending has been done or not.
+ * Invoked after receiving SIGCONT.  We don't know what happened while
+ * sleeping, deal with part of that.
+ */
+    static void
+after_sigcont(void)
+{
+# ifdef FEAT_TITLE
+    // Don't change "oldtitle" in a signal handler, set a flag to obtain it
+    // again later.
+    oldtitle_outdated = TRUE;
+# endif
+    settmode(TMODE_RAW);
+    need_check_timestamps = TRUE;
+    did_check_timestamps = FALSE;
+}
+
+#if defined(SIGCONT)
+static RETSIGTYPE sigcont_handler SIGPROTOARG;
+static volatile int in_mch_suspend = FALSE;
+
+/*
+ * With multi-threading, suspending might not work immediately.  Catch the
+ * SIGCONT signal, which will be used as an indication whether the suspending
+ * has been done or not.
  *
  * On Linux, signal is not always handled immediately either.
  * See https://bugs.launchpad.net/bugs/291373
+ * Probably because the signal is handled in another thread.
  *
  * volatile because it is used in signal handler sigcont_handler().
  */
@@ -1248,7 +1269,22 @@ static RETSIGTYPE sigcont_handler SIGPROTOARG;
     static RETSIGTYPE
 sigcont_handler SIGDEFARG(sigarg)
 {
-    sigcont_received = TRUE;
+    if (in_mch_suspend)
+    {
+	sigcont_received = TRUE;
+    }
+    else
+    {
+	// We didn't suspend ourselves, assume we were stopped by a SIGSTOP
+	// signal (which can't be intercepted) and get a SIGCONT.  Need to get
+	// back to a sane mode. We should redraw, but we can't really do that
+	// in a signal handler, do a redraw later.
+	after_sigcont();
+	redraw_later(CLEAR);
+	cursor_on_force();
+	out_flush();
+    }
+
     SIGRETURN;
 }
 #endif
@@ -1331,6 +1367,8 @@ mch_suspend(void)
 {
     /* BeOS does have SIGTSTP, but it doesn't work. */
 #if defined(SIGTSTP) && !defined(__BEOS__)
+    in_mch_suspend = TRUE;
+
     out_flush();	    /* needed to make cursor visible on some systems */
     settmode(TMODE_COOK);
     out_flush();	    /* needed to disable mouse on some systems */
@@ -1338,40 +1376,32 @@ mch_suspend(void)
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     loose_clipboard();
 # endif
-
-# if defined(_REENTRANT) && defined(SIGCONT)
+# if defined(SIGCONT)
     sigcont_received = FALSE;
 # endif
+
     kill(0, SIGTSTP);	    /* send ourselves a STOP signal */
-# if defined(_REENTRANT) && defined(SIGCONT)
+
+# if defined(SIGCONT)
     /*
      * Wait for the SIGCONT signal to be handled. It generally happens
-     * immediately, but somehow not all the time. Do not call pause()
-     * because there would be race condition which would hang Vim if
-     * signal happened in between the test of sigcont_received and the
-     * call to pause(). If signal is not yet received, call sleep(0)
-     * to just yield CPU. Signal should then be received. If somehow
-     * it's still not received, sleep 1, 2, 3 ms. Don't bother waiting
-     * further if signal is not received after 1+2+3+4 ms (not expected
-     * to happen).
+     * immediately, but somehow not all the time, probably because it's handled
+     * in another thread. Do not call pause() because there would be race
+     * condition which would hang Vim if signal happened in between the test of
+     * sigcont_received and the call to pause(). If signal is not yet received,
+     * sleep 0, 1, 2, 3 ms. Don't bother waiting further if signal is not
+     * received after 1+2+3 ms (not expected to happen).
      */
     {
 	long wait_time;
+
 	for (wait_time = 0; !sigcont_received && wait_time <= 3L; wait_time++)
-	    /* Loop is not entered most of the time */
 	    mch_delay(wait_time, FALSE);
     }
 # endif
+    in_mch_suspend = FALSE;
 
-# ifdef FEAT_TITLE
-    /*
-     * Set oldtitle to NULL, so the current title is obtained again.
-     */
-    VIM_CLEAR(oldtitle);
-# endif
-    settmode(TMODE_RAW);
-    need_check_timestamps = TRUE;
-    did_check_timestamps = FALSE;
+    after_sigcont();
 #else
     suspend_shell();
 #endif
@@ -1411,7 +1441,7 @@ set_signals(void)
 #ifdef SIGTSTP
     signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
 #endif
-#if defined(_REENTRANT) && defined(SIGCONT)
+#if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
 
@@ -1470,7 +1500,7 @@ catch_int_signal(void)
 reset_signals(void)
 {
     catch_signals(SIG_DFL, SIG_DFL);
-#if defined(_REENTRANT) && defined(SIGCONT)
+#if defined(SIGCONT)
     /* SIGCONT isn't in the list, because its default action is ignore */
     signal(SIGCONT, SIG_DFL);
 #endif
@@ -1533,7 +1563,7 @@ block_signals(sigset_t *set)
     for (i = 0; signal_info[i].sig != -1; i++)
 	sigaddset(&newset, signal_info[i].sig);
 
-# if defined(_REENTRANT) && defined(SIGCONT)
+# if defined(SIGCONT)
     /* SIGCONT isn't in the list, because its default action is ignore */
     sigaddset(&newset, SIGCONT);
 # endif
