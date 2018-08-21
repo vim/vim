@@ -3124,8 +3124,13 @@ u_add_time(char_u *buf, size_t buflen, time_t tt)
     }
     else
 #endif
-	vim_snprintf((char *)buf, buflen, _("%ld seconds ago"),
-						      (long)(vim_time() - tt));
+    {
+	long seconds = (long)(vim_time() - tt);
+
+	vim_snprintf((char *)buf, buflen,
+		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
+		seconds);
+    }
 }
 
 /*
