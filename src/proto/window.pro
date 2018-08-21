@@ -94,4 +94,5 @@ void win_id2tabwin(typval_T *argvars, list_T *list);
 win_T *win_id2wp(typval_T *argvars);
 int win_id2win(typval_T *argvars);
 void win_findbuf(typval_T *argvars, list_T *list);
+void get_framelayout(frame_T *fr, list_T *l, int topframe);
 /* vim: set ft=c : */
