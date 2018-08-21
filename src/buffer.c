@@ -1174,26 +1174,14 @@ do_bufdel(
 	else if (deleted >= p_report)
 	{
 	    if (command == DOBUF_UNLOAD)
-	    {
-		if (deleted == 1)
-		    MSG(_("1 buffer unloaded"));
-		else
-		    smsg((char_u *)_("%d buffers unloaded"), deleted);
-	    }
+		smsg((char_u *)NGETTEXT("%d buffer unloaded",
+			    "%d buffers unloaded", deleted), deleted);
 	    else if (command == DOBUF_DEL)
-	    {
-		if (deleted == 1)
-		    MSG(_("1 buffer deleted"));
-		else
-		    smsg((char_u *)_("%d buffers deleted"), deleted);
-	    }
+		smsg((char_u *)NGETTEXT("%d buffer deleted",
+			    "%d buffers deleted", deleted), deleted);
 	    else
-	    {
-		if (deleted == 1)
-		    MSG(_("1 buffer wiped out"));
-		else
-		    smsg((char_u *)_("%d buffers wiped out"), deleted);
-	    }
+		smsg((char_u *)NGETTEXT("%d buffer wiped out",
+			    "%d buffers wiped out", deleted), deleted);
 	}
     }
 
@@ -3485,19 +3473,14 @@ fileinfo(
 	n = (int)(((long)curwin->w_cursor.lnum * 100L) /
 					    (long)curbuf->b_ml.ml_line_count);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
-    {
 	vim_snprintf_add((char *)buffer, IOSIZE, "%s", _(no_lines_msg));
-    }
 #ifdef FEAT_CMDL_INFO
     else if (p_ru)
-    {
 	/* Current line and column are already on the screen -- webb */
-	if (curbuf->b_ml.ml_line_count == 1)
-	    vim_snprintf_add((char *)buffer, IOSIZE, _("1 line --%d%%--"), n);
-	else
-	    vim_snprintf_add((char *)buffer, IOSIZE, _("%ld lines --%d%%--"),
-					 (long)curbuf->b_ml.ml_line_count, n);
-    }
+	vim_snprintf_add((char *)buffer, IOSIZE,
+		NGETTEXT("%ld line --%d%%--", "%ld lines --%d%%--",
+						   curbuf->b_ml.ml_line_count),
+		(long)curbuf->b_ml.ml_line_count, n);
 #endif
     else
     {

@@ -3802,24 +3802,12 @@ msgmore(long n)
 
     if (pn > p_report)
     {
-	if (pn == 1)
-	{
-	    if (n > 0)
-		vim_strncpy(msg_buf, (char_u *)_("1 more line"),
-							     MSG_BUF_LEN - 1);
-	    else
-		vim_strncpy(msg_buf, (char_u *)_("1 line less"),
-							     MSG_BUF_LEN - 1);
-	}
+	if (n > 0)
+	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+		    NGETTEXT("%ld more line", "%ld more lines", pn), pn);
 	else
-	{
-	    if (n > 0)
-		vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
-						     _("%ld more lines"), pn);
-	    else
-		vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
-						    _("%ld fewer lines"), pn);
-	}
+	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+		    NGETTEXT("%ld line less", "%ld fewer lines", pn), pn);
 	if (got_int)
 	    vim_strcat(msg_buf, (char_u *)_(" (Interrupted)"), MSG_BUF_LEN);
 	if (msg(msg_buf))

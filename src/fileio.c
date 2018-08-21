@@ -5349,16 +5349,11 @@ msg_add_lines(
 		"%ldL, %lldC", lnum, (long long)nchars);
     else
     {
-	if (lnum == 1)
-	    STRCPY(p, _("1 line, "));
-	else
-	    sprintf((char *)p, _("%ld lines, "), lnum);
+	sprintf((char *)p, NGETTEXT("%ld line, ", "%ld lines, ", lnum), lnum);
 	p += STRLEN(p);
-	if (nchars == 1)
-	    STRCPY(p, _("1 character"));
-	else
-	    vim_snprintf((char *)p, IOSIZE - (p - IObuff),
-		    _("%lld characters"), (long long)nchars);
+	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
+		NGETTEXT("%lld character", "%lld characters", nchars),
+		(long long)nchars);
     }
 }
 
