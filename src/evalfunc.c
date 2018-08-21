@@ -398,6 +398,7 @@ static void f_strdisplaywidth(typval_T *argvars, typval_T *rettv);
 static void f_strwidth(typval_T *argvars, typval_T *rettv);
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
+static void f_swapinfo(typval_T *argvars, typval_T *rettv);
 static void f_synID(typval_T *argvars, typval_T *rettv);
 static void f_synIDattr(typval_T *argvars, typval_T *rettv);
 static void f_synIDtrans(typval_T *argvars, typval_T *rettv);
@@ -859,6 +860,7 @@ static struct fst
     {"strwidth",	1, 1, f_strwidth},
     {"submatch",	1, 2, f_submatch},
     {"substitute",	4, 4, f_substitute},
+    {"swapinfo",	1, 1, f_swapinfo},
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
@@ -12311,6 +12313,16 @@ f_substitute(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_string = NULL;
     else
 	rettv->vval.v_string = do_string_sub(str, pat, sub, expr, flg);
+}
+
+/*
+ * "swapinfo(swap_filename)" function
+ */
+    static void
+f_swapinfo(typval_T *argvars, typval_T *rettv)
+{
+    if (rettv_dict_alloc(rettv) == OK)
+	get_b0_dict(get_tv_string(argvars), rettv->vval.v_dict);
 }
 
 /*

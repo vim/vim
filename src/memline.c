@@ -2042,6 +2042,49 @@ static int process_still_running;
 #endif
 
 /*
+ * Return information found in swapfile "fname" in dictionary "d".
+ * This is used by the swapinfo() function.
+ */
+    void
+get_b0_dict(char_u *fname, dict_T *d)
+{
+    int fd;
+    struct block0 b0;
+
+    if ((fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0)) >= 0)
+    {
+	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
+	{
+	    if (b0_magic_wrong(&b0))
+	    {
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"magic number mismatch"));
+	    }
+	    else
+	    {
+		/* we have swap information */
+		dict_add_string(d, "version", vim_strsave(b0.b0_version));
+		dict_add_string(d, "user", vim_strsave(b0.b0_uname));
+		dict_add_string(d, "host", vim_strsave(b0.b0_hname));
+		dict_add_string(d, "fname", vim_strsave(b0.b0_fname));
+
+		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
+		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
+#ifdef CHECK_INODE
+		dict_add_number(d, "inode", char_to_long(b0.b0_ino));
+#endif
+	    }
+	}
+	else
+	    dict_add_string(d, "error",
+				    vim_strsave((char_u *)"Cannot read file"));
+	close(fd);
+    }
+    else
+	dict_add_string(d, "error", vim_strsave((char_u *)"Cannot open file"));
+}
+
+/*
  * Give information about an existing swap file.
  * Returns timestamp (0 when unknown).
  */
