@@ -5385,7 +5385,7 @@ ex_vimgrep(exarg_T *eap)
     if (qf_restore_list(qi, save_qfid) == FAIL)
 	goto theend;
 
-    /* Jump to first match. */
+    // Jump to first match.
     if (!qf_list_empty(qi, qi->qf_curlist))
     {
 	if ((flags & VGR_NOJUMP) == 0)
@@ -6844,16 +6844,13 @@ hgr_search_files_in_dir(
 /*
  * Search for a pattern in all the help files in the 'runtimepath'
  * and add the matches to a quickfix list.
- * 'arg' is the language specifier.  If supplied, then only matches in the
+ * 'lang' is the language specifier.  If supplied, then only matches in the
  * specified language are found.
  */
     static void
-hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *arg)
+hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *lang)
 {
     char_u	*p;
-#ifdef FEAT_MULTI_LANG
-    char_u	*lang;
-#endif
 
 #ifdef FEAT_MBYTE
     vimconv_T	vc;
@@ -6865,10 +6862,6 @@ hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *arg)
 	convert_setup(&vc, (char_u *)"utf-8", p_enc);
 #endif
 
-#ifdef FEAT_MULTI_LANG
-    /* Check for a specified language */
-    lang = check_help_lang(arg);
-#endif
 
     /* Go through all the directories in 'runtimepath' */
     p = p_rtp;
@@ -6903,6 +6896,7 @@ ex_helpgrep(exarg_T *eap)
     qf_info_T	*qi = &ql_info;
     int		new_qi = FALSE;
     char_u	*au_name =  NULL;
+    char_u	*lang = NULL;
 
     switch (eap->cmdidx)
     {
@@ -6919,7 +6913,7 @@ ex_helpgrep(exarg_T *eap)
 #endif
     }
 
-    /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
+    // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
     p_cpo = empty_option;
 
@@ -6930,14 +6924,18 @@ ex_helpgrep(exarg_T *eap)
 	    return;
     }
 
+#ifdef FEAT_MULTI_LANG
+    // Check for a specified language
+    lang = check_help_lang(eap->arg);
+#endif
     regmatch.regprog = vim_regcomp(eap->arg, RE_MAGIC + RE_STRING);
     regmatch.rm_ic = FALSE;
     if (regmatch.regprog != NULL)
     {
-	/* create a new quickfix list */
+	// create a new quickfix list
 	qf_new_list(qi, qf_cmdtitle(*eap->cmdlinep));
 
-	hgr_search_in_rtp(qi, &regmatch, eap->arg);
+	hgr_search_in_rtp(qi, &regmatch, lang);
 
 	vim_regfree(regmatch.regprog);
 
@@ -6950,7 +6948,7 @@ ex_helpgrep(exarg_T *eap)
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
-	/* Darn, some plugin changed the value. */
+	// Darn, some plugin changed the value.
 	free_string_option(save_cpo);
 
     qf_list_changed(qi, qi->qf_curlist);
@@ -6973,8 +6971,8 @@ ex_helpgrep(exarg_T *eap)
 
     if (eap->cmdidx == CMD_lhelpgrep)
     {
-	/* If the help window is not opened or if it already points to the
-	 * correct location list, then free the new location list. */
+	// If the help window is not opened or if it already points to the
+	// correct location list, then free the new location list.
 	if (!bt_help(curwin->w_buffer) || curwin->w_llist == qi)
 	{
 	    if (new_qi)
