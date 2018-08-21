@@ -2041,6 +2041,7 @@ make_percent_swname(char_u *dir, char_u *name)
 static int process_still_running;
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return information found in swapfile "fname" in dictionary "d".
  * This is used by the swapinfo() function.
@@ -2055,11 +2056,12 @@ get_b0_dict(char_u *fname, dict_T *d)
     {
 	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 	{
-	    if (b0_magic_wrong(&b0))
-	    {
+	    if (ml_check_b0_id(&b0) == FAIL)
 		dict_add_string(d, "error",
-			       vim_strsave((char_u *)"magic number mismatch"));
-	    }
+			       vim_strsave((char_u *)"Not a swap file"));
+	    else if (b0_magic_wrong(&b0))
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"Magic number mismatch"));
 	    else
 	    {
 		/* we have swap information */
@@ -2070,9 +2072,10 @@ get_b0_dict(char_u *fname, dict_T *d)
 
 		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
 		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
-#ifdef CHECK_INODE
+		dict_add_number(d, "dirty", b0.b0_dirty ? 1 : 0);
+# ifdef CHECK_INODE
 		dict_add_number(d, "inode", char_to_long(b0.b0_ino));
-#endif
+# endif
 	    }
 	}
 	else
@@ -2083,6 +2086,7 @@ get_b0_dict(char_u *fname, dict_T *d)
     else
 	dict_add_string(d, "error", vim_strsave((char_u *)"Cannot open file"));
 }
+#endif
 
 /*
  * Give information about an existing swap file.
