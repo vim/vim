@@ -161,7 +161,7 @@ static int get_x11_title(int);
 static int get_x11_icon(int);
 
 static char_u	*oldtitle = NULL;
-static volatile int oldtitle_outdated = FALSE;
+static volatile sig_atomic_t oldtitle_outdated = FALSE;
 static int	did_set_title = FALSE;
 static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
@@ -205,7 +205,7 @@ static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 # define SET_SIG_ALARM
 static RETSIGTYPE sig_alarm SIGPROTOARG;
 /* volatile because it is used in signal handler sig_alarm(). */
-static volatile int sig_alarm_called;
+static volatile sig_atomic_t sig_alarm_called;
 #endif
 static RETSIGTYPE deathtrap SIGPROTOARG;
 
@@ -231,13 +231,13 @@ static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***fil
 #endif
 
 /* volatile because it is used in signal handler sig_winch(). */
-static volatile int do_resize = FALSE;
+static volatile sig_atomic_t do_resize = FALSE;
 static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
 /* volatile because it is used in signal handler deathtrap(). */
-static volatile int deadly_signal = 0;	    /* The signal we caught */
+static volatile sig_atomic_t deadly_signal = 0;	   /* The signal we caught */
 /* volatile because it is used in signal handler deathtrap(). */
-static volatile int in_mch_delay = FALSE;    /* sleeping in mch_delay() */
+static volatile sig_atomic_t in_mch_delay = FALSE; /* sleeping in mch_delay() */
 
 #if defined(FEAT_JOB_CHANNEL) && !defined(USE_SYSTEM)
 static int dont_check_job_ended = 0;
@@ -1247,7 +1247,7 @@ after_sigcont(void)
 
 #if defined(SIGCONT)
 static RETSIGTYPE sigcont_handler SIGPROTOARG;
-static volatile int in_mch_suspend = FALSE;
+static volatile sig_atomic_t in_mch_suspend = FALSE;
 
 /*
  * With multi-threading, suspending might not work immediately.  Catch the
@@ -1260,7 +1260,7 @@ static volatile int in_mch_suspend = FALSE;
  *
  * volatile because it is used in signal handler sigcont_handler().
  */
-static volatile int sigcont_received;
+static volatile sig_atomic_t sigcont_received;
 static RETSIGTYPE sigcont_handler SIGPROTOARG;
 
 /*
