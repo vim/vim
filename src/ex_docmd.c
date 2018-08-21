@@ -1766,28 +1766,6 @@ do_one_cmd(
     ea.skip = (if_level > 0);
 #endif
 
-#ifdef FEAT_EVAL
-# ifdef FEAT_PROFILE
-    /* Count this line for profiling if ea.skip is FALSE. */
-    if (do_profiling == PROF_YES && !ea.skip)
-    {
-	if (getline_equal(fgetline, cookie, get_func_line))
-	    func_line_exec(getline_cookie(fgetline, cookie));
-	else if (getline_equal(fgetline, cookie, getsourceline))
-	    script_line_exec();
-    }
-#endif
-
-    /* May go to debug mode.  If this happens and the ">quit" debug command is
-     * used, throw an interrupt exception and skip the next command. */
-    dbg_check_breakpoint(&ea);
-    if (!ea.skip && got_int)
-    {
-	ea.skip = TRUE;
-	(void)do_intthrow(cstack);
-    }
-#endif
-
 /*
  * 3. Skip over the range to find the command.  Let "p" point to after it.
  *
@@ -1798,6 +1776,51 @@ do_one_cmd(
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	ea.cmd = skipwhite(ea.cmd + 1);
     p = find_command(&ea, NULL);
+
+#ifdef FEAT_EVAL
+# ifdef FEAT_PROFILE
+    // Count this line for profiling if skip is TRUE.
+    if (do_profiling == PROF_YES
+	    && (!ea.skip || cstack->cs_idx == 0 || (cstack->cs_idx > 0
+		     && (cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE))))
+    {
+	int skip = did_emsg || got_int || did_throw;
+
+	if (ea.cmdidx == CMD_catch)
+	    skip = !skip && !(cstack->cs_idx >= 0
+			  && (cstack->cs_flags[cstack->cs_idx] & CSF_THROWN)
+			  && !(cstack->cs_flags[cstack->cs_idx] & CSF_CAUGHT));
+	else if (ea.cmdidx == CMD_else || ea.cmdidx == CMD_elseif)
+	    skip = skip || !(cstack->cs_idx >= 0
+			  && !(cstack->cs_flags[cstack->cs_idx]
+						  & (CSF_ACTIVE | CSF_TRUE)));
+	else if (ea.cmdidx == CMD_finally)
+	    skip = FALSE;
+	else if (ea.cmdidx != CMD_endif
+		&& ea.cmdidx != CMD_endfor
+		&& ea.cmdidx != CMD_endtry
+		&& ea.cmdidx != CMD_endwhile)
+	    skip = ea.skip;
+
+	if (!skip)
+	{
+	    if (getline_equal(fgetline, cookie, get_func_line))
+		func_line_exec(getline_cookie(fgetline, cookie));
+	    else if (getline_equal(fgetline, cookie, getsourceline))
+		script_line_exec();
+	}
+    }
+# endif
+
+    /* May go to debug mode.  If this happens and the ">quit" debug command is
+     * used, throw an interrupt exception and skip the next command. */
+    dbg_check_breakpoint(&ea);
+    if (!ea.skip && got_int)
+    {
+	ea.skip = TRUE;
+	(void)do_intthrow(cstack);
+    }
+#endif
 
 /*
  * 4. parse a range specifier of the form: addr [,addr] [;addr] ..
