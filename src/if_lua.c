@@ -164,7 +164,11 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, typval_T *tv);
 #define lua_rawget dll_lua_rawget
 #define lua_rawgeti dll_lua_rawgeti
 #define lua_createtable dll_lua_createtable
-#define lua_newuserdata dll_lua_newuserdata
+#if LUA_VERSION_NUM >= 504
+ #define lua_newuserdatauv dll_lua_newuserdatauv
+#else
+ #define lua_newuserdata dll_lua_newuserdata
+#endif
 #define lua_getmetatable dll_lua_getmetatable
 #define lua_setfield dll_lua_setfield
 #define lua_rawset dll_lua_rawset
@@ -261,7 +265,11 @@ int (*dll_lua_rawget) (lua_State *L, int idx);
 int (*dll_lua_rawgeti) (lua_State *L, int idx, lua_Integer n);
 #endif
 void (*dll_lua_createtable) (lua_State *L, int narr, int nrec);
+#if LUA_VERSION_NUM >= 504
+void *(*dll_lua_newuserdatauv) (lua_State *L, size_t sz, int nuvalue);
+#else
 void *(*dll_lua_newuserdata) (lua_State *L, size_t sz);
+#endif
 int (*dll_lua_getmetatable) (lua_State *L, int objindex);
 void (*dll_lua_setfield) (lua_State *L, int idx, const char *k);
 void (*dll_lua_rawset) (lua_State *L, int idx);
@@ -362,7 +370,11 @@ static const luaV_Reg luaV_dll[] = {
     {"lua_rawget", (luaV_function) &dll_lua_rawget},
     {"lua_rawgeti", (luaV_function) &dll_lua_rawgeti},
     {"lua_createtable", (luaV_function) &dll_lua_createtable},
+#if LUA_VERSION_NUM >= 504
+    {"lua_newuserdatauv", (luaV_function) &dll_lua_newuserdatauv},
+#else
     {"lua_newuserdata", (luaV_function) &dll_lua_newuserdata},
+#endif
     {"lua_getmetatable", (luaV_function) &dll_lua_getmetatable},
     {"lua_setfield", (luaV_function) &dll_lua_setfield},
     {"lua_rawset", (luaV_function) &dll_lua_rawset},
