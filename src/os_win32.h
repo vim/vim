@@ -89,6 +89,7 @@
 
 #define FNAME_ILLEGAL "\"*?><|" /* illegal characters in a file name */
 
+#include <signal.h>
 #include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
