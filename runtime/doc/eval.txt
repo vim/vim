@@ -8014,6 +8014,7 @@ swapinfo({fname})					swapinfo()
 			mtime	last modification time in seconds
 			inode	Optional: INODE number of the file
 			dirty	1 if file was modified, 0 if not
+		Note that "user" and "host" are truncated to at most 39 bytes.
 		In case of failure an "error" item is added with the reason:
 			Cannot open file: file not found or in accessible
 			Cannot read file: cannot read first block
