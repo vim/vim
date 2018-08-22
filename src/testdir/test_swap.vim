@@ -136,3 +136,24 @@ func Test_swapinfo()
   call assert_equal('Not a swap file', info.error)
   call delete('Xnotaswapfile')
 endfunc
+
+func Test_swapname()
+  edit Xtest1
+  let expected = trim(execute('swapname'))
+  call assert_equal(expected, swapname('%'))
+
+  new Xtest2
+  let buf = bufnr('%')
+  let expected = trim(execute('swapname'))
+  wincmd p
+  call assert_equal(expected, swapname(buf))
+
+  new Xtest3
+  setlocal noswapfile
+  call assert_equal('', swapname('%'))
+
+  bwipe!
+  call delete('Xtest1')
+  call delete('Xtest2')
+  call delete('Xtest3')
+endfunc
