@@ -2065,10 +2065,13 @@ get_b0_dict(char_u *fname, dict_T *d)
 	    else
 	    {
 		/* we have swap information */
-		dict_add_string(d, "version", vim_strsave(b0.b0_version));
-		dict_add_string(d, "user", vim_strsave(b0.b0_uname));
-		dict_add_string(d, "host", vim_strsave(b0.b0_hname));
-		dict_add_string(d, "fname", vim_strsave(b0.b0_fname));
+		dict_add_string(d, "version", vim_strnsave(b0.b0_version, 10));
+		dict_add_string(d, "user",
+				     vim_strnsave(b0.b0_uname, B0_UNAME_SIZE));
+		dict_add_string(d, "host",
+				     vim_strnsave(b0.b0_hname, B0_HNAME_SIZE));
+		dict_add_string(d, "fname",
+				 vim_strnsave(b0.b0_fname, B0_FNAME_SIZE_ORG));
 
 		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
 		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
