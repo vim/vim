@@ -4046,6 +4046,7 @@ ResizeConBufAndWindow(
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
     COORD	    coordScreen;
+    static int	    resized = FALSE;
 
 #ifdef MCH_WRITE_DUMP
     if (fdDump)
@@ -4091,8 +4092,8 @@ ResizeConBufAndWindow(
     coordScreen.X = xSize;
     coordScreen.Y = ySize;
 
-    // In the new console call API in reverse order
-    if (!vtp_working)
+    // In the new console call API, only the first time in reverse order
+    if (!vtp_working || resized)
     {
 	ResizeWindow(hConsole, srWindowRect);
 	ResizeConBuf(hConsole, coordScreen);
@@ -4101,6 +4102,7 @@ ResizeConBufAndWindow(
     {
 	ResizeConBuf(hConsole, coordScreen);
 	ResizeWindow(hConsole, srWindowRect);
+	resized = TRUE;
     }
 }
 
