@@ -12554,7 +12554,7 @@ ex_folddo(exarg_T *eap)
     int
 is_loclist_cmd(int cmdidx)
 {
-    if (cmdidx < 0 || cmdidx > CMD_SIZE)
+    if (cmdidx < 0 || cmdidx >= CMD_SIZE)
 	return FALSE;
     return cmdnames[cmdidx].cmd_name[0] == 'l';
 }
