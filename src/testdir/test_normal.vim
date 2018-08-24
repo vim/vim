@@ -1806,11 +1806,6 @@ fun! Test_normal33_g_cmd2()
   call assert_equal(15, col('.'))
   call assert_equal('l', getreg(0))
 
-  " Test for g Ctrl-G
-  set ff=unix
-  let a=execute(":norm! g\<c-g>")
-  call assert_match('Col 15 of 43; Line 2 of 2; Word 2 of 2; Byte 16 of 45', a)
-
   " Test for gI
   norm! gIfoo
   call assert_equal(['', 'fooabcdefghijk   lmno0123456789AMNOPQRSTUVWXYZ'], getline(1,'$'))
@@ -1827,6 +1822,60 @@ fun! Test_normal33_g_cmd2()
 
   " clean up
   bw!
+endfunc
+
+func! Test_g_ctrl_g()
+  new
+  call setline(1, ['first line', 'second line'])
+  norm! jll
+
+  set ff=dos
+  let a = execute(":norm! g\<c-g>")
+  call assert_equal("\nCol 3 of 11; Line 2 of 2; Word 3 of 4; Byte 15 of 25", a)
+
+  set ff=mac
+  let a = execute(":norm! g\<c-g>")
+  call assert_equal("\nCol 3 of 11; Line 2 of 2; Word 3 of 4; Byte 14 of 23", a)
+
+  set ff=unix
+  let a = execute(":norm! g\<c-g>")
+  call assert_equal("\nCol 3 of 11; Line 2 of 2; Word 3 of 4; Byte 14 of 23", a)
+
+  let a = execute(":norm! Vg\<c-g>")
+  call assert_equal("\nSelected 1 of 2 Lines; 2 of 4 Words; 12 of 23 Bytes", a)
+
+  let a = execute(":norm! \<C-V>kllg\<c-g>")
+  call assert_equal("\nSelected 3 Cols; 2 of 2 Lines; 2 of 4 Words; 6 of 23 Bytes", a)
+
+  if has('multi_byte')
+    call setline(1, ['Français', '日本語'])
+
+    let a = execute(":norm! \<Esc>ggjlg\<c-g>")
+    call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20", a)
+
+    let a = execute(":norm! ggjvlg\<c-g>")
+    call assert_equal("\nSelected 1 of 2 Lines; 1 of 2 Words; 2 of 13 Chars; 6 of 20 Bytes", a)
+
+    let a = execute(":norm! \<Esc>ggll\<c-v>jlg\<c-g>")
+    call assert_equal("\nSelected 4 Cols; 2 of 2 Lines; 2 of 2 Words; 6 of 13 Chars; 11 of 20 Bytes", a)
+
+    set fenc=utf8 bomb
+    let a = execute(":norm! \<Esc>ggjlg\<c-g>")
+    call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20(+3 for BOM)", a)
+
+    set fenc=utf16 bomb
+    let a = execute(":norm! g\<c-g>")
+    call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20(+2 for BOM)", a)
+
+    set fenc=utf32 bomb
+    let a = execute(":norm! g\<c-g>")
+    call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20(+4 for BOM)", a)
+
+    set fenc& bomb&
+  endif
+
+  set ff&
+  bwipe!
 endfunc
 
 fun! Test_normal34_g_cmd3()
