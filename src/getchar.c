@@ -3677,8 +3677,8 @@ do_map(
 				mp->m_mode = mode;
 #ifdef FEAT_EVAL
 				mp->m_expr = expr;
-				mp->m_sctx = current_sctx;
-				mp->m_sctx.sc_lnum += sourcing_lnum;
+				mp->m_script_ctx = current_sctx;
+				mp->m_script_ctx.sc_lnum += sourcing_lnum;
 #endif
 				did_it = TRUE;
 			    }
@@ -3784,8 +3784,8 @@ do_map(
     mp->m_mode = mode;
 #ifdef FEAT_EVAL
     mp->m_expr = expr;
-    mp->m_sctx = current_sctx;
-    mp->m_sctx.sc_lnum += sourcing_lnum;
+    mp->m_script_ctx = current_sctx;
+    mp->m_script_ctx.sc_lnum += sourcing_lnum;
 #endif
 
     /* add the new entry in front of the abbrlist or maphash[] list */
@@ -4099,7 +4099,7 @@ showmap(
     }
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
-	last_set_msg(mp->m_sctx);
+	last_set_msg(mp->m_script_ctx);
 #endif
     out_flush();			/* show one line at a time */
 }

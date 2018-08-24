@@ -302,8 +302,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp->uf_varargs = TRUE;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
-	fp->uf_sctx = current_sctx;
-	fp->uf_sctx.sc_lnum += sourcing_lnum - newlines.ga_len;
+	fp->uf_script_ctx = current_sctx;
+	fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len;
 
 	pt->pt_func = fp;
 	pt->pt_refcount = 1;
@@ -946,7 +946,7 @@ call_user_func(
 #endif
 
     save_current_sctx = current_sctx;
-    current_sctx = fp->uf_sctx;
+    current_sctx = fp->uf_script_ctx;
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
@@ -1575,7 +1575,7 @@ list_func_head(ufunc_T *fp, int indent)
 	MSG_PUTS(" closure");
     msg_clr_eos();
     if (p_verbose > 0)
-	last_set_msg(fp->uf_sctx);
+	last_set_msg(fp->uf_script_ctx);
 }
 
 /*
@@ -2455,8 +2455,8 @@ ex_function(exarg_T *eap)
 	flags |= FC_SANDBOX;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
-    fp->uf_sctx = current_sctx;
-    fp->uf_sctx.sc_lnum += sourcing_lnum - newlines.ga_len - 1;
+    fp->uf_script_ctx = current_sctx;
+    fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len - 1;
     goto ret_free;
 
 erret:

@@ -5593,7 +5593,7 @@ call_user_expand_func(
     save_ccline = ccline;
     ccline.cmdbuff = NULL;
     ccline.cmdprompt = NULL;
-    current_sctx = xp->xp_sctx;
+    current_sctx = xp->xp_script_ctx;
 
     ret = user_expand_func(xp->xp_arg, 3, args);
 

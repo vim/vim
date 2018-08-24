@@ -7700,7 +7700,7 @@ typedef struct AutoCmd
     char	    nested;		/* If autocommands nest here */
     char	    last;		/* last command in list */
 #ifdef FEAT_EVAL
-    sctx_T	    sctx;		/* script context where defined */
+    sctx_T	    script_ctx;		/* script context where defined */
 #endif
     struct AutoCmd  *next;		/* Next AutoCmd in list */
 } AutoCmd;
@@ -7962,7 +7962,7 @@ show_autocmd(AutoPat *ap, event_T event)
 	    msg_outtrans(ac->cmd);
 #ifdef FEAT_EVAL
 	    if (p_verbose > 0)
-		last_set_msg(ac->sctx);
+		last_set_msg(ac->script_ctx);
 #endif
 	    if (got_int)
 		return;
@@ -8845,8 +8845,8 @@ do_autocmd_event(
 		return FAIL;
 	    ac->cmd = vim_strsave(cmd);
 #ifdef FEAT_EVAL
-	    ac->sctx = current_sctx;
-	    ac->sctx.sc_lnum += sourcing_lnum;
+	    ac->script_ctx = current_sctx;
+	    ac->script_ctx.sc_lnum += sourcing_lnum;
 #endif
 	    if (ac->cmd == NULL)
 	    {
@@ -9950,7 +9950,7 @@ getnextac(int c UNUSED, void *cookie, int indent UNUSED)
     retval = vim_strsave(ac->cmd);
     autocmd_nested = ac->nested;
 #ifdef FEAT_EVAL
-    current_sctx = ac->sctx;
+    current_sctx = ac->script_ctx;
 #endif
     if (ac->last)
 	acp->nextcmd = NULL;

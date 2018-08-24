@@ -414,7 +414,7 @@ struct vimoption
 				 * local option: indirect option index */
     char_u	*def_val[2];	/* default values for variable (vi and vim) */
 #ifdef FEAT_EVAL
-    sctx_T	sctx;	/* script in which the option was last set */
+    sctx_T	script_ctx;	/* script in which the option was last set */
 # define SCTX_INIT , {0, 0}
 #else
 # define SCTX_INIT
@@ -3314,7 +3314,7 @@ static char_u *did_set_spell_option(int is_spellfile);
 static char_u *compile_cap_prog(synblock_T *synblock);
 #endif
 #ifdef FEAT_EVAL
-static void set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T sctx);
+static void set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx);
 #endif
 static char_u *set_bool_option(int opt_idx, char_u *varp, int value, int opt_flags);
 static char_u *set_num_option(int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags);
@@ -4679,12 +4679,12 @@ do_set(
 		    {
 			/* Mention where the option was last set. */
 			if (varp == options[opt_idx].var)
-			    last_set_msg(options[opt_idx].sctx);
+			    last_set_msg(options[opt_idx].script_ctx);
 			else if ((int)options[opt_idx].indir & PV_WIN)
-			    last_set_msg(curwin->w_p_sctx[
+			    last_set_msg(curwin->w_p_script_ctx[
 				      (int)options[opt_idx].indir & PV_MASK]);
 			else if ((int)options[opt_idx].indir & PV_BUF)
-			    last_set_msg(curbuf->b_p_sctx[
+			    last_set_msg(curbuf->b_p_script_ctx[
 				      (int)options[opt_idx].indir & PV_MASK]);
 		    }
 #endif
@@ -5944,16 +5944,16 @@ set_string_option_direct(
 # ifdef FEAT_EVAL
 	if (set_sid != SID_NONE)
 	{
-	    sctx_T sctx;
+	    sctx_T script_ctx;
 
 	    if (set_sid == 0)
-		sctx = current_sctx;
+		script_ctx = current_sctx;
 	    else
 	    {
-		sctx.sc_scid = set_sid;
-		sctx.sc_lnum = 0;
+		script_ctx.sc_scid = set_sid;
+		script_ctx.sc_lnum = 0;
 	    }
-	    set_option_sctx_idx(idx, opt_flags, sctx);
+	    set_option_sctx_idx(idx, opt_flags, script_ctx);
 	}
 # endif
     }
@@ -8225,27 +8225,27 @@ compile_cap_prog(synblock_T *synblock)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Set the SCTX for an option, taking care of setting the buffer- or
+ * Set the script_ctx for an option, taking care of setting the buffer- or
  * window-local value.
  */
     static void
-set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T sctx)
+set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
 {
     int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
     int		indir = (int)options[opt_idx].indir;
 
-    sctx.sc_lnum += sourcing_lnum;
+    script_ctx.sc_lnum += sourcing_lnum;
 
     /* Remember where the option was set.  For local options need to do that
      * in the buffer or window structure. */
     if (both || (opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
-	options[opt_idx].sctx = sctx;
+	options[opt_idx].script_ctx = script_ctx;
     if (both || (opt_flags & OPT_LOCAL))
     {
 	if (indir & PV_BUF)
-	    curbuf->b_p_sctx[indir & PV_MASK] = sctx;
+	    curbuf->b_p_script_ctx[indir & PV_MASK] = script_ctx;
 	else if (indir & PV_WIN)
-	    curwin->w_p_sctx[indir & PV_MASK] = sctx;
+	    curwin->w_p_script_ctx[indir & PV_MASK] = script_ctx;
     }
 }
 #endif

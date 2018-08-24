@@ -29,7 +29,7 @@ typedef struct ucmd
     int		uc_compl;	/* completion type */
     int		uc_addr_type;	/* The command's address type */
 # ifdef FEAT_EVAL
-    sctx_T	uc_sctx;	/* SCTX where the command was defined */
+    sctx_T	uc_script_ctx;	/* SCTX where the command was defined */
 #  ifdef FEAT_CMDL_COMPL
     char_u	*uc_compl_arg;	/* completion argument if any */
 #  endif
@@ -3332,8 +3332,8 @@ find_ucmd(
 		    if (xp != NULL)
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
-			xp->xp_sctx = uc->uc_sctx;
-			xp->xp_sctx.sc_lnum += sourcing_lnum;
+			xp->xp_script_ctx = uc->uc_script_ctx;
+			xp->xp_script_ctx.sc_lnum += sourcing_lnum;
 		    }
 #  endif
 # endif
@@ -5912,8 +5912,8 @@ uc_add_command(
     cmd->uc_def = def;
     cmd->uc_compl = compl;
 #ifdef FEAT_EVAL
-    cmd->uc_sctx = current_sctx;
-    cmd->uc_sctx.sc_lnum += sourcing_lnum;
+    cmd->uc_script_ctx = current_sctx;
+    cmd->uc_script_ctx.sc_lnum += sourcing_lnum;
 # ifdef FEAT_CMDL_COMPL
     cmd->uc_compl_arg = compl_arg;
 # endif
@@ -6134,7 +6134,7 @@ uc_list(char_u *name, size_t name_len)
 	    msg_outtrans_special(cmd->uc_rep, FALSE);
 #ifdef FEAT_EVAL
 	    if (p_verbose > 0)
-		last_set_msg(cmd->uc_sctx);
+		last_set_msg(cmd->uc_script_ctx);
 #endif
 	    out_flush();
 	    ui_breakcheck();
@@ -7000,7 +7000,7 @@ do_ucmd(exarg_T *eap)
     }
 
 #ifdef FEAT_EVAL
-    current_SID = cmd->uc_sctx.sc_scid;
+    current_SID = cmd->uc_script_ctx.sc_scid;
 #endif
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
