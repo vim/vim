@@ -3792,6 +3792,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 			<amatch>	autocmd matched name
 			<sfile>		sourced script file or function name
 			<slnum>		sourced script file line number
+			<flnum>		current script file line number
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
 			<client>	the {clientid} of the last received
