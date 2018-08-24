@@ -1831,8 +1831,9 @@ func! Test_g_ctrl_g()
   call assert_equal("\n--No lines in buffer--", a)
 
   call setline(1, ['first line', 'second line'])
-  norm! jll
 
+  " Test g CTRL-g with dos, mac and unix file type.
+  norm! gojll
   set ff=dos
   let a = execute(":norm! g\<c-g>")
   call assert_equal("\nCol 3 of 11; Line 2 of 2; Word 3 of 4; Byte 15 of 25", a)
@@ -1845,26 +1846,42 @@ func! Test_g_ctrl_g()
   let a = execute(":norm! g\<c-g>")
   call assert_equal("\nCol 3 of 11; Line 2 of 2; Word 3 of 4; Byte 14 of 23", a)
 
-  let a = execute(":norm! Vg\<c-g>")
-  call assert_equal("\nSelected 1 of 2 Lines; 2 of 4 Words; 12 of 23 Bytes", a)
+  " Test g CTRL-g in visual mode (v)
+  let a = execute(":norm! gojllvlg\<c-g>")
+  call assert_equal("\nSelected 1 of 2 Lines; 1 of 4 Words; 2 of 23 Bytes", a)
 
-  let a = execute(":norm! \<C-V>kllg\<c-g>")
+  " Test g CTRL-g in visual most (CTRL-V) with end col > start col
+  let a = execute(":norm! \<Esc>gojll\<C-V>kllg\<c-g>")
   call assert_equal("\nSelected 3 Cols; 2 of 2 Lines; 2 of 4 Words; 6 of 23 Bytes", a)
+
+  " Test g_CTRL-g in visual most (CTRL-V) with end col < start col
+  let a = execute(":norm! \<Esc>goll\<C-V>jhhg\<c-g>")
+  call assert_equal("\nSelected 3 Cols; 2 of 2 Lines; 2 of 4 Words; 6 of 23 Bytes", a)
+
+  " Test g CTRL-g in visual mode (CTRL-V) with end_vcol being MAXCOL
+  let a = execute(":norm! \<Esc>gojll\<C-V>k$g\<c-g>")
+  call assert_equal("\nSelected 2 of 2 Lines; 4 of 4 Words; 17 of 23 Bytes", a)
+
+  " There should be one byte less with noeol
+  set bin noeol
+  let a = execute(":norm! \<Esc>gog\<c-g>")
+  call assert_equal("\nCol 1 of 10; Line 1 of 2; Word 1 of 4; Char 1 of 23; Byte 1 of 22", a)
+  set bin & eol&
 
   if has('multi_byte')
     call setline(1, ['Français', '日本語'])
 
-    let a = execute(":norm! \<Esc>ggjlg\<c-g>")
+    let a = execute(":norm! \<Esc>gojlg\<c-g>")
     call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20", a)
 
-    let a = execute(":norm! ggjvlg\<c-g>")
+    let a = execute(":norm! \<Esc>gojvlg\<c-g>")
     call assert_equal("\nSelected 1 of 2 Lines; 1 of 2 Words; 2 of 13 Chars; 6 of 20 Bytes", a)
 
-    let a = execute(":norm! \<Esc>ggll\<c-v>jlg\<c-g>")
+    let a = execute(":norm! \<Esc>goll\<c-v>jlg\<c-g>")
     call assert_equal("\nSelected 4 Cols; 2 of 2 Lines; 2 of 2 Words; 6 of 13 Chars; 11 of 20 Bytes", a)
 
     set fenc=utf8 bomb
-    let a = execute(":norm! \<Esc>ggjlg\<c-g>")
+    let a = execute(":norm! \<Esc>gojlg\<c-g>")
     call assert_equal("\nCol 4-3 of 9-6; Line 2 of 2; Word 2 of 2; Char 11 of 13; Byte 16 of 20(+3 for BOM)", a)
 
     set fenc=utf16 bomb
