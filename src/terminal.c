@@ -743,6 +743,8 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_top = eap->line1;
 	opt.jo_in_bot = eap->line2;
     }
+    if (*eap->cmd == 'v')
+	opt.jo_vertical = 1;
 
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = cmd;
