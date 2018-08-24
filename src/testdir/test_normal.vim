@@ -1826,6 +1826,10 @@ endfunc
 
 func! Test_g_ctrl_g()
   new
+
+  let a = execute(":norm! g\<c-g>")
+  call assert_equal("\n--No lines in buffer--", a)
+
   call setline(1, ['first line', 'second line'])
   norm! jll
 
