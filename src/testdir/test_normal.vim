@@ -1850,11 +1850,11 @@ func! Test_g_ctrl_g()
   let a = execute(":norm! gojllvlg\<c-g>")
   call assert_equal("\nSelected 1 of 2 Lines; 1 of 4 Words; 2 of 23 Bytes", a)
 
-  " Test g CTRL-g in visual most (CTRL-V) with end col > start col
+  " Test g CTRL-g in visual mode (CTRL-V) with end col > start col
   let a = execute(":norm! \<Esc>gojll\<C-V>kllg\<c-g>")
   call assert_equal("\nSelected 3 Cols; 2 of 2 Lines; 2 of 4 Words; 6 of 23 Bytes", a)
 
-  " Test g_CTRL-g in visual most (CTRL-V) with end col < start col
+  " Test g_CTRL-g in visual mode (CTRL-V) with end col < start col
   let a = execute(":norm! \<Esc>goll\<C-V>jhhg\<c-g>")
   call assert_equal("\nSelected 3 Cols; 2 of 2 Lines; 2 of 4 Words; 6 of 23 Bytes", a)
 
