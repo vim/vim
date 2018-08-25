@@ -5842,7 +5842,7 @@ gui_mch_set_sp_color(guicolor_T color)
  * First static functions (no prototypes generated).
  */
 # ifdef _MSC_VER
-#  include <ime.h>   /* Apparently not needed for Cygwin, or MingW. */
+#  include <ime.h>   /* Apparently not needed for Cygwin or MingW. */
 # endif
 # include <imm.h>
 
