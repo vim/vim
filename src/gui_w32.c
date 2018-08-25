@@ -1365,9 +1365,6 @@ gui_mch_def_colors(void)
     int
 gui_mch_open(void)
 {
-#ifndef SW_SHOWDEFAULT
-# define SW_SHOWDEFAULT 10	/* Borland 5.0 doesn't have it */
-#endif
     /* Actually open the window, if not already visible
      * (may be done already in gui_mch_set_shellsize) */
     if (!IsWindowVisible(s_hwnd))
@@ -5845,7 +5842,7 @@ gui_mch_set_sp_color(guicolor_T color)
  * First static functions (no prototypes generated).
  */
 # ifdef _MSC_VER
-#  include <ime.h>   /* Apparently not needed for Cygwin, MingW or Borland. */
+#  include <ime.h>   /* Apparently not needed for Cygwin, or MingW. */
 # endif
 # include <imm.h>
 
@@ -6603,14 +6600,6 @@ gui_mch_draw_string(
     void
 gui_mch_flush(void)
 {
-#   if defined(__BORLANDC__)
-    /*
-     * The GdiFlush declaration (in Borland C 5.01 <wingdi.h>) is not a
-     * prototype declaration.
-     * The compiler complains if __stdcall is not used in both declarations.
-     */
-    BOOL  __stdcall GdiFlush(void);
-#   endif
 
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())

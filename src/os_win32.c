@@ -146,11 +146,6 @@ typedef int LPSECURITY_ATTRIBUTES;
 # define __stdcall /* empty */
 #endif
 
-#if defined(__BORLANDC__)
-/* Strangely Borland uses a non-standard name. */
-# define wcsicmp(a, b) wcscmpi((a), (b))
-#endif
-
 #ifndef FEAT_GUI_W32
 /* Win32 Console handles for input and output */
 static HANDLE g_hConIn  = INVALID_HANDLE_VALUE;
@@ -932,9 +927,6 @@ static const struct
 
 /* The return code indicates key code size. */
     static int
-#ifdef __BORLANDC__
-    __stdcall
-#endif
 win32_kbd_patch_key(
     KEY_EVENT_RECORD *pker)
 {
@@ -2466,11 +2458,7 @@ static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
 #ifdef FEAT_TITLE
-#ifdef __BORLANDC__
-typedef HWND (__stdcall *GETCONSOLEWINDOWPROC)(VOID);
-#else
 typedef HWND (WINAPI *GETCONSOLEWINDOWPROC)(VOID);
-#endif
 char g_szOrigTitle[256] = { 0 };
 HWND g_hWnd = NULL;	/* also used in os_mswin.c */
 static HICON g_hOrigIconSmall = NULL;
@@ -7059,8 +7047,6 @@ getout:
     int
 mch_open(const char *name, int flags, int mode)
 {
-    /* _wopen() does not work with Borland C 5.5: creates a read-only file. */
-# ifndef __BORLANDC__
     WCHAR	*wn;
     int		f;
 
@@ -7074,7 +7060,6 @@ mch_open(const char *name, int flags, int mode)
 	    return f;
 	}
     }
-# endif
 
     /* open() can open a file which name is longer than _MAX_PATH bytes
      * and shorter than _MAX_PATH characters successfully, but sometimes it

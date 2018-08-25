@@ -11164,14 +11164,8 @@ f_sinh(typval_T *argvars, typval_T *rettv)
 #endif
 
 static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
 	item_compare(const void *s1, const void *s2);
 static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
 	item_compare2(const void *s1, const void *s2);
 
 /* struct used in the array that's given to qsort() */
@@ -11204,9 +11198,6 @@ static void	do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort);
  * Compare functions for f_sort() and f_uniq() below.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 item_compare(const void *s1, const void *s2)
 {
     sortItem_T  *si1, *si2;
@@ -11291,9 +11282,6 @@ item_compare(const void *s1, const void *s2)
 }
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 item_compare2(const void *s1, const void *s2)
 {
     sortItem_T  *si1, *si2;

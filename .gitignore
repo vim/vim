@@ -41,15 +41,6 @@ gvimext.lib
 gvim.lib
 runtime/doc/uganda.nsis.txt
 
-# Borland C++
-bcc.cfg
-*.ilc
-*.ild
-*.ilf
-*.ils
-*.map
-*.tds
-
 # NetBeans
 nbproject/*
 

@@ -28,9 +28,6 @@ static int	restart_VIsual_select = 0;
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
 static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
 		nv_compare(const void *s1, const void *s2);
 static int	find_command(int cmdchar);
 static void	op_colon(oparg_T *oap);
@@ -439,9 +436,6 @@ static int nv_max_linear;
  * through the index in nv_cmd_idx[].
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 nv_compare(const void *s1, const void *s2)
 {
     int		c1, c2;

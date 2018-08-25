@@ -5844,15 +5844,9 @@ qsort(
  * Sort an array of strings.
  */
 static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_compare(const void *s1, const void *s2);
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_compare(const void *s1, const void *s2)
 {
     return STRCMP(*(char **)s1, *(char **)s2);

@@ -372,9 +372,6 @@ trunc_string(
 int vim_snprintf(char *str, size_t str_m, char *fmt, ...);
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg(char_u *s, ...)
 {
     va_list arglist;
@@ -386,9 +383,6 @@ smsg(char_u *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr(int attr, char_u *s, ...)
 {
     va_list arglist;
@@ -400,9 +394,6 @@ smsg_attr(int attr, char_u *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr_keep(int attr, char_u *s, ...)
 {
     va_list arglist;

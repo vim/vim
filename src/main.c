@@ -102,9 +102,6 @@ static int has_dash_c_arg = FALSE;
 _export
 # endif
 # ifdef FEAT_GUI_MSWIN
-#  ifdef __BORLANDC__
-_cdecl
-#  endif
 VimMain
 # else
 main

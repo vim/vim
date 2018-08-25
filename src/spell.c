@@ -6914,9 +6914,6 @@ rescore_one(suginfo_T *su, suggest_T *stp)
 }
 
 static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sug_compare(const void *s1, const void *s2);
 
 /*
@@ -6924,9 +6921,6 @@ sug_compare(const void *s1, const void *s2);
  * First on "st_score", then "st_altscore" then alphabetically.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sug_compare(const void *s1, const void *s2)
 {
     suggest_T	*p1 = (suggest_T *)s1;

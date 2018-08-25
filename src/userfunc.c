@@ -56,14 +56,8 @@ static void func_do_profile(ufunc_T *fp);
 static void prof_sort_list(FILE *fd, ufunc_T **sorttab, int st_len, char *title, int prefer_self);
 static void prof_func_line(FILE *fd, int count, proftime_T *total, proftime_T *self, int prefer_self);
 static int
-# ifdef __BORLANDC__
-    _RTLENTRYF
-# endif
 	prof_total_cmp(const void *s1, const void *s2);
 static int
-# ifdef __BORLANDC__
-    _RTLENTRYF
-# endif
 	prof_self_cmp(const void *s1, const void *s2);
 #endif
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
@@ -2699,9 +2693,6 @@ prof_func_line(
  * Compare function for total time sorting.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 prof_total_cmp(const void *s1, const void *s2)
 {
     ufunc_T	*p1, *p2;
@@ -2715,9 +2706,6 @@ prof_total_cmp(const void *s1, const void *s2)
  * Compare function for self time sorting.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 prof_self_cmp(const void *s1, const void *s2)
 {
     ufunc_T	*p1, *p2;

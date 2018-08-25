@@ -10059,10 +10059,6 @@ static int expand_backtick(garray_T *gap, char_u *pat, int flags);
  */
 # if defined(PROTO)
 #  define _cdecl
-# else
-#  ifdef __BORLANDC__
-#   define _cdecl _RTLENTRYF
-#  endif
 # endif
 
 /*

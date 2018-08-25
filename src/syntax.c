@@ -415,11 +415,7 @@ static void pop_current_state(void);
 #ifdef FEAT_PROFILE
 static void syn_clear_time(syn_time_T *tt);
 static void syntime_clear(void);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_syntime(const void *v1, const void *v2);
-#else
 static int syn_compare_syntime(const void *v1, const void *v2);
-#endif
 static void syntime_report(void);
 static int syn_time_on = FALSE;
 # define IF_SYN_TIME(p) (p)
@@ -474,11 +470,7 @@ static void syn_cmd_iskeyword(exarg_T *eap, int syncing);
 static void syn_cmd_keyword(exarg_T *eap, int syncing);
 static void syn_cmd_match(exarg_T *eap, int syncing);
 static void syn_cmd_region(exarg_T *eap, int syncing);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_stub(const void *v1, const void *v2);
-#else
 static int syn_compare_stub(const void *v1, const void *v2);
-#endif
 static void syn_cmd_cluster(exarg_T *eap, int syncing);
 static int syn_scl_name2id(char_u *name);
 static int syn_scl_namen2id(char_u *linep, int len);
@@ -5402,9 +5394,6 @@ syn_cmd_region(
  * A simple syntax group ID comparison function suitable for use in qsort()
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 syn_compare_stub(const void *v1, const void *v2)
 {
     const short	*s1 = v1;
@@ -6757,9 +6746,6 @@ typedef struct
 } time_entry_T;
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 syn_compare_syntime(const void *v1, const void *v2)
 {
     const time_entry_T	*s1 = v1;

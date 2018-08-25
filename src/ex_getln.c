@@ -140,9 +140,6 @@ static int	open_cmdwin(void);
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_func_compare(const void *s1, const void *s2);
 #endif
 
@@ -3872,9 +3869,6 @@ ccheck_abbr(int c)
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_func_compare(const void *s1, const void *s2)
 {
     char_u *p1 = *(char_u **)s1;
@@ -6938,9 +6932,6 @@ concat_history(int type)
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_hist(const void *s1, const void *s2)
 {
     histentry_T *p1 = *(histentry_T **)s1;

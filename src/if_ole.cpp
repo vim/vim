@@ -12,24 +12,14 @@
  *
  * See os_mswin.c for the client side.
  */
-
-/*
- * We have some trouble with order of includes here.  For Borland it needs to
- * be different from MSVC...
- */
-#ifndef __BORLANDC__
 extern "C" {
 # include "vim.h"
 }
-#endif
 
 #include <windows.h>
 #include <oleauto.h>
 
 extern "C" {
-#ifdef __BORLANDC__
-# include "vim.h"
-#endif
 extern HWND s_hwnd;
 extern HWND vim_parent_hwnd;
 }
