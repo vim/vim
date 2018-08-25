@@ -282,7 +282,7 @@ In case you are not satisfied with the features included in the supplied
 binaries, you could try compiling Vim yourself.  Get the source archive from
 the same location as where the binaries are.  You need a compiler for which a
 makefile exists.  Microsoft Visual C works, but is expensive.  The free MingW
-and Cygwin compilers.  Check the file src/INSTALLpc.txt for hints.
+and Cygwin compilers can be used.  Check the file src/INSTALLpc.txt for hints.
 
 ==============================================================================
 *90.3*	Upgrading
