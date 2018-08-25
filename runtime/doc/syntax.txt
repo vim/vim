@@ -1265,7 +1265,7 @@ doxygen_javadoc_autobrief	1	Set to 0 to disable javadoc autobrief
 doxygen_end_punctuation		'[.]'	Set to regexp match for the ending
 					punctuation of brief
 
-There are also some hilight groups worth mentioning as they can be useful in
+There are also some highlight groups worth mentioning as they can be useful in
 configuration.
 
 Highlight			Effect ~
