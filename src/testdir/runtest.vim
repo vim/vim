@@ -272,6 +272,7 @@ let s:flaky = [
       \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
+      \ 'Test_popup_and_window_resize()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_reltime()',

@@ -553,6 +553,10 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 /*
  * The _() stuff is for using gettext().  It is a no-op when libintl.h is not
  * found or the +multilang feature is disabled.
+ * Use NGETTEXT(single, multi, number) to get plural behavior:
+ * - single - message for singular form
+ * - multi  - message for plural form
+ * - number - the count
  */
 #ifdef FEAT_GETTEXT
 # ifdef DYNAMIC_GETTEXT

@@ -161,6 +161,7 @@ static int get_x11_title(int);
 static int get_x11_icon(int);
 
 static char_u	*oldtitle = NULL;
+static volatile sig_atomic_t oldtitle_outdated = FALSE;
 static int	did_set_title = FALSE;
 static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
@@ -204,7 +205,7 @@ static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 # define SET_SIG_ALARM
 static RETSIGTYPE sig_alarm SIGPROTOARG;
 /* volatile because it is used in signal handler sig_alarm(). */
-static volatile int sig_alarm_called;
+static volatile sig_atomic_t sig_alarm_called;
 #endif
 static RETSIGTYPE deathtrap SIGPROTOARG;
 
@@ -230,13 +231,13 @@ static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***fil
 #endif
 
 /* volatile because it is used in signal handler sig_winch(). */
-static volatile int do_resize = FALSE;
+static volatile sig_atomic_t do_resize = FALSE;
 static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
 /* volatile because it is used in signal handler deathtrap(). */
-static volatile int deadly_signal = 0;	    /* The signal we caught */
+static volatile sig_atomic_t deadly_signal = 0;	   /* The signal we caught */
 /* volatile because it is used in signal handler deathtrap(). */
-static volatile int in_mch_delay = FALSE;    /* sleeping in mch_delay() */
+static volatile sig_atomic_t in_mch_delay = FALSE; /* sleeping in mch_delay() */
 
 #if defined(FEAT_JOB_CHANNEL) && !defined(USE_SYSTEM)
 static int dont_check_job_ended = 0;
@@ -1227,12 +1228,17 @@ deathtrap SIGDEFARG(sigarg)
     SIGRETURN;
 }
 
+/*
+ * Invoked after receiving SIGCONT.  We don't know what happened while
+ * sleeping, deal with part of that.
+ */
     static void
 after_sigcont(void)
 {
 # ifdef FEAT_TITLE
-    // Set oldtitle to NULL, so the current title is obtained again.
-    VIM_CLEAR(oldtitle);
+    // Don't change "oldtitle" in a signal handler, set a flag to obtain it
+    // again later.
+    oldtitle_outdated = TRUE;
 # endif
     settmode(TMODE_RAW);
     need_check_timestamps = TRUE;
@@ -1241,21 +1247,21 @@ after_sigcont(void)
 
 #if defined(SIGCONT)
 static RETSIGTYPE sigcont_handler SIGPROTOARG;
-static int in_mch_suspend = FALSE;
+static volatile sig_atomic_t in_mch_suspend = FALSE;
 
-# if defined(_REENTRANT) && defined(SIGCONT)
 /*
- * On Solaris with multi-threading, suspending might not work immediately.
- * Catch the SIGCONT signal, which will be used as an indication whether the
- * suspending has been done or not.
+ * With multi-threading, suspending might not work immediately.  Catch the
+ * SIGCONT signal, which will be used as an indication whether the suspending
+ * has been done or not.
  *
  * On Linux, signal is not always handled immediately either.
  * See https://bugs.launchpad.net/bugs/291373
+ * Probably because the signal is handled in another thread.
  *
  * volatile because it is used in signal handler sigcont_handler().
  */
-static volatile int sigcont_received;
-# endif
+static volatile sig_atomic_t sigcont_received;
+static RETSIGTYPE sigcont_handler SIGPROTOARG;
 
 /*
  * signal handler for SIGCONT
@@ -1265,32 +1271,16 @@ sigcont_handler SIGDEFARG(sigarg)
 {
     if (in_mch_suspend)
     {
-# if defined(_REENTRANT) && defined(SIGCONT)
 	sigcont_received = TRUE;
-# endif
     }
     else
     {
 	// We didn't suspend ourselves, assume we were stopped by a SIGSTOP
 	// signal (which can't be intercepted) and get a SIGCONT.  Need to get
-	// back to a sane mode and redraw.
+	// back to a sane mode. We should redraw, but we can't really do that
+	// in a signal handler, do a redraw later.
 	after_sigcont();
-
-	update_screen(CLEAR);
-	if (State & CMDLINE)
-	    redrawcmdline();
-	else if (State == HITRETURN || State == SETWSIZE || State == ASKMORE
-		|| State == EXTERNCMD || State == CONFIRM || exmode_active)
-	    repeat_message();
-	else if (redrawing())
-	    setcursor();
-#if defined(FEAT_INS_EXPAND)
-	if (pum_visible())
-	{
-	    redraw_later(NOT_VALID);
-	    ins_compl_show_pum();
-	}
-#endif
+	redraw_later(CLEAR);
 	cursor_on_force();
 	out_flush();
     }
@@ -1386,27 +1376,26 @@ mch_suspend(void)
 # if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
     loose_clipboard();
 # endif
-
-# if defined(_REENTRANT) && defined(SIGCONT)
+# if defined(SIGCONT)
     sigcont_received = FALSE;
 # endif
+
     kill(0, SIGTSTP);	    /* send ourselves a STOP signal */
-# if defined(_REENTRANT) && defined(SIGCONT)
+
+# if defined(SIGCONT)
     /*
      * Wait for the SIGCONT signal to be handled. It generally happens
-     * immediately, but somehow not all the time. Do not call pause()
-     * because there would be race condition which would hang Vim if
-     * signal happened in between the test of sigcont_received and the
-     * call to pause(). If signal is not yet received, call sleep(0)
-     * to just yield CPU. Signal should then be received. If somehow
-     * it's still not received, sleep 1, 2, 3 ms. Don't bother waiting
-     * further if signal is not received after 1+2+3+4 ms (not expected
-     * to happen).
+     * immediately, but somehow not all the time, probably because it's handled
+     * in another thread. Do not call pause() because there would be race
+     * condition which would hang Vim if signal happened in between the test of
+     * sigcont_received and the call to pause(). If signal is not yet received,
+     * sleep 0, 1, 2, 3 ms. Don't bother waiting further if signal is not
+     * received after 1+2+3 ms (not expected to happen).
      */
     {
 	long wait_time;
+
 	for (wait_time = 0; !sigcont_received && wait_time <= 3L; wait_time++)
-	    /* Loop is not entered most of the time */
 	    mch_delay(wait_time, FALSE);
     }
 # endif
@@ -1511,7 +1500,7 @@ catch_int_signal(void)
 reset_signals(void)
 {
     catch_signals(SIG_DFL, SIG_DFL);
-#if defined(_REENTRANT) && defined(SIGCONT)
+#if defined(SIGCONT)
     /* SIGCONT isn't in the list, because its default action is ignore */
     signal(SIGCONT, SIG_DFL);
 #endif
@@ -1574,7 +1563,7 @@ block_signals(sigset_t *set)
     for (i = 0; signal_info[i].sig != -1; i++)
 	sigaddset(&newset, signal_info[i].sig);
 
-# if defined(_REENTRANT) && defined(SIGCONT)
+# if defined(SIGCONT)
     /* SIGCONT isn't in the list, because its default action is ignore */
     sigaddset(&newset, SIGCONT);
 # endif
@@ -2281,6 +2270,11 @@ mch_settitle(char_u *title, char_u *icon)
      */
     if ((type || *T_TS != NUL) && title != NULL)
     {
+	if (oldtitle_outdated)
+	{
+	    oldtitle_outdated = FALSE;
+	    VIM_CLEAR(oldtitle);
+	}
 	if (oldtitle == NULL
 #ifdef FEAT_GUI
 		&& !gui.in_use

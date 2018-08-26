@@ -944,6 +944,8 @@ drawBalloon(BalloonEval *beval)
 	GtkRequisition	requisition;
 	int		screen_w;
 	int		screen_h;
+	int		screen_x;
+	int		screen_y;
 	int		x;
 	int		y;
 	int		x_offset = EVAL_OFFSET_X;
@@ -956,8 +958,8 @@ drawBalloon(BalloonEval *beval)
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
 # endif
-	gui_gtk_get_screen_size_of_win(beval->balloonShell,
-							 &screen_w, &screen_h);
+	gui_gtk_get_screen_geom_of_win(beval->balloonShell,
+				    &screen_x, &screen_y, &screen_w, &screen_h);
 # if !GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_ensure_style(beval->balloonShell);
 	gtk_widget_ensure_style(beval->balloonLabel);
@@ -998,14 +1000,16 @@ drawBalloon(BalloonEval *beval)
 	y += beval->y;
 
 	/* Get out of the way of the mouse pointer */
-	if (x + x_offset + requisition.width > screen_w)
+	if (x + x_offset + requisition.width > screen_x + screen_w)
 	    y_offset += 15;
-	if (y + y_offset + requisition.height > screen_h)
+	if (y + y_offset + requisition.height > screen_y + screen_h)
 	    y_offset = -requisition.height - EVAL_OFFSET_Y;
 
 	/* Sanitize values */
-	x = CLAMP(x + x_offset, 0, MAX(0, screen_w - requisition.width));
-	y = CLAMP(y + y_offset, 0, MAX(0, screen_h - requisition.height));
+	x = CLAMP(x + x_offset, 0,
+			    MAX(0, screen_x + screen_w - requisition.width));
+	y = CLAMP(y + y_offset, 0,
+			    MAX(0, screen_y + screen_h - requisition.height));
 
 	/* Show the balloon */
 # if GTK_CHECK_VERSION(3,0,0)

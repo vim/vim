@@ -3108,6 +3108,9 @@ mch_dirname(
     char_u	*buf,
     int		len)
 {
+    char_u  abuf[_MAX_PATH + 1];
+    DWORD   lfnlen;
+
     /*
      * Originally this was:
      *    return (getcwd(buf, len) != NULL ? OK : FAIL);
@@ -3121,7 +3124,21 @@ mch_dirname(
 
 	if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
 	{
-	    char_u  *p = utf16_to_enc(wbuf, NULL);
+	    WCHAR   wcbuf[_MAX_PATH + 1];
+	    char_u  *p = NULL;
+
+	    if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
+	    {
+		p = utf16_to_enc(wcbuf, NULL);
+		if (STRLEN(p) >= (size_t)len)
+		{
+		    // long path name is too long, fall back to short one
+		    vim_free(p);
+		    p = NULL;
+		}
+	    }
+	    if (p == NULL)
+		p = utf16_to_enc(wbuf, NULL);
 
 	    if (p != NULL)
 	    {
@@ -3133,7 +3150,16 @@ mch_dirname(
 	return FAIL;
     }
 #endif
-    return (GetCurrentDirectory(len, (LPSTR)buf) != 0 ? OK : FAIL);
+    if (GetCurrentDirectory(len, (LPSTR)buf) == 0)
+	return FAIL;
+    lfnlen = GetLongPathNameA((LPCSTR)buf, (LPSTR)abuf, _MAX_PATH);
+    if (lfnlen == 0 || lfnlen >= (DWORD)len)
+	// Failed to get long path name or it's too long: fall back to the
+	// short path name.
+	return OK;
+
+    STRCPY(buf, abuf);
+    return OK;
 }
 
 /*
@@ -4020,6 +4046,7 @@ ResizeConBufAndWindow(
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
     COORD	    coordScreen;
+    static int	    resized = FALSE;
 
 #ifdef MCH_WRITE_DUMP
     if (fdDump)
@@ -4065,8 +4092,8 @@ ResizeConBufAndWindow(
     coordScreen.X = xSize;
     coordScreen.Y = ySize;
 
-    // In the new console call API in reverse order
-    if (!vtp_working)
+    // In the new console call API, only the first time in reverse order
+    if (!vtp_working || resized)
     {
 	ResizeWindow(hConsole, srWindowRect);
 	ResizeConBuf(hConsole, coordScreen);
@@ -4075,6 +4102,7 @@ ResizeConBufAndWindow(
     {
 	ResizeConBuf(hConsole, coordScreen);
 	ResizeWindow(hConsole, srWindowRect);
+	resized = TRUE;
     }
 }
 

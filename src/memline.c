@@ -828,10 +828,13 @@ ml_open_file(buf_T *buf)
  */
     void
 check_need_swap(
-    int	    newfile)		/* reading file into new buffer */
+    int	    newfile)		// reading file into new buffer
 {
+    int old_msg_silent = msg_silent; // might be reset by an E325 message
+
     if (curbuf->b_may_swap && (!curbuf->b_p_ro || !newfile))
 	ml_open_file(curbuf);
+    msg_silent = old_msg_silent;
 }
 
 /*
@@ -2036,6 +2039,56 @@ make_percent_swname(char_u *dir, char_u *name)
 
 #if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 static int process_still_running;
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return information found in swapfile "fname" in dictionary "d".
+ * This is used by the swapinfo() function.
+ */
+    void
+get_b0_dict(char_u *fname, dict_T *d)
+{
+    int fd;
+    struct block0 b0;
+
+    if ((fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0)) >= 0)
+    {
+	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
+	{
+	    if (ml_check_b0_id(&b0) == FAIL)
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"Not a swap file"));
+	    else if (b0_magic_wrong(&b0))
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"Magic number mismatch"));
+	    else
+	    {
+		/* we have swap information */
+		dict_add_string(d, "version", vim_strnsave(b0.b0_version, 10));
+		dict_add_string(d, "user",
+				     vim_strnsave(b0.b0_uname, B0_UNAME_SIZE));
+		dict_add_string(d, "host",
+				     vim_strnsave(b0.b0_hname, B0_HNAME_SIZE));
+		dict_add_string(d, "fname",
+				 vim_strnsave(b0.b0_fname, B0_FNAME_SIZE_ORG));
+
+		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
+		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
+		dict_add_number(d, "dirty", b0.b0_dirty ? 1 : 0);
+# ifdef CHECK_INODE
+		dict_add_number(d, "inode", char_to_long(b0.b0_ino));
+# endif
+	    }
+	}
+	else
+	    dict_add_string(d, "error",
+				    vim_strsave((char_u *)"Cannot read file"));
+	close(fd);
+    }
+    else
+	dict_add_string(d, "error", vim_strsave((char_u *)"Cannot open file"));
+}
 #endif
 
 /*
@@ -5267,7 +5320,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	/* Don't count the last line break if 'noeol' and ('bin' or
 	 * 'nofixeol'). */
 	if ((!buf->b_p_fixeol || buf->b_p_bin) && !buf->b_p_eol
-					   && buf->b_ml.ml_line_count == lnum)
+					   && lnum > buf->b_ml.ml_line_count)
 	    size -= ffdos + 1;
     }
 

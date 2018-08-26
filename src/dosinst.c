@@ -1575,18 +1575,13 @@ install_registry(void)
     }
 
     printf("Creating an uninstall entry\n");
+    sprintf(display_name, "Vim " VIM_VERSION_SHORT);
 
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)
-    {
-	sprintf(display_name, "Vim " VIM_VERSION_SHORT);
 	sprintf(uninstall_string, "%s\\uninstal.exe", installdir);
-    }
     else
-    {
-	sprintf(display_name, "Vim " VIM_VERSION_SHORT " (self-installing)");
 	sprintf(uninstall_string, "%s\\uninstall-gui.exe", installdir);
-    }
 
     lRet = register_uninstall(
 	HKEY_LOCAL_MACHINE,

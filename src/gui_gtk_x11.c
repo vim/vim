@@ -5008,27 +5008,35 @@ gui_mch_set_shellsize(int width, int height,
 }
 
     void
-gui_gtk_get_screen_size_of_win(GtkWidget *wid, int *width, int *height)
+gui_gtk_get_screen_geom_of_win(
+	GtkWidget *wid,
+	int *screen_x,
+	int *screen_y,
+	int *width,
+	int *height)
 {
+    GdkRectangle geometry;
+    GdkWindow *win = gtk_widget_get_window(wid);
 #if GTK_CHECK_VERSION(3,22,0)
     GdkDisplay *dpy = gtk_widget_get_display(wid);
-    GdkWindow *win = gtk_widget_get_window(wid);
     GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
-    GdkRectangle geometry;
 
     gdk_monitor_get_geometry(monitor, &geometry);
-    *width = geometry.width;
-    *height = geometry.height;
 #else
     GdkScreen* screen;
+    int monitor;
 
     if (wid != NULL && gtk_widget_has_screen(wid))
 	screen = gtk_widget_get_screen(wid);
     else
 	screen = gdk_screen_get_default();
-    *width = gdk_screen_get_width(screen);
-    *height = gdk_screen_get_height(screen);
+    monitor = gdk_screen_get_monitor_at_window(screen, win);
+    gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
 #endif
+    *screen_x = geometry.x;
+    *screen_y = geometry.y;
+    *width = geometry.width;
+    *height = geometry.height;
 }
 
 /*
@@ -5039,7 +5047,9 @@ gui_gtk_get_screen_size_of_win(GtkWidget *wid, int *width, int *height)
     void
 gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 {
-    gui_gtk_get_screen_size_of_win(gui.mainwin, screen_w, screen_h);
+    int	    x, y;
+
+    gui_gtk_get_screen_geom_of_win(gui.mainwin, &x, &y, screen_w, screen_h);
 
     /* Subtract 'guiheadroom' from the height to allow some room for the
      * window manager (task list and window title bar). */

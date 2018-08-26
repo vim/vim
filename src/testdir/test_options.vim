@@ -350,55 +350,57 @@ func Test_backupskip()
 endfunc
 
 func Test_copy_winopt()
-    set hidden
+  set hidden
 
-    " Test copy option from current buffer in window
-    split
-    enew
-    setlocal numberwidth=5
-    wincmd w
-    call assert_equal(4,&numberwidth)
-    bnext
-    call assert_equal(5,&numberwidth)
-    bw!
-    call assert_equal(4,&numberwidth)
+  " Test copy option from current buffer in window
+  split
+  enew
+  setlocal numberwidth=5
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(5,&numberwidth)
+  bw!
+  call assert_equal(4,&numberwidth)
 
-    " Test copy value from window that used to be display the buffer
-    split
-    enew
-    setlocal numberwidth=6
-    bnext
-    wincmd w
-    call assert_equal(4,&numberwidth)
-    bnext
-    call assert_equal(6,&numberwidth)
-    bw!
+  " Test copy value from window that used to be display the buffer
+  split
+  enew
+  setlocal numberwidth=6
+  bnext
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(6,&numberwidth)
+  bw!
 
-    " Test that if buffer is current, don't use the stale cached value
-    " from the last time the buffer was displayed.
-    split
-    enew
-    setlocal numberwidth=7
-    bnext
-    bnext
-    setlocal numberwidth=8
-    wincmd w
-    call assert_equal(4,&numberwidth)
-    bnext
-    call assert_equal(8,&numberwidth)
-    bw!
+  " Test that if buffer is current, don't use the stale cached value
+  " from the last time the buffer was displayed.
+  split
+  enew
+  setlocal numberwidth=7
+  bnext
+  bnext
+  setlocal numberwidth=8
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(8,&numberwidth)
+  bw!
 
-    " Test value is not copied if window already has seen the buffer
-    enew
-    split
-    setlocal numberwidth=9
-    bnext
-    setlocal numberwidth=10
-    wincmd w
-    call assert_equal(4,&numberwidth)
-    bnext
-    call assert_equal(4,&numberwidth)
-    bw!
+  " Test value is not copied if window already has seen the buffer
+  enew
+  split
+  setlocal numberwidth=9
+  bnext
+  setlocal numberwidth=10
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(4,&numberwidth)
+  bw!
+
+  set hidden&
 endfunc
 
 func Test_shortmess_F()
@@ -412,5 +414,26 @@ func Test_shortmess_F()
   call assert_match('bar', execute('file bar'))
   call assert_match('bar', execute('file'))
   set shortmess&
+  bwipe
+endfunc
+
+func Test_shortmess_F2()
+  e file1
+  e file2
+  call assert_match('file1', execute('bn', ''))
+  call assert_match('file2', execute('bn', ''))
+  set shortmess+=F
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set hidden
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set nohidden
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set shortmess&
+  call assert_match('file1', execute('bn', ''))
+  call assert_match('file2', execute('bn', ''))
+  bwipe
   bwipe
 endfunc

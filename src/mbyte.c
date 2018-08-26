@@ -4951,24 +4951,26 @@ im_add_to_input(char_u *str, int len)
      static void
 im_preedit_window_set_position(void)
 {
-    int x, y, w, h, sw, sh;
+    int x, y, width, height;
+    int screen_x, screen_y, screen_width, screen_height;
 
     if (preedit_window == NULL)
 	return;
 
-    gui_gtk_get_screen_size_of_win(preedit_window, &sw, &sh);
+    gui_gtk_get_screen_geom_of_win(gui.drawarea,
+			  &screen_x, &screen_y, &screen_width, &screen_height);
 #if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
 #else
     gdk_window_get_origin(gui.drawarea->window, &x, &y);
 #endif
-    gtk_window_get_size(GTK_WINDOW(preedit_window), &w, &h);
+    gtk_window_get_size(GTK_WINDOW(preedit_window), &width, &height);
     x = x + FILL_X(gui.col);
     y = y + FILL_Y(gui.row);
-    if (x + w > sw)
-	x = sw - w;
-    if (y + h > sh)
-	y = sh - h;
+    if (x + width > screen_x + screen_width)
+	x = screen_x + screen_width - width;
+    if (y + height > screen_y + screen_height)
+	y = screen_y + screen_height - height;
     gtk_window_move(GTK_WINDOW(preedit_window), x, y);
 }
 
