@@ -3664,6 +3664,13 @@ mch_setmouse(int on)
 # endif
     int		xterm_mouse_vers;
 
+# if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+    if (!on)
+	// Make sure not tracing mouse movements.  Important when a button-down
+	// was received but no release yet.
+	stop_xterm_trace();
+# endif
+
     if (on == mouse_ison
 # ifdef FEAT_BEVAL_TERM
 	    && p_bevalterm == bevalterm_ison
