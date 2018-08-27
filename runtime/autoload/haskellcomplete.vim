@@ -4,6 +4,9 @@
 " URL:             https://github.com/alx741/haskellcomplete.vim
 " Last Change:     2018 Aug 26
 
+" Usage:           setlocal omnifunc=haskellcomplete#Complete
+
+
 " Language extensions from:
 "   https://hackage.haskell.org/package/Cabal-2.2.0.1/docs/Language-Haskell-Extension.html
 "
