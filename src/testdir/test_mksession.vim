@@ -311,5 +311,135 @@ endfunc
 
 endif " has('terminal')
 
+" Test :mkview and :loadview without argument.
+func Test_mkview_loadview()
+  " Create a view with line number and a fold.
+  help :mkview
+  set number
+  norm! V}zf
+  let curpos = getcurpos()
+  let linefoldclosed1 = foldclosed('.')
+  mkview
+  set nonumber
+  norm! zrj
+
+  loadview
+  call assert_equal(1, &number)
+  call assert_match('\*:mkview\*$', getline('.'))
+  call assert_equal(curpos, getcurpos())
+  call assert_equal(linefoldclosed1, foldclosed('.'))
+
+  helpclose
+endfunc
+
+" Test :mkview with a file argument.
+func Test_mkview_file()
+  " Create a view with line number and a fold.
+  help :mkview
+  set number
+  norm! V}zf
+  let curpos = getcurpos()
+  let linefoldclosed1 = foldclosed('.')
+  mkview! Xview
+  set nonumber
+  norm! zrj
+  " We can close the help window, as mkview with a file name should
+  " generate a command to edit the file.
+  helpclose
+
+  source Xview
+  call assert_equal(1, &number)
+  call assert_match('\*:mkview\*$', getline('.'))
+  call assert_equal(curpos, getcurpos())
+  call assert_equal(linefoldclosed1, foldclosed('.'))
+
+  " Creating a view again with the same file name should fail (file
+  " already exists). But with a !, the previous view should be
+  " overwritten without error.
+  help :loadview
+  call assert_fails('mkview Xview', 'E189:')
+  call assert_match('\*:loadview\*$', getline('.'))
+  mkview! Xview
+  call assert_match('\*:loadview\*$', getline('.'))
+
+  call delete('Xview')
+  bwipe
+endfunc
+
+" Test :mkview {nr} and :loadview {nr}.
+func Test_mkview_loadview_nr()
+  " Create a first view with line number and a fold.
+  help :mkview
+  set number
+  norm! V}zf
+  let curpos1 = getcurpos()
+  let linefoldclosed1 = foldclosed('.')
+  mkview 1
+
+  " Create a second view without line number and without fold.
+  help :loadview
+  set nonumber
+  norm! zr
+  let curpos2 = getcurpos()
+  mkview 2
+
+  loadview 1
+  call assert_equal(1, &number)
+  call assert_match('\*:mkview\*$', getline('.'))
+  call assert_equal(curpos1, getcurpos())
+  call assert_equal(linefoldclosed1, foldclosed('.'))
+
+  loadview 2
+  call assert_equal(0, &number)
+  call assert_match('\*:loadview\*$', getline('.'))
+  call assert_equal(curpos2, getcurpos())
+  call assert_equal(-1, foldclosed('.'))
+
+  helpclose
+endfunc
+
+" Test :mkview and :loadview with a custom 'viewdir'.
+func Test_mkview_loadview_with_viewdir()
+  set viewdir=Xviewdir
+
+  help :mkview
+  set number
+  norm! V}zf
+  let curpos = getcurpos()
+  let linefoldclosed1 = foldclosed('.')
+  mkview 1
+  set nonumber
+  norm! zrj
+
+  loadview 1
+
+  " The directory Xviewdir/ should have been created and the view
+  " should be stored in that directory.
+  call assert_equal('Xviewdir/' . substitute(expand('%:p'), '/', '=+', 'g') . '=1.vim',
+        \           glob('Xviewdir/*'))
+  call assert_equal(1, &number)
+  call assert_match('\*:mkview\*$', getline('.'))
+  call assert_equal(curpos, getcurpos())
+  call assert_equal(linefoldclosed1, foldclosed('.'))
+
+  call delete('Xviewdir', 'rf')
+  set viewdir&
+  helpclose
+endfunc
+
+func Test_mkview_no_file_name()
+  new
+  " :mkview or :mkview {nr} should fail in a unnamed buffer.
+  call assert_fails('mkview', 'E32:')
+  call assert_fails('mkview 1', 'E32:')
+
+  " :mkview {file} should succeed in a unnamed buffer.
+  mkview Xview
+  help
+  source Xview
+  call assert_equal('', bufname('%'))
+
+  %bwipe
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
