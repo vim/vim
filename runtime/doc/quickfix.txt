@@ -1557,8 +1557,8 @@ reduce the number of entries.  Load the plugin with: >
    packadd cfilter
 
 Then you can use these command: >
-   :Cfilter[!] {pat}
-   :Lfilter[!] {pat}
+   :Cfilter[!] /{pat}/
+   :Lfilter[!] /{pat}/
 
 :Cfilter creates a new quickfix list from entries matching {pat} in the
 current quickfix list. Both the file name and the text of the entries are

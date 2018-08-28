@@ -6270,8 +6270,13 @@ ft-python-plugin	filetype.txt	/*ft-python-plugin*
 ft-python-syntax	syntax.txt	/*ft-python-syntax*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
+ft-r-syntax	syntax.txt	/*ft-r-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
+ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
+ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
+ft-rrst-plugin	filetype.txt	/*ft-rrst-plugin*
+ft-rrst-syntax	syntax.txt	/*ft-rrst-syntax*
 ft-rst-syntax	syntax.txt	/*ft-rst-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*
@@ -8200,6 +8205,7 @@ quotes.txt	quotes.txt	/*quotes.txt*
 quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
+r.vim	syntax.txt	/*r.vim*
 range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
@@ -8264,8 +8270,10 @@ right-justify	change.txt	/*right-justify*
 rileft	rileft.txt	/*rileft*
 rileft.txt	rileft.txt	/*rileft.txt*
 riscos	os_risc.txt	/*riscos*
+rmd.vim	syntax.txt	/*rmd.vim*
 rot13	change.txt	/*rot13*
 round()	eval.txt	/*round()*
+rrst.vim	syntax.txt	/*rrst.vim*
 rst.vim	syntax.txt	/*rst.vim*
 rsync	pi_netrw.txt	/*rsync*
 ruby	if_ruby.txt	/*ruby*

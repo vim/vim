@@ -228,6 +228,10 @@ Syntax ~
 
 			If you want to use more options use the |term_start()|
 			function.
+			If you want to split the window vertically, use: >
+				:vertical terminal
+<			Or short: >
+				:vert ter
 
 When the buffer associated with the terminal is forcibly unloaded or wiped out
 the job is killed, similar to calling `job_stop(job, "kill")` .

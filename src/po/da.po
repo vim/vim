@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-08 22:09+0200\n"
-"PO-Revision-Date: 2018-06-23 23:30+0200\n"
+"POT-Creation-Date: 2018-07-18 21:20+0200\n"
+"PO-Revision-Date: 2018-08-17 00:15+0200\n"
 "Last-Translator: scootergrisen\n"
 "Language-Team: Danish\n"
 "Language: da\n"
@@ -184,10 +184,10 @@ msgid "All"
 msgstr "Alt"
 
 msgid "Bot"
-msgstr "Ned"
+msgstr "Nederst"
 
 msgid "Top"
-msgstr "Øve"
+msgstr "Øverst"
 
 msgid ""
 "\n"
@@ -565,7 +565,8 @@ msgid "E115: Missing quote: %s"
 msgstr "E115: Manglende citationstegn: %s"
 
 msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr "Ikke nok hukommelse til at sætte referencer, affaldsindsamling afbrudt!"
+msgstr ""
+"Ikke nok hukommelse til at sætte referencer, affaldsindsamling afbrudt!"
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variabel indlejret for dybt til at blive vist"
@@ -1415,6 +1416,9 @@ msgstr "E784: Kan ikke lukke sidste fanebladsside"
 msgid "Already only one tab page"
 msgstr "Allerede kun én fanebladsside"
 
+msgid "Edit File in new tab page"
+msgstr "Rediger fil i ny fanebladsside"
+
 msgid "Edit File in new window"
 msgstr "Rediger fil i nyt vindue"
 
@@ -1645,7 +1649,7 @@ msgid ""
 "# %s History (newest to oldest):\n"
 msgstr ""
 "\n"
-"# %s Historik (nyeste til ældste):\n"
+"# %s historik (nyeste til ældste):\n"
 
 msgid "Command Line"
 msgstr "Kommandolinje"
@@ -1672,7 +1676,7 @@ msgid "E812: Autocommands changed buffer or buffer name"
 msgstr "E812: Autokommandoer ændrede buffer eller buffernavn"
 
 msgid "Illegal file name"
-msgstr "Ulovlig filnavn"
+msgstr "Ulovligt filnavn"
 
 msgid "is a directory"
 msgstr "er en mappe"
@@ -1957,7 +1961,8 @@ msgstr "Se \":help W12\" for mere info."
 
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
-msgstr "W11: Advarsel: Filen \"%s\" er blevet ændret siden redigeringen startede"
+msgstr ""
+"W11: Advarsel: Filen \"%s\" er blevet ændret siden redigeringen startede"
 
 msgid "See \":help W11\" for more info."
 msgstr "Se \":help W11\" for mere info."
@@ -1965,8 +1970,8 @@ msgstr "Se \":help W11\" for mere info."
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Advarsel: Tilstanden af filen \"%s\" er blevet ændret siden redigeringen "
-"startede"
+"W16: Advarsel: Tilstanden af filen \"%s\" er blevet ændret siden "
+"redigeringen startede"
 
 msgid "See \":help W16\" for more info."
 msgstr "Se \":help W16\" for mere info."
@@ -2025,10 +2030,10 @@ msgstr "E216: Ingen sådan gruppe eller hændelse: %s"
 
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Auto-kommandoer ---"
+"--- Autokommandoer ---"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
@@ -2044,8 +2049,8 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: autokommando indlejret for dyb"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
-msgstr "%s Auto-kommandoer for \"%s\""
+msgid "%s Autocommands for \"%s\""
+msgstr "%s Autokommandoer for \"%s\""
 
 #, c-format
 msgid "Executing %s"
@@ -2291,10 +2296,10 @@ msgstr "&Fortryd"
 msgid "Open tab..."
 msgstr "Åbn faneblad..."
 
-msgid "Find string (use '\\\\' to find  a '\\')"
+msgid "Find string (use '\\\\' to find a '\\')"
 msgstr "Find streng (brug '\\\\' til at finde et '\\')"
 
-msgid "Find & Replace (use '\\\\' to find  a '\\')"
+msgid "Find & Replace (use '\\\\' to find a '\\')"
 msgstr "Find og erstat (brug '\\\\' til at finde et '\\')"
 
 msgid "Not Used"
@@ -2878,7 +2883,8 @@ msgstr "Affald efter tilvalgsargument"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr ""
-"For mange \"+kommando\"-, \"-c kommando\"- eller \"--cmd kommando\"-argumenter"
+"For mange \"+kommando\"-, \"-c kommando\"- eller \"--cmd kommando\"-"
+"argumenter"
 
 msgid "Invalid argument for"
 msgstr "Ugyldigt argument for"
@@ -2931,7 +2937,7 @@ msgstr ""
 "\n"
 "Mere info med: \"vim -h\"\n"
 
-msgid "[file ..]       edit specified file(s)"
+msgid "[file ..]  edit specified file(s)"
 msgstr "[fil ..]        rediger angivne fil(er)"
 
 msgid "-               read text from stdin"
@@ -2946,11 +2952,11 @@ msgstr "-q [fejlfil]    rediger fil med første fejl"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
-"anvendelse:"
+"Anvendelse:"
 
 msgid " vim [arguments] "
 msgstr " vim [argumenter] "
@@ -3063,8 +3069,8 @@ msgstr "-f\t\t\tBrug ikke newcli til at åbne vindue"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhed>\t\tBrug <enhed> til I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
-msgstr "-A\t\t\tstart i arabisk tilstand"
+msgid "-A\t\t\tStart in Arabic mode"
+msgstr "-A\t\t\tStart i arabisk tilstand"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tStart i hebraisk tilstand"
@@ -3113,7 +3119,8 @@ msgid "-c <command>\t\tExecute <command> after loading the first file"
 msgstr "-c <kommando>\tUdfør <kommando> efter indlæsning af den første fil"
 
 msgid "-S <session>\t\tSource file <session> after loading the first file"
-msgstr "-S <session>\t\tSource filen <session> efter indlæsning af den første fil"
+msgstr ""
+"-S <session>\t\tSource filen <session> efter indlæsning af den første fil"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <scriptind>\tLæs normal tilstand-kommandoer fra filen <scriptind>"
@@ -3180,7 +3187,8 @@ msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tBrug <viminfo> i stedet for .viminfo"
 
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
-msgstr "--clean\t\t'nocompatible', Vim-standarder, ingen plugins, ingen viminfo"
+msgstr ""
+"--clean\t\t'nocompatible', Vim-standarder, ingen plugins, ingen viminfo"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h eller --help\tUdskriv hjælp (denne meddelelse) og afslut"
@@ -3486,21 +3494,22 @@ msgid ""
 "If you entered a new crypt key but did not write the text file,"
 msgstr ""
 "\n"
-"Hvis du indtastede en ny crypt-nøgle men ikke skrev tekstfilen,"
+"Hvis du indtastede en ny krypteringsnøgle men ikke skrev tekstfilen,"
 
 msgid ""
 "\n"
 "enter the new crypt key."
 msgstr ""
 "\n"
-"så indtast den nye crypt-nøgle."
+"så indtast den nye krypteringsnøgle."
 
 msgid ""
 "\n"
 "If you wrote the text file after changing the crypt key press enter"
 msgstr ""
 "\n"
-"Hvis du skrev tekstfilen efter crypt-nøglen blev ændret, så tryk på enter"
+"Hvis du skrev tekstfilen efter krypteringsnøglen blev ændret, så tryk på "
+"enter"
 
 msgid ""
 "\n"
@@ -3547,8 +3556,7 @@ msgstr "E311: Gendannelse afbrudt"
 msgid ""
 "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr ""
-"E312: Fejl registreret ved gendannelse; kig efter linjer som begynder med "
-"???"
+"E312: Fejl registreret ved gendannelse; kig efter linjer som begynder med ???"
 
 msgid "See \":help E312\" for more information."
 msgstr "Se \":help E312\" for mere information."
@@ -3580,16 +3588,16 @@ msgstr ""
 "\n"
 
 msgid "Using crypt key from swap file for the text file.\n"
-msgstr "Bruger crypt-nøglen fra swap-filen til tekstfilen.\n"
+msgstr "Bruger krypteringsnøglen fra swap-filen til tekstfilen.\n"
 
 msgid "Swap files found:"
 msgstr "Swap-filer fundet:"
 
 msgid "   In current directory:\n"
-msgstr "   I nuværende mappe:\n"
+msgstr "      I nuværende mappe:\n"
 
 msgid "   Using specified name:\n"
-msgstr "   Bruger angivne navn:\n"
+msgstr "    Bruger angivne navn:\n"
 
 msgid "   In directory "
 msgstr "   I mappe "
@@ -3598,13 +3606,13 @@ msgid "      -- none --\n"
 msgstr "      -- ingen --\n"
 
 msgid "          owned by: "
-msgstr "          ejet af: "
+msgstr "           ejet af: "
 
 msgid "   dated: "
-msgstr "   dateret: "
+msgstr " dateret: "
 
 msgid "             dated: "
-msgstr "             dateret: "
+msgstr "           dateret: "
 
 msgid "         [from Vim version 3.0]"
 msgstr "         [fra Vim version 3.0]"
@@ -3613,14 +3621,14 @@ msgid "         [does not look like a Vim swap file]"
 msgstr "         [ligner ikke en Vim swap-fil]"
 
 msgid "         file name: "
-msgstr "         filnavn: "
+msgstr "           filnavn: "
 
 msgid ""
 "\n"
 "          modified: "
 msgstr ""
 "\n"
-"          ændret: "
+"            ændret: "
 
 msgid "YES"
 msgstr "JA"
@@ -3633,7 +3641,7 @@ msgid ""
 "         user name: "
 msgstr ""
 "\n"
-"         brugernavn: "
+"        brugernavn: "
 
 msgid "   host name: "
 msgstr "   værtsnavn: "
@@ -3650,7 +3658,7 @@ msgid ""
 "        process ID: "
 msgstr ""
 "\n"
-"        proces-ID: "
+"         proces-ID: "
 
 msgid " (still running)"
 msgstr " (kører stadig)"
@@ -3758,9 +3766,11 @@ msgid ""
 "    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
-"(1) Et andet program redigere muligvis den samme fil. Hvis det er tilfældet,\n"
+"(1) Et andet program redigere muligvis den samme fil. Hvis det er "
+"tilfældet,\n"
 "    så pas på ikke at ende med to forskellige instanser af den samme\n"
-"    fil når der foretages ændringer. Afslut, eller fortsæt med forsigtighed.\n"
+"    fil når der foretages ændringer. Afslut, eller fortsæt med "
+"forsigtighed.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) En redigeringssession for filen holdt op med at virke.\n"
@@ -4059,7 +4069,8 @@ msgstr "E347: Ikke flere fil \"%s\" fundet i path"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: Forkert adgangstilstand for NetBeans-forbindelsens info-fil: \"%s\""
+msgstr ""
+"E668: Forkert adgangstilstand for NetBeans-forbindelsens info-fil: \"%s\""
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
@@ -4214,8 +4225,8 @@ msgid ""
 "Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of "
 "%lld Bytes"
 msgstr ""
-"Markerede %s%ld af %ld linje; %lld af %lld ord; %lld af %lld tegn; %lld af %"
-"lld byte"
+"Markerede %s%ld af %ld linje; %lld af %lld ord; %lld af %lld tegn; %lld af "
+"%lld byte"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Byte %lld of %lld"
@@ -4226,8 +4237,8 @@ msgid ""
 "Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
 "%lld of %lld"
 msgstr ""
-"Kol %s af %s; Linje %ld af %ld; Ord %lld af %lld; Tegn %lld af %lld; Byte %"
-"lld af %lld"
+"Kol %s af %s; Linje %ld af %ld; Ord %lld af %lld; Tegn %lld af %lld; Byte "
+"%lld af %lld"
 
 #, c-format
 msgid "(+%lld for BOM)"
@@ -4746,8 +4757,8 @@ msgstr "E55: Ikke-matchet %s)"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( ikke tilladt her"
 
-msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 og andre ikke tilladt her"
+msgid "E67: \\z1 - \\z9 not allowed here"
+msgstr "E67: \\z1 - \\z9 ikke tilladt her"
 
 #, c-format
 msgid "E69: Missing ] after %s%%["
@@ -4756,6 +4767,9 @@ msgstr "E69: Manglende ] efter %s%%["
 #, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: Tom %s%%[]"
+
+msgid "E956: Cannot use pattern recursively"
+msgstr "E956: Kan ikke bruge mønster rekursivt"
 
 msgid "E65: Illegal back reference"
 msgstr "E65: Ulovlig tilbage-reference"
@@ -4859,8 +4873,8 @@ msgstr "E869: (NFA) Ukendt operator '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (NFA regexp) Fejl ved læsning af gentagelsesgrænser"
 
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
-msgstr "E871: (NFA regexp) En multi må ikke efterfølges af en multi !"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
+msgstr "E871: (NFA regexp) En multi må ikke efterfølges af en multi"
 
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (NFA regexp) For mange '('"
@@ -4871,8 +4885,11 @@ msgstr "E879: (NFA regexp) For mange \\z("
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA regexp) fejl ved korrekt terminering"
 
-msgid "E874: (NFA) Could not pop the stack !"
-msgstr "E874: (NFA) Kunne ikke pop'e stakken !"
+msgid "Could not open temporary log file for writing, displaying on stderr... "
+msgstr "Kunne ikke åbne midlertidig logfil til skrivning, viser på stderr... "
+
+msgid "E874: (NFA) Could not pop the stack!"
+msgstr "E874: (NFA) Kunne ikke pop'e stakken!"
 
 msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
@@ -4886,17 +4903,6 @@ msgstr "E876: (NFA regexp) Ikke nok plads til at lagre hele NFA'en "
 
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Kunne ikke allokere hukommelse til gennemgang af gren!"
-
-msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
-msgstr "Kunne ikke åbne midlertidig logfil til skrivning, viser på stderr ... "
-
-#, c-format
-msgid "(NFA) COULD NOT OPEN %s !"
-msgstr "(NFA) KUNNE IKKE ÅBNE %s !"
-
-msgid "Could not open temporary log file for writing "
-msgstr "Kunne ikke åbne midlertidig logfil til skrivning "
 
 msgid " VREPLACE"
 msgstr " VERSTAT"
@@ -5008,6 +5014,7 @@ msgstr "E389: Kunne ikke finde mønster"
 msgid "Substitute "
 msgstr "Erstatning "
 
+# scootergrisen: find ud af om "Søgemønster" skal være med stort eller lille
 #, c-format
 msgid ""
 "\n"
@@ -5023,11 +5030,13 @@ msgstr "E756: Stavekontrol er ikke aktiveret"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
-msgstr "Advarsel: Kan ikke finde ordlisten \"%s_%s.spl\" eller \"%s_ascii.spl\""
+msgstr ""
+"Advarsel: Kan ikke finde ordlisten \"%s_%s.spl\" eller \"%s_ascii.spl\""
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
-msgstr "Advarsel: Kan ikke finde ordlisten \"%s.%s.spl\" eller \"%s.ascii.spl\""
+msgstr ""
+"Advarsel: Kan ikke finde ordlisten \"%s.%s.spl\" eller \"%s.ascii.spl\""
 
 msgid "E797: SpellFileMissing autocommand deleted buffer"
 msgstr "E797: SpellFileMissing-autokommando slettede buffer"
@@ -5115,8 +5124,8 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: fejl ved læsning af .sug-fil: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Læser affix-filen %s ..."
+msgid "Reading affix file %s..."
+msgstr "Læser affix-filen %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5251,8 +5260,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s-værdi er ikke den samme som bruges i en anden .aff-fil"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Læser ordbogsfilen %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Læser ordbogsfilen %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5279,8 +5288,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorerede %d ord med ikke-ASCII-tegn i %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Læser ordfilen %s ..."
+msgid "Reading word file %s..."
+msgstr "Læser ordfilen %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5336,8 +5345,8 @@ msgid "Total number of words: %d"
 msgstr "Samlet antal ord: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Skriver forslagsfilen %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Skriver forslagsfilen %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -5358,8 +5367,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Advarsel: både compounding og NOBREAK angivet"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Skriver spell-filen %s ..."
+msgid "Writing spell file %s..."
+msgstr "Skriver spell-filen %s..."
 
 msgid "Done!"
 msgstr "Færdig!"
@@ -5386,10 +5395,10 @@ msgid "No Syntax items defined for this buffer"
 msgstr "Ingen syntakspunkter defineret for denne buffer"
 
 msgid "syntax conceal on"
-msgstr "syntax conceal on"
+msgstr "syntax conceal til"
 
 msgid "syntax conceal off"
-msgstr "syntax conceal off"
+msgstr "syntax conceal fra"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5981,7 +5990,8 @@ msgstr "E129: Funktionsnavn kræves"
 
 #, c-format
 msgid "E128: Function name must start with a capital or \"s:\": %s"
-msgstr "E128: Funktionsnavnet skal begynde med et stort bogstav eller \"s:\": %s"
+msgstr ""
+"E128: Funktionsnavnet skal begynde med et stort bogstav eller \"s:\": %s"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -6031,6 +6041,10 @@ msgstr "E133: :return ikke i en funktion"
 #, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Manglende parenteser: %s"
+
+#, c-format
+msgid "%s (%s, compiled %s)"
+msgstr "%s (%s, kompileret %s)"
 
 msgid ""
 "\n"
@@ -6264,7 +6278,7 @@ msgid "type  :help version8<Enter>   for version info"
 msgstr "skriv :help version8<Enter>   for versionsinfo"
 
 msgid "Running in Vi compatible mode"
-msgstr "Kører i Vi-kompatibel-tilstand"
+msgstr "Kører i Vi-kompatibel tilstand"
 
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr "skriv :set nocp<Enter>        for Vim-standarder"
@@ -6410,8 +6424,7 @@ msgstr "E11: Ugyldig i kommandolinjevindue; <CR> udfører, CTRL-C afslutter"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Kommando ikke tilladt fra exrc/vimrc i nuværende mappe- eller "
-"tagsøgning"
+"E12: Kommando ikke tilladt fra exrc/vimrc i nuværende mappe- eller tagsøgning"
 
 msgid "E171: Missing :endif"
 msgstr "E171: Manglende :endif"
@@ -6530,9 +6543,7 @@ msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
 msgstr "E26: Hebraisk kan ikke bruges: Ikke aktiveret ved kompileringstid\n"
 
 msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
-msgstr ""
-"E27: Persisk kan ikke bruges: Ikke aktiveret ved kompileringstid\n"
-"\n"
+msgstr "E27: Persisk kan ikke bruges: Ikke aktiveret ved kompileringstid\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr "E800: Arabisk kan ikke bruges: Ikke aktiveret ved kompileringstid\n"
@@ -6852,8 +6863,7 @@ msgstr "ventede 3-tuple som imp.find_module() resultat, men fik %s"
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
 msgstr ""
-"ventede 3-tuple som imp.find_module() resultat, men fik tuple af størrelse %"
-"d"
+"ventede 3-tuple som imp.find_module() resultat, men fik tuple af størrelse %d"
 
 msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "intern fejl: imp.find_module returnerede tuple med NULL"

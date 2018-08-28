@@ -954,6 +954,13 @@ These three can be repeated and mixed.  Examples:
 
 expr8							*expr8*
 -----
+This expression is either |expr9| or a sequence of the alternatives below,
+in any order.  E.g., these are all possible:
+	expr9[expr1].name
+	expr9.name[expr1]
+	expr9(expr1, ...)[expr1].name
+
+
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
 If expr8 is a Number or String this results in a String that contains the
@@ -8014,6 +8021,7 @@ swapinfo({fname})					swapinfo()
 			mtime	last modification time in seconds
 			inode	Optional: INODE number of the file
 			dirty	1 if file was modified, 0 if not
+		Note that "user" and "host" are truncated to at most 39 bytes.
 		In case of failure an "error" item is added with the reason:
 			Cannot open file: file not found or in accessible
 			Cannot read file: cannot read first block
