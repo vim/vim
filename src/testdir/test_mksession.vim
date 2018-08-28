@@ -311,27 +311,6 @@ endfunc
 
 endif " has('terminal')
 
-" Test :mkview and :loadview without argument.
-func Test_mkview_loadview()
-  " Create a view with line number and a fold.
-  help :mkview
-  set number
-  norm! V}zf
-  let pos = getpos('.')
-  let linefoldclosed1 = foldclosed('.')
-  mkview
-  set nonumber
-  norm! zrj
-
-  loadview
-  call assert_equal(1, &number)
-  call assert_match('\*:mkview\*$', getline('.'))
-  call assert_equal(pos, getpos('.'))
-  call assert_equal(linefoldclosed1, foldclosed('.'))
-
-  helpclose
-endfunc
-
 " Test :mkview with a file argument.
 func Test_mkview_file()
   " Create a view with line number and a fold.
@@ -364,44 +343,6 @@ func Test_mkview_file()
 
   call delete('Xview')
   bwipe
-endfunc
-
-" Test :mkview {nr} and :loadview {nr}.
-func Test_mkview_loadview_nr()
-  if has('win32')
-    " FIXME: This test fails on Windows with error:
-    " Cannot create directory: C:\projects\vim/vimfiles/view
-    return
-  endif
-
-  " Create a first view with line number and a fold.
-  help :mkview
-  set number
-  norm! V}zf
-  let pos1 = getpos('.')
-  let linefoldclosed1 = foldclosed('.')
-  mkview 1
-
-  " Create a second view without line number and without fold.
-  help :loadview
-  set nonumber
-  norm! zr
-  let pos2 = getpos('.')
-  mkview 2
-
-  loadview 1
-  call assert_equal(1, &number)
-  call assert_match('\*:mkview\*$', getline('.'))
-  call assert_equal(pos1, getpos('.'))
-  call assert_equal(linefoldclosed1, foldclosed('.'))
-
-  loadview 2
-  call assert_equal(0, &number)
-  call assert_match('\*:loadview\*$', getline('.'))
-  call assert_equal(pos2, getpos('.'))
-  call assert_equal(-1, foldclosed('.'))
-
-  helpclose
 endfunc
 
 " Test :mkview and :loadview with a custom 'viewdir'.
@@ -448,6 +389,7 @@ func Test_mkview_no_file_name()
   source Xview
   call assert_equal('', bufname('%'))
 
+  call delete('Xview')
   %bwipe
 endfunc
 
