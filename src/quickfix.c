@@ -5997,6 +5997,83 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 }
 
 /*
+ * Add a new quickfix entry to list at 'qf_idx' in the stack 'qi' from the
+ * items in the dict 'd'.
+ */
+    static int
+qf_add_entry_from_dict(
+	qf_info_T	*qi,
+	int		qf_idx,
+	dict_T		*d,
+	int		first_entry)
+{
+    static int	did_bufnr_emsg;
+    char_u	*filename, *module, *pattern, *text, *type;
+    int		bufnum, valid, status, col, vcol, nr;
+    long	lnum;
+
+    if (first_entry)
+	did_bufnr_emsg = FALSE;
+
+    filename = get_dict_string(d, (char_u *)"filename", TRUE);
+    module = get_dict_string(d, (char_u *)"module", TRUE);
+    bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
+    lnum = (int)get_dict_number(d, (char_u *)"lnum");
+    col = (int)get_dict_number(d, (char_u *)"col");
+    vcol = (int)get_dict_number(d, (char_u *)"vcol");
+    nr = (int)get_dict_number(d, (char_u *)"nr");
+    type = get_dict_string(d, (char_u *)"type", TRUE);
+    pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
+    text = get_dict_string(d, (char_u *)"text", TRUE);
+    if (text == NULL)
+	text = vim_strsave((char_u *)"");
+
+    valid = TRUE;
+    if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
+	valid = FALSE;
+
+    // Mark entries with non-existing buffer number as not valid. Give the
+    // error message only once.
+    if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
+    {
+	if (!did_bufnr_emsg)
+	{
+	    did_bufnr_emsg = TRUE;
+	    EMSGN(_("E92: Buffer %ld not found"), bufnum);
+	}
+	valid = FALSE;
+	bufnum = 0;
+    }
+
+    // If the 'valid' field is present it overrules the detected value.
+    if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
+	valid = (int)get_dict_number(d, (char_u *)"valid");
+
+    status =  qf_add_entry(qi,
+			qf_idx,
+			NULL,		// dir
+			filename,
+			module,
+			bufnum,
+			text,
+			lnum,
+			col,
+			vcol,		// vis_col
+			pattern,	// search pattern
+			nr,
+			type == NULL ? NUL : *type,
+			valid);
+
+    vim_free(filename);
+    vim_free(module);
+    vim_free(pattern);
+    vim_free(text);
+    vim_free(type);
+
+    return status;
+}
+
+/*
  * Add list of entries to quickfix/location list. Each list entry is
  * a dictionary with item information.
  */
@@ -6010,15 +6087,8 @@ qf_add_entries(
 {
     listitem_T	*li;
     dict_T	*d;
-    char_u	*filename, *module, *pattern, *text, *type;
-    int		bufnum;
-    long	lnum;
-    int		col, nr;
-    int		vcol;
     qfline_T	*old_last = NULL;
-    int		valid, status;
     int		retval = OK;
-    int		did_bufnr_emsg = FALSE;
 
     if (action == ' ' || qf_idx == qi->qf_listcount)
     {
@@ -6044,66 +6114,9 @@ qf_add_entries(
 	if (d == NULL)
 	    continue;
 
-	filename = get_dict_string(d, (char_u *)"filename", TRUE);
-	module = get_dict_string(d, (char_u *)"module", TRUE);
-	bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
-	lnum = (int)get_dict_number(d, (char_u *)"lnum");
-	col = (int)get_dict_number(d, (char_u *)"col");
-	vcol = (int)get_dict_number(d, (char_u *)"vcol");
-	nr = (int)get_dict_number(d, (char_u *)"nr");
-	type = get_dict_string(d, (char_u *)"type", TRUE);
-	pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
-	text = get_dict_string(d, (char_u *)"text", TRUE);
-	if (text == NULL)
-	    text = vim_strsave((char_u *)"");
-
-	valid = TRUE;
-	if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
-	    valid = FALSE;
-
-	/* Mark entries with non-existing buffer number as not valid. Give the
-	 * error message only once. */
-	if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
-	{
-	    if (!did_bufnr_emsg)
-	    {
-		did_bufnr_emsg = TRUE;
-		EMSGN(_("E92: Buffer %ld not found"), bufnum);
-	    }
-	    valid = FALSE;
-	    bufnum = 0;
-	}
-
-	/* If the 'valid' field is present it overrules the detected value. */
-	if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
-	    valid = (int)get_dict_number(d, (char_u *)"valid");
-
-	status =  qf_add_entry(qi,
-			       qf_idx,
-			       NULL,	    /* dir */
-			       filename,
-			       module,
-			       bufnum,
-			       text,
-			       lnum,
-			       col,
-			       vcol,	    /* vis_col */
-			       pattern,	    /* search pattern */
-			       nr,
-			       type == NULL ? NUL : *type,
-			       valid);
-
-	vim_free(filename);
-	vim_free(module);
-	vim_free(pattern);
-	vim_free(text);
-	vim_free(type);
-
-	if (status == FAIL)
-	{
-	    retval = FAIL;
+	retval = qf_add_entry_from_dict(qi, qf_idx, d, li == list->lv_first);
+	if (retval == FAIL)
 	    break;
-	}
     }
 
     if (qi->qf_lists[qf_idx].qf_index == 0)
