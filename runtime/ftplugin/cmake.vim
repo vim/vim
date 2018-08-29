@@ -13,4 +13,12 @@ let b:did_ftplugin = 1
 
 let b:undo_ftplugin = "setl commentstring<"
 
+if exists("loaded_matchit")
+  let b:match_words =  '^[^#]*\<if\>\s*(:^[^#]*\<else\>\s*(:^[^#]*\<elseif\>\s*(:^[^#]*\<endif\>\s*(\c'
+  let b:match_words .= ',^[^#]*\<function\>\s*(:^[^#]*\<endfunction\>\s*(\c'
+  let b:match_words .= ',^[^#]*\<foreach\>\s*(:^[^#]*\<endforeach\>\s*(\c'
+  let b:match_words .= ',^[^#]*\<macro\>\s*(:^[^#]*\<endmacro\>\s*(\c'
+  let b:match_words .= ',^[^#]*\<while\>\s*(:^[^#]*\<endwhile\>\s*(\c'
+endif
+
 setlocal commentstring=#\ %s
