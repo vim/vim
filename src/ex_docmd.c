@@ -11706,6 +11706,18 @@ ses_do_win(win_T *wp)
     return TRUE;
 }
 
+    static int
+put_view_curpos(FILE *fd, win_T *wp, char *spaces)
+{
+    int r;
+
+    if (wp->w_curswant == MAXCOL)
+	r = fprintf(fd, "%snormal! $", spaces);
+    else
+	r = fprintf(fd, "%snormal! 0%d|", spaces, wp->w_virtcol + 1);
+    return r < 0 || put_eol(fd) == FAIL ? FALSE : OK;
+}
+
 /*
  * Write commands to "fd" to restore the view of a window.
  * Caller must make sure 'scrolloff' is zero.
@@ -11897,17 +11909,12 @@ put_view(
 			    (long)wp->w_virtcol + 1) < 0
 			|| put_eol(fd) == FAIL
 			|| put_line(fd, "else") == FAIL
-			|| fprintf(fd, "  normal! 0%d|", wp->w_virtcol + 1) < 0
-			|| put_eol(fd) == FAIL
+			|| put_view_curpos(fd, wp, "  ") == FAIL
 			|| put_line(fd, "endif") == FAIL)
 		    return FAIL;
 	    }
-	    else
-	    {
-		if (fprintf(fd, "normal! 0%d|", wp->w_virtcol + 1) < 0
-			|| put_eol(fd) == FAIL)
-		    return FAIL;
-	    }
+	    else if (put_view_curpos(fd, wp, "") == FAIL)
+		return FAIL;
 	}
     }
 
