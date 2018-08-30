@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 8.1.  Last change: 2018 Jan 21
+*if_cscop.txt*  For Vim version 8.1.  Last change: 2018 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -258,13 +258,19 @@ started will have no effect!
 'cscopequickfix' specifies whether to use quickfix window to show cscope
 results.  This is a list of comma-separated values. Each item consists of
 |cscope-find| command (s, g, d, c, t, e, f, i or a) and flag (+, - or 0).
-'+' indicates that results must be appended to quickfix window,
-'-' implies previous results clearance, '0' or command absence - don't use
-quickfix.  Search is performed from start until first command occurrence.
-The default value is "" (don't use quickfix anyway).  The following value
-seems to be useful: >
+'+' and '-' flags may be followed by optional '!'
+    '+' flag will make cscope append its results to the quickfix window
+    '-' means that results will overwrite previous data
+    '0' or command absence - don't use quickfix
+With '!', cscope will not jump to the first location like |:make|!
+Search is performed from start until first command occurrence.
+The default value is "" (don't use quickfix). The following value
+seems useful enough: >
 	:set cscopequickfix=s-,c-,d-,i-,t-,e-,a-
 <
+Example below will prevent 's' search from jumping to the first location: >
+	:set cscopequickfix=s-!,c-,t0
++
 							*cscopetag* *cst*
 If 'cscopetag' is set, the commands ":tag" and CTRL-] as well as "vim -t"
 will always use |:cstag| instead of the default :tag behavior.  Effectively,

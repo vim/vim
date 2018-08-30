@@ -7439,18 +7439,43 @@ did_set_string_option(
 	    p = p_csqf;
 	    while (*p != NUL)
 	    {
-		if (vim_strchr((char_u *)CSQF_CMDS, *p) == NULL
-			|| p[1] == NUL
-			|| vim_strchr((char_u *)CSQF_FLAGS, p[1]) == NULL
-			|| (p[2] != NUL && p[2] != ','))
+		int ok = FALSE;
+		if (vim_strchr((char_u *)CSQF_CMDS, *p) != NULL
+			&& p[1] != NUL
+			&& vim_strchr((char_u *)CSQF_FLAGS, p[1]) != NULL)
+		{
+		    switch (p[2])
+		    {
+		    case NUL:
+			p += 2;
+			ok = TRUE;
+			break;
+		    case ',':
+			p += 3;
+			ok = TRUE;
+			break;
+		    case '!':
+			if (p[1] == '0')
+			    break;
+			if (p[3] == NUL)
+			{
+			    p += 3;
+			    ok = TRUE;
+			}
+			else if (p[3] == ',')
+			{
+			    p += 4;
+			    ok = TRUE;
+			}
+			break;
+		    }
+
+		}
+		if (!ok)
 		{
 		    errmsg = e_invarg;
 		    break;
 		}
-		else if (p[2] == NUL)
-		    break;
-		else
-		    p += 3;
 	    }
 	}
     }
