@@ -321,7 +321,7 @@ func Test_mkview_file()
   help :mkview
   set number
   norm! V}zf0
-  let pos = getcurpos()
+  let pos = getpos('.')
   let linefoldclosed1 = foldclosed('.')
   mkview! Xview
   set nonumber
@@ -333,7 +333,7 @@ func Test_mkview_file()
   source Xview
   call assert_equal(1, &number)
   call assert_match('\*:mkview\*$', getline('.'))
-  call assert_equal(pos, getcurpos())
+  call assert_equal(pos, getpos('.'))
   call assert_equal(linefoldclosed1, foldclosed('.'))
 
   " Creating a view again with the same file name should fail (file
@@ -356,7 +356,7 @@ func Test_mkview_loadview_with_viewdir()
   help :mkview
   set number
   norm! V}zf
-  let pos = getcurpos()
+  let pos = getpos('.')
   let linefoldclosed1 = foldclosed('.')
   mkview 1
   set nonumber
@@ -373,7 +373,7 @@ func Test_mkview_loadview_with_viewdir()
         \           glob('Xviewdir/*'))
   call assert_equal(1, &number)
   call assert_match('\*:mkview\*$', getline('.'))
-  call assert_equal(pos, getcurpos())
+  call assert_equal(pos, getpos('.'))
   call assert_equal(linefoldclosed1, foldclosed('.'))
 
   call delete('Xviewdir', 'rf')
