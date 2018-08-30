@@ -112,3 +112,41 @@ func Test_writefile_sync_dev_stdout()
     throw 'Skipped: /dev/stdout is not writable'
   endif
 endfunc
+
+func Test_writefile_autowrite()
+  set autowrite
+  new
+  next Xa Xb Xc
+  call setline(1, 'aaa')
+  next
+  call assert_equal(['aaa'], readfile('Xa'))
+  call setline(1, 'bbb')
+  call assert_fails('edit XX')
+  call assert_false(filereadable('Xb'))
+
+  set autowriteall
+  edit XX
+  call assert_equal(['bbb'], readfile('Xb'))
+
+  bwipe!
+  call delete('Xa')
+  call delete('Xb')
+  set noautowrite
+endfunc
+
+func Test_writefile_autowrite_nowrite()
+  set autowrite
+  new
+  next Xa Xb Xc
+  set buftype=nowrite
+  call setline(1, 'aaa')
+  let buf = bufnr('%')
+  " buffer contents silently lost
+  edit XX
+  call assert_false(filereadable('Xa'))
+  rewind
+  call assert_equal('', getline(1))
+
+  bwipe!
+  set noautowrite
+endfunc
