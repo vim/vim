@@ -141,8 +141,9 @@ func Test_spellinfo()
   endif
 
   set enc=latin1 spell spelllang=en_us,en_nz
-  call assert_match("^\nfile: ../../runtime/spell/en.latin1.spl" .
-                 \  "\nfile: ../../runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+  call assert_match("^\n" .
+                 \  "file: .*/runtime/spell/en.latin1.spl\n" .
+                 \  "file: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
 
   set spell spelllang=
   call assert_fails('spellinfo', 'E756:')
