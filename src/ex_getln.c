@@ -436,12 +436,18 @@ finish_incsearch_highlighting(
 	}
 	restore_viewstate(&is_state->old_viewstate);
 	highlight_match = FALSE;
+
+	// by default search all lines
+	search_first_line = 0;
+	search_last_line = MAXLNUM;
+
+	p_magic = is_state->magic_save;
+
 	validate_cursor();	/* needed for TAB */
 	if (call_update_screen)
 	    update_screen(SOME_VALID);
 	else
 	    redraw_all_later(SOME_VALID);
-	p_magic = is_state->magic_save;
     }
 }
 
