@@ -6366,33 +6366,38 @@ parse_queued_messages(void)
 {
     win_T *old_curwin = curwin;
 
-    /* For Win32 mch_breakcheck() does not check for input, do it here. */
+    // Do not handle messages while redrawing, because it may cause buffers to
+    // change or be wiped while they are being redrawn.
+    if (updating_screen)
+	return;
+
+    // For Win32 mch_breakcheck() does not check for input, do it here.
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
     channel_handle_events(FALSE);
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
-    /* Process the queued netbeans messages. */
+    // Process the queued netbeans messages.
     netbeans_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    /* Write any buffer lines still to be written. */
+    // Write any buffer lines still to be written.
     channel_write_any_lines();
 
-    /* Process the messages queued on channels. */
+    // Process the messages queued on channels.
     channel_parse_messages();
 # endif
 # if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-    /* Process the queued clientserver messages. */
+    // Process the queued clientserver messages.
     server_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    /* Check if any jobs have ended. */
+    // Check if any jobs have ended.
     job_check_ended();
 # endif
 
-    /* If the current window changed we need to bail out of the waiting loop.
-     * E.g. when a job exit callback closes the terminal window. */
+    // If the current window changed we need to bail out of the waiting loop.
+    // E.g. when a job exit callback closes the terminal window.
     if (curwin != old_curwin)
 	ins_char_typebuf(K_IGNORE);
 }
