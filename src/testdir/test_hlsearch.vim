@@ -4,7 +4,6 @@ function! Test_hlsearch()
   new
   call setline(1, repeat(['aaa'], 10))
   set hlsearch nolazyredraw
-  let r=[]
   " redraw is needed to make hlsearch highlight the matches
   exe "normal! /aaa\<CR>" | redraw
   let r1 = screenattr(1, 1)
@@ -49,5 +48,18 @@ func Test_hlsearch_hangs()
   call assert_true(elapsed > 0.1)
   call assert_true(elapsed < 1.0)
   set nohlsearch redrawtime&
+  bwipe!
+endfunc
+
+func Test_hlsearch_eol_highlight()
+  new
+  call append(1, repeat([''], 9))
+  set hlsearch nolazyredraw
+  exe "normal! /$\<CR>" | redraw
+  let attr = screenattr(1, 1)
+  for row in range(2, 10)
+    call assert_equal(attr, screenattr(row, 1), 'in line ' . row)
+  endfor
+  set nohlsearch
   bwipe!
 endfunc
