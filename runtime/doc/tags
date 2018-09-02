@@ -5408,6 +5408,7 @@ catch-order	eval.txt	/*catch-order*
 catch-text	eval.txt	/*catch-text*
 cc	change.txt	/*cc*
 ceil()	eval.txt	/*ceil()*
+cfilter-plugin	quickfix.txt	/*cfilter-plugin*
 ch.vim	syntax.txt	/*ch.vim*
 ch_canread()	eval.txt	/*ch_canread()*
 ch_close()	eval.txt	/*ch_close()*
@@ -8659,6 +8660,7 @@ swap-file	recover.txt	/*swap-file*
 swapchoice-variable	eval.txt	/*swapchoice-variable*
 swapcommand-variable	eval.txt	/*swapcommand-variable*
 swapfile-changed	version4.txt	/*swapfile-changed*
+swapinfo()	eval.txt	/*swapinfo()*
 swapname-variable	eval.txt	/*swapname-variable*
 sybase	ft_sql.txt	/*sybase*
 syn-sync-grouphere	syntax.txt	/*syn-sync-grouphere*
@@ -9639,6 +9641,7 @@ windows98	os_win32.txt	/*windows98*
 windowsme	os_win32.txt	/*windowsme*
 winheight()	eval.txt	/*winheight()*
 winid	windows.txt	/*winid*
+winlayout()	eval.txt	/*winlayout()*
 winline()	eval.txt	/*winline()*
 winnr()	eval.txt	/*winnr()*
 winrestcmd()	eval.txt	/*winrestcmd()*

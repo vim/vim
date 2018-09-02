@@ -8013,7 +8013,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		|submatch()| returns.  Example: >
 		   :echo substitute(s, '%\(\x\x\)', {m -> '0x' . m[1]}, 'g')
 
-swapinfo({fname})					swapinfo()
+swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the
 		swapfile {fname}. The available fields are:
 			version VIM version
