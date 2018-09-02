@@ -5670,7 +5670,8 @@ enum {
     QF_GETLIST_IDX	= 0x40,
     QF_GETLIST_SIZE	= 0x80,
     QF_GETLIST_TICK	= 0x100,
-    QF_GETLIST_ALL	= 0x1FF,
+    QF_GETLIST_FILEWINID	= 0x200,
+    QF_GETLIST_ALL	= 0x3FF,
 };
 
 /*
@@ -5744,12 +5745,17 @@ qf_winid(qf_info_T *qi)
  * Convert the keys in 'what' to quickfix list property flags.
  */
     static int
-qf_getprop_keys2flags(dict_T *what)
+qf_getprop_keys2flags(dict_T *what, int loclist)
 {
     int		flags = QF_GETLIST_NONE;
 
     if (dict_find(what, (char_u *)"all", -1) != NULL)
+    {
 	flags |= QF_GETLIST_ALL;
+	if (!loclist)
+	    // File window ID is applicable only to location list windows
+	    flags &= ~ QF_GETLIST_FILEWINID;
+    }
 
     if (dict_find(what, (char_u *)"title", -1) != NULL)
 	flags |= QF_GETLIST_TITLE;
@@ -5777,6 +5783,9 @@ qf_getprop_keys2flags(dict_T *what)
 
     if (dict_find(what, (char_u *)"changedtick", -1) != NULL)
 	flags |= QF_GETLIST_TICK;
+
+    if (loclist && dict_find(what, (char_u *)"filewinid", -1) != NULL)
+	flags |= QF_GETLIST_FILEWINID;
 
     return flags;
 }
@@ -5870,6 +5879,8 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 	status = dict_add_number(retdict, "size", 0);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick", 0);
+    if ((status == OK) && (qi != &ql_info) && (flags & QF_GETLIST_FILEWINID))
+	status = dict_add_number(retdict, "filewinid", 0);
 
     return status;
 }
@@ -5881,6 +5892,26 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 qf_getprop_title(qf_info_T *qi, int qf_idx, dict_T *retdict)
 {
     return dict_add_string(retdict, "title", qi->qf_lists[qf_idx].qf_title);
+}
+
+/*
+ * Returns the identifier of the window used to display files from a location
+ * list.  If there is no associated window, then returns 0. Useful only when
+ * called from a location list window.
+ */
+    static int
+qf_getprop_filewinid(win_T *wp, qf_info_T *qi, dict_T *retdict)
+{
+    int winid = 0;
+
+    if (wp != NULL && IS_LL_WINDOW(wp))
+    {
+	win_T	*ll_wp = qf_find_win_with_loclist(qi);
+	if (ll_wp != NULL)
+	    winid = ll_wp->w_id;
+    }
+
+    return dict_add_number(retdict, "filewinid", winid);
 }
 
 /*
@@ -5963,7 +5994,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
 
-    flags = qf_getprop_keys2flags(what);
+    flags = qf_getprop_keys2flags(what, (wp != NULL));
 
     if (qi != NULL && qi->qf_listcount != 0)
 	qf_idx = qf_getprop_qfidx(qi, what);
@@ -5992,6 +6023,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick",
 					qi->qf_lists[qf_idx].qf_changedtick);
+    if ((status == OK) && (wp != NULL) && (flags & QF_GETLIST_FILEWINID))
+	status = qf_getprop_filewinid(wp, qi, retdict);
 
     return status;
 }
