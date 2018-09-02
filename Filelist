@@ -1,5 +1,5 @@
 # List of distributed Vim files.
-# Used by Makefile and upload.aap.
+# Used by Makefile.
 
 # source files for all source archives
 SRC_ALL =	\
@@ -101,9 +101,7 @@ SRC_ALL =	\
 		src/window.c \
 		src/tee/tee.c \
 		src/xxd/xxd.c \
-		src/main.aap \
 		src/testdir/gen_opt_test.vim \
-		src/testdir/main.aap \
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
@@ -291,7 +289,6 @@ SRC_UNIX =	\
 		src/INSTALLx.txt \
 		src/Makefile \
 		src/auto/configure \
-		src/config.aap.in \
 		src/config.h.in \
 		src/config.mk.dist \
 		src/config.mk.in \
@@ -612,7 +609,6 @@ RT_ALL =	\
 		runtime/macros/matchit.vim \
 		runtime/macros/maze/README.txt \
 		runtime/macros/maze/[mM]akefile \
-		runtime/macros/maze/main.aap \
 		runtime/macros/maze/maze.c \
 		runtime/macros/maze/maze_5.78 \
 		runtime/macros/maze/maze_mac \
@@ -640,6 +636,7 @@ RT_ALL =	\
 		runtime/tutor/tutor \
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
+		runtime/pack/dist/opt/cfilter/plugin/cfilter.vim \
 		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
