@@ -3747,7 +3747,12 @@ set_init_1(int clean_arg)
 	    {
 		char	buf[50];
 
-		sprintf(buf, "cp%ld", (long)GetConsoleCP());
+		/* Win32 console: In ConPTY, GetConsoleCP() returns zero.
+		 * Use an alternative value. */
+		if (GetConsoleCP() == 0)
+		    sprintf(buf, "cp%ld", (long)GetACP());
+		else
+		    sprintf(buf, "cp%ld", (long)GetConsoleCP());
 		p_tenc = vim_strsave((char_u *)buf);
 		if (p_tenc != NULL)
 		{

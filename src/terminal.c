@@ -65,6 +65,23 @@ typedef struct sb_line_S {
     cellattr_T	sb_fill_attr;	/* for short line */
 } sb_line_T;
 
+#ifdef WIN3264
+# ifndef HPCON
+#  define HPCON VOID*
+# endif
+# ifndef EXTENDED_STARTUPINFO_PRESENT
+#  define EXTENDED_STARTUPINFO_PRESENT 0x00080000
+# endif
+# ifndef PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE
+#  define PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE 0x00020016
+# endif
+typedef struct _DYN_STARTUPINFOEXW
+{
+    STARTUPINFOW StartupInfo;
+    LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList;
+} DYN_STARTUPINFOEXW, *PDYN_STARTUPINFOEXW;
+#endif
+
 /* typedef term_T in structs.h */
 struct terminal_S {
     term_T	*tl_next;
@@ -92,9 +109,18 @@ struct terminal_S {
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
 
+    char_u	*tl_arg0_cmd;	/* To format the status bar */
+
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
+
+    HPCON	tl_conpty;
+    HANDLE	tl_i_theirs;
+    HANDLE	tl_i_ours;
+    HANDLE	tl_o_theirs;
+    HANDLE	tl_o_ours;
+    DYN_STARTUPINFOEXW tl_siex;	/* Structure that always needs to be hold */
 
     FILE	*tl_out_fd;
 #endif
@@ -146,6 +172,11 @@ static term_T *first_term = NULL;
 
 /* Terminal active in terminal_loop(). */
 static term_T *in_terminal_loop = NULL;
+
+#ifdef WIN3264
+static BOOL has_winpty = FALSE;
+static BOOL has_conpty = FALSE;
+#endif
 
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
 #define KEY_BUF_LEN 200
@@ -846,6 +877,7 @@ free_terminal(buf_T *buf)
     vim_free(term->tl_status_text);
     vim_free(term->tl_opencmd);
     vim_free(term->tl_eof_chars);
+    vim_free(term->tl_arg0_cmd);
 #ifdef WIN3264
     if (term->tl_out_fd != NULL)
 	fclose(term->tl_out_fd);
@@ -2611,6 +2643,14 @@ handle_settermprop(
 	    /* a blank title isn't useful, make it empty, so that "running" is
 	     * displayed */
 	    if (*skipwhite((char_u *)value->string) == NUL)
+		term->tl_title = NULL;
+	    /* Same as blank */
+	    else if (term->tl_arg0_cmd != NULL
+		    && STRNCMP(term->tl_arg0_cmd, (char_u *)value->string,
+					  (int)STRLEN(term->tl_arg0_cmd)) == 0)
+		term->tl_title = NULL;
+	    /* Empty corrupted data of winpty */
+	    else if (STRNCMP("  - ", (char_u *)value->string, 4) == 0)
 		term->tl_title = NULL;
 #ifdef WIN3264
 	    else if (!enc_utf8 && enc_codepage > 0)
@@ -5363,6 +5403,340 @@ term_getjob(term_T *term)
  * 2. MS-Windows implementation.
  */
 
+typedef HRESULT (WINAPI *PfnCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
+static PfnCreatePseudoConsole pCreatePseudoConsole;
+typedef HRESULT (WINAPI *PfnResizePseudoConsole)(HPCON, COORD);
+static PfnResizePseudoConsole pResizePseudoConsole;
+typedef HRESULT (WINAPI *PfnClosePseudoConsole)(HPCON);
+static PfnClosePseudoConsole pClosePseudoConsole;
+typedef BOOL (*PfnInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
+static PfnInitializeProcThreadAttributeList pInitializeProcThreadAttributeList;
+typedef BOOL (*PfnUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
+static PfnUpdateProcThreadAttribute pUpdateProcThreadAttribute;
+typedef void (*PfnDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
+static PfnDeleteProcThreadAttributeList pDeleteProcThreadAttributeList;
+
+    static int
+dyn_conpty_init(void)
+{
+    static BOOL	handled = FALSE;
+    static int	result;
+    HMODULE	hKerneldll;
+
+    if (handled)
+	return result;
+
+    if (!has_vtp_working())
+    {
+	handled = TRUE;
+	result = FAIL;
+	return FAIL;
+    }
+
+    hKerneldll = GetModuleHandle("kernel32.dll");
+    if (hKerneldll != NULL)
+    {
+	pCreatePseudoConsole =
+		(PfnCreatePseudoConsole)GetProcAddress(
+		hKerneldll, "CreatePseudoConsole");
+	pResizePseudoConsole =
+		(PfnResizePseudoConsole)GetProcAddress(
+		hKerneldll, "ResizePseudoConsole");
+	pClosePseudoConsole =
+		(PfnClosePseudoConsole)GetProcAddress(
+		hKerneldll, "ClosePseudoConsole");
+	pInitializeProcThreadAttributeList =
+		(PfnInitializeProcThreadAttributeList)GetProcAddress(
+		hKerneldll, "InitializeProcThreadAttributeList");
+	pUpdateProcThreadAttribute =
+		(PfnUpdateProcThreadAttribute)GetProcAddress(
+		hKerneldll, "UpdateProcThreadAttribute");
+	pDeleteProcThreadAttributeList =
+		(PfnDeleteProcThreadAttributeList)GetProcAddress(
+		hKerneldll, "DeleteProcThreadAttributeList");
+	if (pCreatePseudoConsole != NULL
+		&& pResizePseudoConsole != NULL
+		&& pClosePseudoConsole != NULL
+		&& pInitializeProcThreadAttributeList != NULL
+		&& pUpdateProcThreadAttribute != NULL
+		&& pDeleteProcThreadAttributeList != NULL)
+	{
+	    handled = TRUE;
+	    result = OK;
+	    return OK;
+	}
+    }
+    return FAIL;
+}
+
+    static int
+conpty_term_and_job_init(
+	term_T	    *term,
+	typval_T    *argvar,
+	char	    **argv,
+	jobopt_T    *opt,
+	jobopt_T    *orig_opt)
+{
+    WCHAR	    *cmd_wchar = NULL;
+    WCHAR	    *cmd_wchar_copy = NULL;
+    WCHAR	    *cwd_wchar = NULL;
+    WCHAR	    *env_wchar = NULL;
+    channel_T	    *channel = NULL;
+    job_T	    *job = NULL;
+    HANDLE	    jo = NULL;
+    garray_T	    ga_cmd, ga_env;
+    char_u	    *cmd = NULL;
+    HRESULT	    hr;
+    COORD	    consize;
+    size_t	    breq;
+    PROCESS_INFORMATION proc_info;
+
+    term->tl_conpty = NULL;
+    term->tl_i_theirs = INVALID_HANDLE_VALUE;
+    term->tl_i_ours = INVALID_HANDLE_VALUE;
+    term->tl_o_theirs = INVALID_HANDLE_VALUE;
+    term->tl_o_ours = INVALID_HANDLE_VALUE;
+    vim_memset(&term->tl_siex, 0, sizeof(term->tl_siex));
+
+    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+    ga_init2(&ga_env, (int)sizeof(char*), 20);
+
+    if (argvar->v_type == VAR_STRING)
+    {
+	cmd = argvar->vval.v_string;
+    }
+    else if (argvar->v_type == VAR_LIST)
+    {
+	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
+	    goto failed;
+	cmd = ga_cmd.ga_data;
+    }
+    if (cmd == NULL || *cmd == NUL)
+    {
+	EMSG(_(e_invarg));
+	goto failed;
+    }
+
+    term->tl_arg0_cmd = vim_strsave(cmd);
+
+    cmd_wchar = enc_to_utf16(cmd, NULL);
+
+    if (cmd_wchar != NULL)
+    {
+	/* Request by CreateProcessW */
+	breq = wcslen(cmd_wchar) + 1 + 1;	/* Addition of NUL by API */
+	cmd_wchar_copy = (PWSTR)alloc((int)(breq * sizeof(WCHAR)));
+	wcsncpy(cmd_wchar_copy, cmd_wchar, breq - 1);
+    }
+
+    ga_clear(&ga_cmd);
+    if (cmd_wchar == NULL)
+	goto failed;
+    if (opt->jo_cwd != NULL)
+	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+
+    win32_build_env(opt->jo_env, &ga_env, TRUE);
+    env_wchar = ga_env.ga_data;
+
+    if (!CreatePipe(&term->tl_i_theirs, &term->tl_i_ours, NULL, 0))
+	goto failed;
+    if (!CreatePipe(&term->tl_o_ours, &term->tl_o_theirs, NULL, 0))
+	goto failed;
+
+    consize.X = term->tl_cols;
+    consize.Y = term->tl_rows;
+    hr = pCreatePseudoConsole(consize, term->tl_i_theirs, term->tl_o_theirs,
+							  0, &term->tl_conpty);
+    if (FAILED(hr))
+	goto failed;
+
+    term->tl_siex.StartupInfo.cb = sizeof(term->tl_siex);
+
+    /* Set up pipe inheritance safely: Vista or later. */
+    pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
+    term->tl_siex.lpAttributeList =
+	    (PPROC_THREAD_ATTRIBUTE_LIST)alloc((int)breq);
+    if (!term->tl_siex.lpAttributeList)
+	goto failed;
+    if (!pInitializeProcThreadAttributeList(term->tl_siex.lpAttributeList, 1,
+								     0, &breq))
+	goto failed;
+    if (!pUpdateProcThreadAttribute(
+	    term->tl_siex.lpAttributeList, 0,
+	    PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, term->tl_conpty,
+	    sizeof(HPCON), NULL, NULL))
+	goto failed;
+
+    channel = add_channel();
+    if (channel == NULL)
+	goto failed;
+
+    job = job_alloc();
+    if (job == NULL)
+	goto failed;
+    if (argvar->v_type == VAR_STRING)
+    {
+	int argc;
+
+	build_argv_from_string(cmd, &job->jv_argv, &argc);
+    }
+    else
+    {
+	int argc;
+
+	build_argv_from_list(argvar->vval.v_list, &job->jv_argv, &argc);
+    }
+
+    if (opt->jo_set & JO_IN_BUF)
+	job->jv_in_buf = buflist_findnr(opt->jo_io_buf[PART_IN]);
+
+    if (!CreateProcessW(NULL, cmd_wchar_copy, NULL, NULL, FALSE,
+	    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT
+	    | CREATE_SUSPENDED | CREATE_NEW_PROCESS_GROUP
+	    | CREATE_DEFAULT_ERROR_MODE,
+	    env_wchar, cwd_wchar,
+	    &term->tl_siex.StartupInfo, &proc_info))
+	goto failed;
+
+    CloseHandle(term->tl_i_theirs);
+    term->tl_i_theirs = INVALID_HANDLE_VALUE;
+    CloseHandle(term->tl_o_theirs);
+    term->tl_o_theirs = INVALID_HANDLE_VALUE;
+
+    channel_set_pipes(channel,
+	    (sock_T)term->tl_i_ours,
+	    (sock_T)term->tl_o_ours,
+	    (sock_T)term->tl_o_ours);
+
+    /* Write lines with CR instead of NL. */
+    channel->ch_write_text_mode = TRUE;
+
+    jo = CreateJobObject(NULL, NULL);
+    if (jo == NULL)
+	goto failed;
+
+    if (!AssignProcessToJobObject(jo, proc_info.hProcess))
+    {
+	/* Failed, switch the way to terminate process with TerminateProcess. */
+	CloseHandle(jo);
+	jo = NULL;
+    }
+
+    ResumeThread(proc_info.hThread);
+    CloseHandle(proc_info.hThread);
+
+    vim_free(cmd_wchar);
+    vim_free(cmd_wchar_copy);
+    vim_free(cwd_wchar);
+    vim_free(env_wchar);
+
+    create_vterm(term, term->tl_rows, term->tl_cols);
+
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (opt->jo_set2 & JO2_ANSI_COLORS)
+	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
+    else
+	init_vterm_ansi_colors(term->tl_vterm);
+#endif
+
+    channel_set_job(channel, job, opt);
+    job_set_options(job, opt);
+
+    job->jv_channel = channel;
+    job->jv_term = term;
+    job->jv_proc_info = proc_info;
+    job->jv_job_object = jo;
+    job->jv_status = JOB_STARTED;
+    ++job->jv_refcount;
+    term->tl_job = job;
+
+    /* Redirecting stdout and stderr doesn't work at the job level.  Instead
+     * open the file here and handle it in.  opt->jo_io was changed in
+     * setup_job_options(), use the original flags here. */
+    if (orig_opt->jo_io[PART_OUT] == JIO_FILE)
+    {
+	char_u *fname = opt->jo_io_name[PART_OUT];
+
+	ch_log(channel, "Opening output file %s", fname);
+	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
+	if (term->tl_out_fd == NULL)
+	    EMSG2(_(e_notopen), fname);
+    }
+
+    return OK;
+
+failed:
+    ga_clear(&ga_cmd);
+    ga_clear(&ga_env);
+    vim_free(cmd_wchar);
+    vim_free(cmd_wchar_copy);
+    vim_free(cwd_wchar);
+    if (channel != NULL)
+	channel_clear(channel);
+    if (job != NULL)
+    {
+	job->jv_channel = NULL;
+	job_cleanup(job);
+    }
+    term->tl_job = NULL;
+    if (jo != NULL)
+	CloseHandle(jo);
+
+    if (term->tl_siex.lpAttributeList != NULL)
+    {
+	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
+	vim_free(term->tl_siex.lpAttributeList);
+    }
+    if (term->tl_conpty != NULL)
+	pClosePseudoConsole(term->tl_conpty);
+    term->tl_conpty = NULL;
+    if (term->tl_o_theirs != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_o_theirs);
+    if (term->tl_o_ours != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_o_ours);
+    if (term->tl_i_ours != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_i_ours);
+    if (term->tl_i_theirs != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_i_theirs);
+    return FAIL;
+}
+
+    static void
+conpty_term_report_winsize(term_T *term, int rows, int cols)
+{
+    COORD consize;
+
+    consize.X = cols;
+    consize.Y = rows;
+    pResizePseudoConsole(term->tl_conpty, consize);
+}
+
+    void
+term_free_conpty(term_T *term)
+{
+    if (term->tl_siex.lpAttributeList != NULL)
+    {
+	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
+	vim_free(term->tl_siex.lpAttributeList);
+    }
+    term->tl_siex.lpAttributeList = NULL;
+    if (term->tl_conpty != NULL)
+	pClosePseudoConsole(term->tl_conpty);
+    term->tl_conpty = NULL;
+    if (term->tl_o_ours != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_o_ours);
+    term->tl_o_ours = INVALID_HANDLE_VALUE;
+    if (term->tl_i_ours != INVALID_HANDLE_VALUE)
+	CloseHandle(term->tl_i_ours);
+    term->tl_i_ours = INVALID_HANDLE_VALUE;
+}
+
+    int
+use_conpty(void)
+{
+    return (!has_winpty && has_conpty);
+}
+
 #  ifndef PROTO
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
@@ -5480,8 +5854,14 @@ term_and_job_init(
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
 
-    if (dyn_winpty_init(TRUE) == FAIL)
-	return FAIL;
+    has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
+    has_conpty = dyn_conpty_init() != FAIL ? TRUE : FALSE;
+
+    if (!has_winpty && !has_conpty)
+	return dyn_winpty_init(TRUE);
+    if (use_conpty())
+	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
+
     ga_init2(&ga_cmd, (int)sizeof(char*), 20);
     ga_init2(&ga_env, (int)sizeof(char*), 20);
 
@@ -5500,6 +5880,8 @@ term_and_job_init(
 	EMSG(_(e_invarg));
 	goto failed;
     }
+
+    term->tl_arg0_cmd = vim_strsave(cmd);
 
     cmd_wchar = enc_to_utf16(cmd, NULL);
     ga_clear(&ga_cmd);
@@ -5756,14 +6138,16 @@ term_free_vterm(term_T *term)
     static void
 term_report_winsize(term_T *term, int rows, int cols)
 {
-    if (term->tl_winpty)
+    if (use_conpty())
+	conpty_term_report_winsize(term, rows, cols);
+    else if (term->tl_winpty)
 	winpty_set_size(term->tl_winpty, cols, rows, NULL);
 }
 
     int
 terminal_enabled(void)
 {
-    return dyn_winpty_init(FALSE) == OK;
+    return dyn_winpty_init(FALSE) == OK || dyn_conpty_init() == OK;
 }
 
 # else
@@ -5787,6 +6171,8 @@ term_and_job_init(
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt UNUSED)
 {
+    term->tl_arg0_cmd = NULL;
+
     create_vterm(term, term->tl_rows, term->tl_cols);
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)

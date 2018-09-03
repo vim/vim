@@ -5640,7 +5640,11 @@ mch_detect_ended_job(job_T *job_list)
 	    job_T *wait_job = jobArray[result - WAIT_OBJECT_0];
 
 	    if (STRCMP(mch_job_status(wait_job), "dead") == 0)
+	    {
+		if (use_conpty())
+		    term_free_conpty(wait_job->jv_term);
 		return wait_job;
+	    }
 	}
     }
     return NULL;
@@ -5696,6 +5700,8 @@ mch_signal_job(job_T *job, char_u *how)
     if (STRCMP(how, "term") == 0 || STRCMP(how, "kill") == 0 || *how == NUL)
     {
 	/* deadly signal */
+	if (job->jv_job_object != NULL && use_conpty())
+	    term_free_conpty(job->jv_term);
 	if (job->jv_job_object != NULL)
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
 	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;

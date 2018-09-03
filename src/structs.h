@@ -1485,6 +1485,7 @@ struct jobvar_S
 #ifdef WIN32
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
+    HANDLE		jv_term;
 #endif
     char_u	*jv_tty_in;	/* controlling tty input, allocated */
     char_u	*jv_tty_out;	/* controlling tty output, allocated */

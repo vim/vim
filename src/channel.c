@@ -1677,10 +1677,6 @@ channel_get_all(channel_T *channel, ch_part_T part)
     char_u  *res;
     char_u  *p;
 
-    /* If there is only one buffer just get that one. */
-    if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
-	return channel_get(channel, part);
-
     /* Concatenate everything into one buffer. */
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
@@ -1703,11 +1699,27 @@ channel_get_all(channel_T *channel, ch_part_T part)
     } while (p != NULL);
 
     /* turn all NUL into NL */
-    while (len > 0)
+    p = res;
+    while (p < res + len)
     {
-	--len;
-	if (res[len] == NUL)
-	    res[len] = NL;
+	/* Crush the escape sequence OSC 0/1/2 */
+	if (*p == 0x1b)
+	{
+	    if ((res + len) - p > 3
+		    && p[1] == ']'
+		    && (p[2] == '0' || p[2] == '1' || p[2] == '2')
+		    && p[3] == ';')
+	    {
+		/* '\a' becomes a NL */
+	        while (p < res + (len - 1) && *p != '\a')
+		    ++p;
+		/* BEL is zero width characters, suppress display mistake */
+		p[-1] = 0x07;
+	    }
+	}
+	else if (*p == NUL)
+	    *p = NL;
+	++p;
     }
 
     return res;
