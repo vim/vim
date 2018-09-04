@@ -5670,7 +5670,8 @@ enum {
     QF_GETLIST_IDX	= 0x40,
     QF_GETLIST_SIZE	= 0x80,
     QF_GETLIST_TICK	= 0x100,
-    QF_GETLIST_ALL	= 0x1FF,
+    QF_GETLIST_FILEWINID	= 0x200,
+    QF_GETLIST_ALL	= 0x3FF,
 };
 
 /*
@@ -5744,12 +5745,17 @@ qf_winid(qf_info_T *qi)
  * Convert the keys in 'what' to quickfix list property flags.
  */
     static int
-qf_getprop_keys2flags(dict_T *what)
+qf_getprop_keys2flags(dict_T *what, int loclist)
 {
     int		flags = QF_GETLIST_NONE;
 
     if (dict_find(what, (char_u *)"all", -1) != NULL)
+    {
 	flags |= QF_GETLIST_ALL;
+	if (!loclist)
+	    // File window ID is applicable only to location list windows
+	    flags &= ~ QF_GETLIST_FILEWINID;
+    }
 
     if (dict_find(what, (char_u *)"title", -1) != NULL)
 	flags |= QF_GETLIST_TITLE;
@@ -5777,6 +5783,9 @@ qf_getprop_keys2flags(dict_T *what)
 
     if (dict_find(what, (char_u *)"changedtick", -1) != NULL)
 	flags |= QF_GETLIST_TICK;
+
+    if (loclist && dict_find(what, (char_u *)"filewinid", -1) != NULL)
+	flags |= QF_GETLIST_FILEWINID;
 
     return flags;
 }
@@ -5870,6 +5879,8 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 	status = dict_add_number(retdict, "size", 0);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick", 0);
+    if ((status == OK) && (qi != &ql_info) && (flags & QF_GETLIST_FILEWINID))
+	status = dict_add_number(retdict, "filewinid", 0);
 
     return status;
 }
@@ -5881,6 +5892,26 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 qf_getprop_title(qf_info_T *qi, int qf_idx, dict_T *retdict)
 {
     return dict_add_string(retdict, "title", qi->qf_lists[qf_idx].qf_title);
+}
+
+/*
+ * Returns the identifier of the window used to display files from a location
+ * list.  If there is no associated window, then returns 0. Useful only when
+ * called from a location list window.
+ */
+    static int
+qf_getprop_filewinid(win_T *wp, qf_info_T *qi, dict_T *retdict)
+{
+    int winid = 0;
+
+    if (wp != NULL && IS_LL_WINDOW(wp))
+    {
+	win_T	*ll_wp = qf_find_win_with_loclist(qi);
+	if (ll_wp != NULL)
+	    winid = ll_wp->w_id;
+    }
+
+    return dict_add_number(retdict, "filewinid", winid);
 }
 
 /*
@@ -5963,7 +5994,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (wp != NULL)
 	qi = GET_LOC_LIST(wp);
 
-    flags = qf_getprop_keys2flags(what);
+    flags = qf_getprop_keys2flags(what, (wp != NULL));
 
     if (qi != NULL && qi->qf_listcount != 0)
 	qf_idx = qf_getprop_qfidx(qi, what);
@@ -5992,6 +6023,85 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick",
 					qi->qf_lists[qf_idx].qf_changedtick);
+    if ((status == OK) && (wp != NULL) && (flags & QF_GETLIST_FILEWINID))
+	status = qf_getprop_filewinid(wp, qi, retdict);
+
+    return status;
+}
+
+/*
+ * Add a new quickfix entry to list at 'qf_idx' in the stack 'qi' from the
+ * items in the dict 'd'.
+ */
+    static int
+qf_add_entry_from_dict(
+	qf_info_T	*qi,
+	int		qf_idx,
+	dict_T		*d,
+	int		first_entry)
+{
+    static int	did_bufnr_emsg;
+    char_u	*filename, *module, *pattern, *text, *type;
+    int		bufnum, valid, status, col, vcol, nr;
+    long	lnum;
+
+    if (first_entry)
+	did_bufnr_emsg = FALSE;
+
+    filename = get_dict_string(d, (char_u *)"filename", TRUE);
+    module = get_dict_string(d, (char_u *)"module", TRUE);
+    bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
+    lnum = (int)get_dict_number(d, (char_u *)"lnum");
+    col = (int)get_dict_number(d, (char_u *)"col");
+    vcol = (int)get_dict_number(d, (char_u *)"vcol");
+    nr = (int)get_dict_number(d, (char_u *)"nr");
+    type = get_dict_string(d, (char_u *)"type", TRUE);
+    pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
+    text = get_dict_string(d, (char_u *)"text", TRUE);
+    if (text == NULL)
+	text = vim_strsave((char_u *)"");
+
+    valid = TRUE;
+    if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
+	valid = FALSE;
+
+    // Mark entries with non-existing buffer number as not valid. Give the
+    // error message only once.
+    if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
+    {
+	if (!did_bufnr_emsg)
+	{
+	    did_bufnr_emsg = TRUE;
+	    EMSGN(_("E92: Buffer %ld not found"), bufnum);
+	}
+	valid = FALSE;
+	bufnum = 0;
+    }
+
+    // If the 'valid' field is present it overrules the detected value.
+    if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
+	valid = (int)get_dict_number(d, (char_u *)"valid");
+
+    status =  qf_add_entry(qi,
+			qf_idx,
+			NULL,		// dir
+			filename,
+			module,
+			bufnum,
+			text,
+			lnum,
+			col,
+			vcol,		// vis_col
+			pattern,	// search pattern
+			nr,
+			type == NULL ? NUL : *type,
+			valid);
+
+    vim_free(filename);
+    vim_free(module);
+    vim_free(pattern);
+    vim_free(text);
+    vim_free(type);
 
     return status;
 }
@@ -6010,15 +6120,8 @@ qf_add_entries(
 {
     listitem_T	*li;
     dict_T	*d;
-    char_u	*filename, *module, *pattern, *text, *type;
-    int		bufnum;
-    long	lnum;
-    int		col, nr;
-    int		vcol;
     qfline_T	*old_last = NULL;
-    int		valid, status;
     int		retval = OK;
-    int		did_bufnr_emsg = FALSE;
 
     if (action == ' ' || qf_idx == qi->qf_listcount)
     {
@@ -6044,66 +6147,9 @@ qf_add_entries(
 	if (d == NULL)
 	    continue;
 
-	filename = get_dict_string(d, (char_u *)"filename", TRUE);
-	module = get_dict_string(d, (char_u *)"module", TRUE);
-	bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
-	lnum = (int)get_dict_number(d, (char_u *)"lnum");
-	col = (int)get_dict_number(d, (char_u *)"col");
-	vcol = (int)get_dict_number(d, (char_u *)"vcol");
-	nr = (int)get_dict_number(d, (char_u *)"nr");
-	type = get_dict_string(d, (char_u *)"type", TRUE);
-	pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
-	text = get_dict_string(d, (char_u *)"text", TRUE);
-	if (text == NULL)
-	    text = vim_strsave((char_u *)"");
-
-	valid = TRUE;
-	if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
-	    valid = FALSE;
-
-	/* Mark entries with non-existing buffer number as not valid. Give the
-	 * error message only once. */
-	if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
-	{
-	    if (!did_bufnr_emsg)
-	    {
-		did_bufnr_emsg = TRUE;
-		EMSGN(_("E92: Buffer %ld not found"), bufnum);
-	    }
-	    valid = FALSE;
-	    bufnum = 0;
-	}
-
-	/* If the 'valid' field is present it overrules the detected value. */
-	if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
-	    valid = (int)get_dict_number(d, (char_u *)"valid");
-
-	status =  qf_add_entry(qi,
-			       qf_idx,
-			       NULL,	    /* dir */
-			       filename,
-			       module,
-			       bufnum,
-			       text,
-			       lnum,
-			       col,
-			       vcol,	    /* vis_col */
-			       pattern,	    /* search pattern */
-			       nr,
-			       type == NULL ? NUL : *type,
-			       valid);
-
-	vim_free(filename);
-	vim_free(module);
-	vim_free(pattern);
-	vim_free(text);
-	vim_free(type);
-
-	if (status == FAIL)
-	{
-	    retval = FAIL;
+	retval = qf_add_entry_from_dict(qi, qf_idx, d, li == list->lv_first);
+	if (retval == FAIL)
 	    break;
-	}
     }
 
     if (qi->qf_lists[qf_idx].qf_index == 0)

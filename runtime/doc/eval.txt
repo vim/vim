@@ -954,6 +954,13 @@ These three can be repeated and mixed.  Examples:
 
 expr8							*expr8*
 -----
+This expression is either |expr9| or a sequence of the alternatives below,
+in any order.  E.g., these are all possible:
+	expr9[expr1].name
+	expr9.name[expr1]
+	expr9(expr1, ...)[expr1].name
+
+
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
 If expr8 is a Number or String this results in a String that contains the
@@ -4722,6 +4729,10 @@ getloclist({nr} [, {what}])				*getloclist()*
 		If the optional {what} dictionary argument is supplied, then
 		returns the items listed in {what} as a dictionary. Refer to
 		|getqflist()| for the supported items in {what}.
+		If {what} contains 'filewinid', then returns the id of the
+		window used to display files from the location list. This
+		field is applicable only when called from a location list
+		window.
 
 getmatches()						*getmatches()*
 		Returns a |List| with all matches previously defined by
@@ -8002,7 +8013,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		|submatch()| returns.  Example: >
 		   :echo substitute(s, '%\(\x\x\)', {m -> '0x' . m[1]}, 'g')
 
-swapinfo({fname})					swapinfo()
+swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the
 		swapfile {fname}. The available fields are:
 			version VIM version
@@ -8014,6 +8025,7 @@ swapinfo({fname})					swapinfo()
 			mtime	last modification time in seconds
 			inode	Optional: INODE number of the file
 			dirty	1 if file was modified, 0 if not
+		Note that "user" and "host" are truncated to at most 39 bytes.
 		In case of failure an "error" item is added with the reason:
 			Cannot open file: file not found or in accessible
 			Cannot read file: cannot read first block

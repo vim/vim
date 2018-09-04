@@ -809,6 +809,7 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapinfo()		information about a swap file
 
 Command line:					*command-line-functions*
 	getcmdline()		get the current command line

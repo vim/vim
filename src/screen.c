@@ -447,32 +447,37 @@ redraw_after_callback(int call_update_screen)
     ++redrawing_for_callback;
 
     if (State == HITRETURN || State == ASKMORE)
-	; /* do nothing */
+	; // do nothing
     else if (State & CMDLINE)
     {
-	/* Redrawing only works when the screen didn't scroll. Don't clear
-	 * wildmenu entries. */
-	if (msg_scrolled == 0
+	// Don't redraw when in prompt_for_number().
+	if (cmdline_row > 0)
+	{
+	    // Redrawing only works when the screen didn't scroll. Don't clear
+	    // wildmenu entries.
+	    if (msg_scrolled == 0
 #ifdef FEAT_WILDMENU
-		&& wild_menu_showing == 0
+		    && wild_menu_showing == 0
 #endif
-		&& call_update_screen)
-	    update_screen(0);
-	/* Redraw in the same position, so that the user can continue
-	 * editing the command. */
-	redrawcmdline_ex(FALSE);
+		    && call_update_screen)
+		update_screen(0);
+
+	    // Redraw in the same position, so that the user can continue
+	    // editing the command.
+	    redrawcmdline_ex(FALSE);
+	}
     }
     else if (State & (NORMAL | INSERT | TERMINAL))
     {
-	/* keep the command line if possible */
+	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
     }
     cursor_on();
 #ifdef FEAT_GUI
     if (gui.in_use && !gui_mch_is_blink_off())
-	/* Don't update the cursor when it is blinking and off to avoid
-	 * flicker. */
+	// Don't update the cursor when it is blinking and off to avoid
+	// flicker.
 	out_flush_cursor(FALSE, FALSE);
     else
 #endif
@@ -5491,15 +5496,6 @@ win_line(
 	if (c == NUL)
 	{
 #ifdef FEAT_SYN_HL
-	    if (eol_hl_off > 0 && vcol - eol_hl_off == (long)wp->w_virtcol
-		    && lnum == wp->w_cursor.lnum)
-	    {
-		/* highlight last char after line */
-		--col;
-		--off;
-		--vcol;
-	    }
-
 	    /* Highlight 'cursorcolumn' & 'colorcolumn' past end of the line. */
 	    if (wp->w_p_wrap)
 		v = wp->w_skipcol;

@@ -958,7 +958,7 @@ drawBalloon(BalloonEval *beval)
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
 # endif
-	gui_gtk_get_screen_geom_of_win(beval->balloonShell,
+	gui_gtk_get_screen_geom_of_win(beval->target,
 				    &screen_x, &screen_y, &screen_w, &screen_h);
 # if !GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_ensure_style(beval->balloonShell);

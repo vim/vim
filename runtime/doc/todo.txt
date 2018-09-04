@@ -38,6 +38,16 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+'incsearch' with :s: (#3321)
+- :/foo/s//<Esc>  changes last search pattern.  Also E486.
+- :s/foo  using CTRL-G moves to another line, should not happen, or use the
+  correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
+- Also support range: :/foo/,/bar/delete
+- Also support for user command, e.g. Cfilter
+- :%s/foo should take the first match below the cursor line, unless there
+  isn't one?
+  Then :%s?foo should take the first match above the cursor line.
+
 Prompt buffer:
 - Add a command line history.
 - delay next prompt until plugin gives OK?
@@ -50,11 +60,16 @@ Terminal debugger:
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
 
 Terminal emulator window:
+- GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
+  (#3327)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
+- Allow for specifying the directory, with ++cwd={dir}.
 - With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
   #2977)
+- Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
+  directly.  Perhaps ":term ++shell cmd". (#3340)
 - When pasting should call vterm_keyboard_start_paste(), e.g. when using
   K_MIDDLEMOUSE, calling insert_reg().
 - Users expect parsing the :term argument like a shell does, also support
@@ -74,35 +89,12 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patch to support ":tag <tagkind> <tagname". (emmrk, 2018 May 7, #2871)
-
-Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
-#2546)  Fixes #1057.  Missing a test.
-
-Problem with quickfix giving E42 when filtering the error list.
-(Nobuhiro Takasaki, 2018 Aug 1, #3270)
-Patch with test from Yegappan, Aug 2.
-
-Patch to add variable name after "scope add". (Eddie Lebow, 2018 Feb 7, #2620)
-Maybe not needed?
-
-Patch in issue 3268, fix suggestion window appearing on wrong screen.
-Also from Ken Takata, 2018 Aug 2.
-
-Patch for Lua support. (Kazunobu Kuriyama, 2018 May 26)
-
-Patch to use NGETTEXT() in many more places. (Sergey Alyoshin, 2018 May 25)
-Updated patch May 27.
-
-Patch to add winlayout() function. (Yegappan Lakshmanan, 2018 Jan 4)
-
-Patch to fix profiling condition lines. (Ozaki Kiichi,, 2017 Dec 26, #2499)
-
-Issue #686: apply 'F' in 'shortmess' to more messages.  Also #3221.
-Patch on #3221 from Christian.  Does it work now?
-
-Patch to include a cfilter plugin to filter quickfix/location lists.
-(Yegappan Lakshmanan, 2018 May 12)
+Not possible to have a comment in between line continuation.  Use |\":
+	let array = [
+	    \ item,
+	    |\" comment
+	    \ item,
+	    \ ]
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
@@ -111,9 +103,6 @@ Does not build with MinGW out of the box:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-On Win32 when not in the console and t_Co >= 256, allow using 'tgc'.
-(Nobuhiro Takasaki, #2833)  Also check t_Co.
-
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
@@ -121,16 +110,11 @@ Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
 
-Inlcude Chinese-Taiwan translations. (bystar, #3261)
-
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
-
-Using mouse for inputlist() doesn't work after patch 8.0.1756. (Dominique
-Pelle, 2018 Jul 22, #3239)  Also see 8.0.0722.  Check both console and GUI.
 
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
@@ -138,11 +122,11 @@ https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
 
-Using ":file" in quickfix window during an autocommand doesn't work. 
-(Jason Franklin, 2018 May 23) Allow for using it when there is no argument.
-
 Patch in pull request #2967: Allow white space in sign text. (Ben Jackson)
 Test fails in AppVeyor.
+
+Patch to add script line number to script ID. (ichizok, Ozaki Kiichi, 2018 Aug
+24, #3362)
 
 Removing flags from 'cpoptions' breaks the Winbar buttons in termdebug.
 (Dominique Pelle, 2018 Jul 16)
@@ -186,12 +170,41 @@ Delete the src/main.aap file?
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
 
+Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
+Use something like ":tag {kind}/{tagname}".
+Not ready to include.
+
 home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
 
 Adjust windows installer explanation of behavior. (scootergrisen, #3310)
 
 Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
 (Daniel Hahler, 2018 Aug 8, #3299)
+
+Using an external diff is inefficient.  Not all systems have a good diff
+program available (esp. MS-Windows).  Would be nice to have in internal diff
+implementation.  Can then also use this for displaying changes within a line.
+Olaf Dabrunz is working on this. (10 Jan 2016)
+9   Instead invoking an external diff program, use builtin code.  One can be
+    found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
+    It's complicated and badly documented.
+Alternative: use the xdiff library.  Unfinished Patch from Christian Brabandt,
+2018 Mar 20, #2732)
+
+Difference between two regexp engines: #3373
+
+Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
+24, #832)  Also need a way to get the global arg list?  Update later on Jan 24
+Update Mar 5. Update Apr 7.  Update Jun 5.
+
+When the last line wraps, selecting with the mouse below that line only
+includes the first screen line. (2018 Aug 23, #3368)
+
+Refactored HTML indent file. (Michael Lee, #1821)
+
+Patch to add getregpoint() and setreg() with an option to set "".
+(Andy Massimino, 2018 Aug 24, #3370)
+Better name?
 
 Script generated by :mksession does not work well if there are windows with
 modified buffers
@@ -209,6 +222,12 @@ Compiler warnings (geeknik, 2017 Oct 26):
 Win32 console: <F11> and <F12> typed in Insert mode don't result in normal
 characters. (#3246)
 
+Height of quickfix window is not retained with vertical splits. (Lifepillar,
+2018 Aug 24, #2998)
+
+Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
+#2999)
+
 Tests failing for "make testgui" with GTK:
 - Test_setbufvar_options()
 - Test_exit_callback_interval()
@@ -224,6 +243,10 @@ On Win32 it stops showing, because showState is already ShS_SHOWING.
 balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
 Also see #2352, want better control over balloon, perhaps set the position.
+Should also be possible to add highlighting, like in the status line?
+
+Patch to fix that executable() may fail on very long filename in MS-Windows.
+(Ken Takata, 2016 Feb 1)
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -239,8 +262,13 @@ used for git temp files.
 
 Cursor in wrong position when line wraps. (#2540)
 
+Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+#2546)  Fixes #1057.  Missing a test.
+
 Make {skip} argument of searchpair() consistent with other places where we
 pass an expression to evaluate.  Allow passing zero for "never skip".
+
+The 'scrolloff' option is global, make it global-local. #3195
 
 Add an option similar to 'lazyredraw' to skip redrawing while executing a
 script or function.
@@ -281,6 +309,9 @@ How to test that it works well for all Vim users?
 
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
+Delete all the speficic stuff for the Borland compiler? (#3374)
+Patch in #3377 (Thomas Dziedzic)
+
 Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
 mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
 Also: 'foldtext' is evaluated too often. (Daniel Hahler, #2773)
@@ -320,7 +351,8 @@ sequence of these commands. (Andy Stewart, 2018 Mar 16)
 ch_sendraw() with long string does not try to read in between, which may cause
 a deadlock if the reading side is waiting for the write to finish. (Nate
 Bosch, 2018 Jan 13, #2548)
-Perhaps just make chunks of 1024 bytes?  Make the write non-blocking?
+Perhaps just make chunks of 1024 bytes?
+Probably better: Make the write non-blocking
 Also a problem on MS-Windows: #2828.
 
 Add Makefiles to the runtime/spell directory tree, since nobody uses Aap.
@@ -388,6 +420,8 @@ No profile information for function that executes ":quit". (Daniel Hahler,
 
 A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
 
+Add script number to profile?  (#3330 breaks tests).
+
 A function defined locally and lambda's are not easily recognized.
 Mention where they were defined somewhere.
 
@@ -398,16 +432,6 @@ CTRL-X on zero gets stuck on 0xfffffffffffffffe. (Hengyang Zhao, #2746)
 
 Invalid range error when using BufWinLeave for closing terminal.
 (Gabriel Barta, 2017 Nov 15, #2339)
-
-Using an external diff is inefficient.  Not all systems have a good diff
-program available (esp. MS-Windows).  Would be nice to have in internal diff
-implementation.  Can then also use this for displaying changes within a line.
-Olaf Dabrunz is working on this. (10 Jan 2016)
-9   Instead invoking an external diff program, use builtin code.  One can be
-    found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
-    It's complicated and badly documented.
-Alternative: use the xdiff library.  Unfinished Patch from Christian Brabandt,
-2018 Mar 20, #2732)
 
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
@@ -485,8 +509,6 @@ Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
-
-Refactored HTML indent file. (Michael Lee, #1821)
 
 Test_writefile_fails_conversion failure on Solaris because if different iconv
 behavior.  Skip when "uname" returns "SunOS"? (Pavel Heimlich, #1872)
@@ -566,7 +588,7 @@ Profile of a dict function is lost when the dict is deleted.  Would it be
 possible to collect this?  (Daniel Hahler, #2350)
 
 Add `:filter` support for various commands (Marcin Szamotulski, 2017 Nov 12
-#2322)  Now in #2327?
+#2322)  Patch now in #2856.
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -751,6 +773,7 @@ receiving Vim?  Or make an exception for #, it's not useful remotely.
 vertical split. (Haldean Brown, 2017 Mar 1)
 
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
+E.g. all the location list commands use a count.
 Add tests for using number larger than number of lines in buffer.
 
 Might be useful to have isreadonly(), like we have islocked().
@@ -1098,9 +1121,6 @@ Patch to add <restore> to :windo, :bufdo, etc. (Christian Brabandt, 2015 Jan
 6, 2nd message)
 Alternative: ":keeppos" command modifier: ":keeppos windo {cmd}".
 
-Patch to fix that executable() may fail on very long filename in MS-Windows.
-(Ken Takata, 2016 Feb 1)
-
 Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
 Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
 https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
@@ -1161,10 +1181,6 @@ I can't recommend it though.
 
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
-
-Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
-24)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5. Update Apr 7.  Update Jun 5.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis

@@ -2041,7 +2041,7 @@ autowrite(buf_T *buf, int forceit)
 }
 
 /*
- * flush all buffers, except the ones that are readonly
+ * Flush all buffers, except the ones that are readonly or are never written.
  */
     void
 autowrite_all(void)
@@ -2051,7 +2051,7 @@ autowrite_all(void)
     if (!(p_aw || p_awa) || !p_write)
 	return;
     FOR_ALL_BUFFERS(buf)
-	if (bufIsChanged(buf) && !buf->b_p_ro)
+	if (bufIsChanged(buf) && !buf->b_p_ro && !bt_dontwrite(buf))
 	{
 	    bufref_T	bufref;
 
@@ -2445,10 +2445,10 @@ buf_write_all(buf_T *buf, int forceit)
  */
 
 static char_u	*do_one_arg(char_u *str);
-static int	do_arglist(char_u *str, int what, int after);
+static int	do_arglist(char_u *str, int what, int after, int will_edit);
 static void	alist_check_arg_idx(void);
 static int	editing_arg_idx(win_T *win);
-static int	alist_add_list(int count, char_u **files, int after);
+static void	alist_add_list(int count, char_u **files, int after, int will_edit);
 #define AL_SET	1
 #define AL_ADD	2
 #define AL_DEL	3
@@ -2553,7 +2553,7 @@ get_arglist_exp(
     void
 set_arglist(char_u *str)
 {
-    do_arglist(str, AL_SET, 0);
+    do_arglist(str, AL_SET, 0, FALSE);
 }
 
 /*
@@ -2567,7 +2567,8 @@ set_arglist(char_u *str)
 do_arglist(
     char_u	*str,
     int		what,
-    int		after UNUSED)		/* 0 means before first one */
+    int		after UNUSED,	// 0 means before first one
+    int		will_edit)	// will edit added argument
 {
     garray_T	new_ga;
     int		exp_count;
@@ -2652,11 +2653,11 @@ do_arglist(
 
 	if (what == AL_ADD)
 	{
-	    (void)alist_add_list(exp_count, exp_files, after);
+	    alist_add_list(exp_count, exp_files, after, will_edit);
 	    vim_free(exp_files);
 	}
 	else /* what == AL_SET */
-	    alist_set(ALIST(curwin), exp_count, exp_files, FALSE, NULL, 0);
+	    alist_set(ALIST(curwin), exp_count, exp_files, will_edit, NULL, 0);
     }
 
     alist_check_arg_idx();
@@ -2932,7 +2933,7 @@ ex_next(exarg_T *eap)
     {
 	if (*eap->arg != NUL)		    /* redefine file list */
 	{
-	    if (do_arglist(eap->arg, AL_SET, 0) == FAIL)
+	    if (do_arglist(eap->arg, AL_SET, 0, TRUE) == FAIL)
 		return;
 	    i = 0;
 	}
@@ -2952,7 +2953,7 @@ ex_argedit(exarg_T *eap)
     // Whether curbuf will be reused, curbuf->b_ffname will be set.
     int curbuf_is_reusable = curbuf_reusable();
 
-    if (do_arglist(eap->arg, AL_ADD, i) == FAIL)
+    if (do_arglist(eap->arg, AL_ADD, i, TRUE) == FAIL)
 	return;
 #ifdef FEAT_TITLE
     maketitle();
@@ -2974,7 +2975,8 @@ ex_argedit(exarg_T *eap)
 ex_argadd(exarg_T *eap)
 {
     do_arglist(eap->arg, AL_ADD,
-	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1);
+	       eap->addr_count > 0 ? (int)eap->line2 : curwin->w_arg_idx + 1,
+	       FALSE);
 #ifdef FEAT_TITLE
     maketitle();
 #endif
@@ -3024,7 +3026,7 @@ ex_argdelete(exarg_T *eap)
     else if (*eap->arg == NUL)
 	EMSG(_(e_argreq));
     else
-	do_arglist(eap->arg, AL_DEL, 0);
+	do_arglist(eap->arg, AL_DEL, 0, FALSE);
 #ifdef FEAT_TITLE
     maketitle();
 #endif
@@ -3269,13 +3271,13 @@ ex_listdo(exarg_T *eap)
  * Add files[count] to the arglist of the current window after arg "after".
  * The file names in files[count] must have been allocated and are taken over.
  * Files[] itself is not taken over.
- * Returns index of first added argument.  Returns -1 when failed (out of mem).
  */
-    static int
+    static void
 alist_add_list(
     int		count,
     char_u	**files,
-    int		after)	    /* where to add: 0 = before first one */
+    int		after,	    // where to add: 0 = before first one
+    int		will_edit)  // will edit adding argument
 {
     int		i;
     int		old_argcount = ARGCOUNT;
@@ -3291,19 +3293,19 @@ alist_add_list(
 				       (ARGCOUNT - after) * sizeof(aentry_T));
 	for (i = 0; i < count; ++i)
 	{
+	    int flags = BLN_LISTED | (will_edit ? BLN_CURBUF : 0);
+
 	    ARGLIST[after + i].ae_fname = files[i];
-	    ARGLIST[after + i].ae_fnum =
-				buflist_add(files[i], BLN_LISTED | BLN_CURBUF);
+	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], flags);
 	}
 	ALIST(curwin)->al_ga.ga_len += count;
 	if (old_argcount > 0 && curwin->w_arg_idx >= after)
 	    curwin->w_arg_idx += count;
-	return after;
+	return;
     }
 
     for (i = 0; i < count; ++i)
 	vim_free(files[i]);
-    return -1;
 }
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)

@@ -846,6 +846,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'{A-Z0-9}, or `{A-Z0-9} command takes one to another file.
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.
+	Some buffers will not be written, specifically when 'buttype' is
+	"nowrite", "nofile", "terminal" or "prompt".
 
 			 *'autowriteall'* *'awa'* *'noautowriteall'* *'noawa'*
 'autowriteall' 'awa'	boolean	(default off)
@@ -4480,8 +4482,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	so far, matches.  The matched string is highlighted.  If the pattern
 	is invalid or not found, nothing is shown.  The screen will be updated
 	often, this is only useful on fast terminals.
-	Also applies to the `:s`, `:g` and `:v` commands.
-	Note that the match will be shown, but the cursor will return to its
+	Also applies to the pattern in commands: >
+		:global
+		:lvimgrep
+		:lvimgrepadd
+		:smagic
+		:snomagic
+		:sort
+		:substitute
+		:vglobal
+		:vimgrep
+		:vimgrepadd
+<	Note that the match will be shown, but the cursor will return to its
 	original position when no match is found and when pressing <Esc>.  You
 	still need to finish the search command with <Enter> to move the
 	cursor to the match.

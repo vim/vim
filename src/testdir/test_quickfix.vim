@@ -1973,6 +1973,18 @@ func Xproperty_tests(cchar)
     call g:Xsetlist([], 'r', {'items' : [{'filename' : 'F1', 'lnum' : 10, 'text' : 'L10'}]})
     call assert_equal('TestTitle', g:Xgetlist({'title' : 1}).title)
 
+    " Test for getting id of window associated with a location list window
+    if a:cchar == 'l'
+      only
+      call assert_equal(0, g:Xgetlist({'all' : 1}).filewinid)
+      let wid = win_getid()
+      Xopen
+      call assert_equal(wid, g:Xgetlist({'filewinid' : 1}).filewinid)
+      wincmd w
+      call assert_equal(0, g:Xgetlist({'filewinid' : 1}).filewinid)
+      only
+    endif
+
     " The following used to crash Vim with address sanitizer
     call g:Xsetlist([], 'f')
     call g:Xsetlist([], 'a', {'items' : [{'filename':'F1', 'lnum':10}]})
@@ -2485,6 +2497,35 @@ func Test_cclose_in_autocmd()
   call test_override('starting', 0)
 endfunc
 
+" Check that ":file" without an argument is possible even when "curbuf_lock"
+" is set.
+func Test_file_from_copen()
+  " Works without argument.
+  augroup QF_Test
+    au!
+    au FileType qf file
+  augroup END
+  copen
+
+  augroup QF_Test
+    au!
+  augroup END
+  cclose
+
+  " Fails with argument.
+  augroup QF_Test
+    au!
+    au FileType qf call assert_fails(':file foo', 'E788')
+  augroup END
+  copen
+  augroup QF_Test
+    au!
+  augroup END
+  cclose
+
+  augroup! QF_Test
+endfunction
+
 func Test_resize_from_copen()
     augroup QF_Test
 	au!
@@ -2971,7 +3012,17 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal('', g:Xgetlist({'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'winid' : 0}).winid)
   call assert_equal(0, g:Xgetlist({'changedtick' : 0}).changedtick)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick': 0}, g:Xgetlist({'all' : 0}))
+  if a:cchar == 'c'
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0,
+		  \ 'items' : [], 'nr' : 0, 'size' : 0,
+		  \ 'title' : '', 'winid' : 0, 'changedtick': 0},
+		  \ g:Xgetlist({'all' : 0}))
+  else
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0,
+		\ 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '',
+		\ 'winid' : 0, 'changedtick': 0, 'filewinid' : 0},
+		\ g:Xgetlist({'all' : 0}))
+  endif
 
   " Quickfix window with empty stack
   silent! Xopen
@@ -3004,7 +3055,16 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal('', g:Xgetlist({'id' : qfid, 'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'winid' : 0}).winid)
   call assert_equal(0, g:Xgetlist({'id' : qfid, 'changedtick' : 0}).changedtick)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick' : 0}, g:Xgetlist({'id' : qfid, 'all' : 0}))
+  if a:cchar == 'c'
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [],
+		\ 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0,
+		\ 'changedtick' : 0}, g:Xgetlist({'id' : qfid, 'all' : 0}))
+  else
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [],
+		\ 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0,
+		\ 'changedtick' : 0, 'filewinid' : 0},
+		\ g:Xgetlist({'id' : qfid, 'all' : 0}))
+  endif
 
   " Non-existing quickfix list number
   call assert_equal('', g:Xgetlist({'nr' : 5, 'context' : 0}).context)
@@ -3016,7 +3076,16 @@ func Xgetlist_empty_tests(cchar)
   call assert_equal('', g:Xgetlist({'nr' : 5, 'title' : 0}).title)
   call assert_equal(0, g:Xgetlist({'nr' : 5, 'winid' : 0}).winid)
   call assert_equal(0, g:Xgetlist({'nr' : 5, 'changedtick' : 0}).changedtick)
-  call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [], 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0, 'changedtick' : 0}, g:Xgetlist({'nr' : 5, 'all' : 0}))
+  if a:cchar == 'c'
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [],
+		\ 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0,
+		\ 'changedtick' : 0}, g:Xgetlist({'nr' : 5, 'all' : 0}))
+  else
+    call assert_equal({'context' : '', 'id' : 0, 'idx' : 0, 'items' : [],
+		\ 'nr' : 0, 'size' : 0, 'title' : '', 'winid' : 0,
+		\ 'changedtick' : 0, 'filewinid' : 0},
+		\ g:Xgetlist({'nr' : 5, 'all' : 0}))
+  endif
 endfunc
 
 func Test_getqflist()

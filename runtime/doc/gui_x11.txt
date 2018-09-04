@@ -376,8 +376,8 @@ you might have to use the file ~/.gtkrc-2.0 instead, depending on your
 distribution.
 
 For GTK+ 3, an effect similar to the above can be obtained by adding the
-following snippet of CSS code to $XDG_HOME_DIR/gtk-3.0/gtk.css (usually,
-$HOME/.config/gtk-3.0/gtk.css):
+following snippet of CSS code to $XDG_HOME_DIR/gtk-3.0/gtk.css (see the next
+section):
 
 For GTK+ 3 < 3.20: >
 
@@ -407,6 +407,10 @@ stable support for GTK+ CSS:
 
 GTK+ uses CSS for styling and layout of widgets.  In this subsection, we'll
 have a quick look at GTK+ CSS through simple, illustrative examples.
+
+You can usually edit the config with: >
+	vim $HOME/.config/gtk-3.0/gtk.css
+
 
 Example 1.  Empty Space Adjustment ~
 
@@ -490,6 +494,16 @@ Note: Theming can be difficult since it must make every application look
 equally good; making a single application more charming often gets others
 unexpectedly less attractive or even deteriorates their usability.  Keep this
 in mind always when you try improving a theme.
+
+
+Example 3.  border color
+
+To eliminate borders when maximized: >
+
+    @define-color bg_color #1B2B34;
+    #vim-main-window {
+	background-color: @bg_color;
+    }
 
 
 Using Vim as a GTK+ plugin ~

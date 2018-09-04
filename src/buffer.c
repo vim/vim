@@ -412,7 +412,28 @@ buf_hashtab_remove(buf_T *buf)
 	hash_remove(&buf_hashtab, hi);
 }
 
-static char *e_buflocked = N_("E937: Attempt to delete a buffer that is in use");
+/*
+ * Return TRUE when buffer "buf" can be unloaded.
+ * Give an error message and return FALSE when the buffer is locked or the
+ * screen is being redrawn and the buffer is in a window.
+ */
+    static int
+can_unload_buffer(buf_T *buf)
+{
+    int	    can_unload = !buf->b_locked;
+
+    if (can_unload && updating_screen)
+    {
+	win_T	*wp;
+
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer == buf)
+		can_unload = FALSE;
+    }
+    if (!can_unload)
+	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+    return can_unload;
+}
 
 /*
  * Close the link to a buffer.
@@ -474,11 +495,9 @@ close_buffer(
 	{
 	    if (wipe_buf || unload_buf)
 	    {
-		if (buf->b_locked)
-		{
-		    EMSG(_(e_buflocked));
+		if (!can_unload_buffer(buf))
 		    return;
-		}
+
 		/* Wiping out or unloading a terminal buffer kills the job. */
 		free_terminal(buf);
 	    }
@@ -501,11 +520,8 @@ close_buffer(
 
     /* Disallow deleting the buffer when it is locked (already being closed or
      * halfway a command that relies on it). Unloading is allowed. */
-    if (buf->b_locked > 0 && (del_buf || wipe_buf))
-    {
-	EMSG(_(e_buflocked));
+    if ((del_buf || wipe_buf) && !can_unload_buffer(buf))
 	return;
-    }
 
     /* check no autocommands closed the window */
     if (win != NULL && win_valid_any_tab(win))
@@ -1196,8 +1212,6 @@ do_bufdel(
     return errormsg;
 }
 
-static int	empty_curbuf(int close_others, int forceit, int action);
-
 /*
  * Make the current buffer empty.
  * Used when it is wiped out and it's the last buffer.
@@ -1238,6 +1252,7 @@ empty_curbuf(
 	need_fileinfo = FALSE;
     return retval;
 }
+
 /*
  * Implementation of the commands for the buffer list.
  *
@@ -1359,11 +1374,8 @@ do_buffer(
 	int	forward;
 	bufref_T bufref;
 
-	if (buf->b_locked)
-	{
-	    EMSG(_(e_buflocked));
+	if (!can_unload_buffer(buf))
 	    return FAIL;
-	}
 
 	set_bufref(&bufref, buf);
 

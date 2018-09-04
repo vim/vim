@@ -3747,17 +3747,17 @@ prompt_for_number(int *mouse_used)
     else
 	MSG_PUTS(_("Type number and <Enter> (empty cancels): "));
 
-    /* Set the state such that text can be selected/copied/pasted and we still
-     * get mouse events. */
+    // Set the state such that text can be selected/copied/pasted and we still
+    // get mouse events. redraw_after_callback() will not redraw if cmdline_row
+    // is zero.
     save_cmdline_row = cmdline_row;
     cmdline_row = 0;
     save_State = State;
-    State = ASKMORE;	/* prevents a screen update when using a timer */
+    State = CMDLINE;
 #ifdef FEAT_MOUSE
-    /* May show different mouse shape. */
+    // May show different mouse shape.
     setmouse();
 #endif
-
 
     i = get_number(TRUE, mouse_used);
     if (KeyTyped)
@@ -3773,7 +3773,7 @@ prompt_for_number(int *mouse_used)
 	cmdline_row = save_cmdline_row;
     State = save_State;
 #ifdef FEAT_MOUSE
-    /* May need to restore mouse shape. */
+    // May need to restore mouse shape.
     setmouse();
 #endif
 

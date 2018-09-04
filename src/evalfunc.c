@@ -4955,11 +4955,11 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 		vim_free(cwd);
 	    }
 	}
-#ifdef BACKSLASH_IN_FILENAME
-	if (rettv->vval.v_string != NULL)
-	    slash_adjust(rettv->vval.v_string);
-#endif
     }
+#ifdef BACKSLASH_IN_FILENAME
+    if (rettv->vval.v_string != NULL)
+	slash_adjust(rettv->vval.v_string);
+#endif
 }
 
 /*

@@ -82,6 +82,18 @@ Examples:
 	:pydo return "%s\t%d" % (line[::-1], len(line))
 	:pydo if line: return "%4d: %s" % (linenr, line)
 <
+One can use `:pydo` in possible conjunction with `:py` to filter a range using
+python. For example: >
+
+	:py3 << EOF
+	needle = vim.eval('@a')
+	replacement = vim.eval('@b')
+
+	def py_vim_string_replace(str):
+		return str.replace(needle, replacement)
+	EOF
+	:'<,'>py3do return py_vim_string_replace(line)
+<
 							*:pyfile* *:pyf*
 :[range]pyf[ile] {file}
 			Execute the Python script in {file}.  The whole
@@ -168,11 +180,15 @@ vim.eval(str)						*python-eval*
 	- a dictionary if the Vim expression evaluates to a Vim dictionary
 	Dictionaries and lists are recursively expanded.
 	Examples: >
+	    :" value of the 'textwidth' option
 	    :py text_width = vim.eval("&tw")
-	    :py str = vim.eval("12+12")		# NB result is a string! Use
-						# string.atoi() to convert to
-						# a number.
-
+	    :
+	    :" contents of the 'a' register
+	    :py a_reg = vim.eval("@a") 
+	    :
+	    :" Result is a string! Use string.atoi() to convert to a number.
+	    :py str = vim.eval("12+12")
+	    :
 	    :py tagList = vim.eval('taglist("eval_expr")')
 <	The latter will return a python list of python dicts, for instance:
 	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name': ~
