@@ -3614,13 +3614,13 @@ msgid "      -- none --\n"
 msgstr "      -- ниједан --\n"
 
 msgid "          owned by: "
-msgstr "          које поседује: "
+msgstr "          који поседује: "
 
 msgid "   dated: "
-msgstr "   датирани: "
+msgstr "   датиран: "
 
 msgid "             dated: "
-msgstr "             датирани: "
+msgstr "             датиран: "
 
 msgid "         [from Vim version 3.0]"
 msgstr "         [од Vim верзије 3.0]"
