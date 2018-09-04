@@ -156,6 +156,9 @@ The |term_setansicolors()| function can be used to change the colors, and
 
 Syntax ~
 
+:[range]vter[minal] [options] [command]			*:vter* *:vterminal*
+			Like |:terminal|, but split vertically.
+
 :[range]ter[minal] [options] [command]			*:ter* *:terminal*
 			Open a new terminal window.
 
