@@ -4717,8 +4717,8 @@ get_env_name(
 }
 
 /*
- * Add a ser name to the list of users in ga_users.
- * Do nothing is user is NULL or empty.
+ * Add a user name to the list of users in ga_users.
+ * Do nothing if user name is NULL or empty.
  */
     static void
 add_user(char_u *user, int need_copy)
@@ -4760,7 +4760,6 @@ init_users(void)
     }
 # elif defined(WIN3264)
     {
-	char_u*		user;
 	DWORD		nusers = 0, ntotal = 0, i;
 	PUSER_INFO_0	uinfo;
 
@@ -4769,7 +4768,7 @@ init_users(void)
 	{
 	    for (i = 0; i < nusers; i++)
 	    {
-		user = utf16_to_enc(uinfo[i].usri0_name, NULL);
+		char_u	*user = utf16_to_enc(uinfo[i].usri0_name, NULL);
 		add_user(user, FALSE);
 	    }
 
@@ -4780,9 +4779,9 @@ init_users(void)
 # if defined(HAVE_GETPWNAM)
     {
 	// The $USER environment variable may be a valid remote user name (NIS, LDAP)
-	// not already listed by getpwent() as getpwent() only lists local users names.
+	// not already listed by getpwent() as getpwent() only lists local user names.
 	// If $USER is not already listed, check whether it is a valid remote user name
-	// using getpwname() and if it is, add it to the list of user names.
+	// using getpwnam() and if it is, add it to the list of user names.
 	char_u	*user_env = mch_getenv((char_u *)"USER");
 
 	if (user_env != NULL && *user_env != NUL)
@@ -4790,9 +4789,9 @@ init_users(void)
 	    int	i;
 	    for (i = 0; i < ga_users.ga_len; i++)
 	    {
-		char_u	*localuser = ((char_u **)ga_users.ga_data)[i];
+		char_u	*local_user = ((char_u **)ga_users.ga_data)[i];
 
-		if (STRCMP(localuser, user_env) == 0)
+		if (STRCMP(local_user, user_env) == 0)
 		    break;
 	    }
 
