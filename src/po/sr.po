@@ -3636,7 +3636,7 @@ msgid ""
 "          modified: "
 msgstr ""
 "\n"
-"          измењено: "
+"          измењен: "
 
 msgid "YES"
 msgstr "ДА"
