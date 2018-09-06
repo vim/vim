@@ -13073,6 +13073,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (STRCMP(name, (char_u *)"redraw") == 0)
 	    disable_redraw_for_testing = val;
+	else if (STRCMP(name, (char_u *)"redraw_flag") == 0)
+	    ignore_redraw_flag_for_testing = val;
 	else if (STRCMP(name, (char_u *)"char_avail") == 0)
 	    disable_char_avail_for_testing = val;
 	else if (STRCMP(name, (char_u *)"starting") == 0)
@@ -13095,6 +13097,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    disable_char_avail_for_testing = FALSE;
 	    disable_redraw_for_testing = FALSE;
+	    ignore_redraw_flag_for_testing = FALSE;
 	    nfa_fail_for_testing = FALSE;
 	    if (save_starting >= 0)
 	    {

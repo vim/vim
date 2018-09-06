@@ -10819,8 +10819,11 @@ redrawing(void)
 	return 0;
     else
 #endif
-	return (!RedrawingDisabled
-		       && !(p_lz && char_avail() && !KeyTyped && !do_redraw));
+	return ((!RedrawingDisabled
+#ifdef FEAT_EVAL
+		    || ignore_redraw_flag_for_testing
+#endif
+		) && !(p_lz && char_avail() && !KeyTyped && !do_redraw));
 }
 
 /*
