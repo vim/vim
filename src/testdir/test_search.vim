@@ -1043,6 +1043,23 @@ func Test_incsearch_vimgrep_dump()
   call delete('Xis_vimgrep_script')
 endfunc
 
+func Test_keep_last_search_pattern()
+  if !exists('+incsearch')
+    return
+  endif
+  new
+  call setline(1, ['foo', 'foo', 'foo'])
+  set incsearch
+  call test_override("char_avail", 1)
+  let @/ = 'bar'
+  call feedkeys(":/foo/s//\<Esc>", 'ntx')
+  call assert_equal('bar', @/)
+
+  bwipe!
+  call test_override("ALL", 0)
+  set noincsearch
+endfunc
+
 func Test_search_undefined_behaviour()
   if !has("terminal")
     return
