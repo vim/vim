@@ -163,6 +163,9 @@ Use |ch_status()| to see if the channel could be opened.
 				The "close_cb" is also considered for this.
 		    "never"	All messages will be kept.
 
+							*channel-noblock*
+"noblock"	Same effect as |job-noblock|.  Only matters for writing.
+
 							*waittime*
 "waittime"	The time to wait for the connection to be made in
 		milliseconds.  A negative number waits forever.
@@ -594,6 +597,17 @@ See |job_setoptions()| and |ch_setoptions()|.
 			Note: when writing to a file or buffer and when
 			reading from a buffer NL mode is used by default.
 
+						*job-noblock*
+"noblock": 1		When writing use a non-blocking write call.  This
+			avoids getting stuck if Vim should handle other
+			messages in between, e.g. when a job sends back data
+			to Vim.  It implies that when `ch_sendraw()` returns
+			not all data may have been written yet.
+			This option was added in patch 8.1.0350, test with: >
+				if has("patch-8.1.350")
+				  let options['noblock'] = 1
+				endif
+<
 						*job-callback*
 "callback": handler	Callback for something to read on any part of the
 			channel.
