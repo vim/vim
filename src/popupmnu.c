@@ -199,8 +199,8 @@ pum_display(
 	/* If there is a preview window at the above avoid drawing over it. */
 	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
 	{
-	    pum_row += above_row;
-	    pum_height -= above_row;
+	    pum_row = above_row;
+	    pum_height = pum_win_row - above_row;
 	}
 #endif
 
