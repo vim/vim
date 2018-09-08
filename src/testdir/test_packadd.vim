@@ -53,9 +53,10 @@ func Test_packadd()
   call assert_match('/testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
 
   let new_after = match(&rtp, '/testdir/Xdir/pack/mine/opt/mytest/after,')
-  let old_after = match(&rtp, ',' . first_after_entry . '\>')
+  let forwarded = substitute(first_after_entry, '\\', '[/\\\\]', 'g')
+  let old_after = match(&rtp, ',' . forwarded . '\>')
   call assert_true(new_after > 0, 'rtp is ' . &rtp)
-  call assert_true(old_after > 0, 'rtp is ' . &rtp)
+  call assert_true(old_after > 0, 'match ' . forwarded . ' in ' . &rtp)
   call assert_true(new_after < old_after, 'rtp is ' . &rtp)
 
   " NOTE: '/.../opt/myte' forwardly matches with '/.../opt/mytest'
