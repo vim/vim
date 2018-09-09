@@ -462,7 +462,7 @@ may_do_incsearch_highlighting(
 	incsearch_state_T   *is_state)
 {
     int		skiplen, patlen;
-    int		i;
+    int		found;  // do_search() result
     pos_T	end_pos;
     struct cmdline_info	save_ccline;
 #ifdef FEAT_RELTIME
@@ -508,7 +508,7 @@ may_do_incsearch_highlighting(
     // If there is no pattern, don't do anything.
     if (patlen == 0 && !use_last_pat)
     {
-	i = 0;
+	found = 0;
 	set_no_hlsearch(TRUE); // turn off previous highlight
 	redraw_all_later(SOME_VALID);
     }
@@ -528,7 +528,7 @@ may_do_incsearch_highlighting(
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
-	i = do_search(NULL, firstc == ':' ? '/' : firstc,
+	found = do_search(NULL, firstc == ':' ? '/' : firstc,
 				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
 		&tm, NULL
@@ -543,7 +543,7 @@ may_do_incsearch_highlighting(
 		|| curwin->w_cursor.lnum > search_last_line)
 	{
 	    // match outside of address range
-	    i = 0;
+	    found = 0;
 	    curwin->w_cursor = is_state->search_start;
 	}
 
@@ -552,13 +552,13 @@ may_do_incsearch_highlighting(
 	{
 	    (void)vpeekc();	// remove <C-C> from input stream
 	    got_int = FALSE;	// don't abandon the command line
-	    i = 0;
+	    found = 0;
 	}
 	else if (char_avail())
 	    // cancelled searching because a char was typed
 	    is_state->incsearch_postponed = TRUE;
     }
-    if (i != 0)
+    if (found != 0)
 	highlight_match = TRUE;		// highlight position
     else
 	highlight_match = FALSE;	// remove highlight
@@ -569,7 +569,7 @@ may_do_incsearch_highlighting(
     changed_cline_bef_curs();
     update_topline();
 
-    if (i != 0)
+    if (found != 0)
     {
 	pos_T	    save_pos = curwin->w_cursor;
 
@@ -604,8 +604,11 @@ may_do_incsearch_highlighting(
     restore_cmdline(&save_ccline);
     restore_last_search_pattern();
 
-    // Leave it at the end to make CTRL-R CTRL-W work.
-    if (i != 0)
+    // Leave it at the end to make CTRL-R CTRL-W work.  But not when beyond the
+    // end of the pattern, e.g. for ":s/pat/".
+    if (ccline.cmdbuff[skiplen + patlen] != NUL)
+	curwin->w_cursor = is_state->search_start;
+    else if (found != 0)
 	curwin->w_cursor = end_pos;
 
     msg_starthere();
