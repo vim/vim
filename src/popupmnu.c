@@ -141,8 +141,8 @@ pum_display(
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
 
-	/* Put the pum below "pum_win_row" if possible.  If there are few lines decide
-	 * on where there is more room. */
+	/* Put the pum below "pum_win_row" if possible.  If there are few lines
+	 * decide on where there is more room. */
 	if (pum_win_row + 2 >= below_row - pum_height
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
@@ -196,11 +196,20 @@ pum_display(
 	    return;
 
 #if defined(FEAT_QUICKFIX)
-	/* If there is a preview window at the above avoid drawing over it. */
-	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
+	// If there is a preview window at the above avoid drawing over it.
+	// Do keep at least 10 entries.
+	if (pvwin != NULL && pum_row < above_row && pum_height > 10)
 	{
-	    pum_row += above_row;
-	    pum_height -= above_row;
+	    if (pum_win_row - above_row < 10)
+	    {
+		pum_row = pum_win_row - 10;
+		pum_height = 10;
+	    }
+	    else
+	    {
+		pum_row = above_row;
+		pum_height = pum_win_row - above_row;
+	    }
 	}
 #endif
 
