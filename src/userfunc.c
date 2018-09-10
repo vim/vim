@@ -302,7 +302,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp->uf_varargs = TRUE;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
-	fp->uf_script_ID = current_SID;
+	fp->uf_script_ctx = current_sctx;
+	fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len;
 
 	pt->pt_func = fp;
 	pt->pt_refcount = 1;
@@ -690,7 +691,7 @@ call_user_func(
 {
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
-    scid_T	save_current_SID;
+    sctx_T	save_current_sctx;
     int		using_sandbox = FALSE;
     funccall_T	*fc;
     int		save_did_emsg;
@@ -944,8 +945,8 @@ call_user_func(
     }
 #endif
 
-    save_current_SID = current_SID;
-    current_SID = fp->uf_script_ID;
+    save_current_sctx = current_sctx;
+    current_sctx = fp->uf_script_ctx;
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
@@ -1026,7 +1027,7 @@ call_user_func(
     vim_free(sourcing_name);
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
-    current_SID = save_current_SID;
+    current_sctx = save_current_sctx;
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	script_prof_restore(&wait_start);
@@ -1574,7 +1575,7 @@ list_func_head(ufunc_T *fp, int indent)
 	MSG_PUTS(" closure");
     msg_clr_eos();
     if (p_verbose > 0)
-	last_set_msg(fp->uf_script_ID);
+	last_set_msg(fp->uf_script_ctx);
 }
 
 /*
@@ -2454,7 +2455,8 @@ ex_function(exarg_T *eap)
 	flags |= FC_SANDBOX;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
-    fp->uf_script_ID = current_SID;
+    fp->uf_script_ctx = current_sctx;
+    fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len - 1;
     goto ret_free;
 
 erret:

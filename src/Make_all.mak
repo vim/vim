@@ -52,6 +52,7 @@ NEW_TESTS = \
 	test_exists_autocmd \
 	test_expand \
 	test_expand_dllpath \
+	test_expand_func \
 	test_expr \
 	test_expr_utf8 \
 	test_farsi \

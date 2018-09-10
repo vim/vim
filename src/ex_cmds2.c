@@ -4351,7 +4351,7 @@ do_source(
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
 #ifdef FEAT_EVAL
-    scid_T		    save_current_SID;
+    sctx_T		    save_current_sctx;
     static scid_T	    last_current_SID = 0;
     void		    *save_funccalp;
     int			    save_debug_break_level = debug_break_level;
@@ -4521,7 +4521,8 @@ do_source(
      * Check if this script was sourced before to finds its SID.
      * If it's new, generate a new SID.
      */
-    save_current_SID = current_SID;
+    save_current_sctx = current_sctx;
+    current_SLN = 0;
 # ifdef UNIX
     stat_ok = (mch_stat((char *)fname_exp, &st) >= 0);
 # endif
@@ -4671,7 +4672,7 @@ do_source(
 
 #ifdef FEAT_EVAL
 almosttheend:
-    current_SID = save_current_SID;
+    current_sctx = save_current_sctx;
     restore_funccal(save_funccalp);
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)

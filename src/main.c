@@ -3159,7 +3159,7 @@ process_env(
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
 #ifdef FEAT_EVAL
-    scid_T	save_sid;
+    sctx_T	save_current_sctx;
 #endif
 
     if ((initstr = mch_getenv(env)) != NULL && *initstr != NUL)
@@ -3171,14 +3171,15 @@ process_env(
 	sourcing_name = env;
 	sourcing_lnum = 0;
 #ifdef FEAT_EVAL
-	save_sid = current_SID;
+	save_current_sctx = current_sctx;
 	current_SID = SID_ENV;
+	current_SLN = 0;
 #endif
 	do_cmdline_cmd(initstr);
 	sourcing_name = save_sourcing_name;
 	sourcing_lnum = save_sourcing_lnum;
 #ifdef FEAT_EVAL
-	current_SID = save_sid;
+	current_sctx = save_current_sctx;
 #endif
 	return OK;
     }
