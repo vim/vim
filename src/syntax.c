@@ -58,7 +58,7 @@ struct hl_group
     int		sg_link;	/* link to this highlight group ID */
     int		sg_set;		/* combination of SG_* flags */
 #ifdef FEAT_EVAL
-    scid_T	sg_scriptID;	/* script in which the group was last set */
+    sctx_T	sg_script_ctx;	/* script in which the group was last set */
 #endif
 };
 
@@ -7507,7 +7507,8 @@ do_highlight(
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
 #ifdef FEAT_EVAL
-		    || HL_TABLE()[from_id - 1].sg_scriptID != current_SID
+		    || HL_TABLE()[from_id - 1].sg_script_ctx.sc_sid
+							 != current_sctx.sc_sid
 #endif
 		    || HL_TABLE()[from_id - 1].sg_cleared)
 	    {
@@ -7515,7 +7516,8 @@ do_highlight(
 		    HL_TABLE()[from_id - 1].sg_set |= SG_LINK;
 		HL_TABLE()[from_id - 1].sg_link = to_id;
 #ifdef FEAT_EVAL
-		HL_TABLE()[from_id - 1].sg_scriptID = current_SID;
+		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
+		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += sourcing_lnum;
 #endif
 		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
@@ -8277,7 +8279,8 @@ do_highlight(
 	else
 	    set_hl_attr(idx);
 #ifdef FEAT_EVAL
-	HL_TABLE()[idx].sg_scriptID = current_SID;
+	HL_TABLE()[idx].sg_script_ctx = current_sctx;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum += sourcing_lnum;
 #endif
     }
 
@@ -8404,7 +8407,10 @@ highlight_clear(int idx)
     /* Clear the script ID only when there is no link, since that is not
      * cleared. */
     if (HL_TABLE()[idx].sg_link == 0)
-	HL_TABLE()[idx].sg_scriptID = 0;
+    {
+	HL_TABLE()[idx].sg_script_ctx.sc_sid = 0;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum = 0;
+    }
 #endif
 }
 
@@ -9272,7 +9278,7 @@ highlight_list_one(int id)
 	highlight_list_arg(id, didh, LIST_STRING, 0, (char_u *)"cleared", "");
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
-	last_set_msg(sgp->sg_scriptID);
+	last_set_msg(sgp->sg_script_ctx);
 #endif
 }
 

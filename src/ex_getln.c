@@ -5591,7 +5591,7 @@ call_user_expand_func(
 {
     int		keep = 0;
     typval_T	args[4];
-    int		save_current_SID = current_SID;
+    sctx_T	save_current_sctx = current_sctx;
     char_u	*pat = NULL;
     void	*ret;
     struct cmdline_info	    save_ccline;
@@ -5621,12 +5621,12 @@ call_user_expand_func(
     save_ccline = ccline;
     ccline.cmdbuff = NULL;
     ccline.cmdprompt = NULL;
-    current_SID = xp->xp_scriptID;
+    current_sctx = xp->xp_script_ctx;
 
     ret = user_expand_func(xp->xp_arg, 3, args);
 
     ccline = save_ccline;
-    current_SID = save_current_SID;
+    current_sctx = save_current_sctx;
     if (ccline.cmdbuff != NULL)
 	ccline.cmdbuff[ccline.cmdlen] = keep;
 

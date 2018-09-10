@@ -2259,7 +2259,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
     /* Use the Insert mode entry when returning to Insert mode. */
     if (restart_edit
 #ifdef FEAT_EVAL
-	    && !current_SID
+	    && !current_sctx.sc_sid
 #endif
 	    )
     {
@@ -2333,7 +2333,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
 	 * Otherwise put them in the typeahead buffer. */
 	if (eap == NULL
 #ifdef FEAT_EVAL
-		|| current_SID != 0
+		|| current_sctx.sc_sid != 0
 #endif
 	   )
 	{

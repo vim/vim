@@ -4061,7 +4061,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	     * also be called from another script. Using trans_function_name()
 	     * would also work, but some plugins depend on the name being
 	     * printable text. */
-	    sprintf(sid_buf, "<SNR>%ld_", (long)current_SID);
+	    sprintf(sid_buf, "<SNR>%ld_", (long)current_sctx.sc_sid);
 	    name = alloc((int)(STRLEN(sid_buf) + STRLEN(s + off) + 1));
 	    if (name != NULL)
 	    {
@@ -7618,7 +7618,8 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
 	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
 	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
-	dict_add_number(dict, "sid", (long)mp->m_script_ID);
+	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
+	dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
 	dict_add_number(dict, "buffer", (long)buffer_local);
 	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
 	dict_add_string(dict, "mode", mapmode);
