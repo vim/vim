@@ -4626,6 +4626,7 @@ E954	options.txt	/*E954*
 E955	eval.txt	/*E955*
 E956	pattern.txt	/*E956*
 E957	eval.txt	/*E957*
+E958	eval.txt	/*E958*
 E96	diff.txt	/*E96*
 E97	diff.txt	/*E97*
 E98	diff.txt	/*E98*
@@ -5463,6 +5464,7 @@ channel-drop	channel.txt	/*channel-drop*
 channel-functions	usr_41.txt	/*channel-functions*
 channel-mode	channel.txt	/*channel-mode*
 channel-more	channel.txt	/*channel-more*
+channel-noblock	channel.txt	/*channel-noblock*
 channel-open	channel.txt	/*channel-open*
 channel-open-options	channel.txt	/*channel-open-options*
 channel-raw	channel.txt	/*channel-raw*
@@ -7183,6 +7185,7 @@ job-err_io	channel.txt	/*job-err_io*
 job-exit_cb	channel.txt	/*job-exit_cb*
 job-functions	usr_41.txt	/*job-functions*
 job-in_io	channel.txt	/*job-in_io*
+job-noblock	channel.txt	/*job-noblock*
 job-options	channel.txt	/*job-options*
 job-out_cb	channel.txt	/*job-out_cb*
 job-out_io	channel.txt	/*job-out_io*

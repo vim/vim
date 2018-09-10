@@ -617,7 +617,18 @@ This will open a window consisting of three parts:
 3.  The contents of the second dump
 
 You can usually see what differs in the second part.  Use the 'ruler' to
-relate it to the position in the first or second dump.
+relate it to the position in the first or second dump.  Letters indicate the
+kind of difference:
+	X	different character
+	>	cursor in first but not in second
+	<	cursor in second but not in first
+	w	character width differs (single vs double width)
+	f	foreground color differs
+	b	background color differs
+	a	attribute differs (bold, underline, reverse, etc.)
+	?	character missing in both
+	+	character missing in first
+	-	character missing in second
 
 Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.

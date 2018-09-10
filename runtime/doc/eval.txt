@@ -5978,11 +5978,14 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 		When {expr} is a |List| then this returns the index of the
 		first item where {pat} matches.  Each item is used as a
 		String, |Lists| and |Dictionaries| are used as echoed.
+
 		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
+
 		A match at the first character or |List| item returns zero.
 		If there is no match -1 is returned.
+
 		For getting submatches see |matchlist()|.
 		Example: >
 			:echo match("testing", "ing")	" results in 4
@@ -8386,7 +8389,9 @@ term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
 		|term_dumpload()| and |term_dumpdiff()|.
-		If {filename} already exists an error is given.	*E953*
+		If the job in the terminal already finished an error is given:
+		*E958*
+		If {filename} already exists an error is given:	*E953*
 		Also see |terminal-diff|.
 
 		{options} is a dictionary with these optional entries:
