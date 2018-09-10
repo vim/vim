@@ -2433,7 +2433,9 @@ struct file_buffer
     term_T	*b_term;	/* When not NULL this buffer is for a terminal
 				 * window. */
 #endif
-
+#ifdef FEAT_DIFF
+    int		b_diff_failed;	// internal diff failed for this buffer
+#endif
 }; /* file_buffer */
 
 
