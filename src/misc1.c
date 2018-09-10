@@ -4717,6 +4717,24 @@ get_env_name(
 }
 
 /*
+ * Add a user name to the list of users in ga_users.
+ * Do nothing if user name is NULL or empty.
+ */
+    static void
+add_user(char_u *user, int need_copy)
+{
+    char_u	*user_copy = (user != NULL && need_copy) ?  vim_strsave(user) : user;
+
+    if (user_copy == NULL || *user_copy == NUL || ga_grow(&ga_users, 1) == FAIL)
+    {
+	if (need_copy)
+	    vim_free(user);
+	return;
+    }
+    ((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user_copy;
+}
+
+/*
  * Find all user names for user completion.
  * Done only once and then cached.
  */
@@ -4733,26 +4751,15 @@ init_users(void)
 
 # if defined(HAVE_GETPWENT) && defined(HAVE_PWD_H)
     {
-	char_u*		user;
 	struct passwd*	pw;
 
 	setpwent();
 	while ((pw = getpwent()) != NULL)
-	    /* pw->pw_name shouldn't be NULL but just in case... */
-	    if (pw->pw_name != NULL)
-	    {
-		if (ga_grow(&ga_users, 1) == FAIL)
-		    break;
-		user = vim_strsave((char_u*)pw->pw_name);
-		if (user == NULL)
-		    break;
-		((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user;
-	    }
+	    add_user((char_u *)pw->pw_name, TRUE);
 	endpwent();
     }
 # elif defined(WIN3264)
     {
-	char_u*		user;
 	DWORD		nusers = 0, ntotal = 0, i;
 	PUSER_INFO_0	uinfo;
 
@@ -4761,15 +4768,40 @@ init_users(void)
 	{
 	    for (i = 0; i < nusers; i++)
 	    {
-		if (ga_grow(&ga_users, 1) == FAIL)
-		    break;
-		user = utf16_to_enc(uinfo[i].usri0_name, NULL);
-		if (user == NULL)
-		    break;
-		((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user;
+		char_u	*user = utf16_to_enc(uinfo[i].usri0_name, NULL);
+		add_user(user, FALSE);
 	    }
 
 	    NetApiBufferFree(uinfo);
+	}
+    }
+# endif
+# if defined(HAVE_GETPWNAM)
+    {
+	// The $USER environment variable may be a valid remote user name (NIS, LDAP)
+	// not already listed by getpwent() as getpwent() only lists local user names.
+	// If $USER is not already listed, check whether it is a valid remote user name
+	// using getpwnam() and if it is, add it to the list of user names.
+	char_u	*user_env = mch_getenv((char_u *)"USER");
+
+	if (user_env != NULL && *user_env != NUL)
+	{
+	    int	i;
+	    for (i = 0; i < ga_users.ga_len; i++)
+	    {
+		char_u	*local_user = ((char_u **)ga_users.ga_data)[i];
+
+		if (STRCMP(local_user, user_env) == 0)
+		    break;
+	    }
+
+	    if (i == ga_users.ga_len)
+	    {
+		struct passwd	*pw = getpwnam((char *)user_env);
+		char_u		*remote_user = (pw == NULL) ? NULL : (char_u *)pw->pw_name;
+
+		add_user(remote_user, TRUE);
+	    }
 	}
     }
 # endif
