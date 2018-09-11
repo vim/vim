@@ -4959,11 +4959,7 @@ im_preedit_window_set_position(void)
 
     gui_gtk_get_screen_geom_of_win(gui.drawarea,
 			  &screen_x, &screen_y, &screen_width, &screen_height);
-#if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), &x, &y);
-#else
-    gdk_window_get_origin(gui.drawarea->window, &x, &y);
-#endif
     gtk_window_get_size(GTK_WINDOW(preedit_window), &width, &height);
     x = x + FILL_X(gui.col);
     y = y + FILL_Y(gui.row);
@@ -5565,11 +5561,7 @@ xim_init(void)
 #endif
 
     g_return_if_fail(gui.drawarea != NULL);
-#if GTK_CHECK_VERSION(3,0,0)
     g_return_if_fail(gtk_widget_get_window(gui.drawarea) != NULL);
-#else
-    g_return_if_fail(gui.drawarea->window != NULL);
-#endif
 
     xic = gtk_im_multicontext_new();
     g_object_ref(xic);
@@ -5583,11 +5575,7 @@ xim_init(void)
     g_signal_connect(G_OBJECT(xic), "preedit_end",
 		     G_CALLBACK(&im_preedit_end_cb), NULL);
 
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_im_context_set_client_window(xic, gtk_widget_get_window(gui.drawarea));
-#else
-    gtk_im_context_set_client_window(xic, gui.drawarea->window);
-#endif
 }
 
     void
@@ -5686,17 +5674,9 @@ im_synthesize_keypress(unsigned int keyval, unsigned int state)
     GdkEventKey *event;
 
     event = (GdkEventKey *)gdk_event_new(GDK_KEY_PRESS);
-#  if GTK_CHECK_VERSION(3,0,0)
     g_object_ref(gtk_widget_get_window(gui.drawarea));
 					/* unreffed by gdk_event_free() */
-#  else
-    g_object_ref(gui.drawarea->window); /* unreffed by gdk_event_free() */
-#  endif
-#  if GTK_CHECK_VERSION(3,0,0)
     event->window = gtk_widget_get_window(gui.drawarea);
-#  else
-    event->window = gui.drawarea->window;
-#  endif
     event->send_event = TRUE;
     event->time = GDK_CURRENT_TIME;
     event->state  = state;

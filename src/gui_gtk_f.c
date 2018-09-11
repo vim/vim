@@ -345,24 +345,18 @@ gtk_form_realize(GtkWidget *widget)
     gtk_widget_set_window(widget,
 			  gdk_window_new(gtk_widget_get_parent_window(widget),
 					 &attributes, attributes_mask));
-    gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
 #else
     widget->window = gdk_window_new(gtk_widget_get_parent_window(widget),
 				    &attributes, attributes_mask);
-    gdk_window_set_user_data(widget->window, widget);
 #endif
+    gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
 
     attributes.x = 0;
     attributes.y = 0;
     attributes.event_mask = gtk_widget_get_events(widget);
 
-#if GTK_CHECK_VERSION(3,0,0)
     form->bin_window = gdk_window_new(gtk_widget_get_window(widget),
 				      &attributes, attributes_mask);
-#else
-    form->bin_window = gdk_window_new(widget->window,
-				      &attributes, attributes_mask);
-#endif
     gdk_window_set_user_data(form->bin_window, widget);
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -422,11 +416,7 @@ gtk_form_map(GtkWidget *widget)
     GTK_WIDGET_SET_FLAGS(widget, GTK_MAPPED);
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
     gdk_window_show(gtk_widget_get_window(widget));
-#else
-    gdk_window_show(widget->window);
-#endif
     gdk_window_show(form->bin_window);
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
@@ -593,15 +583,9 @@ gtk_form_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     if (GTK_WIDGET_REALIZED(widget))
 #endif
     {
-#if GTK_CHECK_VERSION(3,0,0)
 	gdk_window_move_resize(gtk_widget_get_window(widget),
 			       allocation->x, allocation->y,
 			       allocation->width, allocation->height);
-#else
-	gdk_window_move_resize(widget->window,
-			       allocation->x, allocation->y,
-			       allocation->width, allocation->height);
-#endif
 	gdk_window_move_resize(GTK_FORM(widget)->bin_window,
 			       0, 0,
 			       allocation->width, allocation->height);

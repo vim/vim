@@ -1241,7 +1241,7 @@ typedef struct {
 #define MIN_SWAP_PAGE_SIZE 1048
 #define MAX_SWAP_PAGE_SIZE 50000
 
-/* Special values for current_SID. */
+/* Special values for current_sctx.sc_sid. */
 #define SID_MODELINE	-1	/* when using a modeline */
 #define SID_CMDARG	-2	/* for "--cmd" argument */
 #define SID_CARG	-3	/* for "-c" argument */
@@ -2326,6 +2326,12 @@ typedef enum {
 #if defined(FEAT_BROWSE) && defined(GTK_CHECK_VERSION)
 # if GTK_CHECK_VERSION(2,4,0)
 #  define USE_FILE_CHOOSER
+# endif
+#endif
+
+#ifdef FEAT_GUI_GTK
+# if !GTK_CHECK_VERSION(2,14,0)
+#  define gtk_widget_get_window(wid)	((wid)->window)
 # endif
 #endif
 

@@ -1932,11 +1932,7 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 			 gboolean *push_in UNUSED,
 			 gpointer user_data UNUSED)
 {
-# if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), x, y);
-# else
-    gdk_window_get_origin(gui.drawarea->window, x, y);
-# endif
 
     if (popup_mouse_pos)
     {
@@ -1946,12 +1942,8 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 	*x += mx;
 	*y += my;
     }
-# if GTK_CHECK_VERSION(3,0,0)
     else if (curwin != NULL && gui.drawarea != NULL &&
 	     gtk_widget_get_window(gui.drawarea) != NULL)
-# else
-    else if (curwin != NULL && gui.drawarea != NULL && gui.drawarea->window != NULL)
-# endif
     {
 	/* Find the cursor position in the current window */
 	*x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
