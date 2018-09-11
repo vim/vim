@@ -4864,17 +4864,21 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	/* compensate for the one line read-ahead */
 	--sourcing_lnum;
 
-	/* Get the next line and concatenate it when it starts with a
-	 * backslash. We always need to read the next line, keep it in
-	 * sp->nextline. */
+	// Get the next line and concatenate it when it starts with a
+	// backslash. We always need to read the next line, keep it in
+	// sp->nextline.
+	/* Also check for a comment in between continuation lines: "\ */
 	sp->nextline = get_one_sourceline(sp);
-	if (sp->nextline != NULL && *(p = skipwhite(sp->nextline)) == '\\')
+	if (sp->nextline != NULL
+		&& (*(p = skipwhite(sp->nextline)) == '\\'
+			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')))
 	{
 	    garray_T    ga;
 
 	    ga_init2(&ga, (int)sizeof(char_u), 400);
 	    ga_concat(&ga, line);
-	    ga_concat(&ga, p + 1);
+	    if (*p == '\\')
+		ga_concat(&ga, p + 1);
 	    for (;;)
 	    {
 		vim_free(sp->nextline);
@@ -4882,18 +4886,21 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 		if (sp->nextline == NULL)
 		    break;
 		p = skipwhite(sp->nextline);
-		if (*p != '\\')
-		    break;
-		/* Adjust the growsize to the current length to speed up
-		 * concatenating many lines. */
-		if (ga.ga_len > 400)
+		if (*p == '\\')
 		{
-		    if (ga.ga_len > 8000)
-			ga.ga_growsize = 8000;
-		    else
-			ga.ga_growsize = ga.ga_len;
+		    // Adjust the growsize to the current length to speed up
+		    // concatenating many lines.
+		    if (ga.ga_len > 400)
+		    {
+			if (ga.ga_len > 8000)
+			    ga.ga_growsize = 8000;
+			else
+			    ga.ga_growsize = ga.ga_len;
+		    }
+		    ga_concat(&ga, p + 1);
 		}
-		ga_concat(&ga, p + 1);
+		else if (p[0] != '"' || p[1] != '\\' || p[2] != ' ')
+		    break;
 	    }
 	    ga_append(&ga, NUL);
 	    vim_free(line);
