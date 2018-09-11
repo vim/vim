@@ -4680,6 +4680,13 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     varnumber_T		n;
     int			error = FALSE;
 
+#ifdef MESSAGE_QUEUE
+    // vpeekc() used to check for messages, but that caused problems, invoking
+    // a callback where it was not expected.  Some plugins use getchar(1) in a
+    // loop to await a message, therefore make sure we check for messages here.
+    parse_queued_messages();
+#endif
+
     /* Position the cursor.  Needed after a message that ends in a space. */
     windgoto(msg_row, msg_col);
 
