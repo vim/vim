@@ -132,7 +132,7 @@ static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T
 static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
 static void copy_text_attr(int off, char_u *buf, int len, int attr);
 #endif
-static int win_line(win_T *, linenr_T, int, int, int nochange);
+static int win_line(win_T *, linenr_T, int, int, int nochange, int number_only);
 static int char_needs_redraw(int off_from, int off_to, int cols);
 static void draw_vsep_win(win_T *wp, int row);
 #ifdef FEAT_STL_OPT
@@ -971,7 +971,8 @@ update_single_line(win_T *wp, linenr_T lnum)
 		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE);
+		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
+								 FALSE, FALSE);
 # if defined(FEAT_SEARCH_EXTRA)
 		end_search_hl();
 # endif
@@ -1881,7 +1882,7 @@ win_update(win_T *wp)
 	/*
 	 * Update a line when it is in an area that needs updating, when it
 	 * has changes or w_lines[idx] is invalid.
-	 * bot_start may be halfway a wrapped line after using
+	 * "bot_start" may be halfway a wrapped line after using
 	 * win_del_lines(), check if the current line includes it.
 	 * When syntax folding is being used, the saved syntax states will
 	 * already have been updated, we can't see where the syntax state is
@@ -2140,7 +2141,8 @@ win_update(win_T *wp)
 		/*
 		 * Display one line.
 		 */
-		row = win_line(wp, lnum, srow, wp->w_height, mod_top == 0);
+		row = win_line(wp, lnum, srow, wp->w_height,
+							  mod_top == 0, FALSE);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2177,7 +2179,14 @@ win_update(win_T *wp)
 	}
 	else
 	{
-	    /* This line does not need updating, advance to the next one */
+	    if (wp->w_p_rnu)
+	    {
+		// 'relativenumber' set: The text doesn't need to be drawn, but
+		// the number column nearly always does.
+		(void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+	    }
+
+	    // This line does not need to be drawn, advance to the next one.
 	    row += wp->w_lines[idx++].wl_size;
 	    if (row > wp->w_height)	/* past end of screen */
 		break;
@@ -3058,7 +3067,8 @@ win_line(
     linenr_T	lnum,
     int		startrow,
     int		endrow,
-    int		nochange UNUSED)	/* not updating for changed text */
+    int		nochange UNUSED,	// not updating for changed text
+    int		number_only)		// only update the number column
 {
     int		col = 0;		/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
@@ -3253,212 +3263,215 @@ win_line(
     row = startrow;
     screen_row = row + W_WINROW(wp);
 
-    /*
-     * To speed up the loop below, set extra_check when there is linebreak,
-     * trailing white space and/or syntax processing to be done.
-     */
+    if (!number_only)
+    {
+	/*
+	 * To speed up the loop below, set extra_check when there is linebreak,
+	 * trailing white space and/or syntax processing to be done.
+	 */
 #ifdef FEAT_LINEBREAK
-    extra_check = wp->w_p_lbr;
+	extra_check = wp->w_p_lbr;
 #else
-    extra_check = 0;
+	extra_check = 0;
 #endif
 #ifdef FEAT_SYN_HL
-    if (syntax_present(wp) && !wp->w_s->b_syn_error
+	if (syntax_present(wp) && !wp->w_s->b_syn_error
 # ifdef SYN_TIME_LIMIT
-	    && !wp->w_s->b_syn_slow
+		&& !wp->w_s->b_syn_slow
 # endif
-       )
-    {
-	/* Prepare for syntax highlighting in this line.  When there is an
-	 * error, stop syntax highlighting. */
-	save_did_emsg = did_emsg;
-	did_emsg = FALSE;
-	syntax_start(wp, lnum);
-	if (did_emsg)
-	    wp->w_s->b_syn_error = TRUE;
-	else
+	   )
 	{
-	    did_emsg = save_did_emsg;
-#ifdef SYN_TIME_LIMIT
-	    if (!wp->w_s->b_syn_slow)
-#endif
+	    /* Prepare for syntax highlighting in this line.  When there is an
+	     * error, stop syntax highlighting. */
+	    save_did_emsg = did_emsg;
+	    did_emsg = FALSE;
+	    syntax_start(wp, lnum);
+	    if (did_emsg)
+		wp->w_s->b_syn_error = TRUE;
+	    else
 	    {
-		has_syntax = TRUE;
-		extra_check = TRUE;
+		did_emsg = save_did_emsg;
+#ifdef SYN_TIME_LIMIT
+		if (!wp->w_s->b_syn_slow)
+#endif
+		{
+		    has_syntax = TRUE;
+		    extra_check = TRUE;
+		}
 	    }
 	}
-    }
 
-    /* Check for columns to display for 'colorcolumn'. */
-    color_cols = wp->w_p_cc_cols;
-    if (color_cols != NULL)
-	draw_color_col = advance_color_col(VCOL_HLC, &color_cols);
+	/* Check for columns to display for 'colorcolumn'. */
+	color_cols = wp->w_p_cc_cols;
+	if (color_cols != NULL)
+	    draw_color_col = advance_color_col(VCOL_HLC, &color_cols);
 #endif
 
 #ifdef FEAT_TERMINAL
-    if (term_show_buffer(wp->w_buffer))
-    {
-	extra_check = TRUE;
-	get_term_attr = TRUE;
-	term_attr = term_get_attr(wp->w_buffer, lnum, -1);
-    }
+	if (term_show_buffer(wp->w_buffer))
+	{
+	    extra_check = TRUE;
+	    get_term_attr = TRUE;
+	    term_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	}
 #endif
 
 #ifdef FEAT_SPELL
-    if (wp->w_p_spell
-	    && *wp->w_s->b_p_spl != NUL
-	    && wp->w_s->b_langp.ga_len > 0
-	    && *(char **)(wp->w_s->b_langp.ga_data) != NULL)
-    {
-	/* Prepare for spell checking. */
-	has_spell = TRUE;
-	extra_check = TRUE;
-
-	/* Get the start of the next line, so that words that wrap to the next
-	 * line are found too: "et<line-break>al.".
-	 * Trick: skip a few chars for C/shell/Vim comments */
-	nextline[SPWORDLEN] = NUL;
-	if (lnum < wp->w_buffer->b_ml.ml_line_count)
+	if (wp->w_p_spell
+		&& *wp->w_s->b_p_spl != NUL
+		&& wp->w_s->b_langp.ga_len > 0
+		&& *(char **)(wp->w_s->b_langp.ga_data) != NULL)
 	{
-	    line = ml_get_buf(wp->w_buffer, lnum + 1, FALSE);
-	    spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
+	    /* Prepare for spell checking. */
+	    has_spell = TRUE;
+	    extra_check = TRUE;
+
+	    /* Get the start of the next line, so that words that wrap to the next
+	     * line are found too: "et<line-break>al.".
+	     * Trick: skip a few chars for C/shell/Vim comments */
+	    nextline[SPWORDLEN] = NUL;
+	    if (lnum < wp->w_buffer->b_ml.ml_line_count)
+	    {
+		line = ml_get_buf(wp->w_buffer, lnum + 1, FALSE);
+		spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
+	    }
+
+	    /* When a word wrapped from the previous line the start of the current
+	     * line is valid. */
+	    if (lnum == checked_lnum)
+		cur_checked_col = checked_col;
+	    checked_lnum = 0;
+
+	    /* When there was a sentence end in the previous line may require a
+	     * word starting with capital in this line.  In line 1 always check
+	     * the first word. */
+	    if (lnum != capcol_lnum)
+		cap_col = -1;
+	    if (lnum == 1)
+		cap_col = 0;
+	    capcol_lnum = 0;
 	}
-
-	/* When a word wrapped from the previous line the start of the current
-	 * line is valid. */
-	if (lnum == checked_lnum)
-	    cur_checked_col = checked_col;
-	checked_lnum = 0;
-
-	/* When there was a sentence end in the previous line may require a
-	 * word starting with capital in this line.  In line 1 always check
-	 * the first word. */
-	if (lnum != capcol_lnum)
-	    cap_col = -1;
-	if (lnum == 1)
-	    cap_col = 0;
-	capcol_lnum = 0;
-    }
 #endif
 
-    /*
-     * handle visual active in this window
-     */
-    fromcol = -10;
-    tocol = MAXCOL;
-    if (VIsual_active && wp->w_buffer == curwin->w_buffer)
-    {
-					/* Visual is after curwin->w_cursor */
-	if (LTOREQ_POS(curwin->w_cursor, VIsual))
+	/*
+	 * handle visual active in this window
+	 */
+	fromcol = -10;
+	tocol = MAXCOL;
+	if (VIsual_active && wp->w_buffer == curwin->w_buffer)
 	{
-	    top = &curwin->w_cursor;
-	    bot = &VIsual;
-	}
-	else				/* Visual is before curwin->w_cursor */
-	{
-	    top = &VIsual;
-	    bot = &curwin->w_cursor;
-	}
-	lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
-	if (VIsual_mode == Ctrl_V)	/* block mode */
-	{
-	    if (lnum_in_visual_area)
+					    /* Visual is after curwin->w_cursor */
+	    if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	    {
-		fromcol = wp->w_old_cursor_fcol;
-		tocol = wp->w_old_cursor_lcol;
+		top = &curwin->w_cursor;
+		bot = &VIsual;
 	    }
-	}
-	else				/* non-block mode */
-	{
-	    if (lnum > top->lnum && lnum <= bot->lnum)
-		fromcol = 0;
-	    else if (lnum == top->lnum)
+	    else				/* Visual is before curwin->w_cursor */
 	    {
-		if (VIsual_mode == 'V')	/* linewise */
+		top = &VIsual;
+		bot = &curwin->w_cursor;
+	    }
+	    lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
+	    if (VIsual_mode == Ctrl_V)	/* block mode */
+	    {
+		if (lnum_in_visual_area)
+		{
+		    fromcol = wp->w_old_cursor_fcol;
+		    tocol = wp->w_old_cursor_lcol;
+		}
+	    }
+	    else				/* non-block mode */
+	    {
+		if (lnum > top->lnum && lnum <= bot->lnum)
 		    fromcol = 0;
-		else
+		else if (lnum == top->lnum)
 		{
-		    getvvcol(wp, top, (colnr_T *)&fromcol, NULL, NULL);
-		    if (gchar_pos(top) == NUL)
-			tocol = fromcol + 1;
-		}
-	    }
-	    if (VIsual_mode != 'V' && lnum == bot->lnum)
-	    {
-		if (*p_sel == 'e' && bot->col == 0
-#ifdef FEAT_VIRTUALEDIT
-			&& bot->coladd == 0
-#endif
-		   )
-		{
-		    fromcol = -10;
-		    tocol = MAXCOL;
-		}
-		else if (bot->col == MAXCOL)
-		    tocol = MAXCOL;
-		else
-		{
-		    pos = *bot;
-		    if (*p_sel == 'e')
-			getvvcol(wp, &pos, (colnr_T *)&tocol, NULL, NULL);
+		    if (VIsual_mode == 'V')	/* linewise */
+			fromcol = 0;
 		    else
 		    {
-			getvvcol(wp, &pos, NULL, NULL, (colnr_T *)&tocol);
-			++tocol;
+			getvvcol(wp, top, (colnr_T *)&fromcol, NULL, NULL);
+			if (gchar_pos(top) == NUL)
+			    tocol = fromcol + 1;
+		    }
+		}
+		if (VIsual_mode != 'V' && lnum == bot->lnum)
+		{
+		    if (*p_sel == 'e' && bot->col == 0
+#ifdef FEAT_VIRTUALEDIT
+			    && bot->coladd == 0
+#endif
+		       )
+		    {
+			fromcol = -10;
+			tocol = MAXCOL;
+		    }
+		    else if (bot->col == MAXCOL)
+			tocol = MAXCOL;
+		    else
+		    {
+			pos = *bot;
+			if (*p_sel == 'e')
+			    getvvcol(wp, &pos, (colnr_T *)&tocol, NULL, NULL);
+			else
+			{
+			    getvvcol(wp, &pos, NULL, NULL, (colnr_T *)&tocol);
+			    ++tocol;
+			}
 		    }
 		}
 	    }
-	}
 
-	/* Check if the character under the cursor should not be inverted */
-	if (!highlight_match && lnum == curwin->w_cursor.lnum && wp == curwin
+	    /* Check if the character under the cursor should not be inverted */
+	    if (!highlight_match && lnum == curwin->w_cursor.lnum && wp == curwin
 #ifdef FEAT_GUI
-		&& !gui.in_use
+		    && !gui.in_use
 #endif
-		)
-	    noinvcur = TRUE;
+		    )
+		noinvcur = TRUE;
 
-	/* if inverting in this line set area_highlighting */
-	if (fromcol >= 0)
-	{
-	    area_highlighting = TRUE;
-	    attr = HL_ATTR(HLF_V);
+	    /* if inverting in this line set area_highlighting */
+	    if (fromcol >= 0)
+	    {
+		area_highlighting = TRUE;
+		attr = HL_ATTR(HLF_V);
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-	    if ((clip_star.available && !clip_star.owned
-						     && clip_isautosel_star())
-		    || (clip_plus.available && !clip_plus.owned
-						    && clip_isautosel_plus()))
-		attr = HL_ATTR(HLF_VNC);
+		if ((clip_star.available && !clip_star.owned
+							 && clip_isautosel_star())
+			|| (clip_plus.available && !clip_plus.owned
+							&& clip_isautosel_plus()))
+		    attr = HL_ATTR(HLF_VNC);
 #endif
+	    }
 	}
-    }
 
-    /*
-     * handle 'incsearch' and ":s///c" highlighting
-     */
-    else if (highlight_match
-	    && wp == curwin
-	    && lnum >= curwin->w_cursor.lnum
-	    && lnum <= curwin->w_cursor.lnum + search_match_lines)
-    {
-	if (lnum == curwin->w_cursor.lnum)
-	    getvcol(curwin, &(curwin->w_cursor),
-					     (colnr_T *)&fromcol, NULL, NULL);
-	else
-	    fromcol = 0;
-	if (lnum == curwin->w_cursor.lnum + search_match_lines)
+	/*
+	 * handle 'incsearch' and ":s///c" highlighting
+	 */
+	else if (highlight_match
+		&& wp == curwin
+		&& lnum >= curwin->w_cursor.lnum
+		&& lnum <= curwin->w_cursor.lnum + search_match_lines)
 	{
-	    pos.lnum = lnum;
-	    pos.col = search_match_endcol;
-	    getvcol(curwin, &pos, (colnr_T *)&tocol, NULL, NULL);
+	    if (lnum == curwin->w_cursor.lnum)
+		getvcol(curwin, &(curwin->w_cursor),
+						 (colnr_T *)&fromcol, NULL, NULL);
+	    else
+		fromcol = 0;
+	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
+	    {
+		pos.lnum = lnum;
+		pos.col = search_match_endcol;
+		getvcol(curwin, &pos, (colnr_T *)&tocol, NULL, NULL);
+	    }
+	    else
+		tocol = MAXCOL;
+	    /* do at least one character; happens when past end of line */
+	    if (fromcol == tocol)
+		tocol = fromcol + 1;
+	    area_highlighting = TRUE;
+	    attr = HL_ATTR(HLF_I);
 	}
-	else
-	    tocol = MAXCOL;
-	/* do at least one character; happens when past end of line */
-	if (fromcol == tocol)
-	    tocol = fromcol + 1;
-	area_highlighting = TRUE;
-	attr = HL_ATTR(HLF_I);
     }
 
 #ifdef FEAT_DIFF
@@ -3504,7 +3517,7 @@ win_line(
     ptr = line;
 
 #ifdef FEAT_SPELL
-    if (has_spell)
+    if (has_spell && !number_only)
     {
 	/* For checking first word with a capital skip white space. */
 	if (cap_col == 0)
@@ -3564,7 +3577,7 @@ win_line(
 	v = wp->w_skipcol;
     else
 	v = wp->w_leftcol;
-    if (v > 0)
+    if (v > 0 && !number_only)
     {
 #ifdef FEAT_MBYTE
 	char_u	*prev_ptr = ptr;
@@ -3707,7 +3720,7 @@ win_line(
      */
     cur = wp->w_match_head;
     shl_flag = FALSE;
-    while (cur != NULL || shl_flag == FALSE)
+    while ((cur != NULL || shl_flag == FALSE) && !number_only)
     {
 	if (shl_flag == FALSE)
 	{
@@ -4068,13 +4081,16 @@ win_line(
 	    }
 	}
 
-	/* When still displaying '$' of change command, stop at cursor */
-	if (dollar_vcol >= 0 && wp == curwin
+	// When still displaying '$' of change command, stop at cursor.
+	// When only displaying the (relative) line number and that's done,
+	// stop here.
+	if ((dollar_vcol >= 0 && wp == curwin
 		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol
 #ifdef FEAT_DIFF
 				   && filler_todo <= 0
 #endif
 		)
+		|| (number_only && draw_state > WL_NR))
 	{
 	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
 						    HAS_RIGHTLEFT(wp->w_p_rl));
