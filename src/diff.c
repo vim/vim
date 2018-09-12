@@ -31,7 +31,7 @@ static int	diff_busy = FALSE;	/* ex_diffgetput() is busy */
 #define DIFF_VERTICAL	16	// vertical splits
 #define DIFF_HIDDEN_OFF	32	// diffoff when hidden
 #define DIFF_INTERNAL	64	// use internal xdiff algorithm
-static int	diff_flags = DIFF_FILLER;
+static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER;
 
 static long diff_algorithm = 0;
 
