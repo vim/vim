@@ -153,12 +153,14 @@ redraw_for_cursorline(win_T *wp)
 	    // in the same window.
 	    redrawWinline(wp, last_cursorline, FALSE);
 	    redrawWinline(wp, wp->w_cursor.lnum, FALSE);
-	    last_cursorline = wp->w_cursor.lnum;
 	    redraw_win_later(wp, VALID);
 	}
 	else
 #endif
 	    redraw_win_later(wp, SOME_VALID);
+#ifdef FEAT_SYN_HL
+	last_cursorline = wp->w_cursor.lnum;
+#endif
     }
 }
 
