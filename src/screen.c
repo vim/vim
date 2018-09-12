@@ -496,6 +496,7 @@ redraw_after_callback(int call_update_screen)
  */
     void
 redrawWinline(
+    win_T	*wp,
     linenr_T	lnum,
     int		invalid UNUSED)	/* window line height is invalid now */
 {
@@ -503,19 +504,19 @@ redrawWinline(
     int		i;
 #endif
 
-    if (curwin->w_redraw_top == 0 || curwin->w_redraw_top > lnum)
-	curwin->w_redraw_top = lnum;
-    if (curwin->w_redraw_bot == 0 || curwin->w_redraw_bot < lnum)
-	curwin->w_redraw_bot = lnum;
-    redraw_later(VALID);
+    if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
+	wp->w_redraw_top = lnum;
+    if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
+	wp->w_redraw_bot = lnum;
+    redraw_win_later(wp, VALID);
 
 #ifdef FEAT_FOLDING
     if (invalid)
     {
 	/* A w_lines[] entry for this lnum has become invalid. */
-	i = find_wl_entry(curwin, lnum);
+	i = find_wl_entry(wp, lnum);
 	if (i >= 0)
-	    curwin->w_lines[i].wl_valid = FALSE;
+	    wp->w_lines[i].wl_valid = FALSE;
     }
 #endif
 }
