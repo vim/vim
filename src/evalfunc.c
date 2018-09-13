@@ -13075,7 +13075,7 @@ f_test_option_not_set(typval_T *argvars, typval_T *rettv UNUSED)
 	EMSG(_(e_invarg));
     else
     {
-	name = get_tv_string_chk(&argvars[0]);
+	name = get_tv_string(&argvars[0]);
 	if (reset_option_was_set(name) == FAIL)
 	    EMSG2(_(e_invarg2), name);
     }
