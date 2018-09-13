@@ -3147,7 +3147,7 @@ win_line(
     static linenr_T capcol_lnum = 0;	/* line number where "cap_col" used */
     int		cur_checked_col = 0;	/* checked column for current line */
 #endif
-    int		extra_check;		/* has syntax or linebreak */
+    int		extra_check = 0;	// has syntax or linebreak
 #ifdef FEAT_MBYTE
     int		multi_attr = 0;		/* attributes desired by multibyte */
     int		mb_l = 1;		/* multi-byte byte length */
@@ -3271,8 +3271,6 @@ win_line(
 	 */
 #ifdef FEAT_LINEBREAK
 	extra_check = wp->w_p_lbr;
-#else
-	extra_check = 0;
 #endif
 #ifdef FEAT_SYN_HL
 	if (syntax_present(wp) && !wp->w_s->b_syn_error
