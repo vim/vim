@@ -11,6 +11,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
+#include "protodef.h"
 #ifdef HAVE_CONFIG_H
 # include "auto/config.h"
 #endif

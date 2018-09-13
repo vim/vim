@@ -64,7 +64,7 @@ int tabstop_set(char_u *var, int **array);
 int tabstop_padding(colnr_T col, int ts_arg, int *vts);
 int tabstop_at(colnr_T col, int ts, int *vts);
 colnr_T tabstop_start(colnr_T col, int ts, int *vts);
-void tabstop_fromto(colnr_T start_col, colnr_T end_col, int ts, int *vts, int *ntabs, int *nspcs);
+void tabstop_fromto(colnr_T start_col, colnr_T end_col, int ts_arg, int *vts, int *ntabs, int *nspcs);
 int tabstop_eq(int *ts1, int *ts2);
 int *tabstop_copy(int *oldts);
 int tabstop_count(int *ts);
