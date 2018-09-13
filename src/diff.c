@@ -1969,9 +1969,8 @@ diff_cmp(char_u *s1, char_u *s2)
     /* Ignore trailing white space. */
     p1 = skipwhite(p1);
     p2 = skipwhite(p2);
-    if (*p1 != NUL || *p2 != NUL)
-	return 1;
-    return 0;
+    
+    return *p1 != NUL || *p2 != NUL;
 }
 
 /*
