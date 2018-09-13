@@ -209,17 +209,16 @@ static struct entry *find_longest_common_sequence(struct hashmap *map)
 	struct entry **sequence = (struct entry **)xdl_malloc(map->nr * sizeof(struct entry *));
 	int longest = 0, i;
 	struct entry *entry;
-
-	/* Added to silence Coverity. */
-	if (sequence == NULL)
-		return map->first;
-
 	/*
 	 * If not -1, this entry in sequence must never be overridden.
 	 * Therefore, overriding entries before this has no effect, so
 	 * do not do that either.
 	 */
 	int anchor_i = -1;
+
+	/* Added to silence Coverity. */
+	if (sequence == NULL)
+		return map->first;
 
 	for (entry = map->first; entry; entry = entry->next) {
 		if (!entry->line2 || entry->line2 == NON_UNIQUE)
