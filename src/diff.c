@@ -1600,6 +1600,10 @@ diff_read(
 		    && (tag_fgets(linebuf, LBUFLEN, fd) == 0)
 		    && (STRNCMP(line, "@@ ", 3) == 0))
 		diffstyle = DIFF_UNIFIED;
+	    else
+		// Format not recognized yet, skip over this line.  Cygwin diff
+		// may put a warning at the start of the file.
+		continue;
 	}
 
 	if (diffstyle == DIFF_ED)

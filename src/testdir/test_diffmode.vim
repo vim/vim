@@ -519,7 +519,9 @@ func Test_diffexpr()
   endif
 
   func DiffExpr()
-    silent exe '!diff ' . v:fname_in . ' ' . v:fname_new . '>' . v:fname_out
+    " Prepent some text to check diff type detection
+    call writefile(['warning', '  message'], v:fname_out)
+    silent exe '!diff ' . v:fname_in . ' ' . v:fname_new . '>>' . v:fname_out
   endfunc
   set diffexpr=DiffExpr()
   set diffopt=foldcolumn:0
