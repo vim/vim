@@ -704,9 +704,7 @@ struct signlist
     linenr_T	lnum;		/* line number which has this sign */
     int		typenr;		/* typenr of sign */
     signlist_T	*next;		/* next signlist entry */
-# ifdef FEAT_NETBEANS_INTG
     signlist_T  *prev;		/* previous entry -- for easy reordering */
-# endif
 };
 
 /* type argument for buf_getsigntype() */
