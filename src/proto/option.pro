@@ -55,7 +55,7 @@ int shortmess(int x);
 void vimrc_found(char_u *fname, char_u *envname);
 void change_compatible(int on);
 int option_was_set(char_u *name);
-void reset_option_was_set(char_u *name);
+int reset_option_was_set(char_u *name);
 int can_bs(int what);
 void save_file_ff(buf_T *buf);
 int file_ff_differs(buf_T *buf, int ignore_empty);

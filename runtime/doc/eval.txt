@@ -2473,6 +2473,7 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_option_not_set({name})    none	reset flag indicating option was set
 test_override({expr}, {val})    none	test with Vim internal overrides
 test_settime({expr})		none	set current time for testing
 timer_info([{id}])		List	information about timers
@@ -8736,6 +8737,15 @@ test_null_partial()					*test_null_partial()*
 
 test_null_string()					*test_null_string()*
 		Return a String that is null. Only useful for testing.
+
+test_option_not_set({name})				*test_option_not_set()*
+		Reset the flag that indicates option {name} was set.  Thus it
+		looks like it still has the default value. Use like this: >
+			set ambiwidth=double
+			call test_option_not_set('ambiwidth')
+<		Now the 'ambiwidth' option behaves like it was never changed,
+		even though the value is "double".
+		Only to be used for testing!
 
 test_override({name}, {val})				*test_override()*
 		Overrides certain parts of Vims internal processing to be able

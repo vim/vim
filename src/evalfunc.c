@@ -415,6 +415,7 @@ static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
+static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
@@ -922,6 +923,7 @@ static struct fst
     {"test_null_list",	0, 0, f_test_null_list},
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
+    {"test_option_not_set", 1, 1, f_test_option_not_set},
     {"test_override",    2, 2, f_test_override},
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
@@ -13062,7 +13064,25 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * "test_disable({name}, {val})" function
+ * "test_option_not_set({name})" function
+ */
+    static void
+f_test_option_not_set(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u *name = (char_u *)"";
+
+    if (argvars[0].v_type != VAR_STRING)
+	EMSG(_(e_invarg));
+    else
+    {
+	name = get_tv_string_chk(&argvars[0]);
+	if (reset_option_was_set(name) == FAIL)
+	    EMSG2(_(e_invarg2), name);
+    }
+}
+
+/*
+ * "test_override({name}, {val})" function
  */
     static void
 f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
