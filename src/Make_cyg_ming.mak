@@ -818,15 +818,15 @@ endif
 
 ifeq ($(TERMINAL),yes)
 OBJ += $(OUTDIR)/terminal.o \
-	$(OUTDIR)/term_encoding.o \
-	$(OUTDIR)/term_keyboard.o \
-	$(OUTDIR)/term_mouse.o \
-	$(OUTDIR)/term_parser.o \
-	$(OUTDIR)/term_pen.o \
-	$(OUTDIR)/term_screen.o \
-	$(OUTDIR)/term_state.o \
-	$(OUTDIR)/term_unicode.o \
-	$(OUTDIR)/term_vterm.o
+	$(OUTDIR)/encoding.o \
+	$(OUTDIR)/keyboard.o \
+	$(OUTDIR)/mouse.o \
+	$(OUTDIR)/parser.o \
+	$(OUTDIR)/pen.o \
+	$(OUTDIR)/termscreen.o \
+	$(OUTDIR)/state.o \
+	$(OUTDIR)/unicode.o \
+	$(OUTDIR)/vterm.o
 endif
 
 # Include xdiff
@@ -1064,31 +1064,31 @@ CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-$(OUTDIR)/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+$(OUTDIR)/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/encoding.c -o $@
 
-$(OUTDIR)/term_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+$(OUTDIR)/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/keyboard.c -o $@
 
-$(OUTDIR)/term_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+$(OUTDIR)/mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/mouse.c -o $@
 
-$(OUTDIR)/term_parser.o: libvterm/src/parser.c $(TERM_DEPS)
+$(OUTDIR)/parser.o: libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/parser.c -o $@
 
-$(OUTDIR)/term_pen.o: libvterm/src/pen.c $(TERM_DEPS)
+$(OUTDIR)/pen.o: libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/pen.c -o $@
 
-$(OUTDIR)/term_screen.o: libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/screen.c -o $@
+$(OUTDIR)/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/termscreen.c -o $@
 
-$(OUTDIR)/term_state.o: libvterm/src/state.c $(TERM_DEPS)
+$(OUTDIR)/state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/state.c -o $@
 
-$(OUTDIR)/term_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+$(OUTDIR)/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/unicode.c -o $@
 
-$(OUTDIR)/term_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+$(OUTDIR)/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/vterm.c -o $@
 
 $(OUTDIR)/xdiffi.o: xdiff/xdiffi.c $(XDIFF_DEPS)
