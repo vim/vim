@@ -14,6 +14,7 @@ NEW_TESTS = \
 	test_autoload \
 	test_backspace_opt \
 	test_backup \
+	test_behave \
 	test_blockedit \
 	test_breakindent \
 	test_bufline \
