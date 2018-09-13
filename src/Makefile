@@ -2845,7 +2845,7 @@ depend:
 	sed -e '/\#\#\# Dependencies/q' < Makefile > tmp_make
 	-for i in $(ALL_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
-		sed -e 's+^\([^ ]*\.o\)+objects/\1+' >> tmp_make; done
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
 	mv tmp_make Makefile
 
 # Run lint.  Clean up the *.ln files that are sometimes left behind.
@@ -3404,7 +3404,7 @@ objects/dict.o: dict.c vim.h protodef.h auto/config.h feature.h os_unix.h \
 objects/diff.o: diff.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h farsi.h arabic.h xdiff/xdiff.h xdiff/../vim.h
+ proto.h globals.h farsi.h arabic.h xdiff/xdiff.h vim.h
 objects/digraph.o: digraph.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3791,57 +3791,57 @@ objects/unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
 objects/vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
-objects/xemit.o: xdiff/xemit.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xemit.o: xdiff/xemit.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
-objects/xprepare.o: xdiff/xprepare.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xprepare.o: xdiff/xprepare.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
-objects/xutils.o: xdiff/xutils.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xutils.o: xdiff/xutils.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
-objects/xhistogram.o: xdiff/xhistogram.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xhistogram.o: xdiff/xhistogram.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
-objects/xpatience.o: xdiff/xpatience.c xdiff/xinclude.h xdiff/../auto/config.h \
- xdiff/xmacros.h xdiff/xdiff.h xdiff/../vim.h xdiff/../protodef.h \
- xdiff/../auto/config.h xdiff/../feature.h xdiff/../os_unix.h \
- xdiff/../auto/osdef.h xdiff/../ascii.h xdiff/../keymap.h xdiff/../term.h \
- xdiff/../macros.h xdiff/../option.h xdiff/../beval.h proto/gui_beval.pro \
- xdiff/../structs.h xdiff/../regexp.h xdiff/../gui.h xdiff/../alloc.h \
- xdiff/../ex_cmds.h xdiff/../spell.h xdiff/../proto.h xdiff/../globals.h \
- xdiff/../farsi.h xdiff/../arabic.h xdiff/xtypes.h xdiff/xutils.h \
+objects/xpatience.o: xdiff/xpatience.c xdiff/xinclude.h auto/config.h \
+ xdiff/xmacros.h xdiff/xdiff.h vim.h protodef.h \
+ auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h \
+ macros.h option.h beval.h proto/gui_beval.pro \
+ structs.h regexp.h gui.h alloc.h \
+ ex_cmds.h spell.h proto.h globals.h \
+ farsi.h arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
