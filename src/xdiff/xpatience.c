@@ -206,7 +206,7 @@ static int binary_search(struct entry **sequence, int longest,
  */
 static struct entry *find_longest_common_sequence(struct hashmap *map)
 {
-	struct entry **sequence = xdl_malloc(map->nr * sizeof(struct entry *));
+	struct entry **sequence = (struct entry **)xdl_malloc(map->nr * sizeof(struct entry *));
 	int longest = 0, i;
 	struct entry *entry;
 
