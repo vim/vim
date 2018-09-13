@@ -90,9 +90,7 @@ menu_is_winbar(char_u *name)
     int
 winbar_height(win_T *wp)
 {
-    if (wp->w_winbar != NULL && wp->w_winbar->children != NULL)
-	return 1;
-    return 0;
+    return wp->w_winbar != NULL && wp->w_winbar->children != NULL;
 }
 
     static vimmenu_T **

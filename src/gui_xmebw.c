@@ -253,7 +253,7 @@ alloc_color(Display	*display,
     xcolor->blue = bump_color(xcolor->blue);
 
     status = XAllocColor(display, colormap, xcolor);
-    return status != 0 ? 1 : 0;
+    return status != 0;
 }
 
 /* XPM */
