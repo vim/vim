@@ -991,11 +991,7 @@ drawBalloon(BalloonEval *beval)
 # endif
 
 	/* Compute position of the balloon area */
-# if GTK_CHECK_VERSION(3,0,0)
 	gdk_window_get_origin(gtk_widget_get_window(beval->target), &x, &y);
-# else
-	gdk_window_get_origin(beval->target->window, &x, &y);
-# endif
 	x += beval->x;
 	y += beval->y;
 

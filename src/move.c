@@ -123,6 +123,10 @@ comp_botline(win_T *wp)
     set_empty_rows(wp, done);
 }
 
+#ifdef FEAT_SYN_HL
+static linenr_T	last_cursorline = 0;
+#endif
+
 /*
  * Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
  * set.
@@ -140,7 +144,28 @@ redraw_for_cursorline(win_T *wp)
 	    && !pum_visible()
 # endif
 	    )
-	redraw_win_later(wp, SOME_VALID);
+    {
+	if (wp->w_p_rnu)
+	    // win_line() will redraw the number column only.
+	    redraw_win_later(wp, VALID);
+#ifdef FEAT_SYN_HL
+	if (wp->w_p_cul)
+	{
+	    if (wp->w_redr_type <= VALID && last_cursorline != 0)
+	    {
+		// "last_cursorline" may be set for another window, worst case
+		// we redraw too much.  This is optimized for moving the cursor
+		// around in the same window.
+		redrawWinline(wp, last_cursorline, FALSE);
+		redrawWinline(wp, wp->w_cursor.lnum, FALSE);
+		redraw_win_later(wp, VALID);
+	    }
+	    else
+		redraw_win_later(wp, SOME_VALID);
+	    last_cursorline = wp->w_cursor.lnum;
+	}
+#endif
+    }
 }
 
 /*

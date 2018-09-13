@@ -18,17 +18,6 @@
  * changed beyond recognition.
  */
 
-/*
- * Some systems have a prototype for select() that has (int *) instead of
- * (fd_set *), which is wrong. This define removes that prototype. We define
- * our own prototype below.
- * Don't use it for the Mac, it causes a warning for precompiled headers.
- * TODO: use a configure check for precompiled headers?
- */
-#if !defined(__APPLE__) && !defined(__TANDEM)
-# define select select_declared_wrong
-#endif
-
 #include "vim.h"
 
 #ifdef FEAT_MZSCHEME
@@ -54,14 +43,9 @@ static int selinux_enabled = -1;
 # endif
 #endif
 
-/*
- * Use this prototype for select, some include files have a wrong prototype
- */
-#ifndef __TANDEM
+#ifdef __BEOS__
 # undef select
-# ifdef __BEOS__
-#  define select	beos_select
-# endif
+# define select	beos_select
 #endif
 
 #ifdef __CYGWIN__
@@ -75,10 +59,6 @@ static int selinux_enabled = -1;
 #   include "winclip.pro"
 #  endif
 # endif
-#endif
-
-#if defined(HAVE_SELECT)
-extern int   select(int, fd_set *, fd_set *, fd_set *, struct timeval *);
 #endif
 
 #ifdef FEAT_MOUSE_GPM
@@ -417,10 +397,14 @@ mch_inchar(
 	    handle_resize();
 
 #ifdef MESSAGE_QUEUE
-	parse_queued_messages();
-	/* If input was put directly in typeahead buffer bail out here. */
-	if (typebuf_changed(tb_change_cnt))
-	    return 0;
+	// Only process messages when waiting.
+	if (wtime != 0)
+	{
+	    parse_queued_messages();
+	    // If input was put directly in typeahead buffer bail out here.
+	    if (typebuf_changed(tb_change_cnt))
+		return 0;
+	}
 #endif
 	if (wtime < 0 && did_start_blocking)
 	    /* blocking and already waited for p_ut */
@@ -6312,7 +6296,8 @@ select_eintr:
 	if (interrupted != NULL)
 	    *interrupted = FALSE;
 
-	ret = select(maxfd + 1, &rfds, &wfds, &efds, tvp);
+	ret = select(maxfd + 1, SELECT_TYPE_ARG234 &rfds,
+		      SELECT_TYPE_ARG234 &wfds, SELECT_TYPE_ARG234 &efds, tvp);
 	result = ret > 0 && FD_ISSET(fd, &rfds);
 	if (result)
 	    --ret;

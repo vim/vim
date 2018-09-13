@@ -1180,6 +1180,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	channel->ch_part[PART_OUT].ch_mode = opt->jo_out_mode;
     if (opt->jo_set & JO_ERR_MODE)
 	channel->ch_part[PART_ERR].ch_mode = opt->jo_err_mode;
+    channel->ch_nonblock = opt->jo_noblock;
 
     if (opt->jo_set & JO_TIMEOUT)
 	for (part = PART_SOCK; part < PART_COUNT; ++part)
@@ -3677,7 +3678,7 @@ channel_any_keep_open()
 channel_set_nonblock(channel_T *channel, ch_part_T part)
 {
     chanpart_T *ch_part = &channel->ch_part[part];
-    int fd = ch_part->ch_fd;
+    int		fd = ch_part->ch_fd;
 
     if (fd != INVALID_FD)
     {
@@ -3721,6 +3722,9 @@ channel_send(
 	channel->ch_error = TRUE;
 	return FAIL;
     }
+
+    if (channel->ch_nonblock && !ch_part->ch_nonblocking)
+	channel_set_nonblock(channel, part);
 
     if (ch_log_active())
     {
@@ -4552,6 +4556,12 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (handle_mode(item, opt, &opt->jo_err_mode, JO_ERR_MODE)
 								      == FAIL)
 		    return FAIL;
+	    }
+	    else if (STRCMP(hi->hi_key, "noblock") == 0)
+	    {
+		if (!(supported & JO_MODE))
+		    break;
+		opt->jo_noblock = get_tv_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_io") == 0
 		    || STRCMP(hi->hi_key, "out_io") == 0

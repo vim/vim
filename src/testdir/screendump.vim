@@ -93,8 +93,11 @@ endfunc
 " Verify that Vim running in terminal buffer "buf" matches the screen dump.
 " "options" is passed to term_dumpwrite().
 " The file name used is "dumps/{filename}.dump".
+" Optionally an extra argument can be passed which is prepended to the error
+" message.  Use this when using the same dump file with different options.
 " Will wait for up to a second for the screen dump to match.
-func VerifyScreenDump(buf, filename, options)
+" Returns non-zero when verification fails.
+func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
   let testfile = a:filename . '.dump.failed'
 
@@ -108,10 +111,15 @@ func VerifyScreenDump(buf, filename, options)
     endif
     if i == 100
       " Leave the test file around for inspection.
-      call assert_report('See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")')
-      break
+      let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
+      if a:0 == 1
+	let msg = a:1 . ': ' . msg
+      endif
+      call assert_report(msg)
+      return 1
     endif
     sleep 10m
     let i += 1
   endwhile
+  return 0
 endfunc

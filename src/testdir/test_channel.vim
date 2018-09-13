@@ -47,8 +47,11 @@ endfunc
 func Ch_communicate(port)
   " Avoid dropping messages, since we don't use a callback here.
   let s:chopt.drop = 'never'
+  " Also add the noblock flag to try it out.
+  let s:chopt.noblock = 1
   let handle = ch_open('localhost:' . a:port, s:chopt)
   unlet s:chopt.drop
+  unlet s:chopt.noblock
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -451,8 +454,9 @@ func Test_raw_pipe()
   call ch_log('Test_raw_pipe()')
   " Add a dummy close callback to avoid that messages are dropped when calling
   " ch_canread().
+  " Also test the non-blocking option.
   let job = job_start(s:python . " test_channel_pipe.py",
-	\ {'mode': 'raw', 'drop': 'never'})
+	\ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
   call assert_equal(v:t_job, type(job))
   call assert_equal("run", job_status(job))
 
@@ -1346,6 +1350,34 @@ func Test_close_and_exit_cb()
   call assert_match('^\%(dead\|run\)', g:retdict.ret['close_cb'])
   call assert_equal('dead', g:retdict.ret['exit_cb'])
   unlet g:retdict
+endfunc
+
+""""""""""
+
+function ExitCbWipe(job, status)
+  exe g:wipe_buf 'bw!'
+endfunction
+
+" This caused a crash, because messages were handled while peeking for a
+" character.
+func Test_exit_cb_wipes_buf()
+  if !has('timers')
+    return
+  endif
+  set cursorline lazyredraw
+  call test_override('redraw_flag', 1)
+  new
+  let g:wipe_buf = bufnr('')
+
+  let job = job_start(['true'], {'exit_cb': 'ExitCbWipe'})
+  let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
+  call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call timer_stop(timer)
+
+  set nocursorline nolazyredraw
+  unlet g:wipe_buf
+  call test_override('ALL', 0)
 endfunc
 
 """"""""""

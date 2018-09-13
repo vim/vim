@@ -15,23 +15,40 @@ TO ADD A NEW STYLE TEST:
 
 1) Create a test_<subject>.vim file.
 2) Add test_<subject>.res to NEW_TESTS in Make_all.mak in alphabetical order.
-3) Also add an entry in src/Makefile.
+3) Also add an entry "test_<subject>" in src/Make_all.mak.
 4) Use make test_<subject>.res to run a single test in src/testdir/.
    Use make test_<subject>  to run a single test in src/.
 
+At 2), instead of running the test separately, it can be included in
+"test_alot".  Do this for quick tests without side effects.  The test runs a
+bit faster, because Vim doesn't have to be started, one Vim instance runs many
+tests.
+
+
 What you can use (see test_assert.vim for an example):
+
 - Call assert_equal(), assert_true(), assert_false(), etc.
-- Use try/catch to check for exceptions.
-- Use alloc_fail() to have memory allocation fail. This makes it possible
-  to check memory allocation failures are handled gracefully.  You need to
-  change the source code to add an ID to the allocation.  Update LAST_ID_USED
-  above alloc_id() to the highest ID used.
-- Use disable_char_avail_for_testing(1) if char_avail() must return FALSE for
-  a while.  E.g. to trigger the CursorMovedI autocommand event.
-  See test_cursor_func.vim for an example
+
+- Use assert_fails() to check for expected errors.
+
+- Use try/catch to avoid an exception aborts the test.
+
+- Use alloc_fail() to have memory allocation fail. This makes it possible to
+  check memory allocation failures are handled gracefully.  You need to change
+
+- the source code to add an ID to the allocation.  Update LAST_ID_USED above
+  alloc_id() to the highest ID used.
+
+- Use test_override() to make Vim behave differently, e.g.  if char_avail()
+  must return FALSE for a while.  E.g. to trigger the CursorMovedI autocommand
+  event.
+
+- See test_cursor_func.vim for an example.
+
 - If the bug that is being tested isn't fixed yet, you can throw an exception
-  so that it's clear this still needs work.  E.g.:
-	  throw "Skipped: Bug with <c-e> and popupmenu not fixed yet"
+  with "Skipped" so that it's clear this still needs work.  E.g.: throw
+  "Skipped: Bug with <c-e> and popupmenu not fixed yet"
+
 - See the start of runtest.vim for more help.
 
 

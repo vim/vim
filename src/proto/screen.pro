@@ -8,7 +8,7 @@ void redraw_buf_later(buf_T *buf, int type);
 void redraw_buf_and_status_later(buf_T *buf, int type);
 int redraw_asap(int type);
 void redraw_after_callback(int call_update_screen);
-void redrawWinline(linenr_T lnum, int invalid);
+void redrawWinline(win_T *wp, linenr_T lnum, int invalid);
 void reset_updating_screen(int may_resize_shell);
 void update_curbuf(int type);
 int update_screen(int type_arg);

@@ -113,6 +113,9 @@
 /* Define if you can safely include both <sys/time.h> and <sys/select.h>.  */
 #undef SYS_SELECT_WITH_SYS_TIME
 
+/* Define to a typecast for select() arguments 2, 3 and 4. */
+#undef SELECT_TYPE_ARG234
+
 /* Define if you have /dev/ptc */
 #undef HAVE_DEV_PTC
 

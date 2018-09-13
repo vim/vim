@@ -3798,7 +3798,10 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 			<abuf>		autocmd buffer number (as a String!)
 			<amatch>	autocmd matched name
 			<sfile>		sourced script file or function name
-			<slnum>		sourced script file line number
+			<slnum>		sourced script line number or function
+					line number
+			<sflnum>	script file line number, also when in
+					a function
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
 			<client>	the {clientid} of the last received
@@ -5931,6 +5934,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 				     (|mapmode-ic|)
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
+		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).
 
@@ -5978,11 +5982,14 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 		When {expr} is a |List| then this returns the index of the
 		first item where {pat} matches.  Each item is used as a
 		String, |Lists| and |Dictionaries| are used as echoed.
+
 		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
+
 		A match at the first character or |List| item returns zero.
 		If there is no match -1 is returned.
+
 		For getting submatches see |matchlist()|.
 		Example: >
 			:echo match("testing", "ing")	" results in 4
@@ -8386,7 +8393,9 @@ term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
 		|term_dumpload()| and |term_dumpdiff()|.
-		If {filename} already exists an error is given.	*E953*
+		If the job in the terminal already finished an error is given:
+		*E958*
+		If {filename} already exists an error is given:	*E953*
 		Also see |terminal-diff|.
 
 		{options} is a dictionary with these optional entries:
@@ -8737,6 +8746,7 @@ test_override({name}, {val})				*test_override()*
 
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
+		redraw_flag  ignore the RedrawingDisabled flag
 		char_avail   disable the char_avail() function
 		starting     reset the "starting" variable, see below
 		nfa_fail     makes the NFA regexp engine fail to force a

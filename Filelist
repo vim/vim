@@ -273,6 +273,22 @@ SRC_ALL =	\
 		src/libvterm/t/92lp1640917.test \
 		src/libvterm/t/harness.c \
 		src/libvterm/t/run-test.pl \
+		src/xdiff/COPYING \
+		src/xdiff/README.txt \
+		src/xdiff/xdiff.h \
+		src/xdiff/xdiffi.c \
+		src/xdiff/xdiffi.h \
+		src/xdiff/xemit.c \
+		src/xdiff/xemit.h \
+		src/xdiff/xhistogram.c \
+		src/xdiff/xinclude.h \
+		src/xdiff/xmacros.h \
+		src/xdiff/xpatience.c \
+		src/xdiff/xprepare.c \
+		src/xdiff/xprepare.h \
+		src/xdiff/xtypes.h \
+		src/xdiff/xutils.c \
+		src/xdiff/xutils.h \
 
 
 # source files for Unix only

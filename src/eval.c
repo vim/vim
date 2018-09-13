@@ -1495,8 +1495,8 @@ list_vim_vars(int *first)
     static void
 list_script_vars(int *first)
 {
-    if (current_SID > 0 && current_SID <= ga_scripts.ga_len)
-	list_hashtable_vars(&SCRIPT_VARS(current_SID),
+    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= ga_scripts.ga_len)
+	list_hashtable_vars(&SCRIPT_VARS(current_sctx.sc_sid),
 						(char_u *)"s:", FALSE, first);
 }
 
@@ -7202,7 +7202,7 @@ find_var_in_ht(
 	/* Must be something like "s:", otherwise "ht" would be NULL. */
 	switch (htname)
 	{
-	    case 's': return &SCRIPT_SV(current_SID)->sv_var;
+	    case 's': return &SCRIPT_SV(current_sctx.sc_sid)->sv_var;
 	    case 'g': return &globvars_var;
 	    case 'v': return &vimvars_var;
 	    case 'b': return &curbuf->b_bufvar;
@@ -7286,8 +7286,8 @@ find_var_ht(char_u *name, char_u **varname)
     if (*name == 'l')				/* l: local function variable */
 	return get_funccal_local_ht();
     if (*name == 's'				/* script variable */
-	    && current_SID > 0 && current_SID <= ga_scripts.ga_len)
-	return &SCRIPT_VARS(current_SID);
+	    && current_sctx.sc_sid > 0 && current_sctx.sc_sid <= ga_scripts.ga_len)
+	return &SCRIPT_VARS(current_sctx.sc_sid);
     return NULL;
 }
 
@@ -8729,20 +8729,25 @@ store_session_globals(FILE *fd)
  * Should only be invoked when 'verbose' is non-zero.
  */
     void
-last_set_msg(scid_T scriptID)
+last_set_msg(sctx_T script_ctx)
 {
     char_u *p;
 
-    if (scriptID != 0)
+    if (script_ctx.sc_sid != 0)
     {
-	p = home_replace_save(NULL, get_scriptname(scriptID));
+	p = home_replace_save(NULL, get_scriptname(script_ctx.sc_sid));
 	if (p != NULL)
 	{
 	    verbose_enter();
 	    MSG_PUTS(_("\n\tLast set from "));
 	    MSG_PUTS(p);
-	    vim_free(p);
+	    if (script_ctx.sc_lnum > 0)
+	    {
+		MSG_PUTS(_(" line "));
+		msg_outnum((long)script_ctx.sc_lnum);
+	    }
 	    verbose_leave();
+	    vim_free(p);
 	}
     }
 }

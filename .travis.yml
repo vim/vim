@@ -10,18 +10,18 @@ compiler:
   - gcc
 
 env:
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    # ASAN build
+  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
+    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
   - BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
   - BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
   - BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
   - BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     # Mac OSX build
   - BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-    # ASAN build
-  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
 
 sudo: false

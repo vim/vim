@@ -4061,7 +4061,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	     * also be called from another script. Using trans_function_name()
 	     * would also work, but some plugins depend on the name being
 	     * printable text. */
-	    sprintf(sid_buf, "<SNR>%ld_", (long)current_SID);
+	    sprintf(sid_buf, "<SNR>%ld_", (long)current_sctx.sc_sid);
 	    name = alloc((int)(STRLEN(sid_buf) + STRLEN(s + off) + 1));
 	    if (name != NULL)
 	    {
@@ -4679,6 +4679,13 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
     int			error = FALSE;
+
+#ifdef MESSAGE_QUEUE
+    // vpeekc() used to check for messages, but that caused problems, invoking
+    // a callback where it was not expected.  Some plugins use getchar(1) in a
+    // loop to await a message, therefore make sure we check for messages here.
+    parse_queued_messages();
+#endif
 
     /* Position the cursor.  Needed after a message that ends in a space. */
     windgoto(msg_row, msg_col);
@@ -7618,7 +7625,8 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
 	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
 	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
-	dict_add_number(dict, "sid", (long)mp->m_script_ID);
+	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
+	dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
 	dict_add_number(dict, "buffer", (long)buffer_local);
 	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
 	dict_add_string(dict, "mode", mapmode);
@@ -13073,6 +13081,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (STRCMP(name, (char_u *)"redraw") == 0)
 	    disable_redraw_for_testing = val;
+	else if (STRCMP(name, (char_u *)"redraw_flag") == 0)
+	    ignore_redraw_flag_for_testing = val;
 	else if (STRCMP(name, (char_u *)"char_avail") == 0)
 	    disable_char_avail_for_testing = val;
 	else if (STRCMP(name, (char_u *)"starting") == 0)
@@ -13095,6 +13105,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    disable_char_avail_for_testing = FALSE;
 	    disable_redraw_for_testing = FALSE;
+	    ignore_redraw_flag_for_testing = FALSE;
 	    nfa_fail_for_testing = FALSE;
 	    if (save_starting >= 0)
 	    {

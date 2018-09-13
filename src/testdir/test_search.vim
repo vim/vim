@@ -1043,6 +1043,59 @@ func Test_incsearch_vimgrep_dump()
   call delete('Xis_vimgrep_script')
 endfunc
 
+func Test_keep_last_search_pattern()
+  if !exists('+incsearch')
+    return
+  endif
+  new
+  call setline(1, ['foo', 'foo', 'foo'])
+  set incsearch
+  call test_override("char_avail", 1)
+  let @/ = 'bar'
+  call feedkeys(":/foo/s//\<Esc>", 'ntx')
+  call assert_equal('bar', @/)
+
+  bwipe!
+  call test_override("ALL", 0)
+  set noincsearch
+endfunc
+
+func Test_word_under_cursor_after_match()
+  if !exists('+incsearch')
+    return
+  endif
+  new
+  call setline(1, 'foo bar')
+  set incsearch
+  call test_override("char_avail", 1)
+  try
+    call feedkeys("/foo\<C-R>\<C-W>\<CR>", 'ntx')
+  catch /E486:/
+  endtry
+  call assert_equal('foobar', @/)
+
+  bwipe!
+  call test_override("ALL", 0)
+  set noincsearch
+endfunc
+
+func Test_subst_word_under_cursor()
+  if !exists('+incsearch')
+    return
+  endif
+  new
+  call setline(1, ['int SomeLongName;', 'for (xxx = 1; xxx < len; ++xxx)'])
+  set incsearch
+  call test_override("char_avail", 1)
+  call feedkeys("/LongName\<CR>", 'ntx')
+  call feedkeys(":%s/xxx/\<C-R>\<C-W>/g\<CR>", 'ntx')
+  call assert_equal('for (SomeLongName = 1; SomeLongName < len; ++SomeLongName)', getline(2))
+
+  bwipe!
+  call test_override("ALL", 0)
+  set noincsearch
+endfunc
+
 func Test_search_undefined_behaviour()
   if !has("terminal")
     return

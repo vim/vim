@@ -38,8 +38,10 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+tar plugin: use "file" to check compression type, use bzip2 only when it
+recognizes bzip2 or file ends in .bz2
+
 'incsearch' with :s: (#3321)
-- :/foo/s//<Esc>  changes last search pattern.  Also E486.
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
 - Also support range: :/foo/,/bar/delete
@@ -103,6 +105,9 @@ Does not build with MinGW out of the box:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
+Patch to add script line number to script ID. (ichizok, Ozaki Kiichi, 2018 Aug
+24, #3362)
+
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
@@ -125,14 +130,18 @@ Related to bracketed paste.  I cannot reproduce it.
 Patch in pull request #2967: Allow white space in sign text. (Ben Jackson)
 Test fails in AppVeyor.
 
-Patch to add script line number to script ID. (ichizok, Ozaki Kiichi, 2018 Aug
-24, #3362)
+Job_info() returns command without backslashes. (Daniel Hahler, 2018 Sep 3,
+#3404)
 
 Removing flags from 'cpoptions' breaks the Winbar buttons in termdebug.
 (Dominique Pelle, 2018 Jul 16)
 
 Problem with two buffers with the same name a/b, if it didn't exist before and
 is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
+
+Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
+#3405)  Introduced by 8.0.1517, which was fixing another memory access error.
+(Sep 8)
 
 Memory leak in test_assert:
 ==19127==    by 0x2640D7: alloc (misc2.c:874)
@@ -188,8 +197,12 @@ Olaf Dabrunz is working on this. (10 Jan 2016)
 9   Instead invoking an external diff program, use builtin code.  One can be
     found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
     It's complicated and badly documented.
-Alternative: use the xdiff library.  Unfinished Patch from Christian Brabandt,
-2018 Mar 20, #2732)
+Alternative: use the xdiff library from git.  Unfinished Patch from Christian
+Brabandt, 2018 Mar 20, #2732)
+Note that this is NOT libxdiff.
+-> avoid writing all the text to a file, use in-memory only
+-> add option to use external diff above a certain size.
+-> when making changes, diff only the part of the buffer that changed.
 
 Difference between two regexp engines: #3373
 
@@ -201,6 +214,9 @@ When the last line wraps, selecting with the mouse below that line only
 includes the first screen line. (2018 Aug 23, #3368)
 
 Refactored HTML indent file. (Michael Lee, #1821)
+
+Test for user name completeion ":e ~s<Tab>" fails because we don't get all
+user names.  Is there another function to get more? (2018 Sep 3, Stuckrad)
 
 Patch to add getregpoint() and setreg() with an option to set "".
 (Andy Massimino, 2018 Aug 24, #3370)
@@ -347,13 +363,6 @@ Add the debug command line history to viminfo.
 
 Avoid that "sign unplace id" does a redraw right away, esp. when there is a
 sequence of these commands. (Andy Stewart, 2018 Mar 16)
-
-ch_sendraw() with long string does not try to read in between, which may cause
-a deadlock if the reading side is waiting for the write to finish. (Nate
-Bosch, 2018 Jan 13, #2548)
-Perhaps just make chunks of 1024 bytes?
-Probably better: Make the write non-blocking
-Also a problem on MS-Windows: #2828.
 
 Add Makefiles to the runtime/spell directory tree, since nobody uses Aap.
 Will have to explain the manual steps (downloading the .aff and .dic files,

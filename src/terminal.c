@@ -3871,6 +3871,11 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     if (buf == NULL)
 	return;
     term = buf->b_term;
+    if (term->tl_vterm == NULL)
+    {
+	EMSG(_("E958: Job already finished"));
+	return;
+    }
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
