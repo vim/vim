@@ -1576,8 +1576,8 @@ $(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
 $(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/pen.c
 
-$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/screen.c
+$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/termscreen.c
 
 $(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/state.c
