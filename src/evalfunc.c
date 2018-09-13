@@ -14016,7 +14016,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	else if (do_fsync)
 	    /* Ignore the error, the user wouldn't know what to do about it.
 	     * May happen for a device. */
-	    ignored = fsync(fileno(fd));
+	    vim_ignored = fsync(fileno(fd));
 #endif
 	fclose(fd);
     }

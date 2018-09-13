@@ -392,9 +392,9 @@ static int recs_match(xrecord_t *rec1, xrecord_t *rec2, long flags)
 }
 
 /*
- * If a line is indented more than this, get_indent() just returns this value.
+ * If a line is indented more than this, xget_indent() just returns this value.
  * This avoids having to do absurd amounts of work for data that are not
- * human-readable text, and also ensures that the output of get_indent fits within
+ * human-readable text, and also ensures that the output of xget_indent fits within
  * an int.
  */
 #define MAX_INDENT 200
@@ -404,7 +404,7 @@ static int recs_match(xrecord_t *rec1, xrecord_t *rec2, long flags)
  * columns. Return -1 if line is empty or contains only whitespace. Clamp the
  * output value at MAX_INDENT.
  */
-static int get_indent(xrecord_t *rec)
+static int xget_indent(xrecord_t *rec)
 {
 	long i;
 	int ret = 0;
@@ -492,13 +492,13 @@ static void measure_split(const xdfile_t *xdf, long split,
 		m->indent = -1;
 	} else {
 		m->end_of_file = 0;
-		m->indent = get_indent(xdf->recs[split]);
+		m->indent = xget_indent(xdf->recs[split]);
 	}
 
 	m->pre_blank = 0;
 	m->pre_indent = -1;
 	for (i = split - 1; i >= 0; i--) {
-		m->pre_indent = get_indent(xdf->recs[i]);
+		m->pre_indent = xget_indent(xdf->recs[i]);
 		if (m->pre_indent != -1)
 			break;
 		m->pre_blank += 1;
@@ -511,7 +511,7 @@ static void measure_split(const xdfile_t *xdf, long split,
 	m->post_blank = 0;
 	m->post_indent = -1;
 	for (i = split + 1; i < xdf->nrec; i++) {
-		m->post_indent = get_indent(xdf->recs[i]);
+		m->post_indent = xget_indent(xdf->recs[i]);
 		if (m->post_indent != -1)
 			break;
 		m->post_blank += 1;

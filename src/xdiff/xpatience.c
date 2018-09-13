@@ -210,6 +210,10 @@ static struct entry *find_longest_common_sequence(struct hashmap *map)
 	int longest = 0, i;
 	struct entry *entry;
 
+	/* Added to silence Coverity. */
+	if (sequence == NULL)
+		return map->first;
+
 	/*
 	 * If not -1, this entry in sequence must never be overridden.
 	 * Therefore, overriding entries before this has no effect, so

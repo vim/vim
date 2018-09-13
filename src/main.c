@@ -2632,7 +2632,7 @@ read_stdin(void)
      * Is there any other system that cannot do this?
      */
     close(0);
-    ignored = dup(2);
+    vim_ignored = dup(2);
 #endif
 }
 

@@ -1203,10 +1203,10 @@ ex_diffpatch(exarg_T *eap)
     {
 # ifdef TEMPDIRNAMES
 	if (vim_tempdir != NULL)
-	    ignored = mch_chdir((char *)vim_tempdir);
+	    vim_ignored = mch_chdir((char *)vim_tempdir);
 	else
 # endif
-	    ignored = mch_chdir("/tmp");
+	    vim_ignored = mch_chdir("/tmp");
 	shorten_fnames(TRUE);
     }
 #endif
