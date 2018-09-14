@@ -429,6 +429,9 @@ static void f_test_null_job(typval_T *argvars, typval_T *rettv);
 static void f_test_null_list(typval_T *argvars, typval_T *rettv);
 static void f_test_null_partial(typval_T *argvars, typval_T *rettv);
 static void f_test_null_string(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_GUI
+static void f_test_scrollbar(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_test_settime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_tan(typval_T *argvars, typval_T *rettv);
@@ -925,6 +928,9 @@ static struct fst
     {"test_null_string", 0, 0, f_test_null_string},
     {"test_option_not_set", 1, 1, f_test_option_not_set},
     {"test_override",    2, 2, f_test_override},
+#ifdef FEAT_GUI
+    {"test_scrollbar",	3, 3, f_test_scrollbar},
+#endif
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, f_timer_info},
@@ -13201,6 +13207,41 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 }
+
+#ifdef FEAT_GUI
+    static void
+f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u	*which;
+    long	value;
+    int		dragging;
+    scrollbar_T *sb = NULL;
+
+    if (argvars[0].v_type != VAR_STRING
+	    || (argvars[1].v_type) != VAR_NUMBER
+	    || (argvars[2].v_type) != VAR_NUMBER)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+    which = get_tv_string(&argvars[0]);
+    value = get_tv_number(&argvars[1]);
+    dragging = get_tv_number(&argvars[2]);
+
+    if (STRCMP(which, "left") == 0)
+	sb = &curwin->w_scrollbars[SBAR_LEFT];
+    else if (STRCMP(which, "right") == 0)
+	sb = &curwin->w_scrollbars[SBAR_RIGHT];
+    else if (STRCMP(which, "hor") == 0)
+	sb = &gui.bottom_sbar;
+    if (sb == NULL)
+    {
+	EMSG2(_(e_invarg2), which);
+	return;
+    }
+    gui_drag_scrollbar(sb, value, dragging);
+}
+#endif
 
     static void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)

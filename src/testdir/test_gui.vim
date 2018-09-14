@@ -667,6 +667,41 @@ func Test_set_guioptions()
   let &guioptions = guioptions_saved
 endfunc
 
+func Test_scrollbars()
+  new
+  " buffer with 200 lines
+  call setline(1, repeat(['one', 'two'], 100))
+  set guioptions+=rlb
+
+  " scroll to move line 11 at top, moves the cursor there
+  call test_scrollbar('left', 10, 0)
+  redraw
+  call assert_equal(1, winline())
+  call assert_equal(11, line('.'))
+
+  " scroll to move line 1 at top, cursor stays in line 11
+  call test_scrollbar('right', 0, 0)
+  redraw
+  call assert_equal(11, winline())
+  call assert_equal(11, line('.'))
+
+  set nowrap
+  call setline(11, repeat('x', 150))
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(1, col('.'))
+
+  " scroll to character 11, cursor is moved
+  call test_scrollbar('hor', 10, 0)
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(11, col('.'))
+
+  set guioptions&
+  set wrap&
+  bwipe!
+endfunc
+
 func Test_set_guipty()
   let guipty_saved = &guipty
 
