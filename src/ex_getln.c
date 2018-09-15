@@ -388,7 +388,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     // parse the address range
     save_cursor = curwin->w_cursor;
     curwin->w_cursor = is_state->search_start;
-    parse_cmd_address(&ea, &dummy);
+    parse_cmd_address(&ea, &dummy, TRUE);
     if (ea.addr_count > 0)
     {
 	// Allow for reverse match.

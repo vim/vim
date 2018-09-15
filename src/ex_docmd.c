@@ -117,7 +117,7 @@ static int	getargopt(exarg_T *eap);
 #endif
 
 static int	check_more(int, int);
-static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int to_other_file, int address_count);
+static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int silent, int to_other_file, int address_count);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
@@ -1853,7 +1853,7 @@ do_one_cmd(
     }
 
     ea.cmd = cmd;
-    if (parse_cmd_address(&ea, &errormsg) == FAIL)
+    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 	goto doend;
 
 /*
@@ -2836,7 +2836,7 @@ parse_command_modifiers(exarg_T *eap, char_u **errormsg, int skip_only)
 	    case 't':	if (checkforcmd(&p, "tab", 3))
 			{
 			    long tabnr = get_address(eap, &eap->cmd, ADDR_TABS,
-							    eap->skip, FALSE, 1);
+					       eap->skip, skip_only, FALSE, 1);
 			    if (tabnr == MAXLNUM)
 				cmdmod.tab = tabpage_index(curtab) + 1;
 			    else
@@ -2911,11 +2911,11 @@ free_cmdmod(void)
 
 /*
  * Parse the address range, if any, in "eap".
- * May set the last search pattern.
+ * May set the last search pattern, unless "silent" is TRUE.
  * Return FAIL and set "errormsg" or return OK.
  */
     int
-parse_cmd_address(exarg_T *eap, char_u **errormsg)
+parse_cmd_address(exarg_T *eap, char_u **errormsg, int silent)
 {
     int		address_count = 1;
     linenr_T	lnum;
@@ -2955,7 +2955,7 @@ parse_cmd_address(exarg_T *eap, char_u **errormsg)
 #endif
 	}
 	eap->cmd = skipwhite(eap->cmd);
-	lnum = get_address(eap, &eap->cmd, eap->addr_type, eap->skip,
+	lnum = get_address(eap, &eap->cmd, eap->addr_type, eap->skip, silent,
 					eap->addr_count == 0, address_count++);
 	if (eap->cmd == NULL)	// error detected
 	    return FAIL;
@@ -4450,10 +4450,11 @@ skip_range(
 get_address(
     exarg_T	*eap UNUSED,
     char_u	**ptr,
-    int		addr_type,  /* flag: one of ADDR_LINES, ... */
-    int		skip,	    /* only skip the address, don't use it */
-    int		to_other_file,  /* flag: may jump to other file */
-    int		address_count UNUSED) /* 1 for first address, >1 after comma */
+    int		addr_type,	// flag: one of ADDR_LINES, ...
+    int		skip,		// only skip the address, don't use it
+    int		silent,		// no errors or side effects
+    int		to_other_file,  // flag: may jump to other file
+    int		address_count UNUSED) // 1 for first address, >1 after comma
 {
     int		c;
     int		i;
@@ -4599,28 +4600,28 @@ get_address(
 		}
 		else
 		{
-		    pos = curwin->w_cursor; /* save curwin->w_cursor */
-		    /*
-		     * When '/' or '?' follows another address, start
-		     * from there.
-		     */
+		    int flags;
+
+		    pos = curwin->w_cursor; // save curwin->w_cursor
+
+		    // When '/' or '?' follows another address, start from
+		    // there.
 		    if (lnum != MAXLNUM)
 			curwin->w_cursor.lnum = lnum;
-		    /*
-		     * Start a forward search at the end of the line (unless
-		     * before the first line).
-		     * Start a backward search at the start of the line.
-		     * This makes sure we never match in the current
-		     * line, and can match anywhere in the
-		     * next/previous line.
-		     */
+
+		    // Start a forward search at the end of the line (unless
+		    // before the first line).
+		    // Start a backward search at the start of the line.
+		    // This makes sure we never match in the current
+		    // line, and can match anywhere in the
+		    // next/previous line.
 		    if (c == '/' && curwin->w_cursor.lnum > 0)
 			curwin->w_cursor.col = MAXCOL;
 		    else
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
-		    if (!do_search(NULL, c, cmd, 1L,
-					  SEARCH_HIS | SEARCH_MSG, NULL, NULL))
+		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
+		    if (!do_search(NULL, c, cmd, 1L, flags, NULL, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -9529,7 +9530,7 @@ ex_copymove(exarg_T *eap)
 {
     long	n;
 
-    n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE, 1);
+    n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE, FALSE, 1);
     if (eap->arg == NULL)	    /* error detected */
     {
 	eap->nextcmd = NULL;
