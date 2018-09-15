@@ -97,9 +97,6 @@ static void gtk_form_send_configure(GtkForm *form);
 static void gtk_form_child_map(GtkWidget *widget, gpointer user_data);
 static void gtk_form_child_unmap(GtkWidget *widget, gpointer user_data);
 
-#if !GTK_CHECK_VERSION(3,0,0)
-static GtkWidgetClass *parent_class = NULL;
-#endif
 
 /* Public interface
  */
@@ -109,11 +106,7 @@ gtk_form_new(void)
 {
     GtkForm *form;
 
-#if GTK_CHECK_VERSION(3,0,0)
     form = g_object_new(GTK_TYPE_FORM, NULL);
-#else
-    form = gtk_type_new(gtk_form_get_type());
-#endif
 
     return GTK_WIDGET(form);
 }
@@ -212,30 +205,7 @@ gtk_form_thaw(GtkForm *form)
 
 /* Basic Object handling procedures
  */
-#if GTK_CHECK_VERSION(3,0,0)
 G_DEFINE_TYPE(GtkForm, gtk_form, GTK_TYPE_CONTAINER)
-#else
-    GtkType
-gtk_form_get_type(void)
-{
-    static GtkType form_type = 0;
-
-    if (!form_type)
-    {
-	GtkTypeInfo form_info;
-
-	vim_memset(&form_info, 0, sizeof(form_info));
-	form_info.type_name = "GtkForm";
-	form_info.object_size = sizeof(GtkForm);
-	form_info.class_size = sizeof(GtkFormClass);
-	form_info.class_init_func = (GtkClassInitFunc)gtk_form_class_init;
-	form_info.object_init_func = (GtkObjectInitFunc)gtk_form_init;
-
-	form_type = gtk_type_unique(GTK_TYPE_CONTAINER, &form_info);
-    }
-    return form_type;
-}
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
 
     static void
 gtk_form_class_init(GtkFormClass *klass)
@@ -245,10 +215,6 @@ gtk_form_class_init(GtkFormClass *klass)
 
     widget_class = (GtkWidgetClass *) klass;
     container_class = (GtkContainerClass *) klass;
-
-#if !GTK_CHECK_VERSION(3,0,0)
-    parent_class = gtk_type_class(gtk_container_get_type());
-#endif
 
     widget_class->realize = gtk_form_realize;
     widget_class->unrealize = gtk_form_unrealize;
@@ -433,13 +399,8 @@ gtk_form_unrealize(GtkWidget *widget)
 	tmp_list = tmp_list->next;
     }
 
-#if GTK_CHECK_VERSION(3,0,0)
     if (GTK_WIDGET_CLASS (gtk_form_parent_class)->unrealize)
 	 (* GTK_WIDGET_CLASS (gtk_form_parent_class)->unrealize) (widget);
-#else
-    if (GTK_WIDGET_CLASS (parent_class)->unrealize)
-	 (* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
-#endif
 }
 
     static void

@@ -22,17 +22,10 @@ extern "C" {
 #endif
 
 #define GTK_TYPE_FORM		       (gtk_form_get_type ())
-#ifdef USE_GTK3
 #define GTK_FORM(obj)		       (G_TYPE_CHECK_INSTANCE_CAST((obj), GTK_TYPE_FORM, GtkForm))
 #define GTK_FORM_CLASS(klass)	       (G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_FORM, GtkFormClass))
 #define GTK_IS_FORM(obj)	       (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_FORM))
 #define GTK_IS_FORM_CLASS(klass)       (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_TYPE_FORM))
-#else
-#define GTK_FORM(obj)		       (GTK_CHECK_CAST ((obj), GTK_TYPE_FORM, GtkForm))
-#define GTK_FORM_CLASS(klass)	       (GTK_CHECK_CLASS_CAST ((klass), GTK_TYPE_FORM, GtkFormClass))
-#define GTK_IS_FORM(obj)	       (GTK_CHECK_TYPE ((obj), GTK_TYPE_FORM))
-#define GTK_IS_FORM_CLASS(klass)       (GTK_CHECK_CLASS_TYPE ((klass), GTK_TYPE_FORM))
-#endif
 
 
 typedef struct _GtkForm GtkForm;
@@ -52,11 +45,7 @@ struct _GtkFormClass
     GtkContainerClass parent_class;
 };
 
-#ifdef USE_GTK3
 GType gtk_form_get_type(void);
-#else
-GtkType gtk_form_get_type(void);
-#endif
 
 GtkWidget *gtk_form_new(void);
 
