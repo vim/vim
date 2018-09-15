@@ -2765,7 +2765,7 @@ SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../xdiff ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak .
+	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
@@ -2777,6 +2777,8 @@ shadow:	runtime pixmaps
 	cp config.mk.dist $(SHADOWDIR)
 	$(MKDIR_P) $(SHADOWDIR)/xxd
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
+	$(MKDIR_P) $(SHADOWDIR)/xdiff
+	cd $(SHADOWDIR)/xdiff; ln -s ../../xdiff/*.[ch] .
 	if test -d $(RSRC_DIR); then \
 		cd $(SHADOWDIR); \
 		ln -s ../infplist.xml .; \
