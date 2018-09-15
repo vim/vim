@@ -2329,6 +2329,54 @@ typedef enum {
 #ifdef FEAT_GUI_GTK
 # if !GTK_CHECK_VERSION(2,14,0)
 #  define gtk_widget_get_window(wid)	((wid)->window)
+#  define gtk_plug_get_socket_window(wid)	((wid)->socket_window)
+#  define gtk_selection_data_get_data(sel)	((sel)->data)
+#  define gtk_selection_data_get_length(sel)	((sel)->length)
+#  define gtk_selection_data_get_type(sel)	((sel)->type)
+#  define gtk_adjustment_set_lower(adj, low) \
+    do { (adj)->lower = low; } while (0)
+#  define gtk_adjustment_set_upper(adj, up) \
+    do { (adj)->upper = up; } while (0)
+#  define gtk_adjustment_set_page_size(adj, size) \
+    do { (adj)->page_size = size; } while (0)
+#  define gtk_adjustment_set_page_increment(adj, inc) \
+    do { (adj)->page_increment = inc; } while (0)
+#  define gtk_adjustment_set_step_increment(adj, inc) \
+    do { (adj)->step_increment = inc; } while (0)
+# endif
+# if !GTK_CHECK_VERSION(2,16,0)
+#  define gtk_selection_data_get_selection(sel)	((sel)->selection)
+# endif
+# if !GTK_CHECK_VERSION(2,18,0)
+#  define gtk_widget_get_allocation(wid, alloc) \
+    do { *(alloc) = (wid)->allocation; } while (0)
+#  define gtk_widget_set_allocation(wid, alloc) \
+    do { (wid)->allocation = *(alloc); } while (0)
+#  define gtk_widget_get_has_window(wid)	!GTK_WIDGET_NO_WINDOW(wid)
+#  define gtk_widget_get_sensitive(wid)	GTK_WIDGET_SENSITIVE(wid)
+#  define gtk_widget_get_visible(wid)	GTK_WIDGET_VISIBLE(wid)
+#  define gtk_widget_has_focus(wid)	GTK_WIDGET_HAS_FOCUS(wid)
+#  define gtk_widget_set_window(wid, win) \
+    do { (wid)->window = (win); } while (0)
+#  define gtk_widget_set_can_default(wid, can) \
+    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_DEFAULT); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_DEFAULT); } } while (0)
+#  define gtk_widget_set_can_focus(wid, can) \
+    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_FOCUS); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_FOCUS); } } while (0)
+#  define gtk_widget_set_visible(wid, vis) \
+    do { if (vis) { gtk_widget_show(wid); } \
+	else { gtk_widget_hide(wid); } } while (0)
+# endif
+# if !GTK_CHECK_VERSION(2,20,0)
+#  define gtk_widget_get_mapped(wid)	GTK_WIDGET_MAPPED(wid)
+#  define gtk_widget_get_realized(wid)	GTK_WIDGET_REALIZED(wid)
+#  define gtk_widget_set_mapped(wid, map) \
+    do { if (map) { GTK_WIDGET_SET_FLAGS(wid, GTK_MAPPED); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_MAPPED); } } while (0)
+#  define gtk_widget_set_realized(wid, rea) \
+    do { if (rea) { GTK_WIDGET_SET_FLAGS(wid, GTK_REALIZED); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_REALIZED); } } while (0)
 # endif
 #endif
 
