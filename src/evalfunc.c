@@ -399,6 +399,7 @@ static void f_strwidth(typval_T *argvars, typval_T *rettv);
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
 static void f_swapinfo(typval_T *argvars, typval_T *rettv);
+static void f_swapname(typval_T *argvars, typval_T *rettv);
 static void f_synID(typval_T *argvars, typval_T *rettv);
 static void f_synIDattr(typval_T *argvars, typval_T *rettv);
 static void f_synIDtrans(typval_T *argvars, typval_T *rettv);
@@ -865,6 +866,7 @@ static struct fst
     {"submatch",	1, 2, f_submatch},
     {"substitute",	4, 4, f_substitute},
     {"swapinfo",	1, 1, f_swapinfo},
+    {"swapname",	1, 1, f_swapname},
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
@@ -12339,6 +12341,23 @@ f_swapinfo(typval_T *argvars, typval_T *rettv)
 {
     if (rettv_dict_alloc(rettv) == OK)
 	get_b0_dict(get_tv_string(argvars), rettv->vval.v_dict);
+}
+
+/*
+ * "swapname(expr)" function
+ */
+    static void
+f_swapname(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+
+    rettv->v_type = VAR_STRING;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL
+					|| buf->b_ml.ml_mfp->mf_fname == NULL)
+	rettv->vval.v_string = NULL;
+    else
+	rettv->vval.v_string = vim_strsave(buf->b_ml.ml_mfp->mf_fname);
 }
 
 /*
