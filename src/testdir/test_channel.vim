@@ -1855,3 +1855,40 @@ func Test_keep_pty_open()
   call assert_inrange(200, 1000, elapsed)
   call job_stop(job)
 endfunc
+
+func StatusFunc()
+  if s:elapsed > 0
+    if has('win32')
+      let cmd = ['cmd', '/c', 'echo .']
+    else
+      let cmd = ['echo']
+    endif
+
+    let job = job_start(cmd)
+    let ch = job_getchannel(job)
+
+    while ch_status(ch) =~# '^\(open\|buffered\)' && s:elapsed > 0
+      let s:elapsed -= 1
+      sleep 10m
+    endwhile
+
+    call job_stop(job)
+  endif
+  return ''
+endfunc
+
+func Test_job_in_statusline()
+  let save_stl = &statusline
+  let save_ls = &laststatus
+
+  let s:elapsed = 100
+  set statusline=%{StatusFunc()}
+  set laststatus=2
+
+  redrawstatus!
+  call assert_true(s:elapsed > 0)
+
+  let &statusline = save_stl
+  let &laststatus = save_ls
+  unlet s:elapsed
+endfunc
