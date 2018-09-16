@@ -58,7 +58,7 @@ static void menu_unescape_name(char_u	*p);
 static char_u *menu_translate_tab_and_shift(char_u *arg_start);
 
 /* The character for each menu mode */
-static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};
+static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 'r', 't'};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
 static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
@@ -1650,6 +1650,9 @@ get_menu_cmd_modes(
 	case 'c':			/* cmenu */
 	    modes = MENU_CMDLINE_MODE;
 	    break;
+	case 'r':			/* mmenu */
+	    modes = MENU_TERMINAL_MODE;
+	    break;
 	case 'a':			/* amenu */
 	    modes = MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE
 				    | MENU_VISUAL_MODE | MENU_SELECT_MODE
@@ -1712,6 +1715,8 @@ get_menu_index(vimmenu_T *menu, int state)
 	idx = MENU_INDEX_INSERT;
     else if (state & CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
+    else if (term_use_loop())
+	idx = MENU_INDEX_TERMINAL;
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1872,6 +1877,10 @@ menu_is_tearoff(char_u *name UNUSED)
     static int
 get_menu_mode(void)
 {
+    if (term_use_loop())
+    {
+	return MENU_INDEX_TERMINAL;
+    }
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -2265,6 +2274,11 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
     {
 	mode = (char_u *)"Insert";
 	idx = MENU_INDEX_INSERT;
+    }
+    else if (term_use_loop())
+    {
+	mode = (char_u *)"Terminal";
+	idx = MENU_INDEX_TERMINAL;
     }
     else if (VIsual_active)
     {

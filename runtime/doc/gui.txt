@@ -556,6 +556,7 @@ floating menus that do not appear on the main menu bar.
 				*:sme* *:smenu* *:snoreme* *:snoremenu*
 				*:ime* *:imenu* *:inoreme* *:inoremenu*
 				*:cme* *:cmenu* *:cnoreme* *:cnoremenu*
+				*:rm*  *:rmenu* *:rn*      *:rnoremenu*
 				*E330* *E327* *E331* *E336* *E333*
 				*E328* *E329* *E337* *E792*
 To create a new menu item, use the ":menu" commands.  They are mostly like
@@ -570,6 +571,10 @@ This last one will create a new item in the menu bar called "Edit", holding
 the mouse button down on this will pop up a menu containing the item
 "Big Changes", which is a sub-menu containing the item "Delete All Spaces",
 which when selected, performs the operation.
+
+To create a menu for terminal mode, use |:rmenu| instead of |:tmenu| unlike
+key mapping (|:tmap|). This is because |:tmenu| is already used for defining
+tooltips for menus. See |terminal-typing|.
 
 Special characters in a menu name:
 
@@ -885,6 +890,7 @@ using the last visual selection.
 						*:sunme* *:sunmenu*
 						*:iunme* *:iunmenu*
 						*:cunme* *:cunmenu*
+						*:runm*  *:runmenu*
 To delete a menu item or a whole submenu, use the unmenu commands, which are
 analogous to the unmap commands.  Eg: >
     :unmenu! Edit.Paste
@@ -950,6 +956,9 @@ See section |42.4| in the user manual.
 							*:tunmenu* *:tu*
 :tu[nmenu] {menupath}		Remove a tip for a menu or tool.
 				{only in X11 and Win32 GUI}
+
+Note: These commands do not create menus for terminal mode. Use |:rmenu|
+instead.
 
 When a tip is defined for a menu item, it appears in the command-line area
 when the mouse is over that item, much like a standard Windows menu hint in
