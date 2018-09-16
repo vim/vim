@@ -4,6 +4,9 @@ source screendump.vim
 
 func Test_diff_fold_sync()
   enew!
+  let g:update_count = 0
+  au DiffUpdated * let g:update_count += 1
+
   let l = range(50)
   call setline(1, l)
   diffthis
@@ -28,6 +31,9 @@ func Test_diff_fold_sync()
   normal 23G
   call win_gotoid(winone)
   call assert_equal(23, getcurpos()[1])
+
+  call assert_equal(1, g:update_count)
+  au! DiffUpdated
 
   windo diffoff
   close!

@@ -942,6 +942,8 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
     curwin->w_valid_cursor.lnum = 0;
 
     diff_redraw(TRUE);
+
+    apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
 }
 
 /*
