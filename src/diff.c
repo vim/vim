@@ -292,6 +292,16 @@ diff_mark_adjust_tp(
     linenr_T	lnum_deleted = line1;	/* lnum of remaining deletion */
     int		check_unchanged;
 
+    if (diff_internal())
+    {
+	// Will udpate diffs before redrawing.  Set _invalid to update the
+	// diffs themselves, set _update to also update folds properly just
+	// before redrawing.
+	tp->tp_diff_invalid = TRUE;
+	tp->tp_diff_update = TRUE;
+	return;
+    }
+
     if (line2 == MAXLNUM)
     {
 	/* mark_adjust(99, MAXLNUM, 9, 0): insert lines */
@@ -640,7 +650,7 @@ diff_check_sanity(tabpage_T *tp, diff_T *dp)
  */
     static void
 diff_redraw(
-    int		dofold)	    /* also recompute the folds */
+    int		dofold)	    // also recompute the folds
 {
     win_T	*wp;
     int		n;
@@ -863,7 +873,7 @@ theend:
  * Note that if the internal diff failed for one of the buffers, the external
  * diff will be used anyway.
  */
-    static int
+    int
 diff_internal(void)
 {
     return (diff_flags & DIFF_INTERNAL) != 0 && *p_dex == NUL;
@@ -887,9 +897,9 @@ diff_internal_failed(void)
 
 /*
  * Completely update the diffs for the buffers involved.
- * This uses the ordinary "diff" command.
- * The buffers are written to a file, also for unmodified buffers (the file
- * could have been produced by autocommands, e.g. the netrw plugin).
+ * When using the external "diff" command the buffers are written to a file,
+ * also for unmodified buffers (the file could have been produced by
+ * autocommands, e.g. the netrw plugin).
  */
     void
 ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
