@@ -221,6 +221,8 @@ func Test_o_arg()
     call assert_equal('foo', bn1)
     call assert_equal('bar', bn2)
   endif
+
+  call delete('Xtestout')
 endfunc
 
 func Test_file_args()
