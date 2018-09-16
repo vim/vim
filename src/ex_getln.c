@@ -445,10 +445,9 @@ finish_incsearch_highlighting(
 	p_magic = is_state->magic_save;
 
 	validate_cursor();	/* needed for TAB */
+	redraw_all_later(SOME_VALID);
 	if (call_update_screen)
 	    update_screen(SOME_VALID);
-	else
-	    redraw_all_later(SOME_VALID);
     }
 }
 
@@ -589,8 +588,11 @@ may_do_incsearch_highlighting(
     {
 	next_char = ccline.cmdbuff[skiplen + patlen];
 	ccline.cmdbuff[skiplen + patlen] = NUL;
-	if (empty_pattern(ccline.cmdbuff))
+	if (empty_pattern(ccline.cmdbuff) && !no_hlsearch)
+	{
+	    redraw_all_later(SOME_VALID);
 	    set_no_hlsearch(TRUE);
+	}
 	ccline.cmdbuff[skiplen + patlen] = next_char;
     }
 
