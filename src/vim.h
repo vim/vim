@@ -2331,8 +2331,9 @@ typedef enum {
 #  define gtk_widget_get_window(wid)	((wid)->window)
 #  define gtk_plug_get_socket_window(wid)	((wid)->socket_window)
 #  define gtk_selection_data_get_data(sel)	((sel)->data)
+#  define gtk_selection_data_get_data_type(sel)	((sel)->type)
+#  define gtk_selection_data_get_format(sel)	((sel)->format)
 #  define gtk_selection_data_get_length(sel)	((sel)->length)
-#  define gtk_selection_data_get_type(sel)	((sel)->type)
 #  define gtk_adjustment_set_lower(adj, low) \
     do { (adj)->lower = low; } while (0)
 #  define gtk_adjustment_set_upper(adj, up) \
