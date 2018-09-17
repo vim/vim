@@ -115,8 +115,7 @@ break: >
    set notimeout ttimeout timeoutlen=100
 
 You can also create menus similar to terminal mode mappings, but you have to
-use |:rmenu| instead of |:tmenu| as it is already used for defining tooltips
-for menus.
+use |:tlmenu| instead of |:tmenu|.
 
 <							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the

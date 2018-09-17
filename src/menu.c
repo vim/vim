@@ -58,7 +58,7 @@ static void menu_unescape_name(char_u	*p);
 static char_u *menu_translate_tab_and_shift(char_u *arg_start);
 
 /* The character for each menu mode */
-static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 'r', 't'};
+static char *menu_mode_chars[] = {"n", "v", "s", "o", "i", "c", "tl", "t"};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
 static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
@@ -1196,7 +1196,7 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		    return;
 		for (i = 0; i < depth + 2; i++)
 		    MSG_PUTS("  ");
-		msg_putchar(menu_mode_chars[bit]);
+		msg_puts((char_u*)menu_mode_chars[bit]);
 		if (menu->noremap[bit] == REMAP_NONE)
 		    msg_putchar('*');
 		else if (menu->noremap[bit] == REMAP_SCRIPT)
@@ -1645,13 +1645,16 @@ get_menu_cmd_modes(
 	    modes = MENU_INSERT_MODE;
 	    break;
 	case 't':
+	    if (*cmd == 'l')            /* tlmenu, tlunmenu, tlnoremenu */
+	    {
+		modes = MENU_TERMINAL_MODE;
+		++cmd;
+		break;
+	    }
 	    modes = MENU_TIP_MODE;	/* tmenu */
 	    break;
 	case 'c':			/* cmenu */
 	    modes = MENU_CMDLINE_MODE;
-	    break;
-	case 'r':			/* mmenu */
-	    modes = MENU_TERMINAL_MODE;
 	    break;
 	case 'a':			/* amenu */
 	    modes = MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE
@@ -1690,12 +1693,17 @@ popup_mode_name(char_u *name, int idx)
 {
     char_u	*p;
     int		len = (int)STRLEN(name);
+    char	*mode_chars = menu_mode_chars[idx];
+    int		mode_chars_len = (int)strlen(mode_chars);
 
-    p = vim_strnsave(name, len + 1);
+    p = vim_strnsave(name, len + mode_chars_len);
     if (p != NULL)
     {
-	mch_memmove(p + 6, p + 5, (size_t)(len - 4));
-	p[5] = menu_mode_chars[idx];
+	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
+	for (int i = 0; i < mode_chars_len; ++i)
+	{
+	    p[5 + i] = menu_mode_chars[idx][i];
+	}
     }
     return p;
 }
@@ -1919,23 +1927,20 @@ get_menu_mode_flag(void)
 show_popupmenu(void)
 {
     vimmenu_T	*menu;
-    int		mode;
+    int		menu_mode;
+    char*	mode;
+    int		mode_len;
 
-    mode = get_menu_mode();
-    if (mode == MENU_INDEX_INVALID)
+    menu_mode = get_menu_mode();
+    if (menu_mode == MENU_INDEX_INVALID)
 	return;
-    mode = menu_mode_chars[mode];
+    mode = menu_mode_chars[menu_mode];
+    mode_len = (int)strlen(mode);
 
-    {
-	char_u	    ename[2];
-
-	ename[0] = mode;
-	ename[1] = NUL;
-	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
-    }
+    apply_autocmds(EVENT_MENUPOPUP, (char_u*)mode, NULL, FALSE, curbuf);
 
     for (menu = root_menu; menu != NULL; menu = menu->next)
-	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)
+	if (STRNCMP("PopUp", menu->name, 5) == 0 && STRNCMP(menu->name + 5, mode, mode_len) == 0)
 	    break;
 
     /* Only show a popup when it is defined and has entries */

@@ -2848,10 +2848,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :right	change.txt	/*:right*
 :rightb	windows.txt	/*:rightb*
 :rightbelow	windows.txt	/*:rightbelow*
-:rm	gui.txt	/*:rm*
-:rmenu	gui.txt	/*:rmenu*
-:rn	gui.txt	/*:rn*
-:rnoremenu	gui.txt	/*:rnoremenu*
 :ru	repeat.txt	/*:ru*
 :rub	if_ruby.txt	/*:rub*
 :ruby	if_ruby.txt	/*:ruby*
@@ -2860,8 +2856,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :rubyf	if_ruby.txt	/*:rubyf*
 :rubyfile	if_ruby.txt	/*:rubyfile*
 :rundo	undo.txt	/*:rundo*
-:runm	gui.txt	/*:runm*
-:runmenu	gui.txt	/*:runmenu*
 :runtime	repeat.txt	/*:runtime*
 :rv	starting.txt	/*:rv*
 :rviminfo	starting.txt	/*:rviminfo*
@@ -3180,6 +3174,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tjump	tagsrch.txt	/*:tjump*
 :tl	tagsrch.txt	/*:tl*
 :tlast	tagsrch.txt	/*:tlast*
+:tlm	gui.txt	/*:tlm*
+:tlmenu	gui.txt	/*:tlmenu*
+:tln	gui.txt	/*:tln*
+:tlnoremenu	gui.txt	/*:tlnoremenu*
+:tlu	gui.txt	/*:tlu*
+:tlunmenu	gui.txt	/*:tlunmenu*
 :tm	gui.txt	/*:tm*
 :tma	map.txt	/*:tma*
 :tmap	map.txt	/*:tmap*

@@ -150,7 +150,7 @@ like the variations on the ":map" command:
 	:menu!		Insert and Command-line mode
 	:imenu		Insert mode
 	:cmenu		Command-line mode
-	:tmenu		Terminal mode
+	:tlmenu		Terminal mode
 	:amenu		All modes (except for Terminal mode)
 
 To avoid that the commands of a menu item are being mapped, use the command
