@@ -1858,7 +1858,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
     {
 	ch_log_lead(lead, channel, part);
 	fprintf(log_fd, "'");
-	ignored = (int)fwrite(buf, len, 1, log_fd);
+	vim_ignored = (int)fwrite(buf, len, 1, log_fd);
 	fprintf(log_fd, "'\n");
     }
     return OK;
@@ -2388,7 +2388,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
     u_sync(TRUE);
     /* ignore undo failure, undo is not very useful here */
-    ignored = u_save(lnum - empty, lnum + 1);
+    vim_ignored = u_save(lnum - empty, lnum + 1);
 
     if (empty)
     {
@@ -3730,7 +3730,7 @@ channel_send(
     {
 	ch_log_lead("SEND ", channel, part);
 	fprintf(log_fd, "'");
-	ignored = (int)fwrite(buf_arg, len_arg, 1, log_fd);
+	vim_ignored = (int)fwrite(buf_arg, len_arg, 1, log_fd);
 	fprintf(log_fd, "'\n");
 	fflush(log_fd);
 	did_log_msg = TRUE;

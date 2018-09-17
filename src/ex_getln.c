@@ -388,7 +388,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     // parse the address range
     save_cursor = curwin->w_cursor;
     curwin->w_cursor = is_state->search_start;
-    parse_cmd_address(&ea, &dummy);
+    parse_cmd_address(&ea, &dummy, TRUE);
     if (ea.addr_count > 0)
     {
 	// Allow for reverse match.
@@ -445,10 +445,9 @@ finish_incsearch_highlighting(
 	p_magic = is_state->magic_save;
 
 	validate_cursor();	/* needed for TAB */
+	redraw_all_later(SOME_VALID);
 	if (call_update_screen)
 	    update_screen(SOME_VALID);
-	else
-	    redraw_all_later(SOME_VALID);
     }
 }
 
@@ -589,8 +588,11 @@ may_do_incsearch_highlighting(
     {
 	next_char = ccline.cmdbuff[skiplen + patlen];
 	ccline.cmdbuff[skiplen + patlen] = NUL;
-	if (empty_pattern(ccline.cmdbuff))
+	if (empty_pattern(ccline.cmdbuff) && !no_hlsearch)
+	{
+	    redraw_all_later(SOME_VALID);
 	    set_no_hlsearch(TRUE);
+	}
 	ccline.cmdbuff[skiplen + patlen] = next_char;
     }
 

@@ -3093,7 +3093,7 @@ changed_lines(
     changed_lines_buf(curbuf, lnum, lnume, xtra);
 
 #ifdef FEAT_DIFF
-    if (xtra == 0 && curwin->w_p_diff)
+    if (xtra == 0 && curwin->w_p_diff && !diff_internal())
     {
 	/* When the number of lines doesn't change then mark_adjust() isn't
 	 * called and other diff buffers still need to be marked for
@@ -3172,6 +3172,11 @@ changed_common(
 
     /* mark the buffer as modified */
     changed();
+
+#ifdef FEAT_DIFF
+    if (curwin->w_p_diff && diff_internal())
+	curtab->tp_diff_update = TRUE;
+#endif
 
     /* set the '. mark */
     if (!cmdmod.keepjumps)

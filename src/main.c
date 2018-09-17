@@ -1200,6 +1200,15 @@ main_loop(
 	    }
 
 #if defined(FEAT_DIFF)
+	    // Updating diffs from changed() does not always work properly,
+	    // esp. updating folds.  Do an update just before redrawing if
+	    // needed.
+	    if (curtab->tp_diff_update || curtab->tp_diff_invalid)
+	    {
+		ex_diffupdate(NULL);
+		curtab->tp_diff_update = FALSE;
+	    }
+
 	    /* Scroll-binding for diff mode may have been postponed until
 	     * here.  Avoids doing it for every change. */
 	    if (diff_need_scrollbind)
@@ -2632,7 +2641,7 @@ read_stdin(void)
      * Is there any other system that cannot do this?
      */
     close(0);
-    ignored = dup(2);
+    vim_ignored = dup(2);
 #endif
 }
 

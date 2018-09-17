@@ -7013,7 +7013,7 @@ gui_get_color_cmn(char_u *name)
 		size_t	len;
 		int	pos;
 
-		ignoredp = fgets(line, LINE_LEN, fd);
+		vim_ignoredp = fgets(line, LINE_LEN, fd);
 		len = strlen(line);
 
 		if (len <= 1 || line[len - 1] != '\n')

@@ -399,6 +399,7 @@ static void f_strwidth(typval_T *argvars, typval_T *rettv);
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
 static void f_swapinfo(typval_T *argvars, typval_T *rettv);
+static void f_swapname(typval_T *argvars, typval_T *rettv);
 static void f_synID(typval_T *argvars, typval_T *rettv);
 static void f_synIDattr(typval_T *argvars, typval_T *rettv);
 static void f_synIDtrans(typval_T *argvars, typval_T *rettv);
@@ -415,6 +416,7 @@ static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
+static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
@@ -428,6 +430,9 @@ static void f_test_null_job(typval_T *argvars, typval_T *rettv);
 static void f_test_null_list(typval_T *argvars, typval_T *rettv);
 static void f_test_null_partial(typval_T *argvars, typval_T *rettv);
 static void f_test_null_string(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_GUI
+static void f_test_scrollbar(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_test_settime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_tan(typval_T *argvars, typval_T *rettv);
@@ -861,6 +866,7 @@ static struct fst
     {"submatch",	1, 2, f_submatch},
     {"substitute",	4, 4, f_substitute},
     {"swapinfo",	1, 1, f_swapinfo},
+    {"swapname",	1, 1, f_swapname},
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
@@ -922,7 +928,11 @@ static struct fst
     {"test_null_list",	0, 0, f_test_null_list},
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
+    {"test_option_not_set", 1, 1, f_test_option_not_set},
     {"test_override",    2, 2, f_test_override},
+#ifdef FEAT_GUI
+    {"test_scrollbar",	3, 3, f_test_scrollbar},
+#endif
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, f_timer_info},
@@ -12334,6 +12344,23 @@ f_swapinfo(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "swapname(expr)" function
+ */
+    static void
+f_swapname(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+
+    rettv->v_type = VAR_STRING;
+    buf = get_buf_tv(&argvars[0], FALSE);
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL
+					|| buf->b_ml.ml_mfp->mf_fname == NULL)
+	rettv->vval.v_string = NULL;
+    else
+	rettv->vval.v_string = vim_strsave(buf->b_ml.ml_mfp->mf_fname);
+}
+
+/*
  * "synID(lnum, col, trans)" function
  */
     static void
@@ -13062,7 +13089,25 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * "test_disable({name}, {val})" function
+ * "test_option_not_set({name})" function
+ */
+    static void
+f_test_option_not_set(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u *name = (char_u *)"";
+
+    if (argvars[0].v_type != VAR_STRING)
+	EMSG(_(e_invarg));
+    else
+    {
+	name = get_tv_string(&argvars[0]);
+	if (reset_option_was_set(name) == FAIL)
+	    EMSG2(_(e_invarg2), name);
+    }
+}
+
+/*
+ * "test_override({name}, {val})" function
  */
     static void
 f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
@@ -13181,6 +13226,41 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 }
+
+#ifdef FEAT_GUI
+    static void
+f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u	*which;
+    long	value;
+    int		dragging;
+    scrollbar_T *sb = NULL;
+
+    if (argvars[0].v_type != VAR_STRING
+	    || (argvars[1].v_type) != VAR_NUMBER
+	    || (argvars[2].v_type) != VAR_NUMBER)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+    which = get_tv_string(&argvars[0]);
+    value = get_tv_number(&argvars[1]);
+    dragging = get_tv_number(&argvars[2]);
+
+    if (STRCMP(which, "left") == 0)
+	sb = &curwin->w_scrollbars[SBAR_LEFT];
+    else if (STRCMP(which, "right") == 0)
+	sb = &curwin->w_scrollbars[SBAR_RIGHT];
+    else if (STRCMP(which, "hor") == 0)
+	sb = &gui.bottom_sbar;
+    if (sb == NULL)
+    {
+	EMSG2(_(e_invarg2), which);
+	return;
+    }
+    gui_drag_scrollbar(sb, value, dragging);
+}
+#endif
 
     static void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
@@ -14016,7 +14096,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	else if (do_fsync)
 	    /* Ignore the error, the user wouldn't know what to do about it.
 	     * May happen for a device. */
-	    ignored = fsync(fileno(fd));
+	    vim_ignored = fsync(fileno(fd));
 #endif
 	fclose(fd);
     }

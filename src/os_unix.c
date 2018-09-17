@@ -357,7 +357,7 @@ mch_chdir(char *path)
     void
 mch_write(char_u *s, int len)
 {
-    ignored = (int)write(1, (char *)s, len);
+    vim_ignored = (int)write(1, (char *)s, len);
     if (p_wd)		/* Unix is too fast, slow down a bit more */
 	RealWaitForChar(read_cmd_fd, p_wd, NULL, NULL);
 }
@@ -4693,9 +4693,9 @@ mch_call_shell_fork(
 		 */
 		if (fd >= 0)
 		{
-		    ignored = dup(fd); /* To replace stdin  (fd 0) */
-		    ignored = dup(fd); /* To replace stdout (fd 1) */
-		    ignored = dup(fd); /* To replace stderr (fd 2) */
+		    vim_ignored = dup(fd); /* To replace stdin  (fd 0) */
+		    vim_ignored = dup(fd); /* To replace stdout (fd 1) */
+		    vim_ignored = dup(fd); /* To replace stderr (fd 2) */
 
 		    /* Don't need this now that we've duplicated it */
 		    close(fd);
@@ -4752,13 +4752,13 @@ mch_call_shell_fork(
 
 		    /* set up stdin/stdout/stderr for the child */
 		    close(0);
-		    ignored = dup(pty_slave_fd);
+		    vim_ignored = dup(pty_slave_fd);
 		    close(1);
-		    ignored = dup(pty_slave_fd);
+		    vim_ignored = dup(pty_slave_fd);
 		    if (gui.in_use)
 		    {
 			close(2);
-			ignored = dup(pty_slave_fd);
+			vim_ignored = dup(pty_slave_fd);
 		    }
 
 		    close(pty_slave_fd);    /* has been dupped, close it now */
@@ -4769,13 +4769,13 @@ mch_call_shell_fork(
 		    /* set up stdin for the child */
 		    close(fd_toshell[1]);
 		    close(0);
-		    ignored = dup(fd_toshell[0]);
+		    vim_ignored = dup(fd_toshell[0]);
 		    close(fd_toshell[0]);
 
 		    /* set up stdout for the child */
 		    close(fd_fromshell[0]);
 		    close(1);
-		    ignored = dup(fd_fromshell[1]);
+		    vim_ignored = dup(fd_fromshell[1]);
 		    close(fd_fromshell[1]);
 
 # ifdef FEAT_GUI
@@ -4783,7 +4783,7 @@ mch_call_shell_fork(
 		    {
 			/* set up stderr for the child */
 			close(2);
-			ignored = dup(1);
+			vim_ignored = dup(1);
 		    }
 # endif
 		}
@@ -4920,7 +4920,7 @@ mch_call_shell_fork(
 					    && (lnum !=
 						    curbuf->b_ml.ml_line_count
 						    || curbuf->b_p_eol)))
-				    ignored = write(toshell_fd, "\n",
+				    vim_ignored = write(toshell_fd, "\n",
 								   (size_t)1);
 				++lnum;
 				if (lnum > curbuf->b_op_end.lnum)
@@ -5611,34 +5611,34 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	/* set up stdin for the child */
 	close(0);
 	if (use_null_for_in && null_fd >= 0)
-	    ignored = dup(null_fd);
+	    vim_ignored = dup(null_fd);
 	else if (fd_in[0] < 0)
-	    ignored = dup(pty_slave_fd);
+	    vim_ignored = dup(pty_slave_fd);
 	else
-	    ignored = dup(fd_in[0]);
+	    vim_ignored = dup(fd_in[0]);
 
 	/* set up stderr for the child */
 	close(2);
 	if (use_null_for_err && null_fd >= 0)
 	{
-	    ignored = dup(null_fd);
+	    vim_ignored = dup(null_fd);
 	    stderr_works = FALSE;
 	}
 	else if (use_out_for_err)
-	    ignored = dup(fd_out[1]);
+	    vim_ignored = dup(fd_out[1]);
 	else if (fd_err[1] < 0)
-	    ignored = dup(pty_slave_fd);
+	    vim_ignored = dup(pty_slave_fd);
 	else
-	    ignored = dup(fd_err[1]);
+	    vim_ignored = dup(fd_err[1]);
 
 	/* set up stdout for the child */
 	close(1);
 	if (use_null_for_out && null_fd >= 0)
-	    ignored = dup(null_fd);
+	    vim_ignored = dup(null_fd);
 	else if (fd_out[1] < 0)
-	    ignored = dup(pty_slave_fd);
+	    vim_ignored = dup(pty_slave_fd);
 	else
-	    ignored = dup(fd_out[1]);
+	    vim_ignored = dup(fd_out[1]);
 
 	if (fd_in[0] >= 0)
 	    close(fd_in[0]);

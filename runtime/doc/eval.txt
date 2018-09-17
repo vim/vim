@@ -2417,6 +2417,7 @@ submatch({nr} [, {list}])	String or List
 substitute({expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
 swapinfo({fname})		Dict	information about swap file {fname}
+swapname({expr})		String	swap file of buffer {expr}
 synID({lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr({synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
@@ -2473,7 +2474,10 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
+test_option_not_set({name})    none	reset flag indicating option was set
 test_override({expr}, {val})    none	test with Vim internal overrides
+test_scrollbar({which}, {value}, {dragging})
+				none	scroll in the GUI for testing
 test_settime({expr})		none	set current time for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
@@ -8039,6 +8043,13 @@ swapinfo({fname})					*swapinfo()*
 			Not a swap file: does not contain correct block ID
 			Magic number mismatch: Info in first block is invalid
 
+swapname({expr})					*swapname()*
+		The result is the swap file path of the buffer {expr}.
+		For the use of {expr}, see |bufname()| above.
+		If buffer {expr} is the current buffer, the result is equal to
+		|:swapname| (unless no swap file).
+		If buffer {expr} has no swap file, returns an empty string.
+
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
 		{lnum} and {col} in the current window.
@@ -8737,6 +8748,15 @@ test_null_partial()					*test_null_partial()*
 test_null_string()					*test_null_string()*
 		Return a String that is null. Only useful for testing.
 
+test_option_not_set({name})				*test_option_not_set()*
+		Reset the flag that indicates option {name} was set.  Thus it
+		looks like it still has the default value. Use like this: >
+			set ambiwidth=double
+			call test_option_not_set('ambiwidth')
+<		Now the 'ambiwidth' option behaves like it was never changed,
+		even though the value is "double".
+		Only to be used for testing!
+
 test_override({name}, {val})				*test_override()*
 		Overrides certain parts of Vims internal processing to be able
 		to run tests. Only to be used for testing Vim!
@@ -8762,6 +8782,23 @@ test_override({name}, {val})				*test_override()*
 			call test_override('starting', 1)
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
+
+test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
+		Pretend using scrollbar {which} to move it to position
+		{value}.  {which} can be:
+			left	Left scrollbar of the current window
+			right	Right scrollbar of the current window
+			hor	Horizontal scrollbar
+
+		For the vertical scrollbars {value} can be 1 to the
+		line-count of the buffer.  For the horizontal scrollbar the
+		{value} can be between 1 and the maximum line length, assuming
+		'wrap' is not set.
+
+		When {dragging} is non-zero it's like dragging the scrollbar,
+		otherwise it's like clicking in the scrollbar.
+		Only works when the {which} scrollbar actually exists,
+		obviously only when using the GUI.
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for

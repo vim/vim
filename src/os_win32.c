@@ -4388,7 +4388,8 @@ sub_process_writer(LPVOID param)
 		    && (lnum != curbuf->b_ml.ml_line_count
 			|| curbuf->b_p_eol)))
 	    {
-		WriteFile(g_hChildStd_IN_Wr, "\n", 1, (LPDWORD)&ignored, NULL);
+		WriteFile(g_hChildStd_IN_Wr, "\n", 1,
+						  (LPDWORD)&vim_ignored, NULL);
 	    }
 
 	    ++lnum;

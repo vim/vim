@@ -8,6 +8,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
+#include "protodef.h"
 #ifdef HAVE_CONFIG_H
 # include "auto/config.h"
 #endif
@@ -1541,7 +1542,7 @@ workshop_beval_cb(
 #ifdef FEAT_VARTABS
 	    idx = computeIndex(col, text, beval->ts, beval->vts);
 #else
-	    idx = computeIndex(col, text, beval->ts);
+	    idx = computeIndex(col, text, beval->ts, 0);
 #endif
 	    if (idx > 0)
 	    {
@@ -1577,11 +1578,8 @@ workshop_beval_cb(
 computeIndex(
 	int		 wantedCol,
 	char_u		*line,
-	int		 ts
-#ifdef FEAT_VARTABS
-	int		*vts
-#else
-	)
+	int		 ts,
+	int		*vts UNUSED)
 {
     int		 col = 0;
     int		 idx = 0;

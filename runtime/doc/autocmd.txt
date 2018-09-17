@@ -656,6 +656,11 @@ FileChangedRO			Before making the first change to a read-only
 							*E881*
 				If the number of lines changes saving for undo
 				may fail and the change will be aborted.
+							*DiffUpdated*
+DiffUpdated			After diffs have been updated.  Depending on
+				what kind of diff is being used (internal or
+				external) this can be triggered on every
+				change or when doing |:diffupdate|.
 							*DirChanged*
 DirChanged			The working directory has changed in response
 				to the |:cd| or |:lcd| commands, or as a

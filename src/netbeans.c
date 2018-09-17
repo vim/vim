@@ -1988,10 +1988,10 @@ nb_do_cmd(
 	    pos = get_off_or_lnum(buf->bufp, &args);
 
 	    cp = (char *)args;
-	    ignored = (int)strtol(cp, &cp, 10);
+	    vim_ignored = (int)strtol(cp, &cp, 10);
 	    args = (char_u *)cp;
 # ifdef NBDEBUG
-	    if (ignored != -1)
+	    if (vim_ignored != -1)
 	    {
 		nbdebug(("    partial line annotation -- Not Yet Implemented!\n"));
 	    }

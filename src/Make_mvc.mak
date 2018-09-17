@@ -380,15 +380,15 @@ TERMINAL = no
 !if "$(TERMINAL)" == "yes"
 TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
-	$(OBJDIR)/term_encoding.obj \
-	$(OBJDIR)/term_keyboard.obj \
-	$(OBJDIR)/term_mouse.obj \
-	$(OBJDIR)/term_parser.obj \
-	$(OBJDIR)/term_pen.obj \
-	$(OBJDIR)/term_screen.obj \
-	$(OBJDIR)/term_state.obj \
-	$(OBJDIR)/term_unicode.obj \
-	$(OBJDIR)/term_vterm.obj
+	$(OBJDIR)/encoding.obj \
+	$(OBJDIR)/keyboard.obj \
+	$(OBJDIR)/mouse.obj \
+	$(OBJDIR)/parser.obj \
+	$(OBJDIR)/pen.obj \
+	$(OBJDIR)/termscreen.obj \
+	$(OBJDIR)/state.obj \
+	$(OBJDIR)/unicode.obj \
+	$(OBJDIR)/vterm.obj
 TERM_DEFS = -DFEAT_TERMINAL
 TERM_DEPS = \
 	libvterm/include/vterm.h \
@@ -1561,31 +1561,31 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DWCWIDTH_FUNCTION=utf_uint2cells \
 	-D_CRT_SECURE_NO_WARNINGS
 
-$(OUTDIR)/term_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+$(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
 
-$(OUTDIR)/term_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+$(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/keyboard.c
 
-$(OUTDIR)/term_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
+$(OUTDIR)/mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/mouse.c
 
-$(OUTDIR)/term_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+$(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/parser.c
 
-$(OUTDIR)/term_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+$(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/pen.c
 
-$(OUTDIR)/term_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/screen.c
+$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
+	$(CCCTERM) -Fo$@ libvterm/src/termscreen.c
 
-$(OUTDIR)/term_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+$(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/state.c
 
-$(OUTDIR)/term_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
+$(OUTDIR)/unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/unicode.c
 
-$(OUTDIR)/term_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+$(OUTDIR)/vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) -Fo$@ libvterm/src/vterm.c
 
 

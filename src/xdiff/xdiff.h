@@ -108,10 +108,11 @@ typedef struct s_bdiffparam {
 	long bsize;
 } bdiffparam_t;
 
+#include "../vim.h"
 
-#define xdl_malloc(x) malloc(x)
-#define xdl_free(ptr) free(ptr)
-#define xdl_realloc(ptr,x) realloc(ptr,x)
+#define xdl_malloc(x) lalloc((x), TRUE)
+#define xdl_free(ptr) vim_free(ptr)
+#define xdl_realloc(ptr,x) vim_realloc((ptr),(x))
 
 void *xdl_mmfile_first(mmfile_t *mmf, long *size);
 long xdl_mmfile_size(mmfile_t *mmf);
