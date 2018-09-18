@@ -199,7 +199,7 @@ func Test_o_arg()
     " - both windows should have the same height
     " - window height (+ 2 for the statusline and Ex command) should be equal
     "   to the number of lines
-    " - buffer of both windowns should have no name
+    " - buffer of both windows should have no name
     let [wn, wh1, wh2, ln, ww1, ww2, cn, bn1, bn2] = readfile('Xtestout')
     call assert_equal('2', wn)
     call assert_inrange(0, 1, ww1 - ww2)
@@ -264,7 +264,7 @@ func Test_V_arg()
   call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
 endfunc
 
-" Test the -A, -F and -H arguments (Arabic, Farsi and Hewbrew modes).
+" Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
 func Test_A_F_H_arg()
   let after = [
 	\ 'call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")',
