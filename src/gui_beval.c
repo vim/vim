@@ -264,7 +264,6 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     static void
 removeEventHandler(BalloonEval *beval)
 {
-    /* LINTED: avoid warning: dubious operation on enum */
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
 					 FUNC2GENERIC(target_event_cb),
 					 beval);
@@ -272,7 +271,6 @@ removeEventHandler(BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(beval->target, gui.mainwin))
     {
-	/* LINTED: avoid warning: dubious operation on enum */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(gui.mainwin),
 					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
