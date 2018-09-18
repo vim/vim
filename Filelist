@@ -141,6 +141,7 @@ SRC_ALL =	\
 		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
 		src/proto.h \
+		src/protodef.h \
 		src/proto/arabic.pro \
 		src/proto/beval.pro \
 		src/proto/blowfish.pro \
