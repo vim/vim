@@ -295,7 +295,7 @@ diff_mark_adjust_tp(
 
     if (diff_internal())
     {
-	// Will udpate diffs before redrawing.  Set _invalid to update the
+	// Will update diffs before redrawing.  Set _invalid to update the
 	// diffs themselves, set _update to also update folds properly just
 	// before redrawing.
 	tp->tp_diff_invalid = TRUE;
@@ -908,6 +908,7 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
     int		idx_orig;
     int		idx_new;
     diffio_T	diffio;
+    int		had_diffs = curtab->tp_first_diff != NULL;
 
     if (diff_busy)
     {
@@ -924,14 +925,14 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
 	if (curtab->tp_diffbuf[idx_orig] != NULL)
 	    break;
     if (idx_orig == DB_COUNT)
-	return;
+	goto theend;
 
     // Only need to do something when there is another buffer.
     for (idx_new = idx_orig + 1; idx_new < DB_COUNT; ++idx_new)
 	if (curtab->tp_diffbuf[idx_new] != NULL)
 	    break;
     if (idx_new == DB_COUNT)
-	return;
+	goto theend;
 
     // Only use the internal method if it did not fail for one of the buffers.
     vim_memset(&diffio, 0, sizeof(diffio));
@@ -948,9 +949,14 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
     // force updating cursor position on screen
     curwin->w_valid_cursor.lnum = 0;
 
-    diff_redraw(TRUE);
-
-    apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
+theend:
+    // A redraw is needed if there were diffs and they were cleared, or there
+    // are diffs now, which means they got updated.
+    if (had_diffs || curtab->tp_first_diff != NULL)
+    {
+	diff_redraw(TRUE);
+	apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
+    }
 }
 
 /*
@@ -2272,7 +2278,8 @@ diffopt_changed(void)
     if ((diff_flags_new & DIFF_HORIZONTAL) && (diff_flags_new & DIFF_VERTICAL))
 	return FAIL;
 
-    /* If "icase" or "iwhite" was added or removed, need to update the diff. */
+    // If flags were added or removed, or the algorithm was changed, need to
+    // update the diff.
     if (diff_flags != diff_flags_new || diff_algorithm != diff_algorithm_new)
 	FOR_ALL_TABPAGES(tp)
 	    tp->tp_diff_invalid = TRUE;
@@ -2845,14 +2852,18 @@ theend:
 	diff_need_update = FALSE;
 	ex_diffupdate(NULL);
     }
+    else
+    {
+	// Check that the cursor is on a valid character and update it's
+	// position.  When there were filler lines the topline has become
+	// invalid.
+	check_cursor();
+	changed_line_abv_curs();
 
-    /* Check that the cursor is on a valid character and update it's position.
-     * When there were filler lines the topline has become invalid. */
-    check_cursor();
-    changed_line_abv_curs();
-
-    /* Also need to redraw the other buffers. */
-    diff_redraw(FALSE);
+	// Also need to redraw the other buffers.
+	diff_redraw(FALSE);
+	apply_autocmds(EVENT_DIFFUPDATED, NULL, NULL, FALSE, curbuf);
+    }
 }
 
 #ifdef FEAT_FOLDING
