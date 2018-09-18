@@ -244,16 +244,9 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
      * This allows us to catch events independently of the signal handlers
      * in gui_gtk_x11.c.
      */
-# if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(target), "event",
 		     G_CALLBACK(target_event_cb),
 		     beval);
-# else
-    /* Should use GTK_OBJECT() here, but that causes a lint warning... */
-    gtk_signal_connect((GtkObject*)(target), "event",
-		       GTK_SIGNAL_FUNC(target_event_cb),
-		       beval);
-# endif
     /*
      * Nasty:  Key press events go to the main window thus the drawing area
      * will never see them.  This means we have to connect to the main window
@@ -262,45 +255,25 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(target, gui.mainwin))
     {
-# if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(gui.mainwin), "event",
 			 G_CALLBACK(mainwin_event_cb),
 			 beval);
-# else
-	gtk_signal_connect((GtkObject*)(gui.mainwin), "event",
-			   GTK_SIGNAL_FUNC(mainwin_event_cb),
-			   beval);
-# endif
     }
 }
 
     static void
 removeEventHandler(BalloonEval *beval)
 {
-    /* LINTED: avoid warning: dubious operation on enum */
-# if GTK_CHECK_VERSION(3,0,0)
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
 					 FUNC2GENERIC(target_event_cb),
 					 beval);
-# else
-    gtk_signal_disconnect_by_func((GtkObject*)(beval->target),
-				  GTK_SIGNAL_FUNC(target_event_cb),
-				  beval);
-# endif
 
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(beval->target, gui.mainwin))
     {
-	/* LINTED: avoid warning: dubious operation on enum */
-# if GTK_CHECK_VERSION(3,0,0)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(gui.mainwin),
 					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
-# else
-	gtk_signal_disconnect_by_func((GtkObject*)(gui.mainwin),
-				      GTK_SIGNAL_FUNC(mainwin_event_cb),
-				      beval);
-# endif
     }
 }
 
@@ -433,13 +406,8 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	    }
 	    else
 	    {
-# if GTK_CHECK_VERSION(3,0,0)
 		beval->timerID = g_timeout_add((guint)p_bdlay,
 					       &timeout_cb, beval);
-# else
-		beval->timerID = gtk_timeout_add((guint32)p_bdlay,
-						 &timeout_cb, beval);
-# endif
 	    }
 	}
     }
@@ -1039,11 +1007,7 @@ cancelBalloon(BalloonEval *beval)
 
     if (beval->timerID != 0)
     {
-# if GTK_CHECK_VERSION(3,0,0)
 	g_source_remove(beval->timerID);
-# else
-	gtk_timeout_remove(beval->timerID);
-# endif
 	beval->timerID = 0;
     }
     beval->showState = ShS_NEUTRAL;
@@ -1055,17 +1019,9 @@ createBalloonEvalWindow(BalloonEval *beval)
     beval->balloonShell = gtk_window_new(GTK_WINDOW_POPUP);
 
     gtk_widget_set_app_paintable(beval->balloonShell, TRUE);
-# if GTK_CHECK_VERSION(3,0,0)
     gtk_window_set_resizable(GTK_WINDOW(beval->balloonShell), FALSE);
-# else
-    gtk_window_set_policy(GTK_WINDOW(beval->balloonShell), FALSE, FALSE, TRUE);
-# endif
     gtk_widget_set_name(beval->balloonShell, "gtk-tooltips");
-# if GTK_CHECK_VERSION(3,0,0)
     gtk_container_set_border_width(GTK_CONTAINER(beval->balloonShell), 4);
-# else
-    gtk_container_border_width(GTK_CONTAINER(beval->balloonShell), 4);
-# endif
 
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(beval->balloonShell), "draw",
