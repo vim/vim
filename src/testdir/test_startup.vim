@@ -225,6 +225,69 @@ func Test_o_arg()
   call delete('Xtestout')
 endfunc
 
+" Test the -p[N] argument to open N tabpages.
+func Test_p_arg()
+  let after = [
+	\ 'call writefile(split(execute("tabs"), "\n"), "Xtestout")',
+	\ 'qall',
+	\ ]
+  if RunVim([], after, '-p2')
+    let lines = readfile('Xtestout')
+    call assert_equal(4, len(lines))
+    call assert_equal('Tab page 1',    lines[0])
+    call assert_equal('>   [No Name]', lines[1])
+    call assert_equal('Tab page 2',    lines[2])
+    call assert_equal('    [No Name]', lines[3])
+  endif
+
+  if RunVim([], after, '-p foo bar')
+    let lines = readfile('Xtestout')
+    call assert_equal(4, len(lines))
+    call assert_equal('Tab page 1', lines[0])
+    call assert_equal('>   foo',    lines[1])
+    call assert_equal('Tab page 2', lines[2])
+    call assert_equal('    bar',    lines[3])
+  endif
+
+  call delete('Xtestout')
+endfunc
+
+" Test the -V[N] argument to set the 'version' option to [N]
+func Test_V_arg()
+  let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
+  call assert_equal("  verbose=0\n", out)
+
+  let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
+  call assert_match("^sourcing \"$VIMRUNTIME/defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n  verbose=2\n$", out)
+
+  let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
+  call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
+endfunc
+
+" Test the -A, -F and -H arguments (Arabic, Farsi and Hewbrew modes).
+func Test_A_F_H_arg()
+  let after = [
+	\ 'call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")',
+	\ 'qall',
+	\ ]
+  if has('arabic') && RunVim([], after, '-A')
+    let lines = readfile('Xtestout')
+    call assert_equal(['1', '1', '0', '0'], lines)
+  endif
+
+  if has('farsi') && RunVim([], after, '-F')
+    let lines = readfile('Xtestout')
+    call assert_equal(['1', '0', '1', '0'], lines)
+  endif
+
+  if has('rightleft') && RunVim([], after, '-H')
+    let lines = readfile('Xtestout')
+    call assert_equal(['1', '0', '0', '1'], lines)
+  endif
+
+  call delete('Xtestout')
+endfunc
+
 func Test_file_args()
   let after = [
 	\ 'call writefile(argv(), "Xtestout")',
