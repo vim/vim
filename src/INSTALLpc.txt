@@ -3,7 +3,7 @@ INSTALLpc.txt - Installation of Vim on PC
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-You can find the lastest here: https://github.com/vim/vim-win32-installer
+You can find the latest here: https://github.com/vim/vim-win32-installer
 This page also has links to install support for interfaces such as Perl,
 Python, Lua, etc.
 
@@ -164,6 +164,11 @@ options:
   msvc2015
 For x64 builds run this with the "x86_amd64" option:
   msvc2015 x86_amd64
+This enables x86_x64 cross compiler. This works on any editions including
+Express edition.
+If you use Community (or Professional) edition, you can enable the x64 native
+compiler by using the "x64" option:
+  msvc2015 x64
 
 The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
@@ -182,7 +187,7 @@ Visual C++ Toolkit 2003				*msvc-2003-toolkit*
 
 You could download the Microsoft Visual C++ Toolkit 2003 from
     http://msdn.microsoft.com/visualc/vctoolkit2003/
-Unfortunately this URL is no longer valid.  Inofficial downloads appear to be
+Unfortunately this URL is no longer valid.  Unofficial downloads appear to be
 available from links mentioned on these pages (use at your own risk):
    http://www.filewatcher.com/m/VCToolkitSetup.exe.32952488.0.0.html
    http://feargame.net/wiki/index.php?title=Building_Source_with_the_VC2003_Toolkit
@@ -276,12 +281,12 @@ Download an installer:
 
 Execute the installer and follow the instructions to update basic packages.
 At the end keep the checkbox checked to run msys2 now.  If needed, you can
-open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS
+open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS.
 
 Execute:
     $ pacman -Syu
-    
-And restart MSYS2 window (select "MSYS2 MSYS" icon from the Start Menu).
+
+And restart MSYS2 console (select "MSYS2 MSYS" icon from the Start Menu).
 Then execute:
     $ pacman -Su
 
@@ -297,6 +302,7 @@ The following package groups are required for building Vim:
 * mingw-w64-i686-toolchain (for building 32-bit Vim)
 * mingw-w64-x86_64-toolchain (for building 64-bit Vim)
 
+(These groups also include some useful packages which are not used by Vim.)
 Use the following command to install them:
 
     $ pacman -S base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain
@@ -305,7 +311,17 @@ Or you can use the `pacboy` command to avoid long package names:
 
     $ pacboy -S base-devel: toolchain:m
 
+The suffix ":" means that it disables the package name translation.
+The suffix ":m" means both i686 and x86_64.  You can also use the ":i" suffix
+to install only i686, and the ":x" suffix to install only x86_64.
 (See `pacboy help` for the help.)
+
+See also the pacman page in ArchWiki for the general usage of pacman:
+    https://wiki.archlinux.org/index.php/pacman
+
+MSYS2 has its own git package, and you can also install it via pacman:
+
+    $ pacman -S git
 
 
 2.3. Keep the build environment up-to-date
@@ -316,7 +332,7 @@ In that case, you just need to execute the command:
     $ pacman -Syu
 
 
-# Build Vim
+2.4. Build Vim
 
 Select one of the following icon from the Start Menu:
 
@@ -329,12 +345,12 @@ Go to the source directory of Vim, then execute the make command.  E.g.:
     make -f Make_ming.mak GUI=no
     make -f Make_ming.mak GUI=no DEBUG=yes
 
-NOTE: you can't execute the vim.exe in the MSYS console, open a normal Windows
+NOTE: you can't execute vim.exe in the MSYS2 console, open a normal Windows
 console for that.  You need to set $PATH to be able to build there, e.g.:
 
     set PATH=c:\msys64\mingw32\bin;c:\msys64\usr\bin;%PATH%
 
-This command is in msys32.bat.  Or or the 64 bit compiler use msys64.bat:
+This command is in msys32.bat.  Or for the 64 bit compiler use msys64.bat:
 
     set PATH=c:\msys64\mingw64\bin;c:\msys64\usr\bin;%PATH%
 
