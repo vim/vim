@@ -227,6 +227,11 @@ endfunc
 
 " Test the -p[N] argument to open N tabpages.
 func Test_p_arg()
+  if has('win32')
+    " FIXME: Disabled on for Windows until Appveyor hang is fixed.
+    return
+  endif
+
   let after = [
 	\ 'call writefile(split(execute("tabs"), "\n"), "Xtestout")',
 	\ 'qall',
@@ -254,17 +259,19 @@ endfunc
 
 " Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
-  " FIXME: disabled for Windows as this test hangs in Appveyor.
-  if !has('win32')
-    let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
-    call assert_equal("  verbose=0\n", out)
-
-    let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
-    call assert_match("^sourcing \"$VIMRUNTIME/defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n  verbose=2\n$", out)
-
-    let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
-    call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
+  if has('win32')
+    " FIXME: Disabled on for Windows until Appveyor hang is fixed.
+    return
   endif
+
+  let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
+  call assert_equal("  verbose=0\n", out)
+
+  let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
+  call assert_match("^sourcing \"$VIMRUNTIME/defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n  verbose=2\n$", out)
+
+  let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
+  call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
 endfunc
 
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
