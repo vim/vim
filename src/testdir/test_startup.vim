@@ -252,16 +252,19 @@ func Test_p_arg()
   call delete('Xtestout')
 endfunc
 
-" Test the -V[N] argument to set the 'version' option to [N]
+" Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
-  let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
-  call assert_equal("  verbose=0\n", out)
+  " FIXME: disabled for Windows as this test hangs in Appveyor.
+  if !has('win32')
+    let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
+    call assert_equal("  verbose=0\n", out)
 
-  let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
-  call assert_match("^sourcing \"$VIMRUNTIME/defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n  verbose=2\n$", out)
+    let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
+    call assert_match("^sourcing \"$VIMRUNTIME/defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n  verbose=2\n$", out)
 
-  let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
-  call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
+    let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
+    call assert_match("\+*\nsourcing \"$VIMRUNTIME/defaults\.vim\"\r\nline 1: \" The default vimrc file\..*\n  verbose=15\n\+*", out)
+  endif
 endfunc
 
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
