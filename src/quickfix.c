@@ -3807,6 +3807,112 @@ qf_set_title_var(qf_list_T *qfl)
 }
 
 /*
+ * Goto a quickfix or location list window (if present).
+ * Returns OK if the window is found, FAIL otherwise.
+ */
+    static int
+qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
+{
+    win_T	*win;
+
+    win = qf_find_win(qi);
+    if (win == NULL)
+	return FAIL;
+
+    win_goto(win);
+    if (resize)
+    {
+	if (vertsplit)
+	{
+	    if (sz != win->w_width)
+		win_setwidth(sz);
+	}
+	else if (sz != win->w_height)
+	    win_setheight(sz);
+    }
+
+    return OK;
+}
+
+/*
+ * Open a new quickfix or location list window, load the quickfix buffer and
+ * set the appropriate options for the window.
+ * Returns FAIL if the window could not be opened.
+ */
+    static int
+qf_open_new_cwindow(qf_info_T *qi, int height)
+{
+    buf_T	*qf_buf;
+    win_T	*oldwin = curwin;
+    tabpage_T	*prevtab = curtab;
+    int		flags = 0;
+    win_T	*win;
+
+    qf_buf = qf_find_buf(qi);
+
+    // The current window becomes the previous window afterwards.
+    win = curwin;
+
+    if (IS_QF_STACK(qi) && cmdmod.split == 0)
+	// Create the new quickfix window at the very bottom, except when
+	// :belowright or :aboveleft is used.
+	win_goto(lastwin);
+    // Default is to open the window below the current window
+    if (cmdmod.split == 0)
+	flags = WSP_BELOW;
+    flags |= WSP_NEWLOC;
+    if (win_split(height, flags) == FAIL)
+	return FAIL;		// not enough room for window
+    RESET_BINDING(curwin);
+
+    if (IS_LL_STACK(qi))
+    {
+	// For the location list window, create a reference to the
+	// location list from the window 'win'.
+	curwin->w_llist_ref = win->w_llist;
+	win->w_llist->qf_refcount++;
+    }
+
+    if (oldwin != curwin)
+	oldwin = NULL;  // don't store info when in another window
+    if (qf_buf != NULL)
+    {
+	// Use the existing quickfix buffer
+	(void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
+		ECMD_HIDE + ECMD_OLDBUF, oldwin);
+    }
+    else
+    {
+	// Create a new quickfix buffer
+	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
+
+	// switch off 'swapfile'
+	set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+	set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
+		OPT_LOCAL);
+	set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
+	RESET_BINDING(curwin);
+#ifdef FEAT_DIFF
+	curwin->w_p_diff = FALSE;
+#endif
+#ifdef FEAT_FOLDING
+	set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+		OPT_LOCAL);
+#endif
+    }
+
+    // Only set the height when still in the same tab page and there is no
+    // window to the side.
+    if (curtab == prevtab && curwin->w_width == Columns)
+	win_setheight(height);
+    curwin->w_p_wfh = TRUE;	    // set 'winfixheight'
+    if (win_valid(win))
+	prevwin = win;
+
+    return OK;
+}
+
+/*
  * ":copen": open a window that shows the list of errors.
  * ":lopen": open a window that shows the location list.
  */
@@ -3815,10 +3921,7 @@ ex_copen(exarg_T *eap)
 {
     qf_info_T	*qi = &ql_info;
     int		height;
-    win_T	*win;
-    tabpage_T	*prevtab = curtab;
-    buf_T	*qf_buf;
-    win_T	*oldwin = curwin;
+    int		status = FAIL;
 
     if (is_loclist_cmd(eap->cmdidx))
     {
@@ -3835,107 +3938,28 @@ ex_copen(exarg_T *eap)
     else
 	height = QF_WINHEIGHT;
 
-    reset_VIsual_and_resel();			/* stop Visual mode */
+    reset_VIsual_and_resel();			// stop Visual mode
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
 
-    /*
-     * Find existing quickfix window, or open a new one.
-     */
-    win = qf_find_win(qi);
-
-    if (win != NULL && cmdmod.tab == 0)
-    {
-	win_goto(win);
-	if (eap->addr_count != 0)
-	{
-	    if (cmdmod.split & WSP_VERT)
-	    {
-		if (height != win->w_width)
-		    win_setwidth(height);
-	    }
-	    else if (height != win->w_height)
-		win_setheight(height);
-	}
-    }
-    else
-    {
-	int flags = 0;
-
-	qf_buf = qf_find_buf(qi);
-
-	/* The current window becomes the previous window afterwards. */
-	win = curwin;
-
-	if ((eap->cmdidx == CMD_copen || eap->cmdidx == CMD_cwindow)
-		&& cmdmod.split == 0)
-	    /* Create the new quickfix window at the very bottom, except when
-	     * :belowright or :aboveleft is used. */
-	    win_goto(lastwin);
-	/* Default is to open the window below the current window */
-	if (cmdmod.split == 0)
-	    flags = WSP_BELOW;
-	flags |= WSP_NEWLOC;
-	if (win_split(height, flags) == FAIL)
-	    return;		/* not enough room for window */
-	RESET_BINDING(curwin);
-
-	if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
-	{
-	    /*
-	     * For the location list window, create a reference to the
-	     * location list from the window 'win'.
-	     */
-	    curwin->w_llist_ref = win->w_llist;
-	    win->w_llist->qf_refcount++;
-	}
-
-	if (oldwin != curwin)
-	    oldwin = NULL;  /* don't store info when in another window */
-	if (qf_buf != NULL)
-	    /* Use the existing quickfix buffer */
-	    (void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
-					     ECMD_HIDE + ECMD_OLDBUF, oldwin);
-	else
-	{
-	    /* Create a new quickfix buffer */
-	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
-	    /* switch off 'swapfile' */
-	    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-	    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
-								   OPT_LOCAL);
-	    set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
-	    RESET_BINDING(curwin);
-#ifdef FEAT_DIFF
-	    curwin->w_p_diff = FALSE;
-#endif
-#ifdef FEAT_FOLDING
-	    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
-								   OPT_LOCAL);
-#endif
-	}
-
-	/* Only set the height when still in the same tab page and there is no
-	 * window to the side. */
-	if (curtab == prevtab && curwin->w_width == Columns)
-	    win_setheight(height);
-	curwin->w_p_wfh = TRUE;	    /* set 'winfixheight' */
-	if (win_valid(win))
-	    prevwin = win;
-    }
+    // Find an existing quickfix window, or open a new one.
+    if (cmdmod.tab == 0)
+	status = qf_goto_cwindow(qi, eap->addr_count != 0, height,
+						cmdmod.split & WSP_VERT);
+    if (status == FAIL)
+	if (qf_open_new_cwindow(qi, height) == FAIL)
+	    return;
 
     qf_set_title_var(&qi->qf_lists[qi->qf_curlist]);
 
-    /*
-     * Fill the buffer with the quickfix list.
-     */
+    // Fill the buffer with the quickfix list.
     qf_fill_buffer(qi, curbuf, NULL);
 
     curwin->w_cursor.lnum = qi->qf_lists[qi->qf_curlist].qf_index;
     curwin->w_cursor.col = 0;
     check_cursor();
-    update_topline();		/* scroll to show the line */
+    update_topline();		// scroll to show the line
 }
 
 /*
