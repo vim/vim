@@ -228,7 +228,7 @@ endfunc
 " Test the -p[N] argument to open N tabpages.
 func Test_p_arg()
   if has('win32')
-    " FIXME: Disabled on for Windows until Appveyor hang is fixed.
+    " FIXME: Disabled on Windows until Appveyor hang is fixed.
     return
   endif
 
@@ -260,7 +260,7 @@ endfunc
 " Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
   if has('win32')
-    " FIXME: Disabled on for Windows until Appveyor hang is fixed.
+    " FIXME: Disabled on Windows until Appveyor hang is fixed.
     return
   endif
 
@@ -276,6 +276,11 @@ endfunc
 
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
 func Test_A_F_H_arg()
+  if has('win32')
+    " FIXME: Disabled on Windows until Appveyor hang is fixed.
+    return
+  endif
+
   let after = [
 	\ 'call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")',
 	\ 'qall',
