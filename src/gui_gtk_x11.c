@@ -3415,6 +3415,7 @@ on_select_tab(
 	send_tabline_event(idx + 1);
 }
 
+# if GTK_CHECK_VERSION(2,10,0)
 /*
  * Handle reordering the tabs (using D&D).
  */
@@ -3433,6 +3434,7 @@ on_tab_reordered(
 	    tabpage_move(idx);
     }
 }
+# endif
 
 /*
  * Show or hide the tabline.
@@ -3516,9 +3518,11 @@ gui_mch_update_tabline(void)
 		    page,
 		    event_box,
 		    nr++);
+# if GTK_CHECK_VERSION(2,10,0)
 	    gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline),
 		    page,
 		    TRUE);
+# endif
 	}
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
@@ -3914,13 +3918,17 @@ gui_mch_init(void)
 # endif
 	gtk_container_add(GTK_CONTAINER(event_box), label);
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
+# if GTK_CHECK_VERSION(2,10,0)
 	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(gui.tabline), page, TRUE);
+# endif
     }
 
     g_signal_connect(G_OBJECT(gui.tabline), "switch-page",
 		     G_CALLBACK(on_select_tab), NULL);
+# if GTK_CHECK_VERSION(2,10,0)
     g_signal_connect(G_OBJECT(gui.tabline), "page-reordered",
 		     G_CALLBACK(on_tab_reordered), NULL);
+# endif
 
     /* Create a popup menu for the tab line and connect it. */
     tabline_menu = create_tabline_menu();
