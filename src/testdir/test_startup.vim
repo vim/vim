@@ -227,11 +227,6 @@ endfunc
 
 " Test the -p[N] argument to open N tabpages.
 func Test_p_arg()
-  if has('win32')
-    " FIXME: Disabled on Windows until Appveyor hang is fixed.
-    return
-  endif
-
   let after = [
 	\ 'call writefile(split(execute("tabs"), "\n"), "Xtestout")',
 	\ 'qall',
