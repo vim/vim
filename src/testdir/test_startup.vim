@@ -252,8 +252,13 @@ func Test_p_arg()
   call delete('Xtestout')
 endfunc
 
-" Test the -V[N] argument to set the 'version' option to [N]
+" Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
+  if has('win32')
+    " FIXME: Disabled on Windows until Appveyor hang is fixed.
+    return
+  endif
+
   let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
   call assert_equal("  verbose=0\n", out)
 
@@ -266,6 +271,11 @@ endfunc
 
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
 func Test_A_F_H_arg()
+  if has('win32')
+    " FIXME: Disabled on Windows until Appveyor hang is fixed.
+    return
+  endif
+
   let after = [
 	\ 'call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")',
 	\ 'qall',
