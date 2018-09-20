@@ -245,7 +245,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		for (i = 0; i < b->bv_len; i++)
 		{
 		    if (i > 0)
-			ga_concat(gap, ",");
+			ga_concat(gap, (char_u *)",");
 		    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d",
 							(int)b->bv_buf[i]);
 		    ga_concat(gap, numbuf);
