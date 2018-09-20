@@ -5672,7 +5672,7 @@ echo_string_core(
 	    if (tv->vval.v_blob == NULL)
 	    {
 		*tofree = NULL;
-		r = "b[]";
+		r = (char_u *)"b[]";
 	    }
 	    else
 	    {
@@ -7076,6 +7076,9 @@ get_tv_number_chk(typval_T *varp, int *denote)
 	    EMSG(_("E913: Using a Channel as a Number"));
 	    break;
 #endif
+	case VAR_BLOB:
+	    EMSG(_("E996: Using a Blob as a Number"));
+	    break;
 	case VAR_UNKNOWN:
 	    internal_error("get_tv_number(UNKNOWN)");
 	    break;
@@ -7123,6 +7126,9 @@ get_tv_float(typval_T *varp)
 	    EMSG(_("E914: Using a Channel as a Float"));
 	    break;
 # endif
+	case VAR_BLOB:
+	    EMSG(_("E963: Using a Blob as a Float"));
+	    break;
 	case VAR_UNKNOWN:
 	    internal_error("get_tv_float(UNKNOWN)");
 	    break;
@@ -7199,6 +7205,9 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 	case VAR_SPECIAL:
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
+        case VAR_BLOB:
+	    EMSG(_("E964: using Blob as a String"));
+	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    {
@@ -8742,6 +8751,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
 		    case VAR_CHANNEL:
+		    case VAR_BLOB:
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
