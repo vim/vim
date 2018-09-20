@@ -121,12 +121,6 @@ blob_copy(blob_T *orig, int deep, int copyID)
     copy = blob_alloc();
     if (copy != NULL)
     {
-	if (copyID != 0)
-	{
-	    /* Do this before adding the items, because one of the items may
-	     * refer back to this blob. */
-	    orig->bv_copyID = copyID;
-	}
 	copy->bv_len = orig->bv_len;
 	copy->bv_buf = alloc(orig->bv_len);
 	for (i = 0; i < orig->bv_len; i++)
