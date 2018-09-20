@@ -112,7 +112,10 @@ bench_re_freeze.out: bench_re_freeze.vim
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 
-newtests: $(NEW_TESTS)
+newtests: newtestssilent
+	@if exist messages (findstr "SKIPPED FAILED" messages > nul) && type messages
+
+newtestssilent: $(NEW_TESTS)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
