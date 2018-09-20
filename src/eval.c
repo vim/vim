@@ -177,6 +177,7 @@ static struct vimvar
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
     {VV_NAME("testing",		 VAR_NUMBER), 0},
+    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
     {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
     {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},

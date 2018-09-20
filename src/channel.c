@@ -4008,14 +4008,14 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     if (argvars[1].v_type == VAR_BLOB)
     {
 	text = argvars[1].vval.v_blob->bv_buf;
-	len =argvars[1].vval.v_blob->bv_len;
+	len = argvars[1].vval.v_blob->bv_len;
     }
     else
     {
 	text = get_tv_string_buf(&argvars[1], buf);
 	len = STRLEN(text);
     }
-    channel = send_common(argvars, text, STRLEN(text), 0, eval, &opt,
+    channel = send_common(argvars, text, len, 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
     if (channel != NULL && eval)
     {

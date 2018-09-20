@@ -2018,6 +2018,7 @@ typedef int sock_T;
 #define VAR_TYPE_NONE	    7
 #define VAR_TYPE_JOB	    8
 #define VAR_TYPE_CHANNEL    9
+#define VAR_TYPE_BLOB	    10
 
 #ifdef FEAT_CLIPBOARD
 
