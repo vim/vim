@@ -1191,6 +1191,7 @@ f_acos(typval_T *argvars, typval_T *rettv)
 f_add(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
+    blob_T	*b;
 
     rettv->vval.v_number = 1; /* Default: Failed */
     if (argvars[0].v_type == VAR_LIST)
@@ -1200,6 +1201,16 @@ f_add(typval_T *argvars, typval_T *rettv)
 					 (char_u *)N_("add() argument"), TRUE)
 		&& list_append_tv(l, &argvars[1]) == OK)
 	    copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	if ((b = argvars[0].vval.v_blob) != NULL
+		&& !tv_check_lock(b->bv_lock,
+					 (char_u *)N_("add() argument"), TRUE))
+	{
+	    ga_append(&b->bv_ga, (char_u)get_tv_number(&argvars[1]));
+	    copy_tv(&argvars[0], rettv);
+	}
     }
     else
 	EMSG(_(e_listreq));
