@@ -101,6 +101,7 @@ blob_equal(
 
     for (i = 0; i < b1->bv_len; i++)
 	  	if (b1->bv_buf[i] != b2->bv_buf[i]) return FALSE;
+    return TRUE;
 }
 
 /*
