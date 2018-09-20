@@ -3885,6 +3885,7 @@ channel_send(
 send_common(
 	typval_T    *argvars,
 	char_u	    *text,
+	int	    len,
 	int	    id,
 	int	    eval,
 	jobopt_T    *opt,
@@ -3918,7 +3919,7 @@ send_common(
 				       opt->jo_callback, opt->jo_partial, id);
     }
 
-    if (channel_send(channel, part_send, text, (int)STRLEN(text), fun) == OK
+    if (channel_send(channel, part_send, text, len, fun) == OK
 						  && opt->jo_callback == NULL)
 	return channel;
     return NULL;
@@ -3962,7 +3963,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     if (text == NULL)
 	return;
 
-    channel = send_common(argvars, text, id, eval, &opt,
+    channel = send_common(argvars, text, STRLEN(text), id, eval, &opt,
 			    eval ? "ch_evalexpr" : "ch_sendexpr", &part_read);
     vim_free(text);
     if (channel != NULL && eval)
@@ -3994,6 +3995,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 {
     char_u	buf[NUMBUFLEN];
     char_u	*text;
+    int		len;
     channel_T	*channel;
     ch_part_T	part_read;
     jobopt_T    opt;
@@ -4003,8 +4005,17 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    text = get_tv_string_buf(&argvars[1], buf);
-    channel = send_common(argvars, text, 0, eval, &opt,
+    if (argvars[1].v_type == VAR_BLOB)
+    {
+	text = argvars[1].vval.v_blob->bv_buf;
+	len =argvars[1].vval.v_blob->bv_len;
+    }
+    else
+    {
+	text = get_tv_string_buf(&argvars[1], buf);
+	len = STRLEN(text);
+    }
+    channel = send_common(argvars, text, STRLEN(text), 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
     if (channel != NULL && eval)
     {

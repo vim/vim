@@ -2090,6 +2090,18 @@ get_lval(
 	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
+	else if (lp->ll_tv->v_type == VAR_DICT)
+	{
+	    /*
+	     * Get the number and item for the only or first index of the List.
+	     */
+	    if (empty1)
+		lp->ll_n1 = 0;
+	    else
+		/* is number or string */
+		lp->ll_n1 = (long)get_tv_number(&var1);
+	    clear_tv(&var1);
+	}
 	else
 	{
 	    /*
