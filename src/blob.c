@@ -138,7 +138,6 @@ blob_copy(blob_T *orig, int deep, int copyID)
 read_blob(FILE *fd, blob_T *blob)
 {
     int		n;
-    int		ret = OK;
     struct stat	st;
 
     if (fstat(fileno(fd), &st) < 0)
@@ -146,9 +145,7 @@ read_blob(FILE *fd, blob_T *blob)
     blob->bv_cap = blob->bv_len = st.st_size;
     blob->bv_buf = alloc_clear(blob->bv_len);
     if (fread(blob->bv_buf, 1, blob->bv_len, fd) < 0)
-    {
 	return FAIL;
-    }
     return OK;
 }
 
