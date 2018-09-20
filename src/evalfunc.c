@@ -3064,6 +3064,12 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_number != VVAL_TRUE;
 	    break;
 
+	case VAR_BLOB:
+	    n = argvars[0].vval.v_blob == NULL
+	       	|| argvars[0].vval.v_blob->bv_buf == NULL
+	       	|| argvars[0].vval.v_blob->bv_len == 0;
+	    break;
+
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    n = argvars[0].vval.v_job == NULL
@@ -14040,8 +14046,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     FILE	*fd;
     int		ret = 0;
     listitem_T	*li;
-    list_T	*list;
-    blob_T	*blob;
+    list_T	*list = NULL;
+    blob_T	*blob = NULL;
 
     rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
