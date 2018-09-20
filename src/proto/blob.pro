@@ -12,4 +12,6 @@ int get_blob_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_blob(FILE *fd, blob_T *blob);
 int read_blob(FILE *fd, blob_T *blob);
 int blob_equal(blob_T *b1, blob_T *b2);
+char_u blob_get(blob_T *b, int idx);
+void blob_set(blob_T *b, int idx, char_u c);
 /* vim: set ft=c : */

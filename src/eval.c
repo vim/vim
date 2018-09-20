@@ -2106,7 +2106,7 @@ get_lval(
 	    clear_tv(&var1);
 
 	    if (lp->ll_n1 < 0
-		    || lp->ll_n1 >= lp->ll_tv->vval.v_blob->bv_len)
+		    || lp->ll_n1 >= blob_len(lp->ll_tv->vval.v_blob))
 	    {
 		if (!quiet)
 		    EMSGN(_(e_listidx), lp->ll_n1);
@@ -2226,7 +2226,8 @@ set_var_lval(
 		EMSG2(_(e_letwrong), op);
 		return;
 	    }
-	    lp->ll_blob->bv_buf[lp->ll_n1] = rettv->vval.v_number;
+
+	    blob_set(lp->ll_blob, lp->ll_n1, get_tv_number(rettv));
 	}
 	else if (op != NULL && *op != '=')
 	{
@@ -4498,10 +4499,9 @@ eval_index(
 		    if (n1 < len && n2 > 0 && n1 < n2)
 		    {
 			blob_T  *blob = blob_alloc();
-			blob->bv_buf = alloc(n2 - n1);
-			blob->bv_len = n2 - n1;
 			for (i = n1; i < n2; i++)
-			    blob->bv_buf[i - n1] = rettv->vval.v_blob->bv_buf[i];
+			    blob_set(blob, i - n1,
+				    blob_get(rettv->vval.v_blob, i));
 
 			clear_tv(rettv);
 			rettv->v_type = VAR_BLOB;
@@ -4515,7 +4515,7 @@ eval_index(
 		     * result is empty. */
 		    if (n1 < len && n1 >= 0)
 		    {
-			int v = (int)rettv->vval.v_blob->bv_buf[n1];
+			int v = (int)blob_get(rettv->vval.v_blob, n1);
 			clear_tv(rettv);
 			rettv->v_type = VAR_NUMBER;
 			rettv->vval.v_number = v;

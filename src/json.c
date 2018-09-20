@@ -237,17 +237,17 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_BLOB:
 	    b = val->vval.v_blob;
-	    if (b == NULL || b->bv_len == 0)
+	    if (b == NULL || b->bv_ga.ga_len == 0)
 		ga_concat(gap, (char_u *)"[]");
 	    else
 	    {
 		ga_append(gap, '[');
-		for (i = 0; i < b->bv_len; i++)
+		for (i = 0; i < b->bv_ga.ga_len; i++)
 		{
 		    if (i > 0)
 			ga_concat(gap, (char_u *)",");
 		    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d",
-							(int)b->bv_buf[i]);
+			    (int)blob_get(b, i));
 		    ga_concat(gap, numbuf);
 		}
 		ga_append(gap, ']');

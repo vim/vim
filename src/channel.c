@@ -4007,8 +4007,8 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 
     if (argvars[1].v_type == VAR_BLOB)
     {
-	text = argvars[1].vval.v_blob->bv_buf;
-	len = argvars[1].vval.v_blob->bv_len;
+	text = argvars[1].vval.v_blob->bv_ga.ga_data;
+	len = argvars[1].vval.v_blob->bv_ga.ga_len;
     }
     else
     {

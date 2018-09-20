@@ -3066,8 +3066,8 @@ f_empty(typval_T *argvars, typval_T *rettv)
 
 	case VAR_BLOB:
 	    n = argvars[0].vval.v_blob == NULL
-	       	|| argvars[0].vval.v_blob->bv_buf == NULL
-	       	|| argvars[0].vval.v_blob->bv_len == 0;
+	       	|| argvars[0].vval.v_blob->bv_ga.ga_data == NULL
+	       	|| argvars[0].vval.v_blob->bv_ga.ga_len == 0;
 	    break;
 
 	case VAR_JOB:

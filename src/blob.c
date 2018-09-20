@@ -22,7 +22,12 @@
     blob_T *
 blob_alloc(void)
 {
-    return (blob_T *)alloc_clear(sizeof(blob_T));
+    blob_T *blob = (blob_T *)alloc_clear(sizeof(blob_T));
+    if (blob != NULL)
+    {
+	ga_init2(&blob->bv_ga, 1, 100);
+    }
+    return blob;
 }
 
 /*
@@ -57,7 +62,7 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
     void
 blob_free(blob_T *b)
 {
-    vim_free(b->bv_buf);
+    ga_clear(&b->bv_ga);
     vim_free(b);
 }
 
@@ -80,7 +85,19 @@ blob_len(blob_T *b)
 {
     if (b == NULL)
 	return 0L;
-    return b->bv_len;
+    return b->bv_ga.ga_len;
+}
+
+    char_u
+blob_get(blob_T *b, int idx)
+{
+    return ((char_u*)b->bv_ga.ga_data)[idx];
+}
+
+    void
+blob_set(blob_T *b, int idx, char_u c)
+{
+    ((char_u*)b->bv_ga.ga_data)[idx] = c;
 }
 
 /*
@@ -99,8 +116,8 @@ blob_equal(
     if (blob_len(b1) != blob_len(b2))
 	return FALSE;
 
-    for (i = 0; i < b1->bv_len; i++)
-	  	if (b1->bv_buf[i] != b2->bv_buf[i]) return FALSE;
+    for (i = 0; i < b1->bv_ga.ga_len; i++)
+	if (blob_get(b1, i) != blob_get(b2, i)) return FALSE;
     return TRUE;
 }
 
@@ -122,10 +139,9 @@ blob_copy(blob_T *orig, int deep, int copyID)
     copy = blob_alloc();
     if (copy != NULL)
     {
-	copy->bv_len = orig->bv_len;
-	copy->bv_buf = alloc(orig->bv_len);
-	for (i = 0; i < orig->bv_len; i++)
-	    copy->bv_buf[i] = orig->bv_buf[i];
+	ga_init2(&copy->bv_ga, 1, orig->bv_ga.ga_len);
+	for (i = 0; i < orig->bv_ga.ga_len; i++)
+	    blob_set(copy, i, blob_get(orig, i));
 	++copy->bv_refcount;
     }
 
@@ -142,9 +158,12 @@ read_blob(FILE *fd, blob_T *blob)
 
     if (fstat(fileno(fd), &st) < 0)
 	return FAIL;
-    blob->bv_cap = blob->bv_len = st.st_size;
-    blob->bv_buf = alloc_clear(blob->bv_len);
-    if (fread(blob->bv_buf, 1, blob->bv_len, fd) < 0)
+    ga_init2(&blob->bv_ga, 1, st.st_size);
+    if (ga_grow(&blob->bv_ga, st.st_size) == FAIL)
+	return FAIL;
+    blob->bv_ga.ga_len = st.st_size;
+    if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
+	    < blob->bv_ga.ga_len)
 	return FAIL;
     return OK;
 }
@@ -155,7 +174,7 @@ read_blob(FILE *fd, blob_T *blob)
     int
 write_blob(FILE *fd, blob_T *blob)
 {
-    if (fwrite(blob->bv_buf, 1, blob->bv_len, fd) < 0)
+    if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd) < 0)
     {
 	EMSG(_(e_write));
 	return FAIL;
