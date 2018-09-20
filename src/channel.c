@@ -40,6 +40,7 @@
 #else
 # include <netdb.h>
 # include <netinet/in.h>
+# include <arpa/inet.h>
 
 # include <sys/socket.h>
 # ifdef HAVE_LIBGEN_H
@@ -643,6 +644,7 @@ channel_gui_unregister(channel_T *channel)
 #endif
 
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
+static char *e_cannot_listen = N_("E962: Cannot listen to port");
 
 /*
  * Open a socket channel to "hostname":"port".
@@ -926,6 +928,142 @@ channel_open(
 }
 
 /*
+ * Listen to the socket channel to "hostname":"port".
+ * "hostname" can be empty string if listen from any.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    channel_T *
+channel_listen(
+	char *hostname,
+	int port_in,
+	void (*nb_close_cb)(void))
+{
+    int			sd = -1;
+    struct sockaddr_in	server;
+    struct hostent	*host;
+#ifdef WIN32
+    u_short		port = port_in;
+    u_long		val = 1;
+#else
+    int			port = port_in;
+    int			val = 1;
+#endif
+    channel_T		*channel;
+    int			ret;
+
+#ifdef WIN32
+    channel_init_winsock();
+#endif
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	return NULL;
+    }
+
+    /* Get the server internet address and put into addr structure */
+    /* fill in the socket address structure and connect to server */
+    vim_memset((char *)&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    if (hostname != NULL)
+    {
+	if ((host = gethostbyname(hostname)) == NULL)
+	{
+	    ch_error(channel, "in gethostbyname() in channel_listen()");
+	    PERROR(_("E963: gethostbyname() in channel_listen()"));
+	    channel_free(channel);
+	    return NULL;
+	}
+	{
+	    char		*p;
+
+	    /* When using host->h_addr_list[0] directly ubsan warns for it to not
+	     * be aligned.  First copy the pointer to avoid that. */
+	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
+	    memcpy((char *)&server.sin_addr, p, host->h_length);
+	}
+    }
+    else
+	server.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    /*
+     * For Unix we need to call connect() again after connect() failed.
+     * On Win32 one time is sufficient.
+     */
+    sd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sd == -1)
+    {
+	SOCK_ERRNO;
+	ch_error(channel, "in socket() in channel_listen().");
+	PERROR(_("E964: socket() in channel_listen()"));
+	channel_free(channel);
+	return NULL;
+    }
+
+    val = 1;
+    ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val, sizeof(val));
+    if (ret == -1)
+    {
+	SOCK_ERRNO;
+	ch_error(channel,
+		     "channel_listen: Setsockopt failed with errno %d", errno);
+	PERROR(_(e_cannot_listen));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    ret = bind(sd, (struct sockaddr *)&server, sizeof(struct sockaddr));
+    if (ret == -1)
+    {
+	SOCK_ERRNO;
+	ch_error(channel,
+		     "channel_listen: Bind failed with errno %d", errno);
+	PERROR(_(e_cannot_listen));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+    /* Try connecting to the server. */
+    ch_log(channel, "Listening at %s port %d", hostname, port);
+    ret = listen(sd, SOMAXCONN);
+    if (ret != 0)
+    {
+	SOCK_ERRNO;
+	ch_error(channel,
+		     "channel_listen: Listen failed with errno %d", errno);
+	PERROR(_(e_cannot_listen));
+	sock_close(sd);
+	channel_free(channel);
+	return NULL;
+    }
+
+#ifdef _WIN32
+    val = 0;
+    ioctlsocket(sd, FIONBIO, &val);
+#else
+    (void)fcntl(sd, F_SETFL, 0);
+#endif
+
+    channel->CH_SOCK_FD = (sock_T)sd;
+    channel->ch_nb_close_cb = nb_close_cb;
+    channel->ch_hostname = hostname != NULL ? (char *)vim_strsave((char_u *)hostname) : NULL;
+    channel->ch_port = port_in;
+    channel->ch_to_be_closed |= (1U << PART_SOCK);
+    channel->ch_listen = TRUE;
+
+#ifdef FEAT_GUI
+    channel_gui_register_one(channel, PART_SOCK);
+#endif
+
+    return channel;
+}
+
+/*
  * Implements ch_open().
  */
     channel_T *
@@ -979,6 +1117,65 @@ channel_open_func(typval_T *argvars)
     if (channel != NULL)
     {
 	opt.jo_set = JO_ALL;
+	channel_set_options(channel, &opt);
+    }
+theend:
+    free_job_options(&opt);
+    return channel;
+}
+
+/*
+ * Implements ch_listen().
+ */
+    channel_T *
+channel_listen_func(typval_T *argvars)
+{
+    char_u	*address;
+    char_u	*p;
+    char	*rest;
+    int		port;
+    jobopt_T    opt;
+    channel_T	*channel = NULL;
+
+    address = get_tv_string(&argvars[0]);
+    if (argvars[1].v_type != VAR_UNKNOWN
+	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
+    {
+	EMSG(_(e_invarg));
+	return NULL;
+    }
+
+    /* parse address */
+    p = vim_strchr(address, ':');
+    if (p == NULL)
+    {
+	EMSG2(_(e_invarg2), address);
+	return NULL;
+    }
+    *p++ = NUL;
+    port = strtol((char *)p, &rest, 10);
+    if (port <= 0 || *rest != NUL)
+    {
+	p[-1] = ':';
+	EMSG2(_(e_invarg2), address);
+	return NULL;
+    }
+
+    /* parse options */
+    clear_job_options(&opt);
+    opt.jo_timeout = 2000;
+    if (get_job_options(&argvars[1], &opt, JO_CALLBACK + JO_TIMEOUT, 0) == FAIL)
+	goto theend;
+    if (opt.jo_timeout < 0)
+    {
+	EMSG(_(e_invarg));
+	goto theend;
+    }
+
+    channel = channel_listen((char *)address, port, NULL);
+    if (channel != NULL)
+    {
+	opt.jo_set = JO_CALLBACK + JO_TIMEOUT;
 	channel_set_options(channel, &opt);
     }
 theend:
@@ -3326,6 +3523,43 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
     {
 	if (channel_wait(channel, fd, 0) != CW_READY)
 	    break;
+	if (channel->ch_listen)
+	{
+	    sock_T		newfd;
+	    struct sockaddr_in	client;
+	    socklen_t		len;
+	    channel_T		*newchannel;
+	    typval_T		argv[2];
+	    char		namebuf[20];
+
+	    newchannel = add_channel();
+	    if (newchannel == NULL)
+	    {
+		ch_error(NULL, "Cannot allocate channel.");
+		return;
+	    }
+	    len = sizeof(client);
+	    newfd = accept(fd, (struct sockaddr*)&client, &len);
+	    if (newfd < 0)
+	    {
+		ch_error(NULL, "Cannot accept channel.");
+		channel_free(newchannel);
+		return;
+	    }
+	    newchannel->CH_SOCK_FD = (sock_T)newfd;
+
+	    sprintf((char *)namebuf, "%s:%d",
+		inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+	    ++safe_to_invoke_callback;
+	    ++newchannel->ch_refcount;
+	    argv[0].v_type = VAR_CHANNEL;
+	    argv[0].vval.v_channel = newchannel;
+	    argv[1].v_type = VAR_STRING;
+	    argv[1].vval.v_string = vim_strsave(namebuf);;
+	    invoke_callback(newchannel, channel->ch_callback, NULL, argv);
+	    --safe_to_invoke_callback;
+	    return;
+	}
 	if (use_socket)
 	    len = sock_read(fd, (char *)buf, MAXMSGSIZE);
 	else
