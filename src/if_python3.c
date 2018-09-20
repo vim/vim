@@ -1680,6 +1680,7 @@ do_py3eval (char_u *str, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    break;
     }
 }
