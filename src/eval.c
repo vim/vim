@@ -193,7 +193,7 @@ static struct vimvar
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
-    {VV_NAME("event",		VAR_DICT), VV_RO}
+    {VV_NAME("event",		VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -2356,6 +2356,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
+	    case VAR_BLOB:
 		break;
 
 	    case VAR_LIST:
