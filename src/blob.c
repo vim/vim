@@ -132,65 +132,6 @@ blob_copy(blob_T *orig, int deep, int copyID)
 }
 
 /*
- * Allocate a variable for a Blob and fill it from "*arg".
- * Return OK or FAIL.
- */
-    int
-get_blob_tv(char_u **arg, typval_T *rettv, int evaluate)
-{
-    blob_T	*l = NULL;
-    typval_T	tv;
-
-    if (evaluate)
-    {
-	l = blob_alloc();
-	if (l == NULL)
-	    return FAIL;
-    }
-
-    *arg = skipwhite(*arg + 1);
-    while (**arg != ']' && **arg != NUL)
-    {
-#if 0
-	if (eval7(arg, &tv, evaluate) == FAIL)	/* recursive! */
-	    goto failret;
-	if (evaluate)
-	{
-	    item = listitem_alloc();
-	    if (item != NULL)
-	    {
-		item->li_tv = tv;
-		item->li_tv.v_lock = 0;
-		blob_append(l, item);
-	    }
-	    else
-		clear_tv(&tv);
-	}
-#endif
-	++*arg;
-
-	if (**arg == '"')
-	    break;
-	*arg = skipwhite(*arg + 1);
-    }
-
-    if (**arg != '"')
-    {
-	EMSG2(_("E697: Missing end of Blob '\"': %s"), *arg);
-failret:
-	if (evaluate)
-	    blob_free(l);
-	return FAIL;
-    }
-
-    *arg = skipwhite(*arg + 1);
-    if (evaluate)
-	rettv_blob_set(rettv, l);
-
-    return OK;
-}
-
-/*
  * Read "blob" from file "fd".
  */
     int
