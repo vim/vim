@@ -2221,13 +2221,16 @@ set_var_lval(
 	*endp = NUL;
 	if (lp->ll_blob != NULL)
 	{
+	    int	    error = FALSE, val;
 	    if (op != NULL && *op != '=')
 	    {
 		EMSG2(_(e_letwrong), op);
 		return;
 	    }
 
-	    blob_set(lp->ll_blob, lp->ll_n1, get_tv_number(rettv));
+	    val = (int)get_tv_number_chk(rettv, &error);
+	    if (!error)
+		blob_set(lp->ll_blob, lp->ll_n1, val);
 	}
 	else if (op != NULL && *op != '=')
 	{

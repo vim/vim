@@ -9504,6 +9504,26 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	int	    error = FALSE;
+
+	idx = (long)get_tv_number_chk(&argvars[1], &error);
+	if (!error)
+	{
+	    char_u *p;
+	    int len = blob_len(argvars[0].vval.v_blob);
+	    if (idx < 0 || idx >= len)
+	    {
+		EMSGN(_(e_listidx), idx);
+		return;
+	    }
+	    p = (char_u*) argvars[0].vval.v_blob
+		->bv_ga.ga_data;
+	    mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
+	    --argvars[0].vval.v_blob->bv_ga.ga_len;
+	}
+    }
     else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listdictarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL
