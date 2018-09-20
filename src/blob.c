@@ -137,7 +137,6 @@ blob_copy(blob_T *orig, int deep, int copyID)
     int
 read_blob(FILE *fd, blob_T *blob)
 {
-    int		n;
     struct stat	st;
 
     if (fstat(fileno(fd), &st) < 0)
@@ -155,9 +154,6 @@ read_blob(FILE *fd, blob_T *blob)
     int
 write_blob(FILE *fd, blob_T *blob)
 {
-    int		n;
-    int		ret = OK;
-
     if (fwrite(blob->bv_buf, 1, blob->bv_len, fd) < 0)
     {
 	EMSG(_(e_write));
