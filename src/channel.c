@@ -3527,10 +3527,10 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	{
 	    sock_T		newfd;
 	    struct sockaddr_in	client;
-	    socklen_t		len;
+	    int			len;
 	    channel_T		*newchannel;
 	    typval_T		argv[2];
-	    char		namebuf[20];
+	    char_u		namebuf[20];
 
 	    newchannel = add_channel();
 	    if (newchannel == NULL)
