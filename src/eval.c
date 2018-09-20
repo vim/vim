@@ -202,6 +202,7 @@ static struct vimvar
 #define vv_str		vv_di.di_tv.vval.v_string
 #define vv_list		vv_di.di_tv.vval.v_list
 #define vv_dict		vv_di.di_tv.vval.v_dict
+#define vv_blob		vv_di.di_tv.vval.v_blob
 #define vv_tv		vv_di.di_tv
 
 static dictitem_T	vimvars_var;		/* variable used for v: */
@@ -2947,6 +2948,7 @@ item_lock(typval_T *tv, int deep, int lock)
     list_T	*l;
     listitem_T	*li;
     dict_T	*d;
+    blob_T	*b;
     hashitem_T	*hi;
     int		todo;
 
@@ -2978,6 +2980,15 @@ item_lock(typval_T *tv, int deep, int lock)
 	case VAR_CHANNEL:
 	    break;
 
+	case VAR_BLOB:
+	    if ((b = tv->vval.v_blob) != NULL)
+	    {
+		if (lock)
+		    b->bv_lock |= VAR_LOCKED;
+		else
+		    b->bv_lock &= ~VAR_LOCKED;
+	    }
+	    break;
 	case VAR_LIST:
 	    if ((l = tv->vval.v_list) != NULL)
 	    {
@@ -4255,6 +4266,7 @@ eval_index(
 {
     int		empty1 = FALSE, empty2 = FALSE;
     typval_T	var1, var2;
+    long	i;
     long	n1, n2 = 0;
     long	len = -1;
     int		range = FALSE;
@@ -4289,6 +4301,7 @@ eval_index(
 	case VAR_NUMBER:
 	case VAR_LIST:
 	case VAR_DICT:
+	case VAR_BLOB:
 	    break;
     }
 
@@ -4429,6 +4442,50 @@ eval_index(
 		clear_tv(rettv);
 		rettv->v_type = VAR_STRING;
 		rettv->vval.v_string = s;
+		break;
+
+	    case VAR_BLOB:
+		len = blob_len(rettv->vval.v_blob);
+		if (range)
+		{
+		    /* The resulting variable is a substring.  If the indexes
+		     * are out of range the result is empty. */
+		    if (n1 < 0)
+		    {
+			n1 = len + n1;
+			if (n1 < 0)
+			    n1 = 0;
+		    }
+		    if (n2 < 0)
+			n2 = len + n2;
+		    else if (n2 >= len)
+			n2 = len;
+		    if (n1 < len && n2 > 0 && n1 < n2)
+		    {
+			blob_T  *blob = blob_alloc();
+			blob->bv_buf = alloc(n2 - n1);
+			blob->bv_len = n2 - n1;
+			for (i = n1; i < n2; i++)
+			    blob->bv_buf[i - n1] = rettv->vval.v_blob->bv_buf[i];
+
+			clear_tv(rettv);
+			rettv->v_type = VAR_BLOB;
+			rettv->vval.v_blob = blob;
+		    }
+		}
+		else
+		{
+		    /* The resulting variable is a string of a single
+		     * character.  If the index is too big or negative the
+		     * result is empty. */
+		    if (n1 < len && n1 >= 0)
+		    {
+			int v = (int)rettv->vval.v_blob->bv_buf[n1];
+			clear_tv(rettv);
+			rettv->v_type = VAR_NUMBER;
+			rettv->vval.v_number = v;
+		    }
+		}
 		break;
 
 	    case VAR_LIST:
@@ -4961,6 +5018,9 @@ tv_equal(
 	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, TRUE);
 	    --recursive_cnt;
 	    return r;
+
+	case VAR_BLOB:
+	    return blob_equal(tv1->vval.v_blob, tv2->vval.v_blob);
 
 	case VAR_NUMBER:
 	    return tv1->vval.v_number == tv2->vval.v_number;
@@ -5593,6 +5653,19 @@ echo_string_core(
 		r = *tofree;
 		break;
 	    }
+
+	case VAR_BLOB:
+	    if (tv->vval.v_blob == NULL)
+	    {
+		*tofree = NULL;
+		r = "b[]";
+	    }
+	    else
+	    {
+		*tofree = json_encode(tv, JSON_JS);
+		r = *tofree;
+	    }
+	    break;
 
 	case VAR_LIST:
 	    if (tv->vval.v_list == NULL)
@@ -6833,6 +6906,9 @@ free_tv(typval_T *varp)
 	    case VAR_PARTIAL:
 		partial_unref(varp->vval.v_partial);
 		break;
+	    case VAR_BLOB:
+		blob_unref(varp->vval.v_blob);
+		break;
 	    case VAR_LIST:
 		list_unref(varp->vval.v_list);
 		break;
@@ -6878,6 +6954,10 @@ clear_tv(typval_T *varp)
 	    case VAR_PARTIAL:
 		partial_unref(varp->vval.v_partial);
 		varp->vval.v_partial = NULL;
+		break;
+	    case VAR_BLOB:
+		blob_unref(varp->vval.v_blob);
+		varp->vval.v_blob = NULL;
 		break;
 	    case VAR_LIST:
 		list_unref(varp->vval.v_list);
@@ -7770,6 +7850,15 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_partial->pt_refcount;
 	    }
 	    break;
+	case VAR_BLOB:
+	    if (from->vval.v_blob == NULL)
+		to->vval.v_blob = NULL;
+	    else
+	    {
+		to->vval.v_blob = from->vval.v_blob;
+		++to->vval.v_blob->bv_refcount;
+	    }
+	    break;
 	case VAR_LIST:
 	    if (from->vval.v_list == NULL)
 		to->vval.v_list = NULL;
@@ -7828,6 +7917,7 @@ item_copy(
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

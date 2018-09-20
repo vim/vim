@@ -1190,6 +1190,7 @@ typedef double	float_T;
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
 typedef struct partial_S partial_T;
+typedef struct blobvar_S blob_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
@@ -1211,6 +1212,7 @@ typedef enum
     VAR_SPECIAL, // "v_number" is used
     VAR_JOB,	 // "v_job" is used
     VAR_CHANNEL, // "v_channel" is used
+    VAR_BLOB,	 // "v_blob" is used
 } vartype_T;
 
 /*
@@ -1234,6 +1236,7 @@ typedef struct
 	job_T		*v_job;		/* job value (can be NULL!) */
 	channel_T	*v_channel;	/* channel value (can be NULL!) */
 #endif
+	blob_T		*v_blob;	/* blob value (can be NULL!) */
     }		vval;
 } typval_T;
 
@@ -1338,6 +1341,18 @@ struct dictvar_S
     dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     dict_T	*dv_used_next;	/* next dict in used dicts list */
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
+};
+
+/*
+ * Structure to hold info about a blob.
+ */
+struct blobvar_S
+{
+    char_u	*bv_buf;	/* buffer */
+    int		bv_refcount;	/* reference count */
+    int		bv_len;		/* length of buffer */
+    int		bv_cap;		/* capacity of buffer */
+    char	bv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 
 #if defined(FEAT_EVAL) || defined(PROTO)

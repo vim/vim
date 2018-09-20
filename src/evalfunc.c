@@ -7414,6 +7414,9 @@ f_len(typval_T *argvars, typval_T *rettv)
 	    rettv->vval.v_number = (varnumber_T)STRLEN(
 					       get_tv_string(&argvars[0]));
 	    break;
+	case VAR_BLOB:
+	    rettv->vval.v_number = blob_len(argvars[0].vval.v_blob);
+	    break;
 	case VAR_LIST:
 	    rettv->vval.v_number = list_len(argvars[0].vval.v_list);
 	    break;
@@ -8809,6 +8812,7 @@ f_range(typval_T *argvars, typval_T *rettv)
 f_readfile(typval_T *argvars, typval_T *rettv)
 {
     int		binary = FALSE;
+    int		blob = FALSE;
     int		failed = FALSE;
     char_u	*fname;
     FILE	*fd;
@@ -8827,12 +8831,22 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (STRCMP(get_tv_string(&argvars[1]), "b") == 0)
 	    binary = TRUE;
+	if (STRCMP(get_tv_string(&argvars[1]), "B") == 0)
+	    blob = TRUE;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    maxline = (long)get_tv_number(&argvars[2]);
     }
 
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
+    if (blob)
+    {
+	if (rettv_blob_alloc(rettv) == FAIL)
+	    return;
+    }
+    else
+    {
+	if (rettv_list_alloc(rettv) == FAIL)
+	    return;
+    }
 
     /* Always open the file in binary mode, library functions have a mind of
      * their own about CR-LF conversion. */
@@ -8840,6 +8854,17 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	EMSG2(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	return;
+    }
+
+    if (blob)
+    {
+	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
+	{
+	    EMSG("cannot read file");
+	    blob_free(rettv->vval.v_blob);
+	}
+	fclose(fd);
 	return;
     }
 
@@ -14015,22 +14040,32 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     int		ret = 0;
     listitem_T	*li;
     list_T	*list;
+    blob_T	*blob;
 
     rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	list = argvars[0].vval.v_list;
+	if (list == NULL)
+	    return;
+	for (li = list->lv_first; li != NULL; li = li->li_next)
+	    if (get_tv_string_chk(&li->li_tv) == NULL)
+		return;
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob = argvars[0].vval.v_blob;
+	if (blob == NULL)
+	    return;
+    }
+    else
     {
 	EMSG2(_(e_listarg), "writefile()");
 	return;
     }
-    list = argvars[0].vval.v_list;
-    if (list == NULL)
-	return;
-    for (li = list->lv_first; li != NULL; li = li->li_next)
-	if (get_tv_string_chk(&li->li_tv) == NULL)
-	    return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -14061,6 +14096,18 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     {
 	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	ret = -1;
+    }
+    else if (blob)
+    {
+	if (write_blob(fd, blob) == FAIL)
+	    ret = -1;
+#ifdef HAVE_FSYNC
+	else if (do_fsync)
+	    /* Ignore the error, the user wouldn't know what to do about it.
+	     * May happen for a device. */
+	    vim_ignored = fsync(fileno(fd));
+#endif
+	fclose(fd);
     }
     else
     {

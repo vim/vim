@@ -1604,6 +1604,7 @@ BASIC_SRC = \
 	if_xcmdsrv.c \
 	json.c \
 	list.c \
+	blob.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1637,6 +1638,7 @@ BASIC_SRC = \
 	userfunc.c \
 	version.c \
 	window.c \
+	blob.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1717,6 +1719,7 @@ OBJ_COMMON = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
+	objects/blob.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -3098,6 +3101,9 @@ objects/kword_test.o: kword_test.c
 
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
+
+objects/blob.o: blob.c
+	$(CCC) -o $@ blob.c
 
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
