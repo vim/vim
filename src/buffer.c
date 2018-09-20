@@ -1742,6 +1742,9 @@ enter_buffer(buf_T *buf)
     /* mark cursor position as being invalid */
     curwin->w_valid = 0;
 
+    buflist_setfpos(curbuf, curwin, curbuf->b_last_cursor.lnum,
+		    curbuf->b_last_cursor.col, TRUE);
+
     /* Make sure the buffer is loaded. */
     if (curbuf->b_ml.ml_mfp == NULL)	/* need to load the file */
     {
