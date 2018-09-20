@@ -1912,7 +1912,9 @@ get_lval(
     {
 	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
 		&& !(lp->ll_tv->v_type == VAR_DICT
-					   && lp->ll_tv->vval.v_dict != NULL))
+					   && lp->ll_tv->vval.v_dict != NULL)
+		&& !(lp->ll_tv->v_type == VAR_BLOB
+					   && lp->ll_tv->vval.v_blob != NULL))
 	{
 	    if (!quiet)
 		EMSG(_("E689: Can only index a List or Dictionary"));
@@ -2091,7 +2093,7 @@ get_lval(
 	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
-	else if (lp->ll_tv->v_type == VAR_DICT)
+	else if (lp->ll_tv->v_type == VAR_BLOB)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -2102,6 +2104,16 @@ get_lval(
 		/* is number or string */
 		lp->ll_n1 = (long)get_tv_number(&var1);
 	    clear_tv(&var1);
+
+	    if (lp->ll_n1 < 0
+		    || lp->ll_n1 >= lp->ll_tv->vval.v_blob->bv_len)
+	    {
+		if (!quiet)
+		    EMSGN(_(e_listidx), lp->ll_n1);
+		return NULL;
+	    }
+	    lp->ll_blob = lp->ll_tv->vval.v_blob;
+	    lp->ll_tv = NULL;
 	}
 	else
 	{
@@ -2207,7 +2219,16 @@ set_var_lval(
     {
 	cc = *endp;
 	*endp = NUL;
-	if (op != NULL && *op != '=')
+	if (lp->ll_blob != NULL)
+	{
+	    if (op != NULL && *op != '=')
+	    {
+		EMSG2(_(e_letwrong), op);
+		return;
+	    }
+	    lp->ll_blob->bv_buf[lp->ll_n1] = rettv->vval.v_number;
+	}
+	else if (op != NULL && *op != '=')
 	{
 	    typval_T tv;
 
@@ -5672,7 +5693,7 @@ echo_string_core(
 	    if (tv->vval.v_blob == NULL)
 	    {
 		*tofree = NULL;
-		r = (char_u *)"b[]";
+		r = (char_u *)"[]";
 	    }
 	    else
 	    {
