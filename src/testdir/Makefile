@@ -59,7 +59,7 @@ clean:
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in > /dev/null
 	@/bin/sh -c "if test -f wrongtermsize; \
 		then echo; \
 		echo test1 FAILED - terminal size must be 80x24 or larger; \
@@ -78,7 +78,7 @@ test1.out: test1.in
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in > /dev/null
 
 	# For flaky tests retry one time.  No tests at the moment.
 	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
@@ -108,7 +108,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in > /dev/null
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
 
 nolog:
@@ -129,7 +129,7 @@ newtestssilent: $(NEW_TESTS)
 .vim.res: writevimcmd
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_VIMTEST)" >> vimcmd
-	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim > /dev/null
 	@rm vimcmd
 
 test_gui.res: test_gui.vim
