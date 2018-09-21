@@ -4075,15 +4075,28 @@ eval7(
 		    char_u  *p = *arg + 2;
 
 		    blob_T *blob = blob_alloc();
-		    while (vim_isxdigit(p[0]) && vim_isxdigit(p[1]))
+		    while (vim_isxdigit(p[0]))
 		    {
-			char_u	c = (hex2nr(*p) << 4) + hex2nr(*(p+1));
-			ga_append(&blob->bv_ga, c);
+			if (!vim_isxdigit(p[1]))
+			{
+			    EMSG(_("E965: Blob literal should be for each two bytes'"));
+			    clear_tv(rettv);
+			    ret = FAIL;
+			    break;
+			}
+			if (evaluate)
+			{
+			    char_u	c = (hex2nr(*p) << 4) + hex2nr(*(p+1));
+			    ga_append(&blob->bv_ga, c);
+			}
 			p += 2;
 		    }
-		    ++blob->bv_refcount;
-		    rettv->v_type = VAR_BLOB;
-		    rettv->vval.v_blob = blob;
+		    if (evaluate)
+		    {
+			++blob->bv_refcount;
+			rettv->v_type = VAR_BLOB;
+			rettv->vval.v_blob = blob;
+		    }
 		    *arg = p;
 		}
 		else
