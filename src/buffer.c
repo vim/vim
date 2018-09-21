@@ -428,7 +428,10 @@ can_unload_buffer(buf_T *buf)
 
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_buffer == buf)
+	    {
 		can_unload = FALSE;
+		break;
+	    }
     }
     if (!can_unload)
 	EMSG(_("E937: Attempt to delete a buffer that is in use"));
@@ -1741,6 +1744,9 @@ enter_buffer(buf_T *buf)
 
     /* mark cursor position as being invalid */
     curwin->w_valid = 0;
+
+    buflist_setfpos(curbuf, curwin, curbuf->b_last_cursor.lnum,
+					      curbuf->b_last_cursor.col, TRUE);
 
     /* Make sure the buffer is loaded. */
     if (curbuf->b_ml.ml_mfp == NULL)	/* need to load the file */
