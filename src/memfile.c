@@ -539,9 +539,6 @@ mf_sync(memfile_T *mfp, int flags)
 {
     int		status;
     bhdr_T	*hp;
-#if defined(SYNC_DUP_CLOSE)
-    int		fd;
-#endif
     int		got_int_save = got_int;
 
     if (mfp->mf_fd < 0)	    /* there is no file, nothing to do */
@@ -624,13 +621,9 @@ mf_sync(memfile_T *mfp, int flags)
 		status = FAIL;
 	}
 #endif
-#ifdef SYNC_DUP_CLOSE
-	/*
-	 * Win32 is a bit more work: Duplicate the file handle and close it.
-	 * This should flush the file to disk.
-	 */
-	if ((fd = dup(mfp->mf_fd)) >= 0)
-	    close(fd);
+#ifdef WIN32
+	if (_commit(mfp->mf_fd))
+	    status = FAIL;
 #endif
 #ifdef AMIGA
 # if defined(__AROS__) || defined(__amigaos4__)
