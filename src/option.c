@@ -4359,7 +4359,9 @@ trigger_optionsset_string(
 	char_u *oldval,
 	char_u *newval)
 {
-    if (oldval != NULL && newval != NULL)
+    // Don't do this recursively.
+    if (oldval != NULL && newval != NULL
+				    && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
     {
 	char_u buf_type[7];
 
@@ -8858,9 +8860,11 @@ set_bool_option(
     options[opt_idx].flags |= P_WAS_SET;
 
 #if defined(FEAT_EVAL)
-    if (!starting)
+    // Don't do this while starting up or recursively.
+    if (!starting && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
     {
 	char_u buf_old[2], buf_new[2], buf_type[7];
+
 	vim_snprintf((char *)buf_old, 2, "%d", old_value ? TRUE: FALSE);
 	vim_snprintf((char *)buf_new, 2, "%d", value ? TRUE: FALSE);
 	vim_snprintf((char *)buf_type, 7, "%s", (opt_flags & OPT_LOCAL) ? "local" : "global");
@@ -9415,7 +9419,8 @@ set_num_option(
     options[opt_idx].flags |= P_WAS_SET;
 
 #if defined(FEAT_EVAL)
-    if (!starting && errmsg == NULL)
+    // Don't do this while starting up, failure or recursively.
+    if (!starting && errmsg == NULL && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
     {
 	char_u buf_old[11], buf_new[11], buf_type[7];
 	vim_snprintf((char *)buf_old, 10, "%ld", old_value);
