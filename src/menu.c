@@ -1695,12 +1695,13 @@ popup_mode_name(char_u *name, int idx)
     int		len = (int)STRLEN(name);
     char	*mode_chars = menu_mode_chars[idx];
     int		mode_chars_len = (int)strlen(mode_chars);
+    int		i;
 
     p = vim_strnsave(name, len + mode_chars_len);
     if (p != NULL)
     {
 	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
-	for (int i = 0; i < mode_chars_len; ++i)
+	for (i = 0; i < mode_chars_len; ++i)
 	{
 	    p[5 + i] = menu_mode_chars[idx][i];
 	}
