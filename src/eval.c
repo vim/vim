@@ -4069,6 +4069,23 @@ eval7(
 		}
 		else
 #endif
+		if (**arg == '0' && *(*arg + 1) == 'z')
+		{
+		    char_u  *p = *arg + 2;
+
+		    blob_T *blob = blob_alloc();
+		    while (vim_isxdigit(p[0]) && vim_isxdigit(p[1]))
+		    {
+			char_u	c = (hex2nr(*p) << 4) + hex2nr(*(p+1));
+			ga_append(&blob->bv_ga, c);
+			p += 2;
+		    }
+		    ++blob->bv_refcount;
+		    rettv->v_type = VAR_BLOB;
+		    rettv->vval.v_blob = blob;
+		    *arg = p;
+		}
+		else
 		{
 		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0);
 		    *arg += len;
