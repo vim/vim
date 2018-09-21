@@ -99,6 +99,14 @@
 # define PERL_SUBVERSION SUBVERSION
 #endif
 
+
+/* Work around for ActivePerl 5.20.3+.  Avoid generating (g)vim.lib. */
+#if defined(ACTIVEPERL_VERSION) && (ACTIVEPERL_VERSION >= 2003) \
+	&& defined(WIN32) && defined(USE_DYNAMIC_LOADING)
+# undef XS_EXTERNAL
+# define XS_EXTERNAL(name) XSPROTO(name)
+#endif
+
 /*
  * Quoting Jan Dubois of Active State:
  *    ActivePerl build 822 still identifies itself as 5.8.8 but already
