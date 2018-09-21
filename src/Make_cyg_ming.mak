@@ -936,6 +936,10 @@ ifeq (yes, $(STATIC_WINPTHREAD))
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 
+ifeq (yes, $(MAP))
+LFLAGS += -Wl,-Map=$(TARGET).map
+endif
+
 all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
