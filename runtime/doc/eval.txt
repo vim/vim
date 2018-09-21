@@ -57,6 +57,7 @@ List		An ordered sequence of items |List|.
 		Example: [1, 2, ['a', 'b']]
 
 Dictionary	An associative, unordered array: Each entry has a key and a
+		Example: 0zFF00ED015DA
 		value. |Dictionary|
 		Example: {'blue': "#0000ff", 'red': "#ff0000"}
 
@@ -71,6 +72,9 @@ Special		|v:false|, |v:true|, |v:none| and |v:null|.  *Special*
 Job		Used for a job, see |job_start()|. *Job* *Jobs*
 
 Channel		Used for a channel, see |ch_open()|. *Channel* *Channels*
+
+Blob		Binary Large Object.
+		Example: 0zFF00ED015DAF
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -1150,6 +1154,16 @@ encodings.  Use "\u00ff" to store character 255 according to the current value
 of 'encoding'.
 
 Note that "\000" and "\x00" force the end of the string.
+
+blob-literal							*blob-literal*
+------------
+
+Hexadecimal (starting with 0z or 0Z), Binary (starting with 0b or 0B)
+and Octal (starting with 0).
+
+This literal is taken as binary array. Sequences should be two byte tokens.
+Examples: >
+	:let b = 0zFF00ED015DAF
 
 
 literal-string						*literal-string* *E115*
