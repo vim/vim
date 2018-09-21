@@ -26,7 +26,6 @@
 
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		/* use argv[0] for $VIM */
-#define SYNC_DUP_CLOSE		/* sync() a file with dup() and close() */
 #define USE_TERM_CONSOLE
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H
