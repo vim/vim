@@ -177,7 +177,6 @@ static struct vimvar
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
     {VV_NAME("testing",		 VAR_NUMBER), 0},
-    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
     {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
     {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},
@@ -188,6 +187,7 @@ static struct vimvar
     {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
     {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
     {VV_NAME("termrfgresp",	 VAR_STRING), VV_RO},
     {VV_NAME("termrbgresp",	 VAR_STRING), VV_RO},
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
@@ -340,6 +340,7 @@ eval_init(void)
     set_vim_var_nr(VV_TYPE_NONE,    VAR_TYPE_NONE);
     set_vim_var_nr(VV_TYPE_JOB,     VAR_TYPE_JOB);
     set_vim_var_nr(VV_TYPE_CHANNEL, VAR_TYPE_CHANNEL);
+    set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
 
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 

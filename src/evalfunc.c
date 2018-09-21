@@ -13718,7 +13718,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	     break;
 	case VAR_JOB:     n = VAR_TYPE_JOB; break;
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
-	case VAR_BLOB: n = VAR_TYPE_BLOB; break;
+	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
 	     internal_error("f_type(UNKNOWN)");
 	     n = -1;

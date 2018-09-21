@@ -1993,13 +1993,14 @@ typedef int sock_T;
 #define VV_TYPE_NONE	78
 #define VV_TYPE_JOB	79
 #define VV_TYPE_CHANNEL	80
-#define VV_TERMRFGRESP	81
-#define VV_TERMRBGRESP	82
-#define VV_TERMU7RESP	83
-#define VV_TERMSTYLERESP 84
-#define VV_TERMBLINKRESP 85
-#define VV_EVENT	86
-#define VV_LEN		87	/* number of v: vars */
+#define VV_TYPE_BLOB	81
+#define VV_TERMRFGRESP	82
+#define VV_TERMRBGRESP	83
+#define VV_TERMU7RESP	84
+#define VV_TERMSTYLERESP 85
+#define VV_TERMBLINKRESP 86
+#define VV_EVENT	87
+#define VV_LEN		88	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
