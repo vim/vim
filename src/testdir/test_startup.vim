@@ -269,8 +269,8 @@ func Test_V_arg()
    call assert_match("sourcing \"$VIMRUNTIME[\\/]defaults\.vim\"\r\nline 1: \" The default vimrc file\..*  verbose=15\n", out)
 endfunc
 
-" Test the -V[N]file argument to set the 'verbose' option to [N]
-" and set 'verbosefiele'.
+" Test the -V[N]{filename} argument to set the 'verbose' option to N
+" and set 'verbosefile' to filename.
 func Test_V_file_arg()
   if RunVim([], [], ' --clean -X -V2Xverbosefile -c "set verbose? verbosefile?" -cq')
     let out = join(readfile('Xverbosefile'), "\n")
@@ -282,7 +282,10 @@ func Test_V_file_arg()
   call delete('Xverbosefile')
 endfunc
 
-" Test the -m, -M  and -R arguments.
+" Test the -m, -M and -R arguments:
+" -m resets 'write'
+" -M resets 'modifiable' and 'write'
+" -R sets 'readonly'
 func Test_m_M_R()
   let after = [
 	\ 'call writefile([&write, &modifiable, &readonly, &updatecount], "Xtestout")',
