@@ -6743,35 +6743,35 @@ update_tcap(int attr)
 #  define KSSIZE 20
 struct ks_tbl_s
 {
-    int  code;		/* value of KS_ */
-    char *vtp;		/* code in vtp mode */
-    char *vtp2;		/* code in vtp2 mode */
-    char buf[KSSIZE];   /* save buffer in non-vtp mode */
-    char vbuf[KSSIZE];  /* save buffer in vtp mode */
-    char v2buf[KSSIZE]; /* save buffer in vtp2 mode */
-    char arr[KSSIZE];   /* real buffer */
+    int  code;		// value of KS_
+    char *vtp;		// code in vtp mode
+    char *vtp2;		// code in vtp2 mode
+    char buf[KSSIZE];   // save buffer in non-vtp mode
+    char vbuf[KSSIZE];  // save buffer in vtp mode
+    char v2buf[KSSIZE]; // save buffer in vtp2 mode
+    char arr[KSSIZE];   // real buffer
 };
 
 static struct ks_tbl_s ks_tbl[] =
 {
-    {(int)KS_ME,  "\033|0m",  "\033|0m"},   /* normal */
-    {(int)KS_MR,  "\033|7m",  "\033|7m"},   /* reverse */
-    {(int)KS_MD,  "\033|1m",  "\033|1m"},   /* bold */
-    {(int)KS_SO,  "\033|91m", "\033|91m"},  /* standout: bright red text */
-    {(int)KS_SE,  "\033|39m", "\033|39m"},  /* standout end: default color */
-    {(int)KS_CZH, "\033|95m", "\033|95m"},  /* italic: bright magenta text */
-    {(int)KS_CZR, "\033|0m",  "\033|0m"},   /* italic end */
-    {(int)KS_US,  "\033|4m",  "\033|4m"},   /* underscore */
-    {(int)KS_UE,  "\033|24m", "\033|24m"},  /* underscore end */
+    {(int)KS_ME,  "\033|0m",  "\033|0m"},   // normal
+    {(int)KS_MR,  "\033|7m",  "\033|7m"},   // reverse
+    {(int)KS_MD,  "\033|1m",  "\033|1m"},   // bold
+    {(int)KS_SO,  "\033|91m", "\033|91m"},  // standout: bright red text
+    {(int)KS_SE,  "\033|39m", "\033|39m"},  // standout end: default color
+    {(int)KS_CZH, "\033|95m", "\033|95m"},  // italic: bright magenta text
+    {(int)KS_CZR, "\033|0m",  "\033|0m"},   // italic end
+    {(int)KS_US,  "\033|4m",  "\033|4m"},   // underscore
+    {(int)KS_UE,  "\033|24m", "\033|24m"},  // underscore end
 #  ifdef TERMINFO
-    {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, /* set background color */
-    {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, /* set foreground color */
+    {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, // set background color
+    {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, // set foreground color
 #  else
-    {(int)KS_CAB, "\033|%db", "\033|4%dm"}, /* set background color */
-    {(int)KS_CAF, "\033|%df", "\033|3%dm"}, /* set foreground color */
+    {(int)KS_CAB, "\033|%db", "\033|4%dm"}, // set background color
+    {(int)KS_CAF, "\033|%df", "\033|3%dm"}, // set foreground color
 #  endif
-    {(int)KS_CCO, "16", "256"},     /* colors */
-    {(int)KS_NAME}		    /* terminator */
+    {(int)KS_CCO, "256", "256"},	    // colors
+    {(int)KS_NAME}			    // terminator
 };
 
     static struct builtin_term *

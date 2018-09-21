@@ -7785,8 +7785,6 @@ did_set_string_option(
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
     if (did_swaptcap)
     {
-	if (t_colors < 256)
-	    p_tgc = 0;
 	set_termname((char_u *)"win32");
 	init_highlight(TRUE, FALSE);
     }
