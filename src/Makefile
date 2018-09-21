@@ -2028,8 +2028,9 @@ proto: $(PRO_AUTO) $(PRO_MANUAL)
 # them as a list of individual flags.
 # The -E"gcc -E" argument must be separate to avoid problems with shell
 # quoting.
+# Strip -O2, it may cause cproto to write stderr to the file "2".
 CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g'`
+	 `echo '$(LINT_CFLAGS)' | sed -e 's/ -[a-z-]\+//g' -e 's/ -O[^ ]\+//g'`
 
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
