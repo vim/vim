@@ -35,6 +35,9 @@ FEATURES=HUGE
 # set to yes for a debug build
 DEBUG=no
 
+# set to yes to create a mapfile
+# MAP=yes
+
 # set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 
@@ -934,6 +937,10 @@ endif
 
 ifeq (yes, $(STATIC_WINPTHREAD))
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
+endif
+
+ifeq (yes, $(MAP))
+LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
 all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
