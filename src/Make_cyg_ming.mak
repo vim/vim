@@ -256,7 +256,8 @@ LUA_VER=53
 endif
 
 ifeq (no,$(DYNAMIC_LUA))
-LUA_LIB = -L$(LUA)/lib -llua
+LUA_LIBDIR = $(LUA)/lib
+LUA_LIB = -L$(LUA_LIBDIR) -llua
 endif
 
 endif
@@ -524,7 +525,8 @@ endif
 endif
 
 ifdef LUA
-CFLAGS += -I$(LUA)/include -I$(LUA) -DFEAT_LUA
+LUA_INCDIR = $(LUA)/include
+CFLAGS += -I$(LUA_INCDIR) -I$(LUA) -DFEAT_LUA
 ifeq (yes, $(DYNAMIC_LUA))
 CFLAGS += -DDYNAMIC_LUA -DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
 endif
