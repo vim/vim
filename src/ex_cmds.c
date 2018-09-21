@@ -649,7 +649,10 @@ ex_sort(exarg_T *eap)
     /* Adjust marks for deleted (or added) lines and prepare for displaying. */
     deleted = (long)(count - (lnum - eap->line2));
     if (deleted > 0)
+    {
 	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+	msgmore(-deleted);
+    }
     else if (deleted < 0)
 	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
 
