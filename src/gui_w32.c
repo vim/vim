@@ -3627,7 +3627,7 @@ gui_mch_browseW(
     WCHAR		*extp = NULL;
     WCHAR		*initdirp = NULL;
     WCHAR		*filterp;
-    char_u		*p;
+    char_u		*p, *q;
 
     if (dflt == NULL)
 	fileBuf[0] = NUL;
@@ -3713,16 +3713,16 @@ gui_mch_browseW(
 
     /* Convert from UCS2 to 'encoding'. */
     p = utf16_to_enc(fileBuf, NULL);
-    if (p != NULL)
-	/* when out of memory we get garbage for non-ASCII chars */
-	STRCPY(fileBuf, p);
-    vim_free(p);
+    if (p == NULL)
+	return NULL;
 
     /* Give focus back to main window (when using MDI). */
     SetFocus(s_hwnd);
 
     /* Shorten the file name if possible */
-    return vim_strsave(shorten_fname1((char_u *)fileBuf));
+    q = vim_strsave(shorten_fname1(p));
+    vim_free(p);
+    return q;
 }
 # endif /* FEAT_MBYTE */
 
