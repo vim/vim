@@ -594,9 +594,9 @@ With the shortcut "F" (while keeping the <Alt> key pressed), and then "O",
 this menu can be used.  The second part is shown as "Open     :e".  The ":e"
 is right aligned, and the "O" is underlined, to indicate it is the shortcut.
 
-The ":amenu" command can be used to define menu entries for all modes at once.
-To make the command work correctly, a character is automatically inserted for
-some modes:
+The ":amenu" command can be used to define menu entries for all modes at once,
+except for Terminal mode.  To make the command work correctly, a character is
+automatically inserted for some modes:
 	mode		inserted	appended	~
 	Normal		nothing		nothing
 	Visual		<C-C>		<C-\><C-G>
