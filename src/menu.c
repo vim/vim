@@ -1724,8 +1724,10 @@ get_menu_index(vimmenu_T *menu, int state)
 	idx = MENU_INDEX_INSERT;
     else if (state & CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
+#ifdef FEAT_TERMINAL
     else if (term_use_loop())
 	idx = MENU_INDEX_TERMINAL;
+#endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1886,10 +1888,12 @@ menu_is_tearoff(char_u *name UNUSED)
     static int
 get_menu_mode(void)
 {
+#ifdef FEAT_TERMINAL
     if (term_use_loop())
     {
 	return MENU_INDEX_TERMINAL;
     }
+#endif
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -2281,11 +2285,13 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
 	mode = (char_u *)"Insert";
 	idx = MENU_INDEX_INSERT;
     }
+#ifdef FEAT_TERMINAL
     else if (term_use_loop())
     {
 	mode = (char_u *)"Terminal";
 	idx = MENU_INDEX_TERMINAL;
     }
+#endif
     else if (VIsual_active)
     {
 	mode = (char_u *)"Visual";
