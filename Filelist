@@ -141,6 +141,7 @@ SRC_ALL =	\
 		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
 		src/proto.h \
+		src/protodef.h \
 		src/proto/arabic.pro \
 		src/proto/beval.pro \
 		src/proto/blowfish.pro \
@@ -227,7 +228,7 @@ SRC_ALL =	\
 		src/libvterm/src/parser.c \
 		src/libvterm/src/pen.c \
 		src/libvterm/src/rect.h \
-		src/libvterm/src/screen.c \
+		src/libvterm/src/termscreen.c \
 		src/libvterm/src/state.c \
 		src/libvterm/src/unicode.c \
 		src/libvterm/src/utf8.h \

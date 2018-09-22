@@ -88,15 +88,21 @@
 # endif
 #endif
 
-/* Perl compatibility stuff. This should ensure compatibility with older
- * versions of Perl.
- */
-
+// Perl compatibility stuff. This should ensure compatibility with older
+// versions of Perl.
 #ifndef PERL_VERSION
 # include <patchlevel.h>
 # define PERL_REVISION   5
 # define PERL_VERSION    PATCHLEVEL
 # define PERL_SUBVERSION SUBVERSION
+#endif
+
+
+// Work around for ActivePerl 5.20.3+: Avoid generating (g)vim.lib.
+#if defined(ACTIVEPERL_VERSION) && (ACTIVEPERL_VERSION >= 2003) \
+	&& defined(WIN32) && defined(USE_DYNAMIC_LOADING)
+# undef XS_EXTERNAL
+# define XS_EXTERNAL(name) XSPROTO(name)
 #endif
 
 /*

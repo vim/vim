@@ -9,6 +9,9 @@ XXDPROG = ../xxd/xxd
 
 SCRIPTSOURCE = ../../runtime
 
+# Change this to empty to see the verbose output of tests.
+REDIR_TEST_TO_NULL = > /dev/null
+
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
@@ -59,7 +62,7 @@ clean:
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f wrongtermsize; \
 		then echo; \
 		echo test1 FAILED - terminal size must be 80x24 or larger; \
@@ -78,7 +81,7 @@ test1.out: test1.in
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 
 	# For flaky tests retry one time.  No tests at the moment.
 	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
@@ -108,7 +111,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
 
 nolog:
@@ -121,7 +124,7 @@ nolog:
 RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
 
 newtests: newtestssilent
-	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages && if test -f test.log; then cat test.log; fi ; fi"
+	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages; fi"
 
 newtestssilent: $(NEW_TESTS)
 
@@ -129,7 +132,7 @@ newtestssilent: $(NEW_TESTS)
 .vim.res: writevimcmd
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_VIMTEST)" >> vimcmd
-	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
 	@rm vimcmd
 
 test_gui.res: test_gui.vim

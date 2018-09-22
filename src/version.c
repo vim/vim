@@ -795,6 +795,56 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    426,
+/**/
+    425,
+/**/
+    424,
+/**/
+    423,
+/**/
+    422,
+/**/
+    421,
+/**/
+    420,
+/**/
+    419,
+/**/
+    418,
+/**/
+    417,
+/**/
+    416,
+/**/
+    415,
+/**/
+    414,
+/**/
+    413,
+/**/
+    412,
+/**/
+    411,
+/**/
+    410,
+/**/
+    409,
+/**/
+    408,
+/**/
+    407,
+/**/
+    406,
+/**/
+    405,
+/**/
+    404,
+/**/
+    403,
+/**/
+    402,
+/**/
     401,
 /**/
     400,
@@ -1721,7 +1771,7 @@ list_in_columns(char_u **items, int size, int current)
     if (Columns < width)
     {
 	/* Not enough screen columns - show one per line */
-	for (i = 0; items[i] != NULL; ++i)
+	for (i = 0; i < item_count; ++i)
 	{
 	    version_msg_wrap(items[i], i == current);
 	    if (msg_col > 0)
