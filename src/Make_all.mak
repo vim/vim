@@ -168,6 +168,7 @@ NEW_TESTS = \
 	test_stat \
 	test_statusline \
 	test_substitute \
+	test_suspend \
 	test_swap \
 	test_syn_attr \
 	test_syntax \
