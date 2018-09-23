@@ -5488,7 +5488,7 @@ conpty_term_and_job_init(
     char_u	    *cmd = NULL;
     HRESULT	    hr;
     COORD	    consize;
-    size_t	    breq;
+    SIZE_T	    breq;
     PROCESS_INFORMATION proc_info;
 
     term->tl_conpty = NULL;
