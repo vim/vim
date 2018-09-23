@@ -78,6 +78,8 @@ typedef struct
     int		fi_varcount;	/* nr of variables in the list */
     listwatch_T	fi_lw;		/* keep an eye on the item used. */
     list_T	*fi_list;	/* list being used */
+    int		fi_bi;		/* index of blob */
+    blob_T	*fi_blob;	/* blob being used */
 } forinfo_T;
 
 
@@ -2484,6 +2486,7 @@ eval_for_line(
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
+    blob_T  	*b;
 
     *errp = TRUE;	/* default: there is an error */
 
@@ -2509,24 +2512,38 @@ eval_for_line(
 	*errp = FALSE;
 	if (!skip)
 	{
-	    l = tv.vval.v_list;
-	    if (tv.v_type != VAR_LIST)
+	    if (tv.v_type == VAR_LIST)
 	    {
-		EMSG(_(e_listreq));
-		clear_tv(&tv);
+		l = tv.vval.v_list;
+		if (l == NULL)
+		{
+		    /* a null list is like an empty list: do nothing */
+		    clear_tv(&tv);
+		}
+		else
+		{
+		    /* No need to increment the refcount, it's already set for the
+		     * list being used in "tv". */
+		    fi->fi_list = l;
+		    list_add_watch(l, &fi->fi_lw);
+		    fi->fi_lw.lw_item = l->lv_first;
+		}
 	    }
-	    else if (l == NULL)
+	    else if (tv.v_type == VAR_BLOB)
 	    {
-		/* a null list is like an empty list: do nothing */
-		clear_tv(&tv);
+		b = tv.vval.v_blob;
+		if (b == NULL)
+		    clear_tv(&tv);
+		else
+		{
+		    fi->fi_blob = b;
+		    fi->fi_bi = 0;
+		}
 	    }
 	    else
 	    {
-		/* No need to increment the refcount, it's already set for the
-		 * list being used in "tv". */
-		fi->fi_list = l;
-		list_add_watch(l, &fi->fi_lw);
-		fi->fi_lw.lw_item = l->lv_first;
+		EMSG(_(e_listreq));
+		clear_tv(&tv);
 	    }
 	}
     }
@@ -2548,6 +2565,20 @@ next_for_item(void *fi_void, char_u *arg)
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
     listitem_T	*item;
+
+    if (fi->fi_blob != NULL)
+    {
+	typval_T	tv;
+
+	if (fi->fi_bi >= blob_len(fi->fi_blob))
+	    return FALSE;
+	tv.v_type = VAR_NUMBER;
+	tv.v_lock = VAR_FIXED;
+	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
+	++fi->fi_bi;
+	return (ex_let_vars(arg, &tv, TRUE,
+			      fi->fi_semicolon, fi->fi_varcount, NULL) == OK);
+    }
 
     item = fi->fi_lw.lw_item;
     if (item == NULL)
