@@ -6879,23 +6879,49 @@ f_index(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T	*item;
+    blob_T	*b;
     long	idx = 0;
     int		ic = FALSE;
+    int		error = FALSE;
 
     rettv->vval.v_number = -1;
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	typval_T	tv;
+	int		start = 0;
+
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    start = get_tv_number_chk(&argvars[2], &error);
+	    if (error)
+		return;
+	}
+	b = argvars[0].vval.v_blob;
+	if (b == NULL)
+	    return;
+	for (idx = start; idx < blob_len(b); ++idx)
+	{
+	    tv.v_type = VAR_NUMBER;
+	    tv.vval.v_number = blob_get(b, idx);
+	    if (tv_equal(&tv, &argvars[1], ic, FALSE))
+	    {
+		rettv->vval.v_number = idx;
+		return;
+	    }
+	}
+    }
+    else if (argvars[0].v_type != VAR_LIST)
     {
 	EMSG(_(e_listreq));
 	return;
     }
+
     l = argvars[0].vval.v_list;
     if (l != NULL)
     {
 	item = l->lv_first;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    int		error = FALSE;
-
 	    /* Start at specified item.  Use the cached index that list_find()
 	     * sets, so that a negative number also works. */
 	    item = list_find(l, (long)get_tv_number_chk(&argvars[2], &error));
