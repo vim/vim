@@ -404,7 +404,7 @@ netbeans_parse_messages(void)
 	if (*p == NUL)
 	{
 	    own_node = TRUE;
-	    buffer = channel_get(nb_channel, PART_SOCK);
+	    buffer = channel_get(nb_channel, PART_SOCK, NULL);
 	    /* "node" is now invalid! */
 	}
 	else

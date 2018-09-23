@@ -98,6 +98,7 @@ static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
 static void f_ch_read(typval_T *argvars, typval_T *rettv);
+static void f_ch_readblob(typval_T *argvars, typval_T *rettv);
 static void f_ch_readraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
@@ -562,6 +563,7 @@ static struct fst
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
     {"ch_read",		1, 2, f_ch_read},
+    {"ch_readblob",	1, 2, f_ch_readblob},
     {"ch_readraw",	1, 2, f_ch_readraw},
     {"ch_sendexpr",	2, 3, f_ch_sendexpr},
     {"ch_sendraw",	2, 3, f_ch_sendraw},
@@ -2214,7 +2216,16 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_read(typval_T *argvars, typval_T *rettv)
 {
-    common_channel_read(argvars, rettv, FALSE);
+    common_channel_read(argvars, rettv, FALSE, FALSE);
+}
+
+/*
+ * "ch_readblob()" function
+ */
+    static void
+f_ch_readblob(typval_T *argvars, typval_T *rettv)
+{
+    common_channel_read(argvars, rettv, TRUE, TRUE);
 }
 
 /*
@@ -2223,7 +2234,7 @@ f_ch_read(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_readraw(typval_T *argvars, typval_T *rettv)
 {
-    common_channel_read(argvars, rettv, TRUE);
+    common_channel_read(argvars, rettv, TRUE, FALSE);
 }
 
 /*

@@ -1645,7 +1645,7 @@ channel_first_nl(readq_T *node)
  * Returns NULL if there is nothing.
  */
     char_u *
-channel_get(channel_T *channel, ch_part_T part)
+channel_get(channel_T *channel, ch_part_T part, int *outlen)
 {
     readq_T *head = &channel->ch_part[part].ch_head;
     readq_T *node = head->rq_next;
@@ -1653,6 +1653,8 @@ channel_get(channel_T *channel, ch_part_T part)
 
     if (node == NULL)
 	return NULL;
+    if (outlen != NULL)
+	*outlen += node->rq_buflen;
     /* dispose of the node but keep the buffer */
     p = node->rq_buffer;
     head->rq_next = node->rq_next;
@@ -1669,7 +1671,7 @@ channel_get(channel_T *channel, ch_part_T part)
  * Replaces NUL bytes with NL.
  */
     static char_u *
-channel_get_all(channel_T *channel, ch_part_T part)
+channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
 {
     readq_T *head = &channel->ch_part[part].ch_head;
     readq_T *node = head->rq_next;
@@ -1679,7 +1681,7 @@ channel_get_all(channel_T *channel, ch_part_T part)
 
     /* If there is only one buffer just get that one. */
     if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
-	return channel_get(channel, part);
+	return channel_get(channel, part, outlen);
 
     /* Concatenate everything into one buffer. */
     for (node = head->rq_next; node != NULL; node = node->rq_next)
@@ -1698,9 +1700,15 @@ channel_get_all(channel_T *channel, ch_part_T part)
     /* Free all buffers */
     do
     {
-	p = channel_get(channel, part);
+	p = channel_get(channel, part, NULL);
 	vim_free(p);
     } while (p != NULL);
+
+    if (outlen != NULL)
+    {
+	*outlen += len;
+	return res;
+    }
 
     /* turn all NUL into NL */
     while (len > 0)
@@ -1873,7 +1881,7 @@ channel_fill(js_read_T *reader)
 {
     channel_T	*channel = (channel_T *)reader->js_cookie;
     ch_part_T	part = reader->js_cookie_arg;
-    char_u	*next = channel_get(channel, part);
+    char_u	*next = channel_get(channel, part, NULL);
     int		keeplen;
     int		addlen;
     char_u	*p;
@@ -1922,7 +1930,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
     if (channel_peek(channel, part) == NULL)
 	return FALSE;
 
-    reader.js_buf = channel_get(channel, part);
+    reader.js_buf = channel_get(channel, part, NULL);
     reader.js_used = 0;
     reader.js_fill = channel_fill;
     reader.js_cookie = channel;
@@ -2455,7 +2463,7 @@ drop_messages(channel_T *channel, ch_part_T part)
 {
     char_u *msg;
 
-    while ((msg = channel_get(channel, part)) != NULL)
+    while ((msg = channel_get(channel, part, NULL)) != NULL)
     {
 	ch_log(channel, "Dropping message '%s'", (char *)msg);
 	vim_free(msg);
@@ -2619,7 +2627,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    if (nl + 1 == buf + node->rq_buflen)
 	    {
 		/* get the whole buffer, drop the NL */
-		msg = channel_get(channel, part);
+		msg = channel_get(channel, part, NULL);
 		*nl = NUL;
 	    }
 	    else
@@ -2635,7 +2643,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    /* For a raw channel we don't know where the message ends, just
 	     * get everything we have.
 	     * Convert NUL to NL, the internal representation. */
-	    msg = channel_get_all(channel, part);
+	    msg = channel_get_all(channel, part, NULL);
 	}
 
 	if (msg == NULL)
@@ -2987,7 +2995,7 @@ channel_clear_one(channel_T *channel, ch_part_T part)
     cbq_T   *cb_head = &ch_part->ch_cb_head;
 
     while (channel_peek(channel, part) != NULL)
-	vim_free(channel_get(channel, part));
+	vim_free(channel_get(channel, part, NULL));
 
     while (cb_head->cq_next != NULL)
     {
@@ -3361,7 +3369,8 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
  * Returns NULL in case of error or timeout.
  */
     static char_u *
-channel_read_block(channel_T *channel, ch_part_T part, int timeout, int raw)
+channel_read_block(
+	channel_T *channel, ch_part_T part, int timeout, int raw, int *outlen)
 {
     char_u	*buf;
     char_u	*msg;
@@ -3402,9 +3411,9 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout, int raw)
     }
 
     /* We have a complete message now. */
-    if (mode == MODE_RAW)
+    if (mode == MODE_RAW || outlen != NULL)
     {
-	msg = channel_get_all(channel, part);
+	msg = channel_get_all(channel, part, outlen);
     }
     else
     {
@@ -3421,12 +3430,12 @@ channel_read_block(channel_T *channel, ch_part_T part, int timeout, int raw)
 	if (nl == NULL)
 	{
 	    /* must be a closed channel with missing NL */
-	    msg = channel_get(channel, part);
+	    msg = channel_get(channel, part, NULL);
 	}
 	else if (nl + 1 == buf + node->rq_buflen)
 	{
 	    /* get the whole buffer */
-	    msg = channel_get(channel, part);
+	    msg = channel_get(channel, part, NULL);
 	    *nl = NUL;
 	}
 	else
@@ -3534,7 +3543,7 @@ channel_read_json_block(
  * Common for ch_read() and ch_readraw().
  */
     void
-common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
+common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 {
     channel_T	*channel;
     ch_part_T	part = PART_COUNT;
@@ -3565,9 +3574,32 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw)
 	if (opt.jo_set & JO_TIMEOUT)
 	    timeout = opt.jo_timeout;
 
-	if (raw || mode == MODE_RAW || mode == MODE_NL)
+	if (blob)
+	{
+	    int outlen = 0;
+	    char_u  *p = channel_read_block(channel, part,
+						 timeout, TRUE, &outlen);
+	    if (p != NULL)
+	    {
+		blob_T	*blob = blob_alloc();
+		if (blob != NULL)
+		{
+		    ga_init2(&blob->bv_ga, 1, outlen);
+		    blob->bv_ga.ga_len = outlen;
+		    if (ga_grow(&blob->bv_ga, outlen) == FAIL)
+			blob_free(blob);
+		    else
+		    {
+			memcpy(blob->bv_ga.ga_data, p, outlen);
+			rettv->v_type = VAR_BLOB;
+			rettv->vval.v_blob = blob;
+		    }
+		}
+	    }
+	}
+	else if (raw || mode == MODE_RAW || mode == MODE_NL)
 	    rettv->vval.v_string = channel_read_block(channel, part,
-								 timeout, raw);
+							 timeout, raw, NULL);
 	else
 	{
 	    if (opt.jo_set & JO_ID)
@@ -4024,7 +4056,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 	else
 	    timeout = channel_get_timeout(channel, part_read);
 	rettv->vval.v_string = channel_read_block(channel, part_read,
-								timeout, TRUE);
+							timeout, TRUE, NULL);
     }
     free_job_options(&opt);
 }
