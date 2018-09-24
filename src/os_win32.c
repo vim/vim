@@ -2191,7 +2191,6 @@ mch_init(void)
     win_clip_init();
 #endif
 
-    vtp_flag_init();
 }
 
 
