@@ -4275,7 +4275,17 @@ f_get(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     typval_T	*tv = NULL;
 
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	int error = FALSE;
+	int idx = get_tv_number_chk(&argvars[1], &error);
+	if (!error)
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = blob_get(argvars[0].vval.v_blob, idx);
+	}
+    }
+    else if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) != NULL)
 	{
@@ -7101,7 +7111,43 @@ f_insert(typval_T *argvars, typval_T *rettv)
     list_T	*l;
     int		error = FALSE;
 
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	int	    error = FALSE, val, len;
+        char_u	    *p;
+
+	len = blob_len(argvars[0].vval.v_blob);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)get_tv_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		/* type error; errmsg already given */
+	    if (before < 0 || before > len)
+	    {
+		EMSG2(_(e_invarg2), get_tv_string(&argvars[2]));
+		return;
+	    }
+	}
+        val = get_tv_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (val < 0 || val > 255)
+	{
+	    EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
+	    return;
+	}
+
+	if (ga_grow(&argvars[0].vval.v_blob->bv_ga, 1) == FAIL)
+	    return;
+	p = (char_u*) argvars[0].vval.v_blob
+	    ->bv_ga.ga_data;
+	mch_memmove(p + before + 1, p + before, (size_t)len - before);
+	*(p + before) = val;
+	++argvars[0].vval.v_blob->bv_ga.ga_len;
+
+	copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL
 	    && !tv_check_lock(l->lv_lock, (char_u *)N_("insert() argument"), TRUE))
@@ -9893,6 +9939,19 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T	*li, *ni;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob_T	*b = argvars[0].vval.v_blob;
+	int i, len = blob_len(b);
+	for(i = 0; i < len / 2; i++)
+	{
+	    int tmp = blob_get(b, i);
+	    blob_set(b, i, blob_get(b, len - i - 1));
+	    blob_set(b, len - i - 1, tmp);
+	}
+	return;
+    }
 
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "reverse()");
