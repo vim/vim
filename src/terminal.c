@@ -5736,7 +5736,7 @@ term_free_conpty(term_T *term)
     int
 use_conpty(void)
 {
-    return (!has_winpty && has_conpty);
+    return has_conpty;
 }
 
 #  ifndef PROTO
@@ -5856,13 +5856,13 @@ term_and_job_init(
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
 
-    has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
     has_conpty = dyn_conpty_init() != FAIL ? TRUE : FALSE;
+    if (has_conpty)
+	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
 
+    has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
     if (!has_winpty && !has_conpty)
 	return dyn_winpty_init(TRUE);
-    if (use_conpty())
-	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
 
     ga_init2(&ga_cmd, (int)sizeof(char*), 20);
     ga_init2(&ga_env, (int)sizeof(char*), 20);
