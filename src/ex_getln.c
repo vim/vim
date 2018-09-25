@@ -1308,7 +1308,11 @@ getcmdline(
 	    /* CTRL-\ e doesn't work when obtaining an expression, unless it
 	     * is in a mapping. */
 	    if (c != Ctrl_N && c != Ctrl_G && (c != 'e'
-				    || (ccline.cmdfirstc == '=' && KeyTyped)))
+				    || (ccline.cmdfirstc == '=' && KeyTyped)
+#ifdef FEAT_EVAL
+				    || cmdline_star
+#endif
+				    ))
 	    {
 		vungetc(c);
 		c = Ctrl_BSL;
@@ -1801,7 +1805,8 @@ getcmdline(
 		new_cmdpos = -1;
 		if (c == '=')
 		{
-		    if (ccline.cmdfirstc == '=')/* can't do this recursively */
+		    if (ccline.cmdfirstc == '=' // can't do this recursively
+			    || cmdline_star)	// or when typing a password
 		    {
 			beep_flush();
 			c = ESC;
