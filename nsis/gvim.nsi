@@ -471,9 +471,7 @@ Function SetCustom
 	# Display the InstallOptions dialog
 
 	# Check if a _vimrc should be created
-	SectionGetFlags ${sec_vimrc_id} $3
-	IntOp $3 $3 & 1
-	${If} $3 = 1
+	${IfNot} ${SectionIsSelected} ${sec_vimrc_id}
 	  Abort
 	${EndIf}
 
