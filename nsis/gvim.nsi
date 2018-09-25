@@ -490,13 +490,13 @@ Function ValidateCustom
 	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 5" "State"
 	${If} $3 == "1"
 	  StrCpy $1 "$1 -vimrc-behave unix"
-	${EndIf}
-
-	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
-	${If} $3 == "1"
-	  StrCpy $1 "$1 -vimrc-behave mswin"
 	${Else}
-	  StrCpy $1 "$1 -vimrc-behave default"
+	  ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
+	  ${If} $3 == "1"
+	    StrCpy $1 "$1 -vimrc-behave mswin"
+	  ${Else}
+	    StrCpy $1 "$1 -vimrc-behave default"
+	  ${EndIf}
 	${EndIf}
 FunctionEnd
 
