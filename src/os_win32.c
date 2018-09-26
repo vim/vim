@@ -7743,8 +7743,8 @@ vtp_flag_init(void)
 	    cmd = (char_u *)default_shell();
 	sprintf(cmdline, "%s /c cmd", cmd);
 
-	CreateProcess(cmd, cmdline, NULL, NULL, TRUE, CREATE_NEW_CONSOLE,
-		NULL, NULL, &si, &pi);
+	CreateProcess((char *)cmd, cmdline, NULL, NULL, TRUE,
+				     CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
 	Sleep(100);
 	AttachConsole(pi.dwProcessId);
 
