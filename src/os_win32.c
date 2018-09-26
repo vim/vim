@@ -2191,6 +2191,8 @@ mch_init(void)
     win_clip_init();
 #endif
 
+    vtp_flag_init();
+
 }
 
 
@@ -7688,17 +7690,96 @@ mch_setenv(char *var, char *value, int x)
  */
 #define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
 
-    void
+#ifdef FEAT_GUI_W32
+static HWINSTA origsta;
+static HWINSTA newsta;
+static HDESK desktop;
+#endif
+
+    static void
 vtp_flag_init(void)
 {
     DWORD   ver, mode;
+    HANDLE  out;
+
+#ifdef FEAT_GUI_W32
+    HDESK   save;
+    char    name[256];
+    char    startup[256];
+    char_u  *cmd;
+    char    cmdline[256];
+    SECURITY_ATTRIBUTES sa;
+    STARTUPINFO		si;
+    PROCESS_INFORMATION pi;
+
+    /* A console opened on another window station, get its standard output. */
+
+    vim_memset(&sa, 0, sizeof(sa));
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.bInheritHandle = TRUE;
+
+    save = GetThreadDesktop(GetCurrentThreadId());
+
+    origsta = GetProcessWindowStation();
+
+    newsta = CreateWindowStation(NULL, 0, WINSTA_ALL_ACCESS, &sa);
+
+    if (SetProcessWindowStation(newsta))
+    {
+	desktop = CreateDesktop("Default", NULL, NULL, 0, GENERIC_ALL, &sa);
+	SetThreadDesktop(desktop);
+	name[0] = NUL;
+	GetUserObjectInformation(newsta, UOI_NAME, name, sizeof(name), NULL);
+	sprintf(startup, "%s\\Default", name);
+
+	vim_memset(&si, 0, sizeof(si));
+	si.cb = sizeof(STARTUPINFO);
+	si.lpDesktop = startup;
+
+        vim_memset(&pi, 0, sizeof(pi));
+
+	cmd = mch_getenv("COMSPEC");
+	if (cmd == NULL || *cmd == NUL)
+	    cmd = (char_u *)default_shell();
+	sprintf(cmdline, "%s /c cmd", cmd);
+
+	CreateProcess(cmd, cmdline, NULL, NULL, TRUE, CREATE_NEW_CONSOLE,
+		NULL, NULL, &si, &pi);
+	Sleep(100);
+	AttachConsole(pi.dwProcessId);
+
+	freopen("CONOUT$", "w", stdout);
+	SetStdHandle(STD_OUTPUT_HANDLE, CreateFile("CONOUT$",
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		&sa, OPEN_EXISTING, 0, NULL));
+    }
+#endif
+    out = GetStdHandle(STD_OUTPUT_HANDLE);
 
     ver = get_build_number();
     vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
-    GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &mode);
+    GetConsoleMode(out, &mode);
     mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode) == 0)
+    if (SetConsoleMode(out, mode) == 0)
 	vtp_working = 0;
+
+#ifdef FEAT_GUI_W32
+    SetThreadDesktop(save);
+    SetProcessWindowStation(origsta);
+#endif
+}
+
+    void
+vtp_flag_exit(void)
+{
+#ifdef FEAT_GUI_W32
+    SetProcessWindowStation(newsta);
+    FreeConsole();
+    SetProcessWindowStation(origsta);
+    CloseWindowStation(newsta);
+    CloseDesktop(desktop);
+#endif
 }
 
 #ifndef FEAT_GUI_W32

@@ -5426,9 +5426,7 @@ dyn_conpty_init(void)
     if (handled)
 	return result;
 
-#ifndef FEAT_GUI_W32
     if (!has_vtp_working())
-#endif
     {
 	handled = TRUE;
 	result = FAIL;
