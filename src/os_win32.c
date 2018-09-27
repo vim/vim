@@ -7693,7 +7693,9 @@ mch_setenv(char *var, char *value, int x)
 #ifdef FEAT_GUI_W32
 static HWINSTA origsta;
 static HWINSTA newsta;
-static HDESK desktop;
+static HDESK origdesk;
+static HDESK newdesk;
+static PROCESS_INFORMATION pista;
 #endif
 
     static void
@@ -7703,14 +7705,12 @@ vtp_flag_init(void)
     HANDLE  out;
 
 #ifdef FEAT_GUI_W32
-    HDESK   save;
     char    name[256];
     char    startup[256];
     char_u  *cmd;
     char    cmdline[256];
     SECURITY_ATTRIBUTES sa;
     STARTUPINFO		si;
-    PROCESS_INFORMATION pi;
 
     /* A console opened on another window station, get its standard output. */
 
@@ -7718,7 +7718,7 @@ vtp_flag_init(void)
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.bInheritHandle = TRUE;
 
-    save = GetThreadDesktop(GetCurrentThreadId());
+    origdesk = GetThreadDesktop(GetCurrentThreadId());
 
     origsta = GetProcessWindowStation();
 
@@ -7726,8 +7726,8 @@ vtp_flag_init(void)
 
     if (SetProcessWindowStation(newsta))
     {
-	desktop = CreateDesktop("Default", NULL, NULL, 0, GENERIC_ALL, &sa);
-	SetThreadDesktop(desktop);
+	newdesk = CreateDesktop("Default", NULL, NULL, 0, GENERIC_ALL, &sa);
+	SetThreadDesktop(newdesk);
 	name[0] = NUL;
 	GetUserObjectInformation(newsta, UOI_NAME, name, sizeof(name), NULL);
 	sprintf(startup, "%s\\Default", name);
@@ -7736,17 +7736,17 @@ vtp_flag_init(void)
 	si.cb = sizeof(STARTUPINFO);
 	si.lpDesktop = startup;
 
-        vim_memset(&pi, 0, sizeof(pi));
+        vim_memset(&pista, 0, sizeof(pista));
 
 	cmd = mch_getenv("COMSPEC");
 	if (cmd == NULL || *cmd == NUL)
 	    cmd = (char_u *)default_shell();
-	sprintf(cmdline, "%s /c cmd", cmd);
+	sprintf(cmdline, "%s /k", cmd);
 
 	CreateProcess((char *)cmd, cmdline, NULL, NULL, TRUE,
-				     CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+				  CREATE_NEW_CONSOLE, NULL, NULL, &si, &pista);
 	Sleep(100);
-	AttachConsole(pi.dwProcessId);
+	AttachConsole(pista.dwProcessId);
 
 	freopen("CONOUT$", "w", stdout);
 	SetStdHandle(STD_OUTPUT_HANDLE, CreateFile("CONOUT$",
@@ -7765,7 +7765,7 @@ vtp_flag_init(void)
 	vtp_working = 0;
 
 #ifdef FEAT_GUI_W32
-    SetThreadDesktop(save);
+    SetThreadDesktop(origdesk);
     SetProcessWindowStation(origsta);
 #endif
 }
@@ -7775,10 +7775,14 @@ vtp_flag_exit(void)
 {
 #ifdef FEAT_GUI_W32
     SetProcessWindowStation(newsta);
+    SetThreadDesktop(newdesk);
+    TerminateProcess(pista.hProcess, 0);
+    TerminateThread(pista.hThread, 0);
     FreeConsole();
+    SetThreadDesktop(origdesk);
     SetProcessWindowStation(origsta);
     CloseWindowStation(newsta);
-    CloseDesktop(desktop);
+    CloseDesktop(newdesk);
 #endif
 }
 
