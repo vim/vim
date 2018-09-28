@@ -1192,6 +1192,7 @@ syn_stack_free_block(synblock_T *block)
 	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
 	    clear_syn_state(p);
 	VIM_CLEAR(block->b_sst_array);
+	block->b_sst_first = NULL;
 	block->b_sst_len = 0;
     }
 }
@@ -1323,9 +1324,6 @@ syn_stack_apply_changes_block(synblock_T *block, buf_T *buf)
     synstate_T	*p, *prev, *np;
     linenr_T	n;
 
-    if (block->b_sst_array == NULL)	/* nothing to do */
-	return;
-
     prev = NULL;
     for (p = block->b_sst_first; p != NULL; )
     {
@@ -1378,7 +1376,7 @@ syn_stack_cleanup(void)
     int		dist;
     int		retval = FALSE;
 
-    if (syn_block->b_sst_array == NULL || syn_block->b_sst_first == NULL)
+    if (syn_block->b_sst_first == NULL)
 	return retval;
 
     /* Compute normal distance between non-displayed entries. */
