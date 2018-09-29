@@ -7746,6 +7746,8 @@ vtp_flag_init(void)
 	    vim_memset(&si, 0, sizeof(si));
 	    si.cb = sizeof(STARTUPINFO);
 	    si.lpDesktop = startup;
+	    si.dwFlags = STARTF_USESHOWWINDOW;
+	    si.wShowWindow = SW_SHOWNOACTIVATE;
 
 	    vim_memset(&pista, 0, sizeof(pista));
 
