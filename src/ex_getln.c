@@ -838,6 +838,8 @@ getcmdline(
      * custom status line may invoke ":normal". */
     struct cmdline_info save_ccline;
 #endif
+    int save_last_ccline = FALSE;
+    struct cmdline_info last_ccline;
     int		cmdline_type;
 
 #ifdef FEAT_EVAL
@@ -853,6 +855,10 @@ getcmdline(
 	cmd_hkmap = 0;
 #endif
 
+    if (ccline.cmdbuff != NULL) {
+	save_cmdline(&last_ccline);
+	save_last_ccline = TRUE;
+    }
     ccline.overstrike = FALSE;		    /* always start in insert mode */
 
 #ifdef FEAT_SEARCH_EXTRA
@@ -2491,6 +2497,9 @@ returncmd:
 
 	/* Make ccline empty, getcmdline() may try to use it. */
 	ccline.cmdbuff = NULL;
+	if (save_last_ccline) {
+	    restore_cmdline(&last_ccline);
+	}
 	return p;
     }
 }
