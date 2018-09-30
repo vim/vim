@@ -4666,7 +4666,6 @@ eval_map_expr(
     char_u	*res;
     char_u	*p;
     char_u	*expr;
-    char_u	*save_cmd;
     pos_T	save_cursor;
     int		save_msg_col;
     int		save_msg_row;
@@ -4677,13 +4676,6 @@ eval_map_expr(
     if (expr == NULL)
 	return NULL;
     vim_unescape_csi(expr);
-
-    save_cmd = save_cmdline_alloc();
-    if (save_cmd == NULL)
-    {
-	vim_free(expr);
-	return NULL;
-    }
 
     /* Forbid changing text or using ":normal" to avoid most of the bad side
      * effects.  Also restore the cursor position. */
@@ -4700,7 +4692,6 @@ eval_map_expr(
     msg_col = save_msg_col;
     msg_row = save_msg_row;
 
-    restore_cmdline_alloc(save_cmd);
     vim_free(expr);
 
     if (p == NULL)

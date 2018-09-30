@@ -929,6 +929,7 @@ vim_main2(void)
     void
 common_init(mparm_T *paramp)
 {
+    cmdline_init();
 
 #ifdef FEAT_MBYTE
     (void)mb_init();	/* init mb_bytelen_tab[] to ones */
