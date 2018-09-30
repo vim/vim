@@ -137,6 +137,7 @@ func Test_list_func_remove()
   " Test invalid cases
   let l = [1, 2, 3, 4]
   call assert_fails("call remove(l, 5)", 'E684:')
+  call assert_fails("call remove(l, 1, 5)", 'E684:')
   call assert_fails("call remove(l, 3, 2)", 'E16:')
   call assert_fails("call remove(1, 0)", 'E712:')
   call assert_fails("call remove(l, l)", 'E745:')
