@@ -444,7 +444,7 @@ window_cb(HWND hwnd, LPARAM lparam)
 
     title[0] = 0;
     GetWindowText(hwnd, title, 256);
-    if (strstr(title, "Vim ") != NULL && strstr(title, "Uninstall:") != NULL)
+    if (strstr(title, "Vim ") != NULL && strstr(title, " Uninstall") != NULL)
 	++num_windows;
     return TRUE;
 }

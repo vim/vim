@@ -1,6 +1,8 @@
-# NSIS file to create a self-installing exe for Vim.
-# It requires NSIS version 2.0 or later.
+﻿# NSIS file to create a self-installing exe for Vim.
+# It requires NSIS version 3.0 or later.
 # Last Change:	2014 Nov 5
+
+Unicode true
 
 # WARNING: if you make changes to this script, look out for $0 to be valid,
 # because uninstall deletes most files in $0.
@@ -38,12 +40,17 @@
 
 # ----------- No configurable settings below this line -----------
 
-!include UpgradeDLL.nsh		# for VisVim.dll
-!include LogicLib.nsh
-!include x64.nsh
+!include "Library.nsh"		# For DLL install
+!include "UpgradeDLL.nsh"	# for VisVim.dll
+!include "LogicLib.nsh"
+!include "MUI2.nsh"
+!include "nsDialogs.nsh"
+!include "Sections.nsh"
+!include "x64.nsh"
 
 !define PRODUCT		"Vim ${VER_MAJOR}.${VER_MINOR}"
-!define UNINST_REG_KEY	"Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT}"
+!define UNINST_REG_KEY	"Software\Microsoft\Windows\CurrentVersion\Uninstall"
+!define UNINST_REG_KEY_VIM  "${UNINST_REG_KEY}\${PRODUCT}"
 
 Name "${PRODUCT}"
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
@@ -55,70 +62,217 @@ SetDatablockOptimize on
 RequestExecutionLevel highest
 XPStyle on
 
-ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
-DirText "Choose a directory to install Vim (should contain 'vim')"
-Icon icons\vim_16c.ico
+#ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
+#DirText "Choose a directory to install Vim (should contain 'vim')"
+#Icon icons\vim_16c.ico
 # NSIS2 uses a different strategy with six different images in a strip...
 #EnabledBitmap icons\enabled.bmp
 #DisabledBitmap icons\disabled.bmp
-UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR} from your system."
-UninstallIcon icons\vim_uninst_16c.ico
+#UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR} from your system."
+#UninstallIcon icons\vim_uninst_16c.ico
 
 # On NSIS 2 using the BGGradient causes trouble on Windows 98, in combination
 # with the BringToFront.
 # BGGradient 004000 008200 FFFFFF
-LicenseText "You should read the following before installing:"
-LicenseData ${VIMRT}\doc\uganda.nsis.txt
+#LicenseText "You should read the following before installing:"
+#LicenseData ${VIMRT}\doc\uganda.nsis.txt
 
 !ifdef HAVE_UPX
   !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
 !endif
+
+
+##########################################################
+# MUI2 settings
+
+!define MUI_ICON   "icons\vim_16c.ico"
+!define MUI_UNICON "icons\vim_uninst_16c.ico"
+
+# Show all languages, despite user's codepage:
+#!define MUI_LANGDLL_ALLLANGUAGES
+
+!define MUI_WELCOMEFINISHPAGE_BITMAP       "icons\welcome.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP     "icons\uninstall.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP             "icons\header.bmp"
+!define MUI_HEADERIMAGE_UNBITMAP           "icons\un_header.bmp"
+
+!define MUI_COMPONENTSPAGE_SMALLDESC
+!define MUI_LICENSEPAGE_CHECKBOX
+!define MUI_FINISHPAGE_RUN                 "$0\gvim.exe"
+!define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
+!define MUI_FINISHPAGE_RUN_PARAMETERS      "-R $\"$0\README.txt$\""
 
 # This adds '\vim' to the user choice automagically.  The actual value is
 # obtained below with ReadINIStr.
 InstallDir "$PROGRAMFILES\Vim"
 
 # Types of installs we can perform:
-InstType Typical
-InstType Minimal
-InstType Full
+InstType $(str_type_typical)
+InstType $(str_type_minimal)
+InstType $(str_type_full)
 
 SilentInstall normal
 
 # These are the pages we use
-Page license
-Page components
-Page custom SetCustom ValidateCustom ": _vimrc setting"
-Page directory "" "" CheckInstallDir
-Page instfiles
-UninstPage uninstConfirm
-UninstPage instfiles
+#Page license
+#Page components
+#Page custom SetCustom ValidateCustom ": _vimrc setting"
+#Page directory "" "" CheckInstallDir
+#Page instfiles
+#UninstPage uninstConfirm
+#UninstPage instfiles
+
+# General custom functions for MUI2:
+#!define MUI_CUSTOMFUNCTION_ABORT   VimOnUserAbort
+#!define MUI_CUSTOMFUNCTION_UNABORT un.VimOnUserAbort
+
+# Installer pages
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "${VIMRT}\doc\uganda.nsis.txt"
+!insertmacro MUI_PAGE_COMPONENTS
+Page custom SetCustom ValidateCustom
+#!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VimFinalCheck
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!insertmacro MUI_PAGE_FINISH
+
+# Uninstaller pages:
+!insertmacro MUI_UNPAGE_CONFIRM
+#!define MUI_PAGE_CUSTOMFUNCTION_LEAVE un.VimCheckRunning
+!insertmacro MUI_UNPAGE_COMPONENTS
+!insertmacro MUI_UNPAGE_INSTFILES
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!insertmacro MUI_UNPAGE_FINISH
+
+##########################################################
+# Languages Files
+
+!insertmacro MUI_RESERVEFILE_LANGDLL
+!include "lang\english.nsi"
+
+# Include support for other languages:
+!ifdef HAVE_MULTI_LANG
+    !include "lang\dutch.nsi"
+    !include "lang\german.nsi"
+    !include "lang\italian.nsi"
+    !include "lang\simpchinese.nsi"
+    !include "lang\tradchinese.nsi"
+!endif
+
+
+# Global variables
+Var vim_dialog
+Var vim_nsd_keymap_1
+Var vim_nsd_keymap_2
+Var vim_nsd_mouse_1
+Var vim_nsd_mouse_2
+Var vim_nsd_mouse_3
+Var vim_keymap_stat
+Var vim_mouse_stat
+
 
 # Reserve files
 # Needed for showing the _vimrc setting page faster.
-ReserveFile /plugin InstallOptions.dll
-ReserveFile vimrc.ini
+#ReserveFile /plugin InstallOptions.dll
+#ReserveFile vimrc.ini
+ReserveFile ${VIMSRC}\installw32.exe
 
 ##########################################################
 # Functions
 
+Function CheckOldVim
+  Push $0
+  Push $R0
+  Push $R1
+  Push $R2
+
+  ${If} ${RunningX64}
+    SetRegView 64
+  ${EndIf}
+
+  ClearErrors
+  StrCpy $0 0	  # Found flag
+  StrCpy $R0 0    # Sub-key index
+  StrCpy $R1 ""   # Sub-key
+  ${Do}
+    # Eumerate the sub-key:
+    EnumRegKey $R1 HKLM ${UNINST_REG_KEY} $R0
+
+    # Stop if no more sub-key:
+    ${If} ${Errors}
+    ${OrIf} $R1 == ""
+      ${ExitDo}
+    ${EndIf}
+
+    # Move to the next sub-key:
+    IntOp $R0 $R0 + 1
+
+    # Check if the key is Vim uninstall key or not:
+    StrCpy $R2 $R1 4
+    ${If} $R2 S!= "Vim "
+      ${Continue}
+    ${EndIf}
+
+    # Verifies required sub-keys:
+    ReadRegStr $R2 HKLM "${UNINST_REG_KEY}\$R1" "DisplayName"
+    ${If} ${Errors}
+    ${OrIf} $R2 == ""
+      ${Continue}
+    ${EndIf}
+
+    ReadRegStr $R2 HKLM "${UNINST_REG_KEY}\$R1" "UninstallString"
+    ${If} ${Errors}
+    ${OrIf} $R2 == ""
+      ${Continue}
+    ${EndIf}
+
+    StrCpy $0 1	  # Found
+    ${ExitDo}
+
+  ${Loop}
+
+  ${If} ${RunningX64}
+    SetRegView lastused
+  ${EndIf}
+
+  Pop $R2
+  Pop $R1
+  Pop $R0
+  Exch $0 ; put $0 on top of stack, restore $0 to original value
+FunctionEnd
+
+Section "Uninstall old version of Vim" sec_old_vim_id
+	SectionIn 1 2 3 RO
+
+	# run the install program to check for already installed versions
+	SetOutPath $TEMP
+	File /oname=install.exe ${VIMSRC}\installw32.exe
+	nsExec::Exec "$TEMP\install.exe -uninstall-check"
+	Pop $3
+	Delete $TEMP\install.exe
+
+	# We may have been put to the background when uninstall did something.
+	BringToFront
+SectionEnd
+
 Function .onInit
-  MessageBox MB_YESNO|MB_ICONQUESTION \
-	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
-	/SD IDYES \
-	IDYES NoAbort
-	    Abort ; causes installer to quit.
-	NoAbort:
+#  MessageBox MB_YESNO|MB_ICONQUESTION \
+#	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
+#	/SD IDYES \
+#	IDYES NoAbort
+#	    Abort ; causes installer to quit.
+#	NoAbort:
 
-  # run the install program to check for already installed versions
-  SetOutPath $TEMP
-  File /oname=install.exe ${VIMSRC}\installw32.exe
-  nsExec::Exec "$TEMP\install.exe -uninstall-check"
+  call CheckOldVim
   Pop $3
-  Delete $TEMP\install.exe
-
-  # We may have been put to the background when uninstall did something.
-  BringToFront
+  ${If} $3 == 0
+    # No old versions of Vim found. Unselect and hide the section.
+    !insertmacro UnselectSection ${sec_old_vim_id}
+    SectionSetInstTypes ${sec_old_vim_id} 0
+    SectionSetText ${sec_old_vim_id} ""
+  ${EndIf}
 
   # Install will have created a file for us that contains the directory where
   # we should install.  This is $VIM if it's set.  This appears to be the only
@@ -147,17 +301,17 @@ Function .onInit
   StrCpy $1 "-register-OLE"
   StrCpy $2 "gvim evim gview gvimdiff vimtutor"
 
-  # Extract InstallOptions files
-  # $PLUGINSDIR will automatically be removed when the installer closes
-  InitPluginsDir
-  File /oname=$PLUGINSDIR\vimrc.ini "vimrc.ini"
+#  # Extract InstallOptions files
+#  # $PLUGINSDIR will automatically be removed when the installer closes
+#  InitPluginsDir
+#  File /oname=$PLUGINSDIR\vimrc.ini "vimrc.ini"
 FunctionEnd
 
-Function .onUserAbort
-  MessageBox MB_YESNO|MB_ICONQUESTION "Abort install?" IDYES NoCancelAbort
-    Abort ; causes installer to not quit.
-  NoCancelAbort:
-FunctionEnd
+#Function .onUserAbort
+#  MessageBox MB_YESNO|MB_ICONQUESTION "Abort install?" IDYES NoCancelAbort
+#    Abort ; causes installer to not quit.
+#  NoCancelAbort:
+#FunctionEnd
 
 # We only accept the directory if it ends in "vim".  Using .onVerifyInstDir has
 # the disadvantage that the browse dialog is difficult to use.
@@ -166,21 +320,21 @@ FunctionEnd
 
 Function .onInstSuccess
   WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
-  MessageBox MB_YESNO|MB_ICONQUESTION \
-	"The installation process has been successful. Happy Vimming! \
-	$\n$\n Do you want to see the README file now?" IDNO NoReadme
-      Exec '$0\gvim.exe -R "$0\README.txt"'
-  NoReadme:
+  #MessageBox MB_YESNO|MB_ICONQUESTION \
+  #     "The installation process has been successful. Happy Vimming! \
+  #     $\n$\n Do you want to see the README file now?" IDNO NoReadme
+  #    Exec '$0\gvim.exe -R "$0\README.txt"'
+  #NoReadme:
 FunctionEnd
 
 Function .onInstFailed
   MessageBox MB_OK|MB_ICONEXCLAMATION "Installation failed. Better luck next time."
 FunctionEnd
 
-Function un.onUnInstSuccess
-  MessageBox MB_OK|MB_ICONINFORMATION \
-  "Vim ${VER_MAJOR}.${VER_MINOR} has been (partly) removed from your system"
-FunctionEnd
+#Function un.onUnInstSuccess
+#  MessageBox MB_OK|MB_ICONINFORMATION \
+#  "Vim ${VER_MAJOR}.${VER_MINOR} has been (partly) removed from your system"
+#FunctionEnd
 
 Function un.GetParent
   Exch $0 ; old $0 is on top of stack
@@ -390,6 +544,30 @@ Section "Create a _vimrc if it doesn't exist" sec_vimrc_id
 	SectionIn 1 3
 
 	StrCpy $1 "$1 -create-vimrc"
+
+	${If} ${RunningX64}
+	  SetRegView 64
+	${EndIf}
+	WriteRegStr HKLM "${UNINST_REG_KEY_VIM}" "keyremap" "$vim_keymap_stat"
+	WriteRegStr HKLM "${UNINST_REG_KEY_VIM}" "mouse" "$vim_mouse_stat"
+	${If} ${RunningX64}
+	  SetRegView lastused
+	${EndIf}
+
+	${If} $vim_keymap_stat == "default"
+	  StrCpy $1 "$1 -vimrc-remap no"
+	${Else}
+	  StrCpy $1 "$1 -vimrc-remap win"
+	${EndIf}
+
+	${If} $vim_mouse_stat == "default"
+	  StrCpy $1 "$1 -vimrc-behave default"
+	${ElseIf} $vim_mouse_stat == "windows"
+	  StrCpy $1 "$1 -vimrc-behave mswin"
+	${Else}
+	  StrCpy $1 "$1 -vimrc-behave unix"
+	${EndIf}
+
 SectionEnd
 
 ##########################################################
@@ -524,7 +702,7 @@ Section -post
 	${If} ${RunningX64}
 	  SetRegView 64
 	${EndIf}
-	WriteRegDWORD HKLM "${UNINST_REG_KEY}" "EstimatedSize" $3
+	WriteRegDWORD HKLM "${UNINST_REG_KEY_VIM}" "EstimatedSize" $3
 	${If} ${RunningX64}
 	  SetRegView lastused
 	${EndIf}
@@ -541,33 +719,105 @@ Function SetCustom
 	  Abort
 	${EndIf}
 
-	InstallOptions::dialog "$PLUGINSDIR\vimrc.ini"
+	!insertmacro MUI_HEADER_TEXT \
+	    $(str_vimrc_page_title) $(str_vimrc_page_subtitle)
+
+	nsDialogs::Create 1018
+	Pop $vim_dialog
+
+	${If} $vim_dialog == error
+	  Abort
+	${EndIf}
+
+	${If} ${RunningX64}
+	  SetRegView 64
+	${EndIf}
+
+	GetFunctionAddress $3 ValidateCustom
+	nsDialogs::OnBack $3
+
+	# 1st group - Key remapping
+	${NSD_CreateGroupBox} 0 0 100% 38% $(str_msg_keymap_title)
 	Pop $3
+
+	${NSD_CreateRadioButton} 5% 8% 90% 8% $(str_msg_keymap_default)
+	Pop $vim_nsd_keymap_1
+	${NSD_AddStyle} $vim_nsd_keymap_1 ${WS_GROUP}
+
+	${NSD_CreateRadioButton} 5% 18% 90% 16% $(str_msg_keymap_windows)
+	Pop $vim_nsd_keymap_2
+
+	${If} $vim_keymap_stat == ""
+	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "keyremap"
+	${Else}
+	  StrCpy $3 $vim_keymap_stat
+	${EndIf}
+	${If} $3 == "windows"
+	  ${NSD_SetState} $vim_nsd_keymap_2 ${BST_CHECKED}
+	${Else} # default
+	  ${NSD_SetState} $vim_nsd_keymap_1 ${BST_CHECKED}
+	${EndIf}
+
+
+	# 2nd group - Mouse behavior
+	${NSD_CreateGroupBox} 0 42% 100% 58% $(str_msg_mouse_title)
+	Pop $3
+
+	${NSD_CreateRadioButton} 5% 48% 90% 16% $(str_msg_mouse_default)
+	Pop $vim_nsd_mouse_1
+	${NSD_AddStyle} $vim_nsd_mouse_1 ${WS_GROUP}
+
+	${NSD_CreateRadioButton} 5% 65% 90% 16% $(str_msg_mouse_windows)
+	Pop $vim_nsd_mouse_2
+
+	${NSD_CreateRadioButton} 5% 81% 90% 16% $(str_msg_mouse_unix)
+	Pop $vim_nsd_mouse_3
+
+	${If} $vim_mouse_stat == ""
+	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "mouse"
+	${Else}
+	  StrCpy $3 $vim_mouse_stat
+	${EndIf}
+	${If} $3 == "xterm"
+	  ${NSD_SetState} $vim_nsd_mouse_3 ${BST_CHECKED}
+	${ElseIf} $3 == "windows"
+	  ${NSD_SetState} $vim_nsd_mouse_2 ${BST_CHECKED}
+	${Else} # defualt
+	  ${NSD_SetState} $vim_nsd_mouse_1 ${BST_CHECKED}
+	${EndIf}
+
+	${If} ${RunningX64}
+	  SetRegView lastused
+	${EndIf}
+
+	nsDialogs::Show
 FunctionEnd
 
 Function ValidateCustom
-	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 2" "State"
-	${If} $3 == "1"
-	  StrCpy $1 "$1 -vimrc-remap no"
+	${NSD_GetState} $vim_nsd_keymap_1 $3
+	${If} $3 == ${BST_CHECKED}
+	  StrCpy $vim_keymap_stat "default"
 	${Else}
-	  StrCpy $1 "$1 -vimrc-remap win"
+	  StrCpy $vim_keymap_stat "windows"
 	${EndIf}
 
-	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 5" "State"
-	${If} $3 == "1"
-	  StrCpy $1 "$1 -vimrc-behave unix"
+	${NSD_GetState} $vim_nsd_mouse_1 $3
+	${If} $3 == ${BST_CHECKED}
+	  StrCpy $vim_mouse_stat "default"
 	${Else}
-	  ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
-	  ${If} $3 == "1"
-	    StrCpy $1 "$1 -vimrc-behave mswin"
+	  ${NSD_GetState} $vim_nsd_mouse_2 $3
+	  ${If} $3 == ${BST_CHECKED}
+	    StrCpy $vim_mouse_stat "windows"
 	  ${Else}
-	    StrCpy $1 "$1 -vimrc-behave default"
+	    StrCpy $vim_mouse_stat "xterm"
 	  ${EndIf}
 	${EndIf}
 FunctionEnd
 
 ##########################################################
-Section Uninstall
+Section "un.$(str_unsection_register)"
+	SectionIn RO
+
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
 	# created.  Thus the "vim61" directory is included in it.
 	StrCpy $0 "$INSTDIR"
@@ -583,11 +833,11 @@ Section Uninstall
 
 	# We may have been put to the background when uninstall did something.
 	BringToFront
+SectionEnd
 
-	# ask the user if the Vim version dir must be removed
-	MessageBox MB_YESNO|MB_ICONQUESTION \
-	  "Would you like to delete $0?$\n \
-	   $\nIt contains the Vim executables and runtime files." IDNO NoRemoveExes
+Section "un.$(str_unsection_exe)"
+
+	StrCpy $0 "$INSTDIR"
 
 	Delete /REBOOTOK $0\*.dll
 	Delete /REBOOTOK $0\GvimExt32\*.dll
@@ -626,13 +876,13 @@ Section Uninstall
 	# No error message if the "vim62" directory can't be removed, the
 	# gvimext.dll may still be there.
 	RMDir $0
+SectionEnd
 
-	NoRemoveExes:
+Section "un.Remove vimfiles directory"
 	# get the parent dir of the installation
 	Push $INSTDIR
 	Call un.GetParent
-	Pop $0
-	StrCpy $1 $0
+	Pop $1
 
 	# if a plugin dir was created at installation ask the user to remove it
 	# first look in the root of the installation then in HOME
@@ -642,20 +892,28 @@ Section Uninstall
 
 	${If} $1 != ""
 	${AndIf} ${FileExists} $1\vimfiles
-	  MessageBox MB_YESNO|MB_ICONQUESTION \
-	    "Remove all files in your $1\vimfiles directory?$\n \
-	    $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
+	  #MessageBox MB_YESNO|MB_ICONQUESTION \
+	  #  "Remove all files in your $1\vimfiles directory?$\n \
+	  #  $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
 	  RMDir /r $1\vimfiles
 	${EndIf}
+SectionEnd
+
+Section "un.Remove the Vim root directory (may contain your _vimrc)"
+	# get the parent dir of the installation
+	Push $INSTDIR
+	Call un.GetParent
+	Pop $0
 
 	# ask the user if the Vim root dir must be removed
-	MessageBox MB_YESNO|MB_ICONQUESTION \
-	  "Would you like to remove $0?$\n \
-	   $\nIt contains your Vim configuration files!" IDNO NoDelete
-	   RMDir /r $0 ; skipped if no
-	NoDelete:
+	#MessageBox MB_YESNO|MB_ICONQUESTION \
+	#  "Would you like to remove $0?$\n \
+	#   $\nIt contains your Vim configuration files!" IDNO NoDelete
+	#   RMDir /r $0 ; skipped if no
+	#NoDelete:
+	RMDir /r $0
 
-	Fin:
-	Call un.onUnInstSuccess
+	#Fin:
+	#Call un.onUnInstSuccess
 
 SectionEnd
