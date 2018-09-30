@@ -775,6 +775,12 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 }
 #endif
 
+    void
+cmdline_init(void)
+{
+    vim_memset(&ccline, 0, sizeof(struct cmdline_info));
+}
+
 /*
  * getcmdline() - accept a command line starting with firstc.
  *
@@ -7044,12 +7050,6 @@ finish_viminfo_history(vir_T *virp)
 	VIM_CLEAR(viminfo_history[type]);
 	viminfo_hisidx[type] = 0;
     }
-}
-
-    void
-cmdline_init(void)
-{
-    vim_memset(&ccline, 0, sizeof(struct cmdline_info));
 }
 
 /*
