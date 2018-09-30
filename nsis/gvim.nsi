@@ -121,9 +121,9 @@ Function .onInit
   Delete $TEMP\vimini.ini
 
   # If ReadINIStr failed or did not find a path: use the default dir.
-  StrCmp $INSTDIR "" 0 IniOK
-  StrCpy $INSTDIR "$PROGRAMFILES\Vim"
-  IniOK:
+  ${If} $INSTDIR == ""
+    StrCpy $INSTDIR "$PROGRAMFILES\Vim"
+  ${EndIf}
 
   # Should check for the value of $VIM and use it.  Unfortunately I don't know
   # how to obtain the value of $VIM
@@ -303,15 +303,7 @@ Section "Vim console program (vim.exe)"
 	SectionIn 1 3
 
 	SetOutPath $0
-	ReadRegStr $R0 HKLM \
-	   "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-	IfErrors 0 lbl_winnt
-	    # Windows 95/98/ME: not supported
-	    Goto lbl_done
-	lbl_winnt:
-	    # Windows NT/2000/XP and later
-	    File /oname=vim.exe ${VIMSRC}\vimw32.exe
-	lbl_done:
+	File /oname=vim.exe ${VIMSRC}\vimw32.exe
 	StrCpy $2 "$2 vim view vimdiff"
 SectionEnd
 
@@ -362,24 +354,22 @@ Section "Add an Edit-with-Vim context menu entry"
 	  File ${GETTEXT}\gettext64\libiconv-2.dll
 !endif
 
-	  IfErrors 0 GvimExt64Done
-
-	  # Can't copy gvimext.dll, create it under another name and rename it
-	  # on next reboot.
-	  GetTempFileName $3 $0\GvimExt64
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
-	  Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
+	  ${If} ${Errors}
+	    # Can't copy gvimext.dll, create it under another name and rename it
+	    # on next reboot.
+	    GetTempFileName $3 $0\GvimExt64
+	    File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
+	    Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
 !ifdef HAVE_NLS
-	  GetTempFileName $3 $0\GvimExt64
-	  File /oname=$3 ${GETTEXT}\gettext64\libintl-8.dll
-	  Rename /REBOOTOK $3 $0\GvimExt64\libintl-8.dll
-	  GetTempFileName $3 $0\GvimExt64
-	  File /oname=$3 ${GETTEXT}\gettext64\libiconv-2.dll
-	  Rename /REBOOTOK $3 $0\GvimExt64\libiconv-2.dll
+	    GetTempFileName $3 $0\GvimExt64
+	    File /oname=$3 ${GETTEXT}\gettext64\libintl-8.dll
+	    Rename /REBOOTOK $3 $0\GvimExt64\libintl-8.dll
+	    GetTempFileName $3 $0\GvimExt64
+	    File /oname=$3 ${GETTEXT}\gettext64\libiconv-2.dll
+	    Rename /REBOOTOK $3 $0\GvimExt64\libiconv-2.dll
 !endif
+	  ${EndIf}
 	${EndIf}
-
-	GvimExt64Done:
 
 	# Install 32-bit gvimext.dll into the GvimExt32 directory.
 	SetOutPath $0\GvimExt32
@@ -392,26 +382,24 @@ Section "Add an Edit-with-Vim context menu entry"
 	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
 !endif
 
-	IfErrors 0 GvimExt32Done
-
-	# Can't copy gvimext.dll, create it under another name and rename it on
-	# next reboot.
-	GetTempFileName $3 $0\GvimExt32
-	File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
-	Rename /REBOOTOK $3 $0\GvimExt32\gvimext.dll
+	${If} ${Errors}
+	  # Can't copy gvimext.dll, create it under another name and rename it on
+	  # next reboot.
+	  GetTempFileName $3 $0\GvimExt32
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
+	  Rename /REBOOTOK $3 $0\GvimExt32\gvimext.dll
 !ifdef HAVE_NLS
-	GetTempFileName $3 $0\GvimExt32
-	File /oname=$3 ${GETTEXT}\gettext32\libintl-8.dll
-	Rename /REBOOTOK $3 $0\GvimExt32\libintl-8.dll
-	GetTempFileName $3 $0\GvimExt32
-	File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
-	Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
-	GetTempFileName $3 $0\GvimExt32
-	File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
-	Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
+	  GetTempFileName $3 $0\GvimExt32
+	  File /oname=$3 ${GETTEXT}\gettext32\libintl-8.dll
+	  Rename /REBOOTOK $3 $0\GvimExt32\libintl-8.dll
+	  GetTempFileName $3 $0\GvimExt32
+	  File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
+	  Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
+	  GetTempFileName $3 $0\GvimExt32
+	  File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+	  Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
 !endif
-
-	GvimExt32Done:
+	${EndIf}
 	SetOverwrite lastused
 
 	# We don't have a separate entry for the "Open With..." menu, assume
@@ -451,20 +439,20 @@ SectionEnd
 
 ##########################################################
 !ifdef HAVE_NLS
-	Section "Native Language Support"
-		SectionIn 1 3
+Section "Native Language Support"
+	SectionIn 1 3
 
-		SetOutPath $0\lang
-		File /r ${VIMRT}\lang\*.*
-		SetOutPath $0\keymap
-		File ${VIMRT}\keymap\README.txt
-		File ${VIMRT}\keymap\*.vim
-		SetOutPath $0
-		File ${GETTEXT}\gettext32\libintl-8.dll
-		File ${GETTEXT}\gettext32\libiconv-2.dll
-		#File /nonfatal ${VIMRT}\libwinpthread-1.dll
-		File /nonfatal ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
-	SectionEnd
+	SetOutPath $0\lang
+	File /r ${VIMRT}\lang\*.*
+	SetOutPath $0\keymap
+	File ${VIMRT}\keymap\README.txt
+	File ${VIMRT}\keymap\*.vim
+	SetOutPath $0
+	File ${GETTEXT}\gettext32\libintl-8.dll
+	File ${GETTEXT}\gettext32\libiconv-2.dll
+	#File /nonfatal ${VIMRT}\libwinpthread-1.dll
+	File /nonfatal ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+SectionEnd
 !endif
 
 ##########################################################
@@ -483,10 +471,9 @@ Function SetCustom
 	# Display the InstallOptions dialog
 
 	# Check if a _vimrc should be created
-	SectionGetFlags ${sec_vimrc_id} $3
-	IntOp $3 $3 & 1
-	StrCmp $3 "1" +2 0
+	${IfNot} ${SectionIsSelected} ${sec_vimrc_id}
 	  Abort
+	${EndIf}
 
 	InstallOptions::dialog "$PLUGINSDIR\vimrc.ini"
 	Pop $3
@@ -494,25 +481,23 @@ FunctionEnd
 
 Function ValidateCustom
 	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 2" "State"
-	StrCmp $3 "1" 0 +3
+	${If} $3 == "1"
 	  StrCpy $1 "$1 -vimrc-remap no"
-	  Goto behave
-
+	${Else}
 	  StrCpy $1 "$1 -vimrc-remap win"
+	${EndIf}
 
-	behave:
 	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 5" "State"
-	StrCmp $3 "1" 0 +3
+	${If} $3 == "1"
 	  StrCpy $1 "$1 -vimrc-behave unix"
-	  Goto done
-
-	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
-	StrCmp $3 "1" 0 +3
-	  StrCpy $1 "$1 -vimrc-behave mswin"
-	  Goto done
-
-	  StrCpy $1 "$1 -vimrc-behave default"
-	done:
+	${Else}
+	  ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
+	  ${If} $3 == "1"
+	    StrCpy $1 "$1 -vimrc-behave mswin"
+	  ${Else}
+	    StrCpy $1 "$1 -vimrc-behave default"
+	  ${EndIf}
+	${EndIf}
 FunctionEnd
 
 ##########################################################
@@ -522,11 +507,9 @@ Section Uninstall
 	StrCpy $0 "$INSTDIR"
 
 	# If VisVim was installed, unregister the DLL.
-	IfFileExists "$0\VisVim.dll" Has_VisVim No_VisVim
-	Has_VisVim:
-	   ExecWait "regsvr32.exe /u /s $0\VisVim.dll"
-
-	No_VisVim:
+	${If} ${FileExists} "$0\VisVim.dll"
+	  ExecWait "regsvr32.exe /u /s $0\VisVim.dll"
+	${EndIf}
 
 	# delete the context menu entry and batch files
 	ExecWait "$0\uninstal.exe -nsis"
@@ -568,11 +551,10 @@ Section Uninstall
 	Delete $0\*.vim
 	Delete $0\*.txt
 
-	IfErrors ErrorMess NoErrorMess
-	  ErrorMess:
-	    MessageBox MB_OK|MB_ICONEXCLAMATION \
+	${If} ${Errors}
+	  MessageBox MB_OK|MB_ICONEXCLAMATION \
 	      "Some files in $0 have not been deleted!$\nYou must do it manually."
-	  NoErrorMess:
+	${EndIf}
 
 	# No error message if the "vim62" directory can't be removed, the
 	# gvimext.dll may still be there.
@@ -587,18 +569,17 @@ Section Uninstall
 
 	# if a plugin dir was created at installation ask the user to remove it
 	# first look in the root of the installation then in HOME
-	IfFileExists $1\vimfiles AskRemove 0
-	    ReadEnvStr $1 "HOME"
-	    StrCmp $1 "" NoRemove 0
+	${IfNot} ${FileExists} $1\vimfiles
+	  ReadEnvStr $1 "HOME"
+	${EndIf}
 
-	    IfFileExists $1\vimfiles 0 NoRemove
-
-	  AskRemove:
-	    MessageBox MB_YESNO|MB_ICONQUESTION \
-	      "Remove all files in your $1\vimfiles directory?$\n \
-	      $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
-	    RMDir /r $1\vimfiles
-	  NoRemove:
+	${If} $1 != ""
+	${AndIf} ${FileExists} $1\vimfiles
+	  MessageBox MB_YESNO|MB_ICONQUESTION \
+	    "Remove all files in your $1\vimfiles directory?$\n \
+	    $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
+	  RMDir /r $1\vimfiles
+	${EndIf}
 
 	# ask the user if the Vim root dir must be removed
 	MessageBox MB_YESNO|MB_ICONQUESTION \
