@@ -49,6 +49,8 @@ Name "${PRODUCT}"
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
 CRCCheck force
 SetCompressor /SOLID lzma
+SetCompressorDictSize 64
+ManifestDPIAware true
 SetDatablockOptimize on
 RequestExecutionLevel highest
 XPStyle on
