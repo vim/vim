@@ -1491,7 +1491,10 @@ register_uninstall(
     HKEY hRootKey,
     const char *appname,
     const char *display_name,
-    const char *uninstall_string)
+    const char *uninstall_string,
+    const char *display_icon,
+    const char *display_version,
+    const char *publisher)
 {
     LONG lRet = reg_create_key_and_value(hRootKey, appname,
 			     "DisplayName", display_name, KEY_WOW64_64KEY);
@@ -1499,6 +1502,15 @@ register_uninstall(
     if (ERROR_SUCCESS == lRet)
 	lRet = reg_create_key_and_value(hRootKey, appname,
 		     "UninstallString", uninstall_string, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "DisplayIcon", display_icon, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "DisplayVersion", display_version, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "Publisher", publisher, KEY_WOW64_64KEY);
     return lRet;
 }
 
@@ -1519,6 +1531,7 @@ install_registry(void)
     char	vim_exe_path[BUFSIZE];
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
+    char	icon_string[BUFSIZE];
     int		i;
     int		loop_count = is_64bit_os() ? 2 : 1;
     DWORD	flag;
@@ -1583,11 +1596,16 @@ install_registry(void)
     else
 	sprintf(uninstall_string, "%s\\uninstall-gui.exe", installdir);
 
+    sprintf(icon_string, "%s\\gvim.exe,0", installdir);
+
     lRet = register_uninstall(
 	HKEY_LOCAL_MACHINE,
 	"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
 	display_name,
-	uninstall_string);
+	uninstall_string,
+	icon_string,
+	VIM_VERSION_SHORT,
+	"Bram Moolenaar et al.");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
 
