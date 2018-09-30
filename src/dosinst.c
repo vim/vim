@@ -1192,7 +1192,9 @@ install_vimrc(int idx)
 	/* Use the diff.exe that comes with the self-extracting gvim.exe. */
 	fclose(tfd);
 	fprintf(fd, "\n");
-	fprintf(fd, "set diffexpr=MyDiff()\n");
+	fprintf(fd, "if &diffopt !~# 'internal'\n");
+	fprintf(fd, "  set diffexpr=MyDiff()\n");
+	fprintf(fd, "endif\n");
 	fprintf(fd, "function MyDiff()\n");
 	fprintf(fd, "  let opt = '-a --binary '\n");
 	fprintf(fd, "  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif\n");
