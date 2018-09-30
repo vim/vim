@@ -113,7 +113,8 @@ Function .onInit
   # run the install program to check for already installed versions
   SetOutPath $TEMP
   File /oname=install.exe ${VIMSRC}\installw32.exe
-  ExecWait "$TEMP\install.exe -uninstall-check"
+  nsExec::Exec "$TEMP\install.exe -uninstall-check"
+  Pop $3
   Delete $TEMP\install.exe
 
   # We may have been put to the background when uninstall did something.
@@ -490,7 +491,8 @@ SectionEnd
 ##########################################################
 Section -call_install_exe
 	SetOutPath $0
-	ExecWait "$0\install.exe $1"
+	nsExec::Exec "$0\install.exe $1"
+	Pop $3
 SectionEnd
 
 ##########################################################
@@ -576,7 +578,8 @@ Section Uninstall
 	${EndIf}
 
 	# delete the context menu entry and batch files
-	ExecWait "$0\uninstal.exe -nsis"
+	nsExec::Exec "$0\uninstal.exe -nsis"
+	Pop $3
 
 	# We may have been put to the background when uninstall did something.
 	BringToFront
