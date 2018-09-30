@@ -380,7 +380,10 @@ Section "Add an Edit-with-Vim context menu entry"
 !ifdef HAVE_NLS
 	File ${GETTEXT}\gettext32\libintl-8.dll
 	File ${GETTEXT}\gettext32\libiconv-2.dll
+  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+	# Install libgcc_s_sjlj-1.dll only if it is needed.
 	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+  !endif
 !endif
 
 	${If} ${Errors}
@@ -396,9 +399,12 @@ Section "Add an Edit-with-Vim context menu entry"
 	  GetTempFileName $3 $0\GvimExt32
 	  File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
 	  Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
+  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+	  # Install libgcc_s_sjlj-1.dll only if it is needed.
 	  GetTempFileName $3 $0\GvimExt32
 	  File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
 	  Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
+  !endif
 !endif
 	${EndIf}
 	SetOverwrite lastused
@@ -452,7 +458,10 @@ Section "Native Language Support"
 	File ${GETTEXT}\gettext32\libintl-8.dll
 	File ${GETTEXT}\gettext32\libiconv-2.dll
 	#File /nonfatal ${VIMRT}\libwinpthread-1.dll
-	File /nonfatal ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+	# Install libgcc_s_sjlj-1.dll only if it is needed.
+	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+  !endif
 SectionEnd
 !endif
 
