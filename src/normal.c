@@ -32,7 +32,6 @@ static int
     _RTLENTRYF
 #endif
 		nv_compare(const void *s1, const void *s2);
-static int	find_command(int cmdchar);
 static void	op_colon(oparg_T *oap);
 static void	op_function(oparg_T *oap);
 #if defined(FEAT_MOUSE)
@@ -40,10 +39,7 @@ static void	find_start_of_word(pos_T *);
 static void	find_end_of_word(pos_T *);
 static int	get_mouse_class(char_u *p);
 #endif
-static void	prep_redo_cmd(cmdarg_T *cap);
 static void	prep_redo(int regname, long, int, int, int, int, int);
-static int	checkclearop(oparg_T *oap);
-static int	checkclearopq(oparg_T *oap);
 static void	clearop(oparg_T *oap);
 static void	clearopbeep(oparg_T *oap);
 static void	unshift_special(cmdarg_T *cap);
@@ -63,8 +59,6 @@ static void	nv_error(cmdarg_T *cap);
 static void	nv_help(cmdarg_T *cap);
 static void	nv_addsub(cmdarg_T *cap);
 static void	nv_page(cmdarg_T *cap);
-static void	nv_gd(oparg_T *oap, int nchar, int thisblock);
-static int	nv_screengo(oparg_T *oap, int dir, long dist);
 #ifdef FEAT_MOUSE
 static void	nv_mousescroll(cmdarg_T *cap);
 static void	nv_mouse(cmdarg_T *cap);
@@ -94,9 +88,6 @@ static void	nv_right(cmdarg_T *cap);
 static void	nv_left(cmdarg_T *cap);
 static void	nv_up(cmdarg_T *cap);
 static void	nv_down(cmdarg_T *cap);
-#ifdef FEAT_SEARCHPATH
-static void	nv_gotofile(cmdarg_T *cap);
-#endif
 static void	nv_end(cmdarg_T *cap);
 static void	nv_dollar(cmdarg_T *cap);
 static void	nv_search(cmdarg_T *cap);
@@ -111,10 +102,7 @@ static void	nv_findpar(cmdarg_T *cap);
 static void	nv_undo(cmdarg_T *cap);
 static void	nv_kundo(cmdarg_T *cap);
 static void	nv_Replace(cmdarg_T *cap);
-static void	nv_vreplace(cmdarg_T *cap);
-static void	v_swap_corners(int cmdchar);
 static void	nv_replace(cmdarg_T *cap);
-static void	n_swapchar(cmdarg_T *cap);
 static void	nv_cursormark(cmdarg_T *cap, int flag, pos_T *pos);
 static void	v_visop(cmdarg_T *cap);
 static void	nv_subst(cmdarg_T *cap);
@@ -128,7 +116,6 @@ static void	n_start_visual_mode(int c);
 static void	nv_window(cmdarg_T *cap);
 static void	nv_suspend(cmdarg_T *cap);
 static void	nv_g_cmd(cmdarg_T *cap);
-static void	n_opencmd(cmdarg_T *cap);
 static void	nv_dot(cmdarg_T *cap);
 static void	nv_redo(cmdarg_T *cap);
 static void	nv_Undo(cmdarg_T *cap);

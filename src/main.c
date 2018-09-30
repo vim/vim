@@ -39,9 +39,7 @@ static void init_locale(void);
 # endif
 static void early_arg_scan(mparm_T *parmp);
 #ifndef NO_VIM_MAIN
-static void main_msg(char *s);
 static void usage(void);
-static int get_number_arg(char_u *p, int *idx, int def);
 static void parse_command_name(mparm_T *parmp);
 static void command_line_scan(mparm_T *parmp);
 static void check_tty(mparm_T *parmp);
@@ -3476,8 +3474,6 @@ check_swap_exists_action(void)
 #endif /* NO_VIM_MAIN */
 
 #if defined(STARTUPTIME) || defined(PROTO)
-static void time_diff(struct timeval *then, struct timeval *now);
-
 static struct timeval	prev_timeval;
 
 # ifdef WIN3264

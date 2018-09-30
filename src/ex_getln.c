@@ -75,11 +75,6 @@ static int	hisnum[HIST_COUNT] = {0, 0, 0, 0, 0};
 static int	hislen = 0;		/* actual length of history tables */
 
 static int	hist_char2type(int c);
-
-static int	in_history(int, char_u *, int, int, int);
-# ifdef FEAT_EVAL
-static int	calc_hist_idx(int histype, int num);
-# endif
 #endif
 
 #ifdef FEAT_RIGHTLEFT
@@ -103,9 +98,6 @@ static void	draw_cmdline(int start, int len);
 static void	save_cmdline(struct cmdline_info *ccp);
 static void	restore_cmdline(struct cmdline_info *ccp);
 static int	cmdline_paste(int regname, int literally, int remcr);
-#if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-static void	redrawcmd_preedit(void);
-#endif
 #ifdef FEAT_WILDMENU
 static void	cmdline_del(int from);
 #endif
@@ -5049,8 +5041,6 @@ expand_cmdline(
  * Remove "@ab" if the top of 'helplang' is "ab" and the language of the first
  * tag matches it.  Otherwise remove "@en" if "en" is the only language.
  */
-static void	cleanup_help_tags(int num_file, char_u **file);
-
     static void
 cleanup_help_tags(int num_file, char_u **file)
 {
@@ -6706,8 +6696,6 @@ static histentry_T *viminfo_history[HIST_COUNT] =
 static int	viminfo_hisidx[HIST_COUNT] = {0, 0, 0, 0, 0};
 static int	viminfo_hislen[HIST_COUNT] = {0, 0, 0, 0, 0};
 static int	viminfo_add_at_front = FALSE;
-
-static int	hist_type2char(int type, int use_question);
 
 /*
  * Translate a history type number to the associated character.

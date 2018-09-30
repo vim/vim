@@ -95,7 +95,6 @@ struct block_def
 
 #ifdef FEAT_VISUALEXTRA
 static void shift_block(oparg_T *oap, int amount);
-static void block_insert(oparg_T *oap, char_u *s, int b_insert, struct block_def*bdp);
 #endif
 static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
@@ -105,7 +104,6 @@ static void	stuffescaped(char_u *arg, int literally);
 #ifdef FEAT_MBYTE
 static void	mb_adjust_opend(oparg_T *oap);
 #endif
-static void	free_yank(long);
 static void	free_yank_all(void);
 static int	yank_copy_line(struct block_def *bd, long y_idx);
 #ifdef FEAT_CLIPBOARD
@@ -120,7 +118,6 @@ static void	str_to_reg(yankreg_T *y_ptr, int yank_type, char_u *str, long len, l
 #endif
 static int	ends_in_white(linenr_T lnum);
 #ifdef FEAT_COMMENTS
-static int	same_leader(linenr_T lnum, int, char_u *, int, char_u *);
 static int	fmt_check_par(linenr_T, int *, char_u **, int do_comments);
 #else
 static int	fmt_check_par(linenr_T);
@@ -6829,8 +6826,6 @@ get_reg_type(int regname, long *reglen)
     return MAUTO;
 }
 
-static char_u *getreg_wrap_one_line(char_u *s, int flags);
-
 /*
  * When "flags" has GREG_LIST return a list with text "s".
  * Otherwise just return "s".
@@ -7301,8 +7296,6 @@ clear_oparg(oparg_T *oap)
 {
     vim_memset(oap, 0, sizeof(oparg_T));
 }
-
-static varnumber_T line_count_info(char_u *line, varnumber_T *wc, varnumber_T *cc, varnumber_T limit, int eol_size);
 
 /*
  *  Count the number of bytes, characters and "words" in a line.

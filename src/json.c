@@ -19,7 +19,6 @@
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
-static int json_decode_item(js_read_T *reader, typval_T *res, int options);
 
 /*
  * Encode "val" into a JSON format string.

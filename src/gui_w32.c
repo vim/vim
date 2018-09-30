@@ -4336,10 +4336,6 @@ done:
 # define UINT_PTR UINT
 #endif
 
-static void make_tooltip(BalloonEval *beval, char *text, POINT pt);
-static void delete_tooltip(BalloonEval *beval);
-static VOID CALLBACK BevalTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
@@ -4463,10 +4459,6 @@ static UINT	s_menu_id = 100;
 /*
  * stuff for dialogs, menus, tearoffs etc.
  */
-static LRESULT APIENTRY dialog_callback(HWND, UINT, WPARAM, LPARAM);
-#ifdef FEAT_TEAROFF
-static LRESULT APIENTRY tearoff_callback(HWND, UINT, WPARAM, LPARAM);
-#endif
 static PWORD
 add_dialog_element(
 	PWORD p,

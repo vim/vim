@@ -117,51 +117,12 @@ static void sandbox_check(void);
 #endif
 /*  Buffer-related commands */
 static Scheme_Object *buffer_new(buf_T *buf);
-static Scheme_Object *get_buffer_by_name(void *, int, Scheme_Object **);
 static Scheme_Object *get_buffer_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_name(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_size(void *, int, Scheme_Object **);
-static Scheme_Object *get_curr_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_next_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_prev_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *mzscheme_open_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *insert_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_start(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_end(void *, int, Scheme_Object **);
 static vim_mz_buffer *get_vim_curr_buffer(void);
 
 /*  Window-related commands */
 static Scheme_Object *window_new(win_T *win);
-static Scheme_Object *get_curr_win(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
-static Scheme_Object *get_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *set_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_list(void *, int, Scheme_Object **);
 static vim_mz_window *get_vim_curr_window(void);
-
-/*  Vim-related commands */
-static Scheme_Object *mzscheme_beep(void *, int, Scheme_Object **);
-static Scheme_Object *get_option(void *, int, Scheme_Object **);
-static Scheme_Object *set_option(void *, int, Scheme_Object **);
-static Scheme_Object *vim_command(void *, int, Scheme_Object **);
-static Scheme_Object *vim_eval(void *, int, Scheme_Object **);
-static Scheme_Object *vim_bufferp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_windowp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_buffer_validp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_window_validp(void *data, int, Scheme_Object **);
 
 /*
  *========================================================================

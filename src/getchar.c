@@ -108,17 +108,8 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	/* initial typebuf.tb_noremap */
 
 static int	last_recorded_len = 0;	/* number of last recorded chars */
 
-static char_u	*get_buffcont(buffheader_T *, int);
-static void	add_buff(buffheader_T *, char_u *, long n);
-static void	add_num_buff(buffheader_T *, long);
-static void	add_char_buff(buffheader_T *, int);
-static int	read_readbuffers(int advance);
 static int	read_readbuf(buffheader_T *buf, int advance);
-static void	start_stuff(void);
-static int	read_redo(int, int);
-static void	copy_redo(int);
 static void	init_typebuf(void);
-static void	gotchars(char_u *, int);
 static void	may_sync_undo(void);
 static void	closescript(void);
 static int	vgetorpeek(int);

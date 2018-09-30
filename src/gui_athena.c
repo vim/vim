@@ -52,8 +52,6 @@ static XtIntervalId timer = 0;	    /* 0 = expired, otherwise active */
 static vimmenu_T *a_cur_menu = NULL;
 static Cardinal	athena_calculate_ins_pos(Widget);
 
-static Pixmap gui_athena_create_pullright_pixmap(Widget);
-static void gui_athena_menu_timeout(XtPointer, XtIntervalId *);
 static void gui_athena_popup_callback(Widget, XtPointer, XtPointer);
 static void gui_athena_delayed_arm_action(Widget, XEvent *, String *,
 						 Cardinal *);
@@ -70,8 +68,6 @@ static void gui_mch_reset_focus(void);
 static Widget toolBar = (Widget)0;
 #endif
 
-static void gui_athena_scroll_cb_jump(Widget, XtPointer, XtPointer);
-static void gui_athena_scroll_cb_scroll(Widget, XtPointer, XtPointer);
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_MENU)
 static void gui_athena_menu_colors(Widget id);
 #endif
@@ -445,7 +441,6 @@ gui_x11_destroy_widgets(void)
 # endif
 
 static void createXpmImages(char_u *path, char **xpm, Pixmap *sen);
-static void get_toolbar_pixmap(vimmenu_T *menu, Pixmap *sen);
 
 /*
  * Allocated a pixmap for toolbar menu "menu".
@@ -646,7 +641,6 @@ static Widget	submenu_widget(Widget);
 static Boolean	has_submenu(Widget);
 static void gui_mch_submenu_change(vimmenu_T *mp, int colors);
 static void gui_athena_menu_font(Widget id);
-static Boolean	gui_athena_menu_has_submenus(Widget, Widget);
 
     void
 gui_mch_enable_menu(int flag)
@@ -2040,10 +2034,6 @@ gui_mch_browse(
 
 static int	dialogStatus;
 static Atom	dialogatom;
-
-static void keyhit_callback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
-static void butproc(Widget w, XtPointer client_data, XtPointer call_data);
-static void dialog_wm_handler(Widget w, XtPointer client_data, XEvent *event, Boolean *dum);
 
 /*
  * Callback function for the textfield.  When CR is hit this works like

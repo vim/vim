@@ -20,8 +20,6 @@ static void win_exchange(long);
 static void win_rotate(int, int);
 static void win_totop(int size, int flags);
 static void win_equal_rec(win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height);
-static int last_window(void);
-static int close_last_window_tabpage(win_T *win, int free_buf, tabpage_T *prev_curtab);
 static win_T *win_free_mem(win_T *win, int *dirp, tabpage_T *tp);
 static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
@@ -6246,8 +6244,6 @@ file_name_in_line(
 }
 
 # if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
-static char_u *eval_includeexpr(char_u *ptr, int len);
-
     static char_u *
 eval_includeexpr(char_u *ptr, int len)
 {

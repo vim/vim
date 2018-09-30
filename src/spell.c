@@ -251,7 +251,6 @@ typedef struct matchinf_S
 static int spell_iswordp(char_u *p, win_T *wp);
 #ifdef FEAT_MBYTE
 static int spell_mb_isword_class(int cl, win_T *wp);
-static int spell_iswordp_w(int *p, win_T *wp);
 #endif
 
 /*
@@ -337,22 +336,16 @@ typedef struct trystate_S
 static void find_word(matchinf_T *mip, int mode);
 static int match_checkcompoundpattern(char_u *ptr, int wlen, garray_T *gap);
 static int can_compound(slang_T *slang, char_u *word, char_u *flags);
-static int can_be_compound(trystate_T *sp, slang_T *slang, char_u *compflags, int flag);
 static int match_compoundrule(slang_T *slang, char_u *compflags);
 static int valid_word_prefix(int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req);
 static void find_prefix(matchinf_T *mip, int mode);
 static int fold_more(matchinf_T *mip);
 static int spell_valid_case(int wordflags, int treeflags);
-static int no_spell_checking(win_T *wp);
-static void spell_load_lang(char_u *lang);
-static void int_wordlist_spl(char_u *fname);
 static void spell_load_cb(char_u *fname, void *cookie);
-static int score_wordcount_adj(slang_T *slang, int score, char_u *word, int split);
 static int count_syllables(slang_T *slang, char_u *word);
 static void clear_midword(win_T *buf);
 static void use_midword(slang_T *lp, win_T *buf);
 static int find_region(char_u *rp, char_u *region);
-static int badword_captype(char_u *word, char_u *end);
 static int check_need_cap(linenr_T lnum, colnr_T col);
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
@@ -361,7 +354,6 @@ static void spell_suggest_expr(suginfo_T *su, char_u *expr);
 static void spell_suggest_file(suginfo_T *su, char_u *fname);
 static void spell_suggest_intern(suginfo_T *su, int interactive);
 static void spell_find_cleanup(suginfo_T *su);
-static void allcap_copy(char_u *word, char_u *wcopy);
 static void suggest_try_special(suginfo_T *su);
 static void suggest_try_change(suginfo_T *su);
 static void suggest_trie_walk(suginfo_T *su, langp_T *lp, char_u *fword, int soundfold);

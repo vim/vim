@@ -138,7 +138,6 @@
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
 
-static int enc_canon_search(char_u *name);
 static int dbcs_char2len(int c);
 static int dbcs_char2bytes(int c, char_u *buf);
 static int dbcs_ptr2len(char_u *p);
@@ -147,7 +146,6 @@ static int utf_ptr2cells_len(char_u *p, int size);
 static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
-static int utf_safe_read_char_adv(char_u **s, size_t *n);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -3133,9 +3131,6 @@ static convertStruct foldCase[] =
 	{0x1e900,0x1e921,1,34}
 };
 
-static int utf_convert(int a, convertStruct table[], int tableSize);
-static int utf_strnicmp(char_u *s1, char_u *s2, size_t n1, size_t n2);
-
 /*
  * Generic conversion function for case operations.
  * Return the converted equivalent of "a", which is a UCS-4 character.  Use
@@ -4541,8 +4536,6 @@ encname2codepage(char_u *name)
 # endif
 
 # if defined(USE_ICONV) || defined(PROTO)
-
-static char_u *iconv_string(vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp);
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -6053,8 +6046,6 @@ static int xim_real_init(Window x11_window, Display *x11_display);
 
 
 #  ifdef USE_X11R6_XIM
-static void xim_destroy_cb(XIM im, XPointer client_data, XPointer call_data);
-
     static void
 xim_instantiate_cb(
     Display	*display,

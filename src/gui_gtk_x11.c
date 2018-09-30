@@ -618,7 +618,6 @@ static gboolean is_key_pressed = FALSE;
 static gboolean blink_mode = TRUE;
 
 static gboolean gui_gtk_is_blink_on(void);
-static void gui_gtk_window_clear(GdkWindow *win);
 
     static void
 gui_gtk3_redraw(int x, int y, int width, int height)

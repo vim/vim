@@ -715,7 +715,6 @@ clip_isautosel_plus(void)
  * Stuff for general mouse selection, without using Visual mode.
  */
 
-static int clip_compare_pos(int row1, int col1, int row2, int col2);
 static void clip_invert_area(int, int, int, int, int how);
 static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
 static void clip_get_word_boundaries(VimClipboard *, int, int);
@@ -2069,8 +2068,6 @@ x11_setup_atoms(Display *dpy)
 static Boolean	clip_x11_convert_selection_cb(Widget w, Atom *sel_atom, Atom *target, Atom *type, XtPointer *value, long_u *length, int *format);
 static void clip_x11_lose_ownership_cb(Widget w, Atom *sel_atom);
 static void clip_x11_notify_cb(Widget w, Atom *sel_atom, Atom *target);
-static void clip_x11_timestamp_cb(Widget w, XtPointer n, XEvent *event, Boolean *cont);
-static void clip_x11_request_selection_cb(Widget w, XtPointer success, Atom *sel_atom, Atom *type, XtPointer value, long_u *length, int *format);
 
 /*
  * Property callback to get a timestamp for XtOwnSelection.

@@ -74,7 +74,6 @@ struct builtin_term
 /* start of keys that are not directly used by Vim but can be mapped */
 #define BT_EXTRA_KEYS	0x101
 
-static struct builtin_term *find_builtin_term(char_u *name);
 static void parse_builtin_tcap(char_u *s);
 static void gather_termleader(void);
 #ifdef FEAT_TERMRESPONSE
@@ -91,9 +90,6 @@ static int get_bytes_from_buf(char_u *, char_u *, int);
 static void del_termcode_idx(int idx);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
-#ifdef FEAT_TERMRESPONSE
-static void switch_to_8bit(void);
-#endif
 
 #ifdef HAVE_TGETENT
 static char_u *tgetent_error(char_u *, char_u *);
@@ -2429,8 +2425,6 @@ tltoa(unsigned long i)
  * minimal tgoto() implementation.
  * no padding and we only parse for %i %d and %+char
  */
-static char *tgoto(char *, int, int);
-
     static char *
 tgoto(char *cm, int x, int y)
 {
@@ -3146,8 +3140,6 @@ add_long_to_buf(long_u val, char_u *dst)
 	dst[i - 1] = (char_u) ((val >> shift) & 0xff);
     }
 }
-
-static int get_long_from_buf(char_u *buf, long_u *val);
 
 /*
  * Interpret the next string of bytes in buf as a long integer, with the most

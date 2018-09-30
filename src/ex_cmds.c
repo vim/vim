@@ -1813,7 +1813,6 @@ append_redir(
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
-static int no_viminfo(void);
 static int read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing);
 static void write_viminfo_version(FILE *fp_out);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
@@ -7568,7 +7567,6 @@ struct sign
 static sign_T	*first_sign = NULL;
 static int	next_sign_typenr = 1;
 
-static int sign_cmd_idx(char_u *begin_cmd, char_u *end_cmd);
 static void sign_list_defined(sign_T *sp);
 static void sign_undefine(sign_T *sp, sign_T *sp_prev);
 

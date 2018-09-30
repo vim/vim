@@ -155,15 +155,9 @@ static void ins_ctrl_x(void);
 static int  has_compl_option(int dict_opt);
 static int  ins_compl_accept_char(int c);
 static int ins_compl_add(char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup);
-static int  ins_compl_equal(compl_T *match, char_u *str, int len);
 static void ins_compl_longest_match(compl_T *match);
-static void ins_compl_add_matches(int num_matches, char_u **matches, int icase);
-static int  ins_compl_make_cyclic(void);
-static void ins_compl_upd_pum(void);
 static void ins_compl_del_pum(void);
 static int  pum_wanted(void);
-static int  pum_enough_matches(void);
-static void ins_compl_dictionaries(char_u *dict, char_u *pat, int flags, int thesaurus);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
 static char_u *find_line_end(char_u *ptr);
 static void ins_compl_free(void);
@@ -178,19 +172,15 @@ static void ins_compl_set_original_text(char_u *str);
 static void ins_compl_addfrommatch(void);
 static int  ins_compl_prep(int c);
 static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
-static buf_T *ins_compl_next_buf(buf_T *buf, int flag);
 # if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 # endif
-static int  ins_compl_get_exp(pos_T *ini);
 static void ins_compl_delete(void);
 static void ins_compl_insert(int in_compl_func);
-static int  ins_compl_next(int allow_get_expansion, int count, int insert_match, int in_compl_func);
 static int  ins_compl_key2dir(int c);
 static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
-static int  ins_compl_use_match(int c);
 static int  ins_complete(int c, int enable_pum);
 static void show_pum(int prev_w_wrow, int prev_w_leftcol);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
@@ -212,7 +202,6 @@ static void internal_format(int textwidth, int second_indent, int flags, int for
 static void check_auto_format(int);
 static void redo_literal(int c);
 static void start_arrow(pos_T *end_insert_pos);
-static void start_arrow_with_change(pos_T *end_insert_pos, int change);
 static void start_arrow_common(pos_T *end_insert_pos, int change);
 #ifdef FEAT_SPELL
 static void check_spell_redraw(void);
@@ -221,9 +210,7 @@ static int  spell_bad_len = 0;	/* length of located bad word */
 #endif
 static void stop_insert(pos_T *end_insert_pos, int esc, int nomove);
 static int  echeck_abbr(int);
-static int  replace_pop(void);
 static void replace_join(int off);
-static void replace_pop_ins(void);
 #ifdef FEAT_MBYTE
 static void mb_replace_pop_ins(int cc);
 #endif
@@ -9051,8 +9038,6 @@ ins_del(void)
 #endif
     AppendCharToRedobuff(K_DEL);
 }
-
-static void ins_bs_one(colnr_T *vcolp);
 
 /*
  * Delete one character for ins_bs().

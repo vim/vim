@@ -36,8 +36,6 @@ typedef struct {
 } zip_state_T;
 
 
-static void make_crc_tab(void);
-
 static u32_T crc_32_table[256];
 
 /*

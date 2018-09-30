@@ -126,8 +126,6 @@
 # undef HAVE_SVR4_PTYS
 #endif
 
-static void initmaster(int);
-
 /*
  *  Open all ptys with O_NOCTTY, just to be on the safe side.
  */

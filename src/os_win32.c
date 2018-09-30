@@ -168,28 +168,12 @@ static int g_fCBrkPressed = FALSE;  /* set by ctrl-break interrupt */
 static int g_fCtrlCPressed = FALSE; /* set when ctrl-C or ctrl-break detected */
 static int g_fForceExit = FALSE;    /* set when forcefully exiting */
 
-static void termcap_mode_start(void);
-static void termcap_mode_end(void);
-static void clear_chars(COORD coord, DWORD n);
-static void clear_screen(void);
-static void clear_to_end_of_display(void);
-static void clear_to_end_of_line(void);
 static void scroll(unsigned cLines);
 static void set_scroll_region(unsigned left, unsigned top,
 			      unsigned right, unsigned bottom);
-static void insert_lines(unsigned cLines);
 static void delete_lines(unsigned cLines);
 static void gotoxy(unsigned x, unsigned y);
-static void normvideo(void);
-static void textattr(WORD wAttr);
-static void textcolor(WORD wAttr);
-static void textbackground(WORD wAttr);
 static void standout(void);
-static void standend(void);
-static void visual_bell(void);
-static void cursor_visible(BOOL fVisible);
-static DWORD write_chars(char_u *pchBuf, DWORD cbToWrite);
-static void create_conin(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
 #else
@@ -3487,8 +3471,7 @@ win32_getattrs(char_u *name)
  *
  * return -1 for failure, 0 otherwise
  */
-    static
-    int
+    static int
 win32_setattrs(char_u *name, int attrs)
 {
     int res;
@@ -3513,8 +3496,7 @@ win32_setattrs(char_u *name, int attrs)
 /*
  * Set archive flag for "name".
  */
-    static
-    int
+    static int
 win32_set_archive(char_u *name)
 {
     int attrs = win32_getattrs(name);
