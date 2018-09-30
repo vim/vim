@@ -502,37 +502,28 @@ Section "Add an Edit-with-Vim context menu entry" sec_gvimext_id
 	# installed at the next reboot.  Can't use UpgradeDLL!
 	# We don't ask the user to reboot, the old dll will keep on working.
 	SetOutPath $0
-	ClearErrors
-	SetOverwrite try
 
 	${If} ${RunningX64}
 	  # Install 64-bit gvimext.dll into the GvimExt64 directory.
 	  SetOutPath $0\GvimExt64
 	  ClearErrors
-	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext64.dll
-
-	  ${If} ${Errors}
-	    # Can't copy gvimext.dll, create it under another name and rename it
-	    # on next reboot.
-	    GetTempFileName $3 $0\GvimExt64
-	    File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
-	    Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
-	  ${EndIf}
+	  !define LIBRARY_SHELL_EXTENSION
+	  !define LIBRARY_X64
+	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "${VIMSRC}\GvimExt\gvimext64.dll" \
+	      "$0\GvimExt64\gvimext.dll" "$0"
+	  !undef LIBRARY_X64
+	  !undef LIBRARY_SHELL_EXTENSION
 	${EndIf}
 
 	# Install 32-bit gvimext.dll into the GvimExt32 directory.
 	SetOutPath $0\GvimExt32
 	ClearErrors
-	File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
-
-	${If} ${Errors}
-	  # Can't copy gvimext.dll, create it under another name and rename it
-	  # on next reboot.
-	  GetTempFileName $3 $0\GvimExt32
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
-	  Rename /REBOOTOK $3 $0\GvimExt32\gvimext.dll
-	${EndIf}
-	SetOverwrite lastused
+	!define LIBRARY_SHELL_EXTENSION
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${VIMSRC}\GvimExt\gvimext.dll" \
+	    "$0\GvimExt32\gvimext.dll" "$0"
+	!undef LIBRARY_SHELL_EXTENSION
 
 	# We don't have a separate entry for the "Open With..." menu, assume
 	# the user wants either both or none.
@@ -604,64 +595,49 @@ Section "Native Language Support" sec_nls_id
 	File ${VIMRT}\keymap\README.txt
 	File ${VIMRT}\keymap\*.vim
 	SetOutPath $0
-	File ${GETTEXT}\gettext32\libintl-8.dll
-	File ${GETTEXT}\gettext32\libiconv-2.dll
-	#File /nonfatal ${VIMRT}\libwinpthread-1.dll
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext32\libintl-8.dll" \
+	    "$0\libintl-8.dll" "$0"
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext32\libiconv-2.dll" \
+	    "$0\libiconv-2.dll" "$0"
   !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
 	# Install libgcc_s_sjlj-1.dll only if it is needed.
-	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	    "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
+	    "$0\libgcc_s_sjlj-1.dll" "$0"
   !endif
 
 	${If} ${SectionIsSelected} ${sec_gvimext_id}
-	  SetOverwrite try
-
 	  ${If} ${RunningX64}
 	    # Install DLLs for 64-bit gvimext.dll into the GvimExt64 directory.
 	    SetOutPath $0\GvimExt64
 	    ClearErrors
-	    File ${GETTEXT}\gettext64\libintl-8.dll
-	    File ${GETTEXT}\gettext64\libiconv-2.dll
-
-	    ${If} ${Errors}
-	      # Can't copy the DLLs, create it under another name and rename it
-	      # on next reboot.
-	      GetTempFileName $3 $0\GvimExt64
-	      File /oname=$3 ${GETTEXT}\gettext64\libintl-8.dll
-	      Rename /REBOOTOK $3 $0\GvimExt64\libintl-8.dll
-	      GetTempFileName $3 $0\GvimExt64
-	      File /oname=$3 ${GETTEXT}\gettext64\libiconv-2.dll
-	      Rename /REBOOTOK $3 $0\GvimExt64\libiconv-2.dll
-	    ${EndIf}
+	    !define LIBRARY_X64
+	    !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"${GETTEXT}\gettext64\libintl-8.dll" \
+		"$0\GvimExt64\libintl-8.dll" "$0\GvimExt64"
+	    !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"${GETTEXT}\gettext64\libiconv-2.dll" \
+		"$0\GvimExt64\libiconv-2.dll" "$0\GvimExt64"
+	    !undef LIBRARY_X64
 	  ${EndIf}
 
 	  # Install DLLs for 32-bit gvimext.dll into the GvimExt32 directory.
 	  SetOutPath $0\GvimExt32
 	  ClearErrors
-	  File ${GETTEXT}\gettext32\libintl-8.dll
-	  File ${GETTEXT}\gettext32\libiconv-2.dll
+	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "${GETTEXT}\gettext32\libintl-8.dll" \
+	      "$0\GvimExt32\libintl-8.dll" "$0\GvimExt32"
+	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "${GETTEXT}\gettext32\libiconv-2.dll" \
+	      "$0\GvimExt32\libiconv-2.dll" "$0\GvimExt32"
   !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
 	  # Install libgcc_s_sjlj-1.dll only if it is needed.
-	  File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+	  !insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
+	      "$0\GvimExt32\libgcc_s_sjlj-1.dll" "$0\GvimExt32"
   !endif
-
-	  ${If} ${Errors}
-	    # Can't copy the DLLs, create it under another name and rename it
-	    # on next reboot.
-	    GetTempFileName $3 $0\GvimExt32
-	    File /oname=$3 ${GETTEXT}\gettext32\libintl-8.dll
-	    Rename /REBOOTOK $3 $0\GvimExt32\libintl-8.dll
-	    GetTempFileName $3 $0\GvimExt32
-	    File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
-	    Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
-  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
-	    # Install libgcc_s_sjlj-1.dll only if it is needed.
-	    GetTempFileName $3 $0\GvimExt32
-	    File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
-	    Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
-  !endif
-	  ${EndIf}
-
-	  SetOverwrite lastused
 	${EndIf}
 SectionEnd
 !endif
@@ -840,9 +816,45 @@ Section "un.$(str_unsection_exe)"
 	StrCpy $0 "$INSTDIR"
 
 	Delete /REBOOTOK $0\*.dll
-	Delete /REBOOTOK $0\GvimExt32\*.dll
+
+	# Delete 64-bit GvimExt
 	${If} ${RunningX64}
-	  Delete /REBOOTOK $0\GvimExt64\*.dll
+	  !define LIBRARY_X64
+	  ${If} ${FileExists} "$0\GvimExt64\gvimext.dll"
+	    !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"$0\GvimExt64\gvimext.dll"
+	  ${EndIf}
+	  ${If} ${FileExists} "$0\GvimExt64\libiconv-2.dll"
+	    !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"$0\GvimExt64\libiconv-2.dll"
+	  ${EndIf}
+	  ${If} ${FileExists} "$0\GvimExt64\libintl-8.dll"
+	    !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"$0\GvimExt64\libintl-8.dll"
+	  ${EndIf}
+	  ${If} ${FileExists} "$0\GvimExt64\libwinpthread-1.dll"
+	    !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+		"$0\GvimExt64\libwinpthread-1.dll"
+	  ${EndIf}
+	  !undef LIBRARY_X64
+	${EndIf}
+
+	# Delete 32-bit GvimExt
+	${If} ${FileExists} "$0\GvimExt32\gvimext.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\GvimExt32\gvimext.dll"
+	${EndIf}
+	${If} ${FileExists} "$0\GvimExt32\libiconv-2.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\GvimExt32\libiconv-2.dll"
+	${EndIf}
+	${If} ${FileExists} "$0\GvimExt32\libintl-8.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\GvimExt32\libintl-8.dll"
+	${EndIf}
+	${If} ${FileExists} "$0\GvimExt32\libgcc_s_sjlj-1.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\GvimExt32\libgcc_s_sjlj-1.dll"
 	${EndIf}
 
 	ClearErrors
