@@ -170,38 +170,19 @@ static int	(*SFfunc)();
 
 static int	SFstatus = SEL_FILE_NULL;
 
-/***************** static functions */
+/***************** forward declare static functions */
 
 static void SFsetText(char *path);
 static void SFtextChanged(void);
-static char *SFgetText(void);
-static void SFupdatePath(void);
 static int SFgetDir(SFDir *dir);
 static void SFdrawLists(int doScroll);
 static void SFdrawList(int n, int doScroll);
 static void SFclearList(int n, int doScroll);
-static void SFbuttonPressList(Widget w, int n, XButtonPressedEvent *event);
-static void SFbuttonReleaseList(Widget w, int n, XButtonReleasedEvent *event);
-static void SFdirModTimer(XtPointer cl, XtIntervalId *id);
 static char SFstatChar(stat_T *statBuf);
-static void SFdrawStrings(Window w, SFDir *dir, int from, int to);
-static int SFnewInvertEntry(int n, XMotionEvent *event);
-static void SFinvertEntry(int n);
-static void SFenterList(Widget w, int n, XEnterWindowEvent *event);
-static void SFleaveList(Widget w, int n, XEvent *event);
 static void SFmotionList(Widget w, int n, XMotionEvent *event);
-static void SFvFloatSliderMovedCallback(Widget w, XtPointer n, XtPointer fnew);
 static void SFvSliderMovedCallback(Widget w, int n, int nw);
-static void SFvAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew);
-static void SFhSliderMovedCallback(Widget w, XtPointer n, XtPointer nw);
-static void SFhAreaSelectedCallback(Widget w, XtPointer n, XtPointer pnew);
-static void SFpathSliderMovedCallback(Widget w, XtPointer client_data, XtPointer nw);
-static void SFpathAreaSelectedCallback(Widget w, XtPointer client_data, XtPointer pnew);
 static Boolean SFworkProc(void);
 static int SFcompareEntries(const void *p, const void *q);
-static void SFprepareToReturn(void);
-static void SFcreateWidgets(Widget toplevel, char *prompt, char *ok, char *cancel);
-static void SFsetColors(guicolor_T bg, guicolor_T fg, guicolor_T scroll_bg, guicolor_T scrollfg);
 
 /***************** xstat.h */
 
@@ -237,8 +218,6 @@ static SFLogin	*SFlogins;
 
 static int	SFtwiddle = 0;
 
-static int SFchdir(char *path);
-
     static int
 SFchdir(char *path)
 {
@@ -255,8 +234,6 @@ SFchdir(char *path)
 
     return result;
 }
-
-static void SFfree(int i);
 
     static void
 SFfree(int i)
@@ -279,15 +256,11 @@ SFfree(int i)
     dir->dir = NULL;
 }
 
-static void SFstrdup(char **s1, char *s2);
-
     static void
 SFstrdup(char **s1, char *s2)
 {
     *s1 = strcpy(XtMalloc((unsigned)(strlen(s2) + 1)), s2);
 }
-
-static void SFunreadableDir(SFDir *dir);
 
     static void
 SFunreadableDir(SFDir *dir)
@@ -301,8 +274,6 @@ SFunreadableDir(SFDir *dir)
     dir->nEntries = 1;
     dir->nChars = strlen(cannotOpen);
 }
-
-static void SFreplaceText(SFDir *dir, char *str);
 
     static void
 SFreplaceText(SFDir *dir, char *str)
@@ -322,8 +293,6 @@ SFreplaceText(SFDir *dir, char *str)
 
     SFtextChanged();
 }
-
-static void SFexpand(char *str);
 
     static void
 SFexpand(char *str)
@@ -378,8 +347,6 @@ SFexpand(char *str)
     SFreplaceText(dir, growing);
     XtFree(growing);
 }
-
-static int SFfindFile(SFDir *dir, char *str);
 
     static int
 SFfindFile(SFDir *dir, char *str)
@@ -478,8 +445,6 @@ SFfindFile(SFDir *dir, char *str)
     return 0;
 }
 
-static void SFunselect(void);
-
     static void
 SFunselect(void)
 {
@@ -492,15 +457,11 @@ SFunselect(void)
     dir->endSelection = -1;
 }
 
-static int SFcompareLogins(const void *p, const void *q);
-
     static int
 SFcompareLogins(const void *p, const void *q)
 {
     return strcmp(((SFLogin *)p)->name, ((SFLogin *)q)->name);
 }
-
-static void SFgetHomeDirs(void);
 
     static void
 SFgetHomeDirs(void)
@@ -567,8 +528,6 @@ SFgetHomeDirs(void)
     for (i--; i >= 0; i--)
 	(void)strcat(entries[i].real, "/");
 }
-
-static int SFfindHomeDir(char *begin, char *end);
 
     static int
 SFfindHomeDir(char *begin, char *end)
@@ -868,8 +827,6 @@ SFbuttonReleaseList(
     }
 }
 
-static int SFcheckDir(int n, SFDir *dir);
-
     static int
 SFcheckDir(int n, SFDir *dir)
 {
@@ -931,8 +888,6 @@ SFcheckDir(int n, SFDir *dir)
     }
     return 0;
 }
-
-static int SFcheckFiles(SFDir *dir);
 
     static int
 SFcheckFiles(SFDir *dir)
@@ -1077,8 +1032,6 @@ static int SFcurrentListY;
 
 static XtIntervalId SFscrollTimerId;
 
-static void SFinitFont(void);
-
     static void
 SFinitFont(void)
 {
@@ -1127,8 +1080,6 @@ SFinitFont(void)
     SFcharHeight = SFcharAscent + SFfont->max_bounds.descent;
 #endif
 }
-
-static void SFcreateGC(void);
 
     static void
 SFcreateGC(void)
@@ -1261,8 +1212,6 @@ SFclearList(int n, int doScroll)
     }
 }
 
-static void SFdeleteEntry(SFDir *dir, SFEntry *entry);
-
     static void
 SFdeleteEntry(SFDir *dir, SFEntry *entry)
 {
@@ -1313,8 +1262,6 @@ SFdeleteEntry(SFDir *dir, SFEntry *entry)
 #endif
 }
 
-static void SFwriteStatChar(char *name, int last, stat_T *statBuf);
-
     static void
 SFwriteStatChar(
     char	*name,
@@ -1323,8 +1270,6 @@ SFwriteStatChar(
 {
     name[last] = SFstatChar(statBuf);
 }
-
-static int SFstatAndCheck(SFDir *dir, SFEntry *entry);
 
     static int
 SFstatAndCheck(SFDir *dir, SFEntry *entry)
@@ -1532,8 +1477,6 @@ SFinvertEntry(int n)
 	    SFentryHeight);
 }
 
-static unsigned long SFscrollTimerInterval(void);
-
     static unsigned long
 SFscrollTimerInterval(void)
 {
@@ -1560,8 +1503,6 @@ SFscrollTimerInterval(void)
 
     return (unsigned long)t;
 }
-
-static void SFscrollTimer(XtPointer p, XtIntervalId *id);
 
     static void
 SFscrollTimer(XtPointer p, XtIntervalId *id UNUSED)
@@ -2131,8 +2072,6 @@ static char *oneLineTextEditTranslations = "\
 	Ctrl<Key>M:	redraw-display()\n\
 ";
 
-static void SFexposeList(Widget w, XtPointer n, XEvent *event, Boolean *cont);
-
     static void
 SFexposeList(
     Widget	w UNUSED,
@@ -2145,8 +2084,6 @@ SFexposeList(
 
     SFdrawList((int)(long)n, SF_DO_NOT_SCROLL);
 }
-
-static void SFmodVerifyCallback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
 
     static void
 SFmodVerifyCallback(
@@ -2164,8 +2101,6 @@ SFmodVerifyCallback(
 	SFstatus = SEL_FILE_TEXT;
 }
 
-static void SFokCallback(Widget w, XtPointer cl, XtPointer cd);
-
     static void
 SFokCallback(Widget w UNUSED, XtPointer cl UNUSED, XtPointer cd UNUSED)
 {
@@ -2178,8 +2113,6 @@ static XtCallbackRec SFokSelect[] =
     { NULL, (XtPointer) NULL },
 };
 
-static void SFcancelCallback(Widget w, XtPointer cl, XtPointer cd);
-
     static void
 SFcancelCallback(Widget w UNUSED, XtPointer cl UNUSED, XtPointer cd UNUSED)
 {
@@ -2191,8 +2124,6 @@ static XtCallbackRec SFcancelSelect[] =
     { SFcancelCallback, (XtPointer) NULL },
     { NULL, (XtPointer) NULL },
 };
-
-static void SFdismissAction(Widget w, XEvent *event, String *params, Cardinal *num_params);
 
     static void
 SFdismissAction(

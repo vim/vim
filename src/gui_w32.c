@@ -3627,7 +3627,7 @@ gui_mch_browseW(
     WCHAR		*extp = NULL;
     WCHAR		*initdirp = NULL;
     WCHAR		*filterp;
-    char_u		*p;
+    char_u		*p, *q;
 
     if (dflt == NULL)
 	fileBuf[0] = NUL;
@@ -3713,16 +3713,16 @@ gui_mch_browseW(
 
     /* Convert from UCS2 to 'encoding'. */
     p = utf16_to_enc(fileBuf, NULL);
-    if (p != NULL)
-	/* when out of memory we get garbage for non-ASCII chars */
-	STRCPY(fileBuf, p);
-    vim_free(p);
+    if (p == NULL)
+	return NULL;
 
     /* Give focus back to main window (when using MDI). */
     SetFocus(s_hwnd);
 
     /* Shorten the file name if possible */
-    return vim_strsave(shorten_fname1((char_u *)fileBuf));
+    q = vim_strsave(shorten_fname1(p));
+    vim_free(p);
+    return q;
 }
 # endif /* FEAT_MBYTE */
 
@@ -4336,10 +4336,6 @@ done:
 # define UINT_PTR UINT
 #endif
 
-static void make_tooltip(BalloonEval *beval, char *text, POINT pt);
-static void delete_tooltip(BalloonEval *beval);
-static VOID CALLBACK BevalTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
@@ -4463,10 +4459,6 @@ static UINT	s_menu_id = 100;
 /*
  * stuff for dialogs, menus, tearoffs etc.
  */
-static LRESULT APIENTRY dialog_callback(HWND, UINT, WPARAM, LPARAM);
-#ifdef FEAT_TEAROFF
-static LRESULT APIENTRY tearoff_callback(HWND, UINT, WPARAM, LPARAM);
-#endif
 static PWORD
 add_dialog_element(
 	PWORD p,

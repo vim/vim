@@ -17,21 +17,14 @@ gui_T gui;
 static void set_guifontwide(char_u *font_name);
 #endif
 static void gui_check_pos(void);
-static void gui_position_components(int);
 static void gui_outstr(char_u *, int);
 static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
-#ifdef FEAT_GUI_GTK
-static int gui_screenstr(int off, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
-#endif
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
-static void fill_mouse_coord(char_u *p, int col, int row);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static int gui_has_tabline(void);
 #endif
 static void gui_do_scrollbar(win_T *wp, int which, int enable);
-static colnr_T scroll_line_len(linenr_T lnum);
-static linenr_T gui_find_longest_lnum(void);
 static void gui_update_horiz_scrollbar(int);
 static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
@@ -5023,7 +5016,6 @@ ex_gui(exarg_T *eap)
 /*
  * This is shared between Athena, Motif and GTK.
  */
-static void gfp_setname(char_u *fname, void *cookie);
 
 /*
  * Callback function for do_in_runtimepath().
@@ -5384,9 +5376,6 @@ gui_do_findrepl(
 #endif
 
 #if defined(HAVE_DROP_FILE) || defined(PROTO)
-
-static void gui_wingoto_xy(int x, int y);
-
 /*
  * Jump to the window at specified point (x, y).
  */

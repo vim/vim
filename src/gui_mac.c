@@ -300,7 +300,6 @@ static WindowRef drawer = NULL; // TODO: put into gui.h
 
 #ifdef USE_ATSUI_DRAWING
 static void gui_mac_set_font_attributes(GuiFont font);
-static void gui_mac_dispose_atsui_style(void);
 #endif
 
 /*

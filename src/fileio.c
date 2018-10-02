@@ -39,9 +39,6 @@ static void check_marks_read(void);
 #ifdef FEAT_CRYPT
 static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, off_T *filesizep, int newfile, char_u *fname, int *did_ask);
 #endif
-#ifdef UNIX
-static void set_file_time(char_u *fname, time_t atime, time_t mtime);
-#endif
 static int set_rw_fname(char_u *fname, char_u *sfname);
 static int msg_add_fileformat(int eol_type);
 static void msg_add_eol(void);
@@ -128,10 +125,6 @@ static int get_win_fio_flags(char_u *ptr);
 # ifdef MACOS_CONVERT
 static int get_mac_fio_flags(char_u *ptr);
 # endif
-#endif
-static int move_lines(buf_T *frombuf, buf_T *tobuf);
-#ifdef TEMPDIRNAMES
-static void vim_settempdir(char_u *tempdir);
 #endif
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
@@ -7884,16 +7877,7 @@ static int current_augroup = AUGROUP_DEFAULT;
 
 static int au_need_clean = FALSE;   /* need to delete marked patterns */
 
-static void show_autocmd(AutoPat *ap, event_T event);
-static void au_remove_pat(AutoPat *ap);
-static void au_remove_cmds(AutoPat *ap);
-static void au_cleanup(void);
-static int au_new_group(char_u *name);
-static void au_del_group(char_u *name);
-static event_T event_name2nr(char_u *start, char_u **end);
 static char_u *event_nr2name(event_T event);
-static char_u *find_end_event(char_u *arg, int have_group);
-static int event_ignored(event_T event);
 static int au_get_grouparg(char_u **argp);
 static int do_autocmd_event(event_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group);
 static int apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap);

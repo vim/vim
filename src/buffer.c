@@ -51,10 +51,6 @@ static void	clear_wininfo(buf_T *buf);
 # define dev_T unsigned
 #endif
 
-#if defined(FEAT_SIGNS)
-static void insert_sign(buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr);
-#endif
-
 #if defined(FEAT_QUICKFIX)
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
@@ -2839,8 +2835,6 @@ buflist_setfpos(
 }
 
 #ifdef FEAT_DIFF
-static int wininfo_other_tab_diff(wininfo_T *wip);
-
 /*
  * Return TRUE when "wip" has 'diff' set and the diff is only for another tab
  * page.  That's because a diff is local to a tab page.

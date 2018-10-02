@@ -9,10 +9,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_LINEBREAK
-static int win_chartabsize(win_T *wp, char_u *p, colnr_T col);
-#endif
-
 #ifdef FEAT_MBYTE
 # if defined(HAVE_WCHAR_H)
 #  include <wchar.h>	    /* for towupper() and towlower() */

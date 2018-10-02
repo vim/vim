@@ -709,8 +709,6 @@ python3_enabled(int verbose)
 /* Load the standard Python exceptions - don't import the symbols from the
  * DLL, as this can cause errors (importing data symbols is not reliable).
  */
-static void get_py3_exceptions(void);
-
     static void
 get_py3_exceptions(void)
 {
@@ -787,8 +785,6 @@ static int DictionarySetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *ListGetattro(PyObject *, PyObject *);
 static int ListSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *FunctionGetattro(PyObject *, PyObject *);
-
-static PyObject *VimPathHook(PyObject *, PyObject *);
 
 static struct PyModuleDef vimmodule;
 

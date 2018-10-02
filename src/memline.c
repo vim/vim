@@ -235,10 +235,8 @@ typedef enum {
 } upd_block0_T;
 
 #ifdef FEAT_CRYPT
-static void ml_set_mfp_crypt(buf_T *buf);
 static void ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p);
 #endif
-static int ml_check_b0_id(ZERO_BL *b0p);
 static void ml_upd_block0(buf_T *buf, upd_block0_T what);
 static void set_b0_fname(ZERO_BL *, buf_T *buf);
 static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
@@ -4069,8 +4067,6 @@ get_file_in_dir(
 
     return retval;
 }
-
-static void attention_message(buf_T *buf, char_u *fname);
 
 /*
  * Print the ATTENTION message: info about an existing swap file.

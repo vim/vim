@@ -91,7 +91,6 @@ static int hl_attr_table[] =
     {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
 #define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? attr_b : (attr_a)) | (attr_b))
 
-static int get_attr_entry(garray_T *table, attrentry_T *aep);
 static void syn_unadd_group(void);
 static void set_hl_attr(int idx);
 static void highlight_list_one(int id);
@@ -106,10 +105,6 @@ static void gui_do_one_color(int idx, int do_menu, int do_tooltip);
 #endif
 #ifdef FEAT_GUI
 static int  set_group_colors(char_u *name, guicolor_T *fgp, guicolor_T *bgp, int do_menu, int use_norm, int do_tooltip);
-static GuiFont font_name2handle(char_u *name);
-# ifdef FEAT_XFONTSET
-static GuiFontset fontset_name2handle(char_u *name, int fixed_width);
-# endif
 static void hl_do_font(int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip, int free_font);
 #endif
 
@@ -386,8 +381,6 @@ static int	current_line_id = 0;	/* unique number for current line */
 #define CUR_STATE(idx)	((stateitem_T *)(current_state.ga_data))[idx]
 
 static void syn_sync(win_T *wp, linenr_T lnum, synstate_T *last_valid);
-static void save_chartab(char_u *chartab);
-static void restore_chartab(char_u *chartab);
 static int syn_match_linecont(linenr_T lnum);
 static void syn_start_line(void);
 static void syn_update_ends(int startofline);
@@ -415,11 +408,6 @@ static void pop_current_state(void);
 #ifdef FEAT_PROFILE
 static void syn_clear_time(syn_time_T *tt);
 static void syntime_clear(void);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_syntime(const void *v1, const void *v2);
-#else
-static int syn_compare_syntime(const void *v1, const void *v2);
-#endif
 static void syntime_report(void);
 static int syn_time_on = FALSE;
 # define IF_SYN_TIME(p) (p)
@@ -430,8 +418,6 @@ typedef int syn_time_T;
 
 static void syn_stack_apply_changes_block(synblock_T *block, buf_T *buf);
 static void find_endpos(int idx, lpos_T *startpos, lpos_T *m_endpos, lpos_T *hl_endpos, long *flagsp, lpos_T *end_endpos, int *end_idx, reg_extmatch_T *start_ext);
-static void clear_syn_state(synstate_T *p);
-static void clear_current_state(void);
 
 static void limit_pos(lpos_T *pos, lpos_T *limit);
 static void limit_pos_zero(lpos_T *pos, lpos_T *limit);
@@ -440,25 +426,13 @@ static void syn_add_start_off(lpos_T *result, regmmatch_T *regmatch, synpat_T *s
 static char_u *syn_getcurline(void);
 static int syn_regexec(regmmatch_T *rmp, linenr_T lnum, colnr_T col, syn_time_T *st);
 static int check_keyword_id(char_u *line, int startcol, int *endcol, long *flags, short **next_list, stateitem_T *cur_si, int *ccharp);
-static void syn_cmd_case(exarg_T *eap, int syncing);
-static void syn_cmd_spell(exarg_T *eap, int syncing);
-static void syntax_sync_clear(void);
 static void syn_remove_pattern(synblock_T *block, int idx);
 static void syn_clear_pattern(synblock_T *block, int i);
 static void syn_clear_cluster(synblock_T *block, int i);
-static void syn_cmd_clear(exarg_T *eap, int syncing);
-static void syn_cmd_conceal(exarg_T *eap, int syncing);
 static void syn_clear_one(int id, int syncing);
-static void syn_cmd_on(exarg_T *eap, int syncing);
-static void syn_cmd_enable(exarg_T *eap, int syncing);
-static void syn_cmd_reset(exarg_T *eap, int syncing);
-static void syn_cmd_manual(exarg_T *eap, int syncing);
-static void syn_cmd_off(exarg_T *eap, int syncing);
 static void syn_cmd_onoff(exarg_T *eap, char *name);
-static void syn_cmd_list(exarg_T *eap, int syncing);
 static void syn_lines_msg(void);
 static void syn_match_msg(void);
-static void syn_stack_free_block(synblock_T *block);
 static void syn_list_one(int id, int syncing, int link_only);
 static void syn_list_cluster(int id);
 static void put_id_list(char_u *name, short *list, int attr);
@@ -466,30 +440,13 @@ static void put_pattern(char *s, int c, synpat_T *spp, int attr);
 static int syn_list_keywords(int id, hashtab_T *ht, int did_header, int attr);
 static void syn_clear_keyword(int id, hashtab_T *ht);
 static void clear_keywtab(hashtab_T *ht);
-static void add_keyword(char_u *name, int id, int flags, short *cont_in_list, short *next_list, int conceal_char);
-static char_u *get_group_name(char_u *arg, char_u **name_end);
-static char_u *get_syn_options(char_u *arg, syn_opt_arg_T *opt, int *conceal_char, int skip);
-static void syn_cmd_include(exarg_T *eap, int syncing);
-static void syn_cmd_iskeyword(exarg_T *eap, int syncing);
-static void syn_cmd_keyword(exarg_T *eap, int syncing);
-static void syn_cmd_match(exarg_T *eap, int syncing);
-static void syn_cmd_region(exarg_T *eap, int syncing);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_stub(const void *v1, const void *v2);
-#else
-static int syn_compare_stub(const void *v1, const void *v2);
-#endif
-static void syn_cmd_cluster(exarg_T *eap, int syncing);
-static int syn_scl_name2id(char_u *name);
 static int syn_scl_namen2id(char_u *linep, int len);
 static int syn_check_cluster(char_u *pp, int len);
 static int syn_add_cluster(char_u *name);
 static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
-static void syn_cmd_sync(exarg_T *eap, int syncing);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
-static void syn_incl_toplevel(int id, int *flagsp);
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
 /*
@@ -1192,6 +1149,7 @@ syn_stack_free_block(synblock_T *block)
 	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
 	    clear_syn_state(p);
 	VIM_CLEAR(block->b_sst_array);
+	block->b_sst_first = NULL;
 	block->b_sst_len = 0;
     }
 }
@@ -1323,9 +1281,6 @@ syn_stack_apply_changes_block(synblock_T *block, buf_T *buf)
     synstate_T	*p, *prev, *np;
     linenr_T	n;
 
-    if (block->b_sst_array == NULL)	/* nothing to do */
-	return;
-
     prev = NULL;
     for (p = block->b_sst_first; p != NULL; )
     {
@@ -1378,7 +1333,7 @@ syn_stack_cleanup(void)
     int		dist;
     int		retval = FALSE;
 
-    if (syn_block->b_sst_array == NULL || syn_block->b_sst_first == NULL)
+    if (syn_block->b_sst_first == NULL)
 	return retval;
 
     /* Compute normal distance between non-displayed entries. */

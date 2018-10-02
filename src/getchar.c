@@ -108,17 +108,8 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	/* initial typebuf.tb_noremap */
 
 static int	last_recorded_len = 0;	/* number of last recorded chars */
 
-static char_u	*get_buffcont(buffheader_T *, int);
-static void	add_buff(buffheader_T *, char_u *, long n);
-static void	add_num_buff(buffheader_T *, long);
-static void	add_char_buff(buffheader_T *, int);
-static int	read_readbuffers(int advance);
 static int	read_readbuf(buffheader_T *buf, int advance);
-static void	start_stuff(void);
-static int	read_redo(int, int);
-static void	copy_redo(int);
 static void	init_typebuf(void);
-static void	gotchars(char_u *, int);
 static void	may_sync_undo(void);
 static void	closescript(void);
 static int	vgetorpeek(int);
@@ -4666,7 +4657,6 @@ eval_map_expr(
     char_u	*res;
     char_u	*p;
     char_u	*expr;
-    char_u	*save_cmd;
     pos_T	save_cursor;
     int		save_msg_col;
     int		save_msg_row;
@@ -4677,13 +4667,6 @@ eval_map_expr(
     if (expr == NULL)
 	return NULL;
     vim_unescape_csi(expr);
-
-    save_cmd = save_cmdline_alloc();
-    if (save_cmd == NULL)
-    {
-	vim_free(expr);
-	return NULL;
-    }
 
     /* Forbid changing text or using ":normal" to avoid most of the bad side
      * effects.  Also restore the cursor position. */
@@ -4700,7 +4683,6 @@ eval_map_expr(
     msg_col = save_msg_col;
     msg_row = save_msg_row;
 
-    restore_cmdline_alloc(save_cmd);
     vim_free(expr);
 
     if (p == NULL)
