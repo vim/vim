@@ -2686,6 +2686,10 @@ struct window_S
 				       time through cursupdate() to the
 				       current virtual column */
 
+#ifdef FEAT_SYN_HL
+    linenr_T	w_last_cursorline;  // where last time 'cursorline' was drawn
+#endif
+
     /*
      * the next seven are used to update the visual part
      */
