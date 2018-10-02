@@ -2022,8 +2022,10 @@ abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
 add({list}, {item})		List	append {item} to |List| {list}
 and({expr}, {expr})		Number	bitwise AND
-append({lnum}, {string})	Number	append {string} below line {lnum}
-append({lnum}, {list})		Number	append lines {list} below line {lnum}
+append({lnum}, {text})		Number	append {text} below line {lnum}
+appendbufline({expr}, {lnum}, {text})
+				Number	append {text} below line {lnum}
+					in buffer {expr}
 argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
@@ -2108,8 +2110,8 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 copy({expr})			any	make a shallow copy of {expr}
 cos({expr})			Float	cosine of {expr}
 cosh({expr})			Float	hyperbolic cosine of {expr}
-count({list}, {expr} [, {ic} [, {start}]])
-				Number	count how many {expr} are in {list}
+count({comp}, {expr} [, {ic} [, {start}]])
+				Number	count how many {expr} are in {comp}
 cscope_connection([{num}, {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
 cursor({lnum}, {col} [, {off}])
@@ -2331,7 +2333,6 @@ remote_read({serverid} [, {timeout}])
 remote_send({server}, {string} [, {idvar}])
 				String	send key sequence
 remote_startserver({name})	none	become server {name}
-				String	send key sequence
 remove({list}, {idx} [, {end}])	any	remove items {idx}-{end} from {list}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
@@ -2356,8 +2357,8 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
-setbufline({expr}, {lnum}, {line})
-				Number	set line {lnum} to {line} in buffer
+setbufline({expr}, {lnum}, {text})
+				Number	set line {lnum} to {text} in buffer
 					{expr}
 setbufvar({expr}, {varname}, {val})
 				none	set {varname} in buffer {expr} to {val}
@@ -2465,7 +2466,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
-test_feedinput()		none	add key sequence to input buffer
+test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
@@ -2567,10 +2568,10 @@ and({expr}, {expr})					*and()*
 			:let flag = and(bits, 0x80)
 
 
-append({lnum}, {expr})					*append()*
-		When {expr} is a |List|: Append each item of the |List| as a
+append({lnum}, {text})					*append()*
+		When {text} is a |List|: Append each item of the |List| as a
 		text line below line {lnum} in the current buffer.
-		Otherwise append {expr} as one text line below line {lnum} in
+		Otherwise append {text} as one text line below line {lnum} in
 		the current buffer.
 		{lnum} can be zero to insert a line before the first one.
 		Returns 1 for failure ({lnum} out of range or out of memory),
@@ -2800,15 +2801,15 @@ balloon_show({expr})					*balloon_show()*
 
 		When showing a balloon is not possible nothing happens, no
 		error message.
-		{only available when compiled with the +balloon_eval or
-		+balloon_eval_term feature}
+		{only available when compiled with the |+balloon_eval| or
+		|+balloon_eval_term| feature}
 
 balloon_split({msg})					*balloon_split()*
 		Split {msg} into lines to be displayed in a balloon.  The
 		splits are made for the current window size and optimize to
 		show debugger output.
 		Returns a |List| with the split lines.
-		{only available when compiled with the +balloon_eval_term
+		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
 							*browse()*
@@ -3549,7 +3550,7 @@ deletebufline({expr}, {first} [, {last}])		*deletebufline()*
 
 		For the use of {expr}, see |bufname()| above.
 
-		{first} and {last} are used like with |setline()|. Note that
+		{first} and {last} are used like with |getline()|. Note that
 		when using |line()| this refers to the current buffer. Use "$"
 		to refer to the last line in buffer {expr}.
 
@@ -4504,6 +4505,8 @@ getcmdline()						*getcmdline()*
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
 <		Also see |getcmdtype()|, |getcmdpos()| and |setcmdpos()|.
+		Returns an empty string when entering a password or using
+		|inputsecret()|.
 
 getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
@@ -8027,11 +8030,11 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the
 		swapfile {fname}. The available fields are:
-			version VIM version
+			version Vim version
 			user	user name
 			host	host name
 			fname	original file name
-			pid	PID of the VIM process that created the swap
+			pid	PID of the Vim process that created the swap
 				file
 			mtime	last modification time in seconds
 			inode	Optional: INODE number of the file
@@ -8131,7 +8134,7 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		   concealable region if there are two consecutive regions
 		   with the same replacement character.  For an example, if
 		   the text is "123456" and both "23" and "45" are concealed
-		   and replace by the character "X", then:
+		   and replaced by the character "X", then:
 			call			returns ~
 			synconcealed(lnum, 1)   [0, '', 0]
 			synconcealed(lnum, 2)   [1, 'X', 1]
@@ -8359,7 +8362,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		The top part of the buffer contains the contents of the first
 		file, the bottom part of the buffer contains the contents of
 		the second file.  The middle part shows the differences.
-		The parts are separated by a line of dashes.
+		The parts are separated by a line of equals.
 
 		If the {options} argument is present, it must be a Dict with
 		these possible members:
@@ -8452,8 +8455,8 @@ term_getcursor({buf})					*term_getcursor()*
 		"dict" can have these members:
 		   "visible"	one when the cursor is visible, zero when it
 				is hidden.
-		   "blink"	one when the cursor is visible, zero when it
-				is hidden.
+		   "blink"	one when the cursor is blinking, zero when it
+				is not blinking.
 		   "shape"	1 for a block cursor, 2 for underline and 3
 				for a vertical bar.
 
@@ -8485,7 +8488,7 @@ term_getscrolled({buf})					*term_getscrolled()*
 		used for |term_getline()| and |getline()|, so that: >
 			term_getline(buf, N)
 <		is equal to: >
-			`getline(N + term_getscrolled(buf))
+			getline(N + term_getscrolled(buf))
 <		(if that line exists).
 
 		{buf} is used as with |term_getsize()|.
