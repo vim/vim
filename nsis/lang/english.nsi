@@ -21,6 +21,13 @@
 !insertmacro MUI_LANGUAGE "English"
 
 
+# Overwrite the default translation.
+# These string should be always English.  Otherwise dosinst.c fails.
+LangString ^SetupCaption     ${LANG_ENGLISH} \
+        "$(^Name) Setup"
+LangString ^UninstallCaption ${LANG_ENGLISH} \
+        "$(^Name) Uninstall"
+
 ##############################################################################
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
@@ -46,13 +53,13 @@ LangString str_type_full            ${LANG_ENGLISH} \
 # Section Titles & Description                                            {{{1
 ##############################################################################
 
-LangString str_group_old_ver        ${LANG_ENGLISH} \
+LangString str_section_old_ver      ${LANG_ENGLISH} \
     "Uninstall Existing Version(s)"
 LangString str_desc_old_ver         ${LANG_ENGLISH} \
     "Uninstall existing Vim version(s) from your system."
 
 LangString str_section_exe          ${LANG_ENGLISH} \
-    "Vim GUI"
+    "Vim GUI and runtime files"
 LangString str_desc_exe             ${LANG_ENGLISH} \
     "Vim GUI executables and runtime files.  This component is required."
 
@@ -80,15 +87,14 @@ LangString str_desc_desktop         ${LANG_ENGLISH} \
 LangString str_section_start_menu   ${LANG_ENGLISH} \
     "In the Start Menu Programs Folder"
 LangString str_desc_start_menu      ${LANG_ENGLISH} \
-    "Add Vim in the programs folder of the start menu.  \
-     Applicable to Windows 95 and later."
+    "Add Vim in the programs folder of the start menu."
 
 LangString str_section_quick_launch ${LANG_ENGLISH} \
     "In the Quick Launch Bar"
 LangString str_desc_quick_launch    ${LANG_ENGLISH} \
     "Add Vim shortcut in the quick launch bar."
 
-LangString str_group_edit_with      ${LANG_ENGLISH} \
+LangString str_section_edit_with    ${LANG_ENGLISH} \
     "Add Vim Context Menu"
 LangString str_desc_edit_with       ${LANG_ENGLISH} \
     "Add Vim to the $\"Open With...$\" context menu list."
@@ -148,10 +154,21 @@ LangString str_unsection_exe        ${LANG_ENGLISH} \
 LangString str_desc_rm_exe          ${LANG_ENGLISH} \
     "Remove all Vim executables and runtime files."
 
+LangString str_unsection_vimfiles   ${LANG_ENGLISH} \
+    "Remove vimfiles directory"
+LangString str_desc_rm_vimfiles     ${LANG_ENGLISH} \
+    "Remove all files in your vimfiles directory."
+
+LangString str_unsection_rootdir    ${LANG_ENGLISH} \
+    "Remove the Vim root directory"
+LangString str_desc_rm_rootdir      ${LANG_ENGLISH} \
+    "Remove the Vim root directory. It contains your Vim configuration files!"
+
 LangString str_vimrc_page_title     ${LANG_ENGLISH} \
     "Choose _vimrc settings"
 LangString str_vimrc_page_subtitle  ${LANG_ENGLISH} \
     "Choose the behavior of key remapping and mouse."
+
 
 ##############################################################################
 # Messages                                                                {{{1

@@ -33,8 +33,11 @@ Unicode true
 # Get it at https://upx.github.io/
 !define HAVE_UPX
 
-# comment the next line if you do not want to add Native Language Support
+# Comment the next line if you do not want to add Native Language Support
 !define HAVE_NLS
+
+# Comment the following line to create a multilanguage installer:
+!define HAVE_MULTI_LANG
 
 !include gvim_version.nsh	# for version number
 
@@ -89,13 +92,18 @@ XPStyle on
 !define MUI_UNICON "icons\vim_uninst_16c.ico"
 
 # Show all languages, despite user's codepage:
-#!define MUI_LANGDLL_ALLLANGUAGES
+!define MUI_LANGDLL_ALLLANGUAGES
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP       "icons\welcome.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP     "icons\uninstall.bmp"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP             "icons\header.bmp"
 !define MUI_HEADERIMAGE_UNBITMAP           "icons\un_header.bmp"
+
+!define MUI_WELCOMEFINISHPAGE_BITMAP_STRETCH    "AspectFitHeight"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP_STRETCH  "AspectFitHeight"
+!define MUI_HEADERIMAGE_BITMAP_STRETCH          "AspectFitHeight"
+!define MUI_HEADERIMAGE_UNBITMAP_STRETCH        "AspectFitHeight"
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
@@ -157,6 +165,7 @@ Page custom SetCustom ValidateCustom
     !include "lang\dutch.nsi"
     !include "lang\german.nsi"
     !include "lang\italian.nsi"
+    !include "lang\japanese.nsi"
     !include "lang\simpchinese.nsi"
     !include "lang\tradchinese.nsi"
 !endif
@@ -243,7 +252,7 @@ Function CheckOldVim
   Exch $0 ; put $0 on top of stack, restore $0 to original value
 FunctionEnd
 
-Section "Uninstall old version of Vim" sec_old_vim_id
+Section "$(str_section_old_ver)" id_section_old_ver
 	SectionIn 1 2 3 RO
 
 	# run the install program to check for already installed versions
@@ -269,9 +278,9 @@ Function .onInit
   Pop $3
   ${If} $3 == 0
     # No old versions of Vim found. Unselect and hide the section.
-    !insertmacro UnselectSection ${sec_old_vim_id}
-    SectionSetInstTypes ${sec_old_vim_id} 0
-    SectionSetText ${sec_old_vim_id} ""
+    !insertmacro UnselectSection ${id_section_old_ver}
+    SectionSetInstTypes ${id_section_old_ver} 0
+    SectionSetText ${id_section_old_ver} ""
   ${EndIf}
 
   # Install will have created a file for us that contains the directory where
@@ -356,7 +365,7 @@ Function un.GetParent
 FunctionEnd
 
 ##########################################################
-Section "Vim executables and runtime files" sec_main_id
+Section "$(str_section_exe)" id_section_exe
 	SectionIn 1 2 3 RO
 
 	# we need also this here if the user changes the instdir
@@ -460,7 +469,7 @@ Section "Vim executables and runtime files" sec_main_id
 SectionEnd
 
 ##########################################################
-Section "Vim console program (vim.exe)" sec_cons_id
+Section "$(str_section_console)" id_section_console
 	SectionIn 1 3
 
 	SetOutPath $0
@@ -469,28 +478,29 @@ Section "Vim console program (vim.exe)" sec_cons_id
 SectionEnd
 
 ##########################################################
-Section "Create .bat files for command line use"
+Section "$(str_section_batch)" id_section_batch
 	SectionIn 3
 
 	StrCpy $1 "$1 -create-batfiles $2"
 SectionEnd
 
 ##########################################################
-Section "Create icons on the Desktop"
-	SectionIn 1 3
+SectionGroup $(str_group_icons) id_group_icons
+	Section "$(str_section_desktop)" id_section_desktop
+		SectionIn 1 3
 
-	StrCpy $1 "$1 -install-icons"
-SectionEnd
+		StrCpy $1 "$1 -install-icons"
+	SectionEnd
+
+	Section "$(str_section_start_menu)" id_section_startmenu
+		SectionIn 1 3
+
+		StrCpy $1 "$1 -add-start-menu"
+	SectionEnd
+SectionGroupEnd
 
 ##########################################################
-Section "Add Vim to the Start Menu"
-	SectionIn 1 3
-
-	StrCpy $1 "$1 -add-start-menu"
-SectionEnd
-
-##########################################################
-Section "Add an Edit-with-Vim context menu entry" sec_gvimext_id
+Section "$(str_section_edit_with)" id_section_editwith
 	SectionIn 1 3
 
 	# Be aware of this sequence of events:
@@ -531,7 +541,7 @@ Section "Add an Edit-with-Vim context menu entry" sec_gvimext_id
 SectionEnd
 
 ##########################################################
-Section "Create a _vimrc if it doesn't exist" sec_vimrc_id
+Section "$(str_section_vim_rc)" id_section_vimrc
 	SectionIn 1 3
 
 	StrCpy $1 "$1 -create-vimrc"
@@ -562,21 +572,22 @@ Section "Create a _vimrc if it doesn't exist" sec_vimrc_id
 SectionEnd
 
 ##########################################################
-Section "Create plugin directories in HOME or VIM"
-	SectionIn 1 3
+SectionGroup $(str_group_plugin) id_group_plugin
+	Section "$(str_section_plugin_home)" id_section_pluginhome
+		SectionIn 1 3
 
-	StrCpy $1 "$1 -create-directories home"
-SectionEnd
+		StrCpy $1 "$1 -create-directories home"
+	SectionEnd
+
+	Section "$(str_section_plugin_vim)" id_section_pluginvim
+		SectionIn 3
+
+		StrCpy $1 "$1 -create-directories vim"
+	SectionEnd
+SectionGroupEnd
 
 ##########################################################
-Section "Create plugin directories in VIM"
-	SectionIn 3
-
-	StrCpy $1 "$1 -create-directories vim"
-SectionEnd
-
-##########################################################
-Section "VisVim Extension for MS Visual Studio" sec_visvim_id
+Section "$(str_section_vis_vim)" id_section_visvim
 	SectionIn 3
 
 	SetOutPath $0
@@ -586,7 +597,7 @@ SectionEnd
 
 ##########################################################
 !ifdef HAVE_NLS
-Section "Native Language Support" sec_nls_id
+Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
 	SetOutPath $0\lang
@@ -608,7 +619,7 @@ Section "Native Language Support" sec_nls_id
 	    "$0\libgcc_s_sjlj-1.dll" "$0"
   !endif
 
-	${If} ${SectionIsSelected} ${sec_gvimext_id}
+	${If} ${SectionIsSelected} ${id_section_editwith}
 	  ${If} ${RunningX64}
 	    # Install DLLs for 64-bit gvimext.dll into the GvimExt64 directory.
 	    SetOutPath $0\GvimExt64
@@ -653,22 +664,22 @@ SectionEnd
 Section -post
 
 	# Get estimated install size
-	SectionGetSize ${sec_main_id} $3
-	${If} ${SectionIsSelected} ${sec_cons_id}
-	  SectionGetSize ${sec_cons_id} $4
+	SectionGetSize ${id_section_exe} $3
+	${If} ${SectionIsSelected} ${id_section_console}
+	  SectionGetSize ${id_section_console} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
-	${If} ${SectionIsSelected} ${sec_gvimext_id}
-	  SectionGetSize ${sec_gvimext_id} $4
+	${If} ${SectionIsSelected} ${id_section_editwith}
+	  SectionGetSize ${id_section_editwith} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
-	${If} ${SectionIsSelected} ${sec_visvim_id}
-	  SectionGetSize ${sec_visvim_id} $4
+	${If} ${SectionIsSelected} ${id_section_visvim}
+	  SectionGetSize ${id_section_visvim} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
 !ifdef HAVE_NLS
-	${If} ${SectionIsSelected} ${sec_nls_id}
-	  SectionGetSize ${sec_nls_id} $4
+	${If} ${SectionIsSelected} ${id_section_nls}
+	  SectionGetSize ${id_section_nls} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
 !endif
@@ -691,7 +702,7 @@ Function SetCustom
 	# Display the InstallOptions dialog
 
 	# Check if a _vimrc should be created
-	${IfNot} ${SectionIsSelected} ${sec_vimrc_id}
+	${IfNot} ${SectionIsSelected} ${id_section_vimrc}
 	  Abort
 	${EndIf}
 
@@ -791,7 +802,34 @@ Function ValidateCustom
 FunctionEnd
 
 ##########################################################
-Section "un.$(str_unsection_register)"
+# Description for Installer Sections
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_old_ver}     $(str_desc_old_ver)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_exe}         $(str_desc_exe)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_console}     $(str_desc_console)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_batch}       $(str_desc_batch)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_group_icons}         $(str_desc_icons)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_desktop}     $(str_desc_desktop)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_startmenu}   $(str_desc_start_menu)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_editwith}    $(str_desc_edit_with)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_vimrc}       $(str_desc_vim_rc)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_group_plugin}        $(str_desc_plugin)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginhome}  $(str_desc_plugin_home)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginvim}   $(str_desc_plugin_vim)
+
+!ifdef HAVE_VIS_VIM
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_visvim}      $(str_desc_vis_vim)
+!endif
+
+!ifdef HAVE_NLS
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_nls}         $(str_desc_nls)
+!endif
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+
+##########################################################
+Section "un.$(str_unsection_register)" id_unsection_register
 	SectionIn RO
 
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
@@ -811,7 +849,7 @@ Section "un.$(str_unsection_register)"
 	BringToFront
 SectionEnd
 
-Section "un.$(str_unsection_exe)"
+Section "un.$(str_unsection_exe)" id_unsection_exe
 
 	StrCpy $0 "$INSTDIR"
 
@@ -890,7 +928,7 @@ Section "un.$(str_unsection_exe)"
 	RMDir $0
 SectionEnd
 
-Section "un.Remove vimfiles directory"
+Section "un.$(str_unsection_vimfiles)" id_unsection_vimfiles
 	# get the parent dir of the installation
 	Push $INSTDIR
 	Call un.GetParent
@@ -911,7 +949,7 @@ Section "un.Remove vimfiles directory"
 	${EndIf}
 SectionEnd
 
-Section "un.Remove the Vim root directory (may contain your _vimrc)"
+Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	# get the parent dir of the installation
 	Push $INSTDIR
 	Call un.GetParent
@@ -929,3 +967,13 @@ Section "un.Remove the Vim root directory (may contain your _vimrc)"
 	#Call un.onUnInstSuccess
 
 SectionEnd
+
+##########################################################
+# Description for Uninstaller Sections
+
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_register} $(str_desc_unregister)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_exe}      $(str_desc_rm_exe)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_vimfiles} $(str_desc_rm_vimfiles)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_rootdir}  $(str_desc_rm_rootdir)
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_END
