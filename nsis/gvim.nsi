@@ -68,22 +68,6 @@ SetCompressorDictSize 64
 ManifestDPIAware true
 SetDatablockOptimize on
 RequestExecutionLevel highest
-XPStyle on
-
-#ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
-#DirText "Choose a directory to install Vim (should contain 'vim')"
-#Icon icons\vim_16c.ico
-# NSIS2 uses a different strategy with six different images in a strip...
-#EnabledBitmap icons\enabled.bmp
-#DisabledBitmap icons\disabled.bmp
-#UninstallText "This will uninstall Vim ${VER_MAJOR}.${VER_MINOR} from your system."
-#UninstallIcon icons\vim_uninst_16c.ico
-
-# On NSIS 2 using the BGGradient causes trouble on Windows 98, in combination
-# with the BringToFront.
-# BGGradient 004000 008200 FFFFFF
-#LicenseText "You should read the following before installing:"
-#LicenseData ${VIMRT}\doc\uganda.nsis.txt
 
 !ifdef HAVE_UPX
   !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
@@ -126,15 +110,6 @@ InstType $(str_type_minimal)
 InstType $(str_type_full)
 
 SilentInstall normal
-
-# These are the pages we use
-#Page license
-#Page components
-#Page custom SetCustom ValidateCustom ": _vimrc setting"
-#Page directory "" "" CheckInstallDir
-#Page instfiles
-#UninstPage uninstConfirm
-#UninstPage instfiles
 
 # General custom functions for MUI2:
 #!define MUI_CUSTOMFUNCTION_ABORT   VimOnUserAbort
@@ -188,9 +163,6 @@ Var vim_mouse_stat
 
 
 # Reserve files
-# Needed for showing the _vimrc setting page faster.
-#ReserveFile /plugin InstallOptions.dll
-#ReserveFile vimrc.ini
 ReserveFile ${VIMSRC}\installw32.exe
 
 ##########################################################
@@ -307,13 +279,6 @@ SectionEnd
 
 ##########################################################
 Function .onInit
-#  MessageBox MB_YESNO|MB_ICONQUESTION \
-#	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
-#	/SD IDYES \
-#	IDYES NoAbort
-#	    Abort ; causes installer to quit.
-#	NoAbort:
-
   # Check $VIM
   ReadEnvStr $INSTDIR "VIM"
 
@@ -344,41 +309,15 @@ Function .onInit
   StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
   StrCpy $1 "-register-OLE"
   StrCpy $2 "gvim evim gview gvimdiff vimtutor"
-
-#  # Extract InstallOptions files
-#  # $PLUGINSDIR will automatically be removed when the installer closes
-#  InitPluginsDir
-#  File /oname=$PLUGINSDIR\vimrc.ini "vimrc.ini"
-FunctionEnd
-
-#Function .onUserAbort
-#  MessageBox MB_YESNO|MB_ICONQUESTION "Abort install?" IDYES NoCancelAbort
-#    Abort ; causes installer to not quit.
-#  NoCancelAbort:
-#FunctionEnd
-
-# We only accept the directory if it ends in "vim".  Using .onVerifyInstDir has
-# the disadvantage that the browse dialog is difficult to use.
-Function CheckInstallDir
 FunctionEnd
 
 Function .onInstSuccess
   WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
-  #MessageBox MB_YESNO|MB_ICONQUESTION \
-  #     "The installation process has been successful. Happy Vimming! \
-  #     $\n$\n Do you want to see the README file now?" IDNO NoReadme
-  #    Exec '$0\gvim.exe -R "$0\README.txt"'
-  #NoReadme:
 FunctionEnd
 
 Function .onInstFailed
   MessageBox MB_OK|MB_ICONEXCLAMATION "Installation failed. Better luck next time."
 FunctionEnd
-
-#Function un.onUnInstSuccess
-#  MessageBox MB_OK|MB_ICONINFORMATION \
-#  "Vim ${VER_MAJOR}.${VER_MINOR} has been (partly) removed from your system"
-#FunctionEnd
 
 ##########################################################
 Section "$(str_section_exe)" id_section_exe
@@ -519,14 +458,6 @@ SectionGroupEnd
 Section "$(str_section_edit_with)" id_section_editwith
 	SectionIn 1 3
 
-	# Be aware of this sequence of events:
-	# - user uninstalls Vim, gvimext.dll can't be removed (it's in use) and
-	#   is scheduled to be removed at next reboot.
-	# - user installs Vim in same directory, gvimext.dll still exists.
-	# If we now skip installing gvimext.dll, it will disappear at the next
-	# reboot.  Thus when copying gvimext.dll fails always schedule it to be
-	# installed at the next reboot.  Can't use UpgradeDLL!
-	# We don't ask the user to reboot, the old dll will keep on working.
 	SetOutPath $0
 
 	${If} ${RunningX64}
@@ -705,7 +636,7 @@ Section -post
 !endif
 
 	# Register EstimatedSize.
-	# Other information will be set by the install.exe.
+	# Other information will be set by the install.exe (dosinst.c).
 	${If} ${RunningX64}
 	  SetRegView 64
 	${EndIf}
@@ -719,7 +650,7 @@ SectionEnd
 
 ##########################################################
 Function SetCustom
-	# Display the InstallOptions dialog
+	# Display the _vimrc setting dialog using nsDialogs.
 
 	# Check if a _vimrc should be created
 	${IfNot} ${SectionIsSelected} ${id_section_vimrc}
@@ -837,11 +768,9 @@ FunctionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${id_group_plugin}        $(str_desc_plugin)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginhome}  $(str_desc_plugin_home)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginvim}   $(str_desc_plugin_vim)
-
 !ifdef HAVE_VIS_VIM
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_visvim}      $(str_desc_vis_vim)
 !endif
-
 !ifdef HAVE_NLS
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_nls}         $(str_desc_nls)
 !endif
@@ -966,9 +895,6 @@ Section "un.$(str_unsection_vimfiles)" id_unsection_vimfiles
 
 	${If} $1 != ""
 	${AndIf} ${FileExists} $1\vimfiles
-	  #MessageBox MB_YESNO|MB_ICONQUESTION \
-	  #  "Remove all files in your $1\vimfiles directory?$\n \
-	  #  $\nCAREFUL: If you have created something there that you want to keep, click No" IDNO Fin
 	  RMDir /r $1\vimfiles
 	${EndIf}
 SectionEnd
@@ -979,17 +905,7 @@ Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	Call un.GetParent
 	Pop $0
 
-	# ask the user if the Vim root dir must be removed
-	#MessageBox MB_YESNO|MB_ICONQUESTION \
-	#  "Would you like to remove $0?$\n \
-	#   $\nIt contains your Vim configuration files!" IDNO NoDelete
-	#   RMDir /r $0 ; skipped if no
-	#NoDelete:
 	RMDir /r $0
-
-	#Fin:
-	#Call un.onUnInstSuccess
-
 SectionEnd
 
 ##########################################################
