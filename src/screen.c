@@ -2176,7 +2176,14 @@ win_update(win_T *wp)
 	    {
 		// 'relativenumber' set: The text doesn't need to be drawn, but
 		// the number column nearly always does.
-		(void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+		fold_count = foldedCount(wp, lnum, &win_foldinfo);
+		if (fold_count != 0)
+		{
+		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
+		    --fold_count;
+		}
+		else
+		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
@@ -3315,8 +3322,8 @@ win_line(
 	    has_spell = TRUE;
 	    extra_check = TRUE;
 
-	    /* Get the start of the next line, so that words that wrap to the next
-	     * line are found too: "et<line-break>al.".
+	    /* Get the start of the next line, so that words that wrap to the
+	     * next line are found too: "et<line-break>al.".
 	     * Trick: skip a few chars for C/shell/Vim comments */
 	    nextline[SPWORDLEN] = NUL;
 	    if (lnum < wp->w_buffer->b_ml.ml_line_count)
@@ -3325,8 +3332,8 @@ win_line(
 		spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
 	    }
 
-	    /* When a word wrapped from the previous line the start of the current
-	     * line is valid. */
+	    /* When a word wrapped from the previous line the start of the
+	     * current line is valid. */
 	    if (lnum == checked_lnum)
 		cur_checked_col = checked_col;
 	    checked_lnum = 0;
