@@ -10471,21 +10471,24 @@ exec_normal_cmd(char_u *cmd, int remap, int silent)
 {
     /* Stuff the argument into the typeahead buffer. */
     ins_typebuf(cmd, remap, 0, TRUE, silent);
-    exec_normal(FALSE, FALSE);
+    exec_normal(FALSE, FALSE, FALSE);
 }
 
 /*
  * Execute normal_cmd() until there is no typeahead left.
+ * When "use_vpeekc" is TRUE use vpeekc() to check for available chars.
  */
     void
-exec_normal(int was_typed, int may_use_terminal_loop UNUSED)
+exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop UNUSED)
 {
     oparg_T	oa;
 
     clear_oparg(&oa);
     finish_op = FALSE;
-    while ((!stuff_empty() || ((was_typed || !typebuf_typed())
-		    && typebuf.tb_len > 0)) && !got_int)
+    while ((!stuff_empty()
+		|| ((was_typed || !typebuf_typed()) && typebuf.tb_len > 0)
+		|| (use_vpeekc && vpeekc() != NUL))
+	    && !got_int)
     {
 	update_topline_cursor();
 #ifdef FEAT_TERMINAL
