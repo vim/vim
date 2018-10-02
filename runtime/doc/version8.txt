@@ -1136,7 +1136,7 @@ Solution:   Don't put "gn" in a different order in the redo buffer.  Restore
 Files:	    src/normal.c, src/search.c, src/test53.in, src/test53.ok
 
 Patch 7.4.111
-Problem:    Memory leak in Python OptionsAssItem. (Ken Takata)
+Problem:    Memory leak in Python OptionsAsItem. (Ken Takata)
 Solution:   Call Py_XDECREF() where needed. (ZyX)
 Files:	    src/if_py_both.h
 
