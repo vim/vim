@@ -598,6 +598,16 @@ free_funccal(
     listitem_T	*li;
     int		i;
 
+    int item_index = 0;
+    dictitem_T * item = fc->fixvar[i];
+
+    while(item != NULL && item_index < FIXVAR_CNT)
+    {
+        dictitem_free(item);
+	item_index++;
+        item = fc->fixvar[item_index];
+    }
+
     for (i = 0; i < fc->fc_funcs.ga_len; ++i)
     {
 	ufunc_T	    *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
@@ -635,16 +645,6 @@ free_funccal(
 cleanup_function_call(funccall_T *fc)
 {
     current_funccal = fc->caller;
-
-    int i = 0;
-    dictitem_T * item = fc->fixvar[i];
-
-    while(item != NULL && i < FIXVAR_CNT)
-    {
-        dictitem_free(item);
-	i++;
-        item = fc->fixvar[i];
-    }
 
     /* If the a:000 list and the l: and a: dicts are not referenced and there
      * is no closure using it, we can free the funccall_T and what's in it. */
