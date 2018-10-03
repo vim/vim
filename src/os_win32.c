@@ -847,7 +847,6 @@ static const struct
     int	    chAlt;
 } VirtKeyMap[] =
 {
-
 /*    Key	ANSI	alone	shift	ctrl	    alt */
     { VK_ESCAPE,FALSE,	ESC,	ESC,	ESC,	    ESC,    },
 
@@ -861,50 +860,49 @@ static const struct
     { VK_F8,	TRUE,	'B',	'[',	'e',	    'o', },
     { VK_F9,	TRUE,	'C',	'\\',	'f',	    'p', },
     { VK_F10,	TRUE,	'D',	']',	'g',	    'q', },
-    { VK_F11,	TRUE,	'\205',	'\207',	'\211',	    '\213', },
-    { VK_F12,	TRUE,	'\206',	'\210',	'\212',	    '\214', },
+    { VK_F11,	TRUE,	0x85,	0x87,	0x89,	    0x8B, },
+    { VK_F12,	TRUE,	0x86,	0x88,	0x8a,	    0x8c, },
 
-    { VK_HOME,	TRUE,	'G',	'\302',	'w',	    '\303', },
-    { VK_UP,	TRUE,	'H',	'\304',	'\305',	    '\306', },
-    { VK_PRIOR,	TRUE,	'I',	'\307',	'\204',	    '\310', }, /*PgUp*/
-    { VK_LEFT,	TRUE,	'K',	'\311',	's',	    '\312', },
-    { VK_RIGHT,	TRUE,	'M',	'\313',	't',	    '\314', },
-    { VK_END,	TRUE,	'O',	'\315',	'u',	    '\316', },
-    { VK_DOWN,	TRUE,	'P',	'\317',	'\320',	    '\321', },
-    { VK_NEXT,	TRUE,	'Q',	'\322',	'v',	    '\323', }, /*PgDn*/
-    { VK_INSERT,TRUE,	'R',	'\324',	'\325',	    '\326', },
-    { VK_DELETE,TRUE,	'S',	'\327',	'\330',	    '\331', },
+    { VK_HOME,	TRUE,	'G',	0xc2,	'w',	    0xc3, },
+    { VK_UP,	TRUE,	'H',	0xc4,	0xc5,	    0xc6, },
+    { VK_PRIOR,	TRUE,	'I',	0xc7,	0x84,	    0xc8, }, /*PgUp*/
+    { VK_LEFT,	TRUE,	'K',	0xc9,	's',	    0xca, },
+    { VK_RIGHT,	TRUE,	'M',	0xcb,	't',	    0xcc, },
+    { VK_END,	TRUE,	'O',	0xcd,	'u',	    0xce, },
+    { VK_DOWN,	TRUE,	'P',	0xcf,	0xd0,	    0xd1, },
+    { VK_NEXT,	TRUE,	'Q',	0xd2,	'v',	    0xd3, }, /*PgDn*/
+    { VK_INSERT,TRUE,	'R',	0xd4,	0xd5,	    0xd6, },
+    { VK_DELETE,TRUE,	'S',	0xd7,	0xd8,	    0xd9, },
 
     { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, /*PrtScrn*/
 
 #if 0
     /* Most people don't have F13-F20, but what the hell... */
-    { VK_F13,	TRUE,	'\332',	'\333',	'\334',	    '\335', },
-    { VK_F14,	TRUE,	'\336',	'\337',	'\340',	    '\341', },
-    { VK_F15,	TRUE,	'\342',	'\343',	'\344',	    '\345', },
-    { VK_F16,	TRUE,	'\346',	'\347',	'\350',	    '\351', },
-    { VK_F17,	TRUE,	'\352',	'\353',	'\354',	    '\355', },
-    { VK_F18,	TRUE,	'\356',	'\357',	'\360',	    '\361', },
-    { VK_F19,	TRUE,	'\362',	'\363',	'\364',	    '\365', },
-    { VK_F20,	TRUE,	'\366',	'\367',	'\370',	    '\371', },
+    { VK_F13,	TRUE,	0xda,	0xdb,	0xdc,	    0xdd, },
+    { VK_F14,	TRUE,	0xde,	0xdf,	0xe0,	    0xe1, },
+    { VK_F15,	TRUE,	0xe2,	0xe3,	0xe4,	    0xe5, },
+    { VK_F16,	TRUE,	0xe6,	0xe7,	0xe8,	    0xe9, },
+    { VK_F17,	TRUE,	0xea,	0xeb,	0xec,	    0xed, },
+    { VK_F18,	TRUE,	0xee,	0xef,	0xf0,	    0xf1, },
+    { VK_F19,	TRUE,	0xf2,	0xf3,	0xf4,	    0xf5, },
+    { VK_F20,	TRUE,	0xf6,	0xf7,	0xf8,	    0xf9, },
 #endif
     { VK_ADD,	TRUE,   'N',    'N',    'N',	'N',	}, /* keyp '+' */
     { VK_SUBTRACT, TRUE,'J',	'J',    'J',	'J',	}, /* keyp '-' */
  /* { VK_DIVIDE,   TRUE,'N',	'N',    'N',	'N',	},    keyp '/' */
     { VK_MULTIPLY, TRUE,'7',	'7',    '7',	'7',	}, /* keyp '*' */
 
-    { VK_NUMPAD0,TRUE,  '\332',	'\333',	'\334',	    '\335', },
-    { VK_NUMPAD1,TRUE,  '\336',	'\337',	'\340',	    '\341', },
-    { VK_NUMPAD2,TRUE,  '\342',	'\343',	'\344',	    '\345', },
-    { VK_NUMPAD3,TRUE,  '\346',	'\347',	'\350',	    '\351', },
-    { VK_NUMPAD4,TRUE,  '\352',	'\353',	'\354',	    '\355', },
-    { VK_NUMPAD5,TRUE,  '\356',	'\357',	'\360',	    '\361', },
-    { VK_NUMPAD6,TRUE,  '\362',	'\363',	'\364',	    '\365', },
-    { VK_NUMPAD7,TRUE,  '\366',	'\367',	'\370',	    '\371', },
-    { VK_NUMPAD8,TRUE,  '\372',	'\373',	'\374',	    '\375', },
+    { VK_NUMPAD0,TRUE,  0xda,	0xdb,	0xdc,	    0xdd, },
+    { VK_NUMPAD1,TRUE,  0xde,	0xdf,	0xe0,	    0xe1, },
+    { VK_NUMPAD2,TRUE,  0xe2,	0xe3,	0xe4,	    0xe5, },
+    { VK_NUMPAD3,TRUE,  0xe6,	0xe7,	0xe8,	    0xe9, },
+    { VK_NUMPAD4,TRUE,  0xea,	0xeb,	0xec,	    0xed, },
+    { VK_NUMPAD5,TRUE,  0xee,	0xef,	0xf0,	    0xf1, },
+    { VK_NUMPAD6,TRUE,  0xf2,	0xf3,	0xf4,	    0xf5, },
+    { VK_NUMPAD7,TRUE,  0xf6,	0xf7,	0xf8,	    0xf9, },
+    { VK_NUMPAD8,TRUE,  0xfa,	0xfb,	0xfc,	    0xfd, },
     /* Sorry, out of number space! <negri>*/
-    { VK_NUMPAD9,TRUE,  '\376',	'\377',	'\377',	    '\367', },
-
+    { VK_NUMPAD9,TRUE,  0xfe,	0xff,	0xff,	    0xf7, },
 };
 
 
