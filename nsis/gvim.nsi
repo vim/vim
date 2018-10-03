@@ -268,8 +268,21 @@ Section "$(str_section_old_ver)" id_section_old_ver
 	# run the install program to check for already installed versions
 	SetOutPath $TEMP
 	File /oname=install.exe ${VIMSRC}\installw32.exe
-	nsExec::Exec "$TEMP\install.exe -uninstall-check"
-	Pop $3
+	${Do}
+	  nsExec::Exec "$TEMP\install.exe -uninstall-check"
+	  Pop $3
+
+	  call CheckOldVim
+	  Pop $3
+	  ${If} $3 == ""
+	    ${ExitDo}
+	  ${Else}
+	    # It seems that the old version is still remaining.
+	    # TODO: Should we show a warning and run the uninstaller again?
+
+	    ${ExitDo}	# Just ignore for now.
+	  ${EndIf}
+	${Loop}
 	Delete $TEMP\install.exe
 	Delete $TEMP\vimini.ini   # install.exe creates this, but we don't need it.
 
