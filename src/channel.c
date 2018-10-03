@@ -5324,7 +5324,7 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-#if defined(FEAT_TERMINAL)
+#if defined(FEAT_TERMINAL) && defined(WIN32)
     if (use_conpty())
     {
 	/* Flush messages. */
