@@ -63,6 +63,7 @@ int		choice_count = 0;	/* number of choices available */
 enum
 {
     compat_vi = 1,
+    compat_vim,
     compat_some_enhancements,
     compat_all_enhancements
 };
@@ -70,6 +71,7 @@ char	*(compat_choices[]) =
 {
     "\nChoose the default way to run Vim:",
     "Vi compatible",
+    "Vim default",
     "with some Vim enhancements",
     "with syntax highlighting and other features switched on",
 };
@@ -1161,6 +1163,11 @@ install_vimrc(int idx)
 	case compat_vi:
 		    fprintf(fd, "set compatible\n");
 		    break;
+	case compat_vim:
+		    fprintf(fd, "if &compatible\n");
+		    fprintf(fd, "  set nocompatible\n");
+		    fprintf(fd, "endif\n");
+		    break;
 	case compat_some_enhancements:
 		    fprintf(fd, "source $VIMRUNTIME/defaults.vim\n");
 		    break;
@@ -2239,6 +2246,8 @@ print_cmd_line_help(void)
     printf("    Remap keys when creating a default _vimrc file.\n");
     printf("-vimrc-behave [unix|mswin|default]\n");
     printf("    Set mouse behavior when creating a default _vimrc file.\n");
+    printf("-vimrc-compat [vi|vim|defaults|all]\n");
+    printf("    Set Vi compatibility when creating a default _vimrc file.\n");
     printf("-install-popup\n");
     printf("    Install the Edit-with-Vim context menu entry\n");
     printf("-install-openwith\n");
@@ -2315,6 +2324,20 @@ command_line_setup_choices(int argc, char **argv)
 		mouse_choice = mouse_mswin;
 	    else if (strcmp(argv[i], "default") == 0)
 		mouse_choice = mouse_default;
+	}
+	else if (strcmp(argv[i], "-vimrc-compat") == 0)
+	{
+	    if (i + 1 == argc)
+		break;
+	    i++;
+	    if (strcmp(argv[i], "vi") == 0)
+		compat_choice = compat_vi;
+	    else if (strcmp(argv[i], "vim") == 0)
+		compat_choice = compat_vim;
+	    else if (strcmp(argv[i], "defaults") == 0)
+		compat_choice = compat_some_enhancements;
+	    else if (strcmp(argv[i], "all") == 0)
+		compat_choice = compat_all_enhancements;
 	}
 	else if (strcmp(argv[i], "-install-popup") == 0)
 	{
