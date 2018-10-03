@@ -579,7 +579,7 @@ add_nr_var(
     char	*name,
     varnumber_T nr)
 {
-    STRCPY(v->di_key, name);
+    v = dictitem_alloc((char_u *)name);
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     hash_add(&dp->dv_hashtab, DI2HIKEY(v));
     v->di_tv.v_type = VAR_NUMBER;
@@ -635,6 +635,16 @@ free_funccal(
 cleanup_function_call(funccall_T *fc)
 {
     current_funccal = fc->caller;
+
+    int i = 0;
+    dictitem_T * item = fc->fixvar[i];
+
+    while(item != NULL && i < FIXVAR_CNT)
+    {
+        dictitem_free(item);
+	i++;
+        item = fc->fixvar[i];
+    }
 
     /* If the a:000 list and the l: and a: dicts are not referenced and there
      * is no closure using it, we can free the funccall_T and what's in it. */
@@ -727,6 +737,7 @@ call_user_func(
     current_funccal = fc;
     fc->func = fp;
     fc->rettv = rettv;
+    fc->fixvar[fixvar_idx] = NULL;
     rettv->vval.v_number = 0;
     fc->linenr = 0;
     fc->returned = FALSE;
@@ -756,9 +767,10 @@ call_user_func(
     {
 	/* Set l:self to "selfdict".  Use "name" to avoid a warning from
 	 * some compiler that checks the destination size. */
-	v = &fc->fixvar[fixvar_idx++].var;
+	fc->fixvar[fixvar_idx] = dictitem_alloc((char_u*)"self");
+	fc->fixvar[fixvar_idx+1] = NULL;
+	v = fc->fixvar[fixvar_idx++];
 	name = v->di_key;
-	STRCPY(name, "self");
 	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
 	hash_add(&fc->l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;
@@ -773,13 +785,15 @@ call_user_func(
      * Set a:000 to a list with room for the "..." arguments.
      */
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
+    add_nr_var(&fc->l_avars, fc->fixvar[fixvar_idx++], "0",
 				(varnumber_T)(argcount - fp->uf_args.ga_len));
+    fc->fixvar[fixvar_idx] = NULL;
     /* Use "name" to avoid a warning from some compiler that checks the
      * destination size. */
-    v = &fc->fixvar[fixvar_idx++].var;
+    fc->fixvar[fixvar_idx] = dictitem_alloc((char_u*)"000");
+    fc->fixvar[fixvar_idx+1] = NULL;
+    v = fc->fixvar[fixvar_idx++];
     name = v->di_key;
-    STRCPY(name, "000");
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
     hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
     v->di_tv.v_type = VAR_LIST;
@@ -794,10 +808,12 @@ call_user_func(
      * Set a:name to named arguments.
      * Set a:N to the "..." arguments.
      */
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
+    add_nr_var(&fc->l_avars, fc->fixvar[fixvar_idx++], "firstline",
 						      (varnumber_T)firstline);
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
+    fc->fixvar[fixvar_idx+1] = NULL;
+    add_nr_var(&fc->l_avars, fc->fixvar[fixvar_idx++], "lastline",
 						       (varnumber_T)lastline);
+    fc->fixvar[fixvar_idx+1] = NULL;
     for (i = 0; i < argcount; ++i)
     {
 	int	    addlocal = FALSE;
@@ -818,7 +834,9 @@ call_user_func(
 	}
 	if (fixvar_idx < FIXVAR_CNT && STRLEN(name) <= VAR_SHORT_LEN)
 	{
-	    v = &fc->fixvar[fixvar_idx++].var;
+	    fc->fixvar[fixvar_idx] = dictitem_alloc(name);
+	    fc->fixvar[fixvar_idx+1] = NULL;
+	    v = fc->fixvar[fixvar_idx++];
 	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
 	else

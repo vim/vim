@@ -4411,17 +4411,6 @@ if test "$GCC" = yes; then
   else
     AC_MSG_RESULT(no)
   fi
-  dnl -D_FORTIFY_SOURCE=2 crashes Vim on strcpy(buf, "000") when buf is
-  dnl declared as char x[1] but actually longer.  Introduced in gcc 4.0.
-  dnl Also remove duplicate _FORTIFY_SOURCE arguments.
-  dnl And undefine it first to avoid a warning.
-  AC_MSG_CHECKING(whether we need -D_FORTIFY_SOURCE=1)
-  if test "$gccmajor" -gt "3"; then
-    CFLAGS=`echo "$CFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
-    AC_MSG_RESULT(yes)
-  else
-    AC_MSG_RESULT(no)
-  fi
 fi
 AC_SUBST(DEPEND_CFLAGS_FILTER)
 

@@ -1391,11 +1391,7 @@ struct funccall_S
     ufunc_T	*func;		/* function being called */
     int		linenr;		/* next line to be executed */
     int		returned;	/* ":return" used */
-    struct			/* fixed variables for arguments */
-    {
-	dictitem_T	var;		/* variable (without room for name) */
-	char_u	room[VAR_SHORT_LEN];	/* room for the name */
-    } fixvar[FIXVAR_CNT];
+    dictitem_T * fixvar[FIXVAR_CNT]; /* fixed variables for arguments */
     dict_T	l_vars;		/* l: local function variables */
     dictitem_T	l_vars_var;	/* variable for l: scope */
     dict_T	l_avars;	/* a: argument variables */
