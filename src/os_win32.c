@@ -5647,13 +5647,7 @@ mch_detect_ended_job(job_T *job_list)
 	    job_T *wait_job = jobArray[result - WAIT_OBJECT_0];
 
 	    if (STRCMP(mch_job_status(wait_job), "dead") == 0)
-	    {
-#ifdef FEAT_TERMINAL
-		if (use_conpty())
-		    term_free_conpty(wait_job->jv_term);
-#endif
 		return wait_job;
-	    }
 	}
     }
     return NULL;

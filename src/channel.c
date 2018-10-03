@@ -5324,6 +5324,18 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
+#if defined(FEAT_TERMINAL)
+    if (use_conpty())
+    {
+	/* Flush messages. */
+	mch_check_messages();
+	parse_queued_messages();
+
+	/* It can not be done after this. */
+	term_free_conpty(job->jv_term);
+    }
+#endif
+
     /* Do not free the job in case the close callback of the associated channel
      * isn't invoked yet and may get information by job_info(). */
     if (job->jv_refcount == 0 && !job_channel_still_useful(job))
