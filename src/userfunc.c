@@ -599,7 +599,7 @@ free_funccal(
     int		i;
 
     int item_index = 0;
-    dictitem_T * item = fc->fixvar[i];
+    dictitem_T * item = fc->fixvar[item_index];
 
     while(item != NULL && item_index < FIXVAR_CNT)
     {
