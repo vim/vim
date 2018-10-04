@@ -234,10 +234,12 @@ LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
 LangString str_vimrc_page_title    ${LANG_JAPANESE} \
     "_vimrc の設定を選んでください"
 LangString str_vimrc_page_subtitle ${LANG_JAPANESE} \
-    "既定の _vimrc の設定を選んでください。"
+    "拡張やキーボード、マウスの設定を選んでください。"
 
 LangString str_msg_compat_title    ${LANG_JAPANESE} \
-    " Vi との互換性 "
+    " Vi / Vim の動作 "
+LangString str_msg_compat_desc     ${LANG_JAPANESE} \
+    "互換性と拡張(&C)"
 LangString str_msg_compat_vi       ${LANG_JAPANESE} \
     " Vi 互換"
 LangString str_msg_compat_vim      ${LANG_JAPANESE} \
@@ -248,17 +250,21 @@ LangString str_msg_compat_all      ${LANG_JAPANESE} \
     " Vim 独自と全ての拡張 (既定)"
 
 LangString str_msg_keymap_title   ${LANG_JAPANESE} \
-    " Windows用のキーのリマッピング "
+    " マッピング "
+LangString str_msg_keymap_desc    ${LANG_JAPANESE} \
+    "いくつかのキーをリマップする(&R) (例: Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F など)"
 LangString str_msg_keymap_default ${LANG_JAPANESE} \
     " リマップしない (既定)"
 LangString str_msg_keymap_windows ${LANG_JAPANESE} \
-    " いくつかのキーをリマップする (例: <C-V>, <C-C>, <C-A>, <C-S>, <C-F> など)"
+    " リマップする"
 
 LangString str_msg_mouse_title   ${LANG_JAPANESE} \
-    " マウスの動作 "
+    " マウス "
+LangString str_msg_mouse_desc    ${LANG_JAPANESE} \
+    "右ボタンと左ボタンの動作(&B)"
 LangString str_msg_mouse_default ${LANG_JAPANESE} \
-    " 既定:       右ボタンはポップアップメニュー、左ボタンはビジュアルモードを開始"
+    "右：ポップアップメニュー、左：ビジュアルモード (既定)"
 LangString str_msg_mouse_windows ${LANG_JAPANESE} \
-    " Windows: 右ボタンはポップアップメニュー、左ボタンは選択モードを開始"
+    "右：ポップアップメニュー、左：選択モード (Windows)"
 LangString str_msg_mouse_unix    ${LANG_JAPANESE} \
-    " Unix:       右ボタンは選択を拡張、左ボタンはビジュアルモードを開始"
+    "右：選択を拡張、左：ビジュアルモード (Unix)"

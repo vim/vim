@@ -225,31 +225,37 @@ LangString str_msg_rm_root_fail  ${LANG_SIMPCHINESE} \
 LangString str_vimrc_page_title    ${LANG_SIMPCHINESE} \
     "Choose _vimrc settings"
 LangString str_vimrc_page_subtitle ${LANG_SIMPCHINESE} \
-    "Choose the default _vimrc settings."
+    "Choose the settings for enhancement, keyboard and mouse."
 
 LangString str_msg_compat_title    ${LANG_SIMPCHINESE} \
-    " Vi Compatibility "
+    " Vi / Vim behavior "
+LangString str_msg_compat_desc     ${LANG_SIMPCHINESE} \
+    "&Compatibility and enhancements"
 LangString str_msg_compat_vi       ${LANG_SIMPCHINESE} \
-    " Vi compatible"
+    "Vi compatible"
 LangString str_msg_compat_vim      ${LANG_SIMPCHINESE} \
-    " Vim original"
+    "Vim original"
 LangString str_msg_compat_defaults ${LANG_SIMPCHINESE} \
-    " Some enhancements"
+    "Vim with some enhancements"
 LangString str_msg_compat_all      ${LANG_SIMPCHINESE} \
-    " All enhancements (Default)"
+    "Vim with all enhancements (Default)"
 
 LangString str_msg_keymap_title   ${LANG_SIMPCHINESE} \
-    " Key remapping for Windows behavior "
+    " Mappings "
+LangString str_msg_keymap_desc    ${LANG_SIMPCHINESE} \
+    "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_SIMPCHINESE} \
     " Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_SIMPCHINESE} \
-    " Remap a few keys (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
+    " Remap a few keys"
 
 LangString str_msg_mouse_title   ${LANG_SIMPCHINESE} \
-    " Mouse behavior "
+    " Mouse "
+LangString str_msg_mouse_desc    ${LANG_SIMPCHINESE} \
+    "&Behavior of right and left buttons"
 LangString str_msg_mouse_default ${LANG_SIMPCHINESE} \
-    " Default:    Right button has a popup menu, left button starts visual mode"
+    "Right: popup menu, Left: visual mode (Default)"
 LangString str_msg_mouse_windows ${LANG_SIMPCHINESE} \
-    " Windows: Right button has a popup menu, left button starts select mode"
+    "Right: popup menu, Left: select mode (Windows)"
 LangString str_msg_mouse_unix    ${LANG_SIMPCHINESE} \
-    " Unix:        Right button extends selection, left button starts visual mode"
+    "Right: extends selection, Left: visual mode (Unix)"

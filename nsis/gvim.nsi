@@ -153,15 +153,9 @@ Page custom SetCustom ValidateCustom
 
 # Global variables
 Var vim_dialog
-Var vim_nsd_compat_1
-Var vim_nsd_compat_2
-Var vim_nsd_compat_3
-Var vim_nsd_compat_4
-Var vim_nsd_keymap_1
-Var vim_nsd_keymap_2
-Var vim_nsd_mouse_1
-Var vim_nsd_mouse_2
-Var vim_nsd_mouse_3
+Var vim_nsd_compat
+Var vim_nsd_keymap
+Var vim_nsd_mouse
 Var vim_compat_stat
 Var vim_keymap_stat
 Var vim_mouse_stat
@@ -705,90 +699,87 @@ Function SetCustom
 
 
 	# 1st group - Compatibility
-	${NSD_CreateGroupBox} 0 0 100% 28% $(str_msg_compat_title)
+	${NSD_CreateGroupBox} 0 0 100% 24% $(str_msg_compat_title)
 	Pop $3
 
-	${NSD_CreateRadioButton} 5% 8% 40% 8% $(str_msg_compat_vi)
-	Pop $vim_nsd_compat_1
-	${NSD_AddStyle} $vim_nsd_compat_1 ${WS_GROUP}
+	${NSD_CreateLabel} 5% 10% 35% 8% $(str_msg_compat_desc)
+	Pop $3
+	${NSD_CreateDropList} 48% 10% 45% 8% ""
+	Pop $vim_nsd_compat
+	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vi)
+	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vim)
+	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_defaults)
+	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_all)
 
-	${NSD_CreateRadioButton} 50% 8% 40% 8% $(str_msg_compat_vim)
-	Pop $vim_nsd_compat_2
-
-	${NSD_CreateRadioButton} 5% 17% 40% 8% $(str_msg_compat_defaults)
-	Pop $vim_nsd_compat_3
-
-	${NSD_CreateRadioButton} 50% 17% 40% 8% $(str_msg_compat_all)
-	Pop $vim_nsd_compat_4
-
-	# Default button
+	# Default selection
 	${If} $vim_compat_stat == ""
 	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "compat"
 	${Else}
 	  StrCpy $3 $vim_compat_stat
 	${EndIf}
 	${If} $3 == "defaults"
-	  ${NSD_SetState} $vim_nsd_compat_3 ${BST_CHECKED}
+	  StrCpy $4 2
 	${ElseIf} $3 == "vim"
-	  ${NSD_SetState} $vim_nsd_compat_2 ${BST_CHECKED}
+	  StrCpy $4 1
 	${ElseIf} $3 == "vi"
-	  ${NSD_SetState} $vim_nsd_compat_1 ${BST_CHECKED}
-	${Else} # defualt
-	  ${NSD_SetState} $vim_nsd_compat_4 ${BST_CHECKED}
+	  StrCpy $4 0
+	${Else} # default
+	  StrCpy $4 3
 	${EndIf}
+	${NSD_CB_SetSelectionIndex} $vim_nsd_compat $4
 
 
 	# 2nd group - Key remapping
-	${NSD_CreateGroupBox} 0 31% 100% 28% $(str_msg_keymap_title)
+	${NSD_CreateGroupBox} 0 27% 100% 33% $(str_msg_keymap_title)
 	Pop $3
 
-	${NSD_CreateRadioButton} 5% 39% 90% 8% $(str_msg_keymap_default)
-	Pop $vim_nsd_keymap_1
-	${NSD_AddStyle} $vim_nsd_keymap_1 ${WS_GROUP}
+	${NSD_CreateLabel} 5% 37% 90% 8% $(str_msg_keymap_desc)
+	Pop $3
+	${NSD_CreateDropList} 48% 47% 45% 8% ""
+	Pop $vim_nsd_keymap
+	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_default)
+	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_windows)
 
-	${NSD_CreateRadioButton} 5% 48% 90% 8% $(str_msg_keymap_windows)
-	Pop $vim_nsd_keymap_2
-
-	# Default button
+	# Default selection
 	${If} $vim_keymap_stat == ""
 	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "keyremap"
 	${Else}
 	  StrCpy $3 $vim_keymap_stat
 	${EndIf}
 	${If} $3 == "windows"
-	  ${NSD_SetState} $vim_nsd_keymap_2 ${BST_CHECKED}
+	  StrCpy $4 1
 	${Else} # default
-	  ${NSD_SetState} $vim_nsd_keymap_1 ${BST_CHECKED}
+	  StrCpy $4 0
 	${EndIf}
+	${NSD_CB_SetSelectionIndex} $vim_nsd_keymap $4
 
 
 	# 3rd group - Mouse behavior
-	${NSD_CreateGroupBox} 0 62% 100% 37% $(str_msg_mouse_title)
+	${NSD_CreateGroupBox} 0 63% 100% 36% $(str_msg_mouse_title)
 	Pop $3
 
-	${NSD_CreateRadioButton} 5% 70% 90% 8% $(str_msg_mouse_default)
-	Pop $vim_nsd_mouse_1
-	${NSD_AddStyle} $vim_nsd_mouse_1 ${WS_GROUP}
+	${NSD_CreateLabel} 5% 73% 90% 8% $(str_msg_mouse_desc)
+	Pop $3
+	${NSD_CreateDropList} 23% 82% 70% 8% ""
+	Pop $vim_nsd_mouse
+	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_default)
+	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_windows)
+	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_unix)
 
-	${NSD_CreateRadioButton} 5% 79% 90% 8% $(str_msg_mouse_windows)
-	Pop $vim_nsd_mouse_2
-
-	${NSD_CreateRadioButton} 5% 88% 90% 8% $(str_msg_mouse_unix)
-	Pop $vim_nsd_mouse_3
-
-	# Default button
+	# Default selection
 	${If} $vim_mouse_stat == ""
 	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "mouse"
 	${Else}
 	  StrCpy $3 $vim_mouse_stat
 	${EndIf}
 	${If} $3 == "xterm"
-	  ${NSD_SetState} $vim_nsd_mouse_3 ${BST_CHECKED}
+	  StrCpy $4 2
 	${ElseIf} $3 == "windows"
-	  ${NSD_SetState} $vim_nsd_mouse_2 ${BST_CHECKED}
-	${Else} # defualt
-	  ${NSD_SetState} $vim_nsd_mouse_1 ${BST_CHECKED}
+	  StrCpy $4 1
+	${Else} # default
+	  StrCpy $4 0
 	${EndIf}
+	${NSD_CB_SetSelectionIndex} $vim_nsd_mouse $4
 
 	${If} ${RunningX64}
 	  SetRegView lastused
@@ -798,40 +789,31 @@ Function SetCustom
 FunctionEnd
 
 Function ValidateCustom
-	${NSD_GetState} $vim_nsd_compat_1 $3
-	${If} $3 == ${BST_CHECKED}
+	${NSD_CB_GetSelectionIndex} $vim_nsd_compat $3
+	${If} $3 = 0
 	  StrCpy $vim_compat_stat "vi"
+	${ElseIf} $3 = 1
+	  StrCpy $vim_compat_stat "vim"
+	${ElseIf} $3 = 2
+	  StrCpy $vim_compat_stat "defaults"
 	${Else}
-	  ${NSD_GetState} $vim_nsd_compat_2 $3
-	  ${If} $3 == ${BST_CHECKED}
-	    StrCpy $vim_compat_stat "vim"
-	  ${Else}
-	    ${NSD_GetState} $vim_nsd_compat_3 $3
-	    ${If} $3 == ${BST_CHECKED}
-	      StrCpy $vim_compat_stat "defaults"
-	    ${Else}
-	      StrCpy $vim_compat_stat "all"
-	    ${EndIf}
-	  ${EndIf}
+	  StrCpy $vim_compat_stat "all"
 	${EndIf}
 
-	${NSD_GetState} $vim_nsd_keymap_1 $3
-	${If} $3 == ${BST_CHECKED}
+	${NSD_CB_GetSelectionIndex} $vim_nsd_keymap $3
+	${If} $3 = 0
 	  StrCpy $vim_keymap_stat "default"
 	${Else}
 	  StrCpy $vim_keymap_stat "windows"
 	${EndIf}
 
-	${NSD_GetState} $vim_nsd_mouse_1 $3
-	${If} $3 == ${BST_CHECKED}
+	${NSD_CB_GetSelectionIndex} $vim_nsd_mouse $3
+	${If} $3 = 0
 	  StrCpy $vim_mouse_stat "default"
+	${ElseIf} $3 = 1
+	  StrCpy $vim_mouse_stat "windows"
 	${Else}
-	  ${NSD_GetState} $vim_nsd_mouse_2 $3
-	  ${If} $3 == ${BST_CHECKED}
-	    StrCpy $vim_mouse_stat "windows"
-	  ${Else}
-	    StrCpy $vim_mouse_stat "xterm"
-	  ${EndIf}
+	  StrCpy $vim_mouse_stat "xterm"
 	${EndIf}
 FunctionEnd
 

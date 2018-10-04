@@ -238,31 +238,37 @@ LangString str_msg_rm_root_fail  ${LANG_ENGLISH} \
 LangString str_vimrc_page_title    ${LANG_ENGLISH} \
     "Choose _vimrc settings"
 LangString str_vimrc_page_subtitle ${LANG_ENGLISH} \
-    "Choose the default _vimrc settings."
+    "Choose the settings for enhancement, keyboard and mouse."
 
 LangString str_msg_compat_title    ${LANG_ENGLISH} \
-    " Vi Compatibility "
+    " Vi / Vim behavior "
+LangString str_msg_compat_desc     ${LANG_ENGLISH} \
+    "&Compatibility and enhancements"
 LangString str_msg_compat_vi       ${LANG_ENGLISH} \
-    " Vi compatible"
+    "Vi compatible"
 LangString str_msg_compat_vim      ${LANG_ENGLISH} \
-    " Vim original"
+    "Vim original"
 LangString str_msg_compat_defaults ${LANG_ENGLISH} \
-    " Some enhancements"
+    "Vim with some enhancements"
 LangString str_msg_compat_all      ${LANG_ENGLISH} \
-    " All enhancements (Default)"
+    "Vim with all enhancements (Default)"
 
 LangString str_msg_keymap_title   ${LANG_ENGLISH} \
-    " Key remapping for Windows behavior "
+    " Mappings "
+LangString str_msg_keymap_desc    ${LANG_ENGLISH} \
+    "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_ENGLISH} \
     " Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_ENGLISH} \
-    " Remap a few keys (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
+    " Remap a few keys"
 
 LangString str_msg_mouse_title   ${LANG_ENGLISH} \
-    " Mouse behavior "
+    " Mouse "
+LangString str_msg_mouse_desc    ${LANG_ENGLISH} \
+    "&Behavior of right and left buttons"
 LangString str_msg_mouse_default ${LANG_ENGLISH} \
-    " Default:    Right button has a popup menu, left button starts visual mode"
+    "Right: popup menu, Left: visual mode (Default)"
 LangString str_msg_mouse_windows ${LANG_ENGLISH} \
-    " Windows: Right button has a popup menu, left button starts select mode"
+    "Right: popup menu, Left: select mode (Windows)"
 LangString str_msg_mouse_unix    ${LANG_ENGLISH} \
-    " Unix:        Right button extends selection, left button starts visual mode"
+    "Right: extends selection, Left: visual mode (Unix)"
