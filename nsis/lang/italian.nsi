@@ -163,11 +163,6 @@ LangString str_unsection_rootdir    ${LANG_ITALIAN} \
 LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
     "Remove the Vim root directory. It contains your Vim configuration files!"
 
-LangString str_vimrc_page_title     ${LANG_ITALIAN} \
-    "Choose _vimrc settings"
-LangString str_vimrc_page_subtitle  ${LANG_ITALIAN} \
-    "Choose the behavior of key remapping and mouse."
-
 
 ##############################################################################
 # Messages                                                                {{{1
@@ -235,18 +230,39 @@ LangString str_msg_rm_exe_fail   ${LANG_ITALIAN} \
 LangString str_msg_rm_root_fail  ${LANG_ITALIAN} \
     "AVVISO: Non posso cancellare $\"$vim_install_root$\", non è vuota!"
 
+
+##############################################################################
+# Dialog Box                                                              {{{1
+##############################################################################
+
+LangString str_vimrc_page_title    ${LANG_ITALIAN} \
+    "Choose _vimrc settings"
+LangString str_vimrc_page_subtitle ${LANG_ITALIAN} \
+    "Choose the default _vimrc settings."
+
+LangString str_msg_compat_title    ${LANG_ITALIAN} \
+    " Vi Compatibility "
+LangString str_msg_compat_vi       ${LANG_ITALIAN} \
+    " Vi compatible"
+LangString str_msg_compat_vim      ${LANG_ITALIAN} \
+    " Vim original"
+LangString str_msg_compat_defaults ${LANG_ITALIAN} \
+    " Some enhancements"
+LangString str_msg_compat_all      ${LANG_ITALIAN} \
+    " All enhancements (Default)"
+
 LangString str_msg_keymap_title   ${LANG_ITALIAN} \
-    " Key remapping "
+    " Key remapping for Windows behavior "
 LangString str_msg_keymap_default ${LANG_ITALIAN} \
-    " Do not remap keys for Windows behavior (Default)"
+    " Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_ITALIAN} \
-    " Remap a few keys for Windows behavior$\n (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
+    " Remap a few keys (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
 
 LangString str_msg_mouse_title   ${LANG_ITALIAN} \
     " Mouse behavior "
 LangString str_msg_mouse_default ${LANG_ITALIAN} \
-    " Default:$\n     Right button has a popup menu, left button starts visual mode"
+    " Default:    Right button has a popup menu, left button starts visual mode"
 LangString str_msg_mouse_windows ${LANG_ITALIAN} \
-    " Windows:$\n     Right button has a popup menu, left button starts select mode"
+    " Windows: Right button has a popup menu, left button starts select mode"
 LangString str_msg_mouse_unix    ${LANG_ITALIAN} \
-    " Unix:$\n     Right button extends selection, left button starts visual mode"
+    " Unix:        Right button extends selection, left button starts visual mode"

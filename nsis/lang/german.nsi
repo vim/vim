@@ -156,11 +156,6 @@ LangString str_unsection_rootdir    ${LANG_GERMAN} \
 LangString str_desc_rm_rootdir      ${LANG_GERMAN} \
     "Remove the Vim root directory. It contains your Vim configuration files!"
 
-LangString str_vimrc_page_title     ${LANG_GERMAN} \
-    "Choose _vimrc settings"
-LangString str_vimrc_page_subtitle  ${LANG_GERMAN} \
-    "Choose the behavior of key remapping and mouse."
-
 
 ##############################################################################
 # Messages                                                                {{{1
@@ -226,18 +221,39 @@ LangString str_msg_rm_root_fail  ${LANG_GERMAN} \
     "Achtung: Kann Verzeichnis $\"$vim_install_root$\" nicht entfernen, \
      weil es nicht leer ist!"
 
+
+##############################################################################
+# Dialog Box                                                              {{{1
+##############################################################################
+
+LangString str_vimrc_page_title    ${LANG_GERMAN} \
+    "Choose _vimrc settings"
+LangString str_vimrc_page_subtitle ${LANG_GERMAN} \
+    "Choose the default _vimrc settings."
+
+LangString str_msg_compat_title    ${LANG_GERMAN} \
+    " Vi Compatibility "
+LangString str_msg_compat_vi       ${LANG_GERMAN} \
+    " Vi compatible"
+LangString str_msg_compat_vim      ${LANG_GERMAN} \
+    " Vim original"
+LangString str_msg_compat_defaults ${LANG_GERMAN} \
+    " Some enhancements"
+LangString str_msg_compat_all      ${LANG_GERMAN} \
+    " All enhancements (Default)"
+
 LangString str_msg_keymap_title   ${LANG_GERMAN} \
-    " Key remapping "
+    " Key remapping for Windows behavior "
 LangString str_msg_keymap_default ${LANG_GERMAN} \
-    " Do not remap keys for Windows behavior (Default)"
+    " Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_GERMAN} \
-    " Remap a few keys for Windows behavior$\n (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
+    " Remap a few keys (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
 
 LangString str_msg_mouse_title   ${LANG_GERMAN} \
     " Mouse behavior "
 LangString str_msg_mouse_default ${LANG_GERMAN} \
-    " Default:$\n     Right button has a popup menu, left button starts visual mode"
+    " Default:    Right button has a popup menu, left button starts visual mode"
 LangString str_msg_mouse_windows ${LANG_GERMAN} \
-    " Windows:$\n     Right button has a popup menu, left button starts select mode"
+    " Windows: Right button has a popup menu, left button starts select mode"
 LangString str_msg_mouse_unix    ${LANG_GERMAN} \
-    " Unix:$\n     Right button extends selection, left button starts visual mode"
+    " Unix:        Right button extends selection, left button starts visual mode"

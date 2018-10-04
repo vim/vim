@@ -154,11 +154,6 @@ LangString str_unsection_rootdir    ${LANG_TRADCHINESE} \
 LangString str_desc_rm_rootdir      ${LANG_TRADCHINESE} \
     "Remove the Vim root directory. It contains your Vim configuration files!"
 
-LangString str_vimrc_page_title     ${LANG_TRADCHINESE} \
-    "Choose _vimrc settings"
-LangString str_vimrc_page_subtitle  ${LANG_TRADCHINESE} \
-    "Choose the behavior of key remapping and mouse."
-
 
 ##############################################################################
 # Messages                                                                {{{1
@@ -223,18 +218,39 @@ LangString str_msg_rm_root_fail  ${LANG_TRADCHINESE} \
     "警告：無法刪除 Vim 安裝資料夾「$vim_install_root」，\
      該資料夾下仍有其他檔案。"
 
+
+##############################################################################
+# Dialog Box                                                              {{{1
+##############################################################################
+
+LangString str_vimrc_page_title    ${LANG_TRADCHINESE} \
+    "Choose _vimrc settings"
+LangString str_vimrc_page_subtitle ${LANG_TRADCHINESE} \
+    "Choose the default _vimrc settings."
+
+LangString str_msg_compat_title    ${LANG_TRADCHINESE} \
+    " Vi Compatibility "
+LangString str_msg_compat_vi       ${LANG_TRADCHINESE} \
+    " Vi compatible"
+LangString str_msg_compat_vim      ${LANG_TRADCHINESE} \
+    " Vim original"
+LangString str_msg_compat_defaults ${LANG_TRADCHINESE} \
+    " Some enhancements"
+LangString str_msg_compat_all      ${LANG_TRADCHINESE} \
+    " All enhancements (Default)"
+
 LangString str_msg_keymap_title   ${LANG_TRADCHINESE} \
-    " Key remapping "
+    " Key remapping for Windows behavior "
 LangString str_msg_keymap_default ${LANG_TRADCHINESE} \
-    " Do not remap keys for Windows behavior (Default)"
+    " Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_TRADCHINESE} \
-    " Remap a few keys for Windows behavior$\n (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
+    " Remap a few keys (<C-V>, <C-C>, <C-A>, <C-S>, <C-F>, etc)"
 
 LangString str_msg_mouse_title   ${LANG_TRADCHINESE} \
     " Mouse behavior "
 LangString str_msg_mouse_default ${LANG_TRADCHINESE} \
-    " Default:$\n     Right button has a popup menu, left button starts visual mode"
+    " Default:    Right button has a popup menu, left button starts visual mode"
 LangString str_msg_mouse_windows ${LANG_TRADCHINESE} \
-    " Windows:$\n     Right button has a popup menu, left button starts select mode"
+    " Windows: Right button has a popup menu, left button starts select mode"
 LangString str_msg_mouse_unix    ${LANG_TRADCHINESE} \
-    " Unix:$\n     Right button extends selection, left button starts visual mode"
+    " Unix:        Right button extends selection, left button starts visual mode"

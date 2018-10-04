@@ -160,11 +160,6 @@ LangString str_unsection_rootdir    ${LANG_JAPANESE} \
 LangString str_desc_rm_rootdir      ${LANG_JAPANESE} \
     "Vim のトップディレクトリを削除します。あなたの Vim の設定ファイルも含まれていることに注意してください！"
 
-LangString str_vimrc_page_title     ${LANG_JAPANESE} \
-    "_vimrc の設定を選んでください"
-LangString str_vimrc_page_subtitle  ${LANG_JAPANESE} \
-    "キーのリマッピングとマウスの動作の設定を選んでください。"
-
 
 ##############################################################################
 # Messages                                                                {{{1
@@ -231,18 +226,39 @@ LangString str_msg_rm_exe_fail   ${LANG_JAPANESE} \
 LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
     "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
 
+
+##############################################################################
+# Dialog Box                                                              {{{1
+##############################################################################
+
+LangString str_vimrc_page_title    ${LANG_JAPANESE} \
+    "_vimrc の設定を選んでください"
+LangString str_vimrc_page_subtitle ${LANG_JAPANESE} \
+    "既定の _vimrc の設定を選んでください。"
+
+LangString str_msg_compat_title    ${LANG_JAPANESE} \
+    " Vi との互換性 "
+LangString str_msg_compat_vi       ${LANG_JAPANESE} \
+    " Vi 互換"
+LangString str_msg_compat_vim      ${LANG_JAPANESE} \
+    " Vim 独自"
+LangString str_msg_compat_defaults ${LANG_JAPANESE} \
+    " Vim 独自と多少の拡張"
+LangString str_msg_compat_all      ${LANG_JAPANESE} \
+    " Vim 独自と全ての拡張 (既定)"
+
 LangString str_msg_keymap_title   ${LANG_JAPANESE} \
-    " キーのリマッピング "
+    " Windows用のキーのリマッピング "
 LangString str_msg_keymap_default ${LANG_JAPANESE} \
-    " Windows用にキーをリマップしない(既定)"
+    " リマップしない (既定)"
 LangString str_msg_keymap_windows ${LANG_JAPANESE} \
-    " Windowsの動作に合わせていくつかのキーをリマップする$\n (例: <C-V>, <C-C>, <C-A>, <C-S>, <C-F> など)"
+    " いくつかのキーをリマップする (例: <C-V>, <C-C>, <C-A>, <C-S>, <C-F> など)"
 
 LangString str_msg_mouse_title   ${LANG_JAPANESE} \
     " マウスの動作 "
 LangString str_msg_mouse_default ${LANG_JAPANESE} \
-    " 既定:$\n     右ボタンはポップアップメニュー、左ボタンはビジュアルモードを開始"
+    " 既定:       右ボタンはポップアップメニュー、左ボタンはビジュアルモードを開始"
 LangString str_msg_mouse_windows ${LANG_JAPANESE} \
-    " Windows:$\n     右ボタンはポップアップメニュー、左ボタンは選択モードを開始"
+    " Windows: 右ボタンはポップアップメニュー、左ボタンは選択モードを開始"
 LangString str_msg_mouse_unix    ${LANG_JAPANESE} \
-    " Unix:$\n     右ボタンは選択を拡張、左ボタンはビジュアルモードを開始"
+    " Unix:       右ボタンは選択を拡張、左ボタンはビジュアルモードを開始"

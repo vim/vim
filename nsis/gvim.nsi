@@ -153,11 +153,16 @@ Page custom SetCustom ValidateCustom
 
 # Global variables
 Var vim_dialog
+Var vim_nsd_compat_1
+Var vim_nsd_compat_2
+Var vim_nsd_compat_3
+Var vim_nsd_compat_4
 Var vim_nsd_keymap_1
 Var vim_nsd_keymap_2
 Var vim_nsd_mouse_1
 Var vim_nsd_mouse_2
 Var vim_nsd_mouse_3
+Var vim_compat_stat
 Var vim_keymap_stat
 Var vim_mouse_stat
 
@@ -509,10 +514,21 @@ Section "$(str_section_vim_rc)" id_section_vimrc
 	${If} ${RunningX64}
 	  SetRegView 64
 	${EndIf}
+	WriteRegStr HKLM "${UNINST_REG_KEY_VIM}" "compat" "$vim_compat_stat"
 	WriteRegStr HKLM "${UNINST_REG_KEY_VIM}" "keyremap" "$vim_keymap_stat"
 	WriteRegStr HKLM "${UNINST_REG_KEY_VIM}" "mouse" "$vim_mouse_stat"
 	${If} ${RunningX64}
 	  SetRegView lastused
+	${EndIf}
+
+	${If} $vim_compat_stat == "vi"
+	  StrCpy $1 "$1 -vimrc-compat vi"
+	${ElseIf} $vim_compat_stat == "vim"
+	  StrCpy $1 "$1 -vimrc-compat vim"
+	${ElseIf} $vim_compat_stat == "defaults"
+	  StrCpy $1 "$1 -vimrc-compat defaults"
+	${Else}
+	  StrCpy $1 "$1 -vimrc-compat all"
 	${EndIf}
 
 	${If} $vim_keymap_stat == "default"
@@ -687,17 +703,53 @@ Function SetCustom
 	GetFunctionAddress $3 ValidateCustom
 	nsDialogs::OnBack $3
 
-	# 1st group - Key remapping
-	${NSD_CreateGroupBox} 0 0 100% 38% $(str_msg_keymap_title)
+
+	# 1st group - Compatibility
+	${NSD_CreateGroupBox} 0 0 100% 28% $(str_msg_compat_title)
 	Pop $3
 
-	${NSD_CreateRadioButton} 5% 8% 90% 8% $(str_msg_keymap_default)
+	${NSD_CreateRadioButton} 5% 8% 40% 8% $(str_msg_compat_vi)
+	Pop $vim_nsd_compat_1
+	${NSD_AddStyle} $vim_nsd_compat_1 ${WS_GROUP}
+
+	${NSD_CreateRadioButton} 50% 8% 40% 8% $(str_msg_compat_vim)
+	Pop $vim_nsd_compat_2
+
+	${NSD_CreateRadioButton} 5% 17% 40% 8% $(str_msg_compat_defaults)
+	Pop $vim_nsd_compat_3
+
+	${NSD_CreateRadioButton} 50% 17% 40% 8% $(str_msg_compat_all)
+	Pop $vim_nsd_compat_4
+
+	# Default button
+	${If} $vim_compat_stat == ""
+	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "compat"
+	${Else}
+	  StrCpy $3 $vim_compat_stat
+	${EndIf}
+	${If} $3 == "defaults"
+	  ${NSD_SetState} $vim_nsd_compat_3 ${BST_CHECKED}
+	${ElseIf} $3 == "vim"
+	  ${NSD_SetState} $vim_nsd_compat_2 ${BST_CHECKED}
+	${ElseIf} $3 == "vi"
+	  ${NSD_SetState} $vim_nsd_compat_1 ${BST_CHECKED}
+	${Else} # defualt
+	  ${NSD_SetState} $vim_nsd_compat_4 ${BST_CHECKED}
+	${EndIf}
+
+
+	# 2nd group - Key remapping
+	${NSD_CreateGroupBox} 0 31% 100% 28% $(str_msg_keymap_title)
+	Pop $3
+
+	${NSD_CreateRadioButton} 5% 39% 90% 8% $(str_msg_keymap_default)
 	Pop $vim_nsd_keymap_1
 	${NSD_AddStyle} $vim_nsd_keymap_1 ${WS_GROUP}
 
-	${NSD_CreateRadioButton} 5% 18% 90% 16% $(str_msg_keymap_windows)
+	${NSD_CreateRadioButton} 5% 48% 90% 8% $(str_msg_keymap_windows)
 	Pop $vim_nsd_keymap_2
 
+	# Default button
 	${If} $vim_keymap_stat == ""
 	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "keyremap"
 	${Else}
@@ -710,20 +762,21 @@ Function SetCustom
 	${EndIf}
 
 
-	# 2nd group - Mouse behavior
-	${NSD_CreateGroupBox} 0 42% 100% 58% $(str_msg_mouse_title)
+	# 3rd group - Mouse behavior
+	${NSD_CreateGroupBox} 0 62% 100% 37% $(str_msg_mouse_title)
 	Pop $3
 
-	${NSD_CreateRadioButton} 5% 48% 90% 16% $(str_msg_mouse_default)
+	${NSD_CreateRadioButton} 5% 70% 90% 8% $(str_msg_mouse_default)
 	Pop $vim_nsd_mouse_1
 	${NSD_AddStyle} $vim_nsd_mouse_1 ${WS_GROUP}
 
-	${NSD_CreateRadioButton} 5% 65% 90% 16% $(str_msg_mouse_windows)
+	${NSD_CreateRadioButton} 5% 79% 90% 8% $(str_msg_mouse_windows)
 	Pop $vim_nsd_mouse_2
 
-	${NSD_CreateRadioButton} 5% 81% 90% 16% $(str_msg_mouse_unix)
+	${NSD_CreateRadioButton} 5% 88% 90% 8% $(str_msg_mouse_unix)
 	Pop $vim_nsd_mouse_3
 
+	# Default button
 	${If} $vim_mouse_stat == ""
 	  ReadRegStr $3 HKLM "${UNINST_REG_KEY_VIM}" "mouse"
 	${Else}
@@ -745,6 +798,23 @@ Function SetCustom
 FunctionEnd
 
 Function ValidateCustom
+	${NSD_GetState} $vim_nsd_compat_1 $3
+	${If} $3 == ${BST_CHECKED}
+	  StrCpy $vim_compat_stat "vi"
+	${Else}
+	  ${NSD_GetState} $vim_nsd_compat_2 $3
+	  ${If} $3 == ${BST_CHECKED}
+	    StrCpy $vim_compat_stat "vim"
+	  ${Else}
+	    ${NSD_GetState} $vim_nsd_compat_3 $3
+	    ${If} $3 == ${BST_CHECKED}
+	      StrCpy $vim_compat_stat "defaults"
+	    ${Else}
+	      StrCpy $vim_compat_stat "all"
+	    ${EndIf}
+	  ${EndIf}
+	${EndIf}
+
 	${NSD_GetState} $vim_nsd_keymap_1 $3
 	${If} $3 == ${BST_CHECKED}
 	  StrCpy $vim_keymap_stat "default"
