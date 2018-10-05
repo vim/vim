@@ -3535,10 +3535,8 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     if (len >= _MAX_PATH)	/* safety check */
 	return FALSE;
 
-    /* If there already is an extension try using the name directly.  Also do
-     * this with a Unix-shell like 'shell'. */
-    if (vim_strchr(gettail(name), '.') != NULL
-			       || strstr((char *)gettail(p_sh), "sh") != NULL)
+    /* Ty using the name directly when a Unix-shell like 'shell'. */
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
 	if (executable_exists((char *)name, path, use_path))
 	    return TRUE;
 
