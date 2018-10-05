@@ -84,6 +84,15 @@ The best is to use `:help` in Vim.  If you don't have an executable yet, read
 files.  The User Manual reads like a book and is recommended to learn to use
 Vim.  See `:help user-manual`.
 
+## Resources ##
+
+Some resources to get started with VIM real quick,
+* [VIM Wiki](http://vim.wikia.com/wiki/Vim_Tips_Wiki)
+* [Learn VIM Script](http://learnvimscriptthehardway.stevelosh.com/)
+* [Quick Start](https://robots.thoughtbot.com/integrating-vim-into-your-life)
+* [Words, Modifiers, etc.](https://yanpritzker.com/learn-to-speak-vim-verbs-nouns-and-modifiers-d7bfed1f6b2d)
+* [VIM Cheat Sheet](https://vim.rtorr.com/)
+* [VIM Adventures](https://vim-adventures.com/)
 
 ## Copying ##
 
