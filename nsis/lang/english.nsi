@@ -157,7 +157,7 @@ LangString str_desc_rm_exe          ${LANG_ENGLISH} \
 LangString str_unsection_vimfiles   ${LANG_ENGLISH} \
     "Remove vimfiles directory"
 LangString str_desc_rm_vimfiles     ${LANG_ENGLISH} \
-    "Remove all files in your vimfiles directory."
+    "Remove your vimfiles directory if it is empty."
 
 LangString str_unsection_rootdir    ${LANG_ENGLISH} \
     "Remove the Vim root directory"

@@ -869,6 +869,21 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 
 	StrCpy $0 "$INSTDIR"
 
+	# Delete gettext and iconv DLLs
+	${If} ${FileExists} "$0\libiconv-2.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\libiconv-2.dll"
+	${EndIf}
+	${If} ${FileExists} "$0\libintl-8.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\libintl-8.dll"
+	${EndIf}
+	${If} ${FileExists} "$0\libgcc_s_sjlj-1.dll"
+	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
+	      "$0\libgcc_s_sjlj-1.dll"
+	${EndIf}
+
+	# Delete other DLLs
 	Delete /REBOOTOK $0\*.dll
 
 	# Delete 64-bit GvimExt
@@ -891,6 +906,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 		"$0\GvimExt64\libwinpthread-1.dll"
 	  ${EndIf}
 	  !undef LIBRARY_X64
+	  RMDir /r $0\GvimExt64
 	${EndIf}
 
 	# Delete 32-bit GvimExt
@@ -910,6 +926,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	  !insertmacro UninstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	      "$0\GvimExt32\libgcc_s_sjlj-1.dll"
 	${EndIf}
+	RMDir /r $0\GvimExt32
 
 	ClearErrors
 	# Remove everything but *.dll files.  Avoids that
@@ -921,6 +938,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir /r $0\ftplugin
 	RMDir /r $0\indent
 	RMDir /r $0\macros
+	RMDir /r $0\pack
 	RMDir /r $0\plugin
 	RMDir /r $0\spell
 	RMDir /r $0\syntax
@@ -960,7 +978,16 @@ Section "un.$(str_unsection_vimfiles)" id_unsection_vimfiles
 
 	${If} $1 != ""
 	${AndIf} ${FileExists} $1\vimfiles
-	  RMDir /r $1\vimfiles
+	  RMDir $1\vimfiles\colors
+	  RMDir $1\vimfiles\compiler
+	  RMDir $1\vimfiles\doc
+	  RMDir $1\vimfiles\ftdetect
+	  RMDir $1\vimfiles\ftplugin
+	  RMDir $1\vimfiles\indent
+	  RMDir $1\vimfiles\keymap
+	  RMDir $1\vimfiles\plugin
+	  RMDir $1\vimfiles\syntax
+	  RMDir $1\vimfiles
 	${EndIf}
 SectionEnd
 
@@ -970,7 +997,8 @@ Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	Call un.GetParent
 	Pop $0
 
-	RMDir /r $0
+	Delete $0\_vimrc
+	RMDir $0
 SectionEnd
 
 ##########################################################

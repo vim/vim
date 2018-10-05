@@ -153,7 +153,7 @@ LangString str_desc_rm_exe          ${LANG_JAPANESE} \
 LangString str_unsection_vimfiles   ${LANG_JAPANESE} \
     "vimfiles ディレクトリを削除"
 LangString str_desc_rm_vimfiles     ${LANG_JAPANESE} \
-    "vimfiles ディレクトリとその中の全てのファイルを削除します。"
+    "vimfiles ディレクトリが空であればそれを削除します。"
 
 LangString str_unsection_rootdir    ${LANG_JAPANESE} \
     "Vim のトップディレクトリを削除"
