@@ -3530,7 +3530,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 {
     char_u	buf[_MAX_PATH];
     int		len = (int)STRLEN(name);
-    char_u	*p;
+    char_u	*p, *saved;
 
     if (len >= _MAX_PATH)	/* safety check */
 	return FALSE;
@@ -3543,6 +3543,31 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     /*
      * Loop over all extensions in $PATHEXT.
      */
+    p = mch_getenv("PATHEXT");
+    if (p == NULL)
+	p = (char_u *)".com;.exe;.bat;.cmd";
+    saved = vim_strsave(p);
+    if (saved == NULL)
+	return FALSE;
+    p = saved;
+    while (*p)
+    {
+	char_u	*tmp = vim_strchr(p, ';');
+	if (tmp != NULL)
+	    *tmp = NUL;
+	if (_stricoll((char *)name + len - STRLEN(p), (char*) p) == 0
+	    && executable_exists((char*) name, path, use_path))
+	{
+	    vim_free(saved);
+	    return TRUE;
+	}
+	if (tmp != NULL)
+	    p = tmp + 1;
+	else
+	    break;
+    }
+    vim_free(saved);
+
     vim_strncpy(buf, name, _MAX_PATH - 1);
     p = mch_getenv("PATHEXT");
     if (p == NULL)
