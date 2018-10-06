@@ -225,6 +225,11 @@ func Test_resolve()
   call assert_equal('Xdir/Xfile', resolve('Xlink'))
   call delete('Xlink')
 
+  silent !ln -s -f Xlink2/ Xlink1
+  call assert_equal('Xlink2', resolve('Xlink1'))
+  call assert_equal('Xlink2/', resolve('Xlink1/'))
+  call delete('Xlink1')
+
   silent !ln -s -f ./Xlink2 Xlink1
   call assert_equal('Xlink2', resolve('Xlink1'))
   call assert_equal('./Xlink2', resolve('./Xlink1'))
