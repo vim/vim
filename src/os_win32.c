@@ -573,7 +573,8 @@ get_dll_import_func(HINSTANCE hInst, const char *funcname)
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
-#  define GETTEXT_DLL_ALT "libintl-8.dll"
+#  define GETTEXT_DLL_ALT1 "libintl-8.dll"
+#  define GETTEXT_DLL_ALT2 "intl.dll"
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
@@ -614,14 +615,18 @@ dyn_libintl_init(void)
     };
     HINSTANCE hmsvcrt;
 
-    /* No need to initialize twice. */
-    if (hLibintlDLL)
+    // No need to initialize twice.
+    if (hLibintlDLL != NULL)
 	return 1;
-    /* Load gettext library (libintl.dll) */
+    // Load gettext library (libintl.dll and other names).
     hLibintlDLL = vimLoadLib(GETTEXT_DLL);
-#ifdef GETTEXT_DLL_ALT
+#ifdef GETTEXT_DLL_ALT1
     if (!hLibintlDLL)
-	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT);
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT1);
+#endif
+#ifdef GETTEXT_DLL_ALT2
+    if (!hLibintlDLL)
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT2);
 #endif
     if (!hLibintlDLL)
     {
