@@ -4506,19 +4506,23 @@ findswapname(
 #endif
 		    {
 #ifdef FEAT_GUI
-			/* If we are supposed to start the GUI but it wasn't
-			 * completely started yet, start it now.  This makes
-			 * the messages displayed in the Vim window when
-			 * loading a session from the .gvimrc file. */
+			// If we are supposed to start the GUI but it wasn't
+			// completely started yet, start it now.  This makes
+			// the messages displayed in the Vim window when
+			// loading a session from the .gvimrc file.
 			if (gui.starting && !gui.in_use)
 			    gui_start();
 #endif
-			/* Show info about the existing swap file. */
+			// Show info about the existing swap file.
 			attention_message(buf, fname);
 
-			/* We don't want a 'q' typed at the more-prompt
-			 * interrupt loading a file. */
+			// We don't want a 'q' typed at the more-prompt
+			// interrupt loading a file.
 			got_int = FALSE;
+
+			// If vimrc has "simalt ~x" we don't want it to
+			// interfere with the prompt here.
+			flush_buffers(TRUE);
 		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
