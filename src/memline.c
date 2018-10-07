@@ -4522,7 +4522,7 @@ findswapname(
 
 			// If vimrc has "simalt ~x" we don't want it to
 			// interfere with the prompt here.
-			flush_buffers(TRUE);
+			flush_buffers(FLUSH_TYPEAHEAD);
 		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)

@@ -438,7 +438,7 @@ typeahead_noflush(int c)
  * flush all typeahead characters (used when interrupted by a CTRL-C).
  */
     void
-flush_buffers(int flush_typeahead)
+flush_buffers(flush_buffers_T flush_typeahead)
 {
     init_typebuf();
 
@@ -446,15 +446,21 @@ flush_buffers(int flush_typeahead)
     while (read_readbuffers(TRUE) != NUL)
 	;
 
-    if (flush_typeahead)	    /* remove all typeahead */
+    if (flush_typeahead == FLUSH_MINIMAL)
     {
-	/*
-	 * We have to get all characters, because we may delete the first part
-	 * of an escape sequence.
-	 * In an xterm we get one char at a time and we have to get them all.
-	 */
-	while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L) != 0)
-	    ;
+	// remove mapped characters at the start only
+	typebuf.tb_off += typebuf.tb_maplen;
+	typebuf.tb_len -= typebuf.tb_maplen;
+    }
+    else
+    {
+	// remove typeahead
+	if (flush_typeahead == FLUSH_INPUT)
+	    // We have to get all characters, because we may delete the first
+	    // part of an escape sequence.  In an xterm we get one char at a
+	    // time and we have to get them all.
+	    while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L) != 0)
+		;
 	typebuf.tb_off = MAXMAPLEN;
 	typebuf.tb_len = 0;
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
@@ -462,11 +468,6 @@ flush_buffers(int flush_typeahead)
 	 * was inserted in the typeahead buffer. */
 	typebuf_was_filled = FALSE;
 #endif
-    }
-    else		    /* remove mapped characters at the start only */
-    {
-	typebuf.tb_off += typebuf.tb_maplen;
-	typebuf.tb_len -= typebuf.tb_maplen;
     }
     typebuf.tb_maplen = 0;
     typebuf.tb_silent = 0;
@@ -1858,6 +1859,7 @@ plain_vgetc(void)
  * Check if a character is available, such that vgetc() will not block.
  * If the next character is a special character or multi-byte, the returned
  * character is not valid!.
+ * Returns NUL if no character is available.
  */
     int
 vpeekc(void)
@@ -1956,7 +1958,8 @@ vungetc(int c)
  *	KeyTyped is set to TRUE in the case the user typed the key.
  *	KeyStuffed is TRUE if the character comes from the stuff buffer.
  * if "advance" is FALSE (vpeekc()):
- *	just look whether there is a character available.
+ *	Just look whether there is a character available.
+ *	Return NUL if not.
  *
  * When "no_mapping" is zero, checks for mappings in the current mode.
  * Only returns one byte (of a multi-byte character).
@@ -2084,7 +2087,7 @@ vgetorpeek(int advance)
 			c = ESC;
 		    else
 			c = Ctrl_C;
-		    flush_buffers(TRUE);	/* flush all typeahead */
+		    flush_buffers(FLUSH_INPUT);	// flush all typeahead
 
 		    if (advance)
 		    {
@@ -2510,7 +2513,7 @@ vgetorpeek(int advance)
 				redrawcmdline();
 			    else
 				setcursor();
-			    flush_buffers(FALSE);
+			    flush_buffers(FLUSH_MINIMAL);
 			    mapdepth = 0;	/* for next one */
 			    c = -1;
 			    break;
