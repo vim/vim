@@ -1609,7 +1609,11 @@ install_registry(void)
     }
 
     printf("Creating an uninstall entry\n");
-    sprintf(display_name, "Vim " VIM_VERSION_SHORT);
+    sprintf(display_name, "Vim " VIM_VERSION_SHORT
+#ifdef _WIN64
+	    " (x64)"
+#endif
+	    );
 
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)

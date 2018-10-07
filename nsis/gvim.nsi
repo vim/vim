@@ -42,6 +42,9 @@ Unicode true
 # Comment the following line to create a multilanguage installer:
 !define HAVE_MULTI_LANG
 
+# Uncomment the next line if you want to create a 64-bit installer.
+#!define WIN64
+
 !include gvim_version.nsh	# for version number
 
 # ----------- No configurable settings below this line -----------
@@ -60,7 +63,11 @@ Unicode true
 !define UNINST_REG_KEY	"Software\Microsoft\Windows\CurrentVersion\Uninstall"
 !define UNINST_REG_KEY_VIM  "${UNINST_REG_KEY}\${PRODUCT}"
 
+!ifdef WIN64
+Name "${PRODUCT} (x64)"
+!else
 Name "${PRODUCT}"
+!endif
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
 CRCCheck force
 SetCompressor /SOLID lzma
@@ -73,6 +80,11 @@ RequestExecutionLevel highest
   !packhdr temp.dat "upx --best --compress-icons=1 temp.dat"
 !endif
 
+!ifdef WIN64
+!define BIT	64
+!else
+!define BIT	32
+!endif
 
 ##########################################################
 # MUI2 settings
@@ -102,7 +114,11 @@ RequestExecutionLevel highest
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
+!ifdef WIN64
+InstallDir "$PROGRAMFILES64\Vim"
+!else
 InstallDir "$PROGRAMFILES\Vim"
+!endif
 
 # Types of installs we can perform:
 InstType $(str_type_typical)
@@ -309,7 +325,11 @@ Function .onInit
 
   # If did not find a path: use the default dir.
   ${If} $INSTDIR == ""
+!ifdef WIN64
+    StrCpy $INSTDIR "$PROGRAMFILES64\Vim"
+!else
     StrCpy $INSTDIR "$PROGRAMFILES\Vim"
+!endif
   ${EndIf}
 
   # User variables:
@@ -352,7 +372,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\rgb.txt
 
 	File ${VIMTOOLS}\diff.exe
-	File ${VIMTOOLS}\winpty32.dll
+	File ${VIMTOOLS}\winpty${BIT}.dll
 	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
@@ -579,15 +599,15 @@ Section "$(str_section_nls)" id_section_nls
 	File ${VIMRT}\keymap\*.vim
 	SetOutPath $0
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-	    "${GETTEXT}\gettext32\libintl-8.dll" \
+	    "${GETTEXT}\gettext${BIT}\libintl-8.dll" \
 	    "$0\libintl-8.dll" "$0"
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-	    "${GETTEXT}\gettext32\libiconv-2.dll" \
+	    "${GETTEXT}\gettext${BIT}\libiconv-2.dll" \
 	    "$0\libiconv-2.dll" "$0"
-  !if /FileExists "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll"
+  !if /FileExists "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll"
 	# Install libgcc_s_sjlj-1.dll only if it is needed.
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
-	    "${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll" \
+	    "${GETTEXT}\gettext${BIT}\libgcc_s_sjlj-1.dll" \
 	    "$0\libgcc_s_sjlj-1.dll" "$0"
   !endif
 
