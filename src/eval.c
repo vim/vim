@@ -9041,6 +9041,8 @@ assert_fails(typval_T *argvars)
     char_u	*cmd = get_tv_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
+    char_u	numbuf[NUMBUFLEN];
+    char_u	*tofree;
 
     called_emsg = FALSE;
     suppress_errthrow = TRUE;
@@ -9050,7 +9052,14 @@ assert_fails(typval_T *argvars)
     {
 	prepare_assert_error(&ga);
 	ga_concat(&ga, (char_u *)"command did not fail: ");
-	ga_concat(&ga, cmd);
+	if (argvars[1].v_type != VAR_UNKNOWN
+					   && argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
+	    vim_free(tofree);
+	}
+	else
+	    ga_concat(&ga, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
 	ret = 1;
