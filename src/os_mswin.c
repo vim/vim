@@ -2343,8 +2343,8 @@ enum_windows_toplevel(HWND hwnd, LPARAM lParam)
 {
     struct enum_windows_s *ew = (struct enum_windows_s *)lParam;
 
-    if ((ew->lpEnumFunc)(hwnd, ew->lParam) == FALSE)
-	return FALSE;
+    if ((ew->lpEnumFunc)(hwnd, ew->lParam))
+	return TRUE;
     return EnumChildWindows(hwnd, enum_windows_child, lParam);
 }
 
