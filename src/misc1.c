@@ -11392,6 +11392,23 @@ get_cmd_output(
 	return NULL;
     }
 
+#if defined(FEAT_MBYTE) && defined(WIN3264)
+    if (enc_utf8)
+    {
+	int	len;
+	char_u  *pp = NULL;
+
+	/* Convert from active codepage to UTF-8 since mch_call_shell
+	 * convert command-line to wide string from encoding. */
+	acp_to_enc(tempname, (int)STRLEN(tempname), &pp, &len);
+	if (pp != NULL)
+	{
+	    vim_free(tempname);
+	    tempname = pp;
+	}
+    }
+#endif
+
     /* Add the redirection stuff */
     command = make_filter_cmd(cmd, infile, tempname);
     if (command == NULL)
