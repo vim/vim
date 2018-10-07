@@ -1499,6 +1499,15 @@ restofline:
 }
 
 /*
+ * Returns TRUE if the specified quickfix/location stack is empty
+ */
+    static int
+qf_stack_empty(qf_info_T *qi)
+{
+    return qi == NULL || qi->qf_listcount <= 0;
+}
+
+/*
  * Returns TRUE if the specified quickfix/location list is empty.
  */
     static int
@@ -3220,8 +3229,7 @@ qf_jump(qf_info_T	*qi,
     if (qi == NULL)
 	qi = &ql_info;
 
-    if (qi->qf_curlist >= qi->qf_listcount
-	|| qf_list_empty(qi, qi->qf_curlist))
+    if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
     {
 	EMSG(_(e_quickfix));
 	return;
@@ -3412,8 +3420,7 @@ qf_list(exarg_T *eap)
 	}
     }
 
-    if (qi->qf_curlist >= qi->qf_listcount
-	|| qf_list_empty(qi, qi->qf_curlist))
+    if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
     {
 	EMSG(_(e_quickfix));
 	return;
@@ -3601,8 +3608,7 @@ qf_history(exarg_T *eap)
 
     if (is_loclist_cmd(eap->cmdidx))
 	qi = GET_LOC_LIST(curwin);
-    if (qi == NULL || (qi->qf_listcount == 0
-				&& qf_list_empty(qi, qi->qf_curlist)))
+    if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
 	MSG(_("No entries"));
     else
 	for (i = 0; i < qi->qf_listcount; ++i)
@@ -3830,9 +3836,9 @@ ex_cwindow(exarg_T *eap)
      * close the window.  If a quickfix window is not open, then open
      * it if we have errors; otherwise, leave it closed.
      */
-    if (qi->qf_lists[qi->qf_curlist].qf_nonevalid
-	    || qf_list_empty(qi, qi->qf_curlist)
-	    || qi->qf_curlist >= qi->qf_listcount)
+    if (qf_stack_empty(qi)
+	    || qi->qf_lists[qi->qf_curlist].qf_nonevalid
+	    || qf_list_empty(qi, qi->qf_curlist))
     {
 	if (win != NULL)
 	    ex_cclose(eap);
@@ -4342,7 +4348,7 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     }
 
     /* Check if there is anything to display */
-    if (qi->qf_curlist < qi->qf_listcount)
+    if (!qf_stack_empty(qi))
     {
 	char_u	dirname[MAXPATHL];
 
@@ -5333,7 +5339,7 @@ ex_vimgrep(exarg_T *eap)
     if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd
 		&& eap->cmdidx != CMD_vimgrepadd
 		&& eap->cmdidx != CMD_lvimgrepadd)
-					|| qi->qf_curlist == qi->qf_listcount)
+					|| qf_stack_empty(qi))
 	/* make place for a new list */
 	qf_new_list(qi, title != NULL ? title : qf_cmdtitle(*eap->cmdlinep));
 
@@ -6107,11 +6113,11 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     flags = qf_getprop_keys2flags(what, (wp != NULL));
 
-    if (qi != NULL && qi->qf_listcount != 0)
+    if (!qf_stack_empty(qi))
 	qf_idx = qf_getprop_qfidx(qi, what);
 
     /* List is not present or is empty */
-    if (qi == NULL || qi->qf_listcount == 0 || qf_idx == INVALID_QFIDX)
+    if (qf_stack_empty(qi) || qf_idx == INVALID_QFIDX)
 	return qf_getprop_defaults(qi, flags, retdict);
 
     qfl = &qi->qf_lists[qf_idx];
@@ -6313,7 +6319,7 @@ qf_setprop_get_qfidx(
 		 * stack.
 		 */
 		*newlist = TRUE;
-		qf_idx = qi->qf_listcount > 0 ? qi->qf_listcount - 1 : 0;
+		qf_idx = qf_stack_empty(qi) ? 0 : qi->qf_listcount - 1;
 	    }
 	    else if (qf_idx < 0 || qf_idx >= qi->qf_listcount)
 		return INVALID_QFIDX;
@@ -6324,7 +6330,7 @@ qf_setprop_get_qfidx(
 		&& di->di_tv.vval.v_string != NULL
 		&& STRCMP(di->di_tv.vval.v_string, "$") == 0)
 	{
-	    if (qi->qf_listcount > 0)
+	    if (!qf_stack_empty(qi))
 		qf_idx = qi->qf_listcount - 1;
 	    else if (*newlist)
 		qf_idx = 0;
@@ -6452,7 +6458,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     int		qf_idx;
     int		newlist = FALSE;
 
-    if (action == ' ' || qi->qf_curlist == qi->qf_listcount)
+    if (action == ' ' || qf_stack_empty(qi))
 	newlist = TRUE;
 
     qf_idx = qf_setprop_get_qfidx(qi, what, action, &newlist);
