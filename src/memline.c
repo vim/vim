@@ -4519,6 +4519,9 @@ findswapname(
 			/* We don't want a 'q' typed at the more-prompt
 			 * interrupt loading a file. */
 			got_int = FALSE;
+
+			/* flush all typeahead */
+			flush_buffers(TRUE);
 		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
