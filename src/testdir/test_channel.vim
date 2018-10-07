@@ -1728,7 +1728,7 @@ func Test_job_start_windows()
 
   let g:echostr = ''
   let cmd = $COMSPEC . ' /c echo 1'
-  call assert_fails('call job_start(cmd, {"env": 1})', 'E475:')
+  call assert_fails('call job_start(cmd)', 'E475:')
   call job_start(cmd, {'callback': {ch,msg -> execute(":let g:echostr .= msg")}})
   call WaitForAssert({-> assert_equal("1", g:echostr)})
   unlet g:echostr
