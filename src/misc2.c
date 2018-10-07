@@ -6440,7 +6440,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
     int		inquote;
     int		use_escape = TRUE;
 
-# ifndef _WIN32
+# ifdef _WIN32
     use_escape = strstr((char *)gettail(p_sh), "sh") != NULL;
 # endif
 
