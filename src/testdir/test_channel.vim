@@ -1721,6 +1721,22 @@ func Test_read_from_terminated_job()
   call WaitForAssert({-> assert_equal(1, g:linecount)})
 endfunc
 
+func Test_job_start_windows()
+  if !has('job') || !has('win32')
+    return
+  endif
+
+  " Check that backslash in $COMSPEC is handled properly.
+  let g:echostr = ''
+  let cmd = $COMSPEC . ' /c echo 123'
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:echostr .= msg")}})
+  let info = job_info(job)
+  call assert_equal([$COMSPEC, '/c', 'echo', '123'], info.cmd)
+
+  call WaitForAssert({-> assert_equal("123", g:echostr)})
+  unlet g:echostr
+endfunc
+
 func Test_env()
   if !has('job')
     return

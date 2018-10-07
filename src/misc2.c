@@ -6458,14 +6458,14 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
 	    {
 		if (p[0] == '"')
-		    /* quotes surrounding an argument and are dropped */
+		    // quotes surrounding an argument and are dropped
 		    inquote = !inquote;
 		else
 		{
-		    if (p[0] == '\\' && p[1] != NUL)
+		    if (rem_backslash(p))
 		    {
-			/* First pass: skip over "\ " and "\"".
-			 * Second pass: Remove the backslash. */
+			// First pass: skip over "\ " and "\"".
+			// Second pass: Remove the backslash.
 			++p;
 		    }
 		    if (i == 1)
