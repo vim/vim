@@ -6462,12 +6462,14 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 		    inquote = !inquote;
 		else
 		{
+# ifndef _WIN32
 		    if (p[0] == '\\' && p[1] != NUL)
 		    {
 			/* First pass: skip over "\ " and "\"".
 			 * Second pass: Remove the backslash. */
 			++p;
 		    }
+# endif
 		    if (i == 1)
 			*d++ = *p;
 		}
