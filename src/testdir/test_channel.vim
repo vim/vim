@@ -1721,6 +1721,20 @@ func Test_read_from_terminated_job()
   call WaitForAssert({-> assert_equal(1, g:linecount)})
 endfunc
 
+func Test_job_start_windows()
+  if !has('job') || !has('win32')
+    return
+  endif
+
+  let g:echostr = ''
+  let cmd = $COMSPEC . ' /c echo 1'
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:echostr .= msg")}})
+  call WaitForAssert({-> assert_equal("1", g:echostr)})
+  unlet g:echostr
+  let info = job_info(job)
+  call assert_equal([$COMSPEC, '/c', 'echo', '1'], info.cmd)
+endfunction
+
 func Test_env()
   if !has('job')
     return

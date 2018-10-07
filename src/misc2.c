@@ -6438,6 +6438,11 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
     int		i;
     char_u	*p, *d;
     int		inquote;
+    int		use_escape = TRUE;
+
+# ifdef _WIN32
+    use_escape = strstr((char *)gettail(p_sh), "sh") != NULL;
+# endif
 
     /*
      * Do this loop twice:
@@ -6462,7 +6467,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 		    inquote = !inquote;
 		else
 		{
-		    if (p[0] == '\\' && p[1] != NUL)
+		    if (use_escape && p[0] == '\\' && p[1] != NUL)
 		    {
 			/* First pass: skip over "\ " and "\"".
 			 * Second pass: Remove the backslash. */
