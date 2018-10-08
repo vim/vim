@@ -7578,6 +7578,22 @@ vim_tempname(
 	for (p = retval; *p; ++p)
 	    if (*p == '\\')
 		*p = '/';
+
+
+#if defined(FEAT_MBYTE) && defined(WIN3264)
+    if (enc_utf8)
+    {
+	int	len;
+	char_u  *pp = NULL;
+
+	/* Convert from active codepage to UTF-8 since mch_call_shell
+	 * convert command-line to wide string from encoding. */
+	acp_to_enc(retval, (int)STRLEN(retval), &pp, &len);
+	if (pp != NULL)
+	    return pp;
+    }
+#endif
+
     return retval;
 
 # else /* WIN3264 */
