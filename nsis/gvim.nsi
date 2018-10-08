@@ -283,6 +283,7 @@ Section "$(str_section_old_ver)" id_section_old_ver
 	# run the install program to check for already installed versions
 	SetOutPath $TEMP
 	File /oname=install.exe ${VIMSRC}\installw32.exe
+	DetailPrint "$(str_msg_wait_uninst)"
 	${Do}
 	  nsExec::Exec "$TEMP\install.exe -uninstall-check"
 	  Pop $3
@@ -648,6 +649,7 @@ SectionEnd
 ##########################################################
 Section -call_install_exe
 	SetOutPath $0
+	DetailPrint "$(str_msg_registering)"
 	nsExec::Exec "$0\install.exe $1"
 	Pop $3
 SectionEnd
@@ -878,6 +880,7 @@ Section "un.$(str_unsection_register)" id_unsection_register
 !endif
 
 	# delete the context menu entry and batch files
+	DetailPrint "$(str_msg_unregistering)"
 	nsExec::Exec "$0\uninstal.exe -nsis"
 	Pop $3
 

@@ -218,6 +218,15 @@ LangString str_msg_rm_root_fail  ${LANG_TRADCHINESE} \
     "警告：無法刪除 Vim 安裝資料夾「$vim_install_root」，\
      該資料夾下仍有其他檔案。"
 
+LangString str_msg_wait_uninst   ${LANG_TRADCHINESE} \
+    "Waiting the old version to be uninstalled..."
+
+LangString str_msg_registering   ${LANG_TRADCHINESE} \
+    "Registering..."
+
+LangString str_msg_unregistering ${LANG_TRADCHINESE} \
+    "Unregistering..."
+
 
 ##############################################################################
 # Dialog Box                                                              {{{1
