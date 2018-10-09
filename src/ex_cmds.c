@@ -1676,6 +1676,26 @@ do_shell(
     apply_autocmds(EVENT_SHELLCMDPOST, NULL, NULL, FALSE, curbuf);
 }
 
+#if !defined(UNIX)
+    static char_u *
+find_pipe(char_u *cmd)
+{
+    char_u  *p;
+    int	    inquote = FALSE;
+
+    for (p = cmd; *p != NUL; ++p)
+    {
+	if (!inquote && *p == '|')
+	    return p;
+	if (*p == '"')
+	    inquote = !inquote;
+	else if (rem_backslash(p))
+	    ++p;
+    }
+    return NULL;
+}
+#endif
+
 /*
  * Create a shell command from a command string, input redirection file and
  * output redirection file.
@@ -1746,7 +1766,7 @@ make_filter_cmd(
 	 */
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(buf, '|');
+	    p = find_pipe(buf);
 	    if (p != NULL)
 		*p = NUL;
 	}
@@ -1754,7 +1774,7 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(cmd, '|');
+	    p = find_pipe(cmd);
 	    if (p != NULL)
 	    {
 		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
