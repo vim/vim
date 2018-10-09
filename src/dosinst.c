@@ -18,6 +18,7 @@
  */
 #define DOSINST
 #include "dosinst.h"
+#include <io.h>
 
 #define GVIMEXT64_PATH	    "GvimExt64\\gvimext.dll"
 #define GVIMEXT32_PATH	    "GvimExt32\\gvimext.dll"
@@ -569,7 +570,6 @@ uninstall_check(int skip_question)
 			sleep(1);  /* wait for uninstaller to start up */
 			num_windows = 0;
 			EnumWindows(window_cb, 0);
-			sleep(1);  /* wait for windows to be counted */
 			if (num_windows == 0)
 			{
 			    /* Did not find the uninstaller, ask user to press
@@ -585,9 +585,9 @@ uninstall_check(int skip_question)
 			    {
 				printf(".");
 				fflush(stdout);
+				sleep(1);  /* wait for the uninstaller to finish */
 				num_windows = 0;
 				EnumWindows(window_cb, 0);
-				sleep(1);  /* wait for windows to be counted */
 			    } while (num_windows > 0);
 			}
 			printf("\nDone!\n");
@@ -2589,7 +2589,7 @@ main(int argc, char **argv)
 
 	/* When nothing found exit quietly.  If something found wait for
 	 * a little while, so that the user can read the messages. */
-	if (i)
+	if (i && _isatty(1))
 	    sleep(3);
 	exit(0);
     }
