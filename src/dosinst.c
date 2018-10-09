@@ -1161,17 +1161,21 @@ install_vimrc(int idx)
     switch (compat_choice)
     {
 	case compat_vi:
+		    fprintf(fd, "\" Vi compatible\n");
 		    fprintf(fd, "set compatible\n");
 		    break;
 	case compat_vim:
+		    fprintf(fd, "\" Vim's default behavior\n");
 		    fprintf(fd, "if &compatible\n");
 		    fprintf(fd, "  set nocompatible\n");
 		    fprintf(fd, "endif\n");
 		    break;
 	case compat_some_enhancements:
+		    fprintf(fd, "\" Vim with some enhancements\n");
 		    fprintf(fd, "source $VIMRUNTIME/defaults.vim\n");
 		    break;
 	case compat_all_enhancements:
+		    fprintf(fd, "\" Vim with all enhancements\n");
 		    fprintf(fd, "source $VIMRUNTIME/vimrc_example.vim\n");
 		    break;
     }
@@ -1180,15 +1184,21 @@ install_vimrc(int idx)
 	case remap_no:
 		    break;
 	case remap_win:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Remap a few keys for Windows behavior\n");
 		    fprintf(fd, "source $VIMRUNTIME/mswin.vim\n");
 		    break;
     }
     switch (mouse_choice)
     {
 	case mouse_xterm:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Mouse behavior (the Unix way)\n");
 		    fprintf(fd, "behave xterm\n");
 		    break;
 	case mouse_mswin:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Mouse behavior (the Windows way)\n");
 		    fprintf(fd, "behave mswin\n");
 		    break;
 	case mouse_default:
@@ -1199,6 +1209,8 @@ install_vimrc(int idx)
 	/* Use the diff.exe that comes with the self-extracting gvim.exe. */
 	fclose(tfd);
 	fprintf(fd, "\n");
+	fprintf(fd, "\" Use the internal diff if available.\n");
+	fprintf(fd, "\" Otherwise use the special 'diffexpr' for Windows.\n");
 	fprintf(fd, "if &diffopt !~# 'internal'\n");
 	fprintf(fd, "  set diffexpr=MyDiff()\n");
 	fprintf(fd, "endif\n");
