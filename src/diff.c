@@ -1830,6 +1830,9 @@ diff_check(win_T *wp, linenr_T lnum)
     int		i;
     buf_T	*buf = wp->w_buffer;
     int		cmp;
+    int     use_dbuf;
+    int     bufidx_start;
+    int     bufidx_stop;
 
     if (curtab->tp_diff_invalid)
 	ex_diffupdate(NULL);		/* update after a big change */
@@ -1866,9 +1869,9 @@ diff_check(win_T *wp, linenr_T lnum)
 	 * zero, the lines were inserted.  If the other buffers have the same
 	 * count, check if the lines are identical. */
 	cmp = FALSE;
-	int use_dbuf = (p_dbuf > 0 && p_dbuf <= DB_COUNT && curtab->tp_diffbuf[p_dbuf-1] != NULL && p_dbuf-1 != idx);
-	int bufidx_start = use_dbuf ? (p_dbuf-1) : 0;
-	int bufidx_stop = use_dbuf ? p_dbuf : DB_COUNT;
+	use_dbuf = (p_dbuf > 0 && p_dbuf <= DB_COUNT && curtab->tp_diffbuf[p_dbuf-1] != NULL && p_dbuf-1 != idx);
+	bufidx_start = use_dbuf ? (p_dbuf-1) : 0;
+	bufidx_stop = use_dbuf ? p_dbuf : DB_COUNT;
 	for (i = bufidx_start; i < bufidx_stop; ++i)
 	    if (i != idx && curtab->tp_diffbuf[i] != NULL)
 	    {
