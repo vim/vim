@@ -1872,14 +1872,14 @@ diff_check(win_T *wp, linenr_T lnum)
 	for (i = bufidx_start; i < bufidx_stop; ++i)
 	    if (i != idx && curtab->tp_diffbuf[i] != NULL)
 	    {
-		if (dp->df_count[i] == 0)
-		    zero = TRUE;
-		else
-		{
-		    if (dp->df_count[i] != dp->df_count[idx])
-			return -1;	    /* nr of lines changed. */
-		    cmp = TRUE;
-		}
+	        if (dp->df_count[i] == 0)
+	            zero = TRUE;
+	        else
+	        {
+	            if (dp->df_count[i] != dp->df_count[idx])
+	                return -1;      /* nr of lines changed. */
+	            cmp = TRUE;
+	        }
 	    }
 	if (cmp)
 	{
