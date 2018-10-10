@@ -1055,6 +1055,14 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)NULL}
 #endif
 			    SCTX_INIT},
+    {"diffbuf",     "dbuf", P_NUM|P_RALL|P_VI_DEF,
+#ifdef FEAT_DIFF
+			    (char_u *)&p_dbuf, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)0L, (char_u *)0L}
+			    SCTX_INIT},
     {"digraph",	    "dg",   P_BOOL|P_VI_DEF|P_VIM,
 #ifdef FEAT_DIGRAPHS
 			    (char_u *)&p_dg, PV_NONE,
