@@ -5491,13 +5491,6 @@ conpty_term_and_job_init(
     SIZE_T	    breq;
     PROCESS_INFORMATION proc_info;
 
-    term->tl_conpty = NULL;
-    term->tl_i_theirs = INVALID_HANDLE_VALUE;
-    term->tl_i_ours = INVALID_HANDLE_VALUE;
-    term->tl_o_theirs = INVALID_HANDLE_VALUE;
-    term->tl_o_ours = INVALID_HANDLE_VALUE;
-    vim_memset(&term->tl_siex, 0, sizeof(term->tl_siex));
-
     ga_init2(&ga_cmd, (int)sizeof(char*), 20);
     ga_init2(&ga_env, (int)sizeof(char*), 20);
 
@@ -5599,9 +5592,9 @@ conpty_term_and_job_init(
 	goto failed;
 
     CloseHandle(term->tl_i_theirs);
-    term->tl_i_theirs = INVALID_HANDLE_VALUE;
+    term->tl_i_theirs = NULL;
     CloseHandle(term->tl_o_theirs);
-    term->tl_o_theirs = INVALID_HANDLE_VALUE;
+    term->tl_o_theirs = NULL;
 
     channel_set_pipes(channel,
 	    (sock_T)term->tl_i_ours,
@@ -5643,7 +5636,6 @@ conpty_term_and_job_init(
     job_set_options(job, opt);
 
     job->jv_channel = channel;
-    job->jv_term = term;
     job->jv_proc_info = proc_info;
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
@@ -5687,17 +5679,16 @@ failed:
 	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
 	vim_free(term->tl_siex.lpAttributeList);
     }
+    if (term->tl_o_theirs != NULL)
+	CloseHandle(term->tl_o_theirs);
+    if (term->tl_o_ours != NULL)
+	CloseHandle(term->tl_o_ours);
+    if (term->tl_i_ours != NULL)
+	CloseHandle(term->tl_i_ours);
+    if (term->tl_i_theirs != NULL)
+	CloseHandle(term->tl_i_theirs);
     if (term->tl_conpty != NULL)
 	pClosePseudoConsole(term->tl_conpty);
-    term->tl_conpty = NULL;
-    if (term->tl_o_theirs != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_o_theirs);
-    if (term->tl_o_ours != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_o_ours);
-    if (term->tl_i_ours != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_i_ours);
-    if (term->tl_i_theirs != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_i_theirs);
     return FAIL;
 }
 
@@ -5720,15 +5711,15 @@ term_free_conpty(term_T *term)
 	vim_free(term->tl_siex.lpAttributeList);
     }
     term->tl_siex.lpAttributeList = NULL;
+    if (term->tl_o_ours != NULL)
+	CloseHandle(term->tl_o_ours);
+    term->tl_o_ours = NULL;
+    if (term->tl_i_ours != NULL)
+	CloseHandle(term->tl_i_ours);
+    term->tl_i_ours = NULL;
     if (term->tl_conpty != NULL)
 	pClosePseudoConsole(term->tl_conpty);
     term->tl_conpty = NULL;
-    if (term->tl_o_ours != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_o_ours);
-    term->tl_o_ours = INVALID_HANDLE_VALUE;
-    if (term->tl_i_ours != INVALID_HANDLE_VALUE)
-	CloseHandle(term->tl_i_ours);
-    term->tl_i_ours = INVALID_HANDLE_VALUE;
 }
 
     int
@@ -6121,6 +6112,7 @@ failed:
     static void
 term_free_vterm(term_T *term)
 {
+    term_free_conpty(term);
     if (term->tl_winpty != NULL)
 	winpty_free(term->tl_winpty);
     term->tl_winpty = NULL;

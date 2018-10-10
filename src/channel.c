@@ -5325,14 +5325,15 @@ job_cleanup(job_T *job)
     }
 
 #if defined(FEAT_TERMINAL) && defined(WIN32)
-    if (use_conpty())
+    if (job_channel_still_useful(job) && use_conpty())
     {
-	/* Flush messages. */
+	/* Sweep out before closing. */
 	mch_check_messages();
 	parse_queued_messages();
 
-	/* It can not be done after this. */
-	term_free_conpty(job->jv_term);
+	/* Closing later on here is destructive. */
+	ch_close_part(job->jv_channel, PART_OUT);
+	ch_close_part(job->jv_channel, PART_ERR);
     }
 #endif
 

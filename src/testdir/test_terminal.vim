@@ -540,7 +540,7 @@ func Test_terminal_noblock()
   endif
 
   for c in ['a','b','c','d','e','f','g','h','i','j','k']
-    call term_sendkeys(buf, 'echo ' . repeat(c, len) . "\<cr>")
+"   call term_sendkeys(buf, 'echo ' . repeat(c, len) . "\<cr>")
   endfor
   call term_sendkeys(buf, "echo done\<cr>")
 
