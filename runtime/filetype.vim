@@ -1414,8 +1414,8 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 " sed
 au BufNewFile,BufRead *.sed			setf sed
 
-" Sieve (RFC 3028)
-au BufNewFile,BufRead *.siv			setf sieve
+" Sieve (RFC 5228)
+au BufNewFile,BufRead *.siv,*.sieve		setf sieve
 
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm
