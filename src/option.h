@@ -448,6 +448,7 @@ EXTERN char_u	*p_inc;
 #endif
 #ifdef FEAT_DIFF
 EXTERN char_u	*p_dip;		/* 'diffopt' */
+EXTERN int	p_dbuf;		/* 'diffbuf' */
 # ifdef FEAT_EVAL
 EXTERN char_u	*p_dex;		/* 'diffexpr' */
 # endif

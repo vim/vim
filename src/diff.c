@@ -1830,6 +1830,9 @@ diff_check(win_T *wp, linenr_T lnum)
     int		i;
     buf_T	*buf = wp->w_buffer;
     int		cmp;
+    int     use_dbuf;
+    int     bufidx_start;
+    int     bufidx_stop;
 
     if (curtab->tp_diff_invalid)
 	ex_diffupdate(NULL);		/* update after a big change */
@@ -1866,23 +1869,26 @@ diff_check(win_T *wp, linenr_T lnum)
 	 * zero, the lines were inserted.  If the other buffers have the same
 	 * count, check if the lines are identical. */
 	cmp = FALSE;
-	for (i = 0; i < DB_COUNT; ++i)
+	use_dbuf = (p_dbuf > 0 && p_dbuf <= DB_COUNT && curtab->tp_diffbuf[p_dbuf-1] != NULL && p_dbuf-1 != idx);
+	bufidx_start = use_dbuf ? (p_dbuf-1) : 0;
+	bufidx_stop = use_dbuf ? p_dbuf : DB_COUNT;
+	for (i = bufidx_start; i < bufidx_stop; ++i)
 	    if (i != idx && curtab->tp_diffbuf[i] != NULL)
 	    {
-		if (dp->df_count[i] == 0)
-		    zero = TRUE;
-		else
-		{
-		    if (dp->df_count[i] != dp->df_count[idx])
-			return -1;	    /* nr of lines changed. */
-		    cmp = TRUE;
-		}
+	        if (dp->df_count[i] == 0)
+	            zero = TRUE;
+	        else
+	        {
+	            if (dp->df_count[i] != dp->df_count[idx])
+	                return -1;      /* nr of lines changed. */
+	            cmp = TRUE;
+	        }
 	    }
 	if (cmp)
 	{
 	    /* Compare all lines.  If they are equal the lines were inserted
 	     * in some buffers, deleted in others, but not changed. */
-	    for (i = 0; i < DB_COUNT; ++i)
+	    for (i = bufidx_start; i < bufidx_stop; ++i)
 		if (i != idx && curtab->tp_diffbuf[i] != NULL
 						      && dp->df_count[i] != 0)
 		    if (!diff_equal_entry(dp, idx, i))
