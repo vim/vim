@@ -1729,7 +1729,7 @@ error2:
     if (!adding)
     {
 	// Error when creating a new list. Free the new list
-	qf_free(&qi->qf_lists[qi->qf_curlist]);
+	qf_free(qfl);
 	qi->qf_listcount--;
 	if (qi->qf_curlist > 0)
 	    --qi->qf_curlist;
@@ -1812,6 +1812,7 @@ qf_cmdtitle(char_u *cmd)
 qf_new_list(qf_info_T *qi, char_u *qf_title)
 {
     int		i;
+    qf_list_T	*qfl;
 
     // If the current entry is not the last entry, delete entries beyond
     // the current entry.  This makes it possible to browse in a tree-like
@@ -1830,9 +1831,10 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     }
     else
 	qi->qf_curlist = qi->qf_listcount++;
-    vim_memset(&qi->qf_lists[qi->qf_curlist], 0, (size_t)(sizeof(qf_list_T)));
-    qf_store_title(&qi->qf_lists[qi->qf_curlist], qf_title);
-    qi->qf_lists[qi->qf_curlist].qf_id = ++last_qf_id;
+    qfl = &qi->qf_lists[qi->qf_curlist];
+    vim_memset(qfl, 0, (size_t)(sizeof(qf_list_T)));
+    qf_store_title(qfl, qf_title);
+    qfl->qf_id = ++last_qf_id;
 }
 
 /*
@@ -2149,6 +2151,7 @@ copy_loclist_stack(win_T *from, win_T *to)
     static int
 qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *directory, char_u *fname)
 {
+    qf_list_T	*qfl = &qi->qf_lists[qf_idx];
     char_u	*ptr = NULL;
     buf_T	*buf;
     char_u	*bufname;
@@ -2174,7 +2177,7 @@ qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *directory, char_u *fname)
 	if (mch_getperm(ptr) < 0)
 	{
 	    vim_free(ptr);
-	    directory = qf_guess_filepath(&qi->qf_lists[qf_idx], fname);
+	    directory = qf_guess_filepath(qfl, fname);
 	    if (directory)
 		ptr = concat_fnames(directory, fname, TRUE);
 	    else
@@ -3757,6 +3760,7 @@ qf_view_result(int split)
 ex_cwindow(exarg_T *eap)
 {
     qf_info_T	*qi = &ql_info;
+    qf_list_T	*qfl;
     win_T	*win;
 
     if (is_loclist_cmd(eap->cmdidx))
@@ -3766,6 +3770,8 @@ ex_cwindow(exarg_T *eap)
 	    return;
     }
 
+    qfl = &qi->qf_lists[qi->qf_curlist];
+
     // Look for an existing quickfix window.
     win = qf_find_win(qi);
 
@@ -3773,7 +3779,7 @@ ex_cwindow(exarg_T *eap)
     // close the window.  If a quickfix window is not open, then open
     // it if we have errors; otherwise, leave it closed.
     if (qf_stack_empty(qi)
-	    || qi->qf_lists[qi->qf_curlist].qf_nonevalid
+	    || qfl->qf_nonevalid
 	    || qf_list_empty(qi, qi->qf_curlist))
     {
 	if (win != NULL)
@@ -3930,6 +3936,7 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
 ex_copen(exarg_T *eap)
 {
     qf_info_T	*qi = &ql_info;
+    qf_list_T	*qfl;
     int		height;
     int		status = FAIL;
 
@@ -3961,12 +3968,13 @@ ex_copen(exarg_T *eap)
 	if (qf_open_new_cwindow(qi, height) == FAIL)
 	    return;
 
-    qf_set_title_var(&qi->qf_lists[qi->qf_curlist]);
+    qfl = &qi->qf_lists[qi->qf_curlist];
+    qf_set_title_var(qfl);
 
     // Fill the buffer with the quickfix list.
     qf_fill_buffer(qi, curbuf, NULL);
 
-    curwin->w_cursor.lnum = qi->qf_lists[qi->qf_curlist].qf_index;
+    curwin->w_cursor.lnum = qfl->qf_index;
     curwin->w_cursor.col = 0;
     check_cursor();
     update_topline();		// scroll to show the line
@@ -4282,14 +4290,15 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
     // Check if there is anything to display
     if (!qf_stack_empty(qi))
     {
-	char_u	dirname[MAXPATHL];
+	qf_list_T	*qfl = &qi->qf_lists[qi->qf_curlist];
+	char_u		dirname[MAXPATHL];
 
 	*dirname = NUL;
 
 	// Add one line for each error
 	if (old_last == NULL)
 	{
-	    qfp = qi->qf_lists[qi->qf_curlist].qf_start;
+	    qfp = qfl->qf_start;
 	    lnum = 0;
 	}
 	else
@@ -4297,7 +4306,7 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
 	    qfp = old_last->qf_next;
 	    lnum = buf->b_ml.ml_line_count;
 	}
-	while (lnum < qi->qf_lists[qi->qf_curlist].qf_count)
+	while (lnum < qfl->qf_count)
 	{
 	    if (qf_buf_add_line(buf, lnum, qfp, dirname) == FAIL)
 		break;
@@ -4345,9 +4354,9 @@ qf_fill_buffer(qf_info_T *qi, buf_T *buf, qfline_T *old_last)
  * For every change made to the quickfix list, update the changed tick.
  */
     static void
-qf_list_changed(qf_info_T *qi, int qf_idx)
+qf_list_changed(qf_list_T *qfl)
 {
-    qi->qf_lists[qf_idx].qf_changedtick++;
+    qfl->qf_changedtick++;
 }
 
 /*
@@ -4595,7 +4604,7 @@ ex_make(exarg_T *eap)
 	    goto cleanup;
     }
     if (res >= 0)
-	qf_list_changed(qi, qi->qf_curlist);
+	qf_list_changed(&qi->qf_lists[qi->qf_curlist]);
 
     // Remember the current quickfix list identifier, so that we can
     // check for autocommands changing the current quickfix list.
@@ -4620,6 +4629,7 @@ cleanup:
 qf_get_size(exarg_T *eap)
 {
     qf_info_T	*qi = &ql_info;
+    qf_list_T	*qfl;
     qfline_T	*qfp;
     int		i, sz = 0;
     int		prev_fnum = 0;
@@ -4632,8 +4642,8 @@ qf_get_size(exarg_T *eap)
 	    return 0;
     }
 
-    for (i = 0, qfp = qi->qf_lists[qi->qf_curlist].qf_start;
-	    i < qi->qf_lists[qi->qf_curlist].qf_count && qfp != NULL;
+    qfl = &qi->qf_lists[qi->qf_curlist];
+    for (i = 0, qfp = qfl->qf_start; i < qfl->qf_count && qfp != NULL;
 	    ++i, qfp = qfp->qf_next)
     {
 	if (qfp->qf_valid)
@@ -4935,7 +4945,7 @@ ex_cfile(exarg_T *eap)
 	    return;
     }
     if (res >= 0)
-	qf_list_changed(qi, qi->qf_curlist);
+	qf_list_changed(&qi->qf_lists[qi->qf_curlist]);
     save_qfid = qi->qf_lists[qi->qf_curlist].qf_id;
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
@@ -5204,6 +5214,7 @@ ex_vimgrep(exarg_T *eap)
     char_u	*p;
     int		fi;
     qf_info_T	*qi = &ql_info;
+    qf_list_T	*qfl;
     int_u	save_qfid;
     win_T	*wp = NULL;
     buf_T	*buf;
@@ -5410,10 +5421,11 @@ ex_vimgrep(exarg_T *eap)
 
     FreeWild(fcount, fnames);
 
-    qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-    qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
-    qi->qf_lists[qi->qf_curlist].qf_index = 1;
-    qf_list_changed(qi, qi->qf_curlist);
+    qfl = &qi->qf_lists[qi->qf_curlist];
+    qfl->qf_nonevalid = FALSE;
+    qfl->qf_ptr = qfl->qf_start;
+    qfl->qf_index = 1;
+    qf_list_changed(qfl);
 
     qf_update_buffer(qi, NULL);
 
@@ -5915,7 +5927,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 	status = dict_add_number(retdict, "size", 0);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick", 0);
-    if ((status == OK) && (qi != &ql_info) && (flags & QF_GETLIST_FILEWINID))
+    if ((status == OK) && IS_LL_STACK(qi) && (flags & QF_GETLIST_FILEWINID))
 	status = dict_add_number(retdict, "filewinid", 0);
 
     return status;
@@ -5925,9 +5937,9 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
  * Return the quickfix list title as 'title' in retdict
  */
     static int
-qf_getprop_title(qf_info_T *qi, int qf_idx, dict_T *retdict)
+qf_getprop_title(qf_list_T *qfl, dict_T *retdict)
 {
-    return dict_add_string(retdict, "title", qi->qf_lists[qf_idx].qf_title);
+    return dict_add_string(retdict, "title", qfl->qf_title);
 }
 
 /*
@@ -5973,17 +5985,17 @@ qf_getprop_items(qf_info_T *qi, int qf_idx, dict_T *retdict)
  * Return the quickfix list context (if any) as 'context' in retdict.
  */
     static int
-qf_getprop_ctx(qf_info_T *qi, int qf_idx, dict_T *retdict)
+qf_getprop_ctx(qf_list_T *qfl, dict_T *retdict)
 {
     int		status;
     dictitem_T	*di;
 
-    if (qi->qf_lists[qf_idx].qf_ctx != NULL)
+    if (qfl->qf_ctx != NULL)
     {
 	di = dictitem_alloc((char_u *)"context");
 	if (di != NULL)
 	{
-	    copy_tv(qi->qf_lists[qf_idx].qf_ctx, &di->di_tv);
+	    copy_tv(qfl->qf_ctx, &di->di_tv);
 	    status = dict_add(retdict, di);
 	    if (status == FAIL)
 		dictitem_free(di);
@@ -5998,16 +6010,16 @@ qf_getprop_ctx(qf_info_T *qi, int qf_idx, dict_T *retdict)
 }
 
 /*
- * Return the quickfix list index as 'idx' in retdict
+ * Return the current quickfix list index as 'idx' in retdict
  */
     static int
 qf_getprop_idx(qf_info_T *qi, int qf_idx, dict_T *retdict)
 {
-    int idx = qi->qf_lists[qf_idx].qf_index;
+    int curidx = qi->qf_lists[qf_idx].qf_index;
     if (qf_list_empty(qi, qf_idx))
-	// For empty lists, qf_index is set to 1
-	idx = 0;
-    return dict_add_number(retdict, "idx", idx);
+	// For empty lists, current index is set to 0
+	curidx = 0;
+    return dict_add_number(retdict, "idx", curidx);
 }
 
 /*
@@ -6021,7 +6033,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     qf_info_T	*qi = &ql_info;
     qf_list_T	*qfl;
     int		status = OK;
-    int		qf_idx;
+    int		qf_idx = INVALID_QFIDX;
     dictitem_T	*di;
     int		flags = QF_GETLIST_NONE;
 
@@ -6043,7 +6055,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     qfl = &qi->qf_lists[qf_idx];
 
     if (flags & QF_GETLIST_TITLE)
-	status = qf_getprop_title(qi, qf_idx, retdict);
+	status = qf_getprop_title(qfl, retdict);
     if ((status == OK) && (flags & QF_GETLIST_NR))
 	status = dict_add_number(retdict, "nr", qf_idx + 1);
     if ((status == OK) && (flags & QF_GETLIST_WINID))
@@ -6051,7 +6063,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_ITEMS))
 	status = qf_getprop_items(qi, qf_idx, retdict);
     if ((status == OK) && (flags & QF_GETLIST_CONTEXT))
-	status = qf_getprop_ctx(qi, qf_idx, retdict);
+	status = qf_getprop_ctx(qfl, retdict);
     if ((status == OK) && (flags & QF_GETLIST_ID))
 	status = dict_add_number(retdict, "id", qfl->qf_id);
     if ((status == OK) && (flags & QF_GETLIST_IDX))
@@ -6277,12 +6289,13 @@ qf_setprop_get_qfidx(
     static int
 qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
 {
+    qf_list_T	*qfl = &qi->qf_lists[qf_idx];
+
     if (di->di_tv.v_type != VAR_STRING)
 	return FAIL;
 
-    vim_free(qi->qf_lists[qf_idx].qf_title);
-    qi->qf_lists[qf_idx].qf_title =
-	get_dict_string(what, (char_u *)"title", TRUE);
+    vim_free(qfl->qf_title);
+    qfl->qf_title = get_dict_string(what, (char_u *)"title", TRUE);
     if (qf_idx == qi->qf_curlist)
 	qf_update_win_titlevar(qi);
 
@@ -6375,6 +6388,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     int		retval = FAIL;
     int		qf_idx;
     int		newlist = FALSE;
+    qf_list_T	*qfl;
 
     if (action == ' ' || qf_stack_empty(qi))
 	newlist = TRUE;
@@ -6390,6 +6404,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	qf_idx = qi->qf_curlist;
     }
 
+    qfl = &qi->qf_lists[qf_idx];
     if ((di = dict_find(what, (char_u *)"title", -1)) != NULL)
 	retval = qf_setprop_title(qi, qf_idx, what, di);
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
@@ -6397,17 +6412,17 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if ((di = dict_find(what, (char_u *)"lines", -1)) != NULL)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
-	retval = qf_setprop_context(&qi->qf_lists[qf_idx], di);
+	retval = qf_setprop_context(qfl, di);
 
     if (retval == OK)
-	qf_list_changed(qi, qf_idx);
+	qf_list_changed(qfl);
 
     return retval;
 }
 
 /*
- * Find the non-location list window with the specified location list in the
- * current tabpage.
+ * Find the non-location list window with the specified location list stack in
+ * the current tabpage.
  */
     static win_T *
 find_win_with_ll(qf_info_T *qi)
@@ -6508,7 +6523,7 @@ set_errorlist(
     {
 	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
 	if (retval == OK)
-	    qf_list_changed(qi, qi->qf_curlist);
+	    qf_list_changed(&qi->qf_lists[qi->qf_curlist]);
     }
 
     return retval;
@@ -6654,7 +6669,7 @@ ex_cbuffer(exarg_T *eap)
 						   eap->line1, eap->line2,
 						   qf_title, NULL);
 	    if (res >= 0)
-		qf_list_changed(qi, qi->qf_curlist);
+		qf_list_changed(&qi->qf_lists[qi->qf_curlist]);
 
 	    // Remember the current quickfix list identifier, so that we can
 	    // check for autocommands changing the current quickfix list.
@@ -6737,7 +6752,7 @@ ex_cexpr(exarg_T *eap)
 				 (linenr_T)0, (linenr_T)0,
 				 qf_cmdtitle(*eap->cmdlinep), NULL);
 	    if (res >= 0)
-		qf_list_changed(qi, qi->qf_curlist);
+		qf_list_changed(&qi->qf_lists[qi->qf_curlist]);
 
 	    // Remember the current quickfix list identifier, so that we can
 	    // check for autocommands changing the current quickfix list.
@@ -7013,6 +7028,8 @@ ex_helpgrep(exarg_T *eap)
     regmatch.rm_ic = FALSE;
     if (regmatch.regprog != NULL)
     {
+	qf_list_T	*qfl;
+
 	// create a new quickfix list
 	qf_new_list(qi, qf_cmdtitle(*eap->cmdlinep));
 
@@ -7020,10 +7037,12 @@ ex_helpgrep(exarg_T *eap)
 
 	vim_regfree(regmatch.regprog);
 
-	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
-	qi->qf_lists[qi->qf_curlist].qf_ptr =
-	    qi->qf_lists[qi->qf_curlist].qf_start;
-	qi->qf_lists[qi->qf_curlist].qf_index = 1;
+	qfl = &qi->qf_lists[qi->qf_curlist];
+	qfl->qf_nonevalid = FALSE;
+	qfl->qf_ptr = qfl->qf_start;
+	qfl->qf_index = 1;
+	qf_list_changed(qfl);
+	qf_update_buffer(qi, NULL);
     }
 
     if (p_cpo == empty_option)
@@ -7031,9 +7050,6 @@ ex_helpgrep(exarg_T *eap)
     else
 	// Darn, some plugin changed the value.
 	free_string_option(save_cpo);
-
-    qf_list_changed(qi, qi->qf_curlist);
-    qf_update_buffer(qi, NULL);
 
     if (au_name != NULL)
     {
