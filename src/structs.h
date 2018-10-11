@@ -178,6 +178,8 @@ typedef struct
 #ifdef FEAT_DIFF
     int		wo_diff;
 # define w_p_diff w_onebuf_opt.wo_diff	/* 'diff' */
+    int		wo_dref;
+# define w_p_dref w_onebuf_opt.wo_dref	/* 'dref' */
 #endif
 #ifdef FEAT_FOLDING
     long	wo_fdc;

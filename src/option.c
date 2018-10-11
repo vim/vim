@@ -201,6 +201,7 @@
 #endif
 #ifdef FEAT_DIFF
 # define PV_DIFF	OPT_WIN(WV_DIFF)
+# define PV_DREF	OPT_WIN(WV_DREF)
 #endif
 #ifdef FEAT_FOLDING
 # define PV_FDC		OPT_WIN(WV_FDC)
@@ -1055,6 +1056,13 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)NULL}
 #endif
 			    SCTX_INIT},
+	{"diffref",     "dref", P_BOOL|P_VI_DEF|P_RALL|P_NOGLOB,
+#ifdef FEAT_DIFF
+		        (char_u *)VAR_WIN, PV_DREF,
+#else
+		        (char_u *)NULL, PV_NONE,
+#endif
+		        {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"digraph",	    "dg",   P_BOOL|P_VI_DEF|P_VIM,
 #ifdef FEAT_DIGRAPHS
 			    (char_u *)&p_dg, PV_NONE,
@@ -10854,6 +10862,7 @@ get_varp(struct vimoption *p)
 #endif
 #ifdef FEAT_DIFF
 	case PV_DIFF:	return (char_u *)&(curwin->w_p_diff);
+	case PV_DREF:	return (char_u *)&(curwin->w_p_dref);
 #endif
 #ifdef FEAT_FOLDING
 	case PV_FDC:	return (char_u *)&(curwin->w_p_fdc);
@@ -11096,6 +11105,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #ifdef FEAT_DIFF
     to->wo_diff = from->wo_diff;
     to->wo_diff_saved = from->wo_diff_saved;
+    to->wo_dref = from->wo_dref;
 #endif
 #ifdef FEAT_CONCEAL
     to->wo_cocu = vim_strsave(from->wo_cocu);

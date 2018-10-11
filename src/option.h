@@ -1147,6 +1147,7 @@ enum
 #endif
 #ifdef FEAT_DIFF
     , WV_DIFF
+    , WV_DREF
 #endif
 #ifdef FEAT_FOLDING
     , WV_FDC
