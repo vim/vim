@@ -214,7 +214,7 @@ LangString str_msg_install_fail  ${LANG_GERMAN} \
     "Installation fehlerhaft beendet."
 
 LangString str_msg_rm_exe_fail   ${LANG_GERMAN} \
-    "Einige Dateien im Pfad $vim_bin_path konnten nicht gelöscht werden!$\r$\n\
+    "Einige Dateien im Pfad $0 konnten nicht gelöscht werden!$\r$\n\
      Diese Dateien müssen manuell gelöscht werden."
 
 LangString str_msg_rm_root_fail  ${LANG_GERMAN} \

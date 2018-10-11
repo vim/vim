@@ -211,7 +211,7 @@ LangString str_msg_install_fail  ${LANG_TRADCHINESE} \
     "安裝失敗。預祝下次好運。"
 
 LangString str_msg_rm_exe_fail   ${LANG_TRADCHINESE} \
-    "資料夾「$vim_bin_path」下有部分檔案未能移除！$\r$\n\
+    "資料夾「$0」下有部分檔案未能移除！$\r$\n\
      閣下只能手工移除該資料夾。"
 
 LangString str_msg_rm_root_fail  ${LANG_TRADCHINESE} \

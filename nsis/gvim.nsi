@@ -349,7 +349,7 @@ Function .onInstSuccess
 FunctionEnd
 
 Function .onInstFailed
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Installation failed. Better luck next time."
+  MessageBox MB_OK|MB_ICONEXCLAMATION "$(str_msg_install_fail)"
 FunctionEnd
 
 ##########################################################
@@ -978,8 +978,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	Delete $0\*.txt
 
 	${If} ${Errors}
-	  MessageBox MB_OK|MB_ICONEXCLAMATION \
-	      "Some files in $0 have not been deleted!$\nYou must do it manually."
+	  MessageBox MB_OK|MB_ICONEXCLAMATION $(str_msg_rm_exe_fail)
 	${EndIf}
 
 	# No error message if the "vim62" directory can't be removed, the

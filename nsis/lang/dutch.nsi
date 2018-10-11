@@ -215,7 +215,7 @@ LangString str_msg_install_fail  ${LANG_DUTCH} \
     "Installatie is mislukt."
 
 LangString str_msg_rm_exe_fail   ${LANG_DUTCH} \
-    "Sommige bestanden in $vim_bin_path zijn niet verwijderd!$\r$\n\
+    "Sommige bestanden in $0 zijn niet verwijderd!$\r$\n\
      Dit moet je handmatig doen."
 
 LangString str_msg_rm_root_fail  ${LANG_DUTCH} \

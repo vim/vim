@@ -224,7 +224,7 @@ LangString str_msg_install_fail  ${LANG_ENGLISH} \
     "Installation failed. Better luck next time."
 
 LangString str_msg_rm_exe_fail   ${LANG_ENGLISH} \
-    "Some files in $vim_bin_path have not been deleted!$\r$\n\
+    "Some files in $0 have not been deleted!$\r$\n\
      You must do it manually."
 
 LangString str_msg_rm_root_fail  ${LANG_ENGLISH} \

@@ -210,7 +210,7 @@ LangString str_msg_install_fail  ${LANG_SIMPCHINESE} \
     "安装失败。祝您下次好运。"
 
 LangString str_msg_rm_exe_fail   ${LANG_SIMPCHINESE} \
-    "目录“$vim_bin_path”下有部分文件删除失败！$\r$\n\
+    "目录“$0”下有部分文件删除失败！$\r$\n\
      您只能手工删除该目录。"
 
 LangString str_msg_rm_root_fail  ${LANG_SIMPCHINESE} \

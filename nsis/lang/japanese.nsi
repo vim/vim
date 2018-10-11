@@ -217,11 +217,11 @@ LangString str_msg_abort_install ${LANG_JAPANESE} \
     "Installer will abort."
 
 LangString str_msg_install_fail  ${LANG_JAPANESE} \
-    "Installation failed. Better luck next time."
+    "インストールに失敗しました。次はうまくいくことを祈ります。"
 
 LangString str_msg_rm_exe_fail   ${LANG_JAPANESE} \
-    "Some files in $vim_bin_path have not been deleted!$\r$\n\
-     You must do it manually."
+    "$0 内の一部のファイルは削除できませんでした!$\r$\n\
+     手動で削除する必要があります。"
 
 LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
     "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
