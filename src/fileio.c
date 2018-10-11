@@ -6187,7 +6187,8 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
 		|| buf->b_sfname == NULL
 		|| mch_isFullName(buf->b_sfname)))
     {
-	VIM_CLEAR(buf->b_sfname);
+	if (buf->b_sfname != buf->b_ffname)
+	    VIM_CLEAR(buf->b_sfname);
 	p = shorten_fname(buf->b_ffname, dirname);
 	if (p != NULL)
 	{
