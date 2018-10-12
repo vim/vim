@@ -1813,6 +1813,22 @@ diff_clear(tabpage_T *tp)
 }
 
 /*
+ * Check whether the buffer with index "idx" should be treated as a diff master.
+ */
+    int
+diff_ismaster(int idx)
+{
+    win_T	*wp;
+    buf_T	*buf = curtab->tp_diffbuf[idx];
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+        if (wp->w_p_dref && wp->w_buffer == buf)
+	    return TRUE;
+    return FALSE;
+}
+
+
+/*
  * Check diff status for line "lnum" in buffer "buf":
  * Returns 0 for nothing special
  * Returns -1 for a line that should be highlighted as changed.
@@ -1867,7 +1883,7 @@ diff_check(win_T *wp, linenr_T lnum)
 	 * count, check if the lines are identical. */
 	cmp = FALSE;
 	for (i = 0; i < DB_COUNT; ++i)
-	    if (i != idx && curtab->tp_diffbuf[i] != NULL)
+	    if (i != idx && curtab->tp_diffbuf[i] != NULL && (diff_ismaster(i) || diff_ismaster(idx)))
 	    {
 		if (dp->df_count[i] == 0)
 		    zero = TRUE;
@@ -1884,7 +1900,8 @@ diff_check(win_T *wp, linenr_T lnum)
 	     * in some buffers, deleted in others, but not changed. */
 	    for (i = 0; i < DB_COUNT; ++i)
 		if (i != idx && curtab->tp_diffbuf[i] != NULL
-						      && dp->df_count[i] != 0)
+						      && dp->df_count[i] != 0
+						      && (diff_ismaster(i) || diff_ismaster(idx)))
 		    if (!diff_equal_entry(dp, idx, i))
 			return -1;
 	}
