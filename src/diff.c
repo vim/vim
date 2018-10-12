@@ -78,6 +78,7 @@ static int diff_check_sanity(tabpage_T *tp, diff_T *dp);
 static void diff_redraw(int dofold);
 static int check_external_diff(diffio_T *diffio);
 static int diff_file(diffio_T *diffio);
+static int diff_ismaster(int idx);
 static int diff_equal_entry(diff_T *dp, int idx1, int idx2);
 static int diff_cmp(char_u *s1, char_u *s2);
 #ifdef FEAT_FOLDING
@@ -342,7 +343,7 @@ diff_mark_adjust_tp(
 	    dnext->df_lnum[idx] = line1;
 	    dnext->df_count[idx] = inserted;
 	    for (i = 0; i < DB_COUNT; ++i)
-		if (tp->tp_diffbuf[i] != NULL && i != idx)
+		if (tp->tp_diffbuf[i] != NULL && i != idx && (diff_ismaster(i) || diff_ismaster(idx)))
 		{
 		    if (dprev == NULL)
 			dnext->df_lnum[i] = line1;
@@ -449,7 +450,7 @@ diff_mark_adjust_tp(
 		    }
 
 		    for (i = 0; i < DB_COUNT; ++i)
-			if (tp->tp_diffbuf[i] != NULL && i != idx)
+			if (tp->tp_diffbuf[i] != NULL && i != idx && (diff_ismaster(i) || diff_ismaster(idx)))
 			{
 			    dp->df_lnum[i] -= off;
 			    dp->df_count[i] += n;
@@ -2413,7 +2414,7 @@ diff_find_change(
     off = lnum - dp->df_lnum[idx];
 
     for (i = 0; i < DB_COUNT; ++i)
-	if (curtab->tp_diffbuf[i] != NULL && i != idx)
+	if (curtab->tp_diffbuf[i] != NULL && i != idx && (diff_ismaster(i) || diff_ismaster(idx)))
 	{
 	    /* Skip lines that are not in the other change (filler lines). */
 	    if (off >= dp->df_count[i])
