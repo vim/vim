@@ -1340,7 +1340,7 @@ func Test_close_and_exit_cb()
     let self.ret['exit_cb'] = job_status(a:job)
   endfunc
 
-  let g:job = job_start('echo', {
+  let g:job = job_start(has('win32') ? 'cmd /c echo:' : 'echo', {
         \ 'close_cb': g:retdict.close_cb,
         \ 'exit_cb': g:retdict.exit_cb,
         \ })
@@ -1369,7 +1369,8 @@ func Test_exit_cb_wipes_buf()
   new
   let g:wipe_buf = bufnr('')
 
-  let job = job_start(['true'], {'exit_cb': 'ExitCbWipe'})
+  let job = job_start(has('win32') ? 'cmd /c echo:' : ['true'],
+			  \ {'exit_cb': 'ExitCbWipe'})
   let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
   call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
