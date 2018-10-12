@@ -332,7 +332,25 @@ After setting this variable, reload the syntax script: >
 
     set syntax=diff
 <
+If you have more than two diff windows open, but you only care about differ-
+ences with one of them, you can tell Vim which to treat as the "master" win-
+dow.  When you set a master window, only differences with this window will be
+highlighted.  For example, if you have three windows open, and you set window
+1 as the master, then a line in window 2 will not be highlighted if it is the
+same as in window 1, even if window 3 has something different.  This line will
+of course still be highlighted in windows 1 and 3, however.
 
+						*diffm* *diffmaster*
+:diffm[aster]
+		Set the currently active window as the master window. If there
+		is already a master window, it will be replaced.
+
+						*diffa* *diffall*
+:diffa[ll]
+		Clear the master window and restore the default behavior of
+		highlighting differing lines in every window.
+
+See also the 'diffref' option, which these two commands control.
 
 FINDING THE DIFFERENCES					*diff-diffexpr*
 

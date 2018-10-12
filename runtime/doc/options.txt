@@ -2614,6 +2614,29 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+			*'dref'* *'diffref'* *'nodref'* *'nodiffref'*
+'diffref' 'dref'	boolean (default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+diff|
+			feature}
+	Determines whether or not other windows will be aware of this window's
+	contents when highlighting differences.  Normally when there are more
+	than two diff windows, any text not identical in every window will be
+	highlighted in all such windows.  If any open windows have 'diffref'
+	set, however, only those windows will be considered; text will not be
+	highlighted if it differs only in windows without 'diffref' set. A few
+	notes to keep in mind:
+	- Differences will be highlighted inside the 'diffref' window as well,
+	  even if the other window does not have the option set.
+	- If no windows have 'diffref' turned on (the default situation) then
+	  highlighting will occur in the usual way, as if it was turned on in
+	  all windows instead.
+	- In most cases, there will only be a single window you want to com-
+	  pare the other windows against, so normally you will only want this
+	  option set on one window at a time.  For these cases, you can use the
+	  |diffmaster| and |diffall| commands instead.
+
 						*'dip'* *'diffopt'*
 'diffopt' 'dip'		string	(default "internal,filler")
 			global
