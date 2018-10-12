@@ -1820,11 +1820,15 @@ diff_ismaster(int idx)
 {
     win_T	*wp;
     buf_T	*buf = curtab->tp_diffbuf[idx];
+    int		seen_diffref = FALSE;
 
     for (wp = firstwin; wp != NULL; wp = wp->w_next)
-        if (wp->w_p_dref && wp->w_buffer == buf)
-	    return TRUE;
-    return FALSE;
+        if (wp->w_p_dref) {
+            if (wp->w_buffer == buf)
+                return TRUE;
+            seen_diffref = TRUE;
+        }
+    return !seen_diffref;
 }
 
 
