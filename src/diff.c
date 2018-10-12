@@ -1813,6 +1813,20 @@ diff_clear(tabpage_T *tp)
 }
 
 /*
+ * Turn off diffref on all windows, to disable the diffmaster behavior.
+ * This is equivalent to :windo set nodiffref, but it's faster.
+ */
+    void
+ex_diffall(exarg_T *eap UNUSED)
+{
+    win_T	*wp;
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+        wp->w_p_dref = FALSE;
+    diff_redraw(TRUE);
+}
+
+/*
  * Set the current window as the active tab page's diff master.
  * That is, set 'diffref' on the window, and make sure it's unset on all others.
  */

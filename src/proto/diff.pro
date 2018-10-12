@@ -8,6 +8,7 @@ int diff_internal(void);
 void ex_diffupdate(exarg_T *eap);
 void ex_diffpatch(exarg_T *eap);
 void ex_diffsplit(exarg_T *eap);
+void ex_diffall(exarg_T *eap);
 void ex_diffmaster(exarg_T *eap);
 void ex_diffthis(exarg_T *eap);
 void diff_win_options(win_T *wp, int addbuf);
