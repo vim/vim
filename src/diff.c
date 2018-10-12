@@ -1813,6 +1813,20 @@ diff_clear(tabpage_T *tp)
 }
 
 /*
+ * Set the current window as the active tab page's diff master.
+ * That is, set 'diffref' on the window, and make sure it's unset on all others.
+ */
+    void
+ex_diffmaster(exarg_T *eap UNUSED)
+{
+    win_T	*wp;
+
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+        wp->w_p_dref = (wp == curwin);
+    diff_redraw(TRUE);
+}
+
+/*
  * Check whether the buffer with index "idx" should be treated as a diff master.
  */
     int
