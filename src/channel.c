@@ -5324,19 +5324,6 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-#if defined(FEAT_TERMINAL) && defined(WIN32)
-    if (job_channel_still_useful(job) && use_conpty())
-    {
-	/* Sweep out before closing. */
-	mch_check_messages();
-	parse_queued_messages();
-
-	/* Closing later on here is destructive. */
-	ch_close_part(job->jv_channel, PART_OUT);
-	ch_close_part(job->jv_channel, PART_ERR);
-    }
-#endif
-
     /* Do not free the job in case the close callback of the associated channel
      * isn't invoked yet and may get information by job_info(). */
     if (job->jv_refcount == 0 && !job_channel_still_useful(job))
@@ -5346,6 +5333,10 @@ job_cleanup(job_T *job)
 	 * not use "job" after this! */
 	job_free(job);
     }
+#if defined(FEAT_TERMINAL) && defined(WIN32)
+    else if (use_conpty())
+	job->jv_channel->ch_to_be_freed = TRUE;
+#endif
 }
 
 /*
