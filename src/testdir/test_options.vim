@@ -174,15 +174,15 @@ endfun
 
 func Test_set_completion()
   call feedkeys(":set di\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set dictionary diff diffexpr diffopt digraph directory display', @:)
+  call assert_equal('"set dictionary diff diffexpr diffopt diffref digraph directory display', @:)
 
   " Expand boolan options. When doing :set no<Tab>
   " vim displays the options names without "no" but completion uses "no...".
   call feedkeys(":set nodi\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set nodiff digraph', @:)
+  call assert_equal('"set nodiff diffref digraph', @:)
 
   call feedkeys(":set invdi\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set invdiff digraph', @:)
+  call assert_equal('"set invdiff diffref digraph', @:)
 
   " Expand abbreviation of options.
   call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -213,7 +213,7 @@ func Test_set_completion()
   call assert_match(' ./samples/.* ./small.vim', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
+  call assert_equal('"set tags=./\\ diff diffexpr diffopt diffref', @:)
 endfunc
 
 func Test_set_errors()
