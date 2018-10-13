@@ -158,6 +158,7 @@ Page custom SetCustom ValidateCustom
 
 # Include support for other languages:
 !ifdef HAVE_MULTI_LANG
+    !include "lang\danish.nsi"
     !include "lang\dutch.nsi"
     !include "lang\german.nsi"
     !include "lang\italian.nsi"
