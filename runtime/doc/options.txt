@@ -6571,7 +6571,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'scrolloff'* *'so'*
 'scrolloff' 'so'	number	(default 0, set to 5 in |defaults.vim|)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	Minimal number of screen lines to keep above and below the cursor.
 	This will make some context visible around where you are working.  If
@@ -7133,7 +7133,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'sidescrolloff'* *'siso'*
 'sidescrolloff' 'siso'	number (default 0)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	The minimal number of screen columns to keep to the left and to the
 	right of the cursor if 'nowrap' is set.  Setting this option to a

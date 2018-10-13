@@ -319,8 +319,6 @@ behave strangely, as if there is a gap and a vertical window separator.
 Make {skip} argument of searchpair() consistent with other places where we
 pass an expression to evaluate.  Allow passing zero for "never skip".
 
-The 'scrolloff' option is global, make it global-local. #3195
-
 Add an option similar to 'lazyredraw' to skip redrawing while executing a
 script or function.
 
@@ -5574,9 +5572,6 @@ Options:
     that marks if the option was set.  Useful to keep the effect of setting
     'compatible' after ":syntax on" has been used.
 7   There is 'titleold', why is there no 'iconold'? (Chazelas)
-7   Make 'scrolloff' a global-local option, so that it can be different in the
-    quickfix window, for example. (Gary Holloway)
-    Also do 'sidescrolloff'.
 
 
 External commands:

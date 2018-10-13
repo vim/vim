@@ -4463,7 +4463,7 @@ gui_do_scroll(void)
 #endif
 	    )
     {
-	if (p_so != 0)
+	if (curwin->w_p_so != 0 || p_so != 0)
 	{
 	    cursor_correct();		/* fix window for 'so' */
 	    update_topline();		/* avoid up/down jump */

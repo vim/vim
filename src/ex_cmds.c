@@ -3800,6 +3800,7 @@ do_ecmd(
 #endif
     int		readfile_flags = 0;
     int		did_inc_redrawing_disabled = FALSE;
+    long        *so = curwin->w_p_so ? &curwin->w_p_so : &p_so;
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -4414,12 +4415,12 @@ do_ecmd(
     did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
-	n = p_so;
+	n = *so;
 	if (topline == 0 && command == NULL)
-	    p_so = 999;			/* force cursor halfway the window */
+	    *so = 999;			/* force cursor halfway the window */
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
-	p_so = n;
+	*so = n;
 	redraw_curbuf_later(NOT_VALID);	/* redraw this buffer later */
     }
 

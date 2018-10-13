@@ -5868,7 +5868,7 @@ scroll_to_fraction(win_T *wp, int prev_height)
 
     if (wp == curwin)
     {
-	if (p_so)
+	if (curwin->w_p_so || p_so)
 	    update_topline();
 	curs_columns(FALSE);	/* validate w_wrow */
     }

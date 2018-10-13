@@ -682,6 +682,7 @@ leftcol_changed(void)
     long	lastcol;
     colnr_T	s, e;
     int		retval = FALSE;
+    long        *siso = curwin->w_p_siso ? &curwin->w_p_siso : &p_siso;
 
     changed_cline_bef_curs();
     lastcol = curwin->w_leftcol + curwin->w_width - curwin_col_off() - 1;
@@ -691,15 +692,15 @@ leftcol_changed(void)
      * If the cursor is right or left of the screen, move it to last or first
      * character.
      */
-    if (curwin->w_virtcol > (colnr_T)(lastcol - p_siso))
+    if (curwin->w_virtcol > (colnr_T)(lastcol - *siso))
     {
 	retval = TRUE;
-	coladvance((colnr_T)(lastcol - p_siso));
+	coladvance((colnr_T)(lastcol - *siso));
     }
-    else if (curwin->w_virtcol < curwin->w_leftcol + p_siso)
+    else if (curwin->w_virtcol < curwin->w_leftcol + *siso)
     {
 	retval = TRUE;
-	(void)coladvance((colnr_T)(curwin->w_leftcol + p_siso));
+	(void)coladvance((colnr_T)(curwin->w_leftcol + *siso));
     }
 
     /*

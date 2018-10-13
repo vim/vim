@@ -8931,6 +8931,7 @@ ex_syncbind(exarg_T *eap UNUSED)
     long	topline;
     long	y;
     linenr_T	old_linenr = curwin->w_cursor.lnum;
+    long        *so = curwin->w_p_so ? &curwin->w_p_so : &p_so;
 
     setpcmark();
 
@@ -8944,7 +8945,7 @@ ex_syncbind(exarg_T *eap UNUSED)
 	{
 	    if (wp->w_p_scb && wp->w_buffer)
 	    {
-		y = wp->w_buffer->b_ml.ml_line_count - p_so;
+		y = wp->w_buffer->b_ml.ml_line_count - *so;
 		if (topline > y)
 		    topline = y;
 	    }
