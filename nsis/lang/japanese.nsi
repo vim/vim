@@ -250,22 +250,22 @@ LangString str_msg_compat_title    ${LANG_JAPANESE} \
 LangString str_msg_compat_desc     ${LANG_JAPANESE} \
     "互換性と拡張(&C)"
 LangString str_msg_compat_vi       ${LANG_JAPANESE} \
-    " Vi 互換"
+    "Vi 互換"
 LangString str_msg_compat_vim      ${LANG_JAPANESE} \
-    " Vim 独自"
+    "Vim 独自"
 LangString str_msg_compat_defaults ${LANG_JAPANESE} \
-    " Vim 独自と多少の拡張"
+    "Vim 独自と多少の拡張"
 LangString str_msg_compat_all      ${LANG_JAPANESE} \
-    " Vim 独自と全ての拡張 (既定)"
+    "Vim 独自と全ての拡張 (既定)"
 
 LangString str_msg_keymap_title   ${LANG_JAPANESE} \
     " マッピング "
 LangString str_msg_keymap_desc    ${LANG_JAPANESE} \
     "いくつかのキーをリマップする(&R) (例: Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F など)"
 LangString str_msg_keymap_default ${LANG_JAPANESE} \
-    " リマップしない (既定)"
+    "リマップしない (既定)"
 LangString str_msg_keymap_windows ${LANG_JAPANESE} \
-    " リマップする"
+    "リマップする"
 
 LangString str_msg_mouse_title   ${LANG_JAPANESE} \
     " マウス "

@@ -258,9 +258,9 @@ LangString str_msg_keymap_title   ${LANG_GERMAN} \
 LangString str_msg_keymap_desc    ${LANG_GERMAN} \
     "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_GERMAN} \
-    " Do not remap keys (Default)"
+    "Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_GERMAN} \
-    " Remap a few keys"
+    "Remap a few keys"
 
 LangString str_msg_mouse_title   ${LANG_GERMAN} \
     " Mouse "

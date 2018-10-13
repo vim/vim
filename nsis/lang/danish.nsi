@@ -171,8 +171,8 @@ LangString str_msg_compat_all      ${LANG_DANISH}     "Vim med alle forbedringer
 
 LangString str_msg_keymap_title   ${LANG_DANISH}     " Tilknytninger "
 LangString str_msg_keymap_desc    ${LANG_DANISH}     "&Gentilknyt nogle få taster (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F osv.)"
-LangString str_msg_keymap_default ${LANG_DANISH}     " Gentilknyt ikke taster (standard)"
-LangString str_msg_keymap_windows ${LANG_DANISH}     " Gentilknyt nogle få taster"
+LangString str_msg_keymap_default ${LANG_DANISH}     "Gentilknyt ikke taster (standard)"
+LangString str_msg_keymap_windows ${LANG_DANISH}     "Gentilknyt nogle få taster"
 
 LangString str_msg_mouse_title   ${LANG_DANISH}     " Mus "
 LangString str_msg_mouse_desc    ${LANG_DANISH}     "&Opførsel af højre og venstre knapper"
