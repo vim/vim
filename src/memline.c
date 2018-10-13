@@ -2177,7 +2177,7 @@ swapfile_info(char_u *fname)
 		    /* EMX kill() not working correctly, it seems */
 		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
 		    {
-			MSG_PUTS(_(" (still running)"));
+			MSG_PUTS(_(" (STILL RUNNING)"));
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 			process_still_running = TRUE;
 # endif
@@ -4089,7 +4089,11 @@ attention_message(
     MSG_PUTS(_("While opening file \""));
     msg_outtrans(buf->b_fname);
     MSG_PUTS("\"\n");
-    if (mch_stat((char *)buf->b_fname, &st) != -1)
+    if (mch_stat((char *)buf->b_fname, &st) == -1)
+    {
+	MSG_PUTS(_("      CANNOT BE FOUND"));
+    }
+    else
     {
 	MSG_PUTS(_("             dated: "));
 	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
