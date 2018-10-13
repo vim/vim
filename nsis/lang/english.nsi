@@ -32,8 +32,8 @@ LangString ^UninstallCaption ${LANG_ENGLISH} \
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
 
-LangString str_dest_folder          ${LANG_ENGLISH} \
-    "Destination Folder (Must end with $\"vim$\")"
+#LangString str_dest_folder          ${LANG_ENGLISH} \
+#    "Destination Folder (Must end with $\"vim$\")"
 
 LangString str_show_readme          ${LANG_ENGLISH} \
     "Show README after installation finish"
@@ -89,27 +89,27 @@ LangString str_section_start_menu   ${LANG_ENGLISH} \
 LangString str_desc_start_menu      ${LANG_ENGLISH} \
     "Add Vim in the programs folder of the start menu."
 
-LangString str_section_quick_launch ${LANG_ENGLISH} \
-    "In the Quick Launch Bar"
-LangString str_desc_quick_launch    ${LANG_ENGLISH} \
-    "Add Vim shortcut in the quick launch bar."
+#LangString str_section_quick_launch ${LANG_ENGLISH} \
+#    "In the Quick Launch Bar"
+#LangString str_desc_quick_launch    ${LANG_ENGLISH} \
+#    "Add Vim shortcut in the quick launch bar."
 
 LangString str_section_edit_with    ${LANG_ENGLISH} \
     "Add Vim Context Menu"
 LangString str_desc_edit_with       ${LANG_ENGLISH} \
     "Add Vim to the $\"Open With...$\" context menu list."
 
-LangString str_section_edit_with32  ${LANG_ENGLISH} \
-    "32-bit Version"
-LangString str_desc_edit_with32     ${LANG_ENGLISH} \
-    "Add Vim to the $\"Open With...$\" context menu list \
-     for 32-bit applications."
+#LangString str_section_edit_with32  ${LANG_ENGLISH} \
+#    "32-bit Version"
+#LangString str_desc_edit_with32     ${LANG_ENGLISH} \
+#    "Add Vim to the $\"Open With...$\" context menu list \
+#     for 32-bit applications."
 
-LangString str_section_edit_with64  ${LANG_ENGLISH} \
-    "64-bit Version"
-LangString str_desc_edit_with64     ${LANG_ENGLISH} \
-    "Add Vim to the $\"Open With...$\" context menu list \
-     for 64-bit applications."
+#LangString str_section_edit_with64  ${LANG_ENGLISH} \
+#    "64-bit Version"
+#LangString str_desc_edit_with64     ${LANG_ENGLISH} \
+#    "Add Vim to the $\"Open With...$\" context menu list \
+#     for 64-bit applications."
 
 LangString str_section_vim_rc       ${LANG_ENGLISH} \
     "Create Default Config"
@@ -169,56 +169,56 @@ LangString str_desc_rm_rootdir      ${LANG_ENGLISH} \
 # Messages                                                                {{{1
 ##############################################################################
 
-LangString str_msg_too_many_ver  ${LANG_ENGLISH} \
-    "Found $vim_old_ver_count Vim versions on your system.$\r$\n\
-     This installer can only handle ${VIM_MAX_OLD_VER} versions \
-     at most.$\r$\n\
-     Please remove some versions and start again."
+#LangString str_msg_too_many_ver  ${LANG_ENGLISH} \
+#    "Found $vim_old_ver_count Vim versions on your system.$\r$\n\
+#     This installer can only handle ${VIM_MAX_OLD_VER} versions \
+#     at most.$\r$\n\
+#     Please remove some versions and start again."
 
-LangString str_msg_invalid_root  ${LANG_ENGLISH} \
-    "Invalid install path: $vim_install_root!$\r$\n\
-     It should end with $\"vim$\"."
+#LangString str_msg_invalid_root  ${LANG_ENGLISH} \
+#    "Invalid install path: $vim_install_root!$\r$\n\
+#     It should end with $\"vim$\"."
 
-LangString str_msg_bin_mismatch  ${LANG_ENGLISH} \
-    "Binary path mismatch!$\r$\n$\r$\n\
-     Expect the binary path to be $\"$vim_bin_path$\",$\r$\n\
-     but system indicates the binary path is $\"$INSTDIR$\"."
+#LangString str_msg_bin_mismatch  ${LANG_ENGLISH} \
+#    "Binary path mismatch!$\r$\n$\r$\n\
+#     Expect the binary path to be $\"$vim_bin_path$\",$\r$\n\
+#     but system indicates the binary path is $\"$INSTDIR$\"."
 
-LangString str_msg_vim_running   ${LANG_ENGLISH} \
-    "Vim is still running on your system.$\r$\n\
-     Please close all instances of Vim before you continue."
+#LangString str_msg_vim_running   ${LANG_ENGLISH} \
+#    "Vim is still running on your system.$\r$\n\
+#     Please close all instances of Vim before you continue."
 
-LangString str_msg_register_ole  ${LANG_ENGLISH} \
-    "Attempting to register Vim with OLE. \
-     There is no message indicates whether this works or not."
+#LangString str_msg_register_ole  ${LANG_ENGLISH} \
+#    "Attempting to register Vim with OLE. \
+#     There is no message indicates whether this works or not."
 
-LangString str_msg_unreg_ole     ${LANG_ENGLISH} \
-    "Attempting to unregister Vim with OLE. \
-     There is no message indicates whether this works or not."
+#LangString str_msg_unreg_ole     ${LANG_ENGLISH} \
+#    "Attempting to unregister Vim with OLE. \
+#     There is no message indicates whether this works or not."
 
-LangString str_msg_rm_start      ${LANG_ENGLISH} \
-    "Uninstalling the following version:"
+#LangString str_msg_rm_start      ${LANG_ENGLISH} \
+#    "Uninstalling the following version:"
 
-LangString str_msg_rm_fail       ${LANG_ENGLISH} \
-    "Fail to uninstall the following version:"
+#LangString str_msg_rm_fail       ${LANG_ENGLISH} \
+#    "Fail to uninstall the following version:"
 
-LangString str_msg_no_rm_key     ${LANG_ENGLISH} \
-    "Cannot find uninstaller registry key."
+#LangString str_msg_no_rm_key     ${LANG_ENGLISH} \
+#    "Cannot find uninstaller registry key."
 
-LangString str_msg_no_rm_reg     ${LANG_ENGLISH} \
-    "Cannot find uninstaller from registry."
+#LangString str_msg_no_rm_reg     ${LANG_ENGLISH} \
+#    "Cannot find uninstaller from registry."
 
-LangString str_msg_no_rm_exe     ${LANG_ENGLISH} \
-    "Cannot access uninstaller."
+#LangString str_msg_no_rm_exe     ${LANG_ENGLISH} \
+#    "Cannot access uninstaller."
 
-LangString str_msg_rm_copy_fail  ${LANG_ENGLISH} \
-    "Fail to copy uninstaller to temporary directory."
+#LangString str_msg_rm_copy_fail  ${LANG_ENGLISH} \
+#    "Fail to copy uninstaller to temporary directory."
 
-LangString str_msg_rm_run_fail   ${LANG_ENGLISH} \
-    "Fail to run uninstaller."
+#LangString str_msg_rm_run_fail   ${LANG_ENGLISH} \
+#    "Fail to run uninstaller."
 
-LangString str_msg_abort_install ${LANG_ENGLISH} \
-    "Installer will abort."
+#LangString str_msg_abort_install ${LANG_ENGLISH} \
+#    "Installer will abort."
 
 LangString str_msg_install_fail  ${LANG_ENGLISH} \
     "Installation failed. Better luck next time."
@@ -227,8 +227,8 @@ LangString str_msg_rm_exe_fail   ${LANG_ENGLISH} \
     "Some files in $0 have not been deleted!$\r$\n\
      You must do it manually."
 
-LangString str_msg_rm_root_fail  ${LANG_ENGLISH} \
-    "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
+#LangString str_msg_rm_root_fail  ${LANG_ENGLISH} \
+#    "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
 
 LangString str_msg_wait_uninst   ${LANG_ENGLISH} \
     "Waiting the old version to be uninstalled..."

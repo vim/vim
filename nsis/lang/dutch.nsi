@@ -23,8 +23,8 @@ LangString ^UninstallCaption ${LANG_DUTCH} \
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
 
-LangString str_dest_folder          ${LANG_DUTCH} \
-    "Doelmap (moet eindigen op $\"vim$\")"
+#LangString str_dest_folder          ${LANG_DUTCH} \
+#    "Doelmap (moet eindigen op $\"vim$\")"
 
 LangString str_show_readme          ${LANG_DUTCH} \
     "README weergeven na installatie"
@@ -81,27 +81,27 @@ LangString str_desc_start_menu      ${LANG_DUTCH} \
     "Voeg Vim toe aan de programma's map in het start menu.  \
      Van toepassing op Windows 95 en later."
 
-LangString str_section_quick_launch ${LANG_DUTCH} \
-    "In de snel starten balk"
-LangString str_desc_quick_launch    ${LANG_DUTCH} \
-    "Voeg Vim snelkoppeling toe aan de snel starten balk."
+#LangString str_section_quick_launch ${LANG_DUTCH} \
+#    "In de snel starten balk"
+#LangString str_desc_quick_launch    ${LANG_DUTCH} \
+#    "Voeg Vim snelkoppeling toe aan de snel starten balk."
 
 LangString str_section_edit_with    ${LANG_DUTCH} \
     "Voeg Vim contextmenu toe"
 LangString str_desc_edit_with       ${LANG_DUTCH} \
     "Voeg Vim toe aan de $\"Openen met...$\" contextmenu lijst."
 
-LangString str_section_edit_with32  ${LANG_DUTCH} \
-    "32-bit versie"
-LangString str_desc_edit_with32     ${LANG_DUTCH} \
-    "Voeg Vim toe aan de $\"Openen met...$\" contextmenu lijst \
-     voor 32-bit toepassingen."
+#LangString str_section_edit_with32  ${LANG_DUTCH} \
+#    "32-bit versie"
+#LangString str_desc_edit_with32     ${LANG_DUTCH} \
+#    "Voeg Vim toe aan de $\"Openen met...$\" contextmenu lijst \
+#     voor 32-bit toepassingen."
 
-LangString str_section_edit_with64  ${LANG_DUTCH} \
-    "64-bit versie"
-LangString str_desc_edit_with64     ${LANG_DUTCH} \
-    "Voeg Vim toe aan de $\"Openen met...$\" contextmenu lijst \
-     voor 64-bit toepassingen."
+#LangString str_section_edit_with64  ${LANG_DUTCH} \
+#    "64-bit versie"
+#LangString str_desc_edit_with64     ${LANG_DUTCH} \
+#    "Voeg Vim toe aan de $\"Openen met...$\" contextmenu lijst \
+#     voor 64-bit toepassingen."
 
 LangString str_section_vim_rc       ${LANG_DUTCH} \
     "Creëer standaard configuratie"
@@ -161,55 +161,55 @@ LangString str_desc_rm_rootdir      ${LANG_DUTCH} \
 # Messages                                                                {{{1
 ##############################################################################
 
-LangString str_msg_too_many_ver  ${LANG_DUTCH} \
-    "Er zijn $vim_old_ver_count Vim versies op je systeem gevonden.$\r$\n\
-     Deze installatie kan omgaan met maximaal ${VIM_MAX_OLD_VER} versies.$\r$\n\
-     Verwijder a.u.b. wat versies en probeer het dan opnieuw."
+#LangString str_msg_too_many_ver  ${LANG_DUTCH} \
+#    "Er zijn $vim_old_ver_count Vim versies op je systeem gevonden.$\r$\n\
+#     Deze installatie kan omgaan met maximaal ${VIM_MAX_OLD_VER} versies.$\r$\n\
+#     Verwijder a.u.b. wat versies en probeer het dan opnieuw."
 
-LangString str_msg_invalid_root  ${LANG_DUTCH} \
-    "Ongeldig installatiepad: $vim_install_root!$\r$\n\
-     Het moet eindelijk op $\"vim$\"."
+#LangString str_msg_invalid_root  ${LANG_DUTCH} \
+#    "Ongeldig installatiepad: $vim_install_root!$\r$\n\
+#     Het moet eindelijk op $\"vim$\"."
 
-LangString str_msg_bin_mismatch  ${LANG_DUTCH} \
-    "Binair pad onjuist!$\r$\n$\r$\n\
-     Het binaire pad zou $\"$vim_bin_path$\" moeten zijn,$\r$\n\
-     maar het systeem geeft aan dat het binaire pad $\"$INSTDIR$\" is."
+#LangString str_msg_bin_mismatch  ${LANG_DUTCH} \
+#    "Binair pad onjuist!$\r$\n$\r$\n\
+#     Het binaire pad zou $\"$vim_bin_path$\" moeten zijn,$\r$\n\
+#     maar het systeem geeft aan dat het binaire pad $\"$INSTDIR$\" is."
 
-LangString str_msg_vim_running   ${LANG_DUTCH} \
-    "Vim is nog actief op je systeem.$\r$\n\
-     Sluit a.u.b. alle instanties van Vim voordat je verder gaat."
+#LangString str_msg_vim_running   ${LANG_DUTCH} \
+#    "Vim is nog actief op je systeem.$\r$\n\
+#     Sluit a.u.b. alle instanties van Vim voordat je verder gaat."
 
-LangString str_msg_register_ole  ${LANG_DUTCH} \
-    "Bezig met proberen om Vim te registreren met OLE. \
-     Er is geen bericht dat aangeeft of deze operatie slaagt."
+#LangString str_msg_register_ole  ${LANG_DUTCH} \
+#    "Bezig met proberen om Vim te registreren met OLE. \
+#     Er is geen bericht dat aangeeft of deze operatie slaagt."
 
-LangString str_msg_unreg_ole     ${LANG_DUTCH} \
-    "Bezig met proberen om Vim te de-registreren met OLE. \
-     Er is geen bericht dat aangeeft of deze operatie slaagt."
+#LangString str_msg_unreg_ole     ${LANG_DUTCH} \
+#    "Bezig met proberen om Vim te de-registreren met OLE. \
+#     Er is geen bericht dat aangeeft of deze operatie slaagt."
 
-LangString str_msg_rm_start      ${LANG_DUTCH} \
-    "De volgende versies worden verwijderd:"
+#LangString str_msg_rm_start      ${LANG_DUTCH} \
+#    "De volgende versies worden verwijderd:"
 
-LangString str_msg_rm_fail       ${LANG_DUTCH} \
-    "De volgende versies konden niet worden verwijderd:"
+#LangString str_msg_rm_fail       ${LANG_DUTCH} \
+#    "De volgende versies konden niet worden verwijderd:"
 
-LangString str_msg_no_rm_key     ${LANG_DUTCH} \
-    "Kan de uninstaller register sleutel niet vinden."
+#LangString str_msg_no_rm_key     ${LANG_DUTCH} \
+#    "Kan de uninstaller register sleutel niet vinden."
 
-LangString str_msg_no_rm_reg     ${LANG_DUTCH} \
-    "Kan de uninstaller niet vinden via het register."
+#LangString str_msg_no_rm_reg     ${LANG_DUTCH} \
+#    "Kan de uninstaller niet vinden via het register."
 
-LangString str_msg_no_rm_exe     ${LANG_DUTCH} \
-    "Kan geen toegang krijgen tot de uninstaller."
+#LangString str_msg_no_rm_exe     ${LANG_DUTCH} \
+#    "Kan geen toegang krijgen tot de uninstaller."
 
-LangString str_msg_rm_copy_fail  ${LANG_DUTCH} \
-    "Kon de uninstaller niet naar een tijdelijke map kopiëren."
+#LangString str_msg_rm_copy_fail  ${LANG_DUTCH} \
+#    "Kon de uninstaller niet naar een tijdelijke map kopiëren."
 
-LangString str_msg_rm_run_fail   ${LANG_DUTCH} \
-    "Kon de uninstaller niet uitvoeren."
+#LangString str_msg_rm_run_fail   ${LANG_DUTCH} \
+#    "Kon de uninstaller niet uitvoeren."
 
-LangString str_msg_abort_install ${LANG_DUTCH} \
-    "Installatie wordt gestopt."
+#LangString str_msg_abort_install ${LANG_DUTCH} \
+#    "Installatie wordt gestopt."
 
 LangString str_msg_install_fail  ${LANG_DUTCH} \
     "Installatie is mislukt."
@@ -218,8 +218,8 @@ LangString str_msg_rm_exe_fail   ${LANG_DUTCH} \
     "Sommige bestanden in $0 zijn niet verwijderd!$\r$\n\
      Dit moet je handmatig doen."
 
-LangString str_msg_rm_root_fail  ${LANG_DUTCH} \
-    "WAARSCHUWING: Kan $\"$vim_install_root$\" niet verwijderen omdat het niet leeg is!"
+#LangString str_msg_rm_root_fail  ${LANG_DUTCH} \
+#    "WAARSCHUWING: Kan $\"$vim_install_root$\" niet verwijderen omdat het niet leeg is!"
 
 LangString str_msg_wait_uninst   ${LANG_DUTCH} \
     "Waiting the old version to be uninstalled..."

@@ -23,8 +23,8 @@ LangString ^UninstallCaption ${LANG_TRADCHINESE} \
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
 
-LangString str_dest_folder          ${LANG_TRADCHINESE} \
-    "安裝資料夾 (必須以 vim 結尾)"
+#LangString str_dest_folder          ${LANG_TRADCHINESE} \
+#    "安裝資料夾 (必須以 vim 結尾)"
 
 LangString str_show_readme          ${LANG_TRADCHINESE} \
     "安裝完成後顯示 README 檔案"
@@ -80,25 +80,25 @@ LangString str_desc_start_menu      ${LANG_TRADCHINESE} \
     "在「開始」功能表的「程式」集中建立 Vim 啟動組。\
      適用于 Windows 95 及以上版本。"
 
-LangString str_section_quick_launch ${LANG_TRADCHINESE} \
-    "於快速啟動列"
-LangString str_desc_quick_launch    ${LANG_TRADCHINESE} \
-    "在快速啟動列中建立 Vim 圖示。"
+#LangString str_section_quick_launch ${LANG_TRADCHINESE} \
+#    "於快速啟動列"
+#LangString str_desc_quick_launch    ${LANG_TRADCHINESE} \
+#    "在快速啟動列中建立 Vim 圖示。"
 
 LangString str_section_edit_with    ${LANG_TRADCHINESE} \
     "安裝快捷選單"
 LangString str_desc_edit_with       ${LANG_TRADCHINESE} \
     "在「打開方式」快捷選單中添加 Vim 項。"
 
-LangString str_section_edit_with32  ${LANG_TRADCHINESE} \
-    "32 位元版本"
-LangString str_desc_edit_with32     ${LANG_TRADCHINESE} \
-    "在 32 位元程式的「打開方式」快捷選單中添加 Vim 項。"
+#LangString str_section_edit_with32  ${LANG_TRADCHINESE} \
+#    "32 位元版本"
+#LangString str_desc_edit_with32     ${LANG_TRADCHINESE} \
+#    "在 32 位元程式的「打開方式」快捷選單中添加 Vim 項。"
 
-LangString str_section_edit_with64  ${LANG_TRADCHINESE} \
-    "64 位元版本"
-LangString str_desc_edit_with64     ${LANG_TRADCHINESE} \
-    "在 64 位元程式的「打開方式」快捷選單中添加 Vim 項。"
+#LangString str_section_edit_with64  ${LANG_TRADCHINESE} \
+#    "64 位元版本"
+#LangString str_desc_edit_with64     ${LANG_TRADCHINESE} \
+#    "在 64 位元程式的「打開方式」快捷選單中添加 Vim 項。"
 
 LangString str_section_vim_rc       ${LANG_TRADCHINESE} \
     "建立默認設定檔"
@@ -159,53 +159,53 @@ LangString str_desc_rm_rootdir      ${LANG_TRADCHINESE} \
 # Messages                                                                {{{1
 ##############################################################################
 
-LangString str_msg_too_many_ver  ${LANG_TRADCHINESE} \
-    "閣下的電腦上安裝了 $vim_old_ver_count 個不同版本的 Vim，$\r$\n\
-     但是本安裝程式最多只能處理 ${VIM_MAX_OLD_VER} 個版本。$\r$\n\
-     煩請閣下手工移除一些版本以后再運行本安裝程式。"
+#LangString str_msg_too_many_ver  ${LANG_TRADCHINESE} \
+#    "閣下的電腦上安裝了 $vim_old_ver_count 個不同版本的 Vim，$\r$\n\
+#     但是本安裝程式最多只能處理 ${VIM_MAX_OLD_VER} 個版本。$\r$\n\
+#     煩請閣下手工移除一些版本以后再運行本安裝程式。"
 
-LangString str_msg_invalid_root  ${LANG_TRADCHINESE} \
-    "安裝資料夾「$vim_install_root」無效！$\r$\n\
-     該資料夾必須以「vim」結尾。"
+#LangString str_msg_invalid_root  ${LANG_TRADCHINESE} \
+#    "安裝資料夾「$vim_install_root」無效！$\r$\n\
+#     該資料夾必須以「vim」結尾。"
 
-LangString str_msg_bin_mismatch  ${LANG_TRADCHINESE} \
-    "Vim 執行程式安裝路徑異常！$\r$\n$\r$\n\
-     該版本 Vim 的執行程式安裝路徑應該是「$vim_bin_path」,$\r$\n\
-     而系統卻指示該路徑為「$INSTDIR」。"
+#LangString str_msg_bin_mismatch  ${LANG_TRADCHINESE} \
+#    "Vim 執行程式安裝路徑異常！$\r$\n$\r$\n\
+#     該版本 Vim 的執行程式安裝路徑應該是「$vim_bin_path」,$\r$\n\
+#     而系統卻指示該路徑為「$INSTDIR」。"
 
-LangString str_msg_vim_running   ${LANG_TRADCHINESE} \
-    "閣下的電腦上尚有正在運行之 Vim，$\r$\n\
-     煩請閣下在執行后續步驟前將其全部退出。"
+#LangString str_msg_vim_running   ${LANG_TRADCHINESE} \
+#    "閣下的電腦上尚有正在運行之 Vim，$\r$\n\
+#     煩請閣下在執行后續步驟前將其全部退出。"
 
-LangString str_msg_register_ole  ${LANG_TRADCHINESE} \
-    "試圖注冊 Vim OLE 伺服程式。請注意不論成功與否都不再顯示進一步的信息。"
+#LangString str_msg_register_ole  ${LANG_TRADCHINESE} \
+#    "試圖注冊 Vim OLE 伺服程式。請注意不論成功與否都不再顯示進一步的信息。"
 
-LangString str_msg_unreg_ole     ${LANG_TRADCHINESE} \
-    "試圖注銷 Vim OLE 伺服程式。請注意不論成功與否都不再顯示進一步的信息。"
+#LangString str_msg_unreg_ole     ${LANG_TRADCHINESE} \
+#    "試圖注銷 Vim OLE 伺服程式。請注意不論成功與否都不再顯示進一步的信息。"
 
-LangString str_msg_rm_start      ${LANG_TRADCHINESE} \
-    "正移除如下版本："
+#LangString str_msg_rm_start      ${LANG_TRADCHINESE} \
+#    "正移除如下版本："
 
-LangString str_msg_rm_fail       ${LANG_TRADCHINESE} \
-    "以下版本移除失敗："
+#LangString str_msg_rm_fail       ${LANG_TRADCHINESE} \
+#    "以下版本移除失敗："
 
-LangString str_msg_no_rm_key     ${LANG_TRADCHINESE} \
-    "找不到反安裝程式的登錄檔入口。"
+#LangString str_msg_no_rm_key     ${LANG_TRADCHINESE} \
+#    "找不到反安裝程式的登錄檔入口。"
 
-LangString str_msg_no_rm_reg     ${LANG_TRADCHINESE} \
-    "在登錄檔中未找到反安裝程式路徑。"
+#LangString str_msg_no_rm_reg     ${LANG_TRADCHINESE} \
+#    "在登錄檔中未找到反安裝程式路徑。"
 
-LangString str_msg_no_rm_exe     ${LANG_TRADCHINESE} \
-    "找不到反安裝程式。"
+#LangString str_msg_no_rm_exe     ${LANG_TRADCHINESE} \
+#    "找不到反安裝程式。"
 
-LangString str_msg_rm_copy_fail  ${LANG_TRADCHINESE} \
-    "無法將法將反安裝程式复制到臨時目錄。"
+#LangString str_msg_rm_copy_fail  ${LANG_TRADCHINESE} \
+#    "無法將法將反安裝程式复制到臨時目錄。"
 
-LangString str_msg_rm_run_fail   ${LANG_TRADCHINESE} \
-    "執行反安裝程式失敗。"
+#LangString str_msg_rm_run_fail   ${LANG_TRADCHINESE} \
+#    "執行反安裝程式失敗。"
 
-LangString str_msg_abort_install ${LANG_TRADCHINESE} \
-    "安裝程式將退出。"
+#LangString str_msg_abort_install ${LANG_TRADCHINESE} \
+#    "安裝程式將退出。"
 
 LangString str_msg_install_fail  ${LANG_TRADCHINESE} \
     "安裝失敗。預祝下次好運。"
@@ -214,9 +214,9 @@ LangString str_msg_rm_exe_fail   ${LANG_TRADCHINESE} \
     "資料夾「$0」下有部分檔案未能移除！$\r$\n\
      閣下只能手工移除該資料夾。"
 
-LangString str_msg_rm_root_fail  ${LANG_TRADCHINESE} \
-    "警告：無法刪除 Vim 安裝資料夾「$vim_install_root」，\
-     該資料夾下仍有其他檔案。"
+#LangString str_msg_rm_root_fail  ${LANG_TRADCHINESE} \
+#    "警告：無法刪除 Vim 安裝資料夾「$vim_install_root」，\
+#     該資料夾下仍有其他檔案。"
 
 LangString str_msg_wait_uninst   ${LANG_TRADCHINESE} \
     "Waiting the old version to be uninstalled..."

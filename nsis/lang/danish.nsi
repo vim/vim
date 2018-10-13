@@ -30,7 +30,7 @@ LangString ^UninstallCaption ${LANG_DANISH}         "$(^Name) Uninstall"
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
 
-LangString str_dest_folder          ${LANG_DANISH}     "Destinationsmappe (skal slutte med $\"vim$\")"
+#LangString str_dest_folder          ${LANG_DANISH}     "Destinationsmappe (skal slutte med $\"vim$\")"
 
 LangString str_show_readme          ${LANG_DANISH}     "Vis README efter installationen er gennemført"
 
@@ -67,17 +67,17 @@ LangString str_desc_desktop         ${LANG_DANISH}     "Opret ikoner til gVim-ek
 LangString str_section_start_menu   ${LANG_DANISH}     "I Programmer-mappen i menuen Start"
 LangString str_desc_start_menu      ${LANG_DANISH}     "Tilføj Vim i Programmer-mappen i menuen Start."
 
-LangString str_section_quick_launch ${LANG_DANISH}     "I værktøjslinjen Hurtig start"
-LangString str_desc_quick_launch    ${LANG_DANISH}     "Tilføj Vim-genvej i værktøjslinjen Hurtig start."
+#LangString str_section_quick_launch ${LANG_DANISH}     "I værktøjslinjen Hurtig start"
+#LangString str_desc_quick_launch    ${LANG_DANISH}     "Tilføj Vim-genvej i værktøjslinjen Hurtig start."
 
 LangString str_section_edit_with    ${LANG_DANISH}     "Tilføj Vim-genvejsmenu"
 LangString str_desc_edit_with       ${LANG_DANISH}     "Tilføj Vim til listen i $\"Åbn med...$\"-genvejsmenuen."
 
-LangString str_section_edit_with32  ${LANG_DANISH}     "32-bit-version"
-LangString str_desc_edit_with32     ${LANG_DANISH}     "Tilføj Vim til listen i $\"Åbn med...$\"-genvejsmenuen for 32-bit-programmer."
+#LangString str_section_edit_with32  ${LANG_DANISH}     "32-bit-version"
+#LangString str_desc_edit_with32     ${LANG_DANISH}     "Tilføj Vim til listen i $\"Åbn med...$\"-genvejsmenuen for 32-bit-programmer."
 
-LangString str_section_edit_with64  ${LANG_DANISH}     "64-bit-version"
-LangString str_desc_edit_with64     ${LANG_DANISH}     "Tilføj Vim til listen i $\"Åbn med...$\"-genvejsmenuen for 64-bit-programmer."
+#LangString str_section_edit_with64  ${LANG_DANISH}     "64-bit-version"
+#LangString str_desc_edit_with64     ${LANG_DANISH}     "Tilføj Vim til listen i $\"Åbn med...$\"-genvejsmenuen for 64-bit-programmer."
 
 LangString str_section_vim_rc       ${LANG_DANISH}     "Opret standardkonfiguration"
 LangString str_desc_vim_rc          ${LANG_DANISH}     "Opret en standardkonfigurationsfil (_vimrc) hvis der ikke allerede findes en."
@@ -114,39 +114,39 @@ LangString str_desc_rm_rootdir      ${LANG_DANISH}     "Fjern Vim-rodmappen. Den
 # Messages                                                                {{{1
 ##############################################################################
 
-LangString str_msg_too_many_ver  ${LANG_DANISH}     "Fandt $vim_old_ver_count Vim-versioner på dit system.$\r$\nInstallationsguiden kan højst håndtere ${VIM_MAX_OLD_VER}-versioner.$\r$\nFjern venligst nogle versioner og start igen."
+#LangString str_msg_too_many_ver  ${LANG_DANISH}     "Fandt $vim_old_ver_count Vim-versioner på dit system.$\r$\nInstallationsguiden kan højst håndtere ${VIM_MAX_OLD_VER}-versioner.$\r$\nFjern venligst nogle versioner og start igen."
 
-LangString str_msg_invalid_root  ${LANG_DANISH}     "Ugyldig installationssti: $vim_install_root!$\r$\nDen skal slutte med $\"vim$\"."
+#LangString str_msg_invalid_root  ${LANG_DANISH}     "Ugyldig installationssti: $vim_install_root!$\r$\nDen skal slutte med $\"vim$\"."
 
-LangString str_msg_bin_mismatch  ${LANG_DANISH}     "Uoverensstemmelse i binære sti!$\r$\n$\r$\nForventede at den binære sti var $\"$vim_bin_path$\",$\r$\nmen systemet indikerer at den binære sti er $\"$INSTDIR$\"."
+#LangString str_msg_bin_mismatch  ${LANG_DANISH}     "Uoverensstemmelse i binære sti!$\r$\n$\r$\nForventede at den binære sti var $\"$vim_bin_path$\",$\r$\nmen systemet indikerer at den binære sti er $\"$INSTDIR$\"."
 
-LangString str_msg_vim_running   ${LANG_DANISH}     "Vim kører stadig på dit system.$\r$\nLuk venligst alle instanser af Vim inden du fortsætter."
+#LangString str_msg_vim_running   ${LANG_DANISH}     "Vim kører stadig på dit system.$\r$\nLuk venligst alle instanser af Vim inden du fortsætter."
 
-LangString str_msg_register_ole  ${LANG_DANISH}     "Forsøger at registrere Vim med OLE. Der er ingen meddelelse til at indikere om det virker eller ej."
+#LangString str_msg_register_ole  ${LANG_DANISH}     "Forsøger at registrere Vim med OLE. Der er ingen meddelelse til at indikere om det virker eller ej."
 
-LangString str_msg_unreg_ole     ${LANG_DANISH}     "Forsøger at afregistrere Vim med OLE. Der er ingen meddelelse til at indikere om det virker eller ej."
+#LangString str_msg_unreg_ole     ${LANG_DANISH}     "Forsøger at afregistrere Vim med OLE. Der er ingen meddelelse til at indikere om det virker eller ej."
 
-LangString str_msg_rm_start      ${LANG_DANISH}     "Afinstallerer følgende version:"
+#LangString str_msg_rm_start      ${LANG_DANISH}     "Afinstallerer følgende version:"
 
-LangString str_msg_rm_fail       ${LANG_DANISH}     "Kunne ikke afinstallere følgende version:"
+#LangString str_msg_rm_fail       ${LANG_DANISH}     "Kunne ikke afinstallere følgende version:"
 
-LangString str_msg_no_rm_key     ${LANG_DANISH}     "Kan ikke finde registreringsdatabasenøgle for afinstallationsguiden."
+#LangString str_msg_no_rm_key     ${LANG_DANISH}     "Kan ikke finde registreringsdatabasenøgle for afinstallationsguiden."
 
-LangString str_msg_no_rm_reg     ${LANG_DANISH}     "Kan ikke finde afinstallationsguiden fra registreringsdatabasen."
+#LangString str_msg_no_rm_reg     ${LANG_DANISH}     "Kan ikke finde afinstallationsguiden fra registreringsdatabasen."
 
-LangString str_msg_no_rm_exe     ${LANG_DANISH}     "Kan ikke tilgå afinstallationsguide."
+#LangString str_msg_no_rm_exe     ${LANG_DANISH}     "Kan ikke tilgå afinstallationsguide."
 
-LangString str_msg_rm_copy_fail  ${LANG_DANISH}     "Kunne ikke kopiere afinstallationsguide til midlertidig mappe."
+#LangString str_msg_rm_copy_fail  ${LANG_DANISH}     "Kunne ikke kopiere afinstallationsguide til midlertidig mappe."
 
-LangString str_msg_rm_run_fail   ${LANG_DANISH}     "Kunne ikke køre afinstallationsguide."
+#LangString str_msg_rm_run_fail   ${LANG_DANISH}     "Kunne ikke køre afinstallationsguide."
 
-LangString str_msg_abort_install ${LANG_DANISH}     "Installationsguiden vil afbryde."
+#LangString str_msg_abort_install ${LANG_DANISH}     "Installationsguiden vil afbryde."
 
 LangString str_msg_install_fail  ${LANG_DANISH}     "Installationen mislykkedes. Bedre held næste gang."
 
 LangString str_msg_rm_exe_fail   ${LANG_DANISH}     "Nogle filer i $0 er ikke blevet slettet!$\r$\nDu skal gøre det manuelt."
 
-LangString str_msg_rm_root_fail  ${LANG_DANISH}     "ADVARSEL: Kan ikke fjerne $\"$vim_install_root$\", den er ikke tom!"
+#LangString str_msg_rm_root_fail  ${LANG_DANISH}     "ADVARSEL: Kan ikke fjerne $\"$vim_install_root$\", den er ikke tom!"
 
 LangString str_msg_wait_uninst   ${LANG_DANISH}     "Venter på at den gamle version bliver afinstalleret..."
 

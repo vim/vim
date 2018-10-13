@@ -88,27 +88,27 @@ LangString str_section_start_menu   ${LANG_JAPANESE} \
 LangString str_desc_start_menu      ${LANG_JAPANESE} \
     "Vim のアイコンをスタートメニューのプログラムフォルダー上に作成します。"
 
-LangString str_section_quick_launch ${LANG_JAPANESE} \
-    "In the Quick Launch Bar"
-LangString str_desc_quick_launch    ${LANG_JAPANESE} \
-    "Add Vim shortcut in the quick launch bar."
+#LangString str_section_quick_launch ${LANG_JAPANESE} \
+#    "In the Quick Launch Bar"
+#LangString str_desc_quick_launch    ${LANG_JAPANESE} \
+#    "Add Vim shortcut in the quick launch bar."
 
 LangString str_section_edit_with    ${LANG_JAPANESE} \
     "Vim のコンテキストメニューを追加"
 LangString str_desc_edit_with       ${LANG_JAPANESE} \
     "$\"Vimで編集する$\" をコンテキストメニューに追加します。"
 
-LangString str_section_edit_with32  ${LANG_JAPANESE} \
-    "32-bit Version"
-LangString str_desc_edit_with32     ${LANG_JAPANESE} \
-    "Add Vim to the $\"Open With...$\" context menu list \
-     for 32-bit applications."
+#LangString str_section_edit_with32  ${LANG_JAPANESE} \
+#    "32-bit Version"
+#LangString str_desc_edit_with32     ${LANG_JAPANESE} \
+#    "Add Vim to the $\"Open With...$\" context menu list \
+#     for 32-bit applications."
 
-LangString str_section_edit_with64  ${LANG_JAPANESE} \
-    "64-bit Version"
-LangString str_desc_edit_with64     ${LANG_JAPANESE} \
-    "Add Vim to the $\"Open With...$\" context menu list \
-     for 64-bit applications."
+#LangString str_section_edit_with64  ${LANG_JAPANESE} \
+#    "64-bit Version"
+#LangString str_desc_edit_with64     ${LANG_JAPANESE} \
+#    "Add Vim to the $\"Open With...$\" context menu list \
+#     for 64-bit applications."
 
 LangString str_section_vim_rc       ${LANG_JAPANESE} \
     "既定のコンフィグを作成"
@@ -165,56 +165,56 @@ LangString str_desc_rm_rootdir      ${LANG_JAPANESE} \
 # Messages                                                                {{{1
 ##############################################################################
 
-LangString str_msg_too_many_ver  ${LANG_JAPANESE} \
-    "Found $vim_old_ver_count Vim versions on your system.$\r$\n\
-     This installer can only handle ${VIM_MAX_OLD_VER} versions \
-     at most.$\r$\n\
-     Please remove some versions and start again."
+#LangString str_msg_too_many_ver  ${LANG_JAPANESE} \
+#    "Found $vim_old_ver_count Vim versions on your system.$\r$\n\
+#     This installer can only handle ${VIM_MAX_OLD_VER} versions \
+#     at most.$\r$\n\
+#     Please remove some versions and start again."
 
-LangString str_msg_invalid_root  ${LANG_JAPANESE} \
-    "Invalid install path: $vim_install_root!$\r$\n\
-     It should end with $\"vim$\"."
+#LangString str_msg_invalid_root  ${LANG_JAPANESE} \
+#    "Invalid install path: $vim_install_root!$\r$\n\
+#     It should end with $\"vim$\"."
 
-LangString str_msg_bin_mismatch  ${LANG_JAPANESE} \
-    "Binary path mismatch!$\r$\n$\r$\n\
-     Expect the binary path to be $\"$vim_bin_path$\",$\r$\n\
-     but system indicates the binary path is $\"$INSTDIR$\"."
+#LangString str_msg_bin_mismatch  ${LANG_JAPANESE} \
+#    "Binary path mismatch!$\r$\n$\r$\n\
+#     Expect the binary path to be $\"$vim_bin_path$\",$\r$\n\
+#     but system indicates the binary path is $\"$INSTDIR$\"."
 
-LangString str_msg_vim_running   ${LANG_JAPANESE} \
-    "Vim is still running on your system.$\r$\n\
-     Please close all instances of Vim before you continue."
+#LangString str_msg_vim_running   ${LANG_JAPANESE} \
+#    "Vim is still running on your system.$\r$\n\
+#     Please close all instances of Vim before you continue."
 
-LangString str_msg_register_ole  ${LANG_JAPANESE} \
-    "Attempting to register Vim with OLE. \
-     There is no message indicates whether this works or not."
+#LangString str_msg_register_ole  ${LANG_JAPANESE} \
+#    "Attempting to register Vim with OLE. \
+#     There is no message indicates whether this works or not."
 
-LangString str_msg_unreg_ole     ${LANG_JAPANESE} \
-    "Attempting to unregister Vim with OLE. \
-     There is no message indicates whether this works or not."
+#LangString str_msg_unreg_ole     ${LANG_JAPANESE} \
+#    "Attempting to unregister Vim with OLE. \
+#     There is no message indicates whether this works or not."
 
-LangString str_msg_rm_start      ${LANG_JAPANESE} \
-    "Uninstalling the following version:"
+#LangString str_msg_rm_start      ${LANG_JAPANESE} \
+#    "Uninstalling the following version:"
 
-LangString str_msg_rm_fail       ${LANG_JAPANESE} \
-    "Fail to uninstall the following version:"
+#LangString str_msg_rm_fail       ${LANG_JAPANESE} \
+#    "Fail to uninstall the following version:"
 
-LangString str_msg_no_rm_key     ${LANG_JAPANESE} \
-    "Cannot find uninstaller registry key."
+#LangString str_msg_no_rm_key     ${LANG_JAPANESE} \
+#    "Cannot find uninstaller registry key."
 
-LangString str_msg_no_rm_reg     ${LANG_JAPANESE} \
-    "Cannot find uninstaller from registry."
+#LangString str_msg_no_rm_reg     ${LANG_JAPANESE} \
+#    "Cannot find uninstaller from registry."
 
-LangString str_msg_no_rm_exe     ${LANG_JAPANESE} \
-    "Cannot access uninstaller."
+#LangString str_msg_no_rm_exe     ${LANG_JAPANESE} \
+#    "Cannot access uninstaller."
 
-LangString str_msg_rm_copy_fail  ${LANG_JAPANESE} \
-    "Fail to copy uninstaller to temporary directory."
+#LangString str_msg_rm_copy_fail  ${LANG_JAPANESE} \
+#    "Fail to copy uninstaller to temporary directory."
 
-LangString str_msg_rm_run_fail   ${LANG_JAPANESE} \
-    "Fail to run uninstaller."
+#LangString str_msg_rm_run_fail   ${LANG_JAPANESE} \
+#    "Fail to run uninstaller."
 
-LangString str_msg_abort_install ${LANG_JAPANESE} \
-    "Installer will abort."
+#LangString str_msg_abort_install ${LANG_JAPANESE} \
+#    "Installer will abort."
 
 LangString str_msg_install_fail  ${LANG_JAPANESE} \
     "インストールに失敗しました。次はうまくいくことを祈ります。"
@@ -223,8 +223,8 @@ LangString str_msg_rm_exe_fail   ${LANG_JAPANESE} \
     "$0 内の一部のファイルは削除できませんでした!$\r$\n\
      手動で削除する必要があります。"
 
-LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
-    "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
+#LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
+#    "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
 
 LangString str_msg_wait_uninst   ${LANG_JAPANESE} \
     "古いバージョンがアンインストールされるのを待っています..."
