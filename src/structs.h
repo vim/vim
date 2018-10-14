@@ -1445,6 +1445,10 @@ typedef struct
 {
     int	    dummy;
 } funcdict_T;
+typedef struct
+{
+    int	    dummy;
+} funccal_entry_T;
 #endif
 
 struct partial_S
