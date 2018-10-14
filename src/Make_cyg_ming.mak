@@ -985,6 +985,7 @@ clean:
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
+	-$(DEL) auto$(DIRSLASH)if_perl.c
 endif
 ifdef MZSCHEME
 	-$(DEL) mzscheme_base.c
@@ -1043,9 +1044,13 @@ mzscheme_base.c:
 $(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL) if_ole.h
 	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
-if_perl.c:		if_perl.xs typemap
+auto/if_perl.c:		if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs -output $@
+
+$(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
+	$(CC) -c $(CFLAGS) auto/if_perl.c -o $(OUTDIR)/if_perl.o
+
 
 $(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
