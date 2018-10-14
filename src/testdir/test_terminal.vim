@@ -543,8 +543,8 @@ func Test_terminal_noblock()
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
-    " TODO: Value that ConPTY does not conhost's deadlock.
-  elseif has('conpty')
+  " NPFS is used in Windows, nonblocking mode does not work properly.
+  elseif has('win32')
     let len = 1
   else
     let len = 5000
