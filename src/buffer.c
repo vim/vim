@@ -4372,6 +4372,13 @@ build_stl_str_hl(
 		str = (char_u *)((opt == STL_HELPFLAG_ALT) ? ",HLP"
 							       : _("[Help]"));
 	    break;
+	
+	case STL_DREFFLAG:
+	case STL_DREFFLAG_ALT:
+	    itemisflag = TRUE;
+	    if (wp->w_p_dref && wp->w_p_diff)
+		str = (char_u *)((opt == STL_DREFFLAG_ALT) ? ",DM" : _("[Master]"));
+	    break;
 
 	case STL_FILETYPE:
 	    if (*wp->w_buffer->b_p_ft != NUL

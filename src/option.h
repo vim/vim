@@ -272,6 +272,8 @@
 #define STL_ROFLAG_ALT	'R'		/* - other display */
 #define STL_HELPFLAG	'h'		/* window is showing a help file */
 #define STL_HELPFLAG_ALT 'H'		/* - other display */
+#define STL_DREFFLAG	'd'		/* diffref flag status */
+#define STL_DREFFLAG_ALT 'D'		/* - other display */
 #define STL_FILETYPE	'y'		/* 'filetype' */
 #define STL_FILETYPE_ALT 'Y'		/* - other display */
 #define STL_PREVIEWFLAG	'w'		/* window is showing the preview buf */
@@ -290,7 +292,7 @@
 #define STL_HIGHLIGHT	'#'		/* highlight name */
 #define STL_TABPAGENR	'T'		/* tab page label nr */
 #define STL_TABCLOSENR	'X'		/* tab page close nr */
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaN{#")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHdDmYyWwMqpPaN{#")
 
 /* flags used for parsed 'wildmode' */
 #define WIM_FULL	1
