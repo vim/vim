@@ -341,16 +341,19 @@ same as in window 1, even if window 3 has something different.  This line will
 of course still be highlighted in windows 1 and 3, however.
 
 						*diffm* *diffmaster*
-:diffm[aster]
+:diffm[aster][!]
 		Set the currently active window as the master window. If there
-		is already a master window, it will be replaced.
+		is already a master window, it will be replaced. The current
+		window will be made into a diff window if it isn't already. If
+		there are no diff windows yet, or if ! is used, then diff will
+		be activated in all windows.
 
-						*diffa* *diffall*
-:diffa[ll]
+						*diffn* *diffnomaster*
+:diffn[omaster]
 		Clear the master window and restore the default behavior of
 		highlighting differing lines in every window.
 
-See also the 'diffref' option, which these two commands control.
+See also the |'diffref'| option, which these two commands control.
 
 FINDING THE DIFFERENCES					*diff-diffexpr*
 
