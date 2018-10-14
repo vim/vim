@@ -2635,7 +2635,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- In most cases, there will only be a single window you want to com-
 	  pare the other windows against, so normally you will only want this
 	  option set on one window at a time.  For these cases, you can use the
-	  |diffmaster| and |diffall| commands instead.
+	  |diffmaster| and |diffnomaster| commands instead.
 
 						*'dip'* *'diffopt'*
 'diffopt' 'dip'		string	(default "internal,filler")
