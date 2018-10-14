@@ -7525,6 +7525,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	R F   Readonly flag, text is ",RO".
 	h F   Help buffer flag, text is "[help]".
 	H F   Help buffer flag, text is ",HLP".
+	d F   Diff master flag, text is "[Master]".  See 'diffref'.
+	D F   Diff master flag, text is ",DM".  See 'diffref'.
 	w F   Preview window flag, text is "[Preview]".
 	W F   Preview window flag, text is ",PRV".
 	y F   Type of file in the buffer, e.g., "[vim]".  See 'filetype'.
