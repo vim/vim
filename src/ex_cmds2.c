@@ -4344,7 +4344,7 @@ do_source(
 #ifdef FEAT_EVAL
     sctx_T		    save_current_sctx;
     static scid_T	    last_current_SID = 0;
-    void		    *save_funccalp;
+    funccal_entry_T	    funccalp_entry;
     int			    save_debug_break_level = debug_break_level;
     scriptitem_T	    *si = NULL;
 # ifdef UNIX
@@ -4506,7 +4506,7 @@ do_source(
 
     /* Don't use local function variables, if called from a function.
      * Also starts profiling timer for nested script. */
-    save_funccalp = save_funccal();
+    save_funccal(&funccalp_entry);
 
     /*
      * Check if this script was sourced before to finds its SID.
@@ -4665,7 +4665,7 @@ do_source(
 #ifdef FEAT_EVAL
 almosttheend:
     current_sctx = save_current_sctx;
-    restore_funccal(save_funccalp);
+    restore_funccal();
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		/* leaving a child now */

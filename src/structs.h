@@ -1354,7 +1354,7 @@ typedef struct
     int		uf_cleared;	/* func_clear() was already called */
     garray_T	uf_args;	/* arguments */
     garray_T	uf_lines;	/* function lines */
-#ifdef FEAT_PROFILE
+# ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */
     int		uf_prof_initialized;
     /* profiling the function as a whole */
@@ -1371,7 +1371,7 @@ typedef struct
     proftime_T	uf_tml_wait;	/* start wait time for current line */
     int		uf_tml_idx;	/* index of line being timed; -1 if none */
     int		uf_tml_execed;	/* line being timed was executed */
-#endif
+# endif
     sctx_T	uf_script_ctx;	/* SCTX where function was defined,
 				   used for s: variables */
     int		uf_refcount;	/* reference count, see func_name_refcount() */
@@ -1428,6 +1428,12 @@ typedef struct
     char_u	*fd_newkey;	/* new key in "dict" in allocated memory */
     dictitem_T	*fd_di;		/* Dictionary item used */
 } funcdict_T;
+
+typedef struct funccal_entry funccal_entry_T;
+struct funccal_entry {
+    void	    *top_funccal;
+    funccal_entry_T *next;
+};
 
 #else
 /* dummy typedefs for function prototypes */

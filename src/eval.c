@@ -859,9 +859,9 @@ eval_to_string_safe(
     int		use_sandbox)
 {
     char_u	*retval;
-    void	*save_funccalp;
+    funccal_entry_T funccal_entry;
 
-    save_funccalp = save_funccal();
+    save_funccal(&funccal_entry);
     if (use_sandbox)
 	++sandbox;
     ++textlock;
@@ -869,7 +869,7 @@ eval_to_string_safe(
     if (use_sandbox)
 	--sandbox;
     --textlock;
-    restore_funccal(save_funccalp);
+    restore_funccal();
     return retval;
 }
 
@@ -8532,7 +8532,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
     char_u	*tab;
     int		type = VAR_NUMBER;
     typval_T	tv;
-    void	*save_funccal;
+    funccal_entry_T funccal_entry;
 
     if (!writing && (find_viminfo_parameter('!') != NULL))
     {
@@ -8581,9 +8581,9 @@ read_viminfo_varlist(vir_T *virp, int writing)
 		}
 
 		/* when in a function use global variables */
-		save_funccal = clear_current_funccal();
+		save_funccal(&funccal_entry);
 		set_var(virp->vir_line + 1, &tv, FALSE);
-		restore_current_funccal(save_funccal);
+		restore_funccal();
 
 		if (tv.v_type == VAR_STRING)
 		    vim_free(tv.vval.v_string);

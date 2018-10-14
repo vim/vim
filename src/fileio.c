@@ -9400,7 +9400,7 @@ apply_autocmds_group(
     AutoPat	*ap;
 #ifdef FEAT_EVAL
     sctx_T	save_current_sctx;
-    void	*save_funccalp;
+    funccal_entry_T funccal_entry;
     char_u	*save_cmdarg;
     long	save_cmdbang;
 #endif
@@ -9615,8 +9615,8 @@ apply_autocmds_group(
 	prof_child_enter(&wait_time); /* doesn't count for the caller itself */
 # endif
 
-    /* Don't use local function variables, if called from a function */
-    save_funccalp = save_funccal();
+    // Don't use local function variables, if called from a function.
+    save_funccal(&funccal_entry);
 #endif
 
     /*
@@ -9713,7 +9713,7 @@ apply_autocmds_group(
     autocmd_match = save_autocmd_match;
 #ifdef FEAT_EVAL
     current_sctx = save_current_sctx;
-    restore_funccal(save_funccalp);
+    restore_funccal();
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_time);
