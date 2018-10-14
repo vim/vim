@@ -1286,6 +1286,7 @@ clean:
 	- if exist install.exe del install.exe
 	- if exist uninstal.exe del uninstal.exe
 	- if exist if_perl.c del if_perl.c
+	- if exist auto\if_perl.c del auto\if_perl.c
 	- if exist dimm.h del dimm.h
 	- if exist dimm_i.c del dimm_i.c
 	- if exist dimm.tlb del dimm.tlb
@@ -1424,12 +1425,12 @@ $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL) if_cscope.h
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
-if_perl.c : if_perl.xs typemap
+auto/if_perl.c : if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
-		-typemap typemap if_perl.xs -output if_perl.c
+		-typemap typemap if_perl.xs -output $@
 
-$(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
-	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perl.c
+$(OUTDIR)/if_perl.obj: $(OUTDIR) auto/if_perl.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) auto/if_perl.c
 
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perlsfio.c
