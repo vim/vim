@@ -372,9 +372,9 @@ static void	ex_setfiletype(exarg_T *eap);
 #ifndef FEAT_DIFF
 # define ex_diffoff		ex_ni
 # define ex_diffpatch		ex_ni
-# define ex_diffall		ex_ni
 # define ex_diffgetput		ex_ni
 # define ex_diffmaster		ex_ni
+# define ex_diffnomaster	ex_ni
 # define ex_diffsplit		ex_ni
 # define ex_diffthis		ex_ni
 # define ex_diffupdate		ex_ni

@@ -1818,7 +1818,7 @@ diff_clear(tabpage_T *tp)
  * This is equivalent to :windo set nodiffref, but it's faster.
  */
     void
-ex_diffall(exarg_T *eap UNUSED)
+ex_diffnomaster(exarg_T *eap UNUSED)
 {
     win_T	*wp;
 
