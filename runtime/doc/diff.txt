@@ -340,7 +340,7 @@ highlighted.  For example, if you have three windows open, and you set window
 same as in window 1, even if window 3 has something different.  This line will
 of course still be highlighted in windows 1 and 3, however.
 
-						*diffm* *diffmaster*
+						*:diffm* *:diffmaster*
 :diffm[aster][!]
 		Set the currently active window as the master window. If there
 		is already a master window, it will be replaced. The current
@@ -348,7 +348,7 @@ of course still be highlighted in windows 1 and 3, however.
 		there are no diff windows yet, or if ! is used, then diff will
 		be activated in all windows.
 
-						*diffn* *diffnomaster*
+						*:diffn* *:diffnomaster*
 :diffn[omaster]
 		Clear the master window and restore the default behavior of
 		highlighting differing lines in every window.
