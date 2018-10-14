@@ -1830,12 +1830,15 @@ ex_diffall(exarg_T *eap UNUSED)
 /*
  * Set the current window as the active tab page's diff master.
  * That is, set 'diffref' on the window, and make sure it's unset on all others.
+ * This also enables diff on the window if it isn't already.
  */
     void
 ex_diffmaster(exarg_T *eap UNUSED)
 {
     win_T	*wp;
 
+    if (!curwin->w_p_diff)
+	diff_win_options(curwin, TRUE);
     for (wp = firstwin; wp != NULL; wp = wp->w_next)
         wp->w_p_dref = (wp == curwin);
     diff_redraw(TRUE);
