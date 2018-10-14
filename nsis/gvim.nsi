@@ -89,6 +89,9 @@ RequestExecutionLevel highest
 ##########################################################
 # MUI2 settings
 
+!define MUI_ABORTWARNING
+!define MUI_UNABORTWARNING
+
 !define MUI_ICON   "icons\vim_16c.ico"
 !define MUI_UNICON "icons\vim_uninst_16c.ico"
 
