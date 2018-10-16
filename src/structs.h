@@ -1368,7 +1368,7 @@ typedef struct
     int		uf_cleared;	/* func_clear() was already called */
     garray_T	uf_args;	/* arguments */
     garray_T	uf_lines;	/* function lines */
-#ifdef FEAT_PROFILE
+# ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */
     int		uf_prof_initialized;
     /* profiling the function as a whole */
@@ -1385,7 +1385,7 @@ typedef struct
     proftime_T	uf_tml_wait;	/* start wait time for current line */
     int		uf_tml_idx;	/* index of line being timed; -1 if none */
     int		uf_tml_execed;	/* line being timed was executed */
-#endif
+# endif
     sctx_T	uf_script_ctx;	/* SCTX where function was defined,
 				   used for s: variables */
     int		uf_refcount;	/* reference count, see func_name_refcount() */
@@ -1443,6 +1443,12 @@ typedef struct
     dictitem_T	*fd_di;		/* Dictionary item used */
 } funcdict_T;
 
+typedef struct funccal_entry funccal_entry_T;
+struct funccal_entry {
+    void	    *top_funccal;
+    funccal_entry_T *next;
+};
+
 #else
 /* dummy typedefs for function prototypes */
 typedef struct
@@ -1453,6 +1459,10 @@ typedef struct
 {
     int	    dummy;
 } funcdict_T;
+typedef struct
+{
+    int	    dummy;
+} funccal_entry_T;
 #endif
 
 struct partial_S
@@ -1986,9 +1996,11 @@ struct file_buffer
      * b_fname is the same as b_sfname, unless ":cd" has been done,
      *		then it is the same as b_ffname (NULL for no name).
      */
-    char_u	*b_ffname;	/* full path file name */
-    char_u	*b_sfname;	/* short file name */
-    char_u	*b_fname;	/* current file name */
+    char_u	*b_ffname;	// full path file name, allocated
+    char_u	*b_sfname;	// short file name, allocated, may be equal to
+				// b_ffname
+    char_u	*b_fname;	// current file name, points to b_ffname or
+				// b_sfname
 
 #ifdef UNIX
     int		b_dev_valid;	/* TRUE when b_dev has a valid number */
@@ -2699,6 +2711,10 @@ struct window_S
     int		w_set_curswant;	    /* If set, then update w_curswant the next
 				       time through cursupdate() to the
 				       current virtual column */
+
+#ifdef FEAT_SYN_HL
+    linenr_T	w_last_cursorline;  // where last time 'cursorline' was drawn
+#endif
 
     /*
      * the next seven are used to update the visual part

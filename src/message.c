@@ -688,8 +688,8 @@ emsg(char_u *s)
 	if (p_eb)
 	    beep_flush();		/* also includes flush_buffers() */
 	else
-	    flush_buffers(FALSE);	/* flush internal buffers */
-	did_emsg = TRUE;		/* flag for DoOneCmd() */
+	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
+	did_emsg = TRUE;		   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
 	did_uncaught_emsg = TRUE;
 #endif

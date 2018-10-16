@@ -59,7 +59,7 @@ int save_current_state(save_state_T *sst);
 void restore_current_state(save_state_T *sst);
 void ex_normal(exarg_T *eap);
 void exec_normal_cmd(char_u *cmd, int remap, int silent);
-void exec_normal(int was_typed, int may_use_terminal_loop);
+void exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop);
 int find_cmdline_var(char_u *src, int *usedlen);
 char_u *eval_vars(char_u *src, char_u *srcstart, int *usedlen, linenr_T *lnump, char_u **errormsg, int *escaped);
 char_u *expand_sfile(char_u *arg);

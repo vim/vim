@@ -513,7 +513,7 @@ static struct fst
     {"assert_equal",	2, 3, f_assert_equal},
     {"assert_equalfile", 2, 2, f_assert_equalfile},
     {"assert_exception", 1, 2, f_assert_exception},
-    {"assert_fails",	1, 2, f_assert_fails},
+    {"assert_fails",	1, 3, f_assert_fails},
     {"assert_false",	1, 2, f_assert_false},
     {"assert_inrange",	3, 4, f_assert_inrange},
     {"assert_match",	2, 3, f_assert_match},
@@ -1520,7 +1520,7 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "assert_fails(cmd [, error])" function
+ * "assert_fails(cmd [, error[, msg]])" function
  */
     static void
 f_assert_fails(typval_T *argvars, typval_T *rettv)
@@ -3616,7 +3616,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
 		if (!dangerous)
 		    ++ex_normal_busy;
-		exec_normal(TRUE, TRUE);
+		exec_normal(TRUE, FALSE, TRUE);
 		if (!dangerous)
 		    --ex_normal_busy;
 
@@ -13391,6 +13391,10 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     gui_drag_scrollbar(sb, value, dragging);
+# ifndef USE_ON_FLY_SCROLL
+    // need to loop through normal_cmd() to handle the scroll events
+    exec_normal(FALSE, TRUE, FALSE);
+# endif
 }
 #endif
 
