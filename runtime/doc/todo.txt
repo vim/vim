@@ -38,8 +38,17 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-tar plugin: use "file" to check compression type, use bzip2 only when it
-recognizes bzip2 or file ends in .bz2
+Test_scrollbars() fails with X11-Athena GUI or X11-Motif GUI
+(Dominique, #3451)
+
+Flashing highlighting with 'rnu' and folding.
+(Vitaly Yashin, 2018 Sep 26, #3484)
+
+Still a cursorline problem. (Justin Keyes, #3488)
+
+Crash with recursive use of getcmdline() from Timer.  save_ccline isn't used
+then.  Turn it around: When getcmdline() is called it checks if it is a
+recursive call, and saves the cmdline then. (#3493)
 
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
@@ -49,6 +58,8 @@ recognizes bzip2 or file ends in .bz2
 - :%s/foo should take the first match below the cursor line, unless there
   isn't one?
   Then :%s?foo should take the first match above the cursor line.
+
+Don't set diffexpr when generating _vimrc for MS-Windows.
 
 Prompt buffer:
 - Add a command line history.
@@ -91,12 +102,8 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Not possible to have a comment in between line continuation.  Use |\":
-	let array = [
-	    \ item,
-	    |\" comment
-	    \ item,
-	    \ ]
+Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
+#3417)
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
@@ -104,9 +111,6 @@ Does not build with MinGW out of the box:
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
-
-Patch to add script line number to script ID. (ichizok, Ozaki Kiichi, 2018 Aug
-24, #3362)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -127,11 +131,17 @@ https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
 
+":mksession" cannot handle a very long 'runtimepath'. (Timothy Madden, 21 Sep
+2018, #3466)
+
 Patch in pull request #2967: Allow white space in sign text. (Ben Jackson)
 Test fails in AppVeyor.
 
 Job_info() returns command without backslashes. (Daniel Hahler, 2018 Sep 3,
 #3404)
+
+Patch to simplify nsis installer. (Ken Takata, 2018 Sep 24, was #3479)
+Now included in #3501, using MUI2.
 
 Removing flags from 'cpoptions' breaks the Winbar buttons in termdebug.
 (Dominique Pelle, 2018 Jul 16)
@@ -142,6 +152,9 @@ is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
+
+Add function to make use of internal diff, working on two lists and returning
+unified diff (list of lines).
 
 Memory leak in test_assert:
 ==19127==    by 0x2640D7: alloc (misc2.c:874)
@@ -183,28 +196,35 @@ Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
 Use something like ":tag {kind}/{tagname}".
 Not ready to include.
 
+Patch to support menus in terminal: ":tlmenu". (Yee Cheng Chin, #3439)
+
 home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
+
+When the status line uses term_gettitle(), it does not get updated when the
+terminal title changes. (Josh Triplett, 2018 Sep 9, #3418)
+How would we know that the status line needs to be updated?
 
 Adjust windows installer explanation of behavior. (scootergrisen, #3310)
 
 Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
 (Daniel Hahler, 2018 Aug 8, #3299)
 
-Using an external diff is inefficient.  Not all systems have a good diff
-program available (esp. MS-Windows).  Would be nice to have in internal diff
-implementation.  Can then also use this for displaying changes within a line.
-Olaf Dabrunz is working on this. (10 Jan 2016)
-9   Instead invoking an external diff program, use builtin code.  One can be
-    found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
-    It's complicated and badly documented.
-Alternative: use the xdiff library from git.  Unfinished Patch from Christian
-Brabandt, 2018 Mar 20, #2732)
-Note that this is NOT libxdiff.
--> avoid writing all the text to a file, use in-memory only
--> add option to use external diff above a certain size.
--> when making changes, diff only the part of the buffer that changed.
+ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
+
+Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  (Daniel Hahler, 2018 Sep 25)
+Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
+values.
+
+Furthere xdiff changes:
+- More options, e.g. different kind of whitespace diff.
+- when editing text, update the surrounding diff blocks.
+- omit diff.exe from distribution
+- Can we make this show differences within a line?
+- add option to use external diff above a certain size.
 
 Difference between two regexp engines: #3373
+
+Patch to handle missin glibwinpthread-1.dll. (Ken Takata, 2018 Sep 23, #2827)
 
 Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
 24, #832)  Also need a way to get the global arg list?  Update later on Jan 24
@@ -215,12 +235,12 @@ includes the first screen line. (2018 Aug 23, #3368)
 
 Refactored HTML indent file. (Michael Lee, #1821)
 
-Test for user name completeion ":e ~s<Tab>" fails because we don't get all
-user names.  Is there another function to get more? (2018 Sep 3, Stuckrad)
-
 Patch to add getregpoint() and setreg() with an option to set "".
 (Andy Massimino, 2018 Aug 24, #3370)
 Better name?
+
+MS-Windows: .lnk file not resolved properly when 'encoding' is set.
+(lkintact, 2018 Sep 22, #3473)
 
 Script generated by :mksession does not work well if there are windows with
 modified buffers
@@ -238,6 +258,8 @@ Compiler warnings (geeknik, 2017 Oct 26):
 Win32 console: <F11> and <F12> typed in Insert mode don't result in normal
 characters. (#3246)
 
+'foldtext' is evaluated too often. (Daniel Hahler, #2773)
+
 Height of quickfix window is not retained with vertical splits. (Lifepillar,
 2018 Aug 24, #2998)
 
@@ -253,6 +275,9 @@ is cleared, to avoid going back to the list of errors buffer (would have two
 windows with it).  Can we just remove the jump list entries for the quickfix
 buffer?
 
+Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
+Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
+
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
 On Win32 it stops showing, because showState is already ShS_SHOWING.
@@ -260,6 +285,12 @@ balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
 20, #2481)
 Also see #2352, want better control over balloon, perhaps set the position.
 Should also be possible to add highlighting, like in the status line?
+balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
+2018 Sep 14)
+
+Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
+Maybe call it v:motiontype.  Update in #3490)
+Alternaitve: add the force flag to mode(), after "no".
 
 Patch to fix that executable() may fail on very long filename in MS-Windows.
 (Ken Takata, 2016 Feb 1)
@@ -281,6 +312,10 @@ Cursor in wrong position when line wraps. (#2540)
 Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
 #2546)  Fixes #1057.  Missing a test.
 
+Setting 'columns' in a BufEnter autocommand causes a second tab width to
+behave strangely, as if there is a gap and a vertical window separator.
+(Michael Soyka, 2018 Sep 23, #3477)
+
 Make {skip} argument of searchpair() consistent with other places where we
 pass an expression to evaluate.  Allow passing zero for "never skip".
 
@@ -301,6 +336,11 @@ If 'readonly' is not set but the file appears to be readonly later, try again
 (wait a little while).
 CreateFile() returns ERROR_SHARING_VIOLATION (Linwei, 2018 May 5)
 
+Using --remote to open a file in which a # appears does not work on
+MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
+2017 Feb 9)  Can we expand wildcards first and send the path literally to the
+receiving Vim?  Or make an exception for #, it's not useful remotely.
+
 Should add a test for every command line argument.  Check coverage for what is
 missing: --nofork, -A , -b, -h, etc.
 
@@ -311,6 +351,7 @@ Quickfix window height is not kept with a vertical split. (Lifepillar, 2018
 Jun 10, #2998)
 
 Improve the installer for MS-Windows.  There are a few alternatives:
+- mui2 installer improved by Ken Takata (2018 Sep 29)
 - Add silent install option. (Shane Lee, #751)
 - Installer from Cream (Steve Hall).
 - Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
@@ -327,10 +368,6 @@ Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
 Delete all the speficic stuff for the Borland compiler? (#3374)
 Patch in #3377 (Thomas Dziedzic)
-
-Does setting 'cursorline' cause syntax highlighting to slow down?  Perhaps is
-mess up the cache?  (Mike Lee Williams, 2018 Jan 27, #2539)
-Also: 'foldtext' is evaluated too often. (Daniel Hahler, #2773)
 
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
@@ -489,6 +526,9 @@ Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 
 MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
+
+Would be nice for insert mode completion to highlight the text that was added
+(and may change when picking another compltion).
 
 Test runtime files.
 Start with filetype detection: testdir/test_filetype.vim
@@ -772,11 +812,6 @@ Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
-
-Using --remote to open a file in which a # appears does not work on
-MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
-2017 Feb 9)  Can we expand wildcards first and send the path literally to the
-receiving Vim?  Or make an exception for #, it's not useful remotely.
 
 ":sbr" docs state it respects 'switchbuf', but "vsplit" does not cause a
 vertical split. (Haldean Brown, 2017 Mar 1)
@@ -1112,9 +1147,6 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
 Update 2016 Jun 10, #861
-
-Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
-Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 
 Patch to show search statistics. (Christian Brabandt, 2016 Jul 22)
 
@@ -2190,9 +2222,6 @@ Something wrong with session that has "cd" commands and "badd", in such a way
 that Vim doesn't find the edited file in the buffer list, causing the
 ATTENTION message?  (Tony Mechelynck, 2008 Dec 1)
 Also: swap files are in ~/tmp/  One has relative file name ".mozilla/...".
-
-Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-Maybe call it v:motiontype.
 
 MS-Windows: editing the first, empty buffer, 'ffs' set to "unix,dos", ":enew"
 doesn't set 'ff' to "unix".  (Ben Fritz, 2008 Dec 5) Reusing the old buffer

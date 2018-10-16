@@ -277,6 +277,28 @@ func Test_dp_do_buffer()
   %bwipe!
 endfunc
 
+func Test_do_lastline()
+  e! one
+  call setline(1, ['1','2','3','4','5','6'])
+  diffthis
+
+  new two
+  call setline(1, ['2','4','5'])
+  diffthis
+
+  1
+  norm dp]c
+  norm dp]c
+  wincmd w
+  call assert_equal(4, line('$'))
+  norm G
+  norm do
+  call assert_equal(3, line('$'))
+
+  windo diffoff
+  %bwipe!
+endfunc
+
 func Test_diffoff()
   enew!
   call setline(1, ['Two', 'Three'])
@@ -817,3 +839,29 @@ func Test_diff_screen()
   call delete('Xfile2')
 endfunc
 
+func Test_diff_with_cursorline()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'hi CursorLine ctermbg=red ctermfg=white',
+	\ 'set cursorline',
+	\ 'call setline(1, ["foo","foo","foo","bar"])',
+	\ 'vnew',
+	\ 'call setline(1, ["bee","foo","foo","baz"])',
+	\ 'windo diffthis',
+	\ '2wincmd w',
+	\ ], 'Xtest_diff_cursorline')
+  let buf = RunVimInTerminal('-S Xtest_diff_cursorline', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_01', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_02', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_cursorline')
+endfunc

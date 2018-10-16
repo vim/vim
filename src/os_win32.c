@@ -573,7 +573,8 @@ get_dll_import_func(HINSTANCE hInst, const char *funcname)
 #if defined(DYNAMIC_GETTEXT) || defined(PROTO)
 # ifndef GETTEXT_DLL
 #  define GETTEXT_DLL "libintl.dll"
-#  define GETTEXT_DLL_ALT "libintl-8.dll"
+#  define GETTEXT_DLL_ALT1 "libintl-8.dll"
+#  define GETTEXT_DLL_ALT2 "intl.dll"
 # endif
 /* Dummy functions */
 static char *null_libintl_gettext(const char *);
@@ -614,14 +615,18 @@ dyn_libintl_init(void)
     };
     HINSTANCE hmsvcrt;
 
-    /* No need to initialize twice. */
-    if (hLibintlDLL)
+    // No need to initialize twice.
+    if (hLibintlDLL != NULL)
 	return 1;
-    /* Load gettext library (libintl.dll) */
+    // Load gettext library (libintl.dll and other names).
     hLibintlDLL = vimLoadLib(GETTEXT_DLL);
-#ifdef GETTEXT_DLL_ALT
+#ifdef GETTEXT_DLL_ALT1
     if (!hLibintlDLL)
-	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT);
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT1);
+#endif
+#ifdef GETTEXT_DLL_ALT2
+    if (!hLibintlDLL)
+	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT2);
 #endif
     if (!hLibintlDLL)
     {
@@ -847,8 +852,7 @@ static const struct
     int	    chAlt;
 } VirtKeyMap[] =
 {
-
-/*    Key	ANSI	alone	shift	ctrl	    alt */
+//    Key	ANSI	alone	shift	ctrl	    alt
     { VK_ESCAPE,FALSE,	ESC,	ESC,	ESC,	    ESC,    },
 
     { VK_F1,	TRUE,	';',	'T',	'^',	    'h', },
@@ -866,19 +870,19 @@ static const struct
 
     { VK_HOME,	TRUE,	'G',	'\302',	'w',	    '\303', },
     { VK_UP,	TRUE,	'H',	'\304',	'\305',	    '\306', },
-    { VK_PRIOR,	TRUE,	'I',	'\307',	'\204',	    '\310', }, /*PgUp*/
+    { VK_PRIOR,	TRUE,	'I',	'\307',	'\204',	    '\310', }, // PgUp
     { VK_LEFT,	TRUE,	'K',	'\311',	's',	    '\312', },
     { VK_RIGHT,	TRUE,	'M',	'\313',	't',	    '\314', },
     { VK_END,	TRUE,	'O',	'\315',	'u',	    '\316', },
     { VK_DOWN,	TRUE,	'P',	'\317',	'\320',	    '\321', },
-    { VK_NEXT,	TRUE,	'Q',	'\322',	'v',	    '\323', }, /*PgDn*/
+    { VK_NEXT,	TRUE,	'Q',	'\322',	'v',	    '\323', }, // PgDn
     { VK_INSERT,TRUE,	'R',	'\324',	'\325',	    '\326', },
     { VK_DELETE,TRUE,	'S',	'\327',	'\330',	    '\331', },
 
-    { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, /*PrtScrn*/
+    { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, // PrtScrn
 
 #if 0
-    /* Most people don't have F13-F20, but what the hell... */
+    // Most people don't have F13-F20, but what the hell...
     { VK_F13,	TRUE,	'\332',	'\333',	'\334',	    '\335', },
     { VK_F14,	TRUE,	'\336',	'\337',	'\340',	    '\341', },
     { VK_F15,	TRUE,	'\342',	'\343',	'\344',	    '\345', },
@@ -888,10 +892,10 @@ static const struct
     { VK_F19,	TRUE,	'\362',	'\363',	'\364',	    '\365', },
     { VK_F20,	TRUE,	'\366',	'\367',	'\370',	    '\371', },
 #endif
-    { VK_ADD,	TRUE,   'N',    'N',    'N',	'N',	}, /* keyp '+' */
-    { VK_SUBTRACT, TRUE,'J',	'J',    'J',	'J',	}, /* keyp '-' */
- /* { VK_DIVIDE,   TRUE,'N',	'N',    'N',	'N',	},    keyp '/' */
-    { VK_MULTIPLY, TRUE,'7',	'7',    '7',	'7',	}, /* keyp '*' */
+    { VK_ADD,	TRUE,   'N',    'N',    'N',	'N',	}, // keyp '+'
+    { VK_SUBTRACT, TRUE,'J',	'J',    'J',	'J',	}, // keyp '-'
+ // { VK_DIVIDE,   TRUE,'N',	'N',    'N',	'N',	}, // keyp '/'
+    { VK_MULTIPLY, TRUE,'7',	'7',    '7',	'7',	}, // keyp '*'
 
     { VK_NUMPAD0,TRUE,  '\332',	'\333',	'\334',	    '\335', },
     { VK_NUMPAD1,TRUE,  '\336',	'\337',	'\340',	    '\341', },
@@ -902,7 +906,7 @@ static const struct
     { VK_NUMPAD6,TRUE,  '\362',	'\363',	'\364',	    '\365', },
     { VK_NUMPAD7,TRUE,  '\366',	'\367',	'\370',	    '\371', },
     { VK_NUMPAD8,TRUE,  '\372',	'\373',	'\374',	    '\375', },
-    /* Sorry, out of number space! <negri>*/
+    // Sorry, out of number space! <negri>
     { VK_NUMPAD9,TRUE,  '\376',	'\377',	'\377',	    '\367', },
 
 };
@@ -1911,11 +1915,24 @@ mch_inchar(
 		    typeahead[typeaheadlen] = c;
 		if (ch2 != NUL)
 		{
-		    if (c == K_NUL && (ch2 & 0xff00) != 0)
+		    if (c == K_NUL)
 		    {
-			/* fAnsiKey with modifier keys */
-			typeahead[typeaheadlen + n] = (char_u)ch2;
-			n++;
+			switch (ch2)
+			{
+			case (WCHAR)'\324': // SHIFT+Insert
+			case (WCHAR)'\325': // CTRL+Insert
+			case (WCHAR)'\327': // SHIFT+Delete
+			case (WCHAR)'\330': // CTRL+Delete
+			    typeahead[typeaheadlen + n] = (char_u)ch2;
+			    n++;
+			    break;
+
+			default:
+			    typeahead[typeaheadlen + n] = 3;
+			    typeahead[typeaheadlen + n + 1] = (char_u)ch2;
+			    n += 2;
+			    break;
+			}
 		    }
 		    else
 		    {
@@ -3532,21 +3549,44 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 {
     char_u	buf[_MAX_PATH];
     int		len = (int)STRLEN(name);
-    char_u	*p;
+    char_u	*p, *saved;
 
     if (len >= _MAX_PATH)	/* safety check */
 	return FALSE;
 
-    /* If there already is an extension try using the name directly.  Also do
-     * this with a Unix-shell like 'shell'. */
-    if (vim_strchr(gettail(name), '.') != NULL
-			       || strstr((char *)gettail(p_sh), "sh") != NULL)
+    /* Ty using the name directly when a Unix-shell like 'shell'. */
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
 	if (executable_exists((char *)name, path, use_path))
 	    return TRUE;
 
     /*
      * Loop over all extensions in $PATHEXT.
      */
+    p = mch_getenv("PATHEXT");
+    if (p == NULL)
+	p = (char_u *)".com;.exe;.bat;.cmd";
+    saved = vim_strsave(p);
+    if (saved == NULL)
+	return FALSE;
+    p = saved;
+    while (*p)
+    {
+	char_u	*tmp = vim_strchr(p, ';');
+
+	if (tmp != NULL)
+	    *tmp = NUL;
+	if (_stricoll((char *)name + len - STRLEN(p), (char *)p) == 0
+			    && executable_exists((char *)name, path, use_path))
+	{
+	    vim_free(saved);
+	    return TRUE;
+	}
+	if (tmp == NULL)
+	    break;
+	p = tmp + 1;
+    }
+    vim_free(saved);
+
     vim_strncpy(buf, name, _MAX_PATH - 1);
     p = mch_getenv("PATHEXT");
     if (p == NULL)

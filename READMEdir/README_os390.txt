@@ -1,4 +1,4 @@
-README_zOS.txt for version 8.1 of Vim: Vi IMproved.
+README_os390.txt for version 8.1 of Vim: Vi IMproved.
 
 This readme explains how to build Vim on z/OS.  Formerly called OS/390.
 See "README.txt" for general information about Vim.

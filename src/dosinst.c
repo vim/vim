@@ -18,6 +18,7 @@
  */
 #define DOSINST
 #include "dosinst.h"
+#include <io.h>
 
 #define GVIMEXT64_PATH	    "GvimExt64\\gvimext.dll"
 #define GVIMEXT32_PATH	    "GvimExt32\\gvimext.dll"
@@ -63,6 +64,7 @@ int		choice_count = 0;	/* number of choices available */
 enum
 {
     compat_vi = 1,
+    compat_vim,
     compat_some_enhancements,
     compat_all_enhancements
 };
@@ -70,6 +72,7 @@ char	*(compat_choices[]) =
 {
     "\nChoose the default way to run Vim:",
     "Vi compatible",
+    "Vim default",
     "with some Vim enhancements",
     "with syntax highlighting and other features switched on",
 };
@@ -567,7 +570,6 @@ uninstall_check(int skip_question)
 			sleep(1);  /* wait for uninstaller to start up */
 			num_windows = 0;
 			EnumWindows(window_cb, 0);
-			sleep(1);  /* wait for windows to be counted */
 			if (num_windows == 0)
 			{
 			    /* Did not find the uninstaller, ask user to press
@@ -583,9 +585,9 @@ uninstall_check(int skip_question)
 			    {
 				printf(".");
 				fflush(stdout);
+				sleep(1);  /* wait for the uninstaller to finish */
 				num_windows = 0;
 				EnumWindows(window_cb, 0);
-				sleep(1);  /* wait for windows to be counted */
 			    } while (num_windows > 0);
 			}
 			printf("\nDone!\n");
@@ -1159,12 +1161,21 @@ install_vimrc(int idx)
     switch (compat_choice)
     {
 	case compat_vi:
+		    fprintf(fd, "\" Vi compatible\n");
 		    fprintf(fd, "set compatible\n");
 		    break;
+	case compat_vim:
+		    fprintf(fd, "\" Vim's default behavior\n");
+		    fprintf(fd, "if &compatible\n");
+		    fprintf(fd, "  set nocompatible\n");
+		    fprintf(fd, "endif\n");
+		    break;
 	case compat_some_enhancements:
+		    fprintf(fd, "\" Vim with some enhancements\n");
 		    fprintf(fd, "source $VIMRUNTIME/defaults.vim\n");
 		    break;
 	case compat_all_enhancements:
+		    fprintf(fd, "\" Vim with all enhancements\n");
 		    fprintf(fd, "source $VIMRUNTIME/vimrc_example.vim\n");
 		    break;
     }
@@ -1173,15 +1184,21 @@ install_vimrc(int idx)
 	case remap_no:
 		    break;
 	case remap_win:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Remap a few keys for Windows behavior\n");
 		    fprintf(fd, "source $VIMRUNTIME/mswin.vim\n");
 		    break;
     }
     switch (mouse_choice)
     {
 	case mouse_xterm:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Mouse behavior (the Unix way)\n");
 		    fprintf(fd, "behave xterm\n");
 		    break;
 	case mouse_mswin:
+		    fprintf(fd, "\n");
+		    fprintf(fd, "\" Mouse behavior (the Windows way)\n");
 		    fprintf(fd, "behave mswin\n");
 		    break;
 	case mouse_default:
@@ -1192,7 +1209,11 @@ install_vimrc(int idx)
 	/* Use the diff.exe that comes with the self-extracting gvim.exe. */
 	fclose(tfd);
 	fprintf(fd, "\n");
-	fprintf(fd, "set diffexpr=MyDiff()\n");
+	fprintf(fd, "\" Use the internal diff if available.\n");
+	fprintf(fd, "\" Otherwise use the special 'diffexpr' for Windows.\n");
+	fprintf(fd, "if &diffopt !~# 'internal'\n");
+	fprintf(fd, "  set diffexpr=MyDiff()\n");
+	fprintf(fd, "endif\n");
 	fprintf(fd, "function MyDiff()\n");
 	fprintf(fd, "  let opt = '-a --binary '\n");
 	fprintf(fd, "  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif\n");
@@ -1491,7 +1512,10 @@ register_uninstall(
     HKEY hRootKey,
     const char *appname,
     const char *display_name,
-    const char *uninstall_string)
+    const char *uninstall_string,
+    const char *display_icon,
+    const char *display_version,
+    const char *publisher)
 {
     LONG lRet = reg_create_key_and_value(hRootKey, appname,
 			     "DisplayName", display_name, KEY_WOW64_64KEY);
@@ -1499,6 +1523,15 @@ register_uninstall(
     if (ERROR_SUCCESS == lRet)
 	lRet = reg_create_key_and_value(hRootKey, appname,
 		     "UninstallString", uninstall_string, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "DisplayIcon", display_icon, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "DisplayVersion", display_version, KEY_WOW64_64KEY);
+    if (ERROR_SUCCESS == lRet)
+	lRet = reg_create_key_and_value(hRootKey, appname,
+		     "Publisher", publisher, KEY_WOW64_64KEY);
     return lRet;
 }
 
@@ -1519,6 +1552,7 @@ install_registry(void)
     char	vim_exe_path[BUFSIZE];
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
+    char	icon_string[BUFSIZE];
     int		i;
     int		loop_count = is_64bit_os() ? 2 : 1;
     DWORD	flag;
@@ -1583,11 +1617,16 @@ install_registry(void)
     else
 	sprintf(uninstall_string, "%s\\uninstall-gui.exe", installdir);
 
+    sprintf(icon_string, "%s\\gvim.exe,0", installdir);
+
     lRet = register_uninstall(
 	HKEY_LOCAL_MACHINE,
 	"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
 	display_name,
-	uninstall_string);
+	uninstall_string,
+	icon_string,
+	VIM_VERSION_SHORT,
+	"Bram Moolenaar et al.");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
 
@@ -2219,6 +2258,8 @@ print_cmd_line_help(void)
     printf("    Remap keys when creating a default _vimrc file.\n");
     printf("-vimrc-behave [unix|mswin|default]\n");
     printf("    Set mouse behavior when creating a default _vimrc file.\n");
+    printf("-vimrc-compat [vi|vim|defaults|all]\n");
+    printf("    Set Vi compatibility when creating a default _vimrc file.\n");
     printf("-install-popup\n");
     printf("    Install the Edit-with-Vim context menu entry\n");
     printf("-install-openwith\n");
@@ -2295,6 +2336,20 @@ command_line_setup_choices(int argc, char **argv)
 		mouse_choice = mouse_mswin;
 	    else if (strcmp(argv[i], "default") == 0)
 		mouse_choice = mouse_default;
+	}
+	else if (strcmp(argv[i], "-vimrc-compat") == 0)
+	{
+	    if (i + 1 == argc)
+		break;
+	    i++;
+	    if (strcmp(argv[i], "vi") == 0)
+		compat_choice = compat_vi;
+	    else if (strcmp(argv[i], "vim") == 0)
+		compat_choice = compat_vim;
+	    else if (strcmp(argv[i], "defaults") == 0)
+		compat_choice = compat_some_enhancements;
+	    else if (strcmp(argv[i], "all") == 0)
+		compat_choice = compat_all_enhancements;
 	}
 	else if (strcmp(argv[i], "-install-popup") == 0)
 	{
@@ -2546,7 +2601,7 @@ main(int argc, char **argv)
 
 	/* When nothing found exit quietly.  If something found wait for
 	 * a little while, so that the user can read the messages. */
-	if (i)
+	if (i && _isatty(1))
 	    sleep(3);
 	exit(0);
     }
