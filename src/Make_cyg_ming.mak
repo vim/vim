@@ -501,7 +501,7 @@ endif
 #>>>>> end of choices
 ###########################################################################
 
-CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
 CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
@@ -1049,7 +1049,7 @@ auto/if_perl.c:		if_perl.xs typemap
 	     $(PERLTYPEMAP) if_perl.xs -output $@
 
 $(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
-	$(CC) -c $(CFLAGS) -I. auto/if_perl.c -o $(OUTDIR)/if_perl.o
+	$(CC) -c $(CFLAGS) auto/if_perl.c -o $(OUTDIR)/if_perl.o
 
 
 $(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
