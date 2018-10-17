@@ -943,7 +943,7 @@ ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
-all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
+all: $(TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -967,6 +967,9 @@ mpress: exes
 
 xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) -C xxd -f Make_ming.mak CC='$(CC)'
+
+tee/tee.exe: tee/tee.c
+	$(MAKE) -C tee CC='$(CC)'
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
@@ -992,6 +995,7 @@ ifdef MZSCHEME
 endif
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
 	$(MAKE) -C xxd -f Make_ming.mak clean
+	$(MAKE) -C tee clean
 
 ###########################################################################
 INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
