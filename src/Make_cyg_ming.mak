@@ -972,7 +972,11 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h if_perl.xs
+	$(CTAGS) *.c *.cpp *.h
+ifdef PERL
+	$(CTAGS) --append=yes auto$(DIRSLASH)if_perl.c
+endif
+
 
 notags:
 	-$(DEL) tags
@@ -981,7 +985,7 @@ clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-rmdir $(OUTDIR)
-	-$(DEL) *.exe
+	-$(DEL) $(TARGET) vimrun.exe install.exe uninstal.exe
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
