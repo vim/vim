@@ -116,10 +116,6 @@ struct terminal_S {
     void	*tl_winpty;
 
     HPCON	tl_conpty;
-    HANDLE	tl_i_theirs;
-    HANDLE	tl_i_ours;
-    HANDLE	tl_o_theirs;
-    HANDLE	tl_o_ours;
     DYN_STARTUPINFOEXW tl_siex;	/* Structure that always needs to be hold */
 
     FILE	*tl_out_fd;
@@ -5490,6 +5486,10 @@ conpty_term_and_job_init(
     COORD	    consize;
     SIZE_T	    breq;
     PROCESS_INFORMATION proc_info;
+    HANDLE	    i_theirs = NULL;
+    HANDLE	    o_theirs = NULL;
+    HANDLE	    i_ours = NULL;
+    HANDLE	    o_ours = NULL;
 
     ga_init2(&ga_cmd, (int)sizeof(char*), 20);
     ga_init2(&ga_env, (int)sizeof(char*), 20);
@@ -5531,15 +5531,15 @@ conpty_term_and_job_init(
     win32_build_env(opt->jo_env, &ga_env, TRUE);
     env_wchar = ga_env.ga_data;
 
-    if (!CreatePipe(&term->tl_i_theirs, &term->tl_i_ours, NULL, 0))
+    if (!CreatePipe(&i_theirs, &i_ours, NULL, 0))
 	goto failed;
-    if (!CreatePipe(&term->tl_o_ours, &term->tl_o_theirs, NULL, 0))
+    if (!CreatePipe(&o_ours, &o_theirs, NULL, 0))
 	goto failed;
 
     consize.X = term->tl_cols;
     consize.Y = term->tl_rows;
-    hr = pCreatePseudoConsole(consize, term->tl_i_theirs, term->tl_o_theirs,
-							  0, &term->tl_conpty);
+    hr = pCreatePseudoConsole(consize, i_theirs, o_theirs, 0,
+							     &term->tl_conpty);
     if (FAILED(hr))
 	goto failed;
 
@@ -5591,15 +5591,13 @@ conpty_term_and_job_init(
 	    &term->tl_siex.StartupInfo, &proc_info))
 	goto failed;
 
-    CloseHandle(term->tl_i_theirs);
-    term->tl_i_theirs = NULL;
-    CloseHandle(term->tl_o_theirs);
-    term->tl_o_theirs = NULL;
+    CloseHandle(i_theirs);
+    CloseHandle(o_theirs);
 
     channel_set_pipes(channel,
-	    (sock_T)term->tl_i_ours,
-	    (sock_T)term->tl_o_ours,
-	    (sock_T)term->tl_o_ours);
+	    (sock_T)i_ours,
+	    (sock_T)o_ours,
+	    (sock_T)o_ours);
 
     /* Write lines with CR instead of NL. */
     channel->ch_write_text_mode = TRUE;
@@ -5679,14 +5677,14 @@ failed:
 	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
 	vim_free(term->tl_siex.lpAttributeList);
     }
-    if (term->tl_o_theirs != NULL)
-	CloseHandle(term->tl_o_theirs);
-    if (term->tl_o_ours != NULL)
-	CloseHandle(term->tl_o_ours);
-    if (term->tl_i_ours != NULL)
-	CloseHandle(term->tl_i_ours);
-    if (term->tl_i_theirs != NULL)
-	CloseHandle(term->tl_i_theirs);
+    if (o_theirs != NULL)
+	CloseHandle(o_theirs);
+    if (o_ours != NULL)
+	CloseHandle(o_ours);
+    if (i_ours != NULL)
+	CloseHandle(i_ours);
+    if (i_theirs != NULL)
+	CloseHandle(i_theirs);
     if (term->tl_conpty != NULL)
 	pClosePseudoConsole(term->tl_conpty);
     return FAIL;
@@ -5711,12 +5709,6 @@ term_free_conpty(term_T *term)
 	vim_free(term->tl_siex.lpAttributeList);
     }
     term->tl_siex.lpAttributeList = NULL;
-    if (term->tl_o_ours != NULL)
-	CloseHandle(term->tl_o_ours);
-    term->tl_o_ours = NULL;
-    if (term->tl_i_ours != NULL)
-	CloseHandle(term->tl_i_ours);
-    term->tl_i_ours = NULL;
     if (term->tl_conpty != NULL)
 	pClosePseudoConsole(term->tl_conpty);
     term->tl_conpty = NULL;
