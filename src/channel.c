@@ -4917,7 +4917,10 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    break;
 		opt->jo_cwd = get_tv_string_buf_chk(item, opt->jo_cwd_buf);
 		if (opt->jo_cwd == NULL || !mch_isdir(opt->jo_cwd)
-				|| mch_access((char *)opt->jo_cwd, X_OK) != 0)
+#ifndef WIN32  // Win32 directories don't have the concept of "executable"
+				|| mch_access((char *)opt->jo_cwd, X_OK) != 0
+#endif
+				)
 		{
 		    EMSG2(_(e_invargval), "cwd");
 		    return FAIL;
