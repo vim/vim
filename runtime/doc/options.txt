@@ -3895,8 +3895,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.
 
 						*'guioptions'* *'go'*
-'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows, "t" is
-						   removed in |defaults.vim|),
+'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
+					   "t" is removed in |defaults.vim|),
 					 "aegimrLtT" (GTK, Motif and Athena),
 					 )
 			global
