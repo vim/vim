@@ -95,9 +95,6 @@ Terminal emulator window:
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
 
-Patch to check for directory access in term_start(). (Jason Franklin, 2018 Oct
-15)
-
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
@@ -189,16 +186,12 @@ Memory leak in test_terminal:
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
 
-Delete the src/main.aap file?
-
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
 
 Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
 Use something like ":tag {kind}/{tagname}".
 Not ready to include.
-
-Patch to support menus in terminal: ":tlmenu". (Yee Cheng Chin, #3439)
 
 :pedit resets the 'buflisted' option unexpectedly. (Wang Shidong, 2018 Oct 12,
 #3536)
@@ -2222,8 +2215,6 @@ still delete them.  Also convert all buffer file names?
 
 "gqip" in Insert mode has an off-by-one error, causing it to reflow text.
 (Raul Coronado, 2009 Nov 2)
-
-Update src/testdir/main.aap.
 
 Something wrong with session that has "cd" commands and "badd", in such a way
 that Vim doesn't find the edited file in the buffer list, causing the

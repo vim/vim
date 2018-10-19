@@ -3185,6 +3185,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tjump	tagsrch.txt	/*:tjump*
 :tl	tagsrch.txt	/*:tl*
 :tlast	tagsrch.txt	/*:tlast*
+:tlm	gui.txt	/*:tlm*
+:tlmenu	gui.txt	/*:tlmenu*
+:tln	gui.txt	/*:tln*
+:tlnoremenu	gui.txt	/*:tlnoremenu*
+:tlu	gui.txt	/*:tlu*
+:tlunmenu	gui.txt	/*:tlunmenu*
 :tm	gui.txt	/*:tm*
 :tma	map.txt	/*:tma*
 :tmap	map.txt	/*:tmap*
