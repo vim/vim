@@ -4916,7 +4916,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_CWD))
 		    break;
 		opt->jo_cwd = get_tv_string_buf_chk(item, opt->jo_cwd_buf);
-		if (opt->jo_cwd == NULL || !mch_isdir(opt->jo_cwd))
+		if (opt->jo_cwd == NULL || !mch_isdir(opt->jo_cwd)
+				|| mch_access((char *)opt->jo_cwd, X_OK) != 0)
 		{
 		    EMSG2(_(e_invargval), "cwd");
 		    return FAIL;
