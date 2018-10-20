@@ -1231,18 +1231,18 @@ free_all_mem(void)
 	    buf = firstbuf;
     }
 
-#ifdef FEAT_ARABIC
+# ifdef FEAT_ARABIC
     free_cmdline_buf();
-#endif
+# endif
 
     /* Clear registers. */
     clear_registers();
     ResetRedobuff();
     ResetRedobuff();
 
-#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     vim_free(serverDelayedStartName);
-#endif
+# endif
 
     /* highlight info */
     free_highlight();
@@ -1265,9 +1265,9 @@ free_all_mem(void)
 # ifdef FEAT_JOB_CHANNEL
     channel_free_all();
 # endif
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
     timer_free_all();
-#endif
+# endif
 # ifdef FEAT_EVAL
     /* must be after channel_free_all() with unrefs partials */
     eval_clear();
@@ -1282,16 +1282,19 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
-#if defined(USE_XSMP)
+# if defined(USE_XSMP)
     xsmp_close();
-#endif
-#ifdef FEAT_GUI_GTK
+# endif
+# ifdef FEAT_GUI_GTK
     gui_mch_free_all();
-#endif
+# endif
     clear_hl_tables();
 
     vim_free(IObuff);
     vim_free(NameBuff);
+# ifdef FEAT_QUICKFIX
+    check_quickfix_busy();
+# endif
 }
 #endif
 
