@@ -2985,6 +2985,8 @@ qf_jump_edit_buffer(
 {
     qf_list_T	*qfl = &qi->qf_lists[qi->qf_curlist];
     int		retval = OK;
+    int		old_qf_curlist = qi->qf_curlist;
+    int		save_qfid = qfl->qf_id;
 
     if (qf_ptr->qf_type == 1)
     {
@@ -2993,46 +2995,40 @@ qf_jump_edit_buffer(
 	if (!can_abandon(curbuf, forceit))
 	{
 	    no_write_message();
-	    retval = FAIL;
+	    return FAIL;
 	}
-	else
-	    retval = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
-		    ECMD_HIDE + ECMD_SET_HELP,
-		    oldwin == curwin ? curwin : NULL);
+
+	retval = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
+		ECMD_HIDE + ECMD_SET_HELP,
+		oldwin == curwin ? curwin : NULL);
     }
     else
-    {
-	int old_qf_curlist = qi->qf_curlist;
-	int save_qfid = qfl->qf_id;
-
 	retval = buflist_getfile(qf_ptr->qf_fnum,
 		(linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
 
-	if (IS_LL_STACK(qi))
-	{
-	    // Location list. Check whether the associated window is still
-	    // present and the list is still valid.
-	    if (!win_valid_any_tab(oldwin))
-	    {
-		EMSG(_("E924: Current window was closed"));
-		*opened_window = FALSE;
-		return NOTDONE;
-	    }
-	    else if (!qflist_valid(oldwin, save_qfid))
-	    {
-		EMSG(_(e_loc_list_changed));
-		return NOTDONE;
-	    }
-	}
-	else if (old_qf_curlist != qi->qf_curlist
-		|| !is_qf_entry_present(qfl, qf_ptr))
-	{
-	    if (IS_QF_STACK(qi))
-		EMSG(_("E925: Current quickfix was changed"));
-	    else
-		EMSG(_(e_loc_list_changed));
-	    return NOTDONE;
-	}
+    // If a location list, check whether the associated window is still
+    // present.
+    if (IS_LL_STACK(qi) && !win_valid_any_tab(oldwin))
+    {
+	EMSG(_("E924: Current window was closed"));
+	*opened_window = FALSE;
+	return NOTDONE;
+    }
+
+    if (IS_QF_STACK(qi) && !qflist_valid(NULL, save_qfid))
+    {
+	EMSG(_("E925: Current quickfix was changed"));
+	return NOTDONE;
+    }
+
+    if (old_qf_curlist != qi->qf_curlist
+	    || !is_qf_entry_present(qfl, qf_ptr))
+    {
+	if (IS_QF_STACK(qi))
+	    EMSG(_("E925: Current quickfix was changed"));
+	else
+	    EMSG(_(e_loc_list_changed));
+	return NOTDONE;
     }
 
     return retval;
