@@ -121,6 +121,9 @@ endif
 ifndef STATIC_WINPTHREAD
 STATIC_WINPTHREAD=$(STATIC_STDCPLUS)
 endif
+# If you use TDM-GCC(-64), change HAS_GCC_EH to "no".
+# This is used when STATIC_STDCPLUS=yes.
+HAS_GCC_EH=yes
 
 # If the user doesn't want gettext, undefine it.
 ifeq (no, $(GETTEXT))
@@ -928,14 +931,18 @@ DEFINES+=-DDYNAMIC_ICONV
 endif
 
 ifeq (yes, $(USE_STDCPLUS))
+LINK = $(CXX)
 ifeq (yes, $(STATIC_STDCPLUS))
-LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
-else
-LIB += -lstdc++
+LIB += -static-libstdc++ -static-libgcc
 endif
+else
+LINK = $(CC)
 endif
 
 ifeq (yes, $(STATIC_WINPTHREAD))
+ifeq (yes, $(HAS_GCC_EH))
+LIB += -lgcc_eh
+endif
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 
@@ -955,7 +962,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 
 upx: exes
 	upx gvim.exe
@@ -1142,7 +1149,7 @@ ifneq (sh.exe, $(SHELL))
 	@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' >> pathdef.c
 	@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' >> pathdef.c
 	@echo 'char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)";' >> pathdef.c
-	@echo 'char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
+	@echo 'char_u *all_lflags = (char_u *)"$(LINK) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
 	@echo 'char_u *compiled_user = (char_u *)"$(USERNAME)";' >> pathdef.c
 	@echo 'char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";' >> pathdef.c
 else
