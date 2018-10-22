@@ -744,11 +744,6 @@ static long_u mem_peak;
 static long_u num_alloc;
 static long_u num_freed;
 
-static void mem_pre_alloc_s(size_t *sizep);
-static void mem_pre_alloc_l(long_u *sizep);
-static void mem_post_alloc(void **pp, size_t size);
-static void mem_pre_free(void **pp);
-
     static void
 mem_pre_alloc_s(size_t *sizep)
 {
@@ -840,8 +835,6 @@ vim_mem_profile_dump(void)
 #endif /* MEM_PROFILE */
 
 #ifdef FEAT_EVAL
-static int alloc_does_fail(long_u size);
-
     static int
 alloc_does_fail(long_u size)
 {
@@ -1238,18 +1231,18 @@ free_all_mem(void)
 	    buf = firstbuf;
     }
 
-#ifdef FEAT_ARABIC
+# ifdef FEAT_ARABIC
     free_cmdline_buf();
-#endif
+# endif
 
     /* Clear registers. */
     clear_registers();
     ResetRedobuff();
     ResetRedobuff();
 
-#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     vim_free(serverDelayedStartName);
-#endif
+# endif
 
     /* highlight info */
     free_highlight();
@@ -1272,9 +1265,9 @@ free_all_mem(void)
 # ifdef FEAT_JOB_CHANNEL
     channel_free_all();
 # endif
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
     timer_free_all();
-#endif
+# endif
 # ifdef FEAT_EVAL
     /* must be after channel_free_all() with unrefs partials */
     eval_clear();
@@ -1289,16 +1282,19 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
-#if defined(USE_XSMP)
+# if defined(USE_XSMP)
     xsmp_close();
-#endif
-#ifdef FEAT_GUI_GTK
+# endif
+# ifdef FEAT_GUI_GTK
     gui_mch_free_all();
-#endif
+# endif
     clear_hl_tables();
 
     vim_free(IObuff);
     vim_free(NameBuff);
+# ifdef FEAT_QUICKFIX
+    check_quickfix_busy();
+# endif
 }
 #endif
 
@@ -4035,9 +4031,6 @@ static int ff_check_visited(ff_visited_T **, char_u *);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
 static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
-#ifdef FEAT_PATH_EXTRA
-static int ff_wc_equal(char_u *s1, char_u *s2);
-#endif
 
 static void ff_push(ff_search_ctx_T *search_ctx, ff_stack_T *stack_ptr);
 static ff_stack_T *ff_pop(ff_search_ctx_T *search_ctx);
@@ -6468,14 +6461,14 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
 	    {
 		if (p[0] == '"')
-		    /* quotes surrounding an argument and are dropped */
+		    // quotes surrounding an argument and are dropped
 		    inquote = !inquote;
 		else
 		{
-		    if (p[0] == '\\' && p[1] != NUL)
+		    if (rem_backslash(p))
 		    {
-			/* First pass: skip over "\ " and "\"".
-			 * Second pass: Remove the backslash. */
+			// First pass: skip over "\ " and "\"".
+			// Second pass: Remove the backslash.
 			++p;
 		    }
 		    if (i == 1)

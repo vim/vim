@@ -212,10 +212,6 @@ static PtCallbackF_t gui_ph_handle_menu_unrealized;
 static void gui_ph_get_panelgroup_margins(short*, short*, short*, short*);
 #endif
 
-#ifdef FEAT_TOOLBAR
-static PhImage_t *gui_ph_toolbar_find_icon(vimmenu_T *menu);
-#endif
-
 static void gui_ph_draw_start(void);
 static void gui_ph_draw_end(void);
 

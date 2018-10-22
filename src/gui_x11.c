@@ -138,7 +138,6 @@ static void gui_x11_send_event_handler(Widget, XtPointer, XEvent *, Boolean *);
 #endif
 static void gui_x11_wm_protocol_handler(Widget, XtPointer, XEvent *, Boolean *);
 static Cursor gui_x11_create_blank_mouse(void);
-static void draw_curl(int row, int col, int cells);
 
 
 /*
@@ -1308,8 +1307,6 @@ gui_mch_init_check(void)
  * Handle XSMP processing, de-registering the attachment upon error
  */
 static XtInputId _xsmp_xtinputid;
-
-static void local_xsmp_handle_requests(XtPointer c, int *s, XtInputId *i);
 
     static void
 local_xsmp_handle_requests(

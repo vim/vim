@@ -100,7 +100,6 @@ typedef struct {
 } bufinfo_T;
 
 
-static long get_undolevel(void);
 static void u_unch_branch(u_header_T *uhp);
 static u_entry_T *u_get_headentry(void);
 static void u_getbot(void);
@@ -113,24 +112,10 @@ static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentry(u_entry_T *, long);
 #ifdef FEAT_PERSISTENT_UNDO
-static void corruption_error(char *mesg, char_u *file_name);
-static void u_free_uhp(u_header_T *uhp);
-static int undo_write(bufinfo_T *bi, char_u *ptr, size_t len);
 # ifdef FEAT_CRYPT
 static int undo_flush(bufinfo_T *bi);
 # endif
-static int fwrite_crypt(bufinfo_T *bi, char_u *ptr, size_t len);
-static int undo_write_bytes(bufinfo_T *bi, long_u nr, int len);
-static void put_header_ptr(bufinfo_T *bi, u_header_T *uhp);
-static int undo_read_4c(bufinfo_T *bi);
-static int undo_read_2c(bufinfo_T *bi);
-static int undo_read_byte(bufinfo_T *bi);
-static time_t undo_read_time(bufinfo_T *bi);
 static int undo_read(bufinfo_T *bi, char_u *buffer, size_t size);
-static char_u *read_string_decrypt(bufinfo_T *bi, int len);
-static int serialize_header(bufinfo_T *bi, char_u *hash);
-static int serialize_uhp(bufinfo_T *bi, u_header_T *uhp);
-static u_header_T *unserialize_uhp(bufinfo_T *bi, char_u *file_name);
 static int serialize_uep(bufinfo_T *bi, u_entry_T *uep);
 static u_entry_T *unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name);
 static void serialize_pos(bufinfo_T *bi, pos_T pos);

@@ -83,25 +83,12 @@ static int tearoff_val = (int)XmTEAR_OFF_ENABLED;
 static Widget menuBar;
 #endif
 
-static void scroll_cb(Widget w, XtPointer client_data, XtPointer call_data);
-#ifdef FEAT_GUI_TABLINE
-static void tabline_cb(Widget w, XtPointer client_data, XtPointer call_data);
-static void tabline_button_cb(Widget w, XtPointer client_data, XtPointer call_data);
-static void tabline_menu_cb(Widget w, XtPointer	closure, XEvent	*e, Boolean *continue_dispatch);
-static void tabline_balloon_cb(BalloonEval *beval, int state);
-#endif
 #ifdef FEAT_TOOLBAR
 # ifdef FEAT_FOOTER
 static void toolbarbutton_enter_cb(Widget, XtPointer, XEvent *, Boolean *);
 static void toolbarbutton_leave_cb(Widget, XtPointer, XEvent *, Boolean *);
 # endif
 static void reset_focus(void);
-#endif
-#ifdef FEAT_FOOTER
-static int gui_mch_compute_footer_height(void);
-#endif
-#ifdef WSDEBUG
-static void attachDump(Widget, char *);
 #endif
 
 static void gui_motif_menu_colors(Widget id);
@@ -305,8 +292,6 @@ tabline_balloon_cb(BalloonEval *beval, int state UNUSED)
 #include <Xm/LabelP.h>
 
 static XtExposeProc old_label_expose = NULL;
-
-static void label_expose(Widget _w, XEvent *_event, Region _region);
 
     static void
 label_expose(Widget _w, XEvent *_event, Region _region)
@@ -1173,9 +1158,7 @@ gui_mch_compute_menu_height(
  */
 #include "gui_x11_pm.h"
 
-static int check_xpm(char_u *path);
 static char **get_toolbar_pixmap(vimmenu_T *menu, char **fname);
-static int add_pixmap_args(vimmenu_T *menu, Arg *args, int n);
 
 /*
  * Read an Xpm file.  Return OK or FAIL.
@@ -2088,8 +2071,6 @@ suppress_dialog_mnemonics(Widget dialog)
 }
 
 #if defined(FEAT_BROWSE) || defined(FEAT_GUI_DIALOG)
-static void set_fontlist(Widget wg);
-
 /*
  * Use the 'guifont' or 'guifontset' as a fontlist for a dialog widget.
  */
@@ -2172,8 +2153,6 @@ static void DialogAcceptCB(Widget, XtPointer, XtPointer);
  * - equalize the messages between different GUI implementations as far as
  * possible.
  */
-static void set_predefined_label(Widget parent, String name, char *new_label);
-
     static void
 set_predefined_label(Widget parent, String name, char *new_label)
 {
@@ -2404,9 +2383,6 @@ DialogAcceptCB(
 
 static int	dialogStatus;
 
-static void keyhit_callback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
-static void butproc(Widget w, XtPointer client_data, XtPointer call_data);
-
 /*
  * Callback function for the textfield.  When CR is hit this works like
  * hitting the "OK" button, ESC like "Cancel".
@@ -2443,8 +2419,6 @@ butproc(
 }
 
 #ifdef HAVE_XPM
-
-static Widget create_pixmap_label(Widget parent, String name, char **data, ArgList args, Cardinal arg);
 
     static Widget
 create_pixmap_label(
@@ -3491,13 +3465,6 @@ typedef struct _SharedFindReplace
 
 static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-
-static void find_replace_destroy_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_dismiss_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void entry_activate_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_keypress(Widget w, SharedFindReplace * frdp, XKeyEvent * event);
-static void find_replace_dialog_create(char_u *entry_text, int do_replace);
 
     static void
 find_replace_destroy_callback(

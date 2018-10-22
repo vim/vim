@@ -1,4 +1,4 @@
-# A very (if not the most) simplistic Makefile for OS/2
+# A very (if not the most) simplistic Makefile for MS-Windows and OS/2
 
 CC=gcc
 CFLAGS=-O2 -fno-strength-reduce

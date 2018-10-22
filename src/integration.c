@@ -76,8 +76,6 @@
 #endif
 
 /* Functions private to this file */
-static void workshop_connection_closed(void);
-static void messageFromEserve(XtPointer clientData, int *dum1, XtInputId *dum2);
 static void workshop_disconnect(void);
 static void workshop_sensitivity(int num, char *table);
 static void adjust_sign_name(char *filename);
@@ -111,7 +109,7 @@ static XtInputId inputHandler;		/* Cookie for input */
 
 Boolean save_files = True;		/* When true, save all files before build actions */
 
-void
+	static void
 workshop_connection_closed(void)
 {
 	/*
@@ -157,7 +155,7 @@ getCommand(void)
 
 }
 
-void
+	static void
 messageFromEserve(XtPointer clientData UNUSED,
 		  int *dum1 UNUSED,
 		  XtInputId *dum2 UNUSED)
@@ -518,7 +516,7 @@ messageFromEserve(XtPointer clientData UNUSED,
 	}
 }
 
-static void
+	static void
 process_menuItem(
 	char	*cmd)
 {
@@ -540,7 +538,7 @@ process_menuItem(
 }
 
 
-static void
+	static void
 process_toolbarButton(
 	char	*cmd)			/* button definition */
 {
@@ -571,7 +569,7 @@ process_toolbarButton(
 
 
 #ifdef DEBUG
-void
+	static void
 unrecognised_message(
 	char	*cmd)
 {
@@ -587,7 +585,7 @@ unrecognised_message(
  *    x.xpm   : largest icon
  *    x1.xpm  : smaller icon
  *    x2.xpm  : smallest icon */
-	void
+	static void
 adjust_sign_name(char *filename)
 {
 	char *s;
@@ -735,7 +733,8 @@ void	workshop_connect(XtAppContext context)
 	dummy = write(sd, buf, strlen(buf));
 }
 
-void	workshop_disconnect(void)
+	static void
+workshop_disconnect(void)
 {
 	/* Probably need to send some message here */
 
@@ -891,7 +890,8 @@ Boolean workshop_get_width_height(int *width, int *height)
  * Toolbar code
  */
 
-void workshop_sensitivity(int num, char *table)
+	static void
+workshop_sensitivity(int num, char *table)
 {
 	/* build up a verb table */
 	VerbSense *vs;
@@ -947,7 +947,8 @@ void workshop_sensitivity(int num, char *table)
 /* Set an editor option.
  * IGNORE an option if you do not recognize it.
  */
-void workshop_set_option_first(char *name, char *value)
+	static void
+workshop_set_option_first(char *name, char *value)
 {
 	/* Currently value can only be on/off. This may change later (for
 	 * example to set an option like "balloon evaluate delay", but
@@ -1092,7 +1093,7 @@ void workshop_send_message(char *buf)
 
 #ifdef DEBUG
 
-void
+	static void
 pldebug(
 	char		*fmt,	/* a printf style format line */
 	...)

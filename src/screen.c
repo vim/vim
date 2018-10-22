@@ -107,9 +107,6 @@ static int	screen_cur_row, screen_cur_col;	/* last known cursor position */
 static match_T search_hl;	/* used for 'hlsearch' highlight matching */
 #endif
 
-#if defined(FEAT_MENU) || defined(FEAT_FOLDING)
-static int text_to_screenline(win_T *wp, char_u *text, int col);
-#endif
 #ifdef FEAT_FOLDING
 static foldinfo_T win_foldinfo;	/* info for 'foldcolumn' */
 static int compute_foldcolumn(win_T *wp, int col);
@@ -133,7 +130,6 @@ static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
 static void copy_text_attr(int off, char_u *buf, int len, int attr);
 #endif
 static int win_line(win_T *, linenr_T, int, int, int nochange, int number_only);
-static int char_needs_redraw(int off_from, int off_to, int cols);
 static void draw_vsep_win(win_T *wp, int row);
 #ifdef FEAT_STL_OPT
 static void redraw_custom_statusline(win_T *wp);
@@ -147,7 +143,6 @@ static void prepare_search_hl(win_T *wp, linenr_T lnum);
 static void next_search_hl(win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol, matchitem_T *cur);
 static int next_search_hl_pos(match_T *shl, linenr_T lnum, posmatch_T *pos, colnr_T mincol);
 #endif
-static void screen_start_highlight(int attr);
 static void screen_char(unsigned off, int row, int col);
 #ifdef FEAT_MBYTE
 static void screen_char_2(unsigned off, int row, int col);
@@ -155,8 +150,6 @@ static void screen_char_2(unsigned off, int row, int col);
 static void screenclear2(void);
 static void lineclear(unsigned off, int width, int attr);
 static void lineinvalid(unsigned off, int width);
-static void linecopy(int to, int from, win_T *wp);
-static void redraw_block(int row, int end, win_T *wp);
 static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int del, int clear_attr);
 static void win_rest_invalid(win_T *wp);
 static void msg_pos_mode(void);
@@ -2181,9 +2174,15 @@ win_update(win_T *wp)
 	{
 	    if (wp->w_p_rnu)
 	    {
+#ifdef FEAT_FOLDING
 		// 'relativenumber' set: The text doesn't need to be drawn, but
 		// the number column nearly always does.
-		(void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+		fold_count = foldedCount(wp, lnum, &win_foldinfo);
+		if (fold_count != 0)
+		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
+		else
+#endif
+		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
@@ -2495,8 +2494,6 @@ win_draw_end(
 }
 
 #ifdef FEAT_SYN_HL
-static int advance_color_col(int vcol, int **color_cols);
-
 /*
  * Advance **color_cols and return TRUE when there are columns to draw.
  */
@@ -3324,8 +3321,8 @@ win_line(
 	    has_spell = TRUE;
 	    extra_check = TRUE;
 
-	    /* Get the start of the next line, so that words that wrap to the next
-	     * line are found too: "et<line-break>al.".
+	    /* Get the start of the next line, so that words that wrap to the
+	     * next line are found too: "et<line-break>al.".
 	     * Trick: skip a few chars for C/shell/Vim comments */
 	    nextline[SPWORDLEN] = NUL;
 	    if (lnum < wp->w_buffer->b_ml.ml_line_count)
@@ -3334,8 +3331,8 @@ win_line(
 		spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
 	    }
 
-	    /* When a word wrapped from the previous line the start of the current
-	     * line is valid. */
+	    /* When a word wrapped from the previous line the start of the
+	     * current line is valid. */
 	    if (lnum == checked_lnum)
 		cur_checked_col = checked_col;
 	    checked_lnum = 0;
@@ -6034,8 +6031,6 @@ win_line(
 }
 
 #ifdef FEAT_MBYTE
-static int comp_char_differs(int, int);
-
 /*
  * Return if the composing characters at "off_from" and "off_to" differ.
  * Only to be used when ScreenLinesUC[off_from] != 0.
@@ -6617,7 +6612,6 @@ draw_vsep_win(win_T *wp, int row)
 }
 
 #ifdef FEAT_WILDMENU
-static int status_match_len(expand_T *xp, char_u *s);
 static int skip_status_match_char(expand_T *xp, char_u *s);
 
 /*
@@ -7414,8 +7408,6 @@ screen_getbytes(int row, int col, char_u *bytes, int *attrp)
 }
 
 #ifdef FEAT_MBYTE
-static int screen_comp_differs(int, int*);
-
 /*
  * Return TRUE if composing characters for screen posn "off" differs from
  * composing characters in "u8cc".

@@ -20,10 +20,6 @@
 
 static char_u *vim_version_dir(char_u *vimdir);
 static char_u *remove_tail(char_u *p, char_u *pend, char_u *name);
-#if defined(FEAT_CMDL_COMPL)
-static void init_users(void);
-#endif
-static int copy_indent(int size, char_u	*src);
 
 /* All user names (for ~user completion as done by shell). */
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
@@ -704,8 +700,6 @@ get_breakindent_win(
 
 
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
-
-static int cin_is_cinword(char_u *line);
 
 /*
  * Return TRUE if the string "line" starts with a word from 'cinwords'.
@@ -3831,7 +3825,7 @@ beep_flush(void)
 {
     if (emsg_silent == 0)
     {
-	flush_buffers(FALSE);
+	flush_buffers(FLUSH_MINIMAL);
 	vim_beep(BO_ERROR);
     }
 }
@@ -5103,8 +5097,6 @@ gettail(char_u *fname)
 }
 
 #if defined(FEAT_SEARCHPATH)
-static char_u *gettail_dir(char_u *fname);
-
 /*
  * Return the end of the directory name, on the first path
  * separator:
@@ -5455,8 +5447,6 @@ FullName_save(
 #if defined(FEAT_CINDENT) || defined(FEAT_SYN_HL)
 
 static char_u	*skip_string(char_u *p);
-static pos_T *ind_find_start_comment(void);
-static pos_T *ind_find_start_CORS(linenr_T *is_raw);
 static pos_T *find_start_rawstring(int ind_maxcomment);
 
 /*
@@ -5680,42 +5670,18 @@ typedef struct {
  * Below "XXX" means that this function may unlock the current line.
  */
 
-static char_u	*cin_skipcomment(char_u *);
-static int	cin_nocode(char_u *);
-static pos_T	*find_line_comment(void);
-static int	cin_has_js_key(char_u *text);
-static int	cin_islabel_skip(char_u **);
 static int	cin_isdefault(char_u *);
-static char_u	*after_label(char_u *l);
-static int	get_indent_nolabel(linenr_T lnum);
-static int	skip_label(linenr_T, char_u **pp);
-static int	cin_first_id_amount(void);
-static int	cin_get_equal_amount(linenr_T lnum);
 static int	cin_ispreproc(char_u *);
 static int	cin_iscomment(char_u *);
 static int	cin_islinecomment(char_u *);
 static int	cin_isterminated(char_u *, int, int);
-static int	cin_isinit(void);
-static int	cin_isfuncdecl(char_u **, linenr_T, linenr_T);
-static int	cin_isif(char_u *);
 static int	cin_iselse(char_u *);
-static int	cin_isdo(char_u *);
-static int	cin_iswhileofdo(char_u *, linenr_T);
-static int	cin_is_if_for_while_before_offset(char_u *line, int *poffset);
-static int	cin_iswhileofdo_end(int terminated);
-static int	cin_isbreak(char_u *);
-static int	cin_is_cpp_baseclass(cpp_baseclass_cache_T *cached);
-static int	get_baseclass_amount(int col);
 static int	cin_ends_in(char_u *, char_u *, char_u *);
 static int	cin_starts_with(char_u *s, char *word);
-static int	cin_skip2pos(pos_T *trypos);
-static pos_T	*find_start_brace(void);
 static pos_T	*find_match_paren(int);
 static pos_T	*find_match_char(int c, int ind_maxparen);
-static int	corr_ind_maxparen(pos_T *startpos);
 static int	find_last_paren(char_u *l, int start, int end);
 static int	find_match(int lookfor, linenr_T ourscope);
-static int	cin_is_cpp_namespace(char_u *);
 
 /*
  * Skip over white space and C comments within the line.
@@ -7028,7 +6994,7 @@ find_match_paren(int ind_maxparen)	/* XXX */
 }
 
     static pos_T *
-find_match_char (int c, int ind_maxparen)	/* XXX */
+find_match_char(int c, int ind_maxparen)	/* XXX */
 {
     pos_T	cursor_save;
     pos_T	*trypos;
@@ -9570,8 +9536,6 @@ get_expr_indent(void)
 
 #if defined(FEAT_LISP) || defined(PROTO)
 
-static int lisp_match(char_u *p);
-
     static int
 lisp_match(char_u *p)
 {
@@ -10391,8 +10355,6 @@ mch_expandpath(
  * Unix style wildcard expansion code.
  * It's here because it's used both for Unix and Mac.
  */
-static int	pstrcmp(const void *, const void *);
-
     static int
 pstrcmp(const void *a, const void *b)
 {
@@ -10624,13 +10586,6 @@ unix_expandpath(
 #endif
 
 #if defined(FEAT_SEARCHPATH)
-static int find_previous_pathsep(char_u *path, char_u **psep);
-static int is_unique(char_u *maybe_unique, garray_T *gap, int i);
-static void expand_path_option(char_u *curdir, garray_T	*gap);
-static char_u *get_path_cutoff(char_u *fname, garray_T *gap);
-static void uniquefy_paths(garray_T *gap, char_u *pattern);
-static int expand_in_path(garray_T *gap, char_u	*pattern, int flags);
-
 /*
  * Moves "*psep" back to the previous path separator in "path".
  * Returns FAIL is "*psep" ends up at the beginning of "path".
@@ -11055,8 +11010,6 @@ remove_duplicates(garray_T *gap)
 }
 #endif
 
-static int has_env_var(char_u *p);
-
 /*
  * Return TRUE if "p" contains what looks like an environment variable.
  * Allowing for escaping.
@@ -11081,8 +11034,6 @@ has_env_var(char_u *p)
 }
 
 #ifdef SPECIAL_WILDCHAR
-static int has_special_wildchar(char_u *p);
-
 /*
  * Return TRUE if "p" contains a special wildcard character, one that Vim
  * cannot expand, requires using a shell.

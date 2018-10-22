@@ -3466,7 +3466,6 @@ typedef struct regbehind_S
     save_se_T   save_end[NSUBEXP];
 } regbehind_T;
 
-static char_u	*reg_getline(linenr_T lnum);
 static long	bt_regexec_both(char_u *line, colnr_T col, proftime_T *tm, int *timed_out);
 static long	regtry(bt_regprog_T *prog, colnr_T col, proftime_T *tm, int *timed_out);
 static void	cleanup_subexpr(void);
@@ -4009,8 +4008,6 @@ theend:
 }
 
 #ifdef FEAT_SYN_HL
-static reg_extmatch_T *make_extmatch(void);
-
 /*
  * Create a new extmatch and mark it as referenced once.
  */
@@ -4137,8 +4134,6 @@ regtry(
 }
 
 #ifdef FEAT_MBYTE
-static int reg_prev_class(void);
-
 /*
  * Get class of previous character.
  */
@@ -4151,8 +4146,6 @@ reg_prev_class(void)
     return -1;
 }
 #endif
-
-static int reg_match_visual(void);
 
 /*
  * Return TRUE if the current rex.input position matches the Visual area.
@@ -7010,8 +7003,6 @@ re_mult_next(char *what)
 }
 
 #ifdef FEAT_MBYTE
-static void mb_decompose(int c, int *c1, int *c2, int *c3);
-
 typedef struct
 {
     int a, b, c;
@@ -7214,11 +7205,6 @@ cstrchr(char_u *s, int c)
  * pointer to a function returning void. This should work for all compilers.
  */
 typedef void (*(*fptr_T)(int *, int))();
-
-static fptr_T do_upper(int *, int);
-static fptr_T do_Upper(int *, int);
-static fptr_T do_lower(int *, int);
-static fptr_T do_Lower(int *, int);
 
 static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int copy, int magic, int backslash);
 
@@ -7883,8 +7869,6 @@ exit:
 }
 
 #ifdef FEAT_EVAL
-static char_u *reg_getline_submatch(linenr_T lnum);
-
 /*
  * Call reg_getline() with the line numbers from the submatch.  If a
  * substitute() was used the reg_maxline and other values have been
@@ -8212,8 +8196,6 @@ vim_regfree(regprog_T *prog)
 }
 
 #ifdef FEAT_EVAL
-static void report_re_switch(char_u *pat);
-
     static void
 report_re_switch(char_u *pat)
 {

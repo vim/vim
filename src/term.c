@@ -74,7 +74,6 @@ struct builtin_term
 /* start of keys that are not directly used by Vim but can be mapped */
 #define BT_EXTRA_KEYS	0x101
 
-static struct builtin_term *find_builtin_term(char_u *name);
 static void parse_builtin_tcap(char_u *s);
 static void gather_termleader(void);
 #ifdef FEAT_TERMRESPONSE
@@ -91,9 +90,6 @@ static int get_bytes_from_buf(char_u *, char_u *, int);
 static void del_termcode_idx(int idx);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
-#ifdef FEAT_TERMRESPONSE
-static void switch_to_8bit(void);
-#endif
 
 #ifdef HAVE_TGETENT
 static char_u *tgetent_error(char_u *, char_u *);
@@ -1475,6 +1471,9 @@ parse_builtin_tcap(char_u *term)
 	    if (term_strings[p->bt_entry] == NULL
 				 || term_strings[p->bt_entry] == empty_option)
 	    {
+#ifdef FEAT_EVAL
+		int opt_idx = -1;
+#endif
 		/* 8bit terminal: use CSI instead of <Esc>[ */
 		if (term_8bit && term_7to8bit((char_u *)p->bt_string) != 0)
 		{
@@ -1490,11 +1489,23 @@ parse_builtin_tcap(char_u *term)
 				STRMOVE(t + 1, t + 2);
 			    }
 			term_strings[p->bt_entry] = s;
-			set_term_option_alloced(&term_strings[p->bt_entry]);
+#ifdef FEAT_EVAL
+			opt_idx =
+#endif
+				  set_term_option_alloced(
+						   &term_strings[p->bt_entry]);
 		    }
 		}
 		else
+		{
 		    term_strings[p->bt_entry] = (char_u *)p->bt_string;
+#ifdef FEAT_EVAL
+		    opt_idx = get_term_opt_idx(&term_strings[p->bt_entry]);
+#endif
+		}
+#ifdef FEAT_EVAL
+		set_term_option_sctx_idx(NULL, opt_idx);
+#endif
 	    }
 	}
 	else
@@ -1620,7 +1631,12 @@ get_term_entries(int *height, int *width)
     {
 	if (TERM_STR(string_names[i].dest) == NULL
 			     || TERM_STR(string_names[i].dest) == empty_option)
+	{
 	    TERM_STR(string_names[i].dest) = TGETSTR(string_names[i].name, &tp);
+#ifdef FEAT_EVAL
+	    set_term_option_sctx_idx(string_names[i].name, -1);
+#endif
+	}
     }
 
     /* tgetflag() returns 1 if the flag is present, 0 if not and
@@ -1662,7 +1678,12 @@ get_term_entries(int *height, int *width)
      * Get number of colors (if not done already).
      */
     if (TERM_STR(KS_CCO) == NULL || TERM_STR(KS_CCO) == empty_option)
+    {
 	set_color_count(tgetnum("Co"));
+#ifdef FEAT_EVAL
+	set_term_option_sctx_idx("Co", -1);
+#endif
+    }
 
 # ifndef hpux
     BC = (char *)TGETSTR("bc", &tp);
@@ -2429,8 +2450,6 @@ tltoa(unsigned long i)
  * minimal tgoto() implementation.
  * no padding and we only parse for %i %d and %+char
  */
-static char *tgoto(char *, int, int);
-
     static char *
 tgoto(char *cm, int x, int y)
 {
@@ -3146,8 +3165,6 @@ add_long_to_buf(long_u val, char_u *dst)
 	dst[i - 1] = (char_u) ((val >> shift) & 0xff);
     }
 }
-
-static int get_long_from_buf(char_u *buf, long_u *val);
 
 /*
  * Interpret the next string of bytes in buf as a long integer, with the most

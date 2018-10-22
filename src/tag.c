@@ -1155,8 +1155,6 @@ do_tags(exarg_T *eap UNUSED)
 #endif
 
 #ifdef FEAT_TAG_BINS
-static int tag_strnicmp(char_u *s1, char_u *s2, size_t len);
-
 /*
  * Compare two strings, for length "len", ignoring case the ASCII way.
  * return 0 for match, < 0 for smaller, > 0 for bigger
@@ -1193,8 +1191,6 @@ typedef struct
     int		headlen;	/* length of head[] */
     regmatch_T	regmatch;	/* regexp program, may be NULL */
 } pat_T;
-
-static void prepare_pats(pat_T *pats, int has_re);
 
 /*
  * Extract info from the tag search pattern "pats->pat".
@@ -3878,8 +3874,6 @@ expand_tags(
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-static int add_tag_field(dict_T *dict, char *field_name, char_u *start, char_u *end);
-
 /*
  * Add a tag field to the dictionary "dict".
  * Return OK or FAIL.

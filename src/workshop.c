@@ -45,7 +45,6 @@ static char	*addUniqueMnemonic(char *, char *);
 static char	*fixup(char *);
 static char	*get_selection(buf_T *);
 static char	*append_selection(int, char *, int *, int *);
-static void	 load_buffer_by_name(char *, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
 #ifdef FEAT_BEVAL_GUI
@@ -1226,7 +1225,6 @@ append_selection(
 
     return sp;
 }
-
 
 
     static void

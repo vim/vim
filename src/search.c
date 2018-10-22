@@ -16,16 +16,9 @@
 static void set_vv_searchforward(void);
 static int first_submatch(regmmatch_T *rp);
 #endif
-static int check_prevcol(char_u *linep, int col, int ch, int *prevcol);
-static int inmacro(char_u *, char_u *);
 static int check_linecomment(char_u *line);
 static int cls(void);
 static int skip_chars(int, int);
-#ifdef FEAT_TEXTOBJ
-static void back_in_line(void);
-static void find_first_blank(pos_T *);
-static void findsent_forward(long count, int at_start_sent);
-#endif
 #ifdef FEAT_FIND_ID
 static void show_pat_in_path(char_u *, int,
 					 int, int, FILE *, linenr_T *, long);
@@ -1834,8 +1827,6 @@ check_prevcol(
 	*prevcol = col;
     return (col >= 0 && linep[col] == ch) ? TRUE : FALSE;
 }
-
-static int find_rawstring_end(char_u *linep, pos_T *startpos, pos_T *endpos);
 
 /*
  * Raw string start is found at linep[startpos.col - 1].
@@ -3866,8 +3857,6 @@ current_block(
     return OK;
 }
 
-static int in_html_tag(int);
-
 /*
  * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
  * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
@@ -4325,9 +4314,6 @@ extend:
 
     return OK;
 }
-
-static int find_next_quote(char_u *top_ptr, int col, int quotechar, char_u *escape);
-static int find_prev_quote(char_u *line, int col_start, int quotechar, char_u *escape);
 
 /*
  * Search quote char from string line[col].

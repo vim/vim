@@ -28,7 +28,6 @@ typedef struct digraph
     result_T	result;
 } digr_T;
 
-static int getexactdigraph(int, int, int);
 static void printdigraph(digr_T *);
 
 /* digraphs added by the user */

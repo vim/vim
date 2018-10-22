@@ -49,10 +49,8 @@ static pos_T *off2pos(buf_T *, long);
 static pos_T *get_off_or_lnum(buf_T *buf, char_u **argp);
 static long get_buf_size(buf_T *);
 static int netbeans_keystring(char_u *keystr);
-static void postpone_keycommand(char_u *keystr);
 static void special_keys(char_u *args);
 
-static int netbeans_connect(char *, int);
 static int getConnInfo(char *file, char **host, char **port, char **password);
 
 static void nb_init_graphics(void);

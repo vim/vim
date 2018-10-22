@@ -39,9 +39,7 @@ static void init_locale(void);
 # endif
 static void early_arg_scan(mparm_T *parmp);
 #ifndef NO_VIM_MAIN
-static void main_msg(char *s);
 static void usage(void);
-static int get_number_arg(char_u *p, int *idx, int def);
 static void parse_command_name(mparm_T *parmp);
 static void command_line_scan(mparm_T *parmp);
 static void check_tty(mparm_T *parmp);
@@ -929,6 +927,7 @@ vim_main2(void)
     void
 common_init(mparm_T *paramp)
 {
+    cmdline_init();
 
 #ifdef FEAT_MBYTE
     (void)mb_init();	/* init mb_bytelen_tab[] to ones */
@@ -1718,7 +1717,7 @@ get_number_arg(
 }
 
 /*
- * Check for: [r][e][g][vi|vim|view][diff][ex[im]]
+ * Check for: [r][e][g][vi|vim|view][diff][ex[im]]  (sort of)
  * If the executable name starts with "r" we disable shell commands.
  * If the next character is "e" we run in Easy mode.
  * If the next character is "g" we run the GUI version.
@@ -1789,7 +1788,7 @@ parse_command_name(mparm_T *parmp)
     else if (STRNICMP(initstr, "vim", 3) == 0)
 	initstr += 3;
 
-    /* Catch "[r][g]vimdiff" and "[r][g]viewdiff". */
+    // Catch "[r][g]vimdiff" and "[r][g]viewdiff".
     if (STRICMP(initstr, "diff") == 0)
     {
 #ifdef FEAT_DIFF
@@ -1801,13 +1800,15 @@ parse_command_name(mparm_T *parmp)
 #endif
     }
 
+    // Checking for "ex" here may catch some weir names, such as "vimex" or
+    // "viewex", we assume the user knows that.
     if (STRNICMP(initstr, "ex", 2) == 0)
     {
 	if (STRNICMP(initstr + 2, "im", 2) == 0)
 	    exmode_active = EXMODE_VIM;
 	else
 	    exmode_active = EXMODE_NORMAL;
-	change_compatible(TRUE);	/* set 'compatible' */
+	change_compatible(TRUE);	// set 'compatible'
     }
 }
 
@@ -3475,8 +3476,6 @@ check_swap_exists_action(void)
 #endif /* NO_VIM_MAIN */
 
 #if defined(STARTUPTIME) || defined(PROTO)
-static void time_diff(struct timeval *then, struct timeval *now);
-
 static struct timeval	prev_timeval;
 
 # ifdef WIN3264
@@ -4191,12 +4190,16 @@ eval_client_expr_to_string(char_u *expr)
     char_u	*res;
     int		save_dbl = debug_break_level;
     int		save_ro = redir_off;
-    void	*fc = NULL;
+    funccal_entry_T funccal_entry;
+    int		did_save_funccal = FALSE;
 
     /* Evaluate the expression at the toplevel, don't use variables local to
      * the calling function. Except when in debug mode. */
     if (!debug_mode)
-	fc = clear_current_funccal();
+    {
+	save_funccal(&funccal_entry);
+	did_save_funccal = TRUE;
+    }
 
      /* Disable debugging, otherwise Vim hangs, waiting for "cont" to be
       * typed. */
@@ -4213,8 +4216,8 @@ eval_client_expr_to_string(char_u *expr)
     --emsg_silent;
     if (emsg_silent < 0)
 	emsg_silent = 0;
-    if (fc != NULL)
-	restore_current_funccal(fc);
+    if (did_save_funccal)
+	restore_funccal();
 
     /* A client can tell us to redraw, but not to display the cursor, so do
      * that here. */

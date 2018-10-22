@@ -51,10 +51,6 @@ static void	clear_wininfo(buf_T *buf);
 # define dev_T unsigned
 #endif
 
-#if defined(FEAT_SIGNS)
-static void insert_sign(buf_T *buf, signlist_T *prev, signlist_T *next, int id, linenr_T lnum, int typenr);
-#endif
-
 #if defined(FEAT_QUICKFIX)
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
@@ -667,8 +663,11 @@ aucmd_abort:
 	    workshop_file_closed_lineno((char *)buf->b_ffname,
 			(int)buf->b_last_cursor.lnum);
 #endif
-	vim_free(buf->b_ffname);
-	vim_free(buf->b_sfname);
+	if (buf->b_sfname != buf->b_ffname)
+	    VIM_CLEAR(buf->b_sfname);
+	else
+	    buf->b_sfname = NULL;
+	VIM_CLEAR(buf->b_ffname);
 	if (buf->b_prev == NULL)
 	    firstbuf = buf->b_next;
 	else
@@ -1881,11 +1880,13 @@ curbuf_reusable(void)
  */
     buf_T *
 buflist_new(
-    char_u	*ffname,	/* full path of fname or relative */
-    char_u	*sfname,	/* short fname or NULL */
-    linenr_T	lnum,		/* preferred cursor line */
-    int		flags)		/* BLN_ defines */
+    char_u	*ffname_arg,	// full path of fname or relative
+    char_u	*sfname_arg,	// short fname or NULL
+    linenr_T	lnum,		// preferred cursor line
+    int		flags)		// BLN_ defines
 {
+    char_u	*ffname = ffname_arg;
+    char_u	*sfname = sfname_arg;
     buf_T	*buf;
 #ifdef UNIX
     stat_T	st;
@@ -1894,7 +1895,7 @@ buflist_new(
     if (top_file_num == 1)
 	hash_init(&buf_hashtab);
 
-    fname_expand(curbuf, &ffname, &sfname);	/* will allocate ffname */
+    fname_expand(curbuf, &ffname, &sfname);	// will allocate ffname
 
     /*
      * If file name already exists in the list, update the entry.
@@ -2001,8 +2002,11 @@ buflist_new(
     if ((ffname != NULL && (buf->b_ffname == NULL || buf->b_sfname == NULL))
 	    || buf->b_wininfo == NULL)
     {
+	if (buf->b_sfname != buf->b_ffname)
+	    VIM_CLEAR(buf->b_sfname);
+	else
+	    buf->b_sfname = NULL;
 	VIM_CLEAR(buf->b_ffname);
-	VIM_CLEAR(buf->b_sfname);
 	if (buf != curbuf)
 	    free_buffer(buf);
 	return NULL;
@@ -2839,8 +2843,6 @@ buflist_setfpos(
 }
 
 #ifdef FEAT_DIFF
-static int wininfo_other_tab_diff(wininfo_T *wip);
-
 /*
  * Return TRUE when "wip" has 'diff' set and the diff is only for another tab
  * page.  That's because a diff is local to a tab page.
@@ -3109,7 +3111,8 @@ buflist_name_nr(
 }
 
 /*
- * Set the file name for "buf"' to 'ffname', short file name to 'sfname'.
+ * Set the file name for "buf"' to "ffname_arg", short file name to
+ * "sfname_arg".
  * The file name with the full path is also remembered, for when :cd is used.
  * Returns FAIL for failure (file name already in use by other buffer)
  *	OK otherwise.
@@ -3117,10 +3120,12 @@ buflist_name_nr(
     int
 setfname(
     buf_T	*buf,
-    char_u	*ffname,
-    char_u	*sfname,
+    char_u	*ffname_arg,
+    char_u	*sfname_arg,
     int		message)	/* give message when buffer already exists */
 {
+    char_u	*ffname = ffname_arg;
+    char_u	*sfname = sfname_arg;
     buf_T	*obuf = NULL;
 #ifdef UNIX
     stat_T	st;
@@ -3129,8 +3134,11 @@ setfname(
     if (ffname == NULL || *ffname == NUL)
     {
 	/* Removing the name. */
+	if (buf->b_sfname != buf->b_ffname)
+	    VIM_CLEAR(buf->b_sfname);
+	else
+	    buf->b_sfname = NULL;
 	VIM_CLEAR(buf->b_ffname);
-	VIM_CLEAR(buf->b_sfname);
 #ifdef UNIX
 	st.st_dev = (dev_T)-1;
 #endif
@@ -3181,8 +3189,9 @@ setfname(
 # endif
 	    fname_case(sfname, 0);    /* set correct case for short file name */
 #endif
+	if (buf->b_sfname != buf->b_ffname)
+	    vim_free(buf->b_sfname);
 	vim_free(buf->b_ffname);
-	vim_free(buf->b_sfname);
 	buf->b_ffname = ffname;
 	buf->b_sfname = sfname;
     }
@@ -3216,7 +3225,8 @@ buf_set_name(int fnum, char_u *name)
     buf = buflist_findnr(fnum);
     if (buf != NULL)
     {
-	vim_free(buf->b_sfname);
+	if (buf->b_sfname != buf->b_ffname)
+	    vim_free(buf->b_sfname);
 	vim_free(buf->b_ffname);
 	buf->b_ffname = vim_strsave(name);
 	buf->b_sfname = NULL;
@@ -4826,8 +4836,12 @@ fix_fname(char_u  *fname)
 }
 
 /*
- * Make "ffname" a full file name, set "sfname" to "ffname" if not NULL.
- * "ffname" becomes a pointer to allocated memory (or NULL).
+ * Make "*ffname" a full file name, set "*sfname" to "*ffname" if not NULL.
+ * "*ffname" becomes a pointer to allocated memory (or NULL).
+ * When resolving a link both "*sfname" and "*ffname" will point to the same
+ * allocated memory.
+ * The "*ffname" and "*sfname" pointer values on call will not be freed.
+ * Note that the resulting "*ffname" pointer should be considered not allocaed.
  */
     void
 fname_expand(
@@ -4835,18 +4849,18 @@ fname_expand(
     char_u	**ffname,
     char_u	**sfname)
 {
-    if (*ffname == NULL)	/* if no file name given, nothing to do */
+    if (*ffname == NULL)	    // no file name given, nothing to do
 	return;
-    if (*sfname == NULL)	/* if no short file name given, use ffname */
+    if (*sfname == NULL)	    // no short file name given, use ffname
 	*sfname = *ffname;
-    *ffname = fix_fname(*ffname);   /* expand to full path */
+    *ffname = fix_fname(*ffname);   // expand to full path
 
 #ifdef FEAT_SHORTCUT
     if (!buf->b_p_bin)
     {
 	char_u  *rfname;
 
-	/* If the file name is a shortcut file, use the file it links to. */
+	// If the file name is a shortcut file, use the file it links to.
 	rfname = mch_resolve_shortcut(*ffname);
 	if (rfname != NULL)
 	{

@@ -61,7 +61,6 @@ static char_u *get_user_command_name(int idx);
 # define IS_USER_CMDIDX(idx) (FALSE)
 #endif
 
-static int compute_buffer_local_count(int addr_type, int lnum, int local);
 #ifdef FEAT_EVAL
 static char_u	*do_one_cmd(char_u **, int, struct condstack *, char_u *(*fgetline)(int, void *, int), void *cookie);
 #else
@@ -116,7 +115,6 @@ static int	getargopt(exarg_T *eap);
 # define ex_cexpr		ex_ni
 #endif
 
-static int	check_more(int, int);
 static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int silent, int to_other_file, int address_count);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
@@ -497,9 +495,6 @@ struct dbg_stuff
     int		check_cstack;
     except_T	*current_exception;
 };
-
-static void save_dbg_stuff(struct dbg_stuff *dsp);
-static void restore_dbg_stuff(struct dbg_stuff *dsp);
 
     static void
 save_dbg_stuff(struct dbg_stuff *dsp)
@@ -1632,9 +1627,6 @@ compute_buffer_local_count(int addr_type, int lnum, int offset)
 	}
     return buf->b_fnum;
 }
-
-static int current_win_nr(win_T *win);
-static int current_tab_nr(tabpage_T *tab);
 
     static int
 current_win_nr(win_T *win)
@@ -4291,6 +4283,7 @@ set_one_cmd_context(
 	case CMD_omenu:	    case CMD_onoremenu:	    case CMD_ounmenu:
 	case CMD_imenu:	    case CMD_inoremenu:	    case CMD_iunmenu:
 	case CMD_cmenu:	    case CMD_cnoremenu:	    case CMD_cunmenu:
+	case CMD_tlmenu:    case CMD_tlnoremenu:    case CMD_tlunmenu:
 	case CMD_tmenu:				    case CMD_tunmenu:
 	case CMD_popup:	    case CMD_tearoff:	    case CMD_emenu:
 	    return set_context_in_menu_cmd(xp, cmd, arg, forceit);
@@ -4910,8 +4903,6 @@ correct_range(exarg_T *eap)
 }
 
 #ifdef FEAT_QUICKFIX
-static char_u	*skip_grep_pat(exarg_T *eap);
-
 /*
  * For a ":vimgrep" or ":vimgrepadd" command return a pointer past the
  * pattern.  Otherwise return eap->arg.
@@ -5818,12 +5809,6 @@ get_command_name(expand_T *xp UNUSED, int idx)
 #endif
 
 #if defined(FEAT_USR_CMDS) || defined(PROTO)
-static int	uc_add_command(char_u *name, size_t name_len, char_u *rep, long argt, long def, int flags, int compl, char_u *compl_arg, int addr_type, int force);
-static void	uc_list(char_u *name, size_t name_len);
-static int	uc_scan_attr(char_u *attr, size_t len, long *argt, long *def, int *flags, int *compl, char_u **compl_arg, int* attr_type_arg);
-static char_u	*uc_split_args(char_u *arg, size_t *lenp);
-static size_t	uc_check_code(char_u *code, size_t len, char_u *buf, ucmd_T *cmd, exarg_T *eap, char_u **split_buf, size_t *split_len);
-
     static int
 uc_add_command(
     char_u	*name,
@@ -9272,7 +9257,7 @@ do_sleep(long msec)
     long	wait_now;
 
     cursor_on();
-    out_flush();
+    out_flush_cursor(FALSE, FALSE);
     for (done = 0; !got_int && done < msec; done += wait_now)
     {
 	wait_now = msec - done > 1000L ? 1000L : msec - done;
@@ -10487,21 +10472,24 @@ exec_normal_cmd(char_u *cmd, int remap, int silent)
 {
     /* Stuff the argument into the typeahead buffer. */
     ins_typebuf(cmd, remap, 0, TRUE, silent);
-    exec_normal(FALSE, FALSE);
+    exec_normal(FALSE, FALSE, FALSE);
 }
 
 /*
  * Execute normal_cmd() until there is no typeahead left.
+ * When "use_vpeekc" is TRUE use vpeekc() to check for available chars.
  */
     void
-exec_normal(int was_typed, int may_use_terminal_loop UNUSED)
+exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop UNUSED)
 {
     oparg_T	oa;
 
     clear_oparg(&oa);
     finish_op = FALSE;
-    while ((!stuff_empty() || ((was_typed || !typebuf_typed())
-		    && typebuf.tb_len > 0)) && !got_int)
+    while ((!stuff_empty()
+		|| ((was_typed || !typebuf_typed()) && typebuf.tb_len > 0)
+		|| (use_vpeekc && vpeekc() != NUL))
+	    && !got_int)
     {
 	update_topline_cursor();
 #ifdef FEAT_TERMINAL

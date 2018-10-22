@@ -1176,7 +1176,7 @@ pum_execute_menu(vimmenu_T *menu, int mode)
 	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
 	    vim_memset(&ea, 0, sizeof(ea));
-	    execute_menu(&ea, mp);
+	    execute_menu(&ea, mp, -1);
 	    break;
 	}
 }

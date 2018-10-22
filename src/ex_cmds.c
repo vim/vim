@@ -1676,6 +1676,26 @@ do_shell(
     apply_autocmds(EVENT_SHELLCMDPOST, NULL, NULL, FALSE, curbuf);
 }
 
+#if !defined(UNIX)
+    static char_u *
+find_pipe(char_u *cmd)
+{
+    char_u  *p;
+    int	    inquote = FALSE;
+
+    for (p = cmd; *p != NUL; ++p)
+    {
+	if (!inquote && *p == '|')
+	    return p;
+	if (*p == '"')
+	    inquote = !inquote;
+	else if (rem_backslash(p))
+	    ++p;
+    }
+    return NULL;
+}
+#endif
+
 /*
  * Create a shell command from a command string, input redirection file and
  * output redirection file.
@@ -1746,7 +1766,7 @@ make_filter_cmd(
 	 */
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(buf, '|');
+	    p = find_pipe(buf);
 	    if (p != NULL)
 		*p = NUL;
 	}
@@ -1754,7 +1774,7 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(cmd, '|');
+	    p = find_pipe(cmd);
 	    if (p != NULL)
 	    {
 		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
@@ -1813,7 +1833,6 @@ append_redir(
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
-static int no_viminfo(void);
 static int read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing);
 static void write_viminfo_version(FILE *fp_out);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
@@ -3629,8 +3648,8 @@ check_readonly(int *forceit, buf_T *buf)
 }
 
 /*
- * Try to abandon current file and edit a new or existing file.
- * "fnum" is the number of the file, if zero use ffname/sfname.
+ * Try to abandon the current file and edit a new or existing file.
+ * "fnum" is the number of the file, if zero use "ffname_arg"/"sfname_arg".
  * "lnum" is the line number for the cursor in the new file (if non-zero).
  *
  * Return:
@@ -3642,12 +3661,14 @@ check_readonly(int *forceit, buf_T *buf)
     int
 getfile(
     int		fnum,
-    char_u	*ffname,
-    char_u	*sfname,
+    char_u	*ffname_arg,
+    char_u	*sfname_arg,
     int		setpm,
     linenr_T	lnum,
     int		forceit)
 {
+    char_u	*ffname = ffname_arg;
+    char_u	*sfname = sfname_arg;
     int		other;
     int		retval;
     char_u	*free_me = NULL;
@@ -7568,7 +7589,6 @@ struct sign
 static sign_T	*first_sign = NULL;
 static int	next_sign_typenr = 1;
 
-static int sign_cmd_idx(char_u *begin_cmd, char_u *end_cmd);
 static void sign_list_defined(sign_T *sp);
 static void sign_undefine(sign_T *sp, sign_T *sp_prev);
 

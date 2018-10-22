@@ -16,15 +16,9 @@
 
 #include "vim.h"
 
-static int other_sourcing_name(void);
-static char_u *get_emsg_source(void);
-static char_u *get_emsg_lnum(void);
 static void add_msg_hist(char_u *s, int len, int attr);
 static void hit_return_msg(void);
 static void msg_home_replace_attr(char_u *fname, int attr);
-#ifdef FEAT_MBYTE
-static char_u *screen_puts_mbyte(char_u *s, int l, int attr);
-#endif
 static void msg_puts_attr_len(char_u *str, int maxlen, int attr);
 static void msg_puts_display(char_u *str, int maxlen, int attr, int recurse);
 static void msg_scroll_up(void);
@@ -694,8 +688,8 @@ emsg(char_u *s)
 	if (p_eb)
 	    beep_flush();		/* also includes flush_buffers() */
 	else
-	    flush_buffers(FALSE);	/* flush internal buffers */
-	did_emsg = TRUE;		/* flag for DoOneCmd() */
+	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
+	did_emsg = TRUE;		   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
 	did_uncaught_emsg = TRUE;
 #endif
@@ -2407,7 +2401,6 @@ struct msgchunk_S
 static msgchunk_T *last_msgchunk = NULL; /* last displayed text */
 
 static msgchunk_T *msg_sb_start(msgchunk_T *mps);
-static msgchunk_T *disp_sb_line(int row, msgchunk_T *smp);
 
 typedef enum {
     SB_CLEAR_NONE = 0,
@@ -3686,8 +3679,6 @@ do_dialog(
     return retval;
 }
 
-static int copy_char(char_u *from, char_u *to, int lowercase);
-
 /*
  * Copy one character from "*from" to "*to", taking care of multi-byte
  * characters.  Return the length of the character in bytes.
@@ -4130,12 +4121,6 @@ do_browse(
 
 #if defined(FEAT_EVAL)
 static char *e_printf = N_("E766: Insufficient arguments for printf()");
-
-static varnumber_T tv_nr(typval_T *tvs, int *idxp);
-static char *tv_str(typval_T *tvs, int *idxp, char_u **tofree);
-# ifdef FEAT_FLOAT
-static double tv_float(typval_T *tvs, int *idxp);
-# endif
 
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.

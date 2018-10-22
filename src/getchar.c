@@ -108,17 +108,8 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	/* initial typebuf.tb_noremap */
 
 static int	last_recorded_len = 0;	/* number of last recorded chars */
 
-static char_u	*get_buffcont(buffheader_T *, int);
-static void	add_buff(buffheader_T *, char_u *, long n);
-static void	add_num_buff(buffheader_T *, long);
-static void	add_char_buff(buffheader_T *, int);
-static int	read_readbuffers(int advance);
 static int	read_readbuf(buffheader_T *buf, int advance);
-static void	start_stuff(void);
-static int	read_redo(int, int);
-static void	copy_redo(int);
 static void	init_typebuf(void);
-static void	gotchars(char_u *, int);
 static void	may_sync_undo(void);
 static void	closescript(void);
 static int	vgetorpeek(int);
@@ -447,7 +438,7 @@ typeahead_noflush(int c)
  * flush all typeahead characters (used when interrupted by a CTRL-C).
  */
     void
-flush_buffers(int flush_typeahead)
+flush_buffers(flush_buffers_T flush_typeahead)
 {
     init_typebuf();
 
@@ -455,15 +446,21 @@ flush_buffers(int flush_typeahead)
     while (read_readbuffers(TRUE) != NUL)
 	;
 
-    if (flush_typeahead)	    /* remove all typeahead */
+    if (flush_typeahead == FLUSH_MINIMAL)
     {
-	/*
-	 * We have to get all characters, because we may delete the first part
-	 * of an escape sequence.
-	 * In an xterm we get one char at a time and we have to get them all.
-	 */
-	while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L) != 0)
-	    ;
+	// remove mapped characters at the start only
+	typebuf.tb_off += typebuf.tb_maplen;
+	typebuf.tb_len -= typebuf.tb_maplen;
+    }
+    else
+    {
+	// remove typeahead
+	if (flush_typeahead == FLUSH_INPUT)
+	    // We have to get all characters, because we may delete the first
+	    // part of an escape sequence.  In an xterm we get one char at a
+	    // time and we have to get them all.
+	    while (inchar(typebuf.tb_buf, typebuf.tb_buflen - 1, 10L) != 0)
+		;
 	typebuf.tb_off = MAXMAPLEN;
 	typebuf.tb_len = 0;
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
@@ -471,11 +468,6 @@ flush_buffers(int flush_typeahead)
 	 * was inserted in the typeahead buffer. */
 	typebuf_was_filled = FALSE;
 #endif
-    }
-    else		    /* remove mapped characters at the start only */
-    {
-	typebuf.tb_off += typebuf.tb_maplen;
-	typebuf.tb_len -= typebuf.tb_maplen;
     }
     typebuf.tb_maplen = 0;
     typebuf.tb_silent = 0;
@@ -1867,6 +1859,7 @@ plain_vgetc(void)
  * Check if a character is available, such that vgetc() will not block.
  * If the next character is a special character or multi-byte, the returned
  * character is not valid!.
+ * Returns NUL if no character is available.
  */
     int
 vpeekc(void)
@@ -1965,7 +1958,8 @@ vungetc(int c)
  *	KeyTyped is set to TRUE in the case the user typed the key.
  *	KeyStuffed is TRUE if the character comes from the stuff buffer.
  * if "advance" is FALSE (vpeekc()):
- *	just look whether there is a character available.
+ *	Just look whether there is a character available.
+ *	Return NUL if not.
  *
  * When "no_mapping" is zero, checks for mappings in the current mode.
  * Only returns one byte (of a multi-byte character).
@@ -2093,7 +2087,7 @@ vgetorpeek(int advance)
 			c = ESC;
 		    else
 			c = Ctrl_C;
-		    flush_buffers(TRUE);	/* flush all typeahead */
+		    flush_buffers(FLUSH_INPUT);	// flush all typeahead
 
 		    if (advance)
 		    {
@@ -2519,7 +2513,7 @@ vgetorpeek(int advance)
 				redrawcmdline();
 			    else
 				setcursor();
-			    flush_buffers(FALSE);
+			    flush_buffers(FLUSH_MINIMAL);
 			    mapdepth = 0;	/* for next one */
 			    c = -1;
 			    break;
@@ -4666,7 +4660,6 @@ eval_map_expr(
     char_u	*res;
     char_u	*p;
     char_u	*expr;
-    char_u	*save_cmd;
     pos_T	save_cursor;
     int		save_msg_col;
     int		save_msg_row;
@@ -4677,13 +4670,6 @@ eval_map_expr(
     if (expr == NULL)
 	return NULL;
     vim_unescape_csi(expr);
-
-    save_cmd = save_cmdline_alloc();
-    if (save_cmd == NULL)
-    {
-	vim_free(expr);
-	return NULL;
-    }
 
     /* Forbid changing text or using ":normal" to avoid most of the bad side
      * effects.  Also restore the cursor position. */
@@ -4700,7 +4686,6 @@ eval_map_expr(
     msg_col = save_msg_col;
     msg_row = save_msg_row;
 
-    restore_cmdline_alloc(save_cmd);
     vim_free(expr);
 
     if (p == NULL)

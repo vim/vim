@@ -20,9 +20,10 @@
  * 1. Add an entry in the table below.  Keep it sorted on the shortest
  *    version of the command name that works.  If it doesn't start with a
  *    lower case letter, add it at the end.
- * 2. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
- * 3. Add an entry in the index for Ex commands at ":help ex-cmd-index".
- * 4. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
+ * 2. Run "make cmdidxs" to re-generate ex_cmdidxs.h.
+ * 3. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
+ * 4. Add an entry in the index for Ex commands at ":help ex-cmd-index".
+ * 5. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
  *    long name of the command.
  */
 
@@ -176,7 +177,7 @@ EX(CMD_bdelete,		"bdelete",	ex_bunload,
 			BANG|RANGE|NOTADR|BUFNAME|COUNT|EXTRA|TRLBAR,
 			ADDR_BUFFERS),
 EX(CMD_behave,		"behave",	ex_behave,
-			NEEDARG|WORD1|TRLBAR|CMDWIN,
+			BANG|NEEDARG|WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_belowright,	"belowright",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM,
@@ -1497,6 +1498,15 @@ EX(CMD_tjump,		"tjump",	ex_tag,
 			ADDR_LINES),
 EX(CMD_tlast,		"tlast",	ex_tag,
 			BANG|TRLBAR,
+			ADDR_LINES),
+EX(CMD_tlmenu,		"tlmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlunmenu,	"tlunmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_tmenu,		"tmenu",	ex_menu,
 			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,

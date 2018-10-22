@@ -558,6 +558,8 @@ func s:test_xhelpgrep(cchar)
 
   " Search for non existing help string
   call assert_fails('Xhelpgrep a1b2c3', 'E480:')
+  " Invalid regular expression
+  call assert_fails('Xhelpgrep \@<!', 'E480:')
 endfunc
 
 func Test_helpgrep()
@@ -3218,7 +3220,28 @@ func Test_lexpr_crash()
   augroup QF_Test
     au!
   augroup END
+
   enew | only
+  augroup QF_Test
+    au!
+    au BufNew * call setloclist(0, [], 'f')
+  augroup END
+  lexpr 'x:1:x'
+  augroup QF_Test
+    au!
+  augroup END
+
+  enew | only
+  lexpr ''
+  lopen
+  augroup QF_Test
+    au!
+    au FileType * call setloclist(0, [], 'f')
+  augroup END
+  lexpr ''
+  augroup QF_Test
+    au!
+  augroup END
 endfunc
 
 " The following test used to crash Vim
@@ -3232,6 +3255,17 @@ func Test_lvimgrep_crash()
   augroup QF_Test
     au!
   augroup END
+
+  new | only
+  augroup QF_Test
+    au!
+    au BufEnter * call setloclist(0, [], 'r')
+  augroup END
+  call assert_fails('lvimgrep Test_lvimgrep_crash *', 'E926:')
+  augroup QF_Test
+    au!
+  augroup END
+
   enew | only
 endfunc
 
@@ -3314,6 +3348,37 @@ func Test_lhelpgrep_autocmd()
   call assert_equal('help', &filetype)
   call assert_equal(1, getloclist(0, {'nr' : '$'}).nr)
   au! QuickFixCmdPost
+
+  new | only
+  augroup QF_Test
+    au!
+    au BufEnter * call setqflist([], 'f')
+  augroup END
+  call assert_fails('helpgrep quickfix', 'E925:')
+  augroup QF_Test
+    au! BufEnter
+  augroup END
+
+  new | only
+  augroup QF_Test
+    au!
+    au BufEnter * call setqflist([], 'r')
+  augroup END
+  call assert_fails('helpgrep quickfix', 'E925:')
+  augroup QF_Test
+    au! BufEnter
+  augroup END
+
+  new | only
+  augroup QF_Test
+    au!
+    au BufEnter * call setloclist(0, [], 'r')
+  augroup END
+  call assert_fails('lhelpgrep quickfix', 'E926:')
+  augroup QF_Test
+    au! BufEnter
+  augroup END
+
   new | only
 endfunc
 

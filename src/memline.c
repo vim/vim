@@ -235,10 +235,8 @@ typedef enum {
 } upd_block0_T;
 
 #ifdef FEAT_CRYPT
-static void ml_set_mfp_crypt(buf_T *buf);
 static void ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p);
 #endif
-static int ml_check_b0_id(ZERO_BL *b0p);
 static void ml_upd_block0(buf_T *buf, upd_block0_T what);
 static void set_b0_fname(ZERO_BL *, buf_T *buf);
 static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
@@ -2179,7 +2177,7 @@ swapfile_info(char_u *fname)
 		    /* EMX kill() not working correctly, it seems */
 		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
 		    {
-			MSG_PUTS(_(" (still running)"));
+			MSG_PUTS(_(" (STILL RUNNING)"));
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 			process_still_running = TRUE;
 # endif
@@ -4070,8 +4068,6 @@ get_file_in_dir(
     return retval;
 }
 
-static void attention_message(buf_T *buf, char_u *fname);
-
 /*
  * Print the ATTENTION message: info about an existing swap file.
  */
@@ -4093,7 +4089,11 @@ attention_message(
     MSG_PUTS(_("While opening file \""));
     msg_outtrans(buf->b_fname);
     MSG_PUTS("\"\n");
-    if (mch_stat((char *)buf->b_fname, &st) != -1)
+    if (mch_stat((char *)buf->b_fname, &st) == -1)
+    {
+	MSG_PUTS(_("      CANNOT BE FOUND"));
+    }
+    else
     {
 	MSG_PUTS(_("             dated: "));
 	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
@@ -4510,19 +4510,23 @@ findswapname(
 #endif
 		    {
 #ifdef FEAT_GUI
-			/* If we are supposed to start the GUI but it wasn't
-			 * completely started yet, start it now.  This makes
-			 * the messages displayed in the Vim window when
-			 * loading a session from the .gvimrc file. */
+			// If we are supposed to start the GUI but it wasn't
+			// completely started yet, start it now.  This makes
+			// the messages displayed in the Vim window when
+			// loading a session from the .gvimrc file.
 			if (gui.starting && !gui.in_use)
 			    gui_start();
 #endif
-			/* Show info about the existing swap file. */
+			// Show info about the existing swap file.
 			attention_message(buf, fname);
 
-			/* We don't want a 'q' typed at the more-prompt
-			 * interrupt loading a file. */
+			// We don't want a 'q' typed at the more-prompt
+			// interrupt loading a file.
 			got_int = FALSE;
+
+			// If vimrc has "simalt ~x" we don't want it to
+			// interfere with the prompt here.
+			flush_buffers(FLUSH_TYPEAHEAD);
 		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)

@@ -128,17 +128,10 @@ static void xterm_update(void);
 Window	    x11_window = 0;
 # endif
 Display	    *x11_display = NULL;
-
-# ifdef FEAT_TITLE
-static int  get_x11_windis(void);
-static void set_x11_title(char_u *);
-static void set_x11_icon(char_u *);
-# endif
 #endif
 
 #ifdef FEAT_TITLE
 static int get_x11_title(int);
-static int get_x11_icon(int);
 
 static char_u	*oldtitle = NULL;
 static volatile sig_atomic_t oldtitle_outdated = FALSE;
@@ -154,8 +147,6 @@ typedef union wait waitstatus;
 #else
 typedef int waitstatus;
 #endif
-static pid_t wait4pid(pid_t, waitstatus *);
-
 static int  WaitForChar(long msec, int *interrupted, int ignore_input);
 static int  WaitForCharOrMouse(long msec, int *interrupted, int ignore_input);
 #if defined(__BEOS__) || defined(VMS)
@@ -789,7 +780,6 @@ mch_delay(long msec, int ignoreinput)
  * Return a pointer to an item on the stack.  Used to find out if the stack
  * grows up or down.
  */
-static void check_stack_growth(char *p);
 static int stack_grows_downwards;
 
 /*
@@ -907,7 +897,6 @@ static stack_t sigstk;			/* for sigaltstack() */
 static struct sigstack sigstk;		/* for sigstack() */
 # endif
 
-static void init_signal_stack(void);
 static char *signal_stack;
 
     static void
@@ -1273,12 +1262,8 @@ sigcont_handler SIGDEFARG(sigarg)
 }
 #endif
 
-# if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-static void loose_clipboard(void);
+#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
 # ifdef USE_SYSTEM
-static void save_clipboard(void);
-static void restore_clipboard(void);
-
 static void *clip_star_save = NULL;
 static void *clip_plus_save = NULL;
 # endif
@@ -1644,10 +1629,6 @@ xopen_message(long elapsed_msec)
 /*
  * A few functions shared by X11 title and clipboard code.
  */
-static int x_error_handler(Display *dpy, XErrorEvent *error_event);
-static int x_error_check(Display *dpy, XErrorEvent *error_event);
-static int x_connect_to_server(void);
-static int test_x11_window(Display *dpy);
 
 static int	got_x_error = FALSE;
 
@@ -1683,8 +1664,6 @@ x_error_check(Display *dpy UNUSED, XErrorEvent *error_event UNUSED)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
-static int x_IOerror_check(Display *dpy);
-
     static int
 x_IOerror_check(Display *dpy UNUSED)
 {
@@ -1699,8 +1678,6 @@ x_IOerror_check(Display *dpy UNUSED)
 /*
  * An X IO Error handler, used to catch terminal errors.
  */
-static int x_IOerror_handler(Display *dpy);
-static void may_restore_clipboard(void);
 static int xterm_dpy_was_reset = FALSE;
 
     static int
@@ -2510,8 +2487,6 @@ mch_get_pid(void)
 }
 
 #if !defined(HAVE_STRERROR) && defined(USE_GETCWD)
-static char *strerror(int);
-
     static char *
 strerror(int err)
 {
@@ -3136,8 +3111,6 @@ mch_isrealdir(char_u *name)
     return (S_ISDIR(statb.st_mode) ? TRUE : FALSE);
 }
 
-static int executable_file(char_u *name);
-
 /*
  * Return 1 if "name" is an executable file, 0 if not or it doesn't exist.
  */
@@ -3339,8 +3312,6 @@ mch_free_mem(void)
 # endif
 }
 #endif
-
-static void exit_scroll(void);
 
 /*
  * Output a newline when exiting.
@@ -7818,16 +7789,8 @@ clip_xterm_set_selection(VimClipboard *cbd)
 /*
  * Code for X Session Management Protocol.
  */
-static void xsmp_handle_save_yourself(SmcConn smc_conn, SmPointer client_data, int save_type, Bool shutdown, int interact_style, Bool fast);
-static void xsmp_die(SmcConn smc_conn, SmPointer client_data);
-static void xsmp_save_complete(SmcConn smc_conn, SmPointer client_data);
-static void xsmp_shutdown_cancelled(SmcConn smc_conn, SmPointer	client_data);
-static void xsmp_ice_connection(IceConn iceConn, IcePointer clientData, Bool opening, IcePointer *watchData);
-
 
 # if defined(FEAT_GUI) && defined(USE_XSMP_INTERACT)
-static void xsmp_handle_interaction(SmcConn smc_conn, SmPointer client_data);
-
 /*
  * This is our chance to ask the user if they want to save,
  * or abort the logout
