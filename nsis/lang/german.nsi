@@ -51,7 +51,7 @@ LangString str_desc_old_ver         ${LANG_GERMAN} \
 LangString str_section_exe          ${LANG_GERMAN} \
     "Vim GUI"
 LangString str_desc_exe             ${LANG_GERMAN} \
-    "Vim-GUI-Anwendung und Laufzeitdateien (Dieser Teil ist zwingend\
+    "Vim (Anwendung) und Laufzeitdateien (Dieser Teil ist zwingend \
      erforderlich)."
 
 LangString str_section_console      ${LANG_GERMAN} \
@@ -77,8 +77,7 @@ LangString str_desc_desktop         ${LANG_GERMAN} \
 LangString str_section_start_menu   ${LANG_GERMAN} \
     "Im Startmenü"
 LangString str_desc_start_menu      ${LANG_GERMAN} \
-    "Vim im Programmverzeichnis des Startmenüs hinzufügen\
-     Windows 95 und höher."
+    "Vim im Programmverzeichnis des Startmenüs hinzufügen."
 
 #LangString str_section_quick_launch ${LANG_GERMAN} \
 #    "In der Schnellstartleiste"
@@ -111,19 +110,19 @@ LangString str_desc_vim_rc          ${LANG_GERMAN} \
 LangString str_group_plugin         ${LANG_GERMAN} \
     "Plugin-Verzeichnisse anlegen"
 LangString str_desc_plugin          ${LANG_GERMAN} \
-    "Plugin-Verzeichnisse anlegen.  Plugins erlauben es, Vim \
+    "Plugin-Verzeichnisse anlegen. Plugins erlauben es, Vim \
      um zusätzliche Funktionen zu erweitern."
 
 LangString str_section_plugin_home  ${LANG_GERMAN} \
     "Privat"
 LangString str_desc_plugin_home     ${LANG_GERMAN} \
-    "Plugin-Verzeichnis im Basisverzeichnis (falls es existiert) oder im \
+    "Plugin-Verzeichnis im Benutzerverzeichnis (falls es existiert) oder im \
      Vim-Installationspfad erstellen."
 
 LangString str_section_plugin_vim   ${LANG_GERMAN} \
     "Freigegeben"
 LangString str_desc_plugin_vim      ${LANG_GERMAN} \
-    "Plugin-Verzeichnisse im Vim-Installationspfad erstellen. Diese werden \
+    "Plugin-Verzeichnisse im Vim-Installationsverzeichnis erstellen. Diese werden \
      für alle Benutzer dieses Systems genutzt."
 
 LangString str_section_vis_vim      ${LANG_GERMAN} \
@@ -147,14 +146,14 @@ LangString str_desc_rm_exe          ${LANG_GERMAN} \
     "Alle Vim-Anwendungen und Laufzeitdateien von diesem System entfernen."
 
 LangString str_unsection_vimfiles   ${LANG_GERMAN} \
-    "Remove vimfiles directory"
+    "Entferne vimfiles Verzeichnis"
 LangString str_desc_rm_vimfiles     ${LANG_GERMAN} \
-    "Remove your vimfiles directory if it is empty."
+    "Entfernt eigenes vimfiles Verzeichnis, falls es leer ist."
 
 LangString str_unsection_rootdir    ${LANG_GERMAN} \
-    "Remove the Vim root directory"
+    "Entferne Vim Installationsverzeichnis"
 LangString str_desc_rm_rootdir      ${LANG_GERMAN} \
-    "Remove the Vim root directory. It contains your Vim configuration files!"
+    "Entfernt das Vim Installationsverzeichnis. Es enthält die Vim Konfigurationsdateien!"
 
 
 ##############################################################################
@@ -222,13 +221,13 @@ LangString str_msg_rm_exe_fail   ${LANG_GERMAN} \
 #     weil es nicht leer ist!"
 
 LangString str_msg_wait_uninst   ${LANG_GERMAN} \
-    "Waiting the old version to be uninstalled..."
+    "Warte, dass alte Version deinstalliert wird..."
 
 LangString str_msg_registering   ${LANG_GERMAN} \
-    "Registering..."
+    "Registriere..."
 
 LangString str_msg_unregistering ${LANG_GERMAN} \
-    "Unregistering..."
+    "Entferne Registrierung..."
 
 
 ##############################################################################
@@ -236,39 +235,39 @@ LangString str_msg_unregistering ${LANG_GERMAN} \
 ##############################################################################
 
 LangString str_vimrc_page_title    ${LANG_GERMAN} \
-    "Choose _vimrc settings"
+    "Wähle _vimrc Konfigurationsoptionen"
 LangString str_vimrc_page_subtitle ${LANG_GERMAN} \
-    "Choose the settings for enhancement, keyboard and mouse."
+    "Wähle Einstellungen zur Kompatibilität, Tastatur und Maus."
 
 LangString str_msg_compat_title    ${LANG_GERMAN} \
-    " Vi / Vim behavior "
+    " Vi / Vim Verhalten "
 LangString str_msg_compat_desc     ${LANG_GERMAN} \
-    "&Compatibility and enhancements"
+    "&Kompatibilität und Erweiterungen"
 LangString str_msg_compat_vi       ${LANG_GERMAN} \
-    "Vi compatible"
+    "Vi-kompatibel"
 LangString str_msg_compat_vim      ${LANG_GERMAN} \
-    "Vim original"
+    "Vim Original"
 LangString str_msg_compat_defaults ${LANG_GERMAN} \
-    "Vim with some enhancements"
+    "Vim mit einigen Erweiterungen (Lädt defaults.vim)"
 LangString str_msg_compat_all      ${LANG_GERMAN} \
-    "Vim with all enhancements (Default)"
+    "Vim mit allen Erweiterungen (Lädt vimrc_example.vim) (Standard)"
 
 LangString str_msg_keymap_title   ${LANG_GERMAN} \
-    " Mappings "
+    " Mappings für Windows Standard Tastenkombinationen "
 LangString str_msg_keymap_desc    ${LANG_GERMAN} \
-    "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
+    "&Einige Tasten umkonfigurieren (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_GERMAN} \
-    "Do not remap keys (Default)"
+    "Keine Tasten umkonfigurieren (Standard)"
 LangString str_msg_keymap_windows ${LANG_GERMAN} \
-    "Remap a few keys"
+    "Einige Tasten umkonfigurieren"
 
 LangString str_msg_mouse_title   ${LANG_GERMAN} \
-    " Mouse "
+    " Maus "
 LangString str_msg_mouse_desc    ${LANG_GERMAN} \
-    "&Behavior of right and left buttons"
+    "&Verhalten der linken und rechten Buttons"
 LangString str_msg_mouse_default ${LANG_GERMAN} \
-    "Right: popup menu, Left: visual mode (Default)"
+    "Rechts: Popup Menü, Links: Visueller Modus (Standard)"
 LangString str_msg_mouse_windows ${LANG_GERMAN} \
-    "Right: popup menu, Left: select mode (Windows)"
+    "Rechts: Popup Menü, Links: Auswahl Modus (Windows)"
 LangString str_msg_mouse_unix    ${LANG_GERMAN} \
-    "Right: extends selection, Left: visual mode (Unix)"
+    "Rechts: Auswahl erweitern, Links: Visueller Modus (Unix)"
