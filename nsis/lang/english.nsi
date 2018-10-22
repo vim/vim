@@ -258,14 +258,14 @@ LangString str_msg_compat_vi       ${LANG_ENGLISH} \
 LangString str_msg_compat_vim      ${LANG_ENGLISH} \
     "Vim original"
 LangString str_msg_compat_defaults ${LANG_ENGLISH} \
-    "Vim with some enhancements"
+    "Vim with some enhancements (load defaults.vim)"
 LangString str_msg_compat_all      ${LANG_ENGLISH} \
-    "Vim with all enhancements (Default)"
+    "Vim with all enhancements (load vimrc_example.vim) (Default)"
 
 LangString str_msg_keymap_title   ${LANG_ENGLISH} \
     " Mappings "
 LangString str_msg_keymap_desc    ${LANG_ENGLISH} \
-    "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
+    "&Remap a few keys for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_ENGLISH} \
     "Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_ENGLISH} \

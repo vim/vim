@@ -725,12 +725,12 @@ Function SetCustom
 
 
 	# 1st group - Compatibility
-	${NSD_CreateGroupBox} 0 0 100% 24% $(str_msg_compat_title)
+	${NSD_CreateGroupBox} 0 0 100% 32% $(str_msg_compat_title)
 	Pop $3
 
 	${NSD_CreateLabel} 5% 10% 35% 8% $(str_msg_compat_desc)
 	Pop $3
-	${NSD_CreateDropList} 48% 10% 45% 8% ""
+	${NSD_CreateDropList} 18% 19% 75% 8% ""
 	Pop $vim_nsd_compat
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vi)
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vim)
@@ -756,12 +756,12 @@ Function SetCustom
 
 
 	# 2nd group - Key remapping
-	${NSD_CreateGroupBox} 0 27% 100% 33% $(str_msg_keymap_title)
+	${NSD_CreateGroupBox} 0 35% 100% 31% $(str_msg_keymap_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 37% 90% 8% $(str_msg_keymap_desc)
+	${NSD_CreateLabel} 5% 45% 90% 8% $(str_msg_keymap_desc)
 	Pop $3
-	${NSD_CreateDropList} 48% 47% 45% 8% ""
+	${NSD_CreateDropList} 38% 54% 55% 8% ""
 	Pop $vim_nsd_keymap
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_default)
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_windows)
@@ -781,12 +781,12 @@ Function SetCustom
 
 
 	# 3rd group - Mouse behavior
-	${NSD_CreateGroupBox} 0 63% 100% 36% $(str_msg_mouse_title)
+	${NSD_CreateGroupBox} 0 69% 100% 31% $(str_msg_mouse_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 73% 90% 8% $(str_msg_mouse_desc)
+	${NSD_CreateLabel} 5% 79% 90% 8% $(str_msg_mouse_desc)
 	Pop $3
-	${NSD_CreateDropList} 23% 82% 70% 8% ""
+	${NSD_CreateDropList} 23% 87% 70% 8% ""
 	Pop $vim_nsd_mouse
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_default)
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_windows)

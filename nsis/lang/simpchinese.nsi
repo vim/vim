@@ -245,14 +245,14 @@ LangString str_msg_compat_vi       ${LANG_SIMPCHINESE} \
 LangString str_msg_compat_vim      ${LANG_SIMPCHINESE} \
     "Vim original"
 LangString str_msg_compat_defaults ${LANG_SIMPCHINESE} \
-    "Vim with some enhancements"
+    "Vim with some enhancements (load defaults.vim)"
 LangString str_msg_compat_all      ${LANG_SIMPCHINESE} \
-    "Vim with all enhancements (Default)"
+    "Vim with all enhancements (load vimrc_example.vim) (Default)"
 
 LangString str_msg_keymap_title   ${LANG_SIMPCHINESE} \
     " Mappings "
 LangString str_msg_keymap_desc    ${LANG_SIMPCHINESE} \
-    "&Remap a few keys (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
+    "&Remap a few keys for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_SIMPCHINESE} \
     "Do not remap keys (Default)"
 LangString str_msg_keymap_windows ${LANG_SIMPCHINESE} \
