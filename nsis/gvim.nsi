@@ -97,6 +97,9 @@ RequestExecutionLevel highest
 
 # Show all languages, despite user's codepage:
 !define MUI_LANGDLL_ALLLANGUAGES
+!define MUI_LANGDLL_REGISTRY_ROOT       "HKCU"
+!define MUI_LANGDLL_REGISTRY_KEY        "Software\Vim"
+!define MUI_LANGDLL_REGISTRY_VALUENAME  "Installer Language"
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP       "icons\welcome.bmp"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP     "icons\uninstall.bmp"
@@ -312,6 +315,11 @@ SectionEnd
 
 ##########################################################
 Function .onInit
+!ifdef HAVE_MULTI_LANG
+  # Select a language (or read from the registry).
+  !insertmacro MUI_LANGDLL_DISPLAY
+!endif
+
   # Check $VIM
   ReadEnvStr $INSTDIR "VIM"
 
@@ -869,6 +877,15 @@ FunctionEnd
 
 
 ##########################################################
+# Uninstaller Functions and Sections
+
+Function un.onInit
+!ifdef HAVE_MULTI_LANG
+  # Get the language from the registry.
+  !insertmacro MUI_UNGETLANGUAGE
+!endif
+FunctionEnd
+
 Section "un.$(str_unsection_register)" id_unsection_register
 	SectionIn RO
 
@@ -890,6 +907,9 @@ Section "un.$(str_unsection_register)" id_unsection_register
 
 	# We may have been put to the background when uninstall did something.
 	BringToFront
+
+	# Delete the installer language setting.
+	DeleteRegKey ${MUI_LANGDLL_REGISTRY_ROOT} ${MUI_LANGDLL_REGISTRY_KEY}
 SectionEnd
 
 Section "un.$(str_unsection_exe)" id_unsection_exe
