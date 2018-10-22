@@ -132,7 +132,12 @@ endfunc
 
 func Get_cat_123_cmd()
   if has('win32')
-    return 'cmd /c "cls && color 2 && echo 123"'
+    if !has('conpty')
+      return 'cmd /c "cls && color 2 && echo 123"'
+    else
+      " When clearing twice, extra sequence is not output.
+      return 'cmd /c "cls && cls && color 2 && echo 123"'
+    endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
     return "cat Xtext"
@@ -192,19 +197,14 @@ func Test_terminal_scrape_123()
   call term_wait(buf)
   " On MS-Windows we first get a startup message of two lines, wait for the
   " "cls" to happen, after that we have one line with three characters.
-  " In ConPTY, the content rendered is different depending on the situation.
-  if !has('conpty')
-    call WaitForAssert({-> assert_equal(3, len(term_scrape(buf, 1)))})
-    call Check_123(buf)
-  endif
+  call WaitForAssert({-> assert_equal(3, len(term_scrape(buf, 1)))})
+  call Check_123(buf)
 
   " Must still work after the job ended.
   let job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call term_wait(buf)
-  if !has('conpty')
-    call Check_123(buf)
-  endif
+  call Check_123(buf)
 
   exe buf . 'bwipe'
   call delete('Xtext')
@@ -1018,9 +1018,12 @@ func Test_terminal_open_autocmd()
 endfunction
 
 func Check_dump01(off)
-  call assert_equal('one two three four five', trim(getline(a:off + 1)))
-  call assert_equal('~           Select Word', trim(getline(a:off + 7)))
-  call assert_equal(':popup PopUp', trim(getline(a:off + 20)))
+  " TODO: Specify a reason.
+  if !has('conpty')
+    call assert_equal('one two three four five', trim(getline(a:off + 1)))
+    call assert_equal('~           Select Word', trim(getline(a:off + 7)))
+    call assert_equal(':popup PopUp', trim(getline(a:off + 20)))
+  endif
 endfunc
 
 func Test_terminal_dumpwrite_composing()
@@ -1051,10 +1054,7 @@ func Test_terminal_dumpload()
   call term_dumpload('dumps/Test_popup_command_01.dump')
   call assert_equal(2, winnr('$'))
   call assert_equal(20, line('$'))
-  " TODO: Another method is required for ConPTY. Dedicated dump file?
-  if !has('conpty')
-    call Check_dump01(0)
-  endif
+  call Check_dump01(0)
   quit
 endfunc
 
@@ -1063,11 +1063,8 @@ func Test_terminal_dumpdiff()
   call term_dumpdiff('dumps/Test_popup_command_01.dump', 'dumps/Test_popup_command_02.dump')
   call assert_equal(2, winnr('$'))
   call assert_equal(62, line('$'))
-  " TODO: Another method is required for ConPTY. Dedicated dump file?
-  if !has('conpty')
-    call Check_dump01(0)
-    call Check_dump01(42)
-  endif
+  call Check_dump01(0)
+  call Check_dump01(42)
   call assert_equal('           bbbbbbbbbbbbbbbbbb ', getline(26)[0:29])
   quit
 endfunc
