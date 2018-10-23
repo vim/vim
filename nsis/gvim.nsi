@@ -616,6 +616,14 @@ Section -call_install_exe
 SectionEnd
 
 ##########################################################
+!macro SaveSectionSelection section_id reg_value
+	${If} ${SectionIsSelected} ${section_id}
+	  WriteRegDWORD HKLM "${UNINST_REG_KEY_VIM}" ${reg_value} 1
+	${Else}
+	  WriteRegDWORD HKLM "${UNINST_REG_KEY_VIM}" ${reg_value} 0
+	${EndIf}
+!macroend
+
 Section -post
 
 	# Get estimated install size
@@ -651,10 +659,44 @@ Section -post
 	  SetRegView lastused
 	${EndIf}
 
+	# Store the selections to the registry.
+	${If} ${RunningX64}
+	  SetRegView 64
+	${EndIf}
+	!insertmacro SaveSectionSelection ${id_section_console}    "select_console"
+	!insertmacro SaveSectionSelection ${id_section_batch}      "select_batch"
+	!insertmacro SaveSectionSelection ${id_section_desktop}    "select_desktop"
+	!insertmacro SaveSectionSelection ${id_section_startmenu}  "select_startmenu"
+	!insertmacro SaveSectionSelection ${id_section_editwith}   "select_editwith"
+	!insertmacro SaveSectionSelection ${id_section_vimrc}      "select_vimrc"
+	!insertmacro SaveSectionSelection ${id_section_pluginhome} "select_pluginhome"
+	!insertmacro SaveSectionSelection ${id_section_pluginvim}  "select_pluginvim"
+!ifdef HAVE_VIS_VIM
+	!insertmacro SaveSectionSelection ${id_section_visvim}     "select_visvim"
+!endif
+!ifdef HAVE_NLS
+	!insertmacro SaveSectionSelection ${id_section_nls}        "select_nls"
+!endif
+	${If} ${RunningX64}
+	  SetRegView lastused
+	${EndIf}
+
 	BringToFront
 SectionEnd
 
 ##########################################################
+!macro LoadSectionSelection section_id reg_value
+	ClearErrors
+	ReadRegDWORD $3 HKLM "${UNINST_REG_KEY_VIM}" ${reg_value}
+	${IfNot} ${Errors}
+	  ${If} $3 = 1
+	    !insertmacro SelectSection ${section_id}
+	  ${Else}
+	    !insertmacro UnselectSection ${section_id}
+	  ${EndIf}
+	${EndIf}
+!macroend
+
 Function .onInit
 !ifdef HAVE_MULTI_LANG
   # Select a language (or read from the registry).
@@ -684,6 +726,28 @@ Function .onInit
 !else
     StrCpy $INSTDIR "$PROGRAMFILES\Vim"
 !endif
+  ${EndIf}
+
+# Load the selections from the registry (if any).
+  ${If} ${RunningX64}
+    SetRegView 64
+  ${EndIf}
+  !insertmacro LoadSectionSelection ${id_section_console}    "select_console"
+  !insertmacro LoadSectionSelection ${id_section_batch}      "select_batch"
+  !insertmacro LoadSectionSelection ${id_section_desktop}    "select_desktop"
+  !insertmacro LoadSectionSelection ${id_section_startmenu}  "select_startmenu"
+  !insertmacro LoadSectionSelection ${id_section_editwith}   "select_editwith"
+  !insertmacro LoadSectionSelection ${id_section_vimrc}      "select_vimrc"
+  !insertmacro LoadSectionSelection ${id_section_pluginhome} "select_pluginhome"
+  !insertmacro LoadSectionSelection ${id_section_pluginvim}  "select_pluginvim"
+!ifdef HAVE_VIS_VIM
+  !insertmacro LoadSectionSelection ${id_section_visvim}     "select_visvim"
+!endif
+!ifdef HAVE_NLS
+  !insertmacro LoadSectionSelection ${id_section_nls}        "select_nls"
+!endif
+  ${If} ${RunningX64}
+    SetRegView lastused
   ${EndIf}
 
   # User variables:
