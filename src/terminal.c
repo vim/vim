@@ -4094,7 +4094,12 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     {
 	if (c == EOF)
 	    break;
-	if (c == '\n')
+	if (c == '\r')
+	{
+	    // DOS line endings?  Ignore.
+	    c = fgetc(fd);
+	}
+	else if (c == '\n')
 	{
 	    /* End of a line: append it to the buffer. */
 	    if (ga_text.ga_data == NULL)
