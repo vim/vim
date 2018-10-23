@@ -4094,6 +4094,14 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     {
 	if (c == EOF)
 	    break;
+#ifdef WIN3264
+	else if (c == '\r')
+	{
+	    c = fgetc(fd);
+	    continue;
+	}
+	else
+#endif
 	if (c == '\n')
 	{
 	    /* End of a line: append it to the buffer. */
