@@ -1018,12 +1018,9 @@ func Test_terminal_open_autocmd()
 endfunction
 
 func Check_dump01(off)
-  " TODO: Specify a reason.
-  if !has('conpty')
-    call assert_equal('one two three four five', trim(getline(a:off + 1)))
-    call assert_equal('~           Select Word', trim(getline(a:off + 7)))
-    call assert_equal(':popup PopUp', trim(getline(a:off + 20)))
-  endif
+  call assert_equal('one two three four five', trim(getline(a:off + 1)))
+  call assert_equal('~           Select Word', trim(getline(a:off + 7)))
+  call assert_equal(':popup PopUp', trim(getline(a:off + 20)))
 endfunc
 
 func Test_terminal_dumpwrite_composing()
