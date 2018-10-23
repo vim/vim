@@ -314,57 +314,6 @@ Section "$(str_section_old_ver)" id_section_old_ver
 SectionEnd
 
 ##########################################################
-Function .onInit
-!ifdef HAVE_MULTI_LANG
-  # Select a language (or read from the registry).
-  !insertmacro MUI_LANGDLL_DISPLAY
-!endif
-
-  # Check $VIM
-  ReadEnvStr $INSTDIR "VIM"
-
-  call CheckOldVim
-  Pop $3
-  ${If} $3 == ""
-    # No old versions of Vim found. Unselect and hide the section.
-    !insertmacro UnselectSection ${id_section_old_ver}
-    SectionSetInstTypes ${id_section_old_ver} 0
-    SectionSetText ${id_section_old_ver} ""
-  ${Else}
-    ${If} $INSTDIR == ""
-      StrCpy $INSTDIR $3
-    ${EndIf}
-  ${EndIf}
-
-  # If did not find a path: use the default dir.
-  ${If} $INSTDIR == ""
-!ifdef WIN64
-    StrCpy $INSTDIR "$PROGRAMFILES64\Vim"
-!else
-    StrCpy $INSTDIR "$PROGRAMFILES\Vim"
-!endif
-  ${EndIf}
-
-  # User variables:
-  # $0 - holds the directory the executables are installed to
-  # $1 - holds the parameters to be passed to install.exe.  Starts with OLE
-  #      registration (since a non-OLE gvim will not complain, and we want to
-  #      always register an OLE gvim).
-  # $2 - holds the names to create batch files for
-  StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
-  StrCpy $1 "-register-OLE"
-  StrCpy $2 "gvim evim gview gvimdiff vimtutor"
-FunctionEnd
-
-Function .onInstSuccess
-  WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
-FunctionEnd
-
-Function .onInstFailed
-  MessageBox MB_OK|MB_ICONEXCLAMATION "$(str_msg_install_fail)"
-FunctionEnd
-
-##########################################################
 Section "$(str_section_exe)" id_section_exe
 	SectionIn 1 2 3 RO
 
@@ -704,6 +653,57 @@ Section -post
 
 	BringToFront
 SectionEnd
+
+##########################################################
+Function .onInit
+!ifdef HAVE_MULTI_LANG
+  # Select a language (or read from the registry).
+  !insertmacro MUI_LANGDLL_DISPLAY
+!endif
+
+  # Check $VIM
+  ReadEnvStr $INSTDIR "VIM"
+
+  call CheckOldVim
+  Pop $3
+  ${If} $3 == ""
+    # No old versions of Vim found. Unselect and hide the section.
+    !insertmacro UnselectSection ${id_section_old_ver}
+    SectionSetInstTypes ${id_section_old_ver} 0
+    SectionSetText ${id_section_old_ver} ""
+  ${Else}
+    ${If} $INSTDIR == ""
+      StrCpy $INSTDIR $3
+    ${EndIf}
+  ${EndIf}
+
+  # If did not find a path: use the default dir.
+  ${If} $INSTDIR == ""
+!ifdef WIN64
+    StrCpy $INSTDIR "$PROGRAMFILES64\Vim"
+!else
+    StrCpy $INSTDIR "$PROGRAMFILES\Vim"
+!endif
+  ${EndIf}
+
+  # User variables:
+  # $0 - holds the directory the executables are installed to
+  # $1 - holds the parameters to be passed to install.exe.  Starts with OLE
+  #      registration (since a non-OLE gvim will not complain, and we want to
+  #      always register an OLE gvim).
+  # $2 - holds the names to create batch files for
+  StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
+  StrCpy $1 "-register-OLE"
+  StrCpy $2 "gvim evim gview gvimdiff vimtutor"
+FunctionEnd
+
+Function .onInstSuccess
+  WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
+FunctionEnd
+
+Function .onInstFailed
+  MessageBox MB_OK|MB_ICONEXCLAMATION "$(str_msg_install_fail)"
+FunctionEnd
 
 ##########################################################
 Function SetCustom
