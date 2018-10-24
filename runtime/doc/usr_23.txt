@@ -210,9 +210,11 @@ LIMITS ON ENCRYPTION
 
 The encryption algorithm used by Vim is weak.  It is good enough to keep out
 the casual prowler, but not good enough to keep out a cryptology expert with
-lots of time on his hands.  Also you should be aware that the swap file is not
-encrypted; so while you are editing, people with superuser privileges can read
-the unencrypted text from this file.
+lots of time on his hands.  The text in the swap file and the undo file
+is also encrypted.  However, this is done block-by-block and may reduce the
+time needed to crack a password.  You can disable the swap file, but then a
+crash will cause you to lose your work.  The undo file can be disabled without
+much disadvantage.
    One way to avoid letting people read your swap file is to avoid using one.
 If the -n argument is supplied on the command line, no swap file is used
 (instead, Vim puts everything in memory).  For example, to edit the encrypted
