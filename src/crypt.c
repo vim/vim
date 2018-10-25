@@ -501,6 +501,16 @@ crypt_check_method(int method)
 	msg_scroll = TRUE;
 	MSG(_("Warning: Using a weak encryption method; see :help 'cm'"));
     }
+#ifdef HAVE_FIPS_WARNING
+    FILE *fips_enable_fd = fopen(FIPS_ENABLED_FILE_LINK, "r");
+    int enabled = fgetc(fips_enable_fd);
+
+    if ( access(SYSTEM_FIPS_FILE_LINK, F_OK) != -1 && enabled == '1')
+    {
+	msg_scroll = TRUE;
+	MSG(_("Warning: This cryptography is not FIPS 140-2 compliant."));
+    }
+#endif
 }
 
     void

@@ -482,3 +482,12 @@
 
 /* Define to inline symbol or empty */
 #undef inline
+
+/* Do we need FIPS warning? */
+#undef HAVE_FIPS_WARNING
+
+/* Link to system-fips file */
+#undef SYSTEM_FIPS_FILE_LINK
+
+/* Link to fips_enabled file */
+#undef FIPS_ENABLED_FILE_LINK
