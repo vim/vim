@@ -298,9 +298,9 @@ diff_mark_adjust_tp(
 	// Will update diffs before redrawing.  Set _invalid to update the
 	// diffs themselves, set _update to also update folds properly just
 	// before redrawing.
+	// Do update marks here, it is needed for :%diffput.
 	tp->tp_diff_invalid = TRUE;
 	tp->tp_diff_update = TRUE;
-	return;
     }
 
     if (line2 == MAXLNUM)
@@ -2850,7 +2850,7 @@ theend:
     if (diff_need_update)
 	ex_diffupdate(NULL);
 
-    // Check that the cursor is on a valid character and update it's
+    // Check that the cursor is on a valid character and update its
     // position.  When there were filler lines the topline has become
     // invalid.
     check_cursor();
