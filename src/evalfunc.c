@@ -5291,7 +5291,7 @@ f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #ifdef FEAT_QUICKFIX
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr_or_id(&argvars[0]);
     get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
 #endif
 }
@@ -5796,7 +5796,7 @@ f_win_screenpos(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr_or_id(&argvars[0]);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_winrow + 1);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_wincol + 1);
 }
@@ -8028,7 +8028,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 
     if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
     {
-	*win = find_win_by_nr(&di->di_tv, NULL);
+	*win = find_win_by_nr_or_id(&di->di_tv);
 	if (*win == NULL)
 	{
 	    EMSG(_("E957: Invalid window number"));
@@ -10785,7 +10785,7 @@ f_setloclist(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    win = find_win_by_nr(&argvars[0], NULL);
+    win = find_win_by_nr_or_id(&argvars[0]);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], &argvars[3], rettv);
 }
@@ -13843,7 +13843,7 @@ f_winbufnr(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -13868,7 +13868,7 @@ f_winheight(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -14035,7 +14035,7 @@ f_winwidth(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0], NULL);
+    wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
