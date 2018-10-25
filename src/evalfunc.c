@@ -501,10 +501,10 @@ static struct fst
     {"and",		2, 2, f_and},
     {"append",		2, 2, f_append},
     {"appendbufline",	3, 3, f_appendbufline},
-    {"argc",		0, 0, f_argc},
+    {"argc",		0, 1, f_argc},
     {"argidx",		0, 0, f_argidx},
     {"arglistid",	0, 2, f_arglistid},
-    {"argv",		0, 1, f_argv},
+    {"argv",		0, 2, f_argv},
 #ifdef FEAT_FLOAT
     {"asin",		1, 1, f_asin},	/* WJMc */
 #endif
@@ -1407,12 +1407,29 @@ f_appendbufline(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "argc()" function
+ * "argc([window id])" function
  */
     static void
-f_argc(typval_T *argvars UNUSED, typval_T *rettv)
+f_argc(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = ARGCOUNT;
+    win_T	*wp;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	// use the current window
+	rettv->vval.v_number = ARGCOUNT;
+    else if (argvars[0].v_type == VAR_NUMBER
+					   && get_tv_number(&argvars[0]) == -1)
+	// use the global argument list
+	rettv->vval.v_number = GARGCOUNT;
+    else
+    {
+	// use the argument list of the specified window
+	wp = find_win_by_nr_or_id(&argvars[0]);
+	if (wp != NULL)
+	    rettv->vval.v_number = WARGCOUNT(wp);
+	else
+	    rettv->vval.v_number = -1;
+    }
 }
 
 /*
@@ -1439,26 +1456,64 @@ f_arglistid(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Get the argument list for a given window
+ */
+    static void
+get_arglist_as_rettv(aentry_T *arglist, int argcount, typval_T *rettv)
+{
+    int		idx;
+
+    if (rettv_list_alloc(rettv) == OK && arglist != NULL)
+	for (idx = 0; idx < argcount; ++idx)
+	    list_append_string(rettv->vval.v_list,
+						alist_name(&arglist[idx]), -1);
+}
+
+/*
  * "argv(nr)" function
  */
     static void
 f_argv(typval_T *argvars, typval_T *rettv)
 {
     int		idx;
+    aentry_T	*arglist = NULL;
+    int		argcount = -1;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	idx = (int)get_tv_number_chk(&argvars[0], NULL);
-	if (idx >= 0 && idx < ARGCOUNT)
-	    rettv->vval.v_string = vim_strsave(alist_name(&ARGLIST[idx]));
+	if (argvars[1].v_type == VAR_UNKNOWN)
+	{
+	    arglist = ARGLIST;
+	    argcount = ARGCOUNT;
+	}
+	else if (argvars[1].v_type == VAR_NUMBER
+					   && get_tv_number(&argvars[1]) == -1)
+	{
+	    arglist = GARGLIST;
+	    argcount = GARGCOUNT;
+	}
 	else
-	    rettv->vval.v_string = NULL;
+	{
+	    win_T	*wp = find_win_by_nr_or_id(&argvars[1]);
+
+	    if (wp != NULL)
+	    {
+		/* Use the argument list of the specified window */
+		arglist = WARGLIST(wp);
+		argcount = WARGCOUNT(wp);
+	    }
+	}
+
 	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+	idx = get_tv_number_chk(&argvars[0], NULL);
+	if (arglist != NULL && idx >= 0 && idx < argcount)
+	    rettv->vval.v_string = vim_strsave(alist_name(&arglist[idx]));
+	else if (idx == -1)
+	    get_arglist_as_rettv(arglist, argcount, rettv);
     }
-    else if (rettv_list_alloc(rettv) == OK)
-	for (idx = 0; idx < ARGCOUNT; ++idx)
-	    list_append_string(rettv->vval.v_list,
-					       alist_name(&ARGLIST[idx]), -1);
+    else
+	get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
 }
 
 /*
@@ -5358,7 +5413,6 @@ getpos_both(
 	rettv->vval.v_number = FALSE;
 }
 
-
 /*
  * "getcurpos()" function
  */
@@ -6981,7 +7035,6 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = selected;
 }
-
 
 static garray_T	    ga_userinput = {0, 0, sizeof(tasave_T), 4, NULL};
 
@@ -12397,7 +12450,6 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 	    modec = 't';
     }
 
-
     switch (TOLOWER_ASC(what[0]))
     {
 	case 'b':
@@ -12808,7 +12860,6 @@ f_tabpagebuflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
 }
 
-
 /*
  * "tabpagenr()" function
  */
@@ -12899,7 +12950,6 @@ f_tabpagewinnr(typval_T *argvars UNUSED, typval_T *rettv)
 	nr = get_winnr(tp, &argvars[1]);
     rettv->vval.v_number = nr;
 }
-
 
 /*
  * "tagfiles()" function
@@ -14091,6 +14141,5 @@ f_xor(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = get_tv_number_chk(&argvars[0], NULL)
 					^ get_tv_number_chk(&argvars[1], NULL);
 }
-
 
 #endif /* FEAT_EVAL */
