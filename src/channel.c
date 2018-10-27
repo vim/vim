@@ -5337,13 +5337,11 @@ job_cleanup(job_T *job)
 	 * not use "job" after this! */
 	job_free(job);
     }
-#if defined(FEAT_TERMINAL) && defined(WIN32)
-    else if (use_conpty() && !job->jv_channel->ch_to_be_freed)
+    else if (!job->jv_channel->ch_killing)
     {
 	channel_free(job->jv_channel);
 	job->jv_channel = NULL;
     }
-#endif
 }
 
 /*

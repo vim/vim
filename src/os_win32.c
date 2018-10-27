@@ -5726,8 +5726,11 @@ mch_signal_job(job_T *job, char_u *how)
     {
 	/* deadly signal */
 #ifdef FEAT_TERMINAL
-	if (use_conpty())
+	if (use_conpty() && job->jv_job_object != NULL)
+	{
+	    job->jv_channel->ch_killing = TRUE;
 	    job->jv_channel->ch_to_be_freed = TRUE;
+	}
 #endif
 	if (job->jv_job_object != NULL)
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
