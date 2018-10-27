@@ -5341,7 +5341,8 @@ job_cleanup(job_T *job)
     {
 	/* Explicitly delete anonymous pipe handle. */
 	++safe_to_invoke_callback;
-	channel_close(job->jv_channel, TRUE);
+	channel_free_contents(job->jv_channel);
+	job->jv_channel->ch_job = NULL;
 	job->jv_channel = NULL;
 	--safe_to_invoke_callback;
     }
