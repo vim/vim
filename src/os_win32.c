@@ -5727,7 +5727,8 @@ mch_signal_job(job_T *job, char_u *how)
 	/* deadly signal */
 	if (job->jv_job_object != NULL)
 	{
-	    job->jv_channel->ch_not_killing = FALSE;
+	    if (job->jv_channel->ch_anonymous_pipe)
+		job->jv_channel->ch_killing = TRUE;
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
 	}
 	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
