@@ -1679,7 +1679,9 @@ struct channel_S {
 				 * reference, the job refers to the channel. */
     int		ch_job_killed;	/* TRUE when there was a job and it was killed
 				 * or we know it died. */
-    int		ch_killing;	/* suppress double kill with <C-c> */
+    int		ch_not_killing;	/* In case of ConPTY the initial state is
+				 * TRUE, which is used to explicitly delete the
+				 * anonymous pipe handle. */
 
     int		ch_refcount;	/* reference count */
     int		ch_copyID;

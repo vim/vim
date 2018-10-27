@@ -4264,7 +4264,7 @@ channel_parse_messages(void)
 	    channel = first_channel;
 	    continue;
 	}
-	if (channel->ch_to_be_freed)
+	if (channel->ch_to_be_freed || !channel->ch_not_killing)
 	{
 	    channel_free(channel);
 	    /* channel has been freed, start over */
@@ -5337,11 +5337,9 @@ job_cleanup(job_T *job)
 	 * not use "job" after this! */
 	job_free(job);
     }
-    else if (!job->jv_channel->ch_killing)
-    {
+    else if (job->jv_channel->ch_not_killing)
+	/* Explicitly delete anonymous pipe handle. */
 	channel_close(job->jv_channel, TRUE);
-	job->jv_channel = NULL;
-    }
 }
 
 /*

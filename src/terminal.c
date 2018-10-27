@@ -5619,6 +5619,9 @@ conpty_term_and_job_init(
     /* Write lines with CR instead of NL. */
     channel->ch_write_text_mode = TRUE;
 
+    /* Use to explicitly delete anonymous pipe handle. */
+    channel->ch_not_killing = TRUE;
+
     jo = CreateJobObject(NULL, NULL);
     if (jo == NULL)
 	goto failed;

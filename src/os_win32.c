@@ -5725,15 +5725,11 @@ mch_signal_job(job_T *job, char_u *how)
     if (STRCMP(how, "term") == 0 || STRCMP(how, "kill") == 0 || *how == NUL)
     {
 	/* deadly signal */
-#ifdef FEAT_TERMINAL
-	if (use_conpty() && job->jv_job_object != NULL)
-	{
-	    job->jv_channel->ch_killing = TRUE;
-	    job->jv_channel->ch_to_be_freed = TRUE;
-	}
-#endif
 	if (job->jv_job_object != NULL)
+	{
+	    job->jv_channel->ch_not_killing = FALSE;
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	}
 	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
     }
 
