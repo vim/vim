@@ -5338,8 +5338,13 @@ job_cleanup(job_T *job)
 	job_free(job);
     }
     else if (job->jv_channel->ch_not_killing)
+    {
 	/* Explicitly delete anonymous pipe handle. */
+	++safe_to_invoke_callback;
 	channel_close(job->jv_channel, TRUE);
+	job->jv_channel = NULL;
+	--safe_to_invoke_callback;
+    }
 }
 
 /*
