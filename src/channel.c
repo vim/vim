@@ -5339,7 +5339,7 @@ job_cleanup(job_T *job)
     }
     else if (!job->jv_channel->ch_killing)
     {
-	channel_free(job->jv_channel);
+	channel_close(job->jv_channel, TRUE);
 	job->jv_channel = NULL;
     }
 }
