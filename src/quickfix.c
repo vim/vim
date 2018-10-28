@@ -5217,7 +5217,7 @@ vgr_match_buflines(
 	char_u	    *fname,
 	buf_T	    *buf,
 	regmmatch_T *regmatch,
-	long	    tomatch,
+	long	    *tomatch,
 	int	    duplicate_name,
 	int	    flags)
 {
@@ -5225,7 +5225,7 @@ vgr_match_buflines(
     long	lnum;
     colnr_T	col;
 
-    for (lnum = 1; lnum <= buf->b_ml.ml_line_count && tomatch > 0; ++lnum)
+    for (lnum = 1; lnum <= buf->b_ml.ml_line_count && *tomatch > 0; ++lnum)
     {
 	col = 0;
 	while (vim_regexec_multi(regmatch, curwin, buf, lnum,
@@ -5255,7 +5255,7 @@ vgr_match_buflines(
 		break;
 	    }
 	    found_match = TRUE;
-	    if (--tomatch == 0)
+	    if (--*tomatch == 0)
 		break;
 	    if ((flags & VGR_GLOBAL) == 0
 		    || regmatch->endpos[0].lnum > 0)
@@ -5464,7 +5464,7 @@ ex_vimgrep(exarg_T *eap)
 	    // Try for a match in all lines of the buffer.
 	    // For ":1vimgrep" look for first match only.
 	    found_match = vgr_match_buflines(qi, fname, buf, &regmatch,
-		    tomatch, duplicate_name, flags);
+		    &tomatch, duplicate_name, flags);
 
 	    if (using_dummy)
 	    {

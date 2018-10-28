@@ -2364,6 +2364,21 @@ func Test_vimgrep()
   call XvimgrepTests('l')
 endfunc
 
+" Test for incsearch highlighting of the :vimgrep pattern
+" This test used to cause "E315: ml_get: invalid lnum" errors.
+func Test_vimgrep_incsearch()
+  enew
+  set incsearch
+  call test_override("char_avail", 1)
+
+  call feedkeys(":2vimgrep assert test_quickfix.vim test_cdo.vim\<CR>", "ntx")
+  let l = getqflist()
+  call assert_equal(2, len(l))
+
+  call test_override("ALL", 0)
+  set noincsearch
+endfunc
+
 func XfreeTests(cchar)
   call s:setup_commands(a:cchar)
 
