@@ -6859,6 +6859,10 @@ static char *(highlight_init_both[]) = {
     "default link EndOfBuffer NonText",
     CENT("VertSplit term=reverse cterm=reverse",
 	 "VertSplit term=reverse cterm=reverse gui=reverse"),
+    CENT("Digraph1 term=standout cterm=Red",
+	 "Digraph1 term=standout ctermfg=Red guifg=Red"),
+    CENT("Digraph2 term=standout ctermfg=Yellow",
+	 "Digraph2 term=standout ctermfg=Yellow guifg=Yellow" ),
 #ifdef FEAT_CLIPBOARD
     CENT("VisualNOS term=underline,bold cterm=underline,bold",
 	 "VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold"),

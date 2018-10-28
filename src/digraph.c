@@ -2314,6 +2314,9 @@ printdigraph(digr_T *dp)
 	*p++ = dp->char1;
 	*p++ = dp->char2;
 	*p++ = ' ';
+	*p = NUL;
+	msg_outtrans(buf);
+	p = buf;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
@@ -2325,6 +2328,36 @@ printdigraph(digr_T *dp)
 	else
 #endif
 	    *p++ = (char_u)dp->result;
+	*p = NUL;
+	if (dp->result < 161)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 915)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 1032)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 1130)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 1775)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 7842)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 8203)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 8356)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 8544)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 8592)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 8942)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else if (dp->result < 9644)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	else if (dp->result < 12353)
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG1));
+	else
+	    msg_outtrans_attr(buf,  HL_ATTR(HLF_DG2));
+	p = buf;
 	if (char2cells(dp->result) == 1)
 	    *p++ = ' ';
 	vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
