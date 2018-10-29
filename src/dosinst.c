@@ -2097,6 +2097,91 @@ set_directories_text(int idx)
 }
 
 /*
+ * To get the "real" home directory:
+ * - get value of $HOME
+ * - if not found, get value of $HOMEDRIVE$HOMEPATH
+ * - if not found, get value of $USERPROFILE
+ *
+ * This code is based on init_homedir() in misc1.c.  Keep sync with it.
+ */
+static char *homedir = NULL;
+
+    void
+init_homedir(void)
+{
+    char    *var;
+    char    buf[MAX_PATH];
+
+    if (homedir != NULL)
+    {
+	free(homedir);
+	homedir = NULL;
+    }
+
+    var = getenv("HOME");
+
+    /*
+     * Typically, $HOME is not defined on Windows, unless the user has
+     * specifically defined it for Vim's sake.  However, on Windows NT
+     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
+     * each user.  Try constructing $HOME from these.
+     */
+    if (var == NULL || *var == NUL)
+    {
+	char	*homedrive, *homepath;
+
+	homedrive = getenv("HOMEDRIVE");
+	homepath = getenv("HOMEPATH");
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = "\\";
+	if (homedrive != NULL
+			   && strlen(homedrive) + strlen(homepath) < MAX_PATH)
+	{
+	    sprintf(buf, "%s%s", homedrive, homepath);
+	    if (buf[0] != NUL)
+		var = buf;
+	}
+    }
+
+    if (var == NULL)
+	var = getenv("USERPROFILE");
+
+    /*
+     * Weird but true: $HOME may contain an indirect reference to another
+     * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
+     * when $HOME is being set.
+     */
+    if (var != NULL && *var == '%')
+    {
+	char	*p;
+	char	*exp;
+
+	p = strchr(var + 1, '%');
+	if (p != NULL)
+	{
+	    strncpy(buf, var + 1, p - (var + 1));
+	    buf[p - (var + 1)] = NUL;
+	    exp = getenv(buf);
+	    if (exp != NULL && *exp != NUL
+					&& strlen(exp) + strlen(p) < MAX_PATH)
+	    {
+		_snprintf(buf, MAX_PATH, "%s%s", exp, p + 1);
+		buf[MAX_PATH - 1] = NUL;
+		var = buf;
+	    }
+	}
+    }
+
+    if (var != NULL && *var == NUL)	/* empty is same as not set */
+	var = NULL;
+
+    if (var == NULL)
+	homedir = NULL;
+    else
+	homedir = _strdup(var);
+}
+
+/*
  * Change the directory that the vim plugin directories will be created in:
  * $HOME, $VIM or nowhere.
  */
@@ -2105,8 +2190,8 @@ change_directories_choice(int idx)
 {
     int	    choice_count = TABLE_SIZE(vimfiles_dir_choices);
 
-    /* Don't offer the $HOME choice if $HOME and $USERPROFILE aren't set. */
-    if (getenv("HOME") == NULL && getenv("USERPROFILE") == NULL)
+    /* Don't offer the $HOME choice if $HOME isn't set. */
+    if (homedir == NULL)
 	--choice_count;
     vimfiles_dir_choice = get_choice(vimfiles_dir_choices, choice_count);
     set_directories_text(idx);
@@ -2145,15 +2230,11 @@ install_vimfilesdir(int idx)
 	case vimfiles_dir_home:
 	{
 	    /* Find the $HOME directory.  Its existence was already checked. */
-	    p = getenv("HOME");
+	    p = homedir;
 	    if (p == NULL)
 	    {
-		p = getenv("USERPROFILE");
-		if (p == NULL)
-		{
-		    printf("Internal error: $HOME or $USERPROFILE is NULL\n");
-		    p = "c:\\";
-		}
+		printf("Internal error: $HOME is NULL\n");
+		p = "c:\\";
 	    }
 	    strcpy(vimdir_path, p);
 	    break;
@@ -2381,8 +2462,7 @@ command_line_setup_choices(int argc, char **argv)
 		    vimfiles_dir_choice = (int)vimfiles_dir_vim;
 		else if (strcmp(argv[i], "home") == 0)
 		{
-		    if (getenv("HOME") == NULL && getenv("USERPROFILE"))
-			/* No $HOME or $USERPROFILE in environment */
+		    if (homedir == NULL) /* No $HOME in environment */
 			vimfiles_dir_choice = (int)vimfiles_dir_none;
 		    else
 			vimfiles_dir_choice = (int)vimfiles_dir_home;
@@ -2594,6 +2674,7 @@ main(int argc, char **argv)
 
     /* Initialize this program. */
     do_inits(argv);
+    init_homedir();
 
     if (argc > 1 && strcmp(argv[1], "-uninstall-check") == 0)
     {
