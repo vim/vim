@@ -741,7 +741,8 @@ add_dummy_choice(void)
     choices[choice_count].installfunc = NULL;
     choices[choice_count].active = 0;
     choices[choice_count].changefunc = NULL;
-    choices[choice_count].installfunc = NULL;
+    choices[choice_count].text = NULL;
+    choices[choice_count].arg = 0;
     ++choice_count;
 }
 
