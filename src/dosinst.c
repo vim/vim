@@ -122,7 +122,6 @@ static char    *(vimfiles_dir_choices[]) =
     "In the VIM directory",
     "In your HOME directory",
 };
-static int     vimfiles_dir_choice;
 
 /* non-zero when selected to install the popup menu entry. */
 static int	install_popup = 0;
@@ -2090,6 +2089,8 @@ dir_remove_last(const char *path, char to[BUFSIZE])
     static void
 set_directories_text(int idx)
 {
+    int vimfiles_dir_choice = choices[idx].arg;
+
     if (vimfiles_dir_choice == (int)vimfiles_dir_none)
 	alloc_text(idx, "Do NOT create plugin directories%s", "");
     else
@@ -2194,7 +2195,7 @@ change_directories_choice(int idx)
     /* Don't offer the $HOME choice if $HOME isn't set. */
     if (homedir == NULL)
 	--choice_count;
-    vimfiles_dir_choice = get_choice(vimfiles_dir_choices, choice_count);
+    choices[idx].arg = get_choice(vimfiles_dir_choices, choice_count);
     set_directories_text(idx);
 }
 
@@ -2206,6 +2207,7 @@ change_directories_choice(int idx)
 install_vimfilesdir(int idx)
 {
     int i;
+    int vimfiles_dir_choice = choices[idx].arg;
     char *p;
     char vimdir_path[BUFSIZE];
     char vimfiles_path[BUFSIZE];
@@ -2271,6 +2273,7 @@ init_directories_choice(void)
     struct stat	st;
     char	tmp_dirname[BUFSIZE];
     char	*p;
+    int		vimfiles_dir_choice;
 
     choices[choice_count].text = alloc(150);
     choices[choice_count].changefunc = change_directories_choice;
@@ -2299,6 +2302,7 @@ init_directories_choice(void)
 	    vimfiles_dir_choice = (int)vimfiles_dir_none;
     }
 
+    choices[choice_count].arg = vimfiles_dir_choice;
     set_directories_text(choice_count);
     ++choice_count;
 }
@@ -2455,6 +2459,8 @@ command_line_setup_choices(int argc, char **argv)
 	}
 	else if (strcmp(argv[i], "-create-directories") == 0)
 	{
+	    int vimfiles_dir_choice;
+
 	    init_directories_choice();
 	    if (argv[i + 1][0] != '-')
 	    {
@@ -2477,6 +2483,7 @@ command_line_setup_choices(int argc, char **argv)
 	    }
 	    else /* No choice specified, default to vim directory */
 		vimfiles_dir_choice = (int)vimfiles_dir_vim;
+	    choices[choice_count - 1].arg = vimfiles_dir_choice;
 	}
 	else if (strcmp(argv[i], "-register-OLE") == 0)
 	{
