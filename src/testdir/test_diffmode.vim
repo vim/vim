@@ -885,3 +885,23 @@ func Test_diff_with_cursorline()
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_cursorline')
 endfunc
+
+func Test_diff_of_diff()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',
+	\ 'vnew',
+	\ 'call setline(1, ["aa","bb","cc"])',
+	\ 'windo diffthis',
+	\ ], 'Xtest_diff_diff')
+  let buf = RunVimInTerminal('-S Xtest_diff_diff', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_of_diff_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_diff')
+endfunc
