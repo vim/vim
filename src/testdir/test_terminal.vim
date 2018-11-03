@@ -490,14 +490,17 @@ func Test_terminal_cwd_failure()
   call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
 
   " Case 3: Directory exists but is not accessible.
-  call mkdir('Xdir', '', '0600')
-  " return early if the directory permissions could not be set properly
-  if getfperm('Xdir')[2] == 'x'
-    call delete('Xdir', 'rf')
-    return
+  " Skip this for root, it will be accessible anyway.
+  if $USER != 'root'
+    call mkdir('XdirNoAccess', '', '0600')
+    " return early if the directory permissions could not be set properly
+    if getfperm('XdirNoAccess')[2] == 'x'
+      call delete('XdirNoAccess', 'rf')
+      return
+    endif
+    call assert_fails("call term_start(&shell, {'cwd': 'XdirNoAccess'})", 'E475:')
+    call delete('XdirNoAccess', 'rf')
   endif
-  call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
-  call delete('Xdir', 'rf')
 endfunc
 
 func Test_terminal_servername()
