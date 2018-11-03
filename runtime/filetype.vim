@@ -1129,7 +1129,7 @@ au BufNewFile,BufRead *.dpr			setf pascal
 " PDF
 au BufNewFile,BufRead *.pdf			setf pdf
 
-" PCMK - HAE - crm configure edit 
+" PCMK - HAE - crm configure edit
 au BufNewFile,BufRead *.pcmk 			setf pcmk
 
 " Perl
@@ -1893,8 +1893,11 @@ au BufNewFile,BufRead *.yy,*.yxx,*.y++		setf yacc
 " Yacc or racc
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
-" Yaml or Raml
-au BufNewFile,BufRead *.yaml,*.yml,*.raml	setf yaml
+" Yaml
+au BufNewFile,BufRead *.yaml,*.yml	setf yaml
+
+" Raml
+au BufNewFile,BufRead *.raml	setf raml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
@@ -2107,7 +2110,7 @@ au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 au BufNewFile,BufRead *.text,README		setf text
 
 " Help files match *.txt but should have a last line that is a modeline.
-au BufNewFile,BufRead *.txt	
+au BufNewFile,BufRead *.txt
 	\  if getline('$') !~ 'vim:.*ft=help'
 	\|   setf text
 	\| endif
