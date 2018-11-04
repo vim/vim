@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-01 14:20+0200\n"
-"PO-Revision-Date: 2018-09-01 17:15+0200\n"
+"POT-Creation-Date: 2018-10-30 09:47+0100\n"
+"PO-Revision-Date: 2018-10-30 10:09+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -342,12 +342,19 @@ msgstr "E737: La clé existe déjà : %s"
 msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: Impossible d'utiliser diff sur plus de %ld tampons"
 
+#, c-format
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr "Pas assez de mémoire pour utiliser l'outil diff interne pour le tampon \"%s\""
+
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Impossible de lire ou écrire des fichiers temporaires"
 
 # AB - La version française est meilleure que la version anglaise.
 msgid "E97: Cannot create diffs"
 msgstr "E97: diff ne fonctionne pas"
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: Problème lors de la création de l'outil diff interne"
 
 msgid "Patch file"
 msgstr "Fichier rustine"
@@ -357,6 +364,9 @@ msgstr "E816: Le fichier intermédiaire produit par patch n'a pu être lu"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Le fichier intermédiaire produit par diff n'a pu être lu"
+
+msgid "E959: Invalid diff format."
+msgstr "E959: Format diff invalide."
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Le tampon courant n'est pas en mode diff"
@@ -734,6 +744,9 @@ msgid ""
 msgstr ""
 "\n"
 "\tModifié la dernière fois dans "
+
+msgid " line "
+msgstr " ligne "
 
 msgid "E691: Can only compare List with List"
 msgstr "E691: Une Liste ne peut être comparée qu'avec une Liste"
@@ -1692,6 +1705,9 @@ msgstr "E498: Aucun nom de fichier :source à substituer à \"<sfile>\""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: aucun numéro de ligne à utiliser pour \"<slnum>\""
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: aucun numéro de ligne à utiliser pour \"<sflnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -3884,8 +3900,8 @@ msgstr ""
 "\n"
 "      processus n° : "
 
-msgid " (still running)"
-msgstr " (en cours d'exécution)"
+msgid " (STILL RUNNING)"
+msgstr " (EN COURS D'EXÉCUTION)"
 
 msgid ""
 "\n"
@@ -3979,6 +3995,9 @@ msgstr ""
 
 msgid "While opening file \""
 msgstr "Lors de l'ouverture du fichier \""
+
+msgid "      CANNOT BE FOUND"
+msgstr "      INTROUVABLE"
 
 msgid "      NEWER than swap file!\n"
 msgstr "      PLUS RÉCENT que le fichier d'échange !\n"
@@ -6016,6 +6035,9 @@ msgstr "en cours"
 msgid "finished"
 msgstr "fini"
 
+msgid "E958: Job already finished"
+msgstr "E958: Tâche déjà finie"
+
 #, c-format
 msgid "E953: File exists: %s"
 msgstr "E953: Le fichier existe déjà : %s"
@@ -6680,6 +6702,9 @@ msgstr "&Comparer avec Vim"
 
 msgid "Edit with &Vim"
 msgstr "Éditer dans &Vim"
+
+msgid "Edit with existing Vim"
+msgstr "Éditer dans le Vim existant"
 
 msgid "Edit with existing Vim - "
 msgstr "Éditer dans le Vim existant - "
