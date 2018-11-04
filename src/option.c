@@ -4256,11 +4256,17 @@ set_helplang_default(char_u *lang)
 	    p_hlg = empty_option;
 	else
 	{
-	    /* zh_CN becomes "cn", zh_TW becomes "tw". */
+	    // zh_CN becomes "cn", zh_TW becomes "tw"
 	    if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
 	    {
 		p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
 		p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
+	    }
+	    // any C like setting, such as C.UTF-8, becomes "en"
+	    else if (STRLEN(p_hlg) >= 1 && *p_hlg == 'C')
+	    {
+		p_hlg[0] = 'e';
+		p_hlg[1] = 'n';
 	    }
 	    p_hlg[2] = NUL;
 	}
