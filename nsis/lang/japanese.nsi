@@ -226,8 +226,8 @@ LangString str_msg_rm_exe_fail   ${LANG_JAPANESE} \
 #LangString str_msg_rm_root_fail  ${LANG_JAPANESE} \
 #    "WARNING: Cannot remove $\"$vim_install_root$\", it is not empty!"
 
-LangString str_msg_wait_uninst   ${LANG_JAPANESE} \
-    "古いバージョンがアンインストールされるのを待っています..."
+LangString str_msg_uninstalling  ${LANG_JAPANESE} \
+    "古いバージョンをアンインストールしています..."
 
 LangString str_msg_registering   ${LANG_JAPANESE} \
     "登録中..."

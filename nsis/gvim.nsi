@@ -290,7 +290,7 @@ Section "$(str_section_old_ver)" id_section_old_ver
 	# run the install program to check for already installed versions
 	SetOutPath $TEMP
 	File /oname=install.exe ${VIMSRC}\installw32.exe
-	DetailPrint "$(str_msg_wait_uninst)"
+	DetailPrint "$(str_msg_uninstalling)"
 	${Do}
 	  nsExec::Exec "$TEMP\install.exe -uninstall-check"
 	  Pop $3
@@ -649,12 +649,13 @@ Section -post
 	${EndIf}
 !endif
 
-	# Register EstimatedSize.
+	# Register EstimatedSize and AllowSilent.
 	# Other information will be set by the install.exe (dosinst.c).
 	${If} ${RunningX64}
 	  SetRegView 64
 	${EndIf}
 	WriteRegDWORD HKLM "${UNINST_REG_KEY_VIM}" "EstimatedSize" $3
+	WriteRegDWORD HKLM "${UNINST_REG_KEY_VIM}" "AllowSilent" 1
 	${If} ${RunningX64}
 	  SetRegView lastused
 	${EndIf}
@@ -1080,14 +1081,8 @@ Section "un.$(str_unsection_vimfiles)" id_unsection_vimfiles
 	Call un.GetParent
 	Pop $1
 
-	# if a plugin dir was created at installation ask the user to remove it
-	# first look in the root of the installation then in HOME
-	${IfNot} ${FileExists} $1\vimfiles
-	  ReadEnvStr $1 "HOME"
-	${EndIf}
-
-	${If} $1 != ""
-	${AndIf} ${FileExists} $1\vimfiles
+	# if a plugin dir was created at installation remove it
+	${If} ${FileExists} $1\vimfiles
 	  RMDir $1\vimfiles\colors
 	  RMDir $1\vimfiles\compiler
 	  RMDir $1\vimfiles\doc

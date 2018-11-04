@@ -156,7 +156,7 @@ LangString str_desc_rm_rc           ${LANG_ITALIAN} \
 LangString str_unsection_vimfiles   ${LANG_ITALIAN} \
     "Remove vimfiles directory"
 LangString str_desc_rm_vimfiles     ${LANG_ITALIAN} \
-    "Remove your vimfiles directory if it is empty."
+    "Remove the vimfiles directory if it is empty."
 
 LangString str_unsection_rootdir    ${LANG_ITALIAN} \
     "Remove the Vim root directory"
@@ -230,8 +230,8 @@ LangString str_msg_rm_exe_fail   ${LANG_ITALIAN} \
 #LangString str_msg_rm_root_fail  ${LANG_ITALIAN} \
 #    "AVVISO: Non posso cancellare $\"$vim_install_root$\", non è vuota!"
 
-LangString str_msg_wait_uninst   ${LANG_ITALIAN} \
-    "Waiting the old version to be uninstalled..."
+LangString str_msg_uninstalling  ${LANG_ITALIAN} \
+    "Uninstalling the old version..."
 
 LangString str_msg_registering   ${LANG_ITALIAN} \
     "Registering..."

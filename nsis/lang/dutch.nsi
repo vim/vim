@@ -149,7 +149,7 @@ LangString str_desc_rm_exe          ${LANG_DUTCH} \
 LangString str_unsection_vimfiles   ${LANG_DUTCH} \
     "Remove vimfiles directory"
 LangString str_desc_rm_vimfiles     ${LANG_DUTCH} \
-    "Remove your vimfiles directory if it is empty."
+    "Remove the vimfiles directory if it is empty."
 
 LangString str_unsection_rootdir    ${LANG_DUTCH} \
     "Remove the Vim root directory"
@@ -221,8 +221,8 @@ LangString str_msg_rm_exe_fail   ${LANG_DUTCH} \
 #LangString str_msg_rm_root_fail  ${LANG_DUTCH} \
 #    "WAARSCHUWING: Kan $\"$vim_install_root$\" niet verwijderen omdat het niet leeg is!"
 
-LangString str_msg_wait_uninst   ${LANG_DUTCH} \
-    "Waiting the old version to be uninstalled..."
+LangString str_msg_uninstalling  ${LANG_DUTCH} \
+    "Uninstalling the old version..."
 
 LangString str_msg_registering   ${LANG_DUTCH} \
     "Registering..."

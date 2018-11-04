@@ -148,7 +148,8 @@ LangString str_msg_rm_exe_fail   ${LANG_DANISH}     "Nogle filer i $0 er ikke bl
 
 #LangString str_msg_rm_root_fail  ${LANG_DANISH}     "ADVARSEL: Kan ikke fjerne $\"$vim_install_root$\", den er ikke tom!"
 
-LangString str_msg_wait_uninst   ${LANG_DANISH}     "Venter på at den gamle version bliver afinstalleret..."
+LangString str_msg_uninstalling  ${LANG_DANISH} \
+    "Uninstalling the old version..."
 
 LangString str_msg_registering   ${LANG_DANISH}     "Registrerer..."
 

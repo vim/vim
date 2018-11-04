@@ -146,7 +146,7 @@ LangString str_desc_rm_exe          ${LANG_SIMPCHINESE} \
 LangString str_unsection_vimfiles   ${LANG_SIMPCHINESE} \
     "Remove vimfiles directory"
 LangString str_desc_rm_vimfiles     ${LANG_SIMPCHINESE} \
-    "Remove your vimfiles directory if it is empty."
+    "Remove the vimfiles directory if it is empty."
 
 LangString str_unsection_rootdir    ${LANG_SIMPCHINESE} \
     "Remove the Vim root directory"
@@ -217,8 +217,8 @@ LangString str_msg_rm_exe_fail   ${LANG_SIMPCHINESE} \
 #    "警告：无法删除 Vim 安装目录“$vim_install_root”，\
 #     该目录下仍有其他文件。"
 
-LangString str_msg_wait_uninst   ${LANG_SIMPCHINESE} \
-    "Waiting the old version to be uninstalled..."
+LangString str_msg_uninstalling  ${LANG_SIMPCHINESE} \
+    "Uninstalling the old version..."
 
 LangString str_msg_registering   ${LANG_SIMPCHINESE} \
     "Registering..."
