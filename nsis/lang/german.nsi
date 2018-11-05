@@ -148,7 +148,7 @@ LangString str_desc_rm_exe          ${LANG_GERMAN} \
 LangString str_unsection_vimfiles   ${LANG_GERMAN} \
     "Entferne vimfiles Verzeichnis"
 LangString str_desc_rm_vimfiles     ${LANG_GERMAN} \
-    "Entfernt eigenes vimfiles Verzeichnis, falls es leer ist."
+    "Entfernt das vimfiles Verzeichnis, falls es leer ist."
 
 LangString str_unsection_rootdir    ${LANG_GERMAN} \
     "Entferne Vim Installationsverzeichnis"
@@ -221,7 +221,7 @@ LangString str_msg_rm_exe_fail   ${LANG_GERMAN} \
 #     weil es nicht leer ist!"
 
 LangString str_msg_uninstalling  ${LANG_GERMAN} \
-    "Uninstalling the old version..."
+    "Deinstalliere alte Version..."
 
 LangString str_msg_registering   ${LANG_GERMAN} \
     "Registriere..."
