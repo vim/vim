@@ -104,7 +104,7 @@ LangString str_unsection_exe        ${LANG_DANISH}     "Fjern Vim-eksekverbare-/
 LangString str_desc_rm_exe          ${LANG_DANISH}     "Fjern alle Vim-eksekverbare- og afviklingsfiler."
 
 LangString str_unsection_vimfiles   ${LANG_DANISH}     "Fjern vimfiles-mappe"
-LangString str_desc_rm_vimfiles     ${LANG_DANISH}     "Fjern din vimfiles-mappe hvis den er tom."
+LangString str_desc_rm_vimfiles     ${LANG_DANISH}     "Fjern vimfiles-mappen hvis den er tom."
 
 LangString str_unsection_rootdir    ${LANG_DANISH}     "Fjern Vim-rodmappen"
 LangString str_desc_rm_rootdir      ${LANG_DANISH}     "Fjern Vim-rodmappen. Den indeholder dine Vim-konfigurationsfiler!"
@@ -148,8 +148,7 @@ LangString str_msg_rm_exe_fail   ${LANG_DANISH}     "Nogle filer i $0 er ikke bl
 
 #LangString str_msg_rm_root_fail  ${LANG_DANISH}     "ADVARSEL: Kan ikke fjerne $\"$vim_install_root$\", den er ikke tom!"
 
-LangString str_msg_uninstalling  ${LANG_DANISH} \
-    "Uninstalling the old version..."
+LangString str_msg_uninstalling  ${LANG_DANISH}     "Afinstallerer den gamle version..."
 
 LangString str_msg_registering   ${LANG_DANISH}     "Registrerer..."
 
