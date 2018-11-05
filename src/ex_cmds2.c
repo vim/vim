@@ -5359,6 +5359,16 @@ gettext_lang(char_u *name)
 
 #if defined(FEAT_MULTI_LANG) || defined(PROTO)
 /*
+ * Return TRUE when "lang" starts with a valid language name.
+ * Rejects NULL, empty string, "C", "C.UTF-8" and others.
+ */
+    static int
+is_valid_mess_lang(char_u *lang)
+{
+    return lang != NULL && ASCII_ISALPHA(lang[0]) && ASCII_ISALPHA(lang[1]);
+}
+
+/*
  * Obtain the current messages language.  Used to set the default for
  * 'helplang'.  May return NULL or an empty string.
  */
@@ -5379,17 +5389,17 @@ get_mess_lang(void)
 #  endif
 # else
     p = mch_getenv((char_u *)"LC_ALL");
-    if (p == NULL || *p == NUL)
+    if (!is_valid_mess_lang(p))
     {
 	p = mch_getenv((char_u *)"LC_MESSAGES");
-	if (p == NULL || *p == NUL)
+	if (!is_valid_mess_lang(p))
 	    p = mch_getenv((char_u *)"LANG");
     }
 # endif
 # ifdef WIN32
     p = gettext_lang(p);
 # endif
-    return p;
+    return is_valid_mess_lang(p) ? p : NULL;
 }
 #endif
 
