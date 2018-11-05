@@ -2266,6 +2266,8 @@ diffopt_changed(void)
 		p += 9;
 		diff_algorithm_new = XDF_HISTOGRAM_DIFF;
 	    }
+	    else
+		return FAIL;
 	}
 
 	if (*p != ',' && *p != NUL)
