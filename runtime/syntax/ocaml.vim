@@ -35,7 +35,7 @@ syn match    ocamlMethod       "#"
 syn match    ocamlComment   "^#!.*" contains=@Spell
 
 " Scripting directives
-syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|require\|thread\|trace\|untrace\|untrace_all\|print_depth\|print_length\|camlp4o\)\>"
+syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|load_rec\|use\|mod_use\|install_printer\|remove_printer\|require\|list\|predicates\|thread\|trace\|untrace\|untrace_all\|print_depth\|print_length\|camlp4o\|camlp4r\)\>"
 
 " lowercase identifier - the standard way to match
 syn match    ocamlLCIdentifier /\<\(\l\|_\)\(\w\|'\)*\>/
