@@ -221,6 +221,26 @@ func Test_diffget_diffput()
   %bwipe!
 endfunc
 
+" Test putting two changes from one buffer to another
+func Test_diffput_two()
+  new a
+  let win_a = win_getid()
+  call setline(1, range(1, 10))
+  diffthis
+  new b
+  let win_b = win_getid()
+  call setline(1, range(1, 10))
+  8del
+  5del
+  diffthis
+  call win_gotoid(win_a)
+  %diffput
+  call win_gotoid(win_b)
+  call assert_equal(map(range(1, 10), 'string(v:val)'), getline(1, '$'))
+  bwipe! a
+  bwipe! b
+endfunc
+
 func Test_dp_do_buffer()
   e! one
   let bn1=bufnr('%')
@@ -272,6 +292,28 @@ func Test_dp_do_buffer()
   call assert_fails('exe "norm" . bn3 . "do"', 'E103:')
   call assert_fails('diffput not_in_diff_mode', 'E94:')
   call assert_fails('diffget not_in_diff_mode', 'E94:')
+
+  windo diffoff
+  %bwipe!
+endfunc
+
+func Test_do_lastline()
+  e! one
+  call setline(1, ['1','2','3','4','5','6'])
+  diffthis
+
+  new two
+  call setline(1, ['2','4','5'])
+  diffthis
+
+  1
+  norm dp]c
+  norm dp]c
+  wincmd w
+  call assert_equal(4, line('$'))
+  norm G
+  norm do
+  call assert_equal(3, line('$'))
 
   windo diffoff
   %bwipe!
@@ -817,3 +859,49 @@ func Test_diff_screen()
   call delete('Xfile2')
 endfunc
 
+func Test_diff_with_cursorline()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'hi CursorLine ctermbg=red ctermfg=white',
+	\ 'set cursorline',
+	\ 'call setline(1, ["foo","foo","foo","bar"])',
+	\ 'vnew',
+	\ 'call setline(1, ["bee","foo","foo","baz"])',
+	\ 'windo diffthis',
+	\ '2wincmd w',
+	\ ], 'Xtest_diff_cursorline')
+  let buf = RunVimInTerminal('-S Xtest_diff_cursorline', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_01', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_02', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_with_cursorline_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_cursorline')
+endfunc
+
+func Test_diff_of_diff()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',
+	\ 'vnew',
+	\ 'call setline(1, ["aa","bb","cc"])',
+	\ 'windo diffthis',
+	\ ], 'Xtest_diff_diff')
+  let buf = RunVimInTerminal('-S Xtest_diff_diff', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_of_diff_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_diff')
+endfunc

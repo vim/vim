@@ -58,7 +58,7 @@ static void menu_unescape_name(char_u	*p);
 static char_u *menu_translate_tab_and_shift(char_u *arg_start);
 
 /* The character for each menu mode */
-static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};
+static char *menu_mode_chars[] = {"n", "v", "s", "o", "i", "c", "tl", "t"};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
 static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
@@ -1196,7 +1196,7 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		    return;
 		for (i = 0; i < depth + 2; i++)
 		    MSG_PUTS("  ");
-		msg_putchar(menu_mode_chars[bit]);
+		msg_puts((char_u*)menu_mode_chars[bit]);
 		if (menu->noremap[bit] == REMAP_NONE)
 		    msg_putchar('*');
 		else if (menu->noremap[bit] == REMAP_SCRIPT)
@@ -1645,6 +1645,12 @@ get_menu_cmd_modes(
 	    modes = MENU_INSERT_MODE;
 	    break;
 	case 't':
+	    if (*cmd == 'l')            /* tlmenu, tlunmenu, tlnoremenu */
+	    {
+		modes = MENU_TERMINAL_MODE;
+		++cmd;
+		break;
+	    }
 	    modes = MENU_TIP_MODE;	/* tmenu */
 	    break;
 	case 'c':			/* cmenu */
@@ -1687,12 +1693,18 @@ popup_mode_name(char_u *name, int idx)
 {
     char_u	*p;
     int		len = (int)STRLEN(name);
+    char	*mode_chars = menu_mode_chars[idx];
+    int		mode_chars_len = (int)strlen(mode_chars);
+    int		i;
 
-    p = vim_strnsave(name, len + 1);
+    p = vim_strnsave(name, len + mode_chars_len);
     if (p != NULL)
     {
-	mch_memmove(p + 6, p + 5, (size_t)(len - 4));
-	p[5] = menu_mode_chars[idx];
+	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
+	for (i = 0; i < mode_chars_len; ++i)
+	{
+	    p[5 + i] = menu_mode_chars[idx][i];
+	}
     }
     return p;
 }
@@ -1712,6 +1724,10 @@ get_menu_index(vimmenu_T *menu, int state)
 	idx = MENU_INDEX_INSERT;
     else if (state & CMDLINE)
 	idx = MENU_INDEX_CMDLINE;
+#ifdef FEAT_TERMINAL
+    else if (term_use_loop())
+	idx = MENU_INDEX_TERMINAL;
+#endif
     else if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1872,6 +1888,12 @@ menu_is_tearoff(char_u *name UNUSED)
     static int
 get_menu_mode(void)
 {
+#ifdef FEAT_TERMINAL
+    if (term_use_loop())
+    {
+	return MENU_INDEX_TERMINAL;
+    }
+#endif
     if (VIsual_active)
     {
 	if (VIsual_select)
@@ -1910,23 +1932,20 @@ get_menu_mode_flag(void)
 show_popupmenu(void)
 {
     vimmenu_T	*menu;
-    int		mode;
+    int		menu_mode;
+    char*	mode;
+    int		mode_len;
 
-    mode = get_menu_mode();
-    if (mode == MENU_INDEX_INVALID)
+    menu_mode = get_menu_mode();
+    if (menu_mode == MENU_INDEX_INVALID)
 	return;
-    mode = menu_mode_chars[mode];
+    mode = menu_mode_chars[menu_mode];
+    mode_len = (int)strlen(mode);
 
-    {
-	char_u	    ename[2];
-
-	ename[0] = mode;
-	ename[1] = NUL;
-	apply_autocmds(EVENT_MENUPOPUP, ename, NULL, FALSE, curbuf);
-    }
+    apply_autocmds(EVENT_MENUPOPUP, (char_u*)mode, NULL, FALSE, curbuf);
 
     for (menu = root_menu; menu != NULL; menu = menu->next)
-	if (STRNCMP("PopUp", menu->name, 5) == 0 && menu->name[5] == mode)
+	if (STRNCMP("PopUp", menu->name, 5) == 0 && STRNCMP(menu->name + 5, mode, mode_len) == 0)
 	    break;
 
     /* Only show a popup when it is defined and has entries */
@@ -2249,82 +2268,86 @@ gui_destroy_tearoffs_recurse(vimmenu_T *menu)
 /*
  * Execute "menu".  Use by ":emenu" and the window toolbar.
  * "eap" is NULL for the window toolbar.
+ * "mode_idx" specifies a MENU_INDEX_ value, use -1 to depend on the current
+ * state.
  */
     void
-execute_menu(exarg_T *eap, vimmenu_T *menu)
+execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 {
-    char_u	*mode;
-    int		idx = -1;
+    int		idx = mode_idx;
 
-    /* Use the Insert mode entry when returning to Insert mode. */
-    if (restart_edit
+    if (idx < 0)
+    {
+	/* Use the Insert mode entry when returning to Insert mode. */
+	if (restart_edit
 #ifdef FEAT_EVAL
-	    && !current_sctx.sc_sid
+		&& !current_sctx.sc_sid
 #endif
-	    )
-    {
-	mode = (char_u *)"Insert";
-	idx = MENU_INDEX_INSERT;
-    }
-    else if (VIsual_active)
-    {
-	mode = (char_u *)"Visual";
-	idx = MENU_INDEX_VISUAL;
-    }
-    else if (eap != NULL && eap->addr_count)
-    {
-	pos_T	tpos;
-
-	mode = (char_u *)"Visual";
-	idx = MENU_INDEX_VISUAL;
-
-	/* GEDDES: This is not perfect - but it is a
-	 * quick way of detecting whether we are doing this from a
-	 * selection - see if the range matches up with the visual
-	 * select start and end.  */
-	if ((curbuf->b_visual.vi_start.lnum == eap->line1)
-		&& (curbuf->b_visual.vi_end.lnum) == eap->line2)
+		)
 	{
-	    /* Set it up for visual mode - equivalent to gv.  */
-	    VIsual_mode = curbuf->b_visual.vi_mode;
-	    tpos = curbuf->b_visual.vi_end;
-	    curwin->w_cursor = curbuf->b_visual.vi_start;
-	    curwin->w_curswant = curbuf->b_visual.vi_curswant;
+	    idx = MENU_INDEX_INSERT;
 	}
-	else
+#ifdef FEAT_TERMINAL
+	else if (term_use_loop())
 	{
-	    /* Set it up for line-wise visual mode */
-	    VIsual_mode = 'V';
-	    curwin->w_cursor.lnum = eap->line1;
-	    curwin->w_cursor.col = 1;
-	    tpos.lnum = eap->line2;
-	    tpos.col = MAXCOL;
+	    idx = MENU_INDEX_TERMINAL;
+	}
+#endif
+	else if (VIsual_active)
+	{
+	    idx = MENU_INDEX_VISUAL;
+	}
+	else if (eap != NULL && eap->addr_count)
+	{
+	    pos_T	tpos;
+
+	    idx = MENU_INDEX_VISUAL;
+
+	    /* GEDDES: This is not perfect - but it is a
+	     * quick way of detecting whether we are doing this from a
+	     * selection - see if the range matches up with the visual
+	     * select start and end.  */
+	    if ((curbuf->b_visual.vi_start.lnum == eap->line1)
+		    && (curbuf->b_visual.vi_end.lnum) == eap->line2)
+	    {
+		/* Set it up for visual mode - equivalent to gv.  */
+		VIsual_mode = curbuf->b_visual.vi_mode;
+		tpos = curbuf->b_visual.vi_end;
+		curwin->w_cursor = curbuf->b_visual.vi_start;
+		curwin->w_curswant = curbuf->b_visual.vi_curswant;
+	    }
+	    else
+	    {
+		/* Set it up for line-wise visual mode */
+		VIsual_mode = 'V';
+		curwin->w_cursor.lnum = eap->line1;
+		curwin->w_cursor.col = 1;
+		tpos.lnum = eap->line2;
+		tpos.col = MAXCOL;
 #ifdef FEAT_VIRTUALEDIT
-	    tpos.coladd = 0;
+		tpos.coladd = 0;
 #endif
+	    }
+
+	    /* Activate visual mode */
+	    VIsual_active = TRUE;
+	    VIsual_reselect = TRUE;
+	    check_cursor();
+	    VIsual = curwin->w_cursor;
+	    curwin->w_cursor = tpos;
+
+	    check_cursor();
+
+	    /* Adjust the cursor to make sure it is in the correct pos
+	     * for exclusive mode */
+	    if (*p_sel == 'e' && gchar_cursor() != NUL)
+		++curwin->w_cursor.col;
 	}
-
-	/* Activate visual mode */
-	VIsual_active = TRUE;
-	VIsual_reselect = TRUE;
-	check_cursor();
-	VIsual = curwin->w_cursor;
-	curwin->w_cursor = tpos;
-
-	check_cursor();
-
-	/* Adjust the cursor to make sure it is in the correct pos
-	 * for exclusive mode */
-	if (*p_sel == 'e' && gchar_cursor() != NUL)
-	    ++curwin->w_cursor.col;
     }
 
     /* For the WinBar menu always use the Normal mode menu. */
     if (idx == -1 || eap == NULL)
-    {
-	mode = (char_u *)"Normal";
 	idx = MENU_INDEX_NORMAL;
-    }
 
     if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL)
     {
@@ -2351,7 +2374,35 @@ execute_menu(exarg_T *eap, vimmenu_T *menu)
 						     TRUE, menu->silent[idx]);
     }
     else if (eap != NULL)
+    {
+	char_u	*mode;
+
+	switch (idx)
+	{
+	    case MENU_INDEX_VISUAL:
+		mode = (char_u *)"Visual";
+		break;
+	    case MENU_INDEX_SELECT:
+		mode = (char_u *)"Select";
+		break;
+	    case MENU_INDEX_OP_PENDING:
+		mode = (char_u *)"Op-pending";
+		break;
+	    case MENU_INDEX_TERMINAL:
+		mode = (char_u *)"Terminal";
+		break;
+	    case MENU_INDEX_INSERT:
+		mode = (char_u *)"Insert";
+		break;
+	    case MENU_INDEX_CMDLINE:
+		mode = (char_u *)"Cmdline";
+		break;
+	    // case MENU_INDEX_TIP: cannot happen
+	    default:
+		mode = (char_u *)"Normal";
+	}
 	EMSG2(_("E335: Menu not defined for %s mode"), mode);
+    }
 }
 
 /*
@@ -2364,9 +2415,29 @@ ex_emenu(exarg_T *eap)
     vimmenu_T	*menu;
     char_u	*name;
     char_u	*saved_name;
+    char_u	*arg = eap->arg;
     char_u	*p;
+    int		gave_emsg = FALSE;
+    int		mode_idx = -1;
 
-    saved_name = vim_strsave(eap->arg);
+    if (arg[0] && VIM_ISWHITE(arg[1]))
+    {
+	switch (arg[0])
+	{
+	    case 'n': mode_idx = MENU_INDEX_NORMAL; break;
+	    case 'v': mode_idx = MENU_INDEX_VISUAL; break;
+	    case 's': mode_idx = MENU_INDEX_SELECT; break;
+	    case 'o': mode_idx = MENU_INDEX_OP_PENDING; break;
+	    case 't': mode_idx = MENU_INDEX_TERMINAL; break;
+	    case 'i': mode_idx = MENU_INDEX_INSERT; break;
+	    case 'c': mode_idx = MENU_INDEX_CMDLINE; break;
+	    default: EMSG2(_(e_invarg2), arg);
+		     return;
+	}
+	arg = skipwhite(arg + 2);
+    }
+
+    saved_name = vim_strsave(arg);
     if (saved_name == NULL)
 	return;
 
@@ -2384,6 +2455,7 @@ ex_emenu(exarg_T *eap)
 		if (*p == NUL && menu->children != NULL)
 		{
 		    EMSG(_("E333: Menu path must lead to a menu item"));
+		    gave_emsg = TRUE;
 		    menu = NULL;
 		}
 		else if (*p != NUL && menu->children == NULL)
@@ -2403,12 +2475,13 @@ ex_emenu(exarg_T *eap)
     vim_free(saved_name);
     if (menu == NULL)
     {
-	EMSG2(_("E334: Menu not found: %s"), eap->arg);
+	if (!gave_emsg)
+	    EMSG2(_("E334: Menu not found: %s"), arg);
 	return;
     }
 
-    /* Found the menu, so execute. */
-    execute_menu(eap, menu);
+    // Found the menu, so execute.
+    execute_menu(eap, menu, mode_idx);
 }
 
 /*
@@ -2445,7 +2518,7 @@ winbar_click(win_T *wp, int col)
 		check_cursor();
 	    }
 
-	    execute_menu(NULL, item->wb_menu);
+	    execute_menu(NULL, item->wb_menu, -1);
 
 	    if (save_curwin != NULL)
 	    {

@@ -1048,7 +1048,10 @@ doESCkey:
 
 	    if (ins_esc(&count, cmdchar, nomove))
 	    {
-		if (cmdchar != 'r' && cmdchar != 'v')
+		// When CTRL-C was typed got_int will be set, with the result
+		// that the autocommands won't be executed. When mapped got_int
+		// is not set, but let's keep the behavior the same.
+		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
 		return (c == Ctrl_O);
@@ -2408,7 +2411,7 @@ has_compl_option(int dict_opt)
     int
 vim_is_ctrl_x_key(int c)
 {
-    /* Always allow ^R - let it's results then be checked */
+    // Always allow ^R - let its results then be checked
     if (c == Ctrl_R)
 	return TRUE;
 

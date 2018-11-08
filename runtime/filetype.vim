@@ -613,12 +613,12 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
-au BufNewFile,BufRead *.git/modules/*/config	setf gitconfig
-au BufNewFile,BufRead */.config/git/config	setf gitconfig
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig 	setf gitconfig
+au BufNewFile,BufRead */.config/git/config			setf gitconfig
+au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
-  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config	setf gitconfig
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
 endif
 au BufNewFile,BufRead git-rebase-todo		setf gitrebase
 au BufRead,BufNewFile .gitsendemail.msg.??????	setf gitsendemail
@@ -1129,7 +1129,7 @@ au BufNewFile,BufRead *.dpr			setf pascal
 " PDF
 au BufNewFile,BufRead *.pdf			setf pdf
 
-" PCMK - HAE - crm configure edit 
+" PCMK - HAE - crm configure edit
 au BufNewFile,BufRead *.pcmk 			setf pcmk
 
 " Perl
@@ -1263,9 +1263,9 @@ au BufNewFile,BufRead */etc/protocols		setf protocols
 " Pyrex
 au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
-" Python, Python Shell Startup Files
+" Python, Python Shell Startup and Python Stub Files
 " Quixote (Python-based web framework)
-au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl  setf python
+au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl,*.pyi  setf python
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -1414,8 +1414,8 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 " sed
 au BufNewFile,BufRead *.sed			setf sed
 
-" Sieve (RFC 3028)
-au BufNewFile,BufRead *.siv			setf sieve
+" Sieve (RFC 3028, 5228)
+au BufNewFile,BufRead *.siv,*.sieve		setf sieve
 
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm
@@ -1893,8 +1893,11 @@ au BufNewFile,BufRead *.yy,*.yxx,*.y++		setf yacc
 " Yacc or racc
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
-" Yaml or Raml
-au BufNewFile,BufRead *.yaml,*.yml,*.raml	setf yaml
+" Yaml
+au BufNewFile,BufRead *.yaml,*.yml		setf yaml
+
+" Raml
+au BufNewFile,BufRead *.raml			setf raml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
@@ -2107,7 +2110,7 @@ au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 au BufNewFile,BufRead *.text,README		setf text
 
 " Help files match *.txt but should have a last line that is a modeline.
-au BufNewFile,BufRead *.txt	
+au BufNewFile,BufRead *.txt
 	\  if getline('$') !~ 'vim:.*ft=help'
 	\|   setf text
 	\| endif

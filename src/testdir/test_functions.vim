@@ -190,6 +190,52 @@ func Test_strftime()
   call assert_fails('call strftime("%Y", [])', 'E745:')
 endfunc
 
+func Test_resolve()
+  if !has('unix')
+    return
+  endif
+
+  " Xlink1 -> Xlink2
+  " Xlink2 -> Xlink3
+  silent !ln -s -f Xlink2 Xlink1
+  silent !ln -s -f Xlink3 Xlink2
+  call assert_equal('Xlink3', resolve('Xlink1'))
+  call assert_equal('./Xlink3', resolve('./Xlink1'))
+  call assert_equal('Xlink3/', resolve('Xlink2/'))
+  " FIXME: these tests result in things like "Xlink2/" instead of "Xlink3/"?!
+  "call assert_equal('Xlink3/', resolve('Xlink1/'))
+  "call assert_equal('./Xlink3/', resolve('./Xlink1/'))
+  "call assert_equal(getcwd() . '/Xlink3/', resolve(getcwd() . '/Xlink1/'))
+  call assert_equal(getcwd() . '/Xlink3', resolve(getcwd() . '/Xlink1'))
+
+  " Test resolve() with a symlink cycle.
+  " Xlink1 -> Xlink2
+  " Xlink2 -> Xlink3
+  " Xlink3 -> Xlink1
+  silent !ln -s -f Xlink1 Xlink3
+  call assert_fails('call resolve("Xlink1")',   'E655:')
+  call assert_fails('call resolve("./Xlink1")', 'E655:')
+  call assert_fails('call resolve("Xlink2")',   'E655:')
+  call assert_fails('call resolve("Xlink3")',   'E655:')
+  call delete('Xlink1')
+  call delete('Xlink2')
+  call delete('Xlink3')
+
+  silent !ln -s -f Xdir//Xfile Xlink
+  call assert_equal('Xdir/Xfile', resolve('Xlink'))
+  call delete('Xlink')
+
+  silent !ln -s -f Xlink2/ Xlink1
+  call assert_equal('Xlink2', resolve('Xlink1'))
+  call assert_equal('Xlink2/', resolve('Xlink1/'))
+  call delete('Xlink1')
+
+  silent !ln -s -f ./Xlink2 Xlink1
+  call assert_equal('Xlink2', resolve('Xlink1'))
+  call assert_equal('./Xlink2', resolve('./Xlink1'))
+  call delete('Xlink1')
+endfunc
+
 func Test_simplify()
   call assert_equal('',            simplify(''))
   call assert_equal('/',           simplify('/'))
@@ -800,6 +846,19 @@ func Test_filewritable()
   bw!
 endfunc
 
+func Test_Executable()
+  if has('win32')
+    call assert_equal(1, executable('notepad'))
+    call assert_equal(1, executable('notepad.exe'))
+    call assert_equal(0, executable('notepad.exe.exe'))
+    call assert_equal(0, executable('shell32.dll'))
+    call assert_equal(0, executable('win.ini'))
+  elseif has('unix')
+    call assert_equal(1, executable('cat'))
+    call assert_equal(0, executable('nodogshere'))
+  endif
+endfunc
+
 func Test_hostname()
   let hostname_vim = hostname()
   if has('unix')
@@ -1059,4 +1118,23 @@ func Test_func_sandbox()
 
   call assert_fails('call Fsandbox()', 'E48:')
   delfunc Fsandbox
+endfunc
+
+func EditAnotherFile()
+  let word = expand('<cword>')
+  edit Xfuncrange2
+endfunc
+
+func Test_func_range_with_edit()
+  " Define a function that edits another buffer, then call it with a range that
+  " is invalid in that buffer.
+  call writefile(['just one line'], 'Xfuncrange2')
+  new
+  call setline(1, range(10))
+  write Xfuncrange1
+  call assert_fails('5,8call EditAnotherFile()', 'E16:')
+
+  call delete('Xfuncrange1')
+  call delete('Xfuncrange2')
+  bwipe!
 endfunc

@@ -1583,6 +1583,9 @@ tag	      command	      action ~
 |:tjump|	:tj[ump]	like ":tselect", but jump directly when there
 				is only one match
 |:tlast|	:tl[ast]	jump to last matching tag
+|:tlmenu|	:tlm[enu]	add menu for Terminal-Job mode
+|:tlnoremenu|	:tln[oremenu]	like ":noremenu" but for Terminal-Job mode
+|:tlunmenu|	:tlu[nmenu]	remove menu for Terminal-Job mode
 |:tmapclear|	:tmapc[lear]	remove all mappings for Terminal-Job mode
 |:tmap|		:tma[p]		like ":map" but for Terminal-Job mode
 |:tmenu|	:tm[enu]	define menu tooltip
