@@ -17,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-01 18:15+0200\n"
-"PO-Revision-Date: 2018-09-01 18:38+0200\n"
+"POT-Creation-Date: 2018-10-30 09:47+0100\n"
+"PO-Revision-Date: 2018-10-30 10:02+0100\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: Esperanto\n"
 "Language: eo\n"
@@ -113,7 +113,7 @@ msgstr ""
 "transpasi)"
 
 msgid "E948: Job still running (add ! to end the job)"
-msgstr "E948: Tasko akoraŭ aktiva (aldonu ! por fini la taskon)"
+msgstr "E948: Tasko ankoraŭ aktiva (aldonu ! por fini la taskon)"
 
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Neniu skribo de post lasta ŝanĝo (aldonu ! por transpasi)"
@@ -322,11 +322,18 @@ msgstr "E737: Ŝlosilo jam ekzistas: %s"
 msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: Ne eblas dosierdiferenci pli ol %ld bufrojn"
 
+#, c-format
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr "Ne sufiĉa memoro por uzi internan dosierdiferencilon por bufro \"%s\""
+
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Ne eblas legi aŭ skribi provizorajn dosierojn"
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: Ne eblas krei dosierdiferencojn"
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: Problemo dum kreado de la interna dosierdiferencilo"
 
 msgid "Patch file"
 msgstr "Flika dosiero"
@@ -336,6 +343,9 @@ msgstr "E816: Ne eblas legi eliron de flikilo \"patch\""
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Ne eblas legi eliron de dosierdiferencilo \"diff\""
+
+msgid "E959: Invalid diff format."
+msgstr "E959: Nevalida formato de dosierdiferenco"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktuala bufro ne estas en dosierdiferenca reĝimo"
@@ -666,6 +676,9 @@ msgid ""
 msgstr ""
 "\n"
 "\tLaste ŝaltita de "
+
+msgid " line "
+msgstr " linio "
 
 msgid "E691: Can only compare List with List"
 msgstr "E691: Eblas nur kompari Liston kun Listo"
@@ -1526,6 +1539,9 @@ msgstr "E498: neniu dosiernomo \":source\" por anstataŭigi al \"<sfile>\""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: neniu uzebla numero de linio por \"<slnum>\""
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: neniu uzebla numero de linio por \"<sflnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -3662,8 +3678,8 @@ msgstr ""
 "\n"
 "        proceza ID: "
 
-msgid " (still running)"
-msgstr " (ankoraŭ ruliĝas)"
+msgid " (STILL RUNNING)"
+msgstr " (ANKORAŬ RULIĜAS)"
 
 msgid ""
 "\n"
@@ -3757,6 +3773,9 @@ msgstr ""
 
 msgid "While opening file \""
 msgstr "Dum malfermo de dosiero \""
+
+msgid "      CANNOT BE FOUND"
+msgstr "      NETROVITA"
 
 msgid "      NEWER than swap file!\n"
 msgstr "      PLI NOVA ol permutodosiero .swp!\n"
@@ -4739,7 +4758,7 @@ msgid "E944: Reverse range in character class"
 msgstr "E944: Inversa amplekso en klaso de signoj"
 
 msgid "E945: Range too large in character class"
-msgstr "E945: tro larga amplekso de klaso de signoj"
+msgstr "E945: tro larĝa amplekso de klaso de signoj"
 
 #, c-format
 msgid "E53: Unmatched %s%%("
@@ -4858,7 +4877,7 @@ msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Nekonata operatoro '\\z%c'"
 
 msgid "E951: \\% value too large"
-msgstr "E951: tro larga valoro de \\%"
+msgstr "E951: tro larĝa valoro de \\%"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
@@ -5771,6 +5790,9 @@ msgstr "ruliĝas"
 msgid "finished"
 msgstr "finiĝis"
 
+msgid "E958: Job already finished"
+msgstr "E958: Tasko jam finiĝis"
+
 #, c-format
 msgid "E953: File exists: %s"
 msgstr "E953: Dosiero jam ekzistas: %s"
@@ -6418,6 +6440,9 @@ msgstr "Kompari per Vim"
 
 msgid "Edit with &Vim"
 msgstr "Redakti per &Vim"
+
+msgid "Edit with existing Vim"
+msgstr "Redakti per ekzistanta Vim"
 
 msgid "Edit with existing Vim - "
 msgstr "Redakti per ekzistanta Vim - "

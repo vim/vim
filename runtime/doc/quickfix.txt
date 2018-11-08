@@ -898,7 +898,7 @@ commands can be combined to create a NewGrep command: >
 			'smartcase' is not used.
 			If {pattern} is empty (e.g. // is specified), the last
 			used search pattern is used. |last-pattern|
-
+:{count}vim[grep] ...
 			When a number is put before the command this is used
 			as the maximum number of matches to find.  Use
 			":1vimgrep pattern file" to find only the first.
@@ -1551,7 +1551,7 @@ The backslashes before the pipe character are required to avoid it to be
 recognized as a command separator.  The backslash before each space is
 required for the set command.
 
-						*cfilter-plugin*
+					    *cfilter-plugin* *Cfilter* *Lfilter*
 If you have too many matching messages, you can use the cfilter plugin to
 reduce the number of entries.  Load the plugin with: >
    packadd cfilter

@@ -3,22 +3,22 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Previous-Translator(s): 
+# Previous-Translator(s):
 # Georg Dahn <georg.dahn@gmail.com>
 # Johannes Zellner <johannes@zellner.org>
 # Gerfried Fuchs <alfie@ist.org>
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim(deutsch)\n"
+"Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-24 10:50+0200\n"
+"POT-Creation-Date: 2018-11-01 09:43+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO_8859-1\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "E831: bf_key_init() called with empty password"
@@ -58,34 +58,31 @@ msgid "E937: Attempt to delete a buffer that is in use"
 msgstr "E937: Versuch, Puffer zu löschen, der noch benutzt wird."
 
 msgid "E515: No buffers were unloaded"
-msgstr "E515: Keine Puffer wurden entladen."
+msgstr "E515: Kein Puffer wurden entladen."
 
 msgid "E516: No buffers were deleted"
-msgstr "E516: Keine Puffer wurden gelöscht."
+msgstr "E516: Kein Puffer wurde gelöscht."
 
 msgid "E517: No buffers were wiped out"
-msgstr "E517: Keine Puffer wurden vollständig gelöscht."
-
-msgid "1 buffer unloaded"
-msgstr "ein Puffer entladen"
+msgstr "E517: Kein Puffer wurde vollständig gelöscht."
 
 #, c-format
-msgid "%d buffers unloaded"
-msgstr "%d Puffer entladen"
-
-msgid "1 buffer deleted"
-msgstr "ein Puffer gelöscht"
-
-#, c-format
-msgid "%d buffers deleted"
-msgstr "%d Puffer gelöscht"
-
-msgid "1 buffer wiped out"
-msgstr "ein Puffer vollständig gelöscht"
+msgid "%d buffer unloaded"
+msgid_plural "%d buffers unloaded"
+msgstr[0] "%d Puffer entladen"
+msgstr[1] "%d Puffer entladen"
 
 #, c-format
-msgid "%d buffers wiped out"
-msgstr "%d Puffer vollständig gelöscht"
+msgid "%d buffer deleted"
+msgid_plural "%d buffers deleted"
+msgstr[0] "%d Puffer gelöscht"
+msgstr[1] "%d Puffer gelöscht"
+
+#, c-format
+msgid "%d buffer wiped out"
+msgid_plural "%d buffers wiped out"
+msgstr[0] "%d Puffer vollständig gelöscht"
+msgstr[1] "%d Puffer vollständig gelöscht"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Kann letzten Puffer nicht ausladen"
@@ -160,12 +157,10 @@ msgid "[readonly]"
 msgstr "[Nur Lesen]"
 
 #, c-format
-msgid "1 line --%d%%--"
-msgstr "1 Zeile --%d%%--"
-
-#, c-format
-msgid "%ld lines --%d%%--"
-msgstr "%ld Zeilen --%d%%--"
+msgid "%ld line --%d%%--"
+msgid_plural "%ld lines --%d%%--"
+msgstr[0] "%ld Zeile --%d%%--"
+msgstr[1] "%ld Zeilen --%d%%--"
 
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
@@ -320,11 +315,20 @@ msgstr "E737: Schlüssel existiert bereits: %s"
 msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: Kann Diff für mehr als %ld Puffer nicht erstellen."
 
+#, c-format
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr ""
+"Nicht genügend Speicher vorhanden, um Puffer \"%s\" mit internem "
+"Diffalgorithmus zu nutzen."
+
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Kann temporäre Datei nicht lesen oder schreiben."
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: Kann keinen Diff erstellen."
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: Problem internen Diffalgorithmus anzuwenden"
 
 msgid "Patch file"
 msgstr "Patch-Datei"
@@ -334,6 +338,9 @@ msgstr "E816: Kann Patch Ausgabe nicht lesen."
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Diff-Ausgabe kann nicht gelesen werden."
+
+msgid "E959: Invalid diff format."
+msgstr "E959: Ungültiges Diff-Format"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktueller Puffer ist nicht im Diff-Modus."
@@ -667,6 +674,9 @@ msgstr ""
 "\n"
 "\tZuletzt gesetzt in "
 
+msgid " line "
+msgstr " Zeile "
+
 msgid "E691: Can only compare List with List"
 msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen."
 
@@ -746,6 +756,9 @@ msgstr "E916: kein gültiger Job"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Unzulässiger Typ für len()"
+
+msgid "E957: Invalid window number"
+msgstr "E957: Ungültige Fensternummer"
 
 #, c-format
 msgid "E798: ID is reserved for \":match\": %ld"
@@ -844,12 +857,11 @@ msgstr "> %d, Hex %08x, Oktal %o"
 msgid "E134: Move lines into themselves"
 msgstr "E134: Verschiebe Zeilen in sich selbst"
 
-msgid "1 line moved"
-msgstr "1 Zeile verschoben"
-
 #, c-format
-msgid "%ld lines moved"
-msgstr "%ld Zeilen verschoben"
+msgid "%ld line moved"
+msgid_plural "%ld lines moved"
+msgstr[0] "%ld Zeile verschoben"
+msgstr[1] "%ld Zeilen verschoben"
 
 #, c-format
 msgid "%ld lines filtered"
@@ -1004,26 +1016,29 @@ msgstr "ersetze durch %s (y/n/a/q/l/^E/^Y)?"
 msgid "(Interrupted) "
 msgstr "(Unterbrochen) "
 
-msgid "1 match"
-msgstr "ein Treffer"
-
-msgid "1 substitution"
-msgstr "eine Ersetzung"
+#, c-format
+msgid "%ld match on %ld line"
+msgid_plural "%ld matches on %ld line"
+msgstr[0] " %ld Treffer in %ld Zeile"
+msgstr[1] " %ld Treffer in %ld Zeile"
 
 #, c-format
-msgid "%ld matches"
-msgstr "%ld Treffer"
+msgid "%ld substitution on %ld line"
+msgid_plural "%ld substitutions on %ld line"
+msgstr[0] "%ld Ersetzung in %ld Zeile"
+msgstr[1] "%ld Ersetzungen in %ld Zeile"
 
 #, c-format
-msgid "%ld substitutions"
-msgstr "%ld Ersetzungen"
-
-msgid " on 1 line"
-msgstr " auf einer Zeile"
+msgid "%ld match on %ld lines"
+msgid_plural "%ld matches on %ld lines"
+msgstr[0] " %ld Treffer in %ld Zeilen"
+msgstr[1] " %ld Treffer in %ld Zeilen"
 
 #, c-format
-msgid " on %ld lines"
-msgstr " auf %ld Zeilen"
+msgid "%ld substitution on %ld lines"
+msgid_plural "%ld substitutions on %ld lines"
+msgstr[0] "%ld Ersetzungen in %ld Zeilen"
+msgstr[1] "%ld Ersetzungen in %ld Zeilen"
 
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "E147: Kann :global nicht rekursiv mit einem Bereich ausführen."
@@ -1341,19 +1356,17 @@ msgstr ""
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Der Befehl ist in dieser Version nicht implementiert"
 
-msgid "1 more file to edit.  Quit anyway?"
-msgstr "Eine weitere Datei zum Editieren. Trotzdem beenden?"
+#, c-format
+msgid "%d more file to edit.  Quit anyway?"
+msgid_plural "%d more files to edit.  Quit anyway?"
+msgstr[0] "%d weitere Datei zum Editieren. Trotzdem beenden?"
+msgstr[1] "%d weitere Dateien zum Editieren. Trotzdem beenden?"
 
 #, c-format
-msgid "%d more files to edit.  Quit anyway?"
-msgstr "%d weitere Dateien zum Editieren. Trotzdem beenden?"
-
-msgid "E173: 1 more file to edit"
-msgstr "E173: Eine weitere Datei zum Editieren"
-
-#, c-format
-msgid "E173: %ld more files to edit"
-msgstr "E173: %ld weitere Dateien zum Editieren"
+msgid "E173: %ld more file to edit"
+msgid_plural "E173: %ld more files to edit"
+msgstr[0] "E173: %ld weitere Datei zum Editieren"
+msgstr[1] "E173: %ld weitere Dateien zum Editieren"
 
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: Befehl existiert bereits: ! zum Ersetzen hinzufügen"
@@ -1537,6 +1550,9 @@ msgstr "E498: kein :source Dateiname zur Ersetzung mit \"<sfile>\""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: Keine Zeilennummer für  \"<slnum>\" vorhanden."
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: Keine Zeilennummer für  \"<slnum>\" vorhanden."
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1742,9 +1758,6 @@ msgstr "Lese von stdin..."
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: Datei wurde durch Konvertierung unlesbar!"
 
-msgid "[fifo/socket]"
-msgstr "[fifo/socket]"
-
 msgid "[fifo]"
 msgstr "[fifo]"
 
@@ -1925,19 +1938,17 @@ msgstr "[unix]"
 msgid "[unix format]"
 msgstr "[unix Format]"
 
-msgid "1 line, "
-msgstr "eine Zeile, "
+#, c-format
+msgid "%ld line, "
+msgid_plural "%ld lines, "
+msgstr[0] "%ld Zeile, "
+msgstr[1] "%ld Zeilen, "
 
 #, c-format
-msgid "%ld lines, "
-msgstr "%ld Zeilen, "
-
-msgid "1 character"
-msgstr "ein Zeichen"
-
-#, c-format
-msgid "%lld characters"
-msgstr "%lld Zeichen"
+msgid "%lld character"
+msgid_plural "%lld characters"
+msgstr[0] "%lld Zeichen"
+msgstr[1] "%lld Zeichen"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -2323,11 +2334,11 @@ msgstr "&Rückgängig"
 msgid "Open tab..."
 msgstr "Öffne Reiter..."
 
-msgid "Find string (use '\\\\' to find a '\\')"
-msgstr "Suche (benutze '\\\\' um ein '\\' zu finden)"
+msgid "Find string"
+msgstr "Suche Zeichenkette"
 
-msgid "Find & Replace (use '\\\\' to find a '\\')"
-msgstr "Suche & Ersetze (benutze '\\\\' um ein '\\' zu finden)"
+msgid "Find & Replace"
+msgstr "Suche & Ersetze"
 
 msgid "Not Used"
 msgstr "Nicht verwendet"
@@ -3202,8 +3213,8 @@ msgstr ""
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab[-wait][-silent] <Dateien>  Wie --remote, aber öffne ein Reiter für "
-"jede Datei."
+"--remote-tab[-wait][-silent] <Dateien>  Wie --remote, aber öffne ein Reiter "
+"für jede Datei."
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <keys>\tSchicke <keys> zu einem Vim Server und beende"
@@ -3717,8 +3728,8 @@ msgstr ""
 "\n"
 "        Process-ID: "
 
-msgid " (still running)"
-msgstr " (läuft noch)"
+msgid " (STILL RUNNING)"
+msgstr " (LÄUFT NOCH)"
 
 msgid ""
 "\n"
@@ -3812,6 +3823,9 @@ msgstr ""
 
 msgid "While opening file \""
 msgstr "Beim Öffnen der Datei \""
+
+msgid "      CANNOT BE FOUND"
+msgstr "      WURDE NICHT GEFUNDEN"
 
 msgid "      NEWER than swap file!\n"
 msgstr "      neuer als Auslagerungsdatei!\n"
@@ -4033,19 +4047,17 @@ msgstr ""
 msgid "Type number and <Enter> (empty cancels): "
 msgstr "Gewünschte Nummer und <Enter> eingeben (abbrechen mit <Enter>): "
 
-msgid "1 more line"
-msgstr "eine Zeile mehr"
-
-msgid "1 line less"
-msgstr "eine Zeile weniger"
+#, c-format
+msgid "%ld more line"
+msgid_plural "%ld more lines"
+msgstr[0] "%ld Zeile mehr"
+msgstr[1] "%ld Zeilen mehr"
 
 #, c-format
-msgid "%ld more lines"
-msgstr "%ld Zeilen mehr"
-
-#, c-format
-msgid "%ld fewer lines"
-msgstr "%ld Zeilen weniger"
+msgid "%ld line less"
+msgid_plural "%ld fewer lines"
+msgstr[0] "%ld Zeile weniger"
+msgstr[1] "%ld Zeilen weniger"
 
 msgid " (Interrupted)"
 msgstr " (Unterbrochen)"
@@ -4186,31 +4198,26 @@ msgstr ""
 "beenden"
 
 #, c-format
-msgid "1 line %sed 1 time"
-msgstr "eine Zeile ein Mal %s"
+msgid "%ld line %sed %d time"
+msgid_plural "%ld line %sed %d times"
+msgstr[0] "%ld Zeile %s %d Mal"
+msgstr[1] "%ld Zeile %s %d Mal"
 
 #, c-format
-msgid "1 line %sed %d times"
-msgstr "eine Zeile %s %d Mal"
-
-#, c-format
-msgid "%ld lines %sed 1 time"
-msgstr "%ld Zeilen %s ein Mal"
-
-#, c-format
-msgid "%ld lines %sed %d times"
-msgstr "%ld Zeilen %s %d Mal"
+msgid "%ld lines %sed %d time"
+msgid_plural "%ld lines %sed %d times"
+msgstr[0] "%ld Zeilen %s %d Mal"
+msgstr[1] "%ld Zeilen %s %d Mal"
 
 #, c-format
 msgid "%ld lines to indent... "
 msgstr "%ld Zeilen zum Einrücken... "
 
-msgid "1 line indented "
-msgstr "eine Zeile eingerückt... "
-
 #, c-format
-msgid "%ld lines indented "
-msgstr "%ld Zeilen eingerückt... "
+msgid "%ld line indented "
+msgid_plural "%ld lines indented "
+msgstr[0] "%ld Zeile eingerückt... "
+msgstr[1] "%ld Zeilen eingerückt... "
 
 msgid "E748: No previously used register"
 msgstr "E748: Kein bereits verwendetes Register"
@@ -4218,12 +4225,11 @@ msgstr "E748: Kein bereits verwendetes Register"
 msgid "cannot yank; delete anyway"
 msgstr "kann nicht kopieren; lösche trotzdem"
 
-msgid "1 line changed"
-msgstr "eine Zeile geändert"
-
 #, c-format
-msgid "%ld lines changed"
-msgstr "%ld Zeilen geändert"
+msgid "%ld line changed"
+msgid_plural "%ld lines changed"
+msgstr[0] "%ld Zeile geändert"
+msgstr[1] "%ld Zeilen geändert"
 
 #, c-format
 msgid "freeing %ld lines"
@@ -4234,20 +4240,16 @@ msgid " into \"%c"
 msgstr " in \"%c"
 
 #, c-format
-msgid "block of 1 line yanked%s"
-msgstr "Block von einer Zeile kopiert%s"
+msgid "block of %ld line yanked%s"
+msgid_plural "block of %ld lines yanked%s"
+msgstr[0] "Block von %ld Zeile kopiert%s"
+msgstr[1] "Block von %ld Zeilen kopiert%s"
 
 #, c-format
-msgid "1 line yanked%s"
-msgstr "eine Zeile kopiert%s"
-
-#, c-format
-msgid "block of %ld lines yanked%s"
-msgstr "Block von %ld Zeilen kopiert%s"
-
-#, c-format
-msgid "%ld lines yanked%s"
-msgstr "%ld Zeilen kopiert%s"
+msgid "%ld line yanked%s"
+msgid_plural "%ld lines yanked%s"
+msgstr[0] "%ld Zeile kopiert%s"
+msgstr[1] "%ld Zeilen kopiert%s"
 
 #, c-format
 msgid "E353: Nothing in register %s"
@@ -4840,6 +4842,9 @@ msgstr "E69: Fehlende ] nach %s%%["
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] ist leer"
 
+msgid "E956: Cannot use pattern recursively"
+msgstr "E956: Kann Muster nicht rekursiv ausführen"
+
 msgid "E65: Illegal back reference"
 msgstr "E65: Ungültige Rückreferenz"
 
@@ -4957,7 +4962,7 @@ msgstr "E873: (NFA regexp) geeigneter Abschlussfehler"
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
-"Konnte temporäre Datei zum Schreiben öffnen, zeige auf Standard "
+"Konnte temporäre Datei nicht zum Schreiben öffnen, zeige auf Standard "
 "Fehlerausgabe... "
 
 msgid "E874: (NFA) Could not pop the stack!"
@@ -5470,6 +5475,9 @@ msgstr "E783: Doppeltes Zeichen im MAP Eintrag"
 msgid "No Syntax items defined for this buffer"
 msgstr "Keine Syntax-Elemente für diesen Puffer definiert"
 
+msgid "'redrawtime' exceeded, syntax highlighting disabled"
+msgstr "'redrawtime' überschritten, Syntaxhighlighting deaktiviert"
+
 msgid "syntax conceal on"
 msgstr "Syntax conceal aktiviert"
 
@@ -5499,6 +5507,9 @@ msgstr ""
 
 msgid "syntax iskeyword "
 msgstr "syntax iskeyword "
+
+msgid "syntax iskeyword not set"
+msgstr "syntax iskeyword nicht gesetzt"
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
@@ -5841,6 +5852,9 @@ msgstr "Führe aus"
 msgid "finished"
 msgstr "beendet"
 
+msgid "E958: Job already finished"
+msgstr "E958: Job bereits beendet"
+
 #, c-format
 msgid "E953: File exists: %s"
 msgstr "E953: Datei existiert bereits: %s"
@@ -5983,8 +5997,10 @@ msgid "number changes  when               saved"
 msgstr "Nummer Änderung Wann               Gesichert"
 
 #, c-format
-msgid "%ld seconds ago"
-msgstr "vor %ld Sekunden"
+msgid "%ld second ago"
+msgid_plural "%ld seconds ago"
+msgstr[0] "vor %ld Sekunde"
+msgstr[1] "vor %ld Sekunden"
 
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: 'undojoin' ist nicht erlaubt nach 'undo'"
@@ -6484,6 +6500,9 @@ msgstr "Differenz mit Vim"
 
 msgid "Edit with &Vim"
 msgstr "Editiere mit &Vim"
+
+msgid "Edit with existing Vim"
+msgstr "Editiere mit vorhandenem Vim"
 
 msgid "Edit with existing Vim - "
 msgstr "Editiere mit vorhandenem Vim - "

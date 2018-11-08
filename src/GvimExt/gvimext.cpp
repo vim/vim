@@ -708,11 +708,26 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	m_edit_existing_off = 1;
     }
 
+    HMENU hSubMenu = NULL;
+    if (m_cntOfHWnd > 1)
+    {
+	hSubMenu = CreatePopupMenu();
+	mii.fMask |= MIIM_SUBMENU;
+	mii.wID = idCmd;
+	mii.dwTypeData = _("Edit with existing Vim");
+	mii.cch = lstrlen(mii.dwTypeData);
+	mii.hSubMenu = hSubMenu;
+	InsertMenuItem(hMenu, indexMenu++, TRUE, &mii);
+	mii.fMask = mii.fMask & ~MIIM_SUBMENU;
+	mii.hSubMenu = NULL;
+    }
     // Now display all the vim instances
     for (int i = 0; i < m_cntOfHWnd; i++)
     {
 	char title[BUFSIZE];
 	char temp[BUFSIZE];
+	int index;
+	HMENU hmenu;
 
 	// Obtain window title, continue if can not
 	if (GetWindowText(m_hWnd[i], title, BUFSIZE - 1) == 0)
@@ -726,15 +741,30 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	    *pos = 0;
 	}
 	// Now concatenate
-	strncpy(temp, _("Edit with existing Vim - "), BUFSIZE - 1);
-	temp[BUFSIZE - 1] = '\0';
+	if (m_cntOfHWnd > 1)
+	    temp[0] = '\0';
+	else
+	{
+	    strncpy(temp, _("Edit with existing Vim - "), BUFSIZE - 1);
+	    temp[BUFSIZE - 1] = '\0';
+	}
 	strncat(temp, title, BUFSIZE - 1 - strlen(temp));
 	temp[BUFSIZE - 1] = '\0';
 
 	mii.wID = idCmd++;
 	mii.dwTypeData = temp;
 	mii.cch = lstrlen(mii.dwTypeData);
-	InsertMenuItem(hMenu, indexMenu++, TRUE, &mii);
+	if (m_cntOfHWnd > 1)
+	{
+	    hmenu = hSubMenu;
+	    index = i;
+	}
+	else
+	{
+	    hmenu = hMenu;
+	    index = indexMenu++;
+	}
+	InsertMenuItem(hmenu, index, TRUE, &mii);
     }
     // InsertMenu(hMenu, indexMenu++, MF_SEPARATOR|MF_BYPOSITION, 0, NULL);
 

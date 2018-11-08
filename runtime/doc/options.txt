@@ -120,10 +120,10 @@ and the following arguments will be ignored.
 When 'verbose' is non-zero, displaying an option value will also tell where it
 was last set.  Example: >
 	:verbose set shiftwidth cindent?
-<	  shiftwidth=4 ~
-		  Last set from modeline ~
-	  cindent ~
-		  Last set from /usr/local/share/vim/vim60/ftplugin/c.vim ~
+<  shiftwidth=4 ~
+	  Last set from modeline line 1 ~
+  cindent ~
+	  Last set from /usr/local/share/vim/vim60/ftplugin/c.vim line 30 ~
 This is only done when specific option values are requested, not for ":verbose
 set all" or ":verbose set" without an argument.
 When the option was set by hand there is no "Last set" message.
@@ -132,7 +132,7 @@ autocommand, the script in which it was defined is reported.
 Note that an option may also have been set as a side effect of setting
 'compatible'.
 A few special texts:
-	Last set from modeline ~
+	Last set from modeline line 1 ~
 		Option was set in a |modeline|.
 	Last set from --cmd argument ~
 		Option was set with command line argument |--cmd| or +.
@@ -1638,10 +1638,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			area extended, Vim tries to become the owner of the
 			windowing system's global selection or put the
 			selected text on the clipboard used by the selection
-			register "*.  See |guioptions_a| and |quotestar| for
-			details.  When the GUI is active, the 'a' flag in
-			'guioptions' is used, when the GUI is not active, this
-			"autoselect" flag is used.
+			register "*.  See |'go-a'| and |quotestar| for details.
+			When the GUI is active, the 'a' flag in 'guioptions'
+			is used, when the GUI is not active, this "autoselect"
+			flag is used.
 			Also applies to the modeless selection.
 
 						*clipboard-autoselectplus*
@@ -1999,8 +1999,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	displayed.  E.g., when moving vertically it may change column.
 
 
-'conceallevel' 'cole'		*'conceallevel'* *'cole'*
-			number (default 0)
+						*'conceallevel'* *'cole'*
+'conceallevel' 'cole'	number (default 0)
 			local to window
 			{not in Vi}
 			{not available when compiled without the |+conceal|
@@ -2634,6 +2634,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 				When omitted a context of six lines is used.
 				See |fold-diff|.
 
+		iblank		Ignore changes where lines are all blank.  Adds
+				the "-B" flag to the "diff" command if
+				'diffexpr' is empty.  Check the documentation
+				of the "diff" command for what this does
+				exactly.
+				NOTE: the diff windows will get out of sync,
+				because no differences between blank lines are
+				taken into account.
+
 		icase		Ignore changes in case of text.  "a" and "A"
 				are considered the same.  Adds the "-i" flag
 				to the "diff" command if 'diffexpr' is empty.
@@ -2644,6 +2653,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 				of the "diff" command for what this does
 				exactly.  It should ignore adding trailing
 				white space, but not leading white space.
+
+		iwhiteall	Ignore all white space changes.  Adds
+				the "-w" flag to the "diff" command if
+				'diffexpr' is empty.  Check the documentation
+				of the "diff" command for what this does
+				exactly.
+
+		iwhiteeol	Ignore white space changes at end of line.
+				Adds the "-Z" flag to the "diff" command if
+				'diffexpr' is empty.  Check the documentation
+				of the "diff" command for what this does
+				exactly.
 
 		horizontal	Start diff mode with horizontal splits (unless
 				explicitly specified otherwise).
@@ -3874,8 +3895,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.
 
 						*'guioptions'* *'go'*
-'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows, "t" is
-						   removed in |defaults.vim|),
+'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
+					   "t" is removed in |defaults.vim|),
 					 "aegimrLtT" (GTK, Motif and Athena),
 					 )
 			global
@@ -3895,7 +3916,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		terminal to list the command output.
 		The terminal window will be positioned at the bottom, and grow
 		upwards as needed.
-							*guioptions_a* *'go-a'*
+								*'go-a'*
 	  'a'	Autoselect:  If present, then whenever VISUAL mode is started,
 		or the Visual area extended, Vim tries to become the owner of
 		the windowing system's global selection.  This means that the
@@ -4698,7 +4719,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Identifiers are used in recognizing environment variables and after a
 	match of the 'define' option.  It is also used for "\i" in a
 	|pattern|.  See 'isfname' for a description of the format of this
-	option.
+	option.  For '@' only characters up to 255 are used.
 	Careful: If you change this option, it might break expanding
 	environment variables.  E.g., when '/' is included and Vim tries to
 	expand "$HOME/.viminfo".  Maybe you should change 'iskeyword' instead.
@@ -4712,8 +4733,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Keywords are used in searching and recognizing with many commands:
 	"w", "*", "[i", etc.  It is also used for "\k" in a |pattern|.  See
-	'isfname' for a description of the format of this option.  For C
-	programs you could use "a-z,A-Z,48-57,_,.,-,>".
+	'isfname' for a description of the format of this option.  For '@'
+	characters above 255 check the "word" character class.
+	For C programs you could use "a-z,A-Z,48-57,_,.,-,>".
 	For a help file it is set to all non-blank printable characters except
 	'*', '"' and '|' (so that CTRL-] on a command finds the help for that
 	command).
@@ -5424,7 +5446,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		h	all previous modes when editing a help file
 		a	all previous modes
 		r	for |hit-enter| and |more-prompt| prompt
-	Normally you would enable the mouse in all four modes with: >
+	Normally you would enable the mouse in all five modes with: >
 		:set mouse=a
 <	When the mouse is not enabled, the GUI will still use the mouse for
 	modeless selection.  This doesn't move the text cursor.
@@ -5946,7 +5968,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'printencoding'* *'penc'*
-'printencoding' 'penc'	String	(default empty, except for some systems)
+'printencoding' 'penc'	string	(default empty, except for some systems)
 			global
 			{not in Vi}
 			{only available when compiled with the |+printer|
@@ -5955,7 +5977,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See |penc-option|.
 
 						*'printexpr'* *'pexpr'*
-'printexpr' 'pexpr'	String	(default: see below)
+'printexpr' 'pexpr'	string	(default: see below)
 			global
 			{not in Vi}
 			{only available when compiled with the |+printer|
@@ -8103,8 +8125,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
 	To obtain a file to be used here, check out this ftp site:
-	[Sorry this link doesn't work anymore, do you know the right one?]
-	ftp://ftp.ox.ac.uk/pub/wordlists/  First get the README file.
+	ftp://ftp.cerias.purdue.edu/pub/dict/wordlists/  First get the README
+	file.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.

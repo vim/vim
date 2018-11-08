@@ -1932,6 +1932,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<cfile>	cmdline.txt	/*:<cfile>*
 :<cword>	cmdline.txt	/*:<cword>*
 :<sfile>	cmdline.txt	/*:<sfile>*
+:<sflnum>	cmdline.txt	/*:<sflnum>*
+:<slnum>	cmdline.txt	/*:<slnum>*
 :=	various.txt	/*:=*
 :>	change.txt	/*:>*
 :?	cmdline.txt	/*:?*
@@ -2872,8 +2874,17 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :sN	windows.txt	/*:sN*
 :sNext	windows.txt	/*:sNext*
 :s\=	change.txt	/*:s\\=*
+:s_#	change.txt	/*:s_#*
+:s_I	change.txt	/*:s_I*
 :s_c	change.txt	/*:s_c*
+:s_e	change.txt	/*:s_e*
 :s_flags	change.txt	/*:s_flags*
+:s_g	change.txt	/*:s_g*
+:s_i	change.txt	/*:s_i*
+:s_l	change.txt	/*:s_l*
+:s_n	change.txt	/*:s_n*
+:s_p	change.txt	/*:s_p*
+:s_r	change.txt	/*:s_r*
 :sa	windows.txt	/*:sa*
 :sal	windows.txt	/*:sal*
 :sall	windows.txt	/*:sall*
@@ -3174,6 +3185,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tjump	tagsrch.txt	/*:tjump*
 :tl	tagsrch.txt	/*:tl*
 :tlast	tagsrch.txt	/*:tlast*
+:tlm	gui.txt	/*:tlm*
+:tlmenu	gui.txt	/*:tlmenu*
+:tln	gui.txt	/*:tln*
+:tlnoremenu	gui.txt	/*:tlnoremenu*
+:tlu	gui.txt	/*:tlu*
+:tlunmenu	gui.txt	/*:tlunmenu*
 :tm	gui.txt	/*:tm*
 :tma	map.txt	/*:tma*
 :tmap	map.txt	/*:tmap*
@@ -3462,10 +3479,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <bang>	map.txt	/*<bang>*
 <buffer=N>	autocmd.txt	/*<buffer=N>*
 <buffer=abuf>	autocmd.txt	/*<buffer=abuf>*
+<cWORD>	cmdline.txt	/*<cWORD>*
 <cexpr>	cmdline.txt	/*<cexpr>*
 <cfile>	cmdline.txt	/*<cfile>*
 <character>	intro.txt	/*<character>*
 <count>	map.txt	/*<count>*
+<cword>	cmdline.txt	/*<cword>*
 <f-args>	map.txt	/*<f-args>*
 <k0>	term.txt	/*<k0>*
 <k1>	term.txt	/*<k1>*
@@ -3497,6 +3516,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
 <sfile>	cmdline.txt	/*<sfile>*
+<sflnum>	cmdline.txt	/*<sflnum>*
 <slnum>	cmdline.txt	/*<slnum>*
 <xCSI>	intro.txt	/*<xCSI>*
 <xDown>	term.txt	/*<xDown>*
@@ -3695,6 +3715,7 @@ CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
+Cfilter	quickfix.txt	/*Cfilter*
 Channel	eval.txt	/*Channel*
 Channels	eval.txt	/*Channels*
 Chinese	mbyte.txt	/*Chinese*
@@ -3727,6 +3748,7 @@ DOS-format-write	editing.txt	/*DOS-format-write*
 Dictionaries	eval.txt	/*Dictionaries*
 Dictionary	eval.txt	/*Dictionary*
 Dictionary-function	eval.txt	/*Dictionary-function*
+DiffUpdated	autocmd.txt	/*DiffUpdated*
 Digraphs	digraph.txt	/*Digraphs*
 DirChanged	autocmd.txt	/*DirChanged*
 E	motion.txt	/*E*
@@ -4628,6 +4650,8 @@ E956	pattern.txt	/*E956*
 E957	eval.txt	/*E957*
 E958	eval.txt	/*E958*
 E96	diff.txt	/*E96*
+E960	options.txt	/*E960*
+E961	cmdline.txt	/*E961*
 E97	diff.txt	/*E97*
 E98	diff.txt	/*E98*
 E99	diff.txt	/*E99*
@@ -4702,6 +4726,7 @@ KVim	gui_x11.txt	/*KVim*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
+Lfilter	quickfix.txt	/*Lfilter*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
@@ -6786,7 +6811,6 @@ gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
 guifontwide_gtk	options.txt	/*guifontwide_gtk*
 guifontwide_win_mbyte	options.txt	/*guifontwide_win_mbyte*
-guioptions_a	options.txt	/*guioptions_a*
 guu	change.txt	/*guu*
 gv	visual.txt	/*gv*
 gview	starting.txt	/*gview*
@@ -7273,6 +7297,7 @@ lifelines.vim	syntax.txt	/*lifelines.vim*
 limits	vi_diff.txt	/*limits*
 line()	eval.txt	/*line()*
 line-continuation	repeat.txt	/*line-continuation*
+line-continuation-comment	repeat.txt	/*line-continuation-comment*
 line2byte()	eval.txt	/*line2byte()*
 linefeed	intro.txt	/*linefeed*
 linewise	motion.txt	/*linewise*
@@ -8664,6 +8689,7 @@ swapchoice-variable	eval.txt	/*swapchoice-variable*
 swapcommand-variable	eval.txt	/*swapcommand-variable*
 swapfile-changed	version4.txt	/*swapfile-changed*
 swapinfo()	eval.txt	/*swapinfo()*
+swapname()	eval.txt	/*swapname()*
 swapname-variable	eval.txt	/*swapname-variable*
 sybase	ft_sql.txt	/*sybase*
 syn-sync-grouphere	syntax.txt	/*syn-sync-grouphere*
@@ -9077,7 +9103,9 @@ test_null_job()	eval.txt	/*test_null_job()*
 test_null_list()	eval.txt	/*test_null_list()*
 test_null_partial()	eval.txt	/*test_null_partial()*
 test_null_string()	eval.txt	/*test_null_string()*
+test_option_not_set()	eval.txt	/*test_option_not_set()*
 test_override()	eval.txt	/*test_override()*
+test_scrollbar()	eval.txt	/*test_scrollbar()*
 test_settime()	eval.txt	/*test_settime()*
 testing	eval.txt	/*testing*
 testing-variable	eval.txt	/*testing-variable*

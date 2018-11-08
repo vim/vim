@@ -483,6 +483,12 @@ may_do_incsearch_highlighting(
     if (search_first_line == 0)
 	// start at the original cursor position
 	curwin->w_cursor = is_state->search_start;
+    else if (search_first_line > curbuf->b_ml.ml_line_count)
+    {
+	// start after the last line
+	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+	curwin->w_cursor.col = MAXCOL;
+    }
     else
     {
 	// start at the first line in the range

@@ -270,6 +270,21 @@ func Test_set_errors()
   call assert_fails('set t_foo=', 'E846:')
 endfunc
 
+" Must be executed before other tests that set 'term'.
+func Test_000_term_option_verbose()
+  if has('gui_running')
+    return
+  endif
+  let verb_cm = execute('verbose set t_cm')
+  call assert_notmatch('Last set from', verb_cm)
+
+  let term_save = &term
+  set term=ansi
+  let verb_cm = execute('verbose set t_cm')
+  call assert_match('Last set from.*test_options.vim', verb_cm)
+  let &term = term_save
+endfunc
+
 func Test_set_ttytype()
   if !has('gui_running') && has('unix')
     " Setting 'ttytype' used to cause a double-free when exiting vim and

@@ -1175,6 +1175,33 @@ func_name_refcount(char_u *name)
     return isdigit(*name) || *name == '<';
 }
 
+static funccal_entry_T *funccal_stack = NULL;
+
+/*
+ * Save the current function call pointer, and set it to NULL.
+ * Used when executing autocommands and for ":source".
+ */
+    void
+save_funccal(funccal_entry_T *entry)
+{
+    entry->top_funccal = current_funccal;
+    entry->next = funccal_stack;
+    funccal_stack = entry;
+    current_funccal = NULL;
+}
+
+    void
+restore_funccal(void)
+{
+    if (funccal_stack == NULL)
+	IEMSG("INTERNAL: restore_funccal()");
+    else
+    {
+	current_funccal = funccal_stack->top_funccal;
+	funccal_stack = funccal_stack->next;
+    }
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 free_all_functions(void)
@@ -1185,11 +1212,13 @@ free_all_functions(void)
     long_u	todo = 1;
     long_u	used;
 
-    /* Clean up the call stack. */
+    /* Clean up the current_funccal chain and the funccal stack. */
     while (current_funccal != NULL)
     {
 	clear_tv(current_funccal->rettv);
 	cleanup_function_call(current_funccal);
+	if (current_funccal == NULL && funccal_stack != NULL)
+	    restore_funccal();
     }
 
     /* First clear what the functions contain.  Since this may lower the
@@ -1853,6 +1882,8 @@ ex_function(exarg_T *eap)
 		{
 		    --todo;
 		    fp = HI2UF(hi);
+		    if (message_filtered(fp->uf_name))
+			continue;
 		    if (!func_name_refcount(fp->uf_name))
 			list_func_head(fp, FALSE);
 		}
@@ -3118,6 +3149,13 @@ ex_call(exarg_T *eap)
     {
 	if (!eap->skip && eap->addr_count > 0)
 	{
+	    if (lnum > curbuf->b_ml.ml_line_count)
+	    {
+		// If the function deleted lines or switched to another buffer
+		// the line number may become invalid.
+		EMSG(_(e_invrange));
+		break;
+	    }
 	    curwin->w_cursor.lnum = lnum;
 	    curwin->w_cursor.col = 0;
 #ifdef FEAT_VIRTUALEDIT
@@ -3578,27 +3616,6 @@ current_func_returned(void)
     return current_funccal->returned;
 }
 
-/*
- * Save the current function call pointer, and set it to NULL.
- * Used when executing autocommands and for ":source".
- */
-    void *
-save_funccal(void)
-{
-    funccall_T *fc = current_funccal;
-
-    current_funccal = NULL;
-    return (void *)fc;
-}
-
-    void
-restore_funccal(void *vfc)
-{
-    funccall_T *fc = (funccall_T *)vfc;
-
-    current_funccal = fc;
-}
-
     int
 free_unref_funccal(int copyID, int testing)
 {
@@ -3699,25 +3716,6 @@ get_funccal_args_var()
     if (current_funccal == NULL)
 	return NULL;
     return &get_funccal()->l_avars_var;
-}
-
-/*
- * Clear the current_funccal and return the old value.
- * Caller is expected to invoke restore_current_funccal().
- */
-    void *
-clear_current_funccal()
-{
-    funccall_T *f = current_funccal;
-
-    current_funccal = NULL;
-    return f;
-}
-
-    void
-restore_current_funccal(void *f)
-{
-    current_funccal = f;
 }
 
 /*

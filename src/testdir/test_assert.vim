@@ -152,6 +152,14 @@ func Test_assert_fail_fails()
   call assert_equal(1, assert_fails('xxx', {}))
   call assert_match("Expected {} but got 'E731:", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('xxx', {}, 'stupid'))
+  call assert_match("stupid: Expected {} but got 'E731:", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('echo', '', 'echo command'))
+  call assert_match("command did not fail: echo command", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_beeps()
