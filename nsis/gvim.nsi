@@ -767,7 +767,7 @@ Function .onInstSuccess
 FunctionEnd
 
 Function .onInstFailed
-  MessageBox MB_OK|MB_ICONEXCLAMATION "$(str_msg_install_fail)"
+  MessageBox MB_OK|MB_ICONEXCLAMATION "$(str_msg_install_fail)" /SD IDOK
 FunctionEnd
 
 ##########################################################
@@ -1067,7 +1067,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	Delete $0\*.txt
 
 	${If} ${Errors}
-	  MessageBox MB_OK|MB_ICONEXCLAMATION $(str_msg_rm_exe_fail)
+	  MessageBox MB_OK|MB_ICONEXCLAMATION $(str_msg_rm_exe_fail) /SD IDOK
 	${EndIf}
 
 	# No error message if the "vim62" directory can't be removed, the
