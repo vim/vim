@@ -238,7 +238,7 @@ syn match    ocamlFloat         "-\=\<\d\(_\|\d\)*\.\?\(_\|\d\)*\([eE][-+]\=\d\(
 " Labels
 syn match    ocamlLabel        "\~\(\l\|_\)\(\w\|'\)*"lc=1
 syn match    ocamlLabel        "?\(\l\|_\)\(\w\|'\)*"lc=1
-syn region   ocamlLabel transparent matchgroup=ocamlLabel start="?(\(\l\|_\)\(\w\|'\)*"lc=2 end=")"me=e-1 contains=ALLBUT,@ocamlContained,ocamlParenErr
+syn region   ocamlLabel transparent matchgroup=ocamlLabel start="[~?](\(\l\|_\)\(\w\|'\)*"lc=2 end=")"me=e-1 contains=ALLBUT,@ocamlContained,ocamlParenErr
 
 
 " Synchronization
