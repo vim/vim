@@ -5658,7 +5658,7 @@ msgid "E426: tag not found: %s"
 msgstr "E426: ознака није пронађена: %s"
 
 msgid "  # pri kind tag"
-msgstr "  # ознака pri врсте"
+msgstr "  # pri ознака врста"
 
 msgid "file\n"
 msgstr "фајл\n"
@@ -5692,7 +5692,7 @@ msgid ""
 "  # TO tag         FROM line  in file/text"
 msgstr ""
 "\n"
-"  # НА ознака      ОД линије  у фајл/текст"
+"  # НА ознаку      ИЗ линије  у фајлу/тексту"
 
 #, c-format
 msgid "Searching tags file %s"
