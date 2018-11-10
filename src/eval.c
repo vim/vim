@@ -2126,6 +2126,11 @@ get_lval(
 		    EMSGN(_(e_listidx), lp->ll_n1);
 		return NULL;
 	    }
+	    if (lp->ll_range && !lp->ll_empty2)
+	    {
+		lp->ll_n2 = (long)get_tv_number(&var2);
+		clear_tv(&var2);
+	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
 	}
@@ -2242,9 +2247,25 @@ set_var_lval(
 		return;
 	    }
 
-	    val = (int)get_tv_number_chk(rettv, &error);
-	    if (!error)
-		blob_set(lp->ll_blob, lp->ll_n1, val);
+	    if (lp->ll_range && rettv->v_type == VAR_BLOB)
+	    {
+		int	i;
+		if (blob_len(rettv->vval.v_blob) != blob_len(lp->ll_blob))
+		{
+		    EMSG(_("E968: Blob value has more items than target"));
+		    return;
+		}
+
+		for (i = lp->ll_n1; i <= lp->ll_n2; i++)
+		    blob_set(lp->ll_blob, i,
+			    blob_get(rettv->vval.v_blob, i));
+	    }
+	    else
+	    {
+		val = (int)get_tv_number_chk(rettv, &error);
+		if (!error)
+		    blob_set(lp->ll_blob, lp->ll_n1, val);
+	    }
 	}
 	else if (op != NULL && *op != '=')
 	{
