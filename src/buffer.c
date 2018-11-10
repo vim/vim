@@ -5519,6 +5519,7 @@ chk_modeline(
 #ifdef FEAT_EVAL
 		save_current_sctx = current_sctx;
 		current_sctx.sc_sid = SID_MODELINE;
+		current_sctx.sc_seq = 0;
 		current_sctx.sc_lnum = 0;
 #endif
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);

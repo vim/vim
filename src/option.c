@@ -415,7 +415,7 @@ struct vimoption
     char_u	*def_val[2];	// default values for variable (vi and vim)
 #ifdef FEAT_EVAL
     sctx_T	script_ctx;	// script context where the option was last set
-# define SCTX_INIT , {0, 0}
+# define SCTX_INIT , {0, 0, 0}
 #else
 # define SCTX_INIT
 #endif
@@ -5959,6 +5959,7 @@ set_string_option_direct(
 	    else
 	    {
 		script_ctx.sc_sid = set_sid;
+		script_ctx.sc_seq = 0;
 		script_ctx.sc_lnum = 0;
 	    }
 	    set_option_sctx_idx(idx, opt_flags, script_ctx);
