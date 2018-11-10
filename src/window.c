@@ -151,8 +151,21 @@ do_window(
     case '^':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	/* stop Visual mode */
-		cmd_with_count("split #", cbuf, sizeof(cbuf), Prenum);
-		do_cmdline_cmd(cbuf);
+
+		if (buflist_findnr(Prenum == 0
+					? curwin->w_alt_fnum : Prenum) == NULL)
+		{
+		    if (Prenum == 0)
+			EMSG(_(e_noalt));
+		    else
+			EMSGN(_("E92: Buffer %ld not found"), Prenum);
+		    break;
+		}
+
+		if (!curbuf_locked() && win_split(0, 0) == OK)
+		    (void)buflist_getfile(
+			    Prenum == 0 ? curwin->w_alt_fnum : Prenum,
+			    (linenr_T)0, GETF_ALT, FALSE);
 		break;
 
 /* open new window */
