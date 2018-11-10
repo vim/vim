@@ -2392,8 +2392,21 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
-	    case VAR_BLOB:
 		break;
+
+	    case VAR_BLOB:
+		if (*op != '+' || tv2->v_type != VAR_BLOB)
+		    break;
+		/* BLOB += BLOB */
+		if (tv1->vval.v_blob != NULL && tv2->vval.v_blob != NULL)
+		{
+		    blob_T  *b1 = tv1->vval.v_blob;
+		    blob_T  *b2 = tv2->vval.v_blob;
+		    int	i, len = blob_len(b2);
+		    for (i = 0; i < len; i++)
+			ga_append(&b1->bv_ga, blob_get(b2, i));
+		}
+		return OK;
 
 	    case VAR_LIST:
 		if (*op != '+' || tv2->v_type != VAR_LIST)
@@ -3691,7 +3704,8 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	if (op != '+' && op != '-' && op != '.')
 	    break;
 
-	if ((op != '+' || rettv->v_type != VAR_LIST)
+	if ((op != '+' || (rettv->v_type != VAR_LIST &&
+				    rettv->v_type != VAR_BLOB))
 #ifdef FEAT_FLOAT
 		&& (op == '.' || rettv->v_type != VAR_FLOAT)
 #endif
@@ -3740,6 +3754,23 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 		clear_tv(rettv);
 		rettv->v_type = VAR_STRING;
 		rettv->vval.v_string = p;
+	    }
+	    else if (op == '+' && rettv->v_type == VAR_BLOB
+						   && var2.v_type == VAR_BLOB)
+	    {
+		blob_T  *b1 = rettv->vval.v_blob;
+		blob_T  *b2 = var2.vval.v_blob;
+		blob_T	*b = blob_alloc();
+		int	i;
+
+		for (i = 0; i < blob_len(b1); i++)
+		    ga_append(&b->bv_ga, blob_get(b1, i));
+		for (i = 0; i < blob_len(b2); i++)
+		    ga_append(&b->bv_ga, blob_get(b2, i));
+
+		clear_tv(rettv);
+		rettv->v_type = VAR_BLOB;
+		rettv->vval.v_blob = b;
 	    }
 	    else if (op == '+' && rettv->v_type == VAR_LIST
 						   && var2.v_type == VAR_LIST)
