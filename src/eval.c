@@ -1981,8 +1981,11 @@ get_lval(
 		    clear_tv(&var1);
 		    return NULL;
 		}
-		if (rettv != NULL && (rettv->v_type != VAR_LIST
-					       || rettv->vval.v_list == NULL))
+		if (rettv != NULL &&
+		    !(rettv->v_type == VAR_LIST ||
+			rettv->vval.v_list != NULL) &&
+		    !(rettv->v_type == VAR_BLOB ||
+			rettv->vval.v_blob != NULL))
 		{
 		    if (!quiet)
 			EMSG(_("E709: [:] requires a List value"));
@@ -8810,6 +8813,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 #endif
 		case 'D': type = VAR_DICT; break;
 		case 'L': type = VAR_LIST; break;
+		case 'B': type = VAR_BLOB; break;
 		case 'X': type = VAR_SPECIAL; break;
 	    }
 
@@ -8817,7 +8821,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    if (tab != NULL)
 	    {
 		tv.v_type = type;
-		if (type == VAR_STRING || type == VAR_DICT || type == VAR_LIST)
+		if (type == VAR_STRING || type == VAR_DICT ||
+			type == VAR_LIST || type == VAR_BLOB)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 #ifdef FEAT_FLOAT
@@ -8826,7 +8831,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 #endif
 		else
 		    tv.vval.v_number = atol((char *)tab + 1);
-		if (type == VAR_DICT || type == VAR_LIST)
+		if (type == VAR_DICT || type == VAR_LIST || type == VAR_BLOB)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
 
@@ -8849,7 +8854,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 
 		if (tv.v_type == VAR_STRING)
 		    vim_free(tv.vval.v_string);
-		else if (tv.v_type == VAR_DICT || tv.v_type == VAR_LIST)
+		else if (tv.v_type == VAR_DICT || tv.v_type == VAR_LIST ||
+			tv.v_type == VAR_BLOB)
 		    clear_tv(&tv);
 	    }
 	}
@@ -8893,6 +8899,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_FLOAT:  s = "FLO"; break;
 		    case VAR_DICT:   s = "DIC"; break;
 		    case VAR_LIST:   s = "LIS"; break;
+		    case VAR_BLOB:   s = "BLO"; break;
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
@@ -8900,7 +8907,6 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
 		    case VAR_CHANNEL:
-		    case VAR_BLOB:
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
@@ -9459,6 +9465,33 @@ typval_compare(
 	/* For "is" a different type always means FALSE, for "notis"
 	    * it means TRUE. */
 	n1 = (type == TYPE_NEQUAL);
+    }
+    else if (typ1->v_type == VAR_BLOB || typ2->v_type == VAR_BLOB)
+    {
+	if (type_is)
+	{
+	    n1 = (typ1->v_type == typ2->v_type
+			    && typ1->vval.v_blob == typ2->vval.v_blob);
+	    if (type == TYPE_NEQUAL)
+		n1 = !n1;
+	}
+	else if (typ1->v_type != typ2->v_type
+		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
+	{
+	    if (typ1->v_type != typ2->v_type)
+		EMSG(_("E966: Can only compare Blob with Blob"));
+	    else
+		EMSG(_("E967: Invalid operation for Blob"));
+	    clear_tv(typ1);
+	    return FAIL;
+	}
+	else
+	{
+	    /* Compare two Blobs for being equal or unequal. */
+	    n1 = blob_equal(typ1->vval.v_blob, typ2->vval.v_blob);
+	    if (type == TYPE_NEQUAL)
+		n1 = !n1;
+	}
     }
     else if (typ1->v_type == VAR_LIST || typ2->v_type == VAR_LIST)
     {
@@ -10488,6 +10521,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     dict_T	*d = NULL;
     typval_T	save_val;
     typval_T	save_key;
+    blob_T	*b = NULL;
     int		rem;
     int		todo;
     char_u	*ermsg = (char_u *)(map ? "map()" : "filter()");
@@ -10496,7 +10530,12 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     int		save_did_emsg;
     int		idx = 0;
 
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	if ((b = argvars[0].vval.v_blob) == NULL)
+	    return;
+    }
+    else if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
 	      || (!map && tv_check_lock(l->lv_lock, arg_errmsg, TRUE)))
@@ -10562,6 +10601,39 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		}
 	    }
 	    hash_unlock(ht);
+	}
+	else if (argvars[0].v_type == VAR_BLOB)
+	{
+	    int		i;
+	    typval_T	tv;
+
+	    vimvars[VV_KEY].vv_type = VAR_NUMBER;
+	    for (i = 0; i < b->bv_ga.ga_len; i++)
+	    {
+		tv.v_type = VAR_NUMBER;
+		vimvars[VV_KEY].vv_nr = idx;
+		tv.vval.v_number = blob_get(b, i);
+		if (filter_map_one(&tv, expr, map, &rem) == FAIL
+								  || did_emsg)
+		    break;
+		if (tv.v_type != VAR_NUMBER)
+		{
+		    EMSG(_("E967: Invalid operation for Blob"));
+		    return;
+		}
+		tv.v_type = VAR_NUMBER;
+		blob_set(b, i, tv.vval.v_number);
+		if (!map && rem)
+		{
+		    char_u *p;
+		    p = (char_u*) argvars[0].vval.v_blob
+			->bv_ga.ga_data;
+		    mch_memmove(p + idx, p + i + 1,
+			    (size_t)b->bv_ga.ga_len - i - 1);
+		    --b->bv_ga.ga_len;
+		    --i;
+		}
+	    }
 	}
 	else
 	{
