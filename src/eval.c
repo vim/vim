@@ -4568,11 +4568,23 @@ eval_index(
 		    if (n2 < 0)
 			n2 = len + n2;
 		    else if (n2 >= len)
-			n2 = len;
-		    if (n1 < len && n2 > 0 && n1 < n2)
+			n2 = len - 1;
+		    if (n1 >= len || n2 < 0 || n1 > n2)
+		    {
+			clear_tv(rettv);
+			rettv->v_type = VAR_BLOB;
+			rettv->vval.v_blob = NULL;
+		    }
+		    else
 		    {
 			blob_T  *blob = blob_alloc();
-			for (i = n1; i < n2; i++)
+		        if (ga_grow(&blob->bv_ga, n2 - n1 + 1) == FAIL)
+			{
+			    blob_free(blob);
+			    return FAIL;
+			}
+			blob->bv_ga.ga_len = n2 - n1 + 1;
+			for (i = n1; i <= n2; i++)
 			    blob_set(blob, i - n1,
 				    blob_get(rettv->vval.v_blob, i));
 
