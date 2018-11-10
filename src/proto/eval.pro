@@ -111,6 +111,7 @@ void ex_echo(exarg_T *eap);
 void ex_echohl(exarg_T *eap);
 void ex_execute(exarg_T *eap);
 win_T *find_win_by_nr(typval_T *vp, tabpage_T *tp);
+win_T *find_win_by_nr_or_id(typval_T *vp);
 win_T *find_tabwin(typval_T *wvp, typval_T *tvp);
 void getwinvar(typval_T *argvars, typval_T *rettv, int off);
 void setwinvar(typval_T *argvars, typval_T *rettv, int off);

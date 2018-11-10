@@ -180,10 +180,10 @@ function() or funcref().  When calling the function the Dictionary and/or
 arguments will be passed to the function.  Example: >
 
 	let Cb = function('Callback', ['foo'], myDict)
-	call Cb()
+	call Cb('bar')
 
 This will invoke the function as if using: >
-	call myDict.Callback('foo')
+	call myDict.Callback('foo', 'bar')
 
 This is very useful when passing a function around, e.g. in the arguments of
 |ch_open()|.
@@ -2022,13 +2022,15 @@ abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
 add({list}, {item})		List	append {item} to |List| {list}
 and({expr}, {expr})		Number	bitwise AND
-append({lnum}, {string})	Number	append {string} below line {lnum}
-append({lnum}, {list})		Number	append lines {list} below line {lnum}
-argc()				Number	number of files in the argument list
+append({lnum}, {text})		Number	append {text} below line {lnum}
+appendbufline({expr}, {lnum}, {text})
+				Number	append {text} below line {lnum}
+					in buffer {expr}
+argc( [{winid}])		Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
-argv({nr})			String	{nr} entry of the argument list
-argv()				List	the argument list
+argv({nr} [, {winid}])		String	{nr} entry of the argument list
+argv([-1, {winid}])		List	the argument list
 assert_beeps({cmd})		Number	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				Number	assert {exp} is equal to {act}
@@ -2036,7 +2038,8 @@ assert_equalfile({fname-one}, {fname-two})
 				Number	assert file contents is equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
-assert_fails({cmd} [, {error}])	Number	assert {cmd} fails
+assert_fails({cmd} [, {error} [, {msg}]])
+				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
 				Number	assert {actual} is false
 assert_inrange({lower}, {upper}, {actual} [, {msg}])
@@ -2108,8 +2111,8 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 copy({expr})			any	make a shallow copy of {expr}
 cos({expr})			Float	cosine of {expr}
 cosh({expr})			Float	hyperbolic cosine of {expr}
-count({list}, {expr} [, {ic} [, {start}]])
-				Number	count how many {expr} are in {list}
+count({comp}, {expr} [, {ic} [, {start}]])
+				Number	count how many {expr} are in {comp}
 cscope_connection([{num}, {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
 cursor({lnum}, {col} [, {off}])
@@ -2331,7 +2334,6 @@ remote_read({serverid} [, {timeout}])
 remote_send({server}, {string} [, {idvar}])
 				String	send key sequence
 remote_startserver({name})	none	become server {name}
-				String	send key sequence
 remove({list}, {idx} [, {end}])	any	remove items {idx}-{end} from {list}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
@@ -2356,8 +2358,8 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
-setbufline({expr}, {lnum}, {line})
-				Number	set line {lnum} to {line} in buffer
+setbufline({expr}, {lnum}, {text})
+				Number	set line {lnum} to {text} in buffer
 					{expr}
 setbufvar({expr}, {varname}, {val})
 				none	set {varname} in buffer {expr} to {val}
@@ -2460,12 +2462,12 @@ term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
-term_start({cmd}, {options})	Job	open a terminal window and run a job
+term_start({cmd}, {options})	Number	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
-test_feedinput()		none	add key sequence to input buffer
+test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_null_channel()		Channel	null value for testing
@@ -2474,8 +2476,8 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
-test_option_not_set({name})    none	reset flag indicating option was set
-test_override({expr}, {val})    none	test with Vim internal overrides
+test_option_not_set({name})	none	reset flag indicating option was set
+test_override({expr}, {val})	none	test with Vim internal overrides
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
 test_settime({expr})		none	set current time for testing
@@ -2567,10 +2569,10 @@ and({expr}, {expr})					*and()*
 			:let flag = and(bits, 0x80)
 
 
-append({lnum}, {expr})					*append()*
-		When {expr} is a |List|: Append each item of the |List| as a
+append({lnum}, {text})					*append()*
+		When {text} is a |List|: Append each item of the |List| as a
 		text line below line {lnum} in the current buffer.
-		Otherwise append {expr} as one text line below line {lnum} in
+		Otherwise append {text} as one text line below line {lnum} in
 		the current buffer.
 		{lnum} can be zero to insert a line before the first one.
 		Returns 1 for failure ({lnum} out of range or out of memory),
@@ -2594,8 +2596,15 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 			:let failed = appendbufline(13, 0, "# THE START")
 <
 							*argc()*
-argc()		The result is the number of files in the argument list of the
-		current window.  See |arglist|.
+argc([{winid}])
+		The result is the number of files in the argument list.  See
+		|arglist|.
+		If {winid} is not supplied, the argument list of the current
+		window is used.
+		If {winid} is -1, the global argument list is used.
+		Otherwise {winid} specifies the window of which the argument
+		list is used: either the window number or the window ID.
+		Returns -1 if the {winid} argument is invalid.
 
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
@@ -2606,7 +2615,7 @@ arglistid([{winnr} [, {tabnr}]])
 		Return the argument list ID.  This is a number which
 		identifies the argument list being used.  Zero is used for the
 		global argument list.  See |arglist|.
-		Return -1 if the arguments are invalid.
+		Returns -1 if the arguments are invalid.
 
 		Without arguments use the current window.
 		With {winnr} only use this window in the current tab page.
@@ -2615,17 +2624,19 @@ arglistid([{winnr} [, {tabnr}]])
 		{winnr} can be the window number or the |window-ID|.
 
 							*argv()*
-argv([{nr}])	The result is the {nr}th file in the argument list of the
-		current window.  See |arglist|.  "argv(0)" is the first one.
-		Example: >
+argv([{nr} [, {winid}])
+		The result is the {nr}th file in the argument list.  See
+		|arglist|.  "argv(0)" is the first one.  Example: >
 	:let i = 0
 	:while i < argc()
 	:  let f = escape(fnameescape(argv(i)), '.')
 	:  exe 'amenu Arg.' . f . ' :e ' . f . '<CR>'
 	:  let i = i + 1
 	:endwhile
-<		Without the {nr} argument a |List| with the whole |arglist| is
-		returned.
+<		Without the {nr} argument, or when {nr} is -1, a |List| with
+		the whole |arglist| is returned.
+
+		The {winid} argument specifies the window ID, see |argc()|.
 
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does
@@ -2670,7 +2681,7 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 			  call assert_exception('E492:')
 			endtry
 
-assert_fails({cmd} [, {error}])					*assert_fails()*
+assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error.  Also see |assert-return|.
 		When {error} is given it must match in |v:errmsg|.
@@ -2800,15 +2811,15 @@ balloon_show({expr})					*balloon_show()*
 
 		When showing a balloon is not possible nothing happens, no
 		error message.
-		{only available when compiled with the +balloon_eval or
-		+balloon_eval_term feature}
+		{only available when compiled with the |+balloon_eval| or
+		|+balloon_eval_term| feature}
 
 balloon_split({msg})					*balloon_split()*
 		Split {msg} into lines to be displayed in a balloon.  The
 		splits are made for the current window size and optimize to
 		show debugger output.
 		Returns a |List| with the split lines.
-		{only available when compiled with the +balloon_eval_term
+		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
 							*browse()*
@@ -3549,7 +3560,7 @@ deletebufline({expr}, {first} [, {last}])		*deletebufline()*
 
 		For the use of {expr}, see |bufname()| above.
 
-		{first} and {last} are used like with |setline()|. Note that
+		{first} and {last} are used like with |getline()|. Note that
 		when using |line()| this refers to the current buffer. Use "$"
 		to refer to the last line in buffer {expr}.
 
@@ -4504,6 +4515,8 @@ getcmdline()						*getcmdline()*
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
 <		Also see |getcmdtype()|, |getcmdpos()| and |setcmdpos()|.
+		Returns an empty string when entering a password or using
+		|inputsecret()|.
 
 getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
@@ -4601,7 +4614,6 @@ getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 getcwd([{winnr} [, {tabnr}]])
 		The result is a String, which is the name of the current
 		working directory.
-		Without arguments, for the current window.
 
 		With {winnr} return the local current directory of this window
 		in the current tab page.  {winnr} can be the window number or
@@ -8027,11 +8039,11 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the
 		swapfile {fname}. The available fields are:
-			version VIM version
+			version Vim version
 			user	user name
 			host	host name
 			fname	original file name
-			pid	PID of the VIM process that created the swap
+			pid	PID of the Vim process that created the swap
 				file
 			mtime	last modification time in seconds
 			inode	Optional: INODE number of the file
@@ -8131,7 +8143,7 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		   concealable region if there are two consecutive regions
 		   with the same replacement character.  For an example, if
 		   the text is "123456" and both "23" and "45" are concealed
-		   and replace by the character "X", then:
+		   and replaced by the character "X", then:
 			call			returns ~
 			synconcealed(lnum, 1)   [0, '', 0]
 			synconcealed(lnum, 2)   [1, 'X', 1]
@@ -8359,7 +8371,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		The top part of the buffer contains the contents of the first
 		file, the bottom part of the buffer contains the contents of
 		the second file.  The middle part shows the differences.
-		The parts are separated by a line of dashes.
+		The parts are separated by a line of equals.
 
 		If the {options} argument is present, it must be a Dict with
 		these possible members:
@@ -8452,8 +8464,8 @@ term_getcursor({buf})					*term_getcursor()*
 		"dict" can have these members:
 		   "visible"	one when the cursor is visible, zero when it
 				is hidden.
-		   "blink"	one when the cursor is visible, zero when it
-				is hidden.
+		   "blink"	one when the cursor is blinking, zero when it
+				is not blinking.
 		   "shape"	1 for a block cursor, 2 for underline and 3
 				for a vertical bar.
 
@@ -8485,7 +8497,7 @@ term_getscrolled({buf})					*term_getscrolled()*
 		used for |term_getline()| and |getline()|, so that: >
 			term_getline(buf, N)
 <		is equal to: >
-			`getline(N + term_getscrolled(buf))
+			getline(N + term_getscrolled(buf))
 <		(if that line exists).
 
 		{buf} is used as with |term_getsize()|.
@@ -9115,7 +9127,7 @@ win_getid([{win} [, {tab}]])				*win_getid()*
 		Get the |window-ID| for the specified window.
 		When {win} is missing use the current window.
 		With {win} this is the window number.  The top window has
-		number 1.  Use `win_getid(winnr())` for the current window.
+		number 1.
 		Without {tab} use the current tab, otherwise the tab with
 		number {tab}.  The first tab has number one.
 		Return zero if the window cannot be found.

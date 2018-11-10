@@ -2108,6 +2108,13 @@ typedef enum {
     PASTE_ONE_CHAR	/* return first character */
 } paste_mode_T;
 
+// Argument for flush_buffers().
+typedef enum {
+    FLUSH_MINIMAL,
+    FLUSH_TYPEAHEAD,	// flush current typebuf contents
+    FLUSH_INPUT		// flush typebuf and inchar() input
+} flush_buffers_T;
+
 #include "ex_cmds.h"	    /* Ex command defines */
 #include "spell.h"	    /* spell checking stuff */
 

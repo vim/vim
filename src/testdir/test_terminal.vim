@@ -478,6 +478,31 @@ func Test_terminal_cwd()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_terminal_cwd_failure()
+  " Case 1: Provided directory is not actually a directory.  Attempt to make
+  " the file executable as well.
+  call writefile([], 'Xfile')
+  call setfperm('Xfile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xfile'})", 'E475:')
+  call delete('Xfile')
+
+  " Case 2: Directory does not exist.
+  call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
+
+  " Case 3: Directory exists but is not accessible.
+  " Skip this for root, it will be accessible anyway.
+  if $USER != 'root'
+    call mkdir('XdirNoAccess', '', '0600')
+    " return early if the directory permissions could not be set properly
+    if getfperm('XdirNoAccess')[2] == 'x'
+      call delete('XdirNoAccess', 'rf')
+      return
+    endif
+    call assert_fails("call term_start(&shell, {'cwd': 'XdirNoAccess'})", 'E475:')
+    call delete('XdirNoAccess', 'rf')
+  endif
+endfunc
+
 func Test_terminal_servername()
   if !has('clientserver')
     return

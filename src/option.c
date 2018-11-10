@@ -1755,12 +1755,12 @@ static struct vimoption options[] =
     {"langmap",     "lmap", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_SECURE,
 #ifdef FEAT_LANGMAP
 			    (char_u *)&p_langmap, PV_NONE,
-			    {(char_u *)"",	/* unmatched } */
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL,
+			    {(char_u *)NULL, (char_u *)0L}
 #endif
-				(char_u *)0L} SCTX_INIT},
+			    SCTX_INIT},
     {"langmenu",    "lm",   P_STRING|P_VI_DEF|P_NFNAME,
 #if defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)
 			    (char_u *)&p_lm, PV_NONE,
@@ -4256,11 +4256,17 @@ set_helplang_default(char_u *lang)
 	    p_hlg = empty_option;
 	else
 	{
-	    /* zh_CN becomes "cn", zh_TW becomes "tw". */
+	    // zh_CN becomes "cn", zh_TW becomes "tw"
 	    if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
 	    {
 		p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
 		p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
+	    }
+	    // any C like setting, such as C.UTF-8, becomes "en"
+	    else if (STRLEN(p_hlg) >= 1 && *p_hlg == 'C')
+	    {
+		p_hlg[0] = 'e';
+		p_hlg[1] = 'n';
 	    }
 	    p_hlg[2] = NUL;
 	}
@@ -5790,20 +5796,32 @@ check_string_option(char_u **pp)
 }
 
 /*
- * Mark a terminal option as allocated, found by a pointer into term_strings[].
+ * Return the option index found by a pointer into term_strings[].
+ * Return -1 if not found.
  */
-    void
-set_term_option_alloced(char_u **p)
+    int
+get_term_opt_idx(char_u **p)
 {
-    int		opt_idx;
+    int opt_idx;
 
     for (opt_idx = 1; options[opt_idx].fullname != NULL; opt_idx++)
 	if (options[opt_idx].var == (char_u *)p)
-	{
-	    options[opt_idx].flags |= P_ALLOCED;
-	    return;
-	}
-    return; /* cannot happen: didn't find it! */
+	    return opt_idx;
+    return -1; // cannot happen: didn't find it!
+}
+
+/*
+ * Mark a terminal option as allocated, found by a pointer into term_strings[].
+ * Return the option index or -1 if not found.
+ */
+    int
+set_term_option_alloced(char_u **p)
+{
+    int		opt_idx = get_term_opt_idx(p);
+
+    if (opt_idx >= 0)
+	options[opt_idx].flags |= P_ALLOCED;
+    return opt_idx;
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -8237,6 +8255,32 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
 	    curwin->w_p_script_ctx[indir & PV_MASK] = new_script_ctx;
     }
 }
+
+/*
+ * Set the script_ctx for a termcap option.
+ * "name" must be the two character code, e.g. "RV".
+ * When "name" is NULL use "opt_idx".
+ */
+    void
+set_term_option_sctx_idx(char *name, int opt_idx)
+{
+    char_u  buf[5];
+    int	    idx;
+
+    if (name == NULL)
+	idx = opt_idx;
+    else
+    {
+	buf[0] = 't';
+	buf[1] = '_';
+	buf[2] = name[0];
+	buf[3] = name[1];
+	buf[4] = 0;
+	idx = findoption(buf);
+    }
+    if (idx >= 0)
+	set_option_sctx_idx(idx, OPT_GLOBAL, current_sctx);
+}
 #endif
 
 /*
@@ -10045,6 +10089,10 @@ showoptions(
 	item_count = 0;
 	for (p = &options[0]; p->fullname != NULL; p++)
 	{
+	    // apply :filter /pat/
+	    if (message_filtered((char_u *) p->fullname))
+		continue;
+
 	    varp = NULL;
 	    isterm = istermoption(p);
 	    if (opt_flags != 0)
@@ -10445,7 +10493,7 @@ free_termoptions(void)
 {
     struct vimoption   *p;
 
-    for (p = &options[0]; p->fullname != NULL; p++)
+    for (p = options; p->fullname != NULL; p++)
 	if (istermoption(p))
 	{
 	    if (p->flags & P_ALLOCED)
@@ -10455,6 +10503,10 @@ free_termoptions(void)
 	    *(char_u **)(p->var) = empty_option;
 	    p->def_val[VI_DEFAULT] = empty_option;
 	    p->flags &= ~(P_ALLOCED|P_DEF_ALLOCED);
+#ifdef FEAT_EVAL
+	    // remember where the option was cleared
+	    set_option_sctx_idx((int)(p - options), OPT_GLOBAL, current_sctx);
+#endif
 	}
     clear_termcodes();
 }
@@ -12744,17 +12796,18 @@ tabstop_set(char_u *var, int **array)
     int t;
     char_u *cp;
 
-    if ((!var[0] || (var[0] == '0' && !var[1])))
+    if (var[0] == NUL || (var[0] == '0' && var[1] == NUL))
     {
 	*array = NULL;
 	return TRUE;
     }
 
-    for (cp = var; *cp; ++cp)
+    for (cp = var; *cp != NUL; ++cp)
     {
-	if (cp == var || *(cp - 1) == ',')
+	if (cp == var || cp[-1] == ',')
 	{
 	    char_u *end;
+
 	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
 	    {
 		if (cp != end)
@@ -12767,7 +12820,7 @@ tabstop_set(char_u *var, int **array)
 
 	if (VIM_ISDIGIT(*cp))
 	    continue;
-	if (*cp == ',' && cp > var && *(cp - 1) != ',')
+	if (cp[0] == ',' && cp > var && cp[-1] != ',' && cp[1] != NUL)
 	{
 	    ++valcount;
 	    continue;
@@ -12776,16 +12829,16 @@ tabstop_set(char_u *var, int **array)
 	return FALSE;
     }
 
-    *array = (int *) alloc((unsigned) ((valcount + 1) * sizeof(int)));
+    *array = (int *)alloc((unsigned) ((valcount + 1) * sizeof(int)));
     (*array)[0] = valcount;
 
     t = 1;
-    for (cp = var; *cp;)
+    for (cp = var; *cp != NUL;)
     {
 	(*array)[t++] = atoi((char *)cp);
-	while (*cp && *cp != ',')
+	while (*cp  != NUL && *cp != ',')
 	    ++cp;
-	if (*cp)
+	if (*cp != NUL)
 	    ++cp;
     }
 
