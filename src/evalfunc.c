@@ -6973,6 +6973,7 @@ f_index(typval_T *argvars, typval_T *rettv)
 		return;
 	    }
 	}
+	return;
     }
     else if (argvars[0].v_type != VAR_LIST)
     {
