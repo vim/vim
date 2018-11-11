@@ -2699,15 +2699,16 @@ qf_find_help_win(void)
 }
 
 /*
- * Find a help window or open one.
+ * Find a help window or open one. If 'newwin' is TRUE, then open a new help
+ * window.
  */
     static int
-jump_to_help_window(qf_info_T *qi, int *opened_window)
+jump_to_help_window(qf_info_T *qi, int newwin, int *opened_window)
 {
     win_T	*wp;
     int		flags;
 
-    if (cmdmod.tab != 0)
+    if (cmdmod.tab != 0 || newwin)
 	wp = NULL;
     else
 	wp = qf_find_help_win();
@@ -2721,8 +2722,10 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (cmdmod.split == 0 && curwin->w_width != Columns
 		&& curwin->w_width < 80)
 	    flags |= WSP_TOP;
-	if (IS_LL_STACK(qi))
-	    flags |= WSP_NEWLOC;  // don't copy the location list
+	// If the user asks to open a new window, then copy the location list.
+	// Otherwise, don't copy the location list.
+	if (IS_LL_STACK(qi) && !newwin)
+	    flags |= WSP_NEWLOC;
 
 	if (win_split(0, flags) == FAIL)
 	    return FAIL;
@@ -2732,9 +2735,11 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (curwin->w_height < p_hh)
 	    win_setheight((int)p_hh);
 
-	if (IS_LL_STACK(qi))		// not a quickfix list
+	// When using location list, the new window should use the supplied
+	// location list. If the user asks to open a new window, then the new
+	// window will get a copy of the location list.
+	if (IS_LL_STACK(qi) && !newwin)
 	{
-	    // The new window should use the supplied location list
 	    curwin->w_llist = qi;
 	    qi->qf_refcount++;
 	}
@@ -2915,20 +2920,26 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 /*
  * Find a suitable window for opening a file (qf_fnum) from the
  * quickfix/location list and jump to it.  If the file is already opened in a
- * window, jump to it. Otherwise open a new window to display the file. This is
- * called from either a quickfix or a location list window.
+ * window, jump to it. Otherwise open a new window to display the file. If
+ * 'newwin' is TRUE, then always open a new window. This is called from either
+ * a quickfix or a location list window.
  */
     static int
-qf_jump_to_usable_window(int qf_fnum, int *opened_window)
+qf_jump_to_usable_window(int qf_fnum, int newwin, int *opened_window)
 {
     win_T	*usable_win_ptr = NULL;
     int		usable_win;
-    qf_info_T	*ll_ref;
+    qf_info_T	*ll_ref = NULL;
     win_T	*win;
 
     usable_win = 0;
 
-    ll_ref = curwin->w_llist_ref;
+    // If opening a new window, then don't use the location list referred by
+    // the current window.  Otherwise two windows will refer to the same
+    // location list.
+    if (!newwin)
+	ll_ref = curwin->w_llist_ref;
+
     if (ll_ref != NULL)
     {
 	// Find a non-quickfix window with this location list
@@ -2952,7 +2963,7 @@ qf_jump_to_usable_window(int qf_fnum, int *opened_window)
 
     // If there is only one window and it is the quickfix window, create a
     // new one above the quickfix window.
-    if ((ONE_WINDOW && bt_quickfix(curbuf)) || !usable_win)
+    if ((ONE_WINDOW && bt_quickfix(curbuf)) || !usable_win || newwin)
     {
 	if (qf_open_new_file_win(ll_ref) != OK)
 	    return FAIL;
@@ -3146,17 +3157,22 @@ qf_jump_print_msg(
 
 /*
  * Find a usable window for opening a file from the quickfix/location list. If
- * a window is not found then open a new window.
+ * a window is not found then open a new window. If 'newwin' is TRUE, then open
+ * a new window.
  * Returns OK if successfully jumped or opened a window. Returns FAIL if not
  * able to jump/open a window.  Returns NOTDONE if a file is not associated
  * with the entry.
  */
     static int
-qf_jump_open_window(qf_info_T *qi, qfline_T *qf_ptr, int *opened_window)
+qf_jump_open_window(
+	qf_info_T	*qi,
+	qfline_T	*qf_ptr,
+	int		newwin,
+	int		*opened_window)
 {
     // For ":helpgrep" find a help window or open one.
     if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer) || cmdmod.tab != 0))
-	if (jump_to_help_window(qi, opened_window) == FAIL)
+	if (jump_to_help_window(qi, newwin, opened_window) == FAIL)
 	    return FAIL;
 
     // If currently in the quickfix window, find another window to show the
@@ -3168,7 +3184,8 @@ qf_jump_open_window(qf_info_T *qi, qfline_T *qf_ptr, int *opened_window)
 	if (qf_ptr->qf_fnum == 0)
 	    return NOTDONE;
 
-	if (qf_jump_to_usable_window(qf_ptr->qf_fnum, opened_window) == FAIL)
+	if (qf_jump_to_usable_window(qf_ptr->qf_fnum, newwin,
+						opened_window) == FAIL)
 	    return FAIL;
     }
 
@@ -3229,19 +3246,33 @@ qf_jump_to_buffer(
 }
 
 /*
- * jump to a quickfix line
- * if dir == FORWARD go "errornr" valid entries forward
- * if dir == BACKWARD go "errornr" valid entries backward
- * if dir == FORWARD_FILE go "errornr" valid entries files backward
- * if dir == BACKWARD_FILE go "errornr" valid entries files backward
+ * Jump to a quickfix line.
+ * If dir == FORWARD go "errornr" valid entries forward.
+ * If dir == BACKWARD go "errornr" valid entries backward.
+ * If dir == FORWARD_FILE go "errornr" valid entries files backward.
+ * If dir == BACKWARD_FILE go "errornr" valid entries files backward
  * else if "errornr" is zero, redisplay the same line
- * else go to entry "errornr"
+ * else go to entry "errornr".
  */
     void
 qf_jump(qf_info_T	*qi,
 	int		dir,
 	int		errornr,
 	int		forceit)
+{
+    qf_jump_newwin(qi, dir, errornr, forceit, FALSE);
+}
+
+/*
+ * As qf_info().
+ * If 'newwin' is TRUE, then open the file in a new window.
+ */
+    void
+qf_jump_newwin(qf_info_T	*qi,
+	int		dir,
+	int		errornr,
+	int		forceit,
+	int		newwin)
 {
     qf_list_T		*qfl;
     qfline_T		*qf_ptr;
@@ -3288,7 +3319,7 @@ qf_jump(qf_info_T	*qi,
 	// window
 	print_message = FALSE;
 
-    retval = qf_jump_open_window(qi, qf_ptr, &opened_window);
+    retval = qf_jump_open_window(qi, qf_ptr, newwin, &opened_window);
     if (retval == FAIL)
 	goto failed;
     if (retval == NOTDONE)
@@ -3824,13 +3855,9 @@ qf_view_result(int split)
 
     if (split)
     {
-	char_u      cmd[32];
-
-	vim_snprintf((char *)cmd, sizeof(cmd), "split +%ld%s",
-		(long)curwin->w_cursor.lnum,
-		IS_LL_WINDOW(curwin) ? "ll" : "cc");
-	if (do_cmdline_cmd(cmd) == OK)
-	    do_cmdline_cmd((char_u *) "clearjumps");
+	// Open the selected entry in a new window
+	qf_jump_newwin(qi, 0, (long)curwin->w_cursor.lnum, FALSE, TRUE);
+	do_cmdline_cmd((char_u *) "clearjumps");
 	return;
     }
 
