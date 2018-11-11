@@ -29,9 +29,7 @@
 #endif
 
 static char *e_listarg = N_("E686: Argument of %s must be a List");
-#ifdef FEAT_QUICKFIX
 static char *e_stringreq = N_("E928: String required");
-#endif
 
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
