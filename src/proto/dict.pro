@@ -1,5 +1,6 @@
 /* dict.c */
 dict_T *dict_alloc(void);
+dict_T *dict_alloc_id(alloc_id_T id);
 dict_T *dict_alloc_lock(int lock);
 int rettv_dict_alloc(typval_T *rettv);
 void rettv_dict_set(typval_T *rettv, dict_T *d);
