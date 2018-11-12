@@ -1323,7 +1323,7 @@ $(NEW_TESTS):
 	$(MAKE) /NOLOGO -f Make_dos.mak nolog
 	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
 	$(MAKE) /NOLOGO -f Make_dos.mak report
-	cat messages
+	type messages
 	cd ..
 
 ###########################################################################
