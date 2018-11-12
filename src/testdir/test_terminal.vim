@@ -1660,12 +1660,6 @@ func Test_terminal_hidden_and_close()
 endfunc
 
 func Test_terminal_does_not_truncate_last_newlines()
-  " FIXME: currently doens't work for Windows
-  if has('win32')
-    return
-  endif
-
-  let cmd = 'cat'
   let contents = [
   \   [ 'One', '', 'X' ],
   \   [ 'Two', '', '' ],
@@ -1674,11 +1668,15 @@ func Test_terminal_does_not_truncate_last_newlines()
 
   for c in contents
     call writefile(c, 'Xfile')
-    exec 'term' cmd 'Xfile'
+    if has('win32')
+      term cmd /c type Xfile
+    else
+      term cat Xfile
+    endif
     let bnr = bufnr('$')
     call assert_equal('terminal', getbufvar(bnr, '&buftype'))
     call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
-    sleep 50m
+    sleep 100m
     call assert_equal(c, getline(1, line('$')))
     quit
   endfor
