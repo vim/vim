@@ -5035,9 +5035,9 @@ mch_call_shell(
     {
 	/* Use a terminal window to run the command in. */
 	x = mch_call_shell_terminal(cmd, options);
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
 	resettitle();
-#endif
+# endif
 	return x;
     }
 #endif
@@ -7341,7 +7341,7 @@ mch_copy_file_attribute(char_u *from, char_u *to)
  */
 
 /* These magic numbers are from the MS header files */
-#define MIN_STACK_WINNT 2
+# define MIN_STACK_WINNT 2
 
 /*
  * This function does the same thing as _resetstkoflw(), which is only
@@ -7586,7 +7586,7 @@ fix_arg_enc(void)
 	{
 	    int literal = used_file_literal;
 
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 	    /* When using diff mode may need to concatenate file name to
 	     * directory name.  Just like it's done in main(). */
 	    if (used_file_diff_mode && mch_isdir(str) && GARGCOUNT > 0
@@ -7601,7 +7601,7 @@ fix_arg_enc(void)
 		    str = r;
 		}
 	    }
-#endif
+# endif
 	    /* Re-use the old buffer by renaming it.  When not using literal
 	     * names it's done by alist_expand() below. */
 	    if (used_file_literal)
@@ -7679,9 +7679,9 @@ mch_setenv(char *var, char *value, int x)
 #endif
     {
 	_putenv((char *)envbuf);
-# ifdef libintl_putenv
+#ifdef libintl_putenv
 	libintl_putenv((char *)envbuf);
-# endif
+#endif
 	/* Unlike Un*x systems, we can free the string for _putenv(). */
 	vim_free(envbuf);
     }
@@ -7742,7 +7742,7 @@ vtp_init(void)
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_bg = bg;
     default_console_color_fg = fg;
-#endif
+# endif
 
     set_console_color_rgb();
 }

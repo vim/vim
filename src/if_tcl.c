@@ -113,7 +113,7 @@ static tcl_info tclinfo = { NULL, 0, 0, 0, 0, NULL, NULL };
 
 /*
  *  List of Tcl interpreters who reference a vim window or buffer.
- *  Each buffer and window has it's own list in the w_tcl_ref or b_tcl_ref
+ *  Each buffer and window has its own list in the w_tcl_ref or b_tcl_ref
  *  struct member.  We need this because Tcl can create sub-interpreters with
  *  the "interp" command, and each interpreter can reference all windows and
  *  buffers.

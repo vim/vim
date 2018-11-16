@@ -54,7 +54,7 @@ What you can use (see test_assert.vim for an example):
 
 TO ADD A SCREEN DUMP TEST:
 
-Mostly the same as writing a new style test.  Additonally, see help on
+Mostly the same as writing a new style test.  Additionally, see help on
 "terminal-dumptest".  Put the reference dump in "dumps/Test_func_name.dump".
 
 

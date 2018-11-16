@@ -5658,7 +5658,7 @@ get_work_area(RECT *spi_rect)
     HMONITOR	    mon;
     MONITORINFO	    moninfo;
 
-    /* work out which monitor the window is on, and get *it's* work area */
+    /* work out which monitor the window is on, and get *its* work area */
     mon = MonitorFromWindow(s_hwnd, MONITOR_DEFAULTTOPRIMARY);
     if (mon != NULL)
     {

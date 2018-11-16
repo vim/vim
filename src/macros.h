@@ -192,7 +192,7 @@
 #   define mch_access(n, p)	access((n), (p))
 # endif
 # define mch_fstat(n, p)	fstat((n), (p))
-# ifdef MSWIN	/* has it's own mch_stat() function */
+# ifdef MSWIN	/* has its own mch_stat() function */
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
