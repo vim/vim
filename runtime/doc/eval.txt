@@ -2026,7 +2026,7 @@ append({lnum}, {text})		Number	append {text} below line {lnum}
 appendbufline({expr}, {lnum}, {text})
 				Number	append {text} below line {lnum}
 					in buffer {expr}
-argc( [{winid}])		Number	number of files in the argument list
+argc([{winid}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
@@ -2386,7 +2386,7 @@ sha256({string})		String	SHA256 checksum of {string}
 shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
-shiftwidth()			Number	effective value of 'shiftwidth'
+shiftwidth([{list}])		Number	effective value of 'shiftwidth'
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -7639,11 +7639,19 @@ shellescape({string} [, {special}])			*shellescape()*
 <		See also |::S|.
 
 
-shiftwidth()						*shiftwidth()*
+shiftwidth([{list}])						*shiftwidth()*
 		Returns the effective value of 'shiftwidth'. This is the
 		'shiftwidth' value unless it is zero, in which case it is the
 		'tabstop' value.  This function was introduced with patch
 		7.3.694 in 2012, everybody should have it by now.
+
+		When there is one argument {list} this is used as position
+		|List| for which to return the 'shiftwidth' value (actually
+		only the column number is relevant). This matters for the
+		'vartabstop' feature. For the {list} arguments see |cursor()|
+		function. If the 'vartabstop' setting is enabled and no
+		{list} argument is given, the current cursor position is
+		taken into account.
 
 
 simplify({filename})					*simplify()*

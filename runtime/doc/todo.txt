@@ -38,6 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+runtest: for flaky test, try more often if error message changes (5 times)
+
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
@@ -92,6 +94,19 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Users get used to "function!" because they reload a script file.  How about
+recognizing the script is re-sourced and not giving an error for the first
+function that overwrites.  Then one can leave out the exclamation mark and
+catch actual errors, overwriting a function from another script.
+
+Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990f8817a50d3264782a5...3b27c92f297540761ebbd92d04fb3
+(Christian Brabandt, 2018 Nov 4)
+
+Patch for comparing quickfix and location stacks. (Yegappan, 2018 Nov 15)
+
+Patch to fix visual block problem. (Tom M, tommm, 2018 Nov 14)
+Also will write a test.
+
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
 
@@ -115,6 +130,9 @@ Include part of #3242?
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
 
+Patch for dos installer to use logic instead of $HOME.  (Ken Takata, Nov 5,
+#3564)
+
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
@@ -125,6 +143,9 @@ Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
+
+Patch to avoid that increment or decrement gets interrupted by updating folds.
+(Christian Brabandt, 2018 Nov 6, #3599)
 
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
@@ -220,6 +241,9 @@ Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
 
 ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
 
+Patch to use forward slash for completion even when 'shellslash' is set.
+Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
+
 Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  (Daniel Hahler, 2018 Sep 25)
 Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
 values.
@@ -311,6 +335,7 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
 Maybe call it v:motiontype.  Update in #3490.
 Alternative: add the force flag to mode(), after "no".
+Patch ready to include?
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -369,7 +394,6 @@ Jun 10, #2998)
 
 Improve the installer for MS-Windows.  There are a few alternatives:
 - mui2 installer improved by Ken Takata (2018 Sep 29)
-- Add silent install option. (Shane Lee, #751)
 - Installer from Cream (Steve Hall).
 - Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
     https://github.com/gpwen/vim-installer-mui2
