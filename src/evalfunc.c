@@ -10403,25 +10403,6 @@ do_searchpair(
 	/* clear the start flag to avoid getting stuck here */
 	options &= ~SEARCH_START;
 
-	/* If the skip pattern matches, ignore this match. */
-	if (use_skip)
-	{
-	    save_pos = curwin->w_cursor;
-	    curwin->w_cursor = pos;
-	    err = FALSE;
-	    r = eval_expr_to_bool(skip, &err);
-	    curwin->w_cursor = save_pos;
-	    if (err)
-	    {
-		/* Evaluating {skip} caused an error, break here. */
-		curwin->w_cursor = save_cursor;
-		retval = -1;
-		break;
-	    }
-	    if (r)
-		continue;
-	}
-
 	if ((dir == BACKWARD && n == 3) || (dir == FORWARD && n == 2))
 	{
 	    /* Found end when searching backwards or start when searching
@@ -10439,6 +10420,25 @@ do_searchpair(
 
 	if (nest == 0)
 	{
+	    /* If the skip pattern matches, ignore this match. */
+	    if (use_skip)
+	    {
+		save_pos = curwin->w_cursor;
+		curwin->w_cursor = pos;
+		err = FALSE;
+		r = eval_expr_to_bool(skip, &err);
+		curwin->w_cursor = save_pos;
+		if (err)
+		{
+		    /* Evaluating {skip} caused an error, break here. */
+		    curwin->w_cursor = save_cursor;
+		    retval = -1;
+		    break;
+		}
+		if (r)
+		    continue;
+	    }
+
 	    /* Found the match: return matchcount or line number. */
 	    if (flags & SP_RETCOUNT)
 		++retval;
