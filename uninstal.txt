@@ -1,4 +1,4 @@
-Uninstalling Vim on Dos and MS-Windows.
+Uninstalling Vim on MS-Windows.
 
 There are three ways to remove Vim:
 
@@ -27,12 +27,11 @@ messages to avoid deleting something you want to keep.
 
 Here are guidelines for removing Vim by hand:
 
-1. Remove the "Edit with Vim" popup menu entry, if it exists.  This will only
-   be on MS-Windows 95/98/NT.  This is done by running the uninstal.exe
-   program.  It removes the registry entries for the "Edit with Vim" popup
-   menu entry.  You only need to run uninstal.exe when you have installed the
-   menu entry.  You can also run uninstal.exe from the Control panel with the
-   Add/Remove programs application.
+1. Remove the "Edit with Vim" popup menu entry, if it exists.  This is done by
+   running the uninstal.exe program.  It removes the registry entries for the
+   "Edit with Vim" popup menu entry.  You only need to run uninstal.exe when
+   you have installed the menu entry.  You can also run uninstal.exe from the
+   Control panel with the Add/Remove programs application.
    Note that uninstal.exe offers you the option to uninstal other items.  You
    can skip this.
 
@@ -55,8 +54,8 @@ Here are guidelines for removing Vim by hand:
    skip the next step.
 
 5. Delete the distributed files.  If you followed the directions, these will
-   be located in a directory like "C:\vim\vim80".  If the $VIM environment
-   variable is set, the directory will be $VIM\vim80.  Delete the "vim80"
+   be located in a directory like "C:\vim\vim81".  If the $VIM environment
+   variable is set, the directory will be $VIM\vim81.  Delete the "vim81"
    directory and all that is in it.  Warning: If you changed any of the
    distributed files, or added some of your own files, you might want to save
    these first.  But normally you would not have changed or added files here.
@@ -66,10 +65,8 @@ Here are guidelines for removing Vim by hand:
    another version of Vim.  $VIMRUNTIME is mostly not set.  Check if $PATH
    contains the path of the vim directory.  Note that $PATH may be set in
    several places, you will have to find the right one, and only delete the
-   Vim path from it.  You can most likely find the lines that set $PATH, $VIM
-   and/or $VIMRUNTIME in C:\autoexec.bat.  Under Windows NT you might need to
-   use the "System Properties" editor to change the environment variables, if
-   they are not in the C:\autoexec.bat file.  You can start it by selecting
+   Vim path from it.  You might need to use the "System Properties" editor to
+   change the environment variables.  You can start it by selecting
    Start/Settings/Control Panel and then "System".
 
 7. If you added a Vim entry in the start menu, delete it.
