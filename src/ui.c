@@ -403,7 +403,12 @@ ui_breakcheck(void)
     void
 ui_breakcheck_force(int force)
 {
+    static int	recursive = 0;
     int save_updating_screen = updating_screen;
+
+    if (recursive)
+	return;
+    recursive++;
 
     /* We do not want gui_resize_shell() to redraw the screen here. */
     ++updating_screen;
@@ -419,6 +424,8 @@ ui_breakcheck_force(int force)
 	updating_screen = TRUE;
     else
 	reset_updating_screen(FALSE);
+
+    recursive--;
 }
 
 /*****************************************************************************
