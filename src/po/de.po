@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-01 09:43+0100\n"
+"POT-Creation-Date: 2018-11-04 18:02+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -58,7 +58,7 @@ msgid "E937: Attempt to delete a buffer that is in use"
 msgstr "E937: Versuch, Puffer zu löschen, der noch benutzt wird."
 
 msgid "E515: No buffers were unloaded"
-msgstr "E515: Kein Puffer wurden entladen."
+msgstr "E515: Kein Puffer wurde entladen."
 
 msgid "E516: No buffers were deleted"
 msgstr "E516: Kein Puffer wurde gelöscht."
@@ -85,7 +85,7 @@ msgstr[0] "%d Puffer vollständig gelöscht"
 msgstr[1] "%d Puffer vollständig gelöscht"
 
 msgid "E90: Cannot unload last buffer"
-msgstr "E90: Kann letzten Puffer nicht ausladen"
+msgstr "E90: Kann letzten Puffer nicht entladen"
 
 msgid "E84: No modified buffer found"
 msgstr "E84: Keinen veränderter Puffer gefunden"
@@ -154,7 +154,7 @@ msgid "[RO]"
 msgstr "[RO]"
 
 msgid "[readonly]"
-msgstr "[Nur Lesen]"
+msgstr "[Schreibgeschützt]"
 
 #, c-format
 msgid "%ld line --%d%%--"
@@ -334,7 +334,7 @@ msgid "Patch file"
 msgstr "Patch-Datei"
 
 msgid "E816: Cannot read patch output"
-msgstr "E816: Kann Patch Ausgabe nicht lesen."
+msgstr "E816: Patch-Ausgabe kann nicht gelesen werden."
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Diff-Ausgabe kann nicht gelesen werden."
@@ -346,7 +346,7 @@ msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktueller Puffer ist nicht im Diff-Modus."
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E793: Kein weitere Puffer im diff-Modues ist modifizierbar."
+msgstr "E793: Kein weiterer Puffer im diff-Modues ist modifizierbar."
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Kein weiterer Puffer ist im Diff-Modus."
@@ -366,10 +366,10 @@ msgid "E787: Buffer changed unexpectedly"
 msgstr "E787: Puffer änderte sich unerwartet."
 
 msgid "E104: Escape not allowed in digraph"
-msgstr "E104: 'Escape' ist in einem Digraphen nicht erlaubt."
+msgstr "E104: <Escape> ist in einem Digraphen nicht erlaubt."
 
 msgid "E544: Keymap file not found"
-msgstr "E544: Datei für die Tastaturbelegung (keymap) nicht gefunden."
+msgstr "E544: Keymap-Datei für die Tastaturbelegung nicht gefunden."
 
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :loadkeymap außerhalb einer eingelesenen Datei."
@@ -378,46 +378,46 @@ msgid "E791: Empty keymap entry"
 msgstr "E791: Leerer keymap Eintrag"
 
 msgid " Keyword completion (^N^P)"
-msgstr " Stichwort-Ergänzung (^N^P)"
+msgstr " Stichwort Vervollständigung (^N^P)"
 
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 msgstr " ^X Modus (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
-msgstr " Zeilen-Ergänzung (^L^N^P)"
+msgstr " Zeilen-Vervollständigung (^L^N^P)"
 
 msgid " File name completion (^F^N^P)"
-msgstr " Dateinamen-Ergänzung (^F^N^P)"
+msgstr " Dateinamen-Vervollständigung (^F^N^P)"
 
 msgid " Tag completion (^]^N^P)"
-msgstr " Tag-Ergänzung  (^]^N^P)"
+msgstr " Tag-Vervollständigung  (^]^N^P)"
 
 msgid " Path pattern completion (^N^P)"
-msgstr " Pfadmuster-Ergänzung (^N^P)"
+msgstr " Pfad-Vervollständigung (^N^P)"
 
 msgid " Definition completion (^D^N^P)"
-msgstr " Definitions-Ergänzung (^D^N^P)"
+msgstr " Definitions-Vervollständigung (^D^N^P)"
 
 msgid " Dictionary completion (^K^N^P)"
-msgstr " Dictionary-Ergänzung (^K^N^P) "
+msgstr " Dictionary-Vervollständigung (^K^N^P) "
 
 msgid " Thesaurus completion (^T^N^P)"
-msgstr " Thesaurus-Ergänzung (^T^N^P)"
+msgstr " Thesaurus-Vervollständigung (^T^N^P)"
 
 msgid " Command-line completion (^V^N^P)"
-msgstr " Kommandozeilen-Ergänzung (^V^N^P)"
+msgstr " Kommandozeilen-Vervollständigung (^V^N^P)"
 
 msgid " User defined completion (^U^N^P)"
-msgstr " Benutzerdefinierte Ergänzung (^U^N^P)"
+msgstr " Benutzerdefinierte Vervollständigung (^U^N^P)"
 
 msgid " Omni completion (^O^N^P)"
-msgstr " Omni-Ergänzung (^O^N^P)"
+msgstr " Omni-Vervollständigung (^O^N^P)"
 
 msgid " Spelling suggestion (s^N^P)"
 msgstr " Vorschlag der Rechtschreibprüfung (s^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
-msgstr " Lokale Stichwort-Ergänzung(^N^P)"
+msgstr " Lokale Stichwort-Vervollständigung(^N^P)"
 
 msgid "Hit end of paragraph"
 msgstr "Absatzende erreicht"
@@ -492,11 +492,11 @@ msgstr "E719: Kann [:] nicht mit einem Dictionary verwenden"
 
 #, c-format
 msgid "E734: Wrong variable type for %s="
-msgstr "E734: Falscher Typ der Variable für %s="
+msgstr "E734: Falscher Variablentyp für %s="
 
 #, c-format
 msgid "E461: Illegal variable name: %s"
-msgstr "E461: Unzulässiger Name der Variable: %s"
+msgstr "E461: Unzulässiger Variablenname: %s"
 
 msgid "E806: using Float as a String"
 msgstr "E806: Float als String benutzt."
@@ -521,7 +521,7 @@ msgid "E708: [:] must come last"
 msgstr "E708: [:] muss am Schluss kommen."
 
 msgid "E709: [:] requires a List value"
-msgstr "E709: [:] benötigt eine Liste als Wert"
+msgstr "E709: [:] benötigt einen Listenwert"
 
 msgid "E710: List value has more items than target"
 msgstr "E710: Listenwert hat mehr Einträge als das Ziel."
@@ -538,10 +538,10 @@ msgstr "E108: Keine solche Variable: \"%s\""
 
 #, c-format
 msgid "E940: Cannot lock or unlock variable %s"
-msgstr "E940: Kann Variable \"%s\" nicht sperren  bzw. entsperren."
+msgstr "E940: Kann Variable \"%s\" nicht sperren bzw. entsperren."
 
 msgid "E743: variable nested too deep for (un)lock"
-msgstr "E743: Variable ist zu tief verschachtelt für (un)lock."
+msgstr "E743: Variable ist zu tief verschachtelt zum (ent)sperren."
 
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Fehlender ':' nach '?'"
@@ -720,8 +720,8 @@ msgstr "&Ok"
 #, c-format
 msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
-msgstr[0] "+-%s%3ld Zeile, "
-msgstr[1] "+-%s%3ld Zeilen, "
+msgstr[0] "+-%s%3ld Zeile: "
+msgstr[1] "+-%s%3ld Zeilen: "
 
 #, c-format
 msgid "E700: Unknown function: %s"
@@ -967,8 +967,8 @@ msgstr "E141: Kein Dateiname für Puffer %ld"
 
 msgid "E142: File not written: Writing is disabled by 'write' option"
 msgstr ""
-"E142: Datei wurde nicht geschrieben: Schreiben ist durch die Option 'write' "
-"ausgeschaltet"
+"E142: Datei wurde nicht geschrieben: Schreiben ist durch die 'write' Option "
+"deaktiviert"
 
 #, c-format
 msgid ""
@@ -1244,7 +1244,7 @@ msgstr "in '%s' nicht gefunden: \"%s\""
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
 msgstr ""
-"W20: Erfoderliche Python Version 2.x nicht unterstützt, ignoriere Datei: %s"
+"W20: Erforderliche Python Version 2.x nicht unterstützt, ignoriere Datei: %s"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
@@ -1571,7 +1571,7 @@ msgid "E196: No digraphs in this version"
 msgstr "E196: Keine Digraphen in dieser Version."
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
-msgstr "E608: Kann nicht :throw Exceptions mit 'Vim' Präfix"
+msgstr "E608: Kann nicht Exceptions mit 'Vim' Präfix werfen (:throw)"
 
 #, c-format
 msgid "Exception thrown: %s"
@@ -1681,7 +1681,7 @@ msgid "tagname"
 msgstr "Tag-Name"
 
 msgid " kind file\n"
-msgstr " verwandte Datei\n"
+msgstr " Typ Datei\n"
 
 msgid "'history' option is zero"
 msgstr "Option 'history' ist Null"
@@ -1861,7 +1861,7 @@ msgstr "E512: Fehler beim Schließen"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um sie zu "
+"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um es zu "
 "erzwingen)"
 
 #, c-format
@@ -1869,8 +1869,8 @@ msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Schreibfehler, Konvertierung fehlgeschlagen in Zeile %ld (leere 'fenc' "
-"um sie zu erzwingen)"
+"E513: Schreibfehler, Konvertierung in Zeile %ld fehlgeschlagen (leere 'fenc' "
+"um es zu erzwingen)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: Schreibfehler (Dateisystem voll?)"
@@ -1914,7 +1914,7 @@ msgid ""
 "WARNING: Original file may be lost or damaged\n"
 msgstr ""
 "\n"
-"ACHTUNG: Original-Datei könnte verloren oder zerstört sein\n"
+"ACHTUNG: Original-Datei könnte verloren oder beschädigt sein\n"
 
 msgid "don't quit the editor until the file is successfully written!"
 msgstr ""
@@ -1960,7 +1960,7 @@ msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "ACHTUNG: Die Datei wurde seit dem letzten Lesen geändert!!!"
 
 msgid "Do you really want to write to it"
-msgstr "Möchten Sie es wirklich schreiben"
+msgstr "Möchten Sie sie wirklich schreiben"
 
 #, c-format
 msgid "E208: Error writing to \"%s\""
@@ -2049,7 +2049,7 @@ msgid "E936: Cannot delete the current group"
 msgstr "E936: Kann die aktuelle Gruppe nicht löschen."
 
 msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: Lösche Autogruppe, die noch in Benutztung ist."
+msgstr "W19: Lösche Autogruppe, die noch in Benutzung ist."
 
 #, c-format
 msgid "E215: Illegal character after *: %s"
@@ -2186,10 +2186,10 @@ msgid "E616: vim_SelFile: can't get font %s"
 msgstr "E616: vim_SelFile: kann Schriftart %s nicht erhalten"
 
 msgid "E614: vim_SelFile: can't return to current directory"
-msgstr "E614: vim_SelFile: kann nicht zum laufenden Verzeichnis zurückkehren."
+msgstr "E614: vim_SelFile: kann nicht zum aktuellen Verzeichnis zurückkehren."
 
 msgid "Pathname:"
-msgstr "Pfad:"
+msgstr "Pfadname:"
 
 msgid "E615: vim_SelFile: can't get current directory"
 msgstr "E615: vim_SelFile: aktuelles Verzeichnis kann nicht ermittelt werden."
@@ -2208,7 +2208,7 @@ msgstr "Vim-Dialog"
 
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr ""
-"E232: BalloonEval kann nicht mit sowohl \"message\" und \"callback\" erzeugt "
+"E232: BalloonEval kann nicht sowohl mit \"message\" als auch \"callback\" erzeugt "
 "werden"
 
 msgid "_Cancel"
@@ -2293,7 +2293,7 @@ msgid "Open Tab..."
 msgstr "Öffne Reiter..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
-msgstr "Vim: Hauptfenster unerwartet gelöscht\n"
+msgstr "Vim: Hauptfenster unerwartet zerstört\n"
 
 msgid "&Filter"
 msgstr "&Filter"
@@ -2314,7 +2314,7 @@ msgid "Files"
 msgstr "Dateien"
 
 msgid "&OK"
-msgstr "&Ok"
+msgstr "&OK"
 
 msgid "Selection"
 msgstr "Auswahl"
@@ -2488,10 +2488,10 @@ msgid "E621: \"%s\" resource file has wrong version"
 msgstr "E621: \"%s\" Ressource-Datei hat die falsche Version."
 
 msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Unzulässiger Multi-Byte Zeichensatz"
+msgstr "E673: Inkompatible Multi-Byte Kodierung und Zeichensatz"
 
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset darf nicht leer sein mit Multi-Byte Zeichensatz."
+msgstr "E674: printmbcharset darf nicht leer sein mit Multi-Byte Kodierung."
 
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Keine Standardschriftart angegeben für Multi-Byte Ausdruck."
@@ -2537,7 +2537,7 @@ msgid "Show this message"
 msgstr "diese Nachricht anzeigen"
 
 msgid "Kill a connection"
-msgstr "Verbindung abbrechen"
+msgstr "Verbindung beenden"
 
 msgid "Reinit all connections"
 msgstr "Verbindungen reinitialisieren"
@@ -2550,7 +2550,7 @@ msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: Verwendung: cs[cope] %s"
 
 msgid "This cscope command does not support splitting the window.\n"
-msgstr "Dieser cscope-Befehl unterstützt nicht Teilen des Fensters.\n"
+msgstr "Dieser cscope-Befehl unterstützt nicht das Teilen des Fensters.\n"
 
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Verwendung: cstag <ident>"
@@ -2682,7 +2682,7 @@ msgid "E609: Cscope error: %s"
 msgstr "E609: Cscope Fehler: %s"
 
 msgid "All cscope databases reset"
-msgstr "alle cscope Datenbanken zurückgesetzt"
+msgstr "Alle cscope Datenbanken zurückgesetzt"
 
 msgid "no cscope connections\n"
 msgstr "keine cscope-Verbindungen\n"
@@ -2847,7 +2847,7 @@ msgid "unknown vimOption"
 msgstr "unbekannte vimOption"
 
 msgid "keyboard interrupt"
-msgstr "Tastatur-Unterbrechung"
+msgstr "Tastatur-Interrupt"
 
 msgid "vim error"
 msgstr "vim Fehler"
@@ -2865,8 +2865,8 @@ msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
 msgstr ""
-"E280: TCL FATALER FEHLER: reflist kaputt!? Bitte vim-dev@vim."
-"orgbenachrichtigen."
+"E280: TCL FATALER FEHLER: reflist kaputt!? Bitte vim-dev@vim.org "
+"benachrichtigen."
 
 msgid "cannot register callback command: buffer/window reference not found"
 msgstr ""
@@ -2881,7 +2881,7 @@ msgstr ""
 
 #, c-format
 msgid "E572: exit code %d"
-msgstr "E572: Ekit-Code %d"
+msgstr "E572: Exit-Code %d"
 
 msgid "cannot get line"
 msgstr "kann Zeile nicht erhalten"
@@ -3057,7 +3057,7 @@ msgid "-E\t\t\tImproved Ex mode"
 msgstr "-E\t\t\tVerbesserter Ex Modus"
 
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
-msgstr "-s\t\t\tLeiser (batch) Modus (nur für \"ex\")"
+msgstr "-s\t\t\tLeiser (Batch) Modus (nur für \"ex\")"
 
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
 msgstr "-d\t\t\tDiff Modus (wie \"vimdiff\")"
@@ -3128,7 +3128,7 @@ msgstr "-T <terminal>\tSetze Terminaltyp auf <terminal>"
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr ""
 "--not-a-term\t\tKeine Warnung ausgeben, wenn Eingabe/Ausgabe nicht auf einem "
-"Terminal ausgegebn wird"
+"Terminal ausgegeben wird"
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr ""
@@ -3293,7 +3293,7 @@ msgstr "-italicfont <Schriftart>\tBenutze <Schriftart> für geneigten Text"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr ""
-"-geometry <geom>\tbenutze <geom> für die Anfangs Abmessungen (auch mit: -"
+"-geometry <geom>\tBenutze <geom> für die Anfangs Abmessungen (auch mit: -"
 "geom)"
 
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
@@ -3398,14 +3398,14 @@ msgid ""
 "# File marks:\n"
 msgstr ""
 "\n"
-"# Datei-Marken:\n"
+"# Datei-Markierungen:\n"
 
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
 msgstr ""
 "\n"
-"# Geschichte (neueste zuerst):\n"
+"# Jumplist (neueste zuerst):\n"
 
 msgid ""
 "\n"
@@ -3430,7 +3430,7 @@ msgid "E286: Failed to open input method"
 msgstr "E286: Eingabemethode konnte nicht geöffnet werden"
 
 msgid "E287: Warning: Could not set destroy callback to IM"
-msgstr "E287: Achtung: Destroy Callabck konnte nicht auf IM gesetzt werden"
+msgstr "E287: Achtung: Destroy Callback konnte nicht auf IM gesetzt werden"
 
 msgid "E288: input method doesn't support any style"
 msgstr "E288: Eingabemethode unterstützt keinen einzigen Stil"
@@ -3466,10 +3466,10 @@ msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Block Nr. 2 nicht erhalten?"
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "E843: Fehler beim Aktualisieren der Verschlüsselung der swap Datei."
+msgstr "E843: Fehler beim Aktualisieren der Verschlüsselung der Auslagerungsdatei."
 
 msgid "E301: Oops, lost the swap file!!!"
-msgstr "E301: Ups, Verlust der Auslagerungsdatei!!!"
+msgstr "E301: Upps, Verlust der Auslagerungsdatei!!!"
 
 msgid "E302: Could not rename swap file"
 msgstr "E302: Auslagerungsdatei konnte nicht umbenannt werden"
@@ -3521,20 +3521,20 @@ msgid " cannot be used on this computer.\n"
 msgstr " kann auf diesem Rechner nicht verwendet werden.\n"
 
 msgid "The file was created on "
-msgstr "Die Datei wurde erstellt um "
+msgstr "Die Datei wurde erstellt am "
 
 msgid ""
 ",\n"
 "or the file has been damaged."
 msgstr ""
 ",\n"
-"oder die Datei wurde zerstört."
+"oder die Datei wurde beschädigt."
 
 #, c-format
 msgid ""
 "E833: %s is encrypted and this version of Vim does not support encryption"
 msgstr ""
-"E833: %s is verschlüsselt, aber diese Version von Vim unterstützt "
+"E833: %s ist verschlüsselt, aber diese Version von Vim unterstützt "
 "Verschlüsselung nicht."
 
 msgid " has been damaged (page size is smaller than minimum value).\n"
@@ -3553,7 +3553,7 @@ msgstr "E308: Achtung: Die Originaldatei könnte verändert worden sein"
 
 #, c-format
 msgid "Swap file is encrypted: \"%s\""
-msgstr "Swap Datei is verschlüsselt: \"%s\""
+msgstr "Swap Datei ist verschlüsselt: \"%s\""
 
 msgid ""
 "\n"
@@ -3587,7 +3587,7 @@ msgstr ""
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
-msgstr "E309: Block 1 kann nicht nicht von %s gelesen werden"
+msgstr "E309: Block 1 von %s kann nicht gelesen werden"
 
 msgid "???MANY LINES MISSING"
 msgstr "???VIELE ZEILEN FEHLEN"
@@ -3630,7 +3630,7 @@ msgid "See \":help E312\" for more information."
 msgstr "Lesen Sie \":help E312\" für weitere Informationen."
 
 msgid "Recovery completed. You should check if everything is OK."
-msgstr "Wiederherstellung beendet. Prüfen Sie, ob alles alles OK ist."
+msgstr "Wiederherstellung beendet. Prüfen Sie, ob alles OK ist."
 
 msgid ""
 "\n"
@@ -3712,14 +3712,14 @@ msgstr ""
 "     Benutzer-Name: "
 
 msgid "   host name: "
-msgstr "   Host-Name: "
+msgstr "   Hostname: "
 
 msgid ""
 "\n"
 "         host name: "
 msgstr ""
 "\n"
-"         Host-Name: "
+"         Hostname: "
 
 msgid ""
 "\n"
@@ -3775,7 +3775,7 @@ msgid "stack_idx should be 0"
 msgstr "stack_idx sollte 0 sein"
 
 msgid "E318: Updated too many blocks?"
-msgstr "E318: Zu viele Blocks aktualisiert?"
+msgstr "E318: Zu viele Blöcke aktualisiert?"
 
 msgid "E317: pointer block id wrong 4"
 msgstr "E317: Zeiger Block id falsch 4"
@@ -3828,7 +3828,7 @@ msgid "      CANNOT BE FOUND"
 msgstr "      WURDE NICHT GEFUNDEN"
 
 msgid "      NEWER than swap file!\n"
-msgstr "      neuer als Auslagerungsdatei!\n"
+msgstr "      NEUER als Auslagerungsdatei!\n"
 
 msgid ""
 "\n"
@@ -3913,7 +3913,7 @@ msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Teil des Menüpunkt-Pfades muss zum Untermenü führen"
 
 msgid "E328: Menu only exists in another mode"
-msgstr "E328: Menü existiert nur in anderen Modus"
+msgstr "E328: Menü existiert nur in anderen Modi"
 
 #, c-format
 msgid "E329: No menu \"%s\""
@@ -4107,7 +4107,7 @@ msgid "E546: Illegal mode"
 msgstr "E546: Unzulässiger Modus"
 
 msgid "E547: Illegal mouseshape"
-msgstr "E547: Unzulässiger Mauszeiger"
+msgstr "E547: Unzulässiger Mauszeigerform"
 
 msgid "E548: digit expected"
 msgstr "E548: Ziffer erwartet"
@@ -4170,7 +4170,7 @@ msgid "E774: 'operatorfunc' is empty"
 msgstr "E774: 'operatorfunc' is empty"
 
 msgid "E775: Eval feature not available"
-msgstr "E775: Evaluierungsfunktion nicht verfügbar"
+msgstr "E775: Eval Eigenschaft nicht verfügbar"
 
 msgid "Warning: terminal cannot highlight"
 msgstr "Achtung: Terminal unterstützt keine Hervorhebung"
@@ -4280,7 +4280,7 @@ msgid ""
 "E883: search pattern and expression register may not contain two or more "
 "lines"
 msgstr ""
-"E883: Suchmuster und Ausdrucksregister dürfen nicht mehr als 1 Zeile "
+"E883: Suchmuster- und Ausdrucksregister dürfen nicht mehr als 1 Zeile "
 "enthalten."
 
 #, c-format
@@ -4797,7 +4797,7 @@ msgid "Cannot open file \"%s\""
 msgstr "Kann Datei \"%s\" nicht öffnen"
 
 msgid "E681: Buffer is not loaded"
-msgstr "E681: Buffer ist nicht geladen"
+msgstr "E681: Puffer ist nicht geladen"
 
 msgid "E777: String or List expected"
 msgstr "E777: Zeichenkette oder Liste erwartet"
@@ -5345,7 +5345,7 @@ msgstr "Lese Wörterbuch-Datei %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
-msgstr "E760: Keine Wörter gezählt in %s"
+msgstr "E760: Kein Wortanzahl in %s"
 
 #, c-format
 msgid "line %6d, word %6ld - %s"
@@ -5404,7 +5404,7 @@ msgid "Ignored %d words with non-ASCII characters"
 msgstr "%d Wörter mit nicht-ASCII Zeichen ignoriert"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
-msgstr "E845: Nicht ausreichend Speicher, Wortlist wird unvollständig sein"
+msgstr "E845: Nicht ausreichend Speicher, Wortliste wird unvollständig sein"
 
 #, c-format
 msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
@@ -5455,7 +5455,7 @@ msgstr "Fertig!"
 
 #, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E765: 'spellfile' hat nicht %ld Einträge"
+msgstr "E765: 'spellfile' hat keine %ld Einträge"
 
 #, c-format
 msgid "Word '%.*s' removed from %s"
@@ -5685,10 +5685,10 @@ msgid "E418: Illegal value: %s"
 msgstr "E418: Unzulässiger Wert: %s"
 
 msgid "E419: FG color unknown"
-msgstr "E419: FG Farbe unbekannt"
+msgstr "E419: Vordergrundfarbe unbekannt"
 
 msgid "E420: BG color unknown"
-msgstr "E420: BG Farbe unbekannt"
+msgstr "E420: Hintergrundfarbe unbekannt"
 
 #, c-format
 msgid "E421: Color name or number not recognized: %s"
@@ -5728,7 +5728,7 @@ msgid "E426: tag not found: %s"
 msgstr "E426: Konnte Tag \"%s\" nicht finden"
 
 msgid "  # pri kind tag"
-msgstr "   # pri verw. tag"
+msgstr "   # Prio Art Tag"
 
 msgid "file\n"
 msgstr "Datei\n"
@@ -5773,7 +5773,7 @@ msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: Tag-Dateipfad wurde abgeschnitten für %s\n"
 
 msgid "Ignoring long line in tags file"
-msgstr "Ignoriere zu lange Zeile in Tagsdatei"
+msgstr "Ignoriere zu lange Zeile in Tag-Datei"
 
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
@@ -5781,7 +5781,7 @@ msgstr "E431: Format Fehler in Tag-Datei \"%s\""
 
 #, c-format
 msgid "Before byte %ld"
-msgstr "Vor byte %ld"
+msgstr "Vor Byte %ld"
 
 #, c-format
 msgid "E432: Tags file not sorted: %s"
@@ -5847,7 +5847,7 @@ msgid "active"
 msgstr "aktiv"
 
 msgid "running"
-msgstr "Führe aus"
+msgstr "führe aus"
 
 msgid "finished"
 msgstr "beendet"
@@ -5887,7 +5887,7 @@ msgstr "E825: Beschädigte Undo-Datei (%s): %s"
 
 msgid "Cannot write undo file in any directory in 'undodir'"
 msgstr ""
-"Undo-Datei kann nicht in eines der Verzeichnisse aus 'undodir' geschrieben "
+"Undo-Datei kann in keines der Verzeichnisse aus 'undodir' geschrieben "
 "werden."
 
 #, c-format
@@ -6106,7 +6106,7 @@ msgid "E124: Missing '(': %s"
 msgstr "E124: Fehlendes '(': %s"
 
 msgid "E862: Cannot use g: here"
-msgstr "E862: g: kann nicht hier benutzt werden"
+msgstr "E862: g: kann hier nicht benutzt werden"
 
 #, c-format
 msgid "E932: Closure function should not be at top level: %s"
@@ -6365,7 +6365,7 @@ msgid "Vim is open source and freely distributable"
 msgstr "Vim ist Open Source und kann frei weitergegeben werden"
 
 msgid "Help poor children in Uganda!"
-msgstr "Helfen Sie armen Kindern in Uganda!"
+msgstr "Hilf armen Kindern in Uganda!"
 
 msgid "type  :help iccf<Enter>       for information "
 msgstr "Tippe  :help iccf<Enter>        für Informationen darüber "
@@ -6412,7 +6412,7 @@ msgid "Sponsor Vim development!"
 msgstr "Unterstützen Sie die Entwicklung von Vim"
 
 msgid "Become a registered Vim user!"
-msgstr "Werden Sie ein registrierter Benutzer von Vim!"
+msgstr "Werd ein registrierter Vim-Nutzer!"
 
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "Tippe  :help sponsor<Enter>     für mehr Informationen    "
@@ -6531,7 +6531,7 @@ msgid "E471: Argument required"
 msgstr "E471: Argument benötigt"
 
 msgid "E10: \\ should be followed by /, ? or &"
-msgstr "E10: \\ sollte von /, ? or & gefolgt werden"
+msgstr "E10: \\ sollte von /, ? oder & gefolgt werden"
 
 msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
 msgstr "E11: Ungültig im Kommandozeilenfenster; <CR> führt aus, CTRL-C beendet"
@@ -6631,7 +6631,7 @@ msgid "E448: Could not load library function %s"
 msgstr "E448: Bibliotheksfunktion %s konnte nicht geladen werden"
 
 msgid "E19: Mark has invalid line number"
-msgstr "E19: Marke hat ungültige Zeilennummer"
+msgstr "E19: Markierung hat ungültige Zeilennummer"
 
 msgid "E20: Mark not set"
 msgstr "E20: Markierung nicht gesetzt"
@@ -6758,7 +6758,7 @@ msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Kann nicht ins vorhergehende Verzeichnis wechseln"
 
 msgid "E42: No Errors"
-msgstr "E42: Kein Fehler"
+msgstr "E42: Keine Fehler"
 
 msgid "E776: No location list"
 msgstr "E776: Keine Positionsliste"
@@ -6830,10 +6830,10 @@ msgid "E72: Close error on swap file"
 msgstr "E72: Fehler beim Schließen der Auslagerungsdatei"
 
 msgid "E73: tag stack empty"
-msgstr "E73: tag Stapel leer."
+msgstr "E73: Tag Stapel leer."
 
 msgid "E74: Command too complex"
-msgstr "E74: Befehl zu kompliziert"
+msgstr "E74: Befehl zu komplex"
 
 msgid "E75: Name too long"
 msgstr "E75: Name zu lang"
@@ -6863,7 +6863,7 @@ msgid "E80: Error while writing"
 msgstr "E80: Fehler während des Schreibens"
 
 msgid "E939: Positive count required"
-msgstr "E939: Positiver Zahl benötigt"
+msgstr "E939: Positive Zahl benötigt"
 
 msgid "E81: Using <SID> not in a script context"
 msgstr "E81: <SID> wurde nicht in einer Skript-Umgebung benutzt"
@@ -6921,10 +6921,10 @@ msgid "empty keys are not allowed"
 msgstr "Leerer Schlüssel nicht erlaubt"
 
 msgid "dictionary is locked"
-msgstr "Dictionary is gesperrt"
+msgstr "Dictionary ist gesperrt"
 
 msgid "list is locked"
-msgstr "Liste is gesperrt"
+msgstr "Liste ist gesperrt"
 
 #, c-format
 msgid "failed to add key '%s' to dictionary"
@@ -7009,7 +7009,7 @@ msgstr "Hashtab veränderte sich während der Initialisierung"
 #, c-format
 msgid "expected sequence element of size 2, but got sequence of size %d"
 msgstr ""
-"erwartete Sequenz Element der Größe 2, but erhielt Sequenz der Größe %d"
+"erwartete Sequenz Element der Größe 2, erhielt jedoch Sequenz der Größe %d"
 
 msgid "list constructor does not accept keyword arguments"
 msgstr "Listen Konstruktor akzeptiert keine Keyword Argumente"
@@ -7031,7 +7031,7 @@ msgstr ""
 
 #, c-format
 msgid "internal error: no vim list item %d"
-msgstr "interner Fehler: Keine Vim Listobjekt %d"
+msgstr "interner Fehler: Kein Vim Listobjekt %d"
 
 msgid "internal error: not enough list items"
 msgstr "interner Fehler: nicht genügend Listobjekte"
@@ -7080,7 +7080,7 @@ msgstr "Konnte globale Option %s nicht aufheben"
 
 #, c-format
 msgid "unable to unset option %s which does not have global value"
-msgstr "konnte option %s nicht aufheben, da sie keinen globalen Wert hat"
+msgstr "konnte Option %s nicht aufheben, da sie keinen globalen Wert hat"
 
 msgid "attempt to refer to deleted tab page"
 msgstr "Versuch, Bezug auf einen gelöschten Reiter zu nehmen"

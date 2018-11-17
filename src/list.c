@@ -86,6 +86,19 @@ list_alloc(void)
 }
 
 /*
+ * list_alloc() with an ID for alloc_fail().
+ */
+    list_T *
+list_alloc_id(alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return NULL;
+#endif
+    return (list_alloc());
+}
+
+/*
  * Allocate an empty list for a return value, with reference count set.
  * Returns OK or FAIL.
  */

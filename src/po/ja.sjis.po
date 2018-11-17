@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-18 00:43+0900\n"
-"PO-Revision-Date: 2017-05-18 00:45+0900\n"
+"POT-Creation-Date: 2018-11-13 19:44+0900\n"
+"PO-Revision-Date: 2018-11-16 09:41+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -69,26 +69,20 @@ msgstr "E516: 削除されたバッファはありません"
 msgid "E517: No buffers were wiped out"
 msgstr "E517: 破棄されたバッファはありません"
 
-msgid "1 buffer unloaded"
-msgstr "1 個のバッファが解放されました"
+#, c-format
+msgid "%d buffer unloaded"
+msgid_plural "%d buffers unloaded"
+msgstr[0] "%d 個のバッファが解放されました"
 
 #, c-format
-msgid "%d buffers unloaded"
-msgstr "%d 個のバッファが解放されました"
-
-msgid "1 buffer deleted"
-msgstr "1 個のバッファが削除されました"
+msgid "%d buffer deleted"
+msgid_plural "%d buffers deleted"
+msgstr[0] "%d 個のバッファが削除されました"
 
 #, c-format
-msgid "%d buffers deleted"
-msgstr "%d 個のバッファが削除されました"
-
-msgid "1 buffer wiped out"
-msgstr "1 個のバッファが破棄されました"
-
-#, c-format
-msgid "%d buffers wiped out"
-msgstr "%d 個のバッファが破棄されました"
+msgid "%d buffer wiped out"
+msgid_plural "%d buffers wiped out"
+msgstr[0] "%d 個のバッファが破棄されました"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: 最後のバッファは解放できません"
@@ -162,12 +156,9 @@ msgid "[readonly]"
 msgstr "[読込専用]"
 
 #, c-format
-msgid "1 line --%d%%--"
-msgstr "1 行 --%d%%--"
-
-#, c-format
-msgid "%ld lines --%d%%--"
-msgstr "%ld 行 --%d%%--"
+msgid "%ld line --%d%%--"
+msgid_plural "%ld lines --%d%%--"
+msgstr[0] "%ld 行 --%d%%--"
 
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
@@ -321,11 +312,18 @@ msgstr "E737: キーは既に存在します: %s"
 msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: %ld 以上のバッファはdiffできません"
 
+#, c-format
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr "バッファ \"%s\" 用に内部diffを使うためのメモリが不足しています"
+
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: 一時ファイルの読込もしくは書込ができません"
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: 差分を作成できません"
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: 内部diff作成時に問題が発生しました"
 
 msgid "Patch file"
 msgstr "パッチファイル"
@@ -335,6 +333,9 @@ msgstr "E816: patchの出力を読込めません"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: diffの出力を読込めません"
+
+msgid "E959: Invalid diff format."
+msgstr "E959: 無効なdiff形式です"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: 現在のバッファは差分モードではありません"
@@ -667,6 +668,9 @@ msgstr ""
 "\n"
 "\t最後にセットしたスクリプト: "
 
+msgid " line "
+msgstr " 行 "
+
 msgid "E691: Can only compare List with List"
 msgstr "E691: リスト型はリスト型としか比較できません"
 
@@ -744,6 +748,9 @@ msgstr "E916: 有効なジョブではありません"
 msgid "E701: Invalid type for len()"
 msgstr "E701: len() には無効な型です"
 
+msgid "E957: Invalid window number"
+msgstr "E957: 無効なウィンドウ番号です"
+
 #, c-format
 msgid "E798: ID is reserved for \":match\": %ld"
 msgstr "E798: ID は \":match\" のために予\約されています: %ld"
@@ -789,6 +796,10 @@ msgstr "E258: クライアントへ送ることができません"
 #, c-format
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: 無効な操作です: %s"
+
+#, c-format
+msgid "E962: Invalid action: '%s'"
+msgstr "E962: 無効な操作です: %s"
 
 msgid "sort() argument"
 msgstr "sort() の引数"
@@ -839,15 +850,13 @@ msgstr "> %d, 16進数 %04x, 8進数 %o"
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, 16進数 %08x, 8進数 %o"
 
-msgid "E134: Move lines into themselves"
-msgstr "E134: 行をそれ自身には移動できません"
-
-msgid "1 line moved"
-msgstr "1 行が移動されました"
+msgid "E134: Cannot move a range of lines into itself"
+msgstr "E134: 行の範囲をそれ自身には移動できません"
 
 #, c-format
-msgid "%ld lines moved"
-msgstr "%ld 行が移動されました"
+msgid "%ld line moved"
+msgid_plural "%ld lines moved"
+msgstr[0] "%ld 行が移動されました"
 
 #, c-format
 msgid "%ld lines filtered"
@@ -999,26 +1008,25 @@ msgstr "%s に置換しますか? (y/n/a/q/l/^E/^Y)"
 msgid "(Interrupted) "
 msgstr "(割込まれました) "
 
-msgid "1 match"
-msgstr "1 箇所該当しました"
-
-msgid "1 substitution"
-msgstr "1 箇所置換しました"
+#, c-format
+msgid "%ld match on %ld line"
+msgid_plural "%ld matches on %ld line"
+msgstr[0] "%ld 箇所該当しました (計 %ld 行内)"
 
 #, c-format
-msgid "%ld matches"
-msgstr "%ld 箇所該当しました"
+msgid "%ld substitution on %ld line"
+msgid_plural "%ld substitutions on %ld line"
+msgstr[0] "%ld 箇所置換しました (計 %ld 行内)"
 
 #, c-format
-msgid "%ld substitutions"
-msgstr "%ld 箇所置換しました"
-
-msgid " on 1 line"
-msgstr " (計 1 行内)"
+msgid "%ld match on %ld lines"
+msgid_plural "%ld matches on %ld lines"
+msgstr[0] "%ld 箇所該当しました (計 %ld 行内)"
 
 #, c-format
-msgid " on %ld lines"
-msgstr " (計 %ld 行内)"
+msgid "%ld substitution on %ld lines"
+msgid_plural "%ld substitutions on %ld lines"
+msgstr[0] "%ld 箇所置換しました (計 %ld 行内)"
 
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "E147: :global を範囲付きで再帰的には使えません"
@@ -1334,19 +1342,15 @@ msgstr ""
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: このバージョンではこのコマンドは利用できません、ごめんなさい"
 
-msgid "1 more file to edit.  Quit anyway?"
-msgstr "編集すべきファイルが 1 個ありますが、終了しますか?"
+#, c-format
+msgid "%d more file to edit.  Quit anyway?"
+msgid_plural "%d more files to edit.  Quit anyway?"
+msgstr[0] "編集すべきファイルがあと %d 個ありますが、終了しますか?"
 
 #, c-format
-msgid "%d more files to edit.  Quit anyway?"
-msgstr "編集すべきファイルがあと %d 個ありますが、終了しますか?"
-
-msgid "E173: 1 more file to edit"
-msgstr "E173: 編集すべきファイルが 1 個あります"
-
-#, c-format
-msgid "E173: %ld more files to edit"
-msgstr "E173: 編集すべきファイルがあと %ld 個あります"
+msgid "E173: %ld more file to edit"
+msgid_plural "E173: %ld more files to edit"
+msgstr[0] "E173: 編集すべきファイルがあと %ld 個あります"
 
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください"
@@ -1520,6 +1524,9 @@ msgstr "E498: \"<sfile>\"を置き換える :source 対象ファイル名がありません"
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: \"<slnum>\"を置き換える行番号がありません"
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: \"<sflnum>\"を置き換える行番号がありません"
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1725,9 +1732,6 @@ msgstr "標準入力から読込み中..."
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: 変換がファイルを読込不可にしました"
 
-msgid "[fifo/socket]"
-msgstr "[FIFO/ソ\ケット]"
-
 msgid "[fifo]"
 msgstr "[FIFO]"
 
@@ -1904,19 +1908,15 @@ msgstr "[unix]"
 msgid "[unix format]"
 msgstr "[unixフォーマット]"
 
-msgid "1 line, "
-msgstr "1 行, "
+#, c-format
+msgid "%ld line, "
+msgid_plural "%ld lines, "
+msgstr[0] "%ld 行, "
 
 #, c-format
-msgid "%ld lines, "
-msgstr "%ld 行, "
-
-msgid "1 character"
-msgstr "1 文字"
-
-#, c-format
-msgid "%lld characters"
-msgstr "%lld 文字"
+msgid "%lld character"
+msgid_plural "%lld characters"
+msgstr[0] "%lld 文字"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -2289,11 +2289,11 @@ msgstr "アンドゥ(&U)"
 msgid "Open tab..."
 msgstr "タブページを開く"
 
-msgid "Find string (use '\\\\' to find a '\\')"
-msgstr "検索文字列 ('\\' を検索するには '\\\\')"
+msgid "Find string"
+msgstr "検索文字列"
 
-msgid "Find & Replace (use '\\\\' to find a '\\')"
-msgstr "検索・置換 ('\\' を検索するには '\\\\')"
+msgid "Find & Replace"
+msgstr "検索・置換"
 
 msgid "Not Used"
 msgstr "使われません"
@@ -2710,19 +2710,6 @@ msgstr "範囲外の行番号です"
 msgid "not allowed in the Vim sandbox"
 msgstr "サンドボックスでは許されません"
 
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: ライブラリ %s をロードできませんでした"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"このコマンドは無効です、ごめんなさい: Perlライブラリをロードできませんでした."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
-"ています"
-
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: このVimでは :py3 を使った後に :python を使えません"
 
@@ -3003,7 +2990,7 @@ msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tGUIで起動する (\"gvim\" と同じ)"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
-msgstr "-f or  --nofork\tフォアグラウンド: GUIを始めるときにforkしない"
+msgstr "-f  or  --nofork\tフォアグラウンド: GUIを始めるときにforkしない"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tViモード (\"vi\" と同じ)"
@@ -3148,7 +3135,7 @@ msgstr "--remote-silent <files>  同上、サーバーが無くても警告文を出力しない"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
-msgstr "--remote-wait <files>\t--remote後 ファイルの編集が終わるのを待つ"
+msgstr "--remote-wait <files>  --remote後 ファイルの編集が終わるのを待つ"
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
@@ -3266,7 +3253,7 @@ msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\tメインウィンドウを識別する一意な役割(role)を設定する"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
-msgstr "--socketid <xid>\t異なるGTK widgetでVimを開く"
+msgstr "--socketid <xid>\t異なるGTK widgetの内部にVimを開く"
 
 msgid "--echo-wid\t\tMake gvim echo the Window ID on stdout"
 msgstr "--echo-wid\t\tウィンドウIDを標準出力に出力する"
@@ -3322,7 +3309,7 @@ msgid ""
 "change line  col text"
 msgstr ""
 "\n"
-"変更   行    列  テキスト"
+"変更     行   列 テキスト"
 
 msgid ""
 "\n"
@@ -3649,7 +3636,7 @@ msgstr ""
 "\n"
 "        プロセスID: "
 
-msgid " (still running)"
+msgid " (STILL RUNNING)"
 msgstr " (まだ実行中)"
 
 msgid ""
@@ -3744,6 +3731,9 @@ msgstr ""
 
 msgid "While opening file \""
 msgstr "次のファイルを開いている最中 \""
+
+msgid "      CANNOT BE FOUND"
+msgstr "      見つかりません"
 
 msgid "      NEWER than swap file!\n"
 msgstr "      スワップファイルよりも新しいです!\n"
@@ -3960,19 +3950,15 @@ msgstr ""
 msgid "Type number and <Enter> (empty cancels): "
 msgstr "番号と<Enter>を入力してください (空でキャンセル): "
 
-msgid "1 more line"
-msgstr "1 行 追加しました"
-
-msgid "1 line less"
-msgstr "1 行 削除しました"
+#, c-format
+msgid "%ld more line"
+msgid_plural "%ld more lines"
+msgstr[0] "%ld 行 追加しました"
 
 #, c-format
-msgid "%ld more lines"
-msgstr "%ld 行 追加しました"
-
-#, c-format
-msgid "%ld fewer lines"
-msgstr "%ld 行 削除しました"
+msgid "%ld line less"
+msgid_plural "%ld fewer lines"
+msgstr[0] "%ld 行 削除しました"
 
 msgid " (Interrupted)"
 msgstr " (割込まれました)"
@@ -4042,7 +4028,7 @@ msgstr ""
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: cdpathには \"%s\" というファイルがありません"
+msgstr "E344: cdpathには \"%s\" というディレクトリがありません"
 
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
@@ -4050,7 +4036,7 @@ msgstr "E345: pathには \"%s\" というファイルがありません"
 
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346: cdpathにはこれ以上 \"%s\" というファイルがありません"
+msgstr "E346: cdpathにはこれ以上 \"%s\" というディレクトリがありません"
 
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
@@ -4108,31 +4094,23 @@ msgstr ""
 "さい"
 
 #, c-format
-msgid "1 line %sed 1 time"
-msgstr "1 行が %s で 1 回処理されました"
+msgid "%ld line %sed %d time"
+msgid_plural "%ld line %sed %d times"
+msgstr[0] "%ld 行が %s で %d 回処理されました"
 
 #, c-format
-msgid "1 line %sed %d times"
-msgstr "1 行が %s で %d 回処理されました"
-
-#, c-format
-msgid "%ld lines %sed 1 time"
-msgstr "%ld 行が %s で 1 回処理されました"
-
-#, c-format
-msgid "%ld lines %sed %d times"
-msgstr "%ld 行が %s で %d 回処理されました"
+msgid "%ld lines %sed %d time"
+msgid_plural "%ld lines %sed %d times"
+msgstr[0] "%ld 行が %s で %d 回処理されました"
 
 #, c-format
 msgid "%ld lines to indent... "
 msgstr "%ld 行がインデントされます... "
 
-msgid "1 line indented "
-msgstr "1 行をインデントしました "
-
 #, c-format
-msgid "%ld lines indented "
-msgstr "%ld 行をインデントしました "
+msgid "%ld line indented "
+msgid_plural "%ld lines indented "
+msgstr[0] "%ld 行をインデントしました "
 
 msgid "E748: No previously used register"
 msgstr "E748: まだレジスタを使用していません"
@@ -4140,12 +4118,10 @@ msgstr "E748: まだレジスタを使用していません"
 msgid "cannot yank; delete anyway"
 msgstr "ヤンクできません; とにかく消去"
 
-msgid "1 line changed"
-msgstr "1 行が変更されました"
-
 #, c-format
-msgid "%ld lines changed"
-msgstr "%ld 行が変更されました"
+msgid "%ld line changed"
+msgid_plural "%ld lines changed"
+msgstr[0] "%ld 行が変更されました"
 
 #, c-format
 msgid "freeing %ld lines"
@@ -4156,20 +4132,14 @@ msgid " into \"%c"
 msgstr " \"%c に"
 
 #, c-format
-msgid "block of 1 line yanked%s"
-msgstr "1 行のブロックが%sヤンクされました"
+msgid "block of %ld line yanked%s"
+msgid_plural "block of %ld lines yanked%s"
+msgstr[0] "%ld 行のブロックが%sヤンクされました"
 
 #, c-format
-msgid "1 line yanked%s"
-msgstr "1 行が%sヤンクされました"
-
-#, c-format
-msgid "block of %ld lines yanked%s"
-msgstr "%ld 行のブロックが%sヤンクされました"
-
-#, c-format
-msgid "%ld lines yanked%s"
-msgstr "%ld 行が%sヤンクされました"
+msgid "%ld line yanked%s"
+msgid_plural "%ld lines yanked%s"
+msgstr[0] "%ld 行が%sヤンクされました"
 
 #, c-format
 msgid "E353: Nothing in register %s"
@@ -5387,6 +5357,9 @@ msgstr "E783: MAP エントリに重複文字が存在します"
 msgid "No Syntax items defined for this buffer"
 msgstr "このバッファに定義された構\文要素はありません"
 
+msgid "'redrawtime' exceeded, syntax highlighting disabled"
+msgstr "'redrawtime' を超過したため、構\文ハイライトは無効化されます"
+
 msgid "syntax conceal on"
 msgstr "構\文の conceal は現在 on です"
 
@@ -5414,6 +5387,9 @@ msgstr "構\文の spell は現在 default です"
 
 msgid "syntax iskeyword "
 msgstr "構\文用 iskeyword "
+
+msgid "syntax iskeyword not set"
+msgstr "構\文用 iskeyword はセットされていません"
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
@@ -5754,6 +5730,9 @@ msgstr "実行中"
 msgid "finished"
 msgstr "終了"
 
+msgid "E958: Job already finished"
+msgstr "E958: ジョブはすでに終了しています"
+
 #, c-format
 msgid "E953: File exists: %s"
 msgstr "E953: ファイルは既に存在します: %s"
@@ -5893,8 +5872,9 @@ msgid "number changes  when               saved"
 msgstr "通番   変更数   変更時期           保存済"
 
 #, c-format
-msgid "%ld seconds ago"
-msgstr "%ld 秒経過しています"
+msgid "%ld second ago"
+msgid_plural "%ld seconds ago"
+msgstr[0] "%ld 秒経過しています"
 
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: undo の直後に undojoin はできません"
@@ -6360,6 +6340,19 @@ msgstr "E802: 無効な ID: %ld (1 以上でなければなりません)"
 msgid "E803: ID not found: %ld"
 msgstr "E803: ID はありません: %ld"
 
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: ライブラリ %s をロードできませんでした"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"このコマンドは無効です、ごめんなさい: Perlライブラリをロードできませんでした."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: サンドボックスでは Safe モジュールを使用しないPerlスクリプトは禁じられ"
+"ています"
+
 msgid "Edit with &multiple Vims"
 msgstr "複数のVimで編集する (&M)"
 
@@ -6371,6 +6364,9 @@ msgstr "Vimで差分を表\示する"
 
 msgid "Edit with &Vim"
 msgstr "Vimで編集する (&V)"
+
+msgid "Edit with existing Vim"
+msgstr "起動済のVimで編集する"
 
 msgid "Edit with existing Vim - "
 msgstr "起動済のVimで編集する - "

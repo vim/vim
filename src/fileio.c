@@ -8086,7 +8086,7 @@ aubuflocal_remove(buf_T *buf)
 
 /*
  * Add an autocmd group name.
- * Return it's ID.  Returns AUGROUP_ERROR (< 0) for error.
+ * Return its ID.  Returns AUGROUP_ERROR (< 0) for error.
  */
     static int
 au_new_group(char_u *name)
@@ -8153,7 +8153,7 @@ au_del_group(char_u *name)
 
 /*
  * Find the ID of an autocmd group name.
- * Return it's ID.  Returns AUGROUP_ERROR (< 0) for error.
+ * Return its ID.  Returns AUGROUP_ERROR (< 0) for error.
  */
     static int
 au_find_group(char_u *name)

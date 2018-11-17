@@ -2953,6 +2953,7 @@ exe_commands(mparm_T *parmp)
     sourcing_name = (char_u *)"command line";
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = SID_CARG;
+    current_sctx.sc_seq = 0;
 #endif
     for (i = 0; i < parmp->n_commands; ++i)
     {
@@ -3183,6 +3184,7 @@ process_env(
 #ifdef FEAT_EVAL
 	save_current_sctx = current_sctx;
 	current_sctx.sc_sid = SID_ENV;
+	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
 #endif
 	do_cmdline_cmd(initstr);

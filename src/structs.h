@@ -84,6 +84,7 @@ typedef struct VimMenu vimmenu_T;
  */
 typedef struct {
     scid_T	sc_sid;		// script ID
+    int		sc_seq;		// sourcing sequence number
     linenr_T	sc_lnum;	// line number
 } sctx_T;
 

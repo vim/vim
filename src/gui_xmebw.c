@@ -50,7 +50,7 @@
  * implementation.  Also missing in Motif 1.2 and earlier.
  *
  * We neither use XmeGetPixmapData or _XmGetPixmapData, since with LessTif the
- * pixmap will not appear in it's caches properly. We cache the interesting
+ * pixmap will not appear in its caches properly. We cache the interesting
  * values in XmEnhancedButtonPart instead ourself.
  */
 #if defined(LESSTIF_VERSION) || (XmVersion <= 1002)

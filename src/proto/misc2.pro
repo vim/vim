@@ -21,6 +21,7 @@ void adjust_cursor_col(void);
 int leftcol_changed(void);
 void vim_mem_profile_dump(void);
 char_u *alloc(unsigned size);
+int alloc_does_fail(long_u size);
 char_u *alloc_id(unsigned size, alloc_id_T id);
 char_u *alloc_clear(unsigned size);
 char_u *alloc_check(unsigned size);

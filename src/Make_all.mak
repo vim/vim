@@ -123,6 +123,7 @@ NEW_TESTS = \
 	test_mksession \
 	test_mksession_utf8 \
 	test_modeline \
+	test_move \
 	test_nested_function \
 	test_netbeans \
 	test_normal \

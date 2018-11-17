@@ -941,7 +941,7 @@ mch_exit(int r)
  *	getch() will return immediately rather than wait for a return. You
  *	lose editing features though.
  *
- * Cooked: This function returns the designate file pointer to it's normal,
+ * Cooked: This function returns the designate file pointer to its normal,
  *	wait for a <CR> mode. This is exactly like raw() except that
  *	it sends a 0 to the console to make it back into a CON: from a RAW:
  */
@@ -1387,7 +1387,7 @@ mch_breakcheck(int force)
 	got_int = TRUE;
 }
 
-/* this routine causes manx to use this Chk_Abort() rather than it's own */
+/* this routine causes manx to use this Chk_Abort() rather than its own */
 /* otherwise it resets our ^C when doing any I/O (even when Enable_Abort */
 /* is zero).  Since we want to check for our own ^C's			 */
 

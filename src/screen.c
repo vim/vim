@@ -6223,7 +6223,7 @@ screen_line(
 	     * first highlighted character.  The stop-highlighting code must
 	     * be written with the cursor just after the last highlighted
 	     * character.
-	     * Overwriting a character doesn't remove it's highlighting.  Need
+	     * Overwriting a character doesn't remove its highlighting.  Need
 	     * to clear the rest of the line, and force redrawing it
 	     * completely.
 	     */
