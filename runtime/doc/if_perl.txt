@@ -45,8 +45,8 @@ The Perl patches for Vim were made by:
 	Matt Gerassimof
 
 Perl for MS-Windows (and other platforms) can be found at:
-http://www.perl.org/ The ActiveState one should work, Strawberry Perl is a
-good alternative.
+	http://www.perl.org/
+The ActiveState one should work, Strawberry Perl is a good alternative.
 
 ==============================================================================
 3. Using the Perl interface				*perl-using*

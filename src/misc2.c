@@ -835,7 +835,7 @@ vim_mem_profile_dump(void)
 #endif /* MEM_PROFILE */
 
 #ifdef FEAT_EVAL
-    static int
+    int
 alloc_does_fail(long_u size)
 {
     if (alloc_fail_countdown == 0)

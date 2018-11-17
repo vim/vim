@@ -47,6 +47,19 @@ dict_alloc(void)
     return d;
 }
 
+/*
+ * dict_alloc() with an ID for alloc_fail().
+ */
+    dict_T *
+dict_alloc_id(alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return NULL;
+#endif
+    return (dict_alloc());
+}
+
     dict_T *
 dict_alloc_lock(int lock)
 {

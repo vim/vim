@@ -1114,7 +1114,7 @@ gui_mch_compute_menu_height(
 	XtManageChild(id);
 
     /*
-     * Now find the menu item that is the furthest down, and get it's position.
+     * Now find the menu item that is the furthest down, and get its position.
      */
     maxy = 0;
     for (mp = root_menu; mp != NULL; mp = mp->next)
@@ -1550,7 +1550,7 @@ submenu_change(
 		    XtSetValues(mp->id, args, n);
 		}
 # ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change it's font */
+		/* If we have a tooltip, then we need to change its font */
 		if (mp->tip != NULL)
 		{
 		    Arg args[2];
@@ -1568,7 +1568,7 @@ submenu_change(
 	    {
 		gui_motif_menu_fontlist(mp->id);
 #ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change it's font */
+		/* If we have a tooltip, then we need to change its font */
 		if (mp->tip != NULL)
 		{
 		    Arg args[1];
@@ -2089,7 +2089,7 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -2108,7 +2108,7 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -3407,7 +3407,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -3428,7 +3428,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }

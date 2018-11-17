@@ -4,6 +4,7 @@ void qf_free_all(win_T *wp);
 void check_quickfix_busy(void);
 void copy_loclist_stack(win_T *from, win_T *to);
 void qf_jump(qf_info_T *qi, int dir, int errornr, int forceit);
+void qf_jump_newwin(qf_info_T *qi, int dir, int errornr, int forceit, int newwin);
 void qf_list(exarg_T *eap);
 void qf_age(exarg_T *eap);
 void qf_history(exarg_T *eap);

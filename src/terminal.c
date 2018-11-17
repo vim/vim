@@ -1592,6 +1592,15 @@ update_snapshot(term_T *term)
 	}
     }
 
+    // Add trailing empty lines.
+    for (pos.row = term->tl_scrollback.ga_len;
+	    pos.row < term->tl_scrollback_scrolled + term->tl_cursor_pos.row;
+	    ++pos.row)
+    {
+	if (add_empty_scrollback(term, &fill_attr, 0) == OK)
+	    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+    }
+
     term->tl_dirty_snapshot = FALSE;
 #ifdef FEAT_TIMERS
     term->tl_timer_set = FALSE;

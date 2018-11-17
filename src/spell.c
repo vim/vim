@@ -2686,7 +2686,7 @@ use_midword(slang_T *lp, win_T *wp)
 
 /*
  * Find the region "region[2]" in "rp" (points to "sl_regions").
- * Each region is simply stored as the two characters of it's name.
+ * Each region is simply stored as the two characters of its name.
  * Returns the index if found (first is 0), REGION_ALL if not found.
  */
     static int

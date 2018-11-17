@@ -515,7 +515,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --clean		Similar to "-u DEFAULTS -U NONE -i NONE":
 		- initializations from files and environment variables is
 		  skipped
-		-'runtimepath'and 'packpath' are set to exclude home
+		- 'runtimepath' and 'packpath' are set to exclude home
 		  directory entries (does not happen with -u DEFAULTS).
 		- the |defaults.vim| script is loaded, which implies
 		  'nocompatible': use Vim defaults

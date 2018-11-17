@@ -1270,7 +1270,7 @@ enum auto_event
     EVENT_BUFWRITECMD,		// write buffer using command
     EVENT_BUFWRITEPOST,		// after writing a buffer
     EVENT_BUFWRITEPRE,		// before writing a buffer
-    EVENT_CMDLINECHANGED,	// command line was modified*/
+    EVENT_CMDLINECHANGED,	// command line was modified
     EVENT_CMDLINEENTER,		// after entering the command line
     EVENT_CMDLINELEAVE,		// before leaving the command line
     EVENT_CMDUNDEFINED,		// command undefined

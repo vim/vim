@@ -2330,14 +2330,19 @@ ex_function(exarg_T *eap)
 	fp = find_func(name);
 	if (fp != NULL)
 	{
-	    if (!eap->forceit)
+	    // Function can be replaced with "function!" and when sourcing the
+	    // same script again, but only once.
+	    if (!eap->forceit
+			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
+			    || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq))
 	    {
 		emsg_funcname(e_funcexts, name);
 		goto erret;
 	    }
 	    if (fp->uf_calls > 0)
 	    {
-		emsg_funcname(N_("E127: Cannot redefine function %s: It is in use"),
+		emsg_funcname(
+			N_("E127: Cannot redefine function %s: It is in use"),
 									name);
 		goto erret;
 	    }

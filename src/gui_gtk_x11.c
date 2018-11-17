@@ -4284,7 +4284,7 @@ mainwin_destroy_cb(GObject *object UNUSED, gpointer data UNUSED)
  * hints (and thus the required size from -geom), but that after that we
  * put the hints back to normal (the actual minimum size) so we may
  * subsequently be resized smaller.  GtkSocket (the parent end) uses the
- * plug's window 'min hints to set *it's* minimum size, but that's also the
+ * plug's window 'min hints to set *its* minimum size, but that's also the
  * only way we have of making ourselves bigger (by set lines/columns).
  * Thus set hints at start-up to ensure correct init. size, then a
  * second after the final attempt to reset the real minimum hints (done by

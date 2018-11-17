@@ -3784,7 +3784,7 @@ get_pfxlist(
 	if (get_affitem(affile->af_flagtype, &p) != 0)
 	{
 	    /* A flag is a postponed prefix flag if it appears in "af_pref"
-	     * and it's ID is not zero. */
+	     * and its ID is not zero. */
 	    vim_strncpy(key, prevp, p - prevp);
 	    hi = hash_find(&affile->af_pref, key);
 	    if (!HASHITEM_EMPTY(hi))
