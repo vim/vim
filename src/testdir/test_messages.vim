@@ -59,3 +59,8 @@ function! Test_stopinsert_does_not_break_message_output()
 
   set cmdheight&
 endfunction
+
+func Test_message_completion()
+  call feedkeys(":message \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"message clear', @:)
+endfunc
