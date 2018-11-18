@@ -120,6 +120,10 @@ func Test_syntime()
 endfunc
 
 func Test_syntime_completion()
+  if !has('profile')
+    return
+  endif
+
   call feedkeys(":syntime \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"syntime clear off on report', @:)
 endfunc
