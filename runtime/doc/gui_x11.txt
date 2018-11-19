@@ -496,7 +496,7 @@ unexpectedly less attractive or even deteriorates their usability.  Keep this
 in mind always when you try improving a theme.
 
 
-Example 3.  border color
+Example 3.  border color ~
 
 To eliminate borders when maximized: >
 

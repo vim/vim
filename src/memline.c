@@ -5029,8 +5029,8 @@ ml_updatechunk(
 	    curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
 	}
     }
-    else if (line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines
-		 && curix < buf->b_ml.ml_usedchunks - 1)
+    else if (curix < buf->b_ml.ml_usedchunks - 1
+	      && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)
     {
 	/* Adjust cached curix & curline */
 	curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;

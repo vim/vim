@@ -221,6 +221,26 @@ func Test_diffget_diffput()
   %bwipe!
 endfunc
 
+" Test putting two changes from one buffer to another
+func Test_diffput_two()
+  new a
+  let win_a = win_getid()
+  call setline(1, range(1, 10))
+  diffthis
+  new b
+  let win_b = win_getid()
+  call setline(1, range(1, 10))
+  8del
+  5del
+  diffthis
+  call win_gotoid(win_a)
+  %diffput
+  call win_gotoid(win_b)
+  call assert_equal(map(range(1, 10), 'string(v:val)'), getline(1, '$'))
+  bwipe! a
+  bwipe! b
+endfunc
+
 func Test_dp_do_buffer()
   e! one
   let bn1=bufnr('%')
@@ -864,4 +884,24 @@ func Test_diff_with_cursorline()
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_cursorline')
+endfunc
+
+func Test_diff_of_diff()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',
+	\ 'vnew',
+	\ 'call setline(1, ["aa","bb","cc"])',
+	\ 'windo diffthis',
+	\ ], 'Xtest_diff_diff')
+  let buf = RunVimInTerminal('-S Xtest_diff_diff', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_of_diff_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_diff')
 endfunc

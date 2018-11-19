@@ -691,6 +691,11 @@ RT_SCRIPTS =	\
 		runtime/compiler/README.txt \
 		runtime/indent/*.vim \
 		runtime/indent/README.txt \
+		runtime/indent/Makefile \
+		runtime/indent/testdir/README.txt \
+		runtime/indent/testdir/*.vim \
+		runtime/indent/testdir/*.in \
+		runtime/indent/testdir/*.ok \
 		runtime/ftplugin/*.vim \
 		runtime/ftplugin/logtalk.dict \
 		runtime/ftplugin/README.txt \

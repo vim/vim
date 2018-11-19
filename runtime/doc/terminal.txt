@@ -114,6 +114,9 @@ break: >
    tnoremap <Esc> <C-W>N
    set notimeout ttimeout timeoutlen=100
 
+You can also create menus similar to terminal mode mappings, but you have to
+use |:tlmenu| instead of |:tmenu|.
+
 <							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set

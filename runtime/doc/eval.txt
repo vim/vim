@@ -184,10 +184,10 @@ function() or funcref().  When calling the function the Dictionary and/or
 arguments will be passed to the function.  Example: >
 
 	let Cb = function('Callback', ['foo'], myDict)
-	call Cb()
+	call Cb('bar')
 
 This will invoke the function as if using: >
-	call myDict.Callback('foo')
+	call myDict.Callback('foo', 'bar')
 
 This is very useful when passing a function around, e.g. in the arguments of
 |ch_open()|.
@@ -2040,11 +2040,11 @@ append({lnum}, {text})		Number	append {text} below line {lnum}
 appendbufline({expr}, {lnum}, {text})
 				Number	append {text} below line {lnum}
 					in buffer {expr}
-argc()				Number	number of files in the argument list
+argc( [{winid}])		Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
-argv({nr})			String	{nr} entry of the argument list
-argv()				List	the argument list
+argv({nr} [, {winid}])		String	{nr} entry of the argument list
+argv([-1, {winid}])		List	the argument list
 assert_beeps({cmd})		Number	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				Number	assert {exp} is equal to {act}
@@ -2052,7 +2052,8 @@ assert_equalfile({fname-one}, {fname-two})
 				Number	assert file contents is equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
-assert_fails({cmd} [, {error}])	Number	assert {cmd} fails
+assert_fails({cmd} [, {error} [, {msg}]])
+				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
 				Number	assert {actual} is false
 assert_inrange({lower}, {upper}, {actual} [, {msg}])
@@ -2475,7 +2476,7 @@ term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
-term_start({cmd}, {options})	Job	open a terminal window and run a job
+term_start({cmd}, {options})	Number	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
@@ -2489,8 +2490,8 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
-test_option_not_set({name})    none	reset flag indicating option was set
-test_override({expr}, {val})    none	test with Vim internal overrides
+test_option_not_set({name})	none	reset flag indicating option was set
+test_override({expr}, {val})	none	test with Vim internal overrides
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
 test_settime({expr})		none	set current time for testing
@@ -2609,8 +2610,15 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 			:let failed = appendbufline(13, 0, "# THE START")
 <
 							*argc()*
-argc()		The result is the number of files in the argument list of the
-		current window.  See |arglist|.
+argc([{winid}])
+		The result is the number of files in the argument list.  See
+		|arglist|.
+		If {winid} is not supplied, the argument list of the current
+		window is used.
+		If {winid} is -1, the global argument list is used.
+		Otherwise {winid} specifies the window of which the argument
+		list is used: either the window number or the window ID.
+		Returns -1 if the {winid} argument is invalid.
 
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
@@ -2621,7 +2629,7 @@ arglistid([{winnr} [, {tabnr}]])
 		Return the argument list ID.  This is a number which
 		identifies the argument list being used.  Zero is used for the
 		global argument list.  See |arglist|.
-		Return -1 if the arguments are invalid.
+		Returns -1 if the arguments are invalid.
 
 		Without arguments use the current window.
 		With {winnr} only use this window in the current tab page.
@@ -2630,17 +2638,19 @@ arglistid([{winnr} [, {tabnr}]])
 		{winnr} can be the window number or the |window-ID|.
 
 							*argv()*
-argv([{nr}])	The result is the {nr}th file in the argument list of the
-		current window.  See |arglist|.  "argv(0)" is the first one.
-		Example: >
+argv([{nr} [, {winid}])
+		The result is the {nr}th file in the argument list.  See
+		|arglist|.  "argv(0)" is the first one.  Example: >
 	:let i = 0
 	:while i < argc()
 	:  let f = escape(fnameescape(argv(i)), '.')
 	:  exe 'amenu Arg.' . f . ' :e ' . f . '<CR>'
 	:  let i = i + 1
 	:endwhile
-<		Without the {nr} argument a |List| with the whole |arglist| is
-		returned.
+<		Without the {nr} argument, or when {nr} is -1, a |List| with
+		the whole |arglist| is returned.
+
+		The {winid} argument specifies the window ID, see |argc()|.
 
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does
@@ -2685,7 +2695,7 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 			  call assert_exception('E492:')
 			endtry
 
-assert_fails({cmd} [, {error}])					*assert_fails()*
+assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error.  Also see |assert-return|.
 		When {error} is given it must match in |v:errmsg|.
@@ -4618,7 +4628,6 @@ getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 getcwd([{winnr} [, {tabnr}]])
 		The result is a String, which is the name of the current
 		working directory.
-		Without arguments, for the current window.
 
 		With {winnr} return the local current directory of this window
 		in the current tab page.  {winnr} can be the window number or
@@ -9132,7 +9141,7 @@ win_getid([{win} [, {tab}]])				*win_getid()*
 		Get the |window-ID| for the specified window.
 		When {win} is missing use the current window.
 		With {win} this is the window number.  The top window has
-		number 1.  Use `win_getid(winnr())` for the current window.
+		number 1.
 		Without {tab} use the current tab, otherwise the tab with
 		number {tab}.  The first tab has number one.
 		Return zero if the window cannot be found.

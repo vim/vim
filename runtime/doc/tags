@@ -3185,6 +3185,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tjump	tagsrch.txt	/*:tjump*
 :tl	tagsrch.txt	/*:tl*
 :tlast	tagsrch.txt	/*:tlast*
+:tlm	gui.txt	/*:tlm*
+:tlmenu	gui.txt	/*:tlmenu*
+:tln	gui.txt	/*:tln*
+:tlnoremenu	gui.txt	/*:tlnoremenu*
+:tlu	gui.txt	/*:tlu*
+:tlunmenu	gui.txt	/*:tlunmenu*
 :tm	gui.txt	/*:tm*
 :tma	map.txt	/*:tma*
 :tmap	map.txt	/*:tmap*
@@ -6805,7 +6811,6 @@ gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
 guifontwide_gtk	options.txt	/*guifontwide_gtk*
 guifontwide_win_mbyte	options.txt	/*guifontwide_win_mbyte*
-guioptions_a	options.txt	/*guioptions_a*
 guu	change.txt	/*guu*
 gv	visual.txt	/*gv*
 gview	starting.txt	/*gview*

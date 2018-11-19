@@ -81,7 +81,7 @@ let test_values = {
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
       \ 'cscopequickfix': [['', 's-', 's-,c+,e0'], ['xxx', 's,g,d']],
       \ 'debug': [['', 'msg', 'msg', 'beep'], ['xxx']],
-      \ 'diffopt': [['', 'filler', 'icase,iwhite'], ['xxx']],
+      \ 'diffopt': [['', 'filler', 'icase,iwhite'], ['xxx', 'algorithm:xxx', 'algorithm:']],
       \ 'display': [['', 'lastline', 'lastline,uhex'], ['xxx']],
       \ 'eadirection': [['', 'both', 'ver'], ['xxx', 'ver,hor']],
       \ 'encoding': [['latin1'], ['xxx', '']],

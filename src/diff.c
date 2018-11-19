@@ -298,9 +298,9 @@ diff_mark_adjust_tp(
 	// Will update diffs before redrawing.  Set _invalid to update the
 	// diffs themselves, set _update to also update folds properly just
 	// before redrawing.
+	// Do update marks here, it is needed for :%diffput.
 	tp->tp_diff_invalid = TRUE;
 	tp->tp_diff_update = TRUE;
-	return;
     }
 
     if (line2 == MAXLNUM)
@@ -2266,6 +2266,8 @@ diffopt_changed(void)
 		p += 9;
 		diff_algorithm_new = XDF_HISTOGRAM_DIFF;
 	    }
+	    else
+		return FAIL;
 	}
 
 	if (*p != ',' && *p != NUL)
@@ -2850,7 +2852,7 @@ theend:
     if (diff_need_update)
 	ex_diffupdate(NULL);
 
-    // Check that the cursor is on a valid character and update it's
+    // Check that the cursor is on a valid character and update its
     // position.  When there were filler lines the topline has become
     // invalid.
     check_cursor();
@@ -3206,21 +3208,23 @@ parse_diff_unified(
 xdiff_out(void *priv, mmbuffer_t *mb, int nbuf)
 {
     diffout_T	*dout = (diffout_T *)priv;
-    int		i;
     char_u	*p;
 
-    for (i = 0; i < nbuf; i++)
-    {
-	// We are only interested in the header lines, skip text lines.
-	if (STRNCMP(mb[i].ptr, "@@ ", 3)  != 0)
-	    continue;
-	if (ga_grow(&dout->dout_ga, 1) == FAIL)
-	    return -1;
-	p = vim_strnsave((char_u *)mb[i].ptr, mb[i].size);
-	if (p == NULL)
-	    return -1;
-	((char_u **)dout->dout_ga.ga_data)[dout->dout_ga.ga_len++] = p;
-    }
+    // The header line always comes by itself, text lines in at least two
+    // parts.  We drop the text part.
+    if (nbuf > 1)
+	return 0;
+
+    // sanity check
+    if (STRNCMP(mb[0].ptr, "@@ ", 3)  != 0)
+	return 0;
+
+    if (ga_grow(&dout->dout_ga, 1) == FAIL)
+	return -1;
+    p = vim_strnsave((char_u *)mb[0].ptr, mb[0].size);
+    if (p == NULL)
+	return -1;
+    ((char_u **)dout->dout_ga.ga_data)[dout->dout_ga.ga_len++] = p;
     return 0;
 }
 

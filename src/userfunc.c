@@ -1882,6 +1882,8 @@ ex_function(exarg_T *eap)
 		{
 		    --todo;
 		    fp = HI2UF(hi);
+		    if (message_filtered(fp->uf_name))
+			continue;
 		    if (!func_name_refcount(fp->uf_name))
 			list_func_head(fp, FALSE);
 		}
@@ -3147,6 +3149,13 @@ ex_call(exarg_T *eap)
     {
 	if (!eap->skip && eap->addr_count > 0)
 	{
+	    if (lnum > curbuf->b_ml.ml_line_count)
+	    {
+		// If the function deleted lines or switched to another buffer
+		// the line number may become invalid.
+		EMSG(_(e_invrange));
+		break;
+	    }
 	    curwin->w_cursor.lnum = lnum;
 	    curwin->w_cursor.col = 0;
 #ifdef FEAT_VIRTUALEDIT

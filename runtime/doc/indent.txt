@@ -588,8 +588,9 @@ The basics for using flexible indenting are explained in section |30.3| of the
 user manual.
 
 If you want to write your own indent file, it must set the 'indentexpr'
-option.  Setting the 'indentkeys' option is often useful.  See the
-$VIMRUNTIME/indent directory for examples.
+option.  Setting the 'indentkeys' option is often useful.
+See the $VIMRUNTIME/indent/README.txt file for hints.
+See the $VIMRUNTIME/indent directory for examples.
 
 
 REMARKS ABOUT SPECIFIC INDENT FILES ~
@@ -940,6 +941,11 @@ Indent after a nested paren: >
 	let g:pyindent_nested_paren = '&sw'
 Indent for a continuation line: >
 	let g:pyindent_continue = '&sw * 2'
+
+The method uses searchpair() to look back for unclosed parenthesis.  This can
+sometimes be slow, thus it timeouts after 150 msec.  If you notice the
+indenting isn't correct, you can set a larger timeout in msec: >
+	let g:pyindent_searchpair_timeout = 500
 
 
 R								*ft-r-indent*

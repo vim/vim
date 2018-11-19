@@ -38,18 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test_scrollbars() fails with X11-Athena GUI or X11-Motif GUI
-(Dominique, #3451)
-
-Flashing highlighting with 'rnu' and folding.
-(Vitaly Yashin, 2018 Sep 26, #3484)
-
-Still a cursorline problem. (Justin Keyes, #3488)
-
-Crash with recursive use of getcmdline() from Timer.  save_ccline isn't used
-then.  Turn it around: When getcmdline() is called it checks if it is a
-recursive call, and saves the cmdline then. (#3493)
-
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
@@ -59,22 +47,24 @@ recursive call, and saves the cmdline then. (#3493)
   isn't one?
   Then :%s?foo should take the first match above the cursor line.
 
-Don't set diffexpr when generating _vimrc for MS-Windows.
-
 Prompt buffer:
 - Add a command line history.
 - delay next prompt until plugin gives OK?
 
 Terminal debugger:
 - Make prompt-buffer variant work better.
+- Add option to not open the program window.  It's not used when attaching to
+  an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
 - Termdebug does not work when Vim was build with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
+- Add support for lldb?  #3565
 
 Terminal emulator window:
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
   (#3327)
+- GUI: hang until key typed. (#3530)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
@@ -115,9 +105,15 @@ Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
+Win32 key codes are messy.  Mike Williams tried to fix that, but now old
+mappings no longer work.  Create a new terminal for the better solution?
+
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
+
+When a terminal exit_cb closes the window, a following typed key is lost, if
+it's in a mapping. (2018 Oct 6, #2302, #3522)
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
@@ -125,26 +121,44 @@ terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
+Internal diff doesn't handle binary file like external diff does. (Mike
+Williams, 2018 Oct 30)
+
+Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
+
+C syntax: {} inside () causes following {} to be highlighted as error.
+(Michalis Giannakidis, 2006 Jun 1)
+
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
+
+Quickfix accessing free memory. (Dominique, 2018 Oct 13, #3538)
+Yegappan will look into it.
+
+Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
+    missing a test.
+7   Make 'scrolloff' a global-local option, so that it can be different in the
+    quickfix window, for example. (Gary Holloway)
+    Also do 'sidescrolloff'.
 
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
 
 ":mksession" cannot handle a very long 'runtimepath'. (Timothy Madden, 21 Sep
-2018, #3466)
+2018, #3466)  Patch from Christian, 2018 Oct 30 (with comments).
 
 Patch in pull request #2967: Allow white space in sign text. (Ben Jackson)
 Test fails in AppVeyor.
 
-Job_info() returns command without backslashes. (Daniel Hahler, 2018 Sep 3,
-#3404)
-
 Patch to simplify nsis installer. (Ken Takata, 2018 Sep 24, was #3479)
-Now included in #3501, using MUI2.
+Now included in #3501, using MUI2.  Use the zip file to get the binary files:
+https://github.com/vim/vim/files/2475621/nsis-icons.zip
+Still being worked on.
 
-Removing flags from 'cpoptions' breaks the Winbar buttons in termdebug.
-(Dominique Pelle, 2018 Jul 16)
+ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
+
+Patch to convert temp file name. (Yasuhiro Matsumoto, #3520)
+Not ready to include yet.
 
 Problem with two buffers with the same name a/b, if it didn't exist before and
 is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
@@ -156,24 +170,17 @@ Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 Add function to make use of internal diff, working on two lists and returning
 unified diff (list of lines).
 
-Memory leak in test_assert:
-==19127==    by 0x2640D7: alloc (misc2.c:874)
-==19127==    by 0x2646D6: vim_strsave (misc2.c:1315)
-==19127==    by 0x1B68D2: f_getcwd (evalfunc.c:4950)
-And:
-==19127==    by 0x2640D7: alloc (misc2.c:874)
-==19127==    by 0x1A9477: set_var (eval.c:7601)
-==19127==    by 0x19F96F: set_var_lval (eval.c:2233)
-==19127==    by 0x19EA3A: ex_let_one (eval.c:1810)
-==19127==    by 0x19D737: ex_let_vars (eval.c:1294)
-==19127==    by 0x19D6B4: ex_let (eval.c:1259)
+Patch to implement 'diffref' option. (#3535)
+  Easier to use a 'diffmaster' option, is the extra complexity needed?
+
+Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
+
+cursorline highlighting not removed after yanking in Visual mode.
+(Matéo Zanibelli, 2018 Oct 30, #3578)
+Patch by Christian, Oct 30.
+
 Memory leaks in test_channel? (or is it because of fork())
 Using uninitialized value in test_crypt.
-Memory leaks in test_escaped_glob
-==20651==    by 0x2640D7: alloc (misc2.c:874)
-==20651==    by 0x2646D6: vim_strsave (misc2.c:1315)
-==20651==    by 0x3741EA: get_function_args (userfunc.c:131)
-==20651==    by 0x378779: ex_function (userfunc.c:2036)
 Memory leak in test_terminal:
 ==23530==    by 0x2640D7: alloc (misc2.c:874)
 ==23530==    by 0x2646D6: vim_strsave (misc2.c:1315)
@@ -187,16 +194,18 @@ Memory leak in test_terminal:
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
 
-Delete the src/main.aap file?
-
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
+
+Sourceforge Vim pages still have content, redirect from empty page.
+Check for PHP errors. (Wayne Davison, 2018 Oct 26)
 
 Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
 Use something like ":tag {kind}/{tagname}".
 Not ready to include.
 
-Patch to support menus in terminal: ":tlmenu". (Yee Cheng Chin, #3439)
+:pedit resets the 'buflisted' option unexpectedly. (Wang Shidong, 2018 Oct 12,
+#3536)
 
 home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
 
@@ -215,7 +224,7 @@ Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  
 Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
 values.
 
-Furthere xdiff changes:
+Further xdiff changes:
 - More options, e.g. different kind of whitespace diff.
 - when editing text, update the surrounding diff blocks.
 - omit diff.exe from distribution
@@ -224,16 +233,11 @@ Furthere xdiff changes:
 
 Difference between two regexp engines: #3373
 
-Patch to handle missin glibwinpthread-1.dll. (Ken Takata, 2018 Sep 23, #2827)
-
-Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
-24, #832)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5. Update Apr 7.  Update Jun 5.
-
 When the last line wraps, selecting with the mouse below that line only
 includes the first screen line. (2018 Aug 23, #3368)
 
 Refactored HTML indent file. (Michael Lee, #1821)
+Ask to write a test first.
 
 Patch to add getregpoint() and setreg() with an option to set "".
 (Andy Massimino, 2018 Aug 24, #3370)
@@ -260,6 +264,14 @@ characters. (#3246)
 
 'foldtext' is evaluated too often. (Daniel Hahler, #2773)
 
+Add Native language protocol server (LSP) support. (Yegappan Lakshmanan, 2018
+Oct 28)
+
+ml_get error when using a Python script. (Yggdroot, 2017 Jun 1, #1737)
+Lemonboy can reproduce (2017 Jun 5)
+Also reproduced by Benjamin Doherty, 2018 Oct 4.
+Simpler way: Ken Takata, Oct 6.
+
 Height of quickfix window is not retained with vertical splits. (Lifepillar,
 2018 Aug 24, #2998)
 
@@ -270,10 +282,18 @@ Tests failing for "make testgui" with GTK:
 - Test_setbufvar_options()
 - Test_exit_callback_interval()
 
+Get a "No Name" buffer when 'hidden' is set and opening a new window from the
+quickfix list. (bfrg, 2018 Jan 22, #2574)
+Tracked down by Jason Franklin, 2018 Oct 30.
+Suggested patch by Yegappan, Nov 1.
+
 When using CTRL-W CR in the quickfix window, the jumplist in the opened window
 is cleared, to avoid going back to the list of errors buffer (would have two
 windows with it).  Can we just remove the jump list entries for the quickfix
 buffer?
+
+Patch to fix that executable() may fail on very long filename in MS-Windows.
+(Ken Takata, 2016 Feb 1, update 2018 Oct 7)
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -289,11 +309,8 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 
 Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-Maybe call it v:motiontype.  Update in #3490)
-Alternaitve: add the force flag to mode(), after "no".
-
-Patch to fix that executable() may fail on very long filename in MS-Windows.
-(Ken Takata, 2016 Feb 1)
+Maybe call it v:motiontype.  Update in #3490.
+Alternative: add the force flag to mode(), after "no".
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -301,7 +318,7 @@ or asyncmake:
   https://github.com/yegappan/asyncmake
 
 Add a ModeChanged autocommand that has an argument indicating the old and new
-mode.  Also used for switching Terminal mode.
+mode, as what's returned from mode().  Also used for switching Terminal mode.
 
 Add an option with file patterns, to be used when unloading a buffer: If there
 is a match, remove entries for the buffer from marks, jumplist, etc.  To be
@@ -366,7 +383,7 @@ How to test that it works well for all Vim users?
 
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
-Delete all the speficic stuff for the Borland compiler? (#3374)
+Delete all the specific stuff for the Borland compiler? (#3374)
 Patch in #3377 (Thomas Dziedzic)
 
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
@@ -445,13 +462,14 @@ option_save({list})					*option_save()*
 		values are handled and the script ID is restored, so that
 		`:verbose set` will show where the option was originally set,
 		not where it was restored.
+  Alternatively: save and restore ALL options.  Implementation needs to use
+	copy-on-write.  Return an ID from option_save(), when
+	option_restore(ID) is called give an error if another option_save()
+	was called in the mean time, they must be balanced.
 
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
-
-ml_get error when using a Python script. (Yggdroot, 2017 Jun 1, #1737)
-Lemonboy can reproduce (2017 Jun 5)
 
 crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
 17, #2652)
@@ -470,9 +488,6 @@ Add script number to profile?  (#3330 breaks tests).
 
 A function defined locally and lambda's are not easily recognized.
 Mention where they were defined somewhere.
-
-Get a "No Name" buffer when 'hidden' is set and opening a new window from the
-quickfix list. (bfrg, 2018 Jan 22, #2574)
 
 CTRL-X on zero gets stuck on 0xfffffffffffffffe. (Hengyang Zhao, #2746)
 
@@ -528,7 +543,7 @@ MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
 
 Would be nice for insert mode completion to highlight the text that was added
-(and may change when picking another compltion).
+(and may change when picking another completion).
 
 Test runtime files.
 Start with filetype detection: testdir/test_filetype.vim
@@ -635,9 +650,6 @@ stack trace. (Yggdroot, 2017 Jul 28, #1887)
 
 Profile of a dict function is lost when the dict is deleted.  Would it be
 possible to collect this?  (Daniel Hahler, #2350)
-
-Add `:filter` support for various commands (Marcin Szamotulski, 2017 Nov 12
-#2322)  Patch now in #2856.
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -2216,8 +2228,6 @@ still delete them.  Also convert all buffer file names?
 "gqip" in Insert mode has an off-by-one error, causing it to reflow text.
 (Raul Coronado, 2009 Nov 2)
 
-Update src/testdir/main.aap.
-
 Something wrong with session that has "cd" commands and "badd", in such a way
 that Vim doesn't find the edited file in the buffer list, causing the
 ATTENTION message?  (Tony Mechelynck, 2008 Dec 1)
@@ -2411,9 +2421,6 @@ Example on http://www.calmar.ws/tmp/aap.html
 Syntax highlighting wrong for transparent region. (Doug Kearns, 2007 Feb 26)
 Bug in using a transparent syntax region. (Hanlen in vim-dev maillist, 2007
 Jul 31)
-
-C syntax: {} inside () causes following {} to be highlighted as error.
-(Michalis Giannakidis, 2006 Jun 1)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -2877,8 +2884,6 @@ More patches:
 -   Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
     Needs a few tests.
 -   Add 'cscopeignorecase' option. (Liang Wenzhi, 2006 Sept 3)
--   Load intl.dll too, not only libintl.dll. (Mike Williams, 2006 May 9, docs
-    patch May 10)
 -   Extra argument to strtrans() to translate special keys to their name (Eric
     Arnold, 2006 May 22)
 -   'threglookexp' option: only match with first word in thesaurus file.
@@ -3702,6 +3707,7 @@ Most interesting new features to be added when all bugs have been fixed:
     Alternative: Make a function for Ex commands: cmd_edit().
 -   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
     can be selected with CTRL-V.  Allow '$' (end of line) for col2.
+    (issue #3292)
 -   ECLIPSE plugin.  Problem is: the interface is very complicated.  Need to
     implement part in Java and then connect to Vim.  Some hints from Alexandru
     Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
@@ -5574,9 +5580,6 @@ Options:
     that marks if the option was set.  Useful to keep the effect of setting
     'compatible' after ":syntax on" has been used.
 7   There is 'titleold', why is there no 'iconold'? (Chazelas)
-7   Make 'scrolloff' a global-local option, so that it can be different in the
-    quickfix window, for example. (Gary Holloway)
-    Also do 'sidescrolloff'.
 
 
 External commands:

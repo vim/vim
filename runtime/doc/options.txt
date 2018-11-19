@@ -1638,10 +1638,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			area extended, Vim tries to become the owner of the
 			windowing system's global selection or put the
 			selected text on the clipboard used by the selection
-			register "*.  See |guioptions_a| and |quotestar| for
-			details.  When the GUI is active, the 'a' flag in
-			'guioptions' is used, when the GUI is not active, this
-			"autoselect" flag is used.
+			register "*.  See |'go-a'| and |quotestar| for details.
+			When the GUI is active, the 'a' flag in 'guioptions'
+			is used, when the GUI is not active, this "autoselect"
+			flag is used.
 			Also applies to the modeless selection.
 
 						*clipboard-autoselectplus*
@@ -3895,8 +3895,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	screen.
 
 						*'guioptions'* *'go'*
-'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows, "t" is
-						   removed in |defaults.vim|),
+'guioptions' 'go'	string	(default "egmrLtT"   (MS-Windows,
+					   "t" is removed in |defaults.vim|),
 					 "aegimrLtT" (GTK, Motif and Athena),
 					 )
 			global
@@ -3916,7 +3916,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		terminal to list the command output.
 		The terminal window will be positioned at the bottom, and grow
 		upwards as needed.
-							*guioptions_a* *'go-a'*
+								*'go-a'*
 	  'a'	Autoselect:  If present, then whenever VISUAL mode is started,
 		or the Visual area extended, Vim tries to become the owner of
 		the windowing system's global selection.  This means that the
@@ -8125,8 +8125,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-keyword characters (white space is preferred).  Maximum line
 	length is 510 bytes.
 	To obtain a file to be used here, check out this ftp site:
-	[Sorry this link doesn't work anymore, do you know the right one?]
-	ftp://ftp.ox.ac.uk/pub/wordlists/  First get the README file.
+	ftp://ftp.cerias.purdue.edu/pub/dict/wordlists/  First get the README
+	file.
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.
