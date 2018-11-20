@@ -403,9 +403,17 @@ ui_breakcheck(void)
     void
 ui_breakcheck_force(int force)
 {
-    int save_updating_screen = updating_screen;
+    static int	recursive = FALSE;
+    int		save_updating_screen = updating_screen;
 
-    /* We do not want gui_resize_shell() to redraw the screen here. */
+    // We could be called recursively if stderr is redirected, calling
+    // fill_input_buf() calls settmode() when stdin isn't a tty.  settmode()
+    // calls vgetorpeek() which calls ui_breakcheck() again.
+    if (recursive)
+	return;
+    recursive = TRUE;
+
+    // We do not want gui_resize_shell() to redraw the screen here.
     ++updating_screen;
 
 #ifdef FEAT_GUI
@@ -419,6 +427,8 @@ ui_breakcheck_force(int force)
 	updating_screen = TRUE;
     else
 	reset_updating_screen(FALSE);
+
+    recursive = FALSE;
 }
 
 /*****************************************************************************
