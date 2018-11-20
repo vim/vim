@@ -5523,11 +5523,11 @@ chk_modeline(
 		current_sctx.sc_lnum = 0;
 #endif
 		// Make sure no risky things are executed as a side effect.
-		++sandbox;
+		++secure;
 
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 
-		--sandbox;
+		--secure;
 #ifdef FEAT_EVAL
 		current_sctx = save_current_sctx;
 #endif
