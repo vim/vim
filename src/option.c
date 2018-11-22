@@ -13113,7 +13113,48 @@ tabstop_first(int *ts)
     long
 get_sw_value(buf_T *buf)
 {
-    return buf->b_p_sw ? buf->b_p_sw : buf->b_p_ts;
+    return get_sw_value_col(buf, 0);
+}
+
+/*
+ * Idem, using the first non-black in the current line.
+ */
+    long
+get_sw_value_indent(buf_T *buf)
+{
+    pos_T pos = curwin->w_cursor;
+
+    pos.col = getwhitecols_curline();
+    return get_sw_value_pos(buf, &pos);
+}
+
+/*
+ * Idem, using "pos".
+ */
+    long
+get_sw_value_pos(buf_T *buf, pos_T *pos)
+{
+    pos_T save_cursor = curwin->w_cursor;
+    long sw_value;
+
+    curwin->w_cursor = *pos;
+    sw_value = get_sw_value_col(buf, get_nolist_virtcol());
+    curwin->w_cursor = save_cursor;
+    return sw_value;
+}
+
+/*
+ * Idem, using virtual column "col".
+ */
+    long
+get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
+{
+    return buf->b_p_sw ? buf->b_p_sw :
+ #ifdef FEAT_VARTABS
+	tabstop_at(col, buf->b_p_ts, buf->b_p_vts_array);
+ #else
+	buf->b_p_ts;
+ #endif
 }
 
 /*
