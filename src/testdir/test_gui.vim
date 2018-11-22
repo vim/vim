@@ -161,7 +161,7 @@ endfunc
 func Test_set_background()
   let background_saved = &background
 
-  set background&
+  set background=light
   call assert_equal('light', &background)
 
   set background=dark
