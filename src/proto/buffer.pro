@@ -74,6 +74,9 @@ linenr_T buf_change_sign_type(buf_T *buf, int markId, int typenr);
 int buf_getsigntype(buf_T *buf, linenr_T lnum, int type);
 linenr_T buf_delsign(buf_T *buf, int id);
 int buf_findsign(buf_T *buf, int id);
+#ifdef FEAT_SIGNS
+signlist_T *buf_getsign(buf_T *buf, linenr_T lnum);
+#endif
 int buf_findsign_id(buf_T *buf, linenr_T lnum);
 int buf_findsigntype_id(buf_T *buf, linenr_T lnum, int typenr);
 int buf_signcount(buf_T *buf, linenr_T lnum);

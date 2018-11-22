@@ -74,7 +74,8 @@ DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
 		The {name} can either be a number (all digits) or a name
 		starting with a non-digit.  Leading digits are ignored, thus
 		"0012", "012" and "12" are considered the same name.
-		About 120 different signs can be defined.
+		About 120 different signs can be defined. Refer to
+		|sign_define()| for the equivalent Vim script function.
 
 		Accepted arguments:
 
@@ -110,6 +111,9 @@ DELETING A SIGN						*:sign-undefine* *E155*
 		Deletes a previously defined sign.  If signs with this {name}
 		are still placed this will cause trouble.
 
+		Refer to |sign_undefine()| for the equivalent Vim script
+		function.
+
 
 LISTING SIGNS						*:sign-list* *E156*
 
@@ -118,6 +122,8 @@ LISTING SIGNS						*:sign-list* *E156*
 :sign list {name}
 		Lists one defined sign and its attributes.
 
+		Refer to |sign_getdefined()| for the equivalent Vim script
+		function.
 
 PLACING SIGNS						*:sign-place* *E158*
 
@@ -149,6 +155,8 @@ PLACING SIGNS						*:sign-place* *E158*
 :sign place {id} name={name} buffer={nr}
 		Same, but use buffer {nr}.
 
+		Refer to |sign_place()| for the equivalent Vim script
+		function.
 
 REMOVING SIGNS						*:sign-unplace* *E159*
 
@@ -175,6 +183,8 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 :sign unplace
 		Remove the placed sign at the cursor position.
 
+		Refer to |sign_unplace()| for the equivalent Vim script
+		function.
 
 LISTING PLACED SIGNS					*:sign-place-list*
 
@@ -187,6 +197,8 @@ LISTING PLACED SIGNS					*:sign-place-list*
 
 :sign place	List placed signs in all files.
 
+		Refer to |sign_getplaced()| for the equivalent Vim script
+		function.
 
 JUMPING TO A SIGN					*:sign-jump* *E157*
 

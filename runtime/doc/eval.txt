@@ -2408,6 +2408,14 @@ shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
+sign_define({name} [, {dict}])	Number	define or update a sign
+sign_getdefined([{name}])	List	get a list of defined signs
+sign_getplaced([{expr} [, {dict}]])
+				List	get a list of placed signs
+sign_place({id}, {name}, {expr} [, {lnum}])
+				Number	place a sign
+sign_undefine([{name}])		Number	undefine a sign
+sign_unplace({id} [, {expr}])	Number	unplace a sign
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -7858,7 +7866,147 @@ shiftwidth([{col}])						*shiftwidth()*
 		'vartabstop' feature. If the 'vartabstop' setting is enabled and
 		no {col} argument is given, column 1 will be assumed.
 
+sign_define({name} [, {dict}])				*sign_define()*
+		Define a new sign named {name} or set attributes for an
+		existing sign.  This is similar to the |:sign-define| command.
+		The {name} can be a String or a Number.
 
+		The optional {dict} argument specifies the sign attributes.
+		The following values are supported:
+
+		    icon	full path to the bitmap file for the sign.
+		    linehl	highlight group used for the whole line the
+				sign is placed in.
+		    text	text that is displayed when there is no icon
+				or the GUI is not being used.
+		    texthl	highlight group used for the text item
+
+		Returns 0 on success and -1 on failure.
+
+		Examples: >
+			call sign_define("mySign", {"text" : "=>", "texthl" :
+					\ "Error", "linehl" : "Search"})
+<
+sign_getdefined([{name}])				*sign_getdefined()*
+		Get a list of defined signs and their attributes.
+		This is similar to the |:sign-list| command.
+
+		If the {name} is not supplied, then a list of all the defined
+		signs is returned. Otherwise the attribute of the specified
+		sign is returned.
+
+		Each list item in the returned value is a dictionary with the
+		following entries:
+
+			icon	full path to the bitmap file of the sign
+			linehl	highlight group used for the whole line the
+				sign is placed in.
+			name	name of the sign
+			text	text that is displayed when there is no icon
+				or the GUI is not being used.
+			texthl	highlight group used for the text item
+
+		Returns an empty List on failure.
+
+		Examples: >
+			" Get a list of all the defined signs
+			echo sign_getdefined()
+
+			" Get the attribute of the sign named mySign
+			echo sign_getdefined("mySign")
+<
+sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
+		Return a list of signs placed in a buffer or all the buffers.
+		This is similar to the |:sign-place-list| command.
+
+		If the optional buffer name {expr} is specified, then only the
+		list of signs placed in that buffer is returned.  For the use
+		of {expr}, see |bufname()|. The optional {dict} can contain
+		the following entries:
+			lnum	return information about signs placed in this
+				line. For the use of {lnum}, see |line()|.
+			id	return information about signs with this
+				identifier
+		If no arguments are supplied, then signs placed in all the
+		buffers are returned.
+
+		Each list item in the returned value is a dictionary with the
+		following entries:
+			bufnr	number of the buffer with the sign
+			signs	list of signs placed in {bufnr}. Each list
+				item is a dictionary with the below listed
+				entries
+
+		The dictionary for each sign contains the following entries:
+			id	identifier of the sign
+			lnum	line number where the sign is placed
+			name	name of the defined sign
+
+		Returns an empty list on failure.
+
+		Examples: >
+			" Get a List of all the signs placed in eval.c
+			echo sign_getplaced("eval.c")
+
+			" Get a List of the sign placed at line 10 in eval.c
+			echo sign_getplaced("eval.c", 10)
+
+			" Get a List of all the placed signs
+			echo sign_getplaced()
+<
+sign_place({id}, {name}, {expr} [, {lnum}])		*sign_place()*
+		Place the sign defined as {name} at line {lnum} in file {expr}
+		and assign {id} to sign.
+		This is similar to the |:sign-place| command.
+
+		For the use of {expr}, see |bufname()|. For the use of {lnum},
+		see |line()|.  If the optional {lnum} is not specified, then
+		changes the placed sign {id} to use the defined sign {name}.
+
+		Returns 0 on success and -1 on failure.
+
+		Examples: >
+			" Place a sign named mySign with id 5 at line 20 in
+			" buffer json.c
+			call sign_place(5, "mySign", "json.c", 20)
+
+			" Updates sign 5 in buffer json.c to use newSign
+			call sign_place(5, "newSign", "json.c")
+<
+sign_undefine([{name}])					*sign_undefine()*
+		Deletes a previously defined sign {name}. This is similar to
+		the |:sign-undefine| command. If {name} is not supplied, then
+		deletes all the defined signs.
+		Returns 0 on success and -1 on failure.
+
+		Examples: >
+			" Delete a sign named mySign
+			call sign_undefine("mySign")
+
+			" Delete all the signs
+			call sign_undefine()
+<
+sign_unplace({id} [, {expr}])				*sign_unplace()*
+		Remove a previously placed sign {id} from buffer {expr}.
+		This is similar to the |:sign-unplace()| command.  For the use
+		of {expr}, see |bufname()|. If {id} is zero, then removes all
+		the signs placed in buffer {expr}. If {expr} is not supplied,
+		then removes sign {id} from all the buffers.
+		Returns 0 on success and -1 on failure.
+
+		Examples: >
+			" Remove sign 10 from buffer eval.c
+			call sign_unplace(10, "eval.c")
+
+			" Remove all the signs placed in buffer 5
+			call sign_unplace(0, 5)
+
+			" Remove sign 20 from all the files
+			call sign_unplace(20)
+
+			" Remove all the placed signs
+			call sign_unplace(0)
+<
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
 		the meaning.  Shortcuts (on MS-Windows) or symbolic links (on

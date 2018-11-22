@@ -6067,8 +6067,11 @@ buf_findsign(
     return 0;
 }
 
-    int
-buf_findsign_id(
+/*
+ * Get information for the sign at 'lnum' in buffer 'buf'
+ */
+    signlist_T *
+buf_getsign(
     buf_T	*buf,		/* buffer whose sign we are searching for */
     linenr_T	lnum)		/* line number of sign */
 {
@@ -6076,11 +6079,24 @@ buf_findsign_id(
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
 	if (sign->lnum == lnum)
-	    return sign->id;
+	    return sign;
+
+    return NULL;
+}
+
+    int
+buf_findsign_id(
+    buf_T	*buf,		/* buffer whose sign we are searching for */
+    linenr_T	lnum)		/* line number of sign */
+{
+    signlist_T	*sign;		/* a sign in the signlist */
+
+    sign = buf_getsign(buf, lnum);
+    if (sign != NULL)
+	return sign->id;
 
     return 0;
 }
-
 
 # if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /*

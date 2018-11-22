@@ -224,3 +224,109 @@ func Test_sign_delete_buffer()
   sign unplace 61
   sign undefine Sign
 endfunc
+
+" Test for VimL functions for managing signs
+func Test_sign_funcs()
+  " Remove all the signs
+  call sign_unplace(0)
+  call sign_undefine()
+
+  " Tests for sign_define()
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
+  call assert_equal(0, sign_define("sign1", attr))
+  call assert_equal([{'name' : 'sign1', 'texthl' : 'Error',
+	      \ 'linehl' : 'Search', 'text' : '=>'}], sign_getdefined())
+
+  " Define a new sign without attributes and then update it
+  call sign_define("sign2")
+  let attr = {'text' : '!!', 'linehl' : 'DiffAdd', 'texthl' : 'DiffChange',
+	      \ 'icon' : 'sign2.ico'}
+  call sign_define("sign2", attr)
+  call assert_equal([{'name' : 'sign2', 'texthl' : 'DiffChange',
+	      \ 'linehl' : 'DiffAdd', 'text' : '!!', 'icon' : 'sign2.ico'}],
+	      \ sign_getdefined("sign2"))
+
+  " Test for a sign name with digits
+  call assert_equal(0, sign_define(0002, {'linehl' : 'StatusLine'}))
+  call assert_equal([{'name' : '2', 'linehl' : 'StatusLine'}],
+	      \ sign_getdefined(0002))
+  call sign_undefine(0002)
+
+  " Tests for invalid arguments to sign_define()
+  call assert_fails('call sign_define("sign4", {"text" : "===>"})', 'E239:')
+  call assert_fails('call sign_define("sign5", {"text" : ""})', 'E239:')
+  call assert_fails('call sign_define([])', 'E730:')
+  call assert_fails('call sign_define("sign6", [])', 'E715:')
+
+  " Tests for sign_getdefined()
+  call assert_equal([], sign_getdefined("none"))
+  call assert_fails('call sign_getdefined({})', 'E731:')
+
+  " Tests for sign_place()
+  sview test_signs.vim
+  call assert_equal(0, sign_place(10, 'sign1', 'test_signs.vim', 20))
+  call assert_equal([{'bufnr' : bufnr('.'),
+	      \ 'signs' : [{'id' : 10, 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ sign_getplaced('test_signs.vim'))
+  call assert_equal([{'bufnr' : bufnr('.'),
+	      \ 'signs' : [{'id' : 10, 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ sign_getplaced('test_signs.vim', {'lnum' : 20}))
+  call assert_equal([{'bufnr' : bufnr('.'),
+	      \ 'signs' : [{'id' : 10, 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ sign_getplaced('test_signs.vim', {'id' : 10}))
+
+  " Tests for invalid arguments to sign_place()
+  call assert_fails('call sign_place([], "mySign", 1)', 'E745:')
+  call assert_fails('call sign_place(5, "mySign", -1)', 'E158:')
+  call assert_fails('call sign_place(-1, "sign1", "test_signs.vim", 30)',
+	      \ 'E474:')
+  call assert_fails('call sign_place(0, "sign1", "test_signs.vim", 30)',
+	      \ 'E474:')
+  call assert_fails('call sign_place(10, "xsign1x", "test_signs.vim", 30)',
+	      \ 'E155:')
+  call assert_fails('call sign_place(10, "", "test_signs.vim", 30)',
+	      \ 'E155:')
+  call assert_fails('call sign_place(10, [], "test_signs.vim", 30)',
+	      \ 'E730:')
+  call assert_fails('call sign_place(5, "sign1", "abcxyz.xxx", 10)', 'E158:')
+  call assert_fails('call sign_place(5, "sign1", "", 10)', 'E158:')
+  call assert_fails('call sign_place(5, "sign1", [], 10)', 'E158:')
+  call assert_fails('call sign_place(10, "sign1", "test_signs.vim", -1)', 'E885:')
+  call assert_fails('call sign_place(10, "sign1", "test_signs.vim", 0)', 'E885:')
+
+  " Tests for sign_getplaced()
+  call assert_equal([{'bufnr' : bufnr('.'),
+	      \ 'signs' : [{'id' : 10, 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ sign_getplaced(bufnr('test_signs.vim')))
+  call assert_equal([{'bufnr' : bufnr('.'),
+	      \ 'signs' : [{'id' : 10, 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ sign_getplaced())
+  call assert_fails("call sign_getplaced('dummy.sign')", 'E158:')
+  call assert_fails('call sign_getplaced("")', 'E158:')
+  call assert_fails('call sign_getplaced(-1)', 'E158:')
+  call assert_fails('call sign_getplaced("test_signs.vim", [])', 'E715:')
+  call assert_equal([{'bufnr' : bufnr('.'), 'signs' : []}],
+	      \ sign_getplaced('test_signs.vim', {'lnum' : 1000000}))
+  call assert_equal([{'bufnr' : bufnr('.'), 'signs' : []}],
+	      \ sign_getplaced('test_signs.vim', {'id' : 44}))
+
+  " Tests for sign_unplace()
+  call sign_place(20, 'sign2', 'test_signs.vim', 30)
+  call assert_equal(0, sign_unplace(20, 'test_signs.vim'))
+  call assert_equal(-1, sign_unplace(30, 'test_signs.vim'))
+  call sign_place(20, 'sign2', 'test_signs.vim', 30)
+  call assert_fails("call sign_unplace(20, 'buffer.c')", 'E158:')
+  call assert_fails("call sign_unplace(20, '')", 'E158:')
+  call assert_fails("call sign_unplace(20, 200)", 'E158:')
+  call assert_fails("call sign_unplace('mySign')", 'E39:')
+
+  " Tests for sign_undefine()
+  call assert_equal(0, sign_undefine("sign1"))
+  call assert_equal([], sign_getdefined("sign1"))
+  call assert_fails('call sign_undefine("none")', 'E155:')
+  call assert_fails('call sign_undefine([])', 'E730:')
+
+  call sign_unplace(0)
+  call sign_undefine()
+  enew | only
+endfunc
