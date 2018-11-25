@@ -612,6 +612,7 @@ String manipulation:					*string-functions*
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 	execute()		execute an Ex command and get the output
+	trim()			trim characters from a string
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
@@ -799,6 +800,9 @@ Buffers, windows and the argument list:
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
 	getbufline()		get a list of lines from the specified buffer
+	setbufline()		replace a line in the specified buffer
+	appendbufline()		append a list of lines in the specified buffer
+	deletebufline()		delete lines from a specified buffer
 	win_findbuf()		find windows containing a buffer
 	win_getid()		get window ID of a window
 	win_gotoid()		go to window with ID
@@ -810,6 +814,7 @@ Buffers, windows and the argument list:
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
 	swapinfo()		information about a swap file
+	swapname()		get the swap file path of a buffer
 
 Command line:					*command-line-functions*
 	getcmdline()		get the current command line
@@ -907,6 +912,7 @@ Window size and position:			*window-size-functions*
 	winheight()		get height of a specific window
 	winwidth()		get width of a specific window
 	win_screenpos()		get screen position of a window
+	winlayout()		get layout of windows in a tab page
 	winrestcmd()		return command to restore window sizes
 	winsaveview()		get view of current window
 	winrestview()		restore saved view of current window
@@ -919,6 +925,7 @@ Mappings:				    *mapping-functions*
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
+	assert_equalfile()	assert that two file contents are equal
 	assert_notequal()	assert that two expressions values are not equal
 	assert_inrange()	assert that an expression is inside a range
 	assert_match()		assert that a pattern matches the value
@@ -941,6 +948,9 @@ Testing:				    *test-functions*
 	test_null_partial()	return a null Partial function
 	test_null_string()	return a null String
 	test_settime()		set the time Vim uses internally
+	test_feedinput()	add key sequence to input buffer
+	test_option_not_set()	reset flag indicating option was set
+	test_scrollbar()	simulate scrollbar movement in the GUI
 
 Inter-process communication:		    *channel-functions*
 	ch_canread()		check if there is something to read
@@ -991,6 +1001,12 @@ Terminal window:				*terminal-functions*
 	term_gettty()		get the tty name of a terminal
 	term_setansicolors()	set 16 ANSI colors, used for GUI
 	term_getansicolors()	get 16 ANSI colors, used for GUI
+	term_dumpdiff()		display difference between two screen dumps
+	term_dumpload()		load a terminal screen dump in a window
+	term_dumpwrite()	dump contents of a terminal screen to a file
+	term_setkill()		set signal to stop job in a terminal
+	term_setrestore()	set command to restore a terminal
+	term_setsize()		set the size of a terminal
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
@@ -998,6 +1014,17 @@ Timers:						*timer-functions*
 	timer_stop()		stop a timer
 	timer_stopall()		stop all timers
 	timer_info()		get information about timers
+
+Tags:						*tag-functions*
+	taglist()		get list of matching tags
+	tagfiles()		get a list of tags files
+	gettagstack()		get the tag stack of a window
+	settagstack()		modify the tag stack of a window
+
+Prompt Buffer:					*promptbuffer-functions*
+	prompt_setcallback()	set prompt callback for a buffer
+	prompt_setinterrupt()	set interrupt callback for a buffer
+	prompt_setprompt()	set the prompt text for a buffer
 
 Various:					*various-functions*
 	mode()			get current editing mode
@@ -1026,17 +1053,13 @@ Various:					*various-functions*
 
 	wordcount()		get byte/word/char count of buffer
 
-	taglist()		get list of matching tags
-	tagfiles()		get a list of tags files
-	gettagstack()		get the tag stack
-	settagstack()		modify the tag stack
-
 	luaeval()		evaluate Lua expression
 	mzeval()		evaluate |MzScheme| expression
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	pyxeval()		evaluate |python_x| expression
+	debugbreak()		interrupt a program  being debugged
 
 ==============================================================================
 *41.7*	Defining a function
