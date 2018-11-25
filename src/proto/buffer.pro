@@ -69,18 +69,19 @@ char_u *buf_spname(buf_T *buf);
 void switch_to_win_for_buf(buf_T *buf, win_T **save_curwinp, tabpage_T **save_curtabp, bufref_T *save_curbuf);
 void restore_win_for_buf(win_T *save_curwin, tabpage_T *save_curtab, bufref_T *save_curbuf);
 int find_win_for_buf(buf_T *buf, win_T **wp, tabpage_T **tp);
-void buf_addsign(buf_T *buf, int id, linenr_T lnum, int typenr);
-linenr_T buf_change_sign_type(buf_T *buf, int markId, int typenr);
+void buf_addsign(buf_T *buf, int id, linenr_T lnum, int typenr, char_u *group);
+linenr_T buf_change_sign_type(buf_T *buf, int markId, int typenr, char_u *group);
 int buf_getsigntype(buf_T *buf, linenr_T lnum, int type);
-linenr_T buf_delsign(buf_T *buf, int id);
-int buf_findsign(buf_T *buf, int id);
+linenr_T buf_delsign(buf_T *buf, int id, char_u *group);
+int buf_findsign(buf_T *buf, int id, char_u *group);
 #ifdef FEAT_SIGNS
-signlist_T *buf_getsign(buf_T *buf, linenr_T lnum);
+int sign_in_group(signlist_T *sign, char_u *group);
+signlist_T *buf_getsign_with_id(buf_T *buf, int id, char_u *group);
 #endif
 int buf_findsign_id(buf_T *buf, linenr_T lnum);
 int buf_findsigntype_id(buf_T *buf, linenr_T lnum, int typenr);
 int buf_signcount(buf_T *buf, linenr_T lnum);
-void buf_delete_signs(buf_T *buf);
+void buf_delete_signs(buf_T *buf, char_u *group);
 void buf_delete_all_signs(void);
 void sign_list_placed(buf_T *rbuf);
 void sign_mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after);

@@ -936,7 +936,7 @@ free_buffer_stuff(
     uc_clear(&buf->b_ucmds);		/* clear local user commands */
 #endif
 #ifdef FEAT_SIGNS
-    buf_delete_signs(buf);		/* delete any signs */
+    buf_delete_signs(buf, (char_u *)"*");	/* delete any signs */
 #endif
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
@@ -5874,7 +5874,8 @@ insert_sign(
     signlist_T	*next,		/* next sign entry */
     int		id,		/* sign ID */
     linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr)		/* typenr of sign we are adding */
+    int		typenr,		/* typenr of sign we are adding */
+    char_u	*group)		/* sign group */
 {
     signlist_T	*newsign;
 
@@ -5884,6 +5885,10 @@ insert_sign(
 	newsign->id = id;
 	newsign->lnum = lnum;
 	newsign->typenr = typenr;
+	if (group != NULL)
+	    newsign->group = vim_strsave(group);
+	else
+	    newsign->group = NULL;
 	newsign->next = next;
 	newsign->prev = prev;
 	if (next != NULL)
@@ -5912,6 +5917,20 @@ insert_sign(
 }
 
 /*
+ * Returns TRUE if 'sign' is in 'group'.
+ * A sign can either be in the default group (sign->group == NULL)
+ * or in a named group.
+ */
+    int
+sign_in_group(signlist_T *sign, char_u *group)
+{
+    return ((group != NULL && STRCMP(group, "*") == 0) ||
+	    (group == NULL && sign->group == NULL) ||
+	    (group != NULL && sign->group != NULL &&
+					STRCMP(group, sign->group) == 0));
+}
+
+/*
  * Add the sign into the signlist. Find the right spot to do it though.
  */
     void
@@ -5919,7 +5938,8 @@ buf_addsign(
     buf_T	*buf,		/* buffer to store sign in */
     int		id,		/* sign ID */
     linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr)		/* typenr of sign we are adding */
+    int		typenr,		/* typenr of sign we are adding */
+    char_u	*group)		/* sign group */
 {
     signlist_T	*sign;		/* a sign in the signlist */
     signlist_T	*prev;		/* the previous sign */
@@ -5927,7 +5947,8 @@ buf_addsign(
     prev = NULL;
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
     {
-	if (lnum == sign->lnum && id == sign->id)
+	if (lnum == sign->lnum && id == sign->id &&
+		sign_in_group(sign, group))
 	{
 	    sign->typenr = typenr;
 	    return;
@@ -5942,7 +5963,7 @@ buf_addsign(
 		sign = buf->b_signlist;
 	    else
 		sign = prev->next;
-	    insert_sign(buf, prev, sign, id, lnum, typenr);
+	    insert_sign(buf, prev, sign, id, lnum, typenr, group);
 	    return;
 	}
 	prev = sign;
@@ -5955,7 +5976,7 @@ buf_addsign(
 	sign = buf->b_signlist;
     else
 	sign = prev->next;
-    insert_sign(buf, prev, sign, id, lnum, typenr);
+    insert_sign(buf, prev, sign, id, lnum, typenr, group);
 
     return;
 }
@@ -5968,13 +5989,14 @@ buf_addsign(
 buf_change_sign_type(
     buf_T	*buf,		/* buffer to store sign in */
     int		markId,		/* sign ID */
-    int		typenr)		/* typenr of sign we are adding */
+    int		typenr,		/* typenr of sign we are adding */
+    char_u	*group)		/* sign group */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
     {
-	if (sign->id == markId)
+	if (sign->id == markId && sign_in_group(sign, group))
 	{
 	    sign->typenr = typenr;
 	    return sign->lnum;
@@ -6011,7 +6033,8 @@ buf_getsigntype(
     linenr_T
 buf_delsign(
     buf_T	*buf,		/* buffer sign is stored in */
-    int		id)		/* sign id */
+    int		id,		/* sign id */
+    char_u	*group)		/* sign group */
 {
     signlist_T	**lastp;	/* pointer to pointer to current sign */
     signlist_T	*sign;		/* a sign in a b_signlist */
@@ -6023,14 +6046,17 @@ buf_delsign(
     for (sign = buf->b_signlist; sign != NULL; sign = next)
     {
 	next = sign->next;
-	if (sign->id == id)
+	if ((id == 0 || sign->id == id) && sign_in_group(sign, group))
+
 	{
 	    *lastp = next;
 	    if (next != NULL)
 		next->prev = sign->prev;
 	    lnum = sign->lnum;
+	    vim_free(sign->group);
 	    vim_free(sign);
-	    break;
+	    if (group == NULL || id != 0)
+		break;
 	}
 	else
 	    lastp = &sign->next;
@@ -6056,22 +6082,23 @@ buf_delsign(
     int
 buf_findsign(
     buf_T	*buf,		/* buffer to store sign in */
-    int		id)		/* sign ID */
+    int		id,		/* sign ID */
+    char_u	*group)		/* sign group */
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->id == id)
+	if (sign->id == id && sign_in_group(sign, group))
 	    return sign->lnum;
 
     return 0;
 }
 
 /*
- * Get information for the sign at 'lnum' in buffer 'buf'
+ * Get information for the sign at line 'lnum' in buffer 'buf'
  */
-    signlist_T *
-buf_getsign(
+    static signlist_T *
+buf_getsign_at_line(
     buf_T	*buf,		/* buffer whose sign we are searching for */
     linenr_T	lnum)		/* line number of sign */
 {
@@ -6084,6 +6111,24 @@ buf_getsign(
     return NULL;
 }
 
+/*
+ * Get information for the sign with 'id' in buffer 'buf'
+ */
+    signlist_T *
+buf_getsign_with_id(
+    buf_T	*buf,		/* buffer whose sign we are searching for */
+    int		id,		/* sign identifier */
+    char_u	*group)		/* sign group */
+{
+    signlist_T	*sign;		/* a sign in the signlist */
+
+    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+	if (sign->id == id && sign_in_group(sign, group))
+	    return sign;
+
+    return NULL;
+}
+
     int
 buf_findsign_id(
     buf_T	*buf,		/* buffer whose sign we are searching for */
@@ -6091,7 +6136,7 @@ buf_findsign_id(
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
-    sign = buf_getsign(buf, lnum);
+    sign = buf_getsign_at_line(buf, lnum);
     if (sign != NULL)
 	return sign->id;
 
@@ -6138,13 +6183,15 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 #  endif /* FEAT_SIGN_ICONS */
 # endif /* FEAT_NETBEANS_INTG */
 
-
 /*
- * Delete signs in buffer "buf".
+ * Delete signs in group 'group' in buffer "buf". If 'group' is '*',
+ * delete all the signs.
  */
     void
-buf_delete_signs(buf_T *buf)
+buf_delete_signs(buf_T *buf, char_u *group)
 {
+    signlist_T	*sign;
+    signlist_T	**lastp;	/* pointer to pointer to current sign */
     signlist_T	*next;
 
     /* When deleting the last sign need to redraw the windows to remove the
@@ -6155,11 +6202,20 @@ buf_delete_signs(buf_T *buf)
 	changed_cline_bef_curs();
     }
 
-    while (buf->b_signlist != NULL)
+    lastp = &buf->b_signlist;
+    for (sign = buf->b_signlist; sign != NULL; sign = next)
     {
-	next = buf->b_signlist->next;
-	vim_free(buf->b_signlist);
-	buf->b_signlist = next;
+	next = sign->next;
+	if (sign_in_group(sign, group))
+	{
+	    *lastp = next;
+	    if (next != NULL)
+		next->prev = sign->prev;
+	    vim_free(sign->group);
+	    vim_free(sign);
+	}
+	else
+	    lastp = &sign->next;
     }
 }
 
@@ -6173,7 +6229,7 @@ buf_delete_all_signs(void)
 
     FOR_ALL_BUFFERS(buf)
 	if (buf->b_signlist != NULL)
-	    buf_delete_signs(buf);
+	    buf_delete_signs(buf, (char_u *)"*");
 }
 
 /*
@@ -6185,6 +6241,7 @@ sign_list_placed(buf_T *rbuf)
     buf_T	*buf;
     signlist_T	*p;
     char	lbuf[BUFSIZ];
+    char	group[BUFSIZ];
 
     MSG_PUTS_TITLE(_("\n--- Signs ---"));
     msg_putchar('\n');
@@ -6202,8 +6259,13 @@ sign_list_placed(buf_T *rbuf)
 	}
 	for (p = buf->b_signlist; p != NULL && !got_int; p = p->next)
 	{
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s"),
-			   (long)p->lnum, p->id, sign_typenr2name(p->typenr));
+	    if (p->group != NULL)
+		snprintf(group, BUFSIZ, " group=%s", p->group);
+	    else
+		group[0] = '\0';
+	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s%s"),
+			   (long)p->lnum, p->id, sign_typenr2name(p->typenr),
+			    group);
 	    MSG_PUTS(lbuf);
 	    msg_putchar('\n');
 	}

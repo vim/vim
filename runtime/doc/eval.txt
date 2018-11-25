@@ -2412,10 +2412,10 @@ sign_define({name} [, {dict}])	Number	define or update a sign
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
-sign_place({id}, {name}, {expr} [, {lnum}])
+sign_place({id}, {name}, {expr} [, {lnum} [, {group}]])
 				Number	place a sign
 sign_undefine([{name}])		Number	undefine a sign
-sign_unplace({id} [, {expr}])	Number	unplace a sign
+sign_unplace([{dict}])		Number	unplace a sign
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -7867,13 +7867,12 @@ shiftwidth([{col}])						*shiftwidth()*
 		no {col} argument is given, column 1 will be assumed.
 
 sign_define({name} [, {dict}])				*sign_define()*
-		Define a new sign named {name} or set attributes for an
+		Define a new sign named {name} or modify the attributes of an
 		existing sign.  This is similar to the |:sign-define| command.
-		The {name} can be a String or a Number.
 
-		The optional {dict} argument specifies the sign attributes.
-		The following values are supported:
-
+		The {name} can be a String or a Number.  The optional {dict}
+		argument specifies the sign attributes.  The following values
+		are supported:
 		    icon	full path to the bitmap file for the sign.
 		    linehl	highlight group used for the whole line the
 				sign is placed in.
@@ -7897,7 +7896,6 @@ sign_getdefined([{name}])				*sign_getdefined()*
 
 		Each list item in the returned value is a dictionary with the
 		following entries:
-
 			icon	full path to the bitmap file of the sign
 			linehl	highlight group used for the whole line the
 				sign is placed in.
@@ -7923,12 +7921,15 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		list of signs placed in that buffer is returned.  For the use
 		of {expr}, see |bufname()|. The optional {dict} can contain
 		the following entries:
-			lnum	return information about signs placed in this
-				line. For the use of {lnum}, see |line()|.
-			id	return information about signs with this
-				identifier
-		If no arguments are supplied, then signs placed in all the
-		buffers are returned.
+			group	select only signs in this group
+			id	select sign with this identifier
+			lnum	select signs placed in this line. For the use
+				of {lnum}, see |line()|.
+		If {group} is '*', then signs in all the groups including the
+		global group are returned. If {group} is not supplied, then
+		only signs in the global group are returned.  If no arguments
+		are supplied, then signs placed in all the buffers are
+		returned.
 
 		Each list item in the returned value is a dictionary with the
 		following entries:
@@ -7938,6 +7939,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 				entries
 
 		The dictionary for each sign contains the following entries:
+			group	sign group. Set to '' for the global group.
 			id	identifier of the sign
 			lnum	line number where the sign is placed
 			name	name of the defined sign
@@ -7945,38 +7947,66 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		Returns an empty list on failure.
 
 		Examples: >
-			" Get a List of all the signs placed in eval.c
+			" Get a List of signs placed in eval.c in the
+			" global group
 			echo sign_getplaced("eval.c")
 
-			" Get a List of the sign placed at line 10 in eval.c
-			echo sign_getplaced("eval.c", 10)
+			" Get a List of signs in group 'g1' placed in eval.c
+			echo sign_getplaced("eval.c", {'group' : 'g1'})
+
+			" Get a List of signs placed at line 10 in eval.c
+			echo sign_getplaced("eval.c", {'lnum' : 10})
+
+			" Get sign with identifier 10 placed in a.py
+			echo sign_getplaced("a.py", {'id' : 10'})
+
+			" Get sign with id 20 in group 'g1' placed in a.py
+			echo sign_getplaced("a.py", {'group' : 'g1',
+							\  'id' : 20'})
 
 			" Get a List of all the placed signs
 			echo sign_getplaced()
 <
-sign_place({id}, {name}, {expr} [, {lnum}])		*sign_place()*
+							*sign_place()*
+sign_place({id}, {group}, {name}, {expr} [, {lnum}])
 		Place the sign defined as {name} at line {lnum} in file {expr}
-		and assign {id} to sign.
-		This is similar to the |:sign-place| command.
+		and assign {id} and {group} to sign.  This is similar to the
+		|:sign-place| command.
 
-		For the use of {expr}, see |bufname()|. For the use of {lnum},
-		see |line()|.  If the optional {lnum} is not specified, then
-		changes the placed sign {id} to use the defined sign {name}.
+		If the sign identifier {id} is zero, then a new identifier is
+		allocated.  {group} is the sign group name. To use the global
+		sign group, use an empty string.  {name} refers to a defined
+		sign.  {expr} refers to a buffer name or number. See
+		|bufname()|.  {lnum} is the line number in the buffer {expr}.
+		See |line()|.
 
-		Returns 0 on success and -1 on failure.
+		If the optional {lnum} is not specified, then modifies the
+		placed sign {id} in group {group} to use the defined sign
+		{name}.
+
+		Returns the sign identifer on success and -1 on failure.
 
 		Examples: >
-			" Place a sign named mySign with id 5 at line 20 in
+			" Place a sign named sign1 with id 5 at line 20 in
 			" buffer json.c
-			call sign_place(5, "mySign", "json.c", 20)
+			call sign_place(5, '', 'sign1', 'json.c', 20)
 
-			" Updates sign 5 in buffer json.c to use newSign
-			call sign_place(5, "newSign", "json.c")
+			" Updates sign 5 in buffer json.c to use sign2
+			call sign_place(5, '', 'sign2', 'json.c')
+
+			" Place a sign named sign3 at line 30 in
+			" buffer json.c with a new identifier
+			let id = sign_place(0, '', 'sign3', 'json.c', 30)
+
+			" Place a sign named sign4 with id 10 in group 'abc'
+			" at line 40 in buffer json.c
+			let id = sign_place(10, 'abc', 'sign4', 'json.c', 40)
 <
 sign_undefine([{name}])					*sign_undefine()*
 		Deletes a previously defined sign {name}. This is similar to
 		the |:sign-undefine| command. If {name} is not supplied, then
 		deletes all the defined signs.
+
 		Returns 0 on success and -1 on failure.
 
 		Examples: >
@@ -7986,26 +8016,45 @@ sign_undefine([{name}])					*sign_undefine()*
 			" Delete all the signs
 			call sign_undefine()
 <
-sign_unplace({id} [, {expr}])				*sign_unplace()*
-		Remove a previously placed sign {id} from buffer {expr}.
-		This is similar to the |:sign-unplace()| command.  For the use
-		of {expr}, see |bufname()|. If {id} is zero, then removes all
-		the signs placed in buffer {expr}. If {expr} is not supplied,
-		then removes sign {id} from all the buffers.
+sign_unplace({group}, [{dict}])				*sign_unplace()*
+		Remove a previously placed sign in one or more buffers.  This
+		is similar to the |:sign-unplace()| command.
+
+		{group} is the sign group name. To use the global sign group,
+		use an empty string.  If {group} is set to '*', then all the
+		groups including the global group are used.
+		The signs in {group} are selected based on the entries in
+		{dict}.  The following optional entries in {dict} are
+		supported:
+			buffer	buffer name or number. See |bufname()|.
+			id	sign identifier
+
 		Returns 0 on success and -1 on failure.
 
 		Examples: >
-			" Remove sign 10 from buffer eval.c
-			call sign_unplace(10, "eval.c")
+			" Remove sign 10 from buffer a.vim
+			call sign_unplace('', {'buffer' : "a.vim", 'id' : 10})
+
+			" Remove sign 20 in group 'g1' from buffer 3
+			call sign_unplace('g1', {'buffer' : 3, 'id' : 20})
+
+			" Remove all the signs in group 'g2' from buffer 10
+			call sign_unplace('g2', {'buffer' : 10})
+
+			" Remove sign 30 in group 'g3' from all the buffers
+			call sign_unplace('g3', {'id' : 30})
 
 			" Remove all the signs placed in buffer 5
-			call sign_unplace(0, 5)
+			call sign_unplace('*', {'buffer' : 5})
 
-			" Remove sign 20 from all the files
-			call sign_unplace(20)
+			" Remove the signs in group 'g4' from all the buffers
+			call sign_unplace('g4')
 
-			" Remove all the placed signs
-			call sign_unplace(0)
+			" Remove sign 40 from all the buffers
+			call sign_unplace('*', {'id' : 40})
+
+			" Remove all the placed signs in all the buffers
+			call sign_unplace('*')
 <
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing

@@ -51,6 +51,13 @@ The color of the column is set with the SignColumn group |hl-SignColumn|.
 Example to set the color: >
 
 	:highlight SignColumn guibg=darkgrey
+<
+							*sign-group*
+Each sign can be assigned to either a default group or a named group. When
+placing a sign, if a group name is not supplied, then the sign is placed in
+the default group. Otherwise the sign is placed in the named group. The sign
+identifier is unique within a group. The sign group allows Vim plugins to
+avoid interfering with other plugins using signs.
 
 ==============================================================================
 2. Commands					*sign-commands* *:sig* *:sign*

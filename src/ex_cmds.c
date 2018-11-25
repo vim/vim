@@ -7847,9 +7847,18 @@ sign_list_by_name(char_u *name)
  * Place a sign at the specifed file location or update a sign.
  */
     int
-sign_place(int id, char_u *sign_name, buf_T *buf, linenr_T lnum)
+sign_place(
+	int		*sign_id,
+	char_u		*sign_group,
+	char_u		*sign_name,
+	buf_T		*buf,
+	linenr_T	lnum)
 {
     sign_T	*sp;
+
+    // Check for reserved character '*' in group name
+    if (sign_group != NULL && (*sign_group == '*' || *sign_group == '\0'))
+	return FAIL;
 
     for (sp = first_sign; sp != NULL; sp = sp->sn_next)
 	if (STRCMP(sp->sn_name, sign_name) == 0)
@@ -7859,13 +7868,25 @@ sign_place(int id, char_u *sign_name, buf_T *buf, linenr_T lnum)
 	EMSG2(_("E155: Unknown sign: %s"), sign_name);
 	return FAIL;
     }
+    if (*sign_id == 0)
+    {
+	// Allocate a new sign id
+	int		id = 1;
+	signlist_T	*sign;
+
+	while ((sign = buf_getsign_with_id(buf, id, sign_group)) != NULL)
+	    id++;
+
+	*sign_id = id;
+    }
+
     if (lnum > 0)
 	// ":sign place {id} line={lnum} name={name} file={fname}":
 	// place a sign
-	buf_addsign(buf, id, lnum, sp->sn_typenr);
+	buf_addsign(buf, *sign_id, lnum, sp->sn_typenr, sign_group);
     else
 	// ":sign place {id} file={fname}": change sign type
-	lnum = buf_change_sign_type(buf, id, sp->sn_typenr);
+	lnum = buf_change_sign_type(buf, *sign_id, sp->sn_typenr, sign_group);
     if (lnum > 0)
 	update_debug_sign(buf, lnum);
     else
@@ -7881,20 +7902,20 @@ sign_place(int id, char_u *sign_name, buf_T *buf, linenr_T lnum)
  * Unplace the specified sign
  */
     int
-sign_unplace(int id, buf_T *buf)
+sign_unplace(int sign_id, char_u *sign_group, buf_T *buf)
 {
-    if (id == 0)
+    if (sign_id == 0)
     {
 	// Delete all the signs in the specified buffer
 	redraw_buf_later(buf, NOT_VALID);
-	buf_delete_signs(buf);
+	buf_delete_signs(buf, sign_group);
     }
     else
     {
 	linenr_T	lnum;
 
 	// Delete only the specified sign
-	lnum = buf_delsign(buf, id);
+	lnum = buf_delsign(buf, sign_id, sign_group);
 	if (lnum == 0)
 	    return FAIL;
 	update_debug_sign(buf, lnum);
@@ -8034,7 +8055,7 @@ ex_sign(exarg_T *eap)
 		/* ":sign unplace": remove placed sign at cursor */
 		id = buf_findsign_id(curwin->w_buffer, curwin->w_cursor.lnum);
 		if (id > 0)
-		    sign_unplace(id, curwin->w_buffer);
+		    sign_unplace(id, NULL, curwin->w_buffer);
 		else
 		    EMSG(_("E159: Missing sign number"));
 	    }
@@ -8067,7 +8088,7 @@ ex_sign(exarg_T *eap)
 		{
 		    /* ":sign unplace {id}": remove placed sign by number */
 		    FOR_ALL_BUFFERS(buf)
-			sign_unplace(id, buf);
+			sign_unplace(id, NULL, buf);
 		    return;
 		}
 	    }
@@ -8144,7 +8165,7 @@ ex_sign(exarg_T *eap)
 	    /* ":sign jump {id} file={fname}" */
 	    if (lnum >= 0 || sign_name != NULL)
 		EMSG(_(e_invarg));
-	    else if ((lnum = buf_findsign(buf, id)) > 0)
+	    else if ((lnum = buf_findsign(buf, id, NULL)) > 0)
 	    {				/* goto a sign ... */
 		if (buf_jump_open_win(buf) != NULL)
 		{			/* ... in a current window */
@@ -8181,14 +8202,14 @@ ex_sign(exarg_T *eap)
 		EMSG(_(e_invarg));
 	    else if (id == -2)
 		/* ":sign unplace * file={fname}" */
-		sign_unplace(0, buf);
+		sign_unplace(0, NULL, buf);
 	    else
 		/* ":sign unplace {id} file={fname}" */
-		sign_unplace(id, buf);
+		sign_unplace(id, NULL, buf);
 	}
 	    /* idx == SIGNCMD_PLACE */
 	else if (sign_name != NULL)
-	    sign_place(id, sign_name, buf, lnum);
+	    sign_place(&id, NULL, sign_name, buf, lnum);
 	else
 	    EMSG(_(e_invarg));
     }
@@ -8262,6 +8283,8 @@ sign_get_info(signlist_T *sign, list_T *retlist)
 	return;
     list_append_dict(retlist, d);
     dict_add_number(d, "id", sign->id);
+    dict_add_string(d, "group", (sign->group == NULL) ?
+						(char_u *)"" : sign->group);
     dict_add_number(d, "lnum", sign->lnum);
     dict_add_string(d, "name", sign_typenr2name(sign->typenr));
 }
@@ -8270,7 +8293,12 @@ sign_get_info(signlist_T *sign, list_T *retlist)
  * Return information about all the signs placed in a buffer
  */
     static void
-sign_get_placed_in_buf(buf_T *buf, list_T *retlist, linenr_T lnum, int id)
+sign_get_placed_in_buf(
+	buf_T		*buf,
+	linenr_T	lnum,
+	int		sign_id,
+	char_u		*sign_group,
+	list_T		*retlist)
 {
     dict_T	*d;
     list_T	*l;
@@ -8287,11 +8315,15 @@ sign_get_placed_in_buf(buf_T *buf, list_T *retlist, linenr_T lnum, int id)
     dict_add_list(d, "signs", l);
 
     for (sign = buf->b_signlist; sign != NULL && !got_int; sign = sign->next)
-	if ((lnum == 0 && id == 0) ||
-		(id == 0 && lnum == sign->lnum) ||
-		(lnum == 0 && id == sign->id) ||
-		(lnum == sign->lnum && id == sign->id))
+    {
+	if (!sign_in_group(sign, sign_group))
+	    continue;
+	if ((lnum == 0 && sign_id == 0) ||
+		(sign_id == 0 && lnum == sign->lnum) ||
+		(lnum == 0 && sign_id == sign->id) ||
+		(lnum == sign->lnum && sign_id == sign->id))
 	    sign_get_info(sign, l);
+    }
 }
 
 /*
@@ -8300,16 +8332,21 @@ sign_get_placed_in_buf(buf_T *buf, list_T *retlist, linenr_T lnum, int id)
  * placed in 'buf'. If 'buf' is NULL, return signs placed in all the buffers.
  */
     void
-sign_get_placed(buf_T *buf, linenr_T lnum, int id, list_T *retlist)
+sign_get_placed(
+	buf_T		*buf,
+	linenr_T	lnum,
+	int		sign_id,
+	char_u		*sign_group,
+	list_T		*retlist)
 {
     if (buf != NULL)
-	sign_get_placed_in_buf(buf, retlist, lnum, id);
+	sign_get_placed_in_buf(buf, lnum, sign_id, sign_group, retlist);
     else
     {
 	FOR_ALL_BUFFERS(buf)
 	{
 	    if (buf->b_signlist != NULL)
-		sign_get_placed_in_buf(buf, retlist, 0, id);
+		sign_get_placed_in_buf(buf, 0, sign_id, sign_group, retlist);
 	}
     }
 }
