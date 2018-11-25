@@ -5869,13 +5869,14 @@ win_found:
  */
     static void
 insert_sign(
-    buf_T	*buf,		/* buffer to store sign in */
-    signlist_T	*prev,		/* previous sign entry */
-    signlist_T	*next,		/* next sign entry */
-    int		id,		/* sign ID */
-    linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr,		/* typenr of sign we are adding */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer to store sign in
+    signlist_T	*prev,		// previous sign entry
+    signlist_T	*next,		// next sign entry
+    int		id,		// sign ID
+    linenr_T	lnum,		// line number which gets the mark
+    int		typenr,		// typenr of sign we are adding
+    char_u	*group,		// sign group
+    int		prio)		// sign priority
 {
     signlist_T	*newsign;
 
@@ -5889,6 +5890,7 @@ insert_sign(
 	    newsign->group = vim_strsave(group);
 	else
 	    newsign->group = NULL;
+	newsign->priority = prio;
 	newsign->next = next;
 	newsign->prev = prev;
 	if (next != NULL)
@@ -5935,11 +5937,12 @@ sign_in_group(signlist_T *sign, char_u *group)
  */
     void
 buf_addsign(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		id,		/* sign ID */
-    linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr,		/* typenr of sign we are adding */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer to store sign in
+    int		id,		// sign ID
+    linenr_T	lnum,		// line number which gets the mark
+    int		typenr,		// typenr of sign we are adding
+    char_u	*group,		// sign group
+    int		prio)		// sign priority
 {
     signlist_T	*sign;		/* a sign in the signlist */
     signlist_T	*prev;		/* the previous sign */
@@ -5950,33 +5953,35 @@ buf_addsign(
 	if (lnum == sign->lnum && id == sign->id &&
 		sign_in_group(sign, group))
 	{
+	    // Update an existing sign
 	    sign->typenr = typenr;
 	    return;
 	}
 	else if (lnum < sign->lnum)
 	{
-	    // keep signs sorted by lnum: insert new sign at head of list for
-	    // this lnum
-	    while (prev != NULL && prev->lnum == lnum)
+	    // keep signs sorted by lnum and by priority: insert new sign at
+	    // the proper position in the list for this lnum.
+	    while (prev != NULL && prev->lnum == lnum &&
+						prev->priority <= prio)
 		prev = prev->prev;
 	    if (prev == NULL)
 		sign = buf->b_signlist;
 	    else
 		sign = prev->next;
-	    insert_sign(buf, prev, sign, id, lnum, typenr, group);
+	    insert_sign(buf, prev, sign, id, lnum, typenr, group, prio);
 	    return;
 	}
 	prev = sign;
     }
 
     // insert new sign at head of list for this lnum
-    while (prev != NULL && prev->lnum == lnum)
+    while (prev != NULL && prev->lnum == lnum && prev->priority <= prio)
 	prev = prev->prev;
     if (prev == NULL)
 	sign = buf->b_signlist;
     else
 	sign = prev->next;
-    insert_sign(buf, prev, sign, id, lnum, typenr, group);
+    insert_sign(buf, prev, sign, id, lnum, typenr, group, prio);
 
     return;
 }
@@ -6263,9 +6268,10 @@ sign_list_placed(buf_T *rbuf)
 		snprintf(group, BUFSIZ, " group=%s", p->group);
 	    else
 		group[0] = '\0';
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s%s"),
+	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s%s "
+							"priority=%d"),
 			   (long)p->lnum, p->id, sign_typenr2name(p->typenr),
-			    group);
+			    group, p->priority);
 	    MSG_PUTS(lbuf);
 	    msg_putchar('\n');
 	}

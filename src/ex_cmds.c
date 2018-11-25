@@ -7852,7 +7852,8 @@ sign_place(
 	char_u		*sign_group,
 	char_u		*sign_name,
 	buf_T		*buf,
-	linenr_T	lnum)
+	linenr_T	lnum,
+	int		prio)
 {
     sign_T	*sp;
 
@@ -7883,7 +7884,7 @@ sign_place(
     if (lnum > 0)
 	// ":sign place {id} line={lnum} name={name} file={fname}":
 	// place a sign
-	buf_addsign(buf, *sign_id, lnum, sp->sn_typenr, sign_group);
+	buf_addsign(buf, *sign_id, lnum, sp->sn_typenr, sign_group, prio);
     else
 	// ":sign place {id} file={fname}": change sign type
 	lnum = buf_change_sign_type(buf, *sign_id, sp->sn_typenr, sign_group);
@@ -8209,7 +8210,7 @@ ex_sign(exarg_T *eap)
 	}
 	    /* idx == SIGNCMD_PLACE */
 	else if (sign_name != NULL)
-	    sign_place(&id, NULL, sign_name, buf, lnum);
+	    sign_place(&id, NULL, sign_name, buf, lnum, SIGN_DEF_PRIO);
 	else
 	    EMSG(_(e_invarg));
     }
@@ -8287,6 +8288,7 @@ sign_get_info(signlist_T *sign, list_T *retlist)
 						(char_u *)"" : sign->group);
     dict_add_number(d, "lnum", sign->lnum);
     dict_add_string(d, "name", sign_typenr2name(sign->typenr));
+    dict_add_number(d, "priority", sign->priority);
 }
 
 /*

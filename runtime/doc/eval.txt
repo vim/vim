@@ -2412,10 +2412,11 @@ sign_define({name} [, {dict}])	Number	define or update a sign
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
-sign_place({id}, {name}, {expr} [, {lnum} [, {group}]])
+sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
 				Number	place a sign
 sign_undefine([{name}])		Number	undefine a sign
-sign_unplace([{dict}])		Number	unplace a sign
+sign_unplace({group} [, {dict}])
+				Number	unplace a sign
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -7943,6 +7944,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			id	identifier of the sign
 			lnum	line number where the sign is placed
 			name	name of the defined sign
+			priority	sign priority
 
 		Returns an empty list on failure.
 
@@ -7968,7 +7970,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			echo sign_getplaced()
 <
 							*sign_place()*
-sign_place({id}, {group}, {name}, {expr} [, {lnum}])
+sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
 		Place the sign defined as {name} at line {lnum} in file {expr}
 		and assign {id} and {group} to sign.  This is similar to the
 		|:sign-place| command.
@@ -7978,7 +7980,11 @@ sign_place({id}, {group}, {name}, {expr} [, {lnum}])
 		sign group, use an empty string.  {name} refers to a defined
 		sign.  {expr} refers to a buffer name or number. See
 		|bufname()|.  {lnum} is the line number in the buffer {expr}.
-		See |line()|.
+		See |line()|. The optional {prio} specifies the priority of
+		the sign. If not specified, the priority is set to 10. When
+		multiple signs are placed on the same line, the highlight
+		groups of the sign with the highest priority is used
+		independent of the sign group.
 
 		If the optional {lnum} is not specified, then modifies the
 		placed sign {id} in group {group} to use the defined sign
@@ -7999,8 +8005,8 @@ sign_place({id}, {group}, {name}, {expr} [, {lnum}])
 			let id = sign_place(0, '', 'sign3', 'json.c', 30)
 
 			" Place a sign named sign4 with id 10 in group 'abc'
-			" at line 40 in buffer json.c
-			let id = sign_place(10, 'abc', 'sign4', 'json.c', 40)
+			" at line 40 in buffer json.c with priority 90
+			call sign_place(10, 'abc', 'sign4', 'json.c', 40, 90)
 <
 sign_undefine([{name}])					*sign_undefine()*
 		Deletes a previously defined sign {name}. This is similar to
@@ -8016,7 +8022,7 @@ sign_undefine([{name}])					*sign_undefine()*
 			" Delete all the signs
 			call sign_undefine()
 <
-sign_unplace({group}, [{dict}])				*sign_unplace()*
+sign_unplace({group} [, {dict}])			*sign_unplace()*
 		Remove a previously placed sign in one or more buffers.  This
 		is similar to the |:sign-unplace()| command.
 

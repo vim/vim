@@ -63,7 +63,7 @@ func Test_sign()
 
   " Check placed signs
   let a=execute('sign place')
-  call assert_equal("\n--- Signs ---\nSigns for [NULL]:\n    line=3  id=41  name=Sign1\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for [NULL]:\n    line=3  id=41  name=Sign1 priority=10\n", a)
 
   " Unplace the sign and try jumping to it again should fail.
   sign unplace 41
@@ -152,7 +152,7 @@ func Test_sign_undefine_still_placed()
 
   " Listing placed sign should show that sign is deleted.
   let a=execute('sign place')
-  call assert_equal("\n--- Signs ---\nSigns for foobar:\n    line=1  id=41  name=[Deleted]\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for foobar:\n    line=1  id=41  name=[Deleted] priority=10\n", a)
 
   sign unplace 41
   let a=execute('sign place')
@@ -266,13 +266,15 @@ func Test_sign_funcs()
   sview test_signs.vim
   call assert_equal(10, sign_place(10, '', 'sign1', 'test_signs.vim', 20))
   call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1'}]}],
-	      \ sign_getplaced('test_signs.vim'))
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}], sign_getplaced('test_signs.vim'))
   call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
 	      \ sign_getplaced('test_signs.vim', {'lnum' : 20}))
   call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
 	      \ sign_getplaced('test_signs.vim', {'id' : 10}))
 
   " Tests for invalid arguments to sign_place()
@@ -297,10 +299,12 @@ func Test_sign_funcs()
 
   " Tests for sign_getplaced()
   call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
 	      \ sign_getplaced(bufnr('test_signs.vim')))
   call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1'}]}],
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
 	      \ sign_getplaced())
   call assert_fails("call sign_getplaced('dummy.sign')", 'E158:')
   call assert_fails('call sign_getplaced("")', 'E158:')
@@ -372,23 +376,31 @@ func Test_sign_group()
   let s = sign_getplaced('test_signs.vim', {'group' : 'g3'})
   call assert_equal([], s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'group' : '*'})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10},
-	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20},
-	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30}],
+  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
+	      \ 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20,
+	      \  'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30,
+	      \  'priority' : 10}],
 	      \ s[0].signs)
 
   " Test for sign_getplaced() with id
   let s = sign_getplaced('test_signs.vim', {'id' : 5})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10}],
+  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'id' : 5, 'group' : 'g2'})
   call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2'}],
+	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'id' : 5, 'group' : '*'})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10},
-	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20},
-	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30}],
+  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
+	      \ 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20,
+	      \ 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30,
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'id' : 5, 'group' : 'g3'})
   call assert_equal([], s[0].signs)
@@ -398,11 +410,13 @@ func Test_sign_group()
   call assert_equal([], s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'lnum' : 20, 'group' : 'g1'})
   call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1'}],
+	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1',
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'lnum' : 30, 'group' : '*'})
   call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2'}],
+	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
   let s = sign_getplaced('test_signs.vim', {'lnum' : 40, 'group' : '*'})
   call assert_equal([], s[0].signs)
@@ -415,15 +429,18 @@ func Test_sign_group()
   call sign_unplace('', {'id' : 5, 'buffer' : 'test_signs.vim'})
   let s = sign_getplaced('test_signs.vim', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1'},
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2'}],
+	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1',
+	      \ 'priority' : 10},
+	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
 
   " Clear the sign in one of the groups
   call sign_unplace('g1', {'buffer' : 'test_signs.vim'})
   let s = sign_getplaced('test_signs.vim', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2'}],
+	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
+	      \ 'priority' : 10}],
 	      \ s[0].signs)
 
   " Clear all the signs from the buffer
@@ -467,7 +484,6 @@ endfunc
 " Tests for auto-generating the sign identifier
 func Test_sign_id_autogen()
   enew | only
-  " Remove all the signs
   call sign_unplace('*')
   call sign_undefine()
 
@@ -485,6 +501,41 @@ func Test_sign_id_autogen()
   call assert_equal(0, sign_unplace('g1', {'id' : 1}))
   call assert_equal(10,
 	      \ sign_getplaced('test_signs.vim', {'id' : 1})[0].signs[0].lnum)
+
+  call sign_unplace('*')
+  call sign_undefine()
+  enew  | only
+endfunc
+
+" Test for sign priority
+func Test_sign_priority()
+  enew | only
+  call sign_unplace('*')
+  call sign_undefine()
+
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search'}
+  call sign_define("sign1", attr)
+  call sign_define("sign2", attr)
+  call sign_define("sign3", attr)
+
+  " Place three signs with different priority in the same line
+  sview test_signs.vim
+  call sign_place(1, 'g1', 'sign1', 'test_signs.vim', 11, 50)
+  call sign_place(2, 'g2', 'sign2', 'test_signs.vim', 11, 100)
+  call sign_place(3, '', 'sign3', 'test_signs.vim', 11)
+  let s = sign_getplaced('test_signs.vim', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 11, 'group' : 'g2',
+	      \ 'priority' : 100},
+	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 11, 'group' : 'g1',
+	      \ 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 11, 'group' : '',
+	      \ 'priority' : 10}],
+	      \ s[0].signs)
+
+  " Error case
+  call assert_fails("call sign_place(1, 'g1', 'sign1', 'test_signs.vim',
+	      \ 11, [])", 'E745:')
 
   call sign_unplace('*')
   call sign_undefine()

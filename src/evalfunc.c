@@ -859,7 +859,7 @@ static struct fst
     {"sign_define",	1, 2, f_sign_define},
     {"sign_getdefined",	0, 1, f_sign_getdefined},
     {"sign_getplaced",	0, 2, f_sign_getplaced},
-    {"sign_place",	4, 5, f_sign_place},
+    {"sign_place",	4, 6, f_sign_place},
     {"sign_undefine",	0, 1, f_sign_undefine},
     {"sign_unplace",	1, 2, f_sign_unplace},
 #endif
@@ -11441,6 +11441,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
     char_u	*sign_name;
     buf_T	*buf;
     linenr_T	lnum = 0;
+    int		prio = SIGN_DEF_PRIO;
     int		notanum = FALSE;
 
     rettv->vval.v_number = -1;
@@ -11490,9 +11491,17 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	    EMSG2(_("E885: Not possible to change sign %s"), sign_name);
 	    return;
 	}
+
+	if (argvars[5].v_type != VAR_UNKNOWN)
+	{
+	    // Sign priority
+	    prio = (int)get_tv_number_chk(&argvars[5], &notanum);
+	    if (notanum)
+		return;
+	}
     }
 
-    if (sign_place(&sign_id, group, sign_name, buf, lnum) == OK)
+    if (sign_place(&sign_id, group, sign_name, buf, lnum, prio) == OK)
 	rettv->vval.v_number = sign_id;
 
     vim_free(group);
