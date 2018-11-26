@@ -5496,7 +5496,8 @@ nv_ctrlo(cmdarg_T *cap)
 }
 
 /*
- * CTRL-^ command, short for ":e #"
+ * CTRL-^ command, short for ":e #".  Works even when the alternate buffer is
+ * not named.
  */
     static void
 nv_hat(cmdarg_T *cap)
@@ -8142,6 +8143,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    do
 		i = gchar_cursor();
 	    while (VIM_ISWHITE(i) && oneright() == OK);
+	    curwin->w_valid &= ~VALID_WCOL;
 	}
 	curwin->w_set_curswant = TRUE;
 	break;

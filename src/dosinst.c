@@ -115,14 +115,13 @@ enum
     vimfiles_dir_vim,
     vimfiles_dir_home
 };
-static char    *(vimfiles_dir_choices[]) =
+static char *(vimfiles_dir_choices[]) =
 {
     "\nCreate plugin directories:",
     "No",
     "In the VIM directory",
     "In your HOME directory",
 };
-static int     vimfiles_dir_choice;
 
 /* non-zero when selected to install the popup menu entry. */
 static int	install_popup = 0;
@@ -741,7 +740,8 @@ add_dummy_choice(void)
     choices[choice_count].installfunc = NULL;
     choices[choice_count].active = 0;
     choices[choice_count].changefunc = NULL;
-    choices[choice_count].installfunc = NULL;
+    choices[choice_count].text = NULL;
+    choices[choice_count].arg = 0;
     ++choice_count;
 }
 
@@ -2089,11 +2089,98 @@ dir_remove_last(const char *path, char to[BUFSIZE])
     static void
 set_directories_text(int idx)
 {
+    int vimfiles_dir_choice = choices[idx].arg;
+
     if (vimfiles_dir_choice == (int)vimfiles_dir_none)
 	alloc_text(idx, "Do NOT create plugin directories%s", "");
     else
 	alloc_text(idx, "Create plugin directories: %s",
 				   vimfiles_dir_choices[vimfiles_dir_choice]);
+}
+
+/*
+ * To get the "real" home directory:
+ * - get value of $HOME
+ * - if not found, get value of $HOMEDRIVE$HOMEPATH
+ * - if not found, get value of $USERPROFILE
+ *
+ * This code is based on init_homedir() in misc1.c, keep in sync!
+ */
+static char *homedir = NULL;
+
+    void
+init_homedir(void)
+{
+    char    *var;
+    char    buf[MAX_PATH];
+
+    if (homedir != NULL)
+    {
+	free(homedir);
+	homedir = NULL;
+    }
+
+    var = getenv("HOME");
+
+    /*
+     * Typically, $HOME is not defined on Windows, unless the user has
+     * specifically defined it for Vim's sake.  However, on Windows NT
+     * platforms, $HOMEDRIVE and $HOMEPATH are automatically defined for
+     * each user.  Try constructing $HOME from these.
+     */
+    if (var == NULL || *var == NUL)
+    {
+	char	*homedrive, *homepath;
+
+	homedrive = getenv("HOMEDRIVE");
+	homepath = getenv("HOMEPATH");
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = "\\";
+	if (homedrive != NULL
+			   && strlen(homedrive) + strlen(homepath) < MAX_PATH)
+	{
+	    sprintf(buf, "%s%s", homedrive, homepath);
+	    if (buf[0] != NUL)
+		var = buf;
+	}
+    }
+
+    if (var == NULL)
+	var = getenv("USERPROFILE");
+
+    /*
+     * Weird but true: $HOME may contain an indirect reference to another
+     * variable, esp. "%USERPROFILE%".  Happens when $USERPROFILE isn't set
+     * when $HOME is being set.
+     */
+    if (var != NULL && *var == '%')
+    {
+	char	*p;
+	char	*exp;
+
+	p = strchr(var + 1, '%');
+	if (p != NULL)
+	{
+	    strncpy(buf, var + 1, p - (var + 1));
+	    buf[p - (var + 1)] = NUL;
+	    exp = getenv(buf);
+	    if (exp != NULL && *exp != NUL
+					&& strlen(exp) + strlen(p) < MAX_PATH)
+	    {
+		_snprintf(buf, MAX_PATH, "%s%s", exp, p + 1);
+		buf[MAX_PATH - 1] = NUL;
+		var = buf;
+	    }
+	}
+    }
+
+    if (var != NULL && *var == NUL)	// empty is same as not set
+	var = NULL;
+
+    if (var == NULL)
+	homedir = NULL;
+    else
+	homedir = _strdup(var);
 }
 
 /*
@@ -2106,9 +2193,9 @@ change_directories_choice(int idx)
     int	    choice_count = TABLE_SIZE(vimfiles_dir_choices);
 
     /* Don't offer the $HOME choice if $HOME isn't set. */
-    if (getenv("HOME") == NULL)
+    if (homedir == NULL)
 	--choice_count;
-    vimfiles_dir_choice = get_choice(vimfiles_dir_choices, choice_count);
+    choices[idx].arg = get_choice(vimfiles_dir_choices, choice_count);
     set_directories_text(idx);
 }
 
@@ -2120,6 +2207,7 @@ change_directories_choice(int idx)
 install_vimfilesdir(int idx)
 {
     int i;
+    int vimfiles_dir_choice = choices[idx].arg;
     char *p;
     char vimdir_path[BUFSIZE];
     char vimfiles_path[BUFSIZE];
@@ -2144,8 +2232,8 @@ install_vimfilesdir(int idx)
 	}
 	case vimfiles_dir_home:
 	{
-	    /* Find the $HOME directory.  Its existence was already checked. */
-	    p = getenv("HOME");
+	    // Find the $HOME directory.  Its existence was already checked.
+	    p = homedir;
 	    if (p == NULL)
 	    {
 		printf("Internal error: $HOME is NULL\n");
@@ -2156,7 +2244,7 @@ install_vimfilesdir(int idx)
 	}
 	case vimfiles_dir_none:
 	{
-	    /* Do not create vim plugin directory */
+	    // Do not create vim plugin directory.
 	    return;
 	}
     }
@@ -2185,14 +2273,15 @@ init_directories_choice(void)
     struct stat	st;
     char	tmp_dirname[BUFSIZE];
     char	*p;
+    int		vimfiles_dir_choice;
 
     choices[choice_count].text = alloc(150);
     choices[choice_count].changefunc = change_directories_choice;
     choices[choice_count].installfunc = install_vimfilesdir;
     choices[choice_count].active = 1;
 
-    /* Check if the "compiler" directory already exists.  That's a good
-     * indication that the plugin directories were already created. */
+    // Check if the "compiler" directory already exists.  That's a good
+    // indication that the plugin directories were already created.
     if (getenv("HOME") != NULL)
     {
 	vimfiles_dir_choice = (int)vimfiles_dir_home;
@@ -2204,7 +2293,7 @@ init_directories_choice(void)
     {
 	vimfiles_dir_choice = (int)vimfiles_dir_vim;
 	p = getenv("VIM");
-	if (p == NULL) /* No $VIM in path, use the install dir */
+	if (p == NULL)  // No $VIM in path, use the install dir.
 	    dir_remove_last(installdir, tmp_dirname);
 	else
 	    strcpy(tmp_dirname, p);
@@ -2213,6 +2302,7 @@ init_directories_choice(void)
 	    vimfiles_dir_choice = (int)vimfiles_dir_none;
     }
 
+    choices[choice_count].arg = vimfiles_dir_choice;
     set_directories_text(choice_count);
     ++choice_count;
 }
@@ -2369,6 +2459,8 @@ command_line_setup_choices(int argc, char **argv)
 	}
 	else if (strcmp(argv[i], "-create-directories") == 0)
 	{
+	    int vimfiles_dir_choice;
+
 	    init_directories_choice();
 	    if (argv[i + 1][0] != '-')
 	    {
@@ -2377,8 +2469,8 @@ command_line_setup_choices(int argc, char **argv)
 		    vimfiles_dir_choice = (int)vimfiles_dir_vim;
 		else if (strcmp(argv[i], "home") == 0)
 		{
-		    if (getenv("HOME") == NULL) /* No $HOME in environment */
-			vimfiles_dir_choice = (int)vimfiles_dir_vim;
+		    if (homedir == NULL)  // No $HOME in environment
+			vimfiles_dir_choice = (int)vimfiles_dir_none;
 		    else
 			vimfiles_dir_choice = (int)vimfiles_dir_home;
 		}
@@ -2391,6 +2483,7 @@ command_line_setup_choices(int argc, char **argv)
 	    }
 	    else /* No choice specified, default to vim directory */
 		vimfiles_dir_choice = (int)vimfiles_dir_vim;
+	    choices[choice_count - 1].arg = vimfiles_dir_choice;
 	}
 	else if (strcmp(argv[i], "-register-OLE") == 0)
 	{
@@ -2442,13 +2535,14 @@ show_help(void)
 "------------\n"
 "(this choice is only available when creating a _vimrc file)\n"
 "1. Vim can run in Vi-compatible mode.  Many nice Vim features are then\n"
-"   disabled.  In the not-Vi-compatible mode Vim is still mostly Vi\n"
-"   compatible, but adds nice features like multi-level undo.  Only\n"
-"   choose Vi-compatible if you really need full Vi compatibility.\n"
-"2. Running Vim with some enhancements is useful when you want some of\n"
+"   disabled.  Only choose Vi-compatible if you really need full Vi\n"
+"   compatibility.\n"
+"2. Vim runs in not-Vi-compatible mode.  Vim is still mostly Vi compatible,\n"
+"   but adds nice features like multi-level undo.\n"
+"3. Running Vim with some enhancements is useful when you want some of\n"
 "   the nice Vim features, but have a slow computer and want to keep it\n"
 "   really fast.\n"
-"3. Syntax highlighting shows many files in color.  Not only does this look\n"
+"4. Syntax highlighting shows many files in color.  Not only does this look\n"
 "   nice, it also makes it easier to spot errors and you can work faster.\n"
 "   The other features include editing compressed files.\n"
 ,
@@ -2589,6 +2683,7 @@ main(int argc, char **argv)
 
     /* Initialize this program. */
     do_inits(argv);
+    init_homedir();
 
     if (argc > 1 && strcmp(argv[1], "-uninstall-check") == 0)
     {

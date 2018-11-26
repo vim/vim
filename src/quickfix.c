@@ -50,6 +50,16 @@ struct qfline_S
 #define INVALID_QFIDX (-1)
 
 /*
+ * Quickfix list type.
+ */
+typedef enum
+{
+    QFLT_QUICKFIX, // Quickfix list - global list
+    QFLT_LOCATION, // Location list - per window list
+    QFLT_INTERNAL  // Internal - Temporary list used by getqflist()/getloclist()
+} qfltype_T;
+
+/*
  * Quickfix/Location list definition
  * Contains a list of entries (qfline_T). qf_start points to the first entry
  * and qf_last points to the last entry. qf_count contains the list size.
@@ -61,6 +71,7 @@ struct qfline_S
 typedef struct qf_list_S
 {
     int_u	qf_id;		// Unique identifier for this list
+    qfltype_T	qfl_type;
     qfline_T	*qf_start;	// pointer to the first error
     qfline_T	*qf_last;	// pointer to the last error
     qfline_T	*qf_ptr;	// pointer to the current error
@@ -95,6 +106,7 @@ struct qf_info_S
     int		qf_listcount;	    // current number of lists
     int		qf_curlist;	    // current error list
     qf_list_T	qf_lists[LISTCOUNT];
+    qfltype_T	qfl_type;	    // type of list
 };
 
 static qf_info_T ql_info;	// global quickfix list
@@ -170,8 +182,10 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
 #define IS_LL_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL)
 
 // Quickfix and location list stack check helper macros
-#define IS_QF_STACK(qi)		(qi == &ql_info)
-#define IS_LL_STACK(qi)		(qi != &ql_info)
+#define IS_QF_STACK(qi)		(qi->qfl_type == QFLT_QUICKFIX)
+#define IS_LL_STACK(qi)		(qi->qfl_type == QFLT_LOCATION)
+#define IS_QF_LIST(qfl)		(qfl->qfl_type == QFLT_QUICKFIX)
+#define IS_LL_LIST(qfl)		(qfl->qfl_type == QFLT_LOCATION)
 
 /*
  * Return location list for window 'wp'
@@ -1847,6 +1861,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     qfl = &qi->qf_lists[qi->qf_curlist];
     vim_memset(qfl, 0, (size_t)(sizeof(qf_list_T)));
     qf_store_title(qfl, qf_title);
+    qfl->qfl_type = qi->qfl_type;
     qfl->qf_id = ++last_qf_id;
 }
 
@@ -2007,7 +2022,7 @@ qf_add_entry(
 	qfp->qf_fnum = bufnum;
 	if (buf != NULL)
 	    buf->b_has_qf_entry |=
-		IS_QF_STACK(qi) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
+		IS_QF_LIST(qfl) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     }
     else
 	qfp->qf_fnum = qf_get_fnum(qi, qf_idx, dir, fname);
@@ -2069,16 +2084,19 @@ qf_add_entry(
 }
 
 /*
- * Allocate a new location list stack
+ * Allocate a new quickfix/location list stack
  */
     static qf_info_T *
-ll_new_list(void)
+qf_alloc_stack(qfltype_T qfltype)
 {
     qf_info_T *qi;
 
     qi = (qf_info_T *)alloc_clear((unsigned)sizeof(qf_info_T));
     if (qi != NULL)
+    {
 	qi->qf_refcount++;
+	qi->qfl_type = qfltype;
+    }
     return qi;
 }
 
@@ -2098,7 +2116,7 @@ ll_get_or_alloc_list(win_T *wp)
     ll_free_all(&wp->w_llist_ref);
 
     if (wp->w_llist == NULL)
-	wp->w_llist = ll_new_list();	    // new location list
+	wp->w_llist = qf_alloc_stack(QFLT_LOCATION);	// new location list
     return wp->w_llist;
 }
 
@@ -2153,6 +2171,7 @@ copy_loclist_entries(qf_list_T *from_qfl, qf_list_T *to_qfl, qf_info_T *to_qi)
 copy_loclist(qf_list_T *from_qfl, qf_list_T *to_qfl, qf_info_T *to_qi)
 {
     // Some of the fields are populated by qf_add_entry()
+    to_qfl->qfl_type = from_qfl->qfl_type;
     to_qfl->qf_nonevalid = from_qfl->qf_nonevalid;
     to_qfl->qf_count = 0;
     to_qfl->qf_index = 0;
@@ -2214,7 +2233,7 @@ copy_loclist_stack(win_T *from, win_T *to)
 	return;
 
     // allocate a new location list
-    if ((to->w_llist = ll_new_list()) == NULL)
+    if ((to->w_llist = qf_alloc_stack(QFLT_LOCATION)) == NULL)
 	return;
 
     to->w_llist->qf_listcount = qi->qf_listcount;
@@ -2300,7 +2319,7 @@ qf_get_fnum(qf_info_T *qi, int qf_idx, char_u *directory, char_u *fname)
 	return 0;
 
     buf->b_has_qf_entry =
-			IS_QF_STACK(qi) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
+			IS_QF_LIST(qfl) ? BUF_HAS_QF_ENTRY : BUF_HAS_LL_ENTRY;
     return buf->b_fnum;
 }
 
@@ -2699,15 +2718,16 @@ qf_find_help_win(void)
 }
 
 /*
- * Find a help window or open one.
+ * Find a help window or open one. If 'newwin' is TRUE, then open a new help
+ * window.
  */
     static int
-jump_to_help_window(qf_info_T *qi, int *opened_window)
+jump_to_help_window(qf_info_T *qi, int newwin, int *opened_window)
 {
     win_T	*wp;
     int		flags;
 
-    if (cmdmod.tab != 0)
+    if (cmdmod.tab != 0 || newwin)
 	wp = NULL;
     else
 	wp = qf_find_help_win();
@@ -2721,8 +2741,10 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (cmdmod.split == 0 && curwin->w_width != Columns
 		&& curwin->w_width < 80)
 	    flags |= WSP_TOP;
-	if (IS_LL_STACK(qi))
-	    flags |= WSP_NEWLOC;  // don't copy the location list
+	// If the user asks to open a new window, then copy the location list.
+	// Otherwise, don't copy the location list.
+	if (IS_LL_STACK(qi) && !newwin)
+	    flags |= WSP_NEWLOC;
 
 	if (win_split(0, flags) == FAIL)
 	    return FAIL;
@@ -2732,9 +2754,11 @@ jump_to_help_window(qf_info_T *qi, int *opened_window)
 	if (curwin->w_height < p_hh)
 	    win_setheight((int)p_hh);
 
-	if (IS_LL_STACK(qi))		// not a quickfix list
+	// When using location list, the new window should use the supplied
+	// location list. If the user asks to open a new window, then the new
+	// window will get a copy of the location list.
+	if (IS_LL_STACK(qi) && !newwin)
 	{
-	    // The new window should use the supplied location list
 	    curwin->w_llist = qi;
 	    qi->qf_refcount++;
 	}
@@ -2915,20 +2939,26 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 /*
  * Find a suitable window for opening a file (qf_fnum) from the
  * quickfix/location list and jump to it.  If the file is already opened in a
- * window, jump to it. Otherwise open a new window to display the file. This is
- * called from either a quickfix or a location list window.
+ * window, jump to it. Otherwise open a new window to display the file. If
+ * 'newwin' is TRUE, then always open a new window. This is called from either
+ * a quickfix or a location list window.
  */
     static int
-qf_jump_to_usable_window(int qf_fnum, int *opened_window)
+qf_jump_to_usable_window(int qf_fnum, int newwin, int *opened_window)
 {
     win_T	*usable_win_ptr = NULL;
     int		usable_win;
-    qf_info_T	*ll_ref;
+    qf_info_T	*ll_ref = NULL;
     win_T	*win;
 
     usable_win = 0;
 
-    ll_ref = curwin->w_llist_ref;
+    // If opening a new window, then don't use the location list referred by
+    // the current window.  Otherwise two windows will refer to the same
+    // location list.
+    if (!newwin)
+	ll_ref = curwin->w_llist_ref;
+
     if (ll_ref != NULL)
     {
 	// Find a non-quickfix window with this location list
@@ -2952,7 +2982,7 @@ qf_jump_to_usable_window(int qf_fnum, int *opened_window)
 
     // If there is only one window and it is the quickfix window, create a
     // new one above the quickfix window.
-    if ((ONE_WINDOW && bt_quickfix(curbuf)) || !usable_win)
+    if ((ONE_WINDOW && bt_quickfix(curbuf)) || !usable_win || newwin)
     {
 	if (qf_open_new_file_win(ll_ref) != OK)
 	    return FAIL;
@@ -2984,6 +3014,7 @@ qf_jump_edit_buffer(
 	int		*opened_window)
 {
     qf_list_T	*qfl = &qi->qf_lists[qi->qf_curlist];
+    qfltype_T	qfl_type = qfl->qfl_type;
     int		retval = OK;
     int		old_qf_curlist = qi->qf_curlist;
     int		save_qfid = qfl->qf_id;
@@ -3008,14 +3039,14 @@ qf_jump_edit_buffer(
 
     // If a location list, check whether the associated window is still
     // present.
-    if (IS_LL_STACK(qi) && !win_valid_any_tab(oldwin))
+    if (qfl_type == QFLT_LOCATION && !win_valid_any_tab(oldwin))
     {
 	EMSG(_("E924: Current window was closed"));
 	*opened_window = FALSE;
 	return NOTDONE;
     }
 
-    if (IS_QF_STACK(qi) && !qflist_valid(NULL, save_qfid))
+    if (qfl_type == QFLT_QUICKFIX && !qflist_valid(NULL, save_qfid))
     {
 	EMSG(_("E925: Current quickfix was changed"));
 	return NOTDONE;
@@ -3024,7 +3055,7 @@ qf_jump_edit_buffer(
     if (old_qf_curlist != qi->qf_curlist
 	    || !is_qf_entry_present(qfl, qf_ptr))
     {
-	if (IS_QF_STACK(qi))
+	if (qfl_type == QFLT_QUICKFIX)
 	    EMSG(_("E925: Current quickfix was changed"));
 	else
 	    EMSG(_(e_loc_list_changed));
@@ -3146,17 +3177,22 @@ qf_jump_print_msg(
 
 /*
  * Find a usable window for opening a file from the quickfix/location list. If
- * a window is not found then open a new window.
+ * a window is not found then open a new window. If 'newwin' is TRUE, then open
+ * a new window.
  * Returns OK if successfully jumped or opened a window. Returns FAIL if not
  * able to jump/open a window.  Returns NOTDONE if a file is not associated
  * with the entry.
  */
     static int
-qf_jump_open_window(qf_info_T *qi, qfline_T *qf_ptr, int *opened_window)
+qf_jump_open_window(
+	qf_info_T	*qi,
+	qfline_T	*qf_ptr,
+	int		newwin,
+	int		*opened_window)
 {
     // For ":helpgrep" find a help window or open one.
     if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer) || cmdmod.tab != 0))
-	if (jump_to_help_window(qi, opened_window) == FAIL)
+	if (jump_to_help_window(qi, newwin, opened_window) == FAIL)
 	    return FAIL;
 
     // If currently in the quickfix window, find another window to show the
@@ -3168,7 +3204,8 @@ qf_jump_open_window(qf_info_T *qi, qfline_T *qf_ptr, int *opened_window)
 	if (qf_ptr->qf_fnum == 0)
 	    return NOTDONE;
 
-	if (qf_jump_to_usable_window(qf_ptr->qf_fnum, opened_window) == FAIL)
+	if (qf_jump_to_usable_window(qf_ptr->qf_fnum, newwin,
+						opened_window) == FAIL)
 	    return FAIL;
     }
 
@@ -3229,19 +3266,33 @@ qf_jump_to_buffer(
 }
 
 /*
- * jump to a quickfix line
- * if dir == FORWARD go "errornr" valid entries forward
- * if dir == BACKWARD go "errornr" valid entries backward
- * if dir == FORWARD_FILE go "errornr" valid entries files backward
- * if dir == BACKWARD_FILE go "errornr" valid entries files backward
+ * Jump to a quickfix line.
+ * If dir == FORWARD go "errornr" valid entries forward.
+ * If dir == BACKWARD go "errornr" valid entries backward.
+ * If dir == FORWARD_FILE go "errornr" valid entries files backward.
+ * If dir == BACKWARD_FILE go "errornr" valid entries files backward
  * else if "errornr" is zero, redisplay the same line
- * else go to entry "errornr"
+ * else go to entry "errornr".
  */
     void
 qf_jump(qf_info_T	*qi,
 	int		dir,
 	int		errornr,
 	int		forceit)
+{
+    qf_jump_newwin(qi, dir, errornr, forceit, FALSE);
+}
+
+/*
+ * As qf_info().
+ * If 'newwin' is TRUE, then open the file in a new window.
+ */
+    void
+qf_jump_newwin(qf_info_T	*qi,
+	int		dir,
+	int		errornr,
+	int		forceit,
+	int		newwin)
 {
     qf_list_T		*qfl;
     qfline_T		*qf_ptr;
@@ -3288,7 +3339,7 @@ qf_jump(qf_info_T	*qi,
 	// window
 	print_message = FALSE;
 
-    retval = qf_jump_open_window(qi, qf_ptr, &opened_window);
+    retval = qf_jump_open_window(qi, qf_ptr, newwin, &opened_window);
     if (retval == FAIL)
 	goto failed;
     if (retval == NOTDONE)
@@ -3824,13 +3875,9 @@ qf_view_result(int split)
 
     if (split)
     {
-	char_u      cmd[32];
-
-	vim_snprintf((char *)cmd, sizeof(cmd), "split +%ld%s",
-		(long)curwin->w_cursor.lnum,
-		IS_LL_WINDOW(curwin) ? "ll" : "cc");
-	if (do_cmdline_cmd(cmd) == OK)
-	    do_cmdline_cmd((char_u *) "clearjumps");
+	// Open the selected entry in a new window
+	qf_jump_newwin(qi, 0, (long)curwin->w_cursor.lnum, FALSE, TRUE);
+	do_cmdline_cmd((char_u *) "clearjumps");
 	return;
     }
 
@@ -5869,7 +5916,7 @@ qf_get_list_from_lines(dict_T *what, dictitem_T *di, dict_T *retdict)
 	if (l == NULL)
 	    return FAIL;
 
-	qi = ll_new_list();
+	qi = qf_alloc_stack(QFLT_INTERNAL);
 	if (qi != NULL)
 	{
 	    if (qf_init_ext(qi, 0, NULL, NULL, &di->di_tv, errorformat,
@@ -6013,7 +6060,7 @@ qf_getprop_qfidx(qf_info_T *qi, dict_T *what)
  * Return default values for quickfix list properties in retdict.
  */
     static int
-qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
+qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
 {
     int		status = OK;
 
@@ -6041,7 +6088,7 @@ qf_getprop_defaults(qf_info_T *qi, int flags, dict_T *retdict)
 	status = dict_add_number(retdict, "size", 0);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
 	status = dict_add_number(retdict, "changedtick", 0);
-    if ((status == OK) && IS_LL_STACK(qi) && (flags & QF_GETLIST_FILEWINID))
+    if ((status == OK) && locstack && (flags & QF_GETLIST_FILEWINID))
 	status = dict_add_number(retdict, "filewinid", 0);
 
     return status;
@@ -6164,7 +6211,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
     // List is not present or is empty
     if (qf_stack_empty(qi) || qf_idx == INVALID_QFIDX)
-	return qf_getprop_defaults(qi, flags, retdict);
+	return qf_getprop_defaults(qi, flags, wp != NULL, retdict);
 
     qfl = &qi->qf_lists[qf_idx];
 
@@ -6589,7 +6636,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
     {
 	// If the location list window is open, then create a new empty
 	// location list
-	qf_info_T *new_ll = ll_new_list();
+	qf_info_T *new_ll = qf_alloc_stack(QFLT_LOCATION);
 
 	// first free the list reference in the location list window
 	ll_free_all(&orig_wp->w_llist_ref);
@@ -6937,7 +6984,7 @@ hgr_get_ll(int *new_ll)
     if (qi == NULL)
     {
 	// Allocate a new location list for help text matches
-	if ((qi = ll_new_list()) == NULL)
+	if ((qi = qf_alloc_stack(QFLT_LOCATION)) == NULL)
 	    return NULL;
 	*new_ll = TRUE;
     }

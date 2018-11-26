@@ -5519,9 +5519,15 @@ chk_modeline(
 #ifdef FEAT_EVAL
 		save_current_sctx = current_sctx;
 		current_sctx.sc_sid = SID_MODELINE;
+		current_sctx.sc_seq = 0;
 		current_sctx.sc_lnum = 0;
 #endif
+		// Make sure no risky things are executed as a side effect.
+		++secure;
+
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
+
+		--secure;
 #ifdef FEAT_EVAL
 		current_sctx = save_current_sctx;
 #endif

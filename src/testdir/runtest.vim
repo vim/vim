@@ -273,15 +273,24 @@ else
 endif
 
 " Names of flaky tests.
-let s:flaky = [
+let s:flaky_tests = [
+      \ 'Test_call()',
+      \ 'Test_channel_handler()',
       \ 'Test_client_server()',
       \ 'Test_close_and_exit_cb()',
+      \ 'Test_close_callback()',
+      \ 'Test_close_handle()',
+      \ 'Test_close_lambda()',
+      \ 'Test_close_partial()',
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',
       \ 'Test_cwd()',
+      \ 'Test_diff_screen()',
+      \ 'Test_exit_callback()',
       \ 'Test_exit_callback_interval()',
       \ 'Test_nb_basic()',
       \ 'Test_oneshot()',
+      \ 'Test_open_delay()',
       \ 'Test_out_cb()',
       \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
@@ -289,14 +298,39 @@ let s:flaky = [
       \ 'Test_popup_and_window_resize()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
+      \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
       \ 'Test_repeat_three()',
+      \ 'Test_server_crash()',
+      \ 'Test_terminal_ansicolors_default()',
+      \ 'Test_terminal_ansicolors_func()',
+      \ 'Test_terminal_ansicolors_global()',
       \ 'Test_terminal_composing_unicode()',
+      \ 'Test_terminal_env()',
+      \ 'Test_terminal_hide_buffer()',
+      \ 'Test_terminal_make_change()',
       \ 'Test_terminal_noblock()',
       \ 'Test_terminal_redir_file()',
+      \ 'Test_terminal_response_to_control_sequence()',
+      \ 'Test_terminal_scrollback()',
+      \ 'Test_terminal_split_quit()',
+      \ 'Test_terminal_termwinkey()',
+      \ 'Test_terminal_termwinsize_mininmum()',
+      \ 'Test_terminal_termwinsize_option_fixed()',
+      \ 'Test_terminal_termwinsize_option_zero()',
       \ 'Test_terminal_tmap()',
+      \ 'Test_terminal_wall()',
+      \ 'Test_terminal_wipe_buffer()',
+      \ 'Test_terminal_wqall()',
+      \ 'Test_two_channels()',
+      \ 'Test_unlet_handle()',
       \ 'Test_with_partial_callback()',
+      \ 'Test_zero_reply()',
+      \ 'Test_zz1_terminal_in_gui()',
       \ ]
+
+" Pattern indicating a common flaky test failure.
+let s:flaky_errors_re = 'StopVimInTerminal\|VerifyScreenDump'
 
 " Locate Test_ functions and execute them.
 redir @q
@@ -313,28 +347,49 @@ endif
 for s:test in sort(s:tests)
   " Silence, please!
   set belloff=all
+  let prev_error = ''
+  let total_errors = []
+  let run_nr = 1
 
   call RunTheTest(s:test)
 
-  if len(v:errors) > 0 && index(s:flaky, s:test) >= 0
-    call add(s:messages, 'Found errors in ' . s:test . ':')
-    call extend(s:messages, v:errors)
-    call add(s:messages, 'Flaky test failed, running it again')
-    let first_run = v:errors
+  " Repeat a flaky test.  Give up when:
+  " - it fails again with the same message
+  " - it fails five times (with a different mesage)
+  if len(v:errors) > 0
+        \ && (index(s:flaky_tests, s:test) >= 0
+        \      || v:errors[0] =~ s:flaky_errors_re)
+    while 1
+      call add(s:messages, 'Found errors in ' . s:test . ':')
+      call extend(s:messages, v:errors)
 
-    " Flakiness is often caused by the system being very busy.  Sleep a couple
-    " of seconds to have a higher chance of succeeding the second time.
-    sleep 2
+      call add(total_errors, 'Run ' . run_nr . ':')
+      call extend(total_errors, v:errors)
 
-    let v:errors = []
-    call RunTheTest(s:test)
-    if len(v:errors) > 0
-      let second_run = v:errors
-      let v:errors = ['First run:']
-      call extend(v:errors, first_run)
-      call add(v:errors, 'Second run:')
-      call extend(v:errors, second_run)
-    endif
+      if run_nr == 5 || prev_error == v:errors[0]
+        call add(total_errors, 'Flaky test failed too often, giving up')
+        let v:errors = total_errors
+        break
+      endif
+
+      call add(s:messages, 'Flaky test failed, running it again')
+
+      " Flakiness is often caused by the system being very busy.  Sleep a
+      " couple of seconds to have a higher chance of succeeding the second
+      " time.
+      sleep 2
+
+      let prev_error = v:errors[0]
+      let v:errors = []
+      let run_nr += 1
+
+      call RunTheTest(s:test)
+
+      if len(v:errors) == 0
+        " Test passed on rerun.
+        break
+      endif
+    endwhile
   endif
 
   call AfterTheTest()

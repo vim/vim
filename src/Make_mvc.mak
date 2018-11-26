@@ -1269,7 +1269,8 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h if_perl.xs
+	$(CTAGS) *.c *.cpp *.h
+	if exist auto\if_perl.c $(CTAGS) --append=yes auto\if_perl.c
 
 notags:
 	- if exist tags del tags
@@ -1323,7 +1324,7 @@ $(NEW_TESTS):
 	$(MAKE) /NOLOGO -f Make_dos.mak nolog
 	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
 	$(MAKE) /NOLOGO -f Make_dos.mak report
-	cat messages
+	type messages
 	cd ..
 
 ###########################################################################

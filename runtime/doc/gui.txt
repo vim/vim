@@ -878,7 +878,7 @@ be used to complete the name of the menu item.
 				    't': |:tlmenu| Terminal mode
 				    'i': |:imenu|  Insert mode
 				    'c': |:cmenu|  Cmdline mode
-				
+
 
 If the console-mode vim has been compiled with WANT_MENU defined, you can
 use :emenu to access useful menu items you may have got used to from GUI

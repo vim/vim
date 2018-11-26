@@ -6194,7 +6194,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 
 	struct timeval  tv;
 	struct timeval	*tvp;
-	fd_set		rfds, wfds, efds;
+	// These are static because they can take 8 Kbyte each and cause the
+	// signal stack to run out with -O3.
+	static fd_set	rfds, wfds, efds;
 	int		maxfd;
 	long		towait = msec;
 

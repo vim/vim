@@ -2026,7 +2026,7 @@ append({lnum}, {text})		Number	append {text} below line {lnum}
 appendbufline({expr}, {lnum}, {text})
 				Number	append {text} below line {lnum}
 					in buffer {expr}
-argc( [{winid}])		Number	number of files in the argument list
+argc([{winid}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
@@ -2206,6 +2206,7 @@ gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
+gettagstack([{nr}])		Dict	get the tag stack of window {nr}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of the Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
@@ -2307,7 +2308,6 @@ perleval({expr})		any	evaluate |Perl| expression
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
-prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
@@ -2378,12 +2378,14 @@ settabvar({nr}, {varname}, {val}) none	set {varname} in tab page {nr} to {val}
 settabwinvar({tabnr}, {winnr}, {varname}, {val})
 				none	set {varname} in window {winnr} in tab
 					page {tabnr} to {val}
+settagstack({nr}, {dict} [, {action}])
+				Number	modify tag stack using {dict}
 setwinvar({nr}, {varname}, {val}) none	set {varname} in window {nr} to {val}
 sha256({string})		String	SHA256 checksum of {string}
 shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
-shiftwidth()			Number	effective value of 'shiftwidth'
+shiftwidth([{col}])		Number	effective value of 'shiftwidth'
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -4971,6 +4973,34 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		To obtain all window-local variables use: >
 			gettabwinvar({tabnr}, {winnr}, '&')
 
+gettagstack([{nr}])					*gettagstack()*
+		The result is a Dict, which is the tag stack of window {nr}.
+		{nr} can be the window number or the |window-ID|.
+		When {nr} is not specified, the current window is used.
+		When window {nr} doesn't exist, an empty Dict is returned.
+
+		The returned dictionary contains the following entries:
+			curidx		Current index in the stack. When at
+					top of the stack, set to (length + 1).
+					Index of bottom of the stack is 1.
+			items		List of items in the stack. Each item
+					is a dictionary containing the
+					entries described below.
+			length		Number of entries in the stack.
+
+		Each item in the stack is a dictionary with the following
+		entries:
+			bufnr		buffer number of the current jump
+			from		cursor position before the tag jump.
+					See |getpos()| for the format of the
+					returned list.
+			matchnr		current matching tag number. Used when
+					multiple matching tags are found for a
+					name.
+			tagname		name of the tag
+
+		See |tagstack| for more information about the tag stack.
+
 getwininfo([{winid}])					*getwininfo()*
 		Returns information about windows as a List with Dictionaries.
 
@@ -7535,6 +7565,37 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 			:call settabwinvar(3, 2, "myvar", "foobar")
 <		This function is not available in the |sandbox|.
 
+settagstack({nr}, {dict} [, {action}])			*settagstack()*
+		Modify the tag stack of the window {nr} using {dict}.
+		{nr} can be the window number or the |window-ID|.
+
+		For a list of supported items in {dict}, refer to
+		|gettagstack()|
+							*E962*
+		If {action} is not present or is set to 'r', then the tag
+		stack is replaced. If {action} is set to 'a', then new entries
+		from {dict} are pushed onto the tag stack.
+
+		Returns zero for success, -1 for failure.
+
+		Examples:
+		    Set current index of the tag stack to 4: >
+			call settagstack(1005, {'curidx' : 4})
+
+<		    Empty the tag stack of window 3: >
+			call settagstack(3, {'items' : []})
+
+<		    Push a new item onto the tag stack: >
+			let pos = [bufnr('myfile.txt'), 10, 1, 0]
+			let newtag = [{'tagname' : 'mytag', 'from' : pos}]
+			call settagstack(2, {'items' : newtag}, 'a')
+
+<		    Save and restore the tag stack: >
+			let stack = gettagstack(1003)
+			" do something else
+			call settagstack(1003, stack)
+			unlet stack
+<
 setwinvar({nr}, {varname}, {val})			*setwinvar()*
 		Like |settabwinvar()| for the current tab page.
 		Examples: >
@@ -7577,11 +7638,17 @@ shellescape({string} [, {special}])			*shellescape()*
 <		See also |::S|.
 
 
-shiftwidth()						*shiftwidth()*
+shiftwidth([{col}])						*shiftwidth()*
 		Returns the effective value of 'shiftwidth'. This is the
 		'shiftwidth' value unless it is zero, in which case it is the
 		'tabstop' value.  This function was introduced with patch
-		7.3.694 in 2012, everybody should have it by now.
+		7.3.694 in 2012, everybody should have it by now (however it
+		did not allow for the optional {col} argument until 8.1.542).
+
+		When there is one argument {col} this is used as column number
+		for which to return the 'shiftwidth' value. This matters for the
+		'vartabstop' feature. If the 'vartabstop' setting is enabled and
+		no {col} argument is given, column 1 will be assumed.
 
 
 simplify({filename})					*simplify()*
@@ -9673,9 +9740,13 @@ See |:verbose-cmd| for more information.
 			deleted if there are no more references to it.
 								*E127* *E122*
 			When a function by this name already exists and [!] is
-			not used an error message is given.  When [!] is used,
-			an existing function is silently replaced.  Unless it
-			is currently being executed, that is an error.
+			not used an error message is given.  There is one
+			exception: When sourcing a script again, a function
+			that was previously defined in that script will be
+			silently replaced.
+			When [!] is used, an existing function is silently
+			replaced.  Unless it is currently being executed, that
+			is an error.
 			NOTE: Use ! wisely.  If used without care it can cause
 			an existing function to be replaced unexpectedly,
 			which is hard to debug.

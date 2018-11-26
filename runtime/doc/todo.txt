@@ -38,6 +38,12 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Make ":script 40" edit the script listed with number 40.  Actually use
+":scriptnames".
+
+Download page: "A 64 bit version" link is wrong, use this one instead:
+https://github.com/vim/vim-win32-installer/releases/latest
+
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
@@ -50,9 +56,12 @@ browser use: https://github.com/vim/vim/issues/1234
 Prompt buffer:
 - Add a command line history.
 - delay next prompt until plugin gives OK?
+- add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 
 Terminal debugger:
 - Make prompt-buffer variant work better.
+- If breakpoints are deleted with "delete" in gdb the response is not parsed
+  properly and the breakpoints in Vim are not removed.
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
@@ -60,6 +69,10 @@ Terminal debugger:
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
 - Add support for lldb?  #3565
+- Could we do something similar for debugging Vim scripts?  At least see the
+  script while stepping through it.  Simple version would use an extra window.
+  More complete solution would actually run Vim in a Terminal an control it
+  with another Vim instance.
 
 Terminal emulator window:
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
@@ -92,12 +105,35 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Users get used to "function!" because they reload a script file.  How about
+recognizing the script is re-sourced and not giving an error for the first
+function that overwrites.  Then one can leave out the exclamation mark and
+catch actual errors, overwriting a function from another script.
+
+Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990f8817a50d3264782a5...3b27c92f297540761ebbd92d04fb3
+(Christian Brabandt, 2018 Nov 4)
+
+Patch for nsis/README.txt and uninstal.txt (Ken Takata, 2018 Nov 17, #3614)
+
+Patch to add commandline completion tests. (Dominique, #3622)
+
+Problem with Visual yank when 'linebreak' and 'showbreak' are set.
+Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
+Nov 17)
+
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
+
+Adding a fold with a marker in a C file doesn't add the comment /* */ if the
+line contains a * somewhere.  Patch with a fix (Hirohito Higashi, 2018 Nov 22)
+
+Crash in terminal with long multi-byte sequence. (2018 Nov 17, #3619)
+Dominique cannot reproduce. Update Nov 18.
+Suggested solution by Yasuhiro Matsumoto, 2018 Nov 18.
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -108,6 +144,9 @@ Errors found with random data:
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
 
+Patch to fix that appending makes items to be "recognized".
+(Yegappan, 2018 Nov 23). Reported by Daniel Hahler, #3633.
+
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
@@ -115,6 +154,10 @@ Include part of #3242?
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
 
+Patch to add FOR_ALL_FRAMES. (Yegappan, 2018 Nov 18)
+
+Patch to resize to fit parent position when using ---windowid. ( Agorgianitis
+Loukas, 2018 Nov 17, #3616)
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
@@ -141,8 +184,17 @@ Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
     quickfix window, for example. (Gary Holloway)
     Also do 'sidescrolloff'.
 
+Patch for ConPTY support, #3474: What is the status?
+
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
+
+Using CTRL-L to add a character to the search string doesn't work for the last
+character in the file. (Smylers, 2018 Nov 17, #3620)
+Suggested patch by Hirohito Higashi, 2018 Nov 18.
+
+Using CTRL-L to add a character to the search string that contains \v,
+punctiuation is repeated. (Smylers, 2018 Nov 17, #3621)
 
 ":mksession" cannot handle a very long 'runtimepath'. (Timothy Madden, 21 Sep
 2018, #3466)  Patch from Christian, 2018 Oct 30 (with comments).
@@ -219,6 +271,9 @@ Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
 (Daniel Hahler, 2018 Aug 8, #3299)
 
 ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
+
+Patch to use forward slash for completion even when 'shellslash' is set.
+Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
 
 Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  (Daniel Hahler, 2018 Sep 25)
 Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
@@ -297,6 +352,8 @@ Patch to fix that executable() may fail on very long filename in MS-Windows.
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
+Patch to be able to disable default digraphs (incomplete) (Eric Pruitt, 2018
+Nov 22).
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -311,6 +368,7 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
 Maybe call it v:motiontype.  Update in #3490.
 Alternative: add the force flag to mode(), after "no".
+Patch ready to include?
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -369,7 +427,6 @@ Jun 10, #2998)
 
 Improve the installer for MS-Windows.  There are a few alternatives:
 - mui2 installer improved by Ken Takata (2018 Sep 29)
-- Add silent install option. (Shane Lee, #751)
 - Installer from Cream (Steve Hall).
 - Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
     https://github.com/gpwen/vim-installer-mui2

@@ -5501,7 +5501,7 @@ gui_handle_drop(
 	    p = NULL;
 
 	/* Handle the drop, :edit or :split to get to the file.  This also
-	 * frees fnames[].  Skip this if there is only one item it's a
+	 * frees fnames[].  Skip this if there is only one item, it's a
 	 * directory and Shift is held down. */
 	if (count == 1 && (modifiers & MOUSE_SHIFT) != 0
 						     && mch_isdir(fnames[0]))

@@ -334,7 +334,7 @@ shift_line(
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)get_sw_value(curbuf);
+    int		p_sw = (int)get_sw_value_indent(curbuf);
 
     count = get_indent();	/* get current indent */
 
@@ -386,7 +386,7 @@ shift_block(oparg_T *oap, int amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)get_sw_value(curbuf);
+    int			p_sw = (int)get_sw_value_indent(curbuf);
 #ifdef FEAT_VARTABS
     int			*p_vts = curbuf->b_p_vts_array;
 #endif
@@ -5549,12 +5549,27 @@ op_addsub(
     int			change_cnt = 0;
     linenr_T		amount = Prenum1;
 
+   // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
+   // buffer is not completly updated yet. Postpone updating folds until before
+   // the call to changed_lines().
+#ifdef FEAT_FOLDING
+   disable_fold_update++;
+#endif
+
     if (!VIsual_active)
     {
 	pos = curwin->w_cursor;
 	if (u_save_cursor() == FAIL)
+	{
+#ifdef FEAT_FOLDING
+	    disable_fold_update--;
+#endif
 	    return;
+	}
 	change_cnt = do_addsub(oap->op_type, &pos, 0, amount);
+#ifdef FEAT_FOLDING
+	disable_fold_update--;
+#endif
 	if (change_cnt)
 	    changed_lines(pos.lnum, 0, pos.lnum + 1, 0L);
     }
@@ -5566,7 +5581,12 @@ op_addsub(
 
 	if (u_save((linenr_T)(oap->start.lnum - 1),
 					(linenr_T)(oap->end.lnum + 1)) == FAIL)
+	{
+#ifdef FEAT_FOLDING
+	    disable_fold_update--;
+#endif
 	    return;
+	}
 
 	pos = oap->start;
 	for (; pos.lnum <= oap->end.lnum; ++pos.lnum)
@@ -5624,6 +5644,10 @@ op_addsub(
 	    if (g_cmd && one_change)
 		amount += Prenum1;
 	}
+
+#ifdef FEAT_FOLDING
+	disable_fold_update--;
+#endif
 	if (change_cnt)
 	    changed_lines(oap->start.lnum, 0, oap->end.lnum + 1, 0L);
 

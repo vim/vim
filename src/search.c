@@ -357,9 +357,9 @@ free_search_patterns(void)
  * Save and restore the search pattern for incremental highlight search
  * feature.
  *
- * It's similar but differnt from save_search_patterns() and
+ * It's similar to but different from save_search_patterns() and
  * restore_search_patterns(), because the search pattern must be restored when
- * cannceling incremental searching even if it's called inside user functions.
+ * canceling incremental searching even if it's called inside user functions.
  */
     void
 save_last_search_pattern(void)
@@ -2869,7 +2869,7 @@ findpar(
 	    }
 #endif
 
-	    /* POSIX has it's own ideas of what a paragraph boundary is and it
+	    /* POSIX has its own ideas of what a paragraph boundary is and it
 	     * doesn't match historical Vi: It also stops at a "{" in the
 	     * first column and at an empty line. */
 	    if (!first && did_skip && (startPS(curr, what, both)
