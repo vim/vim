@@ -11474,14 +11474,14 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
     // Sign name
     sign_name = get_tv_string_chk(&argvars[2]);
     if (sign_name == NULL)
-	return;
+	goto cleanup;
 
     // Buffer to place the sign
     buf = find_buffer(&argvars[3]);
     if (buf == NULL)
     {
 	EMSG2(_("E158: Invalid buffer name: %s"), get_tv_string(&argvars[2]));
-	return;
+	goto cleanup;
     }
 
     if (argvars[4].v_type != VAR_UNKNOWN)
@@ -11490,7 +11490,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 				((dict = argvars[4].vval.v_dict) == NULL))
 	{
 	    EMSG(_(e_dictreq));
-	    return;
+	    goto cleanup;
 	}
 
 	// Line number where the sign is to be placed
@@ -11498,7 +11498,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	{
 	    lnum = (int)get_tv_number_chk(&di->di_tv, &notanum);
 	    if (notanum)
-		return;
+		goto cleanup;
 	    lnum = get_tv_lnum(&di->di_tv);
 	}
 	if ((di = dict_find(dict, (char_u *)"priority", -1)) != NULL)
@@ -11506,13 +11506,14 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	    // Sign priority
 	    prio = (int)get_tv_number_chk(&di->di_tv, &notanum);
 	    if (notanum)
-		return;
+		goto cleanup;
 	}
     }
 
     if (sign_place(&sign_id, group, sign_name, buf, lnum, prio) == OK)
 	rettv->vval.v_number = sign_id;
 
+cleanup:
     vim_free(group);
 }
 
