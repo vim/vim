@@ -20,13 +20,14 @@ endfunc
 func Nb_basic(port)
   call delete("Xnetbeans")
   call writefile([], "Xnetbeans")
+  call writefile(repeat(['abcdefghijklmnopqrstuvwxyz'], 5), "XREADME.txt")
   exe 'nbstart :localhost:' . a:port . ':bunny'
   call assert_true(has("netbeans_enabled"))
 
   call WaitFor('len(readfile("Xnetbeans")) > 2')
-  split +$ README.txt
+  split +$ XREADME.txt
 
-  " Opening README.txt will result in a setDot command
+  " Opening XREADME.txt will result in a setDot command
   call WaitFor('len(readfile("Xnetbeans")) > 4')
   call WaitFor('getcurpos()[1] == 3')
   let pos = getcurpos()
@@ -41,11 +42,12 @@ func Nb_basic(port)
   call assert_equal('AUTH bunny', lines[0])
   call assert_equal('0:version=0 "2.5"', lines[1])
   call assert_equal('0:startupDone=0', lines[2])
-  call assert_equal('0:fileOpened=0 "README.txt" T F', substitute(lines[3], '".*/', '"', ''))
+  call assert_equal('0:fileOpened=0 "XREADME.txt" T F', substitute(lines[3], '".*/', '"', ''))
 
   call assert_equal('0:disconnect=1', lines[6])
 
   call delete("Xnetbeans")
+  call delete("XREADME.txt")
 endfunc
 
 func Test_nb_basic()
