@@ -6060,7 +6060,8 @@ buf_delsign(
 	    lnum = sign->lnum;
 	    vim_free(sign->group);
 	    vim_free(sign);
-	    if (group == NULL || id != 0)
+	    // Check whether only one sign needs to be deleted
+	    if (group == NULL || (*group != '*' && id != 0))
 		break;
 	}
 	else

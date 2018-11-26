@@ -859,7 +859,7 @@ static struct fst
     {"sign_define",	1, 2, f_sign_define},
     {"sign_getdefined",	0, 1, f_sign_getdefined},
     {"sign_getplaced",	0, 2, f_sign_getplaced},
-    {"sign_place",	4, 6, f_sign_place},
+    {"sign_place",	4, 5, f_sign_place},
     {"sign_undefine",	0, 1, f_sign_undefine},
     {"sign_unplace",	1, 2, f_sign_unplace},
 #endif
@@ -11379,6 +11379,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum = 0;
     int		sign_id = 0;
     char_u	*group = NULL;
+    int		notanum = FALSE;
 
     if (rettv_list_alloc(rettv) != OK)
 	return;
@@ -11396,23 +11397,22 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    if (argvars[1].v_type != VAR_DICT)
+	    if (argvars[1].v_type != VAR_DICT ||
+				((dict = argvars[1].vval.v_dict) == NULL))
 	    {
 		EMSG(_(e_dictreq));
 		return;
 	    }
-	    dict = argvars[1].vval.v_dict;
 	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
 	    {
 		// get signs placed at this line
-		lnum = get_tv_lnum(&di->di_tv);
-		if (lnum < 0)
+		lnum = (int)get_tv_number_chk(&di->di_tv, &notanum);
+		if (notanum)
 		    return;
+		lnum = get_tv_lnum(&di->di_tv);
 	    }
 	    if ((di = dict_find(dict, (char_u *)"id", -1)) != NULL)
 	    {
-		int notanum = FALSE;
-
 		// get sign placed with this identifier
 		sign_id = (int)get_tv_number_chk(&di->di_tv, &notanum);
 		if (notanum)
@@ -11440,6 +11440,8 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
     char_u	*group = NULL;
     char_u	*sign_name;
     buf_T	*buf;
+    dict_T	*dict;
+    dictitem_T	*di;
     linenr_T	lnum = 0;
     int		prio = SIGN_DEF_PRIO;
     int		notanum = FALSE;
@@ -11484,18 +11486,25 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     if (argvars[4].v_type != VAR_UNKNOWN)
     {
-	// Line number where the sign is placed
-	lnum = get_tv_lnum(&argvars[4]);
-	if (lnum <= 0)
+	if (argvars[4].v_type != VAR_DICT ||
+				((dict = argvars[4].vval.v_dict) == NULL))
 	{
-	    EMSG2(_("E885: Not possible to change sign %s"), sign_name);
+	    EMSG(_(e_dictreq));
 	    return;
 	}
 
-	if (argvars[5].v_type != VAR_UNKNOWN)
+	// Line number where the sign is to be placed
+	if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
+	{
+	    lnum = (int)get_tv_number_chk(&di->di_tv, &notanum);
+	    if (notanum)
+		return;
+	    lnum = get_tv_lnum(&di->di_tv);
+	}
+	if ((di = dict_find(dict, (char_u *)"priority", -1)) != NULL)
 	{
 	    // Sign priority
-	    prio = (int)get_tv_number_chk(&argvars[5], &notanum);
+	    prio = (int)get_tv_number_chk(&di->di_tv, &notanum);
 	    if (notanum)
 		return;
 	}

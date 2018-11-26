@@ -2412,7 +2412,7 @@ sign_define({name} [, {dict}])	Number	define or update a sign
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
-sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
+sign_place({id}, {group}, {name}, {expr} [, {dict}])
 				Number	place a sign
 sign_undefine([{name}])		Number	undefine a sign
 sign_unplace({group} [, {dict}])
@@ -7880,6 +7880,7 @@ sign_define({name} [, {dict}])				*sign_define()*
 		    text	text that is displayed when there is no icon
 				or the GUI is not being used.
 		    texthl	highlight group used for the text item
+		For an existing sign, the attributes are updated.
 
 		Returns 0 on success and -1 on failure.
 
@@ -7970,7 +7971,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			echo sign_getplaced()
 <
 							*sign_place()*
-sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
+sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		Place the sign defined as {name} at line {lnum} in file {expr}
 		and assign {id} and {group} to sign.  This is similar to the
 		|:sign-place| command.
@@ -7979,14 +7980,15 @@ sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
 		allocated.  {group} is the sign group name. To use the global
 		sign group, use an empty string.  {name} refers to a defined
 		sign.  {expr} refers to a buffer name or number. See
-		|bufname()|.  {lnum} is the line number in the buffer {expr}.
-		See |line()|. The optional {prio} specifies the priority of
-		the sign. If not specified, the priority is set to 10. When
-		multiple signs are placed on the same line, the highlight
-		groups of the sign with the highest priority is used
-		independent of the sign group.
+		|bufname()|.  The optional {dict} argument supports the
+		following entries:
+			lnum		line number in the buffer {expr} where
+					the sign is to be placed. For the
+					accepted values, see |line()|.
+			priority	priority of the sign. See
+					|sign-priority| for more information.
 
-		If the optional {lnum} is not specified, then modifies the
+		If the optional {dict} is not specified, then modifies the
 		placed sign {id} in group {group} to use the defined sign
 		{name}.
 
@@ -7995,18 +7997,21 @@ sign_place({id}, {group}, {name}, {expr} [, {lnum} [, {prio}]])
 		Examples: >
 			" Place a sign named sign1 with id 5 at line 20 in
 			" buffer json.c
-			call sign_place(5, '', 'sign1', 'json.c', 20)
+			call sign_place(5, '', 'sign1', 'json.c',
+							\ {'lnum' : 20})
 
 			" Updates sign 5 in buffer json.c to use sign2
 			call sign_place(5, '', 'sign2', 'json.c')
 
 			" Place a sign named sign3 at line 30 in
 			" buffer json.c with a new identifier
-			let id = sign_place(0, '', 'sign3', 'json.c', 30)
+			let id = sign_place(0, '', 'sign3', 'json.c',
+							\ {'lnum' : 30})
 
-			" Place a sign named sign4 with id 10 in group 'abc'
+			" Place a sign named sign4 with id 10 in group 'g3'
 			" at line 40 in buffer json.c with priority 90
-			call sign_place(10, 'abc', 'sign4', 'json.c', 40, 90)
+			call sign_place(10, 'g3', 'sign4', 'json.c',
+					\ {'lnum' : 40, 'priority' : 90})
 <
 sign_undefine([{name}])					*sign_undefine()*
 		Deletes a previously defined sign {name}. This is similar to
@@ -8059,7 +8064,7 @@ sign_unplace({group} [, {dict}])			*sign_unplace()*
 			" Remove sign 40 from all the buffers
 			call sign_unplace('*', {'id' : 40})
 
-			" Remove all the placed signs in all the buffers
+			" Remove all the placed signs from all the buffers
 			call sign_unplace('*')
 <
 simplify({filename})					*simplify()*
