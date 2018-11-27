@@ -109,7 +109,7 @@ hi def link tasmComment Comment
 hi def link tasmLabel Label
 
 
-let b:curret_syntax = "tasm"
+let b:current_syntax = "tasm"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
