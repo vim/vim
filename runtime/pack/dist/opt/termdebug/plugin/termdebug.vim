@@ -75,7 +75,7 @@ let s:stopped = 1
 
 func s:NR(nr)
   let t = split(a:nr, '\.')
-  return len(t) == 2 ? t[0] * 1000 + t[1] : t[0] * 1000
+  return t[0] * 1000 + len(t) == 2 ? t[1] : 0
 endfunction
 
 func s:Highlight(init, old, new)
