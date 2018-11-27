@@ -9640,6 +9640,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     dictitem_T	*di;
     char_u	*arg_errmsg = (char_u *)N_("remove() argument");
+    int		i, error = FALSE;
 
     if (argvars[0].v_type == VAR_DICT)
     {
@@ -9666,22 +9667,52 @@ f_remove(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type == VAR_BLOB)
     {
-	int	    error = FALSE;
-
 	idx = (long)get_tv_number_chk(&argvars[1], &error);
 	if (!error)
 	{
-	    char_u *p;
-	    int len = blob_len(argvars[0].vval.v_blob);
+	    blob_T  *b = argvars[0].vval.v_blob;
+	    int	    len = blob_len(b);
+	    char_u  *p;
+
 	    if (idx < 0 || idx >= len)
 	    {
 		EMSGN(_(e_listidx), idx);
 		return;
 	    }
-	    p = (char_u*) argvars[0].vval.v_blob
-		->bv_ga.ga_data;
-	    mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
-	    --argvars[0].vval.v_blob->bv_ga.ga_len;
+	    if (argvars[2].v_type == VAR_UNKNOWN)
+	    {
+		/* Remove one item, return its value. */
+		p = (char_u*) b->bv_ga.ga_data;
+		rettv->vval.v_number = (varnumber_T) *(p + idx);
+		mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
+		--b->bv_ga.ga_len;
+	    }
+	    else
+	    {
+		blob_T  *blob;
+
+		/* Remove range of items, return list with values. */
+		end = (long)get_tv_number_chk(&argvars[2], &error);
+		if (error)
+		    return;
+		if (end >= len || idx > end)
+		{
+		    EMSGN(_(e_listidx), end);
+		    return;
+		}
+		blob = blob_alloc();
+		if (blob == NULL)
+		    return;
+		blob->bv_ga.ga_len = end - idx + 1;
+		for (i = idx; i <= end; ++i)
+		    blob_set(blob, i - idx, blob_get(b, idx));
+		++blob->bv_refcount;
+		rettv->v_type = VAR_BLOB;
+		rettv->vval.v_blob = blob;
+		p = (char_u*) b->bv_ga.ga_data;
+		mch_memmove(p + idx, p + end, (size_t)end - idx + 1);
+		b->bv_ga.ga_len -= end - idx + 1;
+	    }
 	}
     }
     else if (argvars[0].v_type != VAR_LIST)
@@ -9689,8 +9720,6 @@ f_remove(typval_T *argvars, typval_T *rettv)
     else if ((l = argvars[0].vval.v_list) != NULL
 	    && !tv_check_lock(l->lv_lock, arg_errmsg, TRUE))
     {
-	int	    error = FALSE;
-
 	idx = (long)get_tv_number_chk(&argvars[1], &error);
 	if (error)
 	    ;		/* type error: do nothing, errmsg already given */

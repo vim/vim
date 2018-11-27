@@ -3791,6 +3791,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 		    ga_append(&b->bv_ga, blob_get(b1, i));
 		for (i = 0; i < blob_len(b2); i++)
 		    ga_append(&b->bv_ga, blob_get(b2, i));
+		++b->bv_refcount;
 
 		clear_tv(rettv);
 		rettv->v_type = VAR_BLOB;
@@ -4643,6 +4644,7 @@ eval_index(
 			    blob_set(blob, i - n1,
 				    blob_get(rettv->vval.v_blob, i));
 
+			++blob->bv_refcount;
 			clear_tv(rettv);
 			rettv->v_type = VAR_BLOB;
 			rettv->vval.v_blob = blob;
@@ -5837,7 +5839,24 @@ echo_string_core(
 	    }
 	    else
 	    {
-		*tofree = json_encode(tv, JSON_JS);
+		blob_T	    *b;
+		int	    i;
+		garray_T    ga;
+
+		/* Store bytes in the growarray. */
+		ga_init2(&ga, 1, 4000);
+		b = tv->vval.v_blob;
+		ga_append(&ga, '[');
+		for (i = 0; i < blob_len(b); i++)
+		{
+		    if (i > 0)
+			ga_concat(&ga, (char_u *)",");
+		    vim_snprintf((char *)numbuf, NUMBUFLEN, "0x%02X",
+			    (int)blob_get(b, i));
+		    ga_concat(&ga, numbuf);
+		}
+		ga_append(&ga, ']');
+		*tofree = ga.ga_data;
 		r = *tofree;
 	    }
 	    break;

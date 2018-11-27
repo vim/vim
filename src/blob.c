@@ -122,33 +122,6 @@ blob_equal(
 }
 
 /*
- * Make a copy of blob "orig".  Shallow if "deep" is FALSE.
- * The refcount of the new blob is set to 1.
- * See item_copy() for "copyID".
- * Returns NULL when out of memory.
- */
-    blob_T *
-blob_copy(blob_T *orig, int deep, int copyID)
-{
-  	size_t i;
-    blob_T	*copy;
-
-    if (orig == NULL)
-	return NULL;
-
-    copy = blob_alloc();
-    if (copy != NULL)
-    {
-	ga_init2(&copy->bv_ga, 1, orig->bv_ga.ga_len);
-	for (i = 0; i < orig->bv_ga.ga_len; i++)
-	    blob_set(copy, i, blob_get(orig, i));
-	++copy->bv_refcount;
-    }
-
-    return copy;
-}
-
-/*
  * Read "blob" from file "fd".
  */
     int
@@ -164,7 +137,11 @@ read_blob(FILE *fd, blob_T *blob)
     blob->bv_ga.ga_len = st.st_size;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 	    < blob->bv_ga.ga_len)
+    {
+	blob_free(&blob);
 	return FAIL;
+    }
+    ++blob->bv_refcount;
     return OK;
 }
 
