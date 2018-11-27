@@ -73,8 +73,9 @@ let s:pc_id = 12
 let s:break_id = 13  " breakpoint number is added to this
 let s:stopped = 1
 
-function s:NR(nr)
-  return '' . float2nr(str2float(a:nr) * 1000)
+func s:NR(nr)
+  let t = split(a:nr, '\.')
+  return len(t) == 2 ? t[0] * 1000 + t[1] : t[0] * 1000
 endfunction
 
 func s:Highlight(init, old, new)
