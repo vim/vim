@@ -43,6 +43,7 @@
 # include <arpa/inet.h>
 
 # include <sys/socket.h>
+# include <sys/un.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
 # endif
