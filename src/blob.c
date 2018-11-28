@@ -138,7 +138,7 @@ read_blob(FILE *fd, blob_T *blob)
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 	    < blob->bv_ga.ga_len)
     {
-	blob_free(&blob);
+	blob_free(blob);
 	return FAIL;
     }
     ++blob->bv_refcount;
@@ -151,7 +151,8 @@ read_blob(FILE *fd, blob_T *blob)
     int
 write_blob(FILE *fd, blob_T *blob)
 {
-    if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd) < 0)
+    if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
+	    < blob->bv_ga.ga_len)
     {
 	EMSG(_(e_write));
 	return FAIL;

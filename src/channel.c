@@ -3581,18 +3581,18 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 						 timeout, TRUE, &outlen);
 	    if (p != NULL)
 	    {
-		blob_T	*blob = blob_alloc();
-		if (blob != NULL)
+		blob_T	*b = blob_alloc();
+		if (b != NULL)
 		{
-		    ga_init2(&blob->bv_ga, 1, outlen);
-		    blob->bv_ga.ga_len = outlen;
-		    if (ga_grow(&blob->bv_ga, outlen) == FAIL)
-			blob_free(blob);
+		    ga_init2(&b->bv_ga, 1, outlen);
+		    b->bv_ga.ga_len = outlen;
+		    if (ga_grow(&b->bv_ga, outlen) == FAIL)
+			blob_free(b);
 		    else
 		    {
-			memcpy(blob->bv_ga.ga_data, p, outlen);
+			memcpy(b->bv_ga.ga_data, p, outlen);
 			rettv->v_type = VAR_BLOB;
-			rettv->vval.v_blob = blob;
+			rettv->vval.v_blob = b;
 		    }
 		}
 	    }
