@@ -644,7 +644,16 @@ channel_gui_unregister(channel_T *channel)
 #endif
 
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
-static char *e_cannot_listen = N_("E962: Cannot listen to port");
+static char *e_cannot_listen = N_("E963: Cannot listen to port");
+
+#ifndef UNIX_PATH_MAX
+#define UNIX_PATH_MAX 108
+
+typedef struct sockaddr_un {
+  ADDRESS_FAMILY sun_family;
+  char sun_path[UNIX_PATH_MAX];
+} SOCKADDR_UN, *PSOCKADDR_UN;
+#endif
 
 /*
  * Open a socket channel to "hostname":"port".
@@ -663,6 +672,8 @@ channel_open(
     int			sd = -1;
     struct sockaddr_in	server;
     struct hostent	*host;
+    int			is_unix = FALSE;
+    struct sockaddr_un	unix;
 #ifdef WIN32
     u_short		port = port_in;
     u_long		val = 1;
@@ -683,25 +694,35 @@ channel_open(
 	return NULL;
     }
 
-    /* Get the server internet address and put into addr structure */
-    /* fill in the socket address structure and connect to server */
-    vim_memset((char *)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    if ((host = gethostbyname(hostname)) == NULL)
+    if (STRNCMP(hostname, "unix:", 5) == 0)
     {
-	ch_error(channel, "in gethostbyname() in channel_open()");
-	PERROR(_("E901: gethostbyname() in channel_open()"));
-	channel_free(channel);
-	return NULL;
+	is_unix = TRUE;
+	vim_memset((char *)&unix, 0, sizeof(unix));
+	unix.sun_family = AF_UNIX;
+	STRNCPY(unix.sun_path, hostname+5, sizeof(unix.sun_path)-1);
     }
+    else
     {
-	char		*p;
+	/* Get the server internet address and put into addr structure */
+	/* fill in the socket address structure and connect to server */
+	vim_memset((char *)&server, 0, sizeof(server));
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	if ((host = gethostbyname(hostname)) == NULL)
+	{
+	    ch_error(channel, "in gethostbyname() in channel_open()");
+	    PERROR(_("E901: gethostbyname() in channel_open()"));
+	    channel_free(channel);
+	    return NULL;
+	}
+	{
+	    char		*p;
 
-	/* When using host->h_addr_list[0] directly ubsan warns for it to not
-	 * be aligned.  First copy the pointer to avoid that. */
-	memcpy(&p, &host->h_addr_list[0], sizeof(p));
-	memcpy((char *)&server.sin_addr, p, host->h_length);
+	    /* When using host->h_addr_list[0] directly ubsan warns for it to
+	     * not be aligned.  First copy the pointer to avoid that. */
+	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
+	    memcpy((char *)&server.sin_addr, p, host->h_length);
+	}
     }
 
     /* On Mac and Solaris a zero timeout almost never works.  At least wait
@@ -721,7 +742,10 @@ channel_open(
 
 	if (sd >= 0)
 	    sock_close(sd);
-	sd = socket(AF_INET, SOCK_STREAM, 0);
+	if (is_unix)
+	    sd = socket(AF_UNIX, SOCK_STREAM, 0);
+	else
+	    sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
 	    ch_error(channel, "in socket() in channel_open().");
@@ -752,7 +776,10 @@ channel_open(
 
 	/* Try connecting to the server. */
 	ch_log(channel, "Connecting to %s port %d", hostname, port);
-	ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
+	if (is_unix)
+	    ret = connect(sd, (struct sockaddr *)&unix, sizeof(unix));
+	else
+	    ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
 
 	if (ret == 0)
 	    /* The connection could be established. */
@@ -942,6 +969,8 @@ channel_listen(
     int			sd = -1;
     struct sockaddr_in	server;
     struct hostent	*host;
+    int			is_unix = FALSE;
+    struct sockaddr_un	unix;
 #ifdef WIN32
     u_short		port = port_in;
     u_long		val = 1;
@@ -963,60 +992,79 @@ channel_listen(
 	return NULL;
     }
 
-    /* Get the server internet address and put into addr structure */
-    /* fill in the socket address structure and connect to server */
-    vim_memset((char *)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    if (hostname != NULL)
+    if (STRNCMP(hostname, "unix:", 5) == 0)
     {
-	if ((host = gethostbyname(hostname)) == NULL)
-	{
-	    ch_error(channel, "in gethostbyname() in channel_listen()");
-	    PERROR(_("E963: gethostbyname() in channel_listen()"));
-	    channel_free(channel);
-	    return NULL;
-	}
-	{
-	    char		*p;
-
-	    /* When using host->h_addr_list[0] directly ubsan warns for it to not
-	     * be aligned.  First copy the pointer to avoid that. */
-	    memcpy(&p, &host->h_addr_list[0], sizeof(p));
-	    memcpy((char *)&server.sin_addr, p, host->h_length);
-	}
+	is_unix = TRUE;
+	vim_memset((char *)&unix, 0, sizeof(unix));
+	unix.sun_family = AF_UNIX;
+	STRNCPY(unix.sun_path, hostname+5, sizeof(unix.sun_path)-1);
     }
     else
-	server.sin_addr.s_addr = htonl(INADDR_ANY);
+    {
+	/* Get the server internet address and put into addr structure */
+	/* fill in the socket address structure and connect to server */
+	vim_memset((char *)&server, 0, sizeof(server));
+	server.sin_family = AF_INET;
+	server.sin_port = htons(port);
+	if (hostname != NULL)
+	{
+	    if ((host = gethostbyname(hostname)) == NULL)
+	    {
+		ch_error(channel, "in gethostbyname() in channel_listen()");
+		PERROR(_("E964: gethostbyname() in channel_listen()"));
+		channel_free(channel);
+		return NULL;
+	    }
+	    {
+		char		*p;
+
+		/* When using host->h_addr_list[0] directly ubsan warns for
+		 * it to not be aligned.  First copy the pointer to avoid
+		 * that. */
+		memcpy(&p, &host->h_addr_list[0], sizeof(p));
+		memcpy((char *)&server.sin_addr, p, host->h_length);
+	    }
+	}
+	else
+	    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
 
     /*
      * For Unix we need to call connect() again after connect() failed.
      * On Win32 one time is sufficient.
      */
-    sd = socket(AF_INET, SOCK_STREAM, 0);
+    if (is_unix)
+	sd = socket(AF_UNIX, SOCK_STREAM, 0);
+    else
+	sd = socket(AF_INET, SOCK_STREAM, 0);
     if (sd == -1)
     {
 	SOCK_ERRNO;
 	ch_error(channel, "in socket() in channel_listen().");
-	PERROR(_("E964: socket() in channel_listen()"));
+	PERROR(_("E965: socket() in channel_listen()"));
 	channel_free(channel);
 	return NULL;
     }
 
-    val = 1;
-    ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val, sizeof(val));
-    if (ret == -1)
+    if (is_unix)
+	ret = bind(sd, (struct sockaddr *)&unix, sizeof(unix));
+    else
     {
-	SOCK_ERRNO;
-	ch_error(channel,
-		     "channel_listen: Setsockopt failed with errno %d", errno);
-	PERROR(_(e_cannot_listen));
-	sock_close(sd);
-	channel_free(channel);
-	return NULL;
+	val = 1;
+	ret = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, (const char *)&val, sizeof(val));
+	if (ret == -1)
+	{
+	    SOCK_ERRNO;
+	    ch_error(channel,
+			 "channel_listen: Setsockopt failed with errno %d", errno);
+	    PERROR(_(e_cannot_listen));
+	    sock_close(sd);
+	    channel_free(channel);
+	    return NULL;
+	}
+	ret = bind(sd, (struct sockaddr *)&server, sizeof(server));
     }
 
-    ret = bind(sd, (struct sockaddr *)&server, sizeof(struct sockaddr));
     if (ret == -1)
     {
 	SOCK_ERRNO;
@@ -1072,7 +1120,7 @@ channel_open_func(typval_T *argvars)
     char_u	*address;
     char_u	*p;
     char	*rest;
-    int		port;
+    int		port = 0;
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
@@ -1084,20 +1132,23 @@ channel_open_func(typval_T *argvars)
 	return NULL;
     }
 
-    /* parse address */
-    p = vim_strchr(address, ':');
-    if (p == NULL)
+    if (STRNCMP(address, "unix:", 5) != 0)
     {
-	EMSG2(_(e_invarg2), address);
-	return NULL;
-    }
-    *p++ = NUL;
-    port = strtol((char *)p, &rest, 10);
-    if (*address == NUL || port <= 0 || *rest != NUL)
-    {
-	p[-1] = ':';
-	EMSG2(_(e_invarg2), address);
-	return NULL;
+	/* parse address */
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	{
+	    EMSG2(_(e_invarg2), address);
+	    return NULL;
+	}
+	*p++ = NUL;
+	port = strtol((char *)p, &rest, 10);
+	if (*address == NUL || port <= 0 || *rest != NUL)
+	{
+	    p[-1] = ':';
+	    EMSG2(_(e_invarg2), address);
+	    return NULL;
+	}
     }
 
     /* parse options */
@@ -1146,19 +1197,26 @@ channel_listen_func(typval_T *argvars)
     }
 
     /* parse address */
-    p = vim_strchr(address, ':');
-    if (p == NULL)
+    if (STRNCMP(address, "unix:", 5) == 0)
     {
-	EMSG2(_(e_invarg2), address);
-	return NULL;
+	port = 0;
     }
-    *p++ = NUL;
-    port = strtol((char *)p, &rest, 10);
-    if (port <= 0 || *rest != NUL)
+    else
     {
-	p[-1] = ':';
-	EMSG2(_(e_invarg2), address);
-	return NULL;
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	{
+	    EMSG2(_(e_invarg2), address);
+	    return NULL;
+	}
+	*p++ = NUL;
+	port = strtol((char *)p, &rest, 10);
+	if (port <= 0 || *rest != NUL)
+	{
+	    p[-1] = ':';
+	    EMSG2(_(e_invarg2), address);
+	    return NULL;
+	}
     }
 
     /* parse options */
@@ -3526,11 +3584,11 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	if (channel->ch_listen)
 	{
 	    sock_T		newfd;
-	    struct sockaddr_in	client;
 	    int			len;
 	    channel_T		*newchannel;
 	    typval_T		argv[2];
-	    char_u		namebuf[20];
+	    char_u		namebuf[UNIX_PATH_MAX];
+	    struct sockaddr_storage	client;
 
 	    newchannel = add_channel();
 	    if (newchannel == NULL)
@@ -3548,8 +3606,13 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	    }
 	    newchannel->CH_SOCK_FD = (sock_T)newfd;
 
-	    sprintf((char *)namebuf, "%s:%d",
-		inet_ntoa(client.sin_addr), ntohs(client.sin_port));
+	    if (client.ss_family == AF_INET)
+		sprintf((char *)namebuf, "%s:%d",
+		    inet_ntoa(((struct sockaddr_in*)&client)->sin_addr),
+		    ntohs(((struct sockaddr_in*)&client)->sin_port));
+	    else
+		sprintf((char *)namebuf, "unix:%s",
+		    ((struct sockaddr_un*)&client)->sun_path);
 	    ++safe_to_invoke_callback;
 	    ++newchannel->ch_refcount;
 	    argv[0].v_type = VAR_CHANNEL;
