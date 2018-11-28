@@ -674,7 +674,7 @@ channel_open(
     struct sockaddr_in	server;
     struct hostent	*host;
     int			is_unix = FALSE;
-    struct sockaddr_un	unix;
+    struct sockaddr_un	unixaddr;
 #ifdef WIN32
     u_short		port = port_in;
     u_long		val = 1;
@@ -698,9 +698,9 @@ channel_open(
     if (STRNCMP(hostname, "unix:", 5) == 0)
     {
 	is_unix = TRUE;
-	vim_memset((char *)&unix, 0, sizeof(unix));
-	unix.sun_family = AF_UNIX;
-	STRNCPY(unix.sun_path, hostname+5, sizeof(unix.sun_path)-1);
+	vim_memset((char *)&unixaddr, 0, sizeof(unixaddr));
+	unixaddr.sun_family = AF_UNIX;
+	STRNCPY(unixaddr.sun_path, hostname+5, sizeof(unixaddr.sun_path)-1);
     }
     else
     {
@@ -778,7 +778,7 @@ channel_open(
 	/* Try connecting to the server. */
 	ch_log(channel, "Connecting to %s port %d", hostname, port);
 	if (is_unix)
-	    ret = connect(sd, (struct sockaddr *)&unix, sizeof(unix));
+	    ret = connect(sd, (struct sockaddr *)&unixaddr, sizeof(unixaddr));
 	else
 	    ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
 
@@ -971,7 +971,7 @@ channel_listen(
     struct sockaddr_in	server;
     struct hostent	*host;
     int			is_unix = FALSE;
-    struct sockaddr_un	unix;
+    struct sockaddr_un	unixaddr;
 #ifdef WIN32
     u_short		port = port_in;
     u_long		val = 1;
@@ -996,9 +996,9 @@ channel_listen(
     if (STRNCMP(hostname, "unix:", 5) == 0)
     {
 	is_unix = TRUE;
-	vim_memset((char *)&unix, 0, sizeof(unix));
-	unix.sun_family = AF_UNIX;
-	STRNCPY(unix.sun_path, hostname+5, sizeof(unix.sun_path)-1);
+	vim_memset((char *)&unixaddr, 0, sizeof(unixaddr));
+	unixaddr.sun_family = AF_UNIX;
+	STRNCPY(unixaddr.sun_path, hostname+5, sizeof(unixaddr.sun_path)-1);
     }
     else
     {
@@ -1048,7 +1048,7 @@ channel_listen(
     }
 
     if (is_unix)
-	ret = bind(sd, (struct sockaddr *)&unix, sizeof(unix));
+	ret = bind(sd, (struct sockaddr *)&unixaddr, sizeof(unixaddr));
     else
     {
 	val = 1;
