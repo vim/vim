@@ -57,7 +57,6 @@ List		An ordered sequence of items |List|.
 		Example: [1, 2, ['a', 'b']]
 
 Dictionary	An associative, unordered array: Each entry has a key and a
-		Example: 0zFF00ED015DA
 		value. |Dictionary|
 		Example: {'blue': "#0000ff", 'red': "#ff0000"}
 
