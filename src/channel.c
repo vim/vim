@@ -647,13 +647,14 @@ channel_gui_unregister(channel_T *channel)
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
 static char *e_cannot_listen = N_("E963: Cannot listen to port");
 
-#if defined(WIN32) && !defined(UNIX_PATH_MAX)
-#define UNIX_PATH_MAX 108
-
+#ifndef UNIX_PATH_MAX
+# define UNIX_PATH_MAX 108
+# ifdef WIN32
 typedef struct sockaddr_un {
   ADDRESS_FAMILY sun_family;
   char sun_path[UNIX_PATH_MAX];
 } SOCKADDR_UN, *PSOCKADDR_UN;
+# endif
 #endif
 
 /*
