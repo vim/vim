@@ -8115,7 +8115,7 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg;
+    int		save_did_emsg = did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -8131,7 +8131,7 @@ ex_execute(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting())
+	    if (!aborting() && did_emsg == save_did_emsg)
 		EMSG2(_(e_invexpr2), p);
 	    ret = FAIL;
 	    break;
