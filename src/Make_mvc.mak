@@ -702,6 +702,7 @@ INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
 OBJ = \
 	$(OUTDIR)\arabic.obj \
 	$(OUTDIR)\beval.obj \
+	$(OUTDIR)\blob.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
@@ -1351,6 +1352,8 @@ $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
 $(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
 
+$(OUTDIR)/blob.obj:	$(OUTDIR) blob.c  $(INCL)
+
 $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
@@ -1617,6 +1620,7 @@ auto:
 # End Custom Build
 proto.h: \
 	proto/arabic.pro \
+	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
