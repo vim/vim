@@ -7999,6 +7999,7 @@ ex_echo(exarg_T *eap)
     int		needclr = TRUE;
     int		atstart = TRUE;
     char_u	numbuf[NUMBUFLEN];
+    int		did_emsg_before = did_emsg;
 
     if (eap->skip)
 	++emsg_skip;
@@ -8016,7 +8017,7 @@ ex_echo(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting())
+	    if (!aborting() && did_emsg == did_emsg_before)
 		EMSG2(_(e_invexpr2), p);
 	    need_clr_eos = FALSE;
 	    break;
