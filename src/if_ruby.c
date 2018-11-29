@@ -51,6 +51,7 @@
 #  define rb_cFloat		(*dll_rb_cFloat)
 # endif
 # define rb_cNilClass		(*dll_rb_cNilClass)
+# define rb_cString		(*dll_rb_cString)
 # define rb_cSymbol		(*dll_rb_cSymbol)
 # define rb_cTrueClass		(*dll_rb_cTrueClass)
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
@@ -215,6 +216,7 @@ static void ruby_vim_init(void);
  */
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
+# define rb_class_new_instance		dll_rb_class_new_instance
 # define rb_check_type			dll_rb_check_type
 # ifdef USE_TYPEDDATA
 #  define rb_check_typeddata		dll_rb_check_typeddata
@@ -358,8 +360,10 @@ VALUE *dll_rb_cFloat;
 # endif
 VALUE *dll_rb_cNilClass;
 static VALUE *dll_rb_cObject;
+VALUE *dll_rb_cString;
 VALUE *dll_rb_cSymbol;
 VALUE *dll_rb_cTrueClass;
+static VALUE (*dll_rb_class_new_instance) (int,VALUE*,VALUE);
 static void (*dll_rb_check_type) (VALUE,int);
 # ifdef USE_TYPEDDATA
 static void *(*dll_rb_check_typeddata) (VALUE,const rb_data_type_t *);
@@ -559,8 +563,10 @@ static struct
 # endif
     {"rb_cNilClass", (RUBY_PROC*)&dll_rb_cNilClass},
     {"rb_cObject", (RUBY_PROC*)&dll_rb_cObject},
+    {"rb_cString", (RUBY_PROC*)&dll_rb_cString},
     {"rb_cSymbol", (RUBY_PROC*)&dll_rb_cSymbol},
     {"rb_cTrueClass", (RUBY_PROC*)&dll_rb_cTrueClass},
+    {"rb_class_new_instance", (RUBY_PROC*)&dll_rb_class_new_instance},
     {"rb_check_type", (RUBY_PROC*)&dll_rb_check_type},
 # ifdef USE_TYPEDDATA
     {"rb_check_typeddata", (RUBY_PROC*)&dll_rb_check_typeddata},
@@ -1144,7 +1150,13 @@ static VALUE vim_to_ruby(typval_T *tv)
 	    result = Qtrue;
 	else if (tv->vval.v_number == VVAL_FALSE)
 	    result = Qfalse;
-    } /* else return Qnil; */
+    }
+    else if (tv->v_type == VAR_BLOB)
+    {
+	result = rb_str_new(tv->vval.v_blob->bv_ga.ga_data,
+		tv->vval.v_blob->bv_ga.ga_len);
+    }
+    /* else return Qnil; */
 
     return result;
 }
@@ -1220,6 +1232,19 @@ static buf_T *get_buf(VALUE obj)
     if (buf == NULL)
 	rb_raise(eDeletedBufferError, "attempt to refer to deleted buffer");
     return buf;
+}
+
+static VALUE str_to_blob(VALUE self)
+{
+    VALUE str = rb_str_new("0z", 2);
+    char    buf[4];
+    int	i;
+    for (i = 0; i < RSTRING_LEN(self); i++)
+    {
+	sprintf(buf, "%02X", RSTRING_PTR(self)[i]);
+	rb_str_concat(str, rb_str_new_cstr(buf));
+    }
+    return str;
 }
 
 static VALUE buffer_s_current(void)
@@ -1642,6 +1667,8 @@ static void ruby_vim_init(void)
     rb_define_module_function(mVIM, "set_option", vim_set_option, 1);
     rb_define_module_function(mVIM, "command", vim_command, 1);
     rb_define_module_function(mVIM, "evaluate", vim_evaluate, 1);
+
+    rb_define_method(rb_cString, "to_blob", str_to_blob, 0);
 
     eDeletedBufferError = rb_define_class_under(mVIM, "DeletedBufferError",
 						rb_eStandardError);
