@@ -24,9 +24,7 @@ blob_alloc(void)
 {
     blob_T *blob = (blob_T *)alloc_clear(sizeof(blob_T));
     if (blob != NULL)
-    {
 	ga_init2(&blob->bv_ga, 1, 100);
-    }
     return blob;
 }
 
@@ -108,7 +106,7 @@ blob_equal(
     blob_T	*b1,
     blob_T	*b2)
 {
-  	size_t i;
+    int i;
     if (b1 == NULL || b2 == NULL)
 	return FALSE;
     if (b1 == b2)
@@ -136,7 +134,7 @@ read_blob(FILE *fd, blob_T *blob)
 	return FAIL;
     blob->bv_ga.ga_len = st.st_size;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
-	    < blob->bv_ga.ga_len)
+	    < (size_t)blob->bv_ga.ga_len)
     {
 	blob_free(blob);
 	return FAIL;
@@ -152,7 +150,7 @@ read_blob(FILE *fd, blob_T *blob)
 write_blob(FILE *fd, blob_T *blob)
 {
     if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
-	    < blob->bv_ga.ga_len)
+	    < (size_t)blob->bv_ga.ga_len)
     {
 	EMSG(_(e_write));
 	return FAIL;

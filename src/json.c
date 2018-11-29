@@ -198,7 +198,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
     blob_T	*b;
     list_T	*l;
     dict_T	*d;
-    size_t	i;
+    int		i;
 
     switch (val->v_type)
     {

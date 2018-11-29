@@ -2421,7 +2421,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_BLOB:
 		if (*op != '+' || tv2->v_type != VAR_BLOB)
 		    break;
-		/* BLOB += BLOB */
+		// BLOB += BLOB
 		if (tv1->vval.v_blob != NULL && tv2->vval.v_blob != NULL)
 		{
 		    blob_T  *b1 = tv1->vval.v_blob;
@@ -2562,13 +2562,13 @@ eval_for_line(
 		l = tv.vval.v_list;
 		if (l == NULL)
 		{
-		    /* a null list is like an empty list: do nothing */
+		    // a null list is like an empty list: do nothing
 		    clear_tv(&tv);
 		}
 		else
 		{
-		    /* No need to increment the refcount, it's already set for the
-		     * list being used in "tv". */
+		    // No need to increment the refcount, it's already set for
+		    // the list being used in "tv".
 		    fi->fi_list = l;
 		    list_add_watch(l, &fi->fi_lw);
 		    fi->fi_lw.lw_item = l->lv_first;
@@ -4652,9 +4652,9 @@ eval_index(
 		}
 		else
 		{
-		    /* The resulting variable is a string of a single
-		     * character.  If the index is too big or negative the
-		     * result is empty. */
+		    // The resulting variable is a string of a single
+		    // character.  If the index is too big or negative the
+		    // result is empty.
 		    if (n1 < len && n1 >= 0)
 		    {
 			int v = (int)blob_get(rettv->vval.v_blob, n1);
@@ -5843,7 +5843,7 @@ echo_string_core(
 		int	    i;
 		garray_T    ga;
 
-		/* Store bytes in the growarray. */
+		// Store bytes in the growarray.
 		ga_init2(&ga, 1, 4000);
 		b = tv->vval.v_blob;
 		ga_append(&ga, '[');
@@ -9527,7 +9527,7 @@ typval_compare(
 	}
 	else
 	{
-	    /* Compare two Blobs for being equal or unequal. */
+	    // Compare two Blobs for being equal or unequal.
 	    n1 = blob_equal(typ1->vval.v_blob, typ2->vval.v_blob);
 	    if (type == TYPE_NEQUAL)
 		n1 = !n1;
