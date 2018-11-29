@@ -867,6 +867,10 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	}
 	return ret;
     }
+    else if (our_tv->v_type == VAR_BLOB)
+	ret = PyBytes_FromStringAndSize(
+		(char*) our_tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) our_tv->vval.v_blob->bv_ga.ga_len);
     else
     {
 	Py_INCREF(Py_None);
@@ -6236,16 +6240,36 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     else if (PyBytes_Check(obj))
     {
 	char_u	*str;
+	Py_ssize_t  len;
 
-	if (PyBytes_AsStringAndSize(obj, (char **) &str, NULL) == -1)
+	if (PyBytes_AsStringAndSize(obj, (char **) &str, &len) == -1)
 	    return -1;
 	if (str == NULL)
 	    return -1;
 
+#if PY_MAJOR_VERSION < 3
 	if (set_string_copy(str, tv) == -1)
 	    return -1;
 
 	tv->v_type = VAR_STRING;
+#else
+	tv->v_type = VAR_BLOB;
+	tv->vval.v_blob = blob_alloc();
+	if (tv->vval.v_blob == NULL)
+	{
+	    PyErr_NoMemory();
+	    return -1;
+	}
+	if (ga_grow(&tv->vval.v_blob->bv_ga, len) == FAIL)
+	{
+	    blob_free(tv->vval.v_blob);
+	    PyErr_NoMemory();
+	    return -1;
+	}
+	tv->vval.v_blob->bv_ga.ga_len = len;
+	mch_memmove(tv->vval.v_blob->bv_ga.ga_data, str, len);
+	++tv->vval.v_blob->bv_refcount;
+#endif
     }
     else if (PyUnicode_Check(obj))
     {
@@ -6374,10 +6398,13 @@ ConvertToPyObject(typval_T *tv)
 				tv->vval.v_partial->pt_argc, argv,
 				tv->vval.v_partial->pt_dict,
 				tv->vval.v_partial->pt_auto);
+	case VAR_BLOB:
+	    return PyBytes_FromStringAndSize(
+		(char*) tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) tv->vval.v_blob->bv_ga.ga_len);
 	case VAR_UNKNOWN:
 	case VAR_CHANNEL:
 	case VAR_JOB:
-	case VAR_BLOB:
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_SPECIAL:
