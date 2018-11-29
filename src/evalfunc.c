@@ -11329,7 +11329,7 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 
-	/* sign attributes */
+	// sign attributes
 	dict = argvars[1].vval.v_dict;
 	if (dict_find(dict, (char_u *)"icon", -1) != NULL)
 	    icon = get_dict_string(dict, (char_u *)"icon", TRUE);

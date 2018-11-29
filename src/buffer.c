@@ -936,7 +936,7 @@ free_buffer_stuff(
     uc_clear(&buf->b_ucmds);		/* clear local user commands */
 #endif
 #ifdef FEAT_SIGNS
-    buf_delete_signs(buf, (char_u *)"*");	/* delete any signs */
+    buf_delete_signs(buf, (char_u *)"*");	// delete any signs */
 #endif
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
@@ -5992,12 +5992,12 @@ buf_addsign(
  */
     linenr_T
 buf_change_sign_type(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		markId,		/* sign ID */
-    int		typenr,		/* typenr of sign we are adding */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer to store sign in
+    int		markId,		// sign ID
+    int		typenr,		// typenr of sign we are adding
+    char_u	*group)		// sign group
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
     {
@@ -6037,14 +6037,14 @@ buf_getsigntype(
 
     linenr_T
 buf_delsign(
-    buf_T	*buf,		/* buffer sign is stored in */
-    int		id,		/* sign id */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer sign is stored in
+    int		id,		// sign id
+    char_u	*group)		// sign group
 {
-    signlist_T	**lastp;	/* pointer to pointer to current sign */
-    signlist_T	*sign;		/* a sign in a b_signlist */
-    signlist_T	*next;		/* the next sign in a b_signlist */
-    linenr_T	lnum;		/* line number whose sign was deleted */
+    signlist_T	**lastp;	// pointer to pointer to current sign
+    signlist_T	*sign;		// a sign in a b_signlist
+    signlist_T	*next;		// the next sign in a b_signlist
+    linenr_T	lnum;		// line number whose sign was deleted
 
     lastp = &buf->b_signlist;
     lnum = 0;
@@ -6068,8 +6068,8 @@ buf_delsign(
 	    lastp = &sign->next;
     }
 
-    /* When deleted the last sign need to redraw the windows to remove the
-     * sign column. */
+    // When deleted the last sign need to redraw the windows to remove the
+    // sign column.
     if (buf->b_signlist == NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
@@ -6087,11 +6087,11 @@ buf_delsign(
  */
     int
 buf_findsign(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		id,		/* sign ID */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer to store sign in
+    int		id,		// sign ID
+    char_u	*group)		// sign group
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
 	if (sign->id == id && sign_in_group(sign, group))
@@ -6105,10 +6105,10 @@ buf_findsign(
  */
     static signlist_T *
 buf_getsign_at_line(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    linenr_T	lnum)		/* line number of sign */
+    buf_T	*buf,		// buffer whose sign we are searching for
+    linenr_T	lnum)		// line number of sign
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
 	if (sign->lnum == lnum)
@@ -6122,11 +6122,11 @@ buf_getsign_at_line(
  */
     signlist_T *
 buf_getsign_with_id(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    int		id,		/* sign identifier */
-    char_u	*group)		/* sign group */
+    buf_T	*buf,		// buffer whose sign we are searching for
+    int		id,		// sign identifier
+    char_u	*group)		// sign group
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
 	if (sign->id == id && sign_in_group(sign, group))
@@ -6137,10 +6137,10 @@ buf_getsign_with_id(
 
     int
 buf_findsign_id(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    linenr_T	lnum)		/* line number of sign */
+    buf_T	*buf,		// buffer whose sign we are searching for
+    linenr_T	lnum)		// line number of sign
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     sign = buf_getsign_at_line(buf, lnum);
     if (sign != NULL)
@@ -6197,11 +6197,11 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 buf_delete_signs(buf_T *buf, char_u *group)
 {
     signlist_T	*sign;
-    signlist_T	**lastp;	/* pointer to pointer to current sign */
+    signlist_T	**lastp;	// pointer to pointer to current sign
     signlist_T	*next;
 
-    /* When deleting the last sign need to redraw the windows to remove the
-     * sign column. Not when curwin is NULL (this means we're exiting). */
+    // When deleting the last sign need to redraw the windows to remove the
+    // sign column. Not when curwin is NULL (this means we're exiting).
     if (buf->b_signlist != NULL && curwin != NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
