@@ -8045,6 +8045,7 @@ ex_sign(exarg_T *eap)
 	char_u		*group = NULL;
 	int		prio = SIGN_DEF_PRIO;
 	char_u		*arg1;
+	int		bufarg = FALSE;
 
 	if (*arg == NUL)
 	{
@@ -8147,6 +8148,7 @@ ex_sign(exarg_T *eap)
 	    {
 		arg += 5;
 		buf = buflist_findname(arg);
+		bufarg = TRUE;
 		break;
 	    }
 	    else if (STRNCMP(arg, "buffer=", 7) == 0)
@@ -8155,6 +8157,7 @@ ex_sign(exarg_T *eap)
 		buf = buflist_findnr((int)getdigits(&arg));
 		if (*skipwhite(arg) != NUL)
 		    EMSG(_(e_trailing));
+		bufarg = TRUE;
 		break;
 	    }
 	    else
@@ -8165,13 +8168,17 @@ ex_sign(exarg_T *eap)
 	    arg = skipwhite(arg);
 	}
 
-	if (buf == NULL && group == NULL)
+	if ((!bufarg && group == NULL) || (group != NULL && *group == '\0'))
+	{
+	    // File or buffer is not specified or an empty group is used
+	    EMSG(_(e_invarg));
+	    return;
+	}
+
+	if (bufarg && buf == NULL)
 	{
 	    EMSG2(_("E158: Invalid buffer name: %s"), arg);
 	}
-	else if (group != NULL && *group == '\0')
-	    // Empty group specified
-	    EMSG(_(e_invarg));
 	else if (id <= 0 && !(idx == SIGNCMD_UNPLACE && id == -2))
 	{
 	    if ((group == NULL) && (lnum >= 0 || sign_name != NULL))
@@ -8250,7 +8257,7 @@ ex_sign(exarg_T *eap)
 	    }
 	}
 	    /* idx == SIGNCMD_PLACE */
-	else if (sign_name != NULL)
+	else if (sign_name != NULL && buf != NULL)
 	    sign_place(&id, group, sign_name, buf, lnum, prio);
 	else
 	    EMSG(_(e_invarg));

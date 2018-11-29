@@ -11406,7 +11406,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
 	    {
 		// get signs placed at this line
-		lnum = (int)get_tv_number_chk(&di->di_tv, &notanum);
+		(void)get_tv_number_chk(&di->di_tv, &notanum);
 		if (notanum)
 		    return;
 		lnum = get_tv_lnum(&di->di_tv);
@@ -11496,7 +11496,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	// Line number where the sign is to be placed
 	if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
 	{
-	    lnum = (int)get_tv_number_chk(&di->di_tv, &notanum);
+	    (void)get_tv_number_chk(&di->di_tv, &notanum);
 	    if (notanum)
 		goto cleanup;
 	    lnum = get_tv_lnum(&di->di_tv);
