@@ -6242,7 +6242,7 @@ buf_delete_all_signs(void)
  * List placed signs for "rbuf".  If "rbuf" is NULL do it for all buffers.
  */
     void
-sign_list_placed(buf_T *rbuf)
+sign_list_placed(buf_T *rbuf, char_u *sign_group)
 {
     buf_T	*buf;
     signlist_T	*p;
@@ -6265,14 +6265,16 @@ sign_list_placed(buf_T *rbuf)
 	}
 	for (p = buf->b_signlist; p != NULL && !got_int; p = p->next)
 	{
+	    if (!sign_in_group(p, sign_group))
+		continue;
 	    if (p->group != NULL)
-		snprintf(group, BUFSIZ, " group=%s", p->group);
+		snprintf(group, BUFSIZ, "  group=%s", p->group);
 	    else
 		group[0] = '\0';
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s%s "
+	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s "
 							"priority=%d"),
-			   (long)p->lnum, p->id, sign_typenr2name(p->typenr),
-			    group, p->priority);
+			   (long)p->lnum, p->id, group,
+			   sign_typenr2name(p->typenr), p->priority);
 	    MSG_PUTS(lbuf);
 	    msg_putchar('\n');
 	}

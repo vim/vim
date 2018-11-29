@@ -131,6 +131,19 @@ func Test_sign()
   sign define Sign4 text=\\ linehl=Comment
   sign undefine Sign4
 
+  " Error cases
+  call assert_fails("exe 'sign place abc line=3 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign unplace abc name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign place 1abc line=3 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign unplace 2abc name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("sign unplace 2 *", 'E474:')
+  call assert_fails("exe 'sign place 1 line=3 name=Sign1 buffer=' . bufnr('%') a", 'E488:')
+  call assert_fails("exe 'sign place name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign place lnum=10 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign unplace 2 lnum=10 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign unplace 2 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  call assert_fails("exe 'sign place 2 line=3 buffer=' . bufnr('%')", 'E474:')
+
   " After undefining the sign, we should no longer be able to place it.
   sign undefine Sign1
   sign undefine Sign2
@@ -490,6 +503,137 @@ func Test_sign_group()
   call assert_equal(0, sign_unplace('', {'buffer' : bnum}))
 
   call sign_unplace('*')
+
+  " Test for :sign command and groups
+  sign place 5 line=10 name=sign1 file=test_signs.vim
+  sign place 5 group=g1 line=10 name=sign1 file=test_signs.vim
+  sign place 5 group=g2 line=10 name=sign1 file=test_signs.vim
+
+  " Test for :sign place group={group} file={fname}
+  let a = execute('sign place file=test_signs.vim')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=g2 file=test_signs.vim')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=* file=test_signs.vim')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  group=g2  name=sign1 priority=10\n" .
+	      \ "    line=10  id=5  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=xyz file=test_signs.vim')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n", a)
+
+  call sign_unplace('*')
+
+  " Test for :sign place group={group} buffer={nr}
+  let bnum = bufnr('test_signs.vim')
+  exe 'sign place 5 line=10 name=sign1 buffer=' . bnum
+  exe 'sign place 5 group=g1 line=11 name=sign1 buffer=' . bnum
+  exe 'sign place 5 group=g2 line=12 name=sign1 buffer=' . bnum
+
+  let a = execute('sign place buffer=' . bnum)
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=g2 buffer=' . bnum)
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=* buffer=' . bnum)
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n" .
+	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+
+  let a = execute('sign place group=xyz buffer=' . bnum)
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n", a)
+
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n" .
+	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+
+  " Test for :sign unplace
+  sign unplace 5 group=g2 file=test_signs.vim
+  call assert_equal([], sign_getplaced(bnum, {'group' : 'g2'})[0].signs)
+
+  exe 'sign unplace 5 group=g1 buffer=' . bnum
+  call assert_equal([], sign_getplaced(bnum, {'group' : 'g1'})[0].signs)
+
+  sign unplace 5 group=xy file=test_signs.vim
+  call assert_equal(1, len(sign_getplaced(bnum, {'group' : '*'})[0].signs))
+
+  " Test for removing all the signs. Place the signs again for this test
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
+  sign place 6 line=20 name=sign1 file=test_signs.vim
+  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
+  sign place 6 group=g2 line=22 name=sign1 file=test_signs.vim
+  sign unplace 5 group=* file=test_signs.vim
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=20  id=6  name=sign1 priority=10\n" .
+	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
+
+  " Remove all the signs from the global group
+  sign unplace * file=test_signs.vim
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
+
+  " Remove all the signs from a particular group
+  sign place 5 line=10 name=sign1 file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
+  sign unplace * group=g1 file=test_signs.vim
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n" .
+	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n" .
+	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
+
+  " Remove all the signs from all the groups in a file
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 6 line=20 name=sign1 file=test_signs.vim
+  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
+  sign unplace * group=* file=test_signs.vim
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\n", a)
+
+  " Remove a particular sign id in a group from all the files
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign unplace 5 group=g1
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\n", a)
+
+  " Remove a particular sign id in all the groups from all the files
+  sign place 5 line=10 name=sign1 file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
+  sign place 6 line=20 name=sign1 file=test_signs.vim
+  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
+  sign place 6 group=g2 line=22 name=sign1 file=test_signs.vim
+  sign unplace 5 group=*
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=20  id=6  name=sign1 priority=10\n" .
+	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
+	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
+
+  " Remove all the signs from all the groups in all the files
+  sign place 5 line=10 name=sign1 file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign unplace * group=*
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\n", a)
+
+  " Error cases
+  call assert_fails("exe 'sign place 3 group= name=sign1 buffer=' . bnum", 'E474:')
+
+  call sign_unplace('*')
   call sign_undefine()
   enew  | only
 endfunc
@@ -556,6 +700,22 @@ func Test_sign_priority()
   " Error case
   call assert_fails("call sign_place(1, 'g1', 'sign1', 'test_signs.vim',
 	      \ [])", 'E715:')
+  call sign_unplace('*')
+
+  " Tests for the :sign place command with priority
+  sign place 5 line=10 name=sign1 priority=30 file=test_signs.vim
+  sign place 5 group=g1 line=10 name=sign1 priority=20 file=test_signs.vim
+  sign place 5 group=g2 line=10 name=sign1 priority=25 file=test_signs.vim
+  let a = execute('sign place group=*')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=30\n" .
+	      \ "    line=10  id=5  group=g2  name=sign1 priority=25\n" .
+	      \ "    line=10  id=5  group=g1  name=sign1 priority=20\n", a)
+
+  " Test for :sign place group={group}
+  let a = execute('sign place group=g1')
+  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+	      \ "    line=10  id=5  group=g1  name=sign1 priority=20\n", a)
 
   call sign_unplace('*')
   call sign_undefine()

@@ -83,7 +83,7 @@ int buf_findsigntype_id(buf_T *buf, linenr_T lnum, int typenr);
 int buf_signcount(buf_T *buf, linenr_T lnum);
 void buf_delete_signs(buf_T *buf, char_u *group);
 void buf_delete_all_signs(void);
-void sign_list_placed(buf_T *rbuf);
+void sign_list_placed(buf_T *rbuf, char_u *sign_group);
 void sign_mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
