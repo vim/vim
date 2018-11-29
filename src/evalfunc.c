@@ -7198,7 +7198,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	{
 	    before = (long)get_tv_number_chk(&argvars[2], &error);
 	    if (error)
-		return;		/* type error; errmsg already given */
+		return;		// type error; errmsg already given
 	    if (before < 0 || before > len)
 	    {
 		EMSG2(_(e_invarg2), get_tv_string(&argvars[2]));
@@ -9681,7 +9681,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	    if (argvars[2].v_type == VAR_UNKNOWN)
 	    {
-		/* Remove one item, return its value. */
+		// Remove one item, return its value.
 		p = (char_u*) b->bv_ga.ga_data;
 		rettv->vval.v_number = (varnumber_T) *(p + idx);
 		mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
@@ -9691,7 +9691,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	    {
 		blob_T  *blob;
 
-		/* Remove range of items, return list with values. */
+		// Remove range of items, return list with values.
 		end = (long)get_tv_number_chk(&argvars[2], &error);
 		if (error)
 		    return;
@@ -14400,8 +14400,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	    ret = -1;
 #ifdef HAVE_FSYNC
 	else if (do_fsync)
-	    /* Ignore the error, the user wouldn't know what to do about it.
-	     * May happen for a device. */
+	    // Ignore the error, the user wouldn't know what to do about it.
+	    // May happen for a device.
 	    vim_ignored = fsync(fileno(fd));
 #endif
 	fclose(fd);

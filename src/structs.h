@@ -1349,10 +1349,10 @@ struct dictvar_S
  */
 struct blobvar_S
 {
-    garray_T	bv_ga;		/* growarray */
-    int		bv_refcount;	/* reference count */
-    int		bv_cap;		/* capacity of buffer */
-    char	bv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
+    garray_T	bv_ga;		// growarray
+    int		bv_refcount;	// reference count
+    int		bv_cap;		// capacity of buffer
+    char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
 #if defined(FEAT_EVAL) || defined(PROTO)

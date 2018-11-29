@@ -1578,6 +1578,7 @@ TAGS_INCL = *.h
 BASIC_SRC = \
 	arabic.c \
 	beval.c \
+	blob.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -1604,7 +1605,6 @@ BASIC_SRC = \
 	if_xcmdsrv.c \
 	json.c \
 	list.c \
-	blob.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1638,7 +1638,6 @@ BASIC_SRC = \
 	userfunc.c \
 	version.c \
 	window.c \
-	blob.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1696,6 +1695,7 @@ OBJ_COMMON = \
 	objects/arabic.o \
 	objects/beval.o \
 	objects/buffer.o \
+	objects/blob.o \
 	objects/blowfish.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
@@ -1719,7 +1719,6 @@ OBJ_COMMON = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
-	objects/blob.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -2937,6 +2936,9 @@ $(ALL_OBJ): objects/.dirstamp
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
 
+objects/blob.o: blob.c
+	$(CCC) -o $@ blob.c
+
 objects/blowfish.o: blowfish.c
 	$(CCC) -o $@ blowfish.c
 
@@ -3101,9 +3103,6 @@ objects/kword_test.o: kword_test.c
 
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
-
-objects/blob.o: blob.c
-	$(CCC) -o $@ blob.c
 
 objects/main.o: main.c
 	$(CCC) -o $@ main.c

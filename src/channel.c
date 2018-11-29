@@ -3995,7 +3995,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     if (text == NULL)
 	return;
 
-    channel = send_common(argvars, text, STRLEN(text), id, eval, &opt,
+    channel = send_common(argvars, text, (int)STRLEN(text), id, eval, &opt,
 			    eval ? "ch_evalexpr" : "ch_sendexpr", &part_read);
     vim_free(text);
     if (channel != NULL && eval)
