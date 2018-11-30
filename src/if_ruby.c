@@ -1234,17 +1234,17 @@ static buf_T *get_buf(VALUE obj)
     return buf;
 }
 
-static VALUE str_to_blob(VALUE self)
+static VALUE vim_blob(VALUE self UNUSED, VALUE str)
 {
-    VALUE str = rb_str_new("0z", 2);
+    VALUE result = rb_str_new("0z", 2);
     char    buf[4];
     int	i;
-    for (i = 0; i < RSTRING_LEN(self); i++)
+    for (i = 0; i < RSTRING_LEN(str); i++)
     {
-	sprintf(buf, "%02X", RSTRING_PTR(self)[i]);
-	rb_str_concat(str, rb_str_new_cstr(buf));
+	sprintf(buf, "%02X", RSTRING_PTR(str)[i]);
+	rb_str_concat(result, rb_str_new_cstr(buf));
     }
-    return str;
+    return result;
 }
 
 static VALUE buffer_s_current(void)
@@ -1667,8 +1667,7 @@ static void ruby_vim_init(void)
     rb_define_module_function(mVIM, "set_option", vim_set_option, 1);
     rb_define_module_function(mVIM, "command", vim_command, 1);
     rb_define_module_function(mVIM, "evaluate", vim_evaluate, 1);
-
-    rb_define_method(rb_cString, "to_blob", str_to_blob, 0);
+    rb_define_module_function(mVIM, "blob", vim_blob, 1);
 
     eDeletedBufferError = rb_define_class_under(mVIM, "DeletedBufferError",
 						rb_eStandardError);
