@@ -224,6 +224,8 @@ func Test_sign_completion()
 endfunc
 
 func Test_sign_invalid_commands()
+  sign define Sign1 text=x
+
   call assert_fails('sign', 'E471:')
   call assert_fails('sign jump', 'E471:')
   call assert_fails('sign xxx', 'E160:')
@@ -233,6 +235,52 @@ func Test_sign_invalid_commands()
   call assert_fails('sign list xxx', 'E155:')
   call assert_fails('sign place 1 buffer=999', 'E158:')
   call assert_fails('sign define Sign2 text=', 'E239:')
+  " Non-numeric identifier for :sign place
+  call assert_fails("exe 'sign place abc line=3 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Non-numeric identifier for :sign unplace
+  call assert_fails("exe 'sign unplace abc name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Number followed by an alphabet as sign identifier for :sign place
+  call assert_fails("exe 'sign place 1abc line=3 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Number followed by an alphabet as sign identifier for :sign unplace
+  call assert_fails("exe 'sign unplace 2abc name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Sign identifier and '*' for :sign unplace
+  call assert_fails("sign unplace 2 *", 'E474:')
+  " Trailing characters after buffer number for :sign place
+  call assert_fails("exe 'sign place 1 line=3 name=Sign1 buffer=' . bufnr('%') . 'xxx'", 'E488:')
+  " Trailing characters after buffer number for :sign unplace
+  call assert_fails("exe 'sign unplace 1 buffer=' . bufnr('%') . 'xxx'", 'E488:')
+  call assert_fails("exe 'sign unplace * buffer=' . bufnr('%') . 'xxx'", 'E488:')
+  call assert_fails("sign unplace 1 xxx", 'E474:')
+  call assert_fails("sign unplace * xxx", 'E474:')
+  call assert_fails("sign unplace xxx", 'E474:')
+  " Placing a sign without line number
+  call assert_fails("exe 'sign place name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Placing a sign without sign name
+  call assert_fails("exe 'sign place line=10 buffer=' . bufnr('%')", 'E474:')
+  " Unplacing a sign with line number
+  call assert_fails("exe 'sign unplace 2 line=10 buffer=' . bufnr('%')", 'E474:')
+  " Unplacing a sign with sign name
+  call assert_fails("exe 'sign unplace 2 name=Sign1 buffer=' . bufnr('%')", 'E474:')
+  " Placing a sign without sign name
+  call assert_fails("exe 'sign place 2 line=3 buffer=' . bufnr('%')", 'E474:')
+  " Placing a sign with only sign identifier
+  call assert_fails("sign place 2", 'E474:')
+  " Placing a sign with only a name
+  call assert_fails("sign place abc", 'E474:')
+  " Placing a sign with only line number
+  call assert_fails("sign place 5 line=3", 'E474:')
+  " Placing a sign with only sign name
+  call assert_fails("sign place 5 name=Sign1", 'E474:')
+  " Placing a sign with only sign group
+  call assert_fails("sign place 5 group=g1", 'E474:')
+  call assert_fails("sign place 5 group=*", 'E474:')
+  " Placing a sign with only sign priority
+  call assert_fails("sign place 5 priority=10", 'E474:')
+  " Placing a sign without buffer number or file name
+  call assert_fails("sign place 5 line=3 name=Sign1", 'E474:')
+  call assert_fails("sign place 5 group=g1 line=3 name=Sign1", 'E474:')
+
+  sign undefine Sign1
 endfunc
 
 func Test_sign_delete_buffer()
