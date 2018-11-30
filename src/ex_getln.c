@@ -462,6 +462,7 @@ may_do_incsearch_highlighting(
     int		use_last_pat;
 
     // Parsing range may already set the last search pattern.
+    // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
@@ -633,6 +634,7 @@ may_adjust_incsearch_highlighting(
     int	    save;
 
     // Parsing range may already set the last search pattern.
+    // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
@@ -735,6 +737,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
     int		skiplen, patlen;
 
     // Parsing range may already set the last search pattern.
+    // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
     if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
@@ -742,6 +745,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	restore_last_search_pattern();
 	return FAIL;
     }
+    restore_last_search_pattern();
 
     // Add a character from under the cursor for 'incsearch'.
     if (is_state->did_incsearch)

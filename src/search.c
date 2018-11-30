@@ -96,6 +96,7 @@ static struct spat  saved_spats[2];
 /* copy of spats[RE_SEARCH], for keeping the search patterns while incremental
  * searching */
 static struct spat  saved_last_search_spat;
+static int	    did_save_last_search_spat = 0;
 static int	    saved_last_idx = 0;
 static int	    saved_no_hlsearch = 0;
 # endif
@@ -364,6 +365,11 @@ free_search_patterns(void)
     void
 save_last_search_pattern(void)
 {
+    if (did_save_last_search_spat != 0)
+	IEMSG("did_save_last_search_spat is not zero");
+    else
+	++did_save_last_search_spat;
+
     saved_last_search_spat = spats[RE_SEARCH];
     if (spats[RE_SEARCH].pat != NULL)
 	saved_last_search_spat.pat = vim_strsave(spats[RE_SEARCH].pat);
@@ -374,8 +380,16 @@ save_last_search_pattern(void)
     void
 restore_last_search_pattern(void)
 {
+    if (did_save_last_search_spat != 1)
+    {
+	IEMSG("did_save_last_search_spat is not one");
+	return;
+    }
+    --did_save_last_search_spat;
+
     vim_free(spats[RE_SEARCH].pat);
     spats[RE_SEARCH] = saved_last_search_spat;
+    saved_last_search_spat.pat = NULL;
 # if defined(FEAT_EVAL)
     set_vv_searchforward();
 # endif
