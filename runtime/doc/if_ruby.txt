@@ -110,6 +110,10 @@ Module Functions:
 Vim::message({msg})
 	Displays the message {msg}.
 
+							*ruby-blob*
+Vim::blob({arg})
+	Return Blob literal string from {arg}.
+
 							*ruby-set_option*
 Vim::set_option({arg})
 	Sets a vim option.  {arg} can be any argument that the ":set" command
