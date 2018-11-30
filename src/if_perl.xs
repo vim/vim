@@ -236,6 +236,7 @@ typedef int perl_key;
 # else
 #  define Perl_sv_2pv dll_Perl_sv_2pv
 # endif
+# define Perl_sv_2pvbyte dll_Perl_sv_2pvbyte
 # define Perl_sv_bless dll_Perl_sv_bless
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
 #  define Perl_sv_catpvn_flags dll_Perl_sv_catpvn_flags
@@ -388,6 +389,7 @@ static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 # else
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
+static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
 static void (*Perl_sv_catpvn_flags)(pTHX_ SV* , const char*, STRLEN, I32);
@@ -543,6 +545,7 @@ static struct {
 # else
     {"Perl_sv_2pv", (PERL_PROC*)&Perl_sv_2pv},
 # endif
+    {"Perl_sv_2pvbyte", (PERL_PROC*)&Perl_sv_2pvbyte},
 # ifdef PERL589_OR_LATER
     {"Perl_sv_2iv_flags", (PERL_PROC*)&Perl_sv_2iv_flags},
     {"Perl_newXS_flags", (PERL_PROC*)&Perl_newXS_flags},
@@ -1555,6 +1558,27 @@ Eval(str)
 	    XPUSHs(sv_2mortal(newSVpv((char *)value, 0)));
 	    vim_free(value);
 	}
+
+SV*
+Blob(SV* sv)
+    PREINIT:
+    STRLEN  len;
+    char    *s;
+    int	    i;
+    char    buf[3];
+    SV*	    newsv;
+
+    CODE:
+    s = SvPVbyte(sv, len);
+    newsv = newSVpv("0z", 2);
+    for (i = 0; i < len; i++)
+    {
+	sprintf(buf, "%02X", s[i]);
+	sv_catpvn(newsv, buf, 2);
+    }
+    RETVAL = newsv;
+    OUTPUT:
+    RETVAL
 
 void
 Buffers(...)
