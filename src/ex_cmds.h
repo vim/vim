@@ -62,15 +62,15 @@
 #define FILE1	(FILES | NOSPC)	/* 1 file allowed, defaults to current file */
 
 /* values for cmd_addr_type */
-#define ADDR_LINES		0
-#define ADDR_WINDOWS		1
-#define ADDR_ARGUMENTS		2
-#define ADDR_LOADED_BUFFERS	3
-#define ADDR_BUFFERS		4
-#define ADDR_TABS		5
-#define ADDR_TABS_RELATIVE	6   /* Tab page that only relative */
-#define ADDR_QUICKFIX		7
-#define ADDR_OTHER		99
+#define ADDR_LINES		0   // buffer line numbers
+#define ADDR_WINDOWS		1   // window number
+#define ADDR_ARGUMENTS		2   // argument number
+#define ADDR_LOADED_BUFFERS	3   // buffer number of loaded buffer
+#define ADDR_BUFFERS		4   // buffer number
+#define ADDR_TABS		5   // tab page number
+#define ADDR_TABS_RELATIVE	6   // Tab page that only relative
+#define ADDR_QUICKFIX		7   // quickfix list entry number
+#define ADDR_OTHER		99  // something else
 
 #ifndef DO_DECLARE_EXCMD
 typedef struct exarg exarg_T;
@@ -1260,8 +1260,8 @@ EX(CMD_sbrewind,	"sbrewind",	ex_brewind,
 			EDITCMD|TRLBAR,
 			ADDR_LINES),
 EX(CMD_scriptnames,	"scriptnames",	ex_scriptnames,
-			TRLBAR|CMDWIN,
-			ADDR_LINES),
+			BANG|RANGE|NOTADR|COUNT|TRLBAR|CMDWIN,
+			ADDR_OTHER),
 EX(CMD_scriptencoding,	"scriptencoding", ex_scriptencoding,
 			WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),

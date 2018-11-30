@@ -4690,9 +4690,22 @@ theend:
  * ":scriptnames"
  */
     void
-ex_scriptnames(exarg_T *eap UNUSED)
+ex_scriptnames(exarg_T *eap)
 {
     int i;
+
+    if (eap->addr_count > 0)
+    {
+	// :script {scriptId}: edit the script
+	if (eap->line2 < 1 || eap->line2 > script_items.ga_len)
+	    EMSG(_(e_invarg));
+	else
+	{
+	    eap->arg = SCRIPT_ITEM(eap->line2).sn_name;
+	    do_exedit(eap, NULL);
+	}
+	return;
+    }
 
     for (i = 1; i <= script_items.ga_len && !got_int; ++i)
 	if (SCRIPT_ITEM(i).sn_name != NULL)
