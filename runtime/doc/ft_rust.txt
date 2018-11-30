@@ -1,4 +1,6 @@
-*ft_rust.txt*      Filetype plugin for Rust
+*ft_rust.txt*	For Vim version 8.1.  Last change: 2017 Nov 02
+
+This is documentation for the Rust filetype plugin.
 
 ==============================================================================
 CONTENTS                                                      *rust*
@@ -116,13 +118,13 @@ g:rustfmt_options~
 
                                                           *g:rust_playpen_url*
 g:rust_playpen_url~
-	Set this option to override the url for the playpen to use: >
+	Set this option to override the URL for the playpen to use: >
 	    let g:rust_playpen_url = 'https://play.rust-lang.org/'
 <
 
                                                         *g:rust_shortener_url*
 g:rust_shortener_url~
-	Set this option to override the url for the url shortener: >
+	Set this option to override the URL for the URL shortener: >
 	    let g:rust_shortener_url = 'https://is.gd/'
 <
 
@@ -199,7 +201,7 @@ COMMANDS                                                       *rust-commands*
 		|g:rust_playpen_url| is the base URL to the playpen, by default
 		"https://play.rust-lang.org/".
 
-		|g:rust_shortener_url| is the base url for the shorterner, by
+		|g:rust_shortener_url| is the base URL for the shortener, by
 		default "https://is.gd/"
 
 :RustFmt                                                       *:RustFmt*
@@ -234,4 +236,4 @@ It also has a few other mappings:
 			Note: This binding is only available in MacVim.
 
 ==============================================================================
- vim:tw=78:sw=4:noet:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

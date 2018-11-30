@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.0.  Last change: 2017 Jun 11
+*channel.txt*      For Vim version 8.1.  Last change: 2018 Apr 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -22,6 +22,7 @@ The Netbeans interface also uses a channel. |netbeans|
 9. Starting a job without a channel	|job-start-nochannel|
 10. Job options				|job-options|
 11. Controlling a job			|job-control|
+12. Using a prompt buffer		|prompt-buffer|
 
 {Vi does not have any of these features}
 {only when compiled with the |+channel| feature for channel stuff}
@@ -55,7 +56,7 @@ JS	JavaScript style JSON-like encoding |js_encode()|
 Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
   checker and receive errors and warnings.
-- Using a deamon, connecting over a socket in JSON mode.  E.g. to lookup
+- Using a daemon, connecting over a socket in JSON mode.  E.g. to lookup
   cross-references in a database.
 
 ==============================================================================
@@ -161,6 +162,9 @@ Use |ch_status()| to see if the channel could be opened.
 		    "auto"	When there is no callback to handle a message.
 				The "close_cb" is also considered for this.
 		    "never"	All messages will be kept.
+
+							*channel-noblock*
+"noblock"	Same effect as |job-noblock|.  Only matters for writing.
 
 							*waittime*
 "waittime"	The time to wait for the connection to be made in
@@ -427,8 +431,8 @@ When no message was available then the result is v:none for a JSON or JS mode
 channels, an empty string for a RAW or NL channel.  You can use |ch_canread()|
 to check if there is something to read.
 
-Note that when there is no callback message are dropped.  To avoid that add a
-close callback to the channel.
+Note that when there is no callback, messages are dropped.  To avoid that add
+a close callback to the channel.
 
 To read all output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
@@ -518,7 +522,7 @@ By default this reads the whole buffer.  This can be changed with the "in_top"
 and "in_bot" options.
 
 A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
-time a line is added to the buffer, the last-but-one line will be send to the
+time a line is added to the buffer, the last-but-one line will be sent to the
 job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 							*channel-close-in*
@@ -593,6 +597,17 @@ See |job_setoptions()| and |ch_setoptions()|.
 			Note: when writing to a file or buffer and when
 			reading from a buffer NL mode is used by default.
 
+						*job-noblock*
+"noblock": 1		When writing use a non-blocking write call.  This
+			avoids getting stuck if Vim should handle other
+			messages in between, e.g. when a job sends back data
+			to Vim.  It implies that when `ch_sendraw()` returns
+			not all data may have been written yet.
+			This option was added in patch 8.1.0350, test with: >
+				if has("patch-8.1.350")
+				  let options['noblock'] = 1
+				endif
+<
 						*job-callback*
 "callback": handler	Callback for something to read on any part of the
 			channel.
@@ -611,7 +626,7 @@ See |job_setoptions()| and |ch_setoptions()|.
 "close_cb": handler	Callback for when the channel is closed.  Same as
 			"close_cb" on |ch_open()|, see |close_cb|.
 						*job-drop*
-"drop"			Specifies when to drop messages.  Same as "drop" on
+"drop": when		Specifies when to drop messages.  Same as "drop" on
 			|ch_open()|, see |channel-drop|.  For "auto" the
 			exit_cb is not considered.
 						*job-exit_cb*
@@ -624,12 +639,12 @@ See |job_setoptions()| and |ch_setoptions()|.
 			Note that data can be buffered, callbacks may still be
 			called after the process ends.
 							*job-timeout*
-"timeout"		The time to wait for a request when blocking, E.g.
+"timeout": time		The time to wait for a request when blocking, E.g.
 			when using ch_evalexpr().  In milliseconds.  The
 			default is 2000 (2 seconds).
 						*out_timeout* *err_timeout*
-"out_timeout"		Timeout for stdout.  Only when using pipes.
-"err_timeout"		Timeout for stderr.  Only when using pipes.
+"out_timeout": time	Timeout for stdout.  Only when using pipes.
+"err_timeout": time	Timeout for stderr.  Only when using pipes.
 			Note: when setting "timeout" the part specific mode is
 			overwritten.  Therefore set "timeout" first and the
 			part specific mode later.
@@ -641,8 +656,9 @@ See |job_setoptions()| and |ch_setoptions()|.
 			The default is "term".
 
 						*job-term*
-"term": "open"		Start a terminal and connect the job
-			stdin/stdout/stderr to it.
+"term": "open"		Start a terminal in a new window and connect the job
+			stdin/stdout/stderr to it.  Similar to using
+			`:terminal`.
 			NOTE: Not implemented yet!
 
 "channel": {channel}	Use an existing channel instead of creating a new one.
@@ -651,6 +667,11 @@ See |job_setoptions()| and |ch_setoptions()|.
 			If the channel was still used by another job this may
 			cause I/O errors.
 			Existing callbacks and other settings remain.
+
+"pty": 1		Use a pty (pseudo-tty) instead of a pipe when
+			possible.  This is most useful in combination with a
+			terminal window, see |terminal|.
+			{only on Unix and Unix-like systems}
 
 				*job-in_io* *in_top* *in_bot* *in_name* *in_buf*
 "in_io": "null"		disconnect stdin (read from /dev/null)
@@ -690,6 +711,10 @@ See |job_setoptions()| and |ch_setoptions()|.
 "block_write": number	only for testing: pretend every other write to stdin
 			will block
 
+"env": dict		environment variables for the new process
+"cwd": "/path/to/dir"	current working directory for the new process;
+			if the directory does not exist an error is given
+
 
 Writing to a buffer ~
 							*out_io-buffer*
@@ -724,10 +749,6 @@ change the buffer.
 The "out_msg" option can be used to specify whether a new buffer will have the
 first line set to "Reading from channel output...".  The default is to add the
 message.  "err_msg" does the same for channel error.
-
-'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
-means that lines will be appended to the buffer, but the user can't easily
-change the buffer.
 
 When an existing buffer is to be written where 'modifiable' is off and the
 "out_modifiable" or "err_modifiable" options is not zero, an error is given
@@ -764,5 +785,49 @@ signals.  E.g. to force a job to stop, "kill it": >
 
 For more options see |job_stop()|.
 
+==============================================================================
+12. Using a prompt buffer				*prompt-buffer*
 
- vim:tw=78:ts=8:ft=help:norl:
+If you want to type input for the job in a Vim window you have a few options:
+- Use a normal buffer and handle all possible commands yourself.
+  This will be complicated, since there are so many possible commands.
+- Use a terminal window.  This works well if what you type goes directly to
+  the job and the job output is directly displayed in the window.
+  See |terminal-window|.
+- Use a prompt window. This works well when entering a line for the job in Vim
+  while displaying (possibly filtered) output from the job.
+
+A prompt buffer is created by setting 'buftype' to "prompt". You would
+normally only do that in a newly created buffer.
+
+The user can edit and enter one line of text at the very last line of the
+buffer.  When pressing Enter in the prompt line the callback set with
+|prompt_setcallback()| is invoked.  It would normally send the line to a job.
+Another callback would receive the output from the job and display it in the
+buffer, below the prompt (and above the next prompt).
+
+Only the text in the last line, after the prompt, is editable. The rest of the
+buffer is not modifiable with Normal mode commands.  It can be modified by
+calling functions, such as |append()|.  Using other commands may mess up the
+buffer.
+
+After setting 'buftype' to "prompt" Vim does not automatically start Insert
+mode, use `:startinsert` if you want to enter Insert mode, so that the user
+can start typing a line.
+
+The text of the prompt can be set with the |prompt_setprompt()| function.
+
+The user can go to Normal mode and navigate through the buffer.  This can be
+useful see older output or copy text.
+
+The CTRL-W key can be used to start a window command, such as CTRL-W w to
+switch to the next window.  This also works in Insert mode (use Shift-CTRL-W
+to delete a word). When leaving the window Insert mode will be stopped.  When
+coming back to the prompt window Insert mode will be restored.
+
+Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
+the cursor to the last line.  "A" will move to the end of the line, "I" to the
+start of the line.
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

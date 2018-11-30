@@ -820,6 +820,8 @@ clean:
 !endif
 !ifdef PERL
 	-@del perl.lib
+	-@del if_perl.c
+	-@del auto\if_perl.c
 !endif
 !ifdef PYTHON
 	-@del python.lib
@@ -948,12 +950,12 @@ $(OBJDIR)\if_ole.obj: if_ole.cpp
 $(OBJDIR)\if_lua.obj: if_lua.c lua.lib
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_lua.c
 
-$(OBJDIR)\if_perl.obj: if_perl.c perl.lib
-	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_perl.c
+$(OBJDIR)\if_perl.obj: auto/if_perl.c perl.lib
+	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc auto/if_perl.c
 
-if_perl.c: if_perl.xs typemap
+auto/if_perl.c: if_perl.xs typemap
 	$(PERL)\bin\perl.exe $(PERL)\lib\ExtUtils\xsubpp -prototypes -typemap \
-	    $(PERL)\lib\ExtUtils\typemap if_perl.xs > $@
+	    $(PERL)\lib\ExtUtils\typemap if_perl.xs -output $@
 
 $(OBJDIR)\if_python.obj: if_python.c if_py_both.h python.lib
 	$(CC) -I$(PYTHON)\include $(CCARG) $(CC1) $(CC2)$@ -pc if_python.c

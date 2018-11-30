@@ -1,5 +1,5 @@
 " Test for :match, :2match, :3match, clearmatches(), getmatches(), matchadd(),
-" matchaddpos(), matcharg(), matchdelete(), matchstrpos() and setmatches().
+" matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red
@@ -150,18 +150,6 @@ function Test_match()
   highlight MyGroup3 NONE
 endfunc
 
-func Test_matchstrpos()
-  call assert_equal(['ing', 4, 7], matchstrpos('testing', 'ing'))
-
-  call assert_equal(['ing', 4, 7], matchstrpos('testing', 'ing', 2))
-
-  call assert_equal(['', -1, -1], matchstrpos('testing', 'ing', 5))
-
-  call assert_equal(['ing', 1, 4, 7], matchstrpos(['vim', 'testing', 'execute'], 'ing'))
-
-  call assert_equal(['', -1, -1, -1], matchstrpos(['vim', 'testing', 'execute'], 'img'))
-endfunc
-
 func Test_matchaddpos()
   syntax on
   set hlsearch
@@ -202,6 +190,28 @@ func Test_matchaddpos()
   call clearmatches()
   syntax off
   set hlsearch&
+endfunc
+
+func Test_matchaddpos_otherwin()
+  syntax on
+  new
+  call setline(1, ['12345', 'NP'])
+  let winid = win_getid()
+
+  wincmd w
+  call matchadd('Search', '4', 10, -1, {'window': winid})
+  call matchaddpos('Error', [[1,2], [2,2]], 10, -1, {'window': winid})
+  redraw!
+  call assert_notequal(screenattr(1,2), 0)
+  call assert_notequal(screenattr(1,4), 0)
+  call assert_notequal(screenattr(2,2), 0)
+  call assert_equal(screenattr(1,2), screenattr(2,2))
+  call assert_notequal(screenattr(1,2), screenattr(1,4))
+
+  wincmd w
+  bwipe!
+  call clearmatches()
+  syntax off
 endfunc
 
 func Test_matchaddpos_using_negative_priority()

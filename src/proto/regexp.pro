@@ -16,5 +16,5 @@ void vim_regfree(regprog_T *prog);
 int vim_regexec_prog(regprog_T **prog, int ignore_case, char_u *line, colnr_T col);
 int vim_regexec(regmatch_T *rmp, char_u *line, colnr_T col);
 int vim_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col);
-long vim_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm);
+long vim_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm, int *timed_out);
 /* vim: set ft=c : */

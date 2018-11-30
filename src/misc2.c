@@ -165,13 +165,11 @@ coladvance2(
     else
     {
 #ifdef FEAT_VIRTUALEDIT
-	int width = W_WIDTH(curwin) - win_col_off(curwin);
+	int width = curwin->w_width - win_col_off(curwin);
 
 	if (finetune
 		&& curwin->w_p_wrap
-# ifdef FEAT_WINDOWS
 		&& curwin->w_width != 0
-# endif
 		&& wcol >= (colnr_T)width)
 	{
 	    csize = linetabsize(line);
@@ -312,7 +310,7 @@ coladvance2(
 	    int b = (int)wcol - (int)col;
 
 	    /* The difference between wcol and col is used to set coladd. */
-	    if (b > 0 && b < (MAXCOL - 2 * W_WIDTH(curwin)))
+	    if (b > 0 && b < (MAXCOL - 2 * curwin->w_width))
 		pos->coladd = b;
 
 	    col += b;
@@ -350,24 +348,29 @@ inc_cursor(void)
     int
 inc(pos_T *lp)
 {
-    char_u  *p = ml_get_pos(lp);
+    char_u  *p;
 
-    if (*p != NUL)	/* still within line, move to next char (may be NUL) */
+    /* when searching position may be set to end of a line */
+    if (lp->col != MAXCOL)
     {
-#ifdef FEAT_MBYTE
-	if (has_mbyte)
+	p = ml_get_pos(lp);
+	if (*p != NUL)	/* still within line, move to next char (may be NUL) */
 	{
-	    int l = (*mb_ptr2len)(p);
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		int l = (*mb_ptr2len)(p);
 
-	    lp->col += l;
-	    return ((p[l] != NUL) ? 0 : 2);
-	}
+		lp->col += l;
+		return ((p[l] != NUL) ? 0 : 2);
+	    }
 #endif
-	lp->col++;
+	    lp->col++;
 #ifdef FEAT_VIRTUALEDIT
-	lp->coladd = 0;
+	    lp->coladd = 0;
 #endif
-	return ((p[1] != NUL) ? 0 : 2);
+	    return ((p[1] != NUL) ? 0 : 2);
+	}
     }
     if (lp->lnum != curbuf->b_ml.ml_line_count)     /* there is a next line */
     {
@@ -414,8 +417,21 @@ dec(pos_T *lp)
 #ifdef FEAT_VIRTUALEDIT
     lp->coladd = 0;
 #endif
-    if (lp->col > 0)		/* still within line */
+    if (lp->col == MAXCOL)
     {
+	/* past end of line */
+	p = ml_get(lp->lnum);
+	lp->col = (colnr_T)STRLEN(p);
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	    lp->col -= (*mb_head_off)(p, p + lp->col);
+#endif
+	return 0;
+    }
+
+    if (lp->col > 0)
+    {
+	/* still within line */
 	lp->col--;
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -426,8 +442,10 @@ dec(pos_T *lp)
 #endif
 	return 0;
     }
-    if (lp->lnum > 1)		/* there is a prior line */
+
+    if (lp->lnum > 1)
     {
+	/* there is a prior line */
 	lp->lnum--;
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
@@ -437,7 +455,9 @@ dec(pos_T *lp)
 #endif
 	return 1;
     }
-    return -1;			/* at start of file */
+
+    /* at start of file */
+    return -1;
 }
 
 /*
@@ -605,7 +625,21 @@ check_cursor_col_win(win_T *win)
     else if (ve_flags == VE_ALL)
     {
 	if (oldcoladd > win->w_cursor.col)
+	{
 	    win->w_cursor.coladd = oldcoladd - win->w_cursor.col;
+
+	    /* Make sure that coladd is not more than the char width.
+	     * Not for the last character, coladd is then used when the cursor
+	     * is actually after the last character. */
+	    if (win->w_cursor.col + 1 < len && win->w_cursor.coladd > 0)
+	    {
+		int cs, ce;
+
+		getvcol(win, &win->w_cursor, &cs, NULL, &ce);
+		if (win->w_cursor.coladd > ce - cs)
+		    win->w_cursor.coladd = ce - cs;
+	    }
+	}
 	else
 	    /* avoid weird number when there is a miscalculation or overflow */
 	    win->w_cursor.coladd = 0;
@@ -650,7 +684,7 @@ leftcol_changed(void)
     int		retval = FALSE;
 
     changed_cline_bef_curs();
-    lastcol = curwin->w_leftcol + W_WIDTH(curwin) - curwin_col_off() - 1;
+    lastcol = curwin->w_leftcol + curwin->w_width - curwin_col_off() - 1;
     validate_virtcol();
 
     /*
@@ -709,11 +743,6 @@ static long_u mem_freed;
 static long_u mem_peak;
 static long_u num_alloc;
 static long_u num_freed;
-
-static void mem_pre_alloc_s(size_t *sizep);
-static void mem_pre_alloc_l(long_u *sizep);
-static void mem_post_alloc(void **pp, size_t size);
-static void mem_pre_free(void **pp);
 
     static void
 mem_pre_alloc_s(size_t *sizep)
@@ -806,9 +835,7 @@ vim_mem_profile_dump(void)
 #endif /* MEM_PROFILE */
 
 #ifdef FEAT_EVAL
-static int alloc_does_fail(long_u size);
-
-    static int
+    int
 alloc_does_fail(long_u size)
 {
     if (alloc_fail_countdown == 0)
@@ -1065,23 +1092,23 @@ free_all_mem(void)
 	return;
     entered_free_all_mem = TRUE;
 
-# ifdef FEAT_AUTOCMD
     /* Don't want to trigger autocommands from here on. */
     block_autocmds();
-# endif
 
-# ifdef FEAT_WINDOWS
     /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
     p_ea = FALSE;
     if (first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (!ONE_WINDOW)
 	do_cmdline_cmd((char_u *)"only!");
-# endif
 
 # if defined(FEAT_SPELL)
     /* Free all spell info. */
     spell_free_all();
+# endif
+
+#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+    ui_remove_balloon();
 # endif
 
 # if defined(FEAT_USR_CMDS)
@@ -1121,11 +1148,8 @@ free_all_mem(void)
 # endif
 
     /* Obviously named calls. */
-# if defined(FEAT_AUTOCMD)
     free_all_autocmds();
-# endif
     clear_termcodes();
-    free_all_options();
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
@@ -1183,10 +1207,11 @@ free_all_mem(void)
     /* Close all script inputs. */
     close_all_scripts();
 
-#if defined(FEAT_WINDOWS)
     /* Destroy all windows.  Must come before freeing buffers. */
     win_free_all();
-#endif
+
+    /* Free all option values.  Must come after closing windows. */
+    free_all_options();
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
@@ -1206,28 +1231,26 @@ free_all_mem(void)
 	    buf = firstbuf;
     }
 
-#ifdef FEAT_ARABIC
+# ifdef FEAT_ARABIC
     free_cmdline_buf();
-#endif
+# endif
 
     /* Clear registers. */
     clear_registers();
     ResetRedobuff();
     ResetRedobuff();
 
-#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     vim_free(serverDelayedStartName);
-#endif
+# endif
 
     /* highlight info */
     free_highlight();
 
     reset_last_sourcing();
 
-#ifdef FEAT_WINDOWS
     free_tabpage(first_tabpage);
     first_tabpage = NULL;
-#endif
 
 # ifdef UNIX
     /* Machine-specific free. */
@@ -1242,9 +1265,9 @@ free_all_mem(void)
 # ifdef FEAT_JOB_CHANNEL
     channel_free_all();
 # endif
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
     timer_free_all();
-#endif
+# endif
 # ifdef FEAT_EVAL
     /* must be after channel_free_all() with unrefs partials */
     eval_clear();
@@ -1259,16 +1282,19 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
-#if defined(USE_XSMP)
+# if defined(USE_XSMP)
     xsmp_close();
-#endif
-#ifdef FEAT_GUI_GTK
+# endif
+# ifdef FEAT_GUI_GTK
     gui_mch_free_all();
-#endif
+# endif
     clear_hl_tables();
 
     vim_free(IObuff);
     vim_free(NameBuff);
+# ifdef FEAT_QUICKFIX
+    check_quickfix_busy();
+# endif
 }
 #endif
 
@@ -1592,11 +1618,17 @@ strup_save(char_u *orig)
 		char_u	*s;
 
 		c = utf_ptr2char(p);
+		l = utf_ptr2len(p);
+		if (c == 0)
+		{
+		    /* overlong sequence, use only the first byte */
+		    c = *p;
+		    l = 1;
+		}
 		uc = utf_toupper(c);
 
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
-		l = utf_ptr2len(p);
 		newl = utf_char2len(uc);
 		if (newl != l)
 		{
@@ -1655,11 +1687,17 @@ strlow_save(char_u *orig)
 		char_u	*s;
 
 		c = utf_ptr2char(p);
+		l = utf_ptr2len(p);
+		if (c == 0)
+		{
+		    /* overlong sequence, use only the first byte */
+		    c = *p;
+		    l = 1;
+		}
 		lc = utf_tolower(c);
 
 		/* Reallocate string when byte count changes.  This is rare,
 		 * thus it's OK to do another malloc()/free(). */
-		l = utf_ptr2len(p);
 		newl = utf_char2len(lc);
 		if (newl != l)
 		{
@@ -1781,6 +1819,8 @@ copy_option_part(
  * Replacement for free() that ignores NULL pointers.
  * Also skip free() when exiting for sure, this helps when we caught a deadly
  * signal that was caused by a crash in free().
+ * If you want to set NULL after calling this function, you should use
+ * VIM_CLEAR() instead.
  */
     void
 vim_free(void *x)
@@ -2194,7 +2234,7 @@ static struct modmasktable
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_2CLICK,	(char_u)'2'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_3CLICK,	(char_u)'3'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_4CLICK,	(char_u)'4'},
-#ifdef MACOS
+#ifdef MACOS_X
     {MOD_MASK_CMD,		MOD_MASK_CMD,		(char_u)'D'},
 #endif
     /* 'A' must be the last one */
@@ -2438,12 +2478,14 @@ static struct key_name_entry
 #endif
 #ifdef FEAT_MOUSE_SGR
     {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
+    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelelase"},
 #endif
     {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
     {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
     {K_LEFTDRAG,	(char_u *)"LeftDrag"},
     {K_LEFTRELEASE,	(char_u *)"LeftRelease"},
     {K_LEFTRELEASE_NM,	(char_u *)"LeftReleaseNM"},
+    {K_MOUSEMOVE,	(char_u *)"MouseMove"},
     {K_MIDDLEMOUSE,	(char_u *)"MiddleMouse"},
     {K_MIDDLEDRAG,	(char_u *)"MiddleDrag"},
     {K_MIDDLERELEASE,	(char_u *)"MiddleRelease"},
@@ -2506,7 +2548,7 @@ static struct mousetable
     {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
     {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
     /* DRAG without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	TRUE},
+    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
     /* RELEASE without CLICK */
     {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
     {0,				0,		0,	0},
@@ -2918,7 +2960,7 @@ extract_modifiers(int key, int *modp)
 {
     int	modifiers = *modp;
 
-#ifdef MACOS
+#ifdef MACOS_X
     /* Command-key really special, no fancynest */
     if (!(modifiers & MOD_MASK_CMD))
 #endif
@@ -2945,7 +2987,7 @@ extract_modifiers(int key, int *modp)
 	if (key == 0)
 	    key = K_ZERO;
     }
-#ifdef MACOS
+#ifdef MACOS_X
     /* Command-key really special, no fancynest */
     if (!(modifiers & MOD_MASK_CMD))
 #endif
@@ -3115,7 +3157,7 @@ get_fileformat_force(
     int		c;
 
     if (eap != NULL && eap->force_ff != 0)
-	c = eap->cmd[eap->force_ff];
+	c = eap->force_ff;
     else
     {
 	if ((eap != NULL && eap->force_bin != 0)
@@ -3161,11 +3203,9 @@ set_fileformat(
 	set_string_option_direct((char_u *)"ff", -1, (char_u *)p,
 						     OPT_FREE | opt_flags, 0);
 
-#ifdef FEAT_WINDOWS
     /* This may cause the buffer to become (un)modified. */
     check_status(curbuf);
     redraw_tabline = TRUE;
-#endif
 #ifdef FEAT_TITLE
     need_maketitle = TRUE;	    /* set window title later */
 #endif
@@ -3337,9 +3377,8 @@ same_directory(char_u *f1, char_u *f2)
 	     && pathcmp((char *)ffname, (char *)f2, (int)(t1 - ffname)) == 0);
 }
 
-#if defined(FEAT_SESSION) || defined(MSWIN) || defined(FEAT_GUI_MAC) \
-	|| ((defined(FEAT_GUI_GTK)) \
-			&& ( defined(FEAT_WINDOWS) || defined(FEAT_DND)) ) \
+#if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
+	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
@@ -3348,13 +3387,18 @@ same_directory(char_u *f1, char_u *f2)
  * Return OK or FAIL.
  */
     int
-vim_chdirfile(char_u *fname)
+vim_chdirfile(char_u *fname, char *trigger_autocmd UNUSED)
 {
     char_u	dir[MAXPATHL];
+    int		res;
 
     vim_strncpy(dir, fname, MAXPATHL - 1);
     *gettail_sep(dir) = NUL;
-    return mch_chdir((char *)dir) == 0 ? OK : FAIL;
+    res = mch_chdir((char *)dir) == 0 ? OK : FAIL;
+    if (res == OK && trigger_autocmd != NULL)
+	apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
+							   dir, FALSE, curbuf);
+    return res;
 }
 #endif
 
@@ -3713,17 +3757,13 @@ get_shape_idx(int mouse)
     }
     if (mouse && drag_status_line)
 	return SHAPE_IDX_SDRAG;
-# ifdef FEAT_WINDOWS
     if (mouse && drag_sep_line)
 	return SHAPE_IDX_VDRAG;
-# endif
 #endif
     if (!mouse && State == SHOWMATCH)
 	return SHAPE_IDX_SM;
-#ifdef FEAT_VREPLACE
     if (State & VREPLACE_FLAG)
 	return SHAPE_IDX_R;
-#endif
     if (State & REPLACE_FLAG)
 	return SHAPE_IDX_R;
     if (State & INSERT)
@@ -3991,9 +4031,6 @@ static int ff_check_visited(ff_visited_T **, char_u *);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
 static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
-#ifdef FEAT_PATH_EXTRA
-static int ff_wc_equal(char_u *s1, char_u *s2);
-#endif
 
 static void ff_push(ff_search_ctx_T *search_ctx, ff_stack_T *stack_ptr);
 static ff_stack_T *ff_pop(ff_search_ctx_T *search_ctx);
@@ -5127,8 +5164,8 @@ ff_wc_equal(char_u *s1, char_u *s2)
 	prev2 = prev1;
 	prev1 = c1;
 
-        i += MB_PTR2LEN(s1 + i);
-        j += MB_PTR2LEN(s2 + j);
+	i += MB_PTR2LEN(s1 + i);
+	j += MB_PTR2LEN(s2 + j);
     }
     return s1[i] == s2[j];
 }
@@ -5846,7 +5883,7 @@ pathcmp(const char *p, const char *q, int maxlen)
 	    if (c2 == NUL)  /* full match */
 		return 0;
 	    s = q;
-            i = j;
+	    i = j;
 	    break;
 	}
 
@@ -5929,10 +5966,7 @@ pathcmp(const char *p, const char *q, int maxlen)
 #define EXTRASIZE 5		/* increment to add to env. size */
 
 static int  envsize = -1;	/* current size of environment */
-#ifndef MACOS_CLASSIC
-extern
-#endif
-       char **environ;		/* the global which is your env. */
+extern char **environ;		/* the global which is your env. */
 
 static int  findenv(char *name); /* look for a name in the env. */
 static int  newenv(void);	/* copy env. from stack to heap */
@@ -6004,19 +6038,14 @@ newenv(void)
     char    **env, *elem;
     int	    i, esize;
 
-#ifdef MACOS
-    /* for Mac a new, empty environment is created */
-    i = 0;
-#else
     for (i = 0; environ[i]; i++)
 	;
-#endif
+
     esize = i + EXTRASIZE + 1;
     env = (char **)alloc((unsigned)(esize * sizeof (elem)));
     if (env == NULL)
 	return -1;
 
-#ifndef MACOS
     for (i = 0; environ[i]; i++)
     {
 	elem = (char *)alloc((unsigned)(strlen(environ[i]) + 1));
@@ -6025,7 +6054,6 @@ newenv(void)
 	env[i] = elem;
 	strcpy(elem, environ[i]);
     }
-#endif
 
     env[i] = 0;
     environ = env;
@@ -6049,6 +6077,9 @@ moreenv(void)
 }
 
 # ifdef USE_VIMPTY_GETENV
+/*
+ * Used for mch_getenv() for Mac.
+ */
     char_u *
 vimpty_getenv(const char_u *string)
 {
@@ -6086,7 +6117,6 @@ filewritable(char_u *fname)
 #if defined(UNIX) || defined(VMS)
     perm = mch_getperm(fname);
 #endif
-#ifndef MACOS_CLASSIC /* TODO: get either mch_writable or mch_access */
     if (
 # ifdef WIN3264
 	    mch_writable(fname) &&
@@ -6097,7 +6127,6 @@ filewritable(char_u *fname)
 # endif
 	    mch_access((char *)fname, W_OK) == 0
        )
-#endif
     {
 	++retval;
 	if (mch_isdir(fname))
@@ -6110,59 +6139,83 @@ filewritable(char_u *fname)
 #if defined(FEAT_SPELL) || defined(FEAT_PERSISTENT_UNDO) || defined(PROTO)
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get2c(FILE *fd)
 {
-    int		n;
+    int		c, n;
 
     n = getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
+    if (n == EOF) return -1;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    return (n << 8) + c;
 }
 
 /*
  * Read 3 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get3c(FILE *fd)
 {
-    int		n;
+    int		c, n;
 
     n = getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
+    if (n == EOF) return -1;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    return (n << 8) + c;
 }
 
 /*
  * Read 4 bytes from "fd" and turn them into an int, MSB first.
+ * Returns -1 when encountering EOF.
  */
     int
 get4c(FILE *fd)
 {
+    int		c;
     /* Use unsigned rather than int otherwise result is undefined
      * when left-shift sets the MSB. */
     unsigned	n;
 
-    n = (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
-    n = (n << 8) + (unsigned)getc(fd);
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
+    c = getc(fd);
+    if (c == EOF) return -1;
+    n = (n << 8) + (unsigned)c;
     return (int)n;
 }
 
 /*
  * Read 8 bytes from "fd" and turn them into a time_T, MSB first.
+ * Returns -1 when encountering EOF.
  */
     time_T
 get8ctime(FILE *fd)
 {
+    int		c;
     time_T	n = 0;
     int		i;
 
     for (i = 0; i < 8; ++i)
-	n = (n << 8) + getc(fd);
+    {
+	c = getc(fd);
+	if (c == EOF) return -1;
+	n = (n << 8) + c;
+    }
     return n;
 }
 
@@ -6304,30 +6357,42 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
-    /* For Win32 mch_breakcheck() does not check for input, do it here. */
+    win_T *old_curwin = curwin;
+
+    // Do not handle messages while redrawing, because it may cause buffers to
+    // change or be wiped while they are being redrawn.
+    if (updating_screen)
+	return;
+
+    // For Win32 mch_breakcheck() does not check for input, do it here.
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
-    channel_handle_events();
+    channel_handle_events(FALSE);
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
-    /* Process the queued netbeans messages. */
+    // Process the queued netbeans messages.
     netbeans_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    /* Write any buffer lines still to be written. */
+    // Write any buffer lines still to be written.
     channel_write_any_lines();
 
-    /* Process the messages queued on channels. */
+    // Process the messages queued on channels.
     channel_parse_messages();
 # endif
 # if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-    /* Process the queued clientserver messages. */
+    // Process the queued clientserver messages.
     server_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    /* Check if any jobs have ended. */
+    // Check if any jobs have ended.
     job_check_ended();
 # endif
+
+    // If the current window changed we need to bail out of the waiting loop.
+    // E.g. when a job exit callback closes the terminal window.
+    if (curwin != old_curwin)
+	ins_char_typebuf(K_IGNORE);
 }
 #endif
 
@@ -6357,6 +6422,153 @@ elapsed(DWORD start_tick)
     DWORD	now = GetTickCount();
 
     return (long)now - (long)start_tick;
+}
+# endif
+#endif
+
+#if defined(FEAT_JOB_CHANNEL) \
+	|| (defined(UNIX) && (!defined(USE_SYSTEM) \
+	|| (defined(FEAT_GUI) && defined(FEAT_TERMINAL)))) \
+	|| defined(PROTO)
+/*
+ * Parse "cmd" and put the white-separated parts in "argv".
+ * "argv" is an allocated array with "argc" entries and room for 4 more.
+ * Returns FAIL when out of memory.
+ */
+    int
+mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
+{
+    int		i;
+    char_u	*p, *d;
+    int		inquote;
+
+    /*
+     * Do this loop twice:
+     * 1: find number of arguments
+     * 2: separate them and build argv[]
+     */
+    for (i = 0; i < 2; ++i)
+    {
+	p = skipwhite(cmd);
+	inquote = FALSE;
+	*argc = 0;
+	for (;;)
+	{
+	    if (i == 1)
+		(*argv)[*argc] = (char *)p;
+	    ++*argc;
+	    d = p;
+	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
+	    {
+		if (p[0] == '"')
+		    // quotes surrounding an argument and are dropped
+		    inquote = !inquote;
+		else
+		{
+		    if (rem_backslash(p))
+		    {
+			// First pass: skip over "\ " and "\"".
+			// Second pass: Remove the backslash.
+			++p;
+		    }
+		    if (i == 1)
+			*d++ = *p;
+		}
+		++p;
+	    }
+	    if (*p == NUL)
+	    {
+		if (i == 1)
+		    *d++ = NUL;
+		break;
+	    }
+	    if (i == 1)
+		*d++ = NUL;
+	    p = skipwhite(p + 1);
+	}
+	if (*argv == NULL)
+	{
+	    if (use_shcf)
+	    {
+		/* Account for possible multiple args in p_shcf. */
+		p = p_shcf;
+		for (;;)
+		{
+		    p = skiptowhite(p);
+		    if (*p == NUL)
+			break;
+		    ++*argc;
+		    p = skipwhite(p);
+		}
+	    }
+
+	    *argv = (char **)alloc((unsigned)((*argc + 4) * sizeof(char *)));
+	    if (*argv == NULL)	    /* out of memory */
+		return FAIL;
+	}
+    }
+    return OK;
+}
+
+# if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
+/*
+ * Build "argv[argc]" from the string "cmd".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_string(char_u *cmd, char ***argv, int *argc)
+{
+    char_u	*cmd_copy;
+    int		i;
+
+    /* Make a copy, parsing will modify "cmd". */
+    cmd_copy = vim_strsave(cmd);
+    if (cmd_copy == NULL
+	    || mch_parse_cmd(cmd_copy, FALSE, argv, argc) == FAIL)
+    {
+	vim_free(cmd_copy);
+	return FAIL;
+    }
+    for (i = 0; i < *argc; i++)
+	(*argv)[i] = (char *)vim_strsave((char_u *)(*argv)[i]);
+    (*argv)[*argc] = NULL;
+    vim_free(cmd_copy);
+    return OK;
+}
+
+/*
+ * Build "argv[argc]" from the list "l".
+ * "argv[argc]" is set to NULL;
+ * Return FAIL when out of memory.
+ */
+    int
+build_argv_from_list(list_T *l, char ***argv, int *argc)
+{
+    listitem_T  *li;
+    char_u	*s;
+
+    /* Pass argv[] to mch_call_shell(). */
+    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    if (*argv == NULL)
+	return FAIL;
+    *argc = 0;
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+    {
+	s = get_tv_string_chk(&li->li_tv);
+	if (s == NULL)
+	{
+	    int i;
+
+	    for (i = 0; i < *argc; ++i)
+		vim_free((*argv)[i]);
+	    return FAIL;
+	}
+	(*argv)[*argc] = (char *)vim_strsave(s);
+	*argc += 1;
+    }
+    (*argv)[*argc] = NULL;
+    return OK;
 }
 # endif
 #endif

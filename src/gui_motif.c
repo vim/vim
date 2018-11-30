@@ -83,25 +83,12 @@ static int tearoff_val = (int)XmTEAR_OFF_ENABLED;
 static Widget menuBar;
 #endif
 
-static void scroll_cb(Widget w, XtPointer client_data, XtPointer call_data);
-#ifdef FEAT_GUI_TABLINE
-static void tabline_cb(Widget w, XtPointer client_data, XtPointer call_data);
-static void tabline_button_cb(Widget w, XtPointer client_data, XtPointer call_data);
-static void tabline_menu_cb(Widget w, XtPointer	closure, XEvent	*e, Boolean *continue_dispatch);
-static void tabline_balloon_cb(BalloonEval *beval, int state);
-#endif
 #ifdef FEAT_TOOLBAR
 # ifdef FEAT_FOOTER
 static void toolbarbutton_enter_cb(Widget, XtPointer, XEvent *, Boolean *);
 static void toolbarbutton_leave_cb(Widget, XtPointer, XEvent *, Boolean *);
 # endif
 static void reset_focus(void);
-#endif
-#ifdef FEAT_FOOTER
-static int gui_mch_compute_footer_height(void);
-#endif
-#ifdef WSDEBUG
-static void attachDump(Widget, char *);
 #endif
 
 static void gui_motif_menu_colors(Widget id);
@@ -305,8 +292,6 @@ tabline_balloon_cb(BalloonEval *beval, int state UNUSED)
 #include <Xm/LabelP.h>
 
 static XtExposeProc old_label_expose = NULL;
-
-static void label_expose(Widget _w, XEvent *_event, Region _region);
 
     static void
 label_expose(Widget _w, XEvent *_event, Region _region)
@@ -1129,7 +1114,7 @@ gui_mch_compute_menu_height(
 	XtManageChild(id);
 
     /*
-     * Now find the menu item that is the furthest down, and get it's position.
+     * Now find the menu item that is the furthest down, and get its position.
      */
     maxy = 0;
     for (mp = root_menu; mp != NULL; mp = mp->next)
@@ -1173,9 +1158,7 @@ gui_mch_compute_menu_height(
  */
 #include "gui_x11_pm.h"
 
-static int check_xpm(char_u *path);
 static char **get_toolbar_pixmap(vimmenu_T *menu, char **fname);
-static int add_pixmap_args(vimmenu_T *menu, Arg *args, int n);
 
 /*
  * Read an Xpm file.  Return OK or FAIL.
@@ -1360,7 +1343,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	if (xms != NULL)
 	    XmStringFree(xms);
 
-# ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL_GUI
 	gui_mch_menu_set_tip(menu);
 # endif
 
@@ -1509,7 +1492,7 @@ gui_mch_new_menu_font(void)
     ui_new_shellsize();
 }
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
     void
 gui_mch_new_tooltip_font(void)
 {
@@ -1566,8 +1549,8 @@ submenu_change(
 		    n = add_pixmap_args(mp, args, n);
 		    XtSetValues(mp->id, args, n);
 		}
-# ifdef FEAT_BEVAL
-		/* If we have a tooltip, then we need to change it's font */
+# ifdef FEAT_BEVAL_GUI
+		/* If we have a tooltip, then we need to change its font */
 		if (mp->tip != NULL)
 		{
 		    Arg args[2];
@@ -1584,8 +1567,8 @@ submenu_change(
 	    else
 	    {
 		gui_motif_menu_fontlist(mp->id);
-#ifdef FEAT_BEVAL
-		/* If we have a tooltip, then we need to change it's font */
+#ifdef FEAT_BEVAL_GUI
+		/* If we have a tooltip, then we need to change its font */
 		if (mp->tip != NULL)
 		{
 		    Arg args[1];
@@ -1642,7 +1625,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	Widget	    parent;
 
 	parent = XtParent(menu->id);
-#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL)
+#if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 	if (parent == toolBar && menu->tip != NULL)
 	{
 	    /* We try to destroy this before the actual menu, because there are
@@ -1703,7 +1686,7 @@ gui_mch_def_colors(void)
 	gui.menu_bg_pixel = gui.menu_def_bg_pixel;
 	gui.scroll_fg_pixel = gui.scroll_def_fg_pixel;
 	gui.scroll_bg_pixel = gui.scroll_def_bg_pixel;
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	gui.tooltip_fg_pixel =
 			gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
 	gui.tooltip_bg_pixel =
@@ -1879,14 +1862,12 @@ gui_mch_create_scrollbar(
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
     if (sb->id != (Widget)0)
 	XtDestroyWidget(sb->id);
 }
-#endif
 
     void
 gui_mch_set_scrollbar_colors(scrollbar_T *sb)
@@ -2090,8 +2071,6 @@ suppress_dialog_mnemonics(Widget dialog)
 }
 
 #if defined(FEAT_BROWSE) || defined(FEAT_GUI_DIALOG)
-static void set_fontlist(Widget wg);
-
 /*
  * Use the 'guifont' or 'guifontset' as a fontlist for a dialog widget.
  */
@@ -2110,7 +2089,7 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -2129,7 +2108,7 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -2174,8 +2153,6 @@ static void DialogAcceptCB(Widget, XtPointer, XtPointer);
  * - equalize the messages between different GUI implementations as far as
  * possible.
  */
-static void set_predefined_label(Widget parent, String name, char *new_label);
-
     static void
 set_predefined_label(Widget parent, String name, char *new_label)
 {
@@ -2406,9 +2383,6 @@ DialogAcceptCB(
 
 static int	dialogStatus;
 
-static void keyhit_callback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
-static void butproc(Widget w, XtPointer client_data, XtPointer call_data);
-
 /*
  * Callback function for the textfield.  When CR is hit this works like
  * hitting the "OK" button, ESC like "Cancel".
@@ -2445,8 +2419,6 @@ butproc(
 }
 
 #ifdef HAVE_XPM
-
-static Widget create_pixmap_label(Widget parent, String name, char **data, ArgList args, Cardinal arg);
 
     static Widget
 create_pixmap_label(
@@ -3435,7 +3407,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -3456,7 +3428,7 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate it's
+		/* We should force the widget to recalculate its
 		 * geometry now. */
 		XtManageChild(id);
 	    }
@@ -3493,13 +3465,6 @@ typedef struct _SharedFindReplace
 
 static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-
-static void find_replace_destroy_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_dismiss_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void entry_activate_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_callback(Widget w, XtPointer client_data, XtPointer call_data);
-static void find_replace_keypress(Widget w, SharedFindReplace * frdp, XKeyEvent * event);
-static void find_replace_dialog_create(char_u *entry_text, int do_replace);
 
     static void
 find_replace_destroy_callback(

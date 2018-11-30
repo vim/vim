@@ -54,8 +54,8 @@
  *			    website, etc)
  *
  * sectionID == SN_REGION: <regionname> ...
- * <regionname>	 2 bytes    Up to 8 region names: ca, au, etc.  Lower case.
- *			    First <regionname> is region 1.
+ * <regionname>	 2 bytes    Up to MAXREGIONS region names: ca, au, etc.  Lower
+ *			    case.  First <regionname> is region 1.
  *
  * sectionID == SN_CHARFLAGS: <charflagslen> <charflags>
  *				<folcharslen> <folchars>
@@ -296,7 +296,6 @@
 
 static int set_spell_finish(spelltab_T	*new_st);
 static int write_spell_prefcond(FILE *fd, garray_T *gap);
-static char_u *read_cnt_string(FILE *fd, int cnt_bytes, int *lenp);
 static int read_region_section(FILE *fd, slang_T *slang, int len);
 static int read_charflags_section(FILE *fd);
 static int read_prefcond_section(FILE *fd, slang_T *lp);
@@ -312,7 +311,6 @@ static int *mb_str2wide(char_u *s);
 #endif
 static int spell_read_tree(FILE *fd, char_u **bytsp, idx_T **idxsp, int prefixtree, int prefixcnt);
 static idx_T read_tree_node(FILE *fd, char_u *byts, idx_T *idxs, int maxidx, idx_T startidx, int prefixtree, int maxprefcondnr);
-static void spell_reload_one(char_u *fname, int added_word);
 static void set_spell_charflags(char_u *flags, int cnt, char_u *upp);
 static int set_spell_chartab(char_u *fol, char_u *low, char_u *upp);
 static void set_map_str(slang_T *lp, char_u *map);
@@ -832,7 +830,7 @@ read_region_section(FILE *fd, slang_T *lp, int len)
 {
     int		i;
 
-    if (len > 16)
+    if (len > MAXREGIONS * 2)
 	return SP_FORMERROR;
     for (i = 0; i < len; ++i)
 	lp->sl_regions[i] = getc(fd);			/* <regionname> */
@@ -1352,8 +1350,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
 	{
 	    if (c == '?' || c == '+' || c == '*')
 	    {
-		vim_free(slang->sl_comprules);
-		slang->sl_comprules = NULL;
+		VIM_CLEAR(slang->sl_comprules);
 		crp = NULL;
 	    }
 	    else
@@ -1952,8 +1949,9 @@ typedef struct spellinfo_S
     char_u	*si_info;	/* info text chars or NULL  */
     int		si_region_count; /* number of regions supported (1 when there
 				    are no regions) */
-    char_u	si_region_name[17]; /* region names; used only if
-				     * si_region_count > 1) */
+    char_u	si_region_name[MAXREGIONS * 2 + 1];
+				/* region names; used only if
+				 * si_region_count > 1) */
 
     garray_T	si_rep;		/* list of fromto_T entries from REP lines */
     garray_T	si_repsal;	/* list of fromto_T entries from REPSAL lines */
@@ -1985,7 +1983,6 @@ typedef struct spellinfo_S
     int		si_newcompID;	/* current value for compound ID */
 } spellinfo_T;
 
-static afffile_T *spell_read_aff(spellinfo_T *spin, char_u *fname);
 static int is_aff_rule(char_u **items, int itemcnt, char *rulename, int	 mincount);
 static void aff_process_flags(afffile_T *affile, affentry_T *entry);
 static int spell_info_item(char_u *s);
@@ -1993,35 +1990,26 @@ static unsigned affitem2flag(int flagtype, char_u *item, char_u	*fname, int lnum
 static unsigned get_affitem(int flagtype, char_u **pp);
 static void process_compflags(spellinfo_T *spin, afffile_T *aff, char_u *compflags);
 static void check_renumber(spellinfo_T *spin);
-static int flag_in_afflist(int flagtype, char_u *afflist, unsigned flag);
 static void aff_check_number(int spinval, int affval, char *name);
 static void aff_check_string(char_u *spinval, char_u *affval, char *name);
 static int str_equal(char_u *s1, char_u	*s2);
 static void add_fromto(spellinfo_T *spin, garray_T *gap, char_u	*from, char_u *to);
 static int sal_to_bool(char_u *s);
-static void spell_free_aff(afffile_T *aff);
-static int spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile);
 static int get_affix_flags(afffile_T *affile, char_u *afflist);
 static int get_pfxlist(afffile_T *affile, char_u *afflist, char_u *store_afflist);
 static void get_compflags(afffile_T *affile, char_u *afflist, char_u *store_afflist);
 static int store_aff_word(spellinfo_T *spin, char_u *word, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int condit, int flags, char_u *pfxlist, int pfxlen);
-static int spell_read_wordfile(spellinfo_T *spin, char_u *fname);
 static void *getroom(spellinfo_T *spin, size_t len, int align);
 static char_u *getroom_save(spellinfo_T *spin, char_u *s);
-static void free_blocks(sblock_T *bl);
-static wordnode_T *wordtree_alloc(spellinfo_T *spin);
 static int store_word(spellinfo_T *spin, char_u *word, int flags, int region, char_u *pfxlist, int need_affix);
 static int tree_add_word(spellinfo_T *spin, char_u *word, wordnode_T *tree, int flags, int region, int affixID);
 static wordnode_T *get_wordnode(spellinfo_T *spin);
-static int deref_wordnode(spellinfo_T *spin, wordnode_T *node);
 static void free_wordnode(spellinfo_T *spin, wordnode_T *n);
 static void wordtree_compress(spellinfo_T *spin, wordnode_T *root);
 static int node_compress(spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, int *tot);
 static int node_equal(wordnode_T *n1, wordnode_T *n2);
-static int write_vim_spell(spellinfo_T *spin, char_u *fname);
 static void clear_node(wordnode_T *node);
 static int put_node(FILE *fd, wordnode_T *node, int idx, int regionmask, int prefixtree);
-static void spell_make_sugfile(spellinfo_T *spin, char_u *wfname);
 static int sug_filltree(spellinfo_T *spin, slang_T *slang);
 static int sug_maketable(spellinfo_T *spin);
 static int sug_filltable(spellinfo_T *spin, wordnode_T *node, int startwordnr, garray_T *gap);
@@ -2241,7 +2229,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	return NULL;
     }
 
-    vim_snprintf((char *)IObuff, IOSIZE, _("Reading affix file %s ..."), fname);
+    vim_snprintf((char *)IObuff, IOSIZE, _("Reading affix file %s..."), fname);
     spell_message(spin, IObuff);
 
     /* Only do REP lines when not done in another .aff file already. */
@@ -3569,7 +3557,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     hash_init(&ht);
 
     vim_snprintf((char *)IObuff, IOSIZE,
-				  _("Reading dictionary file %s ..."), fname);
+				  _("Reading dictionary file %s..."), fname);
     spell_message(spin, IObuff);
 
     /* start with a message for the first line */
@@ -3649,7 +3637,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	{
 	    spin->si_msg_count = 0;
 	    vim_snprintf((char *)message, sizeof(message),
-		    _("line %6d, word %6d - %s"),
+		    _("line %6d, word %6ld - %s"),
 		       lnum, spin->si_foldwcount + spin->si_keepwcount, w);
 	    msg_start();
 	    msg_puts_long_attr(message, 0);
@@ -3796,7 +3784,7 @@ get_pfxlist(
 	if (get_affitem(affile->af_flagtype, &p) != 0)
 	{
 	    /* A flag is a postponed prefix flag if it appears in "af_pref"
-	     * and it's ID is not zero. */
+	     * and its ID is not zero. */
 	    vim_strncpy(key, prevp, p - prevp);
 	    hi = hash_find(&affile->af_pref, key);
 	    if (!HASHITEM_EMPTY(hi))
@@ -4149,7 +4137,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	return FAIL;
     }
 
-    vim_snprintf((char *)IObuff, IOSIZE, _("Reading word file %s ..."), fname);
+    vim_snprintf((char *)IObuff, IOSIZE, _("Reading word file %s..."), fname);
     spell_message(spin, IObuff);
 
     /*
@@ -4234,7 +4222,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		else
 		{
 		    line += 8;
-		    if (STRLEN(line) > 16)
+		    if (STRLEN(line) > MAXREGIONS * 2)
 			smsg((char_u *)_("Too many regions in %s line %d: %s"),
 						       fname, lnum, line);
 		    else
@@ -4277,7 +4265,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		    flags |= WF_REGION;
 
 		    l = *p - '0';
-		    if (l > spin->si_region_count)
+		    if (l == 0 || l > spin->si_region_count)
 		    {
 			smsg((char_u *)_("Invalid region nr in %s line %d: %s"),
 							  fname, lnum, p);
@@ -5865,7 +5853,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     }
 
     vim_snprintf((char *)IObuff, IOSIZE,
-				  _("Writing suggestion file %s ..."), fname);
+				  _("Writing suggestion file %s..."), fname);
     spell_message(spin, IObuff);
 
     /*
@@ -5954,7 +5942,7 @@ mkspell(
     char_u	*wfname;
     char_u	**innames;
     int		incount;
-    afffile_T	*(afile[8]);
+    afffile_T	*(afile[MAXREGIONS]);
     int		i;
     int		len;
     stat_T	st;
@@ -6025,8 +6013,8 @@ mkspell(
 	EMSG(_(e_invarg));	/* need at least output and input names */
     else if (vim_strchr(gettail(wfname), '_') != NULL)
 	EMSG(_("E751: Output file name must not have region name"));
-    else if (incount > 8)
-	EMSG(_("E754: Only up to 8 regions supported"));
+    else if (incount > MAXREGIONS)
+	EMSGN(_("E754: Only up to %ld regions supported"), MAXREGIONS);
     else
     {
 	/* Check for overwriting before doing things that may take a lot of
@@ -6150,7 +6138,7 @@ mkspell(
 	     * Write the info in the spell file.
 	     */
 	    vim_snprintf((char *)IObuff, IOSIZE,
-				      _("Writing spell file %s ..."), wfname);
+				      _("Writing spell file %s..."), wfname);
 	    spell_message(&spin, IObuff);
 
 	    error = write_vim_spell(&spin, wfname) == FAIL;

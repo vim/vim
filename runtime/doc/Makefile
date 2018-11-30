@@ -101,6 +101,7 @@ DOCS = \
 	tabpage.txt \
 	tagsrch.txt \
 	term.txt \
+	terminal.txt \
 	tips.txt \
 	todo.txt \
 	uganda.txt \
@@ -236,6 +237,7 @@ HTMLS = \
 	tabpage.html \
 	tagsrch.html \
 	term.html \
+	terminal.html \
 	tips.html \
 	todo.html \
 	uganda.html \
@@ -341,7 +343,7 @@ xxd.man: xxd.1
 	nroff -man xxd.1 | sed -e s/.//g > xxd.man
 
 uganda.nsis.txt: uganda.txt
-	sed -e 's/[ 	]*\*[-a-zA-Z0-9.]*\*//g' -e 's/vim:tw=78://' \
+	sed -e 's/[ 	]*\*[-a-zA-Z0-9.]*\*//g' -e 's/vim:tw=78:.*//' \
 		uganda.txt | uniq >uganda.nsis.txt
 
 # Awk version of .txt to .html conversion.
@@ -372,6 +374,10 @@ tags.ref tags.html: tags
 # Just run over all .txt files each time one changes.  It's fast anyway.
 perlhtml: tags $(DOCS)
 	./vim2html.pl tags $(DOCS)
+
+# Check URLs in the help with "curl".
+test_urls:
+	vim -S test_urls.vim
 
 clean:
 	-rm doctags *.html tags.ref

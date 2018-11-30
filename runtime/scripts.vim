@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2017 Jun 11
+" Last change:	2018 Feb 03
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -66,19 +66,19 @@ if s:line1 =~# "^#!"
 
   " Bourne-like shell scripts: bash bash2 ksh ksh93 sh
   if s:name =~# '^\(bash\d*\|\|ksh\d*\|sh\)\>'
-    call SetFileTypeSH(s:line1)	" defined in filetype.vim
+    call dist#ft#SetFileTypeSH(s:line1)	" defined in filetype.vim
 
     " csh scripts
   elseif s:name =~# '^csh\>'
     if exists("g:filetype_csh")
-      call SetFileTypeShell(g:filetype_csh)
+      call dist#ft#SetFileTypeShell(g:filetype_csh)
     else
-      call SetFileTypeShell("csh")
+      call dist#ft#SetFileTypeShell("csh")
     endif
 
     " tcsh scripts
   elseif s:name =~# '^tcsh\>'
-    call SetFileTypeShell("tcsh")
+    call dist#ft#SetFileTypeShell("tcsh")
 
     " Z shell scripts
   elseif s:name =~# '^zsh\>'
@@ -99,6 +99,10 @@ if s:line1 =~# "^#!"
     " Makefiles
   elseif s:name =~# 'make\>'
     set ft=make
+
+    " Pike
+  elseif s:name =~# '^pike\%(\>\|[0-9]\)'
+    set ft=pike
 
     " Lua
   elseif s:name =~# 'lua'
@@ -129,7 +133,7 @@ if s:line1 =~# "^#!"
     set ft=ruby
 
     " JavaScript
-  elseif s:name =~# 'node\(js\)\=\>' || s:name =~# 'rhino\>'
+  elseif s:name =~# 'node\(js\)\=\>\|js\>' || s:name =~# 'rhino\>'
     set ft=javascript
 
     " BC calculator
@@ -172,6 +176,10 @@ if s:line1 =~# "^#!"
   elseif s:name =~# 'scala\>'
     set ft=scala
 
+    " Clojure
+  elseif s:name =~# 'clojure'
+    set ft=clojure
+
   endif
   unlet s:name
 
@@ -185,7 +193,7 @@ else
 
   " Bourne-like shell scripts: sh ksh bash bash2
   if s:line1 =~# '^:$'
-    call SetFileTypeSH(s:line1)	" defined in filetype.vim
+    call dist#ft#SetFileTypeSH(s:line1)	" defined in filetype.vim
 
     " Z shell scripts
   elseif s:line1 =~# '^#compdef\>' || s:line1 =~# '^#autoload\>' ||
@@ -306,7 +314,7 @@ else
     set ft=virata
 
     " Strace
-  elseif s:line1 =~# '^\(\[pid \d\+\] \)\=[0-9:.]* *execve(' || s:line1 =~# '^__libc_start_main'
+  elseif s:line1 =~# '[0-9:.]* *execve(' || s:line1 =~# '^__libc_start_main'
     set ft=strace
 
     " VSE JCL
@@ -324,7 +332,7 @@ else
     set ft=sindacmp
 
     " DNS zone files
-  elseif s:line1.s:line2.s:line3.s:line4 =~# '^; <<>> DiG [0-9.]\+ <<>>\|BIND.*named\|$ORIGIN\|$TTL\|IN\s\+SOA'
+  elseif s:line1.s:line2.s:line3.s:line4 =~# '^; <<>> DiG [0-9.]\+.* <<>>\|$ORIGIN\|$TTL\|IN\s\+SOA'
     set ft=bindzone
 
     " BAAN

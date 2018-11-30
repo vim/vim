@@ -2,7 +2,7 @@
  * iscygpty.c -- part of ptycheck
  * https://github.com/k-takata/ptycheck
  *
- * Copyright (c) 2015-2016 K.Takata
+ * Copyright (c) 2015-2017 K.Takata
  *
  * You can redistribute it and/or modify it under the terms of either
  * the MIT license (as described below) or the Vim license.
@@ -26,6 +26,8 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+#ifdef _WIN32
 
 #include <ctype.h>
 #include <io.h>
@@ -60,20 +62,18 @@
 //#define USE_DYNFILEID
 #ifdef USE_DYNFILEID
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
-		HANDLE					  hFile,
-		FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-		LPVOID					  lpFileInformation,
-		DWORD					  dwBufferSize
-);
+		HANDLE						hFile,
+		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+		LPVOID						lpFileInformation,
+		DWORD						dwBufferSize);
 static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
 # ifndef USE_FILEEXTD
 static BOOL WINAPI stub_GetFileInformationByHandleEx(
-		HANDLE					  hFile,
-		FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-		LPVOID					  lpFileInformation,
-		DWORD					  dwBufferSize
-		)
+		HANDLE						hFile,
+		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+		LPVOID						lpFileInformation,
+		DWORD						dwBufferSize)
 {
 	return FALSE;
 }
@@ -111,7 +111,7 @@ int is_cygpty(int fd)
 	return 0;
 #else
 	HANDLE h;
-	int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * MAX_PATH;
+	int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
 	FILE_NAME_INFO *nameinfo;
 	WCHAR *p = NULL;
 
@@ -125,7 +125,7 @@ int is_cygpty(int fd)
 	if (GetFileType(h) != FILE_TYPE_PIPE) {
 		return 0;
 	}
-	nameinfo = malloc(size);
+	nameinfo = malloc(size + sizeof(WCHAR));
 	if (nameinfo == NULL) {
 		return 0;
 	}
@@ -178,4 +178,6 @@ int is_cygpty_used(void)
 	return ret;
 }
 
-/* vi:set ts=8 sts=4 sw=4 noet: */
+#endif /* _WIN32 */
+
+/* vim: set ts=4 sw=4: */

@@ -1,10 +1,9 @@
 /* gui_w32.c */
-int directx_enabled(void);
 int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 LRESULT WINAPI vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void gui_mch_new_colors(void);
@@ -21,6 +20,7 @@ GuiFont gui_mch_get_font(char_u *name, int giveErrorIfMissing);
 char_u *gui_mch_get_fontname(GuiFont font, char_u *name);
 void gui_mch_free_font(GuiFont font);
 guicolor_T gui_mch_get_color(char_u *name);
+guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 int gui_mch_haskey(char_u *name);
 void gui_mch_beep(void);
 void gui_mch_invert_rectangle(int r, int c, int nr, int nc);

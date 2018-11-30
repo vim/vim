@@ -251,7 +251,6 @@ typedef struct matchinf_S
 static int spell_iswordp(char_u *p, win_T *wp);
 #ifdef FEAT_MBYTE
 static int spell_mb_isword_class(int cl, win_T *wp);
-static int spell_iswordp_w(int *p, win_T *wp);
 #endif
 
 /*
@@ -337,22 +336,16 @@ typedef struct trystate_S
 static void find_word(matchinf_T *mip, int mode);
 static int match_checkcompoundpattern(char_u *ptr, int wlen, garray_T *gap);
 static int can_compound(slang_T *slang, char_u *word, char_u *flags);
-static int can_be_compound(trystate_T *sp, slang_T *slang, char_u *compflags, int flag);
 static int match_compoundrule(slang_T *slang, char_u *compflags);
 static int valid_word_prefix(int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req);
 static void find_prefix(matchinf_T *mip, int mode);
 static int fold_more(matchinf_T *mip);
 static int spell_valid_case(int wordflags, int treeflags);
-static int no_spell_checking(win_T *wp);
-static void spell_load_lang(char_u *lang);
-static void int_wordlist_spl(char_u *fname);
 static void spell_load_cb(char_u *fname, void *cookie);
-static int score_wordcount_adj(slang_T *slang, int score, char_u *word, int split);
 static int count_syllables(slang_T *slang, char_u *word);
 static void clear_midword(win_T *buf);
 static void use_midword(slang_T *lp, win_T *buf);
 static int find_region(char_u *rp, char_u *region);
-static int badword_captype(char_u *word, char_u *end);
 static int check_need_cap(linenr_T lnum, colnr_T col);
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
@@ -361,7 +354,6 @@ static void spell_suggest_expr(suginfo_T *su, char_u *expr);
 static void spell_suggest_file(suginfo_T *su, char_u *fname);
 static void spell_suggest_intern(suginfo_T *su, int interactive);
 static void spell_find_cleanup(suginfo_T *su);
-static void allcap_copy(char_u *word, char_u *wcopy);
 static void suggest_try_special(suginfo_T *su);
 static void suggest_try_change(suginfo_T *su);
 static void suggest_trie_walk(suginfo_T *su, langp_T *lp, char_u *fword, int soundfold);
@@ -1625,11 +1617,11 @@ spell_move_to(
 
 	/* For checking first word with a capital skip white space. */
 	if (capcol == 0)
-	    capcol = (int)(skipwhite(line) - line);
+	    capcol = getwhitecols(line);
 	else if (curline && wp == curwin)
 	{
 	    /* For spellbadword(): check if first word needs a capital. */
-	    col = (int)(skipwhite(line) - line);
+	    col = getwhitecols(line);
 	    if (check_need_cap(lnum, col))
 		capcol = col;
 
@@ -1849,9 +1841,7 @@ spell_load_lang(char_u *lang)
     char_u	fname_enc[85];
     int		r;
     spelload_T	sl;
-#ifdef FEAT_AUTOCMD
     int		round;
-#endif
 
     /* Copy the language name to pass it to spell_load_cb() as a cookie.
      * It's truncated when an error is detected. */
@@ -1859,11 +1849,9 @@ spell_load_lang(char_u *lang)
     sl.sl_slang = NULL;
     sl.sl_nobreak = FALSE;
 
-#ifdef FEAT_AUTOCMD
     /* We may retry when no spell file is found for the language, an
      * autocommand may load it then. */
     for (round = 1; round <= 2; ++round)
-#endif
     {
 	/*
 	 * Find the first spell file for "lang" in 'runtimepath' and load it.
@@ -1889,17 +1877,13 @@ spell_load_lang(char_u *lang)
 									lang);
 	    r = do_in_runtimepath(fname_enc, 0, spell_load_cb, &sl);
 
-#ifdef FEAT_AUTOCMD
 	    if (r == FAIL && *sl.sl_lang != NUL && round == 1
 		    && apply_autocmds(EVENT_SPELLFILEMISSING, lang,
 					      curbuf->b_fname, FALSE, curbuf))
 		continue;
 	    break;
-#endif
 	}
-#ifdef FEAT_AUTOCMD
 	break;
-#endif
     }
 
     if (r == FAIL)
@@ -1994,19 +1978,13 @@ slang_clear(slang_T *lp)
     int		i;
     int		round;
 
-    vim_free(lp->sl_fbyts);
-    lp->sl_fbyts = NULL;
-    vim_free(lp->sl_kbyts);
-    lp->sl_kbyts = NULL;
-    vim_free(lp->sl_pbyts);
-    lp->sl_pbyts = NULL;
+    VIM_CLEAR(lp->sl_fbyts);
+    VIM_CLEAR(lp->sl_kbyts);
+    VIM_CLEAR(lp->sl_pbyts);
 
-    vim_free(lp->sl_fidxs);
-    lp->sl_fidxs = NULL;
-    vim_free(lp->sl_kidxs);
-    lp->sl_kidxs = NULL;
-    vim_free(lp->sl_pidxs);
-    lp->sl_pidxs = NULL;
+    VIM_CLEAR(lp->sl_fidxs);
+    VIM_CLEAR(lp->sl_kidxs);
+    VIM_CLEAR(lp->sl_pidxs);
 
     for (round = 1; round <= 2; ++round)
     {
@@ -2048,26 +2026,19 @@ slang_clear(slang_T *lp)
     for (i = 0; i < lp->sl_prefixcnt; ++i)
 	vim_regfree(lp->sl_prefprog[i]);
     lp->sl_prefixcnt = 0;
-    vim_free(lp->sl_prefprog);
-    lp->sl_prefprog = NULL;
+    VIM_CLEAR(lp->sl_prefprog);
 
-    vim_free(lp->sl_info);
-    lp->sl_info = NULL;
+    VIM_CLEAR(lp->sl_info);
 
-    vim_free(lp->sl_midword);
-    lp->sl_midword = NULL;
+    VIM_CLEAR(lp->sl_midword);
 
     vim_regfree(lp->sl_compprog);
-    vim_free(lp->sl_comprules);
-    vim_free(lp->sl_compstartflags);
-    vim_free(lp->sl_compallflags);
     lp->sl_compprog = NULL;
-    lp->sl_comprules = NULL;
-    lp->sl_compstartflags = NULL;
-    lp->sl_compallflags = NULL;
+    VIM_CLEAR(lp->sl_comprules);
+    VIM_CLEAR(lp->sl_compstartflags);
+    VIM_CLEAR(lp->sl_compallflags);
 
-    vim_free(lp->sl_syllable);
-    lp->sl_syllable = NULL;
+    VIM_CLEAR(lp->sl_syllable);
     ga_clear(&lp->sl_syl_items);
 
     ga_clear_strings(&lp->sl_comppat);
@@ -2094,10 +2065,8 @@ slang_clear(slang_T *lp)
     void
 slang_clear_sug(slang_T *lp)
 {
-    vim_free(lp->sl_sbyts);
-    lp->sl_sbyts = NULL;
-    vim_free(lp->sl_sidxs);
-    lp->sl_sidxs = NULL;
+    VIM_CLEAR(lp->sl_sbyts);
+    VIM_CLEAR(lp->sl_sidxs);
     close_spellbuf(lp->sl_sugbuf);
     lp->sl_sugbuf = NULL;
     lp->sl_sugloaded = FALSE;
@@ -2363,11 +2332,9 @@ did_set_spelllang(win_T *wp)
     static int	recursive = FALSE;
     char_u	*ret_msg = NULL;
     char_u	*spl_copy;
-#ifdef FEAT_AUTOCMD
     bufref_T	bufref;
 
     set_bufref(&bufref, wp->w_buffer);
-#endif
 
     /* We don't want to do this recursively.  May happen when a language is
      * not available and the SpellFileMissing autocommand opens a new buffer
@@ -2419,7 +2386,6 @@ did_set_spelllang(win_T *wp)
 	    {
 		vim_strncpy(region_cp, p + 1, 2);
 		mch_memmove(p, p + 3, len - (p - lang) - 2);
-		len -= 3;
 		region = region_cp;
 	    }
 	    else
@@ -2465,7 +2431,6 @@ did_set_spelllang(win_T *wp)
 	    else
 	    {
 		spell_load_lang(lang);
-#ifdef FEAT_AUTOCMD
 		/* SpellFileMissing autocommands may do anything, including
 		 * destroying the buffer we are using... */
 		if (!bufref_valid(&bufref))
@@ -2473,7 +2438,6 @@ did_set_spelllang(win_T *wp)
 		    ret_msg = (char_u *)N_("E797: SpellFileMissing autocommand deleted buffer");
 		    goto theend;
 		}
-#endif
 	    }
 	}
 
@@ -2671,8 +2635,7 @@ clear_midword(win_T *wp)
 {
     vim_memset(wp->w_s->b_spell_ismw, 0, 256);
 #ifdef FEAT_MBYTE
-    vim_free(wp->w_s->b_spell_ismw_mb);
-    wp->w_s->b_spell_ismw_mb = NULL;
+    VIM_CLEAR(wp->w_s->b_spell_ismw_mb);
 #endif
 }
 
@@ -2723,7 +2686,7 @@ use_midword(slang_T *lp, win_T *wp)
 
 /*
  * Find the region "region[2]" in "rp" (points to "sl_regions").
- * Each region is simply stored as the two characters of it's name.
+ * Each region is simply stored as the two characters of its name.
  * Returns the index if found (first is 0), REGION_ALL if not found.
  */
     static int
@@ -2859,8 +2822,7 @@ spell_delete_wordlist(void)
 	mch_remove(int_wordlist);
 	int_wordlist_spl(fname);
 	mch_remove(fname);
-	vim_free(int_wordlist);
-	int_wordlist = NULL;
+	VIM_CLEAR(int_wordlist);
     }
 }
 
@@ -2887,10 +2849,8 @@ spell_free_all(void)
 
     spell_delete_wordlist();
 
-    vim_free(repl_to);
-    repl_to = NULL;
-    vim_free(repl_from);
-    repl_from = NULL;
+    VIM_CLEAR(repl_to);
+    VIM_CLEAR(repl_from);
 }
 #endif
 
@@ -2920,9 +2880,7 @@ spell_reload(void)
 		if (wp->w_p_spell)
 		{
 		    (void)did_set_spelllang(wp);
-# ifdef FEAT_WINDOWS
 		    break;
-# endif
 		}
 	}
     }
@@ -3427,10 +3385,8 @@ spell_suggest(int count)
     }
     else
     {
-	vim_free(repl_from);
-	repl_from = NULL;
-	vim_free(repl_to);
-	repl_to = NULL;
+	VIM_CLEAR(repl_from);
+	VIM_CLEAR(repl_to);
 
 #ifdef FEAT_RIGHTLEFT
 	/* When 'rightleft' is set the list is drawn right-left. */
@@ -3593,7 +3549,7 @@ check_need_cap(linenr_T lnum, colnr_T col)
 
     line = ml_get_curline();
     endcol = 0;
-    if ((int)(skipwhite(line) - line) >= (int)col)
+    if (getwhitecols(line) >= (int)col)
     {
 	/* At start of line, check if previous line is empty or sentence
 	 * ends there. */
@@ -3675,7 +3631,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     curwin->w_cursor.lnum = 0;
     while (!got_int)
     {
-	if (do_search(NULL, '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
+	if (do_search(NULL, '/', frompat, 1L, SEARCH_KEEP, NULL, NULL) == 0
 						   || u_save_cursor() == FAIL)
 	    break;
 
@@ -5021,7 +4977,7 @@ suggest_trie_walk(
 	    }
 	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_PLAIN;
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_PLAIN:
 	    /*
@@ -5245,7 +5201,7 @@ suggest_trie_walk(
 		}
 		break;
 	    }
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_INS_PREP:
 	    if (sp->ts_flags & TSF_DIDDEL)
@@ -5279,7 +5235,7 @@ suggest_trie_walk(
 	    }
 	    break;
 
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_INS:
 	    /* Insert one byte.  Repeat this for each possible byte at this
@@ -5466,7 +5422,7 @@ suggest_trie_walk(
 		*p = p[1];
 		p[1] = c;
 	    }
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_SWAP3:
 	    /* Swap two bytes, skipping one: "123" -> "321".  We change
@@ -5705,7 +5661,7 @@ suggest_trie_walk(
 		p[1] = p[2];
 		p[2] = c;
 	    }
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_REP_INI:
 	    /* Check if matching with REP items from the .aff file would work.
@@ -5738,7 +5694,7 @@ suggest_trie_walk(
 
 	    PROF_STORE(sp->ts_state)
 	    sp->ts_state = STATE_REP;
-	    /*FALLTHROUGH*/
+	    /* FALLTHROUGH */
 
 	case STATE_REP:
 	    /* Try matching with REP items from the .aff file.  For each match

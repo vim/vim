@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.0.  Last change: 2017 Mar 18
+*remote.txt*    For Vim version 8.1.  Last change: 2017 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -63,7 +63,7 @@ The following command line arguments are available:
    --servername {name}		Become the server {name}.  When used together
 				with one of the --remote commands: connect to
 				server {name} instead of the default (see
-				below).
+				below).  The name used will be uppercase.
 								*--remote-send*
    --remote-send {keys}		Send {keys} to server and exit.  The {keys}
    				are not mapped.  Special key names are
@@ -99,7 +99,7 @@ Tell the remote server "BLA" to write all files and exit: >
     vim --servername BLA --remote-send '<C-\><C-N>:wqa<CR>'
 
 
-SERVER NAME
+SERVER NAME						*client-server-name*
 
 By default Vim will try to register the name under which it was invoked (gvim,
 egvim ...).  This can be overridden with the --servername argument.  If the
@@ -181,7 +181,8 @@ name on the 'VimRegistry' property on the root window.
 
 A non GUI Vim with access to the X11 display (|xterm-clipboard| enabled), can
 also act as a command server if a server name is explicitly given with the
---servername argument.
+--servername argument, or when Vim was build with the |+autoservername|
+feature.
 
 An empty --servername argument will cause the command server to be disabled.
 
@@ -203,4 +204,4 @@ When using gvim, the --remote-wait only works properly this way: >
 
 	start /w gvim --remote-wait file.txt
 <
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

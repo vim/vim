@@ -113,6 +113,9 @@
 /* Define if you can safely include both <sys/time.h> and <sys/select.h>.  */
 #undef SYS_SELECT_WITH_SYS_TIME
 
+/* Define to a typecast for select() arguments 2, 3 and 4. */
+#undef SELECT_TYPE_ARG234
+
 /* Define if you have /dev/ptc */
 #undef HAVE_DEV_PTC
 
@@ -156,9 +159,11 @@
 /* Define if you the function: */
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
+#undef HAVE_FCHMOD
+#undef HAVE_FLOAT_FUNCS
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
-#undef HAVE_FLOAT_FUNCS
+#undef HAVE_FTRUNCATE
 #undef HAVE_GETCWD
 #undef HAVE_GETPGID
 #undef HAVE_GETPSEUDOTTY
@@ -209,9 +214,11 @@
 #undef HAVE_TOWLOWER
 #undef HAVE_TOWUPPER
 #undef HAVE_ISWUPPER
+#undef HAVE_UNSETENV
 #undef HAVE_USLEEP
 #undef HAVE_UTIME
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
+#undef HAVE_MBLEN
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES
@@ -383,6 +390,9 @@
 /* Define if you want to include multibyte support. */
 #undef FEAT_MBYTE
 
+/* Define if you want to always define a server name at vim startup. */
+#undef FEAT_AUTOSERVERNAME
+
 /* Define if you want to include fontset support. */
 #undef FEAT_XFONTSET
 
@@ -430,6 +440,9 @@
 
 /* Define if you want to include process communication. */
 #undef FEAT_JOB_CHANNEL
+
+/* Define if you want to include terminal emulator support. */
+#undef FEAT_TERMINAL
 
 /* Define default global runtime path */
 #undef RUNTIME_GLOBAL

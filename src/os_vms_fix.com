@@ -15,7 +15,7 @@ $! and call/subroutine/endsubroutine constructs, because I can still
 $! remember when DCL didn't have them, and I wanted this to be as
 $! portable as possible, so...  If you want to structure it nicer for
 $! your own use, please feel free to do so.  However, please only
-$! distribute it in it's original form.
+$! distribute it in its original form.
 $!
 $! I wrote it in DCL for portability and ease of use - a C version
 $! would definitely run faster, but then I'd have to deal with compiler

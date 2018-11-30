@@ -15,7 +15,11 @@ typedef enum {
 	aid_qf_dirname_start,
 	aid_qf_dirname_now,
 	aid_qf_namebuf,
+	aid_qf_module,
 	aid_qf_errmsg,
 	aid_qf_pattern,
+	aid_tagstack_items,
+	aid_tagstack_from,
+	aid_tagstack_details,
 	aid_last
 } alloc_id_T;

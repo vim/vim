@@ -88,15 +88,21 @@
 # endif
 #endif
 
-/* Perl compatibility stuff. This should ensure compatibility with older
- * versions of Perl.
- */
-
+// Perl compatibility stuff. This should ensure compatibility with older
+// versions of Perl.
 #ifndef PERL_VERSION
 # include <patchlevel.h>
 # define PERL_REVISION   5
 # define PERL_VERSION    PATCHLEVEL
 # define PERL_SUBVERSION SUBVERSION
+#endif
+
+
+// Work around for ActivePerl 5.20.3+: Avoid generating (g)vim.lib.
+#if defined(ACTIVEPERL_VERSION) && (ACTIVEPERL_VERSION >= 2003) \
+	&& defined(WIN32) && defined(USE_DYNAMIC_LOADING)
+# undef XS_EXTERNAL
+# define XS_EXTERNAL(name) XSPROTO(name)
 #endif
 
 /*
@@ -199,6 +205,9 @@ typedef int perl_key;
 # define Perl_gv_stashpv dll_Perl_gv_stashpv
 # define Perl_markstack_grow dll_Perl_markstack_grow
 # define Perl_mg_find dll_Perl_mg_find
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+#  define Perl_mg_get dll_Perl_mg_get
+# endif
 # define Perl_newXS dll_Perl_newXS
 # define Perl_newSV dll_Perl_newSV
 # define Perl_newSViv dll_Perl_newSViv
@@ -342,6 +351,9 @@ static I32* (*Perl_markstack_grow)(pTHX);
 static void (*Perl_markstack_grow)(pTHX);
 # endif
 static MAGIC* (*Perl_mg_find)(pTHX_ SV*, int);
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+static int (*Perl_mg_get)(pTHX_ SV*);
+# endif
 static CV* (*Perl_newXS)(pTHX_ char*, XSUBADDR_t, char*);
 static SV* (*Perl_newSV)(pTHX_ STRLEN);
 static SV* (*Perl_newSViv)(pTHX_ IV);
@@ -494,6 +506,9 @@ static struct {
     {"Perl_gv_stashpv", (PERL_PROC*)&Perl_gv_stashpv},
     {"Perl_markstack_grow", (PERL_PROC*)&Perl_markstack_grow},
     {"Perl_mg_find", (PERL_PROC*)&Perl_mg_find},
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+    {"Perl_mg_get", (PERL_PROC*)&Perl_mg_get},
+# endif
     {"Perl_newXS", (PERL_PROC*)&Perl_newXS},
     {"Perl_newSV", (PERL_PROC*)&Perl_newSV},
     {"Perl_newSViv", (PERL_PROC*)&Perl_newSViv},
@@ -822,8 +837,7 @@ newWINrv(SV *rv, win_T *ptr)
 	ptr->w_perl_private = newSV(0);
 	sv_setiv(ptr->w_perl_private, PTR2IV(ptr));
     }
-    else
-	SvREFCNT_inc_void_NN(ptr->w_perl_private);
+    SvREFCNT_inc_void_NN(ptr->w_perl_private);
     SvRV(rv) = ptr->w_perl_private;
     SvROK_on(rv);
     return sv_bless(rv, gv_stashpv("VIWIN", TRUE));
@@ -838,12 +852,19 @@ newBUFrv(SV *rv, buf_T *ptr)
 	ptr->b_perl_private = newSV(0);
 	sv_setiv(ptr->b_perl_private, PTR2IV(ptr));
     }
-    else
-	SvREFCNT_inc_void_NN(ptr->b_perl_private);
+    SvREFCNT_inc_void_NN(ptr->b_perl_private);
     SvRV(rv) = ptr->b_perl_private;
     SvROK_on(rv);
     return sv_bless(rv, gv_stashpv("VIBUF", TRUE));
 }
+
+#if 0
+SV *__sv_save[1024];
+int __sv_save_ix;
+#  define D_Save_Sv(sv) do { if (__sv_save_ix < 1024) __sv_save[__sv_save_ix++] = (sv); } while (0)
+#else
+#  define D_Save_Sv(sv) NOOP
+#endif
 
 /*
  * perl_win_free
@@ -852,17 +873,27 @@ newBUFrv(SV *rv, buf_T *ptr)
     void
 perl_win_free(win_T *wp)
 {
-    if (wp->w_perl_private)
-	sv_setiv((SV *)wp->w_perl_private, 0);
-    return;
+    if (wp->w_perl_private && perl_interp != NULL)
+    {
+	SV *sv = (SV*)wp->w_perl_private;
+	D_Save_Sv(sv);
+	sv_setiv(sv, 0);
+	SvREFCNT_dec(sv);
+    }
+    wp->w_perl_private = NULL;
 }
 
     void
 perl_buf_free(buf_T *bp)
 {
-    if (bp->b_perl_private)
-	sv_setiv((SV *)bp->b_perl_private, 0);
-    return;
+    if (bp->b_perl_private && perl_interp != NULL)
+    {
+	SV *sv = (SV *)bp->b_perl_private;
+	D_Save_Sv(sv);
+	sv_setiv(sv, 0);
+	SvREFCNT_dec(sv);
+    }
+    bp->b_perl_private = NULL;
 }
 
 #ifndef PROTO
@@ -885,12 +916,19 @@ I32 cur_val(IV iv, SV *sv)
 # endif
 {
     SV *rv;
+
     if (iv == 0)
 	rv = newWINrv(newSV(0), curwin);
     else
 	rv = newBUFrv(newSV(0), curbuf);
-    sv_setsv(sv, rv);
-    SvREFCNT_dec(SvRV(rv));
+
+    if (SvRV(sv) != SvRV(rv))
+	// XXX: This magic variable is a bit confusing...
+	// Is curently refcounted ?
+	sv_setsv(sv, rv);
+
+    SvREFCNT_dec(rv);
+
     return 0;
 }
 #endif /* !PROTO */
@@ -1101,6 +1139,7 @@ perl_to_vim(SV *sv, typval_T *rettv)
 		rettv->vval.v_number = SvIV(sv);
 		break;
 	    }
+	    /* FALLTHROUGH */
 	case SVt_PV:	/* string */
 	{
 	    size_t  len		= 0;
@@ -1199,10 +1238,8 @@ perl_to_vim(SV *sv, typval_T *rettv)
 
 		    if ((item = dictitem_alloc((char_u *)key)) == NULL)
 			break;
-
-		    item->di_tv.v_type		= VAR_NUMBER;
-		    item->di_tv.v_lock		= 0;
-		    item->di_tv.vval.v_number	= 0;
+		    item->di_tv.v_type = VAR_NUMBER;
+		    item->di_tv.vval.v_number = 0;
 
 		    if (dict_add(dict, item) == FAIL) {
 			dictitem_free(item);
@@ -1387,11 +1424,8 @@ PerlIOVim_pushed(pTHX_ PerlIO *f, const char *mode,
 {
     PerlIOVim *s = PerlIOSelf(f, PerlIOVim);
     s->attr = 0;
-    if (arg && SvPOK(arg)) {
-	int id = syn_name2id((char_u *)SvPV_nolen(arg));
-	if (id != 0)
-	    s->attr = syn_id2attr(id);
-    }
+    if (arg && SvPOK(arg))
+	s->attr = syn_name2attr((char_u *)SvPV_nolen(arg));
     return PerlIOBase_pushed(aTHX_ f, mode, (SV *)NULL, tab);
 }
 
@@ -1451,24 +1485,6 @@ vim_IOLayer_init(void)
 }
 #endif /* PERLIO_LAYERS && !USE_SFIO */
 
-#ifndef FEAT_WINDOWS
-    int
-win_valid(win_T *w)
-{
-    return TRUE;
-}
-    int
-win_count(void)
-{
-    return 1;
-}
-    win_T *
-win_find_nr(int n)
-{
-    return curwin;
-}
-#endif
-
 XS(boot_VIM);
 
     static void
@@ -1493,18 +1509,13 @@ Msg(text, hl=NULL)
 
     PREINIT:
     int		attr;
-    int		id;
 
     PPCODE:
     if (text != NULL)
     {
 	attr = 0;
 	if (hl != NULL)
-	{
-	    id = syn_name2id((char_u *)hl);
-	    if (id != 0)
-		attr = syn_id2attr(id);
-	}
+	    attr = syn_name2attr((char_u *)hl);
 	msg_split((char_u *)text, attr);
     }
 
@@ -1566,7 +1577,7 @@ Buffers(...)
 	else
 	{
 	    FOR_ALL_BUFFERS(vimbuf)
-		XPUSHs(newBUFrv(newSV(0), vimbuf));
+		XPUSHs(sv_2mortal(newBUFrv(newSV(0), vimbuf)));
 	}
     }
     else
@@ -1583,7 +1594,7 @@ Buffers(...)
 
 		pat = (char_u *)SvPV(sv, len);
 		++emsg_off;
-		b = buflist_findpat(pat, pat+len, FALSE, FALSE, FALSE);
+		b = buflist_findpat(pat, pat + len, TRUE, FALSE, FALSE);
 		--emsg_off;
 	    }
 
@@ -1591,7 +1602,7 @@ Buffers(...)
 	    {
 		vimbuf = buflist_findnr(b);
 		if (vimbuf)
-		    XPUSHs(newBUFrv(newSV(0), vimbuf));
+		    XPUSHs(sv_2mortal(newBUFrv(newSV(0), vimbuf)));
 	    }
 	}
     }
@@ -1611,7 +1622,7 @@ Windows(...)
 	else
 	{
 	    FOR_ALL_WINDOWS(vimwin)
-		XPUSHs(newWINrv(newSV(0), vimwin));
+		XPUSHs(sv_2mortal(newWINrv(newSV(0), vimwin)));
 	}
     }
     else
@@ -1621,7 +1632,7 @@ Windows(...)
 	    w = (int) SvIV(ST(i));
 	    vimwin = win_find_nr(w);
 	    if (vimwin)
-		XPUSHs(newWINrv(newSV(0), vimwin));
+		XPUSHs(sv_2mortal(newWINrv(newSV(0), vimwin)));
 	}
     }
 
@@ -1685,6 +1696,7 @@ Cursor(win, ...)
       col = (int) SvIV(ST(2));
       win->w_cursor.lnum = lnum;
       win->w_cursor.col = col;
+      win->w_set_curswant = TRUE;
       check_cursor();		    /* put cursor on an existing line */
       update_screen(NOT_VALID);
     }

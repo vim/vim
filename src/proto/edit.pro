@@ -1,11 +1,15 @@
 /* edit.c */
 int edit(int cmdchar, int startln, long count);
 void edit_putchar(int c, int highlight);
+char_u *prompt_text(void);
+int prompt_curpos_editable(void);
 void edit_unputchar(void);
 void display_dollar(colnr_T col);
 void change_indent(int type, int amount, int round, int replaced, int call_changed_bytes);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
+int ctrl_x_mode_not_default(void);
+int ctrl_x_mode_not_defined_yet(void);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_add_infercase(char_u *str, int len, int icase, char_u *fname, int dir, int flags);
 void completeopt_was_set(void);
@@ -42,4 +46,5 @@ int bracketed_paste(paste_mode_T mode, int drop, garray_T *gap);
 void ins_scroll(void);
 void ins_horscroll(void);
 int ins_copychar(linenr_T lnum);
+colnr_T get_nolist_virtcol(void);
 /* vim: set ft=c : */

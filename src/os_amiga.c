@@ -152,7 +152,6 @@ mch_inchar(
 	 */
 	if (WaitForChar(raw_in, p_ut * 1000L) == 0)
 	{
-#ifdef FEAT_AUTOCMD
 	    if (trigger_cursorhold() && maxlen >= 3)
 	    {
 		buf[0] = K_SPECIAL;
@@ -160,7 +159,6 @@ mch_inchar(
 		buf[2] = (int)KE_CURSORHOLD;
 		return 3;
 	    }
-#endif
 	    before_blocking();
 	}
     }
@@ -619,14 +617,14 @@ mch_settitle(char_u *title, char_u *icon)
 /*
  * Restore the window/icon title.
  * which is one of:
- *  1  Just restore title
- *  2  Just restore icon (which we don't have)
- *  3  Restore title and icon (which we don't have)
+ *  SAVE_RESTORE_TITLE  Just restore title
+ *  SAVE_RESTORE_ICON   Just restore icon (which we don't have)
+ *  SAVE_RESTORE_BOTH   Restore title and icon (which we don't have)
  */
     void
 mch_restore_title(int which)
 {
-    if (which & 1)
+    if (which & SAVE_RESTORE_TITLE)
 	mch_settitle(oldwindowtitle, NULL);
 }
 
@@ -909,7 +907,7 @@ mch_exit(int r)
     }
 
 #ifdef FEAT_TITLE
-    mch_restore_title(3);	    /* restore window title */
+    mch_restore_title(SAVE_RESTORE_BOTH);    /* restore window title */
 #endif
 
     ml_close_all(TRUE);		    /* remove all memfiles */
@@ -943,7 +941,7 @@ mch_exit(int r)
  *	getch() will return immediately rather than wait for a return. You
  *	lose editing features though.
  *
- * Cooked: This function returns the designate file pointer to it's normal,
+ * Cooked: This function returns the designate file pointer to its normal,
  *	wait for a <CR> mode. This is exactly like raw() except that
  *	it sends a 0 to the console to make it back into a CON: from a RAW:
  */
@@ -1389,7 +1387,7 @@ mch_breakcheck(int force)
 	got_int = TRUE;
 }
 
-/* this routine causes manx to use this Chk_Abort() rather than it's own */
+/* this routine causes manx to use this Chk_Abort() rather than its own */
 /* otherwise it resets our ^C when doing any I/O (even when Enable_Abort */
 /* is zero).  Since we want to check for our own ^C's			 */
 
@@ -1619,8 +1617,7 @@ mch_getenv(char_u *var)
     else
 #endif
     {
-	vim_free(alloced);
-	alloced = NULL;
+	VIM_CLEAR(alloced);
 	retval = NULL;
 
 	buf = alloc(IOSIZE);

@@ -39,7 +39,11 @@ enum SpecialKey
     KS_DB,	/* text may be scrolled up from down */
     KS_VI,	/* cursor invisible */
     KS_VE,	/* cursor visible */
-    KS_VS,	/* cursor very visible */
+    KS_VS,	/* cursor very visible (blink) */
+    KS_CVS,	/* cursor normally visible (no blink) */
+    KS_CSH,	/* cursor shape */
+    KS_CRC,	/* request cursor blinking */
+    KS_CRS,	/* request cursor style */
     KS_ME,	/* normal mode */
     KS_MR,	/* reverse mode */
     KS_MD,	/* bold mode */
@@ -51,6 +55,8 @@ enum SpecialKey
     KS_US,	/* underscore (underline) mode */
     KS_UCE,	/* exit undercurl mode */
     KS_UCS,	/* undercurl mode */
+    KS_STE,	/* exit strikethrough mode */
+    KS_STS,	/* strikethrough mode */
     KS_MS,	/* save to move cur in reverse mode */
     KS_CM,	/* cursor motion */
     KS_SR,	/* scroll reverse (backward) */
@@ -74,19 +80,20 @@ enum SpecialKey
     KS_ND,	/* cursor right */
     KS_CIS,	/* set icon text start */
     KS_CIE,	/* set icon text end */
+    KS_CSC,	/* set cursor color start */
+    KS_CEC,	/* set cursor color end */
     KS_TS,	/* set window title start (to status line)*/
     KS_FS,	/* set window title end (from status line) */
     KS_CWP,	/* set window position in pixels */
     KS_CGP,	/* get window position */
     KS_CWS,	/* set window size in characters */
     KS_CRV,	/* request version string */
+    KS_RFG,	/* request foreground color */
     KS_RBG,	/* request background color */
     KS_CSI,	/* start insert mode (bar cursor) */
     KS_CEI,	/* end insert mode (block cursor) */
     KS_CSR,	/* start replace mode (underline cursor) */
-#ifdef FEAT_WINDOWS
     KS_CSV,	/* scroll region vertical */
-#endif
     KS_OP,	/* original color pair */
     KS_U7,	/* request cursor position */
     KS_8F,	/* set foreground color (RGB) */
@@ -94,10 +101,14 @@ enum SpecialKey
     KS_CBE,	/* enable bracketed paste mode */
     KS_CBD,	/* disable bracketed paste mode */
     KS_CPS,	/* start of bracketed paste */
-    KS_CPE	/* end of bracketed paste */
+    KS_CPE,	/* end of bracketed paste */
+    KS_CST,	/* save window title */
+    KS_CRT,	/* restore window title */
+    KS_SSI,	/* save icon text */
+    KS_SRI	/* restore icon text */
 };
 
-#define KS_LAST	    KS_CPE
+#define KS_LAST	    KS_SRI
 
 /*
  * the terminal capabilities are stored in this array
@@ -127,7 +138,11 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_DB	(TERM_STR(KS_DB))	/* text may be scrolled up from down */
 #define T_VI	(TERM_STR(KS_VI))	/* cursor invisible */
 #define T_VE	(TERM_STR(KS_VE))	/* cursor visible */
-#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible */
+#define T_VS	(TERM_STR(KS_VS))	/* cursor very visible (blink) */
+#define T_CVS	(TERM_STR(KS_CVS))	/* cursor normally visible (no blink) */
+#define T_CSH	(TERM_STR(KS_CSH))	/* cursor shape */
+#define T_CRC	(TERM_STR(KS_CRC))	/* request cursor blinking */
+#define T_CRS	(TERM_STR(KS_CRS))	/* request cursor style */
 #define T_ME	(TERM_STR(KS_ME))	/* normal mode */
 #define T_MR	(TERM_STR(KS_MR))	/* reverse mode */
 #define T_MD	(TERM_STR(KS_MD))	/* bold mode */
@@ -139,6 +154,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_US	(TERM_STR(KS_US))	/* underscore (underline) mode */
 #define T_UCE	(TERM_STR(KS_UCE))	/* exit undercurl mode */
 #define T_UCS	(TERM_STR(KS_UCS))	/* undercurl mode */
+#define T_STE	(TERM_STR(KS_STE))	/* exit strikethrough mode */
+#define T_STS	(TERM_STR(KS_STS))	/* strikethrough mode */
 #define T_MS	(TERM_STR(KS_MS))	/* save to move cur in reverse mode */
 #define T_CM	(TERM_STR(KS_CM))	/* cursor motion */
 #define T_SR	(TERM_STR(KS_SR))	/* scroll reverse (backward) */
@@ -164,6 +181,8 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CIE	(TERM_STR(KS_CIE))	/* set icon text end */
 #define T_TS	(TERM_STR(KS_TS))	/* set window title start */
 #define T_FS	(TERM_STR(KS_FS))	/* set window title end */
+#define T_CSC	(TERM_STR(KS_CSC))	/* set cursor color start */
+#define T_CEC	(TERM_STR(KS_CEC))	/* set cursor color end */
 #define T_CWP	(TERM_STR(KS_CWP))	/* set window position */
 #define T_CGP	(TERM_STR(KS_CGP))	/* get window position */
 #define T_CWS	(TERM_STR(KS_CWS))	/* window size */
@@ -171,6 +190,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CEI	(TERM_STR(KS_CEI))	/* end insert mode */
 #define T_CSR	(TERM_STR(KS_CSR))	/* start replace mode */
 #define T_CRV	(TERM_STR(KS_CRV))	/* request version string */
+#define T_RFG	(TERM_STR(KS_RFG))	/* request foreground RGB */
 #define T_RBG	(TERM_STR(KS_RBG))	/* request background RGB */
 #define T_OP	(TERM_STR(KS_OP))	/* original color pair */
 #define T_U7	(TERM_STR(KS_U7))	/* request cursor position */
@@ -180,6 +200,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_BD	(TERM_STR(KS_CBD))	/* disable bracketed paste mode */
 #define T_PS	(TERM_STR(KS_CPS))	/* start of bracketed paste */
 #define T_PE	(TERM_STR(KS_CPE))	/* end of bracketed paste */
+#define T_CST	(TERM_STR(KS_CST))	/* save window title */
+#define T_CRT	(TERM_STR(KS_CRT))	/* restore window title */
+#define T_SSI	(TERM_STR(KS_SSI))	/* save icon text */
+#define T_SRI	(TERM_STR(KS_SRI))	/* restore icon text */
 
 #define TMODE_COOK  0	/* terminal mode for external cmds and Ex mode */
 #define TMODE_SLEEP 1	/* terminal mode for sleeping (cooked but no echo) */

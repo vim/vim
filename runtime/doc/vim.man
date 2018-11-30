@@ -3,7 +3,7 @@ VIM(1)                      General Commands Manual                     VIM(1)
 
 
 NAME
-       vim - Vi IMproved, a programmers text editor
+       vim - Vi IMproved, a programmer's text editor
 
 SYNOPSIS
        vim [options] [file ..]
@@ -225,7 +225,7 @@ OPTIONS
                    dentally overwriting a file.  If you do want to overwrite a
                    file, add an exclamation mark to  the  Ex  command,  as  in
                    ":w!".   The  -R  option  also  implies  the -n option (see
-                   below).  The 'readonly' option  can  be  reset  with  ":set
+                   above).  The 'readonly' option  can  be  reset  with  ":set
                    noro".  See ":help 'readonly'".
 
        -r          List  swap  files,  with  information  about using them for

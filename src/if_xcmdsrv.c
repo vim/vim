@@ -192,10 +192,8 @@ static int	DoRegisterName(Display *dpy, char_u *name);
 static void	DeleteAnyLingerer(Display *dpy, Window w);
 static int	GetRegProp(Display *dpy, char_u **regPropp, long_u *numItemsp, int domsg);
 static int	WaitForPend(void *p);
-static int	WaitForReply(void *p);
 static int	WindowValid(Display *dpy, Window w);
 static void	ServerWait(Display *dpy, Window w, EndCond endCond, void *endData, int localLoop, int seconds);
-static struct ServerReply *ServerReplyFind(Window w, enum ServerReplyOp op);
 static int	AppendPropCarefully(Display *display, Window window, Atom property, char_u *value, int length);
 static int	x_error_check(Display *dpy, XErrorEvent *error_event);
 static int	IsSerialName(char_u *name);
@@ -420,6 +418,7 @@ serverSendToVim(
 	    {
 		LookupName(dpy, loosename ? loosename : name,
 			   /*DELETE=*/TRUE, NULL);
+		vim_free(loosename);
 		continue;
 	    }
 	}
@@ -1122,7 +1121,7 @@ GetRegProp(
  * This procedure is invoked by the various X event loops throughout Vims when
  * a property changes on the communication window.  This procedure reads the
  * property and enqueues command requests and responses. If immediate is true,
- * it runs the event immediatly instead of enqueuing it. Immediate can cause
+ * it runs the event immediately instead of enqueuing it. Immediate can cause
  * unintended behavior and should only be used for code that blocks for a
  * response.
  */
@@ -1479,14 +1478,12 @@ server_parse_message(
 		ga_concat(&(r->strings), str);
 		ga_append(&(r->strings), NUL);
 	    }
-#ifdef FEAT_AUTOCMD
 	    {
 		char_u	winstr[30];
 
 		sprintf((char *)winstr, "0x%x", (unsigned int)win);
 		apply_autocmds(EVENT_REMOTEREPLY, winstr, str, TRUE, curbuf);
 	    }
-#endif
 	    vim_free(tofree);
 	}
 	else

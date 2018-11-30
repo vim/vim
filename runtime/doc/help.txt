@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.0.  Last change: 2016 Sep 12
+*help.txt*	For Vim version 8.1.  Last change: 2017 Oct 28
 
 			VIM - main help file
 									 k
@@ -142,6 +142,7 @@ Special issues ~
 |print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
+|terminal.txt|	Terminal window support
 |digraph.txt|	list of available digraphs
 |mbyte.txt|	multi-byte text support
 |mlang.txt|	non-English language support
@@ -150,6 +151,7 @@ Special issues ~
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
 |ft_ada.txt|	Ada (the programming language) support
+|ft_rust.txt|	Filetype plugin for Rust
 |ft_sql.txt|	about the SQL filetype plugin
 |hangulin.txt|	Hangul (Korean) input mode
 |rileft.txt|	right-to-left editing mode
@@ -202,6 +204,7 @@ Standard plugins ~
 |pi_logipat.txt|   Logical operators on patterns
 |pi_netrw.txt|     Reading and writing files over a network
 |pi_paren.txt|     Highlight matching parens
+|pi_spec.txt|      Filetype plugin to work with rpm spec files
 |pi_tar.txt|       Tar file explorer
 |pi_vimball.txt|   Create a self-installing Vim script
 |pi_zip.txt|       Zip archive explorer
@@ -222,4 +225,4 @@ will try to find help for it.  Especially for options in single quotes, e.g.
 'compatible'.
 
 ------------------------------------------------------------------------------
- vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
+ vim:tw=78:isk=!-~,^*,^\|,^\":ts=8:noet:ft=help:norl:

@@ -31,3 +31,122 @@ func Test_writefile_fails_gently()
 
   call assert_fails('call writefile([], [])', 'E730:')
 endfunc
+
+func Test_writefile_fails_conversion()
+  if !has('multi_byte') || !has('iconv') || system('uname -s') =~ 'SunOS'
+    return
+  endif
+  set nobackup nowritebackup
+  new
+  let contents = ["line one", "line two"]
+  call writefile(contents, 'Xfile')
+  edit Xfile
+  call setline(1, ["first line", "cannot convert \u010b", "third line"])
+  call assert_fails('write ++enc=cp932')
+  call assert_equal(contents, readfile('Xfile'))
+
+  call delete('Xfile')
+  bwipe!
+  set backup& writebackup&
+endfunc
+
+func SetFlag(timer)
+  let g:flag = 1
+endfunc
+
+func Test_write_quit_split()
+  " Prevent exiting by splitting window on file write.
+  augroup testgroup
+    autocmd BufWritePre * split
+  augroup END
+  e! Xfile
+  call setline(1, 'nothing')
+  wq
+
+  if has('timers')
+    " timer will not run if "exiting" is still set
+    let g:flag = 0
+    call timer_start(1, 'SetFlag')
+    sleep 50m
+    call assert_equal(1, g:flag)
+    unlet g:flag
+  endif
+  au! testgroup
+  bwipe Xfile
+  call delete('Xfile')
+endfunc
+
+func Test_nowrite_quit_split()
+  " Prevent exiting by opening a help window.
+  e! Xfile
+  help
+  wincmd w
+  exe winnr() . 'q'
+
+  if has('timers')
+    " timer will not run if "exiting" is still set
+    let g:flag = 0
+    call timer_start(1, 'SetFlag')
+    sleep 50m
+    call assert_equal(1, g:flag)
+    unlet g:flag
+  endif
+  bwipe Xfile
+endfunc
+
+func Test_writefile_sync_arg()
+  " This doesn't check if fsync() works, only that the argument is accepted.
+  call writefile(['one'], 'Xtest', 's')
+  call writefile(['two'], 'Xtest', 'S')
+  call delete('Xtest')
+endfunc
+
+func Test_writefile_sync_dev_stdout()
+  if !has('unix')
+    return
+  endif
+  if filewritable('/dev/stdout')
+    " Just check that this doesn't cause an error.
+    call writefile(['one'], '/dev/stdout')
+  else
+    throw 'Skipped: /dev/stdout is not writable'
+  endif
+endfunc
+
+func Test_writefile_autowrite()
+  set autowrite
+  new
+  next Xa Xb Xc
+  call setline(1, 'aaa')
+  next
+  call assert_equal(['aaa'], readfile('Xa'))
+  call setline(1, 'bbb')
+  call assert_fails('edit XX')
+  call assert_false(filereadable('Xb'))
+
+  set autowriteall
+  edit XX
+  call assert_equal(['bbb'], readfile('Xb'))
+
+  bwipe!
+  call delete('Xa')
+  call delete('Xb')
+  set noautowrite
+endfunc
+
+func Test_writefile_autowrite_nowrite()
+  set autowrite
+  new
+  next Xa Xb Xc
+  set buftype=nowrite
+  call setline(1, 'aaa')
+  let buf = bufnr('%')
+  " buffer contents silently lost
+  edit XX
+  call assert_false(filereadable('Xa'))
+  rewind
+  call assert_equal('', getline(1))
+
+  bwipe!
+  set noautowrite
+endfunc

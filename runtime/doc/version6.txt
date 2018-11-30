@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.0.  Last change: 2014 Aug 29
+*version6.txt*  For Vim version 8.1.  Last change: 2018 Mar 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2967,7 +2967,7 @@ DOS and Windows: Expanding *.vim also matched file.vimfoo.  Expand path like
 Unix to avoid problems with Windows dir functions.  Merged the DOS and Win32
 functions.
 
-Win32: Gvimext could not edit more than a few files at once, the length of the
+Win32: GvimExt could not edit more than a few files at once, the length of the
 argument was fixed.
 
 "ls -1 * | xargs vim" worked, but the input was in cooked mode.  Now switch to
@@ -6103,7 +6103,7 @@ New tutor translations:
 	Slovak (Lubos Celko)
 	Greek (Christos Kontas)
 	German (Joachim Hofmann)
-	Norwegian (Øyvind Holm)
+	Norwegian (Ã˜yvind Holm)
 
 New filetype plugins:
 	Occam (Mario Schweigler)
@@ -6121,13 +6121,13 @@ New compiler plugins:
 	Modelsim vcom (Paul Baleme)
 
 New menu translations:
-	Brazilian (José de Paula)
+	Brazilian (JosÃ© de Paula)
 	British (Mike Williams)
 	Korean in UTF-8. (Nam SungHyun)
-	Norwegian (Øyvind Holm)
+	Norwegian (Ã˜yvind Holm)
 	Serbian (Aleksandar Jelenak)
 
-New message translation for Norwegian. (Øyvind Holm)
+New message translation for Norwegian. (Ã˜yvind Holm)
 
 New color scheme:
 	desert (Hans Fugal)
@@ -10066,7 +10066,7 @@ Files:	    src/os_unix.c
 
 Patch 6.2.019 (lang)
 Problem:    Loading the Portuguese menu causes an error message.
-Solution:   Join two lines.  (Jose Pedro Oliveira, José de Paula)
+Solution:   Join two lines.  (Jose Pedro Oliveira, JosÃ© de Paula)
 Files:	    runtime/lang/menu_pt_br.vim
 
 Patch 6.2.020
@@ -12418,7 +12418,7 @@ Files:	    src/message.c
 
 Patch 6.2.376
 Problem:    Win32: Ruby interface cannot be dynamically linked with Ruby 1.6.
-Solution:   Add #ifdefs around use of rb_w32_snprintf().  (Benoît Cerrina)
+Solution:   Add #ifdefs around use of rb_w32_snprintf().  (BenoÃ®t Cerrina)
 Files:	    src/if_ruby.c
 
 Patch 6.2.377 (after 6.2.372)
@@ -14320,7 +14320,7 @@ Files:	    src/edit.c
 Patch 6.3.061
 Problem:    When editing a utf-8 file in an utf-8 xterm and there is a
 	    multi-byte character in the last column, displaying is messed up.
-	    (Joël Rio)
+	    (JoÃ«l Rio)
 Solution:   Check for a multi-byte character, not a multi-column character.
 Files:	    src/screen.c
 
@@ -14527,4 +14527,4 @@ Solution:   Don't advance the cursor to include a line break when it's already
 Files:	    src/search.c
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -117,53 +117,12 @@ static void sandbox_check(void);
 #endif
 /*  Buffer-related commands */
 static Scheme_Object *buffer_new(buf_T *buf);
-static Scheme_Object *get_buffer_by_name(void *, int, Scheme_Object **);
 static Scheme_Object *get_buffer_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_name(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_size(void *, int, Scheme_Object **);
-static Scheme_Object *get_curr_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_next_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_prev_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *mzscheme_open_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *insert_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_start(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_end(void *, int, Scheme_Object **);
 static vim_mz_buffer *get_vim_curr_buffer(void);
 
 /*  Window-related commands */
 static Scheme_Object *window_new(win_T *win);
-static Scheme_Object *get_curr_win(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-#ifdef FEAT_WINDOWS
-static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
-#endif
-static Scheme_Object *get_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *set_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_list(void *, int, Scheme_Object **);
 static vim_mz_window *get_vim_curr_window(void);
-
-/*  Vim-related commands */
-static Scheme_Object *mzscheme_beep(void *, int, Scheme_Object **);
-static Scheme_Object *get_option(void *, int, Scheme_Object **);
-static Scheme_Object *set_option(void *, int, Scheme_Object **);
-static Scheme_Object *vim_command(void *, int, Scheme_Object **);
-static Scheme_Object *vim_eval(void *, int, Scheme_Object **);
-static Scheme_Object *vim_bufferp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_windowp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_buffer_validp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_window_validp(void *data, int, Scheme_Object **);
 
 /*
  *========================================================================
@@ -759,7 +718,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 mzscheme_enabled(int verbose)
 {
     return mzscheme_runtime_link_init(
-	    DYNAMIC_MZSCH_DLL, DYNAMIC_MZGC_DLL, verbose) == OK;
+	    (char *)p_mzschemedll, (char *)p_mzschemegcdll, verbose) == OK;
 }
 
     static void
@@ -1913,11 +1872,9 @@ get_curr_win(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     int	    n = 0;
-#ifdef FEAT_WINDOWS
     win_T   *w;
 
     FOR_ALL_WINDOWS(w)
-#endif
 	++n;
     return scheme_make_integer(n);
 }
@@ -1934,9 +1891,7 @@ get_window_list(void *data, int argc, Scheme_Object **argv)
     buf = get_buffer_arg(prim->name, 0, argc, argv);
     list = scheme_null;
 
-#ifdef FEAT_WINDOWS
     for ( ; w != NULL; w = w->w_next)
-#endif
 	if (w->w_buffer == buf->buf)
 	{
 	    list = scheme_make_pair(window_new(w), list);
@@ -1988,13 +1943,11 @@ window_new(win_T *win)
 get_window_num(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     int		nr = 1;
-#ifdef FEAT_WINDOWS
     Vim_Prim	*prim = (Vim_Prim *)data;
     win_T	*win = get_window_arg(prim->name, 0, argc, argv)->win;
     win_T	*wp;
 
     for (wp = firstwin; wp != win; wp = wp->w_next)
-#endif
 	++nr;
 
     return scheme_make_integer(nr);
@@ -2012,9 +1965,7 @@ get_window_by_num(void *data, int argc, Scheme_Object **argv)
     if (fnum < 1)
 	scheme_signal_error(_("window index is out of range"));
 
-#ifdef FEAT_WINDOWS
     for ( ; win != NULL; win = win->w_next, --fnum)
-#endif
 	if (fnum == 1)	    /* to be 1-based */
 	    return window_new(win);
 
@@ -2066,7 +2017,6 @@ set_window_height(void *data, int argc, Scheme_Object **argv)
     return scheme_void;
 }
 
-#ifdef FEAT_WINDOWS
 /* (get-win-width [window]) */
     static Scheme_Object *
 get_window_width(void *data, int argc, Scheme_Object **argv)
@@ -2074,7 +2024,7 @@ get_window_width(void *data, int argc, Scheme_Object **argv)
     Vim_Prim	    *prim = (Vim_Prim *)data;
     vim_mz_window   *win = get_window_arg(prim->name, 0, argc, argv);
 
-    return scheme_make_integer(W_WIDTH(win->win));
+    return scheme_make_integer(win->win->w_width);
 }
 
 /* (set-win-width {width} [window]) */
@@ -2101,7 +2051,6 @@ set_window_width(void *data, int argc, Scheme_Object **argv)
     raise_if_error();
     return scheme_void;
 }
-#endif
 
 /* (get-cursor [window]) -> (line . col) */
     static Scheme_Object *
@@ -2144,6 +2093,7 @@ set_cursor(void *data, int argc, Scheme_Object **argv)
 
     win->win->w_cursor.lnum = lnum;
     win->win->w_cursor.col = col;
+    win->win->w_set_curswant = TRUE;
     update_screen(VALID);
 
     raise_if_error();
@@ -3744,10 +3694,8 @@ static Vim_Prim prims[]=
     {get_window_buffer, "get-win-buffer", 0, 1},
     {get_window_height, "get-win-height", 0, 1},
     {set_window_height, "set-win-height", 1, 2},
-#ifdef FEAT_WINDOWS
     {get_window_width, "get-win-width", 0, 1},
     {set_window_width, "set-win-width", 1, 2},
-#endif
     {get_cursor, "get-cursor", 0, 1},
     {set_cursor, "set-cursor", 1, 2},
     {get_window_list, "get-win-list", 0, 1},

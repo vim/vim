@@ -61,13 +61,13 @@ SInt32 gMacSystemVersion;
 # define USE_CARBONKEYHANDLER
 
 static int im_is_active = FALSE;
-#if 0
+# if 0
     /* TODO: Implement me! */
 static int im_start_row = 0;
 static int im_start_col = 0;
-#endif
+# endif
 
-#define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
+# define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
 
 static TSMDocumentID gTSMDocument;
 
@@ -267,9 +267,7 @@ static struct
 /*  {XK_Help,		'%', '1'}, */
 /*  {XK_Undo,		'&', '8'}, */
 /*  {XK_BackSpace,	'k', 'b'}, */
-#ifndef MACOS_X
-    {vk_Delete,		'k', 'b'},
-#endif
+/*  {vk_Delete,		'k', 'b'}, */
     {vk_Insert,		'k', 'I'},
     {vk_FwdDelete,	'k', 'D'},
     {vk_Home,		'k', 'h'},
@@ -302,7 +300,6 @@ static WindowRef drawer = NULL; // TODO: put into gui.h
 
 #ifdef USE_ATSUI_DRAWING
 static void gui_mac_set_font_attributes(GuiFont font);
-static void gui_mac_dispose_atsui_style(void);
 #endif
 
 /*
@@ -1009,6 +1006,55 @@ struct SelectionRange /* for handling kCoreClassEvent:kOpenDocuments:keyAEPositi
     long theDate; // modification date/time
 };
 
+static long drop_numFiles;
+static short drop_gotPosition;
+static SelectionRange drop_thePosition;
+
+    static void
+drop_callback(void *cookie UNUSED)
+{
+    /* TODO: Handle the goto/select line more cleanly */
+    if ((drop_numFiles == 1) & (drop_gotPosition))
+    {
+	if (drop_thePosition.lineNum >= 0)
+	{
+	    lnum = drop_thePosition.lineNum + 1;
+	/*  oap->motion_type = MLINE;
+	    setpcmark();*/
+	    if (lnum < 1L)
+		lnum = 1L;
+	    else if (lnum > curbuf->b_ml.ml_line_count)
+		lnum = curbuf->b_ml.ml_line_count;
+	    curwin->w_cursor.lnum = lnum;
+	    curwin->w_cursor.col = 0;
+	/*  beginline(BL_SOL | BL_FIX);*/
+	}
+	else
+	    goto_byte(drop_thePosition.startRange + 1);
+    }
+
+    /* Update the screen display */
+    update_screen(NOT_VALID);
+
+    /* Select the text if possible */
+    if (drop_gotPosition)
+    {
+	VIsual_active = TRUE;
+	VIsual_select = FALSE;
+	VIsual = curwin->w_cursor;
+	if (drop_thePosition.lineNum < 0)
+	{
+	    VIsual_mode = 'v';
+	    goto_byte(drop_thePosition.endRange);
+	}
+	else
+	{
+	    VIsual_mode = 'V';
+	    VIsual.col = 0;
+	}
+    }
+}
+
 /* The IDE uses the optional keyAEPosition parameter to tell the ed-
    itor the selection range. If lineNum is zero or greater, scroll the text
    to the specified line. If lineNum is less than zero, use the values in
@@ -1107,55 +1153,18 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	}
 
 	/* Change directory to the location of the first file. */
-	if (GARGCOUNT > 0 && vim_chdirfile(alist_name(&GARGLIST[0])) == OK)
+	if (GARGCOUNT > 0
+		      && vim_chdirfile(alist_name(&GARGLIST[0]), "drop") == OK)
 	    shorten_fnames(TRUE);
 
 	goto finished;
     }
 
     /* Handle the drop, :edit to get to the file */
-    handle_drop(numFiles, fnames, FALSE);
-
-    /* TODO: Handle the goto/select line more cleanly */
-    if ((numFiles == 1) & (gotPosition))
-    {
-	if (thePosition.lineNum >= 0)
-	{
-	    lnum = thePosition.lineNum + 1;
-	/*  oap->motion_type = MLINE;
-	    setpcmark();*/
-	    if (lnum < 1L)
-		lnum = 1L;
-	    else if (lnum > curbuf->b_ml.ml_line_count)
-		lnum = curbuf->b_ml.ml_line_count;
-	    curwin->w_cursor.lnum = lnum;
-	    curwin->w_cursor.col = 0;
-	/*  beginline(BL_SOL | BL_FIX);*/
-	}
-	else
-	    goto_byte(thePosition.startRange + 1);
-    }
-
-    /* Update the screen display */
-    update_screen(NOT_VALID);
-
-    /* Select the text if possible */
-    if (gotPosition)
-    {
-	VIsual_active = TRUE;
-	VIsual_select = FALSE;
-	VIsual = curwin->w_cursor;
-	if (thePosition.lineNum < 0)
-	{
-	    VIsual_mode = 'v';
-	    goto_byte(thePosition.endRange);
-	}
-	else
-	{
-	    VIsual_mode = 'V';
-	    VIsual.col = 0;
-	}
-    }
+    drop_numFiles = numFiles;
+    drop_gotPosition = gotPosition;
+    drop_thePosition = thePosition;
+    handle_drop(numFiles, fnames, FALSE, drop_callback, NULL);
 
     setcursor();
     out_flush();
@@ -1612,7 +1621,7 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     else			/* Bottom scrollbar */
     {
 	sb_info = sb;
-	page = W_WIDTH(curwin) - 5;
+	page = curwin->w_width - 5;
     }
 
     switch (partCode)
@@ -2026,15 +2035,15 @@ gui_mac_handle_window_activate(
 	switch (eventKind)
 	{
 	    case kEventWindowActivated:
-#if defined(USE_IM_CONTROL)
+# if defined(FEAT_MBYTE)
 		im_on_window_switch(TRUE);
-#endif
+# endif
 		return noErr;
 
 	    case kEventWindowDeactivated:
-#if defined(USE_IM_CONTROL)
+# if defined(FEAT_MBYTE)
 		im_on_window_switch(FALSE);
-#endif
+# endif
 		return noErr;
 	}
     }
@@ -2269,7 +2278,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
     if (p_mh)
 	ObscureCursor();
 
-    /* Get the key code and it's ASCII representation */
+    /* Get the key code and its ASCII representation */
     key_sym = ((theEvent->message & keyCodeMask) >> 8);
     key_char = theEvent->message & charCodeMask;
     num = 1;
@@ -2588,7 +2597,7 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 bail:
     /*
      * when we fail give any additional callback handler a chance to perform
-     * it's actions
+     * its actions
      */
     return CallNextEventHandler(nextHandler, theEvent);
 }
@@ -3726,6 +3735,12 @@ gui_mch_get_color(char_u *name)
     return gui_get_color_cmn(name);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
 /*
  * Set the current text foreground color.
  */
@@ -3892,6 +3907,11 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	{
 	    MoveTo(FILL_X(col), FILL_Y(row + 1) - 1);
 	    LineTo(FILL_X(col + len) - 1, FILL_Y(row + 1) - 1);
+	}
+	if (flags & DRAW_STRIKE)
+	{
+	    MoveTo(FILL_X(col), FILL_Y(row + 1) - gui.char_height/2);
+	    LineTo(FILL_X(col + len) - 1, FILL_Y(row + 1) - gui.char_height/2);
 	}
     }
 
@@ -5147,9 +5167,10 @@ gui_mch_set_blinking(long wait, long on, long off)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
-    gui_update_cursor(TRUE, FALSE);
+    if (may_call_gui_update_cursor)
+	gui_update_cursor(TRUE, FALSE);
     /* TODO: TODO: TODO: TODO: */
 /*    gui_w32_rm_blink_timer();
     if (blink_state == BLINK_OFF)
@@ -6221,7 +6242,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if (defined(USE_IM_CONTROL) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
+#if (defined(FEAT_MBYTE) && defined(USE_CARBONKEYHANDLER)) || defined(PROTO)
 /*
  * Input Method Control functions.
  */
@@ -6232,11 +6253,11 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     void
 im_set_position(int row, int col)
 {
-#if 0
+# if 0
     /* TODO: Implement me! */
     im_start_row = row;
     im_start_col = col;
-#endif
+# endif
 }
 
 static ScriptLanguageRecord gTSLWindow;
@@ -6308,7 +6329,7 @@ im_set_active(int active)
     ScriptLanguageRecord *slptr = NULL;
     OSStatus err;
 
-    if (! gui.in_use)
+    if (!gui.in_use)
 	return;
 
     if (im_initialized == 0)
@@ -6370,7 +6391,7 @@ im_get_status(void)
     return im_is_active;
 }
 
-#endif /* defined(USE_IM_CONTROL) || defined(PROTO) */
+#endif /* defined(FEAT_MBYTE) || defined(PROTO) */
 
 
 

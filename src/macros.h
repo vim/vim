@@ -14,9 +14,9 @@
  */
 
 /*
- * PCHAR(lp, c) - put character 'c' at position 'lp'
+ * PBYTE(lp, c) - put byte 'c' at position 'lp'
  */
-#define PCHAR(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
+#define PBYTE(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
 
 /*
  * Position comparisons
@@ -191,11 +191,8 @@
 # ifndef WIN32
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# if !(defined(FEAT_MBYTE) && defined(WIN3264))
-#  define mch_fopen(n, p)	fopen((n), (p))
-# endif
 # define mch_fstat(n, p)	fstat((n), (p))
-# ifdef MSWIN	/* has it's own mch_stat() function */
+# ifdef MSWIN	/* has its own mch_stat() function */
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
@@ -212,22 +209,13 @@
 # define mch_lstat(n, p)	mch_stat((n), (p))
 #endif
 
-#ifdef MACOS_CLASSIC
-/* MacOS classic doesn't support perm but MacOS X does. */
-# define mch_open(n, m, p)	open((n), (m))
-#else
-# ifdef VMS
+#ifdef VMS
 /*
  * It is possible to force some record format with:
  * #  define mch_open(n, m, p) open(vms_fixfilename(n), (m), (p)), "rat=cr", "rfm=stmlf", "mrs=0")
  * but it is not recommended, because it can destroy indexes etc.
  */
-#  define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
-# else
-#  if !(defined(FEAT_MBYTE) && defined(WIN3264))
-#   define mch_open(n, m, p)	open((n), (m), (p))
-#  endif
-# endif
+# define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
 #endif
 
 /* mch_open_rw(): invoke mch_open() with third argument for user R/W. */
@@ -242,16 +230,12 @@
 #endif
 
 #ifdef STARTUPTIME
-# define TIME_MSG(s) { if (time_fd != NULL) time_msg(s, NULL); }
+# define TIME_MSG(s) do { if (time_fd != NULL) time_msg(s, NULL); } while (0)
 #else
-# define TIME_MSG(s)
+# define TIME_MSG(s) do { /**/ } while (0)
 #endif
 
-#ifdef FEAT_VREPLACE
-# define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
-#else
-# define REPLACE_NORMAL(s) ((s) & REPLACE_FLAG)
-#endif
+#define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
 
 #ifdef FEAT_ARABIC
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_composinglike((p1), (p2))
@@ -273,7 +257,7 @@
  * PTR2CHAR(): get character from pointer.
  */
 #ifdef FEAT_MBYTE
-/* Get the length of the character p points to */
+/* Get the length of the character p points to, including composing chars */
 # define MB_PTR2LEN(p)	    (has_mbyte ? (*mb_ptr2len)(p) : 1)
 /* Advance multi-byte pointer, skip over composing chars. */
 # define MB_PTR_ADV(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
@@ -301,24 +285,12 @@
 #endif
 
 #ifdef FEAT_AUTOCHDIR
-# define DO_AUTOCHDIR if (p_acd) do_autochdir();
+# define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
 #else
-# define DO_AUTOCHDIR
+# define DO_AUTOCHDIR do { /**/ } while (0)
 #endif
 
-#if defined(FEAT_SCROLLBIND) && defined(FEAT_CURSORBIND)
-# define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE
-#else
-# if defined(FEAT_SCROLLBIND)
-#  define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE
-# else
-#  if defined(FEAT_CURSORBIND)
-#   define RESET_BINDING(wp)  (wp)->w_p_crb = FALSE
-#  else
-#   define RESET_BINDING(wp)
-#  endif
-# endif
-#endif
+#define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE
 
 #ifdef FEAT_DIFF
 # define PLINES_NOFILL(x) plines_nofill(x)
@@ -377,6 +349,28 @@
  * HIKEY2DI() converts a hashitem key pointer to a dictitem pointer.
  * HI2DI() converts a hashitem pointer to a dictitem pointer.
  */
-# define DI2HIKEY(di) ((di)->di_key)
-# define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
-# define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
+#define DI2HIKEY(di) ((di)->di_key)
+#define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
+#define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
+
+/*
+ * Flush control functions.
+ */
+#ifdef FEAT_GUI
+# define mch_enable_flush()	gui_enable_flush()
+# define mch_disable_flush()	gui_disable_flush()
+#else
+# define mch_enable_flush()
+# define mch_disable_flush()
+#endif
+
+/*
+ * Like vim_free(), and also set the pointer to NULL.
+ */
+#define VIM_CLEAR(p) \
+    do { \
+	if ((p) != NULL) { \
+	    vim_free(p); \
+	    (p) = NULL; \
+	} \
+    } while (0)

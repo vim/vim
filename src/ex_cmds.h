@@ -20,9 +20,10 @@
  * 1. Add an entry in the table below.  Keep it sorted on the shortest
  *    version of the command name that works.  If it doesn't start with a
  *    lower case letter, add it at the end.
- * 2. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
- * 3. Add an entry in the index for Ex commands at ":help ex-cmd-index".
- * 4. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
+ * 2. Run "make cmdidxs" to re-generate ex_cmdidxs.h.
+ * 3. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
+ * 4. Add an entry in the index for Ex commands at ":help ex-cmd-index".
+ * 5. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
  *    long name of the command.
  */
 
@@ -51,7 +52,9 @@
 #define BUFUNL	      0x20000L	/* accepts unlisted buffer too */
 #define ARGOPT	      0x40000L	/* allow "++opt=val" argument */
 #define SBOXOK	      0x80000L	/* allowed in the sandbox */
-#define CMDWIN	     0x100000L	/* allowed in cmdline window */
+#define CMDWIN	     0x100000L	/* allowed in cmdline window; when missing
+				 * disallows editing another buffer when
+				 * curbuf_lock is set */
 #define MODIFY       0x200000L	/* forbidden in non-'modifiable' buffer */
 #define EXFLAGS      0x400000L	/* allow flags after count in argument */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
@@ -135,7 +138,7 @@ EX(CMD_argdo,		"argdo",	ex_listdo,
 			BANG|NEEDARG|EXTRA|NOTRLCOM|RANGE|NOTADR|DFLALL,
 			ADDR_ARGUMENTS),
 EX(CMD_argedit,		"argedit",	ex_argedit,
-			BANG|NEEDARG|RANGE|NOTADR|ZEROR|FILE1|EDITCMD|ARGOPT|TRLBAR,
+			BANG|NEEDARG|RANGE|NOTADR|ZEROR|FILES|EDITCMD|ARGOPT|TRLBAR,
 			ADDR_ARGUMENTS),
 EX(CMD_argglobal,	"argglobal",	ex_args,
 			BANG|FILES|EDITCMD|ARGOPT|TRLBAR,
@@ -174,7 +177,7 @@ EX(CMD_bdelete,		"bdelete",	ex_bunload,
 			BANG|RANGE|NOTADR|BUFNAME|COUNT|EXTRA|TRLBAR,
 			ADDR_BUFFERS),
 EX(CMD_behave,		"behave",	ex_behave,
-			NEEDARG|WORD1|TRLBAR|CMDWIN,
+			BANG|NEEDARG|WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_belowright,	"belowright",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM,
@@ -426,7 +429,7 @@ EX(CMD_delcommand,	"delcommand",	ex_delcommand,
 			NEEDARG|WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_delfunction,	"delfunction",	ex_delfunction,
-			NEEDARG|WORD1|CMDWIN,
+			BANG|NEEDARG|WORD1|CMDWIN,
 			ADDR_LINES),
 EX(CMD_display,		"display",	ex_display,
 			EXTRA|NOTRLCOM|TRLBAR|SBOXOK|CMDWIN,
@@ -582,7 +585,7 @@ EX(CMD_for,		"for",		ex_while,
 			EXTRA|NOTRLCOM|SBOXOK|CMDWIN,
 			ADDR_LINES),
 EX(CMD_function,	"function",	ex_function,
-			EXTRA|BANG|CMDWIN,
+			EXTRA|BANG|SBOXOK|CMDWIN,
 			ADDR_LINES),
 EX(CMD_global,		"global",	ex_global,
 			RANGE|WHOLEFOLD|BANG|EXTRA|DFLALL|SBOXOK|CMDWIN,
@@ -1176,7 +1179,7 @@ EX(CMD_registers,	"registers",	ex_display,
 			EXTRA|NOTRLCOM|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_resize,		"resize",	ex_resize,
-			RANGE|NOTADR|TRLBAR|WORD1,
+			RANGE|NOTADR|TRLBAR|WORD1|CMDWIN,
 			ADDR_LINES),
 EX(CMD_retab,		"retab",	ex_retab,
 			TRLBAR|RANGE|WHOLEFOLD|DFLALL|BANG|WORD1|CMDWIN|MODIFY,
@@ -1481,6 +1484,9 @@ EX(CMD_tclfile,		"tclfile",	ex_tclfile,
 EX(CMD_tearoff,		"tearoff",	ex_tearoff,
 			NEEDARG|EXTRA|TRLBAR|NOTRLCOM|CMDWIN,
 			ADDR_LINES),
+EX(CMD_terminal,	"terminal",	ex_terminal,
+			RANGE|BANG|FILES|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tfirst,		"tfirst",	ex_tag,
 			RANGE|NOTADR|BANG|TRLBAR|ZEROR,
 			ADDR_LINES),
@@ -1493,11 +1499,29 @@ EX(CMD_tjump,		"tjump",	ex_tag,
 EX(CMD_tlast,		"tlast",	ex_tag,
 			BANG|TRLBAR,
 			ADDR_LINES),
+EX(CMD_tlmenu,		"tlmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlunmenu,	"tlunmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tmenu,		"tmenu",	ex_menu,
 			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
+EX(CMD_tmap,		"tmap",		ex_map,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tmapclear,	"tmapclear",	ex_mapclear,
+			EXTRA|TRLBAR|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tnext,		"tnext",	ex_tag,
 			RANGE|NOTADR|BANG|TRLBAR|ZEROR,
+			ADDR_LINES),
+EX(CMD_tnoremap,	"tnoremap",	ex_map,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_topleft,		"topleft",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM,
@@ -1515,6 +1539,9 @@ EX(CMD_tselect,		"tselect",	ex_tag,
 			BANG|TRLBAR|WORD1,
 			ADDR_LINES),
 EX(CMD_tunmenu,		"tunmenu",	ex_menu,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tunmap,		"tunmap",	ex_unmap,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_undo,		"undo",		ex_undo,
@@ -1620,7 +1647,7 @@ EX(CMD_winsize,		"winsize",	ex_winsize,
 			EXTRA|NEEDARG|TRLBAR,
 			ADDR_LINES),
 EX(CMD_wincmd,		"wincmd",	ex_wincmd,
-			NEEDARG|WORD1|RANGE|NOTADR,
+			NEEDARG|WORD1|RANGE|NOTADR|CMDWIN,
 			ADDR_WINDOWS),
 EX(CMD_windo,		"windo",	ex_listdo,
 			NEEDARG|EXTRA|NOTRLCOM|RANGE|NOTADR|DFLALL,
@@ -1761,7 +1788,7 @@ struct exarg
     int		regname;	/* register name (NUL if none) */
     int		force_bin;	/* 0, FORCE_BIN or FORCE_NOBIN */
     int		read_edit;	/* ++edit argument */
-    int		force_ff;	/* ++ff= argument (index in cmd[]) */
+    int		force_ff;	/* ++ff= argument (first char of argument) */
 #ifdef FEAT_MBYTE
     int		force_enc;	/* ++enc= argument (index in cmd[]) */
     int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement byte */
@@ -1774,6 +1801,12 @@ struct exarg
     void	*cookie;	/* argument for getline() */
 #ifdef FEAT_EVAL
     struct condstack *cstack;	/* condition stack for ":if" etc. */
+#endif
+    long	verbose_save;	 // saved value of p_verbose
+    int		save_msg_silent; // saved value of msg_silent
+    int		did_esilent;	 // how many times emsg_silent was incremented
+#ifdef HAVE_SANDBOX
+    int		did_sandbox;	// when TRUE did ++sandbox
 #endif
 };
 

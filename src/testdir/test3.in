@@ -2339,6 +2339,16 @@ CCC
 /* end of define */
 
 STARTTEST
+:set cin cino&
+/a = second
+ox
+ENDTEST
+
+{
+	a = second/*bug*/*line;
+}
+
+STARTTEST
 :g/^STARTTEST/.,/^ENDTEST/d
 :1;/start of AUTO/,$wq! test.out
 ENDTEST

@@ -8,6 +8,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
+#include "protodef.h"
 #ifdef HAVE_CONFIG_H
 # include "auto/config.h"
 #endif
@@ -33,7 +34,6 @@
 
 #include "vim.h"
 #include "version.h"
-#include "gui_beval.h"
 #include "workshop.h"
 
 void		 workshop_hotkeys(Boolean);
@@ -45,12 +45,15 @@ static char	*addUniqueMnemonic(char *, char *);
 static char	*fixup(char *);
 static char	*get_selection(buf_T *);
 static char	*append_selection(int, char *, int *, int *);
-static void	 load_buffer_by_name(char *, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 void		 workshop_beval_cb(BalloonEval *, int);
+# ifdef FEAT_VARTABS
+static int	 computeIndex(int, char_u *, int, int *);
+# else
 static int	 computeIndex(int, char_u *, int);
+# endif
 #endif
 static char	*fixAccelText(char *);
 static void	 addMenu(char *, char *, char *);
@@ -208,7 +211,7 @@ workshop_load_file(
 	wstrace("workshop_load_file(%s, %d)\n", filename, line);
 #endif
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     bevalServers |= BEVAL_WORKSHOP;
 #endif
 
@@ -1224,7 +1227,6 @@ append_selection(
 }
 
 
-
     static void
 load_buffer_by_name(
 	char	*filename,		/* the file to load */
@@ -1265,7 +1267,6 @@ load_window(
     }
     else
     {
-#ifdef FEAT_WINDOWS
 	/* buf is in a window */
 	if (win != curwin)
 	{
@@ -1273,7 +1274,6 @@ load_window(
 	    /* wsdebug("load_window: window enter %s\n",
 		    win->w_buffer->b_sfname); */
 	}
-#endif
 	if (lnum > 0 && win->w_cursor.lnum != lnum)
 	{
 	    warp_to_pc(lnum);
@@ -1499,7 +1499,7 @@ fixAccelText(
 	return NULL;
 }
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     void
 workshop_beval_cb(
 	BalloonEval	*beval,
@@ -1537,7 +1537,11 @@ workshop_beval_cb(
 	     * a column number. Compute the index from col. Also set
 	     * line to 0 because thats what dbx expects.
 	     */
-	    idx = computeIndex(col, text, beval->ts);
+#ifdef FEAT_VARTABS
+	    idx = computeIndex(col, text, beval->ts, beval->vts);
+#else
+	    idx = computeIndex(col, text, beval->ts, 0);
+#endif
 	    if (idx > 0)
 	    {
 		lnum = 0;
@@ -1572,7 +1576,8 @@ workshop_beval_cb(
 computeIndex(
 	int		 wantedCol,
 	char_u		*line,
-	int		 ts)
+	int		 ts,
+	int		*vts UNUSED)
 {
     int		 col = 0;
     int		 idx = 0;
@@ -1580,7 +1585,11 @@ computeIndex(
     while (line[idx])
     {
 	if (line[idx] == '\t')
+#ifdef FEAT_VARTABS
+	    col += tabstop_padding(col, ts, vts);
+#else
 	    col += ts - (col % ts);
+#endif
 	else
 	    col++;
 	idx++;

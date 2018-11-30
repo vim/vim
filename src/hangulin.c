@@ -37,8 +37,6 @@ static int hangul_keyboard_type = HANGUL_DEFAULT_KEYBOARD;
 
 static void convert_ks_to_3(const char_u *src, int *fp, int *mp, int *lp);
 static int convert_3_to_ks(int fv, int mv, int lv, char_u *des);
-static int hangul_automata2(char_u *buf, unsigned int *c);
-static int hangul_automata3(char_u *buf, unsigned int *c);
 
 #define push(x)	 {stack[ sp++ ] = *(x); stack[sp++] = *((x)+1);}
 #define pop(x)	 {*((x) + 1) = stack[--sp]; *(x) = stack[--sp];}

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Jan 15
+*starting.txt*  For Vim version 8.1.  Last change: 2018 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -58,9 +58,9 @@ filename	One or more file names.  The first one will be the current
 		that is read from stdin.  The commands that would normally be
 		read from stdin will now be read from stderr.  Example: >
 			find . -name "*.c" -print | vim -
-<		The buffer will be marked modified, because it contains text
-		that needs to be saved.  Except when in readonly mode, then
-		the buffer is not marked modified.  Example: >
+<		The buffer will not be marked as modified, so that it's easy
+		to exit.  Be careful to mark it as modified if you don't want
+		to accidentally lose it.  Example: >
 			ls | view -
 <
 		Starting in Ex mode: >
@@ -127,7 +127,8 @@ argument.
 On VMS all option arguments are assumed to be lowercase, unless preceded with
 a slash.  Thus "-R" means recovery and "-/R" readonly.
 
---help							*-h* *--help*
+--help							*-h* *--help* *-?*
+-?
 -h		Give usage (help) message and exit.  {not in Vi}
 		See |info-message| about capturing the text.
 
@@ -140,11 +141,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --noplugin	Skip loading plugins.  Resets the 'loadplugins' option.
 		{not in Vi}
 		Note that the |-u| argument may also disable loading plugins:
-			argument	load vimrc files	load plugins ~
-			(nothing)		yes		    yes
-			-u NONE			no		    no
-			-u NORC			no		    yes
-			--noplugin		yes		    no
+			argument   load: vimrc files  plugins  defaults.vim ~
+			(nothing)	     yes	yes	  yes
+			-u NONE		     no		no	  no
+			-u DEFAULTS	     no		no	  yes
+			-u NORC		     no		yes	  no
+			--noplugin	     yes	no	  yes
 
 --startuptime {fname}					*--startuptime*
 		During startup write timing messages to the file {fname}.
@@ -420,7 +422,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*--not-a-term*
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
-		the two second delay that would happen. {not in Vi}
+		the two second delay that would happen.
+		Also avoids the "Reading from stdin..." message.
+		{not in Vi}
 
 							*--ttyfail*
 --ttyfail	When the stdin or stdout is not a terminal (tty) then exit
@@ -465,21 +469,31 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --nofork	GUI: Do not fork.  Same as |-f|.
 							*-u* *E282*
 -u {vimrc}	The file {vimrc} is read for initializations.  Most other
-		initializations are skipped; see |initialization|.  This can
-		be used to start Vim in a special mode, with special
+		initializations are skipped; see |initialization|.
+
+		This can be used to start Vim in a special mode, with special
 		mappings and settings.  A shell alias can be used to make
 		this easy to use.  For example: >
 			alias vimc vim -u ~/.c_vimrc !*
 <		Also consider using autocommands; see |autocommand|.
+
 		When {vimrc} is equal to "NONE" (all uppercase), all
 		initializations from files and environment variables are
 		skipped, including reading the |gvimrc| file when the GUI
 		starts.  Loading plugins is also skipped.
+
 		When {vimrc} is equal to "NORC" (all uppercase), this has the
 		same effect as "NONE", but loading plugins is not skipped.
-		Using the "-u" argument has the side effect that the
-		'compatible' option will be on by default.  This can have
-		unexpected effects.  See |'compatible'|.
+
+		When {vimrc} is equal to "DEFAULTS" (all uppercase), this has
+		the same effect as "NONE", but the |defaults.vim| script is
+		loaded, which will also set 'nocompatible'.  Also see
+		|--clean|.
+
+		Using the "-u" argument with another argument than DEFAULTS
+		has the side effect that the 'compatible' option will be on by
+		default.  This can have unexpected effects.  See
+		|'compatible'|.
 		{not in Vi}
 
 							*-U* *E230*
@@ -496,6 +510,17 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		file is read or written, even if 'viminfo' is set or when
 		":rv" or ":wv" are used.  See also |viminfo-file|.
 		{not in Vi}
+
+							*--clean*
+--clean		Similar to "-u DEFAULTS -U NONE -i NONE":
+		- initializations from files and environment variables is
+		  skipped
+		- 'runtimepath' and 'packpath' are set to exclude home
+		  directory entries (does not happen with -u DEFAULTS).
+		- the |defaults.vim| script is loaded, which implies
+		  'nocompatible': use Vim defaults
+		- no |gvimrc| script is loaded
+		- no viminfo file is read or written
 
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
@@ -856,6 +881,9 @@ accordingly.  Vim proceeds in this order:
      (*) Using this file or environment variable will cause 'compatible' to be
 	 off by default.  See |compatible-default|.
 
+     Note: When using the |mzscheme| interface, it is initialized after loading
+     the vimrc file.  Changing 'mzschemedll' later has no effect.
+
 4. Load the plugin scripts.					*load-plugins*
 	This does the same as the command: >
 		:runtime! plugin/**/*.vim
@@ -868,6 +896,7 @@ accordingly.  Vim proceeds in this order:
 	Loading plugins won't be done when:
 	- The 'loadplugins' option was reset in a vimrc file.
 	- The |--noplugin| command line argument is used.
+	- The |--clean| command line argument is used.
 	- The "-u NONE" command line argument is used |-u|.
 	- When Vim was compiled without the |+eval| feature.
 	Note that using "-c 'set noloadplugins'" doesn't work, because the
@@ -987,13 +1016,13 @@ Vi compatible default value ~
 When Vim starts, the 'compatible' option is on.  This will be used when Vim
 starts its initializations.  But as soon as:
 - a user vimrc file is found, or
-- a vimrc file in the current directory, or
+- a vimrc file in the current directory is found, or
 - the "VIMINIT" environment variable is set, or
 - the "-N" command line argument is given, or
-  even when no vimrc file exists.
+- the "--clean" command line argument is given, or
 - the |defaults.vim| script is loaded, or
-- gvimrc file was found,
-then it will be set to 'nocompatible'.
+- a gvimrc file was found,
+then the option will be set to 'nocompatible'.
 
 Note that this does NOT happen when a system-wide vimrc file was found.
 
@@ -1019,13 +1048,13 @@ giving the mapping.
 Defaults without a .vimrc file ~
 							*defaults.vim*
 If Vim is started normally and no user vimrc file is found, the
-$VIMRUTIME/defaults.vim script is loaded.  This will set 'compatible' off,
+$VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
 details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
 patch 7.4.2111 to be exact).
 
 This should work well for new Vim users.  If you create your own .vimrc, it is
-recommended to add this line somewhere near the top: >
+recommended to add these lines somewhere near the top: >
 	unlet! skip_defaults_vim
 	source $VIMRUNTIME/defaults.vim
 Then Vim works like before you had a .vimrc. Copying $VIMRUNTIME/vimrc_example
@@ -1396,7 +1425,7 @@ The output of ":mkview" contains these items:
 5. The scroll position and the cursor position in the file.  Doesn't work very
    well when there are closed folds.
 6. The local current directory, if it is different from the global current
-   directory.
+   directory and 'viewoptions' contains "curdir".
 
 Note that Views and Sessions are not perfect:
 - They don't restore everything.  For example, defined functions, autocommands
@@ -1508,7 +1537,7 @@ Notes for Unix:
   you have worked with.
 - If you want to share the viminfo file with other users (e.g. when you "su"
   to another user), you can make the file writable for the group or everybody.
-  Vim will preserve this when writing new viminfo files.  Be careful, don't
+  Vim will preserve this when replacing the viminfo file.  Be careful, don't
   allow just anybody to read and write your viminfo file!
 - Vim will not overwrite a viminfo file that is not writable by the current
   "real" user.  This helps for when you did "su" to become root, but your
@@ -1568,6 +1597,8 @@ VIMINFO FILE NAME					*viminfo-file-name*
 - The "-i" Vim argument can be used to set another file name, |-i|.  When the
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
+- The 'viminfofile' option can be used like the "-i" argument.  In fact, the
+  value form the "-i" argument is stored in the 'viminfofile' option.
 - For the commands below, another file name can be given, overriding the
   default and the name given with 'viminfo' or "-i" (unless it's NONE).
 
@@ -1657,4 +1688,4 @@ most of the information will be restored).
 			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

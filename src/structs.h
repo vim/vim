@@ -68,6 +68,25 @@ typedef struct wininfo_S	wininfo_T;
 typedef struct frame_S		frame_T;
 typedef int			scid_T;		/* script ID */
 typedef struct file_buffer	buf_T;  /* forward declaration */
+typedef struct terminal_S	term_T;
+
+#ifdef FEAT_MENU
+typedef struct VimMenu vimmenu_T;
+#endif
+
+/*
+ * SCript ConteXt (SCTX): identifies a script script line.
+ * When sourcing a script "sc_lnum" is zero, "sourcing_lnum" is the current
+ * line number. When executing a user function "sc_lnum" is the line where the
+ * function was defined, "sourcing_lnum" is the line number inside the
+ * function.  When stored with a function, mapping, option, etc. "sc_lnum" is
+ * the line number in the script "sc_sid".
+ */
+typedef struct {
+    scid_T	sc_sid;		// script ID
+    int		sc_seq;		// sourcing sequence number
+    linenr_T	sc_lnum;	// line number
+} sctx_T;
 
 /*
  * Reference to a buffer that stores the value of buf_free_count.
@@ -96,7 +115,10 @@ typedef struct {
 # endif
 # define guicolor_T long
 # define INVALCOLOR ((guicolor_T)0x1ffffff)
+    /* only used for cterm.bg_rgb and cterm.fg_rgb: use cterm color */
+# define CTERMCOLOR ((guicolor_T)0x1fffffe)
 #endif
+#define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
 /*
  * marks: positions in a file
@@ -204,13 +226,11 @@ typedef struct
     long	wo_nuw;
 # define w_p_nuw w_onebuf_opt.wo_nuw	/* 'numberwidth' */
 #endif
-#if defined(FEAT_WINDOWS)
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	/* 'winfixheight' */
     int		wo_wfw;
 # define w_p_wfw w_onebuf_opt.wo_wfw	/* 'winfixwidth' */
-#endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     int		wo_pvw;
 # define w_p_pvw w_onebuf_opt.wo_pvw	/* 'previewwindow' */
 #endif
@@ -238,14 +258,12 @@ typedef struct
     char_u	*wo_stl;
 #define w_p_stl w_onebuf_opt.wo_stl	/* 'statusline' */
 #endif
-#ifdef FEAT_SCROLLBIND
     int		wo_scb;
-# define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */
+#define w_p_scb w_onebuf_opt.wo_scb	/* 'scrollbind' */
     int		wo_diff_saved; /* options were saved for starting diff mode */
-# define w_p_diff_saved w_onebuf_opt.wo_diff_saved
+#define w_p_diff_saved w_onebuf_opt.wo_diff_saved
     int		wo_scb_save;	/* 'scrollbind' saved for diff mode*/
-# define w_p_scb_save w_onebuf_opt.wo_scb_save
-#endif
+#define w_p_scb_save w_onebuf_opt.wo_scb_save
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
 #ifdef FEAT_DIFF
@@ -258,20 +276,24 @@ typedef struct
     long	wo_cole;		/* 'conceallevel' */
 # define w_p_cole w_onebuf_opt.wo_cole
 #endif
-#ifdef FEAT_CURSORBIND
     int		wo_crb;
-# define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
+#define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
     int		wo_crb_save;	/* 'cursorbind' state saved for diff mode*/
-# define w_p_crb_save w_onebuf_opt.wo_crb_save
-#endif
+#define w_p_crb_save w_onebuf_opt.wo_crb_save
 #ifdef FEAT_SIGNS
     char_u	*wo_scl;
 # define w_p_scl w_onebuf_opt.wo_scl	/* 'signcolumn' */
 #endif
+#ifdef FEAT_TERMINAL
+    char_u	*wo_twk;
+# define w_p_twk w_onebuf_opt.wo_twk	/* 'termwinkey' */
+    char_u	*wo_tws;
+# define w_p_tws w_onebuf_opt.wo_tws	/* 'termwinsize' */
+#endif
 
 #ifdef FEAT_EVAL
-    int		wo_scriptID[WV_COUNT];	/* SIDs for window-local options */
-# define w_p_scriptID w_onebuf_opt.wo_scriptID
+    sctx_T	wo_script_ctx[WV_COUNT];	/* SCTXs for window-local options */
+# define w_p_script_ctx w_onebuf_opt.wo_script_ctx
 #endif
 } winopt_T;
 
@@ -533,7 +555,7 @@ typedef struct expand
     int		xp_pattern_len;		/* bytes in xp_pattern before cursor */
 #if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     char_u	*xp_arg;		/* completion function */
-    int		xp_scriptID;		/* SID for completion function */
+    sctx_T	xp_script_ctx;		/* SCTX for completion function */
 #endif
     int		xp_backslash;		/* one of the XP_BS_ values */
 #ifndef BACKSLASH_IN_FILENAME
@@ -563,10 +585,8 @@ typedef struct
 # ifdef FEAT_BROWSE_CMD
     int		browse;			/* TRUE to invoke file dialog */
 # endif
-# ifdef FEAT_WINDOWS
     int		split;			/* flags for win_split() */
     int		tab;			/* > 0 when ":tab" was used */
-# endif
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     int		confirm;		/* TRUE to invoke yes/no dialog */
 # endif
@@ -576,9 +596,7 @@ typedef struct
     int		lockmarks;		/* TRUE when ":lockmarks" was used */
     int		keeppatterns;		/* TRUE when ":keeppatterns" was used */
     int		noswapfile;		/* TRUE when ":noswapfile" was used */
-# ifdef FEAT_AUTOCMD
     char_u	*save_ei;		/* saved value of 'eventignore' */
-# endif
     regmatch_T	filter_regmatch;	/* set by :filter /pat/ */
     int		filter_force;		/* set for :filter! */
 } cmdmod_T;
@@ -687,9 +705,7 @@ struct signlist
     linenr_T	lnum;		/* line number which has this sign */
     int		typenr;		/* typenr of sign */
     signlist_T	*next;		/* next signlist entry */
-# ifdef FEAT_NETBEANS_INTG
     signlist_T  *prev;		/* previous entry -- for easy reordering */
-# endif
 };
 
 /* type argument for buf_getsigntype() */
@@ -721,11 +737,7 @@ typedef struct argentry
     int		ae_fnum;	/* buffer number with expanded file name */
 } aentry_T;
 
-#ifdef FEAT_WINDOWS
-# define ALIST(win) (win)->w_alist
-#else
-# define ALIST(win) (&global_alist)
-#endif
+#define ALIST(win)	(win)->w_alist
 #define GARGLIST	((aentry_T *)global_alist.al_ga.ga_data)
 #define ARGLIST		((aentry_T *)ALIST(curwin)->al_ga.ga_data)
 #define WARGLIST(wp)	((aentry_T *)ALIST(wp)->al_ga.ga_data)
@@ -827,9 +839,9 @@ struct msglist
  */
 typedef enum
 {
-    ET_USER,		/* exception caused by ":throw" command */
-    ET_ERROR,		/* error exception */
-    ET_INTERRUPT	/* interrupt exception triggered by Ctrl-C */
+    ET_USER,		// exception caused by ":throw" command
+    ET_ERROR,		// error exception
+    ET_INTERRUPT,	// interrupt exception triggered by Ctrl-C
 } except_type_T;
 
 /*
@@ -966,19 +978,12 @@ typedef struct attr_entry
 # else
 #  if defined(MACOS_X)
 #   include <sys/errno.h>
-#   define EILSEQ ENOENT /* MacOS X does not have EILSEQ */
+#   ifndef EILSEQ
+#    define EILSEQ ENOENT /* Early MacOS X does not have EILSEQ */
+#   endif
 typedef struct _iconv_t *iconv_t;
 #  else
-#   if defined(MACOS_CLASSIC)
-typedef struct _iconv_t *iconv_t;
-#    define EINVAL	22
-#    define E2BIG	7
-#    define ENOENT	2
-#    define EFAULT	14
-#    define EILSEQ	123
-#   else
-#    include <errno.h>
-#   endif
+#   include <errno.h>
 #  endif
 typedef void *iconv_t;
 # endif
@@ -1078,7 +1083,7 @@ struct mapblock
     char	m_nowait;	/* <nowait> used */
 #ifdef FEAT_EVAL
     char	m_expr;		/* <expr> used, m_str is an expression */
-    scid_T	m_script_ID;	/* ID of script where map was defined */
+    sctx_T	m_script_ctx;		/* SCTX where map was defined */
 #endif
 };
 
@@ -1189,6 +1194,7 @@ typedef struct partial_S partial_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
+typedef struct writeq_S writeq_T;
 typedef struct jsonq_S jsonq_T;
 typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
@@ -1196,16 +1202,16 @@ typedef struct channel_S channel_T;
 typedef enum
 {
     VAR_UNKNOWN = 0,
-    VAR_NUMBER,	 /* "v_number" is used */
-    VAR_STRING,	 /* "v_string" is used */
-    VAR_FUNC,	 /* "v_string" is function name */
-    VAR_PARTIAL, /* "v_partial" is used */
-    VAR_LIST,	 /* "v_list" is used */
-    VAR_DICT,	 /* "v_dict" is used */
-    VAR_FLOAT,	 /* "v_float" is used */
-    VAR_SPECIAL, /* "v_number" is used */
-    VAR_JOB,	 /* "v_job" is used */
-    VAR_CHANNEL	 /* "v_channel" is used */
+    VAR_NUMBER,	 // "v_number" is used
+    VAR_STRING,	 // "v_string" is used
+    VAR_FUNC,	 // "v_string" is function name
+    VAR_PARTIAL, // "v_partial" is used
+    VAR_LIST,	 // "v_list" is used
+    VAR_DICT,	 // "v_dict" is used
+    VAR_FLOAT,	 // "v_float" is used
+    VAR_SPECIAL, // "v_number" is used
+    VAR_JOB,	 // "v_job" is used
+    VAR_CHANNEL, // "v_channel" is used
 } vartype_T;
 
 /*
@@ -1266,21 +1272,22 @@ struct listwatch_S
 
 /*
  * Structure to hold info about a list.
+ * Order of members is optimized to reduce padding.
  */
 struct listvar_S
 {
     listitem_T	*lv_first;	/* first item, NULL if none */
     listitem_T	*lv_last;	/* last item, NULL if none */
-    int		lv_refcount;	/* reference count */
-    int		lv_len;		/* number of items */
     listwatch_T	*lv_watch;	/* first watcher, NULL if none */
-    int		lv_idx;		/* cached index of an item */
     listitem_T	*lv_idx_item;	/* when not NULL item at index "lv_idx" */
-    int		lv_copyID;	/* ID used by deepcopy() */
     list_T	*lv_copylist;	/* copied list used by deepcopy() */
-    char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
     list_T	*lv_used_next;	/* next list in used lists list */
     list_T	*lv_used_prev;	/* previous list in used lists list */
+    int		lv_refcount;	/* reference count */
+    int		lv_len;		/* number of items */
+    int		lv_idx;		/* cached index of an item */
+    int		lv_copyID;	/* ID used by deepcopy() */
+    char	lv_lock;	/* zero, VAR_LOCKED, VAR_FIXED */
 };
 
 /*
@@ -1348,8 +1355,9 @@ typedef struct
     int		uf_cleared;	/* func_clear() was already called */
     garray_T	uf_args;	/* arguments */
     garray_T	uf_lines;	/* function lines */
-#ifdef FEAT_PROFILE
+# ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */
+    int		uf_prof_initialized;
     /* profiling the function as a whole */
     int		uf_tm_count;	/* nr of calls */
     proftime_T	uf_tm_total;	/* time spent in function + children */
@@ -1364,8 +1372,8 @@ typedef struct
     proftime_T	uf_tml_wait;	/* start wait time for current line */
     int		uf_tml_idx;	/* index of line being timed; -1 if none */
     int		uf_tml_execed;	/* line being timed was executed */
-#endif
-    scid_T	uf_script_ID;	/* ID of script where function was defined,
+# endif
+    sctx_T	uf_script_ctx;	/* SCTX where function was defined,
 				   used for s: variables */
     int		uf_refcount;	/* reference count, see func_name_refcount() */
     funccall_T	*uf_scoped;	/* l: local variables for closure */
@@ -1422,6 +1430,12 @@ typedef struct
     dictitem_T	*fd_di;		/* Dictionary item used */
 } funcdict_T;
 
+typedef struct funccal_entry funccal_entry_T;
+struct funccal_entry {
+    void	    *top_funccal;
+    funccal_entry_T *next;
+};
+
 #else
 /* dummy typedefs for function prototypes */
 typedef struct
@@ -1432,6 +1446,10 @@ typedef struct
 {
     int	    dummy;
 } funcdict_T;
+typedef struct
+{
+    int	    dummy;
+} funccal_entry_T;
 #endif
 
 struct partial_S
@@ -1448,13 +1466,21 @@ struct partial_S
     dict_T	*pt_dict;	/* dict for "self" */
 };
 
+/* Information returned by get_tty_info(). */
+typedef struct {
+    int backspace;	/* what the Backspace key produces */
+    int enter;		/* what the Enter key produces */
+    int interrupt;	/* interrupt character */
+    int nl_does_cr;	/* TRUE when a NL is expanded to CR-NL on output */
+} ttyinfo_T;
+
 /* Status of a job.  Order matters! */
 typedef enum
 {
     JOB_FAILED,
     JOB_STARTED,
-    JOB_ENDED,	    /* detected job done */
-    JOB_FINISHED    /* job done and cleanup done */
+    JOB_ENDED,	    // detected job done
+    JOB_FINISHED,   // job done and cleanup done
 } jobstatus_T;
 
 /*
@@ -1471,6 +1497,8 @@ struct jobvar_S
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
+    char_u	*jv_tty_in;	/* controlling tty input, allocated */
+    char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
@@ -1483,6 +1511,7 @@ struct jobvar_S
     int		jv_copyID;
 
     channel_T	*jv_channel;	/* channel for I/O, reference counted */
+    char	**jv_argv;	/* command line used to start the job */
 };
 
 /*
@@ -1494,6 +1523,13 @@ struct readq_S
     long_u	rq_buflen;
     readq_T	*rq_next;
     readq_T	*rq_prev;
+};
+
+struct writeq_S
+{
+    garray_T	wq_ga;
+    writeq_T	*wq_next;
+    writeq_T	*wq_prev;
 };
 
 struct jsonq_S
@@ -1519,31 +1555,33 @@ typedef enum
     MODE_NL = 0,
     MODE_RAW,
     MODE_JSON,
-    MODE_JS
+    MODE_JS,
 } ch_mode_T;
 
 typedef enum {
-    JIO_PIPE,	    /* default */
+    JIO_PIPE,	    // default
     JIO_NULL,
     JIO_FILE,
     JIO_BUFFER,
     JIO_OUT
 } job_io_T;
 
+#define CH_PART_FD(part)	ch_part[part].ch_fd
+
 /* Ordering matters, it is used in for loops: IN is last, only SOCK/OUT/ERR
  * are polled. */
 typedef enum {
     PART_SOCK = 0,
-#define CH_SOCK_FD	ch_part[PART_SOCK].ch_fd
+#define CH_SOCK_FD	CH_PART_FD(PART_SOCK)
 #ifdef FEAT_JOB_CHANNEL
     PART_OUT,
-# define CH_OUT_FD	ch_part[PART_OUT].ch_fd
+# define CH_OUT_FD	CH_PART_FD(PART_OUT)
     PART_ERR,
-# define CH_ERR_FD	ch_part[PART_ERR].ch_fd
+# define CH_ERR_FD	CH_PART_FD(PART_ERR)
     PART_IN,
-# define CH_IN_FD	ch_part[PART_IN].ch_fd
+# define CH_IN_FD	CH_PART_FD(PART_IN)
 #endif
-    PART_COUNT
+    PART_COUNT,
 } ch_part_T;
 
 #define INVALID_FD	(-1)
@@ -1583,6 +1621,8 @@ typedef struct {
 #endif
     int		ch_block_write;	/* for testing: 0 when not used, -1 when write
 				 * does not block, 1 simulate blocking */
+    int		ch_nonblocking;	/* write() is non-blocking */
+    writeq_T	ch_writeque;	/* header for write queue */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
     char_u	*ch_callback;	/* call when a msg is not handled */
@@ -1604,6 +1644,7 @@ struct channel_S {
     int		ch_last_msg_id;	/* ID of the last message */
 
     chanpart_T	ch_part[PART_COUNT]; /* info for socket, out, err and in */
+    int		ch_write_text_mode; /* write buffer lines with CR, not NL */
 
     char	*ch_hostname;	/* only for socket, allocated */
     int		ch_port;	/* only for socket */
@@ -1623,11 +1664,16 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
+#ifdef WIN32
+    int		ch_named_pipe;	/* using named pipe instead of pty */
+#endif
     char_u	*ch_callback;	/* call when any msg is not handled */
     partial_T	*ch_partial;
     char_u	*ch_close_cb;	/* call when channel is closed */
     partial_T	*ch_close_partial;
     int		ch_drop_never;
+    int		ch_keep_open;	/* do not close on read error */
+    int		ch_nonblock;
 
     job_T	*ch_job;	/* Job that uses this channel; this does not
 				 * count as a reference to avoid a circular
@@ -1646,7 +1692,7 @@ struct channel_S {
 #define JO_CALLBACK	    0x0010	/* channel callback */
 #define JO_OUT_CALLBACK	    0x0020	/* stdout callback */
 #define JO_ERR_CALLBACK	    0x0040	/* stderr callback */
-#define JO_CLOSE_CALLBACK   0x0080	/* close callback */
+#define JO_CLOSE_CALLBACK   0x0080	/* "close_cb" */
 #define JO_WAITTIME	    0x0100	/* only for ch_open() */
 #define JO_TIMEOUT	    0x0200	/* all timeouts */
 #define JO_OUT_TIMEOUT	    0x0400	/* stdout timeouts */
@@ -1674,7 +1720,20 @@ struct channel_S {
 
 #define JO2_OUT_MSG	    0x0001	/* "out_msg" */
 #define JO2_ERR_MSG	    0x0002	/* "err_msg" (JO_OUT_ << 1) */
-#define JO2_ALL		    0x0003
+#define JO2_TERM_NAME	    0x0004	/* "term_name" */
+#define JO2_TERM_FINISH	    0x0008	/* "term_finish" */
+#define JO2_ENV		    0x0010	/* "env" */
+#define JO2_CWD		    0x0020	/* "cwd" */
+#define JO2_TERM_ROWS	    0x0040	/* "term_rows" */
+#define JO2_TERM_COLS	    0x0080	/* "term_cols" */
+#define JO2_VERTICAL	    0x0100	/* "vertical" */
+#define JO2_CURWIN	    0x0200	/* "curwin" */
+#define JO2_HIDDEN	    0x0400	/* "hidden" */
+#define JO2_TERM_OPENCMD    0x0800	/* "term_opencmd" */
+#define JO2_EOF_CHARS	    0x1000	/* "eof_chars" */
+#define JO2_NORESTORE	    0x2000	/* "norestore" */
+#define JO2_TERM_KILL	    0x4000	/* "term_kill" */
+#define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1693,11 +1752,13 @@ typedef struct
     ch_mode_T	jo_in_mode;
     ch_mode_T	jo_out_mode;
     ch_mode_T	jo_err_mode;
+    int		jo_noblock;
 
     job_io_T	jo_io[4];	/* PART_OUT, PART_ERR, PART_IN */
     char_u	jo_io_name_buf[4][NUMBUFLEN];
     char_u	*jo_io_name[4];	/* not allocated! */
     int		jo_io_buf[4];
+    int		jo_pty;
     int		jo_modifiable[4];
     int		jo_message[4];
     channel_T	*jo_channel;
@@ -1725,6 +1786,27 @@ typedef struct
     int		jo_id;
     char_u	jo_soe_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
+    dict_T	*jo_env;	/* environment variables */
+    char_u	jo_cwd_buf[NUMBUFLEN];
+    char_u	*jo_cwd;
+
+#ifdef FEAT_TERMINAL
+    /* when non-zero run the job in a terminal window of this size */
+    int		jo_term_rows;
+    int		jo_term_cols;
+    int		jo_vertical;
+    int		jo_curwin;
+    int		jo_hidden;
+    int		jo_term_norestore;
+    char_u	*jo_term_name;
+    char_u	*jo_term_opencmd;
+    int		jo_term_finish;
+    char_u	*jo_eof_chars;
+    char_u	*jo_term_kill;
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    long_u	jo_ansi_colors[16];
+# endif
+#endif
 } jobopt_T;
 
 
@@ -1797,6 +1879,9 @@ typedef struct {
     hashtab_T	b_keywtab;		/* syntax keywords hash table */
     hashtab_T	b_keywtab_ic;		/* idem, ignore case */
     int		b_syn_error;		/* TRUE when error occurred in HL */
+# ifdef FEAT_RELTIME
+    int		b_syn_slow;		/* TRUE when 'redrawtime' reached */
+# endif
     int		b_syn_ic;		/* ignore case for :syn cmds */
     int		b_syn_spell;		/* SYNSPL_ values */
     garray_T	b_syn_patterns;		/* table for syntax patterns */
@@ -1889,10 +1974,8 @@ struct file_buffer
     int		b_nwindows;	/* nr of windows open on this buffer */
 
     int		b_flags;	/* various BF_ flags */
-#ifdef FEAT_AUTOCMD
     int		b_locked;	/* Buffer is being closed or referenced, don't
 				   let autocommands wipe it out. */
-#endif
 
     /*
      * b_ffname has the full path of the file (NULL for no name).
@@ -1900,9 +1983,11 @@ struct file_buffer
      * b_fname is the same as b_sfname, unless ":cd" has been done,
      *		then it is the same as b_ffname (NULL for no name).
      */
-    char_u	*b_ffname;	/* full path file name */
-    char_u	*b_sfname;	/* short file name */
-    char_u	*b_fname;	/* current file name */
+    char_u	*b_ffname;	// full path file name, allocated
+    char_u	*b_sfname;	// short file name, allocated, may be equal to
+				// b_ffname
+    char_u	*b_fname;	// current file name, points to b_ffname or
+				// b_sfname
 
 #ifdef UNIX
     int		b_dev_valid;	/* TRUE when b_dev has a valid number */
@@ -1928,6 +2013,13 @@ struct file_buffer
 				   b_ct_di.di_tv.vval.v_number;
 				   incremented for each change, also for undo */
 #define CHANGEDTICK(buf) ((buf)->b_ct_di.di_tv.vval.v_number)
+
+    varnumber_T	b_last_changedtick; /* b:changedtick when TextChanged or
+				       TextChangedI was last triggered. */
+#ifdef FEAT_INS_EXPAND
+    varnumber_T	b_last_changedtick_pum; /* b:changedtick when TextChangedP was
+					   last triggered. */
+#endif
 
     int		b_saving;	/* Set to TRUE if we are in the middle of
 				   saving the buffer. */
@@ -2037,12 +2129,8 @@ struct file_buffer
 #define B_IMODE_USE_INSERT -1	/*	Use b_p_iminsert value for search */
 #define B_IMODE_NONE 0		/*	Input via none */
 #define B_IMODE_LMAP 1		/*	Input via langmap */
-#ifndef USE_IM_CONTROL
-# define B_IMODE_LAST 1
-#else
-# define B_IMODE_IM 2		/*	Input via input method */
-# define B_IMODE_LAST 2
-#endif
+#define B_IMODE_IM 2		/*	Input via input method */
+#define B_IMODE_LAST 2
 
 #ifdef FEAT_KEYMAP
     short	b_kmap_state;	/* using "lmap" mappings */
@@ -2059,7 +2147,7 @@ struct file_buffer
     int		b_p_initialized;	/* set when options initialized */
 
 #ifdef FEAT_EVAL
-    int		b_p_scriptID[BV_COUNT];	/* SIDs for buffer-local options */
+    sctx_T	b_p_script_ctx[BV_COUNT];	/* SCTXs for buffer-local options */
 #endif
 
     int		b_p_ai;		/* 'autoindent' */
@@ -2071,9 +2159,9 @@ struct file_buffer
 #ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
 #endif
-#ifdef FEAT_QUICKFIX
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
+#ifdef FEAT_QUICKFIX
 #define BUF_HAS_QF_ENTRY 1
 #define BUF_HAS_LL_ENTRY 2
     int		b_has_qf_entry;
@@ -2109,9 +2197,7 @@ struct file_buffer
     char_u	*b_p_fenc;	/* 'fileencoding' */
 #endif
     char_u	*b_p_ff;	/* 'fileformat' */
-#ifdef FEAT_AUTOCMD
     char_u	*b_p_ft;	/* 'filetype' */
-#endif
     char_u	*b_p_fo;	/* 'formatoptions' */
     char_u	*b_p_flp;	/* 'formatlistpat' */
     int		b_p_inf;	/* 'infercase' */
@@ -2177,6 +2263,13 @@ struct file_buffer
     long	b_p_wm;		/* 'wrapmargin' */
     long	b_p_wm_nobin;	/* b_p_wm saved for binary mode */
     long	b_p_wm_nopaste;	/* b_p_wm saved for paste mode */
+#ifdef FEAT_VARTABS
+    char_u	*b_p_vsts;	/* 'varsofttabstop' */
+    int		*b_p_vsts_array;   /* 'varsofttabstop' in internal format */
+    char_u	*b_p_vsts_nopaste; /* b_p_vsts saved for paste mode */
+    char_u	*b_p_vts;	/* 'vartabstop' */
+    int		*b_p_vts_array;	/* 'vartabstop' in internal format */
+#endif
 #ifdef FEAT_KEYMAP
     char_u	*b_p_keymap;	/* 'keymap' */
 #endif
@@ -2203,6 +2296,9 @@ struct file_buffer
 #endif
 #ifdef FEAT_LISP
     char_u	*b_p_lw;	/* 'lispwords' local value */
+#endif
+#ifdef FEAT_TERMINAL
+    long	b_p_twsl;	/* 'termwinscroll' */
 #endif
 
     /* end of buffer options */
@@ -2294,6 +2390,15 @@ struct file_buffer
 
     int		b_shortname;	/* this file has an 8.3 file name */
 
+#ifdef FEAT_JOB_CHANNEL
+    char_u	*b_prompt_text;	     // set by prompt_setprompt()
+    char_u	*b_prompt_callback;  // set by prompt_setcallback()
+    partial_T	*b_prompt_partial;   // set by prompt_setcallback()
+    char_u	*b_prompt_interrupt;   // set by prompt_setinterrupt()
+    partial_T	*b_prompt_int_partial; // set by prompt_setinterrupt()
+    int		b_prompt_insert;     // value for restart_edit when entering
+				     // a prompt buffer window.
+#endif
 #ifdef FEAT_MZSCHEME
     void	*b_mzscheme_ref; /* The MzScheme reference to this buffer */
 #endif
@@ -2348,6 +2453,13 @@ struct file_buffer
 #endif
     int		b_mapped_ctrl_c; /* modes where CTRL-C is mapped */
 
+#ifdef FEAT_TERMINAL
+    term_T	*b_term;	/* When not NULL this buffer is for a terminal
+				 * window. */
+#endif
+#ifdef FEAT_DIFF
+    int		b_diff_failed;	// internal diff failed for this buffer
+#endif
 }; /* file_buffer */
 
 
@@ -2381,12 +2493,8 @@ struct diffblock_S
 #endif
 
 #define SNAP_HELP_IDX	0
-#ifdef FEAT_AUTOCMD
-# define SNAP_AUCMD_IDX 1
-# define SNAP_COUNT	2
-#else
-# define SNAP_COUNT	1
-#endif
+#define SNAP_AUCMD_IDX 1
+#define SNAP_COUNT	2
 
 /*
  * Tab pages point to the top frame of each tab page.
@@ -2414,7 +2522,8 @@ struct tabpage_S
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);
-    int		    tp_diff_invalid;	/* list of diffs is outdated */
+    int		    tp_diff_invalid;	// list of diffs is outdated
+    int		    tp_diff_update;	// update diffs before redrawing
 #endif
     frame_T	    *(tp_snapshot[SNAP_COUNT]);  /* window layout snapshots */
 #ifdef FEAT_EVAL
@@ -2461,10 +2570,8 @@ typedef struct w_line
 struct frame_S
 {
     char	fr_layout;	/* FR_LEAF, FR_COL or FR_ROW */
-#ifdef FEAT_WINDOWS
     int		fr_width;
     int		fr_newwidth;	/* new width used in win_equal_rec() */
-#endif
     int		fr_height;
     int		fr_newheight;	/* new height used in win_equal_rec() */
     frame_T	*fr_parent;	/* containing frame or NULL */
@@ -2551,6 +2658,14 @@ struct matchitem
 #endif
 };
 
+#ifdef FEAT_MENU
+typedef struct {
+    int		wb_startcol;
+    int		wb_endcol;
+    vimmenu_T	*wb_menu;
+} winbar_item_T;
+#endif
+
 /*
  * Structure which contains all information that belongs to a window
  *
@@ -2567,14 +2682,10 @@ struct window_S
     synblock_T	*w_s;		    /* for :ownsyntax */
 #endif
 
-#ifdef FEAT_WINDOWS
     win_T	*w_prev;	    /* link to previous window */
     win_T	*w_next;	    /* link to next window */
-#endif
-#ifdef FEAT_AUTOCMD
     int		w_closing;	    /* window is being closed, don't let
 				       autocommands close it too. */
-#endif
 
     frame_T	*w_frame;	    /* frame containing this window */
 
@@ -2587,6 +2698,10 @@ struct window_S
     int		w_set_curswant;	    /* If set, then update w_curswant the next
 				       time through cursupdate() to the
 				       current virtual column */
+
+#ifdef FEAT_SYN_HL
+    linenr_T	w_last_cursorline;  // where last time 'cursorline' was drawn
+#endif
 
     /*
      * the next seven are used to update the visual part
@@ -2605,10 +2720,8 @@ struct window_S
      */
     linenr_T	w_topline;	    /* buffer line number of the line at the
 				       top of the window */
-#ifdef FEAT_AUTOCMD
     char	w_topline_was_set;  /* flag set to TRUE when topline is set,
 				       e.g. by winrestview() */
-#endif
 #ifdef FEAT_DIFF
     int		w_topfill;	    /* number of filler lines above w_topline */
     int		w_old_topfill;	    /* w_topfill at last redraw */
@@ -2626,20 +2739,13 @@ struct window_S
      * Layout of the window in the screen.
      * May need to add "msg_scrolled" to "w_winrow" in rare situations.
      */
-#ifdef FEAT_WINDOWS
     int		w_winrow;	    /* first row of window in screen */
-#endif
     int		w_height;	    /* number of rows in window, excluding
-				       status/command line(s) */
-#ifdef FEAT_WINDOWS
+				       status/command/winbar line(s) */
     int		w_status_height;    /* number of status lines (0 or 1) */
-    int		w_wincol;	    /* Leftmost column of window in screen.
-				       use W_WINCOL() */
-    int		w_width;	    /* Width of window, excluding separation.
-				       use W_WIDTH() */
-    int		w_vsep_width;	    /* Number of separator columns (0 or 1).
-				       use W_VSEP_WIDTH() */
-#endif
+    int		w_wincol;	    /* Leftmost column of window in screen. */
+    int		w_width;	    /* Width of window, excluding separation. */
+    int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
 
     /*
      * === start of cached values ====
@@ -2722,9 +2828,7 @@ struct window_S
 				       w_redr_type is REDRAW_TOP */
     linenr_T	w_redraw_top;	    /* when != 0: first line needing redraw */
     linenr_T	w_redraw_bot;	    /* when != 0: last line needing redraw */
-#ifdef FEAT_WINDOWS
     int		w_redr_status;	    /* if TRUE status line must be redrawn */
-#endif
 
 #ifdef FEAT_CMDL_INFO
     /* remember what is shown in the ruler for this window (if 'ruler' set) */
@@ -2740,15 +2844,19 @@ struct window_S
 
     int		w_alt_fnum;	    /* alternate file (for # and CTRL-^) */
 
-#ifdef FEAT_WINDOWS
     alist_T	*w_alist;	    /* pointer to arglist for this window */
-#endif
     int		w_arg_idx;	    /* current index in argument list (can be
 				       out of range!) */
     int		w_arg_idx_invalid;  /* editing another file than w_arg_idx */
 
     char_u	*w_localdir;	    /* absolute path of local directory or
 				       NULL */
+#ifdef FEAT_MENU
+    vimmenu_T	*w_winbar;	    /* The root of the WinBar menu hierarchy. */
+    winbar_item_T *w_winbar_items;  /* list of items in the WinBar */
+    int		w_winbar_height;    /* 1 if there is a window toolbar */
+#endif
+
     /*
      * Options local to a window.
      * They are local because they influence the layout of the window or
@@ -2779,9 +2887,7 @@ struct window_S
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
 
-#ifdef FEAT_SCROLLBIND
     long	w_scbind_pos;
-#endif
 
 #ifdef FEAT_EVAL
     dictitem_T	w_winvar;	/* variable for "w:" Dictionary */
@@ -2907,10 +3013,8 @@ typedef struct oparg_S
     int		block_mode;	/* current operator is Visual block mode */
     colnr_T	start_vcol;	/* start col for block mode operator */
     colnr_T	end_vcol;	/* end col for block mode operator */
-#ifdef FEAT_AUTOCMD
     long	prev_opcount;	/* ca.opcount saved for K_CURSORHOLD */
     long	prev_count0;	/* ca.count0 saved for K_CURSORHOLD */
-#endif
 } oparg_T;
 
 /*
@@ -2998,8 +3102,9 @@ typedef struct cursor_entry
 #define MENU_INDEX_OP_PENDING	3
 #define MENU_INDEX_INSERT	4
 #define MENU_INDEX_CMDLINE	5
-#define MENU_INDEX_TIP		6
-#define MENU_MODES		7
+#define MENU_INDEX_TERMINAL	6
+#define MENU_INDEX_TIP		7
+#define MENU_MODES		8
 
 /* Menu modes */
 #define MENU_NORMAL_MODE	(1 << MENU_INDEX_NORMAL)
@@ -3008,14 +3113,13 @@ typedef struct cursor_entry
 #define MENU_OP_PENDING_MODE	(1 << MENU_INDEX_OP_PENDING)
 #define MENU_INSERT_MODE	(1 << MENU_INDEX_INSERT)
 #define MENU_CMDLINE_MODE	(1 << MENU_INDEX_CMDLINE)
+#define MENU_TERMINAL_MODE	(1 << MENU_INDEX_TERMINAL)
 #define MENU_TIP_MODE		(1 << MENU_INDEX_TIP)
 #define MENU_ALL_MODES		((1 << MENU_INDEX_TIP) - 1)
 /*note MENU_INDEX_TIP is not a 'real' mode*/
 
 /* Start a menu name with this to not include it on the main menu bar */
 #define MNU_HIDDEN_CHAR		']'
-
-typedef struct VimMenu vimmenu_T;
 
 struct VimMenu
 {
@@ -3096,18 +3200,16 @@ typedef int vimmenu_T;
 
 /*
  * Struct to save values in before executing autocommands for a buffer that is
- * not the current buffer.  Without FEAT_AUTOCMD only "curbuf" is remembered.
+ * not the current buffer.
  */
 typedef struct
 {
     buf_T	*save_curbuf;	/* saved curbuf */
-#ifdef FEAT_AUTOCMD
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
     bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
-#endif
 } aco_save_T;
 
 /*
@@ -3188,17 +3290,34 @@ typedef struct
 /*
  * Array indexes used for cptext argument of ins_compl_add().
  */
-#define CPT_ABBR    0	/* "abbr" */
-#define CPT_MENU    1	/* "menu" */
-#define CPT_KIND    2	/* "kind" */
-#define CPT_INFO    3	/* "info" */
-#define CPT_COUNT   4	/* Number of entries */
+#define CPT_ABBR	0	/* "abbr" */
+#define CPT_MENU	1	/* "menu" */
+#define CPT_KIND	2	/* "kind" */
+#define CPT_INFO	3	/* "info" */
+#define CPT_USER_DATA	4	/* "user data" */
+#define CPT_COUNT	5	/* Number of entries */
 
 typedef struct {
   UINT32_T total[2];
   UINT32_T state[8];
   char_u   buffer[64];
 } context_sha256_T;
+
+/*
+ * types for expressions.
+ */
+typedef enum
+{
+    TYPE_UNKNOWN = 0,
+    TYPE_EQUAL,		// ==
+    TYPE_NEQUAL,	// !=
+    TYPE_GREATER,	// >
+    TYPE_GEQUAL,	// >=
+    TYPE_SMALLER,	// <
+    TYPE_SEQUAL,	// <=
+    TYPE_MATCH,		// =~
+    TYPE_NOMATCH,	// !~
+} exptype_T;
 
 /*
  * Structure used for reading in json_decode().
@@ -3230,6 +3349,7 @@ struct timer_S
     long	tr_interval;	    /* msec */
     char_u	*tr_callback;	    /* allocated */
     partial_T	*tr_partial;
+    int		tr_emsg_count;
 #endif
 };
 
@@ -3251,6 +3371,7 @@ typedef struct
 
     int		evim_mode;		/* started as "evim" */
     char_u	*use_vimrc;		/* vimrc from -u argument */
+    int		clean;			/* --clean argument */
 
     int		n_commands;		     /* no. of commands from + or -c */
     char_u	*commands[MAX_ARG_CMDS];     /* commands from + or -c arg. */
@@ -3275,10 +3396,8 @@ typedef struct
 #ifdef FEAT_EVAL
     int		use_debug_break_level;
 #endif
-#ifdef FEAT_WINDOWS
     int		window_count;		/* number of windows to use */
     int		window_layout;		/* 0, WIN_HOR, WIN_VER or WIN_TABS */
-#endif
 
 #ifdef FEAT_CLIENTSERVER
     int		serverArg;		/* TRUE when argument for a server */
@@ -3343,3 +3462,22 @@ typedef struct lval_S
     dictitem_T	*ll_di;		/* The dictitem or NULL */
     char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
 } lval_T;
+
+/* Structure used to save the current state.  Used when executing Normal mode
+ * commands while in any other mode. */
+typedef struct {
+    int		save_msg_scroll;
+    int		save_restart_edit;
+    int		save_msg_didout;
+    int		save_State;
+    int		save_insertmode;
+    int		save_finish_op;
+    int		save_opcount;
+    tasave_T	tabuf;
+} save_state_T;
+
+typedef struct {
+    varnumber_T vv_prevcount;
+    varnumber_T vv_count;
+    varnumber_T vv_count1;
+} vimvars_save_T;

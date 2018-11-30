@@ -1,7 +1,6 @@
 " Tests for user defined commands
 
 " Test for <mods> in user defined commands
-set belloff=all
 function Test_cmdmods()
   let g:mods = ''
 
@@ -206,4 +205,16 @@ func Test_CmdCompletion()
 
   com! -complete=customlist,CustomComp DoCmd :
   call assert_fails("call feedkeys(':DoCmd \<C-D>', 'tx')", 'E117:')
+endfunc
+
+func CallExecute(A, L, P)
+  " Drop first '\n'
+  return execute('echo "hi"')[1:]
+endfunc
+
+func Test_use_execute_in_completion()
+  command! -nargs=* -complete=custom,CallExecute DoExec :
+  call feedkeys(":DoExec \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoExec hi', @:)
+  delcommand DoExec
 endfunc

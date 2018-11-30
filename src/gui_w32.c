@@ -30,37 +30,26 @@
 #endif
 
 #if defined(FEAT_DIRECTX)
+# ifndef FEAT_MBYTE
+#  error FEAT_MBYTE is required for FEAT_DIRECTX.
+# endif
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
 static int s_directx_load_attempted = 0;
-# define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL)
+# define IS_ENABLE_DIRECTX() (s_directx_enabled && s_dwc != NULL && enc_utf8)
+static int directx_enabled(void);
+static void directx_binddc(void);
 #endif
 
 #ifdef FEAT_MENU
 static int gui_mswin_get_menu_height(int fix_window);
 #endif
 
-#if defined(FEAT_DIRECTX) || defined(PROTO)
-    int
-directx_enabled(void)
-{
-    if (s_dwc != NULL)
-	return 1;
-    else if (s_directx_load_attempted)
-	return 0;
-    /* load DirectX */
-    DWrite_Init();
-    s_directx_load_attempted = 1;
-    s_dwc = DWriteContext_Open();
-    return s_dwc != NULL ? 1 : 0;
-}
-#endif
-
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
     int
 gui_mch_set_rendering_options(char_u *s)
 {
-#ifdef FEAT_DIRECTX
+# ifdef FEAT_DIRECTX
     char_u  *p, *q;
 
     int	    dx_enable = 0;
@@ -131,9 +120,16 @@ gui_mch_set_rendering_options(char_u *s)
 	    if (dx_taamode < 0 || dx_taamode > 3)
 		return FAIL;
 	}
+	else if (STRCMP(name, "scrlines") == 0)
+	{
+	    /* Deprecated.  Simply ignore it. */
+	}
 	else
 	    return FAIL;
     }
+
+    if (!gui.in_use)
+	return OK;  /* only checking the syntax of the value */
 
     /* Enable DirectX/DirectWrite */
     if (dx_enable)
@@ -163,9 +159,9 @@ gui_mch_set_rendering_options(char_u *s)
     s_directx_enabled = dx_enable;
 
     return OK;
-#else
+# else
     return FAIL;
-#endif
+# endif
 }
 #endif
 
@@ -197,7 +193,7 @@ gui_mch_set_rendering_options(char_u *s)
 #ifndef __MINGW32__
 # include <shellapi.h>
 #endif
-#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL) || defined(FEAT_GUI_TABLINE)
+#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
 # include <commctrl.h>
 #endif
 #include <windowsx.h>
@@ -290,6 +286,8 @@ typedef int LPNMHDR;
 typedef int LONG;
 typedef int WNDPROC;
 typedef int UINT_PTR;
+typedef int COLORREF;
+typedef int HCURSOR;
 #endif
 
 #ifndef GET_X_LPARAM
@@ -297,6 +295,7 @@ typedef int UINT_PTR;
 #endif
 
 static void _OnPaint( HWND hwnd);
+static void fill_rect(const RECT *rcp, HBRUSH hbr, COLORREF color);
 static void clear_rect(RECT *rcp);
 
 static WORD		s_dlgfntheight;		/* height of the dialog font */
@@ -367,6 +366,34 @@ static int allow_scrollbar = FALSE;
 # define MyTranslateMessage(x) global_ime_TranslateMessage(x)
 #else
 # define MyTranslateMessage(x) TranslateMessage(x)
+#endif
+
+#if defined(FEAT_DIRECTX)
+    static int
+directx_enabled(void)
+{
+    if (s_dwc != NULL)
+	return 1;
+    else if (s_directx_load_attempted)
+	return 0;
+    /* load DirectX */
+    DWrite_Init();
+    s_directx_load_attempted = 1;
+    s_dwc = DWriteContext_Open();
+    directx_binddc();
+    return s_dwc != NULL ? 1 : 0;
+}
+
+    static void
+directx_binddc(void)
+{
+    if (s_textArea != NULL)
+    {
+	RECT	rect;
+	GetClientRect(s_textArea, &rect);
+	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
+    }
+}
 #endif
 
 #if defined(FEAT_MBYTE) || defined(GLOBAL_IME)
@@ -469,11 +496,13 @@ static int	s_getting_focus = FALSE;
 static int	s_x_pending;
 static int	s_y_pending;
 static UINT	s_kFlags_pending;
-static UINT	s_wait_timer = 0;   /* Timer for get char from user */
+static UINT	s_wait_timer = 0;	  // Timer for get char from user
 static int	s_timed_out = FALSE;
-static int	dead_key = 0;	/* 0: no dead key, 1: dead key pressed */
+static int	dead_key = 0;		  // 0: no dead key, 1: dead key pressed
+static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
+					  // else a high surrogate
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 /* balloon-eval WM_NOTIFY_HANDLER */
 static void Handle_WM_Notify(HWND hwnd, LPNMHDR pnmh);
 static void TrackUserActivity(UINT uMsg);
@@ -484,13 +513,13 @@ static void TrackUserActivity(UINT uMsg);
  *
  * These LOGFONT used for IME.
  */
-#ifdef FEAT_MBYTE
-# ifdef USE_IM_CONTROL
+#if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
 /* holds LOGFONT for 'guifontwide' if available, otherwise 'guifont' */
 static LOGFONT norm_logfont;
+#endif
+#ifdef FEAT_MBYTE_IME
 /* holds LOGFONT for 'guifont' always. */
 static LOGFONT sub_logfont;
-# endif
 #endif
 
 #ifdef FEAT_MBYTE_IME
@@ -591,6 +620,7 @@ _OnBlinkTimer(
 	blink_timer = (UINT) SetTimer(NULL, 0, (UINT)blink_ontime,
 						    (TIMERPROC)_OnBlinkTimer);
     }
+    gui_mch_flush();
 }
 
     static void
@@ -612,11 +642,14 @@ gui_mswin_rm_blink_timer(void)
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     gui_mswin_rm_blink_timer();
-    if (blink_state == BLINK_OFF)
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
+    {
 	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
+    }
     blink_state = BLINK_NONE;
 }
 
@@ -636,6 +669,7 @@ gui_mch_start_blink(void)
 						    (TIMERPROC)_OnBlinkTimer);
 	blink_state = BLINK_ON;
 	gui_update_cursor(TRUE, FALSE);
+	gui_mch_flush();
     }
 }
 
@@ -678,6 +712,12 @@ _OnDeadChar(
  * Convert Unicode character "ch" to bytes in "string[slen]".
  * When "had_alt" is TRUE the ALT key was included in "ch".
  * Return the length.
+ * Because the Windows API uses UTF-16, we have to deal with surrogate
+ * pairs; this is where we choose to deal with them: if "ch" is a high
+ * surrogate, it will be stored, and the length returned will be zero; the next
+ * char_to_string call will then include the high surrogate, decoding the pair
+ * of UTF-16 code units to a single Unicode code point, presuming it is the
+ * matching low surrogate.
  */
     static int
 char_to_string(int ch, char_u *string, int slen, int had_alt)
@@ -688,8 +728,27 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     WCHAR	wstring[2];
     char_u	*ws = NULL;
 
-    wstring[0] = ch;
-    len = 1;
+    if (surrogate_pending_ch != 0)
+    {
+	/* We don't guarantee ch is a low surrogate to match the high surrogate
+	 * we already have; it should be, but if it isn't, tough luck. */
+	wstring[0] = surrogate_pending_ch;
+	wstring[1] = ch;
+	surrogate_pending_ch = 0;
+	len = 2;
+    }
+    else if (ch >= 0xD800 && ch <= 0xDBFF)	/* high surrogate */
+    {
+	/* We don't have the entire code point yet, only the first UTF-16 code
+	 * unit; so just remember it and use it in the next call. */
+	surrogate_pending_ch = ch;
+	return 0;
+    }
+    else
+    {
+	wstring[0] = ch;
+	len = 1;
+    }
 
     /* "ch" is a UTF-16 character.  Convert it to a string of bytes.  When
      * "enc_codepage" is non-zero use the standard Win32 function,
@@ -713,7 +772,6 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     }
     else
     {
-	len = 1;
 	ws = utf16_to_enc(wstring, &len);
 	if (ws == NULL)
 	    len = 0;
@@ -1002,6 +1060,19 @@ _OnMouseMoveOrRelease(
     _OnMouseEvent(button, x, y, FALSE, keyFlags);
 }
 
+    static void
+_OnSizeTextArea(
+    HWND hwnd UNUSED,
+    UINT state UNUSED,
+    int cx UNUSED,
+    int cy UNUSED)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	directx_binddc();
+#endif
+}
+
 #ifdef FEAT_MENU
 /*
  * Find the vimmenu_T with the given id
@@ -1216,7 +1287,7 @@ _TextAreaWndProc(
     s_wParam = wParam;
     s_lParam = lParam;
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
     TrackUserActivity(uMsg);
 #endif
 
@@ -1236,8 +1307,9 @@ _TextAreaWndProc(
 	HANDLE_MSG(hwnd, WM_XBUTTONDBLCLK,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONDOWN,_OnMouseButtonDown);
 	HANDLE_MSG(hwnd, WM_XBUTTONUP,	_OnMouseMoveOrRelease);
+	HANDLE_MSG(hwnd, WM_SIZE,	_OnSizeTextArea);
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 	case WM_NOTIFY: Handle_WM_Notify(hwnd, (LPNMHDR)lParam);
 	    return TRUE;
 #endif
@@ -1597,6 +1669,12 @@ gui_mch_get_color(char_u *name)
     return gui_get_color_cmn(name);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
 /*
  * Return OK if the key with the termcap name "name" is supported.
  */
@@ -1629,6 +1707,11 @@ gui_mch_invert_rectangle(
 {
     RECT    rc;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
      */
@@ -1657,6 +1740,11 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     HBRUSH  hbr;
     RECT    rc;
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     /*
      * Note: FrameRect() excludes right and bottom of rectangle.
      */
@@ -1682,7 +1770,6 @@ gui_mch_draw_part_cursor(
     int		h,
     guicolor_T	color)
 {
-    HBRUSH	hbr;
     RECT	rc;
 
     /*
@@ -1697,9 +1784,8 @@ gui_mch_draw_part_cursor(
     rc.top = FILL_Y(gui.row) + gui.char_height - h;
     rc.right = rc.left + w;
     rc.bottom = rc.top + h;
-    hbr = CreateSolidBrush(color);
-    FillRect(s_hdc, &rc, hbr);
-    DeleteBrush(hbr);
+
+    fill_rect(&rc, NULL, color);
 }
 
 
@@ -1834,6 +1920,7 @@ process_message(void)
 	{
 	    trash_input_buf();
 	    got_int = TRUE;
+	    ctrl_break_was_pressed = TRUE;
 	    string[0] = Ctrl_C;
 	    add_to_input_buf(string, 1);
 	}
@@ -2052,7 +2139,7 @@ gui_mch_wait_for_chars(int wtime)
 	    if (gui.in_focus)
 		gui_mch_start_blink();
 	    else
-		gui_mch_stop_blink();
+		gui_mch_stop_blink(TRUE);
 	    focus = gui.in_focus;
 	}
 
@@ -2066,20 +2153,23 @@ gui_mch_wait_for_chars(int wtime)
 	did_add_timer = FALSE;
 #endif
 #ifdef MESSAGE_QUEUE
-	/* Check channel while waiting message. */
+	/* Check channel I/O while waiting for a message. */
 	for (;;)
 	{
 	    MSG msg;
 
 	    parse_queued_messages();
 
-	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)
-		|| MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
-								!= WAIT_TIMEOUT)
+	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+	    {
+		process_message();
+		break;
+	    }
+	    else if (MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
+							       != WAIT_TIMEOUT)
 		break;
 	}
-#endif
-
+#else
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use GetMessage() to hang until an
@@ -2087,6 +2177,7 @@ gui_mch_wait_for_chars(int wtime)
 	 * returning as soon as it contains a single char -- webb
 	 */
 	process_message();
+#endif
 
 	if (input_available())
 	{
@@ -2729,8 +2820,7 @@ gui_mch_find_dialog(exarg_T *eap)
 		s_findrep_hwnd = FindText((LPFINDREPLACE) &s_findrep_struct);
 	}
 
-	set_window_title(s_findrep_hwnd,
-			       _("Find string (use '\\\\' to find  a '\\')"));
+	set_window_title(s_findrep_hwnd, _("Find string"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = TRUE;
@@ -2764,8 +2854,7 @@ gui_mch_replace_dialog(exarg_T *eap)
 					   (LPFINDREPLACE) &s_findrep_struct);
 	}
 
-	set_window_title(s_findrep_hwnd,
-			    _("Find & Replace (use '\\\\' to find  a '\\')"));
+	set_window_title(s_findrep_hwnd, _("Find & Replace"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = FALSE;
@@ -2847,10 +2936,6 @@ _OnPaint(
 
 	out_flush();	    /* make sure all output has been processed */
 	(void)BeginPaint(hwnd, &ps);
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_BeginDraw(s_dwc);
-#endif
 
 #ifdef FEAT_MBYTE
 	/* prevent multi-byte characters from misprinting on an invalid
@@ -2867,19 +2952,11 @@ _OnPaint(
 
 	if (!IsRectEmpty(&ps.rcPaint))
 	{
-#if defined(FEAT_DIRECTX)
-	    if (IS_ENABLE_DIRECTX())
-		DWriteContext_BindDC(s_dwc, s_hdc, &ps.rcPaint);
-#endif
 	    gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
 		    ps.rcPaint.right - ps.rcPaint.left + 1,
 		    ps.rcPaint.bottom - ps.rcPaint.top + 1);
 	}
 
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX())
-	    DWriteContext_EndDraw(s_dwc);
-#endif
 	EndPaint(hwnd, &ps);
     }
 }
@@ -2936,13 +3013,11 @@ _OnActivateApp(
     return MyWindowProc(hwnd, WM_ACTIVATEAPP, fActivate, (DWORD)dwThreadId);
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 gui_mch_destroy_scrollbar(scrollbar_T *sb)
 {
     DestroyWindow(sb->id);
 }
-#endif
 
 /*
  * Get current mouse coordinates in text window.
@@ -3002,6 +3077,11 @@ gui_mswin_get_valid_dimensions(
 gui_mch_flash(int msec)
 {
     RECT    rc;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     /*
      * Note: InvertRect() excludes right and bottom of rectangle.
@@ -3073,17 +3153,26 @@ gui_mch_delete_lines(
 {
     RECT	rc;
 
-    intel_gpu_workaround();
-
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
-    ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
+	DWriteContext_Flush(s_dwc);
+    }
+    else
+#endif
+    {
+	intel_gpu_workaround();
+	ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
+	UpdateWindow(s_textArea);
+    }
 
-    UpdateWindow(s_textArea);
     /* This seems to be required to avoid the cursor disappearing when
      * scrolling such that the cursor ends up in the top-left character on
      * the screen...   But why?  (Webb) */
@@ -3106,18 +3195,27 @@ gui_mch_insert_lines(
 {
     RECT	rc;
 
-    intel_gpu_workaround();
-
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
-    /* The SW_INVALIDATE is required when part of the window is covered or
-     * off-screen.  How do we avoid it when it's not needed? */
-    ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
-				    &rc, &rc, NULL, NULL, get_scroll_flags());
 
-    UpdateWindow(s_textArea);
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+    {
+	DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
+	DWriteContext_Flush(s_dwc);
+    }
+    else
+#endif
+    {
+	intel_gpu_workaround();
+	/* The SW_INVALIDATE is required when part of the window is covered or
+	 * off-screen.  How do we avoid it when it's not needed? */
+	ScrollWindowEx(s_textArea, 0, num_lines * gui.char_height,
+				    &rc, &rc, NULL, NULL, get_scroll_flags());
+	UpdateWindow(s_textArea);
+    }
 
     gui_clear_block(row, gui.scroll_region_left,
 				row + num_lines - 1, gui.scroll_region_right);
@@ -3301,6 +3399,8 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 	font_name = (char_u *)lf.lfFaceName;
 #if defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)
     norm_logfont = lf;
+#endif
+#ifdef FEAT_MBYTE_IME
     sub_logfont = lf;
 #endif
 #ifdef FEAT_MBYTE_IME
@@ -3376,8 +3476,9 @@ gui_mch_maximized(void)
 }
 
 /*
- * Called when the font changed while the window is maximized.  Compute the
- * new Rows and Columns.  This is like resizing the window.
+ * Called when the font changed while the window is maximized or GO_KEEPWINSIZE
+ * is set.  Compute the new Rows and Columns.  This is like resizing the
+ * window.
  */
     void
 gui_mch_newfont(void)
@@ -3526,7 +3627,7 @@ gui_mch_browseW(
     WCHAR		*extp = NULL;
     WCHAR		*initdirp = NULL;
     WCHAR		*filterp;
-    char_u		*p;
+    char_u		*p, *q;
 
     if (dflt == NULL)
 	fileBuf[0] = NUL;
@@ -3612,16 +3713,16 @@ gui_mch_browseW(
 
     /* Convert from UCS2 to 'encoding'. */
     p = utf16_to_enc(fileBuf, NULL);
-    if (p != NULL)
-	/* when out of memory we get garbage for non-ASCII chars */
-	STRCPY(fileBuf, p);
-    vim_free(p);
+    if (p == NULL)
+	return NULL;
 
     /* Give focus back to main window (when using MDI). */
     SetFocus(s_hwnd);
 
     /* Shorten the file name if possible */
-    return vim_strsave(shorten_fname1((char_u *)fileBuf));
+    q = vim_strsave(shorten_fname1(p));
+    vim_free(p);
+    return q;
 }
 # endif /* FEAT_MBYTE */
 
@@ -3774,12 +3875,11 @@ _OnDropFiles(
     HWND hwnd UNUSED,
     HDROP hDrop)
 {
-#ifdef FEAT_WINDOWS
-# define BUFPATHLEN _MAX_PATH
-# define DRAGQVAL 0xFFFFFFFF
-# ifdef FEAT_MBYTE
+#define BUFPATHLEN _MAX_PATH
+#define DRAGQVAL 0xFFFFFFFF
+#ifdef FEAT_MBYTE
     WCHAR   wszFile[BUFPATHLEN];
-# endif
+#endif
     char    szFile[BUFPATHLEN];
     UINT    cFiles = DragQueryFile(hDrop, DRAGQVAL, NULL, 0);
     UINT    i;
@@ -3800,11 +3900,11 @@ _OnDropFiles(
     if (fnames != NULL)
 	for (i = 0; i < cFiles; ++i)
 	{
-# ifdef FEAT_MBYTE
+#ifdef FEAT_MBYTE
 	    if (DragQueryFileW(hDrop, i, wszFile, BUFPATHLEN) > 0)
 		fnames[i] = utf16_to_enc(wszFile, NULL);
 	    else
-# endif
+#endif
 	    {
 		DragQueryFile(hDrop, i, szFile, BUFPATHLEN);
 		fnames[i] = vim_strsave((char_u *)szFile);
@@ -3826,7 +3926,6 @@ _OnDropFiles(
 
 	s_need_activate = TRUE;
     }
-#endif
 }
 
     static int
@@ -3930,7 +4029,10 @@ _OnScroll(
      * position, but don't actually scroll by setting "dont_scroll". */
     dont_scroll = !allow_scrollbar;
 
+    mch_disable_flush();
     gui_drag_scrollbar(sb, val, dragging);
+    mch_enable_flush();
+    gui_may_flush();
 
     s_busy_processing = FALSE;
     dont_scroll = dont_scroll_save;
@@ -4223,7 +4325,7 @@ done:
 #endif
 
 
-#ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL_GUI
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
@@ -4233,10 +4335,6 @@ done:
 # undef  UINT_PTR
 # define UINT_PTR UINT
 #endif
-
-static void make_tooltip(BalloonEval *beval, char *text, POINT pt);
-static void delete_tooltip(BalloonEval *beval);
-static VOID CALLBACK BevalTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
@@ -4302,7 +4400,7 @@ typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 # define TTN_GETDISPINFO	(TTN_FIRST - 0)
 #endif
 
-#endif /* defined(FEAT_BEVAL) */
+#endif /* defined(FEAT_BEVAL_GUI) */
 
 #if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
 /* Older MSVC compilers don't have LPNMTTDISPINFO[AW] thus we need to define
@@ -4361,10 +4459,6 @@ static UINT	s_menu_id = 100;
 /*
  * stuff for dialogs, menus, tearoffs etc.
  */
-static LRESULT APIENTRY dialog_callback(HWND, UINT, WPARAM, LPARAM);
-#ifdef FEAT_TEAROFF
-static LRESULT APIENTRY tearoff_callback(HWND, UINT, WPARAM, LPARAM);
-#endif
 static PWORD
 add_dialog_element(
 	PWORD p,
@@ -4377,7 +4471,7 @@ add_dialog_element(
 	WORD clss,
 	const char *caption);
 static LPWORD lpwAlign(LPWORD);
-static int nCopyAnsiToWideChar(LPWORD, LPSTR);
+static int nCopyAnsiToWideChar(LPWORD, LPSTR, BOOL);
 #if defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 static void gui_mch_tearoff(char_u *title, vimmenu_T *menu, int initX, int initY);
 #endif
@@ -4557,6 +4651,7 @@ _OnMouseWheel(
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
+    mch_disable_flush();
     if (mouse_scroll_lines > 0
 	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
     {
@@ -4565,6 +4660,8 @@ _OnMouseWheel(
     }
     else
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
+    mch_enable_flush();
+    gui_may_flush();
 }
 
 #ifdef USE_SYSMENU_FONT
@@ -4862,8 +4959,7 @@ _WndProc(
 		    char_u		*str = NULL;
 		    static void		*tt_text = NULL;
 
-		    vim_free(tt_text);
-		    tt_text = NULL;
+		    VIM_CLEAR(tt_text);
 
 # ifdef FEAT_GUI_TABLINE
 		    if (gui_mch_showing_tabline()
@@ -5452,9 +5548,7 @@ gui_mch_init(void)
 #endif
     s_hdc = GetDC(s_textArea);
 
-#ifdef FEAT_WINDOWS
     DragAcceptFiles(s_hwnd, TRUE);
-#endif
 
     /* Do we need to bother with this? */
     /* m_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT); */
@@ -5564,7 +5658,7 @@ get_work_area(RECT *spi_rect)
     HMONITOR	    mon;
     MONITORINFO	    moninfo;
 
-    /* work out which monitor the window is on, and get *it's* work area */
+    /* work out which monitor the window is on, and get *its* work area */
     mon = MonitorFromWindow(s_hwnd, MONITOR_DEFAULTTOPRIMARY);
     if (mon != NULL)
     {
@@ -5737,15 +5831,15 @@ gui_mch_set_sp_color(guicolor_T color)
     gui.currSpColor = color;
 }
 
-#if defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)
+#ifdef FEAT_MBYTE_IME
 /*
  * Multi-byte handling, originally by Sung-Hoon Baek.
  * First static functions (no prototypes generated).
  */
-#ifdef _MSC_VER
-# include <ime.h>   /* Apparently not needed for Cygwin, MingW or Borland. */
-#endif
-#include <imm.h>
+# ifdef _MSC_VER
+#  include <ime.h>   /* Apparently not needed for Cygwin, MingW or Borland. */
+# endif
+# include <imm.h>
 
 /*
  * handle WM_IME_NOTIFY message
@@ -5770,7 +5864,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 		State &= ~LANGMAP;
 		if (State & INSERT)
 		{
-#if defined(FEAT_WINDOWS) && defined(FEAT_KEYMAP)
+#if defined(FEAT_KEYMAP)
 		    /* Unshown 'keymap' in status lines */
 		    if (curbuf->b_p_iminsert == B_IMODE_LMAP)
 		    {
@@ -5792,6 +5886,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
 		}
 	    }
 	    gui_update_cursor(TRUE, FALSE);
+	    gui_mch_flush();
 	    lResult = 0;
 	    break;
     }
@@ -5897,7 +5992,7 @@ GetResultStr(HWND hwnd, int GCS, int *lenp)
 #endif
 
 /* For global functions we need prototypes. */
-#if (defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)) || defined(PROTO)
+#if defined(FEAT_MBYTE_IME) || defined(PROTO)
 
 /*
  * set font to IM.
@@ -6022,7 +6117,7 @@ im_get_status(void)
     return status;
 }
 
-#endif /* FEAT_MBYTE && FEAT_MBYTE_IME */
+#endif /* FEAT_MBYTE_IME */
 
 #if defined(FEAT_MBYTE) && !defined(FEAT_MBYTE_IME) && defined(GLOBAL_IME)
 /* Win32 with GLOBAL IME */
@@ -6120,6 +6215,67 @@ RevOut( HDC s_hdc,
 }
 #endif
 
+    static void
+draw_line(
+    int		x1,
+    int	    	y1,
+    int	    	x2,
+    int	    	y2,
+    COLORREF	color)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_DrawLine(s_dwc, x1, y1, x2, y2, color);
+    else
+#endif
+    {
+	HPEN	hpen = CreatePen(PS_SOLID, 1, color);
+	HPEN	old_pen = SelectObject(s_hdc, hpen);
+	MoveToEx(s_hdc, x1, y1, NULL);
+	/* Note: LineTo() excludes the last pixel in the line. */
+	LineTo(s_hdc, x2, y2);
+	DeleteObject(SelectObject(s_hdc, old_pen));
+    }
+}
+
+    static void
+set_pixel(
+    int		x,
+    int	    	y,
+    COLORREF	color)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_SetPixel(s_dwc, x, y, color);
+    else
+#endif
+	SetPixel(s_hdc, x, y, color);
+}
+
+    static void
+fill_rect(
+    const RECT	*rcp,
+    HBRUSH    	hbr,
+    COLORREF	color)
+{
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_FillRect(s_dwc, rcp, color);
+    else
+#endif
+    {
+	HBRUSH	hbr2;
+
+	if (hbr == NULL)
+	    hbr2 = CreateSolidBrush(color);
+	else
+	    hbr2 = hbr;
+	FillRect(s_hdc, rcp, hbr2);
+	if (hbr == NULL)
+	    DeleteBrush(hbr2);
+    }
+}
+
     void
 gui_mch_draw_string(
     int		row,
@@ -6139,11 +6295,7 @@ gui_mch_draw_string(
     static int	unibuflen = 0;
     int		n = 0;
 #endif
-    HPEN	hpen, old_pen;
     int		y;
-#ifdef FEAT_DIRECTX
-    int		font_is_ttf_or_vector = 0;
-#endif
 
     /*
      * Italic and bold text seems to have an extra row of pixels at the bottom
@@ -6204,7 +6356,8 @@ gui_mch_draw_string(
 	    hbr = hbr_cache[brush_lru];
 	    brush_lru = !brush_lru;
 	}
-	FillRect(s_hdc, &rc, hbr);
+
+	fill_rect(&rc, hbr, gui.currBgColor);
 
 	SetBkMode(s_hdc, TRANSPARENT);
 
@@ -6223,16 +6376,7 @@ gui_mch_draw_string(
 
 #ifdef FEAT_DIRECTX
     if (IS_ENABLE_DIRECTX())
-    {
-	TEXTMETRIC tm;
-
-	GetTextMetrics(s_hdc, &tm);
-	if (tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR))
-	{
-	    font_is_ttf_or_vector = 1;
-	    DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
-	}
-    }
+	DWriteContext_SetFont(s_dwc, (HFONT)gui.currFont);
 #endif
 
     if (pad_size != Columns || padding == NULL || padding[0] != gui.char_width)
@@ -6263,13 +6407,13 @@ gui_mch_draw_string(
 	    if (text[n] >= 0x80)
 		break;
 
-#if defined(FEAT_DIRECTX)
+# if defined(FEAT_DIRECTX)
     /* Quick hack to enable DirectWrite.  To use DirectWrite (antialias), it is
      * required that unicode drawing routine, currently.  So this forces it
      * enabled. */
-    if (enc_utf8 && IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX())
 	n = 0; /* Keep n < len, to enter block for unicode. */
-#endif
+# endif
 
     /* Check if the Unicode buffer exists and is big enough.  Create it
      * with the same length as the multi-byte string, the number of wide
@@ -6290,8 +6434,8 @@ gui_mch_draw_string(
 
     if (enc_utf8 && n < len && unicodebuf != NULL)
     {
-	/* Output UTF-8 characters.  Caller has already separated
-	 * composing characters. */
+	/* Output UTF-8 characters.  Composing characters should be
+	 * handled here. */
 	int		i;
 	int		wlen;	/* string length in words */
 	int		clen;	/* string length in characters */
@@ -6315,9 +6459,16 @@ gui_mch_draw_string(
 	    {
 		unicodebuf[wlen++] = c;
 	    }
-	    cw = utf_char2cells(c);
-	    if (cw > 2)		/* don't use 4 for unprintable char */
-		cw = 1;
+
+	    if (utf_iscomposing(c))
+		cw = 0;
+	    else
+	    {
+		cw = utf_char2cells(c);
+		if (cw > 2)		/* don't use 4 for unprintable char */
+		    cw = 1;
+	    }
+
 	    if (unicodepdy != NULL)
 	    {
 		/* Use unicodepdy to make characters fit as we expect, even
@@ -6332,19 +6483,20 @@ gui_mch_draw_string(
 		    unicodepdy[wlen - 1] = cw * gui.char_width;
 	    }
 	    cells += cw;
-	    i += utfc_ptr2len_len(text + i, len - i);
+	    i += utf_ptr2len_len(text + i, len - i);
 	    ++clen;
 	}
-#if defined(FEAT_DIRECTX)
-	if (IS_ENABLE_DIRECTX() && font_is_ttf_or_vector)
+# if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
 	{
 	    /* Add one to "cells" for italics. */
-	    DWriteContext_DrawText(s_dwc, s_hdc, unicodebuf, wlen,
+	    DWriteContext_DrawText(s_dwc, unicodebuf, wlen,
 		    TEXT_X(col), TEXT_Y(row), FILL_X(cells + 1), FILL_Y(1),
-		    gui.char_width, gui.currFgColor);
+		    gui.char_width, gui.currFgColor,
+		    foptions, pcliprect, unicodepdy);
 	}
 	else
-#endif
+# endif
 	    ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
 		    foptions, pcliprect, unicodebuf, wlen, unicodepdy);
 	len = cells;	/* used for underlining */
@@ -6403,17 +6555,19 @@ gui_mch_draw_string(
     /* Underline */
     if (flags & DRAW_UNDERL)
     {
-	hpen = CreatePen(PS_SOLID, 1, gui.currFgColor);
-	old_pen = SelectObject(s_hdc, hpen);
 	/* When p_linespace is 0, overwrite the bottom row of pixels.
 	 * Otherwise put the line just below the character. */
 	y = FILL_Y(row + 1) - 1;
 	if (p_linespace > 1)
 	    y -= p_linespace - 1;
-	MoveToEx(s_hdc, FILL_X(col), y, NULL);
-	/* Note: LineTo() excludes the last pixel in the line. */
-	LineTo(s_hdc, FILL_X(col + len), y);
-	DeleteObject(SelectObject(s_hdc, old_pen));
+	draw_line(FILL_X(col), y, FILL_X(col + len), y, gui.currFgColor);
+    }
+
+    /* Strikethrough */
+    if (flags & DRAW_STRIKE)
+    {
+	y = FILL_Y(row + 1) - gui.char_height/2;
+	draw_line(FILL_X(col), y, FILL_X(col + len), y, gui.currSpColor);
     }
 
     /* Undercurl */
@@ -6427,7 +6581,7 @@ gui_mch_draw_string(
 	for (x = FILL_X(col); x < FILL_X(col + len); ++x)
 	{
 	    offset = val[x % 8];
-	    SetPixel(s_hdc, x, y - offset, gui.currSpColor);
+	    set_pixel(x, y - offset, gui.currSpColor);
 	}
     }
 }
@@ -6450,17 +6604,18 @@ gui_mch_flush(void)
     BOOL  __stdcall GdiFlush(void);
 #   endif
 
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
+
     GdiFlush();
 }
 
     static void
 clear_rect(RECT *rcp)
 {
-    HBRUSH  hbr;
-
-    hbr = CreateSolidBrush(gui.back_pixel);
-    FillRect(s_hdc, rcp, hbr);
-    DeleteBrush(hbr);
+    fill_rect(rcp, NULL, gui.back_pixel);
 }
 
 
@@ -6591,7 +6746,7 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 	}
 	else if (curwin != NULL)
 	{
-	    p.x += TEXT_X(W_WINCOL(curwin) + curwin->w_wcol + 1);
+	    p.x += TEXT_X(curwin->w_wincol + curwin->w_wcol + 1);
 	    p.y += TEXT_Y(W_WINROW(curwin) + curwin->w_wrow + 1);
 	}
 	msg_scroll = FALSE;
@@ -7267,9 +7422,8 @@ gui_mch_dialog(
     add_word(0);	// Class
 
     /* copy the title of the dialog */
-    nchar = nCopyAnsiToWideChar(p, (title ?
-				    (LPSTR)title :
-				    (LPSTR)("Vim "VIM_VERSION_MEDIUM)));
+    nchar = nCopyAnsiToWideChar(p, (title ? (LPSTR)title
+				   : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
     if (s_usenewlook)
@@ -7281,13 +7435,13 @@ gui_mch_dialog(
 	    /* point size */
 	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
 		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    nchar = nCopyAnsiToWideChar(p, TEXT(lfSysmenu.lfFaceName));
+	    nchar = nCopyAnsiToWideChar(p, lfSysmenu.lfFaceName, FALSE);
 	}
 	else
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar(p, TEXT(DLG_FONT_NAME));
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
@@ -7468,7 +7622,7 @@ add_dialog_element(
     *p++ = (WORD)0xffff;
     *p++ = clss;			//2 more here
 
-    nchar = nCopyAnsiToWideChar(p, (LPSTR)caption); //strlen(caption)+1
+    nchar = nCopyAnsiToWideChar(p, (LPSTR)caption, TRUE); //strlen(caption)+1
     p += nchar;
 
     *p++ = 0;  // advance pointer over nExtraStuff WORD   - 2 more
@@ -7500,11 +7654,13 @@ lpwAlign(
  * parameter as wide character (16-bits / char) string, and returns integer
  * number of wide characters (words) in string (including the trailing wide
  * char NULL).  Partly taken from the Win32SDK samples.
- */
+ * If "use_enc" is TRUE, 'encoding' is used for "lpAnsiIn". If FALSE, current
+ * ACP is used for "lpAnsiIn". */
     static int
 nCopyAnsiToWideChar(
     LPWORD lpWCStr,
-    LPSTR lpAnsiIn)
+    LPSTR lpAnsiIn,
+    BOOL use_enc)
 {
     int		nChar = 0;
 #ifdef FEAT_MBYTE
@@ -7512,7 +7668,7 @@ nCopyAnsiToWideChar(
     int		i;
     WCHAR	*wn;
 
-    if (enc_codepage == 0 && (int)GetACP() != enc_codepage)
+    if (use_enc && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	/* Not a codepage, use our own conversion function. */
 	wn = enc_to_utf16((char_u *)lpAnsiIn, NULL);
@@ -7550,6 +7706,26 @@ nCopyAnsiToWideChar(
 
 #ifdef FEAT_TEAROFF
 /*
+ * Lookup menu handle from "menu_id".
+ */
+    static HMENU
+tearoff_lookup_menuhandle(
+    vimmenu_T *menu,
+    WORD menu_id)
+{
+    for ( ; menu != NULL; menu = menu->next)
+    {
+	if (menu->modes == 0)	/* this menu has just been deleted */
+	    continue;
+	if (menu_is_separator(menu->dname))
+	    continue;
+	if ((WORD)((long_u)(menu->submenu_id) | (DWORD)0x8000) == menu_id)
+	    return menu->submenu_id;
+    }
+    return NULL;
+}
+
+/*
  * The callback function for all the modeless dialogs that make up the
  * "tearoff menus" Very simple - forward button presses (to fool Vim into
  * thinking its menus have been clicked), and go away when closed.
@@ -7562,7 +7738,10 @@ tearoff_callback(
     LPARAM lParam)
 {
     if (message == WM_INITDIALOG)
+    {
+	SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
 	return (TRUE);
+    }
 
     /* May show the mouse pointer again. */
     HandleMouseHide(message, lParam);
@@ -7576,8 +7755,11 @@ tearoff_callback(
 
 	    if (GetCursorPos(&mp) && GetWindowRect(hwnd, &rect))
 	    {
+		vimmenu_T *menu;
+
+		menu = (vimmenu_T*)GetWindowLongPtr(hwnd, DWLP_USER);
 		(void)TrackPopupMenu(
-			 (HMENU)(long_u)(LOWORD(wParam) ^ 0x8000),
+			 tearoff_lookup_menuhandle(menu, LOWORD(wParam)),
 			 TPM_LEFTALIGN | TPM_LEFTBUTTON,
 			 (int)rect.right - 8,
 			 (int)mp.y,
@@ -7689,6 +7871,7 @@ gui_mch_tearoff(
     WORD	dlgwidth;
     WORD	menuID;
     vimmenu_T	*pmenu;
+    vimmenu_T	*top_menu;
     vimmenu_T	*the_menu = menu;
     HWND	hwnd;
     HDC		hdc;
@@ -7835,8 +8018,8 @@ gui_mch_tearoff(
 
     /* copy the title of the dialog */
     nchar = nCopyAnsiToWideChar(p, ((*title)
-				    ? (LPSTR)title
-				    : (LPSTR)("Vim "VIM_VERSION_MEDIUM)));
+			    ? (LPSTR)title
+			    : (LPSTR)("Vim "VIM_VERSION_MEDIUM)), TRUE);
     p += nchar;
 
     if (s_usenewlook)
@@ -7848,13 +8031,13 @@ gui_mch_tearoff(
 	    /* point size */
 	    *p++ = -MulDiv(lfSysmenu.lfHeight, 72,
 		    GetDeviceCaps(hdc, LOGPIXELSY));
-	    nchar = nCopyAnsiToWideChar(p, TEXT(lfSysmenu.lfFaceName));
+	    nchar = nCopyAnsiToWideChar(p, lfSysmenu.lfFaceName, FALSE);
 	}
 	else
 #endif
 	{
 	    *p++ = DLG_FONT_POINT_SIZE;		// point size
-	    nchar = nCopyAnsiToWideChar (p, TEXT(DLG_FONT_NAME));
+	    nchar = nCopyAnsiToWideChar(p, DLG_FONT_NAME, FALSE);
 	}
 	p += nchar;
     }
@@ -7867,6 +8050,7 @@ gui_mch_tearoff(
 	menu = menu->children->next;
     else
 	menu = menu->children;
+    top_menu = menu;
     for ( ; menu != NULL; menu = menu->next)
     {
 	if (menu->modes == 0)	/* this menu has just been deleted */
@@ -7977,11 +8161,12 @@ gui_mch_tearoff(
 
 
     /* show modelessly */
-    the_menu->tearoff_handle = CreateDialogIndirect(
+    the_menu->tearoff_handle = CreateDialogIndirectParam(
 	    s_hinst,
 	    (LPDLGTEMPLATE)pdlgtemplate,
 	    s_hwnd,
-	    (DLGPROC)tearoff_callback);
+	    (DLGPROC)tearoff_callback,
+	    (LPARAM)top_menu);
 
     LocalFree(LocalHandle(pdlgtemplate));
     SelectFont(hdc, oldFont);
@@ -8133,6 +8318,34 @@ initialise_tabline(void)
 # endif
 }
 
+/*
+ * Get tabpage_T from POINT.
+ */
+    static tabpage_T *
+GetTabFromPoint(
+    HWND    hWnd,
+    POINT   pt)
+{
+    tabpage_T	*ptp = NULL;
+
+    if (gui_mch_showing_tabline())
+    {
+	TCHITTESTINFO htinfo;
+	htinfo.pt = pt;
+	/* ignore if a window under cusor is not tabcontrol. */
+	if (s_tabhwnd == hWnd)
+	{
+	    int idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
+	    if (idx != -1)
+		ptp = find_tabpage(idx + 1);
+	}
+    }
+    return ptp;
+}
+
+static POINT	    s_pt = {0, 0};
+static HCURSOR      s_hCursor = NULL;
+
     static LRESULT CALLBACK
 tabline_wndproc(
     HWND hwnd,
@@ -8140,7 +8353,73 @@ tabline_wndproc(
     WPARAM wParam,
     LPARAM lParam)
 {
+    POINT	pt;
+    tabpage_T	*tp;
+    RECT	rect;
+    int		nCenter;
+    int		idx0;
+    int		idx1;
+
     HandleMouseHide(uMsg, lParam);
+
+    switch (uMsg)
+    {
+	case WM_LBUTTONDOWN:
+	    {
+		s_pt.x = GET_X_LPARAM(lParam);
+		s_pt.y = GET_Y_LPARAM(lParam);
+		SetCapture(hwnd);
+		s_hCursor = GetCursor(); /* backup default cursor */
+		break;
+	    }
+	case WM_MOUSEMOVE:
+	    if (GetCapture() == hwnd
+		    && ((wParam & MK_LBUTTON)) != 0)
+	    {
+		pt.x = GET_X_LPARAM(lParam);
+		pt.y = s_pt.y;
+		if (abs(pt.x - s_pt.x) > GetSystemMetrics(SM_CXDRAG))
+		{
+		    SetCursor(LoadCursor(NULL, IDC_SIZEWE));
+
+		    tp = GetTabFromPoint(hwnd, pt);
+		    if (tp != NULL)
+		    {
+			idx0 = tabpage_index(curtab) - 1;
+			idx1 = tabpage_index(tp) - 1;
+
+			TabCtrl_GetItemRect(hwnd, idx1, &rect);
+			nCenter = rect.left + (rect.right - rect.left) / 2;
+
+			/* Check if the mouse cursor goes over the center of
+			 * the next tab to prevent "flickering". */
+			if ((idx0 < idx1) && (nCenter < pt.x))
+			{
+			    tabpage_move(idx1 + 1);
+			    update_screen(0);
+			}
+			else if ((idx1 < idx0) && (pt.x < nCenter))
+			{
+			    tabpage_move(idx1);
+			    update_screen(0);
+			}
+		    }
+		}
+	    }
+	    break;
+	case WM_LBUTTONUP:
+	    {
+		if (GetCapture() == hwnd)
+		{
+		    SetCursor(s_hCursor);
+		    ReleaseCapture();
+		}
+		break;
+	    }
+	default:
+	    break;
+    }
+
     return CallWindowProc(s_tabline_wndproc, hwnd, uMsg, wParam, lParam);
 }
 #endif
@@ -8238,6 +8517,11 @@ gui_mch_drawsign(int row, int col, int typenr)
 
     if (!gui.in_use || (sign = (signicon_t *)sign_get_image(typenr)) == NULL)
 	return;
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     x = TEXT_X(col);
     y = TEXT_Y(row);
@@ -8368,12 +8652,12 @@ gui_mch_destroy_sign(void *sign)
 }
 #endif
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
+#if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 /* BALLOON-EVAL IMPLEMENTATION FOR WINDOWS.
  *  Added by Sergey Khorev <sergey.khorev@gmail.com>
  *
- * The only reused thing is gui_beval.h and get_beval_info()
+ * The only reused thing is beval.h and get_beval_info()
  * from gui_beval.c (note it uses x and y of the BalloonEval struct
  * to get current mouse position).
  *
@@ -8628,15 +8912,12 @@ gui_mch_create_beval_area(
 	return NULL;
     }
 
-    beval = (BalloonEval *)alloc(sizeof(BalloonEval));
+    beval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
     if (beval != NULL)
     {
 	beval->target = s_textArea;
-	beval->balloon = NULL;
 
 	beval->showState = ShS_NEUTRAL;
-	beval->x = 0;
-	beval->y = 0;
 	beval->msg = mesg;
 	beval->msgCB = mesgCB;
 	beval->clientData = clientData;
@@ -8646,7 +8927,6 @@ gui_mch_create_beval_area(
 
 	if (p_beval)
 	    gui_mch_enable_beval_area(beval);
-
     }
     return beval;
 }
@@ -8696,9 +8976,13 @@ TrackUserActivity(UINT uMsg)
     void
 gui_mch_destroy_beval_area(BalloonEval *beval)
 {
+#ifdef FEAT_VARTABS
+    if (beval->vts)
+	vim_free(beval->vts);
+#endif
     vim_free(beval);
 }
-#endif /* FEAT_BEVAL */
+#endif /* FEAT_BEVAL_GUI */
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /*
@@ -8717,6 +9001,11 @@ netbeans_draw_multisign_indicator(int row)
 
     x = 0;
     y = TEXT_Y(row);
+
+#if defined(FEAT_DIRECTX)
+    if (IS_ENABLE_DIRECTX())
+	DWriteContext_Flush(s_dwc);
+#endif
 
     for (i = 0; i < gui.char_height - 3; i++)
 	SetPixel(s_hdc, x+2, y++, gui.currFgColor);

@@ -212,10 +212,6 @@ static PtCallbackF_t gui_ph_handle_menu_unrealized;
 static void gui_ph_get_panelgroup_margins(short*, short*, short*, short*);
 #endif
 
-#ifdef FEAT_TOOLBAR
-static PhImage_t *gui_ph_toolbar_find_icon(vimmenu_T *menu);
-#endif
-
 static void gui_ph_draw_start(void);
 static void gui_ph_draw_end(void);
 
@@ -383,7 +379,7 @@ gui_ph_handle_window_cb(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    else
 	    {
 		gui_focus_change(FALSE);
-		gui_mch_stop_blink();
+		gui_mch_stop_blink(TRUE);
 	    }
 	    break;
 
@@ -1040,8 +1036,7 @@ gui_ph_pg_remove_buffer(char *name)
 	PtSetResource(gui.vimPanelGroup, Pt_ARG_PG_PANEL_TITLES, &empty_title,
 		1);
 
-	vim_free(panel_titles);
-	panel_titles = NULL;
+	VIM_CLEAR(panel_titles);
     }
 }
 
@@ -1986,6 +1981,12 @@ gui_mch_get_color(char_u *name)
     return gui_get_color_cmn(name);
 }
 
+    guicolor_T
+gui_mch_get_rgb_color(int r, int g, int b)
+{
+    return gui_get_rgb_color_cmn(r, g, b);
+}
+
     void
 gui_mch_set_fg_color(guicolor_T color)
 {
@@ -2267,11 +2268,11 @@ gui_mch_start_blink(void)
 }
 
     void
-gui_mch_stop_blink(void)
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     PtSetResource(gui_ph_timer_cursor, Pt_ARG_TIMER_INITIAL, 0, 0);
 
-    if (blink_state == BLINK_OFF)
+    if (blink_state == BLINK_OFF && may_call_gui_update_cursor)
 	gui_update_cursor(TRUE, FALSE);
 
     blink_state = BLINK_NONE;

@@ -11,7 +11,7 @@ AC_DEFINE(UNIX)
 AC_PROG_MAKE_SET
 
 dnl Checks for programs.
-AC_PROG_CC		dnl required by almost everything
+AC_PROG_CC_C99		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
 AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
@@ -29,6 +29,39 @@ dnl in autoconf needs it, where it uses STDC_HEADERS.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
+dnl Check that the C99 features that Vim uses are supported:
+if test x"$ac_cv_prog_cc_c99" != xno; then
+  dnl If the compiler doesn't explicitly support C99, then check
+  dnl for the specific features Vim uses
+
+  AC_TYPE_LONG_LONG_INT
+  if test "$ac_cv_type_long_long_int" = no; then
+    AC_MSG_FAILURE([Compiler does not support long long int])
+  fi
+
+  AC_MSG_CHECKING([if the compiler supports trailing commas])
+  trailing_commas=no
+  AC_TRY_COMPILE([], [
+    enum {
+      one,
+    };],
+    [AC_MSG_RESULT(yes); trailing_commas=yes],
+    [AC_MSG_RESULT(no)])
+  if test "$trailing_commas" = no; then
+    AC_MSG_FAILURE([Compiler does not support trailing comma in enum])
+  fi
+
+  AC_MSG_CHECKING([if the compiler supports C++ comments])
+  slash_comments=no
+  AC_TRY_COMPILE([],
+    [// C++ comments?],
+    [AC_MSG_RESULT(yes); slash_comments=yes],
+    [AC_MSG_RESULT(no)])
+  if test "$slash_comments" = no; then
+    AC_MSG_FAILURE([Compiler does not support C++ comments])
+  fi
+fi
+
 dnl Check for the flag that fails if stuff are missing.
 
 AC_MSG_CHECKING(--enable-fail-if-missing argument)
@@ -38,6 +71,9 @@ AC_ARG_ENABLE(fail_if_missing,
 	[fail_if_missing="yes"],
 	[fail_if_missing="no"])
 AC_MSG_RESULT($fail_if_missing)
+
+dnl Keep original value to check later.
+with_x_arg="$with_x"
 
 dnl Set default value for CFLAGS if none is defined or it's empty
 if test -z "$CFLAGS"; then
@@ -134,6 +170,8 @@ dnl are a lot of other things we need to change besides GUI stuff
 AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
+  MACOS_X=yes
+  CPPFLAGS="$CPPFLAGS -DMACOS_X"
 
   AC_MSG_CHECKING(--disable-darwin argument)
   AC_ARG_ENABLE(darwin,
@@ -208,12 +246,12 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   fi
 
   if test "$enable_darwin" = "yes"; then
-    MACOSX=yes
+    MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl TODO: use -arch i386 on Intel machines
     dnl Removed -no-cpp-precomp, only for very old compilers.
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX"
+    CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
@@ -431,8 +469,9 @@ if test "x$found_smack" = "x"; then
   if test "$enable_selinux" = "yes"; then
     AC_MSG_RESULT(no)
     AC_CHECK_LIB(selinux, is_selinux_enabled,
+	[AC_CHECK_HEADER(selinux/selinux.h,
 	    [LIBS="$LIBS -lselinux"
-	     AC_DEFINE(HAVE_SELINUX)])
+	    AC_DEFINE(HAVE_SELINUX)])])
   else
      AC_MSG_RESULT(yes)
   fi
@@ -492,7 +531,7 @@ fi
 dnl Check for Lua feature.
 AC_MSG_CHECKING(--enable-luainterp argument)
 AC_ARG_ENABLE(luainterp,
-	[  --enable-luainterp[=OPTS]     Include Lua interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-luainterp[=OPTS]      Include Lua interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_luainterp="no"])
 AC_MSG_RESULT($enable_luainterp)
 
@@ -626,7 +665,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       if test -f "${vi_cv_path_lua_pfx}/bin/cyglua-${vi_cv_version_lua}.dll"; then
 	vi_cv_dll_name_lua="cyglua-${vi_cv_version_lua}.dll"
       else
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  ext="dylib"
 	  indexes=""
 	else
@@ -670,7 +709,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"${vi_cv_dll_name_lua}\\\" $LUA_CFLAGS"
     fi
     if test "X$LUA_CFLAGS$LUA_LIBS" != "X" && \
-       test "x$MACOSX" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
+       test "x$MACOS_X" = "xyes" && test "x$vi_cv_with_luajit" != "xno" && \
        test "`(uname -m) 2>/dev/null`" = "x86_64"; then
       dnl OSX/x64 requires these flags. See http://luajit.org/install.html
       LUA_LIBS="-pagezero_size 10000 -image_base 100000000 $LUA_LIBS"
@@ -690,7 +729,7 @@ fi
 dnl Check for MzScheme feature.
 AC_MSG_CHECKING(--enable-mzschemeinterp argument)
 AC_ARG_ENABLE(mzschemeinterp,
-	[  --enable-mzschemeinterp   Include MzScheme interpreter.], ,
+	[  --enable-mzschemeinterp      Include MzScheme interpreter.], ,
 	[enable_mzschemeinterp="no"])
 AC_MSG_RESULT($enable_mzschemeinterp)
 
@@ -802,7 +841,7 @@ if test "$enable_mzschemeinterp" = "yes"; then
 
     for path in "${vi_cv_path_mzscheme_pfx}/lib" "${SCHEME_LIB}"; do
       if test "X$path" != "X"; then
-	if test "x$MACOSX" = "xyes"; then
+	if test "x$MACOS_X" = "xyes"; then
 	  MZSCHEME_LIBS="-framework Racket"
 	  MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
 	elif test -f "${path}/libmzscheme3m.a"; then
@@ -1005,9 +1044,14 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       AC_SUBST(vi_cv_perl_xsubpp)
       dnl Remove "-fno-something", it breaks using cproto.
       dnl Remove "-fdebug-prefix-map", it isn't supported by clang.
+      dnl Remove "FORTIFY_SOURCE", it will be defined twice.
+      dnl remove -pipe and -Wxxx, it confuses cproto
       perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
-	      -e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[[^ ]]*//' \
-			-e 's/-fdebug-prefix-map[[^ ]]*//g'`
+		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[[^ ]]*//' \
+		-e 's/-fdebug-prefix-map[[^ ]]*//g' \
+		-e 's/-pipe //' \
+		-e 's/-W[[^ ]]*//g' \
+		-e 's/-D_FORTIFY_SOURCE=.//g'`
       dnl Remove "-lc", it breaks on FreeBSD when using "-pthread".
       perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
@@ -1035,8 +1079,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  dnl remove -pipe and -Wxxx, it confuses cproto
-	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[[^ ]]*//'`
+	  PERL_CFLAGS=$perlcppflags
 	fi
 	if test "X$perlldflags" != "X"; then
 	  if test "X`echo \"$LDFLAGS\" | $FGREP -e \"$perlldflags\"`" = "X"; then
@@ -1055,7 +1098,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
     fi
   fi
 
-  if test "x$MACOSX" = "xyes"; then
+  if test "x$MACOS_X" = "xyes"; then
     dnl Mac OS X 10.2 or later
     dir=/System/Library/Perl
     darwindir=$dir/darwin
@@ -1110,7 +1153,15 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
   fi
 
   dnl -- find the python executable
-  AC_PATH_PROGS(vi_cv_path_python, python2 python)
+  AC_MSG_CHECKING(--with-python-command argument)
+  AC_SUBST(vi_cv_path_python)
+  AC_ARG_WITH(python-command, [  --with-python-command=NAME  name of the Python 2 command (default: python2 or python)],
+	vi_cv_path_python="$withval"; AC_MSG_RESULT($vi_cv_path_python),
+	AC_MSG_RESULT(no))
+
+  if test "X$vi_cv_path_python" = "X"; then
+    AC_PATH_PROGS(vi_cv_path_python, python2 python)
+  fi
   if test "X$vi_cv_path_python" != "X"; then
 
     dnl -- get its version number
@@ -1149,8 +1200,8 @@ if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; th
       dnl -- where the Python implementation library archives are
 
       AC_ARG_WITH(python-config-dir,
-	[  --with-python-config-dir=PATH  Python's config directory],
-	[ vi_cv_path_python_conf="${withval}" ] )
+	[  --with-python-config-dir=PATH  Python's config directory (deprecated)],
+	[ vi_cv_path_python_conf="${withval}"; have_python_config_dir=1 ] )
 
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python_conf,
       [
@@ -1197,18 +1248,14 @@ eof
 	    dnl -- delete the lines from make about Entering/Leaving directory
 	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
-	    if test "x$MACOSX" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
+	    if test "x$MACOS_X" = "xyes" && test -n "${python_PYTHONFRAMEWORK}" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
 	      if test "x${vi_cv_path_python}" != "x/usr/bin/python" && test -n "${python_PYTHONFRAMEWORKPREFIX}"; then
 		  vi_cv_path_python_plibs="-F${python_PYTHONFRAMEWORKPREFIX} -framework Python"
 	      fi
 	    else
-	      if test "${vi_cv_var_python_version}" = "1.4"; then
-		  vi_cv_path_python_plibs="${PYTHON_CONFDIR}/libModules.a ${PYTHON_CONFDIR}/libPython.a ${PYTHON_CONFDIR}/libObjects.a ${PYTHON_CONFDIR}/libParser.a"
-	      else
-		  vi_cv_path_python_plibs="-L${PYTHON_CONFDIR} -lpython${vi_cv_var_python_version}"
-	      fi
+	      vi_cv_path_python_plibs="-L${PYTHON_CONFDIR} -lpython${vi_cv_var_python_version}"
 	      dnl -- Check if the path contained in python_LINKFORSHARED is
 	      dnl    usable for vim build. If not, make and try other
 	      dnl    candidates.
@@ -1244,16 +1291,17 @@ eof
 
 	PYTHON_LIBS="${vi_cv_path_python_plibs}"
 	if test "${vi_cv_path_python_pfx}" = "${vi_cv_path_python_epfx}"; then
-	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version}"
 	else
-	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+	  PYTHON_CFLAGS="-I${vi_cv_path_python_pfx}/include/python${vi_cv_var_python_version} -I${vi_cv_path_python_epfx}/include/python${vi_cv_var_python_version}"
+	fi
+	if test "X$have_python_config_dir" = "X1" -a "$enable_pythoninterp" = "dynamic"; then
+	  dnl Define PYTHON_HOME if --with-python-config-dir was used
+	  PYTHON_CFLAGS="${PYTHON_CFLAGS} -DPYTHON_HOME='\"${vi_cv_path_python_pfx}\"'"
+
 	fi
 	PYTHON_SRC="if_python.c"
 	PYTHON_OBJ="objects/if_python.o"
-	if test "${vi_cv_var_python_version}" = "1.4"; then
-	   PYTHON_OBJ="$PYTHON_OBJ objects/py_getpath.o"
-	fi
-    PYTHON_GETPATH_CFLAGS="-DPYTHONPATH='\"${vi_cv_path_pythonpath}\"' -DPREFIX='\"${vi_cv_path_python_pfx}\"' -DEXEC_PREFIX='\"${vi_cv_path_python_epfx}\"'"
 
 	dnl On FreeBSD linking with "-pthread" is required to use threads.
 	dnl _THREAD_SAFE must be used for compiling then.
@@ -1265,7 +1313,7 @@ eof
 	AC_MSG_CHECKING([if -pthread should be used])
 	threadsafe_flag=
 	thread_lib=
-	dnl if test "x$MACOSX" != "xyes"; then
+	dnl if test "x$MACOS_X" != "xyes"; then
         if test "`(uname) 2>/dev/null`" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
 	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
@@ -1322,9 +1370,7 @@ eof
   fi
 fi
 
-AC_SUBST(PYTHON_CONFDIR)
 AC_SUBST(PYTHON_LIBS)
-AC_SUBST(PYTHON_GETPATH_CFLAGS)
 AC_SUBST(PYTHON_CFLAGS)
 AC_SUBST(PYTHON_SRC)
 AC_SUBST(PYTHON_OBJ)
@@ -1332,7 +1378,7 @@ AC_SUBST(PYTHON_OBJ)
 
 AC_MSG_CHECKING(--enable-python3interp argument)
 AC_ARG_ENABLE(python3interp,
-	[  --enable-python3interp[=OPTS]   Include Python3 interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
+	[  --enable-python3interp[=OPTS]  Include Python3 interpreter. [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_python3interp="no"])
 AC_MSG_RESULT($enable_python3interp)
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
@@ -1341,7 +1387,15 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
   fi
 
   dnl -- find the python3 executable
-  AC_PATH_PROGS(vi_cv_path_python3, python3 python)
+  AC_MSG_CHECKING(--with-python3-command argument)
+  AC_SUBST(vi_cv_path_python3)
+  AC_ARG_WITH(python3-command, [  --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)],
+	vi_cv_path_python3="$withval"; AC_MSG_RESULT($vi_cv_path_python3),
+	AC_MSG_RESULT(no))
+
+  if test "X$vi_cv_path_python3" = "X"; then
+    AC_PATH_PROGS(vi_cv_path_python3, python3 python)
+  fi
   if test "X$vi_cv_path_python3" != "X"; then
 
     dnl -- get its version number
@@ -1391,8 +1445,8 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
       dnl -- where the Python implementation library archives are
   
       AC_ARG_WITH(python3-config-dir,
-       [  --with-python3-config-dir=PATH  Python's config directory],
-       [ vi_cv_path_python3_conf="${withval}" ] )
+       [  --with-python3-config-dir=PATH  Python's config directory (deprecated)],
+       [ vi_cv_path_python3_conf="${withval}"; have_python3_config_dir=1 ] )
   
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
       [
@@ -1453,10 +1507,14 @@ eof
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
         if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         else
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
+	if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
+	  dnl Define PYTHON3_HOME if --with-python-config-dir was used
+	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+	fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
   
@@ -1470,7 +1528,7 @@ eof
         AC_MSG_CHECKING([if -pthread should be used])
         threadsafe_flag=
         thread_lib=
-        dnl if test "x$MACOSX" != "xyes"; then
+        dnl if test "x$MACOS_X" != "xyes"; then
         if test "`(uname) 2>/dev/null`" != Darwin; then
           test "$GCC" = yes && threadsafe_flag="-pthread"
           if test "`(uname) 2>/dev/null`" = FreeBSD; then
@@ -1526,7 +1584,6 @@ eof
   fi
 fi
 
-AC_SUBST(PYTHON3_CONFDIR)
 AC_SUBST(PYTHON3_LIBS)
 AC_SUBST(PYTHON3_CFLAGS)
 AC_SUBST(PYTHON3_SRC)
@@ -1725,7 +1782,7 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
       tcldll=`echo 'puts libtcl[[info tclversion]][[info sharedlibextension]]' | $vi_cv_path_tcl -`
 
       AC_MSG_CHECKING(for location of Tcl include)
-      if test "x$MACOSX" != "xyes"; then
+      if test "x$MACOS_X" != "xyes"; then
 	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/local/include/tcl$tclver /usr/include /usr/include/tcl$tclver"
       else
 	dnl For Mac OS X 10.3, use the OS-provided framework location
@@ -1745,7 +1802,7 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
       fi
       if test -z "$SKIP_TCL"; then
 	AC_MSG_CHECKING(for location of tclConfig.sh script)
-	if test "x$MACOSX" != "xyes"; then
+	if test "x$MACOS_X" != "xyes"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
 	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
@@ -1898,9 +1955,12 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
 	if test "$enable_rubyinterp" = "dynamic"; then
-	  libruby=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_SO']]"`
+	  libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_ALIASES']].split[[0]]"`
+	  if test -z "$libruby_soname"; then
+	    libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_SO']]"`
+	  fi
 	  AC_DEFINE(DYNAMIC_RUBY)
-	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
 	  RUBY_LIBS=
 	fi
       else
@@ -1963,7 +2023,7 @@ fi
 
 AC_MSG_CHECKING(--disable-channel argument)
 AC_ARG_ENABLE(channel,
-	[  --disable-channel      Disable process communication support.],
+	[  --disable-channel       Disable process communication support.],
 	, [enable_channel="yes"])
 if test "$enable_channel" = "yes"; then
   if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
@@ -2028,6 +2088,47 @@ if test "$enable_channel" = "yes"; then
   AC_SUBST(CHANNEL_OBJ)
 fi
 
+AC_MSG_CHECKING(--enable-terminal argument)
+AC_ARG_ENABLE(terminal,
+	[  --enable-terminal       Enable terminal emulation support.],
+	, [enable_terminal="auto"])
+if test "$enable_terminal" = "yes" || test "$enable_terminal" = "auto" -a "x$features" = "xhuge" ; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    AC_MSG_RESULT([cannot use terminal emulator with tiny or small features])
+    enable_terminal="no"
+  else
+    if test "$enable_terminal" = "auto"; then
+      enable_terminal="yes"
+      AC_MSG_RESULT(defaulting to yes)
+    else
+      AC_MSG_RESULT(yes)
+    fi
+  fi
+else
+  if test "$enable_terminal" = "auto"; then
+    enable_terminal="no"
+    AC_MSG_RESULT(defaulting to no)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
+  AC_DEFINE(FEAT_TERMINAL)
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  AC_SUBST(TERM_SRC)
+  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/mouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
+  AC_SUBST(TERM_OBJ)
+fi
+
+AC_MSG_CHECKING(--enable-autoservername argument)
+AC_ARG_ENABLE(autoservername,
+	[  --enable-autoservername Automatically define servername at vim startup.], ,
+	[enable_autoservername="no"])
+AC_MSG_RESULT($enable_autoservername)
+if test "$enable_autoservername" = "yes"; then
+  AC_DEFINE(FEAT_AUTOSERVERNAME)
+fi
+
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
@@ -2057,7 +2158,7 @@ AC_MSG_RESULT($enable_fontset)
 dnl defining FEAT_XFONTSET is delayed, so that it can be disabled for no GUI
 
 test -z "$with_x" && with_x=yes
-test "${enable_gui-yes}" != no -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
+test "${enable_gui-yes}" != no -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && with_x=yes
 if test "$with_x" = no; then
   AC_MSG_RESULT(defaulting to: don't HAVE_X11)
 else
@@ -2188,11 +2289,16 @@ else
   fi
 fi
 
-test "x$with_x" = xno -a "x$MACOSX" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+dnl Check if --with-x was given but it doesn't work.
+if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
+    AC_MSG_ERROR([could not configure X])
+fi
+
+test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]     X11 GUI [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2222,7 +2328,7 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
 		SKIP_PHOTON=YES ;;
   esac
 
-elif test "x$MACOSX" = "xyes" -a "x$with_x" = "xno" ; then
+elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_CARBON=
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
@@ -2344,7 +2450,7 @@ if test "x$SKIP_CARBON" != "xYES" -a "$enable_gui_canon" != "carbon"; then
 fi
 
 
-if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
+if test "x$MACOS_X" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   AC_MSG_CHECKING(for Carbon GUI)
   dnl already did the check, just give the message
   AC_MSG_RESULT(yes);
@@ -2586,7 +2692,7 @@ if test -z "$SKIP_GTK2"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -2638,7 +2744,7 @@ if test -z "$SKIP_GTK3"; then
   fi
 
   if test "X$PKG_CONFIG" = "X"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -2760,7 +2866,7 @@ dnl files, to avoid a mixup if several versions are present
 if test -z "$SKIP_MOTIF"; then
   AC_MSG_CHECKING(--with-motif-lib argument)
   AC_ARG_WITH(motif-lib,
-  [  --with-motif-lib=STRING   Library for Motif ],
+  [  --with-motif-lib=STRING Library for Motif ],
   [ MOTIF_LIBNAME="${withval}" ] )
 
   if test -n "$MOTIF_LIBNAME"; then
@@ -3152,7 +3258,7 @@ AC_TRY_COMPILE([
 	      AC_MSG_RESULT(no))
 
 AC_CHECK_HEADERS(strings.h)
-if test "x$MACOSX" = "xyes"; then
+if test "x$MACOS_X" = "xyes"; then
   dnl The strings.h file on OS/X contains a warning and nothing useful.
   AC_DEFINE(NO_STRINGS_WITH_STRING_H)
 else
@@ -3350,7 +3456,7 @@ if test "x$vim_cv_terminfo" = "xyes" ; then
   AC_DEFINE(TERMINFO)
 fi
 
-AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
+AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgetent],
   [
     AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include "confdefs.h"
@@ -3364,15 +3470,15 @@ AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
 main()
 {char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
     ]])],[
-      vim_cv_tgent=zero
+      vim_cv_tgetent=zero
     ],[
-      vim_cv_tgent=non-zero
+      vim_cv_tgetent=non-zero
     ],[
       AC_MSG_ERROR(failed to compile test program.)
     ])
   ])
 
-if test "x$vim_cv_tgent" = "xzero" ; then
+if test "x$vim_cv_tgetent" = "xzero" ; then
   AC_DEFINE(TGETENT_ZERO_ERR, 0)
 fi
 
@@ -3608,13 +3714,14 @@ fi
 
 dnl Check for functions in one big call, to reduce the size of configure.
 dnl Can only be used for functions that do not require any include.
-AC_CHECK_FUNCS(fchdir fchown fsync getcwd getpseudotty \
+AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes)
+	usleep utime utimes mblen ftruncate unsetenv)
+AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_FSEEKO
 
 dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when
@@ -3749,16 +3856,16 @@ dnl when -lacl works, also try to use -lattr (required for Debian).
 dnl On Solaris, use the acl_get/set functions in libsec, if present.
 AC_MSG_CHECKING(--disable-acl argument)
 AC_ARG_ENABLE(acl,
-	[  --disable-acl           Don't check for ACL support.],
+	[  --disable-acl           No check for ACL support.],
 	, [enable_acl="yes"])
 if test "$enable_acl" = "yes"; then
-AC_MSG_RESULT(no)
-AC_CHECK_LIB(posix1e, acl_get_file, [LIBS="$LIBS -lposix1e"],
+  AC_MSG_RESULT(no)
+  AC_CHECK_LIB(posix1e, acl_get_file, [LIBS="$LIBS -lposix1e"],
 	AC_CHECK_LIB(acl, acl_get_file, [LIBS="$LIBS -lacl"
 		  AC_CHECK_LIB(attr, fgetxattr, LIBS="$LIBS -lattr",,)],,),)
 
-AC_MSG_CHECKING(for POSIX ACL support)
-AC_TRY_LINK([
+  AC_MSG_CHECKING(for POSIX ACL support)
+  AC_TRY_LINK([
 #include <sys/types.h>
 #ifdef HAVE_SYS_ACL_H
 # include <sys/acl.h>
@@ -3769,9 +3876,9 @@ acl_t acl;], [acl = acl_get_file("foo", ACL_TYPE_ACCESS);
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_POSIX_ACL),
 	AC_MSG_RESULT(no))
 
-AC_CHECK_LIB(sec, acl_get, [LIBS="$LIBS -lsec"; AC_DEFINE(HAVE_SOLARIS_ZFS_ACL)],
-AC_MSG_CHECKING(for Solaris ACL support)
-AC_TRY_LINK([
+  AC_CHECK_LIB(sec, acl_get, [LIBS="$LIBS -lsec"; AC_DEFINE(HAVE_SOLARIS_ZFS_ACL)],
+  AC_MSG_CHECKING(for Solaris ACL support)
+  AC_TRY_LINK([
 #ifdef HAVE_SYS_ACL_H
 # include <sys/acl.h>
 #endif], [acl("foo", GETACLCNT, 0, NULL);
@@ -3779,8 +3886,8 @@ AC_TRY_LINK([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SOLARIS_ACL),
 	AC_MSG_RESULT(no)))
 
-AC_MSG_CHECKING(for AIX ACL support)
-AC_TRY_LINK([
+  AC_MSG_CHECKING(for AIX ACL support)
+  AC_TRY_LINK([
 #if STDC_HEADERS
 # include <stdlib.h>
 # include <stddef.h>
@@ -3852,7 +3959,7 @@ fi
 
 AC_MSG_CHECKING(--disable-sysmouse argument)
 AC_ARG_ENABLE(sysmouse,
-	[  --disable-sysmouse    Don't use sysmouse (mouse in *BSD console).], ,
+	[  --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).], ,
 	[enable_sysmouse="yes"])
 
 if test "$enable_sysmouse" = "yes"; then
@@ -4241,7 +4348,7 @@ elif test x${DLL} = xdl.h; then
 fi
 AC_CHECK_HEADERS(setjmp.h)
 
-if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
+if test "x$MACOS_X" = "xyes" -a -n "$PERL"; then
   dnl -ldl must come after DynaLoader.a
   if echo $LIBS | grep -e '-ldl' >/dev/null; then
     LIBS=`echo $LIBS | sed s/-ldl//`
@@ -4249,22 +4356,40 @@ if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOSX" = "xyes"; then
-  AC_MSG_CHECKING(whether we need -framework Cocoa)
-  dnl Cocoa is needed with FEAT_CLIPBOARD or FEAT_MBYTE (the former is
-  dnl disabled during tiny build)
-  if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
-    LIBS=$"$LIBS -framework Cocoa"
-    AC_MSG_RESULT(yes)
+if test "$MACOS_X" = "yes"; then
+  AC_MSG_CHECKING([whether we need macOS frameworks])
+  if test "$GUITYPE" = "CARBONGUI"; then
+    AC_MSG_RESULT([yes, we need Carbon])
+    LIBS="$LIBS -framework Carbon"
+  elif test "$MACOS_X_DARWIN" = "yes"; then
+    if test "$features" = "tiny"; then
+      dnl Since no FEAT_CLIPBOARD, no longer need for os_macosx.m.
+      OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
+      OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+      if test "$enable_multibyte" = "yes"; then
+        AC_MSG_RESULT([yes, we need CoreServices])
+        LIBS="$LIBS -framework CoreServices"
+      else
+        dnl Since no FEAT_MBYTE, no longer need for os_mac_conv.c.
+        AC_MSG_RESULT([no])
+        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
+        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
+        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
+      fi
+    else
+      AC_MSG_RESULT([yes, we need AppKit])
+      LIBS="$LIBS -framework AppKit"
+      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
+        dnl Since FEAT_CLIPBOARD is to be defined in vim.h for FEAT_SMALL, define
+        dnl FEAT_MBYTE in order not to compromise the interoperability of the
+        dnl clipboard.
+        AC_MSG_NOTICE([+multi_byte will be set in favor of +clipboard])
+        enable_multibyte=yes
+        AC_DEFINE(FEAT_MBYTE)
+      fi
+    fi
   else
-    AC_MSG_RESULT(no)
-  fi
-  dnl As mentioned above, tiny build implies os_macosx.m isn't needed.  
-  dnl Exclude it from OS_EXTRA_SRC so that linker won't complain about
-  dnl missing Objective-C symbols.
-  if test "x$features" = "xtiny"; then
-    OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
-    OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
+    AC_MSG_RESULT([no])
   fi
 fi
 if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then
@@ -4299,6 +4424,20 @@ if test "$GCC" = yes; then
   fi
 fi
 AC_SUBST(DEPEND_CFLAGS_FILTER)
+
+dnl On some systems AC_SYS_LARGEFILE determines that -D_FILE_OFFSET_BITS=64
+dnl isn't required, but the CFLAGS for some of the libraries we're using
+dnl include the define.  Since the define changes the size of some datatypes
+dnl (e.g. ino_t and off_t), all of Vim's modules must be compiled with a
+dnl consistent value.  It's therefore safest to force the use of the define
+dnl if it's present in any of the *_CFLAGS variables.
+AC_MSG_CHECKING(whether we need to force -D_FILE_OFFSET_BITS=64)
+if echo "$CFLAGS $LUA_CFLAGS $MZSCHEME_CFLAGS $PERL_CFLAGS $PYTHON_CFLAGS $PYTHON3_CFLAGS $TCL_CFLAGS $RUBY_CFLAGS $GTK_CFLAGS" | grep -q D_FILE_OFFSET_BITS 2>/dev/null; then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(_FILE_OFFSET_BITS, 64)
+else
+  AC_MSG_RESULT(no)
+fi
 
 dnl link.sh tries to avoid overlinking in a hackish way.
 dnl At least GNU ld supports --as-needed which provides the same functionality

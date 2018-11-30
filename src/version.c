@@ -37,7 +37,7 @@ char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
     void
-make_version(void)
+init_longVersion(void)
 {
     /*
      * Construct the long version string.  Necessary because
@@ -49,15 +49,35 @@ make_version(void)
     strcat(longVersion, __TIME__);
     strcat(longVersion, ")");
 }
+
 # else
-char	*longVersion = VIM_VERSION_LONG_DATE __DATE__ " " __TIME__ ")";
+    void
+init_longVersion(void)
+{
+    char *date_time = __DATE__ " " __TIME__;
+    char *msg = _("%s (%s, compiled %s)");
+    size_t len = strlen(msg)
+		+ strlen(VIM_VERSION_LONG_ONLY)
+		+ strlen(VIM_VERSION_DATE_ONLY)
+		+ strlen(date_time);
+
+    longVersion = (char *)alloc((unsigned)len);
+    if (longVersion == NULL)
+	longVersion = VIM_VERSION_LONG;
+    else
+	vim_snprintf(longVersion, len, msg,
+		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+}
 # endif
 #else
 char	*longVersion = VIM_VERSION_LONG;
-#endif
 
-static void list_features(void);
-static void version_msg(char *s);
+    void
+init_longVersion(void)
+{
+    // nothing to do
+}
+#endif
 
 static char *(features[]) =
 {
@@ -78,15 +98,26 @@ static char *(features[]) =
 #else
 	"-arabic",
 #endif
-#ifdef FEAT_AUTOCMD
 	"+autocmd",
+#ifdef FEAT_AUTOCHDIR
+       "+autochdir",
 #else
-	"-autocmd",
+       "-autochdir",
 #endif
-#ifdef FEAT_BEVAL
+#ifdef FEAT_AUTOSERVERNAME
+	"+autoservername",
+#else
+	"-autoservername",
+#endif
+#ifdef FEAT_BEVAL_GUI
 	"+balloon_eval",
 #else
 	"-balloon_eval",
+#endif
+#ifdef FEAT_BEVAL_TERM
+	"+balloon_eval_term",
+#else
+	"-balloon_eval_term",
 #endif
 #ifdef FEAT_BROWSE
 	"+browse",
@@ -162,11 +193,7 @@ static char *(features[]) =
 #else
 	"-cscope",
 #endif
-#ifdef FEAT_CURSORBIND
 	"+cursorbind",
-#else
-	"-cursorbind",
-#endif
 #ifdef CURSOR_SHAPE
 	"+cursorshape",
 #else
@@ -330,11 +357,7 @@ static char *(features[]) =
 #else
 	"-lispindent",
 #endif
-#ifdef FEAT_LISTCMDS
 	"+listcmds",
-#else
-	"-listcmds",
-#endif
 #ifdef FEAT_LOCALMAP
 	"+localmap",
 #else
@@ -473,7 +496,11 @@ static char *(features[]) =
 	"-ole",
 # endif
 #endif
+#ifdef FEAT_EVAL
 	"+packages",
+#else
+	"-packages",
+#endif
 #ifdef FEAT_PATH_EXTRA
 	"+path_extra",
 #else
@@ -550,11 +577,7 @@ static char *(features[]) =
 #else
 	"-ruby",
 #endif
-#ifdef FEAT_SCROLLBIND
 	"+scrollbind",
-#else
-	"-scrollbind",
-#endif
 #ifdef FEAT_SIGNS
 	"+signs",
 #else
@@ -618,6 +641,11 @@ static char *(features[]) =
 #else
 	"-termguicolors",
 #endif
+#ifdef FEAT_TERMINAL
+	"+terminal",
+#else
+	"-terminal",
+#endif
 #if defined(UNIX)
 /* only Unix can have terminfo instead of termcap */
 # ifdef TERMINFO
@@ -662,11 +690,12 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
-#ifdef FEAT_WINDOWS
-	"+vertsplit",
+#ifdef FEAT_VARTABS
+	"+vartabs",
 #else
-	"-vertsplit",
+	"-vartabs",
 #endif
+	"+vertsplit",
 #ifdef FEAT_VIRTUALEDIT
 	"+virtualedit",
 #else
@@ -683,10 +712,13 @@ static char *(features[]) =
 #else
 	"-viminfo",
 #endif
-#ifdef FEAT_VREPLACE
 	"+vreplace",
-#else
-	"-vreplace",
+#ifdef WIN3264
+# ifdef FEAT_VTP
+	"+vtp",
+# else
+	"-vtp",
+# endif
 #endif
 #ifdef FEAT_WILDIGN
 	"+wildignore",
@@ -698,11 +730,7 @@ static char *(features[]) =
 #else
 	"-wildmenu",
 #endif
-#ifdef FEAT_WINDOWS
 	"+windows",
-#else
-	"-windows",
-#endif
 #ifdef FEAT_WRITEBACKUP
 	"+writebackup",
 #else
@@ -764,188 +792,6 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
-/**/
-    642,
-/**/
-    641,
-/**/
-    640,
-/**/
-    639,
-/**/
-    638,
-/**/
-    637,
-/**/
-    636,
-/**/
-    635,
-/**/
-    634,
-/**/
-    633,
-/**/
-    632,
-/**/
-    631,
-/**/
-    630,
-/**/
-    629,
-/**/
-    628,
-/**/
-    627,
-/**/
-    626,
-/**/
-    625,
-/**/
-    624,
-/**/
-    623,
-/**/
-    622,
-/**/
-    621,
-/**/
-    620,
-/**/
-    619,
-/**/
-    618,
-/**/
-    617,
-/**/
-    616,
-/**/
-    615,
-/**/
-    614,
-/**/
-    613,
-/**/
-    612,
-/**/
-    611,
-/**/
-    610,
-/**/
-    609,
-/**/
-    608,
-/**/
-    607,
-/**/
-    606,
-/**/
-    605,
-/**/
-    604,
-/**/
-    603,
-/**/
-    602,
-/**/
-    601,
-/**/
-    600,
-/**/
-    599,
-/**/
-    598,
-/**/
-    597,
-/**/
-    596,
-/**/
-    595,
-/**/
-    594,
-/**/
-    593,
-/**/
-    592,
-/**/
-    591,
-/**/
-    590,
-/**/
-    589,
-/**/
-    588,
-/**/
-    587,
-/**/
-    586,
-/**/
-    585,
-/**/
-    584,
-/**/
-    583,
-/**/
-    582,
-/**/
-    581,
-/**/
-    580,
-/**/
-    579,
-/**/
-    578,
-/**/
-    577,
-/**/
-    576,
-/**/
-    575,
-/**/
-    574,
-/**/
-    573,
-/**/
-    572,
-/**/
-    571,
-/**/
-    570,
-/**/
-    569,
-/**/
-    568,
-/**/
-    567,
-/**/
-    566,
-/**/
-    565,
-/**/
-    564,
-/**/
-    563,
-/**/
-    562,
-/**/
-    561,
-/**/
-    560,
-/**/
-    559,
-/**/
-    558,
-/**/
-    557,
-/**/
-    556,
-/**/
-    555,
-/**/
-    554,
-/**/
-    553,
-/**/
-    552,
 /**/
     551,
 /**/
@@ -2107,35 +1953,75 @@ ex_version(exarg_T *eap)
 }
 
 /*
+ * Output a string for the version message.  If it's going to wrap, output a
+ * newline, unless the message is too long to fit on the screen anyway.
+ * When "wrap" is TRUE wrap the string in [].
+ */
+    static void
+version_msg_wrap(char_u *s, int wrap)
+{
+    int		len = (int)vim_strsize(s) + (wrap ? 2 : 0);
+
+    if (!got_int && len < (int)Columns && msg_col + len >= (int)Columns
+								&& *s != '\n')
+	msg_putchar('\n');
+    if (!got_int)
+    {
+	if (wrap)
+	    MSG_PUTS("[");
+	MSG_PUTS(s);
+	if (wrap)
+	    MSG_PUTS("]");
+    }
+}
+
+    static void
+version_msg(char *s)
+{
+    version_msg_wrap((char_u *)s, FALSE);
+}
+
+/*
  * List all features aligned in columns, dictionary style.
  */
     static void
 list_features(void)
 {
+    list_in_columns((char_u **)features, -1, -1);
+}
+
+/*
+ * List string items nicely aligned in columns.
+ * When "size" is < 0 then the last entry is marked with NULL.
+ * The entry with index "current" is inclosed in [].
+ */
+    void
+list_in_columns(char_u **items, int size, int current)
+{
     int		i;
     int		ncol;
     int		nrow;
-    int		nfeat = 0;
+    int		item_count = 0;
     int		width = 0;
 
-    /* Find the length of the longest feature name, use that + 1 as the column
-     * width */
-    for (i = 0; features[i] != NULL; ++i)
+    /* Find the length of the longest item, use that + 1 as the column
+     * width. */
+    for (i = 0; size < 0 ? items[i] != NULL : i < size; ++i)
     {
-	int l = (int)STRLEN(features[i]);
+	int l = (int)vim_strsize(items[i]) + (i == current ? 2 : 0);
 
 	if (l > width)
 	    width = l;
-	++nfeat;
+	++item_count;
     }
     width += 1;
 
     if (Columns < width)
     {
 	/* Not enough screen columns - show one per line */
-	for (i = 0; features[i] != NULL; ++i)
+	for (i = 0; i < item_count; ++i)
 	{
-	    version_msg(features[i]);
+	    version_msg_wrap(items[i], i == current);
 	    if (msg_col > 0)
 		msg_putchar('\n');
 	}
@@ -2145,18 +2031,22 @@ list_features(void)
     /* The rightmost column doesn't need a separator.
      * Sacrifice it to fit in one more column if possible. */
     ncol = (int) (Columns + 1) / width;
-    nrow = nfeat / ncol + (nfeat % ncol ? 1 : 0);
+    nrow = item_count / ncol + (item_count % ncol ? 1 : 0);
 
     /* i counts columns then rows.  idx counts rows then columns. */
     for (i = 0; !got_int && i < nrow * ncol; ++i)
     {
 	int idx = (i / ncol) + (i % ncol) * nrow;
 
-	if (idx < nfeat)
+	if (idx < item_count)
 	{
 	    int last_col = (i + 1) % ncol == 0;
 
-	    msg_puts((char_u *)features[idx]);
+	    if (idx == current)
+		msg_putchar('[');
+	    msg_puts(items[idx]);
+	    if (idx == current)
+		msg_putchar(']');
 	    if (last_col)
 	    {
 		if (msg_col > 0)
@@ -2187,6 +2077,7 @@ list_version(void)
      * When adding features here, don't forget to update the list of
      * internal variables in eval.c!
      */
+    init_longVersion();
     MSG(longVersion);
 #ifdef WIN3264
 # ifdef FEAT_GUI_W32
@@ -2206,15 +2097,11 @@ list_version(void)
 #  endif
 # endif
 #endif
-#ifdef MACOS
-# ifdef MACOS_X
-#  ifdef MACOS_X_UNIX
-    MSG_PUTS(_("\nMacOS X (unix) version"));
-#  else
-    MSG_PUTS(_("\nMacOS X version"));
-#  endif
-#else
-    MSG_PUTS(_("\nMacOS version"));
+#if defined(MACOS_X)
+# if defined(MACOS_X_DARWIN)
+    MSG_PUTS(_("\nmacOS version"));
+# else
+    MSG_PUTS(_("\nmacOS version w/o darwin feat."));
 # endif
 #endif
 
@@ -2347,9 +2234,6 @@ list_version(void)
 #	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
     MSG_PUTS(_("with Cocoa GUI."));
 #	 else
-#	  if defined(MACOS)
-    MSG_PUTS(_("with (classic) GUI."));
-#	  endif
 #	 endif
 #	endif
 #      endif
@@ -2455,22 +2339,6 @@ list_version(void)
 #endif
 }
 
-/*
- * Output a string for the version message.  If it's going to wrap, output a
- * newline, unless the message is too long to fit on the screen anyway.
- */
-    static void
-version_msg(char *s)
-{
-    int		len = (int)STRLEN(s);
-
-    if (!got_int && len < (int)Columns && msg_col + len >= (int)Columns
-								&& *s != '\n')
-	msg_putchar('\n');
-    if (!got_int)
-	MSG_PUTS(s);
-}
-
 static void do_intro_line(int row, char_u *mesg, int add_version, int attr);
 
 /*
@@ -2481,9 +2349,7 @@ maybe_intro_message(void)
 {
     if (BUFEMPTY()
 	    && curbuf->b_fname == NULL
-#ifdef FEAT_WINDOWS
 	    && firstwin->w_next == NULL
-#endif
 	    && vim_strchr(p_shm, SHM_INTRO) == NULL)
 	intro_message(FALSE);
 }
@@ -2556,11 +2422,9 @@ intro_message(
     if (!p_cp)
 	blanklines += 4;  /* add 4 for not showing "Vi compatible" message */
 
-#ifdef FEAT_WINDOWS
     /* Don't overwrite a statusline.  Depends on 'cmdheight'. */
     if (p_ls > 1)
 	blanklines -= Rows - topframe->fr_height;
-#endif
     if (blanklines < 0)
 	blanklines = 0;
 

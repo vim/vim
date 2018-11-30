@@ -270,6 +270,21 @@ func Test_set_errors()
   call assert_fails('set t_foo=', 'E846:')
 endfunc
 
+" Must be executed before other tests that set 'term'.
+func Test_000_term_option_verbose()
+  if has('gui_running')
+    return
+  endif
+  let verb_cm = execute('verbose set t_cm')
+  call assert_notmatch('Last set from', verb_cm)
+
+  let term_save = &term
+  set term=ansi
+  let verb_cm = execute('verbose set t_cm')
+  call assert_match('Last set from.*test_options.vim', verb_cm)
+  let &term = term_save
+endfunc
+
 func Test_set_ttytype()
   if !has('gui_running') && has('unix')
     " Setting 'ttytype' used to cause a double-free when exiting vim and
@@ -284,7 +299,7 @@ func Test_set_ttytype()
     " in travis on some builds. Why?  Catch both for now
     try
       set ttytype=
-      call assert_report('set ttype= did not fail')
+      call assert_report('set ttytype= did not fail')
     catch /E529\|E522/
     endtry
 
@@ -292,7 +307,7 @@ func Test_set_ttytype()
     " check for failure of finding the entry and for missing 'cm' entry.
     try
       set ttytype=xxx
-      call assert_report('set ttype=xxx did not fail')
+      call assert_report('set ttytype=xxx did not fail')
     catch /E522\|E437/
     endtry
 
@@ -331,4 +346,109 @@ func Test_set_indentexpr()
   call feedkeys("i\<c-f>", 'x')
   call assert_equal('', &indentexpr)
   bwipe!
+endfunc
+
+func Test_backupskip()
+  if has("mac")
+    call assert_match('/private/tmp/\*', &bsk)
+  elseif has("unix")
+    call assert_match('/tmp/\*', &bsk)
+  endif
+
+  let bskvalue = substitute(&bsk, '\\', '/', 'g')
+  for var in  ['$TEMPDIR', '$TMP', '$TEMP']
+    if exists(var)
+      let varvalue = substitute(expand(var), '\\', '/', 'g')
+      call assert_match(varvalue . '/\=\*', bskvalue)
+    endif
+  endfor
+endfunc
+
+func Test_copy_winopt()
+  set hidden
+
+  " Test copy option from current buffer in window
+  split
+  enew
+  setlocal numberwidth=5
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(5,&numberwidth)
+  bw!
+  call assert_equal(4,&numberwidth)
+
+  " Test copy value from window that used to be display the buffer
+  split
+  enew
+  setlocal numberwidth=6
+  bnext
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(6,&numberwidth)
+  bw!
+
+  " Test that if buffer is current, don't use the stale cached value
+  " from the last time the buffer was displayed.
+  split
+  enew
+  setlocal numberwidth=7
+  bnext
+  bnext
+  setlocal numberwidth=8
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(8,&numberwidth)
+  bw!
+
+  " Test value is not copied if window already has seen the buffer
+  enew
+  split
+  setlocal numberwidth=9
+  bnext
+  setlocal numberwidth=10
+  wincmd w
+  call assert_equal(4,&numberwidth)
+  bnext
+  call assert_equal(4,&numberwidth)
+  bw!
+
+  set hidden&
+endfunc
+
+func Test_shortmess_F()
+  new
+  call assert_match('\[No Name\]', execute('file'))
+  set shortmess+=F
+  call assert_match('\[No Name\]', execute('file'))
+  call assert_match('^\s*$', execute('file foo'))
+  call assert_match('foo', execute('file'))
+  set shortmess-=F
+  call assert_match('bar', execute('file bar'))
+  call assert_match('bar', execute('file'))
+  set shortmess&
+  bwipe
+endfunc
+
+func Test_shortmess_F2()
+  e file1
+  e file2
+  call assert_match('file1', execute('bn', ''))
+  call assert_match('file2', execute('bn', ''))
+  set shortmess+=F
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set hidden
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set nohidden
+  call assert_true(empty(execute('bn', '')))
+  call assert_true(empty(execute('bn', '')))
+  set shortmess&
+  call assert_match('file1', execute('bn', ''))
+  call assert_match('file2', execute('bn', ''))
+  bwipe
+  bwipe
 endfunc

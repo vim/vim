@@ -1,10 +1,11 @@
 " Test for timers
 
-source shared.vim
-
 if !has('timers')
   finish
 endif
+
+source shared.vim
+source screendump.vim
 
 func MyHandler(timer)
   let g:val += 1
@@ -122,7 +123,12 @@ func Test_paused()
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
   if has('reltime')
-    call assert_inrange(0, 30, slept)
+    if has('mac')
+      " The travis Mac machines appear to be very busy.
+      call assert_inrange(0, 50, slept)
+    else
+      call assert_inrange(0, 30, slept)
+    endif
   else
     call assert_inrange(0, 10, slept)
   endif
@@ -138,7 +144,7 @@ endfunc
 func Test_delete_myself()
   let g:called = 0
   let t = timer_start(10, 'StopMyself', {'repeat': -1})
-  call WaitFor('g:called == 2')
+  call WaitForAssert({-> assert_equal(2, g:called)})
   call assert_equal(2, g:called)
   call assert_equal([], timer_info(t))
 endfunc
@@ -172,5 +178,118 @@ func Test_stop_all_in_callback()
   call assert_equal(0, len(info))
 endfunc
 
+func FeedkeysCb(timer)
+  call feedkeys("hello\<CR>", 'nt')
+endfunc
+
+func InputCb(timer)
+  call timer_start(10, 'FeedkeysCb')
+  let g:val = input('?')
+  call Resume()
+endfunc
+
+func Test_input_in_timer()
+  let g:val = ''
+  call timer_start(10, 'InputCb')
+  call Standby(1000)
+  call assert_equal('hello', g:val)
+endfunc
+
+func FuncWithError(timer)
+  let g:call_count += 1
+  if g:call_count == 4
+    return
+  endif
+  doesnotexist
+endfunc
+
+func Test_timer_errors()
+  let g:call_count = 0
+  let timer = timer_start(10, 'FuncWithError', {'repeat': -1})
+  " Timer will be stopped after failing 3 out of 3 times.
+  call WaitForAssert({-> assert_equal(3, g:call_count)})
+  sleep 50m
+  call assert_equal(3, g:call_count)
+endfunc
+
+func FuncWithCaughtError(timer)
+  let g:call_count += 1
+  try
+    doesnotexist
+  catch
+    " nop
+  endtry
+endfunc
+
+func Test_timer_catch_error()
+  let g:call_count = 0
+  let timer = timer_start(10, 'FuncWithCaughtError', {'repeat': 4})
+  " Timer will not be stopped.
+  call WaitForAssert({-> assert_equal(4, g:call_count)})
+  sleep 50m
+  call assert_equal(4, g:call_count)
+endfunc
+
+func FeedAndPeek(timer)
+  call test_feedinput('a')
+  call getchar(1)
+endfunc
+
+func Interrupt(timer)
+  call test_feedinput("\<C-C>")
+endfunc
+
+func Test_peek_and_get_char()
+  if !has('unix') && !has('gui_running')
+    return
+  endif
+  call timer_start(0, 'FeedAndPeek')
+  let intr = timer_start(100, 'Interrupt')
+  let c = getchar()
+  call assert_equal(char2nr('a'), c)
+  call timer_stop(intr)
+endfunc
+
+func Test_ex_mode()
+  " Function with an empty line.
+  func Foo(...)
+
+  endfunc
+  let timer =  timer_start(40, function('g:Foo'), {'repeat':-1})
+  " This used to throw error E749.
+  exe "normal Qsleep 100m\rvi\r"
+  call timer_stop(timer)
+endfunc
+
+func Test_restore_count()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  " Check that v:count is saved and restored, not changed by a timer.
+  call writefile([
+        \ 'nnoremap <expr><silent> L v:count ? v:count . "l" : "l"',
+        \ 'func Doit(id)',
+        \ '  normal 3j',
+        \ 'endfunc',
+        \ 'call timer_start(100, "Doit")',
+	\ ], 'Xtrcscript')
+  call writefile([
+        \ '1-1234',
+        \ '2-1234',
+        \ '3-1234',
+	\ ], 'Xtrctext')
+  let buf = RunVimInTerminal('-S Xtrcscript Xtrctext', {})
+
+  " Wait for the timer to move the cursor to the third line.
+  call WaitForAssert({-> assert_equal(3, term_getcursor(buf)[0])})
+  call assert_equal(1, term_getcursor(buf)[1])
+  " Now check that v:count has not been set to 3
+  call term_sendkeys(buf, 'L')
+  call WaitForAssert({-> assert_equal(2, term_getcursor(buf)[1])})
+
+  call StopVimInTerminal(buf)
+  call delete('Xtrcscript')
+  call delete('Xtrctext')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

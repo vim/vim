@@ -95,7 +95,7 @@ static int foldendmarkerlen;
 
 /* Exported folding functions. {{{1 */
 /* copyFoldingState() {{{2 */
-#if defined(FEAT_WINDOWS) || defined(PROTO)
+
 /*
  * Copy that folding state from window "wp_from" to window "wp_to".
  */
@@ -106,7 +106,6 @@ copyFoldingState(win_T *wp_from, win_T *wp_to)
     wp_to->w_foldinvalid = wp_from->w_foldinvalid;
     cloneFoldGrowArray(&wp_from->w_folds, &wp_to->w_folds);
 }
-#endif
 
 /* hasAnyFolding() {{{2 */
 /*
@@ -156,6 +155,7 @@ hasFoldingWin(
     int		low_level = 0;
 
     checkupdate(win);
+
     /*
      * Return quickly when there is no folding at all in this window.
      */
@@ -3220,7 +3220,7 @@ foldlevelIndent(fline_T *flp)
 	    flp->lvl = -1;
     }
     else
-	flp->lvl = get_indent_buf(buf, lnum) / get_sw_value(curbuf);
+	flp->lvl = get_indent_buf(buf, lnum) / get_sw_value(buf);
     if (flp->lvl > flp->wp->w_p_fdn)
     {
 	flp->lvl = flp->wp->w_p_fdn;

@@ -68,7 +68,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 8
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
@@ -120,28 +120,28 @@ MINOR = 0
 #
 # MS-Windows:
 # - Run make on Unix to update the ".mo" files.
-# - Get libintl-8.dll, libiconv-2.dll and libgcc_s_sjlj-1.dll. E.g. from
+# - Get 32 bit libintl-8.dll, libiconv-2.dll and libgcc_s_sjlj-1.dll. E.g. from
 #   https://mlocati.github.io/gettext-iconv-windows/ .
 #   Use the "shared-32.zip file and extract the archive to get the files.
-#   Put them in the top directory, "make dosrt" uses them.
+#   Put them in the gettext32 directory, "make dosrt" uses them.
+# - Get 64 bit libintl-8.dll and libiconv-2.dll. E.g. from
+#   https://mlocati.github.io/gettext-iconv-windows/ .
+#   Use the "shared-64.zip file and extract the archive to get the files.
+#   Put them in the gettext64 directory, "make dosrt" uses them.
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
+#   This creates the directory vim/vim81 and puts all files in there.
 # Win32 console version build:
-# - Set environment for Visual C++ 2008, e.g.:
-#   > src/msvc2008.bat
-#   Or: 
-#   > C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars32.bat
-#   Or, when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
-#   paths when necessary).
-#   For Windows 98/ME the 2003 version is required, but then the executable
-#   won't work on Windows 7 and 64 bit systems.
-# - > cd src
+# - See src/INSTALLpc.txt for installing the compiler and SDK.
+# - Set environment for Visual C++ 2015:
+#   > cd src
+#   > msvc2015.bat
+# - Build the console binary:
 #   > nmake -f Make_mvc.mak
-# - Run the tests:
+# - Run the tests and check the ouput:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
-#   - check the output.
 # - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
@@ -152,19 +152,18 @@ MINOR = 0
 # Win32 GUI version build:
 # - > cd src
 #   > nmake -f Make_mvc.mak GUI=yes
-# - Run the tests:
+# - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak testgvim
-#   - check the output.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
 # - Copy "GvimExt/gvimext.dll" to here.
 # - Delete vimrun.exe, install.exe and uninstal.exe.
 # Win32 GUI version with OLE, PERL, Ruby, TCL, PYTHON and dynamic IME:
 # - Install the interfaces you want, see src/INSTALLpc.txt
+#   Adjust bigvim.bat to match the version of each interface you want.
 # - Build:
 #   > cd src
-#   Adjust bigvim.bat to match the version of each interface you want.
 #   > bigvim.bat
 # - Run the tests:
 #   > nmake -f Make_mvc.mak testclean
@@ -188,10 +187,11 @@ MINOR = 0
 #	gvimext64.dll in src/GvimExt
 #	VisVim.dll in src/VisVim
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
-#   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
-#	It is part of vim72.zip as vim72/gvimext.dll.
+#   gvimext64.dll can be obtained from:
+#   https://github.com/vim/vim-win32-installer/releases
+#	It is part of gvim_8.0.*_x64.zip as vim/vim80/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
-#   version).
+#   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
 #   > makensis gvim.nsi  (takes a few minutes).
 #      ignore warning for libwinpthread-1.dll
@@ -467,9 +467,13 @@ dosrt_files: dist prepare no_title.vim
 		cp $$i dist/vim/$(VIMRTDIR)/lang/$$n/LC_MESSAGES/vim.mo; \
 	      fi \
 	    done
-	cp libintl-8.dll dist/vim/$(VIMRTDIR)/
-	cp libiconv-2.dll dist/vim/$(VIMRTDIR)/
-	cp libgcc_s_sjlj-1.dll dist/vim/$(VIMRTDIR)/
+	mkdir dist/vim/$(VIMRTDIR)/gettext32
+	cp gettext32/libintl-8.dll dist/vim/$(VIMRTDIR)/gettext32/
+	cp gettext32/libiconv-2.dll dist/vim/$(VIMRTDIR)/gettext32/
+	cp gettext32/libgcc_s_sjlj-1.dll dist/vim/$(VIMRTDIR)/gettext32/
+	mkdir dist/vim/$(VIMRTDIR)/gettext64
+	cp gettext64/libintl-8.dll dist/vim/$(VIMRTDIR)/gettext64/
+	cp gettext64/libiconv-2.dll dist/vim/$(VIMRTDIR)/gettext64/
 
 
 # Used before uploading.  Don't delete the AAPDIR/sign files!
@@ -496,7 +500,10 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	cp vimrun.exe dist/vim/$(VIMRTDIR)/vimrun.exe
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
-	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
+	mkdir dist/vim/$(VIMRTDIR)/GvimExt32
+	cp gvimext.dll dist/vim/$(VIMRTDIR)/GvimExt32/gvimext.dll
+	mkdir dist/vim/$(VIMRTDIR)/GvimExt64
+	cp gvimext64.dll dist/vim/$(VIMRTDIR)/GvimExt64/gvimext.dll
 	cd dist && zip -9 -rD -z gvim$(VERSION).zip vim <$(COMMENT_GVIM)
 	cp gvim.pdb dist/gvim$(VERSION).pdb
 

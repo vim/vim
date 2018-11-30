@@ -1882,10 +1882,10 @@ msgstr "E216: onbekende groep of 'event': %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
@@ -1901,8 +1901,8 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: hierarchie van aanroepen autocommands te diep"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
-msgstr "%s 'Auto commands' voor \"%s\""
+msgid "%s Autocommands for \"%s\""
+msgstr "%s 'Autocommands' voor \"%s\""
 
 #, c-format
 msgid "Executing %s"
@@ -2877,7 +2877,7 @@ msgstr "-q [foutbestand]  bewerk bestand dat eerste fout bevat"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2990,7 +2990,7 @@ msgstr "-f\t\t\tGebruik geen newcli om venster te openen"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\tGebruik <device> voor in- en uitvoer"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tIn Arabische modus starten"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4161,7 +4161,7 @@ msgstr "E65: ongeldige terugverwijzing"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( hier niet toegestaan"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 en andere hier niet toegestaan"
 
 msgid "E68: Invalid character after \\z"
@@ -4369,7 +4369,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading affix file %s ..."
+#~ msgid "Reading affix file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4493,7 +4493,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading dictionary file %s ..."
+#~ msgid "Reading dictionary file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4521,7 +4521,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Reading word file %s ..."
+#~ msgid "Reading word file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4579,7 +4579,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Writing suggestion file %s ..."
+#~ msgid "Writing suggestion file %s..."
 #~ msgstr ""
 
 #, c-format
@@ -4600,7 +4600,7 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-#~ msgid "Writing spell file %s ..."
+#~ msgid "Writing spell file %s..."
 #~ msgstr ""
 
 #~ msgid "Done!"

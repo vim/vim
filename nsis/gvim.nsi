@@ -20,8 +20,15 @@
   !define VIMTOOLS ..\..
 !endif
 
+# Location of gettext.
+# It must contain two directories: gettext32 and gettext64.
+# See README.txt for detail.
+!ifndef GETTEXT
+  !define GETTEXT ${VIMRT}
+!endif
+
 # Comment the next line if you don't have UPX.
-# Get it at http://upx.sourceforge.net
+# Get it at https://upx.github.io/
 !define HAVE_UPX
 
 # comment the next line if you do not want to add Native Language Support
@@ -76,10 +83,16 @@ SilentInstall normal
 # These are the pages we use
 Page license
 Page components
+Page custom SetCustom ValidateCustom ": _vimrc setting"
 Page directory "" "" CheckInstallDir
 Page instfiles
 UninstPage uninstConfirm
 UninstPage instfiles
+
+# Reserve files
+# Needed for showing the _vimrc setting page faster.
+ReserveFile /plugin InstallOptions.dll
+ReserveFile vimrc.ini
 
 ##########################################################
 # Functions
@@ -87,6 +100,7 @@ UninstPage instfiles
 Function .onInit
   MessageBox MB_YESNO|MB_ICONQUESTION \
 	"This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer.$\n Continue?" \
+	/SD IDYES \
 	IDYES NoAbort
 	    Abort ; causes installer to quit.
 	NoAbort:
@@ -127,6 +141,10 @@ Function .onInit
   StrCpy $1 "-register-OLE"
   StrCpy $2 "gvim evim gview gvimdiff vimtutor"
 
+  # Extract InstallOptions files
+  # $PLUGINSDIR will automatically be removed when the installer closes
+  InitPluginsDir
+  File /oname=$PLUGINSDIR\vimrc.ini "vimrc.ini"
 FunctionEnd
 
 Function .onUserAbort
@@ -178,7 +196,7 @@ FunctionEnd
 
 ##########################################################
 Section "Vim executables and runtime files"
-	SectionIn 1 2 3
+	SectionIn 1 2 3 RO
 
 	# we need also this here if the user changes the instdir
 	StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
@@ -190,12 +208,15 @@ Section "Vim executables and runtime files"
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
-	File ${VIMTOOLS}\diff.exe
 	File ${VIMRT}\vimtutor.bat
 	File ${VIMRT}\README.txt
 	File ..\uninstal.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
+
+	File ${VIMTOOLS}\diff.exe
+	File ${VIMTOOLS}\winpty32.dll
+	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*
@@ -215,6 +236,14 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0\macros
 	File ${VIMRT}\macros\*.*
+	SetOutPath $0\macros\hanoi
+	File ${VIMRT}\macros\hanoi\*.*
+	SetOutPath $0\macros\life
+	File ${VIMRT}\macros\life\*.*
+	SetOutPath $0\macros\maze
+	File ${VIMRT}\macros\maze\*.*
+	SetOutPath $0\macros\urm
+	File ${VIMRT}\macros\urm\*.*
 
 	SetOutPath $0\pack\dist\opt\dvorak\dvorak
 	File ${VIMRT}\pack\dist\opt\dvorak\dvorak\*.*
@@ -238,11 +267,17 @@ Section "Vim executables and runtime files"
 	SetOutPath $0\pack\dist\opt\swapmouse\plugin
 	File ${VIMRT}\pack\dist\opt\swapmouse\plugin\*.*
 
+	SetOutPath $0\pack\dist\opt\termdebug\plugin
+	File ${VIMRT}\pack\dist\opt\termdebug\plugin\*.*
+
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*
 
 	SetOutPath $0\autoload
 	File ${VIMRT}\autoload\*.*
+
+	SetOutPath $0\autoload\dist
+	File ${VIMRT}\autoload\dist\*.*
 
 	SetOutPath $0\autoload\xml
 	File ${VIMRT}\autoload\xml\*.*
@@ -316,24 +351,67 @@ Section "Add an Edit-with-Vim context menu entry"
 	SetOutPath $0
 	ClearErrors
 	SetOverwrite try
+
 	${If} ${RunningX64}
+	  # Install 64-bit gvimext.dll into the GvimExt64 directory.
+	  SetOutPath $0\GvimExt64
+	  ClearErrors
 	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext64.dll
-	${Else}
-	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+!ifdef HAVE_NLS
+	  File ${GETTEXT}\gettext64\libintl-8.dll
+	  File ${GETTEXT}\gettext64\libiconv-2.dll
+!endif
+
+	  IfErrors 0 GvimExt64Done
+
+	  # Can't copy gvimext.dll, create it under another name and rename it
+	  # on next reboot.
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\gvimext.dll
+!ifdef HAVE_NLS
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${GETTEXT}\gettext64\libintl-8.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\libintl-8.dll
+	  GetTempFileName $3 $0\GvimExt64
+	  File /oname=$3 ${GETTEXT}\gettext64\libiconv-2.dll
+	  Rename /REBOOTOK $3 $0\GvimExt64\libiconv-2.dll
+!endif
 	${EndIf}
-	IfErrors 0 GvimExtDone
+
+	GvimExt64Done:
+
+	# Install 32-bit gvimext.dll into the GvimExt32 directory.
+	SetOutPath $0\GvimExt32
+	ClearErrors
+
+	File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+!ifdef HAVE_NLS
+	File ${GETTEXT}\gettext32\libintl-8.dll
+	File ${GETTEXT}\gettext32\libiconv-2.dll
+	File ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+!endif
+
+	IfErrors 0 GvimExt32Done
 
 	# Can't copy gvimext.dll, create it under another name and rename it on
 	# next reboot.
-	GetTempFileName $3 $0
-	${If} ${RunningX64}
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
-	${Else}
-	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
-	${EndIf}
-	Rename /REBOOTOK $3 $0\gvimext.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\gvimext.dll
+!ifdef HAVE_NLS
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libintl-8.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libintl-8.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libiconv-2.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libiconv-2.dll
+	GetTempFileName $3 $0\GvimExt32
+	File /oname=$3 ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
+	Rename /REBOOTOK $3 $0\GvimExt32\libgcc_s_sjlj-1.dll
+!endif
 
-	GvimExtDone:
+	GvimExt32Done:
 	SetOverwrite lastused
 
 	# We don't have a separate entry for the "Open With..." menu, assume
@@ -342,7 +420,7 @@ Section "Add an Edit-with-Vim context menu entry"
 SectionEnd
 
 ##########################################################
-Section "Create a _vimrc if it doesn't exist"
+Section "Create a _vimrc if it doesn't exist" sec_vimrc_id
 	SectionIn 1 3
 
 	StrCpy $1 "$1 -create-vimrc"
@@ -382,10 +460,10 @@ SectionEnd
 		File ${VIMRT}\keymap\README.txt
 		File ${VIMRT}\keymap\*.vim
 		SetOutPath $0
-		File ${VIMRT}\libintl-8.dll
-		File ${VIMRT}\libiconv-2.dll
-		File /nonfatal ${VIMRT}\libwinpthread-1.dll
-		File /nonfatal ${VIMRT}\libgcc_s_sjlj-1.dll
+		File ${GETTEXT}\gettext32\libintl-8.dll
+		File ${GETTEXT}\gettext32\libiconv-2.dll
+		#File /nonfatal ${VIMRT}\libwinpthread-1.dll
+		File /nonfatal ${GETTEXT}\gettext32\libgcc_s_sjlj-1.dll
 	SectionEnd
 !endif
 
@@ -399,6 +477,43 @@ SectionEnd
 Section -post
 	BringToFront
 SectionEnd
+
+##########################################################
+Function SetCustom
+	# Display the InstallOptions dialog
+
+	# Check if a _vimrc should be created
+	SectionGetFlags ${sec_vimrc_id} $3
+	IntOp $3 $3 & 1
+	StrCmp $3 "1" +2 0
+	  Abort
+
+	InstallOptions::dialog "$PLUGINSDIR\vimrc.ini"
+	Pop $3
+FunctionEnd
+
+Function ValidateCustom
+	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 2" "State"
+	StrCmp $3 "1" 0 +3
+	  StrCpy $1 "$1 -vimrc-remap no"
+	  Goto behave
+
+	  StrCpy $1 "$1 -vimrc-remap win"
+
+	behave:
+	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 5" "State"
+	StrCmp $3 "1" 0 +3
+	  StrCpy $1 "$1 -vimrc-behave unix"
+	  Goto done
+
+	ReadINIStr $3 "$PLUGINSDIR\vimrc.ini" "Field 6" "State"
+	StrCmp $3 "1" 0 +3
+	  StrCpy $1 "$1 -vimrc-behave mswin"
+	  Goto done
+
+	  StrCpy $1 "$1 -vimrc-behave default"
+	done:
+FunctionEnd
 
 ##########################################################
 Section Uninstall
@@ -425,6 +540,11 @@ Section Uninstall
 	   $\nIt contains the Vim executables and runtime files." IDNO NoRemoveExes
 
 	Delete /REBOOTOK $0\*.dll
+	Delete /REBOOTOK $0\GvimExt32\*.dll
+	${If} ${RunningX64}
+	  Delete /REBOOTOK $0\GvimExt64\*.dll
+	${EndIf}
+
 	ClearErrors
 	# Remove everything but *.dll files.  Avoids that
 	# a lot remains when gvimext.dll cannot be deleted.

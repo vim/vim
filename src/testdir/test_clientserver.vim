@@ -27,21 +27,17 @@ func Test_client_server()
 
   let name = 'XVIMTEST'
   let cmd .= ' --servername ' . name
-  let g:job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
-  call WaitFor('job_status(g:job) == "run"')
-  if job_status(g:job) != 'run'
-    call assert_report('Cannot run the Vim server')
-    return
-  endif
+  let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
 
   " Takes a short while for the server to be active.
-  call WaitFor('serverlist() =~ "' . name . '"')
-  call assert_match(name, serverlist())
+  " When using valgrind it takes much longer.
+  call WaitForAssert({-> assert_match(name, serverlist())})
 
   call remote_foreground(name)
 
   call remote_send(name, ":let testvar = 'yes'\<CR>")
-  call WaitFor('remote_expr("' . name . '", "testvar", "", 1) == "yes"')
+  call WaitFor('remote_expr("' . name . '", "exists(\"testvar\") ? testvar : \"\"", "", 1) == "yes"')
   call assert_equal('yes', remote_expr(name, "testvar", "", 2))
 
   if has('unix') && has('gui') && !has('gui_running')
@@ -57,12 +53,10 @@ func Test_client_server()
     endif
     " Wait for the server to be up and answering requests.
     sleep 100m
-    call WaitFor('remote_expr("' . name . '", "v:version", "", 1) != ""')
-    call assert_true(remote_expr(name, "v:version", "", 1) != "")
+    call WaitForAssert({-> assert_true(remote_expr(name, "v:version", "", 1) != "")})
 
     call remote_send(name, ":let testvar = 'maybe'\<CR>")
-    call WaitFor('remote_expr("' . name . '", "testvar", "", 1) == "maybe"')
-    call assert_equal('maybe', remote_expr(name, "testvar", "", 2))
+    call WaitForAssert({-> assert_equal('maybe', remote_expr(name, "testvar", "", 2))})
   endif
 
   call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241')
@@ -82,7 +76,7 @@ func Test_client_server()
   call remote_send(name, ":call server2client(expand('<client>'), 'another')\<CR>", 'g:myserverid')
   let peek_result = 'nothing'
   let r = remote_peek(g:myserverid, 'peek_result')
-  " unpredictable whether the result is already avaialble.
+  " unpredictable whether the result is already available.
   if r > 0
     call assert_equal('another', peek_result)
   elseif r == 0
@@ -96,11 +90,14 @@ func Test_client_server()
   call assert_equal('another', remote_read(g:myserverid, 2))
 
   call remote_send(name, ":qa!\<CR>")
-  call WaitFor('job_status(g:job) == "dead"')
-  if job_status(g:job) != 'dead'
-    call assert_report('Server did not exit')
-    call job_stop(g:job, 'kill')
-  endif
+  try
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  finally
+    if job_status(job) != 'dead'
+      call assert_report('Server did not exit')
+      call job_stop(job, 'kill')
+    endif
+  endtry
 endfunc
 
 " Uncomment this line to get a debugging log

@@ -49,8 +49,14 @@ We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
 - Edit Makefile to add xx to LANGUAGES and xx.mo to MOFILES.
-- Copy the header of an existing file, e.g., de.po, to xx.po.  Do not copy any
-  of the translated messages, delete everything after the "msgstr".
+- If you haven't done so already, run ./configure in the top vim directory
+  (i.e. go up two directories) and then come back here afterwards.
+- Execute these commands:
+  % make vim.pot
+  % msginit -l xx
+  % rm vim.pot
+  The first command will generate a vim.pot file which is used by msginit to
+  generate a correct xx.po file.  After that vim.pot is not needed.
 - The remaining work is like updating, see the next section.
 
 
@@ -84,7 +90,13 @@ language.
     You should include your name and E-mail address instead, for example:
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 
-(3) Clean up
+(3) Remove unused messages (optional)
+    Remove messages that have been marked as obsolete. 
+    Such messages start with "#~".
+
+    The cleanup script will also do that (see next step).
+
+(4) Clean up
     This is very important to make sure the translation works on all systems.
     Comment-out all non-translated strings.  There are two types:
     - items marked with "#, fuzzy"
@@ -100,8 +112,12 @@ language.
     messed up by changes in line numbers and show the actual changes in the
     text.
 
-(4) Check:
+(5) Check:
 
+    While editing the .po file:
+        :source check.vim
+
+    From the command line:
 	vim -S check.vim xx.po
 	make xx.mo
 

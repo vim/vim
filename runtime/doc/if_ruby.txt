@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.0.  Last change: 2016 Sep 01
+*if_ruby.txt*   For Vim version 8.1.  Last change: 2018 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -145,7 +145,7 @@ self[{n}]	Returns the buffer object for the number {n}.  The first number
 
 Methods:
 
-name		Returns the name of the buffer.
+name		Returns the full name of the buffer.
 number		Returns the number of the buffer.
 count		Returns the number of lines.
 length		Returns the number of lines.
@@ -181,6 +181,7 @@ height = {n}	Sets the window height to {n}.
 width		Returns the width of the window.
 width = {n}	Sets the window width to {n}.
 cursor		Returns a [row, col] array for the cursor position.
+		First line number is 1 and first column number is 0.
 cursor = [{row}, {col}]
 		Sets the cursor position to {row} and {col}.
 
@@ -221,6 +222,9 @@ for sure edit "gvim.exe" and search for "ruby\d*.dll\c".
 If you want to build Vim with RubyInstaller 1.9 or 2.X using MSVC, you need
 some tricks.  See the src/INSTALLpc.txt for detail.
 
+If Vim is built with RubyInstaller 2.4 or later, you may also need to add
+"C:\Ruby<version>\bin\ruby_builtin_dlls" to the PATH environment variable.
+
 
 Unix ~
 
@@ -230,4 +234,4 @@ version of the shared library must match the Ruby version Vim was compiled
 with.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

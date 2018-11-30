@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.0.  Last change: 2014 Mar 08
+*gui.txt*       For Vim version 8.1.  Last change: 2018 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -67,7 +67,7 @@ When the GUI starts up initializations are carried out, in this order:
     executed as an Ex command.
   - If the user gvimrc file exists, it is sourced.  The name of this file is
     normally "$HOME/.gvimrc".  You can check this with ":version".
-  - For Win32, when $HOME is not set, "$VIM\_gvimrc" is used.
+  - For Win32, $HOME is set by Vim if needed, see |$HOME-windows|.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
   The name of the first file found is stored in $MYGVIMRC, unless it was
@@ -79,7 +79,8 @@ When the GUI starts up initializations are carried out, in this order:
   and DOS/Win32 "_gvimrc" is tried first.
 
 NOTE: All but the first one are not carried out if Vim was started with
-"-u NONE" and no "-U" argument was given, or when started with "-U NONE".
+"-u NONE" or "-u DEFAULTS" and no "-U" argument was given, or when started
+with "-U NONE".
 
 All this happens AFTER the normal Vim initializations, like reading your
 .vimrc file.  See |initialization|.
@@ -133,7 +134,7 @@ task bar with the 'guiheadroom' option.
 :winp[os]
 		Display current position of the top left corner of the GUI vim
 		window in pixels.  Does not work in all versions.
-		Also see |getwinposx()| and |getwinposy()|.
+		Also see |getwinpos()|, |getwinposx()| and |getwinposy()|.
 
 :winp[os] {X} {Y}							*E466*
 		Put the GUI vim window at the given {X} and {Y} coordinates.
@@ -161,7 +162,7 @@ window Vim is running in with these commands: >
 							*gui-IME* *iBus*
 Input methods for international characters in X that rely on the XIM
 framework, most notably iBus, have been known to produce undesirable results
-in gVim. These may include an inability to enter spaces, or long delays
+in gvim. These may include an inability to enter spaces, or long delays
 between typing a character and it being recognized by the application.
 
 One workaround that has been successful, for unknown reasons, is to prevent
@@ -481,6 +482,7 @@ menus and menu items.  They are most useful for things that you can't remember
 what the key sequence was.
 
 For creating menus in a different language, see |:menutrans|.
+If you don't want to use menus at all, see |'go-M'|.
 
 							*menu.vim*
 The default menus are read from the file "$VIMRUNTIME/menu.vim".  See
@@ -497,7 +499,22 @@ in the menu (which can take a bit of time to load).  If you want to have all
 filetypes already present at startup, add: >
 	:let do_syntax_sel_menu = 1
 
-<
+The following menuitems show all available color schemes, keymaps and compiler
+settings:
+	Edit > Color Scheme ~
+	Edit > Keymap ~
+	Tools > Set Compiler ~
+However, they can also take a bit of time to load, because they search all
+related files from the directories in 'runtimepath'.  Therefore they are
+loaded lazily (by the |CursorHold| event), or you can also load them manually.
+If you want to have all these items already present at startup, add: >
+	:let do_no_lazyload_menus = 1
+
+Note that the menu.vim is sourced when `:syntax on` or `:filetype on` is
+executed or after your .vimrc file is sourced.  This means that the 'encoding'
+option and the language of messages (`:language messages`) must be set before
+that (if you want to change them).
+
 							*console-menus*
 Although this documentation is in the GUI section, you can actually use menus
 in console mode too.  You will have to load |menu.vim| explicitly then, it is
@@ -530,15 +547,16 @@ floating menus that do not appear on the main menu bar.
 
 5.2 Creating New Menus					*creating-menus*
 
-				*:me*  *:menu*  *:noreme*  *:noremenu*
-				*:am*  *:amenu* *:an*      *:anoremenu*
-				*:nme* *:nmenu* *:nnoreme* *:nnoremenu*
-				*:ome* *:omenu* *:onoreme* *:onoremenu*
-				*:vme* *:vmenu* *:vnoreme* *:vnoremenu*
-				*:xme* *:xmenu* *:xnoreme* *:xnoremenu*
-				*:sme* *:smenu* *:snoreme* *:snoremenu*
-				*:ime* *:imenu* *:inoreme* *:inoremenu*
-				*:cme* *:cmenu* *:cnoreme* *:cnoremenu*
+				*:me*  *:menu*   *:noreme*  *:noremenu*
+				*:am*  *:amenu*  *:an*      *:anoremenu*
+				*:nme* *:nmenu*  *:nnoreme* *:nnoremenu*
+				*:ome* *:omenu*  *:onoreme* *:onoremenu*
+				*:vme* *:vmenu*  *:vnoreme* *:vnoremenu*
+				*:xme* *:xmenu*  *:xnoreme* *:xnoremenu*
+				*:sme* *:smenu*  *:snoreme* *:snoremenu*
+				*:ime* *:imenu*  *:inoreme* *:inoremenu*
+				*:cme* *:cmenu*  *:cnoreme* *:cnoremenu*
+				*:tlm* *:tlmenu* *:tln*     *:tlnoremenu*
 				*E330* *E327* *E331* *E336* *E333*
 				*E328* *E329* *E337* *E792*
 To create a new menu item, use the ":menu" commands.  They are mostly like
@@ -553,6 +571,10 @@ This last one will create a new item in the menu bar called "Edit", holding
 the mouse button down on this will pop up a menu containing the item
 "Big Changes", which is a sub-menu containing the item "Delete All Spaces",
 which when selected, performs the operation.
+
+To create a menu for terminal mode, use |:tlmenu| instead of |:tmenu| unlike
+key mapping (|:tmap|). This is because |:tmenu| is already used for defining
+tooltips for menus. See |terminal-typing|.
 
 Special characters in a menu name:
 
@@ -572,9 +594,9 @@ With the shortcut "F" (while keeping the <Alt> key pressed), and then "O",
 this menu can be used.  The second part is shown as "Open     :e".  The ":e"
 is right aligned, and the "O" is underlined, to indicate it is the shortcut.
 
-The ":amenu" command can be used to define menu entries for all modes at once.
-To make the command work correctly, a character is automatically inserted for
-some modes:
+The ":amenu" command can be used to define menu entries for all modes at once,
+except for Terminal mode.  To make the command work correctly, a character is
+automatically inserted for some modes:
 	mode		inserted	appended	~
 	Normal		nothing		nothing
 	Visual		<C-C>		<C-\><C-G>
@@ -783,10 +805,40 @@ In the Win32 and GTK+ GUI, starting a menu name with ']' excludes that menu
 from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
+					*window-toolbar* *WinBar*
+Each window can have a local toolbar.  This uses the first line of the window,
+thus reduces the space for the text by one line.  The items in the toolbar
+must start with "WinBar".
+
+Only text can be used.  When using Unicode, special characters can be used to
+make the items look like icons.
+
+If the items do not fit then the last ones cannot be used.  The toolbar does
+not wrap.
+
+Note that Vim may be in any mode when executing these commands.  The menu
+should be defined for Normal mode and will be executed without changing the
+current mode. Thus if the current window is in Visual mode and the menu
+command does not intentionally change the mode, Vim will remain in Visual
+mode.  Best is to use `:nnoremenu` to avoid side effects.
+
+Example for debugger tools: >
+	nnoremenu 1.10 WinBar.Step :Step<CR>
+	nnoremenu 1.20 WinBar.Next :Next<CR>
+	nnoremenu 1.30 WinBar.Finish :Finish<CR>
+	nnoremenu 1.40 WinBar.Cont :Continue<CR>
+<
+The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
+
+When splitting the window the window toolbar is not copied to the new window.
+
 							*popup-menu*
 In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
 special menu "PopUp".  This is the menu that is displayed when the right mouse
 button is pressed, if 'mousemodel' is set to popup or popup_setpos.
+Example: >
+    nnoremenu 1.40 PopUp.&Paste	"+gP
+    menu PopUp
 
 
 5.3 Showing What Menus Are Mapped To			*showing-menus*
@@ -818,6 +870,16 @@ be used to complete the name of the menu item.
 				insert-mode menu Eg: >
 	:emenu File.Exit
 
+:[range]em[enu] {mode} {menu}	Like above, but execute the menu for {mode}:
+				    'n': |:nmenu|  Normal mode
+				    'v': |:vmenu|  Visual mode
+				    's': |:smenu|  Select mode
+				    'o': |:omenu|  Operator-pending mode
+				    't': |:tlmenu| Terminal mode
+				    'i': |:imenu|  Insert mode
+				    'c': |:cmenu|  Cmdline mode
+
+
 If the console-mode vim has been compiled with WANT_MENU defined, you can
 use :emenu to access useful menu items you may have got used to from GUI
 mode.  See 'wildmenu' for an option that works well with this.  See
@@ -838,6 +900,7 @@ using the last visual selection.
 						*:sunme* *:sunmenu*
 						*:iunme* *:iunmenu*
 						*:cunme* *:cunmenu*
+						*:tlu*   *:tlunmenu*
 To delete a menu item or a whole submenu, use the unmenu commands, which are
 analogous to the unmap commands.  Eg: >
     :unmenu! Edit.Paste
@@ -904,6 +967,8 @@ See section |42.4| in the user manual.
 :tu[nmenu] {menupath}		Remove a tip for a menu or tool.
 				{only in X11 and Win32 GUI}
 
+Note: To create menus for terminal mode, use |:tlmenu| instead.
+
 When a tip is defined for a menu item, it appears in the command-line area
 when the mouse is over that item, much like a standard Windows menu hint in
 the status bar.  (Except when Vim is in Command-line mode, when of course
@@ -945,10 +1010,14 @@ it behaves in a strange way.
 :popu[p] {name}			Popup the menu {name}.  The menu named must
 				have at least one subentry, but need not
 				appear on the menu-bar (see |hidden-menus|).
-				{only available for Win32 and GTK GUI}
+				{only available for Win32 and GTK GUI or in
+				the terminal when compiled with +insert_expand}
 
 :popu[p]! {name}		Like above, but use the position of the mouse
 				pointer instead of the cursor.
+				In the terminal this is the last known
+				position, which is usually at the last click
+				or release (mouse movement is irrelevant).
 
 Example: >
 	:popup File
@@ -958,6 +1027,10 @@ pointer if ! was used). >
 	:amenu ]Toolbar.Make	:make<CR>
 	:popup ]Toolbar
 This creates a popup menu that doesn't exist on the main menu-bar.
+
+Note that in the GUI the :popup command will return immediately, before a
+selection has been made.  In the terminal the commands waits for the user to
+make a selection.
 
 Note that a menu that starts with ']' will not be displayed.
 
@@ -1020,4 +1093,4 @@ careful!
 For the Win32 GUI the external commands are executed in a separate window.
 See |gui-shell-win32|.
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

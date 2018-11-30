@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 8.0.  Last change: 2014 Aug 29
+*os_vms.txt*    For Vim version 8.1.  Last change: 2018 May 06
 
 
 		  VIM REFERENCE MANUAL
@@ -702,13 +702,13 @@ In a cluster that contains nodes with different architectures like below:
 $show cluster
 View of Cluster from system ID 11655  node: TOR                                                                     18-AUG-2008 11:58:31
 +---------------------------------+
-¦        SYSTEMS        ¦ MEMBERS ¦
-+-----------------------+---------¦
-¦  NODE  ¦   SOFTWARE   ¦  STATUS ¦
-+--------+--------------+---------¦
-¦ TOR    ¦ VMS V7.3-2   ¦ MEMBER  ¦
-¦ TITAN2 ¦ VMS V8.3     ¦ MEMBER  ¦
-¦ ODIN   ¦ VMS V7.3-2   ¦ MEMBER  ¦
+|        SYSTEMS        | MEMBERS |
++-----------------------+---------|
+|  NODE  |   SOFTWARE   |  STATUS |
++--------+--------------+---------|
+| TOR    | VMS V7.3-2   | MEMBER  |
+| TITAN2 | VMS V8.3     | MEMBER  |
+| ODIN   | VMS V7.3-2   | MEMBER  |
 +---------------------------------+
 
 It is convenient to have a common VIM directory but execute different
@@ -952,4 +952,4 @@ of OS_VMS.TXT:
 	Bruce Hunsaker <BNHunsaker@chq.byu.edu>
 	Sandor Kopanyi <sandor.kopanyi@mailbox.hu>
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

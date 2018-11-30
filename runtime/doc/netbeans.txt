@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 8.0.  Last change: 2016 Jul 15
+*netbeans.txt*  For Vim version 8.1.  Last change: 2016 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -409,9 +409,9 @@ defineAnnoType typeNum typeName tooltip glyphFile fg bg
 		Vim will define a sign for the annotation.
 		When color is a number, this is the "#rrggbb" Red, Green and
 		Blue values of the color (see |gui-colors|) and the
-		highlighting is only defined for GVim.
+		highlighting is only defined for gVim.
 		When color is a name, this color is defined both for Vim
-		running in a color terminal and for GVim.
+		running in a color terminal and for gVim.
 		When both "fg" and "bg" are "none" no line highlighting is
 		used (new in version 2.1).
 		When "glyphFile" is empty, no text sign is used (new in
@@ -1007,4 +1007,4 @@ Expert tab MIME Type property.  NetBeans is MIME oriented and the External
 Editor will only open MIME types specified in this property.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

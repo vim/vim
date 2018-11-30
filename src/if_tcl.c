@@ -113,7 +113,7 @@ static tcl_info tclinfo = { NULL, 0, 0, 0, 0, NULL, NULL };
 
 /*
  *  List of Tcl interpreters who reference a vim window or buffer.
- *  Each buffer and window has it's own list in the w_tcl_ref or b_tcl_ref
+ *  Each buffer and window has its own list in the w_tcl_ref or b_tcl_ref
  *  struct member.  We need this because Tcl can create sub-interpreters with
  *  the "interp" command, and each interpreter can reference all windows and
  *  buffers.
@@ -1091,6 +1091,7 @@ winselfcmd(
 	    /* TODO: should check column */
 	    win->w_cursor.lnum = val1;
 	    win->w_cursor.col = col2vim(val2);
+	    win->w_set_curswant = TRUE;
 	    flags |= FL_UPDATE_SCREEN;
 	    break;
 
@@ -1385,7 +1386,10 @@ tclvimexpr(
     if (str == NULL)
 	Tcl_SetResult(interp, _("invalid expression"), TCL_STATIC);
     else
+    {
 	Tcl_SetResult(interp, str, TCL_VOLATILE);
+	vim_free(str);
+    }
     err = vimerror(interp);
 #else
     Tcl_SetResult(interp, _("expressions disabled at compile time"), TCL_STATIC);
@@ -2083,7 +2087,6 @@ tcl_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 tcl_window_free(win_T *win)
 {
@@ -2102,6 +2105,5 @@ tcl_window_free(win_T *win)
 	win->w_tcl_ref = NULL;
     }
 }
-#endif
 
 /* The End */

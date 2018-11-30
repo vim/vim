@@ -17,7 +17,7 @@ func Test_window_cmd_ls0_with_split()
 endfunc
 
 func Test_window_cmd_cmdwin_with_vsp()
-  let efmt='Expected 0 but got %d (in ls=%d, %s window)'
+  let efmt = 'Expected 0 but got %d (in ls=%d, %s window)'
   for v in range(0, 2)
     exec "set ls=" . v
     vsplit
@@ -103,15 +103,71 @@ func Test_window_vertical_split()
   bw
 endfunc
 
+" Test the ":wincmd ^" and "<C-W>^" commands.
 func Test_window_split_edit_alternate()
-  e Xa
-  e Xb
 
+  " Test for failure when the alternate buffer/file no longer exists.
+  edit Xfoo | %bw
+  call assert_fails(':wincmd ^', 'E23')
+
+  " Test for the expected behavior when we have two named buffers.
+  edit Xfoo | edit Xbar
   wincmd ^
-  call assert_equal('Xa', bufname(winbufnr(1)))
-  call assert_equal('Xb', bufname(winbufnr(2)))
+  call assert_equal('Xfoo', bufname(winbufnr(1)))
+  call assert_equal('Xbar', bufname(winbufnr(2)))
+  only
 
-  bw Xa Xb
+  " Test for the expected behavior when the alternate buffer is not named.
+  enew | let l:nr1 = bufnr('%')
+  edit Xfoo | let l:nr2 = bufnr('%')
+  wincmd ^
+  call assert_equal(l:nr1, winbufnr(1))
+  call assert_equal(l:nr2, winbufnr(2))
+  only
+
+  " FIXME: this currently fails on AppVeyor, but passes locally
+  if !has('win32')
+    " Test the Normal mode command.
+    call feedkeys("\<C-W>\<C-^>", 'tx')
+    call assert_equal(l:nr2, winbufnr(1))
+    call assert_equal(l:nr1, winbufnr(2))
+  endif
+
+  %bw!
+endfunc
+
+" Test the ":[count]wincmd ^" and "[count]<C-W>^" commands.
+func Test_window_split_edit_bufnr()
+
+  %bwipeout
+  let l:nr = bufnr('%') + 1
+  call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92')
+  call assert_fails(':' . l:nr . 'wincmd ^', 'E16')
+  call assert_fails(':0wincmd ^', 'E16')
+
+  edit Xfoo | edit Xbar | edit Xbaz
+  let l:foo_nr = bufnr('Xfoo')
+  let l:bar_nr = bufnr('Xbar')
+  let l:baz_nr = bufnr('Xbaz')
+
+  " FIXME: this currently fails on AppVeyor, but passes locally
+  if !has('win32')
+    call feedkeys(l:foo_nr . "\<C-W>\<C-^>", 'tx')
+    call assert_equal('Xfoo', bufname(winbufnr(1)))
+    call assert_equal('Xbaz', bufname(winbufnr(2)))
+    only
+
+    call feedkeys(l:bar_nr . "\<C-W>\<C-^>", 'tx')
+    call assert_equal('Xbar', bufname(winbufnr(1)))
+    call assert_equal('Xfoo', bufname(winbufnr(2)))
+    only
+
+    execute l:baz_nr . 'wincmd ^'
+    call assert_equal('Xbaz', bufname(winbufnr(1)))
+    call assert_equal('Xbar', bufname(winbufnr(2)))
+  endif
+
+  %bw!
 endfunc
 
 func Test_window_preview()
@@ -318,6 +374,63 @@ func Test_window_width()
   bw Xa Xb Xc
 endfunc
 
+func Test_equalalways_on_close()
+  set equalalways
+  vsplit
+  windo split
+  split
+  wincmd J
+  " now we have a frame top-left with two windows, a frame top-right with two
+  " windows and a frame at the bottom, full-width.
+  let height_1 = winheight(1)
+  let height_2 = winheight(2)
+  let height_3 = winheight(3)
+  let height_4 = winheight(4)
+  " closing the bottom window causes all windows to be resized.
+  close
+  call assert_notequal(height_1, winheight(1))
+  call assert_notequal(height_2, winheight(2))
+  call assert_notequal(height_3, winheight(3))
+  call assert_notequal(height_4, winheight(4))
+  call assert_equal(winheight(1), winheight(3))
+  call assert_equal(winheight(2), winheight(4))
+
+  1wincmd w
+  split
+  4wincmd w
+  resize + 5
+  " left column has three windows, equalized heights.
+  " right column has two windows, top one a bit higher
+  let height_1 = winheight(1)
+  let height_2 = winheight(2)
+  let height_4 = winheight(4)
+  let height_5 = winheight(5)
+  3wincmd w
+  " closing window in left column equalizes heights in left column but not in
+  " the right column
+  close
+  call assert_notequal(height_1, winheight(1))
+  call assert_notequal(height_2, winheight(2))
+  call assert_equal(height_4, winheight(3))
+  call assert_equal(height_5, winheight(4))
+
+  only
+  set equalalways&
+endfunc
+
+func Test_win_screenpos()
+  call assert_equal(1, winnr('$'))
+  split
+  vsplit
+  10wincmd _
+  30wincmd |
+  call assert_equal([1, 1], win_screenpos(1))
+  call assert_equal([1, 32], win_screenpos(2))
+  call assert_equal([12, 1], win_screenpos(3))
+  call assert_equal([0, 0], win_screenpos(4))
+  only
+endfunc
+
 func Test_window_jump_tag()
   help
   /iccf
@@ -370,6 +483,99 @@ func Test_next_split_all()
   s/x
   all
   bwipe!
+endfunc
+
+" Tests for adjusting window and contents
+func GetScreenStr(row)
+   let str = ""
+   for c in range(1,3)
+       let str .= nr2char(screenchar(a:row, c))
+   endfor
+   return str
+endfunc
+
+func Test_window_contents()
+  enew! | only | new
+  call setline(1, range(1,256))
+
+  exe "norm! \<C-W>t\<C-W>=1Gzt\<C-W>w\<C-W>+"
+  redraw
+  let s3 = GetScreenStr(1)
+  wincmd p
+  call assert_equal(1, line("w0"))
+  call assert_equal('1  ', s3)
+
+  exe "norm! \<C-W>t\<C-W>=50Gzt\<C-W>w\<C-W>+"
+  redraw
+  let s3 = GetScreenStr(1)
+  wincmd p
+  call assert_equal(50, line("w0"))
+  call assert_equal('50 ', s3)
+
+  exe "norm! \<C-W>t\<C-W>=59Gzt\<C-W>w\<C-W>+"
+  redraw
+  let s3 = GetScreenStr(1)
+  wincmd p
+  call assert_equal(59, line("w0"))
+  call assert_equal('59 ', s3)
+
+  bwipeout!
+  call test_garbagecollect_now()
+endfunc
+
+func Test_window_colon_command()
+  " This was reading invalid memory.
+  exe "norm! v\<C-W>:\<C-U>echo v:version"
+endfunc
+
+func Test_access_freed_mem()
+  " This was accessing freed memory
+  au * 0 vs xxx
+  arg 0
+  argadd
+  all
+  all
+  au!
+  bwipe xxx
+endfunc
+
+func Test_visual_cleared_after_window_split()
+  new | only!
+  let smd_save = &showmode
+  set showmode
+  let ls_save = &laststatus
+  set laststatus=1
+  call setline(1, ['a', 'b', 'c', 'd', ''])
+  norm! G
+  exe "norm! kkvk"
+  redraw
+  exe "norm! \<C-W>v"
+  redraw
+  " check if '-- VISUAL --' disappeared from command line
+  let columns = range(1, &columns)
+  let cmdlinechars = map(columns, 'nr2char(screenchar(&lines, v:val))')
+  let cmdline = join(cmdlinechars, '')
+  let cmdline_ltrim = substitute(cmdline, '^\s*', "", "")
+  let mode_shown = substitute(cmdline_ltrim, '\s*$', "", "")
+  call assert_equal('', mode_shown)
+  let &showmode = smd_save
+  let &laststatus = ls_save
+  bwipe!
+endfunc
+
+func Test_winrestcmd()
+  2split
+  3vsplit
+  let a = winrestcmd()
+  call assert_equal(2, winheight(0))
+  call assert_equal(3, winwidth(0))
+  wincmd =
+  call assert_notequal(2, winheight(0))
+  call assert_notequal(3, winwidth(0))
+  exe a
+  call assert_equal(2, winheight(0))
+  call assert_equal(3, winwidth(0))
+  only
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

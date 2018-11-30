@@ -11,6 +11,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
+#include "protodef.h"
 #ifdef HAVE_CONFIG_H
 # include "auto/config.h"
 #endif
@@ -93,6 +94,11 @@
 # define RUBY20_OR_LATER 1
 #endif
 
+#if (defined(RUBY_VERSION) && RUBY_VERSION >= 21) \
+    || (defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 21)
+# define RUBY21_OR_LATER 1
+#endif
+
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 /* Ruby 1.9 defines a number of static functions which use rb_num2long and
  * rb_int2big */
@@ -127,7 +133,7 @@
 #undef _
 
 /* T_DATA defined both by Ruby and Mac header files, hack around it... */
-#if defined(MACOS_X_UNIX) || defined(macintosh)
+#if defined(MACOS_X)
 # define __OPENTRANSPORT__
 # define __OPENTRANSPORTPROTOCOL__
 # define __OPENTRANSPORTPROVIDERS__
@@ -232,16 +238,28 @@ static void ruby_vim_init(void);
 # define rb_define_singleton_method	dll_rb_define_singleton_method
 # define rb_define_virtual_variable	dll_rb_define_virtual_variable
 # define rb_stdout			(*dll_rb_stdout)
+# define rb_stderr			(*dll_rb_stderr)
 # define rb_eArgError			(*dll_rb_eArgError)
 # define rb_eIndexError			(*dll_rb_eIndexError)
 # define rb_eRuntimeError		(*dll_rb_eRuntimeError)
 # define rb_eStandardError		(*dll_rb_eStandardError)
 # define rb_eval_string_protect		dll_rb_eval_string_protect
+# ifdef RUBY21_OR_LATER
+#  define rb_funcallv			dll_rb_funcallv
+# else
+#  define rb_funcall2			dll_rb_funcall2
+# endif
 # define rb_global_variable		dll_rb_global_variable
 # define rb_hash_aset			dll_rb_hash_aset
 # define rb_hash_new			dll_rb_hash_new
 # define rb_inspect			dll_rb_inspect
 # define rb_int2inum			dll_rb_int2inum
+
+// ruby.h may redefine rb_intern to use RUBY_CONST_ID_CACHE(), but that won't
+// work.  Not using the cache appears to be the best solution.
+# undef rb_intern
+# define rb_intern			dll_rb_intern
+
 # if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER <= 18
 #   define rb_fix2int			dll_rb_fix2int
@@ -251,7 +269,8 @@ static void ruby_vim_init(void);
 # endif
 # define rb_lastline_get			dll_rb_lastline_get
 # define rb_lastline_set			dll_rb_lastline_set
-# define rb_load_protect			dll_rb_load_protect
+# define rb_protect			dll_rb_protect
+# define rb_load			dll_rb_load
 # ifndef RUBY19_OR_LATER
 #  define rb_num2long			dll_rb_num2long
 # endif
@@ -281,6 +300,11 @@ static void ruby_vim_init(void);
 #  define rb_string_value_ptr		dll_rb_string_value_ptr
 #  define rb_float_new			dll_rb_float_new
 #  define rb_ary_new			dll_rb_ary_new
+#  ifdef rb_ary_new4
+#    define RB_ARY_NEW4_MACRO 1
+#    undef rb_ary_new4
+#  endif
+#  define rb_ary_new4			dll_rb_ary_new4
 #  define rb_ary_push			dll_rb_ary_push
 #  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #   ifdef __ia64
@@ -359,16 +383,23 @@ static void (*dll_rb_define_module_function) (VALUE,const char*,VALUE(*)(),int);
 static void (*dll_rb_define_singleton_method) (VALUE,const char*,VALUE(*)(),int);
 static void (*dll_rb_define_virtual_variable) (const char*,VALUE(*)(),void(*)());
 static VALUE *dll_rb_stdout;
+static VALUE *dll_rb_stderr;
 static VALUE *dll_rb_eArgError;
 static VALUE *dll_rb_eIndexError;
 static VALUE *dll_rb_eRuntimeError;
 static VALUE *dll_rb_eStandardError;
 static VALUE (*dll_rb_eval_string_protect) (const char*, int*);
+# ifdef RUBY21_OR_LATER
+static VALUE (*dll_rb_funcallv) (VALUE, ID, int, const VALUE*);
+# else
+static VALUE (*dll_rb_funcall2) (VALUE, ID, int, const VALUE*);
+# endif
 static void (*dll_rb_global_variable) (VALUE*);
 static VALUE (*dll_rb_hash_aset) (VALUE, VALUE, VALUE);
 static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
+static ID (*dll_rb_intern) (const char*);
 # if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
 static long (*dll_rb_fix2int) (VALUE);
 static long (*dll_rb_num2int) (VALUE);
@@ -376,7 +407,8 @@ static unsigned long (*dll_rb_num2uint) (VALUE);
 # endif
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
-static void (*dll_rb_load_protect) (VALUE, int, int*);
+static VALUE (*dll_rb_protect) (VALUE (*)(VALUE), VALUE, int*);
+static void (*dll_rb_load) (VALUE, int);
 static long (*dll_rb_num2long) (VALUE);
 static unsigned long (*dll_rb_num2ulong) (VALUE);
 static VALUE (*dll_rb_obj_alloc) (VALUE);
@@ -415,6 +447,7 @@ static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
 static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
+static VALUE (*dll_rb_ary_new4) (long n, const VALUE *elts);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
 #  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #   ifdef __ia64
@@ -551,16 +584,23 @@ static struct
     {"rb_define_singleton_method", (RUBY_PROC*)&dll_rb_define_singleton_method},
     {"rb_define_virtual_variable", (RUBY_PROC*)&dll_rb_define_virtual_variable},
     {"rb_stdout", (RUBY_PROC*)&dll_rb_stdout},
+    {"rb_stderr", (RUBY_PROC*)&dll_rb_stderr},
     {"rb_eArgError", (RUBY_PROC*)&dll_rb_eArgError},
     {"rb_eIndexError", (RUBY_PROC*)&dll_rb_eIndexError},
     {"rb_eRuntimeError", (RUBY_PROC*)&dll_rb_eRuntimeError},
     {"rb_eStandardError", (RUBY_PROC*)&dll_rb_eStandardError},
     {"rb_eval_string_protect", (RUBY_PROC*)&dll_rb_eval_string_protect},
+# ifdef RUBY21_OR_LATER
+    {"rb_funcallv", (RUBY_PROC*)&dll_rb_funcallv},
+# else
+    {"rb_funcall2", (RUBY_PROC*)&dll_rb_funcall2},
+# endif
     {"rb_global_variable", (RUBY_PROC*)&dll_rb_global_variable},
     {"rb_hash_aset", (RUBY_PROC*)&dll_rb_hash_aset},
     {"rb_hash_new", (RUBY_PROC*)&dll_rb_hash_new},
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
+    {"rb_intern", (RUBY_PROC*)&dll_rb_intern},
 # if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
     {"rb_fix2int", (RUBY_PROC*)&dll_rb_fix2int},
     {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
@@ -568,7 +608,8 @@ static struct
 # endif
     {"rb_lastline_get", (RUBY_PROC*)&dll_rb_lastline_get},
     {"rb_lastline_set", (RUBY_PROC*)&dll_rb_lastline_set},
-    {"rb_load_protect", (RUBY_PROC*)&dll_rb_load_protect},
+    {"rb_protect", (RUBY_PROC*)&dll_rb_protect},
+    {"rb_load", (RUBY_PROC*)&dll_rb_load},
     {"rb_num2long", (RUBY_PROC*)&dll_rb_num2long},
     {"rb_num2ulong", (RUBY_PROC*)&dll_rb_num2ulong},
     {"rb_obj_alloc", (RUBY_PROC*)&dll_rb_obj_alloc},
@@ -613,6 +654,11 @@ static struct
     {"rb_float_new_in_heap", (RUBY_PROC*)&dll_rb_float_new},
 #  endif
     {"rb_ary_new", (RUBY_PROC*)&dll_rb_ary_new},
+#  ifdef RB_ARY_NEW4_MACRO
+    {"rb_ary_new_from_values", (RUBY_PROC*)&dll_rb_ary_new4},
+#  else
+    {"rb_ary_new4", (RUBY_PROC*)&dll_rb_ary_new4},
+#  endif
     {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
 # endif
 # ifdef RUBY19_OR_LATER
@@ -825,14 +871,22 @@ void ex_rubydo(exarg_T *eap)
     }
 }
 
+static VALUE rb_load_wrap(VALUE file_to_load)
+{
+    rb_load(file_to_load, 0);
+    return Qnil;
+}
+
 void ex_rubyfile(exarg_T *eap)
 {
     int state;
 
     if (ensure_ruby_initialized())
     {
-	rb_load_protect(rb_str_new2((char *) eap->arg), 0, &state);
-	if (state) error_print(state);
+	VALUE file_to_load = rb_str_new2((const char *)eap->arg);
+	rb_protect(rb_load_wrap, file_to_load, &state);
+	if (state)
+	    error_print(state);
     }
 }
 
@@ -882,7 +936,7 @@ static int ensure_ruby_initialized(void)
 #ifdef RUBY19_OR_LATER
 	    {
 		int dummy_argc = 2;
-		char *dummy_argv[] = {"vim-ruby", "-e0"};
+		char *dummy_argv[] = {"vim-ruby", "-e_=0"};
 		ruby_options(dummy_argc, dummy_argv);
 	    }
 	    ruby_script("vim-ruby");
@@ -912,9 +966,13 @@ static void error_print(int state)
     RUBYEXTERN VALUE ruby_errinfo;
 #endif
 #endif
+    VALUE error;
     VALUE eclass;
     VALUE einfo;
+    VALUE bt;
+    int attr;
     char buff[BUFSIZ];
+    long i;
 
 #define TAG_RETURN	0x1
 #define TAG_BREAK	0x2
@@ -946,12 +1004,12 @@ static void error_print(int state)
     case TAG_RAISE:
     case TAG_FATAL:
 #ifdef RUBY19_OR_LATER
-	eclass = CLASS_OF(rb_errinfo());
-	einfo = rb_obj_as_string(rb_errinfo());
+	error = rb_errinfo();
 #else
-	eclass = CLASS_OF(ruby_errinfo);
-	einfo = rb_obj_as_string(ruby_errinfo);
+	error = ruby_errinfo;
 #endif
+	eclass = CLASS_OF(error);
+	einfo = rb_obj_as_string(error);
 	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
 	{
 	    EMSG(_("E272: unhandled exception"));
@@ -968,6 +1026,17 @@ static void error_print(int state)
 	    if (p) *p = '\0';
 	    EMSG(buff);
 	}
+
+	attr = syn_name2attr((char_u *)"Error");
+# ifdef RUBY21_OR_LATER
+	bt = rb_funcallv(error, rb_intern("backtrace"), 0, 0);
+	for (i = 0; i < RARRAY_LEN(bt); i++)
+	    msg_attr((char_u *)RSTRING_PTR(RARRAY_AREF(bt, i)), attr);
+# else
+	bt = rb_funcall2(error, rb_intern("backtrace"), 0, 0);
+	for (i = 0; i < RARRAY_LEN(bt); i++)
+	    msg_attr((char_u *)RSTRING_PTR(RARRAY_PTR(bt)[i]), attr);
+# endif
 	break;
     default:
 	vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
@@ -984,7 +1053,7 @@ static VALUE vim_message(VALUE self UNUSED, VALUE str)
     if (RSTRING_LEN(str) > 0)
     {
 	/* Only do this when the string isn't empty, alloc(0) causes trouble. */
-	buff = ALLOCA_N(char, RSTRING_LEN(str));
+	buff = ALLOCA_N(char, RSTRING_LEN(str) + 1);
 	strcpy(buff, RSTRING_PTR(str));
 	p = strchr(buff, '\n');
 	if (p) *p = '\0';
@@ -1071,8 +1140,10 @@ static VALUE vim_to_ruby(typval_T *tv)
     }
     else if (tv->v_type == VAR_SPECIAL)
     {
-	if (tv->vval.v_number <= VVAL_TRUE)
-	    result = INT2NUM(tv->vval.v_number);
+	if (tv->vval.v_number == VVAL_TRUE)
+	    result = Qtrue;
+	else if (tv->vval.v_number == VVAL_FALSE)
+	    result = Qfalse;
     } /* else return Qnil; */
 
     return result;
@@ -1424,16 +1495,12 @@ static VALUE current_line_number(void)
 
 static VALUE window_s_count(void)
 {
-#ifdef FEAT_WINDOWS
     win_T	*w;
     int n = 0;
 
     FOR_ALL_WINDOWS(w)
 	n++;
     return INT2NUM(n);
-#else
-    return INT2NUM(1);
-#endif
 }
 
 static VALUE window_s_aref(VALUE self UNUSED, VALUE num)
@@ -1441,11 +1508,7 @@ static VALUE window_s_aref(VALUE self UNUSED, VALUE num)
     win_T *w;
     int n = NUM2INT(num);
 
-#ifndef FEAT_WINDOWS
-    w = curwin;
-#else
     for (w = firstwin; w != NULL; w = w->w_next, --n)
-#endif
 	if (n == 0)
 	    return window_new(w);
     return Qnil;
@@ -1478,19 +1541,17 @@ static VALUE window_set_height(VALUE self, VALUE height)
 
 static VALUE window_width(VALUE self UNUSED)
 {
-    return INT2NUM(W_WIDTH(get_win(self)));
+    return INT2NUM(get_win(self)->w_width);
 }
 
 static VALUE window_set_width(VALUE self UNUSED, VALUE width)
 {
-#ifdef FEAT_WINDOWS
     win_T *win = get_win(self);
     win_T *savewin = curwin;
 
     curwin = win;
     win_setwidth(NUM2INT(width));
     curwin = savewin;
-#endif
     return width;
 }
 
@@ -1513,6 +1574,7 @@ static VALUE window_set_cursor(VALUE self, VALUE pos)
     col = RARRAY_PTR(pos)[1];
     win->w_cursor.lnum = NUM2LONG(lnum);
     win->w_cursor.col = NUM2UINT(col);
+    win->w_set_curswant = TRUE;
     check_cursor();		    /* put cursor on an existing line */
     update_screen(NOT_VALID);
     return Qnil;
@@ -1527,6 +1589,7 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 {
     int i;
     VALUE str = rb_str_new("", 0);
+    VALUE ret = Qnil;
 
     for (i = 0; i < argc; i++)
     {
@@ -1534,18 +1597,27 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 	rb_str_concat(str, rb_inspect(argv[i]));
     }
     MSG(RSTRING_PTR(str));
-    return Qnil;
+
+    if (argc == 1)
+	ret = argv[0];
+    else if (argc > 1)
+	ret = rb_ary_new4(argc, argv);
+    return ret;
 }
 
 static void ruby_io_init(void)
 {
 #ifndef DYNAMIC_RUBY
     RUBYEXTERN VALUE rb_stdout;
+    RUBYEXTERN VALUE rb_stderr;
 #endif
 
     rb_stdout = rb_obj_alloc(rb_cObject);
+    rb_stderr = rb_obj_alloc(rb_cObject);
     rb_define_singleton_method(rb_stdout, "write", vim_message, 1);
     rb_define_singleton_method(rb_stdout, "flush", f_nop, 0);
+    rb_define_singleton_method(rb_stderr, "write", vim_message, 1);
+    rb_define_singleton_method(rb_stderr, "flush", f_nop, 0);
     rb_define_global_function("p", f_p, -1);
 }
 

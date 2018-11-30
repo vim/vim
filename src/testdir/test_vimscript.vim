@@ -1,4 +1,4 @@
-" Test various aspects of the Vim language.
+" Test various aspects of the Vim script language.
 " Most of this was formerly in test49.
 
 "-------------------------------------------------------------------------------
@@ -1361,6 +1361,84 @@ func Test_bitwise_functions()
     call assert_fails("call invert(1.0)", 'E805:')
     call assert_fails("call invert([])", 'E745:')
     call assert_fails("call invert({})", 'E728:')
+endfunc
+
+" Test trailing text after :endfunction				    {{{1
+func Test_endfunction_trailing()
+    call assert_false(exists('*Xtest'))
+
+    exe "func Xtest()\necho 'hello'\nendfunc\nlet done = 'yes'"
+    call assert_true(exists('*Xtest'))
+    call assert_equal('yes', done)
+    delfunc Xtest
+    unlet done
+
+    exe "func Xtest()\necho 'hello'\nendfunc|let done = 'yes'"
+    call assert_true(exists('*Xtest'))
+    call assert_equal('yes', done)
+    delfunc Xtest
+    unlet done
+
+    " trailing line break
+    exe "func Xtest()\necho 'hello'\nendfunc\n"
+    call assert_true(exists('*Xtest'))
+    delfunc Xtest
+
+    set verbose=1
+    exe "func Xtest()\necho 'hello'\nendfunc \" garbage"
+    call assert_notmatch('W22:', split(execute('1messages'), "\n")[0])
+    call assert_true(exists('*Xtest'))
+    delfunc Xtest
+
+    exe "func Xtest()\necho 'hello'\nendfunc garbage"
+    call assert_match('W22:', split(execute('1messages'), "\n")[0])
+    call assert_true(exists('*Xtest'))
+    delfunc Xtest
+    set verbose=0
+
+    function Foo()
+	echo 'hello'
+    endfunction | echo 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    delfunc Foo
+endfunc
+
+func Test_delfunction_force()
+    delfunc! Xtest
+    delfunc! Xtest
+    func Xtest()
+	echo 'nothing'
+    endfunc
+    delfunc! Xtest
+    delfunc! Xtest
+endfunc
+
+" Test using bang after user command				    {{{1
+func Test_user_command_with_bang()
+    command -bang Nieuw let nieuw = 1
+    Ni!
+    call assert_equal(1, nieuw)
+    unlet nieuw
+    delcommand Nieuw
+endfunc
+
+" Test for script-local function
+func <SID>DoLast()
+  call append(line('$'), "last line")
+endfunc
+
+func s:DoNothing()
+  call append(line('$'), "nothing line")
+endfunc
+
+func Test_script_local_func()
+  set nocp viminfo+=nviminfo
+  new
+  nnoremap <buffer> _x	:call <SID>DoNothing()<bar>call <SID>DoLast()<bar>delfunc <SID>DoNothing<bar>delfunc <SID>DoLast<cr>
+
+  normal _x
+  call assert_equal('nothing line', getline(2))
+  call assert_equal('last line', getline(3))
+  enew! | close
 endfunc
 
 "-------------------------------------------------------------------------------

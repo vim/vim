@@ -214,6 +214,7 @@
 #define SHM_ALL		"rmfixlnwaWtToOsAIcqF" /* all possible flags for 'shm' */
 
 /* characters for p_go: */
+#define GO_TERMINAL	'!'		/* use terminal for system commands */
 #define GO_ASEL		'a'		/* autoselect */
 #define GO_ASELML	'A'		/* autoselect modeless selection */
 #define GO_BOT		'b'		/* use bottom scrollbar */
@@ -235,7 +236,8 @@
 #define GO_TOOLBAR	'T'		/* add toolbar */
 #define GO_FOOTER	'F'		/* add footer */
 #define GO_VERTICAL	'v'		/* arrange dialog buttons vertically */
-#define GO_ALL		"aAbcefFghilmMprtTv" /* all possible flags for 'go' */
+#define GO_KEEPWINSIZE	'k'		/* keep GUI window size */
+#define GO_ALL		"!aAbcefFghilmMprtTvk" /* all possible flags for 'go' */
 
 /* flags for 'comments' option */
 #define COM_NEST	'n'		/* comments strings nest */
@@ -375,10 +377,15 @@ EXTERN char_u	*p_bsk;		/* 'backupskip' */
 EXTERN char_u	*p_cm;		/* 'cryptmethod' */
 #endif
 #ifdef FEAT_BEVAL
-EXTERN long	p_bdlay;	/* 'balloondelay' */
+# ifdef FEAT_BEVAL_GUI
 EXTERN int	p_beval;	/* 'ballooneval' */
+# endif
+EXTERN long	p_bdlay;	/* 'balloondelay' */
 # ifdef FEAT_EVAL
 EXTERN char_u	*p_bexpr;
+# endif
+# ifdef FEAT_BEVAL_TERM
+EXTERN int	p_bevalterm;	/* 'balloonevalterm' */
 # endif
 #endif
 #ifdef FEAT_BROWSE
@@ -418,6 +425,7 @@ EXTERN int	p_cp;		/* 'compatible' */
 #ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_cot;		/* 'completeopt' */
 EXTERN long	p_ph;		/* 'pumheight' */
+EXTERN long	p_pw;		/* 'pumwidth' */
 #endif
 EXTERN char_u	*p_cpo;		/* 'cpoptions' */
 #ifdef FEAT_CSCOPE
@@ -460,9 +468,7 @@ static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
 #define DY_TRUNCATE		0x002
 #define DY_UHEX			0x004
 EXTERN int	p_ed;		/* 'edcompatible' */
-#ifdef FEAT_WINDOWS
 EXTERN char_u	*p_ead;		/* 'eadirection' */
-#endif
 EXTERN int	p_ea;		/* 'equalalways' */
 EXTERN char_u	*p_ep;		/* 'equalprg' */
 EXTERN int	p_eb;		/* 'errorbells' */
@@ -472,9 +478,7 @@ EXTERN char_u	*p_efm;		/* 'errorformat' */
 EXTERN char_u	*p_gefm;	/* 'grepformat' */
 EXTERN char_u	*p_gp;		/* 'grepprg' */
 #endif
-#ifdef FEAT_AUTOCMD
 EXTERN char_u	*p_ei;		/* 'eventignore' */
-#endif
 EXTERN int	p_ek;		/* 'esckeys' */
 EXTERN int	p_exrc;		/* 'exrc' */
 #ifdef FEAT_MBYTE
@@ -551,20 +555,11 @@ EXTERN char_u	*p_gtl;		/* 'guitablabel' */
 EXTERN char_u	*p_gtt;		/* 'guitabtooltip' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */
-#ifdef FEAT_WINDOWS
 EXTERN long	p_hh;		/* 'helpheight' */
-#endif
 #ifdef FEAT_MULTI_LANG
 EXTERN char_u	*p_hlg;		/* 'helplang' */
 #endif
 EXTERN int	p_hid;		/* 'hidden' */
-/* Use P_HID to check if a buffer is to be hidden when it is no longer
- * visible in a window. */
-#ifndef FEAT_QUICKFIX
-# define P_HID(dummy) (p_hid || cmdmod.hide)
-#else
-# define P_HID(buf) (buf_hide(buf))
-#endif
 EXTERN char_u	*p_hl;		/* 'highlight' */
 EXTERN int	p_hls;		/* 'hlsearch' */
 EXTERN long	p_hi;		/* 'history' */
@@ -586,10 +581,15 @@ EXTERN char_u	*p_iconstring;	/* 'iconstring' */
 EXTERN int	p_ic;		/* 'ignorecase' */
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 EXTERN char_u	*p_imak;	/* 'imactivatekey' */
+#define IM_ON_THE_SPOT		0L
+#define IM_OVER_THE_SPOT	1L
+EXTERN long	p_imst;		/* 'imstyle' */
+#endif
+#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
 #endif
-#ifdef USE_IM_CONTROL
+#ifdef FEAT_MBYTE
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
 #endif
@@ -615,10 +615,8 @@ EXTERN long	p_linespace;	/* 'linespace' */
 #ifdef FEAT_LISP
 EXTERN char_u	*p_lispwords;	/* 'lispwords' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_ls;		/* 'laststatus' */
 EXTERN long	p_stal;		/* 'showtabline' */
-#endif
 EXTERN char_u	*p_lcs;		/* 'listchars' */
 
 EXTERN int	p_lz;		/* 'lazyredraw' */
@@ -672,6 +670,10 @@ EXTERN long	p_mouset;	/* 'mousetime' */
 EXTERN int	p_more;		/* 'more' */
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		/* 'mzquantum */
+# if defined(DYNAMIC_MZSCHEME)
+EXTERN char_u	*p_mzschemedll;	/* 'mzschemedll' */
+EXTERN char_u	*p_mzschemegcdll; /* 'mzschemegcdll' */
+# endif
 #endif
 #if defined(MSWIN)
 EXTERN int	p_odev;		/* 'opendevice' */
@@ -694,8 +696,14 @@ EXTERN char_u	*p_perldll;	/* 'perldll' */
 #if defined(DYNAMIC_PYTHON3)
 EXTERN char_u	*p_py3dll;	/* 'pythonthreedll' */
 #endif
+#ifdef FEAT_PYTHON3
+EXTERN char_u	*p_py3home;	/* 'pythonthreehome' */
+#endif
 #if defined(DYNAMIC_PYTHON)
 EXTERN char_u	*p_pydll;	/* 'pythondll' */
+#endif
+#ifdef FEAT_PYTHON
+EXTERN char_u	*p_pyhome;	/* 'pythonhome' */
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 EXTERN long	p_pyx;		/* 'pyxversion' */
@@ -709,7 +717,7 @@ EXTERN long	p_re;		/* 'regexpengine' */
 EXTERN char_u	*p_rop;		/* 'renderoptions' */
 #endif
 EXTERN long	p_report;	/* 'report' */
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		/* 'previewheight' */
 #endif
 #ifdef WIN3264
@@ -732,9 +740,7 @@ EXTERN char_u	*p_pp;		/* 'packpath' */
 EXTERN char_u	*p_rtp;		/* 'runtimepath' */
 EXTERN long	p_sj;		/* 'scrolljump' */
 EXTERN long	p_so;		/* 'scrolloff' */
-#ifdef FEAT_SCROLLBIND
 EXTERN char_u	*p_sbo;		/* 'scrollopt' */
-#endif
 EXTERN char_u	*p_sections;	/* 'sections' */
 EXTERN int	p_secure;	/* 'secure' */
 EXTERN char_u	*p_sel;		/* 'selection' */
@@ -746,7 +752,7 @@ EXTERN unsigned	ssop_flags;
 /* Also used for 'viewoptions'! */
 static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
-    "sesdir", "curdir", "folds", "cursor", "tabpages", NULL};
+    "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", NULL};
 # endif
 # define SSOP_BUFFERS		0x001
 # define SSOP_WINPOS		0x002
@@ -764,6 +770,7 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
 # define SSOP_FOLDS		0x2000
 # define SSOP_CURSOR		0x4000
 # define SSOP_TABPAGES		0x8000
+# define SSOP_TERMINAL		0x10000
 #endif
 EXTERN char_u	*p_sh;		/* 'shell' */
 EXTERN char_u	*p_shcf;	/* 'shellcmdflag' */
@@ -799,19 +806,15 @@ EXTERN long	p_ss;		/* 'sidescroll' */
 EXTERN long	p_siso;		/* 'sidescrolloff' */
 EXTERN int	p_scs;		/* 'smartcase' */
 EXTERN int	p_sta;		/* 'smarttab' */
-#ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
 EXTERN long	p_tpm;		/* 'tabpagemax' */
 # if defined(FEAT_STL_OPT)
 EXTERN char_u	*p_tal;		/* 'tabline' */
 # endif
-#endif
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_sps;		/* 'spellsuggest' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN int	p_spr;		/* 'splitright' */
-#endif
 EXTERN int	p_sol;		/* 'startofline' */
 EXTERN char_u	*p_su;		/* 'suffixes' */
 EXTERN char_u	*p_sws;		/* 'swapsync' */
@@ -915,11 +918,10 @@ EXTERN long	p_ul;		/* 'undolevels' */
 EXTERN long	p_ur;		/* 'undoreload' */
 EXTERN long	p_uc;		/* 'updatecount' */
 EXTERN long	p_ut;		/* 'updatetime' */
-#if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
 EXTERN char_u	*p_fcs;		/* 'fillchar' */
-#endif
 #ifdef FEAT_VIMINFO
 EXTERN char_u	*p_viminfo;	/* 'viminfo' */
+EXTERN char_u	*p_viminfofile;	/* 'viminfofile' */
 #endif
 #ifdef FEAT_SESSION
 EXTERN char_u	*p_vdir;	/* 'viewdir' */
@@ -966,11 +968,12 @@ EXTERN char_u	*p_wim;		/* 'wildmode' */
 #ifdef FEAT_WILDMENU
 EXTERN int	p_wmnu;		/* 'wildmenu' */
 #endif
-#ifdef FEAT_WINDOWS
 EXTERN long	p_wh;		/* 'winheight' */
 EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+EXTERN char_u	*p_winptydll;	/* 'winptydll' */
 #endif
 EXTERN int	p_ws;		/* 'wrapscan' */
 EXTERN int	p_write;	/* 'write' */
@@ -987,12 +990,10 @@ enum
 {
     BV_AI = 0
     , BV_AR
-#ifdef FEAT_QUICKFIX
     , BV_BH
-#endif
     , BV_BKC
-#ifdef FEAT_QUICKFIX
     , BV_BT
+#ifdef FEAT_QUICKFIX
     , BV_EFM
     , BV_GP
     , BV_MP
@@ -1043,9 +1044,7 @@ enum
     , BV_FF
     , BV_FLP
     , BV_FO
-#ifdef FEAT_AUTOCMD
     , BV_FT
-#endif
     , BV_IMI
     , BV_IMS
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
@@ -1112,6 +1111,13 @@ enum
     , BV_UDF
     , BV_UL
     , BV_WM
+#ifdef FEAT_TERMINAL
+    , BV_TWSL
+#endif
+#ifdef FEAT_VARTABS
+    , BV_VSTS
+    , BV_VTS
+#endif
     , BV_COUNT	    /* must be the last one */
 };
 
@@ -1130,9 +1136,11 @@ enum
     , WV_COCU
     , WV_COLE
 #endif
-#ifdef FEAT_CURSORBIND
-    , WV_CRBIND
+#ifdef FEAT_TERMINAL
+    , WV_TWK
+    , WV_TWS
 #endif
+    , WV_CRBIND
 #ifdef FEAT_LINEBREAK
     , WV_BRI
     , WV_BRIOPT
@@ -1162,16 +1170,14 @@ enum
 #ifdef FEAT_LINEBREAK
     , WV_NUW
 #endif
-#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_QUICKFIX)
     , WV_PVW
 #endif
 #ifdef FEAT_RIGHTLEFT
     , WV_RL
     , WV_RLC
 #endif
-#ifdef FEAT_SCROLLBIND
     , WV_SCBIND
-#endif
     , WV_SCROLL
 #ifdef FEAT_SPELL
     , WV_SPELL
@@ -1184,10 +1190,8 @@ enum
 #ifdef FEAT_STL_OPT
     , WV_STL
 #endif
-#ifdef FEAT_WINDOWS
     , WV_WFH
     , WV_WFW
-#endif
     , WV_WRAP
 #ifdef FEAT_SIGNS
     , WV_SCL

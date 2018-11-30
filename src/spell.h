@@ -34,6 +34,8 @@
 				   byte, thus it can't be above 255.
 				   Must be >= PFD_NOTSPECIAL. */
 
+#define MAXREGIONS 8		/* Number of regions supported. */
+
 /* Type used for indexes in the word tree need to be at least 4 bytes.  If int
  * is 8 bytes we could use something smaller, but what? */
 #if VIM_SIZEOF_INT > 3
@@ -80,7 +82,8 @@ struct slang_S
 
     char_u	*sl_info;	/* infotext string or NULL */
 
-    char_u	sl_regions[17];	/* table with up to 8 region names plus NUL */
+    char_u	sl_regions[MAXREGIONS * 2 + 1];
+				/* table with up to 8 region names plus NUL */
 
     char_u	*sl_midword;	/* MIDWORD string or NULL */
 

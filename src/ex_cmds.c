@@ -28,9 +28,7 @@ static int read_viminfo_up_to_marks(vir_T *virp, int forceit, int writing);
 #endif
 
 static int check_readonly(int *forceit, buf_T *buf);
-#ifdef FEAT_AUTOCMD
 static void delbuf_msg(char_u *name);
-#endif
 static int
 #ifdef __BORLANDC__
     _RTLENTRYF
@@ -49,6 +47,9 @@ do_ascii(exarg_T *eap UNUSED)
     char	buf1[20];
     char	buf2[20];
     char_u	buf3[7];
+#ifdef FEAT_DIGRAPHS
+    char_u      *dig;
+#endif
 #ifdef FEAT_MBYTE
     int		cc[MAX_MCO];
     int		ci = 0;
@@ -94,7 +95,15 @@ do_ascii(exarg_T *eap UNUSED)
 	else
 #endif
 	    buf2[0] = NUL;
-	vim_snprintf((char *)IObuff, IOSIZE,
+#ifdef FEAT_DIGRAPHS
+	dig = get_digraph_for_char(cval);
+	if (dig != NULL)
+	    vim_snprintf((char *)IObuff, IOSIZE,
+		_("<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"),
+			      transchar(c), buf1, buf2, cval, cval, cval, dig);
+	else
+#endif
+	    vim_snprintf((char *)IObuff, IOSIZE,
 		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
 				  transchar(c), buf1, buf2, cval, cval, cval);
 #ifdef FEAT_MBYTE
@@ -121,9 +130,19 @@ do_ascii(exarg_T *eap UNUSED)
 		)
 	    IObuff[len++] = ' '; /* draw composing char on top of a space */
 	len += (*mb_char2bytes)(c, IObuff + len);
-	vim_snprintf((char *)IObuff + len, IOSIZE - len,
-			c < 0x10000 ? _("> %d, Hex %04x, Octal %o")
-				    : _("> %d, Hex %08x, Octal %o"), c, c, c);
+#ifdef FEAT_DIGRAPHS
+	dig = get_digraph_for_char(c);
+	if (dig != NULL)
+	    vim_snprintf((char *)IObuff + len, IOSIZE - len,
+			c < 0x10000 ? _("> %d, Hex %04x, Oct %o, Digr %s")
+				    : _("> %d, Hex %08x, Oct %o, Digr %s"),
+					c, c, c, dig);
+	else
+#endif
+	    vim_snprintf((char *)IObuff + len, IOSIZE - len,
+			 c < 0x10000 ? _("> %d, Hex %04x, Octal %o")
+				     : _("> %d, Hex %08x, Octal %o"),
+				     c, c, c);
 	if (ci == MAX_MCO)
 	    break;
 	if (enc_utf8)
@@ -177,7 +196,7 @@ ex_align(exarg_T *eap)
 	if (width <= 0)
 	    width = curbuf->b_p_tw;
 	if (width == 0 && curbuf->b_p_wm > 0)
-	    width = W_WIDTH(curwin) - curbuf->b_p_wm;
+	    width = curwin->w_width - curbuf->b_p_wm;
 	if (width <= 0)
 	    width = 80;
     }
@@ -262,7 +281,7 @@ linelen(int *has_tab)
     *last = NUL;
     len = linetabsize(line);		/* get line length */
     if (has_tab != NULL)		/* check for embedded TAB */
-	*has_tab = (vim_strrchr(first, TAB) != NULL);
+	*has_tab = (vim_strchr(first, TAB) != NULL);
     *last = save;
 
     return len;
@@ -379,6 +398,7 @@ ex_sort(exarg_T *eap)
     colnr_T	end_col;
     int		sort_what = 0;
     int		format_found = 0;
+    int		change_occurred = FALSE; // Buffer contents changed.
 
     /* Sorting one line is really quick! */
     if (count <= 1)
@@ -597,12 +617,19 @@ ex_sort(exarg_T *eap)
     lnum = eap->line2;
     for (i = 0; i < count; ++i)
     {
-	s = ml_get(nrs[eap->forceit ? count - i - 1 : i].lnum);
+	linenr_T get_lnum = nrs[eap->forceit ? count - i - 1 : i].lnum;
+
+	// If the original line number of the line being placed is not the same
+	// as "lnum" (accounting for offset), we know that the buffer changed.
+	if (get_lnum + ((linenr_T)count - 1) != lnum)
+	    change_occurred = TRUE;
+
+	s = ml_get(get_lnum);
 	if (!unique || i == 0
 		|| (sort_ic ? STRICMP(s, sortbuf1) : STRCMP(s, sortbuf1)) != 0)
 	{
-	    /* Copy the line into a buffer, it may become invalid in
-	     * ml_append(). And it's needed for "unique". */
+	    // Copy the line into a buffer, it may become invalid in
+	    // ml_append(). And it's needed for "unique".
 	    STRCPY(sortbuf1, s);
 	    if (ml_append(lnum++, sortbuf1, (colnr_T)0, FALSE) == FAIL)
 		break;
@@ -622,10 +649,15 @@ ex_sort(exarg_T *eap)
     /* Adjust marks for deleted (or added) lines and prepare for displaying. */
     deleted = (long)(count - (lnum - eap->line2));
     if (deleted > 0)
+    {
 	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+	msgmore(-deleted);
+    }
     else if (deleted < 0)
 	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
-    changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
+    if (change_occurred || deleted != 0)
+	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
 
     curwin->w_cursor.lnum = eap->line1;
     beginline(BL_WHITE | BL_FIX);
@@ -654,12 +686,17 @@ ex_retab(exarg_T *eap)
     long	vcol;
     long	start_col = 0;		/* For start of white-space string */
     long	start_vcol = 0;		/* For start of white-space string */
-    int		temp;
     long	old_len;
     char_u	*ptr;
     char_u	*new_line = (char_u *)1;    /* init to non-NULL */
     int		did_undo;		/* called u_save for current line */
+#ifdef FEAT_VARTABS
+    int		*new_vts_array = NULL;
+    char_u	*new_ts_str;		/* string value of tab argument */
+#else
+    int		temp;
     int		new_ts;
+#endif
     int		save_list;
     linenr_T	first_line = 0;		/* first changed line */
     linenr_T	last_line = 0;		/* last changed line */
@@ -667,6 +704,24 @@ ex_retab(exarg_T *eap)
     save_list = curwin->w_p_list;
     curwin->w_p_list = 0;	    /* don't want list mode here */
 
+#ifdef FEAT_VARTABS
+    new_ts_str = eap->arg;
+    if (!tabstop_set(eap->arg, &new_vts_array))
+	return;
+    while (vim_isdigit(*(eap->arg)) || *(eap->arg) == ',')
+	++(eap->arg);
+
+    // This ensures that either new_vts_array and new_ts_str are freshly
+    // allocated, or new_vts_array points to an existing array and new_ts_str
+    // is null.
+    if (new_vts_array == NULL)
+    {
+	new_vts_array = curbuf->b_p_vts_array;
+	new_ts_str = NULL;
+    }
+    else
+	new_ts_str = vim_strnsave(new_ts_str, eap->arg - new_ts_str);
+#else
     new_ts = getdigits(&(eap->arg));
     if (new_ts < 0)
     {
@@ -675,6 +730,7 @@ ex_retab(exarg_T *eap)
     }
     if (new_ts == 0)
 	new_ts = curbuf->b_p_ts;
+#endif
     for (lnum = eap->line1; !got_int && lnum <= eap->line2; ++lnum)
     {
 	ptr = ml_get(lnum);
@@ -707,6 +763,14 @@ ex_retab(exarg_T *eap)
 		    num_tabs = 0;
 		    if (!curbuf->b_p_et)
 		    {
+#ifdef FEAT_VARTABS
+			int t, s;
+
+			tabstop_fromto(start_vcol, vcol,
+					curbuf->b_p_ts, new_vts_array, &t, &s);
+			num_tabs = t;
+			num_spaces = s;
+#else
 			temp = new_ts - (start_vcol % new_ts);
 			if (num_spaces >= temp)
 			{
@@ -715,6 +779,7 @@ ex_retab(exarg_T *eap)
 			}
 			num_tabs += num_spaces / new_ts;
 			num_spaces -= (num_spaces / new_ts) * new_ts;
+#endif
 		    }
 		    if (curbuf->b_p_et || got_tab ||
 					(num_spaces + num_tabs < len))
@@ -772,14 +837,53 @@ ex_retab(exarg_T *eap)
     if (got_int)
 	EMSG(_(e_interr));
 
+#ifdef FEAT_VARTABS
+    // If a single value was given then it can be considered equal to
+    // either the value of 'tabstop' or the value of 'vartabstop'.
+    if (tabstop_count(curbuf->b_p_vts_array) == 0
+	&& tabstop_count(new_vts_array) == 1
+	&& curbuf->b_p_ts == tabstop_first(new_vts_array))
+	; /* not changed */
+    else if (tabstop_count(curbuf->b_p_vts_array) > 0
+        && tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
+	; /* not changed */
+    else
+	redraw_curbuf_later(NOT_VALID);
+#else
     if (curbuf->b_p_ts != new_ts)
 	redraw_curbuf_later(NOT_VALID);
+#endif
     if (first_line != 0)
 	changed_lines(first_line, 0, last_line + 1, 0L);
 
     curwin->w_p_list = save_list;	/* restore 'list' */
 
+#ifdef FEAT_VARTABS
+    if (new_ts_str != NULL)		/* set the new tabstop */
+    {
+	// If 'vartabstop' is in use or if the value given to retab has more
+	// than one tabstop then update 'vartabstop'.
+	int *old_vts_ary = curbuf->b_p_vts_array;
+
+	if (tabstop_count(old_vts_ary) > 0 || tabstop_count(new_vts_array) > 1)
+	{
+	    set_string_option_direct((char_u *)"vts", -1, new_ts_str,
+							OPT_FREE|OPT_LOCAL, 0);
+	    curbuf->b_p_vts_array = new_vts_array;
+	    vim_free(old_vts_ary);
+	}
+	else
+	{
+	    // 'vartabstop' wasn't in use and a single value was given to
+	    // retab then update 'tabstop'.
+	    curbuf->b_p_ts = tabstop_first(new_vts_array);
+	    vim_free(new_vts_array);
+	}
+	vim_free(new_ts_str);
+    }
+#else
     curbuf->b_p_ts = new_ts;
+#endif
     coladvance(curwin->w_curswant);
 
     u_clearline();
@@ -795,9 +899,9 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 {
     char_u	*str;
     linenr_T	l;
-    linenr_T	extra;	    /* Num lines added before line1 */
-    linenr_T	num_lines;  /* Num lines moved */
-    linenr_T	last_line;  /* Last line in file after adding new text */
+    linenr_T	extra;	    // Num lines added before line1
+    linenr_T	num_lines;  // Num lines moved
+    linenr_T	last_line;  // Last line in file after adding new text
 #ifdef FEAT_FOLDING
     win_T	*win;
     tabpage_T	*tp;
@@ -805,8 +909,22 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 
     if (dest >= line1 && dest < line2)
     {
-	EMSG(_("E134: Move lines into themselves"));
+	EMSG(_("E134: Cannot move a range of lines into itself"));
 	return FAIL;
+    }
+
+    // Do nothing if we are not actually moving any lines.  This will prevent
+    // the 'modified' flag from being set without cause.
+    if (dest == line1 - 1 || dest == line2)
+    {
+	// Move the cursor as if lines were moved (see below) to be backwards
+	// compatible.
+	if (dest >= line1)
+	    curwin->w_cursor.lnum = dest;
+	else
+	    curwin->w_cursor.lnum = dest + (line2 - line1) + 1;
+
+	return OK;
     }
 
     num_lines = line2 - line1 + 1;
@@ -884,12 +1002,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	ml_delete(line1 + extra, TRUE);
 
     if (!global_busy && num_lines > p_report)
-    {
-	if (num_lines == 1)
-	    MSG(_("1 line moved"));
-	else
-	    smsg((char_u *)_("%ld lines moved"), num_lines);
-    }
+	smsg((char_u *)NGETTEXT("%ld line moved", "%ld lines moved", num_lines),
+			(long)num_lines);
 
     /*
      * Leave the cursor on the last of the moved lines.
@@ -1127,9 +1241,7 @@ do_bang(
 	/* Careful: This may recursively call do_bang() again! (because of
 	 * autocommands) */
 	do_filter(line1, line2, eap, newcmd, do_in, do_out);
-#ifdef FEAT_AUTOCMD
 	apply_autocmds(EVENT_SHELLFILTERPOST, NULL, NULL, FALSE, curbuf);
-#endif
     }
     if (free_newcmd)
 	vim_free(newcmd);
@@ -1165,9 +1277,7 @@ do_filter(
     linenr_T	read_linecount;
     pos_T	cursor_save;
     char_u	*cmd_buf;
-#ifdef FEAT_AUTOCMD
     buf_T	*old_curbuf = curbuf;
-#endif
     int		shell_flags = 0;
 
     if (*cmd == NUL)	    /* no filter command */
@@ -1238,16 +1348,14 @@ do_filter(
     {
 	msg_putchar('\n');		/* keep message from buf_write() */
 	--no_wait_return;
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
 	    (void)EMSG2(_(e_notcreate), itmp);	/* will call wait_return */
 	goto filterend;
     }
-#ifdef FEAT_AUTOCMD
     if (curbuf != old_curbuf)
 	goto filterend;
-#endif
 
     if (!do_out)
 	msg_putchar('\n');
@@ -1313,7 +1421,7 @@ do_filter(
 	    if (readfile(otmp, NULL, line2, (linenr_T)0, (linenr_T)MAXLNUM,
 						    eap, READ_FILTER) != OK)
 	    {
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 		if (!aborting())
 #endif
 		{
@@ -1322,10 +1430,8 @@ do_filter(
 		}
 		goto error;
 	    }
-#ifdef FEAT_AUTOCMD
 	    if (curbuf != old_curbuf)
 		goto filterend;
-#endif
 	}
 
 	read_linecount = curbuf->b_ml.ml_line_count - read_linecount;
@@ -1405,13 +1511,11 @@ error:
 
 filterend:
 
-#ifdef FEAT_AUTOCMD
     if (curbuf != old_curbuf)
     {
 	--no_wait_return;
 	EMSG(_("E135: *Filter* Autocommands must not change current buffer"));
     }
-#endif
     if (itmp != NULL)
 	mch_remove(itmp);
     if (otmp != NULL)
@@ -1461,9 +1565,7 @@ do_shell(
      * avoid having to type return below.
      */
     msg_putchar('\r');			/* put cursor at start of line */
-#ifdef FEAT_AUTOCMD
     if (!autocmd_busy)
-#endif
     {
 #ifdef MSWIN
 	if (!winstart)
@@ -1476,13 +1578,9 @@ do_shell(
 	msg_putchar('\n');		/* may shift screen one line up */
 
     /* warning message before calling the shell */
-    if (p_warn
-#ifdef FEAT_AUTOCMD
-		&& !autocmd_busy
-#endif
-		&& msg_silent == 0)
+    if (p_warn && !autocmd_busy && msg_silent == 0)
 	FOR_ALL_BUFFERS(buf)
-	    if (bufIsChanged(buf))
+	    if (bufIsChangedNotTerm(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
 		if (!winstart)
@@ -1515,14 +1613,12 @@ do_shell(
 	msg_col = 0;
     }
 
-#ifdef FEAT_AUTOCMD
     if (autocmd_busy)
     {
 	if (msg_silent == 0)
 	    redraw_later_clear();
     }
     else
-#endif
     {
 	/*
 	 * For ":sh" there is no need to call wait_return(), just redraw.
@@ -1591,10 +1687,28 @@ do_shell(
     /* display any error messages now */
     display_errors();
 
-#ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_SHELLCMDPOST, NULL, NULL, FALSE, curbuf);
-#endif
 }
+
+#if !defined(UNIX)
+    static char_u *
+find_pipe(char_u *cmd)
+{
+    char_u  *p;
+    int	    inquote = FALSE;
+
+    for (p = cmd; *p != NUL; ++p)
+    {
+	if (!inquote && *p == '|')
+	    return p;
+	if (*p == '"')
+	    inquote = !inquote;
+	else if (rem_backslash(p))
+	    ++p;
+    }
+    return NULL;
+}
+#endif
 
 /*
  * Create a shell command from a command string, input redirection file and
@@ -1666,7 +1780,7 @@ make_filter_cmd(
 	 */
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(buf, '|');
+	    p = find_pipe(buf);
 	    if (p != NULL)
 		*p = NUL;
 	}
@@ -1674,7 +1788,7 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(cmd, '|');
+	    p = find_pipe(cmd);
 	    if (p != NULL)
 	    {
 		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
@@ -1733,7 +1847,6 @@ append_redir(
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
-static int no_viminfo(void);
 static int read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing);
 static void write_viminfo_version(FILE *fp_out);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
@@ -1743,7 +1856,7 @@ static int  viminfo_errcnt;
 no_viminfo(void)
 {
     /* "vim -i NONE" does not read or write a viminfo file */
-    return (use_viminfo != NULL && STRCMP(use_viminfo, "NONE") == 0);
+    return STRCMP(p_viminfofile, "NONE") == 0;
 }
 
 /*
@@ -1825,7 +1938,6 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	/* output viminfo file */
     char_u	*tempname = NULL;	/* name of temp viminfo file */
     stat_T	st_new;		/* mch_stat() of potential new file */
-    char_u	*wp;
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
@@ -1847,27 +1959,29 @@ write_viminfo(char_u *file, int forceit)
     fp_in = mch_fopen((char *)fname, READBIN);
     if (fp_in == NULL)
     {
+	int fd;
+
 	/* if it does exist, but we can't read it, don't try writing */
 	if (mch_stat((char *)fname, &st_new) == 0)
 	    goto end;
-#if defined(UNIX) || defined(VMS)
-	/*
-	 * For Unix we create the .viminfo non-accessible for others,
-	 * because it may contain text from non-accessible documents.
-	 */
-	umask_save = umask(077);
-#endif
-	fp_out = mch_fopen((char *)fname, WRITEBIN);
-#if defined(UNIX) || defined(VMS)
-	(void)umask(umask_save);
-#endif
+
+	/* Create the new .viminfo non-accessible for others, because it may
+	 * contain text from non-accessible documents. It is up to the user to
+	 * widen access (e.g. to a group). This may also fail if there is a
+	 * race condition, then just give up. */
+	fd = mch_open((char *)fname,
+			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
+	if (fd < 0)
+	    goto end;
+	fp_out = fdopen(fd, WRITEBIN);
     }
     else
     {
 	/*
 	 * There is an existing viminfo file.  Create a temporary file to
 	 * write the new viminfo into, in the same directory as the
-	 * existing viminfo file, which will be renamed later.
+	 * existing viminfo file, which will be renamed once all writing is
+	 * successful.
 	 */
 #ifdef UNIX
 	/*
@@ -1901,12 +2015,18 @@ write_viminfo(char_u *file, int forceit)
 #endif
 
 	/*
-	 * Make tempname.
+	 * Make tempname, find one that does not exist yet.
+	 * Beware of a race condition: If someone logs out and all Vim
+	 * instances exit at the same time a temp file might be created between
+	 * stat() and open().  Use mch_open() with O_EXCL to avoid that.
 	 * May try twice: Once normal and once with shortname set, just in
 	 * case somebody puts his viminfo file in an 8.3 filesystem.
 	 */
 	for (;;)
 	{
+	    int		next_char = 'z';
+	    char_u	*wp;
+
 	    tempname = buf_modname(
 #ifdef UNIX
 				    shortname,
@@ -1924,107 +2044,127 @@ write_viminfo(char_u *file, int forceit)
 		break;
 
 	    /*
-	     * Check if tempfile already exists.  Never overwrite an
-	     * existing file!
+	     * Try a series of names.  Change one character, just before
+	     * the extension.  This should also work for an 8.3
+	     * file name, when after adding the extension it still is
+	     * the same file as the original.
 	     */
-	    if (mch_stat((char *)tempname, &st_new) == 0)
+	    wp = tempname + STRLEN(tempname) - 5;
+	    if (wp < gettail(tempname))	    /* empty file name? */
+		wp = gettail(tempname);
+	    for (;;)
 	    {
+		/*
+		 * Check if tempfile already exists.  Never overwrite an
+		 * existing file!
+		 */
+		if (mch_stat((char *)tempname, &st_new) == 0)
+		{
 #ifdef UNIX
-		/*
-		 * Check if tempfile is same as original file.  May happen
-		 * when modname() gave the same file back.  E.g.  silly
-		 * link, or file name-length reached.  Try again with
-		 * shortname set.
-		 */
-		if (!shortname && st_new.st_dev == st_old.st_dev
-					    && st_new.st_ino == st_old.st_ino)
-		{
-		    vim_free(tempname);
-		    tempname = NULL;
-		    shortname = TRUE;
-		    continue;
-		}
-#endif
-		/*
-		 * Try another name.  Change one character, just before
-		 * the extension.  This should also work for an 8.3
-		 * file name, when after adding the extension it still is
-		 * the same file as the original.
-		 */
-		wp = tempname + STRLEN(tempname) - 5;
-		if (wp < gettail(tempname))	    /* empty file name? */
-		    wp = gettail(tempname);
-		for (*wp = 'z'; mch_stat((char *)tempname, &st_new) == 0;
-								    --*wp)
-		{
 		    /*
-		     * They all exist?  Must be something wrong! Don't
-		     * write the viminfo file then.
+		     * Check if tempfile is same as original file.  May happen
+		     * when modname() gave the same file back.  E.g.  silly
+		     * link, or file name-length reached.  Try again with
+		     * shortname set.
 		     */
-		    if (*wp == 'a')
+		    if (!shortname && st_new.st_dev == st_old.st_dev
+						&& st_new.st_ino == st_old.st_ino)
 		    {
-			EMSG2(_("E929: Too many viminfo temp files, like %s!"),
-								    tempname);
-			vim_free(tempname);
-			tempname = NULL;
+			VIM_CLEAR(tempname);
+			shortname = TRUE;
 			break;
 		    }
+#endif
 		}
-	    }
-	    break;
-	}
-
-	if (tempname != NULL)
-	{
+		else
+		{
+		    /* Try creating the file exclusively.  This may fail if
+		     * another Vim tries to do it at the same time. */
 #ifdef VMS
-	    /* fdopen() fails for some reason */
-	    umask_save = umask(077);
-	    fp_out = mch_fopen((char *)tempname, WRITEBIN);
-	    (void)umask(umask_save);
-#else
-	    int	fd;
-
-	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
-	     * protection:
-	     * Unix: same as original file, but strip s-bit.  Reset umask to
-	     * avoid it getting in the way.
-	     * Others: r&w for user only. */
-# ifdef UNIX
-	    umask_save = umask(0);
-	    fd = mch_open((char *)tempname,
-		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
-				       (int)((st_old.st_mode & 0777) | 0600));
-	    (void)umask(umask_save);
-# else
-	    fd = mch_open((char *)tempname,
-			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
-# endif
-	    if (fd < 0)
-		fp_out = NULL;
-	    else
-		fp_out = fdopen(fd, WRITEBIN);
-#endif /* VMS */
-
-	    /*
-	     * If we can't create in the same directory, try creating a
-	     * "normal" temp file.
-	     */
-	    if (fp_out == NULL)
-	    {
-		vim_free(tempname);
-		if ((tempname = vim_tempname('o', TRUE)) != NULL)
+		    /* fdopen() fails for some reason */
+		    umask_save = umask(077);
 		    fp_out = mch_fopen((char *)tempname, WRITEBIN);
+		    (void)umask(umask_save);
+#else
+		    int	fd;
+
+		    /* Use mch_open() to be able to use O_NOFOLLOW and set file
+		     * protection:
+		     * Unix: same as original file, but strip s-bit.  Reset
+		     * umask to avoid it getting in the way.
+		     * Others: r&w for user only. */
+# ifdef UNIX
+		    umask_save = umask(0);
+		    fd = mch_open((char *)tempname,
+			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
+					(int)((st_old.st_mode & 0777) | 0600));
+		    (void)umask(umask_save);
+# else
+		    fd = mch_open((char *)tempname,
+			     O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
+# endif
+		    if (fd < 0)
+		    {
+			fp_out = NULL;
+# ifdef EEXIST
+			/* Avoid trying lots of names while the problem is lack
+			 * of premission, only retry if the file already
+			 * exists. */
+			if (errno != EEXIST)
+			    break;
+# endif
+		    }
+		    else
+			fp_out = fdopen(fd, WRITEBIN);
+#endif /* VMS */
+		    if (fp_out != NULL)
+			break;
+		}
+
+		/* Assume file exists, try again with another name. */
+		if (next_char == 'a' - 1)
+		{
+		    /* They all exist?  Must be something wrong! Don't write
+		     * the viminfo file then. */
+		    EMSG2(_("E929: Too many viminfo temp files, like %s!"),
+								     tempname);
+		    break;
+		}
+		*wp = next_char;
+		--next_char;
 	    }
+
+	    if (tempname != NULL)
+		break;
+	    /* continue if shortname was set */
+	}
 
 #if defined(UNIX) && defined(HAVE_FCHOWN)
+	if (tempname != NULL && fp_out != NULL)
+	{
+		stat_T	tmp_st;
+
 	    /*
-	     * Make sure the owner can read/write it.  This only works for
-	     * root.
+	     * Make sure the original owner can read/write the tempfile and
+	     * otherwise preserve permissions, making sure the group matches.
 	     */
-	    if (fp_out != NULL)
-		ignored = fchown(fileno(fp_out), st_old.st_uid, st_old.st_gid);
-#endif
+	    if (mch_stat((char *)tempname, &tmp_st) >= 0)
+	    {
+		if (st_old.st_uid != tmp_st.st_uid)
+		    /* Changing the owner might fail, in which case the
+		     * file will now owned by the current user, oh well. */
+		    vim_ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
+		if (st_old.st_gid != tmp_st.st_gid
+			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
+		    /* can't set the group to what it should be, remove
+		     * group permissions */
+		    (void)mch_setperm(tempname, 0600);
+	    }
+	    else
+		/* can't stat the file, set conservative permissions */
+		(void)mch_setperm(tempname, 0600);
 	}
+#endif
     }
 
     /*
@@ -2093,16 +2233,21 @@ viminfo_filename(char_u *file)
 {
     if (file == NULL || *file == NUL)
     {
-	if (use_viminfo != NULL)
-	    file = use_viminfo;
+	if (*p_viminfofile != NUL)
+	    file = p_viminfofile;
 	else if ((file = find_viminfo_parameter('n')) == NULL || *file == NUL)
 	{
 #ifdef VIMINFO_FILE2
-	    /* don't use $HOME when not defined (turned into "c:/"!). */
 # ifdef VMS
 	    if (mch_getenv((char_u *)"SYS$LOGIN") == NULL)
 # else
+#  ifdef MSWIN
+	    /* Use $VIM only if $HOME is the default "C:/". */
+	    if (STRCMP(vim_getenv((char_u *)"HOME", NULL), "C:/") == 0
+		    && mch_getenv((char_u *)"HOME") == NULL)
+#  else
 	    if (mch_getenv((char_u *)"HOME") == NULL)
+#  endif
 # endif
 	    {
 		/* don't use $VIM when not available. */
@@ -2926,16 +3071,14 @@ rename_buffer(char_u *new_fname)
     char_u	*fname, *sfname, *xfname;
     buf_T	*buf;
 
-#ifdef FEAT_AUTOCMD
     buf = curbuf;
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     /* buffer changed, don't change name now */
     if (buf != curbuf)
 	return FAIL;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     if (aborting())	    /* autocmds may abort script processing */
 	return FAIL;
-# endif
 #endif
     /*
      * The name of the current buffer will be changed.
@@ -2964,11 +3107,10 @@ rename_buffer(char_u *new_fname)
     }
     vim_free(fname);
     vim_free(sfname);
-#ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
-#endif
+
     /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
+    DO_AUTOCHDIR;
     return OK;
 }
 
@@ -2993,9 +3135,11 @@ ex_file(exarg_T *eap)
     {
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
+	redraw_tabline = TRUE;
     }
-    /* print full file name if :cd used */
-    if (!shortmess(SHM_FILEINFO))
+
+    // print file name if no argument or 'F' is not in 'shortmess'
+    if (*eap->arg == NUL || !shortmess(SHM_FILEINFO))
 	fileinfo(FALSE, FALSE, eap->forceit);
 }
 
@@ -3144,22 +3288,20 @@ do_write(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_saveas && alt_buf != NULL)
 	{
-#ifdef FEAT_AUTOCMD
 	    buf_T	*was_curbuf = curbuf;
 
 	    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
 	    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, alt_buf);
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	    if (curbuf != was_curbuf || aborting())
-# else
+#else
 	    if (curbuf != was_curbuf)
-# endif
+#endif
 	    {
 		/* buffer changed, don't change name now */
 		retval = FAIL;
 		goto theend;
 	    }
-#endif
 	    /* Exchange the file names for the current and the alternate
 	     * buffer.  This makes it look like we are now editing the buffer
 	     * under the new name.  Must be done before buf_write(), because
@@ -3175,7 +3317,7 @@ do_write(exarg_T *eap)
 	    alt_buf->b_sfname = curbuf->b_sfname;
 	    curbuf->b_sfname = fname;
 	    buf_name_changed(curbuf);
-#ifdef FEAT_AUTOCMD
+
 	    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
 	    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, alt_buf);
 	    if (!alt_buf->b_p_bl)
@@ -3183,11 +3325,11 @@ do_write(exarg_T *eap)
 		alt_buf->b_p_bl = TRUE;
 		apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, alt_buf);
 	    }
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	    if (curbuf != was_curbuf || aborting())
-# else
+#else
 	    if (curbuf != was_curbuf)
-# endif
+#endif
 	    {
 		/* buffer changed, don't write the file */
 		retval = FAIL;
@@ -3206,7 +3348,6 @@ do_write(exarg_T *eap)
 	    /* Autocommands may have changed buffer names, esp. when
 	     * 'autochdir' is set. */
 	    fname = curbuf->b_sfname;
-#endif
 	}
 
 	name_was_missing = curbuf->b_ffname == NULL;
@@ -3220,9 +3361,7 @@ do_write(exarg_T *eap)
 	    if (retval == OK)
 	    {
 		curbuf->b_p_ro = FALSE;
-#ifdef FEAT_WINDOWS
 		redraw_tabline = TRUE;
-#endif
 	    }
 	}
 
@@ -3230,7 +3369,7 @@ do_write(exarg_T *eap)
 	 * got changed or set. */
 	if (eap->cmdidx == CMD_saveas || name_was_missing)
 	{
-	    DO_AUTOCHDIR
+	    DO_AUTOCHDIR;
 	}
     }
 
@@ -3397,7 +3536,15 @@ do_wqall(exarg_T *eap)
 
     FOR_ALL_BUFFERS(buf)
     {
-	if (bufIsChanged(buf))
+#ifdef FEAT_TERMINAL
+	if (exiting && term_job_running(buf->b_term))
+	{
+	    no_write_message_nobang(buf);
+	    ++error;
+	}
+	else
+#endif
+	if (bufIsChanged(buf) && !bt_dontwrite(buf))
 	{
 	    /*
 	     * Check if there is a reason the buffer cannot be written:
@@ -3429,18 +3576,14 @@ do_wqall(exarg_T *eap)
 	    }
 	    else
 	    {
-#ifdef FEAT_AUTOCMD
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf);
-#endif
 		if (buf_write_all(buf, eap->forceit) == FAIL)
 		    ++error;
-#ifdef FEAT_AUTOCMD
 		/* an autocommand may have deleted the buffer */
 		if (!bufref_valid(&bufref))
 		    buf = firstbuf;
-#endif
 	    }
 	    eap->forceit = save_forceit;    /* check_overwrite() may set it */
 	}
@@ -3519,8 +3662,8 @@ check_readonly(int *forceit, buf_T *buf)
 }
 
 /*
- * Try to abandon current file and edit a new or existing file.
- * "fnum" is the number of the file, if zero use ffname/sfname.
+ * Try to abandon the current file and edit a new or existing file.
+ * "fnum" is the number of the file, if zero use "ffname_arg"/"sfname_arg".
  * "lnum" is the line number for the cursor in the new file (if non-zero).
  *
  * Return:
@@ -3532,22 +3675,22 @@ check_readonly(int *forceit, buf_T *buf)
     int
 getfile(
     int		fnum,
-    char_u	*ffname,
-    char_u	*sfname,
+    char_u	*ffname_arg,
+    char_u	*sfname_arg,
     int		setpm,
     linenr_T	lnum,
     int		forceit)
 {
+    char_u	*ffname = ffname_arg;
+    char_u	*sfname = sfname_arg;
     int		other;
     int		retval;
     char_u	*free_me = NULL;
 
     if (text_locked())
 	return GETFILE_ERROR;
-#ifdef FEAT_AUTOCMD
     if (curbuf_locked())
 	return GETFILE_ERROR;
-#endif
 
     if (fnum == 0)
     {
@@ -3561,7 +3704,7 @@ getfile(
 
     if (other)
 	++no_wait_return;	    /* don't wait for autowrite message */
-    if (other && !forceit && curbuf->b_nwindows == 1 && !P_HID(curbuf)
+    if (other && !forceit && curbuf->b_nwindows == 1 && !buf_hide(curbuf)
 		   && curbufIsChanged() && autowrite(curbuf, forceit) == FAIL)
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -3572,7 +3715,7 @@ getfile(
 	{
 	    if (other)
 		--no_wait_return;
-	    EMSG(_(e_nowrtmsg));
+	    no_write_message();
 	    retval = GETFILE_NOT_WRITTEN;	/* file has been changed */
 	    goto theend;
 	}
@@ -3590,7 +3733,7 @@ getfile(
 	retval = GETFILE_SAME_FILE;	/* it's in the same file */
     }
     else if (do_ecmd(fnum, ffname, sfname, NULL, lnum,
-		(P_HID(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0),
+	     (buf_hide(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0),
 		curwin) == OK)
 	retval = GETFILE_OPEN_OTHER;	/* opened another file */
     else
@@ -3642,17 +3785,15 @@ do_ecmd(
 {
     int		other_file;		/* TRUE if editing another file */
     int		oldbuf;			/* TRUE if using existing buffer */
-#ifdef FEAT_AUTOCMD
     int		auto_buf = FALSE;	/* TRUE if autocommands brought us
 					   into the buffer unexpectedly */
     char_u	*new_name = NULL;
+#if defined(FEAT_EVAL)
     int		did_set_swapcommand = FALSE;
 #endif
     buf_T	*buf;
     bufref_T	bufref;
-#if defined(FEAT_AUTOCMD) || defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     bufref_T	old_curbuf;
-#endif
     char_u	*free_fname = NULL;
 #ifdef FEAT_BROWSE
     char_u	*browse_file = NULL;
@@ -3676,9 +3817,7 @@ do_ecmd(
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
-#if defined(FEAT_AUTOCMD) || defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     set_bufref(&old_curbuf, curbuf);
-#endif
 
     if (fnum != 0)
     {
@@ -3691,11 +3830,10 @@ do_ecmd(
 #ifdef FEAT_BROWSE
 	if (cmdmod.browse)
 	{
-# ifdef FEAT_AUTOCMD
 	    if (
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		!gui.in_use &&
-#  endif
+# endif
 		    au_has_group((char_u *)"FileExplorer"))
 	    {
 		/* No browsing supported but we do have the file explorer:
@@ -3704,7 +3842,6 @@ do_ecmd(
 		    ffname = (char_u *)".";
 	    }
 	    else
-# endif
 	    {
 		browse_file = do_browse(0, (char_u *)_("Edit File"), ffname,
 						    NULL, NULL, NULL, curbuf);
@@ -3725,10 +3862,8 @@ do_ecmd(
 		fname_case(sfname, 0);   /* set correct case for sfname */
 #endif
 
-#ifdef FEAT_LISTCMDS
 	if ((flags & ECMD_ADDBUF) && (ffname == NULL || *ffname == NUL))
 	    goto theend;
-#endif
 
 	if (ffname == NULL)
 	    other_file = TRUE;
@@ -3778,7 +3913,7 @@ do_ecmd(
      */
     reset_VIsual();
 
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
     if ((command != NULL || newlnum > (linenr_T)0)
 	    && *get_vim_var_str(VV_SWAPCOMMAND) == NUL)
     {
@@ -3810,9 +3945,7 @@ do_ecmd(
      */
     if (other_file)
     {
-#ifdef FEAT_LISTCMDS
 	if (!(flags & ECMD_ADDBUF))
-#endif
 	{
 	    if (!cmdmod.keepalt)
 		curwin->w_alt_fnum = curbuf->b_fnum;
@@ -3824,7 +3957,6 @@ do_ecmd(
 	    buf = buflist_findnr(fnum);
 	else
 	{
-#ifdef FEAT_LISTCMDS
 	    if (flags & ECMD_ADDBUF)
 	    {
 		linenr_T	tlnum = 1L;
@@ -3838,15 +3970,13 @@ do_ecmd(
 		(void)buflist_new(ffname, sfname, tlnum, BLN_LISTED);
 		goto theend;
 	    }
-#endif
 	    buf = buflist_new(ffname, sfname, 0L,
 		    BLN_CURBUF | ((flags & ECMD_SET_HELP) ? 0 : BLN_LISTED));
-#ifdef FEAT_AUTOCMD
+
 	    /* autocommands may change curwin and curbuf */
 	    if (oldwin != NULL)
 		oldwin = curwin;
 	    set_bufref(&old_curbuf, curbuf);
-#endif
 	}
 	if (buf == NULL)
 	    goto theend;
@@ -3861,11 +3991,7 @@ do_ecmd(
 	    (void)buf_check_timestamp(buf, FALSE);
 	    /* Check if autocommands made the buffer invalid or changed the
 	     * current buffer. */
-	    if (!bufref_valid(&bufref)
-#ifdef FEAT_AUTOCMD
-		    || curbuf != old_curbuf.br_buf
-#endif
-		    )
+	    if (!bufref_valid(&bufref) || curbuf != old_curbuf.br_buf)
 		goto theend;
 #ifdef FEAT_EVAL
 	    if (aborting())	    /* autocmds may abort script processing */
@@ -3890,7 +4016,6 @@ do_ecmd(
 	 */
 	if (buf != curbuf)
 	{
-#ifdef FEAT_AUTOCMD
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
 	     * the current buffer.
@@ -3911,13 +4036,13 @@ do_ecmd(
 		delbuf_msg(new_name);	/* frees new_name */
 		goto theend;
 	    }
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	    if (aborting())	    /* autocmds may abort script processing */
 	    {
 		vim_free(new_name);
 		goto theend;
 	    }
-# endif
+#endif
 	    if (buf == curbuf)		/* already in new buffer */
 		auto_buf = TRUE;
 	    else
@@ -3930,7 +4055,6 @@ do_ecmd(
 		++buf->b_locked;
 
 		if (curbuf == old_curbuf.br_buf)
-#endif
 		    buf_copy_options(buf, BCO_ENTER);
 
 		/* Close the link to the current buffer. This will set
@@ -3939,18 +4063,17 @@ do_ecmd(
 		close_buffer(oldwin, curbuf,
 			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);
 
-#ifdef FEAT_AUTOCMD
 		the_curwin->w_closing = FALSE;
 		--buf->b_locked;
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		/* autocmds may abort script processing */
 		if (aborting() && curwin->w_buffer != NULL)
 		{
 		    vim_free(new_name);
 		    goto theend;
 		}
-# endif
+#endif
 		/* Be careful again, like above. */
 		if (!bufref_valid(&au_new_curbuf))
 		{
@@ -3961,15 +4084,14 @@ do_ecmd(
 		if (buf == curbuf)		/* already in new buffer */
 		    auto_buf = TRUE;
 		else
-#endif
 		{
 #ifdef FEAT_SYN_HL
 		    /*
 		     * <VN> We could instead free the synblock
 		     * and re-attach to buffer, perhaps.
 		     */
-		    if (curwin->w_buffer != NULL
-			    && curwin->w_s == &(curwin->w_buffer->b_s))
+		    if (curwin->w_buffer == NULL
+			    || curwin->w_s == &(curwin->w_buffer->b_s))
 			curwin->w_s = &(buf->b_s);
 #endif
 		    curwin->w_buffer = buf;
@@ -3994,13 +4116,10 @@ do_ecmd(
 #ifdef FEAT_SPELL
 		did_get_winopts = TRUE;
 #endif
-
-#ifdef FEAT_AUTOCMD
 	    }
 	    vim_free(new_name);
 	    au_new_curbuf.br_buf = NULL;
 	    au_new_curbuf.br_buf_free_count = 0;
-#endif
 	}
 
 	curwin->w_pcmark.lnum = 1;
@@ -4008,11 +4127,7 @@ do_ecmd(
     }
     else /* !other_file */
     {
-	if (
-#ifdef FEAT_LISTCMDS
-		(flags & ECMD_ADDBUF) ||
-#endif
-		check_fname() == FAIL)
+	if ((flags & ECMD_ADDBUF) || check_fname() == FAIL)
 	    goto theend;
 
 	oldbuf = (flags & ECMD_OLDBUF);
@@ -4023,9 +4138,7 @@ do_ecmd(
     ++RedrawingDisabled;
     did_inc_redrawing_disabled = TRUE;
 
-#ifdef FEAT_AUTOCMD
     buf = curbuf;
-#endif
     if ((flags & ECMD_SET_HELP) || keep_help_flag)
     {
 	prepare_help_buffer();
@@ -4038,21 +4151,19 @@ do_ecmd(
 	    set_buflisted(TRUE);
     }
 
-#ifdef FEAT_AUTOCMD
     /* If autocommands change buffers under our fingers, forget about
      * editing the file. */
     if (buf != curbuf)
 	goto theend;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     if (aborting())	    /* autocmds may abort script processing */
 	goto theend;
-# endif
+#endif
 
     /* Since we are starting to edit a file, consider the filetype to be
      * unset.  Helps for when an autocommand changes files and expects syntax
      * highlighting to work in the other file. */
     did_filetype = FALSE;
-#endif
 
 /*
  * other_file	oldbuf
@@ -4069,14 +4180,13 @@ do_ecmd(
 	    newlnum = curwin->w_cursor.lnum;
 	    solcol = curwin->w_cursor.col;
 	}
-#ifdef FEAT_AUTOCMD
 	buf = curbuf;
 	if (buf->b_fname != NULL)
 	    new_name = vim_strsave(buf->b_fname);
 	else
 	    new_name = NULL;
 	set_bufref(&bufref, buf);
-#endif
+
 	if (p_ur < 0 || curbuf->b_ml.ml_line_count <= p_ur)
 	{
 	    /* Save all the text, so that the reload can be undone.
@@ -4085,9 +4195,7 @@ do_ecmd(
 	    if (u_savecommon(0, curbuf->b_ml.ml_line_count + 1, 0, TRUE)
 								     == FAIL)
 	    {
-#ifdef FEAT_AUTOCMD
 		vim_free(new_name);
-#endif
 		goto theend;
 	    }
 	    u_unchanged(curbuf);
@@ -4098,7 +4206,7 @@ do_ecmd(
 	}
 	else
 	    buf_freeall(curbuf, 0);   /* free all things for buffer */
-#ifdef FEAT_AUTOCMD
+
 	/* If autocommands deleted the buffer we were going to re-edit, give
 	 * up and jump to the end. */
 	if (!bufref_valid(&bufref))
@@ -4113,10 +4221,9 @@ do_ecmd(
 	 * the autocommands changed the buffer... */
 	if (buf != curbuf)
 	    goto theend;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	if (aborting())	    /* autocmds may abort script processing */
 	    goto theend;
-# endif
 #endif
 	buf_clear_file(curbuf);
 	curbuf->b_op_start.lnum = 0;	/* clear '[ and '] marks */
@@ -4134,9 +4241,7 @@ do_ecmd(
      */
     check_arg_idx(curwin);
 
-#ifdef FEAT_AUTOCMD
     if (!auto_buf)
-#endif
     {
 	/*
 	 * Set cursor and init window before reading the file and executing
@@ -4148,7 +4253,6 @@ do_ecmd(
 #ifdef FEAT_FOLDING
 	/* It's possible that all lines in the buffer changed.  Need to update
 	 * automatic folding for all windows where it's used. */
-# ifdef FEAT_WINDOWS
 	{
 	    win_T	    *win;
 	    tabpage_T	    *tp;
@@ -4157,13 +4261,10 @@ do_ecmd(
 		if (win->w_buffer == curbuf)
 		    foldUpdateAll(win);
 	}
-# else
-	foldUpdateAll(curwin);
-# endif
 #endif
 
 	/* Change directories when the 'acd' option is set. */
-	DO_AUTOCHDIR
+	DO_AUTOCHDIR;
 
 	/*
 	 * Careful: open_buffer() and apply_autocmds() may change the current
@@ -4181,7 +4282,7 @@ do_ecmd(
 	    /*
 	     * Open the buffer and read the file.
 	     */
-#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	    if (should_abort(open_buffer(FALSE, eap, readfile_flags)))
 		retval = FAIL;
 #else
@@ -4194,7 +4295,6 @@ do_ecmd(
 	    handle_swap_exists(&old_curbuf);
 #endif
 	}
-#ifdef FEAT_AUTOCMD
 	else
 	{
 	    /* Read the modelines, but only to set window-local options.  Any
@@ -4208,14 +4308,20 @@ do_ecmd(
 								    &retval);
 	}
 	check_arg_idx(curwin);
-#endif
 
 	/* If autocommands change the cursor position or topline, we should
-	 * keep it.  Also when it moves within a line. */
+	 * keep it.  Also when it moves within a line. But not when it moves
+	 * to the first non-blank. */
 	if (!EQUAL_POS(curwin->w_cursor, orig_pos))
 	{
-	    newlnum = curwin->w_cursor.lnum;
-	    newcol = curwin->w_cursor.col;
+	    char_u *text = ml_get_curline();
+
+	    if (curwin->w_cursor.lnum != orig_pos.lnum
+		    || curwin->w_cursor.col != (int)(skipwhite(text) - text))
+	    {
+		newlnum = curwin->w_cursor.lnum;
+		newcol = curwin->w_cursor.col;
+	    }
 	}
 	if (curwin->w_topline == topline)
 	    topline = 0;
@@ -4279,20 +4385,14 @@ do_ecmd(
 	}
     }
 
-#ifdef FEAT_WINDOWS
     /* Check if cursors in other windows on the same buffer are still valid */
     check_lnums(FALSE);
-#endif
 
     /*
      * Did not read the file, need to show some info about the file.
      * Do this after setting the cursor.
      */
-    if (oldbuf
-#ifdef FEAT_AUTOCMD
-		&& !auto_buf
-#endif
-			    )
+    if (oldbuf && !auto_buf)
     {
 	int	msg_scroll_save = msg_scroll;
 
@@ -4332,9 +4432,7 @@ do_ecmd(
 	if (topline == 0 && command == NULL)
 	    p_so = 999;			/* force cursor halfway the window */
 	update_topline();
-#ifdef FEAT_SCROLLBIND
 	curwin->w_scbind_pos = curwin->w_topline;
-#endif
 	p_so = n;
 	redraw_curbuf_later(NOT_VALID);	/* redraw this buffer later */
     }
@@ -4342,8 +4440,22 @@ do_ecmd(
     if (p_im)
 	need_start_insertmode = TRUE;
 
-    /* Change directories when the 'acd' option is set. */
-    DO_AUTOCHDIR
+#ifdef FEAT_AUTOCHDIR
+    /* Change directories when the 'acd' option is set and we aren't already in
+     * that directory (should already be done above). Expect getcwd() to be
+     * faster than calling shorten_fnames() unnecessarily. */
+    if (p_acd && curbuf->b_ffname != NULL)
+    {
+	char_u	curdir[MAXPATHL];
+	char_u	filedir[MAXPATHL];
+
+	vim_strncpy(filedir, curbuf->b_ffname, MAXPATHL - 1);
+	*gettail_sep(filedir) = NUL;
+	if (mch_dirname(curdir, MAXPATHL) != FAIL
+		&& vim_fnamecmp(curdir, filedir) != 0)
+	    do_autochdir();
+    }
+#endif
 
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
     if (curbuf->b_ffname != NULL)
@@ -4362,7 +4474,7 @@ do_ecmd(
 theend:
     if (did_inc_redrawing_disabled)
 	--RedrawingDisabled;
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
     if (did_set_swapcommand)
 	set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
 #endif
@@ -4373,7 +4485,6 @@ theend:
     return retval;
 }
 
-#ifdef FEAT_AUTOCMD
     static void
 delbuf_msg(char_u *name)
 {
@@ -4383,7 +4494,6 @@ delbuf_msg(char_u *name)
     au_new_curbuf.br_buf = NULL;
     au_new_curbuf.br_buf_free_count = 0;
 }
-#endif
 
 static int append_indent = 0;	    /* autoindent for first line */
 
@@ -4578,10 +4688,8 @@ ex_z(exarg_T *eap)
      * 'scroll' */
     if (eap->forceit)
 	bigness = curwin->w_height;
-#ifdef FEAT_WINDOWS
     else if (!ONE_WINDOW)
 	bigness = curwin->w_height - 3;
-#endif
     else
 	bigness = curwin->w_p_scr * 2;
     if (bigness < 1)
@@ -5090,13 +5198,13 @@ do_sub(exarg_T *eap)
      */
     line2 = eap->line2;
     for (lnum = eap->line1; lnum <= line2 && !(got_quit
-#if defined(FEAT_EVAL) && defined(FEAT_AUTOCMD)
+#if defined(FEAT_EVAL)
 		|| aborting()
 #endif
 		); ++lnum)
     {
 	nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-							    (colnr_T)0, NULL);
+						       (colnr_T)0, NULL, NULL);
 	if (nmatch)
 	{
 	    colnr_T	copycol;
@@ -5187,8 +5295,7 @@ do_sub(exarg_T *eap)
 		    lnum += regmatch.startpos[0].lnum;
 		    sub_firstlnum += regmatch.startpos[0].lnum;
 		    nmatch -= regmatch.startpos[0].lnum;
-		    vim_free(sub_firstline);
-		    sub_firstline = NULL;
+		    VIM_CLEAR(sub_firstline);
 		}
 
 		if (sub_firstline == NULL)
@@ -5275,10 +5382,8 @@ do_sub(exarg_T *eap)
 		    setmouse();		/* disable mouse in xterm */
 #endif
 		    curwin->w_cursor.col = regmatch.startpos[0].col;
-#ifdef FEAT_CURSORBIND
 		    if (curwin->w_p_crb)
 			do_check_cursorbind();
-#endif
 
 		    /* When 'cpoptions' contains "u" don't sync undo when
 		     * asking for confirmation. */
@@ -5350,10 +5455,7 @@ do_sub(exarg_T *eap)
 						     sub_firstline + copycol);
 
 				    if (new_line == NULL)
-				    {
-					vim_free(orig_line);
-					orig_line = NULL;
-				    }
+					VIM_CLEAR(orig_line);
 				    else
 				    {
 					/* Position the cursor relative to the
@@ -5695,7 +5797,7 @@ skip:
 			|| nmatch_tl > 0
 			|| (nmatch = vim_regexec_multi(&regmatch, curwin,
 							curbuf, sub_firstlnum,
-							 matchcol, NULL)) == 0
+						    matchcol, NULL, NULL)) == 0
 			|| regmatch.startpos[0].lnum > 0)
 		{
 		    if (new_start != NULL)
@@ -5760,7 +5862,7 @@ skip:
 		    }
 		    if (nmatch == -1 && !lastone)
 			nmatch = vim_regexec_multi(&regmatch, curwin, curbuf,
-					       sub_firstlnum, matchcol, NULL);
+					  sub_firstlnum, matchcol, NULL, NULL);
 
 		    /*
 		     * 5. break if there isn't another match in this line
@@ -5782,8 +5884,7 @@ skip:
 	    if (did_sub)
 		++sub_nlines;
 	    vim_free(new_start);	/* for when substitute was cancelled */
-	    vim_free(sub_firstline);	/* free the copy of the original line */
-	    sub_firstline = NULL;
+	    VIM_CLEAR(sub_firstline);	/* free the copy of the original line */
 	}
 
 	line_breakcheck();
@@ -5873,23 +5974,29 @@ do_sub_msg(
 		|| count_only)
 	    && messaging())
     {
+	char	*msg_single;
+	char	*msg_plural;
+
 	if (got_int)
 	    STRCPY(msg_buf, _("(Interrupted) "));
 	else
 	    *msg_buf = NUL;
-	if (sub_nsubs == 1)
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    "%s", count_only ? _("1 match") : _("1 substitution"));
-	else
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    count_only ? _("%ld matches") : _("%ld substitutions"),
-								   sub_nsubs);
-	if (sub_nlines == 1)
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    "%s", _(" on 1 line"));
-	else
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    _(" on %ld lines"), (long)sub_nlines);
+
+	msg_single = count_only
+		    ? NGETTEXT("%ld match on %ld line",
+					  "%ld matches on %ld line", sub_nsubs)
+		    : NGETTEXT("%ld substitution on %ld line",
+				   "%ld substitutions on %ld line", sub_nsubs);
+	msg_plural = count_only
+		    ? NGETTEXT("%ld match on %ld lines",
+					 "%ld matches on %ld lines", sub_nsubs)
+		    : NGETTEXT("%ld substitution on %ld lines",
+				  "%ld substitutions on %ld lines", sub_nsubs);
+
+	vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
+				 NGETTEXT(msg_single, msg_plural, sub_nlines),
+				 sub_nsubs, (long)sub_nlines);
+
 	if (msg(msg_buf))
 	    /* save message to display it after redraw */
 	    set_keep_msg(msg_buf, 0);
@@ -6012,7 +6119,7 @@ ex_global(exarg_T *eap)
     {
 	lnum = curwin->w_cursor.lnum;
 	match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-							     (colnr_T)0, NULL);
+						       (colnr_T)0, NULL, NULL);
 	if ((type == 'g' && match) || (type == 'v' && !match))
 	    global_exe_one(cmd, lnum);
     }
@@ -6025,7 +6132,7 @@ ex_global(exarg_T *eap)
 	{
 	    /* a match on this line? */
 	    match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-							     (colnr_T)0, NULL);
+						       (colnr_T)0, NULL, NULL);
 	    if ((type == 'g' && match) || (type == 'v' && !match))
 	    {
 		ml_setmarked(lnum);
@@ -6147,7 +6254,7 @@ free_old_sub(void)
 }
 #endif
 
-#if (defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Set up for a tagpreview.
  * Return TRUE when it was created.
@@ -6210,9 +6317,7 @@ ex_help(exarg_T *eap)
     FILE	*helpfd;	/* file descriptor of help file */
     int		n;
     int		i;
-#ifdef FEAT_WINDOWS
     win_T	*wp;
-#endif
     int		num_matches;
     char_u	**matches;
     char_u	*p;
@@ -6314,23 +6419,17 @@ ex_help(exarg_T *eap)
      * Re-use an existing help window or open a new one.
      * Always open a new one for ":tab help".
      */
-    if (!curwin->w_buffer->b_help
-#ifdef FEAT_WINDOWS
-	    || cmdmod.tab != 0
-#endif
-	    )
+    if (!bt_help(curwin->w_buffer) || cmdmod.tab != 0)
     {
-#ifdef FEAT_WINDOWS
 	if (cmdmod.tab != 0)
 	    wp = NULL;
 	else
 	    FOR_ALL_WINDOWS(wp)
-		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		if (bt_help(wp->w_buffer))
 		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	    win_enter(wp, TRUE);
 	else
-#endif
 	{
 	    /*
 	     * There is no help window yet.
@@ -6343,7 +6442,6 @@ ex_help(exarg_T *eap)
 	    }
 	    fclose(helpfd);
 
-#ifdef FEAT_WINDOWS
 	    /* Split off help window; put it at far top if no position
 	     * specified, the current window is vertically split and
 	     * narrow. */
@@ -6353,16 +6451,9 @@ ex_help(exarg_T *eap)
 		n |= WSP_TOP;
 	    if (win_split(0, n) == FAIL)
 		goto erret;
-#else
-	    /* use current window */
-	    if (!can_abandon(curbuf, FALSE))
-		goto erret;
-#endif
 
-#ifdef FEAT_WINDOWS
 	    if (curwin->w_height < p_hh)
 		win_setheight((int)p_hh);
-#endif
 
 	    /*
 	     * Open help file (do_ecmd() will set b_help flag, readfile() will
@@ -6372,12 +6463,7 @@ ex_help(exarg_T *eap)
 	    alt_fnum = curbuf->b_fnum;
 	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_LASTL,
 			  ECMD_HIDE + ECMD_SET_HELP,
-#ifdef FEAT_WINDOWS
-			  NULL  /* buffer is still open, don't store info */
-#else
-			  curwin
-#endif
-		    );
+			  NULL);  /* buffer is still open, don't store info */
 	    if (!cmdmod.keepalt)
 		curwin->w_alt_fnum = alt_fnum;
 	    empty_fnum = curbuf->b_fnum;
@@ -6420,18 +6506,16 @@ erret:
     void
 ex_helpclose(exarg_T *eap UNUSED)
 {
-#if defined(FEAT_WINDOWS)
     win_T *win;
 
     FOR_ALL_WINDOWS(win)
     {
-	if (win->w_buffer->b_help)
+	if (bt_help(win->w_buffer))
 	{
 	    win_close(win, FALSE);
 	    return;
 	}
     }
-#endif
 }
 
 #if defined(FEAT_MULTI_LANG) || defined(PROTO)
@@ -6540,6 +6624,7 @@ find_help_tags(
 			       "/*", "/\\*", "\"*", "**",
 			       "cpo-*", "/\\(\\)", "/\\%(\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
 			       "[count]", "[quotex]",
 			       "[range]", ":[range]",
@@ -6550,26 +6635,42 @@ find_help_tags(
 			       "/star", "/\\\\star", "quotestar", "starstar",
 			       "cpo-star", "/\\\\(\\\\)", "/\\\\%(\\\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]",
 			       "\\[range]", ":\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
 			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
 			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
+    static char *(expr_table[]) = {"!=?", "!~?", "<=?", "<?", "==?", "=~?",
+				">=?", ">?", "is?", "isnot?"};
     int flags;
 
     d = IObuff;		    /* assume IObuff is long enough! */
 
-    /*
-     * Recognize a few exceptions to the rule.	Some strings that contain '*'
-     * with "star".  Otherwise '*' is recognized as a wildcard.
-     */
-    for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
-	if (STRCMP(arg, mtable[i]) == 0)
-	{
-	    STRCPY(d, rtable[i]);
-	    break;
-	}
+    if (STRNICMP(arg, "expr-", 5) == 0)
+    {
+	// When the string starting with "expr-" and containing '?' and matches
+	// the table, it is taken literally.  Otherwise '?' is recognized as a
+	// wildcard.
+	for (i = (int)(sizeof(expr_table) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg + 5, expr_table[i]) == 0)
+	    {
+		STRCPY(d, arg);
+		break;
+	    }
+    }
+    else
+    {
+	// Recognize a few exceptions to the rule.  Some strings that contain
+	// '*' with "star".  Otherwise '*' is recognized as a wildcard.
+	for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg, mtable[i]) == 0)
+	    {
+		STRCPY(d, rtable[i]);
+		break;
+	    }
+    }
 
     if (i < 0)	/* no match in table */
     {
@@ -6832,8 +6933,13 @@ fix_help_buffer(void)
     char_u	*rt;
     int		mustfree;
 
-    /* set filetype to "help". */
-    set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
+    /* Set filetype to "help" if still needed. */
+    if (STRCMP(curbuf->b_p_ft, "help") != 0)
+    {
+	++curbuf_lock;
+	set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
+	--curbuf_lock;
+    }
 
 #ifdef FEAT_SYN_HL
     if (!syntax_present(curwin))
@@ -6902,7 +7008,7 @@ fix_help_buffer(void)
 		copy_option_part(&p, NameBuff, MAXPATHL, ",");
 		mustfree = FALSE;
 		rt = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
-		if (fullpathcmp(rt, NameBuff, FALSE) != FPC_SAME)
+		if (rt != NULL && fullpathcmp(rt, NameBuff, FALSE) != FPC_SAME)
 		{
 		    int		fcount;
 		    char_u	**fnames;
@@ -6926,13 +7032,10 @@ fix_help_buffer(void)
 			    && fcount > 0)
 		    {
 #ifdef FEAT_MULTI_LANG
-			int	i1;
-			int	i2;
-			char_u	*f1;
-			char_u	*f2;
-			char_u	*t1;
-			char_u	*e1;
-			char_u	*e2;
+			int	i1, i2;
+			char_u	*f1, *f2;
+			char_u	*t1, *t2;
+			char_u	*e1, *e2;
 
 			/* If foo.abx is found use it instead of foo.txt in
 			 * the same directory. */
@@ -6947,29 +7050,25 @@ fix_help_buffer(void)
 				f1 = fnames[i1];
 				f2 = fnames[i2];
 				t1 = gettail(f1);
-				if (fnamencmp(f1, f2, t1 - f1) != 0)
-				    continue;
+				t2 = gettail(f2);
 				e1 = vim_strrchr(t1, '.');
-				e2 = vim_strrchr(gettail(f2), '.');
+				e2 = vim_strrchr(t2, '.');
 				if (e1 == NULL || e2 == NULL)
 				    continue;
 				if (fnamecmp(e1, ".txt") != 0
 				    && fnamecmp(e1, fname + 4) != 0)
 				{
 				    /* Not .txt and not .abx, remove it. */
-				    vim_free(fnames[i1]);
-				    fnames[i1] = NULL;
+				    VIM_CLEAR(fnames[i1]);
 				    continue;
 				}
-				if (fnamencmp(f1, f2, e1 - f1) != 0)
+				if (e1 - f1 != e2 - f2
+					    || fnamencmp(f1, f2, e1 - f1) != 0)
 				    continue;
 				if (fnamecmp(e1, ".txt") == 0
 				    && fnamecmp(e2, fname + 4) == 0)
-				{
 				    /* use .abx instead of .txt */
-				    vim_free(fnames[i1]);
-				    fnames[i1] = NULL;
-				}
+				    VIM_CLEAR(fnames[i1]);
 			    }
 			}
 #endif
@@ -7504,7 +7603,6 @@ struct sign
 static sign_T	*first_sign = NULL;
 static int	next_sign_typenr = 1;
 
-static int sign_cmd_idx(char_u *begin_cmd, char_u *end_cmd);
 static void sign_list_defined(sign_T *sp);
 static void sign_undefine(sign_T *sp, sign_T *sp_prev);
 
@@ -7556,7 +7654,7 @@ ex_sign(exarg_T *eap)
     int		idx;
     sign_T	*sp;
     sign_T	*sp_prev;
-    buf_T	*buf;
+    buf_T	*buf = NULL;
 
     /* Parse the subcommand. */
     p = skiptowhite(arg);
@@ -8326,7 +8424,6 @@ ex_smile(exarg_T *eap UNUSED)
     msg_clr_eos();
 }
 
-#if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)
 /*
  * ":drop"
  * Opens the first argument in a window.  When there are two or more arguments
@@ -8338,9 +8435,7 @@ ex_drop(exarg_T *eap)
     int		split = FALSE;
     win_T	*wp;
     buf_T	*buf;
-# ifdef FEAT_WINDOWS
     tabpage_T	*tp;
-# endif
 
     /*
      * Check if the first argument is already being edited in a window.  If
@@ -8360,7 +8455,6 @@ ex_drop(exarg_T *eap)
     if (ARGCOUNT == 0)
 	return;
 
-# ifdef FEAT_WINDOWS
     if (cmdmod.tab)
     {
 	/* ":tab drop file ...": open a tab for each argument that isn't
@@ -8369,7 +8463,6 @@ ex_drop(exarg_T *eap)
 	ex_all(eap);
     }
     else
-# endif
     {
 	/* ":drop file ...": Edit the first argument.  Jump to an existing
 	 * window if possible, edit in current window if the current buffer
@@ -8380,9 +8473,7 @@ ex_drop(exarg_T *eap)
 	{
 	    if (wp->w_buffer == buf)
 	    {
-# ifdef FEAT_WINDOWS
 		goto_tabpage_win(tp, wp);
-# endif
 		curwin->w_arg_idx = 0;
 		return;
 	    }
@@ -8394,18 +8485,11 @@ ex_drop(exarg_T *eap)
 	 * Skip the check if the 'hidden' option is set, as in this case the
 	 * buffer won't be lost.
 	 */
-	if (!P_HID(curbuf))
+	if (!buf_hide(curbuf))
 	{
-# ifdef FEAT_WINDOWS
 	    ++emsg_off;
-# endif
 	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
-# ifdef FEAT_WINDOWS
 	    --emsg_off;
-# else
-	    if (split)
-		return;
-# endif
 	}
 
 	/* Fake a ":sfirst" or ":first" command edit the first argument. */
@@ -8419,7 +8503,6 @@ ex_drop(exarg_T *eap)
 	ex_rewind(eap);
     }
 }
-#endif
 
 /*
  * Skip over the pattern argument of ":vimgrep /pat/[g][j]".

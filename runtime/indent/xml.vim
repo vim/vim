@@ -1,6 +1,10 @@
 " Language:	xml
-" Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	2017 Jun 13
+" Repository:   https://github.com/chrisbra/vim-xml-ftplugin
+" Maintainer:	Christian Brabandt <cb@256bit.org>
+" Previous Maintainer:	Johannes Zellner <johannes@zellner.org>
+" Last Change:	20181022 - Do not overwrite indentkeys setting
+"                          https://github.com/chrisbra/vim-xml-ftplugin/issues/1
+"             	20180724 - Correctly indent xml comments https://github.com/vim/vim/issues/3200
 " Notes:	1) does not indent pure non-xml code (e.g. embedded scripts)
 "		2) will be confused by unbalanced tags in comments
 "		or CDATA sections.
@@ -17,7 +21,7 @@ set cpo&vim
 
 " [-- local settings (must come before aborting the script) --]
 setlocal indentexpr=XmlIndentGet(v:lnum,1)
-setlocal indentkeys=o,O,*<Return>,<>>,<<>,/,{,}
+setlocal indentkeys=o,O,*<Return>,<>>,<<>,/,{,},!^F
 
 if !exists('b:xml_indent_open')
     let b:xml_indent_open = '.\{-}<\a'
@@ -55,9 +59,6 @@ fun! <SID>XmlIndentSynCheck(lnum)
 	if '' != syn1 && syn1 !~ 'xml' && '' != syn2 && syn2 !~ 'xml'
 	    " don't indent pure non-xml code
 	    return 0
-	elseif syn1 =~ '^xmlComment' && syn2 =~ '^xmlComment'
-	    " indent comments specially
-	    return -1
 	endif
     endif
     return 1

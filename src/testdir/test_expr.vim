@@ -131,6 +131,9 @@ func Test_option_value()
 endfunc
 
 function Test_printf_misc()
+  call assert_equal('123', printf('123'))
+  call assert_fails("call printf('123', 3)", "E767:")
+
   call assert_equal('123', printf('%d', 123))
   call assert_equal('123', printf('%i', 123))
   call assert_equal('123', printf('%D', 123))

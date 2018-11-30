@@ -8,8 +8,8 @@
  */
 
 /* for debugging */
-/* #define CHECK(c, s)	if (c) EMSG(s) */
-#define CHECK(c, s)
+/* #define CHECK(c, s)	do { if (c) EMSG(s); } while (0) */
+#define CHECK(c, s)	do { /**/ } while (0)
 
 /*
  * memline.c: Contains the functions for appending, deleting and changing the
@@ -235,10 +235,8 @@ typedef enum {
 } upd_block0_T;
 
 #ifdef FEAT_CRYPT
-static void ml_set_mfp_crypt(buf_T *buf);
 static void ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p);
 #endif
-static int ml_check_b0_id(ZERO_BL *b0p);
 static void ml_upd_block0(buf_T *buf, upd_block0_T what);
 static void set_b0_fname(ZERO_BL *, buf_T *buf);
 static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
@@ -262,9 +260,6 @@ static int fnamecmp_ino(char_u *, char_u *, long);
 #endif
 static void long_to_char(long, char_u *);
 static long char_to_long(char_u *);
-#if defined(UNIX) || defined(WIN3264)
-static char_u *make_percent_swname(char_u *dir, char_u *name);
-#endif
 #ifdef FEAT_CRYPT
 static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading);
 #endif
@@ -344,7 +339,7 @@ ml_open(buf_T *buf)
     b0p->b0_magic_int = (int)B0_MAGIC_INT;
     b0p->b0_magic_short = (short)B0_MAGIC_SHORT;
     b0p->b0_magic_char = B0_MAGIC_CHAR;
-    STRNCPY(b0p->b0_version, "VIM ", 4);
+    mch_memmove(b0p->b0_version, "VIM ", 4);
     STRNCPY(b0p->b0_version + 4, Version, 6);
     long_to_char((long)mfp->mf_page_size, b0p->b0_page_size);
 
@@ -535,8 +530,7 @@ ml_set_crypt_key(
 	idx = 0;		/* start with first index in block 1 */
 	error = 0;
 	buf->b_ml.ml_stack_top = 0;
-	vim_free(buf->b_ml.ml_stack);
-	buf->b_ml.ml_stack = NULL;
+	VIM_CLEAR(buf->b_ml.ml_stack);
 	buf->b_ml.ml_stack_size = 0;	/* no stack yet */
 
 	for ( ; !got_int; line_breakcheck())
@@ -832,10 +826,13 @@ ml_open_file(buf_T *buf)
  */
     void
 check_need_swap(
-    int	    newfile)		/* reading file into new buffer */
+    int	    newfile)		// reading file into new buffer
 {
+    int old_msg_silent = msg_silent; // might be reset by an E325 message
+
     if (curbuf->b_may_swap && (!curbuf->b_p_ro || !newfile))
 	ml_open_file(curbuf);
+    msg_silent = old_msg_silent;
 }
 
 /*
@@ -852,8 +849,7 @@ ml_close(buf_T *buf, int del_file)
 	vim_free(buf->b_ml.ml_line_ptr);
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
-    vim_free(buf->b_ml.ml_chunksize);
-    buf->b_ml.ml_chunksize = NULL;
+    VIM_CLEAR(buf->b_ml.ml_chunksize);
 #endif
     buf->b_ml.ml_mfp = NULL;
 
@@ -1139,7 +1135,7 @@ ml_recover(void)
     attr = HL_ATTR(HLF_E);
 
     /*
-     * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.
+     * If the file name ends in ".s[a-w][a-z]" we assume this is the swap file.
      * Otherwise a search is done to find the swap file(s).
      */
     fname = curbuf->b_fname;
@@ -1153,7 +1149,8 @@ ml_recover(void)
 	    STRNICMP(fname + len - 4, ".s", 2)
 #endif
 						== 0
-		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
+		&& vim_strchr((char_u *)"abcdefghijklmnopqrstuvw",
+					   TOLOWER_ASC(fname[len - 2])) != NULL
 		&& ASCII_ISALPHA(fname[len - 1]))
     {
 	directly = TRUE;
@@ -1733,13 +1730,11 @@ theend:
     }
     if (serious_error && called_from_main)
 	ml_close(curbuf, TRUE);
-#ifdef FEAT_AUTOCMD
     else
     {
 	apply_autocmds(EVENT_BUFREADPOST, NULL, curbuf->b_fname, FALSE, curbuf);
 	apply_autocmds(EVENT_BUFWINENTER, NULL, curbuf->b_fname, FALSE, curbuf);
     }
-#endif
     return;
 }
 
@@ -2010,18 +2005,18 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
+#if defined(UNIX) || defined(WIN3264) || defined(PROTO)
 /*
+ * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
  * signs, to dir. An unnamed buffer is handled as "" (<currentdir>/"")
  */
-    static char_u *
+    char_u *
 make_percent_swname(char_u *dir, char_u *name)
 {
-    char_u *d, *s, *f;
+    char_u *d = NULL, *s, *f;
 
-    f = fix_fname(name != NULL ? name : (char_u *) "");
-    d = NULL;
+    f = fix_fname(name != NULL ? name : (char_u *)"");
     if (f != NULL)
     {
 	s = alloc((unsigned)(STRLEN(f) + 1));
@@ -2042,6 +2037,56 @@ make_percent_swname(char_u *dir, char_u *name)
 
 #if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 static int process_still_running;
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return information found in swapfile "fname" in dictionary "d".
+ * This is used by the swapinfo() function.
+ */
+    void
+get_b0_dict(char_u *fname, dict_T *d)
+{
+    int fd;
+    struct block0 b0;
+
+    if ((fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0)) >= 0)
+    {
+	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
+	{
+	    if (ml_check_b0_id(&b0) == FAIL)
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"Not a swap file"));
+	    else if (b0_magic_wrong(&b0))
+		dict_add_string(d, "error",
+			       vim_strsave((char_u *)"Magic number mismatch"));
+	    else
+	    {
+		/* we have swap information */
+		dict_add_string(d, "version", vim_strnsave(b0.b0_version, 10));
+		dict_add_string(d, "user",
+				     vim_strnsave(b0.b0_uname, B0_UNAME_SIZE));
+		dict_add_string(d, "host",
+				     vim_strnsave(b0.b0_hname, B0_HNAME_SIZE));
+		dict_add_string(d, "fname",
+				 vim_strnsave(b0.b0_fname, B0_FNAME_SIZE_ORG));
+
+		dict_add_number(d, "pid", char_to_long(b0.b0_pid));
+		dict_add_number(d, "mtime", char_to_long(b0.b0_mtime));
+		dict_add_number(d, "dirty", b0.b0_dirty ? 1 : 0);
+# ifdef CHECK_INODE
+		dict_add_number(d, "inode", char_to_long(b0.b0_ino));
+# endif
+	    }
+	}
+	else
+	    dict_add_string(d, "error",
+				    vim_strsave((char_u *)"Cannot read file"));
+	close(fd);
+    }
+    else
+	dict_add_string(d, "error", vim_strsave((char_u *)"Cannot open file"));
+}
 #endif
 
 /*
@@ -2132,7 +2177,7 @@ swapfile_info(char_u *fname)
 		    /* EMX kill() not working correctly, it seems */
 		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
 		    {
-			MSG_PUTS(_(" (still running)"));
+			MSG_PUTS(_(" (STILL RUNNING)"));
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 			process_still_running = TRUE;
 # endif
@@ -2544,8 +2589,7 @@ ml_append(
     return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
 }
 
-#if defined(FEAT_SPELL) || (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
-	|| defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -3112,7 +3156,8 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
 }
 
 /*
- * Delete line 'lnum' in the current buffer.
+ * Delete line "lnum" in the current buffer.
+ * When "message" is TRUE may give a "No lines in buffer" message.
  *
  * Check: The caller of this function should probably also call
  * deleted_lines() after this.
@@ -4023,8 +4068,6 @@ get_file_in_dir(
     return retval;
 }
 
-static void attention_message(buf_T *buf, char_u *fname);
-
 /*
  * Print the ATTENTION message: info about an existing swap file.
  */
@@ -4046,7 +4089,11 @@ attention_message(
     MSG_PUTS(_("While opening file \""));
     msg_outtrans(buf->b_fname);
     MSG_PUTS("\"\n");
-    if (mch_stat((char *)buf->b_fname, &st) != -1)
+    if (mch_stat((char *)buf->b_fname, &st) == -1)
+    {
+	MSG_PUTS(_("      CANNOT BE FOUND"));
+    }
+    else
     {
 	MSG_PUTS(_("             dated: "));
 	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
@@ -4072,9 +4119,7 @@ attention_message(
     --no_wait_return;
 }
 
-#ifdef FEAT_AUTOCMD
-static int do_swapexists(buf_T *buf, char_u *fname);
-
+#if defined(FEAT_EVAL)
 /*
  * Trigger the SwapExists autocommands.
  * Returns a value for equivalent to do_dialog() (see below):
@@ -4196,8 +4241,7 @@ findswapname(
 	    break;
 	if ((n = (int)STRLEN(fname)) == 0)	/* safety check */
 	{
-	    vim_free(fname);
-	    fname = NULL;
+	    VIM_CLEAR(fname);
 	    break;
 	}
 #if defined(UNIX)
@@ -4452,7 +4496,7 @@ findswapname(
 #if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_EVAL)
 		    /*
 		     * If there is an SwapExists autocommand and we can handle
 		     * the response, trigger it.  It may return 0 to ask the
@@ -4466,19 +4510,23 @@ findswapname(
 #endif
 		    {
 #ifdef FEAT_GUI
-			/* If we are supposed to start the GUI but it wasn't
-			 * completely started yet, start it now.  This makes
-			 * the messages displayed in the Vim window when
-			 * loading a session from the .gvimrc file. */
+			// If we are supposed to start the GUI but it wasn't
+			// completely started yet, start it now.  This makes
+			// the messages displayed in the Vim window when
+			// loading a session from the .gvimrc file.
 			if (gui.starting && !gui.in_use)
 			    gui_start();
 #endif
-			/* Show info about the existing swap file. */
+			// Show info about the existing swap file.
 			attention_message(buf, fname);
 
-			/* We don't want a 'q' typed at the more-prompt
-			 * interrupt loading a file. */
+			// We don't want a 'q' typed at the more-prompt
+			// interrupt loading a file.
 			got_int = FALSE;
+
+			// If vimrc has "simalt ~x" we don't want it to
+			// interfere with the prompt here.
+			flush_buffers(FLUSH_TYPEAHEAD);
 		    }
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -4577,8 +4625,7 @@ findswapname(
 	    if (fname[n - 2] == 'a')    /* ".saa": tried enough, give up */
 	    {
 		EMSG(_("E326: Too many swap files found"));
-		vim_free(fname);
-		fname = NULL;
+		VIM_CLEAR(fname);
 		break;
 	    }
 	    --fname[n - 2];		/* ".svz", ".suz", etc. */
@@ -4653,8 +4700,8 @@ b0_magic_wrong(ZERO_BL *b0p)
  *		== 0   == 0	OK	FAIL	TRUE
  *
  * current file doesn't exist, inode for swap unknown, both file names not
- * available -> probably same file
- *		== 0   == 0    FAIL	FAIL	FALSE
+ * available -> compare file names
+ *		== 0   == 0    FAIL	FAIL	fname_c != fname_s
  *
  * Note that when the ino_t is 64 bits, only the last 32 will be used.  This
  * can't be changed without making the block 0 incompatible with 32 bit
@@ -4698,14 +4745,15 @@ fnamecmp_ino(
     retval_c = vim_FullName(fname_c, buf_c, MAXPATHL, TRUE);
     retval_s = vim_FullName(fname_s, buf_s, MAXPATHL, TRUE);
     if (retval_c == OK && retval_s == OK)
-	return (STRCMP(buf_c, buf_s) != 0);
+	return STRCMP(buf_c, buf_s) != 0;
 
     /*
      * Can't compare inodes or file names, guess that the files are different,
-     * unless both appear not to exist at all.
+     * unless both appear not to exist at all, then compare with the file name
+     * in the swap file.
      */
     if (ino_s == 0 && ino_c == 0 && retval_c == FAIL && retval_s == FAIL)
-	return FALSE;
+	return STRCMP(fname_c, fname_s) != 0;
     return TRUE;
 }
 #endif /* CHECK_INODE */
@@ -4981,8 +5029,8 @@ ml_updatechunk(
 	    curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
 	}
     }
-    else if (line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines
-		 && curix < buf->b_ml.ml_usedchunks - 1)
+    else if (curix < buf->b_ml.ml_usedchunks - 1
+	      && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)
     {
 	/* Adjust cached curix & curline */
 	curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
@@ -5276,7 +5324,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	/* Don't count the last line break if 'noeol' and ('bin' or
 	 * 'nofixeol'). */
 	if ((!buf->b_p_fixeol || buf->b_p_bin) && !buf->b_p_eol
-					   && buf->b_ml.ml_line_count == lnum)
+					   && lnum > buf->b_ml.ml_line_count)
 	    size -= ffdos + 1;
     }
 

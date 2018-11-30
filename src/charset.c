@@ -9,10 +9,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_LINEBREAK
-static int win_chartabsize(win_T *wp, char_u *p, colnr_T col);
-#endif
-
 #ifdef FEAT_MBYTE
 # if defined(HAVE_WCHAR_H)
 #  include <wchar.h>	    /* for towupper() and towlower() */
@@ -812,7 +808,16 @@ vim_strnsize(char_u *s, int len)
  * Also see getvcol() below.
  */
 
-#define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
+#ifdef FEAT_VARTABS
+# define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
+    if (*(p) == TAB && (!(wp)->w_p_list || lcs_tab1)) \
+    { \
+	return tabstop_padding(col, (buf)->b_p_ts, (buf)->b_p_vts_array); \
+    } \
+    else \
+	return ptr2cells(p);
+#else
+# define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
     if (*(p) == TAB && (!(wp)->w_p_list || lcs_tab1)) \
     { \
 	int ts; \
@@ -821,6 +826,7 @@ vim_strnsize(char_u *s, int len)
     } \
     else \
 	return ptr2cells(p);
+#endif
 
     int
 chartabsize(char_u *p, colnr_T col)
@@ -1092,10 +1098,7 @@ win_lbr_chartabsize(
 	    && VIM_ISBREAK(c)
 	    && !VIM_ISBREAK((int)s[1])
 	    && wp->w_p_wrap
-# ifdef FEAT_WINDOWS
-	    && wp->w_width != 0
-# endif
-       )
+	    && wp->w_width != 0)
     {
 	/*
 	 * Count all characters from first non-blank after a blank up to next
@@ -1103,7 +1106,7 @@ win_lbr_chartabsize(
 	 */
 	numberextra = win_col_off(wp);
 	col2 = col;
-	colmax = (colnr_T)(W_WIDTH(wp) - numberextra - col_adj);
+	colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
 	if (col >= colmax)
 	{
 	    colmax += col_adj;
@@ -1154,10 +1157,10 @@ win_lbr_chartabsize(
 
 	numberextra = numberwidth;
 	col += numberextra + mb_added;
-	if (col >= (colnr_T)W_WIDTH(wp))
+	if (col >= (colnr_T)wp->w_width)
 	{
-	    col -= W_WIDTH(wp);
-	    numberextra = W_WIDTH(wp) - (numberextra - win_col_off2(wp));
+	    col -= wp->w_width;
+	    numberextra = wp->w_width - (numberextra - win_col_off2(wp));
 	    if (col >= numberextra && numberextra > 0)
 		col %= numberextra;
 	    if (*p_sbr != NUL)
@@ -1173,18 +1176,18 @@ win_lbr_chartabsize(
 
 	    numberwidth -= win_col_off2(wp);
 	}
-	if (col == 0 || col + size + sbrlen > (colnr_T)W_WIDTH(wp))
+	if (col == 0 || col + size + sbrlen > (colnr_T)wp->w_width)
 	{
 	    added = 0;
 	    if (*p_sbr != NUL)
 	    {
-		if (size + sbrlen + numberwidth > (colnr_T)W_WIDTH(wp))
+		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
 		    /* calculate effective window width */
-		    int width = (colnr_T)W_WIDTH(wp) - sbrlen - numberwidth;
-		    int prev_width = col ? ((colnr_T)W_WIDTH(wp) - (sbrlen + col)) : 0;
+		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
+		    int prev_width = col ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
 		    if (width == 0)
-			width = (colnr_T)W_WIDTH(wp);
+			width = (colnr_T)wp->w_width;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
 		    if ((size - prev_width) % width)
 			/* wrapped, add another length of 'sbr' */
@@ -1224,8 +1227,13 @@ win_nolbr_chartabsize(
 
     if (*s == TAB && (!wp->w_p_list || lcs_tab1))
     {
+# ifdef FEAT_VARTABS
+	return tabstop_padding(col, wp->w_buffer->b_p_ts,
+				    wp->w_buffer->b_p_vts_array);
+# else
 	n = wp->w_buffer->b_p_ts;
 	return (int)(n - (col % n));
+# endif
     }
     n = ptr2cells(s);
     /* Add one cell for a double-width character in the last column of the
@@ -1249,11 +1257,9 @@ in_win_border(win_T *wp, colnr_T vcol)
     int		width1;		/* width of first line (after line number) */
     int		width2;		/* width of further lines */
 
-# ifdef FEAT_WINDOWS
     if (wp->w_width == 0)	/* there is no border */
 	return FALSE;
-# endif
-    width1 = W_WIDTH(wp) - win_col_off(wp);
+    width1 = wp->w_width - win_col_off(wp);
     if ((int)vcol < width1 - 1)
 	return FALSE;
     if ((int)vcol == width1 - 1)
@@ -1287,6 +1293,9 @@ getvcol(
     char_u	*line;		/* start of the line */
     int		incr;
     int		head;
+#ifdef FEAT_VARTABS
+    int		*vts = wp->w_buffer->b_p_vts_array;
+#endif
     int		ts = wp->w_buffer->b_p_ts;
     int		c;
 
@@ -1337,7 +1346,11 @@ getvcol(
 	    }
 	    /* A tab gets expanded, depending on the current column */
 	    if (c == TAB)
+#ifdef FEAT_VARTABS
+		incr = tabstop_padding(vcol, ts, vts);
+#else
 		incr = ts - (vcol % ts);
+#endif
 	    else
 	    {
 #ifdef FEAT_MBYTE
@@ -1422,7 +1435,12 @@ getvcol_nolist(pos_T *posp)
     colnr_T	vcol;
 
     curwin->w_p_list = FALSE;
-    getvcol(curwin, posp, NULL, &vcol, NULL);
+#ifdef FEAT_VIRTUALEDIT
+    if (posp->coladd)
+	getvvcol(curwin, posp, NULL, &vcol, NULL);
+    else
+#endif
+	getvcol(curwin, posp, NULL, &vcol, NULL);
     curwin->w_p_list = list_save;
     return vcol;
 }
@@ -1533,6 +1551,22 @@ skipwhite(char_u *q)
     while (VIM_ISWHITE(*p)) /* skip to next non-white */
 	++p;
     return p;
+}
+
+/*
+ * getwhitecols: return the number of whitespace
+ * columns (bytes) at the start of a given line
+ */
+    int
+getwhitecols_curline()
+{
+    return getwhitecols(ml_get_curline());
+}
+
+    int
+getwhitecols(char_u *p)
+{
+    return skipwhite(p) - p;
 }
 
 /*
@@ -1776,7 +1810,6 @@ skiptowhite(char_u *p)
     return p;
 }
 
-#if defined(FEAT_LISTCMDS) || defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * skiptowhite_esc: Like skiptowhite(), but also skip escaped chars
  */
@@ -1791,7 +1824,6 @@ skiptowhite_esc(char_u *p)
     }
     return p;
 }
-#endif
 
 /*
  * Getdigits: Get a number from a string and skip over it.
@@ -1841,7 +1873,7 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_OCT recognize octal numbers
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
- * If maxlen > 0, check at a maximum maxlen chars
+ * If maxlen > 0, check at a maximum maxlen chars.
  */
     void
 vim_str2nr(
@@ -1889,17 +1921,14 @@ vim_str2nr(
 	    if (what & STR2NR_OCT)
 	    {
 		/* Don't interpret "0", "08" or "0129" as octal. */
-		for (n = 1; VIM_ISDIGIT(ptr[n]); ++n)
+		for (n = 1; n != maxlen && VIM_ISDIGIT(ptr[n]); ++n)
 		{
 		    if (ptr[n] > '7')
 		    {
 			pre = 0;	/* can't be octal */
 			break;
 		    }
-		    if (ptr[n] >= '0')
-			pre = '0';	/* assume octal */
-		    if (n == maxlen)
-			break;
+		    pre = '0';	/* assume octal */
 		}
 	    }
 	}
@@ -1917,8 +1946,8 @@ vim_str2nr(
 	while ('0' <= *ptr && *ptr <= '1')
 	{
 	    /* avoid ubsan error for overflow */
-	    if (un < UVARNUM_MAX / 2)
-		un = 2 * un + (unsigned long)(*ptr - '0');
+	    if (un <= UVARNUM_MAX / 2)
+		un = 2 * un + (uvarnumber_T)(*ptr - '0');
 	    else
 		un = UVARNUM_MAX;
 	    ++ptr;
@@ -1932,7 +1961,7 @@ vim_str2nr(
 	while ('0' <= *ptr && *ptr <= '7')
 	{
 	    /* avoid ubsan error for overflow */
-	    if (un < UVARNUM_MAX / 8)
+	    if (un <= UVARNUM_MAX / 8)
 		un = 8 * un + (uvarnumber_T)(*ptr - '0');
 	    else
 		un = UVARNUM_MAX;
@@ -1949,7 +1978,7 @@ vim_str2nr(
 	while (vim_isxdigit(*ptr))
 	{
 	    /* avoid ubsan error for overflow */
-	    if (un < UVARNUM_MAX / 16)
+	    if (un <= UVARNUM_MAX / 16)
 		un = 16 * un + (uvarnumber_T)hex2nr(*ptr);
 	    else
 		un = UVARNUM_MAX;
@@ -1963,9 +1992,12 @@ vim_str2nr(
 	/* decimal */
 	while (VIM_ISDIGIT(*ptr))
 	{
+	    uvarnumber_T    digit = (uvarnumber_T)(*ptr - '0');
+
 	    /* avoid ubsan error for overflow */
-	    if (un < UVARNUM_MAX / 10)
-		un = 10 * un + (uvarnumber_T)(*ptr - '0');
+	    if (un < UVARNUM_MAX / 10
+		    || (un == UVARNUM_MAX / 10 && digit <= UVARNUM_MAX % 10))
+		un = 10 * un + digit;
 	    else
 		un = UVARNUM_MAX;
 	    ++ptr;
@@ -2013,8 +2045,7 @@ hex2nr(int c)
     return c - '0';
 }
 
-#if defined(FEAT_TERMRESPONSE) \
-	|| (defined(FEAT_GUI_GTK) && defined(FEAT_WINDOWS)) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Convert two hex characters to a byte.
  * Return -1 if one of the characters is not hex.
