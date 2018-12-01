@@ -5920,7 +5920,7 @@ insert_sign(
 
 /*
  * Returns TRUE if 'sign' is in 'group'.
- * A sign can either be in the default group (sign->group == NULL)
+ * A sign can either be in the global group (sign->group == NULL)
  * or in a named group.
  */
     int

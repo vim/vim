@@ -437,7 +437,7 @@ func Test_sign_group()
   call assert_fails("call sign_place(5, [], 'sign1', 'test_signs.vim',
 	      \ {'lnum' : 30})", 'E730:')
 
-  " place three signs with the same identifier. One in the default group and
+  " place three signs with the same identifier. One in the global group and
   " others in the named groups
   call assert_equal(5, sign_place(5, '', 'sign1', 'test_signs.vim',
 	      \ {'lnum' : 10}))
@@ -502,7 +502,7 @@ func Test_sign_group()
   call assert_fails("call sign_getplaced(bnum, {'group' : []})",
 	      \ 'E730:')
 
-  " Clear the sign in default group
+  " Clear the sign in global group
   call sign_unplace('', {'id' : 5, 'buffer' : bnum})
   let s = sign_getplaced(bnum, {'group' : '*'})
   call assert_equal([
@@ -534,7 +534,7 @@ func Test_sign_group()
   " Error case
   call assert_fails("call sign_unplace([])", 'E474:')
 
-  " Place a sign in the default group and try to delete it using a group
+  " Place a sign in the global group and try to delete it using a group
   call assert_equal(5, sign_place(5, '', 'sign1', bnum, {'lnum' : 10}))
   call assert_equal(-1, sign_unplace('g1', {'id' : 5}))
 

@@ -53,11 +53,11 @@ Example to set the color: >
 	:highlight SignColumn guibg=darkgrey
 <
 							*sign-group*
-Each sign can be assigned to either a default group or a named group. When
+Each sign can be assigned to either a global group or a named group. When
 placing a sign, if a group name is not supplied, then the sign is placed in
-the default group. Otherwise the sign is placed in the named group. The sign
+the global group. Otherwise the sign is placed in the named group. The sign
 identifier is unique within a group. The sign group allows Vim plugins to
-avoid interfering with other plugins using signs.
+use unique signs without interfering with other plugins using signs.
 
 							*sign-priority*
 Each placed sign is assigned a priority value. When multiple signs are placed
@@ -164,10 +164,11 @@ PLACING SIGNS						*:sign-place* *E158*
 		place a sign in a named group, use "group={group}" to specify
 		a sign group.
 
-		By default, the sign is assigned a priority of 10. To assign a
-		different priority value, use "priority={prio}" to specify a
-		value. The priority is used to determine the highlight group
-		used when multiple signs are placed on the same line.
+		By default, the sign is assigned a default priority of 10. To
+		assign a different priority value, use "priority={prio}" to
+		specify a value. The priority is used to determine the
+		highlight group used when multiple signs are placed on the
+		same line.
 
 		Examples: >
 			:sign place 5 line=3 name=sign1 file=a.py
