@@ -196,20 +196,11 @@ pum_display(
 	    return;
 
 #if defined(FEAT_QUICKFIX)
-	// If there is a preview window at the above avoid drawing over it.
-	// Do keep at least 10 entries.
-	if (pvwin != NULL && pum_row < above_row && pum_height > 10)
+	// If there is a preview window above avoid drawing over it.
+	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
 	{
-	    if (pum_win_row - above_row < 10)
-	    {
-		pum_row = pum_win_row - 10;
-		pum_height = 10;
-	    }
-	    else
-	    {
-		pum_row = above_row;
-		pum_height = pum_win_row - above_row;
-	    }
+	    pum_row = above_row;
+	    pum_height = pum_win_row - above_row;
 	}
 #endif
 
