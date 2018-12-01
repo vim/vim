@@ -6268,7 +6268,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	    if (!sign_in_group(p, sign_group))
 		continue;
 	    if (p->group != NULL)
-		snprintf(group, BUFSIZ, "  group=%s", p->group);
+		vim_snprintf(group, BUFSIZ, "  group=%s", p->group);
 	    else
 		group[0] = '\0';
 	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s "
