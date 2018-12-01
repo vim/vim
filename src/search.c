@@ -1385,7 +1385,7 @@ do_search(
 	    char_u	*trunc;
 
 	    if (*searchstr == NUL)
-		p = spats[last_idx].pat;
+		p = spats[0].pat;
 	    else
 		p = searchstr;
 	    msgbuf = alloc((unsigned)(STRLEN(p) + 40));
