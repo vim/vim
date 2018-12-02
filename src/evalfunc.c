@@ -4433,19 +4433,12 @@ f_get(typval_T *argvars, typval_T *rettv)
 get_buffer_signs(buf_T *buf, list_T *l)
 {
     signlist_T	*sign;
+    dict_T	*d;
 
-    for (sign = buf->b_signlist; sign; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
     {
-	dict_T *d = dict_alloc();
-
-	if (d != NULL)
-	{
-	    dict_add_number(d, "id", sign->id);
-	    dict_add_number(d, "lnum", sign->lnum);
-	    dict_add_string(d, "name", sign_typenr2name(sign->typenr));
-
+	if ((d = sign_get_info(sign)) != NULL)
 	    list_append_dict(l, d);
-	}
     }
 }
 #endif

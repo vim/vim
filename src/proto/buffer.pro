@@ -76,6 +76,7 @@ linenr_T buf_delsign(buf_T *buf, int id, char_u *group);
 int buf_findsign(buf_T *buf, int id, char_u *group);
 #ifdef FEAT_SIGNS
 int sign_in_group(signlist_T *sign, char_u *group);
+dict_T *sign_get_info(signlist_T *sign);
 signlist_T *buf_getsign_with_id(buf_T *buf, int id, char_u *group);
 #endif
 int buf_findsign_id(buf_T *buf, linenr_T lnum);

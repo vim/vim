@@ -5933,6 +5933,26 @@ sign_in_group(signlist_T *sign, char_u *group)
 }
 
 /*
+ * Get information about a sign in a Dict
+ */
+    dict_T *
+sign_get_info(signlist_T *sign)
+{
+    dict_T	*d;
+
+    if ((d = dict_alloc()) == NULL)
+	return NULL;
+    dict_add_number(d, "id", sign->id);
+    dict_add_string(d, "group", (sign->group == NULL) ?
+						(char_u *)"" : sign->group);
+    dict_add_number(d, "lnum", sign->lnum);
+    dict_add_string(d, "name", sign_typenr2name(sign->typenr));
+    dict_add_number(d, "priority", sign->priority);
+
+    return d;
+}
+
+/*
  * Add the sign into the signlist. Find the right spot to do it though.
  */
     void
@@ -5948,7 +5968,7 @@ buf_addsign(
     signlist_T	*prev;		/* the previous sign */
 
     prev = NULL;
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
     {
 	if (lnum == sign->lnum && id == sign->id &&
 		sign_in_group(sign, group))
@@ -5999,7 +6019,7 @@ buf_change_sign_type(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
     {
 	if (sign->id == markId && sign_in_group(sign, group))
 	{
@@ -6019,7 +6039,7 @@ buf_getsigntype(
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->lnum == lnum
 		&& (type == SIGN_ANY
 # ifdef FEAT_SIGN_ICONS
@@ -6093,7 +6113,7 @@ buf_findsign(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->id == id && sign_in_group(sign, group))
 	    return sign->lnum;
 
@@ -6110,7 +6130,7 @@ buf_getsign_at_line(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->lnum == lnum)
 	    return sign;
 
@@ -6128,7 +6148,7 @@ buf_getsign_with_id(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->id == id && sign_in_group(sign, group))
 	    return sign;
 
@@ -6161,7 +6181,7 @@ buf_findsigntype_id(
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->lnum == lnum && sign->typenr == typenr)
 	    return sign->id;
 
@@ -6179,7 +6199,7 @@ buf_signcount(buf_T *buf, linenr_T lnum)
     signlist_T	*sign;		/* a sign in the signlist */
     int		count = 0;
 
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
 	if (sign->lnum == lnum)
 	    if (sign_get_image(sign->typenr) != NULL)
 		count++;
@@ -6245,7 +6265,7 @@ buf_delete_all_signs(void)
 sign_list_placed(buf_T *rbuf, char_u *sign_group)
 {
     buf_T	*buf;
-    signlist_T	*p;
+    signlist_T	*sign;
     char	lbuf[BUFSIZ];
     char	group[BUFSIZ];
 
@@ -6263,18 +6283,18 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
 	    msg_putchar('\n');
 	}
-	for (p = buf->b_signlist; p != NULL && !got_int; p = p->next)
+	FOR_ALL_SIGNS_IN_BUF(buf)
 	{
-	    if (!sign_in_group(p, sign_group))
+	    if (!sign_in_group(sign, sign_group))
 		continue;
-	    if (p->group != NULL)
-		vim_snprintf(group, BUFSIZ, "  group=%s", p->group);
+	    if (sign->group != NULL)
+		vim_snprintf(group, BUFSIZ, "  group=%s", sign->group);
 	    else
 		group[0] = '\0';
 	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s "
 							"priority=%d"),
-			   (long)p->lnum, p->id, group,
-			   sign_typenr2name(p->typenr), p->priority);
+			   (long)sign->lnum, sign->id, group,
+			   sign_typenr2name(sign->typenr), sign->priority);
 	    MSG_PUTS(lbuf);
 	    msg_putchar('\n');
 	}
@@ -6296,7 +6316,7 @@ sign_mark_adjust(
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
-    for (sign = curbuf->b_signlist; sign != NULL; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(curbuf)
     {
 	if (sign->lnum >= line1 && sign->lnum <= line2)
 	{

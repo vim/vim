@@ -8323,22 +8323,6 @@ sign_getlist(char_u *name, list_T *retlist)
     }
 }
 
-    static void
-sign_get_info(signlist_T *sign, list_T *retlist)
-{
-    dict_T	*d;
-
-    if ((d = dict_alloc()) == NULL)
-	return;
-    list_append_dict(retlist, d);
-    dict_add_number(d, "id", sign->id);
-    dict_add_string(d, "group", (sign->group == NULL) ?
-						(char_u *)"" : sign->group);
-    dict_add_number(d, "lnum", sign->lnum);
-    dict_add_string(d, "name", sign_typenr2name(sign->typenr));
-    dict_add_number(d, "priority", sign->priority);
-}
-
 /*
  * Return information about all the signs placed in a buffer
  */
@@ -8353,6 +8337,7 @@ sign_get_placed_in_buf(
     dict_T	*d;
     list_T	*l;
     signlist_T	*sign;
+    dict_T	*sdict;
 
     if ((d = dict_alloc()) == NULL)
 	return;
@@ -8364,7 +8349,7 @@ sign_get_placed_in_buf(
 	return;
     dict_add_list(d, "signs", l);
 
-    for (sign = buf->b_signlist; sign != NULL && !got_int; sign = sign->next)
+    FOR_ALL_SIGNS_IN_BUF(buf)
     {
 	if (!sign_in_group(sign, sign_group))
 	    continue;
@@ -8372,7 +8357,10 @@ sign_get_placed_in_buf(
 		(sign_id == 0 && lnum == sign->lnum) ||
 		(lnum == 0 && sign_id == sign->id) ||
 		(lnum == sign->lnum && sign_id == sign->id))
-	    sign_get_info(sign, l);
+	{
+	    if ((sdict = sign_get_info(sign)) != NULL)
+		list_append_dict(l, sdict);
+	}
     }
 }
 
