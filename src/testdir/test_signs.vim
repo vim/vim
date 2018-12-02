@@ -333,33 +333,35 @@ func Test_sign_funcs()
   call assert_fails('call sign_getdefined({})', 'E731:')
 
   " Tests for sign_place()
-  sview test_signs.vim
-  call assert_equal(10, sign_place(10, '', 'sign1', 'test_signs.vim',
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+
+  call assert_equal(10, sign_place(10, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 20}))
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}], sign_getplaced('test_signs.vim'))
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}],
-	      \ sign_getplaced('test_signs.vim', {'lnum' : 20}))
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
+	      \ 'priority' : 10}]}], sign_getplaced('Xsign'))
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
 	      \ 'priority' : 10}]}],
-	      \ sign_getplaced('test_signs.vim', {'id' : 10}))
+	      \ sign_getplaced('Xsign', {'lnum' : 20}))
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
+	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
+	      \ sign_getplaced('Xsign', {'id' : 10}))
 
   " Tests for invalid arguments to sign_place()
   call assert_fails('call sign_place([], "", "mySign", 1)', 'E745:')
   call assert_fails('call sign_place(5, "", "mySign", -1)', 'E158:')
-  call assert_fails('call sign_place(-1, "", "sign1", "test_signs.vim", [])',
+  call assert_fails('call sign_place(-1, "", "sign1", "Xsign", [])',
 	      \ 'E474:')
-  call assert_fails('call sign_place(-1, "", "sign1", "test_signs.vim",
+  call assert_fails('call sign_place(-1, "", "sign1", "Xsign",
 	      \ {"lnum" : 30})', 'E474:')
-  call assert_fails('call sign_place(10, "", "xsign1x", "test_signs.vim",
+  call assert_fails('call sign_place(10, "", "xsign1x", "Xsign",
 	      \ {"lnum" : 30})', 'E155:')
-  call assert_fails('call sign_place(10, "", "", "test_signs.vim",
+  call assert_fails('call sign_place(10, "", "", "Xsign",
 	      \ {"lnum" : 30})', 'E155:')
-  call assert_fails('call sign_place(10, "", [], "test_signs.vim",
+  call assert_fails('call sign_place(10, "", [], "Xsign",
 	      \ {"lnum" : 30})', 'E730:')
   call assert_fails('call sign_place(5, "", "sign1", "abcxyz.xxx",
 	      \ {"lnum" : 10})', 'E158:')
@@ -367,40 +369,40 @@ func Test_sign_funcs()
 	      \ 'E158:')
   call assert_fails('call sign_place(5, "", "sign1", [], {"lnum" : 10})',
 	      \ 'E158:')
-  call assert_fails('call sign_place(21, "", "sign1", "test_signs.vim",
+  call assert_fails('call sign_place(21, "", "sign1", "Xsign",
 	      \ {"lnum" : -1})', 'E885:')
-  call assert_fails('call sign_place(22, "", "sign1", "test_signs.vim",
+  call assert_fails('call sign_place(22, "", "sign1", "Xsign",
 	      \ {"lnum" : 0})', 'E885:')
 
   " Tests for sign_getplaced()
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
 	      \ 'priority' : 10}]}],
-	      \ sign_getplaced(bufnr('test_signs.vim')))
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' :
+	      \ sign_getplaced(bufnr('Xsign')))
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
 	      \ 'priority' : 10}]}],
 	      \ sign_getplaced())
   call assert_fails("call sign_getplaced('dummy.sign')", 'E158:')
   call assert_fails('call sign_getplaced("")', 'E158:')
   call assert_fails('call sign_getplaced(-1)', 'E158:')
-  call assert_fails('call sign_getplaced("test_signs.vim", [])', 'E715:')
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' : []}],
-	      \ sign_getplaced('test_signs.vim', {'lnum' : 1000000}))
-  call assert_fails("call sign_getplaced('test_signs.vim', {'lnum' : []})",
+  call assert_fails('call sign_getplaced("Xsign", [])', 'E715:')
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' : []}],
+	      \ sign_getplaced('Xsign', {'lnum' : 1000000}))
+  call assert_fails("call sign_getplaced('Xsign', {'lnum' : []})",
 	      \ 'E745:')
-  call assert_equal([{'bufnr' : bufnr('.'), 'signs' : []}],
-	      \ sign_getplaced('test_signs.vim', {'id' : 44}))
-  call assert_fails("call sign_getplaced('test_signs.vim', {'id' : []})",
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' : []}],
+	      \ sign_getplaced('Xsign', {'id' : 44}))
+  call assert_fails("call sign_getplaced('Xsign', {'id' : []})",
 	      \ 'E745:')
 
   " Tests for sign_unplace()
-  call sign_place(20, '', 'sign2', 'test_signs.vim', {"lnum" : 30})
+  call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
   call assert_equal(0, sign_unplace('',
-	      \ {'id' : 20, 'buffer' : 'test_signs.vim'}))
+	      \ {'id' : 20, 'buffer' : 'Xsign'}))
   call assert_equal(-1, sign_unplace('',
-	      \ {'id' : 30, 'buffer' : 'test_signs.vim'}))
-  call sign_place(20, '', 'sign2', 'test_signs.vim', {"lnum" : 30})
+	      \ {'id' : 30, 'buffer' : 'Xsign'}))
+  call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
   call assert_fails("call sign_unplace('',
 	      \ {'id' : 20, 'buffer' : 'buffer.c'})", 'E158:')
   call assert_fails("call sign_unplace('',
@@ -415,6 +417,7 @@ func Test_sign_funcs()
   call assert_fails('call sign_undefine("none")', 'E155:')
   call assert_fails('call sign_undefine([])', 'E730:')
 
+  call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
   enew | only
@@ -427,25 +430,27 @@ func Test_sign_group()
   call sign_unplace('*')
   call sign_undefine()
 
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
   call assert_equal(0, sign_define("sign1", attr))
 
-  sview test_signs.vim
+  edit Xsign
   let bnum = bufnr('%')
 
   " Error case
-  call assert_fails("call sign_place(5, [], 'sign1', 'test_signs.vim',
+  call assert_fails("call sign_place(5, [], 'sign1', 'Xsign',
 	      \ {'lnum' : 30})", 'E730:')
 
   " place three signs with the same identifier. One in the global group and
   " others in the named groups
-  call assert_equal(5, sign_place(5, '', 'sign1', 'test_signs.vim',
+  call assert_equal(5, sign_place(5, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 10}))
   call assert_equal(5, sign_place(5, 'g1', 'sign1', bnum, {'lnum' : 20}))
   call assert_equal(5, sign_place(5, 'g2', 'sign1', bnum, {'lnum' : 30}))
 
   " Test for sign_getplaced() with group
-  let s = sign_getplaced('test_signs.vim')
+  let s = sign_getplaced('Xsign')
   call assert_equal(1, len(s[0].signs))
   call assert_equal(s[0].signs[0].group, '')
   let s = sign_getplaced(bnum, {'group' : 'g2'})
@@ -513,7 +518,7 @@ func Test_sign_group()
 	      \ s[0].signs)
 
   " Clear the sign in one of the groups
-  call sign_unplace('g1', {'buffer' : 'test_signs.vim'})
+  call sign_unplace('g1', {'buffer' : 'Xsign'})
   let s = sign_getplaced(bnum, {'group' : '*'})
   call assert_equal([
 	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
@@ -562,127 +567,127 @@ func Test_sign_group()
   call sign_unplace('*')
 
   " Test for :sign command and groups
-  sign place 5 line=10 name=sign1 file=test_signs.vim
-  sign place 5 group=g1 line=10 name=sign1 file=test_signs.vim
-  sign place 5 group=g2 line=10 name=sign1 file=test_signs.vim
+  sign place 5 line=10 name=sign1 file=Xsign
+  sign place 5 group=g1 line=10 name=sign1 file=Xsign
+  sign place 5 group=g2 line=10 name=sign1 file=Xsign
 
   " Test for :sign place group={group} file={fname}
-  let a = execute('sign place file=test_signs.vim')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  name=sign1 priority=10\n", a)
+  let a = execute('sign place file=Xsign')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=g2 file=test_signs.vim')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
+  let a = execute('sign place group=g2 file=Xsign')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=* file=test_signs.vim')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  let a = execute('sign place group=* file=Xsign')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g2  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=xyz file=test_signs.vim')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n", a)
+  let a = execute('sign place group=xyz file=Xsign')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
   call sign_unplace('*')
 
   " Test for :sign place group={group} buffer={nr}
-  let bnum = bufnr('test_signs.vim')
+  let bnum = bufnr('Xsign')
   exe 'sign place 5 line=10 name=sign1 buffer=' . bnum
   exe 'sign place 5 group=g1 line=11 name=sign1 buffer=' . bnum
   exe 'sign place 5 group=g2 line=12 name=sign1 buffer=' . bnum
 
   let a = execute('sign place buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=10  id=5  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
 
   let a = execute('sign place group=g2 buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
   let a = execute('sign place group=* buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
   let a = execute('sign place group=xyz buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
   " Test for :sign unplace
-  sign unplace 5 group=g2 file=test_signs.vim
+  sign unplace 5 group=g2 file=Xsign
   call assert_equal([], sign_getplaced(bnum, {'group' : 'g2'})[0].signs)
 
   exe 'sign unplace 5 group=g1 buffer=' . bnum
   call assert_equal([], sign_getplaced(bnum, {'group' : 'g1'})[0].signs)
 
-  sign unplace 5 group=xy file=test_signs.vim
+  sign unplace 5 group=xy file=Xsign
   call assert_equal(1, len(sign_getplaced(bnum, {'group' : '*'})[0].signs))
 
   " Test for removing all the signs. Place the signs again for this test
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
-  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
-  sign place 6 line=20 name=sign1 file=test_signs.vim
-  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
-  sign place 6 group=g2 line=22 name=sign1 file=test_signs.vim
-  sign unplace 5 group=* file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  sign place 5 group=g2 line=12 name=sign1 file=Xsign
+  sign place 6 line=20 name=sign1 file=Xsign
+  sign place 6 group=g1 line=21 name=sign1 file=Xsign
+  sign place 6 group=g2 line=22 name=sign1 file=Xsign
+  sign unplace 5 group=* file=Xsign
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=20  id=6  name=sign1 priority=10\n" .
 	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from the global group
-  sign unplace * file=test_signs.vim
+  sign unplace * file=Xsign
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from a particular group
-  sign place 5 line=10 name=sign1 file=test_signs.vim
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
-  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
-  sign unplace * group=g1 file=test_signs.vim
+  sign place 5 line=10 name=sign1 file=Xsign
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  sign place 5 group=g2 line=12 name=sign1 file=Xsign
+  sign unplace * group=g1 file=Xsign
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n" .
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from all the groups in a file
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
-  sign place 6 line=20 name=sign1 file=test_signs.vim
-  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
-  sign unplace * group=* file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  sign place 6 line=20 name=sign1 file=Xsign
+  sign place 6 group=g1 line=21 name=sign1 file=Xsign
+  sign unplace * group=* file=Xsign
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
 
   " Remove a particular sign id in a group from all the files
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
   sign unplace 5 group=g1
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
 
   " Remove a particular sign id in all the groups from all the files
-  sign place 5 line=10 name=sign1 file=test_signs.vim
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
-  sign place 5 group=g2 line=12 name=sign1 file=test_signs.vim
-  sign place 6 line=20 name=sign1 file=test_signs.vim
-  sign place 6 group=g1 line=21 name=sign1 file=test_signs.vim
-  sign place 6 group=g2 line=22 name=sign1 file=test_signs.vim
+  sign place 5 line=10 name=sign1 file=Xsign
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  sign place 5 group=g2 line=12 name=sign1 file=Xsign
+  sign place 6 line=20 name=sign1 file=Xsign
+  sign place 6 group=g1 line=21 name=sign1 file=Xsign
+  sign place 6 group=g2 line=22 name=sign1 file=Xsign
   sign unplace 5 group=*
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=20  id=6  name=sign1 priority=10\n" .
 	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from all the groups in all the files
-  sign place 5 line=10 name=sign1 file=test_signs.vim
-  sign place 5 group=g1 line=11 name=sign1 file=test_signs.vim
+  sign place 5 line=10 name=sign1 file=Xsign
+  sign place 5 group=g1 line=11 name=sign1 file=Xsign
   sign unplace * group=*
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
@@ -690,6 +695,7 @@ func Test_sign_group()
   " Error cases
   call assert_fails("exe 'sign place 3 group= name=sign1 buffer=' . bnum", 'E474:')
 
+  call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
   enew  | only
@@ -704,23 +710,26 @@ func Test_sign_id_autogen()
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
   call assert_equal(0, sign_define("sign1", attr))
 
-  sview test_signs.vim
-  call assert_equal(1, sign_place(0, '', 'sign1', 'test_signs.vim',
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+
+  call assert_equal(1, sign_place(0, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 10}))
-  call assert_equal(2, sign_place(2, '', 'sign1', 'test_signs.vim',
+  call assert_equal(2, sign_place(2, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 12}))
-  call assert_equal(3, sign_place(0, '', 'sign1', 'test_signs.vim',
+  call assert_equal(3, sign_place(0, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 14}))
-  call sign_unplace('', {'buffer' : 'test_signs.vim', 'id' : 2})
-  call assert_equal(2, sign_place(0, '', 'sign1', 'test_signs.vim',
+  call sign_unplace('', {'buffer' : 'Xsign', 'id' : 2})
+  call assert_equal(2, sign_place(0, '', 'sign1', 'Xsign',
 	      \ {'lnum' : 12}))
 
-  call assert_equal(1, sign_place(0, 'g1', 'sign1', 'test_signs.vim',
+  call assert_equal(1, sign_place(0, 'g1', 'sign1', 'Xsign',
 	      \ {'lnum' : 11}))
   call assert_equal(0, sign_unplace('g1', {'id' : 1}))
   call assert_equal(10,
-	      \ sign_getplaced('test_signs.vim', {'id' : 1})[0].signs[0].lnum)
+	      \ sign_getplaced('Xsign', {'id' : 1})[0].signs[0].lnum)
 
+  call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
   enew  | only
@@ -738,13 +747,15 @@ func Test_sign_priority()
   call sign_define("sign3", attr)
 
   " Place three signs with different priority in the same line
-  sview test_signs.vim
-  call sign_place(1, 'g1', 'sign1', 'test_signs.vim',
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+
+  call sign_place(1, 'g1', 'sign1', 'Xsign',
 	      \ {'lnum' : 11, 'priority' : 50})
-  call sign_place(2, 'g2', 'sign2', 'test_signs.vim',
+  call sign_place(2, 'g2', 'sign2', 'Xsign',
 	      \ {'lnum' : 11, 'priority' : 100})
-  call sign_place(3, '', 'sign3', 'test_signs.vim', {'lnum' : 11})
-  let s = sign_getplaced('test_signs.vim', {'group' : '*'})
+  call sign_place(3, '', 'sign3', 'Xsign', {'lnum' : 11})
+  let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
 	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 11, 'group' : 'g2',
 	      \ 'priority' : 100},
@@ -755,25 +766,26 @@ func Test_sign_priority()
 	      \ s[0].signs)
 
   " Error case
-  call assert_fails("call sign_place(1, 'g1', 'sign1', 'test_signs.vim',
+  call assert_fails("call sign_place(1, 'g1', 'sign1', 'Xsign',
 	      \ [])", 'E715:')
   call sign_unplace('*')
 
   " Tests for the :sign place command with priority
-  sign place 5 line=10 name=sign1 priority=30 file=test_signs.vim
-  sign place 5 group=g1 line=10 name=sign1 priority=20 file=test_signs.vim
-  sign place 5 group=g2 line=10 name=sign1 priority=25 file=test_signs.vim
+  sign place 5 line=10 name=sign1 priority=30 file=Xsign
+  sign place 5 group=g1 line=10 name=sign1 priority=20 file=Xsign
+  sign place 5 group=g2 line=10 name=sign1 priority=25 file=Xsign
   let a = execute('sign place group=*')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=30\n" .
 	      \ "    line=10  id=5  group=g2  name=sign1 priority=25\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=20\n", a)
 
   " Test for :sign place group={group}
   let a = execute('sign place group=g1')
-  call assert_equal("\n--- Signs ---\nSigns for test_signs.vim:\n" .
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=20\n", a)
 
+  call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
   enew  | only
