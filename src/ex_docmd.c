@@ -5940,6 +5940,7 @@ static struct
     {ADDR_BUFFERS, "buffers"},
     {ADDR_WINDOWS, "windows"},
     {ADDR_QUICKFIX, "quickfix"},
+    {ADDR_OTHER, "other"},
     {-1, NULL}
 };
 #endif
