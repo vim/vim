@@ -4717,6 +4717,8 @@ get_address(
 		    case ADDR_TABS_RELATIVE:
 			lnum = 1;
 			break;
+		    case ADDR_KEEP:
+			lnum = 0;
 #ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
 			lnum = qf_get_cur_valid_idx(eap);
@@ -4739,6 +4741,10 @@ get_address(
 		EMSG(_(e_invrange));
 		cmd = NULL;
 		goto error;
+	    }
+	    else if (addr_type == ADDR_KEEP)
+	    {
+		lnum = i == '-' ? -n : n;
 	    }
 	    else if (addr_type == ADDR_LOADED_BUFFERS
 		    || addr_type == ADDR_BUFFERS)
@@ -4817,8 +4823,8 @@ ex_script_ni(exarg_T *eap)
 invalid_range(exarg_T *eap)
 {
     buf_T	*buf;
-    if (       eap->line1 < 0
-	    || eap->line2 < 0
+    if (       (eap->line1 < 0 && eap->addr_type != ADDR_KEEP)
+	    || (eap->line2 < 0 && eap->addr_type != ADDR_KEEP)
 	    || eap->line1 > eap->line2)
 	return (char_u *)_(e_invrange);
 
@@ -5940,6 +5946,7 @@ static struct
     {ADDR_BUFFERS, "buffers"},
     {ADDR_WINDOWS, "windows"},
     {ADDR_QUICKFIX, "quickfix"},
+    {ADDR_KEEP, "keep"},
     {-1, NULL}
 };
 #endif

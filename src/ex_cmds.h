@@ -70,6 +70,7 @@
 #define ADDR_TABS		5   // tab page number
 #define ADDR_TABS_RELATIVE	6   // Tab page that only relative
 #define ADDR_QUICKFIX		7   // quickfix list entry number
+#define ADDR_KEEP		98  // keep negative counts
 #define ADDR_OTHER		99  // something else
 
 #ifndef DO_DECLARE_EXCMD
