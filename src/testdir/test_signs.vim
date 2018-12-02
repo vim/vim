@@ -311,7 +311,12 @@ func Test_sign_funcs()
   call sign_define("sign2")
   let attr = {'text' : '!!', 'linehl' : 'DiffAdd', 'texthl' : 'DiffChange',
 	      \ 'icon' : 'sign2.ico'}
-  call sign_define("sign2", attr)
+  try
+    call sign_define("sign2", attr)
+  catch /E255:/
+    " ignore error: E255: Couldn't read in sign data!
+    " This error can happen when running in gui.
+  endtry
   call assert_equal([{'name' : 'sign2', 'texthl' : 'DiffChange',
 	      \ 'linehl' : 'DiffAdd', 'text' : '!!', 'icon' : 'sign2.ico'}],
 	      \ sign_getdefined("sign2"))
@@ -437,6 +442,7 @@ func Test_sign_group()
 
   edit Xsign
   let bnum = bufnr('%')
+  let fname = fnamemodify('Xsign', ':p')
 
   " Error case
   call assert_fails("call sign_place(5, [], 'sign1', 'Xsign',
@@ -567,24 +573,24 @@ func Test_sign_group()
   call sign_unplace('*')
 
   " Test for :sign command and groups
-  sign place 5 line=10 name=sign1 file=Xsign
-  sign place 5 group=g1 line=10 name=sign1 file=Xsign
-  sign place 5 group=g2 line=10 name=sign1 file=Xsign
+  exe 'sign place 5 line=10 name=sign1 file=' . fname
+  exe 'sign place 5 group=g1 line=10 name=sign1 file=' . fname
+  exe 'sign place 5 group=g2 line=10 name=sign1 file=' . fname
 
   " Test for :sign place group={group} file={fname}
-  let a = execute('sign place file=Xsign')
+  let a = execute('sign place file=' . fname)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=g2 file=Xsign')
+  let a = execute('sign place group=g2 file=' . fname)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=* file=Xsign')
+  let a = execute('sign place group=* file=' . fname)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g2  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
-  let a = execute('sign place group=xyz file=Xsign')
+  let a = execute('sign place group=xyz file=' . fname)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
   call sign_unplace('*')
@@ -617,22 +623,22 @@ func Test_sign_group()
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
   " Test for :sign unplace
-  sign unplace 5 group=g2 file=Xsign
+  exe 'sign unplace 5 group=g2 file=' . fname
   call assert_equal([], sign_getplaced(bnum, {'group' : 'g2'})[0].signs)
 
   exe 'sign unplace 5 group=g1 buffer=' . bnum
   call assert_equal([], sign_getplaced(bnum, {'group' : 'g1'})[0].signs)
 
-  sign unplace 5 group=xy file=Xsign
+  exe 'sign unplace 5 group=xy file=' . fname
   call assert_equal(1, len(sign_getplaced(bnum, {'group' : '*'})[0].signs))
 
   " Test for removing all the signs. Place the signs again for this test
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
-  sign place 5 group=g2 line=12 name=sign1 file=Xsign
-  sign place 6 line=20 name=sign1 file=Xsign
-  sign place 6 group=g1 line=21 name=sign1 file=Xsign
-  sign place 6 group=g2 line=22 name=sign1 file=Xsign
-  sign unplace 5 group=* file=Xsign
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
+  exe 'sign place 5 group=g2 line=12 name=sign1 file=' . fname
+  exe 'sign place 6 line=20 name=sign1 file=' . fname
+  exe 'sign place 6 group=g1 line=21 name=sign1 file=' . fname
+  exe 'sign place 6 group=g2 line=22 name=sign1 file=' . fname
+  exe 'sign unplace 5 group=* file=' . fname
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=20  id=6  name=sign1 priority=10\n" .
@@ -640,17 +646,17 @@ func Test_sign_group()
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from the global group
-  sign unplace * file=Xsign
+  exe 'sign unplace * file=' . fname
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=21  id=6  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from a particular group
-  sign place 5 line=10 name=sign1 file=Xsign
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
-  sign place 5 group=g2 line=12 name=sign1 file=Xsign
-  sign unplace * group=g1 file=Xsign
+  exe 'sign place 5 line=10 name=sign1 file=' . fname
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
+  exe 'sign place 5 group=g2 line=12 name=sign1 file=' . fname
+  exe 'sign unplace * group=g1 file=' . fname
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
@@ -658,26 +664,26 @@ func Test_sign_group()
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from all the groups in a file
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
-  sign place 6 line=20 name=sign1 file=Xsign
-  sign place 6 group=g1 line=21 name=sign1 file=Xsign
-  sign unplace * group=* file=Xsign
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
+  exe 'sign place 6 line=20 name=sign1 file=' . fname
+  exe 'sign place 6 group=g1 line=21 name=sign1 file=' . fname
+  exe 'sign unplace * group=* file=' . fname
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
 
   " Remove a particular sign id in a group from all the files
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
   sign unplace 5 group=g1
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
 
   " Remove a particular sign id in all the groups from all the files
-  sign place 5 line=10 name=sign1 file=Xsign
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
-  sign place 5 group=g2 line=12 name=sign1 file=Xsign
-  sign place 6 line=20 name=sign1 file=Xsign
-  sign place 6 group=g1 line=21 name=sign1 file=Xsign
-  sign place 6 group=g2 line=22 name=sign1 file=Xsign
+  exe 'sign place 5 line=10 name=sign1 file=' . fname
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
+  exe 'sign place 5 group=g2 line=12 name=sign1 file=' . fname
+  exe 'sign place 6 line=20 name=sign1 file=' . fname
+  exe 'sign place 6 group=g1 line=21 name=sign1 file=' . fname
+  exe 'sign place 6 group=g2 line=22 name=sign1 file=' . fname
   sign unplace 5 group=*
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
@@ -686,8 +692,8 @@ func Test_sign_group()
 	      \ "    line=22  id=6  group=g2  name=sign1 priority=10\n", a)
 
   " Remove all the signs from all the groups in all the files
-  sign place 5 line=10 name=sign1 file=Xsign
-  sign place 5 group=g1 line=11 name=sign1 file=Xsign
+  exe 'sign place 5 line=10 name=sign1 file=' . fname
+  exe 'sign place 5 group=g1 line=11 name=sign1 file=' . fname
   sign unplace * group=*
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\n", a)
@@ -749,6 +755,7 @@ func Test_sign_priority()
   " Place three signs with different priority in the same line
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
+  let fname = fnamemodify('Xsign', ':p')
 
   call sign_place(1, 'g1', 'sign1', 'Xsign',
 	      \ {'lnum' : 11, 'priority' : 50})
@@ -771,9 +778,9 @@ func Test_sign_priority()
   call sign_unplace('*')
 
   " Tests for the :sign place command with priority
-  sign place 5 line=10 name=sign1 priority=30 file=Xsign
-  sign place 5 group=g1 line=10 name=sign1 priority=20 file=Xsign
-  sign place 5 group=g2 line=10 name=sign1 priority=25 file=Xsign
+  exe 'sign place 5 line=10 name=sign1 priority=30 file=' . fname
+  exe 'sign place 5 group=g1 line=10 name=sign1 priority=20 file=' . fname
+  exe 'sign place 5 group=g2 line=10 name=sign1 priority=25 file=' . fname
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=30\n" .
