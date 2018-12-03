@@ -636,7 +636,7 @@ emsg(char_u *s)
 	if (cause_errthrow(s, severe, &ignore) == TRUE)
 	{
 	    if (!ignore)
-		did_emsg = TRUE;
+		++did_emsg;
 	    return TRUE;
 	}
 
@@ -689,7 +689,7 @@ emsg(char_u *s)
 	    beep_flush();		/* also includes flush_buffers() */
 	else
 	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
-	did_emsg = TRUE;		   // flag for DoOneCmd()
+	++did_emsg;			   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
 	did_uncaught_emsg = TRUE;
 #endif

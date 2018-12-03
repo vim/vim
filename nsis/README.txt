@@ -15,6 +15,7 @@ To build the installable .exe:
 	vimrun.exe,
 	install.exe,
 	uninstal.exe,
+	tee/tee.exe,
 	xxd/xxd.exe,
 
     Then execute tools/rename.bat to rename the executables. (mv command is
@@ -29,14 +30,15 @@ To build the installable .exe:
 4.  Go to the VisVim directory and build VisVim.dll (or get it from a binary
     archive).
 
-5.  Go to the OleVim directory and build OpenWithVim.exe and SendToVim.exe (or
-    get them from a binary archive).
-
-6.  Get a "diff.exe" program and put it in the "../.." directory (above the
-    "vim80" directory, it's the same for all Vim versions).
+5.  Get a "diff.exe" program.  If you skip this the built-in diff will always
+    be used (which is fine for most users).  If you do have your own
+    "diff.exe" put it in the "../.." directory (above the "vim81" directory,
+    it's the same for all Vim versions).
     You can find one in previous Vim versions or in this archive:
 		http://www.mossbayeng.com/~ron/vim/diffutils.tar.gz
-    Also put winpty32.dll and winpty-agent.exe there.
+
+6   Also put winpty32.dll and winpty-agent.exe in "../.." (above the "vim81"
+    directory).  This is required for the terminal window.
 
 7.  Do "make uganda.nsis.txt" in runtime/doc.  This requires sed, you may have
     to do this on Unix.  Make sure the file is in DOS file format!

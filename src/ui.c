@@ -154,8 +154,7 @@ ui_inchar(
 	static int count = 0;
 
 # ifndef NO_CONSOLE
-	retval = mch_inchar(buf, maxlen, (wtime >= 0 && wtime < 10)
-						? 10L : wtime, tb_change_cnt);
+	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
 	if (retval > 0 || typebuf_changed(tb_change_cnt) || wtime >= 0)
 	    goto theend;
 # endif

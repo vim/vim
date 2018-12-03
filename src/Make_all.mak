@@ -153,6 +153,7 @@ NEW_TESTS = \
 	test_reltime \
 	test_retab \
 	test_ruby \
+	test_scriptnames \
 	test_scroll_opt \
 	test_scrollbind \
 	test_search \
