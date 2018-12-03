@@ -362,6 +362,7 @@ func s:StartDebugCommon(dict)
   " Contains breakpoints that have been placed, key is a string with the GDB
   " breakpoint number.
   let s:breakpoints = {}
+  let s:breakpoint_locations = {}
 
   augroup TermDebug
     au BufRead * call s:BufRead()
@@ -688,6 +689,7 @@ func s:DeleteCommands()
     endfor
   endfor
   unlet s:breakpoints
+  unlet s:breakpoint_locations
 
   sign undefine debugPC
   for val in s:BreakpointSigns
@@ -722,19 +724,24 @@ endfunc
 func s:ClearBreakpoint()
   let fname = fnameescape(expand('%:p'))
   let lnum = line('.')
-  for [id, entries] in items(s:breakpoints)
-    for entry in values(entries)
-      if entry['fname'] == fname && entry['lnum'] == lnum
+  let bploc = printf('%s:%d', fname, lnum)
+  if has_key(s:breakpoint_locations, bploc)
+    for id in s:breakpoint_locations[bploc]
+      if has_key(s:breakpoints, id)
         call s:SendCommand('-break-delete ' . id)
-        for subid in keys(entries)
+        for subid in keys(s:breakpoints[id])
           " Assume this always wors, the reply is simply "^done".
           exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
         endfor
         unlet s:breakpoints[id]
-        return
+        unlet s:breakpoint_locations[bploc][id]
+        break
       endif
     endfor
-  endfor
+    if empty(s:breakpoint_locations[bploc])
+      unlet s:breakpoint_locations[bploc]
+    endif
+  endif
 endfunc
 
 func s:Run(args)
@@ -926,6 +933,12 @@ func s:HandleNewBreakpoint(msg)
     let lnum = substitute(msg, '.*line="\([^"]*\)".*', '\1', '')
     let entry['fname'] = fname
     let entry['lnum'] = lnum
+
+    let bploc = printf('%s:%d', fname, lnum)
+    if !has_key(s:breakpoint_locations, bploc)
+      let s:breakpoint_locations[bploc] = []
+    endif
+    let s:breakpoint_locations[bploc] += [id]
 
     if bufloaded(fname)
       call s:PlaceSign(id, subid, entry)
