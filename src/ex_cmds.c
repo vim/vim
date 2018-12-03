@@ -7884,10 +7884,10 @@ sign_place(
     if (lnum > 0)
 	// ":sign place {id} line={lnum} name={name} file={fname}":
 	// place a sign
-	buf_addsign(buf, *sign_id, lnum, sp->sn_typenr, sign_group, prio);
+	buf_addsign(buf, *sign_id, sign_group, prio, lnum, sp->sn_typenr);
     else
 	// ":sign place {id} file={fname}": change sign type
-	lnum = buf_change_sign_type(buf, *sign_id, sp->sn_typenr, sign_group);
+	lnum = buf_change_sign_type(buf, *sign_id, sign_group, sp->sn_typenr);
     if (lnum > 0)
 	update_debug_sign(buf, lnum);
     else

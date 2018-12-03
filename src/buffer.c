@@ -5865,7 +5865,8 @@ win_found:
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
 /*
- * Insert the sign into the signlist.
+ * Insert a new sign into the signlist for 'buf' between the 'prev' and 'next'
+ * signs.
  */
     static void
 insert_sign(
@@ -5873,10 +5874,10 @@ insert_sign(
     signlist_T	*prev,		// previous sign entry
     signlist_T	*next,		// next sign entry
     int		id,		// sign ID
+    char_u	*group,		// sign group; NULL for global group
+    int		prio,		// sign priority
     linenr_T	lnum,		// line number which gets the mark
-    int		typenr,		// typenr of sign we are adding
-    char_u	*group,		// sign group
-    int		prio)		// sign priority
+    int		typenr)		// typenr of sign we are adding
 {
     signlist_T	*newsign;
 
@@ -5919,9 +5920,36 @@ insert_sign(
 }
 
 /*
+ * Insert a new sign sorted by line number and sign priority.
+ */
+    static void
+insert_sign_by_lnum_prio(
+    buf_T	*buf,		// buffer to store sign in
+    signlist_T	*prev,		// previous sign entry
+    int		id,		// sign ID
+    char_u	*group,		// sign group; NULL for global group
+    int		prio,		// sign priority
+    linenr_T	lnum,		// line number which gets the mark
+    int		typenr)		// typenr of sign we are adding
+{
+    signlist_T	*sign;
+
+    // keep signs sorted by lnum and by priority: insert new sign at
+    // the proper position in the list for this lnum.
+    while (prev != NULL && prev->lnum == lnum && prev->priority <= prio)
+	prev = prev->prev;
+    if (prev == NULL)
+	sign = buf->b_signlist;
+    else
+	sign = prev->next;
+
+    insert_sign(buf, prev, sign, id, group, prio, lnum, typenr);
+}
+
+/*
  * Returns TRUE if 'sign' is in 'group'.
  * A sign can either be in the global group (sign->group == NULL)
- * or in a named group.
+ * or in a named group. If 'group' is '*', then the sign is part of the group.
  */
     int
 sign_in_group(signlist_T *sign, char_u *group)
@@ -5933,7 +5961,7 @@ sign_in_group(signlist_T *sign, char_u *group)
 }
 
 /*
- * Get information about a sign in a Dict
+ * Return information about a sign in a Dict
  */
     dict_T *
 sign_get_info(signlist_T *sign)
@@ -5959,10 +5987,10 @@ sign_get_info(signlist_T *sign)
 buf_addsign(
     buf_T	*buf,		// buffer to store sign in
     int		id,		// sign ID
-    linenr_T	lnum,		// line number which gets the mark
-    int		typenr,		// typenr of sign we are adding
     char_u	*group,		// sign group
-    int		prio)		// sign priority
+    int		prio,		// sign priority
+    linenr_T	lnum,		// line number which gets the mark
+    int		typenr)		// typenr of sign we are adding
 {
     signlist_T	*sign;		/* a sign in the signlist */
     signlist_T	*prev;		/* the previous sign */
@@ -5979,29 +6007,13 @@ buf_addsign(
 	}
 	else if (lnum < sign->lnum)
 	{
-	    // keep signs sorted by lnum and by priority: insert new sign at
-	    // the proper position in the list for this lnum.
-	    while (prev != NULL && prev->lnum == lnum &&
-						prev->priority <= prio)
-		prev = prev->prev;
-	    if (prev == NULL)
-		sign = buf->b_signlist;
-	    else
-		sign = prev->next;
-	    insert_sign(buf, prev, sign, id, lnum, typenr, group, prio);
+	    insert_sign_by_lnum_prio(buf, prev, id, group, prio, lnum, typenr);
 	    return;
 	}
 	prev = sign;
     }
 
-    // insert new sign at head of list for this lnum
-    while (prev != NULL && prev->lnum == lnum && prev->priority <= prio)
-	prev = prev->prev;
-    if (prev == NULL)
-	sign = buf->b_signlist;
-    else
-	sign = prev->next;
-    insert_sign(buf, prev, sign, id, lnum, typenr, group, prio);
+    insert_sign_by_lnum_prio(buf, prev, id, group, prio, lnum, typenr);
 
     return;
 }
@@ -6014,8 +6026,8 @@ buf_addsign(
 buf_change_sign_type(
     buf_T	*buf,		// buffer to store sign in
     int		markId,		// sign ID
-    int		typenr,		// typenr of sign we are adding
-    char_u	*group)		// sign group
+    char_u	*group,		// sign group
+    int		typenr)		// typenr of sign we are adding
 {
     signlist_T	*sign;		// a sign in the signlist
 
@@ -6054,7 +6066,16 @@ buf_getsigntype(
     return 0;
 }
 
-
+/*
+ * Delete sign 'id' in group 'group' from buffer 'buf'.
+ * If 'id' is zero, then delete all the signs in group 'group'. Otherwise
+ * delete only the specified sign.
+ * If 'group' is '*', then delete the sign in all the groups. If 'group' is
+ * NULL, then delete the sign in the global group. Otherwise delete the sign in
+ * the specified group.
+ * Returns the line number of the deleted sign. If multiple signs are deleted,
+ * then returns the line number of the last sign deleted.
+ */
     linenr_T
 buf_delsign(
     buf_T	*buf,		// buffer sign is stored in
@@ -6101,9 +6122,9 @@ buf_delsign(
 
 
 /*
- * Find the line number of the sign with the requested id. If the sign does
- * not exist, return 0 as the line number. This will still let the correct file
- * get loaded.
+ * Find the line number of the sign with the requested id in group 'group'. If
+ * the sign does not exist, return 0 as the line number. This will still let
+ * the correct file get loaded.
  */
     int
 buf_findsign(
@@ -6121,7 +6142,7 @@ buf_findsign(
 }
 
 /*
- * Get information for the sign at line 'lnum' in buffer 'buf'
+ * Return information for the sign at line 'lnum' in buffer 'buf'
  */
     static signlist_T *
 buf_getsign_at_line(
@@ -6138,7 +6159,8 @@ buf_getsign_at_line(
 }
 
 /*
- * Get information for the sign with 'id' in buffer 'buf'
+ * Return information for the sign with 'id' in group 'group' placed in buffer
+ * 'buf'
  */
     signlist_T *
 buf_getsign_with_id(
@@ -6210,7 +6232,7 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 # endif /* FEAT_NETBEANS_INTG */
 
 /*
- * Delete signs in group 'group' in buffer "buf". If 'group' is '*',
+ * Delete signs in group 'group' in buffer "buf". If 'group' is '*', then
  * delete all the signs.
  */
     void
