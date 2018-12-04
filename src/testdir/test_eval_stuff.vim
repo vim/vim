@@ -53,3 +53,9 @@ func Test_line_continuation()
 	"\ and some more
   call assert_equal([5, 6], array)
 endfunc
+
+func Test_E963()
+  " These commands used to cause an internal error prior to vim 8.1.0563
+  call assert_fails("let v:errors=''", 'E963:')
+  call assert_fails("let v:oldfiles=''", 'E963:')
+endfunc
