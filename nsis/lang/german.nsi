@@ -116,8 +116,7 @@ LangString str_desc_plugin          ${LANG_GERMAN} \
 LangString str_section_plugin_home  ${LANG_GERMAN} \
     "Privat"
 LangString str_desc_plugin_home     ${LANG_GERMAN} \
-    "Plugin-Verzeichnis im Benutzerverzeichnis (falls es existiert) oder im \
-     Vim-Installationspfad erstellen."
+    "Erstelle Plugin-Verzeichnis im HOME Benutzerverzeichnis."
 
 LangString str_section_plugin_vim   ${LANG_GERMAN} \
     "Freigegeben"
@@ -146,19 +145,19 @@ LangString str_desc_rm_exe          ${LANG_GERMAN} \
     "Alle Vim-Anwendungen und Laufzeitdateien von diesem System entfernen."
 
 LangString str_ungroup_plugin       ${LANG_GERMAN} \
-    "Entferne vimfiles Verzeichnis"
+    "Entferne Plugin-Verzeichnisse"
 LangString str_desc_rm_plugin       ${LANG_GERMAN} \
-    "Entfernt das vimfiles Verzeichnis, falls es leer ist."
+    "Entferne Plugin-Verzeichnisse, falls sie leer sind."
 
 LangString str_unsection_plugin_home ${LANG_GERMAN} \
     "Privat"
 LangString str_desc_rm_plugin_home  ${LANG_GERMAN} \
-    "Remove the plugin directories from HOME directory."
+    "Entfernt die Plugin-Verzeichnisse aus dem HOME Benutzerverzeichnis."
 
 LangString str_unsection_plugin_vim ${LANG_GERMAN} \
     "Freigegeben"
 LangString str_desc_rm_plugin_vim   ${LANG_GERMAN} \
-    "Remove the plugin directories from Vim install directory."
+    "Entfernt das Plugin-Verzeichnis aus dem Vim-Installationsverzeichnis."
 
 LangString str_unsection_rootdir    ${LANG_GERMAN} \
     "Entferne Vim Installationsverzeichnis"
