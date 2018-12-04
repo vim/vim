@@ -5865,8 +5865,8 @@ win_found:
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
 /*
- * Insert a new sign into the signlist for 'buf' between the 'prev' and 'next'
- * signs.
+ * Insert a new sign into the signlist for buffer 'buf' between the 'prev' and
+ * 'next' signs.
  */
     static void
 insert_sign(
@@ -6043,6 +6043,11 @@ buf_change_sign_type(
     return (linenr_T)0;
 }
 
+/*
+ * Return the type number of the sign at line number 'lnum' in buffer 'buf'
+ * which has the attribute specifed by 'type'. Returns 0 if a sign is not found
+ * at the line number or it doesn't have the specified attribute.
+ */
     int
 buf_getsigntype(
     buf_T	*buf,
@@ -6142,7 +6147,8 @@ buf_findsign(
 }
 
 /*
- * Return information for the sign at line 'lnum' in buffer 'buf'
+ * Return the sign at line 'lnum' in buffer 'buf'. Returns NULL if a sign is
+ * not found at the line.
  */
     static signlist_T *
 buf_getsign_at_line(
@@ -6159,8 +6165,7 @@ buf_getsign_at_line(
 }
 
 /*
- * Return information for the sign with 'id' in group 'group' placed in buffer
- * 'buf'
+ * Return the sign with identifier 'id' in group 'group' placed in buffer 'buf'
  */
     signlist_T *
 buf_getsign_with_id(
@@ -6177,6 +6182,9 @@ buf_getsign_with_id(
     return NULL;
 }
 
+/*
+ * Return the identifier of the sign at line number 'lnum' in buffer 'buf'.
+ */
     int
 buf_findsign_id(
     buf_T	*buf,		// buffer whose sign we are searching for

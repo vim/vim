@@ -778,9 +778,9 @@ func Test_sign_priority()
   call sign_unplace('*')
 
   " Tests for the :sign place command with priority
-  exe 'sign place 5 line=10 name=sign1 priority=30 file=' . fname
-  exe 'sign place 5 group=g1 line=10 name=sign1 priority=20 file=' . fname
-  exe 'sign place 5 group=g2 line=10 name=sign1 priority=25 file=' . fname
+  exe 'sign place 5 line=10 name=sign1 priority=30 file=Xsign'
+  exe 'sign place 5 group=g1 line=10 name=sign1 priority=20 file=Xsign'
+  exe 'sign place 5 group=g2 line=10 name=sign1 priority=25 file=Xsign'
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=30\n" .

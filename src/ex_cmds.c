@@ -8147,7 +8147,7 @@ ex_sign(exarg_T *eap)
 	    else if (STRNCMP(arg, "file=", 5) == 0)
 	    {
 		arg += 5;
-		buf = buflist_findname(arg);
+		buf = buflist_findname_exp(arg);
 		bufarg = TRUE;
 		break;
 	    }
