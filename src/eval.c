@@ -7568,7 +7568,7 @@ set_var(
 		return;
 	    }
 	    else if (v->di_tv.v_type != tv->v_type)
-		internal_error("set_var()");
+		EMSG2(_("E963: setting %s to value with wrong type"), name);
 	}
 
 	clear_tv(&v->di_tv);
