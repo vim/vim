@@ -86,7 +86,7 @@ LangString str_group_plugin         ${LANG_DANISH}     "Opret plugin-mapper"
 LangString str_desc_plugin          ${LANG_DANISH}     "Opret plugin-mapper. Plugin-mapper giver mulighed for at udvide Vim ved at slippe en fil i en mappen."
 
 LangString str_section_plugin_home  ${LANG_DANISH}     "Private"
-LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HOME (hvis du har defineret et) eller Vim-installationsmappe."
+LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HOME-mappen."
 
 LangString str_section_plugin_vim   ${LANG_DANISH}     "Delte"
 LangString str_desc_plugin_vim      ${LANG_DANISH}     "Opret plugin-mapper i Vim-installationsmappe, det bruges af alle på systemet."
@@ -103,16 +103,14 @@ LangString str_desc_unregister      ${LANG_DANISH}     "Afregistrer Vim fra syst
 LangString str_unsection_exe        ${LANG_DANISH}     "Fjern Vim-eksekverbare-/afviklingsfiler"
 LangString str_desc_rm_exe          ${LANG_DANISH}     "Fjern alle Vim-eksekverbare- og afviklingsfiler."
 
-LangString str_ungroup_plugin       ${LANG_DANISH}     "Fjern vimfiles-mappe"
-LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern vimfiles-mappen hvis den er tom."
+LangString str_ungroup_plugin       ${LANG_DANISH}     "Fjern plugin-mapper"
+LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern plugin-mapperne hvis de er tomme."
 
-LangString str_unsection_plugin_home ${LANG_DANISH}    "Private"
-LangString str_desc_rm_plugin_home  ${LANG_DANISH} \
-    "Remove the plugin directories from HOME directory."
+LangString str_unsection_plugin_home ${LANG_DANISH}    "Privat"
+LangString str_desc_rm_plugin_home  ${LANG_DANISH}     "Fjern plugin-mapperne fra HOME-mappen."
 
 LangString str_unsection_plugin_vim ${LANG_DANISH}     "Delte"
-LangString str_desc_rm_plugin_vim   ${LANG_DANISH} \
-    "Remove the plugin directories from Vim install directory."
+LangString str_desc_rm_plugin_vim   ${LANG_DANISH}     "Fjern plugin-mapperne fra Vim-installationsmappen."
 
 LangString str_unsection_rootdir    ${LANG_DANISH}     "Fjern Vim-rodmappen"
 LangString str_desc_rm_rootdir      ${LANG_DANISH}     "Fjern Vim-rodmappen. Den indeholder dine Vim-konfigurationsfiler!"
