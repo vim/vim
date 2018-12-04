@@ -125,8 +125,7 @@ LangString str_desc_plugin          ${LANG_ENGLISH} \
 LangString str_section_plugin_home  ${LANG_ENGLISH} \
     "Private"
 LangString str_desc_plugin_home     ${LANG_ENGLISH} \
-    "Create plugin directories in HOME (if you defined one) or Vim \
-     install directory."
+    "Create plugin directories in HOME directory."
 
 LangString str_section_plugin_vim   ${LANG_ENGLISH} \
     "Shared"
@@ -154,10 +153,20 @@ LangString str_unsection_exe        ${LANG_ENGLISH} \
 LangString str_desc_rm_exe          ${LANG_ENGLISH} \
     "Remove all Vim executables and runtime files."
 
-LangString str_unsection_vimfiles   ${LANG_ENGLISH} \
-    "Remove vimfiles directory"
-LangString str_desc_rm_vimfiles     ${LANG_ENGLISH} \
-    "Remove the vimfiles directory if it is empty."
+LangString str_ungroup_plugin       ${LANG_ENGLISH} \
+    "Remove plugin directories"
+LangString str_desc_rm_plugin       ${LANG_ENGLISH} \
+    "Remove the plugin directories if they are empty."
+
+LangString str_unsection_plugin_home ${LANG_ENGLISH} \
+    "Private"
+LangString str_desc_rm_plugin_home  ${LANG_ENGLISH} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_ENGLISH} \
+    "Shared"
+LangString str_desc_rm_plugin_vim   ${LANG_ENGLISH} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_ENGLISH} \
     "Remove the Vim root directory"

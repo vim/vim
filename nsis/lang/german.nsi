@@ -145,10 +145,20 @@ LangString str_unsection_exe        ${LANG_GERMAN} \
 LangString str_desc_rm_exe          ${LANG_GERMAN} \
     "Alle Vim-Anwendungen und Laufzeitdateien von diesem System entfernen."
 
-LangString str_unsection_vimfiles   ${LANG_GERMAN} \
+LangString str_ungroup_plugin       ${LANG_GERMAN} \
     "Entferne vimfiles Verzeichnis"
-LangString str_desc_rm_vimfiles     ${LANG_GERMAN} \
+LangString str_desc_rm_plugin       ${LANG_GERMAN} \
     "Entfernt das vimfiles Verzeichnis, falls es leer ist."
+
+LangString str_unsection_plugin_home ${LANG_GERMAN} \
+    "Privat"
+LangString str_desc_rm_plugin_home  ${LANG_GERMAN} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_GERMAN} \
+    "Freigegeben"
+LangString str_desc_rm_plugin_vim   ${LANG_GERMAN} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_GERMAN} \
     "Entferne Vim Installationsverzeichnis"

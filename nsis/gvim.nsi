@@ -1075,26 +1075,50 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir $0
 SectionEnd
 
-Section "un.$(str_unsection_vimfiles)" id_unsection_vimfiles
-	# get the parent dir of the installation
-	Push $INSTDIR
-	Call un.GetParent
-	Pop $1
-
-	# if a plugin dir was created at installation remove it
-	${If} ${FileExists} $1\vimfiles
-	  RMDir $1\vimfiles\colors
-	  RMDir $1\vimfiles\compiler
-	  RMDir $1\vimfiles\doc
-	  RMDir $1\vimfiles\ftdetect
-	  RMDir $1\vimfiles\ftplugin
-	  RMDir $1\vimfiles\indent
-	  RMDir $1\vimfiles\keymap
-	  RMDir $1\vimfiles\plugin
-	  RMDir $1\vimfiles\syntax
-	  RMDir $1\vimfiles
+# Remove "vimfiles" directory under the specified directory.
+!macro RemoveVimfiles dir
+	${If} ${FileExists} ${dir}\vimfiles
+	  RMDir ${dir}\vimfiles\colors
+	  RMDir ${dir}\vimfiles\compiler
+	  RMDir ${dir}\vimfiles\doc
+	  RMDir ${dir}\vimfiles\ftdetect
+	  RMDir ${dir}\vimfiles\ftplugin
+	  RMDir ${dir}\vimfiles\indent
+	  RMDir ${dir}\vimfiles\keymap
+	  RMDir ${dir}\vimfiles\plugin
+	  RMDir ${dir}\vimfiles\syntax
+	  RMDir ${dir}\vimfiles
 	${EndIf}
-SectionEnd
+!macroend
+
+SectionGroup "un.$(str_ungroup_plugin)" id_ungroup_plugin
+	Section /o "un.$(str_unsection_plugin_home)" id_unsection_plugin_home
+		# get the home dir
+		ReadEnvStr $0 "HOME"
+		${If} $0 == ""
+		  ReadEnvStr $0 "HOMEDRIVE"
+		  ReadEnvStr $1 "HOMEPATH"
+		  StrCpy $0 "$0$1"
+		  ${If} $0 == ""
+		    ReadEnvStr $0 "USERPROFILE"
+		  ${EndIf}
+		${EndIf}
+
+		${If} $0 != ""
+		  !insertmacro RemoveVimfiles $0
+		${EndIf}
+	SectionEnd
+
+	Section "un.$(str_unsection_plugin_vim)" id_unsection_plugin_vim
+		# get the parent dir of the installation
+		Push $INSTDIR
+		Call un.GetParent
+		Pop $0
+
+		# if a plugin dir was created at installation remove it
+		!insertmacro RemoveVimfiles $0
+	SectionEnd
+SectionGroupEnd
 
 Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	# get the parent dir of the installation
@@ -1110,8 +1134,10 @@ SectionEnd
 # Description for Uninstaller Sections
 
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_register} $(str_desc_unregister)
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_exe}      $(str_desc_rm_exe)
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_vimfiles} $(str_desc_rm_vimfiles)
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_rootdir}  $(str_desc_rm_rootdir)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_register}    $(str_desc_unregister)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_exe}         $(str_desc_rm_exe)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_ungroup_plugin}        $(str_desc_rm_plugin)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_plugin_home} $(str_desc_rm_plugin_home)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_plugin_vim}  $(str_desc_rm_plugin_vim)
+    !insertmacro MUI_DESCRIPTION_TEXT ${id_unsection_rootdir}     $(str_desc_rm_rootdir)
 !insertmacro MUI_UNFUNCTION_DESCRIPTION_END

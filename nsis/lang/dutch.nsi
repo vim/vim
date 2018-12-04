@@ -117,8 +117,7 @@ LangString str_desc_plugin          ${LANG_DUTCH} \
 LangString str_section_plugin_home  ${LANG_DUTCH} \
     "Privé"
 LangString str_desc_plugin_home     ${LANG_DUTCH} \
-    "Creëer plugin mappen in HOME (als je deze gedefinieerd hebt) \
-     of Vim installatie map."
+    "Create plugin directories in HOME directory."
 
 LangString str_section_plugin_vim   ${LANG_DUTCH} \
     "Gedeeld"
@@ -146,10 +145,20 @@ LangString str_unsection_exe        ${LANG_DUTCH} \
 LangString str_desc_rm_exe          ${LANG_DUTCH} \
     "Verwijder alle Vim uitvoerbare bestanden en runtime bestanden."
 
-LangString str_unsection_vimfiles   ${LANG_DUTCH} \
-    "Remove vimfiles directory"
-LangString str_desc_rm_vimfiles     ${LANG_DUTCH} \
-    "Remove the vimfiles directory if it is empty."
+LangString str_ungroup_plugin       ${LANG_DUTCH} \
+    "Remove plugin directories"
+LangString str_desc_rm_plugin       ${LANG_DUTCH} \
+    "Remove the plugin directories if they are empty."
+
+LangString str_unsection_plugin_home ${LANG_DUTCH} \
+    "Privé"
+LangString str_desc_rm_plugin_home  ${LANG_DUTCH} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_DUTCH} \
+    "Gedeeld"
+LangString str_desc_rm_plugin_vim   ${LANG_DUTCH} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_DUTCH} \
     "Remove the Vim root directory"

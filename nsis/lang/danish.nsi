@@ -103,8 +103,16 @@ LangString str_desc_unregister      ${LANG_DANISH}     "Afregistrer Vim fra syst
 LangString str_unsection_exe        ${LANG_DANISH}     "Fjern Vim-eksekverbare-/afviklingsfiler"
 LangString str_desc_rm_exe          ${LANG_DANISH}     "Fjern alle Vim-eksekverbare- og afviklingsfiler."
 
-LangString str_unsection_vimfiles   ${LANG_DANISH}     "Fjern vimfiles-mappe"
-LangString str_desc_rm_vimfiles     ${LANG_DANISH}     "Fjern vimfiles-mappen hvis den er tom."
+LangString str_ungroup_plugin       ${LANG_DANISH}     "Fjern vimfiles-mappe"
+LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern vimfiles-mappen hvis den er tom."
+
+LangString str_unsection_plugin_home ${LANG_DANISH}    "Private"
+LangString str_desc_rm_plugin_home  ${LANG_DANISH} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_DANISH}     "Delte"
+LangString str_desc_rm_plugin_vim   ${LANG_DANISH} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_DANISH}     "Fjern Vim-rodmappen"
 LangString str_desc_rm_rootdir      ${LANG_DANISH}     "Fjern Vim-rodmappen. Den indeholder dine Vim-konfigurationsfiler!"

@@ -118,8 +118,7 @@ LangString str_desc_plugin          ${LANG_ITALIAN} \
 LangString str_section_plugin_home  ${LANG_ITALIAN} \
     "Privato"
 LangString str_desc_plugin_home     ${LANG_ITALIAN} \
-    "Crea Directory Plugin in HOME (se definita) o nella \
-     directory di installazione di Vim."
+    "Create plugin directories in HOME directory."
 
 LangString str_section_plugin_vim   ${LANG_ITALIAN} \
     "Condiviso"
@@ -153,10 +152,20 @@ LangString str_desc_rm_rc           ${LANG_ITALIAN} \
     "Cancella file di configurazione di Vim $vim_install_root\_vimrc. \
      Da saltare se avete personalizzato il file di configurazione."
 
-LangString str_unsection_vimfiles   ${LANG_ITALIAN} \
-    "Remove vimfiles directory"
-LangString str_desc_rm_vimfiles     ${LANG_ITALIAN} \
-    "Remove the vimfiles directory if it is empty."
+LangString str_ungroup_plugin       ${LANG_ITALIAN} \
+    "Remove plugin directories"
+LangString str_desc_rm_plugin       ${LANG_ITALIAN} \
+    "Remove the plugin directories if they are empty."
+
+LangString str_unsection_plugin_home ${LANG_ITALIAN} \
+    "Privato"
+LangString str_desc_rm_plugin_home  ${LANG_ITALIAN} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_ITALIAN} \
+    "Condiviso"
+LangString str_desc_rm_plugin_vim   ${LANG_ITALIAN} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_ITALIAN} \
     "Remove the Vim root directory"

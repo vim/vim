@@ -114,8 +114,7 @@ LangString str_desc_plugin          ${LANG_SIMPCHINESE} \
 LangString str_section_plugin_home  ${LANG_SIMPCHINESE} \
     "私有插件目录"
 LangString str_desc_plugin_home     ${LANG_SIMPCHINESE} \
-    "在 HOME 目录下创建(空的)插件目录结构。若您未设置 HOME 目录，会在安装\
-     目录下创建该目录结构。"
+    "Create plugin directories in HOME directory."
 
 LangString str_section_plugin_vim   ${LANG_SIMPCHINESE} \
     "公共插件目录"
@@ -143,10 +142,20 @@ LangString str_unsection_exe        ${LANG_SIMPCHINESE} \
 LangString str_desc_rm_exe          ${LANG_SIMPCHINESE} \
     "删除 Vim 的所有执行文件及脚本。"
 
-LangString str_unsection_vimfiles   ${LANG_SIMPCHINESE} \
-    "Remove vimfiles directory"
-LangString str_desc_rm_vimfiles     ${LANG_SIMPCHINESE} \
-    "Remove the vimfiles directory if it is empty."
+LangString str_ungroup_plugin       ${LANG_SIMPCHINESE} \
+    "Remove plugin directories"
+LangString str_desc_rm_plugin       ${LANG_SIMPCHINESE} \
+    "Remove the plugin directories if they are empty."
+
+LangString str_unsection_plugin_home ${LANG_SIMPCHINESE} \
+    "私有插件目录"
+LangString str_desc_rm_plugin_home  ${LANG_SIMPCHINESE} \
+    "Remove the plugin directories from HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_SIMPCHINESE} \
+    "公共插件目录"
+LangString str_desc_rm_plugin_vim   ${LANG_SIMPCHINESE} \
+    "Remove the plugin directories from Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_SIMPCHINESE} \
     "Remove the Vim root directory"

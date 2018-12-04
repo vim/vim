@@ -123,7 +123,7 @@ LangString str_desc_plugin          ${LANG_JAPANESE} \
 LangString str_section_plugin_home  ${LANG_JAPANESE} \
     "個人用"
 LangString str_desc_plugin_home     ${LANG_JAPANESE} \
-    "プラグインディレクトリを HOME (もし定義していれば)、または Vim のインストールディレクトリに作成します。"
+    "プラグインディレクトリをホームディレクトリに作成します。"
 
 LangString str_section_plugin_vim   ${LANG_JAPANESE} \
     "共用"
@@ -150,10 +150,20 @@ LangString str_unsection_exe        ${LANG_JAPANESE} \
 LangString str_desc_rm_exe          ${LANG_JAPANESE} \
     "全ての Vim の実行ファイルとランタイムファイルを削除します。"
 
-LangString str_unsection_vimfiles   ${LANG_JAPANESE} \
-    "vimfiles ディレクトリを削除"
-LangString str_desc_rm_vimfiles     ${LANG_JAPANESE} \
-    "vimfiles ディレクトリが空であればそれを削除します。"
+LangString str_ungroup_plugin       ${LANG_JAPANESE} \
+    "プラグインディレクトリを削除"
+LangString str_desc_rm_plugin       ${LANG_JAPANESE} \
+    "プラグインディレクトリが空であればそれを削除します。"
+
+LangString str_unsection_plugin_home ${LANG_JAPANESE} \
+    "個人用"
+LangString str_desc_rm_plugin_home  ${LANG_JAPANESE} \
+    "プラグインディレクトリをホームディレクトリから削除します。"
+
+LangString str_unsection_plugin_vim ${LANG_JAPANESE} \
+    "共用"
+LangString str_desc_rm_plugin_vim   ${LANG_JAPANESE} \
+    "プラグインディレクトリを Vim のインストールディレクトリから削除します。"
 
 LangString str_unsection_rootdir    ${LANG_JAPANESE} \
     "Vim のトップディレクトリを削除"

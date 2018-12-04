@@ -115,8 +115,7 @@ LangString str_desc_plugin          ${LANG_TRADCHINESE} \
 LangString str_section_plugin_home  ${LANG_TRADCHINESE} \
     "建立插件資料夾"
 LangString str_desc_plugin_home     ${LANG_TRADCHINESE} \
-    "在 HOME 資料夾下建立(空的)插件資料夾結構。若閣下未設定 HOME 資料夾，會\
-     在安裝資料夾下建立該資料夾結構。"
+    "Create plugin directories in HOME directory."
 
 LangString str_section_plugin_vim   ${LANG_TRADCHINESE} \
     "建立共享插件資料夾"
@@ -144,10 +143,20 @@ LangString str_unsection_exe        ${LANG_TRADCHINESE} \
 LangString str_desc_rm_exe          ${LANG_TRADCHINESE} \
     "移除所有的 Vim 程式及腳本。"
 
-LangString str_unsection_vimfiles   ${LANG_TRADCHINESE} \
-    "Remove vimfiles directory"
-LangString str_desc_rm_vimfiles     ${LANG_TRADCHINESE} \
-    "Remove the vimfiles directory if it is empty."
+LangString str_ungroup_plugin       ${LANG_TRADCHINESE} \
+    "Remove plugin directories"
+LangString str_desc_rm_plugin       ${LANG_TRADCHINESE} \
+    "Remove the plugin directories if they are empty."
+
+LangString str_unsection_plugin_home ${LANG_TRADCHINESE} \
+    "Private"
+LangString str_desc_rm_plugin_home  ${LANG_TRADCHINESE} \
+    "Remove the vimfiles directory in HOME directory."
+
+LangString str_unsection_plugin_vim ${LANG_TRADCHINESE} \
+    "Shared"
+LangString str_desc_rm_plugin_vim   ${LANG_TRADCHINESE} \
+    "Remove the vimfiles directory in Vim install directory."
 
 LangString str_unsection_rootdir    ${LANG_TRADCHINESE} \
     "Remove the Vim root directory"
