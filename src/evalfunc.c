@@ -149,6 +149,7 @@ static void f_filewritable(typval_T *argvars, typval_T *rettv);
 static void f_filter(typval_T *argvars, typval_T *rettv);
 static void f_finddir(typval_T *argvars, typval_T *rettv);
 static void f_findfile(typval_T *argvars, typval_T *rettv);
+static void f_flatten(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_float2nr(typval_T *argvars, typval_T *rettv);
 static void f_floor(typval_T *argvars, typval_T *rettv);
@@ -616,6 +617,7 @@ static struct fst
     {"filter",		2, 2, f_filter},
     {"finddir",		1, 3, f_finddir},
     {"findfile",	1, 3, f_findfile},
+    {"flatten",		1, 1, f_flatten},
 #ifdef FEAT_FLOAT
     {"float2nr",	1, 1, f_float2nr},
     {"floor",		1, 1, f_floor},
@@ -3838,6 +3840,25 @@ f_fmod(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 #endif
+
+    static void
+f_flatten(typval_T *argvars, typval_T *rettv)
+{
+    list_T *l;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	EMSG2(_(e_listarg), "flatten()");
+	return;
+    }
+
+    if ((l = argvars[0].vval.v_list) != NULL
+	    && !tv_check_lock(l->lv_lock, (char_u *)N_("flatten() argument"), TRUE)
+	    && rettv_list_alloc(rettv) == OK)
+	list_flatten(rettv->vval.v_list, l);
+
+    printf("aaa: %p", rettv);
+}
 
 /*
  * "fnameescape({string})" function

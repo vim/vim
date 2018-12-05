@@ -102,6 +102,7 @@ NEW_TESTS = test_arabic.res \
 	    test_file_size.res \
 	    test_find_complete.res \
 	    test_fixeol.res \
+	    test_flatten.res \
 	    test_fnameescape.res \
 	    test_fold.res \
 	    test_getcwd.res \
