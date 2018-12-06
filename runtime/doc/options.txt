@@ -8433,7 +8433,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
 	from 95 to 276.  The "sgr" value will be set if the xterm version is
-	277 or higher and when Vim detects Mac Terminal.app or iTerm2.
+	277 or higher or when Vim detects Mac Terminal.app, iTerm2 or mintty.
 	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
 	automatically, set t_RV to an empty string: >
 		:set t_RV=
