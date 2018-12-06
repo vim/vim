@@ -68,6 +68,7 @@ NEW_TESTS = \
 	test_find_complete \
 	test_findfile \
 	test_fixeol \
+	test_flatten \
 	test_float_func \
 	test_fnameescape \
 	test_fnamemodify \

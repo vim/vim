@@ -617,7 +617,7 @@ static struct fst
     {"filter",		2, 2, f_filter},
     {"finddir",		1, 3, f_finddir},
     {"findfile",	1, 3, f_findfile},
-    {"flatten",		1, 1, f_flatten},
+    {"flatten",		1, 2, f_flatten},
 #ifdef FEAT_FLOAT
     {"float2nr",	1, 1, f_float2nr},
     {"floor",		1, 1, f_floor},
@@ -3841,10 +3841,15 @@ f_fmod(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
+/*
+ * "flatten(list[, {maxdepth}])" function
+ */
     static void
 f_flatten(typval_T *argvars, typval_T *rettv)
 {
-    list_T *l;
+    list_T  *l;
+    long    maxdepth;
+    int	    error = FALSE;
 
     if (argvars[0].v_type != VAR_LIST)
     {
@@ -3852,12 +3857,23 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)N_("flatten() argument"), TRUE)
-	    && rettv_list_alloc(rettv) == OK)
-	list_flatten(rettv->vval.v_list, l);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	maxdepth = p_mfd;
+    }
+    else
+    {
+	maxdepth = (long)get_tv_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+    }
 
-    printf("aaa: %p", rettv);
+    if ((l = argvars[0].vval.v_list) != NULL
+	    && !tv_check_lock(l->lv_lock, (char_u *)N_("flatten() argument"), TRUE))
+    {
+	list_flatten(l, maxdepth, 0);
+	copy_tv(&argvars[0], rettv);
+    }
 }
 
 /*

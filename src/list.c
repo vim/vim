@@ -592,29 +592,30 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 }
 
 /*
- * l2のリストをflatにしてl1に追加する.
+ * Make "list" flatting of this list recursively until "maxdepth".
  */
     void
-list_flatten(list_T *l1, list_T *l2)
+list_flatten(list_T *list, long maxdepth, long current_depth)
 {
     listitem_T *item;
-    listitem_T *copy_item;
+    listitem_T *tmp;
 
-    if (l1 == NULL || l2 == NULL)
+    if (maxdepth <= current_depth || list == NULL)
 	return;
 
-    for (item = l2->lv_first; item != NULL; item = item->li_next)
-    {
-	if (item->li_tv.v_type == VAR_LIST)
-	    list_flatten(l1, item->li_tv.vval.v_list);
-	else
-	{
-	    copy_item = listitem_alloc();
-	    copy_tv(&item->li_tv, &copy_item->li_tv);
-	    list_append(l1, copy_item);
-	}
-	printf("%p", l2);
-	printf("%p", item);
+    item = list->lv_first;
+    while (item != NULL) {
+	if (item->li_tv.v_type == VAR_LIST) {
+	    list_flatten(item->li_tv.vval.v_list, maxdepth, current_depth + 1);
+
+	    tmp = item->li_next;
+
+	    vimlist_remove(list, item, item);
+	    list_extend(list, item->li_tv.vval.v_list, tmp);
+
+	    item = tmp;
+	} else
+	    item = item->li_next;
     }
 }
 
