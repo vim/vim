@@ -3866,6 +3866,12 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 	maxdepth = (long)get_tv_number_chk(&argvars[1], &error);
 	if (error)
 	    return;
+	if (maxdepth < 0)
+	{
+	    // FIXME: return suitable error message.
+	    EMSG2(_(e_listarg), "flatten()");
+	    return;
+	}
     }
 
     if ((l = argvars[0].vval.v_list) != NULL
