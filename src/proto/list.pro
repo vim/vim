@@ -36,5 +36,5 @@ int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore
 int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_list(FILE *fd, list_T *list, int binary);
 void init_static_list(staticList10_T *sl);
-void list_flatten(list_T *list, long maxdepth, long current_depth);
+void list_flatten(list_T *list, long maxdepth);
 /* vim: set ft=c : */

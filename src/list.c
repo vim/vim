@@ -595,12 +595,12 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
  * Make "list" flatting of this list recursively until "maxdepth".
  */
     void
-list_flatten(list_T *list, long maxdepth, long current_depth)
+list_flatten(list_T *list, long maxdepth)
 {
     listitem_T *item;
     listitem_T *tmp;
 
-    if (maxdepth <= current_depth || list == NULL)
+    if (maxdepth == 0 || list == NULL)
 	return;
 
     item = list->lv_first;
@@ -608,7 +608,7 @@ list_flatten(list_T *list, long maxdepth, long current_depth)
     {
 	if (item->li_tv.v_type == VAR_LIST)
 	{
-	    list_flatten(item->li_tv.vval.v_list, maxdepth, current_depth + 1);
+	    list_flatten(item->li_tv.vval.v_list, maxdepth - 1);
 
 	    tmp = item->li_next;
 

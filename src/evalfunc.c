@@ -3871,7 +3871,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
     if ((l = argvars[0].vval.v_list) != NULL
 	    && !tv_check_lock(l->lv_lock, (char_u *)N_("flatten() argument"), TRUE))
     {
-	list_flatten(l, maxdepth, 0);
+	list_flatten(l, maxdepth);
 	copy_tv(&argvars[0], rettv);
     }
 }
