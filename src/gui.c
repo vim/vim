@@ -2753,9 +2753,15 @@ gui_redraw_block(
 	}
 	else if (enc_utf8)
 	{
-	    // FIXME: how can the first character ever be zero?
-	    if (col1 > 0 && ScreenLines[off + col1] == 0)
-		--col1;
+	    if (ScreenLines[off + col1] == 0)
+	    {
+		if (col1 > 0)
+		    --col1;
+		else
+		    // FIXME: how can the first character ever be zero?
+		    IEMSGN("INTERNAL ERROR: NUL in ScreenLines in row %ld",
+								      gui.row);
+	    }
 # ifdef FEAT_GUI_GTK
 	    if (col2 + 1 < Columns && ScreenLines[off + col2 + 1] == 0)
 		++col2;
