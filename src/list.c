@@ -600,7 +600,8 @@ list_flatten(list_T *list, long maxdepth)
     listitem_T *item;
     listitem_T *tmp;
 
-    if (maxdepth == 0 || list == NULL)
+    ui_breakcheck();
+    if (maxdepth == 0 || list == NULL || got_int)
 	return;
 
     item = list->lv_first;
