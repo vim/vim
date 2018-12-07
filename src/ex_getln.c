@@ -2475,7 +2475,7 @@ returncmd:
      */
     msg_check();
     msg_scroll = save_msg_scroll;
-    redir_on = TRUE;
+    redir_on = msg_silent + 1;  /* any later msg_silent++ will disable redir */
 
     /* When the command line was typed, no need for a wait-return prompt. */
     if (some_key_typed)

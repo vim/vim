@@ -3304,9 +3304,9 @@ f_execute(typval_T *argvars, typval_T *rettv)
 	save_ga = redir_execute_ga;
     ga_init2(&redir_execute_ga, (int)sizeof(char), 500);
     redir_execute = TRUE;
-    redir_on = TRUE;
     msg_col = 0;  // prevent leading spaces
 
+    redir_on = msg_silent + 1;  /* any later msg_silent++ will disable redir */
     if (cmd != NULL)
 	do_cmdline_cmd(cmd);
     else
@@ -3329,6 +3329,7 @@ f_execute(typval_T *argvars, typval_T *rettv)
 	ga_clear(&redir_execute_ga);
 	rettv->vval.v_string = NULL;
     }
+    redir_on = save_redir_on;   /* need to be restored together with msg_silent */
     msg_silent = save_msg_silent;
     emsg_silent = save_emsg_silent;
     emsg_noredir = save_emsg_noredir;
@@ -3336,7 +3337,6 @@ f_execute(typval_T *argvars, typval_T *rettv)
     redir_execute = save_redir_execute;
     if (redir_execute)
 	redir_execute_ga = save_ga;
-    redir_on = save_redir_on;
 
     // "silent reg" or "silent echo x" leaves msg_col somewhere in the line.
     // Put it back where it was, since nothing should have been written.

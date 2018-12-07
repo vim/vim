@@ -345,7 +345,7 @@ do_debug(char_u *cmd)
     cmd_silent = save_cmd_silent;
     msg_silent = save_msg_silent;
     emsg_silent = save_emsg_silent;
-    redir_on = save_redir_on;
+    redir_on = save_redir_on;   /* need to be restored together with msg_silent */
 
     /* Only print the message again when typing a command before coming back
      * here. */

@@ -1219,7 +1219,7 @@ wait_return(int redraw)
 				       typeahead */
 	}
     }
-    redir_on = TRUE;
+    redir_on = msg_silent + 1;  /* any later msg_silent++ will disable redir */
 
     /*
      * If the user hits ':', '?' or '/' we get a command line from the next
@@ -3316,7 +3316,9 @@ redir_write(char_u *str, int maxlen)
     static int	cur_col = 0;
 
     /* Don't do anything for displaying prompts and the like. */
-    if (!redir_on)
+    /* when we need redir, we set redir_on to be msg_silent + 1. Therefore, any later 
+     * silent will be able to disable redir. */
+    if (redir_on <= msg_silent)
 	return;
 
     /* If 'verbosefile' is set prepare for writing in that file. */
