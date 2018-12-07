@@ -604,8 +604,10 @@ list_flatten(list_T *list, long maxdepth, long current_depth)
 	return;
 
     item = list->lv_first;
-    while (item != NULL) {
-	if (item->li_tv.v_type == VAR_LIST) {
+    while (item != NULL)
+    {
+	if (item->li_tv.v_type == VAR_LIST)
+	{
 	    list_flatten(item->li_tv.vval.v_list, maxdepth, current_depth + 1);
 
 	    tmp = item->li_next;
@@ -614,7 +616,8 @@ list_flatten(list_T *list, long maxdepth, long current_depth)
 	    list_extend(list, item->li_tv.vval.v_list, tmp);
 
 	    item = tmp;
-	} else
+	}
+	else
 	    item = item->li_next;
     }
 }
