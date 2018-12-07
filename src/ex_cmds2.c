@@ -95,7 +95,7 @@ do_debug(char_u *cmd)
     int		save_cmd_silent = cmd_silent;
     int		save_msg_silent = msg_silent;
     int		save_emsg_silent = emsg_silent;
-    int		save_redir_off = redir_off;
+    int		save_redir_on = redir_on;
     tasave_T	typeaheadbuf;
     int		typeahead_saved = FALSE;
     int		save_ignore_script = 0;
@@ -137,7 +137,7 @@ do_debug(char_u *cmd)
     cmd_silent = FALSE;		/* display commands */
     msg_silent = FALSE;		/* display messages */
     emsg_silent = FALSE;	/* display error messages */
-    redir_off = TRUE;		/* don't redirect debug commands */
+    redir_on = FALSE;		/* don't redirect debug commands */
 
     State = NORMAL;
     debug_mode = TRUE;
@@ -345,7 +345,7 @@ do_debug(char_u *cmd)
     cmd_silent = save_cmd_silent;
     msg_silent = save_msg_silent;
     emsg_silent = save_emsg_silent;
-    redir_off = save_redir_off;
+    redir_on = save_redir_on;
 
     /* Only print the message again when typing a command before coming back
      * here. */

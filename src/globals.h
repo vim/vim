@@ -1103,7 +1103,7 @@ EXTERN int	keep_help_flag INIT(= FALSE); /* doing :ta from help file */
  */
 EXTERN char_u	*empty_option INIT(= (char_u *)"");
 
-EXTERN int  redir_off INIT(= FALSE);	/* no redirection for a moment */
+EXTERN int  redir_on INIT(= TRUE);	/* no redirection for a moment */
 EXTERN FILE *redir_fd INIT(= NULL);	/* message redirection file */
 #ifdef FEAT_EVAL
 EXTERN int  redir_reg INIT(= 0);	/* message redirection register */

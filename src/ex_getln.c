@@ -915,7 +915,7 @@ getcmdline_int(
 	cmdmsg_rl = FALSE;
 #endif
 
-    redir_off = TRUE;		/* don't redirect the typed command */
+    redir_on = FALSE;		/* don't redirect the typed command */
     if (!cmd_silent)
     {
 	i = msg_scrolled;
@@ -1005,7 +1005,7 @@ getcmdline_int(
      */
     for (;;)
     {
-	redir_off = TRUE;	/* Don't redirect the typed command.
+	redir_on = FALSE;	/* Don't redirect the typed command.
 				   Repeated, because a ":redir" inside
 				   completion may switch it on. */
 #ifdef USE_ON_FLY_SCROLL
@@ -2475,7 +2475,7 @@ returncmd:
      */
     msg_check();
     msg_scroll = save_msg_scroll;
-    redir_off = FALSE;
+    redir_on = TRUE;
 
     /* When the command line was typed, no need for a wait-return prompt. */
     if (some_key_typed)

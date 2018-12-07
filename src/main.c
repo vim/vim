@@ -4191,7 +4191,7 @@ eval_client_expr_to_string(char_u *expr)
 {
     char_u	*res;
     int		save_dbl = debug_break_level;
-    int		save_ro = redir_off;
+    int		save_redir_on = redir_on;
     funccal_entry_T funccal_entry;
     int		did_save_funccal = FALSE;
 
@@ -4206,7 +4206,7 @@ eval_client_expr_to_string(char_u *expr)
      /* Disable debugging, otherwise Vim hangs, waiting for "cont" to be
       * typed. */
     debug_break_level = -1;
-    redir_off = 0;
+    redir_on = TRUE;
     /* Do not display error message, otherwise Vim hangs, waiting for "cont"
      * to be typed.  Do generate errors so that try/catch works. */
     ++emsg_silent;
@@ -4214,7 +4214,7 @@ eval_client_expr_to_string(char_u *expr)
     res = eval_to_string(expr, NULL, TRUE);
 
     debug_break_level = save_dbl;
-    redir_off = save_ro;
+    redir_on = save_redir_on;
     --emsg_silent;
     if (emsg_silent < 0)
 	emsg_silent = 0;

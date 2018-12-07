@@ -1064,7 +1064,7 @@ wait_return(int redraw)
 	return;
     }
 
-    redir_off = TRUE;		/* don't redirect this message */
+    redir_on = FALSE;		/* don't redirect this message */
     oldState = State;
     if (quit_more)
     {
@@ -1219,7 +1219,7 @@ wait_return(int redraw)
 				       typeahead */
 	}
     }
-    redir_off = FALSE;
+    redir_on = TRUE;
 
     /*
      * If the user hits ':', '?' or '/' we get a command line from the next
@@ -3316,7 +3316,7 @@ redir_write(char_u *str, int maxlen)
     static int	cur_col = 0;
 
     /* Don't do anything for displaying prompts and the like. */
-    if (redir_off)
+    if (!redir_on)
 	return;
 
     /* If 'verbosefile' is set prepare for writing in that file. */

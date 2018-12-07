@@ -9850,7 +9850,7 @@ ex_redir(exarg_T *eap)
 			  || redir_reg || redir_vname
 #endif
 							)
-	redir_off = FALSE;
+	redir_on = TRUE;
 }
 
 /*
