@@ -61,3 +61,25 @@ func Test_execute_does_not_change_col()
   endfor
   call assert_equal('abcdxyz', text)
 endfunc
+
+func Test_execute_handles_silent_correctly()
+  func s:silent1()
+    echo 'hide me'
+  endfunc
+  func s:silent2()
+    echo undefined
+  endfunc
+  func s:silent3()
+    silent! call s:silent2()
+  endfunc
+
+  func s:silent()
+    echo 'show me'
+    silent call s:silent1()
+    call s:silent3()
+    echo 'show me again'
+  endfunc
+
+  let text = execute('call s:silent()')
+  call assert_equal("\nshow me\nshow me again", text)
+endfunc
