@@ -5820,7 +5820,6 @@ mch_detect_ended_job(job_T *job_list)
 mch_signal_job(job_T *job, char_u *how)
 {
     int	    sig = -1;
-    pid_t   job_pid;
 
     if (*how == NUL || STRCMP(how, "term") == 0)
 	sig = SIGTERM;
@@ -5841,16 +5840,13 @@ mch_signal_job(job_T *job, char_u *how)
     else
 	return FAIL;
 
-    /* TODO: have an option to only kill the process, not the group? */
-    job_pid = job->jv_pid;
-#ifdef HAVE_GETPGID
-    if (job_pid == getpgid(job_pid))
-	job_pid = -job_pid;
-#endif
-
-    /* Never kill ourselves! */
-    if (job_pid != 0)
-	kill(job_pid, sig);
+    // Never kill ourselves!
+    if (job->jv_pid != 0)
+    {
+	// TODO: have an option to only kill the process, not the group?
+	kill(-job->jv_pid, sig);
+	kill(job->jv_pid, sig);
+    }
 
     return OK;
 }
