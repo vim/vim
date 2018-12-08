@@ -3868,8 +3868,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 	    return;
 	if (maxdepth < 0)
 	{
-	    // FIXME: return suitable error message.
-	    EMSG2(_(e_listarg), "flatten()");
+	    EMSG2(_(e_nonneg), "maxdepth");
 	    return;
 	}
     }

@@ -1486,6 +1486,7 @@ EXTERN char_u e_nomap[]		INIT(= N_("E31: No such mapping"));
 EXTERN char_u e_nomatch[]	INIT(= N_("E479: No match"));
 EXTERN char_u e_nomatch2[]	INIT(= N_("E480: No match: %s"));
 EXTERN char_u e_noname[]	INIT(= N_("E32: No file name"));
+EXTERN char_u e_nonneg[]	INIT(= N_("E964: %s must be non negative number"));
 EXTERN char_u e_nopresub[]	INIT(= N_("E33: No previous substitute regular expression"));
 EXTERN char_u e_noprev[]	INIT(= N_("E34: No previous command"));
 EXTERN char_u e_noprevre[]	INIT(= N_("E35: No previous regular expression"));
