@@ -4043,10 +4043,10 @@ flatten({list} [, {maxdepth}])					*flatten()*
 			:echo flatten([1, [2], 3])
 <			[1, 2, 3] >
 			:echo flatten([[[1], [2], [3]]], 1)
-
-<			 [[1], [2], [3]]
+<			[[1], [2], [3]]
 							        *E964*
 		{maxdepth} must be positive number.
+
 float2nr({expr})					*float2nr()*
 		Convert {expr} to a Number by omitting the part after the
 		decimal point.
