@@ -597,29 +597,38 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
     void
 list_flatten(list_T *list, long maxdepth)
 {
-    listitem_T *item;
-    listitem_T *tmp;
+    listitem_T	*item;
+    int		n;
 
-    ui_breakcheck();
-    if (maxdepth == 0 || list == NULL || got_int)
-	return;
-
+    n = 0;
     item = list->lv_first;
-    while (item != NULL)
+    while (item != NULL && !got_int)
     {
+	line_breakcheck();
+
 	if (item->li_tv.v_type == VAR_LIST)
 	{
-	    list_flatten(item->li_tv.vval.v_list, maxdepth - 1);
-
-	    tmp = item->li_next;
+	    listitem_T *next = item->li_next;
 
 	    vimlist_remove(list, item, item);
-	    list_extend(list, item->li_tv.vval.v_list, tmp);
+	    list_extend(list, item->li_tv.vval.v_list, next);
 
-	    item = tmp;
+	    if (item->li_prev == NULL)
+		item = list->lv_first;
+	    else
+		item = item->li_prev->li_next;
+
+	    if (++n >= maxdepth)
+	    {
+		n = 0;
+		item = next;
+	    }
 	}
 	else
+	{
+	    n = 0;
 	    item = item->li_next;
+	}
     }
 }
 
