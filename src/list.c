@@ -600,6 +600,9 @@ list_flatten(list_T *list, long maxdepth)
     listitem_T	*item;
     int		n;
 
+    if (maxdepth == 0)
+	return;
+
     n = 0;
     item = list->lv_first;
     while (item != NULL && !got_int)

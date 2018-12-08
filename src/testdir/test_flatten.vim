@@ -21,13 +21,14 @@ func Test_flatten()
   call assert_equal([1, 2, 3], flatten([[1, 2], [], [3]]))
   call assert_equal([1, 2, 3], flatten([[], [1, 2, 3], []]))
 
-  " Make it flatten if the given maxdepth is larger than actual depth.
-  call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 1))
-  call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 2))
-
   call assert_equal([0, [1], 2, [3], 4], flatten([[0, [1]], 2, [[3], 4]], 1))
   call assert_equal([1, 2, 3], flatten([[[[1]]], [2], [3]], 3))
   call assert_equal([[1], [2], [3]], flatten([[[1], [2], [3]]], 1))
+  call assert_equal([[1]], flatten([[1]], 0))
+
+  " Make it flatten if the given maxdepth is larger than actual depth.
+  call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 1))
+  call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 2))
 
   let l:list = [[1], [2], [3]]
   call assert_equal([1, 2, 3], flatten(l:list))
