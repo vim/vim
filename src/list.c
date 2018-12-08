@@ -592,16 +592,18 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 }
 
 /*
- * Make "list" flatting of this list recursively until "maxdepth".
+ * Flatten "list" to depth "maxdepth".
+ * It does nothing if "maxdepth" is 0.
+ * Returns FAIL when out of memory.
  */
-    void
+    int
 list_flatten(list_T *list, long maxdepth)
 {
     listitem_T	*item;
     int		n;
 
     if (maxdepth == 0)
-	return;
+	return OK;
 
     n = 0;
     item = list->lv_first;
@@ -614,7 +616,8 @@ list_flatten(list_T *list, long maxdepth)
 	    listitem_T *next = item->li_next;
 
 	    vimlist_remove(list, item, item);
-	    list_extend(list, item->li_tv.vval.v_list, next);
+	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
+		return FAIL;
 
 	    if (item->li_prev == NULL)
 		item = list->lv_first;
@@ -633,6 +636,8 @@ list_flatten(list_T *list, long maxdepth)
 	    item = item->li_next;
 	}
     }
+
+    return OK;
 }
 
 /*

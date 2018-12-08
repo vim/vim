@@ -27,6 +27,7 @@ int list_append_string(list_T *l, char_u *str, int len);
 int list_append_number(list_T *l, varnumber_T n);
 int list_insert_tv(list_T *l, typval_T *tv, listitem_T *item);
 void list_insert(list_T *l, listitem_T *ni, listitem_T *item);
+int list_flatten(list_T *list, long maxdepth);
 int list_extend(list_T *l1, list_T *l2, listitem_T *bef);
 int list_concat(list_T *l1, list_T *l2, typval_T *tv);
 list_T *list_copy(list_T *orig, int deep, int copyID);
@@ -36,5 +37,4 @@ int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore
 int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_list(FILE *fd, list_T *list, int binary);
 void init_static_list(staticList10_T *sl);
-void list_flatten(list_T *list, long maxdepth);
 /* vim: set ft=c : */
