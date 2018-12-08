@@ -3859,7 +3859,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type == VAR_UNKNOWN)
     {
-	maxdepth = p_mfd;
+	maxdepth = 1;
     }
     else
     {

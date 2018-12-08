@@ -3,8 +3,9 @@ func Test_flatten()
   call assert_fails('call flatten(1)', 'E686:')
   call assert_fails('call flatten({})', 'E686:')
   call assert_fails('call flatten("string")', 'E686:')
-  call assert_equal([], flatten([], 0))
-  call assert_equal([], flatten([[[[[[[[[[[[]]]]]]]]]]]]))
+  call assert_equal([], flatten([]))
+  call assert_equal([], flatten([[]]))
+  call assert_equal([[]], flatten([[[]]]))
 
   call assert_equal([1, 2, 3], flatten([1, 2, 3]))
   call assert_equal([1, 2, 3], flatten([[1], 2, 3]))
@@ -15,16 +16,18 @@ func Test_flatten()
   call assert_equal([1, 2, 3], flatten([[1], 2, [3]]))
   call assert_equal([1, 2, 3], flatten([[1], [2], [3]]))
 
-  call assert_equal([1, 2, 3], flatten([[[[1]]], [2], [3]]))
   call assert_equal([1, 2, 3], flatten([[1, 2, 3], []]))
   call assert_equal([1, 2, 3], flatten([[], [1, 2, 3]]))
   call assert_equal([1, 2, 3], flatten([[1, 2], [], [3]]))
   call assert_equal([1, 2, 3], flatten([[], [1, 2, 3], []]))
 
+  " Make it flatten if the given maxdepth is larger than actual depth.
   call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 1))
   call assert_equal([1, 2, 3], flatten([[1, 2, 3]], 2))
+
+  call assert_equal([0, [1], 2, [3], 4], flatten([[0, [1]], 2, [[3], 4]], 1))
+  call assert_equal([1, 2, 3], flatten([[[[1]]], [2], [3]], 3))
   call assert_equal([[1], [2], [3]], flatten([[[1], [2], [3]]], 1))
-  call assert_equal([0, [1], 2, [3], 4], flatten([[0,[1]],2,[[3],4]], 1))
 
   let l:list = [[1], [2], [3]]
   call assert_equal([1, 2, 3], flatten(l:list))
@@ -64,6 +67,6 @@ func Test_flatten()
   let l:y = [2]
   call add(x, y) " l:x = [1, [2]]
   call add(y, x) " l:y = [2, [1, [...]]]
-  call assert_equal([1, 2, 1, 2], flatten(l:x))
+  call assert_equal([1, 2, 1, 2], flatten(l:x, 2))
   call assert_equal([2, l:x], l:y)
 endfunc
