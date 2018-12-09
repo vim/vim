@@ -1993,7 +1993,6 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	for (list = curbuf->b_p_com; *list; )
 	{
 	    char_u *flags_save = list;
-	    int	    is_only_whitespace = FALSE;
 
 	    /*
 	     * Get one option part into part_buf[].  Advance list to next one.
@@ -2021,8 +2020,6 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		    continue;
 		while (VIM_ISWHITE(*string))
 		    ++string;
-		if (*string == NUL)
-		    is_only_whitespace = TRUE;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
 		/* do nothing */;
@@ -2037,11 +2034,13 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		    && !VIM_ISWHITE(line[i + j]) && line[i + j] != NUL)
 		continue;
 
-	    // For a middlepart comment that is only white space, only consider
-	    // it to match if everything before the current position in the
-	    // line is also whitespace.
-	    if (is_only_whitespace && vim_strchr(part_buf, COM_MIDDLE) != NULL)
+	    if (vim_strchr(part_buf, COM_MIDDLE) != NULL)
 	    {
+		// For a middlepart comment, only consider it to match if
+		// everything before the current position in the line is
+		// whitespace.  Otherwise we would think we are inside a
+		// comment if the middle part appears somewhere in the middle
+		// of the line.  E.g. for C the "*" appears often.
 		for (j = 0; VIM_ISWHITE(line[j]) && j <= i; j++)
 		    ;
 		if (j < i)
