@@ -4036,9 +4036,9 @@ findfile({name} [, {path} [, {count}]])				*findfile()*
 		it finds the file "tags.vim".
 
 flatten({list} [, {maxdepth}])					*flatten()*
-		Flatten {list} to depth {maxdepth}. {maxdepth} means how
-		deeply it makes flatten the list. the depth is 1 when
-		{maxdepth} is omitted. {list} is not modified when
+		Flatten {list} to depth {maxdepth}.  {maxdepth} means how
+		deeply it makes flatten the list.  the depth is 1 when
+		{maxdepth} is omitted.  {list} is not modified when
 		{maxdepth} is 0.
 		Example: >
 			:echo flatten([1, [2], 3])
