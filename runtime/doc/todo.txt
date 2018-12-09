@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2018 May 17
+*todo.txt*      For Vim version 8.1.  Last change: 2018 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Make ":script 40" edit the script listed with number 40.  Actually use
-":scriptnames".
-
-Download page: "A 64 bit version" link is wrong, use this one instead:
-https://github.com/vim/vim-win32-installer/releases/latest
-
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
+- :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
+   pass delim to do_search() ?
 - Also support range: :/foo/,/bar/delete
 - Also support for user command, e.g. Cfilter
 - :%s/foo should take the first match below the cursor line, unless there
@@ -105,21 +101,18 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Users get used to "function!" because they reload a script file.  How about
-recognizing the script is re-sourced and not giving an error for the first
-function that overwrites.  Then one can leave out the exclamation mark and
-catch actual errors, overwriting a function from another script.
+":function" can now silently overwrite the function from the same script.
+Do the same for ":command" ?
 
 Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990f8817a50d3264782a5...3b27c92f297540761ebbd92d04fb3
 (Christian Brabandt, 2018 Nov 4)
 
-Patch for nsis/README.txt and uninstal.txt (Ken Takata, 2018 Nov 17, #3614)
-
-Patch to add commandline completion tests. (Dominique, #3622)
-
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)
+
+Patch to add configure flags to skip rtl, farsi and arabic support.
+(Diego Carrión, #1867)
 
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
@@ -128,15 +121,20 @@ Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
 
-Adding a fold with a marker in a C file doesn't add the comment /* */ if the
-line contains a * somewhere.  Patch with a fix (Hirohito Higashi, 2018 Nov 22)
-
 Crash in terminal with long multi-byte sequence. (2018 Nov 17, #3619)
 Dominique cannot reproduce. Update Nov 18.
 Suggested solution by Yasuhiro Matsumoto, 2018 Nov 18.
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
+
+Patch to simplify nsis installer. (Ken Takata, 2018 Sep 24, was #3479)
+Now included in #3501, using MUI2.  Use the zip file to get the binary files:
+https://github.com/vim/vim/files/2475621/nsis-icons.zip
+Ready to include now.
+
+Patch to add blob type support.  (Yasuhiro Matsumoto, 2018 Nov 26, #3638)
+Not done yet.
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -146,6 +144,9 @@ mappings no longer work.  Create a new terminal for the better solution?
 
 Patch to fix that appending makes items to be "recognized".
 (Yegappan, 2018 Nov 23). Reported by Daniel Hahler, #3633.
+
+Patch to define and manipulate signs with functions.  Adds sign groups and
+priority.   (Yegappan Lakshmanan, #3652)
 
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
@@ -175,9 +176,6 @@ C syntax: {} inside () causes following {} to be highlighted as error.
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
-Quickfix accessing free memory. (Dominique, 2018 Oct 13, #3538)
-Yegappan will look into it.
-
 Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
     missing a test.
 7   Make 'scrolloff' a global-local option, so that it can be different in the
@@ -199,13 +197,11 @@ punctiuation is repeated. (Smylers, 2018 Nov 17, #3621)
 ":mksession" cannot handle a very long 'runtimepath'. (Timothy Madden, 21 Sep
 2018, #3466)  Patch from Christian, 2018 Oct 30 (with comments).
 
+Patch to add functions for signs. (Yegappan Lakshmanan, 2018 Nov 24)
+obsolete: Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
+
 Patch in pull request #2967: Allow white space in sign text. (Ben Jackson)
 Test fails in AppVeyor.
-
-Patch to simplify nsis installer. (Ken Takata, 2018 Sep 24, was #3479)
-Now included in #3501, using MUI2.  Use the zip file to get the binary files:
-https://github.com/vim/vim/files/2475621/nsis-icons.zip
-Still being worked on.
 
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
 
@@ -227,6 +223,9 @@ Patch to implement 'diffref' option. (#3535)
 
 Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
 
+Patch for lnext/lprev work in specific cases. (Yegappan Lakshmanan, 2018 Dec
+4, #3633)
+
 cursorline highlighting not removed after yanking in Visual mode.
 (Matéo Zanibelli, 2018 Oct 30, #3578)
 Patch by Christian, Oct 30.
@@ -245,6 +244,9 @@ Memory leak in test_terminal:
 ==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
+
+Patch to add match count and current index "3/44" when using "n" command.
+(Christian Brabandt, on issue #453).  Only when search string was typed?
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
@@ -287,6 +289,9 @@ Further xdiff changes:
 - add option to use external diff above a certain size.
 
 Difference between two regexp engines: #3373
+
+Patch to add ch_listen() (Yasuhiro Matsumoto, 2018 Nov 26, #3639)
+What is the practical use for this?
 
 When the last line wraps, selecting with the mouse below that line only
 includes the first screen line. (2018 Aug 23, #3368)
@@ -758,9 +763,6 @@ Is it possible to keep the complete menu open when calling complete()?
 (Prabir Shrestha, 2017 May 19, #1713)
 
 Memory leak in test97?  The string is actually freed.  Weird.
-
-Patch to add configure flags to skip rtl, farsi and arabic support.
-(Diego Carrión, #1867)
 
 assert_fails() can only check for the first error.  Make it possible to have
 it catch multiple errors and check all of them.
@@ -1653,8 +1655,6 @@ Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
 
 Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
-
-Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
 
 Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
 

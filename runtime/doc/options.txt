@@ -8126,7 +8126,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	separated by non-keyword characters (white space is preferred).
 	Maximum line length is 510 bytes.
 
-	Unfortunately we currently cannot recommend a file to be used here.
+	An English word list was added to this github issue:
+	https://github.com/vim/vim/issues/629#issuecomment-443293282
+	Unpack thesaurus_pkg.zip, put the thesaurus.txt file somewhere, e.g.
+	~/.vim/thesaurus/english.txt, and the 'thesaurus' option to this file
+	name.
 
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
@@ -8432,8 +8436,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|t_RV| is set to the escape sequence to request the xterm version
 	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
-	from 95 to 276.  The "sgr" value will be set if the xterm version is
-	277 or higher and when Vim detects Mac Terminal.app or iTerm2.
+	from 95 to 276.  The "sgr" value will be set if Vim detects Mac
+	Terminal.app, iTerm2 or mintty, and when the xterm version is 277 or
+	higher.
 	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
 	automatically, set t_RV to an empty string: >
 		:set t_RV=

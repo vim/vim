@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 May 17
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -518,7 +518,7 @@ To loop over the values use the |values()| function:  >
 	:endfor
 
 If you want both the key and the value use the |items()| function.  It returns
-a List in which each item is a	List with two items, the key and the value: >
+a List in which each item is a List with two items, the key and the value: >
 	:for [key, value] in items(mydict)
 	:   echo key . ': ' . value
 	:endfor
@@ -1088,11 +1088,6 @@ These are INVALID:
 	3.		empty {M}
 	1e40		missing .{M}
 
-							*float-pi* *float-e*
-A few useful values to copy&paste: >
-	:let pi = 3.14159265359
-	:let e  = 2.71828182846
-
 Rationale:
 Before floating point was introduced, the text "123.456" was interpreted as
 the two numbers "123" and "456", both converted to a string and concatenated,
@@ -1100,6 +1095,15 @@ resulting in the string "123456".  Since this was considered pointless, and we
 could not find it intentionally being used in Vim scripts, this backwards
 incompatibility was accepted in favor of being able to use the normal notation
 for floating point numbers.
+
+							*float-pi* *float-e*
+A few useful values to copy&paste: >
+	:let pi = 3.14159265359
+	:let e  = 2.71828182846
+Or, if you don't want to write them in as floating-point literals, you can
+also use functions, like the following: >
+	:let pi = acos(-1.0)
+	:let e  = exp(1.0)
 
 						*floating-point-precision*
 The precision and range of floating points numbers depends on what "double"
@@ -1438,7 +1442,9 @@ Note that this means that filetype plugins don't get a different set of script
 variables for each buffer.  Use local buffer variables instead |b:var|.
 
 
-Predefined Vim variables:			*vim-variable* *v:var* *v:*
+PREDEFINED VIM VARIABLES			*vim-variable* *v:var* *v:*
+								*E963*
+Some variables can be set by the user, but the type cannot be changed.
 
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.
@@ -7845,7 +7851,8 @@ str2float({expr})					*str2float()*
 		as when using a floating point number in an expression, see
 		|floating-point-format|.  But it's a bit more permissive.
 		E.g., "1e40" is accepted, while in an expression you need to
-		write "1.0e40".
+		write "1.0e40".  The hexadecimal form "0x123" is also
+		accepted, but not others, like binary or octal.
 		Text after the number is silently ignored.
 		The decimal point is always '.', no matter what the locale is
 		set to.  A comma ends the number: "12,345.67" is converted to

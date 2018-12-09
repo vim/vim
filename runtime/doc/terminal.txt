@@ -110,7 +110,7 @@ sent to the job running in the terminal.  For example, to make F1 switch
 to Terminal-Normal mode: >
    tnoremap <F1> <C-W>N
 You can use Esc, but you need to make sure it won't cause other keys to
-break: >
+break (cursor keys start with an Esc, so they may break): >
    tnoremap <Esc> <C-W>N
    set notimeout ttimeout timeoutlen=100
 

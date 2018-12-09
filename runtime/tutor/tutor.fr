@@ -685,8 +685,8 @@ NOTE : Si vous quittez Vim et le redémarrez de nouveau avec le fichier TEST,
        celui-ci sera une copie exacte de ce cours au moment où vous l'avez
        enregistré.
 
-  5. Maintenant, effacez le fichier en tapant (MS-DOS) :   :!del TEST
-                                           ou (Unix) :     :!rm TEST
+  5. Maintenant, effacez le fichier en tapant (Windows) :   :!del TEST
+                                           ou (Unix) :      :!rm TEST
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -731,7 +731,7 @@ NOTE :  Après avoir exécuté l'étape 2 vous verrez du texte de la Leçon 5.3.
      où TEST est le nom de votre fichier.
      Le fichier que vous récupérez est placé au-dessous de la ligne du curseur.
 
-  4. Pour vérifier que le fichier a bien été inséré, remontez et vérifiez
+  3. Pour vérifier que le fichier a bien été inséré, remontez et vérifiez
      qu'il y a maintenant deux copies de la Leçon 5.3, l'originale et celle
      contenue dans le fichier.
 
@@ -747,12 +747,12 @@ NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par exemple,
   1. :!commande  exécute une commande externe.
 
      Quelques exemples pratiques :
-      (MS-DOS)        (Unix)
+      (Windows)       (Unix)
        :!dir           :!ls          affiche le contenu du répertoire courant.
        :!del FICHIER   :!rm FICHIER  efface FICHIER.
 
   2. :w FICHIER  enregistre le fichier Vim courant sur le disque avec pour
-                  nom FICHIER.
+     nom FICHIER.
 
   3. v  déplacement  :w FICHIER sauvegarde les lignes de la sélection Visuelle
      dans le fichier FICHIER.
@@ -950,7 +950,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
   1. Commencez à éditer le fichier "vimrc". Ceci dépend de votre système :
         :edit ~/.vimrc         pour Unix
-        :edit $VIM/_vimrc      pour MS-Windows
+        :edit $VIM/_vimrc      pour Windows
 
   2. Lisez maintenant le fichier d'exemple "vimrc" :
         :r $VIMRUNTIME/vimrc_example.vim
@@ -978,7 +978,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
   4. Appuyez  CTRL-D  et Vim affichera une liste de commandes qui commencent
      par "e".
 
-  5. Appuyez  <TAB>  et Vim complétera le nom de la commande :  ":edit"
+  5. Appuyez  d<TAB>  et Vim complétera le nom de la commande :  ":edit"
 
   6. Ajoutez maintenant un espace et le début d'un fichier existant :
      :edit  FIC
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2017 Jun 30
+  Last Change : 2018 Dec 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
