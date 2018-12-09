@@ -40,12 +40,12 @@ func Test_flatten()
   " Tests for checking reference counter works well.
   let l:x = {'foo': 'bar'}
   call assert_equal([1, 2, l:x, 3], flatten([1, [2, l:x], 3]))
-  call garbagecollect()
+  call test_garbagecollect_now()
   call assert_equal('bar', l:x.foo)
 
   let l:list = [[1], [2], [3]]
   call assert_equal([1, 2, 3], flatten(l:list))
-  call garbagecollect()
+  call test_garbagecollect_now()
   call assert_equal([1, 2, 3], l:list)
 
   " Tests for checking circular reference list can be flatten.
@@ -53,7 +53,7 @@ func Test_flatten()
   let l:y = [x]
   let l:z = flatten(l:y)
   call assert_equal([1], l:z)
-  call garbagecollect()
+  call test_garbagecollect_now()
   let l:x[0] = 2
   call assert_equal([2], l:x)
   call assert_equal([1], l:z) " NOTE: primitive types are copied.
