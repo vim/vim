@@ -9523,7 +9523,7 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		EMSG(_("E966: Can only compare Blob with Blob"));
+		EMSG(_("E969: Can only compare Blob with Blob"));
 	    else
 		EMSG(_("E967: Invalid operation for Blob"));
 	    clear_tv(typ1);
@@ -10657,8 +10657,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		tv.v_type = VAR_NUMBER;
 		vimvars[VV_KEY].vv_nr = idx;
 		tv.vval.v_number = blob_get(b, i);
-		if (filter_map_one(&tv, expr, map, &rem) == FAIL
-								  || did_emsg)
+		if (filter_map_one(&tv, expr, map, &rem) == FAIL || did_emsg)
 		    break;
 		if (tv.v_type != VAR_NUMBER)
 		{

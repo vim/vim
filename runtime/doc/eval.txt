@@ -9059,7 +9059,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			None	    7  |v:t_none| (v:null and v:none)
 			Job	    8  |v:t_job|
 			Channel	    9  |v:t_channel|
-			Channel	   10  |v:t_blob|
+			Blob	   10  |v:t_blob|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
