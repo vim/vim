@@ -6241,14 +6241,16 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 
 /*
  * Add a new quickfix entry to list at 'qf_idx' in the stack 'qi' from the
- * items in the dict 'd'.
+ * items in the dict 'd'. If it is a valid error entry, then set 'valid_entry'
+ * to TRUE.
  */
     static int
 qf_add_entry_from_dict(
 	qf_info_T	*qi,
 	int		qf_idx,
 	dict_T		*d,
-	int		first_entry)
+	int		first_entry,
+	int		*valid_entry)
 {
     static int	did_bufnr_emsg;
     char_u	*filename, *module, *pattern, *text, *type;
@@ -6313,6 +6315,9 @@ qf_add_entry_from_dict(
     vim_free(text);
     vim_free(type);
 
+    if (valid)
+	*valid_entry = TRUE;
+
     return status;
 }
 
@@ -6333,6 +6338,7 @@ qf_add_entries(
     dict_T	*d;
     qfline_T	*old_last = NULL;
     int		retval = OK;
+    int		valid_entry = FALSE;
 
     if (action == ' ' || qf_idx == qi->qf_listcount)
     {
@@ -6359,22 +6365,27 @@ qf_add_entries(
 	if (d == NULL)
 	    continue;
 
-	retval = qf_add_entry_from_dict(qi, qf_idx, d, li == list->lv_first);
+	retval = qf_add_entry_from_dict(qi, qf_idx, d, li == list->lv_first,
+								&valid_entry);
 	if (retval == FAIL)
 	    break;
     }
 
-    if (qfl->qf_index == 0)
+    // Check if any valid error entries are added to the list.
+    if (valid_entry)
+	qfl->qf_nonevalid = FALSE;
+    else if (qfl->qf_index == 0)
 	// no valid entry
 	qfl->qf_nonevalid = TRUE;
-    else
-	qfl->qf_nonevalid = FALSE;
+
+    // If not appending to the list, set the current error to the first entry
     if (action != 'a')
-    {
 	qfl->qf_ptr = qfl->qf_start;
-	if (!qf_list_empty(qi, qf_idx))
-	    qfl->qf_index = 1;
-    }
+
+    // Update the current error index if not appending to the list or if the
+    // list was empty before and it is not empty now.
+    if ((action != 'a' || qfl->qf_index == 0) && !qf_list_empty(qi, qf_idx))
+	qfl->qf_index = 1;
 
     // Don't update the cursor in quickfix window when appending entries
     qf_update_buffer(qi, old_last);
