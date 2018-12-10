@@ -6253,22 +6253,32 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 
 	tv->v_type = VAR_STRING;
 #else
-	tv->v_type = VAR_BLOB;
-	tv->vval.v_blob = blob_alloc();
-	if (tv->vval.v_blob == NULL)
+	if (PyBytes_CheckExact(obj))
 	{
-	    PyErr_NoMemory();
-	    return -1;
+	    if (set_string_copy(str, tv) == -1)
+		return -1;
+
+	    tv->v_type = VAR_STRING;
 	}
-	if (ga_grow(&tv->vval.v_blob->bv_ga, len) == FAIL)
+	else
 	{
-	    blob_free(tv->vval.v_blob);
-	    PyErr_NoMemory();
-	    return -1;
+	    tv->v_type = VAR_BLOB;
+	    tv->vval.v_blob = blob_alloc();
+	    if (tv->vval.v_blob == NULL)
+	    {
+		PyErr_NoMemory();
+		return -1;
+	    }
+	    if (ga_grow(&tv->vval.v_blob->bv_ga, len) == FAIL)
+	    {
+		blob_free(tv->vval.v_blob);
+		PyErr_NoMemory();
+		return -1;
+	    }
+	    tv->vval.v_blob->bv_ga.ga_len = len;
+	    mch_memmove(tv->vval.v_blob->bv_ga.ga_data, str, len);
+	    ++tv->vval.v_blob->bv_refcount;
 	}
-	tv->vval.v_blob->bv_ga.ga_len = len;
-	mch_memmove(tv->vval.v_blob->bv_ga.ga_data, str, len);
-	++tv->vval.v_blob->bv_refcount;
 #endif
     }
     else if (PyUnicode_Check(obj))
