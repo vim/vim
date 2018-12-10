@@ -2998,6 +2998,7 @@ parse_cmd_address(exarg_T *eap, char_u **errormsg, int silent)
 			}
 			break;
 		    case ADDR_TABS_RELATIVE:
+		    case ADDR_OTHER:
 			*errormsg = (char_u *)_(e_invrange);
 			return FAIL;
 		    case ADDR_ARGUMENTS:
@@ -5868,9 +5869,13 @@ uc_add_command(
 
 	if (cmp == 0)
 	{
-	    if (!force)
+	    // Command can be replaced with "command!" and when sourcing the
+	    // same script again, but only once.
+	    if (!force && (cmd->uc_script_ctx.sc_sid != current_sctx.sc_sid
+			  || cmd->uc_script_ctx.sc_seq == current_sctx.sc_seq))
 	    {
-		EMSG(_("E174: Command already exists: add ! to replace it"));
+		EMSG2(_("E174: Command already exists: add ! to replace it: %s"),
+									 name);
 		goto fail;
 	    }
 
@@ -5940,6 +5945,7 @@ static struct
     {ADDR_BUFFERS, "buffers"},
     {ADDR_WINDOWS, "windows"},
     {ADDR_QUICKFIX, "quickfix"},
+    {ADDR_OTHER, "other"},
     {-1, NULL}
 };
 #endif

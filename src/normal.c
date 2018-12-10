@@ -8143,6 +8143,7 @@ nv_g_cmd(cmdarg_T *cap)
 	    do
 		i = gchar_cursor();
 	    while (VIM_ISWHITE(i) && oneright() == OK);
+	    curwin->w_valid &= ~VALID_WCOL;
 	}
 	curwin->w_set_curswant = TRUE;
 	break;

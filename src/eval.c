@@ -7843,7 +7843,10 @@ set_var(
 		return;
 	    }
 	    else if (v->di_tv.v_type != tv->v_type)
-		internal_error("set_var()");
+	    {
+		EMSG2(_("E963: setting %s to value with wrong type"), name);
+		return;
+	    }
 	}
 
 	clear_tv(&v->di_tv);
@@ -8284,6 +8287,7 @@ ex_echo(exarg_T *eap)
     int		needclr = TRUE;
     int		atstart = TRUE;
     char_u	numbuf[NUMBUFLEN];
+    int		did_emsg_before = did_emsg;
 
     if (eap->skip)
 	++emsg_skip;
@@ -8301,7 +8305,7 @@ ex_echo(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting())
+	    if (!aborting() && did_emsg == did_emsg_before)
 		EMSG2(_(e_invexpr2), p);
 	    need_clr_eos = FALSE;
 	    break;
@@ -8399,7 +8403,7 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg;
+    int		save_did_emsg = did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -8415,7 +8419,7 @@ ex_execute(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting())
+	    if (!aborting() && did_emsg == save_did_emsg)
 		EMSG2(_(e_invexpr2), p);
 	    ret = FAIL;
 	    break;

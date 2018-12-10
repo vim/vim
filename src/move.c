@@ -1961,7 +1961,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	    scrolled += loff.height;
 	    if (loff.lnum == curwin->w_botline
 #ifdef FEAT_DIFF
-			    && boff.fill == 0
+			    && loff.fill == 0
 #endif
 		    )
 		scrolled -= curwin->w_empty_rows;

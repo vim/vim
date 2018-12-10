@@ -2173,6 +2173,7 @@ diffopt_changed(void)
     int		diff_flags_new = 0;
     int		diff_foldcolumn_new = 2;
     long	diff_algorithm_new = 0;
+    long	diff_indent_heuristic = 0;
     tabpage_T	*tp;
 
     p = p_dip;
@@ -2236,7 +2237,7 @@ diffopt_changed(void)
 	else if (STRNCMP(p, "indent-heuristic", 16) == 0)
 	{
 	    p += 16;
-	    diff_algorithm_new |= XDF_INDENT_HEURISTIC;
+	    diff_indent_heuristic = XDF_INDENT_HEURISTIC;
 	}
 	else if (STRNCMP(p, "internal", 8) == 0)
 	{
@@ -2275,6 +2276,8 @@ diffopt_changed(void)
 	if (*p == ',')
 	    ++p;
     }
+
+    diff_algorithm_new |= diff_indent_heuristic;
 
     /* Can't have both "horizontal" and "vertical". */
     if ((diff_flags_new & DIFF_HORIZONTAL) && (diff_flags_new & DIFF_VERTICAL))

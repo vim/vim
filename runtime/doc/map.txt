@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.1.  Last change: 2018 May 13
+*map.txt*       For Vim version 8.1.  Last change: 2018 Dec 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1223,6 +1223,10 @@ See |:verbose-cmd| for more information.
 			attributes (see below) are {attr}.  If the command
 			already exists, an error is reported, unless a ! is
 			specified, in which case the command is redefined.
+			There is one exception: When sourcing a script again,
+			a command that was previously defined in that script
+			will be silently replaced.
+
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
@@ -1230,7 +1234,8 @@ See |:verbose-cmd| for more information.
 :comc[lear]						*:comc* *:comclear*
 			Delete all user-defined commands.
 
-Command attributes
+
+Command attributes ~
 
 User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
@@ -1241,8 +1246,9 @@ There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
 attributes are described below, by category.
 
-Argument handling				*E175* *E176* *:command-nargs*
 
+Argument handling ~
+						*E175* *E176* *:command-nargs*
 By default, a user defined command will take no arguments (and an error is
 reported if any are supplied).  However, it is possible to specify that the
 command can take arguments, using the -nargs attribute.  Valid cases are:
@@ -1271,8 +1277,10 @@ defined, not where it is invoked!  Example:
 Executing script2.vim will result in "None" being echoed.  Not what you
 intended!  Calling a function may be an alternative.
 
-Completion behavior				*:command-completion* *E179*
-					*E180* *E181* *:command-complete*
+
+Completion behavior ~
+				*:command-completion* *E179* *E180* *E181* 
+				*:command-complete*
 By default, the arguments of user defined commands do not undergo completion.
 However, by specifying one or the other of the following attributes, argument
 completion can be enabled:
@@ -1317,9 +1325,9 @@ completion can be enabled:
 Note: That some completion methods might expand environment variables.
 
 
-Custom completion			*:command-completion-custom*
-					*:command-completion-customlist*
-					*E467* *E468*
+Custom completion ~
+				*:command-completion-custom*
+				*:command-completion-customlist* *E467* *E468*
 It is possible to define customized completion schemes via the "custom,{func}"
 or the "customlist,{func}" completion argument.  The {func} part should be a
 function with the following signature: >
@@ -1364,8 +1372,8 @@ the 'path' option: >
 This example does not work for file names with spaces!
 
 
-Range handling				*E177* *E178* *:command-range*
-							*:command-count*
+Range handling ~
+				*E177* *E178* *:command-range* *:command-count*
 By default, user-defined commands do not accept a line number range.  However,
 it is possible to specify that the command does take a range (the -range
 attribute), or that it takes an arbitrary count value, either in the line
@@ -1399,8 +1407,11 @@ Possible values are:
 	-addr=loaded_buffers	Range for loaded buffers
 	-addr=windows		Range for windows
 	-addr=tabs		Range for tab pages
+	-addr=other		other kind of range 
 
-Special cases				*:command-bang* *:command-bar*
+
+Special cases ~
+					*:command-bang* *:command-bar*
 					*:command-register* *:command-buffer*
 There are some special cases as well:
 
@@ -1418,7 +1429,8 @@ replacement text separately.
 Note that these arguments can be abbreviated, but that is a deprecated
 feature.  Use the full name for new scripts.
 
-Replacement text
+
+Replacement text ~
 
 The replacement text for a user defined command is scanned for special escape
 sequences, using <...> notation.  Escape sequences are replaced with values

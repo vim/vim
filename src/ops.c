@@ -334,7 +334,7 @@ shift_line(
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)get_sw_value(curbuf);
+    int		p_sw = (int)get_sw_value_indent(curbuf);
 
     count = get_indent();	/* get current indent */
 
@@ -386,7 +386,7 @@ shift_block(oparg_T *oap, int amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)get_sw_value(curbuf);
+    int			p_sw = (int)get_sw_value_indent(curbuf);
 #ifdef FEAT_VARTABS
     int			*p_vts = curbuf->b_p_vts_array;
 #endif

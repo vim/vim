@@ -2018,7 +2018,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	    {
 		if (i == 0 || !VIM_ISWHITE(line[i - 1]))
 		    continue;
-		while (VIM_ISWHITE(string[0]))
+		while (VIM_ISWHITE(*string))
 		    ++string;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
@@ -2032,8 +2032,19 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	     */
 	    if (vim_strchr(part_buf, COM_BLANK) != NULL
 		    && !VIM_ISWHITE(line[i + j]) && line[i + j] != NUL)
-	    {
 		continue;
+
+	    if (vim_strchr(part_buf, COM_MIDDLE) != NULL)
+	    {
+		// For a middlepart comment, only consider it to match if
+		// everything before the current position in the line is
+		// whitespace.  Otherwise we would think we are inside a
+		// comment if the middle part appears somewhere in the middle
+		// of the line.  E.g. for C the "*" appears often.
+		for (j = 0; VIM_ISWHITE(line[j]) && j <= i; j++)
+		    ;
+		if (j < i)
+		    continue;
 	    }
 
 	    /*

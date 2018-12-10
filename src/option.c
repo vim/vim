@@ -3284,7 +3284,7 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
 static char_u *term_bg_default(void);
-static void did_set_option(int opt_idx, int opt_flags, int new_value);
+static void did_set_option(int opt_idx, int opt_flags, int new_value, int value_checked);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -3295,7 +3295,7 @@ static long_u *insecure_flag(int opt_idx, int opt_flags);
 # define insecure_flag(opt_idx, opt_flags) (&options[opt_idx].flags)
 #endif
 static void set_string_option_global(int opt_idx, char_u **varp);
-static char_u *did_set_string_option(int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags);
+static char_u *did_set_string_option(int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags, int *value_checked);
 static char_u *set_chars_option(char_u **varp);
 #ifdef FEAT_CLIPBOARD
 static char_u *check_clipboard_option(void);
@@ -4705,6 +4705,9 @@ do_set(
 	    }
 	    else
 	    {
+		int value_is_replaced = !prepending && !adding && !removing;
+		int value_checked = FALSE;
+
 		if (flags & P_BOOL)		    /* boolean */
 		{
 		    if (nextchar == '=' || nextchar == ':')
@@ -5209,12 +5212,37 @@ do_set(
 			}
 #endif
 
-			/* Handle side effects, and set the global value for
-			 * ":set" on local options. Note: when setting 'syntax'
-			 * or 'filetype' autocommands may be triggered that can
-			 * cause havoc. */
-			errmsg = did_set_string_option(opt_idx, (char_u **)varp,
-				new_value_alloced, oldval, errbuf, opt_flags);
+			{
+			    long_u *p = insecure_flag(opt_idx, opt_flags);
+			    int	    did_inc_secure = FALSE;
+
+			    // When an option is set in the sandbox, from a
+			    // modeline or in secure mode, then deal with side
+			    // effects in secure mode.  Also when the value was
+			    // set with the P_INSECURE flag and is not
+			    // completely replaced.
+			    if (secure
+#ifdef HAVE_SANDBOX
+				    || sandbox != 0
+#endif
+				    || (opt_flags & OPT_MODELINE)
+				    || (!value_is_replaced && (*p & P_INSECURE)))
+			    {
+				did_inc_secure = TRUE;
+				++secure;
+			    }
+
+			    // Handle side effects, and set the global value for
+			    // ":set" on local options. Note: when setting 'syntax'
+			    // or 'filetype' autocommands may be triggered that can
+			    // cause havoc.
+			    errmsg = did_set_string_option(opt_idx, (char_u **)varp,
+				    new_value_alloced, oldval, errbuf,
+				    opt_flags, &value_checked);
+
+			    if (did_inc_secure)
+				--secure;
+			}
 
 #if defined(FEAT_EVAL)
 			if (errmsg == NULL)
@@ -5254,8 +5282,8 @@ do_set(
 		}
 
 		if (opt_idx >= 0)
-		    did_set_option(opt_idx, opt_flags,
-					 !prepending && !adding && !removing);
+		    did_set_option(
+			 opt_idx, opt_flags, value_is_replaced, value_checked);
 	    }
 
 skip:
@@ -5323,8 +5351,10 @@ theend:
     static void
 did_set_option(
     int	    opt_idx,
-    int	    opt_flags,	    /* possibly with OPT_MODELINE */
-    int	    new_value)	    /* value was replaced completely */
+    int	    opt_flags,	    // possibly with OPT_MODELINE
+    int	    new_value,	    // value was replaced completely
+    int	    value_checked)  // value was checked to be safe, no need to set the
+			    // P_INSECURE flag.
 {
     long_u	*p;
 
@@ -5334,11 +5364,11 @@ did_set_option(
      * set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
      * flag. */
     p = insecure_flag(opt_idx, opt_flags);
-    if (secure
+    if (!value_checked && (secure
 #ifdef HAVE_SANDBOX
 	    || sandbox != 0
 #endif
-	    || (opt_flags & OPT_MODELINE))
+	    || (opt_flags & OPT_MODELINE)))
 	*p = *p | P_INSECURE;
     else if (new_value)
 	*p = *p & ~P_INSECURE;
@@ -6011,6 +6041,7 @@ set_string_option(
     char_u	*saved_newval = NULL;
 #endif
     char_u	*r = NULL;
+    int		value_checked = FALSE;
 
     if (options[opt_idx].var == NULL)	/* don't set hidden option */
 	return NULL;
@@ -6038,8 +6069,8 @@ set_string_option(
 	}
 #endif
 	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
-							   opt_flags)) == NULL)
-	    did_set_option(opt_idx, opt_flags, TRUE);
+					   opt_flags, &value_checked)) == NULL)
+	    did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
 #if defined(FEAT_EVAL)
 	/* call autocommand after handling side effects */
@@ -6074,12 +6105,14 @@ valid_filetype(char_u *val)
  */
     static char_u *
 did_set_string_option(
-    int		opt_idx,		/* index in options[] table */
-    char_u	**varp,			/* pointer to the option variable */
-    int		new_value_alloced,	/* new value was allocated */
-    char_u	*oldval,		/* previous value of the option */
-    char_u	*errbuf,		/* buffer for errors, or NULL */
-    int		opt_flags)		/* OPT_LOCAL and/or OPT_GLOBAL */
+    int		opt_idx,		// index in options[] table
+    char_u	**varp,			// pointer to the option variable
+    int		new_value_alloced,	// new value was allocated
+    char_u	*oldval,		// previous value of the option
+    char_u	*errbuf,		// buffer for errors, or NULL
+    int		opt_flags,		// OPT_LOCAL and/or OPT_GLOBAL
+    int		*value_checked)		// value was checked to be save, no
+					// need to set P_INSECURE
 {
     char_u	*errmsg = NULL;
     char_u	*s, *p;
@@ -6109,10 +6142,9 @@ did_set_string_option(
 	errmsg = e_secure;
     }
 
-    /* Check for a "normal" directory or file name in some options.  Disallow a
-     * path separator (slash and/or backslash), wildcards and characters that
-     * are often illegal in a file name. Be more permissive if "secure" is off.
-     */
+    // Check for a "normal" directory or file name in some options.  Disallow a
+    // path separator (slash and/or backslash), wildcards and characters that
+    // are often illegal in a file name. Be more permissive if "secure" is off.
     else if (((options[opt_idx].flags & P_NFNAME)
 		    && vim_strpbrk(*varp, (char_u *)(secure
 			    ? "/\\*?[|;&<>\r\n" : "/\\*?[<>\r\n")) != NULL)
@@ -6499,8 +6531,22 @@ did_set_string_option(
 	if (!valid_filetype(*varp))
 	    errmsg = e_invarg;
 	else
-	    /* load or unload key mapping tables */
+	{
+	    int	    secure_save = secure;
+
+	    // Reset the secure flag, since the value of 'keymap' has
+	    // been checked to be safe.
+	    secure = 0;
+
+	    // load or unload key mapping tables
 	    errmsg = keymap_init();
+
+	    secure = secure_save;
+
+	    // Since we check the value, there is no need to set P_INSECURE,
+	    // even when the value comes from a modeline.
+	    *value_checked = TRUE;
+	}
 
 	if (errmsg == NULL)
 	{
@@ -7498,7 +7544,13 @@ did_set_string_option(
 	if (!valid_filetype(*varp))
 	    errmsg = e_invarg;
 	else
+	{
 	    value_changed = STRCMP(oldval, *varp) != 0;
+
+	    // Since we check the value, there is no need to set P_INSECURE,
+	    // even when the value comes from a modeline.
+	    *value_checked = TRUE;
+	}
     }
 
 #ifdef FEAT_SYN_HL
@@ -7507,7 +7559,13 @@ did_set_string_option(
 	if (!valid_filetype(*varp))
 	    errmsg = e_invarg;
 	else
+	{
 	    value_changed = STRCMP(oldval, *varp) != 0;
+
+	    // Since we check the value, there is no need to set P_INSECURE,
+	    // even when the value comes from a modeline.
+	    *value_checked = TRUE;
+	}
     }
 #endif
 
@@ -7727,7 +7785,12 @@ did_set_string_option(
 	     * already set to this value. */
 	    if (!(opt_flags & OPT_MODELINE) || value_changed)
 	    {
-		static int ft_recursive = 0;
+		static int  ft_recursive = 0;
+		int	    secure_save = secure;
+
+		// Reset the secure flag, since the value of 'filetype' has
+		// been checked to be safe.
+		secure = 0;
 
 		++ft_recursive;
 		did_filetype = TRUE;
@@ -7739,6 +7802,8 @@ did_set_string_option(
 		/* Just in case the old "curbuf" is now invalid. */
 		if (varp != &(curbuf->b_p_ft))
 		    varp = NULL;
+
+		secure = secure_save;
 	    }
 	}
 #ifdef FEAT_SPELL
@@ -7758,10 +7823,13 @@ did_set_string_option(
 	     * '.encoding'.
 	     */
 	    for (p = q; *p != NUL; ++p)
-		if (vim_strchr((char_u *)"_.,", *p) != NULL)
+		if (!ASCII_ISALNUM(*p) && *p != '-')
 		    break;
-	    vim_snprintf((char *)fname, 200, "spell/%.*s.vim", (int)(p - q), q);
-	    source_runtime(fname, DIP_ALL);
+	    if (p > q)
+	    {
+		vim_snprintf((char *)fname, 200, "spell/%.*s.vim", (int)(p - q), q);
+		source_runtime(fname, DIP_ALL);
+	    }
 	}
 #endif
     }
@@ -13085,7 +13153,48 @@ tabstop_first(int *ts)
     long
 get_sw_value(buf_T *buf)
 {
-    return buf->b_p_sw ? buf->b_p_sw : buf->b_p_ts;
+    return get_sw_value_col(buf, 0);
+}
+
+/*
+ * Idem, using the first non-black in the current line.
+ */
+    long
+get_sw_value_indent(buf_T *buf)
+{
+    pos_T pos = curwin->w_cursor;
+
+    pos.col = getwhitecols_curline();
+    return get_sw_value_pos(buf, &pos);
+}
+
+/*
+ * Idem, using "pos".
+ */
+    long
+get_sw_value_pos(buf_T *buf, pos_T *pos)
+{
+    pos_T save_cursor = curwin->w_cursor;
+    long sw_value;
+
+    curwin->w_cursor = *pos;
+    sw_value = get_sw_value_col(buf, get_nolist_virtcol());
+    curwin->w_cursor = save_cursor;
+    return sw_value;
+}
+
+/*
+ * Idem, using virtual column "col".
+ */
+    long
+get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
+{
+    return buf->b_p_sw ? buf->b_p_sw :
+ #ifdef FEAT_VARTABS
+	tabstop_at(col, buf->b_p_ts, buf->b_p_vts_array);
+ #else
+	buf->b_p_ts;
+ #endif
 }
 
 /*

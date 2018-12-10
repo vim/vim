@@ -93,11 +93,8 @@ static int	lastc_bytelen = 1;	/* >1 for multi-byte char */
 /* copy of spats[], for keeping the search patterns while executing autocmds */
 static struct spat  saved_spats[2];
 # ifdef FEAT_SEARCH_EXTRA
-/* copy of spats[RE_SEARCH], for keeping the search patterns while incremental
- * searching */
-static struct spat  saved_last_search_spat;
-static int	    saved_last_idx = 0;
-static int	    saved_no_hlsearch = 0;
+static int	    saved_spats_last_idx = 0;
+static int	    saved_spats_no_hlsearch = 0;
 # endif
 
 static char_u	    *mr_pattern = NULL;	/* pattern used by search_regcomp() */
@@ -309,8 +306,8 @@ save_search_patterns(void)
 	if (spats[1].pat != NULL)
 	    saved_spats[1].pat = vim_strsave(spats[1].pat);
 #ifdef FEAT_SEARCH_EXTRA
-	saved_last_idx = last_idx;
-	saved_no_hlsearch = no_hlsearch;
+	saved_spats_last_idx = last_idx;
+	saved_spats_no_hlsearch = no_hlsearch;
 #endif
     }
 }
@@ -328,8 +325,8 @@ restore_search_patterns(void)
 	vim_free(spats[1].pat);
 	spats[1] = saved_spats[1];
 #ifdef FEAT_SEARCH_EXTRA
-	last_idx = saved_last_idx;
-	set_no_hlsearch(saved_no_hlsearch);
+	last_idx = saved_spats_last_idx;
+	set_no_hlsearch(saved_spats_no_hlsearch);
 #endif
     }
 }
@@ -353,6 +350,13 @@ free_search_patterns(void)
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
+// copy of spats[RE_SEARCH], for keeping the search patterns while incremental
+// searching
+static struct spat  saved_last_search_spat;
+static int	    did_save_last_search_spat = 0;
+static int	    saved_last_idx = 0;
+static int	    saved_no_hlsearch = 0;
+
 /*
  * Save and restore the search pattern for incremental highlight search
  * feature.
@@ -364,6 +368,11 @@ free_search_patterns(void)
     void
 save_last_search_pattern(void)
 {
+    if (did_save_last_search_spat != 0)
+	IEMSG("did_save_last_search_spat is not zero");
+    else
+	++did_save_last_search_spat;
+
     saved_last_search_spat = spats[RE_SEARCH];
     if (spats[RE_SEARCH].pat != NULL)
 	saved_last_search_spat.pat = vim_strsave(spats[RE_SEARCH].pat);
@@ -374,8 +383,16 @@ save_last_search_pattern(void)
     void
 restore_last_search_pattern(void)
 {
+    if (did_save_last_search_spat != 1)
+    {
+	IEMSG("did_save_last_search_spat is not one");
+	return;
+    }
+    --did_save_last_search_spat;
+
     vim_free(spats[RE_SEARCH].pat);
     spats[RE_SEARCH] = saved_last_search_spat;
+    saved_last_search_spat.pat = NULL;
 # if defined(FEAT_EVAL)
     set_vv_searchforward();
 # endif
@@ -561,7 +578,7 @@ set_last_search_pat(
 	    saved_spats[idx].pat = NULL;
 	else
 	    saved_spats[idx].pat = vim_strsave(spats[idx].pat);
-	saved_last_idx = last_idx;
+	saved_spats_last_idx = last_idx;
     }
 # ifdef FEAT_SEARCH_EXTRA
     /* If 'hlsearch' set and search pat changed: need redraw. */
@@ -1371,7 +1388,7 @@ do_search(
 	    char_u	*trunc;
 
 	    if (*searchstr == NUL)
-		p = spats[last_idx].pat;
+		p = spats[0].pat;
 	    else
 		p = searchstr;
 	    msgbuf = alloc((unsigned)(STRLEN(p) + 40));

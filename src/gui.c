@@ -2754,7 +2754,19 @@ gui_redraw_block(
 	else if (enc_utf8)
 	{
 	    if (ScreenLines[off + col1] == 0)
-		--col1;
+	    {
+		if (col1 > 0)
+		    --col1;
+		else
+		{
+		    // FIXME: how can the first character ever be zero?
+		    // Make this IEMSGN when it no longer breaks Travis CI.
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			    "INTERNAL ERROR: NUL in ScreenLines in row %ld",
+			    (long)gui.row);
+		    msg(IObuff);
+		}
+	    }
 # ifdef FEAT_GUI_GTK
 	    if (col2 + 1 < Columns && ScreenLines[off + col2 + 1] == 0)
 		++col2;
