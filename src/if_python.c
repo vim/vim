@@ -75,7 +75,6 @@
 
 #define PyBytes_FromString      PyString_FromString
 #define PyBytes_Check		PyString_Check
-#define PyBytes_CheckExact	PyString_CheckExact
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
