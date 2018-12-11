@@ -3337,9 +3337,7 @@ create_tabline_menu(void)
     GtkWidget *menu;
 
     menu = gtk_menu_new();
-    if (first_tabpage->tp_next != NULL)
-	add_tabline_menu_item(menu, (char_u *)_("Close tab"),
-							  TABLINE_MENU_CLOSE);
+    add_tabline_menu_item(menu, (char_u *)_("Close tab"), TABLINE_MENU_CLOSE);
     add_tabline_menu_item(menu, (char_u *)_("New tab"), TABLINE_MENU_NEW);
     add_tabline_menu_item(menu, (char_u *)_("Open Tab..."), TABLINE_MENU_OPEN);
 

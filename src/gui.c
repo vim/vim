@@ -3865,8 +3865,12 @@ send_tabline_menu_event(int tabidx, int event)
 {
     char_u	    string[3];
 
-    /* Don't put events in the input queue now. */
+    // Don't put events in the input queue now.
     if (hold_gui_events)
+	return;
+
+    // Cannot close the last tabpage.
+    if (event == TABLINE_MENU_CLOSE && first_tabpage->tp_next == NULL)
 	return;
 
     string[0] = CSI;
