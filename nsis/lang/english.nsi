@@ -4,20 +4,8 @@
 #
 # Locale ID    : 1033
 # fileencoding : UTF-8
-# Author       : Guopeng Wen
+# Author       : Guopeng Wen, Ken Takata
 
-# The following macro pulls in NSIS language file and defines various
-# constants for multiple language support.  The first argument to the macro is
-# language name.  For a list of languages supported by NSIS, check:
-#   "<nsis>/Contrib/Language files"
-# The second argument is locale name of the language like the one used by GNU
-# gettext.  It's used to make it simpler to specify language on command line.
-# ${LANG_<language>} will be defined as the language id after you inserted the
-# language.  For example, after you insert "English", ${LANG_ENGLISH} will be
-# defined as the language ID so you can use it in the following language
-# string definition.
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "English" "en"
 !insertmacro MUI_LANGUAGE "English"
 
 

@@ -7,8 +7,6 @@
 # fileencoding : latin1
 # Author       : Antonio Colombo
 
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "Italian" "it"
 !insertmacro MUI_LANGUAGE "Italian"
 
 

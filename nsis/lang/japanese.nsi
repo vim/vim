@@ -6,8 +6,6 @@
 # fileencoding : UTF-8
 # Author       : Ken Takata
 
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "Japanese" "ja"
 !insertmacro MUI_LANGUAGE "Japanese"
 
 

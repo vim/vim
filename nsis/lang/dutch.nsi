@@ -7,8 +7,6 @@
 # fileencoding : UTF-8
 # Author       : Peter Odding <peter@peterodding.com>
 
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "Dutch" "nl"
 !insertmacro MUI_LANGUAGE "Dutch"
 
 

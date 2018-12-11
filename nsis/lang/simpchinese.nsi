@@ -7,8 +7,6 @@
 # fileencoding : UTF-8
 # Author       : Guopeng Wen
 
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "SimpChinese" "zh_CN"
 !insertmacro MUI_LANGUAGE "SimpChinese"
 
 

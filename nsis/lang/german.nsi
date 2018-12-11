@@ -6,8 +6,6 @@
 # fileencoding : UTF-8
 # Author       : Christian Brabandt, tux
 
-#!include "script\helper_util.nsh"
-#${VimAddLanguage} "German" "de"
 !insertmacro MUI_LANGUAGE "German"
 
 
