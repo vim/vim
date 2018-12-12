@@ -2138,6 +2138,45 @@ if test "$enable_multibyte" = "yes"; then
   AC_DEFINE(FEAT_MBYTE)
 fi
 
+dnl Right-to-Left language support for Vim will be included with big features,
+dnl unless ENABLE_RIGHTLEFT is undefined.
+AC_MSG_CHECKING(--disable-rightleft argument)
+AC_ARG_ENABLE(rightleft,
+	[  --disable-rightleft     Do not include Right-to-Left language support.],
+	, [enable_rightleft="yes"])
+if test "$enable_rightleft" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_RIGHTLEFT)
+fi
+
+dnl Arabic language support for Vim will be included with big features,
+dnl unless ENABLE_ARABIC is undefined.
+AC_MSG_CHECKING(--disable-arabic argument)
+AC_ARG_ENABLE(arabic,
+	[  --disable-arabic        Do not include Arabic language support.],
+	, [enable_arabic="yes"])
+if test "$enable_arabic" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_ARABIC)
+fi
+
+dnl Farsi language support for vim will be included with big features,
+dnl unless ENABLE_FARSI is undefined.
+AC_MSG_CHECKING(--disable-farsi argument)
+AC_ARG_ENABLE(farsi,
+	[  --disable-farsi         Do not include Farsi language support.],
+	, [enable_farsi="yes"])
+if test "$enable_farsi" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_FARSI)
+fi
+
 AC_MSG_CHECKING(--enable-hangulinput argument)
 AC_ARG_ENABLE(hangulinput,
 	[  --enable-hangulinput    Include Hangul input support.], ,

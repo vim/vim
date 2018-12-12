@@ -499,6 +499,10 @@ CClink = $(CC)
 # configure tests may fail.
 #CONF_OPT_MULTIBYTE = --enable-multibyte
 
+# When building with at least "big" features, right-left, Arabic and Farsi
+# features are enabled.  Use this to disable them.
+#CONF_OPT_MULTIBYTE = --disable-rightleft --disable-farsi --disable-arabic
+
 # NLS - National Language Support
 # Uncomment this when you do not want to support translated messages, even
 # though configure can find support for it.

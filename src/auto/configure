@@ -818,6 +818,9 @@ enable_channel
 enable_terminal
 enable_autoservername
 enable_multibyte
+enable_rightleft
+enable_arabic
+enable_farsi
 enable_hangulinput
 enable_xim
 enable_fontset
@@ -1497,6 +1500,9 @@ Optional Features:
   --enable-terminal       Enable terminal emulation support.
   --enable-autoservername Automatically define servername at vim startup.
   --enable-multibyte      Include multibyte editing support.
+  --disable-rightleft     Do not include Right-to-Left language support.
+  --disable-arabic        Do not include Arabic language support.
+  --disable-farsi         Do not include Farsi language support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
@@ -7951,6 +7957,63 @@ fi
 $as_echo "$enable_multibyte" >&6; }
 if test "$enable_multibyte" = "yes"; then
   $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-rightleft argument" >&5
+$as_echo_n "checking --disable-rightleft argument... " >&6; }
+# Check whether --enable-rightleft was given.
+if test "${enable_rightleft+set}" = set; then :
+  enableval=$enable_rightleft;
+else
+  enable_rightleft="yes"
+fi
+
+if test "$enable_rightleft" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_RIGHTLEFT 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-arabic argument" >&5
+$as_echo_n "checking --disable-arabic argument... " >&6; }
+# Check whether --enable-arabic was given.
+if test "${enable_arabic+set}" = set; then :
+  enableval=$enable_arabic;
+else
+  enable_arabic="yes"
+fi
+
+if test "$enable_arabic" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_ARABIC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-farsi argument" >&5
+$as_echo_n "checking --disable-farsi argument... " >&6; }
+# Check whether --enable-farsi was given.
+if test "${enable_farsi+set}" = set; then :
+  enableval=$enable_farsi;
+else
+  enable_farsi="yes"
+fi
+
+if test "$enable_farsi" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_FARSI 1" >>confdefs.h
 
 fi
 

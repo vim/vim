@@ -390,6 +390,15 @@
 /* Define if you want to include multibyte support. */
 #undef FEAT_MBYTE
 
+/* Define if you don't want to include right-left support. */
+#undef DISABLE_RIGHTLEFT
+
+/* Define if you don't want to include Farsi support. */
+#undef DISABLE_FARSI
+
+/* Define if you don't want to include Arabic support. */
+#undef DISABLE_ARABIC
+
 /* Define if you want to always define a server name at vim startup. */
 #undef FEAT_AUTOSERVERNAME
 
