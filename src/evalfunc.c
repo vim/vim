@@ -772,6 +772,17 @@ static struct fst
     {"prompt_setinterrupt", 2, 2, f_prompt_setinterrupt},
     {"prompt_setprompt", 2, 2, f_prompt_setprompt},
 #endif
+#ifdef FEAT_TEXT_PROP
+    {"prop_add",	3, 3, f_prop_add},
+    {"prop_clear",	1, 3, f_prop_clear},
+    {"prop_list",	1, 2, f_prop_list},
+    {"prop_remove",	2, 3, f_prop_remove},
+    {"prop_type_add",	2, 2, f_prop_type_add},
+    {"prop_type_change", 2, 2, f_prop_type_change},
+    {"prop_type_delete", 1, 2, f_prop_type_delete},
+    {"prop_type_get",	1, 2, f_prop_type_get},
+    {"prop_type_list",	0, 1, f_prop_type_list},
+#endif
     {"pumvisible",	0, 0, f_pumvisible},
 #ifdef FEAT_PYTHON3
     {"py3eval",		1, 1, f_py3eval},
@@ -6477,6 +6488,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_TEXTOBJ
 	"textobjects",
+#endif
+#ifdef FEAT_TEXT_PROP
+	"textprop",
 #endif
 #ifdef HAVE_TGETENT
 	"tgetent",

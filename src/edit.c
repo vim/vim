@@ -10302,6 +10302,9 @@ ins_tab(void)
 		if ((State & REPLACE_FLAG) && !(State & VREPLACE_FLAG))
 		    for (temp = i; --temp >= 0; )
 			replace_join(repl_off);
+#ifdef FEAT_TEXT_PROP
+		curbuf->b_ml.ml_line_len -= i;
+#endif
 	    }
 #ifdef FEAT_NETBEANS_INTG
 	    if (netbeans_active())

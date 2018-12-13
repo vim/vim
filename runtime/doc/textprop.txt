@@ -1,0 +1,114 @@
+*textprop.txt*  For Vim version 8.1.  Last change: 2018 Dec 13
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Displaying text with properties attached.		*text-properties*
+
+THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
+
+What is not working yet:
+- Adjusting column/length when inserting text
+- Text properties spanning more than one line
+- prop_find()
+- callbacks when text properties are outdated
+
+
+1. Introduction			|text-prop-intro|
+2. Functions			|text-prop-functions|
+
+
+{Vi does not have text properties}
+{not able to use text properties when the |+textprop| feature was
+disabled at compile time}
+
+==============================================================================
+1. Introduction						*text-prop-intro*
+
+Text properties can be attached to text in a buffer.  They will move with the
+text: If lines are deleted or inserted the properties move with the text they
+are attached to.  Also when inserting/deleting text in the line before the
+text property.  And when inserting/deleting text inside the text property, it
+will increase/decrease in size.
+
+The main use for text properties is to highlight text.  This can be seen as a
+replacement for syntax highlighting.  Instead of defining patterns to match
+the text, the highlighting is set by a script, possibly using the output of an
+external parser.  This only needs to be done once, not every time when
+redrawing the screen, thus can be much faster, after the initial cost of
+attaching the text properties.
+
+Text properties can also be used for other purposes to identify text.  For
+example, add a text property on a function name, so that a search can be
+defined to jump to the next/previous function.
+
+A text property is attached at a specific line and column, and has a specified
+length.  The property can span multiple lines.
+
+A text property has these fields:
+	"id"		a number to be used as desired
+	"type"		the name of a property type
+
+
+Property Types ~
+							*E971*
+A text property normally has the name of a property type, which defines 
+how to highlight the text.  The property type can have these entries:
+	"highlight"	name of the highlight group to use
+	"priority"	when properties overlap, the one with the highest
+			priority will be used.
+	"start_incl"	when TRUE inserts at the start position will be
+			included in the text property
+	"end_incl"    	when TRUE inserts at the end position will be
+			included in the text property
+
+
+Example ~
+
+Suppose line 11 in a buffer has this text (excluding the indent):
+
+	The number 123 is smaller than 4567.
+
+To highlight the numbers: >
+	call prop_type_add('number', {'highlight': 'Constant'})
+	call prop_add(11, 12, {'length': 3, 'type': 'number})
+	call prop_add(11, 32, {'length': 4, 'type': 'number})
+
+Setting "start_incl" and "end_incl" is useful when white space surrounds the
+text, e.g. for a function name.  Using false is useful when the text starts
+and/or ends with a specific character, such as the quote surrounding a string.
+
+	func FuncName(arg) ~
+	     ^^^^^^^^        property with start_incl and end_incl set
+
+	var = "text"; ~
+	      ^^^^^^	     property with start_incl and end_incl not set
+
+Nevertheless, when text is inserted or deleted the text may need to be parsed
+and the text properties updated.  But this can be done asynchrnously.
+
+==============================================================================
+2. Functions						*text-prop-functions*
+
+Manipulating text property types:
+
+prop_type_add({name}, {props})		define a new property type
+prop_type_change({name}, {props})	change an existing property type
+prop_type_delete({name} [, {props}])	delete a property type
+prop_type_get([{name} [, {props}])	get property type values
+prop_type_list([{props}])		get list of property types
+
+
+Manipulating text properties:
+
+prop_add({lnum}, {col}, {props})  	add a text property
+prop_clear({lnum} [, {lnum_end} [, {bufnr}]])
+					remove all text properties
+prop_find({props} [, {direction}])	search for a text property
+prop_list({lnum} [, {props})  		text properties in {lnum}
+prop_remove({props} [, {lnum} [, {lnum_end}]])
+					remove a text property
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

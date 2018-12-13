@@ -769,6 +769,21 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 		    stuffcharReadbuff(*c);
 		    *c = '\\';
 		}
+#ifdef FEAT_MBYTE
+		// add any composing characters
+		if (mb_char2len(*c) != mb_ptr2len(ml_get_cursor()))
+		{
+		    int save_c = *c;
+
+		    while (mb_char2len(*c) != mb_ptr2len(ml_get_cursor()))
+		    {
+			curwin->w_cursor.col += mb_char2len(*c);
+			*c = gchar_cursor();
+			stuffcharReadbuff(*c);
+		    }
+		    *c = save_c;
+		}
+#endif
 		return FAIL;
 	    }
 	}

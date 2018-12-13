@@ -684,6 +684,7 @@ typedef struct memline
 
     linenr_T	ml_line_lnum;	/* line number of cached line, 0 if not valid */
     char_u	*ml_line_ptr;	/* pointer to cached line */
+    colnr_T	ml_line_len;	/* length of the cached line, including NUL */
 
     bhdr_T	*ml_locked;	/* block used by last ml_get */
     linenr_T	ml_locked_low;	/* first line in ml_locked */
@@ -695,6 +696,41 @@ typedef struct memline
     int		ml_usedchunks;
 #endif
 } memline_T;
+
+
+/*
+ * Structure defining text properties.  These stick with the text.
+ * When stored in memline they are after the text, ml_line_len is larger than
+ * STRLEN(ml_line_ptr) + 1.
+ */
+typedef struct textprop_S
+{
+    colnr_T	tp_col;		// start column
+    colnr_T	tp_len;		// length in bytes
+    int		tp_id;		// identifier
+    int		tp_type;	// property type
+    int		tp_flags;	// TP_FLAG_ values
+} textprop_T;
+
+#define TP_FLAG_CONT_NEXT	1	// property continues in next line
+#define TP_FLAG_CONT_PREV	2	// property was continued from prev line
+
+/*
+ * Structure defining a property type.
+ */
+typedef struct proptype_S
+{
+    int		pt_id;		// value used for tp_id
+    int		pt_type;	// number used for tp_type
+    int		pt_hl_id;	// highlighting
+    int		pt_priority;	// priority
+    int		pt_flags;	// PT_FLAG_ values
+    char_u	pt_name[1];	// property type name, actually longer
+} proptype_T;
+
+#define PT_FLAG_INS_START_INCL	1	// insert at start included in property
+#define PT_FLAG_INS_END_INCL	2	// insert at end included in property
+
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
 typedef struct signlist signlist_T;
@@ -2357,6 +2393,9 @@ struct file_buffer
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
     dict_T	*b_vars;	/* internal variables, local to buffer */
+#endif
+#ifdef FEAT_TEXT_PROP
+    hashtab_T	*b_proptypes;	/* text property types local to buffer */
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)

@@ -183,6 +183,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
 # endif
+# ifdef FEAT_TEXT_PROP
+#  include "textprop.pro"
+# endif
 # include "ui.pro"
 # include "undo.pro"
 # include "userfunc.pro"

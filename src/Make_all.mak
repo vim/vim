@@ -186,6 +186,7 @@ NEW_TESTS = \
 	test_terminal_fail \
 	test_textformat \
 	test_textobjects \
+	test_textprop \
 	test_timers \
 	test_true_false \
 	test_undo \

@@ -1577,8 +1577,6 @@ include Make_all.mak
 #	     TAGS_INCL: include files used for make tags
 #	       ALL_SRC: source files used for make depend and make lint
 
-TAGS_INCL = *.h
-
 BASIC_SRC = \
 	arabic.c \
 	beval.c \
@@ -1636,6 +1634,7 @@ BASIC_SRC = \
 	tag.c \
 	term.c \
 	terminal.c \
+	textprop.c \
 	ui.c \
 	undo.c \
 	userfunc.c \
@@ -1657,7 +1656,8 @@ SRC =	$(BASIC_SRC) \
 	$(WORKSHOP_SRC) \
 	$(WSDEBUG_SRC)
 
-TAGS_SRC = *.c *.cpp if_perl.xs
+TAGS_SRC = *.c *.cpp $(PERL_SRC) $(TERM_SRC) $(XDIFF_SRC)
+TAGS_INCL = *.h $(TERM_DEPS) $(XDIFF_INCL)
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
@@ -1747,6 +1747,7 @@ OBJ_COMMON = \
 	objects/tag.o \
 	objects/term.o \
 	objects/terminal.o \
+	objects/textprop.o \
 	objects/ui.o \
 	objects/undo.o \
 	objects/userfunc.o \
@@ -1881,6 +1882,7 @@ PRO_AUTO = \
 	term.pro \
 	terminal.pro \
 	termlib.pro \
+	textprop.pro \
 	ui.pro \
 	undo.pro \
 	userfunc.pro \
@@ -2092,7 +2094,7 @@ notags:
 #	Motif and Athena GUI
 # You can ignore error messages for missing files.
 tags TAGS: notags
-	$(TAGPRG) $(TAGS_SRC) $(TAGS_INCL) $(TERM_SRC) $(TERM_DEPS)
+	$(TAGPRG) $(TAGS_SRC) $(TAGS_INCL)
 
 # Make a highlight file for types.  Requires Exuberant ctags and awk
 types: types.vim
@@ -3211,6 +3213,9 @@ objects/term.o: term.c
 objects/terminal.o: terminal.c $(TERM_DEPS)
 	$(CCC) -o $@ terminal.c
 
+objects/textprop.o: textprop.c
+	$(CCC) -o $@ textprop.c
+
 objects/ui.o: ui.c
 	$(CCC) -o $@ ui.c
 
@@ -3602,6 +3607,10 @@ objects/terminal.o: terminal.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h
+objects/textprop.o: textprop.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h farsi.h arabic.h
 objects/ui.o: ui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

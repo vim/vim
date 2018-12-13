@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 09
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1104,7 +1104,7 @@ Or, if you don't want to write them in as floating-point literals, you can
 also use functions, like the following: >
 	:let pi = acos(-1.0)
 	:let e  = exp(1.0)
-
+<
 						*floating-point-precision*
 The precision and range of floating points numbers depends on what "double"
 means in the library Vim was compiled with.  There is no way to change this at
@@ -2317,6 +2317,22 @@ printf({fmt}, {expr1}...)	String	format text
 prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
+prop_add({lnum}, {col}, {props})  none	add a text property
+prop_clear({lnum} [, {lnum_end} [, {bufnr}]])
+				none	remove all text properties
+prop_find({props} [, {direction}])
+				Dict	search for a text property
+prop_list({lnum} [, {props})  	List	text properties in {lnum}
+prop_remove({props} [, {lnum} [, {lnum_end}]])
+				Number	remove a text property
+prop_type_add({name}, {props})	none	define a new property type
+prop_type_change({name}, {props})
+				none	change an existing property type
+prop_type_delete({name} [, {props}])
+				none	delete a property type
+prop_type_get([{name} [, {props}])
+				Dict	get property type values
+prop_type_list([{props}])	List	get list of property types
 pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
@@ -3142,8 +3158,9 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		When {mode} is omitted or "a" append to the file.
 		When {mode} is "w" start with an empty file.
 
-		The file is flushed after every message, on Unix you can use
-		"tail -f" to see what is going on in real time.
+		Use |ch_log()| to write log messages.  The file is flushed
+		after every message, on Unix you can use "tail -f" to see what
+		is going on in real time.
 
 		This function is not available in the |sandbox|.
 		NOTE: the channel communication is stored in the file, be
@@ -6656,6 +6673,191 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		The result is only visible if {buf} has 'buftype' set to
 		"prompt".  Example: >
 			call prompt_setprompt(bufnr(''), 'command: ')
+<
+						*prop_add()* *E965*
+prop_add({lnum}, {col}, {props})
+		Attach a text property at position {lnum}, {col}.  Use one for
+		the first column.
+		If {lnum} is invalid an error is given. *E966*
+		If {col} is invalid an error is given. *E964*
+
+		{props} is a dictionary with these fields:
+			"length"   - length of text in characters, can only be
+				     used for a property that does not
+				     continue in another line
+			"end_lnum" - line number for end of text
+			"end_col"  - column for end of text; not used when
+				     "length" is present
+			"bufnr	   - buffer to add the property to; when
+				     omitted the current buffer is used
+			"id"	   - user defined ID for the property; when
+				     omitted zero is used
+			"type"	   - name of the text property type
+		All fields except "type" are optional.
+
+		It is an error when both "length" and "end_lnum" or "end_col"
+		are passed.  Either use "length" or "end_col" for a property
+		within one line, or use "end_lnum" and "end_col" for a
+		property that spans more than one line.
+		When neither "length" or "end_col" are passed the property
+		will apply to one character.
+
+		"type" will first be looked up in the buffer the property is
+		added to. When not found, the global property types are used.
+		If not found an error is given.
+
+		See |text-properties| for information about text properties.
+
+
+prop_clear({lnum} [, {lnum_end} [, {props}]])		*prop_clear()*
+		Remove all text properties from line {lnum}.
+		When {lnum_end} is given, remove all text properties from line
+		{lnum} to {lnum_end} (inclusive).
+
+		When {props} contains a "bufnr" item use this buffer,
+		otherwise use the current buffer.
+
+		See |text-properties| for information about text properties.
+
+							*prop_find()*
+prop_find({props} [, {direction}])
+		NOT IMPLEMENTED YET
+		Search for a text property as specified with {props}:
+			"id"		property with this ID
+			"type"		property with this type name
+			"bufnr	        buffer to search in; when present a
+					start position with "lnum" and "col"
+					must be given; when omitted the
+					current buffer is used
+			"lnum"		start in this line (when omitted start
+					at the cursor)
+			"col"		start at this column (when omitted
+					and "lnum" is given: use column 1,
+					otherwise start at the cursor)
+			"skipstart"	do not look for a match at the start
+					position
+
+		{direction} can be "f" for forward and "b" for backward.  When
+		omitted forward search is performed.
+
+		If a match is found then a Dict is returned with the entries
+		as with prop_list(), and additionally an "lnum" entry.
+		If no match is found then an empty Dict is returned.
+
+		See |text-properties| for information about text properties.
+
+
+prop_list({lnum} [, {props}]) 				*prop_list()*
+		Return a List with all text properties in line {lnum}.
+
+		When {props} contains a "bufnr" item, use this buffer instead
+		of the current buffer.
+
+		The properties are ordered by starting column and priority.
+		Each property is a Dict with these entries:
+			"col"		starting column
+			"length"	length in bytes
+			"id"		property ID
+			"type"		name of the property type, omitted if
+					the type was deleted
+			"start"		when TRUE property starts in this line
+			"end"		when TRUE property ends in this line
+
+		When "start" is zero the property started in a previous line,
+		the current one is a continuation.
+		When "end" is zero the property continues in the next line.
+		The line break after this line is included.
+
+		See |text-properties| for information about text properties.
+
+
+						*prop_remove()* *E968*
+prop_remove({props} [, {lnum} [, {lnum_end}]])	
+		Remove a matching text property from line {lnum}.  When
+		{lnum_end} is given, remove matching text properties from line
+		{lnum} to {lnum_end} (inclusive).
+		When {lnum} is omitted remove matching text properties from
+		all lines.
+
+		{props} is a dictionary with these fields:
+			"id"    - remove text properties with this ID
+			"type"  - remove text properties with this type name
+			"bufnr" - use this buffer instead of the current one
+			"all"   - when TRUE remove all matching text
+				  properties, not just the first one
+		A property matches when either "id" or "type" matches.
+
+		Returns the number of properties that were removed.
+
+		See |text-properties| for information about text properties.
+
+
+prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
+		Add a text property type {name}.  If a property type with this
+		name already exists an error is given.
+		{props} is a dictionary with these optional fields:
+			"bufnr"	      - define the property only for this
+					buffer; this avoids name collisions and
+					automatically clears the property types
+					when the buffer is deleted.
+			"highlight"   - name of highlight group to use
+			"priority"    - when a character has multiple text
+					properties the one with the highest
+					priority will be used; negative values
+					can be used, the default priority is
+					zero
+			"start_incl"  - when TRUE inserts at the start
+					position will be included in the text
+					property
+			"end_incl"    - when TRUE inserts at the end
+					position will be included in the text
+					property
+
+		See |text-properties| for information about text properties.
+
+
+prop_type_change({name}, {props})			*prop_type_change()*
+		Change properties of an existing text property type.  If a
+		property with this name does not exist an error is given.
+		The {props} argument is just like |prop_type_add()|.
+
+		See |text-properties| for information about text properties.
+
+
+prop_type_delete({name} [, {props}])			*prop_type_delete()*
+		Remove the text property type {name}.  When text properties
+		using the type {name} are still in place, they will not have
+		an effect and can no longer be removed by name.
+
+		{props} can contain a "bufnr" item.  When it is given, delete
+		a property type from this buffer instead of from the global
+		property types.
+
+		When text property type {name} is not found there is no error.
+
+		See |text-properties| for information about text properties.
+
+
+prop_type_get([{name} [, {props}])			*prop_type_get()*
+		Returns the properties of property type {name}.  This is a
+		dictionary with the same fields as was given to
+		prop_type_add().
+		When the property type {name} does not exist, an empty
+		dictionary is returned.
+
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+
+		See |text-properties| for information about text properties.
+
+
+prop_type_list([{props}])				*prop_type_list()*
+		Returns a list with all property type names.
+
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+
+		See |text-properties| for information about text properties.
 
 
 pumvisible()						*pumvisible()*
@@ -9609,6 +9811,7 @@ terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
 textobjects		Compiled with support for |text-objects|.
+textprop		Compiled with support for |text-properties|.
 tgetent			Compiled with tgetent support, able to use a termcap
 			or terminfo file.
 timers			Compiled with |timer_start()| support.

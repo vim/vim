@@ -91,6 +91,7 @@ SRC_ALL =	\
 		src/terminal.c \
 		src/term.h \
 		src/termlib.c \
+		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
 		src/userfunc.c \
@@ -198,6 +199,7 @@ SRC_ALL =	\
 		src/proto/term.pro \
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
+		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/userfunc.pro \

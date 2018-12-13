@@ -823,6 +823,9 @@ buf_freeall(buf_T *buf, int flags)
 #ifdef FEAT_SYN_HL
     syntax_clear(&buf->b_s);	    /* reset syntax info */
 #endif
+#ifdef FEAT_TEXT_PROP
+    clear_buf_prop_types(buf);
+#endif
     buf->b_flags &= ~BF_READERR;    /* a read error is no longer relevant */
 }
 

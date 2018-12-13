@@ -502,6 +502,13 @@
 #endif
 
 /*
+ * +textprop		Text properties
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+# define FEAT_TEXT_PROP
+#endif
+
+/*
  * +spell		spell checking
  *
  * Disabled for EBCDIC: * Doesn't work (SIGSEGV).

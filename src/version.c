@@ -653,12 +653,6 @@ static char *(features[]) =
 # else
 	"-terminfo",
 # endif
-#else		    /* unix always includes termcap support */
-# ifdef HAVE_TGETENT
-	"+tgetent",
-# else
-	"-tgetent",
-# endif
 #endif
 #ifdef FEAT_TERMRESPONSE
 	"+termresponse",
@@ -669,6 +663,19 @@ static char *(features[]) =
 	"+textobjects",
 #else
 	"-textobjects",
+#endif
+#ifdef FEAT_TEXT_PROP
+	"+textprop",
+#else
+	"-textprop",
+#endif
+#if !defined(UNIX)
+/* unix always includes termcap support */
+# ifdef HAVE_TGETENT
+	"+tgetent",
+# else
+	"-tgetent",
+# endif
 #endif
 #ifdef FEAT_TIMERS
 	"+timers",
@@ -792,6 +799,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    579,
 /**/
     578,
 /**/
