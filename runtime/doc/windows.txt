@@ -620,6 +620,7 @@ The minimal height and width of a window is set with 'winminheight' and
 27. :sall		37. :sball		edit all args/buffers
 			38. :sunhide		edit all loaded buffers
 			39. :[N]sbmod [N]	split + to Nth modified buf
+			40. :[N]vsbuffer [N]	vertical split + to Nth buf
 
 40. :args		list of arguments
 41. :buffers		list of buffers
@@ -1174,6 +1175,10 @@ list of buffers. |unlisted-buffer|
 		under another name, you can do it this way: >
 			:w foobar | sp #
 <		Also see |+cmd|.
+
+:[N]vsb[uffer] [+cmd] [N]				*:vsb* *:vsbuffer*
+:[N]vsb[uffer] [+cmd] {bufname}
+		Like |:sbuffer|, but split vertically.
 
 :[N]bn[ext][!] [+cmd] [N]				*:bn* *:bnext* *E87*
 		Go to [N]th next buffer in buffer list.  [N] defaults to one.

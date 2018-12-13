@@ -985,8 +985,9 @@ goto_buffer(
 
     swap_exists_action = SEA_DIALOG;
 #endif
-    (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
-					     start, dir, count, eap->forceit);
+    (void)do_buffer(
+	    *eap->cmd == 's' ? DOBUF_SPLIT : *eap->cmd == 'v' ? DOBUF_VSPLIT : DOBUF_GOTO,
+	    start, dir, count, eap->forceit);
 #if defined(HAS_SWAP_EXISTS_ACTION)
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
@@ -1258,6 +1259,7 @@ empty_curbuf(
  *
  * action == DOBUF_GOTO	    go to specified buffer
  * action == DOBUF_SPLIT    split window and go to specified buffer
+ * action == DOBUF_VSPLIT   vsplit window and go to specified buffer
  * action == DOBUF_UNLOAD   unload specified buffer(s)
  * action == DOBUF_DEL	    delete specified buffer(s) from buffer list
  * action == DOBUF_WIPE	    delete specified buffer(s) really
@@ -1553,7 +1555,7 @@ do_buffer(
     /*
      * make buf current buffer
      */
-    if (action == DOBUF_SPLIT)	    /* split window first */
+    if (action == DOBUF_SPLIT || action == DOBUF_VSPLIT)	/* split window first */
     {
 	/* If 'switchbuf' contains "useopen": jump to first window containing
 	 * "buf" if one exists */
@@ -1563,7 +1565,7 @@ do_buffer(
 	 * page containing "buf" if one exists */
 	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
 	    return OK;
-	if (win_split(0, 0) == FAIL)
+	if (win_split(0, action == DOBUF_VSPLIT ? WSP_VERT : 0) == FAIL)
 	    return FAIL;
     }
 

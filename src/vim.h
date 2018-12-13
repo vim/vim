@@ -992,9 +992,10 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 /* Values for action argument for do_buffer() */
 #define DOBUF_GOTO	0	/* go to specified buffer */
 #define DOBUF_SPLIT	1	/* split window and go to specified buffer */
-#define DOBUF_UNLOAD	2	/* unload specified buffer(s) */
-#define DOBUF_DEL	3	/* delete specified buffer(s) from buflist */
-#define DOBUF_WIPE	4	/* delete specified buffer(s) really */
+#define DOBUF_VSPLIT	2	/* vsplit window and go to specified buffer */
+#define DOBUF_UNLOAD	3	/* unload specified buffer(s) */
+#define DOBUF_DEL	4	/* delete specified buffer(s) from buflist */
+#define DOBUF_WIPE	5	/* delete specified buffer(s) really */
 
 /* Values for start argument for do_buffer() */
 #define DOBUF_CURRENT	0	/* "count" buffer from current buffer */

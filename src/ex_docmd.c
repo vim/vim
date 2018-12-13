@@ -4192,6 +4192,7 @@ set_one_cmd_context(
 	    /* FALLTHROUGH */
 	case CMD_buffer:
 	case CMD_sbuffer:
+	case CMD_vsbuffer:
 	case CMD_checktime:
 	    xp->xp_context = EXPAND_BUFFERS;
 	    xp->xp_pattern = arg;
@@ -5631,6 +5632,7 @@ ex_bunload(exarg_T *eap)
 /*
  * :[N]buffer [N]	to buffer N
  * :[N]sbuffer [N]	to buffer N
+ * :[N]vsbuffer [N]	to buffer N
  */
     static void
 ex_buffer(exarg_T *eap)
