@@ -47,3 +47,34 @@ func Test_expand_tilde_filename()
   call assert_match('\~', expand('%:p')) 
   bwipe!
 endfunc
+
+func Test_expandcmd()
+  let $FOO = 'Test'
+  call assert_equal('e x/Test/y', expandcmd('e x/$FOO/y'))
+  unlet $FOO
+
+  new
+  edit Xfile1
+  call assert_equal('e Xfile1', expandcmd('e %'))
+  edit Xfile2
+  edit Xfile1
+  call assert_equal('e Xfile2', expandcmd('e #'))
+  edit Xfile2
+  edit Xfile3
+  edit Xfile4
+  let bnum = bufnr('Xfile2')
+  call assert_equal('e Xfile2', expandcmd('e #' . bnum))
+  call setline('.', 'Vim!@#')
+  call assert_equal('e Vim', expandcmd('e <cword>'))
+  call assert_equal('e Vim!@#', expandcmd('e <cWORD>'))
+  enew!
+  edit Xfile.java
+  call assert_equal('e Xfile.py', expandcmd('e %:r.py'))
+  call assert_equal('make abc.java', expandcmd('make abc.%:e'))
+  call assert_equal('make Xabc.java', expandcmd('make %:s?file?abc?'))
+  edit a1a2a3.rb
+  call assert_equal('make b1b2b3.rb', expandcmd('make %:gs?a?b?'))
+  call assert_equal('make a1a2a3', expandcmd('make %<'))
+  call assert_equal('make Xfile.o', expandcmd('make #<.o'))
+  close
+endfunc
