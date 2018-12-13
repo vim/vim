@@ -3176,9 +3176,9 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
     {
 	// another line is buffered, flush it
 	ml_flush_line(curbuf);
+	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 
 #ifdef FEAT_TEXT_PROP
-	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 	if (has_any_text_properties(curbuf))
 	    // Need to fetch the old line to copy over any text properties.
 	    ml_get_buf(curbuf, lnum, TRUE);
