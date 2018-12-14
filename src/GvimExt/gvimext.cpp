@@ -1025,7 +1025,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
     cmdlen = BUFSIZE;
     cmdStrW  = (wchar_t *) malloc(cmdlen * sizeof(wchar_t));
     if (cmdStrW == NULL)
-	return;
+	return E_FAIL;
     getGvimInvocationW(cmdStrW);
 
     if (useDiff)
@@ -1043,7 +1043,10 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	    cmdlen = len + BUFSIZE;
 	    wchar_t *cmdStrW_new = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
 	    if (cmdStrW_new == NULL)
-		goto theend;
+	    {
+		free(cmdStrW);
+		return E_FAIL;
+	    }
 	    cmdStrW = cmdStrW_new;
 	}
 	wcscat(cmdStrW, L" \"");

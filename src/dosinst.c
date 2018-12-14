@@ -2459,7 +2459,7 @@ command_line_setup_choices(int argc, char **argv)
 	}
 	else if (strcmp(argv[i], "-create-directories") == 0)
 	{
-	    int vimfiles_dir_choice;
+	    int vimfiles_dir_choice = (int)vimfiles_dir_none;
 
 	    init_directories_choice();
 	    if (argv[i + 1][0] != '-')
