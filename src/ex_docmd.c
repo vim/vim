@@ -12413,7 +12413,7 @@ ex_digraphs(exarg_T *eap UNUSED)
     if (*eap->arg != NUL)
 	putdigraph(eap->arg);
     else
-	listdigraphs();
+	listdigraphs(eap->forceit);
 #else
     EMSG(_("E196: No digraphs in this version"));
 #endif
