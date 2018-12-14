@@ -1039,7 +1039,12 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	if (len > cmdlen)
 	{
 	    cmdlen = len + BUFSIZE;
-	    cmdStrW = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    wchar_t* cmdStrW_new = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    if (cmdStrW_new == NULL) {
+            free(cmdStrW);
+	    } else {
+    	    cmdStrW = cmdStrW_new;
+	    }
 	}
 	wcscat(cmdStrW, L" \"");
 	wcscat(cmdStrW, m_szFileUserClickedOn);
