@@ -5510,24 +5510,28 @@ has_pending_job(void)
 
 /*
  * Called once in a while: check if any jobs that seem useful have ended.
+ * Returns TRUE if a job did end.
  */
-    void
+    int
 job_check_ended(void)
 {
     int		i;
+    int		did_end = FALSE;
 
+    // be quick if there are no jobs to check
     if (first_job == NULL)
-	return;
+	return did_end;
 
     for (i = 0; i < MAX_CHECK_ENDED; ++i)
     {
-	/* NOTE: mch_detect_ended_job() must only return a job of which the
-	 * status was just set to JOB_ENDED. */
+	// NOTE: mch_detect_ended_job() must only return a job of which the
+	// status was just set to JOB_ENDED.
 	job_T	*job = mch_detect_ended_job(first_job);
 
 	if (job == NULL)
 	    break;
-	job_cleanup(job); /* may free "job" */
+	did_end = TRUE;
+	job_cleanup(job); // may free "job"
     }
 
     if (channel_need_redraw)
@@ -5535,6 +5539,7 @@ job_check_ended(void)
 	channel_need_redraw = FALSE;
 	redraw_after_callback(TRUE);
     }
+    return did_end;
 }
 
 /*

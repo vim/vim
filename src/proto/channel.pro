@@ -65,7 +65,7 @@ job_T *job_alloc(void);
 void job_set_options(job_T *job, jobopt_T *opt);
 void job_stop_on_exit(void);
 int has_pending_job(void);
-void job_check_ended(void);
+int job_check_ended(void);
 job_T *job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg, int is_terminal);
 char *job_status(job_T *job);
 void job_info(job_T *job, dict_T *dict);

@@ -6351,6 +6351,8 @@ has_non_ascii(char_u *s)
 #endif
 
 #if defined(MESSAGE_QUEUE) || defined(PROTO)
+# define MAX_REPEAT_PARSE 8
+
 /*
  * Process messages that have been queued for netbeans or clientserver.
  * Also check if any jobs have ended.
@@ -6360,37 +6362,45 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
-    win_T *old_curwin = curwin;
+    win_T   *old_curwin = curwin;
+    int	    i;
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
 
-    // For Win32 mch_breakcheck() does not check for input, do it here.
+    // Loop when a job ended, but don't keep looping forever.
+    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
+    {
+	// For Win32 mch_breakcheck() does not check for input, do it here.
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
-    channel_handle_events(FALSE);
+	channel_handle_events(FALSE);
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
-    // Process the queued netbeans messages.
-    netbeans_parse_messages();
+	// Process the queued netbeans messages.
+	netbeans_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    // Write any buffer lines still to be written.
-    channel_write_any_lines();
+	// Write any buffer lines still to be written.
+	channel_write_any_lines();
 
-    // Process the messages queued on channels.
-    channel_parse_messages();
+	// Process the messages queued on channels.
+	channel_parse_messages();
 # endif
 # if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-    // Process the queued clientserver messages.
-    server_parse_messages();
+	// Process the queued clientserver messages.
+	server_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    // Check if any jobs have ended.
-    job_check_ended();
+	// Check if any jobs have ended.  If so, repeat the above to handle
+	// changes, e.g. stdin may have been closed.
+	if (job_check_ended())
+	    continue;
 # endif
+	break;
+    }
 
     // If the current window changed we need to bail out of the waiting loop.
     // E.g. when a job exit callback closes the terminal window.
