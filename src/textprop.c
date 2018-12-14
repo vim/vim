@@ -151,7 +151,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     size_t	textlen;
     char_u	*props;
     char_u	*newprops;
-    static textprop_T	tmp_prop; // static to get it aligned.
+    textprop_T	tmp_prop;
     int		i;
 
     lnum = get_tv_number(&argvars[0]);
@@ -212,8 +212,9 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
     // Fetch the line to get the ml_line_len field updated.
     proplen = get_text_props(buf, lnum, &props, TRUE);
+    textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
-    if (col >= (colnr_T)STRLEN(buf->b_ml.ml_line_ptr))
+    if (col >= (colnr_T)textlen - 1)
     {
 	EMSGN(_(e_invalid_col), (long)col);
 	return;
@@ -224,7 +225,6 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     if (newtext == NULL)
 	return;
     // Copy the text, including terminating NUL.
-    textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
     mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
 
     // Find the index where to insert the new property.
@@ -232,8 +232,8 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     // text, we need to copy them as bytes before using it as a struct.
     for (i = 0; i < proplen; ++i)
     {
-	mch_memmove(&tmp_prop, props + i * sizeof(proptype_T),
-							   sizeof(proptype_T));
+	mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
+							   sizeof(textprop_T));
 	if (tmp_prop.tp_col >= col)
 	    break;
     }
@@ -274,7 +274,7 @@ has_any_text_properties(buf_T *buf)
 }
 
 /*
- * Fetch the text properties for line "lnum" in buffer 'buf".
+ * Fetch the text properties for line "lnum" in buffer "buf".
  * Returns the number of text properties and, when non-zero, a pointer to the
  * first one in "props" (note that it is not aligned, therefore the char_u
  * pointer).
@@ -617,11 +617,13 @@ prop_type_set(typval_T *argvars, int add)
 	{
 	    *htp = (hashtab_T *)alloc(sizeof(hashtab_T));
 	    if (*htp == NULL)
+	    {
+		vim_free(prop);
 		return;
+	    }
 	    hash_init(*htp);
 	}
-	hash_add(buf == NULL ? global_proptypes : buf->b_proptypes,
-							       PT2HIKEY(prop));
+	hash_add(*htp, PT2HIKEY(prop));
     }
     else
     {
@@ -640,7 +642,7 @@ prop_type_set(typval_T *argvars, int add)
 	    char_u	*highlight;
 	    int		hl_id = 0;
 
-	    highlight = get_dict_string(dict, (char_u *)"highlight", TRUE);
+	    highlight = get_dict_string(dict, (char_u *)"highlight", FALSE);
 	    if (highlight != NULL && *highlight != NUL)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
@@ -721,12 +723,14 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     if (hi != NULL)
     {
 	hashtab_T	*ht;
+	proptype_T	*prop = HI2PT(hi);
 
 	if (buf == NULL)
 	    ht = global_proptypes;
 	else
 	    ht = buf->b_proptypes;
 	hash_remove(ht, hi);
+	vim_free(prop);
     }
 }
 
@@ -846,7 +850,7 @@ clear_ht_prop_types(hashtab_T *ht)
 
 #if defined(EXITFREE) || defined(PROTO)
 /*
- * Free all property types for "buf".
+ * Free all global property types.
  */
     void
 clear_global_prop_types(void)

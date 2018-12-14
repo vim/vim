@@ -505,7 +505,7 @@
  * +textprop		Text properties
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-// # define FEAT_TEXT_PROP
+# define FEAT_TEXT_PROP
 #endif
 
 /*
