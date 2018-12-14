@@ -7779,6 +7779,14 @@ ex_sign(exarg_T *eap)
 			int	len;
 
 			arg += 5;
+			for (s = arg; s + 1 < p; ++s)
+			    if (*s == '\\')
+			    {
+				// Remove a backslash, so that it is possible
+				// to use a space.
+				STRMOVE(s, s + 1);
+				--p;
+			    }
 # ifdef FEAT_MBYTE
 			/* Count cells and check for non-printable chars */
 			if (has_mbyte)
