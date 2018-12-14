@@ -6258,16 +6258,16 @@ qf_add_entry_from_dict(
     if (first_entry)
 	did_bufnr_emsg = FALSE;
 
-    filename = get_dict_string(d, (char_u *)"filename", TRUE);
-    module = get_dict_string(d, (char_u *)"module", TRUE);
-    bufnum = (int)get_dict_number(d, (char_u *)"bufnr");
-    lnum = (int)get_dict_number(d, (char_u *)"lnum");
-    col = (int)get_dict_number(d, (char_u *)"col");
-    vcol = (int)get_dict_number(d, (char_u *)"vcol");
-    nr = (int)get_dict_number(d, (char_u *)"nr");
-    type = get_dict_string(d, (char_u *)"type", TRUE);
-    pattern = get_dict_string(d, (char_u *)"pattern", TRUE);
-    text = get_dict_string(d, (char_u *)"text", TRUE);
+    filename = dict_get_string(d, (char_u *)"filename", TRUE);
+    module = dict_get_string(d, (char_u *)"module", TRUE);
+    bufnum = (int)dict_get_number(d, (char_u *)"bufnr");
+    lnum = (int)dict_get_number(d, (char_u *)"lnum");
+    col = (int)dict_get_number(d, (char_u *)"col");
+    vcol = (int)dict_get_number(d, (char_u *)"vcol");
+    nr = (int)dict_get_number(d, (char_u *)"nr");
+    type = dict_get_string(d, (char_u *)"type", TRUE);
+    pattern = dict_get_string(d, (char_u *)"pattern", TRUE);
+    text = dict_get_string(d, (char_u *)"text", TRUE);
     if (text == NULL)
 	text = vim_strsave((char_u *)"");
 
@@ -6290,7 +6290,7 @@ qf_add_entry_from_dict(
 
     // If the 'valid' field is present it overrules the detected value.
     if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
-	valid = (int)get_dict_number(d, (char_u *)"valid");
+	valid = (int)dict_get_number(d, (char_u *)"valid");
 
     status =  qf_add_entry(qi,
 			qf_idx,
@@ -6456,7 +6456,7 @@ qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
 	return FAIL;
 
     vim_free(qfl->qf_title);
-    qfl->qf_title = get_dict_string(what, (char_u *)"title", TRUE);
+    qfl->qf_title = dict_get_string(what, (char_u *)"title", TRUE);
     if (qf_idx == qi->qf_curlist)
 	qf_update_win_titlevar(qi);
 

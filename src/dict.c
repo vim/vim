@@ -487,7 +487,7 @@ dict_find(dict_T *d, char_u *key, int len)
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *
-get_dict_string(dict_T *d, char_u *key, int save)
+dict_get_string(dict_T *d, char_u *key, int save)
 {
     dictitem_T	*di;
     char_u	*s;
@@ -506,7 +506,7 @@ get_dict_string(dict_T *d, char_u *key, int save)
  * Returns 0 if the entry doesn't exist.
  */
     varnumber_T
-get_dict_number(dict_T *d, char_u *key)
+dict_get_number(dict_T *d, char_u *key)
 {
     dictitem_T	*di;
 
@@ -583,7 +583,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
+dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;

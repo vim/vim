@@ -4063,7 +4063,7 @@ eval7(
      */
     case '{':	ret = get_lambda_tv(arg, rettv, evaluate);
 		if (ret == NOTDONE)
-		    ret = get_dict_tv(arg, rettv, evaluate);
+		    ret = dict_get_tv(arg, rettv, evaluate);
 		break;
 
     /*

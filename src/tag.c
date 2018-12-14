@@ -4160,14 +4160,14 @@ tagstack_push_items(win_T *wp, list_T *l)
 	if (list2fpos(&di->di_tv, &mark, &fnum, NULL) != OK)
 	    continue;
 	if ((tagname =
-		get_dict_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
+		dict_get_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
 	    continue;
 
 	if (mark.col > 0)
 	    mark.col--;
 	tagstack_push_item(wp, tagname,
-		(int)get_dict_number(itemdict, (char_u *)"bufnr"),
-		(int)get_dict_number(itemdict, (char_u *)"matchnr") - 1,
+		(int)dict_get_number(itemdict, (char_u *)"bufnr"),
+		(int)dict_get_number(itemdict, (char_u *)"matchnr") - 1,
 		mark, fnum);
     }
 }

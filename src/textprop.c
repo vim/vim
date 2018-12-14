@@ -173,7 +173,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	EMSG(_("E965: missing property type name"));
 	return;
     }
-    type_name = get_dict_string(dict, (char_u *)"type", FALSE);
+    type_name = dict_get_string(dict, (char_u *)"type", FALSE);
 
     if (dict_find(dict, (char_u *)"end_lnum", -1) != NULL)
     {
@@ -183,10 +183,10 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     if (dict_find(dict, (char_u *)"length", -1) != NULL)
-	length = get_dict_number(dict, (char_u *)"length");
+	length = dict_get_number(dict, (char_u *)"length");
     else if (dict_find(dict, (char_u *)"end_col", -1) != NULL)
     {
-	length = get_dict_number(dict, (char_u *)"end_col") - col;
+	length = dict_get_number(dict, (char_u *)"end_col") - col;
 	if (length <= 0)
 	{
 	    EMSG2(_(e_invargval), "end_col");
@@ -195,7 +195,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
-	id = get_dict_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, (char_u *)"id");
 
     if (get_bufnr_from_arg(&argvars[2], &buf) == FAIL)
 	return;
@@ -265,7 +265,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
 /*
  * Return TRUE if any text properties are defined globally or for buffer
- * 'buf".
+ * "buf".
  */
     int
 has_any_text_properties(buf_T *buf)
@@ -498,13 +498,13 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     di = dict_find(dict, (char_u*)"all", -1);
     if (di != NULL)
-	do_all = get_dict_number(dict, (char_u *)"all");
+	do_all = dict_get_number(dict, (char_u *)"all");
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
-	id = get_dict_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, (char_u *)"id");
     if (dict_find(dict, (char_u *)"type", -1))
     {
-	char_u	    *name = get_dict_string(dict, (char_u *)"type", FALSE);
+	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
 	proptype_T  *type = lookup_prop_type(name, buf);
 
 	if (type == NULL)
@@ -642,7 +642,7 @@ prop_type_set(typval_T *argvars, int add)
 	    char_u	*highlight;
 	    int		hl_id = 0;
 
-	    highlight = get_dict_string(dict, (char_u *)"highlight", FALSE);
+	    highlight = dict_get_string(dict, (char_u *)"highlight", FALSE);
 	    if (highlight != NULL && *highlight != NUL)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
