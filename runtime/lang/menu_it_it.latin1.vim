@@ -12,14 +12,14 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding iso-8859-1
+scriptencoding latin1
 
 " Help / Aiuto
 menut &Help			&Aiuto
 
 menut &Overview<Tab><F1>	&Panoramica<Tab><F1>
 menut &User\ Manual		Manuale\ &Utente
-menut &How-to\ links	Co&Me\.\.\.
+menut &How-to\ links	Co&me\.\.\.
 menut &Find\.\.\.	&Cerca\.\.\.
 " -SEP1-
 menut &Credits		Cr&editi
@@ -37,12 +37,12 @@ menut &File				&File
 
 menut &Open\.\.\.<Tab>:e		&Apri\.\.\.<Tab>:e
 menut Sp&lit-Open\.\.\.<Tab>:sp		A&pri\ nuova\ finestra\.\.\.<Tab>:sp
-menut Open\ Tab\.\.\.<Tab>:tabnew	Apri\ nuova\ &Linguetta\.\.\.<Tab>:tabnew
+menut Open\ Tab\.\.\.<Tab>:tabnew	Apri\ nuova\ &Tab\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew			&Nuovo<Tab>:enew
 menut &Close<Tab>:close			&Chiudi<Tab>:close
 " -SEP1-
 menut &Save<Tab>:w			&Salva<Tab>:w
-menut Save\ &As\.\.\.<Tab>:sav		Salva\ &Con\ nome\.\.\.<Tab>:sav
+menut Save\ &As\.\.\.<Tab>:sav		Salva\ &con\ nome\.\.\.<Tab>:sav
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.		&Differenza\ con\.\.\.
 menut Split\ Patched\ &By\.\.\.		Patc&h\ da\.\.\.
@@ -64,8 +64,8 @@ menut &Copy<Tab>"+y			&Copia<Tab>"+y
 menut &Paste<Tab>"+gP			&Incolla<Tab>"+gP
 menut Put\ &Before<Tab>[p		&Metti\ davanti<Tab>[p
 menut Put\ &After<Tab>]p		M&etti\ dietro<Tab>]p
-menut &Delete<Tab>x			Cance&Lla<Tab>x
-menut &Select\ all<Tab>ggVG		Seleziona\ &Tutto<Tab>ggVG
+menut &Delete<Tab>x			Cance&lla<Tab>x
+menut &Select\ all<Tab>ggVG		Seleziona\ &tutto<Tab>ggVG
 " -SEP2-
 menut &Find\.\.\.			&Cerca\.\.\.
 menut &Find\.\.\.<Tab>/			&Cerca\.\.\.<Tab>/
@@ -265,7 +265,7 @@ menut L&ist\ Messages<Tab>:cl!	Lista\ &Messaggi<Tab>:cl!
 menut &Next\ Error<Tab>:cn		Errore\ S&uccessivo<Tab>:cn
 menut &Previous\ Error<Tab>:cp	Errore\ &Precedente<Tab>:cp
 menut &Older\ List<Tab>:cold	Lista\ Men&o\ Recente<Tab>:cold
-menut N&ewer\ List<Tab>:cnew	Lista\ Più\ Rece&Nte<Tab>:cnew
+menut N&ewer\ List<Tab>:cnew	Lista\ Più\ Rece&nte<Tab>:cnew
 
 menut Error\ &Window		&Finestra\ errori
 
