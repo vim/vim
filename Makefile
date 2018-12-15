@@ -39,10 +39,18 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
+	# When the target is "test" also run the indent tests.
+	@if test "$@" = "test"; then \
+		$(MAKE) indenttest; \
+	fi
 
-test: all
-	cd src && $(MAKE) test
-	cd runtime/indent && $(MAKE) clean && $(MAKE) test
+# Executable used for running the indent tests.
+VIM_FOR_INDENTTEST = ../../src/vim
+
+indenttest:
+	cd runtime/indent && \
+		$(MAKE) clean VIM="$(VIM_FOR_INDENTTEST)" && \
+		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
 		
 
 #########################################################################
