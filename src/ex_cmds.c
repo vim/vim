@@ -7685,7 +7685,8 @@ sign_define_by_name(
 	int	start = next_sign_typenr;
 
 	// Allocate a new sign.
-	sp = (sign_T *)alloc_clear((unsigned)sizeof(sign_T));
+	sp = (sign_T *)alloc_clear_id((unsigned)sizeof(sign_T),
+						aid_sign_define_by_name);
 	if (sp == NULL)
 	    return FAIL;
 
@@ -8312,7 +8313,7 @@ sign_getlist(char_u *name, list_T *retlist)
 
     for (; sp != NULL && !got_int; sp = sp->sn_next)
     {
-	if ((dict = dict_alloc()) == NULL)
+	if ((dict = dict_alloc_id(aid_sign_getlist)) == NULL)
 	    return;
 	if (list_append_dict(retlist, dict) == FAIL)
 	    return;
@@ -8339,13 +8340,13 @@ sign_get_placed_in_buf(
     signlist_T	*sign;
     dict_T	*sdict;
 
-    if ((d = dict_alloc()) == NULL)
+    if ((d = dict_alloc_id(aid_sign_getplaced_dict)) == NULL)
 	return;
     list_append_dict(retlist, d);
 
     dict_add_number(d, "bufnr", (long)buf->b_fnum);
 
-    if ((l = list_alloc()) == NULL)
+    if ((l = list_alloc_id(aid_sign_getplaced_list)) == NULL)
 	return;
     dict_add_list(d, "signs", l);
 

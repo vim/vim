@@ -24,6 +24,7 @@ char_u *alloc(unsigned size);
 int alloc_does_fail(long_u size);
 char_u *alloc_id(unsigned size, alloc_id_T id);
 char_u *alloc_clear(unsigned size);
+char_u * alloc_clear_id(unsigned size, alloc_id_T id);
 char_u *alloc_check(unsigned size);
 char_u *lalloc_clear(long_u size, int message);
 char_u *lalloc(long_u size, int message);

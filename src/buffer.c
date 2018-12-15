@@ -5881,7 +5881,8 @@ insert_sign(
 {
     signlist_T	*newsign;
 
-    newsign = (signlist_T *)lalloc((long_u)sizeof(signlist_T), FALSE);
+    newsign = (signlist_T *)lalloc_id((long_u)sizeof(signlist_T), FALSE,
+							aid_insert_sign);
     if (newsign != NULL)
     {
 	newsign->id = id;
@@ -5968,7 +5969,7 @@ sign_get_info(signlist_T *sign)
 {
     dict_T	*d;
 
-    if ((d = dict_alloc()) == NULL)
+    if ((d = dict_alloc_id(aid_sign_getinfo)) == NULL)
 	return NULL;
     dict_add_number(d, "id", sign->id);
     dict_add_string(d, "group", (sign->group == NULL) ?

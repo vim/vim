@@ -895,6 +895,19 @@ alloc_clear(unsigned size)
 }
 
 /*
+ * Same as alloc_clear() but with allocation id for testing
+ */
+    char_u *
+alloc_clear_id(unsigned size, alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
+	return NULL;
+#endif
+    return alloc_clear(size);
+}
+
+/*
  * alloc() with check for maximum line length
  */
     char_u *

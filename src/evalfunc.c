@@ -11351,7 +11351,7 @@ f_sign_getdefined(typval_T *argvars, typval_T *rettv)
 {
     char_u	*name = NULL;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc_id(rettv, aid_sign_getdefined) != OK)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -11374,7 +11374,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     char_u	*group = NULL;
     int		notanum = FALSE;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc_id(rettv, aid_sign_getplaced) != OK)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)

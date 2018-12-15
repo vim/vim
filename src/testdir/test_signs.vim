@@ -378,6 +378,7 @@ func Test_sign_funcs()
 	      \ {"lnum" : -1})', 'E885:')
   call assert_fails('call sign_place(22, "", "sign1", "Xsign",
 	      \ {"lnum" : 0})', 'E885:')
+  call assert_equal(-1, sign_place(1, "*", "sign1", "Xsign", {"lnum" : 10}))
 
   " Tests for sign_getplaced()
   call assert_equal([{'bufnr' : bufnr(''), 'signs' :
@@ -792,8 +793,50 @@ func Test_sign_priority()
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=20\n", a)
 
-  call delete("Xsign")
   call sign_unplace('*')
   call sign_undefine()
   enew  | only
+  call delete("Xsign")
+endfunc
+
+" Tests for memory allocation failures in sign functions
+func Test_sign_memfailures()
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+
+  call test_alloc_fail(GetAllocId('sign_getdefined'), 0, 0)
+  call assert_fails('call sign_getdefined("sign1")', 'E342:')
+  call test_alloc_fail(GetAllocId('sign_getplaced'), 0, 0)
+  call assert_fails('call sign_getplaced("Xsign")', 'E342:')
+  call test_alloc_fail(GetAllocId('sign_define_by_name'), 0, 0)
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
+  call assert_fails('call sign_define("sign1", attr)', 'E342:')
+
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
+  call sign_define("sign1", attr)
+  call test_alloc_fail(GetAllocId('sign_getlist'), 0, 0)
+  call assert_fails('call sign_getdefined("sign1")', 'E342:')
+
+  call sign_place(3, 'g1', 'sign1', 'Xsign', {'lnum' : 10})
+  call test_alloc_fail(GetAllocId('sign_getplaced_dict'), 0, 0)
+  call assert_fails('call sign_getplaced("Xsign")', 'E342:')
+  call test_alloc_fail(GetAllocId('sign_getplaced_list'), 0, 0)
+  call assert_fails('call sign_getplaced("Xsign")', 'E342:')
+
+  call test_alloc_fail(GetAllocId('insert_sign'), 0, 0)
+  call assert_fails('call sign_place(4, "g1", "sign1", "Xsign", {"lnum" : 11})',
+								\ 'E342:')
+
+  call test_alloc_fail(GetAllocId('sign_getinfo'), 0, 0)
+  call assert_fails('call getbufinfo()', 'E342:')
+  call sign_place(4, 'g1', 'sign1', 'Xsign', {'lnum' : 11})
+  call test_alloc_fail(GetAllocId('sign_getinfo'), 0, 0)
+  call assert_fails('let binfo=getbufinfo("Xsign")', 'E342:')
+  call assert_equal([{'lnum': 11, 'id': 4, 'name': 'sign1',
+	      \ 'priority': 10, 'group': 'g1'}], binfo[0].signs)
+
+  call sign_unplace('*')
+  call sign_undefine()
+  enew  | only
+  call delete("Xsign")
 endfunc
