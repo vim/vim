@@ -2107,7 +2107,7 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 # TESTING
 #
 # Execute the test scripts and the unittests.
-test check: scripttests unittests
+test check: scripttests unittests test_libvterm
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
@@ -2158,6 +2158,10 @@ run_memfile_test: $(MEMFILE_TEST_TARGET)
 
 run_message_test: $(MESSAGE_TEST_TARGET)
 	$(VALGRIND) ./$(MESSAGE_TEST_TARGET) || exit 1; echo $* passed;
+
+# Run the libvterm tests.
+test_libvterm:
+	cd libvterm; $(MAKE) -f Makefile test CC="$(CC)"
 
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.

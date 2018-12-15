@@ -8,8 +8,7 @@ ifneq ($(VERBOSE),1)
   LIBTOOL +=--quiet
 endif
 
-# override CFLAGS +=-Wall -Iinclude -std=c99 -DINLINE="static inline" -DUSE_INLINE
-override CFLAGS +=-Wall -Iinclude -std=c90 -Wpedantic -DINLINE=""
+override CFLAGS +=-Wall -Iinclude -std=c99 -Wpedantic -DINLINE=""
 
 ifeq ($(shell uname),SunOS)
   override CFLAGS +=-D__EXTENSIONS__ -D_XPG6 -D__XOPEN_OR_POSIX
