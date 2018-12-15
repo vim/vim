@@ -52,6 +52,9 @@ INCDIR=$(PREFIX)/include
 MANDIR=$(PREFIX)/share/man
 MAN3DIR=$(MANDIR)/man3
 
+# Uncomment to check for memory access errors with valgrind.
+# VALGRIND=1
+
 all: $(LIBRARY) $(BINFILES)
 
 $(LIBRARY): $(OBJECTS)
