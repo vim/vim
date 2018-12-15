@@ -112,7 +112,7 @@ func Test_sign()
   " Only 1 or 2 character text is allowed
   call assert_fails("sign define Sign4 text=abc linehl=Comment", 'E239:')
   call assert_fails("sign define Sign4 text= linehl=Comment", 'E239:')
-  call assert_fails("sign define Sign4 text=\ ab  linehl=Comment", 'E239:')
+  call assert_fails("sign define Sign4 text=\\ ab  linehl=Comment", 'E239:')
 
   " define sign with whitespace
   sign define Sign4 text=\ X linehl=Comment

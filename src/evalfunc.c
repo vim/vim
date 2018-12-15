@@ -11325,13 +11325,13 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
 	// sign attributes
 	dict = argvars[1].vval.v_dict;
 	if (dict_find(dict, (char_u *)"icon", -1) != NULL)
-	    icon = get_dict_string(dict, (char_u *)"icon", TRUE);
+	    icon = dict_get_string(dict, (char_u *)"icon", TRUE);
 	if (dict_find(dict, (char_u *)"linehl", -1) != NULL)
-	    linehl = get_dict_string(dict, (char_u *)"linehl", TRUE);
+	    linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
 	if (dict_find(dict, (char_u *)"text", -1) != NULL)
-	    text = get_dict_string(dict, (char_u *)"text", TRUE);
+	    text = dict_get_string(dict, (char_u *)"text", TRUE);
 	if (dict_find(dict, (char_u *)"texthl", -1) != NULL)
-	    texthl = get_dict_string(dict, (char_u *)"texthl", TRUE);
+	    texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
     }
 
     if (sign_define_by_name(name, icon, linehl, text, texthl) == OK)
@@ -11588,7 +11588,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 	    }
 	}
 	if (dict_find(dict, (char_u *)"id", -1) != NULL)
-	    sign_id = get_dict_number(dict, (char_u *)"id");
+	    sign_id = dict_get_number(dict, (char_u *)"id");
     }
 
     if (buf == NULL)
