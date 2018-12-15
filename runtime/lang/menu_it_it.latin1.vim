@@ -22,10 +22,10 @@ menut &User\ Manual		Manuale\ &Utente
 menut &How-to\ links	Co&Me\.\.\.
 menut &Find\.\.\.	&Cerca\.\.\.
 " -SEP1-
-menut &Credits		Cr&Editi
-menut Co&pying		C&Opie
+menut &Credits		Cr&editi
+menut Co&pying		C&opie
 menut &Sponsor/Register &Sponsor/Registrazione
-menut O&rphans		O&Rfani
+menut O&rphans		O&rfani
 " -SEP2-
 menut &Version		&Versione
 menut &About		&Intro
@@ -36,7 +36,7 @@ let g:menutrans_help_dialog = "Batti un comando o una parola per cercare aiuto:\
 menut &File				&File
 
 menut &Open\.\.\.<Tab>:e		&Apri\.\.\.<Tab>:e
-menut Sp&lit-Open\.\.\.<Tab>:sp		A&Pri\ nuova\ finestra\.\.\.<Tab>:sp
+menut Sp&lit-Open\.\.\.<Tab>:sp		A&pri\ nuova\ finestra\.\.\.<Tab>:sp
 menut Open\ Tab\.\.\.<Tab>:tabnew	Apri\ nuova\ &Linguetta\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew			&Nuovo<Tab>:enew
 menut &Close<Tab>:close			&Chiudi<Tab>:close
@@ -45,11 +45,11 @@ menut &Save<Tab>:w			&Salva<Tab>:w
 menut Save\ &As\.\.\.<Tab>:sav		Salva\ &Con\ nome\.\.\.<Tab>:sav
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.		&Differenza\ con\.\.\.
-menut Split\ Patched\ &By\.\.\.		Patc&H\ da\.\.\.
+menut Split\ Patched\ &By\.\.\.		Patc&h\ da\.\.\.
 " -SEP3-
 menut &Print				S&tampa
 " -SEP4-
-menut Sa&ve-Exit<Tab>:wqa		Sa&Lva\ ed\ esci<Tab>:wqa
+menut Sa&ve-Exit<Tab>:wqa		Sa&lva\ ed\ Esci<Tab>:wqa
 menut E&xit<Tab>:qa			&Esci<Tab>:qa
 
 " Edit / Modifica
@@ -57,13 +57,13 @@ menut &Edit				&Modifica
 
 menut &Undo<Tab>u			&Annulla<Tab>u
 menut &Redo<Tab>^R			&Ripristina<Tab>^R
-menut Rep&eat<Tab>\.			Ri&Peti<Tab>\.
+menut Rep&eat<Tab>\.			Ri&peti<Tab>\.
 " -SEP1-
 menut Cu&t<Tab>"+x			&Taglia<Tab>"+x
 menut &Copy<Tab>"+y			&Copia<Tab>"+y
 menut &Paste<Tab>"+gP			&Incolla<Tab>"+gP
 menut Put\ &Before<Tab>[p		&Metti\ davanti<Tab>[p
-menut Put\ &After<Tab>]p		M&Etti\ dietro<Tab>]p
+menut Put\ &After<Tab>]p		M&etti\ dietro<Tab>]p
 menut &Delete<Tab>x			Cance&Lla<Tab>x
 menut &Select\ all<Tab>ggVG		Seleziona\ &Tutto<Tab>ggVG
 " -SEP2-
@@ -80,9 +80,9 @@ menut Question				Domanda
 
 " Edit / Modifica / Impostazioni Globali
 
-menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Evidenzia\ ricerche\ Sì/No<Tab>:set\ hls!
-menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!		&Ignora\ maiusc\.-minusc\.\ Sì/No<Tab>:set\ ic!
-menut Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!			Indica\ &Corrispondenze\ Sì/No<Tab>:set\ sm!
+menut Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Evidenzia\ ricerche\ SÃ¬/No<Tab>:set\ hls!
+menut Toggle\ &Ignoring\ Case<Tab>:set\ ic!		&Ignora\ maiusc\.-minusc\.\ SÃ¬/No<Tab>:set\ ic!
+menut Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!			Indica\ &Corrispondenze\ SÃ¬/No<Tab>:set\ sm!
 
 menut &Context\ lines		&Linee\ di\ contesto
 
@@ -93,15 +93,15 @@ menut Insert\ mode		Modo\ Insert
 menut Block\ and\ Insert	Selezione\ Blocco\ e\ Inserimento
 menut Always			Sempre
 
-menut Toggle\ Insert\ &Mode<Tab>:set\ im!	&Modo\ Insert\ Sì/No<Tab>:set\ im!
-menut Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	C&Ompatibilità\ VI\ Sì/No<Tab>:set\ cp!
-menut Search\ &Path\.\.\.	&Percorso\ di\ ricerca\.\.\.
-menut Ta&g\ Files\.\.\.		File\ ta&G\.\.\.
+menut Toggle\ Insert\ &Mode<Tab>:set\ im!	&Modo\ Insert\ SÃ¬/No<Tab>:set\ im!
+menut Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	C&ompatibilitÃ \ VI\ SÃ¬/No<Tab>:set\ cp!
+menut Search\ &Path\.\.\.	&Percorso\ di\ Ricerca\.\.\.
+menut Ta&g\ Files\.\.\.		File\ Ta&g\.\.\.
 " -SEP1-
-menut Toggle\ &Toolbar			Barra\ s&Trumenti\ Sì/No
-menut Toggle\ &Bottom\ Scrollbar	Barra\ scorrimento\ in\ &Fondo\ Sì/No
-menut Toggle\ &Left\ Scrollbar		Barra\ scorrimento\ a\ &Sinistra\ Sì/No
-menut Toggle\ &Right\ Scrollbar		Barra\ scorrimento\ a\ &Destra\ Sì/No
+menut Toggle\ &Toolbar			Barra\ s&trumenti\ SÃ¬/No
+menut Toggle\ &Bottom\ Scrollbar	Barra\ Scorrimento\ in\ &Fondo\ SÃ¬/No
+menut Toggle\ &Left\ Scrollbar		Barra\ Scorrimento\ a\ &Sinistra\ SÃ¬/No
+menut Toggle\ &Right\ Scrollbar		Barra\ Scorrimento\ a\ &Destra\ SÃ¬/No
 
 let g:menutrans_path_dialog = "Batti percorso di ricerca per i file.\nSepara fra loro i nomi di directory con una virgola."
 let g:menutrans_tags_dialog = "Batti nome dei file di tag.\nSepara fra loro i nomi di directory con una virgola."
@@ -110,14 +110,14 @@ let g:menutrans_tags_dialog = "Batti nome dei file di tag.\nSepara fra loro i no
 menut F&ile\ Settings	&Impostazioni\ file
 
 " Boolean options
-menut Toggle\ Line\ &Numbering<Tab>:set\ nu!		&Numerazione\ Sì/No<Tab>:set\ nu!
-menut Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Numerazione\ relati&Va\ Sì/No<Tab>:set\ rnu!
-menut Toggle\ &List\ Mode<Tab>:set\ list!		Modo\ &List\ Sì/No<Tab>:set\ list!
-menut Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Linee\ &Continuate\ Sì/No<Tab>:set\ wrap!
-menut Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	A\ capo\ alla\ &Parola\ Sì/No<Tab>:set\ lbr!
-menut Toggle\ Tab\ &expanding<Tab>:set\ et!		&Espandi\ Tabulazione\ Sì/No<Tab>:set\ et!
-menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Indentazione\ &Automatica\ Sì/No<Tab>:set ai!
-menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indentazione\ stile\ &C\ Sì/No<Tab>:set cin!
+menut Toggle\ Line\ &Numbering<Tab>:set\ nu!		&Numerazione\ SÃ¬/No<Tab>:set\ nu!
+menut Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Numerazione\ relati&va\ SÃ¬/No<Tab>:set\ rnu!
+menut Toggle\ &List\ Mode<Tab>:set\ list!		Modo\ &List\ SÃ¬/No<Tab>:set\ list!
+menut Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Linee\ &Continuate\ SÃ¬/No<Tab>:set\ wrap!
+menut Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	A\ Capo\ alla\ &Parola\ SÃ¬/No<Tab>:set\ lbr!
+menut Toggle\ Tab\ &expanding<Tab>:set\ et!		&Espandi\ Tabulazione\ SÃ¬/No<Tab>:set\ et!
+menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Indentazione\ &Automatica\ SÃ¬/No<Tab>:set ai!
+menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indentazione\ stile\ &C\ SÃ¬/No<Tab>:set cin!
 " -SEP2-
 menut &Shiftwidth					&Spazi\ rientranza
 "menut &Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>		&Spazi\ rientranza.2<Tab>:set\ sw=2\ sw?<CR>
@@ -133,18 +133,18 @@ menut Soft\ &Tabstop					&Tabulazione\ software
 "menut Soft\ &Tabstop.5<Tab>:set\ sts=5\ sts?		&Tabulazione\ software.5<Tab>:set\ sts=5\ sts?
 "menut Soft\ &Tabstop.6<Tab>:set\ sts=6\ sts?		&Tabulazione\ software.6<Tab>:set\ sts=6\ sts?
 "menut Soft\ &Tabstop.8<Tab>:set\ sts=8\ sts?		&Tabulazione\ software.8<Tab>:set\ sts=8\ sts?
-menut Te&xt\ Width\.\.\.				Lunghe&Zza\ riga\.\.\.
+menut Te&xt\ Width\.\.\.				Lunghe&zza\ riga\.\.\.
 menut &File\ Format\.\.\.				Formato\ &File\.\.\.
 
 let g:menutrans_textwidth_dialog = "Batti nuova lunghezza linea (0 per inibire la formattazione): "
 let g:menutrans_fileformat_dialog = "Scegli formato con cui scrivere il file"
 let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annullare "
 
-menut Show\ C&olor\ Schemes\ in\ Menu	Mostra\ Schemi\ C&olore\ in\ Menù
-menut C&olor\ Scheme		Schema\ c&Olori
+menut Show\ C&olor\ Schemes\ in\ Menu	Mostra\ Schemi\ C&olore\ in\ MenÃ¹
+menut C&olor\ Scheme		Schema\ c&olori
 
-menut blue		blù
-menut darkblue		blù\ scuro
+menut blue		blu
+menut darkblue		blu\ scuro
 menut desert		deserto
 menut elflord		signore\ degli\ elfi
 menut evening		sera
@@ -153,8 +153,8 @@ menut morning		mattino
 menut peachpuff		pesca
 menut shine		brillante
 menut slate		ardesia
-menut BLUE		BLÙ
-menut DARKBLUE		BLÙ\ SCURO
+menut BLUE		BLU
+menut DARKBLUE		BLU\ SCURO
 menut DESERT		DESERTO
 menut ELFLORD		SIGNORE\ DEGLI\ ELFI
 menut EVENING		SERA
@@ -164,7 +164,7 @@ menut PEACHPUFF		PESCA
 menut SHINE		BRILLANTE
 menut SLATE		ARDESIA
 
-menut Show\ &Keymaps\ in\ Menu	Mostra\ Ma&ppe\ tastiera\ in\ Menù
+menut Show\ &Keymaps\ in\ Menu	Mostra\ Ma&ppe\ tastiera\ in\ MenÃ¹
 menut &Keymap			Ma&ppa\ tastiera
 
 menut None			nessuna
@@ -199,14 +199,14 @@ menut SLOVAK			SLOVACCO
 
 menut Select\ Fo&nt\.\.\.		Scegli\ &Font\.\.\.
 
-" Menù strumenti programmazione
+" MenÃ¹ strumenti programmazione
 menut &Tools				&Strumenti
 
 menut &Jump\ to\ this\ tag<Tab>g^]	&Vai\ a\ questa\ tag<Tab>g^]
 menut Jump\ &back<Tab>^T		Torna\ &Indietro<Tab>^T
 menut Build\ &Tags\ File		Costruisci\ file\ &Tags\
 " -SEP1-
-" Menù ortografia / Spelling
+" MenÃ¹ ortografia / Spelling
 menut &Spelling			&Ortografia
 
 menut &Spell\ Check\ On			Attiva\ &Controllo\ ortografico
@@ -223,53 +223,53 @@ menut Set\ language\ to\ "en_nz"	Imposta\ lingua\ a\ "en_nz"
 menut Set\ language\ to\ "en_us"	Imposta\ lingua\ a\ "en_us"
 menut &Find\ More\ Languages		&Trova\ altre\ lingue
 
-" Menù piegature / Fold
+" MenÃ¹ piegature / Fold
 menut &Folding					&Piegature
 " apri e chiudi piegature
-menut &Enable/Disable\ folds<Tab>zi		Pi&egature\ Sì/No<Tab>zi
+menut &Enable/Disable\ folds<Tab>zi		Pi&egature\ SÃ¬/No<Tab>zi
 menut &View\ Cursor\ Line<Tab>zv			&Vedi\ linea\ col\ Cursore<Tab>zv
 menut Vie&w\ Cursor\ Line\ only<Tab>zMzx		Vedi\ &Solo\ linea\ col\ Cursore<Tab>zMzx
-menut C&lose\ more\ folds<Tab>zm			C&Hiudi\ più\ piegature<Tab>zm
+menut C&lose\ more\ folds<Tab>zm			C&hiudi\ piÃ¹\ piegature<Tab>zm
 menut &Close\ all\ folds<Tab>zM			&Chiudi\ tutte\ le\ piegature<Tab>zM
-menut O&pen\ more\ folds<Tab>zr			A&Pri\ più\ piegature<Tab>zr
+menut O&pen\ more\ folds<Tab>zr			A&pri\ piÃ¹\ piegature<Tab>zr
 menut &Open\ all\ folds<Tab>zR			&Apri\ tutte\ le\ piegature<Tab>zR
 " -SEP1-
 " metodo piegatura
-menut Fold\ Met&hod				Meto&Do\ piegatura
+menut Fold\ Met&hod				Meto&do\ piegatura
 menut M&anual					&Manuale
 menut I&ndent					&Nidificazione
 menut E&xpression					&Espressione\ Reg\.
 menut S&yntax					&Sintassi
 menut &Diff					&Differenza
-menut Ma&rker					Mar&Catura
+menut Ma&rker					Mar&catura
 
 " crea e cancella piegature
 menut Create\ &Fold<Tab>zf			Crea\ &Piegatura<Tab>zf
-menut &Delete\ Fold<Tab>zd			&Leva\ piegatura<Tab>zd
-menut Delete\ &All\ Folds<Tab>zD			Leva\ &Tutte\ le\ piegature<Tab>zD
+menut &Delete\ Fold<Tab>zd			&Leva\ Piegatura<Tab>zd
+menut Delete\ &All\ Folds<Tab>zD			Leva\ &Tutte\ le\ Piegature<Tab>zD
 " -SEP2-
 " movimenti all'interno delle piegature
-menut Fold\ col&umn\ width			Larghezza\ piegat&Ure\ in\ colonne
+menut Fold\ col&umn\ width			Larghezza\ Piegat&ure\ in\ Colonne
 
 menut &Diff					&Differenza
 "
 menut &Update					&Aggiorna
-menut &Get\ Block				&Importa\ differenze
-menut &Put\ Block				&Esporta\ differenze
+menut &Get\ Block				&Importa\ Differenze
+menut &Put\ Block				&Esporta\ Differenze
 
 " -SEP2-
 menut &Make<Tab>:make		Esegui\ &Make<Tab>:make
 
 menut &List\ Errors<Tab>:cl		Lista\ &Errori<Tab>:cl
 menut L&ist\ Messages<Tab>:cl!	Lista\ &Messaggi<Tab>:cl!
-menut &Next\ Error<Tab>:cn		Errore\ s&Uccessivo<Tab>:cn
+menut &Next\ Error<Tab>:cn		Errore\ S&uccessivo<Tab>:cn
 menut &Previous\ Error<Tab>:cp	Errore\ &Precedente<Tab>:cp
-menut &Older\ List<Tab>:cold	Lista\ men&O\ recente<Tab>:cold
-menut N&ewer\ List<Tab>:cnew	Lista\ più\ rece&Nte<Tab>:cnew
+menut &Older\ List<Tab>:cold	Lista\ Men&o\ Recente<Tab>:cold
+menut N&ewer\ List<Tab>:cnew	Lista\ PiÃ¹\ Rece&Nte<Tab>:cnew
 
 menut Error\ &Window		&Finestra\ errori
 
-menut &Update<Tab>:cwin		A&Ggiorna<Tab>:cwin
+menut &Update<Tab>:cwin		A&ggiorna<Tab>:cwin
 menut &Open<Tab>:copen		&Apri<Tab>:copen
 menut &Close<Tab>:cclose	&Chiudi<Tab>:cclose
 
@@ -277,12 +277,12 @@ menut &Close<Tab>:cclose	&Chiudi<Tab>:cclose
 menut &Convert\ to\ HEX<Tab>:%!xxd	&Converti\ a\ esadecimale<Tab>:%!xxd
 menut Conve&rt\ back<Tab>:%!xxd\ -r	Conve&rti\ da\ esadecimale<Tab>:%!xxd\ -r
 
-menut Se&T\ Compiler		Impo&Sta\ Compilatore
+menut Se&T\ Compiler		Impo&sta\ Compilatore
 
 " Buffers / Buffer
 menut &Buffers			&Buffer
 
-menut &Refresh\ menu		A&ggiorna\ menù
+menut &Refresh\ menu		A&ggiorna\ menÃ¹
 menut &Delete			&Elimina
 menut &Alternate		&Alternato
 menut &Next			&Successivo
@@ -292,13 +292,13 @@ menut [No\ File]		[Nessun\ File]
 " Syntax / Sintassi
 menut &Syntax				&Sintassi
 
-menut &Show\ File\ Types\ in\ menu	Mo&Stra\ tipi\ di\ file\ nel\ menù
+menut &Show\ File\ Types\ in\ menu	Mo&stra\ tipi\ di\ file\ nel\ menÃ¹
 menut Set\ '&syntax'\ only		&S\ Attiva\ solo\ \ 'syntax'
 menut Set\ '&filetype'\ too		&F\ Attiva\ anche\ 'filetype'
 menut &Off				&Disattiva
 menut &Manual				&Manuale
-menut A&utomatic			A&Utomatico
-menut on/off\ for\ &This\ file		Attiva\ Sì/No\ su\ ques&To\ file
+menut A&utomatic			A&utomatico
+menut on/off\ for\ &This\ file		Attiva\ SÃ¬/No\ su\ ques&to\ file
 menut Co&lor\ test			Test\ &Colori
 menut &Highlight\ test			Test\ &Evidenziamento
 menut &Convert\ to\ HTML		Converti\ ad\ &HTML
@@ -309,13 +309,13 @@ let g:menutrans_no_file = "[Senza nome]"
 menut &Window				&Finestra
 
 menut &New<Tab>^Wn			&Nuova<Tab>^Wn
-menut S&plit<Tab>^Ws			&Dividi\ lo\ schermo<Tab>^Ws
-menut Sp&lit\ To\ #<Tab>^W^^		D&Ividi\ verso\ #<Tab>^W^^
-menut Split\ &Vertically<Tab>^Wv	Di&Vidi\ verticalmente<Tab>^Wv
-menut Split\ File\ E&xplorer		Aggiungi\ finestra\ e&Xplorer
+menut S&plit<Tab>^Ws			&Dividi\ lo\ Schermo<Tab>^Ws
+menut Sp&lit\ To\ #<Tab>^W^^		D&ividi\ verso\ #<Tab>^W^^
+menut Split\ &Vertically<Tab>^Wv	Di&vidi\ Verticalmente<Tab>^Wv
+menut Split\ File\ E&xplorer		Aggiungi\ Finestra\ e&Xplorer
 " -SEP1-
 menut &Close<Tab>^Wc			&Chiudi<Tab>^Wc
-menut Close\ &Other(s)<Tab>^Wo		C&Hiudi\ altra(e)<Tab>^Wo
+menut Close\ &Other(s)<Tab>^Wo		C&hiudi\ Altra(e)<Tab>^Wo
 " -SEP2-
 menut Move\ &To				&Muovi\ verso
 
@@ -328,7 +328,7 @@ menut Rotate\ &Down<Tab>^Wr		Ruota\ verso\ il\ &Basso<Tab>^Wr
 " -SEP3-
 menut &Equal\ Size<Tab>^W=		&Uguale\ ampiezza<Tab>^W=
 menut &Max\ Height<Tab>^W_		&Altezza\ massima<Tab>^W_
-menut M&in\ Height<Tab>^W1_		A&Ltezza\ minima<Tab>^W1_
+menut M&in\ Height<Tab>^W1_		A&ltezza\ minima<Tab>^W1_
 menut Max\ &Width<Tab>^W\|		Larghezza\ massima<Tab>^W\|
 menut Min\ Widt&h<Tab>^W1\|		Larghezza\ minima<Tab>^W1\|
 
@@ -340,11 +340,11 @@ menut &Copy		&Copia
 menut &Paste		&Incolla
 menut &Delete		&Elimina
 " -SEP2-
-menut Select\ Blockwise 	Seleziona\ in\ blocco
+menut Select\ Blockwise 	Seleziona\ in\ Blocco
 menut Select\ &Word		Seleziona\ &Parola
 menut Select\ &Line		Seleziona\ &Linea
 menut Select\ &Block 		Seleziona\ &Blocco
-menut Select\ &All		Seleziona\ t&Utto
+menut Select\ &All		Seleziona\ T&utto
 
 " The GUI Toolbar / Barra Strumenti
 menut Open		Apri
