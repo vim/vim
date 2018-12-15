@@ -58,30 +58,24 @@ MAN3DIR=$(MANDIR)/man3
 all: $(LIBRARY) $(BINFILES)
 
 $(LIBRARY): $(OBJECTS)
-	@echo LINK $@
-	@$(LIBTOOL) --mode=link --tag=CC $(CC) -rpath $(LIBDIR) -version-info $(VERSION_CURRENT):$(VERSION_REVISION):$(VERSION_AGE) -o $@ $^ $(LDFLAGS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) -rpath $(LIBDIR) -version-info $(VERSION_CURRENT):$(VERSION_REVISION):$(VERSION_AGE) -o $@ $^ $(LDFLAGS)
 
 src/%.lo: src/%.c $(HFILES_INT)
-	@echo CC $<
-	@$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CFLAGS) -o $@ -c $<
+	$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CFLAGS) -o $@ -c $<
 
 src/encoding/%.inc: src/encoding/%.tbl
-	@echo TBL $<
-	@perl -CSD tbl2inc_c.pl $< >$@
+	perl -CSD tbl2inc_c.pl $< >$@
 
 src/encoding.lo: $(INCFILES)
 
 bin/%: bin/%.c $(LIBRARY)
-	@echo CC $<
-	@$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $< -lvterm $(LDFLAGS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $< -lvterm $(LDFLAGS)
 
 t/harness.lo: t/harness.c $(HFILES)
-	@echo CC $<
-	@$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CFLAGS) -o $@ -c $<
+	$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CFLAGS) -o $@ -c $<
 
 t/harness: t/harness.lo $(LIBRARY)
-	@echo LINK $@
-	@$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 .PHONY: test
 test: $(LIBRARY) t/harness
