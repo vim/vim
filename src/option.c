@@ -927,7 +927,7 @@ static struct vimoption options[] =
     {"cryptmethod", "cm",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_CRYPT
 			    (char_u *)&p_cm, PV_CM,
-			    {(char_u *)"zip", (char_u *)0L}
+			    {(char_u *)"blowfish2", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}

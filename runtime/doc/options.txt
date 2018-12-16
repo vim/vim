@@ -2370,7 +2370,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'cryptmethod'* *'cm'*
-'cryptmethod' 'cm'	string	(default "zip")
+'cryptmethod' 'cm'	string	(default "blowfish2")
 			global or local to buffer |global-local|
 			{not in Vi}
 	Method used for encryption when the buffer is written to a file:
@@ -2401,8 +2401,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	modifications.  Also see |:X|.
 
 	When setting the global value to an empty string, it will end up with
-	the value "zip".  When setting the local value to an empty string the
-	buffer will use the global value.
+	the value "blowfish2".  When setting the local value to an empty
+	string the buffer will use the global value.
 
 	When a new encryption method is added in a later version of Vim, and
 	the current version does not recognize it, you will get	*E821* .
