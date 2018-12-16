@@ -3402,7 +3402,7 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
     vim_strncpy(new_dir, fname, MAXPATHL - 1);
     *gettail_sep(new_dir) = NUL;
 
-    if (STRCMP(old_dir, new_dir) == 0)
+    if (pathcmp((char *)old_dir, (char *)new_dir, -1) == 0)
 	// nothing to do
 	res = OK;
     else

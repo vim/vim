@@ -9185,7 +9185,7 @@ ex_cd(exarg_T *eap)
 	}
 #endif
 	dir_differs = new_dir == NULL || prev_dir == NULL
-					     || STRCMP(prev_dir, new_dir) != 0;
+			|| pathcmp((char *)prev_dir, (char *)new_dir, -1) != 0;
 	if (new_dir == NULL || (dir_differs && vim_chdir(new_dir)))
 	    EMSG(_(e_failed));
 	else
