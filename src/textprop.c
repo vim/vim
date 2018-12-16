@@ -301,7 +301,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     }
     if (proplen > 0)
 	*props = text + textlen;
-    return proplen / sizeof(textprop_T);
+    return (int)(proplen / sizeof(textprop_T));
 }
 
     static proptype_T *
@@ -393,7 +393,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 		buf->b_ml.ml_line_ptr = newtext;
 		buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	    }
-	    buf->b_ml.ml_line_len = len;
+	    buf->b_ml.ml_line_len = (int)len;
 	}
     }
     redraw_buf_later(buf, NOT_VALID);
@@ -423,8 +423,8 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     {
 	char_u	    *text = ml_get_buf(buf, lnum, FALSE);
 	size_t	    textlen = STRLEN(text) + 1;
-	int	    count = (buf->b_ml.ml_line_len - textlen)
-							  / sizeof(textprop_T);
+	int	    count = (int)((buf->b_ml.ml_line_len - textlen)
+							 / sizeof(textprop_T));
 	int	    i;
 	textprop_T  prop;
 	proptype_T  *pt;
@@ -607,7 +607,7 @@ prop_type_set(typval_T *argvars, int add)
 	    EMSG2(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = (proptype_T *)alloc_clear(sizeof(proptype_T) + STRLEN(name));
+	prop = (proptype_T *)alloc_clear((int)(sizeof(proptype_T) + STRLEN(name)));
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);

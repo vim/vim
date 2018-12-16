@@ -3146,7 +3146,7 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
     colnr_T len = -1;
 
     if (line != NULL)
-	len = STRLEN(line);
+	len = (colnr_T)STRLEN(line);
     return ml_replace_len(lnum, line, len, copy);
 }
 
@@ -3196,14 +3196,14 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
 	    size_t textproplen = curbuf->b_ml.ml_line_len - oldtextlen;
 
 	    // Need to copy over text properties, stored after the text.
-	    newline = alloc(len + 1 + textproplen);
+	    newline = alloc(len + 1 + (int)textproplen);
 	    if (newline != NULL)
 	    {
 		mch_memmove(newline, line, len + 1);
 		mch_memmove(newline + len + 1, curbuf->b_ml.ml_line_ptr + oldtextlen, textproplen);
 		vim_free(line);
 		line = newline;
-		len += textproplen;
+		len += (colnr_T)textproplen;
 	    }
 	}
     }

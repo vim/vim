@@ -1084,7 +1084,6 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
     }
-theend:
     free(cmdStrW);
 
     return NOERROR;
