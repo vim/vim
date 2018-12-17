@@ -7700,6 +7700,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				"lines". If this is not present, then the
 				'errorformat' option value is used.
 		    id		quickfix list identifier |quickfix-ID|
+		    idx		index of the current entry in the list
 		    items	list of quickfix entries. Same as the {list}
 				argument.
 		    lines	use 'errorformat' to parse a list of lines and

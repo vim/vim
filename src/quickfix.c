@@ -3687,7 +3687,7 @@ qf_history(exarg_T *eap)
 
     if (is_loclist_cmd(eap->cmdidx))
 	qi = GET_LOC_LIST(curwin);
-    if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
+    if (qf_stack_empty(qi))
 	MSG(_("No entries"));
     else
 	for (i = 0; i < qi->qf_listcount; ++i)
@@ -6549,6 +6549,41 @@ qf_setprop_context(qf_list_T *qfl, dictitem_T *di)
 }
 
 /*
+ * Set the current index in the specified quickfix list
+ */
+    static int
+qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
+{
+    int		denote = FALSE;
+    int		newidx;
+    int		old_qfidx;
+    qfline_T	*qf_ptr;
+
+    newidx = get_tv_number_chk(&di->di_tv, &denote);
+    if (denote)
+	return FAIL;
+
+    if (newidx < 1)		// sanity check
+	return FAIL;
+    if (newidx > qfl->qf_count)
+	newidx = qfl->qf_count;
+
+    old_qfidx = qfl->qf_index;
+    qf_ptr = get_nth_entry(qfl, newidx, &newidx);
+    if (qf_ptr == NULL)
+	return FAIL;
+    qfl->qf_ptr = qf_ptr;
+    qfl->qf_index = newidx;
+
+    // If the current list is modified and it is displayed in the quickfix
+    // window, then Update it.
+    if (qi->qf_lists[qi->qf_curlist].qf_id == qfl->qf_id)
+	qf_win_pos_update(qi, old_qfidx);
+
+    return OK;
+}
+
+/*
  * Set quickfix/location list properties (title, items, context).
  * Also used to add items from parsing a list of lines.
  * Used by the setqflist() and setloclist() Vim script functions.
@@ -6585,6 +6620,8 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
 	retval = qf_setprop_context(qfl, di);
+    if ((di = dict_find(what, (char_u *)"idx", -1)) != NULL)
+	retval = qf_setprop_curidx(qi, qfl, di);
 
     if (retval == OK)
 	qf_list_changed(qfl);

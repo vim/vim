@@ -657,6 +657,9 @@ using these functions are below:
 
     " get the location list window id of the third window
     :echo getloclist(3, {'winid' : 0}).winid
+
+    " get the file window id of a location list window (winnr: 4)
+    :echo getloclist(4, {'filewinid' : 0}).filewinid
 <
 							*setqflist-examples*
 The |setqflist()| and |setloclist()| functions can be used to set the various
@@ -670,6 +673,9 @@ using these functions are below:
 
     " set the title of the current quickfix list
     :call setqflist([], 'a', {'title' : 'Mytitle'})
+
+    " change the current entry in the list specified by an identifier
+    :call setqflist([], 'a', {'id' : qfid, 'idx' : 10})
 
     " set the context of a quickfix list specified by an identifier
     :call setqflist([], 'a', {'id' : qfid, 'context' : {'val' : 100}})
