@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 8.1.  Last change: 2016 Nov 04
+*digraph.txt*   For Vim version 8.1.  Last change: 2018 Dec 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-04 18:02+0100\n"
+"POT-Creation-Date: 2018-12-12 15:34+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "E831: bf_key_init() called with empty password"
-msgstr "E831: bf_key_init() mit leerem passwort aufgerufen."
+msgstr "E831: bf_key_init() mit leerem Passwort aufgerufen."
 
 msgid "E820: sizeof(uint32_t) != 4"
 msgstr "E820: sizeof(uint32_t) ungleich 4."
@@ -634,6 +634,10 @@ msgid "E908: using an invalid value as a String"
 msgstr "E908: Ungültiger Wert als String verwendet."
 
 #, c-format
+msgid "E963: setting %s to value with wrong type"
+msgstr "E963: %s auf Wert mit falschem Typ gesetzt"
+
+#, c-format
 msgid "E795: Cannot delete variable %s"
 msgstr "E795: Kann Variable nicht löschen: %s"
 
@@ -805,6 +809,10 @@ msgstr "E258: Kann nicht zum Client senden."
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Ungültige Aktion '%s'"
 
+#, c-format
+msgid "E962: Invalid action: '%s'"
+msgstr "E962: Ungültige Aktion '%s'"
+
 msgid "sort() argument"
 msgstr "sort() Argument"
 
@@ -854,8 +862,8 @@ msgstr "> %d, Hex %04x, Oktal %o"
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, Hex %08x, Oktal %o"
 
-msgid "E134: Move lines into themselves"
-msgstr "E134: Verschiebe Zeilen in sich selbst"
+msgid "E134: Cannot move a range of lines into itself"
+msgstr "E134: Kann Bereich von Zeilen nicht in sich selbst verschieben"
 
 #, c-format
 msgid "%ld line moved"
@@ -1368,8 +1376,9 @@ msgid_plural "E173: %ld more files to edit"
 msgstr[0] "E173: %ld weitere Datei zum Editieren"
 msgstr[1] "E173: %ld weitere Dateien zum Editieren"
 
-msgid "E174: Command already exists: add ! to replace it"
-msgstr "E174: Befehl existiert bereits: ! zum Ersetzen hinzufügen"
+#, c-format
+msgid "E174: Command already exists: add ! to replace it: %s"
+msgstr "E174: Befehl '%s' existiert bereits: ! zum Ersetzen hinzufügen"
 
 msgid ""
 "\n"
@@ -1861,8 +1870,7 @@ msgstr "E512: Fehler beim Schließen"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um es zu "
-"erzwingen)"
+"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um es zu erzwingen)"
 
 #, c-format
 msgid ""
@@ -2208,8 +2216,8 @@ msgstr "Vim-Dialog"
 
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr ""
-"E232: BalloonEval kann nicht sowohl mit \"message\" als auch \"callback\" erzeugt "
-"werden"
+"E232: BalloonEval kann nicht sowohl mit \"message\" als auch \"callback\" "
+"erzeugt werden"
 
 msgid "_Cancel"
 msgstr "_Abbrechen"
@@ -3466,7 +3474,8 @@ msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Block Nr. 2 nicht erhalten?"
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "E843: Fehler beim Aktualisieren der Verschlüsselung der Auslagerungsdatei."
+msgstr ""
+"E843: Fehler beim Aktualisieren der Verschlüsselung der Auslagerungsdatei."
 
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Upps, Verlust der Auslagerungsdatei!!!"
@@ -5887,8 +5896,7 @@ msgstr "E825: Beschädigte Undo-Datei (%s): %s"
 
 msgid "Cannot write undo file in any directory in 'undodir'"
 msgstr ""
-"Undo-Datei kann in keines der Verzeichnisse aus 'undodir' geschrieben "
-"werden."
+"Undo-Datei kann in keines der Verzeichnisse aus 'undodir' geschrieben werden."
 
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"

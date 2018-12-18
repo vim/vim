@@ -8,6 +8,7 @@ if 1
 set nocp
 filetype indent on
 set nowrapscan
+set report=9999
 
 au! SwapExists * call HandleSwapExists()
 func HandleSwapExists()

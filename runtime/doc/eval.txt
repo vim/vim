@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 13
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2318,7 +2318,7 @@ prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
 prop_add({lnum}, {col}, {props})  none	add a text property
-prop_clear({lnum} [, {lnum_end} [, {bufnr}]])
+prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
 				Dict	search for a text property
@@ -2714,7 +2714,7 @@ assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
 
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
-		|v:errors|, like with |assert_equal()|. 
+		|v:errors|, like with |assert_equal()|.
 		Also see |assert-return|.
 		A value is false when it is zero. When {actual} is not a
 		number the assert fails.
@@ -5058,7 +5058,7 @@ getwininfo([{winid}])					*getwininfo()*
 
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a list with two numbers, the result of
-		getwinposx() and getwinposy() combined: 
+		getwinposx() and getwinposy() combined:
 			[x-pos, y-pos]
 		{timeout} can be used to specify how long to wait in msec for
 		a response from the terminal.  When omitted 100 msec is used.
@@ -6688,7 +6688,7 @@ prop_add({lnum}, {col}, {props})
 			"end_lnum" - line number for end of text
 			"end_col"  - column for end of text; not used when
 				     "length" is present
-			"bufnr	   - buffer to add the property to; when
+			"bufnr"	   - buffer to add the property to; when
 				     omitted the current buffer is used
 			"id"	   - user defined ID for the property; when
 				     omitted zero is used
@@ -6699,7 +6699,7 @@ prop_add({lnum}, {col}, {props})
 		are passed.  Either use "length" or "end_col" for a property
 		within one line, or use "end_lnum" and "end_col" for a
 		property that spans more than one line.
-		When neither "length" or "end_col" are passed the property
+		When neither "length" nor "end_col" are passed the property
 		will apply to one character.
 
 		"type" will first be looked up in the buffer the property is
@@ -6709,10 +6709,10 @@ prop_add({lnum}, {col}, {props})
 		See |text-properties| for information about text properties.
 
 
-prop_clear({lnum} [, {lnum_end} [, {props}]])		*prop_clear()*
+prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		Remove all text properties from line {lnum}.
-		When {lnum_end} is given, remove all text properties from line
-		{lnum} to {lnum_end} (inclusive).
+		When {lnum-end} is given, remove all text properties from line
+		{lnum} to {lnum-end} (inclusive).
 
 		When {props} contains a "bufnr" item use this buffer,
 		otherwise use the current buffer.
@@ -6772,7 +6772,7 @@ prop_list({lnum} [, {props}]) 				*prop_list()*
 
 
 						*prop_remove()* *E968*
-prop_remove({props} [, {lnum} [, {lnum_end}]])	
+prop_remove({props} [, {lnum} [, {lnum_end}]])
 		Remove a matching text property from line {lnum}.  When
 		{lnum_end} is given, remove matching text properties from line
 		{lnum} to {lnum_end} (inclusive).
@@ -9046,7 +9046,7 @@ test_option_not_set({name})				*test_option_not_set()*
 		Only to be used for testing!
 
 test_override({name}, {val})				*test_override()*
-		Overrides certain parts of Vims internal processing to be able
+		Overrides certain parts of Vim's internal processing to be able
 		to run tests. Only to be used for testing Vim!
 		The override is enabled when {val} is non-zero and removed
 		when {val} is zero.

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.1.  Last change: 2018 Dec 08
+*map.txt*       For Vim version 8.1.  Last change: 2018 Dec 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1254,7 +1254,7 @@ reported if any are supplied).  However, it is possible to specify that the
 command can take arguments, using the -nargs attribute.  Valid cases are:
 
 	-nargs=0    No arguments are allowed (the default)
-	-nargs=1    Exactly one argument is required, it includes spaces 
+	-nargs=1    Exactly one argument is required, it includes spaces
 	-nargs=*    Any number of arguments are allowed (0, 1, or many),
 		    separated by white space
 	-nargs=?    0 or 1 arguments are allowed
@@ -1279,7 +1279,7 @@ intended!  Calling a function may be an alternative.
 
 
 Completion behavior ~
-				*:command-completion* *E179* *E180* *E181* 
+				*:command-completion* *E179* *E180* *E181*
 				*:command-complete*
 By default, the arguments of user defined commands do not undergo completion.
 However, by specifying one or the other of the following attributes, argument
@@ -1407,7 +1407,7 @@ Possible values are:
 	-addr=loaded_buffers	Range for loaded buffers
 	-addr=windows		Range for windows
 	-addr=tabs		Range for tab pages
-	-addr=other		other kind of range 
+	-addr=other		other kind of range
 
 
 Special cases ~
