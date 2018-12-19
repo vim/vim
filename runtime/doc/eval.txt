@@ -3539,6 +3539,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 			    cursor is the end).  When not in Visual mode
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
+		These expressions except "v" accept offset suffix.
 		Additionally {expr} can be [lnum, col]: a |List| with the line
 		and column number. Most useful when the column is "$", to get
 		the last column of a specific line.  When "lnum" or "col" is
@@ -3552,6 +3553,9 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("$")		length of cursor line plus one
 			col("'t")		column of mark t
 			col("'" . markname)	column of mark markname
+<		Examples of offset suffix: >
+			col(".+2")		column of cursor + 2
+			col("$-1")		length of cursor line
 <		The first column is 1.  0 is returned for an error.
 		For an uppercase mark the column may actually be in another
 		buffer.
@@ -6268,6 +6272,7 @@ line({expr})	The result is a Number, which is the line number of the file
 			    cursor is the end).  When not in Visual mode
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
+		These expressions except "v" accept offset suffix.
 		Note that a mark in another file can be used.  The line number
 		then applies to another buffer.
 		To get the column number use |col()|.  To get both use
@@ -6276,7 +6281,10 @@ line({expr})	The result is a Number, which is the line number of the file
 			line(".")		line number of the cursor
 			line("'t")		line number of mark t
 			line("'" . marker)	line number of mark marker
-<
+<		Examples of offset suffix: >
+			line(".-3")		line number of the cursor - 3
+			line("$+1")		the last line + 1
+<							*last-position-jump*
 		To jump to the last known position when opening a file see
 		|last-position-jump|.
 
@@ -10266,6 +10274,7 @@ virtcol({expr})						*virtcol()*
 			    cursor is the end).  When not in Visual mode
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
+		These expressions except "v" accept offset suffix.
 		Note that only marks in the current file can be used.
 		Examples: >
   virtcol(".")	   with text "foo^Lbar", with cursor on the "^L", returns 5
