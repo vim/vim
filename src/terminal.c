@@ -1561,7 +1561,7 @@ update_snapshot(term_T *term)
 
 			cell2cellattr(&cell, &p[pos.col]);
 
-			if (ga_grow(&ga, MB_MAXBYTES) == OK)
+			if (ga_grow(&ga, MB_MAXBYTES*VTERM_MAX_CHARS_PER_CELL) == OK)
 			{
 			    int	    i;
 			    int	    c;
