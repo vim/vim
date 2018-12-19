@@ -1202,6 +1202,24 @@ tv_get_lnum(typval_T *argvars)
 }
 
 /*
+ * If there is a window for "curbuf", make it the current window.
+ */
+    static void
+find_win_for_curbuf(void)
+{
+    wininfo_T *wip;
+
+    for (wip = curbuf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    {
+	if (wip->wi_win != NULL)
+	{
+	    curwin = wip->wi_win;
+	    break;
+	}
+    }
+}
+
+/*
  * Get the lnum from the first argument.
  * Also accepts "$", then "buf" is used.
  * Returns 0 on error.
@@ -1209,11 +1227,34 @@ tv_get_lnum(typval_T *argvars)
     static linenr_T
 tv_get_lnum_buf(typval_T *argvars, buf_T *buf)
 {
+    linenr_T	lnum;
+    buf_T	*curbuf_save = NULL;
+    win_T	*curwin_save = NULL;
+    int		is_curbuf = buf == curbuf;
+
     if (argvars[0].v_type == VAR_STRING
 	    && argvars[0].vval.v_string != NULL
 	    && argvars[0].vval.v_string[0] == '$'
 	    && buf != NULL)
-	return buf->b_ml.ml_line_count;
+    {
+	if (!is_curbuf)
+	{
+	    curbuf_save = curbuf;
+	    curwin_save = curwin;
+	    curbuf = buf;
+	    find_win_for_curbuf();
+	}
+
+	lnum = tv_get_lnum(&argvars[0]);
+
+	if (!is_curbuf)
+	{
+	    curbuf = curbuf_save;
+	    curwin = curwin_save;
+	}
+
+	return lnum;
+    }
     return (linenr_T)tv_get_number_chk(&argvars[0], NULL);
 }
 
@@ -1327,24 +1368,6 @@ f_and(typval_T *argvars, typval_T *rettv)
 {
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					& tv_get_number_chk(&argvars[1], NULL);
-}
-
-/*
- * If there is a window for "curbuf", make it the current window.
- */
-    static void
-find_win_for_curbuf(void)
-{
-    wininfo_T *wip;
-
-    for (wip = curbuf->b_wininfo; wip != NULL; wip = wip->wi_next)
-    {
-	if (wip->wi_win != NULL)
-	{
-	    curwin = wip->wi_win;
-	    break;
-	}
-    }
 }
 
 /*
@@ -2630,8 +2653,9 @@ f_col(typval_T *argvars, typval_T *rettv)
     colnr_T	col = 0;
     pos_T	*fp;
     int		fnum = curbuf->b_fnum;
+    int		off = 0;
 
-    fp = var2fpos(&argvars[0], FALSE, &fnum);
+    fp = var2fpos(&argvars[0], FALSE, &fnum, &off);
     if (fp != NULL && fnum == curbuf->b_fnum)
     {
 	if (fp->col == MAXCOL)
@@ -2660,6 +2684,7 @@ f_col(typval_T *argvars, typval_T *rettv)
 			col += l;
 		}
 	    }
+	    col += off;
 	}
     }
     rettv->vval.v_number = col;
@@ -5704,7 +5729,7 @@ getpos_both(
 	if (getcurpos)
 	    fp = &curwin->w_cursor;
 	else
-	    fp = var2fpos(&argvars[0], TRUE, &fnum);
+	    fp = var2fpos(&argvars[0], TRUE, &fnum, NULL);
 	if (fnum != -1)
 	    list_append_number(l, (varnumber_T)fnum);
 	else
@@ -7972,11 +7997,12 @@ f_line(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum = 0;
     pos_T	*fp;
     int		fnum;
+    int		off = 0;
 
-    fp = var2fpos(&argvars[0], TRUE, &fnum);
+    fp = var2fpos(&argvars[0], TRUE, &fnum, &off);
     if (fp != NULL)
 	lnum = fp->lnum;
-    rettv->vval.v_number = lnum;
+    rettv->vval.v_number = lnum + off;
 }
 
 /*
@@ -15186,8 +15212,9 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     colnr_T	vcol = 0;
     pos_T	*fp;
     int		fnum = curbuf->b_fnum;
+    int		off = 0;
 
-    fp = var2fpos(&argvars[0], FALSE, &fnum);
+    fp = var2fpos(&argvars[0], FALSE, &fnum, &off);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
 						    && fnum == curbuf->b_fnum)
     {
@@ -15195,7 +15222,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	++vcol;
     }
 
-    rettv->vval.v_number = vcol;
+    rettv->vval.v_number = vcol + off;
 }
 
 /*

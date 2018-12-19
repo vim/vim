@@ -6352,7 +6352,16 @@ get_env_tv(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
-
+/*
+ * Parse position-offset suffix.
+ */
+    static pos_T *
+parse_offset_part(pos_T *p, char_u *s, int *offset)
+{
+    if (offset != NULL && p != NULL && (*s == '+' || *s == '-'))
+	*offset = atoi((char *)s);
+    return p;
+}
 
 /*
  * Translate a String variable into a position.
@@ -6362,7 +6371,8 @@ get_env_tv(char_u **arg, typval_T *rettv, int evaluate)
 var2fpos(
     typval_T	*varp,
     int		dollar_lnum,	/* TRUE when $ is last line */
-    int		*fnum)		/* set to fnum for '0, 'A, etc. */
+    int		*fnum,		/* set to fnum for '0, 'A, etc. */
+    int		*offset)	/* offset for line() and col() */
 {
     char_u		*name;
     static pos_T	pos;
@@ -6412,27 +6422,30 @@ var2fpos(
     }
 
     name = tv_get_string_chk(varp);
-    if (name == NULL)
-	return NULL;
-    if (name[0] == '.')				/* cursor */
-	return &curwin->w_cursor;
-    if (name[0] == 'v' && name[1] == NUL)	/* Visual start */
+    if (curwin != NULL)
     {
-	if (VIsual_active)
-	    return &VIsual;
-	return &curwin->w_cursor;
+	if (name == NULL)
+	    return NULL;
+	if (name[0] == '.')				/* cursor */
+	    return parse_offset_part(&curwin->w_cursor, &name[1], offset);
+	if (name[0] == 'v' && name[1] == NUL)	/* Visual start */
+	{
+	    if (VIsual_active)
+		return &VIsual;
+	    return &curwin->w_cursor;
+	}
     }
     if (name[0] == '\'')			/* mark */
     {
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
-	return pp;
+	return parse_offset_part(pp, &name[2], offset);
     }
 
     pos.coladd = 0;
 
-    if (name[0] == 'w' && dollar_lnum)
+    if (name[0] == 'w' && dollar_lnum && curwin != NULL)
     {
 	pos.col = 0;
 	if (name[1] == '0')		/* "w0": first visible line */
@@ -6441,14 +6454,14 @@ var2fpos(
 	    /* In silent Ex mode topline is zero, but that's not a valid line
 	     * number; use one instead. */
 	    pos.lnum = curwin->w_topline > 0 ? curwin->w_topline : 1;
-	    return &pos;
+	    return parse_offset_part(&pos, &name[2], offset);
 	}
 	else if (name[1] == '$')	/* "w$": last visible line */
 	{
 	    validate_botline();
 	    /* In silent Ex mode botline is zero, return zero then. */
 	    pos.lnum = curwin->w_botline > 0 ? curwin->w_botline - 1 : 0;
-	    return &pos;
+	    return parse_offset_part(&pos, &name[2], offset);
 	}
     }
     else if (name[0] == '$')		/* last column or line */
@@ -6457,11 +6470,13 @@ var2fpos(
 	{
 	    pos.lnum = curbuf->b_ml.ml_line_count;
 	    pos.col = 0;
+	    return parse_offset_part(&pos, &name[1], offset);
 	}
-	else
+	else if (curwin != NULL)
 	{
 	    pos.lnum = curwin->w_cursor.lnum;
 	    pos.col = (colnr_T)STRLEN(ml_get_curline());
+	    return parse_offset_part(&pos, &name[1], offset);
 	}
 	return &pos;
     }
