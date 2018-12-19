@@ -73,6 +73,9 @@ syn keyword cmakeKWadd_executable contained
 syn keyword cmakeKWadd_library contained
             \ ALIAS ARCHIVE_OUTPUT_DIRECTORY CLI CONFIG DLL EXCLUDE_FROM_ALL FRAMEWORK GLOBAL HEADER_FILE_ONLY IMPORTED IMPORTED_ IMPORTED_LOCATION IMPORTED_LOCATION_ INTERFACE_ LIBRARY_OUTPUT_DIRECTORY MODULE OBJECT ON OUTPUT_NAME POSITION_INDEPENDENT_CODE POST_BUILD PRE_BUILD PRE_LINK RUNTIME_OUTPUT_DIRECTORY SHARED STATIC TARGET_OBJECTS UNKNOWN
 
+syn keyword cmakeKWadd_link_options contained
+            \ BEFORE INTERFACE PRIVATE PUBLIC
+
 syn keyword cmakeKWadd_subdirectory contained
             \ EXCLUDE_FROM_ALL
 
@@ -304,6 +307,9 @@ syn keyword cmakeKWtarget_include_directories contained
 syn keyword cmakeKWtarget_link_libraries contained
             \ ALIAS DAG DEBUG_CONFIGURATIONS IMPORTED IMPORTED_NO_SONAME INTERFACE INTERFACE_LINK_LIBRARIES LINK_FLAGS LINK_INTERFACE_LIBRARIES LINK_INTERFACE_LIBRARIES_DEBUG LINK_INTERFACE_MULTIPLICITY LINK_PRIVATE LINK_PUBLIC OLD OSX PRIVATE PUBLIC STATIC
 
+syn keyword cmakeKWtarget_link_options contained
+            \ BEFORE INTERFACE PRIVATE PUBLIC
+
 syn keyword cmakeKWtarget_sources contained
             \ IMPORTED INTERFACE INTERFACE_SOURCES PRIVATE PUBLIC SOURCES
 
@@ -338,7 +344,7 @@ syn keyword cmakeGeneratorExpressions contained
 syn case ignore
 
 syn keyword cmakeCommand
-            \ add_compile_options add_custom_command add_custom_target add_definitions add_compile_definitions add_dependencies add_executable add_library add_subdirectory add_test aux_source_directory break build_command cmake_host_system_information cmake_minimum_required cmake_parse_arguments cmake_policy configure_file continue create_test_sourcelist ctest_build ctest_configure ctest_coverage ctest_empty_binary_directory ctest_memcheck ctest_read_custom_files ctest_run_script ctest_sleep ctest_start ctest_submit ctest_test ctest_update ctest_upload define_property enable_language enable_testing endfunction endmacro execute_process export file find_file find_library find_package find_path find_program fltk_wrap_ui function get_cmake_property get_directory_property get_filename_component get_property get_source_file_property get_target_property get_test_property include include_directories include_external_msproject include_guard include_regular_expression install link_directories list load_cache load_command macro mark_as_advanced math message option project qt_wrap_cpp qt_wrap_ui remove_definitions return separate_arguments set set_directory_properties set_property set_source_files_properties set_target_properties set_tests_properties site_name source_group string target_compile_definitions target_compile_features target_compile_options target_include_directories target_link_libraries target_sources try_compile try_run unset variable_watch
+            \ add_compile_options add_custom_command add_custom_target add_definitions add_compile_definitions add_dependencies add_executable add_library add_link_options add_subdirectory add_test aux_source_directory break build_command cmake_host_system_information cmake_minimum_required cmake_parse_arguments cmake_policy configure_file continue create_test_sourcelist ctest_build ctest_configure ctest_coverage ctest_empty_binary_directory ctest_memcheck ctest_read_custom_files ctest_run_script ctest_sleep ctest_start ctest_submit ctest_test ctest_update ctest_upload define_property enable_language enable_testing endfunction endmacro execute_process export file find_file find_library find_package find_path find_program fltk_wrap_ui function get_cmake_property get_directory_property get_filename_component get_property get_source_file_property get_target_property get_test_property include include_directories include_external_msproject include_guard include_regular_expression install link_directories list load_cache load_command macro mark_as_advanced math message option project qt_wrap_cpp qt_wrap_ui remove_definitions return separate_arguments set set_directory_properties set_property set_source_files_properties set_target_properties set_tests_properties site_name source_group string target_compile_definitions target_compile_features target_compile_options target_include_directories target_link_libraries target_link_options target_sources try_compile try_run unset variable_watch
             \ nextgroup=cmakeArguments
 
 syn keyword cmakeCommandConditional
@@ -386,6 +392,7 @@ hi def link cmakeKWadd_compile_definitions ModeMsg
 hi def link cmakeKWadd_dependencies ModeMsg
 hi def link cmakeKWadd_executable ModeMsg
 hi def link cmakeKWadd_library ModeMsg
+hi def link cmakeKWadd_link_options ModeMsg
 hi def link cmakeKWadd_subdirectory ModeMsg
 hi def link cmakeKWadd_test ModeMsg
 hi def link cmakeKWbuild_command ModeMsg
@@ -463,6 +470,7 @@ hi def link cmakeKWtarget_compile_features ModeMsg
 hi def link cmakeKWtarget_compile_options ModeMsg
 hi def link cmakeKWtarget_include_directories ModeMsg
 hi def link cmakeKWtarget_link_libraries ModeMsg
+hi def link cmakeKWtarget_link_options ModeMsg
 hi def link cmakeKWtarget_sources ModeMsg
 hi def link cmakeKWtry_compile ModeMsg
 hi def link cmakeKWtry_run ModeMsg
