@@ -326,8 +326,11 @@ static void ruby_vim_init(void);
 # define ruby_init			dll_ruby_init
 # define ruby_init_loadpath		dll_ruby_init_loadpath
 # ifdef WIN3264
-#  define NtInitialize			dll_NtInitialize
-#  define ruby_sysinit			dll_ruby_sysinit
+#  ifdef RUBY19_OR_LATER
+#   define ruby_sysinit			dll_ruby_sysinit
+#  else
+#   define NtInitialize			dll_NtInitialize
+#  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 #   define rb_w32_snprintf		dll_rb_w32_snprintf
 #  endif
@@ -437,8 +440,11 @@ static VALUE *dll_ruby_errinfo;
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
 # ifdef WIN3264
-static void (*dll_NtInitialize) (int*, char***);
+#  ifdef RUBY19_OR_LATER
 static void (*dll_ruby_sysinit) (int*, char***);
+#  else
+static void (*dll_NtInitialize) (int*, char***);
+#  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #  endif
@@ -637,10 +643,10 @@ static struct
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
 # ifdef WIN3264
-#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 19
-    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
-#  else
+#  ifdef RUBY19_OR_LATER
     {"ruby_sysinit", (RUBY_PROC*)&dll_ruby_sysinit},
+#  else
+    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
 #  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
