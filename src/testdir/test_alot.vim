@@ -36,6 +36,7 @@ source test_help_tagjump.vim
 source test_join.vim
 source test_jumps.vim
 source test_lambda.vim
+source test_linecol.vim
 source test_lispwords.vim
 source test_mapping.vim
 source test_match.vim

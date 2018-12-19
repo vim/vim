@@ -162,6 +162,7 @@ NEW_TESTS = \
 	test_langmap \
 	test_largefile \
 	test_let \
+	test_linecol \
 	test_lineending \
 	test_lispwords \
 	test_listchars \
