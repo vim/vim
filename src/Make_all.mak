@@ -1,5 +1,5 @@
 #
-# Common Makefile, defines the list of tests to run.
+# Common Makefile, defines the list of tests to run and other things.
 #
 
 # Individual tests, including the ones part of test_alot.
@@ -210,3 +210,15 @@ NEW_TESTS = \
 	test_alot_latin \
 	test_alot_utf8 \
 	test_alot
+
+# Argument for running ctags.
+TAGS_FILES = \
+	*.c \
+	*.cpp \
+	*.h \
+	auto/*.c \
+	libvterm/src/*.c \
+	libvterm/src/*.h \
+	libvterm/include/*.h \
+	xdiff/*.c \
+	xdiff/*.h

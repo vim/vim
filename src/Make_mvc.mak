@@ -1270,8 +1270,7 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h
-	if exist auto\if_perl.c $(CTAGS) --append=yes auto\if_perl.c
+	$(CTAGS) $(TAGS_FILES)
 
 notags:
 	- if exist tags del tags

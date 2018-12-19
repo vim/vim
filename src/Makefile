@@ -1573,8 +1573,6 @@ include Make_all.mak
 #	   ALL_GUI_SRC: all GUI files for Unix
 #
 #		   SRC: files used for current configuration
-#	      TAGS_SRC: source files used for make tags
-#	     TAGS_INCL: include files used for make tags
 #	       ALL_SRC: source files used for make depend and make lint
 
 BASIC_SRC = \
@@ -1655,9 +1653,6 @@ SRC =	$(BASIC_SRC) \
 	$(RUBY_SRC) \
 	$(WORKSHOP_SRC) \
 	$(WSDEBUG_SRC)
-
-TAGS_SRC = *.c *.cpp $(PERL_SRC) $(TERM_SRC) $(XDIFF_SRC)
-TAGS_INCL = *.h $(TERM_DEPS) $(XDIFF_INCL)
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
@@ -2094,12 +2089,12 @@ notags:
 #	Motif and Athena GUI
 # You can ignore error messages for missing files.
 tags TAGS: notags
-	$(TAGPRG) $(TAGS_SRC) $(TAGS_INCL)
+	$(TAGPRG) $(TAGS_FILES)
 
 # Make a highlight file for types.  Requires Exuberant ctags and awk
 types: types.vim
-types.vim: $(TAGS_SRC) $(TAGS_INCL)
-	ctags --c-kinds=gstu -o- $(TAGS_SRC) $(TAGS_INCL) |\
+types.vim: $(TAGS_FILES)
+	ctags --c-kinds=gstu -o- $(TAGS_FILES) |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
 	echo "syn keyword Constant OK FAIL TRUE FALSE MAYBE" >> $@
