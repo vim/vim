@@ -1561,7 +1561,8 @@ update_snapshot(term_T *term)
 
 			cell2cellattr(&cell, &p[pos.col]);
 
-			if (ga_grow(&ga, MB_MAXBYTES) == OK)
+			// Each character can be up to 6 bytes.
+			if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6) == OK)
 			{
 			    int	    i;
 			    int	    c;
