@@ -1001,9 +1001,12 @@ op_reindent(oparg_T *oap, int (*how)(void))
 	smsg(NGETTEXT("%ld line indented ",
 						 "%ld lines indented ", i), i);
     }
-    // set '[ and '] marks
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
+    if (!cmdmod.lockmarks)
+    {
+	// set '[ and '] marks
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+    }
 }
 #endif // defined(FEAT_LISP) || defined(FEAT_CINDENT)
 
