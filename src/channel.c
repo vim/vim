@@ -938,7 +938,7 @@ channel_open_func(typval_T *argvars)
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
-    address = get_tv_string(&argvars[0]);
+    address = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
 	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
@@ -4003,7 +4003,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    text = get_tv_string_buf(&argvars[1], buf);
+    text = tv_get_string_buf(&argvars[1], buf);
     channel = send_common(argvars, text, 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
     if (channel != NULL && eval)
@@ -4402,7 +4402,7 @@ channel_get_timeout(channel_T *channel, ch_part_T part)
     static int
 handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 {
-    char_u	*val = get_tv_string(item);
+    char_u	*val = tv_get_string(item);
 
     opt->jo_set |= jo;
     if (STRCMP(val, "nl") == 0)
@@ -4424,7 +4424,7 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
     static int
 handle_io(typval_T *item, ch_part_T part, jobopt_T *opt)
 {
-    char_u	*val = get_tv_string(item);
+    char_u	*val = tv_get_string(item);
 
     opt->jo_set |= JO_OUT_IO << (part - PART_OUT);
     if (STRCMP(val, "null") == 0)
@@ -4561,7 +4561,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    {
 		if (!(supported & JO_MODE))
 		    break;
-		opt->jo_noblock = get_tv_number(item);
+		opt->jo_noblock = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_io") == 0
 		    || STRCMP(hi->hi_key, "out_io") == 0
@@ -4582,13 +4582,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    break;
 		opt->jo_set |= JO_OUT_NAME << (part - PART_OUT);
 		opt->jo_io_name[part] =
-		       get_tv_string_buf_chk(item, opt->jo_io_name_buf[part]);
+		       tv_get_string_buf_chk(item, opt->jo_io_name_buf[part]);
 	    }
 	    else if (STRCMP(hi->hi_key, "pty") == 0)
 	    {
 		if (!(supported & JO_MODE))
 		    break;
-		opt->jo_pty = get_tv_number(item);
+		opt->jo_pty = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_buf") == 0
 		    || STRCMP(hi->hi_key, "out_buf") == 0
@@ -4599,10 +4599,10 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_OUT_IO))
 		    break;
 		opt->jo_set |= JO_OUT_BUF << (part - PART_OUT);
-		opt->jo_io_buf[part] = get_tv_number(item);
+		opt->jo_io_buf[part] = tv_get_number(item);
 		if (opt->jo_io_buf[part] <= 0)
 		{
-		    EMSG3(_(e_invargNval), hi->hi_key, get_tv_string(item));
+		    EMSG3(_(e_invargNval), hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 		if (buflist_findnr(opt->jo_io_buf[part]) == NULL)
@@ -4619,7 +4619,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_OUT_IO))
 		    break;
 		opt->jo_set |= JO_OUT_MODIFIABLE << (part - PART_OUT);
-		opt->jo_modifiable[part] = get_tv_number(item);
+		opt->jo_modifiable[part] = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "out_msg") == 0
 		    || STRCMP(hi->hi_key, "err_msg") == 0)
@@ -4629,7 +4629,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_OUT_IO))
 		    break;
 		opt->jo_set2 |= JO2_OUT_MSG << (part - PART_OUT);
-		opt->jo_message[part] = get_tv_number(item);
+		opt->jo_message[part] = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "in_top") == 0
 		    || STRCMP(hi->hi_key, "in_bot") == 0)
@@ -4648,10 +4648,10 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    lp = &opt->jo_in_bot;
 		    opt->jo_set |= JO_IN_BOT;
 		}
-		*lp = get_tv_number(item);
+		*lp = tv_get_number(item);
 		if (*lp < 0)
 		{
-		    EMSG3(_(e_invargNval), hi->hi_key, get_tv_string(item));
+		    EMSG3(_(e_invargNval), hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 	    }
@@ -4718,7 +4718,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    else if (STRCMP(hi->hi_key, "drop") == 0)
 	    {
 		int never = FALSE;
-		val = get_tv_string(item);
+		val = tv_get_string(item);
 
 		if (STRCMP(val, "never") == 0)
 		    never = TRUE;
@@ -4747,7 +4747,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_TERM_NAME))
 		    break;
 		opt->jo_set2 |= JO2_TERM_NAME;
-		opt->jo_term_name = get_tv_string_chk(item);
+		opt->jo_term_name = tv_get_string_chk(item);
 		if (opt->jo_term_name == NULL)
 		{
 		    EMSG2(_(e_invargval), "term_name");
@@ -4758,7 +4758,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    {
 		if (!(supported2 & JO2_TERM_FINISH))
 		    break;
-		val = get_tv_string(item);
+		val = tv_get_string(item);
 		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
 		{
 		    EMSG3(_(e_invargNval), "term_finish", val);
@@ -4774,7 +4774,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_TERM_OPENCMD))
 		    break;
 		opt->jo_set2 |= JO2_TERM_OPENCMD;
-		p = opt->jo_term_opencmd = get_tv_string_chk(item);
+		p = opt->jo_term_opencmd = tv_get_string_chk(item);
 		if (p != NULL)
 		{
 		    /* Must have %d and no other %. */
@@ -4796,7 +4796,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_EOF_CHARS))
 		    break;
 		opt->jo_set2 |= JO2_EOF_CHARS;
-		p = opt->jo_eof_chars = get_tv_string_chk(item);
+		p = opt->jo_eof_chars = tv_get_string_chk(item);
 		if (p == NULL)
 		{
 		    EMSG2(_(e_invargval), "eof_chars");
@@ -4808,54 +4808,54 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_TERM_ROWS))
 		    break;
 		opt->jo_set2 |= JO2_TERM_ROWS;
-		opt->jo_term_rows = get_tv_number(item);
+		opt->jo_term_rows = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "term_cols") == 0)
 	    {
 		if (!(supported2 & JO2_TERM_COLS))
 		    break;
 		opt->jo_set2 |= JO2_TERM_COLS;
-		opt->jo_term_cols = get_tv_number(item);
+		opt->jo_term_cols = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "vertical") == 0)
 	    {
 		if (!(supported2 & JO2_VERTICAL))
 		    break;
 		opt->jo_set2 |= JO2_VERTICAL;
-		opt->jo_vertical = get_tv_number(item);
+		opt->jo_vertical = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "curwin") == 0)
 	    {
 		if (!(supported2 & JO2_CURWIN))
 		    break;
 		opt->jo_set2 |= JO2_CURWIN;
-		opt->jo_curwin = get_tv_number(item);
+		opt->jo_curwin = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "hidden") == 0)
 	    {
 		if (!(supported2 & JO2_HIDDEN))
 		    break;
 		opt->jo_set2 |= JO2_HIDDEN;
-		opt->jo_hidden = get_tv_number(item);
+		opt->jo_hidden = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "norestore") == 0)
 	    {
 		if (!(supported2 & JO2_NORESTORE))
 		    break;
 		opt->jo_set2 |= JO2_NORESTORE;
-		opt->jo_term_norestore = get_tv_number(item);
+		opt->jo_term_norestore = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "term_kill") == 0)
 	    {
 		if (!(supported2 & JO2_TERM_KILL))
 		    break;
 		opt->jo_set2 |= JO2_TERM_KILL;
-		opt->jo_term_kill = get_tv_string_chk(item);
+		opt->jo_term_kill = tv_get_string_chk(item);
 	    }
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
 	    {
-		int 		n = 0;
+		int		n = 0;
 		listitem_T	*li;
 		long_u		rgb[16];
 
@@ -4873,9 +4873,9 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		for (; li != NULL && n < 16; li = li->li_next, n++)
 		{
 		    char_u	*color_name;
-		    guicolor_T 	guicolor;
+		    guicolor_T	guicolor;
 
-		    color_name = get_tv_string_chk(&li->li_tv);
+		    color_name = tv_get_string_chk(&li->li_tv);
 		    if (color_name == NULL)
 			return FAIL;
 
@@ -4915,7 +4915,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    {
 		if (!(supported2 & JO2_CWD))
 		    break;
-		opt->jo_cwd = get_tv_string_buf_chk(item, opt->jo_cwd_buf);
+		opt->jo_cwd = tv_get_string_buf_chk(item, opt->jo_cwd_buf);
 		if (opt->jo_cwd == NULL || !mch_isdir(opt->jo_cwd)
 #ifndef WIN32  // Win32 directories don't have the concept of "executable"
 				|| mch_access((char *)opt->jo_cwd, X_OK) != 0
@@ -4932,35 +4932,35 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_WAITTIME))
 		    break;
 		opt->jo_set |= JO_WAITTIME;
-		opt->jo_waittime = get_tv_number(item);
+		opt->jo_waittime = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "timeout") == 0)
 	    {
 		if (!(supported & JO_TIMEOUT))
 		    break;
 		opt->jo_set |= JO_TIMEOUT;
-		opt->jo_timeout = get_tv_number(item);
+		opt->jo_timeout = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "out_timeout") == 0)
 	    {
 		if (!(supported & JO_OUT_TIMEOUT))
 		    break;
 		opt->jo_set |= JO_OUT_TIMEOUT;
-		opt->jo_out_timeout = get_tv_number(item);
+		opt->jo_out_timeout = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "err_timeout") == 0)
 	    {
 		if (!(supported & JO_ERR_TIMEOUT))
 		    break;
 		opt->jo_set |= JO_ERR_TIMEOUT;
-		opt->jo_err_timeout = get_tv_number(item);
+		opt->jo_err_timeout = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "part") == 0)
 	    {
 		if (!(supported & JO_PART))
 		    break;
 		opt->jo_set |= JO_PART;
-		val = get_tv_string(item);
+		val = tv_get_string(item);
 		if (STRCMP(val, "err") == 0)
 		    opt->jo_part = PART_ERR;
 		else if (STRCMP(val, "out") == 0)
@@ -4976,14 +4976,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_ID))
 		    break;
 		opt->jo_set |= JO_ID;
-		opt->jo_id = get_tv_number(item);
+		opt->jo_id = tv_get_number(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "stoponexit") == 0)
 	    {
 		if (!(supported & JO_STOPONEXIT))
 		    break;
 		opt->jo_set |= JO_STOPONEXIT;
-		opt->jo_stoponexit = get_tv_string_buf_chk(item,
+		opt->jo_stoponexit = tv_get_string_buf_chk(item,
 							     opt->jo_soe_buf);
 		if (opt->jo_stoponexit == NULL)
 		{
@@ -4996,7 +4996,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_BLOCK_WRITE))
 		    break;
 		opt->jo_set |= JO_BLOCK_WRITE;
-		opt->jo_block_write = get_tv_number(item);
+		opt->jo_block_write = tv_get_number(item);
 	    }
 	    else
 		break;
@@ -5035,7 +5035,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     }
     else
     {
-	EMSG2(_(e_invarg2), get_tv_string(tv));
+	EMSG2(_(e_invarg2), tv_get_string(tv));
 	return NULL;
     }
     if (channel != NULL && reading)
@@ -5262,7 +5262,7 @@ win32_build_cmd(list_T *l, garray_T *gap)
 
     for (li = l->lv_first; li != NULL; li = li->li_next)
     {
-	s = get_tv_string_chk(&li->li_tv);
+	s = tv_get_string_chk(&li->li_tv);
 	if (s == NULL)
 	    return FAIL;
 	s = win32_escape_arg(s);
@@ -5832,7 +5832,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	arg = (char_u *)"";
     else
     {
-	arg = get_tv_string_chk(&argvars[1]);
+	arg = tv_get_string_chk(&argvars[1]);
 	if (arg == NULL)
 	{
 	    EMSG(_(e_invarg));

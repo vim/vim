@@ -4137,7 +4137,7 @@ tv_nr(typval_T *tvs, int *idxp)
     else
     {
 	++*idxp;
-	n = get_tv_number_chk(&tvs[idx], &err);
+	n = tv_get_number_chk(&tvs[idx], &err);
 	if (err)
 	    n = 0;
     }
@@ -4146,7 +4146,7 @@ tv_nr(typval_T *tvs, int *idxp)
 
 /*
  * Get string argument from "idxp" entry in "tvs".  First entry is 1.
- * If "tofree" is NULL get_tv_string_chk() is used.  Some types (e.g. List)
+ * If "tofree" is NULL tv_get_string_chk() is used.  Some types (e.g. List)
  * are not converted to a string.
  * If "tofree" is not NULL echo_string() is used.  All types are converted to
  * a string with the same format as ":echo".  The caller must free "*tofree".
@@ -4167,7 +4167,7 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
 	if (tofree != NULL)
 	    s = (char *)echo_string(&tvs[idx], tofree, numbuf, get_copyID());
 	else
-	    s = (char *)get_tv_string_chk(&tvs[idx]);
+	    s = (char *)tv_get_string_chk(&tvs[idx]);
     }
     return s;
 }

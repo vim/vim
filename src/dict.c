@@ -495,7 +495,7 @@ dict_get_string(dict_T *d, char_u *key, int save)
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return NULL;
-    s = get_tv_string(&di->di_tv);
+    s = tv_get_string(&di->di_tv);
     if (save && s != NULL)
 	s = vim_strsave(s);
     return s;
@@ -513,7 +513,7 @@ dict_get_number(dict_T *d, char_u *key)
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return 0;
-    return get_tv_number(&di->di_tv);
+    return tv_get_number(&di->di_tv);
 }
 
 /*
@@ -630,10 +630,10 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 	}
 	if (evaluate)
 	{
-	    key = get_tv_string_buf_chk(&tvkey, buf);
+	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {
-		/* "key" is NULL when get_tv_string_buf_chk() gave an errmsg */
+		/* "key" is NULL when tv_get_string_buf_chk() gave an errmsg */
 		clear_tv(&tvkey);
 		goto failret;
 	    }

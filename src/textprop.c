@@ -154,8 +154,8 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     textprop_T	tmp_prop;
     int		i;
 
-    lnum = get_tv_number(&argvars[0]);
-    col = get_tv_number(&argvars[1]);
+    lnum = tv_get_number(&argvars[0]);
+    col = tv_get_number(&argvars[1]);
     if (col < 1)
     {
 	EMSGN(_(e_invalid_col), (long)col);
@@ -352,14 +352,14 @@ text_prop_type_by_id(buf_T *buf, int id)
     void
 f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    linenr_T start = get_tv_number(&argvars[0]);
+    linenr_T start = tv_get_number(&argvars[0]);
     linenr_T end = start;
     linenr_T lnum;
     buf_T    *buf = curbuf;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	end = get_tv_number(&argvars[1]);
+	end = tv_get_number(&argvars[1]);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
 	    if (get_bufnr_from_arg(&argvars[2], &buf) == FAIL)
@@ -405,7 +405,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_list(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T lnum = get_tv_number(&argvars[0]);
+    linenr_T lnum = tv_get_number(&argvars[0]);
     buf_T    *buf = curbuf;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -476,10 +476,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	start = get_tv_number(&argvars[1]);
+	start = tv_get_number(&argvars[1]);
 	end = start;
 	if (argvars[2].v_type != VAR_UNKNOWN)
-	    end = get_tv_number(&argvars[2]);
+	    end = tv_get_number(&argvars[2]);
 	if (start < 1 || end < 1)
 	{
 	    EMSG(_(e_invrange));
@@ -586,7 +586,7 @@ prop_type_set(typval_T *argvars, int add)
     dictitem_T  *di;
     proptype_T	*prop;
 
-    name = get_tv_string(&argvars[0]);
+    name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
 	EMSG(_(e_invarg));
@@ -656,12 +656,12 @@ prop_type_set(typval_T *argvars, int add)
 
 	di = dict_find(dict, (char_u *)"priority", -1);
 	if (di != NULL)
-	    prop->pt_priority = get_tv_number(&di->di_tv);
+	    prop->pt_priority = tv_get_number(&di->di_tv);
 
 	di = dict_find(dict, (char_u *)"start_incl", -1);
 	if (di != NULL)
 	{
-	    if (get_tv_number(&di->di_tv))
+	    if (tv_get_number(&di->di_tv))
 		prop->pt_flags |= PT_FLAG_INS_START_INCL;
 	    else
 		prop->pt_flags &= ~PT_FLAG_INS_START_INCL;
@@ -670,7 +670,7 @@ prop_type_set(typval_T *argvars, int add)
 	di = dict_find(dict, (char_u *)"end_incl", -1);
 	if (di != NULL)
 	{
-	    if (get_tv_number(&di->di_tv))
+	    if (tv_get_number(&di->di_tv))
 		prop->pt_flags |= PT_FLAG_INS_END_INCL;
 	    else
 		prop->pt_flags &= ~PT_FLAG_INS_END_INCL;
@@ -706,7 +706,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     buf_T	*buf = NULL;
     hashitem_T	*hi;
 
-    name = get_tv_string(&argvars[0]);
+    name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
 	EMSG(_(e_invarg));
@@ -740,7 +740,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u *name = get_tv_string(&argvars[0]);
+    char_u *name = tv_get_string(&argvars[0]);
 
     if (*name == NUL)
     {

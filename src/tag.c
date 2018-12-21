@@ -4212,7 +4212,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     }
 
     if ((di = dict_find(d, (char_u *)"curidx", -1)) != NULL)
-	tagstack_set_curidx(wp, (int)get_tv_number(&di->di_tv) - 1);
+	tagstack_set_curidx(wp, (int)tv_get_number(&di->di_tv) - 1);
 
     return OK;
 }

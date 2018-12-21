@@ -6593,7 +6593,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     *argc = 0;
     for (li = l->lv_first; li != NULL; li = li->li_next)
     {
-	s = get_tv_string_chk(&li->li_tv);
+	s = tv_get_string_chk(&li->li_tv);
 	if (s == NULL)
 	{
 	    int i;

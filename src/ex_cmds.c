@@ -8913,7 +8913,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
 	{
 	    ++nr;
-	    fname = get_tv_string(&li->li_tv);
+	    fname = tv_get_string(&li->li_tv);
 	    if (!message_filtered(fname))
 	    {
 		msg_outnum((long)nr);

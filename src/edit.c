@@ -4363,7 +4363,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     }
     else
     {
-	word = get_tv_string_chk(tv);
+	word = tv_get_string_chk(tv);
 	vim_memset(cptext, 0, sizeof(cptext));
     }
     if (word == NULL || (!aempty && *word == NUL))
