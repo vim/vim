@@ -5519,6 +5519,7 @@ chk_modeline(
 
 	    if (*s != NUL)		/* skip over an empty "::" */
 	    {
+		int secure_save = secure;
 #ifdef FEAT_EVAL
 		save_current_sctx = current_sctx;
 		current_sctx.sc_sid = SID_MODELINE;
@@ -5530,7 +5531,7 @@ chk_modeline(
 
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 
-		--secure;
+		secure = secure_save;
 #ifdef FEAT_EVAL
 		current_sctx = save_current_sctx;
 #endif
