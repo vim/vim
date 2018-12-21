@@ -116,6 +116,20 @@ rettv_list_alloc(typval_T *rettv)
 }
 
 /*
+ * Same as rettv_list_alloc() but uses an allocation id for testing.
+ */
+    int
+rettv_list_alloc_id(typval_T *rettv, alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return FAIL;
+#endif
+    return rettv_list_alloc(rettv);
+}
+
+
+/*
  * Set a list as the return value
  */
     void

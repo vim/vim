@@ -1042,7 +1042,7 @@ nb_do_cmd(
 		cp = (char *)args;
 		serNum = strtol(cp, &cp, 10);
 		/* If the sign isn't found linenum will be zero. */
-		linenum = (long)buf_findsign(buf->bufp, serNum);
+		linenum = (long)buf_findsign(buf->bufp, serNum, NULL);
 	    }
 #endif
 	    nb_reply_nr(cmdno, linenum);
@@ -1256,7 +1256,7 @@ nb_do_cmd(
 			{
 			    nbdebug(("    Deleting sign %d on line %d\n",
 								      id, i));
-			    buf_delsign(buf->bufp, id);
+			    buf_delsign(buf->bufp, id, NULL);
 			}
 			else
 			{
