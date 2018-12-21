@@ -327,8 +327,8 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
-	File ${VIMRT}\vimtutor.bat
-	File ${VIMRT}\README.txt
+	File ..\vimtutor.bat
+	File ..\README.txt
 	File ..\uninstal.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
