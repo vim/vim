@@ -444,9 +444,53 @@ window_cb(HWND hwnd, LPARAM lparam)
 
     title[0] = 0;
     GetWindowText(hwnd, title, 256);
-    if (strstr(title, "Vim ") != NULL && strstr(title, "Uninstall:") != NULL)
+    if (strstr(title, "Vim ") != NULL && strstr(title, " Uninstall") != NULL)
 	++num_windows;
     return TRUE;
+}
+
+/*
+ * Run the uninstaller silently.
+ */
+    static int
+run_silent_uninstall(char *uninst_exe)
+{
+    char    vimrt_dir[BUFSIZE];
+    char    temp_uninst[BUFSIZE];
+    char    temp_dir[MAX_PATH];
+    char    buf[BUFSIZE * 2 + 10];
+    int	    i;
+    DWORD   tick;
+
+    strcpy(vimrt_dir, uninst_exe);
+    remove_tail(vimrt_dir);
+
+    if (!GetTempPath(sizeof(temp_dir), temp_dir))
+	return FAIL;
+
+    /* Copy the uninstaller to a temporary exe. */
+    tick = GetTickCount();
+    for (i = 0; ; i++)
+    {
+	sprintf(temp_uninst, "%s\\vimun%04X.exe", temp_dir,
+							(i + tick) & 0xFFFF);
+	if (CopyFile(uninst_exe, temp_uninst, TRUE))
+	    break;
+	if (GetLastError() != ERROR_FILE_EXISTS)
+	    return FAIL;
+	if (i == 65535)
+	    return FAIL;
+    }
+
+    /* Run the copied uninstaller silently. */
+    if (strchr(temp_uninst, ' ') != NULL)
+	sprintf(buf, "\"%s\" /S _?=%s", temp_uninst, vimrt_dir);
+    else
+	sprintf(buf, "%s /S _?=%s", temp_uninst, vimrt_dir);
+    run_command(buf);
+
+    DeleteFile(temp_uninst);
+    return OK;
 }
 
 /*
@@ -469,6 +513,7 @@ uninstall_check(int skip_question)
     DWORD	value_type;
     DWORD	orig_num_keys;
     DWORD	new_num_keys;
+    DWORD	allow_silent;
     int		foundone = 0;
 
     code = RegOpenKeyEx(HKEY_LOCAL_MACHINE, uninstall_key, 0,
@@ -494,6 +539,16 @@ uninstall_check(int skip_question)
 		    &local_bufsize);
 	    local_bufsize = BUFSIZE;
 	    CHECK_REG_ERROR(code);
+
+	    allow_silent = 0;
+	    if (skip_question)
+	    {
+		DWORD varsize = sizeof(DWORD);
+
+		RegQueryValueEx(uninstall_key_handle, "AllowSilent", 0,
+			&value_type, (LPBYTE)&allow_silent,
+			&varsize);
+	    }
 
 	    foundone = 1;
 	    printf("\n*********************************************************\n");
@@ -549,45 +604,54 @@ uninstall_check(int skip_question)
 			/* Find existing .bat files before deleting them. */
 			find_bat_exe(TRUE);
 
-			/* Execute the uninstall program.  Put it in double
-			 * quotes if there is an embedded space. */
+			if (allow_silent)
 			{
-			    char buf[BUFSIZE];
-
-			    if (strchr(temp_string_buffer, ' ') != NULL)
-				sprintf(buf, "\"%s\"", temp_string_buffer);
-			    else
-				strcpy(buf, temp_string_buffer);
-			    run_command(buf);
+			    if (run_silent_uninstall(temp_string_buffer)
+								    == FAIL)
+				allow_silent = 0; /* Retry with non silent. */
 			}
-
-			/* Count the number of windows with a title that match
-			 * the installer, so that we can check when it's done.
-			 * The uninstaller copies itself, executes the copy
-			 * and exits, thus we can't wait for the process to
-			 * finish. */
-			sleep(1);  /* wait for uninstaller to start up */
-			num_windows = 0;
-			EnumWindows(window_cb, 0);
-			if (num_windows == 0)
+			if (!allow_silent)
 			{
-			    /* Did not find the uninstaller, ask user to press
-			     * Enter when done. Just in case. */
-			    printf("Press Enter when the uninstaller is finished\n");
-			    rewind(stdin);
-			    (void)getchar();
-			}
-			else
-			{
-			    printf("Waiting for the uninstaller to finish (press CTRL-C to abort).");
-			    do
+			    /* Execute the uninstall program.  Put it in double
+			     * quotes if there is an embedded space. */
 			    {
-				printf(".");
-				fflush(stdout);
-				sleep(1);  /* wait for the uninstaller to finish */
-				num_windows = 0;
-				EnumWindows(window_cb, 0);
-			    } while (num_windows > 0);
+				char buf[BUFSIZE];
+
+				if (strchr(temp_string_buffer, ' ') != NULL)
+				    sprintf(buf, "\"%s\"", temp_string_buffer);
+				else
+				    strcpy(buf, temp_string_buffer);
+				run_command(buf);
+			    }
+
+			    /* Count the number of windows with a title that match
+			     * the installer, so that we can check when it's done.
+			     * The uninstaller copies itself, executes the copy
+			     * and exits, thus we can't wait for the process to
+			     * finish. */
+			    sleep(1);  /* wait for uninstaller to start up */
+			    num_windows = 0;
+			    EnumWindows(window_cb, 0);
+			    if (num_windows == 0)
+			    {
+				/* Did not find the uninstaller, ask user to press
+				 * Enter when done. Just in case. */
+				printf("Press Enter when the uninstaller is finished\n");
+				rewind(stdin);
+				(void)getchar();
+			    }
+			    else
+			    {
+				printf("Waiting for the uninstaller to finish (press CTRL-C to abort).");
+				do
+				{
+				    printf(".");
+				    fflush(stdout);
+				    sleep(1);  /* wait for the uninstaller to finish */
+				    num_windows = 0;
+				    EnumWindows(window_cb, 0);
+				} while (num_windows > 0);
+			    }
 			}
 			printf("\nDone!\n");
 
@@ -1609,7 +1673,11 @@ install_registry(void)
     }
 
     printf("Creating an uninstall entry\n");
-    sprintf(display_name, "Vim " VIM_VERSION_SHORT);
+    sprintf(display_name, "Vim " VIM_VERSION_SHORT
+#ifdef _WIN64
+	    " (x64)"
+#endif
+	    );
 
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)
