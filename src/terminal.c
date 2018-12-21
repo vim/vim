@@ -4794,11 +4794,14 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars, "term_getjob()");
 
-    rettv->v_type = VAR_JOB;
-    rettv->vval.v_job = NULL;
     if (buf == NULL)
+    {
+	rettv->v_type = VAR_SPECIAL;
+	rettv->vval.v_number = VVAL_NULL;
 	return;
+    }
 
+    rettv->v_type = VAR_JOB;
     rettv->vval.v_job = buf->b_term->tl_job;
     if (rettv->vval.v_job != NULL)
 	++rettv->vval.v_job->jv_refcount;

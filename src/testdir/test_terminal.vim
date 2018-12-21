@@ -1714,3 +1714,8 @@ func Test_stop_in_terminal()
   call Stop_shell_in_terminal(bufnr)
   exe bufnr . 'bwipe'
 endfunc
+
+func Test_terminal_no_job()
+  let term = term_start('false', {'term_finish': 'close'})
+  call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
+endfunc
