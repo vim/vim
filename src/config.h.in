@@ -453,8 +453,11 @@
 /* Define if you want to include terminal emulator support. */
 #undef FEAT_TERMINAL
 
-/* Define default global runtime path */
+// Define default global runtime path.
 #undef RUNTIME_GLOBAL
+
+// Define default global runtime after path.
+#undef RUNTIME_GLOBAL_AFTER
 
 /* Define name of who modified a released Vim */
 #undef MODIFIED_BY

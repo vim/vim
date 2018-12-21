@@ -345,9 +345,15 @@ AC_ARG_WITH(view-name, [  --with-view-name=NAME   what to call the View executab
 AC_SUBST(VIEWNAME)
 
 AC_MSG_CHECKING(--with-global-runtime argument)
-AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath'],
-	AC_MSG_RESULT($withval); AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$withval"),
+AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories],
+	RUNTIME_GLOBAL="$withval"; AC_MSG_RESULT($withval),
 	AC_MSG_RESULT(no))
+
+if test "X$RUNTIME_GLOBAL" != "X"; then
+  RUNTIME_GLOBAL_AFTER=$(printf -- "$RUNTIME_GLOBAL\\n" | $AWK -F, 'BEGIN { comma=0 } { for (i = NF; i > 0; i--) { if (comma) { printf ",%s/after", $i } else { printf "%s/after", $i; comma=1 } } } END { printf "\n" }')
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$RUNTIME_GLOBAL")
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL_AFTER, "$RUNTIME_GLOBAL_AFTER")
+fi
 
 AC_MSG_CHECKING(--with-modified-by argument)
 AC_ARG_WITH(modified-by, [  --with-modified-by=NAME       name of who modified a release version],

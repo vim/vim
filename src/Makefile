@@ -317,12 +317,13 @@ CClink = $(CC)
 # You can give a lot of options to configure.
 # Change this to your desire and do 'make config' afterwards
 
-# examples (can only use one!):
-#CONF_ARGS = --exec-prefix=/usr
-#CONF_ARGS = --with-vim-name=vim7 --with-ex-name=ex7 --with-view-name=view7
-#CONF_ARGS = --with-global-runtime=/etc/vim
-#CONF_ARGS = --with-local-dir=/usr/share
-#CONF_ARGS = --without-local-dir
+# examples:
+#CONF_ARGS1 = --exec-prefix=/usr
+#CONF_ARGS2 = --with-vim-name=vim8 --with-ex-name=ex8 --with-view-name=view8
+#CONF_ARGS3 = --with-global-runtime=/etc/vim,/usr/share/vim
+#CONF_ARGS4 = --with-local-dir=/usr/share
+#CONF_ARGS5 = --without-local-dir
+CONF_ARGS = $(CONF_ARGS1) $(CONF_ARGS2) $(CONF_ARGS3) $(CONF_ARGS4) $(CONF_ARGS5)
 
 # Use this one if you distribute a modified version of Vim.
 #CONF_ARGS = --with-modified-by="John Doe"
