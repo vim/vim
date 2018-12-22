@@ -142,6 +142,13 @@ func s:StartDebug_internal(dict)
   endif
 endfunc
 
+" Use when debugger didn't start or ended.
+func s:CloseBuffers()
+  exe 'bwipe! ' . s:ptybuf
+  exe 'bwipe! ' . s:commbuf
+  unlet! s:gdbwin
+endfunc
+
 func s:StartDebug_term(dict)
   " Open a terminal window without a job, to run the debugged program in.
   let s:ptybuf = term_start('NONE', {
@@ -181,13 +188,11 @@ func s:StartDebug_term(dict)
   let cmd = [g:termdebugger, '-quiet', '-tty', pty] + gdb_args
   call ch_log('executing "' . join(cmd) . '"')
   let s:gdbbuf = term_start(cmd, {
-        \ 'exit_cb': function('s:EndTermDebug'),
         \ 'term_finish': 'close',
         \ })
   if s:gdbbuf == 0
     echoerr 'Failed to open the gdb terminal window'
-    exe 'bwipe! ' . s:ptybuf
-    exe 'bwipe! ' . s:commbuf
+    call s:CloseBuffers()
     return
   endif
   let s:gdbwin = win_getid(winnr())
@@ -204,6 +209,13 @@ func s:StartDebug_term(dict)
   " why the debugger doesn't work.
   let try_count = 0
   while 1
+    let gdbproc = term_getjob(s:gdbbuf)
+    if gdbproc == v:null || job_status(gdbproc) !=# 'run'
+      echoerr string(g:termdebugger) . ' exited unexpectedly'
+      call s:CloseBuffers()
+      return
+    endif
+
     let response = ''
     for lnum in range(1,200)
       if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
@@ -211,8 +223,7 @@ func s:StartDebug_term(dict)
         let response = term_getline(s:gdbbuf, lnum) . term_getline(s:gdbbuf, lnum + 1)
         if response =~ 'Undefined command'
           echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
-          exe 'bwipe! ' . s:ptybuf
-          exe 'bwipe! ' . s:commbuf
+	  call s:CloseBuffers()
           return
         endif
         if response =~ 'New UI allocated'
@@ -243,6 +254,7 @@ func s:StartDebug_term(dict)
   " "Type <return> to continue" prompt.
   call s:SendCommand('set pagination off')
 
+  call job_setoptions(gdbproc, {'exit_cb': function('s:EndTermDebug')})
   call s:StartDebugCommon(a:dict)
 endfunc
 
