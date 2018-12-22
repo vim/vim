@@ -687,9 +687,10 @@ gui_init(void)
     gui.shell_created = TRUE;
 
 #ifndef FEAT_GUI_GTK
-    /* Set the shell size, adjusted for the screen size.  For GTK this only
-     * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+    // Set the shell size, adjusted for the screen size.  For GTK this only
+    // works after the shell has been opened, thus it is further down.
+    // For MS-Windows pass FALSE for "mustset" to make --windowid work.
+    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
