@@ -323,10 +323,9 @@ CClink = $(CC)
 #CONF_ARGS3 = --with-global-runtime=/etc/vim,/usr/share/vim
 #CONF_ARGS4 = --with-local-dir=/usr/share
 #CONF_ARGS5 = --without-local-dir
-CONF_ARGS = $(CONF_ARGS1) $(CONF_ARGS2) $(CONF_ARGS3) $(CONF_ARGS4) $(CONF_ARGS5)
 
 # Use this one if you distribute a modified version of Vim.
-#CONF_ARGS = --with-modified-by="John Doe"
+#CONF_ARGS6 = --with-modified-by="John Doe"
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
@@ -1933,7 +1932,9 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
 		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
 		$(CONF_OPT_CHANNEL) $(CONF_OPT_TERMINAL) \
-		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
+		$(CONF_ARGS1) $(CONF_ARGS2) $(CONF_ARGS3) $(CONF_ARGS4) \
+		$(CONF_ARGS5) $(CONF_ARGS6) \
+		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
 		$(CONF_OPT_SYSMOUSE); \
 	fi
