@@ -159,10 +159,16 @@ func Check_123(buf)
   call assert_equal('2', l[1].chars)
   call assert_equal('3', l[2].chars)
   call assert_equal('#00e000', l[0].fg)
-  if &background == 'light'
-    call assert_equal('#ffffff', l[0].bg)
+  if has('win32')
+    " On Windows 'background' always defaults to dark, even though the terminal
+    " may use a light background.  Therefore accept both white and black.
+    call assert_match('#ffffff\|#000000', l[0].bg)
   else
-    call assert_equal('#000000', l[0].bg)
+    if &background == 'light'
+      call assert_equal('#ffffff', l[0].bg)
+    else
+      call assert_equal('#000000', l[0].bg)
+    endif
   endif
 
   let l = term_getline(a:buf, -1)
