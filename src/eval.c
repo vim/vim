@@ -10686,8 +10686,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		tv.v_type = VAR_NUMBER;
 		vimvars[VV_KEY].vv_nr = idx;
 		tv.vval.v_number = blob_get(b, i);
-		if (filter_map_one(&tv, expr, map, &rem) == FAIL
-								  || did_emsg)
+		if (filter_map_one(&tv, expr, map, &rem) == FAIL || did_emsg)
 		    break;
 		if (tv.v_type != VAR_NUMBER)
 		{

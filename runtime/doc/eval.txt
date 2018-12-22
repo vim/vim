@@ -1924,6 +1924,8 @@ v:t_none	Value of None type.  Read-only.  See: |type()|
 v:t_number	Value of Number type.  Read-only.  See: |type()|
 					*v:t_string* *t_string-variable*
 v:t_string	Value of String type.  Read-only.  See: |type()|
+					*v:t_blob* *t_blob-variable*
+v:t_blob	Value of Blob type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -9479,6 +9481,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			None	    7  |v:t_none| (v:null and v:none)
 			Job	    8  |v:t_job|
 			Channel	    9  |v:t_channel|
+			Blob	   10  |v:t_blob|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
