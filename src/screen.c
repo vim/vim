@@ -6681,7 +6681,7 @@ win_redraw_last_status(frame_T *frp)
 	frp->fr_win->w_redr_status = TRUE;
     else if (frp->fr_layout == FR_ROW)
     {
-	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
+	FOR_ALL_FRAMES(frp, frp->fr_child)
 	    win_redraw_last_status(frp);
     }
     else /* frp->fr_layout == FR_COL */
