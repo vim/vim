@@ -6559,7 +6559,7 @@ qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
     int		old_qfidx;
     qfline_T	*qf_ptr;
 
-    newidx = get_tv_number_chk(&di->di_tv, &denote);
+    newidx = tv_get_number_chk(&di->di_tv, &denote);
     if (denote)
 	return FAIL;
 
