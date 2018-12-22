@@ -345,9 +345,15 @@ AC_ARG_WITH(view-name, [  --with-view-name=NAME   what to call the View executab
 AC_SUBST(VIEWNAME)
 
 AC_MSG_CHECKING(--with-global-runtime argument)
-AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath'],
-	AC_MSG_RESULT($withval); AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$withval"),
+AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories],
+	RUNTIME_GLOBAL="$withval"; AC_MSG_RESULT($withval),
 	AC_MSG_RESULT(no))
+
+if test "X$RUNTIME_GLOBAL" != "X"; then
+  RUNTIME_GLOBAL_AFTER=$(printf -- "$RUNTIME_GLOBAL\\n" | $AWK -F, 'BEGIN { comma=0 } { for (i = NF; i > 0; i--) { if (comma) { printf ",%s/after", $i } else { printf "%s/after", $i; comma=1 } } } END { printf "\n" }')
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$RUNTIME_GLOBAL")
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL_AFTER, "$RUNTIME_GLOBAL_AFTER")
+fi
 
 AC_MSG_CHECKING(--with-modified-by argument)
 AC_ARG_WITH(modified-by, [  --with-modified-by=NAME       name of who modified a release version],
@@ -2136,6 +2142,45 @@ AC_ARG_ENABLE(multibyte,
 AC_MSG_RESULT($enable_multibyte)
 if test "$enable_multibyte" = "yes"; then
   AC_DEFINE(FEAT_MBYTE)
+fi
+
+dnl Right-to-Left language support for Vim will be included with big features,
+dnl unless ENABLE_RIGHTLEFT is undefined.
+AC_MSG_CHECKING(--disable-rightleft argument)
+AC_ARG_ENABLE(rightleft,
+	[  --disable-rightleft     Do not include Right-to-Left language support.],
+	, [enable_rightleft="yes"])
+if test "$enable_rightleft" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_RIGHTLEFT)
+fi
+
+dnl Arabic language support for Vim will be included with big features,
+dnl unless ENABLE_ARABIC is undefined.
+AC_MSG_CHECKING(--disable-arabic argument)
+AC_ARG_ENABLE(arabic,
+	[  --disable-arabic        Do not include Arabic language support.],
+	, [enable_arabic="yes"])
+if test "$enable_arabic" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_ARABIC)
+fi
+
+dnl Farsi language support for vim will be included with big features,
+dnl unless ENABLE_FARSI is undefined.
+AC_MSG_CHECKING(--disable-farsi argument)
+AC_ARG_ENABLE(farsi,
+	[  --disable-farsi         Do not include Farsi language support.],
+	, [enable_farsi="yes"])
+if test "$enable_farsi" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_FARSI)
 fi
 
 AC_MSG_CHECKING(--enable-hangulinput argument)

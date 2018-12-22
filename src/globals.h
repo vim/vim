@@ -606,6 +606,10 @@ EXTERN buf_T	*curbuf INIT(= NULL);	/* currently active buffer */
 
 #define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 
+// Iterate through all the signs placed in a buffer
+#define FOR_ALL_SIGNS_IN_BUF(buf) \
+	for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+
 /* Flag that is set when switching off 'swapfile'.  It means that all blocks
  * are to be loaded into memory.  Shouldn't be global... */
 EXTERN int	mf_dont_release INIT(= FALSE);	/* don't release blocks */

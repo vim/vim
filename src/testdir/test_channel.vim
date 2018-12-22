@@ -922,9 +922,9 @@ func Run_pipe_through_sort(all, use_buffer)
     let options.in_bot = 4
   endif
   let g:job = job_start('sort', options)
-  call assert_equal("run", job_status(g:job))
 
   if !a:use_buffer
+    call assert_equal("run", job_status(g:job))
     call ch_sendraw(g:job, "ccc\naaa\nddd\nbbb\neee\n")
     call ch_close_in(g:job)
   endif

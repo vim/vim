@@ -169,9 +169,9 @@ INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list 
 #else
   written = vsprintf(buffer, format, args);
 
-  if(written >= (int)(vt->outbuffer_len - vt->outbuffer_cur)) {
+  if(written >= (int)(vt->outbuffer_len - vt->outbuffer_cur - 1)) {
     /* output was truncated */
-    written = vt->outbuffer_len - vt->outbuffer_cur;
+    written = vt->outbuffer_len - vt->outbuffer_cur - 1;
   }
   if (written > 0)
   {

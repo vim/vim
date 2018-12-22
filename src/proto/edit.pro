@@ -46,4 +46,5 @@ int bracketed_paste(paste_mode_T mode, int drop, garray_T *gap);
 void ins_scroll(void);
 void ins_horscroll(void);
 int ins_copychar(linenr_T lnum);
+colnr_T get_nolist_virtcol(void);
 /* vim: set ft=c : */

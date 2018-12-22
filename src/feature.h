@@ -263,7 +263,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT) && !defined(EBCDIC)
 # define FEAT_RIGHTLEFT
 #endif
 
@@ -273,7 +273,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_FARSI) && !defined(EBCDIC)
 # define FEAT_FKMAP
 #endif
 #ifdef FEAT_FKMAP
@@ -288,7 +288,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -499,6 +499,13 @@
  */
 #if defined(FEAT_BIG) && defined(FEAT_SYN_HL)
 # define FEAT_CONCEAL
+#endif
+
+/*
+ * +textprop		Text properties
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+# define FEAT_TEXT_PROP
 #endif
 
 /*
@@ -966,12 +973,22 @@
 #endif
 
 /*
- * RUNTIME_GLOBAL	Directory name for global Vim runtime directory.
+ * RUNTIME_GLOBAL	Comma-separated list of directory names for global Vim
+ *			runtime directories.
  *			Don't define this if the preprocessor can't handle
  *			string concatenation.
  *			Also set by "--with-global-runtime" configure argument.
  */
 /* #define RUNTIME_GLOBAL "/etc/vim" */
+
+/*
+ * RUNTIME_GLOBAL_AFTER	Comma-separated list of directory names for global Vim
+ *			runtime after directories.
+ *			Don't define this if the preprocessor can't handle
+ *			string concatenation.
+ *			Also set by "--with-global-runtime" configure argument.
+ */
+/* #define RUNTIME_GLOBAL_AFTER "/etc/vim/after" */
 
 /*
  * MODIFIED_BY		Name of who modified Vim.  Required when distributing

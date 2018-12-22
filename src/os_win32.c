@@ -5355,7 +5355,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 	    {
 		typval_T *item = &dict_lookup(hi)->di_tv;
 		WCHAR   *wkey = enc_to_utf16((char_u *)hi->hi_key, NULL);
-		WCHAR   *wval = enc_to_utf16(get_tv_string(item), NULL);
+		WCHAR   *wval = enc_to_utf16(tv_get_string(item), NULL);
 		--todo;
 		if (wkey != NULL && wval != NULL)
 		{

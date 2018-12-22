@@ -159,6 +159,7 @@ NEW_TESTS = test_arabic.res \
 	    test_registers.res \
 	    test_retab.res \
 	    test_ruby.res \
+	    test_scriptnames.res \
 	    test_scrollbind.res \
 	    test_search.res \
 	    test_shortpathname.res \
@@ -177,6 +178,7 @@ NEW_TESTS = test_arabic.res \
 	    test_terminal_fail.res \
 	    test_textformat.res \
 	    test_textobjects.res \
+	    test_textprop.res \
 	    test_undo.res \
 	    test_user_func.res \
 	    test_usercommands.res \

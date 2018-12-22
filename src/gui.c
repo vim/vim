@@ -2754,7 +2754,19 @@ gui_redraw_block(
 	else if (enc_utf8)
 	{
 	    if (ScreenLines[off + col1] == 0)
-		--col1;
+	    {
+		if (col1 > 0)
+		    --col1;
+		else
+		{
+		    // FIXME: how can the first character ever be zero?
+		    // Make this IEMSGN when it no longer breaks Travis CI.
+		    vim_snprintf((char *)IObuff, IOSIZE,
+			    "INTERNAL ERROR: NUL in ScreenLines in row %ld",
+			    (long)gui.row);
+		    msg(IObuff);
+		}
+	    }
 # ifdef FEAT_GUI_GTK
 	    if (col2 + 1 < Columns && ScreenLines[off + col2 + 1] == 0)
 		++col2;
@@ -3853,8 +3865,12 @@ send_tabline_menu_event(int tabidx, int event)
 {
     char_u	    string[3];
 
-    /* Don't put events in the input queue now. */
+    // Don't put events in the input queue now.
     if (hold_gui_events)
+	return;
+
+    // Cannot close the last tabpage.
+    if (event == TABLINE_MENU_CLOSE && first_tabpage->tp_next == NULL)
 	return;
 
     string[0] = CSI;

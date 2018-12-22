@@ -2998,6 +2998,7 @@ parse_cmd_address(exarg_T *eap, char_u **errormsg, int silent)
 			}
 			break;
 		    case ADDR_TABS_RELATIVE:
+		    case ADDR_OTHER:
 			*errormsg = (char_u *)_(e_invrange);
 			return FAIL;
 		    case ADDR_ARGUMENTS:
@@ -5868,9 +5869,13 @@ uc_add_command(
 
 	if (cmp == 0)
 	{
-	    if (!force)
+	    // Command can be replaced with "command!" and when sourcing the
+	    // same script again, but only once.
+	    if (!force && (cmd->uc_script_ctx.sc_sid != current_sctx.sc_sid
+			  || cmd->uc_script_ctx.sc_seq == current_sctx.sc_seq))
 	    {
-		EMSG(_("E174: Command already exists: add ! to replace it"));
+		EMSG2(_("E174: Command already exists: add ! to replace it: %s"),
+									 name);
 		goto fail;
 	    }
 
@@ -5940,6 +5945,7 @@ static struct
     {ADDR_BUFFERS, "buffers"},
     {ADDR_WINDOWS, "windows"},
     {ADDR_QUICKFIX, "quickfix"},
+    {ADDR_OTHER, "other"},
     {-1, NULL}
 };
 #endif
@@ -9120,8 +9126,9 @@ post_chdir(int local)
     void
 ex_cd(exarg_T *eap)
 {
-    char_u		*new_dir;
-    char_u		*tofree;
+    char_u	*new_dir;
+    char_u	*tofree;
+    int		dir_differs;
 
     new_dir = eap->arg;
 #if !defined(UNIX) && !defined(VMS)
@@ -9177,7 +9184,9 @@ ex_cd(exarg_T *eap)
 	    new_dir = NameBuff;
 	}
 #endif
-	if (new_dir == NULL || vim_chdir(new_dir))
+	dir_differs = new_dir == NULL || prev_dir == NULL
+			|| pathcmp((char *)prev_dir, (char *)new_dir, -1) != 0;
+	if (new_dir == NULL || (dir_differs && vim_chdir(new_dir)))
 	    EMSG(_(e_failed));
 	else
 	{
@@ -9189,9 +9198,11 @@ ex_cd(exarg_T *eap)
 	    /* Echo the new current directory if the command was typed. */
 	    if (KeyTyped || p_verbose >= 5)
 		ex_pwd(eap);
-	    apply_autocmds(EVENT_DIRCHANGED,
-		    is_local_chdir ? (char_u *)"window" : (char_u *)"global",
-		    new_dir, FALSE, curbuf);
+
+	    if (dir_differs)
+		apply_autocmds(EVENT_DIRCHANGED,
+		      is_local_chdir ? (char_u *)"window" : (char_u *)"global",
+		      new_dir, FALSE, curbuf);
 	}
 	vim_free(tofree);
     }
@@ -12407,7 +12418,7 @@ ex_digraphs(exarg_T *eap UNUSED)
     if (*eap->arg != NUL)
 	putdigraph(eap->arg);
     else
-	listdigraphs();
+	listdigraphs(eap->forceit);
 #else
     EMSG(_("E196: No digraphs in this version"));
 #endif

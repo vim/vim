@@ -30,7 +30,7 @@ int check_overwrite(exarg_T *eap, buf_T *buf, char_u *fname, char_u *ffname, int
 void ex_wnext(exarg_T *eap);
 void do_wqall(exarg_T *eap);
 int not_writing(void);
-int getfile(int fnum, char_u *ffname, char_u *sfname, int setpm, linenr_T lnum, int forceit);
+int getfile(int fnum, char_u *ffname_arg, char_u *sfname_arg, int setpm, linenr_T lnum, int forceit);
 int do_ecmd(int fnum, char_u *ffname, char_u *sfname, exarg_T *eap, linenr_T newlnum, int flags, win_T *oldwin);
 void ex_append(exarg_T *eap);
 void ex_change(exarg_T *eap);
@@ -61,10 +61,17 @@ char_u *sign_get_text(int typenr);
 void *sign_get_image(int typenr);
 char_u *sign_typenr2name(int typenr);
 void free_signs(void);
+void free_signs(void);
 char_u *get_sign_name(expand_T *xp, int idx);
 void set_context_in_sign_cmd(expand_T *xp, char_u *arg);
 void ex_smile(exarg_T *eap);
 void ex_drop(exarg_T *eap);
 char_u *skip_vimgrep_pat(char_u *p, char_u **s, int *flags);
 void ex_oldfiles(exarg_T *eap);
+int sign_define_by_name(char_u *name, char_u *icon, char_u *linehl, char_u *text, char_u *texthl);
+int sign_undefine_by_name(char_u *name);
+void sign_getlist(char_u *name, list_T *retlist);
+int sign_place(int *sign_id, char_u *group, char_u *sign_name, buf_T *buf, linenr_T lnum, int prio);
+int sign_unplace(int id, char_u *group, buf_T *buf);
+void sign_get_placed(buf_T *buf, linenr_T lnum, int id, char_u *group, list_T *retlist);
 /* vim: set ft=c : */

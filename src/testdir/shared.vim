@@ -345,3 +345,13 @@ func Stop_shell_in_terminal(buf)
   let job = term_getjob(a:buf)
   call WaitFor({-> job_status(job) == "dead"})
 endfunc
+
+" Gets the text of a terminal line, using term_scrape()
+func Get_terminal_text(bufnr, row)
+  let list = term_scrape(a:bufnr, a:row)
+  let text = ''
+  for item in list
+    let text .= item.chars
+  endfor
+  return text
+endfunc

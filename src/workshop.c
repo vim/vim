@@ -491,7 +491,7 @@ workshop_get_mark_lineno(
     lineno = 0;
     buf = buflist_findname((char_u *)filename);
     if (buf != NULL)
-	lineno = buf_findsign(buf, markId);
+	lineno = buf_findsign(buf, markId, NULL);
 
     return lineno;
 }

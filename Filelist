@@ -91,6 +91,7 @@ SRC_ALL =	\
 		src/terminal.c \
 		src/term.h \
 		src/termlib.c \
+		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
 		src/userfunc.c \
@@ -198,6 +199,7 @@ SRC_ALL =	\
 		src/proto/term.pro \
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
+		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/userfunc.pro \
@@ -475,6 +477,7 @@ SRC_DOS =	\
 		nsis/gvim_version.nsh \
 		nsis/vimrc.ini \
 		nsis/README.txt \
+		nsis/lang/*.nsi \
 		uninstal.txt \
 		src/VisVim/Commands.cpp \
 		src/VisVim/Commands.h \
@@ -515,6 +518,7 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		nsis/icons/*.bmp \
 		nsis/icons/*.ico \
+		nsis/icons/*.svg \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)
 SRC_AMI_DOS =	\

@@ -1678,13 +1678,13 @@ x_IOerror_check(Display *dpy UNUSED)
 /*
  * An X IO Error handler, used to catch terminal errors.
  */
-static int xterm_dpy_was_reset = FALSE;
+static int xterm_dpy_retry_count = 0;
 
     static int
 x_IOerror_handler(Display *dpy UNUSED)
 {
     xterm_dpy = NULL;
-    xterm_dpy_was_reset = TRUE;
+    xterm_dpy_retry_count = 5;  // Try reconnecting five times
     x11_window = 0;
     x11_display = NULL;
     xterm_Shell = (Widget)0;
@@ -1704,9 +1704,9 @@ x_IOerror_handler(Display *dpy UNUSED)
     static void
 may_restore_clipboard(void)
 {
-    if (xterm_dpy_was_reset)
+    if (xterm_dpy_retry_count > 0)
     {
-	xterm_dpy_was_reset = FALSE;
+	--xterm_dpy_retry_count;
 
 # ifndef LESSTIF_VERSION
 	/* This has been reported to avoid Vim getting stuck. */
@@ -5553,7 +5553,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
 
-		    vim_setenv((char_u*)hi->hi_key, get_tv_string(item));
+		    vim_setenv((char_u*)hi->hi_key, tv_get_string(item));
 		    --todo;
 		}
 	}
@@ -5820,7 +5820,6 @@ mch_detect_ended_job(job_T *job_list)
 mch_signal_job(job_T *job, char_u *how)
 {
     int	    sig = -1;
-    pid_t   job_pid;
 
     if (*how == NUL || STRCMP(how, "term") == 0)
 	sig = SIGTERM;
@@ -5841,16 +5840,13 @@ mch_signal_job(job_T *job, char_u *how)
     else
 	return FAIL;
 
-    /* TODO: have an option to only kill the process, not the group? */
-    job_pid = job->jv_pid;
-#ifdef HAVE_GETPGID
-    if (job_pid == getpgid(job_pid))
-	job_pid = -job_pid;
-#endif
-
-    /* Never kill ourselves! */
-    if (job_pid != 0)
-	kill(job_pid, sig);
+    // Never kill ourselves!
+    if (job->jv_pid != 0)
+    {
+	// TODO: have an option to only kill the process, not the group?
+	kill(-job->jv_pid, sig);
+	kill(job->jv_pid, sig);
+    }
 
     return OK;
 }
@@ -7498,6 +7494,8 @@ setup_term_clip(void)
 	{
 	    xterm_dpy = XtOpenDisplay(app_context, xterm_display,
 		    "vim_xterm", "Vim_xterm", NULL, 0, &z, &strp);
+	    if (xterm_dpy != NULL)
+		xterm_dpy_retry_count = 0;
 #if defined(HAVE_SETJMP_H)
 	    mch_endjmp();
 #endif

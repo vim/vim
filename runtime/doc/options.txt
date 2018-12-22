@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2018 May 15
+*options.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2370,7 +2370,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'cryptmethod'* *'cm'*
-'cryptmethod' 'cm'	string	(default "zip")
+'cryptmethod' 'cm'	string	(default "blowfish2")
 			global or local to buffer |global-local|
 			{not in Vi}
 	Method used for encryption when the buffer is written to a file:
@@ -2401,8 +2401,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	modifications.  Also see |:X|.
 
 	When setting the global value to an empty string, it will end up with
-	the value "zip".  When setting the local value to an empty string the
-	buffer will use the global value.
+	the value "blowfish2".  When setting the local value to an empty
+	string the buffer will use the global value.
 
 	When a new encryption method is added in a later version of Vim, and
 	the current version does not recognize it, you will get	*E821* .
@@ -4133,11 +4133,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,
 				     N:CursorLineNr,r:Question,s:StatusLine,
 				     S:StatusLineNC,c:VertSplit,t:Title,
-				     v:Visual,w:WarningMsg,W:WildMenu,f:Folded,
-				     F:FoldColumn,A:DiffAdd,C:DiffChange,
-				     D:DiffDelete,T:DiffText,>:SignColumn,
-				     B:SpellBad,P:SpellCap,R:SpellRare,
-				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
+				     v:Visual,V:VisualNOS,w:WarningMsg,
+				     W:WildMenu,f:Folded,F:FoldColumn,
+				     A:DiffAdd,C:DiffChange,D:DiffDelete,
+				     T:DiffText,>:SignColumn,-:Conceal,
+ 				     B:SpellBad,P:SpellCap,R:SpellRare,
+				     L:SpellLocal,+:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
 				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
@@ -4182,16 +4183,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-DiffDelete|	 D  deleted line in diff mode
 	|hl-DiffText|	 T  inserted text in diff mode
 	|hl-SignColumn|	 >  column used for |signs|
+	|hl-Conceal|	 -  the placeholders used for concealed characters
+			    (see 'conceallevel')
 	|hl-SpellBad|	 B  misspelled word |spell|
 	|hl-SpellCap|	 P  word that should start with capital |spell|
 	|hl-SpellRare|	 R  rare word |spell|
 	|hl-SpellLocal|	 L  word from other region |spell|
-	|hl-Conceal|	 -  the placeholders used for concealed characters
-			    (see 'conceallevel')
-	|hl-Pmenu|       +  popup menu normal line
-	|hl-PmenuSel|    =  popup menu normal line
-	|hl-PmenuSbar|   x  popup menu scrollbar
-	|hl-PmenuThumb|  X  popup menu scrollbar thumb
+	|hl-Pmenu|	 +  popup menu normal line
+	|hl-PmenuSel|	 =  popup menu selected line
+	|hl-PmenuSbar|	 x  popup menu scrollbar
+	|hl-PmenuThumb|	 X  popup menu scrollbar thumb
 
 	The display modes are:
 		r	reverse		(termcap entry "mr" and "me")
@@ -7339,8 +7340,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	After this option has been set successfully, Vim will source the files
 	"spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'
-	up to the first comma, dot or underscore.
-	Also see |set-spc-auto|.
+	up to the first character that is not an ASCII letter or number and
+	not a dash.  Also see |set-spc-auto|.
 
 
 						*'spellsuggest'* *'sps'*
@@ -8126,7 +8127,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	separated by non-keyword characters (white space is preferred).
 	Maximum line length is 510 bytes.
 
-	Unfortunately we currently cannot recommend a file to be used here.
+	An English word list was added to this github issue:
+	https://github.com/vim/vim/issues/629#issuecomment-443293282
+	Unpack thesaurus_pkg.zip, put the thesaurus.txt file somewhere, e.g.
+	~/.vim/thesaurus/english.txt, and the 'thesaurus' option to this file
+	name.
 
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
@@ -8432,8 +8437,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|t_RV| is set to the escape sequence to request the xterm version
 	number, more intelligent detection process runs.
 	The "xterm2" value will be set if the xterm version is reported to be
-	from 95 to 276.  The "sgr" value will be set if the xterm version is
-	277 or higher and when Vim detects Mac Terminal.app or iTerm2.
+	from 95 to 276.  The "sgr" value will be set if Vim detects Mac
+	Terminal.app, iTerm2 or mintty, and when the xterm version is 277 or
+	higher.
 	If you do not want 'ttymouse' to be set to "xterm2" or "sgr"
 	automatically, set t_RV to an empty string: >
 		:set t_RV=

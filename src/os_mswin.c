@@ -114,6 +114,7 @@ typedef int SMALL_RECT;
 typedef int TEXTMETRIC;
 typedef int UINT;
 typedef int WCHAR;
+typedef int WNDENUMPROC;
 typedef int WORD;
 typedef int WPARAM;
 typedef void VOID;

@@ -116,6 +116,20 @@ rettv_list_alloc(typval_T *rettv)
 }
 
 /*
+ * Same as rettv_list_alloc() but uses an allocation id for testing.
+ */
+    int
+rettv_list_alloc_id(typval_T *rettv, alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return FAIL;
+#endif
+    return rettv_list_alloc(rettv);
+}
+
+
+/*
  * Set a list as the return value
  */
     void
@@ -389,7 +403,7 @@ list_find_nr(
 	    *errorp = TRUE;
 	return -1L;
     }
-    return (long)get_tv_number_chk(&li->li_tv, errorp);
+    return (long)tv_get_number_chk(&li->li_tv, errorp);
 }
 
 /*
@@ -406,7 +420,7 @@ list_find_str(list_T *l, long idx)
 	EMSGN(_(e_listidx), idx);
 	return NULL;
     }
-    return get_tv_string(&li->li_tv);
+    return tv_get_string(&li->li_tv);
 }
 
 /*
@@ -935,7 +949,7 @@ write_list(FILE *fd, list_T *list, int binary)
 
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
-	for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
+	for (s = tv_get_string(&li->li_tv); *s != NUL; ++s)
 	{
 	    if (*s == '\n')
 		c = putc(NUL, fd);

@@ -7566,7 +7566,7 @@ vim_regsub_both(
 		    /* fill_submatch_list() was called */
 		    clear_submatch_list(&matchList);
 
-		eval_result = get_tv_string_buf_chk(&rettv, buf);
+		eval_result = tv_get_string_buf_chk(&rettv, buf);
 		if (eval_result != NULL)
 		    eval_result = vim_strsave(eval_result);
 		clear_tv(&rettv);
