@@ -396,7 +396,6 @@ static void f_strftime(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_strgetchar(typval_T *argvars, typval_T *rettv);
 static void f_stridx(typval_T *argvars, typval_T *rettv);
-static void f_string(typval_T *argvars, typval_T *rettv);
 static void f_strlen(typval_T *argvars, typval_T *rettv);
 static void f_strcharpart(typval_T *argvars, typval_T *rettv);
 static void f_strpart(typval_T *argvars, typval_T *rettv);
@@ -12475,7 +12474,7 @@ f_stridx(typval_T *argvars, typval_T *rettv)
 /*
  * "string()" function
  */
-    static void
+    void
 f_string(typval_T *argvars, typval_T *rettv)
 {
     char_u	*tofree;

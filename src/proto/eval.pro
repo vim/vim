@@ -89,6 +89,7 @@ char_u *tv_get_string(typval_T *varp);
 char_u *tv_get_string_buf(typval_T *varp, char_u *buf);
 char_u *tv_get_string_chk(typval_T *varp);
 char_u *tv_get_string_buf_chk(typval_T *varp, char_u *buf);
+char_u *tv_stringify(typval_T *varp, char_u *buf);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_in_ht(hashtab_T *ht, int htname, char_u *varname, int no_autoload);
 hashtab_T *find_var_ht(char_u *name, char_u **varname);

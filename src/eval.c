@@ -7163,6 +7163,30 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 }
 
 /*
+ * Turn a typeval into a string.  Similar to tv_get_string_buf() but uses
+ * string() on Dict, List, etc.
+ */
+    char_u *
+tv_stringify(typval_T *varp, char_u *buf)
+{
+    if (varp->v_type == VAR_LIST
+	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_FUNC
+	    || varp->v_type == VAR_PARTIAL
+	    || varp->v_type == VAR_FLOAT)
+    {
+	typval_T tmp;
+
+	f_string(varp, &tmp);
+	tv_get_string_buf(&tmp, buf);
+	clear_tv(varp);
+	*varp = tmp;
+	return tmp.vval.v_string;
+    }
+    return tv_get_string_buf(varp, buf);
+}
+
+/*
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
  * Careful: "a:0" variables don't have a name.
@@ -8142,7 +8166,12 @@ ex_execute(exarg_T *eap)
 
 	if (!eap->skip)
 	{
-	    p = tv_get_string(&rettv);
+	    char_u   buf[NUMBUFLEN];
+
+	    if (eap->cmdidx == CMD_execute)
+		p = tv_get_string_buf(&rettv, buf);
+	    else
+		p = tv_stringify(&rettv, buf);
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {
