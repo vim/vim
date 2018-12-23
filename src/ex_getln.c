@@ -675,7 +675,7 @@ may_adjust_incsearch_highlighting(
     ++emsg_off;
     save = pat[patlen];
     pat[patlen] = NUL;
-    i = searchit(curwin, curbuf, &t,
+    i = searchit(curwin, curbuf, &t, NULL,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
 		 pat, count, search_flags,
 		 RE_SEARCH, 0, NULL, NULL);

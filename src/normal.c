@@ -4338,7 +4338,7 @@ find_decl(
     for (;;)
     {
 	valid = FALSE;
-	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,
+	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
 		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */

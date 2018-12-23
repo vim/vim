@@ -4669,7 +4669,7 @@ get_address(
 #ifdef FEAT_VIRTUALEDIT
 		    pos.coladd = 0;
 #endif
-		    if (searchit(curwin, curbuf, &pos,
+		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
 				(char_u *)"", 1L, SEARCH_MSG,
 					i, (linenr_T)0, NULL, NULL) != FAIL)

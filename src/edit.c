@@ -4653,7 +4653,7 @@ ins_compl_get_exp(pos_T *ini)
 		    found_new_match = search_for_exact_line(ins_buf, pos,
 					      compl_direction, compl_pattern);
 		else
-		    found_new_match = searchit(NULL, ins_buf, pos,
+		    found_new_match = searchit(NULL, ins_buf, pos, NULL,
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
 					     RE_LAST, (linenr_T)0, NULL, NULL);

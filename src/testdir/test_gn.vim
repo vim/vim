@@ -131,4 +131,23 @@ func Test_gn_command()
   set wrapscan&vim
 endfu
 
+func Test_gn_multi_line()
+  new
+  call setline(1, [
+        \ 'func Tm1()',
+        \ ' echo "one"',
+        \ 'endfunc',
+        \ 'func Tm2()',
+        \ ' echo "two"',
+        \ 'endfunc',
+        \ 'func Tm3()',
+        \ ' echo "three"',
+        \ 'endfunc',
+        \])
+  /\v^func Tm\d\(\)\n.*\zs".*"\ze$
+  normal jgnrx
+  call assert_equal(' echo xxxxx', getline(5))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
