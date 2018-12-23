@@ -2953,7 +2953,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    char_u *np;
 	    size_t len = STRLEN(p) + 1;
 
-	    if ((np = alloc(len + 2)) == NULL)
+	    if ((np = alloc((int)len + 2)) == NULL)
 	    {
 		vim_free(p);
 		return NULL;
