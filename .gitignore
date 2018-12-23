@@ -80,6 +80,7 @@ src/testdir/dostmp/*
 src/testdir/messages
 src/testdir/viminfo
 src/testdir/opt_test.vim
+runtime/indent/testdir/*.out
 src/memfile_test
 src/json_test
 src/message_test
