@@ -13586,7 +13586,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	EMSG(_(e_invarg));
     else
     {
-	name = tv_get_string_chk(&argvars[0]);
+	name = tv_get_string(&argvars[0]);
 	val = (int)tv_get_number(&argvars[1]);
 
 	if (STRCMP(name, (char_u *)"redraw") == 0)
