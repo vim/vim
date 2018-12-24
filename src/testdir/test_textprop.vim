@@ -197,4 +197,34 @@ func Test_prop_clear_buf()
   bwipe!
 endfunc
 
+func Test_prop_multiline()
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  new
+  call setline(1, ['xxxxxxx', 'yyyyyyyyy', 'zzzzzzzz'])
+
+  " start halfway line 1, end halfway line 3
+  call prop_add(1, 3, {'end_lnum': 3, 'end_col': 5, 'type': 'comment'})
+  let expect1 = {'col': 3, 'length': 6, 'type': 'comment', 'start': 1, 'end': 0, 'id': 0}
+  call assert_equal([expect1], prop_list(1))
+  let expect2 = {'col': 1, 'length': 10, 'type': 'comment', 'start': 0, 'end': 0, 'id': 0}
+  call assert_equal([expect2], prop_list(2))
+  let expect3 = {'col': 1, 'length': 5, 'type': 'comment', 'start': 0, 'end': 1, 'id': 0}
+  call assert_equal([expect3], prop_list(3))
+  call prop_clear(1, 3)
+
+  " include all three lines
+  call prop_add(1, 1, {'end_lnum': 3, 'end_col': 999, 'type': 'comment'})
+  let expect1.col = 1
+  let expect1.length = 8
+  call assert_equal([expect1], prop_list(1))
+  call assert_equal([expect2], prop_list(2))
+  let expect3.length = 9
+  call assert_equal([expect3], prop_list(3))
+  call prop_clear(1, 3)
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
+
 " TODO: screenshot test with highlighting

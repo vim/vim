@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2318,7 +2318,7 @@ prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
 prop_add({lnum}, {col}, {props})  none	add a text property
-prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
+prop_clear({lnum} [, {lnum-end} [, {props}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
 				Dict	search for a text property
@@ -6695,7 +6695,7 @@ prop_add({lnum}, {col}, {props})
 				     used for a property that does not
 				     continue in another line
 			"end_lnum" - line number for end of text
-			"end_col"  - column for end of text; not used when
+			"end_col"  - last column of the text; not used when
 				     "length" is present
 			"bufnr"	   - buffer to add the property to; when
 				     omitted the current buffer is used
@@ -6710,6 +6710,10 @@ prop_add({lnum}, {col}, {props})
 		property that spans more than one line.
 		When neither "length" nor "end_col" are passed the property
 		will apply to one character.
+		The property can end exactly at the last character of the
+		text, or just after it.  In the last case, if text is appended
+		to the line, the text property size will increase, also when
+		the property type does not have "end_incl" set.
 
 		"type" will first be looked up in the buffer the property is
 		added to. When not found, the global property types are used.
