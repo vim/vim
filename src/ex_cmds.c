@@ -8180,7 +8180,7 @@ ex_sign(exarg_T *eap)
 	{
 	    EMSG2(_("E158: Invalid buffer name: %s"), arg);
 	}
-	else if (id <= 0 && !(idx == SIGNCMD_UNPLACE && id == -2))
+	else if (id <= 0 && idx == SIGNCMD_PLACE)
 	{
 	    if ((group == NULL) && (lnum >= 0 || sign_name != NULL))
 		EMSG(_(e_invarg));
