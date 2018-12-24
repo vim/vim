@@ -1705,11 +1705,13 @@ func Test_stop_in_terminal()
   call WaitForAssert({-> assert_match('ready', Get_terminal_text(bufnr, lastrow))})
 
   call term_sendkeys(bufnr, ":stop\r")
-  " Not sure where "Stopped" shows up, assume in the first three lines.
+  " Not sure where "Stopped" shows up, need five lines for Arch.
   call WaitForAssert({-> assert_match('Stopped',
 	\ Get_terminal_text(bufnr, 1) . 
 	\ Get_terminal_text(bufnr, 2) . 
-	\ Get_terminal_text(bufnr, 3))})
+	\ Get_terminal_text(bufnr, 3) . 
+	\ Get_terminal_text(bufnr, 4) . 
+	\ Get_terminal_text(bufnr, 5))})
 
   call term_sendkeys(bufnr, "fg\r")
   call term_sendkeys(bufnr, ":echo 'back again'\r")
