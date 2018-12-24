@@ -1,5 +1,6 @@
 #define DEFINE_INLINES
 
+/* vim: set sw=2 : */
 #include "vterm_internal.h"
 
 #include <stdio.h>
@@ -41,6 +42,8 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   /* Need to bootstrap using the allocator function directly */
   VTerm *vt = (*funcs->malloc)(sizeof(VTerm), allocdata);
 
+  if (vt == NULL)
+    return NULL;
   vt->allocator = funcs;
   vt->allocdata = allocdata;
 
@@ -55,10 +58,21 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->parser.strbuffer_len = 500; /* should be able to hold an OSC string */
   vt->parser.strbuffer_cur = 0;
   vt->parser.strbuffer = vterm_allocator_malloc(vt, vt->parser.strbuffer_len);
+  if (vt->parser.strbuffer == NULL)
+  {
+    vterm_allocator_free(vt, vt);
+    return NULL;
+  }
 
   vt->outbuffer_len = 200;
   vt->outbuffer_cur = 0;
   vt->outbuffer = vterm_allocator_malloc(vt, vt->outbuffer_len);
+  if (vt->outbuffer == NULL)
+  {
+    vterm_allocator_free(vt, vt->parser.strbuffer);
+    vterm_allocator_free(vt, vt);
+    return NULL;
+  }
 
   return vt;
 }
@@ -82,9 +96,13 @@ INTERNAL void *vterm_allocator_malloc(VTerm *vt, size_t size)
   return (*vt->allocator->malloc)(size, vt->allocdata);
 }
 
+/*
+ * Free "ptr" unless it is NULL.
+ */
 INTERNAL void vterm_allocator_free(VTerm *vt, void *ptr)
 {
-  (*vt->allocator->free)(ptr, vt->allocdata);
+  if (ptr)
+    (*vt->allocator->free)(ptr, vt->allocdata);
 }
 
 void vterm_get_size(const VTerm *vt, int *rowsp, int *colsp)

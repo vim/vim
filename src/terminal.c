@@ -3430,6 +3430,7 @@ set_vterm_palette(VTerm *vterm, long_u *rgb)
 {
     int		index = 0;
     VTermState	*state = vterm_obtain_state(vterm);
+
     for (; index < 16; index++)
     {
 	VTermColor	color;
@@ -3703,8 +3704,9 @@ static VTermAllocatorFunctions vterm_allocator = {
 
 /*
  * Create a new vterm and initialize it.
+ * Return FAIL when out of memory.
  */
-    static void
+    static int
 create_vterm(term_T *term, int rows, int cols)
 {
     VTerm	    *vterm;
@@ -3714,7 +3716,18 @@ create_vterm(term_T *term, int rows, int cols)
 
     vterm = vterm_new_with_allocator(rows, cols, &vterm_allocator, NULL);
     term->tl_vterm = vterm;
+    if (vterm == NULL)
+	return FAIL;
+
+    // Allocate screen and state here, so we can bail out if that fails.
+    state = vterm_obtain_state(vterm);
     screen = vterm_obtain_screen(vterm);
+    if (state == NULL || screen == NULL)
+    {
+	vterm_free(vterm);
+	return FAIL;
+    }
+
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
     /* TODO: depends on 'encoding'. */
     vterm_set_utf8(vterm, 1);
@@ -3722,7 +3735,7 @@ create_vterm(term_T *term, int rows, int cols)
     init_default_colors(term);
 
     vterm_state_set_default_colors(
-	    vterm_obtain_state(vterm),
+	    state,
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
 
@@ -3746,9 +3759,10 @@ create_vterm(term_T *term, int rows, int cols)
 #else
     value.boolean = 0;
 #endif
-    state = vterm_obtain_state(vterm);
     vterm_state_set_termprop(state, VTERM_PROP_CURSORBLINK, &value);
     vterm_state_set_unrecognised_fallbacks(state, &parser_fallbacks, term);
+
+    return OK;
 }
 
 /*
@@ -5629,7 +5643,8 @@ term_and_job_init(
     vim_free(cwd_wchar);
     vim_free(env_wchar);
 
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	goto failed;
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (opt->jo_set2 & JO2_ANSI_COLORS)
@@ -5710,7 +5725,8 @@ create_pty_only(term_T *term, jobopt_T *options)
     char	    in_name[80], out_name[80];
     channel_T	    *channel = NULL;
 
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
     vim_snprintf(in_name, sizeof(in_name), "\\\\.\\pipe\\vim-%d-in-%d",
 	    GetCurrentProcessId(),
@@ -5822,7 +5838,8 @@ term_and_job_init(
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt UNUSED)
 {
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (opt->jo_set2 & JO2_ANSI_COLORS)
@@ -5844,7 +5861,8 @@ term_and_job_init(
     static int
 create_pty_only(term_T *term, jobopt_T *opt)
 {
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
     term->tl_job = job_alloc();
     if (term->tl_job == NULL)
