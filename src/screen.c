@@ -4294,6 +4294,66 @@ win_line(
 	    }
 #endif
 
+#ifdef FEAT_TEXT_PROP
+	    if (text_props != NULL)
+	    {
+		int pi;
+
+		// Check if any active property ends.
+		for (pi = 0; pi < text_props_active; ++pi)
+		{
+		    int tpi = text_prop_idxs[pi];
+
+		    if (col >= text_props[tpi].tp_col - 1
+						  + text_props[tpi].tp_len)
+		    {
+			if (pi + 1 < text_props_active)
+			    mch_memmove(text_prop_idxs + pi,
+					text_prop_idxs + pi + 1,
+					sizeof(int)
+					 * (text_props_active - (pi + 1)));
+			--text_props_active;
+			--pi;
+		    }
+		}
+
+		// Add any text property that starts in this column.
+		while (text_prop_next < text_prop_count
+			   && col >= text_props[text_prop_next].tp_col - 1)
+		    text_prop_idxs[text_props_active++] = text_prop_next++;
+
+		text_prop_type = NULL;
+		if (text_props_active > 0)
+		{
+		    int max_priority = INT_MIN;
+		    int max_col = 0;
+
+		    // Get the property type with the highest priority
+		    // and/or starting last.
+		    for (pi = 0; pi < text_props_active; ++pi)
+		    {
+			int		tpi = text_prop_idxs[pi];
+			proptype_T  *pt;
+
+			pt = text_prop_type_by_id(
+				curwin->w_buffer, text_props[tpi].tp_type);
+			if (pt != NULL
+				&& (pt->pt_priority > max_priority
+				    || (pt->pt_priority == max_priority
+				    && text_props[tpi].tp_col >= max_col)))
+			{
+			    text_prop_type = pt;
+			    max_priority = pt->pt_priority;
+			    max_col = text_props[tpi].tp_col;
+			}
+		    }
+		    if (text_prop_type != NULL)
+			text_prop_attr =
+				     syn_id2attr(text_prop_type->pt_hl_id);
+		}
+	    }
+#endif
+
 	    /* Decide which of the highlight attributes to use. */
 	    attr_pri = TRUE;
 #ifdef LINE_ATTR
@@ -4653,8 +4713,8 @@ win_line(
 #endif
 
 #ifdef FEAT_SYN_HL
-		/* Get syntax attribute, unless still at the start of the line
-		 * (double-wide char that doesn't fit). */
+		// Get syntax attribute, unless still at the start of the line
+		// (double-wide char that doesn't fit).
 		v = (long)(ptr - line);
 		if (has_syntax && v > 0)
 		{
@@ -4686,10 +4746,16 @@ win_line(
 		    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 		    ptr = line + v;
 
-		    if (!attr_pri)
-			char_attr = syntax_attr;
-		    else
-			char_attr = hl_combine_attr(syntax_attr, char_attr);
+# ifdef FEAT_TEXT_PROP
+		    // Text properties overrule syntax highlighting.
+		    if (text_prop_attr == 0)
+#endif
+		    {
+			if (!attr_pri)
+			    char_attr = syntax_attr;
+			else
+			    char_attr = hl_combine_attr(syntax_attr, char_attr);
+		    }
 # ifdef FEAT_CONCEAL
 		    /* no concealing past the end of the line, it interferes
 		     * with line highlighting */
@@ -4698,66 +4764,6 @@ win_line(
 		    else
 			syntax_flags = get_syntax_info(&syntax_seqnr);
 # endif
-		}
-#endif
-
-#ifdef FEAT_TEXT_PROP
-		if (text_props != NULL)
-		{
-		    int pi;
-
-		    // Check if any active property ends.
-		    for (pi = 0; pi < text_props_active; ++pi)
-		    {
-			int tpi = text_prop_idxs[pi];
-
-			if (col >= text_props[tpi].tp_col - 1
-						      + text_props[tpi].tp_len)
-			{
-			    if (pi + 1 < text_props_active)
-				mch_memmove(text_prop_idxs + pi,
-					    text_prop_idxs + pi + 1,
-					    sizeof(int)
-					     * (text_props_active - (pi + 1)));
-			    --text_props_active;
-			    --pi;
-			}
-		    }
-
-		    // Add any text property that starts in this column.
-		    while (text_prop_next < text_prop_count
-			       && col >= text_props[text_prop_next].tp_col - 1)
-			text_prop_idxs[text_props_active++] = text_prop_next++;
-
-		    text_prop_type = NULL;
-		    if (text_props_active > 0)
-		    {
-			int max_priority = INT_MIN;
-			int max_col = 0;
-
-			// Get the property type with the highest priority
-			// and/or starting last.
-			for (pi = 0; pi < text_props_active; ++pi)
-			{
-			    int		tpi = text_prop_idxs[pi];
-			    proptype_T  *pt;
-
-			    pt = text_prop_type_by_id(
-				    curwin->w_buffer, text_props[tpi].tp_type);
-			    if (pt != NULL
-				    && (pt->pt_priority > max_priority
-					|| (pt->pt_priority == max_priority
-					&& text_props[tpi].tp_col >= max_col)))
-			    {
-				text_prop_type = pt;
-				max_priority = pt->pt_priority;
-				max_col = text_props[tpi].tp_col;
-			    }
-			}
-			if (text_prop_type != NULL)
-			    text_prop_attr =
-					 syn_id2attr(text_prop_type->pt_hl_id);
-		    }
 		}
 #endif
 
