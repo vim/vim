@@ -2411,7 +2411,8 @@ struct file_buffer
     dict_T	*b_vars;	/* internal variables, local to buffer */
 #endif
 #ifdef FEAT_TEXT_PROP
-    hashtab_T	*b_proptypes;	/* text property types local to buffer */
+    int		b_has_textprop;	// TRUE when text props were added
+    hashtab_T	*b_proptypes;	// text property types local to buffer
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)

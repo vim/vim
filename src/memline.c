@@ -3179,14 +3179,14 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
 	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 
 #ifdef FEAT_TEXT_PROP
-	if (has_any_text_properties(curbuf))
+	if (curbuf->b_has_textprop)
 	    // Need to fetch the old line to copy over any text properties.
 	    ml_get_buf(curbuf, lnum, TRUE);
 #endif
     }
 
 #ifdef FEAT_TEXT_PROP
-    if (has_any_text_properties(curbuf))
+    if (curbuf->b_has_textprop)
     {
 	size_t	oldtextlen = STRLEN(curbuf->b_ml.ml_line_ptr) + 1;
 
@@ -5131,6 +5131,7 @@ ml_updatechunk(
 	{
 	    int	    count;	    /* number of entries in block */
 	    int	    idx;
+	    int	    end_idx;
 	    int	    text_end;
 	    int	    linecnt;
 
@@ -5154,23 +5155,39 @@ ml_updatechunk(
 			(long)(buf->b_ml.ml_locked_low) + 1;
 		idx = curline - buf->b_ml.ml_locked_low;
 		curline = buf->b_ml.ml_locked_high + 1;
-		if (idx == 0)/* first line in block, text at the end */
-		    text_end = dp->db_txt_end;
-		else
-		    text_end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
-		/* Compute index of last line to use in this MEMLINE */
+
+		// compute index of last line to use in this MEMLINE
 		rest = count - idx;
 		if (linecnt + rest > MLCS_MINL)
 		{
-		    idx += MLCS_MINL - linecnt - 1;
+		    end_idx = idx + MLCS_MINL - linecnt - 1;
 		    linecnt = MLCS_MINL;
 		}
 		else
 		{
-		    idx = count - 1;
+		    end_idx = count - 1;
 		    linecnt += rest;
 		}
-		size += text_end - ((dp->db_index[idx]) & DB_INDEX_MASK);
+#ifdef FEAT_TEXT_PROP
+		if (buf->b_has_textprop)
+		{
+		    int i;
+
+		    // We cannot use the text pointers to get the text length,
+		    // the text prop info would also be counted.  Go over the
+		    // lines.
+		    for (i = end_idx; i < idx; ++i)
+			size += STRLEN((char_u *)dp + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
+		}
+		else
+#endif
+		{
+		    if (idx == 0)/* first line in block, text at the end */
+			text_end = dp->db_txt_end;
+		    else
+			text_end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
+		    size += text_end - ((dp->db_index[end_idx]) & DB_INDEX_MASK);
+		}
 	    }
 	    buf->b_ml.ml_chunksize[curix].mlcs_numlines = linecnt;
 	    buf->b_ml.ml_chunksize[curix + 1].mlcs_numlines -= linecnt;
@@ -5360,7 +5377,20 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		idx++;
 	    }
 	}
-	len = text_end - ((dp->db_index[idx]) & DB_INDEX_MASK);
+#ifdef FEAT_TEXT_PROP
+	if (buf->b_has_textprop)
+	{
+	    int i;
+
+	    // cannot use the db_index pointer, need to get the actual text
+	    // lengths.
+	    len = 0;
+	    for (i = start_idx; i <= idx; ++i)
+		len += STRLEN((char_u *)dp + ((dp->db_index[idx]) & DB_INDEX_MASK)) + 1;
+	}
+	else
+#endif
+	    len = text_end - ((dp->db_index[idx]) & DB_INDEX_MASK);
 	size += len;
 	if (offset != 0 && size >= offset)
 	{

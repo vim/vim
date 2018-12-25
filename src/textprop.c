@@ -17,12 +17,16 @@
  * Text properties have a type, which can be used to specify highlighting.
  *
  * TODO:
+ * - mismatch in column 1 being the first column
+ * - Let props overrule syntax HL.
  * - When deleting a line where a prop ended, adjust flag of previous line.
  * - When deleting a line where a prop started, adjust flag of next line.
  * - When inserting a line add props that continue from previous line.
  * - Adjust property column and length when text is inserted/deleted
  * - Add an arrray for global_proptypes, to quickly lookup a proptype by ID
  * - Add an arrray for b_proptypes, to quickly lookup a proptype by ID
+ * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
+ *   into account.
  * - add mechanism to keep track of changed lines.
  */
 
@@ -261,7 +265,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	    length = end_col - col + 1;
 	else
 	    length = textlen - col + 1;
-	if (length > textlen)
+	if (length > (long)textlen)
 	    length = textlen;  // can include the end-of-line
 	if (length < 1)
 	    length = 1;
@@ -308,17 +312,8 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
     }
 
+    buf->b_has_textprop = TRUE;  // this is never reset
     redraw_buf_later(buf, NOT_VALID);
-}
-
-/*
- * Return TRUE if any text properties are defined globally or for buffer
- * "buf".
- */
-    int
-has_any_text_properties(buf_T *buf)
-{
-    return buf->b_proptypes != NULL || global_proptypes != NULL;
 }
 
 /*
@@ -334,8 +329,9 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     size_t textlen;
     size_t proplen;
 
-    // Be quick when no text property types are defined.
-    if (!has_any_text_properties(buf))
+    // Be quick when no text property types have been defined or the buffer,
+    // unless we are adding one.
+    if (!buf->b_has_textprop && !will_change)
 	return 0;
 
     // Fetch the line to get the ml_line_len field updated.
