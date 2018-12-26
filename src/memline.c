@@ -5380,7 +5380,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    // lengths.
 	    len = 0;
 	    for (i = start_idx; i <= idx; ++i)
-		len += STRLEN((char_u *)dp + ((dp->db_index[idx]) & DB_INDEX_MASK)) + 1;
+		len += STRLEN((char_u *)dp + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
 	}
 	else
 #endif

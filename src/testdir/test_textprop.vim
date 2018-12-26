@@ -229,11 +229,11 @@ endfunc
 func Test_prop_byteoff()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
-  call setline(1, ['line1', 'line2', ''])
+  call setline(1, ['line1', 'second line', ''])
   set ff=unix
-  call assert_equal(13, line2byte(3))
+  call assert_equal(19, line2byte(3))
   call prop_add(1, 1, {'end_col': 3, 'type': 'comment'})
-  call assert_equal(13, line2byte(3))
+  call assert_equal(19, line2byte(3))
 
   bwipe!
   call prop_type_delete('comment')
