@@ -230,6 +230,7 @@ func Test_prop_byteoff()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
   call setline(1, ['line1', 'line2', ''])
+  set ff=unix
   call assert_equal(13, line2byte(3))
   call prop_add(1, 1, {'end_col': 3, 'type': 'comment'})
   call assert_equal(13, line2byte(3))
