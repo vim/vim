@@ -1032,6 +1032,10 @@ common_init(mparm_T *paramp)
 #ifdef FEAT_EVAL
     set_lang_var();		/* set v:lang and v:ctype */
 #endif
+
+#ifdef FEAT_SIGNS
+    init_signs();
+#endif
 }
 
 /*

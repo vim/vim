@@ -5866,6 +5866,16 @@ win_found:
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
 static hashtab_T	sg_table;	// sign group (signgroup_T) hashtable
+static int		next_sign_id = 1; // next sign id in the global group
+
+/*
+ * Initialize data needed for managing signs
+ */
+    void
+init_signs(void)
+{
+    hash_init(&sg_table);		// sign group hash table
+}
 
 /*
  * A new sign in group 'groupname' is added. If the group is not present,
@@ -5874,16 +5884,9 @@ static hashtab_T	sg_table;	// sign group (signgroup_T) hashtable
     static signgroup_T *
 sign_group_ref(char_u *groupname)
 {
-    static int		initialized = FALSE;
     hash_T		hash;
     hashitem_T		*hi;
     signgroup_T		*group;
-
-    if (!initialized)
-    {
-	initialized = TRUE;
-	hash_init(&sg_table);
-    }
 
     hash = hash_hash(groupname);
     hi = hash_lookup(&sg_table, groupname, hash);
@@ -5896,6 +5899,7 @@ sign_group_ref(char_u *groupname)
 	    return NULL;
 	STRCPY(group->sg_name, groupname);
 	group->refcount = 1;
+	group->next_sign_id = 1;
 	hash_add_item(&sg_table, hi, group->sg_name, hash);
     }
     else
@@ -5930,6 +5934,49 @@ sign_group_unref(char_u *groupname)
 	    vim_free(group);
 	}
     }
+}
+
+/*
+ * Get the next free sign identifier in the specified group
+ */
+    int
+sign_group_get_next_signid(buf_T *buf, char_u *groupname)
+{
+    int			id = 1;
+    signgroup_T		*group = NULL;
+    signlist_T		*sign;
+    hashitem_T		*hi;
+    int			found = FALSE;
+
+    if (groupname != NULL)
+    {
+	hi = hash_find(&sg_table, groupname);
+	if (HASHITEM_EMPTY(hi))
+	    return id;
+	group = HI2SG(hi);
+    }
+
+    // Search for the next usuable sign identifier
+    while (!found)
+    {
+	if (group == NULL)
+	    id = next_sign_id++;		// global group
+	else
+	    id = group->next_sign_id++;
+
+	// Check whether this sign is already placed in the buffer
+	found = TRUE;
+	FOR_ALL_SIGNS_IN_BUF(buf, sign)
+	{
+	    if (id == sign->id && sign_in_group(sign, groupname))
+	    {
+		found = FALSE;		// sign identifier is in use
+		break;
+	    }
+	}
+    }
+
+    return id;
 }
 
 /*
@@ -6072,7 +6119,7 @@ buf_addsign(
     signlist_T	*prev;		// the previous sign
 
     prev = NULL;
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
 	if (lnum == sign->lnum && id == sign->id &&
 		sign_in_group(sign, groupname))
@@ -6107,7 +6154,7 @@ buf_change_sign_type(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
 	if (sign->id == markId && sign_in_group(sign, group))
 	{
@@ -6132,7 +6179,7 @@ buf_getsigntype(
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum
 		&& (type == SIGN_ANY
 # ifdef FEAT_SIGN_ICONS
@@ -6216,7 +6263,7 @@ buf_findsign(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->id == id && sign_in_group(sign, group))
 	    return sign->lnum;
 
@@ -6234,7 +6281,7 @@ buf_getsign_at_line(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum)
 	    return sign;
 
@@ -6252,7 +6299,7 @@ buf_getsign_with_id(
 {
     signlist_T	*sign;		// a sign in the signlist
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->id == id && sign_in_group(sign, group))
 	    return sign;
 
@@ -6288,7 +6335,7 @@ buf_findsigntype_id(
 {
     signlist_T	*sign;		/* a sign in the signlist */
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum && sign->typenr == typenr)
 	    return sign->id;
 
@@ -6306,7 +6353,7 @@ buf_signcount(buf_T *buf, linenr_T lnum)
     signlist_T	*sign;		// a sign in the signlist
     int		count = 0;
 
-    FOR_ALL_SIGNS_IN_BUF(buf)
+    FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum)
 	    if (sign_get_image(sign->typenr) != NULL)
 		count++;
@@ -6391,7 +6438,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
 	    msg_putchar('\n');
 	}
-	FOR_ALL_SIGNS_IN_BUF(buf)
+	FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	{
 	    if (got_int)
 		break;
@@ -6427,7 +6474,7 @@ sign_mark_adjust(
 {
     signlist_T	*sign;		/* a sign in a b_signlist */
 
-    FOR_ALL_SIGNS_IN_BUF(curbuf)
+    FOR_ALL_SIGNS_IN_BUF(curbuf, sign)
     {
 	if (sign->lnum >= line1 && sign->lnum <= line2)
 	{
