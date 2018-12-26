@@ -370,13 +370,33 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
     int
 dict_add_string(dict_T *d, char *key, char_u *str)
 {
+    return dict_add_string_len(d, key, str, -1);
+}
+
+/*
+ * Add a string entry to dictionary "d".
+ * "str" will be copied to allocated memory.
+ * When "len" is -1 use the whole string, otherwise only this many bytes.
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_string_len(dict_T *d, char *key, char_u *str, int len)
+{
     dictitem_T	*item;
+    char_u	*val = NULL;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_STRING;
-    item->di_tv.vval.v_string = str != NULL ? vim_strsave(str) : NULL;
+    if (str != NULL)
+    {
+	if (len == -1)
+	    val = vim_strsave(str);
+	else
+	    val = vim_strnsave(str, len);
+    }
+    item->di_tv.vval.v_string = val;
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
