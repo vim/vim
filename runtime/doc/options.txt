@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
+*options.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4137,7 +4137,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     W:WildMenu,f:Folded,F:FoldColumn,
 				     A:DiffAdd,C:DiffChange,D:DiffDelete,
 				     T:DiffText,>:SignColumn,-:Conceal,
- 				     B:SpellBad,P:SpellCap,R:SpellRare,
+				     B:SpellBad,P:SpellCap,R:SpellRare,
 				     L:SpellLocal,+:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
 				     #:TabLineSel,_:TabLineFill,!:CursorColumn,

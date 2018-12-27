@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.1.  Last change: 2018 Dec 21
+*sign.txt*      For Vim version 8.1.  Last change: 2018 Dec 26
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -279,8 +279,11 @@ See |sign_getplaced()| for the equivalent Vim script function.
 
 :sign place	List placed signs in all files.
 
+:sign place group=*
+		List placed signs in all sign groups in all files.
+
 :sign place group={group}
-		List placed signs in all sign groups in all the files.
+		List placed signs with sign group {group} in all files.
 
 
 JUMPING TO A SIGN					*:sign-jump* *E157*

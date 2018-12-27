@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2018 Dec 14
+*syntax.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,7 +29,7 @@ In the User Manual:
 7.  :syntax arguments		|:syn-arguments|
 8.  Syntax patterns		|:syn-pattern|
 9.  Syntax clusters		|:syn-cluster|
-10.  Including syntax files	|:syn-include|
+10. Including syntax files	|:syn-include|
 11. Synchronizing		|:syn-sync|
 12. Listing syntax items	|:syntax|
 13. Highlight command		|:highlight|

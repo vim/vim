@@ -1949,6 +1949,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :AdaTypes	ft_ada.txt	/*:AdaTypes*
 :Arguments	terminal.txt	/*:Arguments*
 :Break	terminal.txt	/*:Break*
+:Cfilter	quickfix.txt	/*:Cfilter*
 :Clear	terminal.txt	/*:Clear*
 :CompilerSet	usr_41.txt	/*:CompilerSet*
 :Continue	terminal.txt	/*:Continue*
@@ -1968,6 +1969,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :LPE	pi_logipat.txt	/*:LPE*
 :LPF	pi_logipat.txt	/*:LPF*
 :Lexplore	pi_netrw.txt	/*:Lexplore*
+:Lfilter	quickfix.txt	/*:Lfilter*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
@@ -3717,7 +3719,6 @@ CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
-Cfilter	quickfix.txt	/*Cfilter*
 Channel	eval.txt	/*Channel*
 Channels	eval.txt	/*Channels*
 Chinese	mbyte.txt	/*Chinese*
@@ -4738,7 +4739,6 @@ KVim	gui_x11.txt	/*KVim*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
-Lfilter	quickfix.txt	/*Lfilter*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
@@ -6192,6 +6192,7 @@ foldtext()	eval.txt	/*foldtext()*
 foldtextresult()	eval.txt	/*foldtextresult()*
 font-sizes	gui_x11.txt	/*font-sizes*
 fontset	mbyte.txt	/*fontset*
+forced-motion	motion.txt	/*forced-motion*
 foreground()	eval.txt	/*foreground()*
 fork	os_unix.txt	/*fork*
 form.vim	syntax.txt	/*form.vim*
@@ -8481,9 +8482,18 @@ shiftwidth()	eval.txt	/*shiftwidth()*
 short-name-changed	version4.txt	/*short-name-changed*
 showing-menus	gui.txt	/*showing-menus*
 sign-commands	sign.txt	/*sign-commands*
+sign-functions	usr_41.txt	/*sign-functions*
+sign-group	sign.txt	/*sign-group*
 sign-intro	sign.txt	/*sign-intro*
+sign-priority	sign.txt	/*sign-priority*
 sign-support	sign.txt	/*sign-support*
 sign.txt	sign.txt	/*sign.txt*
+sign_define()	eval.txt	/*sign_define()*
+sign_getdefined()	eval.txt	/*sign_getdefined()*
+sign_getplaced()	eval.txt	/*sign_getplaced()*
+sign_place()	eval.txt	/*sign_place()*
+sign_undefine()	eval.txt	/*sign_undefine()*
+sign_unplace()	eval.txt	/*sign_unplace()*
 signs	sign.txt	/*signs*
 simple-change	change.txt	/*simple-change*
 simplify()	eval.txt	/*simplify()*

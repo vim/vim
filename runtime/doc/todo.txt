@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2018 Dec 17
+*todo.txt*      For Vim version 8.1.  Last change: 2018 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,10 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Possible errors reported from fuzzer. Shadowblade #3716
+a) using get_regline() without checking for NULL
+b) using getcell() in libvterm without checking for NULL
 
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
@@ -107,49 +111,39 @@ Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990
 
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
-Nov 17)
+Nov 17)  Asked about this, Dec 22. Christian will have a look.
 
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
+
+Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
+Maybe call it v:motiontype.  Update in #3490.
+Alternative: add the force flag to mode(), after "no".
+Patch ready to include?
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
 
 Signs:
--   Patch to define and manipulate signs with functions.  Adds sign groups and
-    priority.   (Yegappan Lakshmanan, #3652)
+-   Use a sign group in the Termdebug plugin.
 -   Avoid that "sign unplace id" does a redraw right away, esp. when there is
     a sequence of these commands. (Andy Stewart, 2018 Mar 16)
 -   Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
 -   Patch from Christian Brabandt to make the "buffer" argument for ":sign
     place" optional. (2013 Jul 12)
 
-Rename get_tv_ functions to tv_get_.
-
-Crash in terminal with long multi-byte sequence. (2018 Nov 17, #3619)
-Dominique cannot reproduce. Update Nov 18.
-Suggested solution by Yasuhiro Matsumoto, 2018 Nov 18.
-
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-Patch to simplify nsis installer. (Ken Takata, 2018 Sep 24, was #3479)
-Now included in #3501, using MUI2.  Use the zip file to get the binary files:
-https://github.com/vim/vim/files/2475621/nsis-icons.zip
-Ready to include now.
-
 Patch to add blob type support.  (Yasuhiro Matsumoto, 2018 Nov 26, #3638)
-Not done yet.
+Should be ready to include.
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
-
-Patch to fix that appending makes items to be "recognized".
-(Yegappan, 2018 Nov 23, #3683). Reported by Daniel Hahler, #3633.
 
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
@@ -158,10 +152,6 @@ Include part of #3242?
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
 
-Patch to add FOR_ALL_FRAMES. (Yegappan, 2018 Nov 18)
-
-Patch to resize to fit parent position when using ---windowid. ( Agorgianitis
-Loukas, 2018 Nov 17, #3616)
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
@@ -176,13 +166,8 @@ Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
 
-Patch to fix function object in Python3. (Ozaki Kiichi, #3681)
-
 Patch on #3690 to fix that "wincmd p" does not always behave properly.
 (Christian Brabandt, 2018 Dec 17)
-
-"gn" selects two matches instead of one when the pattern contains "\zs" and
-spans more than one line.  (#3695)
 
 Patch: When using %v in 'errorformat', assume the number is the screen column
 not bytes, also handle multi-byte charactes. (Yegappan Lakshmanan, #3700)
@@ -202,7 +187,13 @@ Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
 
 Patch for ConPTY support, #3474: What is the status?
 
+Issue #3649: Retrying the X server connection once may be insufficient.
+Since patch 8.1.0615 we try reconnecting five times.  Does it work?
+
 nvo-mode mapping works on Windows, not on Linux. (#3678)
+
+Patch to be able to separately map CTRL-H and BS on Windows.
+(Linwei, 2017 Jul 11, #1833)
 
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
@@ -228,6 +219,10 @@ Not ready to include yet.
 Problem with two buffers with the same name a/b, if it didn't exist before and
 is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
 
+When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
+scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
+using CTRL-E. (Yee Cheng Chin, #3721)
+
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
@@ -239,6 +234,9 @@ Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
 
 Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
+
+Patch to add support for changing the current quickfix/location list indes.
+(Yegappan Lakshmanan, 2018 Dec 18, #3701)
 
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
@@ -381,11 +379,6 @@ Also see #2352, want better control over balloon, perhaps set the position.
 Should also be possible to add highlighting, like in the status line?
 balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
-
-Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-Maybe call it v:motiontype.  Update in #3490.
-Alternative: add the force flag to mode(), after "no".
-Patch ready to include?
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -916,9 +909,6 @@ Does this also fix #1408 ?
 'cursorline' and match interfere. (Ozaki Kiichi, 2017 Jun 23, #1792)
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
-
-Patch to be able to separately map CTRL-H and BS on Windows.
-(Linwei, 2017 Jul 11, #1833)
 
 When 'completeopt' has "noselect" does not insert a newline. (Lifepillar, 2017
 Apr 23, #1653)

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 24
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2323,7 +2323,7 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])
 prop_find({props} [, {direction}])
 				Dict	search for a text property
 prop_list({lnum} [, {props})  	List	text properties in {lnum}
-prop_remove({props} [, {lnum} [, {lnum_end}]])
+prop_remove({props} [, {lnum} [, {lnum-end}]])
 				Number	remove a text property
 prop_type_add({name}, {props})	none	define a new property type
 prop_type_change({name}, {props})
@@ -6695,17 +6695,17 @@ prop_add({lnum}, {col}, {props})
 		If {col} is invalid an error is given. *E964*
 
 		{props} is a dictionary with these fields:
-			"length"   - length of text in characters, can only be
-				     used for a property that does not
-				     continue in another line
-			"end_lnum" - line number for end of text
-			"end_col"  - last column of the text; not used when
-				     "length" is present
-			"bufnr"	   - buffer to add the property to; when
-				     omitted the current buffer is used
-			"id"	   - user defined ID for the property; when
-				     omitted zero is used
-			"type"	   - name of the text property type
+		   length	length of text in characters, can only be used
+				for a property that does not continue in
+				another line
+		   end_lnum	line number for end of text
+		   end_col	last column of the text; not used when
+				"length" is present
+		   bufnr	buffer to add the property to; when omitted
+		   		the current buffer is used
+		   id		user defined ID for the property; when omitted
+				zero is used
+		   type		name of the text property type
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
@@ -6740,19 +6740,19 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 prop_find({props} [, {direction}])
 		NOT IMPLEMENTED YET
 		Search for a text property as specified with {props}:
-			"id"		property with this ID
-			"type"		property with this type name
-			"bufnr	        buffer to search in; when present a
-					start position with "lnum" and "col"
-					must be given; when omitted the
-					current buffer is used
-			"lnum"		start in this line (when omitted start
-					at the cursor)
-			"col"		start at this column (when omitted
-					and "lnum" is given: use column 1,
-					otherwise start at the cursor)
-			"skipstart"	do not look for a match at the start
-					position
+		   id		property with this ID
+		   type		property with this type name
+		   bufnr	buffer to search in; when present a
+				start position with "lnum" and "col"
+				must be given; when omitted the
+				current buffer is used
+		   lnum"	start in this line (when omitted start
+				at the cursor)
+		   col		start at this column (when omitted
+				and "lnum" is given: use column 1,
+				otherwise start at the cursor)
+		   skipstart	do not look for a match at the start
+				position
 
 		{direction} can be "f" for forward and "b" for backward.  When
 		omitted forward search is performed.
@@ -6772,13 +6772,13 @@ prop_list({lnum} [, {props}]) 				*prop_list()*
 
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
-			"col"		starting column
-			"length"	length in bytes
-			"id"		property ID
-			"type"		name of the property type, omitted if
-					the type was deleted
-			"start"		when TRUE property starts in this line
-			"end"		when TRUE property ends in this line
+		   col		starting column
+		   length	length in bytes
+		   id		property ID
+		   type		name of the property type, omitted if
+				the type was deleted
+		   start	when TRUE property starts in this line
+		   end		when TRUE property ends in this line
 
 		When "start" is zero the property started in a previous line,
 		the current one is a continuation.
@@ -6789,19 +6789,19 @@ prop_list({lnum} [, {props}]) 				*prop_list()*
 
 
 						*prop_remove()* *E968*
-prop_remove({props} [, {lnum} [, {lnum_end}]])
+prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
-		{lnum_end} is given, remove matching text properties from line
-		{lnum} to {lnum_end} (inclusive).
+		{lnum-end} is given, remove matching text properties from line
+		{lnum} to {lnum-end} (inclusive).
 		When {lnum} is omitted remove matching text properties from
 		all lines.
 
 		{props} is a dictionary with these fields:
-			"id"    - remove text properties with this ID
-			"type"  - remove text properties with this type name
-			"bufnr" - use this buffer instead of the current one
-			"all"   - when TRUE remove all matching text
-				  properties, not just the first one
+		   id		remove text properties with this ID
+		   type		remove text properties with this type name
+		   bufnr	use this buffer instead of the current one
+		   all		when TRUE remove all matching text properties,
+				not just the first one
 		A property matches when either "id" or "type" matches.
 
 		Returns the number of properties that were removed.
@@ -6813,22 +6813,19 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		Add a text property type {name}.  If a property type with this
 		name already exists an error is given.
 		{props} is a dictionary with these optional fields:
-			"bufnr"	      - define the property only for this
-					buffer; this avoids name collisions and
-					automatically clears the property types
-					when the buffer is deleted.
-			"highlight"   - name of highlight group to use
-			"priority"    - when a character has multiple text
-					properties the one with the highest
-					priority will be used; negative values
-					can be used, the default priority is
-					zero
-			"start_incl"  - when TRUE inserts at the start
-					position will be included in the text
-					property
-			"end_incl"    - when TRUE inserts at the end
-					position will be included in the text
-					property
+		   bufnr	define the property only for this buffer; this
+				avoids name collisions and automatically
+				clears the property types when the buffer is
+				deleted.
+		   highlight	name of highlight group to use
+		   priority	when a character has multiple text
+				properties the one with the highest priority
+				will be used; negative values can be used, the
+				default priority is zero
+		   start_incl	when TRUE inserts at the start position will
+				be included in the text property
+		   end_incl	when TRUE inserts at the end position will be
+				included in the text property
 
 		See |text-properties| for information about text properties.
 
@@ -7885,12 +7882,12 @@ sign_define({name} [, {dict}])				*sign_define()*
 		The {name} can be a String or a Number.  The optional {dict}
 		argument specifies the sign attributes.  The following values
 		are supported:
-		    icon	full path to the bitmap file for the sign.
-		    linehl	highlight group used for the whole line the
+		   icon		full path to the bitmap file for the sign.
+		   linehl	highlight group used for the whole line the
 				sign is placed in.
-		    text	text that is displayed when there is no icon
+		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
-		    texthl	highlight group used for the text item
+		   texthl	highlight group used for the text item
 		For an existing sign, the attributes are updated.
 
 		Returns 0 on success and -1 on failure.
@@ -7909,13 +7906,13 @@ sign_getdefined([{name}])				*sign_getdefined()*
 
 		Each list item in the returned value is a dictionary with the
 		following entries:
-			icon	full path to the bitmap file of the sign
-			linehl	highlight group used for the whole line the
+		   icon		full path to the bitmap file of the sign
+		   linehl	highlight group used for the whole line the
 				sign is placed in.
-			name	name of the sign
-			text	text that is displayed when there is no icon
+		   name		name of the sign
+		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
-			texthl	highlight group used for the text item
+		   texthl	highlight group used for the text item
 
 		Returns an empty List if there are no signs and when {name} is
 		not found.
@@ -7935,9 +7932,9 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		list of signs placed in that buffer is returned.  For the use
 		of {expr}, see |bufname()|. The optional {dict} can contain
 		the following entries:
-			group	select only signs in this group
-			id	select sign with this identifier
-			lnum	select signs placed in this line. For the use
+		   group	select only signs in this group
+		   id		select sign with this identifier
+		   lnum		select signs placed in this line. For the use
 				of {lnum}, see |line()|.
 		If {group} is '*', then signs in all the groups including the
 		global group are returned. If {group} is not supplied or is an
@@ -7973,11 +7970,11 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			echo sign_getplaced("eval.c", {'lnum' : 10})
 
 			" Get sign with identifier 10 placed in a.py
-			echo sign_getplaced("a.py", {'id' : 10'})
+			echo sign_getplaced("a.py", {'id' : 10})
 
 			" Get sign with id 20 in group 'g1' placed in a.py
 			echo sign_getplaced("a.py", {'group' : 'g1',
-							\  'id' : 20'})
+							\  'id' : 20})
 
 			" Get a List of all the placed signs
 			echo sign_getplaced()
@@ -7993,7 +7990,7 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		the sign group name. To use the global sign group, use an
 		empty string.  {group} functions as a namespace for {id}, thus
 		two groups can use the same IDs.
-		
+
 		{name} refers to a defined sign.
 		{expr} refers to a buffer name or number. For the accepted
 		values, see |bufname()|.
@@ -8046,7 +8043,7 @@ sign_undefine([{name}])					*sign_undefine()*
 <
 sign_unplace({group} [, {dict}])			*sign_unplace()*
 		Remove a previously placed sign in one or more buffers.  This
-		is similar to the |:sign-unplace()| command.
+		is similar to the |:sign-unplace| command.
 
 		{group} is the sign group name. To use the global sign group,
 		use an empty string.  If {group} is set to '*', then all the
