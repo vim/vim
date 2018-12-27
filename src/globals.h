@@ -928,6 +928,7 @@ EXTERN char_u		composing_hangul_buffer[5];
  * "Visual_mode"    When State is NORMAL or INSERT.
  * "finish_op"	    When State is NORMAL, after typing the operator and before
  *		    typing the motion command.
+ * "motion_force"   Last motion_force  from do_pending_operator()
  * "debug_mode"	    Debug mode.
  */
 EXTERN int	State INIT(= NORMAL);	/* This is the current state of the
@@ -938,6 +939,7 @@ EXTERN int	debug_mode INIT(= FALSE);
 
 EXTERN int	finish_op INIT(= FALSE);/* TRUE while an operator is pending */
 EXTERN long	opcount INIT(= 0);	/* count for pending operator */
+EXTERN int	motion_force INIT(= 0); // motion force for pending operator
 
 /*
  * Ex mode (Q) state

@@ -8506,7 +8506,11 @@ f_mode(typval_T *argvars, typval_T *rettv)
     {
 	buf[0] = 'n';
 	if (finish_op)
+	{
 	    buf[1] = 'o';
+	    // to be able to detect force-linewise/blockwise/characterwise operations
+	    buf[2] = motion_force;
+	}
 	else if (restart_edit == 'I' || restart_edit == 'R'
 							|| restart_edit == 'V')
 	{

@@ -6324,6 +6324,10 @@ mode([expr])	Return a string that indicates the current mode.
 
 		   n	    Normal, Terminal-Normal
 		   no	    Operator-pending
+		   nov	    Operator-pending (forced characterwise |o_v|)
+		   noV	    Operator-pending (forced linewise |o_V|)
+		   noCTRL-V Operator-pending (forced blockwise |o_CTRL-V|);
+		   		CTRL-V is one character
 		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
 		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
 		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
