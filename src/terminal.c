@@ -5060,6 +5060,8 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     if (term->tl_vterm != NULL)
     {
 	screen = vterm_obtain_screen(term->tl_vterm);
+	if (screen == NULL)  // can't really happen
+	    return;
 	p = NULL;
 	line = NULL;
     }
