@@ -17,14 +17,12 @@
  * Text properties have a type, which can be used to specify highlighting.
  *
  * TODO:
- * - mismatch in column 1 being the first column
- * - Let props overrule syntax HL.
- * - When deleting a line where a prop ended, adjust flag of previous line.
- * - When deleting a line where a prop started, adjust flag of next line.
- * - When inserting a line add props that continue from previous line.
- * - Adjust property column and length when text is inserted/deleted
- * - Add an arrray for global_proptypes, to quickly lookup a proptype by ID
- * - Add an arrray for b_proptypes, to quickly lookup a proptype by ID
+ * - Perhaps we only need TP_FLAG_CONT_NEXT ?
+ * - Adjust text property column and length when text is inserted/deleted
+ * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
+ * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
+ * - Checking the text length to detect text properties is slow.  Use a flag in
+ *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
  * - add mechanism to keep track of changed lines.

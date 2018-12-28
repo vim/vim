@@ -257,6 +257,16 @@ func Test_prop_multiline()
   call assert_equal([expect_short], prop_list(4))
   bwipe!
 
+  " Test appending a line below the text prop start.
+  call Setup_three_line_prop()
+  let expect2 = {'col': 4, 'length': 4, 'type': 'comment', 'start': 1, 'end': 0, 'id': 0}
+  call assert_equal([expect2], prop_list(2))
+  call append(2, "new line")
+  call assert_equal([expect2], prop_list(2))
+  let expect3 = {'col': 1, 'length': 9, 'type': 'comment', 'start': 0, 'end': 0, 'id': 0}
+  call assert_equal([expect3], prop_list(3))
+  bwipe!
+
   call prop_type_delete('comment')
 endfunc
 

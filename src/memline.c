@@ -2568,6 +2568,66 @@ ml_line_alloced(void)
     return (curbuf->b_ml.ml_flags & ML_LINE_DIRTY);
 }
 
+#ifdef FEAT_TEXT_PROP
+    static void
+add_text_props_for_append(
+	    buf_T	*buf,
+	    linenr_T	lnum,
+	    char_u	**line,
+	    int		*len,
+	    char_u	**tofree)
+{
+    int		round;
+    int		new_prop_count = 0;
+    int		count;
+    int		n;
+    char_u	*props;
+    int		new_len;
+    char_u	*new_line;
+    textprop_T	prop;
+
+    // Make two rounds:
+    // 1. calculate the extra space needed
+    // 2. allocate the space and fill it
+    for (round = 1; round <= 2; ++round)
+    {
+	if (round == 2)
+	{
+	    if (new_prop_count == 0)
+		return;  // nothing to do
+	    new_len = *len + new_prop_count * sizeof(textprop_T);
+	    new_line = alloc((unsigned)new_len);
+	    if (new_line == NULL)
+		return;
+	    mch_memmove(new_line, *line, *len);
+	    new_prop_count = 0;
+	}
+
+	// Get the line above to find any props that continue in the next
+	// line.
+	count = get_text_props(buf, lnum, &props, FALSE);
+	for (n = 0; n < count; ++n)
+	{
+	    mch_memmove(&prop, props + n * sizeof(textprop_T), sizeof(textprop_T));
+	    if (prop.tp_flags & TP_FLAG_CONT_NEXT)
+	    {
+		if (round == 2)
+		{
+		    prop.tp_flags |= TP_FLAG_CONT_PREV;
+		    prop.tp_col = 1;
+		    prop.tp_len = *len;
+		    mch_memmove(new_line + *len + new_prop_count * sizeof(textprop_T), &prop, sizeof(textprop_T));
+		}
+		++new_prop_count;
+	    }
+	}
+    }
+    *line = new_line;
+    *tofree = new_line;
+    *len = new_len;
+}
+#endif
+
 /*
  * Append a line after lnum (may be 0 to insert a line in front of the file).
  * "line" does not need to be allocated, but can't be another line in a
@@ -2622,12 +2682,13 @@ ml_append_buf(
 ml_append_int(
     buf_T	*buf,
     linenr_T	lnum,		// append after this line (can be 0)
-    char_u	*line,		// text of the new line
+    char_u	*line_arg,	// text of the new line
     colnr_T	len_arg,	// length of line, including NUL, or 0
     int		newfile,	// flag, see above
     int		mark)		// mark the new line
 {
-    colnr_T	len = len_arg;	// length of line, including NUL, or 0
+    char_u	*line = line_arg;
+    colnr_T	len = len_arg;
     int		i;
     int		line_count;	// number of indexes in current block
     int		offset;
@@ -2641,16 +2702,26 @@ ml_append_int(
     DATA_BL	*dp;
     PTR_BL	*pp;
     infoptr_T	*ip;
+#ifdef FEAT_TEXT_PROP
+    char_u	*tofree = NULL;
+#endif
+    int		ret = FAIL;
 
-					/* lnum out of range */
     if (lnum > buf->b_ml.ml_line_count || buf->b_ml.ml_mfp == NULL)
-	return FAIL;
+	return FAIL;  // lnum out of range
 
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked = lnum + 1;
 
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
+
+#ifdef FEAT_TEXT_PROP
+    if (curbuf->b_has_textprop && lnum > 0)
+	// Add text properties that continue from the previous line.
+	add_text_props_for_append(buf, lnum, &line, &len, &tofree);
+#endif
+
     space_needed = len + INDEX_SIZE;	// space needed for text + index
 
     mfp = buf->b_ml.ml_mfp;
@@ -2663,7 +2734,7 @@ ml_append_int(
  */
     if ((hp = ml_find_line(buf, lnum == 0 ? (linenr_T)1 : lnum,
 							  ML_INSERT)) == NULL)
-	return FAIL;
+	goto theend;
 
     buf->b_ml.ml_flags &= ~ML_EMPTY;
 
@@ -2694,7 +2765,7 @@ ml_append_int(
 	--(buf->b_ml.ml_locked_lineadd);
 	--(buf->b_ml.ml_locked_high);
 	if ((hp = ml_find_line(buf, lnum + 1, ML_INSERT)) == NULL)
-	    return FAIL;
+	    goto theend;
 
 	db_idx = -1;		    /* careful, it is negative! */
 		    /* get line count before the insertion */
@@ -2708,9 +2779,10 @@ ml_append_int(
 
     if ((int)dp->db_free >= space_needed)	/* enough room in data block */
     {
-/*
- * Insert new line in existing data block, or in data block allocated above.
- */
+	/*
+	 * Insert the new line in an existing data block, or in the data block
+	 * allocated above.
+	 */
 	dp->db_txt_start -= len;
 	dp->db_free -= space_needed;
 	++(dp->db_line_count);
@@ -2756,15 +2828,6 @@ ml_append_int(
     }
     else	    /* not enough space in data block */
     {
-/*
- * If there is not enough room we have to create a new data block and copy some
- * lines into it.
- * Then we have to insert an entry in the pointer block.
- * If this pointer block also is full, we go up another block, and so on, up
- * to the root if necessary.
- * The line counts in the pointer blocks have already been adjusted by
- * ml_find_line().
- */
 	long	    line_count_left, line_count_right;
 	int	    page_count_left, page_count_right;
 	bhdr_T	    *hp_left;
@@ -2783,6 +2846,14 @@ ml_append_int(
 	PTR_BL	    *pp_new;
 
 	/*
+	 * There is not enough room, we have to create a new data block and
+	 * copy some lines into it.
+	 * Then we have to insert an entry in the pointer block.
+	 * If this pointer block also is full, we go up another block, and so
+	 * on, up to the root if necessary.
+	 * The line counts in the pointer blocks have already been adjusted by
+	 * ml_find_line().
+	 *
 	 * We are going to allocate a new data block. Depending on the
 	 * situation it will be put to the left or right of the existing
 	 * block.  If possible we put the new line in the left block and move
@@ -2826,7 +2897,7 @@ ml_append_int(
 			/* correct line counts in pointer blocks */
 	    --(buf->b_ml.ml_locked_lineadd);
 	    --(buf->b_ml.ml_locked_high);
-	    return FAIL;
+	    goto theend;
 	}
 	if (db_idx < 0)		/* left block is new */
 	{
@@ -2951,13 +3022,13 @@ ml_append_int(
 	    ip = &(buf->b_ml.ml_stack[stack_idx]);
 	    pb_idx = ip->ip_index;
 	    if ((hp = mf_get(mfp, ip->ip_bnum, 1)) == NULL)
-		return FAIL;
+		goto theend;
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
 		IEMSG(_("E317: pointer block id wrong 3"));
 		mf_put(mfp, hp, FALSE, FALSE);
-		return FAIL;
+		goto theend;
 	    }
 	    /*
 	     * TODO: If the pointer block is full and we are adding at the end
@@ -3014,7 +3085,7 @@ ml_append_int(
 		{
 		    hp_new = ml_new_ptr(mfp);
 		    if (hp_new == NULL)	    /* TODO: try to fix tree */
-			return FAIL;
+			goto theend;
 		    pp_new = (PTR_BL *)(hp_new->bh_data);
 
 		    if (hp->bh_bnum != 1)
@@ -3119,8 +3190,13 @@ ml_append_int(
     if (buf->b_write_to_channel)
 	channel_write_new_lines(buf);
 #endif
+    ret = OK;
 
-    return OK;
+theend:
+#ifdef FEAT_TEXT_PROP
+    vim_free(tofree);
+#endif
+    return ret;
 }
 
 /*
