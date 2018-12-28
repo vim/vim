@@ -1351,6 +1351,20 @@ vim_strnsave(char_u *string, int len)
 }
 
 /*
+ * Copy "p[len]" into allocated memory, ignoring NUL characters.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+vim_memsave(char_u *p, int len)
+{
+    char_u *ret = alloc((unsigned)len);
+
+    if (ret != NULL)
+	mch_memmove(ret, p, (size_t)len);
+    return ret;
+}
+
+/*
  * Same as vim_strsave(), but any characters found in esc_chars are preceded
  * by a backslash.
  */

@@ -3214,6 +3214,104 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
     return OK;
 }
 
+#ifdef FEAT_TEXT_PROP
+/*
+ * Adjust text properties in line "lnum" for a deleted line.
+ * When "above" is true this is the line above the deleted line.
+ * "del_props" are the properties of the deleted line.
+ */
+    static void
+adjust_text_props_for_delete(
+	buf_T	    *buf,
+	linenr_T    lnum,
+	char_u	    *del_props,
+	int	    del_props_len,
+	int	    above)
+{
+    int		did_get_line = FALSE;
+    int		done_del;
+    int		done_this;
+    textprop_T	prop_del;
+    textprop_T	prop_this;
+    bhdr_T	*hp;
+    DATA_BL	*dp;
+    int		idx;
+    int		line_start;
+    long	line_size;
+    int		this_props_len;
+    char_u	*text;
+    size_t	textlen;
+    int		found;
+
+    for (done_del = 0; done_del < del_props_len; done_del += sizeof(textprop_T))
+    {
+	mch_memmove(&prop_del, del_props + done_del, sizeof(textprop_T));
+	if ((above && (prop_del.tp_flags & TP_FLAG_CONT_PREV)
+		    && !(prop_del.tp_flags & TP_FLAG_CONT_NEXT))
+		|| (!above && (prop_del.tp_flags & TP_FLAG_CONT_NEXT)
+		    && !(prop_del.tp_flags & TP_FLAG_CONT_PREV)))
+	{
+	    if (!did_get_line)
+	    {
+		did_get_line = TRUE;
+		if ((hp = ml_find_line(buf, lnum, ML_FIND)) == NULL)
+		    return;
+
+		dp = (DATA_BL *)(hp->bh_data);
+		idx = lnum - buf->b_ml.ml_locked_low;
+		line_start = ((dp->db_index[idx]) & DB_INDEX_MASK);
+		if (idx == 0)		// first line in block, text at the end
+		    line_size = dp->db_txt_end - line_start;
+		else
+		    line_size = ((dp->db_index[idx - 1]) & DB_INDEX_MASK) - line_start;
+		text = (char_u *)dp + line_start;
+		textlen = STRLEN(text) + 1;
+		if ((long)textlen >= line_size)
+		{
+		    if (above)
+			internal_error("no text property above deleted line");
+		    else
+			internal_error("no text property below deleted line");
+		    return;
+		}
+		this_props_len = line_size - textlen;
+	    }
+
+	    found = FALSE;
+	    for (done_this = 0; done_this < this_props_len; done_this += sizeof(textprop_T))
+	    {
+		mch_memmove(&prop_this, text + textlen + done_del, sizeof(textprop_T));
+		if (prop_del.tp_id == prop_this.tp_id
+			&& prop_del.tp_type == prop_this.tp_type)
+		{
+		    int flag = above ? TP_FLAG_CONT_NEXT : TP_FLAG_CONT_PREV;
+
+		    found = TRUE;
+		    if (prop_this.tp_flags & flag)
+		    {
+			prop_this.tp_flags &= ~flag;
+			mch_memmove(text + textlen + done_del, &prop_this, sizeof(textprop_T));
+		    }
+		    else if (above)
+			internal_error("text property above deleted line does not continue");
+		    else
+			internal_error("text property below deleted line does not continue");
+		}
+	    }
+	    if (!found)
+	    {
+		if (above)
+		    internal_error("text property above deleted line not found");
+		else
+		    internal_error("text property below deleted line not found");
+	    }
+
+	    buf->b_ml.ml_flags |= (ML_LOCKED_DIRTY | ML_LOCKED_POS);
+	}
+    }
+}
+#endif
+
 /*
  * Delete line "lnum" in the current buffer.
  * When "message" is TRUE may give a "No lines in buffer" message.
@@ -3245,6 +3343,11 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     int		line_start;
     long	line_size;
     int		i;
+    int		ret = FAIL;
+#ifdef FEAT_TEXT_PROP
+    char_u	*textprop_save = NULL;
+    int		textprop_save_len;
+#endif
 
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
 	return FAIL;
@@ -3272,9 +3375,9 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     }
 
 /*
- * find the data block containing the line
- * This also fills the stack with the blocks from the root to the data block
- * This also releases any locked block.
+ * Find the data block containing the line.
+ * This also fills the stack with the blocks from the root to the data block.
+ * This also releases any locked block..
  */
     mfp = buf->b_ml.ml_mfp;
     if (mfp == NULL)
@@ -3301,6 +3404,21 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     if (netbeans_active())
 	netbeans_removed(buf, lnum, 0, (long)line_size);
 #endif
+#ifdef FEAT_TEXT_PROP
+    // If there are text properties, make a copy, so that we can update
+    // properties in preceding and following lines.
+    if (buf->b_has_textprop)
+    {
+	size_t	textlen = STRLEN((char_u *)dp + line_start) + 1;
+
+	if ((long)textlen < line_size)
+	{
+	    textprop_save_len = line_size - textlen;
+	    textprop_save = vim_memsave((char_u *)dp + line_start + textlen,
+							  textprop_save_len);
+	}
+    }
+#endif
 
 /*
  * special case: If there is only one line in the data block it becomes empty.
@@ -3322,13 +3440,13 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 	    ip = &(buf->b_ml.ml_stack[stack_idx]);
 	    idx = ip->ip_index;
 	    if ((hp = mf_get(mfp, ip->ip_bnum, 1)) == NULL)
-		return FAIL;
+		goto theend;
 	    pp = (PTR_BL *)(hp->bh_data);   /* must be pointer block */
 	    if (pp->pb_id != PTR_ID)
 	    {
 		IEMSG(_("E317: pointer block id wrong 4"));
 		mf_put(mfp, hp, FALSE, FALSE);
-		return FAIL;
+		goto theend;
 	    }
 	    count = --(pp->pb_count);
 	    if (count == 0)	    /* the pointer block becomes empty! */
@@ -3384,11 +3502,25 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 #ifdef FEAT_BYTEOFF
     ml_updatechunk(buf, lnum, line_size, ML_CHNK_DELLINE);
 #endif
-    return OK;
+    ret = OK;
+
+theend:
+#ifdef FEAT_TEXT_PROP
+    if (textprop_save != NULL)
+    {
+	// Adjust text properties in the line above and below.
+	if (lnum > 1)
+	    adjust_text_props_for_delete(buf, lnum - 1, textprop_save, textprop_save_len, TRUE);
+	if (lnum <= buf->b_ml.ml_line_count)
+	    adjust_text_props_for_delete(buf, lnum, textprop_save, textprop_save_len, FALSE);
+    }
+    vim_free(textprop_save);
+#endif
+    return ret;
 }
 
 /*
- * set the B_MARKED flag for line 'lnum'
+ * set the DB_MARKED flag for line 'lnum'
  */
     void
 ml_setmarked(linenr_T lnum)
@@ -3417,7 +3549,7 @@ ml_setmarked(linenr_T lnum)
 }
 
 /*
- * find the first line with its B_MARKED flag set
+ * find the first line with its DB_MARKED flag set
  */
     linenr_T
 ml_firstmarked(void)
@@ -3650,7 +3782,7 @@ ml_new_ptr(memfile_T *mfp)
 }
 
 /*
- * lookup line 'lnum' in a memline
+ * Lookup line 'lnum' in a memline.
  *
  *   action: if ML_DELETE or ML_INSERT the line count is updated while searching
  *	     if ML_FLUSH only flush a locked block

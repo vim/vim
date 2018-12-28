@@ -197,6 +197,16 @@ func Test_prop_clear_buf()
   bwipe!
 endfunc
 
+" Setup a three line prop in lines 2 - 4.
+" Add short props in line 1 and 5.
+func Setup_three_line_prop()
+  new
+  call setline(1, ['one', 'twotwo', 'three', 'fourfour', 'five'])
+  call prop_add(1, 2, {'length': 1, 'type': 'comment'})
+  call prop_add(2, 4, {'end_lnum': 4, 'end_col': 5, 'type': 'comment'})
+  call prop_add(5, 2, {'length': 1, 'type': 'comment'})
+endfunc
+
 func Test_prop_multiline()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
@@ -223,6 +233,30 @@ func Test_prop_multiline()
   call prop_clear(1, 3)
 
   bwipe!
+
+  " Test deleting the first line with a prop.
+  call Setup_three_line_prop()
+  let expect2 = {'col': 4, 'length': 4, 'type': 'comment', 'start': 1, 'end': 0, 'id': 0}
+  call assert_equal([expect2], prop_list(2))
+  2del
+  let expect_short = {'col': 2, 'length': 1, 'type': 'comment', 'start': 1, 'end': 1, 'id': 0}
+  call assert_equal([expect_short], prop_list(1))
+  let expect2 = {'col': 1, 'length': 6, 'type': 'comment', 'start': 1, 'end': 0, 'id': 0}
+  call assert_equal([expect2], prop_list(2))
+  bwipe!
+
+  " Test deleting the last line with a prop.
+  call Setup_three_line_prop()
+  let expect3 = {'col': 1, 'length': 6, 'type': 'comment', 'start': 0, 'end': 0, 'id': 0}
+  call assert_equal([expect3], prop_list(3))
+  let expect4 = {'col': 1, 'length': 5, 'type': 'comment', 'start': 0, 'end': 1, 'id': 0}
+  call assert_equal([expect4], prop_list(4))
+  4del
+  let expect3 = {'col': 1, 'length': 6, 'type': 'comment', 'start': 0, 'end': 1, 'id': 0}
+  call assert_equal([expect3], prop_list(3))
+  call assert_equal([expect_short], prop_list(4))
+  bwipe!
+
   call prop_type_delete('comment')
 endfunc
 
