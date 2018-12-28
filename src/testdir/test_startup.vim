@@ -271,7 +271,7 @@ endfunc
 
 " Test the '-q [errorfile]' argument.
 func Test_q_arg()
-  let source_file = has('win32') ? '..\\memfile.c' : '../memfile.c'
+  let source_file = has('win32') ? '..\memfile.c' : '../memfile.c'
   let after = [
 	\ 'call writefile([&errorfile, string(getpos("."))], "Xtestout")',
 	\ 'copen',
