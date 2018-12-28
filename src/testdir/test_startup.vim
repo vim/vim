@@ -271,6 +271,7 @@ endfunc
 
 " Test the '-q [errorfile]' argument.
 func Test_q_arg()
+  let source_file = has('win32') ? '..\\memfile.c' : '../memfile.c'
   let after = [
 	\ 'call writefile([&errorfile, string(getpos("."))], "Xtestout")',
 	\ 'copen',
@@ -285,7 +286,7 @@ func Test_q_arg()
     let lines = readfile('Xtestout')
     call assert_equal(['errors.err',
 	\              '[0, 1482, 5, 0]',
-	\              "../memfile.c|1482 col 5| error: expected ';' before '}' token"],
+	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
@@ -297,7 +298,7 @@ func Test_q_arg()
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
 	\              '[0, 1482, 5, 0]',
-	\              "../memfile.c|1482 col 5| error: expected ';' before '}' token"],
+	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
@@ -307,7 +308,7 @@ func Test_q_arg()
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
 	\              '[0, 1482, 5, 0]',
-	\              "../memfile.c|1482 col 5| error: expected ';' before '}' token"],
+	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
 
