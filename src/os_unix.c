@@ -980,13 +980,25 @@ sig_alarm SIGDEFARG(sigarg)
 }
 #endif
 
-#if (defined(HAVE_SETJMP_H) \
-	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
-	    || defined(FEAT_LIBCALL))) \
-    || defined(PROTO)
+#if defined(HAVE_SETJMP_H) || defined(PROTO)
+// argument to SETJMP()
+static JMP_BUF lc_jump_env;
+
+# ifdef SIGHASARG
+// Caught signal number, 0 when no was signal caught; used for mch_libcall().
+// Volatile because it is used in signal handlers.
+static volatile sig_atomic_t lc_signal;
+# endif
+
+// TRUE when lc_jump_env is valid.
+// Volatile because it is used in signal handler deathtrap().
+static volatile sig_atomic_t lc_active INIT(= FALSE);
+
 /*
  * A simplistic version of setjmp() that only allows one level of using.
+ * Used to protect areas where we could crash.
  * Don't call twice before calling mch_endjmp()!.
+ *
  * Usage:
  *	mch_startjmp();
  *	if (SETJMP(lc_jump_env) != 0)
@@ -1023,8 +1035,8 @@ mch_endjmp(void)
 mch_didjmp(void)
 {
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    /* On FreeBSD the signal stack has to be reset after using siglongjmp(),
-     * otherwise catching the signal only works once. */
+    // On FreeBSD the signal stack has to be reset after using siglongjmp(),
+    // otherwise catching the signal only works once.
     init_signal_stack();
 # endif
 }

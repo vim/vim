@@ -798,21 +798,6 @@ EXTERN int	vr_lines_changed INIT(= 0); /* #Lines changed by "gR" so far */
 EXTERN JMP_BUF x_jump_env;
 #endif
 
-#if defined(HAVE_SETJMP_H)
-/*
- * Stuff for setjmp() and longjmp().
- * Used to protect areas where we could crash.
- */
-EXTERN JMP_BUF lc_jump_env;	/* argument to SETJMP() */
-# ifdef SIGHASARG
-/* volatile because it is used in signal handlers. */
-EXTERN volatile sig_atomic_t lc_signal;	/* caught signal number, 0 when no was signal
-				   caught; used for mch_libcall() */
-# endif
-/* volatile because it is used in signal handler deathtrap(). */
-EXTERN volatile sig_atomic_t lc_active INIT(= FALSE); /* TRUE when lc_jump_env is valid. */
-#endif
-
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /*
  * These flags are set based upon 'fileencoding'.
