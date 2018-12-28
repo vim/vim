@@ -72,6 +72,6 @@ int sign_define_by_name(char_u *name, char_u *icon, char_u *linehl, char_u *text
 int sign_undefine_by_name(char_u *name);
 void sign_getlist(char_u *name, list_T *retlist);
 int sign_place(int *sign_id, char_u *group, char_u *sign_name, buf_T *buf, linenr_T lnum, int prio);
-int sign_unplace(int id, char_u *group, buf_T *buf);
+int sign_unplace(int id, char_u *group, buf_T *buf, linenr_T atlnum);
 void sign_get_placed(buf_T *buf, linenr_T lnum, int id, char_u *group, list_T *retlist);
 /* vim: set ft=c : */

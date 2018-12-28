@@ -1251,12 +1251,12 @@ nb_do_cmd(
 		    /* delete signs from the lines being deleted */
 		    for (i = del_from_lnum; i <= del_to_lnum; i++)
 		    {
-			int id = buf_findsign_id(buf->bufp, (linenr_T)i);
+			int id = buf_findsign_id(buf->bufp, (linenr_T)i, NULL);
 			if (id > 0)
 			{
 			    nbdebug(("    Deleting sign %d on line %d\n",
 								      id, i));
-			    buf_delsign(buf->bufp, id, NULL);
+			    buf_delsign(buf->bufp, 0, id, NULL);
 			}
 			else
 			{
