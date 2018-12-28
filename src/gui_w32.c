@@ -8787,7 +8787,6 @@ make_tooltipw(BalloonEval *beval, char *text, POINT pt)
 {
     TOOLINFOW	*pti;
     int		ToolInfoSize;
-    WCHAR	*tofree = NULL;
 
     if (multiline_balloon_available() == TRUE)
 	ToolInfoSize = sizeof(TOOLINFOW_NEW);
@@ -8817,8 +8816,8 @@ make_tooltipw(BalloonEval *beval, char *text, POINT pt)
 	RECT rect;
 	TOOLINFOW_NEW *ptin = (TOOLINFOW_NEW *)pti;
 	pti->lpszText = LPSTR_TEXTCALLBACKW;
-	tofree = enc_to_utf16((char_u*)text, NULL);
-	ptin->lParam = (LPARAM)tofree;
+	beval->tofree = enc_to_utf16((char_u*)text, NULL);
+	ptin->lParam = (LPARAM)beval->tofree;
 	// switch multiline tooltips on
 	if (GetClientRect(s_textArea, &rect))
 	    SendMessageW(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
@@ -8827,8 +8826,8 @@ make_tooltipw(BalloonEval *beval, char *text, POINT pt)
     else
     {
 	// do this old way
-	tofree = enc_to_utf16((char_u*)text, NULL);
-	pti->lpszText = tofree;
+	beval->tofree = enc_to_utf16((char_u*)text, NULL);
+	pti->lpszText = (LPWSTR)beval->tofree;
     }
 
     // Limit ballooneval bounding rect to CursorPos neighbourhood.
@@ -8851,8 +8850,6 @@ make_tooltipw(BalloonEval *beval, char *text, POINT pt)
     mouse_event(MOUSEEVENTF_MOVE, 2, 2, 0, 0);
     mouse_event(MOUSEEVENTF_MOVE, (DWORD)-1, (DWORD)-1, 0, 0);
     vim_free(pti);
-    if (tofree != NULL)
-	vim_free(tofree);
 }
 #endif
 
@@ -8898,7 +8895,8 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
 	RECT rect;
 	TOOLINFO_NEW *ptin = (TOOLINFO_NEW *)pti;
 	pti->lpszText = LPSTR_TEXTCALLBACK;
-	ptin->lParam = (LPARAM)text;
+	beval->tofree = vim_strsave((char_u*)text);
+	ptin->lParam = (LPARAM)beval->tofree;
 	if (GetClientRect(s_textArea, &rect)) /* switch multiline tooltips on */
 	    SendMessage(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
 		    (LPARAM)rect.right);
@@ -9106,9 +9104,9 @@ TrackUserActivity(UINT uMsg)
 gui_mch_destroy_beval_area(BalloonEval *beval)
 {
 #ifdef FEAT_VARTABS
-    if (beval->vts)
-	vim_free(beval->vts);
+    vim_free(beval->vts);
 #endif
+    vim_free(beval->tofree);
     vim_free(beval);
 }
 #endif /* FEAT_BEVAL_GUI */
