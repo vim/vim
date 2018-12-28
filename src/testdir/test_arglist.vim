@@ -217,6 +217,12 @@ func Test_list_arguments()
   %argdelete
 endfunc
 
+func Test_args_with_quote()
+  args \"foobar
+  call assert_equal('"foobar', argv(0))
+  %argdelete
+endfunc
+
 " Test for 0argadd and 0argedit
 " Ported from the test_argument_0count.in test script
 func Test_zero_argadd()
