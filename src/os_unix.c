@@ -1742,8 +1742,8 @@ x_IOerror_handler(Display *dpy UNUSED)
     static void
 may_restore_clipboard(void)
 {
-    // Only try restoring if we want the connection.
-    if (x_connect_to_server() && xterm_dpy_retry_count > 0)
+    // No point in restoring the connecting if we are exiting or dying.
+    if (!exiting && !v_dying && xterm_dpy_retry_count > 0)
     {
 	--xterm_dpy_retry_count;
 
