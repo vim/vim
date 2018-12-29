@@ -731,8 +731,6 @@ typedef struct proptype_S
 #define PT_FLAG_INS_START_INCL	1	// insert at start included in property
 #define PT_FLAG_INS_END_INCL	2	// insert at end included in property
 
-
-#if defined(FEAT_SIGNS) || defined(PROTO)
 // Sign group
 typedef struct signgroup_S
 {
@@ -740,10 +738,6 @@ typedef struct signgroup_S
     int		next_sign_id;		// next sign id for this group
     char_u	sg_name[1];		// sign group name
 } signgroup_T;
-
-// Macros to get the sign group structure from the group name
-#define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
-#define HI2SG(hi)	((signgroup_T *)((hi)->hi_key - SGN_KEY_OFF))
 
 typedef struct signlist signlist_T;
 
@@ -757,6 +751,11 @@ struct signlist
     signlist_T	*next;		/* next signlist entry */
     signlist_T  *prev;		/* previous entry -- for easy reordering */
 };
+
+#if defined(FEAT_SIGNS) || defined(PROTO)
+// Macros to get the sign group structure from the group name
+#define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
+#define HI2SG(hi)	((signgroup_T *)((hi)->hi_key - SGN_KEY_OFF))
 
 // Default sign priority for highlighting
 #define SIGN_DEF_PRIO	10
