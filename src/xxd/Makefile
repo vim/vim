@@ -4,4 +4,4 @@ xxd: xxd.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DUNIX -o xxd xxd.c
 
 clean:
-	rm -f xxd xxd.o
+	rm -f xxd xxd.o xxd.gcno
