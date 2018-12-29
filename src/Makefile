@@ -2758,7 +2758,7 @@ uninstall_runtime:
 # Clean up all the files that have been produced, except configure's.
 # We support common typing mistakes for Juergen! :-)
 clean celan: testclean
-	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
+	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o xxd/*.gcno
 	-rm -rf objects
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
 	-rm -f conftest* *~ auto/link.sed
