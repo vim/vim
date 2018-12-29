@@ -28,8 +28,8 @@ func Test_sign()
   let a=execute('sign list Sign1')
   call assert_equal("\nsign Sign1 text=x ", a)
 
-  " Split the window to the bottom to verify sign jump will stay in the current window
-  " if the buffer is displayed there.
+  " Split the window to the bottom to verify sign jump will stay in the
+  " current window if the buffer is displayed there.
   let bn = bufnr('%')
   let wn = winnr()
   exe 'sign place 41 line=3 name=Sign1 buffer=' . bn 
@@ -636,6 +636,13 @@ func Test_sign_group()
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+
+  " Test for sign jump with groups
+  sign jump 5 group=g1 file=Xsign
+  call assert_equal(11, line('.'))
+  call assert_equal('Xsign', bufname(''))
+  sign jump 5 group=g2 file=Xsign
+  call assert_equal(12, line('.'))
 
   " Error cases
   call assert_fails("sign place 3 group= name=sign1 buffer=" . bnum, 'E474:')

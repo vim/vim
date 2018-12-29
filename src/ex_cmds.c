@@ -8191,7 +8191,8 @@ ex_sign(exarg_T *eap)
 	}
 	else if (idx == SIGNCMD_JUMP)
 	{
-	    /* ":sign jump {id} file={fname}" */
+	    // ":sign jump {id} file={fname}"
+	    // ":sign jump {id} group={group} file={fname}"
 	    if (lnum >= 0 || sign_name != NULL || buf == NULL)
 		EMSG(_(e_invarg));
 	    else if ((lnum = buf_findsign(buf, id, group)) > 0)
