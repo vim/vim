@@ -18,5 +18,8 @@ if has("conceal")
   setlocal conceallevel=2 'concealcursor'=nc
 endif
 
+" Use :help to lookup the keyword under the cursor with K.
+setlocal keywordprg=:help
+
 let &cpoptions = s:cpo_save
 unlet s:cpo_save
