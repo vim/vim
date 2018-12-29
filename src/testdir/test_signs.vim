@@ -588,56 +588,70 @@ func Test_sign_group()
   sign place 5 group=g1 line=10 name=sign1 file=Xsign
   sign place 5 group=g2 line=10 name=sign1 file=Xsign
 
-  " Test for :sign place group={group} file={fname}
+  " Tests for the ':sign place' command
+
+  " :sign place file={fname}
   let a = execute('sign place file=Xsign')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
 
+  " :sign place group={group} file={fname}
   let a = execute('sign place group=g2 file=Xsign')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
 
+  " :sign place group=* file={fname}
   let a = execute('sign place group=* file=Xsign')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g2  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
+  " Error case: non-existing group
   let a = execute('sign place group=xyz file=Xsign')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
   call sign_unplace('*')
-
-  " Test for :sign place group={group} buffer={nr}
   let bnum = bufnr('Xsign')
   exe 'sign place 5 line=10 name=sign1 buffer=' . bnum
   exe 'sign place 5 group=g1 line=11 name=sign1 buffer=' . bnum
   exe 'sign place 5 group=g2 line=12 name=sign1 buffer=' . bnum
 
+  " :sign place buffer={fname}
   let a = execute('sign place buffer=' . bnum)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
 
+  " :sign place group={group} buffer={fname}
   let a = execute('sign place group=g2 buffer=' . bnum)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
+  " :sign place group=* buffer={fname}
   let a = execute('sign place group=* buffer=' . bnum)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
+  " Error case: non-existing group
   let a = execute('sign place group=xyz buffer=' . bnum)
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
+  " :sign place
   let a = execute('sign place')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
+  " :sign place group={group}
+  let a = execute('sign place group=g1')
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n", a)
+
+  " :sign place group=*
   let a = execute('sign place group=*')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  name=sign1 priority=10\n" .
 	      \ "    line=11  id=5  group=g1  name=sign1 priority=10\n" .
 	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
-  " Test for sign jump with groups
+  " Test for ':sign jump' command with groups
   sign jump 5 group=g1 file=Xsign
   call assert_equal(11, line('.'))
   call assert_equal('Xsign', bufname(''))
