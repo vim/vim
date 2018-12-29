@@ -11578,7 +11578,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 	if (argvars[1].v_type != VAR_DICT)
 	{
 	    EMSG(_(e_dictreq));
-	    return;
+	    goto cleanup;
 	}
 	dict = argvars[1].vval.v_dict;
 
@@ -11589,7 +11589,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 	    {
 		EMSG2(_("E158: Invalid buffer name: %s"),
 						tv_get_string(&di->di_tv));
-		return;
+		goto cleanup;
 	    }
 	}
 	if (dict_find(dict, (char_u *)"id", -1) != NULL)
@@ -11608,6 +11608,8 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 	if (sign_unplace(sign_id, group, buf, 0) == OK)
 	    rettv->vval.v_number = 0;
     }
+
+cleanup:
     vim_free(group);
 }
 #endif
