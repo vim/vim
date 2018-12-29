@@ -8210,6 +8210,15 @@ report_re_switch(char_u *pat)
 #endif
 
 /*
+ * Return whether "prog" is currently being executed.
+ */
+    int
+regprog_in_use(regprog_T *prog)
+{
+    return prog->re_in_use;
+}
+
+/*
  * Match a regexp against a string.
  * "rmp->regprog" is a compiled regexp as returned by vim_regcomp().
  * Note: "rmp->regprog" may be freed and changed.

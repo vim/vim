@@ -1688,9 +1688,15 @@ x_connect_to_server(void)
     if (x_no_connect)
 	return FALSE;
 
-    /* Check for a match with "exclude:" from 'clipboard'. */
+    // Check for a match with "exclude:" from 'clipboard'.
     if (clip_exclude_prog != NULL)
     {
+	// Just in case we get called recursively, return FALSE.  This could
+	// happen if vpeekc() is used while executing the prog and it causes a
+	// related callback to be invoked.
+	if (regprog_in_use(clip_exclude_prog))
+	    return FALSE;
+
 	if (vim_regexec_prog(&clip_exclude_prog, FALSE, T_NAME, (colnr_T)0))
 	    return FALSE;
     }
