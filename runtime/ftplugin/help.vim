@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:             Vim help file
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2008-07-09
+" Latest Revision:      2018-12-29
 
 if exists("b:did_ftplugin")
   finish
@@ -15,8 +15,8 @@ let b:undo_ftplugin = "setl fo< tw< cole< cocu<"
 
 setlocal formatoptions+=tcroql textwidth=78
 if has("conceal")
-  setlocal cole=2 cocu=nc
+  setlocal conceallevel=2 'concealcursor'=nc
 endif
 
-let &cpo = s:cpo_save
+let &cpoptions = s:cpo_save
 unlet s:cpo_save
