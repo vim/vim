@@ -2366,8 +2366,8 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
 		SKIP_PHOTON=YES ;;
-    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
-    auto)	AC_MSG_RESULT(auto - automatic GUI support) ;;
+    yes|""|auto) AC_MSG_RESULT(automatic GUI support)
+    		gui_auto=yes ;;
     photon)	AC_MSG_RESULT(Photon GUI support) ;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
 		SKIP_PHOTON=YES ;;
@@ -2378,7 +2378,8 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
 		SKIP_CARBON=YES ;;
-    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
+    yes|"")	AC_MSG_RESULT(yes - automatic GUI support)
+    		gui_auto=yes ;;
     auto)	AC_MSG_RESULT(auto - Carbon GUI is outdated - disable GUI support)
 		SKIP_CARBON=YES ;;
     carbon)	AC_MSG_RESULT(Carbon GUI support) ;;
@@ -2391,6 +2392,7 @@ else
   case "$enable_gui_canon" in
     no|none)	AC_MSG_RESULT(no GUI support) ;;
     yes|""|auto)	AC_MSG_RESULT(yes/auto - automatic GUI support)
+		gui_auto=yes
 		SKIP_GTK2=
 		SKIP_GNOME=
 		SKIP_MOTIF=
@@ -2638,6 +2640,9 @@ return 1;
       GTK_CFLAGS=""
       GTK_LIBS=""
       ifelse([$3], , :, [$3])
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	AC_MSG_ERROR([could not configure GTK])
+      fi
     }
     fi
   }
