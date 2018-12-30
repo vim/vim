@@ -4304,7 +4304,7 @@ win_line(
 		{
 		    int tpi = text_prop_idxs[pi];
 
-		    if (col >= text_props[tpi].tp_col - 1
+		    if (vcol >= text_props[tpi].tp_col - 1
 						  + text_props[tpi].tp_len)
 		    {
 			if (pi + 1 < text_props_active)
@@ -4319,7 +4319,7 @@ win_line(
 
 		// Add any text property that starts in this column.
 		while (text_prop_next < text_prop_count
-			   && col >= text_props[text_prop_next].tp_col - 1)
+			   && vcol >= text_props[text_prop_next].tp_col - 1)
 		    text_prop_idxs[text_props_active++] = text_prop_next++;
 
 		text_prop_type = NULL;
