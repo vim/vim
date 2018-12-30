@@ -9803,7 +9803,7 @@ repeat:
 
 #ifdef WIN3264
 # if _WIN32_WINNT >= 0x0500
-	if (vim_strchr(*fnamep, '~') != NULL)
+	if (**fnamep == '~')
 	{
 	    /* Expand 8.3 filename to full path.  Needed to make sure the same
 	     * file does not have two different names.

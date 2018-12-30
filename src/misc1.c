@@ -4924,7 +4924,7 @@ home_replace(
 	homedir_env = NULL;
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL)
-    if (homedir_env != NULL && vim_strchr(homedir_env, '~') != NULL)
+    if (homedir_env != NULL && *homedir_env == '~')
     {
 	int	usedlen = 0;
 	int	flen;
