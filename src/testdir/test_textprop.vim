@@ -5,6 +5,8 @@ if !has('textprop')
   finish
 endif
 
+source screendump.vim
+
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
   let proptypes = prop_type_list()
@@ -283,5 +285,27 @@ func Test_prop_byteoff()
   call prop_type_delete('comment')
 endfunc
 
+" screenshot test with textprop highlighting
+funct Test_textprop_screenshots()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+	\ "call setline(1, ['One two', 'Number 123 and then 4567.', 'Three'])",
+	\ "hi NumberProp ctermfg=blue",
+	\ "hi LongProp ctermbg=yellow",
+	\ "call prop_type_add('number', {'highlight': 'NumberProp'})",
+	\ "call prop_type_add('long', {'highlight': 'LongProp'})",
+	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
+	\ "call prop_add(2, 8, {'length': 3, 'type': 'number'})",
+	\ "call prop_add(2, 21, {'length': 4, 'type': 'number'})",
+	\ "set number",
+	\ "set spell",
+	\], 'XtestProp')
+  let buf = RunVimInTerminal('-S XtestProp', {})
+  call VerifyScreenDump(buf, 'Test_textprop_01', {})
 
-" TODO: screenshot test with highlighting
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_folds_with_rnu')
+endfunc
