@@ -41,7 +41,6 @@ static int pum_do_redraw = FALSE;	/* do redraw anyway */
 static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
-#define PUM_DEF_WIDTH  15
 
     static void
 pum_compute_size(void)
