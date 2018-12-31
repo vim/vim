@@ -307,5 +307,5 @@ funct Test_textprop_screenshots()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_folds_with_rnu')
+  call delete('XtestProp')
 endfunc
