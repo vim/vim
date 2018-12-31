@@ -581,4 +581,24 @@ func Test_setcmdpos()
   call assert_equal(1, setcmdpos(3))
 endfunc
 
+func Test_cmdline_overstrike()
+  " Test overstrike in the middle of the command line.
+  call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
+  call assert_equal('"0ab1cd4', @:)
+
+  " Test overstrike going beyond end of command line.
+  call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cdefgh\<enter>", 'xt')
+  call assert_equal('"0ab1cdefgh', @:)
+
+  " Test toggling insert/overstrike a few times.
+  call feedkeys(":\"01234\<home>\<right>ab\<right>\<insert>cd\<right>\<insert>ef\<enter>", 'xt')
+  call assert_equal('"ab0cd3ef4', @:)
+
+  if has('multi_byte')
+    " Test overstrike with multi-byte characters.
+    call feedkeys(":\"テキストエディタ\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
+    call assert_equal('"テabキcdエディタ', @:)
+  endif
+endfunc
+
 set cpo&
