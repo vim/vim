@@ -1211,6 +1211,8 @@ mark_adjust_internal(
 	    posp->lnum += lnum_amount; \
 	    if (col_amount < 0 && posp->col <= (colnr_T)-col_amount) \
 		posp->col = 0; \
+	    else if (posp->col < spaces_removed) \
+		posp->col = col_amount + spaces_removed; \
 	    else \
 		posp->col += col_amount; \
 	} \
@@ -1220,13 +1222,16 @@ mark_adjust_internal(
  * Adjust marks in line "lnum" at column "mincol" and further: add
  * "lnum_amount" to the line number and add "col_amount" to the column
  * position.
+ * "spaces_removed" is the number of spaces that were removed, matters when the
+ * cursor is inside them.
  */
     void
 mark_col_adjust(
     linenr_T	lnum,
     colnr_T	mincol,
     long	lnum_amount,
-    long	col_amount)
+    long	col_amount,
+    int		spaces_removed)
 {
     int		i;
     int		fnum = curbuf->b_fnum;

@@ -21,7 +21,7 @@ void ex_clearjumps(exarg_T *eap);
 void ex_changes(exarg_T *eap);
 void mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after);
 void mark_adjust_nofold(linenr_T line1, linenr_T line2, long amount, long amount_after);
-void mark_col_adjust(linenr_T lnum, colnr_T mincol, long lnum_amount, long col_amount);
+void mark_col_adjust(linenr_T lnum, colnr_T mincol, long lnum_amount, long col_amount, int spaces_removed);
 void cleanup_jumplist(win_T *wp, int loadfiles);
 void copy_jumplist(win_T *from, win_T *to);
 void free_jumplist(win_T *wp);
