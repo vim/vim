@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2018 Dec 27
+*textprop.txt*  For Vim version 8.1.  Last change: 2018 Dec 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -70,10 +70,13 @@ Suppose line 11 in a buffer has this text (excluding the indent):
 
 	The number 123 is smaller than 4567.
 
-To highlight the numbers: >
+To highlight the numbers in this text: >
 	call prop_type_add('number', {'highlight': 'Constant'})
 	call prop_add(11, 12, {'length': 3, 'type': 'number'})
 	call prop_add(11, 32, {'length': 4, 'type': 'number'})
+
+Try inserting or deleting lines above the text, you will see that the text
+properties stick to the text, thus the line number is adjusted as needed.
 
 Setting "start_incl" and "end_incl" is useful when white space surrounds the
 text, e.g. for a function name.  Using false is useful when the text starts

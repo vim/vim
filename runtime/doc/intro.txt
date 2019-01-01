@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2018 Jan 24
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,29 +52,11 @@ an introduction to the use of Vi or Vim, it gets a bit complicated here and
 there.  For beginners, there is a hands-on |tutor|.  To learn using Vim, read
 the user manual |usr_toc.txt|.
 
-							*book*
-There are many books on Vi that contain a section for beginners.  There are
-two books I can recommend:
-
-	"Vim - Vi Improved" by Steve Oualline
-
-This is the very first book completely dedicated to Vim.  It is very good for
-beginners.  The most often used commands are explained with pictures and
-examples.  The less often used commands are also explained, the more advanced
-features are summarized.  There is a comprehensive index and a quick
-reference.  Parts of this book have been included in the user manual
-|frombook|.
-Published by New Riders Publishing.  ISBN: 0735710015
-For more information try one of these:
-	http://iccf-holland.org/click5.html
-	http://www.vim.org/iccf/click5.html
-
-	"Learning the Vi editor" by Linda Lamb and Arnold Robbins
-
-This is a book about Vi that includes a chapter on Vim (in the sixth edition).
-The first steps in Vi are explained very well.  The commands that Vim adds are
-only briefly mentioned.  There is also a German translation.
-Published by O'Reilly.  ISBN: 1-56592-426-6.
+							*book* *books*
+Most books on Vi and Vim contain a section for beginners.  Others are spending
+more words on specific functionality.  You can find an overview of Vim books
+here:
+	http://iccf-holland.org/vim_books.html
 
 ==============================================================================
 2. Vim on the internet					*internet*
@@ -84,9 +66,9 @@ The Vim pages contain the most recent information about Vim.  They also
 contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
-	Vim home page:	  http://www.vim.org/
-	Vim FAQ:	  http://vimdoc.sf.net/
-	Downloading:	  ftp://ftp.vim.org/pub/vim/MIRRORS
+	Vim home page:	  https://www.vim.org/
+	Vim FAQ:	  https://vimhelp.appspot.com/vim_faq.txt.html
+	Downloading:	  https://www.vim.org/download.php
 
 
 Usenet News group where Vim is discussed:		*news* *usenet*
@@ -114,10 +96,12 @@ There are several mailing lists for Vim:
 See http://www.vim.org/maillist.php for the latest information.
 
 NOTE:
+- Anyone can see the archive, e.g. on Google groups.  Search this if you have
+  questions.
 - You can only send messages to these lists if you have subscribed!
+- The first message is moderated, thus it may take a few hours to show up.
 - You need to send the messages from the same location as where you subscribed
   from (to avoid spam mail).
-- Maximum message size is 40000 characters.
 
 						*subscribe-maillist*
 If you want to join, send a message to
@@ -150,7 +134,10 @@ Preferably start Vim with: >
 Where reproduce.vim is a script that reproduces the problem.  Try different
 machines, if relevant (is this an MS-Windows specific bug perhaps?).
 
-Send me patches if you can!
+Send me patches if you can!  If you create a pull request on
+https://github.com/vim/vim then the automated checks will run and report any
+obvious problems.  But you can also send the patch by email (use an attachment
+to avoid white space changes).
 
 It will help to include information about the version of Vim you are using and
 your setup.  You can get the information with this command: >
@@ -189,7 +176,7 @@ introduce Y2K problems, but those are not really part of Vim itself.
 ==============================================================================
 3. Credits				*credits* *author* *Bram* *Moolenaar*
 
-Most of Vim was written by Bram Moolenaar <Bram@vim.org>.
+Most of Vim was created by Bram Moolenaar <Bram@vim.org>.
 
 Parts of the documentation come from several Vi manuals, written by:
 	W.N. Joy
@@ -268,6 +255,7 @@ Vim would never have become what it is now, without the help of these people!
 	Ken Takata		fixes and features
 	Kazunobu Kuriyama	GTK 3
 	Christian Brabandt	many fixes, features, user support, etc.
+	Yegappan Lakshmanan	many quickfix features
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without
@@ -300,6 +288,12 @@ Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
 	as flexible as Vim.
 	The version used is 2.1.  It is still being developed.  Source code is
 	freely available.
+							*NeoVim*
+NeoVim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
+	Very much bound to github and has many more dependencies, making
+	development more complex and limiting portability.  Code has been
+	refactored, resulting in patches not being exchangeable with Vim.
+	Supports a remote GUI and integration with scripting languages.
 
 ==============================================================================
 4. Notation						*notation*

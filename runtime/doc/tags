@@ -4128,7 +4128,6 @@ E457	print.txt	/*E457*
 E458	message.txt	/*E458*
 E459	message.txt	/*E459*
 E46	message.txt	/*E46*
-E460	message.txt	/*E460*
 E461	eval.txt	/*E461*
 E462	editing.txt	/*E462*
 E463	netbeans.txt	/*E463*
@@ -4770,6 +4769,7 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
+NeoVim	intro.txt	/*NeoVim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
 Normal	intro.txt	/*Normal*
@@ -5291,6 +5291,7 @@ bold	syntax.txt	/*bold*
 bom-bytes	mbyte.txt	/*bom-bytes*
 book	intro.txt	/*book*
 bookmark	usr_03.txt	/*bookmark*
+books	intro.txt	/*books*
 boolean	options.txt	/*boolean*
 break-finally	eval.txt	/*break-finally*
 browse()	eval.txt	/*browse()*

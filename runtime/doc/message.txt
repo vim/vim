@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.1.  Last change: 2018 Feb 04
+*message.txt*   For Vim version 8.1.  Last change: 2018 Dec 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -556,14 +556,6 @@ files are not properly sorted, reset the |'tagbsearch'| option.
 This message is only given when Vim detects a problem when searching for a
 tag.  Sometimes this message is not given, even though the tags file is not
 properly sorted.
-
-							*E460*  >
-  The resource fork would be lost (add ! to override)
-
-On the Macintosh (classic), when writing a file, Vim attempts to preserve all
-info about a file, including its resource fork.  If this is not possible you
-get this error message.  Append "!" to the command name to write anyway (and
-lose the info).
 
 							*E424*  >
   Too many different highlighting attributes in use

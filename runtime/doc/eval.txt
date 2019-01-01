@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
+*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6773,7 +6773,8 @@ prop_list({lnum} [, {props}]) 				*prop_list()*
 		The properties are ordered by starting column and priority.
 		Each property is a Dict with these entries:
 		   col		starting column
-		   length	length in bytes
+		   length	length in bytes, one more if line break is
+				included
 		   id		property ID
 		   type		name of the property type, omitted if
 				the type was deleted

@@ -4,7 +4,7 @@ For instructions on installing this file, type
 	:help matchit-install
 inside Vim.
 
-For Vim version 6.3.  Last change:  2017 May 14
+For Vim version 6.3.  Last change:  2018 Dec 31
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher
@@ -19,9 +19,6 @@ For Vim version 6.3.  Last change:  2017 May 14
 
 The functionality mentioned here is a plugin, see |add-plugin|.
 This plugin is only available if 'compatible' is not set.
-You can avoid loading this plugin by setting the "loaded_matchit" variable
-in your |vimrc| file: >
-	:let loaded_matchit = 1
 
 {Vi does not have any of this}
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2018 Dec 27
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,9 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Valgrind error in old regexp engine when using TOhtml.
+(Dominique, 2018 Dec 31, #3749)
 
 Possible errors reported from fuzzer. Shadowblade #3716
 a) using get_regline() without checking for NULL
@@ -149,6 +152,9 @@ Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
 
+Patch to add 'p' flag to 'formatoptions'. (Tom Ryder, 2018 Dec 28)
+Wait a few days for feedback.
+
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
 
@@ -222,6 +228,9 @@ is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
 When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
 scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
 using CTRL-E. (Yee Cheng Chin, #3721)
+
+We have a SourcePre autocommand event, but not SourcePost.  Useful for doing
+some thing after a plugin was loaded. (#3739)
 
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
