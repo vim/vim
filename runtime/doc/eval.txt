@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2018 Dec 28
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6689,18 +6689,19 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 <
 						*prop_add()* *E965*
 prop_add({lnum}, {col}, {props})
-		Attach a text property at position {lnum}, {col}.  Use one for
-		the first column.
+		Attach a text property at position {lnum}, {col}.  {col} is
+		counted in bytes, use one for the first column.
 		If {lnum} is invalid an error is given. *E966*
 		If {col} is invalid an error is given. *E964*
 
 		{props} is a dictionary with these fields:
-		   length	length of text in characters, can only be used
+		   length	length of text in bytes, can only be used
 				for a property that does not continue in
-				another line
-		   end_lnum	line number for end of text
-		   end_col	last column of the text; not used when
-				"length" is present
+				another line; can be zero
+		   end_lnum	line number for the end of text
+		   end_col	column just after the text; not used when "length"
+				is present; when {col} and "end_col" are equal
+				this is a zero-width text property
 		   bufnr	buffer to add the property to; when omitted
 		   		the current buffer is used
 		   id		user defined ID for the property; when omitted
@@ -6709,11 +6710,12 @@ prop_add({lnum}, {col}, {props})
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
-		are passed.  Either use "length" or "end_col" for a property
+		are given.  Either use "length" or "end_col" for a property
 		within one line, or use "end_lnum" and "end_col" for a
 		property that spans more than one line.
-		When neither "length" nor "end_col" are passed the property
-		will apply to one character.
+		When neither "length" nor "end_col" are given the property
+		will be zero-width.  That means it will not be highlighted but
+		will move with the text, as a kind of mark.
 		The property can end exactly at the last character of the
 		text, or just after it.  In the last case, if text is appended
 		to the line, the text property size will increase, also when

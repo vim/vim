@@ -705,7 +705,7 @@ typedef struct memline
  */
 typedef struct textprop_S
 {
-    colnr_T	tp_col;		// start column (one based)
+    colnr_T	tp_col;		// start column (one based, in bytes)
     colnr_T	tp_len;		// length in bytes
     int		tp_id;		// identifier
     int		tp_type;	// property type

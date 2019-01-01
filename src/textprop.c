@@ -17,8 +17,8 @@
  * Text properties have a type, which can be used to specify highlighting.
  *
  * TODO:
- * - Perhaps we only need TP_FLAG_CONT_NEXT ?
- * - Adjust text property column and length when text is inserted/deleted
+ * - Adjust text property column and length when text is inserted/deleted.
+ * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
  * - Checking the text length to detect text properties is slow.  Use a flag in
@@ -198,12 +198,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	long length = dict_get_number(dict, (char_u *)"length");
 
-	if (length < 1 || end_lnum > start_lnum)
+	if (length < 0 || end_lnum > start_lnum)
 	{
 	    EMSG2(_(e_invargval), "length");
 	    return;
 	}
-	end_col = start_col + length - 1;
+	end_col = start_col + length;
     }
     else if (dict_find(dict, (char_u *)"end_col", -1) != NULL)
     {
@@ -260,13 +260,13 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	}
 
 	if (lnum == end_lnum)
-	    length = end_col - col + 1;
+	    length = end_col - col;
 	else
 	    length = textlen - col + 1;
 	if (length > (long)textlen)
-	    length = textlen;  // can include the end-of-line
-	if (length < 1)
-	    length = 1;
+	    length = textlen;	// can include the end-of-line
+	if (length < 0)
+	    length = 0;		// zero-width property
 
 	// Allocate the new line with space for the new proprety.
 	newtext = alloc(buf->b_ml.ml_line_len + sizeof(textprop_T));
@@ -910,6 +910,16 @@ clear_buf_prop_types(buf_T *buf)
 {
     clear_ht_prop_types(buf->b_proptypes);
     buf->b_proptypes = NULL;
+}
+
+/*
+ * Adjust the columns of text properties in line "lnum" after position "col" to
+ * shift by "bytes_added" (can be negative).
+ */
+    void
+adjust_prop_columns(linenr_T lnum UNUSED, colnr_T col UNUSED, int bytes_added UNUSED)
+{
+    // TODO
 }
 
 #endif // FEAT_TEXT_PROP
