@@ -71,6 +71,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -127,6 +128,7 @@ OBJ =	o/arabic.o \
 	o/screen.o \
 	o/search.o \
 	o/sha256.o \
+	o/sign.o \
 	o/spell.o \
 	o/spellfile.o \
 	o/syntax.o \
@@ -251,6 +253,8 @@ o/screen.o:	screen.c  $(SYMS)
 o/search.o:	search.c  $(SYMS) regexp.h
 
 o/sha256.o:	sha256.c  $(SYMS)
+
+o/sign.o:	sign.c  $(SYMS)
 
 o/spell.o:	spell.c  $(SYMS) spell.h
 
