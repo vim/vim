@@ -11365,7 +11365,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	// get signs placed in this buffer
-	buf = find_buffer(&argvars[0]);
+	buf = get_buf_tv(&argvars[0], FALSE);
 	if (buf == NULL)
 	{
 	    EMSG2(_("E158: Invalid buffer name: %s"),
@@ -11457,7 +11457,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	goto cleanup;
 
     // Buffer to place the sign
-    buf = find_buffer(&argvars[3]);
+    buf = get_buf_tv(&argvars[3], FALSE);
     if (buf == NULL)
     {
 	EMSG2(_("E158: Invalid buffer name: %s"), tv_get_string(&argvars[2]));
@@ -11566,7 +11566,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
 	if ((di = dict_find(dict, (char_u *)"buffer", -1)) != NULL)
 	{
-	    buf = find_buffer(&di->di_tv);
+	    buf = get_buf_tv(&di->di_tv, FALSE);
 	    if (buf == NULL)
 	    {
 		EMSG2(_("E158: Invalid buffer name: %s"),
