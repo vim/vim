@@ -961,14 +961,10 @@ update_single_line(win_T *wp, linenr_T lnum)
 		screen_start();	/* not sure of screen cursor */
 # ifdef FEAT_SEARCH_EXTRA
 		init_search_hl(wp);
-		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
 		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
 								 FALSE, FALSE);
-# if defined(FEAT_SEARCH_EXTRA)
-		end_search_hl();
-# endif
 		break;
 	    }
 	    row += wp->w_lines[j].wl_size;
