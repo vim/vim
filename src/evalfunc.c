@@ -4424,24 +4424,6 @@ f_get(typval_T *argvars, typval_T *rettv)
 	copy_tv(tv, rettv);
 }
 
-#ifdef FEAT_SIGNS
-/*
- * Returns information about signs placed in a buffer as list of dicts.
- */
-    static void
-get_buffer_signs(buf_T *buf, list_T *l)
-{
-    signlist_T	*sign;
-    dict_T	*d;
-
-    FOR_ALL_SIGNS_IN_BUF(buf, sign)
-    {
-	if ((d = sign_get_info(sign)) != NULL)
-	    list_append_dict(l, d);
-    }
-}
-#endif
-
 /*
  * Returns buffer options, variables and other attributes in a dictionary.
  */

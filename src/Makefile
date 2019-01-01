@@ -1626,6 +1626,7 @@ BASIC_SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -1736,6 +1737,7 @@ OBJ_COMMON = \
 	objects/screen.o \
 	objects/search.o \
 	objects/sha256.o \
+	objects/sign.o \
 	objects/spell.o \
 	objects/spellfile.o \
 	objects/syntax.o \
@@ -1870,6 +1872,7 @@ PRO_AUTO = \
 	screen.pro \
 	search.pro \
 	sha256.pro \
+	sign.pro \
 	spell.pro \
 	spellfile.pro \
 	syntax.pro \
@@ -3200,6 +3203,9 @@ objects/search.o: search.c
 objects/sha256.o: sha256.c
 	$(CCC) -o $@ sha256.c
 
+objects/sign.o: sign.c
+	$(CCC) -o $@ sign.c
+
 objects/spell.o: spell.c
 	$(CCC) -o $@ spell.c
 
@@ -3583,6 +3589,10 @@ objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
 objects/sha256.o: sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h farsi.h arabic.h
+objects/sign.o: sign.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
