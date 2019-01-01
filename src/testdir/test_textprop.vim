@@ -300,17 +300,25 @@ funct Test_textprop_screenshots()
     return
   endif
   call writefile([
-	\ "call setline(1, ['One two', 'Numbér 123 änd thœn 4¾7.', 'Three'])",
+	\ "call setline(1, ['One two', 'Numbér 123 änd thœn 4¾7.', '--aa--bb--cc--dd--'])",
 	\ "hi NumberProp ctermfg=blue",
 	\ "hi LongProp ctermbg=yellow",
 	\ "call prop_type_add('number', {'highlight': 'NumberProp'})",
 	\ "call prop_type_add('long', {'highlight': 'LongProp'})",
+	\ "call prop_type_add('start', {'highlight': 'NumberProp', 'start_incl': 1})",
+	\ "call prop_type_add('end', {'highlight': 'NumberProp', 'end_incl': 1})",
+	\ "call prop_type_add('both', {'highlight': 'NumberProp', 'start_incl': 1, 'end_incl': 1})",
 	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
 	\ "call prop_add(2, 9, {'length': 3, 'type': 'number'})",
 	\ "call prop_add(2, 24, {'length': 4, 'type': 'number'})",
+	\ "call prop_add(3, 3, {'length': 2, 'type': 'number'})",
+	\ "call prop_add(3, 7, {'length': 2, 'type': 'start'})",
+	\ "call prop_add(3, 11, {'length': 2, 'type': 'end'})",
+	\ "call prop_add(3, 15, {'length': 2, 'type': 'both'})",
 	\ "set number",
 	\ "hi clear SpellBad",
 	\ "set spell",
+	\ "normal 3G0llix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>",
 	\], 'XtestProp')
   let buf = RunVimInTerminal('-S XtestProp', {'rows': 6})
   call VerifyScreenDump(buf, 'Test_textprop_01', {})

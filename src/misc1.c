@@ -2322,7 +2322,7 @@ ins_bytes_len(char_u *p, int len)
 	for (i = 0; i < len; i += n)
 	{
 	    if (enc_utf8)
-		/* avoid reading past p[len] */
+		// avoid reading past p[len]
 		n = utfc_ptr2len_len(p + i, len - i);
 	    else
 		n = (*mb_ptr2len)(p + i);
@@ -2365,12 +2365,12 @@ ins_char(int c)
 ins_char_bytes(char_u *buf, int charlen)
 {
     int		c = buf[0];
-    int		newlen;		/* nr of bytes inserted */
-    int		oldlen;		/* nr of bytes deleted (0 when not replacing) */
+    int		newlen;		// nr of bytes inserted
+    int		oldlen;		// nr of bytes deleted (0 when not replacing)
     char_u	*p;
     char_u	*newp;
     char_u	*oldp;
-    int		linelen;	/* length of old line including NUL */
+    int		linelen;	// length of old line including NUL
     colnr_T	col;
     linenr_T	lnum = curwin->w_cursor.lnum;
     int		i;
@@ -2439,8 +2439,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	    }
 	    curwin->w_p_list = old_list;
 	}
-	else
-	    if (oldp[col] != NUL)
+	else if (oldp[col] != NUL)
 	{
 	    /* normal replace */
 #ifdef FEAT_MBYTE
@@ -2494,11 +2493,11 @@ ins_char_bytes(char_u *buf, int charlen)
     while (i < newlen)
 	p[i++] = ' ';
 
-    /* Replace the line in the buffer. */
+    // Replace the line in the buffer.
     ml_replace(lnum, newp, FALSE);
 
-    /* mark the buffer as changed and prepare for displaying */
-    changed_bytes(lnum, col);
+    // mark the buffer as changed and prepare for displaying
+    inserted_bytes(lnum, col, newlen - oldlen);
 
     /*
      * If we're in Insert or Replace mode and 'showmatch' is set, then briefly
@@ -2566,7 +2565,7 @@ ins_str(char_u *s)
     mch_memmove(newp + col, s, (size_t)newlen);
     mch_memmove(newp + col + newlen, oldp + col, (size_t)(oldlen - col + 1));
     ml_replace(lnum, newp, FALSE);
-    changed_bytes(lnum, col);
+    inserted_bytes(lnum, col, newlen);
     curwin->w_cursor.col += newlen;
 }
 
@@ -3013,6 +3012,21 @@ changed_bytes(linenr_T lnum, colnr_T col)
 		    changedOneline(wp->w_buffer, wlnum);
 	    }
     }
+#endif
+}
+
+/*
+ * Like changed_bytes() but also adjust text properties for "added" bytes.
+ * When "added" is negative text was deleted.
+ */
+    void
+inserted_bytes(linenr_T lnum, colnr_T col, int added)
+{
+    changed_bytes(lnum, col);
+
+#ifdef FEAT_TEXT_PROP
+    if (curbuf->b_has_textprop && added != 0)
+	adjust_prop_columns(lnum, col, added);
 #endif
 }
 

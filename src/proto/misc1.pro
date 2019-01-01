@@ -35,6 +35,7 @@ char_u *skip_to_option_part(char_u *p);
 void changed(void);
 void changed_int(void);
 void changed_bytes(linenr_T lnum, colnr_T col);
+void inserted_bytes(linenr_T lnum, colnr_T col, int added);
 void appended_lines(linenr_T lnum, long count);
 void appended_lines_mark(linenr_T lnum, long count);
 void deleted_lines(linenr_T lnum, long count);
