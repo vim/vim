@@ -4326,13 +4326,14 @@ win_line(
 	    if (text_props != NULL)
 	    {
 		int pi;
+		int bcol = (int)(ptr - line);
 
 		// Check if any active property ends.
 		for (pi = 0; pi < text_props_active; ++pi)
 		{
 		    int tpi = text_prop_idxs[pi];
 
-		    if (vcol >= text_props[tpi].tp_col - 1
+		    if (bcol >= text_props[tpi].tp_col - 1
 						  + text_props[tpi].tp_len)
 		    {
 			if (pi + 1 < text_props_active)
@@ -4347,7 +4348,7 @@ win_line(
 
 		// Add any text property that starts in this column.
 		while (text_prop_next < text_prop_count
-			   && vcol >= text_props[text_prop_next].tp_col - 1)
+			   && bcol >= text_props[text_prop_next].tp_col - 1)
 		    text_prop_idxs[text_props_active++] = text_prop_next++;
 
 		text_prop_attr = 0;
