@@ -2264,6 +2264,9 @@ list_in_columns(char_u **items, int size, int current)
     int		nrow;
     int		item_count = 0;
     int		width = 0;
+#ifdef FEAT_SYN_HL
+    int		syn_on = get_var_value((char_u *)"g:syntax_on") != NULL;
+#endif
 
     /* Find the length of the longest item, use that + 1 as the column
      * width. */
@@ -2305,7 +2308,15 @@ list_in_columns(char_u **items, int size, int current)
 
 	    if (idx == current)
 		msg_putchar('[');
+#ifdef FEAT_SYN_HL
+	    if (syn_on && items[idx][0] == '-') {
+		msg_puts_attr(items[idx], HL_ATTR(HLF_W));
+	    } else {
+		msg_puts(items[idx]);
+	    }
+#else
 	    msg_puts(items[idx]);
+#endif
 	    if (idx == current)
 		msg_putchar(']');
 	    if (last_col)
