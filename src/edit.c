@@ -7962,6 +7962,17 @@ replace_do_bs(int limit_col)
     cc = replace_pop();
     if (cc > 0)
     {
+#ifdef FEAT_TEXT_PROP
+	size_t	len_before;
+
+	if (curbuf->b_has_textprop)
+	{
+	    // Do not adjust text properties for individual delete and insert
+	    // operations, do it afterwards on the resulting text.
+	    len_before = STRLEN(ml_get_curline());
+	    ++text_prop_frozen;
+	}
+#endif
 	if (State & VREPLACE_FLAG)
 	{
 	    /* Get the number of screen cells used by the character we are
@@ -8012,8 +8023,19 @@ replace_do_bs(int limit_col)
 	    curwin->w_cursor.col -= ins_len;
 	}
 
-	/* mark the buffer as changed and prepare for displaying */
+	// mark the buffer as changed and prepare for displaying
 	changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
+
+#ifdef FEAT_TEXT_PROP
+	if (curbuf->b_has_textprop)
+	{
+	    size_t len_now = STRLEN(ml_get_curline());
+
+	    --text_prop_frozen;
+	    adjust_prop_columns(curwin->w_cursor.lnum, curwin->w_cursor.col,
+						  (int)(len_now - len_before));
+	}
+#endif
     }
     else if (cc == 0)
 	(void)del_char_after_col(limit_col);

@@ -1658,6 +1658,10 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #endif
 
+#ifdef FEAT_TEXT_PROP
+EXTERN int text_prop_frozen INIT(= 0);
+#endif
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */

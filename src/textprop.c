@@ -920,41 +920,59 @@ clear_buf_prop_types(buf_T *buf)
  * Called is expected to check b_has_textprop and "bytes_added" being non-zero.
  */
     void
-adjust_prop_columns(linenr_T lnum, colnr_T col, int bytes_added)
+adjust_prop_columns(
+	linenr_T    lnum,
+	colnr_T	    col,
+	int	    bytes_added)
 {
     int		proplen;
     char_u	*props;
     textprop_T	tmp_prop;
     proptype_T  *pt;
     int		dirty = FALSE;
-    int		i;
+    int		ri, wi;
+    size_t	textlen;
+
+    if (text_prop_frozen > 0)
+	return;
 
     proplen = get_text_props(curbuf, lnum, &props, TRUE);
     if (proplen == 0)
 	return;
+    textlen = curbuf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
-    for (i = 0; i < proplen; ++i)
+    wi = 0; // write index
+    for (ri = 0; ri < proplen; ++ri)
     {
-	mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
+	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
 							   sizeof(textprop_T));
 	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
 
-	if (tmp_prop.tp_col >= col + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL) ? 2 : 1))
+	if (bytes_added > 0
+		? (tmp_prop.tp_col >= col + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL) ? 2 : 1))
+		: (tmp_prop.tp_col > col + 1))
 	{
 	    tmp_prop.tp_col += bytes_added;
 	    dirty = TRUE;
 	}
-	else if (tmp_prop.tp_col + tmp_prop.tp_len > col + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL) ? 0 : 1))
+	else if (tmp_prop.tp_len > 0
+		&& tmp_prop.tp_col + tmp_prop.tp_len > col
+			+ ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
+								      ? 0 : 1))
 	{
 	    tmp_prop.tp_len += bytes_added;
 	    dirty = TRUE;
+	    if (tmp_prop.tp_len <= 0)
+		continue;  // drop this text property
 	}
-	if (dirty)
-	{
-	    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
-	    mch_memmove(props + i * sizeof(textprop_T), &tmp_prop,
+	mch_memmove(props + wi * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
-	}
+	++wi;
+    }
+    if (dirty)
+    {
+	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	curbuf->b_ml.ml_line_len = textlen + wi * sizeof(textprop_T);
     }
 }
 
