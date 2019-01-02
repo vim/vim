@@ -4160,14 +4160,14 @@ tagstack_push_items(win_T *wp, list_T *l)
 	if (list2fpos(&di->di_tv, &mark, &fnum, NULL) != OK)
 	    continue;
 	if ((tagname =
-		get_dict_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
+		dict_get_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
 	    continue;
 
 	if (mark.col > 0)
 	    mark.col--;
 	tagstack_push_item(wp, tagname,
-		(int)get_dict_number(itemdict, (char_u *)"bufnr"),
-		(int)get_dict_number(itemdict, (char_u *)"matchnr") - 1,
+		(int)dict_get_number(itemdict, (char_u *)"bufnr"),
+		(int)dict_get_number(itemdict, (char_u *)"matchnr") - 1,
 		mark, fnum);
     }
 }
@@ -4212,7 +4212,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     }
 
     if ((di = dict_find(d, (char_u *)"curidx", -1)) != NULL)
-	tagstack_set_curidx(wp, (int)get_tv_number(&di->di_tv) - 1);
+	tagstack_set_curidx(wp, (int)tv_get_number(&di->di_tv) - 1);
 
     return OK;
 }

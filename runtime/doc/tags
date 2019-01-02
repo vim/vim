@@ -1356,6 +1356,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +terminfo	various.txt	/*+terminfo*
 +termresponse	various.txt	/*+termresponse*
 +textobjects	various.txt	/*+textobjects*
++textprop	various.txt	/*+textprop*
 +tgetent	various.txt	/*+tgetent*
 +timers	various.txt	/*+timers*
 +title	various.txt	/*+title*
@@ -1948,6 +1949,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :AdaTypes	ft_ada.txt	/*:AdaTypes*
 :Arguments	terminal.txt	/*:Arguments*
 :Break	terminal.txt	/*:Break*
+:Cfilter	quickfix.txt	/*:Cfilter*
 :Clear	terminal.txt	/*:Clear*
 :CompilerSet	usr_41.txt	/*:CompilerSet*
 :Continue	terminal.txt	/*:Continue*
@@ -1967,6 +1969,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :LPE	pi_logipat.txt	/*:LPE*
 :LPF	pi_logipat.txt	/*:LPF*
 :Lexplore	pi_netrw.txt	/*:Lexplore*
+:Lfilter	quickfix.txt	/*:Lfilter*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
@@ -2919,6 +2922,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :scl	change.txt	/*:scl*
 :scp	change.txt	/*:scp*
 :scr	repeat.txt	/*:scr*
+:script	repeat.txt	/*:script*
 :scripte	repeat.txt	/*:scripte*
 :scriptencoding	repeat.txt	/*:scriptencoding*
 :scriptnames	repeat.txt	/*:scriptnames*
@@ -3715,7 +3719,6 @@ CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
-Cfilter	quickfix.txt	/*Cfilter*
 Channel	eval.txt	/*Channel*
 Channels	eval.txt	/*Channels*
 Chinese	mbyte.txt	/*Chinese*
@@ -4125,7 +4128,6 @@ E457	print.txt	/*E457*
 E458	message.txt	/*E458*
 E459	message.txt	/*E459*
 E46	message.txt	/*E46*
-E460	message.txt	/*E460*
 E461	eval.txt	/*E461*
 E462	editing.txt	/*E462*
 E463	netbeans.txt	/*E463*
@@ -4653,7 +4655,16 @@ E96	diff.txt	/*E96*
 E960	options.txt	/*E960*
 E961	cmdline.txt	/*E961*
 E962	eval.txt	/*E962*
+E963	eval.txt	/*E963*
+E964	eval.txt	/*E964*
+E965	eval.txt	/*E965*
+E966	eval.txt	/*E966*
+E967	textprop.txt	/*E967*
+E968	eval.txt	/*E968*
+E969	eval.txt	/*E969*
 E97	diff.txt	/*E97*
+E970	eval.txt	/*E970*
+E971	textprop.txt	/*E971*
 E98	diff.txt	/*E98*
 E99	diff.txt	/*E99*
 EX	intro.txt	/*EX*
@@ -4727,7 +4738,6 @@ KVim	gui_x11.txt	/*KVim*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
-Lfilter	quickfix.txt	/*Lfilter*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
@@ -4759,6 +4769,7 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
+NeoVim	intro.txt	/*NeoVim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
 Normal	intro.txt	/*Normal*
@@ -5280,6 +5291,7 @@ bold	syntax.txt	/*bold*
 bom-bytes	mbyte.txt	/*bom-bytes*
 book	intro.txt	/*book*
 bookmark	usr_03.txt	/*bookmark*
+books	intro.txt	/*books*
 boolean	options.txt	/*boolean*
 break-finally	eval.txt	/*break-finally*
 browse()	eval.txt	/*browse()*
@@ -6181,6 +6193,7 @@ foldtext()	eval.txt	/*foldtext()*
 foldtextresult()	eval.txt	/*foldtextresult()*
 font-sizes	gui_x11.txt	/*font-sizes*
 fontset	mbyte.txt	/*fontset*
+forced-motion	motion.txt	/*forced-motion*
 foreground()	eval.txt	/*foreground()*
 fork	os_unix.txt	/*fork*
 form.vim	syntax.txt	/*form.vim*
@@ -8114,7 +8127,18 @@ prompt-buffer	channel.txt	/*prompt-buffer*
 prompt_setcallback()	eval.txt	/*prompt_setcallback()*
 prompt_setinterrupt()	eval.txt	/*prompt_setinterrupt()*
 prompt_setprompt()	eval.txt	/*prompt_setprompt()*
+promptbuffer-functions	usr_41.txt	/*promptbuffer-functions*
 pronounce	intro.txt	/*pronounce*
+prop_add()	eval.txt	/*prop_add()*
+prop_clear()	eval.txt	/*prop_clear()*
+prop_find()	eval.txt	/*prop_find()*
+prop_list()	eval.txt	/*prop_list()*
+prop_remove()	eval.txt	/*prop_remove()*
+prop_type_add()	eval.txt	/*prop_type_add()*
+prop_type_change()	eval.txt	/*prop_type_change()*
+prop_type_delete()	eval.txt	/*prop_type_delete()*
+prop_type_get()	eval.txt	/*prop_type_get()*
+prop_type_list()	eval.txt	/*prop_type_list()*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
@@ -8459,9 +8483,18 @@ shiftwidth()	eval.txt	/*shiftwidth()*
 short-name-changed	version4.txt	/*short-name-changed*
 showing-menus	gui.txt	/*showing-menus*
 sign-commands	sign.txt	/*sign-commands*
+sign-functions	usr_41.txt	/*sign-functions*
+sign-group	sign.txt	/*sign-group*
 sign-intro	sign.txt	/*sign-intro*
+sign-priority	sign.txt	/*sign-priority*
 sign-support	sign.txt	/*sign-support*
 sign.txt	sign.txt	/*sign.txt*
+sign_define()	eval.txt	/*sign_define()*
+sign_getdefined()	eval.txt	/*sign_getdefined()*
+sign_getplaced()	eval.txt	/*sign_getplaced()*
+sign_place()	eval.txt	/*sign_place()*
+sign_undefine()	eval.txt	/*sign_undefine()*
+sign_unplace()	eval.txt	/*sign_unplace()*
 signs	sign.txt	/*signs*
 simple-change	change.txt	/*simple-change*
 simplify()	eval.txt	/*simplify()*
@@ -8936,6 +8969,7 @@ tag-binary-search	tagsrch.txt	/*tag-binary-search*
 tag-blocks	motion.txt	/*tag-blocks*
 tag-commands	tagsrch.txt	/*tag-commands*
 tag-details	tagsrch.txt	/*tag-details*
+tag-functions	usr_41.txt	/*tag-functions*
 tag-highlight	syntax.txt	/*tag-highlight*
 tag-matchlist	tagsrch.txt	/*tag-matchlist*
 tag-old-static	tagsrch.txt	/*tag-old-static*
@@ -9132,7 +9166,11 @@ tex.vim	syntax.txt	/*tex.vim*
 text-functions	usr_41.txt	/*text-functions*
 text-objects	motion.txt	/*text-objects*
 text-objects-changed	version5.txt	/*text-objects-changed*
+text-prop-functions	textprop.txt	/*text-prop-functions*
+text-prop-intro	textprop.txt	/*text-prop-intro*
+text-properties	textprop.txt	/*text-properties*
 textlock	eval.txt	/*textlock*
+textprop.txt	textprop.txt	/*textprop.txt*
 tf.vim	syntax.txt	/*tf.vim*
 this_session-variable	eval.txt	/*this_session-variable*
 throw-catch	eval.txt	/*throw-catch*

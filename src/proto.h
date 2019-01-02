@@ -172,6 +172,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "sha256.pro"
 # endif
 # include "search.pro"
+# ifdef FEAT_SIGNS
+# include "sign.pro"
+# endif
 # include "spell.pro"
 # include "spellfile.pro"
 # include "syntax.pro"
@@ -182,6 +185,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
+# endif
+# ifdef FEAT_TEXT_PROP
+#  include "textprop.pro"
 # endif
 # include "ui.pro"
 # include "undo.pro"

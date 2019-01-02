@@ -103,6 +103,8 @@ func VerifyScreenDump(buf, filename, options, ...)
 
   let i = 0
   while 1
+    " leave some time for updating the original window
+    sleep 10m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
     if readfile(reference) == readfile(testfile)
@@ -113,12 +115,11 @@ func VerifyScreenDump(buf, filename, options, ...)
       " Leave the test file around for inspection.
       let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
       if a:0 == 1
-	let msg = a:1 . ': ' . msg
+        let msg = a:1 . ': ' . msg
       endif
       call assert_report(msg)
       return 1
     endif
-    sleep 10m
     let i += 1
   endwhile
   return 0

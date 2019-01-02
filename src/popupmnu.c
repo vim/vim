@@ -41,7 +41,6 @@ static int pum_do_redraw = FALSE;	/* do redraw anyway */
 static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
-#define PUM_DEF_WIDTH  15
 
     static void
 pum_compute_size(void)
@@ -1103,7 +1102,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	    return;
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
-	    char_u *text = get_tv_string_chk(&li->li_tv);
+	    char_u *text = tv_get_string_chk(&li->li_tv);
 
 	    balloon_array[idx].pum_text = vim_strsave(
 					   text == NULL ? (char_u *)"" : text);

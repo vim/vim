@@ -514,21 +514,18 @@ gui_x11_create_widgets(void)
     XtVaSetValues(scroller, XmNwidth, 0, XmNresizable, False,
 		  XmNtraversalOn, False, NULL);
 
-    /* Create the tabline popup menu */
+    // Create the tabline popup menu
     tabLine_menu = XmCreatePopupMenu(tabLine, "tabline popup", NULL, 0);
 
-    /* Add the buttons to the menu */
-    if (first_tabpage->tp_next != NULL)
-    {
-	n = 0;
-	XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
-	xms = XmStringCreate((char *)"Close tab", STRING_TAG);
-	XtSetArg(args[n], XmNlabelString, xms); n++;
-	button = XmCreatePushButton(tabLine_menu, "Close", args, n);
-	XtAddCallback(button, XmNactivateCallback,
-		      (XtCallbackProc)tabline_button_cb, NULL);
-	XmStringFree(xms);
-    }
+    // Add the buttons to the tabline popup menu
+    n = 0;
+    XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
+    xms = XmStringCreate((char *)"Close tab", STRING_TAG);
+    XtSetArg(args[n], XmNlabelString, xms); n++;
+    button = XmCreatePushButton(tabLine_menu, "Close", args, n);
+    XtAddCallback(button, XmNactivateCallback,
+		  (XtCallbackProc)tabline_button_cb, NULL);
+    XmStringFree(xms);
 
     n = 0;
     XtSetArg(args[n], XmNuserData, TABLINE_MENU_NEW); n++;

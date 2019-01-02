@@ -895,6 +895,19 @@ alloc_clear(unsigned size)
 }
 
 /*
+ * Same as alloc_clear() but with allocation id for testing
+ */
+    char_u *
+alloc_clear_id(unsigned size, alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
+	return NULL;
+#endif
+    return alloc_clear(size);
+}
+
+/*
  * alloc() with check for maximum line length
  */
     char_u *
@@ -1191,6 +1204,9 @@ free_all_mem(void)
 # ifdef FEAT_CMDHIST
     init_history();
 # endif
+#ifdef FEAT_TEXT_PROP
+    clear_global_prop_types();
+#endif
 
 #ifdef FEAT_QUICKFIX
     {
@@ -1332,6 +1348,20 @@ vim_strnsave(char_u *string, int len)
 	p[len] = NUL;
     }
     return p;
+}
+
+/*
+ * Copy "p[len]" into allocated memory, ignoring NUL characters.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+vim_memsave(char_u *p, int len)
+{
+    char_u *ret = alloc((unsigned)len);
+
+    if (ret != NULL)
+	mch_memmove(ret, p, (size_t)len);
+    return ret;
 }
 
 /*
@@ -3387,17 +3417,29 @@ same_directory(char_u *f1, char_u *f2)
  * Return OK or FAIL.
  */
     int
-vim_chdirfile(char_u *fname, char *trigger_autocmd UNUSED)
+vim_chdirfile(char_u *fname, char *trigger_autocmd)
 {
-    char_u	dir[MAXPATHL];
+    char_u	old_dir[MAXPATHL];
+    char_u	new_dir[MAXPATHL];
     int		res;
 
-    vim_strncpy(dir, fname, MAXPATHL - 1);
-    *gettail_sep(dir) = NUL;
-    res = mch_chdir((char *)dir) == 0 ? OK : FAIL;
-    if (res == OK && trigger_autocmd != NULL)
-	apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
-							   dir, FALSE, curbuf);
+    if (mch_dirname(old_dir, MAXPATHL) != OK)
+	*old_dir = NUL;
+
+    vim_strncpy(new_dir, fname, MAXPATHL - 1);
+    *gettail_sep(new_dir) = NUL;
+
+    if (pathcmp((char *)old_dir, (char *)new_dir, -1) == 0)
+	// nothing to do
+	res = OK;
+    else
+    {
+	res = mch_chdir((char *)new_dir) == 0 ? OK : FAIL;
+
+	if (res == OK && trigger_autocmd != NULL)
+	    apply_autocmds(EVENT_DIRCHANGED, (char_u *)trigger_autocmd,
+						       new_dir, FALSE, curbuf);
+    }
     return res;
 }
 #endif
@@ -6348,6 +6390,8 @@ has_non_ascii(char_u *s)
 #endif
 
 #if defined(MESSAGE_QUEUE) || defined(PROTO)
+# define MAX_REPEAT_PARSE 8
+
 /*
  * Process messages that have been queued for netbeans or clientserver.
  * Also check if any jobs have ended.
@@ -6357,37 +6401,45 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
-    win_T *old_curwin = curwin;
+    win_T   *old_curwin = curwin;
+    int	    i;
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
 
-    // For Win32 mch_breakcheck() does not check for input, do it here.
+    // Loop when a job ended, but don't keep looping forever.
+    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
+    {
+	// For Win32 mch_breakcheck() does not check for input, do it here.
 # if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
-    channel_handle_events(FALSE);
+	channel_handle_events(FALSE);
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
-    // Process the queued netbeans messages.
-    netbeans_parse_messages();
+	// Process the queued netbeans messages.
+	netbeans_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    // Write any buffer lines still to be written.
-    channel_write_any_lines();
+	// Write any buffer lines still to be written.
+	channel_write_any_lines();
 
-    // Process the messages queued on channels.
-    channel_parse_messages();
+	// Process the messages queued on channels.
+	channel_parse_messages();
 # endif
 # if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-    // Process the queued clientserver messages.
-    server_parse_messages();
+	// Process the queued clientserver messages.
+	server_parse_messages();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    // Check if any jobs have ended.
-    job_check_ended();
+	// Check if any jobs have ended.  If so, repeat the above to handle
+	// changes, e.g. stdin may have been closed.
+	if (job_check_ended())
+	    continue;
 # endif
+	break;
+    }
 
     // If the current window changed we need to bail out of the waiting loop.
     // E.g. when a job exit callback closes the terminal window.
@@ -6555,7 +6607,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     *argc = 0;
     for (li = l->lv_first; li != NULL; li = li->li_next)
     {
-	s = get_tv_string_chk(&li->li_tv);
+	s = tv_get_string_chk(&li->li_tv);
 	if (s == NULL)
 	{
 	    int i;

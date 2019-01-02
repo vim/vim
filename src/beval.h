@@ -76,6 +76,9 @@ typedef struct BalloonEvalStruct
     int			*vts;		// vartabstop setting for this buffer
 #endif
     char_u		*msg;
+#ifdef FEAT_GUI_W32
+    void		*tofree;
+#endif
 } BalloonEval;
 
 #define EVAL_OFFSET_X 15 /* displacement of beval topleft corner from pointer */

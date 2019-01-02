@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2018 Apr 11
+*usr_41.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -983,6 +983,14 @@ Jobs:		    			        *job-functions*
 	job_info()		get information about a job
 	job_setoptions()	set options for a job
 
+Signs:						*sign-functions*
+	sign_define()		define or update a sign
+	sign_getdefined()	get a list of defined signs
+	sign_getplaced()	get a list of placed signs
+	sign_place()		place a sign
+	sign_undefine()		undefine a sign
+	sign_unplace()		unplace a sign
+
 Terminal window:				*terminal-functions*
 	term_start()		open a terminal window and run a job
 	term_list()		get the list of terminal buffers
@@ -1059,7 +1067,7 @@ Various:					*various-functions*
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	pyxeval()		evaluate |python_x| expression
-	debugbreak()		interrupt a program  being debugged
+	debugbreak()		interrupt a program being debugged
 
 ==============================================================================
 *41.7*	Defining a function

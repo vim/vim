@@ -281,6 +281,7 @@ let s:flaky_tests = [
       \ 'Test_close_callback()',
       \ 'Test_close_handle()',
       \ 'Test_close_lambda()',
+      \ 'Test_close_output_buffer()',
       \ 'Test_close_partial()',
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',

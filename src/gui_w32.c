@@ -4367,14 +4367,14 @@ typedef struct _DllVersionInfo
 
 typedef struct tagTOOLINFOA_NEW
 {
-	UINT cbSize;
-	UINT uFlags;
-	HWND hwnd;
-	UINT_PTR uId;
-	RECT rect;
-	HINSTANCE hinst;
-	LPSTR lpszText;
-	LPARAM lParam;
+    UINT       cbSize;
+    UINT       uFlags;
+    HWND       hwnd;
+    UINT_PTR   uId;
+    RECT       rect;
+    HINSTANCE  hinst;
+    LPSTR      lpszText;
+    LPARAM     lParam;
 } TOOLINFO_NEW;
 
 typedef struct tagNMTTDISPINFO_NEW
@@ -4386,6 +4386,32 @@ typedef struct tagNMTTDISPINFO_NEW
     UINT       uFlags;
     LPARAM     lParam;
 } NMTTDISPINFO_NEW;
+
+#ifdef FEAT_MBYTE
+typedef struct tagTOOLINFOW_NEW
+{
+    UINT       cbSize;
+    UINT       uFlags;
+    HWND       hwnd;
+    UINT_PTR   uId;
+    RECT       rect;
+    HINSTANCE  hinst;
+    LPWSTR     lpszText;
+    LPARAM     lParam;
+    void       *lpReserved;
+} TOOLINFOW_NEW;
+
+typedef struct tagNMTTDISPINFOW_NEW
+{
+    NMHDR      hdr;
+    LPWSTR     lpszText;
+    WCHAR      szText[80];
+    HINSTANCE  hinst;
+    UINT       uFlags;
+    LPARAM     lParam;
+} NMTTDISPINFOW_NEW;
+
+#endif
 
 typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 #ifndef TTM_SETMAXTIPWIDTH
@@ -5502,6 +5528,15 @@ gui_mch_init(void)
 	    if (RegisterClassW(&wndclassw) == 0)
 		return FAIL;
 	}
+
+	s_textArea = CreateWindowExW(
+	    0,
+	    szTextAreaClassW, L"Vim text area",
+	    WS_CHILD | WS_VISIBLE, 0, 0,
+	    100,				// Any value will do for now
+	    100,				// Any value will do for now
+	    s_hwnd, NULL,
+	    s_hinst, NULL);
     }
     else
 #endif
@@ -5520,15 +5555,16 @@ gui_mch_init(void)
 
 	if (RegisterClass(&wndclass) == 0)
 	    return FAIL;
+
+	s_textArea = CreateWindowEx(
+	    0,
+	    szTextAreaClass, "Vim text area",
+	    WS_CHILD | WS_VISIBLE, 0, 0,
+	    100,				// Any value will do for now
+	    100,				// Any value will do for now
+	    s_hwnd, NULL,
+	    s_hinst, NULL);
     }
-    s_textArea = CreateWindowEx(
-	0,
-	szTextAreaClass, "Vim text area",
-	WS_CHILD | WS_VISIBLE, 0, 0,
-	100,				/* Any value will do for now */
-	100,				/* Any value will do for now */
-	s_hwnd, NULL,
-	s_hinst, NULL);
 
     if (s_textArea == NULL)
 	return FAIL;
@@ -6218,9 +6254,9 @@ RevOut( HDC s_hdc,
     static void
 draw_line(
     int		x1,
-    int	    	y1,
-    int	    	x2,
-    int	    	y2,
+    int		y1,
+    int		x2,
+    int		y2,
     COLORREF	color)
 {
 #if defined(FEAT_DIRECTX)
@@ -6241,7 +6277,7 @@ draw_line(
     static void
 set_pixel(
     int		x,
-    int	    	y,
+    int		y,
     COLORREF	color)
 {
 #if defined(FEAT_DIRECTX)
@@ -6255,7 +6291,7 @@ set_pixel(
     static void
 fill_rect(
     const RECT	*rcp,
-    HBRUSH    	hbr,
+    HBRUSH	hbr,
     COLORREF	color)
 {
 #if defined(FEAT_DIRECTX)
@@ -8745,11 +8781,91 @@ multiline_balloon_available(void)
     return multiline_tip;
 }
 
+#ifdef FEAT_MBYTE
+    static void
+make_tooltipw(BalloonEval *beval, char *text, POINT pt)
+{
+    TOOLINFOW	*pti;
+    int		ToolInfoSize;
+
+    if (multiline_balloon_available() == TRUE)
+	ToolInfoSize = sizeof(TOOLINFOW_NEW);
+    else
+	ToolInfoSize = sizeof(TOOLINFOW);
+
+    pti = (TOOLINFOW *)alloc(ToolInfoSize);
+    if (pti == NULL)
+	return;
+
+    beval->balloon = CreateWindowExW(WS_EX_TOPMOST, TOOLTIPS_CLASSW,
+	    NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+	    beval->target, NULL, s_hinst, NULL);
+
+    SetWindowPos(beval->balloon, HWND_TOPMOST, 0, 0, 0, 0,
+	    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+    pti->cbSize = ToolInfoSize;
+    pti->uFlags = TTF_SUBCLASS;
+    pti->hwnd = beval->target;
+    pti->hinst = 0; // Don't use string resources
+    pti->uId = ID_BEVAL_TOOLTIP;
+
+    if (multiline_balloon_available() == TRUE)
+    {
+	RECT rect;
+	TOOLINFOW_NEW *ptin = (TOOLINFOW_NEW *)pti;
+	pti->lpszText = LPSTR_TEXTCALLBACKW;
+	beval->tofree = enc_to_utf16((char_u*)text, NULL);
+	ptin->lParam = (LPARAM)beval->tofree;
+	// switch multiline tooltips on
+	if (GetClientRect(s_textArea, &rect))
+	    SendMessageW(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
+		    (LPARAM)rect.right);
+    }
+    else
+    {
+	// do this old way
+	beval->tofree = enc_to_utf16((char_u*)text, NULL);
+	pti->lpszText = (LPWSTR)beval->tofree;
+    }
+
+    // Limit ballooneval bounding rect to CursorPos neighbourhood.
+    pti->rect.left = pt.x - 3;
+    pti->rect.top = pt.y - 3;
+    pti->rect.right = pt.x + 3;
+    pti->rect.bottom = pt.y + 3;
+
+    SendMessageW(beval->balloon, TTM_ADDTOOLW, 0, (LPARAM)pti);
+    // Make tooltip appear sooner.
+    SendMessageW(beval->balloon, TTM_SETDELAYTIME, TTDT_INITIAL, 10);
+    // I've performed some tests and it seems the longest possible life time
+    // of tooltip is 30 seconds.
+    SendMessageW(beval->balloon, TTM_SETDELAYTIME, TTDT_AUTOPOP, 30000);
+    /*
+     * HACK: force tooltip to appear, because it'll not appear until
+     * first mouse move. D*mn M$
+     * Amazingly moving (2, 2) and then (-1, -1) the mouse doesn't move.
+     */
+    mouse_event(MOUSEEVENTF_MOVE, 2, 2, 0, 0);
+    mouse_event(MOUSEEVENTF_MOVE, (DWORD)-1, (DWORD)-1, 0, 0);
+    vim_free(pti);
+}
+#endif
+
     static void
 make_tooltip(BalloonEval *beval, char *text, POINT pt)
 {
     TOOLINFO	*pti;
     int		ToolInfoSize;
+
+#ifdef FEAT_MBYTE
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	make_tooltipw(beval, text, pt);
+	return;
+    }
+#endif
 
     if (multiline_balloon_available() == TRUE)
 	ToolInfoSize = sizeof(TOOLINFO_NEW);
@@ -8779,7 +8895,8 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
 	RECT rect;
 	TOOLINFO_NEW *ptin = (TOOLINFO_NEW *)pti;
 	pti->lpszText = LPSTR_TEXTCALLBACK;
-	ptin->lParam = (LPARAM)text;
+	beval->tofree = vim_strsave((char_u*)text);
+	ptin->lParam = (LPARAM)beval->tofree;
 	if (GetClientRect(s_textArea, &rect)) /* switch multiline tooltips on */
 	    SendMessage(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
 		    (LPARAM)rect.right);
@@ -8961,6 +9078,16 @@ Handle_WM_Notify(HWND hwnd UNUSED, LPNMHDR pnmh)
 		info->uFlags |= TTF_DI_SETITEM;
 	    }
 	    break;
+#ifdef FEAT_MBYTE
+	case TTN_GETDISPINFOW:
+	    {
+		// if we get here then we have new common controls
+		NMTTDISPINFOW_NEW *info = (NMTTDISPINFOW_NEW *)pnmh;
+		info->lpszText = (LPWSTR)info->lParam;
+		info->uFlags |= TTF_DI_SETITEM;
+	    }
+	    break;
+#endif
 	}
     }
 }
@@ -8977,9 +9104,9 @@ TrackUserActivity(UINT uMsg)
 gui_mch_destroy_beval_area(BalloonEval *beval)
 {
 #ifdef FEAT_VARTABS
-    if (beval->vts)
-	vim_free(beval->vts);
+    vim_free(beval->vts);
 #endif
+    vim_free(beval->tofree);
     vim_free(beval);
 }
 #endif /* FEAT_BEVAL_GUI */

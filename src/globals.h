@@ -564,6 +564,8 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define ONE_WINDOW (firstwin == lastwin)
 # define W_NEXT(wp) ((wp)->w_next)
 # define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
+# define FOR_ALL_FRAMES(frp, first_frame) \
+    for (frp = first_frame; frp != NULL; frp = frp->fr_next)
 # define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
 # define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
     for ((wp) = ((tp) == NULL || (tp) == curtab) \
@@ -605,6 +607,10 @@ EXTERN buf_T	*lastbuf INIT(= NULL);	/* last buffer */
 EXTERN buf_T	*curbuf INIT(= NULL);	/* currently active buffer */
 
 #define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+
+// Iterate through all the signs placed in a buffer
+#define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
+	for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
 
 /* Flag that is set when switching off 'swapfile'.  It means that all blocks
  * are to be loaded into memory.  Shouldn't be global... */
@@ -792,21 +798,6 @@ EXTERN int	vr_lines_changed INIT(= 0); /* #Lines changed by "gR" so far */
 EXTERN JMP_BUF x_jump_env;
 #endif
 
-#if defined(HAVE_SETJMP_H)
-/*
- * Stuff for setjmp() and longjmp().
- * Used to protect areas where we could crash.
- */
-EXTERN JMP_BUF lc_jump_env;	/* argument to SETJMP() */
-# ifdef SIGHASARG
-/* volatile because it is used in signal handlers. */
-EXTERN volatile sig_atomic_t lc_signal;	/* caught signal number, 0 when no was signal
-				   caught; used for mch_libcall() */
-# endif
-/* volatile because it is used in signal handler deathtrap(). */
-EXTERN volatile sig_atomic_t lc_active INIT(= FALSE); /* TRUE when lc_jump_env is valid. */
-#endif
-
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /*
  * These flags are set based upon 'fileencoding'.
@@ -922,6 +913,7 @@ EXTERN char_u		composing_hangul_buffer[5];
  * "Visual_mode"    When State is NORMAL or INSERT.
  * "finish_op"	    When State is NORMAL, after typing the operator and before
  *		    typing the motion command.
+ * "motion_force"   Last motion_force  from do_pending_operator()
  * "debug_mode"	    Debug mode.
  */
 EXTERN int	State INIT(= NORMAL);	/* This is the current state of the
@@ -932,6 +924,7 @@ EXTERN int	debug_mode INIT(= FALSE);
 
 EXTERN int	finish_op INIT(= FALSE);/* TRUE while an operator is pending */
 EXTERN long	opcount INIT(= 0);	/* count for pending operator */
+EXTERN int	motion_force INIT(= 0); // motion force for pending operator
 
 /*
  * Ex mode (Q) state

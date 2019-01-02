@@ -961,14 +961,10 @@ update_single_line(win_T *wp, linenr_T lnum)
 		screen_start();	/* not sure of screen cursor */
 # ifdef FEAT_SEARCH_EXTRA
 		init_search_hl(wp);
-		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
 		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
 								 FALSE, FALSE);
-# if defined(FEAT_SEARCH_EXTRA)
-		end_search_hl();
-# endif
 		break;
 	    }
 	    row += wp->w_lines[j].wl_size;
@@ -3051,6 +3047,38 @@ fill_foldcolumn(
 }
 #endif /* FEAT_FOLDING */
 
+#ifdef FEAT_TEXT_PROP
+static textprop_T	*current_text_props = NULL;
+static buf_T		*current_buf = NULL;
+
+    static int
+#ifdef __BORLANDC__
+_RTLENTRYF
+#endif
+text_prop_compare(const void *s1, const void *s2)
+{
+    int  idx1, idx2;
+    proptype_T  *pt1, *pt2;
+    colnr_T col1, col2;
+
+    idx1 = *(int *)s1;
+    idx2 = *(int *)s2;
+    pt1 = text_prop_type_by_id(current_buf, current_text_props[idx1].tp_type);
+    pt2 = text_prop_type_by_id(current_buf, current_text_props[idx2].tp_type);
+    if (pt1 == pt2)
+	return 0;
+    if (pt1 == NULL)
+	return -1;
+    if (pt2 == NULL)
+	return 1;
+    if (pt1->pt_priority != pt2->pt_priority)
+	return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
+    col1 = current_text_props[idx1].tp_col;
+    col2 = current_text_props[idx2].tp_col;
+    return col1 == col2 ? 0 : col1 > col2 ? 1 : -1;
+}
+#endif
+
 /*
  * Display line "lnum" of window 'wp' on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -3128,6 +3156,15 @@ win_line(
     int		draw_color_col = FALSE;	/* highlight colorcolumn */
     int		*color_cols = NULL;	/* pointer to according columns array */
 #endif
+#ifdef FEAT_TEXT_PROP
+    int		text_prop_count;
+    int		text_prop_next = 0;	// next text property to use
+    textprop_T	*text_props = NULL;
+    int		*text_prop_idxs = NULL;
+    int		text_props_active = 0;
+    proptype_T  *text_prop_type = NULL;
+    int		text_prop_attr = 0;
+#endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	/* this buffer has spell checking */
 # define SPWORDLEN 150
@@ -3144,7 +3181,7 @@ win_line(
     static linenr_T capcol_lnum = 0;	/* line number where "cap_col" used */
     int		cur_checked_col = 0;	/* checked column for current line */
 #endif
-    int		extra_check = 0;	// has syntax or linebreak
+    int		extra_check = 0;	// has extra highlighting
 #ifdef FEAT_MBYTE
     int		multi_attr = 0;		/* attributes desired by multibyte */
     int		mb_l = 1;		/* multi-byte byte length */
@@ -3784,6 +3821,30 @@ win_line(
     }
 #endif
 
+#ifdef FEAT_TEXT_PROP
+    {
+	char_u *prop_start;
+
+	text_prop_count = get_text_props(wp->w_buffer, lnum,
+							   &prop_start, FALSE);
+	if (text_prop_count > 0)
+	{
+	    // Make a copy of the properties, so that they are properly
+	    // aligned.
+	    text_props = (textprop_T *)alloc(
+					 text_prop_count * sizeof(textprop_T));
+	    if (text_props != NULL)
+		mch_memmove(text_props, prop_start,
+					 text_prop_count * sizeof(textprop_T));
+
+	    // Allocate an array for the indexes.
+	    text_prop_idxs = (int *)alloc(text_prop_count * sizeof(int));
+	    area_highlighting = TRUE;
+	    extra_check = TRUE;
+	}
+    }
+#endif
+
     off = (unsigned)(current_ScreenLine - ScreenLines);
     col = 0;
 #ifdef FEAT_RIGHTLEFT
@@ -4261,6 +4322,65 @@ win_line(
 	    }
 #endif
 
+#ifdef FEAT_TEXT_PROP
+	    if (text_props != NULL)
+	    {
+		int pi;
+		int bcol = (int)(ptr - line);
+
+		// Check if any active property ends.
+		for (pi = 0; pi < text_props_active; ++pi)
+		{
+		    int tpi = text_prop_idxs[pi];
+
+		    if (bcol >= text_props[tpi].tp_col - 1
+						  + text_props[tpi].tp_len)
+		    {
+			if (pi + 1 < text_props_active)
+			    mch_memmove(text_prop_idxs + pi,
+					text_prop_idxs + pi + 1,
+					sizeof(int)
+					 * (text_props_active - (pi + 1)));
+			--text_props_active;
+			--pi;
+		    }
+		}
+
+		// Add any text property that starts in this column.
+		while (text_prop_next < text_prop_count
+			   && bcol >= text_props[text_prop_next].tp_col - 1)
+		    text_prop_idxs[text_props_active++] = text_prop_next++;
+
+		text_prop_attr = 0;
+		if (text_props_active > 0)
+		{
+		    // Sort the properties on priority and/or starting last.
+		    // Then combine the attributes, highest priority last.
+		    current_text_props = text_props;
+		    current_buf = wp->w_buffer;
+		    qsort((void *)text_prop_idxs, (size_t)text_props_active,
+					       sizeof(int), text_prop_compare);
+
+		    for (pi = 0; pi < text_props_active; ++pi)
+		    {
+			int	    tpi = text_prop_idxs[pi];
+			proptype_T  *pt = text_prop_type_by_id(wp->w_buffer, text_props[tpi].tp_type);
+
+			if (pt != NULL)
+			{
+			    int pt_attr = syn_id2attr(pt->pt_hl_id);
+
+			    text_prop_type = pt;
+			    if (text_prop_attr == 0)
+				text_prop_attr = pt_attr;
+			    else
+				text_prop_attr = hl_combine_attr(text_prop_attr, pt_attr);
+			}
+		    }
+		}
+	    }
+#endif
+
 	    /* Decide which of the highlight attributes to use. */
 	    attr_pri = TRUE;
 #ifdef LINE_ATTR
@@ -4283,6 +4403,11 @@ win_line(
 	    else
 	    {
 		attr_pri = FALSE;
+#ifdef FEAT_TEXT_PROP
+		if (text_prop_type != NULL)
+		    char_attr = text_prop_attr;
+		else
+#endif
 #ifdef FEAT_SYN_HL
 		if (has_syntax)
 		    char_attr = syntax_attr;
@@ -4615,8 +4740,8 @@ win_line(
 #endif
 
 #ifdef FEAT_SYN_HL
-		/* Get syntax attribute, unless still at the start of the line
-		 * (double-wide char that doesn't fit). */
+		// Get syntax attribute, unless still at the start of the line
+		// (double-wide char that doesn't fit).
 		v = (long)(ptr - line);
 		if (has_syntax && v > 0)
 		{
@@ -4648,10 +4773,16 @@ win_line(
 		    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 		    ptr = line + v;
 
-		    if (!attr_pri)
-			char_attr = syntax_attr;
-		    else
-			char_attr = hl_combine_attr(syntax_attr, char_attr);
+# ifdef FEAT_TEXT_PROP
+		    // Text properties overrule syntax highlighting.
+		    if (text_prop_attr == 0)
+#endif
+		    {
+			if (!attr_pri)
+			    char_attr = syntax_attr;
+			else
+			    char_attr = hl_combine_attr(syntax_attr, char_attr);
+		    }
 # ifdef FEAT_CONCEAL
 		    /* no concealing past the end of the line, it interferes
 		     * with line highlighting */
@@ -4671,10 +4802,6 @@ win_line(
 		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
-# ifdef FEAT_SYN_HL
-		    if (!attr_pri)
-			char_attr = syntax_attr;
-# endif
 		    if (c != 0 && (
 # ifdef FEAT_SYN_HL
 				!has_syntax ||
@@ -6025,6 +6152,10 @@ win_line(
 	cap_col = 0;
     }
 #endif
+#ifdef FEAT_TEXT_PROP
+    vim_free(text_props);
+    vim_free(text_prop_idxs);
+#endif
 
     vim_free(p_extra_free);
     return row;
@@ -6579,7 +6710,7 @@ win_redraw_last_status(frame_T *frp)
 	frp->fr_win->w_redr_status = TRUE;
     else if (frp->fr_layout == FR_ROW)
     {
-	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
+	FOR_ALL_FRAMES(frp, frp->fr_child)
 	    win_redraw_last_status(frp);
     }
     else /* frp->fr_layout == FR_COL */

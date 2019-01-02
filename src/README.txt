@@ -35,6 +35,7 @@ Most code can be found in a file with an obvious name (incomplete list):
 	regexp.c	pattern matching
 	screen.c	updating the windows
 	search.c	pattern searching
+	sign.c		signs
 	spell.c		spell checking
 	syntax.c	syntax and other highlighting
 	tag.c		tags

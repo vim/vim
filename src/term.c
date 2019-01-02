@@ -4698,6 +4698,12 @@ check_termcode(
 			int need_flush = FALSE;
 # ifdef FEAT_MOUSE_SGR
 			int is_iterm2 = FALSE;
+			int is_mintty = FALSE;
+
+			// mintty 2.9.5 sends 77;20905;0c.
+			// (77 is ASCII 'M' for mintty.)
+			if (STRNCMP(tp + extra - 3, "77;", 3) == 0)
+			    is_mintty = TRUE;
 # endif
 
 			/* if xterm version >= 141 try to get termcap codes */
@@ -4751,8 +4757,9 @@ check_termcode(
 			{
 # ifdef FEAT_MOUSE_SGR
 			    /* Xterm version 277 supports SGR.  Also support
-			     * Terminal.app and iTerm2. */
-			    if (version >= 277 || is_iterm2 || is_mac_terminal)
+			     * Terminal.app, iTerm2 and mintty. */
+			    if (version >= 277 || is_iterm2 || is_mac_terminal
+				    || is_mintty)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else

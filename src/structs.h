@@ -684,6 +684,7 @@ typedef struct memline
 
     linenr_T	ml_line_lnum;	/* line number of cached line, 0 if not valid */
     char_u	*ml_line_ptr;	/* pointer to cached line */
+    colnr_T	ml_line_len;	/* length of the cached line, including NUL */
 
     bhdr_T	*ml_locked;	/* block used by last ml_get */
     linenr_T	ml_locked_low;	/* first line in ml_locked */
@@ -696,7 +697,48 @@ typedef struct memline
 #endif
 } memline_T;
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+
+/*
+ * Structure defining text properties.  These stick with the text.
+ * When stored in memline they are after the text, ml_line_len is larger than
+ * STRLEN(ml_line_ptr) + 1.
+ */
+typedef struct textprop_S
+{
+    colnr_T	tp_col;		// start column (one based, in bytes)
+    colnr_T	tp_len;		// length in bytes
+    int		tp_id;		// identifier
+    int		tp_type;	// property type
+    int		tp_flags;	// TP_FLAG_ values
+} textprop_T;
+
+#define TP_FLAG_CONT_NEXT	1	// property continues in next line
+#define TP_FLAG_CONT_PREV	2	// property was continued from prev line
+
+/*
+ * Structure defining a property type.
+ */
+typedef struct proptype_S
+{
+    int		pt_id;		// value used for tp_id
+    int		pt_type;	// number used for tp_type
+    int		pt_hl_id;	// highlighting
+    int		pt_priority;	// priority
+    int		pt_flags;	// PT_FLAG_ values
+    char_u	pt_name[1];	// property type name, actually longer
+} proptype_T;
+
+#define PT_FLAG_INS_START_INCL	1	// insert at start included in property
+#define PT_FLAG_INS_END_INCL	2	// insert at end included in property
+
+// Sign group
+typedef struct signgroup_S
+{
+    short_u	refcount;		// number of signs in this group
+    int		next_sign_id;		// next sign id for this group
+    char_u	sg_name[1];		// sign group name
+} signgroup_T;
+
 typedef struct signlist signlist_T;
 
 struct signlist
@@ -704,9 +746,19 @@ struct signlist
     int		id;		/* unique identifier for each placed sign */
     linenr_T	lnum;		/* line number which has this sign */
     int		typenr;		/* typenr of sign */
+    signgroup_T	*group;		/* sign group */
+    int		priority;	/* priority for highlighting */
     signlist_T	*next;		/* next signlist entry */
     signlist_T  *prev;		/* previous entry -- for easy reordering */
 };
+
+#if defined(FEAT_SIGNS) || defined(PROTO)
+// Macros to get the sign group structure from the group name
+#define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
+#define HI2SG(hi)	((signgroup_T *)((hi)->hi_key - SGN_KEY_OFF))
+
+// Default sign priority for highlighting
+#define SIGN_DEF_PRIO	10
 
 /* type argument for buf_getsigntype() */
 #define SIGN_ANY	0
@@ -2358,6 +2410,10 @@ struct file_buffer
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
     dict_T	*b_vars;	/* internal variables, local to buffer */
 #endif
+#ifdef FEAT_TEXT_PROP
+    int		b_has_textprop;	// TRUE when text props were added
+    hashtab_T	*b_proptypes;	// text property types local to buffer
+#endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
     char_u	*b_p_bexpr;	/* 'balloonexpr' local value */
@@ -3208,6 +3264,7 @@ typedef struct
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
+    win_T	*save_prevwin;	/* saved prevwin */
     bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
 } aco_save_T;

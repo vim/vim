@@ -562,6 +562,10 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    tv->v_type = VAR_SPECIAL;
 	    tv->vval.v_number = (varnumber_T) lua_toboolean(L, pos);
 	    break;
+	case LUA_TNIL:
+	    tv->v_type = VAR_SPECIAL;
+	    tv->vval.v_number = VVAL_NULL;
+	    break;
 	case LUA_TSTRING:
 	    tv->v_type = VAR_STRING;
 	    tv->vval.v_string = vim_strsave((char_u *) lua_tostring(L, pos));

@@ -818,6 +818,9 @@ enable_channel
 enable_terminal
 enable_autoservername
 enable_multibyte
+enable_rightleft
+enable_arabic
+enable_farsi
 enable_hangulinput
 enable_xim
 enable_fontset
@@ -1497,6 +1500,9 @@ Optional Features:
   --enable-terminal       Enable terminal emulation support.
   --enable-autoservername Automatically define servername at vim startup.
   --enable-multibyte      Include multibyte editing support.
+  --disable-rightleft     Do not include Right-to-Left language support.
+  --disable-arabic        Do not include Arabic language support.
+  --disable-farsi         Do not include Farsi language support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
@@ -1527,7 +1533,7 @@ Optional Packages:
   --with-vim-name=NAME    what to call the Vim executable
   --with-ex-name=NAME     what to call the Ex executable
   --with-view-name=NAME   what to call the View executable
-  --with-global-runtime=DIR    global runtime directory in 'runtimepath'
+  --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories
   --with-modified-by=NAME       name of who modified a release version
   --with-features=TYPE    tiny, small, normal, big or huge (default: huge)
   --with-compiledby=NAME  name to show in :version message
@@ -4884,16 +4890,25 @@ $as_echo_n "checking --with-global-runtime argument... " >&6; }
 
 # Check whether --with-global-runtime was given.
 if test "${with_global_runtime+set}" = set; then :
-  withval=$with_global_runtime; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }; cat >>confdefs.h <<_ACEOF
-#define RUNTIME_GLOBAL "$withval"
-_ACEOF
-
+  withval=$with_global_runtime; RUNTIME_GLOBAL="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
+
+if test "X$RUNTIME_GLOBAL" != "X"; then
+  RUNTIME_GLOBAL_AFTER=$(printf -- "$RUNTIME_GLOBAL\\n" | $AWK -F, 'BEGIN { comma=0 } { for (i = NF; i > 0; i--) { if (comma) { printf ",%s/after", $i } else { printf "%s/after", $i; comma=1 } } } END { printf "\n" }')
+  cat >>confdefs.h <<_ACEOF
+#define RUNTIME_GLOBAL "$RUNTIME_GLOBAL"
+_ACEOF
+
+  cat >>confdefs.h <<_ACEOF
+#define RUNTIME_GLOBAL_AFTER "$RUNTIME_GLOBAL_AFTER"
+_ACEOF
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-modified-by argument" >&5
 $as_echo_n "checking --with-modified-by argument... " >&6; }
@@ -7954,6 +7969,63 @@ if test "$enable_multibyte" = "yes"; then
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-rightleft argument" >&5
+$as_echo_n "checking --disable-rightleft argument... " >&6; }
+# Check whether --enable-rightleft was given.
+if test "${enable_rightleft+set}" = set; then :
+  enableval=$enable_rightleft;
+else
+  enable_rightleft="yes"
+fi
+
+if test "$enable_rightleft" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_RIGHTLEFT 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-arabic argument" >&5
+$as_echo_n "checking --disable-arabic argument... " >&6; }
+# Check whether --enable-arabic was given.
+if test "${enable_arabic+set}" = set; then :
+  enableval=$enable_arabic;
+else
+  enable_arabic="yes"
+fi
+
+if test "$enable_arabic" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_ARABIC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-farsi argument" >&5
+$as_echo_n "checking --disable-farsi argument... " >&6; }
+# Check whether --enable-farsi was given.
+if test "${enable_farsi+set}" = set; then :
+  enableval=$enable_farsi;
+else
+  enable_farsi="yes"
+fi
+
+if test "$enable_farsi" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_FARSI 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-hangulinput argument" >&5
 $as_echo_n "checking --enable-hangulinput argument... " >&6; }
 # Check whether --enable-hangulinput was given.
@@ -9043,10 +9115,9 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
     no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
 $as_echo "no GUI support" >&6; }
 		SKIP_PHOTON=YES ;;
-    yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
-$as_echo "yes - automatic GUI support" >&6; } ;;
-    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - automatic GUI support" >&5
-$as_echo "auto - automatic GUI support" >&6; } ;;
+    yes|""|auto) { $as_echo "$as_me:${as_lineno-$LINENO}: result: automatic GUI support" >&5
+$as_echo "automatic GUI support" >&6; }
+    		gui_auto=yes ;;
     photon)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Photon GUI support" >&5
 $as_echo "Photon GUI support" >&6; } ;;
     *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
@@ -9061,7 +9132,8 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
 $as_echo "no GUI support" >&6; }
 		SKIP_CARBON=YES ;;
     yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
-$as_echo "yes - automatic GUI support" >&6; } ;;
+$as_echo "yes - automatic GUI support" >&6; }
+    		gui_auto=yes ;;
     auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - Carbon GUI is outdated - disable GUI support" >&5
 $as_echo "auto - Carbon GUI is outdated - disable GUI support" >&6; }
 		SKIP_CARBON=YES ;;
@@ -9079,6 +9151,7 @@ else
 $as_echo "no GUI support" >&6; } ;;
     yes|""|auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes/auto - automatic GUI support" >&5
 $as_echo "yes/auto - automatic GUI support" >&6; }
+		gui_auto=yes
 		SKIP_GTK2=
 		SKIP_GNOME=
 		SKIP_MOTIF=
@@ -9510,6 +9583,9 @@ $as_echo "no" >&6; }
       GTK_CFLAGS=""
       GTK_LIBS=""
       :
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	as_fn_error $? "could not configure GTK" "$LINENO" 5
+      fi
     }
     fi
   }
@@ -9861,6 +9937,9 @@ $as_echo "no" >&6; }
       GTK_CFLAGS=""
       GTK_LIBS=""
       :
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	as_fn_error $? "could not configure GTK" "$LINENO" 5
+      fi
     }
     fi
   }

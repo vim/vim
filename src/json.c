@@ -873,7 +873,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    if (top_item != NULL && top_item->jd_type == JSON_OBJECT_KEY
 		    && cur_item != NULL)
 	    {
-		top_item->jd_key = get_tv_string_buf_chk(cur_item, key_buf);
+		top_item->jd_key = tv_get_string_buf_chk(cur_item, key_buf);
 		if (top_item->jd_key == NULL)
 		{
 		    clear_tv(cur_item);

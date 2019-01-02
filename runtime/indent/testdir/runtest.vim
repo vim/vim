@@ -2,9 +2,13 @@
 "
 " Current directory must be runtime/indent.
 
+" Only do this with the +eval feature
+if 1
+
 set nocp
 filetype indent on
 set nowrapscan
+set report=9999
 
 au! SwapExists * call HandleSwapExists()
 func HandleSwapExists()
@@ -115,5 +119,8 @@ for fname in glob('testdir/*.in', 1, 1)
     quit!  " close the indented file
   endif
 endfor
+
+" Matching "if 1" at the start.
+endif
 
 qall!

@@ -22,7 +22,7 @@ char_u *last_search_pat(void);
 void reset_search_dir(void);
 void set_last_search_pat(char_u *s, int idx, int magic, int setlast);
 void last_pat_prog(regmmatch_T *regmatch);
-int searchit(win_T *win, buf_T *buf, pos_T *pos, int dir, char_u *pat, long count, int options, int pat_use, linenr_T stop_lnum, proftime_T *tm, int *timed_out);
+int searchit(win_T *win, buf_T *buf, pos_T *pos, pos_T *end_pos, int dir, char_u *pat, long count, int options, int pat_use, linenr_T stop_lnum, proftime_T *tm, int *timed_out);
 void set_search_direction(int cdir);
 int do_search(oparg_T *oap, int dirc, char_u *pat, long count, int options, proftime_T *tm, int *timed_out);
 int search_for_exact_line(buf_T *buf, pos_T *pos, int dir, char_u *pat);
