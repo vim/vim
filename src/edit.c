@@ -6737,7 +6737,6 @@ internal_format(
 			 * comment leader for the numbered list.  */
 			for (i = 0; i < padding; i++)
 			    ins_str((char_u *)" ");
-			changed_bytes(curwin->w_cursor.lnum, leader_len);
 		    }
 		    else
 		    {

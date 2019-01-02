@@ -2749,7 +2749,7 @@ del_bytes(
 #endif
 
     // mark the buffer as changed and prepare for displaying
-    changed_bytes(lnum, curwin->w_cursor.col);
+    inserted_bytes(lnum, curwin->w_cursor.col, -count);
 
     return OK;
 }

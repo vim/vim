@@ -177,6 +177,29 @@ func Test_prop_add_remove_buf()
   bwipe!
 endfunc
 
+func Test_prop_backspace()
+  new
+  set bs=2
+  call setline(1, 'xonex xtwoxx')
+  call AddPropTypes()
+  call prop_add(1, 2, {'length': 3, 'id': 11, 'type': 'one'})
+  call prop_add(1, 8, {'length': 3, 'id': 12, 'type': 'two'})
+  let expected = [
+	\ {'col': 2, 'length': 3, 'id': 11, 'type': 'one', 'start': 1, 'end': 1},
+	\ {'col': 8, 'length': 3, 'id': 12, 'type': 'two', 'start': 1, 'end': 1},
+	\]
+  call assert_equal(expected, prop_list(1))
+
+  exe "normal 0li\<BS>\<Esc>fxli\<BS>\<Esc>"
+  call assert_equal('one xtwoxx', getline(1))
+  let expected[0].col = 1
+  let expected[1].col = 6
+  call assert_equal(expected, prop_list(1))
+
+  call DeletePropTypes()
+  bwipe!
+  set bs&
+endfunc
 
 func Test_prop_clear()
   new
@@ -319,6 +342,7 @@ funct Test_textprop_screenshots()
 	\ "hi clear SpellBad",
 	\ "set spell",
 	\ "normal 3G0llix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>",
+	\ "normal 3G0lli\<BS>\<Esc>",
 	\], 'XtestProp')
   let buf = RunVimInTerminal('-S XtestProp', {'rows': 6})
   call VerifyScreenDump(buf, 'Test_textprop_01', {})
