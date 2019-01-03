@@ -262,9 +262,9 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	if (lnum == end_lnum)
 	    length = end_col - col;
 	else
-	    length = textlen - col + 1;
+	    length = (int)textlen - col + 1;
 	if (length > (long)textlen)
-	    length = textlen;	// can include the end-of-line
+	    length = (int)textlen;	// can include the end-of-line
 	if (length < 0)
 	    length = 0;		// zero-width property
 
@@ -972,7 +972,7 @@ adjust_prop_columns(
     if (dirty)
     {
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
-	curbuf->b_ml.ml_line_len = textlen + wi * sizeof(textprop_T);
+	curbuf->b_ml.ml_line_len = (int)textlen + wi * sizeof(textprop_T);
     }
 }
 

@@ -562,7 +562,7 @@ ml_set_crypt_key(
 			    /* Skip data block with negative block number.
 			     * Should not happen, because of the ml_preserve()
 			     * above. Get same block again for next index. */
-			    ++idx; 
+			    ++idx;
 			    continue;
 			}
 
@@ -3350,7 +3350,7 @@ adjust_text_props_for_delete(
 			internal_error("no text property below deleted line");
 		    return;
 		}
-		this_props_len = line_size - textlen;
+		this_props_len = line_size - (int)textlen;
 	    }
 
 	    found = FALSE;
@@ -3489,7 +3489,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 
 	if ((long)textlen < line_size)
 	{
-	    textprop_save_len = line_size - textlen;
+	    textprop_save_len = line_size - (int)textlen;
 	    textprop_save = vim_memsave((char_u *)dp + line_start + textlen,
 							  textprop_save_len);
 	}
@@ -5379,7 +5379,7 @@ ml_updatechunk(
 		    // the text prop info would also be counted.  Go over the
 		    // lines.
 		    for (i = end_idx; i < idx; ++i)
-			size += STRLEN((char_u *)dp + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
+			size += (int)STRLEN((char_u *)dp + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
 		}
 		else
 #endif
@@ -5588,7 +5588,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    // lengths.
 	    len = 0;
 	    for (i = start_idx; i <= idx; ++i)
-		len += STRLEN((char_u *)dp + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
+		len += (int)STRLEN((char_u *)dp + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
 	}
 	else
 #endif
