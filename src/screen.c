@@ -4161,7 +4161,11 @@ win_line(
 	    break;
 	}
 
-	if (draw_state == WL_LINE && area_highlighting)
+	if (draw_state == WL_LINE && (area_highlighting
+#ifdef FEAT_SPELL
+		|| has_spell
+#endif
+	   ))
 	{
 	    /* handle Visual or match highlighting in this line */
 	    if (vcol == fromcol
