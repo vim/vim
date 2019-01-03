@@ -1326,7 +1326,8 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Handle an operator after visual mode or when the movement is finished
+ * Handle an operator after Visual mode or when the movement is finished.
+ * "gui_yank" is true when yanking text for the clipboard.
  */
     void
 do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
@@ -1372,6 +1373,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
      */
     if ((finish_op || VIsual_active) && oap->op_type != OP_NOP)
     {
+	// Yank can be redone when 'y' is in 'cpoptions', but not when yanking
+	// for the clipboard.
+	int	redo_yank = vim_strchr(p_cpo, CPO_YANK) != NULL && !gui_yank;
+
 #ifdef FEAT_LINEBREAK
 	/* Avoid a problem with unwanted linebreaks in block mode. */
 	if (curwin->w_p_lbr)
@@ -1407,7 +1412,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 
 	/* Only redo yank when 'y' flag is in 'cpoptions'. */
 	/* Never redo "zf" (define fold). */
-	if ((vim_strchr(p_cpo, CPO_YANK) != NULL || oap->op_type != OP_YANK)
+	if ((redo_yank || oap->op_type != OP_YANK)
 		&& ((!VIsual_active || oap->motion_force)
 		    /* Also redo Operator-pending Visual mode mappings */
 		    || (VIsual_active && cap->cmdchar == ':'
@@ -1628,7 +1633,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    }
 
 	    /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
-	    if ((vim_strchr(p_cpo, CPO_YANK) != NULL || oap->op_type != OP_YANK)
+	    if ((redo_yank || oap->op_type != OP_YANK)
 		    && oap->op_type != OP_COLON
 #ifdef FEAT_FOLDING
 		    && oap->op_type != OP_FOLD
