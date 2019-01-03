@@ -130,7 +130,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	*buf = get_buf_tv(&di->di_tv, FALSE);
+	*buf = tv_get_buf(&di->di_tv, FALSE);
 	if (*buf == NULL)
 	    return FAIL;
     }
@@ -533,7 +533,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     di = dict_find(dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	buf = get_buf_tv(&di->di_tv, FALSE);
+	buf = tv_get_buf(&di->di_tv, FALSE);
 	if (buf == NULL)
 	    return;
     }
