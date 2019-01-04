@@ -1195,6 +1195,15 @@ pum_show_popupmenu(vimmenu_T *menu)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
 
+    /* executing 'tlnoremap ...', 'aunmenu *' and 'popup Edit', pum_size is 0.
+     * because 'aunmenu *' is excluding Terminal mode.
+     */
+    if (pum_size <= 0)
+    {
+	EMSG(e_menuothermode);
+	return;
+    }
+
     array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
     if (array == NULL)
 	return;

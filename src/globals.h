@@ -1595,6 +1595,10 @@ EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 EXTERN char need_key_msg[] INIT(= N_("Need encryption key for \"%s\""));
 #endif
 
+#ifdef FEAT_MENU
+EXTERN char_u e_menuothermode[] INIT(= N_("E328: Menu only exists in another mode"));
+#endif
+
 /*
  * Comms. with the session manager (XSMP)
  */
