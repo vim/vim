@@ -347,6 +347,14 @@ typedef struct
  * structures used for undo
  */
 
+// One line saved for undo.  After the NUL terminated text there might be text
+// properties, thus ul_len can be larger than STRLEN(ul_line) + 1.
+typedef struct {
+    char_u	*ul_line;	// text of the line
+    long	ul_len;		// length of the line including NUL, plus text
+				// properties
+} undoline_T;
+
 typedef struct u_entry u_entry_T;
 typedef struct u_header u_header_T;
 struct u_entry
@@ -355,7 +363,7 @@ struct u_entry
     linenr_T	ue_top;		/* number of line above undo block */
     linenr_T	ue_bot;		/* number of line below undo block */
     linenr_T	ue_lcount;	/* linecount when u_save called */
-    char_u	**ue_array;	/* array of lines in undo block */
+    undoline_T	*ue_array;	/* array of lines in undo block */
     long	ue_size;	/* number of lines in ue_array */
 #ifdef U_DEBUG
     int		ue_magic;	/* magic number to check allocation */
@@ -2167,7 +2175,7 @@ struct file_buffer
     /*
      * variables for "U" command in undo.c
      */
-    char_u	*b_u_line_ptr;	/* saved line for "U" command */
+    undoline_T	b_u_line_ptr;	/* saved line for "U" command */
     linenr_T	b_u_line_lnum;	/* line number of line in u_line */
     colnr_T	b_u_line_colnr;	/* optional column number */
 

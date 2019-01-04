@@ -3217,11 +3217,22 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
 
     if (line != NULL)
 	len = (colnr_T)STRLEN(line);
-    return ml_replace_len(lnum, line, len, copy);
+    return ml_replace_len(lnum, line, len, FALSE, copy);
 }
 
+/*
+ * Replace a line for the current buffer.  Like ml_replace() with:
+ * "len_arg" is the length of the text, excluding NUL.
+ * If "has_props" is TRUE then "line_arg" includes the text properties and
+ * "len_arg" includes the NUL of the text.
+ */
     int
-ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
+ml_replace_len(
+	linenr_T    lnum,
+	char_u	    *line_arg,
+	colnr_T	    len_arg,
+	int	    has_props,
+	int	    copy)
 {
     char_u *line = line_arg;
     colnr_T len = len_arg;
@@ -3233,8 +3244,21 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
     if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
 	return FAIL;
 
-    if (copy && (line = vim_strnsave(line, len)) == NULL) /* allocate memory */
-	return FAIL;
+    if (!has_props)
+	++len;  // include the NUL after the text
+    if (copy)
+    {
+	// copy the line to allocated memory
+#ifdef FEAT_TEXT_PROP
+	if (has_props)
+	    line = vim_memsave(line, len);
+	else
+#endif
+	    line = vim_strnsave(line, len - 1);
+	if (line == NULL)
+	    return FAIL;
+    }
+
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
@@ -3249,14 +3273,14 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
 	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 
 #ifdef FEAT_TEXT_PROP
-	if (curbuf->b_has_textprop)
+	if (curbuf->b_has_textprop && !has_props)
 	    // Need to fetch the old line to copy over any text properties.
 	    ml_get_buf(curbuf, lnum, TRUE);
 #endif
     }
 
 #ifdef FEAT_TEXT_PROP
-    if (curbuf->b_has_textprop)
+    if (curbuf->b_has_textprop && !has_props)
     {
 	size_t	oldtextlen = STRLEN(curbuf->b_ml.ml_line_ptr) + 1;
 
@@ -3266,11 +3290,11 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
 	    size_t textproplen = curbuf->b_ml.ml_line_len - oldtextlen;
 
 	    // Need to copy over text properties, stored after the text.
-	    newline = alloc(len + 1 + (int)textproplen);
+	    newline = alloc(len + (int)textproplen);
 	    if (newline != NULL)
 	    {
-		mch_memmove(newline, line, len + 1);
-		mch_memmove(newline + len + 1, curbuf->b_ml.ml_line_ptr + oldtextlen, textproplen);
+		mch_memmove(newline, line, len);
+		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr + oldtextlen, textproplen);
 		vim_free(line);
 		line = newline;
 		len += (colnr_T)textproplen;
@@ -3279,11 +3303,11 @@ ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int copy)
     }
 #endif
 
-    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY) /* same line allocated */
-	vim_free(curbuf->b_ml.ml_line_ptr);	    /* free it */
+    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)	// same line allocated
+	vim_free(curbuf->b_ml.ml_line_ptr);	// free it
 
     curbuf->b_ml.ml_line_ptr = line;
-    curbuf->b_ml.ml_line_len = len + 1;
+    curbuf->b_ml.ml_line_len = len;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 
