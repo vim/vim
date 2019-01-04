@@ -89,30 +89,34 @@ func SetupPropsInFirstLine()
   call setline(1, 'one two three')
   call prop_add(1, 1, {'length': 3, 'id': 11, 'type': 'one'})
   call prop_add(1, 5, {'length': 3, 'id': 12, 'type': 'two'})
-  call prop_add(1, 8, {'length': 5, 'id': 13, 'type': 'three'})
+  call prop_add(1, 9, {'length': 5, 'id': 13, 'type': 'three'})
   call prop_add(1, 1, {'length': 13, 'id': 14, 'type': 'whole'})
 endfunc
 
-let s:expected_props = [{'col': 1, 'length': 13, 'id': 14, 'type': 'whole', 'start': 1, 'end': 1},
+func Get_expected_props()
+  return [
+      \ {'col': 1, 'length': 13, 'id': 14, 'type': 'whole', 'start': 1, 'end': 1},
       \ {'col': 1, 'length': 3, 'id': 11, 'type': 'one', 'start': 1, 'end': 1},
       \ {'col': 5, 'length': 3, 'id': 12, 'type': 'two', 'start': 1, 'end': 1},
-      \ {'col': 8, 'length': 5, 'id': 13, 'type': 'three', 'start': 1, 'end': 1},
+      \ {'col': 9, 'length': 5, 'id': 13, 'type': 'three', 'start': 1, 'end': 1},
       \ ]
+endfunc
 
 func Test_prop_add()
   new
   call AddPropTypes()
   call SetupPropsInFirstLine()
-  call assert_equal(s:expected_props, prop_list(1))
+  let expected_props = Get_expected_props()
+  call assert_equal(expected_props, prop_list(1))
   call assert_fails("call prop_add(10, 1, {'length': 1, 'id': 14, 'type': 'whole'})", 'E966:')
   call assert_fails("call prop_add(1, 22, {'length': 1, 'id': 14, 'type': 'whole'})", 'E964:')
  
   " Insert a line above, text props must still be there.
   call append(0, 'empty')
-  call assert_equal(s:expected_props, prop_list(2))
+  call assert_equal(expected_props, prop_list(2))
   " Delete a line above, text props must still be there.
   1del
-  call assert_equal(s:expected_props, prop_list(1))
+  call assert_equal(expected_props, prop_list(1))
 
   " Prop without length or end column is zero length
   call prop_clear(1)
@@ -128,7 +132,7 @@ func Test_prop_remove()
   new
   call AddPropTypes()
   call SetupPropsInFirstLine()
-  let props = deepcopy(s:expected_props)
+  let props = Get_expected_props()
   call assert_equal(props, prop_list(1))
 
   " remove by id
@@ -236,7 +240,7 @@ func Test_prop_clear()
   new
   call AddPropTypes()
   call SetupPropsInFirstLine()
-  call assert_equal(s:expected_props, prop_list(1))
+  call assert_equal(Get_expected_props(), prop_list(1))
 
   call prop_clear(1)
   call assert_equal([], prop_list(1))
@@ -251,7 +255,7 @@ func Test_prop_clear_buf()
   call SetupPropsInFirstLine()
   let bufnr = bufnr('')
   wincmd w
-  call assert_equal(s:expected_props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(Get_expected_props(), prop_list(1, {'bufnr': bufnr}))
 
   call prop_clear(1, 1, {'bufnr': bufnr})
   call assert_equal([], prop_list(1, {'bufnr': bufnr}))
@@ -265,7 +269,7 @@ func Test_prop_setline()
   new
   call AddPropTypes()
   call SetupPropsInFirstLine()
-  call assert_equal(s:expected_props, prop_list(1))
+  call assert_equal(Get_expected_props(), prop_list(1))
 
   call setline(1, 'foobar')
   call assert_equal([], prop_list(1))
@@ -280,12 +284,60 @@ func Test_prop_setbufline()
   call SetupPropsInFirstLine()
   let bufnr = bufnr('')
   wincmd w
-  call assert_equal(s:expected_props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(Get_expected_props(), prop_list(1, {'bufnr': bufnr}))
 
   call setbufline(bufnr, 1, 'foobar')
   call assert_equal([], prop_list(1, {'bufnr': bufnr}))
 
   wincmd w
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
+func Test_prop_substitute()
+  new
+  " Set first line to 'one two three'
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let expected_props = Get_expected_props()
+  call assert_equal(expected_props, prop_list(1))
+
+  " Change "n" in "one" to XX: 'oXXe two three'
+  s/n/XX/
+  let expected_props[0].length += 1
+  let expected_props[1].length += 1
+  let expected_props[2].col += 1
+  let expected_props[3].col += 1
+  call assert_equal(expected_props, prop_list(1))
+
+  " Delete "t" in "two" and "three" to XX: 'oXXe wo hree'
+  s/t//g
+  let expected_props[0].length -= 2
+  let expected_props[2].length -= 1
+  let expected_props[3].length -= 1
+  let expected_props[3].col -= 1
+  call assert_equal(expected_props, prop_list(1))
+
+  " Split the line by changing w to line break: 'oXXe ', 'o hree'
+  " The long prop is split and spans both lines.
+  " The props on "two" and "three" move to the next line.
+  s/w/\r/
+  let new_props = [
+	\ copy(expected_props[0]),
+	\ copy(expected_props[2]),
+	\ copy(expected_props[3]),
+	\ ]
+  let expected_props[0].length = 5
+  unlet expected_props[3]
+  unlet expected_props[2]
+  call assert_equal(expected_props, prop_list(1))
+
+  let new_props[0].length = 6
+  let new_props[1].col = 1
+  let new_props[1].length = 1
+  let new_props[2].col = 3
+  call assert_equal(new_props, prop_list(2))
+
   call DeletePropTypes()
   bwipe!
 endfunc

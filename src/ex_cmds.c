@@ -5628,9 +5628,19 @@ do_sub(exarg_T *eap)
 		 * - original text up to match
 		 * - length of substituted part
 		 * - original text after match
+		 * Adjust text properties here, since we have all information
+		 * needed.
 		 */
 		if (nmatch == 1)
+		{
 		    p1 = sub_firstline;
+#ifdef FEAT_TEXT_PROP
+		    if (curbuf->b_has_textprop)
+			adjust_prop_columns(lnum, regmatch.startpos[0].col,
+			      sublen - 1 - (regmatch.endpos[0].col
+						  - regmatch.startpos[0].col));
+#endif
+		}
 		else
 		{
 		    p1 = ml_get(sub_firstlnum + nmatch - 1);
@@ -5732,11 +5742,12 @@ do_sub(exarg_T *eap)
 			STRMOVE(p1, p1 + 1);
 		    else if (*p1 == CAR)
 		    {
-			if (u_inssub(lnum) == OK)   /* prepare for undo */
+			if (u_inssub(lnum) == OK)   // prepare for undo
 			{
-			    *p1 = NUL;		    /* truncate up to the CR */
-			    ml_append(lnum - 1, new_start,
-					(colnr_T)(p1 - new_start + 1), FALSE);
+			    colnr_T	plen = (colnr_T)(p1 - new_start + 1);
+
+			    *p1 = NUL;		    // truncate up to the CR
+			    ml_append(lnum - 1, new_start, plen, FALSE);
 			    mark_adjust(lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 			    if (subflags.do_ask)
 				appended_lines(lnum - 1, 1L);
@@ -5746,13 +5757,16 @@ do_sub(exarg_T *eap)
 				    first_line = lnum;
 				last_line = lnum + 1;
 			    }
-			    /* All line numbers increase. */
+#ifdef FEAT_TEXT_PROP
+			    adjust_props_for_split(lnum, plen, 1);
+#endif
+			    // all line numbers increase
 			    ++sub_firstlnum;
 			    ++lnum;
 			    ++line2;
-			    /* move the cursor to the new line, like Vi */
+			    // move the cursor to the new line, like Vi
 			    ++curwin->w_cursor.lnum;
-			    /* copy the rest */
+			    // copy the rest
 			    STRMOVE(new_start, p1 + 1);
 			    p1 = new_start - 1;
 			}

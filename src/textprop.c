@@ -18,6 +18,8 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
+ *   -> a :substitute with a multi-line match
+ *   -> search for changed_bytes() from ex_cmds.c
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -344,6 +346,34 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     if (proplen > 0)
 	*props = text + textlen;
     return (int)(proplen / sizeof(textprop_T));
+}
+
+/*
+ * Set the text properties for line "lnum" to "props" with length "len".
+ * If "len" is zero text properties are removed, "props" is not used.
+ * Any existing text properties are dropped.
+ * Only works for the current buffer.
+ */
+    static void
+set_text_props(linenr_T lnum, char_u *props, int len)
+{
+    char_u *text;
+    char_u *newtext;
+    size_t textlen;
+
+    text = ml_get(lnum);
+    textlen = STRLEN(text) + 1;
+    newtext = alloc(textlen + len);
+    if (newtext == NULL)
+	return;
+    mch_memmove(newtext, text, textlen);
+    if (len > 0)
+	mch_memmove(newtext + textlen, props, len);
+    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+	vim_free(curbuf->b_ml.ml_line_ptr);
+    curbuf->b_ml.ml_line_ptr = newtext;
+    curbuf->b_ml.ml_line_len = textlen + len;
+    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 }
 
     static proptype_T *
@@ -974,6 +1004,71 @@ adjust_prop_columns(
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	curbuf->b_ml.ml_line_len = (int)textlen + wi * sizeof(textprop_T);
     }
+}
+
+/*
+ * Adjust text properties for a line that was split in two.
+ * "lnum" is the newly inserted line.  The text properties are now on the line
+ * below it.  "kept" is the number of bytes kept in the first line, while
+ * "deleted" is the number of bytes deleted.
+ */
+    void
+adjust_props_for_split(linenr_T lnum, int kept, int deleted)
+{
+    char_u	*props;
+    int		count;
+    garray_T    prevprop;
+    garray_T    nextprop;
+    int		i;
+    int		skipped = kept + deleted;
+
+    if (!curbuf->b_has_textprop)
+	return;
+    count = get_text_props(curbuf, lnum + 1, &props, FALSE);
+    ga_init2(&prevprop, sizeof(textprop_T), 10);
+    ga_init2(&nextprop, sizeof(textprop_T), 10);
+
+    // Get the text properties, which are at "lnum + 1".
+    // Keep the relevant ones in the first line, reducing the length if needed.
+    // Copy the ones that include the split to the second line.
+    // Move the ones after the split to the second line.
+    for (i = 0; i < count; ++i)
+    {
+	textprop_T  prop;
+	textprop_T *p;
+
+	// copy the prop to an aligned structure
+	mch_memmove(&prop, props + i * sizeof(textprop_T), sizeof(textprop_T));
+
+	if (prop.tp_col < kept && ga_grow(&prevprop, 1) == OK)
+	{
+	    p = ((textprop_T *)prevprop.ga_data) + prevprop.ga_len;
+	    *p = prop;
+	    if (p->tp_col + p->tp_len >= kept)
+		p->tp_len = kept - p->tp_col;
+	    ++prevprop.ga_len;
+	}
+
+	if (prop.tp_col + prop.tp_len >= skipped && ga_grow(&nextprop, 1) == OK)
+	{
+	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
+	    *p = prop;
+	    if (p->tp_col > skipped)
+		p->tp_col -= skipped - 1;
+	    else
+	    {
+		p->tp_len -= skipped - p->tp_col;
+		p->tp_col = 1;
+	    }
+	    ++nextprop.ga_len;
+	}
+    }
+
+    set_text_props(lnum, prevprop.ga_data, prevprop.ga_len * sizeof(textprop_T));
+    ga_clear(&prevprop);
+
+    set_text_props(lnum + 1, nextprop.ga_data, nextprop.ga_len * sizeof(textprop_T));
+    ga_clear(&nextprop);
 }
 
 #endif // FEAT_TEXT_PROP
