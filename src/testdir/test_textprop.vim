@@ -261,6 +261,35 @@ func Test_prop_clear_buf()
   bwipe!
 endfunc
 
+func Test_prop_setline()
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  call assert_equal(s:expected_props, prop_list(1))
+
+  call setline(1, 'foobar')
+  call assert_equal([], prop_list(1))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
+func Test_prop_setbufline()
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let bufnr = bufnr('')
+  wincmd w
+  call assert_equal(s:expected_props, prop_list(1, {'bufnr': bufnr}))
+
+  call setbufline(bufnr, 1, 'foobar')
+  call assert_equal([], prop_list(1, {'bufnr': bufnr}))
+
+  wincmd w
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 " Setup a three line prop in lines 2 - 4.
 " Add short props in line 1 and 5.
 func Setup_three_line_prop()

@@ -1357,8 +1357,10 @@ set_buffer_lines(
 
 	if (!append && lnum <= curbuf->b_ml.ml_line_count)
 	{
-	    /* existing line, replace it */
-	    if (u_savesub(lnum) == OK && ml_replace(lnum, line, TRUE) == OK)
+	    // Existing line, replace it.
+	    // Removes any existing text properties.
+	    if (u_savesub(lnum) == OK && ml_replace_len(
+		      lnum, line, (colnr_T)STRLEN(line) + 1, TRUE, TRUE) == OK)
 	    {
 		changed_bytes(lnum, 0);
 		if (is_curbuf && lnum == curwin->w_cursor.lnum)
