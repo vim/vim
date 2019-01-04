@@ -1645,6 +1645,28 @@ func Test_collapse_buffers()
   bwipe!
 endfunc
 
+func Test_write_to_deleted_buffer()
+  if !executable('echo') || !has('job')
+    return
+  endif
+  let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  let bufnr = bufnr('test_buffer')
+  call assert_equal(['hello'], getbufline(bufnr, 1, '$'))
+  call assert_equal('nofile', getbufvar(bufnr, '&buftype'))
+  call assert_equal('hide', getbufvar(bufnr, '&bufhidden'))
+  bdel test_buffer
+  call assert_equal([], getbufline(bufnr, 1, '$'))
+
+  let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call assert_equal(['hello'], getbufline(bufnr, 1, '$'))
+  call assert_equal('nofile', getbufvar(bufnr, '&buftype'))
+  call assert_equal('hide', getbufvar(bufnr, '&bufhidden'))
+
+  bwipe! test_buffer
+endfunc
+
 func Test_cmd_parsing()
   if !has('unix')
     return

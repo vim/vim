@@ -1099,6 +1099,25 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 }
 
 /*
+ * Prepare buffer "buf" for writing channel output to.
+ */
+	static void
+prepare_buffer(buf_T *buf)
+{
+    buf_T *save_curbuf = curbuf;
+
+    buf_copy_options(buf, BCO_ENTER);
+    curbuf = buf;
+#ifdef FEAT_QUICKFIX
+    set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
+    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+#endif
+    if (curbuf->b_ml.ml_mfp == NULL)
+	ml_open(curbuf);
+    curbuf = save_curbuf;
+}
+
+/*
  * Find a buffer matching "name" or create a new one.
  * Returns NULL if there is something very wrong (error already reported).
  */
@@ -1120,14 +1139,9 @@ find_buffer(char_u *name, int err, int msg)
 				     NULL, (linenr_T)0, BLN_LISTED | BLN_NEW);
 	if (buf == NULL)
 	    return NULL;
-	buf_copy_options(buf, BCO_ENTER);
+	prepare_buffer(buf);
+
 	curbuf = buf;
-#ifdef FEAT_QUICKFIX
-	set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
-	set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
-#endif
-	if (curbuf->b_ml.ml_mfp == NULL)
-	    ml_open(curbuf);
 	if (msg)
 	    ml_replace(1, (char_u *)(err ? "Reading from channel error..."
 				   : "Reading from channel output..."), TRUE);
@@ -1244,6 +1258,9 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 		ch_log(channel, "writing out to buffer '%s'",
 						       (char *)buf->b_ffname);
 		set_bufref(&channel->ch_part[PART_OUT].ch_bufref, buf);
+		// if the buffer was deleted or unloaded resurrect it
+		if (buf->b_ml.ml_mfp == NULL)
+		    prepare_buffer(buf);
 	    }
 	}
     }
@@ -1287,6 +1304,9 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 		ch_log(channel, "writing err to buffer '%s'",
 						       (char *)buf->b_ffname);
 		set_bufref(&channel->ch_part[PART_ERR].ch_bufref, buf);
+		// if the buffer was deleted or unloaded resurrect it
+		if (buf->b_ml.ml_mfp == NULL)
+		    prepare_buffer(buf);
 	    }
 	}
     }
