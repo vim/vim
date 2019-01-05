@@ -63,7 +63,8 @@ func Test_sign()
 
   " Check placed signs
   let a=execute('sign place')
-  call assert_equal("\n--- Signs ---\nSigns for [NULL]:\n    line=3  id=41  name=Sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for [NULL]:\n" .
+		\ "    line=3  id=41  name=Sign1 priority=10\n", a)
 
   " Unplace the sign and try jumping to it again should fail.
   sign unplace 41
@@ -86,6 +87,13 @@ func Test_sign()
   sign unplace *
   let a=execute('sign place')
   call assert_equal("\n--- Signs ---\n", a)
+
+  " Place a sign without specifying the filename or buffer
+  sign place 77 line=9 name=Sign2
+  let a=execute('sign place')
+  call assert_equal("\n--- Signs ---\nSigns for [NULL]:\n" .
+		\ "    line=9  id=77  name=Sign2 priority=10\n", a)
+  sign unplace *
 
   " Check :jump with file=...
   edit foo
@@ -148,37 +156,11 @@ func Test_sign()
   call assert_equal("\nsign 4 text=#> linehl=Comment", a)
   exe 'sign place 20 line=3 name=004 buffer=' . bufnr('')
   let a = execute('sign place')
-  call assert_equal("\n--- Signs ---\nSigns for foo:\n    line=3  id=20  name=4 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for foo:\n" .
+		\ "    line=3  id=20  name=4 priority=10\n", a)
   exe 'sign unplace 20 buffer=' . bufnr('')
   sign undefine 004
   call assert_fails('sign list 4', 'E155:')
-
-  " Error cases
-  call assert_fails("sign place abc line=3 name=Sign1 buffer=" .
-			  \ bufnr('%'), 'E474:')
-  call assert_fails("sign unplace abc name=Sign1 buffer=" .
-			  \ bufnr('%'), 'E474:')
-  call assert_fails("sign place 1abc line=3 name=Sign1 buffer=" .
-			  \ bufnr('%'), 'E474:')
-  call assert_fails("sign unplace 2abc name=Sign1 buffer=" .
-			  \ bufnr('%'), 'E474:')
-  call assert_fails("sign unplace 2 *", 'E474:')
-  call assert_fails("sign place 1 line=3 name=Sign1 buffer=" .
-			  \ bufnr('%') . " a", 'E488:')
-  call assert_fails("sign place name=Sign1 buffer=" . bufnr('%'), 'E474:')
-  call assert_fails("sign place line=10 buffer=" . bufnr('%'), 'E474:')
-  call assert_fails("sign unplace 2 line=10 buffer=" . bufnr('%'), 'E474:')
-  call assert_fails("sign unplace 2 name=Sign1 buffer=" . bufnr('%'), 'E474:')
-  call assert_fails("sign place 2 line=3 buffer=" . bufnr('%'), 'E474:')
-  call assert_fails("sign place 2", 'E474:')
-  call assert_fails("sign place abc", 'E474:')
-  call assert_fails("sign place 5 line=3", 'E474:')
-  call assert_fails("sign place 5 name=Sign1", 'E474:')
-  call assert_fails("sign place 5 group=g1", 'E474:')
-  call assert_fails("sign place 5 group=*", 'E474:')
-  call assert_fails("sign place 5 priority=10", 'E474:')
-  call assert_fails("sign place 5 line=3 name=Sign1", 'E474:')
-  call assert_fails("sign place 5 group=g1 line=3 name=Sign1", 'E474:')
 
   " After undefining the sign, we should no longer be able to place it.
   sign undefine Sign1
@@ -202,7 +184,8 @@ func Test_sign_undefine_still_placed()
 
   " Listing placed sign should show that sign is deleted.
   let a=execute('sign place')
-  call assert_equal("\n--- Signs ---\nSigns for foobar:\n    line=1  id=41  name=[Deleted] priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for foobar:\n" .
+		\ "    line=1  id=41  name=[Deleted] priority=10\n", a)
 
   sign unplace 41
   let a=execute('sign place')
@@ -306,16 +289,11 @@ func Test_sign_invalid_commands()
   call assert_fails("sign place abc", 'E474:')
   " Placing a sign with only line number
   call assert_fails("sign place 5 line=3", 'E474:')
-  " Placing a sign with only sign name
-  call assert_fails("sign place 5 name=Sign1", 'E474:')
   " Placing a sign with only sign group
   call assert_fails("sign place 5 group=g1", 'E474:')
   call assert_fails("sign place 5 group=*", 'E474:')
   " Placing a sign with only sign priority
   call assert_fails("sign place 5 priority=10", 'E474:')
-  " Placing a sign without buffer number or file name
-  call assert_fails("sign place 5 line=3 name=Sign1", 'E474:')
-  call assert_fails("sign place 5 group=g1 line=3 name=Sign1", 'E474:')
 
   sign undefine Sign1
 endfunc
@@ -689,6 +667,12 @@ func Test_sign_group()
   call assert_equal('Xsign', bufname(''))
   sign jump 5 group=g2 file=Xsign
   call assert_equal(12, line('.'))
+
+  " Test for :sign jump command without the filename or buffer
+  sign jump 5
+  call assert_equal(10, line('.'))
+  sign jump 5 group=g1
+  call assert_equal(11, line('.'))
 
   " Error cases
   call assert_fails("sign place 3 group= name=sign1 buffer=" . bnum, 'E474:')

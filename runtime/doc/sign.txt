@@ -178,8 +178,9 @@ See |sign_place()| for the equivalent Vim script function.
 			:sign place 9 group=g2 priority=50 line=5
 							\ name=sign1 file=a.py
 <
-:sign place {id} line={lnum} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+:sign place {id} line={lnum} name={name} [ buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, place the sign in the current buffer.
 
 							*E885*
 :sign place {id} name={name} file={fname}
@@ -191,8 +192,9 @@ See |sign_place()| for the equivalent Vim script function.
 		The optional "group={group}" attribute can be used before
 		"file=" to select a sign in a particular group.
 
-:sign place {id} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+:sign place {id} name={name} [ buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, use the current buffer.
 
 
 REMOVING SIGNS						*:sign-unplace* *E159*
@@ -315,11 +317,12 @@ JUMPING TO A SIGN					*:sign-jump* *E157*
 :sign jump {id} group={group} file={fname}
 		Same but jump to the sign in group {group}
 
-:sign jump {id} buffer={nr}					*E934*
+:sign jump {id} [ buffer={nr}]					*E934*
 		Same, but use buffer {nr}.  This fails if buffer {nr} does not
-		have a name.
+		have a name. If the buffer argument is not given, use the
+		current buffer.
 
-:sign jump {id} group={group} buffer={nr}
+:sign jump {id} group={group} [ buffer={nr}]
 		Same but jump to the sign in group {group}
 
 
