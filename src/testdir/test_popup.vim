@@ -882,17 +882,19 @@ func Test_complete_o_tab()
   delfunc s:act_on_text_changed
 endfunc
 
-func Test_menu_only_exists_in_terminal()
-  if exists(':tlmenu')
-    tlnoremenu	 &Edit.&Paste<Tab>"+gP		<C-W>"+
-    aunmenu *
-    try
-      popup Edit
-      call assert_false(1, 'command should have failed')
-    catch
-      call assert_exception('E328:')
-    endtry
-  endif
-endfunc
+if !has('gui_running')
+  func Test_menu_only_exists_in_terminal()
+    if exists(':tlmenu')
+      tlnoremenu	 &Edit.&Paste<Tab>"+gP		<C-W>"+
+      aunmenu *
+      try
+        popup Edit
+        call assert_false(1, 'command should have failed')
+      catch
+        call assert_exception('E328:')
+      endtry
+    endif
+  endfunc
+endif
 
 " vim: shiftwidth=2 sts=2 expandtab
