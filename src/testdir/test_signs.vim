@@ -14,7 +14,8 @@ func Test_sign()
   " the icon name when listing signs.
   sign define Sign1 text=x
   try
-    sign define Sign2 text=xy texthl=Title linehl=Error icon=../../pixmaps/stock_vim_find_help.png
+    sign define Sign2 text=xy texthl=Title linehl=Error
+		\ icon=../../pixmaps/stock_vim_find_help.png
   catch /E255:/
     " Ignore error: E255: Couldn't read in sign data!
     " This error can happen when running in the GUI.
@@ -23,7 +24,9 @@ func Test_sign()
 
   " Test listing signs.
   let a=execute('sign list')
-  call assert_match("^\nsign Sign1 text=x \nsign Sign2 icon=../../pixmaps/stock_vim_find_help.png .*text=xy linehl=Error texthl=Title$", a)
+  call assert_match('^\nsign Sign1 text=x \nsign Sign2 ' .
+	      \ 'icon=../../pixmaps/stock_vim_find_help.png .*text=xy ' .
+	      \ 'linehl=Error texthl=Title$', a)
 
   let a=execute('sign list Sign1')
   call assert_equal("\nsign Sign1 text=x ", a)
@@ -100,7 +103,8 @@ func Test_sign()
   call setline(1, ['A', 'B', 'C', 'D'])
 
   try
-    sign define Sign3 text=y texthl=DoesNotExist linehl=DoesNotExist icon=doesnotexist.xpm
+    sign define Sign3 text=y texthl=DoesNotExist linehl=DoesNotExist
+		\ icon=doesnotexist.xpm
   catch /E255:/
     " ignore error: E255: it can happens for guis.
   endtry
@@ -203,7 +207,8 @@ func Test_sign_completion()
   call assert_equal('"sign define Sign icon= linehl= text= texthl=', @:)
 
   call feedkeys(":sign define Sign linehl=Spell\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"sign define Sign linehl=SpellBad SpellCap SpellLocal SpellRare', @:)
+  call assert_equal('"sign define Sign linehl=SpellBad SpellCap ' .
+	      \ 'SpellLocal SpellRare', @:)
 
   call writefile(['foo'], 'XsignOne')
   call writefile(['bar'], 'XsignTwo')
@@ -256,17 +261,22 @@ func Test_sign_invalid_commands()
   call assert_fails('sign jump 1 line=100', '474:')
   call assert_fails('sign define Sign2 text=', 'E239:')
   " Non-numeric identifier for :sign place
-  call assert_fails("sign place abc line=3 name=Sign1 buffer=" . bufnr('%'), 'E474:')
+  call assert_fails("sign place abc line=3 name=Sign1 buffer=" . bufnr(''),
+								\ 'E474:')
   " Non-numeric identifier for :sign unplace
-  call assert_fails("sign unplace abc name=Sign1 buffer=" . bufnr('%'), 'E474:')
+  call assert_fails("sign unplace abc name=Sign1 buffer=" . bufnr(''),
+								\ 'E474:')
   " Number followed by an alphabet as sign identifier for :sign place
-  call assert_fails("sign place 1abc line=3 name=Sign1 buffer=" . bufnr('%'), 'E474:')
+  call assert_fails("sign place 1abc line=3 name=Sign1 buffer=" . bufnr(''),
+								\ 'E474:')
   " Number followed by an alphabet as sign identifier for :sign unplace
-  call assert_fails("sign unplace 2abc name=Sign1 buffer=" . bufnr('%'), 'E474:')
+  call assert_fails("sign unplace 2abc name=Sign1 buffer=" . bufnr(''),
+								\ 'E474:')
   " Sign identifier and '*' for :sign unplace
   call assert_fails("sign unplace 2 *", 'E474:')
   " Trailing characters after buffer number for :sign place
-  call assert_fails("sign place 1 line=3 name=Sign1 buffer=" . bufnr('%') . 'xxx', 'E488:')
+  call assert_fails("sign place 1 line=3 name=Sign1 buffer=" .
+						\ bufnr('%') . 'xxx', 'E488:')
   " Trailing characters after buffer number for :sign unplace
   call assert_fails("sign unplace 1 buffer=" . bufnr('%') . 'xxx', 'E488:')
   call assert_fails("sign unplace * buffer=" . bufnr('%') . 'xxx', 'E488:')
@@ -602,11 +612,13 @@ func Test_sign_group()
 
   " :sign place file={fname}
   let a = execute('sign place file=Xsign')
-  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
   " :sign place group={group} file={fname}
   let a = execute('sign place group=g2 file=Xsign')
-  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=10  id=5  group=g2  name=sign1 priority=10\n", a)
 
   " :sign place group=* file={fname}
   let a = execute('sign place group=* file=Xsign')
@@ -627,11 +639,13 @@ func Test_sign_group()
 
   " :sign place buffer={fname}
   let a = execute('sign place buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=10  id=5  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=10  id=5  name=sign1 priority=10\n", a)
 
   " :sign place group={group} buffer={fname}
   let a = execute('sign place group=g2 buffer=' . bnum)
-  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
+  call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
+	      \ "    line=12  id=5  group=g2  name=sign1 priority=10\n", a)
 
   " :sign place group=* buffer={fname}
   let a = execute('sign place group=* buffer=' . bnum)

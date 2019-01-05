@@ -7891,7 +7891,9 @@ sign_define({name} [, {dict}])				*sign_define()*
 		   text		text that is displayed when there is no icon
 				or the GUI is not being used.
 		   texthl	highlight group used for the text item
-		For an existing sign, the attributes are updated.
+
+		If the sign named {name} already exists, then the attributes
+		of the sign are updated.
 
 		Returns 0 on success and -1 on failure.
 
@@ -7944,6 +7946,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		empty string, then only signs in the global group are
 		returned.  If no arguments are supplied, then signs in the
 		global group placed in all the buffers are returned.
+		See |sign-group|.
 
 		Each list item in the returned value is a dictionary with the
 		following entries:
@@ -7959,7 +7962,8 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			name	name of the defined sign
 			priority	sign priority
 
-		Returns an empty list on failure.
+		Returns an empty list on failure or if there are no placed
+		signs.
 
 		Examples: >
 			" Get a List of signs placed in eval.c in the
@@ -7992,7 +7996,8 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		allocated.  Otherwise the specified number is used. {group} is
 		the sign group name. To use the global sign group, use an
 		empty string.  {group} functions as a namespace for {id}, thus
-		two groups can use the same IDs.
+		two groups can use the same IDs. Refer to |sign-identifier|
+		for more information.
 
 		{name} refers to a defined sign.
 		{expr} refers to a buffer name or number. For the accepted
