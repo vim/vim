@@ -890,7 +890,7 @@ func Test_menu_only_exists_in_terminal()
       popup Edit
       call assert_false(1, 'command should have failed')
     catch
-      call assert_exception('E973:')
+      call assert_exception('E328:')
     endtry
   endif
 endfunc
