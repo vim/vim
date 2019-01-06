@@ -4219,6 +4219,7 @@ expand_by_function(
     win_T	*curwin_save;
     buf_T	*curbuf_save;
     typval_T	rettv;
+    int		save_State = State;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
@@ -4272,6 +4273,9 @@ expand_by_function(
 	ins_compl_add_dict(matchdict);
 
 theend:
+    // Restore State, it might have been changed.
+    State = save_State;
+
     if (matchdict != NULL)
 	dict_unref(matchdict);
     if (matchlist != NULL)
@@ -5549,6 +5553,7 @@ ins_complete(int c, int enable_pum)
 	    pos_T	pos;
 	    win_T	*curwin_save;
 	    buf_T	*curbuf_save;
+	    int		save_State = State;
 
 	    /* Call 'completefunc' or 'omnifunc' and get pattern length as a
 	     * string */
@@ -5572,6 +5577,8 @@ ins_complete(int c, int enable_pum)
 	    curwin_save = curwin;
 	    curbuf_save = curbuf;
 	    col = call_func_retnr(funcname, 2, args);
+
+	    State = save_State;
 	    if (curwin_save != curwin || curbuf_save != curbuf)
 	    {
 		EMSG(_(e_complwin));
@@ -10730,6 +10737,7 @@ do_insert_char_pre(int c)
 {
     char_u	*res;
     char_u	buf[MB_MAXBYTES + 1];
+    int		save_State = State;
 
     /* Return quickly when there is nothing to do. */
     if (!has_insertcharpre())
@@ -10761,6 +10769,9 @@ do_insert_char_pre(int c)
 
     set_vim_var_string(VV_CHAR, NULL, -1);  /* clear v:char */
     --textlock;
+
+    // Restore the State, it may have been changed.
+    State = save_State;
 
     return res;
 }
