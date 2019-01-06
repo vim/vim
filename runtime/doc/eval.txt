@@ -3977,7 +3977,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			stuck, waiting for a character to be typed before the
 			script continues.
 			Note that if you manage to call feedkeys() while
-			executing commands, thus calling it recursively, the
+			executing commands, thus calling it recursively, then
 			all typehead will be consumed by the last call.
 		'!'	When used with 'x' will not end Insert mode. Can be
 			used in a test when a timer is set to exit Insert mode
