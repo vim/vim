@@ -7970,7 +7970,7 @@ replace_do_bs(int limit_col)
     if (cc > 0)
     {
 #ifdef FEAT_TEXT_PROP
-	size_t	len_before;
+	size_t	len_before = 0;  // init to shut up GCC
 
 	if (curbuf->b_has_textprop)
 	{
