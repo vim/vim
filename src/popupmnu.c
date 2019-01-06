@@ -1195,6 +1195,14 @@ pum_show_popupmenu(vimmenu_T *menu)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
 
+    // When there are only Terminal mode menus, using "popup Edit" results in
+    // pum_size being zero.
+    if (pum_size <= 0)
+    {
+	EMSG(e_menuothermode);
+	return;
+    }
+
     array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
     if (array == NULL)
 	return;
