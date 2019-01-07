@@ -631,11 +631,11 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	    if (!sign_in_group(sign, sign_group))
 		continue;
 	    if (sign->group != NULL)
-		vim_snprintf(group, BUFSIZ, "  group=%s",
+		vim_snprintf(group, BUFSIZ, _("  group=%s"),
 							sign->group->sg_name);
 	    else
 		group[0] = '\0';
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s "
+	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s  "
 							"priority=%d"),
 			   (long)sign->lnum, sign->id, group,
 			   sign_typenr2name(sign->typenr), sign->priority);
