@@ -1729,7 +1729,7 @@ func Test_terminal_no_job()
 endfunc
 
 func Test_term_gettitle()
-  if !has('title')
+  if !has('title') || empty(&t_ts)
     return
   endif"
 
