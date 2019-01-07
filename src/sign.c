@@ -607,8 +607,8 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 {
     buf_T	*buf;
     signlist_T	*sign;
-    char	lbuf[BUFSIZ];
-    char	group[BUFSIZ];
+    char	lbuf[MSG_BUF_LEN];
+    char	group[MSG_BUF_LEN];
 
     MSG_PUTS_TITLE(_("\n--- Signs ---"));
     msg_putchar('\n');
@@ -620,7 +620,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
     {
 	if (buf->b_signlist != NULL)
 	{
-	    vim_snprintf(lbuf, BUFSIZ, _("Signs for %s:"), buf->b_fname);
+	    vim_snprintf(lbuf, MSG_BUF_LEN, _("Signs for %s:"), buf->b_fname);
 	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
 	    msg_putchar('\n');
 	}
@@ -631,12 +631,12 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	    if (!sign_in_group(sign, sign_group))
 		continue;
 	    if (sign->group != NULL)
-		vim_snprintf(group, BUFSIZ, "  group=%s",
+		vim_snprintf(group, MSG_BUF_LEN, _("  group=%s"),
 							sign->group->sg_name);
 	    else
 		group[0] = '\0';
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d%s  name=%s "
-							"priority=%d"),
+	    vim_snprintf(lbuf, MSG_BUF_LEN,
+			   _("    line=%ld  id=%d%s  name=%s  priority=%d"),
 			   (long)sign->lnum, sign->id, group,
 			   sign_typenr2name(sign->typenr), sign->priority);
 	    MSG_PUTS(lbuf);
