@@ -621,9 +621,12 @@ list_flatten(list_T *list, long maxdepth)
 
     n = 0;
     item = list->lv_first;
-    while (item != NULL && !got_int)
+    while (item != NULL)
     {
 	line_breakcheck();
+	if (got_int) {
+	    return FAIL;
+	}
 
 	if (item->li_tv.v_type == VAR_LIST)
 	{
