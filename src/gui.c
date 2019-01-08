@@ -687,9 +687,10 @@ gui_init(void)
     gui.shell_created = TRUE;
 
 #ifndef FEAT_GUI_GTK
-    /* Set the shell size, adjusted for the screen size.  For GTK this only
-     * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+    // Set the shell size, adjusted for the screen size.  For GTK this only
+    // works after the shell has been opened, thus it is further down.
+    // For MS-Windows pass FALSE for "mustset" to make --windowid work.
+    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -3865,8 +3866,12 @@ send_tabline_menu_event(int tabidx, int event)
 {
     char_u	    string[3];
 
-    /* Don't put events in the input queue now. */
+    // Don't put events in the input queue now.
     if (hold_gui_events)
+	return;
+
+    // Cannot close the last tabpage.
+    if (event == TABLINE_MENU_CLOSE && first_tabpage->tp_next == NULL)
 	return;
 
     string[0] = CSI;

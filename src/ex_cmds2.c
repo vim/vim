@@ -2738,7 +2738,7 @@ ex_args(exarg_T *eap)
 	    alist_new();
     }
 
-    if (!ends_excmd(*eap->arg))
+    if (*eap->arg != NUL)
     {
 	/*
 	 * ":args file ..": define new argument list, handle like ":next"

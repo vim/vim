@@ -496,7 +496,7 @@ term_start(
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
 		|| argvar->vval.v_list->lv_len < 1
-		|| (cmd = get_tv_string_chk(
+		|| (cmd = tv_get_string_chk(
 			       &argvar->vval.v_list->lv_first->li_tv)) == NULL)
 	    cmd = (char_u*)"";
 
@@ -569,7 +569,7 @@ term_start(
 	for (item = argvar->vval.v_list->lv_first;
 					item != NULL; item = item->li_next)
 	{
-	    char_u *s = get_tv_string_chk(&item->li_tv);
+	    char_u *s = tv_get_string_chk(&item->li_tv);
 	    char_u *p;
 
 	    if (s == NULL)
@@ -1561,7 +1561,8 @@ update_snapshot(term_T *term)
 
 			cell2cellattr(&cell, &p[pos.col]);
 
-			if (ga_grow(&ga, MB_MAXBYTES) == OK)
+			// Each character can be up to 6 bytes.
+			if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6) == OK)
 			{
 			    int	    i;
 			    int	    c;
@@ -1912,7 +1913,7 @@ term_paste_register(int prev_c UNUSED)
 	type = get_reg_type(c, &reglen);
 	for (item = l->lv_first; item != NULL; item = item->li_next)
 	{
-	    char_u *s = get_tv_string(&item->li_tv);
+	    char_u *s = tv_get_string(&item->li_tv);
 #ifdef WIN3264
 	    char_u *tmp = s;
 
@@ -3429,6 +3430,7 @@ set_vterm_palette(VTerm *vterm, long_u *rgb)
 {
     int		index = 0;
     VTermState	*state = vterm_obtain_state(vterm);
+
     for (; index < 16; index++)
     {
 	VTermColor	color;
@@ -3454,7 +3456,7 @@ set_ansi_colors_list(VTerm *vterm, list_T *list)
 	char_u		*color_name;
 	guicolor_T	guicolor;
 
-	color_name = get_tv_string_chk(&li->li_tv);
+	color_name = tv_get_string_chk(&li->li_tv);
 	if (color_name == NULL)
 	    return FAIL;
 
@@ -3496,7 +3498,7 @@ init_vterm_ansi_colors(VTerm *vterm)
     static void
 handle_drop_command(listitem_T *item)
 {
-    char_u	*fname = get_tv_string(&item->li_tv);
+    char_u	*fname = tv_get_string(&item->li_tv);
     listitem_T	*opt_item = item->li_next;
     int		bufnr;
     win_T	*wp;
@@ -3523,9 +3525,9 @@ handle_drop_command(listitem_T *item)
 	dict_T *dict = opt_item->li_tv.vval.v_dict;
 	char_u *p;
 
-	p = get_dict_string(dict, (char_u *)"ff", FALSE);
+	p = dict_get_string(dict, (char_u *)"ff", FALSE);
 	if (p == NULL)
-	    p = get_dict_string(dict, (char_u *)"fileformat", FALSE);
+	    p = dict_get_string(dict, (char_u *)"fileformat", FALSE);
 	if (p != NULL)
 	{
 	    if (check_ff_value(p) == FAIL)
@@ -3533,9 +3535,9 @@ handle_drop_command(listitem_T *item)
 	    else
 		ea.force_ff = *p;
 	}
-	p = get_dict_string(dict, (char_u *)"enc", FALSE);
+	p = dict_get_string(dict, (char_u *)"enc", FALSE);
 	if (p == NULL)
-	    p = get_dict_string(dict, (char_u *)"encoding", FALSE);
+	    p = dict_get_string(dict, (char_u *)"encoding", FALSE);
 	if (p != NULL)
 	{
 	    ea.cmd = alloc((int)STRLEN(p) + 12);
@@ -3547,7 +3549,7 @@ handle_drop_command(listitem_T *item)
 	    }
 	}
 
-	p = get_dict_string(dict, (char_u *)"bad", FALSE);
+	p = dict_get_string(dict, (char_u *)"bad", FALSE);
 	if (p != NULL)
 	    get_bad_opt(p, &ea);
 
@@ -3588,7 +3590,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
 	ch_log(channel, "Missing function arguments for call");
 	return;
     }
-    func = get_tv_string(&item->li_tv);
+    func = tv_get_string(&item->li_tv);
 
     if (STRNCMP(func, "Tapi_", 5) != 0)
     {
@@ -3644,7 +3646,7 @@ parse_osc(const char *command, size_t cmdlen, void *user)
 	    ch_log(channel, "Missing command");
 	else
 	{
-	    char_u	*cmd = get_tv_string(&item->li_tv);
+	    char_u	*cmd = tv_get_string(&item->li_tv);
 
 	    /* Make sure an invoked command doesn't delete the buffer (and the
 	     * terminal) under our fingers. */
@@ -3702,8 +3704,9 @@ static VTermAllocatorFunctions vterm_allocator = {
 
 /*
  * Create a new vterm and initialize it.
+ * Return FAIL when out of memory.
  */
-    static void
+    static int
 create_vterm(term_T *term, int rows, int cols)
 {
     VTerm	    *vterm;
@@ -3713,7 +3716,18 @@ create_vterm(term_T *term, int rows, int cols)
 
     vterm = vterm_new_with_allocator(rows, cols, &vterm_allocator, NULL);
     term->tl_vterm = vterm;
+    if (vterm == NULL)
+	return FAIL;
+
+    // Allocate screen and state here, so we can bail out if that fails.
+    state = vterm_obtain_state(vterm);
     screen = vterm_obtain_screen(vterm);
+    if (state == NULL || screen == NULL)
+    {
+	vterm_free(vterm);
+	return FAIL;
+    }
+
     vterm_screen_set_callbacks(screen, &screen_callbacks, term);
     /* TODO: depends on 'encoding'. */
     vterm_set_utf8(vterm, 1);
@@ -3721,7 +3735,7 @@ create_vterm(term_T *term, int rows, int cols)
     init_default_colors(term);
 
     vterm_state_set_default_colors(
-	    vterm_obtain_state(vterm),
+	    state,
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
 
@@ -3745,9 +3759,10 @@ create_vterm(term_T *term, int rows, int cols)
 #else
     value.boolean = 0;
 #endif
-    state = vterm_obtain_state(vterm);
     vterm_state_set_termprop(state, VTERM_PROP_CURSORBLINK, &value);
     vterm_state_set_unrecognised_fallbacks(state, &parser_fallbacks, term);
+
+    return OK;
 }
 
 /*
@@ -3825,9 +3840,9 @@ term_get_buf(typval_T *argvars, char *where)
 {
     buf_T *buf;
 
-    (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
+    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
     ++emsg_off;
-    buf = get_buf_tv(&argvars[0], FALSE);
+    buf = tv_get_buf(&argvars[0], FALSE);
     --emsg_off;
     if (buf == NULL || buf->b_term == NULL)
     {
@@ -3915,12 +3930,12 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	d = argvars[2].vval.v_dict;
 	if (d != NULL)
 	{
-	    max_height = get_dict_number(d, (char_u *)"rows");
-	    max_width = get_dict_number(d, (char_u *)"columns");
+	    max_height = dict_get_number(d, (char_u *)"rows");
+	    max_width = dict_get_number(d, (char_u *)"columns");
 	}
     }
 
-    fname = get_tv_string_chk(&argvars[1]);
+    fname = tv_get_string_chk(&argvars[1]);
     if (fname == NULL)
 	return;
     if (mch_stat((char *)fname, &st) >= 0)
@@ -4369,9 +4384,9 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     char_u	*textline = NULL;
 
     /* First open the files.  If this fails bail out. */
-    fname1 = get_tv_string_buf_chk(&argvars[0], buf1);
+    fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     if (do_diff)
-	fname2 = get_tv_string_buf_chk(&argvars[1], buf2);
+	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
 	EMSG(_(e_invarg));
@@ -4739,8 +4754,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 	{"reverse",   HL_INVERSE},
     };
 
-    attr = get_tv_number(&argvars[0]);
-    name = get_tv_string_chk(&argvars[1]);
+    attr = tv_get_number(&argvars[0]);
+    name = tv_get_string_chk(&argvars[1]);
     if (name == NULL)
 	return;
 
@@ -4793,11 +4808,14 @@ f_term_getjob(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = term_get_buf(argvars, "term_getjob()");
 
-    rettv->v_type = VAR_JOB;
-    rettv->vval.v_job = NULL;
     if (buf == NULL)
+    {
+	rettv->v_type = VAR_SPECIAL;
+	rettv->vval.v_number = VVAL_NULL;
 	return;
+    }
 
+    rettv->v_type = VAR_JOB;
     rettv->vval.v_job = buf->b_term->tl_job;
     if (rettv->vval.v_job != NULL)
 	++rettv->vval.v_job->jv_refcount;
@@ -4810,7 +4828,7 @@ get_row_number(typval_T *tv, term_T *term)
 	    && tv->vval.v_string != NULL
 	    && STRCMP(tv->vval.v_string, ".") == 0)
 	return term->tl_cursor_pos.row;
-    return (int)get_tv_number(tv) - 1;
+    return (int)tv_get_number(tv) - 1;
 }
 
 /*
@@ -4910,9 +4928,9 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (buf->b_term->tl_vterm == NULL)
 	return;
     term = buf->b_term;
-    rows = get_tv_number(&argvars[1]);
+    rows = tv_get_number(&argvars[1]);
     rows = rows <= 0 ? term->tl_rows : rows;
-    cols = get_tv_number(&argvars[2]);
+    cols = tv_get_number(&argvars[2]);
     cols = cols <= 0 ? term->tl_cols : cols;
     vterm_set_size(term->tl_vterm, rows, cols);
     /* handle_resize() will resize the windows */
@@ -4976,7 +4994,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     if (argvars[1].v_type != VAR_UNKNOWN)
-	num = get_tv_number(&argvars[1]);
+	num = tv_get_number(&argvars[1]);
 
     switch (num)
     {
@@ -4989,7 +5007,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 		p = buf->b_term->tl_job->jv_tty_in;
 	    break;
 	default:
-	    EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
+	    EMSG2(_(e_invarg2), tv_get_string(&argvars[1]));
 	    return;
     }
     if (p != NULL)
@@ -5042,6 +5060,8 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     if (term->tl_vterm != NULL)
     {
 	screen = vterm_obtain_screen(term->tl_vterm);
+	if (screen == NULL)  // can't really happen
+	    return;
 	p = NULL;
 	line = NULL;
     }
@@ -5138,7 +5158,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
 
-    msg = get_tv_string_chk(&argvars[1]);
+    msg = tv_get_string_chk(&argvars[1]);
     if (msg == NULL)
 	return;
     term = buf->b_term;
@@ -5240,7 +5260,7 @@ f_term_setrestore(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     term = buf->b_term;
     vim_free(term->tl_command);
-    cmd = get_tv_string_chk(&argvars[1]);
+    cmd = tv_get_string_chk(&argvars[1]);
     if (cmd != NULL)
 	term->tl_command = vim_strsave(cmd);
     else
@@ -5262,7 +5282,7 @@ f_term_setkill(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     term = buf->b_term;
     vim_free(term->tl_kill);
-    how = get_tv_string_chk(&argvars[1]);
+    how = tv_get_string_chk(&argvars[1]);
     if (how != NULL)
 	term->tl_kill = vim_strsave(how);
     else
@@ -5346,7 +5366,7 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 
 	/* Wait for some time for any channel I/O. */
 	if (argvars[1].v_type != VAR_UNKNOWN)
-	    wait = get_tv_number(&argvars[1]);
+	    wait = tv_get_number(&argvars[1]);
 	ui_delay(wait, TRUE);
 	mch_check_messages();
 
@@ -5625,7 +5645,8 @@ term_and_job_init(
     vim_free(cwd_wchar);
     vim_free(env_wchar);
 
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	goto failed;
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (opt->jo_set2 & JO2_ANSI_COLORS)
@@ -5706,7 +5727,8 @@ create_pty_only(term_T *term, jobopt_T *options)
     char	    in_name[80], out_name[80];
     channel_T	    *channel = NULL;
 
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
     vim_snprintf(in_name, sizeof(in_name), "\\\\.\\pipe\\vim-%d-in-%d",
 	    GetCurrentProcessId(),
@@ -5818,7 +5840,8 @@ term_and_job_init(
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt UNUSED)
 {
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (opt->jo_set2 & JO2_ANSI_COLORS)
@@ -5840,7 +5863,8 @@ term_and_job_init(
     static int
 create_pty_only(term_T *term, jobopt_T *opt)
 {
-    create_vterm(term, term->tl_rows, term->tl_cols);
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	return FAIL;
 
     term->tl_job = job_alloc();
     if (term->tl_job == NULL)

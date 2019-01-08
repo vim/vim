@@ -581,6 +581,7 @@ vimobj =  \
 	$(OBJDIR)\screen.obj \
 	$(OBJDIR)\search.obj \
 	$(OBJDIR)\sha256.obj \
+	$(OBJDIR)\sign.obj \
 	$(OBJDIR)\spell.obj \
 	$(OBJDIR)\spellfile.obj \
 	$(OBJDIR)\syntax.obj \

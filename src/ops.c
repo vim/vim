@@ -4707,6 +4707,8 @@ do_join(
      */
     for (t = count - 1; ; --t)
     {
+	int spaces_removed;
+
 	cend -= currsize;
 	mch_memmove(cend, curr, (size_t)currsize);
 	if (spaces[t] > 0)
@@ -4714,8 +4716,13 @@ do_join(
 	    cend -= spaces[t];
 	    vim_memset(cend, ' ', (size_t)(spaces[t]));
 	}
+
+	// If deleting more spaces than adding, the cursor moves no more than
+	// what is added if it is inside these spaces.
+	spaces_removed = (curr - curr_start) - spaces[t];
+
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
-			 (long)(cend - newp + spaces[t] - (curr - curr_start)));
+			 (long)(cend - newp - spaces_removed), spaces_removed);
 	if (t == 0)
 	    break;
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
@@ -5225,7 +5232,7 @@ format_lines(
 		{
 		    (void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		    mark_col_adjust(curwin->w_cursor.lnum, (colnr_T)0, 0L,
-						      (long)-next_leader_len);
+						      (long)-next_leader_len, 0);
 		} else
 #endif
 		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
@@ -5236,7 +5243,7 @@ format_lines(
 		    {
 			(void)del_bytes(indent, FALSE, FALSE);
 			mark_col_adjust(curwin->w_cursor.lnum,
-					       (colnr_T)0, 0L, (long)-indent);
+					       (colnr_T)0, 0L, (long)-indent, 0);
 		    }
 		}
 		curwin->w_cursor.lnum--;

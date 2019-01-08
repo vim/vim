@@ -2922,8 +2922,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 {
     FunctionObject	*self;
 
-    self = (FunctionObject *) subtype->tp_alloc(subtype, 0);
-
+    self = (FunctionObject *)subtype->tp_alloc(subtype, 0);
     if (self == NULL)
 	return NULL;
 
@@ -2938,14 +2937,35 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	self->name = vim_strsave(name);
     }
     else
-	if ((self->name = get_expanded_name(name,
-				    vim_strchr(name, AUTOLOAD_CHAR) == NULL))
-		== NULL)
+    {
+	char_u *p;
+
+	if ((p = get_expanded_name(name,
+			    vim_strchr(name, AUTOLOAD_CHAR) == NULL)) == NULL)
 	{
 	    PyErr_FORMAT(PyExc_ValueError,
 		    N_("function %s does not exist"), name);
 	    return NULL;
 	}
+
+	if (p[0] == K_SPECIAL && p[1] == KS_EXTRA && p[2] == (int)KE_SNR)
+	{
+	    char_u *np;
+	    size_t len = STRLEN(p) + 1;
+
+	    if ((np = alloc((int)len + 2)) == NULL)
+	    {
+		vim_free(p);
+		return NULL;
+	    }
+	    mch_memmove(np, "<SNR>", 5);
+	    mch_memmove(np + 5, p + 3, len - 3);
+	    vim_free(p);
+	    self->name = np;
+	}
+	else
+	    self->name = p;
+    }
 
     func_ref(self->name);
     self->argc = argc;

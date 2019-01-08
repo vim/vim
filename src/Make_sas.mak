@@ -134,6 +134,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -191,6 +192,7 @@ OBJ = \
 	screen.o \
 	search.o \
 	sha256.o \
+	sign.o \
 	spell.o \
 	spellfile.o \
 	syntax.o \
@@ -248,6 +250,7 @@ PRO = \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
@@ -404,6 +407,8 @@ search.o:		search.c
 proto/search.pro:	search.c
 sha256.o:		sha256.c
 proto/sha256.pro:	sha256.c
+sign.o:			sign.c
+proto/sign.pro:		sign.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
 spellfile.o:		spellfile.c

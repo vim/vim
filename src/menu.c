@@ -61,7 +61,6 @@ static char_u *menu_translate_tab_and_shift(char_u *arg_start);
 static char *menu_mode_chars[] = {"n", "v", "s", "o", "i", "c", "tl", "t"};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
-static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
 static char_u e_nomenu[] = N_("E329: No menu \"%s\"");
 
 #ifdef FEAT_TOOLBAR
@@ -956,7 +955,7 @@ remove_menu(
 	    else if (*name != NUL)
 	    {
 		if (!silent)
-		    EMSG(_(e_othermode));
+		    EMSG(_(e_menuothermode));
 		return FAIL;
 	    }
 
@@ -1130,7 +1129,7 @@ show_menus(char_u *path_name, int modes)
 		}
 		else if ((menu->modes & modes) == 0x0)
 		{
-		    EMSG(_(e_othermode));
+		    EMSG(_(e_menuothermode));
 		    vim_free(path_name);
 		    return FAIL;
 		}

@@ -32,14 +32,26 @@ first:
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.
-all install uninstall tools config configure reconfig proto depend lint tags types test scripttests unittests testclean clean distclean:
+all install uninstall tools config configure reconfig proto depend lint tags types test scripttests test_libvterm unittests testclean clean distclean:
 	@if test ! -f src/auto/config.mk; then \
 		cp src/config.mk.dist src/auto/config.mk; \
 	fi
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
+	@# When the target is "test" also run the indent tests.
+	@if test "$@" = "test"; then \
+		$(MAKE) indenttest; \
+	fi
 
+# Executable used for running the indent tests.
+VIM_FOR_INDENTTEST = ../../src/vim
+
+indenttest:
+	cd runtime/indent && \
+		$(MAKE) clean VIM="$(VIM_FOR_INDENTTEST)" && \
+		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
+		
 
 #########################################################################
 # 2. Creating the various distribution files.

@@ -1326,7 +1326,8 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Handle an operator after visual mode or when the movement is finished
+ * Handle an operator after Visual mode or when the movement is finished.
+ * "gui_yank" is true when yanking text for the clipboard.
  */
     void
 do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
@@ -1372,6 +1373,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
      */
     if ((finish_op || VIsual_active) && oap->op_type != OP_NOP)
     {
+	// Yank can be redone when 'y' is in 'cpoptions', but not when yanking
+	// for the clipboard.
+	int	redo_yank = vim_strchr(p_cpo, CPO_YANK) != NULL && !gui_yank;
+
 #ifdef FEAT_LINEBREAK
 	/* Avoid a problem with unwanted linebreaks in block mode. */
 	if (curwin->w_p_lbr)
@@ -1395,8 +1400,11 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	else if (oap->motion_force == Ctrl_V)
 	{
 	    /* Change line- or characterwise motion into Visual block mode. */
-	    VIsual_active = TRUE;
-	    VIsual = oap->start;
+	    if (!VIsual_active)
+	    {
+		VIsual_active = TRUE;
+		VIsual = oap->start;
+	    }
 	    VIsual_mode = Ctrl_V;
 	    VIsual_select = FALSE;
 	    VIsual_reselect = FALSE;
@@ -1404,7 +1412,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 
 	/* Only redo yank when 'y' flag is in 'cpoptions'. */
 	/* Never redo "zf" (define fold). */
-	if ((vim_strchr(p_cpo, CPO_YANK) != NULL || oap->op_type != OP_YANK)
+	if ((redo_yank || oap->op_type != OP_YANK)
 		&& ((!VIsual_active || oap->motion_force)
 		    /* Also redo Operator-pending Visual mode mappings */
 		    || (VIsual_active && cap->cmdchar == ':'
@@ -1625,7 +1633,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    }
 
 	    /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
-	    if ((vim_strchr(p_cpo, CPO_YANK) != NULL || oap->op_type != OP_YANK)
+	    if ((redo_yank || oap->op_type != OP_YANK)
 		    && oap->op_type != OP_COLON
 #ifdef FEAT_FOLDING
 		    && oap->op_type != OP_FOLD
@@ -2129,6 +2137,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	}
 	oap->block_mode = FALSE;
 	clearop(oap);
+	motion_force = NUL;
     }
 #ifdef FEAT_LINEBREAK
     curwin->w_p_lbr = lbr_saved;
@@ -4338,7 +4347,7 @@ find_decl(
     for (;;)
     {
 	valid = FALSE;
-	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,
+	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
 		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
@@ -7689,7 +7698,7 @@ nv_visual(cmdarg_T *cap)
      * characterwise, linewise, or blockwise. */
     if (cap->oap->op_type != OP_NOP)
     {
-	cap->oap->motion_force = cap->cmdchar;
+	motion_force = cap->oap->motion_force = cap->cmdchar;
 	finish_op = FALSE;	/* operator doesn't finish now but later */
 	return;
     }

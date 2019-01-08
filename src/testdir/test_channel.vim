@@ -922,9 +922,9 @@ func Run_pipe_through_sort(all, use_buffer)
     let options.in_bot = 4
   endif
   let g:job = job_start('sort', options)
-  call assert_equal("run", job_status(g:job))
 
   if !a:use_buffer
+    call assert_equal("run", job_status(g:job))
     call ch_sendraw(g:job, "ccc\naaa\nddd\nbbb\neee\n")
     call ch_close_in(g:job)
   endif
@@ -1643,6 +1643,27 @@ func Test_collapse_buffers()
   call job_start('cat test_channel.vim', {'out_io': 'buffer', 'out_name': 'testout'})
   call WaitForAssert({-> assert_inrange(g:linecount, g:linecount + 1, line('$'))})
   bwipe!
+endfunc
+
+func Test_write_to_deleted_buffer()
+  if !executable('echo') || !has('job')
+    return
+  endif
+  let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
+  let bufnr = bufnr('test_buffer')
+  call WaitForAssert({-> assert_equal(['hello'], getbufline(bufnr, 1, '$'))})
+  call assert_equal('nofile', getbufvar(bufnr, '&buftype'))
+  call assert_equal('hide', getbufvar(bufnr, '&bufhidden'))
+
+  bdel test_buffer
+  call assert_equal([], getbufline(bufnr, 1, '$'))
+
+  let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
+  call WaitForAssert({-> assert_equal(['hello'], getbufline(bufnr, 1, '$'))})
+  call assert_equal('nofile', getbufvar(bufnr, '&buftype'))
+  call assert_equal('hide', getbufvar(bufnr, '&bufhidden'))
+
+  bwipe! test_buffer
 endfunc
 
 func Test_cmd_parsing()

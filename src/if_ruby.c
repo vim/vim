@@ -123,6 +123,10 @@
 # define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
 #endif
 
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 26
+# define rb_ary_detransient (*dll_rb_ary_detransient)
+#endif
+
 #include <ruby.h>
 #ifdef RUBY19_OR_LATER
 # include <ruby/encoding.h>
@@ -326,8 +330,11 @@ static void ruby_vim_init(void);
 # define ruby_init			dll_ruby_init
 # define ruby_init_loadpath		dll_ruby_init_loadpath
 # ifdef WIN3264
-#  define NtInitialize			dll_NtInitialize
-#  define ruby_sysinit			dll_ruby_sysinit
+#  ifdef RUBY19_OR_LATER
+#   define ruby_sysinit			dll_ruby_sysinit
+#  else
+#   define NtInitialize			dll_NtInitialize
+#  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 #   define rb_w32_snprintf		dll_rb_w32_snprintf
 #  endif
@@ -437,8 +444,11 @@ static VALUE *dll_ruby_errinfo;
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
 # ifdef WIN3264
-static void (*dll_NtInitialize) (int*, char***);
+#  ifdef RUBY19_OR_LATER
 static void (*dll_ruby_sysinit) (int*, char***);
+#  else
+static void (*dll_NtInitialize) (int*, char***);
+#  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #  endif
@@ -449,6 +459,9 @@ static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
 static VALUE (*dll_rb_ary_new4) (long n, const VALUE *elts);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
+#  if DYNAMIC_RUBY_VER >= 26
+static void (*dll_rb_ary_detransient) (VALUE);
+#  endif
 #  if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 #   ifdef __ia64
 static void * (*dll_rb_ia64_bsp) (void);
@@ -637,10 +650,10 @@ static struct
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
 # ifdef WIN3264
-#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 19
-    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
-#  else
+#  ifdef RUBY19_OR_LATER
     {"ruby_sysinit", (RUBY_PROC*)&dll_ruby_sysinit},
+#  else
+    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
 #  endif
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
@@ -660,6 +673,9 @@ static struct
     {"rb_ary_new4", (RUBY_PROC*)&dll_rb_ary_new4},
 #  endif
     {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
+#  if DYNAMIC_RUBY_VER >= 26
+    {"rb_ary_detransient", (RUBY_PROC*)&dll_rb_ary_detransient},
+#  endif
 # endif
 # ifdef RUBY19_OR_LATER
     {"rb_int2big", (RUBY_PROC*)&dll_rb_int2big},
@@ -960,11 +976,8 @@ static int ensure_ruby_initialized(void)
 
 static void error_print(int state)
 {
-#ifndef DYNAMIC_RUBY
-#if !(defined(RUBY_VERSION) && RUBY_VERSION >= 19) \
-    && !(defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19)
+#if !defined(DYNAMIC_RUBY) && !defined(RUBY19_OR_LATER)
     RUBYEXTERN VALUE ruby_errinfo;
-#endif
 #endif
     VALUE error;
     VALUE eclass;

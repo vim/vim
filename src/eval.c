@@ -681,7 +681,7 @@ eval_to_bool(
 	*error = FALSE;
 	if (!skip)
 	{
-	    retval = (get_tv_number_chk(&tv, error) != 0);
+	    retval = (tv_get_number_chk(&tv, error) != 0);
 	    clear_tv(&tv);
 	}
     }
@@ -720,7 +720,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
     }
     else
     {
-	s = get_tv_string_buf_chk(expr, buf);
+	s = tv_get_string_buf_chk(expr, buf);
 	if (s == NULL)
 	    return FAIL;
 	s = skipwhite(s);
@@ -751,7 +751,7 @@ eval_expr_to_bool(typval_T *expr, int *error)
 	*error = TRUE;
 	return FALSE;
     }
-    res = (get_tv_number_chk(&rettv, error) != 0);
+    res = (tv_get_number_chk(&rettv, error) != 0);
     clear_tv(&rettv);
     return res;
 }
@@ -776,7 +776,7 @@ eval_to_string_skip(
 	retval = NULL;
     else
     {
-	retval = vim_strsave(get_tv_string(&tv));
+	retval = vim_strsave(tv_get_string(&tv));
 	clear_tv(&tv);
     }
     if (skip)
@@ -841,7 +841,7 @@ eval_to_string(
 	}
 #endif
 	else
-	    retval = vim_strsave(get_tv_string(&tv));
+	    retval = vim_strsave(tv_get_string(&tv));
 	clear_tv(&tv);
     }
 
@@ -891,7 +891,7 @@ eval_to_number(char_u *expr)
 	retval = -1;
     else
     {
-	retval = get_tv_number_chk(&rettv, NULL);
+	retval = tv_get_number_chk(&rettv, NULL);
 	clear_tv(&rettv);
     }
     --emsg_off;
@@ -982,12 +982,12 @@ get_spellword(list_T *list, char_u **pp)
     li = list->lv_first;
     if (li == NULL)
 	return -1;
-    *pp = get_tv_string(&li->li_tv);
+    *pp = tv_get_string(&li->li_tv);
 
     li = li->li_next;
     if (li == NULL)
 	return -1;
-    return (int)get_tv_number(&li->li_tv);
+    return (int)tv_get_number(&li->li_tv);
 }
 #endif
 
@@ -1053,7 +1053,7 @@ call_func_retnr(
     if (call_vim_function(func, argc, argv, &rettv) == FAIL)
 	return -1;
 
-    retval = get_tv_number_chk(&rettv, NULL);
+    retval = tv_get_number_chk(&rettv, NULL);
     clear_tv(&rettv);
     return retval;
 }
@@ -1080,7 +1080,7 @@ call_func_retstr(
     if (call_vim_function(func, argc, argv, &rettv) == FAIL)
 	return NULL;
 
-    retval = vim_strsave(get_tv_string(&rettv));
+    retval = vim_strsave(tv_get_string(&rettv));
     clear_tv(&rettv);
     return retval;
 }
@@ -1654,7 +1654,7 @@ ex_let_one(
 	    {
 		c1 = name[len];
 		name[len] = NUL;
-		p = get_tv_string_chk(tv);
+		p = tv_get_string_chk(tv);
 		if (p != NULL && op != NULL && *op == '.')
 		{
 		    int	    mustfree = FALSE;
@@ -1708,8 +1708,8 @@ ex_let_one(
 	    c1 = *p;
 	    *p = NUL;
 
-	    n = (long)get_tv_number(tv);
-	    s = get_tv_string_chk(tv);	    /* != NULL if number or string */
+	    n = (long)tv_get_number(tv);
+	    s = tv_get_string_chk(tv);	    /* != NULL if number or string */
 	    if (s != NULL && op != NULL && *op != '=')
 	    {
 		opt_type = get_option_value(arg, &numval,
@@ -1763,7 +1763,7 @@ ex_let_one(
 	    char_u	*ptofree = NULL;
 	    char_u	*s;
 
-	    p = get_tv_string_chk(tv);
+	    p = tv_get_string_chk(tv);
 	    if (p != NULL && op != NULL && *op == '.')
 	    {
 		s = get_reg_contents(*arg == '@' ? '"' : *arg, GREG_EXPR_SRC);
@@ -1956,7 +1956,7 @@ get_lval(
 		empty1 = FALSE;
 		if (eval1(&p, &var1, TRUE) == FAIL)	/* recursive! */
 		    return NULL;
-		if (get_tv_string_chk(&var1) == NULL)
+		if (tv_get_string_chk(&var1) == NULL)
 		{
 		    /* not a number or string */
 		    clear_tv(&var1);
@@ -1993,7 +1993,7 @@ get_lval(
 			clear_tv(&var1);
 			return NULL;
 		    }
-		    if (get_tv_string_chk(&var2) == NULL)
+		    if (tv_get_string_chk(&var2) == NULL)
 		    {
 			/* not a number or string */
 			clear_tv(&var1);
@@ -2024,7 +2024,7 @@ get_lval(
 	    if (len == -1)
 	    {
 		/* "[key]": get key from "var1" */
-		key = get_tv_string_chk(&var1);	/* is number or string */
+		key = tv_get_string_chk(&var1);	/* is number or string */
 		if (key == NULL)
 		{
 		    clear_tv(&var1);
@@ -2106,7 +2106,7 @@ get_lval(
 		lp->ll_n1 = 0;
 	    else
 		/* is number or string */
-		lp->ll_n1 = (long)get_tv_number(&var1);
+		lp->ll_n1 = (long)tv_get_number(&var1);
 	    clear_tv(&var1);
 
 	    lp->ll_dict = NULL;
@@ -2136,7 +2136,7 @@ get_lval(
 	     */
 	    if (lp->ll_range && !lp->ll_empty2)
 	    {
-		lp->ll_n2 = (long)get_tv_number(&var2);
+		lp->ll_n2 = (long)tv_get_number(&var2);
 						    /* is number or string */
 		clear_tv(&var2);
 		if (lp->ll_n2 < 0)
@@ -2367,7 +2367,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		if (*op == '+' || *op == '-')
 		{
 		    /* nr += nr  or  nr -= nr*/
-		    n = get_tv_number(tv1);
+		    n = tv_get_number(tv1);
 #ifdef FEAT_FLOAT
 		    if (tv2->v_type == VAR_FLOAT)
 		    {
@@ -2385,9 +2385,9 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 #endif
 		    {
 			if (*op == '+')
-			    n += get_tv_number(tv2);
+			    n += tv_get_number(tv2);
 			else
-			    n -= get_tv_number(tv2);
+			    n -= tv_get_number(tv2);
 			clear_tv(tv1);
 			tv1->v_type = VAR_NUMBER;
 			tv1->vval.v_number = n;
@@ -2399,8 +2399,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			break;
 
 		    /* str .= str */
-		    s = get_tv_string(tv1);
-		    s = concat_str(s, get_tv_string_buf(tv2, numbuf));
+		    s = tv_get_string(tv1);
+		    s = concat_str(s, tv_get_string_buf(tv2, numbuf));
 		    clear_tv(tv1);
 		    tv1->v_type = VAR_STRING;
 		    tv1->vval.v_string = s;
@@ -2419,7 +2419,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		    if (tv2->v_type == VAR_FLOAT)
 			f = tv2->vval.v_float;
 		    else
-			f = get_tv_number(tv2);
+			f = tv_get_number(tv2);
 		    if (*op == '+')
 			tv1->vval.v_float += f;
 		    else
@@ -3271,7 +3271,7 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	{
 	    int		error = FALSE;
 
-	    if (get_tv_number_chk(rettv, &error) != 0)
+	    if (tv_get_number_chk(rettv, &error) != 0)
 		result = TRUE;
 	    clear_tv(rettv);
 	    if (error)
@@ -3345,7 +3345,7 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
     {
 	if (evaluate && first)
 	{
-	    if (get_tv_number_chk(rettv, &error) != 0)
+	    if (tv_get_number_chk(rettv, &error) != 0)
 		result = TRUE;
 	    clear_tv(rettv);
 	    if (error)
@@ -3365,7 +3365,7 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
 	 */
 	if (evaluate && !result)
 	{
-	    if (get_tv_number_chk(&var2, &error) != 0)
+	    if (tv_get_number_chk(&var2, &error) != 0)
 		result = TRUE;
 	    clear_tv(&var2);
 	    if (error)
@@ -3413,7 +3413,7 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
     {
 	if (evaluate && first)
 	{
-	    if (get_tv_number_chk(rettv, &error) == 0)
+	    if (tv_get_number_chk(rettv, &error) == 0)
 		result = FALSE;
 	    clear_tv(rettv);
 	    if (error)
@@ -3433,7 +3433,7 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
 	 */
 	if (evaluate && result)
 	{
-	    if (get_tv_number_chk(&var2, &error) == 0)
+	    if (tv_get_number_chk(&var2, &error) == 0)
 		result = FALSE;
 	    clear_tv(&var2);
 	    if (error)
@@ -3622,7 +3622,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	     * we know that the first operand needs to be a string or number
 	     * without evaluating the 2nd operand.  So check before to avoid
 	     * side effects after an error. */
-	    if (evaluate && get_tv_string_chk(rettv) == NULL)
+	    if (evaluate && tv_get_string_chk(rettv) == NULL)
 	    {
 		clear_tv(rettv);
 		return FAIL;
@@ -3646,8 +3646,8 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	     */
 	    if (op == '.')
 	    {
-		s1 = get_tv_string_buf(rettv, buf1);	/* already checked */
-		s2 = get_tv_string_buf_chk(&var2, buf2);
+		s1 = tv_get_string_buf(rettv, buf1);	/* already checked */
+		s2 = tv_get_string_buf_chk(&var2, buf2);
 		if (s2 == NULL)		/* type error ? */
 		{
 		    clear_tv(rettv);
@@ -3686,7 +3686,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 		else
 #endif
 		{
-		    n1 = get_tv_number_chk(rettv, &error);
+		    n1 = tv_get_number_chk(rettv, &error);
 		    if (error)
 		    {
 			/* This can only happen for "list + non-list".  For
@@ -3709,7 +3709,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 		else
 #endif
 		{
-		    n2 = get_tv_number_chk(&var2, &error);
+		    n2 = tv_get_number_chk(&var2, &error);
 		    if (error)
 		    {
 			clear_tv(rettv);
@@ -3804,7 +3804,7 @@ eval6(
 	    }
 	    else
 #endif
-		n1 = get_tv_number_chk(rettv, &error);
+		n1 = tv_get_number_chk(rettv, &error);
 	    clear_tv(rettv);
 	    if (error)
 		return FAIL;
@@ -3835,7 +3835,7 @@ eval6(
 	    else
 #endif
 	    {
-		n2 = get_tv_number_chk(&var2, &error);
+		n2 = tv_get_number_chk(&var2, &error);
 		clear_tv(&var2);
 		if (error)
 		    return FAIL;
@@ -4063,7 +4063,7 @@ eval7(
      */
     case '{':	ret = get_lambda_tv(arg, rettv, evaluate);
 		if (ret == NOTDONE)
-		    ret = get_dict_tv(arg, rettv, evaluate);
+		    ret = dict_get_tv(arg, rettv, evaluate);
 		break;
 
     /*
@@ -4200,7 +4200,7 @@ eval7(
 	    f = rettv->vval.v_float;
 	else
 #endif
-	    val = get_tv_number_chk(rettv, &error);
+	    val = tv_get_number_chk(rettv, &error);
 	if (error)
 	{
 	    clear_tv(rettv);
@@ -4326,7 +4326,7 @@ eval_index(
 	    empty1 = TRUE;
 	else if (eval1(arg, &var1, evaluate) == FAIL)	/* recursive! */
 	    return FAIL;
-	else if (evaluate && get_tv_string_chk(&var1) == NULL)
+	else if (evaluate && tv_get_string_chk(&var1) == NULL)
 	{
 	    /* not a number or string */
 	    clear_tv(&var1);
@@ -4348,7 +4348,7 @@ eval_index(
 		    clear_tv(&var1);
 		return FAIL;
 	    }
-	    else if (evaluate && get_tv_string_chk(&var2) == NULL)
+	    else if (evaluate && tv_get_string_chk(&var2) == NULL)
 	    {
 		/* not a number or string */
 		if (!empty1)
@@ -4376,7 +4376,7 @@ eval_index(
 	n1 = 0;
 	if (!empty1 && rettv->v_type != VAR_DICT)
 	{
-	    n1 = get_tv_number(&var1);
+	    n1 = tv_get_number(&var1);
 	    clear_tv(&var1);
 	}
 	if (range)
@@ -4385,7 +4385,7 @@ eval_index(
 		n2 = -1;
 	    else
 	    {
-		n2 = get_tv_number(&var2);
+		n2 = tv_get_number(&var2);
 		clear_tv(&var2);
 	    }
 	}
@@ -4403,7 +4403,7 @@ eval_index(
 
 	    case VAR_NUMBER:
 	    case VAR_STRING:
-		s = get_tv_string(rettv);
+		s = tv_get_string(rettv);
 		len = (long)STRLEN(s);
 		if (range)
 		{
@@ -4504,7 +4504,7 @@ eval_index(
 
 		    if (len == -1)
 		    {
-			key = get_tv_string_chk(&var1);
+			key = tv_get_string_chk(&var1);
 			if (key == NULL)
 			{
 			    clear_tv(&var1);
@@ -4974,8 +4974,8 @@ tv_equal(
 	    return tv1->vval.v_number == tv2->vval.v_number;
 
 	case VAR_STRING:
-	    s1 = get_tv_string_buf(tv1, buf1);
-	    s2 = get_tv_string_buf(tv2, buf2);
+	    s1 = tv_get_string_buf(tv1, buf1);
+	    s2 = tv_get_string_buf(tv2, buf2);
 	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
 
 	case VAR_SPECIAL:
@@ -5652,13 +5652,13 @@ echo_string_core(
 	case VAR_NUMBER:
 	case VAR_UNKNOWN:
 	    *tofree = NULL;
-	    r = get_tv_string_buf(tv, numbuf);
+	    r = tv_get_string_buf(tv, numbuf);
 	    break;
 
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    *tofree = NULL;
-	    r = get_tv_string_buf(tv, numbuf);
+	    r = tv_get_string_buf(tv, numbuf);
 	    if (composite_val)
 	    {
 		*tofree = string_quote(r, FALSE);
@@ -5913,7 +5913,7 @@ var2fpos(
 	return &pos;
     }
 
-    name = get_tv_string_chk(varp);
+    name = tv_get_string_chk(varp);
     if (name == NULL)
 	return NULL;
     if (name[0] == '.')				/* cursor */
@@ -6363,7 +6363,7 @@ get_vim_var_nr(int idx)
     char_u *
 get_vim_var_str(int idx)
 {
-    return get_tv_string(&vimvars[idx].vv_tv);
+    return tv_get_string(&vimvars[idx].vv_tv);
 }
 
 /*
@@ -6936,20 +6936,20 @@ init_tv(typval_T *varp)
  * Get the number value of a variable.
  * If it is a String variable, uses vim_str2nr().
  * For incompatible types, return 0.
- * get_tv_number_chk() is similar to get_tv_number(), but informs the
+ * tv_get_number_chk() is similar to tv_get_number(), but informs the
  * caller of incompatible types: it sets *denote to TRUE if "denote"
  * is not NULL or returns -1 otherwise.
  */
     varnumber_T
-get_tv_number(typval_T *varp)
+tv_get_number(typval_T *varp)
 {
     int		error = FALSE;
 
-    return get_tv_number_chk(varp, &error);	/* return 0L on error */
+    return tv_get_number_chk(varp, &error);	/* return 0L on error */
 }
 
     varnumber_T
-get_tv_number_chk(typval_T *varp, int *denote)
+tv_get_number_chk(typval_T *varp, int *denote)
 {
     varnumber_T	n = 0L;
 
@@ -6991,7 +6991,7 @@ get_tv_number_chk(typval_T *varp, int *denote)
 	    break;
 #endif
 	case VAR_UNKNOWN:
-	    internal_error("get_tv_number(UNKNOWN)");
+	    internal_error("tv_get_number(UNKNOWN)");
 	    break;
     }
     if (denote == NULL)		/* useful for values that must be unsigned */
@@ -7003,7 +7003,7 @@ get_tv_number_chk(typval_T *varp, int *denote)
 
 #ifdef FEAT_FLOAT
     float_T
-get_tv_float(typval_T *varp)
+tv_get_float(typval_T *varp)
 {
     switch (varp->v_type)
     {
@@ -7038,7 +7038,7 @@ get_tv_float(typval_T *varp)
 	    break;
 # endif
 	case VAR_UNKNOWN:
-	    internal_error("get_tv_float(UNKNOWN)");
+	    internal_error("tv_get_float(UNKNOWN)");
 	    break;
     }
     return 0;
@@ -7048,25 +7048,25 @@ get_tv_float(typval_T *varp)
 /*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
- * get_tv_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
- * get_tv_string_buf() uses a given buffer.
+ * tv_get_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
+ * tv_get_string_buf() uses a given buffer.
  * If the String variable has never been set, return an empty string.
  * Never returns NULL;
- * get_tv_string_chk() and get_tv_string_buf_chk() are similar, but return
+ * tv_get_string_chk() and tv_get_string_buf_chk() are similar, but return
  * NULL on error.
  */
     char_u *
-get_tv_string(typval_T *varp)
+tv_get_string(typval_T *varp)
 {
     static char_u   mybuf[NUMBUFLEN];
 
-    return get_tv_string_buf(varp, mybuf);
+    return tv_get_string_buf(varp, mybuf);
 }
 
     char_u *
-get_tv_string_buf(typval_T *varp, char_u *buf)
+tv_get_string_buf(typval_T *varp, char_u *buf)
 {
-    char_u	*res =  get_tv_string_buf_chk(varp, buf);
+    char_u	*res =  tv_get_string_buf_chk(varp, buf);
 
     return res != NULL ? res : (char_u *)"";
 }
@@ -7075,15 +7075,15 @@ get_tv_string_buf(typval_T *varp, char_u *buf)
  * Careful: This uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
  */
     char_u *
-get_tv_string_chk(typval_T *varp)
+tv_get_string_chk(typval_T *varp)
 {
     static char_u   mybuf[NUMBUFLEN];
 
-    return get_tv_string_buf_chk(varp, mybuf);
+    return tv_get_string_buf_chk(varp, mybuf);
 }
 
     char_u *
-get_tv_string_buf_chk(typval_T *varp, char_u *buf)
+tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 {
     switch (varp->v_type)
     {
@@ -7160,6 +7160,30 @@ get_tv_string_buf_chk(typval_T *varp, char_u *buf)
 	    break;
     }
     return NULL;
+}
+
+/*
+ * Turn a typeval into a string.  Similar to tv_get_string_buf() but uses
+ * string() on Dict, List, etc.
+ */
+    char_u *
+tv_stringify(typval_T *varp, char_u *buf)
+{
+    if (varp->v_type == VAR_LIST
+	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_FUNC
+	    || varp->v_type == VAR_PARTIAL
+	    || varp->v_type == VAR_FLOAT)
+    {
+	typval_T tmp;
+
+	f_string(varp, &tmp);
+	tv_get_string_buf(&tmp, buf);
+	clear_tv(varp);
+	*varp = tmp;
+	return tmp.vval.v_string;
+    }
+    return tv_get_string_buf(varp, buf);
 }
 
 /*
@@ -7298,7 +7322,7 @@ find_var_ht(char_u *name, char_u **varname)
 
 /*
  * Get the string value of a (global/local) variable.
- * Note: see get_tv_string() for how long the pointer remains valid.
+ * Note: see tv_get_string() for how long the pointer remains valid.
  * Returns NULL when it doesn't exist.
  */
     char_u *
@@ -7309,7 +7333,7 @@ get_var_value(char_u *name)
     v = find_var(name, NULL, FALSE);
     if (v == NULL)
 	return NULL;
-    return get_tv_string(&v->di_tv);
+    return tv_get_string(&v->di_tv);
 }
 
 /*
@@ -7544,7 +7568,7 @@ set_var(
 	    {
 		vim_free(v->di_tv.vval.v_string);
 		if (copy || tv->v_type != VAR_STRING)
-		    v->di_tv.vval.v_string = vim_strsave(get_tv_string(tv));
+		    v->di_tv.vval.v_string = vim_strsave(tv_get_string(tv));
 		else
 		{
 		    /* Take over the string to avoid an extra alloc/free. */
@@ -7555,7 +7579,7 @@ set_var(
 	    }
 	    else if (v->di_tv.v_type == VAR_NUMBER)
 	    {
-		v->di_tv.vval.v_number = get_tv_number(tv);
+		v->di_tv.vval.v_number = tv_get_number(tv);
 		if (STRCMP(varname, "searchforward") == 0)
 		    set_search_direction(v->di_tv.vval.v_number ? '/' : '?');
 #ifdef FEAT_SEARCH_EXTRA
@@ -7894,7 +7918,7 @@ get_user_input(
     int		inputdialog,
     int		secret)
 {
-    char_u	*prompt = get_tv_string_chk(&argvars[0]);
+    char_u	*prompt = tv_get_string_chk(&argvars[0]);
     char_u	*p = NULL;
     int		c;
     char_u	buf[NUMBUFLEN];
@@ -7937,7 +7961,7 @@ get_user_input(
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    defstr = get_tv_string_buf_chk(&argvars[1], buf);
+	    defstr = tv_get_string_buf_chk(&argvars[1], buf);
 	    if (defstr != NULL)
 		stuffReadbuffSpec(defstr);
 
@@ -7950,7 +7974,7 @@ get_user_input(
 		/* input() with a third argument: completion */
 		rettv->vval.v_string = NULL;
 
-		xp_name = get_tv_string_buf_chk(&argvars[2], buf);
+		xp_name = tv_get_string_buf_chk(&argvars[2], buf);
 		if (xp_name == NULL)
 		    return;
 
@@ -7975,7 +7999,7 @@ get_user_input(
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN
 		&& argvars[2].v_type != VAR_UNKNOWN)
-	    rettv->vval.v_string = vim_strsave(get_tv_string_buf(
+	    rettv->vval.v_string = vim_strsave(tv_get_string_buf(
 							   &argvars[2], buf));
 
 	vim_free(xp_arg);
@@ -8142,7 +8166,12 @@ ex_execute(exarg_T *eap)
 
 	if (!eap->skip)
 	{
-	    p = get_tv_string(&rettv);
+	    char_u   buf[NUMBUFLEN];
+
+	    if (eap->cmdidx == CMD_execute)
+		p = tv_get_string_buf(&rettv, buf);
+	    else
+		p = tv_stringify(&rettv, buf);
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {
@@ -8205,7 +8234,7 @@ find_win_by_nr(
     tabpage_T	*tp)	/* NULL for current tab page */
 {
     win_T	*wp;
-    int		nr = (int)get_tv_number_chk(vp, NULL);
+    int		nr = (int)tv_get_number_chk(vp, NULL);
 
     if (nr < 0)
 	return NULL;
@@ -8234,7 +8263,7 @@ find_win_by_nr(
     win_T *
 find_win_by_nr_or_id(typval_T *vp)
 {
-    int	nr = (int)get_tv_number_chk(vp, NULL);
+    int	nr = (int)tv_get_number_chk(vp, NULL);
 
     if (nr >= LOWEST_WIN_ID)
 	return win_id2wp(vp);
@@ -8257,7 +8286,7 @@ find_tabwin(
     {
 	if (tvp->v_type != VAR_UNKNOWN)
 	{
-	    n = (long)get_tv_number(tvp);
+	    n = (long)tv_get_number(tvp);
 	    if (n >= 0)
 		tp = find_tabpage(n);
 	}
@@ -8292,11 +8321,11 @@ getwinvar(
     int		need_switch_win;
 
     if (off == 1)
-	tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
+	tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     else
 	tp = curtab;
     win = find_win_by_nr(&argvars[off], tp);
-    varname = get_tv_string_chk(&argvars[off + 1]);
+    varname = tv_get_string_chk(&argvars[off + 1]);
     ++emsg_off;
 
     rettv->v_type = VAR_STRING;
@@ -8373,11 +8402,11 @@ setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
 	return;
 
     if (off == 1)
-	tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
+	tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     else
 	tp = curtab;
     win = find_win_by_nr(&argvars[off], tp);
-    varname = get_tv_string_chk(&argvars[off + 1]);
+    varname = tv_get_string_chk(&argvars[off + 1]);
     varp = &argvars[off + 2];
 
     if (win != NULL && varname != NULL && varp != NULL)
@@ -8393,8 +8422,8 @@ setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
 		int		error = FALSE;
 
 		++varname;
-		numval = (long)get_tv_number_chk(varp, &error);
-		strval = get_tv_string_buf_chk(varp, nbuf);
+		numval = (long)tv_get_number_chk(varp, &error);
+		strval = tv_get_string_buf_chk(varp, nbuf);
 		if (!error && strval != NULL)
 		    set_option_value(varname, numval, strval, OPT_LOCAL);
 	    }
@@ -8697,7 +8726,7 @@ store_session_globals(FILE *fd)
 	    {
 		/* Escape special characters with a backslash.  Turn a LF and
 		 * CR into \n and \r. */
-		p = vim_strsave_escaped(get_tv_string(&this_var->di_tv),
+		p = vim_strsave_escaped(tv_get_string(&this_var->di_tv),
 							(char_u *)"\\\"\n\r");
 		if (p == NULL)	    /* out of memory */
 		    break;
@@ -8842,8 +8871,8 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    char_u	*fname1 = get_tv_string_buf_chk(&argvars[0], buf1);
-    char_u	*fname2 = get_tv_string_buf_chk(&argvars[1], buf2);
+    char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
+    char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     garray_T	ga;
     FILE	*fd1;
     FILE	*fd2;
@@ -8914,8 +8943,8 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    char_u	*pat = get_tv_string_buf_chk(&argvars[0], buf1);
-    char_u	*text = get_tv_string_buf_chk(&argvars[1], buf2);
+    char_u	*pat = tv_get_string_buf_chk(&argvars[0], buf1);
+    char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
     if (pat == NULL || text == NULL)
 	EMSG(_(e_invarg));
@@ -8936,9 +8965,9 @@ assert_inrange(typval_T *argvars)
 {
     garray_T	ga;
     int		error = FALSE;
-    varnumber_T	lower = get_tv_number_chk(&argvars[0], &error);
-    varnumber_T	upper = get_tv_number_chk(&argvars[1], &error);
-    varnumber_T	actual = get_tv_number_chk(&argvars[2], &error);
+    varnumber_T	lower = tv_get_number_chk(&argvars[0], &error);
+    varnumber_T	upper = tv_get_number_chk(&argvars[1], &error);
+    varnumber_T	actual = tv_get_number_chk(&argvars[2], &error);
     char_u	*tofree;
     char	msg[200];
     char_u	numbuf[NUMBUFLEN];
@@ -8980,7 +9009,7 @@ assert_bool(typval_T *argvars, int isTrue)
 	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return 0;
     if (argvars[0].v_type != VAR_NUMBER
-	    || (get_tv_number_chk(&argvars[0], &error) == 0) == isTrue
+	    || (tv_get_number_chk(&argvars[0], &error) == 0) == isTrue
 	    || error)
     {
 	prepare_assert_error(&ga);
@@ -9000,7 +9029,7 @@ assert_report(typval_T *argvars)
     garray_T	ga;
 
     prepare_assert_error(&ga);
-    ga_concat(&ga, get_tv_string(&argvars[0]));
+    ga_concat(&ga, tv_get_string(&argvars[0]));
     assert_error(&ga);
     ga_clear(&ga);
     return 1;
@@ -9010,7 +9039,7 @@ assert_report(typval_T *argvars)
 assert_exception(typval_T *argvars)
 {
     garray_T	ga;
-    char_u	*error = get_tv_string_chk(&argvars[0]);
+    char_u	*error = tv_get_string_chk(&argvars[0]);
 
     if (vimvars[VV_EXCEPTION].vv_str == NULL)
     {
@@ -9036,7 +9065,7 @@ assert_exception(typval_T *argvars)
     int
 assert_beeps(typval_T *argvars)
 {
-    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
 
@@ -9062,7 +9091,7 @@ assert_beeps(typval_T *argvars)
     int
 assert_fails(typval_T *argvars)
 {
-    char_u	*cmd = get_tv_string_chk(&argvars[0]);
+    char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
     char_u	numbuf[NUMBUFLEN];
@@ -9091,7 +9120,7 @@ assert_fails(typval_T *argvars)
     else if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char	*error = (char *)get_tv_string_buf_chk(&argvars[1], buf);
+	char	*error = (char *)tv_get_string_buf_chk(&argvars[1], buf);
 
 	if (error == NULL
 		  || strstr((char *)vimvars[VV_ERRMSG].vv_str, error) == NULL)
@@ -9325,11 +9354,11 @@ typval_compare(
 	if (typ1->v_type == VAR_FLOAT)
 	    f1 = typ1->vval.v_float;
 	else
-	    f1 = get_tv_number(typ1);
+	    f1 = tv_get_number(typ1);
 	if (typ2->v_type == VAR_FLOAT)
 	    f2 = typ2->vval.v_float;
 	else
-	    f2 = get_tv_number(typ2);
+	    f2 = tv_get_number(typ2);
 	n1 = FALSE;
 	switch (type)
 	{
@@ -9353,8 +9382,8 @@ typval_compare(
     else if ((typ1->v_type == VAR_NUMBER || typ2->v_type == VAR_NUMBER)
 	    && type != TYPE_MATCH && type != TYPE_NOMATCH)
     {
-	n1 = get_tv_number(typ1);
-	n2 = get_tv_number(typ2);
+	n1 = tv_get_number(typ1);
+	n2 = tv_get_number(typ2);
 	switch (type)
 	{
 	    case TYPE_EQUAL:    n1 = (n1 == n2); break;
@@ -9370,8 +9399,8 @@ typval_compare(
     }
     else
     {
-	s1 = get_tv_string_buf(typ1, buf1);
-	s2 = get_tv_string_buf(typ2, buf2);
+	s1 = tv_get_string_buf(typ1, buf1);
+	s2 = tv_get_string_buf(typ2, buf2);
 	if (type != TYPE_MATCH && type != TYPE_NOMATCH)
 	    i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
 	else
@@ -10220,10 +10249,10 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 	int	    error = FALSE;
 
 	/* filter(): when expr is zero remove the item */
-	*remp = (get_tv_number_chk(&rettv, &error) == 0);
+	*remp = (tv_get_number_chk(&rettv, &error) == 0);
 	clear_tv(&rettv);
 	/* On type error, nothing has been removed; return FAIL to stop the
-	 * loop.  The error message was given by get_tv_number_chk(). */
+	 * loop.  The error message was given by tv_get_number_chk(). */
 	if (error)
 	    goto theend;
     }

@@ -927,7 +927,7 @@ static struct vimoption options[] =
     {"cryptmethod", "cm",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_CRYPT
 			    (char_u *)&p_cm, PV_CM,
-			    {(char_u *)"zip", (char_u *)0L}
+			    {(char_u *)"blowfish2", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -5214,7 +5214,7 @@ do_set(
 
 			{
 			    long_u *p = insecure_flag(opt_idx, opt_flags);
-			    int	    did_inc_secure = FALSE;
+			    int	    secure_saved = secure;
 
 			    // When an option is set in the sandbox, from a
 			    // modeline or in secure mode, then deal with side
@@ -5227,21 +5227,18 @@ do_set(
 #endif
 				    || (opt_flags & OPT_MODELINE)
 				    || (!value_is_replaced && (*p & P_INSECURE)))
-			    {
-				did_inc_secure = TRUE;
 				++secure;
-			    }
 
-			    // Handle side effects, and set the global value for
-			    // ":set" on local options. Note: when setting 'syntax'
-			    // or 'filetype' autocommands may be triggered that can
-			    // cause havoc.
-			    errmsg = did_set_string_option(opt_idx, (char_u **)varp,
+			    // Handle side effects, and set the global value
+			    // for ":set" on local options. Note: when setting
+			    // 'syntax' or 'filetype' autocommands may be
+			    // triggered that can cause havoc.
+			    errmsg = did_set_string_option(
+				    opt_idx, (char_u **)varp,
 				    new_value_alloced, oldval, errbuf,
 				    opt_flags, &value_checked);
 
-			    if (did_inc_secure)
-				--secure;
+			    secure = secure_saved;
 			}
 
 #if defined(FEAT_EVAL)
