@@ -3899,7 +3899,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 	maxdepth = 1;
     else
     {
-	maxdepth = (long)get_tv_number_chk(&argvars[1], &error);
+	maxdepth = (long)tv_get_number_chk(&argvars[1], &error);
 	if (error)
 	    return;
 	if (maxdepth < 0)
