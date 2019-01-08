@@ -371,6 +371,7 @@ static void f_shiftwidth(typval_T *argvars, typval_T *rettv);
 static void f_sign_define(typval_T *argvars, typval_T *rettv);
 static void f_sign_getdefined(typval_T *argvars, typval_T *rettv);
 static void f_sign_getplaced(typval_T *argvars, typval_T *rettv);
+static void f_sign_jump(typval_T *argvars, typval_T *rettv);
 static void f_sign_place(typval_T *argvars, typval_T *rettv);
 static void f_sign_undefine(typval_T *argvars, typval_T *rettv);
 static void f_sign_unplace(typval_T *argvars, typval_T *rettv);
@@ -858,6 +859,7 @@ static struct fst
     {"sign_define",	1, 2, f_sign_define},
     {"sign_getdefined",	0, 1, f_sign_getdefined},
     {"sign_getplaced",	0, 2, f_sign_getplaced},
+    {"sign_jump",	3, 3, f_sign_jump},
     {"sign_place",	4, 5, f_sign_place},
     {"sign_undefine",	0, 1, f_sign_undefine},
     {"sign_unplace",	1, 2, f_sign_unplace},
@@ -11410,6 +11412,58 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     }
 
     sign_get_placed(buf, lnum, sign_id, group, rettv->vval.v_list);
+}
+
+/*
+ * "sign_jump()" function
+ */
+    static void
+f_sign_jump(typval_T *argvars, typval_T *rettv)
+{
+    int		sign_id;
+    char_u	*sign_group = NULL;
+    buf_T	*buf;
+    int		notanum = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    // Sign identifer
+    sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
+    if (notanum)
+	return;
+    if (sign_id <= 0)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    // Sign group
+    sign_group = tv_get_string_chk(&argvars[1]);
+    if (sign_group == NULL)
+	return;
+    if (sign_group[0] == '\0')
+	sign_group = NULL;			// global sign group
+    else
+    {
+	sign_group = vim_strsave(sign_group);
+	if (sign_group == NULL)
+	    return;
+    }
+
+    // Buffer to place the sign
+    ++emsg_off;
+    buf = tv_get_buf(&argvars[2], FALSE);
+    --emsg_off;
+    if (buf == NULL)
+    {
+	EMSG2(_("E158: Invalid buffer name: %s"), tv_get_string(&argvars[2]));
+	goto cleanup;
+    }
+
+    rettv->vval.v_number = sign_jump(sign_id, sign_group, buf);
+
+cleanup:
+    vim_free(sign_group);
 }
 
 /*
