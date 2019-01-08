@@ -296,6 +296,7 @@ static void	ex_redo(exarg_T *eap);
 static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
+static void	ex_redrawtabline(exarg_T *eap);
 static void	close_redir(void);
 static void	ex_mkrc(exarg_T *eap);
 static void	ex_mark(exarg_T *eap);
@@ -9913,6 +9914,25 @@ ex_redrawstatus(exarg_T *eap UNUSED)
     else
 	status_redraw_curbuf();
     update_screen(VIsual_active ? INVERTED : 0);
+    RedrawingDisabled = r;
+    p_lz = p;
+    out_flush();
+}
+
+/*
+ * ":redrawtabline": force redraw of the tabline
+ */
+    static void
+ex_redrawtabline(exarg_T *eap UNUSED)
+{
+    int		r = RedrawingDisabled;
+    int		p = p_lz;
+
+    RedrawingDisabled = 0;
+    p_lz = FALSE;
+
+    draw_tabline();
+
     RedrawingDisabled = r;
     p_lz = p;
     out_flush();

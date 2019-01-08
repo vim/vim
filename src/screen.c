@@ -154,7 +154,6 @@ static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int de
 static void win_rest_invalid(win_T *wp);
 static void msg_pos_mode(void);
 static void recording_mode(int attr);
-static void draw_tabline(void);
 static int fillchar_status(int *attr, win_T *wp);
 static int fillchar_vsep(int *attr);
 #ifdef FEAT_MENU
@@ -10693,7 +10692,7 @@ recording_mode(int attr)
 /*
  * Draw the tab pages line at the top of the Vim window.
  */
-    static void
+    void
 draw_tabline(void)
 {
     int		tabcount = 0;

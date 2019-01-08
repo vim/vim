@@ -52,6 +52,7 @@ int screen_del_lines(int off, int row, int line_count, int end, int force, int c
 int showmode(void);
 void unshowmode(int force);
 void clearmode(void);
+void draw_tabline(void);
 void get_trans_bufname(buf_T *buf);
 int redrawing(void);
 int messaging(void);
