@@ -411,24 +411,29 @@ set_indent(
     }
     mch_memmove(s, p, (size_t)line_len);
 
-    /* Replace the line (unless undo fails). */
+    // Replace the line (unless undo fails).
     if (!(flags & SIN_UNDO) || u_savesub(curwin->w_cursor.lnum) == OK)
     {
 	ml_replace(curwin->w_cursor.lnum, newline, FALSE);
 	if (flags & SIN_CHANGED)
 	    changed_bytes(curwin->w_cursor.lnum, 0);
-	/* Correct saved cursor position if it is in this line. */
+
+	// Correct saved cursor position if it is in this line.
 	if (saved_cursor.lnum == curwin->w_cursor.lnum)
 	{
 	    if (saved_cursor.col >= (colnr_T)(p - oldline))
-		/* cursor was after the indent, adjust for the number of
-		 * bytes added/removed */
+		// cursor was after the indent, adjust for the number of
+		// bytes added/removed
 		saved_cursor.col += ind_len - (colnr_T)(p - oldline);
 	    else if (saved_cursor.col >= (colnr_T)(s - newline))
-		/* cursor was in the indent, and is now after it, put it back
-		 * at the start of the indent (replacing spaces with TAB) */
+		// cursor was in the indent, and is now after it, put it back
+		// at the start of the indent (replacing spaces with TAB)
 		saved_cursor.col = (colnr_T)(s - newline);
 	}
+#ifdef FEAT_TEXT_PROP
+	adjust_prop_columns(curwin->w_cursor.lnum, (colnr_T)(p - oldline),
+					     ind_len - (colnr_T)(p - oldline));
+#endif
 	retval = TRUE;
     }
     else
