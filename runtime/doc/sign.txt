@@ -317,6 +317,8 @@ See |sign_getplaced()| for the equivalent Vim script function.
 
 JUMPING TO A SIGN					*:sign-jump* *E157*
 
+See |sign_jump()| for the equivalent Vim script function.
+
 :sign jump {id} file={fname}
 		Open the file {fname} or jump to the window that contains
 		{fname} and position the cursor at sign {id}.

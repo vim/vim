@@ -8004,6 +8004,7 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 sign_jump({id}, {group}, {expr})
 		Open the buffer {expr} or jump to the window that contains
 		{expr} and position the cursor at sign {id} in group {group}.
+		This is similar to the |:sign-jump| command.
 
 		For the use of {expr}, see |bufname()|.
 
