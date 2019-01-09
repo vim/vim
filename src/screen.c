@@ -264,6 +264,17 @@ redraw_buf_later(buf_T *buf, int type)
 }
 
     void
+redraw_buf_line_later(buf_T *buf, linenr_T lnum)
+{
+    win_T	*wp;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == buf && lnum >= wp->w_topline
+						  && lnum < wp->w_botline)
+	    redrawWinline(wp, lnum);
+}
+
+    void
 redraw_buf_and_status_later(buf_T *buf, int type)
 {
     win_T	*wp;
@@ -978,26 +989,13 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
     win_foldinfo.fi_level = 0;
 # endif
 
-    /* update/delete a specific mark */
+    // update/delete a specific sign
+    redraw_buf_line_later(buf, lnum);
+
+    // check if it resulted in the need to redraw a window
     FOR_ALL_WINDOWS(wp)
-    {
-	if (buf != NULL && lnum > 0)
-	{
-	    if (wp->w_buffer == buf && lnum >= wp->w_topline
-						      && lnum < wp->w_botline)
-	    {
-		if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
-		    wp->w_redraw_top = lnum;
-		if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
-		    wp->w_redraw_bot = lnum;
-		redraw_win_later(wp, VALID);
-	    }
-	}
-	else
-	    redraw_win_later(wp, VALID);
 	if (wp->w_redr_type != 0)
 	    doit = TRUE;
-    }
 
     /* Return when there is nothing to do, screen updating is already
      * happening (recursive call), messages on the screen or still starting up.

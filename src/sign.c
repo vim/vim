@@ -327,8 +327,8 @@ buf_addsign(
     prev = NULL;
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {
-	if (lnum == sign->lnum && id == sign->id &&
-		sign_in_group(sign, groupname))
+	if (lnum == sign->lnum && id == sign->id
+		&& sign_in_group(sign, groupname))
 	{
 	    // Update an existing sign
 	    sign->typenr = typenr;
@@ -427,9 +427,9 @@ buf_delsign(
     for (sign = buf->b_signlist; sign != NULL; sign = next)
     {
 	next = sign->next;
-	if ((id == 0 || sign->id == id) &&
-		(atlnum == 0 || sign->lnum == atlnum) &&
-		sign_in_group(sign, group))
+	if ((id == 0 || sign->id == id)
+		&& (atlnum == 0 || sign->lnum == atlnum)
+		&& sign_in_group(sign, group))
 
 	{
 	    *lastp = next;
@@ -439,7 +439,8 @@ buf_delsign(
 	    if (sign->group != NULL)
 		sign_group_unref(sign->group->sg_name);
 	    vim_free(sign);
-	    update_debug_sign(buf, lnum);
+	    redraw_buf_line_later(buf, lnum);
+
 	    // Check whether only one sign needs to be deleted
 	    // If deleting a sign with a specific identifer in a particular
 	    // group or deleting any sign at a particular line number, delete
@@ -453,13 +454,10 @@ buf_delsign(
 	    lastp = &sign->next;
     }
 
-    // When deleted the last sign need to redraw the windows to remove the
-    // sign column.
+    // When deleting the last sign the cursor position may change, because the
+    // sign columns no longer shows.
     if (buf->b_signlist == NULL)
-    {
-	redraw_buf_later(buf, NOT_VALID);
 	changed_cline_bef_curs();
-    }
 
     return lnum;
 }
@@ -932,7 +930,7 @@ sign_place(
 	// ":sign place {id} file={fname}": change sign type
 	lnum = buf_change_sign_type(buf, *sign_id, sign_group, sp->sn_typenr);
     if (lnum > 0)
-	update_debug_sign(buf, lnum);
+	redraw_buf_line_later(buf, lnum);
     else
     {
 	EMSG2(_("E885: Not possible to change sign %s"), sign_name);
@@ -1068,8 +1066,8 @@ sign_place_cmd(
 	//   :sign place
 	//   :sign place group={group}
 	//   :sign place group=*
-	if (lnum >= 0 || sign_name != NULL ||
-		(group != NULL && *group == '\0'))
+	if (lnum >= 0 || sign_name != NULL
+		|| (group != NULL && *group == '\0'))
 	    EMSG(_(e_invarg));
 	else
 	    sign_list_placed(buf, group);
@@ -1077,8 +1075,8 @@ sign_place_cmd(
     else
     {
 	// Place a new sign
-	if (sign_name == NULL || buf == NULL ||
-		(group != NULL && *group == '\0'))
+	if (sign_name == NULL || buf == NULL
+		|| (group != NULL && *group == '\0'))
 	{
 	    EMSG(_(e_invarg));
 	    return;
@@ -1174,8 +1172,8 @@ sign_jump_cmd(
 	return;
     }
 
-    if (buf == NULL || (group != NULL && *group == '\0') ||
-					lnum >= 0 || sign_name != NULL)
+    if (buf == NULL || (group != NULL && *group == '\0')
+					     || lnum >= 0 || sign_name != NULL)
     {
 	// File or buffer is not specified or an empty group is used
 	// or a line number or a sign name is specified.
@@ -1330,7 +1328,7 @@ parse_sign_cmd_args(
     // If the filename is not supplied for the sign place or the sign jump
     // command, then use the current buffer.
     if (filename == NULL && ((cmd == SIGNCMD_PLACE && lnum_arg)
-		|| cmd == SIGNCMD_JUMP))
+						       || cmd == SIGNCMD_JUMP))
 	*buf = curwin->w_buffer;
 
     return OK;
@@ -1522,10 +1520,10 @@ sign_get_placed_in_buf(
     {
 	if (!sign_in_group(sign, sign_group))
 	    continue;
-	if ((lnum == 0 && sign_id == 0) ||
-		(sign_id == 0 && lnum == sign->lnum) ||
-		(lnum == 0 && sign_id == sign->id) ||
-		(lnum == sign->lnum && sign_id == sign->id))
+	if ((lnum == 0 && sign_id == 0)
+		|| (sign_id == 0 && lnum == sign->lnum)
+		|| (lnum == 0 && sign_id == sign->id)
+		|| (lnum == sign->lnum && sign_id == sign->id))
 	{
 	    if ((sdict = sign_get_info(sign)) != NULL)
 		list_append_dict(l, sdict);
@@ -1864,8 +1862,8 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	switch (cmd_idx)
 	{
 	    case SIGNCMD_DEFINE:
-		if (STRNCMP(last, "texthl", p - last) == 0 ||
-		    STRNCMP(last, "linehl", p - last) == 0)
+		if (STRNCMP(last, "texthl", p - last) == 0
+			|| STRNCMP(last, "linehl", p - last) == 0)
 		    xp->xp_context = EXPAND_HIGHLIGHT;
 		else if (STRNCMP(last, "icon", p - last) == 0)
 		    xp->xp_context = EXPAND_FILES;
