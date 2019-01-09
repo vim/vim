@@ -81,10 +81,19 @@ fd_read(sock_T fd, char *buf, size_t len)
 fd_write(sock_T fd, char *buf, size_t len)
 {
     HANDLE h = (HANDLE)fd;
-    DWORD nwrite;
+    DWORD nwrite = 0;
+    OVERLAPPED ov;
 
-    if (!WriteFile(h, buf, (DWORD)len, &nwrite, NULL))
-	return -1;
+    memset(&ov, 0, sizeof(ov));
+    if (!WriteFile(h, buf, (DWORD)len, &nwrite, &ov))
+    {
+	if (GetLastError() == ERROR_IO_PENDING)
+	{
+	    if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
+		return -1;
+	} else
+	    return -1;
+    }
     return (int)nwrite;
 }
 
