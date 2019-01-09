@@ -7,17 +7,17 @@ else
   let s:xxd_cmd = $XXD
 endif
 
-func! PrepareBuffer(lines)
+func PrepareBuffer(lines)
   new
   call append(0, a:lines)
   $d
 endfunc
 
-func! s:Mess(counter)
+func s:Mess(counter)
   return printf("Failed xxd test %d:", a:counter)
 endfunc
 
-func! Test_xxd()
+func Test_xxd()
   call PrepareBuffer(range(1,30))
   set ff=unix
   w XXDfile
