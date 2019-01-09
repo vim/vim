@@ -4,14 +4,14 @@
 #
 # Locale ID    : 1040
 # Locale Name  : it
-# fileencoding : latin1
+# fileencoding : UTF-8
 # Author       : Antonio Colombo
 
 !insertmacro MUI_LANGUAGE "Italian"
 
 
 # Overwrite the default translation.
-# These string should be always English.  Otherwise dosinst.c fails.
+# These strings should be always English.  Otherwise dosinst.c fails.
 LangString ^SetupCaption     ${LANG_ITALIAN} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_ITALIAN} \
