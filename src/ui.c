@@ -205,7 +205,7 @@ theend:
     return retval;
 }
 
-#if defined(FEAT_TIMERS) || defined(PROT)
+#if defined(FEAT_TIMERS) || defined(PROTO)
 /*
  * Wait for a timer to fire or "wait_func" to return non-zero.
  * Returns OK when something was read.
@@ -222,27 +222,35 @@ ui_wait_for_chars_or_timer(
     long    remaining = wtime;
     int	    tb_change_cnt = typebuf.tb_change_cnt;
 
-    /* When waiting very briefly don't trigger timers. */
+    // When waiting very briefly don't trigger timers.
     if (wtime >= 0 && wtime < 10L)
 	return wait_func(wtime, NULL, ignore_input);
 
     while (wtime < 0 || remaining > 0)
     {
-	/* Trigger timers and then get the time in wtime until the next one is
-	 * due.  Wait up to that time. */
+	// Trigger timers and then get the time in wtime until the next one is
+	// due.  Wait up to that time.
 	due_time = check_due_timer();
 	if (typebuf.tb_change_cnt != tb_change_cnt)
-	{
-	    /* timer may have used feedkeys() */
+	    // timer may have used feedkeys().
 	    return FAIL;
-	}
+# ifdef FEAT_JOB_CHANNEL
+	if ((wtime < 0 || remaining > 10L)
+#  ifdef FEAT_GUI
+		&& !gui.in_use
+#  endif
+		&& (has_pending_job() || channel_any_readahead()))
+	    // When there are any pending jobs or channels after timer callback
+	    // invoked, should return promptly in order to handle them ASAP.
+	    wtime = remaining = 10L;
+# endif
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
 	if (wait_func(due_time, interrupted, ignore_input))
 	    return OK;
 	if (interrupted != NULL && *interrupted)
-	    /* Nothing available, but need to return so that side effects get
-	     * handled, such as handling a message on a channel. */
+	    // Nothing available, but need to return so that side effects get
+	    // handled, such as handling a message on a channel.
 	    return FAIL;
 	if (wtime > 0)
 	    remaining -= due_time;
