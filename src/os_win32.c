@@ -5494,7 +5494,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 	}
     }
     else if (!use_null_for_in &&
-	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
+	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 65536)
 	    || !SetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
 
