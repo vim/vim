@@ -3266,13 +3266,7 @@ qf_jump_to_buffer(
 }
 
 /*
- * Jump to a quickfix line.
- * If dir == FORWARD go "errornr" valid entries forward.
- * If dir == BACKWARD go "errornr" valid entries backward.
- * If dir == FORWARD_FILE go "errornr" valid entries files backward.
- * If dir == BACKWARD_FILE go "errornr" valid entries files backward
- * else if "errornr" is zero, redisplay the same line
- * else go to entry "errornr".
+ * Jump to a quickfix line and try to use an existing window.
  */
     void
 qf_jump(qf_info_T	*qi,
@@ -3284,7 +3278,14 @@ qf_jump(qf_info_T	*qi,
 }
 
 /*
- * As qf_info().
+ * Jump to a quickfix line.
+ * If dir == 0 go to entry "errornr".
+ * If dir == FORWARD go "errornr" valid entries forward.
+ * If dir == BACKWARD go "errornr" valid entries backward.
+ * If dir == FORWARD_FILE go "errornr" valid entries files backward.
+ * If dir == BACKWARD_FILE go "errornr" valid entries files backward
+ * else if "errornr" is zero, redisplay the same line
+ * If 'forceit' is TRUE, then can discard changes to the current buffer.
  * If 'newwin' is TRUE, then open the file in a new window.
  */
     void
@@ -6559,9 +6560,18 @@ qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
     int		old_qfidx;
     qfline_T	*qf_ptr;
 
-    newidx = tv_get_number_chk(&di->di_tv, &denote);
-    if (denote)
-	return FAIL;
+    // If the specified index is '$', then use the last entry
+    if (di->di_tv.v_type == VAR_STRING
+	    && di->di_tv.vval.v_string != NULL
+	    && STRCMP(di->di_tv.vval.v_string, "$") == 0)
+	newidx = qfl->qf_count;
+    else
+    {
+	// Otherwise use the specified index
+	newidx = tv_get_number_chk(&di->di_tv, &denote);
+	if (denote)
+	    return FAIL;
+    }
 
     if (newidx < 1)		// sanity check
 	return FAIL;

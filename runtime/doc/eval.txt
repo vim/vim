@@ -7704,8 +7704,9 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				See |quickfix-parse|
 		    id		quickfix list identifier |quickfix-ID|
 		    idx		index of the current entry in the quickfix
-				list specified by 'id' or 'nr'.
-				See |quickfix-index|
+				list specified by 'id' or 'nr'. If set to '$',
+				then the last entry in the list is set as the
+				current entry.  See |quickfix-index|
 		    items	list of quickfix entries. Same as the {list}
 				argument.
 		    lines	use 'errorformat' to parse a list of lines and
