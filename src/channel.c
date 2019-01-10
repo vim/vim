@@ -81,7 +81,7 @@ fd_read(sock_T fd, char *buf, size_t len)
 fd_write(sock_T fd, char *buf, size_t len)
 {
     HANDLE h = (HANDLE)fd;
-    DWORD nwrite = 0;
+    DWORD nwrite;
     OVERLAPPED ov;
 
     // If the pipe overflows while the job does not read the data, WriteFile
@@ -89,11 +89,10 @@ fd_write(sock_T fd, char *buf, size_t len)
     memset(&ov, 0, sizeof(ov));
     if (!WriteFile(h, buf, (DWORD)len, &nwrite, &ov))
     {
-	if (GetLastError() == ERROR_IO_PENDING)
-	{
-	    if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
-		return -1;
-	} else
+	DWORD err = GetLastError();
+	if (err != ERROR_IO_PENDING)
+	    return -1;
+	if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
 	    return -1;
     }
     return (int)nwrite;
