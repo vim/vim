@@ -84,6 +84,8 @@ fd_write(sock_T fd, char *buf, size_t len)
     DWORD nwrite = 0;
     OVERLAPPED ov;
 
+    // If the pipe overflows while the job does not read the data, WriteFile
+    // will block forever. This avandon the sending.
     memset(&ov, 0, sizeof(ov));
     if (!WriteFile(h, buf, (DWORD)len, &nwrite, &ov))
     {
