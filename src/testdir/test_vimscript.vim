@@ -1441,6 +1441,45 @@ func Test_script_local_func()
   enew! | close
 endfunc
 
+func Test_compound_assignment_operators()
+    " Test for number
+    let x = 0
+    let x += 100
+    call assert_equal(100, x)
+    let x -= 45
+    call assert_equal(55, x)
+    let x *= 11
+    call assert_equal(605, x)
+    let x /= 20
+    call assert_equal(30, x)
+    let x %= 7
+    call assert_equal(2, x)
+    let x .= 'n'
+    call assert_equal('2n', x)
+
+    " Test for string
+    let x = 'str'
+    let x .= 'ing'
+    call assert_equal('string', x)
+    let x += 1
+    call assert_equal(1, x)
+
+    if has('float')
+        " Test for float
+        let x = 0.25
+        let x += 24.5
+        call assert_equal(24.75, x)
+        let x -= 11.25
+        call assert_equal(13.5, x)
+        let x *= 5.75
+        call assert_equal(77.625, x)
+        let x /= 10.0
+        call assert_equal(7.7625, x)
+        call assert_fails('let x %= 0.1', 'E734')
+        call assert_fails('let x .= "f"', 'E734')
+    endif
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
