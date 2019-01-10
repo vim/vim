@@ -1559,9 +1559,11 @@ struct jobvar_S
     char_u	*jv_tty_in;	/* controlling tty input, allocated */
     char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
-    char_u	*jv_stoponexit; /* allocated */
+    char_u	*jv_stoponexit;	/* allocated */
+#ifdef UNIX
+    char_u	*jv_termsig;	/* allocated */
+#endif
     int		jv_exitval;
-    char_u	*jv_termsig;
     char_u	*jv_exit_cb;	/* allocated */
     partial_T	*jv_exit_partial;
 

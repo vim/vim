@@ -5151,8 +5151,10 @@ job_free_contents(job_T *job)
 
     vim_free(job->jv_tty_in);
     vim_free(job->jv_tty_out);
-    vim_free(job->jv_termsig);
     vim_free(job->jv_stoponexit);
+#ifdef UNIX
+    vim_free(job->jv_termsig);
+#endif
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
     if (job->jv_argv != NULL)
     {
@@ -5863,9 +5865,11 @@ job_info(job_T *job, dict_T *dict)
     dict_add_string(dict, "tty_out", job->jv_tty_out);
 
     dict_add_number(dict, "exitval", job->jv_exitval);
-    dict_add_string(dict, "termsig", job->jv_termsig);
     dict_add_string(dict, "exit_cb", job->jv_exit_cb);
     dict_add_string(dict, "stoponexit", job->jv_stoponexit);
+#ifdef UNIX
+    dict_add_string(dict, "termsig", job->jv_termsig);
+#endif
 
     l = list_alloc();
     if (l != NULL)
