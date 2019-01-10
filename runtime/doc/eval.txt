@@ -5738,7 +5738,12 @@ job_info([{job}])					*job_info()*
 		   "process"	process ID
 		   "tty_in"	terminal input name, empty when none
 		   "tty_out"	terminal output name, empty when none
-		   "exitval"	only valid when "status" is "dead"
+		   "exitval"	only valid when "status" is "dead" and
+				"termsig" is empty
+		   "termsig"	the signal which terminated process
+				(See |job_stop()| for the values)
+				only valid when "status" is "dead" and
+				on unix
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
 
