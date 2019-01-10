@@ -1561,7 +1561,7 @@ struct jobvar_S
     jobstatus_T	jv_status;
     char_u	*jv_stoponexit; /* allocated */
     int		jv_exitval;
-    int		jv_termsig;
+    char_u	*jv_termsig;
     char_u	*jv_exit_cb;	/* allocated */
     partial_T	*jv_exit_partial;
 
