@@ -1893,3 +1893,40 @@ func Test_keep_pty_open()
   call assert_inrange(200, 1000, elapsed)
   call job_stop(job)
 endfunc
+
+func Test_job_start_in_timer()
+  if !has('job') || !has('timers')
+    return
+  endif
+
+  func OutCb(chan, msg)
+  endfunc
+
+  func ExitCb(job, status)
+    let g:val = 1
+    call Resume()
+  endfunc
+
+  func TimerCb(timer)
+    if has('win32')
+      let cmd = ['cmd', '/c', 'echo.']
+    else
+      let cmd = ['echo']
+    endif
+    let g:job = job_start(cmd, {'out_cb': 'OutCb', 'exit_cb': 'ExitCb'})
+    call substitute(repeat('a', 100000), '.', '', 'g')
+  endfunc
+
+  " We should be interrupted before 'updatetime' elapsed.
+  let g:val = 0
+  call timer_start(1, 'TimerCb')
+  let elapsed = Standby(&ut)
+  call assert_inrange(1, &ut / 2, elapsed)
+  call job_stop(g:job)
+
+  delfunc OutCb
+  delfunc ExitCb
+  delfunc TimerCb
+  unlet! g:val
+  unlet! g:job
+endfunc

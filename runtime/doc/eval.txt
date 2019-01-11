@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 06
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2322,7 +2322,7 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
 				Dict	search for a text property
-prop_list({lnum} [, {props})  	List	text properties in {lnum}
+prop_list({lnum} [, {props})	List	text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 				Number	remove a text property
 prop_type_add({name}, {props})	none	define a new property type
@@ -2412,6 +2412,8 @@ sign_define({name} [, {dict}])	Number	define or update a sign
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
+sign_jump({id}, {group}, {expr})
+				Number	jump to a sign
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
 				Number	place a sign
 sign_undefine([{name}])		Number	undefine a sign
@@ -3977,7 +3979,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			stuck, waiting for a character to be typed before the
 			script continues.
 			Note that if you manage to call feedkeys() while
-			executing commands, thus calling it recursively, the
+			executing commands, thus calling it recursively, then
 			all typehead will be consumed by the last call.
 		'!'	When used with 'x' will not end Insert mode. Can be
 			used in a test when a timer is set to exit Insert mode
@@ -4792,7 +4794,7 @@ getloclist({nr} [, {what}])				*getloclist()*
 		If {what} contains 'filewinid', then returns the id of the
 		window used to display files from the location list. This
 		field is applicable only when called from a location list
-		window.
+		window. See |location-list-file-window| for more details.
 
 getmatches()						*getmatches()*
 		Returns a |List| with all matches previously defined by
@@ -4883,7 +4885,9 @@ getqflist([{what}])					*getqflist()*
 			id	get information for the quickfix list with
 				|quickfix-ID|; zero means the id for the
 				current list or the list specified by "nr"
-			idx	index of the current entry in the list
+			idx	index of the current entry in the quickfix
+				list specified by 'id' or 'nr'.
+				See |quickfix-index|
 			items	quickfix list entries
 			lines	parse a list of lines using 'efm' and return
 				the resulting entries.  Only a |List| type is
@@ -5082,7 +5086,7 @@ getwinpos([{timeout}])					*getwinpos()*
 		When using a value less than 10 and no response is received
 		within that time, a previously reported position is returned,
 		if available.  This can be used to poll for the position and
-		do some work in the mean time: >
+		do some work in the meantime: >
 			while 1
 			  let res = getwinpos(1)
 			  if res[0] >= 0
@@ -6334,7 +6338,7 @@ mode([expr])	Return a string that indicates the current mode.
 		   nov	    Operator-pending (forced characterwise |o_v|)
 		   noV	    Operator-pending (forced linewise |o_V|)
 		   noCTRL-V Operator-pending (forced blockwise |o_CTRL-V|);
-		   		CTRL-V is one character
+				CTRL-V is one character
 		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
 		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
 		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
@@ -6706,12 +6710,12 @@ prop_add({lnum}, {col}, {props})
 				for a property that does not continue in
 				another line; can be zero
 		   end_lnum	line number for the end of text
-		   end_col	column just after the text; not used when "length"
-				is present; when {col} and "end_col" are
-				equal, and "end_lnum" is omitted or equal to
-				{lnum}, this is a zero-width text property
+		   end_col	column just after the text; not used when
+				"length" is present; when {col} and "end_col"
+				are equal, and "end_lnum" is omitted or equal
+				to {lnum}, this is a zero-width text property
 		   bufnr	buffer to add the property to; when omitted
-		   		the current buffer is used
+				the current buffer is used
 		   id		user defined ID for the property; when omitted
 				zero is used
 		   type		name of the text property type
@@ -6756,7 +6760,7 @@ prop_find({props} [, {direction}])
 				start position with "lnum" and "col"
 				must be given; when omitted the
 				current buffer is used
-		   lnum"	start in this line (when omitted start
+		   lnum		start in this line (when omitted start
 				at the cursor)
 		   col		start at this column (when omitted
 				and "lnum" is given: use column 1,
@@ -6774,7 +6778,7 @@ prop_find({props} [, {direction}])
 		See |text-properties| for information about text properties.
 
 
-prop_list({lnum} [, {props}]) 				*prop_list()*
+prop_list({lnum} [, {props}])				*prop_list()*
 		Return a List with all text properties in line {lnum}.
 
 		When {props} contains a "bufnr" item, use this buffer instead
@@ -7699,16 +7703,22 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
 				'errorformat' option value is used.
+				See |quickfix-parse|
 		    id		quickfix list identifier |quickfix-ID|
+		    idx		index of the current entry in the quickfix
+				list specified by 'id' or 'nr'. If set to '$',
+				then the last entry in the list is set as the
+				current entry.  See |quickfix-index|
 		    items	list of quickfix entries. Same as the {list}
 				argument.
 		    lines	use 'errorformat' to parse a list of lines and
 				add the resulting entries to the quickfix list
 				{nr} or {id}.  Only a |List| value is supported.
+				See |quickfix-parse|
 		    nr		list number in the quickfix stack; zero
 				means the current quickfix list and "$" means
-				the last quickfix list
-		    title	quickfix list title text
+				the last quickfix list.
+		    title	quickfix list title text. See |quickfix-title|
 		Unsupported keys in {what} are ignored.
 		If the "nr" item is not present, then the current quickfix list
 		is modified. When creating a new quickfix list, "nr" can be
@@ -7971,6 +7981,9 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			name	name of the defined sign
 			priority	sign priority
 
+		The returned signs in a buffer are ordered by their line
+		number.
+
 		Returns an empty list on failure or if there are no placed
 		signs.
 
@@ -7995,6 +8008,21 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 			" Get a List of all the placed signs
 			echo sign_getplaced()
 <
+							*sign_jump()*
+sign_jump({id}, {group}, {expr})
+		Open the buffer {expr} or jump to the window that contains
+		{expr} and position the cursor at sign {id} in group {group}.
+		This is similar to the |:sign-jump| command.
+
+		For the use of {expr}, see |bufname()|.
+
+		Returns the line number of the sign. Returns -1 if the
+		arguments are invalid.
+
+		Example: >
+			" Jump to sign 10 in the current buffer
+			call sign_jump(10, '', '')
+<
 							*sign_place()*
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		Place the sign defined as {name} at line {lnum} in file {expr}
@@ -8006,7 +8034,7 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		the sign group name. To use the global sign group, use an
 		empty string.  {group} functions as a namespace for {id}, thus
 		two groups can use the same IDs. Refer to |sign-identifier|
-		for more information.
+		and |sign-group| for more information.
 
 		{name} refers to a defined sign.
 		{expr} refers to a buffer name or number. For the accepted
@@ -10071,9 +10099,9 @@ vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
 viminfo			Compiled with viminfo support.
 virtualedit		Compiled with 'virtualedit' option.
-visual			Compiled with Visual mode.
-visualextra		Compiled with extra Visual mode commands.
-			|blockwise-operators|.
+visual			Compiled with Visual mode. (always true)
+visualextra		Compiled with extra Visual mode commands. (always
+			true) |blockwise-operators|.
 vms			VMS version of Vim.
 vreplace		Compiled with |gR| and |gr| commands.
 vtp			Compiled for vcon support |+vtp| (check vcon to find

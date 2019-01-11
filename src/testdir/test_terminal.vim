@@ -122,7 +122,7 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
-func! s:Nasty_exit_cb(job, st)
+func s:Nasty_exit_cb(job, st)
   exe g:buf . 'bwipe!'
   let g:buf = 0
 endfunc
@@ -1726,4 +1726,28 @@ endfunc
 func Test_terminal_no_job()
   let term = term_start('false', {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
+endfunc
+
+func Test_term_gettitle()
+  if !has('title') || empty(&t_ts)
+    return
+  endif
+  " TODO: this fails on Travis
+  return
+
+  " term_gettitle() returns an empty string for a non-terminal buffer
+  " or for a non-existing buffer.
+  call assert_equal('', term_gettitle(bufnr('%')))
+  call assert_equal('', term_gettitle(bufnr('$') + 1))
+
+  let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
+  call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":e Xfoo\r")
+  call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":set titlestring=foo\r")
+  call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
+
+  exe term . 'bwipe!'
 endfunc

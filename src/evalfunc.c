@@ -371,6 +371,7 @@ static void f_shiftwidth(typval_T *argvars, typval_T *rettv);
 static void f_sign_define(typval_T *argvars, typval_T *rettv);
 static void f_sign_getdefined(typval_T *argvars, typval_T *rettv);
 static void f_sign_getplaced(typval_T *argvars, typval_T *rettv);
+static void f_sign_jump(typval_T *argvars, typval_T *rettv);
 static void f_sign_place(typval_T *argvars, typval_T *rettv);
 static void f_sign_undefine(typval_T *argvars, typval_T *rettv);
 static void f_sign_unplace(typval_T *argvars, typval_T *rettv);
@@ -858,6 +859,7 @@ static struct fst
     {"sign_define",	1, 2, f_sign_define},
     {"sign_getdefined",	0, 1, f_sign_getdefined},
     {"sign_getplaced",	0, 2, f_sign_getplaced},
+    {"sign_jump",	3, 3, f_sign_jump},
     {"sign_place",	4, 5, f_sign_place},
     {"sign_undefine",	0, 1, f_sign_undefine},
     {"sign_unplace",	1, 2, f_sign_unplace},
@@ -1914,6 +1916,23 @@ tv_get_buf(typval_T *tv, int curtab_only)
     if (buf == NULL)
 	buf = find_buffer(tv);
 
+    return buf;
+}
+
+/*
+ * Get the buffer from "arg" and give an error and return NULL if it is not
+ * valid.
+ */
+    static buf_T *
+get_buf_arg(typval_T *arg)
+{
+    buf_T *buf;
+
+    ++emsg_off;
+    buf = tv_get_buf(arg, FALSE);
+    --emsg_off;
+    if (buf == NULL)
+	EMSG2(_("E158: Invalid buffer name: %s"), tv_get_string(arg));
     return buf;
 }
 
@@ -6514,9 +6533,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"virtualedit",
 #endif
 	"visual",
-#ifdef FEAT_VISUALEXTRA
 	"visualextra",
-#endif
 	"vreplace",
 #ifdef FEAT_VTP
 	"vtp",
@@ -11366,14 +11383,10 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	// get signs placed in this buffer
-	buf = tv_get_buf(&argvars[0], FALSE);
+	// get signs placed in the specified buffer
+	buf = get_buf_arg(&argvars[0]);
 	if (buf == NULL)
-	{
-	    EMSG2(_("E158: Invalid buffer name: %s"),
-						tv_get_string(&argvars[0]));
 	    return;
-	}
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
@@ -11410,6 +11423,53 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     }
 
     sign_get_placed(buf, lnum, sign_id, group, rettv->vval.v_list);
+}
+
+/*
+ * "sign_jump()" function
+ */
+    static void
+f_sign_jump(typval_T *argvars, typval_T *rettv)
+{
+    int		sign_id;
+    char_u	*sign_group = NULL;
+    buf_T	*buf;
+    int		notanum = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    // Sign identifer
+    sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
+    if (notanum)
+	return;
+    if (sign_id <= 0)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    // Sign group
+    sign_group = tv_get_string_chk(&argvars[1]);
+    if (sign_group == NULL)
+	return;
+    if (sign_group[0] == '\0')
+	sign_group = NULL;			// global sign group
+    else
+    {
+	sign_group = vim_strsave(sign_group);
+	if (sign_group == NULL)
+	    return;
+    }
+
+    // Buffer to place the sign
+    buf = get_buf_arg(&argvars[2]);
+    if (buf == NULL)
+	goto cleanup;
+
+    rettv->vval.v_number = sign_jump(sign_id, sign_group, buf);
+
+cleanup:
+    vim_free(sign_group);
 }
 
 /*
@@ -11459,12 +11519,9 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 	goto cleanup;
 
     // Buffer to place the sign
-    buf = tv_get_buf(&argvars[3], FALSE);
+    buf = get_buf_arg(&argvars[3]);
     if (buf == NULL)
-    {
-	EMSG2(_("E158: Invalid buffer name: %s"), tv_get_string(&argvars[2]));
 	goto cleanup;
-    }
 
     if (argvars[4].v_type != VAR_UNKNOWN)
     {
@@ -11568,13 +11625,9 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
 	if ((di = dict_find(dict, (char_u *)"buffer", -1)) != NULL)
 	{
-	    buf = tv_get_buf(&di->di_tv, FALSE);
+	    buf = get_buf_arg(&di->di_tv);
 	    if (buf == NULL)
-	    {
-		EMSG2(_("E158: Invalid buffer name: %s"),
-						tv_get_string(&di->di_tv));
 		goto cleanup;
-	    }
 	}
 	if (dict_find(dict, (char_u *)"id", -1) != NULL)
 	    sign_id = dict_get_number(dict, (char_u *)"id");

@@ -411,24 +411,29 @@ set_indent(
     }
     mch_memmove(s, p, (size_t)line_len);
 
-    /* Replace the line (unless undo fails). */
+    // Replace the line (unless undo fails).
     if (!(flags & SIN_UNDO) || u_savesub(curwin->w_cursor.lnum) == OK)
     {
 	ml_replace(curwin->w_cursor.lnum, newline, FALSE);
 	if (flags & SIN_CHANGED)
 	    changed_bytes(curwin->w_cursor.lnum, 0);
-	/* Correct saved cursor position if it is in this line. */
+
+	// Correct saved cursor position if it is in this line.
 	if (saved_cursor.lnum == curwin->w_cursor.lnum)
 	{
 	    if (saved_cursor.col >= (colnr_T)(p - oldline))
-		/* cursor was after the indent, adjust for the number of
-		 * bytes added/removed */
+		// cursor was after the indent, adjust for the number of
+		// bytes added/removed
 		saved_cursor.col += ind_len - (colnr_T)(p - oldline);
 	    else if (saved_cursor.col >= (colnr_T)(s - newline))
-		/* cursor was in the indent, and is now after it, put it back
-		 * at the start of the indent (replacing spaces with TAB) */
+		// cursor was in the indent, and is now after it, put it back
+		// at the start of the indent (replacing spaces with TAB)
 		saved_cursor.col = (colnr_T)(s - newline);
 	}
+#ifdef FEAT_TEXT_PROP
+	adjust_prop_columns(curwin->w_cursor.lnum, (colnr_T)(p - oldline),
+					     ind_len - (colnr_T)(p - oldline));
+#endif
 	retval = TRUE;
     }
     else
@@ -2397,7 +2402,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	    colnr_T	vcol;
 	    int		old_list;
 #ifndef FEAT_MBYTE
-	    char_u	buf[2];
+	    char_u	cbuf[2];
 #endif
 
 	    /*
@@ -2417,10 +2422,12 @@ ins_char_bytes(char_u *buf, int charlen)
 	     */
 	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL);
 #ifndef FEAT_MBYTE
-	    buf[0] = c;
-	    buf[1] = NUL;
-#endif
+	    cbuf[0] = c;
+	    cbuf[1] = NUL;
+	    new_vcol = vcol + chartabsize(cbuf, vcol);
+#else
 	    new_vcol = vcol + chartabsize(buf, vcol);
+#endif
 	    while (oldp[col + oldlen] != NUL && vcol < new_vcol)
 	    {
 		vcol += chartabsize(oldp + col + oldlen, vcol);
@@ -3020,7 +3027,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * When "added" is negative text was deleted.
  */
     void
-inserted_bytes(linenr_T lnum, colnr_T col, int added)
+inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
     changed_bytes(lnum, col);
 

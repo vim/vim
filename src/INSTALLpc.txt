@@ -496,6 +496,26 @@ E.g. When using MSVC (as one line):
     nmake -f Make_mvc.mak
         PYTHON=C:\Python27 DYNAMIC_PYTHON=yes PYTHON_VER=27
 
+When using MinGW and link with the official Python (as one line):
+
+    mingw32-make -f Make_ming.mak
+        PYTHON=C:/Python27 DYNAMIC_PYTHON=yes PYTHON_VER=27
+
+When using msys2 and link with Python2 bundled with msys2 (as one line):
+
+    mingw32-make -f Make_ming.mak PYTHON=c:/msys64/mingw64
+        PYTHON_HOME=c:/msys64/mingw64
+        PYTHONINC=-Ic:/msys64/mingw64/include/python2.7
+        DYNAMIC_PYTHON=yes
+        PYTHON_VER=27
+        DYNAMIC_PYTHON_DLL=libpython2.7.dll
+        STATIC_STDCPLUS=yes
+
+(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
+(STATIC_STDCPLUS is optional.  Set to yes if you don't want to require
+libstdc++-6.dll.)
+
+
 (rest written by Ron Aaron: <ronaharon@yahoo.com>)
 
 Building with the mingw32 compiler, and the ActiveState ActivePython:
@@ -517,17 +537,6 @@ easily:
 Now just do:
     make -f Make_ming.mak gvim.exe
 
-And if you use msys2 to build python support (as one line):
-
-    mingw32-make -f Make_ming.mak PYTHON=c:/msys64/mingw64
-        PYTHON_HOME=c:/msys64/mingw64
-        PYTHONINC=-Ic:/msys64/mingw64/include/python2.7
-        DYNAMIC_PYTHON=yes
-        PYTHON_VER=27
-        DYNAMIC_PYTHON_DLL=libpython2.7.dll
-        STATIC_STDCPLUS=yes
-
-(This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
 You will end up with a Python-enabled, Win32 version. Enjoy!
 
 
@@ -548,6 +557,10 @@ E.g. When using MSVC (as one line):
     nmake -f Make_mvc.mak
         PYTHON3=C:\Python36 DYNAMIC_PYTHON3=yes PYTHON3_VER=36
 
+When using MinGW and link with the official Python3 (as one line):
+
+    mingw32-make -f Make_ming.mak
+        PYTHON3=C:/Python36 DYNAMIC_PYTHON3=yes PYTHON3_VER=36
 
 When using msys2 and link with Python3 bundled with msys2 (as one line):
 
@@ -560,6 +573,8 @@ When using msys2 and link with Python3 bundled with msys2 (as one line):
         STATIC_STDCPLUS=yes
 
 (This is for 64-bit builds.  For 32-bit builds, replace mingw64 with mingw32.)
+(STATIC_STDCPLUS is optional.  Set to yes if you don't want to require
+libstdc++-6.dll.)
 
 
 9. Building with Racket or MzScheme support
@@ -833,11 +848,11 @@ After you install RubyInstaller, just type this (as one line):
 
     mingw32-make -f Make_ming.mak
         RUBY=C:/Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
-        WINVER=0x501
+        WINVER=0x600
 
 For 64-bit version, replace RUBY=C:/Ruby24 with RUBY=C:/Ruby24-x64.
 If you set WINVER explicitly, it must be set to >=0x500, when building with
-Ruby 2.1 or later.  (Default is 0x501.)
+Ruby 2.1 or later.  (Default is 0x600.)
 
 
 
@@ -849,7 +864,14 @@ You can use binaries from ActiveState (ActiveTcl).
 
     http://www.activestate.com/activetcl
 
-For MSVC 2015 use version 8.6.6 or later.
+Alternatively, you can use the binaries provided by IronTcl from
+
+    https://www.irontcl.com/
+
+They might lack behind the latest version a bit, but should provide 64bit
+and 32bit versions even if ActiveTcl does not provide them anymore.
+
+For building with MSVC 2015 use version 8.6.6 or later.
 When building, you need to set the following variables:
 
     TCL:          Where tcl is installed. E.g. C:\Tcl86
@@ -944,44 +966,44 @@ work on MS-DOS because of the limited amount of memory available.
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
 using Git, Mercurial or by downloading them as a unix tar file, you must
-first create a "vim80" directory.  If you instead downloaded the sources as
+first create a "vim81" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
 correct directory structure.
 
-  A.  Create a Vim "runtime" subdirectory named "vim80"
+  A.  Create a Vim "runtime" subdirectory named "vim81"
   -----------------------------------------------------
   If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim80".
+  directories and create a new subdirectory named "vim81".
 
-  Copy the "runtime" files into "vim80":
-     copy runtime\* vim80
+  Copy the "runtime" files into "vim81":
+     copy runtime\* vim81
 
-  B.  Copy the new binaries into the "vim80" directory
+  B.  Copy the new binaries into the "vim81" directory
   ----------------------------------------------------
   Regardless of how you installed the Vim sources, you need to copy the
-  new binaries you created above into "vim80":
+  new binaries you created above into "vim81":
 
-     copy src\*.exe vim80
-     copy src\tee\tee.exe vim80
-     copy src\xxd\xxd.exe vim80
+     copy src\*.exe vim81
+     copy src\tee\tee.exe vim81
+     copy src\xxd\xxd.exe vim81
 
   To install the "Edit with Vim" popup menu, you need both 32-bit and 64-bit
-  versions of gvimext.dll.  They should be copied to "vim80\GvimExt32" and
-  "vim80\GvimExt64" respectively.
+  versions of gvimext.dll.  They should be copied to "vim81\GvimExt32" and
+  "vim81\GvimExt64" respectively.
   First, build the 32-bit version, then:
 
-     mkdir vim80\GvimExt32
-     copy src\GvimExt\gvimext.dll vim80\GvimExt32
+     mkdir vim81\GvimExt32
+     copy src\GvimExt\gvimext.dll vim81\GvimExt32
 
   Next, clean the 32-bit version and build the 64-bit version, then:
 
-     mkdir vim80\GvimExt64
-     copy src\GvimExt\gvimext.dll vim80\GvimExt64
+     mkdir vim81\GvimExt64
+     copy src\GvimExt\gvimext.dll vim81\GvimExt64
 
-  C.  Copy gettext and iconv DLLs into the "vim80" directory
+  C.  Copy gettext and iconv DLLs into the "vim81" directory
   ----------------------------------------------------------
   Get gettext and iconv DLLs from the following site:
      https://github.com/mlocati/gettext-iconv-windows/releases
@@ -989,7 +1011,7 @@ correct directory structure.
   Download the files gettextX.X.X.X-iconvX.XX-shared-{32,64}.zip, extract
   DLLs and place them as follows:
 
-        vim80\
+        vim81\
             |   libintl-8.dll
             |   libiconv-2.dll
             |   libgcc_s_sjlj-1.dll     (only for 32-bit)
@@ -1003,18 +1025,18 @@ correct directory structure.
                 libintl-8.dll
                 libiconv-2.dll
 
-  The DLLs in the "vim80" should be the same bitness with the (g)vim.exe.
+  The DLLs in the "vim81" should be the same bitness with the (g)vim.exe.
 
-  D.  Move the "vim80" directory into the Vim installation subdirectory
+  D.  Move the "vim81" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
-  Move the "vim80" subdirectory into the subdirectory where you want Vim
+  Move the "vim81" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".
-  If you already have a "vim80" subdirectory in "vim", delete it first
+  If you already have a "vim81" subdirectory in "vim", delete it first
   by running its uninstal.exe program.
 
   E.  Install Vim
   ---------------
-  "cd" to your Vim installation subdirectory "vim\vim80" and run the
+  "cd" to your Vim installation subdirectory "vim\vim81" and run the
   "install.exe" program.  It will ask you a number of questions about
   how you would like to have your Vim setup.  Among these are:
   - You can tell it to write a "_vimrc" file with your preferences in the

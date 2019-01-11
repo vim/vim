@@ -1205,9 +1205,10 @@ serialize_header(bufinfo_T *bi, char_u *hash)
     /* buffer-specific data */
     undo_write_bytes(bi, (long_u)buf->b_ml.ml_line_count, 4);
     len = buf->b_u_line_ptr.ul_line == NULL
-				       ? 0 : STRLEN(buf->b_u_line_ptr.ul_line);
+				? 0L : (long)STRLEN(buf->b_u_line_ptr.ul_line);
     undo_write_bytes(bi, (long_u)len, 4);
-    if (len > 0 && fwrite_crypt(bi, buf->b_u_line_ptr.ul_line, (size_t)len) == FAIL)
+    if (len > 0 && fwrite_crypt(bi, buf->b_u_line_ptr.ul_line, (size_t)len)
+								       == FAIL)
 	return FAIL;
     undo_write_bytes(bi, (long_u)buf->b_u_line_lnum, 4);
     undo_write_bytes(bi, (long_u)buf->b_u_line_colnr, 4);

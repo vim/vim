@@ -150,6 +150,7 @@ static int	  compl_cont_mode = 0;
 static expand_T	  compl_xp;
 
 static int	  compl_opt_refresh_always = FALSE;
+static int	  compl_opt_suppress_empty = FALSE;
 
 static void ins_ctrl_x(void);
 static int  has_compl_option(int dict_opt);
@@ -1955,7 +1956,7 @@ edit_unputchar(void)
 	if (pc_status == PC_STATUS_RIGHT)
 	    ++curwin->w_wcol;
 	if (pc_status == PC_STATUS_RIGHT || pc_status == PC_STATUS_LEFT)
-	    redrawWinline(curwin, curwin->w_cursor.lnum, FALSE);
+	    redrawWinline(curwin, curwin->w_cursor.lnum);
 	else
 #endif
 	    screen_puts(pc_bytes, pc_row - msg_scrolled, pc_col, pc_attr);
@@ -2006,7 +2007,7 @@ undisplay_dollar(void)
     if (dollar_vcol >= 0)
     {
 	dollar_vcol = -1;
-	redrawWinline(curwin, curwin->w_cursor.lnum, FALSE);
+	redrawWinline(curwin, curwin->w_cursor.lnum);
     }
 }
 
@@ -4247,8 +4248,12 @@ expand_by_function(
 	    case VAR_DICT:
 		matchdict = rettv.vval.v_dict;
 		break;
+	    case VAR_SPECIAL:
+		if (rettv.vval.v_number == VVAL_NONE)
+		    compl_opt_suppress_empty = TRUE;
+		// FALLTHROUGH
 	    default:
-		/* TODO: Give error message? */
+		// TODO: Give error message?
 		clear_tv(&rettv);
 		break;
 	}
@@ -5611,6 +5616,7 @@ ins_complete(int c, int enable_pum)
 	     * completion.
 	     */
 	    compl_opt_refresh_always = FALSE;
+	    compl_opt_suppress_empty = FALSE;
 
 	    if (col < 0)
 		col = curs_col;
@@ -5860,19 +5866,22 @@ ins_complete(int c, int enable_pum)
 	}
     }
 
-    /* Show a message about what (completion) mode we're in. */
-    showmode();
-    if (!shortmess(SHM_COMPLETIONMENU))
+    // Show a message about what (completion) mode we're in.
+    if (!compl_opt_suppress_empty)
     {
-	if (edit_submode_extra != NULL)
+	showmode();
+	if (!shortmess(SHM_COMPLETIONMENU))
 	{
-	    if (!p_smd)
-		msg_attr(edit_submode_extra,
-			edit_submode_highl < HLF_COUNT
-			? HL_ATTR(edit_submode_highl) : 0);
+	    if (edit_submode_extra != NULL)
+	    {
+		if (!p_smd)
+		    msg_attr(edit_submode_extra,
+			    edit_submode_highl < HLF_COUNT
+			    ? HL_ATTR(edit_submode_highl) : 0);
+	    }
+	    else
+		msg_clr_cmdline();	// necessary for "noshowmode"
 	}
-	else
-	    msg_clr_cmdline();	/* necessary for "noshowmode" */
     }
 
     /* Show the popup menu, unless we got interrupted. */
@@ -7074,7 +7083,7 @@ check_spell_redraw(void)
 	linenr_T	lnum = spell_redraw_lnum;
 
 	spell_redraw_lnum = 0;
-	redrawWinline(curwin, lnum, FALSE);
+	redrawWinline(curwin, lnum);
     }
 }
 
