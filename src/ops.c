@@ -2754,7 +2754,12 @@ op_insert(oparg_T *oap, long count1)
 			)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
+#ifdef FEAT_VIRTUALEDIT
+					      curbuf->b_op_start_orig.coladd
+#else
+					      0
+#endif
+					      );
 		oap->start.col = curbuf->b_op_start_orig.col;
 		pre_textlen -= t - oap->start_vcol;
 		oap->start_vcol = t;
@@ -2771,7 +2776,12 @@ op_insert(oparg_T *oap, long count1)
 			)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
+#ifdef FEAT_VIRTUALEDIT
+					      curbuf->b_op_start_orig.coladd
+#else
+					      0
+#endif
+					      );
 		oap->start.col = curbuf->b_op_start_orig.col;
 		/* reset pre_textlen to the value of OP_INSERT */
 		pre_textlen += bd.textlen;

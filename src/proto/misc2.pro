@@ -1,8 +1,8 @@
 /* misc2.c */
 int virtual_active(void);
 int getviscol(void);
-int getviscol2(colnr_T col, colnr_T coladd);
 int coladvance_force(colnr_T wcol);
+int getviscol2(colnr_T col, colnr_T coladd);
 int coladvance(colnr_T wcol);
 int getvpos(pos_T *pos, colnr_T wcol);
 int inc_cursor(void);

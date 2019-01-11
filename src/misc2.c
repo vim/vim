@@ -48,22 +48,6 @@ getviscol(void)
 }
 
 /*
- * Get the screen position of character col with a coladd in the cursor line.
- */
-    int
-getviscol2(colnr_T col, colnr_T coladd)
-{
-    colnr_T	x;
-    pos_T	pos;
-
-    pos.lnum = curwin->w_cursor.lnum;
-    pos.col = col;
-    pos.coladd = coladd;
-    getvvcol(curwin, &pos, &x, NULL, NULL);
-    return (int)x;
-}
-
-/*
  * Go to column "wcol", and add/insert white space as necessary to get the
  * cursor in that column.
  * The caller must have saved the cursor line for undo!
@@ -84,6 +68,24 @@ coladvance_force(colnr_T wcol)
     return rc;
 }
 #endif
+
+/*
+ * Get the screen position of character col with a coladd in the cursor line.
+ */
+    int
+getviscol2(colnr_T col, colnr_T coladd)
+{
+    colnr_T	x;
+    pos_T	pos;
+
+    pos.lnum = curwin->w_cursor.lnum;
+    pos.col = col;
+#ifdef FEAT_VIRTUALEDIT
+    pos.coladd = coladd;
+#endif
+    getvvcol(curwin, &pos, &x, NULL, NULL);
+    return (int)x;
+}
 
 /*
  * Try to advance the Cursor to the specified screen column.
