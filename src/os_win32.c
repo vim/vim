@@ -5442,7 +5442,7 @@ create_pipe_pair(HANDLE handles[2])
     // Create named pipe. Max size of named pipe is 65535
     handles[1] = CreateNamedPipe(
 	    name,
-	    PIPE_ACCESS_OUTBOUND,
+	    PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
 	    PIPE_TYPE_BYTE | PIPE_WAIT,
 	    1, 65535, 0, 0, NULL);
 
