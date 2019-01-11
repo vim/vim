@@ -33,6 +33,7 @@ NEW_TESTS = \
 	test_command_count \
 	test_comparators \
 	test_compiler \
+	test_conceal \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \

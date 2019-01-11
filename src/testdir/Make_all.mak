@@ -84,6 +84,7 @@ NEW_TESTS = test_arabic.res \
 	    test_cmdline.res \
 	    test_command_count.res \
 	    test_comparators.res \
+	    test_conceal.res \
 	    test_crypt.res \
 	    test_cscope.res \
 	    test_curswant.res \
