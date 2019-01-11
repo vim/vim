@@ -137,9 +137,9 @@ redraw_for_cursorline(win_T *wp)
 #endif
 		)
 	    && (wp->w_valid & VALID_CROW) == 0
-# ifdef FEAT_INS_EXPAND
+#ifdef FEAT_INS_EXPAND
 	    && !pum_visible()
-# endif
+#endif
 	    )
     {
 	if (wp->w_p_rnu)
@@ -155,7 +155,6 @@ redraw_for_cursorline(win_T *wp)
 		// the current window.
 		redrawWinline(wp, wp->w_last_cursorline);
 		redrawWinline(wp, wp->w_cursor.lnum);
-		redraw_win_later(wp, VALID);
 	    }
 	    else
 		redraw_win_later(wp, SOME_VALID);
