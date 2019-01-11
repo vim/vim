@@ -33,6 +33,11 @@ SCRIPTS = $(SCRIPTS_ALL) \
 	  $(SCRIPTS_MORE2) \
 	  $(SCRIPTS_MORE4)
 
+# Explicit dependencies.
+test49.out: test49.vim
+
+test_options.res test_alot.res: opt_test.vim
+
 SCRIPTS_BENCH = bench_re_freeze.out
 
 .SUFFIXES: .in .out .res .vim

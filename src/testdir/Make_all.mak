@@ -407,9 +407,3 @@ NEW_TESTS_RES = \
 	test_alot_latin.res \
 	test_alot_utf8.res \
 	test_alot.res
-
-
-# Explicit dependencies.
-test49.out: test49.vim
-
-test_options.res test_alot.res: opt_test.vim
