@@ -4249,14 +4249,8 @@ expand_by_function(
 		matchdict = rettv.vval.v_dict;
 		break;
 	    case VAR_SPECIAL:
-		switch (rettv.vval.v_number)
-		{
-		    case VVAL_FALSE:
-		    case VVAL_NONE:
-		    case VVAL_NULL:
-			compl_opt_suppress_empty = TRUE;
-			break;
-		}
+		if (rettv.vval.v_number == VVAL_NONE)
+		    compl_opt_suppress_empty = TRUE;
 	    default:
 		/* TODO: Give error message? */
 		clear_tv(&rettv);

@@ -1077,9 +1077,8 @@ that contains the List.  The Dict can have these items:
 			effect is that the function is called whenever the
 			leading text is changed.
 
-If you want to suppress warning message for empty result, return v:null or
-v:none or v:false. This is useful to asynchronized implemente completion with
-complete().
+If you want to suppress warning message for empty result, return v:none. This
+is useful to asynchronized implemente completion with complete().
 
 Other items are ignored.
 
