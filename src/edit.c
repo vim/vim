@@ -6498,6 +6498,7 @@ internal_format(
 	char_u	*saved_text = NULL;
 	colnr_T	col;
 	colnr_T	end_col;
+	int	wcc;			// counter for whitespace chars
 
 	virtcol = get_nolist_virtcol()
 		+ char2cells(c != NUL ? c : gchar_cursor());
@@ -6559,14 +6560,26 @@ internal_format(
 		/* remember position of blank just before text */
 		end_col = curwin->w_cursor.col;
 
-		/* find start of sequence of blanks */
+		// find start of sequence of blanks
+		wcc = 0;
 		while (curwin->w_cursor.col > 0 && WHITECHAR(cc))
 		{
 		    dec_cursor();
 		    cc = gchar_cursor();
+
+		    // Increment count of how many whitespace chars in this
+		    // group; we only need to know if it's more than one.
+		    if (wcc < 2)
+		        wcc++;
 		}
 		if (curwin->w_cursor.col == 0 && WHITECHAR(cc))
 		    break;		/* only spaces in front of text */
+
+		// Don't break after a period when 'formatoptions' has 'p' and
+		// there are less than two spaces.
+		if (has_format_option(FO_PERIOD_ABBR) && cc == '.' && wcc < 2)
+		    continue;
+
 #ifdef FEAT_COMMENTS
 		/* Don't break until after the comment leader */
 		if (curwin->w_cursor.col < leader_len)
