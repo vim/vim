@@ -38,7 +38,7 @@ SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
 SCRIPTS_BENCH = bench_re_freeze.out
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 .SUFFIXES: .in .out .res .vim
 
@@ -110,7 +110,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 
-newtests: $(NEW_TESTS)
+newtests: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd

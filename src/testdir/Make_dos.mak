@@ -66,7 +66,7 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 # Must run test1 first to create small.vim.
 # This rule must come after the one that copies the input files to dostmp to
 # allow for running an individual test.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 report:
 	@echo ""
@@ -115,7 +115,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 newtests: newtestssilent
 	@if exist messages (findstr "SKIPPED FAILED" messages > nul) && type messages
 
-newtestssilent: $(NEW_TESTS)
+newtestssilent: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
