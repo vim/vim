@@ -150,6 +150,7 @@ static int	  compl_cont_mode = 0;
 static expand_T	  compl_xp;
 
 static int	  compl_opt_refresh_always = FALSE;
+static int	  compl_opt_suppress_empty = FALSE;
 
 static void ins_ctrl_x(void);
 static int  has_compl_option(int dict_opt);
@@ -4247,6 +4248,15 @@ expand_by_function(
 	    case VAR_DICT:
 		matchdict = rettv.vval.v_dict;
 		break;
+	    case VAR_SPECIAL:
+		switch (rettv.vval.v_number)
+		{
+		    case VVAL_FALSE:
+		    case VVAL_NONE:
+		    case VVAL_NULL:
+			compl_opt_suppress_empty = TRUE;
+			break;
+		}
 	    default:
 		/* TODO: Give error message? */
 		clear_tv(&rettv);
@@ -5611,6 +5621,7 @@ ins_complete(int c, int enable_pum)
 	     * completion.
 	     */
 	    compl_opt_refresh_always = FALSE;
+	    compl_opt_suppress_empty = FALSE;
 
 	    if (col < 0)
 		col = curs_col;
@@ -5861,18 +5872,21 @@ ins_complete(int c, int enable_pum)
     }
 
     /* Show a message about what (completion) mode we're in. */
-    showmode();
-    if (!shortmess(SHM_COMPLETIONMENU))
+    if (!compl_opt_suppress_empty)
     {
-	if (edit_submode_extra != NULL)
+	showmode();
+	if (!shortmess(SHM_COMPLETIONMENU))
 	{
-	    if (!p_smd)
-		msg_attr(edit_submode_extra,
-			edit_submode_highl < HLF_COUNT
-			? HL_ATTR(edit_submode_highl) : 0);
+	    if (edit_submode_extra != NULL)
+	    {
+		if (!p_smd)
+		    msg_attr(edit_submode_extra,
+			    edit_submode_highl < HLF_COUNT
+			    ? HL_ATTR(edit_submode_highl) : 0);
+	    }
+	    else
+		msg_clr_cmdline();	/* necessary for "noshowmode" */
 	}
-	else
-	    msg_clr_cmdline();	/* necessary for "noshowmode" */
     }
 
     /* Show the popup menu, unless we got interrupted. */
