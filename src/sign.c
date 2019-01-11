@@ -22,16 +22,16 @@ typedef struct sign sign_T;
 
 struct sign
 {
-    sign_T	*sn_next;	/* next sign in list */
-    int		sn_typenr;	/* type number of sign */
-    char_u	*sn_name;	/* name of sign */
-    char_u	*sn_icon;	/* name of pixmap */
+    sign_T	*sn_next;	// next sign in list
+    int		sn_typenr;	// type number of sign
+    char_u	*sn_name;	// name of sign
+    char_u	*sn_icon;	// name of pixmap
 # ifdef FEAT_SIGN_ICONS
-    void	*sn_image;	/* icon image */
+    void	*sn_image;	// icon image
 # endif
-    char_u	*sn_text;	/* text used instead of pixmap */
-    int		sn_line_hl;	/* highlight ID for line */
-    int		sn_text_hl;	/* highlight ID for text */
+    char_u	*sn_text;	// text used instead of pixmap
+    int		sn_line_hl;	// highlight ID for line
+    int		sn_text_hl;	// highlight ID for text
 };
 
 static sign_T	*first_sign = NULL;
@@ -381,9 +381,9 @@ buf_change_sign_type(
 buf_getsigntype(
     buf_T	*buf,
     linenr_T	lnum,
-    int		type)	/* SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL */
+    int		type)	// SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL
 {
-    signlist_T	*sign;		/* a sign in a b_signlist */
+    signlist_T	*sign;		// a sign in a b_signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum
@@ -526,11 +526,11 @@ buf_findsign_id(
  */
     int
 buf_findsigntype_id(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    linenr_T	lnum,		/* line number of sign */
-    int		typenr)		/* sign type number */
+    buf_T	*buf,		// buffer whose sign we are searching for
+    linenr_T	lnum,		// line number of sign
+    int		typenr)		// sign type number
 {
-    signlist_T	*sign;		/* a sign in the signlist */
+    signlist_T	*sign;		// a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
 	if (sign->lnum == lnum && sign->typenr == typenr)
@@ -656,7 +656,7 @@ sign_mark_adjust(
     long	amount,
     long	amount_after)
 {
-    signlist_T	*sign;		/* a sign in a b_signlist */
+    signlist_T	*sign;		// a sign in a b_signlist
 
     FOR_ALL_SIGNS_IN_BUF(curbuf, sign)
     {
@@ -678,8 +678,8 @@ sign_mark_adjust(
  */
     static int
 sign_cmd_idx(
-    char_u	*begin_cmd,	/* begin of sign subcmd */
-    char_u	*end_cmd)	/* just after sign subcmd */
+    char_u	*begin_cmd,	// begin of sign subcmd
+    char_u	*end_cmd)	// just after sign subcmd
 {
     int		idx;
     char	save = *end_cmd;
@@ -984,8 +984,51 @@ sign_unplace_at_cursor(char_u *groupname)
 }
 
 /*
- * sign define command
- *   ":sign define {name} ..."
+ * Jump to a sign.
+ */
+    linenr_T
+sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
+{
+    linenr_T	lnum;
+
+    if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
+    {
+	EMSGN(_("E157: Invalid sign ID: %ld"), sign_id);
+	return -1;
+    }
+
+    // goto a sign ...
+    if (buf_jump_open_win(buf) != NULL)
+    {			// ... in a current window
+	curwin->w_cursor.lnum = lnum;
+	check_cursor_lnum();
+	beginline(BL_WHITE);
+    }
+    else
+    {			// ... not currently in a window
+	char_u	*cmd;
+
+	if (buf->b_fname == NULL)
+	{
+	    EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
+	    return -1;
+	}
+	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
+	if (cmd == NULL)
+	    return -1;
+	sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);
+	do_cmdline_cmd(cmd);
+	vim_free(cmd);
+    }
+# ifdef FEAT_FOLDING
+    foldOpenCursor();
+# endif
+
+    return lnum;
+}
+
+/*
+ * ":sign define {name} ..." command
  */
     static void
 sign_define_cmd(char_u *sign_name, char_u *cmdline)
@@ -1043,7 +1086,7 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 }
 
 /*
- * :sign place command
+ * ":sign place" command
  */
     static void
 sign_place_cmd(
@@ -1087,7 +1130,7 @@ sign_place_cmd(
 }
 
 /*
- * :sign unplace command
+ * ":sign unplace" command
  */
     static void
 sign_unplace_cmd(
@@ -1152,7 +1195,7 @@ sign_unplace_cmd(
 }
 
 /*
- * Jump to a placed sign
+ * Jump to a placed sign commands:
  *   :sign jump {id} file={fname}
  *   :sign jump {id} buffer={nr}
  *   :sign jump {id} group={group} file={fname}
@@ -1180,39 +1223,7 @@ sign_jump_cmd(
 	EMSG(_(e_invarg));
 	return;
     }
-
-    if ((lnum = buf_findsign(buf, id, group)) <= 0)
-    {
-	EMSGN(_("E157: Invalid sign ID: %ld"), id);
-	return;
-    }
-
-    // goto a sign ...
-    if (buf_jump_open_win(buf) != NULL)
-    {			// ... in a current window
-	curwin->w_cursor.lnum = lnum;
-	check_cursor_lnum();
-	beginline(BL_WHITE);
-    }
-    else
-    {			// ... not currently in a window
-	char_u	*cmd;
-
-	if (buf->b_fname == NULL)
-	{
-	    EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
-	    return;
-	}
-	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
-	if (cmd == NULL)
-	    return;
-	sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);
-	do_cmdline_cmd(cmd);
-	vim_free(cmd);
-    }
-# ifdef FEAT_FOLDING
-    foldOpenCursor();
-# endif
+    (void)sign_jump(id, group, buf);
 }
 
 /*
@@ -1685,7 +1696,7 @@ sign_get_text(int typenr)
 # if defined(FEAT_SIGN_ICONS) || defined(PROTO)
     void *
 sign_get_image(
-    int		typenr)		/* the attribute which may have a sign */
+    int		typenr)		// the attribute which may have a sign
 {
     sign_T	*sp;
 
@@ -1709,11 +1720,11 @@ free_signs(void)
 # if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static enum
 {
-    EXP_SUBCMD,		/* expand :sign sub-commands */
-    EXP_DEFINE,		/* expand :sign define {name} args */
-    EXP_PLACE,		/* expand :sign place {id} args */
-    EXP_UNPLACE,	/* expand :sign unplace" */
-    EXP_SIGN_NAMES	/* expand with name of placed signs */
+    EXP_SUBCMD,		// expand :sign sub-commands
+    EXP_DEFINE,		// expand :sign define {name} args
+    EXP_PLACE,		// expand :sign place {id} args
+    EXP_UNPLACE,	// expand :sign unplace"
+    EXP_SIGN_NAMES	// expand with name of placed signs
 } expand_what;
 
 /*
@@ -1753,7 +1764,7 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 	    return (char_u *)unplace_arg[idx];
 	}
     case EXP_SIGN_NAMES:
-	/* Complete with name of signs already defined */
+	// Complete with name of signs already defined
 	current_idx = 0;
 	for (sp = first_sign; sp != NULL; sp = sp->sn_next)
 	    if (current_idx++ == idx)
@@ -1776,38 +1787,38 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
     int		cmd_idx;
     char_u	*begin_subcmd_args;
 
-    /* Default: expand subcommands. */
+    // Default: expand subcommands.
     xp->xp_context = EXPAND_SIGN;
     expand_what = EXP_SUBCMD;
     xp->xp_pattern = arg;
 
     end_subcmd = skiptowhite(arg);
     if (*end_subcmd == NUL)
-	/* expand subcmd name
-	 * :sign {subcmd}<CTRL-D>*/
+	// expand subcmd name
+	// :sign {subcmd}<CTRL-D>
 	return;
 
     cmd_idx = sign_cmd_idx(arg, end_subcmd);
 
-    /* :sign {subcmd} {subcmd_args}
-     *		      |
-     *		      begin_subcmd_args */
+    // :sign {subcmd} {subcmd_args}
+    //		      |
+    //		      begin_subcmd_args
     begin_subcmd_args = skipwhite(end_subcmd);
     p = skiptowhite(begin_subcmd_args);
     if (*p == NUL)
     {
-	/*
-	 * Expand first argument of subcmd when possible.
-	 * For ":jump {id}" and ":unplace {id}", we could
-	 * possibly expand the ids of all signs already placed.
-	 */
+	//
+	// Expand first argument of subcmd when possible.
+	// For ":jump {id}" and ":unplace {id}", we could
+	// possibly expand the ids of all signs already placed.
+	//
 	xp->xp_pattern = begin_subcmd_args;
 	switch (cmd_idx)
 	{
 	    case SIGNCMD_LIST:
 	    case SIGNCMD_UNDEFINE:
-		/* :sign list <CTRL-D>
-		 * :sign undefine <CTRL-D> */
+		// :sign list <CTRL-D>
+		// :sign undefine <CTRL-D>
 		expand_what = EXP_SIGN_NAMES;
 		break;
 	    default:
@@ -1816,13 +1827,13 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	return;
     }
 
-    /* expand last argument of subcmd */
+    // expand last argument of subcmd
 
-    /* :sign define {name} {args}...
-     *		    |
-     *		    p */
+    // :sign define {name} {args}...
+    //		    |
+    //		    p
 
-    /* Loop until reaching last argument. */
+    // Loop until reaching last argument.
     do
     {
 	p = skipwhite(p);
@@ -1832,12 +1843,12 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 
     p = vim_strchr(last, '=');
 
-    /* :sign define {name} {args}... {last}=
-     *				     |	   |
-     *				  last	   p */
+    // :sign define {name} {args}... {last}=
+    //				     |	   |
+    //				  last	   p
     if (p == NULL)
     {
-	/* Expand last argument name (before equal sign). */
+	// Expand last argument name (before equal sign).
 	xp->xp_pattern = last;
 	switch (cmd_idx)
 	{
@@ -1857,7 +1868,7 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
     }
     else
     {
-	/* Expand last argument value (after equal sign). */
+	// Expand last argument value (after equal sign).
 	xp->xp_pattern = p + 1;
 	switch (cmd_idx)
 	{
