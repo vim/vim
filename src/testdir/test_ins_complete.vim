@@ -148,7 +148,7 @@ func s:CompleteDone_CompleteFuncNone( findstart, base )
   endif
 
   return v:none
-endfunction
+endfunc
 
 func s:CompleteDone_CompleteFuncDict( findstart, base )
   if a:findstart
@@ -171,7 +171,7 @@ endfunc
 
 func s:CompleteDone_CheckCompletedItemNone()
   let s:called_completedone = 1
-endfunction
+endfunc
 
 func s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'aword',          v:completed_item[ 'word' ] )
@@ -195,7 +195,7 @@ func Test_CompleteDoneNone()
 
   let s:called_completedone = 0
   au! CompleteDone
-endfunction
+endfunc
 
 func Test_CompleteDoneDict()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDict()
@@ -209,7 +209,7 @@ func Test_CompleteDoneDict()
 
   let s:called_completedone = 0
   au! CompleteDone
-endfunction
+endfunc
 
 func s:CompleteDone_CompleteFuncDictNoUserData( findstart, base )
   if a:findstart
