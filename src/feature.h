@@ -194,10 +194,8 @@
 /*
  * +visual		Visual mode - now always included.
  * +visualextra		Extra features for Visual mode (mostly block operators).
+ *			Now always included.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_VISUALEXTRA
-#endif
 
 /*
  * +virtualedit		'virtualedit' option and its implementation

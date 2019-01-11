@@ -6533,9 +6533,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"virtualedit",
 #endif
 	"visual",
-#ifdef FEAT_VISUALEXTRA
 	"visualextra",
-#endif
 	"vreplace",
 #ifdef FEAT_VTP
 	"vtp",

@@ -1998,7 +1998,6 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	case OP_INSERT:
 	case OP_APPEND:
 	    VIsual_reselect = FALSE;	/* don't reselect now */
-#ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
 	    {
 		vim_beep(BO_OPER);
@@ -2035,24 +2034,18 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		else
 		    cap->retval |= CA_COMMAND_BUSY;
 	    }
-#else
-	    vim_beep(BO_OPER);
-#endif
 	    break;
 
 	case OP_REPLACE:
 	    VIsual_reselect = FALSE;	/* don't reselect now */
-#ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
-#endif
 	    {
 		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
-#ifdef FEAT_VISUALEXTRA
 	    else
 	    {
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 		/* Restore linebreak, so that when the user edits it looks as
 		 * before. */
 		if (curwin->w_p_lbr != lbr_saved)
@@ -2060,10 +2053,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    curwin->w_p_lbr = lbr_saved;
 		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
 		}
-# endif
+#endif
 		op_replace(oap, cap->nchar);
 	    }
-#endif
 	    break;
 
 #ifdef FEAT_FOLDING

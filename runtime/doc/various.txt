@@ -465,13 +465,13 @@ N  *+viminfo*		|'viminfo'|
 			since 8.0.1118.
 			in sync with the |+windows| feature
 N  *+virtualedit*	|'virtualedit'|
-S  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
-N  *+visualextra*	extra Visual mode commands |blockwise-operators|
+T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
+T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
 N  *+wildignore*	|'wildignore'|
 N  *+wildmenu*		|'wildmenu'|
-   *+windows*		more than one window; Always enabled since 8.0.1118.
+T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
