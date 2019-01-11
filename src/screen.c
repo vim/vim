@@ -927,55 +927,6 @@ conceal_check_cursor_line(void)
 	curs_columns(TRUE);
     }
 }
-
-    void
-update_single_line(win_T *wp, linenr_T lnum)
-{
-    int		row;
-    int		j;
-#ifdef SYN_TIME_LIMIT
-    proftime_T	syntax_tm;
-#endif
-
-    /* Don't do anything if the screen structures are (not yet) valid. */
-    if (!screen_valid(TRUE) || updating_screen)
-	return;
-
-    if (lnum >= wp->w_topline && lnum < wp->w_botline
-				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
-    {
-#ifdef SYN_TIME_LIMIT
-	/* Set the time limit to 'redrawtime'. */
-	profile_setlimit(p_rdt, &syntax_tm);
-	syn_set_timeout(&syntax_tm);
-#endif
-	update_prepare();
-
-	row = 0;
-	for (j = 0; j < wp->w_lines_valid; ++j)
-	{
-	    if (lnum == wp->w_lines[j].wl_lnum)
-	    {
-		screen_start();	/* not sure of screen cursor */
-# ifdef FEAT_SEARCH_EXTRA
-		init_search_hl(wp);
-		prepare_search_hl(wp, lnum);
-# endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
-								 FALSE, FALSE);
-		break;
-	    }
-	    row += wp->w_lines[j].wl_size;
-	}
-
-	update_finish();
-
-#ifdef SYN_TIME_LIMIT
-	syn_set_timeout(NULL);
-#endif
-    }
-    need_cursor_line_redraw = FALSE;
-}
 #endif
 
 #if defined(FEAT_SIGNS) || defined(PROTO)

@@ -5166,8 +5166,6 @@ gui_update_screen(void)
 	last_cursormoved = curwin->w_cursor;
     }
 
-    update_screen(0);	/* may need to update the screen */
-    setcursor();
 # ifdef FEAT_CONCEAL
     if (conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line
@@ -5175,11 +5173,14 @@ gui_update_screen(void)
 		|| need_cursor_line_redraw))
     {
 	if (conceal_old_cursor_line != conceal_new_cursor_line)
-	    update_single_line(curwin, conceal_old_cursor_line);
-	update_single_line(curwin, conceal_new_cursor_line);
+	    redrawWinline(curwin, conceal_old_cursor_line);
+	redrawWinline(curwin, conceal_new_cursor_line);
 	curwin->w_valid &= ~VALID_CROW;
+	need_cursor_line_redraw = FALSE;
     }
 # endif
+    update_screen(0);	/* may need to update the screen */
+    setcursor();
     out_flush_cursor(TRUE, FALSE);
 }
 #endif

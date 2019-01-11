@@ -8512,7 +8512,7 @@ n_opencmd(cmdarg_T *cap)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
-		update_single_line(curwin, oldline);
+		redrawWinline(curwin, oldline);
 #endif
 	    /* When '#' is in 'cpoptions' ignore the count. */
 	    if (vim_strchr(p_cpo, CPO_HASH) != NULL)
