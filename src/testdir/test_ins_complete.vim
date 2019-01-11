@@ -142,7 +142,7 @@ func Test_completefunc_args()
   delfunc CompleteFunc
 endfunc
 
-function! s:CompleteDone_CompleteFuncNone( findstart, base )
+func s:CompleteDone_CompleteFuncNone( findstart, base )
   if a:findstart
     return 0
   endif
@@ -150,7 +150,7 @@ function! s:CompleteDone_CompleteFuncNone( findstart, base )
   return v:none
 endfunction
 
-function! s:CompleteDone_CompleteFuncDict( findstart, base )
+func s:CompleteDone_CompleteFuncDict( findstart, base )
   if a:findstart
     return 0
   endif
@@ -169,11 +169,11 @@ function! s:CompleteDone_CompleteFuncDict( findstart, base )
         \ }
 endfunc
 
-function! s:CompleteDone_CheckCompletedItemNone()
+func s:CompleteDone_CheckCompletedItemNone()
   let s:called_completedone = 1
 endfunction
 
-function! s:CompleteDone_CheckCompletedItemDict()
+func s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'aword',          v:completed_item[ 'word' ] )
   call assert_equal( 'wrd',            v:completed_item[ 'abbr' ] )
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
@@ -184,7 +184,7 @@ function! s:CompleteDone_CheckCompletedItemDict()
   let s:called_completedone = 1
 endfunc
 
-function Test_CompleteDoneNone()
+func Test_CompleteDoneNone()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemNone()
 
   set completefunc=<SID>CompleteDone_CompleteFuncNone
@@ -197,7 +197,7 @@ function Test_CompleteDoneNone()
   au! CompleteDone
 endfunction
 
-function Test_CompleteDoneDict()
+func Test_CompleteDoneDict()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDict()
 
   set completefunc=<SID>CompleteDone_CompleteFuncDict
@@ -240,7 +240,7 @@ func s:CompleteDone_CheckCompletedItemDictNoUserData()
   let s:called_completedone = 1
 endfunc
 
-function Test_CompleteDoneDictNoUserData()
+func Test_CompleteDoneDictNoUserData()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDictNoUserData()
 
   set completefunc=<SID>CompleteDone_CompleteFuncDictNoUserData
@@ -273,7 +273,7 @@ func s:CompleteDone_CheckCompletedItemList()
   let s:called_completedone = 1
 endfunc
 
-function Test_CompleteDoneList()
+func Test_CompleteDoneList()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemList()
 
   set completefunc=<SID>CompleteDone_CompleteFuncList
