@@ -142,6 +142,14 @@ func Test_completefunc_args()
   delfunc CompleteFunc
 endfunc
 
+function! s:CompleteDone_CompleteFuncNone( findstart, base )
+  if a:findstart
+    return 0
+  endif
+
+  return v:none
+endfunction
+
 function! s:CompleteDone_CompleteFuncDict( findstart, base )
   if a:findstart
     return 0
@@ -161,6 +169,10 @@ function! s:CompleteDone_CompleteFuncDict( findstart, base )
         \ }
 endfunction
 
+function! s:CompleteDone_CheckCompletedItemNone()
+  let s:called_completedone = 1
+endfunction
+
 function! s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'aword',          v:completed_item[ 'word' ] )
   call assert_equal( 'wrd',            v:completed_item[ 'abbr' ] )
@@ -170,6 +182,20 @@ function! s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'test',           v:completed_item[ 'user_data' ] )
 
   let s:called_completedone = 1
+endfunction
+
+function Test_CompleteDoneNone()
+  au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemNone()
+
+  set completefunc=<SID>CompleteDone_CompleteFuncNone
+  execute "normal a\<C-X>\<C-U>\<C-Y>"
+  set completefunc&
+
+  call assert_equal( {}, v:completed_item )
+  call assert_true( s:called_completedone )
+
+  let s:called_completedone = 0
+  au! CompleteDone
 endfunction
 
 function Test_CompleteDoneDict()
@@ -184,7 +210,7 @@ function Test_CompleteDoneDict()
 
   let s:called_completedone = 0
   au! CompleteDone
-endfunc
+endfunction
 
 function! s:CompleteDone_CompleteFuncDictNoUserData( findstart, base )
   if a:findstart
