@@ -191,7 +191,6 @@ function Test_CompleteDoneNone()
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
 
-  call assert_equal( {}, v:completed_item )
   call assert_true( s:called_completedone )
 
   let s:called_completedone = 0
