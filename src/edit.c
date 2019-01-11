@@ -4251,6 +4251,7 @@ expand_by_function(
 	    case VAR_SPECIAL:
 		if (rettv.vval.v_number == VVAL_NONE)
 		    compl_opt_suppress_empty = TRUE;
+		/* FALLTHROUGH */
 	    default:
 		/* TODO: Give error message? */
 		clear_tv(&rettv);
