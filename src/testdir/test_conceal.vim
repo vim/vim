@@ -91,6 +91,20 @@ func Test_conceal_two_windows()
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_09v', {})
   call term_sendkeys(buf, "\<Esc>")
 
+  " Check moving the cursor while in insert mode.
+  call term_sendkeys(buf, ":set concealcursor=\r")
+  call term_sendkeys(buf, "a")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_10', {})
+  call term_sendkeys(buf, "\<Down>")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_11', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Check the "o" command
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_12', {})
+  call term_sendkeys(buf, "o")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_13', {})
+  call term_sendkeys(buf, "\<Esc>")
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_conceal')
