@@ -2402,7 +2402,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	    colnr_T	vcol;
 	    int		old_list;
 #ifndef FEAT_MBYTE
-	    char_u	buf[2];
+	    char_u	cbuf[2];
 #endif
 
 	    /*
@@ -2422,10 +2422,12 @@ ins_char_bytes(char_u *buf, int charlen)
 	     */
 	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL);
 #ifndef FEAT_MBYTE
-	    buf[0] = c;
-	    buf[1] = NUL;
-#endif
+	    cbuf[0] = c;
+	    cbuf[1] = NUL;
+	    new_vcol = vcol + chartabsize(cbuf, vcol);
+#else
 	    new_vcol = vcol + chartabsize(buf, vcol);
+#endif
 	    while (oldp[col + oldlen] != NUL && vcol < new_vcol)
 	    {
 		vcol += chartabsize(oldp + col + oldlen, vcol);
@@ -3025,7 +3027,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * When "added" is negative text was deleted.
  */
     void
-inserted_bytes(linenr_T lnum, colnr_T col, int added)
+inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
     changed_bytes(lnum, col);
 
