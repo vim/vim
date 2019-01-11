@@ -839,7 +839,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-		    if (STRNICMP((char *)p, "-Infinity", 8) == 0)
+		    if (STRNICMP((char *)p, "-Infinity", 9) == 0)
 		    {
 			reader->js_used += 9;
 			if (cur_item != NULL)
