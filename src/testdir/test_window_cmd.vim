@@ -578,13 +578,13 @@ func Test_winrestcmd()
   only
 endfunc
 
-function! Fun_RenewFile()
+func Fun_RenewFile()
   sleep 2
   silent execute '!echo "1" > tmp.txt'
   sp
   wincmd p
   edit! tmp.txt
-endfunction
+endfunc
 
 func Test_window_prevwin()
   " Can we make this work on MS-Windows?

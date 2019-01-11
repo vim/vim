@@ -124,7 +124,7 @@
 #endif
 
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 26
-# define rb_ary_detransient (*dll_rb_ary_detransient)
+# define rb_ary_detransient rb_ary_detransient_stub
 #endif
 
 #include <ruby.h>
@@ -547,6 +547,13 @@ void rb_gc_writebarrier_unprotect_stub(VALUE obj)
     dll_rb_gc_writebarrier_unprotect(obj);
 }
 #  endif
+# endif
+
+# if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 26
+void rb_ary_detransient_stub(VALUE x)
+{
+    dll_rb_ary_detransient(x);
+}
 # endif
 
 static HINSTANCE hinstRuby = NULL; /* Instance of ruby.dll */

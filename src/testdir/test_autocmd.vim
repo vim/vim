@@ -2,7 +2,7 @@
 
 source shared.vim
 
-func! s:cleanup_buffers() abort
+func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
       execute 'bd! ' . bnr
@@ -1343,7 +1343,7 @@ func Test_ChangedP()
 endfunc
 
 let g:setline_handled = v:false
-func! SetLineOne()
+func SetLineOne()
   if !g:setline_handled
     call setline(1, "(x)")
     let g:setline_handled = v:true
