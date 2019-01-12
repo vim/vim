@@ -5726,7 +5726,8 @@ json_decode({string})					*json_decode()*
 		  "[1, 2, ]" is the same as "[1, 2]".
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
-		  "Infinity" and "NaN" (capitalization ignored) are accepted.
+		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
+		  are accepted.
 		- Leading zeroes in integer numbers are ignored, e.g. "012"
 		  for "12" or "-012" for "-12".
 		- Capitalization is ignored in literal names null, true or
@@ -5755,6 +5756,7 @@ json_encode({expr})					*json_encode()*
 		   Float		floating point number
 		   Float nan		"NaN"
 		   Float inf		"Infinity"
+		   Float -inf		"-Infinity"
 		   String		in double quotes (possibly null)
 		   Funcref		not possible, error
 		   List			as an array (possibly null); when
