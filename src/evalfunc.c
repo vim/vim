@@ -1919,6 +1919,7 @@ tv_get_buf(typval_T *tv, int curtab_only)
     return buf;
 }
 
+#ifdef FEAT_SIGNS
 /*
  * Get the buffer from "arg" and give an error and return NULL if it is not
  * valid.
@@ -1935,6 +1936,7 @@ get_buf_arg(typval_T *arg)
 	EMSG2(_("E158: Invalid buffer name: %s"), tv_get_string(arg));
     return buf;
 }
+#endif
 
 /*
  * "bufname(expr)" function
