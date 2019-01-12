@@ -7959,7 +7959,7 @@ $as_echo_n "checking --enable-multibyte argument... " >&6; }
 if test "${enable_multibyte+set}" = set; then :
   enableval=$enable_multibyte;
 else
-  enable_multibyte="no"
+  enable_multibyte="yes"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multibyte" >&5
@@ -7967,6 +7967,9 @@ $as_echo "$enable_multibyte" >&6; }
 if test "$enable_multibyte" = "yes"; then
   $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
 
+else
+  as_fn_error $? "The multi-byte feature can no longer be disabled. If you have
+		a problem with this, discuss on the Vim mailing list." "$LINENO" 5
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-rightleft argument" >&5
@@ -14813,28 +14816,13 @@ $as_echo "yes, we need Carbon" >&6; }
     if test "$features" = "tiny"; then
             OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      if test "$enable_multibyte" = "yes"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
 $as_echo "yes, we need CoreServices" >&6; }
-        LIBS="$LIBS -framework CoreServices"
-      else
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
-        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
-      fi
+      LIBS="$LIBS -framework CoreServices"
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
 $as_echo "yes, we need AppKit" >&6; }
       LIBS="$LIBS -framework AppKit"
-      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
-                                { $as_echo "$as_me:${as_lineno-$LINENO}: +multi_byte will be set in favor of +clipboard" >&5
-$as_echo "$as_me: +multi_byte will be set in favor of +clipboard" >&6;}
-        enable_multibyte=yes
-        $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
-
-      fi
     fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5

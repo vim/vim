@@ -493,11 +493,7 @@ CClink = $(CC)
 #CONF_OPT_TERMINAL = --disable-terminal
 
 # MULTIBYTE - To edit multi-byte characters.
-# Uncomment this when you want to edit a multibyte language.
-# It's automatically enabled with normal features, GTK or IME support.
-# Note: Compile on a machine where setlocale() actually works, otherwise the
-# configure tests may fail.
-#CONF_OPT_MULTIBYTE = --enable-multibyte
+# This is now always enabled.
 
 # When building with at least "big" features, right-left, Arabic and Farsi
 # features are enabled.  Use this to disable them.

@@ -26,14 +26,12 @@
 #	GUI interface: GUI=yes (default is no)
 #
 #	GUI with DirectWrite (DirectX): DIRECTX=yes
-#	  (default is yes if GUI=yes, requires GUI=yes and MBYTE=yes)
+#	  (default is yes if GUI=yes, requires GUI=yes)
 #
 #	Color emoji support: COLOR_EMOJI=yes
 #	  (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
 #
 #	OLE interface: OLE=yes (usually with GUI=yes)
-#
-#	Multibyte support: MBYTE=yes (default is yes for NORMAL, BIG, HUGE)
 #
 #	IME support: IME=yes	(requires GUI=yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
@@ -786,11 +784,6 @@ IME_LIB = imm32.lib
 !if "$(GIME)" == "yes"
 CFLAGS = $(CFLAGS) -DGLOBAL_IME
 OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
-MBYTE = yes
-!endif
-
-!if "$(MBYTE)" == "yes"
-CFLAGS = $(CFLAGS) -DFEAT_MBYTE
 !endif
 
 !if "$(GUI)" == "yes"
