@@ -257,6 +257,7 @@
 # define PV_TWK		OPT_WIN(WV_TWK)
 # define PV_TWS		OPT_WIN(WV_TWS)
 # define PV_TWSL	OPT_BUF(BV_TWSL)
+# define PV_TMOD	OPT_WIN(WV_TMOD)
 #endif
 #ifdef FEAT_SIGNS
 # define PV_SCL		OPT_WIN(WV_SCL)
@@ -2765,6 +2766,15 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCTX_INIT},
+    {"termmode", "tmod",    P_STRING|P_ALLOCED|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)VAR_WIN, PV_TMOD,
+			    {(char_u *)"", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"termwinkey", "twk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
 			    (char_u *)VAR_WIN, PV_TWK,
@@ -3280,6 +3290,9 @@ static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noins
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
 #endif
+#ifdef FEAT_TERMINAL
+static char *(p_tmod_values[]) = {"winpty", "conpty", "", NULL};
+#endif
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
@@ -3738,7 +3751,12 @@ set_init_1(int clean_arg)
 	    {
 		char	buf[50];
 
-		sprintf(buf, "cp%ld", (long)GetConsoleCP());
+		/* Win32 console: In ConPTY, GetConsoleCP() returns zero.
+		 * Use an alternative value. */
+		if (GetConsoleCP() == 0)
+		    sprintf(buf, "cp%ld", (long)GetACP());
+		else
+		    sprintf(buf, "cp%ld", (long)GetConsoleCP());
 		p_tenc = vim_strsave((char_u *)buf);
 		if (p_tenc != NULL)
 		{
@@ -7586,6 +7604,12 @@ did_set_string_option(
 		errmsg = e_invarg;
 	}
     }
+    /* 'termmode' */
+    else if (varp == &curwin->w_p_tmod)
+    {
+	if (check_opt_strings(*varp, p_tmod_values, FALSE) != OK)
+	    errmsg = e_invarg;
+    }
 #endif
 
 #ifdef FEAT_VARTABS
@@ -10976,6 +11000,7 @@ get_varp(struct vimoption *p)
 	case PV_TWK:    return (char_u *)&(curwin->w_p_twk);
 	case PV_TWS:    return (char_u *)&(curwin->w_p_tws);
 	case PV_TWSL:	return (char_u *)&(curbuf->b_p_twsl);
+	case PV_TMOD:	return (char_u *)&(curwin->w_p_tmod);
 #endif
 
 	case PV_AI:	return (char_u *)&(curbuf->b_p_ai);
@@ -11180,6 +11205,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #ifdef FEAT_TERMINAL
     to->wo_twk = vim_strsave(from->wo_twk);
     to->wo_tws = vim_strsave(from->wo_tws);
+    to->wo_tmod = vim_strsave(from->wo_tmod);
 #endif
 #ifdef FEAT_FOLDING
     to->wo_fdc = from->wo_fdc;
@@ -11250,6 +11276,7 @@ check_winopt(winopt_T *wop UNUSED)
 #ifdef FEAT_TERMINAL
     check_string_option(&wop->wo_twk);
     check_string_option(&wop->wo_tws);
+    check_string_option(&wop->wo_tmod);
 #endif
 #ifdef FEAT_LINEBREAK
     check_string_option(&wop->wo_briopt);
@@ -11293,6 +11320,7 @@ clear_winopt(winopt_T *wop UNUSED)
 #ifdef FEAT_TERMINAL
     clear_string_option(&wop->wo_twk);
     clear_string_option(&wop->wo_tws);
+    clear_string_option(&wop->wo_tmod);
 #endif
 }
 

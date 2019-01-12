@@ -245,7 +245,7 @@ func Test_mksession_terminal_shell()
       call assert_report('unexpected shell line: ' . line)
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*$', term_cmd)
+  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
 
   call Stop_shell_in_terminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -325,7 +325,7 @@ func Test_mksession_terminal_restore_other()
       let term_cmd = line
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+ other', term_cmd)
+  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+ .* other', term_cmd)
 
   call Stop_shell_in_terminal(bufnr('%'))
   call delete('Xtest_mks.out')

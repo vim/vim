@@ -8028,6 +8028,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'termmode'* *'tmod'*
+'termmode' 'tmod'	string  (default "")
+			local to window
+			{not in Vi}
+	It indicates whether the window uses winpty or ConPTY as the virtual
+	console.  You can set a value here and specify the type of terminal
+	you want to use next.  If you do not know the type of terminal you are
+	using, look here.  Depending on the installation condition of the
+	terminal, it is not always possible to use the set contents as it is.
+	Possible values are '', 'winpty', 'conpty'. '' preferentially uses
+	ConPTY, otherwise it uses winpty.
+
 						*'termwinscroll'* *'twsl'*
 'termwinscroll' 'twsl'	number	(default 10000)
 			local to buffer

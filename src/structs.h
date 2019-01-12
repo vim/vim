@@ -289,6 +289,8 @@ typedef struct
 # define w_p_twk w_onebuf_opt.wo_twk	/* 'termwinkey' */
     char_u	*wo_tws;
 # define w_p_tws w_onebuf_opt.wo_tws	/* 'termwinsize' */
+    char_u	*wo_tmod;
+# define w_p_tmod w_onebuf_opt.wo_tmod	/* 'termmode' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -1740,6 +1742,8 @@ struct channel_S {
 				 * reference, the job refers to the channel. */
     int		ch_job_killed;	/* TRUE when there was a job and it was killed
 				 * or we know it died. */
+    int		ch_killing;
+    int		ch_anonymous_pipe;
 
     int		ch_refcount;	/* reference count */
     int		ch_copyID;
@@ -1794,6 +1798,7 @@ struct channel_S {
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
 #define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
+#define JO2_TERM_MODE	    0x10000	/* "term_mode" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1866,6 +1871,7 @@ typedef struct
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
+    int		jo_term_mode;
 #endif
 } jobopt_T;
 

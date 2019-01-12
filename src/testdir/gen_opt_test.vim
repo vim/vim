@@ -131,6 +131,7 @@ let test_values = {
       \ 'term': [[], []],
       \ 'termguicolors': [[], []],
       \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
+      \ 'termmode': [['', 'winpty', 'conpty'], ['xxx']],
       \ 'termwinsize': [['', '24x80', '0x80', '32x0', '0x0'], ['xxx', '80', '8ax9', '24x80b']],
       \ 'toolbar': [['', 'icons', 'text'], ['xxx']],
       \ 'toolbariconsize': [['', 'tiny', 'huge'], ['xxx']],

@@ -9247,6 +9247,8 @@ term_start({cmd}, {options})				*term_start()*
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
 				     color modes.  See |g:terminal_ansi_colors|.
+		   "winpty"	     Use winpty as the virtual console.
+		   "conpty"	     Use ConPTY as the virtual console.
 
 		{only available when compiled with the |+terminal| feature}
 
@@ -9956,6 +9958,7 @@ cmdline_hist		Compiled with |cmdline-history| support.
 cmdline_info		Compiled with 'showcmd' and 'ruler' support.
 comments		Compiled with |'comments'| support.
 compatible		Compiled to be very Vi compatible.
+conpty			Environment in which ConPTY can be used.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
 debug			Compiled with "DEBUG" defined.

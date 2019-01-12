@@ -186,8 +186,10 @@ static int win32_getattrs(char_u *name);
 static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
-#ifndef FEAT_GUI_W32
 static int vtp_working = 0;
+static void vtp_flag_init();
+
+#ifndef FEAT_GUI_W32
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -247,6 +249,7 @@ static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
 typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
 static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
 static BOOL has_csbiex = FALSE;
+#endif
 
 /*
  * Get version number including build number
@@ -276,7 +279,7 @@ get_build_number(void)
     return ver;
 }
 
-
+#ifndef FEAT_GUI_W32
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -2188,6 +2191,9 @@ mch_init(void)
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
 #endif
+
+    vtp_flag_init();
+
 }
 
 
@@ -2688,6 +2694,7 @@ mch_init(void)
     win_clip_init();
 #endif
 
+    vtp_flag_init();
     vtp_init();
 }
 
@@ -5719,7 +5726,11 @@ mch_signal_job(job_T *job, char_u *how)
     {
 	/* deadly signal */
 	if (job->jv_job_object != NULL)
+	{
+	    if (job->jv_channel->ch_anonymous_pipe)
+		job->jv_channel->ch_killing = TRUE;
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	}
 	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
     }
 
@@ -7689,30 +7700,140 @@ mch_setenv(char *var, char *value, int x)
     return 0;
 }
 
-#ifndef FEAT_GUI_W32
-
 /*
  * Support for 256 colors and 24-bit colors was added in Windows 10
  * version 1703 (Creators update).
  */
-# define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+#define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+
+/*
+ * Support for pseudo-console (ConPTY) was added in windows 10
+ * version 1809 (October 2018 update).
+ */
+#define CONPTY_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 17763)
+
+#ifdef FEAT_GUI_W32
+static HWINSTA origsta;
+static HWINSTA newsta;
+static HDESK origdesk;
+static HDESK newdesk;
+static PROCESS_INFORMATION pista;
+#endif
+
+    static void
+vtp_flag_init(void)
+{
+    DWORD   ver = get_build_number();
+    DWORD   mode;
+    HANDLE  out;
+
+#ifdef FEAT_GUI_W32
+    char    name[256];
+    char    startup[256];
+    char_u  *cmd;
+    char    cmdline[256];
+    SECURITY_ATTRIBUTES sa;
+    STARTUPINFO		si;
+
+    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
+    {
+	/* A console opened on another window station, get its standard
+	 * output. */
+
+	vim_memset(&sa, 0, sizeof(sa));
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = TRUE;
+
+	origdesk = GetThreadDesktop(GetCurrentThreadId());
+	origsta = GetProcessWindowStation();
+
+	newsta = CreateWindowStation(NULL, 0, WINSTA_ALL_ACCESS, &sa);
+
+	if (SetProcessWindowStation(newsta))
+	{
+	    newdesk = CreateDesktop("Default", NULL, NULL, 0, GENERIC_ALL,
+									  &sa);
+	    SetThreadDesktop(newdesk);
+	    name[0] = NUL;
+	    GetUserObjectInformation(newsta, UOI_NAME, name, sizeof(name),
+									 NULL);
+	    sprintf(startup, "%s\\Default", name);
+
+	    vim_memset(&si, 0, sizeof(si));
+	    si.cb = sizeof(STARTUPINFO);
+	    si.lpDesktop = startup;
+	    si.dwFlags = STARTF_USESHOWWINDOW;
+	    si.wShowWindow = SW_SHOWNOACTIVATE;
+
+	    vim_memset(&pista, 0, sizeof(pista));
+
+	    cmd = mch_getenv("COMSPEC");
+	    if (cmd == NULL || *cmd == NUL)
+		cmd = (char_u *)default_shell();
+	    sprintf(cmdline, "%s /k", cmd);
+
+	    CreateProcess((char *)cmd, cmdline, NULL, NULL, TRUE,
+				  CREATE_NEW_CONSOLE, NULL, NULL, &si, &pista);
+	    Sleep(100);
+	    AttachConsole(pista.dwProcessId);
+
+	    freopen("CONOUT$", "w", stdout);
+	    SetStdHandle(STD_OUTPUT_HANDLE, CreateFile("CONOUT$",
+		    GENERIC_READ | GENERIC_WRITE,
+		    FILE_SHARE_READ | FILE_SHARE_WRITE,
+		    &sa, OPEN_EXISTING, 0, NULL));
+	}
+    }
+#endif
+    out = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
+    GetConsoleMode(out, &mode);
+    mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    if (SetConsoleMode(out, mode) == 0)
+	vtp_working = 0;
+
+#ifdef FEAT_GUI_W32
+    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
+    {
+	SetThreadDesktop(origdesk);
+	SetProcessWindowStation(origsta);
+    }
+#endif
+}
+
+    void
+vtp_flag_exit(void)
+{
+#ifdef FEAT_GUI_W32
+    DWORD ver;
+
+    ver = get_build_number();
+    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
+    {
+	SetProcessWindowStation(newsta);
+	SetThreadDesktop(newdesk);
+	TerminateProcess(pista.hProcess, 0);
+	TerminateThread(pista.hThread, 0);
+	FreeConsole();
+	SetThreadDesktop(origdesk);
+	SetProcessWindowStation(origsta);
+	CloseWindowStation(newsta);
+	CloseDesktop(newdesk);
+    }
+#endif
+}
+
+#ifndef FEAT_GUI_W32
 
     static void
 vtp_init(void)
 {
-    DWORD   ver, mode;
     HMODULE hKerneldll;
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
     COLORREF fg, bg;
 # endif
-
-    ver = get_build_number();
-    vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
-    GetConsoleMode(g_hConOut, &mode);
-    mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    if (SetConsoleMode(g_hConOut, mode) == 0)
-	vtp_working = 0;
 
     /* Use functions supported from Vista */
     hKerneldll = GetModuleHandle("kernel32.dll");
@@ -7897,12 +8018,6 @@ control_console_color_rgb(void)
 }
 
     int
-has_vtp_working(void)
-{
-    return vtp_working;
-}
-
-    int
 use_vtp(void)
 {
     return USE_VTP;
@@ -7915,3 +8030,9 @@ is_term_win32(void)
 }
 
 #endif
+
+    int
+has_vtp_working(void)
+{
+    return vtp_working;
+}
