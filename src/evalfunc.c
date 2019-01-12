@@ -96,6 +96,7 @@ static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
 static void f_ch_read(typval_T *argvars, typval_T *rettv);
+static void f_ch_readblob(typval_T *argvars, typval_T *rettv);
 static void f_ch_readraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendexpr(typval_T *argvars, typval_T *rettv);
 static void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
@@ -570,6 +571,7 @@ static struct fst
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
     {"ch_read",		1, 2, f_ch_read},
+    {"ch_readblob",	1, 2, f_ch_readblob},
     {"ch_readraw",	1, 2, f_ch_readraw},
     {"ch_sendexpr",	2, 3, f_ch_sendexpr},
     {"ch_sendraw",	2, 3, f_ch_sendraw},
@@ -1237,6 +1239,7 @@ f_acos(typval_T *argvars, typval_T *rettv)
 f_add(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
+    blob_T	*b;
 
     rettv->vval.v_number = 1; /* Default: Failed */
     if (argvars[0].v_type == VAR_LIST)
@@ -1246,6 +1249,16 @@ f_add(typval_T *argvars, typval_T *rettv)
 					 (char_u *)N_("add() argument"), TRUE)
 		&& list_append_tv(l, &argvars[1]) == OK)
 	    copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	if ((b = argvars[0].vval.v_blob) != NULL
+		&& !tv_check_lock(b->bv_lock,
+					 (char_u *)N_("add() argument"), TRUE))
+	{
+	    ga_append(&b->bv_ga, (char_u)tv_get_number(&argvars[1]));
+	    copy_tv(&argvars[0], rettv);
+	}
     }
     else
 	EMSG(_(e_listreq));
@@ -2309,7 +2322,16 @@ f_ch_open(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_read(typval_T *argvars, typval_T *rettv)
 {
-    common_channel_read(argvars, rettv, FALSE);
+    common_channel_read(argvars, rettv, FALSE, FALSE);
+}
+
+/*
+ * "ch_readblob()" function
+ */
+    static void
+f_ch_readblob(typval_T *argvars, typval_T *rettv)
+{
+    common_channel_read(argvars, rettv, TRUE, TRUE);
 }
 
 /*
@@ -2318,7 +2340,7 @@ f_ch_read(typval_T *argvars, typval_T *rettv)
     static void
 f_ch_readraw(typval_T *argvars, typval_T *rettv)
 {
-    common_channel_read(argvars, rettv, TRUE);
+    common_channel_read(argvars, rettv, TRUE, FALSE);
 }
 
 /*
@@ -3168,6 +3190,12 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    break;
 	case VAR_SPECIAL:
 	    n = argvars[0].vval.v_number != VVAL_TRUE;
+	    break;
+
+	case VAR_BLOB:
+	    n = argvars[0].vval.v_blob == NULL
+		|| argvars[0].vval.v_blob->bv_ga.ga_data == NULL
+		|| argvars[0].vval.v_blob->bv_ga.ga_len == 0;
 	    break;
 
 	case VAR_JOB:
@@ -4365,7 +4393,21 @@ f_get(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     typval_T	*tv = NULL;
 
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	int error = FALSE;
+	int idx = tv_get_number_chk(&argvars[1], &error);
+
+	if (!error)
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    if (idx >= blob_len(argvars[0].vval.v_blob))
+		EMSGN(_(e_blobidx), idx);
+	    else
+		rettv->vval.v_number = blob_get(argvars[0].vval.v_blob, idx);
+	}
+    }
+    else if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) != NULL)
 	{
@@ -6965,23 +7007,50 @@ f_index(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T	*item;
+    blob_T	*b;
     long	idx = 0;
     int		ic = FALSE;
+    int		error = FALSE;
 
     rettv->vval.v_number = -1;
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	typval_T	tv;
+	int		start = 0;
+
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    start = tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;
+	}
+	b = argvars[0].vval.v_blob;
+	if (b == NULL)
+	    return;
+	for (idx = start; idx < blob_len(b); ++idx)
+	{
+	    tv.v_type = VAR_NUMBER;
+	    tv.vval.v_number = blob_get(b, idx);
+	    if (tv_equal(&tv, &argvars[1], ic, FALSE))
+	    {
+		rettv->vval.v_number = idx;
+		return;
+	    }
+	}
+	return;
+    }
+    else if (argvars[0].v_type != VAR_LIST)
     {
 	EMSG(_(e_listreq));
 	return;
     }
+
     l = argvars[0].vval.v_list;
     if (l != NULL)
     {
 	item = l->lv_first;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    int		error = FALSE;
-
 	    /* Start at specified item.  Use the cached index that list_find()
 	     * sets, so that a negative number also works. */
 	    item = list_find(l, (long)tv_get_number_chk(&argvars[2], &error));
@@ -7160,10 +7229,45 @@ f_insert(typval_T *argvars, typval_T *rettv)
     list_T	*l;
     int		error = FALSE;
 
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	int	    val, len;
+	char_u	    *p;
+
+	len = blob_len(argvars[0].vval.v_blob);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		// type error; errmsg already given
+	    if (before < 0 || before > len)
+	    {
+		EMSG2(_(e_invarg2), tv_get_string(&argvars[2]));
+		return;
+	    }
+	}
+	val = tv_get_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (val < 0 || val > 255)
+	{
+	    EMSG2(_(e_invarg2), tv_get_string(&argvars[1]));
+	    return;
+	}
+
+	if (ga_grow(&argvars[0].vval.v_blob->bv_ga, 1) == FAIL)
+	    return;
+	p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
+	mch_memmove(p + before + 1, p + before, (size_t)len - before);
+	*(p + before) = val;
+	++argvars[0].vval.v_blob->bv_ga.ga_len;
+
+	copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "insert()");
-    else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)N_("insert() argument"), TRUE))
+    else if ((l = argvars[0].vval.v_list) != NULL && !tv_check_lock(l->lv_lock,
+				      (char_u *)N_("insert() argument"), TRUE))
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    before = (long)tv_get_number_chk(&argvars[2], &error);
@@ -7526,6 +7630,9 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_NUMBER:
 	    rettv->vval.v_number = (varnumber_T)STRLEN(
 					       tv_get_string(&argvars[0]));
+	    break;
+	case VAR_BLOB:
+	    rettv->vval.v_number = blob_len(argvars[0].vval.v_blob);
 	    break;
 	case VAR_LIST:
 	    rettv->vval.v_number = list_len(argvars[0].vval.v_list);
@@ -8926,6 +9033,7 @@ f_range(typval_T *argvars, typval_T *rettv)
 f_readfile(typval_T *argvars, typval_T *rettv)
 {
     int		binary = FALSE;
+    int		blob = FALSE;
     int		failed = FALSE;
     char_u	*fname;
     FILE	*fd;
@@ -8944,12 +9052,23 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (STRCMP(tv_get_string(&argvars[1]), "b") == 0)
 	    binary = TRUE;
+	if (STRCMP(tv_get_string(&argvars[1]), "B") == 0)
+	    blob = TRUE;
+
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    maxline = (long)tv_get_number(&argvars[2]);
     }
 
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
+    if (blob)
+    {
+	if (rettv_blob_alloc(rettv) == FAIL)
+	    return;
+    }
+    else
+    {
+	if (rettv_list_alloc(rettv) == FAIL)
+	    return;
+    }
 
     /* Always open the file in binary mode, library functions have a mind of
      * their own about CR-LF conversion. */
@@ -8957,6 +9076,17 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	EMSG2(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	return;
+    }
+
+    if (blob)
+    {
+	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
+	{
+	    EMSG("cannot read file");
+	    blob_free(rettv->vval.v_blob);
+	}
+	fclose(fd);
 	return;
     }
 
@@ -9555,6 +9685,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     dictitem_T	*di;
     char_u	*arg_errmsg = (char_u *)N_("remove() argument");
+    int		error = FALSE;
 
     if (argvars[0].v_type == VAR_DICT)
     {
@@ -9579,16 +9710,76 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	idx = (long)tv_get_number_chk(&argvars[1], &error);
+	if (!error)
+	{
+	    blob_T  *b = argvars[0].vval.v_blob;
+	    int	    len = blob_len(b);
+	    char_u  *p;
+
+	    if (idx < 0)
+		// count from the end
+		idx = len + idx;
+	    if (idx < 0 || idx >= len)
+	    {
+		EMSGN(_(e_blobidx), idx);
+		return;
+	    }
+	    if (argvars[2].v_type == VAR_UNKNOWN)
+	    {
+		// Remove one item, return its value.
+		p = (char_u *)b->bv_ga.ga_data;
+		rettv->vval.v_number = (varnumber_T) *(p + idx);
+		mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
+		--b->bv_ga.ga_len;
+	    }
+	    else
+	    {
+		blob_T  *blob;
+
+		// Remove range of items, return list with values.
+		end = (long)tv_get_number_chk(&argvars[2], &error);
+		if (error)
+		    return;
+		if (end < 0)
+		    // count from the end
+		    end = len + end;
+		if (end >= len || idx > end)
+		{
+		    EMSGN(_(e_blobidx), end);
+		    return;
+		}
+		blob = blob_alloc();
+		if (blob == NULL)
+		    return;
+		blob->bv_ga.ga_len = end - idx + 1;
+		if (ga_grow(&blob->bv_ga, end - idx + 1) == FAIL)
+		{
+		    vim_free(blob);
+		    return;
+		}
+		p = (char_u *)b->bv_ga.ga_data;
+		mch_memmove((char_u *)blob->bv_ga.ga_data, p + idx,
+						      (size_t)(end - idx + 1));
+		++blob->bv_refcount;
+		rettv->v_type = VAR_BLOB;
+		rettv->vval.v_blob = blob;
+
+		mch_memmove(p + idx, p + end + 1, (size_t)(len - end));
+		b->bv_ga.ga_len -= end - idx + 1;
+	    }
+	}
+    }
     else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listdictarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, arg_errmsg, TRUE))
+			       && !tv_check_lock(l->lv_lock, arg_errmsg, TRUE))
     {
-	int	    error = FALSE;
-
 	idx = (long)tv_get_number_chk(&argvars[1], &error);
 	if (error)
-	    ;		/* type error: do nothing, errmsg already given */
+	    ;		// type error: do nothing, errmsg already given
 	else if ((item = list_find(l, idx)) == NULL)
 	    EMSGN(_(e_listidx), idx);
 	else
@@ -9602,10 +9793,10 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	    else
 	    {
-		/* Remove range of items, return list with values. */
+		// Remove range of items, return list with values.
 		end = (long)tv_get_number_chk(&argvars[2], &error);
 		if (error)
-		    ;		/* type error: do nothing */
+		    ;		// type error: do nothing
 		else if ((item2 = list_find(l, end)) == NULL)
 		    EMSGN(_(e_listidx), end);
 		else
@@ -9911,6 +10102,22 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l;
     listitem_T	*li, *ni;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob_T	*b = argvars[0].vval.v_blob;
+	int	i, len = blob_len(b);
+
+	for (i = 0; i < len / 2; i++)
+	{
+	    int tmp = blob_get(b, i);
+
+	    blob_set(b, i, blob_get(b, len - i - 1));
+	    blob_set(b, len - i - 1, tmp);
+	}
+	rettv_blob_set(rettv, b);
+	return;
+    }
 
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "reverse()");
@@ -14198,6 +14405,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	     break;
 	case VAR_JOB:     n = VAR_TYPE_JOB; break;
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
+	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
 	     internal_error("f_type(UNKNOWN)");
 	     n = -1;
@@ -14556,23 +14764,33 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     FILE	*fd;
     int		ret = 0;
     listitem_T	*li;
-    list_T	*list;
+    list_T	*list = NULL;
+    blob_T	*blob = NULL;
 
     rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type == VAR_LIST)
     {
-	EMSG2(_(e_listarg), "writefile()");
+	list = argvars[0].vval.v_list;
+	if (list == NULL)
+	    return;
+	for (li = list->lv_first; li != NULL; li = li->li_next)
+	    if (tv_get_string_chk(&li->li_tv) == NULL)
+		return;
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob = argvars[0].vval.v_blob;
+	if (blob == NULL)
+	    return;
+    }
+    else
+    {
+	EMSG2(_(e_invarg2), "writefile()");
 	return;
     }
-    list = argvars[0].vval.v_list;
-    if (list == NULL)
-	return;
-    for (li = list->lv_first; li != NULL; li = li->li_next)
-	if (tv_get_string_chk(&li->li_tv) == NULL)
-	    return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -14603,6 +14821,18 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     {
 	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	ret = -1;
+    }
+    else if (blob)
+    {
+	if (write_blob(fd, blob) == FAIL)
+	    ret = -1;
+#ifdef HAVE_FSYNC
+	else if (do_fsync)
+	    // Ignore the error, the user wouldn't know what to do about it.
+	    // May happen for a device.
+	    vim_ignored = fsync(fileno(fd));
+#endif
+	fclose(fd);
     }
     else
     {

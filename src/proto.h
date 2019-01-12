@@ -88,6 +88,7 @@ extern int _stricoll(char *a, char *b);
 # include "hashtab.pro"
 # include "json.pro"
 # include "list.pro"
+# include "blob.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
