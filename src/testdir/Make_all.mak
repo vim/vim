@@ -222,6 +222,7 @@ NEW_TESTS = \
 	test_signs \
 	test_smartindent \
 	test_sort \
+	test_source \
 	test_source_utf8 \
 	test_spell \
 	test_startup \
@@ -376,6 +377,7 @@ NEW_TESTS_RES = \
 	test_shortpathname.res \
 	test_signs.res \
 	test_smartindent.res \
+	test_source.res \
 	test_spell.res \
 	test_startup.res \
 	test_stat.res \

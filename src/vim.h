@@ -1324,6 +1324,7 @@ enum auto_event
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
     EVENT_SOURCECMD,		// sourcing a Vim script using command
     EVENT_SOURCEPRE,		// before sourcing a Vim script
+    EVENT_SOURCEPOST,		// after sourcing a Vim script
     EVENT_SPELLFILEMISSING,	// spell file missing
     EVENT_STDINREADPOST,	// after reading from stdin
     EVENT_STDINREADPRE,		// before reading from stdin
