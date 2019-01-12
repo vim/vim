@@ -1729,14 +1729,14 @@ func Test_terminal_no_job()
 endfunc
 
 func Test_term_gettitle()
-  if !has('title') || empty(&t_ts)
-    return
-  endif"
-
   " term_gettitle() returns an empty string for a non-terminal buffer
   " or for a non-existing buffer.
   call assert_equal('', term_gettitle(bufnr('%')))
   call assert_equal('', term_gettitle(bufnr('$') + 1))
+
+  if !has('title') || &title == 0 || empty(&t_ts)
+    throw "Skipped: can't get/set title"
+  endif"
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
   call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
