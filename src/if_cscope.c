@@ -254,7 +254,7 @@ ex_cstag(exarg_T *eap)
 
     if (*eap->arg == NUL)
     {
-	(void)emsg((char_u *)_("E562: Usage: cstag <ident>"));
+	(void)EMSG(_("E562: Usage: cstag <ident>"));
 	return;
     }
 
@@ -312,7 +312,7 @@ ex_cstag(exarg_T *eap)
 
     if (!ret)
     {
-	(void)emsg((char_u *)_("E257: cstag: tag not found"));
+	(void)EMSG(_("E257: cstag: tag not found"));
 #if defined(FEAT_QUICKFIX)
 	g_do_tagpreview = 0;
 #endif
@@ -471,11 +471,11 @@ cs_stat_emsg(char *fname)
     if (buf != NULL)
     {
 	(void)sprintf(buf, stat_emsg, fname, errno);
-	(void)emsg((char_u *)buf);
+	(void)EMSG(buf);
 	vim_free(buf);
     }
     else
-	(void)emsg((char_u *)_("E563: stat error"));
+	(void)EMSG(_("E563: stat error"));
 }
 
 
@@ -757,7 +757,7 @@ cs_create_cmd(char *csoption, char *pattern)
 	search = 9;
 	break;
     default :
-	(void)emsg((char_u *)_("E561: unknown cscope search type"));
+	(void)EMSG(_("E561: unknown cscope search type"));
 	cs_usage_msg(Find);
 	return NULL;
     }
@@ -814,7 +814,7 @@ cs_create_connection(int i)
     to_cs[0] = to_cs[1] = from_cs[0] = from_cs[1] = -1;
     if (pipe(to_cs) < 0 || pipe(from_cs) < 0)
     {
-	(void)emsg((char_u *)_("E566: Could not create cscope pipes"));
+	(void)EMSG(_("E566: Could not create cscope pipes"));
 err_closing:
 	if (to_cs[0] != -1)
 	    (void)close(to_cs[0]);
@@ -830,7 +830,7 @@ err_closing:
     switch (csinfo[i].pid = fork())
     {
     case -1:
-	(void)emsg((char_u *)_("E622: Could not fork for cscope"));
+	(void)EMSG(_("E622: Could not fork for cscope"));
 	goto err_closing;
     case 0:				/* child: run cscope. */
 	if (dup2(to_cs[0], STDIN_FILENO) == -1)
@@ -853,7 +853,7 @@ err_closing:
 	if (!(pipe_stdin = CreatePipe(&stdin_rd, &stdin_wr, &sa, 0))
 		|| !(pipe_stdout = CreatePipe(&stdout_rd, &stdout_wr, &sa, 0)))
 	{
-	    (void)emsg((char_u *)_("E566: Could not create cscope pipes"));
+	    (void)EMSG(_("E566: Could not create cscope pipes"));
 err_closing:
 	    if (pipe_stdin)
 	    {
@@ -987,7 +987,7 @@ err_closing:
     if (!created)
     {
 	PERROR(_("cs_create_connection exec failed"));
-	(void)emsg((char_u *)_("E623: Could not spawn cscope process"));
+	(void)EMSG(_("E623: Could not spawn cscope process"));
 	goto err_closing;
     }
     /* else */
@@ -1029,7 +1029,7 @@ cs_find(exarg_T *eap)
 
     if (cs_check_for_connections() == FALSE)
     {
-	(void)emsg((char_u *)_("E567: no cscope connections"));
+	(void)EMSG(_("E567: no cscope connections"));
 	return FALSE;
     }
 
@@ -1127,7 +1127,7 @@ cs_find_common(
 	    if (buf != NULL)
 	    {
 		sprintf(buf, nf, *qfpos, *(qfpos-1));
-		(void)emsg((char_u *)buf);
+		(void)EMSG(buf);
 		vim_free(buf);
 	    }
 	    return FALSE;
@@ -1194,11 +1194,11 @@ cs_find_common(
 
 	buf = (char *)alloc((unsigned)(strlen(opt) + strlen(pat) + strlen(nf)));
 	if (buf == NULL)
-	    (void)emsg((char_u *)nf);
+	    (void)EMSG(nf);
 	else
 	{
 	    sprintf(buf, nf, opt, pat);
-	    (void)emsg((char_u *)buf);
+	    (void)EMSG(buf);
 	    vim_free(buf);
 	}
 	vim_free(nummatches);
@@ -1389,7 +1389,7 @@ cs_insert_filelist(
 
 	case FILEINFO_INFO_FAIL:    /* GetFileInformationByHandle() failed */
 	    if (p_csverbose)
-		(void)emsg((char_u *)_("E626: cannot get cscope database information"));
+		(void)EMSG(_("E626: cannot get cscope database information"));
 	    return -1;
     }
 #endif
@@ -1412,7 +1412,7 @@ cs_insert_filelist(
 	    )
 	{
 	    if (p_csverbose)
-		(void)emsg((char_u *)_("E568: duplicate cscope database not added"));
+		(void)EMSG(_("E568: duplicate cscope database not added"));
 	    return -1;
 	}
 
@@ -1723,7 +1723,7 @@ cs_manage_matches(
 	cs_print_tags_priv(mp, cp, cnt);
 	break;
     default:	/* should not reach here */
-	iemsg((char_u *)_("E570: fatal error in cs_manage_matches"));
+	IEMSG(_("E570: fatal error in cs_manage_matches"));
 	return NULL;
     }
 

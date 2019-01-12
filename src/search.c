@@ -156,9 +156,9 @@ search_regcomp(
 	if (spats[i].pat == NULL)	/* pattern was never defined */
 	{
 	    if (pat_use == RE_SUBST)
-		emsg((char_u *)_(e_nopresub));
+		EMSG(_(e_nopresub));
 	    else
-		emsg((char_u *)_(e_noprevre));
+		EMSG(_(e_noprevre));
 	    rc_did_emsg = TRUE;
 	    return FAIL;
 	}
@@ -369,7 +369,7 @@ static int	    saved_no_hlsearch = 0;
 save_last_search_pattern(void)
 {
     if (did_save_last_search_spat != 0)
-	iemsg((char_u *)"did_save_last_search_spat is not zero");
+	IEMSG("did_save_last_search_spat is not zero");
     else
 	++did_save_last_search_spat;
 
@@ -385,7 +385,7 @@ restore_last_search_pattern(void)
 {
     if (did_save_last_search_spat != 1)
     {
-	iemsg((char_u *)"did_save_last_search_spat is not one");
+	IEMSG("did_save_last_search_spat is not one");
 	return;
     }
     --did_save_last_search_spat;
@@ -1136,7 +1136,7 @@ searchit(
     if (!found)		    /* did not find it */
     {
 	if (got_int)
-	    emsg((char_u *)_(e_interr));
+	    EMSG(_(e_interr));
 	else if ((options & SEARCH_MSG) == SEARCH_MSG)
 	{
 	    if (p_ws)
@@ -1324,7 +1324,7 @@ do_search(
 		searchstr = spats[RE_SUBST].pat;
 		if (searchstr == NULL)
 		{
-		    emsg((char_u *)_(e_noprevre));
+		    EMSG(_(e_noprevre));
 		    retval = 0;
 		    goto end_do_search;
 		}
@@ -1581,7 +1581,7 @@ do_search(
 	if (dirc != '?' && dirc != '/')
 	{
 	    retval = 0;
-	    emsg((char_u *)_("E386: Expected '?' or '/'  after ';'"));
+	    EMSG(_("E386: Expected '?' or '/'  after ';'"));
 	    goto end_do_search;
 	}
 	++pat;
@@ -5442,7 +5442,7 @@ search_line:
 						      && g_do_tagpreview == 0
 #endif
 						      )
-		    emsg((char_u *)_("E387: Match is on current line"));
+		    EMSG(_("E387: Match is on current line"));
 		else if (action == ACTION_SHOW)
 		{
 		    show_pat_in_path(line, type, did_show, action,
@@ -5609,11 +5609,11 @@ exit_matched:
 #else
 	if (got_int)
 #endif
-	    emsg((char_u *)_(e_interr));
+	    EMSG(_(e_interr));
 	else if (type == FIND_DEFINE)
-	    emsg((char_u *)_("E388: Couldn't find definition"));
+	    EMSG(_("E388: Couldn't find definition"));
 	else
-	    emsg((char_u *)_("E389: Couldn't find pattern"));
+	    EMSG(_("E389: Couldn't find pattern"));
     }
     if (action == ACTION_SHOW || action == ACTION_SHOW_ALL)
 	msg_end();

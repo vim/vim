@@ -3055,7 +3055,7 @@ ttest(int pairs)
      * MUST have "cm": cursor motion.
      */
     if (*T_CM == NUL)
-	emsg((char_u *)_("E437: terminal capability \"cm\" required"));
+	EMSG(_("E437: terminal capability \"cm\" required"));
 
     /*
      * if "cs" defined, use a scroll region, it's faster.
@@ -6153,7 +6153,7 @@ replace_termcodes(
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
 		if (current_sctx.sc_sid <= 0)
-		    emsg((char_u *)_(e_usingsid));
+		    EMSG(_(e_usingsid));
 		else
 		{
 		    src += 5;

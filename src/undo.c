@@ -158,29 +158,29 @@ u_check_tree(u_header_T *uhp,
     ++header_count;
     if (uhp == curbuf->b_u_curhead && ++seen_b_u_curhead > 1)
     {
-	emsg((char_u *)"b_u_curhead found twice (looping?)");
+	EMSG("b_u_curhead found twice (looping?)");
 	return;
     }
     if (uhp == curbuf->b_u_newhead && ++seen_b_u_newhead > 1)
     {
-	emsg((char_u *)"b_u_newhead found twice (looping?)");
+	EMSG("b_u_newhead found twice (looping?)");
 	return;
     }
 
     if (uhp->uh_magic != UH_MAGIC)
-	emsg((char_u *)"uh_magic wrong (may be using freed memory)");
+	EMSG("uh_magic wrong (may be using freed memory)");
     else
     {
 	/* Check pointers back are correct. */
 	if (uhp->uh_next.ptr != exp_uh_next)
 	{
-	    emsg((char_u *)"uh_next wrong");
+	    EMSG("uh_next wrong");
 	    smsg("expected: 0x%x, actual: 0x%x",
 					       exp_uh_next, uhp->uh_next.ptr);
 	}
 	if (uhp->uh_alt_prev.ptr != exp_uh_alt_prev)
 	{
-	    emsg((char_u *)"uh_alt_prev wrong");
+	    EMSG("uh_alt_prev wrong");
 	    smsg("expected: 0x%x, actual: 0x%x",
 				       exp_uh_alt_prev, uhp->uh_alt_prev.ptr);
 	}
@@ -190,7 +190,7 @@ u_check_tree(u_header_T *uhp,
 	{
 	    if (uep->ue_magic != UE_MAGIC)
 	    {
-		emsg((char_u *)"ue_magic wrong (may be using freed memory)");
+		EMSG("ue_magic wrong (may be using freed memory)");
 		break;
 	    }
 	}
@@ -219,7 +219,7 @@ u_check(int newhead_may_be_NULL)
 	semsg("b_u_curhead invalid: 0x%x", curbuf->b_u_curhead);
     if (header_count != curbuf->b_u_numhead)
     {
-	emsg((char_u *)"b_u_numhead invalid");
+	EMSG("b_u_numhead invalid");
 	smsg("expected: %ld, actual: %ld",
 			       (long)header_count, (long)curbuf->b_u_numhead);
     }
@@ -316,7 +316,7 @@ undo_allowed(void)
     /* Don't allow changes when 'modifiable' is off.  */
     if (!curbuf->b_p_ma)
     {
-	emsg((char_u *)_(e_modifiable));
+	EMSG(_(e_modifiable));
 	return FALSE;
     }
 
@@ -324,7 +324,7 @@ undo_allowed(void)
     /* In the sandbox it's not allowed to change the text. */
     if (sandbox != 0)
     {
-	emsg((char_u *)_(e_sandbox));
+	EMSG(_(e_sandbox));
 	return FALSE;
     }
 #endif
@@ -333,7 +333,7 @@ undo_allowed(void)
      * caller of getcmdline() may get confused. */
     if (textlock != 0)
     {
-	emsg((char_u *)_(e_secure));
+	EMSG(_(e_secure));
 	return FALSE;
     }
 
@@ -413,12 +413,12 @@ u_savecommon(
 	{
 	    if (netbeans_is_guarded(top, bot))
 	    {
-		emsg((char_u *)_(e_guarded));
+		EMSG(_(e_guarded));
 		return FAIL;
 	    }
 	    if (curbuf->b_p_ro)
 	    {
-		emsg((char_u *)_(e_nbreadonly));
+		EMSG(_(e_nbreadonly));
 		return FAIL;
 	    }
 	}
@@ -439,7 +439,7 @@ u_savecommon(
 	{
 	    /* This happens when the FileChangedRO autocommand changes the
 	     * file in a way it becomes shorter. */
-	    emsg((char_u *)_("E881: Line count changed unexpectedly"));
+	    EMSG(_("E881: Line count changed unexpectedly"));
 	    return FAIL;
 	}
     }
@@ -2678,7 +2678,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg((char_u *)_("E438: u_undo: line numbers wrong"));
+	    IEMSG(_("E438: u_undo: line numbers wrong"));
 	    changed();		/* don't want UNCHANGED now */
 	    return;
 	}
@@ -3165,7 +3165,7 @@ ex_undojoin(exarg_T *eap UNUSED)
 	return;		    /* nothing changed before */
     if (curbuf->b_u_curhead != NULL)
     {
-	emsg((char_u *)_("E790: undojoin is not allowed after undo"));
+	EMSG(_("E790: undojoin is not allowed after undo"));
 	return;
     }
     if (!curbuf->b_u_synced)
@@ -3270,7 +3270,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg((char_u *)_("E439: undo list corrupt"));
+	IEMSG(_("E439: undo list corrupt"));
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3302,7 +3302,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg((char_u *)_("E440: undo line missing"));
+	    IEMSG(_("E440: undo line missing"));
 	    uep->ue_bot = uep->ue_top + 1;  /* assume all lines deleted, will
 					     * get all the old lines back
 					     * without deleting the current

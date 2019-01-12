@@ -536,7 +536,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	emsg((char_u *)_("E264: Python: Error initialising I/O objects"));
+	EMSG(_("E264: Python: Error initialising I/O objects"));
 	return -1;
     }
 
@@ -5691,7 +5691,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (u_save((linenr_T)RangeStart - 1, (linenr_T)RangeEnd + 1) != OK)
     {
-	emsg((char_u *)_("cannot save undo information"));
+	EMSG(_("cannot save undo information"));
 	return;
     }
 
@@ -5720,7 +5720,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (status)
     {
-	emsg((char_u *)_("failed to run the code"));
+	EMSG(_("failed to run the code"));
 	return;
     }
 
@@ -5817,13 +5817,13 @@ run_eval(const char *cmd, typval_T *rettv
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    emsg((char_u *)_("E858: Eval did not return a valid python object"));
+	    EMSG(_("E858: Eval did not return a valid python object"));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    emsg((char_u *)_("E859: Failed to convert returned python object to vim value"));
+	    EMSG(_("E859: Failed to convert returned python object to vim value"));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6727,7 +6727,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	emsg((char_u *)_("Failed to set path hook: sys.path_hooks is not a list\n"
+	EMSG(_("Failed to set path hook: sys.path_hooks is not a list\n"
 	       "You should now do the following:\n"
 	       "- append vim.path_hook to sys.path_hooks\n"
 	       "- append vim.VIM_SPECIAL_PATH to sys.path\n"));
@@ -6757,7 +6757,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	emsg((char_u *)_("Failed to set path: sys.path is not a list\n"
+	EMSG(_("Failed to set path: sys.path is not a list\n"
 	       "You should now append vim.VIM_SPECIAL_PATH to sys.path"));
 	VimTryEnd(); /* Discard the error */
     }

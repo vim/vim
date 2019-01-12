@@ -4060,7 +4060,7 @@ init_homedir(void)
 	    if (!mch_chdir((char *)var) && mch_dirname(IObuff, IOSIZE) == OK)
 		var = IObuff;
 	    if (mch_chdir((char *)NameBuff) != 0)
-		emsg((char_u *)_(e_prev_dir));
+		EMSG(_(e_prev_dir));
 	}
 #endif
 	homedir = vim_strsave(var);
@@ -11434,7 +11434,7 @@ get_cmd_output(
     /* get a name for the temp file */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	emsg((char_u *)_(e_notmp));
+	EMSG(_(e_notmp));
 	return NULL;
     }
 

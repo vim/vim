@@ -124,7 +124,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
 
     if (arg->v_type != VAR_DICT)
     {
-	emsg((char_u *)_(e_dictreq));
+	EMSG(_(e_dictreq));
 	return FAIL;
     }
     if (arg->vval.v_dict == NULL)
@@ -172,14 +172,14 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (argvars[2].v_type != VAR_DICT)
     {
-	emsg((char_u *)_(e_dictreq));
+	EMSG(_(e_dictreq));
 	return;
     }
     dict = argvars[2].vval.v_dict;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
-	emsg((char_u *)_("E965: missing property type name"));
+	EMSG(_("E965: missing property type name"));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -340,7 +340,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     proplen = buf->b_ml.ml_line_len - textlen;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	iemsg((char_u *)_("E967: text property info corrupted"));
+	IEMSG(_("E967: text property info corrupted"));
 	return 0;
     }
     if (proplen > 0)
@@ -440,7 +440,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (start < 1 || end < 1)
     {
-	emsg((char_u *)_(e_invrange));
+	EMSG(_(e_invrange));
 	return;
     }
 
@@ -487,7 +487,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     }
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-	emsg((char_u *)_(e_invrange));
+	EMSG(_(e_invrange));
 	return;
     }
 
@@ -542,7 +542,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -554,7 +554,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    end = tv_get_number(&argvars[2]);
 	if (start < 1 || end < 1)
 	{
-	    emsg((char_u *)_(e_invrange));
+	    EMSG(_(e_invrange));
 	    return;
 	}
     }
@@ -585,7 +585,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     if (id == -1 && type_id == -1)
     {
-	emsg((char_u *)_("E968: Need at least one of 'id' or 'type'"));
+	EMSG(_("E968: Need at least one of 'id' or 'type'"));
 	return;
     }
 
@@ -661,7 +661,7 @@ prop_type_set(typval_T *argvars, int add)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -781,7 +781,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -816,7 +816,7 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*name == NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
     if (rettv_dict_alloc(rettv) == OK)

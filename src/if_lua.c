@@ -1795,7 +1795,7 @@ luaV_luaeval (lua_State *L)
 	return 0;
     }
     if (luaV_totypval(L, -1, rettv) == FAIL)
-	emsg((char_u *)"luaeval: cannot convert value");
+	EMSG("luaeval: cannot convert value");
     return 0;
 }
 
@@ -1926,7 +1926,7 @@ lua_init(void)
 #ifdef DYNAMIC_LUA
 	if (!lua_enabled(TRUE))
 	{
-	    emsg((char_u *)_("Lua library cannot be loaded."));
+	    EMSG(_("Lua library cannot be loaded."));
 	    return FAIL;
 	}
 #endif
@@ -1978,7 +1978,7 @@ ex_luado(exarg_T *eap)
     if (lua_init() == FAIL) return;
     if (u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
     {
-	emsg((char_u *)_("cannot save undo information"));
+	EMSG(_("cannot save undo information"));
 	return;
     }
     luaV_setrange(L, eap->line1, eap->line2);

@@ -215,7 +215,7 @@ gui_do_fork(void)
     pid = fork();
     if (pid < 0)	    /* Fork error */
     {
-	emsg((char_u *)_("E851: Failed to create a new process for the GUI"));
+	EMSG(_("E851: Failed to create a new process for the GUI"));
 	return;
     }
     else if (pid > 0)	    /* Parent */
@@ -239,7 +239,7 @@ gui_do_fork(void)
 # else
 		waitpid(pid, &exit_status, 0);
 # endif
-		emsg((char_u *)_("E852: The child process failed to start the GUI"));
+		EMSG(_("E852: The child process failed to start the GUI"));
 		return;
 	    }
 	    else if (status == GUI_CHILD_IO_ERROR)
@@ -362,7 +362,7 @@ gui_init_check(void)
     if (result != MAYBE)
     {
 	if (result == FAIL)
-	    emsg((char_u *)_("E229: Cannot start the GUI"));
+	    EMSG(_("E229: Cannot start the GUI"));
 	return result;
     }
 
@@ -649,12 +649,12 @@ gui_init(void)
 	    gui_init_font(*p_guifont == NUL ? hl_get_font_name()
 						  : p_guifont, FALSE) == FAIL)
     {
-	emsg((char_u *)_("E665: Cannot start GUI, no valid font found"));
+	EMSG(_("E665: Cannot start GUI, no valid font found"));
 	goto error2;
     }
 #ifdef FEAT_MBYTE
     if (gui_get_wide_font() == FAIL)
-	emsg((char_u *)_("E231: 'guifontwide' invalid"));
+	EMSG(_("E231: 'guifontwide' invalid"));
 #endif
 
     gui.num_cols = Columns;
@@ -769,7 +769,7 @@ gui_init(void)
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
-	    emsg((char_u *)_("E599: Value of 'imactivatekey' is invalid"));
+	    EMSG(_("E599: Value of 'imactivatekey' is invalid"));
 #endif
 	/* When 'cmdheight' was set during startup it may not have taken
 	 * effect yet. */

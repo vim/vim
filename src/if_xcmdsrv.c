@@ -467,7 +467,7 @@ serverSendToVim(
     vim_free(property);
     if (res < 0)
     {
-	emsg((char_u *)_("E248: Failed to send command to the destination program"));
+	EMSG(_("E248: Failed to send command to the destination program"));
 	return -1;
     }
 
@@ -1110,7 +1110,7 @@ GetRegProp(
 	    XFree(*regPropp);
 	XDeleteProperty(dpy, RootWindow(dpy, 0), registryProperty);
 	if (domsg)
-	    emsg((char_u *)_("E251: VIM instance registry property is badly formed.  Deleted!"));
+	    EMSG(_("E251: VIM instance registry property is badly formed.  Deleted!"));
 	return FAIL;
     }
     return OK;

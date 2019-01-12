@@ -1260,13 +1260,13 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (disabled || !mzscheme_enabled(TRUE))
 	{
-	    emsg((char_u *)_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    EMSG(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
 	    return -1;
 	}
 #endif
 	if (load_base_module_failed || startup_mzscheme())
 	{
-	    emsg((char_u *)_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    EMSG(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
 	    return -1;
 	}
 	initialized = TRUE;
@@ -1572,7 +1572,7 @@ do_intrnl_output(char *mesg, int error)
     {
 	*p = '\0';
 	if (error)
-	    emsg((char_u *)prev);
+	    EMSG(prev);
 	else
 	    MSG(prev);
 	prev = p + 1;
@@ -1580,7 +1580,7 @@ do_intrnl_output(char *mesg, int error)
     }
 
     if (error)
-	emsg((char_u *)prev);
+	EMSG(prev);
     else
 	MSG(prev);
 }

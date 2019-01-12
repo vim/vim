@@ -279,7 +279,7 @@ do_tag(
 		    tagstacklen == 0)
 	    {
 		/* empty stack */
-		emsg((char_u *)_(e_tagstack));
+		EMSG(_(e_tagstack));
 		goto end_do_tag;
 	    }
 
@@ -290,7 +290,7 @@ do_tag(
 #endif
 		if ((tagstackidx -= count) < 0)
 		{
-		    emsg((char_u *)_(bottommsg));
+		    EMSG(_(bottommsg));
 		    if (tagstackidx + count == 0)
 		    {
 			/* We did [num]^T from the bottom of the stack */
@@ -304,7 +304,7 @@ do_tag(
 		}
 		else if (tagstackidx >= tagstacklen)    /* count == 0? */
 		{
-		    emsg((char_u *)_(topmsg));
+		    EMSG(_(topmsg));
 		    goto end_do_tag;
 		}
 
@@ -375,12 +375,12 @@ do_tag(
 			 * position.
 			 */
 			tagstackidx = tagstacklen - 1;
-			emsg((char_u *)_(topmsg));
+			EMSG(_(topmsg));
 			save_pos = FALSE;
 		    }
 		    else if (tagstackidx < 0)	/* must have been count == 0 */
 		    {
-			emsg((char_u *)_(bottommsg));
+			EMSG(_(bottommsg));
 			tagstackidx = 0;
 			goto end_do_tag;
 		    }
@@ -424,7 +424,7 @@ do_tag(
 		    cur_match = MAXCOL - 1;
 		else if (cur_match < 0)
 		{
-		    emsg((char_u *)_("E425: Cannot go before first matching tag"));
+		    EMSG(_("E425: Cannot go before first matching tag"));
 		    skip_msg = TRUE;
 		    cur_match = 0;
 		    cur_fnum = curbuf->b_fnum;
@@ -950,14 +950,14 @@ do_tag(
 	    {
 		/* Avoid giving this error when a file wasn't found and we're
 		 * looking for a match in another file, which wasn't found.
-		 * There will be an emsg((char_u *)"file doesn't exist") below then. */
+		 * There will be an EMSG("file doesn't exist") below then. */
 		if ((type == DT_NEXT || type == DT_FIRST)
 						      && nofile_fname == NULL)
 		{
 		    if (num_matches == 1)
-			emsg((char_u *)_("E427: There is only one matching tag"));
+			EMSG(_("E427: There is only one matching tag"));
 		    else
-			emsg((char_u *)_("E428: Cannot go beyond last matching tag"));
+			EMSG(_("E428: Cannot go beyond last matching tag"));
 		    skip_msg = TRUE;
 		}
 		cur_match = num_matches - 1;
@@ -2525,7 +2525,7 @@ parse_line:
     if (!stop_searching)
     {
 	if (!did_open && verbose)	/* never opened any tags file */
-	    emsg((char_u *)_("E433: No tags file"));
+	    EMSG(_("E433: No tags file"));
 	retval = OK;		/* It's OK even when no tag found */
     }
 
@@ -3370,7 +3370,7 @@ jumpto_tag(
 		}
 		if (found == 0)
 		{
-		    emsg((char_u *)_("E434: Can't find tag pattern"));
+		    EMSG(_("E434: Can't find tag pattern"));
 		    curwin->w_cursor.lnum = save_lnum;
 		}
 		else
@@ -4200,7 +4200,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     {
 	if (di->di_tv.v_type != VAR_LIST)
 	{
-	    emsg((char_u *)_(e_listreq));
+	    EMSG(_(e_listreq));
 	    return FAIL;
 	}
 	l = di->di_tv.vval.v_list;

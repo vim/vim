@@ -1664,7 +1664,7 @@ gui_mch_early_init_check(int give_message)
     {
 	gui.dying = TRUE;
 	if (give_message)
-	    emsg((char_u *)_((char *)e_opendisp));
+	    EMSG(_((char *)e_opendisp));
 	return FAIL;
     }
     return OK;
@@ -1710,7 +1710,7 @@ gui_mch_init_check(void)
     if (!gtk_init_check(&gui_argc, &gui_argv))
     {
 	gui.dying = TRUE;
-	emsg((char_u *)_((char *)e_opendisp));
+	EMSG(_((char *)e_opendisp));
 	return FAIL;
     }
 

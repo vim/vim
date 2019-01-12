@@ -1624,6 +1624,8 @@ typedef UINT32_TYPEDEF UINT32_T;
 #endif
 
 #define MSG(s)			    msg((char_u *)(s))
+#define EMSG(s)			    emsg((char_u *)(s))
+#define IEMSG(s)		    iemsg((char_u *)(s))
 #define MSG_ATTR(s, attr)	    msg_attr((char_u *)(s), (attr))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))

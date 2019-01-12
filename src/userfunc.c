@@ -713,7 +713,7 @@ call_user_func(
     /* If depth of calling is getting too high, don't execute the function */
     if (depth >= p_mfd)
     {
-	emsg((char_u *)_("E132: Function call depth is higher than 'maxfuncdepth'"));
+	EMSG(_("E132: Function call depth is higher than 'maxfuncdepth'"));
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
 	return;
@@ -1194,7 +1194,7 @@ save_funccal(funccal_entry_T *entry)
 restore_funccal(void)
 {
     if (funccal_stack == NULL)
-	iemsg((char_u *)"INTERNAL: restore_funccal()");
+	IEMSG("INTERNAL: restore_funccal()");
     else
     {
 	current_funccal = funccal_stack->top_funccal;
@@ -1312,7 +1312,7 @@ func_call(
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
 	{
-	    emsg((char_u *)_("E699: Too many arguments"));
+	    EMSG(_("E699: Too many arguments"));
 	    break;
 	}
 	/* Make a copy of each argument.  This is needed to be able to set
@@ -1660,7 +1660,7 @@ trans_function_name(
     if (end == start)
     {
 	if (!skip)
-	    emsg((char_u *)_("E129: Function name required"));
+	    EMSG(_("E129: Function name required"));
 	goto theend;
     }
     if (end == NULL || (lv.ll_tv != NULL && (lead > 2 || lv.ll_range)))
@@ -1706,7 +1706,7 @@ trans_function_name(
 	{
 	    if (!skip && !(flags & TFN_QUIET) && (fdp == NULL
 			     || lv.ll_dict == NULL || fdp->fd_newkey == NULL))
-		emsg((char_u *)_(e_funcref));
+		EMSG(_(e_funcref));
 	    else
 		*pp = end;
 	    name = NULL;
@@ -1789,7 +1789,7 @@ trans_function_name(
 	    /* It's "s:" or "<SID>" */
 	    if (current_sctx.sc_sid <= 0)
 	    {
-		emsg((char_u *)_(e_usingsid));
+		EMSG(_(e_usingsid));
 		goto theend;
 	    }
 	    sprintf((char *)sid_buf, "%ld_", (long)current_sctx.sc_sid);
@@ -1981,7 +1981,7 @@ ex_function(exarg_T *eap)
     {
 	if (!ends_excmd(*skipwhite(p)))
 	{
-	    emsg((char_u *)_(e_trailing));
+	    EMSG(_(e_trailing));
 	    goto ret_free;
 	}
 	eap->nextcmd = check_nextcmd(p);
@@ -2062,7 +2062,7 @@ ex_function(exarg_T *eap)
 	}
 	/* Disallow using the g: dict. */
 	if (fudi.fd_dict != NULL && fudi.fd_dict->dv_scope == VAR_DEF_SCOPE)
-	    emsg((char_u *)_("E862: Cannot use g: here"));
+	    EMSG(_("E862: Cannot use g: here"));
     }
 
     if (get_function_args(&p, ')', &newargs, &varargs, eap->skip) == FAIL)
@@ -2107,7 +2107,7 @@ ex_function(exarg_T *eap)
     if (*p == '\n')
 	line_arg = p + 1;
     else if (*p != NUL && *p != '"' && !eap->skip && !did_emsg)
-	emsg((char_u *)_(e_trailing));
+	EMSG(_(e_trailing));
 
     /*
      * Read the body of the function, until ":endfunction" is found.
@@ -2120,7 +2120,7 @@ ex_function(exarg_T *eap)
 	if (!eap->skip && !eap->forceit)
 	{
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
-		emsg((char_u *)_(e_funcdict));
+		EMSG(_(e_funcdict));
 	    else if (name != NULL && find_func(name) != NULL)
 		emsg_funcname(e_funcexts, name);
 	}
@@ -2170,7 +2170,7 @@ ex_function(exarg_T *eap)
 	    lines_left = Rows - 1;
 	if (theline == NULL)
 	{
-	    emsg((char_u *)_("E126: Missing :endfunction"));
+	    EMSG(_("E126: Missing :endfunction"));
 	    goto erret;
 	}
 
@@ -2374,7 +2374,7 @@ ex_function(exarg_T *eap)
 	fp = NULL;
 	if (fudi.fd_newkey == NULL && !eap->forceit)
 	{
-	    emsg((char_u *)_(e_funcdict));
+	    EMSG(_(e_funcdict));
 	    goto erret;
 	}
 	if (fudi.fd_di == NULL)
@@ -2876,13 +2876,13 @@ ex_delfunction(exarg_T *eap)
     if (name == NULL)
     {
 	if (fudi.fd_dict != NULL && !eap->skip)
-	    emsg((char_u *)_(e_funcref));
+	    EMSG(_(e_funcref));
 	return;
     }
     if (!ends_excmd(*skipwhite(p)))
     {
 	vim_free(name);
-	emsg((char_u *)_(e_trailing));
+	EMSG(_(e_trailing));
 	return;
     }
     eap->nextcmd = check_nextcmd(p);
@@ -3032,7 +3032,7 @@ ex_return(exarg_T *eap)
 
     if (current_funccal == NULL)
     {
-	emsg((char_u *)_("E133: :return not inside a function"));
+	EMSG(_("E133: :return not inside a function"));
 	return;
     }
 
@@ -3158,7 +3158,7 @@ ex_call(exarg_T *eap)
 	    {
 		// If the function deleted lines or switched to another buffer
 		// the line number may become invalid.
-		emsg((char_u *)_(e_invrange));
+		EMSG(_(e_invrange));
 		break;
 	    }
 	    curwin->w_cursor.lnum = lnum;
@@ -3205,7 +3205,7 @@ ex_call(exarg_T *eap)
 	if (!ends_excmd(*arg))
 	{
 	    emsg_severe = TRUE;
-	    emsg((char_u *)_(e_trailing));
+	    EMSG(_(e_trailing));
 	}
 	else
 	    eap->nextcmd = check_nextcmd(arg);
@@ -3267,7 +3267,7 @@ do_return(
 		if ((cstack->cs_rettv[idx] = alloc_tv()) != NULL)
 		    *(typval_T *)cstack->cs_rettv[idx] = *(typval_T *)rettv;
 		else
-		    emsg((char_u *)_(e_outofmem));
+		    EMSG(_(e_outofmem));
 	    }
 	    else
 		cstack->cs_rettv[idx] = NULL;

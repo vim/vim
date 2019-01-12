@@ -841,7 +841,7 @@ mch_check_messages(void)
     int
 mch_screenmode(char_u *arg UNUSED)
 {
-    emsg((char_u *)_(e_screenmode));
+    EMSG(_(e_screenmode));
     return FAIL;
 }
 
@@ -1524,7 +1524,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 
     if (prt_dlg.hDC == NULL)
     {
-	emsg((char_u *)_("E237: Printer selection failed"));
+	EMSG(_("E237: Printer selection failed"));
 	mch_print_cleanup();
 	return FALSE;
     }

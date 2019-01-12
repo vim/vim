@@ -377,7 +377,7 @@ term_start(
 	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
 	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return NULL;
     }
 
@@ -3914,7 +3914,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     term = buf->b_term;
     if (term->tl_vterm == NULL)
     {
-	emsg((char_u *)_("E958: Job already finished"));
+	EMSG(_("E958: Job already finished"));
 	return;
     }
 
@@ -3924,7 +3924,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    emsg((char_u *)_(e_dictreq));
+	    EMSG(_(e_dictreq));
 	    return;
 	}
 	d = argvars[2].vval.v_dict;
@@ -4389,7 +4389,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
     fd1 = mch_fopen((char *)fname1, READBIN);
@@ -4922,7 +4922,7 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (buf == NULL)
     {
-	emsg((char_u *)_("E955: Not a terminal buffer"));
+	EMSG(_("E955: Not a terminal buffer"));
 	return;
     }
     if (buf->b_term->tl_vterm == NULL)
@@ -5236,12 +5236,12 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	emsg((char_u *)_(e_listreq));
+	EMSG(_(e_listreq));
 	return;
     }
 
     if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 }
 #endif
 
@@ -5548,7 +5548,7 @@ term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	goto failed;
     }
 

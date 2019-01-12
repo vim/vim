@@ -518,7 +518,7 @@ nb_parse_cmd(char_u *cmd)
 	 * so I'm disabling it except for debugging.
 	 */
 	nbdebug(("nb_parse_cmd: Command error for \"%s\"\n", cmd));
-	emsg((char_u *)"E629: bad return from nb_do_cmd");
+	EMSG("E629: bad return from nb_do_cmd");
 #endif
     }
 }
@@ -1032,7 +1032,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    Invalid buffer identifier in getAnno\n"));
-		emsg((char_u *)"E652: Invalid buffer identifier in getAnno");
+		EMSG("E652: Invalid buffer identifier in getAnno");
 		retval = FAIL;
 	    }
 	    else
@@ -1055,7 +1055,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in getLength\n"));
-		emsg((char_u *)"E632: invalid buffer identifier in getLength");
+		EMSG("E632: invalid buffer identifier in getLength");
 		retval = FAIL;
 	    }
 	    else
@@ -1077,7 +1077,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in getText\n"));
-		emsg((char_u *)"E633: invalid buffer identifier in getText");
+		EMSG("E633: invalid buffer identifier in getText");
 		retval = FAIL;
 	    }
 	    else
@@ -1141,7 +1141,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in remove\n"));
-		emsg((char_u *)"E634: invalid buffer identifier in remove");
+		EMSG("E634: invalid buffer identifier in remove");
 		retval = FAIL;
 	    }
 	    else
@@ -1311,7 +1311,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in insert\n"));
-		emsg((char_u *)"E635: invalid buffer identifier in insert");
+		EMSG("E635: invalid buffer identifier in insert");
 		retval = FAIL;
 	    }
 	    else if (args != NULL)
@@ -1471,7 +1471,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in create\n"));
-		emsg((char_u *)"E636: invalid buffer identifier in create");
+		EMSG("E636: invalid buffer identifier in create");
 		return FAIL;
 	    }
 	    VIM_CLEAR(buf->displayname);
@@ -1521,7 +1521,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in startDocumentListen\n"));
-		emsg((char_u *)"E637: invalid buffer identifier in startDocumentListen");
+		EMSG("E637: invalid buffer identifier in startDocumentListen");
 		return FAIL;
 	    }
 	    buf->fireChanges = 1;
@@ -1532,7 +1532,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in stopDocumentListen\n"));
-		emsg((char_u *)"E638: invalid buffer identifier in stopDocumentListen");
+		EMSG("E638: invalid buffer identifier in stopDocumentListen");
 		return FAIL;
 	    }
 	    buf->fireChanges = 0;
@@ -1561,7 +1561,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in setTitle\n"));
-		emsg((char_u *)"E639: invalid buffer identifier in setTitle");
+		EMSG("E639: invalid buffer identifier in setTitle");
 		return FAIL;
 	    }
 	    vim_free(buf->displayname);
@@ -1573,7 +1573,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in initDone\n"));
-		emsg((char_u *)"E640: invalid buffer identifier in initDone");
+		EMSG("E640: invalid buffer identifier in initDone");
 		return FAIL;
 	    }
 	    do_update = 1;
@@ -1594,7 +1594,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in setBufferNumber\n"));
-		emsg((char_u *)"E641: invalid buffer identifier in setBufferNumber");
+		EMSG("E641: invalid buffer identifier in setBufferNumber");
 		return FAIL;
 	    }
 	    path = (char_u *)nb_unquote(args, NULL);
@@ -1630,7 +1630,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in setFullName\n"));
-		emsg((char_u *)"E643: invalid buffer identifier in setFullName");
+		EMSG("E643: invalid buffer identifier in setFullName");
 		return FAIL;
 	    }
 	    vim_free(buf->displayname);
@@ -1653,7 +1653,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in editFile\n"));
-		emsg((char_u *)"E644: invalid buffer identifier in editFile");
+		EMSG("E644: invalid buffer identifier in editFile");
 		return FAIL;
 	    }
 	    /* Edit a file: like create + setFullName + read the file. */
@@ -1681,7 +1681,7 @@ nb_do_cmd(
 		/* This message was commented out, probably because it can
 		 * happen when shutting down. */
 		if (p_verbose > 0)
-		    emsg((char_u *)"E645: invalid buffer identifier in setVisible");
+		    EMSG("E645: invalid buffer identifier in setVisible");
 		return FAIL;
 	    }
 	    if (streq((char *)args, "T") && buf->bufp != curbuf)
@@ -1721,7 +1721,7 @@ nb_do_cmd(
 		/* This message was commented out, probably because it can
 		 * happen when shutting down. */
 		if (p_verbose > 0)
-		    emsg((char_u *)"E646: invalid buffer identifier in setModified");
+		    EMSG("E646: invalid buffer identifier in setModified");
 		return FAIL;
 	    }
 	    prev_b_changed = buf->bufp->b_changed;
@@ -1803,7 +1803,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in setDot\n"));
-		emsg((char_u *)"E647: invalid buffer identifier in setDot");
+		EMSG("E647: invalid buffer identifier in setDot");
 		return FAIL;
 	    }
 
@@ -1856,7 +1856,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in close\n"));
-		emsg((char_u *)"E648: invalid buffer identifier in close");
+		EMSG("E648: invalid buffer identifier in close");
 		return FAIL;
 	    }
 
@@ -1870,7 +1870,7 @@ nb_do_cmd(
 		/* This message was commented out, probably because it can
 		 * happen when shutting down. */
 		if (p_verbose > 0)
-		    emsg((char_u *)"E649: invalid buffer identifier in close");
+		    EMSG("E649: invalid buffer identifier in close");
 	    }
 	    nbdebug(("    CLOSE %d: %s\n", bufno, name));
 #ifdef FEAT_GUI
@@ -1909,7 +1909,7 @@ nb_do_cmd(
 	    if (buf == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in defineAnnoType\n"));
-		emsg((char_u *)"E650: invalid buffer identifier in defineAnnoType");
+		EMSG("E650: invalid buffer identifier in defineAnnoType");
 		return FAIL;
 	    }
 
@@ -1937,7 +1937,7 @@ nb_do_cmd(
 	    bg = vim_strsave(p);
 	    if (STRLEN(fg) > MAX_COLOR_LENGTH || STRLEN(bg) > MAX_COLOR_LENGTH)
 	    {
-		emsg((char_u *)"E532: highlighting color name too long in defineAnnoType");
+		EMSG("E532: highlighting color name too long in defineAnnoType");
 		vim_free(typeName);
 		parse_error = TRUE;
 	    }
@@ -1968,7 +1968,7 @@ nb_do_cmd(
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 		nbdebug(("    invalid buffer identifier in addAnno\n"));
-		emsg((char_u *)"E651: invalid buffer identifier in addAnno");
+		EMSG("E651: invalid buffer identifier in addAnno");
 		return FAIL;
 	    }
 
@@ -2352,7 +2352,7 @@ ex_nbstart(
 		&& !defined(FEAT_GUI_W32)
     if (gui.in_use)
     {
-	emsg((char_u *)_("E838: netbeans is not supported with this GUI"));
+	EMSG(_("E838: netbeans is not supported with this GUI"));
 	return;
     }
 # endif
@@ -2517,7 +2517,7 @@ netbeans_open(char *params, int doabort)
 
     if (NETBEANS_OPEN)
     {
-	emsg((char_u *)_("E511: netbeans already connected"));
+	EMSG(_("E511: netbeans already connected"));
 	return;
     }
 

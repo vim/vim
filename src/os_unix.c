@@ -1004,7 +1004,7 @@ static volatile sig_atomic_t lc_active INIT(= FALSE);
  *	if (SETJMP(lc_jump_env) != 0)
  *	{
  *	    mch_didjmp();
- *	    emsg((char_u *)"crash!");
+ *	    EMSG("crash!");
  *	}
  *	else
  *	{
@@ -2670,7 +2670,7 @@ mch_FullName(
 #endif
 		l = mch_chdir((char *)olddir);
 	    if (l != 0)
-		emsg((char_u *)_(e_prev_dir));
+		EMSG(_(e_prev_dir));
 	}
 
 	l = STRLEN(buf);
@@ -3974,7 +3974,7 @@ check_mouse_termcode(void)
     int
 mch_screenmode(char_u *arg UNUSED)
 {
-    emsg((char_u *)_(e_screenmode));
+    EMSG(_(e_screenmode));
     return FAIL;
 }
 
@@ -6509,7 +6509,7 @@ mch_expand_wildcards(
      */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	emsg((char_u *)_(e_notmp));
+	EMSG(_(e_notmp));
 	return FAIL;
     }
 

@@ -2601,7 +2601,7 @@ text_locked(void)
     void
 text_locked_msg(void)
 {
-    emsg((char_u *)_(get_text_locked_msg()));
+    EMSG(_(get_text_locked_msg()));
 }
 
     char_u *
@@ -2623,7 +2623,7 @@ curbuf_locked(void)
 {
     if (curbuf_lock > 0)
     {
-	emsg((char_u *)_("E788: Not allowed to edit another buffer now"));
+	EMSG(_("E788: Not allowed to edit another buffer now"));
 	return TRUE;
     }
     return allbuf_locked();
@@ -2638,7 +2638,7 @@ allbuf_locked(void)
 {
     if (allbuf_lock > 0)
     {
-	emsg((char_u *)_("E811: Not allowed to change buffer information now"));
+	EMSG(_("E811: Not allowed to change buffer information now"));
 	return TRUE;
     }
     return FALSE;
@@ -4219,7 +4219,7 @@ ExpandOne(
 		     * (and possibly have to hit return to continue!).
 		     */
 		    if (!(options & WILD_SILENT))
-			emsg((char_u *)_(e_toomany));
+			EMSG(_(e_toomany));
 		    else if (!(options & WILD_NO_BEEP))
 			beep_flush();
 		}
@@ -6658,7 +6658,7 @@ ex_history(exarg_T *eap)
 	    else
 	    {
 		*end = i;
-		emsg((char_u *)_(e_trailing));
+		EMSG(_(e_trailing));
 		return;
 	    }
 	}
@@ -6670,7 +6670,7 @@ ex_history(exarg_T *eap)
 	end = arg;
     if (!get_list_range(&end, &hisidx1, &hisidx2) || *end != NUL)
     {
-	emsg((char_u *)_(e_trailing));
+	EMSG(_(e_trailing));
 	return;
     }
 
@@ -7201,7 +7201,7 @@ cmd_pchar(int c, int offset)
 {
     if (ccline.cmdpos + offset >= ccline.cmdlen || ccline.cmdpos + offset < 0)
     {
-	emsg((char_u *)_("E198: cmd_pchar beyond the command length"));
+	EMSG(_("E198: cmd_pchar beyond the command length"));
 	return;
     }
     ccline.cmdbuff[ccline.cmdpos + offset] = (char_u)c;
@@ -7213,7 +7213,7 @@ cmd_gchar(int offset)
 {
     if (ccline.cmdpos + offset >= ccline.cmdlen || ccline.cmdpos + offset < 0)
     {
-	// emsg((char_u *)_("cmd_gchar beyond the command length"));
+	// EMSG(_("cmd_gchar beyond the command length"));
 	return NUL;
     }
     return (int)ccline.cmdbuff[ccline.cmdpos + offset];
@@ -7392,7 +7392,7 @@ open_cmdwin(void)
     if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf))
     {
 	cmdwin_result = Ctrl_C;
-	emsg((char_u *)_("E199: Active window or buffer deleted"));
+	EMSG(_("E199: Active window or buffer deleted"));
     }
     else
     {

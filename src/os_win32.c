@@ -5182,7 +5182,7 @@ mch_call_shell(
 	    {
 		x = -1;
 #ifdef FEAT_GUI_W32
-		emsg((char_u *)_("E371: Command not found"));
+		EMSG(_("E371: Command not found"));
 #endif
 	    }
 

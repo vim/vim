@@ -8767,7 +8767,7 @@ set_bool_option(
 	{
 	    char_u	*errmsg = did_set_spelllang(curwin);
 	    if (errmsg != NULL)
-		emsg((char_u *)_(errmsg));
+		EMSG(_(errmsg));
 	}
     }
 #endif
@@ -9984,7 +9984,7 @@ set_option_value(
 	/* Disallow changing some options in the sandbox */
 	if (sandbox > 0 && (flags & P_SECURE))
 	{
-	    emsg((char_u *)_(e_sandbox));
+	    EMSG(_(e_sandbox));
 	    return NULL;
 	}
 #endif
@@ -11086,7 +11086,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
-	default:	iemsg((char_u *)_("E356: get_varp ERROR"));
+	default:	IEMSG(_("E356: get_varp ERROR"));
     }
     /* always return a valid pointer to avoid a crash! */
     return (char_u *)&(curbuf->b_p_wm);
@@ -12877,9 +12877,9 @@ tabstop_set(char_u *var, int **array)
 	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
 	    {
 		if (cp != end)
-		    emsg((char_u *)_(e_positive));
+		    EMSG(_(e_positive));
 		else
-		    emsg((char_u *)_(e_invarg));
+		    EMSG(_(e_invarg));
 		return FALSE;
 	    }
 	}
@@ -12891,7 +12891,7 @@ tabstop_set(char_u *var, int **array)
 	    ++valcount;
 	    continue;
 	}
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return FALSE;
     }
 

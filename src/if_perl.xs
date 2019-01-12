@@ -998,7 +998,7 @@ ex_perl(exarg_T *eap)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    emsg((char_u *)_(e_noperl));
+	    EMSG(_(e_noperl));
 	    vim_free(script);
 	    return;
 	}
@@ -1025,7 +1025,7 @@ ex_perl(exarg_T *eap)
 	safe = perl_get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	if (safe == NULL || !SvTRUE(safe))
-	    emsg((char_u *)_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
+	    EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
 	else
 # endif
 	{
@@ -1286,7 +1286,7 @@ do_perleval(char_u *str, typval_T *rettv)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    emsg((char_u *)_(e_noperl));
+	    EMSG(_(e_noperl));
 	    return;
 	}
 #endif
@@ -1304,7 +1304,7 @@ do_perleval(char_u *str, typval_T *rettv)
 	    safe = get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	    if (safe == NULL || !SvTRUE(safe))
-		emsg((char_u *)_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
+		EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
 	    else
 # endif
 	    {
@@ -1356,7 +1356,7 @@ ex_perldo(exarg_T *eap)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    emsg((char_u *)_(e_noperl));
+	    EMSG(_(e_noperl));
 	    return;
 	}
 #endif

@@ -582,7 +582,7 @@ do_perror(char *msg)
 {
     perror(msg);
     ++emsg_silent;
-    emsg((char_u *)msg);
+    EMSG(msg);
     --emsg_silent;
 }
 #endif
@@ -957,7 +957,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -4080,7 +4080,7 @@ do_browse(
 # endif
     {
 	/* TODO: non-GUI file selector here */
-	emsg((char_u *)_("E338: Sorry, no file browser in console mode"));
+	EMSG(_("E338: Sorry, no file browser in console mode"));
 	fname = NULL;
     }
 
@@ -4124,7 +4124,7 @@ tv_nr(typval_T *tvs, int *idxp)
     int		err = FALSE;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg((char_u *)_(e_printf));
+	EMSG(_(e_printf));
     else
     {
 	++*idxp;
@@ -4151,7 +4151,7 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     static char_u   numbuf[NUMBUFLEN];
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg((char_u *)_(e_printf));
+	EMSG(_(e_printf));
     else
     {
 	++*idxp;
@@ -4174,7 +4174,7 @@ tv_float(typval_T *tvs, int *idxp)
     double	f = 0;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg((char_u *)_(e_printf));
+	EMSG(_(e_printf));
     else
     {
 	++*idxp;
@@ -4183,7 +4183,7 @@ tv_float(typval_T *tvs, int *idxp)
 	else if (tvs[idx].v_type == VAR_NUMBER)
 	    f = (double)tvs[idx].vval.v_number;
 	else
-	    emsg((char_u *)_("E807: Expected Float argument for printf()"));
+	    EMSG(_("E807: Expected Float argument for printf()"));
     }
     return f;
 }
@@ -5226,7 +5226,7 @@ vim_vsnprintf_typval(
     }
 
     if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	emsg((char_u *)_("E767: Too many arguments to printf()"));
+	EMSG(_("E767: Too many arguments to printf()"));
 
     /* Return the number of characters formatted (excluding trailing nul
      * character), that is, the number of characters that would have been

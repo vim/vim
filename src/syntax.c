@@ -4650,7 +4650,7 @@ get_syn_options(
 	{
 	    if (!opt->has_cont_list)
 	    {
-		emsg((char_u *)_("E395: contains argument not accepted here"));
+		EMSG(_("E395: contains argument not accepted here"));
 		return NULL;
 	    }
 	    if (get_id_list(&arg, 8, &opt->cont_list, skip) == FAIL)
@@ -4689,7 +4689,7 @@ get_syn_options(
 #ifdef FEAT_CONCEAL
 	    if (!vim_isprintc_strict(*conceal_char))
 	    {
-		emsg((char_u *)_("E844: invalid cchar value"));
+		EMSG(_("E844: invalid cchar value"));
 		return NULL;
 	    }
 #endif
@@ -4705,7 +4705,7 @@ get_syn_options(
 	    {
 		if (opt->sync_idx == NULL)
 		{
-		    emsg((char_u *)_("E393: group[t]here not accepted here"));
+		    EMSG(_("E393: group[t]here not accepted here"));
 		    return NULL;
 		}
 		gname_start = arg;
@@ -4802,7 +4802,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
 	rest = get_group_name(arg, &group_name_end);
 	if (rest == NULL)
 	{
-	    emsg((char_u *)_("E397: Filename required"));
+	    EMSG(_("E397: Filename required"));
 	    return;
 	}
 	sgl_id = syn_check_cluster(arg, (int)(group_name_end - arg));
@@ -4838,7 +4838,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
      */
     if (running_syn_inc_tag >= MAX_SYN_INC_TAG)
     {
-	emsg((char_u *)_("E847: Too many syntax includes"));
+	EMSG(_("E847: Too many syntax includes"));
 	return;
     }
     prev_syn_inc_tag = current_syn_inc_tag;
@@ -5578,7 +5578,7 @@ syn_add_cluster(char_u *name)
     len = curwin->w_s->b_syn_clusters.ga_len;
     if (len >= MAX_CLUSTER_ID)
     {
-	emsg((char_u *)_("E848: Too many syntax clusters"));
+	EMSG(_("E848: Too many syntax clusters"));
 	vim_free(name);
 	return 0;
     }
@@ -5680,7 +5680,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
     }
 
     if (!got_clstr)
-	emsg((char_u *)_("E400: No cluster specified"));
+	EMSG(_("E400: No cluster specified"));
     if (rest == NULL || !ends_excmd(*rest))
 	semsg(_(e_invarg2), arg);
 }
@@ -5885,7 +5885,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	    }
 	    if (curwin->w_s->b_syn_linecont_pat != NULL)
 	    {
-		emsg((char_u *)_("E403: syntax sync: line continuations pattern specified twice"));
+		EMSG(_("E403: syntax sync: line continuations pattern specified twice"));
 		finished = TRUE;
 		break;
 	    }
@@ -7158,7 +7158,7 @@ init_highlight(
 	static int	recursive = 0;
 
 	if (recursive >= 5)
-	    emsg((char_u *)_("E679: recursive loop loading syncolor.vim"));
+	    EMSG(_("E679: recursive loop loading syncolor.vim"));
 	else
 	{
 	    ++recursive;
@@ -7458,7 +7458,7 @@ do_highlight(
 				   && hl_has_settings(from_id - 1, dodefault))
 	    {
 		if (sourcing_name == NULL && !dodefault)
-		    emsg((char_u *)_("E414: group has settings, highlight link ignored"));
+		    EMSG(_("E414: group has settings, highlight link ignored"));
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
 #ifdef FEAT_EVAL
@@ -7831,7 +7831,7 @@ do_highlight(
 		    color = cterm_normal_fg_color - 1;
 		else
 		{
-		    emsg((char_u *)_("E419: FG color unknown"));
+		    EMSG(_("E419: FG color unknown"));
 		    error = TRUE;
 		    break;
 		}
@@ -7842,7 +7842,7 @@ do_highlight(
 		    color = cterm_normal_bg_color - 1;
 		else
 		{
-		    emsg((char_u *)_("E420: BG color unknown"));
+		    EMSG(_("E420: BG color unknown"));
 		    error = TRUE;
 		    break;
 		}
@@ -8827,7 +8827,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	 */
 	if (recursive)
 	{
-	    emsg((char_u *)_("E424: Too many different highlighting attributes in use"));
+	    EMSG(_("E424: Too many different highlighting attributes in use"));
 	    return 0;
 	}
 	recursive = TRUE;
@@ -9716,7 +9716,7 @@ syn_add_group(char_u *name)
     {
 	if (!vim_isprintc(*p))
 	{
-	    emsg((char_u *)_("E669: Unprintable character in group name"));
+	    EMSG(_("E669: Unprintable character in group name"));
 	    vim_free(name);
 	    return 0;
 	}
@@ -9741,7 +9741,7 @@ syn_add_group(char_u *name)
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
     {
-	emsg((char_u *)_("E849: Too many highlight and syntax groups"));
+	EMSG(_("E849: Too many highlight and syntax groups"));
 	vim_free(name);
 	return 0;
     }

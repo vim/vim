@@ -920,7 +920,7 @@ alloc_check(unsigned size)
     {
 	/* Don't hide this message */
 	emsg_silent = 0;
-	emsg((char_u *)_("E340: Line is becoming too long"));
+	EMSG(_("E340: Line is becoming too long"));
 	return NULL;
     }
 #endif
@@ -3286,7 +3286,7 @@ call_shell(char_u *cmd, int opt)
 
     if (*p_sh == NUL)
     {
-	emsg((char_u *)_(e_shellempty));
+	EMSG(_(e_shellempty));
 	retval = -1;
     }
     else
@@ -4385,7 +4385,7 @@ vim_findfile_init(
 	{
 	    if (len + 5 >= MAXPATHL)
 	    {
-		emsg((char_u *)_(e_pathtoolong));
+		EMSG(_(e_pathtoolong));
 		break;
 	    }
 	    if (STRNCMP(wc_part, "**", 2) == 0)
@@ -4436,7 +4436,7 @@ vim_findfile_init(
     if (STRLEN(search_ctx->ffsc_start_dir)
 			  + STRLEN(search_ctx->ffsc_fix_path) + 3 >= MAXPATHL)
     {
-	emsg((char_u *)_(e_pathtoolong));
+	EMSG(_(e_pathtoolong));
 	goto error_return;
     }
     STRCPY(ff_expand_buffer, search_ctx->ffsc_start_dir);

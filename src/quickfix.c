@@ -335,7 +335,7 @@ scanf_fmt_to_regpat(
 		    // skip ;
 		if (efmp == efm + len)
 		{
-		    emsg((char_u *)_("E374: Missing ] in format string"));
+		    EMSG(_("E374: Missing ] in format string"));
 		    return NULL;
 		}
 	    }
@@ -572,7 +572,7 @@ parse_efm_option(char_u *efm)
     }
 
     if (fmt_first == NULL)	// nothing found
-	emsg((char_u *)_("E378: 'errorformat' contains no pattern"));
+	EMSG(_("E378: 'errorformat' contains no pattern"));
 
     goto parse_efm_end;
 
@@ -1271,7 +1271,7 @@ qf_parse_dir_pfx(int idx, qffields_T *fields, qf_list_T *qfl)
     {
 	if (*fields->namebuf == NUL)
 	{
-	    emsg((char_u *)_("E379: Missing or empty directory name"));
+	    EMSG(_("E379: Missing or empty directory name"));
 	    return QF_FAIL;
 	}
 	qfl->qf_directory =
@@ -1751,7 +1751,7 @@ qf_init_ext(
 	retval = qfl->qf_count;
 	goto qf_init_end;
     }
-    emsg((char_u *)_(e_readerrf));
+    EMSG(_(e_readerrf));
 error2:
     if (!adding)
     {
@@ -1968,7 +1968,7 @@ decr_quickfix_busy(void)
 #ifdef ABORT_ON_INTERNAL_ERROR
     if (quickfix_busy < 0)
     {
-	emsg((char_u *)"quickfix_busy has become negative");
+	EMSG("quickfix_busy has become negative");
 	abort();
     }
 #endif
@@ -2635,7 +2635,7 @@ get_nth_valid_entry(
 	    qf_idx = prev_index;
 	    if (err != NULL)
 	    {
-		emsg((char_u *)_(err));
+		EMSG(_(err));
 		return NULL;
 	    }
 	    break;
@@ -3041,14 +3041,14 @@ qf_jump_edit_buffer(
     // present.
     if (qfl_type == QFLT_LOCATION && !win_valid_any_tab(oldwin))
     {
-	emsg((char_u *)_("E924: Current window was closed"));
+	EMSG(_("E924: Current window was closed"));
 	*opened_window = FALSE;
 	return NOTDONE;
     }
 
     if (qfl_type == QFLT_QUICKFIX && !qflist_valid(NULL, save_qfid))
     {
-	emsg((char_u *)_("E925: Current quickfix was changed"));
+	EMSG(_("E925: Current quickfix was changed"));
 	return NOTDONE;
     }
 
@@ -3056,9 +3056,9 @@ qf_jump_edit_buffer(
 	    || !is_qf_entry_present(qfl, qf_ptr))
     {
 	if (qfl_type == QFLT_QUICKFIX)
-	    emsg((char_u *)_("E925: Current quickfix was changed"));
+	    EMSG(_("E925: Current quickfix was changed"));
 	else
-	    emsg((char_u *)_(e_loc_list_changed));
+	    EMSG(_(e_loc_list_changed));
 	return NOTDONE;
     }
 
@@ -3315,7 +3315,7 @@ qf_jump_newwin(qf_info_T	*qi,
 
     if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
     {
-	emsg((char_u *)_(e_quickfix));
+	EMSG(_(e_quickfix));
 	return;
     }
 
@@ -3497,14 +3497,14 @@ qf_list(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
 
     if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
     {
-	emsg((char_u *)_(e_quickfix));
+	EMSG(_(e_quickfix));
 	return;
     }
     if (*arg == '+')
@@ -3514,7 +3514,7 @@ qf_list(exarg_T *eap)
     }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
-	emsg((char_u *)_(e_trailing));
+	EMSG(_(e_trailing));
 	return;
     }
     qfl = &qi->qf_lists[qi->qf_curlist];
@@ -3643,7 +3643,7 @@ qf_age(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
@@ -3658,7 +3658,7 @@ qf_age(exarg_T *eap)
 	{
 	    if (qi->qf_curlist == 0)
 	    {
-		emsg((char_u *)_("E380: At bottom of quickfix stack"));
+		EMSG(_("E380: At bottom of quickfix stack"));
 		break;
 	    }
 	    --qi->qf_curlist;
@@ -3667,7 +3667,7 @@ qf_age(exarg_T *eap)
 	{
 	    if (qi->qf_curlist >= qi->qf_listcount - 1)
 	    {
-		emsg((char_u *)_("E381: At top of quickfix stack"));
+		EMSG(_("E381: At top of quickfix stack"));
 		break;
 	    }
 	    ++qi->qf_curlist;
@@ -3870,7 +3870,7 @@ qf_view_result(int split)
 
     if (qf_list_empty(qi, qi->qf_curlist))
     {
-	emsg((char_u *)_(e_quickfix));
+	EMSG(_(e_quickfix));
 	return;
     }
 
@@ -4081,7 +4081,7 @@ ex_copen(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
@@ -4163,7 +4163,7 @@ ex_cbottom(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
@@ -4609,7 +4609,7 @@ get_mef_name(void)
     {
 	name = vim_tempname('e', FALSE);
 	if (name == NULL)
-	    emsg((char_u *)_(e_notmp));
+	    EMSG(_(e_notmp));
 	return name;
     }
 
@@ -4941,7 +4941,7 @@ ex_cc(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
@@ -4992,7 +4992,7 @@ ex_cnext(exarg_T *eap)
 	qi = GET_LOC_LIST(curwin);
 	if (qi == NULL)
 	{
-	    emsg((char_u *)_(e_loclist));
+	    EMSG(_(e_loclist));
 	    return;
 	}
     }
@@ -5148,7 +5148,7 @@ vgr_init_regmatch(regmmatch_T *regmatch, char_u *s)
 	// Pattern is empty, use last search pattern.
 	if (last_search_pat() == NULL)
 	{
-	    emsg((char_u *)_(e_noprevre));
+	    EMSG(_(e_noprevre));
 	    return;
 	}
 	regmatch->regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
@@ -5238,7 +5238,7 @@ vgr_qflist_valid(
 	if (wp != NULL)
 	{
 	    // An autocmd has freed the location list.
-	    emsg((char_u *)_(e_loc_list_changed));
+	    EMSG(_(e_loc_list_changed));
 	    return FALSE;
 	}
 	else
@@ -5417,7 +5417,7 @@ ex_vimgrep(exarg_T *eap)
     p = skip_vimgrep_pat(eap->arg, &s, &flags);
     if (p == NULL)
     {
-	emsg((char_u *)_(e_invalpat));
+	EMSG(_(e_invalpat));
 	goto theend;
     }
 
@@ -5428,7 +5428,7 @@ ex_vimgrep(exarg_T *eap)
     p = skipwhite(p);
     if (*p == NUL)
     {
-	emsg((char_u *)_("E683: File name missing or invalid pattern"));
+	EMSG(_("E683: File name missing or invalid pattern"));
 	goto theend;
     }
 
@@ -5444,7 +5444,7 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     if (fcount == 0)
     {
-	emsg((char_u *)_(e_nomatch));
+	EMSG(_(e_nomatch));
 	goto theend;
     }
 
@@ -6864,9 +6864,9 @@ ex_cbuffer(exarg_T *eap)
     else if (*skipwhite(skipdigits(eap->arg)) == NUL)
 	buf = buflist_findnr(atoi((char *)eap->arg));
     if (buf == NULL)
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
     else if (buf->b_ml.ml_mfp == NULL)
-	emsg((char_u *)_("E681: Buffer is not loaded"));
+	EMSG(_("E681: Buffer is not loaded"));
     else
     {
 	if (eap->addr_count == 0)
@@ -6876,7 +6876,7 @@ ex_cbuffer(exarg_T *eap)
 	}
 	if (eap->line1 < 1 || eap->line1 > buf->b_ml.ml_line_count
 		|| eap->line2 < 1 || eap->line2 > buf->b_ml.ml_line_count)
-	    emsg((char_u *)_(e_invrange));
+	    EMSG(_(e_invrange));
 	else
 	{
 	    char_u *qf_title = qf_cmdtitle(*eap->cmdlinep);
@@ -7011,7 +7011,7 @@ ex_cexpr(exarg_T *eap)
 	    decr_quickfix_busy();
 	}
 	else
-	    emsg((char_u *)_("E777: String or List expected"));
+	    EMSG(_("E777: String or List expected"));
 cleanup:
 	free_tv(tv);
     }

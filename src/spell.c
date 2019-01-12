@@ -717,7 +717,7 @@ find_word(matchinf_T *mip, int mode)
 	    if (endidxcnt == MAXWLEN)
 	    {
 		/* Must be a corrupted spell file. */
-		emsg((char_u *)_(e_format));
+		EMSG(_(e_format));
 		return;
 	    }
 	    endlen[endidxcnt] = wlen;
@@ -1537,7 +1537,7 @@ no_spell_checking(win_T *wp)
     if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
 					 || wp->w_s->b_langp.ga_len == 0)
     {
-	emsg((char_u *)_("E756: Spell checking is not enabled"));
+	EMSG(_("E756: Spell checking is not enabled"));
 	return TRUE;
     }
     return FALSE;
@@ -3614,7 +3614,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 
     if (repl_from == NULL || repl_to == NULL)
     {
-	emsg((char_u *)_("E752: No previous spell replacement"));
+	EMSG(_("E752: No previous spell replacement"));
 	return;
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));

@@ -101,7 +101,7 @@ do_window(
     do { \
 	if (cmdwin_type != 0) \
 	{ \
-	    emsg((char_u *)_(e_cmdwin)); \
+	    EMSG(_(e_cmdwin)); \
 	    return; \
 	} \
     } while (0)
@@ -156,7 +156,7 @@ do_window(
 					? curwin->w_alt_fnum : Prenum) == NULL)
 		{
 		    if (Prenum == 0)
-			emsg((char_u *)_(e_noalt));
+			EMSG(_(e_noalt));
 		    else
 			semsg(_("E92: Buffer %ld not found"), Prenum);
 		    break;
@@ -220,7 +220,7 @@ newwindow:
 		    if (wp->w_p_pvw)
 			break;
 		if (wp == NULL)
-		    emsg((char_u *)_("E441: There is no preview window"));
+		    EMSG(_("E441: There is no preview window"));
 		else
 		    win_goto(wp);
 		break;
@@ -739,7 +739,7 @@ win_split(int size, int flags)
     flags |= cmdmod.split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
     {
-	emsg((char_u *)_("E442: Can't split topleft and botright at the same time"));
+	EMSG(_("E442: Can't split topleft and botright at the same time"));
 	return FAIL;
     }
 
@@ -794,7 +794,7 @@ win_split_ins(
     {
 	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
 	{
-	    emsg((char_u *)_(e_noroom));
+	    EMSG(_(e_noroom));
 	    return FAIL;
 	}
 	need_status = STATUS_HEIGHT;
@@ -852,7 +852,7 @@ win_split_ins(
 	}
 	if (available < needed && new_wp == NULL)
 	{
-	    emsg((char_u *)_(e_noroom));
+	    EMSG(_(e_noroom));
 	    return FAIL;
 	}
 	if (new_size == 0)
@@ -935,7 +935,7 @@ win_split_ins(
 	}
 	if (available < needed && new_wp == NULL)
 	{
-	    emsg((char_u *)_(e_noroom));
+	    EMSG(_(e_noroom));
 	    return FAIL;
 	}
 	oldwin_height = oldwin->w_height;
@@ -1606,7 +1606,7 @@ win_rotate(int upwards, int count)
     FOR_ALL_FRAMES(frp, curwin->w_frame->fr_parent->fr_child)
 	if (frp->fr_win == NULL)
 	{
-	    emsg((char_u *)_("E443: Cannot rotate when another window is split"));
+	    EMSG(_("E443: Cannot rotate when another window is split"));
 	    return;
 	}
 
@@ -2309,7 +2309,7 @@ win_close(win_T *win, int free_buf)
 
     if (last_window())
     {
-	emsg((char_u *)_("E444: Cannot close last window"));
+	EMSG(_("E444: Cannot close last window"));
 	return FAIL;
     }
 
@@ -2318,12 +2318,12 @@ win_close(win_T *win, int free_buf)
 	return FAIL; /* window is already being closed */
     if (win == aucmd_win)
     {
-	emsg((char_u *)_("E813: Cannot close autocmd window"));
+	EMSG(_("E813: Cannot close autocmd window"));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
     {
-	emsg((char_u *)_("E814: Cannot close window, only autocmd window would remain"));
+	EMSG(_("E814: Cannot close window, only autocmd window would remain"));
 	return FAIL;
     }
 
@@ -3419,7 +3419,7 @@ close_others(
     }
 
     if (message && !ONE_WINDOW)
-	emsg((char_u *)_("E445: Other window contains changes"));
+	EMSG(_("E445: Other window contains changes"));
 }
 
 /*
@@ -5447,7 +5447,7 @@ win_setminheight(void)
 	--p_wmh;
 	if (first)
 	{
-	    emsg((char_u *)_(e_noroom));
+	    EMSG(_(e_noroom));
 	    first = FALSE;
 	}
     }
@@ -5473,7 +5473,7 @@ win_setminwidth(void)
 	--p_wmw;
 	if (first)
 	{
-	    emsg((char_u *)_(e_noroom));
+	    EMSG(_(e_noroom));
 	    first = FALSE;
 	}
     }
@@ -5950,7 +5950,7 @@ command_height(void)
 	    {
 		if (frp == NULL)
 		{
-		    emsg((char_u *)_(e_noroom));
+		    EMSG(_(e_noroom));
 		    p_ch = old_p_ch;
 		    curtab->tp_ch_used = p_ch;
 		    cmdline_row = Rows - p_ch;
@@ -6041,7 +6041,7 @@ last_status_rec(frame_T *fr, int statusline)
 	    {
 		if (fp == topframe)
 		{
-		    emsg((char_u *)_(e_noroom));
+		    EMSG(_(e_noroom));
 		    return;
 		}
 		/* In a column of frames: go to frame above.  If already at
@@ -6170,7 +6170,7 @@ file_name_in_line(
     if (*ptr == NUL)		/* nothing found */
     {
 	if (options & FNAME_MESS)
-	    emsg((char_u *)_("E446: No file name under cursor"));
+	    EMSG(_("E446: No file name under cursor"));
 	return NULL;
     }
 
@@ -6900,7 +6900,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg((char_u *)_("List or number required"));
+		EMSG(_("List or number required"));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)

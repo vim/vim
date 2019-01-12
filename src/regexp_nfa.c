@@ -1370,7 +1370,7 @@ nfa_regatom(void)
 		 * Generated as "\%(pattern\)". */
 		if (reg_prev_sub == NULL)
 		{
-		    emsg((char_u *)_(e_nopresub));
+		    EMSG(_(e_nopresub));
 		    return FAIL;
 		}
 		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
@@ -1577,7 +1577,7 @@ nfa_regatom(void)
 #if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 			    if (n > INT_MAX)
 			    {
-				emsg((char_u *)_("E951: \\% value too large"));
+				EMSG(_("E951: \\% value too large"));
 				return FAIL;
 			    }
 #endif
@@ -2928,7 +2928,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    emsg((char_u *)_("E874: (NFA) Could not pop the stack!"));
+    EMSG(_("E874: (NFA) Could not pop the stack!"));
 }
 
 /*
@@ -5146,7 +5146,7 @@ recursive_regmatch(
 	    *listids = (int *)lalloc(sizeof(int) * prog->nstate, TRUE);
 	    if (*listids == NULL)
 	    {
-		emsg((char_u *)_("E878: (NFA) Could not allocate memory for branch traversal!"));
+		EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
 		return 0;
 	    }
 	    *listids_len = prog->nstate;
@@ -5201,7 +5201,7 @@ recursive_regmatch(
     }
     else
     {
-	emsg((char_u *)_(e_log_open_failed));
+	EMSG(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -5549,7 +5549,7 @@ nfa_regmatch(
     }
     else
     {
-	emsg((char_u *)_(e_log_open_failed));
+	EMSG(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -6961,7 +6961,7 @@ nfa_regtry(
 	fclose(f);
     }
     else
-	emsg((char_u *)"Could not open temporary log file for writing");
+	EMSG("Could not open temporary log file for writing");
 #endif
 
     clear_sub(&subs.norm);
@@ -7094,7 +7094,7 @@ nfa_regexec_both(
     /* Be paranoid... */
     if (prog == NULL || line == NULL)
     {
-	emsg((char_u *)_(e_null));
+	EMSG(_(e_null));
 	goto theend;
     }
 

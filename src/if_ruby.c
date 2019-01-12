@@ -885,7 +885,7 @@ void ex_rubydo(exarg_T *eap)
 	    {
 		if (TYPE(line) != T_STRING)
 		{
-		    emsg((char_u *)_("E265: $_ must be an instance of String"));
+		    EMSG(_("E265: $_ must be an instance of String"));
 		    return;
 		}
 		ml_replace(i, (char_u *) StringValuePtr(line), 1);
@@ -979,7 +979,7 @@ static int ensure_ruby_initialized(void)
 	}
 	else
 	{
-	    emsg((char_u *)_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
+	    EMSG(_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
 	    return 0;
 	}
 #endif
@@ -1013,19 +1013,19 @@ static void error_print(int state)
     switch (state)
     {
     case TAG_RETURN:
-	emsg((char_u *)_("E267: unexpected return"));
+	EMSG(_("E267: unexpected return"));
 	break;
     case TAG_NEXT:
-	emsg((char_u *)_("E268: unexpected next"));
+	EMSG(_("E268: unexpected next"));
 	break;
     case TAG_BREAK:
-	emsg((char_u *)_("E269: unexpected break"));
+	EMSG(_("E269: unexpected break"));
 	break;
     case TAG_REDO:
-	emsg((char_u *)_("E270: unexpected redo"));
+	EMSG(_("E270: unexpected redo"));
 	break;
     case TAG_RETRY:
-	emsg((char_u *)_("E271: retry outside of rescue clause"));
+	EMSG(_("E271: retry outside of rescue clause"));
 	break;
     case TAG_RAISE:
     case TAG_FATAL:
@@ -1038,7 +1038,7 @@ static void error_print(int state)
 	einfo = rb_obj_as_string(error);
 	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
 	{
-	    emsg((char_u *)_("E272: unhandled exception"));
+	    EMSG(_("E272: unhandled exception"));
 	}
 	else
 	{
@@ -1050,7 +1050,7 @@ static void error_print(int state)
 		     RSTRING_PTR(epath), RSTRING_PTR(einfo));
 	    p = strchr(buff, '\n');
 	    if (p) *p = '\0';
-	    emsg((char_u *)buff);
+	    EMSG(buff);
 	}
 
 	attr = syn_name2attr((char_u *)"Error");
@@ -1066,7 +1066,7 @@ static void error_print(int state)
 	break;
     default:
 	vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
-	emsg((char_u *)buff);
+	EMSG(buff);
 	break;
     }
 }

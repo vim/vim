@@ -2218,18 +2218,18 @@ putdigraph(char_u *str)
 	char2 = *str++;
 	if (char2 == 0)
 	{
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	    return;
 	}
 	if (char1 == ESC || char2 == ESC)
 	{
-	    emsg((char_u *)_("E104: Escape not allowed in digraph"));
+	    EMSG(_("E104: Escape not allowed in digraph"));
 	    return;
 	}
 	str = skipwhite(str);
 	if (!VIM_ISDIGIT(*str))
 	{
-	    emsg((char_u *)_(e_number_exp));
+	    EMSG(_(e_number_exp));
 	    return;
 	}
 	n = getdigits(&str);
@@ -2513,7 +2513,7 @@ ex_loadkeymap(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg((char_u *)_("E105: Using :loadkeymap not in a sourced file"));
+	EMSG(_("E105: Using :loadkeymap not in a sourced file"));
 	return;
     }
 
@@ -2552,7 +2552,7 @@ ex_loadkeymap(exarg_T *eap)
 		    || *kp->from == NUL || *kp->to == NUL)
 	    {
 		if (kp->to != NULL && *kp->to == NUL)
-		    emsg((char_u *)_("E791: Empty keymap entry"));
+		    EMSG(_("E791: Empty keymap entry"));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

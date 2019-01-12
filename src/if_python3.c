@@ -634,7 +634,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    emsg((char_u *)_("E837: This Vim cannot execute :py3 after using :python"));
+	    EMSG(_("E837: This Vim cannot execute :py3 after using :python"));
 	return FAIL;
     }
 # endif
@@ -864,7 +864,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    emsg((char_u *)_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif

@@ -255,7 +255,7 @@ cause_errthrow(
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
-		emsg((char_u *)_(e_outofmem));
+		EMSG(_(e_outofmem));
 	    }
 	    else
 	    {
@@ -264,7 +264,7 @@ cause_errthrow(
 		{
 		    vim_free(elem);
 		    suppress_errthrow = TRUE;
-		    emsg((char_u *)_(e_outofmem));
+		    EMSG(_(e_outofmem));
 		}
 		else
 		{
@@ -513,7 +513,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 		&& (((char_u *)value)[3] == NUL || ((char_u *)value)[3] == ':'
 		    || ((char_u *)value)[3] == '('))
 	{
-	    emsg((char_u *)_("E608: Cannot :throw exceptions with 'Vim' prefix"));
+	    EMSG(_("E608: Cannot :throw exceptions with 'Vim' prefix"));
 	    goto fail;
 	}
     }
@@ -572,7 +572,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 nomem:
     vim_free(excp);
     suppress_errthrow = TRUE;
-    emsg((char_u *)_(e_outofmem));
+    EMSG(_(e_outofmem));
 fail:
     current_exception = NULL;
     return FAIL;
@@ -1290,7 +1290,7 @@ ex_throw(exarg_T *eap)
 	value = eval_to_string_skip(arg, &eap->nextcmd, eap->skip);
     else
     {
-	emsg((char_u *)_(e_argreq));
+	EMSG(_(e_argreq));
 	value = NULL;
     }
 
@@ -1442,7 +1442,7 @@ ex_try(exarg_T *eap)
 
 		elem = (eslist_T *)alloc((unsigned)sizeof(struct eslist_elem));
 		if (elem == NULL)
-		    emsg((char_u *)_(e_outofmem));
+		    EMSG(_(e_outofmem));
 		else
 		{
 		    elem->saved_emsg_silent = emsg_silent;
@@ -1536,7 +1536,7 @@ ex_catch(exarg_T *eap)
 	{
 	    if (end != NULL && *end != NUL && !ends_excmd(*skipwhite(end + 1)))
 	    {
-		emsg((char_u *)_(e_trailing));
+		EMSG(_(e_trailing));
 		return;
 	    }
 
@@ -2263,7 +2263,7 @@ rewind_conditionals(
     void
 ex_endfunction(exarg_T *eap UNUSED)
 {
-    emsg((char_u *)_("E193: :endfunction not inside a function"));
+    EMSG(_("E193: :endfunction not inside a function"));
 }
 
 /*

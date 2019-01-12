@@ -5468,7 +5468,7 @@ gui_mch_init(void)
 #endif
 	if (s_hwnd == NULL)
 	{
-	    emsg((char_u *)_("E672: Unable to open window inside MDI application"));
+	    EMSG(_("E672: Unable to open window inside MDI application"));
 	    mch_exit(2);
 	}
     }
@@ -8671,7 +8671,7 @@ gui_mch_register_sign(char_u *signfile)
     {
 	if (sign.hImage)
 	    close_signicon_image(&sign);
-	emsg((char_u *)_(e_signdata));
+	EMSG(_(e_signdata));
     }
     return (void *)psign;
 
@@ -9025,7 +9025,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg((char_u *)_("E232: Cannot create BalloonEval with both message and callback"));
+	IEMSG(_("E232: Cannot create BalloonEval with both message and callback"));
 	return NULL;
     }
 

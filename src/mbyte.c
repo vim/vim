@@ -199,7 +199,7 @@ xim_log(char *s, ...)
 	fd = mch_fopen("xim.log", "w");
 	if (fd == NULL)
 	{
-	    emsg((char_u *)"Cannot open xim.log");
+	    EMSG("Cannot open xim.log");
 	    fd = (FILE *)-1;
 	    return;
 	}
@@ -6028,7 +6028,7 @@ xim_set_preedit(void)
 					XNLineSpace, line_space,
 					NULL);
 	if (XSetICValues(xic, XNPreeditAttributes, attr_list, NULL))
-	    emsg((char_u *)_("E284: Cannot set IC values"));
+	    EMSG(_("E284: Cannot set IC values"));
 	XFree(attr_list);
     }
 }
@@ -6187,7 +6187,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    emsg((char_u *)_("E286: Failed to open input method"));
+	    EMSG(_("E286: Failed to open input method"));
 	    verbose_leave();
 	}
 	return FALSE;
@@ -6200,13 +6200,13 @@ xim_real_init(Window x11_window, Display *x11_display)
 	destroy_cb.callback = xim_destroy_cb;
 	destroy_cb.client_data = NULL;
 	if (XSetIMValues(xim, XNDestroyCallback, &destroy_cb, NULL))
-	    emsg((char_u *)_("E287: Warning: Could not set destroy callback to IM"));
+	    EMSG(_("E287: Warning: Could not set destroy callback to IM"));
     }
 #  endif
 
     if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL) || !xim_styles)
     {
-	emsg((char_u *)_("E288: input method doesn't support any style"));
+	EMSG(_("E288: input method doesn't support any style"));
 	XCloseIM(xim);
 	return FALSE;
     }
@@ -6265,7 +6265,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    emsg((char_u *)_("E289: input method doesn't support my preedit type"));
+	    EMSG(_("E289: input method doesn't support my preedit type"));
 	    verbose_leave();
 	}
 	XCloseIM(xim);
@@ -6329,7 +6329,7 @@ xim_real_init(Window x11_window, Display *x11_display)
     else
     {
 	if (!is_not_a_term())
-	    emsg((char_u *)_(e_xim));
+	    EMSG(_(e_xim));
 	XCloseIM(xim);
 	return FALSE;
     }

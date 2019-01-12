@@ -237,7 +237,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	/* buffer has already been read */
     {
-	iemsg((char_u *)_("E222: Add to read buffer"));
+	IEMSG(_("E222: Add to read buffer"));
 	return;
     }
     else if (buf->bh_index != 0)
@@ -998,7 +998,7 @@ ins_typebuf(
 	newlen = typebuf.tb_len + addlen + newoff + 4 * (MAXMAPLEN + 4);
 	if (newlen < 0)		    /* string is getting too long */
 	{
-	    emsg((char_u *)_(e_toocompl));    /* also calls flush_buffers */
+	    EMSG(_(e_toocompl));    /* also calls flush_buffers */
 	    setcursor();
 	    return FAIL;
 	}
@@ -1431,7 +1431,7 @@ openscript(
 {
     if (curscript + 1 == NSCRIPT)
     {
-	emsg((char_u *)_(e_nesting));
+	EMSG(_(e_nesting));
 	return;
     }
 #ifdef FEAT_EVAL
@@ -2508,7 +2508,7 @@ vgetorpeek(int advance)
 			 */
 			if (++mapdepth >= p_mmd)
 			{
-			    emsg((char_u *)_("E223: recursive mapping"));
+			    EMSG(_("E223: recursive mapping"));
 			    if (State & CMDLINE)
 				redrawcmdline();
 			    else
@@ -3892,7 +3892,7 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 #endif
@@ -4920,7 +4920,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			iemsg((char_u *)_("E228: makemap: Illegal mode"));
+			IEMSG(_("E228: makemap: Illegal mode"));
 			return FAIL;
 		}
 		do	/* do this twice if c2 is set, 3 times with c3 */

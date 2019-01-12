@@ -2629,7 +2629,7 @@ SFprepareToReturn(void)
     XtRemoveTimeOut(SFdirModTimerId);
     if (SFchdir(SFstartDir))
     {
-	emsg((char_u *)_("E614: vim_SelFile: can't return to current directory"));
+	EMSG(_("E614: vim_SelFile: can't return to current directory"));
 	SFstatus = SEL_FILE_CANCEL;
     }
 }
@@ -2658,7 +2658,7 @@ vim_SelFile(
 
     if (mch_dirname((char_u *)SFstartDir, MAXPATHL) == FAIL)
     {
-	emsg((char_u *)_("E615: vim_SelFile: can't get current directory"));
+	EMSG(_("E615: vim_SelFile: can't get current directory"));
 	return NULL;
     }
 

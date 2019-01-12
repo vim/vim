@@ -606,7 +606,7 @@ check_mark(pos_T *pos)
 {
     if (pos == NULL)
     {
-	emsg((char_u *)_(e_umark));
+	EMSG(_(e_umark));
 	return FAIL;
     }
     if (pos->lnum <= 0)
@@ -614,12 +614,12 @@ check_mark(pos_T *pos)
 	/* lnum is negative if mark is in another file can can't get that
 	 * file, error message already give then. */
 	if (pos->lnum == 0)
-	    emsg((char_u *)_(e_marknotset));
+	    EMSG(_(e_marknotset));
 	return FAIL;
     }
     if (pos->lnum > curbuf->b_ml.ml_line_count)
     {
-	emsg((char_u *)_(e_markinval));
+	EMSG(_(e_markinval));
 	return FAIL;
     }
     return OK;
@@ -815,9 +815,9 @@ ex_delmarks(exarg_T *eap)
 	/* clear all marks */
 	clrallmarks(curbuf);
     else if (eap->forceit)
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
     else if (*eap->arg == NUL)
-	emsg((char_u *)_(e_argreq));
+	EMSG(_(e_argreq));
     else
     {
 	/* clear specified marks only */

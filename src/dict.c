@@ -835,7 +835,7 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	emsg((char_u *)_(e_dictreq));
+	EMSG(_(e_dictreq));
 	return;
     }
     if ((d = argvars[0].vval.v_dict) == NULL)

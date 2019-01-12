@@ -1295,7 +1295,7 @@ gui_mch_init_check(void)
     if (app_context == NULL || gui.dpy == NULL)
     {
 	gui.dying = TRUE;
-	emsg((char_u *)_(e_opendisp));
+	EMSG(_(e_opendisp));
 	return FAIL;
     }
     return OK;
@@ -1541,7 +1541,7 @@ gui_mch_init(void)
     }
 
     if (gui.color_approx)
-	emsg((char_u *)_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
+	EMSG(_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
 
 #ifdef FEAT_SUN_WORKSHOP
     if (usingSunWorkShop)
@@ -3326,7 +3326,7 @@ gui_mch_register_sign(char_u *signfile)
 		gui.sign_width = sign->width + 8; */
 	}
 	else
-	    emsg((char_u *)_(e_signdata));
+	    EMSG(_(e_signdata));
     }
 
     return (void *)sign;

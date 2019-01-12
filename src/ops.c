@@ -712,7 +712,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
     /* Don't even try when 'modifiable' is off. */
     if (!curbuf->b_p_ma)
     {
-	emsg((char_u *)_(e_modifiable));
+	EMSG(_(e_modifiable));
 	return;
     }
 
@@ -1218,7 +1218,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    emsg((char_u *)_("E748: No previously used register"));
+	    EMSG(_("E748: No previously used register"));
 	    return FAIL;
 	}
 	regname = execreg_lastc;
@@ -1243,7 +1243,7 @@ do_execreg(
     {
 	if (last_cmdline == NULL)
 	{
-	    emsg((char_u *)_(e_nolastcmd));
+	    EMSG(_(e_nolastcmd));
 	    return FAIL;
 	}
 	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
@@ -1277,7 +1277,7 @@ do_execreg(
 	p = get_last_insert_save();
 	if (p == NULL)
 	{
-	    emsg((char_u *)_(e_noinstext));
+	    EMSG(_(e_noinstext));
 	    return FAIL;
 	}
 	retval = put_in_typebuf(p, FALSE, colon, silent);
@@ -1535,13 +1535,13 @@ get_spec_reg(
 
 	case ':':		/* last command line */
 	    if (last_cmdline == NULL && errmsg)
-		emsg((char_u *)_(e_nolastcmd));
+		EMSG(_(e_nolastcmd));
 	    *argp = last_cmdline;
 	    return TRUE;
 
 	case '/':		/* last search-pattern */
 	    if (last_search_pat() == NULL && errmsg)
-		emsg((char_u *)_(e_noprevre));
+		EMSG(_(e_noprevre));
 	    *argp = last_search_pat();
 	    return TRUE;
 
@@ -1549,7 +1549,7 @@ get_spec_reg(
 	    *argp = get_last_insert_save();
 	    *allocated = TRUE;
 	    if (*argp == NULL && errmsg)
-		emsg((char_u *)_(e_noinstext));
+		EMSG(_(e_noinstext));
 	    return TRUE;
 
 #ifdef FEAT_SEARCHPATH
@@ -1761,7 +1761,7 @@ op_delete(oparg_T *oap)
 
     if (!curbuf->b_p_ma)
     {
-	emsg((char_u *)_(e_modifiable));
+	EMSG(_(e_modifiable));
 	return FAIL;
     }
 
@@ -1884,7 +1884,7 @@ op_delete(oparg_T *oap)
 	    msg_silent = msg_silent_save;
 	    if (n != 'y')
 	    {
-		emsg((char_u *)_(e_abort));
+		EMSG(_(e_abort));
 		return FAIL;
 	    }
 	}
@@ -7052,7 +7052,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    emsg((char_u *)_("E883: search pattern and expression register may not "
+	    EMSG(_("E883: search pattern and expression register may not "
 			"contain two or more lines"));
 	    return;
 	}

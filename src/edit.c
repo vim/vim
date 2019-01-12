@@ -360,7 +360,7 @@ edit(
     /* Don't allow inserting in the sandbox. */
     if (sandbox != 0)
     {
-	emsg((char_u *)_(e_sandbox));
+	EMSG(_(e_sandbox));
 	return FALSE;
     }
 #endif
@@ -368,7 +368,7 @@ edit(
      * caller of getcmdline() may get confused. */
     if (textlock != 0)
     {
-	emsg((char_u *)_(e_secure));
+	EMSG(_(e_secure));
 	return FALSE;
     }
 
@@ -376,7 +376,7 @@ edit(
     /* Don't allow recursive insert mode when busy with completion. */
     if (compl_started || compl_busy || pum_visible())
     {
-	emsg((char_u *)_(e_secure));
+	EMSG(_(e_secure));
 	return FALSE;
     }
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
@@ -4262,14 +4262,14 @@ expand_by_function(
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
-	emsg((char_u *)_(e_complwin));
+	EMSG(_(e_complwin));
 	goto theend;
     }
     curwin->w_cursor = pos;	/* restore the cursor position */
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
-	emsg((char_u *)_(e_compldel));
+	EMSG(_(e_compldel));
 	goto theend;
     }
 
@@ -5587,14 +5587,14 @@ ins_complete(int c, int enable_pum)
 	    State = save_State;
 	    if (curwin_save != curwin || curbuf_save != curbuf)
 	    {
-		emsg((char_u *)_(e_complwin));
+		EMSG(_(e_complwin));
 		return FAIL;
 	    }
 	    curwin->w_cursor = pos;	/* restore the cursor position */
 	    validate_cursor();
 	    if (!EQUAL_POS(curwin->w_cursor, pos))
 	    {
-		emsg((char_u *)_(e_compldel));
+		EMSG(_(e_compldel));
 		return FAIL;
 	    }
 
@@ -7678,7 +7678,7 @@ stuff_inserted(
     ptr = get_last_insert();
     if (ptr == NULL)
     {
-	emsg((char_u *)_(e_noinstext));
+	EMSG(_(e_noinstext));
 	return FAIL;
     }
 

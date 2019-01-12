@@ -969,7 +969,7 @@ write_list(FILE *fd, list_T *list, int binary)
 	    }
 	if (ret == FAIL)
 	{
-	    emsg((char_u *)_(e_write));
+	    EMSG(_(e_write));
 	    break;
 	}
     }

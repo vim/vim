@@ -467,7 +467,7 @@ ex_sort(exarg_T *eap)
 	    s = skip_regexp(p + 1, *p, TRUE, NULL);
 	    if (*s != *p)
 	    {
-		emsg((char_u *)_(e_invalpat));
+		EMSG(_(e_invalpat));
 		goto sortend;
 	    }
 	    *s = NUL;
@@ -476,7 +476,7 @@ ex_sort(exarg_T *eap)
 	    {
 		if (last_search_pat() == NULL)
 		{
-		    emsg((char_u *)_(e_noprevre));
+		    EMSG(_(e_noprevre));
 		    goto sortend;
 		}
 		regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
@@ -498,7 +498,7 @@ ex_sort(exarg_T *eap)
     /* Can only have one of 'n', 'b', 'o' and 'x'. */
     if (format_found > 1)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	goto sortend;
     }
 
@@ -668,7 +668,7 @@ sortend:
     vim_free(sortbuf2);
     vim_regfree(regmatch.regprog);
     if (got_int)
-	emsg((char_u *)_(e_interr));
+	EMSG(_(e_interr));
 }
 
 /*
@@ -725,7 +725,7 @@ ex_retab(exarg_T *eap)
     new_ts = getdigits(&(eap->arg));
     if (new_ts < 0)
     {
-	emsg((char_u *)_(e_positive));
+	EMSG(_(e_positive));
 	return;
     }
     if (new_ts == 0)
@@ -835,7 +835,7 @@ ex_retab(exarg_T *eap)
 	line_breakcheck();
     }
     if (got_int)
-	emsg((char_u *)_(e_interr));
+	EMSG(_(e_interr));
 
 #ifdef FEAT_VARTABS
     // If a single value was given then it can be considered equal to
@@ -909,7 +909,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 
     if (dest >= line1 && dest < line2)
     {
-	emsg((char_u *)_("E134: Cannot move a range of lines into itself"));
+	EMSG(_("E134: Cannot move a range of lines into itself"));
 	return FAIL;
     }
 
@@ -1147,7 +1147,7 @@ do_bang(
 	{
 	    if (prevcmd == NULL)
 	    {
-		emsg((char_u *)_(e_noprev));
+		EMSG(_(e_noprev));
 		vim_free(newcmd);
 		return;
 	    }
@@ -1334,7 +1334,7 @@ do_filter(
 	if ((do_in && (itmp = vim_tempname('i', FALSE)) == NULL)
 		|| (do_out && (otmp = vim_tempname('o', FALSE)) == NULL))
 	{
-	    emsg((char_u *)_(e_notmp));
+	    EMSG(_(e_notmp));
 	    goto filterend;
 	}
 
@@ -1514,7 +1514,7 @@ filterend:
     if (curbuf != old_curbuf)
     {
 	--no_wait_return;
-	emsg((char_u *)_("E135: *Filter* Autocommands must not change current buffer"));
+	EMSG(_("E135: *Filter* Autocommands must not change current buffer"));
     }
     if (itmp != NULL)
 	mch_remove(itmp);
@@ -1874,7 +1874,7 @@ viminfo_error(char *errnum, char *message, char_u *line)
     emsg(IObuff);
     if (++viminfo_errcnt >= 10)
     {
-	emsg((char_u *)_("E136: viminfo: Too many errors, skipping rest of file"));
+	EMSG(_("E136: viminfo: Too many errors, skipping rest of file"));
 	return TRUE;
     }
     return FALSE;
@@ -3127,7 +3127,7 @@ ex_file(exarg_T *eap)
 		|| eap->line2 > 0
 		|| eap->addr_count > 1))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -3205,7 +3205,7 @@ do_write(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_saveas)
 	{
-	    emsg((char_u *)_(e_argreq));
+	    EMSG(_(e_argreq));
 	    goto theend;
 	}
 	other = FALSE;
@@ -3237,7 +3237,7 @@ do_write(exarg_T *eap)
 	{
 	    /* Overwriting a file that is loaded in another buffer is not a
 	     * good idea. */
-	    emsg((char_u *)_(e_bufloaded));
+	    EMSG(_(e_bufloaded));
 	    goto theend;
 	}
     }
@@ -3278,7 +3278,7 @@ do_write(exarg_T *eap)
 	    else
 #endif
 	    {
-		emsg((char_u *)_("E140: Use ! to write partial buffer"));
+		EMSG(_("E140: Use ! to write partial buffer"));
 		goto theend;
 	    }
 	}
@@ -3434,7 +3434,7 @@ check_overwrite(
 	    else
 #endif
 	    {
-		emsg((char_u *)_(e_exists));
+		EMSG(_(e_exists));
 		return FAIL;
 	    }
 	}
@@ -3605,7 +3605,7 @@ not_writing(void)
 {
     if (p_write)
 	return FALSE;
-    emsg((char_u *)_("E142: File not written: Writing is disabled by 'write' option"));
+    EMSG(_("E142: File not written: Writing is disabled by 'write' option"));
     return TRUE;
 }
 
@@ -3651,7 +3651,7 @@ check_readonly(int *forceit, buf_T *buf)
 	else
 #endif
 	if (buf->b_p_ro)
-	    emsg((char_u *)_(e_readonly));
+	    EMSG(_(e_readonly));
 	else
 	    semsg(_("E505: \"%s\" is read-only (add ! to override)"),
 		    buf->b_fname);
@@ -4707,7 +4707,7 @@ ex_z(exarg_T *eap)
     {
 	if (!VIM_ISDIGIT(*x))
 	{
-	    emsg((char_u *)_("E144: non-numeric argument to :z"));
+	    EMSG(_("E144: non-numeric argument to :z"));
 	    return;
 	}
 	else
@@ -4817,7 +4817,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	emsg((char_u *)_("E145: Shell commands not allowed in rvim"));
+	EMSG(_("E145: Shell commands not allowed in rvim"));
 	return TRUE;
     }
     return FALSE;
@@ -4834,7 +4834,7 @@ check_secure(void)
     if (secure)
     {
 	secure = 2;
-	emsg((char_u *)_(e_curdir));
+	EMSG(_(e_curdir));
 	return TRUE;
     }
 #ifdef HAVE_SANDBOX
@@ -4844,7 +4844,7 @@ check_secure(void)
      */
     if (sandbox != 0)
     {
-	emsg((char_u *)_(e_sandbox));
+	EMSG(_(e_sandbox));
 	return TRUE;
     }
 #endif
@@ -4933,7 +4933,7 @@ do_sub(exarg_T *eap)
 				/* don't accept alphanumeric for separator */
 	if (isalpha(*cmd))
 	{
-	    emsg((char_u *)_("E146: Regular expressions can't be delimited by letters"));
+	    EMSG(_("E146: Regular expressions can't be delimited by letters"));
 	    return;
 	}
 	/*
@@ -4946,7 +4946,7 @@ do_sub(exarg_T *eap)
 	    ++cmd;
 	    if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	    {
-		emsg((char_u *)_(e_backslash));
+		EMSG(_(e_backslash));
 		return;
 	    }
 	    if (*cmd != '&')
@@ -4994,7 +4994,7 @@ do_sub(exarg_T *eap)
 	    {
 		if (old_sub == NULL)	/* there is no previous command */
 		{
-		    emsg((char_u *)_(e_nopresub));
+		    EMSG(_(e_nopresub));
 		    return;
 		}
 		sub = old_sub;
@@ -5010,7 +5010,7 @@ do_sub(exarg_T *eap)
     {
 	if (old_sub == NULL)	/* there is no previous command */
 	{
-	    emsg((char_u *)_(e_nopresub));
+	    EMSG(_(e_nopresub));
 	    return;
 	}
 	pat = NULL;		/* search_regcomp() will use previous pattern */
@@ -5137,7 +5137,7 @@ do_sub(exarg_T *eap)
 	i = getdigits(&cmd);
 	if (i <= 0 && !eap->skip && subflags.do_error)
 	{
-	    emsg((char_u *)_(e_zerocount));
+	    EMSG(_(e_zerocount));
 	    return;
 	}
 	eap->line1 = eap->line2;
@@ -5155,7 +5155,7 @@ do_sub(exarg_T *eap)
 	eap->nextcmd = check_nextcmd(cmd);
 	if (eap->nextcmd == NULL)
 	{
-	    emsg((char_u *)_(e_trailing));
+	    EMSG(_(e_trailing));
 	    return;
 	}
     }
@@ -5166,14 +5166,14 @@ do_sub(exarg_T *eap)
     if (!subflags.do_count && !curbuf->b_p_ma)
     {
 	/* Substitution is not allowed in non-'modifiable' buffer */
-	emsg((char_u *)_(e_modifiable));
+	EMSG(_(e_modifiable));
 	return;
     }
 
     if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
-	    emsg((char_u *)_(e_invcmd));
+	    EMSG(_(e_invcmd));
 	return;
     }
 
@@ -5949,7 +5949,7 @@ outofmem:
     else if (!global_busy)
     {
 	if (got_int)		/* interrupted */
-	    emsg((char_u *)_(e_interr));
+	    EMSG(_(e_interr));
 	else if (got_match)	/* did find something but nothing substituted */
 	    MSG("");
 	else if (subflags.do_error)	/* nothing found */
@@ -6018,7 +6018,7 @@ do_sub_msg(
     }
     if (got_int)
     {
-	emsg((char_u *)_(e_interr));
+	EMSG(_(e_interr));
 	return TRUE;
     }
     return FALSE;
@@ -6071,7 +6071,7 @@ ex_global(exarg_T *eap)
 				  || eap->line2 != curbuf->b_ml.ml_line_count))
     {
 	/* will increment global_busy to break out of the loop */
-	emsg((char_u *)_("E147: Cannot do :global recursive with a range"));
+	EMSG(_("E147: Cannot do :global recursive with a range"));
 	return;
     }
 
@@ -6092,7 +6092,7 @@ ex_global(exarg_T *eap)
 	++cmd;
 	if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	{
-	    emsg((char_u *)_(e_backslash));
+	    EMSG(_(e_backslash));
 	    return;
 	}
 	if (*cmd == '&')
@@ -6104,7 +6104,7 @@ ex_global(exarg_T *eap)
     }
     else if (*cmd == NUL)
     {
-	emsg((char_u *)_("E148: Regular expression missing from global"));
+	EMSG(_("E148: Regular expression missing from global"));
 	return;
     }
     else
@@ -6125,7 +6125,7 @@ ex_global(exarg_T *eap)
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
-	emsg((char_u *)_(e_invcmd));
+	EMSG(_(e_invcmd));
 	return;
     }
 
@@ -6366,7 +6366,7 @@ ex_help(exarg_T *eap)
 
 	if (eap->forceit && *arg == NUL && !curbuf->b_help)
 	{
-	    emsg((char_u *)_("E478: Don't panic!"));
+	    EMSG(_("E478: Don't panic!"));
 	    return;
 	}
 

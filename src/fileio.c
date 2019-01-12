@@ -595,7 +595,7 @@ readfile(
 				|| (using_b_fname
 					 && (old_b_fname != curbuf->b_fname)))
 			{
-			    emsg((char_u *)_(e_auchangedbuf));
+			    EMSG(_(e_auchangedbuf));
 			    return FAIL;
 			}
 		    }
@@ -676,7 +676,7 @@ readfile(
 		|| (using_b_ffname && (old_b_ffname != curbuf->b_ffname))
 		|| (using_b_fname && (old_b_fname != curbuf->b_fname))))
 	{
-	    emsg((char_u *)_(e_auchangedbuf));
+	    EMSG(_(e_auchangedbuf));
 	    if (!read_buffer)
 		close(fd);
 	    return FAIL;
@@ -798,9 +798,9 @@ readfile(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (fd < 0)
-		emsg((char_u *)_("E200: *ReadPre autocommands made the file unreadable"));
+		EMSG(_("E200: *ReadPre autocommands made the file unreadable"));
 	    else
-		emsg((char_u *)_("E201: *ReadPre autocommands must not change current buffer"));
+		EMSG(_("E201: *ReadPre autocommands must not change current buffer"));
 	    curbuf->b_p_ro = TRUE;	/* must use "w!" now */
 	    return FAIL;
 	}
@@ -1128,7 +1128,7 @@ retry:
 		    if (fd < 0)
 		    {
 			/* Re-opening the original file failed! */
-			emsg((char_u *)_("E202: Conversion made file unreadable!"));
+			EMSG(_("E202: Conversion made file unreadable!"));
 			error = TRUE;
 			goto failed;
 		    }
@@ -3197,7 +3197,7 @@ buf_write(
     {
 	/* This can happen during startup when there is a stray "w" in the
 	 * vimrc file. */
-	emsg((char_u *)_(e_emptybuf));
+	EMSG(_(e_emptybuf));
 	return FAIL;
     }
 
@@ -3211,7 +3211,7 @@ buf_write(
     /* Avoid a crash for a long name. */
     if (STRLEN(fname) >= MAXPATHL)
     {
-	emsg((char_u *)_(e_longname));
+	EMSG(_(e_longname));
 	return FAIL;
     }
 
@@ -3399,7 +3399,7 @@ buf_write(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
-		emsg((char_u *)_("E676: No matching autocommands for acwrite buffer"));
+		EMSG(_("E676: No matching autocommands for acwrite buffer"));
 
 	    if (nofile_err
 #ifdef FEAT_EVAL
@@ -3434,7 +3434,7 @@ buf_write(
 #ifdef FEAT_EVAL
 	    if (!aborting())
 #endif
-		emsg((char_u *)_("E203: Autocommands deleted or unloaded buffer to be written"));
+		EMSG(_("E203: Autocommands deleted or unloaded buffer to be written"));
 	    return FAIL;
 	}
 
@@ -3457,7 +3457,7 @@ buf_write(
 		{
 		    --no_wait_return;
 		    msg_scroll = msg_save;
-		    emsg((char_u *)_("E204: Autocommand changed number of lines in unexpected way"));
+		    EMSG(_("E204: Autocommand changed number of lines in unexpected way"));
 		    return FAIL;
 		}
 	    }
@@ -5055,7 +5055,7 @@ restore_backup:
 	     * the current backup file becomes the original file
 	     */
 	    if (org == NULL)
-		emsg((char_u *)_("E205: Patchmode: can't save original file"));
+		EMSG(_("E205: Patchmode: can't save original file"));
 	    else if (mch_stat(org, &st) < 0)
 	    {
 		vim_rename(backup, (char_u *)org);
@@ -5077,7 +5077,7 @@ restore_backup:
 		    || (empty_fd = mch_open(org,
 				      O_CREAT | O_EXTRA | O_EXCL | O_NOFOLLOW,
 					perm < 0 ? 0666 : (perm & 0777))) < 0)
-	      emsg((char_u *)_("E206: patchmode: can't touch empty original file"));
+	      EMSG(_("E206: patchmode: can't touch empty original file"));
 	    else
 	      close(empty_fd);
 	}
@@ -5092,7 +5092,7 @@ restore_backup:
      * Remove the backup unless 'backup' option is set
      */
     if (!p_bk && backup != NULL && mch_remove(backup) != 0)
-	emsg((char_u *)_("E207: Can't delete backup file"));
+	EMSG(_("E207: Can't delete backup file"));
 
 #ifdef FEAT_SUN_WORKSHOP
     if (usingSunWorkShop)
@@ -5251,7 +5251,7 @@ set_rw_fname(char_u *fname, char_u *sfname)
     if (curbuf != buf)
     {
 	/* We are in another buffer now, don't do the renaming. */
-	emsg((char_u *)_(e_auchangedbuf));
+	EMSG(_(e_auchangedbuf));
 	return FAIL;
     }
 
@@ -6983,7 +6983,7 @@ buf_check_timestamp(
 	    if (n)
 	    {
 		if (!bufref_valid(&bufref))
-		    emsg((char_u *)_("E246: FileChangedShell autocommand deleted buffer"));
+		    EMSG(_("E246: FileChangedShell autocommand deleted buffer"));
 #ifdef FEAT_EVAL
 		s = get_vim_var_str(VV_FCS_CHOICE);
 		if (STRCMP(s, "reload") == 0 && *reason != 'd')
@@ -8122,7 +8122,7 @@ au_del_group(char_u *name)
     if (i == AUGROUP_ERROR)	/* the group doesn't exist */
 	semsg(_("E367: No such group: \"%s\""), name);
     else if (i == current_augroup)
-	emsg((char_u *)_("E936: Cannot delete the current group"));
+	EMSG(_("E936: Cannot delete the current group"));
     else
     {
 	event_T	event;
@@ -8187,7 +8187,7 @@ do_augroup(char_u *arg, int del_group)
     if (del_group)
     {
 	if (*arg == NUL)
-	    emsg((char_u *)_(e_argreq));
+	    EMSG(_(e_argreq));
 	else
 	    au_del_group(arg);
     }
@@ -8875,7 +8875,7 @@ do_doautocmd(
 
     if (*arg == '*')
     {
-	emsg((char_u *)_("E217: Can't execute autocommands for ALL events"));
+	EMSG(_("E217: Can't execute autocommands for ALL events"));
 	return FAIL;
     }
 
@@ -9460,7 +9460,7 @@ apply_autocmds_group(
      */
     if (nesting == 10)
     {
-	emsg((char_u *)_("E218: autocommand nesting too deep"));
+	EMSG(_("E218: autocommand nesting too deep"));
 	goto BYPASS_AU;
     }
 
@@ -10482,9 +10482,9 @@ file_pat_to_reg_pat(
     if (nested != 0)
     {
 	if (nested < 0)
-	    emsg((char_u *)_("E219: Missing {."));
+	    EMSG(_("E219: Missing {."));
 	else
-	    emsg((char_u *)_("E220: Missing }."));
+	    EMSG(_("E220: Missing }."));
 	VIM_CLEAR(reg_pat);
     }
     return reg_pat;

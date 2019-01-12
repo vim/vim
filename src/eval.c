@@ -301,7 +301,7 @@ eval_init(void)
 	p = &vimvars[i];
 	if (STRLEN(p->vv_name) > 16)
 	{
-	    iemsg((char_u *)"INTERNAL: name too long, increase size of dictitem16_T");
+	    IEMSG("INTERNAL: name too long, increase size of dictitem16_T");
 	    getout(1);
 	}
 	STRCPY(p->vv_di.di_key, p->vv_name);
@@ -448,7 +448,7 @@ var_redir_start(char_u *name, int append)
     /* Catch a bad name early. */
     if (!eval_isnamec1(*name))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return FAIL;
     }
 
@@ -475,9 +475,9 @@ var_redir_start(char_u *name, int append)
 	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    /* Trailing characters are present after the variable name */
-	    emsg((char_u *)_(e_trailing));
+	    EMSG(_(e_trailing));
 	else
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	redir_endp = NULL;  /* don't store a value, only cleanup */
 	var_redir_stop();
 	return FAIL;
@@ -1202,7 +1202,7 @@ ex_let(exarg_T *eap)
 	 * ":let" without "=": list variables
 	 */
 	if (*arg == '[')
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	else if (!ends_excmd(*arg))
 	    /* ":let var1 var2" */
 	    arg = list_arg_vars(eap, arg, &first);
@@ -1288,19 +1288,19 @@ ex_let_vars(
      */
     if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
-	emsg((char_u *)_(e_listreq));
+	EMSG(_(e_listreq));
 	return FAIL;
     }
 
     i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	emsg((char_u *)_("E687: Less targets than List items"));
+	EMSG(_("E687: Less targets than List items"));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	emsg((char_u *)_("E688: More targets than List items"));
+	EMSG(_("E688: More targets than List items"));
 	return FAIL;
     }
 
@@ -1386,7 +1386,7 @@ skip_var_list(
 	    {
 		if (*semicolon == 1)
 		{
-		    emsg((char_u *)_("Double ; in list of variables"));
+		    EMSG(_("Double ; in list of variables"));
 		    return NULL;
 		}
 		*semicolon = 1;
@@ -1534,7 +1534,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		emsg((char_u *)_(e_trailing));
+		EMSG(_(e_trailing));
 		break;
 	    }
 	}
@@ -1654,7 +1654,7 @@ ex_let_one(
 		semsg(_(e_letwrong), op);
 	    else if (endchars != NULL
 			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		emsg((char_u *)_(e_letunexp));
+		EMSG(_(e_letunexp));
 	    else if (!check_secure())
 	    {
 		c1 = name[len];
@@ -1701,7 +1701,7 @@ ex_let_one(
 	p = find_option_end(&arg, &opt_flags);
 	if (p == NULL || (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    emsg((char_u *)_(e_letunexp));
+	    EMSG(_(e_letunexp));
 	else
 	{
 	    long	n;
@@ -1762,7 +1762,7 @@ ex_let_one(
 	    semsg(_(e_letwrong), op);
 	else if (endchars != NULL
 			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    emsg((char_u *)_(e_letunexp));
+	    EMSG(_(e_letunexp));
 	else
 	{
 	    char_u	*ptofree = NULL;
@@ -1799,7 +1799,7 @@ ex_let_one(
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
-		emsg((char_u *)_(e_letunexp));
+		EMSG(_(e_letunexp));
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, op);
@@ -1875,7 +1875,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    emsg((char_u *)_(e_trailing));
+	    EMSG(_(e_trailing));
 	    return NULL;
 	}
 
@@ -1934,7 +1934,7 @@ get_lval(
 	if (lp->ll_range)
 	{
 	    if (!quiet)
-		emsg((char_u *)_("E708: [:] must come last"));
+		EMSG(_("E708: [:] must come last"));
 	    return NULL;
 	}
 
@@ -1947,7 +1947,7 @@ get_lval(
 	    if (len == 0)
 	    {
 		if (!quiet)
-		    emsg((char_u *)_(e_emptykey));
+		    EMSG(_(e_emptykey));
 		return NULL;
 	    }
 	    p = key + len;
@@ -1977,7 +1977,7 @@ get_lval(
 		if (lp->ll_tv->v_type == VAR_DICT)
 		{
 		    if (!quiet)
-			emsg((char_u *)_(e_dictrange));
+			EMSG(_(e_dictrange));
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -2019,7 +2019,7 @@ get_lval(
 	    if (*p != ']')
 	    {
 		if (!quiet)
-		    emsg((char_u *)_(e_missbrac));
+		    EMSG(_(e_missbrac));
 		clear_tv(&var1);
 		clear_tv(&var2);
 		return NULL;
@@ -2374,11 +2374,11 @@ set_var_lval(
 	    ++lp->ll_n1;
 	}
 	if (ri != NULL)
-	    emsg((char_u *)_("E710: List value has more items than target"));
+	    EMSG(_("E710: List value has more items than target"));
 	else if (lp->ll_empty2
 		? (lp->ll_li != NULL && lp->ll_li->li_next != NULL)
 		: lp->ll_n1 != lp->ll_n2)
-	    emsg((char_u *)_("E711: List value has not enough items"));
+	    EMSG(_("E711: List value has not enough items"));
     }
     else
     {
@@ -2580,7 +2580,7 @@ eval_for_line(
     expr = skipwhite(expr);
     if (expr[0] != 'i' || expr[1] != 'n' || !VIM_ISWHITE(expr[2]))
     {
-	emsg((char_u *)_("E690: Missing \"in\" after :for"));
+	EMSG(_("E690: Missing \"in\" after :for"));
 	return fi;
     }
 
@@ -2879,7 +2879,7 @@ ex_unletlock(
 	    if (name_end != NULL)
 	    {
 		emsg_severe = TRUE;
-		emsg((char_u *)_(e_trailing));
+		EMSG(_(e_trailing));
 	    }
 	    if (!(eap->skip || error))
 		clear_lval(&lv);
@@ -3108,7 +3108,7 @@ item_lock(typval_T *tv, int deep, int lock)
 
     if (recurse >= DICT_MAXNEST)
     {
-	emsg((char_u *)_("E743: variable nested too deep for (un)lock"));
+	EMSG(_("E743: variable nested too deep for (un)lock"));
 	return;
     }
     if (deep == 0)
@@ -3451,7 +3451,7 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	 */
 	if ((*arg)[0] != ':')
 	{
-	    emsg((char_u *)_("E109: Missing ':' after '?'"));
+	    EMSG(_("E109: Missing ':' after '?'"));
 	    if (evaluate && result)
 		clear_tv(rettv);
 	    return FAIL;
@@ -4058,7 +4058,7 @@ eval6(
 		}
 		else
 		{
-		    emsg((char_u *)_("E804: Cannot use '%' with Float"));
+		    EMSG(_("E804: Cannot use '%' with Float"));
 		    return FAIL;
 		}
 		rettv->v_type = VAR_FLOAT;
@@ -4314,7 +4314,7 @@ eval7(
 		    ++*arg;
 		else if (ret == OK)
 		{
-		    emsg((char_u *)_("E110: Missing ')'"));
+		    EMSG(_("E110: Missing ')'"));
 		    clear_tv(rettv);
 		    ret = FAIL;
 		}
@@ -4488,19 +4488,19 @@ eval_index(
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	    if (verbose)
-		emsg((char_u *)_("E695: Cannot index a Funcref"));
+		EMSG(_("E695: Cannot index a Funcref"));
 	    return FAIL;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 	    if (verbose)
-		emsg((char_u *)_(e_float_as_string));
+		EMSG(_(e_float_as_string));
 	    return FAIL;
 #endif
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    if (verbose)
-		emsg((char_u *)_("E909: Cannot index a special variable"));
+		EMSG(_("E909: Cannot index a special variable"));
 	    return FAIL;
 	case VAR_UNKNOWN:
 	    if (evaluate)
@@ -4577,7 +4577,7 @@ eval_index(
 	if (**arg != ']')
 	{
 	    if (verbose)
-		emsg((char_u *)_(e_missbrac));
+		EMSG(_(e_missbrac));
 	    clear_tv(&var1);
 	    if (range)
 		clear_tv(&var2);
@@ -4770,7 +4770,7 @@ eval_index(
 		if (range)
 		{
 		    if (verbose)
-			emsg((char_u *)_(e_dictrange));
+			EMSG(_(e_dictrange));
 		    if (len == -1)
 			clear_tv(&var1);
 		    return FAIL;
@@ -5798,7 +5798,7 @@ echo_string_core(
 	     * flooding the user with errors.  And stop iterating over lists
 	     * and dicts. */
 	    did_echo_string_emsg = TRUE;
-	    emsg((char_u *)_("E724: variable nested too deep for displaying"));
+	    EMSG(_("E724: variable nested too deep for displaying"));
 	}
 	*tofree = NULL;
 	return (char_u *)"{E724}";
@@ -7251,12 +7251,12 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg((char_u *)_("E805: Using a Float as a Number"));
+	    EMSG(_("E805: Using a Float as a Number"));
 	    break;
 #endif
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg((char_u *)_("E703: Using a Funcref as a Number"));
+	    EMSG(_("E703: Using a Funcref as a Number"));
 	    break;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
@@ -7264,22 +7264,22 @@ tv_get_number_chk(typval_T *varp, int *denote)
 						    STR2NR_ALL, &n, NULL, 0);
 	    return n;
 	case VAR_LIST:
-	    emsg((char_u *)_("E745: Using a List as a Number"));
+	    EMSG(_("E745: Using a List as a Number"));
 	    break;
 	case VAR_DICT:
-	    emsg((char_u *)_("E728: Using a Dictionary as a Number"));
+	    EMSG(_("E728: Using a Dictionary as a Number"));
 	    break;
 	case VAR_SPECIAL:
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg((char_u *)_("E910: Using a Job as a Number"));
+	    EMSG(_("E910: Using a Job as a Number"));
 	    break;
 #endif
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
-	    emsg((char_u *)_("E913: Using a Channel as a Number"));
+	    EMSG(_("E913: Using a Channel as a Number"));
 	    break;
 #endif
 	case VAR_BLOB:
@@ -7308,28 +7308,28 @@ tv_get_float(typval_T *varp)
 	    return varp->vval.v_float;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg((char_u *)_("E891: Using a Funcref as a Float"));
+	    EMSG(_("E891: Using a Funcref as a Float"));
 	    break;
 	case VAR_STRING:
-	    emsg((char_u *)_("E892: Using a String as a Float"));
+	    EMSG(_("E892: Using a String as a Float"));
 	    break;
 	case VAR_LIST:
-	    emsg((char_u *)_("E893: Using a List as a Float"));
+	    EMSG(_("E893: Using a List as a Float"));
 	    break;
 	case VAR_DICT:
-	    emsg((char_u *)_("E894: Using a Dictionary as a Float"));
+	    EMSG(_("E894: Using a Dictionary as a Float"));
 	    break;
 	case VAR_SPECIAL:
-	    emsg((char_u *)_("E907: Using a special value as a Float"));
+	    EMSG(_("E907: Using a special value as a Float"));
 	    break;
 	case VAR_JOB:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg((char_u *)_("E911: Using a Job as a Float"));
+	    EMSG(_("E911: Using a Job as a Float"));
 	    break;
 # endif
 	case VAR_CHANNEL:
 # ifdef FEAT_JOB_CHANNEL
-	    emsg((char_u *)_("E914: Using a Channel as a Float"));
+	    EMSG(_("E914: Using a Channel as a Float"));
 	    break;
 # endif
 	case VAR_BLOB:
@@ -7391,17 +7391,17 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    emsg((char_u *)_("E729: using Funcref as a String"));
+	    EMSG(_("E729: using Funcref as a String"));
 	    break;
 	case VAR_LIST:
-	    emsg((char_u *)_("E730: using List as a String"));
+	    EMSG(_("E730: using List as a String"));
 	    break;
 	case VAR_DICT:
-	    emsg((char_u *)_("E731: using Dictionary as a String"));
+	    EMSG(_("E731: using Dictionary as a String"));
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg((char_u *)_(e_float_as_string));
+	    EMSG(_(e_float_as_string));
 	    break;
 #endif
 	case VAR_STRING:
@@ -7457,7 +7457,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
-	    emsg((char_u *)_("E908: using an invalid value as a String"));
+	    EMSG(_("E908: using an invalid value as a String"));
 	    break;
     }
     return NULL;
@@ -8158,7 +8158,7 @@ item_copy(
 
     if (recurse >= DICT_MAXNEST)
     {
-	emsg((char_u *)_("E698: variable nested too deep for making a copy"));
+	EMSG(_("E698: variable nested too deep for making a copy"));
 	return FAIL;
     }
     ++recurse;
@@ -8521,7 +8521,7 @@ ex_execute(exarg_T *eap)
 	{
 	    /* We don't want to abort following commands, restore did_emsg. */
 	    save_did_emsg = did_emsg;
-	    emsg((char_u *)ga.ga_data);
+	    EMSG(ga.ga_data);
 	    if (!force_abort)
 		did_emsg = save_did_emsg;
 	}
@@ -9286,7 +9286,7 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
     if (pat == NULL || text == NULL)
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
     else if (pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
@@ -9629,9 +9629,9 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		emsg((char_u *)_("E691: Can only compare List with List"));
+		EMSG(_("E691: Can only compare List with List"));
 	    else
-		emsg((char_u *)_("E692: Invalid operation for List"));
+		EMSG(_("E692: Invalid operation for List"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -9658,9 +9658,9 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		emsg((char_u *)_("E735: Can only compare Dictionary with Dictionary"));
+		EMSG(_("E735: Can only compare Dictionary with Dictionary"));
 	    else
-		emsg((char_u *)_("E736: Invalid operation for Dictionary"));
+		EMSG(_("E736: Invalid operation for Dictionary"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -9679,7 +9679,7 @@ typval_compare(
     {
 	if (type != TYPE_EQUAL && type != TYPE_NEQUAL)
 	{
-	    emsg((char_u *)_("E694: Invalid operation for Funcrefs"));
+	    EMSG(_("E694: Invalid operation for Funcrefs"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}

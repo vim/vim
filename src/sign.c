@@ -752,7 +752,7 @@ sign_define_by_name(
 		if (next_sign_typenr == start)
 		{
 		    vim_free(sp);
-		    emsg((char_u *)_("E612: Too many signs defined"));
+		    EMSG(_("E612: Too many signs defined"));
 		    return FAIL;
 		}
 		lp = first_sign;  // start all over
@@ -980,7 +980,7 @@ sign_unplace_at_cursor(char_u *groupname)
     if (id > 0)
 	sign_unplace(id, groupname, curwin->w_buffer, curwin->w_cursor.lnum);
     else
-	emsg((char_u *)_("E159: Missing sign number"));
+	EMSG(_("E159: Missing sign number"));
 }
 
 /*
@@ -1010,7 +1010,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
 	if (buf->b_fname == NULL)
 	{
-	    emsg((char_u *)_("E934: Cannot jump to a buffer that does not have a name"));
+	    EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
 	    return -1;
 	}
 	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
@@ -1111,7 +1111,7 @@ sign_place_cmd(
 	//   :sign place group=*
 	if (lnum >= 0 || sign_name != NULL
 		|| (group != NULL && *group == '\0'))
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	else
 	    sign_list_placed(buf, group);
     }
@@ -1121,7 +1121,7 @@ sign_place_cmd(
 	if (sign_name == NULL || buf == NULL
 		|| (group != NULL && *group == '\0'))
 	{
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	    return;
 	}
 
@@ -1142,7 +1142,7 @@ sign_unplace_cmd(
 {
     if (lnum >= 0 || sign_name != NULL || (group != NULL && *group == '\0'))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
 
@@ -1211,7 +1211,7 @@ sign_jump_cmd(
 {
     if (sign_name == NULL && group == NULL && id == -1)
     {
-	emsg((char_u *)_(e_argreq));
+	EMSG(_(e_argreq));
 	return;
     }
 
@@ -1220,7 +1220,7 @@ sign_jump_cmd(
     {
 	// File or buffer is not specified or an empty group is used
 	// or a line number or a sign name is specified.
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return;
     }
     (void)sign_jump(id, group, buf);
@@ -1275,7 +1275,7 @@ parse_sign_cmd_args(
 	{
 	    if (*signid != -1)
 	    {
-		emsg((char_u *)_(e_invarg));
+		EMSG(_(e_invarg));
 		return FAIL;
 	    }
 	    *signid = -2;
@@ -1319,12 +1319,12 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		emsg((char_u *)_(e_trailing));
+		EMSG(_(e_trailing));
 	    break;
 	}
 	else
 	{
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	    return FAIL;
 	}
 	arg = skipwhite(arg);
@@ -1377,7 +1377,7 @@ ex_sign(exarg_T *eap)
 		sign_list_defined(sp);
 	}
 	else if (*arg == NUL)
-	    emsg((char_u *)_("E156: Missing sign name"));
+	    EMSG(_("E156: Missing sign name"));
 	else
 	{
 	    char_u	*name;

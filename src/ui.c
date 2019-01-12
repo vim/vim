@@ -337,7 +337,7 @@ ui_suspend(void)
 suspend_shell(void)
 {
     if (*p_sh == NUL)
-	emsg((char_u *)_(e_shellempty));
+	EMSG(_(e_shellempty));
     else
     {
 	MSG_PUTS(_("new shell started\n"));

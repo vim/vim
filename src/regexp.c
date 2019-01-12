@@ -334,9 +334,9 @@ toggle_Magic(int x)
 
 /* Used for an error (down from) vim_regcomp(): give the error message, set
  * rc_did_emsg and return NULL */
-#define EMSG_RET_NULL(m) return (emsg((char_u *)(m)), rc_did_emsg = TRUE, (void *)NULL)
-#define IEMSG_RET_NULL(m) return (iemsg((char_u *)(m)), rc_did_emsg = TRUE, (void *)NULL)
-#define EMSG_RET_FAIL(m) return (emsg((char_u *)(m)), rc_did_emsg = TRUE, FAIL)
+#define EMSG_RET_NULL(m) return (EMSG((m)), rc_did_emsg = TRUE, (void *)NULL)
+#define IEMSG_RET_NULL(m) return (IEMSG((m)), rc_did_emsg = TRUE, (void *)NULL)
+#define EMSG_RET_FAIL(m) return (EMSG((m)), rc_did_emsg = TRUE, FAIL)
 #define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
 #define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
@@ -1304,7 +1304,7 @@ seen_endbrace(int refnum)
 		break;
 	if (*p == NUL)
 	{
-	    emsg((char_u *)_("E65: Illegal back reference"));
+	    EMSG(_("E65: Illegal back reference"));
 	    rc_did_emsg = TRUE;
 	    return FALSE;
 	}
@@ -3826,7 +3826,7 @@ bt_regexec_both(
     /* Be paranoid... */
     if (prog == NULL || line == NULL)
     {
-	emsg((char_u *)_(e_null));
+	EMSG(_(e_null));
 	goto theend;
     }
 
@@ -5241,7 +5241,7 @@ regmatch(
 		     * a regstar_T on the regstack. */
 		    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 		    {
-			emsg((char_u *)_(e_maxmempat));
+			EMSG(_(e_maxmempat));
 			status = RA_FAIL;
 		    }
 		    else if (ga_grow(&regstack, sizeof(regstar_T)) == FAIL)
@@ -5286,7 +5286,7 @@ regmatch(
 	    /* Need a bit of room to store extra positions. */
 	    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 	    {
-		emsg((char_u *)_(e_maxmempat));
+		EMSG(_(e_maxmempat));
 		status = RA_FAIL;
 	    }
 	    else if (ga_grow(&regstack, sizeof(regbehind_T)) == FAIL)
@@ -5338,7 +5338,7 @@ regmatch(
 	    break;
 
 	  default:
-	    emsg((char_u *)_(e_re_corr));
+	    EMSG(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Illegal op code %d\n", op);
 #endif
@@ -5748,7 +5748,7 @@ regmatch(
 	     * We get here only if there's trouble -- normally "case END" is
 	     * the terminating point.
 	     */
-	    emsg((char_u *)_(e_re_corr));
+	    EMSG(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Premature EOL\n");
 #endif
@@ -5772,7 +5772,7 @@ regstack_push(regstate_T state, char_u *scan)
 
     if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
     {
-	emsg((char_u *)_(e_maxmempat));
+	EMSG(_(e_maxmempat));
 	return NULL;
     }
     if (ga_grow(&regstack, sizeof(regitem_T)) == FAIL)
@@ -6185,7 +6185,7 @@ do_class:
 	break;
 
       default:			/* Oh dear.  Called inappropriately. */
-	emsg((char_u *)_(e_re_corr));
+	EMSG(_(e_re_corr));
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
 #endif
@@ -6236,7 +6236,7 @@ prog_magic_wrong(void)
 
     if (UCHARAT(((bt_regprog_T *)prog)->program) != REGMAGIC)
     {
-	emsg((char_u *)_(e_re_corr));
+	EMSG(_(e_re_corr));
 	return TRUE;
     }
     return FALSE;
@@ -7487,7 +7487,7 @@ vim_regsub_both(
     /* Be paranoid... */
     if ((source == NULL && expr == NULL) || dest == NULL)
     {
-	emsg((char_u *)_(e_null));
+	EMSG(_(e_null));
 	return 0;
     }
     if (prog_magic_wrong())
@@ -7790,7 +7790,7 @@ vim_regsub_both(
 		    else if (*s == NUL) /* we hit NUL. */
 		    {
 			if (copy)
-			    emsg((char_u *)_(e_re_damg));
+			    EMSG(_(e_re_damg));
 			goto exit;
 		    }
 		    else
@@ -8126,7 +8126,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 	}
 	else
 	{
-	    emsg((char_u *)_("E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be used "));
+	    EMSG(_("E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be used "));
 	    regexp_engine = AUTOMATIC_ENGINE;
 	}
     }
@@ -8241,7 +8241,7 @@ vim_regexec_string(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg((char_u *)_(e_recursive));
+	EMSG(_(e_recursive));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;
@@ -8365,7 +8365,7 @@ vim_regexec_multi(
     // Cannot use the same prog recursively, it contains state.
     if (rmp->regprog->re_in_use)
     {
-	emsg((char_u *)_(e_recursive));
+	EMSG(_(e_recursive));
 	return FALSE;
     }
     rmp->regprog->re_in_use = TRUE;

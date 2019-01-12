@@ -607,7 +607,7 @@ dbg_parsearg(
     {
 	if (curbuf->b_ffname == NULL)
 	{
-	    emsg((char_u *)_(e_noname));
+	    EMSG(_(e_noname));
 	    return FAIL;
 	}
 	bp->dbg_type = DBG_FILE;
@@ -1726,7 +1726,7 @@ ex_profile(exarg_T *eap)
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
     else if (do_profiling == PROF_NONE)
-	emsg((char_u *)_("E750: First use \":profile start {fname}\""));
+	EMSG(_("E750: First use \":profile start {fname}\""));
     else if (STRCMP(eap->arg, "pause") == 0)
     {
 	if (do_profiling == PROF_YES)
@@ -2407,7 +2407,7 @@ check_fname(void)
 {
     if (curbuf->b_ffname == NULL)
     {
-	emsg((char_u *)_(e_noname));
+	EMSG(_(e_noname));
 	return FAIL;
     }
     return OK;
@@ -2640,7 +2640,7 @@ do_arglist(
 	ga_clear(&new_ga);
 	if (i == FAIL || exp_count == 0)
 	{
-	    emsg((char_u *)_(e_nomatch));
+	    EMSG(_(e_nomatch));
 	    return FAIL;
 	}
 
@@ -2847,11 +2847,11 @@ do_argfile(exarg_T *eap, int argn)
     if (argn < 0 || argn >= ARGCOUNT)
     {
 	if (ARGCOUNT <= 1)
-	    emsg((char_u *)_("E163: There is only one file to edit"));
+	    EMSG(_("E163: There is only one file to edit"));
 	else if (argn < 0)
-	    emsg((char_u *)_("E164: Cannot go before first file"));
+	    EMSG(_("E164: Cannot go before first file"));
 	else
-	    emsg((char_u *)_("E165: Cannot go beyond last file"));
+	    EMSG(_("E165: Cannot go beyond last file"));
     }
     else
     {
@@ -2992,12 +2992,12 @@ ex_argdelete(exarg_T *eap)
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
 	    /* Can't have both a range and an argument. */
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	else if (n <= 0)
 	{
 	    /* Don't give an error for ":%argdel" if the list is empty. */
 	    if (eap->line1 != 1 || eap->line2 != 0)
-		emsg((char_u *)_(e_invrange));
+		EMSG(_(e_invrange));
 	}
 	else
 	{
@@ -3017,7 +3017,7 @@ ex_argdelete(exarg_T *eap)
 	}
     }
     else if (*eap->arg == NUL)
-	emsg((char_u *)_(e_argreq));
+	EMSG(_(e_argreq));
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
 #ifdef FEAT_TITLE
@@ -4208,7 +4208,7 @@ ex_source(exarg_T *eap)
 cmd_source(char_u *fname, exarg_T *eap)
 {
     if (*fname == NUL)
-	emsg((char_u *)_(e_argreq));
+	EMSG(_(e_argreq));
 
     else if (eap != NULL && eap->forceit)
 	/* ":source!": read Normal mode commands
@@ -4638,7 +4638,7 @@ do_source(
 #endif
 
     if (got_int)
-	emsg((char_u *)_(e_interr));
+	EMSG(_(e_interr));
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
     if (p_verbose > 1)
@@ -4709,7 +4709,7 @@ ex_scriptnames(exarg_T *eap)
     {
 	// :script {scriptId}: edit the script
 	if (eap->line2 < 1 || eap->line2 > script_items.ga_len)
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	else
 	{
 	    eap->arg = SCRIPT_ITEM(eap->line2).sn_name;
@@ -5067,7 +5067,7 @@ get_one_sourceline(struct source_cookie *sp)
 		    if (!sp->error)
 		    {
 			msg_source(HL_ATTR(HLF_W));
-			emsg((char_u *)_("W15: Warning: Wrong line separator, ^M may be missing"));
+			EMSG(_("W15: Warning: Wrong line separator, ^M may be missing"));
 		    }
 		    sp->error = TRUE;
 		    sp->fileformat = EOL_UNIX;
@@ -5200,7 +5200,7 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg((char_u *)_("E167: :scriptencoding used outside of a sourced file"));
+	EMSG(_("E167: :scriptencoding used outside of a sourced file"));
 	return;
     }
 
@@ -5232,7 +5232,7 @@ ex_finish(exarg_T *eap)
     if (getline_equal(eap->getline, eap->cookie, getsourceline))
 	do_finish(eap, FALSE);
     else
-	emsg((char_u *)_("E168: :finish used outside of a sourced file"));
+	EMSG(_("E168: :finish used outside of a sourced file"));
 }
 
 /*

@@ -1431,7 +1431,7 @@ prt_write_file_raw_len(char_u *buffer, int bytes)
 	    && fwrite(buffer, sizeof(char_u), bytes, prt_ps_fd)
 							     != (size_t)bytes)
     {
-	emsg((char_u *)_("E455: Error writing to PostScript output file"));
+	EMSG(_("E455: Error writing to PostScript output file"));
 	prt_file_error = TRUE;
     }
 }
@@ -2465,7 +2465,7 @@ mch_print_init(
 	    /* Check encoding and character set are compatible */
 	    if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
 	    {
-		emsg((char_u *)_("E673: Incompatible multi-byte encoding and character set."));
+		EMSG(_("E673: Incompatible multi-byte encoding and character set."));
 		return FALSE;
 	    }
 
@@ -2482,7 +2482,7 @@ mch_print_init(
 	    /* Add custom CMap character set name */
 	    if (*p_pmcs == NUL)
 	    {
-		emsg((char_u *)_("E674: printmbcharset cannot be empty with multi-byte encoding."));
+		EMSG(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
 		return FALSE;
 	    }
 	    vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
@@ -2500,7 +2500,7 @@ mch_print_init(
 
 	if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
 	{
-	    emsg((char_u *)_("E675: No default font specified for multi-byte printing."));
+	    EMSG(_("E675: No default font specified for multi-byte printing."));
 	    return FALSE;
 	}
 
@@ -2677,7 +2677,7 @@ mch_print_init(
 	prt_ps_file_name = vim_tempname('p', TRUE);
 	if (prt_ps_file_name == NULL)
 	{
-	    emsg((char_u *)_(e_notmp));
+	    EMSG(_(e_notmp));
 	    return FAIL;
 	}
 	prt_ps_fd = mch_fopen((char *)prt_ps_file_name, WRITEBIN);
@@ -2693,7 +2693,7 @@ mch_print_init(
     }
     if (prt_ps_fd == NULL)
     {
-	emsg((char_u *)_("E324: Can't open PostScript output file"));
+	EMSG(_("E324: Can't open PostScript output file"));
 	mch_print_cleanup();
 	return FAIL;
     }
@@ -2880,7 +2880,7 @@ mch_print_begin(prt_settings_T *psettings)
     /* Search for external resources VIM supplies */
     if (!prt_find_resource("prolog", res_prolog))
     {
-	emsg((char_u *)_("E456: Can't find PostScript resource file \"prolog.ps\""));
+	EMSG(_("E456: Can't find PostScript resource file \"prolog.ps\""));
 	goto theend;
     }
     if (!prt_open_resource(res_prolog))
@@ -2893,7 +2893,7 @@ mch_print_begin(prt_settings_T *psettings)
 	/* Look for required version of multi-byte printing procset */
 	if (!prt_find_resource("cidfont", res_cidfont))
 	{
-	    emsg((char_u *)_("E456: Can't find PostScript resource file \"cidfont.ps\""));
+	    EMSG(_("E456: Can't find PostScript resource file \"cidfont.ps\""));
 	    goto theend;
 	}
 	if (!prt_open_resource(res_cidfont))
@@ -3236,7 +3236,7 @@ mch_print_end(prt_settings_T *psettings)
 
 	/* Not printing to a file: use 'printexpr' to print the file. */
 	if (eval_printexpr(prt_ps_file_name, psettings->arguments) == FAIL)
-	    emsg((char_u *)_("E365: Failed to print PostScript file"));
+	    EMSG(_("E365: Failed to print PostScript file"));
 	else
 	    prt_message((char_u *)_("Print job sent."));
     }

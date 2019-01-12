@@ -941,7 +941,7 @@ channel_open_func(typval_T *argvars)
     if (argvars[1].v_type != VAR_UNKNOWN
 	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	return NULL;
     }
 
@@ -970,7 +970,7 @@ channel_open_func(typval_T *argvars)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	goto theend;
     }
 
@@ -1250,7 +1250,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (!buf->b_p_ma && !channel->ch_part[PART_OUT].ch_nomodifiable)
 	    {
-		emsg((char_u *)_(e_modifiable));
+		EMSG(_(e_modifiable));
 	    }
 	    else
 	    {
@@ -1296,7 +1296,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 						!opt->jo_modifiable[PART_ERR];
 	    if (!buf->b_p_ma && !channel->ch_part[PART_ERR].ch_nomodifiable)
 	    {
-		emsg((char_u *)_(e_modifiable));
+		EMSG(_(e_modifiable));
 	    }
 	    else
 	    {
@@ -1618,7 +1618,7 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
     int		dummy;
 
     if (safe_to_invoke_callback == 0)
-	iemsg((char_u *)"INTERNAL: Invoking callback when it is not safe");
+	IEMSG("INTERNAL: Invoking callback when it is not safe");
 
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
@@ -2236,7 +2236,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     {
 	ch_error(channel, "received command with non-string argument");
 	if (p_verbose > 2)
-	    emsg((char_u *)_("E903: received command with non-string argument"));
+	    EMSG(_("E903: received command with non-string argument"));
 	return;
     }
     arg = argv[1].vval.v_string;
@@ -2288,13 +2288,13 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	{
 	    ch_error(channel, "last argument for expr/call must be a number");
 	    if (p_verbose > 2)
-		emsg((char_u *)_("E904: last argument for expr/call must be a number"));
+		EMSG(_("E904: last argument for expr/call must be a number"));
 	}
 	else if (is_call && argv[2].v_type != VAR_LIST)
 	{
 	    ch_error(channel, "third argument for call must be a list");
 	    if (p_verbose > 2)
-		emsg((char_u *)_("E904: third argument for call must be a list"));
+		EMSG(_("E904: third argument for call must be a list"));
 	}
 	else
 	{
@@ -4004,7 +4004,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     ch_mode = channel_get_mode(channel, part_send);
     if (ch_mode == MODE_RAW || ch_mode == MODE_NL)
     {
-	emsg((char_u *)_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
+	EMSG(_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
 	return;
     }
 
@@ -4575,7 +4575,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
     if (tv->v_type != VAR_DICT)
     {
-	emsg((char_u *)_(e_dictreq));
+	EMSG(_(e_dictreq));
 	return FAIL;
     }
     dict = tv->vval.v_dict;
@@ -5107,7 +5107,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     if (check_open && (channel == NULL || (!channel_is_open(channel)
 					     && !(reading && has_readahead))))
     {
-	emsg((char_u *)_("E906: not an open channel"));
+	EMSG(_("E906: not an open channel"));
 	return NULL;
     }
     return channel;
@@ -5661,7 +5661,7 @@ job_start(
 		&& (!(opt.jo_set & (JO_OUT_NAME << (part - PART_OUT)))
 		    || *opt.jo_io_name[part] == NUL))
 	{
-	    emsg((char_u *)_("E920: _io file requires _name to be set"));
+	    EMSG(_("E920: _io file requires _name to be set"));
 	    goto theend;
 	}
 
@@ -5678,7 +5678,7 @@ job_start(
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
 	{
-	    emsg((char_u *)_("E915: in_io buffer requires in_buf or in_name to be set"));
+	    EMSG(_("E915: in_io buffer requires in_buf or in_name to be set"));
 	}
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
@@ -5725,7 +5725,7 @@ job_start(
 	cmd = argvars[0].vval.v_string;
 	if (cmd == NULL || *cmd == NUL)
 	{
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	    goto theend;
 	}
 
@@ -5736,7 +5736,7 @@ job_start(
 	    || argvars[0].vval.v_list == NULL
 	    || argvars[0].vval.v_list->lv_len < 1)
     {
-	emsg((char_u *)_(e_invarg));
+	EMSG(_(e_invarg));
 	goto theend;
     }
     else
@@ -5897,7 +5897,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	arg = tv_get_string_chk(&argvars[1]);
 	if (arg == NULL)
 	{
-	    emsg((char_u *)_(e_invarg));
+	    EMSG(_(e_invarg));
 	    return 0;
 	}
     }
