@@ -39,14 +39,36 @@ func Test_global_vars()
   " store a really long list, so line wrapping will occur in viminfo file
   let test_list = range(1,100)
   let g:MY_GLOBAL_LIST = test_list
+  let test_blob = 0z00112233445566778899aabbccddeeff
+  let g:MY_GLOBAL_BLOB = test_blob
+  let test_false = v:false
+  let g:MY_GLOBAL_FALSE = test_false
+  let test_true = v:true
+  let g:MY_GLOBAL_TRUE = test_true
+  let test_null = v:null
+  let g:MY_GLOBAL_NULL = test_null
+  let test_none = v:none
+  let g:MY_GLOBAL_NONE = test_none
+
   set viminfo='100,<50,s10,h,!,nviminfo
   wv! Xviminfo
+
   unlet g:MY_GLOBAL_DICT
   unlet g:MY_GLOBAL_LIST
+  unlet g:MY_GLOBAL_BLOB
+  unlet g:MY_GLOBAL_FALSE
+  unlet g:MY_GLOBAL_TRUE
+  unlet g:MY_GLOBAL_NULL
+  unlet g:MY_GLOBAL_NONE
 
   rv! Xviminfo
   call assert_equal(test_dict, g:MY_GLOBAL_DICT)
   call assert_equal(test_list, g:MY_GLOBAL_LIST)
+  call assert_equal(test_blob, g:MY_GLOBAL_BLOB)
+  call assert_equal(test_false, g:MY_GLOBAL_FALSE)
+  call assert_equal(test_true, g:MY_GLOBAL_TRUE)
+  call assert_equal(test_null, g:MY_GLOBAL_NULL)
+  call assert_equal(test_none, g:MY_GLOBAL_NONE)
 
   call delete('Xviminfo')
   set viminfo-=!

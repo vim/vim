@@ -5882,33 +5882,7 @@ echo_string_core(
 	    }
 
 	case VAR_BLOB:
-	    if (tv->vval.v_blob == NULL)
-	    {
-		*tofree = NULL;
-		r = (char_u *)"[]";
-	    }
-	    else
-	    {
-		blob_T	    *b;
-		int	    i;
-		garray_T    ga;
-
-		// Store bytes in the growarray.
-		ga_init2(&ga, 1, 4000);
-		b = tv->vval.v_blob;
-		ga_append(&ga, '[');
-		for (i = 0; i < blob_len(b); i++)
-		{
-		    if (i > 0)
-			ga_concat(&ga, (char_u *)",");
-		    vim_snprintf((char *)numbuf, NUMBUFLEN, "0x%02X",
-			    (int)blob_get(b, i));
-		    ga_concat(&ga, numbuf);
-		}
-		ga_append(&ga, ']');
-		*tofree = ga.ga_data;
-		r = *tofree;
-	    }
+	    r = blob2string(tv->vval.v_blob, tofree, numbuf);
 	    break;
 
 	case VAR_LIST:
@@ -8948,8 +8922,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    if (tab != NULL)
 	    {
 		tv.v_type = type;
-		if (type == VAR_STRING || type == VAR_DICT ||
-			type == VAR_LIST || type == VAR_BLOB)
+		if (type == VAR_STRING || type == VAR_DICT
+			|| type == VAR_LIST || type == VAR_BLOB)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 #ifdef FEAT_FLOAT
@@ -8958,7 +8932,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 #endif
 		else
 		    tv.vval.v_number = atol((char *)tab + 1);
-		if (type == VAR_DICT || type == VAR_LIST || type == VAR_BLOB)
+		if (type == VAR_DICT || type == VAR_LIST)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
 
@@ -8971,6 +8945,20 @@ read_viminfo_varlist(vir_T *virp, int writing)
 			vim_free(tv.vval.v_string);
 			tv = *etv;
 			vim_free(etv);
+		    }
+		}
+		else if (type == VAR_BLOB)
+		{
+		    blob_T *blob = string2blob(tv.vval.v_string);
+
+		    if (blob == NULL)
+			// Failed to parse back the blob, use it as a string.
+			tv.v_type = VAR_STRING;
+		    else
+		    {
+			vim_free(tv.vval.v_string);
+			tv.v_type = VAR_BLOB;
+			tv.vval.v_blob = blob;
 		    }
 		}
 
@@ -9037,7 +9025,15 @@ write_viminfo_varlist(FILE *fp)
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
+		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		{
+		    sprintf((char *)numbuf, "%ld",
+					  (long)this_var->di_tv.vval.v_number);
+		    p = numbuf;
+		    tofree = NULL;
+		}
+		else
+		    p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
 		if (p != NULL)
 		    viminfo_writestring(fp, p);
 		vim_free(tofree);
