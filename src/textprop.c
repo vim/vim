@@ -357,12 +357,12 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     static void
 set_text_props(linenr_T lnum, char_u *props, int len)
 {
-    char_u *text;
-    char_u *newtext;
-    size_t textlen;
+    char_u  *text;
+    char_u  *newtext;
+    int	    textlen;
 
     text = ml_get(lnum);
-    textlen = STRLEN(text) + 1;
+    textlen = (int)STRLEN(text) + 1;
     newtext = alloc(textlen + len);
     if (newtext == NULL)
 	return;

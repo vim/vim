@@ -3266,13 +3266,7 @@ qf_jump_to_buffer(
 }
 
 /*
- * Jump to a quickfix line.
- * If dir == FORWARD go "errornr" valid entries forward.
- * If dir == BACKWARD go "errornr" valid entries backward.
- * If dir == FORWARD_FILE go "errornr" valid entries files backward.
- * If dir == BACKWARD_FILE go "errornr" valid entries files backward
- * else if "errornr" is zero, redisplay the same line
- * else go to entry "errornr".
+ * Jump to a quickfix line and try to use an existing window.
  */
     void
 qf_jump(qf_info_T	*qi,
@@ -3284,7 +3278,14 @@ qf_jump(qf_info_T	*qi,
 }
 
 /*
- * As qf_info().
+ * Jump to a quickfix line.
+ * If dir == 0 go to entry "errornr".
+ * If dir == FORWARD go "errornr" valid entries forward.
+ * If dir == BACKWARD go "errornr" valid entries backward.
+ * If dir == FORWARD_FILE go "errornr" valid entries files backward.
+ * If dir == BACKWARD_FILE go "errornr" valid entries files backward
+ * else if "errornr" is zero, redisplay the same line
+ * If 'forceit' is TRUE, then can discard changes to the current buffer.
  * If 'newwin' is TRUE, then open the file in a new window.
  */
     void
@@ -3687,7 +3688,7 @@ qf_history(exarg_T *eap)
 
     if (is_loclist_cmd(eap->cmdidx))
 	qi = GET_LOC_LIST(curwin);
-    if (qf_stack_empty(qi) || qf_list_empty(qi, qi->qf_curlist))
+    if (qf_stack_empty(qi))
 	MSG(_("No entries"));
     else
 	for (i = 0; i < qi->qf_listcount; ++i)
@@ -6549,6 +6550,50 @@ qf_setprop_context(qf_list_T *qfl, dictitem_T *di)
 }
 
 /*
+ * Set the current index in the specified quickfix list
+ */
+    static int
+qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
+{
+    int		denote = FALSE;
+    int		newidx;
+    int		old_qfidx;
+    qfline_T	*qf_ptr;
+
+    // If the specified index is '$', then use the last entry
+    if (di->di_tv.v_type == VAR_STRING
+	    && di->di_tv.vval.v_string != NULL
+	    && STRCMP(di->di_tv.vval.v_string, "$") == 0)
+	newidx = qfl->qf_count;
+    else
+    {
+	// Otherwise use the specified index
+	newidx = tv_get_number_chk(&di->di_tv, &denote);
+	if (denote)
+	    return FAIL;
+    }
+
+    if (newidx < 1)		// sanity check
+	return FAIL;
+    if (newidx > qfl->qf_count)
+	newidx = qfl->qf_count;
+
+    old_qfidx = qfl->qf_index;
+    qf_ptr = get_nth_entry(qfl, newidx, &newidx);
+    if (qf_ptr == NULL)
+	return FAIL;
+    qfl->qf_ptr = qf_ptr;
+    qfl->qf_index = newidx;
+
+    // If the current list is modified and it is displayed in the quickfix
+    // window, then Update it.
+    if (qi->qf_lists[qi->qf_curlist].qf_id == qfl->qf_id)
+	qf_win_pos_update(qi, old_qfidx);
+
+    return OK;
+}
+
+/*
  * Set quickfix/location list properties (title, items, context).
  * Also used to add items from parsing a list of lines.
  * Used by the setqflist() and setloclist() Vim script functions.
@@ -6585,6 +6630,8 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	retval = qf_setprop_items_from_lines(qi, qf_idx, what, di, action);
     if ((di = dict_find(what, (char_u *)"context", -1)) != NULL)
 	retval = qf_setprop_context(qfl, di);
+    if ((di = dict_find(what, (char_u *)"idx", -1)) != NULL)
+	retval = qf_setprop_curidx(qi, qfl, di);
 
     if (retval == OK)
 	qf_list_changed(qfl);

@@ -122,7 +122,7 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
-func! s:Nasty_exit_cb(job, st)
+func s:Nasty_exit_cb(job, st)
   exe g:buf . 'bwipe!'
   let g:buf = 0
 endfunc

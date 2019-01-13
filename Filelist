@@ -517,9 +517,7 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
 		src/xpm/x86/lib-vc14/libXpm.lib \
-		nsis/icons/*.bmp \
-		nsis/icons/*.ico \
-		nsis/icons/*.svg \
+		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)
 SRC_AMI_DOS =	\

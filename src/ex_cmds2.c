@@ -4360,6 +4360,7 @@ do_source(
 #ifdef FEAT_PROFILE
     proftime_T		    wait_start;
 #endif
+    int			    trigger_source_post = FALSE;
 
     p = expand_env_save(fname);
     if (p == NULL)
@@ -4384,6 +4385,10 @@ do_source(
 #else
 	retval = OK;
 #endif
+	if (retval == OK)
+	    // Apply SourcePost autocommands.
+	    apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp,
+								FALSE, curbuf);
 	goto theend;
     }
 
@@ -4551,7 +4556,7 @@ do_source(
 	}
 	si = &SCRIPT_ITEM(current_sctx.sc_sid);
 	si->sn_name = fname_exp;
-	fname_exp = NULL;
+	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 # ifdef UNIX
 	if (stat_ok)
 	{
@@ -4653,6 +4658,9 @@ do_source(
     }
 #endif
 
+    if (!got_int)
+	trigger_source_post = TRUE;
+
 #ifdef FEAT_EVAL
     /*
      * After a "finish" in debug mode, need to break at first command of next
@@ -4678,6 +4686,9 @@ almosttheend:
 #ifdef FEAT_MBYTE
     convert_setup(&cookie.conv, NULL, NULL);
 #endif
+
+    if (trigger_source_post)
+	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
     vim_free(fname_exp);

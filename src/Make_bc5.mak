@@ -61,10 +61,6 @@
 #		of Ruby will cause a compile error on these systems.
 #   RUBY_VER_LONG  same, but in format with dot. (1.6)
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (no)
-# MBYTE		no or yes: set to yes for multi-byte support (yes)
-#		NOTE: multi-byte support is broken in the Borland libraries,
-#		not everything will work properly!  Esp. handling multi-byte
-#		file names.
 # IME		no or yes: set to yes for multi-byte IME support (yes)
 #   DYNAMIC_IME no or yes: set to yes to load imm32.dll dynamically (yes)
 # GETTEXT	no or yes: set to yes for multi-language support (yes)
@@ -102,11 +98,6 @@ BOR = c:\bc5
 ### GUI: yes for GUI version, no for console version
 !if ("$(GUI)"=="")
 GUI = yes
-!endif
-
-### MBYTE: yes for multibyte support, no to disable it.
-!if ("$(MBYTE)"=="")
-MBYTE = yes
 !endif
 
 ### IME: yes for multibyte support, no to disable it.
@@ -216,7 +207,6 @@ ALIGN = 4
 	("$(RUBY)"=="") && \
 	("$(ICONV)"!="yes") && \
 	("$(IME)"!="yes") && \
-	("$(MBYTE)"!="yes") && \
 	("$(XPM)"=="")
 FASTCALL = yes
 !endif
@@ -397,9 +387,6 @@ DEFINES=$(DEFINES) -DDEBUG -D_DEBUG
 DEFINES = $(DEFINES) -DFEAT_OLE
 !endif
 #
-!if ("$(MBYTE)"=="yes")
-MBDEFINES = $(MBDEFINES) -DFEAT_MBYTE
-!endif
 !if ("$(IME)"=="yes")
 MBDEFINES = $(MBDEFINES) -DFEAT_MBYTE_IME
 !if ("$(DYNAMIC_IME)" == "yes")
@@ -686,9 +673,6 @@ MSG = $(MSG) VIMDLL
 !endif
 !if ("$(FASTCALL)"=="yes")
 MSG = $(MSG) FASTCALL
-!endif
-!if ("$(MBYTE)"=="yes")
-MSG = $(MSG) MBYTE
 !endif
 !if ("$(IME)"=="yes")
 MSG = $(MSG) IME

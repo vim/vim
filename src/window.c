@@ -4177,9 +4177,9 @@ win_goto(win_T *wp)
     win_enter(wp, TRUE);
 
 #ifdef FEAT_CONCEAL
-    /* Conceal cursor line in previous window, unconceal in current window. */
+    // Conceal cursor line in previous window, unconceal in current window.
     if (win_valid(owp) && owp->w_p_cole > 0 && !msg_scrolled)
-	update_single_line(owp, owp->w_cursor.lnum);
+	redrawWinline(owp, owp->w_cursor.lnum);
     if (curwin->w_p_cole > 0 && !msg_scrolled)
 	need_cursor_line_redraw = TRUE;
 #endif

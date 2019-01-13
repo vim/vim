@@ -205,6 +205,7 @@ MINOR = 1
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
+#   > unzip icons.zip
 #   > makensis gvim.nsi  (takes a few minutes).
 #      ignore warning for libwinpthread-1.dll
 # - Copy gvim##.exe to the dist directory.
@@ -468,11 +469,12 @@ dosrt_files: dist prepare no_title.vim
 	-rm $(IN_README_DIR)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
-# Add the message translations.  Trick: skip ja.mo and use ja.sjis.mo instead.
-# Same for cs.mo / cs.cp1250.mo, pl.mo / pl.cp1250.mo, sk.mo / sk.cp1250.mo,
-# zh_CN.mo / zh_CN.cp936.mo, uk.mo / uk.cp1251.mo and ru.mo / ru.cp1251.mo.
+# Add the message translations.  Trick: skip ja.mo/ja.euc-jp.mo and use
+# ja.sjis.mo instead.  Same for cs.mo / cs.cp1250.mo, pl.mo / pl.cp1250.mo,
+# sk.mo / sk.cp1250.mo, zh_CN.mo / zh_CN.cp936.mo, uk.mo / uk.cp1251.mo and
+# ru.mo / ru.cp1251.mo.
 	for i in $(LANG_DOS); do \
-	      if test "$$i" != "src/po/ja.mo" -a "$$i" != "src/po/pl.mo" -a "$$i" != "src/po/cs.mo" -a "$$i" != "src/po/sk.mo" -a "$$i" != "src/po/zh_CN.mo" -a "$$i" != "src/po/ru.mo" -a "$$i" != "src/po/uk.mo"; then \
+	      if test "$$i" != "src/po/ja.mo" -a "$$i" != "src/po/ja.euc-jp.mo" -a "$$i" != "src/po/pl.mo" -a "$$i" != "src/po/cs.mo" -a "$$i" != "src/po/sk.mo" -a "$$i" != "src/po/zh_CN.mo" -a "$$i" != "src/po/ru.mo" -a "$$i" != "src/po/uk.mo"; then \
 		n=`echo $$i | sed -e "s+src/po/\([-a-zA-Z0-9_]*\(.UTF-8\)*\)\(.sjis\)*\(.cp1250\)*\(.cp1251\)*\(.cp936\)*.mo+\1+"`; \
 		mkdir dist/vim/$(VIMRTDIR)/lang/$$n; \
 		mkdir dist/vim/$(VIMRTDIR)/lang/$$n/LC_MESSAGES; \

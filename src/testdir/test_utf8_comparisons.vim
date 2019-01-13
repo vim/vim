@@ -5,12 +5,12 @@ if !has("multi_byte")
   finish
 endif
 
-function! Ch(a, op, b, expected)
+func Ch(a, op, b, expected)
   call assert_equal(eval(printf('"%s" %s "%s"', a:a, a:op, a:b)), a:expected,
         \ printf('"%s" %s "%s" should return %d', a:a, a:op, a:b, a:expected))
-endfunction
+endfunc
 
-function! Chk(a, b, result)
+func Chk(a, b, result)
   if a:result == 0
     call Ch(a:a, '==?', a:b, 1)
     call Ch(a:a, '!=?', a:b, 0)
@@ -33,26 +33,26 @@ function! Chk(a, b, result)
     call Ch(a:a, '<?', a:b, 1)
     call Ch(a:a, '>?', a:b, 0)
   endif
-endfunction
+endfunc
 
-function! Check(a, b, result)
+func Check(a, b, result)
   call Chk(a:a, a:b, a:result)
   call Chk(a:b, a:a, -a:result)
-endfunction
+endfunc
 
-function! LT(a, b)
+func LT(a, b)
   call Check(a:a, a:b, -1)
-endfunction
+endfunc
 
-function! GT(a, b)
+func GT(a, b)
   call Check(a:a, a:b, 1)
-endfunction
+endfunc
 
-function! EQ(a, b)
+func EQ(a, b)
   call Check(a:a, a:b, 0)
-endfunction
+endfunc
 
-function Test_comparisons()
+func Test_comparisons()
   call EQ('', '')
   call LT('', 'a')
   call EQ('abc', 'abc')
@@ -85,11 +85,11 @@ function Test_comparisons()
   for n in range(0xC0, 0xFF)
     call LT(printf('xYz\xc2\x%.2XUvW', n), printf('XyZ\xc2\x%.2XuVw', n))
   endfor
-endfunction
+endfunc
 
 " test that g~ap changes one paragraph only.
-function Test_gap()
+func Test_gap()
   new
   call feedkeys("iabcd\n\ndefggg0g~ap", "tx")
   call assert_equal(["ABCD", "", "defg"], getline(1,3))
-endfunction
+endfunc

@@ -296,6 +296,7 @@ static void	ex_redo(exarg_T *eap);
 static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
+static void	ex_redrawtabline(exarg_T *eap);
 static void	close_redir(void);
 static void	ex_mkrc(exarg_T *eap);
 static void	ex_mark(exarg_T *eap);
@@ -9918,6 +9919,25 @@ ex_redrawstatus(exarg_T *eap UNUSED)
     out_flush();
 }
 
+/*
+ * ":redrawtabline": force redraw of the tabline
+ */
+    static void
+ex_redrawtabline(exarg_T *eap UNUSED)
+{
+    int		r = RedrawingDisabled;
+    int		p = p_lz;
+
+    RedrawingDisabled = 0;
+    p_lz = FALSE;
+
+    draw_tabline();
+
+    RedrawingDisabled = r;
+    p_lz = p;
+    out_flush();
+}
+
     static void
 close_redir(void)
 {
@@ -10124,6 +10144,10 @@ ex_mkrc(
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)
 		failed = TRUE;
+# ifdef FEAT_SEARCH_EXTRA
+	    if (no_hlsearch && put_line(fd, "nohlsearch") == FAIL)
+		failed = TRUE;
+# endif
 	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
 		failed = TRUE;
 	    if (eap->cmdidx == CMD_mksession)

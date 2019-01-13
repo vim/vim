@@ -65,9 +65,6 @@ CROSS=no
 ICONV=yes
 GETTEXT=yes
 
-# Set to yes to include multibyte support.
-MBYTE=yes
-
 # Set to yes to include IME support.
 IME=yes
 DYNAMIC_IME=yes
@@ -699,6 +696,7 @@ CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/beval.o \
+	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
@@ -909,10 +907,6 @@ ifeq (yes, $(OLE))
 LIB += -loleaut32
 OBJ += $(OUTDIR)/if_ole.o
 USE_STDCPLUS = yes
-endif
-
-ifeq (yes, $(MBYTE))
-DEFINES += -DFEAT_MBYTE
 endif
 
 ifeq (yes, $(IME))
