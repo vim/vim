@@ -1562,11 +1562,11 @@ Eval(str)
 SV*
 Blob(SV* sv)
     PREINIT:
-    STRLEN  len;
-    char    *s;
-    int	    i;
-    char    buf[3];
-    SV*	    newsv;
+    STRLEN	len;
+    char	*s;
+    unsigned	i;
+    char	buf[3];
+    SV*		newsv;
 
     CODE:
     s = SvPVbyte(sv, len);

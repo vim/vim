@@ -6965,9 +6965,9 @@ did_set_string_option(
     else if (varp == &p_guifontset)
     {
 	if (STRCMP(p_guifontset, "*") == 0)
-	    errmsg = (char_u *)N_("E597: can't select fontset");
+	    errmsg = N_("E597: can't select fontset");
 	else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
-	    errmsg = (char_u *)N_("E598: Invalid fontset");
+	    errmsg = N_("E598: Invalid fontset");
 	redraw_gui_only = TRUE;
     }
 # endif
@@ -7687,7 +7687,7 @@ did_set_string_option(
 	    p = (char_u *)MOUSE_ALL;
 #else
 	    if (*p_mouse != NUL)
-		errmsg = (char_u *)N_("E538: No mouse support");
+		errmsg = N_("E538: No mouse support");
 #endif
 	}
 #if defined(FEAT_GUI)

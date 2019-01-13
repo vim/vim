@@ -303,7 +303,7 @@ messageFromEserve(XtPointer clientData UNUSED,
 			char buffer[2*MAXPATHLEN];
 			vim_snprintf(buffer, sizeof(buffer),
 					NOCATGETS("currentFile %d %s"),
-				f ? strlen(f) : 0, f ? f : "");
+				f ? (int)strlen(f) : 0, f ? f : "");
 			workshop_send_message(buffer);
 		} else if (strcmp(cmd, NOCATGETS("getCursorRow")) == 0) {
 			int row = workshop_test_getcursorrow();
@@ -322,14 +322,14 @@ messageFromEserve(XtPointer clientData UNUSED,
 			char buffer[2*MAXPATHLEN];
 			vim_snprintf(buffer, sizeof(buffer),
 					NOCATGETS("cursorRowText %d %s"),
-				t ? strlen(t) : 0, t ? t : "");
+				t ? (int)strlen(t) : 0, t ? t : "");
 			workshop_send_message(buffer);
 		} else if (strcmp(cmd, NOCATGETS("getSelectedText")) == 0) {
 			char *t = workshop_test_getselectedtext();
 			char buffer[2*MAXPATHLEN];
 			vim_snprintf(buffer, sizeof(buffer),
 					NOCATGETS("selectedText %d %s"),
-				t ? strlen(t) : 0, t ? t : "");
+				t ? (int)strlen(t) : 0, t ? t : "");
 			workshop_send_message(buffer);
 #endif
 		}
