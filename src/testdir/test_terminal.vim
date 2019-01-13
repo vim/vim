@@ -1736,7 +1736,7 @@ func Test_term_gettitle()
 
   if !has('title') || &title == 0 || empty(&t_ts)
     throw "Skipped: can't get/set title"
-  endif"
+  endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
   call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
