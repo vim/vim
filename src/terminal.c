@@ -5923,6 +5923,7 @@ term_and_job_init(
 							OPT_FREE|OPT_LOCAL, 0);
 
     if (curwin->w_p_tmod == NULL || *curwin->w_p_tmod == NUL)
+    {
 	if (has_conpty)
 	    if (has_winpty)
 		goto to_conpty;
@@ -5933,8 +5934,10 @@ term_and_job_init(
 		goto to_winpty;
 	    else
 		goto to_error;
+    }
 
     if (STRICMP(curwin->w_p_tmod, "winpty") == 0)
+    {
 	if (has_conpty)
 	    if (has_winpty)
 		goto to_winpty;
@@ -5945,8 +5948,10 @@ term_and_job_init(
 		goto to_winpty;
 	    else
 		goto to_error;
+    }
 
     if (STRICMP(curwin->w_p_tmod, "conpty") == 0)
+    {
 	if (has_conpty)
 	    if (has_winpty)
 		goto to_conpty;
@@ -5957,6 +5962,7 @@ term_and_job_init(
 		goto to_winpty;
 	    else
 		goto to_error;
+    }
 
 to_error:
     return dyn_winpty_init(TRUE);
