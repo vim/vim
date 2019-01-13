@@ -69,3 +69,21 @@ func Test_for_invalid()
   call assert_fails("for x in 'asdf'", 'E714:')
   call assert_fails("for x in {'a': 9}", 'E714:')
 endfunc
+
+func Test_readfile_binary()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  setlocal ff=dos
+  write XReadfile
+  let lines = readfile('XReadfile')
+  call assert_equal(['one', 'two', 'three'], lines)
+  let lines = readfile('XReadfile', '', 2)
+  call assert_equal(['one', 'two'], lines)
+  let lines = readfile('XReadfile', 'b')
+  call assert_equal(["one\r", "two\r", "three\r", ""], lines)
+  let lines = readfile('XReadfile', 'b', 2)
+  call assert_equal(["one\r", "two\r"], lines)
+
+  bwipe!
+  call delete('XReadfile')
+endfunc

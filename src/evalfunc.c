@@ -1258,8 +1258,14 @@ f_add(typval_T *argvars, typval_T *rettv)
 		&& !tv_check_lock(b->bv_lock,
 					 (char_u *)N_("add() argument"), TRUE))
 	{
-	    ga_append(&b->bv_ga, (char_u)tv_get_number(&argvars[1]));
-	    copy_tv(&argvars[0], rettv);
+	    int		error = FALSE;
+	    varnumber_T n = tv_get_number_chk(&argvars[1], &error);
+
+	    if (!error)
+	    {
+		ga_append(&b->bv_ga, (int)n);
+		copy_tv(&argvars[0], rettv);
+	    }
 	}
     }
     else
@@ -3196,7 +3202,6 @@ f_empty(typval_T *argvars, typval_T *rettv)
 
 	case VAR_BLOB:
 	    n = argvars[0].vval.v_blob == NULL
-		|| argvars[0].vval.v_blob->bv_ga.ga_data == NULL
 		|| argvars[0].vval.v_blob->bv_ga.ga_len == 0;
 	    break;
 
@@ -7029,6 +7034,13 @@ f_index(typval_T *argvars, typval_T *rettv)
 	b = argvars[0].vval.v_blob;
 	if (b == NULL)
 	    return;
+	if (start < 0)
+	{
+	    start = blob_len(b) + start;
+	    if (start < 0)
+		start = 0;
+	}
+
 	for (idx = start; idx < blob_len(b); ++idx)
 	{
 	    tv.v_type = VAR_NUMBER;
