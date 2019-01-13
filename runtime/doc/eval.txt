@@ -9297,8 +9297,9 @@ term_start({cmd}, {options})				*term_start()*
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
 				     color modes.  See |g:terminal_ansi_colors|.
-		   "winpty"	     Use winpty as the virtual console.
-		   "conpty"	     Use ConPTY as the virtual console.
+		   "term_mode"	     Specify which pty to use:
+					"winpty": Use winpty
+					"conpty": Use ConPTY
 
 		{only available when compiled with the |+terminal| feature}
 
