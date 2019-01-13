@@ -2615,6 +2615,8 @@ eval_for_line(
 		    clear_tv(&tv);
 		else
 		{
+		    // No need to increment the refcount, it's already set for
+		    // the blob being used in "tv".
 		    fi->fi_blob = b;
 		    fi->fi_bi = 0;
 		}
@@ -2684,6 +2686,8 @@ free_for_info(void *fi_void)
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
 	list_unref(fi->fi_list);
     }
+    if (fi != NULL && fi->fi_blob != NULL)
+	blob_unref(fi->fi_blob);
     vim_free(fi);
 }
 
@@ -4217,8 +4221,12 @@ eval7(
 		    {
 			if (!vim_isxdigit(bp[1]))
 			{
-			    EMSG(_("E973: Blob literal should have an even number of hex characters"));
-			    vim_free(blob);
+			    if (blob != NULL)
+			    {
+				EMSG(_("E973: Blob literal should have an even number of hex characters"));
+				ga_clear(&blob->bv_ga);
+				VIM_CLEAR(blob);
+			    }
 			    ret = FAIL;
 			    break;
 			}
@@ -4227,11 +4235,7 @@ eval7(
 					 (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
 		    }
 		    if (blob != NULL)
-		    {
-			++blob->bv_refcount;
-			rettv->v_type = VAR_BLOB;
-			rettv->vval.v_blob = blob;
-		    }
+			rettv_blob_set(rettv, blob);
 		    *arg = bp;
 		}
 		else
