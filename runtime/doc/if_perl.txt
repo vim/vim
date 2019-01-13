@@ -191,6 +191,9 @@ VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list
 			A |List| is turned into a string by joining the items
 			and inserting line breaks.
 
+							*perl-Blob*
+VIM::Blob({expr})	Return Blob literal string 0zXXXX from scalar value.
+
 							*perl-SetHeight*
 Window->SetHeight({height})
 			Sets the Window height to {height}, within screen

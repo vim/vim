@@ -195,8 +195,10 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*res;
+    blob_T	*b;
     list_T	*l;
     dict_T	*d;
+    int		i;
 
     switch (val->v_type)
     {
@@ -232,6 +234,25 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    /* no JSON equivalent TODO: better error */
 	    EMSG(_(e_invarg));
 	    return FAIL;
+
+	case VAR_BLOB:
+	    b = val->vval.v_blob;
+	    if (b == NULL || b->bv_ga.ga_len == 0)
+		ga_concat(gap, (char_u *)"[]");
+	    else
+	    {
+		ga_append(gap, '[');
+		for (i = 0; i < b->bv_ga.ga_len; i++)
+		{
+		    if (i > 0)
+			ga_concat(gap, (char_u *)",");
+		    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d",
+			    (int)blob_get(b, i));
+		    ga_concat(gap, numbuf);
+		}
+		ga_append(gap, ']');
+	    }
+	    break;
 
 	case VAR_LIST:
 	    l = val->vval.v_list;

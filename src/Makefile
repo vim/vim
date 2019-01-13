@@ -1577,6 +1577,7 @@ include testdir/Make_all.mak
 BASIC_SRC = \
 	arabic.c \
 	beval.c \
+	blob.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -1693,6 +1694,7 @@ OBJ_COMMON = \
 	objects/arabic.o \
 	objects/beval.o \
 	objects/buffer.o \
+	objects/blob.o \
 	objects/blowfish.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
@@ -2943,6 +2945,9 @@ $(ALL_OBJ): objects/.dirstamp
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
 
+objects/blob.o: blob.c
+	$(CCC) -o $@ blob.c
+
 objects/blowfish.o: blowfish.c
 	$(CCC) -o $@ blowfish.c
 
@@ -3392,6 +3397,10 @@ objects/arabic.o: arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
 objects/beval.o: beval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h farsi.h arabic.h
+objects/blob.o: blob.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h

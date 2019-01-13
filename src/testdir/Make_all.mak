@@ -73,6 +73,7 @@ NEW_TESTS = \
 	test_backspace_opt \
 	test_backup \
 	test_behave \
+	test_blob \
 	test_blockedit \
 	test_breakindent \
 	test_bufline \
@@ -283,6 +284,7 @@ NEW_TESTS_RES = \
 	test_autocmd.res \
 	test_autoload.res \
 	test_backspace_opt.res \
+	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
 	test_bufwintabinfo.res \
