@@ -4208,7 +4208,7 @@ eval7(
 		if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
 		{
 		    char_u  *bp;
-		    blob_T  *blob;
+		    blob_T  *blob = NULL;  // init for gcc
 
 		    // Blob constant: 0z0123456789abcdef
 		    if (evaluate)
