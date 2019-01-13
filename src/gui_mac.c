@@ -3556,7 +3556,7 @@ gui_mch_get_font(char_u *name, int giveErrorIfMissing)
     if (font == NOFONT)
     {
 	if (giveErrorIfMissing)
-	    EMSG2(_(e_font), name);
+	    semsg(_(e_font), name);
 	return NOFONT;
     }
     /*

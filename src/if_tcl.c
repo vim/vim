@@ -213,7 +213,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     if (!(hTclLib = load_dll(libname)))
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
@@ -224,7 +224,7 @@ tcl_runtime_link_init(char *libname, int verbose)
 	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), tcl_funcname_table[i].name);
+		semsg(_(e_loadfunc), tcl_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -1539,7 +1539,7 @@ tclsetdelcmd(
 	reflist = reflist->next;
     }
     /* This should never happen.  Famous last word? */
-    EMSG(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
+    emsg(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
     Tcl_SetResult(interp, _("cannot register callback command: buffer/window reference not found"), TCL_STATIC);
     return TCL_ERROR;
 }
@@ -1709,7 +1709,7 @@ tclinit(exarg_T *eap)
 #ifdef DYNAMIC_TCL
     if (!tcl_enabled(TRUE))
     {
-	EMSG(_("E571: Sorry, this command is disabled: the Tcl library could not be loaded."));
+	emsg(_("E571: Sorry, this command is disabled: the Tcl library could not be loaded."));
 	return FAIL;
     }
 #endif
@@ -1817,11 +1817,11 @@ tclerrmsg(char *text)
     while ((next=strchr(text, '\n')))
     {
 	*next++ = '\0';
-	EMSG(text);
+	emsg(text);
 	text = next;
     }
     if (*text)
-	EMSG(text);
+	emsg(text);
 }
 
     static void

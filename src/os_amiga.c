@@ -963,7 +963,7 @@ mch_settmode(int tmode)
     int
 mch_screenmode(char_u *arg)
 {
-    EMSG(_(e_screenmode));
+    emsg(_(e_screenmode));
     return FAIL;
 }
 
@@ -1189,7 +1189,7 @@ mch_call_shell(
     if (close_win)
     {
 	/* if Vim opened a window: Executing a shell may cause crashes */
-	EMSG(_("E360: Cannot execute shell with -f option"));
+	emsg(_("E360: Cannot execute shell with -f option"));
 	return -1;
     }
 
@@ -1517,11 +1517,11 @@ mch_expandpath(
     matches = gap->ga_len - start_len;
 
     if (Result == ERROR_BUFFER_OVERFLOW)
-	EMSG(_("ANCHOR_BUF_SIZE too small."));
+	emsg(_("ANCHOR_BUF_SIZE too small."));
     else if (matches == 0 && Result != ERROR_OBJECT_NOT_FOUND
 			  && Result != ERROR_DEVICE_NOT_MOUNTED
 			  && Result != ERROR_NO_MORE_ENTRIES)
-	EMSG(_("I/O ERROR"));
+	emsg(_("I/O ERROR"));
 
     /*
      * Sort the files for this pattern.

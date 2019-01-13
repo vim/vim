@@ -116,7 +116,7 @@ ch_logfile(char_u *fname, char_u *opt)
 	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
 	if (file == NULL)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    return;
 	}
     }
@@ -209,8 +209,7 @@ ch_error(channel_T *ch, const char *fmt, ...)
 
 #ifdef _WIN32
 # undef PERROR
-# define PERROR(msg) (void)emsg3((char_u *)"%s: %s", \
-	(char_u *)msg, (char_u *)strerror_win32(errno))
+# define PERROR(msg) (void)semsg("%s: %s", msg, strerror_win32(errno))
 
     static char *
 strerror_win32(int eno)
@@ -942,7 +941,7 @@ channel_open_func(typval_T *argvars)
     if (argvars[1].v_type != VAR_UNKNOWN
 	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return NULL;
     }
 
@@ -950,7 +949,7 @@ channel_open_func(typval_T *argvars)
     p = vim_strchr(address, ':');
     if (p == NULL)
     {
-	EMSG2(_(e_invarg2), address);
+	semsg(_(e_invarg2), address);
 	return NULL;
     }
     *p++ = NUL;
@@ -958,7 +957,7 @@ channel_open_func(typval_T *argvars)
     if (*address == NUL || port <= 0 || *rest != NUL)
     {
 	p[-1] = ':';
-	EMSG2(_(e_invarg2), address);
+	semsg(_(e_invarg2), address);
 	return NULL;
     }
 
@@ -971,7 +970,7 @@ channel_open_func(typval_T *argvars)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto theend;
     }
 
@@ -1233,7 +1232,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	{
 	    buf = buflist_findnr(opt->jo_io_buf[PART_OUT]);
 	    if (buf == NULL)
-		EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[PART_OUT]);
+		semsg(_(e_nobufnr), (long)opt->jo_io_buf[PART_OUT]);
 	}
 	else
 	{
@@ -1251,7 +1250,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (!buf->b_p_ma && !channel->ch_part[PART_OUT].ch_nomodifiable)
 	    {
-		EMSG(_(e_modifiable));
+		emsg(_(e_modifiable));
 	    }
 	    else
 	    {
@@ -1280,7 +1279,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	{
 	    buf = buflist_findnr(opt->jo_io_buf[PART_ERR]);
 	    if (buf == NULL)
-		EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[PART_ERR]);
+		semsg(_(e_nobufnr), (long)opt->jo_io_buf[PART_ERR]);
 	}
 	else
 	{
@@ -1297,7 +1296,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 						!opt->jo_modifiable[PART_ERR];
 	    if (!buf->b_p_ma && !channel->ch_part[PART_ERR].ch_nomodifiable)
 	    {
-		EMSG(_(e_modifiable));
+		emsg(_(e_modifiable));
 	    }
 	    else
 	    {
@@ -1619,7 +1618,7 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
     int		dummy;
 
     if (safe_to_invoke_callback == 0)
-	IEMSG("INTERNAL: Invoking callback when it is not safe");
+	iemsg("INTERNAL: Invoking callback when it is not safe");
 
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
@@ -2237,7 +2236,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     {
 	ch_error(channel, "received command with non-string argument");
 	if (p_verbose > 2)
-	    EMSG(_("E903: received command with non-string argument"));
+	    emsg(_("E903: received command with non-string argument"));
 	return;
     }
     arg = argv[1].vval.v_string;
@@ -2289,13 +2288,13 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	{
 	    ch_error(channel, "last argument for expr/call must be a number");
 	    if (p_verbose > 2)
-		EMSG(_("E904: last argument for expr/call must be a number"));
+		emsg(_("E904: last argument for expr/call must be a number"));
 	}
 	else if (is_call && argv[2].v_type != VAR_LIST)
 	{
 	    ch_error(channel, "third argument for call must be a list");
 	    if (p_verbose > 2)
-		EMSG(_("E904: third argument for call must be a list"));
+		emsg(_("E904: third argument for call must be a list"));
 	}
 	else
 	{
@@ -2351,7 +2350,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     else if (p_verbose > 2)
     {
 	ch_error(channel, "Received unknown command: %s", (char *)cmd);
-	EMSG2(_("E905: received unknown command: %s"), cmd);
+	semsg(_("E905: received unknown command: %s"), cmd);
     }
 }
 
@@ -3769,7 +3768,7 @@ channel_send(
 	if (!channel->ch_error && fun != NULL)
 	{
 	    ch_error(channel, "%s(): write while not connected", fun);
-	    EMSG2(_("E630: %s(): write while not connected"), fun);
+	    semsg(_("E630: %s(): write while not connected"), fun);
 	}
 	channel->ch_error = TRUE;
 	return FAIL;
@@ -3916,7 +3915,7 @@ channel_send(
 	    if (!channel->ch_error && fun != NULL)
 	    {
 		ch_error(channel, "%s(): write failed", fun);
-		EMSG2(_("E631: %s(): write failed"), fun);
+		semsg(_("E631: %s(): write failed"), fun);
 	    }
 	    channel->ch_error = TRUE;
 	    return FAIL;
@@ -3964,7 +3963,7 @@ send_common(
     {
 	if (eval)
 	{
-	    EMSG2(_("E917: Cannot use a callback with %s()"), fun);
+	    semsg(_("E917: Cannot use a callback with %s()"), fun);
 	    return NULL;
 	}
 	channel_set_req_callback(channel, *part_read,
@@ -4005,7 +4004,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
     ch_mode = channel_get_mode(channel, part_send);
     if (ch_mode == MODE_RAW || ch_mode == MODE_NL)
     {
-	EMSG(_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
+	emsg(_("E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"));
 	return;
     }
 
@@ -4478,7 +4477,7 @@ handle_mode(typval_T *item, jobopt_T *opt, ch_mode_T *modep, int jo)
 	*modep = MODE_JSON;
     else
     {
-	EMSG2(_(e_invarg2), val);
+	semsg(_(e_invarg2), val);
 	return FAIL;
     }
     return OK;
@@ -4502,7 +4501,7 @@ handle_io(typval_T *item, ch_part_T part, jobopt_T *opt)
 	opt->jo_io[part] = JIO_OUT;
     else
     {
-	EMSG2(_(e_invarg2), val);
+	semsg(_(e_invarg2), val);
 	return FAIL;
     }
     return OK;
@@ -4576,7 +4575,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
     if (tv->v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return FAIL;
     }
     dict = tv->vval.v_dict;
@@ -4665,12 +4664,12 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_io_buf[part] = tv_get_number(item);
 		if (opt->jo_io_buf[part] <= 0)
 		{
-		    EMSG3(_(e_invargNval), hi->hi_key, tv_get_string(item));
+		    semsg(_(e_invargNval), hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 		if (buflist_findnr(opt->jo_io_buf[part]) == NULL)
 		{
-		    EMSGN(_(e_nobufnr), (long)opt->jo_io_buf[part]);
+		    semsg(_(e_nobufnr), (long)opt->jo_io_buf[part]);
 		    return FAIL;
 		}
 	    }
@@ -4714,7 +4713,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		*lp = tv_get_number(item);
 		if (*lp < 0)
 		{
-		    EMSG3(_(e_invargNval), hi->hi_key, tv_get_string(item));
+		    semsg(_(e_invargNval), hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 	    }
@@ -4725,7 +4724,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set |= JO_CHANNEL;
 		if (item->v_type != VAR_CHANNEL)
 		{
-		    EMSG2(_(e_invargval), "channel");
+		    semsg(_(e_invargval), "channel");
 		    return FAIL;
 		}
 		opt->jo_channel = item->vval.v_channel;
@@ -4738,7 +4737,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_callback = get_callback(item, &opt->jo_partial);
 		if (opt->jo_callback == NULL)
 		{
-		    EMSG2(_(e_invargval), "callback");
+		    semsg(_(e_invargval), "callback");
 		    return FAIL;
 		}
 	    }
@@ -4750,7 +4749,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_out_cb = get_callback(item, &opt->jo_out_partial);
 		if (opt->jo_out_cb == NULL)
 		{
-		    EMSG2(_(e_invargval), "out_cb");
+		    semsg(_(e_invargval), "out_cb");
 		    return FAIL;
 		}
 	    }
@@ -4762,7 +4761,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_err_cb = get_callback(item, &opt->jo_err_partial);
 		if (opt->jo_err_cb == NULL)
 		{
-		    EMSG2(_(e_invargval), "err_cb");
+		    semsg(_(e_invargval), "err_cb");
 		    return FAIL;
 		}
 	    }
@@ -4774,7 +4773,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_close_cb = get_callback(item, &opt->jo_close_partial);
 		if (opt->jo_close_cb == NULL)
 		{
-		    EMSG2(_(e_invargval), "close_cb");
+		    semsg(_(e_invargval), "close_cb");
 		    return FAIL;
 		}
 	    }
@@ -4787,7 +4786,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    never = TRUE;
 		else if (STRCMP(val, "auto") != 0)
 		{
-		    EMSG3(_(e_invargNval), "drop", val);
+		    semsg(_(e_invargNval), "drop", val);
 		    return FAIL;
 		}
 		opt->jo_drop_never = never;
@@ -4800,7 +4799,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_exit_cb = get_callback(item, &opt->jo_exit_partial);
 		if (opt->jo_exit_cb == NULL)
 		{
-		    EMSG2(_(e_invargval), "exit_cb");
+		    semsg(_(e_invargval), "exit_cb");
 		    return FAIL;
 		}
 	    }
@@ -4813,7 +4812,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_term_name = tv_get_string_chk(item);
 		if (opt->jo_term_name == NULL)
 		{
-		    EMSG2(_(e_invargval), "term_name");
+		    semsg(_(e_invargval), "term_name");
 		    return FAIL;
 		}
 	    }
@@ -4824,7 +4823,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		val = tv_get_string(item);
 		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
 		{
-		    EMSG3(_(e_invargNval), "term_finish", val);
+		    semsg(_(e_invargNval), "term_finish", val);
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_TERM_FINISH;
@@ -4848,7 +4847,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		}
 		if (p == NULL)
 		{
-		    EMSG2(_(e_invargval), "term_opencmd");
+		    semsg(_(e_invargval), "term_opencmd");
 		    return FAIL;
 		}
 	    }
@@ -4862,7 +4861,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		p = opt->jo_eof_chars = tv_get_string_chk(item);
 		if (p == NULL)
 		{
-		    EMSG2(_(e_invargval), "eof_chars");
+		    semsg(_(e_invargval), "eof_chars");
 		    return FAIL;
 		}
 	    }
@@ -4928,7 +4927,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (item == NULL || item->v_type != VAR_LIST
 			|| item->vval.v_list == NULL)
 		{
-		    EMSG2(_(e_invargval), "ansi_colors");
+		    semsg(_(e_invargval), "ansi_colors");
 		    return FAIL;
 		}
 
@@ -4951,7 +4950,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 
 		if (n != 16 || li != NULL)
 		{
-		    EMSG2(_(e_invargval), "ansi_colors");
+		    semsg(_(e_invargval), "ansi_colors");
 		    return FAIL;
 		}
 
@@ -4966,7 +4965,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    break;
 		if (item->v_type != VAR_DICT)
 		{
-		    EMSG2(_(e_invargval), "env");
+		    semsg(_(e_invargval), "env");
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_ENV;
@@ -4985,7 +4984,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 #endif
 				)
 		{
-		    EMSG2(_(e_invargval), "cwd");
+		    semsg(_(e_invargval), "cwd");
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_CWD;
@@ -5030,7 +5029,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    opt->jo_part = PART_OUT;
 		else
 		{
-		    EMSG3(_(e_invargNval), "part", val);
+		    semsg(_(e_invargNval), "part", val);
 		    return FAIL;
 		}
 	    }
@@ -5050,7 +5049,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 							     opt->jo_soe_buf);
 		if (opt->jo_stoponexit == NULL)
 		{
-		    EMSG2(_(e_invargval), "stoponexit");
+		    semsg(_(e_invargval), "stoponexit");
 		    return FAIL;
 		}
 	    }
@@ -5067,7 +5066,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	}
     if (todo > 0)
     {
-	EMSG2(_(e_invarg2), hi->hi_key);
+	semsg(_(e_invarg2), hi->hi_key);
 	return FAIL;
     }
 
@@ -5098,7 +5097,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     }
     else
     {
-	EMSG2(_(e_invarg2), tv_get_string(tv));
+	semsg(_(e_invarg2), tv_get_string(tv));
 	return NULL;
     }
     if (channel != NULL && reading)
@@ -5108,7 +5107,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
     if (check_open && (channel == NULL || (!channel_is_open(channel)
 					     && !(reading && has_readahead))))
     {
-	EMSG(_("E906: not an open channel"));
+	emsg(_("E906: not an open channel"));
 	return NULL;
     }
     return channel;
@@ -5662,7 +5661,7 @@ job_start(
 		&& (!(opt.jo_set & (JO_OUT_NAME << (part - PART_OUT)))
 		    || *opt.jo_io_name[part] == NUL))
 	{
-	    EMSG(_("E920: _io file requires _name to be set"));
+	    emsg(_("E920: _io file requires _name to be set"));
 	    goto theend;
 	}
 
@@ -5675,11 +5674,11 @@ job_start(
 	{
 	    buf = buflist_findnr(opt.jo_io_buf[PART_IN]);
 	    if (buf == NULL)
-		EMSGN(_(e_nobufnr), (long)opt.jo_io_buf[PART_IN]);
+		semsg(_(e_nobufnr), (long)opt.jo_io_buf[PART_IN]);
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
 	{
-	    EMSG(_("E915: in_io buffer requires in_buf or in_name to be set"));
+	    emsg(_("E915: in_io buffer requires in_buf or in_name to be set"));
 	}
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
@@ -5697,7 +5696,7 @@ job_start(
 	    }
 	    else
 		s = opt.jo_io_name[PART_IN];
-	    EMSG2(_("E918: buffer must be loaded: %s"), s);
+	    semsg(_("E918: buffer must be loaded: %s"), s);
 	    goto theend;
 	}
 	job->jv_in_buf = buf;
@@ -5726,7 +5725,7 @@ job_start(
 	cmd = argvars[0].vval.v_string;
 	if (cmd == NULL || *cmd == NUL)
 	{
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    goto theend;
 	}
 
@@ -5737,7 +5736,7 @@ job_start(
 	    || argvars[0].vval.v_list == NULL
 	    || argvars[0].vval.v_list->lv_len < 1)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto theend;
     }
     else
@@ -5898,7 +5897,7 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 	arg = tv_get_string_chk(&argvars[1]);
 	if (arg == NULL)
 	{
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return 0;
 	}
     }

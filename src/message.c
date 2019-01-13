@@ -358,23 +358,23 @@ trunc_string(
 
 /*
  * Automatic prototype generation does not understand this function.
- * Note: Caller of smgs() and smsg_attr() must check the resulting string is
+ * Note: Caller of smsg() and smsg_attr() must check the resulting string is
  * shorter than IOSIZE!!!
  */
 #ifndef PROTO
 
-int vim_snprintf(char *str, size_t str_m, char *fmt, ...);
+int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
 
     int
 # ifdef __BORLANDC__
 _RTLENTRYF
 # endif
-smsg(char_u *s, ...)
+smsg(const char *s, ...)
 {
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
     va_end(arglist);
     return msg(IObuff);
 }
@@ -383,12 +383,12 @@ smsg(char_u *s, ...)
 # ifdef __BORLANDC__
 _RTLENTRYF
 # endif
-smsg_attr(int attr, char_u *s, ...)
+smsg_attr(int attr, const char *s, ...)
 {
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
     va_end(arglist);
     return msg_attr(IObuff, attr);
 }
@@ -397,12 +397,12 @@ smsg_attr(int attr, char_u *s, ...)
 # ifdef __BORLANDC__
 _RTLENTRYF
 # endif
-smsg_attr_keep(int attr, char_u *s, ...)
+smsg_attr_keep(int attr, const char *s, ...)
 {
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
     va_end(arglist);
     return msg_attr_keep(IObuff, attr, TRUE);
 }
@@ -582,21 +582,22 @@ do_perror(char *msg)
 {
     perror(msg);
     ++emsg_silent;
-    emsg((char_u *)msg);
+    emsg(msg);
     --emsg_silent;
 }
 #endif
 
 /*
- * emsg() - display an error message
+ * emsg_core() - display an error message
  *
  * Rings the bell, if appropriate, and calls message() to do the real work
  * When terminal not initialized (yet) mch_errmsg(..) is used.
  *
- * return TRUE if wait_return not called
+ * Return TRUE if wait_return not called.
+ * Note: caller must check 'emsg_not_now()' before calling this.
  */
-    int
-emsg(char_u *s)
+    static int
+emsg_core(char_u *s)
 {
     int		attr;
     char_u	*p;
@@ -605,10 +606,6 @@ emsg(char_u *s)
     int		ignore = FALSE;
     int		severe;
 #endif
-
-    /* Skip this if not giving error messages at the moment. */
-    if (emsg_not_now())
-	return TRUE;
 
 #ifdef FEAT_EVAL
     /* When testing some errors are turned into a normal message. */
@@ -727,40 +724,36 @@ emsg(char_u *s)
     return r;
 }
 
-
 /*
- * Print an error message with one "%s" and one string argument.
+ * Print an error message.
  */
     int
-emsg2(char_u *s, char_u *a1)
+emsg(char *s)
 {
-    return emsg3(s, a1, NULL);
+    /* Skip this if not giving error messages at the moment. */
+    if (!emsg_not_now())
+	return emsg_core((char_u *)s);
+    return TRUE;		/* no error messages at the moment */
 }
 
 /*
- * Print an error message with one or two "%s" and one or two string arguments.
- * This is not in message.c to avoid a warning for prototypes.
+ * Print an error message with format string and variable arguments.
+ * Note: caller must not pass 'IObuff' as 1st argument.
  */
     int
-emsg3(char_u *s, char_u *a1, char_u *a2)
+semsg(const char *s, ...)
 {
-    if (emsg_not_now())
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, a1, a2);
-    return emsg(IObuff);
-}
+    /* Skip this if not giving error messages at the moment. */
+    if (!emsg_not_now())
+    {
+	va_list ap;
 
-/*
- * Print an error message with one "%ld" and one long int argument.
- * This is not in message.c to avoid a warning for prototypes.
- */
-    int
-emsgn(char_u *s, long n)
-{
-    if (emsg_not_now())
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
-    return emsg(IObuff);
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	return emsg_core(IObuff);
+    }
+    return TRUE;		/* no error messages at the moment */
 }
 
 /*
@@ -769,38 +762,33 @@ emsgn(char_u *s, long n)
  * detected when fuzzing vim.
  */
     void
-iemsg(char_u *s)
+iemsg(char *s)
 {
-    emsg(s);
-#ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
-#endif
-}
-
-
-/*
- * Same as emsg2(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
- * defined. It is used for internal errors only, so that they can be
- * detected when fuzzing vim.
- */
-    void
-iemsg2(char_u *s, char_u *a1)
-{
-    emsg2(s, a1);
+    if (!emsg_not_now())
+	emsg_core((char_u *)s);
 #ifdef ABORT_ON_INTERNAL_ERROR
     abort();
 #endif
 }
 
 /*
- * Same as emsgn(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
+ * Same as semsg(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
  * defined. It is used for internal errors only, so that they can be
  * detected when fuzzing vim.
+ * Note: caller must not pass 'IObuff' as 1st argument.
  */
     void
-iemsgn(char_u *s, long n)
+siemsg(const char *s, ...)
 {
-    emsgn(s, n);
+    if (!emsg_not_now())
+    {
+	va_list ap;
+
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	emsg_core(IObuff);
+    }
 #ifdef ABORT_ON_INTERNAL_ERROR
     abort();
 #endif
@@ -812,7 +800,7 @@ iemsgn(char_u *s, long n)
     void
 internal_error(char *where)
 {
-    IEMSG2(_(e_intern2), where);
+    siemsg(_(e_intern2), where);
 }
 
 /* emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes. */
@@ -820,7 +808,7 @@ internal_error(char *where)
     void
 emsg_invreg(int name)
 {
-    EMSG2(_("E354: Invalid register name: '%s'"), transchar(name));
+    semsg(_("E354: Invalid register name: '%s'"), transchar(name));
 }
 
 /*
@@ -969,7 +957,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -3473,7 +3461,7 @@ verbose_open(void)
 	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
-	    EMSG2(_(e_notopen), p_vfile);
+	    semsg(_(e_notopen), p_vfile);
 	    return FAIL;
 	}
     }
@@ -4092,7 +4080,7 @@ do_browse(
 # endif
     {
 	/* TODO: non-GUI file selector here */
-	EMSG(_("E338: Sorry, no file browser in console mode"));
+	emsg(_("E338: Sorry, no file browser in console mode"));
 	fname = NULL;
     }
 
@@ -4136,7 +4124,7 @@ tv_nr(typval_T *tvs, int *idxp)
     int		err = FALSE;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
@@ -4163,7 +4151,7 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     static char_u   numbuf[NUMBUFLEN];
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
@@ -4186,7 +4174,7 @@ tv_float(typval_T *tvs, int *idxp)
     double	f = 0;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
@@ -4195,7 +4183,7 @@ tv_float(typval_T *tvs, int *idxp)
 	else if (tvs[idx].v_type == VAR_NUMBER)
 	    f = (double)tvs[idx].vval.v_number;
 	else
-	    EMSG(_("E807: Expected Float argument for printf()"));
+	    emsg(_("E807: Expected Float argument for printf()"));
     }
     return f;
 }
@@ -4274,7 +4262,7 @@ infinity_str(int positive,
 
 /* Like vim_vsnprintf() but append to the string. */
     int
-vim_snprintf_add(char *str, size_t str_m, char *fmt, ...)
+vim_snprintf_add(char *str, size_t str_m, const char *fmt, ...)
 {
     va_list	ap;
     int		str_l;
@@ -4292,7 +4280,7 @@ vim_snprintf_add(char *str, size_t str_m, char *fmt, ...)
 }
 
     int
-vim_snprintf(char *str, size_t str_m, char *fmt, ...)
+vim_snprintf(char *str, size_t str_m, const char *fmt, ...)
 {
     va_list	ap;
     int		str_l;
@@ -4307,7 +4295,7 @@ vim_snprintf(char *str, size_t str_m, char *fmt, ...)
 vim_vsnprintf(
     char	*str,
     size_t	str_m,
-    char	*fmt,
+    const char	*fmt,
     va_list	ap)
 {
     return vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
@@ -4317,12 +4305,12 @@ vim_vsnprintf(
 vim_vsnprintf_typval(
     char	*str,
     size_t	str_m,
-    char	*fmt,
+    const char	*fmt,
     va_list	ap,
     typval_T	*tvs)
 {
     size_t	str_l = 0;
-    char	*p = fmt;
+    const char	*p = fmt;
     int		arg_idx = 1;
 
     if (p == NULL)
@@ -4370,7 +4358,7 @@ vim_vsnprintf_typval(
 	    char    tmp[TMP_LEN];
 
 	    /* string address in case of string argument */
-	    char    *str_arg;
+	    const char  *str_arg = NULL;
 
 	    /* natural field width of arg without padding and sign */
 	    size_t  str_arg_l;
@@ -4394,7 +4382,6 @@ vim_vsnprintf_typval(
 	    char_u  *tofree = NULL;
 
 
-	    str_arg = NULL;
 	    p++;  /* skip '%' */
 
 	    /* parse flags */
@@ -5239,7 +5226,7 @@ vim_vsnprintf_typval(
     }
 
     if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	EMSG(_("E767: Too many arguments to printf()"));
+	emsg(_("E767: Too many arguments to printf()"));
 
     /* Return the number of characters formatted (excluding trailing nul
      * character), that is, the number of characters that would have been

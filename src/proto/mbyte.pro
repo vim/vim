@@ -1,6 +1,6 @@
 /* mbyte.c */
 int enc_canon_props(char_u *name);
-char_u *mb_init(void);
+char *mb_init(void);
 int bomb_size(void);
 void remove_bom(char_u *s);
 int mb_get_class(char_u *p);

@@ -633,7 +633,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    EMSG2(_(e_loadlib), GETTEXT_DLL);
+	    semsg(_(e_loadlib), GETTEXT_DLL);
 	    verbose_leave();
 	}
 	return 0;
@@ -648,7 +648,7 @@ dyn_libintl_init(void)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		EMSG2(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_loadfunc), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -5182,7 +5182,7 @@ mch_call_shell(
 	    {
 		x = -1;
 #ifdef FEAT_GUI_W32
-		EMSG(_("E371: Command not found"));
+		emsg(_("E371: Command not found"));
 #endif
 	    }
 
@@ -5260,7 +5260,7 @@ mch_call_shell(
 #endif
 	    )
     {
-	smsg((char_u *)_("shell returned %d"), x);
+	smsg(_("shell returned %d"), x);
 	msg_putchar('\n');
     }
 #ifdef FEAT_TITLE
@@ -5489,7 +5489,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -5507,7 +5507,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -5525,7 +5525,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }

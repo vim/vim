@@ -1799,7 +1799,7 @@ struct exarg
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
 #endif
-    char_u	*errmsg;	/* returned error message */
+    char	*errmsg;	/* returned error message */
     char_u	*(*getline)(int, void *, int);
     void	*cookie;	/* argument for getline() */
 #ifdef FEAT_EVAL

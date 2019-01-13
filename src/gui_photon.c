@@ -2937,7 +2937,7 @@ gui_mch_get_font(char_u *vim_font_name, int report_error)
     }
 
     if (report_error)
-	EMSG2(e_font, vim_font_name);
+	semsg(e_font, vim_font_name);
 
     return FAIL;
 }

@@ -274,7 +274,7 @@ ex_menu(
     menu_path = arg;
     if (*menu_path == '.')
     {
-	EMSG2(_(e_invarg2), menu_path);
+	semsg(_(e_invarg2), menu_path);
 	goto theend;
     }
 
@@ -290,7 +290,7 @@ ex_menu(
     }
     else if (*map_to != NUL && (unmenu || enable != MAYBE))
     {
-	EMSG(_(e_trailing));
+	emsg(_(e_trailing));
 	goto theend;
     }
 #if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))
@@ -515,7 +515,7 @@ add_menu_path(
 	if (*dname == NUL)
 	{
 	    /* Only a mnemonic or accelerator is not valid. */
-	    EMSG(_("E792: Empty menu name"));
+	    emsg(_("E792: Empty menu name"));
 	    goto erret;
 	}
 
@@ -533,7 +533,7 @@ add_menu_path(
 		if (*next_name == NUL && menu->children != NULL)
 		{
 		    if (!sys_menu)
-			EMSG(_("E330: Menu path must not lead to a sub-menu"));
+			emsg(_("E330: Menu path must not lead to a sub-menu"));
 		    goto erret;
 		}
 		if (*next_name != NUL && menu->children == NULL
@@ -543,7 +543,7 @@ add_menu_path(
 			)
 		{
 		    if (!sys_menu)
-			EMSG(_(e_notsubmenu));
+			emsg(_(e_notsubmenu));
 		    goto erret;
 		}
 		break;
@@ -572,13 +572,13 @@ add_menu_path(
 	{
 	    if (*next_name == NUL && parent == NULL)
 	    {
-		EMSG(_("E331: Must not add menu items directly to menu bar"));
+		emsg(_("E331: Must not add menu items directly to menu bar"));
 		goto erret;
 	    }
 
 	    if (menu_is_separator(dname) && *next_name != NUL)
 	    {
-		EMSG(_("E332: Separator cannot be part of a menu path"));
+		emsg(_("E332: Separator cannot be part of a menu path"));
 		goto erret;
 	    }
 
@@ -867,7 +867,7 @@ menu_nable_recurse(
 	    {
 		if (menu->children == NULL)
 		{
-		    EMSG(_(e_notsubmenu));
+		    emsg(_(e_notsubmenu));
 		    return FAIL;
 		}
 		if (menu_nable_recurse(menu->children, p, modes, enable)
@@ -892,7 +892,7 @@ menu_nable_recurse(
     }
     if (*name != NUL && *name != '*' && menu == NULL)
     {
-	EMSG2(_(e_nomenu), name);
+	semsg(_(e_nomenu), name);
 	return FAIL;
     }
 
@@ -933,7 +933,7 @@ remove_menu(
 	    if (*p != NUL && menu->children == NULL)
 	    {
 		if (!silent)
-		    EMSG(_(e_notsubmenu));
+		    emsg(_(e_notsubmenu));
 		return FAIL;
 	    }
 	    if ((menu->modes & modes) != 0x0)
@@ -955,7 +955,7 @@ remove_menu(
 	    else if (*name != NUL)
 	    {
 		if (!silent)
-		    EMSG(_(e_menuothermode));
+		    emsg(_(e_menuothermode));
 		return FAIL;
 	    }
 
@@ -985,7 +985,7 @@ remove_menu(
 	if (menu == NULL)
 	{
 	    if (!silent)
-		EMSG2(_(e_nomenu), name);
+		semsg(_(e_nomenu), name);
 	    return FAIL;
 	}
 
@@ -1123,13 +1123,13 @@ show_menus(char_u *path_name, int modes)
 		/* Found menu */
 		if (*p != NUL && menu->children == NULL)
 		{
-		    EMSG(_(e_notsubmenu));
+		    emsg(_(e_notsubmenu));
 		    vim_free(path_name);
 		    return FAIL;
 		}
 		else if ((menu->modes & modes) == 0x0)
 		{
-		    EMSG(_(e_menuothermode));
+		    emsg(_(e_menuothermode));
 		    vim_free(path_name);
 		    return FAIL;
 		}
@@ -1139,7 +1139,7 @@ show_menus(char_u *path_name, int modes)
 	}
 	if (menu == NULL)
 	{
-	    EMSG2(_(e_nomenu), name);
+	    semsg(_(e_nomenu), name);
 	    vim_free(path_name);
 	    return FAIL;
 	}
@@ -2400,7 +2400,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 	    default:
 		mode = (char_u *)"Normal";
 	}
-	EMSG2(_("E335: Menu not defined for %s mode"), mode);
+	semsg(_("E335: Menu not defined for %s mode"), mode);
     }
 }
 
@@ -2430,7 +2430,7 @@ ex_emenu(exarg_T *eap)
 	    case 't': mode_idx = MENU_INDEX_TERMINAL; break;
 	    case 'i': mode_idx = MENU_INDEX_INSERT; break;
 	    case 'c': mode_idx = MENU_INDEX_CMDLINE; break;
-	    default: EMSG2(_(e_invarg2), arg);
+	    default: semsg(_(e_invarg2), arg);
 		     return;
 	}
 	arg = skipwhite(arg + 2);
@@ -2453,13 +2453,13 @@ ex_emenu(exarg_T *eap)
 	    {
 		if (*p == NUL && menu->children != NULL)
 		{
-		    EMSG(_("E333: Menu path must lead to a menu item"));
+		    emsg(_("E333: Menu path must lead to a menu item"));
 		    gave_emsg = TRUE;
 		    menu = NULL;
 		}
 		else if (*p != NUL && menu->children == NULL)
 		{
-		    EMSG(_(e_notsubmenu));
+		    emsg(_(e_notsubmenu));
 		    menu = NULL;
 		}
 		break;
@@ -2475,7 +2475,7 @@ ex_emenu(exarg_T *eap)
     if (menu == NULL)
     {
 	if (!gave_emsg)
-	    EMSG2(_("E334: Menu not found: %s"), arg);
+	    semsg(_("E334: Menu not found: %s"), arg);
 	return;
     }
 
@@ -2567,9 +2567,9 @@ gui_find_menu(char_u *path_name)
 		{
 		    /* found a menu item instead of a sub-menu */
 		    if (*p == NUL)
-			EMSG(_("E336: Menu path must lead to a sub-menu"));
+			emsg(_("E336: Menu path must lead to a sub-menu"));
 		    else
-			EMSG(_(e_notsubmenu));
+			emsg(_(e_notsubmenu));
 		    menu = NULL;
 		    goto theend;
 		}
@@ -2588,7 +2588,7 @@ gui_find_menu(char_u *path_name)
     }
 
     if (menu == NULL)
-	EMSG(_("E337: Menu not found - check menu names"));
+	emsg(_("E337: Menu not found - check menu names"));
 theend:
     vim_free(saved_name);
     return menu;
@@ -2654,7 +2654,7 @@ ex_menutranslate(exarg_T *eap UNUSED)
 	*arg = NUL;
 	arg = menu_skip_part(to);
 	if (arg == to)
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	else
 	{
 	    if (ga_grow(&menutrans_ga, 1) == OK)

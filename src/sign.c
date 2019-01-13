@@ -752,7 +752,7 @@ sign_define_by_name(
 		if (next_sign_typenr == start)
 		{
 		    vim_free(sp);
-		    EMSG(_("E612: Too many signs defined"));
+		    emsg(_("E612: Too many signs defined"));
 		    return FAIL;
 		}
 		lp = first_sign;  // start all over
@@ -835,7 +835,7 @@ sign_define_by_name(
 	// Currently must be one or two display cells
 	if (s != endp || cells < 1 || cells > 2)
 	{
-	    EMSG2(_("E239: Invalid sign text: %s"), text);
+	    semsg(_("E239: Invalid sign text: %s"), text);
 	    return FAIL;
 	}
 
@@ -870,7 +870,7 @@ sign_undefine_by_name(char_u *name)
     sp = sign_find(name, &sp_prev);
     if (sp == NULL)
     {
-	EMSG2(_("E155: Unknown sign: %s"), name);
+	semsg(_("E155: Unknown sign: %s"), name);
 	return FAIL;
     }
     sign_undefine(sp, sp_prev);
@@ -890,7 +890,7 @@ sign_list_by_name(char_u *name)
     if (sp != NULL)
 	sign_list_defined(sp);
     else
-	EMSG2(_("E155: Unknown sign: %s"), name);
+	semsg(_("E155: Unknown sign: %s"), name);
 }
 
 /*
@@ -916,7 +916,7 @@ sign_place(
 	    break;
     if (sp == NULL)
     {
-	EMSG2(_("E155: Unknown sign: %s"), sign_name);
+	semsg(_("E155: Unknown sign: %s"), sign_name);
 	return FAIL;
     }
     if (*sign_id == 0)
@@ -933,7 +933,7 @@ sign_place(
 	redraw_buf_line_later(buf, lnum);
     else
     {
-	EMSG2(_("E885: Not possible to change sign %s"), sign_name);
+	semsg(_("E885: Not possible to change sign %s"), sign_name);
 	return FAIL;
     }
 
@@ -980,7 +980,7 @@ sign_unplace_at_cursor(char_u *groupname)
     if (id > 0)
 	sign_unplace(id, groupname, curwin->w_buffer, curwin->w_cursor.lnum);
     else
-	EMSG(_("E159: Missing sign number"));
+	emsg(_("E159: Missing sign number"));
 }
 
 /*
@@ -993,7 +993,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
     if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
     {
-	EMSGN(_("E157: Invalid sign ID: %ld"), sign_id);
+	semsg(_("E157: Invalid sign ID: %ld"), sign_id);
 	return -1;
     }
 
@@ -1010,7 +1010,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
 	if (buf->b_fname == NULL)
 	{
-	    EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
+	    emsg(_("E934: Cannot jump to a buffer that does not have a name"));
 	    return -1;
 	}
 	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
@@ -1070,7 +1070,7 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	}
 	else
 	{
-	    EMSG2(_(e_invarg2), arg);
+	    semsg(_(e_invarg2), arg);
 	    failed = TRUE;
 	    break;
 	}
@@ -1111,7 +1111,7 @@ sign_place_cmd(
 	//   :sign place group=*
 	if (lnum >= 0 || sign_name != NULL
 		|| (group != NULL && *group == '\0'))
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	else
 	    sign_list_placed(buf, group);
     }
@@ -1121,7 +1121,7 @@ sign_place_cmd(
 	if (sign_name == NULL || buf == NULL
 		|| (group != NULL && *group == '\0'))
 	{
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return;
 	}
 
@@ -1142,7 +1142,7 @@ sign_unplace_cmd(
 {
     if (lnum >= 0 || sign_name != NULL || (group != NULL && *group == '\0'))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -1211,7 +1211,7 @@ sign_jump_cmd(
 {
     if (sign_name == NULL && group == NULL && id == -1)
     {
-	EMSG(_(e_argreq));
+	emsg(_(e_argreq));
 	return;
     }
 
@@ -1220,7 +1220,7 @@ sign_jump_cmd(
     {
 	// File or buffer is not specified or an empty group is used
 	// or a line number or a sign name is specified.
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
     (void)sign_jump(id, group, buf);
@@ -1275,7 +1275,7 @@ parse_sign_cmd_args(
 	{
 	    if (*signid != -1)
 	    {
-		EMSG(_(e_invarg));
+		emsg(_(e_invarg));
 		return FAIL;
 	    }
 	    *signid = -2;
@@ -1319,12 +1319,12 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		EMSG(_(e_trailing));
+		emsg(_(e_trailing));
 	    break;
 	}
 	else
 	{
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return FAIL;
 	}
 	arg = skipwhite(arg);
@@ -1332,7 +1332,7 @@ parse_sign_cmd_args(
 
     if (filename != NULL && *buf == NULL)
     {
-	EMSG2(_("E158: Invalid buffer name: %s"), filename);
+	semsg(_("E158: Invalid buffer name: %s"), filename);
 	return FAIL;
     }
 
@@ -1362,7 +1362,7 @@ ex_sign(exarg_T *eap)
     idx = sign_cmd_idx(arg, p);
     if (idx == SIGNCMD_LAST)
     {
-	EMSG2(_("E160: Unknown sign command: %s"), arg);
+	semsg(_("E160: Unknown sign command: %s"), arg);
 	return;
     }
     arg = skipwhite(p);
@@ -1377,7 +1377,7 @@ ex_sign(exarg_T *eap)
 		sign_list_defined(sp);
 	}
 	else if (*arg == NUL)
-	    EMSG(_("E156: Missing sign name"));
+	    emsg(_("E156: Missing sign name"));
 	else
 	{
 	    char_u	*name;
@@ -1591,7 +1591,7 @@ sign_list_defined(sign_T *sp)
 {
     char_u	*p;
 
-    smsg((char_u *)"sign %s", sp->sn_name);
+    smsg("sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
     {
 	MSG_PUTS(" icon=");

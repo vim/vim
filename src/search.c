@@ -156,9 +156,9 @@ search_regcomp(
 	if (spats[i].pat == NULL)	/* pattern was never defined */
 	{
 	    if (pat_use == RE_SUBST)
-		EMSG(_(e_nopresub));
+		emsg(_(e_nopresub));
 	    else
-		EMSG(_(e_noprevre));
+		emsg(_(e_noprevre));
 	    rc_did_emsg = TRUE;
 	    return FAIL;
 	}
@@ -369,7 +369,7 @@ static int	    saved_no_hlsearch = 0;
 save_last_search_pattern(void)
 {
     if (did_save_last_search_spat != 0)
-	IEMSG("did_save_last_search_spat is not zero");
+	iemsg("did_save_last_search_spat is not zero");
     else
 	++did_save_last_search_spat;
 
@@ -385,7 +385,7 @@ restore_last_search_pattern(void)
 {
     if (did_save_last_search_spat != 1)
     {
-	IEMSG("did_save_last_search_spat is not one");
+	iemsg("did_save_last_search_spat is not one");
 	return;
     }
     --did_save_last_search_spat;
@@ -670,7 +670,7 @@ searchit(
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
     {
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
-	    EMSG2(_("E383: Invalid search string: %s"), mr_pattern);
+	    semsg(_("E383: Invalid search string: %s"), mr_pattern);
 	return FAIL;
     }
 
@@ -1136,16 +1136,16 @@ searchit(
     if (!found)		    /* did not find it */
     {
 	if (got_int)
-	    EMSG(_(e_interr));
+	    emsg(_(e_interr));
 	else if ((options & SEARCH_MSG) == SEARCH_MSG)
 	{
 	    if (p_ws)
-		EMSG2(_(e_patnotf2), mr_pattern);
+		semsg(_(e_patnotf2), mr_pattern);
 	    else if (lnum == 0)
-		EMSG2(_("E384: search hit TOP without match for: %s"),
+		semsg(_("E384: search hit TOP without match for: %s"),
 								  mr_pattern);
 	    else
-		EMSG2(_("E385: search hit BOTTOM without match for: %s"),
+		semsg(_("E385: search hit BOTTOM without match for: %s"),
 								  mr_pattern);
 	}
 	return FAIL;
@@ -1324,7 +1324,7 @@ do_search(
 		searchstr = spats[RE_SUBST].pat;
 		if (searchstr == NULL)
 		{
-		    EMSG(_(e_noprevre));
+		    emsg(_(e_noprevre));
 		    retval = 0;
 		    goto end_do_search;
 		}
@@ -1581,7 +1581,7 @@ do_search(
 	if (dirc != '?' && dirc != '/')
 	{
 	    retval = 0;
-	    EMSG(_("E386: Expected '?' or '/'  after ';'"));
+	    emsg(_("E386: Expected '?' or '/'  after ';'"));
 	    goto end_do_search;
 	}
 	++pat;
@@ -5219,7 +5219,7 @@ find_pattern_in_path(
 			 if (p_verbose >= 5)
 		    {
 			verbose_enter();
-			smsg((char_u *)_("Searching included file %s"),
+			smsg(_("Searching included file %s"),
 							   (char *)new_fname);
 			verbose_leave();
 		    }
@@ -5442,7 +5442,7 @@ search_line:
 						      && g_do_tagpreview == 0
 #endif
 						      )
-		    EMSG(_("E387: Match is on current line"));
+		    emsg(_("E387: Match is on current line"));
 		else if (action == ACTION_SHOW)
 		{
 		    show_pat_in_path(line, type, did_show, action,
@@ -5609,11 +5609,11 @@ exit_matched:
 #else
 	if (got_int)
 #endif
-	    EMSG(_(e_interr));
+	    emsg(_(e_interr));
 	else if (type == FIND_DEFINE)
-	    EMSG(_("E388: Couldn't find definition"));
+	    emsg(_("E388: Couldn't find definition"));
 	else
-	    EMSG(_("E389: Couldn't find pattern"));
+	    emsg(_("E389: Couldn't find pattern"));
     }
     if (action == ACTION_SHOW || action == ACTION_SHOW_ALL)
 	msg_end();

@@ -745,7 +745,7 @@ ruby_runtime_link_init(char *libname, int verbose)
     if (!hinstRuby)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -757,7 +757,7 @@ ruby_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstRuby);
 	    hinstRuby = NULL;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), ruby_funcname_table[i].name);
+		semsg(_(e_loadfunc), ruby_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -885,7 +885,7 @@ void ex_rubydo(exarg_T *eap)
 	    {
 		if (TYPE(line) != T_STRING)
 		{
-		    EMSG(_("E265: $_ must be an instance of String"));
+		    emsg(_("E265: $_ must be an instance of String"));
 		    return;
 		}
 		ml_replace(i, (char_u *) StringValuePtr(line), 1);
@@ -979,7 +979,7 @@ static int ensure_ruby_initialized(void)
 	}
 	else
 	{
-	    EMSG(_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
+	    emsg(_("E266: Sorry, this command is disabled, the Ruby library could not be loaded."));
 	    return 0;
 	}
 #endif
@@ -1013,19 +1013,19 @@ static void error_print(int state)
     switch (state)
     {
     case TAG_RETURN:
-	EMSG(_("E267: unexpected return"));
+	emsg(_("E267: unexpected return"));
 	break;
     case TAG_NEXT:
-	EMSG(_("E268: unexpected next"));
+	emsg(_("E268: unexpected next"));
 	break;
     case TAG_BREAK:
-	EMSG(_("E269: unexpected break"));
+	emsg(_("E269: unexpected break"));
 	break;
     case TAG_REDO:
-	EMSG(_("E270: unexpected redo"));
+	emsg(_("E270: unexpected redo"));
 	break;
     case TAG_RETRY:
-	EMSG(_("E271: retry outside of rescue clause"));
+	emsg(_("E271: retry outside of rescue clause"));
 	break;
     case TAG_RAISE:
     case TAG_FATAL:
@@ -1038,7 +1038,7 @@ static void error_print(int state)
 	einfo = rb_obj_as_string(error);
 	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
 	{
-	    EMSG(_("E272: unhandled exception"));
+	    emsg(_("E272: unhandled exception"));
 	}
 	else
 	{
@@ -1050,7 +1050,7 @@ static void error_print(int state)
 		     RSTRING_PTR(epath), RSTRING_PTR(einfo));
 	    p = strchr(buff, '\n');
 	    if (p) *p = '\0';
-	    EMSG(buff);
+	    emsg(buff);
 	}
 
 	attr = syn_name2attr((char_u *)"Error");
@@ -1066,7 +1066,7 @@ static void error_print(int state)
 	break;
     default:
 	vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
-	EMSG(buff);
+	emsg(buff);
 	break;
     }
 }

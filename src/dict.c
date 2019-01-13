@@ -644,7 +644,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    goto failret;
 	if (**arg != ':')
 	{
-	    EMSG2(_("E720: Missing colon in Dictionary: %s"), *arg);
+	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -671,7 +671,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		EMSG2(_("E721: Duplicate key in Dictionary: \"%s\""), key);
+		semsg(_("E721: Duplicate key in Dictionary: \"%s\""), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -691,7 +691,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    EMSG2(_("E722: Missing comma in Dictionary: %s"), *arg);
+	    semsg(_("E722: Missing comma in Dictionary: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -699,7 +699,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (**arg != '}')
     {
-	EMSG2(_("E723: Missing end of Dictionary '}': %s"), *arg);
+	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
 	if (evaluate)
 	    dict_free(d);
@@ -753,7 +753,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    }
 	    else if (*action == 'e')
 	    {
-		EMSG2(_("E737: Key already exists: %s"), hi2->hi_key);
+		semsg(_("E737: Key already exists: %s"), hi2->hi_key);
 		break;
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
@@ -835,7 +835,7 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return;
     }
     if ((d = argvars[0].vval.v_dict) == NULL)
