@@ -114,13 +114,16 @@ blob_equal(
     blob_T	*b1,
     blob_T	*b2)
 {
-    int i;
+    int	    i;
+    int	    len1 = blob_len(b1);
+    int	    len2 = blob_len(b2);
 
-    if (b1 == NULL || b2 == NULL)
-	return FALSE;
+    // empty and NULL are considered the same
+    if (len1 == 0 && len2 == 0)
+	return TRUE;
     if (b1 == b2)
 	return TRUE;
-    if (blob_len(b1) != blob_len(b2))
+    if (len1 != len2)
 	return FALSE;
 
     for (i = 0; i < b1->bv_ga.ga_len; i++)

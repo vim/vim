@@ -1983,9 +1983,9 @@ get_lval(
 		}
 		if (rettv != NULL
 			&& !(rettv->v_type == VAR_LIST
-			    || rettv->vval.v_list != NULL)
+						 && rettv->vval.v_list != NULL)
 			&& !(rettv->v_type == VAR_BLOB
-			    || rettv->vval.v_blob != NULL))
+						&& rettv->vval.v_blob != NULL))
 		{
 		    if (!quiet)
 			EMSG(_("E709: [:] requires a List or Blob value"));
@@ -2109,6 +2109,8 @@ get_lval(
 	}
 	else if (lp->ll_tv->v_type == VAR_BLOB)
 	{
+	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
+
 	    /*
 	     * Get the number and item for the only or first index of the List.
 	     */
@@ -2120,16 +2122,26 @@ get_lval(
 	    clear_tv(&var1);
 
 	    if (lp->ll_n1 < 0
-		    || lp->ll_n1 > blob_len(lp->ll_tv->vval.v_blob))
+		    || lp->ll_n1 > bloblen
+		    || (lp->ll_range && lp->ll_n1 == bloblen))
 	    {
 		if (!quiet)
-		    EMSGN(_(e_listidx), lp->ll_n1);
+		    EMSGN(_(e_blobidx), lp->ll_n1);
+		clear_tv(&var2);
 		return NULL;
 	    }
 	    if (lp->ll_range && !lp->ll_empty2)
 	    {
 		lp->ll_n2 = (long)tv_get_number(&var2);
 		clear_tv(&var2);
+		if (lp->ll_n2 < 0
+			|| lp->ll_n2 >= bloblen
+			|| lp->ll_n2 < lp->ll_n1)
+		{
+		    if (!quiet)
+			EMSGN(_(e_blobidx), lp->ll_n2);
+		    return NULL;
+		}
 	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
@@ -2241,6 +2253,7 @@ set_var_lval(
 	if (lp->ll_blob != NULL)
 	{
 	    int	    error = FALSE, val;
+
 	    if (op != NULL && *op != '=')
 	    {
 		EMSG2(_(e_letwrong), op);
@@ -2249,17 +2262,23 @@ set_var_lval(
 
 	    if (lp->ll_range && rettv->v_type == VAR_BLOB)
 	    {
-		int	i;
+		int	il, ir;
 
-		if (blob_len(rettv->vval.v_blob) != blob_len(lp->ll_blob))
+		if (lp->ll_empty2)
+		    lp->ll_n2 = blob_len(lp->ll_blob) - 1;
+
+		if (lp->ll_n2 - lp->ll_n1 + 1 != blob_len(rettv->vval.v_blob))
 		{
-		    EMSG(_("E972: Blob value has more items than target"));
+		    EMSG(_("E972: Blob value does not have the right number of bytes"));
 		    return;
 		}
+		if (lp->ll_empty2)
+		    lp->ll_n2 = blob_len(lp->ll_blob);
 
-		for (i = lp->ll_n1; i <= lp->ll_n2; i++)
-		    blob_set(lp->ll_blob, i,
-			    blob_get(rettv->vval.v_blob, i));
+		ir = 0;
+		for (il = lp->ll_n1; il <= lp->ll_n2; il++)
+		    blob_set(lp->ll_blob, il,
+			    blob_get(rettv->vval.v_blob, ir++));
 	    }
 	    else
 	    {
@@ -2278,8 +2297,7 @@ set_var_lval(
 			if (lp->ll_n1 == gap->ga_len)
 			    ++gap->ga_len;
 		    }
-		    else
-			EMSG(_(e_invrange));
+		    // error for invalid range was already given in get_lval()
 		}
 	    }
 	}
@@ -2312,7 +2330,7 @@ set_var_lval(
     else if (lp->ll_range)
     {
 	listitem_T *ll_li = lp->ll_li;
-	int ll_n1 = lp->ll_n1;
+	int	    ll_n1 = lp->ll_n1;
 
 	/*
 	 * Check whether any of the list items is locked
@@ -3354,6 +3372,8 @@ eval0(
 {
     int		ret;
     char_u	*p;
+    int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evaluate);
@@ -3364,9 +3384,11 @@ eval0(
 	/*
 	 * Report the invalid expression unless the expression evaluation has
 	 * been cancelled due to an aborting error, an interrupt, or an
-	 * exception.
+	 * exception, or we already gave a more specific error.
+	 * Also check called_emsg for when using assert_fails().
 	 */
-	if (!aborting())
+	if (!aborting() && did_emsg == did_emsg_before
+					  && called_emsg == called_emsg_before)
 	    EMSG2(_(e_invexpr2), arg);
 	ret = FAIL;
     }
@@ -4195,7 +4217,7 @@ eval7(
 		    {
 			if (!vim_isxdigit(bp[1]))
 			{
-			    EMSG(_("E973: Blob literal should have an even number of hex characters'"));
+			    EMSG(_("E973: Blob literal should have an even number of hex characters"));
 			    vim_free(blob);
 			    ret = FAIL;
 			    break;
@@ -4632,7 +4654,7 @@ eval_index(
 		len = blob_len(rettv->vval.v_blob);
 		if (range)
 		{
-		    // The resulting variable is a substring.  If the indexes
+		    // The resulting variable is a sub-blob.  If the indexes
 		    // are out of range the result is empty.
 		    if (n1 < 0)
 		    {
@@ -8336,6 +8358,7 @@ ex_echo(exarg_T *eap)
     int		atstart = TRUE;
     char_u	numbuf[NUMBUFLEN];
     int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
 
     if (eap->skip)
 	++emsg_skip;
@@ -8353,7 +8376,8 @@ ex_echo(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting() && did_emsg == did_emsg_before)
+	    if (!aborting() && did_emsg == did_emsg_before
+					  && called_emsg == called_emsg_before)
 		EMSG2(_(e_invexpr2), p);
 	    need_clr_eos = FALSE;
 	    break;

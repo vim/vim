@@ -63,3 +63,9 @@ func Test_E963()
   call assert_fails("let v:oldfiles=''", 'E963:')
   call assert_equal(v_o, v:oldfiles)
 endfunc
+
+func Test_for_invalid()
+  call assert_fails("for x in 99", 'E714:')
+  call assert_fails("for x in 'asdf'", 'E714:')
+  call assert_fails("for x in {'a': 9}", 'E714:')
+endfunc

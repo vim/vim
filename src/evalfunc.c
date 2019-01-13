@@ -429,6 +429,7 @@ static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
+static void f_test_null_blob(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
 static void f_test_null_channel(typval_T *argvars, typval_T *rettv);
 #endif
@@ -950,6 +951,7 @@ static struct fst
     {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
+    {"test_null_blob", 0, 0, f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
 #endif
@@ -13900,6 +13902,13 @@ f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_test_ignore_error(typval_T *argvars, typval_T *rettv UNUSED)
 {
      ignore_error_for_testing(tv_get_string(&argvars[0]));
+}
+
+    static void
+f_test_null_blob(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_BLOB;
+    rettv->vval.v_blob = NULL;
 }
 
 #ifdef FEAT_JOB_CHANNEL
