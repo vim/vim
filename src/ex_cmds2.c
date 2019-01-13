@@ -4556,7 +4556,7 @@ do_source(
 	}
 	si = &SCRIPT_ITEM(current_sctx.sc_sid);
 	si->sn_name = fname_exp;
-	fname_exp = NULL;
+	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 # ifdef UNIX
 	if (stat_ok)
 	{
@@ -4688,8 +4688,7 @@ almosttheend:
 #endif
 
     if (trigger_source_post)
-	apply_autocmds(EVENT_SOURCEPOST, si->sn_name, si->sn_name,
-								FALSE, curbuf);
+	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
     vim_free(fname_exp);

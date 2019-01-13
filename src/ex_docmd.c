@@ -10144,6 +10144,10 @@ ex_mkrc(
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)
 		failed = TRUE;
+# ifdef FEAT_SEARCH_EXTRA
+	    if (no_hlsearch && put_line(fd, "nohlsearch") == FAIL)
+		failed = TRUE;
+# endif
 	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
 		failed = TRUE;
 	    if (eap->cmdidx == CMD_mksession)
