@@ -173,7 +173,7 @@ diff_buf_add(buf_T *buf)
 	    return;
 	}
 
-    semsg(_("E96: Cannot diff more than %ld buffers"), DB_COUNT);
+    semsg(_("E96: Cannot diff more than %d buffers"), DB_COUNT);
 }
 
 /*

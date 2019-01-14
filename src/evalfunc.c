@@ -8256,7 +8256,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     if (id >= 1 && id <= 3)
     {
-	semsg(_("E798: ID is reserved for \":match\": %ld"), id);
+	semsg(_("E798: ID is reserved for \":match\": %d"), id);
 	return;
     }
 
@@ -8314,7 +8314,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     /* id == 3 is ok because matchaddpos() is supposed to substitute :3match */
     if (id == 1 || id == 2)
     {
-	semsg(_("E798: ID is reserved for \":match\": %ld"), id);
+	semsg(_("E798: ID is reserved for \":match\": %d"), id);
 	return;
     }
 

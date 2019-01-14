@@ -162,7 +162,7 @@ sign_group_get_next_signid(buf_T *buf, char_u *groupname)
 	group = HI2SG(hi);
     }
 
-    // Search for the next usuable sign identifier
+    // Search for the next usable sign identifier
     while (!found)
     {
 	if (group == NULL)
@@ -996,7 +996,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
     if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
     {
-	semsg(_("E157: Invalid sign ID: %ld"), sign_id);
+	semsg(_("E157: Invalid sign ID: %d"), sign_id);
 	return -1;
     }
 

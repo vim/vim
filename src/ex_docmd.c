@@ -1296,7 +1296,7 @@ do_cmdline(
 	 */
 	if (did_throw)
 	{
-	    void	*p = NULL;
+	    char_u	*p = NULL;
 	    char_u	*saved_sourcing_name;
 	    int		saved_sourcing_lnum;
 	    struct msglist	*messages = NULL, *next;
@@ -1347,7 +1347,7 @@ do_cmdline(
 	    }
 	    else if (p != NULL)
 	    {
-		semsg(p);
+		semsg("%s", p);
 		vim_free(p);
 	    }
 	    vim_free(sourcing_name);
@@ -5788,8 +5788,8 @@ check_more(
 		return FAIL;
 	    }
 #endif
-	    semsg(NGETTEXT("E173: %ld more file to edit",
-			"E173: %ld more files to edit", n), n);
+	    semsg(NGETTEXT("E173: %d more file to edit",
+			"E173: %d more files to edit", n), n);
 	    quitmore = 2;	    /* next try to quit is allowed */
 	}
 	return FAIL;

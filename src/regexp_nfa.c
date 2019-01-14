@@ -1307,7 +1307,7 @@ nfa_regatom(void)
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
-		siemsg("INTERNAL: Unknown character class char: %ld", c);
+		siemsg("INTERNAL: Unknown character class char: %d", c);
 		return FAIL;
 	    }
 #ifdef FEAT_MBYTE

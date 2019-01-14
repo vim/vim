@@ -11,9 +11,18 @@ int emsg_not_now(void);
 void ignore_error_for_testing(char_u *error);
 void do_perror(char *msg);
 int emsg(char *s);
-int semsg(const char *s, ...);
+
+int semsg(const char *s, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 2)))
+#endif
+;
 void iemsg(char *s);
-void siemsg(const char *s, ...);
+void siemsg(const char *s, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 2)))
+#endif
+;
 void internal_error(char *where);
 void emsg_invreg(int name);
 char_u *msg_trunc_attr(char_u *s, int force, int attr);

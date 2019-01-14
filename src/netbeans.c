@@ -1541,7 +1541,7 @@ nb_do_cmd(
 		if (!buf->bufp->b_netbeans_file)
 		{
 		    nbdebug(("E658: NetBeans connection lost for buffer %ld\n", buf->bufp->b_fnum));
-		    semsg(_("E658: NetBeans connection lost for buffer %ld"),
+		    semsg(_("E658: NetBeans connection lost for buffer %d"),
 							   buf->bufp->b_fnum);
 		}
 		else

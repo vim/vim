@@ -6014,7 +6014,7 @@ mkspell(
     else if (vim_strchr(gettail(wfname), '_') != NULL)
 	emsg(_("E751: Output file name must not have region name"));
     else if (incount > MAXREGIONS)
-	semsg(_("E754: Only up to %ld regions supported"), MAXREGIONS);
+	semsg(_("E754: Only up to %d regions supported"), MAXREGIONS);
     else
     {
 	/* Check for overwriting before doing things that may take a lot of
@@ -6274,7 +6274,7 @@ spell_add_word(
 		break;
 	    if (*spf == NUL)
 	    {
-		semsg(_("E765: 'spellfile' does not have %ld entries"), idx);
+		semsg(_("E765: 'spellfile' does not have %d entries"), idx);
 		vim_free(fnamebuf);
 		return;
 	    }
