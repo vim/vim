@@ -2143,7 +2143,11 @@ win_update(win_T *wp)
 
 #ifdef FEAT_VTP
     /* Rewrite the character at the end of the screen line. */
-    if (use_vtp())
+    if (use_vtp()
+# ifndef FEAT_GUI
+	&& use_cmdexe()
+# endif
+	)
     {
 	int i;
 

@@ -1414,14 +1414,15 @@ utf_uint2cells(UINT32_T c)
     int
 utf_char2cells(int c)
 {
+#ifdef WIN3264
     /* Sorted list of non-overlapping intervals of EN(single width characters
-     * in typesetting) that are not affected by p_ambw and CJKV. */
+     * in typesetting) that are not affected by p_ambw and CJKV.
+     * (except for cmd.exe only). */
     static struct interval singlewidth[] =
     {
-	{0x2000, 0x2000},
-	{0x2002, 0x2002},
 	{0x2013, 0x2013}
     };
+#endif
 
     /* Sorted list of non-overlapping intervals of East Asian double width
      * characters, generated with ../runtime/tools/unicode.vim. */
@@ -1599,8 +1600,10 @@ utf_char2cells(int c)
 #else
 	if (!utf_printable(c))
 	    return 6;		/* unprintable, displays <xxxx> */
-	if (intable(singlewidth, sizeof(singlewidth), c))
+# if defined(WIN3264) && !defined(FEAT_GUI)
+	if (use_cmdexe() && intable(singlewidth, sizeof(singlewidth), c))
 	    return 1;		/* EN chars, forced by typesetting */
+# endif
 	if (intable(doublewidth, sizeof(doublewidth), c))
 	    return 2;
 #endif

@@ -194,6 +194,10 @@ static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
 
+static void vtp_check_cmdexe();
+static int vtp_in_cmdexe = FALSE;
+static int vtp_in_conemu = FALSE;
+
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
 
@@ -228,7 +232,13 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
+#if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+# define AChar AsciiChar
+#else
+# define AChar uChar.AsciiChar
+#endif
 #ifndef FEAT_GUI_W32
+
 /* Dynamic loading for portability */
 typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
 {
@@ -290,7 +300,7 @@ read_console_input(
 {
     enum
     {
-	IRSIZE = 10
+	IRSIZE = 30
     };
     static INPUT_RECORD s_irCache[IRSIZE];
     static DWORD s_dwIndex = 0;
@@ -299,6 +309,24 @@ read_console_input(
     int head;
     int tail;
     int i;
+    static int s_in_attr = 0;
+    static int s_next_seq = FALSE;
+
+    if (nLength == -3)
+    {
+	s_next_seq = TRUE;
+	return TRUE;
+    }
+
+    if (s_next_seq)
+    {
+	s_next_seq = FALSE;
+	if (vtp_working)
+	{
+	    s_in_attr = 5;	    /* How many inputs should be processed */
+	    vtp_printf("\033[0c");  /* Query state: Device attributes */
+	}
+    }
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -344,6 +372,94 @@ read_console_input(
 	    }
 	    s_dwMax = tail + 1;
 	}
+    }
+
+    /* Confirm the device attribute in the key buffer. Detect cmd.exe. */
+    if (s_in_attr > 0)
+    {
+#define SEQCOUNT 3
+	static char seq[SEQCOUNT][10] = /* This number can be expanded */
+	{
+	    { "\033[?1;0c" },		/* cmd.exe */
+	    { "\033[?1;2c" },   	/* ConEmu */
+	    { "\033[?c" }		/* dummy (always keep last) */
+	};
+	int div;
+	int in_term[SEQCOUNT];
+
+	for (i = 0; i < SEQCOUNT; i++)
+	    in_term[i] = FALSE;
+
+	for (div = 0; div < SEQCOUNT; div++)
+	{
+	    INPUT_RECORD s_irMeter[IRSIZE];	/* Buffer for processed data */
+	    int seqindex = 0;
+	    int combo = 0;
+	    int inkeydown;	    /* Processing data with key pressed */
+	    int meter = 0;	    /* End index of processed data */
+	    int inseq = FALSE;	    /* Flag that entered sequence processing */
+
+	    for (i = s_dwIndex; i < (int)(s_dwMax - s_dwIndex); ++i)
+	    {
+		s_irMeter[meter] = s_irCache[i];
+		inkeydown = FALSE;
+		if (s_irCache[i].EventType == KEY_EVENT)
+		{
+		    if (s_irCache[i].Event.KeyEvent.bKeyDown)
+		    {
+			inkeydown = TRUE;
+			if (s_irCache[i].Event.KeyEvent.AChar
+						       == seq[div][seqindex++])
+			{
+			    inseq = TRUE;
+			    if (++combo == STRLEN(&seq[div][0]))
+			    {
+				/* All matched */
+
+				in_term[div] = TRUE;
+				seqindex = 0;
+				combo = 0;
+			    }
+			    continue;
+			}
+			else
+			{
+			    /* No match */
+
+			    /* Delete unmatched reply data */
+			    if (inseq && div == SEQCOUNT - 1)
+				inkeydown = FALSE;
+
+			    /* 'c' is the end of the sequence */
+			    if (s_irCache[i].Event.KeyEvent.AChar == 'c')
+				inseq = FALSE;
+			}
+		    }
+		}
+		if (inkeydown)
+		{
+		    /* Make the skipped data also processed */
+		    for (; meter <= i; meter++)
+			s_irMeter[meter] = s_irCache[meter];
+
+		    seqindex = 0;
+		    combo = 0;
+		}
+	    }
+	    /* Copy processing result to the correct place */
+	    for (i = s_dwIndex; i < (int)(s_dwIndex + meter); i++)
+		s_irCache[i] = s_irMeter[i];
+	    s_dwMax = s_dwIndex + meter;
+	}
+
+	if (in_term[0])
+	    vtp_in_cmdexe = TRUE;
+	if (in_term[1])
+	    vtp_in_conemu = TRUE;   /* Leave it as a sample for expansion */
+
+	--s_in_attr;
+
+	/* At this point there is always more than one event left. */
     }
 
     *lpBuffer = s_irCache[s_dwIndex];
@@ -2689,6 +2805,7 @@ mch_init(void)
 #endif
 
     vtp_init();
+    vtp_check_cmdexe();
 }
 
 /*
@@ -7912,6 +8029,19 @@ use_vtp(void)
 is_term_win32(void)
 {
     return T_NAME != NULL && STRCMP(T_NAME, "win32") == 0;
+}
+
+    static void
+vtp_check_cmdexe()
+{
+    /* In order to refer to the static buffer in the function. */
+    read_console_input(NULL, NULL, -3, NULL);
+}
+
+    int
+use_cmdexe()
+{
+    return vtp_in_cmdexe;
 }
 
 #endif
