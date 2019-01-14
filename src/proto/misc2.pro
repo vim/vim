@@ -1,8 +1,8 @@
 /* misc2.c */
 int virtual_active(void);
 int getviscol(void);
-int getviscol2(colnr_T col, colnr_T coladd);
 int coladvance_force(colnr_T wcol);
+int getviscol2(colnr_T col, colnr_T coladd);
 int coladvance(colnr_T wcol);
 int getvpos(pos_T *pos, colnr_T wcol);
 int inc_cursor(void);
@@ -87,7 +87,7 @@ int after_pathsep(char_u *b, char_u *p);
 int same_directory(char_u *f1, char_u *f2);
 int vim_chdirfile(char_u *fname, char *trigger_autocmd);
 int vim_stat(const char *name, stat_T *stp);
-char_u *parse_shape_opt(int what);
+char *parse_shape_opt(int what);
 int get_shape_idx(int mouse);
 void update_mouseshape(int shape_idx);
 void *vim_findfile_init(char_u *path, char_u *filename, char_u *stopdirs, int level, int free_visited, int find_what, void *search_ctx_arg, int tagfile, char_u *rel_fname);

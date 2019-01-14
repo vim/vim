@@ -10,7 +10,7 @@ void slang_clear_sug(slang_T *lp);
 void count_common_word(slang_T *lp, char_u *word, int len, int count);
 int byte_in_str(char_u *str, int n);
 int init_syl_tab(slang_T *slang);
-char_u *did_set_spelllang(win_T *wp);
+char *did_set_spelllang(win_T *wp);
 int captype(char_u *word, char_u *end);
 void spell_delete_wordlist(void);
 void spell_free_all(void);

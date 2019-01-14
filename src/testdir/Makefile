@@ -23,7 +23,8 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' > /dev/null
 default: nongui
 
 # The list of tests is common to all systems.
-# This defines NEW_TESTS, SCRIPTS_ALL, SCRIPTS_MORE* and SCRIPTS_GUI.
+# This defines NEW_TESTS, NEW_TESTS_RES, SCRIPTS_ALL, SCRIPTS_MORE* and
+# SCRIPTS_GUI.
 include Make_all.mak
 
 
@@ -31,6 +32,11 @@ SCRIPTS = $(SCRIPTS_ALL) \
 	  $(SCRIPTS_MORE1) \
 	  $(SCRIPTS_MORE2) \
 	  $(SCRIPTS_MORE4)
+
+# Explicit dependencies.
+test49.out: test49.vim
+
+test_options.res test_alot.res: opt_test.vim
 
 SCRIPTS_BENCH = bench_re_freeze.out
 
@@ -50,10 +56,21 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
+$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(VIMPROG)
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+
+
+# Execute an individual new style test, e.g.:
+# 	make test_largefile
+$(NEW_TESTS):
+	rm -f $@.res test.log messages
+	$(MAKE) -f Makefile $@.res
+	@if test -f test.log; then \
+		cat test.log; \
+	fi
+	cat messages
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
@@ -128,7 +145,7 @@ RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPR
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages; fi"
 
-newtestssilent: $(NEW_TESTS)
+newtestssilent: $(NEW_TESTS_RES)
 
 
 .vim.res: writevimcmd

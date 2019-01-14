@@ -88,6 +88,7 @@ extern int _stricoll(char *a, char *b);
 # include "hashtab.pro"
 # include "json.pro"
 # include "list.pro"
+# include "blob.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
@@ -107,25 +108,25 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg(char_u *, ...);
+smsg(const char *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr(int, char_u *, ...);
+smsg_attr(int, const char *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr_keep(int, char_u *, ...);
+smsg_attr_keep(int, const char *, ...);
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf_add(char *, size_t, char *, ...)
+vim_snprintf_add(char *, size_t, const char *, ...)
 #ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
 #endif
@@ -135,14 +136,14 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf(char *, size_t, char *, ...)
+vim_snprintf(char *, size_t, const char *, ...)
 #ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
 #endif
     ;
 
-int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
-int vim_vsnprintf_typval(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
+int vim_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
+int vim_vsnprintf_typval(char *str, size_t str_m, const char *fmt, va_list ap, typval_T *tvs);
 
 # include "message.pro"
 # include "misc1.pro"

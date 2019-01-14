@@ -342,6 +342,40 @@ func Test_prop_substitute()
   bwipe!
 endfunc
 
+func Test_prop_change_indent()
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  new
+  call setline(1, ['    xxx', 'yyyyy'])
+  call prop_add(2, 2, {'length': 2, 'type': 'comment'})
+  let expect = {'col': 2, 'length': 2, 'type': 'comment', 'start': 1, 'end': 1, 'id': 0}
+  call assert_equal([expect], prop_list(2))
+
+  set shiftwidth=3
+  normal 2G>>
+  call assert_equal('   yyyyy', getline(2))
+  let expect.col += 3
+  call assert_equal([expect], prop_list(2))
+
+  normal 2G==
+  call assert_equal('    yyyyy', getline(2))
+  let expect.col = 6
+  call assert_equal([expect], prop_list(2))
+
+  call prop_clear(2)
+  call prop_add(2, 2, {'length': 5, 'type': 'comment'})
+  let expect.col = 2
+  let expect.length = 5
+  call assert_equal([expect], prop_list(2))
+
+  normal 2G<<
+  call assert_equal(' yyyyy', getline(2))
+  let expect.length = 2
+  call assert_equal([expect], prop_list(2))
+
+  set shiftwidth&
+  call prop_type_delete('comment')
+endfunc
+
 " Setup a three line prop in lines 2 - 4.
 " Add short props in line 1 and 5.
 func Setup_three_line_prop()

@@ -359,11 +359,11 @@ spell_load_file(
     if (fd == NULL)
     {
 	if (!silent)
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	else if (p_verbose > 2)
 	{
 	    verbose_enter();
-	    smsg((char_u *)e_notopen, fname);
+	    smsg((const char *)e_notopen, fname);
 	    verbose_leave();
 	}
 	goto endFAIL;
@@ -371,7 +371,7 @@ spell_load_file(
     if (p_verbose > 2)
     {
 	verbose_enter();
-	smsg((char_u *)_("Reading spell file \"%s\""), fname);
+	smsg(_("Reading spell file \"%s\""), fname);
 	verbose_leave();
     }
 
@@ -403,18 +403,18 @@ spell_load_file(
 	buf[i] = getc(fd);				/* <fileID> */
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
     {
-	EMSG(_("E757: This does not look like a spell file"));
+	emsg(_("E757: This does not look like a spell file"));
 	goto endFAIL;
     }
     c = getc(fd);					/* <versionnr> */
     if (c < VIMSPELLVERSION)
     {
-	EMSG(_("E771: Old spell file, needs to be updated"));
+	emsg(_("E771: Old spell file, needs to be updated"));
 	goto endFAIL;
     }
     else if (c > VIMSPELLVERSION)
     {
-	EMSG(_("E772: Spell file is for newer version of Vim"));
+	emsg(_("E772: Spell file is for newer version of Vim"));
 	goto endFAIL;
     }
 
@@ -521,7 +521,7 @@ spell_load_file(
 		 * message.  When it's not required skip the contents. */
 		if (c & SNF_REQUIRED)
 		{
-		    EMSG(_("E770: Unsupported section in spell file"));
+		    emsg(_("E770: Unsupported section in spell file"));
 		    goto endFAIL;
 		}
 		while (--len >= 0)
@@ -532,13 +532,13 @@ spell_load_file(
 someerror:
 	if (res == SP_FORMERROR)
 	{
-	    EMSG(_(e_format));
+	    emsg(_(e_format));
 	    goto endFAIL;
 	}
 	if (res == SP_TRUNCERROR)
 	{
 truncerr:
-	    EMSG(_(e_spell_trunc));
+	    emsg(_(e_spell_trunc));
 	    goto endFAIL;
 	}
 	if (res == SP_OTHERERROR)
@@ -695,20 +695,20 @@ suggest_load_files(void)
 		buf[i] = getc(fd);			/* <fileID> */
 	    if (STRNCMP(buf, VIMSUGMAGIC, VIMSUGMAGICL) != 0)
 	    {
-		EMSG2(_("E778: This does not look like a .sug file: %s"),
+		semsg(_("E778: This does not look like a .sug file: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    c = getc(fd);				/* <versionnr> */
 	    if (c < VIMSUGVERSION)
 	    {
-		EMSG2(_("E779: Old .sug file, needs to be updated: %s"),
+		semsg(_("E779: Old .sug file, needs to be updated: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
 	    else if (c > VIMSUGVERSION)
 	    {
-		EMSG2(_("E780: .sug file is for newer version of Vim: %s"),
+		semsg(_("E780: .sug file is for newer version of Vim: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -718,7 +718,7 @@ suggest_load_files(void)
 	    timestamp = get8ctime(fd);			/* <timestamp> */
 	    if (timestamp != slang->sl_sugtime)
 	    {
-		EMSG2(_("E781: .sug file doesn't match .spl file: %s"),
+		semsg(_("E781: .sug file doesn't match .spl file: %s"),
 							     slang->sl_fname);
 		goto nextone;
 	    }
@@ -731,7 +731,7 @@ suggest_load_files(void)
 							       FALSE, 0) != 0)
 	    {
 someerror:
-		EMSG2(_("E782: error while reading .sug file: %s"),
+		semsg(_("E782: error while reading .sug file: %s"),
 							     slang->sl_fname);
 		slang_clear_sug(slang);
 		goto nextone;
@@ -2225,7 +2225,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 	return NULL;
     }
 
@@ -2277,7 +2277,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    pc = string_convert(&spin->si_conv, rline, NULL);
 	    if (pc == NULL)
 	    {
-		smsg((char_u *)_("Conversion failure for word in %s line %d: %s"),
+		smsg(_("Conversion failure for word in %s line %d: %s"),
 							   fname, lnum, rline);
 		continue;
 	    }
@@ -2325,11 +2325,11 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		if (aff->af_enc != NULL && !spin->si_ascii
 			&& convert_setup(&spin->si_conv, aff->af_enc,
 							       p_enc) == FAIL)
-		    smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
+		    smsg(_("Conversion in %s not supported: from %s to %s"),
 					       fname, aff->af_enc, p_enc);
 		spin->si_conv.vc_fail = TRUE;
 #else
-		    smsg((char_u *)_("Conversion in %s not supported"), fname);
+		    smsg(_("Conversion in %s not supported"), fname);
 #endif
 	    }
 	    else if (is_aff_rule(items, itemcnt, "FLAG", 2)
@@ -2342,7 +2342,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		else if (STRCMP(items[1], "caplong") == 0)
 		    aff->af_flagtype = AFT_CAPLONG;
 		else
-		    smsg((char_u *)_("Invalid value for FLAG in %s line %d: %s"),
+		    smsg(_("Invalid value for FLAG in %s line %d: %s"),
 			    fname, lnum, items[1]);
 		if (aff->af_rare != 0
 			|| aff->af_keepcase != 0
@@ -2355,7 +2355,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			|| compflags != NULL
 			|| aff->af_suff.ht_used > 0
 			|| aff->af_pref.ht_used > 0)
-		    smsg((char_u *)_("FLAG after using flags in %s line %d: %s"),
+		    smsg(_("FLAG after using flags in %s line %d: %s"),
 			    fname, lnum, items[1]);
 	    }
 	    else if (spell_info_item(items[0]))
@@ -2446,7 +2446,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		aff->af_compforbid = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 		if (aff->af_pref.ht_used > 0)
-		    smsg((char_u *)_("Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"),
+		    smsg(_("Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"),
 			    fname, lnum);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDPERMITFLAG", 2)
@@ -2455,7 +2455,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		aff->af_comppermit = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 		if (aff->af_pref.ht_used > 0)
-		    smsg((char_u *)_("Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"),
+		    smsg(_("Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"),
 			    fname, lnum);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDFLAG", 2)
@@ -2476,7 +2476,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		/* We don't use the count, but do check that it's a number and
 		 * not COMPOUNDRULE mistyped. */
 		if (atoi((char *)items[1]) == 0)
-		    smsg((char_u *)_("Wrong COMPOUNDRULES value in %s line %d: %s"),
+		    smsg(_("Wrong COMPOUNDRULES value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDRULE", 2))
@@ -2507,7 +2507,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    {
 		compmax = atoi((char *)items[1]);
 		if (compmax == 0)
-		    smsg((char_u *)_("Wrong COMPOUNDWORDMAX value in %s line %d: %s"),
+		    smsg(_("Wrong COMPOUNDWORDMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDMIN", 2)
@@ -2515,7 +2515,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    {
 		compminlen = atoi((char *)items[1]);
 		if (compminlen == 0)
-		    smsg((char_u *)_("Wrong COMPOUNDMIN value in %s line %d: %s"),
+		    smsg(_("Wrong COMPOUNDMIN value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "COMPOUNDSYLMAX", 2)
@@ -2523,7 +2523,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    {
 		compsylmax = atoi((char *)items[1]);
 		if (compsylmax == 0)
-		    smsg((char_u *)_("Wrong COMPOUNDSYLMAX value in %s line %d: %s"),
+		    smsg(_("Wrong COMPOUNDSYLMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDDUP", 1))
@@ -2545,7 +2545,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDPATTERN", 2))
 	    {
 		if (atoi((char *)items[1]) == 0)
-		    smsg((char_u *)_("Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"),
+		    smsg(_("Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDPATTERN", 3))
@@ -2619,10 +2619,10 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		{
 		    cur_aff = HI2AH(hi);
 		    if (cur_aff->ah_combine != (*items[2] == 'Y'))
-			smsg((char_u *)_("Different combining flag in continued affix block in %s line %d: %s"),
+			smsg(_("Different combining flag in continued affix block in %s line %d: %s"),
 						   fname, lnum, items[1]);
 		    if (!cur_aff->ah_follows)
-			smsg((char_u *)_("Duplicate affix in %s line %d: %s"),
+			smsg(_("Duplicate affix in %s line %d: %s"),
 						       fname, lnum, items[1]);
 		}
 		else
@@ -2644,7 +2644,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			    || cur_aff->ah_flag == aff->af_nosuggest
 			    || cur_aff->ah_flag == aff->af_needcomp
 			    || cur_aff->ah_flag == aff->af_comproot)
-			smsg((char_u *)_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"),
+			smsg(_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"),
 						       fname, lnum, items[1]);
 		    STRCPY(cur_aff->ah_key, items[1]);
 		    hash_add(tp, cur_aff->ah_key);
@@ -2665,10 +2665,10 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		/* Myspell allows extra text after the item, but that might
 		 * mean mistakes go unnoticed.  Require a comment-starter. */
 		if (itemcnt > lasti && *items[lasti] != '#')
-		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
+		    smsg(_(e_afftrailing), fname, lnum, items[lasti]);
 
 		if (STRCMP(items[2], "Y") != 0 && STRCMP(items[2], "N") != 0)
-		    smsg((char_u *)_("Expected Y or N in %s line %d: %s"),
+		    smsg(_("Expected Y or N in %s line %d: %s"),
 						       fname, lnum, items[2]);
 
 		if (*items[0] == 'P' && aff->af_pfxpostpone)
@@ -2710,7 +2710,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			&& *items[lasti] != '#'
 			&& (STRCMP(items[lasti], "-") != 0
 						     || itemcnt != lasti + 1))
-		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
+		    smsg(_(e_afftrailing), fname, lnum, items[lasti]);
 
 		/* New item for an affix letter. */
 		--aff_todo;
@@ -2754,7 +2754,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			aff_entry->ae_prog = vim_regcomp(buf,
 					    RE_MAGIC + RE_STRING + RE_STRICT);
 			if (aff_entry->ae_prog == NULL)
-			    smsg((char_u *)_("Broken condition in %s line %d: %s"),
+			    smsg(_("Broken condition in %s line %d: %s"),
 						       fname, lnum, items[4]);
 		    }
 
@@ -2902,7 +2902,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    {
 		/* Ignore REP/REPSAL count */;
 		if (!isdigit(*items[1]))
-		    smsg((char_u *)_("Expected REP(SAL) count in %s line %d"),
+		    smsg(_("Expected REP(SAL) count in %s line %d"),
 								 fname, lnum);
 	    }
 	    else if ((STRCMP(items[0], "REP") == 0
@@ -2913,7 +2913,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		/* Myspell ignores extra arguments, we require it starts with
 		 * # to detect mistakes. */
 		if (itemcnt > 3 && items[3][0] != '#')
-		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[3]);
+		    smsg(_(e_afftrailing), fname, lnum, items[3]);
 		if (items[0][3] == 'S' ? do_repsal : do_rep)
 		{
 		    /* Replace underscore with space (can't include a space
@@ -2937,7 +2937,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		    /* First line contains the count. */
 		    found_map = TRUE;
 		    if (!isdigit(*items[1]))
-			smsg((char_u *)_("Expected MAP count in %s line %d"),
+			smsg(_("Expected MAP count in %s line %d"),
 								 fname, lnum);
 		}
 		else if (do_mapline)
@@ -2956,7 +2956,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 				    && vim_strchr(spin->si_map.ga_data, c)
 								      != NULL)
 				|| vim_strchr(p, c) != NULL)
-			    smsg((char_u *)_("Duplicate character in MAP in %s line %d"),
+			    smsg(_("Duplicate character in MAP in %s line %d"),
 								 fname, lnum);
 		    }
 
@@ -3013,7 +3013,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		}
 	    }
 	    else
-		smsg((char_u *)_("Unrecognized or duplicate item in %s line %d: %s"),
+		smsg(_("Unrecognized or duplicate item in %s line %d: %s"),
 						       fname, lnum, items[0]);
 	}
     }
@@ -3041,7 +3041,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		)
 	{
 	    if (fol == NULL || low == NULL || upp == NULL)
-		smsg((char_u *)_("Missing FOL/LOW/UPP line in %s"), fname);
+		smsg(_("Missing FOL/LOW/UPP line in %s"), fname);
 	    else
 		(void)set_spell_chartab(fol, low, upp);
 	}
@@ -3067,7 +3067,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     if (compsylmax != 0)
     {
 	if (syllable == NULL)
-	    smsg((char_u *)_("COMPOUNDSYLMAX used without SYLLABLE"));
+	    smsg(_("COMPOUNDSYLMAX used without SYLLABLE"));
 	aff_check_number(spin->si_compsylmax, compsylmax, "COMPOUNDSYLMAX");
 	spin->si_compsylmax = compsylmax;
     }
@@ -3101,10 +3101,10 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     if (sofofrom != NULL || sofoto != NULL)
     {
 	if (sofofrom == NULL || sofoto == NULL)
-	    smsg((char_u *)_("Missing SOFO%s line in %s"),
+	    smsg(_("Missing SOFO%s line in %s"),
 				     sofofrom == NULL ? "FROM" : "TO", fname);
 	else if (spin->si_sal.ga_len > 0)
-	    smsg((char_u *)_("Both SAL and SOFO lines in %s"), fname);
+	    smsg(_("Both SAL and SOFO lines in %s"), fname);
 	else
 	{
 	    aff_check_string(spin->si_sofofr, sofofrom, "SOFOFROM");
@@ -3208,15 +3208,15 @@ affitem2flag(
     if (res == 0)
     {
 	if (flagtype == AFT_NUM)
-	    smsg((char_u *)_("Flag is not a number in %s line %d: %s"),
+	    smsg(_("Flag is not a number in %s line %d: %s"),
 							   fname, lnum, item);
 	else
-	    smsg((char_u *)_("Illegal flag in %s line %d: %s"),
+	    smsg(_("Illegal flag in %s line %d: %s"),
 							   fname, lnum, item);
     }
     if (*p != NUL)
     {
-	smsg((char_u *)_(e_affname), fname, lnum, item);
+	smsg(_(e_affname), fname, lnum, item);
 	return 0;
     }
 
@@ -3419,7 +3419,7 @@ flag_in_afflist(int flagtype, char_u *afflist, unsigned flag)
 aff_check_number(int spinval, int affval, char *name)
 {
     if (spinval != 0 && spinval != affval)
-	smsg((char_u *)_("%s value differs from what is used in another .aff file"), name);
+	smsg(_("%s value differs from what is used in another .aff file"), name);
 }
 
 /*
@@ -3429,7 +3429,7 @@ aff_check_number(int spinval, int affval, char *name)
 aff_check_string(char_u *spinval, char_u *affval, char *name)
 {
     if (spinval != NULL && STRCMP(spinval, affval) != 0)
-	smsg((char_u *)_("%s value differs from what is used in another .aff file"), name);
+	smsg(_("%s value differs from what is used in another .aff file"), name);
 }
 
 /*
@@ -3549,7 +3549,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 	return FAIL;
     }
 
@@ -3566,7 +3566,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     /* Read and ignore the first line: word count. */
     (void)vim_fgets(line, MAXLINELEN, fd);
     if (!vim_isdigit(*skipwhite(line)))
-	EMSG2(_("E760: No word count in %s"), fname);
+	semsg(_("E760: No word count in %s"), fname);
 
     /*
      * Read all the lines in the file one by one.
@@ -3596,7 +3596,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	    pc = string_convert(&spin->si_conv, line, NULL);
 	    if (pc == NULL)
 	    {
-		smsg((char_u *)_("Conversion failure for word in %s line %d: %s"),
+		smsg(_("Conversion failure for word in %s line %d: %s"),
 						       fname, lnum, line);
 		continue;
 	    }
@@ -3661,10 +3661,10 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    if (p_verbose > 0)
-		smsg((char_u *)_("Duplicate word in %s line %d: %s"),
+		smsg(_("Duplicate word in %s line %d: %s"),
 							     fname, lnum, dw);
 	    else if (duplicate == 0)
-		smsg((char_u *)_("First duplicate word in %s line %d: %s"),
+		smsg(_("First duplicate word in %s line %d: %s"),
 							     fname, lnum, dw);
 	    ++duplicate;
 	}
@@ -3719,9 +3719,9 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     }
 
     if (duplicate > 0)
-	smsg((char_u *)_("%d duplicate word(s) in %s"), duplicate, fname);
+	smsg(_("%d duplicate word(s) in %s"), duplicate, fname);
     if (spin->si_ascii && non_ascii > 0)
-	smsg((char_u *)_("Ignored %d word(s) with non-ASCII characters in %s"),
+	smsg(_("Ignored %d word(s) with non-ASCII characters in %s"),
 							    non_ascii, fname);
     hash_clear(&ht);
 
@@ -4133,7 +4133,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 	return FAIL;
     }
 
@@ -4168,7 +4168,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    pc = string_convert(&spin->si_conv, rline, NULL);
 	    if (pc == NULL)
 	    {
-		smsg((char_u *)_("Conversion failure for word in %s line %d: %s"),
+		smsg(_("Conversion failure for word in %s line %d: %s"),
 							   fname, lnum, rline);
 		continue;
 	    }
@@ -4187,10 +4187,10 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
-		    smsg((char_u *)_("Duplicate /encoding= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /encoding= line ignored in %s line %d: %s"),
 						       fname, lnum, line - 1);
 		else if (did_word)
-		    smsg((char_u *)_("/encoding= line after word ignored in %s line %d: %s"),
+		    smsg(_("/encoding= line after word ignored in %s line %d: %s"),
 						       fname, lnum, line - 1);
 		else
 		{
@@ -4203,12 +4203,12 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		    if (enc != NULL && !spin->si_ascii
 			    && convert_setup(&spin->si_conv, enc,
 							       p_enc) == FAIL)
-			smsg((char_u *)_("Conversion in %s not supported: from %s to %s"),
+			smsg(_("Conversion in %s not supported: from %s to %s"),
 							  fname, line, p_enc);
 		    vim_free(enc);
 		    spin->si_conv.vc_fail = TRUE;
 #else
-		    smsg((char_u *)_("Conversion in %s not supported"), fname);
+		    smsg(_("Conversion in %s not supported"), fname);
 #endif
 		}
 		continue;
@@ -4217,13 +4217,13 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "regions=", 8) == 0)
 	    {
 		if (spin->si_region_count > 1)
-		    smsg((char_u *)_("Duplicate /regions= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /regions= line ignored in %s line %d: %s"),
 						       fname, lnum, line);
 		else
 		{
 		    line += 8;
 		    if (STRLEN(line) > MAXREGIONS * 2)
-			smsg((char_u *)_("Too many regions in %s line %d: %s"),
+			smsg(_("Too many regions in %s line %d: %s"),
 						       fname, lnum, line);
 		    else
 		    {
@@ -4237,7 +4237,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		continue;
 	    }
 
-	    smsg((char_u *)_("/ line ignored in %s line %d: %s"),
+	    smsg(_("/ line ignored in %s line %d: %s"),
 						       fname, lnum, line - 1);
 	    continue;
 	}
@@ -4267,7 +4267,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		    l = *p - '0';
 		    if (l == 0 || l > spin->si_region_count)
 		    {
-			smsg((char_u *)_("Invalid region nr in %s line %d: %s"),
+			smsg(_("Invalid region nr in %s line %d: %s"),
 							  fname, lnum, p);
 			break;
 		    }
@@ -4275,7 +4275,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		}
 		else
 		{
-		    smsg((char_u *)_("Unrecognized flags in %s line %d: %s"),
+		    smsg(_("Unrecognized flags in %s line %d: %s"),
 							      fname, lnum, p);
 		    break;
 		}
@@ -4346,7 +4346,7 @@ getroom(
 	{
 	    if (!spin->si_did_emsg)
 	    {
-		EMSG(_("E845: Insufficient memory, word list will be incomplete"));
+		emsg(_("E845: Insufficient memory, word list will be incomplete"));
 		spin->si_did_emsg = TRUE;
 	    }
 	    return NULL;
@@ -4576,7 +4576,7 @@ tree_add_word(
 	node = *prev;
     }
 #ifdef SPELL_PRINTTREE
-    smsg((char_u *)"Added \"%s\"", word);
+    smsg("Added \"%s\"", word);
     spell_print_tree(root->wn_sibling);
 #endif
 
@@ -4916,7 +4916,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 	return FAIL;
     }
 
@@ -5305,7 +5305,7 @@ theend:
     if (fwv != (size_t)1)
 	retval = FAIL;
     if (retval == FAIL)
-	EMSG(_(e_write));
+	emsg(_(e_write));
 
     return retval;
 }
@@ -5450,7 +5450,7 @@ put_node(
 	    if (fd != NULL)
 		if (putc(np->wn_byte, fd) == EOF) /* <byte> or <xbyte> */
 		{
-		    EMSG(_(e_write));
+		    emsg(_(e_write));
 		    return 0;
 		}
 	}
@@ -5555,7 +5555,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
     if (sug_maketable(spin) == FAIL)
 	goto theend;
 
-    smsg((char_u *)_("Number of words after soundfolding: %ld"),
+    smsg(_("Number of words after soundfolding: %ld"),
 				 (long)spin->si_spellbuf->b_ml.ml_line_count);
 
     /*
@@ -5682,7 +5682,7 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 	}
     }
 
-    smsg((char_u *)_("Total number of words: %d"), words_done);
+    smsg(_("Total number of words: %d"), words_done);
 
     return OK;
 }
@@ -5848,7 +5848,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 	return;
     }
 
@@ -5861,7 +5861,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
      */
     if (fwrite(VIMSUGMAGIC, VIMSUGMAGICL, (size_t)1, fd) != 1) /* <fileID> */
     {
-	EMSG(_(e_write));
+	emsg(_(e_write));
 	goto theend;
     }
     putc(VIMSUGVERSION, fd);				/* <versionnr> */
@@ -5903,7 +5903,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
 	len = (int)STRLEN(line) + 1;
 	if (fwrite(line, (size_t)len, (size_t)1, fd) == 0)
 	{
-	    EMSG(_(e_write));
+	    emsg(_(e_write));
 	    goto theend;
 	}
 	spin->si_memtot += len;
@@ -5911,7 +5911,7 @@ sug_write(spellinfo_T *spin, char_u *fname)
 
     /* Write another byte to check for errors. */
     if (putc(0, fd) == EOF)
-	EMSG(_(e_write));
+	emsg(_(e_write));
 
     vim_snprintf((char *)IObuff, IOSIZE,
 		 _("Estimated runtime memory use: %d bytes"), spin->si_memtot);
@@ -6010,23 +6010,23 @@ mkspell(
     }
 
     if (incount <= 0)
-	EMSG(_(e_invarg));	/* need at least output and input names */
+	emsg(_(e_invarg));	/* need at least output and input names */
     else if (vim_strchr(gettail(wfname), '_') != NULL)
-	EMSG(_("E751: Output file name must not have region name"));
+	emsg(_("E751: Output file name must not have region name"));
     else if (incount > MAXREGIONS)
-	EMSGN(_("E754: Only up to %ld regions supported"), MAXREGIONS);
+	semsg(_("E754: Only up to %ld regions supported"), MAXREGIONS);
     else
     {
 	/* Check for overwriting before doing things that may take a lot of
 	 * time. */
 	if (!over_write && mch_stat((char *)wfname, &st) >= 0)
 	{
-	    EMSG(_(e_exists));
+	    emsg(_(e_exists));
 	    goto theend;
 	}
 	if (mch_isdir(wfname))
 	{
-	    EMSG2(_(e_isadir2), wfname);
+	    semsg(_(e_isadir2), wfname);
 	    goto theend;
 	}
 
@@ -6048,7 +6048,7 @@ mkspell(
 		if (STRLEN(gettail(innames[i])) < 5
 						|| innames[i][len - 3] != '_')
 		{
-		    EMSG2(_("E755: Invalid region in %s"), innames[i]);
+		    semsg(_("E755: Invalid region in %s"), innames[i]);
 		    goto theend;
 		}
 		spin.si_region_name[i * 2] = TOLOWER_ASC(innames[i][len - 2]);
@@ -6260,7 +6260,7 @@ spell_add_word(
 
 	if (*curwin->w_s->b_p_spf == NUL)
 	{
-	    EMSG2(_(e_notset), "spellfile");
+	    semsg(_(e_notset), "spellfile");
 	    return;
 	}
 	fnamebuf = alloc(MAXPATHL);
@@ -6274,7 +6274,7 @@ spell_add_word(
 		break;
 	    if (*spf == NUL)
 	    {
-		EMSGN(_("E765: 'spellfile' does not have %ld entries"), idx);
+		semsg(_("E765: 'spellfile' does not have %ld entries"), idx);
 		vim_free(fnamebuf);
 		return;
 	    }
@@ -6286,7 +6286,7 @@ spell_add_word(
 	    buf = NULL;
 	if (buf != NULL && bufIsChanged(buf))
 	{
-	    EMSG(_(e_bufloaded));
+	    emsg(_(e_bufloaded));
 	    vim_free(fnamebuf);
 	    return;
 	}
@@ -6321,7 +6321,7 @@ spell_add_word(
 			if (undo)
 			{
 			    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-			    smsg((char_u *)_("Word '%.*s' removed from %s"),
+			    smsg(_("Word '%.*s' removed from %s"),
 							 len, word, NameBuff);
 			}
 		    }
@@ -6358,7 +6358,7 @@ spell_add_word(
 	}
 
 	if (fd == NULL)
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	else
 	{
 	    if (bad)
@@ -6368,7 +6368,7 @@ spell_add_word(
 	    fclose(fd);
 
 	    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
-	    smsg((char_u *)_("Word '%.*s' added to %s"), len, word, NameBuff);
+	    smsg(_("Word '%.*s' added to %s"), len, word, NameBuff);
 	}
     }
 
@@ -6485,7 +6485,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
     {
 	if (*pl == NUL || *pu == NUL)
 	{
-	    EMSG(_(e_affform));
+	    emsg(_(e_affform));
 	    return FAIL;
 	}
 #ifdef FEAT_MBYTE
@@ -6511,7 +6511,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 	{
 	    if (f >= 256)
 	    {
-		EMSG(_(e_affrange));
+		emsg(_(e_affrange));
 		return FAIL;
 	    }
 	    new_st.st_fold[l] = f;
@@ -6524,7 +6524,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 	{
 	    if (f >= 256)
 	    {
-		EMSG(_(e_affrange));
+		emsg(_(e_affrange));
 		return FAIL;
 	    }
 	    new_st.st_fold[u] = f;
@@ -6535,7 +6535,7 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 
     if (*pl != NUL || *pu != NUL)
     {
-	EMSG(_(e_affform));
+	emsg(_(e_affform));
 	return FAIL;
     }
 
@@ -6599,7 +6599,7 @@ set_spell_finish(spelltab_T *new_st)
 		    || spelltab.st_fold[i] != new_st->st_fold[i]
 		    || spelltab.st_upper[i] != new_st->st_upper[i])
 	    {
-		EMSG(_("E763: Word characters differ between spell files"));
+		emsg(_("E763: Word characters differ between spell files"));
 		return FAIL;
 	    }
 	}
@@ -6725,7 +6725,7 @@ set_map_str(slang_T *lp, char_u *map)
 		{
 		    /* This should have been checked when generating the .spl
 		     * file. */
-		    EMSG(_("E783: duplicate char in MAP entry"));
+		    emsg(_("E783: duplicate char in MAP entry"));
 		    vim_free(b);
 		}
 	    }

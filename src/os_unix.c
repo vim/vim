@@ -327,7 +327,7 @@ mch_chdir(char *path)
     if (p_verbose >= 5)
     {
 	verbose_enter();
-	smsg((char_u *)"chdir(%s)", path);
+	smsg("chdir(%s)", path);
 	verbose_leave();
     }
 # ifdef VMS
@@ -1004,7 +1004,7 @@ static volatile sig_atomic_t lc_active INIT(= FALSE);
  *	if (SETJMP(lc_jump_env) != 0)
  *	{
  *	    mch_didjmp();
- *	    EMSG("crash!");
+ *	    emsg("crash!");
  *	}
  *	else
  *	{
@@ -1632,7 +1632,7 @@ mch_input_isatty(void)
     static void
 xopen_message(long elapsed_msec)
 {
-    smsg((char_u *)_("Opening the X display took %ld msec"), elapsed_msec);
+    smsg(_("Opening the X display took %ld msec"), elapsed_msec);
 }
 # endif
 #endif
@@ -2670,7 +2670,7 @@ mch_FullName(
 #endif
 		l = mch_chdir((char *)olddir);
 	    if (l != 0)
-		EMSG(_(e_prev_dir));
+		emsg(_(e_prev_dir));
 	}
 
 	l = STRLEN(buf);
@@ -3974,7 +3974,7 @@ check_mouse_termcode(void)
     int
 mch_screenmode(char_u *arg UNUSED)
 {
-    EMSG(_(e_screenmode));
+    emsg(_(e_screenmode));
     return FAIL;
 }
 
@@ -5454,7 +5454,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_in[0] = mch_open((char *)fname, O_RDONLY, 0);
 	if (fd_in[0] < 0)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -5472,7 +5472,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_out[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd_out[1] < 0)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -5486,7 +5486,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	fd_err[1] = mch_open((char *)fname, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	if (fd_err[1] < 0)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -6509,7 +6509,7 @@ mch_expand_wildcards(
      */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	EMSG(_(e_notmp));
+	emsg(_(e_notmp));
 	return FAIL;
     }
 
@@ -6763,7 +6763,7 @@ mch_expand_wildcards(
     if (i != (int)len)
     {
 	/* unexpected read error */
-	EMSG2(_(e_notread), tempname);
+	semsg(_(e_notread), tempname);
 	vim_free(tempname);
 	vim_free(buffer);
 	return FAIL;
@@ -7347,7 +7347,7 @@ mch_libcall(
 	/* "dlerr" must be used before dlclose() */
 	dlerr = (char *)dlerror();
 	if (dlerr != NULL)
-	    EMSG2(_("dlerror = \"%s\""), dlerr);
+	    semsg(_("dlerror = \"%s\""), dlerr);
     }
 # else
     hinstLib = shl_load((const char*)libname, BIND_IMMEDIATE|BIND_VERBOSE, 0L);
@@ -7442,7 +7442,7 @@ mch_libcall(
 	    for (i = 0; signal_info[i].sig != -1; i++)
 		if (lc_signal == signal_info[i].sig)
 		    break;
-	    EMSG2("E368: got SIG%s in libcall()", signal_info[i].name);
+	    semsg("E368: got SIG%s in libcall()", signal_info[i].name);
 	}
 #  endif
 # endif
@@ -7450,7 +7450,7 @@ mch_libcall(
 # if defined(USE_DLOPEN)
 	/* "dlerr" must be used before dlclose() */
 	if (dlerr != NULL)
-	    EMSG2(_("dlerror = \"%s\""), dlerr);
+	    semsg(_("dlerror = \"%s\""), dlerr);
 
 	/* Free the DLL module. */
 	(void)dlclose(hinstLib);
@@ -7461,7 +7461,7 @@ mch_libcall(
 
     if (!success)
     {
-	EMSG2(_(e_libcall), funcname);
+	semsg(_(e_libcall), funcname);
 	return FAIL;
     }
 

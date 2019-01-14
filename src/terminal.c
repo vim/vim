@@ -377,7 +377,7 @@ term_start(
 	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
 	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return NULL;
     }
 
@@ -719,7 +719,7 @@ ex_terminal(exarg_T *eap)
 	{
 	    if (*p)
 		*p = NUL;
-	    EMSG2(_("E181: Invalid attribute: %s"), cmd);
+	    semsg(_("E181: Invalid attribute: %s"), cmd);
 	    goto theend;
 	}
 	cmd = skipwhite(p);
@@ -3487,7 +3487,7 @@ init_vterm_ansi_colors(VTerm *vterm)
 	    && (var->di_tv.v_type != VAR_LIST
 		|| var->di_tv.vval.v_list == NULL
 		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
-	EMSG2(_(e_invarg2), "g:terminal_ansi_colors");
+	semsg(_(e_invarg2), "g:terminal_ansi_colors");
 }
 #endif
 
@@ -3914,7 +3914,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     term = buf->b_term;
     if (term->tl_vterm == NULL)
     {
-	EMSG(_("E958: Job already finished"));
+	emsg(_("E958: Job already finished"));
 	return;
     }
 
@@ -3924,7 +3924,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    EMSG(_(e_dictreq));
+	    emsg(_(e_dictreq));
 	    return;
 	}
 	d = argvars[2].vval.v_dict;
@@ -3940,13 +3940,13 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     if (mch_stat((char *)fname, &st) >= 0)
     {
-	EMSG2(_("E953: File exists: %s"), fname);
+	semsg(_("E953: File exists: %s"), fname);
 	return;
     }
 
     if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
     {
-	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
@@ -4389,13 +4389,13 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	EMSG2(_(e_notread), fname1);
+	semsg(_(e_notread), fname1);
 	return;
     }
     if (do_diff)
@@ -4404,7 +4404,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    EMSG2(_(e_notread), fname2);
+	    semsg(_(e_notread), fname2);
 	    return;
 	}
     }
@@ -4922,7 +4922,7 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (buf == NULL)
     {
-	EMSG(_("E955: Not a terminal buffer"));
+	emsg(_("E955: Not a terminal buffer"));
 	return;
     }
     if (buf->b_term->tl_vterm == NULL)
@@ -5007,7 +5007,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 		p = buf->b_term->tl_job->jv_tty_in;
 	    break;
 	default:
-	    EMSG2(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
 	    return;
     }
     if (p != NULL)
@@ -5236,12 +5236,12 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	EMSG(_(e_listreq));
+	emsg(_(e_listreq));
 	return;
     }
 
     if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 }
 #endif
 
@@ -5485,7 +5485,7 @@ dyn_winpty_init(int verbose)
     if (!hWinPtyDLL)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
+	    semsg(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
 						       : (char_u *)WINPTY_DLL);
 	return FAIL;
     }
@@ -5496,7 +5496,7 @@ dyn_winpty_init(int verbose)
 					      winpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		EMSG2(_(e_loadfunc), winpty_entry[i].name);
+		semsg(_(e_loadfunc), winpty_entry[i].name);
 	    return FAIL;
 	}
     }
@@ -5548,7 +5548,7 @@ term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto failed;
     }
 
@@ -5680,7 +5680,7 @@ term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
     }
 
     return OK;
@@ -5713,7 +5713,7 @@ failed:
 	char_u *msg = utf16_to_enc(
 				(short_u *)winpty_error_msg(winpty_err), NULL);
 
-	EMSG(msg);
+	emsg(msg);
 	winpty_error_free(winpty_err);
     }
     return FAIL;

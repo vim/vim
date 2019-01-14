@@ -1324,6 +1324,7 @@ enum auto_event
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
     EVENT_SOURCECMD,		// sourcing a Vim script using command
     EVENT_SOURCEPRE,		// before sourcing a Vim script
+    EVENT_SOURCEPOST,		// after sourcing a Vim script
     EVENT_SPELLFILEMISSING,	// spell file missing
     EVENT_STDINREADPOST,	// after reading from stdin
     EVENT_STDINREADPRE,		// before reading from stdin
@@ -1624,14 +1625,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 #define MSG(s)			    msg((char_u *)(s))
 #define MSG_ATTR(s, attr)	    msg_attr((char_u *)(s), (attr))
-#define EMSG(s)			    emsg((char_u *)(s))
-#define EMSG2(s, p)		    emsg2((char_u *)(s), (char_u *)(p))
-#define EMSG3(s, p, q)		    emsg3((char_u *)(s), (char_u *)(p), (char_u *)(q))
-#define EMSGN(s, n)		    emsgn((char_u *)(s), (long)(n))
-#define EMSGU(s, n)		    emsgu((char_u *)(s), (long_u)(n))
-#define IEMSG(s)		    iemsg((char_u *)(s))
-#define IEMSG2(s, p)		    iemsg2((char_u *)(s), (char_u *)(p))
-#define IEMSGN(s, n)		    iemsgn((char_u *)(s), (long)(n))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))
 #define MSG_PUTS(s)		    msg_puts((char_u *)(s))
@@ -1675,10 +1668,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define GUI_GET_COLOR		    GUI_FUNCTION(get_color)
 #endif
 
-/* Prefer using emsg3(), because perror() may send the output to the wrong
+/* Prefer using emsgf(), because perror() may send the output to the wrong
  * destination and mess up the screen. */
 #ifdef HAVE_STRERROR
-# define PERROR(msg)		    (void)emsg3((char_u *)"%s: %s", (char_u *)msg, (char_u *)strerror(errno))
+# define PERROR(msg)		    (void)semsg("%s: %s", (char *)msg, strerror(errno))
 #else
 # define PERROR(msg)		    do_perror(msg)
 #endif
@@ -1993,13 +1986,14 @@ typedef int sock_T;
 #define VV_TYPE_NONE	78
 #define VV_TYPE_JOB	79
 #define VV_TYPE_CHANNEL	80
-#define VV_TERMRFGRESP	81
-#define VV_TERMRBGRESP	82
-#define VV_TERMU7RESP	83
-#define VV_TERMSTYLERESP 84
-#define VV_TERMBLINKRESP 85
-#define VV_EVENT	86
-#define VV_LEN		87	/* number of v: vars */
+#define VV_TYPE_BLOB	81
+#define VV_TERMRFGRESP	82
+#define VV_TERMRBGRESP	83
+#define VV_TERMU7RESP	84
+#define VV_TERMSTYLERESP 85
+#define VV_TERMBLINKRESP 86
+#define VV_EVENT	87
+#define VV_LEN		88	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
@@ -2018,6 +2012,7 @@ typedef int sock_T;
 #define VAR_TYPE_NONE	    7
 #define VAR_TYPE_JOB	    8
 #define VAR_TYPE_CHANNEL    9
+#define VAR_TYPE_BLOB	    10
 
 #ifdef FEAT_CLIPBOARD
 

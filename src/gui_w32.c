@@ -1582,7 +1582,7 @@ gui_mch_get_font(
     if (get_logfont(&lf, name, NULL, giveErrorIfMissing) == OK)
 	font = get_font_handle(&lf);
     if (font == NOFONT && giveErrorIfMissing)
-	EMSG2(_(e_font), name);
+	semsg(_(e_font), name);
     return font;
 }
 
@@ -5235,7 +5235,7 @@ gui_mch_set_parent(char *title)
     EnumWindows(FindWindowTitle, (LPARAM)title);
     if (vim_parent_hwnd == NULL)
     {
-	EMSG2(_("E671: Cannot find window title \"%s\""), title);
+	semsg(_("E671: Cannot find window title \"%s\""), title);
 	mch_exit(2);
     }
 }
@@ -5246,7 +5246,7 @@ ole_error(char *arg)
 {
     char buf[IOSIZE];
 
-    /* Can't use EMSG() here, we have not finished initialisation yet. */
+    /* Can't use emsg() here, we have not finished initialisation yet. */
     vim_snprintf(buf, IOSIZE,
 	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
 	    arg);
@@ -5468,7 +5468,7 @@ gui_mch_init(void)
 #endif
 	if (s_hwnd == NULL)
 	{
-	    EMSG(_("E672: Unable to open window inside MDI application"));
+	    emsg(_("E672: Unable to open window inside MDI application"));
 	    mch_exit(2);
 	}
     }
@@ -8671,7 +8671,7 @@ gui_mch_register_sign(char_u *signfile)
     {
 	if (sign.hImage)
 	    close_signicon_image(&sign);
-	EMSG(_(e_signdata));
+	emsg(_(e_signdata));
     }
     return (void *)psign;
 
@@ -9025,7 +9025,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	IEMSG(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
 	return NULL;
     }
 

@@ -19,7 +19,7 @@
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
  *   -> a :substitute with a multi-line match
- *   -> search for changed_bytes() from ex_cmds.c
+ *   -> search for changed_bytes() from misc1.c
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -106,7 +106,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
     if (type == NULL)
 	type = find_prop(name, NULL);
     if (type == NULL)
-	EMSG2(_(e_type_not_exist), name);
+	semsg(_(e_type_not_exist), name);
     return type;
 }
 
@@ -124,7 +124,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
 
     if (arg->v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return FAIL;
     }
     if (arg->vval.v_dict == NULL)
@@ -167,19 +167,19 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     start_col = tv_get_number(&argvars[1]);
     if (start_col < 1)
     {
-	EMSGN(_(e_invalid_col), (long)start_col);
+	semsg(_(e_invalid_col), (long)start_col);
 	return;
     }
     if (argvars[2].v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return;
     }
     dict = argvars[2].vval.v_dict;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
-	EMSG(_("E965: missing property type name"));
+	emsg(_("E965: missing property type name"));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -189,7 +189,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	end_lnum = dict_get_number(dict, (char_u *)"end_lnum");
 	if (end_lnum < start_lnum)
 	{
-	    EMSG2(_(e_invargval), "end_lnum");
+	    semsg(_(e_invargval), "end_lnum");
 	    return;
 	}
     }
@@ -202,7 +202,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (length < 0 || end_lnum > start_lnum)
 	{
-	    EMSG2(_(e_invargval), "length");
+	    semsg(_(e_invargval), "length");
 	    return;
 	}
 	end_col = start_col + length;
@@ -212,7 +212,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	end_col = dict_get_number(dict, (char_u *)"end_col");
 	if (end_col <= 0)
 	{
-	    EMSG2(_(e_invargval), "end_col");
+	    semsg(_(e_invargval), "end_col");
 	    return;
 	}
     }
@@ -233,12 +233,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
     {
-	EMSGN(_(e_invalid_lnum), (long)start_lnum);
+	semsg(_(e_invalid_lnum), (long)start_lnum);
 	return;
     }
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
-	EMSGN(_(e_invalid_lnum), (long)end_lnum);
+	semsg(_(e_invalid_lnum), (long)end_lnum);
 	return;
     }
 
@@ -257,7 +257,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	    col = 1;
 	if (col - 1 > (colnr_T)textlen)
 	{
-	    EMSGN(_(e_invalid_col), (long)start_col);
+	    semsg(_(e_invalid_col), (long)start_col);
 	    return;
 	}
 
@@ -340,7 +340,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     proplen = buf->b_ml.ml_line_len - textlen;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	IEMSG(_("E967: text property info corrupted"));
+	iemsg(_("E967: text property info corrupted"));
 	return 0;
     }
     if (proplen > 0)
@@ -357,12 +357,12 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     static void
 set_text_props(linenr_T lnum, char_u *props, int len)
 {
-    char_u *text;
-    char_u *newtext;
-    size_t textlen;
+    char_u  *text;
+    char_u  *newtext;
+    int	    textlen;
 
     text = ml_get(lnum);
-    textlen = STRLEN(text) + 1;
+    textlen = (int)STRLEN(text) + 1;
     newtext = alloc(textlen + len);
     if (newtext == NULL)
 	return;
@@ -440,7 +440,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (start < 1 || end < 1)
     {
-	EMSG(_(e_invrange));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -487,7 +487,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     }
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-	EMSG(_(e_invrange));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -542,7 +542,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -554,7 +554,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    end = tv_get_number(&argvars[2]);
 	if (start < 1 || end < 1)
 	{
-	    EMSG(_(e_invrange));
+	    emsg(_(e_invrange));
 	    return;
 	}
     }
@@ -585,7 +585,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     if (id == -1 && type_id == -1)
     {
-	EMSG(_("E968: Need at least one of 'id' or 'type'"));
+	emsg(_("E968: Need at least one of 'id' or 'type'"));
 	return;
     }
 
@@ -661,7 +661,7 @@ prop_type_set(typval_T *argvars, int add)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -676,7 +676,7 @@ prop_type_set(typval_T *argvars, int add)
 
 	if (prop != NULL)
 	{
-	    EMSG2(_("E969: Property type %s already defined"), name);
+	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
 	prop = (proptype_T *)alloc_clear((int)(sizeof(proptype_T) + STRLEN(name)));
@@ -701,7 +701,7 @@ prop_type_set(typval_T *argvars, int add)
     {
 	if (prop == NULL)
 	{
-	    EMSG2(_(e_type_not_exist), name);
+	    semsg(_(e_type_not_exist), name);
 	    return;
 	}
     }
@@ -719,7 +719,7 @@ prop_type_set(typval_T *argvars, int add)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
 	    {
-		EMSG2(_("E970: Unknown highlight group name: '%s'"),
+		semsg(_("E970: Unknown highlight group name: '%s'"),
 			highlight == NULL ? (char_u *)"" : highlight);
 		return;
 	    }
@@ -781,7 +781,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -816,7 +816,7 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
     if (rettv_dict_alloc(rettv) == OK)

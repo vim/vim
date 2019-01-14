@@ -1998,7 +1998,6 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	case OP_INSERT:
 	case OP_APPEND:
 	    VIsual_reselect = FALSE;	/* don't reselect now */
-#ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
 	    {
 		vim_beep(BO_OPER);
@@ -2035,24 +2034,18 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		else
 		    cap->retval |= CA_COMMAND_BUSY;
 	    }
-#else
-	    vim_beep(BO_OPER);
-#endif
 	    break;
 
 	case OP_REPLACE:
 	    VIsual_reselect = FALSE;	/* don't reselect now */
-#ifdef FEAT_VISUALEXTRA
 	    if (empty_region_error)
-#endif
 	    {
 		vim_beep(BO_OPER);
 		CancelRedo();
 	    }
-#ifdef FEAT_VISUALEXTRA
 	    else
 	    {
-# ifdef FEAT_LINEBREAK
+#ifdef FEAT_LINEBREAK
 		/* Restore linebreak, so that when the user edits it looks as
 		 * before. */
 		if (curwin->w_p_lbr != lbr_saved)
@@ -2060,10 +2053,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    curwin->w_p_lbr = lbr_saved;
 		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
 		}
-# endif
+#endif
 		op_replace(oap, cap->nchar);
 	    }
-#endif
 	    break;
 
 #ifdef FEAT_FOLDING
@@ -2219,7 +2211,7 @@ op_function(oparg_T *oap UNUSED)
 # endif
 
     if (*p_opfunc == NUL)
-	EMSG(_("E774: 'operatorfunc' is empty"));
+	emsg(_("E774: 'operatorfunc' is empty"));
     else
     {
 	/* Set '[ and '] marks to text to be operated on. */
@@ -2251,7 +2243,7 @@ op_function(oparg_T *oap UNUSED)
 # endif
     }
 #else
-    EMSG(_("E775: Eval feature not available"));
+    emsg(_("E775: Eval feature not available"));
 #endif
 }
 
@@ -3550,9 +3542,9 @@ find_ident_at_pos(
 	 * didn't find an identifier or string
 	 */
 	if (find_type & FIND_STRING)
-	    EMSG(_("E348: No string under cursor"));
+	    emsg(_("E348: No string under cursor"));
 	else
-	    EMSG(_(e_noident));
+	    emsg(_(e_noident));
 	return 0;
     }
     ptr += col;
@@ -5024,7 +5016,7 @@ dozet:
 		    deleteFold((linenr_T)1, curbuf->b_ml.ml_line_count,
 								 TRUE, FALSE);
 		else
-		    EMSG(_("E352: Cannot erase folds with current 'foldmethod'"));
+		    emsg(_("E352: Cannot erase folds with current 'foldmethod'"));
 		break;
 
 		/* "zn": fold none: reset 'foldenable' */
@@ -5624,7 +5616,7 @@ nv_ident(cmdarg_T *cap)
 						 || STRCMP(kp, ":help") == 0);
     if (kp_help && *skipwhite(ptr) == NUL)
     {
-	EMSG(_(e_noident));	 /* found white space only */
+	emsg(_(e_noident));	 /* found white space only */
 	return;
     }
     kp_ex = (*kp == ':');
@@ -5675,7 +5667,7 @@ nv_ident(cmdarg_T *cap)
 		}
 		if (n == 0)
 		{
-		    EMSG(_(e_noident));	 /* found dashes only */
+		    emsg(_(e_noident));	 /* found dashes only */
 		    vim_free(buf);
 		    return;
 		}
@@ -7283,7 +7275,7 @@ nv_Replace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    EMSG(_(e_modifiable));
+	    emsg(_(e_modifiable));
 	else
 	{
 #ifdef FEAT_VIRTUALEDIT
@@ -7310,7 +7302,7 @@ nv_vreplace(cmdarg_T *cap)
     else if (!checkclearopq(cap->oap))
     {
 	if (!curbuf->b_p_ma)
-	    EMSG(_(e_modifiable));
+	    emsg(_(e_modifiable));
 	else
 	{
 	    if (cap->extra_char == Ctrl_V)	/* get another character */
@@ -7637,11 +7629,11 @@ nv_pcmark(cmdarg_T *cap)
 	else if (cap->cmdchar == 'g')
 	{
 	    if (curbuf->b_changelistlen == 0)
-		EMSG(_("E664: changelist is empty"));
+		emsg(_("E664: changelist is empty"));
 	    else if (cap->count1 < 0)
-		EMSG(_("E662: At start of changelist"));
+		emsg(_("E662: At start of changelist"));
 	    else
-		EMSG(_("E663: At end of changelist"));
+		emsg(_("E663: At end of changelist"));
 	}
 	else
 	    clearopbeep(cap->oap);
@@ -8520,16 +8512,16 @@ n_opencmd(cmdarg_T *cap)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
-		update_single_line(curwin, oldline);
+		redrawWinline(curwin, oldline);
 #endif
-	    /* When '#' is in 'cpoptions' ignore the count. */
-	    if (vim_strchr(p_cpo, CPO_HASH) != NULL)
-		cap->count1 = 1;
 #ifdef FEAT_SYN_HL
 	    if (curwin->w_p_cul)
 		/* force redraw of cursorline */
 		curwin->w_valid &= ~VALID_CROW;
 #endif
+	    /* When '#' is in 'cpoptions' ignore the count. */
+	    if (vim_strchr(p_cpo, CPO_HASH) != NULL)
+		cap->count1 = 1;
 	    invoke_edit(cap, FALSE, cap->cmdchar, TRUE);
 	}
     }
@@ -9115,7 +9107,7 @@ nv_edit(cmdarg_T *cap)
     else if (!curbuf->b_p_ma && !p_im)
     {
 	/* Only give this error when 'insertmode' is off. */
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	clearop(cap->oap);
 	if (cap->cmdchar == K_PS)
 	    /* drop the pasted text */

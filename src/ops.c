@@ -82,20 +82,16 @@ struct block_def
     colnr_T	textcol;	/* index of chars (partially) in block */
     colnr_T	start_vcol;	/* start col of 1st char wholly inside block */
     colnr_T	end_vcol;	/* start col of 1st char wholly after block */
-#ifdef FEAT_VISUALEXTRA
     int		is_short;	/* TRUE if line is too short to fit in block */
     int		is_MAX;		/* TRUE if curswant==MAXCOL when starting */
     int		is_oneChar;	/* TRUE if block within one character */
     int		pre_whitesp;	/* screen cols of ws before block */
     int		pre_whitesp_c;	/* chars of ws before block */
     colnr_T	end_char_vcols;	/* number of vcols of post-block char */
-#endif
     colnr_T	start_char_vcols; /* number of vcols of pre-block char */
 };
 
-#ifdef FEAT_VISUALEXTRA
 static void shift_block(oparg_T *oap, int amount);
-#endif
 static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon,
@@ -255,10 +251,8 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 	first_char = *ml_get_curline();
 	if (first_char == NUL)				/* empty line */
 	    curwin->w_cursor.col = 0;
-#ifdef FEAT_VISUALEXTRA
 	else if (oap->block_mode)
 	    shift_block(oap, amount);
-#endif
 	else
 	    /* Move the line right if it doesn't start with '#', 'smartindent'
 	     * isn't set or 'cindent' isn't set or '#' isn't in 'cino'. */
@@ -322,8 +316,8 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 }
 
 /*
- * shift the current line one shiftwidth left (if left != 0) or right
- * leaves cursor on first blank in the line
+ * Shift the current line one shiftwidth left (if left != 0) or right
+ * leaves cursor on first blank in the line.
  */
     void
 shift_line(
@@ -373,7 +367,6 @@ shift_line(
 	(void)set_indent(count, call_changed_bytes ? SIN_CHANGED : 0);
 }
 
-#if defined(FEAT_VISUALEXTRA) || defined(PROTO)
 /*
  * Shift one line of the current block one shiftwidth right or left.
  * Leaves cursor on first character in block.
@@ -577,9 +570,7 @@ shift_block(oparg_T *oap, int amount)
     p_ri = old_p_ri;
 #endif
 }
-#endif
 
-#ifdef FEAT_VISUALEXTRA
 /*
  * Insert string "s" (b_insert ? before : after) block :AKelly
  * Caller must prepare for undo.
@@ -703,7 +694,6 @@ block_insert(
 
     State = oldstate;
 }
-#endif
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(PROTO)
 /*
@@ -722,7 +712,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
     /* Don't even try when 'modifiable' is off. */
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return;
     }
 
@@ -734,7 +724,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 	if (i > 1
 		&& (i % 50 == 0 || i == oap->line_count - 1)
 		&& oap->line_count > p_report)
-	    smsg((char_u *)_("%ld lines to indent... "), i);
+	    smsg(_("%ld lines to indent... "), i);
 
 	/*
 	 * Be vi-compatible: For lisp indenting the first line is not
@@ -780,7 +770,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
     if (oap->line_count > p_report)
     {
 	i = oap->line_count - (i + 1);
-	smsg((char_u *)NGETTEXT("%ld line indented ",
+	smsg(NGETTEXT("%ld line indented ",
 						 "%ld lines indented ", i), i);
     }
     /* set '[ and '] marks */
@@ -1228,7 +1218,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    EMSG(_("E748: No previously used register"));
+	    emsg(_("E748: No previously used register"));
 	    return FAIL;
 	}
 	regname = execreg_lastc;
@@ -1253,7 +1243,7 @@ do_execreg(
     {
 	if (last_cmdline == NULL)
 	{
-	    EMSG(_(e_nolastcmd));
+	    emsg(_(e_nolastcmd));
 	    return FAIL;
 	}
 	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
@@ -1287,7 +1277,7 @@ do_execreg(
 	p = get_last_insert_save();
 	if (p == NULL)
 	{
-	    EMSG(_(e_noinstext));
+	    emsg(_(e_noinstext));
 	    return FAIL;
 	}
 	retval = put_in_typebuf(p, FALSE, colon, silent);
@@ -1545,13 +1535,13 @@ get_spec_reg(
 
 	case ':':		/* last command line */
 	    if (last_cmdline == NULL && errmsg)
-		EMSG(_(e_nolastcmd));
+		emsg(_(e_nolastcmd));
 	    *argp = last_cmdline;
 	    return TRUE;
 
 	case '/':		/* last search-pattern */
 	    if (last_search_pat() == NULL && errmsg)
-		EMSG(_(e_noprevre));
+		emsg(_(e_noprevre));
 	    *argp = last_search_pat();
 	    return TRUE;
 
@@ -1559,7 +1549,7 @@ get_spec_reg(
 	    *argp = get_last_insert_save();
 	    *allocated = TRUE;
 	    if (*argp == NULL && errmsg)
-		EMSG(_(e_noinstext));
+		emsg(_(e_noinstext));
 	    return TRUE;
 
 #ifdef FEAT_SEARCHPATH
@@ -1771,7 +1761,7 @@ op_delete(oparg_T *oap)
 
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return FAIL;
     }
 
@@ -1894,7 +1884,7 @@ op_delete(oparg_T *oap)
 	    msg_silent = msg_silent_save;
 	    if (n != 'y')
 	    {
-		EMSG(_(e_abort));
+		emsg(_(e_abort));
 		return FAIL;
 	    }
 	}
@@ -2132,9 +2122,8 @@ mb_adjust_opend(oparg_T *oap)
 }
 #endif
 
-#if defined(FEAT_VISUALEXTRA) || defined(PROTO)
 
-# ifdef FEAT_MBYTE
+#ifdef FEAT_MBYTE
 /*
  * Replace the character under the cursor with "c".
  * This takes care of multi-byte characters.
@@ -2150,8 +2139,8 @@ replace_character(int c)
     /* Backup to the replaced character. */
     dec_cursor();
 }
+#endif
 
-# endif
 /*
  * Replace a whole area with one character.
  */
@@ -2378,11 +2367,11 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
                    if ((*mb_char2len)(c) > 1)
 		       replace_character(c);
                    else
- #endif
+# endif
 			PBYTE(curwin->w_cursor, c);
 		   if (inc(&curwin->w_cursor) == -1)
 		       break;
@@ -2406,7 +2395,6 @@ op_replace(oparg_T *oap, int c)
 
     return OK;
 }
-#endif
 
 static int swapchars(int op_type, pos_T *pos, int length);
 
@@ -2518,7 +2506,7 @@ op_tilde(oparg_T *oap)
     curbuf->b_op_end = oap->end;
 
     if (oap->line_count > p_report)
-	smsg((char_u *)NGETTEXT("%ld line changed", "%ld lines changed",
+	smsg(NGETTEXT("%ld line changed", "%ld lines changed",
 					    oap->line_count), oap->line_count);
 }
 
@@ -2627,7 +2615,6 @@ swapchar(int op_type, pos_T *pos)
     return FALSE;
 }
 
-#if defined(FEAT_VISUALEXTRA) || defined(PROTO)
 /*
  * op_insert - Insert and append operators for Visual mode.
  */
@@ -2767,7 +2754,12 @@ op_insert(oparg_T *oap, long count1)
 			)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
+#ifdef FEAT_VIRTUALEDIT
+					      curbuf->b_op_start_orig.coladd
+#else
+					      0
+#endif
+					      );
 		oap->start.col = curbuf->b_op_start_orig.col;
 		pre_textlen -= t - oap->start_vcol;
 		oap->start_vcol = t;
@@ -2784,7 +2776,12 @@ op_insert(oparg_T *oap, long count1)
 			)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-					      curbuf->b_op_start_orig.coladd);
+#ifdef FEAT_VIRTUALEDIT
+					      curbuf->b_op_start_orig.coladd
+#else
+					      0
+#endif
+					      );
 		oap->start.col = curbuf->b_op_start_orig.col;
 		/* reset pre_textlen to the value of OP_INSERT */
 		pre_textlen += bd.textlen;
@@ -2844,7 +2841,6 @@ op_insert(oparg_T *oap, long count1)
 	}
     }
 }
-#endif
 
 /*
  * op_change - handle a change operation
@@ -2856,7 +2852,6 @@ op_change(oparg_T *oap)
 {
     colnr_T		l;
     int			retval;
-#ifdef FEAT_VISUALEXTRA
     long		offset;
     linenr_T		linenr;
     long		ins_len;
@@ -2865,7 +2860,6 @@ op_change(oparg_T *oap)
     char_u		*firstline;
     char_u		*ins_text, *newp, *oldp;
     struct block_def	bd;
-#endif
 
     l = oap->start.col;
     if (oap->motion_type == MLINE)
@@ -2895,23 +2889,21 @@ op_change(oparg_T *oap)
 							 && !virtual_op)
 	inc_cursor();
 
-#ifdef FEAT_VISUALEXTRA
     /* check for still on same line (<CR> in inserted text meaningless) */
     /* skip blank lines too */
     if (oap->block_mode)
     {
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 	/* Add spaces before getting the current line length. */
 	if (virtual_op && (curwin->w_cursor.coladd > 0
 						    || gchar_cursor() == NUL))
 	    coladvance_force(getviscol());
-# endif
+#endif
 	firstline = ml_get(oap->start.lnum);
 	pre_textlen = (long)STRLEN(firstline);
 	pre_indent = (long)getwhitecols(firstline);
 	bd.textcol = curwin->w_cursor.col;
     }
-#endif
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     if (oap->motion_type == MLINE)
@@ -2920,7 +2912,6 @@ op_change(oparg_T *oap)
 
     retval = edit(NUL, FALSE, (linenr_T)1);
 
-#ifdef FEAT_VISUALEXTRA
     /*
      * In Visual block mode, handle copying the new text to all lines of the
      * block.
@@ -2953,7 +2944,7 @@ op_change(oparg_T *oap)
 		    block_prep(oap, &bd, linenr, TRUE);
 		    if (!bd.is_short || virtual_op)
 		    {
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 			pos_T vpos;
 
 			/* If the block starts in virtual space, count the
@@ -2965,22 +2956,22 @@ op_change(oparg_T *oap)
 			}
 			else
 			    vpos.coladd = 0;
-# endif
+#endif
 			oldp = ml_get(linenr);
 			newp = alloc_check((unsigned)(STRLEN(oldp)
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 							+ vpos.coladd
-# endif
+#endif
 							      + ins_len + 1));
 			if (newp == NULL)
 			    continue;
 			/* copy up to block start */
 			mch_memmove(newp, oldp, (size_t)bd.textcol);
 			offset = bd.textcol;
-# ifdef FEAT_VIRTUALEDIT
+#ifdef FEAT_VIRTUALEDIT
 			vim_memset(newp + offset, ' ', (size_t)vpos.coladd);
 			offset += vpos.coladd;
-# endif
+#endif
 			mch_memmove(newp + offset, ins_text, (size_t)ins_len);
 			offset += ins_len;
 			oldp += bd.textcol;
@@ -2995,7 +2986,6 @@ op_change(oparg_T *oap)
 	    vim_free(ins_text);
 	}
     }
-#endif
 
     return retval;
 }
@@ -3048,7 +3038,7 @@ free_yank(long n)
 		 * Overwrite this message with any next message.
 		 */
 		++no_wait_return;
-		smsg((char_u *)_("freeing %ld lines"), i + 1);
+		smsg(_("freeing %ld lines"), i + 1);
 		--no_wait_return;
 		msg_didout = FALSE;
 		msg_col = 0;
@@ -3335,13 +3325,13 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    update_topline_redraw();
 	    if (oap->block_mode)
 	    {
-		smsg((char_u *)NGETTEXT("block of %ld line yanked%s",
+		smsg(NGETTEXT("block of %ld line yanked%s",
 				     "block of %ld lines yanked%s", yanklines),
 			yanklines, namebuf);
 	    }
 	    else
 	    {
-		smsg((char_u *)NGETTEXT("%ld line yanked%s",
+		smsg(NGETTEXT("%ld line yanked%s",
 					      "%ld lines yanked%s", yanklines),
 			yanklines, namebuf);
 	    }
@@ -3659,7 +3649,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	EMSG2(_("E353: Nothing in register %s"),
+	semsg(_("E353: Nothing in register %s"),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }
@@ -5415,13 +5405,11 @@ block_prep(
     bdp->textlen = 0;
     bdp->start_vcol = 0;
     bdp->end_vcol = 0;
-#ifdef FEAT_VISUALEXTRA
     bdp->is_short = FALSE;
     bdp->is_oneChar = FALSE;
     bdp->pre_whitesp = 0;
     bdp->pre_whitesp_c = 0;
     bdp->end_char_vcols = 0;
-#endif
     bdp->start_char_vcols = 0;
 
     line = ml_get(lnum);
@@ -5432,7 +5420,6 @@ block_prep(
 	/* Count a tab for what it's worth (if list mode not on) */
 	incr = lbr_chartabsize(line, pstart, (colnr_T)bdp->start_vcol);
 	bdp->start_vcol += incr;
-#ifdef FEAT_VISUALEXTRA
 	if (VIM_ISWHITE(*pstart))
 	{
 	    bdp->pre_whitesp += incr;
@@ -5443,7 +5430,6 @@ block_prep(
 	    bdp->pre_whitesp = 0;
 	    bdp->pre_whitesp_c = 0;
 	}
-#endif
 	prev_pstart = pstart;
 	MB_PTR_ADV(pstart);
     }
@@ -5451,9 +5437,7 @@ block_prep(
     if (bdp->start_vcol < oap->start_vcol)	/* line too short */
     {
 	bdp->end_vcol = bdp->start_vcol;
-#ifdef FEAT_VISUALEXTRA
 	bdp->is_short = TRUE;
-#endif
 	if (!is_del || oap->op_type == OP_APPEND)
 	    bdp->endspaces = oap->end_vcol - oap->start_vcol + 1;
     }
@@ -5468,9 +5452,7 @@ block_prep(
 	bdp->end_vcol = bdp->start_vcol;
 	if (bdp->end_vcol > oap->end_vcol)	/* it's all in one character */
 	{
-#ifdef FEAT_VISUALEXTRA
 	    bdp->is_oneChar = TRUE;
-#endif
 	    if (oap->op_type == OP_INSERT)
 		bdp->endspaces = bdp->start_char_vcols - bdp->startspaces;
 	    else if (oap->op_type == OP_APPEND)
@@ -5507,9 +5489,7 @@ block_prep(
 			|| oap->op_type == OP_APPEND
 			|| oap->op_type == OP_REPLACE)) /* line too short */
 	    {
-#ifdef FEAT_VISUALEXTRA
 		bdp->is_short = TRUE;
-#endif
 		/* Alternative: include spaces to fill up the block.
 		 * Disadvantage: can lead to trailing spaces when the line is
 		 * short where the text is put */
@@ -5531,9 +5511,7 @@ block_prep(
 		}
 	    }
 	}
-#ifdef FEAT_VISUALEXTRA
 	bdp->end_char_vcols = incr;
-#endif
 	if (is_del && bdp->startspaces)
 	    pstart = prev_pstart;
 	bdp->textlen = (int)(pend - pstart);
@@ -5668,7 +5646,7 @@ op_addsub(
 	    curbuf->b_op_start = startpos;
 
 	if (change_cnt > p_report)
-	    smsg((char_u *)NGETTEXT("%ld line changed", "%ld lines changed",
+	    smsg(NGETTEXT("%ld line changed", "%ld lines changed",
 						      change_cnt), change_cnt);
     }
 }
@@ -6445,9 +6423,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		sprintf((char *)IObuff, _("E574: Unknown register type %d"),
-							    y_ptr->y_type);
-		emsg(IObuff);
+		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -6624,7 +6600,7 @@ clip_free_selection(VimClipboard *cbd)
 }
 
 /*
- * Get the selected text and put it in the gui selection register '*' or '+'.
+ * Get the selected text and put it in register '*' or '+'.
  */
     void
 clip_get_selection(VimClipboard *cbd)
@@ -7076,7 +7052,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    EMSG(_("E883: search pattern and expression register may not "
+	    emsg(_("E883: search pattern and expression register may not "
 			"contain two or more lines"));
 	    return;
 	}
@@ -7132,7 +7108,7 @@ write_reg_contents_ex(
 
 	    buf = buflist_findnr(num);
 	    if (buf == NULL)
-		EMSGN(_(e_nobufnr), (long)num);
+		semsg(_(e_nobufnr), (long)num);
 	}
 	else
 	    buf = buflist_findnr(buflist_findpat(str, str + STRLEN(str),

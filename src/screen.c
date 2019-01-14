@@ -154,7 +154,6 @@ static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int de
 static void win_rest_invalid(win_T *wp);
 static void msg_pos_mode(void);
 static void recording_mode(int attr);
-static void draw_tabline(void);
 static int fillchar_status(int *attr, win_T *wp);
 static int fillchar_vsep(int *attr);
 #ifdef FEAT_MENU
@@ -262,6 +261,17 @@ redraw_buf_later(buf_T *buf, int type)
 	if (wp->w_buffer == buf)
 	    redraw_win_later(wp, type);
     }
+}
+
+    void
+redraw_buf_line_later(buf_T *buf, linenr_T lnum)
+{
+    win_T	*wp;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == buf && lnum >= wp->w_topline
+						  && lnum < wp->w_botline)
+	    redrawWinline(wp, lnum);
 }
 
     void
@@ -493,28 +503,13 @@ redraw_after_callback(int call_update_screen)
     void
 redrawWinline(
     win_T	*wp,
-    linenr_T	lnum,
-    int		invalid UNUSED)	/* window line height is invalid now */
+    linenr_T	lnum)
 {
-#ifdef FEAT_FOLDING
-    int		i;
-#endif
-
     if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
 	wp->w_redraw_top = lnum;
     if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
 	wp->w_redraw_bot = lnum;
     redraw_win_later(wp, VALID);
-
-#ifdef FEAT_FOLDING
-    if (invalid)
-    {
-	/* A w_lines[] entry for this lnum has become invalid. */
-	i = find_wl_entry(wp, lnum);
-	if (i >= 0)
-	    wp->w_lines[i].wl_valid = FALSE;
-    }
-#endif
 }
 
     void
@@ -932,55 +927,6 @@ conceal_check_cursor_line(void)
 	curs_columns(TRUE);
     }
 }
-
-    void
-update_single_line(win_T *wp, linenr_T lnum)
-{
-    int		row;
-    int		j;
-#ifdef SYN_TIME_LIMIT
-    proftime_T	syntax_tm;
-#endif
-
-    /* Don't do anything if the screen structures are (not yet) valid. */
-    if (!screen_valid(TRUE) || updating_screen)
-	return;
-
-    if (lnum >= wp->w_topline && lnum < wp->w_botline
-				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
-    {
-#ifdef SYN_TIME_LIMIT
-	/* Set the time limit to 'redrawtime'. */
-	profile_setlimit(p_rdt, &syntax_tm);
-	syn_set_timeout(&syntax_tm);
-#endif
-	update_prepare();
-
-	row = 0;
-	for (j = 0; j < wp->w_lines_valid; ++j)
-	{
-	    if (lnum == wp->w_lines[j].wl_lnum)
-	    {
-		screen_start();	/* not sure of screen cursor */
-# ifdef FEAT_SEARCH_EXTRA
-		init_search_hl(wp);
-		prepare_search_hl(wp, lnum);
-# endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
-								 FALSE, FALSE);
-		break;
-	    }
-	    row += wp->w_lines[j].wl_size;
-	}
-
-	update_finish();
-
-#ifdef SYN_TIME_LIMIT
-	syn_set_timeout(NULL);
-#endif
-    }
-    need_cursor_line_redraw = FALSE;
-}
 #endif
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
@@ -994,26 +940,13 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
     win_foldinfo.fi_level = 0;
 # endif
 
-    /* update/delete a specific mark */
+    // update/delete a specific sign
+    redraw_buf_line_later(buf, lnum);
+
+    // check if it resulted in the need to redraw a window
     FOR_ALL_WINDOWS(wp)
-    {
-	if (buf != NULL && lnum > 0)
-	{
-	    if (wp->w_buffer == buf && lnum >= wp->w_topline
-						      && lnum < wp->w_botline)
-	    {
-		if (wp->w_redraw_top == 0 || wp->w_redraw_top > lnum)
-		    wp->w_redraw_top = lnum;
-		if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
-		    wp->w_redraw_bot = lnum;
-		redraw_win_later(wp, VALID);
-	    }
-	}
-	else
-	    redraw_win_later(wp, VALID);
 	if (wp->w_redr_type != 0)
 	    doit = TRUE;
-    }
 
     /* Return when there is nothing to do, screen updating is already
      * happening (recursive call), messages on the screen or still starting up.
@@ -10693,7 +10626,7 @@ recording_mode(int attr)
 /*
  * Draw the tab pages line at the top of the Vim window.
  */
-    static void
+    void
 draw_tabline(void)
 {
     int		tabcount = 0;

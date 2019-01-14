@@ -516,6 +516,51 @@ func Test_raw_pipe()
   call assert_equal(1, found)
 endfunc
 
+func Test_raw_pipe_blob()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_raw_pipe_blob()')
+  " Add a dummy close callback to avoid that messages are dropped when calling
+  " ch_canread().
+  " Also test the non-blocking option.
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
+  call assert_equal(v:t_job, type(job))
+  call assert_equal("run", job_status(job))
+
+  call assert_equal("open", ch_status(job))
+  call assert_equal("open", ch_status(job), {"part": "out"})
+
+  try
+    " Create a blob with the echo command and write it.
+    let blob = 0z00
+    let cmd = "echo something\n"
+    for i in range(0, len(cmd) - 1)
+      let blob[i] = char2nr(cmd[i])
+    endfor
+    call assert_equal(len(cmd), len(blob))
+    call ch_sendraw(job, blob)
+
+    " Read a blob with the reply.
+    let msg = ch_readblob(job)
+    let expected = 'something'
+    for i in range(0, len(expected) - 1)
+      call assert_equal(char2nr(expected[i]), msg[i])
+    endfor
+
+    let reply = ch_evalraw(job, "quit\n", {'timeout': 100})
+    call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
+  finally
+    call job_stop(job)
+  endtry
+
+  let g:Ch_job = job
+  call WaitForAssert({-> assert_equal("dead", job_status(g:Ch_job))})
+  let info = job_info(job)
+  call assert_equal("dead", info.status)
+endfunc
+
 func Test_nl_pipe()
   if !has('job')
     return
@@ -1892,4 +1937,41 @@ func Test_keep_pty_open()
   let elapsed = WaitFor({-> job_status(job) ==# 'dead'})
   call assert_inrange(200, 1000, elapsed)
   call job_stop(job)
+endfunc
+
+func Test_job_start_in_timer()
+  if !has('job') || !has('timers')
+    return
+  endif
+
+  func OutCb(chan, msg)
+  endfunc
+
+  func ExitCb(job, status)
+    let g:val = 1
+    call Resume()
+  endfunc
+
+  func TimerCb(timer)
+    if has('win32')
+      let cmd = ['cmd', '/c', 'echo.']
+    else
+      let cmd = ['echo']
+    endif
+    let g:job = job_start(cmd, {'out_cb': 'OutCb', 'exit_cb': 'ExitCb'})
+    call substitute(repeat('a', 100000), '.', '', 'g')
+  endfunc
+
+  " We should be interrupted before 'updatetime' elapsed.
+  let g:val = 0
+  call timer_start(1, 'TimerCb')
+  let elapsed = Standby(&ut)
+  call assert_inrange(1, &ut / 2, elapsed)
+  call job_stop(g:job)
+
+  delfunc OutCb
+  delfunc ExitCb
+  delfunc TimerCb
+  unlet! g:val
+  unlet! g:job
 endfunc

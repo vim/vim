@@ -889,8 +889,8 @@ struct condstack
  */
 struct msglist
 {
-    char_u		*msg;		/* original message */
-    char_u		*throw_msg;	/* msg to throw: usually original one */
+    char		*msg;		/* original message */
+    char		*throw_msg;	/* msg to throw: usually original one */
     struct msglist	*next;		/* next of several messages in a row */
 };
 
@@ -912,7 +912,7 @@ typedef struct vim_exception except_T;
 struct vim_exception
 {
     except_type_T	type;		/* exception type */
-    char_u		*value;		/* exception value */
+    char		*value;		/* exception value */
     struct msglist	*messages;	/* message(s) causing error exception */
     char_u		*throw_name;	/* name of the throw point */
     linenr_T		throw_lnum;	/* line number of the throw point */
@@ -1251,6 +1251,7 @@ typedef double	float_T;
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
 typedef struct partial_S partial_T;
+typedef struct blobvar_S blob_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
@@ -1272,6 +1273,7 @@ typedef enum
     VAR_SPECIAL, // "v_number" is used
     VAR_JOB,	 // "v_job" is used
     VAR_CHANNEL, // "v_channel" is used
+    VAR_BLOB,	 // "v_blob" is used
 } vartype_T;
 
 /*
@@ -1295,6 +1297,7 @@ typedef struct
 	job_T		*v_job;		/* job value (can be NULL!) */
 	channel_T	*v_channel;	/* channel value (can be NULL!) */
 #endif
+	blob_T		*v_blob;	/* blob value (can be NULL!) */
     }		vval;
 } typval_T;
 
@@ -1399,6 +1402,16 @@ struct dictvar_S
     dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     dict_T	*dv_used_next;	/* next dict in used dicts list */
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
+};
+
+/*
+ * Structure to hold info about a blob.
+ */
+struct blobvar_S
+{
+    garray_T	bv_ga;		// growarray with the data
+    int		bv_refcount;	// reference count
+    char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -3526,6 +3539,7 @@ typedef struct lval_S
     dict_T	*ll_dict;	/* The Dictionary or NULL */
     dictitem_T	*ll_di;		/* The dictitem or NULL */
     char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
+    blob_T	*ll_blob;	/* The Blob or NULL */
 } lval_T;
 
 /* Structure used to save the current state.  Used when executing Normal mode

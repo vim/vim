@@ -606,7 +606,7 @@ check_mark(pos_T *pos)
 {
     if (pos == NULL)
     {
-	EMSG(_(e_umark));
+	emsg(_(e_umark));
 	return FAIL;
     }
     if (pos->lnum <= 0)
@@ -614,12 +614,12 @@ check_mark(pos_T *pos)
 	/* lnum is negative if mark is in another file can can't get that
 	 * file, error message already give then. */
 	if (pos->lnum == 0)
-	    EMSG(_(e_marknotset));
+	    emsg(_(e_marknotset));
 	return FAIL;
     }
     if (pos->lnum > curbuf->b_ml.ml_line_count)
     {
-	EMSG(_(e_markinval));
+	emsg(_(e_markinval));
 	return FAIL;
     }
     return OK;
@@ -763,7 +763,7 @@ show_one_mark(
 	    if (arg == NULL)
 		MSG(_("No marks set"));
 	    else
-		EMSG2(_("E283: No marks matching \"%s\""), arg);
+		semsg(_("E283: No marks matching \"%s\""), arg);
 	}
     }
     /* don't output anything if 'q' typed at --more-- prompt */
@@ -815,9 +815,9 @@ ex_delmarks(exarg_T *eap)
 	/* clear all marks */
 	clrallmarks(curbuf);
     else if (eap->forceit)
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
     else if (*eap->arg == NUL)
-	EMSG(_(e_argreq));
+	emsg(_(e_argreq));
     else
     {
 	/* clear specified marks only */
@@ -837,7 +837,7 @@ ex_delmarks(exarg_T *eap)
 				    : ASCII_ISUPPER(p[2])))
 			    || to < from)
 		    {
-			EMSG2(_(e_invarg2), p);
+			semsg(_(e_invarg2), p);
 			return;
 		    }
 		    p += 2;
@@ -875,7 +875,7 @@ ex_delmarks(exarg_T *eap)
 		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
 		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
 		    case ' ': break;
-		    default:  EMSG2(_(e_invarg2), p);
+		    default:  semsg(_(e_invarg2), p);
 			      return;
 		}
 	}
