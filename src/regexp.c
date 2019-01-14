@@ -338,6 +338,7 @@ toggle_Magic(int x)
 #define IEMSG_RET_NULL(m) return (iemsg((m)), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG_RET_FAIL(m) return (emsg((m)), rc_did_emsg = TRUE, FAIL)
 #define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
+#define EMSG3_RET_NULL(m, c, a) return (semsg((const char *)(m), (c) ? "" : "\\", (a)), rc_did_emsg = TRUE, (void *)NULL)
 #define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
 #define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
 
@@ -1895,14 +1896,11 @@ regpiece(int *flagp)
     }
     if (re_multi_type(peekchr()) != NOT_MULTI)
     {
-	/* Can't have a multi follow a multi. */
+	// Can't have a multi follow a multi.
 	if (peekchr() == Magic('*'))
-	    sprintf((char *)IObuff, _("E61: Nested %s*"),
-					    reg_magic >= MAGIC_ON ? "" : "\\");
-	else
-	    sprintf((char *)IObuff, _("E62: Nested %s%c"),
-		reg_magic == MAGIC_ALL ? "" : "\\", no_Magic(peekchr()));
-	EMSG_RET_NULL((char *)IObuff);
+	    EMSG2_RET_NULL(_("E61: Nested %s*"), reg_magic >= MAGIC_ON);
+	EMSG3_RET_NULL(_("E62: Nested %s%c"), reg_magic == MAGIC_ALL,
+							  no_Magic(peekchr()));
     }
 
     return ret;
@@ -2075,10 +2073,8 @@ regatom(int *flagp)
       case Magic('{'):
       case Magic('*'):
 	c = no_Magic(c);
-	sprintf((char *)IObuff, _("E64: %s%c follows nothing"),
-		(c == '*' ? reg_magic >= MAGIC_ON : reg_magic == MAGIC_ALL)
-		? "" : "\\", c);
-	EMSG_RET_NULL((char *)IObuff);
+	EMSG3_RET_NULL(_("E64: %s%c follows nothing"),
+		(c == '*' ? reg_magic >= MAGIC_ON : reg_magic == MAGIC_ALL), c);
 	/* NOTREACHED */
 
       case Magic('~'):		/* previous substitute pattern */
@@ -3403,11 +3399,8 @@ read_limits(long *minval, long *maxval)
     if (*regparse == '\\')
 	regparse++;	/* Allow either \{...} or \{...\} */
     if (*regparse != '}')
-    {
-	sprintf((char *)IObuff, _("E554: Syntax error in %s{...}"),
-					  reg_magic == MAGIC_ALL ? "" : "\\");
-	EMSG_RET_FAIL((char *)IObuff);
-    }
+	EMSG2_RET_FAIL(_("E554: Syntax error in %s{...}"),
+						       reg_magic == MAGIC_ALL);
 
     /*
      * Reverse the range if there was a '-', or make sure it is in the right
@@ -6998,7 +6991,11 @@ regprop(char_u *op)
 re_mult_next(char *what)
 {
     if (re_multi_type(peekchr()) == MULTI_MULT)
-	EMSG2_RET_FAIL(_("E888: (NFA regexp) cannot repeat %s"), what);
+    {
+       semsg(_("E888: (NFA regexp) cannot repeat %s"), what);
+       rc_did_emsg = TRUE;
+       return FAIL;
+    }
     return OK;
 }
 
