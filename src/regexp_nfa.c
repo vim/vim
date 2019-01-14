@@ -1219,7 +1219,9 @@ nfa_regatom(void)
     switch (c)
     {
 	case NUL:
-	    EMSG_RET_FAIL(_(e_nul_found));
+	    emsg(_(e_nul_found));
+	    rc_did_emsg = TRUE;
+	    return FAIL;
 
 	case Magic('^'):
 	    EMIT(NFA_BOL);
@@ -1243,7 +1245,11 @@ nfa_regatom(void)
 	case Magic('_'):
 	    c = no_Magic(getchr());
 	    if (c == NUL)
-		EMSG_RET_FAIL(_(e_nul_found));
+	    {
+		emsg(_(e_nul_found));
+		rc_did_emsg = TRUE;
+		return FAIL;
+	    }
 
 	    if (c == '^')	/* "\_^" is start-of-line */
 	    {
@@ -1429,7 +1435,11 @@ nfa_regatom(void)
 		case '9':
 		    /* \z1...\z9 */
 		    if ((reg_do_extmatch & REX_USE) == 0)
-			EMSG_RET_FAIL(_(e_z1_not_allowed));
+		    {
+			emsg(_(e_z1_not_allowed));
+			rc_did_emsg = TRUE;
+			return FAIL;
+		    }
 		    EMIT(NFA_ZREF1 + (no_Magic(c) - '1'));
 		    /* No need to set rex.nfa_has_backref, the sub-matches don't
 		     * change when \z1 .. \z9 matches or not. */
@@ -1438,7 +1448,11 @@ nfa_regatom(void)
 		case '(':
 		    /* \z(  */
 		    if ((reg_do_extmatch & REX_SET) == 0)
-			EMSG_RET_FAIL(_(e_z_not_allowed));
+		    {
+			emsg(_(e_z_not_allowed));
+			rc_did_emsg = TRUE;
+			return FAIL;
+		    }
 		    if (nfa_reg(REG_ZPAREN) == FAIL)
 			return FAIL;	    /* cascaded error */
 		    re_has_z = REX_SET;
@@ -1740,7 +1754,9 @@ collection:
 			    if (result == FAIL)
 			    {
 				/* should never happen */
-				EMSG_RET_FAIL(_("E868: Error building NFA with equivalence class!"));
+				emsg(_("E868: Error building NFA with equivalence class!"));
+				rc_did_emsg = TRUE;
+				return FAIL;
 			    }
 			    continue;
 			}
@@ -1812,7 +1828,11 @@ collection:
 			endc = startc;
 			startc = oldstartc;
 			if (startc > endc)
-			    EMSG_RET_FAIL(_(e_reverse_range));
+			{
+			    emsg(_(e_reverse_range));
+			    rc_did_emsg = TRUE;
+			    return FAIL;
+			}
 
 			if (endc > startc + 2)
 			{
@@ -1924,7 +1944,11 @@ collection:
 	    } /* if exists closing ] */
 
 	    if (reg_strict)
-		EMSG_RET_FAIL(_(e_missingbracket));
+	    {
+		emsg(_(e_missingbracket));
+		rc_did_emsg = TRUE;
+		return FAIL;
+	    }
 	    /* FALLTHROUGH */
 
 	default:
@@ -2101,7 +2125,11 @@ nfa_regpiece(void)
 		greedy = FALSE;
 	    }
 	    if (!read_limits(&minval, &maxval))
-		EMSG_RET_FAIL(_("E870: (NFA regexp) Error reading repetition limits"));
+	    {
+		emsg(_("E870: (NFA regexp) Error reading repetition limits"));
+		rc_did_emsg = TRUE;
+		return FAIL;
+	    }
 
 	    /*  <atom>{0,inf}, <atom>{0,} and <atom>{}  are equivalent to
 	     *  <atom>*  */
@@ -2177,8 +2205,12 @@ nfa_regpiece(void)
     }	/* end switch */
 
     if (re_multi_type(peekchr()) != NOT_MULTI)
+    {
 	/* Can't have a multi follow a multi. */
-	EMSG_RET_FAIL(_("E871: (NFA regexp) Can't have a multi follow a multi"));
+	emsg(_("E871: (NFA regexp) Can't have a multi follow a multi"));
+	rc_did_emsg = TRUE;
+	return FAIL;
+    }
 
     return OK;
 }
@@ -2327,7 +2359,11 @@ nfa_reg(
     if (paren == REG_PAREN)
     {
 	if (regnpar >= NSUBEXP) /* Too many `(' */
-	    EMSG_RET_FAIL(_("E872: (NFA regexp) Too many '('"));
+	{
+	    emsg(_("E872: (NFA regexp) Too many '('"));
+	    rc_did_emsg = TRUE;
+	    return FAIL;
+	}
 	parno = regnpar++;
     }
 #ifdef FEAT_SYN_HL
@@ -2335,7 +2371,11 @@ nfa_reg(
     {
 	/* Make a ZOPEN node. */
 	if (regnzpar >= NSUBEXP)
-	    EMSG_RET_FAIL(_("E879: (NFA regexp) Too many \\z("));
+	{
+	    emsg(_("E879: (NFA regexp) Too many \\z("));
+	    rc_did_emsg = TRUE;
+	    return FAIL;
+	}
 	parno = regnzpar++;
     }
 #endif
@@ -2364,7 +2404,11 @@ nfa_reg(
 	if (peekchr() == Magic(')'))
 	    EMSG2_RET_FAIL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_FAIL(_("E873: (NFA regexp) proper termination error"));
+	{
+	    emsg(_("E873: (NFA regexp) proper termination error"));
+	    rc_did_emsg = TRUE;
+	    return FAIL;
+	}
     }
     /*
      * Here we set the flag allowing back references to this set of
@@ -3697,13 +3741,17 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
     if (stackp != stack)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E875: (NFA regexp) (While converting from postfix to NFA), too many states left on stack"));
+	emsg(_("E875: (NFA regexp) (While converting from postfix to NFA), too many states left on stack"));
+	rc_did_emsg = TRUE;
+	return NULL;
     }
 
     if (istate >= nstate)
     {
 	vim_free(stack);
-	EMSG_RET_NULL(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
+	emsg(_("E876: (NFA regexp) Not enough space to store the whole NFA "));
+	rc_did_emsg = TRUE;
+	return NULL;
     }
 
     matchstate = &state_ptr[istate++]; /* the match state */
