@@ -2290,7 +2290,7 @@ do_one_cmd(
 	/* check these explicitly for a more specific error message */
 	if (*ea.arg == '*' || *ea.arg == '+')
 	{
-	    errormsg = (char_u *)_(e_invalidreg);
+	    errormsg = _(e_invalidreg);
 	    goto doend;
 	}
 #endif
