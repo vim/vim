@@ -332,13 +332,6 @@ toggle_Magic(int x)
  */
 #define UCHARAT(p)	((int)*(char_u *)(p))
 
-/* Used for an error (down from) vim_regcomp(): give the error message, set
- * rc_did_emsg and return NULL */
-#define EMSG2_RET_NULL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, (void *)NULL)
-#define EMSG2_RET_FAIL(m, c) return (semsg((const char *)(m), (c) ? "" : "\\"), rc_did_emsg = TRUE, FAIL)
-#define EMSG_ONE_RET_NULL EMSG2_RET_NULL(_("E369: invalid item in %s%%[]"), reg_magic == MAGIC_ALL)
-
-
 #define MAX_LIMIT	(32767L << 16L)
 
 static int cstrncmp(char_u *s1, char_u *s2, int *n);
@@ -353,6 +346,7 @@ static char_u	*regprop(char_u *);
 
 static int re_mult_next(char *what);
 
+static char_u e_invaliditem[] = N_("E369: invalid item in %s%%[]");
 static char_u e_missingbracket[] = N_("E769: Missing ] after %s[");
 static char_u e_reverse_range[] = N_("E944: Reverse range in character class");
 #ifdef FEAT_MBYTE
@@ -1564,7 +1558,11 @@ reg(
     {
 	/* Make a MOPEN node. */
 	if (regnpar >= NSUBEXP)
-	    EMSG2_RET_NULL(_("E51: Too many %s("), reg_magic == MAGIC_ALL);
+	{
+	    semsg(_("E51: Too many %s("), reg_magic == MAGIC_ALL ? "" : "\\");
+	    rc_did_emsg = TRUE;
+	    return NULL;
+	}
 	parno = regnpar;
 	++regnpar;
 	ret = regnode(MOPEN + parno);
@@ -1628,15 +1626,27 @@ reg(
 	}
 	else
 #endif
-	    if (paren == REG_NPAREN)
-	    EMSG2_RET_NULL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
+	if (paren == REG_NPAREN)
+	{
+	    semsg(_(e_unmatchedpp), reg_magic == MAGIC_ALL ? "" : "\\");
+	    rc_did_emsg = TRUE;
+	    return NULL;
+	}
 	else
-	    EMSG2_RET_NULL(_(e_unmatchedp), reg_magic == MAGIC_ALL);
+	{
+	    semsg(_(e_unmatchedp), reg_magic == MAGIC_ALL ? "" : "\\");
+	    rc_did_emsg = TRUE;
+	    return NULL;
+	}
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (curchr == Magic(')'))
-	    EMSG2_RET_NULL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
+	{
+	    semsg(_(e_unmatchedpar), reg_magic == MAGIC_ALL ? "" : "\\");
+	    rc_did_emsg = TRUE;
+	    return NULL;
+	}
 	else
 	{
 	    /* "Can't happen". */
@@ -1858,8 +1868,12 @@ regpiece(int *flagp)
 			      }
 		}
 		if (lop == END)
-		    EMSG2_RET_NULL(_("E59: invalid character after %s@"),
-						      reg_magic == MAGIC_ALL);
+		{
+		    semsg(_("E59: invalid character after %s@"),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+		    rc_did_emsg = TRUE;
+		    return NULL;
+		}
 		/* Look behind must match with behind_pos. */
 		if (lop == BEHIND || lop == NOBEHIND)
 		{
@@ -1899,8 +1913,12 @@ regpiece(int *flagp)
 	    else
 	    {
 		if (num_complex_braces >= 10)
-		    EMSG2_RET_NULL(_("E60: Too many complex %s{...}s"),
-						      reg_magic == MAGIC_ALL);
+		{
+		    semsg(_("E60: Too many complex %s{...}s"),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+		    rc_did_emsg = TRUE;
+		    return NULL;
+		}
 		reginsert(BRACE_COMPLEX + num_complex_braces, ret);
 		regoptail(ret, regnode(BACK));
 		regoptail(ret, ret);
@@ -1916,10 +1934,10 @@ regpiece(int *flagp)
 	/* Can't have a multi follow a multi. */
 	if (peekchr() == Magic('*'))
 	    sprintf((char *)IObuff, _("E61: Nested %s*"),
-					    reg_magic >= MAGIC_ON ? "" : "\\");
+					   reg_magic >= MAGIC_ON ? "" : "\\");
 	else
 	    sprintf((char *)IObuff, _("E62: Nested %s%c"),
-		reg_magic == MAGIC_ALL ? "" : "\\", no_Magic(peekchr()));
+		     reg_magic == MAGIC_ALL ? "" : "\\", no_Magic(peekchr()));
 	emsg((char *)IObuff);
 	rc_did_emsg = TRUE;
 	return NULL;
@@ -2076,7 +2094,11 @@ regatom(int *flagp)
 
       case Magic('('):
 	if (one_exactly)
-	    EMSG_ONE_RET_NULL;
+	{
+	    semsg(_(e_invaliditem), reg_magic == MAGIC_ALL ? "" : "\\");
+	    rc_did_emsg = TRUE;
+	    return NULL;
+	}
 	ret = reg(REG_PAREN, &flags);
 	if (ret == NULL)
 	    return NULL;
@@ -2088,9 +2110,10 @@ regatom(int *flagp)
       case Magic('&'):
       case Magic(')'):
 	if (one_exactly)
-	    EMSG_ONE_RET_NULL;
+	    semsg(_(e_invaliditem), reg_magic == MAGIC_ALL ? "" : "\\");
+	else
+	    iemsg(_(e_internal));
 	/* Supposed to be caught earlier. */
-	iemsg(_(e_internal));
 	rc_did_emsg = TRUE;
 	return NULL;
 	/* NOTREACHED */
@@ -2168,7 +2191,12 @@ regatom(int *flagp)
 			return NULL;
 		    }
 		    if (one_exactly)
-			EMSG_ONE_RET_NULL;
+		    {
+			semsg(_(e_invaliditem),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+			rc_did_emsg = TRUE;
+			return NULL;
+		    }
 		    ret = reg(REG_ZPAREN, &flags);
 		    if (ret == NULL)
 			return NULL;
@@ -2224,7 +2252,12 @@ regatom(int *flagp)
 		/* () without a back reference */
 		case '(':
 		    if (one_exactly)
-			EMSG_ONE_RET_NULL;
+		    {
+			semsg(_(e_invaliditem),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+			rc_did_emsg = TRUE;
+			return NULL;
+		    }
 		    ret = reg(REG_NPAREN, &flags);
 		    if (ret == NULL)
 			return NULL;
@@ -2257,7 +2290,12 @@ regatom(int *flagp)
 		 * branch which matches nothing. */
 		case '[':
 			  if (one_exactly)	/* doesn't nest */
-			      EMSG_ONE_RET_NULL;
+			  {
+			      semsg(_(e_invaliditem),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+			      rc_did_emsg = TRUE;
+			      return NULL;
+			  }
 			  {
 			      char_u	*lastbranch;
 			      char_u	*lastnode = NULL;
@@ -2267,8 +2305,12 @@ regatom(int *flagp)
 			      while ((c = getchr()) != ']')
 			      {
 				  if (c == NUL)
-				      EMSG2_RET_NULL(_(e_missing_sb),
-						      reg_magic == MAGIC_ALL);
+				  {
+				      semsg(_(e_missing_sb),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+				      rc_did_emsg = TRUE;
+				      return NULL;
+				  }
 				  br = regnode(BRANCH);
 				  if (ret == NULL)
 				      ret = br;
@@ -2283,8 +2325,12 @@ regatom(int *flagp)
 				      return NULL;
 			      }
 			      if (ret == NULL)
-				  EMSG2_RET_NULL(_(e_empty_sb),
-						      reg_magic == MAGIC_ALL);
+			      {
+				  semsg(_(e_empty_sb),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+				  rc_did_emsg = TRUE;
+				  return NULL;
+			      }
 			      lastbranch = regnode(BRANCH);
 			      br = regnode(NOTHING);
 			      if (ret != JUST_CALC_SIZE)
@@ -2327,9 +2373,12 @@ regatom(int *flagp)
 			      }
 
 			      if (i < 0)
-				  EMSG2_RET_NULL(
-					_("E678: Invalid character after %s%%[dxouU]"),
-					reg_magic == MAGIC_ALL);
+			      {
+				  semsg( _("E678: Invalid character after %s%%[dxouU]"),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+				  rc_did_emsg = TRUE;
+				  return NULL;
+			      }
 #ifdef FEAT_MBYTE
 			      if (use_multibytecode(i))
 				  ret = regnode(MULTIBYTECODE);
@@ -2403,8 +2452,10 @@ regatom(int *flagp)
 			      }
 			  }
 
-			  EMSG2_RET_NULL(_("E71: Invalid character after %s%%"),
-						      reg_magic == MAGIC_ALL);
+			  semsg(_("E71: Invalid character after %s%%"),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+			  rc_did_emsg = TRUE;
+			  return NULL;
 	    }
 	}
 	break;
@@ -2711,7 +2762,11 @@ collection:
 		break;
 	    }
 	    else if (reg_strict)
-		EMSG2_RET_NULL(_(e_missingbracket), reg_magic > MAGIC_OFF);
+	    {
+		semsg(_(e_missingbracket), reg_magic >= MAGIC_ON ? "" : "\\");
+		rc_did_emsg = TRUE;
+		return NULL;
+	    }
 	}
 	/* FALLTHROUGH */
 

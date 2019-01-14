@@ -1495,9 +1495,13 @@ nfa_regatom(void)
 			}
 
 			if (nr < 0)
-			    EMSG2_RET_FAIL(
+			{
+			    semsg(
 			       _("E678: Invalid character after %s%%[dxouU]"),
-				    reg_magic == MAGIC_ALL);
+			       reg_magic == MAGIC_ALL ? "" : "\\");
+			    rc_did_emsg = TRUE;
+			    return FAIL;
+			}
 			/* A NUL is stored in the text as NL */
 			/* TODO: what if a composing character follows? */
 			EMIT(nr == 0 ? 0x0a : nr);
@@ -1534,16 +1538,24 @@ nfa_regatom(void)
 			for (n = 0; (c = peekchr()) != ']'; ++n)
 			{
 			    if (c == NUL)
-				EMSG2_RET_FAIL(_(e_missing_sb),
-						      reg_magic == MAGIC_ALL);
+			    {
+				semsg(_(e_missing_sb),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+				rc_did_emsg = TRUE;
+				return FAIL;
+			    }
 			    /* recursive call! */
 			    if (nfa_regatom() == FAIL)
 				return FAIL;
 			}
 			getchr();  /* get the ] */
 			if (n == 0)
-			    EMSG2_RET_FAIL(_(e_empty_sb),
-						      reg_magic == MAGIC_ALL);
+			{
+			    semsg(_(e_empty_sb),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+			    rc_did_emsg = TRUE;
+			    return FAIL;
+			}
 			EMIT(NFA_OPT_CHARS);
 			EMIT(n);
 
@@ -2394,21 +2406,19 @@ nfa_reg(
     /* Check for proper termination. */
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
-	if (paren == REG_NPAREN)
-	    EMSG2_RET_FAIL(_(e_unmatchedpp), reg_magic == MAGIC_ALL);
-	else
-	    EMSG2_RET_FAIL(_(e_unmatchedp), reg_magic == MAGIC_ALL);
+	semsg(paren == REG_NPAREN ? _(e_unmatchedpp) : _(e_unmatchedp),
+					  reg_magic == MAGIC_ALL ? "" : "\\");
+	rc_did_emsg = TRUE;
+	return FAIL;
     }
     else if (paren == REG_NOPAREN && peekchr() != NUL)
     {
 	if (peekchr() == Magic(')'))
-	    EMSG2_RET_FAIL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
+	    semsg(_(e_unmatchedpar), reg_magic == MAGIC_ALL ? "" : "\\");
 	else
-	{
 	    emsg(_("E873: (NFA regexp) proper termination error"));
-	    rc_did_emsg = TRUE;
-	    return FAIL;
-	}
+	rc_did_emsg = TRUE;
+	return FAIL;
     }
     /*
      * Here we set the flag allowing back references to this set of
