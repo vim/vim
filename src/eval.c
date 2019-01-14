@@ -702,6 +702,7 @@ eval_to_bool(
     static int
 eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
 {
+    char_u	*start = *arg;
     int		ret;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
@@ -715,7 +716,7 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
 	// Also check called_emsg for when using assert_fails().
 	if (!aborting() && did_emsg == did_emsg_before
 					  && called_emsg == called_emsg_before)
-	    semsg(_(e_invexpr2), arg);
+	    semsg(_(e_invexpr2), start);
     }
     return ret;
 }
