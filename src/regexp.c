@@ -1933,12 +1933,10 @@ regpiece(int *flagp)
     {
 	/* Can't have a multi follow a multi. */
 	if (peekchr() == Magic('*'))
-	    sprintf((char *)IObuff, _("E61: Nested %s*"),
-					   reg_magic >= MAGIC_ON ? "" : "\\");
+	    semsg(_("E61: Nested %s*"), reg_magic >= MAGIC_ON ? "" : "\\");
 	else
-	    sprintf((char *)IObuff, _("E62: Nested %s%c"),
-		     reg_magic == MAGIC_ALL ? "" : "\\", no_Magic(peekchr()));
-	emsg((char *)IObuff);
+	    semsg(_("E62: Nested %s%c"), reg_magic == MAGIC_ALL ? "" : "\\",
+							 no_Magic(peekchr()));
 	rc_did_emsg = TRUE;
 	return NULL;
     }
@@ -2125,10 +2123,9 @@ regatom(int *flagp)
       case Magic('{'):
       case Magic('*'):
 	c = no_Magic(c);
-	sprintf((char *)IObuff, _("E64: %s%c follows nothing"),
+	semsg(_("E64: %s%c follows nothing"),
 		(c == '*' ? reg_magic >= MAGIC_ON : reg_magic == MAGIC_ALL)
 		? "" : "\\", c);
-	emsg((char *)IObuff);
 	rc_did_emsg = TRUE;
 	return NULL;
 	/* NOTREACHED */
@@ -3519,9 +3516,8 @@ read_limits(long *minval, long *maxval)
 	regparse++;	/* Allow either \{...} or \{...\} */
     if (*regparse != '}')
     {
-	sprintf((char *)IObuff, _("E554: Syntax error in %s{...}"),
+	semsg(_("E554: Syntax error in %s{...}"),
 					  reg_magic == MAGIC_ALL ? "" : "\\");
-	emsg((char *)IObuff);
 	rc_did_emsg = TRUE;
 	return FAIL;
     }
