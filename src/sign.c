@@ -374,7 +374,7 @@ buf_change_sign_type(
 
 /*
  * Return the type number of the sign at line number 'lnum' in buffer 'buf'
- * which has the attribute specifed by 'type'. Returns 0 if a sign is not found
+ * which has the attribute specified by 'type'. Returns 0 if a sign is not found
  * at the line number or it doesn't have the specified attribute.
  */
     int
@@ -442,7 +442,7 @@ buf_delsign(
 	    redraw_buf_line_later(buf, lnum);
 
 	    // Check whether only one sign needs to be deleted
-	    // If deleting a sign with a specific identifer in a particular
+	    // If deleting a sign with a specific identifier in a particular
 	    // group or deleting any sign at a particular line number, delete
 	    // only one sign.
 	    if (group == NULL
@@ -457,8 +457,10 @@ buf_delsign(
     // When deleting the last sign the cursor position may change, because the
     // sign columns no longer shows.
     if (buf->b_signlist == NULL)
+    {
+	redraw_buf_later(buf, NOT_VALID);
 	changed_cline_bef_curs();
-
+    }
     return lnum;
 }
 
@@ -894,7 +896,7 @@ sign_list_by_name(char_u *name)
 }
 
 /*
- * Place a sign at the specifed file location or update a sign.
+ * Place a sign at the specified file location or update a sign.
  */
     int
 sign_place(
