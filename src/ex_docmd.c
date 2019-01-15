@@ -10942,7 +10942,7 @@ eval_vars(
 			return NULL;
 		    }
 #else
-		    *errormsg = (char_u *)_("E809: #< is not available without the +eval feature");
+		    *errormsg = _("E809: #< is not available without the +eval feature");
 		    return NULL;
 #endif
 		}
