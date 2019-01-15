@@ -1673,7 +1673,7 @@ ex_let_one(
 	    semsg(_(e_invarg2), name - 1);
 	else
 	{
-	    if (op != NULL && (*op == '+' || *op == '-'))
+	    if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
 		semsg(_(e_letwrong), op);
 	    else if (endchars != NULL
 			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
@@ -1752,10 +1752,14 @@ ex_let_one(
 		{
 		    if (opt_type == 1)  /* number */
 		    {
-			if (*op == '+')
-			    n = numval + n;
-			else
-			    n = numval - n;
+			switch (*op)
+			{
+			    case '+': n = numval + n; break;
+			    case '-': n = numval - n; break;
+			    case '*': n = numval * n; break;
+			    case '/': n = numval / n; break;
+			    case '%': n = numval % n; break;
+			}
 		    }
 		    else if (opt_type == 0 && stringval != NULL) /* string */
 		    {
@@ -1781,7 +1785,7 @@ ex_let_one(
     else if (*arg == '@')
     {
 	++arg;
-	if (op != NULL && (*op == '+' || *op == '-'))
+	if (op != NULL && vim_strchr((char_u *)"+-*/%", *op) != NULL)
 	    semsg(_(e_letwrong), op);
 	else if (endchars != NULL
 			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
