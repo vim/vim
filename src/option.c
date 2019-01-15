@@ -989,7 +989,7 @@ static struct vimoption options[] =
     {"cursorbind",  "crb",  P_BOOL|P_VI_DEF,
 			    (char_u *)VAR_WIN, PV_CRBIND,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"cursorcolumn", "cuc", P_BOOL|P_VI_DEF|P_RWIN,
+    {"cursorcolumn", "cuc", P_BOOL|P_VI_DEF|P_RWINONLY,
 #ifdef FEAT_SYN_HL
 			    (char_u *)VAR_WIN, PV_CUC,
 #else
