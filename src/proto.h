@@ -108,19 +108,31 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg(const char *, ...);
+smsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr(int, const char *, ...);
+smsg_attr(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr_keep(int, const char *, ...);
+smsg_attr_keep(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__

@@ -6263,7 +6263,7 @@ qf_add_entry_from_dict(
 	if (!did_bufnr_emsg)
 	{
 	    did_bufnr_emsg = TRUE;
-	    semsg(_("E92: Buffer %ld not found"), bufnum);
+	    semsg(_("E92: Buffer %d not found"), bufnum);
 	}
 	valid = FALSE;
 	bufnum = 0;

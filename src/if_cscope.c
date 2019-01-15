@@ -651,7 +651,7 @@ cs_cnt_connections(void)
 cs_reading_emsg(
     int idx)	/* connection index */
 {
-    semsg(_("E262: error reading cscope connection %ld"), idx);
+    semsg(_("E262: error reading cscope connection %d"), idx);
 }
 
 #define	CSREAD_BUFSIZE	2048

@@ -2210,9 +2210,10 @@ check_fontset_sanity(XFontSet fs)
 	    semsg(_("E253: Fontset name: %s"), base_name);
 	    semsg(_("Font0: %s"), font_name[min_font_idx]);
 	    semsg(_("Font1: %s"), font_name[i]);
-	    semsg(_("Font%ld width is not twice that of font0"), i);
-	    semsg(_("Font0 width: %ld"), xfs[min_font_idx]->max_bounds.width);
-	    semsg(_("Font1 width: %ld"), xfs[i]->max_bounds.width);
+	    semsg(_("Font%d width is not twice that of font0"), i);
+	    semsg(_("Font0 width: %d"),
+				     (int)xfs[min_font_idx]->max_bounds.width);
+	    semsg(_("Font%d width: %d"), i, (int)xfs[i]->max_bounds.width);
 	    return FAIL;
 	}
     }

@@ -268,7 +268,7 @@ compare_func_name(const void *s1, const void *s2)
 
 /*
  * Sort the function table by function name.
- * The sorting of the table above is ASCII dependant.
+ * The sorting of the table above is ASCII dependent.
  * On machines using EBCDIC we have to sort it.
  */
     static void
