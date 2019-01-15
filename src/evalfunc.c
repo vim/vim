@@ -4408,10 +4408,15 @@ f_get(typval_T *argvars, typval_T *rettv)
 	if (!error)
 	{
 	    rettv->v_type = VAR_NUMBER;
-	    if (idx >= blob_len(argvars[0].vval.v_blob))
-		semsg(_(e_blobidx), idx);
+	    if (idx < 0)
+		idx = blob_len(argvars[0].vval.v_blob) + idx;
+	    if (idx < 0 || idx >= blob_len(argvars[0].vval.v_blob))
+		rettv->vval.v_number = -1;
 	    else
+	    {
 		rettv->vval.v_number = blob_get(argvars[0].vval.v_blob, idx);
+		tv = rettv;
+	    }
 	}
     }
     else if (argvars[0].v_type == VAR_LIST)
