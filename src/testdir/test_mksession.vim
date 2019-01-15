@@ -325,7 +325,7 @@ func Test_mksession_terminal_restore_other()
       let term_cmd = line
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+ .* other', term_cmd)
+  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
 
   call Stop_shell_in_terminal(bufnr('%'))
   call delete('Xtest_mks.out')
