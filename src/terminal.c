@@ -5572,7 +5572,7 @@ conpty_term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto failed;
     }
 
@@ -5720,7 +5720,7 @@ conpty_term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
     }
 
     return OK;

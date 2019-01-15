@@ -4937,7 +4937,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (p == NULL || !(*p == NUL || STRCMP(p, "winpty") == 0
 					          || STRCMP(p, "conpty") == 0))
 		{
-		    EMSG2(_(e_invargval), "term_mode");
+		    semsg(_(e_invargval), "term_mode");
 		    return FAIL;
 		}
 		opt->jo_term_mode = p[0];
