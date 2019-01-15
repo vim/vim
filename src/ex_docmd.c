@@ -1296,7 +1296,7 @@ do_cmdline(
 	 */
 	if (did_throw)
 	{
-	    char_u	*p = NULL;
+	    void	*p = NULL;
 	    char_u	*saved_sourcing_name;
 	    int		saved_sourcing_lnum;
 	    struct msglist	*messages = NULL, *next;
@@ -1347,7 +1347,7 @@ do_cmdline(
 	    }
 	    else if (p != NULL)
 	    {
-		semsg("%s", p);
+		emsg(p);
 		vim_free(p);
 	    }
 	    vim_free(sourcing_name);
@@ -6958,7 +6958,7 @@ do_ucmd(exarg_T *eap)
 		}
 	    }
 
-	    /* break if there no <item> is found */
+	    /* break if no <item> is found */
 	    if (start == NULL || end == NULL)
 		break;
 
@@ -8022,7 +8022,7 @@ handle_drop_internal(void)
 /*
  * Handle a file drop. The code is here because a drop is *nearly* like an
  * :args command, but not quite (we have a list of exact filenames, so we
- * don't want to (a) parse a command line, or (b) expand wildcards. So the
+ * don't want to (a) parse a command line, or (b) expand wildcards). So the
  * code is very similar to :args and hence needs access to a lot of the static
  * functions in this file.
  *
