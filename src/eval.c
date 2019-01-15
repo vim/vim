@@ -8198,7 +8198,6 @@ item_copy(
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
-	case VAR_BLOB:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:
@@ -8216,6 +8215,21 @@ item_copy(
 		to->vval.v_list = list_copy(from->vval.v_list, deep, copyID);
 	    if (to->vval.v_list == NULL)
 		ret = FAIL;
+	    break;
+	case VAR_BLOB:
+	    to->v_type = VAR_BLOB;
+	    if (from->vval.v_blob == NULL)
+		to->vval.v_blob = NULL;
+	    else if (rettv_blob_alloc(to) == FAIL)
+		ret = FAIL;
+	    else
+	    {
+		int  len = from->vval.v_blob->bv_ga.ga_len;
+
+		to->vval.v_blob->bv_ga.ga_data =
+			    vim_memsave(from->vval.v_blob->bv_ga.ga_data, len);
+		to->vval.v_blob->bv_ga.ga_len = len;
+	    }
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;
