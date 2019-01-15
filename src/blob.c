@@ -114,13 +114,16 @@ blob_equal(
     blob_T	*b1,
     blob_T	*b2)
 {
-    int i;
+    int	    i;
+    int	    len1 = blob_len(b1);
+    int	    len2 = blob_len(b2);
 
-    if (b1 == NULL || b2 == NULL)
-	return FALSE;
+    // empty and NULL are considered the same
+    if (len1 == 0 && len2 == 0)
+	return TRUE;
     if (b1 == b2)
 	return TRUE;
-    if (blob_len(b1) != blob_len(b2))
+    if (len1 != len2)
 	return FALSE;
 
     for (i = 0; i < b1->bv_ga.ga_len; i++)
@@ -158,10 +161,77 @@ write_blob(FILE *fd, blob_T *blob)
     if (fwrite(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
     {
-	EMSG(_(e_write));
+	emsg(_(e_write));
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Convert a blob to a readable form: "[0x11,0x34]"
+ */
+    char_u *
+blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
+{
+    int		i;
+    garray_T    ga;
+
+    if (blob == NULL)
+    {
+	*tofree = NULL;
+	return (char_u *)"[]";
+    }
+
+    // Store bytes in the growarray.
+    ga_init2(&ga, 1, 4000);
+    ga_append(&ga, '[');
+    for (i = 0; i < blob_len(blob); i++)
+    {
+	if (i > 0)
+	    ga_concat(&ga, (char_u *)",");
+	vim_snprintf((char *)numbuf, NUMBUFLEN, "0x%02X", (int)blob_get(blob, i));
+	ga_concat(&ga, numbuf);
+    }
+    ga_append(&ga, ']');
+    *tofree = ga.ga_data;
+    return *tofree;
+}
+
+/*
+ * Convert a string variable, in the format of blob2string(), to a blob.
+ * Return NULL when conversion failed.
+ */
+    blob_T *
+string2blob(char_u *str)
+{
+    blob_T  *blob = blob_alloc();
+    char_u  *s = str;
+
+    if (*s != '[')
+	goto failed;
+    s = skipwhite(s + 1);
+    while (*s != ']')
+    {
+	if (s[0] != '0' || s[1] != 'x'
+				 || !vim_isxdigit(s[2]) || !vim_isxdigit(s[3]))
+	    goto failed;
+	ga_append(&blob->bv_ga, (hex2nr(s[2]) << 4) + hex2nr(s[3]));
+	s += 4;
+	if (*s == ',')
+	    s = skipwhite(s + 1);
+	else if (*s != ']')
+	    goto failed;
+    }
+    s = skipwhite(s + 1);
+    if (*s != NUL)
+	goto failed;  // text after final ']'
+
+    ++blob->bv_refcount;
+    return blob;
+
+failed:
+    blob_free(blob);
+    return NULL;
 }
 
 #endif /* defined(FEAT_EVAL) */

@@ -945,7 +945,7 @@ common_init(mparm_T *paramp)
 
     /*
      * Allocate space for the generic buffers (needed for set_init_1() and
-     * EMSG2()).
+     * emsg()).
      */
     if ((IObuff = alloc(IOSIZE)) == NULL
 	    || (NameBuff = alloc(MAXPATHL)) == NULL)
@@ -1170,6 +1170,10 @@ main_loop(
 	    // locked, this would be a good time to handle the drop.
 	    handle_any_postponed_drop();
 #endif
+#ifdef FEAT_CONCEAL
+	    if (curwin->w_p_cole == 0)
+		conceal_update_lines = FALSE;
+#endif
 
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
@@ -1201,6 +1205,7 @@ main_loop(
 			|| need_cursor_line_redraw))
 	    {
 		if (conceal_old_cursor_line != conceal_new_cursor_line
+			&& conceal_old_cursor_line != 0
 			&& conceal_old_cursor_line
 						<= curbuf->b_ml.ml_line_count)
 		    redrawWinline(curwin, conceal_old_cursor_line);
@@ -3020,7 +3025,7 @@ source_startup_scripts(mparm_T *parmp)
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
-		EMSG2(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
     else if (!silent_mode)

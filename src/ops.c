@@ -712,7 +712,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
     /* Don't even try when 'modifiable' is off. */
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return;
     }
 
@@ -724,7 +724,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 	if (i > 1
 		&& (i % 50 == 0 || i == oap->line_count - 1)
 		&& oap->line_count > p_report)
-	    smsg((char_u *)_("%ld lines to indent... "), i);
+	    smsg(_("%ld lines to indent... "), i);
 
 	/*
 	 * Be vi-compatible: For lisp indenting the first line is not
@@ -770,7 +770,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
     if (oap->line_count > p_report)
     {
 	i = oap->line_count - (i + 1);
-	smsg((char_u *)NGETTEXT("%ld line indented ",
+	smsg(NGETTEXT("%ld line indented ",
 						 "%ld lines indented ", i), i);
     }
     /* set '[ and '] marks */
@@ -1218,7 +1218,7 @@ do_execreg(
     {
 	if (execreg_lastc == NUL)
 	{
-	    EMSG(_("E748: No previously used register"));
+	    emsg(_("E748: No previously used register"));
 	    return FAIL;
 	}
 	regname = execreg_lastc;
@@ -1243,7 +1243,7 @@ do_execreg(
     {
 	if (last_cmdline == NULL)
 	{
-	    EMSG(_(e_nolastcmd));
+	    emsg(_(e_nolastcmd));
 	    return FAIL;
 	}
 	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
@@ -1277,7 +1277,7 @@ do_execreg(
 	p = get_last_insert_save();
 	if (p == NULL)
 	{
-	    EMSG(_(e_noinstext));
+	    emsg(_(e_noinstext));
 	    return FAIL;
 	}
 	retval = put_in_typebuf(p, FALSE, colon, silent);
@@ -1535,13 +1535,13 @@ get_spec_reg(
 
 	case ':':		/* last command line */
 	    if (last_cmdline == NULL && errmsg)
-		EMSG(_(e_nolastcmd));
+		emsg(_(e_nolastcmd));
 	    *argp = last_cmdline;
 	    return TRUE;
 
 	case '/':		/* last search-pattern */
 	    if (last_search_pat() == NULL && errmsg)
-		EMSG(_(e_noprevre));
+		emsg(_(e_noprevre));
 	    *argp = last_search_pat();
 	    return TRUE;
 
@@ -1549,7 +1549,7 @@ get_spec_reg(
 	    *argp = get_last_insert_save();
 	    *allocated = TRUE;
 	    if (*argp == NULL && errmsg)
-		EMSG(_(e_noinstext));
+		emsg(_(e_noinstext));
 	    return TRUE;
 
 #ifdef FEAT_SEARCHPATH
@@ -1761,7 +1761,7 @@ op_delete(oparg_T *oap)
 
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return FAIL;
     }
 
@@ -1884,7 +1884,7 @@ op_delete(oparg_T *oap)
 	    msg_silent = msg_silent_save;
 	    if (n != 'y')
 	    {
-		EMSG(_(e_abort));
+		emsg(_(e_abort));
 		return FAIL;
 	    }
 	}
@@ -2506,7 +2506,7 @@ op_tilde(oparg_T *oap)
     curbuf->b_op_end = oap->end;
 
     if (oap->line_count > p_report)
-	smsg((char_u *)NGETTEXT("%ld line changed", "%ld lines changed",
+	smsg(NGETTEXT("%ld line changed", "%ld lines changed",
 					    oap->line_count), oap->line_count);
 }
 
@@ -3038,7 +3038,7 @@ free_yank(long n)
 		 * Overwrite this message with any next message.
 		 */
 		++no_wait_return;
-		smsg((char_u *)_("freeing %ld lines"), i + 1);
+		smsg(_("freeing %ld lines"), i + 1);
 		--no_wait_return;
 		msg_didout = FALSE;
 		msg_col = 0;
@@ -3325,13 +3325,13 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    update_topline_redraw();
 	    if (oap->block_mode)
 	    {
-		smsg((char_u *)NGETTEXT("block of %ld line yanked%s",
+		smsg(NGETTEXT("block of %ld line yanked%s",
 				     "block of %ld lines yanked%s", yanklines),
 			yanklines, namebuf);
 	    }
 	    else
 	    {
-		smsg((char_u *)NGETTEXT("%ld line yanked%s",
+		smsg(NGETTEXT("%ld line yanked%s",
 					      "%ld lines yanked%s", yanklines),
 			yanklines, namebuf);
 	    }
@@ -3649,7 +3649,7 @@ do_put(
 
     if (y_size == 0 || y_array == NULL)
     {
-	EMSG2(_("E353: Nothing in register %s"),
+	semsg(_("E353: Nothing in register %s"),
 		  regname == 0 ? (char_u *)"\"" : transchar(regname));
 	goto end;
     }
@@ -5646,7 +5646,7 @@ op_addsub(
 	    curbuf->b_op_start = startpos;
 
 	if (change_cnt > p_report)
-	    smsg((char_u *)NGETTEXT("%ld line changed", "%ld lines changed",
+	    smsg(NGETTEXT("%ld line changed", "%ld lines changed",
 						      change_cnt), change_cnt);
     }
 }
@@ -6423,9 +6423,7 @@ write_viminfo_registers(FILE *fp)
 		type = (char_u *)"BLOCK";
 		break;
 	    default:
-		sprintf((char *)IObuff, _("E574: Unknown register type %d"),
-							    y_ptr->y_type);
-		emsg(IObuff);
+		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
 		type = (char_u *)"LINE";
 		break;
 	}
@@ -7054,7 +7052,7 @@ write_reg_contents_lst(
 	    s = (char_u *)"";
 	else if (strings[1] != NULL)
 	{
-	    EMSG(_("E883: search pattern and expression register may not "
+	    emsg(_("E883: search pattern and expression register may not "
 			"contain two or more lines"));
 	    return;
 	}
@@ -7110,7 +7108,7 @@ write_reg_contents_ex(
 
 	    buf = buflist_findnr(num);
 	    if (buf == NULL)
-		EMSGN(_(e_nobufnr), (long)num);
+		semsg(_(e_nobufnr), (long)num);
 	}
 	else
 	    buf = buflist_findnr(buflist_findpat(str, str + STRLEN(str),

@@ -301,7 +301,7 @@ eval_init(void)
 	p = &vimvars[i];
 	if (STRLEN(p->vv_name) > 16)
 	{
-	    IEMSG("INTERNAL: name too long, increase size of dictitem16_T");
+	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
 	    getout(1);
 	}
 	STRCPY(p->vv_di.di_key, p->vv_name);
@@ -448,7 +448,7 @@ var_redir_start(char_u *name, int append)
     /* Catch a bad name early. */
     if (!eval_isnamec1(*name))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return FAIL;
     }
 
@@ -475,9 +475,9 @@ var_redir_start(char_u *name, int append)
 	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    /* Trailing characters are present after the variable name */
-	    EMSG(_(e_trailing));
+	    emsg(_(e_trailing));
 	else
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	redir_endp = NULL;  /* don't store a value, only cleanup */
 	var_redir_stop();
 	return FAIL;
@@ -696,6 +696,31 @@ eval_to_bool(
     return (int)retval;
 }
 
+/*
+ * Call eval1() and give an error message if not done at a lower level.
+ */
+    static int
+eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
+{
+    char_u	*start = *arg;
+    int		ret;
+    int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
+
+    ret = eval1(arg, rettv, evaluate);
+    if (ret == FAIL)
+    {
+	// Report the invalid expression unless the expression evaluation has
+	// been cancelled due to an aborting error, an interrupt, or an
+	// exception, or we already gave a more specific error.
+	// Also check called_emsg for when using assert_fails().
+	if (!aborting() && did_emsg == did_emsg_before
+					  && called_emsg == called_emsg_before)
+	    semsg(_(e_invexpr2), start);
+    }
+    return ret;
+}
+
     static int
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
@@ -729,12 +754,12 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	if (s == NULL)
 	    return FAIL;
 	s = skipwhite(s);
-	if (eval1(&s, rettv, TRUE) == FAIL)
+	if (eval1_emsg(&s, rettv, TRUE) == FAIL)
 	    return FAIL;
 	if (*s != NUL)  /* check for trailing chars after expr */
 	{
 	    clear_tv(rettv);
-	    EMSG2(_(e_invexpr2), s);
+	    semsg(_(e_invexpr2), s);
 	    return FAIL;
 	}
     }
@@ -1202,7 +1227,7 @@ ex_let(exarg_T *eap)
 	 * ":let" without "=": list variables
 	 */
 	if (*arg == '[')
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	else if (!ends_excmd(*arg))
 	    /* ":let var1 var2" */
 	    arg = list_arg_vars(eap, arg, &first);
@@ -1288,19 +1313,19 @@ ex_let_vars(
      */
     if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
-	EMSG(_(e_listreq));
+	emsg(_(e_listreq));
 	return FAIL;
     }
 
     i = list_len(l);
     if (semicolon == 0 && var_count < i)
     {
-	EMSG(_("E687: Less targets than List items"));
+	emsg(_("E687: Less targets than List items"));
 	return FAIL;
     }
     if (var_count - semicolon > i)
     {
-	EMSG(_("E688: More targets than List items"));
+	emsg(_("E688: More targets than List items"));
 	return FAIL;
     }
 
@@ -1374,7 +1399,7 @@ skip_var_list(
 	    s = skip_var_one(p);
 	    if (s == p)
 	    {
-		EMSG2(_(e_invarg2), p);
+		semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	    ++*var_count;
@@ -1386,14 +1411,14 @@ skip_var_list(
 	    {
 		if (*semicolon == 1)
 		{
-		    EMSG(_("Double ; in list of variables"));
+		    emsg(_("Double ; in list of variables"));
 		    return NULL;
 		}
 		*semicolon = 1;
 	    }
 	    else if (*p != ',')
 	    {
-		EMSG2(_(e_invarg2), p);
+		semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	}
@@ -1534,7 +1559,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		EMSG(_(e_trailing));
+		emsg(_(e_trailing));
 		break;
 	    }
 	}
@@ -1550,7 +1575,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		if (len < 0 && !aborting())
 		{
 		    emsg_severe = TRUE;
-		    EMSG2(_(e_invarg2), arg);
+		    semsg(_(e_invarg2), arg);
 		    break;
 		}
 		error = TRUE;
@@ -1581,7 +1606,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 				case 's': list_script_vars(first); break;
 				case 'l': list_func_vars(first); break;
 				default:
-					  EMSG2(_("E738: Can't list variables for %s"), name);
+					  semsg(_("E738: Can't list variables for %s"), name);
 			    }
 			}
 			else
@@ -1647,14 +1672,14 @@ ex_let_one(
 	name = arg;
 	len = get_env_len(&arg);
 	if (len == 0)
-	    EMSG2(_(e_invarg2), name - 1);
+	    semsg(_(e_invarg2), name - 1);
 	else
 	{
 	    if (op != NULL && (*op == '+' || *op == '-'))
-		EMSG2(_(e_letwrong), op);
+		semsg(_(e_letwrong), op);
 	    else if (endchars != NULL
 			     && vim_strchr(endchars, *skipwhite(arg)) == NULL)
-		EMSG(_(e_letunexp));
+		emsg(_(e_letunexp));
 	    else if (!check_secure())
 	    {
 		c1 = name[len];
@@ -1701,7 +1726,7 @@ ex_let_one(
 	p = find_option_end(&arg, &opt_flags);
 	if (p == NULL || (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	    EMSG(_(e_letunexp));
+	    emsg(_(e_letunexp));
 	else
 	{
 	    long	n;
@@ -1722,7 +1747,7 @@ ex_let_one(
 		if ((opt_type == 1 && *op == '.')
 			|| (opt_type == 0 && *op != '.'))
 		{
-		    EMSG2(_(e_letwrong), op);
+		    semsg(_(e_letwrong), op);
 		    s = NULL;  /* don't set the value */
 		}
 		else
@@ -1759,10 +1784,10 @@ ex_let_one(
     {
 	++arg;
 	if (op != NULL && (*op == '+' || *op == '-'))
-	    EMSG2(_(e_letwrong), op);
+	    semsg(_(e_letwrong), op);
 	else if (endchars != NULL
 			 && vim_strchr(endchars, *skipwhite(arg + 1)) == NULL)
-	    EMSG(_(e_letunexp));
+	    emsg(_(e_letunexp));
 	else
 	{
 	    char_u	*ptofree = NULL;
@@ -1799,7 +1824,7 @@ ex_let_one(
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
-		EMSG(_(e_letunexp));
+		emsg(_(e_letunexp));
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, op);
@@ -1810,7 +1835,7 @@ ex_let_one(
     }
 
     else
-	EMSG2(_(e_invarg2), arg);
+	semsg(_(e_invarg2), arg);
 
     return arg_end;
 }
@@ -1875,7 +1900,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    EMSG(_(e_trailing));
+	    emsg(_(e_trailing));
 	    return NULL;
 	}
 
@@ -1888,7 +1913,7 @@ get_lval(
 	    if (!aborting() && !quiet)
 	    {
 		emsg_severe = TRUE;
-		EMSG2(_(e_invarg2), name);
+		semsg(_(e_invarg2), name);
 		return NULL;
 	    }
 	}
@@ -1908,7 +1933,7 @@ get_lval(
     v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
 						      flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
-	EMSG2(_(e_undefvar), lp->ll_name);
+	semsg(_(e_undefvar), lp->ll_name);
     *p = cc;
     if (v == NULL)
 	return NULL;
@@ -1928,13 +1953,13 @@ get_lval(
 					   && lp->ll_tv->vval.v_blob != NULL))
 	{
 	    if (!quiet)
-		EMSG(_("E689: Can only index a List, Dictionary or Blob"));
+		emsg(_("E689: Can only index a List, Dictionary or Blob"));
 	    return NULL;
 	}
 	if (lp->ll_range)
 	{
 	    if (!quiet)
-		EMSG(_("E708: [:] must come last"));
+		emsg(_("E708: [:] must come last"));
 	    return NULL;
 	}
 
@@ -1947,7 +1972,7 @@ get_lval(
 	    if (len == 0)
 	    {
 		if (!quiet)
-		    EMSG(_(e_emptykey));
+		    emsg(_(e_emptykey));
 		return NULL;
 	    }
 	    p = key + len;
@@ -1977,18 +2002,18 @@ get_lval(
 		if (lp->ll_tv->v_type == VAR_DICT)
 		{
 		    if (!quiet)
-			EMSG(_(e_dictrange));
+			emsg(_(e_dictrange));
 		    clear_tv(&var1);
 		    return NULL;
 		}
 		if (rettv != NULL
 			&& !(rettv->v_type == VAR_LIST
-			    || rettv->vval.v_list != NULL)
+						 && rettv->vval.v_list != NULL)
 			&& !(rettv->v_type == VAR_BLOB
-			    || rettv->vval.v_blob != NULL))
+						&& rettv->vval.v_blob != NULL))
 		{
 		    if (!quiet)
-			EMSG(_("E709: [:] requires a List or Blob value"));
+			emsg(_("E709: [:] requires a List or Blob value"));
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -2019,7 +2044,7 @@ get_lval(
 	    if (*p != ']')
 	    {
 		if (!quiet)
-		    EMSG(_(e_missbrac));
+		    emsg(_(e_missbrac));
 		clear_tv(&var1);
 		clear_tv(&var2);
 		return NULL;
@@ -2075,7 +2100,7 @@ get_lval(
 		/* Can't add "v:" variable. */
 		if (lp->ll_dict == &vimvardict)
 		{
-		    EMSG2(_(e_illvar), name);
+		    semsg(_(e_illvar), name);
 		    return NULL;
 		}
 
@@ -2083,7 +2108,7 @@ get_lval(
 		if (*p == '[' || *p == '.' || unlet)
 		{
 		    if (!quiet)
-			EMSG2(_(e_dictkey), key);
+			semsg(_(e_dictkey), key);
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -2109,6 +2134,8 @@ get_lval(
 	}
 	else if (lp->ll_tv->v_type == VAR_BLOB)
 	{
+	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
+
 	    /*
 	     * Get the number and item for the only or first index of the List.
 	     */
@@ -2120,16 +2147,26 @@ get_lval(
 	    clear_tv(&var1);
 
 	    if (lp->ll_n1 < 0
-		    || lp->ll_n1 > blob_len(lp->ll_tv->vval.v_blob))
+		    || lp->ll_n1 > bloblen
+		    || (lp->ll_range && lp->ll_n1 == bloblen))
 	    {
 		if (!quiet)
-		    EMSGN(_(e_listidx), lp->ll_n1);
+		    semsg(_(e_blobidx), lp->ll_n1);
+		clear_tv(&var2);
 		return NULL;
 	    }
 	    if (lp->ll_range && !lp->ll_empty2)
 	    {
 		lp->ll_n2 = (long)tv_get_number(&var2);
 		clear_tv(&var2);
+		if (lp->ll_n2 < 0
+			|| lp->ll_n2 >= bloblen
+			|| lp->ll_n2 < lp->ll_n1)
+		{
+		    if (!quiet)
+			semsg(_(e_blobidx), lp->ll_n2);
+		    return NULL;
+		}
 	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
@@ -2161,7 +2198,7 @@ get_lval(
 	    {
 		clear_tv(&var2);
 		if (!quiet)
-		    EMSGN(_(e_listidx), lp->ll_n1);
+		    semsg(_(e_listidx), lp->ll_n1);
 		return NULL;
 	    }
 
@@ -2182,7 +2219,7 @@ get_lval(
 		    if (ni == NULL)
 		    {
 			if (!quiet)
-			    EMSGN(_(e_listidx), lp->ll_n2);
+			    semsg(_(e_listidx), lp->ll_n2);
 			return NULL;
 		    }
 		    lp->ll_n2 = list_idx_of_item(lp->ll_list, ni);
@@ -2194,7 +2231,7 @@ get_lval(
 		if (lp->ll_n2 < lp->ll_n1)
 		{
 		    if (!quiet)
-			EMSGN(_(e_listidx), lp->ll_n2);
+			semsg(_(e_listidx), lp->ll_n2);
 		    return NULL;
 		}
 	    }
@@ -2241,25 +2278,32 @@ set_var_lval(
 	if (lp->ll_blob != NULL)
 	{
 	    int	    error = FALSE, val;
+
 	    if (op != NULL && *op != '=')
 	    {
-		EMSG2(_(e_letwrong), op);
+		semsg(_(e_letwrong), op);
 		return;
 	    }
 
 	    if (lp->ll_range && rettv->v_type == VAR_BLOB)
 	    {
-		int	i;
+		int	il, ir;
 
-		if (blob_len(rettv->vval.v_blob) != blob_len(lp->ll_blob))
+		if (lp->ll_empty2)
+		    lp->ll_n2 = blob_len(lp->ll_blob) - 1;
+
+		if (lp->ll_n2 - lp->ll_n1 + 1 != blob_len(rettv->vval.v_blob))
 		{
-		    EMSG(_("E972: Blob value has more items than target"));
+		    emsg(_("E972: Blob value does not have the right number of bytes"));
 		    return;
 		}
+		if (lp->ll_empty2)
+		    lp->ll_n2 = blob_len(lp->ll_blob);
 
-		for (i = lp->ll_n1; i <= lp->ll_n2; i++)
-		    blob_set(lp->ll_blob, i,
-			    blob_get(rettv->vval.v_blob, i));
+		ir = 0;
+		for (il = lp->ll_n1; il <= lp->ll_n2; il++)
+		    blob_set(lp->ll_blob, il,
+			    blob_get(rettv->vval.v_blob, ir++));
 	    }
 	    else
 	    {
@@ -2278,8 +2322,7 @@ set_var_lval(
 			if (lp->ll_n1 == gap->ga_len)
 			    ++gap->ga_len;
 		    }
-		    else
-			EMSG(_(e_invrange));
+		    // error for invalid range was already given in get_lval()
 		}
 	    }
 	}
@@ -2312,7 +2355,7 @@ set_var_lval(
     else if (lp->ll_range)
     {
 	listitem_T *ll_li = lp->ll_li;
-	int ll_n1 = lp->ll_n1;
+	int	    ll_n1 = lp->ll_n1;
 
 	/*
 	 * Check whether any of the list items is locked
@@ -2356,11 +2399,11 @@ set_var_lval(
 	    ++lp->ll_n1;
 	}
 	if (ri != NULL)
-	    EMSG(_("E710: List value has more items than target"));
+	    emsg(_("E710: List value has more items than target"));
 	else if (lp->ll_empty2
 		? (lp->ll_li != NULL && lp->ll_li->li_next != NULL)
 		: lp->ll_n1 != lp->ll_n2)
-	    EMSG(_("E711: List value has not enough items"));
+	    emsg(_("E711: List value has not enough items"));
     }
     else
     {
@@ -2371,7 +2414,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		EMSG2(_(e_letwrong), op);
+		semsg(_(e_letwrong), op);
 		return;
 	    }
 
@@ -2526,7 +2569,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	}
     }
 
-    EMSG2(_(e_letwrong), op);
+    semsg(_(e_letwrong), op);
     return FAIL;
 }
 
@@ -2562,7 +2605,7 @@ eval_for_line(
     expr = skipwhite(expr);
     if (expr[0] != 'i' || expr[1] != 'n' || !VIM_ISWHITE(expr[2]))
     {
-	EMSG(_("E690: Missing \"in\" after :for"));
+	emsg(_("E690: Missing \"in\" after :for"));
 	return fi;
     }
 
@@ -2597,13 +2640,15 @@ eval_for_line(
 		    clear_tv(&tv);
 		else
 		{
+		    // No need to increment the refcount, it's already set for
+		    // the blob being used in "tv".
 		    fi->fi_blob = b;
 		    fi->fi_bi = 0;
 		}
 	    }
 	    else
 	    {
-		EMSG(_(e_listreq));
+		emsg(_(e_listreq));
 		clear_tv(&tv);
 	    }
 	}
@@ -2666,6 +2711,8 @@ free_for_info(void *fi_void)
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
 	list_unref(fi->fi_list);
     }
+    if (fi != NULL && fi->fi_blob != NULL)
+	blob_unref(fi->fi_blob);
     vim_free(fi);
 }
 
@@ -2838,7 +2885,7 @@ ex_unletlock(
 
 	    if (get_env_len(&arg) == 0)
 	    {
-		EMSG2(_(e_invarg2), name - 1);
+		semsg(_(e_invarg2), name - 1);
 		return;
 	    }
 	    vim_unsetenv(name);
@@ -2857,7 +2904,7 @@ ex_unletlock(
 	    if (name_end != NULL)
 	    {
 		emsg_severe = TRUE;
-		EMSG(_(e_trailing));
+		emsg(_(e_trailing));
 	    }
 	    if (!(eap->skip || error))
 		clear_lval(&lv);
@@ -3000,7 +3047,7 @@ do_unlet(char_u *name, int forceit)
     }
     if (forceit)
 	return OK;
-    EMSG2(_("E108: No such variable: \"%s\""), name);
+    semsg(_("E108: No such variable: \"%s\""), name);
     return FAIL;
 }
 
@@ -3037,7 +3084,7 @@ do_lock_var(
 			&& di->di_tv.v_type != VAR_LIST)
 	    /* For historic reasons this error is not given for a list or dict.
 	     * E.g., the b: dict could be locked/unlocked. */
-	    EMSG2(_("E940: Cannot lock or unlock variable %s"), lp->ll_name);
+	    semsg(_("E940: Cannot lock or unlock variable %s"), lp->ll_name);
 	else
 	{
 	    if (lock)
@@ -3086,7 +3133,7 @@ item_lock(typval_T *tv, int deep, int lock)
 
     if (recurse >= DICT_MAXNEST)
     {
-	EMSG(_("E743: variable nested too deep for (un)lock"));
+	emsg(_("E743: variable nested too deep for (un)lock"));
 	return;
     }
     if (deep == 0)
@@ -3354,6 +3401,8 @@ eval0(
 {
     int		ret;
     char_u	*p;
+    int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evaluate);
@@ -3364,10 +3413,12 @@ eval0(
 	/*
 	 * Report the invalid expression unless the expression evaluation has
 	 * been cancelled due to an aborting error, an interrupt, or an
-	 * exception.
+	 * exception, or we already gave a more specific error.
+	 * Also check called_emsg for when using assert_fails().
 	 */
-	if (!aborting())
-	    EMSG2(_(e_invexpr2), arg);
+	if (!aborting() && did_emsg == did_emsg_before
+					  && called_emsg == called_emsg_before)
+	    semsg(_(e_invexpr2), arg);
 	ret = FAIL;
     }
     if (nextcmd != NULL)
@@ -3425,7 +3476,7 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	 */
 	if ((*arg)[0] != ':')
 	{
-	    EMSG(_("E109: Missing ':' after '?'"));
+	    emsg(_("E109: Missing ':' after '?'"));
 	    if (evaluate && result)
 		clear_tv(rettv);
 	    return FAIL;
@@ -4032,7 +4083,7 @@ eval6(
 		}
 		else
 		{
-		    EMSG(_("E804: Cannot use '%' with Float"));
+		    emsg(_("E804: Cannot use '%' with Float"));
 		    return FAIL;
 		}
 		rettv->v_type = VAR_FLOAT;
@@ -4186,7 +4237,7 @@ eval7(
 		if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
 		{
 		    char_u  *bp;
-		    blob_T  *blob;
+		    blob_T  *blob = NULL;  // init for gcc
 
 		    // Blob constant: 0z0123456789abcdef
 		    if (evaluate)
@@ -4195,8 +4246,12 @@ eval7(
 		    {
 			if (!vim_isxdigit(bp[1]))
 			{
-			    EMSG(_("E973: Blob literal should have an even number of hex characters'"));
-			    vim_free(blob);
+			    if (blob != NULL)
+			    {
+				emsg(_("E973: Blob literal should have an even number of hex characters"));
+				ga_clear(&blob->bv_ga);
+				VIM_CLEAR(blob);
+			    }
 			    ret = FAIL;
 			    break;
 			}
@@ -4205,11 +4260,7 @@ eval7(
 					 (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
 		    }
 		    if (blob != NULL)
-		    {
-			++blob->bv_refcount;
-			rettv->v_type = VAR_BLOB;
-			rettv->vval.v_blob = blob;
-		    }
+			rettv_blob_set(rettv, blob);
 		    *arg = bp;
 		}
 		else
@@ -4288,7 +4339,7 @@ eval7(
 		    ++*arg;
 		else if (ret == OK)
 		{
-		    EMSG(_("E110: Missing ')'"));
+		    emsg(_("E110: Missing ')'"));
 		    clear_tv(rettv);
 		    ret = FAIL;
 		}
@@ -4462,19 +4513,19 @@ eval_index(
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	    if (verbose)
-		EMSG(_("E695: Cannot index a Funcref"));
+		emsg(_("E695: Cannot index a Funcref"));
 	    return FAIL;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 	    if (verbose)
-		EMSG(_(e_float_as_string));
+		emsg(_(e_float_as_string));
 	    return FAIL;
 #endif
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    if (verbose)
-		EMSG(_("E909: Cannot index a special variable"));
+		emsg(_("E909: Cannot index a special variable"));
 	    return FAIL;
 	case VAR_UNKNOWN:
 	    if (evaluate)
@@ -4551,7 +4602,7 @@ eval_index(
 	if (**arg != ']')
 	{
 	    if (verbose)
-		EMSG(_(e_missbrac));
+		emsg(_(e_missbrac));
 	    clear_tv(&var1);
 	    if (range)
 		clear_tv(&var2);
@@ -4632,7 +4683,7 @@ eval_index(
 		len = blob_len(rettv->vval.v_blob);
 		if (range)
 		{
-		    // The resulting variable is a substring.  If the indexes
+		    // The resulting variable is a sub-blob.  If the indexes
 		    // are out of range the result is empty.
 		    if (n1 < 0)
 		    {
@@ -4685,7 +4736,7 @@ eval_index(
 			rettv->vval.v_number = v;
 		    }
 		    else
-			EMSGN(_(e_blobidx), n1);
+			semsg(_(e_blobidx), n1);
 		}
 		break;
 
@@ -4700,7 +4751,7 @@ eval_index(
 		    if (!range)
 		    {
 			if (verbose)
-			    EMSGN(_(e_listidx), n1);
+			    semsg(_(e_listidx), n1);
 			return FAIL;
 		    }
 		    n1 = len;
@@ -4744,7 +4795,7 @@ eval_index(
 		if (range)
 		{
 		    if (verbose)
-			EMSG(_(e_dictrange));
+			emsg(_(e_dictrange));
 		    if (len == -1)
 			clear_tv(&var1);
 		    return FAIL;
@@ -4765,7 +4816,7 @@ eval_index(
 		    item = dict_find(rettv->vval.v_dict, key, (int)len);
 
 		    if (item == NULL && verbose)
-			EMSG2(_(e_dictkey), key);
+			semsg(_(e_dictkey), key);
 		    if (len == -1)
 			clear_tv(&var1);
 		    if (item == NULL)
@@ -4810,7 +4861,7 @@ get_option_tv(
     if (option_end == NULL)
     {
 	if (rettv != NULL)
-	    EMSG2(_("E112: Option name missing: %s"), *arg);
+	    semsg(_("E112: Option name missing: %s"), *arg);
 	return FAIL;
     }
 
@@ -4828,7 +4879,7 @@ get_option_tv(
     if (opt_type == -3)			/* invalid name */
     {
 	if (rettv != NULL)
-	    EMSG2(_("E113: Unknown option: %s"), *arg);
+	    semsg(_("E113: Unknown option: %s"), *arg);
 	ret = FAIL;
     }
     else if (rettv != NULL)
@@ -4891,7 +4942,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (*p != '"')
     {
-	EMSG2(_("E114: Missing quote: %s"), *arg);
+	semsg(_("E114: Missing quote: %s"), *arg);
 	return FAIL;
     }
 
@@ -5028,7 +5079,7 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (*p != '\'')
     {
-	EMSG2(_("E115: Missing quote: %s"), *arg);
+	semsg(_("E115: Missing quote: %s"), *arg);
 	return FAIL;
     }
 
@@ -5772,7 +5823,7 @@ echo_string_core(
 	     * flooding the user with errors.  And stop iterating over lists
 	     * and dicts. */
 	    did_echo_string_emsg = TRUE;
-	    EMSG(_("E724: variable nested too deep for displaying"));
+	    emsg(_("E724: variable nested too deep for displaying"));
 	}
 	*tofree = NULL;
 	return (char_u *)"{E724}";
@@ -5856,33 +5907,7 @@ echo_string_core(
 	    }
 
 	case VAR_BLOB:
-	    if (tv->vval.v_blob == NULL)
-	    {
-		*tofree = NULL;
-		r = (char_u *)"[]";
-	    }
-	    else
-	    {
-		blob_T	    *b;
-		int	    i;
-		garray_T    ga;
-
-		// Store bytes in the growarray.
-		ga_init2(&ga, 1, 4000);
-		b = tv->vval.v_blob;
-		ga_append(&ga, '[');
-		for (i = 0; i < blob_len(b); i++)
-		{
-		    if (i > 0)
-			ga_concat(&ga, (char_u *)",");
-		    vim_snprintf((char *)numbuf, NUMBUFLEN, "0x%02X",
-			    (int)blob_get(b, i));
-		    ga_concat(&ga, numbuf);
-		}
-		ga_append(&ga, ']');
-		*tofree = ga.ga_data;
-		r = *tofree;
-	    }
+	    r = blob2string(tv->vval.v_blob, tofree, numbuf);
 	    break;
 
 	case VAR_LIST:
@@ -6436,8 +6461,10 @@ get_name_len(
     }
 
     len += get_id_len(arg);
-    if (len == 0 && verbose)
-	EMSG2(_(e_invexpr2), *arg);
+    // Only give an error when there is something, otherwise it will be
+    // reported at a higher level.
+    if (len == 0 && verbose && **arg != NUL)
+	semsg(_(e_invexpr2), *arg);
 
     return len;
 }
@@ -6935,7 +6962,7 @@ get_var_tv(
     if (tv == NULL)
     {
 	if (rettv != NULL && verbose)
-	    EMSG2(_(e_undefvar), name);
+	    semsg(_(e_undefvar), name);
 	ret = FAIL;
     }
     else if (rettv != NULL)
@@ -7249,12 +7276,12 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    EMSG(_("E805: Using a Float as a Number"));
+	    emsg(_("E805: Using a Float as a Number"));
 	    break;
 #endif
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    EMSG(_("E703: Using a Funcref as a Number"));
+	    emsg(_("E703: Using a Funcref as a Number"));
 	    break;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
@@ -7262,26 +7289,26 @@ tv_get_number_chk(typval_T *varp, int *denote)
 						    STR2NR_ALL, &n, NULL, 0);
 	    return n;
 	case VAR_LIST:
-	    EMSG(_("E745: Using a List as a Number"));
+	    emsg(_("E745: Using a List as a Number"));
 	    break;
 	case VAR_DICT:
-	    EMSG(_("E728: Using a Dictionary as a Number"));
+	    emsg(_("E728: Using a Dictionary as a Number"));
 	    break;
 	case VAR_SPECIAL:
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
-	    EMSG(_("E910: Using a Job as a Number"));
+	    emsg(_("E910: Using a Job as a Number"));
 	    break;
 #endif
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
-	    EMSG(_("E913: Using a Channel as a Number"));
+	    emsg(_("E913: Using a Channel as a Number"));
 	    break;
 #endif
 	case VAR_BLOB:
-	    EMSG(_("E974: Using a Blob as a Number"));
+	    emsg(_("E974: Using a Blob as a Number"));
 	    break;
 	case VAR_UNKNOWN:
 	    internal_error("tv_get_number(UNKNOWN)");
@@ -7306,32 +7333,32 @@ tv_get_float(typval_T *varp)
 	    return varp->vval.v_float;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    EMSG(_("E891: Using a Funcref as a Float"));
+	    emsg(_("E891: Using a Funcref as a Float"));
 	    break;
 	case VAR_STRING:
-	    EMSG(_("E892: Using a String as a Float"));
+	    emsg(_("E892: Using a String as a Float"));
 	    break;
 	case VAR_LIST:
-	    EMSG(_("E893: Using a List as a Float"));
+	    emsg(_("E893: Using a List as a Float"));
 	    break;
 	case VAR_DICT:
-	    EMSG(_("E894: Using a Dictionary as a Float"));
+	    emsg(_("E894: Using a Dictionary as a Float"));
 	    break;
 	case VAR_SPECIAL:
-	    EMSG(_("E907: Using a special value as a Float"));
+	    emsg(_("E907: Using a special value as a Float"));
 	    break;
 	case VAR_JOB:
 # ifdef FEAT_JOB_CHANNEL
-	    EMSG(_("E911: Using a Job as a Float"));
+	    emsg(_("E911: Using a Job as a Float"));
 	    break;
 # endif
 	case VAR_CHANNEL:
 # ifdef FEAT_JOB_CHANNEL
-	    EMSG(_("E914: Using a Channel as a Float"));
+	    emsg(_("E914: Using a Channel as a Float"));
 	    break;
 # endif
 	case VAR_BLOB:
-	    EMSG(_("E975: Using a Blob as a Float"));
+	    emsg(_("E975: Using a Blob as a Float"));
 	    break;
 	case VAR_UNKNOWN:
 	    internal_error("tv_get_float(UNKNOWN)");
@@ -7389,17 +7416,17 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    EMSG(_("E729: using Funcref as a String"));
+	    emsg(_("E729: using Funcref as a String"));
 	    break;
 	case VAR_LIST:
-	    EMSG(_("E730: using List as a String"));
+	    emsg(_("E730: using List as a String"));
 	    break;
 	case VAR_DICT:
-	    EMSG(_("E731: using Dictionary as a String"));
+	    emsg(_("E731: using Dictionary as a String"));
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    EMSG(_(e_float_as_string));
+	    emsg(_(e_float_as_string));
 	    break;
 #endif
 	case VAR_STRING:
@@ -7410,7 +7437,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
         case VAR_BLOB:
-	    EMSG(_("E976: using Blob as a String"));
+	    emsg(_("E976: using Blob as a String"));
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -7455,7 +7482,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
-	    EMSG(_("E908: using an invalid value as a String"));
+	    emsg(_("E908: using an invalid value as a String"));
 	    break;
     }
     return NULL;
@@ -7837,7 +7864,7 @@ set_var(
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
-	EMSG2(_(e_illvar), name);
+	semsg(_(e_illvar), name);
 	return;
     }
     v = find_var_in_ht(ht, 0, varname, TRUE);
@@ -7892,7 +7919,7 @@ set_var(
 	    }
 	    else if (v->di_tv.v_type != tv->v_type)
 	    {
-		EMSG2(_("E963: setting %s to value with wrong type"), name);
+		semsg(_("E963: setting %s to value with wrong type"), name);
 		return;
 	    }
 	}
@@ -7904,7 +7931,7 @@ set_var(
 	/* Can't add "v:" variable. */
 	if (ht == &vimvarht)
 	{
-	    EMSG2(_(e_illvar), name);
+	    semsg(_(e_illvar), name);
 	    return;
 	}
 
@@ -7944,12 +7971,12 @@ var_check_ro(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_RO)
     {
-	EMSG2(_(e_readonlyvar), use_gettext ? (char_u *)_(name) : name);
+	semsg(_(e_readonlyvar), use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
-	EMSG2(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
+	semsg(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
@@ -7964,7 +7991,7 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
 {
     if (flags & DI_FLAGS_FIX)
     {
-	EMSG2(_("E795: Cannot delete variable %s"),
+	semsg(_("E795: Cannot delete variable %s"),
 				      use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
@@ -7985,7 +8012,7 @@ var_check_func_name(
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 						     ? name[2] : name[0]))
     {
-	EMSG2(_("E704: Funcref variable name must start with a capital: %s"),
+	semsg(_("E704: Funcref variable name must start with a capital: %s"),
 									name);
 	return TRUE;
     }
@@ -7994,7 +8021,7 @@ var_check_func_name(
      * below. */
     if (new_var && function_exists(name, FALSE))
     {
-	EMSG2(_("E705: Variable name conflicts with existing function: %s"),
+	semsg(_("E705: Variable name conflicts with existing function: %s"),
 								    name);
 	return TRUE;
     }
@@ -8014,7 +8041,7 @@ valid_varname(char_u *varname)
 	if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
 						   && *p != AUTOLOAD_CHAR)
 	{
-	    EMSG2(_(e_illvar), varname);
+	    semsg(_(e_illvar), varname);
 	    return FALSE;
 	}
     return TRUE;
@@ -8030,7 +8057,7 @@ tv_check_lock(int lock, char_u *name, int use_gettext)
 {
     if (lock & VAR_LOCKED)
     {
-	EMSG2(_("E741: Value is locked: %s"),
+	semsg(_("E741: Value is locked: %s"),
 				name == NULL ? (char_u *)_("Unknown")
 					     : use_gettext ? (char_u *)_(name)
 					     : name);
@@ -8038,7 +8065,7 @@ tv_check_lock(int lock, char_u *name, int use_gettext)
     }
     if (lock & VAR_FIXED)
     {
-	EMSG2(_("E742: Cannot change value of %s"),
+	semsg(_("E742: Cannot change value of %s"),
 				name == NULL ? (char_u *)_("Unknown")
 					     : use_gettext ? (char_u *)_(name)
 					     : name);
@@ -8156,7 +8183,7 @@ item_copy(
 
     if (recurse >= DICT_MAXNEST)
     {
-	EMSG(_("E698: variable nested too deep for making a copy"));
+	emsg(_("E698: variable nested too deep for making a copy"));
 	return FAIL;
     }
     ++recurse;
@@ -8336,6 +8363,7 @@ ex_echo(exarg_T *eap)
     int		atstart = TRUE;
     char_u	numbuf[NUMBUFLEN];
     int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
 
     if (eap->skip)
 	++emsg_skip;
@@ -8353,8 +8381,9 @@ ex_echo(exarg_T *eap)
 	     * has been cancelled due to an aborting error, an interrupt, or an
 	     * exception.
 	     */
-	    if (!aborting() && did_emsg == did_emsg_before)
-		EMSG2(_(e_invexpr2), p);
+	    if (!aborting() && did_emsg == did_emsg_before
+					  && called_emsg == called_emsg_before)
+		semsg(_(e_invexpr2), p);
 	    need_clr_eos = FALSE;
 	    break;
 	}
@@ -8460,18 +8489,9 @@ ex_execute(exarg_T *eap)
     while (*arg != NUL && *arg != '|' && *arg != '\n')
     {
 	p = arg;
-	if (eval1(&arg, &rettv, !eap->skip) == FAIL)
-	{
-	    /*
-	     * Report the invalid expression unless the expression evaluation
-	     * has been cancelled due to an aborting error, an interrupt, or an
-	     * exception.
-	     */
-	    if (!aborting() && did_emsg == save_did_emsg)
-		EMSG2(_(e_invexpr2), p);
-	    ret = FAIL;
+	ret = eval1_emsg(&arg, &rettv, !eap->skip);
+	if (ret == FAIL)
 	    break;
-	}
 
 	if (!eap->skip)
 	{
@@ -8517,7 +8537,7 @@ ex_execute(exarg_T *eap)
 	{
 	    /* We don't want to abort following commands, restore did_emsg. */
 	    save_did_emsg = did_emsg;
-	    EMSG((char_u *)ga.ga_data);
+	    emsg(ga.ga_data);
 	    if (!force_abort)
 		did_emsg = save_did_emsg;
 	}
@@ -8918,8 +8938,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    if (tab != NULL)
 	    {
 		tv.v_type = type;
-		if (type == VAR_STRING || type == VAR_DICT ||
-			type == VAR_LIST || type == VAR_BLOB)
+		if (type == VAR_STRING || type == VAR_DICT
+			|| type == VAR_LIST || type == VAR_BLOB)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
 #ifdef FEAT_FLOAT
@@ -8928,7 +8948,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 #endif
 		else
 		    tv.vval.v_number = atol((char *)tab + 1);
-		if (type == VAR_DICT || type == VAR_LIST || type == VAR_BLOB)
+		if (type == VAR_DICT || type == VAR_LIST)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
 
@@ -8941,6 +8961,20 @@ read_viminfo_varlist(vir_T *virp, int writing)
 			vim_free(tv.vval.v_string);
 			tv = *etv;
 			vim_free(etv);
+		    }
+		}
+		else if (type == VAR_BLOB)
+		{
+		    blob_T *blob = string2blob(tv.vval.v_string);
+
+		    if (blob == NULL)
+			// Failed to parse back the blob, use it as a string.
+			tv.v_type = VAR_STRING;
+		    else
+		    {
+			vim_free(tv.vval.v_string);
+			tv.v_type = VAR_BLOB;
+			tv.vval.v_blob = blob;
 		    }
 		}
 
@@ -9007,7 +9041,15 @@ write_viminfo_varlist(FILE *fp)
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
+		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		{
+		    sprintf((char *)numbuf, "%ld",
+					  (long)this_var->di_tv.vval.v_number);
+		    p = numbuf;
+		    tofree = NULL;
+		}
+		else
+		    p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
 		if (p != NULL)
 		    viminfo_writestring(fp, p);
 		vim_free(tofree);
@@ -9260,7 +9302,7 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
     if (pat == NULL || text == NULL)
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
     else if (pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
@@ -9576,9 +9618,9 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		EMSG(_("E977: Can only compare Blob with Blob"));
+		emsg(_("E977: Can only compare Blob with Blob"));
 	    else
-		EMSG(_(e_invalblob));
+		emsg(_(e_invalblob));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -9603,9 +9645,9 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		EMSG(_("E691: Can only compare List with List"));
+		emsg(_("E691: Can only compare List with List"));
 	    else
-		EMSG(_("E692: Invalid operation for List"));
+		emsg(_("E692: Invalid operation for List"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -9632,9 +9674,9 @@ typval_compare(
 		|| (type != TYPE_EQUAL && type != TYPE_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
-		EMSG(_("E735: Can only compare Dictionary with Dictionary"));
+		emsg(_("E735: Can only compare Dictionary with Dictionary"));
 	    else
-		EMSG(_("E736: Invalid operation for Dictionary"));
+		emsg(_("E736: Invalid operation for Dictionary"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -9653,7 +9695,7 @@ typval_compare(
     {
 	if (type != TYPE_EQUAL && type != TYPE_NEQUAL)
 	{
-	    EMSG(_("E694: Invalid operation for Funcrefs"));
+	    emsg(_("E694: Invalid operation for Funcrefs"));
 	    clear_tv(typ1);
 	    return FAIL;
 	}
@@ -10646,7 +10688,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     }
     else
     {
-	EMSG2(_(e_listdictarg), ermsg);
+	semsg(_(e_listdictarg), ermsg);
 	return;
     }
 
@@ -10714,7 +10756,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		    break;
 		if (tv.v_type != VAR_NUMBER)
 		{
-		    EMSG(_(e_invalblob));
+		    emsg(_(e_invalblob));
 		    return;
 		}
 		tv.v_type = VAR_NUMBER;
@@ -10732,6 +10774,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	}
 	else
 	{
+	    // argvars[0].v_type == VAR_LIST
 	    vimvars[VV_KEY].vv_type = VAR_NUMBER;
 
 	    for (li = l->lv_first; li != NULL; li = nli)

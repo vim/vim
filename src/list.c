@@ -417,7 +417,7 @@ list_find_str(list_T *l, long idx)
     li = list_find(l, idx - 1);
     if (li == NULL)
     {
-	EMSGN(_(e_listidx), idx);
+	semsg(_(e_listidx), idx);
 	return NULL;
     }
     return tv_get_string(&li->li_tv);
@@ -914,7 +914,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    EMSG2(_("E696: Missing comma in List: %s"), *arg);
+	    semsg(_("E696: Missing comma in List: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -922,7 +922,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (**arg != ']')
     {
-	EMSG2(_("E697: Missing end of List ']': %s"), *arg);
+	semsg(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);
@@ -969,7 +969,7 @@ write_list(FILE *fd, list_T *list, int binary)
 	    }
 	if (ret == FAIL)
 	{
-	    EMSG(_(e_write));
+	    emsg(_(e_write));
 	    break;
 	}
     }

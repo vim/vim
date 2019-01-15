@@ -2658,7 +2658,7 @@ del_bytes(
     /* If "count" is negative the caller must be doing something wrong. */
     if (count < 1)
     {
-	IEMSGN("E950: Invalid count for del_bytes(): %ld", count);
+	siemsg("E950: Invalid count for del_bytes(): %ld", count);
 	return FAIL;
     }
 
@@ -3521,7 +3521,7 @@ ask_yesno(char_u *str, int direct)
     while (r != 'y' && r != 'n')
     {
 	/* same highlighting as for wait_return */
-	smsg_attr(HL_ATTR(HLF_R), (char_u *)"%s (y/n)?", str);
+	smsg_attr(HL_ATTR(HLF_R), "%s (y/n)?", str);
 	if (direct)
 	    r = get_keystroke();
 	else
@@ -4060,7 +4060,7 @@ init_homedir(void)
 	    if (!mch_chdir((char *)var) && mch_dirname(IObuff, IOSIZE) == OK)
 		var = IObuff;
 	    if (mch_chdir((char *)NameBuff) != 0)
-		EMSG(_(e_prev_dir));
+		emsg(_(e_prev_dir));
 	}
 #endif
 	homedir = vim_strsave(var);
@@ -9942,7 +9942,7 @@ expand_wildcards_eval(
     int		ret = FAIL;
     char_u	*eval_pat = NULL;
     char_u	*exp_pat = *pat;
-    char_u      *ignored_msg;
+    char      *ignored_msg;
     int		usedlen;
 
     if (*exp_pat == '%' || *exp_pat == '#' || *exp_pat == '<')
@@ -11434,7 +11434,7 @@ get_cmd_output(
     /* get a name for the temp file */
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
-	EMSG(_(e_notmp));
+	emsg(_(e_notmp));
 	return NULL;
     }
 
@@ -11465,7 +11465,7 @@ get_cmd_output(
 
     if (fd == NULL)
     {
-	EMSG2(_(e_notopen), tempname);
+	semsg(_(e_notopen), tempname);
 	goto done;
     }
 
@@ -11485,7 +11485,7 @@ get_cmd_output(
 #endif
     if (i != len)
     {
-	EMSG2(_(e_notread), tempname);
+	semsg(_(e_notread), tempname);
 	VIM_CLEAR(buffer);
     }
     else if (ret_len == NULL)

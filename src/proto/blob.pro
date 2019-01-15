@@ -10,4 +10,6 @@ void blob_set(blob_T *b, int idx, char_u c);
 int blob_equal(blob_T *b1, blob_T *b2);
 int read_blob(FILE *fd, blob_T *blob);
 int write_blob(FILE *fd, blob_T *blob);
+char_u *blob2string(blob_T *blob, char_u **tofree, char_u *numbuf);
+blob_T *string2blob(char_u *str);
 /* vim: set ft=c : */

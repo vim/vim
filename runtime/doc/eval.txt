@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 11
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2528,6 +2528,7 @@ test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
+test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
 test_null_job()			Job	null value for testing
@@ -3129,7 +3130,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		is removed.
 		Note that Vim does not know when the text received on a raw
 		channel is complete, it may only return the first part and you
-		need to use ch_readraw() to fetch the rest.
+		need to use |ch_readraw()| to fetch the rest.
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
@@ -9341,25 +9342,28 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		When the {expr} is the string "RESET" then the list of ignored
 		errors is made empty.
 
+test_null_blob()					*test_null_blob()*
+		Return a |Blob| that is null. Only useful for testing.
+
 test_null_channel()					*test_null_channel()*
-		Return a Channel that is null. Only useful for testing.
+		Return a |Channel| that is null. Only useful for testing.
 		{only available when compiled with the +channel feature}
 
 test_null_dict()					*test_null_dict()*
-		Return a Dict that is null. Only useful for testing.
+		Return a |Dict| that is null. Only useful for testing.
 
 test_null_job()						*test_null_job()*
-		Return a Job that is null. Only useful for testing.
+		Return a |Job| that is null. Only useful for testing.
 		{only available when compiled with the +job feature}
 
 test_null_list()					*test_null_list()*
-		Return a List that is null. Only useful for testing.
+		Return a |List| that is null. Only useful for testing.
 
 test_null_partial()					*test_null_partial()*
-		Return a Partial that is null. Only useful for testing.
+		Return a |Partial| that is null. Only useful for testing.
 
 test_null_string()					*test_null_string()*
-		Return a String that is null. Only useful for testing.
+		Return a |String| that is null. Only useful for testing.
 
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it

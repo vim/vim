@@ -162,7 +162,7 @@ crypt_method_nr_from_magic(char *ptr, int len)
 
     i = (int)STRLEN(crypt_magic_head);
     if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
-	EMSG(_("E821: File is encrypted with unknown method"));
+	emsg(_("E821: File is encrypted with unknown method"));
 
     return -1;
 }

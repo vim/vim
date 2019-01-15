@@ -4,7 +4,7 @@ char_u *getcmdline(int firstc, long count, int indent);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
 int text_locked(void);
 void text_locked_msg(void);
-char_u *get_text_locked_msg(void);
+char *get_text_locked_msg(void);
 int curbuf_locked(void);
 int allbuf_locked(void);
 char_u *getexline(int c, void *cookie, int indent);

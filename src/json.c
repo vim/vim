@@ -232,7 +232,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    /* no JSON equivalent TODO: better error */
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return FAIL;
 
 	case VAR_BLOB:
@@ -739,7 +739,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = json_decode_string(reader, cur_item, *p);
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    break;
@@ -747,7 +747,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		case ',': /* comma: empty item */
 		    if ((options & JSON_JS) == 0)
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 			break;
 		    }
@@ -777,7 +777,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			    if (!VIM_ISDIGIT(*sp))
 			    {
-				EMSG(_(e_invarg));
+				emsg(_(e_invarg));
 				retval = FAIL;
 				break;
 			    }
@@ -915,7 +915,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (top_item->jd_key == NULL)
 		{
 		    clear_tv(cur_item);
-		    EMSG(_(e_invarg));
+		    emsg(_(e_invarg));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -953,7 +953,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -971,7 +971,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -988,7 +988,7 @@ item_end:
 			&& dict_find(top_item->jd_tv.vval.v_dict,
 						 top_item->jd_key, -1) != NULL)
 		{
-		    EMSG2(_("E938: Duplicate key in JSON: \"%s\""),
+		    semsg(_("E938: Duplicate key in JSON: \"%s\""),
 							     top_item->jd_key);
 		    clear_tv(&top_item->jd_key_tv);
 		    clear_tv(cur_item);
@@ -1027,7 +1027,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1046,7 +1046,7 @@ item_end:
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
-    EMSG(_(e_invarg));
+    emsg(_(e_invarg));
 
 theend:
     ga_clear(&stack);
@@ -1070,13 +1070,13 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     if (ret != OK)
     {
 	if (ret == MAYBE)
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	return FAIL;
     }
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
     {
-	EMSG(_(e_trailing));
+	emsg(_(e_trailing));
 	return FAIL;
     }
     return OK;

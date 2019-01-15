@@ -695,7 +695,7 @@ perl_runtime_link_init(char *libname, int verbose)
     if ((hPerlLib = load_dll(libname)) == NULL)
     {
 	if (verbose)
-	    EMSG2(_("E370: Could not load library %s"), libname);
+	    semsg(_("E370: Could not load library %s"), libname);
 	return FAIL;
     }
     for (i = 0; perl_funcname_table[i].ptr; ++i)
@@ -706,7 +706,7 @@ perl_runtime_link_init(char *libname, int verbose)
 	    close_dll(hPerlLib);
 	    hPerlLib = NULL;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), perl_funcname_table[i].name);
+		semsg((const char *)_(e_loadfunc), perl_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -998,7 +998,7 @@ ex_perl(exarg_T *eap)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    EMSG(_(e_noperl));
+	    emsg(_(e_noperl));
 	    vim_free(script);
 	    return;
 	}
@@ -1025,7 +1025,7 @@ ex_perl(exarg_T *eap)
 	safe = perl_get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	if (safe == NULL || !SvTRUE(safe))
-	    EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
+	    emsg(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
 	else
 # endif
 	{
@@ -1235,7 +1235,7 @@ perl_to_vim(SV *sv, typval_T *rettv)
 		    key = hv_iterkey(entry, &key_len);
 
 		    if (!key || !key_len || strlen(key) < (size_t)key_len) {
-			EMSG2("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
+			semsg("Malformed key Dictionary '%s'", key && *key ? key : "(empty)");
 			break;
 		    }
 
@@ -1286,7 +1286,7 @@ do_perleval(char_u *str, typval_T *rettv)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    EMSG(_(e_noperl));
+	    emsg(_(e_noperl));
 	    return;
 	}
 #endif
@@ -1304,7 +1304,7 @@ do_perleval(char_u *str, typval_T *rettv)
 	    safe = get_sv("VIM::safe", FALSE);
 # ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	    if (safe == NULL || !SvTRUE(safe))
-		EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
+		emsg(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
 	    else
 # endif
 	    {
@@ -1356,7 +1356,7 @@ ex_perldo(exarg_T *eap)
 #ifdef DYNAMIC_PERL
 	if (!perl_enabled(TRUE))
 	{
-	    EMSG(_(e_noperl));
+	    emsg(_(e_noperl));
 	    return;
 	}
 #endif
@@ -1562,11 +1562,11 @@ Eval(str)
 SV*
 Blob(SV* sv)
     PREINIT:
-    STRLEN  len;
-    char    *s;
-    int	    i;
-    char    buf[3];
-    SV*	    newsv;
+    STRLEN	len;
+    char	*s;
+    unsigned	i;
+    char	buf[3];
+    SV*		newsv;
 
     CODE:
     s = SvPVbyte(sv, len);

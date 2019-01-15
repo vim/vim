@@ -1625,14 +1625,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 #define MSG(s)			    msg((char_u *)(s))
 #define MSG_ATTR(s, attr)	    msg_attr((char_u *)(s), (attr))
-#define EMSG(s)			    emsg((char_u *)(s))
-#define EMSG2(s, p)		    emsg2((char_u *)(s), (char_u *)(p))
-#define EMSG3(s, p, q)		    emsg3((char_u *)(s), (char_u *)(p), (char_u *)(q))
-#define EMSGN(s, n)		    emsgn((char_u *)(s), (long)(n))
-#define EMSGU(s, n)		    emsgu((char_u *)(s), (long_u)(n))
-#define IEMSG(s)		    iemsg((char_u *)(s))
-#define IEMSG2(s, p)		    iemsg2((char_u *)(s), (char_u *)(p))
-#define IEMSGN(s, n)		    iemsgn((char_u *)(s), (long)(n))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))
 #define MSG_PUTS(s)		    msg_puts((char_u *)(s))
@@ -1676,10 +1668,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define GUI_GET_COLOR		    GUI_FUNCTION(get_color)
 #endif
 
-/* Prefer using emsg3(), because perror() may send the output to the wrong
+/* Prefer using emsgf(), because perror() may send the output to the wrong
  * destination and mess up the screen. */
 #ifdef HAVE_STRERROR
-# define PERROR(msg)		    (void)emsg3((char_u *)"%s: %s", (char_u *)msg, (char_u *)strerror(errno))
+# define PERROR(msg)		    (void)semsg("%s: %s", (char *)msg, strerror(errno))
 #else
 # define PERROR(msg)		    do_perror(msg)
 #endif

@@ -1303,11 +1303,11 @@ nfa_regatom(void)
 	    {
 		if (extra == NFA_ADD_NL)
 		{
-		    EMSGN(_(e_ill_char_class), c);
+		    semsg(_(e_ill_char_class), c);
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
-		IEMSGN("INTERNAL: Unknown character class char: %ld", c);
+		siemsg("INTERNAL: Unknown character class char: %ld", c);
 		return FAIL;
 	    }
 #ifdef FEAT_MBYTE
@@ -1349,7 +1349,7 @@ nfa_regatom(void)
 	case Magic('|'):
 	case Magic('&'):
 	case Magic(')'):
-	    EMSGN(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
 	case Magic('='):
@@ -1359,7 +1359,7 @@ nfa_regatom(void)
 	case Magic('*'):
 	case Magic('{'):
 	    /* these should follow an atom, not form an atom */
-	    EMSGN(_(e_misplaced), no_Magic(c));
+	    semsg(_(e_misplaced), no_Magic(c));
 	    return FAIL;
 
 	case Magic('~'):
@@ -1370,7 +1370,7 @@ nfa_regatom(void)
 		 * Generated as "\%(pattern\)". */
 		if (reg_prev_sub == NULL)
 		{
-		    EMSG(_(e_nopresub));
+		    emsg(_(e_nopresub));
 		    return FAIL;
 		}
 		for (lp = reg_prev_sub; *lp != NUL; MB_CPTR_ADV(lp))
@@ -1445,7 +1445,7 @@ nfa_regatom(void)
 		    break;
 #endif
 		default:
-		    EMSGN(_("E867: (NFA) Unknown operator '\\z%c'"),
+		    semsg(_("E867: (NFA) Unknown operator '\\z%c'"),
 								 no_Magic(c));
 		    return FAIL;
 	    }
@@ -1577,7 +1577,7 @@ nfa_regatom(void)
 #if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 			    if (n > INT_MAX)
 			    {
-				EMSG(_("E951: \\% value too large"));
+				emsg(_("E951: \\% value too large"));
 				return FAIL;
 			    }
 #endif
@@ -1593,7 +1593,7 @@ nfa_regatom(void)
 			    break;
 			}
 		    }
-		    EMSGN(_("E867: (NFA) Unknown operator '\\%%%c'"),
+		    semsg(_("E867: (NFA) Unknown operator '\\%%%c'"),
 								 no_Magic(c));
 		    return FAIL;
 	    }
@@ -2071,7 +2071,7 @@ nfa_regpiece(void)
 	    }
 	    if (i == 0)
 	    {
-		EMSGN(_("E869: (NFA) Unknown operator '\\@%c'"), op);
+		semsg(_("E869: (NFA) Unknown operator '\\@%c'"), op);
 		return FAIL;
 	    }
 	    EMIT(i);
@@ -2928,7 +2928,7 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	fclose(df);
     }
 #endif
-    EMSG(_("E874: (NFA) Could not pop the stack!"));
+    emsg(_("E874: (NFA) Could not pop the stack!"));
 }
 
 /*
@@ -4877,7 +4877,7 @@ check_char_class(int class, int c)
 
 	default:
 	    /* should not be here :P */
-	    IEMSGN(_(e_ill_char_class), class);
+	    siemsg(_(e_ill_char_class), class);
 	    return FAIL;
     }
     return FAIL;
@@ -5146,7 +5146,7 @@ recursive_regmatch(
 	    *listids = (int *)lalloc(sizeof(int) * prog->nstate, TRUE);
 	    if (*listids == NULL)
 	    {
-		EMSG(_("E878: (NFA) Could not allocate memory for branch traversal!"));
+		emsg(_("E878: (NFA) Could not allocate memory for branch traversal!"));
 		return 0;
 	    }
 	    *listids_len = prog->nstate;
@@ -5201,7 +5201,7 @@ recursive_regmatch(
     }
     else
     {
-	EMSG(_(e_log_open_failed));
+	emsg(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -5521,7 +5521,7 @@ nfa_regmatch(
     debug = fopen(NFA_REGEXP_DEBUG_LOG, "a");
     if (debug == NULL)
     {
-	EMSG2("(NFA) COULD NOT OPEN %s!", NFA_REGEXP_DEBUG_LOG);
+	semsg("(NFA) COULD NOT OPEN %s!", NFA_REGEXP_DEBUG_LOG);
 	return FALSE;
     }
 #endif
@@ -5549,7 +5549,7 @@ nfa_regmatch(
     }
     else
     {
-	EMSG(_(e_log_open_failed));
+	emsg(_(e_log_open_failed));
 	log_fd = stderr;
     }
 #endif
@@ -6670,7 +6670,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    IEMSGN("INTERNAL: Negative state char: %ld", c);
+		    siemsg("INTERNAL: Negative state char: %ld", c);
 #endif
 		result = (c == curc);
 
@@ -6961,7 +6961,7 @@ nfa_regtry(
 	fclose(f);
     }
     else
-	EMSG("Could not open temporary log file for writing");
+	emsg("Could not open temporary log file for writing");
 #endif
 
     clear_sub(&subs.norm);
@@ -7094,7 +7094,7 @@ nfa_regexec_both(
     /* Be paranoid... */
     if (prog == NULL || line == NULL)
     {
-	EMSG(_(e_null));
+	emsg(_(e_null));
 	goto theend;
     }
 
@@ -7212,7 +7212,7 @@ nfa_regcomp(char_u *expr, int re_flags)
     {
 	/* TODO: only give this error for debugging? */
 	if (post_ptr >= post_end)
-	    IEMSGN("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
+	    siemsg("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
 	goto fail;	    /* Cascaded (syntax?) error */
     }
 

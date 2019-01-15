@@ -672,14 +672,14 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
     if (!hMzGC)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), gc_dll);
+	    semsg(_(e_loadlib), gc_dll);
 	return FAIL;
     }
 
     if (!hMzSch)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), sch_dll);
+	    semsg(_(e_loadlib), sch_dll);
 	return FAIL;
     }
 
@@ -693,7 +693,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), thunk->name);
+		semsg(_(e_loadfunc), thunk->name);
 	    return FAIL;
 	}
     }
@@ -707,7 +707,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), thunk->name);
+		semsg(_(e_loadfunc), thunk->name);
 	    return FAIL;
 	}
     }
@@ -1260,13 +1260,13 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (disabled || !mzscheme_enabled(TRUE))
 	{
-	    EMSG(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    emsg(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
 	    return -1;
 	}
 #endif
 	if (load_base_module_failed || startup_mzscheme())
 	{
-	    EMSG(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    emsg(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
 	    return -1;
 	}
 	initialized = TRUE;
@@ -1572,7 +1572,7 @@ do_intrnl_output(char *mesg, int error)
     {
 	*p = '\0';
 	if (error)
-	    EMSG(prev);
+	    emsg(prev);
 	else
 	    MSG(prev);
 	prev = p + 1;
@@ -1580,7 +1580,7 @@ do_intrnl_output(char *mesg, int error)
     }
 
     if (error)
-	EMSG(prev);
+	emsg(prev);
     else
 	MSG(prev);
 }

@@ -778,7 +778,7 @@ mch_chdir(char *path)
     if (p_verbose >= 5)
     {
 	verbose_enter();
-	smsg((char_u *)"chdir(%s)", path);
+	smsg("chdir(%s)", path);
 	verbose_leave();
     }
     if (isalpha(path[0]) && path[1] == ':')	/* has a drive name */
@@ -843,7 +843,7 @@ mch_check_messages(void)
     int
 mch_screenmode(char_u *arg UNUSED)
 {
-    EMSG(_(e_screenmode));
+    emsg(_(e_screenmode));
     return FAIL;
 }
 
@@ -1006,7 +1006,7 @@ mch_libcall(
 
     if (!fRunTimeLinkSuccess)
     {
-	EMSG2(_(e_libcall), funcname);
+	semsg(_(e_libcall), funcname);
 	return FAIL;
     }
 
@@ -1526,7 +1526,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 
     if (prt_dlg.hDC == NULL)
     {
-	EMSG(_("E237: Printer selection failed"));
+	emsg(_("E237: Printer selection failed"));
 	mch_print_cleanup();
 	return FALSE;
     }
@@ -1603,7 +1603,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     vim_memset(&fLogFont, 0, sizeof(fLogFont));
     if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
-	EMSG2(_("E613: Unknown printer font: %s"), p_pfn);
+	semsg(_("E613: Unknown printer font: %s"), p_pfn);
 	mch_print_cleanup();
 	return FALSE;
     }
@@ -1664,7 +1664,7 @@ init_fail_dlg:
 			  FORMAT_MESSAGE_FROM_SYSTEM |
 			  FORMAT_MESSAGE_IGNORE_INSERTS,
 			  NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
-	    EMSG2(_("E238: Print error: %s"),
+	    semsg(_("E238: Print error: %s"),
 				  buf == NULL ? (char_u *)_("Unknown") : buf);
 	    LocalFree((LPVOID)(buf));
 	}
@@ -2506,7 +2506,7 @@ serverSendToVim(
     if (target == 0)
     {
 	if (!silent)
-	    EMSG2(_(e_noserver), name);
+	    semsg(_(e_noserver), name);
 	return -1;
     }
 
@@ -3072,9 +3072,7 @@ get_logfont(
 			}
 		    if (cp->name == NULL && verbose)
 		    {
-			vim_snprintf((char *)IObuff, IOSIZE,
-				_("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
-			EMSG(IObuff);
+			semsg(_("E244: Illegal charset name \"%s\" in font name \"%s\""), p, name);
 			break;
 		    }
 		    break;
@@ -3092,21 +3090,14 @@ get_logfont(
 			}
 		    if (qp->name == NULL && verbose)
 		    {
-			vim_snprintf((char *)IObuff, IOSIZE,
-				_("E244: Illegal quality name \"%s\" in font name \"%s\""), p, name);
-			EMSG(IObuff);
+			semsg(_("E244: Illegal quality name \"%s\" in font name \"%s\""), p, name);
 			break;
 		    }
 		    break;
 		}
 	    default:
 		if (verbose)
-		{
-		    vim_snprintf((char *)IObuff, IOSIZE,
-			    _("E245: Illegal char '%c' in font name \"%s\""),
-			    p[-1], name);
-		    EMSG(IObuff);
-		}
+		    semsg(_("E245: Illegal char '%c' in font name \"%s\""), p[-1], name);
 		goto theend;
 	}
 	while (*p == ':')
