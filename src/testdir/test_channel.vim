@@ -1994,7 +1994,7 @@ func Test_input_with_job_callback()
   endfunc
 
   let g:job = job_start([&shell, &shellcmdflag, 'echo 1'], {'callback': 'Callback'})
-  call WaitFor({-> job_status(job) ==# 'dead'})
+  call WaitFor({-> job_status(g:job) ==# 'dead'})
 
   call assert_equal('y', g:val)
   call job_stop(g:job)
