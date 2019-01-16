@@ -1975,3 +1975,32 @@ func Test_job_start_in_timer()
   unlet! g:val
   unlet! g:job
 endfunc
+
+func Test_input_with_job_callback()
+  if !has('job') || !has('timers')
+    return
+  endif
+
+  let g:val = ''
+
+  func TimerCb(timer)
+    let g:val = getcmdline()
+    call feedkeys("<CR>", 'nt')
+  endfunc
+
+  func Callback(...)
+    call input('x: ', 'y')
+  endfunc
+
+  call timer_start(100, 'TimerCb')
+  let g:job = job_start([&shell, &shellcmdflag, 'echo 1'], {'callback': 'Callback'})
+
+  call assert_equal('y', g:val)
+  call job_stop(g:job)
+
+  delfunc TimerCb
+  delfunc Callback
+  unlet! g:val
+  unlet! g:job
+endfunc
+

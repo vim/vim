@@ -8325,12 +8325,15 @@ get_user_input(
 	if (defstr != NULL)
 	{
 	    int save_ex_normal_busy = ex_normal_busy;
+	    int save_vgetc_busy = vgetc_busy;
 
 	    ex_normal_busy = 0;
+	    vgetc_busy = 0;
 	    rettv->vval.v_string =
 		getcmdline_prompt(secret ? NUL : '@', p, echo_attr,
 							      xp_type, xp_arg);
 	    ex_normal_busy = save_ex_normal_busy;
+	    vgetc_busy = save_vgetc_busy;
 	}
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN
