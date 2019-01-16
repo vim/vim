@@ -221,7 +221,7 @@ Syntax ~
 					Vim width (no window left or right of
 					the terminal window) this value is
 					ignored.
-			++eof={text}	when using [range]: text to send after
+			++eof={text}	When using [range]: text to send after
 					the last line was written. Cannot
 					contain white space.  A CR is
 					appended.  For MS-Windows the default
@@ -233,6 +233,16 @@ Syntax ~
 			++type={pty}	(MS-Windows only): Use {pty} as the
 					virtual console.  See 'termwintype'
 					for the values.
+			++api[={expr}]	Permit the function name matched with
+					{expr} to be called as |terminal-api|
+					function.  As {expr}, can use a string
+					with trailing wildcard or regexp
+					(starts with "/").
+					E.g. "++api=Tapi_*", "++api=/^Tapi_"
+					When {expr} is omitted, set to
+					"Tapi_*".
+			++noapi		Forbid any user defined function being
+					called as |terminal-api|.
 
 			If you want to use more options use the |term_start()|
 			function.
@@ -469,7 +479,7 @@ Currently supported commands:
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
 		of the terminal and {argument}, the decoded JSON argument. 
-		The function name must start with "Tapi_" to avoid
+		By default, The function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
 		terminal API.
 		The user function should sanity check the argument.

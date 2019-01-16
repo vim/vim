@@ -2688,6 +2688,8 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setapi({buf}, {expr})	none	set |terminal-api| function name of a
+					terminal
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
@@ -9736,6 +9738,18 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		means the character CTRL-X.
 		{only available when compiled with the |+terminal| feature}
 
+term_setapi({buf}, {expr})				*term_setapi()*
+		Set the function name or pattern whom permits to be called as
+		|terminal-api| function in terminal {buf}.
+		You can use as {expr} a string, or with trailing wildcard or
+		regexp (starts with "/").  For example: >
+		    :call term_setapi(buf, "Tapi_func")
+		    :call term_setapi(buf, "Tapi_*")
+		    :call term_setapi(buf, "/^Tapi_")
+<
+		When {expr} is empty, |terminal-api| function becomes forbidden
+		in {buf}.
+
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
 		{colors} must be a List of 16 valid color names or hexadecimal
@@ -9864,6 +9878,9 @@ term_start({cmd} [, {options}])			*term_start()*
 				     color modes.  See |g:terminal_ansi_colors|.
 		   "tty_type"	     (MS-Windows only): Specify which pty to
 				     use.  See 'termwintype' for the values.
+		   "term_api"	     function name or pattern whom permits to
+				     be called as |terminal-api| function.
+				     See |term_setapi()|.
 
 		{only available when compiled with the |+terminal| feature}
 
