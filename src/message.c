@@ -1771,6 +1771,7 @@ msg_prt_line(char_u *s, int list)
     int		col = 0;
     int		n_extra = 0;
     int		c_extra = 0;
+    int		c_final = 0;
     char_u	*p_extra = NULL;	    /* init to make SASC shut up */
     int		n;
     int		attr = 0;
@@ -1801,7 +1802,9 @@ msg_prt_line(char_u *s, int list)
 	if (n_extra > 0)
 	{
 	    --n_extra;
-	    if (c_extra)
+	    if (n_extra == 0 && c_final)
+		c = c_final;
+	    else if (c_extra)
 		c = c_extra;
 	    else
 		c = *p_extra++;
@@ -1844,11 +1847,13 @@ msg_prt_line(char_u *s, int list)
 		{
 		    c = ' ';
 		    c_extra = ' ';
+		    c_final = NUL;
 		}
 		else
 		{
-		    c = lcs_tab1;
+		    c = (n_extra == 0 && lcs_tab3) ? lcs_tab3 : lcs_tab1;
 		    c_extra = lcs_tab2;
+		    c_final = lcs_tab3;
 		    attr = HL_ATTR(HLF_8);
 		}
 	    }
@@ -1861,6 +1866,7 @@ msg_prt_line(char_u *s, int list)
 	    {
 		p_extra = (char_u *)"";
 		c_extra = NUL;
+		c_final = NUL;
 		n_extra = 1;
 		c = lcs_eol;
 		attr = HL_ATTR(HLF_AT);
@@ -1871,6 +1877,7 @@ msg_prt_line(char_u *s, int list)
 		n_extra = n - 1;
 		p_extra = transchar_byte(c);
 		c_extra = NUL;
+		c_final = NUL;
 		c = *p_extra++;
 		/* Use special coloring to be able to distinguish <hex> from
 		 * the same in plain text. */

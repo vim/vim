@@ -1163,6 +1163,7 @@ EXTERN int	lcs_nbsp INIT(= NUL);
 EXTERN int	lcs_space INIT(= NUL);
 EXTERN int	lcs_tab1 INIT(= NUL);
 EXTERN int	lcs_tab2 INIT(= NUL);
+EXTERN int	lcs_tab3 INIT(= NUL);
 EXTERN int	lcs_trail INIT(= NUL);
 #ifdef FEAT_CONCEAL
 EXTERN int	lcs_conceal INIT(= ' ');
