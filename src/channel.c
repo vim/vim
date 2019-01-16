@@ -4934,7 +4934,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    break;
 		opt->jo_set2 |= JO2_TERM_MODE;
 		p = tv_get_string_chk(item);
-		if (p == NULL || !(*p == NUL || STRCMP(p, "winpty") == 0
+		if (p == NULL)
+		{
+		    semsg(_(e_invargval), "term_mode");
+		    return FAIL;
+		}
+		/* Want to enable NUL, winpty, conpty. */
+		if (!(*p == NUL || STRCMP(p, "winpty") == 0
 					          || STRCMP(p, "conpty") == 0))
 		{
 		    semsg(_(e_invargval), "term_mode");

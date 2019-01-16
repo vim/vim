@@ -2193,7 +2193,6 @@ mch_init(void)
 #endif
 
     vtp_flag_init();
-
 }
 
 
@@ -7731,7 +7730,7 @@ vtp_flag_init(void)
     char    name[256];
     char    startup[256];
     char_u  *cmd;
-    char    cmdline[256];
+    char    cmdline[_MAX_PATH + 4];  /* +4 is (STRLEN(" /k") + 1). */
     SECURITY_ATTRIBUTES sa;
     STARTUPINFO		si;
 
@@ -7770,7 +7769,7 @@ vtp_flag_init(void)
 	    cmd = mch_getenv("COMSPEC");
 	    if (cmd == NULL || *cmd == NUL)
 		cmd = (char_u *)default_shell();
-	    sprintf(cmdline, "%s /k", cmd);
+	    snprintf(cmdline, _MAX_PATH + 4, "%s /k", cmd);
 
 	    CreateProcess((char *)cmd, cmdline, NULL, NULL, TRUE,
 				  CREATE_NEW_CONSOLE, NULL, NULL, &si, &pista);
