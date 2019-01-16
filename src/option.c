@@ -8955,7 +8955,7 @@ set_bool_option(
 	if (!has_vtp_working())
 	{
 	    p_tgc = 0;
-	    return (char *)N_("E954: 24-bit colors are not supported on this environment");
+	    return N_("E954: 24-bit colors are not supported on this environment");
 	}
 	if (is_term_win32())
 	    swap_tcap();
