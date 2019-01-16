@@ -1985,15 +1985,16 @@ func Test_input_with_job_callback()
 
   func TimerCb(timer)
     let g:val = getcmdline()
-    call feedkeys("<CR>", 'nt')
+    call feedkeys("\<CR>", 'nt')
   endfunc
 
   func Callback(...)
+    call timer_start(100, 'TimerCb')
     call input('x: ', 'y')
   endfunc
 
-  call timer_start(100, 'TimerCb')
   let g:job = job_start([&shell, &shellcmdflag, 'echo 1'], {'callback': 'Callback'})
+  call WaitFor({-> job_status(job) ==# 'dead'})
 
   call assert_equal('y', g:val)
   call job_stop(g:job)
@@ -2003,4 +2004,3 @@ func Test_input_with_job_callback()
   unlet! g:val
   unlet! g:job
 endfunc
-
