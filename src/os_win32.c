@@ -7711,79 +7711,14 @@ mch_setenv(char *var, char *value, int x)
  */
 #define CONPTY_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 17763)
 
-#ifdef FEAT_GUI_W32
-static HWINSTA origsta;
-static HWINSTA newsta;
-static HDESK origdesk;
-static HDESK newdesk;
-static PROCESS_INFORMATION pista;
-#endif
-
     static void
 vtp_flag_init(void)
 {
     DWORD   ver = get_build_number();
+#ifndef FEAT_GUI_W32
     DWORD   mode;
     HANDLE  out;
 
-#ifdef FEAT_GUI_W32
-    char    name[256];
-    char    startup[256];
-    char_u  *cmd;
-    char    cmdline[_MAX_PATH + 4];  /* +4 is (STRLEN(" /k") + 1). */
-    SECURITY_ATTRIBUTES sa;
-    STARTUPINFO		si;
-
-    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
-    {
-	/* A console opened on another window station, get its standard
-	 * output. */
-
-	vim_memset(&sa, 0, sizeof(sa));
-	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-	sa.bInheritHandle = TRUE;
-
-	origdesk = GetThreadDesktop(GetCurrentThreadId());
-	origsta = GetProcessWindowStation();
-
-	newsta = CreateWindowStation(NULL, 0, WINSTA_ALL_ACCESS, &sa);
-
-	if (SetProcessWindowStation(newsta))
-	{
-	    newdesk = CreateDesktop("Default", NULL, NULL, 0, GENERIC_ALL,
-									  &sa);
-	    SetThreadDesktop(newdesk);
-	    name[0] = NUL;
-	    GetUserObjectInformation(newsta, UOI_NAME, name, sizeof(name),
-									 NULL);
-	    sprintf(startup, "%s\\Default", name);
-
-	    vim_memset(&si, 0, sizeof(si));
-	    si.cb = sizeof(STARTUPINFO);
-	    si.lpDesktop = startup;
-	    si.dwFlags = STARTF_USESHOWWINDOW;
-	    si.wShowWindow = SW_SHOWNOACTIVATE;
-
-	    vim_memset(&pista, 0, sizeof(pista));
-
-	    cmd = mch_getenv("COMSPEC");
-	    if (cmd == NULL || *cmd == NUL)
-		cmd = (char_u *)default_shell();
-	    snprintf(cmdline, _MAX_PATH + 4, "%s /k", cmd);
-
-	    CreateProcess((char *)cmd, cmdline, NULL, NULL, TRUE,
-				  CREATE_NEW_CONSOLE, NULL, NULL, &si, &pista);
-	    Sleep(100);
-	    AttachConsole(pista.dwProcessId);
-
-	    freopen("CONOUT$", "w", stdout);
-	    SetStdHandle(STD_OUTPUT_HANDLE, CreateFile("CONOUT$",
-		    GENERIC_READ | GENERIC_WRITE,
-		    FILE_SHARE_READ | FILE_SHARE_WRITE,
-		    &sa, OPEN_EXISTING, 0, NULL));
-	}
-    }
-#endif
     out = GetStdHandle(STD_OUTPUT_HANDLE);
 
     vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
@@ -7791,36 +7726,13 @@ vtp_flag_init(void)
     mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
     if (SetConsoleMode(out, mode) == 0)
 	vtp_working = 0;
+#endif
 
 #ifdef FEAT_GUI_W32
     if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
-    {
-	SetThreadDesktop(origdesk);
-	SetProcessWindowStation(origsta);
-    }
+	vtp_working = 1;
 #endif
-}
 
-    void
-vtp_flag_exit(void)
-{
-#ifdef FEAT_GUI_W32
-    DWORD ver;
-
-    ver = get_build_number();
-    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
-    {
-	SetProcessWindowStation(newsta);
-	SetThreadDesktop(newdesk);
-	TerminateProcess(pista.hProcess, 0);
-	TerminateThread(pista.hThread, 0);
-	FreeConsole();
-	SetThreadDesktop(origdesk);
-	SetProcessWindowStation(origsta);
-	CloseWindowStation(newsta);
-	CloseDesktop(newdesk);
-    }
-#endif
 }
 
 #ifndef FEAT_GUI_W32

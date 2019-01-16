@@ -229,8 +229,6 @@ mch_exit(int r)
     free_all_mem();
 #endif
 
-    vtp_flag_exit();
-
     exit(r);
 }
 
