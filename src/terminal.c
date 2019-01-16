@@ -6155,7 +6155,7 @@ failed:
     term->tl_winpty_config = NULL;
     if (winpty_err != NULL)
     {
-	char_u *msg = utf16_to_enc(
+	char *msg = utf16_to_enc(
 				(short_u *)winpty_error_msg(winpty_err), NULL);
 
 	emsg(msg);
