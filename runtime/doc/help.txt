@@ -180,7 +180,6 @@ Interfaces ~
 |if_ole.txt|	OLE automation interface for Win32
 |if_ruby.txt|	Ruby interface
 |debugger.txt|	Interface with a debugger
-|workshop.txt|	Sun Visual Workshop interface
 |netbeans.txt|	NetBeans External Editor interface
 |sign.txt|	debugging signs
 

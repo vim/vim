@@ -661,8 +661,6 @@ CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
-WORKSHOP_OBJ
-WORKSHOP_SRC
 RUBY_LIBS
 RUBY_CFLAGS
 RUBY_PRO
@@ -812,7 +810,6 @@ with_tclsh
 enable_rubyinterp
 with_ruby_command
 enable_cscope
-enable_workshop
 enable_netbeans
 enable_channel
 enable_terminal
@@ -1494,7 +1491,6 @@ Optional Features:
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
-  --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
@@ -7663,29 +7659,6 @@ $as_echo "$enable_cscope" >&6; }
 if test "$enable_cscope" = "yes"; then
   $as_echo "#define FEAT_CSCOPE 1" >>confdefs.h
 
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-workshop argument" >&5
-$as_echo_n "checking --enable-workshop argument... " >&6; }
-# Check whether --enable-workshop was given.
-if test "${enable_workshop+set}" = set; then :
-  enableval=$enable_workshop;
-else
-  enable_workshop="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_workshop" >&5
-$as_echo "$enable_workshop" >&6; }
-if test "$enable_workshop" = "yes"; then
-  $as_echo "#define FEAT_SUN_WORKSHOP 1" >>confdefs.h
-
-  WORKSHOP_SRC="workshop.c integration.c"
-
-  WORKSHOP_OBJ="objects/workshop.o objects/integration.o"
-
-  if test "${enable_gui-xxx}" = xxx; then
-    enable_gui=motif
-  fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-netbeans argument" >&5

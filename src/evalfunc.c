@@ -6512,9 +6512,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_STL_OPT
 	"statusline",
 #endif
-#ifdef FEAT_SUN_WORKSHOP
-	"sun_workshop",
-#endif
 #ifdef FEAT_NETBEANS_INTG
 	"netbeans_intg",
 #endif

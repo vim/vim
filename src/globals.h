@@ -1218,10 +1218,9 @@ EXTERN int	no_hlsearch INIT(= FALSE);
 #if defined(FEAT_BEVAL) && !defined(NO_X11_INCLUDES)
 EXTERN BalloonEval	*balloonEval INIT(= NULL);
 EXTERN int		balloonEvalForTerm INIT(= FALSE);
-# if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+# if defined(FEAT_NETBEANS_INTG)
 EXTERN int bevalServers INIT(= 0);
 #  define BEVAL_NETBEANS		0x01
-#  define BEVAL_WORKSHOP		0x02
 # endif
 #endif
 
@@ -1361,14 +1360,6 @@ EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 #ifdef FEAT_CONCEAL
 /* Set when the cursor line needs to be redrawn. */
 EXTERN int		need_cursor_line_redraw INIT(= FALSE);
-#endif
-
-#ifdef ALT_X_INPUT
-/* we need to be able to go into the dispatch loop while processing a command
- * received via alternate input. However, we don't want to process another
- * command until the first is completed.
- */
-EXTERN int	suppress_alternate_input INIT(= FALSE);
 #endif
 
 #ifdef USE_MCH_ERRMSG

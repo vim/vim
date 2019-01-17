@@ -658,11 +658,6 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
-#ifdef FEAT_SUN_WORKSHOP
-	if (usingSunWorkShop)
-	    workshop_file_closed_lineno((char *)buf->b_ffname,
-			(int)buf->b_last_cursor.lnum);
-#endif
 	if (buf->b_sfname != buf->b_ffname)
 	    VIM_CLEAR(buf->b_sfname);
 	else

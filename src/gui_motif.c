@@ -698,8 +698,7 @@ manage_centered(Widget dialog_child)
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
-#if defined(FEAT_MENU) || defined(FEAT_SUN_WORKSHOP) \
-	|| defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_MENU) || defined(FEAT_GUI_DIALOG) || defined(PROTO)
 
 /*
  * Encapsulate the way an XmFontList is created.

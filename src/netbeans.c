@@ -2273,9 +2273,7 @@ coloncmd(char *cmd, ...)
 
     nbdebug(("    COLONCMD %s\n", buf));
 
-/*     ALT_INPUT_LOCK_ON; */
     do_cmdline((char_u *)buf, NULL, NULL, DOCMD_NOWAIT | DOCMD_KEYTYPED);
-/*     ALT_INPUT_LOCK_OFF; */
 
     setcursor();		/* restore the cursor position */
     out_flush_cursor(TRUE, FALSE);

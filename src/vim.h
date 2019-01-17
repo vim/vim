@@ -288,10 +288,6 @@
 # include "os_qnx.h"
 #endif
 
-#ifdef FEAT_SUN_WORKSHOP
-# include "workshop.h"
-#endif
-
 #ifdef X_LOCALE
 # include <X11/Xlocale.h>
 #else
@@ -2234,14 +2230,6 @@ typedef enum {
 # define vim_realloc(ptr, size)  mem_realloc((ptr), (size))
 #else
 # define vim_realloc(ptr, size)  realloc((ptr), (size))
-#endif
-
-/*
- * The following macros stop display/event loop nesting at the wrong time.
- */
-#ifdef ALT_X_INPUT
-# define ALT_INPUT_LOCK_OFF	suppress_alternate_input = FALSE
-# define ALT_INPUT_LOCK_ON	suppress_alternate_input = TRUE
 #endif
 
 #ifdef FEAT_MBYTE

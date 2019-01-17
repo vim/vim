@@ -5094,11 +5094,6 @@ restore_backup:
     if (!p_bk && backup != NULL && mch_remove(backup) != 0)
 	emsg(_("E207: Can't delete backup file"));
 
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-	workshop_file_saved((char *) ffname);
-#endif
-
     goto nofail;
 
     /*

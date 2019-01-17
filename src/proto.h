@@ -295,9 +295,6 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"
 #  endif
-#  ifdef FEAT_SUN_WORKSHOP
-#   include "workshop.pro"
-#  endif
 # endif	/* FEAT_GUI */
 
 # ifdef FEAT_OLE
