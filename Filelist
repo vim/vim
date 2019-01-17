@@ -16,6 +16,7 @@ SRC_ALL =	\
 		src/ascii.h \
 		src/beval.c \
 		src/beval.h \
+		src/blob.c \
 		src/blowfish.c \
 		src/buffer.c \
 		src/channel.c \
@@ -146,6 +147,7 @@ SRC_ALL =	\
 		src/protodef.h \
 		src/proto/arabic.pro \
 		src/proto/beval.pro \
+		src/proto/blob.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
@@ -334,8 +336,6 @@ SRC_UNIX =	\
 		src/gui_x11_pm.h \
 		src/hangulin.c \
 		src/if_xcmdsrv.c \
-		src/integration.c \
-		src/integration.h \
 		src/link.sh \
 		src/installman.sh \
 		src/installml.sh \
@@ -358,7 +358,6 @@ SRC_UNIX =	\
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \
-		src/proto/workshop.pro \
 		src/pty.c \
 		src/testdir/Makefile \
 		src/testdir/unix.vim \
@@ -368,10 +367,6 @@ SRC_UNIX =	\
 		src/vimtutor \
 		src/gvimtutor \
 		src/which.sh \
-		src/workshop.c \
-		src/workshop.h \
-		src/wsdebug.c \
-		src/wsdebug.h \
 		src/tee/Makefile \
 		src/xxd/Makefile \
 
