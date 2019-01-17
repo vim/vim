@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.1.  Last change: 2018 Mar 18
+*version6.txt*  For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -943,7 +943,7 @@ Added the ":sign" command to define and place signs.  They can be displayed
 with two ASCII characters or an icon.  The line after it can be highlighted.
 Useful to display breakpoints and the current PC position.
 
-Added the |:wsverb| command to execute debugger commands.
+Added the :wsverb command to execute debugger commands.
 
 Added balloon stuff: 'balloondelay' and 'ballooneval' options.
 

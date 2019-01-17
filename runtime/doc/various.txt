@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Jan 08
+*various.txt*   For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -440,7 +440,7 @@ N  *+smartindent*	|'smartindent'|
 N  *+startuptime*	|--startuptime| argument
 N  *+statusline*	Options 'statusline', 'rulerformat' and special
 			formats of 'titlestring' and 'iconstring'
-m  *+sun_workshop*	|workshop|
+m  *+sun_workshop*	|workshop|; no longer supported
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|

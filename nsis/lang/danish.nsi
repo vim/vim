@@ -10,7 +10,7 @@
 
 
 # Overwrite the default translation.
-# These string should be always English.  Otherwise dosinst.c fails.
+# These strings should be always English.  Otherwise dosinst.c fails.
 LangString ^SetupCaption     ${LANG_DANISH}         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_DANISH}         "$(^Name) Uninstall"
 
