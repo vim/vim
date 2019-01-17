@@ -4258,6 +4258,8 @@ eval7(
 			if (blob != NULL)
 			    ga_append(&blob->bv_ga,
 					 (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
+			if (bp[2] == '.' && vim_isxdigit(bp[3]))
+			    ++bp;
 		    }
 		    if (blob != NULL)
 			rettv_blob_set(rettv, blob);

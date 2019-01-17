@@ -168,7 +168,7 @@ write_blob(FILE *fd, blob_T *blob)
 }
 
 /*
- * Convert a blob to a readable form: "[0x11,0x34]"
+ * Convert a blob to a readable form: "0z00112233.44556677.8899"
  */
     char_u *
 blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
@@ -179,20 +179,19 @@ blob2string(blob_T *blob, char_u **tofree, char_u *numbuf)
     if (blob == NULL)
     {
 	*tofree = NULL;
-	return (char_u *)"[]";
+	return (char_u *)"0z";
     }
 
     // Store bytes in the growarray.
     ga_init2(&ga, 1, 4000);
-    ga_append(&ga, '[');
+    ga_concat(&ga, (char_u *)"0z");
     for (i = 0; i < blob_len(blob); i++)
     {
-	if (i > 0)
-	    ga_concat(&ga, (char_u *)",");
-	vim_snprintf((char *)numbuf, NUMBUFLEN, "0x%02X", (int)blob_get(blob, i));
+	if (i > 0 && (i & 3) == 0)
+	    ga_concat(&ga, (char_u *)".");
+	vim_snprintf((char *)numbuf, NUMBUFLEN, "%02X", (int)blob_get(blob, i));
 	ga_concat(&ga, numbuf);
     }
-    ga_append(&ga, ']');
     *tofree = ga.ga_data;
     return *tofree;
 }
@@ -207,24 +206,20 @@ string2blob(char_u *str)
     blob_T  *blob = blob_alloc();
     char_u  *s = str;
 
-    if (*s != '[')
+    if (s[0] != '0' || (s[1] != 'z' && s[1] != 'Z'))
 	goto failed;
-    s = skipwhite(s + 1);
-    while (*s != ']')
+    s += 2;
+    while (vim_isxdigit(*s))
     {
-	if (s[0] != '0' || s[1] != 'x'
-				 || !vim_isxdigit(s[2]) || !vim_isxdigit(s[3]))
+	if (!vim_isxdigit(s[1]))
 	    goto failed;
-	ga_append(&blob->bv_ga, (hex2nr(s[2]) << 4) + hex2nr(s[3]));
-	s += 4;
-	if (*s == ',')
-	    s = skipwhite(s + 1);
-	else if (*s != ']')
-	    goto failed;
+	ga_append(&blob->bv_ga, (hex2nr(s[0]) << 4) + hex2nr(s[1]));
+	s += 2;
+	if (*s == '.' && vim_isxdigit(s[1]))
+	    ++s;
     }
-    s = skipwhite(s + 1);
-    if (*s != NUL)
-	goto failed;  // text after final ']'
+    if (*skipwhite(s) != NUL)
+	goto failed;  // text after final digit
 
     ++blob->bv_refcount;
     return blob;
