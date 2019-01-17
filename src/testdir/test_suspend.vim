@@ -45,6 +45,11 @@ func Test_suspend()
   call term_sendkeys(buf, "fg\<CR>")
   call WaitForAssert({-> assert_equal('  1 foo', term_getline(buf, '.'))})
 
+  " Quit gracefully to dump coverage information.
+  call term_sendkeys(buf, ":quit\<CR>")
+  call term_wait(buf)
+  call Stop_shell_in_terminal(buf)
+
   exe buf . 'bwipe!'
   call delete('Xfoo')
   set autowrite&
