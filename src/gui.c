@@ -2951,7 +2951,7 @@ gui_wait_for_chars_or_timer(long wtime)
     int
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
-    int		retval;
+    int		retval = FAIL;
 #if defined(ELAPSED_FUNC)
     elapsed_T	start_tv;
 #endif
@@ -2974,26 +2974,38 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
     /* Before waiting, flush any output to the screen. */
     gui_mch_flush();
 
-    if (wtime > 0)
-    {
-	/* Blink when waiting for a character.	Probably only does something
-	 * for showmatch() */
-	gui_mch_start_blink();
-	retval = gui_wait_for_chars_or_timer(wtime);
-	gui_mch_stop_blink(TRUE);
-	return retval;
-    }
-
 #if defined(ELAPSED_FUNC)
     ELAPSED_INIT(start_tv);
 #endif
+
+    if (wtime > 0)
+    {
+	long wait_time = wtime;
+
+	// Blink when waiting for a character.	Probably only does something
+	// for showmatch().
+	gui_mch_start_blink();
+	do
+	{
+	    // When gui_wait_for_chars_or_timer() returns FAIL in less than
+	    // wait_time it is presumed that a new timer is added and there is
+	    // no user input, so call once again with the remaining time.
+	    retval = gui_wait_for_chars_or_timer(wait_time);
+	} while (0
+#if defined(ELAPSED_FUNC)
+		|| (retval == FAIL
+		    && (wait_time = wtime - ELAPSED_FUNC(start_tv)) > 0)
+#endif
+		);
+	gui_mch_stop_blink(TRUE);
+	return retval;
+    }
 
     /*
      * While we are waiting indefinitely for a character, blink the cursor.
      */
     gui_mch_start_blink();
 
-    retval = FAIL;
     /*
      * We may want to trigger the CursorHold event.  First wait for
      * 'updatetime' and if nothing is typed within that time, and feedkeys()
