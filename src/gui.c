@@ -2951,9 +2951,9 @@ gui_wait_for_chars_or_timer(long wtime)
     int
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
-    int	    retval;
+    int		retval;
 #if defined(ELAPSED_FUNC)
-    ELAPSED_TYPE start_tv;
+    elapsed_T	start_tv;
 #endif
 
 #ifdef FEAT_MENU
@@ -3002,7 +3002,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
     else if (trigger_cursorhold()
-#ifdef ELAPSED_FUNC
+#if defined(ELAPSED_FUNC)
 	    && ELAPSED_FUNC(start_tv) >= p_ut
 #endif
 	    && typebuf.tb_change_cnt == tb_change_cnt)

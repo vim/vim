@@ -374,7 +374,7 @@ mch_inchar(
     long	wait_time;
     long	elapsed_time = 0;
 #ifdef ELAPSED_FUNC
-    ELAPSED_TYPE start_tv;
+    elapsed_T	start_tv;
 
     ELAPSED_INIT(start_tv);
 #endif
@@ -1908,7 +1908,7 @@ get_x11_windis(void)
 	RETSIGTYPE (*sig_save)();
 #endif
 #ifdef ELAPSED_FUNC
-	ELAPSED_TYPE start_tv;
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
 	    ELAPSED_INIT(start_tv);
@@ -4832,7 +4832,7 @@ mch_call_shell_fork(
 		garray_T    ga;
 		int	    noread_cnt;
 # ifdef ELAPSED_FUNC
-		ELAPSED_TYPE start_tv;
+		elapsed_T   start_tv;
 # endif
 
 # ifdef FEAT_GUI
@@ -6073,8 +6073,8 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # ifdef ELAPSED_FUNC
     /* Remember at what time we started, so that we know how much longer we
      * should wait after being interrupted. */
-    long	    start_msec = msec;
-    ELAPSED_TYPE  start_tv;
+    long	start_msec = msec;
+    elapsed_T	start_tv;
 
     if (msec > 0)
 	ELAPSED_INIT(start_tv);
@@ -7494,7 +7494,7 @@ setup_term_clip(void)
 	int (*oldIOhandler)();
 #endif
 # ifdef ELAPSED_FUNC
-	ELAPSED_TYPE  start_tv;
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
 	    ELAPSED_INIT(start_tv);

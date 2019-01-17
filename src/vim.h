@@ -2625,13 +2625,13 @@ typedef enum {
 # define ELAPSED_TIMEVAL
 # define ELAPSED_INIT(v) gettimeofday(&v, NULL)
 # define ELAPSED_FUNC(v) elapsed(&v)
-# define ELAPSED_TYPE struct timeval
+typedef struct timeval elapsed_T;
 long elapsed(struct timeval *start_tv);
 #elif defined(WIN32)
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)
-# define ELAPSED_TYPE DWORD
+typedef DWORD elapsed_T;
 # ifndef PROTO
 long elapsed(DWORD start_tick);
 # endif
