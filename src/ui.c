@@ -222,7 +222,7 @@ ui_wait_for_chars_or_timer(
     long    remaining = wtime;
     int	    tb_change_cnt = typebuf.tb_change_cnt;
 # ifdef FEAT_JOB_CHANNEL
-    int	    brief_wait = TRUE;
+    int	    brief_wait = FALSE;
 # endif
 
     // When waiting very briefly don't trigger timers.
@@ -337,7 +337,7 @@ ui_suspend(void)
 suspend_shell(void)
 {
     if (*p_sh == NUL)
-	EMSG(_(e_shellempty));
+	emsg(_(e_shellempty));
     else
     {
 	MSG_PUTS(_("new shell started\n"));

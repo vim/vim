@@ -927,55 +927,6 @@ conceal_check_cursor_line(void)
 	curs_columns(TRUE);
     }
 }
-
-    void
-update_single_line(win_T *wp, linenr_T lnum)
-{
-    int		row;
-    int		j;
-#ifdef SYN_TIME_LIMIT
-    proftime_T	syntax_tm;
-#endif
-
-    /* Don't do anything if the screen structures are (not yet) valid. */
-    if (!screen_valid(TRUE) || updating_screen)
-	return;
-
-    if (lnum >= wp->w_topline && lnum < wp->w_botline
-				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
-    {
-#ifdef SYN_TIME_LIMIT
-	/* Set the time limit to 'redrawtime'. */
-	profile_setlimit(p_rdt, &syntax_tm);
-	syn_set_timeout(&syntax_tm);
-#endif
-	update_prepare();
-
-	row = 0;
-	for (j = 0; j < wp->w_lines_valid; ++j)
-	{
-	    if (lnum == wp->w_lines[j].wl_lnum)
-	    {
-		screen_start();	/* not sure of screen cursor */
-# ifdef FEAT_SEARCH_EXTRA
-		init_search_hl(wp);
-		prepare_search_hl(wp, lnum);
-# endif
-		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size,
-								 FALSE, FALSE);
-		break;
-	    }
-	    row += wp->w_lines[j].wl_size;
-	}
-
-	update_finish();
-
-#ifdef SYN_TIME_LIMIT
-	syn_set_timeout(NULL);
-#endif
-    }
-    need_cursor_line_redraw = FALSE;
-}
 #endif
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
@@ -3098,6 +3049,7 @@ win_line(
     char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
     char_u	*p_extra_free = NULL;   /* p_extra needs to be freed */
     int		c_extra = NUL;		/* extra chars, all the same */
+    int		c_final = NUL;		/* final char, mandatory if set */
     int		extra_attr = 0;		/* attributes when n_extra != 0 */
     static char_u *at_end_str = (char_u *)""; /* used for p_extra when
 					   displaying lcs_eol at end-of-line */
@@ -3108,6 +3060,7 @@ win_line(
     int		saved_n_extra = 0;
     char_u	*saved_p_extra = NULL;
     int		saved_c_extra = 0;
+    int		saved_c_final = 0;
     int		saved_char_attr = 0;
 
     int		n_attr = 0;		/* chars with special attr */
@@ -3863,6 +3816,7 @@ win_line(
 		    /* Draw the cmdline character. */
 		    n_extra = 1;
 		    c_extra = cmdwin_type;
+		    c_final = NUL;
 		    char_attr = HL_ATTR(HLF_AT);
 		}
 	    }
@@ -3888,6 +3842,7 @@ win_line(
 			p_extra_free[n_extra] = NUL;
 			p_extra = p_extra_free;
 			c_extra = NUL;
+			c_final = NUL;
 			char_attr = HL_ATTR(HLF_FC);
 		    }
 		}
@@ -3909,6 +3864,7 @@ win_line(
 
 		    /* Draw two cells with the sign value or blank. */
 		    c_extra = ' ';
+		    c_final = NUL;
 		    char_attr = HL_ATTR(HLF_SC);
 		    n_extra = 2;
 
@@ -3927,9 +3883,13 @@ win_line(
 			{
 			    /* Use the image in this position. */
 			    c_extra = SIGN_BYTE;
+			    c_final = NUL;
 #  ifdef FEAT_NETBEANS_INTG
 			    if (buf_signcount(wp->w_buffer, lnum) > 1)
+			    {
 				c_extra = MULTISIGN_BYTE;
+				c_final = NUL;
+			    }
 #  endif
 			    char_attr = icon_sign;
 			}
@@ -3941,6 +3901,7 @@ win_line(
 			    if (p_extra != NULL)
 			    {
 				c_extra = NUL;
+				c_final = NUL;
 				n_extra = (int)STRLEN(p_extra);
 			    }
 			    char_attr = sign_get_attr(text_sign, FALSE);
@@ -3998,9 +3959,13 @@ win_line(
 #endif
 			p_extra = extra;
 			c_extra = NUL;
+			c_final = NUL;
 		    }
 		    else
+		    {
 			c_extra = ' ';
+			c_final = NUL;
+		    }
 		    n_extra = number_width(wp) + 1;
 		    char_attr = HL_ATTR(HLF_N);
 #ifdef FEAT_SYN_HL
@@ -4069,9 +4034,15 @@ win_line(
 		{
 		    /* Draw "deleted" diff line(s). */
 		    if (char2cells(fill_diff) > 1)
+		    {
 			c_extra = '-';
+			c_final = NUL;
+		    }
 		    else
+		    {
 			c_extra = fill_diff;
+			c_final = NUL;
+		    }
 #  ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 			n_extra = col + 1;
@@ -4087,6 +4058,7 @@ win_line(
 		    /* Draw 'showbreak' at the start of each broken line. */
 		    p_extra = p_sbr;
 		    c_extra = NUL;
+		    c_final = NUL;
 		    n_extra = (int)STRLEN(p_sbr);
 		    char_attr = HL_ATTR(HLF_AT);
 		    need_showbreak = FALSE;
@@ -4114,6 +4086,7 @@ win_line(
 		    /* Continue item from end of wrapped line. */
 		    n_extra = saved_n_extra;
 		    c_extra = saved_c_extra;
+		    c_final = saved_c_final;
 		    p_extra = saved_p_extra;
 		    char_attr = saved_char_attr;
 		}
@@ -4413,15 +4386,16 @@ win_line(
 	 * The "p_extra" points to the extra stuff that is inserted to
 	 * represent special characters (non-printable stuff) and other
 	 * things.  When all characters are the same, c_extra is used.
+	 * If c_final is set, it will compulsorily be used at the end.
 	 * "p_extra" must end in a NUL to avoid mb_ptr2len() reads past
 	 * "p_extra[n_extra]".
 	 * For the '$' of the 'list' option, n_extra == 1, p_extra == "".
 	 */
 	if (n_extra > 0)
 	{
-	    if (c_extra != NUL)
+	    if (c_extra != NUL || (n_extra == 1 && c_final != NUL))
 	    {
-		c = c_extra;
+		c = (n_extra == 1 && c_final != NUL) ? c_final : c_extra;
 #ifdef FEAT_MBYTE
 		mb_c = c;	/* doesn't handle non-utf-8 multi-byte! */
 		if (enc_utf8 && utf_char2len(c) > 1)
@@ -4586,6 +4560,7 @@ win_line(
 			mb_utf8 = (c >= 0x80);
 			n_extra = (int)STRLEN(p_extra);
 			c_extra = NUL;
+			c_final = NUL;
 			if (area_attr == 0 && search_attr == 0)
 			{
 			    n_attr = n_extra + 1;
@@ -4654,6 +4629,7 @@ win_line(
 			    p_extra = extra;
 			    n_extra = (int)STRLEN(extra) - 1;
 			    c_extra = NUL;
+			    c_final = NUL;
 			    c = *p_extra++;
 			    if (area_attr == 0 && search_attr == 0)
 			    {
@@ -4694,6 +4670,7 @@ win_line(
 		{
 		    n_extra = 1;
 		    c_extra = MB_FILLER_CHAR;
+		    c_final = NUL;
 		    c = ' ';
 		    if (area_attr == 0 && search_attr == 0)
 		    {
@@ -4905,6 +4882,7 @@ win_line(
 # else
 		    c_extra = ' ';
 # endif
+		    c_final = NUL;
 		    if (VIM_ISWHITE(c))
 		    {
 #ifdef FEAT_CONCEAL
@@ -5089,13 +5067,14 @@ win_line(
 #endif
 		    if (wp->w_p_list)
 		    {
-			c = lcs_tab1;
+			c = (n_extra == 0 && lcs_tab3) ? lcs_tab3 : lcs_tab1;
 #ifdef FEAT_LINEBREAK
 			if (wp->w_p_lbr)
 			    c_extra = NUL; /* using p_extra from above */
 			else
 #endif
 			    c_extra = lcs_tab2;
+			c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			extra_attr = HL_ATTR(HLF_8);
 			saved_attr2 = char_attr; /* save current attr */
@@ -5111,6 +5090,7 @@ win_line(
 		    }
 		    else
 		    {
+			c_final = NUL;
 			c_extra = ' ';
 			c = ' ';
 		    }
@@ -5160,6 +5140,7 @@ win_line(
 			    p_extra = at_end_str;
 			    n_extra = 1;
 			    c_extra = NUL;
+			    c_final = NUL;
 			}
 		    }
 		    if (wp->w_p_list && lcs_eol > 0)
@@ -5195,6 +5176,7 @@ win_line(
 			rl_mirror(p_extra);	/* reverse "<12>" */
 #endif
 		    c_extra = NUL;
+		    c_final = NUL;
 #ifdef FEAT_LINEBREAK
 		    if (wp->w_p_lbr)
 		    {
@@ -5456,6 +5438,7 @@ win_line(
 		/* Double-width character being overwritten by the "precedes"
 		 * character, need to fill up half the character. */
 		c_extra = MB_FILLER_CHAR;
+		c_final = NUL;
 		n_extra = 1;
 		n_attr = 2;
 		extra_attr = HL_ATTR(HLF_AT);
@@ -6113,6 +6096,7 @@ win_line(
 	    saved_n_extra = n_extra;
 	    saved_p_extra = p_extra;
 	    saved_c_extra = c_extra;
+	    saved_c_final = c_final;
 	    saved_char_attr = char_attr;
 	    n_extra = 0;
 	    lcs_prec_todo = lcs_prec;

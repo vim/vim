@@ -410,6 +410,12 @@ writer(writefn fn, char_u *str, PyInt n)
 }
 
     static int
+msg_wrapper(char *text)
+{
+    return msg((char_u *)text);
+}
+
+    static int
 write_output(OutputObject *self, PyObject *string)
 {
     Py_ssize_t	len = 0;
@@ -421,7 +427,7 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    writer((writefn)(error ? emsg : msg), (char_u *)str, len);
+    writer((writefn)(error ? emsg : msg_wrapper), (char_u *)str, len);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
     PyMem_Free(str);
@@ -536,7 +542,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	EMSG(_("E264: Python: Error initialising I/O objects"));
+	emsg(_("E264: Python: Error initialising I/O objects"));
 	return -1;
     }
 
@@ -634,7 +640,7 @@ VimTryEnd(void)
     else if (msg_list != NULL && *msg_list != NULL)
     {
 	int	should_free;
-	char_u	*msg;
+	char	*msg;
 
 	msg = get_exception_string(*msg_list, ET_ERROR, NULL, &should_free);
 
@@ -644,7 +650,7 @@ VimTryEnd(void)
 	    return -1;
 	}
 
-	PyErr_SetVim((char *) msg);
+	PyErr_SetVim(msg);
 
 	free_global_msglist();
 
@@ -867,6 +873,10 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	}
 	return ret;
     }
+    else if (our_tv->v_type == VAR_BLOB)
+	ret = PyBytes_FromStringAndSize(
+		(char*) our_tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) our_tv->vval.v_blob->bv_ga.ga_len);
     else
     {
 	Py_INCREF(Py_None);
@@ -3479,13 +3489,13 @@ OptionsIter(OptionsObject *self)
     static int
 set_option_value_err(char_u *key, int numval, char_u *stringval, int opt_flags)
 {
-    char_u	*errmsg;
+    char	*errmsg;
 
     if ((errmsg = set_option_value(key, numval, stringval, opt_flags)))
     {
 	if (VimTryEnd())
 	    return FAIL;
-	PyErr_SetVim((char *)errmsg);
+	PyErr_SetVim(errmsg);
 	return FAIL;
     }
     return OK;
@@ -5660,7 +5670,7 @@ run_cmd(const char *cmd, void *arg UNUSED
     }
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
-	EMSG2(_(e_py_systemexit), "python");
+	semsg(_(e_py_systemexit), "python");
 	PyErr_Clear();
     }
     else
@@ -5687,7 +5697,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (u_save((linenr_T)RangeStart - 1, (linenr_T)RangeEnd + 1) != OK)
     {
-	EMSG(_("cannot save undo information"));
+	emsg(_("cannot save undo information"));
 	return;
     }
 
@@ -5705,7 +5715,7 @@ run_do(const char *cmd, void *arg UNUSED
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
 	PyMem_Free(code);
-	EMSG2(_(e_py_systemexit), "python");
+	semsg(_(e_py_systemexit), "python");
 	PyErr_Clear();
 	return;
     }
@@ -5716,7 +5726,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (status)
     {
-	EMSG(_("failed to run the code"));
+	emsg(_("failed to run the code"));
 	return;
     }
 
@@ -5806,20 +5816,20 @@ run_eval(const char *cmd, typval_T *rettv
     {
 	if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
 	{
-	    EMSG2(_(e_py_systemexit), "python");
+	    semsg(_(e_py_systemexit), "python");
 	    PyErr_Clear();
 	}
 	else
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    EMSG(_("E858: Eval did not return a valid python object"));
+	    emsg(_("E858: Eval did not return a valid python object"));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    EMSG(_("E859: Failed to convert returned python object to vim value"));
+	    emsg(_("E859: Failed to convert returned python object to vim value"));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6394,6 +6404,10 @@ ConvertToPyObject(typval_T *tv)
 				tv->vval.v_partial->pt_argc, argv,
 				tv->vval.v_partial->pt_dict,
 				tv->vval.v_partial->pt_auto);
+	case VAR_BLOB:
+	    return PyBytes_FromStringAndSize(
+		(char*) tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) tv->vval.v_blob->bv_ga.ga_len);
 	case VAR_UNKNOWN:
 	case VAR_CHANNEL:
 	case VAR_JOB:
@@ -6719,7 +6733,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	EMSG(_("Failed to set path hook: sys.path_hooks is not a list\n"
+	emsg(_("Failed to set path hook: sys.path_hooks is not a list\n"
 	       "You should now do the following:\n"
 	       "- append vim.path_hook to sys.path_hooks\n"
 	       "- append vim.VIM_SPECIAL_PATH to sys.path\n"));
@@ -6749,7 +6763,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	EMSG(_("Failed to set path: sys.path is not a list\n"
+	emsg(_("Failed to set path: sys.path is not a list\n"
 	       "You should now append vim.VIM_SPECIAL_PATH to sys.path"));
 	VimTryEnd(); /* Discard the error */
     }

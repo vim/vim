@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 11
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -17,7 +17,8 @@ done, the features in this document are not available.  See |+eval| and
     1.2 Function references		|Funcref|
     1.3 Lists				|Lists|
     1.4 Dictionaries			|Dictionaries|
-    1.5 More about variables		|more-variables|
+    1.5 Blobs				|Blobs|
+    1.6 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
 3.  Internal variable		|internal-variables|
 4.  Builtin Functions		|functions|
@@ -53,7 +54,7 @@ Float		A floating point number. |floating-point-format| *Float*
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
 		|expr-string| Examples: "ab\txx\"--"  'x-z''a,c'
 
-List		An ordered sequence of items |List|.
+List		An ordered sequence of items, see |List| for details.
 		Example: [1, 2, ['a', 'b']]
 
 Dictionary	An associative, unordered array: Each entry has a key and a
@@ -71,6 +72,11 @@ Special		|v:false|, |v:true|, |v:none| and |v:null|.  *Special*
 Job		Used for a job, see |job_start()|. *Job* *Jobs*
 
 Channel		Used for a channel, see |ch_open()|. *Channel* *Channels*
+
+Blob		Binary Large Object. Stores any sequence of bytes.  See |Blob|
+		for details
+		Example: 0zFF00ED015DAF
+		0z is an empty Blob.
 
 The Number and String types are converted automatically, depending on how they
 are used.
@@ -124,7 +130,8 @@ Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
 A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
-List, Dictionary, Funcref, Job and Channel types are not automatically
+		*E974* *E975* *E976*
+List, Dictionary, Funcref, Job, Channel and Blob types are not automatically
 converted.
 
 							*E805* *E806* *E808*
@@ -454,7 +461,7 @@ example, to add up all the numbers in a list: >
 
 
 1.4 Dictionaries ~
-					*dict* *Dictionaries* *Dictionary*
+				*dict* *Dict* *Dictionaries* *Dictionary*
 A Dictionary is an associative array: Each entry has a key and a value.  The
 entry can be located with the key.  The entries are stored without a specific
 ordering.
@@ -616,7 +623,122 @@ Functions that can be used with a Dictionary: >
 	:call map(dict, '">> " . v:val')  " prepend ">> " to each item
 
 
-1.5 More about variables ~
+1.5 Blobs ~
+						*blob* *Blob* *Blobs* *E978*
+A Blob mostly behaves like a |List| of numbers, where the numbers have an
+8-bit value, from 0 to 255.
+
+
+Blob creation ~
+
+A Blob can be created with a |blob-literal|: >
+	:let b = 0zFF00ED015DAF
+
+A blob can be read from a file with |readfile()| passing the {type} argument
+set to "B", for example: >
+	:let b = readfile('image.png', 'B')
+
+A blob can be read from a channel with the |ch_readblob()| function.
+
+
+Blob index ~
+							*blob-index* *E979*
+A byte in the Blob can be accessed by putting the index in square brackets
+after the Blob.  Indexes are zero-based, thus the first byte has index zero. >
+	:let myblob = 0z00112233
+	:let byte = myblob[0]		" get the first byte: 0x00
+	:let byte = myblob[2]		" get the third byte: 0x22
+
+A negative index is counted from the end.  Index -1 refers to the last byte in
+the Blob, -2 to the last but one byte, etc. >
+	:let last = myblob[-1]		" get the last byte: 0x33
+
+To avoid an error for an invalid index use the |get()| function.  When an item
+is not available it returns -1 or the default value you specify: >
+	:echo get(myblob, idx)
+	:echo get(myblob, idx, 999)
+
+
+Blob concatenation ~
+
+Two blobs can be concatenated with the "+" operator: >
+	:let longblob = myblob + 0z4455
+	:let myblob += 0z6677
+
+To change a blob in-place see |blob-modification| below.
+
+
+Part of a blob ~
+
+A part of the Blob can be obtained by specifying the first and last index,
+separated by a colon in square brackets: >
+	:let myblob = 0z00112233
+	:let shortblob = myblob[2:-1]	" get 0z2233
+
+Omitting the first index is similar to zero.  Omitting the last index is
+similar to -1. >
+	:let endblob = myblob[2:]	" from item 2 to the end: 0z2233
+	:let shortblob = myblob[2:2]	" Blob with one byte: 0z22
+	:let otherblob = myblob[:]	" make a copy of the Blob
+
+If the first index is beyond the last byte of the Blob or the second byte is
+before the first byte, the result is an empty list.  There is no error
+message.
+
+If the second index is equal to or greater than the length of the list the
+length minus one is used: >
+	:echo myblob[2:8]		" result: 0z2233
+
+
+Blob modification ~
+							*blob-modification*
+To change a specific byte of a blob use |:let| this way: >
+	:let blob[4] = 0x44
+
+When the index is just one beyond the end of the Blob, it is appended. Any
+higher index is an error.
+
+To change a sequence of bytes the [:] notation can be used: >
+	let blob[1:3] = 0z445566
+The length of the replaced bytes much be exactly the same as the value
+provided. *E972*
+
+To change part of a blob you can specify the first and last byte to be
+modified.  The value must at least have the number of bytes in the range: >
+	:let blob[3:5] = [3, 4, 5]
+
+You can also use the functions |add()|, |remove()| and |insert()|.
+
+
+Blob identity ~
+
+Blobs can be compared for equality: >
+	if blob == 0z001122
+And for equal identity: >
+	if blob is otherblob
+<							*blob-identity* *E977*
+When variable "aa" is a Blob and you assign it to another variable "bb", both
+variables refer to the same Blob.  Then the "is" operator returns true.
+
+When making a copy using [:] or |copy()| the values are the same, but the
+identity is different: >
+	:let blob = 0z112233
+	:let blob2 = blob
+	:echo blob == blob2
+<	1 >
+	:echo blob is blob2
+<	1 >
+	:let blob3 = blob[:]
+	:echo blob == blob3
+<	1 >
+	:echo blob is blob3
+<	0
+
+Making a copy of a list is done with the |copy()| function.  Using [:] also
+works, as explained above.
+
+
+1.6 More about variables ~
 							*more-variables*
 If you need to know the type of a variable or expression, use the |type()|
 function.
@@ -1017,6 +1139,12 @@ just above. Also see |sublist| below.  Examples: >
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
 
+If expr8 is a |Blob| this results in a new |Blob| with the bytes in the
+indexes expr1a and expr1b, inclusive.  Examples: >
+	:let b = 0zDEADBEEF
+	:let bs = b[1:2]		" 0zADBE
+	:let bs = b[]			" copy ov 0zDEADBEEF
+
 Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
 error.
 
@@ -1154,6 +1282,14 @@ encodings.  Use "\u00ff" to store character 255 according to the current value
 of 'encoding'.
 
 Note that "\000" and "\x00" force the end of the string.
+
+
+blob-literal				*blob-literal* *E973*
+------------
+
+Hexadecimal starting with 0z or 0Z, with an arbitrary number of bytes.
+The sequence must be an even number of hex characters.  Example: >
+	:let b = 0zFF00ED015DAF
 
 
 literal-string						*literal-string* *E115*
@@ -1911,6 +2047,8 @@ v:t_none	Value of None type.  Read-only.  See: |type()|
 v:t_number	Value of Number type.  Read-only.  See: |type()|
 					*v:t_string* *t_string-variable*
 v:t_string	Value of String type.  Read-only.  See: |type()|
+					*v:t_blob* *t_blob-variable*
+v:t_blob	Value of Blob type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -2026,7 +2164,7 @@ USAGE				RESULT	DESCRIPTION	~
 
 abs({expr})			Float or Number  absolute value of {expr}
 acos({expr})			Float	arc cosine of {expr}
-add({list}, {item})		List	append {item} to |List| {list}
+add({object}, {item})		List/Blob   append {item} to {object}
 and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {text})		Number	append {text} below line {lnum}
 appendbufline({expr}, {lnum}, {text})
@@ -2094,12 +2232,14 @@ ch_logfile({fname} [, {mode}])	none	start logging channel activity
 ch_open({address} [, {options}])
 				Channel	open a channel to {address}
 ch_read({handle} [, {options}]) String	read from {handle}
+ch_readblob({handle} [, {options}])
+				Blob	read Blob from {handle}
 ch_readraw({handle} [, {options}])
 				String	read raw from {handle}
 ch_sendexpr({handle}, {expr} [, {options}])
 				any	send {expr} over JSON {handle}
-ch_sendraw({handle}, {string} [, {options}])
-				any	send {string} over raw {handle}
+ch_sendraw({handle}, {expr} [, {options}])
+				any	send {expr} over raw {handle}
 ch_setoptions({handle}, {options})
 				none	set options for {handle}
 ch_status({handle} [, {options}])
@@ -2239,8 +2379,8 @@ hlID({name})			Number	syntax ID of highlight group {name}
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 indent({lnum})			Number	indent of line {lnum}
-index({list}, {expr} [, {start} [, {ic}]])
-				Number	index in {list} where {expr} appears
+index({object}, {expr} [, {start} [, {ic}]])
+				Number	index in {object} where {expr} appears
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
 inputdialog({prompt} [, {text} [, {completion}]])
@@ -2249,7 +2389,7 @@ inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String	like input() but hiding the text
-insert({list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
+insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
 invert({expr})			Number	bitwise invert
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
 islocked({expr})		Number	|TRUE| if {expr} is locked
@@ -2339,7 +2479,7 @@ py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readfile({fname} [, {binary} [, {max}]])
+readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
 reg_executing()			String	get the executing register name
 reg_recording()			String	get the recording register name
@@ -2505,6 +2645,7 @@ test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
 test_ignore_error({expr})	none	ignore a specific error
+test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
 test_null_job()			Job	null value for testing
@@ -2554,8 +2695,8 @@ winrestview({dict})		none	restore view of current window
 winsaveview()			Dict	save view of current window
 winwidth({nr})			Number	width of window {nr}
 wordcount()			Dict	get byte/char/word statistics
-writefile({list}, {fname} [, {flags}])
-				Number	write list of lines to file {fname}
+writefile({object}, {fname} [, {flags}])
+				Number	write |Blob| or |List| of lines to file
 xor({expr}, {expr})		Number	bitwise XOR
 
 
@@ -2587,13 +2728,14 @@ acos({expr})							*acos()*
 		{only available when compiled with the |+float| feature}
 
 
-add({list}, {expr})					*add()*
-		Append the item {expr} to |List| {list}.  Returns the
-		resulting |List|.  Examples: >
+add({object}, {expr})					*add()*
+		Append the item {expr} to |List| or |Blob| {object}.  Returns
+		the resulting |List| or |Blob|.  Examples: >
 			:let alist = add([1, 2, 3], item)
 			:call add(mylist, "woodstock")
 <		Note that when {expr} is a |List| it is appended as a single
 		item.  Use |extend()| to concatenate |Lists|.
+		When {object} is a |Blob| then  {expr} must be a number.
 		Use |insert()| to add an item at another position.
 
 
@@ -3106,7 +3248,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		is removed.
 		Note that Vim does not know when the text received on a raw
 		channel is complete, it may only return the first part and you
-		need to use ch_readraw() to fetch the rest.
+		need to use |ch_readraw()| to fetch the rest.
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
@@ -3199,6 +3341,11 @@ ch_read({handle} [, {options}])					*ch_read()*
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
+ch_readblob({handle} [, {options}])			*ch_readblob()*
+		Like ch_read() but reads binary data and returns a Blob.
+		See |channel-more|.
+		{only available when compiled with the |+channel| feature}
+
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
 		the message.  For a NL channel it does not block waiting for
@@ -3215,8 +3362,8 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 
 		{only available when compiled with the |+channel| feature}
 
-ch_sendraw({handle}, {string} [, {options}])		*ch_sendraw()*
-		Send {string} over {handle}.
+ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
+		Send string or Blob {expr} over {handle}.
 		Works like |ch_sendexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
 		correct contents.  Also does not add a newline for a channel
@@ -3636,11 +3783,12 @@ empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
 		- A |List| or |Dictionary| is empty when it does not have any
 		  items.
-		- A String is empty when its length is zero.
-		- A Number and Float is empty when its value is zero.
+		- A |String| is empty when its length is zero.
+		- A |Number| and |Float| are empty when their value is zero.
 		- |v:false|, |v:none| and |v:null| are empty, |v:true| is not.
-		- A Job is empty when it failed to start.
-		- A Channel is empty when it is closed.
+		- A |Job| is empty when it failed to start.
+		- A |Channel| is empty when it is closed.
+		- A Blob is empty when its length is zero.
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -4312,6 +4460,10 @@ garbagecollect([{atexit}])				*garbagecollect()*
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
+		omitted.
+get({blob}, {idx} [, {default}])
+		Get byte {idx} from |Blob| {blob}.  When this byte is not
+		available return {default}.  Return -1 when {default} is
 		omitted.
 get({dict}, {key} [, {default}])
 		Get item with key {key} from |Dictionary| {dict}.  When this
@@ -5375,17 +5527,21 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 		When {lnum} is invalid -1 is returned.
 
 
-index({list}, {expr} [, {start} [, {ic}]])			*index()*
-		Return the lowest index in |List| {list} where the item has a
-		value equal to {expr}.  There is no automatic conversion, so
-		the String "4" is different from the Number 4.  And the number
-		4 is different from the Float 4.0.  The value of 'ignorecase'
-		is not used here, case always matters.
+index({object}, {expr} [, {start} [, {ic}]])			*index()*
+		If {object} is a |List| return the lowest index where the item
+		has a value equal to {expr}.  There is no automatic
+		conversion, so the String "4" is different from the Number 4.
+		And the number 4 is different from the Float 4.0.  The value
+		of 'ignorecase' is not used here, case always matters.
+
+		If {object} is |Blob| return the lowest index where the byte
+		value is equal to {expr}.
+
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
 		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
-		-1 is returned when {expr} is not found in {list}.
+		-1 is returned when {expr} is not found in {object}.
 		Example: >
 			:let idx = index(words, "the")
 			:if index(numbers, 123) >= 0
@@ -5491,13 +5647,16 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 		typed on the command-line in response to the issued prompt.
 		NOTE: Command-line completion is not supported.
 
-insert({list}, {item} [, {idx}])			*insert()*
-		Insert {item} at the start of |List| {list}.
+insert({object}, {item} [, {idx}])			*insert()*
+		When {object} is a |List| or a |Blob| insert {item} at the start
+		of it.
+
 		If {idx} is specified insert {item} before the item with index
 		{idx}.  If {idx} is zero it goes before the first item, just
 		like omitting {idx}.  A negative {idx} is also possible, see
 		|list-index|.  -1 inserts just before the last item.
-		Returns the resulting |List|.  Examples: >
+
+		Returns the resulting |List| or |Blob|.  Examples: >
 			:let mylist = insert([2, 3, 5], 1)
 			:call insert(mylist, 4, -1)
 			:call insert(mylist, 6, len(mylist))
@@ -5726,7 +5885,8 @@ json_decode({string})					*json_decode()*
 		  "[1, 2, ]" is the same as "[1, 2]".
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
-		  "Infinity" and "NaN" (capitalization ignored) are accepted.
+		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
+		  are accepted.
 		- Leading zeroes in integer numbers are ignored, e.g. "012"
 		  for "12" or "-012" for "-12".
 		- Capitalization is ignored in literal names null, true or
@@ -5755,12 +5915,14 @@ json_encode({expr})					*json_encode()*
 		   Float		floating point number
 		   Float nan		"NaN"
 		   Float inf		"Infinity"
+		   Float -inf		"-Infinity"
 		   String		in double quotes (possibly null)
 		   Funcref		not possible, error
 		   List			as an array (possibly null); when
 					used recursively: []
 		   Dict			as an object (possibly null); when
 					used recursively: {}
+		   Blob			as an array of the individual bytes
 		   v:false		"false"
 		   v:true		"true"
 		   v:none		"null"
@@ -6945,16 +7107,18 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(2, 0)		" error!
 <
 							*readfile()*
-readfile({fname} [, {binary} [, {max}]])
+readfile({fname} [, {type} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
 		as an item.  Lines are broken at NL characters.  Macintosh
 		files separated with CR will result in a single long line
 		(unless a NL appears somewhere).
 		All NUL characters are replaced with a NL character.
-		When {binary} contains "b" binary mode is used:
+		When {type} contains "b" binary mode is used:
 		- When the last line ends in a NL an extra empty list item is
 		  added.
 		- No CR characters are removed.
+		When {type} contains "B" a |Blob| is returned with the binary
+		data of the file unmodified.
 		Otherwise:
 		- CR characters that appear before a NL are removed.
 		- Whether the last line ends in a NL or not does not matter.
@@ -7130,6 +7294,16 @@ remove({list}, {idx} [, {end}])				*remove()*
 		Example: >
 			:echo "last item: " . remove(mylist, -1)
 			:call remove(mylist, 0, 9)
+remove({blob}, {idx} [, {end}])
+		Without {end}: Remove the byte at {idx} from |Blob| {blob} and
+		return the byte.
+		With {end}: Remove bytes from {idx} to {end} (inclusive) and
+		return a |Blob| with these bytes.  When {idx} points to the same
+		byte as {end} a |Blob| with one byte is returned.  When {end}
+		points to a byte before {idx} this is an error.
+		Example: >
+			:echo "last byte: " . remove(myblob, -1)
+			:call remove(mylist, 0, 9)
 remove({dict}, {key})
 		Remove the entry from {dict} with key {key}.  Example: >
 			:echo "removed " . remove(dict, "one")
@@ -7170,9 +7344,11 @@ resolve({filename})					*resolve()* *E655*
 		path name) and also keeps a trailing path separator.
 
 							*reverse()*
-reverse({list})	Reverse the order of items in {list} in-place.  Returns
-		{list}.
-		If you want a list to remain unmodified make a copy first: >
+reverse({object})
+		Reverse the order of items in {object} in-place.
+		{object} can be a |List| or a |Blob|.
+		Returns {object}.
+		If you want an object to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 
 round({expr})							*round()*
@@ -9286,25 +9462,28 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		When the {expr} is the string "RESET" then the list of ignored
 		errors is made empty.
 
+test_null_blob()					*test_null_blob()*
+		Return a |Blob| that is null. Only useful for testing.
+
 test_null_channel()					*test_null_channel()*
-		Return a Channel that is null. Only useful for testing.
+		Return a |Channel| that is null. Only useful for testing.
 		{only available when compiled with the +channel feature}
 
 test_null_dict()					*test_null_dict()*
-		Return a Dict that is null. Only useful for testing.
+		Return a |Dict| that is null. Only useful for testing.
 
 test_null_job()						*test_null_job()*
-		Return a Job that is null. Only useful for testing.
+		Return a |Job| that is null. Only useful for testing.
 		{only available when compiled with the +job feature}
 
 test_null_list()					*test_null_list()*
-		Return a List that is null. Only useful for testing.
+		Return a |List| that is null. Only useful for testing.
 
 test_null_partial()					*test_null_partial()*
-		Return a Partial that is null. Only useful for testing.
+		Return a |Partial| that is null. Only useful for testing.
 
 test_null_string()					*test_null_string()*
-		Return a String that is null. Only useful for testing.
+		Return a |String| that is null. Only useful for testing.
 
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
@@ -9516,6 +9695,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			None	    7  |v:t_none| (v:null and v:none)
 			Job	    8  |v:t_job|
 			Channel	    9  |v:t_channel|
+			Blob	   10  |v:t_blob|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
@@ -9863,13 +10043,16 @@ wordcount()						*wordcount()*
 
 
 							*writefile()*
-writefile({list}, {fname} [, {flags}])
-		Write |List| {list} to file {fname}.  Each list item is
-		separated with a NL.  Each list item must be a String or
-		Number.
+writefile({object}, {fname} [, {flags}])
+		When {object} is a |List| write it to file {fname}.  Each list
+		item is separated with a NL.  Each list item must be a String
+		or Number.
 		When {flags} contains "b" then binary mode is used: There will
 		not be a NL after the last list item.  An empty item at the
 		end does cause the last line in the file to end in a NL.
+
+		When {object} is a |Blob| write the bytes to file {fname}
+		unmodified.
 
 		When {flags} contains "a" then append mode is used, lines are
 		appended to the file: >
@@ -10573,7 +10756,10 @@ This does NOT work: >
 			This cannot be used to set a byte in a String.  You
 			can do that like this: >
 				:let var = var[0:2] . 'X' . var[4:]
-<
+<			When {var-name} is a |Blob| then {idx} can be the
+			length of the blob, in which case one byte is
+			appended.
+
 							*E711* *E719*
 :let {var-name}[{idx1}:{idx2}] = {expr1}		*E708* *E709* *E710*
 			Set a sequence of items in a |List| to the result of

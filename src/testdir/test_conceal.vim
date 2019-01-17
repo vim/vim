@@ -91,7 +91,46 @@ func Test_conceal_two_windows()
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_09v', {})
   call term_sendkeys(buf, "\<Esc>")
 
+  " Check moving the cursor while in insert mode.
+  call term_sendkeys(buf, ":set concealcursor=\r")
+  call term_sendkeys(buf, "a")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_10', {})
+  call term_sendkeys(buf, "\<Down>")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_11', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " Check the "o" command
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_12', {})
+  call term_sendkeys(buf, "o")
+  call VerifyScreenDump(buf, 'Test_conceal_two_windows_13', {})
+  call term_sendkeys(buf, "\<Esc>")
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_conceal')
+endfunc
+
+func Test_conceal_with_cursorline()
+  " Opens a help window, where 'conceal' is set, switches to the other window
+  " where 'cursorline' needs to be updated when the cursor moves.
+  call writefile([
+	\ 'set cursorline',
+	\ 'normal othis is a test',
+	\ 'new',
+	\ 'call setline(1, ["one", "two", "three", "four", "five"])',
+	\ 'set ft=help',
+	\ 'normal M',
+	\ ], 'XTest_conceal_cul')
+  let buf = RunVimInTerminal('-S XTest_conceal_cul', {})
+  call VerifyScreenDump(buf, 'Test_conceal_cul_01', {})
+
+  call term_sendkeys(buf, ":wincmd w\r")
+  call VerifyScreenDump(buf, 'Test_conceal_cul_02', {})
+
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_conceal_cul_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_conceal_cul')
 endfunc

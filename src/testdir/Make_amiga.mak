@@ -19,7 +19,7 @@ include Make_all.mak
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 .SUFFIXES: .in .out
 

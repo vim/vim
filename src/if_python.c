@@ -685,7 +685,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (python3_loaded())
     {
 	if (verbose)
-	    EMSG(_("E836: This Vim cannot execute :python after using :py3"));
+	    emsg(_("E836: This Vim cannot execute :python after using :py3"));
 	return FAIL;
     }
 #endif
@@ -696,7 +696,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (!hinstPython)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -708,7 +708,7 @@ python_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPython);
 	    hinstPython = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), python_funcname_table[i].name);
+		semsg(_(e_loadfunc), python_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -725,7 +725,7 @@ python_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPython);
 	hinstPython = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -928,7 +928,7 @@ Python_Init(void)
 #ifdef DYNAMIC_PYTHON
 	if (!python_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
@@ -960,7 +960,7 @@ Python_Init(void)
 	site = PyImport_ImportModule("site");
 	if (site == NULL)
 	{
-	    EMSG(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+	    emsg(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
 	    goto fail;
 	}
 	Py_DECREF(site);
@@ -1035,7 +1035,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     if (recursive)
     {
-	EMSG(_("E659: Cannot invoke Python recursively"));
+	emsg(_("E659: Cannot invoke Python recursively"));
 	return;
     }
     ++recursive;
@@ -1575,6 +1575,7 @@ do_pyeval (char_u *str, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    break;
     }
 }

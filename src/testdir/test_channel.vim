@@ -516,6 +516,51 @@ func Test_raw_pipe()
   call assert_equal(1, found)
 endfunc
 
+func Test_raw_pipe_blob()
+  if !has('job')
+    return
+  endif
+  call ch_log('Test_raw_pipe_blob()')
+  " Add a dummy close callback to avoid that messages are dropped when calling
+  " ch_canread().
+  " Also test the non-blocking option.
+  let job = job_start(s:python . " test_channel_pipe.py",
+	\ {'mode': 'raw', 'drop': 'never', 'noblock': 1})
+  call assert_equal(v:t_job, type(job))
+  call assert_equal("run", job_status(job))
+
+  call assert_equal("open", ch_status(job))
+  call assert_equal("open", ch_status(job), {"part": "out"})
+
+  try
+    " Create a blob with the echo command and write it.
+    let blob = 0z00
+    let cmd = "echo something\n"
+    for i in range(0, len(cmd) - 1)
+      let blob[i] = char2nr(cmd[i])
+    endfor
+    call assert_equal(len(cmd), len(blob))
+    call ch_sendraw(job, blob)
+
+    " Read a blob with the reply.
+    let msg = ch_readblob(job)
+    let expected = 'something'
+    for i in range(0, len(expected) - 1)
+      call assert_equal(char2nr(expected[i]), msg[i])
+    endfor
+
+    let reply = ch_evalraw(job, "quit\n", {'timeout': 100})
+    call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
+  finally
+    call job_stop(job)
+  endtry
+
+  let g:Ch_job = job
+  call WaitForAssert({-> assert_equal("dead", job_status(g:Ch_job))})
+  let info = job_info(job)
+  call assert_equal("dead", info.status)
+endfunc
+
 func Test_nl_pipe()
   if !has('job')
     return

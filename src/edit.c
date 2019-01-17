@@ -360,7 +360,7 @@ edit(
     /* Don't allow inserting in the sandbox. */
     if (sandbox != 0)
     {
-	EMSG(_(e_sandbox));
+	emsg(_(e_sandbox));
 	return FALSE;
     }
 #endif
@@ -368,7 +368,7 @@ edit(
      * caller of getcmdline() may get confused. */
     if (textlock != 0)
     {
-	EMSG(_(e_secure));
+	emsg(_(e_secure));
 	return FALSE;
     }
 
@@ -376,7 +376,7 @@ edit(
     /* Don't allow recursive insert mode when busy with completion. */
     if (compl_started || compl_busy || pum_visible())
     {
-	EMSG(_(e_secure));
+	emsg(_(e_secure));
 	return FALSE;
     }
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
@@ -476,7 +476,7 @@ edit(
 	if (p_fkmap && p_ri)
 	{
 	    beep_flush();
-	    EMSG(farsi_text_3);	    /* encoded in Farsi */
+	    emsg(farsi_text_3);	    /* encoded in Farsi */
 	    State = INSERT;
 	}
 	else
@@ -1745,23 +1745,24 @@ ins_redraw(
     }
 #endif
 
-    if (must_redraw)
-	update_screen(0);
-    else if (clear_cmdline || redraw_cmdline)
-	showmode();		/* clear cmdline and show mode */
-# if defined(FEAT_CONCEAL)
+#if defined(FEAT_CONCEAL)
     if ((conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line
 		|| conceal_cursor_line(curwin)))
 	    || need_cursor_line_redraw)
     {
 	if (conceal_old_cursor_line != conceal_new_cursor_line)
-	    update_single_line(curwin, conceal_old_cursor_line);
-	update_single_line(curwin, conceal_new_cursor_line == 0
-		       ? curwin->w_cursor.lnum : conceal_new_cursor_line);
+	    redrawWinline(curwin, conceal_old_cursor_line);
+	redrawWinline(curwin, conceal_new_cursor_line == 0
+			    ? curwin->w_cursor.lnum : conceal_new_cursor_line);
 	curwin->w_valid &= ~VALID_CROW;
+	need_cursor_line_redraw = FALSE;
     }
-# endif
+#endif
+    if (must_redraw)
+	update_screen(0);
+    else if (clear_cmdline || redraw_cmdline)
+	showmode();		/* clear cmdline and show mode */
     showruler(FALSE);
     setcursor();
     emsg_on_display = FALSE;	/* may remove error message now */
@@ -4261,14 +4262,14 @@ expand_by_function(
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
-	EMSG(_(e_complwin));
+	emsg(_(e_complwin));
 	goto theend;
     }
     curwin->w_cursor = pos;	/* restore the cursor position */
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
-	EMSG(_(e_compldel));
+	emsg(_(e_compldel));
 	goto theend;
     }
 
@@ -5566,7 +5567,7 @@ ins_complete(int c, int enable_pum)
 					  ? curbuf->b_p_cfu : curbuf->b_p_ofu;
 	    if (*funcname == NUL)
 	    {
-		EMSG2(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION
+		semsg(_(e_notset), ctrl_x_mode == CTRL_X_FUNCTION
 					     ? "completefunc" : "omnifunc");
 		/* restore did_ai, so that adding comment leader works */
 		did_ai = save_did_ai;
@@ -5586,14 +5587,14 @@ ins_complete(int c, int enable_pum)
 	    State = save_State;
 	    if (curwin_save != curwin || curbuf_save != curbuf)
 	    {
-		EMSG(_(e_complwin));
+		emsg(_(e_complwin));
 		return FAIL;
 	    }
 	    curwin->w_cursor = pos;	/* restore the cursor position */
 	    validate_cursor();
 	    if (!EQUAL_POS(curwin->w_cursor, pos))
 	    {
-		EMSG(_(e_compldel));
+		emsg(_(e_compldel));
 		return FAIL;
 	    }
 
@@ -6497,6 +6498,7 @@ internal_format(
 	char_u	*saved_text = NULL;
 	colnr_T	col;
 	colnr_T	end_col;
+	int	wcc;			// counter for whitespace chars
 
 	virtcol = get_nolist_virtcol()
 		+ char2cells(c != NUL ? c : gchar_cursor());
@@ -6558,14 +6560,26 @@ internal_format(
 		/* remember position of blank just before text */
 		end_col = curwin->w_cursor.col;
 
-		/* find start of sequence of blanks */
+		// find start of sequence of blanks
+		wcc = 0;
 		while (curwin->w_cursor.col > 0 && WHITECHAR(cc))
 		{
 		    dec_cursor();
 		    cc = gchar_cursor();
+
+		    // Increment count of how many whitespace chars in this
+		    // group; we only need to know if it's more than one.
+		    if (wcc < 2)
+		        wcc++;
 		}
 		if (curwin->w_cursor.col == 0 && WHITECHAR(cc))
 		    break;		/* only spaces in front of text */
+
+		// Don't break after a period when 'formatoptions' has 'p' and
+		// there are less than two spaces.
+		if (has_format_option(FO_PERIOD_ABBR) && cc == '.' && wcc < 2)
+		    continue;
+
 #ifdef FEAT_COMMENTS
 		/* Don't break until after the comment leader */
 		if (curwin->w_cursor.col < leader_len)
@@ -7664,7 +7678,7 @@ stuff_inserted(
     ptr = get_last_insert();
     if (ptr == NULL)
     {
-	EMSG(_(e_noinstext));
+	emsg(_(e_noinstext));
 	return FAIL;
     }
 
@@ -8955,7 +8969,7 @@ ins_insert(int replaceState)
     if (p_fkmap && p_ri)
     {
 	beep_flush();
-	EMSG(farsi_text_3);	/* encoded in Farsi */
+	emsg(farsi_text_3);	/* encoded in Farsi */
 	return;
     }
 #endif

@@ -2138,10 +2138,13 @@ fi
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
-	[enable_multibyte="no"])
+	[enable_multibyte="yes"])
 AC_MSG_RESULT($enable_multibyte)
 if test "$enable_multibyte" = "yes"; then
   AC_DEFINE(FEAT_MBYTE)
+else
+  AC_MSG_ERROR([The multi-byte feature can no longer be disabled. If you have
+		a problem with this, discuss on the Vim mailing list.])
 fi
 
 dnl Right-to-Left language support for Vim will be included with big features,
@@ -4416,27 +4419,11 @@ if test "$MACOS_X" = "yes"; then
       dnl Since no FEAT_CLIPBOARD, no longer need for os_macosx.m.
       OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      if test "$enable_multibyte" = "yes"; then
-        AC_MSG_RESULT([yes, we need CoreServices])
-        LIBS="$LIBS -framework CoreServices"
-      else
-        dnl Since no FEAT_MBYTE, no longer need for os_mac_conv.c.
-        AC_MSG_RESULT([no])
-        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
-        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
-      fi
+      AC_MSG_RESULT([yes, we need CoreServices])
+      LIBS="$LIBS -framework CoreServices"
     else
       AC_MSG_RESULT([yes, we need AppKit])
       LIBS="$LIBS -framework AppKit"
-      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
-        dnl Since FEAT_CLIPBOARD is to be defined in vim.h for FEAT_SMALL, define
-        dnl FEAT_MBYTE in order not to compromise the interoperability of the
-        dnl clipboard.
-        AC_MSG_NOTICE([+multi_byte will be set in favor of +clipboard])
-        enable_multibyte=yes
-        AC_DEFINE(FEAT_MBYTE)
-      fi
     fi
   else
     AC_MSG_RESULT([no])

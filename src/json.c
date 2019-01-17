@@ -195,8 +195,10 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*res;
+    blob_T	*b;
     list_T	*l;
     dict_T	*d;
+    int		i;
 
     switch (val->v_type)
     {
@@ -230,8 +232,27 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    /* no JSON equivalent TODO: better error */
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return FAIL;
+
+	case VAR_BLOB:
+	    b = val->vval.v_blob;
+	    if (b == NULL || b->bv_ga.ga_len == 0)
+		ga_concat(gap, (char_u *)"[]");
+	    else
+	    {
+		ga_append(gap, '[');
+		for (i = 0; i < b->bv_ga.ga_len; i++)
+		{
+		    if (i > 0)
+			ga_concat(gap, (char_u *)",");
+		    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d",
+			    (int)blob_get(b, i));
+		    ga_concat(gap, numbuf);
+		}
+		ga_append(gap, ']');
+	    }
+	    break;
 
 	case VAR_LIST:
 	    l = val->vval.v_list;
@@ -316,7 +337,12 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    if (isnan(val->vval.v_float))
 		ga_concat(gap, (char_u *)"NaN");
 	    else if (isinf(val->vval.v_float))
-		ga_concat(gap, (char_u *)"Infinity");
+	    {
+		if (val->vval.v_float < 0.0)
+		    ga_concat(gap, (char_u *)"-Infinity");
+		else
+		    ga_concat(gap, (char_u *)"Infinity");
+	    }
 	    else
 # endif
 	    {
@@ -713,7 +739,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = json_decode_string(reader, cur_item, *p);
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    break;
@@ -721,7 +747,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		case ',': /* comma: empty item */
 		    if ((options & JSON_JS) == 0)
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 			break;
 		    }
@@ -736,7 +762,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    break;
 
 		default:
-		    if (VIM_ISDIGIT(*p) || *p == '-')
+		    if (VIM_ISDIGIT(*p) || (*p == '-' && VIM_ISDIGIT(p[1])))
 		    {
 #ifdef FEAT_FLOAT
 			char_u  *sp = p;
@@ -751,7 +777,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			    if (!VIM_ISDIGIT(*sp))
 			    {
-				EMSG(_(e_invarg));
+				emsg(_(e_invarg));
 				retval = FAIL;
 				break;
 			    }
@@ -834,6 +860,17 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
+		    if (STRNICMP((char *)p, "-Infinity", 9) == 0)
+		    {
+			reader->js_used += 9;
+			if (cur_item != NULL)
+			{
+			    cur_item->v_type = VAR_FLOAT;
+			    cur_item->vval.v_float = -INFINITY;
+			}
+			retval = OK;
+			break;
+		    }
 		    if (STRNICMP((char *)p, "Infinity", 8) == 0)
 		    {
 			reader->js_used += 8;
@@ -851,6 +888,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    if (
 			    (len < 5 && STRNICMP((char *)p, "false", len) == 0)
 #ifdef FEAT_FLOAT
+			    || (len < 9 && STRNICMP((char *)p, "-Infinity", len) == 0)
 			    || (len < 8 && STRNICMP((char *)p, "Infinity", len) == 0)
 			    || (len < 3 && STRNICMP((char *)p, "NaN", len) == 0)
 #endif
@@ -877,7 +915,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		if (top_item->jd_key == NULL)
 		{
 		    clear_tv(cur_item);
-		    EMSG(_(e_invarg));
+		    emsg(_(e_invarg));
 		    retval = FAIL;
 		    goto theend;
 		}
@@ -915,7 +953,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -933,7 +971,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -950,7 +988,7 @@ item_end:
 			&& dict_find(top_item->jd_tv.vval.v_dict,
 						 top_item->jd_key, -1) != NULL)
 		{
-		    EMSG2(_("E938: Duplicate key in JSON: \"%s\""),
+		    semsg(_("E938: Duplicate key in JSON: \"%s\""),
 							     top_item->jd_key);
 		    clear_tv(&top_item->jd_key_tv);
 		    clear_tv(cur_item);
@@ -989,7 +1027,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			EMSG(_(e_invarg));
+			emsg(_(e_invarg));
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1008,7 +1046,7 @@ item_end:
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
-    EMSG(_(e_invarg));
+    emsg(_(e_invarg));
 
 theend:
     ga_clear(&stack);
@@ -1032,13 +1070,13 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     if (ret != OK)
     {
 	if (ret == MAYBE)
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	return FAIL;
     }
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
     {
-	EMSG(_(e_trailing));
+	emsg(_(e_trailing));
 	return FAIL;
     }
     return OK;
@@ -1072,7 +1110,7 @@ json_decode(js_read_T *reader, typval_T *res, int options)
  * Return FAIL if the message has a decoding error.
  * Return MAYBE if the message is truncated, need to read more.
  * This only works reliable if the message contains an object, array or
- * string.  A number might be trucated without knowing.
+ * string.  A number might be truncated without knowing.
  * Does not advance the reader.
  */
     int

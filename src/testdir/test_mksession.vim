@@ -198,6 +198,24 @@ func Test_mksession_blank_tabs()
   call delete('Xtest_mks.out')
 endfunc
 
+if has('extra_search')
+
+func Test_mksession_hlsearch()
+  set hlsearch
+  mksession! Xtest_mks.out
+  nohlsearch
+  source Xtest_mks.out
+  call assert_equal(1, v:hlsearch, 'session should restore search highlighting state')
+  nohlsearch
+  mksession! Xtest_mks.out
+  source Xtest_mks.out
+  call assert_equal(0, v:hlsearch, 'session should restore search highlighting state')
+  call delete('Xtest_mks.out')
+endfunc
+
+endif
+
+
 func Test_mksession_blank_windows()
   split
   split

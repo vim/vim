@@ -29,8 +29,10 @@ let s:varnr = 1234
 if has('float')
   let s:jsonfl = '12.34'
   let s:varfl = 12.34
-  let s:jsoninf = 'Infinity'
-  let s:varinf = 1.0 / 0.0
+  let s:jsonneginf = '-Infinity'
+  let s:jsonposinf = 'Infinity'
+  let s:varneginf = -1.0 / 0.0
+  let s:varposinf = 1.0 / 0.0
   let s:jsonnan = 'NaN'
   let s:varnan = 0.0 / 0.0
 endif
@@ -85,7 +87,8 @@ func Test_json_encode()
   call assert_equal(s:jsonnr, json_encode(s:varnr))
   if has('float')
     call assert_equal(s:jsonfl, json_encode(s:varfl))
-    call assert_equal(s:jsoninf, json_encode(s:varinf))
+    call assert_equal(s:jsonneginf, json_encode(s:varneginf))
+    call assert_equal(s:jsonposinf, json_encode(s:varposinf))
     call assert_equal(s:jsonnan, json_encode(s:varnan))
   endif
 
@@ -202,7 +205,8 @@ func Test_js_encode()
   call assert_equal(s:jsonnr, js_encode(s:varnr))
   if has('float')
     call assert_equal(s:jsonfl, js_encode(s:varfl))
-    call assert_equal(s:jsoninf, js_encode(s:varinf))
+    call assert_equal(s:jsonneginf, js_encode(s:varneginf))
+    call assert_equal(s:jsonposinf, js_encode(s:varposinf))
     call assert_equal(s:jsonnan, js_encode(s:varnan))
   endif
 
@@ -242,7 +246,8 @@ func Test_js_decode()
   call assert_equal(s:varnr, js_decode(s:jsonnr))
   if has('float')
     call assert_equal(s:varfl, js_decode(s:jsonfl))
-    call assert_equal(s:varinf, js_decode(s:jsoninf))
+    call assert_equal(s:varneginf, js_decode(s:jsonneginf))
+    call assert_equal(s:varposinf, js_decode(s:jsonposinf))
     call assert_true(isnan(js_decode(s:jsonnan)))
   endif
 
