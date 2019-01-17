@@ -480,7 +480,7 @@ mch_inchar(
 	}
 
 	/* no character available */
-#if !(defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H))
+#ifndef ELAPSED_FUNC
 	/* estimate the elapsed time */
 	elapsed_time += wait_time;
 #endif
@@ -1907,11 +1907,11 @@ get_x11_windis(void)
 #ifdef SET_SIG_ALARM
 	RETSIGTYPE (*sig_save)();
 #endif
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-	struct timeval  start_tv;
+#ifdef ELAPSED_FUNC
+	ELAPSED_TYPE start_tv;
 
 	if (p_verbose > 0)
-	    gettimeofday(&start_tv, NULL);
+	    ELAPSED_INIT(start_tv);
 #endif
 
 #ifdef SET_SIG_ALARM
@@ -4831,8 +4831,8 @@ mch_call_shell_fork(
 		int	    fromshell_fd;
 		garray_T    ga;
 		int	    noread_cnt;
-# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-		struct timeval  start_tv;
+# ifdef ELAPSED_FUNC
+		ELAPSED_TYPE start_tv;
 # endif
 
 # ifdef FEAT_GUI
