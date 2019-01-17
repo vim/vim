@@ -4064,7 +4064,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     else
     {
 	text = tv_get_string_buf(&argvars[1], buf);
-	len = STRLEN(text);
+	len = (int)STRLEN(text);
     }
     channel = send_common(argvars, text, len, 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
