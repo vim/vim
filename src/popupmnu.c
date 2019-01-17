@@ -19,6 +19,8 @@ static int pum_size;			/* nr of items in "pum_array" */
 static int pum_selected;		/* index of selected item or -1 */
 static int pum_first = 0;		/* index of top item */
 
+static int call_update_screen = FALSE;
+
 static int pum_height;			/* nr of displayed pum items */
 static int pum_width;			/* width of displayed pum items */
 static int pum_base_width;		/* width of pum items base */
@@ -36,7 +38,8 @@ static int pum_win_col;
 static int pum_win_wcol;
 static int pum_win_width;
 
-static int pum_do_redraw = FALSE;	/* do redraw anyway */
+static int pum_do_redraw = FALSE;	// do redraw anyway
+static int pum_skip_redraw = FALSE;	// skip redraw
 
 static int pum_set_selected(int n, int repeat);
 
@@ -354,6 +357,36 @@ pum_display(
 }
 
 /*
+ * Set a flag that when pum_redraw() is called it first calls update_screen().
+ * This will avoid clearing and redrawing the popup menu, prevent flicker.
+ */
+    void
+pum_call_update_screen()
+{
+    call_update_screen = TRUE;
+
+    // Update the cursor position to be able to compute the popup menu
+    // position.  The cursor line length may have changed because of the
+    // inserted completion.
+    curwin->w_valid &= VALID_CROW|VALID_CHEIGHT;
+    validate_cursor();
+}
+
+/*
+ * Return TRUE if we are going to redraw the popup menu and the screen position
+ * "row"/"col" is under the popup menu.
+ */
+    int
+pum_under_menu(int row, int col)
+{
+    return pum_skip_redraw
+	    && row >= pum_row
+	    && row < pum_row + pum_height
+	    && col >= pum_col - 1
+	    && col < pum_col + pum_width;
+}
+
+/*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
     void
@@ -376,7 +409,15 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    /* Never display more than we have */
+    if (call_update_screen)
+    {
+	call_update_screen = FALSE;
+	pum_skip_redraw = TRUE;  // do not redraw in pum_may_redraw().
+	update_screen(0);
+	pum_skip_redraw = FALSE;
+    }
+
+    // never display more than we have
     if (pum_first > pum_size - pum_height)
 	pum_first = pum_size - pum_height;
 
@@ -789,6 +830,7 @@ pum_set_selected(int n, int repeat)
 			pum_do_redraw = TRUE;
 			update_screen(0);
 			pum_do_redraw = FALSE;
+			call_update_screen = FALSE;
 		    }
 		}
 	    }
@@ -844,7 +886,7 @@ pum_may_redraw(void)
     int		len = pum_size;
     int		selected = pum_selected;
 
-    if (!pum_visible())
+    if (!pum_visible() || pum_skip_redraw)
 	return;  // nothing to do
 
     if (pum_window != curwin
