@@ -34,9 +34,12 @@
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
-
 #ifdef HAVE_X11_XPM_H
-# include <X11/xpm.h>
+# if defined(VMS)
+#  include <xpm.h>
+# else
+#  include <X11/xpm.h>
+# endif
 #else
 # ifdef HAVE_XM_XPMP_H
 #  include <Xm/XpmP.h>

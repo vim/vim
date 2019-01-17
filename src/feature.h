@@ -380,7 +380,7 @@
 /*
  * +timers		timer_start()
  */
-#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32))
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32) || defined(VMS) )
 # define FEAT_TIMERS
 #endif
 
@@ -1306,7 +1306,7 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || (defined(WIN32) && !defined(FEAT_GUI_W32)))
+	(defined(UNIX) || defined(VMS) || (defined(WIN32) && !defined(FEAT_GUI_W32)))
 # define FEAT_BEVAL_TERM
 #endif
 

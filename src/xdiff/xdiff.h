@@ -108,7 +108,11 @@ typedef struct s_bdiffparam {
 	long bsize;
 } bdiffparam_t;
 
-#include "../vim.h"
+#ifdef VMS
+# include "[]vim.h"
+#else
+# include "../vim.h"
+#endif
 
 #define xdl_malloc(x) lalloc((x), TRUE)
 #define xdl_free(ptr) vim_free(ptr)

@@ -337,6 +337,17 @@
 typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
+
+/* Older systems do not have support for long long
+ * use a typedef instead of hadcoded long long */
+#ifdef HAVE_NO_LONG_LONG
+ typedef long long_long_T;
+ typedef long unsigned long_long_u_T;
+#else
+ typedef long long long_long_T;
+ typedef long long unsigned long_long_u_T;
+#endif
+
 /* Make sure long_u is big enough to hold a pointer.
  * On Win64, longs are 32 bits and pointers are 64 bits.
  * For printf() and scanf(), we need to take care of long_u specifically. */
