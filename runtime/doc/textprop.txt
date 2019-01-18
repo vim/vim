@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2018 Dec 30
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,6 +17,7 @@ What is not working yet:
 
 1. Introduction			|text-prop-intro|
 2. Functions			|text-prop-functions|
+3. When text changes		|text-prop-changes|
 
 
 {Vi does not have text properties}
@@ -112,6 +113,26 @@ prop_find({props} [, {direction}])	search for a text property
 prop_list({lnum} [, {props})  		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
+
+==============================================================================
+3. When text changes				*text-prop-changes*
+
+Vim will do its best to keep the text properties on the text where it was
+attached.  When inserting or deleting text the properties after the change
+will move accordingly.
+
+When text is deleted and a text property no longer includes any text, it is
+deleted.  However, a text property that was defined as zero-width will remain,
+unless the whole line is deleted.
+
+When using replace mode, the text properties stay on the same character
+positions, even though the characters themselves change.
+
+
+When text property columns are not updated ~
+
+- When setting the line with |setline()| or through an interface, such as Lua,
+  Tcl or Python.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

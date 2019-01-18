@@ -672,10 +672,6 @@ gui_init(void)
 #ifdef FEAT_MENU
     gui_create_initial_menus(root_menu);
 #endif
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-	workshop_init();
-#endif
 #ifdef FEAT_SIGN_ICONS
     sign_gui_started();
 #endif
@@ -1604,19 +1600,8 @@ gui_set_shellsize(
 	/* Remember the original window position. */
 	(void)gui_mch_get_winpos(&x, &y);
 
-#ifdef USE_SUN_WORKSHOP
-    if (!mustset && usingSunWorkShop
-				&& workshop_get_width_height(&width, &height))
-    {
-	Columns = (width - base_width + gui.char_width - 1) / gui.char_width;
-	Rows = (height - base_height + gui.char_height - 1) / gui.char_height;
-    }
-    else
-#endif
-    {
-	width = Columns * gui.char_width + base_width;
-	height = Rows * gui.char_height + base_height;
-    }
+    width = Columns * gui.char_width + base_width;
+    height = Rows * gui.char_height + base_height;
 
     if (fit_to_display)
     {
@@ -2966,9 +2951,9 @@ gui_wait_for_chars_or_timer(long wtime)
     int
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
-    int	    retval;
+    int		retval;
 #if defined(ELAPSED_FUNC)
-    ELAPSED_TYPE start_tv;
+    elapsed_T	start_tv;
 #endif
 
 #ifdef FEAT_MENU
@@ -3017,7 +3002,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
     else if (trigger_cursorhold()
-#ifdef ELAPSED_FUNC
+#if defined(ELAPSED_FUNC)
 	    && ELAPSED_FUNC(start_tv) >= p_ut
 #endif
 	    && typebuf.tb_change_cnt == tb_change_cnt)
@@ -5128,7 +5113,7 @@ no_console_input(void)
 }
 #endif
 
-#if defined(FIND_REPLACE_DIALOG) || defined(FEAT_SUN_WORKSHOP) \
+#if defined(FIND_REPLACE_DIALOG) \
 	|| defined(NEED_GUI_UPDATE_SCREEN) \
 	|| defined(PROTO)
 /*

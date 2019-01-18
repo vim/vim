@@ -628,10 +628,7 @@ vim_main2(void)
      */
     if (gui.in_use)
     {
-# ifdef FEAT_SUN_WORKSHOP
-	if (!usingSunWorkShop)
-# endif
-	    gui_wait_for_chars(50L, typebuf.tb_change_cnt);
+	gui_wait_for_chars(50L, typebuf.tb_change_cnt);
 	TIME_MSG("GUI delay");
     }
 #endif
@@ -983,9 +980,6 @@ common_init(mparm_T *paramp)
      */
     early_arg_scan(paramp);
 
-#ifdef FEAT_SUN_WORKSHOP
-    findYourself(paramp->argv[0]);
-#endif
 #if defined(FEAT_GUI)
     /* Prepare for possibly starting GUI sometime */
     gui_prepare(&paramp->argc, paramp->argv);

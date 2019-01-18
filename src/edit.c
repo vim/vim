@@ -3020,7 +3020,8 @@ ins_compl_upd_pum(void)
     if (compl_match_array != NULL)
     {
 	h = curwin->w_cline_height;
-	update_screen(0);
+	// Update the screen later, before drawing the popup menu over it.
+	pum_call_update_screen();
 	if (h != curwin->w_cline_height)
 	    ins_compl_del_pum();
     }
@@ -3110,8 +3111,8 @@ ins_compl_show_pum(void)
     do_cmdline_cmd((char_u *)"if exists('g:loaded_matchparen')|3match none|endif");
 #endif
 
-    /* Update the screen before drawing the popup menu over it. */
-    update_screen(0);
+    // Update the screen later, before drawing the popup menu over it.
+    pum_call_update_screen();
 
     if (compl_match_array == NULL)
     {
@@ -3668,11 +3669,11 @@ ins_compl_new_leader(void)
 	spell_bad_len = 0;	/* need to redetect bad word */
 #endif
 	/*
-	 * Matches were cleared, need to search for them now.  First display
-	 * the changed text before the cursor.  Set "compl_restarting" to
-	 * avoid that the first match is inserted.
+	 * Matches were cleared, need to search for them now.  Befor drawing
+	 * the popup menu display the changed text before the cursor.  Set
+	 * "compl_restarting" to avoid that the first match is inserted.
 	 */
-	update_screen(0);
+	pum_call_update_screen();
 #ifdef FEAT_GUI
 	if (gui.in_use)
 	{
@@ -5077,8 +5078,9 @@ ins_compl_next(
 	/* may undisplay the popup menu first */
 	ins_compl_upd_pum();
 
-	/* redraw to show the user what was inserted */
-	update_screen(0);
+	// Redraw before showing the popup menu to show the user what was
+	// inserted.
+	pum_call_update_screen();
 
 	/* display the updated popup menu */
 	ins_compl_show_pum();

@@ -1,5 +1,7 @@
 /* popupmnu.c */
 void pum_display(pumitem_T *array, int size, int selected);
+void pum_call_update_screen(void);
+int pum_under_menu(int row, int col);
 void pum_redraw(void);
 void pum_undisplay(void);
 void pum_clear(void);

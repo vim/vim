@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jan 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2273,7 +2273,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			deleted only once.  Also when repeating "R" with "."
 			and a count.
 								*cpo-y*
-		y	A yank command can be redone with ".".
+		y	A yank command can be redone with ".".  Think twice if
+			you really want to use this, it may break some
+			plugins, since most people expect "." to only repeat a
+			change.
 								*cpo-Z*
 		Z	When using "w!" while the 'readonly' option is set,
 			don't reset 'readonly'.

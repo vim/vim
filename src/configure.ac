@@ -1996,22 +1996,6 @@ if test "$enable_cscope" = "yes"; then
   AC_DEFINE(FEAT_CSCOPE)
 fi
 
-AC_MSG_CHECKING(--enable-workshop argument)
-AC_ARG_ENABLE(workshop,
-	[  --enable-workshop       Include Sun Visual Workshop support.], ,
-	[enable_workshop="no"])
-AC_MSG_RESULT($enable_workshop)
-if test "$enable_workshop" = "yes"; then
-  AC_DEFINE(FEAT_SUN_WORKSHOP)
-  WORKSHOP_SRC="workshop.c integration.c"
-  AC_SUBST(WORKSHOP_SRC)
-  WORKSHOP_OBJ="objects/workshop.o objects/integration.o"
-  AC_SUBST(WORKSHOP_OBJ)
-  if test "${enable_gui-xxx}" = xxx; then
-    enable_gui=motif
-  fi
-fi
-
 AC_MSG_CHECKING(--disable-netbeans argument)
 AC_ARG_ENABLE(netbeans,
 	[  --disable-netbeans      Disable NetBeans integration support.],

@@ -183,7 +183,7 @@ static int screen_char_attr = 0;
 /*
  * Redraw the current window later, with update_screen(type).
  * Set must_redraw only if not already set to a higher value.
- * e.g. if must_redraw is CLEAR, type NOT_VALID will do nothing.
+ * E.g. if must_redraw is CLEAR, type NOT_VALID will do nothing.
  */
     void
 redraw_later(int type)
@@ -8475,6 +8475,10 @@ screen_char(unsigned off, int row, int col)
     if (row >= screen_Rows || col >= screen_Columns)
 	return;
 
+#ifdef FEAT_INS_EXPAND
+    if (pum_under_menu(row, col))
+	return;
+#endif
     /* Outputting a character in the last cell on the screen may scroll the
      * screen up.  Only do it when the "xn" termcap property is set, otherwise
      * mark the character invalid (update it when scrolled up). */

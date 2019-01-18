@@ -4258,6 +4258,8 @@ eval7(
 			if (blob != NULL)
 			    ga_append(&blob->bv_ga,
 					 (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
+			if (bp[2] == '.' && vim_isxdigit(bp[3]))
+			    ++bp;
 		    }
 		    if (blob != NULL)
 			rettv_blob_set(rettv, blob);
@@ -7412,7 +7414,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
     {
 	case VAR_NUMBER:
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
-					    (long long)varp->vval.v_number);
+					    (long_long_T)varp->vval.v_number);
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:

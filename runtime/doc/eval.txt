@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 15
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -107,7 +107,7 @@ To force conversion from String to Number, add zero to it: >
 To avoid a leading zero to cause octal conversion, or for using a different
 base, use |str2nr()|.
 
-							*TRUE* *FALSE*
+						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
 You can also use |v:false| and |v:true|.  When TRUE is returned from a
 function it is the Number one, FALSE is the number zero.
@@ -131,8 +131,8 @@ A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
 		*E974* *E975* *E976*
-List, Dictionary, Funcref, Job, Channel and Blob types are not automatically
-converted.
+|List|, |Dictionary|, |Funcref|, |Job|, |Channel| and |Blob| types are not
+automatically converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.  Otherwise
@@ -673,6 +673,7 @@ Part of a blob ~
 A part of the Blob can be obtained by specifying the first and last index,
 separated by a colon in square brackets: >
 	:let myblob = 0z00112233
+	:let shortblob = myblob[1:2]	" get 0z1122
 	:let shortblob = myblob[2:-1]	" get 0z2233
 
 Omitting the first index is similar to zero.  Omitting the last index is
@@ -681,7 +682,7 @@ similar to -1. >
 	:let shortblob = myblob[2:2]	" Blob with one byte: 0z22
 	:let otherblob = myblob[:]	" make a copy of the Blob
 
-If the first index is beyond the last byte of the Blob or the second byte is
+If the first index is beyond the last byte of the Blob or the second index is
 before the first byte, the result is an empty list.  There is no error
 message.
 
@@ -700,12 +701,12 @@ higher index is an error.
 
 To change a sequence of bytes the [:] notation can be used: >
 	let blob[1:3] = 0z445566
-The length of the replaced bytes much be exactly the same as the value
+The length of the replaced bytes must be exactly the same as the value
 provided. *E972*
 
 To change part of a blob you can specify the first and last byte to be
-modified.  The value must at least have the number of bytes in the range: >
-	:let blob[3:5] = [3, 4, 5]
+modified.  The value must have the same number of bytes in the range: >
+	:let blob[3:5] = 0z334455
 
 You can also use the functions |add()|, |remove()| and |insert()|.
 
@@ -734,7 +735,7 @@ identity is different: >
 	:echo blob is blob3
 <	0
 
-Making a copy of a list is done with the |copy()| function.  Using [:] also
+Making a copy of a Blob is done with the |copy()| function.  Using [:] also
 works, as explained above.
 
 
@@ -793,7 +794,7 @@ Expression syntax summary, from least to most significant:
 	expr5 isnot expr5	different |List| instance
 
 |expr5|	expr6
-	expr6 +	 expr6 ..	number addition or list concatenation
+	expr6 +	 expr6 ..	number addition, list or blob concatenation
 	expr6 -	 expr6 ..	number subtraction
 	expr6 .	 expr6 ..	string concatenation
 
@@ -1143,7 +1144,7 @@ If expr8 is a |Blob| this results in a new |Blob| with the bytes in the
 indexes expr1a and expr1b, inclusive.  Examples: >
 	:let b = 0zDEADBEEF
 	:let bs = b[1:2]		" 0zADBE
-	:let bs = b[]			" copy ov 0zDEADBEEF
+	:let bs = b[:]			" copy of 0zDEADBEEF
 
 Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
 error.
@@ -1871,7 +1872,7 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 		This is the screen column number, like with |virtcol()|.  The
 		value is zero when there was no mouse button click.
 
-					*v:none* *none-variable*
+					*v:none* *none-variable* *None*
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
@@ -2028,27 +2029,27 @@ v:swapcommand	Normal mode command to be executed after a file has been
 		For ":edit +cmd file" the value is ":cmd\r".
 
 				*v:t_TYPE* *v:t_bool* *t_bool-variable*
-v:t_bool	Value of Boolean type.  Read-only.  See: |type()|
+v:t_bool	Value of |Boolean| type.  Read-only.  See: |type()|
 					*v:t_channel* *t_channel-variable*
-v:t_channel	Value of Channel type.  Read-only.  See: |type()|
+v:t_channel	Value of |Channel| type.  Read-only.  See: |type()|
 					*v:t_dict* *t_dict-variable*
-v:t_dict	Value of Dictionary type.  Read-only.  See: |type()|
+v:t_dict	Value of |Dictionary| type.  Read-only.  See: |type()|
 					*v:t_float* *t_float-variable*
-v:t_float	Value of Float type.  Read-only.  See: |type()|
+v:t_float	Value of |Float| type.  Read-only.  See: |type()|
 					*v:t_func* *t_func-variable*
-v:t_func	Value of Funcref type.  Read-only.  See: |type()|
+v:t_func	Value of |Funcref| type.  Read-only.  See: |type()|
 					*v:t_job* *t_job-variable*
-v:t_job		Value of Job type.  Read-only.  See: |type()|
+v:t_job		Value of |Job| type.  Read-only.  See: |type()|
 					*v:t_list* *t_list-variable*
-v:t_list	Value of List type.  Read-only.  See: |type()|
+v:t_list	Value of |List| type.  Read-only.  See: |type()|
 					*v:t_none* *t_none-variable*
-v:t_none	Value of None type.  Read-only.  See: |type()|
+v:t_none	Value of |None| type.  Read-only.  See: |type()|
 					*v:t_number* *t_number-variable*
-v:t_number	Value of Number type.  Read-only.  See: |type()|
+v:t_number	Value of |Number| type.  Read-only.  See: |type()|
 					*v:t_string* *t_string-variable*
-v:t_string	Value of String type.  Read-only.  See: |type()|
+v:t_string	Value of |String| type.  Read-only.  See: |type()|
 					*v:t_blob* *t_blob-variable*
-v:t_blob	Value of Blob type.  Read-only.  See: |type()|
+v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -3342,7 +3343,7 @@ ch_read({handle} [, {options}])					*ch_read()*
 		{only available when compiled with the |+channel| feature}
 
 ch_readblob({handle} [, {options}])			*ch_readblob()*
-		Like ch_read() but reads binary data and returns a Blob.
+		Like ch_read() but reads binary data and returns a |Blob|.
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 
@@ -3363,7 +3364,7 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		{only available when compiled with the |+channel| feature}
 
 ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
-		Send string or Blob {expr} over {handle}.
+		Send |String| or |Blob| {expr} over {handle}.
 		Works like |ch_sendexpr()|, but does not encode the request or
 		decode the response.  The caller is responsible for the
 		correct contents.  Also does not add a newline for a channel
@@ -3788,7 +3789,7 @@ empty({expr})						*empty()*
 		- |v:false|, |v:none| and |v:null| are empty, |v:true| is not.
 		- A |Job| is empty when it failed to start.
 		- A |Channel| is empty when it is closed.
-		- A Blob is empty when its length is zero.
+		- A |Blob| is empty when its length is zero.
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -5883,6 +5884,8 @@ json_decode({string})					*json_decode()*
 		The decoding is permissive:
 		- A trailing comma in an array and object is ignored, e.g.
 		  "[1, 2, ]" is the same as "[1, 2]".
+		- Integer keys are accepted in objects, e.g. {1:2} is the
+		  same as {'1':2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
 		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
@@ -5911,18 +5914,18 @@ json_encode({expr})					*json_encode()*
 		The encoding is specified in:
 		https://tools.ietf.org/html/rfc7159.html
 		Vim values are converted as follows:
-		   Number		decimal number
-		   Float		floating point number
+		   |Number|		decimal number
+		   |Float|		floating point number
 		   Float nan		"NaN"
 		   Float inf		"Infinity"
 		   Float -inf		"-Infinity"
-		   String		in double quotes (possibly null)
-		   Funcref		not possible, error
-		   List			as an array (possibly null); when
+		   |String|		in double quotes (possibly null)
+		   |Funcref|		not possible, error
+		   |List|		as an array (possibly null); when
 					used recursively: []
-		   Dict			as an object (possibly null); when
+		   |Dict|		as an object (possibly null); when
 					used recursively: {}
-		   Blob			as an array of the individual bytes
+		   |Blob|		as an array of the individual bytes
 		   v:false		"false"
 		   v:true		"true"
 		   v:none		"null"
@@ -5941,6 +5944,7 @@ len({expr})	The result is a Number, which is the length of the argument.
 		used, as with |strlen()|.
 		When {expr} is a |List| the number of items in the |List| is
 		returned.
+		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
 		Otherwise an error is given.
@@ -10247,7 +10251,7 @@ spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
-sun_workshop		Compiled with support for Sun |workshop|.
+sun_workshop		Support for Sun |workshop| has been removed.
 syntax			Compiled with syntax highlighting support |syntax|.
 syntax_items		There are active syntax highlighting items for the
 			current buffer.

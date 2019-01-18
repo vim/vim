@@ -374,7 +374,7 @@ mch_inchar(
     long	wait_time;
     long	elapsed_time = 0;
 #ifdef ELAPSED_FUNC
-    ELAPSED_TYPE start_tv;
+    elapsed_T	start_tv;
 
     ELAPSED_INIT(start_tv);
 #endif
@@ -480,7 +480,7 @@ mch_inchar(
 	}
 
 	/* no character available */
-#if !(defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H))
+#ifndef ELAPSED_FUNC
 	/* estimate the elapsed time */
 	elapsed_time += wait_time;
 #endif
@@ -1907,11 +1907,11 @@ get_x11_windis(void)
 #ifdef SET_SIG_ALARM
 	RETSIGTYPE (*sig_save)();
 #endif
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-	struct timeval  start_tv;
+#ifdef ELAPSED_FUNC
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
-	    gettimeofday(&start_tv, NULL);
+	    ELAPSED_INIT(start_tv);
 #endif
 
 #ifdef SET_SIG_ALARM
@@ -4831,8 +4831,8 @@ mch_call_shell_fork(
 		int	    fromshell_fd;
 		garray_T    ga;
 		int	    noread_cnt;
-# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-		struct timeval  start_tv;
+# ifdef ELAPSED_FUNC
+		elapsed_T   start_tv;
 # endif
 
 # ifdef FEAT_GUI
@@ -6073,8 +6073,8 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # ifdef ELAPSED_FUNC
     /* Remember at what time we started, so that we know how much longer we
      * should wait after being interrupted. */
-    long	    start_msec = msec;
-    ELAPSED_TYPE  start_tv;
+    long	start_msec = msec;
+    elapsed_T	start_tv;
 
     if (msec > 0)
 	ELAPSED_INIT(start_tv);
@@ -7494,7 +7494,7 @@ setup_term_clip(void)
 	int (*oldIOhandler)();
 #endif
 # ifdef ELAPSED_FUNC
-	ELAPSED_TYPE  start_tv;
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
 	    ELAPSED_INIT(start_tv);

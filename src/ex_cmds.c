@@ -3805,9 +3805,6 @@ do_ecmd(
     int		newcol = -1;
     int		solcol = -1;
     pos_T	*pos;
-#ifdef FEAT_SUN_WORKSHOP
-    char_u	*cp;
-#endif
     char_u	*command = NULL;
 #ifdef FEAT_SPELL
     int		did_get_winopts = FALSE;
@@ -3881,11 +3878,6 @@ do_ecmd(
 	    if (free_fname != NULL)
 		ffname = free_fname;
 	    other_file = otherfile(ffname);
-#ifdef FEAT_SUN_WORKSHOP
-	    if (usingSunWorkShop && p_acd
-				   && (cp = vim_strrchr(sfname, '/')) != NULL)
-		sfname = ++cp;
-#endif
 	}
     }
 
@@ -4457,13 +4449,9 @@ do_ecmd(
     }
 #endif
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
+#if defined(FEAT_NETBEANS_INTG)
     if (curbuf->b_ffname != NULL)
     {
-# ifdef FEAT_SUN_WORKSHOP
-	if (gui.in_use && usingSunWorkShop)
-	    workshop_file_opened((char *)curbuf->b_ffname, curbuf->b_p_ro);
-# endif
 # ifdef FEAT_NETBEANS_INTG
 	if ((flags & ECMD_SET_HELP) != ECMD_SET_HELP)
 	    netbeans_file_opened(curbuf);

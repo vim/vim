@@ -660,18 +660,28 @@ sign_mark_adjust(
     long	amount_after)
 {
     signlist_T	*sign;		// a sign in a b_signlist
+    linenr_T	new_lnum;
 
     FOR_ALL_SIGNS_IN_BUF(curbuf, sign)
     {
+	// Ignore changes to lines after the sign
+	if (sign->lnum < line1)
+	    continue;
+	new_lnum = sign->lnum;
 	if (sign->lnum >= line1 && sign->lnum <= line2)
 	{
-	    if (amount == MAXLNUM)
-		sign->lnum = line1;
-	    else
-		sign->lnum += amount;
+	    if (amount != MAXLNUM)
+		new_lnum += amount;
 	}
 	else if (sign->lnum > line2)
-	    sign->lnum += amount_after;
+	    // Lines inserted or deleted before the sign
+	    new_lnum += amount_after;
+
+	// If the new sign line number is past the last line in the buffer,
+	// then don't adjust the line number. Otherwise, it will always be past
+	// the last line and will not be visible.
+	if (new_lnum <= curbuf->b_ml.ml_line_count)
+	    sign->lnum = new_lnum;
     }
 }
 

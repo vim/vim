@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.1.  Last change: 2019 Jan 09
+*quickfix.txt*  For Vim version 8.1.  Last change: 2019 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -111,14 +111,14 @@ processing a quickfix or location list command, it will be aborted.
 :[count]lne[xt][!]	Same as ":cnext", except the location list for the
 			current window is used instead of the quickfix list.
 
-:[count]cN[ext][!]			*:cp* *:cprevious* *:cN* *:cNext*
+:[count]cN[ext][!]		*:cp* *:cprevious*  *:cprev* *:cN* *:cNext*
 :[count]cp[revious][!]	Display the [count] previous error in the list that
 			includes a file name.  If there are no file names at
 			all, go to the [count] previous error.  See |:cc| for
 			[!] and 'switchbuf'.
 
 
-:[count]lN[ext][!]			*:lp* *:lprevious* *:lN* *:lNext*
+:[count]lN[ext][!]		*:lp* *:lprevious* *:lprev* *:lN* *:lNext*
 :[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
 			list for the current window is used instead of the
 			quickfix list.
@@ -367,8 +367,8 @@ modify the title of a quickfix and location list respectively. Examples: >
 <
 							*quickfix-index*
 When you jump to a quickfix/location list entry using any of the quickfix
-commands (e.g. |cc|, |cnext|, |cprev|, etc.), that entry becomes the currently
-selected entry. The index of the currently selected entry in a
+commands (e.g. |:cc|, |:cnext|, |:cprev|, etc.), that entry becomes the
+currently selected entry. The index of the currently selected entry in a
 quickfix/location list can be obtained using the getqflist()/getloclist()
 functions. Examples: >
 	echo getqflist({'idx' : 0}).idx

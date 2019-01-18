@@ -411,9 +411,6 @@ static void	ex_folddo(exarg_T *eap);
 #ifndef FEAT_SIGNS
 # define ex_sign		ex_ni
 #endif
-#ifndef FEAT_SUN_WORKSHOP
-# define ex_wsverb		ex_ni
-#endif
 #ifndef FEAT_NETBEANS_INTG
 # define ex_nbclose		ex_ni
 # define ex_nbkey		ex_ni

@@ -1625,10 +1625,9 @@ clip_gen_owner_exists(VimClipboard *cbd UNUSED)
  * descriptions which would otherwise overflow.  The buffer is considered full
  * when only this extra space (or part of it) remains.
  */
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_JOB_CHANNEL) \
-	|| defined(FEAT_CLIENTSERVER)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
    /*
-    * Sun WorkShop and NetBeans stuff debugger commands into the input buffer.
+    * NetBeans stuffs debugger commands into the input buffer.
     * This requires a larger buffer...
     * (Madsen) Go with this for remote input as well ...
     */

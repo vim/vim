@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jan 12
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -958,6 +958,7 @@ Inter-process communication:		    *channel-functions*
 	ch_close()		close a channel
 	ch_close_in()		close the in part of a channel
 	ch_read()		read a message from a channel
+	ch_readblob()		read a Blob from a channel
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel

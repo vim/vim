@@ -3891,7 +3891,7 @@ vim_beep(
 	{
 #ifdef ELAPSED_FUNC
 	    static int		did_init = FALSE;
-	    static ELAPSED_TYPE	start_tv;
+	    static elapsed_T	start_tv;
 
 	    /* Only beep once per half a second, otherwise a sequence of beeps
 	     * would freeze Vim. */

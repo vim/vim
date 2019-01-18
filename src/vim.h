@@ -288,10 +288,6 @@
 # include "os_qnx.h"
 #endif
 
-#ifdef FEAT_SUN_WORKSHOP
-# include "workshop.h"
-#endif
-
 #ifdef X_LOCALE
 # include <X11/Xlocale.h>
 #else
@@ -341,6 +337,17 @@
 typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
+
+/* Older systems do not have support for long long
+ * use a typedef instead of hadcoded long long */
+#ifdef HAVE_NO_LONG_LONG
+ typedef long long_long_T;
+ typedef long unsigned long_long_u_T;
+#else
+ typedef long long long_long_T;
+ typedef long long unsigned long_long_u_T;
+#endif
+
 /* Make sure long_u is big enough to hold a pointer.
  * On Win64, longs are 32 bits and pointers are 64 bits.
  * For printf() and scanf(), we need to take care of long_u specifically. */
@@ -2236,14 +2243,6 @@ typedef enum {
 # define vim_realloc(ptr, size)  realloc((ptr), (size))
 #endif
 
-/*
- * The following macros stop display/event loop nesting at the wrong time.
- */
-#ifdef ALT_X_INPUT
-# define ALT_INPUT_LOCK_OFF	suppress_alternate_input = FALSE
-# define ALT_INPUT_LOCK_ON	suppress_alternate_input = TRUE
-#endif
-
 #ifdef FEAT_MBYTE
 /*
  * Return byte length of character that starts with byte "b".
@@ -2626,17 +2625,15 @@ typedef enum {
 # define ELAPSED_TIMEVAL
 # define ELAPSED_INIT(v) gettimeofday(&v, NULL)
 # define ELAPSED_FUNC(v) elapsed(&v)
-# define ELAPSED_TYPE struct timeval
-    long elapsed(struct timeval *start_tv);
-#else
-# if defined(WIN32)
-#  define ELAPSED_TICKCOUNT
-#  define ELAPSED_INIT(v) v = GetTickCount()
-#  define ELAPSED_FUNC(v) elapsed(v)
-#  define ELAPSED_TYPE DWORD
-#   ifndef PROTO
-     long elapsed(DWORD start_tick);
-#   endif
+typedef struct timeval elapsed_T;
+long elapsed(struct timeval *start_tv);
+#elif defined(WIN32)
+# define ELAPSED_TICKCOUNT
+# define ELAPSED_INIT(v) v = GetTickCount()
+# define ELAPSED_FUNC(v) elapsed(v)
+typedef DWORD elapsed_T;
+# ifndef PROTO
+long elapsed(DWORD start_tick);
 # endif
 #endif
 

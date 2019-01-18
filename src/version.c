@@ -598,11 +598,7 @@ static char *(features[]) =
 #else
 	"-statusline",
 #endif
-#ifdef FEAT_SUN_WORKSHOP
-	"+sun_workshop",
-#else
 	"-sun_workshop",
-#endif
 #ifdef FEAT_SYN_HL
 	"+syntax",
 #else
@@ -795,6 +791,24 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    770,
+/**/
+    769,
+/**/
+    768,
+/**/
+    767,
+/**/
+    766,
+/**/
+    765,
+/**/
+    764,
+/**/
+    763,
+/**/
+    762,
 /**/
     761,
 /**/

@@ -5094,11 +5094,6 @@ restore_backup:
     if (!p_bk && backup != NULL && mch_remove(backup) != 0)
 	emsg(_("E207: Can't delete backup file"));
 
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-	workshop_file_saved((char *) ffname);
-#endif
-
     goto nofail;
 
     /*
@@ -5339,14 +5334,14 @@ msg_add_lines(
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
-		"%ldL, %lldC", lnum, (long long)nchars);
+		"%ldL, %lldC", lnum, (long_long_T)nchars);
     else
     {
 	sprintf((char *)p, NGETTEXT("%ld line, ", "%ld lines, ", lnum), lnum);
 	p += STRLEN(p);
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
 		NGETTEXT("%lld character", "%lld characters", nchars),
-		(long long)nchars);
+		(long_long_T)nchars);
     }
 }
 
