@@ -42,10 +42,15 @@ func Test_colorscheme()
 
   colorscheme torte
   redraw!
-  sleep 200m
   call assert_equal('dark', &background)
   call assert_equal(1, g:before_colors)
   call assert_equal(2, g:after_colors)
+  call assert_equal("\ntorte", execute('colorscheme'))
+
+  let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
+  call assert_match("\nSearch         xxx term=reverse ctermfg=0 ctermbg=12 gui=bold guifg=Black guibg=Red", a)
+
+  call assert_fails('colorscheme does_not_exist', 'E185:')
 
   exec 'colorscheme' colorscheme_saved
   augroup TestColors

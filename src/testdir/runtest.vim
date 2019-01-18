@@ -26,7 +26,7 @@
 " It will be called after each Test_ function.
 "
 " When debugging a test it can be useful to add messages to v:errors:
-" 	call add(v:errors, "this happened")
+"	call add(v:errors, "this happened")
 
 
 " Without the +eval feature we can't run these tests, bail out.
@@ -148,6 +148,10 @@ func RunTheTest(test)
       call add(v:errors, 'Caught exception in ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
     endtry
   endif
+
+  " In case 'insertmode' was set and something went wrong, make sure it is
+  " reset to avoid trouble with anything else.
+  set noinsertmode
 
   if exists("*TearDown")
     try

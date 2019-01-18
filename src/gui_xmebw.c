@@ -35,7 +35,13 @@
 # include <Xm/XpmP.h>
 # define UNHIGHLIGHTT
 #else
-# include <X11/xpm.h>
+# ifdef HAVE_X11_XPM_H
+#  ifdef VMS
+#   include <xpm.h>
+#  else
+#   include <X11/xpm.h>
+#  endif
+# endif
 #endif
 #include <Xm/ManagerP.h>
 #include <Xm/Display.h>

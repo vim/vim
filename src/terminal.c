@@ -377,7 +377,7 @@ term_start(
 	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
 	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return NULL;
     }
 
@@ -719,7 +719,7 @@ ex_terminal(exarg_T *eap)
 	{
 	    if (*p)
 		*p = NUL;
-	    EMSG2(_("E181: Invalid attribute: %s"), cmd);
+	    semsg(_("E181: Invalid attribute: %s"), cmd);
 	    goto theend;
 	}
 	cmd = skipwhite(p);
@@ -3487,7 +3487,7 @@ init_vterm_ansi_colors(VTerm *vterm)
 	    && (var->di_tv.v_type != VAR_LIST
 		|| var->di_tv.vval.v_list == NULL
 		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
-	EMSG2(_(e_invarg2), "g:terminal_ansi_colors");
+	semsg(_(e_invarg2), "g:terminal_ansi_colors");
 }
 #endif
 
@@ -3914,7 +3914,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     term = buf->b_term;
     if (term->tl_vterm == NULL)
     {
-	EMSG(_("E958: Job already finished"));
+	emsg(_("E958: Job already finished"));
 	return;
     }
 
@@ -3924,7 +3924,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (argvars[2].v_type != VAR_DICT)
 	{
-	    EMSG(_(e_dictreq));
+	    emsg(_(e_dictreq));
 	    return;
 	}
 	d = argvars[2].vval.v_dict;
@@ -3940,13 +3940,13 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     if (mch_stat((char *)fname, &st) >= 0)
     {
-	EMSG2(_("E953: File exists: %s"), fname);
+	semsg(_("E953: File exists: %s"), fname);
 	return;
     }
 
     if (*fname == NUL || (fd = mch_fopen((char *)fname, WRITEBIN)) == NULL)
     {
-	EMSG2(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_notcreate), *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
@@ -4031,7 +4031,6 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    if (cell.width == 2)
 		    {
 			fputs("*", fd);
-			++pos.col;
 		    }
 		    else
 			fputs("+", fd);
@@ -4062,6 +4061,9 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 
 		prev_cell = cell;
 	    }
+
+	    if (cell.width == 2)
+		++pos.col;
 	}
 	if (repeat > 0)
 	    fprintf(fd, "@%d", repeat);
@@ -4103,6 +4105,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     char_u	    *prev_char = NULL;
     int		    attr = 0;
     cellattr_T	    cell;
+    cellattr_T	    empty_cell;
     term_T	    *term = curbuf->b_term;
     int		    max_cells = 0;
     int		    start_row = term->tl_scrollback.ga_len;
@@ -4110,6 +4113,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     ga_init2(&ga_text, 1, 90);
     ga_init2(&ga_cell, sizeof(cellattr_T), 90);
     vim_memset(&cell, 0, sizeof(cell));
+    vim_memset(&empty_cell, 0, sizeof(empty_cell));
     cursor_pos->row = -1;
     cursor_pos->col = -1;
 
@@ -4208,66 +4212,68 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 			c = fgetc(fd);
 		    }
 		    hl2vtermAttr(attr, &cell);
+
+		    /* is_bg == 0: fg, is_bg == 1: bg */
+		    for (is_bg = 0; is_bg <= 1; ++is_bg)
+		    {
+			if (c == '&')
+			{
+			    /* use same color as previous cell */
+			    c = fgetc(fd);
+			}
+			else if (c == '#')
+			{
+			    int red, green, blue, index = 0;
+
+			    c = fgetc(fd);
+			    red = hex2nr(c);
+			    c = fgetc(fd);
+			    red = (red << 4) + hex2nr(c);
+			    c = fgetc(fd);
+			    green = hex2nr(c);
+			    c = fgetc(fd);
+			    green = (green << 4) + hex2nr(c);
+			    c = fgetc(fd);
+			    blue = hex2nr(c);
+			    c = fgetc(fd);
+			    blue = (blue << 4) + hex2nr(c);
+			    c = fgetc(fd);
+			    if (!isdigit(c))
+				dump_is_corrupt(&ga_text);
+			    while (isdigit(c))
+			    {
+				index = index * 10 + (c - '0');
+				c = fgetc(fd);
+			    }
+
+			    if (is_bg)
+			    {
+				cell.bg.red = red;
+				cell.bg.green = green;
+				cell.bg.blue = blue;
+				cell.bg.ansi_index = index;
+			    }
+			    else
+			    {
+				cell.fg.red = red;
+				cell.fg.green = green;
+				cell.fg.blue = blue;
+				cell.fg.ansi_index = index;
+			    }
+			}
+			else
+			    dump_is_corrupt(&ga_text);
+		    }
 		}
 		else
 		    dump_is_corrupt(&ga_text);
-
-		/* is_bg == 0: fg, is_bg == 1: bg */
-		for (is_bg = 0; is_bg <= 1; ++is_bg)
-		{
-		    if (c == '&')
-		    {
-			/* use same color as previous cell */
-			c = fgetc(fd);
-		    }
-		    else if (c == '#')
-		    {
-			int red, green, blue, index = 0;
-
-			c = fgetc(fd);
-			red = hex2nr(c);
-			c = fgetc(fd);
-			red = (red << 4) + hex2nr(c);
-			c = fgetc(fd);
-			green = hex2nr(c);
-			c = fgetc(fd);
-			green = (green << 4) + hex2nr(c);
-			c = fgetc(fd);
-			blue = hex2nr(c);
-			c = fgetc(fd);
-			blue = (blue << 4) + hex2nr(c);
-			c = fgetc(fd);
-			if (!isdigit(c))
-			    dump_is_corrupt(&ga_text);
-			while (isdigit(c))
-			{
-			    index = index * 10 + (c - '0');
-			    c = fgetc(fd);
-			}
-
-			if (is_bg)
-			{
-			    cell.bg.red = red;
-			    cell.bg.green = green;
-			    cell.bg.blue = blue;
-			    cell.bg.ansi_index = index;
-			}
-			else
-			{
-			    cell.fg.red = red;
-			    cell.fg.green = green;
-			    cell.fg.blue = blue;
-			    cell.fg.ansi_index = index;
-			}
-		    }
-		    else
-			dump_is_corrupt(&ga_text);
-		}
 	    }
 	    else
 		dump_is_corrupt(&ga_text);
 
 	    append_cell(&ga_cell, &cell);
+	    if (cell.width == 2)
+		append_cell(&ga_cell, &empty_cell);
 	}
 	else if (c == '@')
 	{
@@ -4389,13 +4395,13 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     if (fname1 == NULL || (do_diff && fname2 == NULL))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	EMSG2(_(e_notread), fname1);
+	semsg(_(e_notread), fname1);
 	return;
     }
     if (do_diff)
@@ -4404,7 +4410,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    EMSG2(_(e_notread), fname2);
+	    semsg(_(e_notread), fname2);
 	    return;
 	}
     }
@@ -4922,7 +4928,7 @@ f_term_setsize(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if (buf == NULL)
     {
-	EMSG(_("E955: Not a terminal buffer"));
+	emsg(_("E955: Not a terminal buffer"));
 	return;
     }
     if (buf->b_term->tl_vterm == NULL)
@@ -5007,7 +5013,7 @@ f_term_gettty(typval_T *argvars, typval_T *rettv)
 		p = buf->b_term->tl_job->jv_tty_in;
 	    break;
 	default:
-	    EMSG2(_(e_invarg2), tv_get_string(&argvars[1]));
+	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
 	    return;
     }
     if (p != NULL)
@@ -5236,12 +5242,12 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	EMSG(_(e_listreq));
+	emsg(_(e_listreq));
 	return;
     }
 
     if (set_ansi_colors_list(term->tl_vterm, argvars[1].vval.v_list) == FAIL)
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 }
 #endif
 
@@ -5485,7 +5491,7 @@ dyn_winpty_init(int verbose)
     if (!hWinPtyDLL)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
+	    semsg(_(e_loadlib), *p_winptydll != NUL ? p_winptydll
 						       : (char_u *)WINPTY_DLL);
 	return FAIL;
     }
@@ -5496,7 +5502,7 @@ dyn_winpty_init(int verbose)
 					      winpty_entry[i].name)) == NULL)
 	{
 	    if (verbose)
-		EMSG2(_(e_loadfunc), winpty_entry[i].name);
+		semsg(_(e_loadfunc), winpty_entry[i].name);
 	    return FAIL;
 	}
     }
@@ -5548,7 +5554,7 @@ term_and_job_init(
     }
     if (cmd == NULL || *cmd == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto failed;
     }
 
@@ -5680,7 +5686,7 @@ term_and_job_init(
 	ch_log(channel, "Opening output file %s", fname);
 	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
 	if (term->tl_out_fd == NULL)
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
     }
 
     return OK;
@@ -5713,7 +5719,7 @@ failed:
 	char_u *msg = utf16_to_enc(
 				(short_u *)winpty_error_msg(winpty_err), NULL);
 
-	EMSG(msg);
+	emsg(msg);
 	winpty_error_free(winpty_err);
     }
     return FAIL;

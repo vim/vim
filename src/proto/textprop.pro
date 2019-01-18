@@ -14,4 +14,5 @@ void f_prop_type_list(typval_T *argvars, typval_T *rettv);
 void clear_global_prop_types(void);
 void clear_buf_prop_types(buf_T *buf);
 void adjust_prop_columns(linenr_T lnum, colnr_T col, int bytes_added);
+void adjust_props_for_split(linenr_T lnum, int kept, int deleted);
 /* vim: set ft=c : */

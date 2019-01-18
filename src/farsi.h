@@ -203,7 +203,7 @@ EXTERN char_u farsi_text_2[]
 #endif
 		     ;
 
-EXTERN char_u farsi_text_3[]
+EXTERN char farsi_text_3[]
 #ifdef DO_INIT
 		= { DAL, WAW, _SHIN, _YE, _MIM, _NOON, ' ', YE_, _NOON,
 		    ALEF_,_BE, _YE, _TE, _SHIN, _PE, ' ', 'R','E','P','L',

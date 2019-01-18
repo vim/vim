@@ -661,8 +661,6 @@ CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
-WORKSHOP_OBJ
-WORKSHOP_SRC
 RUBY_LIBS
 RUBY_CFLAGS
 RUBY_PRO
@@ -812,7 +810,6 @@ with_tclsh
 enable_rubyinterp
 with_ruby_command
 enable_cscope
-enable_workshop
 enable_netbeans
 enable_channel
 enable_terminal
@@ -1494,7 +1491,6 @@ Optional Features:
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
-  --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
@@ -7665,29 +7661,6 @@ if test "$enable_cscope" = "yes"; then
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-workshop argument" >&5
-$as_echo_n "checking --enable-workshop argument... " >&6; }
-# Check whether --enable-workshop was given.
-if test "${enable_workshop+set}" = set; then :
-  enableval=$enable_workshop;
-else
-  enable_workshop="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_workshop" >&5
-$as_echo "$enable_workshop" >&6; }
-if test "$enable_workshop" = "yes"; then
-  $as_echo "#define FEAT_SUN_WORKSHOP 1" >>confdefs.h
-
-  WORKSHOP_SRC="workshop.c integration.c"
-
-  WORKSHOP_OBJ="objects/workshop.o objects/integration.o"
-
-  if test "${enable_gui-xxx}" = xxx; then
-    enable_gui=motif
-  fi
-fi
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-netbeans argument" >&5
 $as_echo_n "checking --disable-netbeans argument... " >&6; }
 # Check whether --enable-netbeans was given.
@@ -7959,7 +7932,7 @@ $as_echo_n "checking --enable-multibyte argument... " >&6; }
 if test "${enable_multibyte+set}" = set; then :
   enableval=$enable_multibyte;
 else
-  enable_multibyte="no"
+  enable_multibyte="yes"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multibyte" >&5
@@ -7967,6 +7940,9 @@ $as_echo "$enable_multibyte" >&6; }
 if test "$enable_multibyte" = "yes"; then
   $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
 
+else
+  as_fn_error $? "The multi-byte feature can no longer be disabled. If you have
+		a problem with this, discuss on the Vim mailing list." "$LINENO" 5
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-rightleft argument" >&5
@@ -14813,28 +14789,13 @@ $as_echo "yes, we need Carbon" >&6; }
     if test "$features" = "tiny"; then
             OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      if test "$enable_multibyte" = "yes"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
 $as_echo "yes, we need CoreServices" >&6; }
-        LIBS="$LIBS -framework CoreServices"
-      else
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
-        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
-      fi
+      LIBS="$LIBS -framework CoreServices"
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
 $as_echo "yes, we need AppKit" >&6; }
       LIBS="$LIBS -framework AppKit"
-      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
-                                { $as_echo "$as_me:${as_lineno-$LINENO}: +multi_byte will be set in favor of +clipboard" >&5
-$as_echo "$as_me: +multi_byte will be set in favor of +clipboard" >&6;}
-        enable_multibyte=yes
-        $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
-
-      fi
     fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5

@@ -441,9 +441,6 @@
 /* Define if we have shl_load() */
 #undef HAVE_SHL_LOAD
 
-/* Define if you want to include Sun Visual Workshop support. */
-#undef FEAT_SUN_WORKSHOP
-
 /* Define if you want to include NetBeans integration. */
 #undef FEAT_NETBEANS_INTG
 

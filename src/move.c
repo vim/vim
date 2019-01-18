@@ -137,9 +137,9 @@ redraw_for_cursorline(win_T *wp)
 #endif
 		)
 	    && (wp->w_valid & VALID_CROW) == 0
-# ifdef FEAT_INS_EXPAND
+#ifdef FEAT_INS_EXPAND
 	    && !pum_visible()
-# endif
+#endif
 	    )
     {
 	if (wp->w_p_rnu)
@@ -153,9 +153,8 @@ redraw_for_cursorline(win_T *wp)
 		// "w_last_cursorline" may be outdated, worst case we redraw
 		// too much.  This is optimized for moving the cursor around in
 		// the current window.
-		redrawWinline(wp, wp->w_last_cursorline, FALSE);
-		redrawWinline(wp, wp->w_cursor.lnum, FALSE);
-		redraw_win_later(wp, VALID);
+		redrawWinline(wp, wp->w_last_cursorline);
+		redrawWinline(wp, wp->w_cursor.lnum);
 	    }
 	    else
 		redraw_win_later(wp, SOME_VALID);

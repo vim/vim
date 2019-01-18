@@ -122,7 +122,7 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
-func! s:Nasty_exit_cb(job, st)
+func s:Nasty_exit_cb(job, st)
   exe g:buf . 'bwipe!'
   let g:buf = 0
 endfunc
@@ -1690,40 +1690,31 @@ func Test_terminal_does_not_truncate_last_newlines()
   call delete('Xfile')
 endfunc
 
-func Test_stop_in_terminal()
-  " We can't expect this to work on all systems, just test on Linux for now.
-  if !has('unix') || system('uname') !~ 'Linux'
-    return
-  endif
-  term /bin/sh
-  let bufnr = bufnr('')
-  call WaitForAssert({-> assert_equal('running', term_getstatus(bufnr))})
-  let lastrow = term_getsize(bufnr)[0]
-
-  call term_sendkeys(bufnr, GetVimCommandClean() . "\r")
-  call term_sendkeys(bufnr, ":echo 'ready'\r")
-  call WaitForAssert({-> assert_match('ready', Get_terminal_text(bufnr, lastrow))})
-
-  call term_sendkeys(bufnr, ":stop\r")
-  " Not sure where "Stopped" shows up, need five lines for Arch.
-  call WaitForAssert({-> assert_match('Stopped',
-	\ Get_terminal_text(bufnr, 1) . 
-	\ Get_terminal_text(bufnr, 2) . 
-	\ Get_terminal_text(bufnr, 3) . 
-	\ Get_terminal_text(bufnr, 4) . 
-	\ Get_terminal_text(bufnr, 5))})
-
-  call term_sendkeys(bufnr, "fg\r")
-  call term_sendkeys(bufnr, ":echo 'back again'\r")
-  call WaitForAssert({-> assert_match('back again', Get_terminal_text(bufnr, lastrow))})
-
-  call term_sendkeys(bufnr, ":quit\r")
-  call term_wait(bufnr)
-  call Stop_shell_in_terminal(bufnr)
-  exe bufnr . 'bwipe'
-endfunc
-
 func Test_terminal_no_job()
   let term = term_start('false', {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
+endfunc
+
+func Test_term_gettitle()
+  if !has('title') || empty(&t_ts)
+    return
+  endif
+  " TODO: this fails on Travis
+  return
+
+  " term_gettitle() returns an empty string for a non-terminal buffer
+  " or for a non-existing buffer.
+  call assert_equal('', term_gettitle(bufnr('%')))
+  call assert_equal('', term_gettitle(bufnr('$') + 1))
+
+  let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
+  call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":e Xfoo\r")
+  call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":set titlestring=foo\r")
+  call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
+
+  exe term . 'bwipe!'
 endfunc

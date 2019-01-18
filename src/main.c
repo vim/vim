@@ -628,10 +628,7 @@ vim_main2(void)
      */
     if (gui.in_use)
     {
-# ifdef FEAT_SUN_WORKSHOP
-	if (!usingSunWorkShop)
-# endif
-	    gui_wait_for_chars(50L, typebuf.tb_change_cnt);
+	gui_wait_for_chars(50L, typebuf.tb_change_cnt);
 	TIME_MSG("GUI delay");
     }
 #endif
@@ -945,7 +942,7 @@ common_init(mparm_T *paramp)
 
     /*
      * Allocate space for the generic buffers (needed for set_init_1() and
-     * EMSG2()).
+     * emsg()).
      */
     if ((IObuff = alloc(IOSIZE)) == NULL
 	    || (NameBuff = alloc(MAXPATHL)) == NULL)
@@ -983,9 +980,6 @@ common_init(mparm_T *paramp)
      */
     early_arg_scan(paramp);
 
-#ifdef FEAT_SUN_WORKSHOP
-    findYourself(paramp->argv[0]);
-#endif
 #if defined(FEAT_GUI)
     /* Prepare for possibly starting GUI sometime */
     gui_prepare(&paramp->argc, paramp->argv);
@@ -1170,6 +1164,10 @@ main_loop(
 	    // locked, this would be a good time to handle the drop.
 	    handle_any_postponed_drop();
 #endif
+#ifdef FEAT_CONCEAL
+	    if (curwin->w_p_cole == 0)
+		conceal_update_lines = FALSE;
+#endif
 
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
@@ -1193,6 +1191,23 @@ main_loop(
 # endif
 		last_cursormoved = curwin->w_cursor;
 	    }
+
+#if defined(FEAT_CONCEAL)
+	    if (conceal_update_lines
+		    && (conceal_old_cursor_line != conceal_new_cursor_line
+			|| conceal_cursor_line(curwin)
+			|| need_cursor_line_redraw))
+	    {
+		if (conceal_old_cursor_line != conceal_new_cursor_line
+			&& conceal_old_cursor_line != 0
+			&& conceal_old_cursor_line
+						<= curbuf->b_ml.ml_line_count)
+		    redrawWinline(curwin, conceal_old_cursor_line);
+		redrawWinline(curwin, conceal_new_cursor_line);
+		curwin->w_valid &= ~VALID_CROW;
+		need_cursor_line_redraw = FALSE;
+	    }
+#endif
 
 	    /* Trigger TextChanged if b:changedtick differs. */
 	    if (!finish_op && has_textchanged()
@@ -1288,22 +1303,6 @@ main_loop(
 	    may_clear_sb_text();	/* clear scroll-back text on next msg */
 	    showruler(FALSE);
 
-#if defined(FEAT_CONCEAL)
-	    if (conceal_update_lines
-		    && (conceal_old_cursor_line != conceal_new_cursor_line
-			|| conceal_cursor_line(curwin)
-			|| need_cursor_line_redraw))
-	    {
-		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
-		if (conceal_old_cursor_line != conceal_new_cursor_line
-			&& conceal_old_cursor_line
-						<= curbuf->b_ml.ml_line_count)
-		    update_single_line(curwin, conceal_old_cursor_line);
-		update_single_line(curwin, conceal_new_cursor_line);
-		mch_enable_flush();
-		curwin->w_valid &= ~VALID_CROW;
-	    }
-#endif
 	    setcursor();
 	    cursor_on();
 
@@ -3020,7 +3019,7 @@ source_startup_scripts(mparm_T *parmp)
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
-		EMSG2(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
     else if (!silent_mode)
