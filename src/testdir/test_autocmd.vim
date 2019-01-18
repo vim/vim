@@ -36,6 +36,26 @@ if has('timers')
     set updatetime&
   endfunc
 
+  func Test_cursorhold_insert_with_timer_interrupt()
+    if !has('job')
+      return
+    endif
+    " Need to move the cursor.
+    call feedkeys("ggG", "xt")
+
+    " Confirm the timer invoked in exit_cb of the job doesn't disturb
+    " CursorHoldI event.
+    let g:triggered = 0
+    au CursorHoldI * let g:triggered += 1
+    set updatetime=500
+    call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
+          \ {'exit_cb': {j, s -> timer_start(1000, 'ExitInsertMode')}})
+    call feedkeys('a', 'x!')
+    call assert_equal(1, g:triggered)
+    au! CursorHoldI
+    set updatetime&
+  endfunc
+
   func Test_cursorhold_insert_ctrl_x()
     let g:triggered = 0
     au CursorHoldI * let g:triggered += 1
