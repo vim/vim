@@ -94,6 +94,7 @@ fd_write(sock_T fd, char *buf, size_t len)
 	    return -1;
 	if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
 	    return -1;
+	FlushFileBuffers(h);
     }
     return (int)nwrite;
 }
