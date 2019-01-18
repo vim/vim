@@ -1940,6 +1940,10 @@ typedef struct {
 # define CRYPT_M_BF	1
 # define CRYPT_M_BF2	2
 # define CRYPT_M_COUNT	3 /* number of crypt methods */
+
+// Currently all crypt methods work inplace.  If one is added that isn't then
+// define this.
+//  # define CRYPT_NOT_INPLACE 1
 #endif
 
 

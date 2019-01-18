@@ -1381,9 +1381,12 @@ retry:
 		if (cryptkey != NULL && curbuf->b_cryptstate != NULL
 								   && size > 0)
 		{
+# ifdef CRYPT_NOT_INPLACE
 		    if (crypt_works_inplace(curbuf->b_cryptstate))
 		    {
+# endif
 			crypt_decode_inplace(curbuf->b_cryptstate, ptr, size);
+# ifdef CRYPT_NOT_INPLACE
 		    }
 		    else
 		    {
@@ -1434,6 +1437,7 @@ retry:
 			}
 			size = decrypted_size;
 		    }
+# endif
 		}
 #endif
 
@@ -5768,9 +5772,12 @@ buf_write_bytes(struct bw_info *ip)
     {
 	/* Encrypt the data. Do it in-place if possible, otherwise use an
 	 * allocated buffer. */
+# ifdef CRYPT_NOT_INPLACE
 	if (crypt_works_inplace(ip->bw_buffer->b_cryptstate))
 	{
+# endif
 	    crypt_encode_inplace(ip->bw_buffer->b_cryptstate, buf, len);
+# ifdef CRYPT_NOT_INPLACE
 	}
 	else
 	{
@@ -5783,6 +5790,7 @@ buf_write_bytes(struct bw_info *ip)
 	    vim_free(outbuf);
 	    return (wlen < len) ? FAIL : OK;
 	}
+# endif
     }
 #endif
 
