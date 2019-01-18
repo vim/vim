@@ -2934,6 +2934,26 @@ gui_wait_for_chars_3(
 gui_wait_for_chars_or_timer(long wtime)
 {
 #ifdef FEAT_TIMERS
+# if defined(ELAPSED_FUNC)
+    if (wtime > 0)
+    {
+	long wait_time = wtime;
+	elapsed_T start_tv;
+
+	ELAPSED_INIT(start_tv);
+
+	// When ui_wait_for_chars_or_timer() returns FAIL in less than
+	// wait_time it is presumed that a new timer is added and there is no
+	// user input, so call once again with the remaining time.
+	do
+	{
+	    if (ui_wait_for_chars_or_timer(
+				    wait_time, gui_wait_for_chars_3, NULL, 0))
+		return OK;
+	} while ((wait_time = wtime - ELAPSED_FUNC(start_tv)) > 0);
+	return FAIL;
+    }
+# endif
     return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
 #else
     return gui_mch_wait_for_chars(wtime);
@@ -2974,32 +2994,19 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
     /* Before waiting, flush any output to the screen. */
     gui_mch_flush();
 
-#if defined(ELAPSED_FUNC)
-    ELAPSED_INIT(start_tv);
-#endif
-
     if (wtime > 0)
     {
-	long wait_time = wtime;
-
-	// Blink when waiting for a character.	Probably only does something
-	// for showmatch().
+	/* Blink when waiting for a character.	Probably only does something
+	 * for showmatch() */
 	gui_mch_start_blink();
-	do
-	{
-	    // When gui_wait_for_chars_or_timer() returns FAIL in less than
-	    // wait_time it is presumed that a new timer is added and there is
-	    // no user input, so call once again with the remaining time.
-	    retval = gui_wait_for_chars_or_timer(wait_time);
-	} while (0
-#if defined(ELAPSED_FUNC)
-		|| (retval == FAIL
-		    && (wait_time = wtime - ELAPSED_FUNC(start_tv)) > 0)
-#endif
-		);
+	retval = gui_wait_for_chars_or_timer(wtime);
 	gui_mch_stop_blink(TRUE);
 	return retval;
     }
+
+#if defined(ELAPSED_FUNC)
+    ELAPSED_INIT(start_tv);
+#endif
 
     /*
      * While we are waiting indefinitely for a character, blink the cursor.
