@@ -643,8 +643,9 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
+  " Does not work on Mac.
   " Todo: make this work on Win32 again
-  if has('win32')
+  if has('mac') || has('win32')
     return
   endif
   let buf = term_start('NONE', {})
