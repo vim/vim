@@ -2080,11 +2080,6 @@ gui_update_menus(int modes)
 	gui_mch_draw_menubar();
 	prev_mode = mode;
 	force_menu_update = FALSE;
-# ifdef FEAT_GUI_W32
-	/* This can leave a tearoff as active window - make sure we
-	 * have the focus <negri>*/
-	gui_mch_activate_window();
-# endif
     }
 }
 

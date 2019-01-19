@@ -2442,12 +2442,6 @@ CenterWindow(
 }
 #endif /* FEAT_GUI_DIALOG */
 
-void
-gui_mch_activate_window(void)
-{
-    (void)SetActiveWindow(s_hwnd);
-}
-
 #if defined(FEAT_TOOLBAR) || defined(PROTO)
     void
 gui_mch_show_toolbar(int showit)
