@@ -643,8 +643,8 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work in the GUI
-  if !has('gui_running')
+  " Todo: make this work on Win32 again
+  if has('win32')
     return
   endif
   let buf = term_start('NONE', {})
