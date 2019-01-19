@@ -5721,6 +5721,7 @@ bt_dontwrite(buf_T *buf)
 	         || buf->b_p_bt[0] == 'p');
 }
 
+#ifdef FEAT_QUICKFIX
     int
 bt_dontwrite_msg(buf_T *buf)
 {
@@ -5731,6 +5732,7 @@ bt_dontwrite_msg(buf_T *buf)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"

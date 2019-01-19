@@ -5408,11 +5408,13 @@ term_send_eof(channel_T *ch)
 	}
 }
 
+#ifdef FEAT_GUI
     job_T *
 term_getjob(term_T *term)
 {
     return term != NULL ? term->tl_job : NULL;
 }
+#endif
 
 # if defined(WIN3264) || defined(PROTO)
 

@@ -1050,6 +1050,7 @@ put_register(int name, void *reg)
 #endif
 }
 
+#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11) && defined(USE_SYSTEM)
     void
 free_register(void *reg)
 {
@@ -1061,6 +1062,7 @@ free_register(void *reg)
     vim_free(reg);
     *y_current = tmp;
 }
+#endif
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
 /*

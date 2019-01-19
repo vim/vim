@@ -847,6 +847,7 @@ bomb_size(void)
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
+#ifdef FEAT_QUICKFIX
     void
 remove_bom(char_u *s)
 {
@@ -863,6 +864,7 @@ remove_bom(char_u *s)
 	}
     }
 }
+#endif
 
 /*
  * Get class of pointer:

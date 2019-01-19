@@ -9823,11 +9823,13 @@ unblock_autocmds(void)
 # endif
 }
 
+#if defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
+#endif
 
 /*
  * Find next autocommand pattern that matches.

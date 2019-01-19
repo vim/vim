@@ -1033,6 +1033,7 @@ theend:
 /*
  * lalloc() with an ID for alloc_fail().
  */
+#ifdef FEAT_SIGNS
     char_u *
 lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 {
@@ -1042,6 +1043,7 @@ lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 #endif
     return (lalloc((long_u)size, message));
 }
+#endif
 
 #if defined(MEM_PROFILE) || defined(PROTO)
 /*
