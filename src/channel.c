@@ -3179,20 +3179,7 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 	    if (r && nread > 0)
 		return CW_READY;
 	    if (r == 0)
-	    {
-		DWORD err = GetLastError();
-
-		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
-		    return CW_ERROR;
-
-		if (channel->ch_named_pipe)
-		{
-		    DisconnectNamedPipe((HANDLE)fd);
-		    ConnectNamedPipe((HANDLE)fd, NULL);
-		}
-		else
-		    return CW_ERROR;
-	    }
+		return CW_ERROR;
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -3823,17 +3810,7 @@ channel_send(
 	if (part == PART_SOCK)
 	    res = sock_write(fd, (char *)buf, len);
 	else
-	{
 	    res = fd_write(fd, (char *)buf, len);
-#ifdef WIN32
-	    if (channel->ch_named_pipe && res < 0)
-	    {
-		DisconnectNamedPipe((HANDLE)fd);
-		ConnectNamedPipe((HANDLE)fd, NULL);
-	    }
-#endif
-
-	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN
 			|| errno == EAGAIN
