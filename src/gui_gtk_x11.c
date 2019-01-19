@@ -6737,7 +6737,7 @@ clip_mch_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
-#if defined(FEAT_XCLIPBOARD) || defined(PROTO)
+#if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gtk_owner_exists(VimClipboard *cbd)
 {

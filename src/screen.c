@@ -276,6 +276,7 @@ redraw_buf_line_later(buf_T *buf, linenr_T lnum)
 }
 #endif
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 redraw_buf_and_status_later(buf_T *buf, int type)
 {
@@ -296,6 +297,7 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 	}
     }
 }
+#endif
 
 #if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
@@ -933,7 +935,7 @@ conceal_check_cursor_line(void)
 }
 #endif
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
     void
 update_debug_sign(buf_T *buf, linenr_T lnum)
 {

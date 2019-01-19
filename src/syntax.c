@@ -8909,7 +8909,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
 }
 #endif
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
 /*
  * Get an attribute index for a 'termguicolors' entry.
  * Uses an existing entry when possible or adds one when needed.
