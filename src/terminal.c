@@ -5408,7 +5408,7 @@ term_send_eof(channel_T *ch)
 	}
 }
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(PROTO)
     job_T *
 term_getjob(term_T *term)
 {

@@ -9303,10 +9303,10 @@ has_cursormoved(void)
     return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
 }
 
+#if defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Return TRUE when there is a CursorMovedI autocommand defined.
  */
-#ifdef FEAT_CONCEAL
     int
 has_cursormovedI(void)
 {
@@ -9332,10 +9332,10 @@ has_textchangedI(void)
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
+#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
-#ifdef FEAT_INS_EXPAND
     int
 has_textchangedP(void)
 {
@@ -9370,10 +9370,10 @@ has_funcundefined(void)
     return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
-#ifdef FEAT_EVAL
     int
 has_textyankpost(void)
 {
@@ -9829,7 +9829,8 @@ unblock_autocmds(void)
 # endif
 }
 
-#if defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)
+#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
+	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
@@ -10096,10 +10097,10 @@ get_event_name(expand_T *xp UNUSED, int idx)
 
 #endif	/* FEAT_CMDL_COMPL */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if autocmd is supported.
  */
-#ifdef FEAT_EVAL
     int
 autocmd_supported(char_u *name)
 {

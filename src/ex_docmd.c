@@ -12314,7 +12314,7 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
 }
 #endif
 
-#ifdef FEAT_CMDL_COMPL
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_mapclear_arg(expand_T *xp UNUSED, int idx)
 {

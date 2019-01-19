@@ -178,12 +178,12 @@ hash_lookup(hashtab_T *ht, char_u *key, hash_T hash)
     }
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * Print the efficiency of hashtable lookups.
  * Useful when trying different hash algorithms.
  * Called when exiting.
  */
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
     void
 hash_debug_results(void)
 {

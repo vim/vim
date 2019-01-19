@@ -1589,7 +1589,7 @@ clip_gen_request_selection(VimClipboard *cbd)
 #endif
 }
 
-#if defined(FEAT_X11) && defined(USE_SYSTEM)
+#if (defined(FEAT_X11) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gen_owner_exists(VimClipboard *cbd UNUSED)
 {
@@ -2576,7 +2576,8 @@ clip_x11_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
-#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
+#if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
+	|| defined(PROTO)
     int
 clip_x11_owner_exists(VimClipboard *cbd)
 {

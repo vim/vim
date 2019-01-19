@@ -5660,10 +5660,10 @@ bt_normal(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == NUL;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
-#ifdef FEAT_QUICKFIX
     int
 bt_quickfix(buf_T *buf)
 {
@@ -5671,10 +5671,10 @@ bt_quickfix(buf_T *buf)
 }
 #endif
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
-#ifdef FEAT_TERMINAL
     int
 bt_terminal(buf_T *buf)
 {
@@ -5725,7 +5725,7 @@ bt_dontwrite(buf_T *buf)
 	         || buf->b_p_bt[0] == 'p');
 }
 
-#ifdef FEAT_QUICKFIX
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
     int
 bt_dontwrite_msg(buf_T *buf)
 {

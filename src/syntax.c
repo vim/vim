@@ -8887,11 +8887,11 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     return (table->ga_len - 1 + ATTR_OFF);
 }
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
  * Uses an existing entry when possible or adds one when needed.
  */
-#ifdef FEAT_TERMINAL
     int
 get_cterm_attr_idx(int attr, int fg, int bg)
 {

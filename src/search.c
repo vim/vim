@@ -476,7 +476,7 @@ pat_has_uppercase(char_u *pat)
     return FALSE;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
     char_u *
 last_csearch(void)
 {
@@ -498,9 +498,7 @@ last_csearch_until(void)
 {
     return last_t_cmd == TRUE;
 }
-#endif
 
-#ifdef FEAT_EVAL
     void
 set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
 {

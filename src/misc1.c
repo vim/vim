@@ -4672,7 +4672,7 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 vim_unsetenv(char_u *var)
 {

@@ -201,10 +201,10 @@ op_on_lines(int op)
     return opchars[op][2] & OPF_LINES;
 }
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Return TRUE if operator "op" changes text.
  */
-#ifdef FEAT_JOB_CHANNEL
     int
 op_is_change(int op)
 {
@@ -1052,7 +1052,8 @@ put_register(int name, void *reg)
 #endif
 }
 
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11) && defined(USE_SYSTEM)
+#if (defined(FEAT_CLIPBOARD) && defined(FEAT_X11) && defined(USE_SYSTEM)) \
+	|| defined(PROTO)
     void
 free_register(void *reg)
 {

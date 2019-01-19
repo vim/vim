@@ -10699,10 +10699,10 @@ comp_col(void)
 #endif
 }
 
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
 /*
  * Unset local option value, similar to ":set opt<".
  */
-#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     void
 unset_global_local_option(char_u *name, void *from)
 {
@@ -13124,10 +13124,10 @@ tabstop_eq(int *ts1, int *ts2)
     return TRUE;
 }
 
+#if defined(FEAT_BEVAL) || defined(PROTO)
 /*
  * Copy a tabstop array, allocating space for the new array.
  */
-#ifdef FEAT_BEVAL
     int *
 tabstop_copy(int *oldts)
 {

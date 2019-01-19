@@ -2838,6 +2838,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
+#  if (defined(FEAT_EVAL) && defined(HAVE_TGETENT)) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -2885,6 +2886,7 @@ term_get_winpos(int *x, int *y, varnumber_T timeout)
 
     return FALSE;
 }
+#  endif
 # endif
 
     void

@@ -1033,7 +1033,7 @@ theend:
 /*
  * lalloc() with an ID for alloc_fail().
  */
-#ifdef FEAT_SIGNS
+#if defined(FEAT_SIGNS) || defined(PROTO)
     char_u *
 lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 {
@@ -2137,12 +2137,12 @@ ga_grow(garray_T *gap, int n)
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * For a growing array that contains a list of strings: concatenate all the
  * strings with a separating "sep".
  * Returns NULL when out of memory.
  */
-#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH)
     char_u *
 ga_concat_strings(garray_T *gap, char *sep)
 {

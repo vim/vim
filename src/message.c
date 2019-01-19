@@ -3507,7 +3507,7 @@ give_warning(char_u *message, int hl)
     --no_wait_return;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 give_warning2(char_u *message, char_u *a1, int hl)
 {

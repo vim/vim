@@ -413,11 +413,11 @@ stuff_empty(void)
 	 && readbuf2.bh_first.b_next == NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
  */
-#ifdef FEAT_EVAL
     int
 readbuf1_empty(void)
 {
