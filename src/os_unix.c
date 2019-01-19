@@ -1016,7 +1016,7 @@ static volatile sig_atomic_t lc_active INIT(= FALSE);
  * Returns OK for normal return, FAIL when the protected code caused a
  * problem and LONGJMP() was used.
  */
-    void
+    static void
 mch_startjmp(void)
 {
 #ifdef SIGHASARG
@@ -1025,13 +1025,13 @@ mch_startjmp(void)
     lc_active = TRUE;
 }
 
-    void
+    static void
 mch_endjmp(void)
 {
     lc_active = FALSE;
 }
 
-    void
+    static void
 mch_didjmp(void)
 {
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)

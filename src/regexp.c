@@ -8199,11 +8199,13 @@ report_re_switch(char_u *pat)
 /*
  * Return whether "prog" is currently being executed.
  */
+#if defined(FEAT_X11) && (defined(FEAT_TITLE) || defined(FEAT_XCLIPBOARD))
     int
 regprog_in_use(regprog_T *prog)
 {
     return prog->re_in_use;
 }
+#endif
 
 /*
  * Match a regexp against a string.

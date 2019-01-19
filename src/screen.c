@@ -300,6 +300,7 @@ redraw_buf_and_status_later(buf_T *buf, int type)
  * right away and restore what was on the command line.
  * Return a code indicating what happened.
  */
+#ifdef FEAT_TERMRESPONSE
     int
 redraw_asap(int type)
 {
@@ -439,6 +440,7 @@ redraw_asap(int type)
 
     return ret;
 }
+#endif
 
 /*
  * Invoked after an asynchronous callback is called.
@@ -11294,6 +11296,7 @@ number_width(win_T *wp)
 }
 #endif
 
+#ifdef FEAT_EVAL
 /*
  * Return the current cursor column. This is the actual position on the
  * screen. First column is 0.
@@ -11313,3 +11316,4 @@ screen_screenrow(void)
 {
     return screen_cur_row;
 }
+#endif

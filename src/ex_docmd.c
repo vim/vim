@@ -12314,6 +12314,7 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
 }
 #endif
 
+#ifdef FEAT_CMDL_COMPL
     char_u *
 get_mapclear_arg(expand_T *xp UNUSED, int idx)
 {
@@ -12321,6 +12322,7 @@ get_mapclear_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"<buffer>";
     return NULL;
 }
+#endif
 
 static int filetype_detect = FALSE;
 static int filetype_plugin = FALSE;

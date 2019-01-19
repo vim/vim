@@ -2142,6 +2142,7 @@ ga_grow(garray_T *gap, int n)
  * strings with a separating "sep".
  * Returns NULL when out of memory.
  */
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH)
     char_u *
 ga_concat_strings(garray_T *gap, char *sep)
 {
@@ -2172,6 +2173,7 @@ ga_concat_strings(garray_T *gap, char *sep)
     }
     return s;
 }
+#endif
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*

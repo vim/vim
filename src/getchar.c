@@ -417,11 +417,13 @@ stuff_empty(void)
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
  */
+#ifdef FEAT_EVAL
     int
 readbuf1_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL);
 }
+#endif
 
 /*
  * Set a typeahead character that won't be flushed.

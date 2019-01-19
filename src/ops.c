@@ -204,11 +204,13 @@ op_on_lines(int op)
 /*
  * Return TRUE if operator "op" changes text.
  */
+#ifdef FEAT_JOB_CHANNEL
     int
 op_is_change(int op)
 {
     return opchars[op][2] & OPF_CHANGE;
 }
+#endif
 
 /*
  * Get first operator command character.

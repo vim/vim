@@ -4672,6 +4672,7 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
+#ifdef FEAT_EVAL
     void
 vim_unsetenv(char_u *var)
 {
@@ -4681,6 +4682,7 @@ vim_unsetenv(char_u *var)
     vim_setenv(var, (char_u *)"");
 #endif
 }
+#endif
 
 
 /*

@@ -9306,11 +9306,13 @@ has_cursormoved(void)
 /*
  * Return TRUE when there is a CursorMovedI autocommand defined.
  */
+#ifdef FEAT_CONCEAL
     int
 has_cursormovedI(void)
 {
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is a TextChanged autocommand defined.
@@ -9333,11 +9335,13 @@ has_textchangedI(void)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
+#ifdef FEAT_INS_EXPAND
     int
 has_textchangedP(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is an InsertCharPre autocommand defined.
@@ -9369,11 +9373,13 @@ has_funcundefined(void)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
+#ifdef FEAT_EVAL
     int
 has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
 }
+#endif
 
 /*
  * Execute autocommands for "event" and file name "fname".
@@ -10093,6 +10099,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
 /*
  * Return TRUE if autocmd is supported.
  */
+#ifdef FEAT_EVAL
     int
 autocmd_supported(char_u *name)
 {
@@ -10198,6 +10205,7 @@ theend:
     vim_free(arg_save);
     return retval;
 }
+#endif
 
 
 /*

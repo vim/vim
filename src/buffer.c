@@ -5663,20 +5663,24 @@ bt_normal(buf_T *buf)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
+#ifdef FEAT_QUICKFIX
     int
 bt_quickfix(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'q';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
+#ifdef FEAT_TERMINAL
     int
 bt_terminal(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 't';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a help buffer.
