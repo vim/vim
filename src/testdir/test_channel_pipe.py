@@ -56,4 +56,8 @@ if __name__ == "__main__":
         if typed.startswith("doubleerr "):
             print(typed[10:-1] + "\nAND " + typed[10:-1], file=sys.stderr)
             sys.stderr.flush()
+        if typed.startswith("XXX"):
+            print(typed, end='')
+            sys.stderr.flush()
+            break
 

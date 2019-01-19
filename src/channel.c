@@ -81,23 +81,33 @@ fd_read(sock_T fd, char *buf, size_t len)
 fd_write(sock_T fd, char *buf, size_t len)
 {
     HANDLE	h = (HANDLE)fd;
-    DWORD	nwrite;
+    DWORD	nwrite, size, total = 0;
     OVERLAPPED	ov;
 
-    // If the pipe overflows while the job does not read the data, WriteFile
-    // will block forever. This abandons the write.
-    memset(&ov, 0, sizeof(ov));
-    if (!WriteFile(h, buf, (DWORD)len, &nwrite, &ov))
+    while (len > 0)
     {
-	DWORD err = GetLastError();
+	if (len > MAX_NAMED_PIPE_SIZE)
+	    size = MAX_NAMED_PIPE_SIZE;
+	else
+	    size = len;
+	// If the pipe overflows while the job does not read the data, WriteFile
+	// will block forever. This abandons the write.
+	memset(&ov, 0, sizeof(ov));
+	if (!WriteFile(h, buf, size, &nwrite, &ov))
+	{
+	    DWORD err = GetLastError();
 
-	if (err != ERROR_IO_PENDING)
-	    return -1;
-	if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
-	    return -1;
-	FlushFileBuffers(h);
+	    if (err != ERROR_IO_PENDING)
+		return -1;
+	    if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
+		return -1;
+	    FlushFileBuffers(h);
+	}
+	len -= nwrite;
+	buf += nwrite;
+	total += nwrite;
     }
-    return (int)nwrite;
+    return (int)total;
 }
 
     static void

@@ -1975,3 +1975,21 @@ func Test_job_start_in_timer()
   unlet! g:val
   unlet! g:job
 endfunc
+
+func Test_raw_large_data()
+  try
+    let g:out = ''
+    let job = job_start(s:python . " test_channel_pipe.py",
+	  \ {'mode': 'raw', 'drop': 'never', 'noblock': 1,
+      \  'callback': {ch, msg -> execute('let g:out .= msg')}})
+
+    let want = repeat('X', 79999) . "\n"
+    call ch_sendraw(job, want)
+    let g:Ch_job = job
+    call WaitForAssert({-> assert_equal("dead", job_status(g:Ch_job))})
+    call assert_equal(want, substitute(g:out, '\r', '', 'g'))
+  finally
+    call job_stop(job)
+    unlet g:out
+  endtry
+endfunc
