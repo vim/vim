@@ -473,7 +473,7 @@ run_silent_uninstall(char *uninst_exe)
     for (i = 0; ; i++)
     {
 	sprintf(temp_uninst, "%s\\vimun%04X.exe", temp_dir,
-							(i + tick) & 0xFFFF);
+					  (unsigned int)((i + tick) & 0xFFFF));
 	if (CopyFile(uninst_exe, temp_uninst, TRUE))
 	    break;
 	if (GetLastError() != ERROR_FILE_EXISTS)

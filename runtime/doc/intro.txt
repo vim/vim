@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 Jan 01
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,9 +268,9 @@ In this documentation there are several references to other versions of Vi:
 Vi	"the original".  Without further remarks this is the version
 	of Vi that appeared in Sun OS 4.x.  ":version" returns
 	"Version 3.7, 6/7/85".  Sometimes other versions are referred
-	to.  Only runs under Unix.  Source code only available with a
-	license.  More information on Vi can be found through:
-		http://vi-editor.org	[doesn't currently work...]
+	to.  Only runs under Unix.  Source code is now available under a
+	BSD-style license.  More information on Vi can be found through:
+		http://ex-vi.sourceforge.net/
 							*Posix*
 Posix	From the IEEE standard 1003.2, Part 2: Shell and utilities.
 	Generally known as "Posix".  This is a textual description of
@@ -285,11 +285,10 @@ Nvi	The "New" Vi.  The version of Vi that comes with BSD 4.4 and FreeBSD.
 	Source code is freely available.
 							*Elvis*
 Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
-	as flexible as Vim.
-	The version used is 2.1.  It is still being developed.  Source code is
-	freely available.
-							*NeoVim*
-NeoVim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
+	as flexible as Vim.  Development has stalled, Elvis has left the
+	building!  Source code is freely available.
+							*Neovim*
+Neovim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
 	Very much bound to github and has many more dependencies, making
 	development more complex and limiting portability.  Code has been
 	refactored, resulting in patches not being exchangeable with Vim.

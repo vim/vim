@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 01
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,12 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Valgrind error in old regexp engine when using TOhtml.
-(Dominique, 2018 Dec 31, #3749)
+Blob: the string form can't be parsed back.  Use 0z00112233.44556677 ?
 
-Possible errors reported from fuzzer. Shadowblade #3716
-a) using get_regline() without checking for NULL
-b) using getcell() in libvterm without checking for NULL
+Make msg() and msg_attr() also use "char *" intead of "char_u *"?
+
+Feature to possibly graduate: FEAT_MBYTE
+    Integrate EBCDIC feature, use 'encoding' == "ebcdic" ?
+    Or drop EBCDIC?
 
 'incsearch' with :s: (#3321)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
@@ -76,8 +77,11 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
+- When Vim runs in the terminal and changes the title, the statusline needs to
+  be redrawn.
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
   (#3327)
+- Terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
 - GUI: hang until key typed. (#3530)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
@@ -96,7 +100,6 @@ Terminal emulator window:
 - Win32: Redirecting output works but includes escape sequences.
 - Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
   redirection.
-- Terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
 - When the job only outputs lines, we could handle resizing the terminal
   better: store lines separated by line breaks, instead of screen lines,
   then when the window is resized redraw those lines.
@@ -106,8 +109,7 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-":function" can now silently overwrite the function from the same script.
-Do the same for ":command" ?
+Patch with updates for VMS. (Zoltan Arpadffy, 2019 Jan 14)
 
 Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990f8817a50d3264782a5...3b27c92f297540761ebbd92d04fb3
 (Christian Brabandt, 2018 Nov 4)
@@ -116,34 +118,43 @@ Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
 
+Patch to deal with signs at the end of the buffer when lines are deleted.
+(Yegappan Lakshmanan, #3798)
+
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
-
-Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-Maybe call it v:motiontype.  Update in #3490.
-Alternative: add the force flag to mode(), after "no".
-Patch ready to include?
+Another report, with reproduction steps. (#3799)
+Is this fixed by 8.1.0761?
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
 
+Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
+When redrawing for updating the popup menu, don't redraw the part when the new
+popup menu will be displayed?
+
+js_decode() does not handle infinity properly. (Dominique Pelle, 2019 Jan 10,
+#3788)
+
 Signs:
+-   screen not redrawn correctly. (Dominique Pelle, 2019 Jan 14, #3803)
 -   Use a sign group in the Termdebug plugin.
 -   Avoid that "sign unplace id" does a redraw right away, esp. when there is
     a sequence of these commands. (Andy Stewart, 2018 Mar 16)
--   Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
--   Patch from Christian Brabandt to make the "buffer" argument for ":sign
-    place" optional. (2013 Jul 12)
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-Patch to add blob type support.  (Yasuhiro Matsumoto, 2018 Nov 26, #3638)
-Should be ready to include.
+Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+
+Patch to not call setActiveWindow. Yasuhiro Matsumoto, 2019 Jan 8, #3778)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
+
+Patch for xxd to make it work with 64 bit numbers. (Christer Jense, 2019 Jan
+11, #3791)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
@@ -151,9 +162,6 @@ mappings no longer work.  Create a new terminal for the better solution?
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
-
-Patch to add 'p' flag to 'formatoptions'. (Tom Ryder, 2018 Dec 28)
-Wait a few days for feedback.
 
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
@@ -169,6 +177,10 @@ Williams, 2018 Oct 30)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
+When using a timer callback vgetc_busy is reset, allowing for using input().
+But in a channel callback this does not happen.  We need to do something
+similar to check_due_timer().  Also see #3809.
+
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
 
@@ -178,9 +190,26 @@ Patch on #3690 to fix that "wincmd p" does not always behave properly.
 Patch: When using %v in 'errorformat', assume the number is the screen column
 not bytes, also handle multi-byte charactes. (Yegappan Lakshmanan, #3700)
 
+Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
+#2948. (related to #1512?)
+On Win32 it stops showing, because showState is already ShS_SHOWING.
+balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
+20, #2481)
+Also see #2352, want better control over balloon, perhaps set the position.
+Should also be possible to add highlighting, like in the status line?
+balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
+2018 Sep 14)
+Another request: #3811.
+
 Patch to add FOR_ALL_FRAMES. (Yegappan, 2018 Dec 11, #3686)
 
 Patch for MinGW build with static libraries. (Ken Takata, 2018 Dec 16)
+
+Patch to add new regexp classes :ident:, :keyword:, :fname:.
+(ichizok, 2016 Jan 12, #1373)
+
+Patch to add "termsig" - signal that caused job to end. (Ozaki Kiichi, 2019
+Jan 10, #3786)
 
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
@@ -191,7 +220,8 @@ Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
     quickfix window, for example. (Gary Holloway)
     Also do 'sidescrolloff'.
 
-Patch for ConPTY support, #3474: What is the status?
+Patch for ConPTY support, new one: #3794 Does this work now?
+(Nobuhiro Takasaki)
 
 Issue #3649: Retrying the X server connection once may be insufficient.
 Since patch 8.1.0615 we try reconnecting five times.  Does it work?
@@ -229,9 +259,6 @@ When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
 scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
 using CTRL-E. (Yee Cheng Chin, #3721)
 
-We have a SourcePre autocommand event, but not SourcePost.  Useful for doing
-some thing after a plugin was loaded. (#3739)
-
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
@@ -243,9 +270,6 @@ Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
 
 Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
-
-Patch to add support for changing the current quickfix/location list indes.
-(Yegappan Lakshmanan, 2018 Dec 18, #3701)
 
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
@@ -295,6 +319,9 @@ Adjust windows installer explanation of behavior. (scootergrisen, #3310)
 
 Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
 (Daniel Hahler, 2018 Aug 8, #3299)
+
+Update for xim-input-style help (Tony Mechelynck, 2019 Jan 10).
+Feedback from someone who uses this?
 
 ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
 
@@ -379,16 +406,6 @@ Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 Patch to be able to disable default digraphs (incomplete) (Eric Pruitt, 2018
 Nov 22).
 
-Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
-#2948. (related to #1512?)
-On Win32 it stops showing, because showState is already ShS_SHOWING.
-balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
-20, #2481)
-Also see #2352, want better control over balloon, perhaps set the position.
-Should also be possible to add highlighting, like in the status line?
-balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
-2018 Sep 14)
-
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
 or asyncmake: 
@@ -443,19 +460,6 @@ deleting autocmds, not when adding them.
 
 Quickfix window height is not kept with a vertical split. (Lifepillar, 2018
 Jun 10, #2998)
-
-Improve the installer for MS-Windows.  There are a few alternatives:
-- mui2 installer improved by Ken Takata (2018 Sep 29)
-- Installer from Cream (Steve Hall).
-- Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
-    https://github.com/gpwen/vim-installer-mui2
--  make it possible to do a silent install, see
-    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
-    Version from Guopeng Wen does this.
-- MSI installer: https://github.com/petrkle/vim-msi/
-- The one on Issue 279.
-Problem: they all work slightly different (e.g. don't install vimrun.exe).
-How to test that it works well for all Vim users?
 
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
@@ -538,7 +542,7 @@ option_save({list})					*option_save()*
   Alternatively: save and restore ALL options.  Implementation needs to use
 	copy-on-write.  Return an ID from option_save(), when
 	option_restore(ID) is called give an error if another option_save()
-	was called in the mean time, they must be balanced.
+	was called in the meantime, they must be balanced.
 
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
@@ -561,8 +565,6 @@ Add script number to profile?  (#3330 breaks tests).
 
 A function defined locally and lambda's are not easily recognized.
 Mention where they were defined somewhere.
-
-CTRL-X on zero gets stuck on 0xfffffffffffffffe. (Hengyang Zhao, #2746)
 
 Invalid range error when using BufWinLeave for closing terminal.
 (Gabriel Barta, 2017 Nov 15, #2339)
@@ -589,9 +591,6 @@ In an optional package the "after" directory is not scanned?
 
 Patch for Neovim concerning restoring when closing help window. (glacambre
 neovim #7431)
-
-Default install on MS-Windows should source defaults.vim.
-Ask whether to use Windows or Vim key behavior?
 
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
@@ -1570,9 +1569,6 @@ Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
 Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
 
-Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
-Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
-
 7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
     pixels remains when typing spaces in front of a "D" ('guifont' set to
     "lucida_console:h8").
@@ -1659,8 +1655,6 @@ Or use expand('<sid>')?
 
 Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
-Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
-
 Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
 b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
@@ -1678,9 +1672,6 @@ Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 
 Patch to improve equivalence classes in regexp patterns.
 (Christian Brabandt, 2013 Jan 16, update Jan 17)
-
-Patch to add new regexp classes :ident:, :keyword:, :fname:.
-(ichizok, 2016 Jan 12, #1373)
 
 Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
 But use Gnome instead of GTK?

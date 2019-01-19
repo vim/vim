@@ -1,10 +1,10 @@
-*netbeans.txt*  For Vim version 8.1.  Last change: 2016 Jul 15
+*netbeans.txt*  For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
 
 
-					*netbeans* *netbeans-support*
+					*netbeans* *NetBeans* *netbeans-support*
 
 Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
 
@@ -123,8 +123,18 @@ Currently the NetBeans interface is supported by Vim running in a terminal and
 by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows,
 Athena and Motif.
 
-If Motif support is required the user must supply XPM libraries.  See
-|workshop-xpm| for details on obtaining the latest version of XPM.
+							*netbeans-xpm*
+If Motif support is required the user must supply XPM libraries.
+The XPM library is required to show images within Vim with Motif or Athena.
+Without it the toolbar and signs will be disabled.
+
+The XPM library is provided by Arnaud Le Hors of the French National Institute
+for Research in Computer Science and Control.  It can be downloaded from
+http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
+writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create
+the directory /usr/local/xpm and untar the file there you can use the
+uncommented lines in the Makefile without changing them.  If you use another
+xpm directory you will need to change the XPM_DIR in src/Makefile.
 
 
 On MS-Windows:

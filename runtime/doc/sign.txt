@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.1.  Last change: 2019 Jan 01
+*sign.txt*      For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -31,7 +31,7 @@ terminal emulator.
 Signs and highlights are not useful just for debuggers.  Sun's Visual
 WorkShop uses signs and highlights to mark build errors and SourceBrowser
 hits.  Additionally, the debugger supports 8 to 10 different signs and
-highlight colors. |workshop|  Same for Netbeans |netbeans|.
+highlight colors, see |NetBeans|.
 
 There are two steps in using signs:
 
@@ -43,6 +43,7 @@ There are two steps in using signs:
    displayed.  A defined sign can be placed several times in different lines
    and files.
 
+							*sign-column*
 When signs are defined for a file, Vim will automatically add a column of two
 characters to display them in.  When the last sign is unplaced the column
 disappears again.  This behavior can be changed with the 'signcolumn' option.
@@ -52,19 +53,33 @@ Example to set the color: >
 
 	:highlight SignColumn guibg=darkgrey
 <
+							*sign-identifier*
+Each placed sign is identified by a number called the sign identifier. This
+identifier is used to jump to the sign or to remove the sign. The identifier
+is assigned when placing the sign using the |:sign-place| command or the
+|sign_place()| function. Each sign identifier should be a unique number. If
+multiple placed signs use the same identifier, then jumping to or removing a
+sign becomes unpredictable. To avoid overlapping identifiers, sign groups can
+be used. The |sign_place()| function can be called with a zero sign identifier
+to allocate the next available identifier.
+
 							*sign-group*
-Each sign can be assigned to either the global group or a named group. When
-placing a sign, if a group name is not supplied, or an empty string is used,
-then the sign is placed in the global group. Otherwise the sign is placed in
-the named group. The sign identifier is unique within a group. The sign group
-allows Vim plugins to use unique signs without interfering with other plugins
-using signs.
+Each placed sign can be assigned to either the global group or a named group.
+When placing a sign, if a group name is not supplied, or an empty string is
+used, then the sign is placed in the global group. Otherwise the sign is
+placed in the named group. The sign identifier is unique within a group. The
+sign group allows Vim plugins to use unique signs without interfering with
+other plugins using signs.
 
 							*sign-priority*
 Each placed sign is assigned a priority value. When multiple signs are placed
 on the same line, the attributes of the sign with the highest priority is used
 independent of the sign group. The default priority for a sign is 10. The
 priority is assigned at the time of placing a sign.
+
+When the line on which the sign is placed is deleted, the sign is moved to the
+next line (or the last line of the buffer, if there is no next line).  When
+the delete is undone the sign does not move back.
 
 ==============================================================================
 2. Commands					*sign-commands* *:sig* *:sign*
@@ -178,8 +193,9 @@ See |sign_place()| for the equivalent Vim script function.
 			:sign place 9 group=g2 priority=50 line=5
 							\ name=sign1 file=a.py
 <
-:sign place {id} line={lnum} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+:sign place {id} line={lnum} name={name} [buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, place the sign in the current buffer.
 
 							*E885*
 :sign place {id} name={name} file={fname}
@@ -191,8 +207,9 @@ See |sign_place()| for the equivalent Vim script function.
 		The optional "group={group}" attribute can be used before
 		"file=" to select a sign in a particular group.
 
-:sign place {id} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+:sign place {id} name={name} [buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, use the current buffer.
 
 
 REMOVING SIGNS						*:sign-unplace* *E159*
@@ -251,13 +268,13 @@ See |sign_unplace()| for the equivalent Vim script function.
 		all the files it appears in.
 
 :sign unplace *
-		Remove placed signs in the global group from all the files.
+		Remove all placed signs in the global group from all the files.
 
 :sign unplace * group={group}
-		Remove placed signs in group {group} from all the files.
+		Remove all placed signs in group {group} from all the files.
 
 :sign unplace * group=*
-		Remove placed signs in all the groups from all the files.
+		Remove all placed signs in all the groups from all the files.
 
 :sign unplace
 		Remove a placed sign at the cursor position. If multiple signs
@@ -305,6 +322,8 @@ See |sign_getplaced()| for the equivalent Vim script function.
 
 JUMPING TO A SIGN					*:sign-jump* *E157*
 
+See |sign_jump()| for the equivalent Vim script function.
+
 :sign jump {id} file={fname}
 		Open the file {fname} or jump to the window that contains
 		{fname} and position the cursor at sign {id}.
@@ -315,11 +334,12 @@ JUMPING TO A SIGN					*:sign-jump* *E157*
 :sign jump {id} group={group} file={fname}
 		Same but jump to the sign in group {group}
 
-:sign jump {id} buffer={nr}					*E934*
+:sign jump {id} [buffer={nr}]					*E934*
 		Same, but use buffer {nr}.  This fails if buffer {nr} does not
-		have a name.
+		have a name. If the buffer argument is not given, use the
+		current buffer.
 
-:sign jump {id} group={group} buffer={nr}
+:sign jump {id} group={group} [buffer={nr}]
 		Same but jump to the sign in group {group}
 
 

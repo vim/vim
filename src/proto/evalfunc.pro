@@ -4,7 +4,7 @@ char_u *get_expr_name(expand_T *xp, int idx);
 int find_internal_func(char_u *name);
 int call_internal_func(char_u *name, int argcount, typval_T *argvars, typval_T *rettv);
 buf_T *buflist_find_by_name(char_u *name, int curtab_only);
-buf_T *get_buf_tv(typval_T *tv, int curtab_only);
+buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 void execute_redir_str(char_u *value, int value_len);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 float_T vim_round(float_T f);

@@ -1175,6 +1175,9 @@ EX(CMD_redraw,		"redraw",	ex_redraw,
 EX(CMD_redrawstatus,	"redrawstatus",	ex_redrawstatus,
 			BANG|TRLBAR|CMDWIN,
 			ADDR_LINES),
+EX(CMD_redrawtabline,	"redrawtabline", ex_redrawtabline,
+			TRLBAR|CMDWIN,
+			ADDR_LINES),
 EX(CMD_registers,	"registers",	ex_display,
 			EXTRA|NOTRLCOM|TRLBAR|CMDWIN,
 			ADDR_LINES),
@@ -1667,9 +1670,6 @@ EX(CMD_wq,		"wq",		ex_exit,
 EX(CMD_wqall,		"wqall",	do_wqall,
 			BANG|FILE1|ARGOPT|DFLALL|TRLBAR,
 			ADDR_LINES),
-EX(CMD_wsverb,		"wsverb",	ex_wsverb,
-			EXTRA|NOTADR|NEEDARG,
-			ADDR_LINES),
 EX(CMD_wundo,		"wundo",	ex_wundo,
 			BANG|NEEDARG|FILE1,
 			ADDR_LINES),
@@ -1796,7 +1796,7 @@ struct exarg
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
 #endif
-    char_u	*errmsg;	/* returned error message */
+    char	*errmsg;	/* returned error message */
     char_u	*(*getline)(int, void *, int);
     void	*cookie;	/* argument for getline() */
 #ifdef FEAT_EVAL

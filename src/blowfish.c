@@ -419,7 +419,7 @@ bf_key_init(
     keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
-	IEMSG(_("E831: bf_key_init() called with empty password"));
+	iemsg(_("E831: bf_key_init() called with empty password"));
 	return;
     }
     for (i = 0; i < keylen; i++)
@@ -522,7 +522,7 @@ bf_self_test(void)
      * warning. */
     if (ui != 0xffffffffUL || ui + 1 != 0) {
 	err++;
-	EMSG(_("E820: sizeof(uint32_t) != 4"));
+	emsg(_("E820: sizeof(uint32_t) != 4"));
     }
 
     if (!bf_check_tables(pax_init, sbx_init, 0x6ffa520a))
@@ -543,7 +543,7 @@ bf_self_test(void)
 	if (memcmp(bk.uc, bf_test_data[i].cryptxt, 8) != 0)
 	{
 	    if (err == 0 && memcmp(bk.uc, bf_test_data[i].badcryptxt, 8) == 0)
-		EMSG(_("E817: Blowfish big/little endian use wrong"));
+		emsg(_("E817: Blowfish big/little endian use wrong"));
 	    err++;
 	}
     }
@@ -669,12 +669,12 @@ blowfish_self_test(void)
 {
     if (sha256_self_test() == FAIL)
     {
-	EMSG(_("E818: sha256 test failed"));
+	emsg(_("E818: sha256 test failed"));
 	return FAIL;
     }
     if (bf_self_test() == FAIL)
     {
-	EMSG(_("E819: Blowfish test failed"));
+	emsg(_("E819: Blowfish test failed"));
 	return FAIL;
     }
     return OK;

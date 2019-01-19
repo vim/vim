@@ -134,7 +134,7 @@ func Test_vartabs()
   bwipeout!
 endfunc
 
-func! Test_vartabs_breakindent()
+func Test_vartabs_breakindent()
   if !exists("+breakindent")
     return
   endif

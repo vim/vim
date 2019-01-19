@@ -232,6 +232,8 @@ typedef PySliceObject PySliceObject_T;
 # endif
 # undef PyBytes_FromString
 # define PyBytes_FromString py3_PyBytes_FromString
+# undef PyBytes_FromStringAndSize
+# define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -394,6 +396,7 @@ static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char*
 static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
+static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
@@ -559,6 +562,7 @@ static struct
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
+    {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
@@ -630,7 +634,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    EMSG(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
 	return FAIL;
     }
 # endif
@@ -642,7 +646,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (!hinstPy3)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -654,7 +658,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPy3);
 	    hinstPy3 = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), py3_funcname_table[i].name);
+		semsg(_(e_loadfunc), py3_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -689,7 +693,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -860,7 +864,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
@@ -1680,6 +1684,7 @@ do_py3eval (char_u *str, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    break;
     }
 }

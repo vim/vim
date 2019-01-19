@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.1.  Last change: 2017 Sep 02
+*visual.txt*    For Vim version 8.1.  Last change: 2019 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -304,8 +304,6 @@ mode.
 
 ==============================================================================
 5. Blockwise operators					*blockwise-operators*
-
-{not available when compiled without the |+visualextra| feature}
 
 Reminder: Use 'virtualedit' to be able to select blocks that start or end
 after the end of a line or halfway a tab.

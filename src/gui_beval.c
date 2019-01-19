@@ -60,11 +60,7 @@ static gint target_event_cb(GtkWidget *, GdkEvent *, gpointer);
 static gint mainwin_event_cb(GtkWidget *, GdkEvent *, gpointer);
 static void pointer_event(BalloonEval *, int, int, unsigned);
 static void key_event(BalloonEval *, unsigned, int);
-# if GTK_CHECK_VERSION(3,0,0)
 static gboolean timeout_cb(gpointer);
-# else
-static gint timeout_cb(gpointer);
-# endif
 # if GTK_CHECK_VERSION(3,0,0)
 static gboolean balloon_draw_event_cb (GtkWidget *, cairo_t *, gpointer);
 # else
@@ -107,7 +103,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	IEMSG(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
 	return NULL;
     }
 
@@ -203,8 +199,7 @@ gui_mch_currently_showing_beval(void)
 #endif
 #endif /* !FEAT_GUI_W32 */
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
-    || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL) || defined(PROTO)
 # if !defined(FEAT_GUI_W32) || defined(PROTO)
 
 /*
@@ -220,7 +215,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 	undrawBalloon(beval);
 }
 # endif /* !FEAT_GUI_W32 */
-#endif /* FEAT_SUN_WORKSHOP || FEAT_NETBEANS_INTG || PROTO */
+#endif /* FEAT_NETBEANS_INTG || PROTO */
 
 #if !defined(FEAT_GUI_W32) || defined(PROTO)
 #if defined(FEAT_BEVAL_TIP) || defined(PROTO)
@@ -444,11 +439,7 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
 	cancelBalloon(beval);
 }
 
-# if GTK_CHECK_VERSION(3,0,0)
     static gboolean
-# else
-    static gint
-# endif
 timeout_cb(gpointer data)
 {
     BalloonEval *beval = (BalloonEval *)data;

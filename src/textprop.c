@@ -18,6 +18,8 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
+ *   -> a :substitute with a multi-line match
+ *   -> search for changed_bytes() from misc1.c
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -104,7 +106,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
     if (type == NULL)
 	type = find_prop(name, NULL);
     if (type == NULL)
-	EMSG2(_(e_type_not_exist), name);
+	semsg(_(e_type_not_exist), name);
     return type;
 }
 
@@ -122,7 +124,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
 
     if (arg->v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return FAIL;
     }
     if (arg->vval.v_dict == NULL)
@@ -130,7 +132,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	*buf = get_buf_tv(&di->di_tv, FALSE);
+	*buf = tv_get_buf(&di->di_tv, FALSE);
 	if (*buf == NULL)
 	    return FAIL;
     }
@@ -165,19 +167,19 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     start_col = tv_get_number(&argvars[1]);
     if (start_col < 1)
     {
-	EMSGN(_(e_invalid_col), (long)start_col);
+	semsg(_(e_invalid_col), (long)start_col);
 	return;
     }
     if (argvars[2].v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return;
     }
     dict = argvars[2].vval.v_dict;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
-	EMSG(_("E965: missing property type name"));
+	emsg(_("E965: missing property type name"));
 	return;
     }
     type_name = dict_get_string(dict, (char_u *)"type", FALSE);
@@ -187,7 +189,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	end_lnum = dict_get_number(dict, (char_u *)"end_lnum");
 	if (end_lnum < start_lnum)
 	{
-	    EMSG2(_(e_invargval), "end_lnum");
+	    semsg(_(e_invargval), "end_lnum");
 	    return;
 	}
     }
@@ -200,7 +202,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
 	if (length < 0 || end_lnum > start_lnum)
 	{
-	    EMSG2(_(e_invargval), "length");
+	    semsg(_(e_invargval), "length");
 	    return;
 	}
 	end_col = start_col + length;
@@ -210,7 +212,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	end_col = dict_get_number(dict, (char_u *)"end_col");
 	if (end_col <= 0)
 	{
-	    EMSG2(_(e_invargval), "end_col");
+	    semsg(_(e_invargval), "end_col");
 	    return;
 	}
     }
@@ -231,12 +233,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
     {
-	EMSGN(_(e_invalid_lnum), (long)start_lnum);
+	semsg(_(e_invalid_lnum), (long)start_lnum);
 	return;
     }
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
-	EMSGN(_(e_invalid_lnum), (long)end_lnum);
+	semsg(_(e_invalid_lnum), (long)end_lnum);
 	return;
     }
 
@@ -255,16 +257,16 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	    col = 1;
 	if (col - 1 > (colnr_T)textlen)
 	{
-	    EMSGN(_(e_invalid_col), (long)start_col);
+	    semsg(_(e_invalid_col), (long)start_col);
 	    return;
 	}
 
 	if (lnum == end_lnum)
 	    length = end_col - col;
 	else
-	    length = textlen - col + 1;
+	    length = (int)textlen - col + 1;
 	if (length > (long)textlen)
-	    length = textlen;	// can include the end-of-line
+	    length = (int)textlen;	// can include the end-of-line
 	if (length < 0)
 	    length = 0;		// zero-width property
 
@@ -338,12 +340,40 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     proplen = buf->b_ml.ml_line_len - textlen;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	IEMSG(_("E967: text property info corrupted"));
+	iemsg(_("E967: text property info corrupted"));
 	return 0;
     }
     if (proplen > 0)
 	*props = text + textlen;
     return (int)(proplen / sizeof(textprop_T));
+}
+
+/*
+ * Set the text properties for line "lnum" to "props" with length "len".
+ * If "len" is zero text properties are removed, "props" is not used.
+ * Any existing text properties are dropped.
+ * Only works for the current buffer.
+ */
+    static void
+set_text_props(linenr_T lnum, char_u *props, int len)
+{
+    char_u  *text;
+    char_u  *newtext;
+    int	    textlen;
+
+    text = ml_get(lnum);
+    textlen = (int)STRLEN(text) + 1;
+    newtext = alloc(textlen + len);
+    if (newtext == NULL)
+	return;
+    mch_memmove(newtext, text, textlen);
+    if (len > 0)
+	mch_memmove(newtext + textlen, props, len);
+    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+	vim_free(curbuf->b_ml.ml_line_ptr);
+    curbuf->b_ml.ml_line_ptr = newtext;
+    curbuf->b_ml.ml_line_len = textlen + len;
+    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 }
 
     static proptype_T *
@@ -410,7 +440,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     }
     if (start < 1 || end < 1)
     {
-	EMSG(_(e_invrange));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -457,7 +487,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     }
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-	EMSG(_(e_invrange));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -512,7 +542,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -524,7 +554,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    end = tv_get_number(&argvars[2]);
 	if (start < 1 || end < 1)
 	{
-	    EMSG(_(e_invrange));
+	    emsg(_(e_invrange));
 	    return;
 	}
     }
@@ -533,7 +563,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     di = dict_find(dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	buf = get_buf_tv(&di->di_tv, FALSE);
+	buf = tv_get_buf(&di->di_tv, FALSE);
 	if (buf == NULL)
 	    return;
     }
@@ -555,7 +585,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     if (id == -1 && type_id == -1)
     {
-	EMSG(_("E968: Need at least one of 'id' or 'type'"));
+	emsg(_("E968: Need at least one of 'id' or 'type'"));
 	return;
     }
 
@@ -631,7 +661,7 @@ prop_type_set(typval_T *argvars, int add)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -646,7 +676,7 @@ prop_type_set(typval_T *argvars, int add)
 
 	if (prop != NULL)
 	{
-	    EMSG2(_("E969: Property type %s already defined"), name);
+	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
 	prop = (proptype_T *)alloc_clear((int)(sizeof(proptype_T) + STRLEN(name)));
@@ -671,7 +701,7 @@ prop_type_set(typval_T *argvars, int add)
     {
 	if (prop == NULL)
 	{
-	    EMSG2(_(e_type_not_exist), name);
+	    semsg(_(e_type_not_exist), name);
 	    return;
 	}
     }
@@ -689,7 +719,7 @@ prop_type_set(typval_T *argvars, int add)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)
 	    {
-		EMSG2(_("E970: Unknown highlight group name: '%s'"),
+		semsg(_("E970: Unknown highlight group name: '%s'"),
 			highlight == NULL ? (char_u *)"" : highlight);
 		return;
 	    }
@@ -751,7 +781,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -786,7 +816,7 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*name == NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
     if (rettv_dict_alloc(rettv) == OK)
@@ -920,42 +950,132 @@ clear_buf_prop_types(buf_T *buf)
  * Called is expected to check b_has_textprop and "bytes_added" being non-zero.
  */
     void
-adjust_prop_columns(linenr_T lnum, colnr_T col, int bytes_added)
+adjust_prop_columns(
+	linenr_T    lnum,
+	colnr_T	    col,
+	int	    bytes_added)
 {
     int		proplen;
     char_u	*props;
     textprop_T	tmp_prop;
     proptype_T  *pt;
     int		dirty = FALSE;
-    int		i;
+    int		ri, wi;
+    size_t	textlen;
+
+    if (text_prop_frozen > 0)
+	return;
 
     proplen = get_text_props(curbuf, lnum, &props, TRUE);
     if (proplen == 0)
 	return;
+    textlen = curbuf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
-    for (i = 0; i < proplen; ++i)
+    wi = 0; // write index
+    for (ri = 0; ri < proplen; ++ri)
     {
-	mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
+	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
 							   sizeof(textprop_T));
 	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
 
-	if (tmp_prop.tp_col >= col + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL) ? 2 : 1))
+	if (bytes_added > 0
+		? (tmp_prop.tp_col >= col
+		       + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL)
+								      ? 2 : 1))
+		: (tmp_prop.tp_col > col + 1))
 	{
 	    tmp_prop.tp_col += bytes_added;
 	    dirty = TRUE;
 	}
-	else if (tmp_prop.tp_col + tmp_prop.tp_len > col + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL) ? 0 : 1))
+	else if (tmp_prop.tp_len > 0
+		&& tmp_prop.tp_col + tmp_prop.tp_len > col
+		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
+								      ? 0 : 1))
 	{
 	    tmp_prop.tp_len += bytes_added;
 	    dirty = TRUE;
+	    if (tmp_prop.tp_len <= 0)
+		continue;  // drop this text property
 	}
-	if (dirty)
-	{
-	    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
-	    mch_memmove(props + i * sizeof(textprop_T), &tmp_prop,
+	mch_memmove(props + wi * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
+	++wi;
+    }
+    if (dirty)
+    {
+	colnr_T newlen = (int)textlen + wi * (colnr_T)sizeof(textprop_T);
+
+	if ((curbuf->b_ml.ml_flags & ML_LINE_DIRTY) == 0)
+	    curbuf->b_ml.ml_line_ptr =
+				 vim_memsave(curbuf->b_ml.ml_line_ptr, newlen);
+	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	curbuf->b_ml.ml_line_len = newlen;
+    }
+}
+
+/*
+ * Adjust text properties for a line that was split in two.
+ * "lnum" is the newly inserted line.  The text properties are now on the line
+ * below it.  "kept" is the number of bytes kept in the first line, while
+ * "deleted" is the number of bytes deleted.
+ */
+    void
+adjust_props_for_split(linenr_T lnum, int kept, int deleted)
+{
+    char_u	*props;
+    int		count;
+    garray_T    prevprop;
+    garray_T    nextprop;
+    int		i;
+    int		skipped = kept + deleted;
+
+    if (!curbuf->b_has_textprop)
+	return;
+    count = get_text_props(curbuf, lnum + 1, &props, FALSE);
+    ga_init2(&prevprop, sizeof(textprop_T), 10);
+    ga_init2(&nextprop, sizeof(textprop_T), 10);
+
+    // Get the text properties, which are at "lnum + 1".
+    // Keep the relevant ones in the first line, reducing the length if needed.
+    // Copy the ones that include the split to the second line.
+    // Move the ones after the split to the second line.
+    for (i = 0; i < count; ++i)
+    {
+	textprop_T  prop;
+	textprop_T *p;
+
+	// copy the prop to an aligned structure
+	mch_memmove(&prop, props + i * sizeof(textprop_T), sizeof(textprop_T));
+
+	if (prop.tp_col < kept && ga_grow(&prevprop, 1) == OK)
+	{
+	    p = ((textprop_T *)prevprop.ga_data) + prevprop.ga_len;
+	    *p = prop;
+	    if (p->tp_col + p->tp_len >= kept)
+		p->tp_len = kept - p->tp_col;
+	    ++prevprop.ga_len;
+	}
+
+	if (prop.tp_col + prop.tp_len >= skipped && ga_grow(&nextprop, 1) == OK)
+	{
+	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
+	    *p = prop;
+	    if (p->tp_col > skipped)
+		p->tp_col -= skipped - 1;
+	    else
+	    {
+		p->tp_len -= skipped - p->tp_col;
+		p->tp_col = 1;
+	    }
+	    ++nextprop.ga_len;
 	}
     }
+
+    set_text_props(lnum, prevprop.ga_data, prevprop.ga_len * sizeof(textprop_T));
+    ga_clear(&prevprop);
+
+    set_text_props(lnum + 1, nextprop.ga_data, nextprop.ga_len * sizeof(textprop_T));
+    ga_clear(&nextprop);
 }
 
 #endif // FEAT_TEXT_PROP

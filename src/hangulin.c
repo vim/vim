@@ -588,7 +588,7 @@ hangul_automata2(char_u *buf, int_u *c)
 	    return AUTOMATA_CORRECT_NEW;
 
 	default:
-	    IEMSG(_("E256: Hangul automata ERROR"));
+	    iemsg(_("E256: Hangul automata ERROR"));
 	    break;
     }
     return AUTOMATA_ERROR; /* RrEeAaLlLlYy EeRrRrOoRr */

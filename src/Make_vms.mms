@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2017 Nov 18
+# Last change:  2019 Jan 18
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -43,6 +43,8 @@ GUI = YES
 # GUI with GTK
 # If you have GTK installed you might want to enable this option.
 # NOTE: you will need to properly define GTK_DIR below
+# NOTE: since Vim 7.3 GTK 2+ is used that is not ported to VMS, 
+#       therefore this option should not be used  
 # GTK = YES
 
 # GUI/Motif with XPM
@@ -164,7 +166,7 @@ GTK = ""
 # unique on every system - logicals are not accepted
 # please note: directory should end with . in order to /trans=conc work
 # This value for GTK_DIR is an example.
-GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
+GTK_DIR  = DKA0:[WORK.GTK1210.]
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
 GUI_FLAG = /name=(as_is,short)/float=ieee/ieee=denorm
@@ -178,8 +180,10 @@ GUI_INC_VER= ,\""/gtk_root/gtk\"",\""/gtk_root/glib\""
 MOTIF	 = YES
 .IFDEF XPM
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF","HAVE_XPM"
+XPM_INC  = ,[.xpm.include]
 .ELSE
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF"
+XPM_INC  = 
 .ENDIF
 LIBS     = ,OS_VMS_MOTIF.OPT/OPT
 GUI_FLAG =
@@ -269,6 +273,11 @@ MZSCH_OBJ = if_mzsch.obj
 ICONV_DEF = ,"USE_ICONV"
 .ENDIF
 
+# XDIFF related setup.
+XDIFF_SRC = xdiffi.c,xemit.c,xprepare.c,xutils.c,xhistogram.c,xpatience.c
+XDIFF_OBJ = xdiffi.obj,xemit.obj,xprepare.obj,xutils.obj,xhistogram.obj,xpatience.obj 
+XDIFF_INC = ,[.xdiff]
+
 ######################################################################
 # End of configuration section.
 # Please, do not change anything below without programming experience.
@@ -283,41 +292,45 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 .SUFFIXES : .obj .c
 
 ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF)$(ICONV_DEF)) -
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC)$(TCL_INC))
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
+ $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 # CFLAGS displayed in :ver information
 # It is specially formated for correct display of unix like includes
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
 ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF)$(ICONV_DEF)) -
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
+ $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC)$(TCL_INC))
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
+ $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
 
-SRC =	arabic.c beval.obj blowfish.c buffer.c charset.c crypt.c crypt_zip.c dict.c diff.c digraph.c edit.c eval.c evalfunc.c \
-	ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c if_cscope.c if_xcmdsrv.c farsi.c fileio.c fold.c getchar.c \
-	hardcopy.c hashtab.c json.c list.c main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
+SRC =	arabic.c beval.obj blob.c blowfish.c buffer.c charset.c crypt.c crypt_zip.c dict.c diff.c digraph.c edit.c eval.c \
+	evalfunc.c ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c if_cscope.c if_xcmdsrv.c farsi.c fileio.c fold.c \
+	getchar.c hardcopy.c hashtab.c json.c list.c main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
 	misc2.c move.c normal.c ops.c option.c popupmnu.c quickfix.c regexp.c search.c sha256.c sign.c \
-	spell.c spellfile.c syntax.c tag.c term.c termlib.c ui.c undo.c userfunc.c version.c screen.c \
+ 	spell.c spellfile.c syntax.c tag.c term.c termlib.c textprop.c ui.c undo.c userfunc.c version.c screen.c \
 	window.c os_unix.c os_vms.c pathdef.c \
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) \
-	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC)
+ 	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
-OBJ = 	arabic.obj beval.obj blowfish.obj buffer.obj charset.obj crypt.obj crypt_zip.obj dict.obj diff.obj digraph.obj edit.obj eval.obj \
-	evalfunc.obj ex_cmds.obj ex_cmds2.obj ex_docmd.obj ex_eval.obj ex_getln.obj if_cscope.obj \
+OBJ = 	arabic.obj beval.obj blob.obj blowfish.obj buffer.obj charset.obj crypt.obj crypt_zip.obj dict.obj diff.obj digraph.obj \
+	edit.obj eval.obj evalfunc.obj ex_cmds.obj ex_cmds2.obj ex_docmd.obj ex_eval.obj ex_getln.obj if_cscope.obj \
 	if_xcmdsrv.obj farsi.obj fileio.obj fold.obj getchar.obj hardcopy.obj hashtab.obj json.obj list.obj main.obj mark.obj \
 	menu.obj memfile.obj memline.obj message.obj misc1.obj misc2.obj \
 	move.obj mbyte.obj normal.obj ops.obj option.obj popupmnu.obj quickfix.obj \
-	regexp.obj search.obj sha256.obj sign.obj spell.obj spellfile.obj syntax.obj tag.obj term.obj termlib.obj \
+ 	regexp.obj search.obj sha256.obj sign.obj spell.obj spellfile.obj syntax.obj tag.obj term.obj termlib.obj textprop.obj \
 	ui.obj undo.obj userfunc.obj screen.obj version.obj window.obj os_unix.obj \
 	os_vms.obj pathdef.obj if_mzsch.obj\
 	$(GUI_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(TCL_OBJ) \
-	$(RUBY_OBJ) $(HANGULIN_OBJ) $(MZSCH_OBJ)
+ 	$(RUBY_OBJ) $(HANGULIN_OBJ) $(MZSCH_OBJ) $(XDIFF_OBJ)
 
 # Default target is making the executable
 all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env ruby_env $(TARGET)
@@ -487,7 +500,8 @@ ruby_env :
 .ENDIF
 
 arabic.obj : arabic.c vim.h
-blowfish.obj : blowfish.c vim.h
+blowfish.obj : blowfish.c vim.h [.auto]config.h feature.h os_unix.h
+blob.obj : blob.c vim.h [.auto]config.h feature.h os_unix.h	
 buffer.obj : buffer.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -705,6 +719,10 @@ termlib.obj : termlib.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
  arabic.h
+textprop.obj : textprop.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h
 ui.obj : ui.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h farsi.h \
@@ -828,5 +846,11 @@ netbeans.obj : netbeans.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h version.h
-gui_xmdlg.obj : gui_xmdlg.c
-gui_xmebw.obj : gui_xmebw.c
+gui_xmdlg.obj : gui_xmdlg.c [.auto]config.h vim.h feature.h os_unix.h
+gui_xmebw.obj : gui_xmebw.c [.auto]config.h vim.h feature.h os_unix.h
+xdiffi.obj : [.xdiff]xdiffi.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
+xemit.obj : [.xdiff]xemit.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
+xprepare.obj : [.xdiff]xprepare.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
+xutils.obj : [.xdiff]xutils.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
+xhistogram.obj : [.xdiff]xhistogram.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
+xpatience.obj : [.xdiff]xpatience.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h	

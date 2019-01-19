@@ -10,6 +10,7 @@ compiler:
   - gcc
 
 env:
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
   - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     # ASAN build
   - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
@@ -28,9 +29,12 @@ sudo: false
 
 # instead of a 2*2*7 matrix (2*os + 2*compiler + 7*env),
 # exclude some builds on mac os x and linux
+# on mac os x "tiny" is always without GUI
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
 matrix:
   exclude:
+    - os: osx
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - os: osx
       env: BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
     - os: osx

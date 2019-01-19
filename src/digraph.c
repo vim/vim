@@ -2218,18 +2218,18 @@ putdigraph(char_u *str)
 	char2 = *str++;
 	if (char2 == 0)
 	{
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	    return;
 	}
 	if (char1 == ESC || char2 == ESC)
 	{
-	    EMSG(_("E104: Escape not allowed in digraph"));
+	    emsg(_("E104: Escape not allowed in digraph"));
 	    return;
 	}
 	str = skipwhite(str);
 	if (!VIM_ISDIGIT(*str))
 	{
-	    EMSG(_(e_number_exp));
+	    emsg(_(e_number_exp));
 	    return;
 	}
 	n = getdigits(&str);
@@ -2446,7 +2446,7 @@ static void keymap_unload(void);
  * used when setting the option, not later when the value has already been
  * checked.
  */
-    char_u *
+    char *
 keymap_init(void)
 {
     curbuf->b_kmap_state &= ~KEYMAP_INIT;
@@ -2487,7 +2487,7 @@ keymap_init(void)
 	    if (source_runtime(buf, 0) == FAIL)
 	    {
 		vim_free(buf);
-		return (char_u *)N_("E544: Keymap file not found");
+		return N_("E544: Keymap file not found");
 	    }
 	}
 	vim_free(buf);
@@ -2513,7 +2513,7 @@ ex_loadkeymap(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	EMSG(_("E105: Using :loadkeymap not in a sourced file"));
+	emsg(_("E105: Using :loadkeymap not in a sourced file"));
 	return;
     }
 
@@ -2552,7 +2552,7 @@ ex_loadkeymap(exarg_T *eap)
 		    || *kp->from == NUL || *kp->to == NUL)
 	    {
 		if (kp->to != NULL && *kp->to == NUL)
-		    EMSG(_("E791: Empty keymap entry"));
+		    emsg(_("E791: Empty keymap entry"));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

@@ -633,7 +633,7 @@ dyn_libintl_init(void)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    EMSG2(_(e_loadlib), GETTEXT_DLL);
+	    semsg(_(e_loadlib), GETTEXT_DLL);
 	    verbose_leave();
 	}
 	return 0;
@@ -648,7 +648,7 @@ dyn_libintl_init(void)
 	    if (p_verbose > 0)
 	    {
 		verbose_enter();
-		EMSG2(_(e_loadfunc), libintl_entry[i].name);
+		semsg(_(e_loadfunc), libintl_entry[i].name);
 		verbose_leave();
 	    }
 	    return 0;
@@ -5182,7 +5182,7 @@ mch_call_shell(
 	    {
 		x = -1;
 #ifdef FEAT_GUI_W32
-		EMSG(_("E371: Command not found"));
+		emsg(_("E371: Command not found"));
 #endif
 	    }
 
@@ -5260,7 +5260,7 @@ mch_call_shell(
 #endif
 	    )
     {
-	smsg((char_u *)_("shell returned %d"), x);
+	smsg(_("shell returned %d"), x);
 	msg_putchar('\n');
     }
 #ifdef FEAT_TITLE
@@ -5428,6 +5428,49 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 # endif
 }
 
+/*
+ * Create a pair of pipes.
+ * Return TRUE for success, FALSE for failure.
+ */
+    static BOOL
+create_pipe_pair(HANDLE handles[2])
+{
+    static LONG		s;
+    char		name[64];
+    SECURITY_ATTRIBUTES sa;
+
+    sprintf(name, "\\\\?\\pipe\\vim-%08lx-%08lx",
+	    GetCurrentProcessId(),
+	    InterlockedIncrement(&s));
+
+    // Create named pipe. Max size of named pipe is 65535.
+    handles[1] = CreateNamedPipe(
+	    name,
+	    PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
+	    PIPE_TYPE_BYTE | PIPE_NOWAIT,
+	    1, 65535, 0, 0, NULL);
+
+    if (handles[1] == INVALID_HANDLE_VALUE)
+	return FALSE;
+
+    sa.nLength = sizeof(sa);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = NULL;
+
+    handles[0] = CreateFile(name,
+	    FILE_GENERIC_READ,
+	    FILE_SHARE_READ, &sa,
+	    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+    if (handles[0] == INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(handles[1]);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
     void
 mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {
@@ -5489,13 +5532,13 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	if (ifd[0] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
-    else if (!use_null_for_in &&
-	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
-	    || !SetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
+    else if (!use_null_for_in
+	    && (!create_pipe_pair(ifd)
+		|| !SetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
 
     if (use_file_for_out)
@@ -5507,7 +5550,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (ofd[1] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }
@@ -5525,7 +5568,7 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 		&saAttr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL);
 	if (efd[1] == INVALID_HANDLE_VALUE)
 	{
-	    EMSG2(_(e_notopen), fname);
+	    semsg(_(e_notopen), fname);
 	    goto failed;
 	}
     }

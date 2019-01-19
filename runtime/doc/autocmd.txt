@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2018 Dec 28
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -925,6 +925,12 @@ ShellFilterPost			After executing a shell command with
 							*SourcePre*
 SourcePre			Before sourcing a Vim script. |:source|
 				<afile> is the name of the file being sourced.
+							*SourcePost*
+SourcePost			After sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+				Not triggered when sourcing was interrupted.
+				Also triggered after a SourceCmd autocommand
+				was triggered.
 							*SourceCmd*
 SourceCmd			When sourcing a Vim script. |:source|
 				<afile> is the name of the file being sourced.
@@ -1011,8 +1017,10 @@ TermResponse			After the response to |t_RV| is received from
 				anything else that takes time is involved.
 							*TextChanged*
 TextChanged			After a change was made to the text in the
-				current buffer in Normal mode.  That is when
-				|b:changedtick| has changed.
+				current buffer in Normal mode.  That is after
+				|b:changedtick| has changed (also when that
+				happened before the TextChanged autocommand
+				was defined).
 				Not triggered when there is typeahead or when
 				an operator is pending.
 				Careful: This is triggered very often, don't

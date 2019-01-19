@@ -347,6 +347,14 @@ typedef struct
  * structures used for undo
  */
 
+// One line saved for undo.  After the NUL terminated text there might be text
+// properties, thus ul_len can be larger than STRLEN(ul_line) + 1.
+typedef struct {
+    char_u	*ul_line;	// text of the line
+    long	ul_len;		// length of the line including NUL, plus text
+				// properties
+} undoline_T;
+
 typedef struct u_entry u_entry_T;
 typedef struct u_header u_header_T;
 struct u_entry
@@ -355,7 +363,7 @@ struct u_entry
     linenr_T	ue_top;		/* number of line above undo block */
     linenr_T	ue_bot;		/* number of line below undo block */
     linenr_T	ue_lcount;	/* linecount when u_save called */
-    char_u	**ue_array;	/* array of lines in undo block */
+    undoline_T	*ue_array;	/* array of lines in undo block */
     long	ue_size;	/* number of lines in ue_array */
 #ifdef U_DEBUG
     int		ue_magic;	/* magic number to check allocation */
@@ -881,8 +889,8 @@ struct condstack
  */
 struct msglist
 {
-    char_u		*msg;		/* original message */
-    char_u		*throw_msg;	/* msg to throw: usually original one */
+    char		*msg;		/* original message */
+    char		*throw_msg;	/* msg to throw: usually original one */
     struct msglist	*next;		/* next of several messages in a row */
 };
 
@@ -904,7 +912,7 @@ typedef struct vim_exception except_T;
 struct vim_exception
 {
     except_type_T	type;		/* exception type */
-    char_u		*value;		/* exception value */
+    char		*value;		/* exception value */
     struct msglist	*messages;	/* message(s) causing error exception */
     char_u		*throw_name;	/* name of the throw point */
     linenr_T		throw_lnum;	/* line number of the throw point */
@@ -1243,6 +1251,7 @@ typedef double	float_T;
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
 typedef struct partial_S partial_T;
+typedef struct blobvar_S blob_T;
 
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
@@ -1264,6 +1273,7 @@ typedef enum
     VAR_SPECIAL, // "v_number" is used
     VAR_JOB,	 // "v_job" is used
     VAR_CHANNEL, // "v_channel" is used
+    VAR_BLOB,	 // "v_blob" is used
 } vartype_T;
 
 /*
@@ -1287,6 +1297,7 @@ typedef struct
 	job_T		*v_job;		/* job value (can be NULL!) */
 	channel_T	*v_channel;	/* channel value (can be NULL!) */
 #endif
+	blob_T		*v_blob;	/* blob value (can be NULL!) */
     }		vval;
 } typval_T;
 
@@ -1391,6 +1402,16 @@ struct dictvar_S
     dict_T	*dv_copydict;	/* copied dict used by deepcopy() */
     dict_T	*dv_used_next;	/* next dict in used dicts list */
     dict_T	*dv_used_prev;	/* previous dict in used dicts list */
+};
+
+/*
+ * Structure to hold info about a blob.
+ */
+struct blobvar_S
+{
+    garray_T	bv_ga;		// growarray with the data
+    int		bv_refcount;	// reference count
+    char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -1919,6 +1940,10 @@ typedef struct {
 # define CRYPT_M_BF	1
 # define CRYPT_M_BF2	2
 # define CRYPT_M_COUNT	3 /* number of crypt methods */
+
+// Currently all crypt methods work inplace.  If one is added that isn't then
+// define this.
+//  # define CRYPT_NOT_INPLACE 1
 #endif
 
 
@@ -2167,7 +2192,7 @@ struct file_buffer
     /*
      * variables for "U" command in undo.c
      */
-    char_u	*b_u_line_ptr;	/* saved line for "U" command */
+    undoline_T	b_u_line_ptr;	/* saved line for "U" command */
     linenr_T	b_u_line_lnum;	/* line number of line in u_line */
     colnr_T	b_u_line_colnr;	/* optional column number */
 
@@ -3518,6 +3543,7 @@ typedef struct lval_S
     dict_T	*ll_dict;	/* The Dictionary or NULL */
     dictitem_T	*ll_di;		/* The dictitem or NULL */
     char_u	*ll_newkey;	/* New key for Dict in alloc. mem or NULL. */
+    blob_T	*ll_blob;	/* The Blob or NULL */
 } lval_T;
 
 /* Structure used to save the current state.  Used when executing Normal mode

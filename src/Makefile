@@ -317,7 +317,7 @@ CClink = $(CC)
 # You can give a lot of options to configure.
 # Change this to your desire and do 'make config' afterwards
 
-# examples:
+# examples you can uncomment:
 #CONF_ARGS1 = --exec-prefix=/usr
 #CONF_ARGS2 = --with-vim-name=vim8 --with-ex-name=ex8 --with-view-name=view8
 #CONF_ARGS3 = --with-global-runtime=/etc/vim,/usr/share/vim
@@ -493,11 +493,7 @@ CClink = $(CC)
 #CONF_OPT_TERMINAL = --disable-terminal
 
 # MULTIBYTE - To edit multi-byte characters.
-# Uncomment this when you want to edit a multibyte language.
-# It's automatically enabled with normal features, GTK or IME support.
-# Note: Compile on a machine where setlocale() actually works, otherwise the
-# configure tests may fail.
-#CONF_OPT_MULTIBYTE = --enable-multibyte
+# This is now always enabled.
 
 # When building with at least "big" features, right-left, Arabic and Farsi
 # features are enabled.  Use this to disable them.
@@ -785,7 +781,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC	    = /usr/ucb/cc
 #EXTRA_LIBS = -R/usr/ucblib
 
-### Solaris with Forte Developer and FEAT_SUN_WORKSHOP
+### Solaris with Forte Developer and NetBeans.
 # The Xpm library is available from http://koala.ilog.fr/ftp/pub/xpm.
 #CC		= cc
 #XPM_DIR		= /usr/local/xpm/xpm-3.4k-solaris
@@ -794,10 +790,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #EXTRA_LIBS	= $(XPM_LIB)
 #EXTRA_IPATHS	= $(XPM_IPATH)
 #EXTRA_DEFS	= -xCC -DHAVE_X11_XPM_H
-
-### Solaris with workshop compilers: Vim is unstable when compiled with
-# "-fast".  Use this instead. (Shea Martin)
-#CFLAGS = -x02 -xtarget=ultra
 
 ### (R) for Solaris 2.5 (or 2.5.1) with gcc > 2.5.6 you might need this:
 #LDFLAGS = -lw -ldl -lXmu
@@ -1565,8 +1557,11 @@ DEST_MAN_PL_U = $(DEST_MAN_TOP)/pl.UTF-8$(MAN1DIR)
 DEST_MAN_RU = $(DEST_MAN_TOP)/ru.KOI8-R$(MAN1DIR)
 DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 
-# The list of tests is common to all systems.
+# stuff common to all systems
 include Make_all.mak
+
+# get the list of tests
+include testdir/Make_all.mak
 
 #	     BASIC_SRC: files that are always used
 #	       GUI_SRC: extra GUI files for current configuration
@@ -1578,6 +1573,7 @@ include Make_all.mak
 BASIC_SRC = \
 	arabic.c \
 	beval.c \
+	blob.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -1651,14 +1647,11 @@ SRC =	$(BASIC_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC) \
-	$(WORKSHOP_SRC) \
-	$(WSDEBUG_SRC)
+	$(RUBY_SRC)
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
-	    gui_beval.c workshop.c wsdebug.c integration.c \
-	    netbeans.c channel.c \
+	    gui_beval.c netbeans.c channel.c \
 	    $(GRESOURCE_SRC)
 
 # Unittest files
@@ -1684,7 +1677,6 @@ ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) \
 # The perl sources also don't work well with lint.
 LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
 	   $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
-	   $(WORKSHOP_SRC) $(WSDEBUG_SRC) \
 	   $(NETBEANS_SRC) $(CHANNEL_SRC) $(TERM_SRC)
 #LINT_SRC = $(SRC)
 #LINT_SRC = $(ALL_SRC)
@@ -1694,6 +1686,7 @@ OBJ_COMMON = \
 	objects/arabic.o \
 	objects/beval.o \
 	objects/buffer.o \
+	objects/blob.o \
 	objects/blowfish.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
@@ -1760,11 +1753,9 @@ OBJ_COMMON = \
 	$(TCL_OBJ) \
 	$(RUBY_OBJ) \
 	$(OS_EXTRA_OBJ) \
-	$(WORKSHOP_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS) \
-	$(WSDEBUG_OBJ)
+	$(XDIFF_OBJS)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -1888,7 +1879,6 @@ PRO_AUTO = \
 	window.pro \
 	beval.pro \
 	gui_beval.pro \
-	workshop.pro \
 	netbeans.pro \
 	channel.pro \
 	$(ALL_GUI_PRO) \
@@ -1931,7 +1921,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
 		$(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
 		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
-		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
+		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) \
 		$(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
 		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL) $(CONF_OPT_NETBEANS) \
 		$(CONF_OPT_CHANNEL) $(CONF_OPT_TERMINAL) \
@@ -2184,11 +2174,7 @@ test1 \
 # Run individual NEW style test.
 # These do not depend on the executable, compile it when needed.
 $(NEW_TESTS):
-	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile $@.res VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
-	@if test -f testdir/test.log; then \
-		cat testdir/test.log; \
-	fi
-	cat testdir/messages
+	cd testdir; $(MAKE) $@ VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 newtests:
 	cd testdir; rm -f $@.res test.log messages; $(MAKE) -f Makefile newtestssilent VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
@@ -2948,6 +2934,9 @@ $(ALL_OBJ): objects/.dirstamp
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
 
+objects/blob.o: blob.c
+	$(CCC) -o $@ blob.c
+
 objects/blowfish.o: blowfish.c
 	$(CCC) -o $@ blowfish.c
 
@@ -3098,9 +3087,6 @@ objects/if_ruby.o: if_ruby.c
 objects/if_tcl.o: if_tcl.c
 	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ if_tcl.c
 
-objects/integration.o: integration.c
-	$(CCC) -o $@ integration.c
-
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
 
@@ -3238,12 +3224,6 @@ objects/userfunc.o: userfunc.c
 
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
-
-objects/workshop.o: workshop.c
-	$(CCC) -o $@ workshop.c
-
-objects/wsdebug.o: wsdebug.c
-	$(CCC) -o $@ wsdebug.c
 
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
@@ -3397,6 +3377,10 @@ objects/arabic.o: arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
 objects/beval.o: beval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h farsi.h arabic.h
+objects/blob.o: blob.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
@@ -3780,16 +3764,6 @@ objects/gui_beval.o: gui_beval.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
-objects/workshop.o: workshop.c protodef.h auto/config.h integration.h vim.h \
- feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
- option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
- ex_cmds.h spell.h proto.h globals.h farsi.h arabic.h version.h \
- workshop.h
-objects/wsdebug.o: wsdebug.c
-objects/integration.o: integration.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h farsi.h arabic.h integration.h
 objects/netbeans.o: netbeans.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

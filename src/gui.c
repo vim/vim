@@ -215,7 +215,7 @@ gui_do_fork(void)
     pid = fork();
     if (pid < 0)	    /* Fork error */
     {
-	EMSG(_("E851: Failed to create a new process for the GUI"));
+	emsg(_("E851: Failed to create a new process for the GUI"));
 	return;
     }
     else if (pid > 0)	    /* Parent */
@@ -239,7 +239,7 @@ gui_do_fork(void)
 # else
 		waitpid(pid, &exit_status, 0);
 # endif
-		EMSG(_("E852: The child process failed to start the GUI"));
+		emsg(_("E852: The child process failed to start the GUI"));
 		return;
 	    }
 	    else if (status == GUI_CHILD_IO_ERROR)
@@ -362,7 +362,7 @@ gui_init_check(void)
     if (result != MAYBE)
     {
 	if (result == FAIL)
-	    EMSG(_("E229: Cannot start the GUI"));
+	    emsg(_("E229: Cannot start the GUI"));
 	return result;
     }
 
@@ -515,7 +515,7 @@ gui_init(void)
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
 		    && do_source(use_gvimrc, FALSE, DOSO_NONE) != OK)
-		EMSG2(_("E230: Cannot read from \"%s\""), use_gvimrc);
+		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc);
 	}
 	else
 	{
@@ -649,12 +649,12 @@ gui_init(void)
 	    gui_init_font(*p_guifont == NUL ? hl_get_font_name()
 						  : p_guifont, FALSE) == FAIL)
     {
-	EMSG(_("E665: Cannot start GUI, no valid font found"));
+	emsg(_("E665: Cannot start GUI, no valid font found"));
 	goto error2;
     }
 #ifdef FEAT_MBYTE
     if (gui_get_wide_font() == FAIL)
-	EMSG(_("E231: 'guifontwide' invalid"));
+	emsg(_("E231: 'guifontwide' invalid"));
 #endif
 
     gui.num_cols = Columns;
@@ -671,10 +671,6 @@ gui_init(void)
 
 #ifdef FEAT_MENU
     gui_create_initial_menus(root_menu);
-#endif
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-	workshop_init();
 #endif
 #ifdef FEAT_SIGN_ICONS
     sign_gui_started();
@@ -769,7 +765,7 @@ gui_init(void)
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
-	    EMSG(_("E599: Value of 'imactivatekey' is invalid"));
+	    emsg(_("E599: Value of 'imactivatekey' is invalid"));
 #endif
 	/* When 'cmdheight' was set during startup it may not have taken
 	 * effect yet. */
@@ -1604,19 +1600,8 @@ gui_set_shellsize(
 	/* Remember the original window position. */
 	(void)gui_mch_get_winpos(&x, &y);
 
-#ifdef USE_SUN_WORKSHOP
-    if (!mustset && usingSunWorkShop
-				&& workshop_get_width_height(&width, &height))
-    {
-	Columns = (width - base_width + gui.char_width - 1) / gui.char_width;
-	Rows = (height - base_height + gui.char_height - 1) / gui.char_height;
-    }
-    else
-#endif
-    {
-	width = Columns * gui.char_width + base_width;
-	height = Rows * gui.char_height + base_height;
-    }
+    width = Columns * gui.char_width + base_width;
+    height = Rows * gui.char_height + base_height;
 
     if (fit_to_display)
     {
@@ -2966,9 +2951,9 @@ gui_wait_for_chars_or_timer(long wtime)
     int
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
-    int	    retval;
+    int		retval;
 #if defined(ELAPSED_FUNC)
-    ELAPSED_TYPE start_tv;
+    elapsed_T	start_tv;
 #endif
 
 #ifdef FEAT_MENU
@@ -3017,7 +3002,7 @@ gui_wait_for_chars(long wtime, int tb_change_cnt)
     if (gui_wait_for_chars_or_timer(p_ut) == OK)
 	retval = OK;
     else if (trigger_cursorhold()
-#ifdef ELAPSED_FUNC
+#if defined(ELAPSED_FUNC)
 	    && ELAPSED_FUNC(start_tv) >= p_ut
 #endif
 	    && typebuf.tb_change_cnt == tb_change_cnt)
@@ -4785,7 +4770,7 @@ gui_get_color(char_u *name)
 	    && gui.in_use
 #endif
 	    )
-	EMSG2(_("E254: Cannot allocate color %s"), name);
+	semsg(_("E254: Cannot allocate color %s"), name);
     return t;
 }
 
@@ -5128,7 +5113,7 @@ no_console_input(void)
 }
 #endif
 
-#if defined(FIND_REPLACE_DIALOG) || defined(FEAT_SUN_WORKSHOP) \
+#if defined(FIND_REPLACE_DIALOG) \
 	|| defined(NEED_GUI_UPDATE_SCREEN) \
 	|| defined(PROTO)
 /*
@@ -5166,8 +5151,6 @@ gui_update_screen(void)
 	last_cursormoved = curwin->w_cursor;
     }
 
-    update_screen(0);	/* may need to update the screen */
-    setcursor();
 # ifdef FEAT_CONCEAL
     if (conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line
@@ -5175,11 +5158,14 @@ gui_update_screen(void)
 		|| need_cursor_line_redraw))
     {
 	if (conceal_old_cursor_line != conceal_new_cursor_line)
-	    update_single_line(curwin, conceal_old_cursor_line);
-	update_single_line(curwin, conceal_new_cursor_line);
+	    redrawWinline(curwin, conceal_old_cursor_line);
+	redrawWinline(curwin, conceal_new_cursor_line);
 	curwin->w_valid &= ~VALID_CROW;
+	need_cursor_line_redraw = FALSE;
     }
 # endif
+    update_screen(0);	/* may need to update the screen */
+    setcursor();
     out_flush_cursor(TRUE, FALSE);
 }
 #endif

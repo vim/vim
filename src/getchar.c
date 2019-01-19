@@ -237,7 +237,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	/* buffer has already been read */
     {
-	IEMSG(_("E222: Add to read buffer"));
+	iemsg(_("E222: Add to read buffer"));
 	return;
     }
     else if (buf->bh_index != 0)
@@ -998,7 +998,7 @@ ins_typebuf(
 	newlen = typebuf.tb_len + addlen + newoff + 4 * (MAXMAPLEN + 4);
 	if (newlen < 0)		    /* string is getting too long */
 	{
-	    EMSG(_(e_toocompl));    /* also calls flush_buffers */
+	    emsg(_(e_toocompl));    /* also calls flush_buffers */
 	    setcursor();
 	    return FAIL;
 	}
@@ -1431,7 +1431,7 @@ openscript(
 {
     if (curscript + 1 == NSCRIPT)
     {
-	EMSG(_(e_nesting));
+	emsg(_(e_nesting));
 	return;
     }
 #ifdef FEAT_EVAL
@@ -1446,7 +1446,7 @@ openscript(
     expand_env(name, NameBuff, MAXPATHL);
     if ((scriptin[curscript] = mch_fopen((char *)NameBuff, READBIN)) == NULL)
     {
-	EMSG2(_(e_notopen), name);
+	semsg(_(e_notopen), name);
 	if (curscript)
 	    --curscript;
 	return;
@@ -2508,7 +2508,7 @@ vgetorpeek(int advance)
 			 */
 			if (++mapdepth >= p_mmd)
 			{
-			    EMSG(_("E223: recursive mapping"));
+			    emsg(_("E223: recursive mapping"));
 			    if (State & CMDLINE)
 				redrawcmdline();
 			    else
@@ -3508,10 +3508,10 @@ do_map(
 			&& STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
 		{
 		    if (abbrev)
-			EMSG2(_("E224: global abbreviation already exists for %s"),
+			semsg(_("E224: global abbreviation already exists for %s"),
 				mp->m_keys);
 		    else
-			EMSG2(_("E225: global mapping already exists for %s"),
+			semsg(_("E225: global mapping already exists for %s"),
 				mp->m_keys);
 		    retval = 5;
 		    goto theend;
@@ -3643,10 +3643,10 @@ do_map(
 			else if (unique)
 			{
 			    if (abbrev)
-				EMSG2(_("E226: abbreviation already exists for %s"),
+				semsg(_("E226: abbreviation already exists for %s"),
 									   p);
 			    else
-				EMSG2(_("E227: mapping already exists for %s"), p);
+				semsg(_("E227: mapping already exists for %s"), p);
 			    retval = 5;
 			    goto theend;
 			}
@@ -3892,7 +3892,7 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 #endif
@@ -4920,7 +4920,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			IEMSG(_("E228: makemap: Illegal mode"));
+			iemsg(_("E228: makemap: Illegal mode"));
 			return FAIL;
 		}
 		do	/* do this twice if c2 is set, 3 times with c3 */

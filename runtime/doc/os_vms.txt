@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 8.1.  Last change: 2018 May 06
+*os_vms.txt*    For Vim version 8.1.  Last change: 2019 Jan 18
 
 
 		  VIM REFERENCE MANUAL
@@ -104,6 +104,8 @@ to set up GUI fonts etc. correctly.  See :help xim from Vim command prompt.
 You may want to use GUI with GTK icons, then you have to download and install
 GTK for OpenVMS or at least runtime shareable images - LIBGTK from
 polarhome.com
+Post 7.2 Vim uses GTK2+ while the last GTK on OpenVMS is 1.2.10, thefore
+the GTK build is no longer available. 
 
 For more advanced questions, please send your problem to Vim on VMS mailing
 list <vim-vms@polarhome.com>
@@ -201,10 +203,10 @@ You can check that everything is at the right place with the :version command.
 
 Example LOGIN.COM: >
 
-	$ define/nolog VIM RF10:[UTIL.VIM]
+ 	$ define/nolog VIM DKA0:[UTIL.VIM81]
 	$ vi*m :== mcr VIM:VIM.EXE
 	$ gv*im:== spawn/nowait/input=NLA0 mcr VIM:VIM.EXE -g -GEOMETRY 80x40
-	$ set disp/create/node=192.168.5.223/trans=tcpip
+	$ set disp/create/node=192.168.10.202/trans=tcpip
 
 Note: This set-up should be enough, if you are working on a standalone server or
 clustered environment, but if you want to use Vim as an internode editor in
@@ -763,6 +765,16 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 ==============================================================================
 
 9. VMS related changes					*vms-changes*
+
+Version 8.1
+- make necessary changes to build v8.1 on VMS
+
+Version 8.0
+- solve the 100% cpu usage issue while waiting for a keystroke
+- correct the VMS warnings and errors around handling the INFINITY (used in json.c)
+- minor VMS port related changes 
+- correct the make_vms.mms file for 8.0 
+- fix [.TESTDIR]make_vms.mms for 8.0 
 
 Version 7.4
 - Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name"
