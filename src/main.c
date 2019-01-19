@@ -1288,7 +1288,7 @@ main_loop(
 		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
 		 * to check for duplicates. */
 		p = keep_msg;
-		msg_attr(p, keep_msg_attr);
+		msg_attr((char *)p, keep_msg_attr);
 		vim_free(p);
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
