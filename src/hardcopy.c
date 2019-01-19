@@ -657,7 +657,7 @@ ex_hardcopy(exarg_T *eap)
 	bytes_to_print += (long_u)STRLEN(skipwhite(ml_get(lnum)));
     if (bytes_to_print == 0)
     {
-	MSG(_("No text to be printed"));
+	msg(_("No text to be printed"));
 	goto print_fail_no_begin;
     }
 

@@ -3149,7 +3149,7 @@ qf_jump_print_msg(
 	msg_scroll = TRUE;
     else if (!msg_scrolled && shortmess(SHM_OVERALL))
 	msg_scroll = FALSE;
-    msg_attr_keep(IObuff, 0, TRUE);
+    msg_attr_keep((char *)IObuff, 0, TRUE);
     msg_scroll = i;
 }
 
@@ -3422,7 +3422,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     msg_outtrans_attr(IObuff, cursel ? HL_ATTR(HLF_QFL) : qfFileAttr);
 
     if (qfp->qf_lnum != 0)
-	msg_puts_attr((char_u *)":", qfSepAttr);
+	msg_puts_attr(":", qfSepAttr);
     if (qfp->qf_lnum == 0)
 	IObuff[0] = NUL;
     else if (qfp->qf_col == 0)
@@ -3432,15 +3432,15 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
 		qfp->qf_lnum, qfp->qf_col);
     sprintf((char *)IObuff + STRLEN(IObuff), "%s",
 	    (char *)qf_types(qfp->qf_type, qfp->qf_nr));
-    msg_puts_attr(IObuff, qfLineAttr);
-    msg_puts_attr((char_u *)":", qfSepAttr);
+    msg_puts_attr((char *)IObuff, qfLineAttr);
+    msg_puts_attr(":", qfSepAttr);
     if (qfp->qf_pattern != NULL)
     {
 	qf_fmt_text(qfp->qf_pattern, IObuff, IOSIZE);
-	msg_puts(IObuff);
-	msg_puts_attr((char_u *)":", qfSepAttr);
+	msg_puts((char *)IObuff);
+	msg_puts_attr(":", qfSepAttr);
     }
-    msg_puts((char_u *)" ");
+    msg_puts(" ");
 
     // Remove newlines and leading whitespace from the text.  For an
     // unrecognized line keep the indent, the compiler may mark a word
@@ -3601,7 +3601,7 @@ qf_msg(qf_info_T *qi, int which, char *lead)
 	vim_strcat(buf, (char_u *)title, IOSIZE);
     }
     trunc_string(buf, buf, Columns - 1, IOSIZE);
-    msg(buf);
+    msg((char *)buf);
 }
 
 /*
@@ -3667,7 +3667,7 @@ qf_history(exarg_T *eap)
     if (is_loclist_cmd(eap->cmdidx))
 	qi = GET_LOC_LIST(curwin);
     if (qf_stack_empty(qi))
-	MSG(_("No entries"));
+	msg(_("No entries"));
     else
 	for (i = 0; i < qi->qf_listcount; ++i)
 	    qf_msg(qi, i, i == qi->qf_curlist ? "> " : "  ");
@@ -4653,7 +4653,7 @@ make_get_fullcmd(char_u *makecmd, char_u *fname)
     if (msg_col == 0)
 	msg_didout = FALSE;
     msg_start();
-    MSG_PUTS(":!");
+    msg_puts(":!");
     msg_outtrans(cmd);		// show what we are doing
 
     return cmd;

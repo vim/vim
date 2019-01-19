@@ -1630,15 +1630,8 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define vim_strpbrk(s, cs) (char_u *)strpbrk((char *)(s), (char *)(cs))
 #endif
 
-#define MSG(s)			    msg((char_u *)(s))
-#define MSG_ATTR(s, attr)	    msg_attr((char_u *)(s), (attr))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))
-#define MSG_PUTS(s)		    msg_puts((char_u *)(s))
-#define MSG_PUTS_ATTR(s, a)	    msg_puts_attr((char_u *)(s), (a))
-#define MSG_PUTS_TITLE(s)	    msg_puts_title((char_u *)(s))
-#define MSG_PUTS_LONG(s)	    msg_puts_long_attr((char_u *)(s), 0)
-#define MSG_PUTS_LONG_ATTR(s, a)    msg_puts_long_attr((char_u *)(s), (a))
 
 #ifdef FEAT_GUI
 # ifdef FEAT_TERMGUICOLORS

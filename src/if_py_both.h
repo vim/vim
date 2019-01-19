@@ -410,12 +410,6 @@ writer(writefn fn, char_u *str, PyInt n)
 }
 
     static int
-msg_wrapper(char *text)
-{
-    return msg((char_u *)text);
-}
-
-    static int
 write_output(OutputObject *self, PyObject *string)
 {
     Py_ssize_t	len = 0;
@@ -427,7 +421,7 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    writer((writefn)(error ? emsg : msg_wrapper), (char_u *)str, len);
+    writer((writefn)(error ? emsg : msg), (char_u *)str, len);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
     PyMem_Free(str);

@@ -62,7 +62,7 @@ do_ascii(exarg_T *eap UNUSED)
 	c = gchar_cursor();
     if (c == NUL)
     {
-	MSG("NUL");
+	msg("NUL");
 	return;
     }
 
@@ -152,7 +152,7 @@ do_ascii(exarg_T *eap UNUSED)
     }
 #endif
 
-    msg(IObuff);
+    msg((char *)IObuff);
 }
 
 /*
@@ -1490,11 +1490,11 @@ do_filter(
 	{
 	    if (do_in)
 	    {
-		vim_snprintf((char *)msg_buf, sizeof(msg_buf),
+		vim_snprintf(msg_buf, sizeof(msg_buf),
 				    _("%ld lines filtered"), (long)linecount);
 		if (msg(msg_buf) && !msg_scroll)
 		    /* save message to display it after redraw */
-		    set_keep_msg(msg_buf, 0);
+		    set_keep_msg((char_u *)msg_buf, 0);
 	    }
 	    else
 		msgmore((long)linecount);
@@ -1586,7 +1586,7 @@ do_shell(
 		if (!winstart)
 		    starttermcap();	/* don't want a message box here */
 #endif
-		MSG_PUTS(_("[No write since last change]\n"));
+		msg_puts(_("[No write since last change]\n"));
 #ifdef FEAT_GUI_MSWIN
 		if (!winstart)
 		    stoptermcap();
@@ -3028,11 +3028,11 @@ print_line_no_prefix(
     int		use_number,
     int		list)
 {
-    char_u	numbuf[30];
+    char	numbuf[30];
 
     if (curwin->w_p_nu || use_number)
     {
-	vim_snprintf((char *)numbuf, sizeof(numbuf),
+	vim_snprintf(numbuf, sizeof(numbuf),
 				   "%*ld ", number_width(curwin), (long)lnum);
 	msg_puts_attr(numbuf, HL_ATTR(HLF_N));	/* Highlight line nrs */
     }
@@ -5926,7 +5926,7 @@ outofmem:
 		    beginline(BL_WHITE | BL_FIX);
 	    }
 	    if (!do_sub_msg(subflags.do_count) && subflags.do_ask)
-		MSG("");
+		msg("");
 	}
 	else
 	    global_need_beginline = TRUE;
@@ -5939,7 +5939,7 @@ outofmem:
 	if (got_int)		/* interrupted */
 	    emsg(_(e_interr));
 	else if (got_match)	/* did find something but nothing substituted */
-	    MSG("");
+	    msg("");
 	else if (subflags.do_error)	/* nothing found */
 	    semsg(_(e_patnotf2), get_search_pat());
     }
@@ -5995,13 +5995,13 @@ do_sub_msg(
 		    : NGETTEXT("%ld substitution on %ld lines",
 				  "%ld substitutions on %ld lines", sub_nsubs);
 
-	vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
+	vim_snprintf_add(msg_buf, sizeof(msg_buf),
 				 NGETTEXT(msg_single, msg_plural, sub_nlines),
 				 sub_nsubs, (long)sub_nlines);
 
 	if (msg(msg_buf))
 	    /* save message to display it after redraw */
-	    set_keep_msg(msg_buf, 0);
+	    set_keep_msg((char_u *)msg_buf, 0);
 	return TRUE;
     }
     if (got_int)
@@ -6147,7 +6147,7 @@ ex_global(exarg_T *eap)
 	 * pass 2: execute the command for each line that has been marked
 	 */
 	if (got_int)
-	    MSG(_(e_interr));
+	    msg(_(e_interr));
 	else if (ndone == 0)
 	{
 	    if (type == 'v')
@@ -7755,7 +7755,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
     char_u	*fname;
 
     if (l == NULL)
-	msg((char_u *)_("No old files"));
+	msg(_("No old files"));
     else
     {
 	msg_start();
@@ -7767,7 +7767,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	    if (!message_filtered(fname))
 	    {
 		msg_outnum((long)nr);
-		MSG_PUTS(": ");
+		msg_puts(": ");
 		msg_outtrans(fname);
 		msg_clr_eos();
 		msg_putchar('\n');

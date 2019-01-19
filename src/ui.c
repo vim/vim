@@ -340,7 +340,7 @@ suspend_shell(void)
 	emsg(_(e_shellempty));
     else
     {
-	MSG_PUTS(_("new shell started\n"));
+	msg_puts(_("new shell started\n"));
 	do_shell(NULL, 0);
     }
 }
@@ -2626,7 +2626,7 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    verb_msg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
+	    verb_msg(_("Used CUT_BUFFER0 instead of empty selection"));
 	    verbose_leave();
 	}
     }

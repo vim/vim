@@ -792,6 +792,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    779,
+/**/
     778,
 /**/
     777,
@@ -2421,10 +2423,10 @@ version_msg_wrap(char_u *s, int wrap)
     if (!got_int)
     {
 	if (wrap)
-	    MSG_PUTS("[");
-	MSG_PUTS(s);
+	    msg_puts("[");
+	msg_puts((char *)s);
 	if (wrap)
-	    MSG_PUTS("]");
+	    msg_puts("]");
     }
 }
 
@@ -2502,10 +2504,10 @@ list_in_columns(char_u **items, int size, int current)
 		msg_putchar('[');
 #ifdef FEAT_SYN_HL
 	    if (use_highlight && items[idx][0] == '-')
-		msg_puts_attr(items[idx], HL_ATTR(HLF_W));
+		msg_puts_attr((char *)items[idx], HL_ATTR(HLF_W));
 	    else
 #endif
-		msg_puts(items[idx]);
+		msg_puts((char *)items[idx]);
 	    if (idx == current)
 		msg_putchar(']');
 	    if (last_col)
@@ -2539,40 +2541,40 @@ list_version(void)
      * internal variables in eval.c!
      */
     init_longVersion();
-    MSG(longVersion);
+    msg(longVersion);
 #ifdef WIN3264
 # ifdef FEAT_GUI_W32
 #  ifdef _WIN64
-    MSG_PUTS(_("\nMS-Windows 64-bit GUI version"));
+    msg_puts(_("\nMS-Windows 64-bit GUI version"));
 #  else
-    MSG_PUTS(_("\nMS-Windows 32-bit GUI version"));
+    msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #  endif
 # ifdef FEAT_OLE
-    MSG_PUTS(_(" with OLE support"));
+    msg_puts(_(" with OLE support"));
 # endif
 # else
 #  ifdef _WIN64
-    MSG_PUTS(_("\nMS-Windows 64-bit console version"));
+    msg_puts(_("\nMS-Windows 64-bit console version"));
 #  else
-    MSG_PUTS(_("\nMS-Windows 32-bit console version"));
+    msg_puts(_("\nMS-Windows 32-bit console version"));
 #  endif
 # endif
 #endif
 #if defined(MACOS_X)
 # if defined(MACOS_X_DARWIN)
-    MSG_PUTS(_("\nmacOS version"));
+    msg_puts(_("\nmacOS version"));
 # else
-    MSG_PUTS(_("\nmacOS version w/o darwin feat."));
+    msg_puts(_("\nmacOS version w/o darwin feat."));
 # endif
 #endif
 
 #ifdef VMS
-    MSG_PUTS(_("\nOpenVMS version"));
+    msg_puts(_("\nOpenVMS version"));
 # ifdef HAVE_PATHDEF
     if (*compiled_arch != NUL)
     {
-	MSG_PUTS(" - ");
-	MSG_PUTS(compiled_arch);
+	msg_puts(" - ");
+	msg_puts((char *)compiled_arch);
     }
 # endif
 
@@ -2582,7 +2584,7 @@ list_version(void)
     /* Print a range when patches are consecutive: "1-10, 12, 15-40, 42-45" */
     if (included_patches[0] != 0)
     {
-	MSG_PUTS(_("\nIncluded patches: "));
+	msg_puts(_("\nIncluded patches: "));
 	first = -1;
 	/* find last one */
 	for (i = 0; included_patches[i] != 0; ++i)
@@ -2593,12 +2595,12 @@ list_version(void)
 		first = included_patches[i];
 	    if (i == 0 || included_patches[i - 1] != included_patches[i] + 1)
 	    {
-		MSG_PUTS(s);
+		msg_puts(s);
 		s = ", ";
 		msg_outnum((long)first);
 		if (first != included_patches[i])
 		{
-		    MSG_PUTS("-");
+		    msg_puts("-");
 		    msg_outnum((long)included_patches[i]);
 		}
 		first = -1;
@@ -2609,91 +2611,91 @@ list_version(void)
     /* Print the list of extra patch descriptions if there is at least one. */
     if (extra_patches[0] != NULL)
     {
-	MSG_PUTS(_("\nExtra patches: "));
+	msg_puts(_("\nExtra patches: "));
 	s = "";
 	for (i = 0; extra_patches[i] != NULL; ++i)
 	{
-	    MSG_PUTS(s);
+	    msg_puts(s);
 	    s = ", ";
-	    MSG_PUTS(extra_patches[i]);
+	    msg_puts(extra_patches[i]);
 	}
     }
 
 #ifdef MODIFIED_BY
-    MSG_PUTS("\n");
-    MSG_PUTS(_("Modified by "));
-    MSG_PUTS(MODIFIED_BY);
+    msg_puts("\n");
+    msg_puts(_("Modified by "));
+    msg_puts(MODIFIED_BY);
 #endif
 
 #ifdef HAVE_PATHDEF
     if (*compiled_user != NUL || *compiled_sys != NUL)
     {
-	MSG_PUTS(_("\nCompiled "));
+	msg_puts(_("\nCompiled "));
 	if (*compiled_user != NUL)
 	{
-	    MSG_PUTS(_("by "));
-	    MSG_PUTS(compiled_user);
+	    msg_puts(_("by "));
+	    msg_puts((char *)compiled_user);
 	}
 	if (*compiled_sys != NUL)
 	{
-	    MSG_PUTS("@");
-	    MSG_PUTS(compiled_sys);
+	    msg_puts("@");
+	    msg_puts((char *)compiled_sys);
 	}
     }
 #endif
 
 #ifdef FEAT_HUGE
-    MSG_PUTS(_("\nHuge version "));
+    msg_puts(_("\nHuge version "));
 #else
 # ifdef FEAT_BIG
-    MSG_PUTS(_("\nBig version "));
+    msg_puts(_("\nBig version "));
 # else
 #  ifdef FEAT_NORMAL
-    MSG_PUTS(_("\nNormal version "));
+    msg_puts(_("\nNormal version "));
 #  else
 #   ifdef FEAT_SMALL
-    MSG_PUTS(_("\nSmall version "));
+    msg_puts(_("\nSmall version "));
 #   else
-    MSG_PUTS(_("\nTiny version "));
+    msg_puts(_("\nTiny version "));
 #   endif
 #  endif
 # endif
 #endif
 #ifndef FEAT_GUI
-    MSG_PUTS(_("without GUI."));
+    msg_puts(_("without GUI."));
 #else
 # ifdef FEAT_GUI_GTK
 #  ifdef USE_GTK3
-    MSG_PUTS(_("with GTK3 GUI."));
+    msg_puts(_("with GTK3 GUI."));
 #  else
 #   ifdef FEAT_GUI_GNOME
-     MSG_PUTS(_("with GTK2-GNOME GUI."));
+     msg_puts(_("with GTK2-GNOME GUI."));
 #   else
-     MSG_PUTS(_("with GTK2 GUI."));
+     msg_puts(_("with GTK2 GUI."));
 #   endif
 # endif
 # else
 #  ifdef FEAT_GUI_MOTIF
-    MSG_PUTS(_("with X11-Motif GUI."));
+    msg_puts(_("with X11-Motif GUI."));
 #  else
 #   ifdef FEAT_GUI_ATHENA
 #    ifdef FEAT_GUI_NEXTAW
-    MSG_PUTS(_("with X11-neXtaw GUI."));
+    msg_puts(_("with X11-neXtaw GUI."));
 #    else
-    MSG_PUTS(_("with X11-Athena GUI."));
+    msg_puts(_("with X11-Athena GUI."));
 #    endif
 #   else
 #     ifdef FEAT_GUI_PHOTON
-    MSG_PUTS(_("with Photon GUI."));
+    msg_puts(_("with Photon GUI."));
 #     else
 #      if defined(MSWIN)
-    MSG_PUTS(_("with GUI."));
+    msg_puts(_("with GUI."));
 #      else
 #	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON
-    MSG_PUTS(_("with Carbon GUI."));
+    msg_puts(_("with Carbon GUI."));
 #	else
 #	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
-    MSG_PUTS(_("with Cocoa GUI."));
+    msg_puts(_("with Cocoa GUI."));
 #	 else
 #	 endif
 #	endif

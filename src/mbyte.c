@@ -3745,7 +3745,7 @@ show_utf8(void)
     len = utfc_ptr2len(line);
     if (len == 0)
     {
-	MSG("NUL");
+	msg("NUL");
 	return;
     }
 
@@ -3770,7 +3770,7 @@ show_utf8(void)
 	    break;
     }
 
-    msg(IObuff);
+    msg((char *)IObuff);
 }
 
 /*

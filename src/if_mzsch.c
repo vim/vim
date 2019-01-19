@@ -1574,7 +1574,7 @@ do_intrnl_output(char *mesg, int error)
 	if (error)
 	    emsg(prev);
 	else
-	    MSG(prev);
+	    msg(prev);
 	prev = p + 1;
 	p = strchr(prev, '\n');
     }
@@ -1582,7 +1582,7 @@ do_intrnl_output(char *mesg, int error)
     if (error)
 	emsg(prev);
     else
-	MSG(prev);
+	msg(prev);
 }
 
     static void

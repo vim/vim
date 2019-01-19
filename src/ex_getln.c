@@ -158,7 +158,7 @@ abandon_cmdline(void)
     VIM_CLEAR(ccline.cmdbuff);
     if (msg_scrolled == 0)
 	compute_cmdrow();
-    MSG("");
+    msg("");
     redraw_cmdline = TRUE;
 }
 
@@ -2786,7 +2786,7 @@ getexmodeline(
 	while (indent >= 8)
 	{
 	    ga_append(&line_ga, TAB);
-	    msg_puts((char_u *)"        ");
+	    msg_puts("        ");
 	    indent -= 8;
 	}
 	while (indent-- > 0)
@@ -3769,7 +3769,7 @@ redrawcmdprompt(void)
 	msg_putchar(ccline.cmdfirstc);
     if (ccline.cmdprompt != NULL)
     {
-	msg_puts_attr(ccline.cmdprompt, ccline.cmdattr);
+	msg_puts_attr((char *)ccline.cmdprompt, ccline.cmdattr);
 	ccline.cmdindent = msg_col + (msg_row - cmdline_row) * Columns;
 	/* do the reverse of set_cmdspos() */
 	if (ccline.cmdfirstc != NUL)
@@ -3961,7 +3961,7 @@ nextwild(
 	return FAIL;
     }
 
-    MSG_PUTS("...");	    /* show that we are busy */
+    msg_puts("...");	    /* show that we are busy */
     out_flush();
 
     i = (int)(xp->xp_pattern - ccline.cmdbuff);
@@ -4611,10 +4611,10 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 
 	if (xp->xp_context == EXPAND_TAGS_LISTFILES)
 	{
-	    MSG_PUTS_ATTR(_("tagname"), HL_ATTR(HLF_T));
+	    msg_puts_attr(_("tagname"), HL_ATTR(HLF_T));
 	    msg_clr_eos();
 	    msg_advance(maxlen - 3);
-	    MSG_PUTS_ATTR(_(" kind file\n"), HL_ATTR(HLF_T));
+	    msg_puts_attr(_(" kind file\n"), HL_ATTR(HLF_T));
 	}
 
 	/* list the files line by line */
@@ -4628,9 +4628,9 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 		    msg_outtrans_attr(files_found[k], HL_ATTR(HLF_D));
 		    p = files_found[k] + STRLEN(files_found[k]) + 1;
 		    msg_advance(maxlen + 1);
-		    msg_puts(p);
+		    msg_puts((char *)p);
 		    msg_advance(maxlen + 3);
-		    msg_puts_long_attr(p + 2, HL_ATTR(HLF_D));
+		    msg_outtrans_long_attr(p + 2, HL_ATTR(HLF_D));
 		    break;
 		}
 		for (j = maxlen - lastlen; --j >= 0; )
@@ -6635,7 +6635,7 @@ ex_history(exarg_T *eap)
 
     if (hislen == 0)
     {
-	MSG(_("'history' option is zero"));
+	msg(_("'history' option is zero"));
 	return;
     }
 
@@ -6678,7 +6678,7 @@ ex_history(exarg_T *eap)
     {
 	STRCPY(IObuff, "\n      #  ");
 	STRCAT(STRCAT(IObuff, history_names[histype1]), " history");
-	MSG_PUTS_TITLE(IObuff);
+	msg_puts_title((char *)IObuff);
 	idx = hisidx[histype1];
 	hist = history[histype1];
 	j = hisidx1;

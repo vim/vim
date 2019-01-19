@@ -5128,7 +5128,7 @@ _WndProc(
 		    && GetMenuState(s_menuBar, pMenu->id, MF_BYCOMMAND) != -1)
 	    {
 		++msg_hist_off;
-		msg(pMenu->strings[MENU_INDEX_TIP]);
+		msg((char *)pMenu->strings[MENU_INDEX_TIP]);
 		--msg_hist_off;
 		setcursor();
 		out_flush();

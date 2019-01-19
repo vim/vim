@@ -611,7 +611,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
     char	lbuf[MSG_BUF_LEN];
     char	group[MSG_BUF_LEN];
 
-    MSG_PUTS_TITLE(_("\n--- Signs ---"));
+    msg_puts_title(_("\n--- Signs ---"));
     msg_putchar('\n');
     if (rbuf == NULL)
 	buf = firstbuf;
@@ -622,7 +622,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	if (buf->b_signlist != NULL)
 	{
 	    vim_snprintf(lbuf, MSG_BUF_LEN, _("Signs for %s:"), buf->b_fname);
-	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
+	    msg_puts_attr(lbuf, HL_ATTR(HLF_D));
 	    msg_putchar('\n');
 	}
 	FOR_ALL_SIGNS_IN_BUF(buf, sign)
@@ -640,7 +640,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 			   _("    line=%ld  id=%d%s  name=%s  priority=%d"),
 			   (long)sign->lnum, sign->id, group,
 			   sign_typenr2name(sign->typenr), sign->priority);
-	    MSG_PUTS(lbuf);
+	    msg_puts(lbuf);
 	    msg_putchar('\n');
 	}
 	if (rbuf != NULL)
@@ -1640,37 +1640,37 @@ sign_list_defined(sign_T *sp)
     smsg("sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
     {
-	MSG_PUTS(" icon=");
+	msg_puts(" icon=");
 	msg_outtrans(sp->sn_icon);
 # ifdef FEAT_SIGN_ICONS
 	if (sp->sn_image == NULL)
-	    MSG_PUTS(_(" (NOT FOUND)"));
+	    msg_puts(_(" (NOT FOUND)"));
 # else
-	MSG_PUTS(_(" (not supported)"));
+	msg_puts(_(" (not supported)"));
 # endif
     }
     if (sp->sn_text != NULL)
     {
-	MSG_PUTS(" text=");
+	msg_puts(" text=");
 	msg_outtrans(sp->sn_text);
     }
     if (sp->sn_line_hl > 0)
     {
-	MSG_PUTS(" linehl=");
+	msg_puts(" linehl=");
 	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
 	if (p == NULL)
-	    MSG_PUTS("NONE");
+	    msg_puts("NONE");
 	else
-	    msg_puts(p);
+	    msg_puts((char *)p);
     }
     if (sp->sn_text_hl > 0)
     {
-	MSG_PUTS(" texthl=");
+	msg_puts(" texthl=");
 	p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
 	if (p == NULL)
-	    MSG_PUTS("NONE");
+	    msg_puts("NONE");
 	else
-	    msg_puts(p);
+	    msg_puts((char *)p);
     }
 }
 

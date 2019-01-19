@@ -6373,7 +6373,7 @@ show_termcodes(void)
 	return;
 
     /* Highlight title */
-    MSG_PUTS_TITLE(_("\n--- Terminal keys ---"));
+    msg_puts_title(_("\n--- Terminal keys ---"));
 
     /*
      * do the loop two times:
@@ -6475,9 +6475,9 @@ show_one_termcode(char_u *name, char_u *code, int printit)
 
     if (printit)
     {
-	msg_puts(IObuff);
+	msg_puts((char *)IObuff);
 	if (code == NULL)
-	    msg_puts((char_u *)"NULL");
+	    msg_puts("NULL");
 	else
 	    msg_outtrans(code);
     }
@@ -7013,7 +7013,7 @@ gui_get_color_cmn(char_u *name)
 	if (fd == NULL)
 	{
 	    if (p_verbose > 1)
-		verb_msg((char_u *)_("Cannot open $VIMRUNTIME/rgb.txt"));
+		verb_msg(_("Cannot open $VIMRUNTIME/rgb.txt"));
 	    return INVALCOLOR;
 	}
 

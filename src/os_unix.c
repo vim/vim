@@ -1790,7 +1790,7 @@ test_x11_window(Display *dpy)
     (void)XSetErrorHandler(old_handler);
 
     if (p_verbose > 0 && got_x_error)
-	verb_msg((char_u *)_("Testing the X display failed"));
+	verb_msg(_("Testing the X display failed"));
 
     return (got_x_error ? FAIL : OK);
 }
@@ -2660,7 +2660,7 @@ mch_FullName(
 		if (p_verbose >= 5)
 		{
 		    verbose_enter();
-		    MSG("fchdir() to previous dir");
+		    msg("fchdir() to previous dir");
 		    verbose_leave();
 		}
 		l = fchdir(fd);
@@ -2869,14 +2869,14 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 	    if (errno == EOPNOTSUPP)
 		return;
 
-	    MSG_PUTS(_("\nCould not get security context for "));
+	    msg_puts(_("\nCould not get security context for "));
 	    msg_outtrans(from_file);
 	    msg_putchar('\n');
 	    return;
 	}
 	if (getfilecon((char *)to_file, &to_context) < 0)
 	{
-	    MSG_PUTS(_("\nCould not get security context for "));
+	    msg_puts(_("\nCould not get security context for "));
 	    msg_outtrans(to_file);
 	    msg_putchar('\n');
 	    freecon (from_context);
@@ -2886,7 +2886,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 	{
 	    if (setfilecon((char *)to_file, from_context) < 0)
 	    {
-		MSG_PUTS(_("\nCould not set security context for "));
+		msg_puts(_("\nCould not set security context for "));
 		msg_outtrans(to_file);
 		msg_putchar('\n');
 	    }
@@ -2957,7 +2957,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 		     vim_snprintf((char *)IObuff, IOSIZE,
 			    _("Could not get security context %s for %s. Removing it!"),
 			    name, from_file);
-		    msg_puts(IObuff);
+		    msg_puts((char *)IObuff);
 		    msg_putchar('\n');
 		    /* FALLTHROUGH to remove the attribute */
 
@@ -4505,10 +4505,10 @@ mch_call_shell_system(
     if (emsg_silent)
 	;
     else if (x == 127)
-	MSG_PUTS(_("\nCannot execute shell sh\n"));
+	msg_puts(_("\nCannot execute shell sh\n"));
     else if (x && !(options & SHELL_SILENT))
     {
-	MSG_PUTS(_("\nshell returned "));
+	msg_puts(_("\nshell returned "));
 	msg_outnum((long)x);
 	msg_putchar('\n');
     }
@@ -4605,7 +4605,7 @@ mch_call_shell_fork(
 	    }
 	    if (pipe_error)
 	    {
-		MSG_PUTS(_("\nCannot create pipes\n"));
+		msg_puts(_("\nCannot create pipes\n"));
 		out_flush();
 	    }
 	}
@@ -4625,7 +4625,7 @@ mch_call_shell_fork(
 	{
 	    UNBLOCK_SIGNALS(&curset);
 
-	    MSG_PUTS(_("\nCannot fork\n"));
+	    msg_puts(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
 # ifdef FEAT_GUI
 		|| (gui.in_use && show_shell_mess)
@@ -4877,7 +4877,7 @@ mch_call_shell_fork(
 		     * external program. */
 		    if ((wpid = fork()) == -1)
 		    {
-			MSG_PUTS(_("\nCannot fork\n"));
+			msg_puts(_("\nCannot fork\n"));
 		    }
 		    else if (wpid == 0) /* child */
 		    {
@@ -5166,7 +5166,7 @@ mch_call_shell_fork(
 			    }
 			    c = *p;
 			    *p = NUL;
-			    msg_puts(buffer);
+			    msg_puts((char *)buffer);
 			    if (p < buffer + len)
 			    {
 				*p = c;
@@ -5180,7 +5180,7 @@ mch_call_shell_fork(
 			else
 			{
 			    buffer[len] = NUL;
-			    msg_puts(buffer);
+			    msg_puts((char *)buffer);
 			}
 
 			windgoto(msg_row, msg_col);
@@ -5360,20 +5360,20 @@ finished:
 		{
 		    if (retval == EXEC_FAILED)
 		    {
-			MSG_PUTS(_("\nCannot execute shell "));
+			msg_puts(_("\nCannot execute shell "));
 			msg_outtrans(p_sh);
 			msg_putchar('\n');
 		    }
 		    else if (!(options & SHELL_SILENT))
 		    {
-			MSG_PUTS(_("\nshell returned "));
+			msg_puts(_("\nshell returned "));
 			msg_outnum((long)retval);
 			msg_putchar('\n');
 		    }
 		}
 	    }
 	    else
-		MSG_PUTS(_("\nCommand terminated\n"));
+		msg_puts(_("\nCommand terminated\n"));
 	}
     }
 
@@ -6196,7 +6196,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    else if (fds[xsmp_idx].revents & POLLHUP)
 	    {
 		if (p_verbose > 0)
-		    verb_msg((char_u *)_("XSMP lost ICE connection"));
+		    verb_msg(_("XSMP lost ICE connection"));
 		xsmp_close();
 	    }
 	    if (--ret == 0)
@@ -6354,7 +6354,7 @@ select_eintr:
 	    if (FD_ISSET(xsmp_icefd, &efds))
 	    {
 		if (p_verbose > 0)
-		    verb_msg((char_u *)_("XSMP lost ICE connection"));
+		    verb_msg(_("XSMP lost ICE connection"));
 		xsmp_close();
 		if (--ret == 0)
 		    finished = FALSE;   /* keep going if event was only one */
@@ -6714,7 +6714,7 @@ mch_expand_wildcards(
 	    if (!(flags & EW_SILENT))
 #endif
 	    {
-		MSG(_(e_wildexpand));
+		msg(_(e_wildexpand));
 		msg_start();		/* don't overwrite this message */
 	    }
 	}
@@ -6734,7 +6734,7 @@ mch_expand_wildcards(
 	/* Something went wrong, perhaps a file name with a special char. */
 	if (!(flags & EW_SILENT))
 	{
-	    MSG(_(e_wildexpand));
+	    msg(_(e_wildexpand));
 	    msg_start();		/* don't overwrite this message */
 	}
 	vim_free(tempname);
@@ -7534,7 +7534,7 @@ setup_term_clip(void)
 	if (xterm_dpy == NULL)
 	{
 	    if (p_verbose > 0)
-		verb_msg((char_u *)_("Opening the X display failed"));
+		verb_msg(_("Opening the X display failed"));
 	    return;
 	}
 
@@ -7872,7 +7872,7 @@ xsmp_handle_save_yourself(
     ml_sync_all(FALSE, FALSE);	/* preserve all swap files */
 
     if (p_verbose > 0)
-	verb_msg((char_u *)_("XSMP handling save-yourself request"));
+	verb_msg(_("XSMP handling save-yourself request"));
 
 # if defined(FEAT_GUI) && defined(USE_XSMP_INTERACT)
     /* Now see if we can ask about unsaved files */
@@ -7961,7 +7961,7 @@ xsmp_handle_requests(void)
     {
 	/* Lost ICE */
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("XSMP lost ICE connection"));
+	    verb_msg(_("XSMP lost ICE connection"));
 	xsmp_close();
 	return FAIL;
     }
@@ -7984,7 +7984,7 @@ xsmp_init(void)
 #endif
 
     if (p_verbose > 0)
-	verb_msg((char_u *)_("XSMP opening connection"));
+	verb_msg(_("XSMP opening connection"));
 
     xsmp.save_yourself = xsmp.shutdown = False;
 
@@ -8003,7 +8003,7 @@ xsmp_init(void)
     if (IceAddConnectionWatch(xsmp_ice_connection, &dummy) == 0)
     {
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("XSMP ICE connection watch failed"));
+	    verb_msg(_("XSMP ICE connection watch failed"));
 	return;
     }
 
@@ -8028,7 +8028,7 @@ xsmp_init(void)
 	{
 	    vim_snprintf(errorreport, sizeof(errorreport),
 			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
-	    verb_msg((char_u *)errorreport);
+	    verb_msg(errorreport);
 	}
 	return;
     }

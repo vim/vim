@@ -10438,7 +10438,7 @@ showmode(void)
 	attr = HL_ATTR(HLF_CM);			/* Highlight mode */
 	if (do_mode)
 	{
-	    MSG_PUTS_ATTR("--", attr);
+	    msg_puts_attr("--", attr);
 #if defined(FEAT_XIM)
 	    if (
 # ifdef FEAT_GUI_GTK
@@ -10448,9 +10448,9 @@ showmode(void)
 # endif
 	       )
 # ifdef FEAT_GUI_GTK /* most of the time, it's not XIM being used */
-		MSG_PUTS_ATTR(" IM", attr);
+		msg_puts_attr(" IM", attr);
 # else
-		MSG_PUTS_ATTR(" XIM", attr);
+		msg_puts_attr(" XIM", attr);
 # endif
 #endif
 #if defined(FEAT_HANGULIN) && defined(FEAT_GUI)
@@ -10460,9 +10460,9 @@ showmode(void)
 		{
 		    /* HANGUL */
 		    if (enc_utf8)
-			MSG_PUTS_ATTR(" \355\225\234\352\270\200", attr);
+			msg_puts_attr(" \355\225\234\352\270\200", attr);
 		    else
-			MSG_PUTS_ATTR(" \307\321\261\333", attr);
+			msg_puts_attr(" \307\321\261\333", attr);
 		}
 	    }
 #endif
@@ -10482,17 +10482,17 @@ showmode(void)
 		    if (length - vim_strsize(edit_submode) > 0)
 		    {
 			if (edit_submode_pre != NULL)
-			    msg_puts_attr(edit_submode_pre, attr);
-			msg_puts_attr(edit_submode, attr);
+			    msg_puts_attr((char *)edit_submode_pre, attr);
+			msg_puts_attr((char *)edit_submode, attr);
 		    }
 		    if (edit_submode_extra != NULL)
 		    {
-			MSG_PUTS_ATTR(" ", attr);  /* add a space in between */
+			msg_puts_attr(" ", attr);  /* add a space in between */
 			if ((int)edit_submode_highl < (int)HLF_COUNT)
 			    sub_attr = HL_ATTR(edit_submode_highl);
 			else
 			    sub_attr = attr;
-			msg_puts_attr(edit_submode_extra, sub_attr);
+			msg_puts_attr((char *)edit_submode_extra, sub_attr);
 		    }
 		}
 	    }
@@ -10500,29 +10500,29 @@ showmode(void)
 #endif
 	    {
 		if (State & VREPLACE_FLAG)
-		    MSG_PUTS_ATTR(_(" VREPLACE"), attr);
+		    msg_puts_attr(_(" VREPLACE"), attr);
 		else if (State & REPLACE_FLAG)
-		    MSG_PUTS_ATTR(_(" REPLACE"), attr);
+		    msg_puts_attr(_(" REPLACE"), attr);
 		else if (State & INSERT)
 		{
 #ifdef FEAT_RIGHTLEFT
 		    if (p_ri)
-			MSG_PUTS_ATTR(_(" REVERSE"), attr);
+			msg_puts_attr(_(" REVERSE"), attr);
 #endif
-		    MSG_PUTS_ATTR(_(" INSERT"), attr);
+		    msg_puts_attr(_(" INSERT"), attr);
 		}
 		else if (restart_edit == 'I' || restart_edit == 'A')
-		    MSG_PUTS_ATTR(_(" (insert)"), attr);
+		    msg_puts_attr(_(" (insert)"), attr);
 		else if (restart_edit == 'R')
-		    MSG_PUTS_ATTR(_(" (replace)"), attr);
+		    msg_puts_attr(_(" (replace)"), attr);
 		else if (restart_edit == 'V')
-		    MSG_PUTS_ATTR(_(" (vreplace)"), attr);
+		    msg_puts_attr(_(" (vreplace)"), attr);
 #ifdef FEAT_RIGHTLEFT
 		if (p_hkmap)
-		    MSG_PUTS_ATTR(_(" Hebrew"), attr);
+		    msg_puts_attr(_(" Hebrew"), attr);
 # ifdef FEAT_FKMAP
 		if (p_fkmap)
-		    MSG_PUTS_ATTR(farsi_text_5, attr);
+		    msg_puts_attr(farsi_text_5, attr);
 # endif
 #endif
 #ifdef FEAT_KEYMAP
@@ -10530,16 +10530,16 @@ showmode(void)
 		{
 # ifdef FEAT_ARABIC
 		    if (curwin->w_p_arab)
-			MSG_PUTS_ATTR(_(" Arabic"), attr);
+			msg_puts_attr(_(" Arabic"), attr);
 		    else
 # endif
 			if (get_keymap_str(curwin, (char_u *)" (%s)",
 							   NameBuff, MAXPATHL))
-			    MSG_PUTS_ATTR(NameBuff, attr);
+			    msg_puts_attr((char *)NameBuff, attr);
 		}
 #endif
 		if ((State & INSERT) && p_paste)
-		    MSG_PUTS_ATTR(_(" (paste)"), attr);
+		    msg_puts_attr(_(" (paste)"), attr);
 
 		if (VIsual_active)
 		{
@@ -10558,9 +10558,9 @@ showmode(void)
 			case 5: p = N_(" SELECT LINE"); break;
 			default: p = N_(" SELECT BLOCK"); break;
 		    }
-		    MSG_PUTS_ATTR(_(p), attr);
+		    msg_puts_attr(_(p), attr);
 		}
-		MSG_PUTS_ATTR(" --", attr);
+		msg_puts_attr(" --", attr);
 	    }
 
 	    need_clear = TRUE;
@@ -10651,12 +10651,13 @@ clearmode(void)
     static void
 recording_mode(int attr)
 {
-    MSG_PUTS_ATTR(_("recording"), attr);
+    msg_puts_attr(_("recording"), attr);
     if (!shortmess(SHM_RECORDING))
     {
-	char_u s[4];
-	sprintf((char *)s, " @%c", reg_recording);
-	MSG_PUTS_ATTR(s, attr);
+	char s[4];
+
+	sprintf(s, " @%c", reg_recording);
+	msg_puts_attr(s, attr);
     }
 }
 

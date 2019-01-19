@@ -4534,7 +4534,7 @@ dump_pipe(int	    options,
 	    }
 	    c = *p;
 	    *p = NUL;
-	    msg_puts(buffer);
+	    msg_puts((char *)buffer);
 	    if (p < buffer + len)
 	    {
 		*p = c;
@@ -4548,7 +4548,7 @@ dump_pipe(int	    options,
 	else
 	{
 	    buffer[len] = NUL;
-	    msg_puts(buffer);
+	    msg_puts((char *)buffer);
 	}
 
 	windgoto(msg_row, msg_col);
@@ -4607,7 +4607,7 @@ mch_system_piped(char *cmd, int options)
 	CloseHandle(g_hChildStd_IN_Wr);
 	CloseHandle(g_hChildStd_OUT_Rd);
 	CloseHandle(g_hChildStd_OUT_Wr);
-	MSG_PUTS(_("\nCannot create pipes\n"));
+	msg_puts(_("\nCannot create pipes\n"));
     }
 
     si.cb = sizeof(si);

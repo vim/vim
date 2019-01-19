@@ -4670,7 +4670,7 @@ vim_findfile(void *search_ctx_arg)
 		    smsg("Already Searched: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -4684,7 +4684,7 @@ vim_findfile(void *search_ctx_arg)
 		smsg("Searching: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		/* don't overwrite this either */
-		msg_puts((char_u *)"\n");
+		msg_puts("\n");
 		verbose_leave_scroll();
 	    }
 #endif
@@ -4903,7 +4903,7 @@ vim_findfile(void *search_ctx_arg)
 					smsg("Already: %s",
 								   file_path);
 					/* don't overwrite this either */
-					msg_puts((char_u *)"\n");
+					msg_puts("\n");
 					verbose_leave_scroll();
 				    }
 				    continue;
@@ -4930,7 +4930,7 @@ vim_findfile(void *search_ctx_arg)
 				    verbose_enter_scroll();
 				    smsg("HIT: %s", file_path);
 				    /* don't overwrite this either */
-				    msg_puts((char_u *)"\n");
+				    msg_puts("\n");
 				    verbose_leave_scroll();
 				}
 #endif
@@ -5131,7 +5131,7 @@ ff_get_visited_list(
 		    smsg("ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -5147,7 +5147,7 @@ ff_get_visited_list(
 	verbose_enter_scroll();
 	smsg("ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
-	msg_puts((char_u *)"\n");
+	msg_puts("\n");
 	verbose_leave_scroll();
     }
 #endif

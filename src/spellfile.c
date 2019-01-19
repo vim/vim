@@ -2114,9 +2114,9 @@ spell_print_node(wordnode_T *node, int depth)
 	PRINTSOME(line1, depth, "(%d)", node->wn_nr, 0);
 	PRINTSOME(line2, depth, "    ", 0, 0);
 	PRINTSOME(line3, depth, "    ", 0, 0);
-	msg((char_u *)line1);
-	msg((char_u *)line2);
-	msg((char_u *)line3);
+	msg(line1);
+	msg(line2);
+	msg(line3);
     }
     else
     {
@@ -2142,9 +2142,9 @@ spell_print_node(wordnode_T *node, int depth)
 
 	if (node->wn_byte == NUL)
 	{
-	    msg((char_u *)line1);
-	    msg((char_u *)line2);
-	    msg((char_u *)line3);
+	    msg(line1);
+	    msg(line2);
+	    msg(line3);
 	}
 
 	/* do the children */
@@ -3085,11 +3085,11 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
     if (spin->si_newcompID < spin->si_newprefID)
     {
 	if (spin->si_newcompID == 127 || spin->si_newcompID == 255)
-	    MSG(_("Too many postponed prefixes"));
+	    msg(_("Too many postponed prefixes"));
 	else if (spin->si_newprefID == 0 || spin->si_newprefID == 127)
-	    MSG(_("Too many compound flags"));
+	    msg(_("Too many compound flags"));
 	else
-	    MSG(_("Too many postponed prefixes and/or compound flags"));
+	    msg(_("Too many postponed prefixes and/or compound flags"));
     }
 
     if (syllable != NULL)
@@ -3640,7 +3640,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 		    _("line %6d, word %6ld - %s"),
 		       lnum, spin->si_foldwcount + spin->si_keepwcount, w);
 	    msg_start();
-	    msg_puts_long_attr(message, 0);
+	    msg_outtrans_long_attr(message, 0);
 	    msg_clr_eos();
 	    msg_didout = FALSE;
 	    msg_col = 0;
@@ -4618,7 +4618,7 @@ tree_add_word(
 	if (spin->si_verbose)
 	{
 	    msg_start();
-	    msg_puts((char_u *)_(msg_compressing));
+	    msg_puts(_(msg_compressing));
 	    msg_clr_eos();
 	    msg_didout = FALSE;
 	    msg_col = 0;
@@ -6119,7 +6119,7 @@ mkspell(
 	}
 
 	if (spin.si_compflags != NULL && spin.si_nobreak)
-	    MSG(_("Warning: both compounding and NOBREAK specified"));
+	    msg(_("Warning: both compounding and NOBREAK specified"));
 
 	if (!error && !got_int)
 	{
@@ -6197,7 +6197,7 @@ spell_message(spellinfo_T *spin, char_u *str)
     {
 	if (!spin->si_verbose)
 	    verbose_enter();
-	MSG(str);
+	msg((char *)str);
 	out_flush();
 	if (!spin->si_verbose)
 	    verbose_leave();
