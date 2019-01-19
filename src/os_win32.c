@@ -5428,6 +5428,49 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 # endif
 }
 
+/*
+ * Create a pair of pipes.
+ * Return TRUE for success, FALSE for failure.
+ */
+    static BOOL
+create_pipe_pair(HANDLE handles[2])
+{
+    static LONG		s;
+    char		name[64];
+    SECURITY_ATTRIBUTES sa;
+
+    sprintf(name, "\\\\?\\pipe\\vim-%08lx-%08lx",
+	    GetCurrentProcessId(),
+	    InterlockedIncrement(&s));
+
+    // Create named pipe. Max size of named pipe is 65535.
+    handles[1] = CreateNamedPipe(
+	    name,
+	    PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
+	    PIPE_TYPE_BYTE | PIPE_NOWAIT,
+	    1, 65535, 0, 0, NULL);
+
+    if (handles[1] == INVALID_HANDLE_VALUE)
+	return FALSE;
+
+    sa.nLength = sizeof(sa);
+    sa.bInheritHandle = TRUE;
+    sa.lpSecurityDescriptor = NULL;
+
+    handles[0] = CreateFile(name,
+	    FILE_GENERIC_READ,
+	    FILE_SHARE_READ, &sa,
+	    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+
+    if (handles[0] == INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(handles[1]);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
     void
 mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 {
@@ -5493,9 +5536,9 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
 	    goto failed;
 	}
     }
-    else if (!use_null_for_in &&
-	    (!CreatePipe(&ifd[0], &ifd[1], &saAttr, 0)
-	    || !SetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
+    else if (!use_null_for_in
+	    && (!create_pipe_pair(ifd)
+		|| !SetHandleInformation(ifd[1], HANDLE_FLAG_INHERIT, 0)))
 	goto failed;
 
     if (use_file_for_out)
