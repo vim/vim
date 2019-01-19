@@ -1389,9 +1389,9 @@ msg_putchar(int c)
 msg_putchar_attr(int c, int attr)
 {
 #ifdef FEAT_MBYTE
-    char	buf[MB_MAXBYTES + 1];
+    char_u	buf[MB_MAXBYTES + 1];
 #else
-    char	buf[4];
+    char_u	buf[4];
 #endif
 
     if (IS_SPECIAL(c))
@@ -1404,13 +1404,13 @@ msg_putchar_attr(int c, int attr)
     else
     {
 #ifdef FEAT_MBYTE
-	buf[(*mb_char2bytes)(c, (char_u *)buf)] = NUL;
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
 #else
 	buf[0] = c;
 	buf[1] = NUL;
 #endif
     }
-    msg_puts_attr(buf, attr);
+    msg_puts_attr((char *)buf, attr);
 }
 
     void

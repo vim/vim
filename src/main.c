@@ -1282,12 +1282,11 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
-
 		/* msg_attr_keep() will set keep_msg to NULL, must free the
 		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
 		 * to check for duplicates. */
-		p = keep_msg;
+		char *p = (char *)keep_msg;
+
 		msg_attr(p, keep_msg_attr);
 		vim_free(p);
 	    }
