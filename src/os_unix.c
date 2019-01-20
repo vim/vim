@@ -984,6 +984,7 @@ sig_alarm SIGDEFARG(sigarg)
 	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
 	    || defined(FEAT_LIBCALL))) \
     || defined(PROTO)
+# define USING_SETJMP 1
 
 // argument to SETJMP()
 static JMP_BUF lc_jump_env;
@@ -1023,9 +1024,9 @@ static volatile sig_atomic_t lc_active INIT(= FALSE);
     static void
 mch_startjmp(void)
 {
-#ifdef SIGHASARG
+# ifdef SIGHASARG
     lc_signal = 0;
-#endif
+# endif
     lc_active = TRUE;
 }
 
@@ -1063,7 +1064,7 @@ deathtrap SIGDEFARG(sigarg)
     int		i;
 #endif
 
-#if defined(HAVE_SETJMP_H)
+#if defined(USING_SETJMP)
     /*
      * Catch a crash in protected code.
      * Restores the environment saved in lc_jump_env, which looks like
@@ -1708,7 +1709,7 @@ x_connect_to_server(void)
 }
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
@@ -2100,7 +2101,7 @@ get_x11_thing(
     return retval;
 }
 
-/* Xutf8 functions are not avaialble on older systems. Note that on some
+/* Xutf8 functions are not available on older systems. Note that on some
  * systems X_HAVE_UTF8_STRING may be defined in a header file but
  * Xutf8SetWMProperties() is not in the X11 library.  Configure checks for
  * that and defines HAVE_XUTF8SETWMPROPERTIES. */
@@ -2953,7 +2954,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 		case ENOTSUP:
 		    /* extended attributes aren't supported or enabled */
 		    /* should a message be echoed? not sure... */
-		    return; /* leave because it isn't usefull to continue */
+		    return; /* leave because it isn't useful to continue */
 
 		case ERANGE:
 		default:
@@ -7360,7 +7361,7 @@ mch_libcall(
     /* If the handle is valid, try to get the function address. */
     if (hinstLib != NULL)
     {
-# ifdef HAVE_SETJMP_H
+# ifdef USING_SETJMP
 	/*
 	 * Catch a crash when calling the library function.  For example when
 	 * using a number where a string pointer is expected.
@@ -7435,7 +7436,7 @@ mch_libcall(
 		*string_result = vim_strsave(retval_str);
 	}
 
-# ifdef HAVE_SETJMP_H
+# ifdef USING_SETJMP
 	mch_endjmp();
 #  ifdef SIGHASARG
 	if (lc_signal != 0)
@@ -7494,7 +7495,7 @@ setup_term_clip(void)
     if (app_context != NULL && xterm_Shell == (Widget)0)
     {
 	int (*oldhandler)();
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	int (*oldIOhandler)();
 # endif
 # ifdef ELAPSED_FUNC
@@ -7507,7 +7508,7 @@ setup_term_clip(void)
 	/* Ignore X errors while opening the display */
 	oldhandler = XSetErrorHandler(x_error_check);
 
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	/* Ignore X IO errors while opening the display */
 	oldIOhandler = XSetIOErrorHandler(x_IOerror_check);
 	mch_startjmp();
@@ -7523,12 +7524,12 @@ setup_term_clip(void)
 		    "vim_xterm", "Vim_xterm", NULL, 0, &z, &strp);
 	    if (xterm_dpy != NULL)
 		xterm_dpy_retry_count = 0;
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	    mch_endjmp();
 # endif
 	}
 
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	/* Now handle X IO errors normally. */
 	(void)XSetIOErrorHandler(oldIOhandler);
 # endif
