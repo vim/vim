@@ -1741,7 +1741,9 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
 	        while (p < res + (len - 1) && *p != '\a')
 		    ++p;
 		/* BEL is zero width characters, suppress display mistake */
-		p[-1] = 0x07;
+		/* ConPTY (after 10.0.18317) requires advance checking */
+		if (p[-1] == NUL)
+		    p[-1] = 0x07;
 	    }
 	}
 	else if (*p == NUL)
