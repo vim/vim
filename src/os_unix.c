@@ -980,11 +980,7 @@ sig_alarm SIGDEFARG(sigarg)
 }
 #endif
 
-#if (defined(HAVE_SETJMP_H) \
-	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
-	    || defined(FEAT_LIBCALL))) \
-    || defined(PROTO)
-
+#if defined(HAVE_SETJMP_H) || defined(PROTO)
 // argument to SETJMP()
 static JMP_BUF lc_jump_env;
 
@@ -7497,9 +7493,9 @@ setup_term_clip(void)
     if (app_context != NULL && xterm_Shell == (Widget)0)
     {
 	int (*oldhandler)();
-# if defined(HAVE_SETJMP_H)
+#if defined(HAVE_SETJMP_H)
 	int (*oldIOhandler)();
-# endif
+#endif
 # ifdef ELAPSED_FUNC
 	elapsed_T start_tv;
 
@@ -7510,7 +7506,7 @@ setup_term_clip(void)
 	/* Ignore X errors while opening the display */
 	oldhandler = XSetErrorHandler(x_error_check);
 
-# if defined(HAVE_SETJMP_H)
+#if defined(HAVE_SETJMP_H)
 	/* Ignore X IO errors while opening the display */
 	oldIOhandler = XSetIOErrorHandler(x_IOerror_check);
 	mch_startjmp();
@@ -7520,21 +7516,21 @@ setup_term_clip(void)
 	    xterm_dpy = NULL;
 	}
 	else
-# endif
+#endif
 	{
 	    xterm_dpy = XtOpenDisplay(app_context, xterm_display,
 		    "vim_xterm", "Vim_xterm", NULL, 0, &z, &strp);
 	    if (xterm_dpy != NULL)
 		xterm_dpy_retry_count = 0;
-# if defined(HAVE_SETJMP_H)
+#if defined(HAVE_SETJMP_H)
 	    mch_endjmp();
-# endif
+#endif
 	}
 
-# if defined(HAVE_SETJMP_H)
+#if defined(HAVE_SETJMP_H)
 	/* Now handle X IO errors normally. */
 	(void)XSetIOErrorHandler(oldIOhandler);
-# endif
+#endif
 	/* Now handle X errors normally. */
 	(void)XSetErrorHandler(oldhandler);
 
