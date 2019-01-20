@@ -3869,6 +3869,8 @@ build_stl_str_hl(
     struct stl_hlrec *hltab,	/* return: HL attributes (can be NULL) */
     struct stl_hlrec *tabtab)	/* return: tab page nrs (can be NULL) */
 {
+    linenr_T	lnum;
+    size_t	len;
     char_u	*p;
     char_u	*s;
     char_u	*t;
@@ -3943,15 +3945,33 @@ build_stl_str_hl(
 	fillchar = '-';
 #endif
 
-    /* Get line & check if empty (cursorpos will show "0-1").  Note that
-     * p will become invalid when getting another buffer line. */
-    p = ml_get_buf(wp->w_buffer, wp->w_cursor.lnum, FALSE);
+    // The cursor in windows other than the current one isn't always
+    // up-to-date, esp. because of autocommands and timers.
+    lnum = wp->w_cursor.lnum;
+    if (lnum > wp->w_buffer->b_ml.ml_line_count)
+    {
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+	wp->w_cursor.lnum = lnum;
+    }
+
+    // Get line & check if empty (cursorpos will show "0-1").  Note that
+    // p will become invalid when getting another buffer line.
+    p = ml_get_buf(wp->w_buffer, lnum, FALSE);
     empty_line = (*p == NUL);
 
-    /* Get the byte value now, in case we need it below. This is more
-     * efficient than making a copy of the line. */
-    if (wp->w_cursor.col > (colnr_T)STRLEN(p))
+    // Get the byte value now, in case we need it below. This is more efficient
+    // than making a copy of the line.
+    len = STRLEN(p);
+    if (wp->w_cursor.col > (colnr_T)len)
+    {
+	// Line may have changed since checking the cursor column, or the lnum
+	// was adjusted above.
+	wp->w_cursor.col = (colnr_T)len;
+#ifdef FEAT_VIRTUALEDIT
+	wp->w_cursor.coladd = 0;
+#endif
 	byteval = 0;
+    }
     else
 #ifdef FEAT_MBYTE
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);

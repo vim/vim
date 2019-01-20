@@ -1719,3 +1719,28 @@ func Test_term_gettitle()
 
   exe term . 'bwipe!'
 endfunc
+
+" When drawing the statusline the cursor position may not have been updated
+" yet.
+" 1. create a terminal, make it show 2 lines
+" 2. 0.5 sec later: leave terminal window, execute "i"
+" 3. 0.5 sec later: clear terminal window, now it's 1 line
+" 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
+" 4. 0.5 sec later: should be done, clean up
+func Test_terminal_statusline()
+  if !has('unix')
+    return
+  endif
+  set statusline=x
+  terminal
+  let tbuf = bufnr('')
+  call term_sendkeys(tbuf, "clear; echo a; echo b; sleep 1; clear\n")
+  call timer_start(500, { tid -> feedkeys("\<C-w>j", 'tx') })
+  call timer_start(1500, { tid -> feedkeys("\<C-l>", 'tx') })
+  au BufLeave * if &buftype == 'terminal' | silent! normal i | endif
+
+  sleep 2
+  exe tbuf . 'bwipe!'
+  au! BufLeave
+  set statusline=
+endfunc
