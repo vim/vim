@@ -998,6 +998,8 @@ static volatile sig_atomic_t lc_signal;
 // Volatile because it is used in signal handler deathtrap().
 static volatile sig_atomic_t lc_active INIT(= FALSE);
 
+#if (defined(FEAT_LIBCALL) || (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD))) \
+	|| defined(PROTO)
 /*
  * A simplistic version of setjmp() that only allows one level of using.
  * Used to protect areas where we could crash.
@@ -1044,6 +1046,7 @@ mch_didjmp(void)
     init_signal_stack();
 # endif
 }
+#endif
 #endif
 
 /*
@@ -2100,7 +2103,7 @@ get_x11_thing(
     return retval;
 }
 
-/* Xutf8 functions are not avaialble on older systems. Note that on some
+/* Xutf8 functions are not available on older systems. Note that on some
  * systems X_HAVE_UTF8_STRING may be defined in a header file but
  * Xutf8SetWMProperties() is not in the X11 library.  Configure checks for
  * that and defines HAVE_XUTF8SETWMPROPERTIES. */
@@ -2953,7 +2956,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 		case ENOTSUP:
 		    /* extended attributes aren't supported or enabled */
 		    /* should a message be echoed? not sure... */
-		    return; /* leave because it isn't usefull to continue */
+		    return; /* leave because it isn't useful to continue */
 
 		case ERANGE:
 		default:
