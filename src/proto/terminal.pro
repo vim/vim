@@ -18,7 +18,6 @@ cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);
 int term_use_loop(void);
 void term_win_entered(void);
 int terminal_loop(int blocking);
-void term_job_ended(job_T *job);
 void term_channel_closed(channel_T *ch);
 void term_check_channel_closed_recently(void);
 int term_do_update_window(win_T *wp);

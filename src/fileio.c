@@ -9303,6 +9303,7 @@ has_cursormoved(void)
     return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
 }
 
+#if defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Return TRUE when there is a CursorMovedI autocommand defined.
  */
@@ -9311,6 +9312,7 @@ has_cursormovedI(void)
 {
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is a TextChanged autocommand defined.
@@ -9330,6 +9332,7 @@ has_textchangedI(void)
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
+#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
@@ -9338,6 +9341,7 @@ has_textchangedP(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is an InsertCharPre autocommand defined.
@@ -9366,6 +9370,7 @@ has_funcundefined(void)
     return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
@@ -9374,6 +9379,7 @@ has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
 }
+#endif
 
 /*
  * Execute autocommands for "event" and file name "fname".
@@ -9823,11 +9829,14 @@ unblock_autocmds(void)
 # endif
 }
 
+#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
+	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
+#endif
 
 /*
  * Find next autocommand pattern that matches.
@@ -10088,6 +10097,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
 
 #endif	/* FEAT_CMDL_COMPL */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if autocmd is supported.
  */
@@ -10196,6 +10206,7 @@ theend:
     vim_free(arg_save);
     return retval;
 }
+#endif
 
 
 /*

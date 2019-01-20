@@ -844,6 +844,7 @@ bomb_size(void)
     return n;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
@@ -863,6 +864,7 @@ remove_bom(char_u *s)
 	}
     }
 }
+#endif
 
 /*
  * Get class of pointer:

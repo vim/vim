@@ -476,6 +476,7 @@ pat_has_uppercase(char_u *pat)
     return FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     char_u *
 last_csearch(void)
 {
@@ -510,6 +511,7 @@ set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
 	vim_memset(lastc_bytes, 0, sizeof(lastc_bytes));
 #endif
 }
+#endif
 
     void
 set_csearch_direction(int cdir)

@@ -5660,6 +5660,7 @@ bt_normal(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == NUL;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
@@ -5668,7 +5669,9 @@ bt_quickfix(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'q';
 }
+#endif
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
@@ -5677,6 +5680,7 @@ bt_terminal(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 't';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a help buffer.
@@ -5721,6 +5725,7 @@ bt_dontwrite(buf_T *buf)
 	         || buf->b_p_bt[0] == 'p');
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
     int
 bt_dontwrite_msg(buf_T *buf)
 {
@@ -5731,6 +5736,7 @@ bt_dontwrite_msg(buf_T *buf)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"

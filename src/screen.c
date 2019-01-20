@@ -263,6 +263,7 @@ redraw_buf_later(buf_T *buf, int type)
     }
 }
 
+#if defined(FEAT_SIGNS) || defined(PROTO)
     void
 redraw_buf_line_later(buf_T *buf, linenr_T lnum)
 {
@@ -273,7 +274,9 @@ redraw_buf_line_later(buf_T *buf, linenr_T lnum)
 						  && lnum < wp->w_botline)
 	    redrawWinline(wp, lnum);
 }
+#endif
 
+#if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
     void
 redraw_buf_and_status_later(buf_T *buf, int type)
 {
@@ -294,7 +297,9 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 	}
     }
 }
+#endif
 
+#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * Redraw as soon as possible.  When the command line is not scrolled redraw
  * right away and restore what was on the command line.
@@ -439,6 +444,7 @@ redraw_asap(int type)
 
     return ret;
 }
+#endif
 
 /*
  * Invoked after an asynchronous callback is called.
@@ -929,7 +935,7 @@ conceal_check_cursor_line(void)
 }
 #endif
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
     void
 update_debug_sign(buf_T *buf, linenr_T lnum)
 {
@@ -11294,6 +11300,7 @@ number_width(win_T *wp)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the current cursor column. This is the actual position on the
  * screen. First column is 0.
@@ -11313,3 +11320,4 @@ screen_screenrow(void)
 {
     return screen_cur_row;
 }
+#endif

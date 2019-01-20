@@ -734,16 +734,6 @@ re_multiline(regprog_T *prog)
 }
 
 /*
- * Return TRUE if compiled regular expression "prog" looks before the start
- * position (pattern contains "\@<=" or "\@<!").
- */
-    int
-re_lookbehind(regprog_T *prog)
-{
-    return (prog->regflags & RF_LOOKBH);
-}
-
-/*
  * Check for an equivalence class name "[=a=]".  "pp" points to the '['.
  * Returns a character representing the class. Zero means that no item was
  * recognized.  Otherwise "pp" is advanced to after the item.
@@ -8206,6 +8196,8 @@ report_re_switch(char_u *pat)
 }
 #endif
 
+#if (defined(FEAT_X11) && (defined(FEAT_TITLE) || defined(FEAT_XCLIPBOARD))) \
+	|| defined(PROTO)
 /*
  * Return whether "prog" is currently being executed.
  */
@@ -8214,6 +8206,7 @@ regprog_in_use(regprog_T *prog)
 {
     return prog->re_in_use;
 }
+#endif
 
 /*
  * Match a regexp against a string.

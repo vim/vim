@@ -413,6 +413,7 @@ stuff_empty(void)
 	 && readbuf2.bh_first.b_next == NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
@@ -422,6 +423,7 @@ readbuf1_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL);
 }
+#endif
 
 /*
  * Set a typeahead character that won't be flushed.

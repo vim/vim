@@ -1589,6 +1589,7 @@ clip_gen_request_selection(VimClipboard *cbd)
 #endif
 }
 
+#if (defined(FEAT_X11) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gen_owner_exists(VimClipboard *cbd UNUSED)
 {
@@ -1603,6 +1604,7 @@ clip_gen_owner_exists(VimClipboard *cbd UNUSED)
     return TRUE;
 #endif
 }
+#endif
 
 #endif /* FEAT_CLIPBOARD */
 
@@ -2574,11 +2576,14 @@ clip_x11_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
+#if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
+	|| defined(PROTO)
     int
 clip_x11_owner_exists(VimClipboard *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
 }
+#endif
 #endif
 
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) \

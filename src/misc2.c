@@ -1033,6 +1033,7 @@ theend:
 /*
  * lalloc() with an ID for alloc_fail().
  */
+#if defined(FEAT_SIGNS) || defined(PROTO)
     char_u *
 lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 {
@@ -1042,6 +1043,7 @@ lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 #endif
     return (lalloc((long_u)size, message));
 }
+#endif
 
 #if defined(MEM_PROFILE) || defined(PROTO)
 /*
@@ -2135,6 +2137,7 @@ ga_grow(garray_T *gap, int n)
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * For a growing array that contains a list of strings: concatenate all the
  * strings with a separating "sep".
@@ -2170,6 +2173,7 @@ ga_concat_strings(garray_T *gap, char *sep)
     }
     return s;
 }
+#endif
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*
