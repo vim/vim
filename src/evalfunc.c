@@ -7169,7 +7169,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
     {
-	msg_puts(tv_get_string(&li->li_tv));
+	msg_puts((char *)tv_get_string(&li->li_tv));
 	msg_putchar('\n');
     }
 
@@ -7198,7 +7198,7 @@ f_inputrestore(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else if (p_verbose > 1)
     {
-	verb_msg((char_u *)_("called inputrestore() more often than inputsave()"));
+	verb_msg(_("called inputrestore() more often than inputsave()"));
 	rettv->vval.v_number = 1; /* Failed */
     }
 }

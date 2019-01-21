@@ -413,6 +413,7 @@ stuff_empty(void)
 	 && readbuf2.bh_first.b_next == NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
@@ -422,6 +423,7 @@ readbuf1_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL);
 }
+#endif
 
 /*
  * Set a typeahead character that won't be flushed.
@@ -1942,7 +1944,7 @@ vungetc(int c)
 }
 
 /*
- * Get a character:
+ * Get a byte:
  * 1. from the stuffbuffer
  *	This is used for abbreviated commands like "D" -> "d$".
  *	Also used to redo a command for ".".
@@ -3728,9 +3730,9 @@ do_map(
 		)
 	{
 	    if (abbrev)
-		MSG(_("No abbreviation found"));
+		msg(_("No abbreviation found"));
 	    else
-		MSG(_("No mapping found"));
+		msg(_("No mapping found"));
 	}
 	goto theend;			    /* listing finished */
     }
@@ -4047,7 +4049,7 @@ showmap(
     mapchars = map_mode_to_chars(mp->m_mode);
     if (mapchars != NULL)
     {
-	msg_puts(mapchars);
+	msg_puts((char *)mapchars);
 	len = (int)STRLEN(mapchars);
 	vim_free(mapchars);
     }
@@ -4064,9 +4066,9 @@ showmap(
     } while (len < 12);
 
     if (mp->m_noremap == REMAP_NONE)
-	msg_puts_attr((char_u *)"*", HL_ATTR(HLF_8));
+	msg_puts_attr("*", HL_ATTR(HLF_8));
     else if (mp->m_noremap == REMAP_SCRIPT)
-	msg_puts_attr((char_u *)"&", HL_ATTR(HLF_8));
+	msg_puts_attr("&", HL_ATTR(HLF_8));
     else
 	msg_putchar(' ');
 
@@ -4078,7 +4080,7 @@ showmap(
     /* Use FALSE below if we only want things like <Up> to show up as such on
      * the rhs, and not M-x etc, TRUE gets both -- webb */
     if (*mp->m_str == NUL)
-	msg_puts_attr((char_u *)"<Nop>", HL_ATTR(HLF_8));
+	msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
     else
     {
 	/* Remove escaping of CSI, because "m_str" is in a format to be used

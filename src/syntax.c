@@ -3313,7 +3313,7 @@ syn_regexec(
     if (timed_out && !syn_win->w_s->b_syn_slow)
     {
 	syn_win->w_s->b_syn_slow = TRUE;
-	MSG(_("'redrawtime' exceeded, syntax highlighting disabled"));
+	msg(_("'redrawtime' exceeded, syntax highlighting disabled"));
     }
 #endif
 
@@ -3435,9 +3435,9 @@ syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_conceal)
-	    MSG(_("syntax conceal on"));
+	    msg(_("syntax conceal on"));
 	else
-	    MSG(_("syntax conceal off"));
+	    msg(_("syntax conceal off"));
     }
     else if (STRNICMP(arg, "on", 2) == 0 && next - arg == 2)
 	curwin->w_s->b_syn_conceal = TRUE;
@@ -3465,9 +3465,9 @@ syn_cmd_case(exarg_T *eap, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_ic)
-	    MSG(_("syntax case ignore"));
+	    msg(_("syntax case ignore"));
 	else
-	    MSG(_("syntax case match"));
+	    msg(_("syntax case match"));
     }
     else if (STRNICMP(arg, "match", 5) == 0 && next - arg == 5)
 	curwin->w_s->b_syn_ic = FALSE;
@@ -3494,11 +3494,11 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_spell == SYNSPL_TOP)
-	    MSG(_("syntax spell toplevel"));
+	    msg(_("syntax spell toplevel"));
 	else if (curwin->w_s->b_syn_spell == SYNSPL_NOTOP)
-	    MSG(_("syntax spell notoplevel"));
+	    msg(_("syntax spell notoplevel"));
 	else
-	    MSG(_("syntax spell default"));
+	    msg(_("syntax spell default"));
     }
     else if (STRNICMP(arg, "toplevel", 8) == 0 && next - arg == 8)
 	curwin->w_s->b_syn_spell = SYNSPL_TOP;
@@ -3532,10 +3532,10 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
     arg = skipwhite(arg);
     if (*arg == NUL)
     {
-	MSG_PUTS("\n");
+	msg_puts("\n");
 	if (curwin->w_s->b_syn_isk != empty_option)
 	{
-	    MSG_PUTS(_("syntax iskeyword "));
+	    msg_puts(_("syntax iskeyword "));
 	    msg_outtrans(curwin->w_s->b_syn_isk);
 	}
 	else
@@ -3909,7 +3909,7 @@ syn_cmd_list(
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
 
@@ -3917,7 +3917,7 @@ syn_cmd_list(
     {
 	if (curwin->w_s->b_syn_sync_flags & SF_CCOMMENT)
 	{
-	    MSG_PUTS(_("syncing on C-style comments"));
+	    msg_puts(_("syncing on C-style comments"));
 	    syn_lines_msg();
 	    syn_match_msg();
 	    return;
@@ -3925,28 +3925,28 @@ syn_cmd_list(
 	else if (!(curwin->w_s->b_syn_sync_flags & SF_MATCH))
 	{
 	    if (curwin->w_s->b_syn_sync_minlines == 0)
-		MSG_PUTS(_("no syncing"));
+		msg_puts(_("no syncing"));
 	    else
 	    {
-		MSG_PUTS(_("syncing starts "));
+		msg_puts(_("syncing starts "));
 		msg_outnum(curwin->w_s->b_syn_sync_minlines);
-		MSG_PUTS(_(" lines before top line"));
+		msg_puts(_(" lines before top line"));
 		syn_match_msg();
 	    }
 	    return;
 	}
-	MSG_PUTS_TITLE(_("\n--- Syntax sync items ---"));
+	msg_puts_title(_("\n--- Syntax sync items ---"));
 	if (curwin->w_s->b_syn_sync_minlines > 0
 		|| curwin->w_s->b_syn_sync_maxlines > 0
 		|| curwin->w_s->b_syn_sync_linebreaks > 0)
 	{
-	    MSG_PUTS(_("\nsyncing on items"));
+	    msg_puts(_("\nsyncing on items"));
 	    syn_lines_msg();
 	    syn_match_msg();
 	}
     }
     else
-	MSG_PUTS_TITLE(_("\n--- Syntax items ---"));
+	msg_puts_title(_("\n--- Syntax items ---"));
     if (ends_excmd(*arg))
     {
 	/*
@@ -3993,20 +3993,20 @@ syn_lines_msg(void)
     if (curwin->w_s->b_syn_sync_maxlines > 0
 				      || curwin->w_s->b_syn_sync_minlines > 0)
     {
-	MSG_PUTS("; ");
+	msg_puts("; ");
 	if (curwin->w_s->b_syn_sync_minlines > 0)
 	{
-	    MSG_PUTS(_("minimal "));
+	    msg_puts(_("minimal "));
 	    msg_outnum(curwin->w_s->b_syn_sync_minlines);
 	    if (curwin->w_s->b_syn_sync_maxlines)
-		MSG_PUTS(", ");
+		msg_puts(", ");
 	}
 	if (curwin->w_s->b_syn_sync_maxlines > 0)
 	{
-	    MSG_PUTS(_("maximal "));
+	    msg_puts(_("maximal "));
 	    msg_outnum(curwin->w_s->b_syn_sync_maxlines);
 	}
-	MSG_PUTS(_(" lines before top line"));
+	msg_puts(_(" lines before top line"));
     }
 }
 
@@ -4015,9 +4015,9 @@ syn_match_msg(void)
 {
     if (curwin->w_s->b_syn_sync_linebreaks > 0)
     {
-	MSG_PUTS(_("; match "));
+	msg_puts(_("; match "));
 	msg_outnum(curwin->w_s->b_syn_sync_linebreaks);
-	MSG_PUTS(_(" line breaks"));
+	msg_puts(_(" line breaks"));
     }
 }
 
@@ -4122,15 +4122,15 @@ syn_list_one(
 	if (spp->sp_flags & (HL_SYNC_HERE|HL_SYNC_THERE))
 	{
 	    if (spp->sp_flags & HL_SYNC_HERE)
-		msg_puts_attr((char_u *)"grouphere", attr);
+		msg_puts_attr("grouphere", attr);
 	    else
-		msg_puts_attr((char_u *)"groupthere", attr);
+		msg_puts_attr("groupthere", attr);
 	    msg_putchar(' ');
 	    if (spp->sp_sync_idx >= 0)
 		msg_outtrans(HL_TABLE()[SYN_ITEMS(curwin->w_s)
 				   [spp->sp_sync_idx].sp_syn.id - 1].sg_name);
 	    else
-		MSG_PUTS("NONE");
+		msg_puts("NONE");
 	    msg_putchar(' ');
 	}
     }
@@ -4139,7 +4139,7 @@ syn_list_one(
     if (HL_TABLE()[id - 1].sg_link && (did_header || link_only) && !got_int)
     {
 	(void)syn_list_header(did_header, 999, id);
-	msg_puts_attr((char_u *)"links to", attr);
+	msg_puts_attr("links to", attr);
 	msg_putchar(' ');
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
@@ -4153,7 +4153,7 @@ syn_list_flags(struct name_list *nlist, int flags, int attr)
     for (i = 0; nlist[i].flag != 0; ++i)
 	if (flags & nlist[i].flag)
 	{
-	    msg_puts_attr((char_u *)nlist[i].name, attr);
+	    msg_puts_attr(nlist[i].name, attr);
 	    msg_putchar(' ');
 	}
 }
@@ -4183,8 +4183,8 @@ syn_list_cluster(int id)
     }
     else
     {
-	msg_puts_attr((char_u *)"cluster", HL_ATTR(HLF_D));
-	msg_puts((char_u *)"=NONE");
+	msg_puts_attr("cluster", HL_ATTR(HLF_D));
+	msg_puts("=NONE");
     }
 }
 
@@ -4193,24 +4193,24 @@ put_id_list(char_u *name, short *list, int attr)
 {
     short		*p;
 
-    msg_puts_attr(name, attr);
+    msg_puts_attr((char *)name, attr);
     msg_putchar('=');
     for (p = list; *p; ++p)
     {
 	if (*p >= SYNID_ALLBUT && *p < SYNID_TOP)
 	{
 	    if (p[1])
-		MSG_PUTS("ALLBUT");
+		msg_puts("ALLBUT");
 	    else
-		MSG_PUTS("ALL");
+		msg_puts("ALL");
 	}
 	else if (*p >= SYNID_TOP && *p < SYNID_CONTAINED)
 	{
-	    MSG_PUTS("TOP");
+	    msg_puts("TOP");
 	}
 	else if (*p >= SYNID_CONTAINED && *p < SYNID_CLUSTER)
 	{
-	    MSG_PUTS("CONTAINED");
+	    msg_puts("CONTAINED");
 	}
 	else if (*p >= SYNID_CLUSTER)
 	{
@@ -4244,7 +4244,7 @@ put_pattern(
     if (last_matchgroup != spp->sp_syn_match_id)
     {
 	last_matchgroup = spp->sp_syn_match_id;
-	msg_puts_attr((char_u *)"matchgroup", attr);
+	msg_puts_attr("matchgroup", attr);
 	msg_putchar('=');
 	if (last_matchgroup == 0)
 	    msg_outtrans((char_u *)"NONE");
@@ -4254,7 +4254,7 @@ put_pattern(
     }
 
     /* output the name of the pattern and an '=' or ' ' */
-    msg_puts_attr((char_u *)s, attr);
+    msg_puts_attr(s, attr);
     msg_putchar(c);
 
     /* output the pattern, in between a char that is not in the pattern */
@@ -4277,7 +4277,7 @@ put_pattern(
 	{
 	    if (!first)
 		msg_putchar(',');	/* separate with commas */
-	    msg_puts((char_u *)spo_name_tab[i]);
+	    msg_puts(spo_name_tab[i]);
 	    n = spp->sp_offsets[i];
 	    if (i != SPO_LC_OFF)
 	    {
@@ -4354,7 +4354,7 @@ syn_list_keywords(
 		    did_header = TRUE;
 		    if (prev_contained != (kp->flags & HL_CONTAINED))
 		    {
-			msg_puts_attr((char_u *)"contained", attr);
+			msg_puts_attr("contained", attr);
 			msg_putchar(' ');
 			prev_contained = (kp->flags & HL_CONTAINED);
 		    }
@@ -4372,19 +4372,19 @@ syn_list_keywords(
 			prev_next_list = kp->next_list;
 			if (kp->flags & HL_SKIPNL)
 			{
-			    msg_puts_attr((char_u *)"skipnl", attr);
+			    msg_puts_attr("skipnl", attr);
 			    msg_putchar(' ');
 			    prev_skipnl = (kp->flags & HL_SKIPNL);
 			}
 			if (kp->flags & HL_SKIPWHITE)
 			{
-			    msg_puts_attr((char_u *)"skipwhite", attr);
+			    msg_puts_attr("skipwhite", attr);
 			    msg_putchar(' ');
 			    prev_skipwhite = (kp->flags & HL_SKIPWHITE);
 			}
 			if (kp->flags & HL_SKIPEMPTY)
 			{
-			    msg_puts_attr((char_u *)"skipempty", attr);
+			    msg_puts_attr("skipempty", attr);
 			    msg_putchar(' ');
 			    prev_skipempty = (kp->flags & HL_SKIPEMPTY);
 			}
@@ -6671,7 +6671,7 @@ syntime_clear(void)
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
     for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
@@ -6742,7 +6742,7 @@ syntime_report(void)
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
 
@@ -6777,31 +6777,31 @@ syntime_report(void)
 	qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(time_entry_T),
 							 syn_compare_syntime);
 
-    MSG_PUTS_TITLE(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
-    MSG_PUTS("\n");
+    msg_puts_title(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
+    msg_puts("\n");
     for (idx = 0; idx < ga.ga_len && !got_int; ++idx)
     {
 	p = ((time_entry_T *)ga.ga_data) + idx;
 
-	MSG_PUTS(profile_msg(&p->total));
-	MSG_PUTS(" "); /* make sure there is always a separating space */
+	msg_puts(profile_msg(&p->total));
+	msg_puts(" "); /* make sure there is always a separating space */
 	msg_advance(13);
 	msg_outnum(p->count);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 	msg_advance(20);
 	msg_outnum(p->match);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 	msg_advance(26);
-	MSG_PUTS(profile_msg(&p->slowest));
-	MSG_PUTS(" ");
+	msg_puts(profile_msg(&p->slowest));
+	msg_puts(" ");
 	msg_advance(38);
 # ifdef FEAT_FLOAT
-	MSG_PUTS(profile_msg(&p->average));
-	MSG_PUTS(" ");
+	msg_puts(profile_msg(&p->average));
+	msg_puts(" ");
 # endif
 	msg_advance(50);
 	msg_outtrans(HL_TABLE()[p->id - 1].sg_name);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 
 	msg_advance(69);
 	if (Columns < 80)
@@ -6811,16 +6811,16 @@ syntime_report(void)
 	if (len > (int)STRLEN(p->pattern))
 	    len = (int)STRLEN(p->pattern);
 	msg_outtrans_len(p->pattern, len);
-	MSG_PUTS("\n");
+	msg_puts("\n");
     }
     ga_clear(&ga);
     if (!got_int)
     {
-	MSG_PUTS("\n");
-	MSG_PUTS(profile_msg(&total_total));
+	msg_puts("\n");
+	msg_puts(profile_msg(&total_total));
 	msg_advance(13);
 	msg_outnum(total_count);
-	MSG_PUTS("\n");
+	msg_puts("\n");
     }
 }
 #endif
@@ -8887,6 +8887,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     return (table->ga_len - 1 + ATTR_OFF);
 }
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -8906,8 +8907,9 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     at_en.ae_u.cterm.bg_color = bg;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
+#endif
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
 /*
  * Get an attribute index for a 'termguicolors' entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -8935,7 +8937,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_GUI)) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -9227,7 +9229,7 @@ highlight_list_one(int id)
     {
 	(void)syn_list_header(didh, 9999, id);
 	didh = TRUE;
-	msg_puts_attr((char_u *)"links to", HL_ATTR(HLF_D));
+	msg_puts_attr("links to", HL_ATTR(HLF_D));
 	msg_putchar(' ');
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
@@ -9284,8 +9286,8 @@ highlight_list_arg(
 	{
 	    if (*name != NUL)
 	    {
-		MSG_PUTS_ATTR(name, HL_ATTR(HLF_D));
-		MSG_PUTS_ATTR("=", HL_ATTR(HLF_D));
+		msg_puts_attr(name, HL_ATTR(HLF_D));
+		msg_puts_attr("=", HL_ATTR(HLF_D));
 	    }
 	    msg_outtrans(ts);
 	}
@@ -9484,7 +9486,7 @@ syn_list_header(
     /* Show "xxx" with the attributes. */
     if (!did_header)
     {
-	msg_puts_attr((char_u *)"xxx", syn_id2attr(id));
+	msg_puts_attr("xxx", syn_id2attr(id));
 	msg_putchar(' ');
     }
 
@@ -9725,7 +9727,7 @@ syn_add_group(char_u *name)
 	    /* This is an error, but since there previously was no check only
 	     * give a warning. */
 	    msg_source(HL_ATTR(HLF_W));
-	    MSG(_("W18: Invalid character in group name"));
+	    msg(_("W18: Invalid character in group name"));
 	    break;
 	}
     }
@@ -10264,7 +10266,7 @@ highlight_list(void)
     static void
 highlight_list_two(int cnt, int attr)
 {
-    msg_puts_attr((char_u *)&("N \bI \b!  \b"[cnt / 11]), attr);
+    msg_puts_attr(&("N \bI \b!  \b"[cnt / 11]), attr);
     msg_clr_eos();
     out_flush();
     ui_delay(cnt == 99 ? 40L : (long)cnt * 50L, FALSE);

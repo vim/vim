@@ -2442,12 +2442,6 @@ CenterWindow(
 }
 #endif /* FEAT_GUI_DIALOG */
 
-void
-gui_mch_activate_window(void)
-{
-    (void)SetActiveWindow(s_hwnd);
-}
-
 #if defined(FEAT_TOOLBAR) || defined(PROTO)
     void
 gui_mch_show_toolbar(int showit)
@@ -5128,7 +5122,7 @@ _WndProc(
 		    && GetMenuState(s_menuBar, pMenu->id, MF_BYCOMMAND) != -1)
 	    {
 		++msg_hist_off;
-		msg(pMenu->strings[MENU_INDEX_TIP]);
+		msg((char *)pMenu->strings[MENU_INDEX_TIP]);
 		--msg_hist_off;
 		setcursor();
 		out_flush();

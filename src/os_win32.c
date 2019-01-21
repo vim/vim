@@ -1576,34 +1576,35 @@ WaitForChar(long msec, int ignore_input)
 		dwWaitTime = p_mzq; /* don't wait longer than 'mzquantum' */
 #endif
 #ifdef FEAT_TIMERS
+	    // When waiting very briefly don't trigger timers.
+	    if (dwWaitTime > 10)
 	    {
 		long	due_time;
 
-		/* When waiting very briefly don't trigger timers. */
-		if (dwWaitTime > 10)
+		// Trigger timers and then get the time in msec until the next
+		// one is due.  Wait up to that time.
+		due_time = check_due_timer();
+		if (typebuf.tb_change_cnt != tb_change_cnt)
 		{
-		    /* Trigger timers and then get the time in msec until the
-		     * next one is due.  Wait up to that time. */
-		    due_time = check_due_timer();
-		    if (typebuf.tb_change_cnt != tb_change_cnt)
-		    {
-			/* timer may have used feedkeys() */
-			return FALSE;
-		    }
-		    if (due_time > 0 && dwWaitTime > (DWORD)due_time)
-			dwWaitTime = due_time;
+		    // timer may have used feedkeys().
+		    return FALSE;
 		}
+		if (due_time > 0 && dwWaitTime > (DWORD)due_time)
+		    dwWaitTime = due_time;
 	    }
 #endif
+	    if (
 #ifdef FEAT_CLIENTSERVER
-	    /* Wait for either an event on the console input or a message in
-	     * the client-server window. */
-	    if (msg_wait_for_multiple_objects(1, &g_hConIn, FALSE,
-				 dwWaitTime, QS_SENDMESSAGE) != WAIT_OBJECT_0)
+		    // Wait for either an event on the console input or a
+		    // message in the client-server window.
+		    msg_wait_for_multiple_objects(1, &g_hConIn, FALSE,
+				  dwWaitTime, QS_SENDMESSAGE) != WAIT_OBJECT_0
 #else
-	    if (wait_for_single_object(g_hConIn, dwWaitTime) != WAIT_OBJECT_0)
+		    wait_for_single_object(g_hConIn, dwWaitTime)
+							      != WAIT_OBJECT_0
 #endif
-		    continue;
+		    )
+		continue;
 	}
 
 	cRecords = 0;
@@ -4534,7 +4535,7 @@ dump_pipe(int	    options,
 	    }
 	    c = *p;
 	    *p = NUL;
-	    msg_puts(buffer);
+	    msg_puts((char *)buffer);
 	    if (p < buffer + len)
 	    {
 		*p = c;
@@ -4548,7 +4549,7 @@ dump_pipe(int	    options,
 	else
 	{
 	    buffer[len] = NUL;
-	    msg_puts(buffer);
+	    msg_puts((char *)buffer);
 	}
 
 	windgoto(msg_row, msg_col);
@@ -4607,7 +4608,7 @@ mch_system_piped(char *cmd, int options)
 	CloseHandle(g_hChildStd_IN_Wr);
 	CloseHandle(g_hChildStd_OUT_Rd);
 	CloseHandle(g_hChildStd_OUT_Wr);
-	MSG_PUTS(_("\nCannot create pipes\n"));
+	msg_puts(_("\nCannot create pipes\n"));
     }
 
     si.cb = sizeof(si);

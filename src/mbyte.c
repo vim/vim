@@ -844,6 +844,7 @@ bomb_size(void)
     return n;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Remove all BOM from "s" by moving remaining text.
  */
@@ -863,6 +864,7 @@ remove_bom(char_u *s)
 	}
     }
 }
+#endif
 
 /*
  * Get class of pointer:
@@ -3745,7 +3747,7 @@ show_utf8(void)
     len = utfc_ptr2len(line);
     if (len == 0)
     {
-	MSG("NUL");
+	msg("NUL");
 	return;
     }
 
@@ -3770,7 +3772,7 @@ show_utf8(void)
 	    break;
     }
 
-    msg(IObuff);
+    msg((char *)IObuff);
 }
 
 /*

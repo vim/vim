@@ -3375,7 +3375,7 @@ spell_suggest(int count)
 							TRUE, need_cap, TRUE);
 
     if (sug.su_ga.ga_len == 0)
-	MSG(_("Sorry, no suggestions"));
+	msg(_("Sorry, no suggestions"));
     else if (count > 0)
     {
 	if (count > sug.su_ga.ga_len)
@@ -3409,7 +3409,7 @@ spell_suggest(int count)
 						sug.su_badlen, sug.su_badptr);
 	}
 #endif
-	msg_puts(IObuff);
+	msg_puts((char *)IObuff);
 	msg_clr_eos();
 	msg_putchar('\n');
 
@@ -3430,17 +3430,17 @@ spell_suggest(int count)
 	    if (cmdmsg_rl)
 		rl_mirror(IObuff);
 #endif
-	    msg_puts(IObuff);
+	    msg_puts((char *)IObuff);
 
 	    vim_snprintf((char *)IObuff, IOSIZE, " \"%s\"", wcopy);
-	    msg_puts(IObuff);
+	    msg_puts((char *)IObuff);
 
 	    /* The word may replace more than "su_badlen". */
 	    if (sug.su_badlen < stp->st_orglen)
 	    {
 		vim_snprintf((char *)IObuff, IOSIZE, _(" < \"%.*s\""),
 					       stp->st_orglen, sug.su_badptr);
-		msg_puts(IObuff);
+		msg_puts((char *)IObuff);
 	    }
 
 	    if (p_verbose > 0)
@@ -3459,7 +3459,7 @@ spell_suggest(int count)
 		    rl_mirror(IObuff + 1);
 #endif
 		msg_advance(30);
-		msg_puts(IObuff);
+		msg_puts((char *)IObuff);
 	    }
 	    msg_putchar('\n');
 	}
@@ -8458,13 +8458,13 @@ ex_spellinfo(exarg_T *eap UNUSED)
     for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len && !got_int; ++lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
-	msg_puts((char_u *)"file: ");
-	msg_puts(lp->lp_slang->sl_fname);
+	msg_puts("file: ");
+	msg_puts((char *)lp->lp_slang->sl_fname);
 	msg_putchar('\n');
 	p = lp->lp_slang->sl_info;
 	if (p != NULL)
 	{
-	    msg_puts(p);
+	    msg_puts((char *)p);
 	    msg_putchar('\n');
 	}
     }

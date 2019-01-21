@@ -893,11 +893,11 @@ call_user_func(
 		char_u	*tofree;
 		char_u	*s;
 
-		msg_puts((char_u *)"(");
+		msg_puts("(");
 		for (i = 0; i < argcount; ++i)
 		{
 		    if (i > 0)
-			msg_puts((char_u *)", ");
+			msg_puts(", ");
 		    if (argvars[i].v_type == VAR_NUMBER)
 			msg_outnum((long)argvars[i].vval.v_number);
 		    else
@@ -913,14 +913,14 @@ call_user_func(
 				trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
 				s = buf;
 			    }
-			    msg_puts(s);
+			    msg_puts((char *)s);
 			    vim_free(tofree);
 			}
 		    }
 		}
-		msg_puts((char_u *)")");
+		msg_puts(")");
 	    }
-	    msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	    msg_puts("\n");   /* don't overwrite this either */
 
 	    verbose_leave_scroll();
 	    --no_wait_return;
@@ -1018,7 +1018,7 @@ call_user_func(
 		vim_free(tofree);
 	    }
 	}
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 
 	verbose_leave_scroll();
 	--no_wait_return;
@@ -1041,7 +1041,7 @@ call_user_func(
 	verbose_enter_scroll();
 
 	smsg(_("continuing in %s"), sourcing_name);
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 
 	verbose_leave_scroll();
 	--no_wait_return;
@@ -1571,37 +1571,37 @@ list_func_head(ufunc_T *fp, int indent)
 
     msg_start();
     if (indent)
-	MSG_PUTS("   ");
-    MSG_PUTS("function ");
+	msg_puts("   ");
+    msg_puts("function ");
     if (fp->uf_name[0] == K_SPECIAL)
     {
-	MSG_PUTS_ATTR("<SNR>", HL_ATTR(HLF_8));
-	msg_puts(fp->uf_name + 3);
+	msg_puts_attr("<SNR>", HL_ATTR(HLF_8));
+	msg_puts((char *)fp->uf_name + 3);
     }
     else
-	msg_puts(fp->uf_name);
+	msg_puts((char *)fp->uf_name);
     msg_putchar('(');
     for (j = 0; j < fp->uf_args.ga_len; ++j)
     {
 	if (j)
-	    MSG_PUTS(", ");
-	msg_puts(FUNCARG(fp, j));
+	    msg_puts(", ");
+	msg_puts((char *)FUNCARG(fp, j));
     }
     if (fp->uf_varargs)
     {
 	if (j)
-	    MSG_PUTS(", ");
-	MSG_PUTS("...");
+	    msg_puts(", ");
+	msg_puts("...");
     }
     msg_putchar(')');
     if (fp->uf_flags & FC_ABORT)
-	MSG_PUTS(" abort");
+	msg_puts(" abort");
     if (fp->uf_flags & FC_RANGE)
-	MSG_PUTS(" range");
+	msg_puts(" range");
     if (fp->uf_flags & FC_DICT)
-	MSG_PUTS(" dict");
+	msg_puts(" dict");
     if (fp->uf_flags & FC_CLOSURE)
-	MSG_PUTS(" closure");
+	msg_puts(" closure");
     msg_clr_eos();
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ctx);
@@ -2010,7 +2010,7 @@ ex_function(exarg_T *eap)
 		if (!got_int)
 		{
 		    msg_putchar('\n');
-		    msg_puts((char_u *)"   endfunction");
+		    msg_puts("   endfunction");
 		}
 	    }
 	    else
@@ -2560,6 +2560,7 @@ function_exists(char_u *name, int no_deref)
     return n;
 }
 
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)
     char_u *
 get_expanded_name(char_u *name, int check)
 {
@@ -2575,6 +2576,7 @@ get_expanded_name(char_u *name, int check)
     vim_free(p);
     return NULL;
 }
+#endif
 
 #if defined(FEAT_PROFILE) || defined(PROTO)
 /*
@@ -3731,7 +3733,7 @@ list_func_vars(int *first)
 {
     if (current_funccal != NULL)
 	list_hashtable_vars(&current_funccal->l_vars.dv_hashtab,
-						(char_u *)"l:", FALSE, first);
+							   "l:", FALSE, first);
 }
 
 /*

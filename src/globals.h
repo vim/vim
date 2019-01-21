@@ -989,7 +989,7 @@ EXTERN char_u	*IObuff;		/* sprintf's are done in this buffer,
 					   size is IOSIZE */
 EXTERN char_u	*NameBuff;		/* file names are expanded in this
 					 * buffer, size is MAXPATHL */
-EXTERN char_u	msg_buf[MSG_BUF_LEN];	/* small buffer for messages */
+EXTERN char	msg_buf[MSG_BUF_LEN];	/* small buffer for messages */
 
 /* When non-zero, postpone redrawing. */
 EXTERN int	RedrawingDisabled INIT(= 0);

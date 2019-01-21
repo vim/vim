@@ -3468,7 +3468,7 @@ change_warning(
 	if (msg_row == Rows - 1)
 	    msg_col = col;
 	msg_source(HL_ATTR(HLF_W));
-	MSG_PUTS_ATTR(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
+	msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
 #ifdef FEAT_EVAL
 	set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
 #endif
@@ -3742,7 +3742,7 @@ get_number(
 	{
 	    if (typed > 0)
 	    {
-		MSG_PUTS("\b \b");
+		msg_puts("\b \b");
 		--typed;
 	    }
 	    n /= 10;
@@ -3786,9 +3786,9 @@ prompt_for_number(int *mouse_used)
 
     /* When using ":silent" assume that <CR> was entered. */
     if (mouse_used != NULL)
-	MSG_PUTS(_("Type number and <Enter> or click with mouse (empty cancels): "));
+	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
     else
-	MSG_PUTS(_("Type number and <Enter> (empty cancels): "));
+	msg_puts(_("Type number and <Enter> (empty cancels): "));
 
     // Set the state such that text can be selected/copied/pasted and we still
     // get mouse events. redraw_after_callback() will not redraw if cmdline_row
@@ -3846,16 +3846,17 @@ msgmore(long n)
     if (pn > p_report)
     {
 	if (n > 0)
-	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+	    vim_snprintf(msg_buf, MSG_BUF_LEN,
 		    NGETTEXT("%ld more line", "%ld more lines", pn), pn);
 	else
-	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+	    vim_snprintf(msg_buf, MSG_BUF_LEN,
 		    NGETTEXT("%ld line less", "%ld fewer lines", pn), pn);
 	if (got_int)
-	    vim_strcat(msg_buf, (char_u *)_(" (Interrupted)"), MSG_BUF_LEN);
+	    vim_strcat((char_u *)msg_buf, (char_u *)_(" (Interrupted)"),
+								  MSG_BUF_LEN);
 	if (msg(msg_buf))
 	{
-	    set_keep_msg(msg_buf, 0);
+	    set_keep_msg((char_u *)msg_buf, 0);
 	    keep_msg_more = TRUE;
 	}
     }
@@ -3936,7 +3937,7 @@ vim_beep(
 	if (vim_strchr(p_debug, 'e') != NULL)
 	{
 	    msg_source(HL_ATTR(HLF_W));
-	    msg_attr((char_u *)_("Beep!"), HL_ATTR(HLF_W));
+	    msg_attr(_("Beep!"), HL_ATTR(HLF_W));
 	}
     }
 }
@@ -4671,6 +4672,7 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 vim_unsetenv(char_u *var)
 {
@@ -4680,6 +4682,7 @@ vim_unsetenv(char_u *var)
     vim_setenv(var, (char_u *)"");
 #endif
 }
+#endif
 
 
 /*

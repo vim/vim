@@ -1151,7 +1151,7 @@ show_menus(char_u *path_name, int modes)
 
     /* Now we have found the matching menu, and we list the mappings */
 						    /* Highlight title */
-    MSG_PUTS_TITLE(_("\n--- Menus ---"));
+    msg_puts_title(_("\n--- Menus ---"));
 
     show_menus_recursive(parent, modes, 0);
     return OK;
@@ -1175,11 +1175,11 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 	if (got_int)		/* "q" hit for "--more--" */
 	    return;
 	for (i = 0; i < depth; i++)
-	    MSG_PUTS("  ");
+	    msg_puts("  ");
 	if (menu->priority)
 	{
 	    msg_outnum((long)menu->priority);
-	    MSG_PUTS(" ");
+	    msg_puts(" ");
 	}
 				/* Same highlighting as for directories!? */
 	msg_outtrans_attr(menu->name, HL_ATTR(HLF_D));
@@ -1194,8 +1194,8 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		if (got_int)		/* "q" hit for "--more--" */
 		    return;
 		for (i = 0; i < depth + 2; i++)
-		    MSG_PUTS("  ");
-		msg_puts((char_u*)menu_mode_chars[bit]);
+		    msg_puts("  ");
+		msg_puts(menu_mode_chars[bit]);
 		if (menu->noremap[bit] == REMAP_NONE)
 		    msg_putchar('*');
 		else if (menu->noremap[bit] == REMAP_SCRIPT)
@@ -1210,9 +1210,9 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		    msg_putchar('-');
 		else
 		    msg_putchar(' ');
-		MSG_PUTS(" ");
+		msg_puts(" ");
 		if (*menu->strings[bit] == NUL)
-		    msg_puts_attr((char_u *)"<Nop>", HL_ATTR(HLF_8));
+		    msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
 		else
 		    msg_outtrans_special(menu->strings[bit], FALSE);
 	    }
@@ -2080,11 +2080,6 @@ gui_update_menus(int modes)
 	gui_mch_draw_menubar();
 	prev_mode = mode;
 	force_menu_update = FALSE;
-# ifdef FEAT_GUI_W32
-	/* This can leave a tearoff as active window - make sure we
-	 * have the focus <negri>*/
-	gui_mch_activate_window();
-# endif
     }
 }
 

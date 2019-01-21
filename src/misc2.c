@@ -1033,6 +1033,7 @@ theend:
 /*
  * lalloc() with an ID for alloc_fail().
  */
+#if defined(FEAT_SIGNS) || defined(PROTO)
     char_u *
 lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 {
@@ -1042,6 +1043,7 @@ lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 #endif
     return (lalloc((long_u)size, message));
 }
+#endif
 
 #if defined(MEM_PROFILE) || defined(PROTO)
 /*
@@ -2135,6 +2137,7 @@ ga_grow(garray_T *gap, int n)
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * For a growing array that contains a list of strings: concatenate all the
  * strings with a separating "sep".
@@ -2170,6 +2173,7 @@ ga_concat_strings(garray_T *gap, char *sep)
     }
     return s;
 }
+#endif
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -4670,7 +4674,7 @@ vim_findfile(void *search_ctx_arg)
 		    smsg("Already Searched: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -4684,7 +4688,7 @@ vim_findfile(void *search_ctx_arg)
 		smsg("Searching: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		/* don't overwrite this either */
-		msg_puts((char_u *)"\n");
+		msg_puts("\n");
 		verbose_leave_scroll();
 	    }
 #endif
@@ -4903,7 +4907,7 @@ vim_findfile(void *search_ctx_arg)
 					smsg("Already: %s",
 								   file_path);
 					/* don't overwrite this either */
-					msg_puts((char_u *)"\n");
+					msg_puts("\n");
 					verbose_leave_scroll();
 				    }
 				    continue;
@@ -4930,7 +4934,7 @@ vim_findfile(void *search_ctx_arg)
 				    verbose_enter_scroll();
 				    smsg("HIT: %s", file_path);
 				    /* don't overwrite this either */
-				    msg_puts((char_u *)"\n");
+				    msg_puts("\n");
 				    verbose_leave_scroll();
 				}
 #endif
@@ -5131,7 +5135,7 @@ ff_get_visited_list(
 		    smsg("ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -5147,7 +5151,7 @@ ff_get_visited_list(
 	verbose_enter_scroll();
 	smsg("ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
-	msg_puts((char_u *)"\n");
+	msg_puts("\n");
 	verbose_leave_scroll();
     }
 #endif

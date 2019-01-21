@@ -2750,7 +2750,7 @@ gui_redraw_block(
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			    "INTERNAL ERROR: NUL in ScreenLines in row %ld",
 			    (long)gui.row);
-		    msg(IObuff);
+		    msg((char *)IObuff);
 		}
 	    }
 # ifdef FEAT_GUI_GTK
@@ -5323,7 +5323,7 @@ gui_do_findrepl(
 		}
 	    }
 	    else
-		MSG(_("No match at cursor, finding next"));
+		msg(_("No match at cursor, finding next"));
 	    vim_regfree(regmatch.regprog);
 	}
     }

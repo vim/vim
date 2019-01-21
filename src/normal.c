@@ -1207,7 +1207,7 @@ getcount:
 	    update_screen(0);
 	    /* now reset it, otherwise it's put in the history again */
 	    keep_msg = kmsg;
-	    msg_attr(kmsg, keep_msg_attr);
+	    msg_attr((char *)kmsg, keep_msg_attr);
 	    vim_free(kmsg);
 	}
 	setcursor();
@@ -3274,7 +3274,7 @@ check_visual_highlight(void)
     if (full_screen)
     {
 	if (!did_check && HL_ATTR(HLF_V) == 0)
-	    MSG(_("Warning: terminal cannot highlight"));
+	    msg(_("Warning: terminal cannot highlight"));
 	did_check = TRUE;
     }
 }
@@ -6468,7 +6468,7 @@ nv_brackets(cmdarg_T *cap)
     cap->oap->inclusive = FALSE;
     old_pos = curwin->w_cursor;
 #ifdef FEAT_VIRTUALEDIT
-    curwin->w_cursor.coladd = 0;	    /* TODO: don't do this for an error. */
+    curwin->w_cursor.coladd = 0;    // TODO: don't do this for an error.
 #endif
 
 #ifdef FEAT_SEARCHPATH
@@ -6491,11 +6491,11 @@ nv_brackets(cmdarg_T *cap)
      * define	      "]d"  "[d"   "]D"  "[D"	"]^D"  "[^D"
      */
     if (vim_strchr((char_u *)
-#ifdef EBCDIC
+# ifdef EBCDIC
 		"iI\005dD\067",
-#else
+# else
 		"iI\011dD\004",
-#endif
+# endif
 		cap->nchar) != NULL)
     {
 	char_u	*ptr;
@@ -9027,7 +9027,7 @@ nv_esc(cmdarg_T *cap)
 #endif
 		&& !VIsual_active
 		&& no_reason)
-	    MSG(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
 
 	/* Don't reset "restart_edit" when 'insertmode' is set, it won't be
 	 * set again below when halfway a mapping. */

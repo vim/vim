@@ -476,6 +476,7 @@ pat_has_uppercase(char_u *pat)
     return FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     char_u *
 last_csearch(void)
 {
@@ -510,6 +511,7 @@ set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
 	vim_memset(lastc_bytes, 0, sizeof(lastc_bytes));
 #endif
 }
+#endif
 
     void
 set_csearch_direction(int cdir)
@@ -5059,7 +5061,7 @@ find_pattern_in_path(
 						       message */
 			    {
 				msg_home_replace_hl(new_fname);
-				MSG_PUTS(_(" (includes previously listed match)"));
+				msg_puts(_(" (includes previously listed match)"));
 				prev_fname = NULL;
 			    }
 			}
@@ -5078,25 +5080,25 @@ find_pattern_in_path(
 		else
 		{
 		    gotocmdline(TRUE);	    /* cursor at status line */
-		    MSG_PUTS_TITLE(_("--- Included files "));
+		    msg_puts_title(_("--- Included files "));
 		    if (action != ACTION_SHOW_ALL)
-			MSG_PUTS_TITLE(_("not found "));
-		    MSG_PUTS_TITLE(_("in path ---\n"));
+			msg_puts_title(_("not found "));
+		    msg_puts_title(_("in path ---\n"));
 		}
 		did_show = TRUE;
 		while (depth_displayed < depth && !got_int)
 		{
 		    ++depth_displayed;
 		    for (i = 0; i < depth_displayed; i++)
-			MSG_PUTS("  ");
+			msg_puts("  ");
 		    msg_home_replace(files[depth_displayed].name);
-		    MSG_PUTS(" -->\n");
+		    msg_puts(" -->\n");
 		}
 		if (!got_int)		    /* don't display if 'q' typed
 					       for "--more--" message */
 		{
 		    for (i = 0; i <= depth_displayed; i++)
-			MSG_PUTS("  ");
+			msg_puts("  ");
 		    if (new_fname != NULL)
 		    {
 			/* using "new_fname" is more reliable, e.g., when
@@ -5154,9 +5156,9 @@ find_pattern_in_path(
 		    if (new_fname == NULL && action == ACTION_SHOW_ALL)
 		    {
 			if (already_searched)
-			    MSG_PUTS(_("  (Already listed)"));
+			    msg_puts(_("  (Already listed)"));
 			else
-			    MSG_PUTS(_("  NOT FOUND"));
+			    msg_puts(_("  NOT FOUND"));
 		    }
 		}
 		out_flush();	    /* output each line directly */
@@ -5212,7 +5214,7 @@ find_pattern_in_path(
 			vim_snprintf((char*)IObuff, IOSIZE,
 				_("Scanning included file: %s"),
 				(char *)new_fname);
-			msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
+			msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 		    }
 		    else
 #endif
@@ -5593,9 +5595,9 @@ exit_matched:
 	if (!did_show)
 	{
 	    if (action != ACTION_SHOW_ALL)
-		MSG(_("All included files were found"));
+		msg(_("All included files were found"));
 	    else
-		MSG(_("No included files"));
+		msg(_("No included files"));
 	}
     }
     else if (!found
@@ -5658,11 +5660,11 @@ show_pat_in_path(
 	if (action == ACTION_SHOW_ALL)
 	{
 	    sprintf((char *)IObuff, "%3ld: ", count);	/* show match nr */
-	    msg_puts(IObuff);
+	    msg_puts((char *)IObuff);
 	    sprintf((char *)IObuff, "%4ld", *lnum);	/* show line nr */
 						/* Highlight line numbers */
-	    msg_puts_attr(IObuff, HL_ATTR(HLF_N));
-	    MSG_PUTS(" ");
+	    msg_puts_attr((char *)IObuff, HL_ATTR(HLF_N));
+	    msg_puts(" ");
 	}
 	msg_prt_line(line, FALSE);
 	out_flush();			/* show one line at a time */

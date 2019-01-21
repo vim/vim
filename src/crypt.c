@@ -513,7 +513,7 @@ crypt_check_method(int method)
     if (method < CRYPT_M_BF2)
     {
 	msg_scroll = TRUE;
-	MSG(_("Warning: Using a weak encryption method; see :help 'cm'"));
+	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
     }
 }
 
@@ -555,7 +555,7 @@ crypt_get_key(
 	{
 	    if (p2 != NULL && STRCMP(p1, p2) != 0)
 	    {
-		MSG(_("Keys don't match!"));
+		msg(_("Keys don't match!"));
 		crypt_free_key(p1);
 		crypt_free_key(p2);
 		p2 = NULL;

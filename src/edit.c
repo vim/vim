@@ -2387,8 +2387,8 @@ has_compl_option(int dict_opt)
     {
 	ctrl_x_mode = CTRL_X_NORMAL;
 	edit_submode = NULL;
-	msg_attr(dict_opt ? (char_u *)_("'dictionary' option is empty")
-			  : (char_u *)_("'thesaurus' option is empty"),
+	msg_attr(dict_opt ? _("'dictionary' option is empty")
+			  : _("'thesaurus' option is empty"),
 							      HL_ATTR(HLF_E));
 	if (emsg_silent == 0)
 	{
@@ -3385,7 +3385,7 @@ ins_compl_files(
 	{
 	    vim_snprintf((char *)IObuff, IOSIZE,
 			      _("Scanning dictionary: %s"), (char *)files[i]);
-	    (void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
+	    (void)msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 	}
 
 	if (fp != NULL)
@@ -4500,7 +4500,7 @@ ins_compl_get_exp(pos_T *ini)
 			    : ins_buf->b_sfname == NULL
 				? ins_buf->b_fname
 				: ins_buf->b_sfname);
-		(void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
+		(void)msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 	    }
 	    else if (*e_cpt == NUL)
 		break;
@@ -4530,7 +4530,7 @@ ins_compl_get_exp(pos_T *ini)
 		{
 		    type = CTRL_X_TAGS;
 		    vim_snprintf((char *)IObuff, IOSIZE, _("Scanning tags."));
-		    (void)msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
+		    (void)msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 		}
 		else
 		    type = -1;
@@ -5132,7 +5132,7 @@ ins_compl_next(
 	    }
 	    vim_snprintf((char *)IObuff, IOSIZE, "%s %s%s", lead,
 				s > compl_shown_match->cp_fname ? "<" : "", s);
-	    msg(IObuff);
+	    msg((char *)IObuff);
 	    redraw_cmdline = FALSE;	    /* don't overwrite! */
 	}
     }
@@ -5878,7 +5878,7 @@ ins_complete(int c, int enable_pum)
 	    if (edit_submode_extra != NULL)
 	    {
 		if (!p_smd)
-		    msg_attr(edit_submode_extra,
+		    msg_attr((char *)edit_submode_extra,
 			    edit_submode_highl < HLF_COUNT
 			    ? HL_ATTR(edit_submode_highl) : 0);
 	    }
@@ -8856,7 +8856,7 @@ ins_esc(
     if (reg_recording != 0 || restart_edit != NUL)
 	showmode();
     else if (p_smd)
-	MSG("");
+	msg("");
 
     return TRUE;	    /* exit Insert mode */
 }

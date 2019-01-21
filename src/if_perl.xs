@@ -798,11 +798,11 @@ msg_split(
     while ((next = strchr(token, '\n')) && !got_int)
     {
 	*next++ = '\0';			/* replace \n with \0 */
-	msg_attr((char_u *)token, attr);
+	msg_attr(token, attr);
 	token = next;
     }
     if (*token && !got_int)
-	msg_attr((char_u *)token, attr);
+	msg_attr(token, attr);
 }
 
 #ifndef FEAT_EVAL

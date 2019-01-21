@@ -143,7 +143,7 @@ do_debug(char_u *cmd)
     debug_mode = TRUE;
 
     if (!debug_did_msg)
-	MSG(_("Entering Debug mode.  Type \"cont\" to continue."));
+	msg(_("Entering Debug mode.  Type \"cont\" to continue."));
     if (debug_oldval != NULL)
     {
 	smsg(_("Oldval = \"%s\""), debug_oldval);
@@ -157,7 +157,7 @@ do_debug(char_u *cmd)
 	debug_newval = NULL;
     }
     if (sourcing_name != NULL)
-	msg(sourcing_name);
+	msg((char *)sourcing_name);
     if (sourcing_lnum != 0)
 	smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
@@ -390,7 +390,7 @@ do_checkbacktracelevel(void)
     if (debug_backtrace_level < 0)
     {
 	debug_backtrace_level = 0;
-	MSG(_("frame is zero"));
+	msg(_("frame is zero"));
     }
     else
     {
@@ -857,7 +857,7 @@ ex_breaklist(exarg_T *eap UNUSED)
     int		i;
 
     if (dbg_breakp.ga_len == 0)
-	MSG(_("No breakpoints defined"));
+	msg(_("No breakpoints defined"));
     else
 	for (i = 0; i < dbg_breakp.ga_len; ++i)
 	{
@@ -1578,7 +1578,7 @@ timer_free_all()
 #  endif
 # endif
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT) && defined(FEAT_PROFILE)
 # if defined(HAVE_MATH_H)
 #  include <math.h>
 # endif
@@ -2430,7 +2430,7 @@ buf_write_all(buf_T *buf, int forceit)
     if (curbuf != old_curbuf)
     {
 	msg_source(HL_ATTR(HLF_W));
-	MSG(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
+	msg(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
     }
     return retval;
 }
@@ -4112,7 +4112,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W20: Required python version 2.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
@@ -4124,7 +4124,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W21: Required python version 3.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
