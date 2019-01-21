@@ -415,4 +415,16 @@ func Test_mkview_no_file_name()
   %bwipe
 endfunc
 
+" A clean session (one empty buffer, one window, and one tab) should not
+" set any error messages when sourced because no commands should fail.
+func Test_mksession_no_errmsg()
+  let v:errmsg = ''
+  %bwipe!
+  mksession! Xtest_mks.out
+  source Xtest_mks.out
+  call assert_equal('', v:errmsg)
+  call delete('Xtest_mks.out')
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

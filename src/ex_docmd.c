@@ -12007,7 +12007,7 @@ ses_arglist(
 
     if (fputs(cmd, fd) < 0 || put_eol(fd) == FAIL)
 	return FAIL;
-    if (put_line(fd, "silent! argdel *") == FAIL)
+    if (put_line(fd, "%argdel") == FAIL)
 	return FAIL;
     for (i = 0; i < gap->ga_len; ++i)
     {
