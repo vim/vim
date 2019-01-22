@@ -11401,26 +11401,14 @@ makeopens(
     tab_topframe = topframe;
     if ((ssop_flags & SSOP_TABPAGES))
     {
-	int	num_tabs;
+	tabpage_T *tp;
 
-	/*
-	 * Similar to ses_win_rec() below, populate the tab pages first so
-	 * later local options won't be copied to the new tabs.
-	 */
-	for (tabnr = 1; ; ++tabnr)
-	{
-	    tabpage_T *tp = find_tabpage(tabnr);
-
-	    if (tp == NULL)	/* done all tab pages */
-		break;
-
-	    if (tabnr > 1 && put_line(fd, "tabnew") == FAIL)
+	// Similar to ses_win_rec() below, populate the tab pages first so
+	// later local options won't be copied to the new tabs.
+	FOR_ALL_TABPAGES(tp)
+	    if (tp->tp_next != NULL && put_line(fd, "tabnew") == FAIL)
 		return FAIL;
-	}
-
-	num_tabs = tabnr - 1;
-	if (num_tabs > 1 && (fprintf(fd, "tabnext -%d", num_tabs - 1) < 0
-						       || put_eol(fd) == FAIL))
+	if (first_tabpage->tp_next != NULL && put_line(fd, "tabrewind") == FAIL)
 	    return FAIL;
     }
     for (tabnr = 1; ; ++tabnr)
