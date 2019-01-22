@@ -187,8 +187,6 @@ if !exists("*s:ParseRpmVars")
 		let linenum = search(definestr, "bW")
 		if (linenum != 0)
 			let ret = ret .  substitute(getline(linenum), definestr, "\\2", "")
-		else
-			let ret = ret . strpart(a:str, start, end+1-start)
 		endif
 	endwhile
 	return ret
