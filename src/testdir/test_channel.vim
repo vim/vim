@@ -1945,10 +1945,11 @@ func Test_job_start_in_timer()
   endif
 
   func OutCb(chan, msg)
+    let g:val += 1
   endfunc
 
   func ExitCb(job, status)
-    let g:val = 1
+    let g:val += 1
     call Resume()
   endfunc
 
@@ -1967,6 +1968,7 @@ func Test_job_start_in_timer()
   call timer_start(1, 'TimerCb')
   let elapsed = Standby(&ut)
   call assert_inrange(1, &ut / 2, elapsed)
+  call WaitForAssert({-> assert_equal(2, g:val)})
   call job_stop(g:job)
 
   delfunc OutCb
