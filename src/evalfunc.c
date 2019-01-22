@@ -29,6 +29,7 @@
 #endif
 
 static char *e_listarg = N_("E686: Argument of %s must be a List");
+static char *e_listblobarg = N_("E898: Argument of %s must be a List or Blob");
 static char *e_stringreq = N_("E928: String required");
 
 #ifdef FEAT_FLOAT
@@ -1269,7 +1270,7 @@ f_add(typval_T *argvars, typval_T *rettv)
 	}
     }
     else
-	emsg(_(e_listreq));
+	emsg(_(e_listblobreq));
 }
 
 /*
@@ -4490,7 +4491,7 @@ f_get(typval_T *argvars, typval_T *rettv)
 	}
     }
     else
-	semsg(_(e_listdictarg), "get()");
+	semsg(_(e_listdictblobarg), "get()");
 
     if (tv == NULL)
     {
@@ -7057,7 +7058,7 @@ f_index(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_listblobreq));
 	return;
     }
 
@@ -7281,7 +7282,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	copy_tv(&argvars[0], rettv);
     }
     else if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listarg), "insert()");
+	semsg(_(e_listblobarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL && !tv_check_lock(l->lv_lock,
 				      (char_u *)N_("insert() argument"), TRUE))
     {
@@ -9789,7 +9790,7 @@ f_remove(typval_T *argvars, typval_T *rettv)
 	}
     }
     else if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listdictarg), "remove()");
+	semsg(_(e_listdictblobarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL
 			       && !tv_check_lock(l->lv_lock, arg_errmsg, TRUE))
     {
@@ -10136,7 +10137,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     }
 
     if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listarg), "reverse()");
+	semsg(_(e_listblobarg), "reverse()");
     else if ((l = argvars[0].vval.v_list) != NULL
 	    && !tv_check_lock(l->lv_lock,
 				    (char_u *)N_("reverse() argument"), TRUE))
