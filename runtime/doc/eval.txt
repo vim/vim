@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,7 +38,7 @@ done, the features in this document are not available.  See |+eval| and
 1. Variables						*variables*
 
 1.1 Variable types ~
-							*E712*
+						*E712* *E896* *E897* *E898*
 There are nine types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
@@ -633,6 +633,9 @@ Blob creation ~
 
 A Blob can be created with a |blob-literal|: >
 	:let b = 0zFF00ED015DAF
+Dots can be inserted between bytes (pair of hex characters) for readability,
+they don't change the value: >
+	:let b = 0zFF00.ED01.5DAF
 
 A blob can be read from a file with |readfile()| passing the {type} argument
 set to "B", for example: >
@@ -3805,8 +3808,8 @@ escape({string}, {chars})				*escape()*
 							*eval()*
 eval({string})	Evaluate {string} and return the result.  Especially useful to
 		turn the result of |string()| back into the original value.
-		This works for Numbers, Floats, Strings and composites of
-		them.  Also works for |Funcref|s that refer to existing
+		This works for Numbers, Floats, Strings, Blobs and composites
+		of them.  Also works for |Funcref|s that refer to existing
 		functions.
 
 eventhandler()						*eventhandler()*
@@ -5700,7 +5703,11 @@ items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
 		|List| item is a list with two items: the key of a {dict}
 		entry and the value of this entry.  The |List| is in arbitrary
-		order.
+		order.  Also see |keys()| and |values()|.
+		Example: >
+			for [key, value] in items(mydict)
+			   echo key . ': ' . value
+			endfor
 
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
@@ -5885,7 +5892,7 @@ json_decode({string})					*json_decode()*
 		- A trailing comma in an array and object is ignored, e.g.
 		  "[1, 2, ]" is the same as "[1, 2]".
 		- Integer keys are accepted in objects, e.g. {1:2} is the
-		  same as {'1':2}.
+		  same as {"1":2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
 		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
@@ -5897,6 +5904,8 @@ json_decode({string})					*json_decode()*
 		- Control characters U+0000 through U+001F which are not
 		  escaped in strings are accepted, e.g. "	" (tab
 		  character in string) for "\t".
+		- An empty JSON expression or made of only spaces is accepted
+		  and results in v:none.
 		- Backslash in an invalid 2-character sequence escape is
 		  ignored, e.g. "\a" is decoded as "a".
 		- A correct surrogate pair in JSON strings should normally be
@@ -5936,7 +5945,7 @@ json_encode({expr})					*json_encode()*
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
-		arbitrary order.
+		arbitrary order.  Also see |items()| and |values()|.
 
 							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
@@ -8617,13 +8626,14 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 
 							*string()*
 string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
-		Float, String or a composition of them, then the result can be
-		parsed back with |eval()|.
+		Float, String, Blob or a composition of them, then the result
+		can be parsed back with |eval()|.
 			{expr} type	result ~
 			String		'string' (single quotes are doubled)
 			Number		123
 			Float		123.123456 or 1.123456e8
 			Funcref		function('name')
+			Blob		0z00112233.44556677.8899
 			List		[item, item]
 			Dictionary	{key: value, key: value}
 
@@ -9778,7 +9788,7 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.  The |List| is
-		in arbitrary order.
+		in arbitrary order.  Also see |items()| and |keys()|.
 
 
 virtcol({expr})						*virtcol()*
