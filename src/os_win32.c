@@ -196,7 +196,6 @@ static void vtp_sgr_bulks(int argc, int *argv);
 
 static void vtp_check_cmdexe();
 static int vtp_in_cmdexe = FALSE;
-static int vtp_in_conemu = FALSE;
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
@@ -296,7 +295,9 @@ read_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
     DWORD	    nLength,
-    LPDWORD	    lpEvents)
+    LPDWORD	    lpEvents,
+    LPSTR	    lpszQuery,
+    LPVOID	    *lpParam)
 {
     enum
     {
@@ -309,23 +310,20 @@ read_console_input(
     int head;
     int tail;
     int i;
-    static int s_in_attr = 0;
-    static int s_next_seq = FALSE;
+    int in_query = 0;
 
     if (nLength == -3)
     {
-	s_next_seq = TRUE;
-	return TRUE;
-    }
-
-    if (s_next_seq)
-    {
-	s_next_seq = FALSE;
-	if (vtp_working)
+	if (!vtp_working)
 	{
-	    s_in_attr = 5;	    /* How many inputs should be processed */
-	    vtp_printf("\033[0c");  /* Query state: Device attributes */
+	    if (lpParam != NULL)
+		*lpParam = (LPSTR)vim_strsave("");
+	    return TRUE;
 	}
+
+	if (lpszQuery != NULL)
+	    vtp_printf(lpszQuery);
+	++in_query;
     }
 
     if (nLength == -2)
@@ -374,92 +372,38 @@ read_console_input(
 	}
     }
 
-    /* Confirm the device attribute in the key buffer. Detect cmd.exe. */
-    if (s_in_attr > 0)
+    if (in_query > 0)
     {
-#define SEQCOUNT 3
-	static char seq[SEQCOUNT][10] = /* This number can be expanded */
+	/* Immediately after sending the query, discard the keyboard event. */
+	INPUT_RECORD irStash[IRSIZE];
+	int stashindex = 0;
+	char_u dst[IRSIZE + 1];
+	int dstindex = 0;
+
+	for (i = s_dwIndex; i < (int)(s_dwMax - s_dwIndex); i++)
 	{
-	    { "\033[?1;0c" },		/* cmd.exe */
-	    { "\033[?1;2c" },   	/* ConEmu */
-	    { "\033[?c" }		/* dummy (always keep last) */
-	};
-	int div;
-	int in_term[SEQCOUNT];
-
-	for (i = 0; i < SEQCOUNT; i++)
-	    in_term[i] = FALSE;
-
-	for (div = 0; div < SEQCOUNT; div++)
-	{
-	    INPUT_RECORD s_irMeter[IRSIZE];	/* Buffer for processed data */
-	    int seqindex = 0;
-	    int combo = 0;
-	    int inkeydown;	    /* Processing data with key pressed */
-	    int meter = 0;	    /* End index of processed data */
-	    int inseq = FALSE;	    /* Flag that entered sequence processing */
-
-	    for (i = s_dwIndex; i < (int)(s_dwMax - s_dwIndex); ++i)
+	    if (s_irCache[i].EventType == KEY_EVENT)
 	    {
-		s_irMeter[meter] = s_irCache[i];
-		inkeydown = FALSE;
-		if (s_irCache[i].EventType == KEY_EVENT)
+		if (s_irCache[i].Event.KeyEvent.bKeyDown)
 		{
-		    if (s_irCache[i].Event.KeyEvent.bKeyDown)
-		    {
-			inkeydown = TRUE;
-			if (s_irCache[i].Event.KeyEvent.AChar
-						       == seq[div][seqindex++])
-			{
-			    inseq = TRUE;
-			    if (++combo == STRLEN(&seq[div][0]))
-			    {
-				/* All matched */
-
-				in_term[div] = TRUE;
-				seqindex = 0;
-				combo = 0;
-			    }
-			    continue;
-			}
-			else
-			{
-			    /* No match */
-
-			    /* Delete unmatched reply data */
-			    if (inseq && div == SEQCOUNT - 1)
-				inkeydown = FALSE;
-
-			    /* 'c' is the end of the sequence */
-			    if (s_irCache[i].Event.KeyEvent.AChar == 'c')
-				inseq = FALSE;
-			}
-		    }
-		}
-		if (inkeydown)
-		{
-		    /* Make the skipped data also processed */
-		    for (; meter <= i; meter++)
-			s_irMeter[meter] = s_irCache[meter];
-
-		    seqindex = 0;
-		    combo = 0;
+		    dst[dstindex++] = s_irCache[i].Event.KeyEvent.AChar;
 		}
 	    }
-	    /* Copy processing result to the correct place */
-	    for (i = s_dwIndex; i < (int)(s_dwIndex + meter); i++)
-		s_irCache[i] = s_irMeter[i];
-	    s_dwMax = s_dwIndex + meter;
+	    else
+	    {
+		irStash[stashindex++] = s_irCache[i];
+	    }
 	}
+	dst[dstindex] = NUL;
+	*lpParam = (LPVOID)vim_strsave(dst);
 
-	if (in_term[0])
-	    vtp_in_cmdexe = TRUE;
-	if (in_term[1])
-	    vtp_in_conemu = TRUE;   /* Leave it as a sample for expansion */
+	for (i = 0; i < stashindex; ++i)
+	    s_irCache[s_dwIndex + i] = irStash[i];
+	s_dwMax = s_dwIndex + i;
 
-	--s_in_attr;
+	--in_query;
 
-	/* At this point there is always more than one event left. */
+	return TRUE;
     }
 
     *lpBuffer = s_irCache[s_dwIndex];
@@ -479,7 +423,24 @@ peek_console_input(
     DWORD	    nLength,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, -1, lpEvents);
+    return read_console_input(hInput, lpBuffer, -1, lpEvents, NULL, NULL);
+}
+
+/*
+ * Output a query and return the result.
+ * Return memory allocated by vim_strsave.
+ */
+    static BOOL
+query_console_input(
+    HANDLE  hInput,
+    LPSTR   lpszQuery,
+    LPVOID  *lpszResult)
+{
+    if (read_console_input(NULL, NULL, -2, NULL, NULL, NULL))
+	return FALSE;
+    *lpszResult = lpszQuery;
+    return read_console_input(hInput, NULL, -3, NULL, lpszQuery,
+							   (LPVOID)lpszResult);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -491,7 +452,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL, NULL, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -504,7 +465,7 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL, NULL, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
@@ -1426,7 +1387,8 @@ decode_mouse_event(
 			{
 			    if (pmer2->dwEventFlags != MOUSE_MOVED)
 			    {
-				read_console_input(g_hConIn, &ir, 1, &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords,
+								   NULL, NULL);
 
 				return decode_mouse_event(pmer2);
 			    }
@@ -1434,7 +1396,8 @@ decode_mouse_event(
 				     s_yOldMouse == pmer2->dwMousePosition.Y)
 			    {
 				/* throw away spurious mouse move */
-				read_console_input(g_hConIn, &ir, 1, &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords,
+								   NULL, NULL);
 
 				/* are there any more mouse events in queue? */
 				peek_console_input(g_hConIn, &ir, 1, &cRecords);
@@ -1754,7 +1717,7 @@ WaitForChar(long msec, int ignore_input)
 		if (ir.Event.KeyEvent.UChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
-		    read_console_input(g_hConIn, &ir, 1, &cRecords);
+		    read_console_input(g_hConIn, &ir, 1, &cRecords, NULL, NULL);
 		    continue;
 		}
 #endif
@@ -1763,7 +1726,7 @@ WaitForChar(long msec, int ignore_input)
 		    return TRUE;
 	    }
 
-	    read_console_input(g_hConIn, &ir, 1, &cRecords);
+	    read_console_input(g_hConIn, &ir, 1, &cRecords, NULL, NULL);
 
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
@@ -1851,7 +1814,7 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	    return 0;
 # endif
 #endif
-	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
+	if (read_console_input(g_hConIn, &ir, 1, &cRecords, NULL, NULL) == 0)
 	{
 	    if (did_create_conin)
 		read_error_exit();
@@ -8034,8 +7997,20 @@ is_term_win32(void)
     static void
 vtp_check_cmdexe()
 {
-    /* In order to refer to the static buffer in the function. */
-    read_console_input(NULL, NULL, -3, NULL);
+    int    retry = 10;
+    char_u *result;
+
+    while (--retry)
+    {
+	if (query_console_input(g_hConIn, "\033[0c", (LPVOID)&result))
+	    break;
+	Sleep(20);
+    }
+
+    if (STRCMP(result, "\033[?1;0c") == 0)  /* cmd.exe device attribute */
+	vtp_in_cmdexe = TRUE;
+
+    vim_free(result);
 }
 
     int
