@@ -256,7 +256,7 @@ void ch_log(channel_T *ch, const char *fmt, ...)
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
-#  if defined(UNIX) || defined(MACOS_X)
+#  if defined(UNIX) || defined(MACOS_X) || defined(VMS)
 #   include "pty.pro"
 #  endif
 # endif

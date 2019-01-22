@@ -1935,7 +1935,7 @@ get_x11_windis(void)
 	alarm(0);
 	signal(SIGALRM, (RETSIGTYPE (*)())sig_save);
 	if (p_verbose > 0 && sig_alarm_called)
-	    verb_msg((char_u *)_("Opening the X display timed out"));
+	    verb_msg(_("Opening the X display timed out"));
 #endif
 	if (x11_display != NULL)
 	{
