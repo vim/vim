@@ -7268,6 +7268,10 @@ open_cmdwin(void)
     /* Don't execute autocommands while creating the window. */
     block_autocmds();
 
+    // When using completion in Insert mode with <C-R>=<C-F> one can open the
+    // command line window, but we don't want the popup menu then.
+    pum_undisplay();
+
     /* don't use a new tab page */
     cmdmod.tab = 0;
     cmdmod.noswapfile = 1;

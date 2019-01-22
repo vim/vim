@@ -8537,6 +8537,7 @@ ins_reg(void)
     ++no_u_sync;
     if (regname == '=')
     {
+	pos_T	curpos = curwin->w_cursor;
 # ifdef HAVE_INPUT_METHOD
 	int	im_on = im_get_status();
 # endif
@@ -8545,8 +8546,12 @@ ins_reg(void)
 	u_sync_once = 2;
 
 	regname = get_expr_register();
+
+	// Cursor may be moved back a column.
+	curwin->w_cursor = curpos;
+	check_cursor();
 # ifdef HAVE_INPUT_METHOD
-	/* Restore the Input Method. */
+	// Restore the Input Method.
 	if (im_on)
 	    im_set_active(TRUE);
 # endif
