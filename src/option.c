@@ -5984,6 +5984,7 @@ set_string_option_direct(
 		script_ctx.sc_sid = set_sid;
 		script_ctx.sc_seq = 0;
 		script_ctx.sc_lnum = 0;
+		script_ctx.sc_strict = 0;
 	    }
 	    set_option_sctx_idx(idx, opt_flags, script_ctx);
 	}

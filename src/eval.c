@@ -3813,6 +3813,14 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	    }
 	}
 
+	// If strict flag is on, "a.b" must not be used for concating strings.
+	if (current_sctx.sc_strict && !VIM_ISWHITE(*(*arg - 1)))
+	{
+	    semsg(_(e_invexpr2), *arg);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+
 	/*
 	 * Get the second variable.
 	 */

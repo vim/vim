@@ -86,6 +86,7 @@ typedef struct {
     scid_T	sc_sid;		// script ID
     int		sc_seq;		// sourcing sequence number
     linenr_T	sc_lnum;	// line number
+    int		sc_strict;	// strict version
 } sctx_T;
 
 /*

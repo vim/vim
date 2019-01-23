@@ -2967,6 +2967,7 @@ exe_commands(mparm_T *parmp)
     sourcing_name = NULL;
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = 0;
+    current_sctx.sc_strict = 0;
 #endif
     if (curwin->w_cursor.lnum == 0)
 	curwin->w_cursor.lnum = 1;
@@ -3189,6 +3190,7 @@ process_env(
 	current_sctx.sc_sid = SID_ENV;
 	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
+	current_sctx.sc_strict = 0;
 #endif
 	do_cmdline_cmd(initstr);
 	sourcing_name = save_sourcing_name;

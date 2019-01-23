@@ -5222,6 +5222,23 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 #endif
 }
 
+/*
+ * ":scriptstrict": Set flag the source should be checked syntax strictly.
+ */
+    void
+ex_scriptstrict(exarg_T *eap UNUSED)
+{
+    struct source_cookie	*sp;
+
+    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_("EXXX: :scriptstrict used outside of a sourced file"));
+	return;
+    }
+
+    current_sctx.sc_strict = 1;
+}
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * ":finish": Mark a sourced file as finished.
