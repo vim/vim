@@ -29,7 +29,7 @@ endfunc
 func s:get_resources()
   let pid = getpid()
 
-  if has('mac')
+  if executable('lsof')
     return systemlist('lsof -p ' . pid . ' | awk ''$4~/^[0-9]*[rwu]$/&&$5=="REG"{print$NF}''')
   elseif isdirectory('/proc/' . pid . '/fd/')
     return systemlist('readlink /proc/' . pid . '/fd/* | grep -v ''^/dev/''')
