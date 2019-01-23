@@ -29,7 +29,7 @@
 #endif
 
 static char *e_listarg = N_("E686: Argument of %s must be a List");
-static char *e_listblobarg = N_("E898: Argument of %s must be a List or Blob");
+static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 static char *e_stringreq = N_("E928: String required");
 
 #ifdef FEAT_FLOAT
