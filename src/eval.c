@@ -2587,7 +2587,6 @@ eval_for_line(
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
-    blob_T	*b;
 
     *errp = TRUE;	/* default: there is an error */
 
@@ -2632,16 +2631,17 @@ eval_for_line(
 	    }
 	    else if (tv.v_type == VAR_BLOB)
 	    {
-		b = tv.vval.v_blob;
-		if (b == NULL)
-		    clear_tv(&tv);
-		else
+		fi->fi_bi = 0;
+		if (tv.vval.v_blob != NULL)
 		{
-		    // No need to increment the refcount, it's already set for
-		    // the blob being used in "tv".
-		    fi->fi_blob = b;
-		    fi->fi_bi = 0;
+		    typval_T btv;
+
+		    // Make a copy, so that the iteration still works when the
+		    // blob is changed.
+		    blob_copy(&tv, &btv);
+		    fi->fi_blob = btv.vval.v_blob;
 		}
+		clear_tv(&tv);
 	    }
 	    else
 	    {
@@ -8076,7 +8076,7 @@ tv_check_lock(int lock, char_u *name, int use_gettext)
 /*
  * Copy the values from typval_T "from" to typval_T "to".
  * When needed allocates string or increases reference count.
- * Does not make a copy of a list or dict but copies the reference!
+ * Does not make a copy of a list, blob or dict but copies the reference!
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
  */
@@ -8216,19 +8216,7 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_BLOB:
-	    to->v_type = VAR_BLOB;
-	    if (from->vval.v_blob == NULL)
-		to->vval.v_blob = NULL;
-	    else if (rettv_blob_alloc(to) == FAIL)
-		ret = FAIL;
-	    else
-	    {
-		int  len = from->vval.v_blob->bv_ga.ga_len;
-
-		to->vval.v_blob->bv_ga.ga_data =
-			    vim_memsave(from->vval.v_blob->bv_ga.ga_data, len);
-		to->vval.v_blob->bv_ga.ga_len = len;
-	    }
+	    ret = blob_copy(from, to);
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;
