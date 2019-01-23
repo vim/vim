@@ -1054,22 +1054,31 @@ func Test_libcall_libcallnr()
     let libc = 'msvcrt.dll'
   elseif has('mac')
     let libc = 'libSystem.B.dylib'
-  elseif system('uname -s') =~ 'SunOS'
-    " Set the path to libc.so according to the architecture.
-    let test_bits = system('file ' . GetVimProg())
-    let test_arch = system('uname -p')
-    if test_bits =~ '64-bit' && test_arch =~ 'sparc'
-      let libc = '/usr/lib/sparcv9/libc.so'
-    elseif test_bits =~ '64-bit' && test_arch =~ 'i386'
-      let libc = '/usr/lib/amd64/libc.so'
-    else
-      let libc = '/usr/lib/libc.so'
-    endif
-  else
+  elseif has('linux')
     " On Unix, libc.so can be in various places.
-    " Interestingly, using an empty string for the 1st argument of libcall
-    " allows to call functions from libc which is not documented.
+    " Interestingly, on Linux using an empty string for the 1st argument of
+    " libcall allows to call functions from libc which is not documented.
     let libc = ''
+  elseif executable('ldd')
+    let libc = matchstr(split(system('ldd ' . GetVimProg())), '/libc\.so\>')
+  endif
+  if !exists('libc')
+    if has('sun')
+      " Set the path to libc.so according to the architecture.
+      let test_bits = system('file ' . GetVimProg())
+      let test_arch = system('uname -p')
+      if test_bits =~ '64-bit' && test_arch =~ 'sparc'
+        let libc = '/usr/lib/sparcv9/libc.so'
+      elseif test_bits =~ '64-bit' && test_arch =~ 'i386'
+        let libc = '/usr/lib/amd64/libc.so'
+      else
+        let libc = '/usr/lib/libc.so'
+      endif
+    else
+      " On other Unix (e.g. BSD) libcall doesn't accept an empty string, and
+      " therefore skip this test until a goo way is found.
+      return
+    endif
   endif
 
   if has('win32')
