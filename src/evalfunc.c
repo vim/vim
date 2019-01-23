@@ -6139,6 +6139,15 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
+#ifdef BSD
+	"bsd",
+#endif
+#ifdef hpux
+	"hpux",
+#endif
+#ifdef __linux__
+	"linux",
+#endif
 #ifdef MACOS_X
 	"mac",		/* Mac OS X (and, once, Mac OS Classic) */
 	"osx",		/* Mac OS X */
@@ -6149,6 +6158,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef __QNX__
 	"qnx",
+#endif
+#ifdef SUN_SYSTEM
+	"sun",
 #endif
 #ifdef UNIX
 	"unix",
@@ -6179,7 +6191,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 	"autocmd",
 #ifdef FEAT_AUTOCHDIR
-       "autochdir",
+	"autochdir",
 #endif
 #ifdef FEAT_AUTOSERVERNAME
 	"autoservername",
