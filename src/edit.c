@@ -2945,6 +2945,63 @@ set_completion(colnr_T startcol, list_T *list)
     out_flush();
 }
 
+// complete_mode() implementation.
+char *ins_compl_mode(void)
+{
+    char *mode = NULL;
+    switch (ctrl_x_mode)
+    {
+	case 0:
+	    // Keyword completion
+	    mode = strdup("keyword");
+	    break;
+	case CTRL_X_NOT_DEFINED_YET:
+	    // Just press Ctrl_X
+	    mode = strdup("ctrl_x");
+	    break;
+	case CTRL_X_WHOLE_LINE:
+	    mode = strdup("whole_line");
+	    break;
+	case CTRL_X_FILES:
+	    mode = strdup("files");
+	    break;
+	case CTRL_X_TAGS:
+	    mode = strdup("tags");
+	    break;
+	case CTRL_X_PATH_PATTERNS:
+	    mode = strdup("path_patterns");
+	    break;
+	case CTRL_X_PATH_DEFINES:
+	    mode = strdup("path_defines");
+	    break;
+	case CTRL_X_DICTIONARY:
+	    mode = strdup("dictionary");
+	    break;
+	case CTRL_X_THESAURUS:
+	    mode = strdup("thesaurus");
+	    break;
+	case CTRL_X_CMDLINE:
+	    mode = strdup("cmdline");
+	    break;
+	case CTRL_X_FUNCTION:
+	    mode = strdup("function");
+	    break;
+	case CTRL_X_OMNI:
+	    mode = strdup("omni");
+	    break;
+	case CTRL_X_SPELL:
+	    mode = strdup("spell");
+	    break;
+	case CTRL_X_EVAL:
+	    mode = strdup("eval");
+	    break;
+	default:
+	    mode = strdup("unknown");
+	    break;
+    }
+
+    return mode;
+}
 
 /* "compl_match_array" points the currently displayed list of entries in the
  * popup menu.  It is NULL when there is no popup menu. */
