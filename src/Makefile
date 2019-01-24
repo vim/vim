@@ -2775,6 +2775,8 @@ shadow:	runtime pixmaps
 	rm -f $(SHADOWDIR)/auto/config.mk $(SHADOWDIR)/config.mk.dist
 	cp config.mk.dist $(SHADOWDIR)/auto/config.mk
 	cp config.mk.dist $(SHADOWDIR)
+	$(MKDIR_P) $(SHADOWDIR)/cmdidxs
+	cp cmdidxs/cmdidx.c $(SHADOWDIR)/cmdidxs
 	$(MKDIR_P) $(SHADOWDIR)/xxd
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	$(MKDIR_P) $(SHADOWDIR)/xdiff
