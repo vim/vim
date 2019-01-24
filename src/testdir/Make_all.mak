@@ -105,6 +105,7 @@ NEW_TESTS = \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
+	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
 	test_exit \
