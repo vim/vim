@@ -1162,3 +1162,30 @@ func Test_func_exists_on_reload()
   call delete('Xfuncexists')
   delfunc ExistingFunction
 endfunc
+
+func Test_platform_name()
+  " The system matches at most only one name.
+  let names = ['amiga', 'beos', 'bsd', 'hpux', 'linux', 'mac', 'qnx', 'sun', 'vms', 'win32']
+  call assert_inrange(0, 1, len(filter(copy(names), 'has(v:val)')))
+
+  " Is Unix?
+  call assert_equal(has('beos'), has('beos') && has('unix'))
+  call assert_equal(has('bsd'), has('bsd') && has('unix'))
+  call assert_equal(has('hpux'), has('hpux') && has('unix'))
+  call assert_equal(has('linux'), has('linux') && has('unix'))
+  call assert_equal(has('mac'), has('mac') && has('unix'))
+  call assert_equal(has('qnx'), has('qnx') && has('unix'))
+  call assert_equal(has('sun'), has('sun') && has('unix'))
+  call assert_equal(has('win32unix'), has('win32unix') && has('unix'))
+
+  if executable('uname')
+    let uname = system('uname')
+    call assert_equal(uname =~? 'BeOS', has('beos'))
+    call assert_equal(uname =~? 'BSD\|DragonFly', has('bsd'))
+    call assert_equal(uname =~? 'HP-UX', has('hpux'))
+    call assert_equal(uname =~? 'Linux', has('linux'))
+    call assert_equal(uname =~? 'Darwin', has('mac'))
+    call assert_equal(uname =~? 'QNX', has('qnx'))
+    call assert_equal(uname =~? 'SunOS', has('sun'))
+  endif
+endfunc
