@@ -136,8 +136,6 @@
 # endif
 #endif
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
-
 static int dbcs_char2len(int c);
 static int dbcs_char2bytes(int c, char_u *buf);
 static int dbcs_ptr2len(char_u *p);
@@ -211,9 +209,7 @@ xim_log(char *s, ...)
 }
 #endif
 
-#endif
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT) || defined(PROTO)
 /*
  * Canonical encoding names and their properties.
  * "iso-8859-n" is handled by enc_canonize() directly.
@@ -456,9 +452,6 @@ enc_canon_search(char_u *name)
     return -1;
 }
 
-#endif
-
-#if defined(FEAT_MBYTE) || defined(PROTO)
 
 /*
  * Find canonical encoding "name" in the list and return its properties.
@@ -4294,9 +4287,7 @@ mb_fix_col(int col, int row)
 	return col - 1;
     return col;
 }
-#endif
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT) || defined(PROTO)
 static int enc_alias_search(char_u *name);
 
 /*
@@ -4325,7 +4316,6 @@ enc_canonize(char_u *enc)
     char_u	*p, *s;
     int		i;
 
-# ifdef FEAT_MBYTE
     if (STRCMP(enc, "default") == 0)
     {
 	/* Use the default encoding as it's found by set_init_1(). */
@@ -4334,7 +4324,6 @@ enc_canonize(char_u *enc)
 	    r = (char_u *)"latin1";
 	return vim_strsave(r);
     }
-# endif
 
     /* copy "enc" to allocated memory, with room for two '-' */
     r = alloc((unsigned)(STRLEN(enc) + 3));
@@ -4406,15 +4395,13 @@ enc_alias_search(char_u *name)
 	    return enc_alias_table[i].canon;
     return -1;
 }
+
+
+#ifdef HAVE_LANGINFO_H
+# include <langinfo.h>
 #endif
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
-
-# ifdef HAVE_LANGINFO_H
-#  include <langinfo.h>
-# endif
-
-# ifndef FEAT_GUI_W32
+#ifndef FEAT_GUI_W32
 /*
  * Get the canonicalized encoding from the specified locale string "locale"
  * or from the environment variables LC_ALL, LC_CTYPE and LANG.
@@ -4472,7 +4459,7 @@ enc_locale_env(char *locale)
 
     return enc_canonize((char_u *)buf);
 }
-# endif
+#endif
 
 /*
  * Get the canonicalized encoding of the current locale.
@@ -4481,7 +4468,7 @@ enc_locale_env(char *locale)
     char_u *
 enc_locale(void)
 {
-# ifdef WIN3264
+#ifdef WIN3264
     char	buf[50];
     long	acp = GetACP();
 
@@ -4493,19 +4480,19 @@ enc_locale(void)
 	sprintf(buf, "cp%ld", acp);
 
     return enc_canonize((char_u *)buf);
-# else
+#else
     char	*s;
 
-#  ifdef HAVE_NL_LANGINFO_CODESET
+# ifdef HAVE_NL_LANGINFO_CODESET
     if ((s = nl_langinfo(CODESET)) == NULL || *s == NUL)
-#  endif
-#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# endif
+# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	if ((s = setlocale(LC_CTYPE, NULL)) == NULL || *s == NUL)
-#  endif
+# endif
 	    s = NULL;
 
     return enc_locale_env(s);
-# endif
+#endif
 }
 
 # if defined(WIN3264) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
@@ -4800,7 +4787,6 @@ iconv_end(void)
 #  endif /* DYNAMIC_ICONV */
 # endif /* USE_ICONV */
 
-#endif /* FEAT_MBYTE */
 
 #ifdef FEAT_GUI
 # define USE_IMACTIVATEFUNC (!gui.in_use && *p_imaf != NUL)
@@ -4810,8 +4796,7 @@ iconv_end(void)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#if defined(FEAT_EVAL) && defined(FEAT_MBYTE) \
-	&& (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM))
+#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM))
     static void
 call_imactivatefunc(int active)
 {
@@ -6482,7 +6467,7 @@ static int im_was_set_active = FALSE;
     int
 im_get_status(void)
 {
-#  if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
+#  if defined(FEAT_EVAL)
     if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
 #  endif
@@ -6492,7 +6477,7 @@ im_get_status(void)
     void
 im_set_active(int active_arg)
 {
-#  if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
+#  if defined(FEAT_EVAL)
     int	    active = !p_imdisable && active_arg;
 
     if (USE_IMACTIVATEFUNC && active != im_get_status())
@@ -6513,7 +6498,6 @@ im_set_position(int row UNUSED, int col UNUSED)
 
 #endif /* FEAT_XIM */
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
 
 /*
  * Setup "vcp" for conversion from "from" to "to".
@@ -6548,10 +6532,10 @@ convert_setup_ext(
     int		to_is_utf8;
 
     /* Reset to no conversion. */
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     if (vcp->vc_type == CONV_ICONV && vcp->vc_fd != (iconv_t)-1)
 	iconv_close(vcp->vc_fd);
-# endif
+#endif
     vcp->vc_type = CONV_NONE;
     vcp->vc_factor = 1;
     vcp->vc_fail = FALSE;
@@ -6624,7 +6608,7 @@ convert_setup_ext(
 	vcp->vc_type = CONV_UTF8_MAC;
     }
 #endif
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     else
     {
 	/* Use iconv() for conversion. */
@@ -6637,7 +6621,7 @@ convert_setup_ext(
 	    vcp->vc_factor = 4;	/* could be longer too... */
 	}
     }
-# endif
+#endif
     if (vcp->vc_type == CONV_NONE)
 	return FAIL;
 
@@ -6958,4 +6942,3 @@ string_convert_ext(
 
     return retval;
 }
-#endif

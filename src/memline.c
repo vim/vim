@@ -240,9 +240,7 @@ static void ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p);
 static void ml_upd_block0(buf_T *buf, upd_block0_T what);
 static void set_b0_fname(ZERO_BL *, buf_T *buf);
 static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
-#ifdef FEAT_MBYTE
 static void add_b0_fenc(ZERO_BL *b0p, buf_T *buf);
-#endif
 static time_t swapfile_info(char_u *);
 static int recov_file_names(char_u **, char_u *, int prepend_dot);
 static int ml_append_int(buf_T *, linenr_T, char_u *, colnr_T, int, int);
@@ -1033,10 +1031,8 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	}
     }
 
-#ifdef FEAT_MBYTE
     /* Also add the 'fileencoding' if there is room. */
     add_b0_fenc(b0p, curbuf);
-#endif
 }
 
 /*
@@ -1054,7 +1050,6 @@ set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf)
 	b0p->b0_flags &= ~B0_SAME_DIR;
 }
 
-#ifdef FEAT_MBYTE
 /*
  * When there is room, add the 'fileencoding' to block zero.
  */
@@ -1066,13 +1061,13 @@ add_b0_fenc(
     int		n;
     int		size = B0_FNAME_SIZE_NOCRYPT;
 
-# ifdef FEAT_CRYPT
+#ifdef FEAT_CRYPT
     /* Without encryption use the same offset as in Vim 7.2 to be compatible.
      * With encryption it's OK to move elsewhere, the swap file is not
      * compatible anyway. */
     if (*buf->b_p_key != NUL)
 	size = B0_FNAME_SIZE_CRYPT;
-# endif
+#endif
 
     n = (int)STRLEN(buf->b_p_fenc);
     if ((int)STRLEN(b0p->b0_fname) + n + 1 > size)
@@ -1085,7 +1080,6 @@ add_b0_fenc(
 	b0p->b0_flags |= B0_HAS_FENC;
     }
 }
-#endif
 
 
 /*
@@ -5103,9 +5097,7 @@ ml_setflags(buf_T *buf)
 	    b0p->b0_dirty = buf->b_changed ? B0_DIRTY : 0;
 	    b0p->b0_flags = (b0p->b0_flags & ~B0_FF_MASK)
 						  | (get_fileformat(buf) + 1);
-#ifdef FEAT_MBYTE
 	    add_b0_fenc(b0p, buf);
-#endif
 	    hp->bh_flags |= BH_DIRTY;
 	    mf_sync(buf->b_ml.ml_mfp, MFS_ZERO);
 	    break;
@@ -5682,10 +5674,8 @@ goto_byte(long cnt)
     }
     check_cursor();
 
-# ifdef FEAT_MBYTE
     /* Make sure the cursor is on the first byte of a multi-byte char. */
     if (has_mbyte)
 	mb_adjust_cursor();
-# endif
 }
 #endif

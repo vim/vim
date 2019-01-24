@@ -102,7 +102,7 @@ static long_u	curr_bg;
 static long_u	curr_fg;
 static int	page_count;
 
-#if defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)
+#if defined(FEAT_POSTSCRIPT)
 # define OPT_MBFONT_USECOURIER  0
 # define OPT_MBFONT_ASCII       1
 # define OPT_MBFONT_REGULAR     2
@@ -149,7 +149,7 @@ parse_printoptions(void)
     return parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 }
 
-#if (defined(FEAT_MBYTE) && defined(FEAT_POSTSCRIPT)) || defined(PROTO)
+#if defined(FEAT_POSTSCRIPT) || defined(PROTO)
 /*
  * Parse 'printmbfont' and set the flags in "mbfont_opts".
  * Returns an error message or NULL;
@@ -456,9 +456,7 @@ prt_header(
     int		page_line;
     char_u	*tbuf;
     char_u	*p;
-#ifdef FEAT_MBYTE
     int		l;
-#endif
 
     /* Also use the space for the line number. */
     if (prt_use_number())
@@ -513,24 +511,14 @@ prt_header(
     mch_print_start_line(TRUE, page_line);
     for (p = tbuf; *p != NUL; )
     {
-	if (mch_print_text_out(p,
-#ifdef FEAT_MBYTE
-		(l = (*mb_ptr2len)(p))
-#else
-		1
-#endif
-		    ))
+	if (mch_print_text_out(p, (l = (*mb_ptr2len)(p))))
 	{
 	    ++page_line;
 	    if (page_line >= 0) /* out of room in header */
 		break;
 	    mch_print_start_line(TRUE, page_line);
 	}
-#ifdef FEAT_MBYTE
 	p += l;
-#else
-	p++;
-#endif
     }
 
     vim_free(tbuf);
@@ -867,10 +855,8 @@ hardcopy_line(
     for (col = ppos->column; line[col] != NUL && !need_break; col += outputlen)
     {
 	outputlen = 1;
-#ifdef FEAT_MBYTE
 	if (has_mbyte && (outputlen = (*mb_ptr2len)(line + col)) < 1)
 	    outputlen = 1;
-#endif
 #ifdef FEAT_SYN_HL
 	/*
 	 * syntax highlighting stuff.
@@ -932,11 +918,9 @@ hardcopy_line(
 	else
 	{
 	    need_break = mch_print_text_out(line + col, outputlen);
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		print_pos += (*mb_ptr2cells)(line + col);
 	    else
-#endif
 		print_pos++;
 	}
     }
@@ -1046,7 +1030,6 @@ static struct prt_ps_font_S prt_ps_courier_font =
     {"Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique"}
 };
 
-#ifdef FEAT_MBYTE
 /* Generic font metrics for multi-byte fonts */
 static struct prt_ps_font_S prt_ps_mb_font =
 {
@@ -1055,7 +1038,6 @@ static struct prt_ps_font_S prt_ps_mb_font =
     -250, 805,
     {NULL, NULL, NULL, NULL}
 };
-#endif
 
 /* Pointer to current font set being used */
 static struct prt_ps_font_S* prt_ps_font;
@@ -1076,7 +1058,6 @@ struct prt_ps_charset_S
     int		has_charset;
 };
 
-#ifdef FEAT_MBYTE
 
 #define CS_JIS_C_1978   (0x01)
 #define CS_JIS_X_1983   (0x02)
@@ -1261,7 +1242,6 @@ static struct prt_ps_mbfont_S prt_ps_mbfonts[] =
 	"KS_X_1992"
     }
 };
-#endif /* FEAT_MBYTE */
 
 struct prt_ps_resource_S
 {
@@ -1410,7 +1390,6 @@ static int prt_collate;
 static char_u prt_line_buffer[257];
 static garray_T prt_ps_buffer;
 
-# ifdef FEAT_MBYTE
 static int prt_do_conv;
 static vimconv_T prt_conv;
 
@@ -1422,7 +1401,6 @@ static int prt_in_ascii;
 static int prt_half_width;
 static char *prt_ascii_encoding;
 static char_u prt_hexchar[] = "0123456789abcdef";
-# endif
 
     static void
 prt_write_file_raw_len(char_u *buffer, int bytes)
@@ -1494,18 +1472,15 @@ prt_def_font(
     vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
 			  "/_%s /VIM-%s /%s ref\n", new_name, encoding, font);
     prt_write_file(prt_line_buffer);
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
 	sprintf((char *)prt_line_buffer, "/%s %d %f /_%s sffs\n",
 		       new_name, height, 500./prt_ps_courier_font.wx, new_name);
     else
-#endif
 	vim_snprintf((char *)prt_line_buffer, sizeof(prt_line_buffer),
 			     "/%s %d /_%s ffs\n", new_name, height, new_name);
     prt_write_file(prt_line_buffer);
 }
 
-#ifdef FEAT_MBYTE
 /*
  * Write a line to define the CID font.
  */
@@ -1530,7 +1505,6 @@ prt_dup_cidfont(char *original_name, char *new_name)
 				       "/%s %s d\n", new_name, original_name);
     prt_write_file(prt_line_buffer);
 }
-#endif
 
 /*
  * Convert a real value into an integer and fractional part as integers, with
@@ -1659,18 +1633,14 @@ prt_flush_buffer(void)
 	/* Draw the text
 	 * Note: we write text out raw - EBCDIC conversion is handled in the
 	 * PostScript world via the font encoding vector. */
-#ifdef FEAT_MBYTE
 	if (prt_out_mbyte)
 	    prt_write_string("<");
 	else
-#endif
 	    prt_write_string("(");
 	prt_write_file_raw_len(prt_ps_buffer.ga_data, prt_ps_buffer.ga_len);
-#ifdef FEAT_MBYTE
 	if (prt_out_mbyte)
 	    prt_write_string(">");
 	else
-#endif
 	    prt_write_string(")");
 	/* Add a moveto if need be and use the appropriate show procedure */
 	if (prt_do_moveto)
@@ -2150,7 +2120,6 @@ prt_dsc_docmedia(
     void
 mch_print_cleanup(void)
 {
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	int     i;
@@ -2171,7 +2140,6 @@ mch_print_cleanup(void)
 	convert_setup(&prt_conv, NULL, NULL);
 	prt_do_conv = FALSE;
     }
-#endif
     if (prt_ps_fd != NULL)
     {
 	fclose(prt_ps_fd);
@@ -2250,13 +2218,11 @@ prt_get_cpl(void)
     if (prt_use_number())
     {
 	prt_number_width = PRINT_NUMBER_WIDTH * prt_char_width;
-#ifdef FEAT_MBYTE
 	/* If we are outputting multi-byte characters then line numbers will be
 	 * printed with half width characters
 	 */
 	if (prt_out_mbyte)
 	    prt_number_width /= 2;
-#endif
 	prt_left_margin += prt_number_width;
     }
     else
@@ -2265,7 +2231,6 @@ prt_get_cpl(void)
     return (int)((prt_right_margin - prt_left_margin) / prt_char_width);
 }
 
-#ifdef FEAT_MBYTE
     static int
 prt_build_cid_fontname(int font, char_u *name, int name_len)
 {
@@ -2279,7 +2244,6 @@ prt_build_cid_fontname(int font, char_u *name, int name_len)
 
     return TRUE;
 }
-#endif
 
 /*
  * Get number of lines of text that fit on a page (excluding the header).
@@ -2315,7 +2279,6 @@ prt_get_lpp(void)
     return lpp - prt_header_height();
 }
 
-#ifdef FEAT_MBYTE
     static int
 prt_match_encoding(
     char			*p_encoding,
@@ -2368,7 +2331,6 @@ prt_match_charset(
     }
     return FALSE;
 }
-#endif
 
     int
 mch_print_init(
@@ -2385,14 +2347,12 @@ mch_print_init(
     double      right;
     double      top;
     double      bottom;
-#ifdef FEAT_MBYTE
     int		props;
     int		cmap = 0;
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;
     struct prt_ps_charset_S  *p_mbchar = NULL;
-#endif
 
 #if 0
     /*
@@ -2415,7 +2375,6 @@ mch_print_init(
     /*
      * Set up font and encoding.
      */
-#ifdef FEAT_MBYTE
     p_encoding = enc_skip(p_penc);
     if (*p_encoding == NUL)
 	p_encoding = enc_skip(p_enc);
@@ -2542,11 +2501,8 @@ mch_print_init(
 	prt_ps_font = &prt_ps_mb_font;
     }
     else
-#endif
     {
-#ifdef FEAT_MBYTE
 	prt_use_courier = FALSE;
-#endif
 	prt_ps_font = &prt_ps_courier_font;
     }
 
@@ -2699,10 +2655,8 @@ mch_print_init(
     }
 
     prt_bufsiz = psettings->chars_per_line;
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
 	prt_bufsiz *= 2;
-#endif
     ga_init2(&prt_ps_buffer, (int)sizeof(char), prt_bufsiz);
 
     prt_page_num = 0;
@@ -2781,27 +2735,20 @@ mch_print_begin(prt_settings_T *psettings)
     char	buffer[256];
     char_u      *p_encoding;
     char_u	*p;
-#ifdef FEAT_MBYTE
     struct prt_ps_resource_S *res_cidfont;
     struct prt_ps_resource_S *res_cmap;
-#endif
     int		retval = FALSE;
 
     res_prolog = (struct prt_ps_resource_S *)
 				      alloc(sizeof(struct prt_ps_resource_S));
     res_encoding = (struct prt_ps_resource_S *)
 				      alloc(sizeof(struct prt_ps_resource_S));
-#ifdef FEAT_MBYTE
     res_cidfont = (struct prt_ps_resource_S *)
 				      alloc(sizeof(struct prt_ps_resource_S));
     res_cmap = (struct prt_ps_resource_S *)
 				      alloc(sizeof(struct prt_ps_resource_S));
-#endif
     if (res_prolog == NULL || res_encoding == NULL
-#ifdef FEAT_MBYTE
-	    || res_cidfont == NULL || res_cmap == NULL
-#endif
-       )
+	    || res_cidfont == NULL || res_cmap == NULL)
 	goto theend;
 
     /*
@@ -2863,11 +2810,8 @@ mch_print_begin(prt_settings_T *psettings)
 				prt_mediasize[prt_media].height,
 				(double)0, NULL, NULL);
     /* Define fonts needed */
-#ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
-#endif
 	prt_dsc_font_resource("DocumentNeededResources", &prt_ps_courier_font);
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	prt_dsc_font_resource((prt_use_courier ? NULL
@@ -2875,7 +2819,6 @@ mch_print_begin(prt_settings_T *psettings)
 	if (!prt_custom_cmap)
 	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }
-#endif
 
     /* Search for external resources VIM supplies */
     if (!prt_find_resource("prolog", res_prolog))
@@ -2887,7 +2830,6 @@ mch_print_begin(prt_settings_T *psettings)
 	goto theend;
     if (!prt_check_resource(res_prolog, PRT_PROLOG_VERSION))
 	goto theend;
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	/* Look for required version of multi-byte printing procset */
@@ -2901,23 +2843,19 @@ mch_print_begin(prt_settings_T *psettings)
 	if (!prt_check_resource(res_cidfont, PRT_CID_PROLOG_VERSION))
 	    goto theend;
     }
-#endif
 
     /* Find an encoding to use for printing.
      * Check 'printencoding'. If not set or not found, then use 'encoding'. If
      * that cannot be found then default to "latin1".
      * Note: VIM specific encoding header is always skipped.
      */
-#ifdef FEAT_MBYTE
     if (!prt_out_mbyte)
     {
-#endif
 	p_encoding = enc_skip(p_penc);
 	if (*p_encoding == NUL
 		|| !prt_find_resource((char *)p_encoding, res_encoding))
 	{
 	    /* 'printencoding' not set or not supported - find alternate */
-#ifdef FEAT_MBYTE
 	    int		props;
 
 	    p_encoding = enc_skip(p_enc);
@@ -2925,7 +2863,6 @@ mch_print_begin(prt_settings_T *psettings)
 	    if (!(props & ENC_8BIT)
 		    || !prt_find_resource((char *)p_encoding, res_encoding))
 		/* 8-bit 'encoding' is not supported */
-#endif
 		{
 		/* Use latin1 as default printing encoding */
 		p_encoding = (char_u *)"latin1";
@@ -2941,7 +2878,6 @@ mch_print_begin(prt_settings_T *psettings)
 	    goto theend;
 	/* For the moment there are no checks on encoding resource files to
 	 * perform */
-#ifdef FEAT_MBYTE
     }
     else
     {
@@ -2989,14 +2925,12 @@ mch_print_begin(prt_settings_T *psettings)
 	if (!prt_open_resource(res_cmap))
 	    goto theend;
     }
-#endif
 
     /* List resources supplied */
     STRCPY(buffer, res_prolog->title);
     STRCAT(buffer, " ");
     STRCAT(buffer, res_prolog->version);
     prt_dsc_resources("DocumentSuppliedResources", "procset", buffer);
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	STRCPY(buffer, res_cidfont->title);
@@ -3013,7 +2947,6 @@ mch_print_begin(prt_settings_T *psettings)
 	}
     }
     if (!prt_out_mbyte || prt_use_courier)
-#endif
     {
 	STRCPY(buffer, res_encoding->title);
 	STRCAT(buffer, " ");
@@ -3035,11 +2968,8 @@ mch_print_begin(prt_settings_T *psettings)
     prt_dsc_noarg("BeginDefaults");
 
     /* List font resources most likely common to all pages */
-#ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
-#endif
 	prt_dsc_font_resource("PageResources", &prt_ps_courier_font);
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	prt_dsc_font_resource((prt_use_courier ? NULL : "PageResources"),
@@ -3047,7 +2977,6 @@ mch_print_begin(prt_settings_T *psettings)
 	if (!prt_custom_cmap)
 	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }
-#endif
 
     /* Paper will be used for all pages */
     prt_dsc_textline("PageMedia", prt_mediasize[prt_media].name);
@@ -3062,7 +2991,6 @@ mch_print_begin(prt_settings_T *psettings)
     /* Add required procsets - NOTE: order is important! */
     if (!prt_add_resource(res_prolog))
 	goto theend;
-#ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
 	/* Add CID font procset, and any user supplied CMap */
@@ -3071,11 +2999,8 @@ mch_print_begin(prt_settings_T *psettings)
 	if (prt_custom_cmap && !prt_add_resource(res_cmap))
 	    goto theend;
     }
-#endif
 
-#ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
-#endif
 	/* There will be only one Roman font encoding to be included in the PS
 	 * file. */
 	if (!prt_add_resource(res_encoding))
@@ -3102,14 +3027,12 @@ mch_print_begin(prt_settings_T *psettings)
     prt_write_string("c\n");
 
     /* Font resource inclusion and definition */
-#ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
     {
 	/* When using Courier for ASCII range when printing multi-byte, need to
 	 * pick up ASCII encoding to use with it. */
 	if (prt_use_courier)
 	    p_encoding = (char_u *)prt_ascii_encoding;
-#endif
 	prt_dsc_resources("IncludeResource", "font",
 			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
 	prt_def_font("F0", (char *)p_encoding, (int)prt_line_height,
@@ -3126,7 +3049,6 @@ mch_print_begin(prt_settings_T *psettings)
 			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
 	prt_def_font("F3", (char *)p_encoding, (int)prt_line_height,
 		     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
-#ifdef FEAT_MBYTE
     }
     if (prt_out_mbyte)
     {
@@ -3182,7 +3104,6 @@ mch_print_begin(prt_settings_T *psettings)
 	    /* Use BOLD for BOLDOBLIQUE */
 	    prt_dup_cidfont("CF1", "CF3");
     }
-#endif
 
     /* Misc constant vars used for underlining and background rects */
     prt_def_var("UO", PRT_PS_FONT_TO_USER(prt_line_height,
@@ -3199,10 +3120,8 @@ mch_print_begin(prt_settings_T *psettings)
 theend:
     vim_free(res_prolog);
     vim_free(res_encoding);
-#ifdef FEAT_MBYTE
     vim_free(res_cidfont);
     vim_free(res_cmap);
-#endif
 
     return retval;
 }
@@ -3269,12 +3188,10 @@ mch_print_begin_page(char_u *str UNUSED)
     prt_dsc_noarg("BeginPageSetup");
 
     prt_write_string("sv\n0 g\n");
-#ifdef FEAT_MBYTE
     prt_in_ascii = !prt_out_mbyte;
     if (prt_out_mbyte)
 	prt_write_string("CF0 sf\n");
     else
-#endif
 	prt_write_string("F0 sf\n");
     prt_fgcol = PRCOLOR_BLACK;
     prt_bgcol = PRCOLOR_WHITE;
@@ -3318,9 +3235,7 @@ mch_print_start_line(int margin, int page_line)
 
     prt_attribute_change = TRUE;
     prt_need_moveto = TRUE;
-#ifdef FEAT_MBYTE
     prt_half_width = FALSE;
-#endif
 }
 
     int
@@ -3332,15 +3247,12 @@ mch_print_text_out(char_u *textp, int len UNUSED)
     char_u      ch_buff[8];
     float       char_width;
     float       next_pos;
-#ifdef FEAT_MBYTE
     int		in_ascii;
     int		half_width;
     char_u	*tofree = NULL;
-#endif
 
     char_width = prt_char_width;
 
-#ifdef FEAT_MBYTE
     /* Ideally VIM would create a rearranged CID font to combine a Roman and
      * CJKV font to do what VIM is doing here - use a Roman font for characters
      * in the ASCII range, and the original CID font for everything else.
@@ -3392,7 +3304,6 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	    prt_attribute_change = TRUE;
 	}
     }
-#endif
 
     /* Output any required changes to the graphics state, after flushing any
      * text buffered so far.
@@ -3413,11 +3324,9 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	}
 	if (prt_need_font)
 	{
-#ifdef FEAT_MBYTE
 	    if (!prt_in_ascii)
 		prt_write_string("CF");
 	    else
-#endif
 		prt_write_string("F");
 	    prt_write_int(prt_font);
 	    prt_write_string("sf\n");
@@ -3459,7 +3368,6 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	prt_attribute_change = FALSE;
     }
 
-#ifdef FEAT_MBYTE
     if (prt_do_conv)
     {
 	/* Convert from multi-byte to 8-bit encoding */
@@ -3486,7 +3394,6 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	}
     }
     else
-#endif
     {
 	/* Add next character to buffer of characters to output.
 	 * Note: One printed character may require several PS characters to
@@ -3528,10 +3435,8 @@ mch_print_text_out(char_u *textp, int len UNUSED)
 	    ga_append(&prt_ps_buffer, ch);
     }
 
-#ifdef FEAT_MBYTE
     /* Need to free any translated characters */
     vim_free(tofree);
-#endif
 
     prt_text_run += char_width;
     prt_pos_x += char_width;

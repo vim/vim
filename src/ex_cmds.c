@@ -50,7 +50,6 @@ do_ascii(exarg_T *eap UNUSED)
 #ifdef FEAT_DIGRAPHS
     char_u      *dig;
 #endif
-#ifdef FEAT_MBYTE
     int		cc[MAX_MCO];
     int		ci = 0;
     int		len;
@@ -58,7 +57,6 @@ do_ascii(exarg_T *eap UNUSED)
     if (enc_utf8)
 	c = utfc_ptr2char(ml_get_cursor(), cc);
     else
-#endif
 	c = gchar_cursor();
     if (c == NUL)
     {
@@ -66,10 +64,8 @@ do_ascii(exarg_T *eap UNUSED)
 	return;
     }
 
-#ifdef FEAT_MBYTE
     IObuff[0] = NUL;
     if (!has_mbyte || (enc_dbcs != 0 && c < 0x100) || c < 0x80)
-#endif
     {
 	if (c == NL)	    /* NUL is stored as NL */
 	    c = NUL;
@@ -106,15 +102,12 @@ do_ascii(exarg_T *eap UNUSED)
 	    vim_snprintf((char *)IObuff, IOSIZE,
 		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
 				  transchar(c), buf1, buf2, cval, cval, cval);
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    c = cc[ci++];
 	else
 	    c = 0;
-#endif
     }
 
-#ifdef FEAT_MBYTE
     /* Repeat for combining characters. */
     while (has_mbyte && (c >= 0x100 || (enc_utf8 && c >= 0x80)))
     {
@@ -150,7 +143,6 @@ do_ascii(exarg_T *eap UNUSED)
 	else
 	    c = 0;
     }
-#endif
 
     msg((char *)IObuff);
 }
@@ -823,11 +815,9 @@ ex_retab(exarg_T *eap)
 	    if (ptr[col] == NUL)
 		break;
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		col += (*mb_ptr2len)(ptr + col);
 	    else
-#endif
 		++col;
 	}
 	if (new_line == NULL)		    /* out of memory */
@@ -2282,9 +2272,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     if ((vir.vir_line = alloc(LSIZE)) == NULL)
 	return;
     vir.vir_fd = fp_in;
-#ifdef FEAT_MBYTE
     vir.vir_conv.vc_type = CONV_NONE;
-#endif
     ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
     vir.vir_version = -1;
 
@@ -2321,10 +2309,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 							  VIM_VERSION_MEDIUM);
 	fputs(_("# You may edit it if you're careful!\n\n"), fp_out);
 	write_viminfo_version(fp_out);
-#ifdef FEAT_MBYTE
 	fputs(_("# Value of 'encoding' when this file was written\n"), fp_out);
 	fprintf(fp_out, "*encoding=%s\n\n", p_enc);
-#endif
 	write_viminfo_search_pattern(fp_out);
 	write_viminfo_sub_string(fp_out);
 #ifdef FEAT_CMDHIST
@@ -2353,10 +2339,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     }
 
     vim_free(vir.vir_line);
-#ifdef FEAT_MBYTE
     if (vir.vir_conv.vc_type != CONV_NONE)
 	convert_setup(&vir.vir_conv, NULL, NULL);
-#endif
     ga_clear_strings(&vir.vir_barlines);
 }
 
@@ -2484,7 +2468,6 @@ read_viminfo_up_to_marks(
     static int
 viminfo_encoding(vir_T *virp)
 {
-#ifdef FEAT_MBYTE
     char_u	*p;
     int		i;
 
@@ -2502,7 +2485,6 @@ viminfo_encoding(vir_T *virp)
 	    convert_setup(&virp->vir_conv, p, p_enc);
 	}
     }
-#endif
     return viminfo_readline(virp);
 }
 
@@ -2574,7 +2556,6 @@ viminfo_readstring(
     }
     *d = NUL;
 
-#ifdef FEAT_MBYTE
     if (convert && virp->vir_conv.vc_type != CONV_NONE && *retval != NUL)
     {
 	d = string_convert(&virp->vir_conv, retval, NULL);
@@ -2584,7 +2565,6 @@ viminfo_readstring(
 	    retval = d;
 	}
     }
-#endif
 
     return retval;
 }
@@ -2708,10 +2688,8 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
     int	    i;
     int	    allocated = FALSE;
     int	    eof;
-#ifdef FEAT_MBYTE
     char_u  *sconv;
     int	    converted;
-#endif
 
     while (*p == ',')
     {
@@ -2835,7 +2813,6 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    ++p;
 	    s[len] = NUL;
 
-#ifdef FEAT_MBYTE
 	    converted = FALSE;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
@@ -2849,7 +2826,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		    converted = TRUE;
 		}
 	    }
-#endif
+
 	    /* Need to copy in allocated memory if the string wasn't allocated
 	     * above and we did allocate before, thus vir_line may change. */
 	    if (s != buf && allocated)
@@ -2857,11 +2834,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
 	    value->bv_len = len;
-	    value->bv_allocated = allocated
-#ifdef FEAT_MBYTE
-					    || converted
-#endif
-						;
+	    value->bv_allocated = allocated || converted;
 	    ++values->ga_len;
 	    if (nextp != NULL)
 	    {
@@ -4094,9 +4067,7 @@ do_ecmd(
 		    if (!oldbuf && eap != NULL)
 		    {
 			set_file_options(TRUE, eap);
-#ifdef FEAT_MBYTE
 			set_forced_fenc(eap);
-#endif
 		    }
 		}
 
@@ -5317,11 +5288,9 @@ do_sub(exarg_T *eap)
 		    else
 		    {
 			 /* search for a match at next column */
-#ifdef FEAT_MBYTE
 			if (has_mbyte)
 			    matchcol += mb_ptr2len(sub_firstline + matchcol);
 			else
-#endif
 			    ++matchcol;
 		    }
 		    goto skip;
@@ -5759,10 +5728,8 @@ do_sub(exarg_T *eap)
 			    p1 = new_start - 1;
 			}
 		    }
-#ifdef FEAT_MBYTE
 		    else if (has_mbyte)
 			p1 += (*mb_ptr2len)(p1) - 1;
-#endif
 		}
 
 		/*
@@ -7017,10 +6984,8 @@ fix_help_buffer(void)
 		    FILE	*fd;
 		    char_u	*s;
 		    int		fi;
-#ifdef FEAT_MBYTE
 		    vimconv_T	vc;
 		    char_u	*cp;
-#endif
 
 		    /* Find all "doc/ *.txt" files in this directory. */
 		    add_pathsep(NameBuff);
@@ -7086,9 +7051,8 @@ fix_help_buffer(void)
 					&& (s = vim_strchr(IObuff + 1, '*'))
 								  != NULL)
 				{
-#ifdef FEAT_MBYTE
 				    int	this_utf = MAYBE;
-#endif
+
 				    /* Change tag definition to a
 				     * reference and remove <CR>/<NL>. */
 				    IObuff[0] = '|';
@@ -7097,7 +7061,6 @@ fix_help_buffer(void)
 				    {
 					if (*s == '\r' || *s == '\n')
 					    *s = NUL;
-#ifdef FEAT_MBYTE
 					/* The text is utf-8 when a byte
 					 * above 127 is found and no
 					 * illegal byte sequence is found.
@@ -7112,10 +7075,9 @@ fix_help_buffer(void)
 						this_utf = FALSE;
 					    s += l - 1;
 					}
-#endif
 					++s;
 				    }
-#ifdef FEAT_MBYTE
+
 				    /* The help file is latin1 or utf-8;
 				     * conversion to the current
 				     * 'encoding' may be required. */
@@ -7140,10 +7102,6 @@ fix_help_buffer(void)
 				    ml_append(lnum, cp, (colnr_T)0, FALSE);
 				    if (cp != IObuff)
 					vim_free(cp);
-#else
-				    ml_append(lnum, IObuff, (colnr_T)0,
-								   FALSE);
-#endif
 				    ++lnum;
 				}
 				fclose(fd);
@@ -7199,12 +7157,10 @@ helptags_one(
     int		i;
     char_u	*fname;
     int		dirlen;
-# ifdef FEAT_MBYTE
     int		utf8 = MAYBE;
     int		this_utf8;
     int		firstline;
     int		mix = FALSE;	/* detected mixed encodings */
-# endif
 
     /*
      * Find all *.txt files.
@@ -7274,12 +7230,9 @@ helptags_one(
 	}
 	fname = files[fi] + dirlen + 1;
 
-# ifdef FEAT_MBYTE
 	firstline = TRUE;
-# endif
 	while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
 	{
-# ifdef FEAT_MBYTE
 	    if (firstline)
 	    {
 		/* Detect utf-8 file by a non-ASCII char in the first line. */
@@ -7311,7 +7264,6 @@ helptags_one(
 		}
 		firstline = FALSE;
 	    }
-# endif
 	    p1 = vim_strchr(IObuff, '*');	/* find first '*' */
 	    while (p1 != NULL)
 	    {
@@ -7398,10 +7350,8 @@ helptags_one(
 	    }
 	}
 
-# ifdef FEAT_MBYTE
 	if (utf8 == TRUE)
 	    fprintf(fd_tags, "!_TAG_FILE_ENCODING\tutf-8\t//\n");
-# endif
 
 	/*
 	 * Write the tags into the file.
@@ -7426,10 +7376,8 @@ helptags_one(
 	    }
 	}
     }
-#ifdef FEAT_MBYTE
     if (mix)
 	got_int = FALSE;    /* continue with other languages */
-#endif
 
     for (i = 0; i < ga.ga_len; ++i)
 	vim_free(((char_u **)ga.ga_data)[i]);

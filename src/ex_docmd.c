@@ -404,8 +404,7 @@ static void	ex_folddo(exarg_T *eap);
 # define ex_foldopen		ex_ni
 # define ex_folddo		ex_ni
 #endif
-#if !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)))
+#if !(defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 # define ex_language		ex_ni
 #endif
 #ifndef FEAT_SIGNS
@@ -1550,7 +1549,6 @@ getline_equal(
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * If "fgetline" is get_loop_line(), return the cookie used by the original
  * getline function.  Otherwise return "cookie".
@@ -1560,7 +1558,7 @@ getline_cookie(
     char_u	*(*fgetline)(int, void *, int) UNUSED,
     void	*cookie)		/* argument for fgetline() */
 {
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     char_u		*(*gp)(int, void *, int);
     struct loop_cookie *cp;
 
@@ -1575,11 +1573,10 @@ getline_cookie(
 	cp = cp->cookie;
     }
     return cp;
-# else
+#else
     return cookie;
-# endif
-}
 #endif
+}
 
 
 /*
@@ -3116,17 +3113,9 @@ append_command(char_u *cmd)
     d = IObuff + STRLEN(IObuff);
     while (*s != NUL && d - IObuff < IOSIZE - 7)
     {
-	if (
-#ifdef FEAT_MBYTE
-		enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) :
-#endif
-		*s == 0xa0)
+	if (enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) : *s == 0xa0)
 	{
-	    s +=
-#ifdef FEAT_MBYTE
-		enc_utf8 ? 2 :
-#endif
-		1;
+	    s += enc_utf8 ? 2 : 1;
 	    STRCPY(d, "<a0>");
 	    d += 4;
 	}
@@ -3752,11 +3741,9 @@ set_one_cmd_context(
 	p = xp->xp_pattern;
 	while (*p != NUL)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		c = mb_ptr2char(p);
 	    else
-#endif
 		c = *p;
 	    if (c == '\\' && p[1] != NUL)
 		++p;
@@ -3780,19 +3767,15 @@ set_one_cmd_context(
 		len = 0;  /* avoid getting stuck when space is in 'isfname' */
 		while (*p != NUL)
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			c = mb_ptr2char(p);
 		    else
-#endif
 			c = *p;
 		    if (c == '`' || vim_isfilec_or_wc(c))
 			break;
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			len = (*mb_ptr2len)(p);
 		    else
-#endif
 			len = 1;
 		    MB_PTR_ADV(p);
 		}
@@ -4317,8 +4300,7 @@ set_one_cmd_context(
 	    xp->xp_pattern = arg;
 	    break;
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	case CMD_language:
 	    p = skiptowhite(arg);
 	    if (*p == NUL)
@@ -5408,7 +5390,6 @@ skip_cmd_arg(
     return p;
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
     int
 get_bad_opt(char_u *p, exarg_T *eap)
 {
@@ -5422,7 +5403,6 @@ get_bad_opt(char_u *p, exarg_T *eap)
 	return FAIL;
     return OK;
 }
-#endif
 
 /*
  * Get "++opt=arg" argument.
@@ -5433,10 +5413,8 @@ getargopt(exarg_T *eap)
 {
     char_u	*arg = eap->arg + 2;
     int		*pp = NULL;
-#ifdef FEAT_MBYTE
     int		bad_char_idx;
     char_u	*p;
-#endif
 
     /* ":edit ++[no]bin[ary] file" */
     if (STRNCMP(arg, "bin", 3) == 0 || STRNCMP(arg, "nobin", 5) == 0)
@@ -5472,7 +5450,6 @@ getargopt(exarg_T *eap)
 	arg += 10;
 	pp = &eap->force_ff;
     }
-#ifdef FEAT_MBYTE
     else if (STRNCMP(arg, "enc", 3) == 0)
     {
 	if (STRNCMP(arg, "encoding", 8) == 0)
@@ -5486,7 +5463,6 @@ getargopt(exarg_T *eap)
 	arg += 3;
 	pp = &bad_char_idx;
     }
-#endif
 
     if (pp == NULL || *arg != '=')
 	return FAIL;
@@ -5497,14 +5473,11 @@ getargopt(exarg_T *eap)
     eap->arg = skipwhite(arg);
     *arg = NUL;
 
-#ifdef FEAT_MBYTE
     if (pp == &eap->force_ff)
     {
-#endif
 	if (check_ff_value(eap->cmd + eap->force_ff) == FAIL)
 	    return FAIL;
 	eap->force_ff = eap->cmd[eap->force_ff];
-#ifdef FEAT_MBYTE
     }
     else if (pp == &eap->force_enc)
     {
@@ -5519,7 +5492,6 @@ getargopt(exarg_T *eap)
 	if (get_bad_opt(eap->cmd + bad_char_idx, eap) == FAIL)
 	    return FAIL;
     }
-#endif
 
     return OK;
 }
@@ -5990,8 +5962,7 @@ static struct
 #if defined(FEAT_CMDHIST)
     {EXPAND_HISTORY, "history"},
 #endif
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif
     {EXPAND_MAPCLEAR, "mapclear"},
@@ -6507,14 +6478,10 @@ uc_split_args(char_u *arg, size_t *lenp)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    int charlen = (*mb_ptr2len)(p);
+
 	    len += charlen;
 	    p += charlen;
-#else
-	    ++len;
-	    ++p;
-#endif
 	}
     }
 
@@ -6685,13 +6652,11 @@ uc_check_code(
 	    result = STRLEN(eap->arg) + 2;
 	    for (p = eap->arg; *p; ++p)
 	    {
-#ifdef  FEAT_MBYTE
 		if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
 		    /* DBCS can contain \ in a trail byte, skip the
 		     * double-byte character. */
 		    ++p;
 		else
-#endif
 		     if (*p == '\\' || *p == '"')
 		    ++result;
 	    }
@@ -6701,13 +6666,11 @@ uc_check_code(
 		*buf++ = '"';
 		for (p = eap->arg; *p; ++p)
 		{
-#ifdef  FEAT_MBYTE
 		    if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
 			/* DBCS can contain \ in a trail byte, copy the
 			 * double-byte character to avoid escaping. */
 			*buf++ = *p++;
 		    else
-#endif
 			 if (*p == '\\' || *p == '"')
 			*buf++ = '\\';
 		    *buf++ = *p;
@@ -10328,11 +10291,9 @@ restore_current_state(save_state_T *sst)
 ex_normal(exarg_T *eap)
 {
     save_state_T save_state;
-#ifdef FEAT_MBYTE
     char_u	*arg = NULL;
     int		l;
     char_u	*p;
-#endif
 
     if (ex_normal_lock > 0)
     {
@@ -10345,7 +10306,6 @@ ex_normal(exarg_T *eap)
 	return;
     }
 
-#ifdef FEAT_MBYTE
     /*
      * vgetc() expects a CSI and K_SPECIAL to have been escaped.  Don't do
      * this for the K_SPECIAL leading byte, otherwise special keys will not
@@ -10358,15 +10318,15 @@ ex_normal(exarg_T *eap)
 	/* Count the number of characters to be escaped. */
 	for (p = eap->arg; *p != NUL; ++p)
 	{
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    if (*p == CSI)  /* leadbyte CSI */
 		len += 2;
-# endif
+#endif
 	    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		if (*++p == K_SPECIAL	  /* trailbyte K_SPECIAL or CSI */
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			|| *p == CSI
-# endif
+#endif
 			)
 		    len += 2;
 	}
@@ -10379,13 +10339,13 @@ ex_normal(exarg_T *eap)
 		for (p = eap->arg; *p != NUL; ++p)
 		{
 		    arg[len++] = *p;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		    if (*p == CSI)
 		    {
 			arg[len++] = KS_EXTRA;
 			arg[len++] = (int)KE_CSI;
 		    }
-# endif
+#endif
 		    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		    {
 			arg[len++] = *++p;
@@ -10394,20 +10354,19 @@ ex_normal(exarg_T *eap)
 			    arg[len++] = KS_SPECIAL;
 			    arg[len++] = KE_FILLER;
 			}
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			else if (*p == CSI)
 			{
 			    arg[len++] = KS_EXTRA;
 			    arg[len++] = (int)KE_CSI;
 			}
-# endif
+#endif
 		    }
 		    arg[len] = NUL;
 		}
 	    }
 	}
     }
-#endif
 
     ++ex_normal_busy;
     if (save_current_state(&save_state))
@@ -10426,11 +10385,9 @@ ex_normal(exarg_T *eap)
 		check_cursor_moved(curwin);
 	    }
 
-	    exec_normal_cmd(
-#ifdef FEAT_MBYTE
-		    arg != NULL ? arg :
-#endif
-		    eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, FALSE);
+	    exec_normal_cmd(arg != NULL
+		     ? arg
+		     : eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, FALSE);
 	}
 	while (eap->addr_count > 0 && eap->line1 <= eap->line2 && !got_int);
     }
@@ -10447,9 +10404,7 @@ ex_normal(exarg_T *eap)
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
 
-#ifdef FEAT_MBYTE
     vim_free(arg);
-#endif
 }
 
 /*
@@ -11838,9 +11793,9 @@ put_view(
 	     * edit that buffer, to not lose folding information (:edit resets
 	     * folds in other buffers)
 	     */
-	    if (fputs("if bufexists('", fd) < 0
+	    if (fputs("if bufexists(\"", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
-		    || fputs("') | buffer ", fd) < 0
+		    || fputs("\") | buffer ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
 		    || fputs(" | else | edit ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL

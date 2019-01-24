@@ -1057,11 +1057,9 @@ foldAdjustVisual(void)
 	end->col = (colnr_T)STRLEN(ptr);
 	if (end->col > 0 && *p_sel == 'o')
 	    --end->col;
-#ifdef FEAT_MBYTE
 	/* prevent cursor from moving on the trail byte */
 	if (has_mbyte)
 	    mb_adjust_cursor();
-#endif
     }
 }
 
@@ -1946,7 +1944,6 @@ get_foldtext(
 	     * replace a TAB with a space. */
 	    for (p = text; *p != NUL; ++p)
 	    {
-# ifdef FEAT_MBYTE
 		int	len;
 
 		if (has_mbyte && (len = (*mb_ptr2len)(p)) > 1)
@@ -1956,7 +1953,6 @@ get_foldtext(
 		    p += len - 1;
 		}
 		else
-# endif
 		    if (*p == TAB)
 			*p = ' ';
 		    else if (ptr2cells(p) > 1)

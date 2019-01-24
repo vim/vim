@@ -577,7 +577,6 @@ var_redir_stop(void)
     VIM_CLEAR(redir_varname);
 }
 
-# if defined(FEAT_MBYTE) || defined(PROTO)
     int
 eval_charconvert(
     char_u	*enc_from,
@@ -602,7 +601,6 @@ eval_charconvert(
 	return FAIL;
     return OK;
 }
-# endif
 
 # if defined(FEAT_POSTSCRIPT) || defined(PROTO)
     int
@@ -4998,13 +4996,11 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 				  nr = (nr << 4) + hex2nr(*p);
 			      }
 			      ++p;
-#ifdef FEAT_MBYTE
 			      /* For "\u" store the number according to
 			       * 'encoding'. */
 			      if (c != 'X')
 				  name += (*mb_char2bytes)(nr, name);
 			      else
-#endif
 				  *name++ = nr;
 			  }
 			  break;
@@ -6704,11 +6700,9 @@ set_vim_var_char(int c)
 {
     char_u	buf[MB_MAXBYTES + 1];
 
-#ifdef FEAT_MBYTE
     if (has_mbyte)
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
     else
-#endif
     {
 	buf[0] = c;
 	buf[1] = NUL;
@@ -6885,12 +6879,10 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 
     if (eap->force_ff != 0)
 	len += 10; /* " ++ff=unix" */
-# ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	len += (unsigned)STRLEN(eap->cmd + eap->force_enc) + 7;
     if (eap->bad_char != 0)
 	len += 7 + 4;  /* " ++bad=" + "keep" or "drop" */
-# endif
 
     newval = alloc(len + 1);
     if (newval == NULL)
@@ -6911,7 +6903,6 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 						eap->force_ff == 'u' ? "unix"
 						: eap->force_ff == 'd' ? "dos"
 						: "mac");
-#ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++enc=%s",
 					       eap->cmd + eap->force_enc);
@@ -6921,7 +6912,6 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 	STRCPY(newval + STRLEN(newval), " ++bad=drop");
     else if (eap->bad_char != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++bad=%c", eap->bad_char);
-#endif
     vimvars[VV_CMDARG].vv_str = newval;
     return oldval;
 }
@@ -7892,9 +7882,16 @@ set_var(
 	{
 	    if (v->di_tv.v_type == VAR_STRING)
 	    {
-		vim_free(v->di_tv.vval.v_string);
+		VIM_CLEAR(v->di_tv.vval.v_string);
 		if (copy || tv->v_type != VAR_STRING)
-		    v->di_tv.vval.v_string = vim_strsave(tv_get_string(tv));
+		{
+		    char_u *val = tv_get_string(tv);
+
+		    // Careful: when assigning to v:errmsg and tv_get_string()
+		    // causes an error message the variable will alrady be set.
+		    if (v->di_tv.vval.v_string == NULL)
+			v->di_tv.vval.v_string = vim_strsave(val);
+		}
 		else
 		{
 		    /* Take over the string to avoid an extra alloc/free. */
@@ -8425,7 +8422,6 @@ ex_echo(exarg_T *eap)
 		    }
 		    else
 		    {
-#ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
 			    int i = (*mb_ptr2len)(p);
@@ -8434,7 +8430,6 @@ ex_echo(exarg_T *eap)
 			    p += i - 1;
 			}
 			else
-#endif
 			    (void)msg_outtrans_len_attr(p, 1, echo_attr);
 		    }
 		}
@@ -10075,10 +10070,8 @@ shortpath_for_partial(
     /* Count the paths backward to find the beginning of the desired string. */
     for (p = tfname + len - 1; p >= tfname; --p)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    p -= mb_head_off(tfname, p);
-#endif
 	if (vim_ispathsep(*p))
 	{
 	    if (sepcount == 0 || (hasTilde && sepcount == 1))
