@@ -322,6 +322,7 @@ static void	ex_tag(exarg_T *eap);
 static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 #ifndef FEAT_EVAL
 # define ex_scriptnames		ex_ni
+# define ex_scriptstrict	ex_ni
 # define ex_finish		ex_ni
 # define ex_echo		ex_ni
 # define ex_echohl		ex_ni
