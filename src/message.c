@@ -219,7 +219,6 @@ msg_strtrunc(
 	    room = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
 	if (len > room && room > 0)
 	{
-#ifdef FEAT_MBYTE
 	    if (enc_utf8)
 		/* may have up to 18 bytes per cell (6 per char, up to two
 		 * composing chars) */
@@ -228,7 +227,6 @@ msg_strtrunc(
 		/* may have up to 2 bytes per cell for euc-jp */
 		len = (room + 2) * 2;
 	    else
-#endif
 		len = room + 2;
 	    buf = alloc(len);
 	    if (buf != NULL)
@@ -274,7 +272,6 @@ trunc_string(
 	    break;
 	len += n;
 	buf[e] = s[e];
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    for (n = (*mb_ptr2len)(s + e); --n > 0; )
 	    {
@@ -282,12 +279,10 @@ trunc_string(
 		    break;
 		buf[e] = s[e];
 	    }
-#endif
     }
 
     /* Last part: End of the string. */
     i = e;
-#ifdef FEAT_MBYTE
     if (enc_dbcs != 0)
     {
 	/* For DBCS going backwards in a string is slow, but
@@ -317,7 +312,6 @@ trunc_string(
 	}
     }
     else
-#endif
     {
 	for (i = (int)STRLEN(s); len + (n = ptr2cells(s + i - 1)) <= room; --i)
 	    len += n;
@@ -852,7 +846,6 @@ msg_may_trunc(int force, char_u *s)
     if ((force || (shortmess(SHM_TRUNC) && !exmode_active))
 	    && (n = (int)STRLEN(s) - room) > 0)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    int	size = vim_strsize(s);
@@ -868,7 +861,6 @@ msg_may_trunc(int force, char_u *s)
 	    }
 	    --n;
 	}
-#endif
 	s += n;
 	*s = '<';
     }
@@ -1388,11 +1380,7 @@ msg_putchar(int c)
     void
 msg_putchar_attr(int c, int attr)
 {
-#ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
-#else
-    char_u	buf[4];
-#endif
 
     if (IS_SPECIAL(c))
     {
@@ -1402,14 +1390,7 @@ msg_putchar_attr(int c, int attr)
 	buf[3] = NUL;
     }
     else
-    {
-#ifdef FEAT_MBYTE
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
-#else
-	buf[0] = c;
-	buf[1] = NUL;
-#endif
-    }
     msg_puts_attr((char *)buf, attr);
 }
 
@@ -1478,7 +1459,6 @@ msg_outtrans_len(char_u *str, int len)
     char_u *
 msg_outtrans_one(char_u *p, int attr)
 {
-#ifdef FEAT_MBYTE
     int		l;
 
     if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
@@ -1486,7 +1466,6 @@ msg_outtrans_one(char_u *p, int attr)
 	msg_outtrans_len_attr(p, l, attr);
 	return p + l;
     }
-#endif
     msg_puts_attr((char *)transchar_byte(*p), attr);
     return p + 1;
 }
@@ -1498,10 +1477,8 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     char_u	*str = msgstr;
     char_u	*plain_start = msgstr;
     char_u	*s;
-#ifdef FEAT_MBYTE
     int		mb_l;
     int		c;
-#endif
 
     /* if MSG_HIST flag set, add message to history */
     if (attr & MSG_HIST)
@@ -1510,12 +1487,10 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	attr &= ~MSG_HIST;
     }
 
-#ifdef FEAT_MBYTE
     /* If the string starts with a composing character first draw a space on
      * which the composing char can be drawn. */
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(msgstr)))
 	msg_puts_attr(" ", attr);
-#endif
 
     /*
      * Go over the string.  Special characters are translated and printed.
@@ -1523,7 +1498,6 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
      */
     while (--len >= 0)
     {
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    /* Don't include composing chars after the end. */
 	    mb_l = utfc_ptr2len_len(str, len + 1);
@@ -1553,7 +1527,6 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	    str += mb_l;
 	}
 	else
-#endif
 	{
 	    s = transchar_byte(*str);
 	    if (s[1] != NUL)
@@ -1639,10 +1612,7 @@ msg_outtrans_special(
 	len = vim_strsize((char_u *)text);
 	/* Highlight special keys */
 	msg_puts_attr(text, len > 1
-#ifdef FEAT_MBYTE
-		&& (*mb_ptr2len)((char_u *)text) <= 1
-#endif
-		? attr : 0);
+		&& (*mb_ptr2len)((char_u *)text) <= 1 ? attr : 0);
 	retval += len;
     }
     return retval;
@@ -1685,7 +1655,6 @@ str2special(
     int			modifiers = 0;
     int			special = FALSE;
 
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	char_u	*p;
@@ -1696,7 +1665,6 @@ str2special(
 	if (p != NULL)
 	    return p;
     }
-#endif
 
     c = *str;
     if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
@@ -1716,7 +1684,6 @@ str2special(
 	    special = TRUE;
     }
 
-#ifdef FEAT_MBYTE
     if (has_mbyte && !IS_SPECIAL(c))
     {
 	int len = (*mb_ptr2len)(str);
@@ -1734,7 +1701,6 @@ str2special(
 	*sp = str + len;
     }
     else
-#endif
 	*sp = str + 1;
 
     /* Make unprintable characters in <> form, also <M-Space> and <Tab>.
@@ -1778,10 +1744,8 @@ msg_prt_line(char_u *s, int list)
     int		n;
     int		attr = 0;
     char_u	*trail = NULL;
-#ifdef FEAT_MBYTE
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
-#endif
 
     if (curwin->w_p_list)
 	list = TRUE;
@@ -1811,7 +1775,6 @@ msg_prt_line(char_u *s, int list)
 	    else
 		c = *p_extra++;
 	}
-#ifdef FEAT_MBYTE
 	else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	{
 	    col += (*mb_ptr2cells)(s);
@@ -1831,7 +1794,6 @@ msg_prt_line(char_u *s, int list)
 	    s += l;
 	    continue;
 	}
-#endif
 	else
 	{
 	    attr = 0;
@@ -1906,7 +1868,6 @@ msg_prt_line(char_u *s, int list)
     msg_clr_eos();
 }
 
-#ifdef FEAT_MBYTE
 /*
  * Use screen_puts() to output one multi-byte character.
  * Return the pointer "s" advanced to the next character.
@@ -1952,7 +1913,6 @@ screen_puts_mbyte(char_u *s, int l, int attr)
     }
     return s + l;
 }
-#endif
 
 /*
  * Output a string to the screen at position msg_row, msg_col.
@@ -2069,10 +2029,8 @@ msg_puts_display(
     char_u	*s = str;
     char_u	*t_s = str;	/* string from "t_s" to "s" is still todo */
     int		t_col = 0;	/* screen cells todo, 0 when "t_s" not used */
-#ifdef FEAT_MBYTE
     int		l;
     int		cw;
-#endif
     char_u	*sb_str = str;
     int		sb_col = msg_col;
     int		wrap;
@@ -2091,20 +2049,14 @@ msg_puts_display(
 		    cmdmsg_rl
 		    ? (
 			msg_col <= 1
-			|| (*s == TAB && msg_col <= 7)
-# ifdef FEAT_MBYTE
-			|| (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2)
-# endif
-		      )
+		      || (*s == TAB && msg_col <= 7)
+		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
 		      (msg_col + t_col >= Columns - 1
 		       || (*s == TAB && msg_col + t_col >= ((Columns - 1) & ~7))
-# ifdef FEAT_MBYTE
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					    && msg_col + t_col >= Columns - 2)
-# endif
-		      ))))
+					 && msg_col + t_col >= Columns - 2)))))
 	{
 	    /*
 	     * The screen is scrolled up when at the last row (some terminals
@@ -2133,7 +2085,6 @@ msg_puts_display(
 #endif
 	       )
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    if (enc_utf8 && maxlen >= 0)
@@ -2144,7 +2095,6 @@ msg_puts_display(
 		    s = screen_puts_mbyte(s, l, attr);
 		}
 		else
-#endif
 		    msg_screen_putchar(*s++, attr);
 		did_last_char = TRUE;
 	    }
@@ -2188,11 +2138,8 @@ msg_puts_display(
 
 	wrap = *s == '\n'
 		    || msg_col + t_col >= Columns
-#ifdef FEAT_MBYTE
 		    || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					    && msg_col + t_col >= Columns - 1)
-#endif
-		    ;
+					    && msg_col + t_col >= Columns - 1);
 	if (t_col > 0 && (wrap || *s == '\r' || *s == '\b'
 						 || *s == '\t' || *s == BELL))
 	    /* output any postponed text */
@@ -2233,7 +2180,6 @@ msg_puts_display(
 	    vim_beep(BO_SH);
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		cw = (*mb_ptr2cells)(s);
@@ -2248,42 +2194,28 @@ msg_puts_display(
 		cw = 1;
 		l = 1;
 	    }
-#endif
+
 	    /* When drawing from right to left or when a double-wide character
 	     * doesn't fit, draw a single character here.  Otherwise collect
 	     * characters and draw them all at once later. */
-#if defined(FEAT_RIGHTLEFT) || defined(FEAT_MBYTE)
 	    if (
 # ifdef FEAT_RIGHTLEFT
-		    cmdmsg_rl
-#  ifdef FEAT_MBYTE
-		    ||
-#  endif
+		    cmdmsg_rl ||
 # endif
-# ifdef FEAT_MBYTE
-		    (cw > 1 && msg_col + t_col >= Columns - 1)
-# endif
-		    )
+		    (cw > 1 && msg_col + t_col >= Columns - 1))
 	    {
-# ifdef FEAT_MBYTE
 		if (l > 1)
 		    s = screen_puts_mbyte(s, l, attr) - 1;
 		else
-# endif
 		    msg_screen_putchar(*s, attr);
 	    }
 	    else
-#endif
 	    {
 		/* postpone this character until later */
 		if (t_col == 0)
 		    t_s = s;
-#ifdef FEAT_MBYTE
 		t_col += cw;
 		s += l - 1;
-#else
-		++t_col;
-#endif
 	    }
 	}
 	++s;
@@ -2601,12 +2533,10 @@ t_puts(
     screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
     msg_col += *t_col;
     *t_col = 0;
-#ifdef FEAT_MBYTE
     /* If the string starts with a composing character don't increment the
      * column position for it. */
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(t_s)))
 	--msg_col;
-#endif
     if (msg_col >= Columns)
     {
 	msg_col = 0;
@@ -2643,14 +2573,14 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	buf[4];
     char_u	*p;
 #ifdef WIN3264
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     char_u	*ccp = NULL;
 
 # endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
 
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
     {
 	int	inlen = (int)STRLEN(str);
@@ -2708,7 +2638,7 @@ msg_puts_printf(char_u *str, int maxlen)
     msg_didout = TRUE;	    /* assume that line is not empty */
 
 #ifdef WIN3264
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     vim_free(ccp);
 # endif
     if (!(silent_mode && p_verbose == 0))
@@ -3646,7 +3576,6 @@ do_dialog(
 		retval = 1;
 		for (i = 0; hotkeys[i]; ++i)
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			if ((*mb_ptr2char)(hotkeys + i) == c)
@@ -3654,7 +3583,6 @@ do_dialog(
 			i += (*mb_ptr2len)(hotkeys + i) - 1;
 		    }
 		    else
-#endif
 			if (hotkeys[i] == c)
 			    break;
 		    ++retval;
@@ -3690,7 +3618,6 @@ copy_char(
     char_u	*to,
     int		lowercase)	/* make character lower case */
 {
-#ifdef FEAT_MBYTE
     int		len;
     int		c;
 
@@ -3709,7 +3636,6 @@ copy_char(
 	}
     }
     else
-#endif
     {
 	if (lowercase)
 	    *to = (char_u)TOLOWER_LOC(*from);
@@ -3735,11 +3661,7 @@ msg_show_console_dialog(
     int		dfltbutton)
 {
     int		len = 0;
-#ifdef FEAT_MBYTE
-# define HOTK_LEN (has_mbyte ? MB_MAXBYTES : 1)
-#else
-# define HOTK_LEN 1
-#endif
+#define HOTK_LEN (has_mbyte ? MB_MAXBYTES : 1)
     int		lenhotkey = HOTK_LEN;	/* count first button */
     char_u	*hotk = NULL;
     char_u	*msgp = NULL;
@@ -3771,11 +3693,9 @@ msg_show_console_dialog(
 		    *msgp++ = ' ';	    /* '\n' -> ', ' */
 
 		    /* advance to next hotkey and set default hotkey */
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			hotkp += STRLEN(hotkp);
 		    else
-#endif
 			++hotkp;
 		    hotkp[copy_char(r + 1, hotkp, TRUE)] = NUL;
 		    if (dfltbutton)
@@ -4583,7 +4503,6 @@ vim_vsnprintf_typval(
 			str_arg_l = (q == NULL) ? precision
 						      : (size_t)(q - str_arg);
 		    }
-# ifdef FEAT_MBYTE
 		    if (fmt_spec == 'S')
 		    {
 			if (min_field_width != 0)
@@ -4600,7 +4519,6 @@ vim_vsnprintf_typval(
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
 		    }
-# endif
 		    break;
 
 		default:

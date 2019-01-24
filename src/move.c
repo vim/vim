@@ -934,7 +934,7 @@ curwin_col_off2(void)
 }
 
 /*
- * compute curwin->w_wcol and curwin->w_virtcol.
+ * Compute curwin->w_wcol and curwin->w_virtcol.
  * Also updates curwin->w_wrow and curwin->w_cline_row.
  * Also updates curwin->w_leftcol.
  */
@@ -2845,11 +2845,9 @@ do_check_cursorbind(void)
 		validate_cursor();
 # endif
 	    restart_edit = restart_edit_save;
-# ifdef FEAT_MBYTE
 	    /* Correct cursor for multi-byte character. */
 	    if (has_mbyte)
 		mb_adjust_cursor();
-# endif
 	    redraw_later(VALID);
 
 	    /* Only scroll when 'scrollbind' hasn't done this. */

@@ -5253,8 +5253,7 @@ ExpandFromContext(
 #ifdef FEAT_PROFILE
 	    {EXPAND_PROFILE, get_profile_name, TRUE, TRUE},
 #endif
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	    {EXPAND_LANGUAGE, get_lang_arg, TRUE, FALSE},
 	    {EXPAND_LOCALES, get_locales, TRUE, FALSE},
 #endif

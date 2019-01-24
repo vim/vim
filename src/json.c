@@ -96,7 +96,7 @@ write_string(garray_T *gap, char_u *str)
 	ga_concat(gap, (char_u *)"\"\"");
     else
     {
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
+#if defined(USE_ICONV)
 	vimconv_T   conv;
 	char_u	    *converted = NULL;
 
@@ -115,12 +115,8 @@ write_string(garray_T *gap, char_u *str)
 	while (*res != NUL)
 	{
 	    int c;
-#ifdef FEAT_MBYTE
 	    /* always use utf-8 encoding, ignore 'encoding' */
 	    c = utf_ptr2char(res);
-#else
-	    c = *res;
-#endif
 
 	    switch (c)
 	    {
@@ -142,12 +138,7 @@ write_string(garray_T *gap, char_u *str)
 		default:
 		    if (c >= 0x20)
 		    {
-#ifdef FEAT_MBYTE
 			numbuf[utf_char2bytes(c, numbuf)] = NUL;
-#else
-			numbuf[0] = c;
-			numbuf[1] = NUL;
-#endif
 			ga_concat(gap, numbuf);
 		    }
 		    else
@@ -157,14 +148,10 @@ write_string(garray_T *gap, char_u *str)
 			ga_concat(gap, numbuf);
 		    }
 	    }
-#ifdef FEAT_MBYTE
 	    res += utf_ptr2len(res);
-#else
-	    ++res;
-#endif
 	}
 	ga_append(gap, '"');
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
+#if defined(USE_ICONV)
 	vim_free(converted);
 #endif
     }
@@ -421,11 +408,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
     {
 	/* The JSON is always expected to be utf-8, thus use utf functions
 	 * here. The string is converted below if needed. */
-	if (*p == NUL || p[1] == NUL
-#ifdef FEAT_MBYTE
-		|| utf_ptr2len(p) < utf_byte2len(*p)
-#endif
-		)
+	if (*p == NUL || p[1] == NUL || utf_ptr2len(p) < utf_byte2len(*p))
 	{
 	    /* Not enough bytes to make a character or end of the string. Get
 	     * more if possible. */
@@ -488,13 +471,9 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    }
 		    if (res != NULL)
 		    {
-#ifdef FEAT_MBYTE
 			char_u	buf[NUMBUFLEN];
 			buf[utf_char2bytes((int)nr, buf)] = NUL;
 			ga_concat(&ga, buf);
-#else
-			ga_append(&ga, (int)nr);
-#endif
 		    }
 		    break;
 		default:
@@ -511,11 +490,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    len = utf_ptr2len(p);
-#else
-	    len = 1;
-#endif
 	    if (res != NULL)
 	    {
 		if (ga_grow(&ga, len) == FAIL)
@@ -538,7 +513,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 	{
 	    ga_append(&ga, NUL);
 	    res->v_type = VAR_STRING;
-#if defined(FEAT_MBYTE) && defined(USE_ICONV)
+#if defined(USE_ICONV)
 	    if (!enc_utf8)
 	    {
 		vimconv_T   conv;

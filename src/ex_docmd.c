@@ -4300,8 +4300,7 @@ set_one_cmd_context(
 	    xp->xp_pattern = arg;
 	    break;
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	case CMD_language:
 	    p = skiptowhite(arg);
 	    if (*p == NUL)
@@ -5963,8 +5962,7 @@ static struct
 #if defined(FEAT_CMDHIST)
     {EXPAND_HISTORY, "history"},
 #endif
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif
     {EXPAND_MAPCLEAR, "mapclear"},

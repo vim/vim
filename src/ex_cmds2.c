@@ -5421,7 +5421,6 @@ get_mess_lang(void)
 #if (defined(FEAT_EVAL) && !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	    && defined(LC_MESSAGES))) \
 	|| ((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-		&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)) \
 		&& !defined(LC_MESSAGES))
 /*
  * Get the language used for messages from the environment.
@@ -5485,8 +5484,7 @@ set_lang_var(void)
 }
 #endif
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE) \
 /*
  * ":language":  Set the language (locale).
  */

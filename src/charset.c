@@ -1266,7 +1266,6 @@ getvcol(
 #endif
        )
     {
-	head = 0;
 	for (;;)
 	{
 	    head = 0;
