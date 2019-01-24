@@ -427,6 +427,10 @@ func Test_mksession_no_errmsg()
 endfunc
 
 func Test_mksession_quote_in_filename()
+  if !has('unix')
+    " only Unix can handle this weird filename
+    return
+  endif
   let v:errmsg = ''
   %bwipe!
   split another
