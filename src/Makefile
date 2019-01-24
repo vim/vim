@@ -1968,16 +1968,13 @@ autoconf:
 	-rm -rf autom4te.cache
 	-rm -f auto/config.status auto/config.cache
 
-# Run vim script to generate the Ex command lookup table.
+# Run cmdidxs to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
-cmdidxs/cmdidxs$(EXEEXT): cmdidxs/cmdidxs.c ex_cmds.h
-	cd cmdidxs; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
+cmdidxs/cmdidxs: cmdidxs/cmdidxs.c ex_cmds.h
+	cd cmdidxs; CC="$(CC)" \
 		$(MAKE) -f Makefile
-
-ex_cmdidxs.h: ex_cmds.h cmdidxs/cmdidxs$(EXEEXT)
-	cmdidxs/cmdidxs$(EXEEXT)
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -1987,7 +1984,7 @@ CCC = $(CCC_NF) $(ALL_CFLAGS)
 
 # Link the target for normal use or debugging.
 # A shell script is used to try linking without unnecessary libraries.
-$(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
+$(VIMTARGET): cmdidxs/cmdidxs auto/config.mk objects $(OBJ) version.c version.h
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
