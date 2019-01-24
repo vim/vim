@@ -1972,8 +1972,8 @@ autoconf:
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
-cmdidxs: cmdidxsdir/cmdidxs.c ex_cmds.h
-	$(CC) -o cmdidxs cmdidxsdir/cmdidxs.c && ./cmdidxs && rm ./cmdidxs
+cmdidxs: ex_cmds.h
+	$(CC) -o cmdidx cmdidxs/cmdidx.c && ./cmdidx && rm ./cmdidx
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
