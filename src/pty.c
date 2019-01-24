@@ -410,65 +410,18 @@ mch_openpty(char **ttyn)
 }
 #endif
 
-#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
-/*
- * On SunOS, isatty() for /dev/ptmx returns false and therefore determine by
- * whether a slave device associated exists.
- */
     int
 mch_isatty(int fd)
 {
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+    // On SunOS, isatty() for /dev/ptmx returns false and therefore determine
+    // by whether a slave device associated exists.
     if (isatty(fd))
 	return 1;
     return ptsname(fd) != NULL;
-}
-
-/*
- * Get the terminal parameters from "fd" or the slave device of "fd".
- */
-    int
-mch_tcgetattr(int fd, void *term)
-{
-    int		tty_fd = fd;
-    int		retval;
-
-    if (!isatty(fd))
-    {
-	char *name;
-
-	name = ptsname(fd);
-	if (name == NULL)
-	    return -1;
-
-	tty_fd = open(name, O_RDONLY | O_NOCTTY | O_EXTRA, 0);
-	if (tty_fd < 0)
-	    return -1;
-    }
-# if defined(HAVE_TERMIOS_H)
-    retval = tcgetattr(tty_fd, (struct termios *)term);
-# else
-    retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
-# endif
-    if (tty_fd != fd)
-	close(tty_fd);
-    return retval;
-}
 #else
-    int
-mch_isatty(int fd)
-{
     return isatty(fd);
-}
-
-    int
-mch_tcgetattr(int fd, void *term)
-{
-# if defined(HAVE_TERMIOS_H)
-    return tcgetattr(fd, (struct termios *)term);
-# else
-    return ioctl(fd, TCGETA, (struct termio *)term);
-# endif
-}
 #endif
+}
 
-#endif /* FEAT_GUI || FEAT_TERMINAL */
+#endif /* FEAT_GUI || FEAT_JOB_CHANNEL */

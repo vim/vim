@@ -3448,6 +3448,46 @@ may_core_dump(void)
 
 #ifndef VMS
 
+#ifdef NEW_TTY_SYSTEM
+    static int
+mch_tcgetattr(int fd, void *term)
+{
+# if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+    // On SunOS: Get the terminal parameters from "fd" or the slave device of
+    // "fd".
+    int		tty_fd = fd;
+    int		retval;
+
+    if (!isatty(fd))
+    {
+	char *name;
+
+	name = ptsname(fd);
+	if (name == NULL)
+	    return -1;
+
+	tty_fd = open(name, O_RDONLY | O_NOCTTY | O_EXTRA, 0);
+	if (tty_fd < 0)
+	    return -1;
+    }
+#  if defined(HAVE_TERMIOS_H)
+    retval = tcgetattr(tty_fd, (struct termios *)term);
+#  else
+    retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+#  endif
+    if (tty_fd != fd)
+	close(tty_fd);
+    return retval;
+# else // HAVE_SVR4_PTYS && SUN_SYSTEM
+#  if defined(HAVE_TERMIOS_H)
+    return tcgetattr(fd, (struct termios *)term);
+#  else
+    return ioctl(fd, TCGETA, (struct termio *)term);
+#  endif
+# endif // HAVE_SVR4_PTYS && SUN_SYSTEM
+}
+#endif
+
     void
 mch_settmode(int tmode)
 {
