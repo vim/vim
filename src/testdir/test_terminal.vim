@@ -559,7 +559,7 @@ endfunction
 
 func Test_terminal_noblock()
   let buf = term_start(&shell)
-  if has('bsd')
+  if has('bsd') || has('mac')
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000

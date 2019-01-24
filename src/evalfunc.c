@@ -6139,7 +6139,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
-#ifdef BSD
+#if defined(BSD) && !defined(MACOS_X)
 	"bsd",
 #endif
 #ifdef hpux
