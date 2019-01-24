@@ -77,7 +77,7 @@ main(int argc, char *argv[])
         int c1 = (int) cmd[0];
         int c2 = (int) cmd[1];
         cmdidxs1[c1] = i;
-        if ((c2 >= 'a') && (c2 <= 'z'))
+        if ((c2 >= CH_START) && (c2 <= CH_LAST))
         {
             cmdidxs2[c1][c2] = i;
         }
@@ -93,9 +93,9 @@ main(int argc, char *argv[])
         fprintf(fp, " */\n");
         fprintf(fp, "static const unsigned short cmdidxs1[26] =\n");
         fprintf(fp, "{\n");
-        for (char c1 = 'a'; c1 <= 'z'; c1++)
+        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
         {
-            fprintf(fp, "  /* %c */ %d%s\n", c1, cmdidxs1[(int) c1], (c1 == 'z' ? "" : ","));
+            fprintf(fp, "  /* %c */ %d%s\n", c1, cmdidxs1[(int) c1], (c1 == CH_LAST ? "" : ","));
         }
         fprintf(fp, "};\n");
         fprintf(fp, "\n");
@@ -107,15 +107,15 @@ main(int argc, char *argv[])
         fprintf(fp, " */\n");
         fprintf(fp, "static const unsigned char cmdidxs2[26][26] =\n");
         fprintf(fp, "{ /*      ");
-        for (char c1 = 'a'; c1 <= 'z'; c1++)
+        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
         {
             fprintf(fp, "%4c", c1);
         }
         fprintf(fp, " */\n");
-        for (char c1 = 'a'; c1 <= 'z'; c1++)
+        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
         {
             fprintf(fp, "  /* %c */ {", c1);
-            for (char c2 = 'a'; c2 <= 'z'; c2++)
+            for (char c2 = CH_START; c2 <= CH_LAST; c2++)
             {
         	if (-1 != cmdidxs2[(int) c1][(int) c2])
         	{
@@ -125,10 +125,10 @@ main(int argc, char *argv[])
         	{
         	    fprintf(fp, "  0");
         	}
-        	if (c2 != 'z')
+        	if (c2 != CH_LAST)
         	    fprintf(fp, ",");
             }
-            fprintf(fp, " }%s\n", (c1 == 'z' ? "" : ","));
+            fprintf(fp, " }%s\n", (c1 == CH_LAST ? "" : ","));
         }
         fprintf(fp, "};\n");
         fprintf(fp, "\n");
