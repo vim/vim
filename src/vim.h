@@ -210,7 +210,7 @@
 #endif
 
 /* The Mac conversion stuff doesn't work under X11. */
-#if defined(FEAT_MBYTE) && defined(MACOS_X_DARWIN)
+#if defined(MACOS_X_DARWIN)
 # define MACOS_CONVERT
 #endif
 
@@ -431,16 +431,10 @@ typedef unsigned short sattr_T;
  * bits.  u8char_T is only used for displaying, it could be 16 bits to save
  * memory.
  */
-#ifdef FEAT_MBYTE
-# ifdef UNICODE16
+#ifdef UNICODE16
 typedef unsigned short u8char_T;    /* short should be 16 bits */
-# else
-#  if VIM_SIZEOF_INT >= 4
-typedef unsigned int u8char_T;	    /* int is 32 bits */
-#  else
-typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
-#  endif
-# endif
+#else
+typedef unsigned int u8char_T;	    /* int is 32 bits or more */
 #endif
 
 #ifndef UNIX		    /* For Unix this is included in os_unix.h */
@@ -1516,14 +1510,9 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 #define DIALOG_MSG_SIZE 1000	/* buffer size for dialog_msg() */
 
-#ifdef FEAT_MBYTE
-# define MSG_BUF_LEN 480	/* length of buffer for small messages */
-# define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8
+#define MSG_BUF_LEN 480	/* length of buffer for small messages */
+#define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8
 					       takes 6 bytes for one cell) */
-#else
-# define MSG_BUF_LEN 80		/* length of buffer for small messages */
-# define MSG_BUF_CLEN  MSG_BUF_LEN	    /* cell length */
-#endif
 
 #define FOLD_TEXT_LEN  51	/* buffer size for get_foldtext() */
 
@@ -1609,7 +1598,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
 /* We need to call mb_stricmp() even when we aren't dealing with a multi-byte
  * encoding because mb_stricmp() takes care of all ascii and non-ascii
  * encodings, including characters with umlauts in latin1, etc., while
@@ -1618,10 +1606,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 # define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
 # define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
-#else
-# define MB_STRICMP(d, s)	STRICMP((d), (s))
-# define MB_STRNICMP(d, s, n)	STRNICMP((d), (s), (n))
-#endif
 
 #define STRCAT(d, s)	    strcat((char *)(d), (char *)(s))
 #define STRNCAT(d, s, n)    strncat((char *)(d), (char *)(s), (size_t)(n))
@@ -1766,16 +1750,12 @@ void *vim_memset(void *, int, size_t);
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
-# define MAX_MCO	6	/* maximum value for 'maxcombine' */
+#define MAX_MCO	6	/* maximum value for 'maxcombine' */
 
 /* Maximum number of bytes in a multi-byte character.  It can be one 32-bit
  * character of up to 6 bytes, or one 16-bit character of up to three bytes
  * plus six following composing characters of three bytes each. */
-# define MB_MAXBYTES	21
-#else
-# define MB_MAXBYTES	1
-#endif
+#define MB_MAXBYTES	21
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef WIN3264
@@ -2128,7 +2108,7 @@ typedef enum {
 # define USE_MCH_ERRMSG
 #endif
 
-# if defined(FEAT_MBYTE) && defined(FEAT_EVAL) \
+# if defined(FEAT_EVAL) \
 	&& (!defined(FEAT_GUI_W32) \
 	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
@@ -2139,18 +2119,13 @@ typedef enum {
 # define IME_WITHOUT_XIM
 #endif
 
-#if defined(FEAT_MBYTE) && (defined(FEAT_XIM) \
+#if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
 	|| (defined(FEAT_GUI_W32) \
 	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	|| defined(FEAT_GUI_MAC))
+	|| defined(FEAT_GUI_MAC)
 /* im_set_active() is available */
 # define HAVE_INPUT_METHOD
-#endif
-
-#ifndef FEAT_MBYTE
-# define after_pathsep(b, p)	vim_ispathsep(*((p) - 1))
-# define transchar_byte(c)	transchar(c)
 #endif
 
 #ifndef FEAT_LINEBREAK
@@ -2160,7 +2135,7 @@ typedef enum {
 
 /* This must come after including proto.h.
  * For VMS this is defined in macros.h. */
-#if !(defined(FEAT_MBYTE) && defined(WIN3264)) && !defined(VMS)
+#if !defined(WIN3264) && !defined(VMS)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
@@ -2236,56 +2211,48 @@ typedef enum {
 # define vim_realloc(ptr, size)  realloc((ptr), (size))
 #endif
 
-#ifdef FEAT_MBYTE
 /*
  * Return byte length of character that starts with byte "b".
  * Returns 1 for a single-byte character.
  * MB_BYTE2LEN_CHECK() can be used to count a special key as one byte.
  * Don't call MB_BYTE2LEN(b) with b < 0 or b > 255!
  */
-# define MB_BYTE2LEN(b)		mb_bytelen_tab[b]
-# define MB_BYTE2LEN_CHECK(b)	(((b) < 0 || (b) > 255) ? 1 : mb_bytelen_tab[b])
-#endif
+#define MB_BYTE2LEN(b)		mb_bytelen_tab[b]
+#define MB_BYTE2LEN_CHECK(b)	(((b) < 0 || (b) > 255) ? 1 : mb_bytelen_tab[b])
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /* properties used in enc_canon_table[] (first three mutually exclusive) */
-# define ENC_8BIT	0x01
-# define ENC_DBCS	0x02
-# define ENC_UNICODE	0x04
+#define ENC_8BIT	0x01
+#define ENC_DBCS	0x02
+#define ENC_UNICODE	0x04
 
-# define ENC_ENDIAN_B	0x10	    /* Unicode: Big endian */
-# define ENC_ENDIAN_L	0x20	    /* Unicode: Little endian */
+#define ENC_ENDIAN_B	0x10	    /* Unicode: Big endian */
+#define ENC_ENDIAN_L	0x20	    /* Unicode: Little endian */
 
-# define ENC_2BYTE	0x40	    /* Unicode: UCS-2 */
-# define ENC_4BYTE	0x80	    /* Unicode: UCS-4 */
-# define ENC_2WORD	0x100	    /* Unicode: UTF-16 */
+#define ENC_2BYTE	0x40	    /* Unicode: UCS-2 */
+#define ENC_4BYTE	0x80	    /* Unicode: UCS-4 */
+#define ENC_2WORD	0x100	    /* Unicode: UTF-16 */
 
-# define ENC_LATIN1	0x200	    /* Latin1 */
-# define ENC_LATIN9	0x400	    /* Latin9 */
-# define ENC_MACROMAN	0x800	    /* Mac Roman (not Macro Man! :-) */
-#endif
+#define ENC_LATIN1	0x200	    /* Latin1 */
+#define ENC_LATIN9	0x400	    /* Latin9 */
+#define ENC_MACROMAN	0x800	    /* Mac Roman (not Macro Man! :-) */
 
-#ifdef FEAT_MBYTE
-# ifdef USE_ICONV
-#  ifndef EILSEQ
-#   define EILSEQ 123
-#  endif
-#  ifdef DYNAMIC_ICONV
-/* On Win32 iconv.dll is dynamically loaded. */
-#   define ICONV_ERRNO (*iconv_errno())
-#   define ICONV_E2BIG  7
-#   define ICONV_EINVAL 22
-#   define ICONV_EILSEQ 42
-#  else
-#   define ICONV_ERRNO errno
-#   define ICONV_E2BIG  E2BIG
-#   define ICONV_EINVAL EINVAL
-#   define ICONV_EILSEQ EILSEQ
-#  endif
+#ifdef USE_ICONV
+# ifndef EILSEQ
+#  define EILSEQ 123
 # endif
-
+# ifdef DYNAMIC_ICONV
+/* On Win32 iconv.dll is dynamically loaded. */
+#  define ICONV_ERRNO (*iconv_errno())
+#  define ICONV_E2BIG  7
+#  define ICONV_EINVAL 22
+#  define ICONV_EILSEQ 42
+# else
+#  define ICONV_ERRNO errno
+#  define ICONV_E2BIG  E2BIG
+#  define ICONV_EINVAL EINVAL
+#  define ICONV_EILSEQ EILSEQ
+# endif
 #endif
-
 
 #define SIGN_BYTE 1	    /* byte value used where sign is displayed;
 			       attribute value is sign type */

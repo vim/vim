@@ -1974,12 +1974,9 @@ syn_current_attr(
 	      if (vim_iswordp_buf(line + current_col, syn_buf)
 		      && (current_col == 0
 			  || !vim_iswordp_buf(line + current_col - 1
-#ifdef FEAT_MBYTE
 			      - (has_mbyte
 				  ? (*mb_head_off)(line, line + current_col - 1)
-				  : 0)
-#endif
-			       , syn_buf)))
+				  : 0) , syn_buf)))
 	      {
 		syn_id = check_keyword_id(line, (int)current_col,
 					 &endcol, &flags, &next_list, cur_si,
@@ -3355,11 +3352,9 @@ check_keyword_id(
     kwlen = 0;
     do
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    kwlen += (*mb_ptr2len)(kwp + kwlen);
 	else
-#endif
 	    ++kwlen;
     }
     while (vim_iswordp_buf(kwp + kwlen, syn_buf));
@@ -4668,17 +4663,15 @@ get_syn_options(
 	}
 	else if (flagtab[fidx].argtype == 11 && arg[5] == '=')
 	{
-#ifdef FEAT_MBYTE
 	    /* cchar=? */
 	    if (has_mbyte)
 	    {
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_CONCEAL
 		*conceal_char = mb_ptr2char(arg + 6);
-# endif
+#endif
 		arg += mb_ptr2len(arg + 6) - 1;
 	    }
 	    else
-#endif
 	    {
 #ifdef FEAT_CONCEAL
 		*conceal_char = arg[6];
@@ -4948,7 +4941,6 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			    kw = p + 1;		/* skip over the "]" */
 			    break;
 			}
-#ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
 			    int l = (*mb_ptr2len)(p + 1);
@@ -4957,7 +4949,6 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			    p += l;
 			}
 			else
-#endif
 			{
 			    p[0] = p[1];
 			    ++p;
