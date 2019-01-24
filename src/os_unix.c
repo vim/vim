@@ -3449,10 +3449,9 @@ may_core_dump(void)
 #ifndef VMS
 
     static int
-mch_tcgetattr(int fd, void *term)
+get_tty_fd(int fd)
 {
     int		tty_fd = fd;
-    int		retval;
 
 #if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
     // On SunOS: Get the terminal parameters from "fd" or the slave device of
@@ -3470,22 +3469,31 @@ mch_tcgetattr(int fd, void *term)
 	    return -1;
     }
 #endif
+    return tty_fd;
+}
 
+    static int
+mch_tcgetattr(int fd, void *term)
+{
+    int		tty_fd;
+    int		retval = -1;
+
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
+    {
 #ifdef NEW_TTY_SYSTEM
 # ifdef HAVE_TERMIOS_H
-   retval = tcgetattr(tty_fd, (struct termios *)term);
+	retval = tcgetattr(tty_fd, (struct termios *)term);
 # else
-   retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+	retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
 # endif
 #else
-   // for "old" tty systems
-   retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
+	// for "old" tty systems
+	retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
 #endif
-
-#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
-    if (tty_fd != fd)
-	close(tty_fd);
-#endif
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
     return retval;
 }
 
@@ -4101,34 +4109,35 @@ mch_get_shellsize(void)
     int
 mch_report_winsize(int fd, int rows, int cols)
 {
-# ifdef TIOCSWINSZ
-    struct winsize	ws;
+    int		tty_fd;
+    int		retval = -1;
 
-    ws.ws_col = cols;
-    ws.ws_row = rows;
-    ws.ws_xpixel = cols * 5;
-    ws.ws_ypixel = rows * 10;
-    if (ioctl(fd, TIOCSWINSZ, &ws) == 0)
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
     {
-	ch_log(NULL, "ioctl(TIOCSWINSZ) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSWINSZ) failed");
-# else
-#  ifdef TIOCSSIZE
-    struct ttysize	ts;
+# if defined(TIOCSWINSZ)
+	struct winsize ws;
 
-    ts.ts_cols = cols;
-    ts.ts_lines = rows;
-    if (ioctl(fd, TIOCSSIZE, &ws) == 0)
-    {
-	ch_log(NULL, "ioctl(TIOCSSIZE) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSSIZE) failed");
-#  endif
+	ws.ws_col = cols;
+	ws.ws_row = rows;
+	ws.ws_xpixel = cols * 5;
+	ws.ws_ypixel = rows * 10;
+	retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
+	ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
+					  retval == 0 ? "success" : "failed");
+# elif defined(TIOCSSIZE)
+	struct ttysize ts;
+
+	ts.ts_cols = cols;
+	ts.ts_lines = rows;
+	retval = ioctl(tty_fd, TIOCSSIZE, &ts);
+	ch_log(NULL, "ioctl(TIOCSSIZE) %s",
+					  retval == 0 ? "success" : "failed");
 # endif
-    return FAIL;
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
+    return retval == 0 ? OK : FAIL;
 }
 #endif
 
