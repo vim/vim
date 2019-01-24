@@ -127,6 +127,10 @@ func Test_mksession_large_winheight()
 endfunc
 
 func Test_mksession_rtp()
+  if has('win32')
+    " TODO: fix problem with backslashes
+    return
+  endif
   new
   let _rtp=&rtp
   " Make a real long (invalid) runtimepath value,
