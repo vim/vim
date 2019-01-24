@@ -3448,16 +3448,15 @@ may_core_dump(void)
 
 #ifndef VMS
 
-#ifdef NEW_TTY_SYSTEM
     static int
 mch_tcgetattr(int fd, void *term)
 {
-# if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
-    // On SunOS: Get the terminal parameters from "fd" or the slave device of
-    // "fd".
     int		tty_fd = fd;
     int		retval;
 
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+    // On SunOS: Get the terminal parameters from "fd" or the slave device of
+    // "fd".
     if (!isatty(fd))
     {
 	char *name;
@@ -3470,23 +3469,25 @@ mch_tcgetattr(int fd, void *term)
 	if (tty_fd < 0)
 	    return -1;
     }
-#  if defined(HAVE_TERMIOS_H)
-    retval = tcgetattr(tty_fd, (struct termios *)term);
-#  else
-    retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
-#  endif
+#endif
+
+#ifdef NEW_TTY_SYSTEM
+# ifdef HAVE_TERMIOS_H
+   retval = tcgetattr(tty_fd, (struct termios *)term);
+# else
+   retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+# endif
+#else
+   // for "old" tty systems
+   retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
+#endif
+
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
     if (tty_fd != fd)
 	close(tty_fd);
-    return retval;
-# else // HAVE_SVR4_PTYS && SUN_SYSTEM
-#  if defined(HAVE_TERMIOS_H)
-    return tcgetattr(fd, (struct termios *)term);
-#  else
-    return ioctl(fd, TCGETA, (struct termio *)term);
-#  endif
-# endif // HAVE_SVR4_PTYS && SUN_SYSTEM
-}
 #endif
+    return retval;
+}
 
     void
 mch_settmode(int tmode)
@@ -3563,7 +3564,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-	ioctl(read_cmd_fd, TIOCGETP, &ttybold);
+	mch_tcgetattr(read_cmd_fd, &ttybold);
     }
 
     ttybnew = ttybold;
@@ -3641,7 +3642,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     /* for "old" tty systems */
     struct sgttyb keys;
 
-    if (ioctl(fd, TIOCGETP, &keys) != -1)
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.sg_erase;
 	info->interrupt = keys.sg_kill;
