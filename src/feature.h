@@ -601,10 +601,6 @@
  *			Now always enabled.
  */
 
-/* Define this if you want to use 16 bit Unicode only, reduces memory used for
- * the screen structures. */
-/* #define UNICODE16 */
-
 /*
  * +multi_byte_ime	Win32 IME input method.  Only for far-east Windows, so
  *			IME can be used to input chars.  Not tested much!

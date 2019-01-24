@@ -431,15 +431,9 @@ typedef unsigned short sattr_T;
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
- * We normally use 32 bits now, since some Asian characters don't fit in 16
- * bits.  u8char_T is only used for displaying, it could be 16 bits to save
- * memory.
+ * We use 32 bits, since some Asian characters don't fit in 16 bits.
  */
-#ifdef UNICODE16
-typedef unsigned short u8char_T;    /* short should be 16 bits */
-#else
-typedef unsigned int u8char_T;	    /* int is 32 bits or more */
-#endif
+typedef unsigned int u8char_T;	// int is 32 bits or more
 
 #ifndef UNIX		    /* For Unix this is included in os_unix.h */
 # include <stdio.h>
