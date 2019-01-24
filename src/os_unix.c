@@ -2054,19 +2054,12 @@ get_x11_thing(
 	    retval = TRUE;
 	    if (!test_only)
 	    {
-#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
-		if (text_prop.encoding == XA_STRING
-# ifdef FEAT_MBYTE
-			&& !has_mbyte
-# endif
-			)
+		if (text_prop.encoding == XA_STRING && !has_mbyte)
 		{
-#endif
 		    if (get_title)
 			oldtitle = vim_strsave((char_u *)text_prop.value);
 		    else
 			oldicon = vim_strsave((char_u *)text_prop.value);
-#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
 		}
 		else
 		{
@@ -2093,7 +2086,6 @@ get_x11_thing(
 			    oldicon = vim_strsave((char_u *)text_prop.value);
 		    }
 		}
-#endif
 	    }
 	    XFree((void *)text_prop.value);
 	}
@@ -2105,7 +2097,7 @@ get_x11_thing(
  * systems X_HAVE_UTF8_STRING may be defined in a header file but
  * Xutf8SetWMProperties() is not in the X11 library.  Configure checks for
  * that and defines HAVE_XUTF8SETWMPROPERTIES. */
-#if defined(X_HAVE_UTF8_STRING) && defined(FEAT_MBYTE)
+#if defined(X_HAVE_UTF8_STRING)
 # if X_HAVE_UTF8_STRING && HAVE_XUTF8SETWMPROPERTIES
 #  define USE_UTF8_STRING
 # endif
@@ -4823,9 +4815,7 @@ mch_call_shell_fork(
 	    {
 # define BUFLEN 100		/* length for buffer, pseudo tty limit is 128 */
 		char_u	    buffer[BUFLEN + 1];
-# ifdef FEAT_MBYTE
 		int	    buffer_off = 0;	/* valid bytes in buffer[] */
-# endif
 		char_u	    ta_buf[BUFLEN + 1];	/* TypeAHead */
 		int	    ta_len = 0;		/* valid bytes in ta_buf[] */
 		int	    len;
@@ -5031,11 +5021,9 @@ mch_call_shell_fork(
 			    }
 			    else if (ta_buf[i] == '\r')
 				ta_buf[i] = '\n';
-# ifdef FEAT_MBYTE
 			    if (has_mbyte)
 				i += (*mb_ptr2len_len)(ta_buf + i,
 							ta_len + len - i) - 1;
-# endif
 			}
 
 			/*
@@ -5048,7 +5036,6 @@ mch_call_shell_fork(
 			    {
 				if (ta_buf[i] == '\n' || ta_buf[i] == '\b')
 				    msg_putchar(ta_buf[i]);
-# ifdef FEAT_MBYTE
 				else if (has_mbyte)
 				{
 				    int l = (*mb_ptr2len)(ta_buf + i);
@@ -5056,7 +5043,6 @@ mch_call_shell_fork(
 				    msg_outtrans_len(ta_buf + i, l);
 				    i += l - 1;
 				}
-# endif
 				else
 				    msg_outtrans_len(ta_buf + i, 1);
 			    }
@@ -5114,11 +5100,7 @@ mch_call_shell_fork(
 		    while (RealWaitForChar(fromshell_fd, 10L, NULL, NULL))
 		    {
 			len = read_eintr(fromshell_fd, buffer
-# ifdef FEAT_MBYTE
 				+ buffer_off, (size_t)(BUFLEN - buffer_off)
-# else
-				, (size_t)BUFLEN
-# endif
 				);
 			if (len <= 0)		    /* end of file or error */
 			    goto finished;
@@ -5138,7 +5120,6 @@ mch_call_shell_fork(
 				    ga_append(&ga, buffer[i]);
 			    }
 			}
-# ifdef FEAT_MBYTE
 			else if (has_mbyte)
 			{
 			    int		l;
@@ -5181,7 +5162,6 @@ mch_call_shell_fork(
 			    }
 			    buffer_off = 0;
 			}
-# endif /* FEAT_MBYTE */
 			else
 			{
 			    buffer[len] = NUL;
