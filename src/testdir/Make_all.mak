@@ -121,6 +121,7 @@ NEW_TESTS = \
 	test_feedkeys \
 	test_file_perm \
 	test_file_size \
+	test_filechanged \
 	test_fileformat \
 	test_filetype \
 	test_filter_cmd \
@@ -316,6 +317,7 @@ NEW_TESTS_RES = \
 	test_exit.res \
 	test_farsi.res \
 	test_file_size.res \
+	test_filechanged.res \
 	test_find_complete.res \
 	test_fixeol.res \
 	test_fnameescape.res \
