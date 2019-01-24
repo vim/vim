@@ -5369,7 +5369,7 @@ create_pipe_pair(HANDLE handles[2])
 	    name,
 	    PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
 	    PIPE_TYPE_BYTE | PIPE_NOWAIT,
-	    1, 65535, 0, 0, NULL);
+	    1, MAX_NAMED_PIPE_SIZE, 0, 0, NULL);
 
     if (handles[1] == INVALID_HANDLE_VALUE)
 	return FALSE;

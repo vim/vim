@@ -2467,6 +2467,10 @@ typedef enum {
 # define MAX_OPEN_CHANNELS 0
 #endif
 
+#if defined(WIN32)
+# define MAX_NAMED_PIPE_SIZE 65535
+#endif
+
 /* Options for json_encode() and json_decode. */
 #define JSON_JS		1   /* use JS instead of JSON */
 #define JSON_NO_NONE	2   /* v:none item not allowed */
