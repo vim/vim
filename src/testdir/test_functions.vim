@@ -1054,16 +1054,17 @@ func Test_libcall_libcallnr()
     let libc = 'msvcrt.dll'
   elseif has('mac')
     let libc = 'libSystem.B.dylib'
-  elseif has('linux')
-    " On Unix, libc.so can be in various places.
-    " Interestingly, on Linux using an empty string for the 1st argument of
-    " libcall allows to call functions from libc which is not documented.
-    let libc = ''
   elseif executable('ldd')
     let libc = matchstr(split(system('ldd ' . GetVimProg())), '/libc\.so\>')
   endif
-  if !exists('libc')
-    if has('sun')
+  if get(l:, 'libc', '') ==# ''
+    " On Unix, libc.so can be in various places.
+    if has('linux')
+      " There is not documented but regarding the 1st argument of glibc's
+      " dlopen an empty string and nullptr are equivalent, so using an empty
+      " string for the 1st argument of libcall allows to call functions.
+      let libc = ''
+    elseif has('sun')
       " Set the path to libc.so according to the architecture.
       let test_bits = system('file ' . GetVimProg())
       let test_arch = system('uname -p')
@@ -1075,8 +1076,7 @@ func Test_libcall_libcallnr()
         let libc = '/usr/lib/libc.so'
       endif
     else
-      " On other Unix (e.g. BSD) libcall doesn't accept an empty string, and
-      " therefore skip this test until a goo way is found.
+      " Unfortunately skip this test until a good way is found.
       return
     endif
   endif
