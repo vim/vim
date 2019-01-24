@@ -704,10 +704,8 @@ buf_clear_file(buf_T *buf)
     buf->b_shortname = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
-#ifdef FEAT_MBYTE
     buf->b_p_bomb = FALSE;
     buf->b_start_bomb = FALSE;
-#endif
     buf->b_ml.ml_mfp = NULL;
     buf->b_ml.ml_flags = ML_EMPTY;		/* empty buffer */
 #ifdef FEAT_NETBEANS_INTG
@@ -940,9 +938,7 @@ free_buffer_stuff(
     map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  /* clear local mappings */
     map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   /* clear local abbrevs */
 #endif
-#ifdef FEAT_MBYTE
     VIM_CLEAR(buf->b_start_fenc);
-#endif
 }
 
 /*
@@ -2133,9 +2129,7 @@ free_buf_options(
 {
     if (free_p_ff)
     {
-#ifdef FEAT_MBYTE
 	clear_string_option(&buf->b_p_fenc);
-#endif
 	clear_string_option(&buf->b_p_ff);
 	clear_string_option(&buf->b_p_bh);
 	clear_string_option(&buf->b_p_bt);
@@ -2245,9 +2239,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_lw);
 #endif
     clear_string_option(&buf->b_p_bkc);
-#ifdef FEAT_MBYTE
     clear_string_option(&buf->b_p_menc);
-#endif
 }
 
 /*
@@ -3778,10 +3770,8 @@ maketitle(void)
 	    if (len > 100)
 	    {
 		len -= 100;
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    len += (*mb_tail_off)(p, p + len) + 1;
-#endif
 		p += len;
 	    }
 	    STRCPY(icon_str, p);
@@ -3939,11 +3929,9 @@ build_stl_str_hl(
 
     if (fillchar == 0)
 	fillchar = ' ';
-#ifdef FEAT_MBYTE
     /* Can't handle a multi-byte fill character yet. */
     else if (mb_char2len(fillchar) > 1)
 	fillchar = '-';
-#endif
 
     // The cursor in windows other than the current one isn't always
     // up-to-date, esp. because of autocommands and timers.
@@ -3973,11 +3961,7 @@ build_stl_str_hl(
 	byteval = 0;
     }
     else
-#ifdef FEAT_MBYTE
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
-#else
-	byteval = p[wp->w_cursor.col];
-#endif
 
     groupdepth = 0;
     p = out;
@@ -4079,7 +4063,6 @@ build_stl_str_hl(
 	    if (l > item[groupitem[groupdepth]].maxwid)
 	    {
 		/* truncate, remove n bytes of text at the start */
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    /* Find the first character that should be included. */
@@ -4091,17 +4074,15 @@ build_stl_str_hl(
 		    }
 		}
 		else
-#endif
 		    n = (long)(p - t) - item[groupitem[groupdepth]].maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, (size_t)(p - (t + n)));
 		p = p - n + 1;
-#ifdef FEAT_MBYTE
-		/* Fill up space left over by half a double-wide char. */
+
+		// Fill up space left over by half a double-wide char.
 		while (++l < item[groupitem[groupdepth]].minwid)
 		    *p++ = fillchar;
-#endif
 
 		/* correct the start of the items for the truncation */
 		for (l = groupitem[groupdepth] + 1; l < curitem; l++)
@@ -4483,14 +4464,12 @@ build_stl_str_hl(
 	    if (l > maxwid)
 	    {
 		while (l >= maxwid)
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			l -= ptr2cells(t);
 			t += (*mb_ptr2len)(t);
 		    }
 		    else
-#endif
 			l -= byte2cells(*t++);
 		if (p + 1 >= out + outlen)
 		    break;
@@ -4610,7 +4589,6 @@ build_stl_str_hl(
 	if (width - vim_strsize(s) >= maxwidth)
 	{
 	    /* Truncation mark is beyond max length */
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		s = out;
@@ -4627,7 +4605,6 @@ build_stl_str_hl(
 		    *s++ = fillchar;
 	    }
 	    else
-#endif
 		s = out + maxwidth - 1;
 	    for (l = 0; l < itemcnt; l++)
 		if (item[l].start > s)
@@ -4638,7 +4615,6 @@ build_stl_str_hl(
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		n = 0;
@@ -4649,7 +4625,6 @@ build_stl_str_hl(
 		}
 	    }
 	    else
-#endif
 		n = width - maxwidth + 1;
 	    p = s + n;
 	    STRMOVE(s + 1, p);

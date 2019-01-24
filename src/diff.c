@@ -741,12 +741,10 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 	    if (diff_flags & DIFF_ICASE)
 	    {
 		int c;
-
-		// xdiff doesn't support ignoring case, fold-case the text.
-#ifdef FEAT_MBYTE
 		int	orig_len;
 		char_u	cbuf[MB_MAXBYTES + 1];
 
+		// xdiff doesn't support ignoring case, fold-case the text.
 		c = PTR2CHAR(s);
 		c = enc_utf8 ? utf_fold(c) : MB_TOLOWER(c);
 		orig_len = MB_PTR2LEN(s);
@@ -758,10 +756,6 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 
 		s += orig_len;
 		len += orig_len;
-#else
-		c = *s++;
-		ptr[len++] = TOLOWER_LOC(c);
-#endif
 	    }
 	    else
 		ptr[len++] = *s++;
@@ -1946,7 +1940,6 @@ diff_equal_entry(diff_T *dp, int idx1, int idx2)
     static int
 diff_equal_char(char_u *p1, char_u *p2, int *len)
 {
-#ifdef FEAT_MBYTE
     int l  = (*mb_ptr2len)(p1);
 
     if (l != (*mb_ptr2len)(p2))
@@ -1962,7 +1955,6 @@ diff_equal_char(char_u *p1, char_u *p2, int *len)
 	*len = l;
     }
     else
-#endif
     {
 	if ((*p1 != *p2)
 		&& (!(diff_flags & DIFF_ICASE)
@@ -2400,7 +2392,6 @@ diff_find_change(
 		    si_new += l;
 		}
 	    }
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		/* Move back to first byte of character in both lines (may
@@ -2408,7 +2399,6 @@ diff_find_change(
 		si_org -= (*mb_head_off)(line_org, line_org + si_org);
 		si_new -= (*mb_head_off)(line_new, line_new + si_new);
 	    }
-#endif
 	    if (*startp > si_org)
 		*startp = si_org;
 
@@ -2438,10 +2428,8 @@ diff_find_change(
 		    {
 			p1 = line_org + ei_org;
 			p2 = line_new + ei_new;
-#ifdef FEAT_MBYTE
 			p1 -= (*mb_head_off)(line_org, p1);
 			p2 -= (*mb_head_off)(line_new, p2);
-#endif
 			if (!diff_equal_char(p1, p2, &l))
 			    break;
 			ei_org -= l;

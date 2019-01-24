@@ -2071,9 +2071,7 @@ f_byte2line(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 {
-#ifdef FEAT_MBYTE
     char_u	*t;
-#endif
     char_u	*str;
     varnumber_T	idx;
 
@@ -2083,7 +2081,6 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     if (str == NULL || idx < 0)
 	return;
 
-#ifdef FEAT_MBYTE
     t = str;
     for ( ; idx > 0; idx--)
     {
@@ -2095,10 +2092,6 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 	    t += (*mb_ptr2len)(t);
     }
     rettv->vval.v_number = (varnumber_T)(t - str);
-#else
-    if ((size_t)idx <= STRLEN(str))
-	rettv->vval.v_number = idx;
-#endif
 }
 
 /*
@@ -2450,7 +2443,6 @@ f_changenr(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_char2nr(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	int	utf8 = 0;
@@ -2464,8 +2456,7 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 	    rettv->vval.v_number = (*mb_ptr2char)(tv_get_string(&argvars[0]));
     }
     else
-#endif
-    rettv->vval.v_number = tv_get_string(&argvars[0])[0];
+	rettv->vval.v_number = tv_get_string(&argvars[0])[0];
 }
 
 /*
@@ -2536,15 +2527,10 @@ f_col(typval_T *argvars, typval_T *rettv)
 		if (curwin->w_cursor.coladd >= (colnr_T)chartabsize(p,
 				 curwin->w_virtcol - curwin->w_cursor.coladd))
 		{
-# ifdef FEAT_MBYTE
 		    int		l;
 
 		    if (*p != NUL && p[(l = (*mb_ptr2len)(p))] == NUL)
 			col += l;
-# else
-		    if (*p != NUL && p[1] == NUL)
-			++col;
-# endif
 		}
 	    }
 #endif
@@ -2904,11 +2890,9 @@ f_cursor(typval_T *argvars, typval_T *rettv)
 
     /* Make sure the cursor is in a valid position. */
     check_cursor();
-#ifdef FEAT_MBYTE
     /* Correct cursor for multi-byte character. */
     if (has_mbyte)
 	mb_adjust_cursor();
-#endif
 
     curwin->w_set_curswant = set_curswant;
     rettv->vval.v_number = 0;
@@ -4888,10 +4872,8 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	    temp[i++] = K_SECOND(n);
 	    temp[i++] = K_THIRD(n);
 	}
-#ifdef FEAT_MBYTE
 	else if (has_mbyte)
 	    i += (*mb_char2bytes)(n, temp + i);
-#endif
 	else
 	    temp[i++] = n;
 	temp[i++] = NUL;
@@ -5439,7 +5421,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    dict_add_string(dict, "group", syn_id2name(cur->hlg_id));
 	    dict_add_number(dict, "priority", (long)cur->priority);
 	    dict_add_number(dict, "id", (long)cur->id);
-# if defined(FEAT_CONCEAL) && defined(FEAT_MBYTE)
+# if defined(FEAT_CONCEAL)
 	    if (cur->conceal_char)
 	    {
 		char_u buf[MB_MAXBYTES + 1];
@@ -6423,9 +6405,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"mouse_xterm",
 # endif
 #endif
-#ifdef FEAT_MBYTE
 	"multi_byte",
-#endif
 #ifdef FEAT_MBYTE_IME
 	"multi_byte_ime",
 #endif
@@ -6674,10 +6654,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 	    n = mch_input_isatty();
 	else if (STRICMP(name, "ttyout") == 0)
 	    n = stdout_isatty;
-#ifdef FEAT_MBYTE
 	else if (STRICMP(name, "multi_byte_encoding") == 0)
 	    n = has_mbyte;
-#endif
 #if defined(FEAT_BEVAL) && defined(FEAT_GUI_W32)
 	else if (STRICMP(name, "balloon_multiline") == 0)
 	    n = multiline_balloon_available();
@@ -6965,17 +6943,14 @@ f_hostname(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#ifdef FEAT_MBYTE
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
     char_u	*from, *to, *str;
     vimconv_T	vimconv;
-#endif
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-#ifdef FEAT_MBYTE
     str = tv_get_string(&argvars[0]);
     from = enc_canonize(enc_skip(tv_get_string_buf(&argvars[1], buf1)));
     to = enc_canonize(enc_skip(tv_get_string_buf(&argvars[2], buf2)));
@@ -6991,7 +6966,6 @@ f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
     convert_setup(&vimconv, NULL, NULL);
     vim_free(from);
     vim_free(to);
-#endif
 }
 
 /*
@@ -8097,12 +8071,8 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
 		startcol = (colnr_T)(regmatch.startp[0]
 				    + (*mb_ptr2len)(regmatch.startp[0]) - str);
-#else
-		startcol = (colnr_T)(regmatch.startp[0] + 1 - str);
-#endif
 		if (startcol > (colnr_T)len
 				      || str + startcol <= regmatch.startp[0])
 		{
@@ -8712,7 +8682,6 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[NUMBUFLEN];
 
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	int	utf8 = 0;
@@ -8725,7 +8694,6 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 	    buf[(*mb_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
     }
     else
-#endif
     {
 	buf[0] = (char_u)tv_get_number(&argvars[0]);
 	buf[1] = NUL;
@@ -9175,7 +9143,6 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	    }
 	    else if (*p == NUL)
 		*p = '\n';
-#ifdef FEAT_MBYTE
 	    /* Check for utf8 "bom"; U+FEFF is encoded as EF BB BF.  Do this
 	     * when finding the BF and check the previous two bytes. */
 	    else if (*p == 0xbf && enc_utf8 && !binary)
@@ -9215,7 +9182,6 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 		    }
 		}
 	    }
-#endif
 	} /* for */
 
 	if (failed || (cnt >= maxline && maxline >= 0) || readlen <= 0)
@@ -10386,11 +10352,9 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
     else
     {
 	off = LineOffset[row] + col;
-#ifdef FEAT_MBYTE
 	if (enc_utf8 && ScreenLinesUC[off] != 0)
 	    c = ScreenLinesUC[off];
 	else
-#endif
 	    c = ScreenLines[off];
     }
     rettv->vval.v_number = c;
@@ -10910,7 +10874,6 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 	csearch = dict_get_string(d, (char_u *)"char", FALSE);
 	if (csearch != NULL)
 	{
-#ifdef FEAT_MBYTE
 	    if (enc_utf8)
 	    {
 		int pcc[MAX_MCO];
@@ -10919,7 +10882,6 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 		set_last_csearch(c, csearch, utfc_ptr2len(csearch));
 	    }
 	    else
-#endif
 		set_last_csearch(PTR2CHAR(csearch),
 						csearch, MB_PTR2LEN(csearch));
 	}
@@ -12511,18 +12473,12 @@ f_split(typval_T *argvars, typval_T *rettv)
 	    }
 	    if (!match)
 		break;
-	    /* Advance to just after the match. */
+	    // Advance to just after the match.
 	    if (regmatch.endp[0] > str)
 		col = 0;
 	    else
-	    {
-		/* Don't get stuck at the same match. */
-#ifdef FEAT_MBYTE
+		// Don't get stuck at the same match.
 		col = (*mb_ptr2len)(regmatch.endp[0]);
-#else
-		col = 1;
-#endif
-	    }
 	    str = regmatch.endp[0];
 	}
 
@@ -12632,7 +12588,6 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
     else
     {
-# ifdef FEAT_MBYTE
 	vimconv_T   conv;
 	char_u	    *enc;
 
@@ -12641,28 +12596,23 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	convert_setup(&conv, p_enc, enc);
 	if (conv.vc_type != CONV_NONE)
 	    p = string_convert(&conv, p, NULL);
-# endif
 	if (p != NULL)
 	    (void)strftime((char *)result_buf, sizeof(result_buf),
 							  (char *)p, curtime);
 	else
 	    result_buf[0] = NUL;
 
-# ifdef FEAT_MBYTE
 	if (conv.vc_type != CONV_NONE)
 	    vim_free(p);
 	convert_setup(&conv, enc, p_enc);
 	if (conv.vc_type != CONV_NONE)
 	    rettv->vval.v_string = string_convert(&conv, result_buf, NULL);
 	else
-# endif
 	    rettv->vval.v_string = vim_strsave(result_buf);
 
-# ifdef FEAT_MBYTE
 	/* Release conversion descriptors */
 	convert_setup(&conv, NULL, NULL);
 	vim_free(enc);
-# endif
     }
 }
 #endif
@@ -12677,6 +12627,7 @@ f_strgetchar(typval_T *argvars, typval_T *rettv)
     int		len;
     int		error = FALSE;
     int		charidx;
+    int		byteidx = 0;
 
     rettv->vval.v_number = -1;
     str = tv_get_string_chk(&argvars[0]);
@@ -12686,25 +12637,17 @@ f_strgetchar(typval_T *argvars, typval_T *rettv)
     charidx = (int)tv_get_number_chk(&argvars[1], &error);
     if (error)
 	return;
-#ifdef FEAT_MBYTE
-    {
-	int	byteidx = 0;
 
-	while (charidx >= 0 && byteidx < len)
+    while (charidx >= 0 && byteidx < len)
+    {
+	if (charidx == 0)
 	{
-	    if (charidx == 0)
-	    {
-		rettv->vval.v_number = mb_ptr2char(str + byteidx);
-		break;
-	    }
-	    --charidx;
-	    byteidx += MB_CPTR2LEN(str + byteidx);
+	    rettv->vval.v_number = mb_ptr2char(str + byteidx);
+	    break;
 	}
+	--charidx;
+	byteidx += MB_CPTR2LEN(str + byteidx);
     }
-#else
-    if (charidx < len)
-	rettv->vval.v_number = str[charidx];
-#endif
 }
 
 /*
@@ -12777,10 +12720,8 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 {
     char_u		*s = tv_get_string(&argvars[0]);
     int			skipcc = 0;
-#ifdef FEAT_MBYTE
     varnumber_T		len = 0;
     int			(*func_mb_ptr2char_adv)(char_u **pp);
-#endif
 
     if (argvars[1].v_type != VAR_UNKNOWN)
 	skipcc = (int)tv_get_number_chk(&argvars[1], NULL);
@@ -12788,7 +12729,6 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 	emsg(_(e_invarg));
     else
     {
-#ifdef FEAT_MBYTE
 	func_mb_ptr2char_adv = skipcc ? mb_ptr2char_adv : mb_cptr2char_adv;
 	while (*s != NUL)
 	{
@@ -12796,9 +12736,6 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 	    ++len;
 	}
 	rettv->vval.v_number = len;
-#else
-	rettv->vval.v_number = (varnumber_T)(STRLEN(s));
-#endif
     }
 }
 
@@ -12825,13 +12762,7 @@ f_strwidth(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s = tv_get_string(&argvars[0]);
 
-    rettv->vval.v_number = (varnumber_T)(
-#ifdef FEAT_MBYTE
-	    mb_string2cells(s, -1)
-#else
-	    STRLEN(s)
-#endif
-	    );
+    rettv->vval.v_number = (varnumber_T)(mb_string2cells(s, -1));
 }
 
 /*
@@ -12840,7 +12771,6 @@ f_strwidth(typval_T *argvars, typval_T *rettv)
     static void
 f_strcharpart(typval_T *argvars, typval_T *rettv)
 {
-#ifdef FEAT_MBYTE
     char_u	*p;
     int		nchar;
     int		nbyte = 0;
@@ -12899,9 +12829,6 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strnsave(p + nbyte, len);
-#else
-    f_strpart(argvars, rettv);
-#endif
 }
 
 /*
@@ -13278,11 +13205,9 @@ f_synconcealed(typval_T *argvars UNUSED, typval_T *rettv)
 		    cchar = (lcs_conceal == NUL) ? ' ' : lcs_conceal;
 		if (cchar != NUL)
 		{
-# ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			(*mb_char2bytes)(cchar, str);
 		    else
-# endif
 			str[0] = cchar;
 		}
 	    }
@@ -14208,7 +14133,6 @@ f_tr(typval_T *argvars, typval_T *rettv)
     char_u	*fromstr;
     char_u	*tostr;
     char_u	*p;
-#ifdef FEAT_MBYTE
     int		inlen;
     int		fromlen;
     int		tolen;
@@ -14216,7 +14140,6 @@ f_tr(typval_T *argvars, typval_T *rettv)
     char_u	*cpstr;
     int		cplen;
     int		first = TRUE;
-#endif
     char_u	buf[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
     garray_T	ga;
@@ -14232,15 +14155,11 @@ f_tr(typval_T *argvars, typval_T *rettv)
 	    return;		/* type error; errmsg already given */
     ga_init2(&ga, (int)sizeof(char), 80);
 
-#ifdef FEAT_MBYTE
     if (!has_mbyte)
-#endif
 	/* not multi-byte: fromstr and tostr must be the same length */
 	if (STRLEN(fromstr) != STRLEN(tostr))
 	{
-#ifdef FEAT_MBYTE
 error:
-#endif
 	    semsg(_(e_invarg2), fromstr);
 	    ga_clear(&ga);
 	    return;
@@ -14249,7 +14168,6 @@ error:
     /* fromstr and tostr have to contain the same number of chars */
     while (*in_str != NUL)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    inlen = (*mb_ptr2len)(in_str);
@@ -14300,7 +14218,6 @@ error:
 	    in_str += inlen;
 	}
 	else
-#endif
 	{
 	    /* When not using multi-byte chars we can do it faster. */
 	    p = vim_strchr(fromstr, *in_str);
