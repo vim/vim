@@ -45,14 +45,16 @@ main(int argc, char *argv[])
     int cmds_cnt = 0;
     int cmdidxs1[IDXSIZE];
     int cmdidxs2[IDXSIZE][IDXSIZE];
+    int i, j, k;
+    char c1, c2;
 
     memset(line, 0x00, sizeof(line));
     memset(cmds, 0x00, sizeof(cmds));
 
-    for (int j = 0; j < IDXSIZE; j++)
+    for (j = 0; j < IDXSIZE; j++)
     {
 	cmdidxs1[j] = -1;
-	for (int k = 0; k < IDXSIZE; k++)
+	for (k = 0; k < IDXSIZE; k++)
 	    cmdidxs2[j][k] = -1;
     }
 
@@ -71,7 +73,7 @@ main(int argc, char *argv[])
         fclose(fp);
     }
 
-    for (int i = cmds_cnt - 1; 0 <= i; i--)
+    for (i = cmds_cnt - 1; 0 <= i; i--)
     {
         char* cmd = cmds[i];
         int c1 = (int) cmd[0];
@@ -93,7 +95,7 @@ main(int argc, char *argv[])
         fprintf(fp, " */\n");
         fprintf(fp, "static const unsigned short cmdidxs1[26] =\n");
         fprintf(fp, "{\n");
-        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
+        for (c1 = CH_START; c1 <= CH_LAST; c1++)
         {
             fprintf(fp, "  /* %c */ %d%s\n", c1, cmdidxs1[(int) c1], (c1 == CH_LAST ? "" : ","));
         }
@@ -107,15 +109,15 @@ main(int argc, char *argv[])
         fprintf(fp, " */\n");
         fprintf(fp, "static const unsigned char cmdidxs2[26][26] =\n");
         fprintf(fp, "{ /*      ");
-        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
+        for (c1 = CH_START; c1 <= CH_LAST; c1++)
         {
             fprintf(fp, "%4c", c1);
         }
         fprintf(fp, " */\n");
-        for (char c1 = CH_START; c1 <= CH_LAST; c1++)
+        for (c1 = CH_START; c1 <= CH_LAST; c1++)
         {
             fprintf(fp, "  /* %c */ {", c1);
-            for (char c2 = CH_START; c2 <= CH_LAST; c2++)
+            for (c2 = CH_START; c2 <= CH_LAST; c2++)
             {
         	if (-1 != cmdidxs2[(int) c1][(int) c2])
         	{
@@ -137,7 +139,7 @@ main(int argc, char *argv[])
         fclose(fp);
     }
 
-    for (int i = 0; i < cmds_cnt; i++)
+    for (i = 0; i < cmds_cnt; i++)
     {
         if (NULL != cmds[i])
         {
