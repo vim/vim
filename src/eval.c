@@ -4723,12 +4723,13 @@ eval_index(
 		}
 		else
 		{
-		    // The resulting variable is a string of a single
-		    // character.  If the index is too big or negative the
-		    // result is empty.
+		    // The resulting variable is a byte value.
+		    // If the index is too big or negative that is an error.
+		    if (n1 < 0)
+			n1 = len + n1;
 		    if (n1 < len && n1 >= 0)
 		    {
-			int v = (int)blob_get(rettv->vval.v_blob, n1);
+			int v = blob_get(rettv->vval.v_blob, n1);
 
 			clear_tv(rettv);
 			rettv->v_type = VAR_NUMBER;

@@ -72,8 +72,12 @@ blob_copy(typval_T *from, typval_T *to)
 	int  len = from->vval.v_blob->bv_ga.ga_len;
 
 	if (len > 0)
+	{
 	    to->vval.v_blob->bv_ga.ga_data =
 			    vim_memsave(from->vval.v_blob->bv_ga.ga_data, len);
+	    if (to->vval.v_blob->bv_ga.ga_data == NULL)
+		len = 0;
+	}
 	to->vval.v_blob->bv_ga.ga_len = len;
     }
     return ret;
@@ -112,7 +116,7 @@ blob_len(blob_T *b)
  * Get byte "idx" in blob "b".
  * Caller must check that "idx" is valid.
  */
-    char_u
+    int
 blob_get(blob_T *b, int idx)
 {
     return ((char_u*)b->bv_ga.ga_data)[idx];
