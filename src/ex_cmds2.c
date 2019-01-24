@@ -5222,6 +5222,7 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 #endif
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * ":scriptstrict": Set flag the source should be checked syntax strictly.
  */
@@ -5239,7 +5240,6 @@ ex_scriptstrict(exarg_T *eap UNUSED)
     current_sctx.sc_strict = 1;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * ":finish": Mark a sourced file as finished.
  */
