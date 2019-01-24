@@ -10159,7 +10159,7 @@ beos			BeOS version of Vim.
 browse			Compiled with |:browse| support, and browse() will
 			work.
 browsefilter		Compiled with support for |browsefilter|.
-bsd			*BSD (including macOS) version of Vim.
+bsd			Compiled for the OS in BSD family (including macOS).
 builtin_terms		Compiled with some builtin terminals.
 byte_offset		Compiled with support for 'o' in 'statusline'
 cindent			Compiled with 'cindent' support.
