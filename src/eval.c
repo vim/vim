@@ -7892,9 +7892,16 @@ set_var(
 	{
 	    if (v->di_tv.v_type == VAR_STRING)
 	    {
-		vim_free(v->di_tv.vval.v_string);
+		VIM_CLEAR(v->di_tv.vval.v_string);
 		if (copy || tv->v_type != VAR_STRING)
-		    v->di_tv.vval.v_string = vim_strsave(tv_get_string(tv));
+		{
+		    char_u *val = tv_get_string(tv);
+
+		    // Careful: when assigning to v:errmsg and tv_get_string()
+		    // causes an error message the variable will alrady be set.
+		    if (v->di_tv.vval.v_string == NULL)
+			v->di_tv.vval.v_string = vim_strsave(val);
+		}
 		else
 		{
 		    /* Take over the string to avoid an extra alloc/free. */
