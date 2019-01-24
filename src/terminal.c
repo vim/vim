@@ -873,7 +873,7 @@ get_tty_part(term_T *term)
     {
 	int fd = term->tl_job->jv_channel->ch_part[parts[i]].ch_fd;
 
-	if (isatty(fd))
+	if (mch_isatty(fd))
 	    return parts[i];
     }
 #endif
@@ -2182,7 +2182,7 @@ terminal_loop(int blocking)
 	 * them for every typed character is a bit of overhead, but it's needed
 	 * for the first character typed, e.g. when Vim starts in a shell.
 	 */
-	if (isatty(tty_fd))
+	if (mch_isatty(tty_fd))
 	{
 	    ttyinfo_T info;
 
@@ -5882,7 +5882,7 @@ term_report_winsize(term_T *term, int rows, int cols)
 	for (part = PART_OUT; part < PART_COUNT; ++part)
 	{
 	    fd = term->tl_job->jv_channel->ch_part[part].ch_fd;
-	    if (isatty(fd))
+	    if (mch_isatty(fd))
 		break;
 	}
 	if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)

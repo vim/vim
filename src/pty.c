@@ -155,7 +155,7 @@ initmaster(int f UNUSED)
  * pty on others.  Needs to be tuned...
  */
     int
-SetupSlavePTY(int fd)
+setup_slavepty(int fd)
 {
     if (fd < 0)
 	return 0;
@@ -178,7 +178,7 @@ SetupSlavePTY(int fd)
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     static char TtyName[32];
@@ -195,7 +195,7 @@ OpenPTY(char **ttyn)
 	&& !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     char	*m, *s;
     int		f;
@@ -219,7 +219,7 @@ OpenPTY(char **ttyn)
 #if defined(__sgi) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int f;
     char *name;
@@ -244,7 +244,7 @@ OpenPTY(char **ttyn)
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     stat_T	buf;
@@ -272,7 +272,7 @@ OpenPTY(char **ttyn)
  * Same for Mac OS X Leopard (10.5). */
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
@@ -313,7 +313,7 @@ int aixhack = -1;
 #endif
 
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     /* used for opening a new pty-pair: */
@@ -359,7 +359,7 @@ static char TtyProto[] = "/dev/ttyXY";
 # endif
 
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     char	*p, *q, *l, *d;
     int		f;
@@ -407,6 +407,67 @@ OpenPTY(char **ttyn)
 	}
     }
     return -1;
+}
+#endif
+
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+/*
+ * On SunOS, isatty() for /dev/ptmx returns false and therefore determine by
+ * whether a slave device associated exists.
+ */
+    int
+mch_isatty(int fd)
+{
+    if (isatty(fd))
+	return 1;
+    return ptsname(fd) != NULL;
+}
+
+/*
+ * Get the terminal parameters from "fd" or the slave device of "fd".
+ */
+    int
+mch_tcgetattr(int fd, void *term)
+{
+    int		tty_fd = fd;
+    int		retval;
+
+    if (!isatty(fd))
+    {
+	char *name;
+
+	name = ptsname(fd);
+	if (name == NULL)
+	    return -1;
+
+	tty_fd = open(name, O_RDONLY | O_NOCTTY | O_EXTRA, 0);
+	if (tty_fd < 0)
+	    return -1;
+    }
+# if defined(HAVE_TERMIOS_H)
+    retval = tcgetattr(tty_fd, (struct termios *)term);
+# else
+    retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+# endif
+    if (tty_fd != fd)
+	close(tty_fd);
+    return retval;
+}
+#else
+    int
+mch_isatty(int fd)
+{
+    return isatty(fd);
+}
+
+    int
+mch_tcgetattr(int fd, void *term)
+{
+# if defined(HAVE_TERMIOS_H)
+    return tcgetattr(fd, (struct termios *)term);
+# else
+    return ioctl(fd, TCGETA, (struct termio *)term);
+# endif
 }
 #endif
 

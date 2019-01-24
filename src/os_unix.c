@@ -3465,11 +3465,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-# if defined(HAVE_TERMIOS_H)
-	tcgetattr(read_cmd_fd, &told);
-# else
-	ioctl(read_cmd_fd, TCGETA, &told);
-# endif
+	mch_tcgetattr(read_cmd_fd, &told);
     }
 
     tnew = told;
@@ -3587,13 +3583,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     struct termio keys;
 # endif
 
-    if (
-# if defined(HAVE_TERMIOS_H)
-	    tcgetattr(fd, &keys) != -1
-# else
-	    ioctl(fd, TCGETA, &keys) != -1
-# endif
-       )
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.c_cc[VERASE];
 	info->interrupt = keys.c_cc[VINTR];
@@ -4273,7 +4263,7 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
 {
     char	*tty_name;
 
-    *pty_master_fd = OpenPTY(&tty_name);	    /* open pty */
+    *pty_master_fd = mch_openpty(&tty_name);	    /* open pty */
     if (*pty_master_fd >= 0)
     {
 	/* Leaving out O_NOCTTY may lead to waitpid() always returning
@@ -4721,7 +4711,7 @@ mch_call_shell_fork(
 		{
 		    /* push stream discipline modules */
 		    if (options & SHELL_COOKED)
-			SetupSlavePTY(pty_slave_fd);
+			setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 		    /* Try to become controlling tty (probably doesn't work,
 		     * unless run by root) */
@@ -5579,7 +5569,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	if (pty_slave_fd >= 0)
 	{
 	    /* push stream discipline modules */
-	    SetupSlavePTY(pty_slave_fd);
+	    setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 	    /* Try to become controlling tty (probably doesn't work,
 	     * unless run by root) */
