@@ -1,4 +1,4 @@
-/* Automatically generated code by create_cmdidxs.vim
+/* Automatically generated code by cmdidxs/cmdidxs
  *
  * Table giving the index of the first command in cmdnames[] to lookup
  * based on the first letter of a command.
@@ -29,8 +29,8 @@ static const unsigned short cmdidxs1[26] =
   /* v */ 492,
   /* w */ 510,
   /* x */ 524,
-  /* y */ 533,
-  /* z */ 534
+  /* y */ 534,
+  /* z */ 535
 };
 
 /*
@@ -64,9 +64,9 @@ static const unsigned char cmdidxs2[26][26] =
   /* u */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 10,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
   /* v */ {  0,  0,  0,  0,  1,  0,  0,  0,  4,  0,  0,  0,  9, 12,  0,  0,  0,  0, 15,  0, 16,  0,  0,  0,  0,  0 },
   /* w */ {  2,  0,  0,  0,  0,  0,  0,  3,  4,  0,  0,  0,  0,  8,  0,  9, 10,  0,  0,  0, 12, 13,  0,  0,  0,  0 },
-  /* x */ {  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  5,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0 },
+  /* x */ {  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  6,  0,  0,  0,  0,  0,  0,  8,  0,  0,  0,  0,  0 },
   /* y */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
   /* z */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }
 };
 
-static const int command_count = 547;
+static const int command_count = 548;

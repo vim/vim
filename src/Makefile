@@ -1972,9 +1972,12 @@ autoconf:
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
-cmdidxs: ex_cmds.h
-	vim -u NONE -i NONE -X -S create_cmdidxs.vim
+cmdidxs/cmdidxs$(EXEEXT): cmdidxs/cmdidxs.c
+	cd cmdidxs; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
+		$(MAKE) -f Makefile
 
+ex_cmdidxs.h: ex_cmds.h cmdidxs/cmdidxs$(EXEEXT)
+	cmdidxs/cmdidxs$(EXEEXT)
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -2756,6 +2759,7 @@ clean celan: testclean
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
+	-cd cmdidxs; $(MAKE) -f Makefile clean
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
