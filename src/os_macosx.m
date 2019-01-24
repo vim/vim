@@ -130,18 +130,14 @@ clip_mch_request_selection(VimClipboard *cbd)
     char_u *str = (char_u*)[string UTF8String];
     int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	str = string_convert(&input_conv, str, &len);
-#endif
 
     if (str)
 	clip_yank_selection(motion_type, str, len, cbd);
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(str);
-#endif
 
 releasepool:
     [pool release];
@@ -169,7 +165,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 
     /* TODO: Avoid overflow. */
     int len = (int)llen;
-#ifdef FEAT_MBYTE
     if (output_conv.vc_type != CONV_NONE)
     {
 	char_u *conv_str = string_convert(&output_conv, str, &len);
@@ -179,7 +174,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    str = conv_str;
 	}
     }
-#endif
 
     if (len > 0)
     {

@@ -6,9 +6,6 @@ endif
 
 func Test_block_shift_multibyte()
   " Uses double-wide character.
-  if !has('multi_byte')
-    return
-  endif
   split
   call setline(1, ['xヹxxx', 'ヹxxx'])
   exe "normal 1G0l\<C-V>jl>"

@@ -4492,14 +4492,10 @@ vim_vsnprintf_typval(
 		    {
 			/* Don't put the #if inside memchr(), it can be a
 			 * macro. */
-# if VIM_SIZEOF_INT <= 2
-			char *q = memchr(str_arg, '\0', precision);
-# else
 			/* memchr on HP does not like n > 2^31  !!! */
 			char *q = memchr(str_arg, '\0',
 				  precision <= (size_t)0x7fffffffL ? precision
 						       : (size_t)0x7fffffffL);
-# endif
 			str_arg_l = (q == NULL) ? precision
 						      : (size_t)(q - str_arg);
 		    }

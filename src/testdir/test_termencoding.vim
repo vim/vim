@@ -2,7 +2,7 @@
 " setting 'termencoding' to make it work.
 
 " This only works with "iconv".
-if !has('multi_byte') || !has('iconv')
+if !has('iconv')
   finish
 endif
 

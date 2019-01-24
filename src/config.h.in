@@ -387,9 +387,6 @@
 /* Define if you want to include the Cscope interface. */
 #undef FEAT_CSCOPE
 
-/* Define if you want to include multibyte support. */
-#undef FEAT_MBYTE
-
 /* Define if you don't want to include right-left support. */
 #undef DISABLE_RIGHTLEFT
 
