@@ -1972,7 +1972,7 @@ autoconf:
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
-cmdidxs/cmdidxs$(EXEEXT): cmdidxs/cmdidxs.c
+cmdidxs/cmdidxs$(EXEEXT): cmdidxs/cmdidxs.c ex_cmds.h
 	cd cmdidxs; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		$(MAKE) -f Makefile
 

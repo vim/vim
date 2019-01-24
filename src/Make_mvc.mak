@@ -1219,7 +1219,7 @@ all:	$(VIM).exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
 
-$(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+$(VIM).exe: cmdidxs/cmdidxs.exe $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
 		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
@@ -1251,6 +1251,11 @@ vimrun.exe: vimrun.c
 
 xxd/xxd.exe: xxd/xxd.c
 	cd xxd
+	$(MAKE) /NOLOGO -f Make_mvc.mak $(MAKEFLAGS_TOOLS)
+	cd ..
+
+cmdidxs/cmdidxs.exe: cmdidxs/cmdidxs.c ex_cmds.h
+	cd cmdidxs
 	$(MAKE) /NOLOGO -f Make_mvc.mak $(MAKEFLAGS_TOOLS)
 	cd ..
 

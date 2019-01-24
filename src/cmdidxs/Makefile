@@ -1,8 +1,7 @@
+# The most simplistic Makefile
 
-NAME=cmdidxs
-
-$(NAME): $(NAME).c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(NAME) $<
+cmdidxs: cmdidxs.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DUNIX -o cmdidxs cmdidxs.c
 
 clean:
-	rm -f $(NAME) $(NAME).o
+	rm -f cmdidxs cmdidxs.o
