@@ -40,7 +40,7 @@ ui_write(char_u *s, int len)
     /* Don't output anything in silent mode ("ex -s") unless 'verbose' set */
     if (!(silent_mode && p_verbose == 0))
     {
-#if defined(FEAT_MBYTE) && !defined(WIN3264)
+#if !defined(WIN3264)
 	char_u	*tofree = NULL;
 
 	if (output_conv.vc_type != CONV_NONE)
@@ -54,10 +54,10 @@ ui_write(char_u *s, int len)
 
 	mch_write(s, len);
 
-#if defined(FEAT_MBYTE) && !defined(WIN3264)
+# if !defined(WIN3264)
 	if (output_conv.vc_type != CONV_NONE)
 	    vim_free(tofree);
-#endif
+# endif
     }
 #endif
 }
@@ -516,10 +516,8 @@ clip_update_selection(VimClipboard *clip)
 	{
 	    start = VIsual;
 	    end = curwin->w_cursor;
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		end.col += (*mb_ptr2len)(ml_get_cursor()) - 1;
-#endif
 	}
 	else
 	{
@@ -821,9 +819,7 @@ clip_start_selection(int col, int row, int repeated_click)
 
     row = check_row(row);
     col = check_col(col);
-#ifdef FEAT_MBYTE
     col = mb_fix_col(col, row);
-#endif
 
     cb->start.lnum  = row;
     cb->start.col   = col;
@@ -927,9 +923,7 @@ clip_process_selection(
 
     row = check_row(row);
     col = check_col(col);
-#ifdef FEAT_MBYTE
     col = mb_fix_col(col, row);
-#endif
 
     if (col == (int)cb->prev.col && row == cb->prev.lnum && !repeated_click)
 	return;
@@ -995,21 +989,17 @@ clip_process_selection(
 			    cb->origin_start_col, row, (int)Columns);
 		else
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte && mb_lefthalve(row, col))
 			slen = 2;
-#endif
 		    clip_update_modeless_selection(cb, cb->origin_row,
 			    cb->origin_start_col, row, col + slen);
 		}
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte
 			&& mb_lefthalve(cb->origin_row, cb->origin_start_col))
 		    slen = 2;
-#endif
 		if (col >= (int)cb->word_end_col)
 		    clip_update_modeless_selection(cb, row, cb->word_end_col,
 			    cb->origin_row, cb->origin_start_col + slen);
@@ -1243,9 +1233,7 @@ clip_copy_modeless_selection(int both UNUSED)
     int		line_end_col;
     int		add_newline_flag = FALSE;
     int		len;
-#ifdef FEAT_MBYTE
     char_u	*p;
-#endif
     int		row1 = clip_star.start.lnum;
     int		col1 = clip_star.start.col;
     int		row2 = clip_star.end.lnum;
@@ -1267,23 +1255,19 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
-#ifdef FEAT_MBYTE
     /* correct starting point for being on right halve of double-wide char */
     p = ScreenLines + LineOffset[row1];
     if (enc_dbcs != 0)
 	col1 -= (*mb_head_off)(p, p + col1);
     else if (enc_utf8 && p[col1] == 0)
 	--col1;
-#endif
 
     /* Create a temporary buffer for storing the text */
     len = (row2 - row1 + 1) * Columns + 1;
-#ifdef FEAT_MBYTE
     if (enc_dbcs != 0)
 	len *= 2;	/* max. 2 bytes per display cell */
     else if (enc_utf8)
 	len *= MB_MAXBYTES;
-#endif
     buffer = lalloc((long_u)len, TRUE);
     if (buffer == NULL)	    /* out of memory */
 	return;
@@ -1322,7 +1306,6 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	if (row < screen_Rows && end_col <= screen_Columns)
 	{
-#ifdef FEAT_MBYTE
 	    if (enc_dbcs != 0)
 	    {
 		int	i;
@@ -1373,7 +1356,6 @@ clip_copy_modeless_selection(int both UNUSED)
 		}
 	    }
 	    else
-#endif
 	    {
 		STRNCPY(bufp, ScreenLines + LineOffset[row] + start_col,
 							 end_col - start_col);
@@ -1421,51 +1403,35 @@ clip_get_word_boundaries(VimClipboard *cb, int row, int col)
     int		start_class;
     int		temp_col;
     char_u	*p;
-#ifdef FEAT_MBYTE
     int		mboff;
-#endif
 
     if (row >= screen_Rows || col >= screen_Columns || ScreenLines == NULL)
 	return;
 
     p = ScreenLines + LineOffset[row];
-#ifdef FEAT_MBYTE
     /* Correct for starting in the right halve of a double-wide char */
     if (enc_dbcs != 0)
 	col -= dbcs_screen_head_off(p, p + col);
     else if (enc_utf8 && p[col] == 0)
 	--col;
-#endif
     start_class = CHAR_CLASS(p[col]);
 
     temp_col = col;
     for ( ; temp_col > 0; temp_col--)
-#ifdef FEAT_MBYTE
 	if (enc_dbcs != 0
 		   && (mboff = dbcs_screen_head_off(p, p + temp_col - 1)) > 0)
 	    temp_col -= mboff;
-	else
-#endif
-	if (CHAR_CLASS(p[temp_col - 1]) != start_class
-#ifdef FEAT_MBYTE
-		&& !(enc_utf8 && p[temp_col - 1] == 0)
-#endif
-		)
+	else if (CHAR_CLASS(p[temp_col - 1]) != start_class
+		&& !(enc_utf8 && p[temp_col - 1] == 0))
 	    break;
     cb->word_start_col = temp_col;
 
     temp_col = col;
     for ( ; temp_col < screen_Columns; temp_col++)
-#ifdef FEAT_MBYTE
 	if (enc_dbcs != 0 && dbcs_ptr2cells(p + temp_col) == 2)
 	    ++temp_col;
-	else
-#endif
-	if (CHAR_CLASS(p[temp_col]) != start_class
-#ifdef FEAT_MBYTE
-		&& !(enc_utf8 && p[temp_col] == 0)
-#endif
-		)
+	else if (CHAR_CLASS(p[temp_col]) != start_class
+		&& !(enc_utf8 && p[temp_col] == 0))
 	    break;
     cb->word_end_col = temp_col;
 }
@@ -1820,11 +1786,9 @@ fill_input_buf(int exit_on_error UNUSED)
     int		len;
     int		try;
     static int	did_read_something = FALSE;
-# ifdef FEAT_MBYTE
     static char_u *rest = NULL;	    /* unconverted rest of previous read */
     static int	restlen = 0;
     int		unconverted;
-# endif
 #endif
 
 #ifdef FEAT_GUI
@@ -1860,7 +1824,6 @@ fill_input_buf(int exit_on_error UNUSED)
     inbufcount = 0;
 # else
 
-#  ifdef FEAT_MBYTE
     if (rest != NULL)
     {
 	/* Use remainder of previous call, starts with an invalid character
@@ -1881,16 +1844,12 @@ fill_input_buf(int exit_on_error UNUSED)
     }
     else
 	unconverted = 0;
-#  endif
 
     len = 0;	/* to avoid gcc warning */
     for (try = 0; try < 100; ++try)
     {
 	size_t readlen = (size_t)((INBUFLEN - inbufcount)
-#  ifdef FEAT_MBYTE
-			    / input_conv.vc_factor
-#  endif
-			    );
+			    / input_conv.vc_factor);
 #  ifdef VMS
 	len = vms_read((char *)inbuf + inbufcount, readlen);
 #  else
@@ -1936,7 +1895,6 @@ fill_input_buf(int exit_on_error UNUSED)
     }
     else
     {
-# ifdef FEAT_MBYTE
 	/*
 	 * May perform conversion on the input characters.
 	 * Include the unconverted rest of the previous call.
@@ -1952,7 +1910,6 @@ fill_input_buf(int exit_on_error UNUSED)
 				     len + unconverted, INBUFLEN - inbufcount,
 				       rest == NULL ? &rest : NULL, &restlen);
 	}
-# endif
 	while (len-- > 0)
 	{
 	    /*
@@ -2014,8 +1971,6 @@ ui_cursor_shape(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \
-	|| defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Check bounds for column number
  */
@@ -2041,7 +1996,6 @@ check_row(int row)
 	return (int)screen_Rows - 1;
     return row;
 }
-#endif
 
 /*
  * Stuff for the X clipboard.  Shared between VMS and Unix.
@@ -2066,10 +2020,8 @@ open_app_context(void)
 }
 
 static Atom	vim_atom;	/* Vim's own special selection format */
-#ifdef FEAT_MBYTE
 static Atom	vimenc_atom;	/* Vim's extended selection format */
 static Atom	utf8_atom;
-#endif
 static Atom	compound_text_atom;
 static Atom	text_atom;
 static Atom	targets_atom;
@@ -2079,10 +2031,8 @@ static Atom	timestamp_atom;	/* Used to get a timestamp */
 x11_setup_atoms(Display *dpy)
 {
     vim_atom	       = XInternAtom(dpy, VIM_ATOM_NAME,   False);
-#ifdef FEAT_MBYTE
     vimenc_atom	       = XInternAtom(dpy, VIMENC_ATOM_NAME,False);
     utf8_atom	       = XInternAtom(dpy, "UTF8_STRING",   False);
-#endif
     compound_text_atom = XInternAtom(dpy, "COMPOUND_TEXT", False);
     text_atom	       = XInternAtom(dpy, "TEXT",	   False);
     targets_atom       = XInternAtom(dpy, "TARGETS",	   False);
@@ -2170,9 +2120,7 @@ clip_x11_request_selection_cb(
     char_u	*p;
     char	**text_list = NULL;
     VimClipboard	*cbd;
-#ifdef FEAT_MBYTE
     char_u	*tmpbuf = NULL;
-#endif
 
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
@@ -2193,7 +2141,6 @@ clip_x11_request_selection_cb(
 	len--;
     }
 
-#ifdef FEAT_MBYTE
     else if (*type == vimenc_atom)
     {
 	char_u		*enc;
@@ -2221,17 +2168,10 @@ clip_x11_request_selection_cb(
 	    convert_setup(&conv, NULL, NULL);
 	}
     }
-#endif
 
     else if (*type == compound_text_atom
-#ifdef FEAT_MBYTE
 	    || *type == utf8_atom
-#endif
-	    || (
-#ifdef FEAT_MBYTE
-		enc_dbcs != 0 &&
-#endif
-		*type == text_atom))
+	    || (enc_dbcs != 0 && *type == text_atom))
     {
 	XTextProperty	text_prop;
 	int		n_text = 0;
@@ -2241,7 +2181,7 @@ clip_x11_request_selection_cb(
 	text_prop.encoding = *type;
 	text_prop.format = *format;
 	text_prop.nitems = len;
-#if defined(FEAT_MBYTE) && defined(X_HAVE_UTF8_STRING)
+#if defined(X_HAVE_UTF8_STRING)
 	if (*type == utf8_atom)
 	    status = Xutf8TextPropertyToTextList(X_DISPLAY, &text_prop,
 							 &text_list, &n_text);
@@ -2261,9 +2201,7 @@ clip_x11_request_selection_cb(
 
     if (text_list != NULL)
 	XFreeStringList(text_list);
-#ifdef FEAT_MBYTE
     vim_free(tmpbuf);
-#endif
     XtFree((char *)value);
     *(int *)success = TRUE;
 }
@@ -2281,28 +2219,17 @@ clip_x11_request_selection(
     time_t	start_time;
     int		timed_out = FALSE;
 
-    for (i =
-#ifdef FEAT_MBYTE
-	    0
-#else
-	    1
-#endif
-	    ; i < 6; i++)
+    for (i = 0; i < 6; i++)
     {
 	switch (i)
 	{
-#ifdef FEAT_MBYTE
 	    case 0:  type = vimenc_atom;	break;
-#endif
 	    case 1:  type = vim_atom;		break;
-#ifdef FEAT_MBYTE
 	    case 2:  type = utf8_atom;		break;
-#endif
 	    case 3:  type = compound_text_atom; break;
 	    case 4:  type = text_atom;		break;
 	    default: type = XA_STRING;
 	}
-#ifdef FEAT_MBYTE
 	if (type == utf8_atom
 # if defined(X_HAVE_UTF8_STRING)
 		&& !enc_utf8
@@ -2311,7 +2238,6 @@ clip_x11_request_selection(
 	    /* Only request utf-8 when 'encoding' is utf8 and
 	     * Xutf8TextPropertyToTextList is available. */
 	    continue;
-#endif
 	success = MAYBE;
 	XtGetSelectionValue(myShell, cbd->sel_atom, type,
 	    clip_x11_request_selection_cb, (XtPointer)&success, CurrentTime);
@@ -2406,14 +2332,10 @@ clip_x11_convert_selection_cb(
 	*value = (XtPointer)array;
 	i = 0;
 	array[i++] = targets_atom;
-#ifdef FEAT_MBYTE
 	array[i++] = vimenc_atom;
-#endif
 	array[i++] = vim_atom;
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    array[i++] = utf8_atom;
-#endif
 	array[i++] = XA_STRING;
 	array[i++] = text_atom;
 	array[i++] = compound_text_atom;
@@ -2427,10 +2349,8 @@ clip_x11_convert_selection_cb(
     }
 
     if (       *target != XA_STRING
-#ifdef FEAT_MBYTE
 	    && *target != vimenc_atom
 	    && (*target != utf8_atom || !enc_utf8)
-#endif
 	    && *target != vim_atom
 	    && *target != text_atom
 	    && *target != compound_text_atom)
@@ -2445,11 +2365,9 @@ clip_x11_convert_selection_cb(
     if (*target == vim_atom)
 	(*length)++;
 
-#ifdef FEAT_MBYTE
     /* Our own format with encoding: motion 'encoding' NUL text */
     if (*target == vimenc_atom)
 	*length += STRLEN(p_enc) + 2;
-#endif
 
     if (save_length < *length || save_length / 2 >= *length)
 	*value = XtRealloc((char *)save_result, (Cardinal)*length + 1);
@@ -2463,11 +2381,7 @@ clip_x11_convert_selection_cb(
     save_result = (char_u *)*value;
     save_length = *length;
 
-    if (*target == XA_STRING
-#ifdef FEAT_MBYTE
-	    || (*target == utf8_atom && enc_utf8)
-#endif
-	    )
+    if (*target == XA_STRING || (*target == utf8_atom && enc_utf8))
     {
 	mch_memmove(save_result, string, (size_t)(*length));
 	*type = *target;
@@ -2495,7 +2409,6 @@ clip_x11_convert_selection_cb(
 	save_result = (char_u *)*value;
 	save_length = *length;
     }
-#ifdef FEAT_MBYTE
     else if (*target == vimenc_atom)
     {
 	int l = STRLEN(p_enc);
@@ -2505,7 +2418,6 @@ clip_x11_convert_selection_cb(
 	mch_memmove(save_result + l + 2, string, (size_t)(*length - l - 2));
 	*type = vimenc_atom;
     }
-#endif
     else
     {
 	save_result[0] = motion_type;
@@ -2599,7 +2511,6 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
 
     if (nbytes > 0)
     {
-#ifdef FEAT_MBYTE
 	int  done = FALSE;
 
 	/* CUT_BUFFER0 is supposed to be always latin1.  Convert to 'enc' when
@@ -2625,7 +2536,6 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
 	    }
 	}
 	if (!done)  /* use the text without conversion */
-#endif
 	    clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
 	XFree((void *)buffer);
 	if (p_verbose > 0)

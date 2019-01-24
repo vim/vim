@@ -1349,9 +1349,7 @@ find_tags(
 #endif
 
     pat_T	orgpat;			/* holds unconverted pattern info */
-#ifdef FEAT_MBYTE
     vimconv_T	vimconv;
-#endif
 
 #ifdef FEAT_TAG_BINS
     int		findall = (mincount == MAXCOL || mincount == TAG_MANY);
@@ -1387,9 +1385,7 @@ find_tags(
 
     help_save = curbuf->b_help;
     orgpat.pat = pat;
-#ifdef FEAT_MBYTE
     vimconv.vc_type = CONV_NONE;
-#endif
 
     /*
      * Allocate memory for the buffers that are used
@@ -1725,7 +1721,6 @@ find_tags(
 	    }
 line_read_in:
 
-#ifdef FEAT_MBYTE
 	    if (vimconv.vc_type != CONV_NONE)
 	    {
 		char_u	*conv_line;
@@ -1752,7 +1747,6 @@ line_read_in:
 		    }
 		}
 	    }
-#endif
 
 
 #ifdef FEAT_EMACS_TAGS
@@ -1846,7 +1840,6 @@ line_read_in:
 		    if (STRNCMP(lbuf, "!_TAG_FILE_SORTED\t", 18) == 0)
 			tag_file_sorted = lbuf[18];
 #endif
-#ifdef FEAT_MBYTE
 		    if (STRNCMP(lbuf, "!_TAG_FILE_ENCODING\t", 20) == 0)
 		    {
 			/* Prepare to convert every line from the specified
@@ -1856,7 +1849,6 @@ line_read_in:
 			*p = NUL;
 			convert_setup(&vimconv, lbuf + 20, p_enc);
 		    }
-#endif
 
 		    /* Read the next line.  Unrecognized flags are ignored. */
 		    continue;
@@ -2472,10 +2464,8 @@ parse_line:
 	    vim_free(incstack[incstack_idx].etag_fname);
 	}
 #endif
-#ifdef FEAT_MBYTE
 	if (vimconv.vc_type != CONV_NONE)
 	    convert_setup(&vimconv, NULL, NULL);
-#endif
 
 #ifdef FEAT_TAG_BINS
 	tag_file_sorted = NUL;

@@ -3552,7 +3552,7 @@ convert_filterW(char_u *s)
  *  initdir - directory in which to open the browser (NULL = current dir)
  *  filter  - Filter for matched files to choose from.
  */
-    static char_u *
+    char_u *
 gui_mch_browse(
 	int saving,
 	char_u *title,

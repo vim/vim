@@ -44,7 +44,6 @@ EXTERN sattr_T	*ScreenAttrs INIT(= NULL);
 EXTERN unsigned	*LineOffset INIT(= NULL);
 EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
 
-#ifdef FEAT_MBYTE
 /*
  * When using Unicode characters (in UTF-8 encoding) the character in
  * ScreenLinesUC[] contains the Unicode for the character at this position, or
@@ -61,7 +60,6 @@ EXTERN int	Screen_mco INIT(= 0);		/* value of p_mco used when
 /* Only used for euc-jp: Second byte of a character that starts with 0x8e.
  * These are single-width. */
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
-#endif
 
 /*
  * Indexes for tab page line:
@@ -798,41 +796,38 @@ EXTERN int	vr_lines_changed INIT(= 0); /* #Lines changed by "gR" so far */
 EXTERN JMP_BUF x_jump_env;
 #endif
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /*
  * These flags are set based upon 'fileencoding'.
  * Note that "enc_utf8" is also set for "unicode", because the characters are
  * internally stored as UTF-8 (to avoid trouble with NUL bytes).
  */
-# define DBCS_JPN	932	/* japan */
-# define DBCS_JPNU	9932	/* euc-jp */
-# define DBCS_KOR	949	/* korea */
-# define DBCS_KORU	9949	/* euc-kr */
-# define DBCS_CHS	936	/* chinese */
-# define DBCS_CHSU	9936	/* euc-cn */
-# define DBCS_CHT	950	/* taiwan */
-# define DBCS_CHTU	9950	/* euc-tw */
-# define DBCS_2BYTE	1	/* 2byte- */
-# define DBCS_DEBUG	-1
-#endif
+#define DBCS_JPN	932	/* japan */
+#define DBCS_JPNU	9932	/* euc-jp */
+#define DBCS_KOR	949	/* korea */
+#define DBCS_KORU	9949	/* euc-kr */
+#define DBCS_CHS	936	/* chinese */
+#define DBCS_CHSU	9936	/* euc-cn */
+#define DBCS_CHT	950	/* taiwan */
+#define DBCS_CHTU	9950	/* euc-tw */
+#define DBCS_2BYTE	1	/* 2byte- */
+#define DBCS_DEBUG	-1
 
-#ifdef FEAT_MBYTE
 EXTERN int	enc_dbcs INIT(= 0);		/* One of DBCS_xxx values if
 						   DBCS encoding */
 EXTERN int	enc_unicode INIT(= 0);	/* 2: UCS-2 or UTF-16, 4: UCS-4 */
 EXTERN int	enc_utf8 INIT(= FALSE);		/* UTF-8 encoded Unicode */
 EXTERN int	enc_latin1like INIT(= TRUE);	/* 'encoding' is latin1 comp. */
-# if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /* Codepage nr of 'encoding'.  Negative means it's not been set yet, zero
  * means 'encoding' is not a valid codepage. */
 EXTERN int	enc_codepage INIT(= -1);
 EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
-# endif
+#endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-# if defined(WIN3264) && defined(FEAT_MBYTE)
+#if defined(WIN3264)
 EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
-# endif
+#endif
 
 /*
  * To speed up BYTELEN() we fill a table with the byte lengths whenever
@@ -875,7 +870,6 @@ EXTERN int (*iconvctl) (iconv_t cd, int request, void *argument);
 EXTERN int* (*iconv_errno) (void);
 # endif
 
-#endif /* FEAT_MBYTE */
 
 #ifdef FEAT_XIM
 # ifdef FEAT_GUI_GTK

@@ -24,11 +24,7 @@ static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception
 typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #endif
 
-#ifdef FEAT_MBYTE
-# define ENC_OPT ((char *)p_enc)
-#else
-# define ENC_OPT "latin1"
-#endif
+#define ENC_OPT ((char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"
 
 static const char *vim_special_path = "_vim_path_";
@@ -985,11 +981,7 @@ VimStrwidth(PyObject *self UNUSED, PyObject *string)
     if (!(str = StringToChars(string, &todecref)))
 	return NULL;
 
-#ifdef FEAT_MBYTE
     len = mb_string2cells(str, (int)STRLEN(str));
-#else
-    len = STRLEN(str);
-#endif
 
     Py_XDECREF(todecref);
 

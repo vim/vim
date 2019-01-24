@@ -306,9 +306,7 @@ static int read_sofo_section(FILE *fd, slang_T *slang);
 static int read_compound(FILE *fd, slang_T *slang, int len);
 static int set_sofo(slang_T *lp, char_u *from, char_u *to);
 static void set_sal_first(slang_T *lp);
-#ifdef FEAT_MBYTE
 static int *mb_str2wide(char_u *s);
-#endif
 static int spell_read_tree(FILE *fd, char_u **bytsp, idx_T **idxsp, int prefixtree, int prefixcnt);
 static idx_T read_tree_node(FILE *fd, char_u *byts, idx_T *idxs, int maxidx, idx_T startidx, int prefixtree, int maxprefcondnr);
 static void set_spell_charflags(char_u *flags, int cnt, char_u *upp);
@@ -1062,7 +1060,6 @@ read_sal_section(FILE *fd, slang_T *slang)
 	    return ccnt;
 	}
 
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    /* convert the multi-byte strings to wide char strings */
@@ -1088,7 +1085,6 @@ read_sal_section(FILE *fd, slang_T *slang)
 		return SP_OTHERERROR;
 	    }
 	}
-#endif
     }
 
     if (gap->ga_len > 0)
@@ -1104,7 +1100,6 @@ read_sal_section(FILE *fd, slang_T *slang)
 	smp->sm_oneof = NULL;
 	smp->sm_rules = p;
 	smp->sm_to = NULL;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    smp->sm_lead_w = mb_str2wide(smp->sm_lead);
@@ -1112,7 +1107,6 @@ read_sal_section(FILE *fd, slang_T *slang)
 	    smp->sm_oneof_w = NULL;
 	    smp->sm_to_w = NULL;
 	}
-#endif
 	++gap->ga_len;
     }
 
@@ -1268,10 +1262,8 @@ read_compound(FILE *fd, slang_T *slang, int len)
      * Inserting backslashes may double the length, "^\(\)$<Nul>" is 7 bytes.
      * Conversion to utf-8 may double the size. */
     c = todo * 2 + 7;
-#ifdef FEAT_MBYTE
     if (enc_utf8)
 	c += todo * 2;
-#endif
     pat = alloc((unsigned)c);
     if (pat == NULL)
 	return SP_OTHERERROR;
@@ -1367,11 +1359,9 @@ read_compound(FILE *fd, slang_T *slang, int len)
 	{
 	    if (c == '?' || c == '+' || c == '~')
 		*pp++ = '\\';	    /* "a?" becomes "a\?", "a+" becomes "a\+" */
-#ifdef FEAT_MBYTE
 	    if (enc_utf8)
 		pp += mb_char2bytes(c, pp);
 	    else
-#endif
 		*pp++ = c;
 	}
     }
@@ -1401,7 +1391,6 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 {
     int		i;
 
-#ifdef FEAT_MBYTE
     garray_T	*gap;
     char_u	*s;
     char_u	*p;
@@ -1468,7 +1457,6 @@ set_sofo(slang_T *lp, char_u *from, char_u *to)
 	}
     }
     else
-#endif
     {
 	/* mapping bytes to bytes is done in sl_sal_first[] */
 	if (STRLEN(from) != STRLEN(to))
@@ -1500,19 +1488,16 @@ set_sal_first(slang_T *lp)
     smp = (salitem_T *)gap->ga_data;
     for (i = 0; i < gap->ga_len; ++i)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    /* Use the lowest byte of the first character.  For latin1 it's
 	     * the character, for other encodings it should differ for most
 	     * characters. */
 	    c = *smp[i].sm_lead_w & 0xff;
 	else
-#endif
 	    c = *smp[i].sm_lead;
 	if (sfirst[c] == -1)
 	{
 	    sfirst[c] = i;
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		int		n;
@@ -1540,12 +1525,10 @@ set_sal_first(slang_T *lp)
 			smp[i] = tsal;
 		    }
 	    }
-#endif
 	}
     }
 }
 
-#ifdef FEAT_MBYTE
 /*
  * Turn a multi-byte string into a wide character string.
  * Return it in allocated memory (NULL for out-of-memory)
@@ -1566,7 +1549,6 @@ mb_str2wide(char_u *s)
     }
     return res;
 }
-#endif
 
 /*
  * Read a tree from the .spl or .sug file.
@@ -1820,11 +1802,7 @@ struct affentry_S
     char	ae_comppermit;	/* COMPOUNDPERMITFLAG found */
 };
 
-#ifdef FEAT_MBYTE
-# define AH_KEY_LEN 17		/* 2 x 8 bytes + NUL */
-#else
-# define AH_KEY_LEN 7		/* 6 digits + NUL */
-#endif
+#define AH_KEY_LEN 17		/* 2 x 8 bytes + NUL */
 
 /* Affix header from ".aff" file.  Used for af_pref and af_suff. */
 typedef struct affheader_S
@@ -2271,7 +2249,6 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 
 	/* Convert from "SET" to 'encoding' when needed. */
 	vim_free(pc);
-#ifdef FEAT_MBYTE
 	if (spin->si_conv.vc_type != CONV_NONE)
 	{
 	    pc = string_convert(&spin->si_conv, rline, NULL);
@@ -2284,7 +2261,6 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    line = pc;
 	}
 	else
-#endif
 	{
 	    pc = NULL;
 	    line = rline;
@@ -2319,7 +2295,6 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	{
 	    if (is_aff_rule(items, itemcnt, "SET", 2) && aff->af_enc == NULL)
 	    {
-#ifdef FEAT_MBYTE
 		/* Setup for conversion from "ENC" to 'encoding'. */
 		aff->af_enc = enc_canonize(items[1]);
 		if (aff->af_enc != NULL && !spin->si_ascii
@@ -2328,9 +2303,6 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		    smsg(_("Conversion in %s not supported: from %s to %s"),
 					       fname, aff->af_enc, p_enc);
 		spin->si_conv.vc_fail = TRUE;
-#else
-		    smsg(_("Conversion in %s not supported"), fname);
-#endif
 	    }
 	    else if (is_aff_rule(items, itemcnt, "FLAG", 2)
 					      && aff->af_flagtype == AFT_CHAR)
@@ -2772,13 +2744,8 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 			 * be empty or start with the same letter. */
 			if (aff_entry->ae_chop != NULL
 				&& aff_entry->ae_add != NULL
-#ifdef FEAT_MBYTE
 				&& aff_entry->ae_chop[(*mb_ptr2len)(
-						   aff_entry->ae_chop)] == NUL
-#else
-				&& aff_entry->ae_chop[1] == NUL
-#endif
-				)
+						   aff_entry->ae_chop)] == NUL)
 			{
 			    int		c, c_up;
 
@@ -2803,7 +2770,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 				    if (aff_entry->ae_cond != NULL)
 				    {
 					char_u	buf[MAXLINELEN];
-#ifdef FEAT_MBYTE
+
 					if (has_mbyte)
 					{
 					    onecap_copy(items[4], buf, TRUE);
@@ -2811,7 +2778,6 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 								   spin, buf);
 					}
 					else
-#endif
 					    *aff_entry->ae_cond = c_up;
 					if (aff_entry->ae_cond != NULL)
 					{
@@ -2947,11 +2913,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		    /* Check that every character appears only once. */
 		    for (p = items[1]; *p != NUL; )
 		    {
-#ifdef FEAT_MBYTE
 			c = mb_ptr2char_adv(&p);
-#else
-			c = *p++;
-#endif
 			if ((spin->si_map.ga_len > 0
 				    && vim_strchr(spin->si_map.ga_data, c)
 								      != NULL)
@@ -3034,11 +2996,7 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	 * Don't write one for utf-8 either, we use utf_*() and
 	 * mb_get_class(), the list of chars in the file will be incomplete.
 	 */
-	if (!spin->si_ascii
-#ifdef FEAT_MBYTE
-		&& !enc_utf8
-#endif
-		)
+	if (!spin->si_ascii && !enc_utf8)
 	{
 	    if (fol == NULL || low == NULL || upp == NULL)
 		smsg(_("Missing FOL/LOW/UPP line in %s"), fname);
@@ -3243,21 +3201,13 @@ get_affitem(int flagtype, char_u **pp)
     }
     else
     {
-#ifdef FEAT_MBYTE
 	res = mb_ptr2char_adv(pp);
-#else
-	res = *(*pp)++;
-#endif
 	if (flagtype == AFT_LONG || (flagtype == AFT_CAPLONG
 						 && res >= 'A' && res <= 'Z'))
 	{
 	    if (**pp == NUL)
 		return 0;
-#ifdef FEAT_MBYTE
 	    res = mb_ptr2char_adv(pp) + (res << 16);
-#else
-	    res = *(*pp)++ + (res << 16);
-#endif
 	}
     }
     return res;
@@ -3381,18 +3331,10 @@ flag_in_afflist(int flagtype, char_u *afflist, unsigned flag)
 	case AFT_LONG:
 	    for (p = afflist; *p != NUL; )
 	    {
-#ifdef FEAT_MBYTE
 		n = mb_ptr2char_adv(&p);
-#else
-		n = *p++;
-#endif
 		if ((flagtype == AFT_LONG || (n >= 'A' && n <= 'Z'))
 								 && *p != NUL)
-#ifdef FEAT_MBYTE
 		    n = mb_ptr2char_adv(&p) + (n << 16);
-#else
-		    n = *p++ + (n << 16);
-#endif
 		if (n == flag)
 		    return TRUE;
 	    }
@@ -3589,7 +3531,6 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	    continue;	/* empty line */
 	line[l] = NUL;
 
-#ifdef FEAT_MBYTE
 	/* Convert from "SET" to 'encoding' when needed. */
 	if (spin->si_conv.vc_type != CONV_NONE)
 	{
@@ -3603,7 +3544,6 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	    w = pc;
 	}
 	else
-#endif
 	{
 	    pc = NULL;
 	    w = line;
@@ -3930,7 +3870,6 @@ store_aff_word(
 			    if (ae->ae_chop != NULL)
 			    {
 				/* Skip chop string. */
-#ifdef FEAT_MBYTE
 				if (has_mbyte)
 				{
 				    i = mb_charlen(ae->ae_chop);
@@ -3938,7 +3877,6 @@ store_aff_word(
 					MB_PTR_ADV(p);
 				}
 				else
-#endif
 				    p += STRLEN(ae->ae_chop);
 			    }
 			    STRCAT(newword, p);
@@ -4162,7 +4100,6 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 
 	/* Convert from "/encoding={encoding}" to 'encoding' when needed. */
 	vim_free(pc);
-#ifdef FEAT_MBYTE
 	if (spin->si_conv.vc_type != CONV_NONE)
 	{
 	    pc = string_convert(&spin->si_conv, rline, NULL);
@@ -4175,7 +4112,6 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    line = pc;
 	}
 	else
-#endif
 	{
 	    pc = NULL;
 	    line = rline;
@@ -4194,7 +4130,6 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 						       fname, lnum, line - 1);
 		else
 		{
-#ifdef FEAT_MBYTE
 		    char_u	*enc;
 
 		    /* Setup for conversion to 'encoding'. */
@@ -4207,9 +4142,6 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 							  fname, line, p_enc);
 		    vim_free(enc);
 		    spin->si_conv.vc_fail = TRUE;
-#else
-		    smsg(_("Conversion in %s not supported"), fname);
-#endif
 		}
 		continue;
 	    }
@@ -4981,11 +4913,9 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	l = 0;
 	for (i = 128; i < 256; ++i)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		l += mb_char2bytes(spelltab.st_fold[i], folchars + l);
 	    else
-#endif
 		folchars[l++] = spelltab.st_fold[i];
 	}
 	put_bytes(fd, (long_u)(1 + 128 + 2 + l), 4);	/* <sectionlen> */
@@ -6112,10 +6042,8 @@ mkspell(
 		    error = TRUE;
 	    }
 
-#ifdef FEAT_MBYTE
 	    /* Free any conversion stuff. */
 	    convert_setup(&spin.si_conv, NULL, NULL);
-#endif
 	}
 
 	if (spin.si_compflags != NULL && spin.si_nobreak)
@@ -6488,15 +6416,10 @@ set_spell_chartab(char_u *fol, char_u *low, char_u *upp)
 	    emsg(_(e_affform));
 	    return FAIL;
 	}
-#ifdef FEAT_MBYTE
 	f = mb_ptr2char_adv(&pf);
 	l = mb_ptr2char_adv(&pl);
 	u = mb_ptr2char_adv(&pu);
-#else
-	f = *pf++;
-	l = *pl++;
-	u = *pu++;
-#endif
+
 	/* Every character that appears is a word character. */
 	if (f < 256)
 	    new_st.st_isw[f] = TRUE;
@@ -6570,11 +6493,7 @@ set_spell_charflags(
 
 	if (*p != NUL)
 	{
-#ifdef FEAT_MBYTE
 	    c = mb_ptr2char_adv(&p);
-#else
-	    c = *p++;
-#endif
 	    new_st.st_fold[i + 128] = c;
 	    if (i + 128 != c && new_st.st_isu[i + 128] && c < 256)
 		new_st.st_upper[c] = i + 128;
@@ -6675,9 +6594,7 @@ set_map_str(slang_T *lp, char_u *map)
     /* Init the array and hash tables empty. */
     for (i = 0; i < 256; ++i)
 	lp->sl_map_array[i] = 0;
-#ifdef FEAT_MBYTE
     hash_init(&lp->sl_map_hash);
-#endif
 
     /*
      * The similar characters are stored separated with slashes:
@@ -6686,11 +6603,7 @@ set_map_str(slang_T *lp, char_u *map)
      */
     for (p = map; *p != NUL; )
     {
-#ifdef FEAT_MBYTE
 	c = mb_cptr2char_adv(&p);
-#else
-	c = *p++;
-#endif
 	if (c == '/')
 	    headc = 0;
 	else
@@ -6698,7 +6611,6 @@ set_map_str(slang_T *lp, char_u *map)
 	    if (headc == 0)
 		 headc = c;
 
-#ifdef FEAT_MBYTE
 	    /* Characters above 255 don't fit in sl_map_array[], put them in
 	     * the hash table.  Each entry is the char, a NUL the headchar and
 	     * a NUL. */
@@ -6730,7 +6642,6 @@ set_map_str(slang_T *lp, char_u *map)
 		}
 	    }
 	    else
-#endif
 		lp->sl_map_array[c] = headc;
 	}
     }

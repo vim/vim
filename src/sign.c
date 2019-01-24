@@ -820,7 +820,6 @@ sign_define_init_text(sign_T *sp, char_u *text)
 	}
 
     // Count cells and check for non-printable chars
-# ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	cells = 0;
@@ -832,7 +831,6 @@ sign_define_init_text(sign_T *sp, char_u *text)
 	}
     }
     else
-# endif
     {
 	for (s = text; s < endp; ++s)
 	    if (!vim_isprintc(*s))
