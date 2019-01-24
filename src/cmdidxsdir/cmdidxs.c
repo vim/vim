@@ -56,7 +56,7 @@ main(int argc, char *argv[])
 	    cmdidxs2[j][k] = -1;
     }
 
-    fp = fopen("../ex_cmds.h", "r");
+    fp = fopen("ex_cmds.h", "r");
     if (NULL != fp)
     {
         while (NULL != fgets(line, sizeof(line), fp))
@@ -83,7 +83,7 @@ main(int argc, char *argv[])
         }
     }
 
-    fp = fopen("../ex_cmdidxs.h", "w");
+    fp = fopen("ex_cmdidxs.h", "w");
     if (NULL != fp)
     {
         fprintf(fp, "/* Automatically generated code by cmdidxs/cmdidxs\n");

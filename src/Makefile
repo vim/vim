@@ -1972,9 +1972,8 @@ autoconf:
 # This only needs to be run when a command name has been added or changed.
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
-cmdidxs/cmdidxs: cmdidxs/cmdidxs.c ex_cmds.h
-	cd cmdidxs; CC="$(CC)" \
-		$(MAKE) -f Makefile
+cmdidxs: cmdidxsdir/cmdidxs.c ex_cmds.h
+	$(CC) -o cmdidxs cmdidxsdir/cmdidxs.c && ./cmdidxs && rm ./cmdidxs
 
 # The normal command to compile a .c file to its .o file.
 # Without or with ALL_CFLAGS.
@@ -1984,7 +1983,7 @@ CCC = $(CCC_NF) $(ALL_CFLAGS)
 
 # Link the target for normal use or debugging.
 # A shell script is used to try linking without unnecessary libraries.
-$(VIMTARGET): cmdidxs/cmdidxs auto/config.mk objects $(OBJ) version.c version.h
+$(VIMTARGET): cmdidxs auto/config.mk objects $(OBJ) version.c version.h
 	$(CCC) version.c -o objects/version.o
 	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
@@ -2756,7 +2755,6 @@ clean celan: testclean
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
-	-cd cmdidxs; $(MAKE) -f Makefile clean
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
