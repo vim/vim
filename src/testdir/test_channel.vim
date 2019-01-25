@@ -966,15 +966,15 @@ func Run_pipe_through_sort(all, use_buffer)
     let options.in_top = 2
     let options.in_bot = 4
   endif
-  let g:job = job_start('sort', options)
+  let job = job_start('sort', options)
 
   if !a:use_buffer
-    call assert_equal("run", job_status(g:job))
-    call ch_sendraw(g:job, "ccc\naaa\nddd\nbbb\neee\n")
-    call ch_close_in(g:job)
+    call assert_equal("run", job_status(job))
+    call ch_sendraw(job, "ccc\naaa\nddd\nbbb\neee\n")
+    call ch_close_in(job)
   endif
 
-  call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
 
   sp sortout
   call WaitFor('line("$") > 3')
@@ -985,8 +985,7 @@ func Run_pipe_through_sort(all, use_buffer)
     call assert_equal(['aaa', 'bbb', 'ddd'], getline(2, 4))
   endif
 
-  call job_stop(g:job)
-  unlet g:job
+  call job_stop(job)
   if a:use_buffer
     bwipe! sortin
   endif
@@ -1186,7 +1185,7 @@ func Test_pipe_to_buffer_raw()
   split testout
   let job = job_start([s:python, '-c', 
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
-  call assert_equal("run", job_status(job))
+  call assert_match('^\%(dead\|run\)$', job_status(job))
   call WaitFor('len(join(getline(1, "$"), "")) >= 10000')
   try
     let totlen = 0
@@ -1291,7 +1290,7 @@ func Test_out_close_cb()
   let job = job_start(s:python . " test_channel_pipe.py quit now",
 	\ {'out_cb': 'OutHandler',
 	\  'close_cb': 'CloseHandler'})
-  call assert_equal("run", job_status(job))
+  call assert_match('^\%(dead\|run\)$', job_status(job))
   try
     call WaitForAssert({-> assert_equal('quit', g:Ch_msg1)})
     call WaitForAssert({-> assert_equal(2, g:Ch_closemsg)})
@@ -1314,7 +1313,7 @@ func Test_read_in_close_cb()
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py quit now",
 	\ {'close_cb': 'CloseHandler'})
-  call assert_equal("run", job_status(job))
+  call assert_match('^\%(dead\|run\)$', job_status(job))
   try
     call WaitForAssert({-> assert_equal('quit', g:Ch_received)})
   finally
@@ -1338,7 +1337,7 @@ func Test_read_in_close_cb_incomplete()
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py incomplete",
 	\ {'close_cb': 'CloseHandler'})
-  call assert_equal("run", job_status(job))
+  call assert_match('^\%(dead\|run\)$', job_status(job))
   try
     call WaitForAssert({-> assert_equal('incomplete', g:Ch_received)})
   finally
@@ -1385,13 +1384,12 @@ func Test_close_and_exit_cb()
     let self.ret['exit_cb'] = job_status(a:job)
   endfunc
 
-  let g:job = job_start(has('win32') ? 'cmd /c echo:' : 'echo',
+  let job = job_start([&shell, &shellcmdflag, 'echo'],
         \ {'close_cb': g:retdict.close_cb,
         \  'exit_cb': g:retdict.exit_cb})
-  call assert_equal('run', job_status(g:job))
-  unlet g:job
+  call assert_match('^\%(dead\|run\)$', job_status(job))
   call WaitForAssert({-> assert_equal(2, len(g:retdict.ret))})
-  call assert_match('^\%(dead\|run\)', g:retdict.ret['close_cb'])
+  call assert_match('^\%(dead\|run\)$', g:retdict.ret['close_cb'])
   call assert_equal('dead', g:retdict.ret['exit_cb'])
   unlet g:retdict
 endfunc
