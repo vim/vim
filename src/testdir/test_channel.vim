@@ -879,19 +879,19 @@ endfunc
 func Test_pipe_err_to_buffer_name()
   call Run_test_pipe_err_to_buffer(1, 0, 1)
 endfunc
-  
+
 func Test_pipe_err_to_buffer_nr()
   call Run_test_pipe_err_to_buffer(0, 0, 1)
 endfunc
-  
+
 func Test_pipe_err_to_buffer_name_nomod()
   call Run_test_pipe_err_to_buffer(1, 1, 1)
 endfunc
-  
+
 func Test_pipe_err_to_buffer_name_nomsg()
   call Run_test_pipe_err_to_buffer(1, 0, 0)
 endfunc
-  
+
 func Test_pipe_both_to_buffer()
   if !has('job')
     return
@@ -1247,9 +1247,9 @@ func Test_out_cb()
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_cb': dict.outHandler,
-	\ 'out_mode': 'json',
-	\ 'err_cb': dict.errHandler,
-	\ 'err_mode': 'json'})
+	\  'out_mode': 'json',
+	\  'err_cb': dict.errHandler,
+	\  'err_mode': 'json'})
   call assert_equal("run", job_status(job))
   try
     let g:Ch_outmsg = ''
@@ -1290,7 +1290,7 @@ func Test_out_close_cb()
   endfunc
   let job = job_start(s:python . " test_channel_pipe.py quit now",
 	\ {'out_cb': 'OutHandler',
-	\ 'close_cb': 'CloseHandler'})
+	\  'close_cb': 'CloseHandler'})
   call assert_equal("run", job_status(job))
   try
     call WaitForAssert({-> assert_equal('quit', g:Ch_msg1)})
@@ -1354,10 +1354,10 @@ func Test_out_cb_lambda()
   call ch_log('Test_out_cb_lambda()')
 
   let job = job_start(s:python . " test_channel_pipe.py",
-  \ {'out_cb': {ch, msg -> execute("let g:Ch_outmsg = 'lambda: ' . msg")},
-  \ 'out_mode': 'json',
-  \ 'err_cb': {ch, msg -> execute(":let g:Ch_errmsg = 'lambda: ' . msg")},
-  \ 'err_mode': 'json'})
+        \ {'out_cb': {ch, msg -> execute("let g:Ch_outmsg = 'lambda: ' . msg")},
+        \  'out_mode': 'json',
+        \  'err_cb': {ch, msg -> execute(":let g:Ch_errmsg = 'lambda: ' . msg")},
+        \  'err_mode': 'json'})
   call assert_equal("run", job_status(job))
   try
     let g:Ch_outmsg = ''
@@ -1385,10 +1385,9 @@ func Test_close_and_exit_cb()
     let self.ret['exit_cb'] = job_status(a:job)
   endfunc
 
-  let g:job = job_start(has('win32') ? 'cmd /c echo:' : 'echo', {
-        \ 'close_cb': g:retdict.close_cb,
-        \ 'exit_cb': g:retdict.exit_cb,
-        \ })
+  let g:job = job_start(has('win32') ? 'cmd /c echo:' : 'echo',
+        \ {'close_cb': g:retdict.close_cb,
+        \  'exit_cb': g:retdict.exit_cb})
   call assert_equal('run', job_status(g:job))
   unlet g:job
   call WaitForAssert({-> assert_equal(2, len(g:retdict.ret))})
@@ -1415,7 +1414,7 @@ func Test_exit_cb_wipes_buf()
   let g:wipe_buf = bufnr('')
 
   let job = job_start(has('win32') ? 'cmd /c echo:' : ['true'],
-			  \ {'exit_cb': 'ExitCbWipe'})
+	\ {'exit_cb': 'ExitCbWipe'})
   let timer = timer_start(300, {-> feedkeys("\<Esc>", 'nt')}, {'repeat': 5})
   call feedkeys(repeat('g', 1000) . 'o', 'ntx!')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
@@ -1933,7 +1932,8 @@ func Test_keep_pty_open()
     return
   endif
 
-  let job = job_start(s:python . ' -c "import time;time.sleep(0.2)"', {'out_io': 'null', 'err_io': 'null', 'pty': 1})
+  let job = job_start(s:python . ' -c "import time;time.sleep(0.2)"',
+        \ {'out_io': 'null', 'err_io': 'null', 'pty': 1})
   let elapsed = WaitFor({-> job_status(job) ==# 'dead'})
   call assert_inrange(200, 1000, elapsed)
   call job_stop(job)
@@ -1985,13 +1985,14 @@ func Test_raw_large_data()
   try
     let g:out = ''
     let job = job_start(s:python . " test_channel_pipe.py",
-	  \ {'mode': 'raw', 'drop': 'never', 'noblock': 1,
-      \  'callback': {ch, msg -> execute('let g:out .= msg')}})
+          \ {'mode': 'raw', 'drop': 'never', 'noblock': 1,
+          \  'callback': {ch, msg -> execute('let g:out .= msg')}})
 
-    let want = repeat('X', 79999) . "\n"
+    let outlen = 79999
+    let want = repeat('X', outlen) . "\n"
     call ch_sendraw(job, want)
-    let g:Ch_job = job
-    call WaitForAssert({-> assert_equal("dead", job_status(g:Ch_job))})
+    call WaitFor({-> len(g:out) >= outlen}, 10000)
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
     call assert_equal(want, substitute(g:out, '\r', '', 'g'))
   finally
     call job_stop(job)
