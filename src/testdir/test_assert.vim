@@ -31,6 +31,10 @@ func Test_assert_equal()
   call assert_equal(1, assert_equal('bar', s))
   call assert_match("Expected 'bar' but got 'foo'", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal('XxxxxxxxxxxxxxxxxxxxxxX', 'XyyyyyyyyyyyyyyyyyyyyyyyyyX')
+  call assert_match("Expected 'X\\\\\\[x occurs 21 times]X' but got 'X\\\\\\[y occurs 25 times]X'", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_equalfile()
