@@ -85,10 +85,8 @@ static int last_idx = 0;	/* index in spats[] for RE_LAST */
 static char_u lastc[2] = {NUL, NUL};	/* last character searched for */
 static int lastcdir = FORWARD;		/* last direction of character search */
 static int last_t_cmd = TRUE;		/* last search t_cmd */
-#ifdef FEAT_MBYTE
 static char_u	lastc_bytes[MB_MAXBYTES + 1];
 static int	lastc_bytelen = 1;	/* >1 for multi-byte char */
-#endif
 
 /* copy of spats[], for keeping the search patterns while executing autocmds */
 static struct spat  saved_spats[2];
@@ -248,7 +246,6 @@ reverse_text(char_u *s)
 	rev_i = len;
 	for (s_i = 0; s_i < len; ++s_i)
 	{
-# ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		int	mb_len;
@@ -259,7 +256,6 @@ reverse_text(char_u *s)
 		s_i += mb_len - 1;
 	    }
 	    else
-# endif
 		rev[--rev_i] = s[s_i];
 
 	}
@@ -446,7 +442,6 @@ pat_has_uppercase(char_u *pat)
 
     while (*p != NUL)
     {
-#ifdef FEAT_MBYTE
 	int		l;
 
 	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
@@ -455,9 +450,7 @@ pat_has_uppercase(char_u *pat)
 		return TRUE;
 	    p += l;
 	}
-	else
-#endif
-	     if (*p == '\\')
+	else if (*p == '\\')
 	{
 	    if (p[1] == '_' && p[2] != NUL)  /* skip "\_X" */
 		p += 3;
@@ -476,14 +469,11 @@ pat_has_uppercase(char_u *pat)
     return FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     char_u *
 last_csearch(void)
 {
-#ifdef FEAT_MBYTE
     return lastc_bytes;
-#else
-    return lastc;
-#endif
 }
 
     int
@@ -502,14 +492,13 @@ last_csearch_until(void)
 set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
 {
     *lastc = c;
-#ifdef FEAT_MBYTE
     lastc_bytelen = len;
     if (len)
 	memcpy(lastc_bytes, s, len);
     else
 	vim_memset(lastc_bytes, 0, sizeof(lastc_bytes));
-#endif
 }
+#endif
 
     void
 set_csearch_direction(int cdir)
@@ -685,7 +674,6 @@ searchit(
 	 * MAXCOL + 1 is zero. */
 	if (pos->col == MAXCOL)
 	    start_char_len = 0;
-#ifdef FEAT_MBYTE
 	/* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
 	else if (has_mbyte
 		    && pos->lnum >= 1 && pos->lnum <= buf->b_ml.ml_line_count
@@ -697,7 +685,6 @@ searchit(
 	    else
 		start_char_len = (*mb_ptr2len)(ptr + pos->col);
 	}
-#endif
 	else
 	    start_char_len = 1;
 	if (dir == FORWARD)
@@ -833,12 +820,10 @@ searchit(
 				if (matchcol == matchpos.col
 						      && ptr[matchcol] != NUL)
 				{
-#ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
 					  (*mb_ptr2len)(ptr + matchcol);
 				    else
-#endif
 					++matchcol;
 				}
 			    }
@@ -847,12 +832,10 @@ searchit(
 				matchcol = matchpos.col;
 				if (ptr[matchcol] != NUL)
 				{
-#ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol += (*mb_ptr2len)(ptr
 								  + matchcol);
 				    else
-#endif
 					++matchcol;
 				}
 			    }
@@ -944,12 +927,10 @@ searchit(
 				if (matchcol == matchpos.col
 						      && ptr[matchcol] != NUL)
 				{
-#ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
 					  (*mb_ptr2len)(ptr + matchcol);
 				    else
-#endif
 					++matchcol;
 				}
 			    }
@@ -961,12 +942,10 @@ searchit(
 				matchcol = matchpos.col;
 				if (ptr[matchcol] != NUL)
 				{
-#ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					matchcol +=
 					  (*mb_ptr2len)(ptr + matchcol);
 				    else
-#endif
 					++matchcol;
 				}
 			    }
@@ -1027,14 +1006,12 @@ searchit(
 			else
 			{
 			    --pos->col;
-#ifdef FEAT_MBYTE
 			    if (has_mbyte
 				    && pos->lnum <= buf->b_ml.ml_line_count)
 			    {
 				ptr = ml_get_buf(buf, pos->lnum, FALSE);
 				pos->col -= (*mb_head_off)(ptr, ptr + pos->col);
 			    }
-#endif
 			}
 			if (end_pos != NULL)
 			{
@@ -1408,7 +1385,6 @@ do_search(
 	    if (msgbuf != NULL)
 	    {
 		msgbuf[0] = dirc;
-#ifdef FEAT_MBYTE
 		if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
 		{
 		    /* Use a space to draw the composing char on. */
@@ -1416,7 +1392,6 @@ do_search(
 		    STRCPY(msgbuf + 2, p);
 		}
 		else
-#endif
 		    STRCPY(msgbuf + 1, p);
 		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
 		{
@@ -1709,7 +1684,6 @@ searchc(cmdarg_T *cap, int t_cmd)
 	    *lastc = c;
 	    set_csearch_direction(dir);
 	    set_csearch_until(t_cmd);
-#ifdef FEAT_MBYTE
 	    lastc_bytelen = (*mb_char2bytes)(c, lastc_bytes);
 	    if (cap->ncharC1 != 0)
 	    {
@@ -1719,16 +1693,11 @@ searchc(cmdarg_T *cap, int t_cmd)
 		    lastc_bytelen += (*mb_char2bytes)(cap->ncharC2,
 			    lastc_bytes + lastc_bytelen);
 	    }
-#endif
 	}
     }
     else		/* repeat previous search */
     {
-	if (*lastc == NUL
-#ifdef FEAT_MBYTE
-		&& lastc_bytelen == 1
-#endif
-		)
+	if (*lastc == NUL && lastc_bytelen == 1)
 	    return FAIL;
 	if (dir)	/* repeat in opposite direction */
 	    dir = -lastcdir;
@@ -1756,7 +1725,6 @@ searchc(cmdarg_T *cap, int t_cmd)
 
     while (count--)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    for (;;)
@@ -1785,7 +1753,6 @@ searchc(cmdarg_T *cap, int t_cmd)
 	    }
 	}
 	else
-#endif
 	{
 	    for (;;)
 	    {
@@ -1802,7 +1769,6 @@ searchc(cmdarg_T *cap, int t_cmd)
     {
 	/* backup to before the character (possibly double-byte) */
 	col -= dir;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    if (dir < 0)
@@ -1812,7 +1778,6 @@ searchc(cmdarg_T *cap, int t_cmd)
 		/* To previous char, which may be multi-byte. */
 		col -= (*mb_head_off)(p, p + col);
 	}
-#endif
     }
     curwin->w_cursor.col = col;
 
@@ -1849,10 +1814,8 @@ check_prevcol(
     int		*prevcol)
 {
     --col;
-#ifdef FEAT_MBYTE
     if (col > 0 && has_mbyte)
 	col -= (*mb_head_off)(linep, linep + col);
-#endif
     if (prevcol)
 	*prevcol = col;
     return (col >= 0 && linep[col] == ch) ? TRUE : FALSE;
@@ -2235,10 +2198,8 @@ findmatchlimit(
 	    else
 	    {
 		--pos.col;
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    pos.col -= (*mb_head_off)(linep, linep + pos.col);
-#endif
 	    }
 	}
 	else				/* forward search */
@@ -2276,11 +2237,9 @@ findmatchlimit(
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    pos.col += (*mb_ptr2len)(linep + pos.col);
 		else
-#endif
 		    ++pos.col;
 	    }
 	}
@@ -2932,10 +2891,8 @@ findpar(
 	if ((curwin->w_cursor.col = (colnr_T)STRLEN(line)) != 0)
 	{
 	    --curwin->w_cursor.col;
-#ifdef FEAT_MBYTE
 	    curwin->w_cursor.col -=
 			     (*mb_head_off)(line, line + curwin->w_cursor.col);
-#endif
 	    *pincl = TRUE;
 	}
     }
@@ -3027,7 +2984,6 @@ cls(void)
 #endif
     if (c == ' ' || c == '\t' || c == NUL)
 	return 0;
-#ifdef FEAT_MBYTE
     if (enc_dbcs != 0 && c > 0xFF)
     {
 	/* If cls_bigword, report multi-byte chars as class 1. */
@@ -3044,7 +3000,6 @@ cls(void)
 	    return 1;
 	return c;
     }
-#endif
 
     /* If cls_bigword is TRUE, report all non-blanks as class 1. */
     if (cls_bigword)
@@ -3901,7 +3856,6 @@ in_html_tag(
     int		lc = NUL;
     pos_T	pos;
 
-#ifdef FEAT_MBYTE
     if (enc_dbcs)
     {
 	char_u	*lp = NULL;
@@ -3922,7 +3876,6 @@ in_html_tag(
 	}
     }
     else
-#endif
     {
 	for (p = line + curwin->w_cursor.col; p > line; )
 	{
@@ -4369,11 +4322,9 @@ find_next_quote(
 	    ++col;
 	else if (c == quotechar)
 	    break;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    col += (*mb_ptr2len)(line + col);
 	else
-#endif
 	    ++col;
     }
     return col;
@@ -4397,9 +4348,7 @@ find_prev_quote(
     while (col_start > 0)
     {
 	--col_start;
-#ifdef FEAT_MBYTE
 	col_start -= (*mb_head_off)(line, line + col_start);
-#endif
 	n = 0;
 	if (escape != NULL)
 	    while (col_start - n > 0 && vim_strchr(escape,
@@ -5059,7 +5008,7 @@ find_pattern_in_path(
 						       message */
 			    {
 				msg_home_replace_hl(new_fname);
-				MSG_PUTS(_(" (includes previously listed match)"));
+				msg_puts(_(" (includes previously listed match)"));
 				prev_fname = NULL;
 			    }
 			}
@@ -5078,25 +5027,25 @@ find_pattern_in_path(
 		else
 		{
 		    gotocmdline(TRUE);	    /* cursor at status line */
-		    MSG_PUTS_TITLE(_("--- Included files "));
+		    msg_puts_title(_("--- Included files "));
 		    if (action != ACTION_SHOW_ALL)
-			MSG_PUTS_TITLE(_("not found "));
-		    MSG_PUTS_TITLE(_("in path ---\n"));
+			msg_puts_title(_("not found "));
+		    msg_puts_title(_("in path ---\n"));
 		}
 		did_show = TRUE;
 		while (depth_displayed < depth && !got_int)
 		{
 		    ++depth_displayed;
 		    for (i = 0; i < depth_displayed; i++)
-			MSG_PUTS("  ");
+			msg_puts("  ");
 		    msg_home_replace(files[depth_displayed].name);
-		    MSG_PUTS(" -->\n");
+		    msg_puts(" -->\n");
 		}
 		if (!got_int)		    /* don't display if 'q' typed
 					       for "--more--" message */
 		{
 		    for (i = 0; i <= depth_displayed; i++)
-			MSG_PUTS("  ");
+			msg_puts("  ");
 		    if (new_fname != NULL)
 		    {
 			/* using "new_fname" is more reliable, e.g., when
@@ -5154,9 +5103,9 @@ find_pattern_in_path(
 		    if (new_fname == NULL && action == ACTION_SHOW_ALL)
 		    {
 			if (already_searched)
-			    MSG_PUTS(_("  (Already listed)"));
+			    msg_puts(_("  (Already listed)"));
 			else
-			    MSG_PUTS(_("  NOT FOUND"));
+			    msg_puts(_("  NOT FOUND"));
 		    }
 		}
 		out_flush();	    /* output each line directly */
@@ -5212,7 +5161,7 @@ find_pattern_in_path(
 			vim_snprintf((char*)IObuff, IOSIZE,
 				_("Scanning included file: %s"),
 				(char *)new_fname);
-			msg_trunc_attr(IObuff, TRUE, HL_ATTR(HLF_R));
+			msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 		    }
 		    else
 #endif
@@ -5593,9 +5542,9 @@ exit_matched:
 	if (!did_show)
 	{
 	    if (action != ACTION_SHOW_ALL)
-		MSG(_("All included files were found"));
+		msg(_("All included files were found"));
 	    else
-		MSG(_("No included files"));
+		msg(_("No included files"));
 	}
     }
     else if (!found
@@ -5658,11 +5607,11 @@ show_pat_in_path(
 	if (action == ACTION_SHOW_ALL)
 	{
 	    sprintf((char *)IObuff, "%3ld: ", count);	/* show match nr */
-	    msg_puts(IObuff);
+	    msg_puts((char *)IObuff);
 	    sprintf((char *)IObuff, "%4ld", *lnum);	/* show line nr */
 						/* Highlight line numbers */
-	    msg_puts_attr(IObuff, HL_ATTR(HLF_N));
-	    MSG_PUTS(" ");
+	    msg_puts_attr((char *)IObuff, HL_ATTR(HLF_N));
+	    msg_puts(" ");
 	}
 	msg_prt_line(line, FALSE);
 	out_flush();			/* show one line at a time */

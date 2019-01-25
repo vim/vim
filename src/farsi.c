@@ -1719,7 +1719,7 @@ conv_to_pvim(void)
 
     /* Assume the screen has been messed up: clear it and redraw. */
     redraw_later(CLEAR);
-    MSG_ATTR(farsi_text_1, HL_ATTR(HLF_S));
+    msg_attr(farsi_text_1, HL_ATTR(HLF_S));
 }
 
 /*
@@ -1747,7 +1747,7 @@ conv_to_pstd(void)
 
     /* Assume the screen has been messed up: clear it and redraw. */
     redraw_later(CLEAR);
-    MSG_ATTR(farsi_text_2, HL_ATTR(HLF_S));
+    msg_attr(farsi_text_2, HL_ATTR(HLF_S));
 }
 
 /*
@@ -2150,13 +2150,13 @@ farsi_f8(cmdarg_T *cap UNUSED)
 	{
 	    p_fkmap = 0;
 	    do_cmdline_cmd((char_u *)"set norl");
-	    MSG("");
+	    msg("");
 	}
 	else
 	{
 	    p_fkmap = 1;
 	    do_cmdline_cmd((char_u *)"set rl");
-	    MSG("");
+	    msg("");
 	}
 
 	curwin->w_farsi = curwin->w_farsi ^ W_R_L;

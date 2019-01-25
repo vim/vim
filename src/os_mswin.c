@@ -282,7 +282,6 @@ mch_settitle(
 # else
     if (title != NULL)
     {
-#  ifdef FEAT_MBYTE
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
 	    /* Convert the title from 'encoding' to the active codepage. */
@@ -295,7 +294,6 @@ mch_settitle(
 		return;
 	    }
 	}
-#  endif
 	SetConsoleTitle((LPCSTR)title);
     }
 # endif
@@ -361,7 +359,6 @@ mch_FullName(
     else
 #endif
     {
-#ifdef FEAT_MBYTE
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
 	    WCHAR	*wname;
@@ -387,7 +384,6 @@ mch_FullName(
 	    vim_free(cname);
 	}
 	if (nResult == FAIL)	    /* fall back to non-wide function */
-#endif
 	{
 	    if (_fullpath((char *)buf, (const char *)fname, len - 1) == NULL)
 	    {
@@ -415,14 +411,10 @@ mch_FullName(
     int
 mch_isFullName(char_u *fname)
 {
-#ifdef FEAT_MBYTE
     /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
      * means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
      * UTF-8. */
     char szName[_MAX_PATH * 3 + 1];
-#else
-    char szName[_MAX_PATH + 1];
-#endif
 
     /* A name like "d:/foo" and "//server/share" is absolute */
     if ((fname[0] && fname[1] == ':' && (fname[2] == '/' || fname[2] == '\\'))
@@ -538,11 +530,10 @@ stat_symlink_aware(const char *name, stat_T *stp)
     return stat(name, stp);
 }
 
-#ifdef FEAT_MBYTE
     static int
 wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 {
-# if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
+#if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
     /* Work around for VC12 or earlier (and MinGW). _wstat() can't handle
      * symlinks properly.
      * VC9 or earlier: _wstat() doesn't support a symlink at all. It retrieves
@@ -587,10 +578,9 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 	    return n;
 	}
     }
-# endif
+#endif
     return _wstat(name, (struct _stat *)stp);
 }
-#endif
 
 /*
  * stat() can't handle a trailing '/' or '\', remove it first.
@@ -598,14 +588,10 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
     int
 vim_stat(const char *name, stat_T *stp)
 {
-#ifdef FEAT_MBYTE
     /* WinNT and later can use _MAX_PATH wide characters for a pathname, which
      * means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
      * UTF-8. */
     char_u	buf[_MAX_PATH * 3 + 1];
-#else
-    char_u	buf[_MAX_PATH + 1];
-#endif
     char_u	*p;
 
     vim_strncpy((char_u *)buf, (char_u *)name, sizeof(buf) - 1);
@@ -628,7 +614,6 @@ vim_stat(const char *name, stat_T *stp)
 		STRCAT(buf, "\\");
 	}
     }
-#ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	WCHAR	*wp = enc_to_utf16(buf, NULL);
@@ -641,7 +626,6 @@ vim_stat(const char *name, stat_T *stp)
 	    return n;
 	}
     }
-#endif
     return stat_symlink_aware((char *)buf, stp);
 }
 
@@ -791,7 +775,6 @@ mch_chdir(char *path)
     if (*path == NUL)		/* drive name only */
 	return 0;
 
-#ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	WCHAR	*p = enc_to_utf16((char_u *)path, NULL);
@@ -804,7 +787,6 @@ mch_chdir(char *path)
 	    return n;
 	}
     }
-#endif
 
     return chdir(path);	       /* let the normal chdir() do the rest */
 }
@@ -1145,9 +1127,6 @@ static char_u		*prt_name = NULL;
 #define IDC_PRINTTEXT2		402
 #define IDC_PROGRESS		403
 
-#if !defined(FEAT_MBYTE)
-# define vimSetDlgItemText(h, i, s) SetDlgItemText(h, i, s)
-#else
     static BOOL
 vimSetDlgItemText(HWND hDlg, int nIDDlgItem, char_u *s)
 {
@@ -1166,7 +1145,6 @@ vimSetDlgItemText(HWND hDlg, int nIDDlgItem, char_u *s)
     }
     return SetDlgItemText(hDlg, nIDDlgItem, (LPCSTR)s);
 }
-#endif
 
 /*
  * Convert BGR to RGB for Windows GDI calls
@@ -1563,7 +1541,6 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	char_u	*printer_name = (char_u *)devname + devname->wDeviceOffset;
 	char_u	*port_name = (char_u *)devname +devname->wOutputOffset;
 	char_u	*text = (char_u *)_("to %s on %s");
-#ifdef FEAT_MBYTE
 	char_u  *printer_name_orig = printer_name;
 	char_u	*port_name_orig = port_name;
 
@@ -1580,18 +1557,15 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	    if (to_free != NULL)
 		port_name = to_free;
 	}
-#endif
 	prt_name = alloc((unsigned)(STRLEN(printer_name) + STRLEN(port_name)
 							     + STRLEN(text)));
 	if (prt_name != NULL)
 	    wsprintf((char *)prt_name, (const char *)text,
 		    printer_name, port_name);
-#ifdef FEAT_MBYTE
 	if (printer_name != printer_name_orig)
 	    vim_free(printer_name);
 	if (port_name != port_name_orig)
 	    vim_free(port_name);
-#endif
     }
     GlobalUnlock(prt_dlg.hDevNames);
 
@@ -1680,9 +1654,7 @@ mch_print_begin(prt_settings_T *psettings)
 {
     int			ret;
     char		szBuffer[300];
-#if defined(FEAT_MBYTE)
     WCHAR		*wp = NULL;
-#endif
 
     hDlgPrint = CreateDialog(GetModuleHandle(NULL), TEXT("PrintDlgBox"),
 					     prt_dlg.hwndOwner, PrintDlgProc);
@@ -1690,7 +1662,6 @@ mch_print_begin(prt_settings_T *psettings)
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
     vimSetDlgItemText(hDlgPrint, IDC_PRINTTEXT1, (char_u *)szBuffer);
 
-#if defined(FEAT_MBYTE)
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	wp = enc_to_utf16(psettings->jobname, NULL);
     if (wp != NULL)
@@ -1704,7 +1675,6 @@ mch_print_begin(prt_settings_T *psettings)
 	vim_free(wp);
     }
     else
-#endif
     {
 	DOCINFO		di;
 
@@ -1767,10 +1737,7 @@ mch_print_start_line(int margin, int page_line)
     int
 mch_print_text_out(char_u *p, int len)
 {
-#if defined(FEAT_PROPORTIONAL_FONTS) || defined(FEAT_MBYTE)
     SIZE	sz;
-#endif
-#if defined(FEAT_MBYTE)
     WCHAR	*wp = NULL;
     int		wlen = len;
 
@@ -1801,7 +1768,6 @@ mch_print_text_out(char_u *p, int len)
 	}
 	return ret;
     }
-#endif
     TextOut(prt_dlg.hDC, prt_pos_x + prt_left_margin,
 					  prt_pos_y + prt_top_margin,
 					  (LPCSTR)p, len);
@@ -1873,10 +1839,8 @@ mch_resolve_shortcut(char_u *fname)
     CHAR		buf[MAX_PATH]; // could have simply reused 'wsz'...
     char_u		*rfname = NULL;
     int			len;
-# ifdef FEAT_MBYTE
     IShellLinkW		*pslw = NULL;
     WIN32_FIND_DATAW	ffdw; // we get those free of charge
-# endif
 
     /* Check if the file name ends in ".lnk". Avoid calling
      * CoCreateInstance(), it's quite slow. */
@@ -1888,7 +1852,6 @@ mch_resolve_shortcut(char_u *fname)
 
     CoInitialize(NULL);
 
-# ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	// create a link manager object and request its interface
@@ -1930,7 +1893,6 @@ shortcut_errorw:
 	}
 	goto shortcut_end;
     }
-# endif
     // create a link manager object and request its interface
     hr = CoCreateInstance(
 	    &CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
@@ -1969,10 +1931,8 @@ shortcut_end:
 	ppf->lpVtbl->Release(ppf);
     if (psl != NULL)
 	psl->lpVtbl->Release(psl);
-# ifdef FEAT_MBYTE
     if (pslw != NULL)
 	pslw->lpVtbl->Release(pslw);
-# endif
 
     CoUninitialize();
     return rfname;
@@ -2042,13 +2002,8 @@ serverSendEnc(HWND target)
     COPYDATASTRUCT data;
 
     data.dwData = COPYDATA_ENCODING;
-#ifdef FEAT_MBYTE
     data.cbData = (DWORD)STRLEN(p_enc) + 1;
     data.lpData = p_enc;
-#else
-    data.cbData = (DWORD)STRLEN("latin1") + 1;
-    data.lpData = "latin1";
-#endif
     (void)SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
 							     (LPARAM)(&data));
 }
@@ -2118,11 +2073,9 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (data->dwData)
 	{
 	case COPYDATA_ENCODING:
-# ifdef FEAT_MBYTE
 	    /* Remember the encoding that the client uses. */
 	    vim_free(client_enc);
 	    client_enc = enc_canonize((char_u *)data->lpData);
-# endif
 	    return 1;
 
 	case COPYDATA_KEYS:
@@ -2954,15 +2907,12 @@ get_logfont(
     int		i;
     int		ret = FAIL;
     static LOGFONT *lastlf = NULL;
-#ifdef FEAT_MBYTE
     char_u	*acpname = NULL;
-#endif
 
     *lf = s_lfDefault;
     if (name == NULL)
 	return OK;
 
-#ifdef FEAT_MBYTE
     /* Convert 'name' from 'encoding' to the current codepage, because
      * lf->lfFaceName uses the current codepage.
      * TODO: Use Wide APIs instead of ANSI APIs. */
@@ -2972,7 +2922,6 @@ get_logfont(
 	enc_to_acp(name, (int)STRLEN(name), &acpname, &len);
 	name = acpname;
     }
-#endif
     if (STRCMP(name, "*") == 0)
     {
 #if defined(FEAT_GUI_W32)
@@ -3112,9 +3061,7 @@ theend:
 	if (lastlf != NULL)
 	    mch_memmove(lastlf, lf, sizeof(LOGFONT));
     }
-#ifdef FEAT_MBYTE
     vim_free(acpname);
-#endif
 
     return ret;
 }

@@ -416,12 +416,8 @@ struct u_header
 /*
  * structures used in undo.c
  */
-#if VIM_SIZEOF_INT > 2
-# define ALIGN_LONG	/* longword alignment and use filler byte */
-# define ALIGN_SIZE (sizeof(long))
-#else
-# define ALIGN_SIZE (sizeof(short))
-#endif
+#define ALIGN_LONG	/* longword alignment and use filler byte */
+#define ALIGN_SIZE (sizeof(long))
 
 #define ALIGN_MASK (ALIGN_SIZE - 1)
 
@@ -1103,9 +1099,7 @@ typedef struct
 {
     char_u	*vir_line;	/* text of the current line */
     FILE	*vir_fd;	/* file descriptor */
-#ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
-#endif
     int		vir_version;	/* viminfo version detected or -1 */
     garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
@@ -1231,19 +1225,11 @@ typedef unsigned long	    uvarnumber_T;
 # endif
 #else
 /* Use 32-bit Number. */
-# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#define VARNUM_MIN	    LONG_MIN
-#define VARNUM_MAX	    LONG_MAX
-#define UVARNUM_MAX	    ULONG_MAX
-# else
 typedef int		    varnumber_T;
 typedef unsigned int	    uvarnumber_T;
 #define VARNUM_MIN	    INT_MIN
 #define VARNUM_MAX	    INT_MAX
 #define UVARNUM_MAX	    UINT_MAX
-# endif
 #endif
 
 typedef double	float_T;
@@ -2013,16 +1999,12 @@ typedef struct {
     /* for spell checking */
     garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
     char_u	b_spell_ismw[256];/* flags: is midword char */
-# ifdef FEAT_MBYTE
     char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
-# endif
     char_u	*b_p_spc;	/* 'spellcapcheck' */
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
-# ifdef FEAT_MBYTE
     int		b_cjk;		/* all CJK letters as OK */
-# endif
 #endif
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
     int		dummy;
@@ -2233,9 +2215,7 @@ struct file_buffer
     unsigned	b_bkc_flags;    /* flags for 'backupcopy' */
     int		b_p_ci;		/* 'copyindent' */
     int		b_p_bin;	/* 'binary' */
-#ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
-#endif
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
 #ifdef FEAT_QUICKFIX
@@ -2270,9 +2250,7 @@ struct file_buffer
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
     int	        b_p_et_nopaste; /* b_p_et saved for paste mode */
-#ifdef FEAT_MBYTE
     char_u	*b_p_fenc;	/* 'fileencoding' */
-#endif
     char_u	*b_p_ff;	/* 'fileformat' */
     char_u	*b_p_ft;	/* 'filetype' */
     char_u	*b_p_fo;	/* 'formatoptions' */
@@ -2304,9 +2282,7 @@ struct file_buffer
 #ifdef FEAT_LISP
     int		b_p_lisp;	/* 'lisp' */
 #endif
-#ifdef FEAT_MBYTE
     char_u	*b_p_menc;	/* 'makeencoding' */
-#endif
     char_u	*b_p_mps;	/* 'matchpairs' */
     int		b_p_ml;		/* 'modeline' */
     int		b_p_ml_nobin;	/* b_p_ml saved for binary mode */
@@ -2425,11 +2401,9 @@ struct file_buffer
 
     int		b_start_eol;	/* last line had eol when it was read */
     int		b_start_ffc;	/* first char of 'ff' when edit started */
-#ifdef FEAT_MBYTE
     char_u	*b_start_fenc;	/* 'fileencoding' when edit started or NULL */
     int		b_bad_char;	/* "++bad=" argument when edit started or 0 */
     int		b_start_bomb;	/* 'bomb' when it was read */
-#endif
 
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
@@ -3107,10 +3081,8 @@ typedef struct cmdarg_S
     int		prechar;	/* prefix character (optional, always 'g') */
     int		cmdchar;	/* command character */
     int		nchar;		/* next command character (optional) */
-#ifdef FEAT_MBYTE
     int		ncharC1;	/* first composing character (optional) */
     int		ncharC2;	/* second composing character (optional) */
-#endif
     int		extra_char;	/* yet another character (optional) */
     long	opcount;	/* count before an operator */
     long	count0;		/* count before command, default 0 */

@@ -143,7 +143,7 @@ do_debug(char_u *cmd)
     debug_mode = TRUE;
 
     if (!debug_did_msg)
-	MSG(_("Entering Debug mode.  Type \"cont\" to continue."));
+	msg(_("Entering Debug mode.  Type \"cont\" to continue."));
     if (debug_oldval != NULL)
     {
 	smsg(_("Oldval = \"%s\""), debug_oldval);
@@ -157,7 +157,7 @@ do_debug(char_u *cmd)
 	debug_newval = NULL;
     }
     if (sourcing_name != NULL)
-	msg(sourcing_name);
+	msg((char *)sourcing_name);
     if (sourcing_lnum != 0)
 	smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
@@ -390,7 +390,7 @@ do_checkbacktracelevel(void)
     if (debug_backtrace_level < 0)
     {
 	debug_backtrace_level = 0;
-	MSG(_("frame is zero"));
+	msg(_("frame is zero"));
     }
     else
     {
@@ -857,7 +857,7 @@ ex_breaklist(exarg_T *eap UNUSED)
     int		i;
 
     if (dbg_breakp.ga_len == 0)
-	MSG(_("No breakpoints defined"));
+	msg(_("No breakpoints defined"));
     else
 	for (i = 0; i < dbg_breakp.ga_len; ++i)
 	{
@@ -1578,7 +1578,7 @@ timer_free_all()
 #  endif
 # endif
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT) && defined(FEAT_PROFILE)
 # if defined(HAVE_MATH_H)
 #  include <math.h>
 # endif
@@ -1957,7 +1957,7 @@ script_dump_profile(FILE *fd)
 		    if (IObuff[IOSIZE - 2] != NUL && IObuff[IOSIZE - 2] != NL)
 		    {
 			int n = IOSIZE - 2;
-# ifdef FEAT_MBYTE
+
 			if (enc_utf8)
 			{
 			    /* Move to the first byte of this char.
@@ -1968,7 +1968,6 @@ script_dump_profile(FILE *fd)
 			}
 			else if (has_mbyte)
 			    n -= mb_head_off(IObuff, IObuff + n);
-# endif
 			IObuff[n] = NL;
 			IObuff[n + 1] = NUL;
 		    }
@@ -2430,7 +2429,7 @@ buf_write_all(buf_T *buf, int forceit)
     if (curbuf != old_curbuf)
     {
 	msg_source(HL_ATTR(HLF_W));
-	MSG(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
+	msg(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
     }
     return retval;
 }
@@ -4112,7 +4111,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W20: Required python version 2.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
@@ -4124,7 +4123,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W21: Required python version 3.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
@@ -4254,9 +4253,7 @@ struct source_cookie
     int		dbg_tick;	/* debug_tick when breakpoint was set */
     int		level;		/* top nesting level of sourced file */
 #endif
-#ifdef FEAT_MBYTE
     vimconv_T	conv;		/* type of conversion */
-#endif
 };
 
 #ifdef FEAT_EVAL
@@ -4593,7 +4590,6 @@ do_source(
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
     cookie.conv.vc_type = CONV_NONE;		/* no conversion */
 
     /* Read the first line so we can check for a UTF-8 BOM. */
@@ -4612,7 +4608,6 @@ do_source(
 	    firstline = p;
 	}
     }
-#endif
 
     /*
      * Call do_cmdline, which will call getsourceline() to get the lines.
@@ -4683,9 +4678,7 @@ almosttheend:
     fclose(cookie.fp);
     vim_free(cookie.nextline);
     vim_free(firstline);
-#ifdef FEAT_MBYTE
     convert_setup(&cookie.conv, NULL, NULL);
-#endif
 
     if (trigger_source_post)
 	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
@@ -4924,7 +4917,6 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	}
     }
 
-#ifdef FEAT_MBYTE
     if (line != NULL && sp->conv.vc_type != CONV_NONE)
     {
 	char_u	*s;
@@ -4937,7 +4929,6 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	    line = s;
 	}
     }
-#endif
 
 #ifdef FEAT_EVAL
     /* Did we encounter a breakpoint? */
@@ -5194,7 +5185,6 @@ script_line_end(void)
     void
 ex_scriptencoding(exarg_T *eap UNUSED)
 {
-#ifdef FEAT_MBYTE
     struct source_cookie	*sp;
     char_u			*name;
 
@@ -5219,7 +5209,6 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 
     if (name != eap->arg)
 	vim_free(name);
-#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -5432,7 +5421,6 @@ get_mess_lang(void)
 #if (defined(FEAT_EVAL) && !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	    && defined(LC_MESSAGES))) \
 	|| ((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-		&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)) \
 		&& !defined(LC_MESSAGES))
 /*
  * Get the language used for messages from the environment.
@@ -5496,8 +5484,7 @@ set_lang_var(void)
 }
 #endif
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE) \
 /*
  * ":language":  Set the language (locale).
  */

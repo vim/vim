@@ -37,9 +37,7 @@
 # include <Memory.h>
 # include <OSUtils.h>
 # include <Files.h>
-# ifdef FEAT_MBYTE
-#  include <Script.h>
-# endif
+# include <Script.h>
 #endif
 
 /*

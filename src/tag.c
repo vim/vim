@@ -605,10 +605,10 @@ do_tag(
 		if (msg_col == 0)
 		    msg_didout = FALSE;	/* overwrite previous message */
 		msg_start();
-		MSG_PUTS_ATTR(_("  # pri kind tag"), HL_ATTR(HLF_T));
+		msg_puts_attr(_("  # pri kind tag"), HL_ATTR(HLF_T));
 		msg_clr_eos();
 		taglen_advance(taglen);
-		MSG_PUTS_ATTR(_("file\n"), HL_ATTR(HLF_T));
+		msg_puts_attr(_("file\n"), HL_ATTR(HLF_T));
 
 		for (i = 0; i < num_matches && !got_int; ++i)
 		{
@@ -626,7 +626,7 @@ do_tag(
 		    vim_snprintf((char *)IObuff + 1, IOSIZE - 1,
 			    "%2d %s ", i + 1,
 					   mt_names[matches[i][0] & MT_MASK]);
-		    msg_puts(IObuff);
+		    msg_puts((char *)IObuff);
 		    if (tagp.tagkind != NULL)
 			msg_outtrans_len(tagp.tagkind,
 				      (int)(tagp.tagkind_end - tagp.tagkind));
@@ -642,7 +642,7 @@ do_tag(
 		    p = tag_full_fname(&tagp);
 		    if (p != NULL)
 		    {
-			msg_puts_long_attr(p, HL_ATTR(HLF_D));
+			msg_outtrans_long_attr(p, HL_ATTR(HLF_D));
 			vim_free(p);
 		    }
 		    if (msg_col > 0)
@@ -690,7 +690,7 @@ do_tag(
 				p = msg_outtrans_one(p, attr);
 				if (*p == TAB)
 				{
-				    msg_puts_attr((char_u *)" ", attr);
+				    msg_puts_attr(" ", attr);
 				    break;
 				}
 				if (*p == ':')
@@ -1003,9 +1003,9 @@ do_tag(
 							   && num_matches > 1)
 		{
 		    if (ic)
-			msg_attr(IObuff, HL_ATTR(HLF_W));
+			msg_attr((char *)IObuff, HL_ATTR(HLF_W));
 		    else
-			msg(IObuff);
+			msg((char *)IObuff);
 		    msg_scroll = TRUE;	/* don't overwrite this message */
 		}
 		else
@@ -1119,7 +1119,7 @@ do_tags(exarg_T *eap UNUSED)
     int		tagstacklen = curwin->w_tagstacklen;
 
     /* Highlight title */
-    MSG_PUTS_TITLE(_("\n  # TO tag         FROM line  in file/text"));
+    msg_puts_title(_("\n  # TO tag         FROM line  in file/text"));
     for (i = 0; i < tagstacklen; ++i)
     {
 	if (tagstack[i].tagname != NULL)
@@ -1143,7 +1143,7 @@ do_tags(exarg_T *eap UNUSED)
 	out_flush();		    /* show one line at a time */
     }
     if (tagstackidx == tagstacklen)	/* idx at top of stack */
-	MSG_PUTS("\n>");
+	msg_puts("\n>");
 }
 
 /* When not using a CR for line separator, use vim_fgets() to read tag lines.
@@ -1349,9 +1349,7 @@ find_tags(
 #endif
 
     pat_T	orgpat;			/* holds unconverted pattern info */
-#ifdef FEAT_MBYTE
     vimconv_T	vimconv;
-#endif
 
 #ifdef FEAT_TAG_BINS
     int		findall = (mincount == MAXCOL || mincount == TAG_MANY);
@@ -1387,9 +1385,7 @@ find_tags(
 
     help_save = curbuf->b_help;
     orgpat.pat = pat;
-#ifdef FEAT_MBYTE
     vimconv.vc_type = CONV_NONE;
-#endif
 
     /*
      * Allocate memory for the buffers that are used
@@ -1725,7 +1721,6 @@ find_tags(
 	    }
 line_read_in:
 
-#ifdef FEAT_MBYTE
 	    if (vimconv.vc_type != CONV_NONE)
 	    {
 		char_u	*conv_line;
@@ -1752,7 +1747,6 @@ line_read_in:
 		    }
 		}
 	    }
-#endif
 
 
 #ifdef FEAT_EMACS_TAGS
@@ -1846,7 +1840,6 @@ line_read_in:
 		    if (STRNCMP(lbuf, "!_TAG_FILE_SORTED\t", 18) == 0)
 			tag_file_sorted = lbuf[18];
 #endif
-#ifdef FEAT_MBYTE
 		    if (STRNCMP(lbuf, "!_TAG_FILE_ENCODING\t", 20) == 0)
 		    {
 			/* Prepare to convert every line from the specified
@@ -1856,7 +1849,6 @@ line_read_in:
 			*p = NUL;
 			convert_setup(&vimconv, lbuf + 20, p_enc);
 		    }
-#endif
 
 		    /* Read the next line.  Unrecognized flags are ignored. */
 		    continue;
@@ -1962,7 +1954,7 @@ parse_line:
 			if (p_verbose >= 5)
 			{
 			    verbose_enter();
-			    MSG(_("Ignoring long line in tags file"));
+			    msg(_("Ignoring long line in tags file"));
 			    verbose_leave();
 			}
 #ifdef FEAT_TAG_BINS
@@ -2472,10 +2464,8 @@ parse_line:
 	    vim_free(incstack[incstack_idx].etag_fname);
 	}
 #endif
-#ifdef FEAT_MBYTE
 	if (vimconv.vc_type != CONV_NONE)
 	    convert_setup(&vimconv, NULL, NULL);
-#endif
 
 #ifdef FEAT_TAG_BINS
 	tag_file_sorted = NUL;
@@ -2818,7 +2808,7 @@ etag_fail:
 		if (p_verbose >= 5)
 		{
 		    verbose_enter();
-		    MSG(_("Ignoring long line in tags file"));
+		    msg(_("Ignoring long line in tags file"));
 		    verbose_leave();
 		}
 		tagp->command = lbuf;
@@ -3381,7 +3371,7 @@ jumpto_tag(
 		     */
 		    if (found == 2 || !save_p_ic)
 		    {
-			MSG(_("E435: Couldn't find tag, just guessing!"));
+			msg(_("E435: Couldn't find tag, just guessing!"));
 			if (!msg_scrolled && msg_silent == 0)
 			{
 			    out_flush();

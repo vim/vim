@@ -84,6 +84,15 @@ clean:
 	-@if exist messages $(DEL) messages
 	-@if exist opt_test.vim $(DEL) opt_test.vim
 
+test1.out: test1.in
+	-@if exist wrongtermsize  $(DEL) wrongtermsize
+	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in test1.in
+	-@if exist wrongtermsize  ( \
+	    echo Vim window too small- must be 80x25 or larger && exit 1 \
+	    )
+	-@if exist test.out $(DEL) test.out
+	-@if exist viminfo  $(DEL) viminfo
+
 .in.out:
 	-@if exist $*.ok $(CP) $*.ok test.ok
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $*.in

@@ -130,9 +130,7 @@ errout:
     free(argv);
     if (tofree != NULL)
 	free(tofree);
-#ifdef FEAT_MBYTE
     free_cmd_argsW();
-#endif
 
     return 0;
 }

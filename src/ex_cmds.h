@@ -1789,10 +1789,8 @@ struct exarg
     int		force_bin;	/* 0, FORCE_BIN or FORCE_NOBIN */
     int		read_edit;	/* ++edit argument */
     int		force_ff;	/* ++ff= argument (first char of argument) */
-#ifdef FEAT_MBYTE
     int		force_enc;	/* ++enc= argument (index in cmd[]) */
     int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement byte */
-#endif
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
 #endif

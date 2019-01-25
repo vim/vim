@@ -1945,10 +1945,11 @@ func Test_job_start_in_timer()
   endif
 
   func OutCb(chan, msg)
+    let g:val += 1
   endfunc
 
   func ExitCb(job, status)
-    let g:val = 1
+    let g:val += 1
     call Resume()
   endfunc
 
@@ -1967,6 +1968,10 @@ func Test_job_start_in_timer()
   call timer_start(1, 'TimerCb')
   let elapsed = Standby(&ut)
   call assert_inrange(1, &ut / 2, elapsed)
+
+  " Wait for both OutCb() and ExitCb() to have been called before deleting
+  " them.
+  call WaitForAssert({-> assert_equal(2, g:val)})
   call job_stop(g:job)
 
   delfunc OutCb
@@ -1974,4 +1979,22 @@ func Test_job_start_in_timer()
   delfunc TimerCb
   unlet! g:val
   unlet! g:job
+endfunc
+
+func Test_raw_large_data()
+  try
+    let g:out = ''
+    let job = job_start(s:python . " test_channel_pipe.py",
+	  \ {'mode': 'raw', 'drop': 'never', 'noblock': 1,
+      \  'callback': {ch, msg -> execute('let g:out .= msg')}})
+
+    let want = repeat('X', 79999) . "\n"
+    call ch_sendraw(job, want)
+    let g:Ch_job = job
+    call WaitForAssert({-> assert_equal("dead", job_status(g:Ch_job))})
+    call assert_equal(want, substitute(g:out, '\r', '', 'g'))
+  finally
+    call job_stop(job)
+    unlet g:out
+  endtry
 endfunc

@@ -1641,7 +1641,7 @@ u_write_undo(
     if (buf->b_u_numhead == 0 && buf->b_u_line_ptr.ul_line == NULL)
     {
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("Skipping undo file write, nothing to undo"));
+	    verb_msg(_("Skipping undo file write, nothing to undo"));
 	goto theend;
     }
 
@@ -2232,7 +2232,7 @@ u_doit(int startcount)
 		beep_flush();
 		if (count == startcount - 1)
 		{
-		    MSG(_("Already at oldest change"));
+		    msg(_("Already at oldest change"));
 		    return;
 		}
 		break;
@@ -2247,7 +2247,7 @@ u_doit(int startcount)
 		beep_flush();	/* nothing to redo */
 		if (count == startcount - 1)
 		{
-		    MSG(_("Already at newest change"));
+		    msg(_("Already at newest change"));
 		    return;
 		}
 		break;
@@ -2495,9 +2495,9 @@ undo_time(
 	if (closest == closest_start)
 	{
 	    if (step < 0)
-		MSG(_("Already at oldest change"));
+		msg(_("Already at oldest change"));
 	    else
-		MSG(_("Already at newest change"));
+		msg(_("Already at newest change"));
 	    return;
 	}
 
@@ -3104,20 +3104,20 @@ ex_undolist(exarg_T *eap UNUSED)
     }
 
     if (ga.ga_len == 0)
-	MSG(_("Nothing to undo"));
+	msg(_("Nothing to undo"));
     else
     {
 	sort_strings((char_u **)ga.ga_data, ga.ga_len);
 
 	msg_start();
-	msg_puts_attr((char_u *)_("number changes  when               saved"),
+	msg_puts_attr(_("number changes  when               saved"),
 							      HL_ATTR(HLF_T));
 	for (i = 0; i < ga.ga_len && !got_int; ++i)
 	{
 	    msg_putchar('\n');
 	    if (got_int)
 		break;
-	    msg_puts(((char_u **)ga.ga_data)[i]);
+	    msg_puts(((char **)ga.ga_data)[i]);
 	}
 	msg_end();
 

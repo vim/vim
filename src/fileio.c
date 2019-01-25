@@ -27,11 +27,9 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-#ifdef FEAT_MBYTE
 static char_u *next_fenc(char_u **pp);
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 static char_u *readfile_charconvert(char_u *fname, char_u *fenc, int *fdp);
-# endif
 #endif
 #ifdef FEAT_VIMINFO
 static void check_marks_read(void);
@@ -47,31 +45,29 @@ static int time_differs(long t1, long t2);
 static int apply_autocmds_exarg(event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap);
 static int au_find_group(char_u *name);
 
-# define AUGROUP_DEFAULT    -1	    /* default autocmd group */
-# define AUGROUP_ERROR	    -2	    /* erroneous autocmd group */
-# define AUGROUP_ALL	    -3	    /* all autocmd groups */
+#define AUGROUP_DEFAULT    -1	    /* default autocmd group */
+#define AUGROUP_ERROR	    -2	    /* erroneous autocmd group */
+#define AUGROUP_ALL	    -3	    /* all autocmd groups */
 
-#if defined(FEAT_CRYPT) || defined(FEAT_MBYTE)
-# define HAS_BW_FLAGS
-# define FIO_LATIN1	0x01	/* convert Latin1 */
-# define FIO_UTF8	0x02	/* convert UTF-8 */
-# define FIO_UCS2	0x04	/* convert UCS-2 */
-# define FIO_UCS4	0x08	/* convert UCS-4 */
-# define FIO_UTF16	0x10	/* convert UTF-16 */
-# ifdef WIN3264
-#  define FIO_CODEPAGE	0x20	/* convert MS-Windows codepage */
-#  define FIO_PUT_CP(x) (((x) & 0xffff) << 16)	/* put codepage in top word */
-#  define FIO_GET_CP(x)	(((x)>>16) & 0xffff)	/* get codepage from top word */
-# endif
-# ifdef MACOS_CONVERT
-#  define FIO_MACROMAN	0x20	/* convert MacRoman */
-# endif
-# define FIO_ENDIAN_L	0x80	/* little endian */
-# define FIO_ENCRYPTED	0x1000	/* encrypt written bytes */
-# define FIO_NOCONVERT	0x2000	/* skip encoding conversion */
-# define FIO_UCSBOM	0x4000	/* check for BOM at start of file */
-# define FIO_ALL	-1	/* allow all formats */
+#define HAS_BW_FLAGS
+#define FIO_LATIN1	0x01	/* convert Latin1 */
+#define FIO_UTF8	0x02	/* convert UTF-8 */
+#define FIO_UCS2	0x04	/* convert UCS-2 */
+#define FIO_UCS4	0x08	/* convert UCS-4 */
+#define FIO_UTF16	0x10	/* convert UTF-16 */
+#ifdef WIN3264
+# define FIO_CODEPAGE	0x20	/* convert MS-Windows codepage */
+# define FIO_PUT_CP(x) (((x) & 0xffff) << 16)	/* put codepage in top word */
+# define FIO_GET_CP(x)	(((x)>>16) & 0xffff)	/* get codepage from top word */
 #endif
+#ifdef MACOS_CONVERT
+# define FIO_MACROMAN	0x20	/* convert MacRoman */
+#endif
+#define FIO_ENDIAN_L	0x80	/* little endian */
+#define FIO_ENCRYPTED	0x1000	/* encrypt written bytes */
+#define FIO_NOCONVERT	0x2000	/* skip encoding conversion */
+#define FIO_UCSBOM	0x4000	/* check for BOM at start of file */
+#define FIO_ALL	-1	/* allow all formats */
 
 /* When converting, a read() or write() may leave some bytes to be converted
  * for the next call.  The value is guessed... */
@@ -95,7 +91,6 @@ struct bw_info
 #ifdef FEAT_CRYPT
     buf_T	*bw_buffer;	/* buffer being written */
 #endif
-#ifdef FEAT_MBYTE
     char_u	bw_rest[CONV_RESTLEN]; /* not converted bytes */
     int		bw_restlen;	/* nr of bytes in bw_rest[] */
     int		bw_first;	/* first write call */
@@ -104,27 +99,24 @@ struct bw_info
     int		bw_conv_error;	/* set for conversion error */
     linenr_T	bw_conv_error_lnum;  /* first line with error or zero */
     linenr_T	bw_start_lnum;  /* line number at start of buffer */
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     iconv_t	bw_iconv_fd;	/* descriptor for iconv() or -1 */
-# endif
 #endif
 };
 
 static int  buf_write_bytes(struct bw_info *ip);
 
-#ifdef FEAT_MBYTE
 static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static int ucs2bytes(unsigned c, char_u **pp, int flags);
 static int need_conversion(char_u *fenc);
 static int get_fio_flags(char_u *ptr);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
 static int make_bom(char_u *buf, char_u *name);
-# ifdef WIN3264
+#ifdef WIN3264
 static int get_win_fio_flags(char_u *ptr);
-# endif
-# ifdef MACOS_CONVERT
+#endif
+#ifdef MACOS_CONVERT
 static int get_mac_fio_flags(char_u *ptr);
-# endif
 #endif
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
@@ -265,7 +257,6 @@ readfile(
     int		try_dos;
     int		try_unix;
     int		file_rewind = FALSE;
-#ifdef FEAT_MBYTE
     int		can_retry;
     linenr_T	conv_error = 0;		/* line nr with conversion error */
     linenr_T	illegal_byte = 0;	/* line nr with illegal byte */
@@ -281,19 +272,18 @@ readfile(
     char_u	*fenc_next = NULL;	/* next item in 'fencs' or NULL */
     int		advance_fenc = FALSE;
     long	real_size = 0;
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     iconv_t	iconv_fd = (iconv_t)-1;	/* descriptor for iconv() or -1 */
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     int		did_iconv = FALSE;	/* TRUE when iconv() failed and trying
 					   'charconvert' next */
-#  endif
 # endif
+#endif
     int		converted = FALSE;	/* TRUE if conversion done */
     int		notconverted = FALSE;	/* TRUE if conversion wanted but it
 					   wasn't possible */
     char_u	conv_rest[CONV_RESTLEN];
     int		conv_restlen = 0;	/* nr of bytes in conv_rest[] */
-#endif
     buf_T	*old_curbuf;
     char_u	*old_b_ffname;
     char_u	*old_b_fname;
@@ -609,11 +599,9 @@ readfile(
 		     * edited before and deleted.  Get the old marks. */
 		    check_marks_read();
 #endif
-#ifdef FEAT_MBYTE
 		    /* Set forced 'fileencoding'.  */
 		    if (eap != NULL)
 			set_forced_fenc(eap);
-#endif
 		    apply_autocmds_exarg(EVENT_BUFNEWFILE, sfname, sfname,
 							  FALSE, curbuf, eap);
 		    /* remember the current fileformat */
@@ -658,10 +646,8 @@ readfile(
 	    curbuf->b_p_eol = TRUE;
 	    curbuf->b_start_eol = TRUE;
 	}
-#ifdef FEAT_MBYTE
 	curbuf->b_p_bomb = FALSE;
 	curbuf->b_start_bomb = FALSE;
-#endif
     }
 
     /* Create a swap file now, so that other Vims are warned that we are
@@ -846,7 +832,6 @@ readfile(
      */
     linecnt = curbuf->b_ml.ml_line_count;
 
-#ifdef FEAT_MBYTE
     /* "++bad=" argument. */
     if (eap != NULL && eap->bad_char != 0)
     {
@@ -926,7 +911,6 @@ readfile(
 	fenc = next_fenc(&fenc_next);
 	fenc_alloced = TRUE;
     }
-#endif
 
     /*
      * Jump back here to retry reading the file in different ways.
@@ -966,14 +950,12 @@ retry:
 	while (lnum > from)
 	    ml_delete(lnum--, FALSE);
 	file_rewind = FALSE;
-#ifdef FEAT_MBYTE
 	if (set_options)
 	{
 	    curbuf->b_p_bomb = FALSE;
 	    curbuf->b_start_bomb = FALSE;
 	}
 	conv_error = 0;
-#endif
     }
 
     /*
@@ -997,15 +979,14 @@ retry:
 	    fileformat = EOL_UNKNOWN;		/* detect from file */
     }
 
-#ifdef FEAT_MBYTE
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     if (iconv_fd != (iconv_t)-1)
     {
 	/* aborted conversion with iconv(), close the descriptor */
 	iconv_close(iconv_fd);
 	iconv_fd = (iconv_t)-1;
     }
-# endif
+#endif
 
     if (advance_fenc)
     {
@@ -1073,49 +1054,49 @@ retry:
 	else if (enc_utf8 || STRCMP(p_enc, "latin1") == 0)
 	    fio_flags = get_fio_flags(fenc);
 
-# ifdef WIN3264
+#ifdef WIN3264
 	/*
 	 * Conversion from an MS-Windows codepage to UTF-8 or another codepage
 	 * is handled with MultiByteToWideChar().
 	 */
 	if (fio_flags == 0)
 	    fio_flags = get_win_fio_flags(fenc);
-# endif
+#endif
 
-# ifdef MACOS_CONVERT
+#ifdef MACOS_CONVERT
 	/* Conversion from Apple MacRoman to latin1 or UTF-8 */
 	if (fio_flags == 0)
 	    fio_flags = get_mac_fio_flags(fenc);
-# endif
+#endif
 
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 	/*
 	 * Try using iconv() if we can't convert internally.
 	 */
 	if (fio_flags == 0
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		&& !did_iconv
-#  endif
+# endif
 		)
 	    iconv_fd = (iconv_t)my_iconv_open(
 				  enc_utf8 ? (char_u *)"utf-8" : p_enc, fenc);
-# endif
+#endif
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	/*
 	 * Use the 'charconvert' expression when conversion is required
 	 * and we can't do it internally or with iconv().
 	 */
 	if (fio_flags == 0 && !read_stdin && !read_buffer && *p_ccv != NUL
 						    && !read_fifo
-#  ifdef USE_ICONV
+# ifdef USE_ICONV
 						    && iconv_fd == (iconv_t)-1
-#  endif
+# endif
 		)
 	{
-#  ifdef USE_ICONV
+# ifdef USE_ICONV
 	    did_iconv = FALSE;
-#  endif
+# endif
 	    /* Skip conversion when it's already done (retry for wrong
 	     * "fileformat"). */
 	    if (tmpname == NULL)
@@ -1137,12 +1118,12 @@ retry:
 	    }
 	}
 	else
-# endif
+#endif
 	{
 	    if (fio_flags == 0
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 		    && iconv_fd == (iconv_t)-1
-# endif
+#endif
 	       )
 	    {
 		/* Conversion wanted but we can't.
@@ -1157,7 +1138,6 @@ retry:
      * another "fenc" value.  It's FALSE when no other "fenc" to try, reading
      * stdin or fixed at a specific encoding. */
     can_retry = (*fenc != NUL && !read_stdin && !read_fifo && !keep_dest_enc);
-#endif
 
     if (!skip_read)
     {
@@ -1165,9 +1145,7 @@ retry:
 	filesize = 0;
 	skip_count = lines_to_skip;
 	read_count = lines_to_read;
-#ifdef FEAT_MBYTE
 	conv_restlen = 0;
-#endif
 #ifdef FEAT_PERSISTENT_UNDO
 	read_undo_file = (newfile && (flags & READ_KEEP_UNDO) == 0
 				  && curbuf->b_ffname != NULL
@@ -1200,10 +1178,9 @@ retry:
 	 */
 	if (!skip_read)
 	{
-#if VIM_SIZEOF_INT > 2
-# if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
+#if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
 		size = SSIZE_MAX;		    /* use max I/O size, 52K */
-# else
+#else
 		/* Use buffer >= 64K.  Add linerest to double the size if the
 		 * line gets very long, to avoid a lot of copying. But don't
 		 * read more than 1 Mbyte at a time, so we can be interrupted.
@@ -1211,20 +1188,11 @@ retry:
 		size = 0x10000L + linerest;
 		if (size > 0x100000L)
 		    size = 0x100000L;
-# endif
-#else
-		size = 0x7ff0L - linerest;	    /* limit buffer to 32K */
 #endif
 	}
 
 	/* Protect against the argument of lalloc() going negative. */
-	if (
-#if VIM_SIZEOF_INT <= 2
-	    linerest >= 0x7ff0
-#else
-	    size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL
-#endif
-	   )
+	if (size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL)
 	{
 	    ++split;
 	    *ptr = NL;		    /* split line by inserting a NL */
@@ -1253,7 +1221,6 @@ retry:
 		ptr = buffer + linerest;
 		line_start = buffer;
 
-#ifdef FEAT_MBYTE
 		/* May need room to translate into.
 		 * For iconv() we don't really know the required space, use a
 		 * factor ICONV_MULT.
@@ -1265,11 +1232,11 @@ retry:
 		 * ucs-4 to utf-8: 4 bytes become up to 6 bytes, size must be
 		 * multiple of 4 */
 		real_size = (int)size;
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 		if (iconv_fd != (iconv_t)-1)
 		    size = size / ICONV_MULT;
 		else
-# endif
+#endif
 		    if (fio_flags & FIO_LATIN1)
 		    size = size / 2;
 		else if (fio_flags & (FIO_UCS2 | FIO_UTF16))
@@ -1278,17 +1245,15 @@ retry:
 		    size = (size * 2 / 3) & ~3;
 		else if (fio_flags == FIO_UCSBOM)
 		    size = size / ICONV_MULT;	/* worst case */
-# ifdef WIN3264
+#ifdef WIN3264
 		else if (fio_flags & FIO_CODEPAGE)
 		    size = size / ICONV_MULT;	/* also worst case */
-# endif
-# ifdef MACOS_CONVERT
+#endif
+#ifdef MACOS_CONVERT
 		else if (fio_flags & FIO_MACROMAN)
 		    size = size / ICONV_MULT;	/* also worst case */
-# endif
 #endif
 
-#ifdef FEAT_MBYTE
 		if (conv_restlen > 0)
 		{
 		    /* Insert unconverted bytes from previous line. */
@@ -1296,7 +1261,6 @@ retry:
 		    ptr += conv_restlen;
 		    size -= conv_restlen;
 		}
-#endif
 
 		if (read_buffer)
 		{
@@ -1445,7 +1409,6 @@ retry:
 		{
 		    if (size < 0)		    /* read error */
 			error = TRUE;
-#ifdef FEAT_MBYTE
 		    else if (conv_restlen > 0)
 		    {
 			/*
@@ -1455,9 +1418,9 @@ retry:
 
 			/* When we did a conversion report an error. */
 			if (fio_flags != 0
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 				|| iconv_fd != (iconv_t)-1
-# endif
+#endif
 			   )
 			{
 			    if (can_retry)
@@ -1482,9 +1445,9 @@ retry:
 			     * leave the UTF8 checking code to do it, as it
 			     * works slightly differently. */
 			    if (bad_char_behavior != BAD_KEEP && (fio_flags != 0
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 				    || iconv_fd != (iconv_t)-1
-# endif
+#endif
 			       ))
 			    {
 				while (conv_restlen > 0)
@@ -1494,21 +1457,19 @@ retry:
 				}
 			    }
 			    fio_flags = 0;	/* don't convert this */
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 			    if (iconv_fd != (iconv_t)-1)
 			    {
 				iconv_close(iconv_fd);
 				iconv_fd = (iconv_t)-1;
 			    }
-# endif
+#endif
 			}
 		    }
-#endif
 		}
 	    }
 	    skip_read = FALSE;
 
-#ifdef FEAT_MBYTE
 	    /*
 	     * At start of file (or after crypt magic number): Check for BOM.
 	     * Also check for a BOM for other Unicode encodings, but not after
@@ -1516,11 +1477,11 @@ retry:
 	     * found.
 	     */
 	    if ((filesize == 0
-# ifdef FEAT_CRYPT
+#ifdef FEAT_CRYPT
 		   || (cryptkey != NULL
 			&& filesize == crypt_get_header_len(
 						 crypt_get_method_nr(curbuf)))
-# endif
+#endif
 		       )
 		    && (fio_flags == FIO_UCSBOM
 			|| (!curbuf->b_p_bomb
@@ -1574,16 +1535,14 @@ retry:
 	    ptr -= conv_restlen;
 	    size += conv_restlen;
 	    conv_restlen = 0;
-#endif
 	    /*
 	     * Break here for a read error or end-of-file.
 	     */
 	    if (size <= 0)
 		break;
 
-#ifdef FEAT_MBYTE
 
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 	    if (iconv_fd != (iconv_t)-1)
 	    {
 		/*
@@ -1645,9 +1604,9 @@ retry:
 		mch_memmove(line_start, buffer, (size_t)linerest);
 		size = (long)((char_u *)top - ptr);
 	    }
-# endif
+#endif
 
-# ifdef WIN3264
+#ifdef WIN3264
 	    if (fio_flags & FIO_CODEPAGE)
 	    {
 		char_u	*src, *dst;
@@ -1813,8 +1772,8 @@ retry:
 		size = (long)(dst - ptr);
 	    }
 	    else
-# endif
-# ifdef MACOS_CONVERT
+#endif
+#ifdef MACOS_CONVERT
 	    if (fio_flags & FIO_MACROMAN)
 	    {
 		/*
@@ -1825,7 +1784,7 @@ retry:
 		    goto rewind_retry;
 	    }
 	    else
-# endif
+#endif
 	    if (fio_flags != 0)
 	    {
 		int	u8c;
@@ -2089,11 +2048,11 @@ retry:
 			     * file is more likely than a conversion error. */
 			    if (can_retry && !incomplete_tail)
 				break;
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 			    /* When we did a conversion report an error. */
 			    if (iconv_fd != (iconv_t)-1 && conv_error == 0)
 				conv_error = readfile_linenr(linecnt, ptr, p);
-# endif
+#endif
 			    /* Remember the first linenr with an illegal byte */
 			    if (conv_error == 0 && illegal_byte == 0)
 				illegal_byte = readfile_linenr(linecnt, ptr, p);
@@ -2117,19 +2076,18 @@ retry:
 		    /* Detected a UTF-8 error. */
 rewind_retry:
 		    /* Retry reading with another conversion. */
-# if defined(FEAT_EVAL) && defined(USE_ICONV)
+#if defined(FEAT_EVAL) && defined(USE_ICONV)
 		    if (*p_ccv != NUL && iconv_fd != (iconv_t)-1)
 			/* iconv() failed, try 'charconvert' */
 			did_iconv = TRUE;
 		    else
-# endif
+#endif
 			/* use next item from 'fileencodings' */
 			advance_fenc = TRUE;
 		    file_rewind = TRUE;
 		    goto retry;
 		}
 	    }
-#endif
 
 	    /* count the number of characters (after conversion!) */
 	    filesize += size;
@@ -2371,7 +2329,6 @@ failed:
      * encryption was used. */
 #endif
 
-#ifdef FEAT_MBYTE
     /* If editing a new file: set 'fenc' for the current buffer.
      * Also for ":read ++edit file". */
     if (set_options)
@@ -2379,13 +2336,12 @@ failed:
 						       OPT_FREE|OPT_LOCAL, 0);
     if (fenc_alloced)
 	vim_free(fenc);
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     if (iconv_fd != (iconv_t)-1)
     {
 	iconv_close(iconv_fd);
 	iconv_fd = (iconv_t)-1;
     }
-# endif
 #endif
 
     if (!read_buffer && !read_stdin)
@@ -2409,13 +2365,11 @@ failed:
     }
 #endif
 
-#ifdef FEAT_MBYTE
     if (tmpname != NULL)
     {
 	mch_remove(tmpname);		/* delete converted file */
 	vim_free(tmpname);
     }
-#endif
     --no_wait_return;			/* may wait for return now */
 
     /*
@@ -2528,7 +2482,6 @@ failed:
 		STRCAT(IObuff, _("[long lines split]"));
 		c = TRUE;
 	    }
-#ifdef FEAT_MBYTE
 	    if (notconverted)
 	    {
 		STRCAT(IObuff, _("[NOT converted]"));
@@ -2539,7 +2492,6 @@ failed:
 		STRCAT(IObuff, _("[converted]"));
 		c = TRUE;
 	    }
-#endif
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
 	    {
@@ -2547,7 +2499,6 @@ failed:
 		c = TRUE;
 	    }
 #endif
-#ifdef FEAT_MBYTE
 	    if (conv_error != 0)
 	    {
 		sprintf((char *)IObuff + STRLEN(IObuff),
@@ -2560,9 +2511,7 @@ failed:
 			 _("[ILLEGAL BYTE in line %ld]"), (long)illegal_byte);
 		c = TRUE;
 	    }
-	    else
-#endif
-		if (error)
+	    else if (error)
 	    {
 		STRCAT(IObuff, _("[READ ERRORS]"));
 		c = TRUE;
@@ -2586,7 +2535,7 @@ failed:
 		p = msg_may_trunc(FALSE, IObuff);
 	    else
 #endif
-		p = msg_trunc_attr(IObuff, FALSE, 0);
+		p = (char_u *)msg_trunc_attr((char *)IObuff, FALSE, 0);
 	    if (read_stdin || read_buffer || restart_edit != 0
 		    || (msg_scrolled != 0 && !need_wait_return))
 		/* Need to repeat the message after redrawing when:
@@ -2601,11 +2550,8 @@ failed:
 
 	/* with errors writing the file requires ":w!" */
 	if (newfile && (error
-#ifdef FEAT_MBYTE
 		    || conv_error != 0
-		    || (illegal_byte > 0 && bad_char_behavior != BAD_KEEP)
-#endif
-		    ))
+		    || (illegal_byte > 0 && bad_char_behavior != BAD_KEEP)))
 	    curbuf->b_p_ro = TRUE;
 
 	u_clearline();	    /* cannot use "U" command after adding lines */
@@ -2745,8 +2691,6 @@ is_dev_fd_file(char_u *fname)
 }
 #endif
 
-#ifdef FEAT_MBYTE
-
 /*
  * From the current line count and characters read after that, estimate the
  * line number where we are now.
@@ -2767,7 +2711,6 @@ readfile_linenr(
 	    ++lnum;
     return lnum;
 }
-#endif
 
 /*
  * Fill "*eap" to force the 'fileencoding', 'fileformat' and 'binary to be
@@ -2777,21 +2720,13 @@ readfile_linenr(
     int
 prep_exarg(exarg_T *eap, buf_T *buf)
 {
-    eap->cmd = alloc(15
-#ifdef FEAT_MBYTE
-		+ (unsigned)STRLEN(buf->b_p_fenc)
-#endif
-	    );
+    eap->cmd = alloc(15 + (unsigned)STRLEN(buf->b_p_fenc));
     if (eap->cmd == NULL)
 	return FAIL;
 
-#ifdef FEAT_MBYTE
     sprintf((char *)eap->cmd, "e ++enc=%s", buf->b_p_fenc);
     eap->force_enc = 8;
     eap->bad_char = buf->b_bad_char;
-#else
-    sprintf((char *)eap->cmd, "e");
-#endif
     eap->force_ff = *buf->b_p_ff;
 
     eap->force_bin = buf->b_p_bin ? FORCE_BIN : FORCE_NOBIN;
@@ -2825,7 +2760,6 @@ set_file_options(int set_options, exarg_T *eap)
     }
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Set forced 'fileencoding'.
  */
@@ -2886,7 +2820,7 @@ next_fenc(char_u **pp)
     return r;
 }
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 /*
  * Convert a file with the 'charconvert' expression.
  * This closes the file which is to be read, converts it and opens the
@@ -2902,28 +2836,28 @@ readfile_charconvert(
     int		*fdp)		/* in/out: file descriptor of file */
 {
     char_u	*tmpname;
-    char_u	*errmsg = NULL;
+    char	*errmsg = NULL;
 
     tmpname = vim_tempname('r', FALSE);
     if (tmpname == NULL)
-	errmsg = (char_u *)_("Can't find temp file for conversion");
+	errmsg = _("Can't find temp file for conversion");
     else
     {
 	close(*fdp);		/* close the input file, ignore errors */
 	*fdp = -1;
 	if (eval_charconvert(fenc, enc_utf8 ? (char_u *)"utf-8" : p_enc,
 						      fname, tmpname) == FAIL)
-	    errmsg = (char_u *)_("Conversion with 'charconvert' failed");
+	    errmsg = _("Conversion with 'charconvert' failed");
 	if (errmsg == NULL && (*fdp = mch_open((char *)tmpname,
 						  O_RDONLY | O_EXTRA, 0)) < 0)
-	    errmsg = (char_u *)_("can't read output of 'charconvert'");
+	    errmsg = _("can't read output of 'charconvert'");
     }
 
     if (errmsg != NULL)
     {
 	/* Don't use emsg(), it breaks mappings, the retry with
 	 * another type of conversion might still work. */
-	MSG(errmsg);
+	msg(errmsg);
 	if (tmpname != NULL)
 	{
 	    mch_remove(tmpname);	/* delete converted file */
@@ -2937,9 +2871,8 @@ readfile_charconvert(
 
     return tmpname;
 }
-# endif
-
 #endif
+
 
 #ifdef FEAT_VIMINFO
 /*
@@ -3176,12 +3109,10 @@ buf_write(
     int		    fileformat;
     int		    write_bin;
     struct bw_info  write_info;		/* info for buf_write_bytes() */
-#ifdef FEAT_MBYTE
     int		    converted = FALSE;
     int		    notconverted = FALSE;
     char_u	    *fenc;		/* effective 'fileencoding' */
     char_u	    *fenc_tofree = NULL; /* allocated "fenc" */
-#endif
 #ifdef HAS_BW_FLAGS
     int		    wb_flags = 0;
 #endif
@@ -3219,15 +3150,13 @@ buf_write(
 	return FAIL;
     }
 
-#ifdef FEAT_MBYTE
     /* must init bw_conv_buf and bw_iconv_fd before jumping to "fail" */
     write_info.bw_conv_buf = NULL;
     write_info.bw_conv_error = FALSE;
     write_info.bw_conv_error_lnum = 0;
     write_info.bw_restlen = 0;
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     write_info.bw_iconv_fd = (iconv_t)-1;
-# endif
 #endif
 #ifdef FEAT_CRYPT
     write_info.bw_buffer = buf;
@@ -4227,7 +4156,6 @@ buf_write(
      * multi-byte conversion. */
     wfname = fname;
 
-#ifdef FEAT_MBYTE
     /* Check for forced 'fileencoding' from "++opt=val" argument. */
     if (eap != NULL && eap->force_enc != 0)
     {
@@ -4265,7 +4193,7 @@ buf_write(
 	}
     }
 
-# ifdef WIN3264
+#ifdef WIN3264
     if (converted && wb_flags == 0 && (wb_flags = get_win_fio_flags(fenc)) != 0)
     {
 	/* Convert UTF-8 -> UCS-2 and UCS-2 -> DBCS.  Worst-case * 4: */
@@ -4275,9 +4203,9 @@ buf_write(
 	if (write_info.bw_conv_buf == NULL)
 	    end = 0;
     }
-# endif
+#endif
 
-# ifdef MACOS_CONVERT
+#ifdef MACOS_CONVERT
     if (converted && wb_flags == 0 && (wb_flags = get_mac_fio_flags(fenc)) != 0)
     {
 	write_info.bw_conv_buflen = bufsize * 3;
@@ -4286,12 +4214,12 @@ buf_write(
 	if (write_info.bw_conv_buf == NULL)
 	    end = 0;
     }
-# endif
+#endif
 
-# if defined(FEAT_EVAL) || defined(USE_ICONV)
+#if defined(FEAT_EVAL) || defined(USE_ICONV)
     if (converted && wb_flags == 0)
     {
-#  ifdef USE_ICONV
+# ifdef USE_ICONV
 	/*
 	 * Use iconv() conversion when conversion is needed and it's not done
 	 * internally.
@@ -4308,12 +4236,12 @@ buf_write(
 		end = 0;
 	    write_info.bw_first = TRUE;
 	}
-#   ifdef FEAT_EVAL
-	else
-#   endif
-#  endif
-
 #  ifdef FEAT_EVAL
+	else
+#  endif
+# endif
+
+# ifdef FEAT_EVAL
 	    /*
 	     * When the file needs to be converted with 'charconvert' after
 	     * writing, write to a temp file instead and let the conversion
@@ -4328,16 +4256,16 @@ buf_write(
 		    goto restore_backup;
 		}
 	    }
-#  endif
-    }
 # endif
+    }
+#endif
     if (converted && wb_flags == 0
-#  ifdef USE_ICONV
+#ifdef USE_ICONV
 	    && write_info.bw_iconv_fd == (iconv_t)-1
-#  endif
-#  ifdef FEAT_EVAL
+# endif
+# ifdef FEAT_EVAL
 	    && wfname == fname
-#  endif
+# endif
 	    )
     {
 	if (!forceit)
@@ -4347,7 +4275,6 @@ buf_write(
 	}
 	notconverted = TRUE;
     }
-#endif
 
     /*
      * If conversion is taking place, we may first pretend to write and check
@@ -4362,9 +4289,7 @@ buf_write(
 	 * - we make a backup file, that can be restored in case of conversion
 	 *   failure.
 	 */
-#ifdef FEAT_MBYTE
 	if (!converted || dobackup)
-#endif
 	    checking_conversion = FALSE;
 
 	if (checking_conversion)
@@ -4477,10 +4402,8 @@ restore_backup:
 			end = 0;
 		}
 
-#ifdef FEAT_MBYTE
 		if (wfname != fname)
 		    vim_free(wfname);
-#endif
 		goto fail;
 	    }
 	    write_info.bw_fd = fd;
@@ -4563,7 +4486,6 @@ restore_backup:
 	else
 	    write_bin = buf->b_p_bin;
 
-#ifdef FEAT_MBYTE
 	/*
 	 * The BOM is written just after the encryption magic number.
 	 * Skip it when appending and the file already existed, the BOM only
@@ -4583,7 +4505,6 @@ restore_backup:
 	    }
 	}
 	write_info.bw_start_lnum = start;
-#endif
 
 #ifdef FEAT_PERSISTENT_UNDO
 	write_undo_file = (buf->b_p_udf
@@ -4635,9 +4556,7 @@ restore_backup:
 		nchars += bufsize;
 		s = buffer;
 		len = 0;
-#ifdef FEAT_MBYTE
 		write_info.bw_start_lnum = lnum;
-#endif
 	    }
 	    /* write failed or last line has no EOL: stop here */
 	    if (end == 0
@@ -4841,7 +4760,7 @@ restore_backup:
 	}
 #endif
 
-#if defined(FEAT_MBYTE) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	if (wfname != fname)
 	{
 	    /*
@@ -4870,7 +4789,6 @@ restore_backup:
 	 */
 	if (errmsg == NULL)
 	{
-#ifdef FEAT_MBYTE
 	    if (write_info.bw_conv_error)
 	    {
 		if (write_info.bw_conv_error_lnum == 0)
@@ -4883,12 +4801,10 @@ restore_backup:
 					 (long)write_info.bw_conv_error_lnum);
 		}
 	    }
+	    else if (got_int)
+		errmsg = (char_u *)_(e_interr);
 	    else
-#endif
-		if (got_int)
-		    errmsg = (char_u *)_(e_interr);
-		else
-		    errmsg = (char_u *)_("E514: write error (file system full?)");
+		errmsg = (char_u *)_("E514: write error (file system full?)");
 	}
 
 	/*
@@ -4908,7 +4824,7 @@ restore_backup:
 		 * know we got the message. */
 		if (got_int)
 		{
-		    MSG(_(e_interr));
+		    msg(_(e_interr));
 		    out_flush();
 		}
 		if ((fd = mch_open((char *)backup, O_RDONLY | O_EXTRA, 0)) >= 0)
@@ -4953,7 +4869,6 @@ restore_backup:
     {
 	msg_add_fname(buf, fname);	/* put fname in IObuff with quotes */
 	c = FALSE;
-#ifdef FEAT_MBYTE
 	if (write_info.bw_conv_error)
 	{
 	    STRCAT(IObuff, _(" CONVERSION ERROR"));
@@ -4972,7 +4887,6 @@ restore_backup:
 	    STRCAT(IObuff, _("[converted]"));
 	    c = TRUE;
 	}
-#endif
 	if (device)
 	{
 	    STRCAT(IObuff, _("[Device]"));
@@ -5007,17 +4921,14 @@ restore_backup:
 		STRCAT(IObuff, shortmess(SHM_WRI) ? _(" [w]") : _(" written"));
 	}
 
-	set_keep_msg(msg_trunc_attr(IObuff, FALSE, 0), 0);
+	set_keep_msg((char_u *)msg_trunc_attr((char *)IObuff, FALSE, 0), 0);
     }
 
     /* When written everything correctly: reset 'modified'.  Unless not
      * writing to the original file and '+' is not in 'cpoptions'. */
     if (reset_changed && whole && !append
-#ifdef FEAT_MBYTE
 	    && !write_info.bw_conv_error
-#endif
-	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL)
-	    )
+	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
     {
 	unchanged(buf, TRUE);
 	/* b:changedtick is always incremented in unchanged() but that
@@ -5113,16 +5024,14 @@ nofail:
     vim_free(backup);
     if (buffer != smallbuf)
 	vim_free(buffer);
-#ifdef FEAT_MBYTE
     vim_free(fenc_tofree);
     vim_free(write_info.bw_conv_buf);
-# ifdef USE_ICONV
+#ifdef USE_ICONV
     if (write_info.bw_iconv_fd != (iconv_t)-1)
     {
 	iconv_close(write_info.bw_iconv_fd);
 	write_info.bw_iconv_fd = (iconv_t)-1;
     }
-# endif
 #endif
 #ifdef HAVE_ACL
     mch_free_acl(acl);
@@ -5157,9 +5066,9 @@ nofail:
 	retval = FAIL;
 	if (end == 0)
 	{
-	    MSG_PUTS_ATTR(_("\nWARNING: Original file may be lost or damaged\n"),
+	    msg_puts_attr(_("\nWARNING: Original file may be lost or damaged\n"),
 		    attr | MSG_HIST);
-	    MSG_PUTS_ATTR(_("don't quit the editor until the file is successfully written!"),
+	    msg_puts_attr(_("don't quit the editor until the file is successfully written!"),
 		    attr | MSG_HIST);
 
 	    /* Update the timestamp to avoid an "overwrite changed file"
@@ -5372,7 +5281,7 @@ check_mtime(buf_T *buf, stat_T *st)
 	msg_scroll = TRUE;	    /* don't overwrite messages here */
 	msg_silent = 0;		    /* must give this prompt */
 	/* don't use emsg() here, don't want to flush the buffers */
-	MSG_ATTR(_("WARNING: The file has been changed since reading it!!!"),
+	msg_attr(_("WARNING: The file has been changed since reading it!!!"),
 						       HL_ATTR(HLF_E));
 	if (ask_yesno((char_u *)_("Do you really want to write to it"),
 								 TRUE) == 'n')
@@ -5411,7 +5320,6 @@ buf_write_bytes(struct bw_info *ip)
     int		flags = ip->bw_flags;	/* extra flags */
 #endif
 
-#ifdef FEAT_MBYTE
     /*
      * Skip conversion when writing the crypt magic number or the BOM.
      */
@@ -5521,7 +5429,7 @@ buf_write_bytes(struct bw_info *ip)
 	    }
 	}
 
-# ifdef WIN3264
+#ifdef WIN3264
 	else if (flags & FIO_CODEPAGE)
 	{
 	    /*
@@ -5617,7 +5525,7 @@ buf_write_bytes(struct bw_info *ip)
 
 	    fromlen = to - ip->bw_conv_buf;
 	    buf = to;
-#  ifdef CP_UTF8	/* VC 4.1 doesn't define CP_UTF8 */
+# ifdef CP_UTF8	/* VC 4.1 doesn't define CP_UTF8 */
 	    if (FIO_GET_CP(flags) == CP_UTF8)
 	    {
 		/* Convert from UCS-2 to UTF-8, using the remainder of the
@@ -5636,7 +5544,7 @@ buf_write_bytes(struct bw_info *ip)
 		len = (int)(to - buf);
 	    }
 	    else
-#endif
+# endif
 	    {
 		/* Convert from UCS-2 to the codepage, using the remainder of
 		 * the conversion buffer.  If the conversion uses the default
@@ -5653,9 +5561,9 @@ buf_write_bytes(struct bw_info *ip)
 		}
 	    }
 	}
-# endif
+#endif
 
-# ifdef MACOS_CONVERT
+#ifdef MACOS_CONVERT
 	else if (flags & FIO_MACROMAN)
 	{
 	    /*
@@ -5689,9 +5597,9 @@ buf_write_bytes(struct bw_info *ip)
 	    }
 	    buf = ip->bw_conv_buf;
 	}
-# endif
+#endif
 
-# ifdef USE_ICONV
+#ifdef USE_ICONV
 	if (ip->bw_iconv_fd != (iconv_t)-1)
 	{
 	    const char	*from;
@@ -5759,9 +5667,8 @@ buf_write_bytes(struct bw_info *ip)
 	    buf = ip->bw_conv_buf;
 	    len = (int)((char_u *)to - ip->bw_conv_buf);
 	}
-# endif
+#endif
     }
-#endif /* FEAT_MBYTE */
 
     if (ip->bw_fd < 0)
 	/* Only checking conversion, which is OK if we get here. */
@@ -5798,7 +5705,6 @@ buf_write_bytes(struct bw_info *ip)
     return (wlen < len) ? FAIL : OK;
 }
 
-#ifdef FEAT_MBYTE
 /*
  * Convert a Unicode character to bytes.
  * Return TRUE for an error, FALSE when it's OK.
@@ -6089,7 +5995,6 @@ make_bom(char_u *buf, char_u *name)
     (void)ucs2bytes(0xfeff, &p, flags);
     return (int)(p - buf);
 }
-#endif
 
 /*
  * Try to find a shortname by comparing the fullname with the current
@@ -6807,7 +6712,7 @@ check_timestamps(
 	if (need_wait_return && didit == 2)
 	{
 	    /* make sure msg isn't overwritten */
-	    msg_puts((char_u *)"\n");
+	    msg_puts("\n");
 	    out_flush();
 	}
     }
@@ -7093,10 +6998,9 @@ buf_check_timestamp(
 		if (!autocmd_busy)
 		{
 		    msg_start();
-		    msg_puts_attr((char_u *)tbuf, HL_ATTR(HLF_E) + MSG_HIST);
+		    msg_puts_attr(tbuf, HL_ATTR(HLF_E) + MSG_HIST);
 		    if (*mesg2 != NUL)
-			msg_puts_attr((char_u *)mesg2,
-						   HL_ATTR(HLF_W) + MSG_HIST);
+			msg_puts_attr(mesg2, HL_ATTR(HLF_W) + MSG_HIST);
 		    msg_clr_eos();
 		    (void)msg_end();
 		    if (emsg_silent == 0)
@@ -7640,13 +7544,10 @@ forward_slash(char_u *fname)
     if (path_with_url(fname))
 	return;
     for (p = fname; *p != NUL; ++p)
-# ifdef  FEAT_MBYTE
 	/* The Big5 encoding can have '\' in the trail byte. */
 	if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 	    ++p;
-	else
-# endif
-	if (*p == '\\')
+	else if (*p == '\\')
 	    *p = '/';
 }
 #endif
@@ -7926,12 +7827,12 @@ show_autocmd(AutoPat *ap, event_T event)
 	if (ap->group != AUGROUP_DEFAULT)
 	{
 	    if (AUGROUP_NAME(ap->group) == NULL)
-		msg_puts_attr(get_deleted_augroup(), HL_ATTR(HLF_E));
+		msg_puts_attr((char *)get_deleted_augroup(), HL_ATTR(HLF_E));
 	    else
-		msg_puts_attr(AUGROUP_NAME(ap->group), HL_ATTR(HLF_T));
-	    msg_puts((char_u *)"  ");
+		msg_puts_attr((char *)AUGROUP_NAME(ap->group), HL_ATTR(HLF_T));
+	    msg_puts("  ");
 	}
-	msg_puts_attr(event_nr2name(event), HL_ATTR(HLF_T));
+	msg_puts_attr((char *)event_nr2name(event), HL_ATTR(HLF_T));
 	last_event = event;
 	last_group = ap->group;
 	msg_putchar('\n');
@@ -8210,8 +8111,8 @@ do_augroup(char_u *arg, int del_group)
 	{
 	    if (AUGROUP_NAME(i) != NULL)
 	    {
-		msg_puts(AUGROUP_NAME(i));
-		msg_puts((char_u *)"  ");
+		msg_puts((char *)AUGROUP_NAME(i));
+		msg_puts("  ");
 	    }
 	}
 	msg_clr_eos();
@@ -8535,7 +8436,7 @@ do_autocmd(char_u *arg_in, int forceit)
     if (!forceit && *cmd == NUL)
     {
 	/* Highlight title */
-	MSG_PUTS_TITLE(_("\n--- Autocommands ---"));
+	msg_puts_title(_("\n--- Autocommands ---"));
     }
 
     /*
@@ -8902,7 +8803,7 @@ do_doautocmd(
 	    nothing_done = FALSE;
 
     if (nothing_done && do_msg)
-	MSG(_("No matching autocommands"));
+	msg(_("No matching autocommands"));
     if (did_something != NULL)
 	*did_something = !nothing_done;
 
@@ -9304,6 +9205,7 @@ has_cursormoved(void)
     return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
 }
 
+#if defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Return TRUE when there is a CursorMovedI autocommand defined.
  */
@@ -9312,6 +9214,7 @@ has_cursormovedI(void)
 {
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is a TextChanged autocommand defined.
@@ -9331,6 +9234,7 @@ has_textchangedI(void)
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
+#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
@@ -9339,6 +9243,7 @@ has_textchangedP(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
+#endif
 
 /*
  * Return TRUE when there is an InsertCharPre autocommand defined.
@@ -9367,6 +9272,7 @@ has_funcundefined(void)
     return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
  */
@@ -9375,6 +9281,7 @@ has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
 }
+#endif
 
 /*
  * Execute autocommands for "event" and file name "fname".
@@ -9824,11 +9731,14 @@ unblock_autocmds(void)
 # endif
 }
 
+#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
+	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
+#endif
 
 /*
  * Find next autocommand pattern that matches.
@@ -9939,7 +9849,7 @@ getnextac(int c UNUSED, void *cookie, int indent UNUSED)
     {
 	verbose_enter_scroll();
 	smsg(_("autocommand %s"), ac->cmd);
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 	verbose_leave_scroll();
     }
     retval = vim_strsave(ac->cmd);
@@ -10089,6 +9999,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
 
 #endif	/* FEAT_CMDL_COMPL */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if autocmd is supported.
  */
@@ -10197,6 +10108,7 @@ theend:
     vim_free(arg_save);
     return retval;
 }
+#endif
 
 
 /*
@@ -10330,13 +10242,11 @@ file_pat_to_reg_pat(
 #endif
 	    default:
 		size++;
-# ifdef FEAT_MBYTE
 		if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 		{
 		    ++p;
 		    ++size;
 		}
-# endif
 		break;
 	}
     }
@@ -10469,12 +10379,9 @@ file_pat_to_reg_pat(
 		    reg_pat[i++] = ',';
 		break;
 	    default:
-# ifdef  FEAT_MBYTE
 		if (enc_dbcs != 0 && (*mb_ptr2len)(p) > 1)
 		    reg_pat[i++] = *p++;
-		else
-# endif
-		if (allow_dirs != NULL && vim_ispathsep(*p))
+		else if (allow_dirs != NULL && vim_ispathsep(*p))
 		    *allow_dirs = TRUE;
 		reg_pat[i++] = *p;
 		break;

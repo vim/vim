@@ -391,9 +391,6 @@ func Test_viminfo_jumplist()
 endfunc
 
 func Test_viminfo_encoding()
-  if !has('multi_byte')
-    return
-  endif
   set enc=latin1
   call histdel(':')
   call histadd(':', "echo '\xe9'")

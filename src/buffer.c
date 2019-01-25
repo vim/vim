@@ -704,10 +704,8 @@ buf_clear_file(buf_T *buf)
     buf->b_shortname = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
-#ifdef FEAT_MBYTE
     buf->b_p_bomb = FALSE;
     buf->b_start_bomb = FALSE;
-#endif
     buf->b_ml.ml_mfp = NULL;
     buf->b_ml.ml_flags = ML_EMPTY;		/* empty buffer */
 #ifdef FEAT_NETBEANS_INTG
@@ -940,9 +938,7 @@ free_buffer_stuff(
     map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  /* clear local mappings */
     map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   /* clear local abbrevs */
 #endif
-#ifdef FEAT_MBYTE
     VIM_CLEAR(buf->b_start_fenc);
-#endif
 }
 
 /*
@@ -1083,7 +1079,7 @@ handle_swap_exists(bufref_T *old_curbuf)
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
 	ml_recover();
-	MSG_PUTS("\n");	/* don't overwrite the last message */
+	msg_puts("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
 	do_modelines(0);
 
@@ -2133,9 +2129,7 @@ free_buf_options(
 {
     if (free_p_ff)
     {
-#ifdef FEAT_MBYTE
 	clear_string_option(&buf->b_p_fenc);
-#endif
 	clear_string_option(&buf->b_p_ff);
 	clear_string_option(&buf->b_p_bh);
 	clear_string_option(&buf->b_p_bt);
@@ -2245,9 +2239,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_lw);
 #endif
     clear_string_option(&buf->b_p_bkc);
-#ifdef FEAT_MBYTE
     clear_string_option(&buf->b_p_menc);
-#endif
 }
 
 /*
@@ -3449,17 +3441,17 @@ fileinfo(
 {
     char_u	*name;
     int		n;
-    char_u	*p;
-    char_u	*buffer;
+    char	*p;
+    char	*buffer;
     size_t	len;
 
-    buffer = alloc(IOSIZE);
+    buffer = (char *)alloc(IOSIZE);
     if (buffer == NULL)
 	return;
 
     if (fullname > 1)	    /* 2 CTRL-G: include buffer number */
     {
-	vim_snprintf((char *)buffer, IOSIZE, "buf %d: ", curbuf->b_fnum);
+	vim_snprintf(buffer, IOSIZE, "buf %d: ", curbuf->b_fnum);
 	p = buffer + STRLEN(buffer);
     }
     else
@@ -3467,18 +3459,18 @@ fileinfo(
 
     *p++ = '"';
     if (buf_spname(curbuf) != NULL)
-	vim_strncpy(p, buf_spname(curbuf), IOSIZE - (p - buffer) - 1);
+	vim_strncpy((char_u *)p, buf_spname(curbuf), IOSIZE - (p - buffer) - 1);
     else
     {
 	if (!fullname && curbuf->b_fname != NULL)
 	    name = curbuf->b_fname;
 	else
 	    name = curbuf->b_ffname;
-	home_replace(shorthelp ? curbuf : NULL, name, p,
+	home_replace(shorthelp ? curbuf : NULL, name, (char_u *)p,
 					  (int)(IOSIZE - (p - buffer)), TRUE);
     }
 
-    vim_snprintf_add((char *)buffer, IOSIZE, "\"%s%s%s%s%s%s",
+    vim_snprintf_add(buffer, IOSIZE, "\"%s%s%s%s%s%s",
 	    curbufIsChanged() ? (shortmess(SHM_MOD)
 					  ?  " [+]" : _(" [Modified]")) : " ",
 	    (curbuf->b_flags & BF_NOTEDITED)
@@ -3506,29 +3498,30 @@ fileinfo(
 	n = (int)(((long)curwin->w_cursor.lnum * 100L) /
 					    (long)curbuf->b_ml.ml_line_count);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
-	vim_snprintf_add((char *)buffer, IOSIZE, "%s", _(no_lines_msg));
+	vim_snprintf_add(buffer, IOSIZE, "%s", _(no_lines_msg));
 #ifdef FEAT_CMDL_INFO
     else if (p_ru)
 	/* Current line and column are already on the screen -- webb */
-	vim_snprintf_add((char *)buffer, IOSIZE,
+	vim_snprintf_add(buffer, IOSIZE,
 		NGETTEXT("%ld line --%d%%--", "%ld lines --%d%%--",
 						   curbuf->b_ml.ml_line_count),
 		(long)curbuf->b_ml.ml_line_count, n);
 #endif
     else
     {
-	vim_snprintf_add((char *)buffer, IOSIZE,
+	vim_snprintf_add(buffer, IOSIZE,
 		_("line %ld of %ld --%d%%-- col "),
 		(long)curwin->w_cursor.lnum,
 		(long)curbuf->b_ml.ml_line_count,
 		n);
 	validate_virtcol();
 	len = STRLEN(buffer);
-	col_print(buffer + len, IOSIZE - len,
+	col_print((char_u *)buffer + len, IOSIZE - len,
 		   (int)curwin->w_cursor.col + 1, (int)curwin->w_virtcol + 1);
     }
 
-    (void)append_arg_number(curwin, buffer, IOSIZE, !shortmess(SHM_FILE));
+    (void)append_arg_number(curwin, (char_u *)buffer, IOSIZE,
+							 !shortmess(SHM_FILE));
 
     if (dont_truncate)
     {
@@ -3542,14 +3535,14 @@ fileinfo(
     }
     else
     {
-	p = msg_trunc_attr(buffer, FALSE, 0);
+	p = (char *)msg_trunc_attr(buffer, FALSE, 0);
 	if (restart_edit != 0 || (msg_scrolled && !need_wait_return))
 	    /* Need to repeat the message after redrawing when:
 	     * - When restart_edit is set (otherwise there will be a delay
 	     *   before redrawing).
 	     * - When the screen was scrolled but there is no wait-return
 	     *   prompt. */
-	    set_keep_msg(p, 0);
+	    set_keep_msg((char_u *)p, 0);
     }
 
     vim_free(buffer);
@@ -3777,10 +3770,8 @@ maketitle(void)
 	    if (len > 100)
 	    {
 		len -= 100;
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    len += (*mb_tail_off)(p, p + len) + 1;
-#endif
 		p += len;
 	    }
 	    STRCPY(icon_str, p);
@@ -3868,6 +3859,8 @@ build_stl_str_hl(
     struct stl_hlrec *hltab,	/* return: HL attributes (can be NULL) */
     struct stl_hlrec *tabtab)	/* return: tab page nrs (can be NULL) */
 {
+    linenr_T	lnum;
+    size_t	len;
     char_u	*p;
     char_u	*s;
     char_u	*t;
@@ -3936,27 +3929,39 @@ build_stl_str_hl(
 
     if (fillchar == 0)
 	fillchar = ' ';
-#ifdef FEAT_MBYTE
     /* Can't handle a multi-byte fill character yet. */
     else if (mb_char2len(fillchar) > 1)
 	fillchar = '-';
-#endif
 
-    /* Get line & check if empty (cursorpos will show "0-1").  Note that
-     * p will become invalid when getting another buffer line. */
-    p = ml_get_buf(wp->w_buffer, wp->w_cursor.lnum, FALSE);
+    // The cursor in windows other than the current one isn't always
+    // up-to-date, esp. because of autocommands and timers.
+    lnum = wp->w_cursor.lnum;
+    if (lnum > wp->w_buffer->b_ml.ml_line_count)
+    {
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+	wp->w_cursor.lnum = lnum;
+    }
+
+    // Get line & check if empty (cursorpos will show "0-1").  Note that
+    // p will become invalid when getting another buffer line.
+    p = ml_get_buf(wp->w_buffer, lnum, FALSE);
     empty_line = (*p == NUL);
 
-    /* Get the byte value now, in case we need it below. This is more
-     * efficient than making a copy of the line. */
-    if (wp->w_cursor.col > (colnr_T)STRLEN(p))
-	byteval = 0;
-    else
-#ifdef FEAT_MBYTE
-	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
-#else
-	byteval = p[wp->w_cursor.col];
+    // Get the byte value now, in case we need it below. This is more efficient
+    // than making a copy of the line.
+    len = STRLEN(p);
+    if (wp->w_cursor.col > (colnr_T)len)
+    {
+	// Line may have changed since checking the cursor column, or the lnum
+	// was adjusted above.
+	wp->w_cursor.col = (colnr_T)len;
+#ifdef FEAT_VIRTUALEDIT
+	wp->w_cursor.coladd = 0;
 #endif
+	byteval = 0;
+    }
+    else
+	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
 
     groupdepth = 0;
     p = out;
@@ -4058,7 +4063,6 @@ build_stl_str_hl(
 	    if (l > item[groupitem[groupdepth]].maxwid)
 	    {
 		/* truncate, remove n bytes of text at the start */
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    /* Find the first character that should be included. */
@@ -4070,17 +4074,15 @@ build_stl_str_hl(
 		    }
 		}
 		else
-#endif
 		    n = (long)(p - t) - item[groupitem[groupdepth]].maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, (size_t)(p - (t + n)));
 		p = p - n + 1;
-#ifdef FEAT_MBYTE
-		/* Fill up space left over by half a double-wide char. */
+
+		// Fill up space left over by half a double-wide char.
 		while (++l < item[groupitem[groupdepth]].minwid)
 		    *p++ = fillchar;
-#endif
 
 		/* correct the start of the items for the truncation */
 		for (l = groupitem[groupdepth] + 1; l < curitem; l++)
@@ -4462,14 +4464,12 @@ build_stl_str_hl(
 	    if (l > maxwid)
 	    {
 		while (l >= maxwid)
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			l -= ptr2cells(t);
 			t += (*mb_ptr2len)(t);
 		    }
 		    else
-#endif
 			l -= byte2cells(*t++);
 		if (p + 1 >= out + outlen)
 		    break;
@@ -4589,7 +4589,6 @@ build_stl_str_hl(
 	if (width - vim_strsize(s) >= maxwidth)
 	{
 	    /* Truncation mark is beyond max length */
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		s = out;
@@ -4606,7 +4605,6 @@ build_stl_str_hl(
 		    *s++ = fillchar;
 	    }
 	    else
-#endif
 		s = out + maxwidth - 1;
 	    for (l = 0; l < itemcnt; l++)
 		if (item[l].start > s)
@@ -4617,7 +4615,6 @@ build_stl_str_hl(
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		n = 0;
@@ -4628,7 +4625,6 @@ build_stl_str_hl(
 		}
 	    }
 	    else
-#endif
 		n = width - maxwidth + 1;
 	    p = s + n;
 	    STRMOVE(s + 1, p);
@@ -5659,6 +5655,7 @@ bt_normal(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == NUL;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
@@ -5667,7 +5664,9 @@ bt_quickfix(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'q';
 }
+#endif
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
@@ -5676,6 +5675,7 @@ bt_terminal(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 't';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a help buffer.
@@ -5720,6 +5720,7 @@ bt_dontwrite(buf_T *buf)
 	         || buf->b_p_bt[0] == 'p');
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
     int
 bt_dontwrite_msg(buf_T *buf)
 {
@@ -5730,6 +5731,7 @@ bt_dontwrite_msg(buf_T *buf)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"

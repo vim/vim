@@ -3437,7 +3437,7 @@ print_read_msg(nbbuf_T *buf)
     /* Now display it */
     VIM_CLEAR(keep_msg);
     msg_scrolled_ign = TRUE;
-    msg_trunc_attr(IObuff, FALSE, 0);
+    msg_trunc_attr((char *)IObuff, FALSE, 0);
     msg_scrolled_ign = FALSE;
 }
 
@@ -3464,7 +3464,7 @@ print_save_msg(nbbuf_T *buf, off_T nchars)
 
 	VIM_CLEAR(keep_msg);
 	msg_scrolled_ign = TRUE;
-	p = msg_trunc_attr(IObuff, FALSE, 0);
+	p = (char_u *)msg_trunc_attr((char *)IObuff, FALSE, 0);
 	if ((msg_scrolled && !need_wait_return) || !buf->initDone)
 	{
 	    /* Need to repeat the message after redrawing when:

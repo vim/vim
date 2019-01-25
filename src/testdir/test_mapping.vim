@@ -1,9 +1,5 @@
 " Tests for mappings and abbreviations
 
-if !has('multi_byte')
-  finish
-endif
-
 func Test_abbreviation()
   " abbreviation with 0x80 should work
   inoreab чкпр   vim

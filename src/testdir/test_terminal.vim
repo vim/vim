@@ -209,9 +209,6 @@ func Test_terminal_scrape_123()
 endfunc
 
 func Test_terminal_scrape_multibyte()
-  if !has('multi_byte')
-    return
-  endif
   call writefile(["léttまrs"], 'Xtext')
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
@@ -643,19 +640,17 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work in the GUI
-  if !has('gui_running')
-    return
-  endif
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
   let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
-  if has('win32')
-    silent exe '!start cmd /c "echo look here > ' . pty . '"'
-  else
+  if has('gui_running') && !has('win32')
+    " In the GUI job_start() doesn't work, it does not read from the pty.
     call system('echo "look here" > ' . pty)
+  else
+    " Otherwise using a job works on all systems.
+    call job_start([&shell, &shellcmdflag, 'echo "look here" > ' . pty])
   endif
   call WaitForAssert({-> assert_match('look here', term_getline(buf, 1))})
 
@@ -1717,4 +1712,29 @@ func Test_term_gettitle()
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
 
   exe term . 'bwipe!'
+endfunc
+
+" When drawing the statusline the cursor position may not have been updated
+" yet.
+" 1. create a terminal, make it show 2 lines
+" 2. 0.5 sec later: leave terminal window, execute "i"
+" 3. 0.5 sec later: clear terminal window, now it's 1 line
+" 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
+" 4. 0.5 sec later: should be done, clean up
+func Test_terminal_statusline()
+  if !has('unix')
+    return
+  endif
+  set statusline=x
+  terminal
+  let tbuf = bufnr('')
+  call term_sendkeys(tbuf, "clear; echo a; echo b; sleep 1; clear\n")
+  call timer_start(500, { tid -> feedkeys("\<C-w>j", 'tx') })
+  call timer_start(1500, { tid -> feedkeys("\<C-l>", 'tx') })
+  au BufLeave * if &buftype == 'terminal' | silent! normal i | endif
+
+  sleep 2
+  exe tbuf . 'bwipe!'
+  au! BufLeave
+  set statusline=
 endfunc

@@ -1385,3 +1385,5 @@ func Test_Changed_FirstTime()
   call delete('Xchanged.txt')
   bwipe!
 endfunc
+
+" FileChangedShell tested in test_filechanged.vim

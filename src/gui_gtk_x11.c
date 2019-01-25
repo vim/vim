@@ -6737,11 +6737,13 @@ clip_mch_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
+#if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gtk_owner_exists(VimClipboard *cbd)
 {
     return gdk_selection_owner_get(cbd->gtk_sel_atom) != NULL;
 }
+#endif
 
 
 #if defined(FEAT_MENU) || defined(PROTO)

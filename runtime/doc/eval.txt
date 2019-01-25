@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,7 +38,7 @@ done, the features in this document are not available.  See |+eval| and
 1. Variables						*variables*
 
 1.1 Variable types ~
-							*E712*
+						*E712* *E896* *E897* *E899*
 There are nine types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
@@ -633,6 +633,9 @@ Blob creation ~
 
 A Blob can be created with a |blob-literal|: >
 	:let b = 0zFF00ED015DAF
+Dots can be inserted between bytes (pair of hex characters) for readability,
+they don't change the value: >
+	:let b = 0zFF00.ED01.5DAF
 
 A blob can be read from a file with |readfile()| passing the {type} argument
 set to "B", for example: >
@@ -657,6 +660,16 @@ To avoid an error for an invalid index use the |get()| function.  When an item
 is not available it returns -1 or the default value you specify: >
 	:echo get(myblob, idx)
 	:echo get(myblob, idx, 999)
+
+
+Blob iteration ~
+
+The |:for| loop executes commands for each byte of a Blob.  The loop variable is
+set to each byte in the Blob.  Example: >
+	:for byte in 0z112233
+	:   call Doit(byte)
+	:endfor
+This calls Doit() with 0x11, 0x22 and 0x33.
 
 
 Blob concatenation ~
@@ -790,8 +803,9 @@ Expression syntax summary, from least to most significant:
 	etc.			As above, append ? for ignoring case, # for
 				matching case
 
-	expr5 is expr5		same |List| instance
-	expr5 isnot expr5	different |List| instance
+	expr5 is expr5		same |List|, |Dictionary| or |Blob| instance
+	expr5 isnot expr5	different |List|, |Dictionary| or |Blob|
+				instance
 
 |expr5|	expr6
 	expr6 +	 expr6 ..	number addition, list or blob concatenation
@@ -959,12 +973,12 @@ Dictionary and arguments, use |get()| to get the function name: >
 	if get(Part1, 'name') == get(Part2, 'name')
 	   " Part1 and Part2 refer to the same function
 
-When using "is" or "isnot" with a |List| or a |Dictionary| this checks if the
-expressions are referring to the same |List| or |Dictionary| instance.  A copy
-of a |List| is different from the original |List|.  When using "is" without
-a |List| or a |Dictionary| it is equivalent to using "equal", using "isnot"
-equivalent to using "not equal".  Except that a different type means the
-values are different: >
+Using "is" or "isnot" with a |List|, |Dictionary| or |Blob| checks whether
+the expressions are referring to the same |List|, |Dictionary| or |Blob|
+instance.  A copy of a |List| is different from the original |List|.  When
+using "is" without a |List|, |Dictionary| or |Blob|, it is equivalent to
+using "equal", using "isnot" equivalent to using "not equal".  Except that
+a different type means the values are different: >
 	echo 4 == '4'
 	1
 	echo 4 is '4'
@@ -1009,16 +1023,16 @@ can be matched like an ordinary character.  Examples:
 
 expr5 and expr6						*expr5* *expr6*
 ---------------
-expr6 +	 expr6 ..	Number addition or |List| concatenation	*expr-+*
-expr6 -	 expr6 ..	Number subtraction			*expr--*
-expr6 .	 expr6 ..	String concatenation			*expr-.*
+expr6 + expr6  Number addition, |List| or |Blob| concatenation	*expr-+*
+expr6 - expr6  Number subtraction				*expr--*
+expr6 . expr6  String concatenation				*expr-.*
 
 For |Lists| only "+" is possible and then both expr6 must be a list.  The
 result is a new list with the two lists Concatenated.
 
-expr7 *	 expr7 ..	Number multiplication			*expr-star*
-expr7 /	 expr7 ..	Number division				*expr-/*
-expr7 %	 expr7 ..	Number modulo				*expr-%*
+expr7 * expr7  Number multiplication				*expr-star*
+expr7 / expr7  Number division					*expr-/*
+expr7 % expr7  Number modulo					*expr-%*
 
 For all, except ".", Strings are converted to Numbers.
 For bitwise operators see |and()|, |or()| and |xor()|.
@@ -3805,8 +3819,8 @@ escape({string}, {chars})				*escape()*
 							*eval()*
 eval({string})	Evaluate {string} and return the result.  Especially useful to
 		turn the result of |string()| back into the original value.
-		This works for Numbers, Floats, Strings and composites of
-		them.  Also works for |Funcref|s that refer to existing
+		This works for Numbers, Floats, Strings, Blobs and composites
+		of them.  Also works for |Funcref|s that refer to existing
 		functions.
 
 eventhandler()						*eventhandler()*
@@ -4118,6 +4132,9 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		't'	Handle keys as if typed; otherwise they are handled as
 			if coming from a mapping.  This matters for undo,
 			opening folds, etc.
+		'L'	Lowlevel input.  Only works for Unix or when using the
+			GUI. Keys are used as if they were coming from the
+			terminal.  Other flags are not used.  *E980*
 		'i'	Insert the string instead of appending (see above).
 		'x'	Execute commands until typeahead is empty.  This is
 			similar to using ":normal!".  You can call feedkeys()
@@ -5700,7 +5717,11 @@ items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
 		|List| item is a list with two items: the key of a {dict}
 		entry and the value of this entry.  The |List| is in arbitrary
-		order.
+		order.  Also see |keys()| and |values()|.
+		Example: >
+			for [key, value] in items(mydict)
+			   echo key . ': ' . value
+			endfor
 
 job_getchannel({job})					 *job_getchannel()*
 		Get the channel handle that {job} is using.
@@ -5732,6 +5753,10 @@ job_start({command} [, {options}])			*job_start()*
 		Start a job and return a Job object.  Unlike |system()| and
 		|:!cmd| this does not wait for the job to finish.
 		To start a job in a terminal window see |term_start()|.
+
+		If the job fails to start then |job_status()| on the returned
+		Job object results in "fail" and none of the callbacks will be
+		invoked.
 
 		{command} can be a String.  This works best on MS-Windows.  On
 		Unix it is split up in white-separated parts to be passed to
@@ -5885,7 +5910,7 @@ json_decode({string})					*json_decode()*
 		- A trailing comma in an array and object is ignored, e.g.
 		  "[1, 2, ]" is the same as "[1, 2]".
 		- Integer keys are accepted in objects, e.g. {1:2} is the
-		  same as {'1':2}.
+		  same as {"1":2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
 		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
@@ -5897,6 +5922,8 @@ json_decode({string})					*json_decode()*
 		- Control characters U+0000 through U+001F which are not
 		  escaped in strings are accepted, e.g. "	" (tab
 		  character in string) for "\t".
+		- An empty JSON expression or made of only spaces is accepted
+		  and results in v:none.
 		- Backslash in an invalid 2-character sequence escape is
 		  ignored, e.g. "\a" is decoded as "a".
 		- A correct surrogate pair in JSON strings should normally be
@@ -5936,7 +5963,7 @@ json_encode({expr})					*json_encode()*
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
-		arbitrary order.
+		arbitrary order.  Also see |items()| and |values()|.
 
 							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
@@ -8617,13 +8644,14 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 
 							*string()*
 string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
-		Float, String or a composition of them, then the result can be
-		parsed back with |eval()|.
+		Float, String, Blob or a composition of them, then the result
+		can be parsed back with |eval()|.
 			{expr} type	result ~
 			String		'string' (single quotes are doubled)
 			Number		123
 			Float		123.123456 or 1.123456e8
 			Funcref		function('name')
+			Blob		0z00112233.44556677.8899
 			List		[item, item]
 			Dictionary	{key: value, key: value}
 
@@ -9778,7 +9806,7 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.  The |List| is
-		in arbitrary order.
+		in arbitrary order.  Also see |items()| and |keys()|.
 
 
 virtcol({expr})						*virtcol()*
@@ -11034,27 +11062,33 @@ This does NOT work: >
 			NOTE: The ":append" and ":insert" commands don't work
 			properly inside a ":while" and ":for" loop.
 
-:for {var} in {list}					*:for* *E690* *E732*
+:for {var} in {object}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between ":for" and ":endfor" for
-			each item in {list}.  Variable {var} is set to the
-			value of each item.
-			When an error is detected for a command inside the
-			loop, execution continues after the "endfor".
-			Changing {list} inside the loop affects what items are
-			used.  Make a copy if this is unwanted: >
+			each item in {object}.  {object} can be a |List| or
+			a |Blob|.  Variable {var} is set to the value of each
+			item.  When an error is detected for a command inside
+			the loop, execution continues after the "endfor".
+			Changing {object} inside the loop affects what items
+			are used.  Make a copy if this is unwanted: >
 				:for item in copy(mylist)
-<			When not making a copy, Vim stores a reference to the
-			next item in the list, before executing the commands
-			with the current item.  Thus the current item can be
-			removed without effect.  Removing any later item means
-			it will not be found.  Thus the following example
-			works (an inefficient way to make a list empty): >
+<
+			When {object} is a |List| and not making a copy, Vim
+			stores a reference to the next item in the |List|
+			before executing the commands with the current item.
+			Thus the current item can be removed without effect.
+			Removing any later item means it will not be found.
+			Thus the following example works (an inefficient way
+			to make a |List| empty): >
 				for item in mylist
 				   call remove(mylist, 0)
 				endfor
-<			Note that reordering the list (e.g., with sort() or
+<			Note that reordering the |List| (e.g., with sort() or
 			reverse()) may have unexpected effects.
+
+			When {object} is a |Blob|, Vim always makes a copy to
+			iterate over.  Unlike with |List|, modifying the
+			|Blob| does not affect the iteration.
 
 :for [{var1}, {var2}, ...] in {listlist}
 :endfo[r]
