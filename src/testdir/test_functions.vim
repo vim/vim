@@ -1165,7 +1165,7 @@ endfunc
 
 func Test_platform_name()
   " The system matches at most only one name.
-  let names = ['amiga', 'beos', 'bsd', 'hpux', 'linux', 'mac', 'qnx', 'sun', 'vms', 'win32']
+  let names = ['amiga', 'beos', 'bsd', 'hpux', 'linux', 'mac', 'qnx', 'sun', 'vms', 'win32', 'win32unix']
   call assert_inrange(0, 1, len(filter(copy(names), 'has(v:val)')))
 
   " Is Unix?
@@ -1176,6 +1176,7 @@ func Test_platform_name()
   call assert_equal(has('mac'), has('mac') && has('unix'))
   call assert_equal(has('qnx'), has('qnx') && has('unix'))
   call assert_equal(has('sun'), has('sun') && has('unix'))
+  call assert_equal(has('win32'), has('win32') && !has('unix'))
   call assert_equal(has('win32unix'), has('win32unix') && has('unix'))
 
   if executable('uname')
@@ -1187,5 +1188,6 @@ func Test_platform_name()
     call assert_equal(uname =~? 'Darwin', has('mac'))
     call assert_equal(uname =~? 'QNX', has('qnx'))
     call assert_equal(uname =~? 'SunOS', has('sun'))
+    call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
   endif
 endfunc
