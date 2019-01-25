@@ -397,6 +397,7 @@ EXTERN int	autocmd_no_enter INIT(= FALSE); /* *Enter autocmds disabled */
 EXTERN int	autocmd_no_leave INIT(= FALSE); /* *Leave autocmds disabled */
 EXTERN int	modified_was_set;		/* did ":set modified" */
 EXTERN int	did_filetype INIT(= FALSE);	/* FileType event found */
+EXTERN int	au_did_filetype INIT(= FALSE);
 EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 						   starting to execute
 						   autocommands */

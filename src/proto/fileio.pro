@@ -28,6 +28,7 @@ int delete_recursive(char_u *name);
 void vim_deltempdir(void);
 char_u *vim_tempname(int extra_char, int keep);
 void forward_slash(char_u *fname);
+int match_file_pat(char_u *pattern, regprog_T **prog, char_u *fname, char_u *sfname, char_u *tail, int allow_dirs);
 void aubuflocal_remove(buf_T *buf);
 int au_has_group(char_u *name);
 void do_augroup(char_u *arg, int del_group);

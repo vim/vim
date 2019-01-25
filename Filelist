@@ -14,6 +14,7 @@ SRC_ALL =	\
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/autocmd.c \
 		src/beval.c \
 		src/beval.h \
 		src/blob.c \
@@ -146,6 +147,7 @@ SRC_ALL =	\
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
+		src/proto/autocmd.pro \
 		src/proto/beval.pro \
 		src/proto/blob.pro \
 		src/proto/blowfish.pro \
