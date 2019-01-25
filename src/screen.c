@@ -10110,6 +10110,26 @@ screen_del_lines(
 }
 
 /*
+ * Return TRUE when postponing displaying the mode message: when not redrawing
+ * or inside a mapping.
+ */
+    int
+skip_showmode()
+{
+    // Call char_avail() only when we are going to show something, because it
+    // takes a bit of time.  redrawing() may also call char_avail_avail().
+    if (global_busy
+	    || msg_silent != 0
+	    || !redrawing()
+	    || (char_avail() && !KeyTyped))
+    {
+	redraw_cmdline = TRUE;		// show mode later
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Show the current mode and ruler.
  *
  * If clear_cmdline is TRUE, clear the rest of the cmdline.
@@ -10135,16 +10155,8 @@ showmode(void)
 		|| VIsual_active));
     if (do_mode || reg_recording != 0)
     {
-	/*
-	 * Don't show mode right now, when not redrawing or inside a mapping.
-	 * Call char_avail() only when we are going to show something, because
-	 * it takes a bit of time.
-	 */
-	if (!redrawing() || (char_avail() && !KeyTyped) || msg_silent != 0)
-	{
-	    redraw_cmdline = TRUE;		/* show mode later */
-	    return 0;
-	}
+	if (skip_showmode())
+	    return 0;		// show mode later
 
 	nwr_save = need_wait_return;
 
