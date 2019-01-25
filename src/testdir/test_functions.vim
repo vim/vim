@@ -1179,7 +1179,7 @@ func Test_platform_name()
   call assert_equal(has('win32'), has('win32') && !has('unix'))
   call assert_equal(has('win32unix'), has('win32unix') && has('unix'))
 
-  if executable('uname')
+  if has('unix') && executable('uname')
     let uname = system('uname')
     call assert_equal(uname =~? 'BeOS', has('beos'))
     call assert_equal(uname =~? 'BSD\|DragonFly', has('bsd'))
