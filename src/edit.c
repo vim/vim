@@ -2953,50 +2953,50 @@ char *ins_compl_mode(void)
     {
 	case 0:
 	    // Keyword completion
-	    mode = strdup("keyword");
+	    mode = vim_strsave("keyword");
 	    break;
 	case CTRL_X_NOT_DEFINED_YET:
 	    // Just press Ctrl_X
-	    mode = strdup("ctrl_x");
+	    mode = vim_strsave("ctrl_x");
 	    break;
 	case CTRL_X_WHOLE_LINE:
-	    mode = strdup("whole_line");
+	    mode = vim_strsave("whole_line");
 	    break;
 	case CTRL_X_FILES:
-	    mode = strdup("files");
+	    mode = vim_strsave("files");
 	    break;
 	case CTRL_X_TAGS:
-	    mode = strdup("tags");
+	    mode = vim_strsave("tags");
 	    break;
 	case CTRL_X_PATH_PATTERNS:
-	    mode = strdup("path_patterns");
+	    mode = vim_strsave("path_patterns");
 	    break;
 	case CTRL_X_PATH_DEFINES:
-	    mode = strdup("path_defines");
+	    mode = vim_strsave("path_defines");
 	    break;
 	case CTRL_X_DICTIONARY:
-	    mode = strdup("dictionary");
+	    mode = vim_strsave("dictionary");
 	    break;
 	case CTRL_X_THESAURUS:
-	    mode = strdup("thesaurus");
+	    mode = vim_strsave("thesaurus");
 	    break;
 	case CTRL_X_CMDLINE:
-	    mode = strdup("cmdline");
+	    mode = vim_strsave("cmdline");
 	    break;
 	case CTRL_X_FUNCTION:
-	    mode = strdup("function");
+	    mode = vim_strsave("function");
 	    break;
 	case CTRL_X_OMNI:
-	    mode = strdup("omni");
+	    mode = vim_strsave("omni");
 	    break;
 	case CTRL_X_SPELL:
-	    mode = strdup("spell");
+	    mode = vim_strsave("spell");
 	    break;
 	case CTRL_X_EVAL:
-	    mode = strdup("eval");
+	    mode = vim_strsave("eval");
 	    break;
 	default:
-	    mode = strdup("unknown");
+	    mode = vim_strsave("unknown");
 	    break;
     }
 

@@ -929,15 +929,17 @@ func Test_popup_complete_mode()
   endfor
   call delete('dummy.txt')
 
-  function! s:complTestEval() abort
+  func s:complTestEval() abort
     call complete(1, ['source', 'soundfold'])
     return ''
-  endfunction
-  inoremap <F6>  <c-r>=s:complTestEval()<CR>
+  endfunc
+  inoremap <f6>  <c-r>=s:complTestEval()<CR>
   call feedkeys("i\<f6>\<f5>\<ESC>", 'tx')
   call assert_equal('eval', getline('.'))
 
   bwipe!
+  iunmap <f5>
+  iunmap <f6>
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
