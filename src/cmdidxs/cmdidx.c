@@ -88,7 +88,7 @@ main(int argc, char *argv[])
     fp = fopen("ex_cmdidxs.h", "w");
     if (NULL != fp)
     {
-        fprintf(fp, "/* Automatically generated code by cmdidxs/cmdidxs\n");
+        fprintf(fp, "/* Automatically generated code by cmdidxs\n");
         fprintf(fp, " *\n");
         fprintf(fp, " * Table giving the index of the first command in cmdnames[] to lookup\n");
         fprintf(fp, " * based on the first letter of a command.\n");
