@@ -898,7 +898,7 @@ endfunc
 
 func Test_popup_complete_mode()
   new
-  inoremap <f5> <c-r>=complete_mode()<cr>
+  inoremap <buffer><f5> <c-r>=complete_mode()<cr>
   call writefile([
         \ '!rm	src/testdir/amiga.vim	/^cmap !rm !Delete all$/;"	m',
         \], 'Xdummy.txt')
@@ -933,13 +933,11 @@ func Test_popup_complete_mode()
     call complete(1, ['source', 'soundfold'])
     return ''
   endfunc
-  inoremap <f6>  <c-r>=s:complTestEval()<CR>
+  inoremap <buffer><f6>  <c-r>=s:complTestEval()<CR>
   call feedkeys("i\<f6>\<f5>\<ESC>", 'tx')
   call assert_equal('eval', getline('.'))
 
   bwipe!
-  iunmap <f5>
-  iunmap <f6>
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
