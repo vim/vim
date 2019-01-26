@@ -3383,7 +3383,7 @@ objects/arabic.o: arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
 objects/autocmd.o: autocmd.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ auto/osdef.h os_unix.h os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h \
  structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h proto.h globals.h \
  farsi.h arabic.h
 objects/beval.o: beval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
