@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 17
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Blob: the string form can't be parsed back.  Use 0z00112233.44556677 ?
-
-Make msg() and msg_attr() also use "char *" intead of "char_u *"?
-
-Feature to possibly graduate: FEAT_MBYTE
-    Integrate EBCDIC feature, use 'encoding' == "ebcdic" ?
-    Or drop EBCDIC?
-
 'incsearch' with :s: (#3321)
+- Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
+  was set. (#3837)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
 - :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
@@ -109,17 +103,9 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patch with updates for VMS. (Zoltan Arpadffy, 2019 Jan 14)
-
-Update for German spell files: https://github.com/chrisbra/vim/compare/5e021c990f8817a50d3264782a5...3b27c92f297540761ebbd92d04fb3
-(Christian Brabandt, 2018 Nov 4)
-
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
-
-Patch to deal with signs at the end of the buffer when lines are deleted.
-(Yegappan Lakshmanan, #3798)
 
 Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
 #3417)
@@ -130,12 +116,19 @@ Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
 
-Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
-When redrawing for updating the popup menu, don't redraw the part when the new
-popup menu will be displayed?
-
 js_decode() does not handle infinity properly. (Dominique Pelle, 2019 Jan 10,
 #3788)
+
+Patch to avoid skipping buffers when loading a session. (Jason Franklin, 2019
+Jan 20)
+
+Patch to update example of how to restore the cursor. (Ken Takata, 2019 Jan
+21)
+
+Patch to fix problems with timer in GUI. (Ozaki Kiichi, #3817)
+Should also fix #3824.
+Change the order in which GUI handles events?  Make it work like os_unix.c,
+check timer on lower level, check for pending messages higher up.
 
 Signs:
 -   screen not redrawn correctly. (Dominique Pelle, 2019 Jan 14, #3803)
@@ -146,9 +139,9 @@ Signs:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+Patch to recognize more systems with has().  (Ozaki Kiichi, #3855)
 
-Patch to not call setActiveWindow. Yasuhiro Matsumoto, 2019 Jan 8, #3778)
+Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -190,6 +183,9 @@ Patch on #3690 to fix that "wincmd p" does not always behave properly.
 Patch: When using %v in 'errorformat', assume the number is the screen column
 not bytes, also handle multi-byte charactes. (Yegappan Lakshmanan, #3700)
 
+Support setting the character displayed below the last line?  Neovim uses
+"eob:X" in 'fillchars'.
+
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
 On Win32 it stops showing, because showState is already ShS_SHOWING.
@@ -200,8 +196,6 @@ Should also be possible to add highlighting, like in the status line?
 balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 Another request: #3811.
-
-Patch to add FOR_ALL_FRAMES. (Yegappan, 2018 Dec 11, #3686)
 
 Patch for MinGW build with static libraries. (Ken Takata, 2018 Dec 16)
 
@@ -244,9 +238,6 @@ punctiuation is repeated. (Smylers, 2018 Nov 17, #3621)
 Using CTRL-L during search only picks up the base character, not a combining
 character. (Rick, 2018 Dec 11, #3682)
 
-":mksession" cannot handle a very long 'runtimepath'. (Timothy Madden, 21 Sep
-2018, #3466)  Patch from Christian, 2018 Oct 30 (with comments).
-
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
 
 Patch to convert temp file name. (Yasuhiro Matsumoto, #3520)
@@ -258,6 +249,9 @@ is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
 When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
 scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
 using CTRL-E. (Yee Cheng Chin, #3721)
+
+Patch to add ":vsbuffer" - vertical split + :sbuffer. (Rob Pilling, 2019 Jan
+17, #3816)  Do we really need this?
 
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
@@ -967,6 +961,8 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 - When out_cb executes :sleep, the close_cb may be invoked. (Daniel Hahler,
   2016 Dec 11, #1320)
 - Implement |job-term| ?
+- Calling a function when receiving a "call" on a channel, using feedkeys()
+  does not work.  It does work from a timer. (Qiming Zhao, #3852)
 - Channel test fails with Motif.  Sometimes kills the X11 server.
 - When a message in the queue but there is no callback, drop it after a while?
   Add timestamp to queued messages and callbacks with ID, remove after a
@@ -1829,6 +1825,7 @@ cleared.  See test64.
 Patch to make "z=" work when 'spell' is off.  Does this have nasty side
 effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
 Would also need to do this for spellbadword() and spellsuggest().
+https://github.com/chrisbra/vim-mq-patches/blob/master/enable_spellchecking
 
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the

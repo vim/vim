@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.1.  Last change: 2017 Oct 14
+*term.txt*      For Vim version 8.1.  Last change: 2019 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -334,11 +334,15 @@ Added by Vim (there are no standard codes for these):
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
-		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+		The response is stored in |v:termresponse|
+		|xterm-8bit| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
+		The response is stored in |v:termu7resp|
 	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
+		The response is stored in |v:termrfgresp|
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
+		The response is stored in |v:termrbgresp|
 	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
@@ -351,7 +355,9 @@ Added by Vim (there are no standard codes for these):
 	t_EC	set cursor color end				*t_EC* *'t_EC'*
 	t_SH	set cursor shape				*t_SH* *'t_SH'*
 	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
+		The response is stored in |v:termblinkresp|
 	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
+		The response is stored in |v:termstyleresp|
 	t_ST	save window title to stack			*t_ST* *'t_ST'*
 	t_RT	restore window title from stack			*t_RT* *'t_RT'*
 	t_Si	save icon text to stack				*t_Si* *'t_Si'*
