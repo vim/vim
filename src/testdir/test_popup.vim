@@ -901,10 +901,10 @@ func Test_popup_complete_mode()
   inoremap <f5> <c-r>=complete_mode()<cr>
   call writefile([
         \ '!rm	src/testdir/amiga.vim	/^cmap !rm !Delete all$/;"	m',
-        \], 'dummy.txt')
-  setlocal tags=dummy.txt
-  setlocal dictionary=dummy.txt
-  setlocal thesaurus=dummy.txt
+        \], 'Xdummy.txt')
+  setlocal tags=Xdummy.txt
+  setlocal dictionary=Xdummy.txt
+  setlocal thesaurus=Xdummy.txt
   setlocal omnifunc=syntaxcomplete#Complete
   setlocal completefunc=syntaxcomplete#Complete
   setlocal spell
@@ -927,7 +927,7 @@ func Test_popup_complete_mode()
     call assert_equal(expected, getline('.'))
     %d
   endfor
-  call delete('dummy.txt')
+  call delete('Xdummy.txt')
 
   func s:complTestEval() abort
     call complete(1, ['source', 'soundfold'])
