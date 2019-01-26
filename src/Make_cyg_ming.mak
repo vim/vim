@@ -695,6 +695,7 @@ GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
+	$(OUTDIR)/autocmd.o \
 	$(OUTDIR)/beval.o \
 	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \

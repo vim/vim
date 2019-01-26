@@ -525,6 +525,7 @@ vimwinmain = \
 
 vimobj =  \
 	$(OBJDIR)\arabic.obj \
+	$(OBJDIR)\autocmd.obj \
 	$(OBJDIR)\blowfish.obj \
 	$(OBJDIR)\buffer.obj \
 	$(OBJDIR)\charset.obj \
