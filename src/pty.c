@@ -56,16 +56,19 @@
 #endif
 
 #if HAVE_STROPTS_H
-#include <sys/types.h>
-#ifdef sinix
-#define buf_T __system_buf_t__
-#endif
-#include <stropts.h>
-#ifdef sinix
-#undef buf_T
-#endif
+# include <sys/types.h>
+# ifdef sinix
+#  define buf_T __system_buf_t__
+# endif
+# include <stropts.h>
+# ifdef sinix
+#  undef buf_T
+# endif
 # ifdef SUN_SYSTEM
 #  include <sys/conf.h>
+#  if defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS)
+#   include <sys/ptms.h>
+#  endif
 # endif
 #endif
 
@@ -159,7 +162,8 @@ setup_slavepty(int fd)
 {
     if (fd < 0)
 	return 0;
-#if defined(I_PUSH) && defined(HAVE_SVR4_PTYS) && !defined(sgi) && !defined(linux) && !defined(__osf__) && !defined(M_UNIX)
+#if defined(I_PUSH) && defined(HAVE_SVR4_PTYS) && !defined(sgi) \
+	&& !defined(linux) && !defined(__osf__) && !defined(M_UNIX)
 # if defined(HAVE_SYS_PTEM_H) || defined(hpux)
     if (ioctl(fd, I_PUSH, "ptem") != 0)
 	return -1;
@@ -413,15 +417,22 @@ mch_openpty(char **ttyn)
     int
 mch_isatty(int fd)
 {
-#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
-    // On SunOS, isatty() for /dev/ptmx returns false and therefore determine
-    // by whether a slave device associated exists.
-    if (isatty(fd))
+#if defined(I_STR) && defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS) \
+	&& defined(SUN_SYSTEM)
+    // On SunOS, isatty() for /dev/ptmx returns false or sometimes can hang up
+    // in the inner ioctl(), and therefore first determine whether "fd" is a
+    // master device.
+    struct strioctl istr;
+
+    istr.ic_cmd = ISPTM;
+    istr.ic_timout = 0;
+    istr.ic_dp = NULL;
+    istr.ic_len = 0;
+
+    if (ioctl(fd, I_STR, &istr) == 0)
 	return 1;
-    return ptsname(fd) != NULL;
-#else
-    return isatty(fd);
 #endif
+    return isatty(fd);
 }
 
 #endif /* FEAT_GUI || FEAT_JOB_CHANNEL */
