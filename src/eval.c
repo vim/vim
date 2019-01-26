@@ -6207,12 +6207,10 @@ var2fpos(
 	    return NULL;	/* invalid column number */
 	--pos.col;
 
-#ifdef FEAT_VIRTUALEDIT
 	/* Get the virtual offset.  Defaults to zero. */
 	pos.coladd = list_find_nr(l, 2L, &error);
 	if (error)
 	    pos.coladd = 0;
-#endif
 
 	return &pos;
     }
@@ -6236,9 +6234,7 @@ var2fpos(
 	return pp;
     }
 
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = 0;
-#endif
 
     if (name[0] == 'w' && dollar_lnum)
     {
@@ -6323,13 +6319,11 @@ list2fpos(
 	return FAIL;
     posp->col = n;
 
-#ifdef FEAT_VIRTUALEDIT
     n = list_find_nr(l, i, NULL);	/* off */
     if (n < 0)
 	posp->coladd = 0;
     else
 	posp->coladd = n;
-#endif
 
     if (curswantp != NULL)
 	*curswantp = list_find_nr(l, i + 1, NULL);  /* curswant */

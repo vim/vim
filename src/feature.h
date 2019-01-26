@@ -199,10 +199,8 @@
 
 /*
  * +virtualedit		'virtualedit' option and its implementation
+ *			Now always included.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_VIRTUALEDIT
-#endif
 
 /*
  * +cmdline_info	'showcmd' and 'ruler' options.

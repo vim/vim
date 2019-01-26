@@ -2939,13 +2939,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"virtualedit", "ve",   P_STRING|P_ONECOMMA|P_NODUP|P_VI_DEF
 							    |P_VIM|P_CURSWANT,
-#ifdef FEAT_VIRTUALEDIT
 			    (char_u *)&p_ve, PV_NONE,
 			    {(char_u *)"", (char_u *)""}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"visualbell",  "vb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_vb, PV_NONE,
@@ -5526,9 +5521,7 @@ didset_options(void)
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
-#ifdef FEAT_VIRTUALEDIT
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
-#endif
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
@@ -7374,7 +7367,6 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_VIRTUALEDIT
     /* 'virtualedit' */
     else if (varp == &p_ve)
     {
@@ -7388,7 +7380,6 @@ did_set_string_option(
 	    coladvance(curwin->w_virtcol);
 	}
     }
-#endif
 
 #if defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)
     else if (varp == &p_csqf)

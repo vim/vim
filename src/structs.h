@@ -21,30 +21,23 @@ typedef unsigned short	short_u;
 #endif
 
 /*
- * position in file or buffer
+ * Position in file or buffer.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
-#ifdef FEAT_VIRTUALEDIT
-    colnr_T	coladd;
-#endif
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
+    colnr_T	coladd; // extra virtual column
 } pos_T;
 
-#ifdef FEAT_VIRTUALEDIT
-# define INIT_POS_T(l, c, ca) {l, c, ca}
-#else
-# define INIT_POS_T(l, c, ca) {l, c}
-#endif
 
 /*
  * Same, but without coladd.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
 } lpos_T;
 
 /*
@@ -395,9 +388,7 @@ struct u_header
     u_entry_T	*uh_entry;	/* pointer to first entry */
     u_entry_T	*uh_getbot_entry; /* pointer to where ue_bot must be set */
     pos_T	uh_cursor;	/* cursor position before saving */
-#ifdef FEAT_VIRTUALEDIT
     long	uh_cursor_vcol;
-#endif
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */

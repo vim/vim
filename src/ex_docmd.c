@@ -4650,9 +4650,7 @@ get_address(
 			pos.col = MAXCOL;
 		    else
 			pos.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 		    pos.coladd = 0;
-#endif
 		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
 				(char_u *)"", 1L, SEARCH_MSG,
@@ -9421,9 +9419,7 @@ ex_operators(exarg_T *eap)
     oa.end.lnum = eap->line2;
     oa.line_count = eap->line2 - eap->line1 + 1;
     oa.motion_type = MLINE;
-#ifdef FEAT_VIRTUALEDIT
     virtual_op = FALSE;
-#endif
     if (eap->cmdidx != CMD_yank)	/* position cursor for undo */
     {
 	setpcmark();
@@ -9460,9 +9456,7 @@ ex_operators(exarg_T *eap)
 	    op_shift(&oa, FALSE, eap->amount);
 	    break;
     }
-#ifdef FEAT_VIRTUALEDIT
     virtual_op = MAYBE;
-#endif
     ex_may_print(eap);
 }
 

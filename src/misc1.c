@@ -622,9 +622,7 @@ get_number_indent(linenr_T lnum)
 	{
 	    pos.lnum = lnum;
 	    pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
-#ifdef FEAT_VIRTUALEDIT
 	    pos.coladd = 0;
-#endif
 	}
 	vim_regfree(regmatch.regprog);
     }
@@ -1708,9 +1706,7 @@ open_line(
 	changed_lines(curwin->w_cursor.lnum, 0, curwin->w_cursor.lnum, 1L);
 
     curwin->w_cursor.col = newcol;
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     /*
@@ -1781,9 +1777,7 @@ open_line(
 
 	/* Insert new stuff into line again */
 	curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
 	ins_bytes(p_extra);	/* will call changed_bytes() */
 	vim_free(p_extra);
 	next_line = NULL;
@@ -2354,11 +2348,9 @@ ins_char_bytes(char_u *buf, int charlen)
     linenr_T	lnum = curwin->w_cursor.lnum;
     int		i;
 
-#ifdef FEAT_VIRTUALEDIT
     /* Break tabs if needed. */
     if (virtual_active() && curwin->w_cursor.coladd > 0)
 	coladvance_force(getviscol());
-#endif
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
@@ -2499,10 +2491,8 @@ ins_str(char_u *s)
     colnr_T	col;
     linenr_T	lnum = curwin->w_cursor.lnum;
 
-#ifdef FEAT_VIRTUALEDIT
     if (virtual_active() && curwin->w_cursor.coladd > 0)
 	coladvance_force(getviscol());
-#endif
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
@@ -2637,15 +2627,10 @@ del_bytes(
 	 * unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	 */
 	if (col > 0 && fixpos && restart_edit == 0
-#ifdef FEAT_VIRTUALEDIT
-					      && (ve_flags & VE_ONEMORE) == 0
-#endif
-					      )
+					      && (ve_flags & VE_ONEMORE) == 0)
 	{
 	    --curwin->w_cursor.col;
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
 	    if (has_mbyte)
 		curwin->w_cursor.col -=
 			    (*mb_head_off)(oldp, oldp + curwin->w_cursor.col);

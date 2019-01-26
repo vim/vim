@@ -2136,12 +2136,6 @@ typedef enum {
 
 #include "globals.h"	    /* global variables and messages */
 
-#ifndef FEAT_VIRTUALEDIT
-# define getvvcol(w, p, s, c, e) getvcol((w), (p), (s), (c), (e))
-# define virtual_active() FALSE
-# define virtual_op FALSE
-#endif
-
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
  */

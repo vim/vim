@@ -3178,9 +3178,7 @@ ex_call(exarg_T *eap)
 	    }
 	    curwin->w_cursor.lnum = lnum;
 	    curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
 	}
 	arg = startarg;
 	if (get_func_tv(name, (int)STRLEN(name), &rettv, &arg,

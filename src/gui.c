@@ -4599,14 +4599,12 @@ gui_update_horiz_scrollbar(int force)
 	longest_lnum = gui_find_longest_lnum();
 	max = scroll_line_len(longest_lnum);
 
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_active())
 	{
 	    /* May move the cursor even further to the right. */
 	    if (curwin->w_virtcol >= (colnr_T)max)
 		max = curwin->w_virtcol;
 	}
-#endif
 
 #ifndef SCROLL_PAST_END
 	max += curwin->w_width - 1;
