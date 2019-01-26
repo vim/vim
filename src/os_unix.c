@@ -3454,9 +3454,9 @@ get_tty_fd(int fd)
     int		tty_fd = fd;
 
 #if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
-    // On SunOS: Get the terminal parameters from "fd" or the slave device of
-    // "fd".
-    if (!isatty(fd))
+    // On SunOS: Get the terminal parameters from "fd", or the slave device of
+    // "fd" when it is a master device.
+    if (mch_isatty(fd) > 1)
     {
 	char *name;
 

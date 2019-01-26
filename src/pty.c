@@ -430,7 +430,9 @@ mch_isatty(int fd)
     istr.ic_len = 0;
 
     if (ioctl(fd, I_STR, &istr) == 0)
-	return 1;
+	// Trick: return 2 in order to advice the caller that "fd" is a master
+	// device. cf. src/os_unix.c:get_tty_fd()
+	return 2;
 #endif
     return isatty(fd);
 }
