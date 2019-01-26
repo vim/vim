@@ -75,7 +75,7 @@ func Test_xxd()
   let s:test += 1
   for arg in ['-l 13', '-l13', '-len 13']
     %d
-    exe '0r! ' . s:xxd_cmd . ' -s 0x36 -l 13 -cols 13 ' . fname
+    exe '0r! ' . s:xxd_cmd . ' -s 0x36 ' . arg . ' -cols 13 ' . fname
     $d
     call assert_equal('00000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
   endfor
@@ -130,6 +130,24 @@ func Test_xxd()
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
     call delete('XXDfile')
   endfor
+
+  " Test 11: reverse with CR, hex upper, Postscript style with a TAB
+  let s:test += 1
+  call writefile([" 54455354\t610B6364 30390A             TESTa\0x0bcd09.\r"], 'Xinput')
+  silent exe '!' . s:xxd_cmd . ' -r -p < Xinput > XXDfile'
+  let blob = readfile('XXDfile', 'B')
+  call assert_equal(0z54455354.610B6364.30390A, blob)
+  call delete('Xinput')
+  call delete('XXDfile')
+
+  " Test 12: reverse with seek
+  let s:test += 1
+  call writefile(["00000000: 54455354\t610B6364 30390A             TESTa\0x0bcd09.\r"], 'Xinput')
+  silent exe '!' . s:xxd_cmd . ' -r -seek 5 < Xinput > XXDfile'
+  let blob = readfile('XXDfile', 'B')
+  call assert_equal(0z0000000000.54455354.610B6364.30390A, blob)
+  call delete('Xinput')
+  call delete('XXDfile')
 
   " TODO:
   " -o -offset
