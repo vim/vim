@@ -1729,9 +1729,7 @@ enter_buffer(buf_T *buf)
     /* Cursor on first line by default. */
     curwin->w_cursor.lnum = 1;
     curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     curwin->w_set_curswant = TRUE;
     curwin->w_topline_was_set = FALSE;
 
@@ -2333,9 +2331,7 @@ buflist_getfile(
 	{
 	    curwin->w_cursor.col = col;
 	    check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
 	    curwin->w_set_curswant = TRUE;
 	}
 	return OK;
@@ -2363,9 +2359,7 @@ buflist_getfpos(void)
     {
 	curwin->w_cursor.col = fpos->col;
 	check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
 	curwin->w_set_curswant = TRUE;
     }
 }
@@ -2958,7 +2952,7 @@ get_winopts(buf_T *buf)
 buflist_findfpos(buf_T *buf)
 {
     wininfo_T	*wip;
-    static pos_T no_position = INIT_POS_T(1, 0, 0);
+    static pos_T no_position = {1, 0, 0};
 
     wip = find_wininfo(buf, FALSE);
     if (wip != NULL)
@@ -3955,9 +3949,7 @@ build_stl_str_hl(
 	// Line may have changed since checking the cursor column, or the lnum
 	// was adjusted above.
 	wp->w_cursor.col = (colnr_T)len;
-#ifdef FEAT_VIRTUALEDIT
 	wp->w_cursor.coladd = 0;
-#endif
 	byteval = 0;
     }
     else

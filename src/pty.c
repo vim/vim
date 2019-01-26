@@ -56,16 +56,19 @@
 #endif
 
 #if HAVE_STROPTS_H
-#include <sys/types.h>
-#ifdef sinix
-#define buf_T __system_buf_t__
-#endif
-#include <stropts.h>
-#ifdef sinix
-#undef buf_T
-#endif
+# include <sys/types.h>
+# ifdef sinix
+#  define buf_T __system_buf_t__
+# endif
+# include <stropts.h>
+# ifdef sinix
+#  undef buf_T
+# endif
 # ifdef SUN_SYSTEM
 #  include <sys/conf.h>
+#  if defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS)
+#   include <sys/ptms.h>
+#  endif
 # endif
 #endif
 
@@ -155,11 +158,12 @@ initmaster(int f UNUSED)
  * pty on others.  Needs to be tuned...
  */
     int
-SetupSlavePTY(int fd)
+setup_slavepty(int fd)
 {
     if (fd < 0)
 	return 0;
-#if defined(I_PUSH) && defined(HAVE_SVR4_PTYS) && !defined(sgi) && !defined(linux) && !defined(__osf__) && !defined(M_UNIX)
+#if defined(I_PUSH) && defined(HAVE_SVR4_PTYS) && !defined(sgi) \
+	&& !defined(linux) && !defined(__osf__) && !defined(M_UNIX)
 # if defined(HAVE_SYS_PTEM_H) || defined(hpux)
     if (ioctl(fd, I_PUSH, "ptem") != 0)
 	return -1;
@@ -178,7 +182,7 @@ SetupSlavePTY(int fd)
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     static char TtyName[32];
@@ -195,7 +199,7 @@ OpenPTY(char **ttyn)
 	&& !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     char	*m, *s;
     int		f;
@@ -219,7 +223,7 @@ OpenPTY(char **ttyn)
 #if defined(__sgi) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int f;
     char *name;
@@ -244,7 +248,7 @@ OpenPTY(char **ttyn)
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     stat_T	buf;
@@ -272,7 +276,7 @@ OpenPTY(char **ttyn)
  * Same for Mac OS X Leopard (10.5). */
 #define PTY_DONE
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
@@ -313,7 +317,7 @@ int aixhack = -1;
 #endif
 
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     int		f;
     /* used for opening a new pty-pair: */
@@ -359,7 +363,7 @@ static char TtyProto[] = "/dev/ttyXY";
 # endif
 
     int
-OpenPTY(char **ttyn)
+mch_openpty(char **ttyn)
 {
     char	*p, *q, *l, *d;
     int		f;
@@ -410,4 +414,30 @@ OpenPTY(char **ttyn)
 }
 #endif
 
-#endif /* FEAT_GUI || FEAT_TERMINAL */
+/*
+ * Call isatty(fd), except for SunOS where it's done differently.
+ */
+    int
+mch_isatty(int fd)
+{
+# if defined(I_STR) && defined(HAVE_SYS_PTMS_H) && defined(HAVE_SVR4_PTYS) \
+	&& defined(SUN_SYSTEM)
+    // On SunOS, isatty() for /dev/ptmx returns false or sometimes can hang up
+    // in the inner ioctl(), and therefore first determine whether "fd" is a
+    // master device.
+    struct strioctl istr;
+
+    istr.ic_cmd = ISPTM;
+    istr.ic_timout = 0;
+    istr.ic_dp = NULL;
+    istr.ic_len = 0;
+
+    if (ioctl(fd, I_STR, &istr) == 0)
+	// Trick: return 2 in order to advice the caller that "fd" is a master
+	// device. cf. src/os_unix.c:get_tty_fd()
+	return 2;
+# endif
+    return isatty(fd);
+}
+
+#endif /* FEAT_GUI || FEAT_JOB_CHANNEL */

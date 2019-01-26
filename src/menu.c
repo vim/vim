@@ -2318,9 +2318,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 		curwin->w_cursor.col = 1;
 		tpos.lnum = eap->line2;
 		tpos.col = MAXCOL;
-#ifdef FEAT_VIRTUALEDIT
 		tpos.coladd = 0;
-#endif
 	    }
 
 	    /* Activate visual mode */

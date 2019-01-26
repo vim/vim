@@ -16,7 +16,6 @@ static char_u	*username = NULL; /* cached result of mch_get_user_name() */
 
 static char_u	*ff_expand_buffer = NULL; /* used for expanding filenames */
 
-#if defined(FEAT_VIRTUALEDIT) || defined(PROTO)
 static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
 
 /*
@@ -67,7 +66,6 @@ coladvance_force(colnr_T wcol)
     }
     return rc;
 }
-#endif
 
 /*
  * Get the screen position of character col with a coladd in the cursor line.
@@ -80,9 +78,7 @@ getviscol2(colnr_T col, colnr_T coladd UNUSED)
 
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = coladd;
-#endif
     getvvcol(curwin, &pos, &x, NULL, NULL);
     return (int)x;
 }
@@ -119,7 +115,6 @@ coladvance(colnr_T wcol)
     int
 getvpos(pos_T *pos, colnr_T wcol)
 {
-#ifdef FEAT_VIRTUALEDIT
     return coladvance2(pos, FALSE, virtual_active(), wcol);
 }
 
@@ -130,7 +125,6 @@ coladvance2(
     int		finetune,	/* change char offset for the exact column */
     colnr_T	wcol)		/* column to move to */
 {
-#endif
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -144,10 +138,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-#ifdef FEAT_VIRTUALEDIT
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL)
-#endif
-		    ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -155,18 +146,15 @@ coladvance2(
 	    idx = (int)STRLEN(line) - 1 + one_more;
 	    col = wcol;
 
-#ifdef FEAT_VIRTUALEDIT
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
 		curwin->w_curswant = linetabsize(line) + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
-#endif
     }
     else
     {
-#ifdef FEAT_VIRTUALEDIT
 	int width = curwin->w_width - win_col_off(curwin);
 
 	if (finetune
@@ -188,7 +176,6 @@ coladvance2(
 		wcol = (csize / width + 1) * width - 1;
 	    }
 	}
-#endif
 
 	ptr = line;
 	while (col <= wcol && *ptr != NUL)
@@ -219,7 +206,6 @@ coladvance2(
 	    col -= csize;
 	}
 
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_active()
 		&& addspaces
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
@@ -283,7 +269,6 @@ coladvance2(
 		col += correct;
 	    }
 	}
-#endif
     }
 
     if (idx < 0)
@@ -291,7 +276,6 @@ coladvance2(
     else
 	pos->col = idx;
 
-#ifdef FEAT_VIRTUALEDIT
     pos->coladd = 0;
 
     if (finetune)
@@ -318,7 +302,6 @@ coladvance2(
 	    col += b;
 	}
     }
-#endif
 
     /* prevent from moving onto a trail byte */
     if (has_mbyte)
@@ -364,9 +347,7 @@ inc(pos_T *lp)
 		return ((p[l] != NUL) ? 0 : 2);
 	    }
 	    lp->col++;
-#ifdef FEAT_VIRTUALEDIT
 	    lp->coladd = 0;
-#endif
 	    return ((p[1] != NUL) ? 0 : 2);
 	}
     }
@@ -374,9 +355,7 @@ inc(pos_T *lp)
     {
 	lp->col = 0;
 	lp->lnum++;
-#ifdef FEAT_VIRTUALEDIT
 	lp->coladd = 0;
-#endif
 	return 1;
     }
     return -1;
@@ -412,9 +391,7 @@ dec(pos_T *lp)
 {
     char_u	*p;
 
-#ifdef FEAT_VIRTUALEDIT
     lp->coladd = 0;
-#endif
     if (lp->col == MAXCOL)
     {
 	/* past end of line */
@@ -574,10 +551,8 @@ check_cursor_col(void)
 check_cursor_col_win(win_T *win)
 {
     colnr_T len;
-#ifdef FEAT_VIRTUALEDIT
     colnr_T oldcol = win->w_cursor.col;
     colnr_T oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
-#endif
 
     len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
     if (len == 0)
@@ -590,9 +565,7 @@ check_cursor_col_win(win_T *win)
 	 * - 'virtualedit' is set */
 	if ((State & INSERT) || restart_edit
 		|| (VIsual_active && *p_sel != 'o')
-#ifdef FEAT_VIRTUALEDIT
 		|| (ve_flags & VE_ONEMORE)
-#endif
 		|| virtual_active())
 	    win->w_cursor.col = len;
 	else
@@ -606,7 +579,6 @@ check_cursor_col_win(win_T *win)
     else if (win->w_cursor.col < 0)
 	win->w_cursor.col = 0;
 
-#ifdef FEAT_VIRTUALEDIT
     /* If virtual editing is on, we can leave the cursor on the old position,
      * only we must set it to virtual.  But don't do it when at the end of the
      * line. */
@@ -634,7 +606,6 @@ check_cursor_col_win(win_T *win)
 	    /* avoid weird number when there is a miscalculation or overflow */
 	    win->w_cursor.coladd = 0;
     }
-#endif
 }
 
 /*
@@ -2172,7 +2143,7 @@ ga_add_string(garray_T *gap, char_u *p)
 #endif
 
 /*
- * Concatenate a string to a growarray which contains characters.
+ * Concatenate a string to a growarray which contains bytes.
  * When "s" is NULL does not do anything.
  * Note: Does NOT copy the NUL at the end!
  */

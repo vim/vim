@@ -397,6 +397,7 @@ EXTERN int	autocmd_no_enter INIT(= FALSE); /* *Enter autocmds disabled */
 EXTERN int	autocmd_no_leave INIT(= FALSE); /* *Leave autocmds disabled */
 EXTERN int	modified_was_set;		/* did ":set modified" */
 EXTERN int	did_filetype INIT(= FALSE);	/* FileType event found */
+EXTERN int	au_did_filetype INIT(= FALSE);
 EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 						   starting to execute
 						   autocommands */
@@ -770,7 +771,7 @@ EXTERN int	can_si_back INIT(= FALSE);
 
 EXTERN pos_T	saved_cursor		/* w_cursor before formatting text. */
 #ifdef DO_INIT
-	= INIT_POS_T(0, 0, 0)
+	= {0, 0, 0}
 #endif
 	;
 
@@ -1065,7 +1066,7 @@ EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
 EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold t'gerd */
 EXTERN pos_T	last_cursormoved	      /* for CursorMoved event */
 # ifdef DO_INIT
-			= INIT_POS_T(0, 0, 0)
+			= {0, 0, 0}
 # endif
 			;
 
@@ -1334,11 +1335,9 @@ EXTERN char	psepcN INIT(= '/');	/* abnormal path separator character */
 EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
 #endif
 
-#ifdef FEAT_VIRTUALEDIT
 /* Set to TRUE when an operator is being executed with virtual editing, MAYBE
  * when no operator is being executed, FALSE otherwise. */
 EXTERN int	virtual_op INIT(= MAYBE);
-#endif
 
 #ifdef FEAT_SYN_HL
 /* Display tick, incremented for each call to update_screen() */

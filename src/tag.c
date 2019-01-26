@@ -85,7 +85,7 @@ static char_u	*tagmatchname = NULL;	/* name of last used tag */
  * Tag for preview window is remembered separately, to avoid messing up the
  * normal tagstack.
  */
-static taggy_T ptag_entry = {NULL, {INIT_POS_T(0, 0, 0), 0}, 0, 0};
+static taggy_T ptag_entry = {NULL, {{0, 0, 0}, 0}, 0, 0};
 #endif
 
 /*

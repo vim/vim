@@ -2517,7 +2517,6 @@ f_col(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    col = fp->col + 1;
-#ifdef FEAT_VIRTUALEDIT
 	    /* col(".") when the cursor is on the NUL at the end of the line
 	     * because of "coladd" can be seen as an extra column. */
 	    if (virtual_active() && fp == &curwin->w_cursor)
@@ -2533,7 +2532,6 @@ f_col(typval_T *argvars, typval_T *rettv)
 			col += l;
 		}
 	    }
-#endif
 	}
     }
     rettv->vval.v_number = col;
@@ -2838,9 +2836,7 @@ f_cscope_connection(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_cursor(typval_T *argvars, typval_T *rettv)
 {
     long	line, col;
-#ifdef FEAT_VIRTUALEDIT
     long	coladd = 0;
-#endif
     int		set_curswant = TRUE;
 
     rettv->vval.v_number = -1;
@@ -2856,9 +2852,7 @@ f_cursor(typval_T *argvars, typval_T *rettv)
 	}
 	line = pos.lnum;
 	col = pos.col;
-#ifdef FEAT_VIRTUALEDIT
 	coladd = pos.coladd;
-#endif
 	if (curswant >= 0)
 	{
 	    curwin->w_curswant = curswant - 1;
@@ -2869,24 +2863,16 @@ f_cursor(typval_T *argvars, typval_T *rettv)
     {
 	line = tv_get_lnum(argvars);
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
-#ifdef FEAT_VIRTUALEDIT
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    coladd = (long)tv_get_number_chk(&argvars[2], NULL);
-#endif
     }
-    if (line < 0 || col < 0
-#ifdef FEAT_VIRTUALEDIT
-			    || coladd < 0
-#endif
-	    )
+    if (line < 0 || col < 0 || coladd < 0)
 	return;		/* type error; errmsg already given */
     if (line > 0)
 	curwin->w_cursor.lnum = line;
     if (col > 0)
 	curwin->w_cursor.col = col - 1;
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = coladd;
-#endif
 
     /* Make sure the cursor is in a valid position. */
     check_cursor();
@@ -4810,9 +4796,7 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	    return;
 	dict_add_number(d, "lnum", (long)buf->b_changelist[i].lnum);
 	dict_add_number(d, "col", (long)buf->b_changelist[i].col);
-# ifdef FEAT_VIRTUALEDIT
 	dict_add_number(d, "coladd", (long)buf->b_changelist[i].coladd);
-# endif
     }
 #endif
 }
@@ -5304,9 +5288,7 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	    return;
 	dict_add_number(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum);
 	dict_add_number(d, "col", (long)wp->w_jumplist[i].fmark.mark.col);
-# ifdef FEAT_VIRTUALEDIT
 	dict_add_number(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd);
-# endif
 	dict_add_number(d, "bufnr", (long)wp->w_jumplist[i].fmark.fnum);
 	if (wp->w_jumplist[i].fname != NULL)
 	    dict_add_string(d, "filename", wp->w_jumplist[i].fname);
@@ -5483,10 +5465,7 @@ getpos_both(
 	list_append_number(l, (fp != NULL)
 		     ? (varnumber_T)(fp->col == MAXCOL ? MAXCOL : fp->col + 1)
 							    : (varnumber_T)0);
-	list_append_number(l,
-#ifdef FEAT_VIRTUALEDIT
-				(fp != NULL) ? (varnumber_T)fp->coladd :
-#endif
+	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->coladd :
 							      (varnumber_T)0);
 	if (getcurpos)
 	{
@@ -6574,9 +6553,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"viminfo",
 #endif
 	"vertsplit",
-#ifdef FEAT_VIRTUALEDIT
 	"virtualedit",
-#endif
 	"visual",
 	"visualextra",
 	"vreplace",
@@ -14611,10 +14588,8 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 	    curwin->w_cursor.lnum = (linenr_T)dict_get_number(dict, (char_u *)"lnum");
 	if (dict_find(dict, (char_u *)"col", -1) != NULL)
 	    curwin->w_cursor.col = (colnr_T)dict_get_number(dict, (char_u *)"col");
-#ifdef FEAT_VIRTUALEDIT
 	if (dict_find(dict, (char_u *)"coladd", -1) != NULL)
 	    curwin->w_cursor.coladd = (colnr_T)dict_get_number(dict, (char_u *)"coladd");
-#endif
 	if (dict_find(dict, (char_u *)"curswant", -1) != NULL)
 	{
 	    curwin->w_curswant = (colnr_T)dict_get_number(dict, (char_u *)"curswant");
@@ -14661,9 +14636,7 @@ f_winsaveview(typval_T *argvars UNUSED, typval_T *rettv)
 
     dict_add_number(dict, "lnum", (long)curwin->w_cursor.lnum);
     dict_add_number(dict, "col", (long)curwin->w_cursor.col);
-#ifdef FEAT_VIRTUALEDIT
     dict_add_number(dict, "coladd", (long)curwin->w_cursor.coladd);
-#endif
     update_curswant();
     dict_add_number(dict, "curswant", (long)curwin->w_curswant);
 

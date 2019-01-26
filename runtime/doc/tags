@@ -4592,7 +4592,10 @@ E892	eval.txt	/*E892*
 E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
 E895	if_mzsch.txt	/*E895*
+E896	eval.txt	/*E896*
+E897	eval.txt	/*E897*
 E898	channel.txt	/*E898*
+E899	eval.txt	/*E899*
 E90	message.txt	/*E90*
 E901	channel.txt	/*E901*
 E902	channel.txt	/*E902*
@@ -4680,6 +4683,7 @@ E977	eval.txt	/*E977*
 E978	eval.txt	/*E978*
 E979	eval.txt	/*E979*
 E98	diff.txt	/*E98*
+E980	eval.txt	/*E980*
 E99	diff.txt	/*E99*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -8562,6 +8566,7 @@ spell-CHECKCOMPOUNDDUP	spell.txt	/*spell-CHECKCOMPOUNDDUP*
 spell-CHECKCOMPOUNDPATTERN	spell.txt	/*spell-CHECKCOMPOUNDPATTERN*
 spell-CHECKCOMPOUNDREP	spell.txt	/*spell-CHECKCOMPOUNDREP*
 spell-CHECKCOMPOUNDTRIPLE	spell.txt	/*spell-CHECKCOMPOUNDTRIPLE*
+spell-CHECKSHARPS	spell.txt	/*spell-CHECKSHARPS*
 spell-CIRCUMFIX	spell.txt	/*spell-CIRCUMFIX*
 spell-COMMON	spell.txt	/*spell-COMMON*
 spell-COMPLEXPREFIXES	spell.txt	/*spell-COMPLEXPREFIXES*
@@ -8571,6 +8576,7 @@ spell-COMPOUNDEND	spell.txt	/*spell-COMPOUNDEND*
 spell-COMPOUNDFIRST	spell.txt	/*spell-COMPOUNDFIRST*
 spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
 spell-COMPOUNDFORBIDFLAG	spell.txt	/*spell-COMPOUNDFORBIDFLAG*
+spell-COMPOUNDLAST	spell.txt	/*spell-COMPOUNDLAST*
 spell-COMPOUNDMIDDLE	spell.txt	/*spell-COMPOUNDMIDDLE*
 spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
 spell-COMPOUNDPERMITFLAG	spell.txt	/*spell-COMPOUNDPERMITFLAG*

@@ -338,7 +338,9 @@ mch_chdir(char *path)
 }
 
 /* Why is NeXT excluded here (and not in os_unixx.h)? */
-#if defined(ECHOE) && defined(ICANON) && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) && !defined(__NeXT__)
+#if defined(ECHOE) && defined(ICANON) \
+    && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) \
+    && !defined(__NeXT__)
 # define NEW_TTY_SYSTEM
 #endif
 
@@ -3448,6 +3450,58 @@ may_core_dump(void)
 
 #ifndef VMS
 
+/*
+ * Get the file descriptor to use for tty operations.
+ */
+    static int
+get_tty_fd(int fd)
+{
+    int		tty_fd = fd;
+
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+    // On SunOS: Get the terminal parameters from "fd", or the slave device of
+    // "fd" when it is a master device.
+    if (mch_isatty(fd) > 1)
+    {
+	char *name;
+
+	name = ptsname(fd);
+	if (name == NULL)
+	    return -1;
+
+	tty_fd = open(name, O_RDONLY | O_NOCTTY | O_EXTRA, 0);
+	if (tty_fd < 0)
+	    return -1;
+    }
+#endif
+    return tty_fd;
+}
+
+    static int
+mch_tcgetattr(int fd, void *term)
+{
+    int		tty_fd;
+    int		retval = -1;
+
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
+    {
+#ifdef NEW_TTY_SYSTEM
+# ifdef HAVE_TERMIOS_H
+	retval = tcgetattr(tty_fd, (struct termios *)term);
+# else
+	retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+# endif
+#else
+	// for "old" tty systems
+	retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
+#endif
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
+    return retval;
+}
+
     void
 mch_settmode(int tmode)
 {
@@ -3465,11 +3519,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-# if defined(HAVE_TERMIOS_H)
-	tcgetattr(read_cmd_fd, &told);
-# else
-	ioctl(read_cmd_fd, TCGETA, &told);
-# endif
+	mch_tcgetattr(read_cmd_fd, &told);
     }
 
     tnew = told;
@@ -3527,7 +3577,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-	ioctl(read_cmd_fd, TIOCGETP, &ttybold);
+	mch_tcgetattr(read_cmd_fd, &ttybold);
     }
 
     ttybnew = ttybold;
@@ -3587,13 +3637,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     struct termio keys;
 # endif
 
-    if (
-# if defined(HAVE_TERMIOS_H)
-	    tcgetattr(fd, &keys) != -1
-# else
-	    ioctl(fd, TCGETA, &keys) != -1
-# endif
-       )
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.c_cc[VERASE];
 	info->interrupt = keys.c_cc[VINTR];
@@ -3611,7 +3655,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     /* for "old" tty systems */
     struct sgttyb keys;
 
-    if (ioctl(fd, TIOCGETP, &keys) != -1)
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.sg_erase;
 	info->interrupt = keys.sg_kill;
@@ -4070,34 +4114,35 @@ mch_get_shellsize(void)
     int
 mch_report_winsize(int fd, int rows, int cols)
 {
-# ifdef TIOCSWINSZ
-    struct winsize	ws;
+    int		tty_fd;
+    int		retval = -1;
 
-    ws.ws_col = cols;
-    ws.ws_row = rows;
-    ws.ws_xpixel = cols * 5;
-    ws.ws_ypixel = rows * 10;
-    if (ioctl(fd, TIOCSWINSZ, &ws) == 0)
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
     {
-	ch_log(NULL, "ioctl(TIOCSWINSZ) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSWINSZ) failed");
-# else
-#  ifdef TIOCSSIZE
-    struct ttysize	ts;
+# if defined(TIOCSWINSZ)
+	struct winsize ws;
 
-    ts.ts_cols = cols;
-    ts.ts_lines = rows;
-    if (ioctl(fd, TIOCSSIZE, &ws) == 0)
-    {
-	ch_log(NULL, "ioctl(TIOCSSIZE) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSSIZE) failed");
-#  endif
+	ws.ws_col = cols;
+	ws.ws_row = rows;
+	ws.ws_xpixel = cols * 5;
+	ws.ws_ypixel = rows * 10;
+	retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
+	ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
+					  retval == 0 ? "success" : "failed");
+# elif defined(TIOCSSIZE)
+	struct ttysize ts;
+
+	ts.ts_cols = cols;
+	ts.ts_lines = rows;
+	retval = ioctl(tty_fd, TIOCSSIZE, &ts);
+	ch_log(NULL, "ioctl(TIOCSSIZE) %s",
+					  retval == 0 ? "success" : "failed");
 # endif
-    return FAIL;
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
+    return retval == 0 ? OK : FAIL;
 }
 #endif
 
@@ -4273,7 +4318,7 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
 {
     char	*tty_name;
 
-    *pty_master_fd = OpenPTY(&tty_name);	    /* open pty */
+    *pty_master_fd = mch_openpty(&tty_name);	    // open pty
     if (*pty_master_fd >= 0)
     {
 	/* Leaving out O_NOCTTY may lead to waitpid() always returning
@@ -4721,7 +4766,7 @@ mch_call_shell_fork(
 		{
 		    /* push stream discipline modules */
 		    if (options & SHELL_COOKED)
-			SetupSlavePTY(pty_slave_fd);
+			setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 		    /* Try to become controlling tty (probably doesn't work,
 		     * unless run by root) */
@@ -5579,7 +5624,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	if (pty_slave_fd >= 0)
 	{
 	    /* push stream discipline modules */
-	    SetupSlavePTY(pty_slave_fd);
+	    setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 	    /* Try to become controlling tty (probably doesn't work,
 	     * unless run by root) */

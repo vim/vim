@@ -3184,9 +3184,7 @@ get_fpos_of_mouse(pos_T *mpos)
 
     if (mpos->col > 0)
 	--mpos->col;
-#ifdef FEAT_VIRTUALEDIT
     mpos->coladd = 0;
-#endif
     return IN_BUFFER;
 }
 #endif

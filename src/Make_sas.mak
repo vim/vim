@@ -90,6 +90,7 @@ PROPT = DEF=PROTO GPROTO GPPARM MAXIMUMERRORS=999 GENPROTOSTATICS GENPROTOPARAME
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -148,6 +149,7 @@ SRC = \
 
 OBJ = \
 	arabic.o \
+	autocmd.o \
 	blowfish.o \
 	buffer.o \
 	charset.o \
@@ -206,6 +208,7 @@ OBJ = \
 
 PRO = \
 	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
@@ -319,6 +322,8 @@ $(PRO): $(GST) vim.h
 # dependencies
 arabic.o:		arabic.c
 proto/arabic.pro:	arabic.c
+autocmd.o:		autocmd.c
+proto/autocmd.pro:	autocmd.c
 blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c

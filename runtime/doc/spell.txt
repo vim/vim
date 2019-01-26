@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.1.  Last change: 2019 Jan 09
+*spell.txt*	For Vim version 8.1.  Last change: 2019 Jan 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1582,6 +1582,10 @@ CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 		Forbid three identical characters when compounding.  Not
 		supported.
 
+CHECKSHARPS  (Hunspell))			*spell-CHECKSHARPS*
+		SS letter pair in uppercased (German) words may be upper case
+		sharp s (ß). Not supported.
+
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
 
@@ -1595,12 +1599,21 @@ COMPOUNDFIRST	(Hunspell)				*spell-COMPOUNDFIRST*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
+		Words signed with COMPOUNDBEGIN may be first elements in
+		compound words.
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+
+COMPOUNDLAST	(Hunspell)				*spell-COMPOUNDLAST*
+		Words signed with COMPOUNDLAST may be last elements in
+		compound words.
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
-		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+		Probably the same as COMPOUNDLAST
 
 COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
+		Words signed with COMPOUNDMIDDLE may be middle elements in
+		compound words.
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDRULES	(Hunspell)				*spell-COMPOUNDRULES*

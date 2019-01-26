@@ -21,27 +21,18 @@
 /*
  * Position comparisons
  */
-#ifdef FEAT_VIRTUALEDIT
-# define LT_POS(a, b) (((a).lnum != (b).lnum) \
+#define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? (a).lnum < (b).lnum \
 		   : (a).col != (b).col \
 		       ? (a).col < (b).col \
 		       : (a).coladd < (b).coladd)
-# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
+#define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? (a)->lnum < (b)->lnum \
 		   : (a)->col != (b)->col \
 		       ? (a)->col < (b)->col \
 		       : (a)->coladd < (b)->coladd)
-# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
-# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
-#else
-# define LT_POS(a, b) (((a).lnum != (b).lnum) \
-		   ? ((a).lnum < (b).lnum) : ((a).col < (b).col))
-# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
-		   ? ((a)->lnum < (b)->lnum) : ((a)->col < (b)->col))
-# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
-# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0;}
-#endif
+#define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
+#define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
 
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 

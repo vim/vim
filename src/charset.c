@@ -1365,17 +1365,14 @@ getvcol_nolist(pos_T *posp)
     colnr_T	vcol;
 
     curwin->w_p_list = FALSE;
-#ifdef FEAT_VIRTUALEDIT
     if (posp->coladd)
 	getvvcol(curwin, posp, NULL, &vcol, NULL);
     else
-#endif
 	getvcol(curwin, posp, NULL, &vcol, NULL);
     curwin->w_p_list = list_save;
     return vcol;
 }
 
-#if defined(FEAT_VIRTUALEDIT) || defined(PROTO)
 /*
  * Get virtual column in virtual mode.
  */
@@ -1425,7 +1422,6 @@ getvvcol(
     else
 	getvcol(wp, pos, start, cursor, end);
 }
-#endif
 
 /*
  * Get the leftmost and rightmost virtual column of pos1 and pos2.

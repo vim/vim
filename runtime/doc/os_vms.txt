@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 8.1.  Last change: 2019 Jan 18
+*os_vms.txt*    For Vim version 8.1.  Last change: 2019 Jan 19
 
 
 		  VIM REFERENCE MANUAL
@@ -104,7 +104,7 @@ to set up GUI fonts etc. correctly.  See :help xim from Vim command prompt.
 You may want to use GUI with GTK icons, then you have to download and install
 GTK for OpenVMS or at least runtime shareable images - LIBGTK from
 polarhome.com
-Post 7.2 Vim uses GTK2+ while the last GTK on OpenVMS is 1.2.10, thefore
+Post 7.2 Vim uses GTK2+ while the last GTK on OpenVMS is 1.2.10, therefore
 the GTK build is no longer available. 
 
 For more advanced questions, please send your problem to Vim on VMS mailing

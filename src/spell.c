@@ -1652,9 +1652,7 @@ spell_move_to(
 			    found_one = TRUE;
 			    found_pos.lnum = lnum;
 			    found_pos.col = (int)(p - buf);
-#ifdef FEAT_VIRTUALEDIT
 			    found_pos.coladd = 0;
-#endif
 			    if (dir == FORWARD)
 			    {
 				/* No need to search further. */
