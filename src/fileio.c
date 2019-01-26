@@ -1178,10 +1178,9 @@ retry:
 	 */
 	if (!skip_read)
 	{
-#if VIM_SIZEOF_INT > 2
-# if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
+#if defined(SSIZE_MAX) && (SSIZE_MAX < 0x10000L)
 		size = SSIZE_MAX;		    /* use max I/O size, 52K */
-# else
+#else
 		/* Use buffer >= 64K.  Add linerest to double the size if the
 		 * line gets very long, to avoid a lot of copying. But don't
 		 * read more than 1 Mbyte at a time, so we can be interrupted.
@@ -1189,20 +1188,11 @@ retry:
 		size = 0x10000L + linerest;
 		if (size > 0x100000L)
 		    size = 0x100000L;
-# endif
-#else
-		size = 0x7ff0L - linerest;	    /* limit buffer to 32K */
 #endif
 	}
 
 	/* Protect against the argument of lalloc() going negative. */
-	if (
-#if VIM_SIZEOF_INT <= 2
-	    linerest >= 0x7ff0
-#else
-	    size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL
-#endif
-	   )
+	if (size < 0 || size + linerest + 1 < 0 || linerest >= MAXCOL)
 	{
 	    ++split;
 	    *ptr = NL;		    /* split line by inserting a NL */

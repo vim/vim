@@ -24,11 +24,7 @@
  */
 
 /* Need a type that should be 32 bits. 64 also works but wastes space. */
-# if VIM_SIZEOF_INT >= 4
 typedef unsigned int u32_T;	/* int is at least 32 bits */
-# else
-typedef unsigned long u32_T;	/* long should be 32 bits or more */
-# endif
 
 /* The state of encryption, referenced by cryptstate_T. */
 typedef struct {

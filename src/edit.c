@@ -8722,7 +8722,7 @@ ins_esc(
      */
     if (reg_recording != 0 || restart_edit != NUL)
 	showmode();
-    else if (p_smd)
+    else if (p_smd && !skip_showmode())
 	msg("");
 
     return TRUE;	    /* exit Insert mode */

@@ -157,6 +157,10 @@
 #  define VIM_SIZEOF_INT __SIZEOF_INT__
 #endif
 
+#if VIM_SIZEOF_INT < 4 && !defined(PROTO)
+    Error: Vim only works with 32 bit int or larger
+#endif
+
 /*
  * #defines for optionals and features
  * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
@@ -427,15 +431,9 @@ typedef unsigned short sattr_T;
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
- * We normally use 32 bits now, since some Asian characters don't fit in 16
- * bits.  u8char_T is only used for displaying, it could be 16 bits to save
- * memory.
+ * We use 32 bits, since some Asian characters don't fit in 16 bits.
  */
-#ifdef UNICODE16
-typedef unsigned short u8char_T;    /* short should be 16 bits */
-#else
-typedef unsigned int u8char_T;	    /* int is 32 bits or more */
-#endif
+typedef unsigned int u8char_T;	// int is 32 bits or more
 
 #ifndef UNIX		    /* For Unix this is included in os_unix.h */
 # include <stdio.h>
@@ -1664,8 +1662,6 @@ typedef long	linenr_T;		/* line number type */
 typedef int	colnr_T;		/* column number type */
 typedef unsigned short disptick_T;	/* display tick type */
 
-#define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
-
 /*
  * Well, you won't believe it, but some S/390 machines ("host", now also known
  * as zServer) use 31 bit pointers. There are also some newer machines, that
@@ -1675,14 +1671,12 @@ typedef unsigned short disptick_T;	/* display tick type */
  * With this we restrict the maximum line length to 1073741823. I guess this is
  * not a real problem. BTW:  Longer lines are split.
  */
-#if VIM_SIZEOF_INT >= 4
-# ifdef __MVS__
-#  define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
-# else
-#  define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
-# endif
+#ifdef __MVS__
+# define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
+# define MAXLNUM (0x3fffffffL)		/* maximum (invalid) line number */
 #else
-# define MAXCOL	(0x7fff)		/* maximum column number, 15 bits */
+# define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
+# define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
 #endif
 
 #define SHOWCMD_COLS 10			/* columns needed by shown command */
@@ -2471,6 +2465,10 @@ typedef enum {
 # define MAX_OPEN_CHANNELS 10
 #else
 # define MAX_OPEN_CHANNELS 0
+#endif
+
+#if defined(WIN32)
+# define MAX_NAMED_PIPE_SIZE 65535
 #endif
 
 /* Options for json_encode() and json_decode. */

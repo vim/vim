@@ -2515,12 +2515,7 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 			prev_c = u8c;
 #endif
 		    /* Non-BMP character: display as ? or fullwidth ?. */
-#ifdef UNICODE16
-		    if (u8c >= 0x10000)
-			ScreenLinesUC[idx] = (cells == 2) ? 0xff1f : (int)'?';
-		    else
-#endif
-			ScreenLinesUC[idx] = u8c;
+		    ScreenLinesUC[idx] = u8c;
 		    for (i = 0; i < Screen_mco; ++i)
 		    {
 			ScreenLinesC[i][idx] = u8cc[i];
@@ -4482,34 +4477,17 @@ win_line(
 
 		    if ((mb_l == 1 && c >= 0x80)
 			    || (mb_l >= 1 && mb_c == 0)
-			    || (mb_l > 1 && (!vim_isprintc(mb_c)
-# ifdef UNICODE16
-							 || mb_c >= 0x10000
-# endif
-							 )))
+			    || (mb_l > 1 && (!vim_isprintc(mb_c))))
 		    {
 			/*
 			 * Illegal UTF-8 byte: display as <xx>.
 			 * Non-BMP character : display as ? or fullwidth ?.
 			 */
-# ifdef UNICODE16
-			if (mb_c < 0x10000)
-# endif
-			{
-			    transchar_hex(extra, mb_c);
+			transchar_hex(extra, mb_c);
 # ifdef FEAT_RIGHTLEFT
-			    if (wp->w_p_rl)		/* reverse */
-				rl_mirror(extra);
+			if (wp->w_p_rl)		/* reverse */
+			    rl_mirror(extra);
 # endif
-			}
-# ifdef UNICODE16
-			else if (utf_char2cells(mb_c) != 2)
-			    STRCPY(extra, "?");
-			else
-			    /* 0xff1f in UTF-8: full-width '?' */
-			    STRCPY(extra, "\357\274\237");
-# endif
-
 			p_extra = extra;
 			c = *p_extra;
 			mb_c = mb_ptr2char_adv(&p_extra);
@@ -7478,15 +7456,6 @@ screen_puts_len(
 		else
 		    u8c = utfc_ptr2char(ptr, u8cc);
 		mbyte_cells = utf_char2cells(u8c);
-#ifdef UNICODE16
-		/* Non-BMP character: display as ? or fullwidth ?. */
-		if (u8c >= 0x10000)
-		{
-		    u8c = (mbyte_cells == 2) ? 0xff1f : (int)'?';
-		    if (attr == 0)
-			attr = HL_ATTR(HLF_8);
-		}
-#endif
 #ifdef FEAT_ARABIC
 		if (p_arshape && !p_tbidi && ARABIC_CHAR(u8c))
 		{
@@ -10141,6 +10110,26 @@ screen_del_lines(
 }
 
 /*
+ * Return TRUE when postponing displaying the mode message: when not redrawing
+ * or inside a mapping.
+ */
+    int
+skip_showmode()
+{
+    // Call char_avail() only when we are going to show something, because it
+    // takes a bit of time.  redrawing() may also call char_avail_avail().
+    if (global_busy
+	    || msg_silent != 0
+	    || !redrawing()
+	    || (char_avail() && !KeyTyped))
+    {
+	redraw_cmdline = TRUE;		// show mode later
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Show the current mode and ruler.
  *
  * If clear_cmdline is TRUE, clear the rest of the cmdline.
@@ -10166,16 +10155,8 @@ showmode(void)
 		|| VIsual_active));
     if (do_mode || reg_recording != 0)
     {
-	/*
-	 * Don't show mode right now, when not redrawing or inside a mapping.
-	 * Call char_avail() only when we are going to show something, because
-	 * it takes a bit of time.
-	 */
-	if (!redrawing() || (char_avail() && !KeyTyped) || msg_silent != 0)
-	{
-	    redraw_cmdline = TRUE;		/* show mode later */
-	    return 0;
-	}
+	if (skip_showmode())
+	    return 0;		// show mode later
 
 	nwr_save = need_wait_return;
 

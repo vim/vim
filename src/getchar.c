@@ -3039,9 +3039,10 @@ inchar(
 
 	/*
 	 * Always flush the output characters when getting input characters
-	 * from the user.
+	 * from the user and not just peeking.
 	 */
-	out_flush();
+	if (wait_time == -1L || wait_time > 10L)
+	    out_flush();
 
 	/*
 	 * Fill up to a third of the buffer, because each character may be

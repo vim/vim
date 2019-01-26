@@ -7937,10 +7937,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multibyte" >&5
 $as_echo "$enable_multibyte" >&6; }
-if test "$enable_multibyte" = "yes"; then
-  $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
-
-else
+if test "$enable_multibyte" != "yes"; then
   as_fn_error $? "The multi-byte feature can no longer be disabled. If you have
 		a problem with this, discuss on the Vim mailing list." "$LINENO" 5
 fi

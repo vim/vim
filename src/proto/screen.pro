@@ -49,6 +49,7 @@ int win_ins_lines(win_T *wp, int row, int line_count, int invalid, int mayclear)
 int win_del_lines(win_T *wp, int row, int line_count, int invalid, int mayclear, int clear_attr);
 int screen_ins_lines(int off, int row, int line_count, int end, int clear_attr, win_T *wp);
 int screen_del_lines(int off, int row, int line_count, int end, int force, int clear_attr, win_T *wp);
+int skip_showmode(void);
 int showmode(void);
 void unshowmode(int force);
 void clearmode(void);

@@ -2124,9 +2124,7 @@ AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
 	[enable_multibyte="yes"])
 AC_MSG_RESULT($enable_multibyte)
-if test "$enable_multibyte" = "yes"; then
-  AC_DEFINE(FEAT_MBYTE)
-else
+if test "$enable_multibyte" != "yes"; then
   AC_MSG_ERROR([The multi-byte feature can no longer be disabled. If you have
 		a problem with this, discuss on the Vim mailing list.])
 fi

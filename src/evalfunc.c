@@ -3674,6 +3674,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     int		typed = FALSE;
     int		execute = FALSE;
     int		dangerous = FALSE;
+    int		lowlevel = FALSE;
     char_u	*keys_esc;
 
     /* This is not allowed in the sandbox.  If the commands would still be
@@ -3697,6 +3698,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		case 'i': insert = TRUE; break;
 		case 'x': execute = TRUE; break;
 		case '!': dangerous = TRUE; break;
+		case 'L': lowlevel = TRUE; break;
 	    }
 	}
     }
@@ -3708,7 +3710,16 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	keys_esc = vim_strsave_escape_csi(keys);
 	if (keys_esc != NULL)
 	{
-	    ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
+	    if (lowlevel)
+	    {
+#ifdef USE_INPUT_BUF
+		add_to_input_buf(keys, (int)STRLEN(keys));
+#else
+		emsg(_("E980: lowlevel input not supported"));
+#endif
+	    }
+	    else
+		ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
 				  insert ? 0 : typebuf.tb_len, !typed, FALSE);
 	    vim_free(keys_esc);
 	    if (vgetc_busy

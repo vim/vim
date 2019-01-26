@@ -286,7 +286,7 @@
  *
  * Disabled for EBCDIC as it requires multibyte.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && VIM_SIZEOF_INT >= 4 && !defined(EBCDIC)
+#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC) && !defined(EBCDIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -600,21 +600,10 @@
  * +multi_byte		Generic multi-byte character handling.
  *			Now always enabled.
  */
-#if !defined(FEAT_MBYTE)
-# define FEAT_MBYTE
-#endif
-#if VIM_SIZEOF_INT < 4 && !defined(PROTO)
-	Error: Vim only works with 32 bit int or larger
-#endif
-
-/* Define this if you want to use 16 bit Unicode only, reduces memory used for
- * the screen structures. */
-/* #define UNICODE16 */
 
 /*
- * +multi_byte_ime	Win32 IME input method.  Requires +multi_byte.
- *			Only for far-east Windows, so IME can be used to input
- *			chars.  Not tested much!
+ * +multi_byte_ime	Win32 IME input method.  Only for far-east Windows, so
+ *			IME can be used to input chars.  Not tested much!
  */
 #if defined(FEAT_GUI_W32) && !defined(FEAT_MBYTE_IME)
 /* #define FEAT_MBYTE_IME */

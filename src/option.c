@@ -3243,7 +3243,7 @@ static int find_key_option(char_u *arg_arg, int has_lt);
 static void showoptions(int all, int opt_flags);
 static int optval_default(struct vimoption *, char_u *varp);
 static void showoneopt(struct vimoption *, int opt_flags);
-static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, int expand);
+static int put_setstring(FILE *fd, char *cmd, char *name, char_u **valuep, long_u flags);
 static int put_setnum(FILE *fd, char *cmd, char *name, long *valuep);
 static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int  istermoption(struct vimoption *);
@@ -10297,7 +10297,7 @@ makeset(FILE *fd, int opt_flags, int local_only)
 			do_endif = TRUE;
 		    }
 		    if (put_setstring(fd, cmd, p->fullname, (char_u **)varp,
-					  (p->flags & P_EXPAND) != 0) == FAIL)
+							     p->flags) == FAIL)
 			return FAIL;
 		    if (do_endif)
 		    {
@@ -10319,14 +10319,14 @@ makeset(FILE *fd, int opt_flags, int local_only)
     int
 makefoldset(FILE *fd)
 {
-    if (put_setstring(fd, "setlocal", "fdm", &curwin->w_p_fdm, FALSE) == FAIL
+    if (put_setstring(fd, "setlocal", "fdm", &curwin->w_p_fdm, 0) == FAIL
 # ifdef FEAT_EVAL
-	    || put_setstring(fd, "setlocal", "fde", &curwin->w_p_fde, FALSE)
+	    || put_setstring(fd, "setlocal", "fde", &curwin->w_p_fde, 0)
 								       == FAIL
 # endif
-	    || put_setstring(fd, "setlocal", "fmr", &curwin->w_p_fmr, FALSE)
+	    || put_setstring(fd, "setlocal", "fmr", &curwin->w_p_fmr, 0)
 								       == FAIL
-	    || put_setstring(fd, "setlocal", "fdi", &curwin->w_p_fdi, FALSE)
+	    || put_setstring(fd, "setlocal", "fdi", &curwin->w_p_fdi, 0)
 								       == FAIL
 	    || put_setnum(fd, "setlocal", "fdl", &curwin->w_p_fdl) == FAIL
 	    || put_setnum(fd, "setlocal", "fml", &curwin->w_p_fml) == FAIL
@@ -10345,10 +10345,12 @@ put_setstring(
     char	*cmd,
     char	*name,
     char_u	**valuep,
-    int		expand)
+    long_u	flags)
 {
     char_u	*s;
-    char_u	*buf;
+    char_u	*buf = NULL;
+    char_u	*part = NULL;
+    char_u	*p;
 
     if (fprintf(fd, "%s %s=", cmd, name) < 0)
 	return FAIL;
@@ -10364,12 +10366,46 @@ put_setstring(
 		if (put_escstr(fd, str2special(&s, FALSE), 2) == FAIL)
 		    return FAIL;
 	}
-	else if (expand)
+	// expand the option value, replace $HOME by ~
+	else if ((flags & P_EXPAND) != 0)
 	{
-	    buf = alloc(MAXPATHL);
+	    int  size = (int)STRLEN(*valuep) + 1;
+
+	    // replace home directory in the whole option value into "buf"
+	    buf = alloc(size);
 	    if (buf == NULL)
-		return FAIL;
-	    home_replace(NULL, *valuep, buf, MAXPATHL, FALSE);
+		goto fail;
+	    home_replace(NULL, *valuep, buf, size, FALSE);
+
+	    // If the option value is longer than MAXPATHL, we need to append
+	    // earch comma separated part of the option separately, so that it
+	    // can be expanded when read back.
+	    if (size >= MAXPATHL && (flags & P_COMMA) != 0
+					   && vim_strchr(*valuep, ',') != NULL)
+	    {
+		part = alloc(size);
+		if (part == NULL)
+		    goto fail;
+
+		// write line break to clear the option, e.g. ':set rtp='
+		if (put_eol(fd) == FAIL)
+		    goto fail;
+
+		p = buf;
+		while (*p != NUL)
+		{
+		    // for each comma separated option part, append value to
+		    // the option, :set rtp+=value
+		    if (fprintf(fd, "%s %s+=", cmd, name) < 0)
+			goto fail;
+		    (void)copy_option_part(&p, part, size,  ",");
+		    if (put_escstr(fd, part, 2) == FAIL || put_eol(fd) == FAIL)
+			goto fail;
+		}
+		vim_free(buf);
+		vim_free(part);
+		return OK;
+	    }
 	    if (put_escstr(fd, buf, 2) == FAIL)
 	    {
 		vim_free(buf);
@@ -10383,6 +10419,10 @@ put_setstring(
     if (put_eol(fd) < 0)
 	return FAIL;
     return OK;
+fail:
+    vim_free(buf);
+    vim_free(part);
+    return FAIL;
 }
 
     static int
