@@ -856,17 +856,15 @@ an 70.300 &Window.&New<Tab>^Wn			<C-W>n
 an 70.310 &Window.S&plit<Tab>^Ws		<C-W>s
 an 70.320 &Window.Sp&lit\ To\ #<Tab>^W^^	<C-W><C-^>
 an 70.330 &Window.Split\ &Vertically<Tab>^Wv	<C-W>v
-if has("vertsplit")
-  an <silent> 70.332 &Window.Split\ File\ E&xplorer	:call MenuExplOpen()<CR>
-  if !exists("*MenuExplOpen")
-    fun MenuExplOpen()
-      if @% == ""
-	20vsp .
-      else
-	exe "20vsp " . s:FnameEscape(expand("%:p:h"))
-      endif
-    endfun
-  endif
+an <silent> 70.332 &Window.Split\ File\ E&xplorer	:call MenuExplOpen()<CR>
+if !exists("*MenuExplOpen")
+  fun MenuExplOpen()
+    if @% == ""
+      20vsp .
+    else
+      exe "20vsp " . s:FnameEscape(expand("%:p:h"))
+    endif
+  endfun
 endif
 an 70.335 &Window.-SEP1-				<Nop>
 an 70.340 &Window.&Close<Tab>^Wc			:confirm close<CR>

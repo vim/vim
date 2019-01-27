@@ -10150,7 +10150,8 @@ all_builtin_terms	Compiled with all builtin terminals enabled.
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
-autocmd			Compiled with autocommand support. |autocommand|
+autocmd			Compiled with autocommand support. (always true)
+			|autocommand|
 autochdir		Compiled with support for 'autochdir'
 autoservername		Automatically enable |clientserver|
 balloon_eval		Compiled with |balloon-eval| support.
@@ -10171,6 +10172,7 @@ comments		Compiled with |'comments'| support.
 compatible		Compiled to be very Vi compatible.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
+cursorbind		Compiled with |cursorbind| (always true)
 debug			Compiled with "DEBUG" defined.
 dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
@@ -10182,7 +10184,7 @@ ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
 eval			Compiled with expression evaluation support.  Always
 			true, of course!
-ex_extra		|+ex_extra|, always true now
+ex_extra		|+ex_extra| (always true)
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Compiled with Farsi support |farsi|.
@@ -10223,7 +10225,7 @@ linebreak		Compiled with 'linebreak', 'breakat', 'showbreak' and
 			'breakindent' support.
 lispindent		Compiled with support for lisp indenting.
 listcmds		Compiled with commands for the buffer list |:files|
-			and the argument list |arglist|.
+			and the argument list |arglist|. (always true)
 localmap		Compiled with local mappings and abbr. |:map-local|
 lua			Compiled with Lua interface |Lua|.
 mac			Any Macintosh version of Vim  cf. osx
@@ -10271,7 +10273,7 @@ quickfix		Compiled with |quickfix| support.
 reltime			Compiled with |reltime()| support.
 rightleft		Compiled with 'rightleft' support.
 ruby			Compiled with Ruby interface |ruby|.
-scrollbind		Compiled with 'scrollbind' support.
+scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
@@ -10310,27 +10312,29 @@ user_commands		User-defined commands.
 vcon			Win32: Virtual console support is working, can use
 			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.
+			(always true)
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
 viminfo			Compiled with viminfo support.
-virtualedit		Compiled with 'virtualedit' option.
+virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always
 			true) |blockwise-operators|.
 vms			VMS version of Vim.
-vreplace		Compiled with |gR| and |gr| commands.
+vreplace		Compiled with |gR| and |gr| commands. (always true)
 vtp			Compiled for vcon support |+vtp| (check vcon to find
 			out if it works in the current console).
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
-win16			old version for MS-Windows 3.1 (always False)
+win16			old version for MS-Windows 3.1 (always false)
 win32			Win32 version of Vim (MS-Windows 95 and later, 32 or
 			64 bits)
 win32unix		Win32 version of Vim, using Unix files (Cygwin)
 win64			Win64 version of Vim (MS-Windows 64 bit).
-win95			Win32 version for MS-Windows 95/98/ME (always False)
+win95			Win32 version for MS-Windows 95/98/ME (always false)
 winaltkeys		Compiled with 'winaltkeys' option.
 windows			Compiled with support for more than one window.
+			(always true)
 writebackup		Compiled with 'writebackup' default on.
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.

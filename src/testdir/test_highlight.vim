@@ -129,10 +129,6 @@ func Test_highlight_eol_with_cursorline()
 endfunc
 
 func Test_highlight_eol_with_cursorline_vertsplit()
-  if !has('vertsplit')
-    return
-  endif
-
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 5)

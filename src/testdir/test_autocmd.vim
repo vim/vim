@@ -452,7 +452,7 @@ func s:AutoCommandOptionSet(match)
 endfunc
 
 func Test_OptionSet()
-  if !has("eval") || !has("autocmd") || !exists("+autochdir")
+  if !has("eval") || !exists("+autochdir")
     return
   endif
 
@@ -595,7 +595,7 @@ endfunc
 
 func Test_OptionSet_diffmode()
   call test_override('starting', 1)
-  " 18: Changing an option when enetering diff mode
+  " 18: Changing an option when entering diff mode
   new
   au OptionSet diff :let &l:cul=v:option_new
 

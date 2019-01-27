@@ -1,8 +1,4 @@
 " Tests for various Visual mode.
-if !has('visual')
-  finish
-endif
-
 
 func Test_block_shift_multibyte()
   " Uses double-wide character.

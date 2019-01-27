@@ -54,9 +54,7 @@
 :endif
 :set all
 :set termcap
-:if has("autocmd")
-:  au
-:endif
+:au
 :if 1
 :  echo "--- Normal/Visual mode mappings ---"
 :endif

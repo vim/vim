@@ -733,7 +733,7 @@ endif
 unlet s:pythonpath
 
 " [-- tcl --] {{{3
-if has("win32") || has("win95") || has("win64") || has("win16")
+if has("win32") || has("win64")
  " apparently has("tcl") has been hanging vim on some windows systems with cygwin
  let s:trytcl= (&shell !~ '\<\%(bash\>\|4[nN][tT]\|\<zsh\)\>\%(\.exe\)\=$')
 else

@@ -75,9 +75,6 @@ func Test_signcolumn()
 endfunc
 
 func Test_filetype_valid()
-  if !has('autocmd')
-    return
-  endif
   set ft=valid_name
   call assert_equal("valid_name", &filetype)
   set ft=valid-name

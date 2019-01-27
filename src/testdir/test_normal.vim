@@ -2371,9 +2371,6 @@ func Test_normal50_commandline()
 endfunc
 
 func Test_normal51_FileChangedRO()
-  if !has("autocmd")
-    return
-  endif
   " Don't sleep after the warning message.
   call test_settime(1)
   call writefile(['foo'], 'Xreadonly.log')
