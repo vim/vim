@@ -53,14 +53,20 @@ func Test_xxd()
     call assert_equal(expected[2:], getline(1,'$'), s:Mess(s:test))
   endfor
 
+  " The following tests use the xxd man page.
+  " For these tests to pass, the fileformat must be "unix".
+  let man_copy = 'Xxd.1'
+  let man_page = '../../runtime/doc/xxd.1'
+  if has('win32') && !filereadable(man_page)
+    let man_page = '../../doc/xxd.1'
+  endif
+  %d
+  exe '0r ' man_page '| set ff=unix | $d | w' man_copy '| bwipe!' man_copy
+
   " Test 5: Print 120 bytes as continuous hexdump with 20 octets per line
   let s:test += 1
   %d
-  let fname = '../../runtime/doc/xxd.1'
-  if has('win32') && !filereadable(fname)
-    let fname = '../../doc/xxd.1'
-  endif
-  exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c20 ' . fname
+  exe '0r! ' . s:xxd_cmd . ' -l 120 -ps -c20 ' . man_copy
   $d
   let expected = [
       \ '2e54482058584420312022417567757374203139',
@@ -75,10 +81,13 @@ func Test_xxd()
   let s:test += 1
   for arg in ['-l 13', '-l13', '-len 13']
     %d
-    exe '0r! ' . s:xxd_cmd . ' -s 0x36 ' . arg . ' -cols 13 ' . fname
+    exe '0r! ' . s:xxd_cmd . ' -s 0x36 ' . arg . ' -cols 13 ' . man_copy
     $d
     call assert_equal('00000036: 3231 7374 204d 6179 2031 3939 36  21st May 1996', getline(1), s:Mess(s:test))
   endfor
+
+  " Cleanup after tests 5 and 6
+  call delete(man_copy)
 
   " Test 7: Print C include
   let s:test += 1
