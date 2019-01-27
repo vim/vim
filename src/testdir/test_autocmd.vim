@@ -32,6 +32,7 @@ if has('timers')
     call timer_start(100, 'ExitInsertMode')
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
@@ -52,6 +53,7 @@ if has('timers')
           \ {'exit_cb': {j, s -> timer_start(1000, 'ExitInsertMode')}})
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
@@ -64,6 +66,7 @@ if has('timers')
     " CursorHoldI does not trigger after CTRL-X
     call feedkeys("a\<C-X>", 'x!')
     call assert_equal(0, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
