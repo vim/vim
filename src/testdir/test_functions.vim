@@ -1156,8 +1156,8 @@ endfunc
 
 " Test confirm({msg} [, {choices} [, {default} [, {type}]]])
 func Test_confirm()
-  if !has('unix') || has('gui_running')
-    " Test uses feedkeys(..., 'L') which only workds for unix or the GUI.
+  if !has('unix') && !has('gui_running')
+    " Test uses feedkeys(..., 'L') which only works for unix or the GUI.
     return
   endif
 
@@ -1193,7 +1193,7 @@ func Test_confirm()
   let a = confirm('Are you sure?', "&Yes\n&No", 0)
   call assert_equal(0, a)
 
-  " Test with type 4th argument
+  " Test with the {type} 4th argument
   for type in ['Error', 'Question', 'Info', 'Warning', 'Generic']
     call feedkeys('y', 'L')
     let a = confirm('Are you sure?', "&Yes\n&No\n", 1, type)
