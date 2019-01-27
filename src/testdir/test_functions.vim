@@ -1156,8 +1156,7 @@ endfunc
 
 " Test confirm({msg} [, {choices} [, {default} [, {type}]]])
 func Test_confirm()
-  if !has('unix') && !has('gui_running')
-    " Test uses feedkeys(..., 'L') which only works for unix or the GUI.
+  if !has('unix') || has('gui_running')
     return
   endif
 
