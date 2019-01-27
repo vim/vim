@@ -356,6 +356,21 @@ mch_write(char_u *s, int len)
 }
 
 /*
+ * Function passed to inchar_loop() to handle window resizing.
+ * If "check_only" is TRUE: Return whether there was a resize.
+ * If "check_only" is FALSE: Deal with the window resized.
+ */
+    static int
+resize_func(int check_only)
+{
+    if (check_only)
+	return do_resize;
+    while (do_resize)
+	handle_resize();
+    return FALSE;
+}
+
+/*
  * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
  * Return the number of characters that are available.
@@ -370,138 +385,8 @@ mch_inchar(
     long	wtime,	    /* don't use "time", MIPS cannot handle it */
     int		tb_change_cnt)
 {
-    int		len;
-    int		interrupted = FALSE;
-    int		did_start_blocking = FALSE;
-    long	wait_time;
-    long	elapsed_time = 0;
-#ifdef ELAPSED_FUNC
-    elapsed_T	start_tv;
-
-    ELAPSED_INIT(start_tv);
-#endif
-
-    /* repeat until we got a character or waited long enough */
-    for (;;)
-    {
-	/* Check if window changed size while we were busy, perhaps the ":set
-	 * columns=99" command was used. */
-	while (do_resize)
-	    handle_resize();
-
-#ifdef MESSAGE_QUEUE
-	// Only process messages when waiting.
-	if (wtime != 0)
-	{
-	    parse_queued_messages();
-	    // If input was put directly in typeahead buffer bail out here.
-	    if (typebuf_changed(tb_change_cnt))
-		return 0;
-	}
-#endif
-	if (wtime < 0 && did_start_blocking)
-	    /* blocking and already waited for p_ut */
-	    wait_time = -1;
-	else
-	{
-	    if (wtime >= 0)
-		wait_time = wtime;
-	    else
-		/* going to block after p_ut */
-		wait_time = p_ut;
-#ifdef ELAPSED_FUNC
-	    elapsed_time = ELAPSED_FUNC(start_tv);
-#endif
-	    wait_time -= elapsed_time;
-	    if (wait_time < 0)
-	    {
-		if (wtime >= 0)
-		    /* no character available within "wtime" */
-		    return 0;
-
-		else
-		{
-		    /* no character available within 'updatetime' */
-		    did_start_blocking = TRUE;
-		    if (trigger_cursorhold() && maxlen >= 3
-					    && !typebuf_changed(tb_change_cnt))
-		    {
-			buf[0] = K_SPECIAL;
-			buf[1] = KS_EXTRA;
-			buf[2] = (int)KE_CURSORHOLD;
-			return 3;
-		    }
-		    /*
-		     * If there is no character available within 'updatetime'
-		     * seconds flush all the swap files to disk.
-		     * Also done when interrupted by SIGWINCH.
-		     */
-		    before_blocking();
-		    continue;
-		}
-	    }
-	}
-
-#ifdef FEAT_JOB_CHANNEL
-	/* Checking if a job ended requires polling.  Do this every 100 msec. */
-	if (has_pending_job() && (wait_time < 0 || wait_time > 100L))
-	    wait_time = 100L;
-	/* If there is readahead then parse_queued_messages() timed out and we
-	 * should call it again soon. */
-	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
-	    wait_time = 10L;
-#endif
-#ifdef FEAT_BEVAL_GUI
-	if (p_beval && wait_time > 100L)
-	    /* The 'balloonexpr' may indirectly invoke a callback while waiting
-	     * for a character, need to check often. */
-	    wait_time = 100L;
-#endif
-
-	/*
-	 * We want to be interrupted by the winch signal
-	 * or by an event on the monitored file descriptors.
-	 */
-	if (WaitForChar(wait_time, &interrupted, FALSE))
-	{
-	    /* If input was put directly in typeahead buffer bail out here. */
-	    if (typebuf_changed(tb_change_cnt))
-		return 0;
-
-	    /*
-	     * For some terminals we only get one character at a time.
-	     * We want the get all available characters, so we could keep on
-	     * trying until none is available
-	     * For some other terminals this is quite slow, that's why we don't
-	     * do it.
-	     */
-	    len = read_from_input_buf(buf, (long)maxlen);
-	    if (len > 0)
-		return len;
-	    continue;
-	}
-
-	/* no character available */
-#ifndef ELAPSED_FUNC
-	/* estimate the elapsed time */
-	elapsed_time += wait_time;
-#endif
-
-	if (do_resize	    /* interrupted by SIGWINCH signal */
-#ifdef FEAT_CLIENTSERVER
-		|| server_waiting()
-#endif
-#ifdef MESSAGE_QUEUE
-		|| interrupted
-#endif
-		|| wait_time > 0
-		|| (wtime < 0 && !did_start_blocking))
-	    continue;
-
-	/* no character available or interrupted */
-	break;
-    }
-    return 0;
+    return inchar_loop(buf, maxlen, wtime, tb_change_cnt,
+		       WaitForChar, resize_func);
 }
 
     static void

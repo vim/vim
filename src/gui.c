@@ -2896,10 +2896,14 @@ gui_wait_for_chars_3(
  * or FAIL otherwise.
  */
     static int
-gui_wait_for_chars_or_timer(long wtime)
+gui_wait_for_chars_or_timer(
+	long wtime,
+	int *interrupted UNUSED,
+	int ignore_input UNUSED)
 {
 #ifdef FEAT_TIMERS
-    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3, NULL, 0);
+    return ui_wait_for_chars_or_timer(wtime, gui_wait_for_chars_3,
+						    interrupted, ignore_input);
 #else
     return gui_mch_wait_for_chars(wtime);
 #endif
@@ -2907,6 +2911,59 @@ gui_wait_for_chars_or_timer(long wtime)
 
 /*
  * The main GUI input routine.	Waits for a character from the keyboard.
+ * "wtime" == -1    Wait forever.
+ * "wtime" == 0	    Don't wait.
+ * "wtime" > 0	    Wait wtime milliseconds for a character.
+ *
+ * Returns the number of characters read or zero when timed out or interrupted.
+ * "buf" may be NULL, in which case a non-zero number is returned if characters
+ * are available.
+ */
+    static int
+gui_wait_for_chars_buf(
+    char_u	*buf,
+    int		maxlen,
+    long	wtime,	    // don't use "time", MIPS cannot handle it
+    int		tb_change_cnt)
+{
+    int	    retval;
+
+#ifdef FEAT_MENU
+    // If we're going to wait a bit, update the menus and mouse shape for the
+    // current State.
+    if (wtime != 0)
+	gui_update_menus(0);
+#endif
+
+    gui_mch_update();
+    if (input_available())	// Got char, return immediately
+    {
+	if (buf != NULL && !typebuf_changed(tb_change_cnt))
+	    return read_from_input_buf(buf, (long)maxlen);
+	return 0;
+    }
+    if (wtime == 0)		// Don't wait for char
+	return FAIL;
+
+    // Before waiting, flush any output to the screen.
+    gui_mch_flush();
+
+    // Blink while waiting for a character.
+    gui_mch_start_blink();
+
+    // Common function to loop until "wtime" is met, while handling timers and
+    // other callbacks.
+    retval = inchar_loop(buf, maxlen, wtime, tb_change_cnt,
+			 gui_wait_for_chars_or_timer, NULL);
+
+    gui_mch_stop_blink(TRUE);
+
+    return retval;
+}
+
+/*
+ * Wait for a character from the keyboard without actually reading it.
+ * Also deals with timers.
  * wtime == -1	    Wait forever.
  * wtime == 0	    Don't wait.
  * wtime > 0	    Wait wtime milliseconds for a character.
@@ -2916,82 +2973,7 @@ gui_wait_for_chars_or_timer(long wtime)
     int
 gui_wait_for_chars(long wtime, int tb_change_cnt)
 {
-    int		retval;
-#if defined(ELAPSED_FUNC)
-    elapsed_T	start_tv;
-#endif
-
-#ifdef FEAT_MENU
-    /*
-     * If we're going to wait a bit, update the menus and mouse shape for the
-     * current State.
-     */
-    if (wtime != 0)
-	gui_update_menus(0);
-#endif
-
-    gui_mch_update();
-    if (input_available())	/* Got char, return immediately */
-	return OK;
-    if (wtime == 0)	/* Don't wait for char */
-	return FAIL;
-
-    /* Before waiting, flush any output to the screen. */
-    gui_mch_flush();
-
-    if (wtime > 0)
-    {
-	/* Blink when waiting for a character.	Probably only does something
-	 * for showmatch() */
-	gui_mch_start_blink();
-	retval = gui_wait_for_chars_or_timer(wtime);
-	gui_mch_stop_blink(TRUE);
-	return retval;
-    }
-
-#if defined(ELAPSED_FUNC)
-    ELAPSED_INIT(start_tv);
-#endif
-
-    /*
-     * While we are waiting indefinitely for a character, blink the cursor.
-     */
-    gui_mch_start_blink();
-
-    retval = FAIL;
-    /*
-     * We may want to trigger the CursorHold event.  First wait for
-     * 'updatetime' and if nothing is typed within that time, and feedkeys()
-     * wasn't used, put the K_CURSORHOLD key in the input buffer.
-     */
-    if (gui_wait_for_chars_or_timer(p_ut) == OK)
-	retval = OK;
-    else if (trigger_cursorhold()
-#if defined(ELAPSED_FUNC)
-	    && ELAPSED_FUNC(start_tv) >= p_ut
-#endif
-	    && typebuf.tb_change_cnt == tb_change_cnt)
-    {
-	char_u	buf[3];
-
-	/* Put K_CURSORHOLD in the input buffer. */
-	buf[0] = CSI;
-	buf[1] = KS_EXTRA;
-	buf[2] = (int)KE_CURSORHOLD;
-	add_to_input_buf(buf, 3);
-
-	retval = OK;
-    }
-
-    if (retval == FAIL && typebuf.tb_change_cnt == tb_change_cnt)
-    {
-	/* Blocking wait. */
-	before_blocking();
-	retval = gui_wait_for_chars_or_timer(-1L);
-    }
-
-    gui_mch_stop_blink(TRUE);
-    return retval;
+    return gui_wait_for_chars_buf(NULL, 0, wtime, tb_change_cnt);
 }
 
 /*
@@ -3004,10 +2986,7 @@ gui_inchar(
     long    wtime,		/* milli seconds */
     int	    tb_change_cnt)
 {
-    if (gui_wait_for_chars(wtime, tb_change_cnt)
-	    && !typebuf_changed(tb_change_cnt))
-	return read_from_input_buf(buf, (long)maxlen);
-    return 0;
+    return gui_wait_for_chars_buf(buf, maxlen, wtime, tb_change_cnt);
 }
 
 /*
