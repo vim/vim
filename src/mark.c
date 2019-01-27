@@ -900,7 +900,10 @@ ex_jumps(exarg_T *eap UNUSED)
 
 	    // apply :filter /pat/ or file name not available
 	    if (name == NULL || message_filtered(name))
+	    {
+		vim_free(name);
 		continue;
+	    }
 
 	    msg_putchar('\n');
 	    if (got_int)
