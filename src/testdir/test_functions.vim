@@ -1173,7 +1173,7 @@ func Test_confirm()
   let a = confirm('Are you sure?', "&Yes\n&No")
   call assert_equal(2, a)
 
-  " Confirm should return 0 when pressing CTRL-C.
+  " confirm() should return 0 when pressing CTRL-C.
   " FIXME: <Esc> should also cause it to return 0 but it has
   " to be pressed twice (bug?).
   call feedkeys("\<C-c>", 'L')
