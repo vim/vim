@@ -2600,7 +2600,7 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
  */
 static void f_complete_mode(typval_T *argvars UNUSED, typval_T *rettv)
 {
-  rettv->vval.v_string = ins_compl_mode();
+  rettv->vval.v_string = vim_strsave(ins_compl_mode());
   rettv->v_type = VAR_STRING;
 }
 #endif

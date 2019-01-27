@@ -2946,58 +2946,37 @@ set_completion(colnr_T startcol, list_T *list)
 }
 
 // complete_mode() implementation.
-char_u *ins_compl_mode(void)
+    char_u *
+ins_compl_mode(void)
 {
-    char_u *mode = NULL;
-    switch (ctrl_x_mode)
-    {
-	case 0:
-	    // Keyword completion
-	    mode = vim_strsave("keyword");
-	    break;
-	case CTRL_X_NOT_DEFINED_YET:
-	    // Just press Ctrl_X
-	    mode = vim_strsave("ctrl_x");
-	    break;
-	case CTRL_X_WHOLE_LINE:
-	    mode = vim_strsave("whole_line");
-	    break;
-	case CTRL_X_FILES:
-	    mode = vim_strsave("files");
-	    break;
-	case CTRL_X_TAGS:
-	    mode = vim_strsave("tags");
-	    break;
-	case CTRL_X_PATH_PATTERNS:
-	    mode = vim_strsave("path_patterns");
-	    break;
-	case CTRL_X_PATH_DEFINES:
-	    mode = vim_strsave("path_defines");
-	    break;
-	case CTRL_X_DICTIONARY:
-	    mode = vim_strsave("dictionary");
-	    break;
-	case CTRL_X_THESAURUS:
-	    mode = vim_strsave("thesaurus");
-	    break;
-	case CTRL_X_CMDLINE:
-	    mode = vim_strsave("cmdline");
-	    break;
-	case CTRL_X_FUNCTION:
-	    mode = vim_strsave("function");
-	    break;
-	case CTRL_X_OMNI:
-	    mode = vim_strsave("omni");
-	    break;
-	case CTRL_X_SPELL:
-	    mode = vim_strsave("spell");
-	    break;
-	case CTRL_X_EVAL:
-	    mode = vim_strsave("eval");
-	    break;
-	default:
-	    mode = vim_strsave("unknown");
-	    break;
+    struct mode_table {
+        int mode; char *name;
+    };
+    struct mode_table table[] = {
+        {0, "keyword"},
+        {CTRL_X_NOT_DEFINED_YET, "ctrl_x"},
+        {CTRL_X_WHOLE_LINE, "whole_line"},
+        {CTRL_X_FILES, "files"},
+        {CTRL_X_TAGS, "tags"},
+        {CTRL_X_PATH_PATTERNS, "path_patterns"},
+        {CTRL_X_PATH_DEFINES, "path_defines"},
+        {CTRL_X_DICTIONARY, "dictionary"},
+        {CTRL_X_THESAURUS, "thesaurus"},
+        {CTRL_X_CMDLINE, "cmdline"},
+        {CTRL_X_FUNCTION, "function"},
+        {CTRL_X_OMNI, "omni"},
+        {CTRL_X_SPELL, "spell"},
+        {CTRL_X_EVAL, "eval"},
+    };
+
+    char_u *mode = "unknown";
+    int i;
+
+    for (i = 0; i < sizeof(table)/ sizeof(struct mode_table); i++) {
+        if (table[i].mode == ctrl_x_mode) {
+            mode = table[i].name;
+            break;
+        }
     }
 
     return mode;
