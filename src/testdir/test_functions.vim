@@ -1153,3 +1153,50 @@ func Test_func_exists_on_reload()
   call delete('Xfuncexists')
   delfunc ExistingFunction
 endfunc
+
+" Test confirm({msg} [, {choices} [, {default} [, {type}]]])
+func Test_confirm()
+  if !has('unix') || has('gui_running')
+    " Test uses feedkeys(..., 'L') which only workds for unix or the GUI.
+    return
+  endif
+
+  call feedkeys('o', 'L')
+  let a = confirm('Press O to proceed')
+  call assert_equal(1, a)
+
+  call feedkeys('y', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys('n', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(2, a)
+
+  " Confirm should return 0 when pressing CTRL-C.
+  " FIXME: <Esc> should also cause it to return 0 but it has
+  " to be pressed twice (bug?).
+  call feedkeys("\<C-c>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(0, a)
+
+  " Default choice is returned when pressing <CR>.
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 2)
+  call assert_equal(2, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 0)
+  call assert_equal(0, a)
+
+  " Test with type 4th argument
+  for type in ['Error', 'Question', 'Info', 'Warning', 'Generic']
+    call feedkeys('y', 'L')
+    let a = confirm('Are you sure?', "&Yes\n&No\n", 1, type)
+    call assert_equal(1, a)
+  endfor
+endfunc
