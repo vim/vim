@@ -1198,4 +1198,9 @@ func Test_confirm()
     let a = confirm('Are you sure?', "&Yes\n&No\n", 1, type)
     call assert_equal(1, a)
   endfor
+
+  call assert_fails('call confirm([])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", [])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", [])', 'E745:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", 0, [])', 'E730:')
 endfunc
