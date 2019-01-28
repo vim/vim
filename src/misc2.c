@@ -4657,7 +4657,10 @@ vim_findfile(void *search_ctx_arg)
 			add_pathsep(file_path);
 		    }
 		    else
+		    {
+			ff_free_stack_element(stackp);
 			goto fail;
+		    }
 		}
 
 		/* append the fix part of the search path */
@@ -4667,7 +4670,10 @@ vim_findfile(void *search_ctx_arg)
 		    add_pathsep(file_path);
 		}
 		else
+		{
+		    ff_free_stack_element(stackp);
 		    goto fail;
+		}
 
 #ifdef FEAT_PATH_EXTRA
 		rest_of_wildcards = stackp->ffs_wc_path;
@@ -4687,7 +4693,10 @@ vim_findfile(void *search_ctx_arg)
 			    if (len + 1 < MAXPATHL)
 				file_path[len++] = '*';
 			    else
+			    {
+				ff_free_stack_element(stackp);
 				goto fail;
+			    }
 			}
 
 			if (*p == 0)
@@ -4718,7 +4727,10 @@ vim_findfile(void *search_ctx_arg)
 			if (len + 1 < MAXPATHL)
 			    file_path[len++] = *rest_of_wildcards++;
 			else
+			{
+			    ff_free_stack_element(stackp);
 			    goto fail;
+			}
 
 		    file_path[len] = NUL;
 		    if (vim_ispathsep(*rest_of_wildcards))
@@ -4787,7 +4799,10 @@ vim_findfile(void *search_ctx_arg)
 			    STRCAT(file_path, search_ctx->ffsc_file_to_search);
 			}
 			else
+			{
+			    ff_free_stack_element(stackp);
 			    goto fail;
+			}
 
 			/*
 			 * Try without extra suffix and then with suffixes
