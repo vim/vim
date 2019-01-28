@@ -81,6 +81,7 @@ NEW_TESTS = \
 	test_charsearch_utf8 \
 	test_checkpath \
 	test_cindent \
+	test_cjk_linebreak \
 	test_clientserver \
 	test_close_count \
 	test_cmdline \
@@ -315,6 +316,7 @@ NEW_TESTS_RES = \
 	test_charsearch.res \
 	test_checkpath.res \
 	test_cindent.res \
+	test_cjk_linebreak.res \
 	test_clientserver.res \
 	test_close_count.res \
 	test_cmdline.res \
