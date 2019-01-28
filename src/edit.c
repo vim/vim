@@ -2969,17 +2969,14 @@ ins_compl_mode(void)
         {CTRL_X_EVAL, "eval"},
     };
 
-    char_u *mode = "unknown";
     int i;
 
     for (i = 0; i < sizeof(table)/ sizeof(struct mode_table); i++) {
-        if (table[i].mode == ctrl_x_mode) {
-            mode = table[i].name;
-            break;
-        }
+        if (table[i].mode == ctrl_x_mode)
+            return (char_u *)table[i].name;
     }
 
-    return mode;
+    return (char_u *)"unknown";
 }
 
 /* "compl_match_array" points the currently displayed list of entries in the
