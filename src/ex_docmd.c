@@ -7211,6 +7211,15 @@ ex_colorscheme(exarg_T *eap)
     }
     else if (load_colors(eap->arg) == FAIL)
 	semsg(_("E185: Cannot find color scheme '%s'"), eap->arg);
+
+#ifdef FEAT_VTP
+    else if (has_vtp_working())
+    {
+	// background color change requires clear + redraw
+	update_screen(CLEAR);
+	redrawcmd();
+    }
+#endif
 }
 
     static void
