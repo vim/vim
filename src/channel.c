@@ -90,7 +90,7 @@ fd_write(sock_T fd, char *buf, size_t len)
 	if (todo > MAX_NAMED_PIPE_SIZE)
 	    size = MAX_NAMED_PIPE_SIZE;
 	else
-	    size = todo;
+	    size = (DWORD)todo;
 	// If the pipe overflows while the job does not read the data, WriteFile
 	// will block forever. This abandons the write.
 	memset(&ov, 0, sizeof(ov));
