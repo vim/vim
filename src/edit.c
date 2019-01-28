@@ -2949,33 +2949,31 @@ set_completion(colnr_T startcol, list_T *list)
     char_u *
 ins_compl_mode(void)
 {
-    struct mode_table {
-        int mode; char *name;
+    static char *mode_names[] = {
+	"keyword",
+	"ctrl_x",
+	"unknown",	    // CTRL_X_SCROLL
+	"whole_line",
+	"files",
+	"tags",
+	"path_patterns",
+	"path_defines",
+	"unknown",	    // CTRL_X_FINISHED
+	"dictionary",
+	"thesaurus",
+	"cmdline",
+	"function",
+	"omni",
+	"spell",
+	"unknown",	    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+	"eval",
     };
-    struct mode_table table[] = {
-        {0, "keyword"},
-        {CTRL_X_NOT_DEFINED_YET, "ctrl_x"},
-        {CTRL_X_WHOLE_LINE, "whole_line"},
-        {CTRL_X_FILES, "files"},
-        {CTRL_X_TAGS, "tags"},
-        {CTRL_X_PATH_PATTERNS, "path_patterns"},
-        {CTRL_X_PATH_DEFINES, "path_defines"},
-        {CTRL_X_DICTIONARY, "dictionary"},
-        {CTRL_X_THESAURUS, "thesaurus"},
-        {CTRL_X_CMDLINE, "cmdline"},
-        {CTRL_X_FUNCTION, "function"},
-        {CTRL_X_OMNI, "omni"},
-        {CTRL_X_SPELL, "spell"},
-        {CTRL_X_EVAL, "eval"},
-    };
+    char *mode = "";
 
-    int i;
+    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
+	mode = mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
 
-    for (i = 0; i < sizeof(table)/ sizeof(struct mode_table); i++)
-        if (table[i].mode == ctrl_x_mode)
-            return (char_u *)table[i].name;
-
-    return (char_u *)"unknown";
+    return (char_u *)mode;
 }
 
 /* "compl_match_array" points the currently displayed list of entries in the
