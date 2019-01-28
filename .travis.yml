@@ -82,6 +82,10 @@ addons:
       - tcl-dev
       - cscope
       - libgtk2.0-dev
+  homebrew:
+    packages:
+      - lua
+    update: true
 
 before_install:
   - rvm reset
@@ -93,7 +97,7 @@ before_install:
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export HOMEBREW_NO_AUTO_UPDATE=1; brew update; brew install lua; export LUA_PREFIX=/usr/local; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export LUA_PREFIX=/usr/local; fi
     # Use llvm-cov instead of gcov when compiler is clang.
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
 
