@@ -2971,10 +2971,9 @@ ins_compl_mode(void)
 
     int i;
 
-    for (i = 0; i < sizeof(table)/ sizeof(struct mode_table); i++) {
+    for (i = 0; i < sizeof(table)/ sizeof(struct mode_table); i++)
         if (table[i].mode == ctrl_x_mode)
             return (char_u *)table[i].name;
-    }
 
     return (char_u *)"unknown";
 }
