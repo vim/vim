@@ -2683,9 +2683,10 @@ gui_mch_wait_for_chars(long wtime)
 
     timed_out = FALSE;
 
-    if (wtime > 0)
-	timer = XtAppAddTimeOut(app_context, (long_u)wtime, gui_x11_timer_cb,
-								  &timed_out);
+    if (wtime >= 0)
+	timer = XtAppAddTimeOut(app_context,
+				(long_u)(wtime == 0 ? 1L : wtime),
+						 gui_x11_timer_cb, &timed_out);
 #ifdef FEAT_JOB_CHANNEL
     /* If there is a channel with the keep_open flag we need to poll for input
      * on them. */

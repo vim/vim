@@ -2097,12 +2097,14 @@ gui_mch_wait_for_chars(int wtime)
 
     s_timed_out = FALSE;
 
-    if (wtime > 0)
+    if (wtime >= 0)
     {
-	/* Don't do anything while processing a (scroll) message. */
+	// Don't do anything while processing a (scroll) message.
 	if (s_busy_processing)
 	    return FAIL;
-	s_wait_timer = (UINT)SetTimer(NULL, 0, (UINT)wtime,
+
+	// When called with "wtime" zero, just want one msec.
+	s_wait_timer = (UINT)SetTimer(NULL, 0, (UINT)(wtime == 0 ? 1 : wtime),
 							 (TIMERPROC)_OnTimer);
     }
 

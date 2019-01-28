@@ -272,6 +272,7 @@ inchar_loop(
 {
     int		len;
     int		interrupted = FALSE;
+    int		did_call_wait_func = FALSE;
     int		did_start_blocking = FALSE;
     long	wait_time;
     long	elapsed_time = 0;
@@ -313,7 +314,11 @@ inchar_loop(
 	    elapsed_time = ELAPSED_FUNC(start_tv);
 #endif
 	    wait_time -= elapsed_time;
-	    if (wait_time <= 0)
+
+	    // If the waiting time is now zero or less, we timed out.  However,
+	    // loop at least once to check for characters and events.  Matters
+	    // when "wtime" is zero.
+	    if (wait_time <= 0 && did_call_wait_func)
 	    {
 		if (wtime >= 0)
 		    // no character available within "wtime"
@@ -374,6 +379,7 @@ inchar_loop(
 
 	// Wait for a character to be typed or another event, such as the winch
 	// signal or an event on the monitored file descriptors.
+	did_call_wait_func = TRUE;
 	if (wait_func(wait_time, &interrupted, FALSE))
 	{
 	    // If input was put directly in typeahead buffer bail out here.
