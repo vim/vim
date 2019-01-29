@@ -29,8 +29,10 @@ endfunc
 
 " Test findfile({name} [, {path} [, {count}]])
 func Test_findfile()
+  let save_path = &path
+  let save_shellslash = &shellslash
+  let save_dir = getcwd()
   set shellslash
-  let olddir = getcwd()
   call CreateFiles()
   cd Xdir1
   e Xdir2/foo
@@ -93,7 +95,6 @@ func Test_findfile()
   let l = findfile('foo', ';', -1)
   call assert_match('.*/Xdir1/Xdir2/foo', l[0])
   call assert_match('.*/Xdir1/foo',       l[1])
-  unlet l
 
   " Test combined downwards and upwards search from Xdir2/.
   cd ..
@@ -101,17 +102,18 @@ func Test_findfile()
   call assert_match('.*/Xdir1/bar', findfile('bar', '**;', 2))
 
   bwipe!
-  exe 'cd  ' . olddir
+  exe 'cd  ' . save_dir
   call CleanFiles()
-  set path&
-  set shellslash&
+  let &path = save_path
+  let &shellslash = save_shellslash
 endfunc
 
 " Test finddir({name} [, {path} [, {count}]])
 func Test_finddir()
-  set shellslash
+  let save_path = &path
+  let save_shellslash = &shellslash
+  let save_dir = getcwd()
   set path=,,
-  let olddir = getcwd()
   call CreateFiles()
   cd Xdir1
 
@@ -145,8 +147,8 @@ func Test_finddir()
   call assert_match('.*Xdir1/Xdir2', finddir('Xdir2', '**;', 2))
   call assert_equal('Xdir3',         finddir('Xdir3', '**;', 1))
 
-  exe 'cd  ' . olddir
+  exe 'cd  ' . save_dir
   call CleanFiles()
-  set path&
-  set shellslash&
+  let &path = save_path
+  let &shellslash = save_shellslash
 endfunc
