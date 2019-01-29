@@ -1375,19 +1375,24 @@ term_try_stop_job(buf_T *buf)
 
     job_stop(buf->b_term->tl_job, NULL, how);
 
-    /* wait for up to a second for the job to die */
+    // wait for up to a second for the job to die
     for (count = 0; count < 100; ++count)
     {
-	/* buffer, terminal and job may be cleaned up while waiting */
+	job_T *job;
+
+	// buffer, terminal and job may be cleaned up while waiting
 	if (!buf_valid(buf)
 		|| buf->b_term == NULL
 		|| buf->b_term->tl_job == NULL)
 	    return OK;
+	job = buf->b_term->tl_job;
 
-	/* call job_status() to update jv_status */
-	job_status(buf->b_term->tl_job);
-	if (buf->b_term->tl_job->jv_status >= JOB_ENDED)
+	// Call job_status() to update jv_status. It may cause the job to be
+	// cleaned up but it won't be freed.
+	job_status(job);
+	if (job->jv_status >= JOB_ENDED)
 	    return OK;
+
 	ui_delay(10L, FALSE);
 	mch_check_messages();
 	parse_queued_messages();
