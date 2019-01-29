@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 24
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -696,7 +696,7 @@ similar to -1. >
 	:let otherblob = myblob[:]	" make a copy of the Blob
 
 If the first index is beyond the last byte of the Blob or the second index is
-before the first byte, the result is an empty list.  There is no error
+before the first index, the result is an empty list.  There is no error
 message.
 
 If the second index is equal to or greater than the length of the list the
@@ -2511,7 +2511,10 @@ remote_read({serverid} [, {timeout}])
 remote_send({server}, {string} [, {idvar}])
 				String	send key sequence
 remote_startserver({name})	none	become server {name}
-remove({list}, {idx} [, {end}])	any	remove items {idx}-{end} from {list}
+remove({list}, {idx} [, {end}])	any/List 
+					remove items {idx}-{end} from {list}
+remove({blob}, {idx} [, {end}])	Number/Blob
+					remove bytes {idx}-{end} from {blob}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
 repeat({expr}, {count})		String	repeat {expr} {count} times
@@ -6056,13 +6059,9 @@ line({expr})	The result is a Number, which is the line number of the file
 			line(".")		line number of the cursor
 			line("'t")		line number of mark t
 			line("'" . marker)	line number of mark marker
-<							*last-position-jump*
-		This autocommand jumps to the last known position in a file
-		just after opening it, if the '" mark is set: >
-     :au BufReadPost *
-	 \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit'
-	 \ |   exe "normal! g`\""
-	 \ | endif
+<
+		To jump to the last known position when opening a file see
+		|last-position-jump|.
 
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
@@ -6504,8 +6503,10 @@ min({expr})	Return the minimum value of all items in {expr}.
 							*mkdir()* *E739*
 mkdir({name} [, {path} [, {prot}]])
 		Create directory {name}.
+
 		If {path} is "p" then intermediate directories are created as
 		necessary.  Otherwise it must be "".
+
 		If {prot} is given it is used to set the protection bits of
 		the new directory.  The default is 0755 (rwxr-xr-x: r/w for
 		the user readable for others).  Use 0700 to make it unreadable
@@ -6514,9 +6515,17 @@ mkdir({name} [, {path} [, {prot}]])
 		with 0755.
 		Example: >
 			:call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
+
 <		This function is not available in the |sandbox|.
+
 		There is no error if the directory already exists and the "p"
-		flag is passed (since patch 8.0.1708).
+		flag is passed (since patch 8.0.1708).  However, without the
+		"p" option the call will fail.  
+
+		The function result is a Number, which is 1 if the call was 
+		successful or 0 if the directory creation failed or partly
+		failed.
+
 		Not available on all systems.  To check use: >
 			:if exists("*mkdir")
 <
@@ -7325,6 +7334,9 @@ remove({list}, {idx} [, {end}])				*remove()*
 		Example: >
 			:echo "last item: " . remove(mylist, -1)
 			:call remove(mylist, 0, 9)
+<
+		Use |delete()| to remove a file.
+
 remove({blob}, {idx} [, {end}])
 		Without {end}: Remove the byte at {idx} from |Blob| {blob} and
 		return the byte.
@@ -7335,12 +7347,11 @@ remove({blob}, {idx} [, {end}])
 		Example: >
 			:echo "last byte: " . remove(myblob, -1)
 			:call remove(mylist, 0, 9)
+
 remove({dict}, {key})
 		Remove the entry from {dict} with key {key}.  Example: >
 			:echo "removed " . remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
-
-		Use |delete()| to remove a file.
 
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
@@ -9724,10 +9735,10 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Dictionary: 4  |v:t_dict|
 			Float:	    5  |v:t_float|
 			Boolean:    6  |v:t_bool| (v:false and v:true)
-			None	    7  |v:t_none| (v:null and v:none)
-			Job	    8  |v:t_job|
-			Channel	    9  |v:t_channel|
-			Blob	   10  |v:t_blob|
+			None:	    7  |v:t_none| (v:null and v:none)
+			Job:	    8  |v:t_job|
+			Channel:    9  |v:t_channel|
+			Blob:	   10  |v:t_blob|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
@@ -10150,7 +10161,7 @@ all_builtin_terms	Compiled with all builtin terminals enabled.
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
-autocmd			Compiled with autocommand support. |autocommand|
+autocmd			Compiled with autocommand support. (always true)
 autochdir		Compiled with support for 'autochdir'
 autoservername		Automatically enable |clientserver|
 balloon_eval		Compiled with |balloon-eval| support.
@@ -10159,6 +10170,7 @@ beos			BeOS version of Vim.
 browse			Compiled with |:browse| support, and browse() will
 			work.
 browsefilter		Compiled with support for |browsefilter|.
+bsd			Compiled on an OS in the BSD family (excluding macOS).
 builtin_terms		Compiled with some builtin terminals.
 byte_offset		Compiled with support for 'o' in 'statusline'
 cindent			Compiled with 'cindent' support.
@@ -10171,6 +10183,7 @@ comments		Compiled with |'comments'| support.
 compatible		Compiled to be very Vi compatible.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
+cursorbind		Compiled with |cursorbind| (always true)
 debug			Compiled with "DEBUG" defined.
 dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
@@ -10182,7 +10195,7 @@ ebcdic			Compiled on a machine with ebcdic character set.
 emacs_tags		Compiled with support for Emacs tags.
 eval			Compiled with expression evaluation support.  Always
 			true, of course!
-ex_extra		|+ex_extra|, always true now
+ex_extra		|+ex_extra| (always true)
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Compiled with Farsi support |farsi|.
@@ -10211,6 +10224,7 @@ gui_running		Vim is running in the GUI, or it will start soon.
 gui_win32		Compiled with MS Windows Win32 GUI.
 gui_win32s		idem, and Win32s system being used (Windows 3.1)
 hangul_input		Compiled with Hangul input support. |hangul|
+hpux			HP-UX version of Vim.
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode.
@@ -10221,6 +10235,7 @@ langmap			Compiled with 'langmap' support.
 libcall			Compiled with |libcall()| support.
 linebreak		Compiled with 'linebreak', 'breakat', 'showbreak' and
 			'breakindent' support.
+linux			Linux version of Vim.
 lispindent		Compiled with support for lisp indenting.
 listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
@@ -10271,7 +10286,7 @@ quickfix		Compiled with |quickfix| support.
 reltime			Compiled with |reltime()| support.
 rightleft		Compiled with 'rightleft' support.
 ruby			Compiled with Ruby interface |ruby|.
-scrollbind		Compiled with 'scrollbind' support.
+scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
@@ -10279,6 +10294,7 @@ spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'
 			and special formats of 'titlestring' and 'iconstring'.
+sun			SunOS version of Vim.
 sun_workshop		Support for Sun |workshop| has been removed.
 syntax			Compiled with syntax highlighting support |syntax|.
 syntax_items		There are active syntax highlighting items for the
@@ -10310,27 +10326,29 @@ user_commands		User-defined commands.
 vcon			Win32: Virtual console support is working, can use
 			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.
+			(always true)
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
 viminfo			Compiled with viminfo support.
-virtualedit		Compiled with 'virtualedit' option.
+virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always
 			true) |blockwise-operators|.
 vms			VMS version of Vim.
-vreplace		Compiled with |gR| and |gr| commands.
+vreplace		Compiled with |gR| and |gr| commands. (always true)
 vtp			Compiled for vcon support |+vtp| (check vcon to find
 			out if it works in the current console).
 wildignore		Compiled with 'wildignore' option.
 wildmenu		Compiled with 'wildmenu' option.
-win16			old version for MS-Windows 3.1 (always False)
+win16			old version for MS-Windows 3.1 (always false)
 win32			Win32 version of Vim (MS-Windows 95 and later, 32 or
 			64 bits)
 win32unix		Win32 version of Vim, using Unix files (Cygwin)
 win64			Win64 version of Vim (MS-Windows 64 bit).
-win95			Win32 version for MS-Windows 95/98/ME (always False)
+win95			Win32 version for MS-Windows 95/98/ME (always false)
 winaltkeys		Compiled with 'winaltkeys' option.
 windows			Compiled with support for more than one window.
+			(always true)
 writebackup		Compiled with 'writebackup' default on.
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.
