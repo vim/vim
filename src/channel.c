@@ -5161,8 +5161,11 @@ job_free_contents(job_T *job)
     }
 }
 
+/*
+ * Remove "job" from the list of jobs.
+ */
     static void
-job_free_job(job_T *job)
+job_unlink(job_T *job)
 {
     if (job->jv_next != NULL)
 	job->jv_next->jv_prev = job->jv_prev;
@@ -5170,6 +5173,12 @@ job_free_job(job_T *job)
 	first_job = job->jv_next;
     else
 	job->jv_prev->jv_next = job->jv_next;
+}
+
+    static void
+job_free_job(job_T *job)
+{
+    job_unlink(job);
     vim_free(job);
 }
 
@@ -5183,12 +5192,44 @@ job_free(job_T *job)
     }
 }
 
+job_T *jobs_to_free = NULL;
+
+/*
+ * Put "job" in a list to be freed later, when it's no longer referenced.
+ */
+    static void
+job_free_later(job_T *job)
+{
+    job_unlink(job);
+    job->jv_next = jobs_to_free;
+    jobs_to_free = job;
+}
+
+    static void
+free_jobs_to_free_later(void)
+{
+    job_T *job;
+
+    while (jobs_to_free != NULL)
+    {
+	job = jobs_to_free;
+	jobs_to_free = job->jv_next;
+	job_free_contents(job);
+	vim_free(job);
+    }
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 job_free_all(void)
 {
     while (first_job != NULL)
 	job_free(first_job);
+    free_jobs_to_free_later();
+
+# ifdef FEAT_TERMINAL
+    free_unused_terminals();
+# endif
 }
 #endif
 
@@ -5359,6 +5400,8 @@ win32_build_cmd(list_T *l, garray_T *gap)
  * NOTE: Must call job_cleanup() only once right after the status of "job"
  * changed to JOB_ENDED (i.e. after job_status() returned "dead" first or
  * mch_detect_ended_job() returned non-NULL).
+ * If the job is no longer used it will be removed from the list of jobs, and
+ * deleted a bit later.
  */
     void
 job_cleanup(job_T *job)
@@ -5394,15 +5437,13 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-    /* Do not free the job in case the close callback of the associated channel
-     * isn't invoked yet and may get information by job_info(). */
+    // Do not free the job in case the close callback of the associated channel
+    // isn't invoked yet and may get information by job_info().
     if (job->jv_refcount == 0 && !job_channel_still_useful(job))
-    {
-	/* The job was already unreferenced and the associated channel was
-	 * detached, now that it ended it can be freed. Careful: caller must
-	 * not use "job" after this! */
-	job_free(job);
-    }
+	// The job was already unreferenced and the associated channel was
+	// detached, now that it ended it can be freed. However, a caller might
+	// still use it, thus free it a bit later.
+	job_free_later(job);
 }
 
 /*
@@ -5609,8 +5650,11 @@ job_check_ended(void)
 	if (job == NULL)
 	    break;
 	did_end = TRUE;
-	job_cleanup(job); // may free "job"
+	job_cleanup(job); // may add "job" to jobs_to_free
     }
+
+    // Actually free jobs that were cleaned up.
+    free_jobs_to_free_later();
 
     if (channel_need_redraw)
     {
