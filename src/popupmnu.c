@@ -368,7 +368,7 @@ pum_call_update_screen()
     // Update the cursor position to be able to compute the popup menu
     // position.  The cursor line length may have changed because of the
     // inserted completion.
-    curwin->w_valid &= VALID_CROW|VALID_CHEIGHT;
+    curwin->w_valid &= ~(VALID_CROW|VALID_CHEIGHT);
     validate_cursor();
 }
 
