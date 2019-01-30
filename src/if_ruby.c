@@ -1262,7 +1262,7 @@ static VALUE vim_blob(VALUE self UNUSED, VALUE str)
     for (i = 0; i < RSTRING_LEN(str); i++)
     {
 	sprintf(buf, "%02X", RSTRING_PTR(str)[i]);
-	rb_str_concat(result, rb_str_new_cstr(buf));
+	rb_str_concat(result, rb_str_new2(buf));
     }
     return result;
 }
