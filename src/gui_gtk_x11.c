@@ -6317,10 +6317,11 @@ gui_mch_wait_for_chars(long wtime)
 
     timed_out = FALSE;
 
-    /* this timeout makes sure that we will return if no characters arrived in
-     * time */
-    if (wtime > 0)
-	timer = timeout_add(wtime, input_timer_cb, &timed_out);
+    // This timeout makes sure that we will return if no characters arrived in
+    // time. If "wtime" is zero just use one.
+    if (wtime >= 0)
+	timer = timeout_add(wtime <= 0 ? 1L : wtime,
+						   input_timer_cb, &timed_out);
     else
 	timer = 0;
 
@@ -6737,11 +6738,13 @@ clip_mch_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
+#if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gtk_owner_exists(VimClipboard *cbd)
 {
     return gdk_selection_owner_get(cbd->gtk_sel_atom) != NULL;
 }
+#endif
 
 
 #if defined(FEAT_MENU) || defined(PROTO)

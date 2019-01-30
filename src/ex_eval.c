@@ -556,7 +556,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 
 	smsg(_("Exception thrown: %s"), excp->value);
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    cmdline_row = msg_row;
@@ -610,7 +610,7 @@ discard_exception(except_T *excp, int was_finished)
 		    ? _("Exception finished: %s")
 		    : _("Exception discarded: %s"),
 		excp->value);
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    cmdline_row = msg_row;
 	--no_wait_return;
@@ -679,7 +679,7 @@ catch_exception(except_T *excp)
 	    msg_scroll = TRUE;	    /* always scroll up, don't overwrite */
 
 	smsg(_("Exception caught: %s"), excp->value);
-	msg_puts((char_u *)"\n");   /* don't overwrite this either */
+	msg_puts("\n");   /* don't overwrite this either */
 
 	if (debug_break_level > 0 || *p_vfile == NUL)
 	    cmdline_row = msg_row;
@@ -806,7 +806,7 @@ report_pending(int action, int pending, void *value)
     ++no_wait_return;
     msg_scroll = TRUE;		/* always scroll up, don't overwrite */
     smsg(mesg, s);
-    msg_puts((char_u *)"\n");   /* don't overwrite this either */
+    msg_puts("\n");   /* don't overwrite this either */
     cmdline_row = msg_row;
     --no_wait_return;
     if (debug_break_level > 0)

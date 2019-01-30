@@ -213,14 +213,7 @@ Trace(char *pszFormat, ...);
 #endif
 
 /* Enable common dialogs input unicode from IME if possible. */
-#ifdef FEAT_MBYTE
-# define pDispatchMessage DispatchMessageW
-# define pGetMessage GetMessageW
-# define pIsDialogMessage IsDialogMessageW
-# define pPeekMessage PeekMessageW
-#else
-# define pDispatchMessage DispatchMessage
-# define pGetMessage GetMessage
-# define pIsDialogMessage IsDialogMessage
-# define pPeekMessage PeekMessage
-#endif
+#define pDispatchMessage DispatchMessageW
+#define pGetMessage GetMessageW
+#define pIsDialogMessage IsDialogMessageW
+#define pPeekMessage PeekMessageW

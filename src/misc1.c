@@ -622,9 +622,7 @@ get_number_indent(linenr_T lnum)
 	{
 	    pos.lnum = lnum;
 	    pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
-#ifdef FEAT_VIRTUALEDIT
 	    pos.coladd = 0;
-#endif
 	}
 	vim_regfree(regmatch.regprog);
     }
@@ -843,11 +841,9 @@ open_line(
 	p = saved_line + curwin->w_cursor.col;
 	while (*p != NUL)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		p += replace_push_mb(p);
 	    else
-#endif
 		replace_push(*p++);
 	}
 	saved_line[curwin->w_cursor.col] = NUL;
@@ -1296,7 +1292,6 @@ open_line(
 			    ;
 			++p;
 
-#ifdef FEAT_MBYTE
 			/* Compute the length of the replaced characters in
 			 * screen characters, not bytes. */
 			{
@@ -1317,12 +1312,6 @@ open_line(
 					(size_t)((leader + lead_len) - endp));
 			    lead_len += l;
 			}
-#else
-			if (p < leader + lead_repl_len)
-			    p = leader;
-			else
-			    p -= lead_repl_len;
-#endif
 			mch_memmove(p, lead_repl, (size_t)lead_repl_len);
 			if (p + lead_repl_len > leader + lead_len)
 			    p[lead_repl_len] = NUL;
@@ -1330,7 +1319,6 @@ open_line(
 			/* blank-out any other chars from the old leader. */
 			while (--p >= leader)
 			{
-#ifdef FEAT_MBYTE
 			    int l = mb_head_off(leader, p);
 
 			    if (l > 1)
@@ -1346,16 +1334,14 @@ open_line(
 				lead_len -= l;
 				*p = ' ';
 			    }
-			    else
-#endif
-			    if (!VIM_ISWHITE(*p))
+			    else if (!VIM_ISWHITE(*p))
 				*p = ' ';
 			}
 		    }
 		    else		    /* left adjusted leader */
 		    {
 			p = skipwhite(leader);
-#ifdef FEAT_MBYTE
+
 			/* Compute the length of the replaced characters in
 			 * screen characters, not bytes. Move the part that is
 			 * not to be overwritten. */
@@ -1378,7 +1364,6 @@ open_line(
 				lead_len += lead_repl_len - i;
 			    }
 			}
-#endif
 			mch_memmove(p, lead_repl, (size_t)lead_repl_len);
 
 			/* Replace any remaining non-white chars in the old
@@ -1396,7 +1381,6 @@ open_line(
 				}
 				else
 				{
-#ifdef FEAT_MBYTE
 				    int	    l = (*mb_ptr2len)(p);
 
 				    if (l > 1)
@@ -1412,7 +1396,6 @@ open_line(
 						     (leader + lead_len) - p);
 					lead_len -= l - 1;
 				    }
-#endif
 				    *p = ' ';
 				}
 			    }
@@ -1537,11 +1520,8 @@ open_line(
 	if (curbuf->b_p_ai || (flags & OPENLINE_DELSPACES))
 	{
 	    while ((*p_extra == ' ' || *p_extra == '\t')
-#ifdef FEAT_MBYTE
 		    && (!enc_utf8
-			       || !utf_iscomposing(utf_ptr2char(p_extra + 1)))
-#endif
-		    )
+			       || !utf_iscomposing(utf_ptr2char(p_extra + 1))))
 	    {
 		if (REPLACE_NORMAL(State))
 		    replace_push(*p_extra);
@@ -1726,9 +1706,7 @@ open_line(
 	changed_lines(curwin->w_cursor.lnum, 0, curwin->w_cursor.lnum, 1L);
 
     curwin->w_cursor.col = newcol;
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     /*
@@ -1799,9 +1777,7 @@ open_line(
 
 	/* Insert new stuff into line again */
 	curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
 	ins_bytes(p_extra);	/* will call changed_bytes() */
 	vim_free(p_extra);
 	next_line = NULL;
@@ -2320,7 +2296,6 @@ ins_bytes(char_u *p)
 ins_bytes_len(char_u *p, int len)
 {
     int		i;
-#ifdef FEAT_MBYTE
     int		n;
 
     if (has_mbyte)
@@ -2334,7 +2309,6 @@ ins_bytes_len(char_u *p, int len)
 	    ins_char_bytes(p + i, n);
 	}
     else
-#endif
 	for (i = 0; i < len; ++i)
 	    ins_char(p[i]);
 }
@@ -2350,18 +2324,12 @@ ins_bytes_len(char_u *p, int len)
 ins_char(int c)
 {
     char_u	buf[MB_MAXBYTES + 1];
-    int		n = 1;
-
-#ifdef FEAT_MBYTE
-    n = (*mb_char2bytes)(c, buf);
+    int		n = (*mb_char2bytes)(c, buf);
 
     /* When "c" is 0x100, 0x200, etc. we don't want to insert a NUL byte.
      * Happens for CTRL-Vu9900. */
     if (buf[0] == 0)
 	buf[0] = '\n';
-#else
-    buf[0] = c;
-#endif
 
     ins_char_bytes(buf, n);
 }
@@ -2380,11 +2348,9 @@ ins_char_bytes(char_u *buf, int charlen)
     linenr_T	lnum = curwin->w_cursor.lnum;
     int		i;
 
-#ifdef FEAT_VIRTUALEDIT
     /* Break tabs if needed. */
     if (virtual_active() && curwin->w_cursor.coladd > 0)
 	coladvance_force(getviscol());
-#endif
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
@@ -2401,9 +2367,6 @@ ins_char_bytes(char_u *buf, int charlen)
 	    colnr_T	new_vcol = 0;   /* init for GCC */
 	    colnr_T	vcol;
 	    int		old_list;
-#ifndef FEAT_MBYTE
-	    char_u	cbuf[2];
-#endif
 
 	    /*
 	     * Disable 'list' temporarily, unless 'cpo' contains the 'L' flag.
@@ -2421,13 +2384,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	     * cells.  May result in adding spaces to fill a gap.
 	     */
 	    getvcol(curwin, &curwin->w_cursor, NULL, &vcol, NULL);
-#ifndef FEAT_MBYTE
-	    cbuf[0] = c;
-	    cbuf[1] = NUL;
-	    new_vcol = vcol + chartabsize(cbuf, vcol);
-#else
 	    new_vcol = vcol + chartabsize(buf, vcol);
-#endif
 	    while (oldp[col + oldlen] != NUL && vcol < new_vcol)
 	    {
 		vcol += chartabsize(oldp + col + oldlen, vcol);
@@ -2435,11 +2392,7 @@ ins_char_bytes(char_u *buf, int charlen)
 		 * position. */
 		if (vcol > new_vcol && oldp[col + oldlen] == TAB)
 		    break;
-#ifdef FEAT_MBYTE
 		oldlen += (*mb_ptr2len)(oldp + col + oldlen);
-#else
-		++oldlen;
-#endif
 		/* Deleted a bit too much, insert spaces. */
 		if (vcol > new_vcol)
 		    newlen += vcol - new_vcol;
@@ -2449,11 +2402,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	else if (oldp[col] != NUL)
 	{
 	    /* normal replace */
-#ifdef FEAT_MBYTE
 	    oldlen = (*mb_ptr2len)(oldp + col);
-#else
-	    oldlen = 1;
-#endif
 	}
 
 
@@ -2464,11 +2413,9 @@ ins_char_bytes(char_u *buf, int charlen)
 	replace_push(NUL);
 	for (i = 0; i < oldlen; ++i)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		i += replace_push_mb(oldp + col + i) - 1;
 	    else
-#endif
 		replace_push(oldp[col + i]);
 	}
     }
@@ -2488,13 +2435,8 @@ ins_char_bytes(char_u *buf, int charlen)
 					    (size_t)(linelen - col - oldlen));
 
     /* Insert or overwrite the new character. */
-#ifdef FEAT_MBYTE
     mch_memmove(p, buf, charlen);
     i = charlen;
-#else
-    *p = c;
-    i = 1;
-#endif
 
     /* Fill with spaces when necessary. */
     while (i < newlen)
@@ -2517,11 +2459,9 @@ ins_char_bytes(char_u *buf, int charlen)
 #endif
        )
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));
 	else
-#endif
 	    showmatch(c);
     }
 
@@ -2530,11 +2470,7 @@ ins_char_bytes(char_u *buf, int charlen)
 #endif
     {
 	/* Normal insert: move cursor right */
-#ifdef FEAT_MBYTE
 	curwin->w_cursor.col += charlen;
-#else
-	++curwin->w_cursor.col;
-#endif
     }
     /*
      * TODO: should try to update w_row here, to avoid recomputing it later.
@@ -2555,10 +2491,8 @@ ins_str(char_u *s)
     colnr_T	col;
     linenr_T	lnum = curwin->w_cursor.lnum;
 
-#ifdef FEAT_VIRTUALEDIT
     if (virtual_active() && curwin->w_cursor.coladd > 0)
 	coladvance_force(getviscol());
-#endif
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
@@ -2586,7 +2520,6 @@ ins_str(char_u *s)
     int
 del_char(int fixpos)
 {
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	/* Make sure the cursor is at the start of a character. */
@@ -2595,11 +2528,9 @@ del_char(int fixpos)
 	    return FAIL;
 	return del_chars(1L, fixpos);
     }
-#endif
     return del_bytes(1L, fixpos, TRUE);
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Like del_bytes(), but delete characters instead of bytes.
  */
@@ -2620,7 +2551,6 @@ del_chars(long count, int fixpos)
     }
     return del_bytes(bytes, fixpos, TRUE);
 }
-#endif
 
 /*
  * Delete "count" bytes under the cursor.
@@ -2662,7 +2592,6 @@ del_bytes(
 	return FAIL;
     }
 
-#ifdef FEAT_MBYTE
     /* If 'delcombine' is set and deleting (less than) one character, only
      * delete the last combining character. */
     if (p_deco && use_delcombine && enc_utf8
@@ -2685,7 +2614,6 @@ del_bytes(
 	    fixpos = 0;
 	}
     }
-#endif
 
     /*
      * When count is too big, reduce it.
@@ -2699,20 +2627,13 @@ del_bytes(
 	 * unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	 */
 	if (col > 0 && fixpos && restart_edit == 0
-#ifdef FEAT_VIRTUALEDIT
-					      && (ve_flags & VE_ONEMORE) == 0
-#endif
-					      )
+					      && (ve_flags & VE_ONEMORE) == 0)
 	{
 	    --curwin->w_cursor.col;
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		curwin->w_cursor.col -=
 			    (*mb_head_off)(oldp, oldp + curwin->w_cursor.col);
-#endif
 	}
 	count = oldlen - col;
 	movelen = 1;
@@ -2847,20 +2768,16 @@ gchar_pos(pos_T *pos)
     if (pos->col == MAXCOL)
 	return NUL;
     ptr = ml_get_pos(pos);
-#ifdef FEAT_MBYTE
     if (has_mbyte)
 	return (*mb_ptr2char)(ptr);
-#endif
     return (int)*ptr;
 }
 
     int
 gchar_cursor(void)
 {
-#ifdef FEAT_MBYTE
     if (has_mbyte)
 	return (*mb_ptr2char)(ml_get_cursor());
-#endif
     return (int)*ml_get_cursor();
 }
 
@@ -3468,7 +3385,7 @@ change_warning(
 	if (msg_row == Rows - 1)
 	    msg_col = col;
 	msg_source(HL_ATTR(HLF_W));
-	MSG_PUTS_ATTR(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
+	msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
 #ifdef FEAT_EVAL
 	set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
 #endif
@@ -3681,7 +3598,6 @@ get_keystroke(void)
 	    }
 	    break;
 	}
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    if (MB_BYTE2LEN(n) > len)
@@ -3689,7 +3605,6 @@ get_keystroke(void)
 	    buf[len >= buflen ? buflen - 1 : len] = NUL;
 	    n = (*mb_ptr2char)(buf);
 	}
-#endif
 #ifdef UNIX
 	if (n == intr_char)
 	    n = ESC;
@@ -3742,7 +3657,7 @@ get_number(
 	{
 	    if (typed > 0)
 	    {
-		MSG_PUTS("\b \b");
+		msg_puts("\b \b");
 		--typed;
 	    }
 	    n /= 10;
@@ -3786,9 +3701,9 @@ prompt_for_number(int *mouse_used)
 
     /* When using ":silent" assume that <CR> was entered. */
     if (mouse_used != NULL)
-	MSG_PUTS(_("Type number and <Enter> or click with mouse (empty cancels): "));
+	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
     else
-	MSG_PUTS(_("Type number and <Enter> (empty cancels): "));
+	msg_puts(_("Type number and <Enter> (empty cancels): "));
 
     // Set the state such that text can be selected/copied/pasted and we still
     // get mouse events. redraw_after_callback() will not redraw if cmdline_row
@@ -3846,16 +3761,17 @@ msgmore(long n)
     if (pn > p_report)
     {
 	if (n > 0)
-	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+	    vim_snprintf(msg_buf, MSG_BUF_LEN,
 		    NGETTEXT("%ld more line", "%ld more lines", pn), pn);
 	else
-	    vim_snprintf((char *)msg_buf, MSG_BUF_LEN,
+	    vim_snprintf(msg_buf, MSG_BUF_LEN,
 		    NGETTEXT("%ld line less", "%ld fewer lines", pn), pn);
 	if (got_int)
-	    vim_strcat(msg_buf, (char_u *)_(" (Interrupted)"), MSG_BUF_LEN);
+	    vim_strcat((char_u *)msg_buf, (char_u *)_(" (Interrupted)"),
+								  MSG_BUF_LEN);
 	if (msg(msg_buf))
 	{
-	    set_keep_msg(msg_buf, 0);
+	    set_keep_msg((char_u *)msg_buf, 0);
 	    keep_msg_more = TRUE;
 	}
     }
@@ -3891,7 +3807,7 @@ vim_beep(
 	{
 #ifdef ELAPSED_FUNC
 	    static int		did_init = FALSE;
-	    static ELAPSED_TYPE	start_tv;
+	    static elapsed_T	start_tv;
 
 	    /* Only beep once per half a second, otherwise a sequence of beeps
 	     * would freeze Vim. */
@@ -3936,7 +3852,7 @@ vim_beep(
 	if (vim_strchr(p_debug, 'e') != NULL)
 	{
 	    msg_source(HL_ATTR(HLF_W));
-	    msg_attr((char_u *)_("Beep!"), HL_ATTR(HLF_W));
+	    msg_attr(_("Beep!"), HL_ATTR(HLF_W));
 	}
     }
 }
@@ -4022,7 +3938,6 @@ init_homedir(void)
     if (var != NULL && *var == NUL)	/* empty is same as not set */
 	var = NULL;
 
-# ifdef FEAT_MBYTE
     if (enc_utf8 && var != NULL)
     {
 	int	len;
@@ -4037,7 +3952,6 @@ init_homedir(void)
 	    return;
 	}
     }
-# endif
 
     /*
      * Default home dir is C:/
@@ -4436,7 +4350,7 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
     {
-#if defined(FEAT_MBYTE) && defined(WIN3264)
+#if defined(WIN3264)
 	if (enc_utf8)
 	{
 	    int	    len;
@@ -4480,7 +4394,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    else
 		p = mch_getenv((char_u *)"VIM");
 
-#if defined(FEAT_MBYTE) && defined(WIN3264)
+#if defined(WIN3264)
 	    if (enc_utf8)
 	    {
 		int	len;
@@ -4671,6 +4585,7 @@ remove_tail(char_u *p, char_u *pend, char_u *name)
     return pend;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 vim_unsetenv(char_u *var)
 {
@@ -4680,6 +4595,7 @@ vim_unsetenv(char_u *var)
     vim_setenv(var, (char_u *)"");
 #endif
 }
+#endif
 
 
 /*
@@ -5329,7 +5245,6 @@ shorten_dir(char_u *str)
 	    *d++ = *s;		    /* copy next char */
 	    if (*s != '~' && *s != '.') /* and leading "~" and "." */
 		skip = TRUE;
-# ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		int l = mb_ptr2len(s);
@@ -5337,7 +5252,6 @@ shorten_dir(char_u *str)
 		while (--l > 0)
 		    *d++ = *++s;
 	    }
-# endif
 	}
     }
 }
@@ -10152,10 +10066,8 @@ dos_expandpath(
     static int	stardepth = 0;	    /* depth for "**" expansion */
     WIN32_FIND_DATA	fb;
     HANDLE		hFind = (HANDLE)0;
-# ifdef FEAT_MBYTE
     WIN32_FIND_DATAW    wfb;
     WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
-# endif
     char_u		*matchname;
     int			ok;
 
@@ -10167,8 +10079,8 @@ dos_expandpath(
 	    return 0;
     }
 
-    /* Make room for file name.  When doing encoding conversion the actual
-     * length may be quite a bit longer, thus use the maximum possible length. */
+    // Make room for file name.  When doing encoding conversion the actual
+    // length may be quite a bit longer, thus use the maximum possible length.
     buf = alloc((int)MAXPATHL);
     if (buf == NULL)
 	return 0;
@@ -10196,7 +10108,6 @@ dos_expandpath(
 	else if (path_end >= path + wildoff
 			 && vim_strchr((char_u *)"*?[~", *path_end) != NULL)
 	    e = p;
-# ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    len = (*mb_ptr2len)(path_end);
@@ -10205,7 +10116,6 @@ dos_expandpath(
 	    path_end += len;
 	}
 	else
-# endif
 	    *p++ = *path_end++;
     }
     e = p;
@@ -10266,7 +10176,6 @@ dos_expandpath(
 
     /* Scan all files in the directory with "dir/ *.*" */
     STRCPY(s, "*.*");
-# ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	/* The active codepage differs from 'encoding'.  Attempt using the
@@ -10283,17 +10192,14 @@ dos_expandpath(
     }
 
     if (wn == NULL)
-# endif
 	hFind = FindFirstFile((LPCSTR)buf, &fb);
     ok = (hFind != INVALID_HANDLE_VALUE);
 
     while (ok)
     {
-# ifdef FEAT_MBYTE
 	if (wn != NULL)
 	    p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
 	else
-# endif
 	    p = (char_u *)fb.cFileName;
 	/* Ignore entries starting with a dot, unless when asked for.  Accept
 	 * all entries found with "matchname". */
@@ -10338,14 +10244,12 @@ dos_expandpath(
 	    }
 	}
 
-# ifdef FEAT_MBYTE
 	if (wn != NULL)
 	{
 	    vim_free(p);
 	    ok = FindNextFileW(hFind, &wfb);
 	}
 	else
-# endif
 	    ok = FindNextFile(hFind, &fb);
 
 	/* If no more matches and no match was used, try expanding the name
@@ -10354,7 +10258,6 @@ dos_expandpath(
 	{
 	    STRCPY(s, matchname);
 	    FindClose(hFind);
-# ifdef FEAT_MBYTE
 	    if (wn != NULL)
 	    {
 		vim_free(wn);
@@ -10363,7 +10266,6 @@ dos_expandpath(
 		    hFind = FindFirstFileW(wn, &wfb);
 	    }
 	    if (wn == NULL)
-# endif
 		hFind = FindFirstFile((LPCSTR)buf, &fb);
 	    ok = (hFind != INVALID_HANDLE_VALUE);
 	    VIM_CLEAR(matchname);
@@ -10371,9 +10273,7 @@ dos_expandpath(
     }
 
     FindClose(hFind);
-# ifdef FEAT_MBYTE
     vim_free(wn);
-# endif
     vim_free(buf);
     vim_regfree(regmatch.regprog);
     vim_free(matchname);
@@ -10477,7 +10377,6 @@ unix_expandpath(
 			     || (!p_fic && (flags & EW_ICASE)
 					     && isalpha(PTR2CHAR(path_end)))))
 	    e = p;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    len = (*mb_ptr2len)(path_end);
@@ -10486,7 +10385,6 @@ unix_expandpath(
 	    path_end += len;
 	}
 	else
-#endif
 	    *p++ = *path_end++;
     }
     e = p;

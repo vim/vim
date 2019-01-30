@@ -338,7 +338,9 @@ mch_chdir(char *path)
 }
 
 /* Why is NeXT excluded here (and not in os_unixx.h)? */
-#if defined(ECHOE) && defined(ICANON) && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) && !defined(__NeXT__)
+#if defined(ECHOE) && defined(ICANON) \
+    && (defined(HAVE_TERMIO_H) || defined(HAVE_TERMIOS_H)) \
+    && !defined(__NeXT__)
 # define NEW_TTY_SYSTEM
 #endif
 
@@ -351,6 +353,21 @@ mch_write(char_u *s, int len)
     vim_ignored = (int)write(1, (char *)s, len);
     if (p_wd)		/* Unix is too fast, slow down a bit more */
 	RealWaitForChar(read_cmd_fd, p_wd, NULL, NULL);
+}
+
+/*
+ * Function passed to inchar_loop() to handle window resizing.
+ * If "check_only" is TRUE: Return whether there was a resize.
+ * If "check_only" is FALSE: Deal with the window resized.
+ */
+    static int
+resize_func(int check_only)
+{
+    if (check_only)
+	return do_resize;
+    while (do_resize)
+	handle_resize();
+    return FALSE;
 }
 
 /*
@@ -368,138 +385,8 @@ mch_inchar(
     long	wtime,	    /* don't use "time", MIPS cannot handle it */
     int		tb_change_cnt)
 {
-    int		len;
-    int		interrupted = FALSE;
-    int		did_start_blocking = FALSE;
-    long	wait_time;
-    long	elapsed_time = 0;
-#ifdef ELAPSED_FUNC
-    ELAPSED_TYPE start_tv;
-
-    ELAPSED_INIT(start_tv);
-#endif
-
-    /* repeat until we got a character or waited long enough */
-    for (;;)
-    {
-	/* Check if window changed size while we were busy, perhaps the ":set
-	 * columns=99" command was used. */
-	while (do_resize)
-	    handle_resize();
-
-#ifdef MESSAGE_QUEUE
-	// Only process messages when waiting.
-	if (wtime != 0)
-	{
-	    parse_queued_messages();
-	    // If input was put directly in typeahead buffer bail out here.
-	    if (typebuf_changed(tb_change_cnt))
-		return 0;
-	}
-#endif
-	if (wtime < 0 && did_start_blocking)
-	    /* blocking and already waited for p_ut */
-	    wait_time = -1;
-	else
-	{
-	    if (wtime >= 0)
-		wait_time = wtime;
-	    else
-		/* going to block after p_ut */
-		wait_time = p_ut;
-#ifdef ELAPSED_FUNC
-	    elapsed_time = ELAPSED_FUNC(start_tv);
-#endif
-	    wait_time -= elapsed_time;
-	    if (wait_time < 0)
-	    {
-		if (wtime >= 0)
-		    /* no character available within "wtime" */
-		    return 0;
-
-		else
-		{
-		    /* no character available within 'updatetime' */
-		    did_start_blocking = TRUE;
-		    if (trigger_cursorhold() && maxlen >= 3
-					    && !typebuf_changed(tb_change_cnt))
-		    {
-			buf[0] = K_SPECIAL;
-			buf[1] = KS_EXTRA;
-			buf[2] = (int)KE_CURSORHOLD;
-			return 3;
-		    }
-		    /*
-		     * If there is no character available within 'updatetime'
-		     * seconds flush all the swap files to disk.
-		     * Also done when interrupted by SIGWINCH.
-		     */
-		    before_blocking();
-		    continue;
-		}
-	    }
-	}
-
-#ifdef FEAT_JOB_CHANNEL
-	/* Checking if a job ended requires polling.  Do this every 100 msec. */
-	if (has_pending_job() && (wait_time < 0 || wait_time > 100L))
-	    wait_time = 100L;
-	/* If there is readahead then parse_queued_messages() timed out and we
-	 * should call it again soon. */
-	if ((wait_time < 0 || wait_time > 100L) && channel_any_readahead())
-	    wait_time = 10L;
-#endif
-#ifdef FEAT_BEVAL_GUI
-	if (p_beval && wait_time > 100L)
-	    /* The 'balloonexpr' may indirectly invoke a callback while waiting
-	     * for a character, need to check often. */
-	    wait_time = 100L;
-#endif
-
-	/*
-	 * We want to be interrupted by the winch signal
-	 * or by an event on the monitored file descriptors.
-	 */
-	if (WaitForChar(wait_time, &interrupted, FALSE))
-	{
-	    /* If input was put directly in typeahead buffer bail out here. */
-	    if (typebuf_changed(tb_change_cnt))
-		return 0;
-
-	    /*
-	     * For some terminals we only get one character at a time.
-	     * We want the get all available characters, so we could keep on
-	     * trying until none is available
-	     * For some other terminals this is quite slow, that's why we don't
-	     * do it.
-	     */
-	    len = read_from_input_buf(buf, (long)maxlen);
-	    if (len > 0)
-		return len;
-	    continue;
-	}
-
-	/* no character available */
-#if !(defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H))
-	/* estimate the elapsed time */
-	elapsed_time += wait_time;
-#endif
-
-	if (do_resize	    /* interrupted by SIGWINCH signal */
-#ifdef FEAT_CLIENTSERVER
-		|| server_waiting()
-#endif
-#ifdef MESSAGE_QUEUE
-		|| interrupted
-#endif
-		|| wait_time > 0
-		|| (wtime < 0 && !did_start_blocking))
-	    continue;
-
-	/* no character available or interrupted */
-	break;
-    }
-    return 0;
+    return inchar_loop(buf, maxlen, wtime, tb_change_cnt,
+		       WaitForChar, resize_func);
 }
 
     static void
@@ -980,7 +867,12 @@ sig_alarm SIGDEFARG(sigarg)
 }
 #endif
 
-#if defined(HAVE_SETJMP_H) || defined(PROTO)
+#if (defined(HAVE_SETJMP_H) \
+	&& ((defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) \
+	    || defined(FEAT_LIBCALL))) \
+    || defined(PROTO)
+# define USING_SETJMP 1
+
 // argument to SETJMP()
 static JMP_BUF lc_jump_env;
 
@@ -1016,22 +908,22 @@ static volatile sig_atomic_t lc_active INIT(= FALSE);
  * Returns OK for normal return, FAIL when the protected code caused a
  * problem and LONGJMP() was used.
  */
-    void
+    static void
 mch_startjmp(void)
 {
-#ifdef SIGHASARG
+# ifdef SIGHASARG
     lc_signal = 0;
-#endif
+# endif
     lc_active = TRUE;
 }
 
-    void
+    static void
 mch_endjmp(void)
 {
     lc_active = FALSE;
 }
 
-    void
+    static void
 mch_didjmp(void)
 {
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
@@ -1059,7 +951,7 @@ deathtrap SIGDEFARG(sigarg)
     int		i;
 #endif
 
-#if defined(HAVE_SETJMP_H)
+#if defined(USING_SETJMP)
     /*
      * Catch a crash in protected code.
      * Restores the environment saved in lc_jump_env, which looks like
@@ -1704,7 +1596,7 @@ x_connect_to_server(void)
 }
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-# if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 /*
  * An X IO Error handler, used to catch error while opening the display.
  */
@@ -1790,7 +1682,7 @@ test_x11_window(Display *dpy)
     (void)XSetErrorHandler(old_handler);
 
     if (p_verbose > 0 && got_x_error)
-	verb_msg((char_u *)_("Testing the X display failed"));
+	verb_msg(_("Testing the X display failed"));
 
     return (got_x_error ? FAIL : OK);
 }
@@ -1907,11 +1799,11 @@ get_x11_windis(void)
 #ifdef SET_SIG_ALARM
 	RETSIGTYPE (*sig_save)();
 #endif
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-	struct timeval  start_tv;
+#ifdef ELAPSED_FUNC
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
-	    gettimeofday(&start_tv, NULL);
+	    ELAPSED_INIT(start_tv);
 #endif
 
 #ifdef SET_SIG_ALARM
@@ -1930,7 +1822,7 @@ get_x11_windis(void)
 	alarm(0);
 	signal(SIGALRM, (RETSIGTYPE (*)())sig_save);
 	if (p_verbose > 0 && sig_alarm_called)
-	    verb_msg((char_u *)_("Opening the X display timed out"));
+	    verb_msg(_("Opening the X display timed out"));
 #endif
 	if (x11_display != NULL)
 	{
@@ -2049,19 +1941,12 @@ get_x11_thing(
 	    retval = TRUE;
 	    if (!test_only)
 	    {
-#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
-		if (text_prop.encoding == XA_STRING
-# ifdef FEAT_MBYTE
-			&& !has_mbyte
-# endif
-			)
+		if (text_prop.encoding == XA_STRING && !has_mbyte)
 		{
-#endif
 		    if (get_title)
 			oldtitle = vim_strsave((char_u *)text_prop.value);
 		    else
 			oldicon = vim_strsave((char_u *)text_prop.value);
-#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
 		}
 		else
 		{
@@ -2088,7 +1973,6 @@ get_x11_thing(
 			    oldicon = vim_strsave((char_u *)text_prop.value);
 		    }
 		}
-#endif
 	    }
 	    XFree((void *)text_prop.value);
 	}
@@ -2096,11 +1980,11 @@ get_x11_thing(
     return retval;
 }
 
-/* Xutf8 functions are not avaialble on older systems. Note that on some
+/* Xutf8 functions are not available on older systems. Note that on some
  * systems X_HAVE_UTF8_STRING may be defined in a header file but
  * Xutf8SetWMProperties() is not in the X11 library.  Configure checks for
  * that and defines HAVE_XUTF8SETWMPROPERTIES. */
-#if defined(X_HAVE_UTF8_STRING) && defined(FEAT_MBYTE)
+#if defined(X_HAVE_UTF8_STRING)
 # if X_HAVE_UTF8_STRING && HAVE_XUTF8SETWMPROPERTIES
 #  define USE_UTF8_STRING
 # endif
@@ -2660,7 +2544,7 @@ mch_FullName(
 		if (p_verbose >= 5)
 		{
 		    verbose_enter();
-		    MSG("fchdir() to previous dir");
+		    msg("fchdir() to previous dir");
 		    verbose_leave();
 		}
 		l = fchdir(fd);
@@ -2869,14 +2753,14 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 	    if (errno == EOPNOTSUPP)
 		return;
 
-	    MSG_PUTS(_("\nCould not get security context for "));
+	    msg_puts(_("\nCould not get security context for "));
 	    msg_outtrans(from_file);
 	    msg_putchar('\n');
 	    return;
 	}
 	if (getfilecon((char *)to_file, &to_context) < 0)
 	{
-	    MSG_PUTS(_("\nCould not get security context for "));
+	    msg_puts(_("\nCould not get security context for "));
 	    msg_outtrans(to_file);
 	    msg_putchar('\n');
 	    freecon (from_context);
@@ -2886,7 +2770,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 	{
 	    if (setfilecon((char *)to_file, from_context) < 0)
 	    {
-		MSG_PUTS(_("\nCould not set security context for "));
+		msg_puts(_("\nCould not set security context for "));
 		msg_outtrans(to_file);
 		msg_putchar('\n');
 	    }
@@ -2949,7 +2833,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 		case ENOTSUP:
 		    /* extended attributes aren't supported or enabled */
 		    /* should a message be echoed? not sure... */
-		    return; /* leave because it isn't usefull to continue */
+		    return; /* leave because it isn't useful to continue */
 
 		case ERANGE:
 		default:
@@ -2957,7 +2841,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 		     vim_snprintf((char *)IObuff, IOSIZE,
 			    _("Could not get security context %s for %s. Removing it!"),
 			    name, from_file);
-		    msg_puts(IObuff);
+		    msg_puts((char *)IObuff);
 		    msg_putchar('\n');
 		    /* FALLTHROUGH to remove the attribute */
 
@@ -3451,6 +3335,58 @@ may_core_dump(void)
 
 #ifndef VMS
 
+/*
+ * Get the file descriptor to use for tty operations.
+ */
+    static int
+get_tty_fd(int fd)
+{
+    int		tty_fd = fd;
+
+#if defined(HAVE_SVR4_PTYS) && defined(SUN_SYSTEM)
+    // On SunOS: Get the terminal parameters from "fd", or the slave device of
+    // "fd" when it is a master device.
+    if (mch_isatty(fd) > 1)
+    {
+	char *name;
+
+	name = ptsname(fd);
+	if (name == NULL)
+	    return -1;
+
+	tty_fd = open(name, O_RDONLY | O_NOCTTY | O_EXTRA, 0);
+	if (tty_fd < 0)
+	    return -1;
+    }
+#endif
+    return tty_fd;
+}
+
+    static int
+mch_tcgetattr(int fd, void *term)
+{
+    int		tty_fd;
+    int		retval = -1;
+
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
+    {
+#ifdef NEW_TTY_SYSTEM
+# ifdef HAVE_TERMIOS_H
+	retval = tcgetattr(tty_fd, (struct termios *)term);
+# else
+	retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+# endif
+#else
+	// for "old" tty systems
+	retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
+#endif
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
+    return retval;
+}
+
     void
 mch_settmode(int tmode)
 {
@@ -3468,11 +3404,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-# if defined(HAVE_TERMIOS_H)
-	tcgetattr(read_cmd_fd, &told);
-# else
-	ioctl(read_cmd_fd, TCGETA, &told);
-# endif
+	mch_tcgetattr(read_cmd_fd, &told);
     }
 
     tnew = told;
@@ -3530,7 +3462,7 @@ mch_settmode(int tmode)
     if (first)
     {
 	first = FALSE;
-	ioctl(read_cmd_fd, TIOCGETP, &ttybold);
+	mch_tcgetattr(read_cmd_fd, &ttybold);
     }
 
     ttybnew = ttybold;
@@ -3590,13 +3522,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     struct termio keys;
 # endif
 
-    if (
-# if defined(HAVE_TERMIOS_H)
-	    tcgetattr(fd, &keys) != -1
-# else
-	    ioctl(fd, TCGETA, &keys) != -1
-# endif
-       )
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.c_cc[VERASE];
 	info->interrupt = keys.c_cc[VINTR];
@@ -3614,7 +3540,7 @@ get_tty_info(int fd, ttyinfo_T *info)
     /* for "old" tty systems */
     struct sgttyb keys;
 
-    if (ioctl(fd, TIOCGETP, &keys) != -1)
+    if (mch_tcgetattr(fd, &keys) != -1)
     {
 	info->backspace = keys.sg_erase;
 	info->interrupt = keys.sg_kill;
@@ -4073,34 +3999,35 @@ mch_get_shellsize(void)
     int
 mch_report_winsize(int fd, int rows, int cols)
 {
-# ifdef TIOCSWINSZ
-    struct winsize	ws;
+    int		tty_fd;
+    int		retval = -1;
 
-    ws.ws_col = cols;
-    ws.ws_row = rows;
-    ws.ws_xpixel = cols * 5;
-    ws.ws_ypixel = rows * 10;
-    if (ioctl(fd, TIOCSWINSZ, &ws) == 0)
+    tty_fd = get_tty_fd(fd);
+    if (tty_fd >= 0)
     {
-	ch_log(NULL, "ioctl(TIOCSWINSZ) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSWINSZ) failed");
-# else
-#  ifdef TIOCSSIZE
-    struct ttysize	ts;
+# if defined(TIOCSWINSZ)
+	struct winsize ws;
 
-    ts.ts_cols = cols;
-    ts.ts_lines = rows;
-    if (ioctl(fd, TIOCSSIZE, &ws) == 0)
-    {
-	ch_log(NULL, "ioctl(TIOCSSIZE) success");
-	return OK;
-    }
-    ch_log(NULL, "ioctl(TIOCSSIZE) failed");
-#  endif
+	ws.ws_col = cols;
+	ws.ws_row = rows;
+	ws.ws_xpixel = cols * 5;
+	ws.ws_ypixel = rows * 10;
+	retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
+	ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
+					  retval == 0 ? "success" : "failed");
+# elif defined(TIOCSSIZE)
+	struct ttysize ts;
+
+	ts.ts_cols = cols;
+	ts.ts_lines = rows;
+	retval = ioctl(tty_fd, TIOCSSIZE, &ts);
+	ch_log(NULL, "ioctl(TIOCSSIZE) %s",
+					  retval == 0 ? "success" : "failed");
 # endif
-    return FAIL;
+	if (tty_fd != fd)
+	    close(tty_fd);
+    }
+    return retval == 0 ? OK : FAIL;
 }
 #endif
 
@@ -4276,7 +4203,7 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
 {
     char	*tty_name;
 
-    *pty_master_fd = OpenPTY(&tty_name);	    /* open pty */
+    *pty_master_fd = mch_openpty(&tty_name);	    // open pty
     if (*pty_master_fd >= 0)
     {
 	/* Leaving out O_NOCTTY may lead to waitpid() always returning
@@ -4505,10 +4432,10 @@ mch_call_shell_system(
     if (emsg_silent)
 	;
     else if (x == 127)
-	MSG_PUTS(_("\nCannot execute shell sh\n"));
+	msg_puts(_("\nCannot execute shell sh\n"));
     else if (x && !(options & SHELL_SILENT))
     {
-	MSG_PUTS(_("\nshell returned "));
+	msg_puts(_("\nshell returned "));
 	msg_outnum((long)x);
 	msg_putchar('\n');
     }
@@ -4605,7 +4532,7 @@ mch_call_shell_fork(
 	    }
 	    if (pipe_error)
 	    {
-		MSG_PUTS(_("\nCannot create pipes\n"));
+		msg_puts(_("\nCannot create pipes\n"));
 		out_flush();
 	    }
 	}
@@ -4625,7 +4552,7 @@ mch_call_shell_fork(
 	{
 	    UNBLOCK_SIGNALS(&curset);
 
-	    MSG_PUTS(_("\nCannot fork\n"));
+	    msg_puts(_("\nCannot fork\n"));
 	    if ((options & (SHELL_READ|SHELL_WRITE))
 # ifdef FEAT_GUI
 		|| (gui.in_use && show_shell_mess)
@@ -4724,7 +4651,7 @@ mch_call_shell_fork(
 		{
 		    /* push stream discipline modules */
 		    if (options & SHELL_COOKED)
-			SetupSlavePTY(pty_slave_fd);
+			setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 		    /* Try to become controlling tty (probably doesn't work,
 		     * unless run by root) */
@@ -4818,9 +4745,7 @@ mch_call_shell_fork(
 	    {
 # define BUFLEN 100		/* length for buffer, pseudo tty limit is 128 */
 		char_u	    buffer[BUFLEN + 1];
-# ifdef FEAT_MBYTE
 		int	    buffer_off = 0;	/* valid bytes in buffer[] */
-# endif
 		char_u	    ta_buf[BUFLEN + 1];	/* TypeAHead */
 		int	    ta_len = 0;		/* valid bytes in ta_buf[] */
 		int	    len;
@@ -4831,8 +4756,8 @@ mch_call_shell_fork(
 		int	    fromshell_fd;
 		garray_T    ga;
 		int	    noread_cnt;
-# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-		struct timeval  start_tv;
+# ifdef ELAPSED_FUNC
+		elapsed_T   start_tv;
 # endif
 
 # ifdef FEAT_GUI
@@ -4877,7 +4802,7 @@ mch_call_shell_fork(
 		     * external program. */
 		    if ((wpid = fork()) == -1)
 		    {
-			MSG_PUTS(_("\nCannot fork\n"));
+			msg_puts(_("\nCannot fork\n"));
 		    }
 		    else if (wpid == 0) /* child */
 		    {
@@ -5026,11 +4951,9 @@ mch_call_shell_fork(
 			    }
 			    else if (ta_buf[i] == '\r')
 				ta_buf[i] = '\n';
-# ifdef FEAT_MBYTE
 			    if (has_mbyte)
 				i += (*mb_ptr2len_len)(ta_buf + i,
 							ta_len + len - i) - 1;
-# endif
 			}
 
 			/*
@@ -5043,7 +4966,6 @@ mch_call_shell_fork(
 			    {
 				if (ta_buf[i] == '\n' || ta_buf[i] == '\b')
 				    msg_putchar(ta_buf[i]);
-# ifdef FEAT_MBYTE
 				else if (has_mbyte)
 				{
 				    int l = (*mb_ptr2len)(ta_buf + i);
@@ -5051,7 +4973,6 @@ mch_call_shell_fork(
 				    msg_outtrans_len(ta_buf + i, l);
 				    i += l - 1;
 				}
-# endif
 				else
 				    msg_outtrans_len(ta_buf + i, 1);
 			    }
@@ -5109,11 +5030,7 @@ mch_call_shell_fork(
 		    while (RealWaitForChar(fromshell_fd, 10L, NULL, NULL))
 		    {
 			len = read_eintr(fromshell_fd, buffer
-# ifdef FEAT_MBYTE
 				+ buffer_off, (size_t)(BUFLEN - buffer_off)
-# else
-				, (size_t)BUFLEN
-# endif
 				);
 			if (len <= 0)		    /* end of file or error */
 			    goto finished;
@@ -5133,7 +5050,6 @@ mch_call_shell_fork(
 				    ga_append(&ga, buffer[i]);
 			    }
 			}
-# ifdef FEAT_MBYTE
 			else if (has_mbyte)
 			{
 			    int		l;
@@ -5166,7 +5082,7 @@ mch_call_shell_fork(
 			    }
 			    c = *p;
 			    *p = NUL;
-			    msg_puts(buffer);
+			    msg_puts((char *)buffer);
 			    if (p < buffer + len)
 			    {
 				*p = c;
@@ -5176,11 +5092,10 @@ mch_call_shell_fork(
 			    }
 			    buffer_off = 0;
 			}
-# endif /* FEAT_MBYTE */
 			else
 			{
 			    buffer[len] = NUL;
-			    msg_puts(buffer);
+			    msg_puts((char *)buffer);
 			}
 
 			windgoto(msg_row, msg_col);
@@ -5360,20 +5275,20 @@ finished:
 		{
 		    if (retval == EXEC_FAILED)
 		    {
-			MSG_PUTS(_("\nCannot execute shell "));
+			msg_puts(_("\nCannot execute shell "));
 			msg_outtrans(p_sh);
 			msg_putchar('\n');
 		    }
 		    else if (!(options & SHELL_SILENT))
 		    {
-			MSG_PUTS(_("\nshell returned "));
+			msg_puts(_("\nshell returned "));
 			msg_outnum((long)retval);
 			msg_putchar('\n');
 		    }
 		}
 	    }
 	    else
-		MSG_PUTS(_("\nCommand terminated\n"));
+		msg_puts(_("\nCommand terminated\n"));
 	}
     }
 
@@ -5594,7 +5509,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	if (pty_slave_fd >= 0)
 	{
 	    /* push stream discipline modules */
-	    SetupSlavePTY(pty_slave_fd);
+	    setup_slavepty(pty_slave_fd);
 #  ifdef TIOCSCTTY
 	    /* Try to become controlling tty (probably doesn't work,
 	     * unless run by root) */
@@ -6073,8 +5988,8 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # ifdef ELAPSED_FUNC
     /* Remember at what time we started, so that we know how much longer we
      * should wait after being interrupted. */
-    long	    start_msec = msec;
-    ELAPSED_TYPE  start_tv;
+    long	start_msec = msec;
+    elapsed_T	start_tv;
 
     if (msec > 0)
 	ELAPSED_INIT(start_tv);
@@ -6196,7 +6111,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	    else if (fds[xsmp_idx].revents & POLLHUP)
 	    {
 		if (p_verbose > 0)
-		    verb_msg((char_u *)_("XSMP lost ICE connection"));
+		    verb_msg(_("XSMP lost ICE connection"));
 		xsmp_close();
 	    }
 	    if (--ret == 0)
@@ -6354,7 +6269,7 @@ select_eintr:
 	    if (FD_ISSET(xsmp_icefd, &efds))
 	    {
 		if (p_verbose > 0)
-		    verb_msg((char_u *)_("XSMP lost ICE connection"));
+		    verb_msg(_("XSMP lost ICE connection"));
 		xsmp_close();
 		if (--ret == 0)
 		    finished = FALSE;   /* keep going if event was only one */
@@ -6714,7 +6629,7 @@ mch_expand_wildcards(
 	    if (!(flags & EW_SILENT))
 #endif
 	    {
-		MSG(_(e_wildexpand));
+		msg(_(e_wildexpand));
 		msg_start();		/* don't overwrite this message */
 	    }
 	}
@@ -6734,7 +6649,7 @@ mch_expand_wildcards(
 	/* Something went wrong, perhaps a file name with a special char. */
 	if (!(flags & EW_SILENT))
 	{
-	    MSG(_(e_wildexpand));
+	    msg(_(e_wildexpand));
 	    msg_start();		/* don't overwrite this message */
 	}
 	vim_free(tempname);
@@ -7356,7 +7271,7 @@ mch_libcall(
     /* If the handle is valid, try to get the function address. */
     if (hinstLib != NULL)
     {
-# ifdef HAVE_SETJMP_H
+# ifdef USING_SETJMP
 	/*
 	 * Catch a crash when calling the library function.  For example when
 	 * using a number where a string pointer is expected.
@@ -7431,7 +7346,7 @@ mch_libcall(
 		*string_result = vim_strsave(retval_str);
 	}
 
-# ifdef HAVE_SETJMP_H
+# ifdef USING_SETJMP
 	mch_endjmp();
 #  ifdef SIGHASARG
 	if (lc_signal != 0)
@@ -7490,11 +7405,11 @@ setup_term_clip(void)
     if (app_context != NULL && xterm_Shell == (Widget)0)
     {
 	int (*oldhandler)();
-#if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	int (*oldIOhandler)();
-#endif
+# endif
 # ifdef ELAPSED_FUNC
-	ELAPSED_TYPE  start_tv;
+	elapsed_T start_tv;
 
 	if (p_verbose > 0)
 	    ELAPSED_INIT(start_tv);
@@ -7503,7 +7418,7 @@ setup_term_clip(void)
 	/* Ignore X errors while opening the display */
 	oldhandler = XSetErrorHandler(x_error_check);
 
-#if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	/* Ignore X IO errors while opening the display */
 	oldIOhandler = XSetIOErrorHandler(x_IOerror_check);
 	mch_startjmp();
@@ -7513,28 +7428,28 @@ setup_term_clip(void)
 	    xterm_dpy = NULL;
 	}
 	else
-#endif
+# endif
 	{
 	    xterm_dpy = XtOpenDisplay(app_context, xterm_display,
 		    "vim_xterm", "Vim_xterm", NULL, 0, &z, &strp);
 	    if (xterm_dpy != NULL)
 		xterm_dpy_retry_count = 0;
-#if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	    mch_endjmp();
-#endif
+# endif
 	}
 
-#if defined(HAVE_SETJMP_H)
+# if defined(USING_SETJMP)
 	/* Now handle X IO errors normally. */
 	(void)XSetIOErrorHandler(oldIOhandler);
-#endif
+# endif
 	/* Now handle X errors normally. */
 	(void)XSetErrorHandler(oldhandler);
 
 	if (xterm_dpy == NULL)
 	{
 	    if (p_verbose > 0)
-		verb_msg((char_u *)_("Opening the X display failed"));
+		verb_msg(_("Opening the X display failed"));
 	    return;
 	}
 
@@ -7872,7 +7787,7 @@ xsmp_handle_save_yourself(
     ml_sync_all(FALSE, FALSE);	/* preserve all swap files */
 
     if (p_verbose > 0)
-	verb_msg((char_u *)_("XSMP handling save-yourself request"));
+	verb_msg(_("XSMP handling save-yourself request"));
 
 # if defined(FEAT_GUI) && defined(USE_XSMP_INTERACT)
     /* Now see if we can ask about unsaved files */
@@ -7961,7 +7876,7 @@ xsmp_handle_requests(void)
     {
 	/* Lost ICE */
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("XSMP lost ICE connection"));
+	    verb_msg(_("XSMP lost ICE connection"));
 	xsmp_close();
 	return FAIL;
     }
@@ -7984,7 +7899,7 @@ xsmp_init(void)
 #endif
 
     if (p_verbose > 0)
-	verb_msg((char_u *)_("XSMP opening connection"));
+	verb_msg(_("XSMP opening connection"));
 
     xsmp.save_yourself = xsmp.shutdown = False;
 
@@ -8003,7 +7918,7 @@ xsmp_init(void)
     if (IceAddConnectionWatch(xsmp_ice_connection, &dummy) == 0)
     {
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("XSMP ICE connection watch failed"));
+	    verb_msg(_("XSMP ICE connection watch failed"));
 	return;
     }
 
@@ -8028,7 +7943,7 @@ xsmp_init(void)
 	{
 	    vim_snprintf(errorreport, sizeof(errorreport),
 			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
-	    verb_msg((char_u *)errorreport);
+	    verb_msg(errorreport);
 	}
 	return;
     }

@@ -211,6 +211,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 LINK32_OBJS= \
 	$(EXTRAS) \
 	"$(INTDIR)/arabic.obj" \
+	"$(INTDIR)/autocmd.obj" \
 	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
@@ -339,6 +340,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 # Begin Source File
 
 SOURCE=.\arabic.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\autocmd.c
 # End Source File
 # Begin Source File
 

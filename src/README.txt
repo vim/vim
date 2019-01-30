@@ -17,6 +17,7 @@ use the CTRL-] command.  Use CTRL-T or CTRL-O to jump back.
 To jump to a file, move the cursor on its name and use the "gf" command.
 
 Most code can be found in a file with an obvious name (incomplete list):
+	autocmd.c	autocommands
 	buffer.c	manipulating buffers (loaded files)
 	diff.c		diff mode (vimdiff)
 	eval.c		expression evaluation

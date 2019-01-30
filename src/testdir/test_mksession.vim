@@ -3,7 +3,7 @@
 set encoding=latin1
 scriptencoding latin1
 
-if !has('multi_byte') || !has('mksession')
+if !has('mksession')
   finish
 endif
 
@@ -126,6 +126,33 @@ func Test_mksession_large_winheight()
   call delete('Xtest_mks_winheight.out')
 endfunc
 
+func Test_mksession_rtp()
+  if has('win32')
+    " TODO: fix problem with backslashes
+    return
+  endif
+  new
+  let _rtp=&rtp
+  " Make a real long (invalid) runtimepath value,
+  " that should exceed PATH_MAX (hopefully)
+  let newrtp=&rtp.',~'.repeat('/foobar', 1000)
+  let newrtp.=",".expand("$HOME")."/.vim"
+  let &rtp=newrtp
+
+  " determine expected value
+  let expected=split(&rtp, ',')
+  let expected = map(expected, '"set runtimepath+=".v:val')
+  let expected = ['set runtimepath='] + expected
+  let expected = map(expected, {v,w -> substitute(w, $HOME, "~", "g")})
+
+  mksession! Xtest_mks.out
+  let &rtp=_rtp
+  let li = filter(readfile('Xtest_mks.out'), 'v:val =~# "runtimepath"')
+  call assert_equal(expected, li)
+
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mksession_arglist()
   argdel *
   next file1 file2 file3 file4
@@ -196,6 +223,29 @@ func Test_mksession_blank_tabs()
   call assert_equal(4, tabpagenr('$'), 'session restore should restore number of tabs')
   call assert_equal(3, tabpagenr(), 'session restore should restore the active tab')
   call delete('Xtest_mks.out')
+endfunc
+
+func Test_mksession_buffer_count()
+  set hidden
+
+  " Edit exactly three files in the current session.
+  %bwipe!
+  e Xfoo | tabe Xbar | tabe Xbaz
+  tabdo write
+  mksession! Xtest_mks.out
+
+  " Verify that loading the session does not create additional buffers.
+  %bwipe!
+  source Xtest_mks.out
+  call assert_equal(3, len(getbufinfo()))
+
+  " Clean up.
+  call delete('Xfoo')
+  call delete('Xbar')
+  call delete('Xbaz')
+  call delete('Xtest_mks.out')
+  %bwipe!
+  set hidden&
 endfunc
 
 if has('extra_search')
@@ -414,5 +464,35 @@ func Test_mkview_no_file_name()
   call delete('Xview')
   %bwipe
 endfunc
+
+" A clean session (one empty buffer, one window, and one tab) should not
+" set any error messages when sourced because no commands should fail.
+func Test_mksession_no_errmsg()
+  let v:errmsg = ''
+  %bwipe!
+  mksession! Xtest_mks.out
+  source Xtest_mks.out
+  call assert_equal('', v:errmsg)
+  call delete('Xtest_mks.out')
+endfunc
+
+func Test_mksession_quote_in_filename()
+  if !has('unix')
+    " only Unix can handle this weird filename
+    return
+  endif
+  let v:errmsg = ''
+  %bwipe!
+  split another
+  split x'y\"z
+  mksession! Xtest_mks_quoted.out
+  %bwipe!
+  source Xtest_mks_quoted.out
+  call assert_true(bufexists("x'y\"z"))
+
+  %bwipe!
+  call delete('Xtest_mks_quoted.out')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

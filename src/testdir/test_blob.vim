@@ -20,13 +20,19 @@ func Test_blob_create()
 
   call assert_equal(0xDE, get(b, 0))
   call assert_equal(0xEF, get(b, 3))
-  call assert_fails('let x = get(b, 4)')
 
   call assert_fails('let b = 0z1', 'E973:')
   call assert_fails('let b = 0z1x', 'E973:')
   call assert_fails('let b = 0z12345', 'E973:')
 
   call assert_equal(0z, test_null_blob())
+
+  let b = 0z001122.33445566.778899.aabbcc.dd
+  call assert_equal(0z00112233445566778899aabbccdd, b)
+  call assert_fails('let b = 0z1.1')
+  call assert_fails('let b = 0z.')
+  call assert_fails('let b = 0z001122.')
+  call assert_fails('call get("", 1)', 'E896:')
 endfunc
 
 " assignment to a blob
@@ -79,11 +85,33 @@ func Test_blob_get_range()
   call assert_equal(0z, b[5:6])
 endfunc
 
+func Test_blob_get()
+  let b = 0z0011223344
+  call assert_equal(0x00, get(b, 0))
+  call assert_equal(0x22, get(b, 2, 999))
+  call assert_equal(0x44, get(b, 4))
+  call assert_equal(0x44, get(b, -1))
+  call assert_equal(-1, get(b, 5))
+  call assert_equal(999, get(b, 5, 999))
+  call assert_equal(-1, get(b, -8))
+  call assert_equal(999, get(b, -8, 999))
+
+  call assert_equal(0x00, b[0])
+  call assert_equal(0x22, b[2])
+  call assert_equal(0x44, b[4])
+  call assert_equal(0x44, b[-1])
+  call assert_fails('echo b[5]', 'E979:')
+  call assert_fails('echo b[-8]', 'E979:')
+endfunc
+
 func Test_blob_to_string()
-  let b = 0zDEADBEEF
-  call assert_equal('[0xDE,0xAD,0xBE,0xEF]', string(b))
+  let b = 0z00112233445566778899aabbccdd
+  call assert_equal('0z00112233.44556677.8899AABB.CCDD', string(b))
+  call assert_equal(b, eval(string(b)))
+  call remove(b, 4, -1)
+  call assert_equal('0z00112233', string(b))
   call remove(b, 0, 3)
-  call assert_equal('[]', string(b))
+  call assert_equal('0z', string(b))
 endfunc
 
 func Test_blob_compare()
@@ -101,7 +129,14 @@ func Test_blob_compare()
 
   call assert_false(b1 is b2)
   let b2 = b1
+  call assert_true(b1 == b2)
   call assert_true(b1 is b2)
+  let b2 = copy(b1)
+  call assert_true(b1 == b2)
+  call assert_false(b1 is b2)
+  let b2 = b1[:]
+  call assert_true(b1 == b2)
+  call assert_false(b1 is b2)
 
   call assert_fails('let x = b1 > b2')
   call assert_fails('let x = b1 < b2')
@@ -126,6 +161,7 @@ func Test_blob_for_loop()
     call assert_equal(i, byte)
     let i += 1
   endfor
+    call assert_equal(4, i)
 
   let blob = 0z00
   call remove(blob, 0)
@@ -133,6 +169,19 @@ func Test_blob_for_loop()
   for byte in blob
     call assert_error('loop over empty blob')
   endfor
+
+  let blob = 0z0001020304
+  let i = 0
+  for byte in blob
+    call assert_equal(i, byte)
+    if i == 1
+      call remove(blob, 0)
+    elseif i == 3
+      call remove(blob, 3)
+    endif
+    let i += 1
+  endfor
+  call assert_equal(5, i)
 endfunc
 
 func Test_blob_concatenate()
@@ -155,6 +204,7 @@ func Test_blob_add()
   call assert_equal(0z00112233, b)
 
   call assert_fails('call add(b, [9])', 'E745:')
+  call assert_fails('call add("", 0x01)', 'E897:')
 endfunc
 
 func Test_blob_empty()
@@ -192,7 +242,7 @@ func Test_blob_func_remove()
   call assert_fails("call remove(b, 5)", 'E979:')
   call assert_fails("call remove(b, 1, 5)", 'E979:')
   call assert_fails("call remove(b, 3, 2)", 'E979:')
-  call assert_fails("call remove(1, 0)", 'E712:')
+  call assert_fails("call remove(1, 0)", 'E896:')
   call assert_fails("call remove(b, b)", 'E974:')
 endfunc
 
@@ -228,7 +278,7 @@ func Test_blob_index()
   call assert_equal(2, index(0z11111111, 0x11, -2))
   call assert_equal(3, index(0z11110111, 0x11, -2))
 
-  call assert_fails('call index("asdf", 0)', 'E714:')
+  call assert_fails('call index("asdf", 0)', 'E897:')
 endfunc
 
 func Test_blob_insert()

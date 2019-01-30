@@ -48,11 +48,7 @@
 
 /* Vim's Scrap flavor. */
 #define VIMSCRAPFLAVOR 'VIM!'
-#ifdef FEAT_MBYTE
-# define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
-#else
-# define SCRAPTEXTFLAVOR kScrapFlavorTypeText
-#endif
+#define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
 
 static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 SInt32 gMacSystemVersion;
@@ -169,9 +165,7 @@ static struct
 # define USE_ATSUI_DRAWING
 int	    p_macatsui_last;
 ATSUStyle   gFontStyle;
-# ifdef FEAT_MBYTE
 ATSUStyle   gWideFontStyle;
-# endif
 Boolean	    gIsFontFallbackSet;
 UInt32      useAntialias_cached = 0x0;
 #endif
@@ -2035,15 +2029,11 @@ gui_mac_handle_window_activate(
 	switch (eventKind)
 	{
 	    case kEventWindowActivated:
-# if defined(FEAT_MBYTE)
 		im_on_window_switch(TRUE);
-# endif
 		return noErr;
 
 	    case kEventWindowDeactivated:
-# if defined(FEAT_MBYTE)
 		im_on_window_switch(FALSE);
-# endif
 		return noErr;
 	}
     }
@@ -2391,7 +2381,6 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    /* Convert characters when needed (e.g., from MacRoman to latin1).
 	     * This doesn't work for the NUL byte. */
 	    if (input_conv.vc_type != CONV_NONE && key_char > 0)
@@ -2421,7 +2410,6 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 		    string[len++] = key_char;
 	    }
 	    else
-#endif
 		string[len++] = key_char;
 	}
 
@@ -3195,12 +3183,6 @@ gui_mch_init(void)
     }
 #endif
 
-/*
-#ifdef FEAT_MBYTE
-    set_option_value((char_u *)"encoding", 0L, (char_u *)"utf-8", 0);
-#endif
-*/
-
 #ifdef FEAT_GUI_TABLINE
     /*
      * Create the tabline
@@ -3254,10 +3236,8 @@ gui_mac_dispose_atsui_style(void)
 {
     if (p_macatsui && gFontStyle)
 	ATSUDisposeStyle(gFontStyle);
-#ifdef FEAT_MBYTE
     if (p_macatsui && gWideFontStyle)
 	ATSUDisposeStyle(gWideFontStyle);
-#endif
 }
 #endif
 
@@ -3430,13 +3410,11 @@ gui_mac_create_atsui_style(void)
 	if (ATSUCreateStyle(&gFontStyle) != noErr)
 	    gFontStyle = NULL;
     }
-#ifdef FEAT_MBYTE
     if (p_macatsui && gWideFontStyle == NULL)
     {
 	if (ATSUCreateStyle(&gWideFontStyle) != noErr)
 	    gWideFontStyle = NULL;
     }
-#endif
 
     p_macatsui_last = p_macatsui;
 }
@@ -3622,7 +3600,6 @@ gui_mac_set_font_attributes(GuiFont font)
 	    gFontStyle = NULL;
 	}
 
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    /* FIXME: we should use a more mbyte sensitive way to support
@@ -3637,7 +3614,6 @@ gui_mac_set_font_attributes(GuiFont font)
 		gWideFontStyle = NULL;
 	    }
 	}
-#endif
     }
 }
 #endif
@@ -3811,7 +3787,6 @@ draw_undercurl(int flags, int row, int col, int cells)
     static void
 draw_string_QD(int row, int col, char_u *s, int len, int flags)
 {
-#ifdef FEAT_MBYTE
     char_u	*tofree = NULL;
 
     if (output_conv.vc_type != CONV_NONE)
@@ -3820,7 +3795,6 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	if (tofree != NULL)
 	    s = tofree;
     }
-#endif
 
     /*
      * On OS X, try using Quartz-style text antialiasing.
@@ -3849,7 +3823,6 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 
 	rc.left = FILL_X(col);
 	rc.top = FILL_Y(row);
-#ifdef FEAT_MBYTE
 	/* Multibyte computation taken from gui_w32.c */
 	if (has_mbyte)
 	{
@@ -3857,8 +3830,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
-#endif
-	rc.right = FILL_X(col + len) + (col + len == Columns);
+	    rc.right = FILL_X(col + len) + (col + len == Columns);
 	rc.bottom = FILL_Y(row + 1);
 	EraseRect(&rc);
     }
@@ -3918,9 +3890,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     if (flags & DRAW_UNDERC)
 	draw_undercurl(flags, row, col, len);
 
-#ifdef FEAT_MBYTE
     vim_free(tofree);
-#endif
 }
 
 #ifdef USE_ATSUI_DRAWING
@@ -4007,7 +3977,6 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	    useAntialias_cached = useAntialias;
 	}
 
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    int n, width_in_cell, last_width_in_cell;
@@ -4069,7 +4038,6 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	    ATSUDisposeTextLayout(textLayout);
 	}
 	else
-#endif
 	{
 	    ATSUTextLayout textLayout;
 
@@ -4225,10 +4193,8 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
     rc.left = FILL_X(gui.col);
     rc.top = FILL_Y(gui.row);
     rc.right = rc.left + gui.char_width;
-#ifdef FEAT_MBYTE
     if (mb_lefthalve(gui.row, gui.col))
 	rc.right += gui.char_width;
-#endif
     rc.bottom = rc.top + gui.char_height;
 
     gui_mch_set_fg_color(color);
@@ -4705,11 +4671,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
      */
     static long	 next_avail_id = 128;
     long	 menu_after_me = 0; /* Default to the end */
-#if defined(FEAT_MBYTE)
     CFStringRef name;
-#else
-    char_u	*name;
-#endif
     short	 index;
     vimmenu_T	*parent = menu->parent;
     vimmenu_T	*brother = menu->next;
@@ -4750,12 +4712,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	 * OSStatus SetMenuTitle(MenuRef, ConstStr255Param title);
 	 */
 	menu->submenu_id = next_avail_id;
-#if defined(FEAT_MBYTE)
 	if (CreateNewMenu(menu->submenu_id, 0, (MenuRef *)&menu->submenu_handle) == noErr)
 	    SetMenuTitleWithCFString((MenuRef)menu->submenu_handle, name);
-#else
-	menu->submenu_handle = NewMenu(menu->submenu_id, name);
-#endif
 	next_avail_id++;
     }
 
@@ -4784,21 +4742,13 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	 * to avoid special character recognition by InsertMenuItem
 	 */
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
-#if defined(FEAT_MBYTE)
 	SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
-#else
-	SetMenuItemText(parent->submenu_handle, idx+1, name);
-#endif
 	SetItemCmd(parent->submenu_handle, idx+1, 0x1B);
 	SetItemMark(parent->submenu_handle, idx+1, menu->submenu_id);
 	InsertMenu(menu->submenu_handle, hierMenu);
     }
 
-#if defined(FEAT_MBYTE)
     CFRelease(name);
-#else
-    vim_free(name);
-#endif
 
 #if 0
     /* Done by Vim later on */
@@ -4812,11 +4762,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     void
 gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
-#if defined(FEAT_MBYTE)
     CFStringRef name;
-#else
-    char_u	*name;
-#endif
     vimmenu_T	*parent = menu->parent;
     int		menu_inserted;
 
@@ -4912,23 +4858,14 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     if (!menu_inserted)
 	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
     /* Set the menu item name. */
-#if defined(FEAT_MBYTE)
     SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
-#else
-    SetMenuItemText(parent->submenu_handle, idx+1, name);
-#endif
 
 #if 0
     /* Called by Vim */
     DrawMenuBar();
 #endif
 
-#if defined(FEAT_MBYTE)
     CFRelease(name);
-#else
-    /* TODO: Can name be freed? */
-    vim_free(name);
-#endif
 }
 
     void
@@ -6242,7 +6179,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if (defined(FEAT_MBYTE) && defined(USE_CARBONKEYHANDLER)) || defined(PROTO)
+#if defined(USE_CARBONKEYHANDLER) || defined(PROTO)
 /*
  * Input Method Control functions.
  */
@@ -6391,8 +6328,7 @@ im_get_status(void)
     return im_is_active;
 }
 
-#endif /* defined(FEAT_MBYTE) || defined(PROTO) */
-
+#endif
 
 
 

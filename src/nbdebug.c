@@ -42,7 +42,7 @@ static int	 errorHandler(Display *, XErrorEvent *);
 /*
  * nbdebug_wait	-   This function can be used to delay or stop execution of vim.
  *		    It's normally used to delay startup while attaching a
- *		    debugger to a running process. Since workshop starts gvim
+ *		    debugger to a running process. Since NetBeans starts gvim
  *		    from a background process this is the only way to debug
  *		    startup problems.
  */

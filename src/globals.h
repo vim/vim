@@ -44,7 +44,6 @@ EXTERN sattr_T	*ScreenAttrs INIT(= NULL);
 EXTERN unsigned	*LineOffset INIT(= NULL);
 EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
 
-#ifdef FEAT_MBYTE
 /*
  * When using Unicode characters (in UTF-8 encoding) the character in
  * ScreenLinesUC[] contains the Unicode for the character at this position, or
@@ -61,7 +60,6 @@ EXTERN int	Screen_mco INIT(= 0);		/* value of p_mco used when
 /* Only used for euc-jp: Second byte of a character that starts with 0x8e.
  * These are single-width. */
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
-#endif
 
 /*
  * Indexes for tab page line:
@@ -399,6 +397,7 @@ EXTERN int	autocmd_no_enter INIT(= FALSE); /* *Enter autocmds disabled */
 EXTERN int	autocmd_no_leave INIT(= FALSE); /* *Leave autocmds disabled */
 EXTERN int	modified_was_set;		/* did ":set modified" */
 EXTERN int	did_filetype INIT(= FALSE);	/* FileType event found */
+EXTERN int	au_did_filetype INIT(= FALSE);
 EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when
 						   starting to execute
 						   autocommands */
@@ -772,7 +771,7 @@ EXTERN int	can_si_back INIT(= FALSE);
 
 EXTERN pos_T	saved_cursor		/* w_cursor before formatting text. */
 #ifdef DO_INIT
-	= INIT_POS_T(0, 0, 0)
+	= {0, 0, 0}
 #endif
 	;
 
@@ -798,41 +797,38 @@ EXTERN int	vr_lines_changed INIT(= 0); /* #Lines changed by "gR" so far */
 EXTERN JMP_BUF x_jump_env;
 #endif
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /*
  * These flags are set based upon 'fileencoding'.
  * Note that "enc_utf8" is also set for "unicode", because the characters are
  * internally stored as UTF-8 (to avoid trouble with NUL bytes).
  */
-# define DBCS_JPN	932	/* japan */
-# define DBCS_JPNU	9932	/* euc-jp */
-# define DBCS_KOR	949	/* korea */
-# define DBCS_KORU	9949	/* euc-kr */
-# define DBCS_CHS	936	/* chinese */
-# define DBCS_CHSU	9936	/* euc-cn */
-# define DBCS_CHT	950	/* taiwan */
-# define DBCS_CHTU	9950	/* euc-tw */
-# define DBCS_2BYTE	1	/* 2byte- */
-# define DBCS_DEBUG	-1
-#endif
+#define DBCS_JPN	932	/* japan */
+#define DBCS_JPNU	9932	/* euc-jp */
+#define DBCS_KOR	949	/* korea */
+#define DBCS_KORU	9949	/* euc-kr */
+#define DBCS_CHS	936	/* chinese */
+#define DBCS_CHSU	9936	/* euc-cn */
+#define DBCS_CHT	950	/* taiwan */
+#define DBCS_CHTU	9950	/* euc-tw */
+#define DBCS_2BYTE	1	/* 2byte- */
+#define DBCS_DEBUG	-1
 
-#ifdef FEAT_MBYTE
 EXTERN int	enc_dbcs INIT(= 0);		/* One of DBCS_xxx values if
 						   DBCS encoding */
 EXTERN int	enc_unicode INIT(= 0);	/* 2: UCS-2 or UTF-16, 4: UCS-4 */
 EXTERN int	enc_utf8 INIT(= FALSE);		/* UTF-8 encoded Unicode */
 EXTERN int	enc_latin1like INIT(= TRUE);	/* 'encoding' is latin1 comp. */
-# if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /* Codepage nr of 'encoding'.  Negative means it's not been set yet, zero
  * means 'encoding' is not a valid codepage. */
 EXTERN int	enc_codepage INIT(= -1);
 EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
-# endif
+#endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-# if defined(WIN3264) && defined(FEAT_MBYTE)
+#if defined(WIN3264)
 EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
-# endif
+#endif
 
 /*
  * To speed up BYTELEN() we fill a table with the byte lengths whenever
@@ -875,7 +871,6 @@ EXTERN int (*iconvctl) (iconv_t cd, int request, void *argument);
 EXTERN int* (*iconv_errno) (void);
 # endif
 
-#endif /* FEAT_MBYTE */
 
 #ifdef FEAT_XIM
 # ifdef FEAT_GUI_GTK
@@ -989,7 +984,7 @@ EXTERN char_u	*IObuff;		/* sprintf's are done in this buffer,
 					   size is IOSIZE */
 EXTERN char_u	*NameBuff;		/* file names are expanded in this
 					 * buffer, size is MAXPATHL */
-EXTERN char_u	msg_buf[MSG_BUF_LEN];	/* small buffer for messages */
+EXTERN char	msg_buf[MSG_BUF_LEN];	/* small buffer for messages */
 
 /* When non-zero, postpone redrawing. */
 EXTERN int	RedrawingDisabled INIT(= 0);
@@ -1071,7 +1066,7 @@ EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
 EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold t'gerd */
 EXTERN pos_T	last_cursormoved	      /* for CursorMoved event */
 # ifdef DO_INIT
-			= INIT_POS_T(0, 0, 0)
+			= {0, 0, 0}
 # endif
 			;
 
@@ -1163,6 +1158,7 @@ EXTERN int	lcs_nbsp INIT(= NUL);
 EXTERN int	lcs_space INIT(= NUL);
 EXTERN int	lcs_tab1 INIT(= NUL);
 EXTERN int	lcs_tab2 INIT(= NUL);
+EXTERN int	lcs_tab3 INIT(= NUL);
 EXTERN int	lcs_trail INIT(= NUL);
 #ifdef FEAT_CONCEAL
 EXTERN int	lcs_conceal INIT(= ' ');
@@ -1217,10 +1213,9 @@ EXTERN int	no_hlsearch INIT(= FALSE);
 #if defined(FEAT_BEVAL) && !defined(NO_X11_INCLUDES)
 EXTERN BalloonEval	*balloonEval INIT(= NULL);
 EXTERN int		balloonEvalForTerm INIT(= FALSE);
-# if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+# if defined(FEAT_NETBEANS_INTG)
 EXTERN int bevalServers INIT(= 0);
 #  define BEVAL_NETBEANS		0x01
-#  define BEVAL_WORKSHOP		0x02
 # endif
 #endif
 
@@ -1340,11 +1335,9 @@ EXTERN char	psepcN INIT(= '/');	/* abnormal path separator character */
 EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
 #endif
 
-#ifdef FEAT_VIRTUALEDIT
 /* Set to TRUE when an operator is being executed with virtual editing, MAYBE
  * when no operator is being executed, FALSE otherwise. */
 EXTERN int	virtual_op INIT(= MAYBE);
-#endif
 
 #ifdef FEAT_SYN_HL
 /* Display tick, incremented for each call to update_screen() */
@@ -1360,14 +1353,6 @@ EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 #ifdef FEAT_CONCEAL
 /* Set when the cursor line needs to be redrawn. */
 EXTERN int		need_cursor_line_redraw INIT(= FALSE);
-#endif
-
-#ifdef ALT_X_INPUT
-/* we need to be able to go into the dispatch loop while processing a command
- * received via alternate input. However, we don't want to process another
- * command until the first is completed.
- */
-EXTERN int	suppress_alternate_input INIT(= FALSE);
 #endif
 
 #ifdef USE_MCH_ERRMSG
@@ -1529,7 +1514,9 @@ EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
 EXTERN char e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
 EXTERN char e_dictkey[]	INIT(= N_("E716: Key not present in Dictionary: %s"));
 EXTERN char e_listreq[]	INIT(= N_("E714: List required"));
+EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
+EXTERN char e_listdictblobarg[]	INIT(= N_("E896: Argument of %s must be a List, Dictionary or Blob"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));

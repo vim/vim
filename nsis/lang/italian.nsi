@@ -4,14 +4,14 @@
 #
 # Locale ID    : 1040
 # Locale Name  : it
-# fileencoding : latin1
+# fileencoding : UTF-8
 # Author       : Antonio Colombo
 
 !insertmacro MUI_LANGUAGE "Italian"
 
 
 # Overwrite the default translation.
-# These string should be always English.  Otherwise dosinst.c fails.
+# These strings should be always English.  Otherwise dosinst.c fails.
 LangString ^SetupCaption     ${LANG_ITALIAN} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_ITALIAN} \
@@ -48,7 +48,7 @@ LangString str_desc_old_ver         ${LANG_ITALIAN} \
     "Disinstalla versione/i esistente/i di Vim dal vostro sistema."
 
 LangString str_section_exe          ${LANG_ITALIAN} \
-    "Vim GUI (gvim.exe per Windows)"
+    "Vim GUI e file di supporto"
 LangString str_desc_exe             ${LANG_ITALIAN} \
     "Vim GUI programmi e file di supporto.  Questa componente è indispensabile."
 
@@ -61,7 +61,7 @@ LangString str_section_batch        ${LANG_ITALIAN} \
     "Crea file di invocazione (MS-DOS) .bat"
 LangString str_desc_batch           ${LANG_ITALIAN} \
     "Crea file di invocazione .bat per varianti di Vim nella directory \
-     di Windows, da utilizzare da linea di comando (MS-DOS)."
+     di Windows, per utilizzo da linea di comando (MS-DOS)."
 
 LangString str_group_icons          ${LANG_ITALIAN} \
     "Crea icone per Vim"
@@ -71,13 +71,12 @@ LangString str_desc_icons           ${LANG_ITALIAN} \
 LangString str_section_desktop      ${LANG_ITALIAN} \
     "Sul Desktop"
 LangString str_desc_desktop         ${LANG_ITALIAN} \
-    "Crea icone per programma gvim sul desktop."
+    "Crea icone per programma gVim sul desktop."
 
 LangString str_section_start_menu   ${LANG_ITALIAN} \
     "Nella cartella del menù START"
 LangString str_desc_start_menu      ${LANG_ITALIAN} \
-    "Aggiungi Vim alle cartelle del menù START.  \
-     Disponibile solo da Windows 95 in avanti."
+    "Aggiungi Vim alle cartelle del menù START."
 
 #LangString str_section_quick_launch ${LANG_ITALIAN} \
 #    "Nella barra di Avvio Veloce"
@@ -102,26 +101,26 @@ LangString str_desc_edit_with       ${LANG_ITALIAN} \
 #     per applicazioni a 64-bit."
 
 LangString str_section_vim_rc       ${LANG_ITALIAN} \
-    "Crea Configurazione di default"
+    "Crea configurazione di default"
 LangString str_desc_vim_rc          ${LANG_ITALIAN} \
-    "Crea file configurazione di default (_vimrc) se non ne \
-     esiste già uno."
+    "Crea un file configurazione di default (_vimrc) se non \
+     ne esiste già uno."
 
 LangString str_group_plugin         ${LANG_ITALIAN} \
-    "Crea Directory per Plugin"
+    "Crea directory per plugin"
 LangString str_desc_plugin          ${LANG_ITALIAN} \
-    "Crea Directory per Plugin.  Servono per aggiungere funzionalità \
-     a Vim aggiungendo file a una di queste directory."
+    "Crea directory per plugin.  Consentono di aggiungere funzionalità \
+     a Vim mettendo file in una di queste directory."
 
 LangString str_section_plugin_home  ${LANG_ITALIAN} \
-    "Privato"
+    "Private"
 LangString str_desc_plugin_home     ${LANG_ITALIAN} \
-    "Create plugin directories in HOME directory."
+    "Crea directory per plugin nella directory HOME."
 
 LangString str_section_plugin_vim   ${LANG_ITALIAN} \
-    "Condiviso"
+    "Condivise"
 LangString str_desc_plugin_vim      ${LANG_ITALIAN} \
-    "Crea Directory Plugin nella directory di installazione di Vim \
+    "Crea directory per plugin nella directory di installazione di Vim \
      per uso da parte di tutti gli utenti di questo sistema."
 
 LangString str_section_vis_vim      ${LANG_ITALIAN} \
@@ -140,35 +139,29 @@ LangString str_desc_unregister      ${LANG_ITALIAN} \
     "Togli Vim dal Registry di configurazione sistema."
 
 LangString str_unsection_exe        ${LANG_ITALIAN} \
-    "Cancella programmi/file_ausiliari Vim"
+    "Cancella programmi/file di supporto Vim"
 LangString str_desc_rm_exe          ${LANG_ITALIAN} \
-    "Cancella tutti i programmi/file_ausiliari di Vim."
-
-LangString str_unsection_rc         ${LANG_ITALIAN} \
-    "Cancella file di configurazione di Vim"
-LangString str_desc_rm_rc           ${LANG_ITALIAN} \
-    "Cancella file di configurazione di Vim $vim_install_root\_vimrc. \
-     Da saltare se avete personalizzato il file di configurazione."
+    "Cancella tutti i programmi/file di supporto di Vim."
 
 LangString str_ungroup_plugin       ${LANG_ITALIAN} \
-    "Remove plugin directories"
+    "Cancella le directory per plugin"
 LangString str_desc_rm_plugin       ${LANG_ITALIAN} \
-    "Remove the plugin directories if they are empty."
+    "Cancella le directory per plugin se sono vuote."
 
 LangString str_unsection_plugin_home ${LANG_ITALIAN} \
-    "Privato"
+    "Private"
 LangString str_desc_rm_plugin_home  ${LANG_ITALIAN} \
-    "Remove the plugin directories from HOME directory."
+    "Cancella le directory per plugin dalla directory HOME."
 
 LangString str_unsection_plugin_vim ${LANG_ITALIAN} \
-    "Condiviso"
+    "Condivise"
 LangString str_desc_rm_plugin_vim   ${LANG_ITALIAN} \
-    "Remove the plugin directories from Vim install directory."
+    "Cancella le directory per plugin dalla directory di installazione di Vim."
 
 LangString str_unsection_rootdir    ${LANG_ITALIAN} \
-    "Remove the Vim root directory"
+    "Cancella la directory di installazione di Vim"
 LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
-    "Remove the Vim root directory. It contains your Vim configuration files!"
+    "Cancella la directory di installazione di Vim. Contiene i vostri file di configurazione!"
 
 
 ##############################################################################
@@ -177,8 +170,8 @@ LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
 
 #LangString str_msg_too_many_ver  ${LANG_ITALIAN} \
 #    "Trovate $vim_old_ver_count versioni di Vim sul vostro sistema.$\r$\n\
-#     Questo programma di installazione può gestirne solo \
-#     ${VIM_MAX_OLD_VER}.$\r$\n\
+#     Questo programma di installazione può gestire solo \
+#     ${VIM_MAX_OLD_VER} versioni.$\r$\n\
 #     Disinstallate qualche versione precedente e ricominciate."
 
 #LangString str_msg_invalid_root  ${LANG_ITALIAN} \
@@ -186,7 +179,7 @@ LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
 #     Dovrebbe terminare con $\"vim$\"."
 
 #LangString str_msg_bin_mismatch  ${LANG_ITALIAN} \
-#    "Incongruenza di installazione!$\r$\n$\r$\n\
+#    "Conflitto nella directory di installazione!$\r$\n$\r$\n\
 #     Cartella di installazione dev'essere $\"$vim_bin_path$\",$\r$\n\
 #     ma il sistema segnala invece $\"$INSTDIR$\"."
 
@@ -196,14 +189,14 @@ LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
 
 #LangString str_msg_register_ole  ${LANG_ITALIAN} \
 #    "Tentativo di registrazione di Vim con OLE. \
-#     Non ci sono messaggi che indicano se ha funzionato o no."
+#     Non c'è messaggio che indica se è riuscito o no."
 
 #LangString str_msg_unreg_ole     ${LANG_ITALIAN} \
-#    "Tentativo di togliere da Registry  Vim con OLE. \
-#     Non ci sono messaggi che indicano se ha funzionato o no."
+#    "Tentativo di togliere dal Registry Vim con OLE. \
+#     Non c'è messaggio che indica se è riuscito o no."
 
 #LangString str_msg_rm_start      ${LANG_ITALIAN} \
-#    "Disinstallazione delle seguenti versioni:"
+#    "Disinstallazione della seguente versione:"
 
 #LangString str_msg_rm_fail       ${LANG_ITALIAN} \
 #    "Disinstallazione non riuscita per la seguente versione:"
@@ -215,7 +208,7 @@ LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
 #    "Non riesco a trovare programma disinstallazione nel Registry."
 
 #LangString str_msg_no_rm_exe     ${LANG_ITALIAN} \
-#    "Non riesco a utilizzare programma disinstallazione."
+#    "Non riesco a trovare programma disinstallazione."
 
 #LangString str_msg_rm_copy_fail  ${LANG_ITALIAN} \
 #    "Non riesco a copiare programma disinstallazione a una \
@@ -238,13 +231,13 @@ LangString str_msg_rm_exe_fail   ${LANG_ITALIAN} \
 #    "AVVISO: Non posso cancellare $\"$vim_install_root$\", non è vuota!"
 
 LangString str_msg_uninstalling  ${LANG_ITALIAN} \
-    "Uninstalling the old version..."
+    "Sto disinstallando la vecchia versione..."
 
 LangString str_msg_registering   ${LANG_ITALIAN} \
-    "Registering..."
+    "Sto aggiungendo Vim al Registry..."
 
 LangString str_msg_unregistering ${LANG_ITALIAN} \
-    "Unregistering..."
+    "Sto togliendo Vim dal Registry..."
 
 
 ##############################################################################
@@ -252,39 +245,39 @@ LangString str_msg_unregistering ${LANG_ITALIAN} \
 ##############################################################################
 
 LangString str_vimrc_page_title    ${LANG_ITALIAN} \
-    "Choose _vimrc settings"
+    "Scelta impostazioni _vimrc"
 LangString str_vimrc_page_subtitle ${LANG_ITALIAN} \
-    "Choose the settings for enhancement, keyboard and mouse."
+    "Scelta impostazioni per funzionalità ulteriori, tastiera e mouse."
 
 LangString str_msg_compat_title    ${LANG_ITALIAN} \
-    " Vi / Vim behavior "
+    " comportamento come Vi / Vim "
 LangString str_msg_compat_desc     ${LANG_ITALIAN} \
-    "&Compatibility and enhancements"
+    "&Compatibilità e funzionalità ulteriori"
 LangString str_msg_compat_vi       ${LANG_ITALIAN} \
-    "Vi compatible"
+    "Compatibile con Vi"
 LangString str_msg_compat_vim      ${LANG_ITALIAN} \
-    "Vim original"
+    "Vim originale"
 LangString str_msg_compat_defaults ${LANG_ITALIAN} \
-    "Vim with some enhancements (load defaults.vim)"
+    "Vim con alcune funzionalità ulteriori (esecuzione defaults.vim)"
 LangString str_msg_compat_all      ${LANG_ITALIAN} \
-    "Vim with all enhancements (load vimrc_example.vim) (Default)"
+    "Vim con tutte le funzionalità ulteriori (esecuzione vimrc_example.vim) (Default)"
 
 LangString str_msg_keymap_title   ${LANG_ITALIAN} \
-    " Mappings "
+    " Mappature "
 LangString str_msg_keymap_desc    ${LANG_ITALIAN} \
-    "&Remap a few keys for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
+    "&Rimappatura di alcuni tasti per Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc.)"
 LangString str_msg_keymap_default ${LANG_ITALIAN} \
-    "Do not remap keys (Default)"
+    "Non effettuare rimappature di tasti (Default)"
 LangString str_msg_keymap_windows ${LANG_ITALIAN} \
-    "Remap a few keys"
+    "Rimappare solo alcuni tasti"
 
 LangString str_msg_mouse_title   ${LANG_ITALIAN} \
     " Mouse "
 LangString str_msg_mouse_desc    ${LANG_ITALIAN} \
-    "&Behavior of right and left buttons"
+    "&Comportamento dei pulsanti destro e sinistro"
 LangString str_msg_mouse_default ${LANG_ITALIAN} \
-    "Right: popup menu, Left: visual mode (Default)"
+    "Destro: popup menu, Sinistro: modalità visuale (Default)"
 LangString str_msg_mouse_windows ${LANG_ITALIAN} \
-    "Right: popup menu, Left: select mode (Windows)"
+    "Destro: popup menu, Sinistro: seleziona modalità (Windows)"
 LangString str_msg_mouse_unix    ${LANG_ITALIAN} \
-    "Right: extends selection, Left: visual mode (Unix)"
+    "Destro: estende selezione, Sinistro: modalità visuale (Unix)"

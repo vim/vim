@@ -87,3 +87,10 @@ func Test_readfile_binary()
   bwipe!
   call delete('XReadfile')
 endfunc
+
+func Test_let_errmsg()
+  call assert_fails('let v:errmsg = []', 'E730:')
+  let v:errmsg = ''
+  call assert_fails('let v:errmsg = []', 'E730:')
+  let v:errmsg = ''
+endfunc

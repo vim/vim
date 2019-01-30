@@ -513,13 +513,8 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	if (special_keys[i].key_sym == 0)
 	{
 	    ch = PhTo8859_1(key);
-	    if (ch == -1
-#ifdef FEAT_MBYTE
-		|| (enc_utf8 && ch > 127)
-#endif
-		)
+	    if (ch == -1 || (enc_utf8 && ch > 127))
 	    {
-#ifdef FEAT_MBYTE
 		len = PhKeyToMb(string, key);
 		if (len > 0)
 		{
@@ -546,7 +541,6 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		    return Pt_CONSUME;
 		}
 		len = 0;
-#endif
 		ch = key->key_cap;
 		if (ch < 0xff)
 		{
@@ -1074,7 +1068,6 @@ gui_ph_pane_resize(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 
 /****************************************************************************/
 
-#ifdef FEAT_MBYTE
     void
 gui_ph_encoding_changed(int new_encoding)
 {
@@ -1100,7 +1093,6 @@ gui_ph_encoding_changed(int new_encoding)
 
     charset_translate = PxTranslateSet(charset_translate, charset);
 }
-#endif
 
 /****************************************************************************/
 /****************************************************************************/
@@ -1352,8 +1344,9 @@ gui_mch_wait_for_chars(int wtime)
 {
     is_timeout = FALSE;
 
-    if (wtime > 0)
-	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL, wtime, 0);
+    if (wtime >= 0)
+	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL,
+						    wtime == 0 ? 1 : wtime, 0);
 
     while (1)
     {
@@ -2141,11 +2134,7 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
     if (flags & DRAW_UNDERL)
 	PgSetUnderline(gui.norm_pixel, Pg_TRANSPARENT, 0);
 
-    if (charset_translate != NULL
-#ifdef FEAT_MBYTE
-	    && enc_utf8 == 0
-#endif
-	   )
+    if (charset_translate != NULL && enc_utf8 == 0)
     {
 	int src_taken, dst_made;
 

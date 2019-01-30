@@ -16,7 +16,6 @@ static char_u	*username = NULL; /* cached result of mch_get_user_name() */
 
 static char_u	*ff_expand_buffer = NULL; /* used for expanding filenames */
 
-#if defined(FEAT_VIRTUALEDIT) || defined(PROTO)
 static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
 
 /*
@@ -67,22 +66,19 @@ coladvance_force(colnr_T wcol)
     }
     return rc;
 }
-#endif
 
 /*
  * Get the screen position of character col with a coladd in the cursor line.
  */
     int
-getviscol2(colnr_T col, colnr_T coladd)
+getviscol2(colnr_T col, colnr_T coladd UNUSED)
 {
     colnr_T	x;
     pos_T	pos;
 
     pos.lnum = curwin->w_cursor.lnum;
     pos.col = col;
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = coladd;
-#endif
     getvvcol(curwin, &pos, &x, NULL, NULL);
     return (int)x;
 }
@@ -119,7 +115,6 @@ coladvance(colnr_T wcol)
     int
 getvpos(pos_T *pos, colnr_T wcol)
 {
-#ifdef FEAT_VIRTUALEDIT
     return coladvance2(pos, FALSE, virtual_active(), wcol);
 }
 
@@ -130,7 +125,6 @@ coladvance2(
     int		finetune,	/* change char offset for the exact column */
     colnr_T	wcol)		/* column to move to */
 {
-#endif
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -144,10 +138,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-#ifdef FEAT_VIRTUALEDIT
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL)
-#endif
-		    ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -155,18 +146,15 @@ coladvance2(
 	    idx = (int)STRLEN(line) - 1 + one_more;
 	    col = wcol;
 
-#ifdef FEAT_VIRTUALEDIT
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
 		curwin->w_curswant = linetabsize(line) + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
-#endif
     }
     else
     {
-#ifdef FEAT_VIRTUALEDIT
 	int width = curwin->w_width - win_col_off(curwin);
 
 	if (finetune
@@ -188,7 +176,6 @@ coladvance2(
 		wcol = (csize / width + 1) * width - 1;
 	    }
 	}
-#endif
 
 	ptr = line;
 	while (col <= wcol && *ptr != NUL)
@@ -219,7 +206,6 @@ coladvance2(
 	    col -= csize;
 	}
 
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_active()
 		&& addspaces
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
@@ -283,7 +269,6 @@ coladvance2(
 		col += correct;
 	    }
 	}
-#endif
     }
 
     if (idx < 0)
@@ -291,7 +276,6 @@ coladvance2(
     else
 	pos->col = idx;
 
-#ifdef FEAT_VIRTUALEDIT
     pos->coladd = 0;
 
     if (finetune)
@@ -318,13 +302,10 @@ coladvance2(
 	    col += b;
 	}
     }
-#endif
 
-#ifdef FEAT_MBYTE
     /* prevent from moving onto a trail byte */
     if (has_mbyte)
 	mb_adjustpos(curbuf, pos);
-#endif
 
     if (col < wcol)
 	return FAIL;
@@ -358,7 +339,6 @@ inc(pos_T *lp)
 	p = ml_get_pos(lp);
 	if (*p != NUL)	/* still within line, move to next char (may be NUL) */
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		int l = (*mb_ptr2len)(p);
@@ -366,11 +346,8 @@ inc(pos_T *lp)
 		lp->col += l;
 		return ((p[l] != NUL) ? 0 : 2);
 	    }
-#endif
 	    lp->col++;
-#ifdef FEAT_VIRTUALEDIT
 	    lp->coladd = 0;
-#endif
 	    return ((p[1] != NUL) ? 0 : 2);
 	}
     }
@@ -378,9 +355,7 @@ inc(pos_T *lp)
     {
 	lp->col = 0;
 	lp->lnum++;
-#ifdef FEAT_VIRTUALEDIT
 	lp->coladd = 0;
-#endif
 	return 1;
     }
     return -1;
@@ -416,18 +391,14 @@ dec(pos_T *lp)
 {
     char_u	*p;
 
-#ifdef FEAT_VIRTUALEDIT
     lp->coladd = 0;
-#endif
     if (lp->col == MAXCOL)
     {
 	/* past end of line */
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
-#endif
 	return 0;
     }
 
@@ -435,13 +406,11 @@ dec(pos_T *lp)
     {
 	/* still within line */
 	lp->col--;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    p = ml_get(lp->lnum);
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	}
-#endif
 	return 0;
     }
 
@@ -451,10 +420,8 @@ dec(pos_T *lp)
 	lp->lnum--;
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
-#endif
 	return 1;
     }
 
@@ -584,10 +551,8 @@ check_cursor_col(void)
 check_cursor_col_win(win_T *win)
 {
     colnr_T len;
-#ifdef FEAT_VIRTUALEDIT
     colnr_T oldcol = win->w_cursor.col;
     colnr_T oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
-#endif
 
     len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
     if (len == 0)
@@ -600,25 +565,20 @@ check_cursor_col_win(win_T *win)
 	 * - 'virtualedit' is set */
 	if ((State & INSERT) || restart_edit
 		|| (VIsual_active && *p_sel != 'o')
-#ifdef FEAT_VIRTUALEDIT
 		|| (ve_flags & VE_ONEMORE)
-#endif
 		|| virtual_active())
 	    win->w_cursor.col = len;
 	else
 	{
 	    win->w_cursor.col = len - 1;
-#ifdef FEAT_MBYTE
 	    /* Move the cursor to the head byte. */
 	    if (has_mbyte)
 		mb_adjustpos(win->w_buffer, &win->w_cursor);
-#endif
 	}
     }
     else if (win->w_cursor.col < 0)
 	win->w_cursor.col = 0;
 
-#ifdef FEAT_VIRTUALEDIT
     /* If virtual editing is on, we can leave the cursor on the old position,
      * only we must set it to virtual.  But don't do it when at the end of the
      * line. */
@@ -646,7 +606,6 @@ check_cursor_col_win(win_T *win)
 	    /* avoid weird number when there is a miscalculation or overflow */
 	    win->w_cursor.coladd = 0;
     }
-#endif
 }
 
 /*
@@ -1033,6 +992,7 @@ theend:
 /*
  * lalloc() with an ID for alloc_fail().
  */
+#if defined(FEAT_SIGNS) || defined(PROTO)
     char_u *
 lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 {
@@ -1042,6 +1002,7 @@ lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
 #endif
     return (lalloc((long_u)size, message));
 }
+#endif
 
 #if defined(MEM_PROFILE) || defined(PROTO)
 /*
@@ -1392,9 +1353,7 @@ vim_strsave_escaped_ext(
     char_u	*p2;
     char_u	*escaped_string;
     unsigned	length;
-#ifdef FEAT_MBYTE
     int		l;
-#endif
 
     /*
      * First count the number of backslashes required.
@@ -1403,14 +1362,12 @@ vim_strsave_escaped_ext(
     length = 1;				/* count the trailing NUL */
     for (p = string; *p; p++)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
 	    length += l;		/* count a multibyte char */
 	    p += l - 1;
 	    continue;
 	}
-#endif
 	if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
 	    ++length;			/* count a backslash */
 	++length;			/* count an ordinary char */
@@ -1421,7 +1378,6 @@ vim_strsave_escaped_ext(
 	p2 = escaped_string;
 	for (p = string; *p; p++)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	    {
 		mch_memmove(p2, p, (size_t)l);
@@ -1429,7 +1385,6 @@ vim_strsave_escaped_ext(
 		p += l - 1;		/* skip multibyte char  */
 		continue;
 	    }
-#endif
 	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
 		*p2++ = cc;
 	    *p2++ = *p;
@@ -1640,7 +1595,6 @@ strup_save(char_u *orig)
     if (res != NULL)
 	while (*p != NUL)
 	{
-# ifdef FEAT_MBYTE
 	    int		l;
 
 	    if (enc_utf8)
@@ -1683,7 +1637,6 @@ strup_save(char_u *orig)
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
 	    else
-# endif
 	    {
 		*p = TOUPPER_LOC(*p); /* note that toupper() can be a macro */
 		p++;
@@ -1709,7 +1662,6 @@ strlow_save(char_u *orig)
     if (res != NULL)
 	while (*p != NUL)
 	{
-# ifdef FEAT_MBYTE
 	    int		l;
 
 	    if (enc_utf8)
@@ -1752,7 +1704,6 @@ strlow_save(char_u *orig)
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 		p += l;		/* skip multi-byte character */
 	    else
-# endif
 	    {
 		*p = TOLOWER_LOC(*p); /* note that tolower() can be a macro */
 		p++;
@@ -1941,7 +1892,6 @@ vim_strchr(char_u *string, int c)
     int		b;
 
     p = string;
-#ifdef FEAT_MBYTE
     if (enc_utf8 && c >= 0x80)
     {
 	while (*p != NUL)
@@ -1978,7 +1928,6 @@ vim_strchr(char_u *string, int c)
 	}
 	return NULL;
     }
-#endif
     while ((b = *p) != NUL)
     {
 	if (b == c)
@@ -2135,6 +2084,7 @@ ga_grow(garray_T *gap, int n)
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * For a growing array that contains a list of strings: concatenate all the
  * strings with a separating "sep".
@@ -2170,6 +2120,7 @@ ga_concat_strings(garray_T *gap, char *sep)
     }
     return s;
 }
+#endif
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -2192,7 +2143,7 @@ ga_add_string(garray_T *gap, char_u *p)
 #endif
 
 /*
- * Concatenate a string to a growarray which contains characters.
+ * Concatenate a string to a growarray which contains bytes.
  * When "s" is NULL does not do anything.
  * Note: Does NOT copy the NUL at the end!
  */
@@ -2709,11 +2660,7 @@ get_special_key_name(int c, int modifiers)
      * When not a known special key, and not a printable character, try to
      * extract modifiers.
      */
-    if (c > 0
-#ifdef FEAT_MBYTE
-	    && (*mb_char2len)(c) == 1
-#endif
-       )
+    if (c > 0 && (*mb_char2len)(c) == 1)
     {
 	if (table_idx < 0
 		&& (!vim_isprintc(c) || (c & 0x7f) == ' ')
@@ -2756,12 +2703,9 @@ get_special_key_name(int c, int modifiers)
 	/* Not a special key, only modifiers, output directly */
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte && (*mb_char2len)(c) > 1)
 		idx += (*mb_char2bytes)(c, string + idx);
-	    else
-#endif
-	    if (vim_isprintc(c))
+	    else if (vim_isprintc(c))
 		string[idx++] = c;
 	    else
 	    {
@@ -2821,10 +2765,8 @@ trans_special(
 	dst[dlen++] = KEY2TERMCAP0(key);
 	dst[dlen++] = KEY2TERMCAP1(key);
     }
-#ifdef FEAT_MBYTE
     else if (has_mbyte && !keycode)
 	dlen += (*mb_char2bytes)(key, dst + dlen);
-#endif
     else if (keycode)
 	dlen = (int)(add_char2buf(key, dst + dlen) - dst);
     else
@@ -2869,11 +2811,9 @@ find_special_key(
 	    last_dash = bp;
 	    if (bp[1] != NUL)
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    l = mb_ptr2len(bp + 1);
 		else
-#endif
 		    l = 1;
 		/* Anything accepted, like <C-?>.
 		 * <C-"> or <M-"> are not special in strings as " is
@@ -2931,11 +2871,9 @@ find_special_key(
 		/* Modifier with single letter, or special key name.  */
 		if (in_string && last_dash[1] == '\\' && last_dash[2] == '"')
 		    off = 2;
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    l = mb_ptr2len(last_dash + off);
 		else
-#endif
 		    l = 1;
 		if (modifiers != 0 && last_dash[l + off] == '>')
 		    key = PTR2CHAR(last_dash + off);
@@ -3024,10 +2962,7 @@ extract_modifiers(int key, int *modp)
     if (!(modifiers & MOD_MASK_CMD))
 #endif
     if ((modifiers & MOD_MASK_ALT) && key < 0x80
-#ifdef FEAT_MBYTE
-	    && !enc_dbcs		/* avoid creating a lead byte */
-#endif
-	    )
+	    && !enc_dbcs)		// avoid creating a lead byte
     {
 	key |= 0x80;
 	modifiers &= ~MOD_MASK_ALT;	/* remove the META modifier */
@@ -3373,7 +3308,6 @@ get_real_state(void)
     return State;
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Return TRUE if "p" points to just after a path separator.
  * Takes care of multi-byte characters.
@@ -3385,7 +3319,6 @@ after_pathsep(char_u *b, char_u *p)
     return p > b && vim_ispathsep(p[-1])
 			     && (!has_mbyte || (*mb_head_off)(b, p - 1) == 0);
 }
-#endif
 
 /*
  * Return TRUE if file names "f1" and "f2" are in the same directory.
@@ -3411,7 +3344,7 @@ same_directory(char_u *f1, char_u *f2)
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
 	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
+	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
  * Change to a file's directory.
@@ -4670,7 +4603,7 @@ vim_findfile(void *search_ctx_arg)
 		    smsg("Already Searched: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -4684,7 +4617,7 @@ vim_findfile(void *search_ctx_arg)
 		smsg("Searching: %s (%s)",
 				   stackp->ffs_fix_path, stackp->ffs_wc_path);
 		/* don't overwrite this either */
-		msg_puts((char_u *)"\n");
+		msg_puts("\n");
 		verbose_leave_scroll();
 	    }
 #endif
@@ -4724,7 +4657,10 @@ vim_findfile(void *search_ctx_arg)
 			add_pathsep(file_path);
 		    }
 		    else
+		    {
+			ff_free_stack_element(stackp);
 			goto fail;
+		    }
 		}
 
 		/* append the fix part of the search path */
@@ -4734,7 +4670,10 @@ vim_findfile(void *search_ctx_arg)
 		    add_pathsep(file_path);
 		}
 		else
+		{
+		    ff_free_stack_element(stackp);
 		    goto fail;
+		}
 
 #ifdef FEAT_PATH_EXTRA
 		rest_of_wildcards = stackp->ffs_wc_path;
@@ -4754,7 +4693,10 @@ vim_findfile(void *search_ctx_arg)
 			    if (len + 1 < MAXPATHL)
 				file_path[len++] = '*';
 			    else
+			    {
+				ff_free_stack_element(stackp);
 				goto fail;
+			    }
 			}
 
 			if (*p == 0)
@@ -4785,7 +4727,10 @@ vim_findfile(void *search_ctx_arg)
 			if (len + 1 < MAXPATHL)
 			    file_path[len++] = *rest_of_wildcards++;
 			else
+			{
+			    ff_free_stack_element(stackp);
 			    goto fail;
+			}
 
 		    file_path[len] = NUL;
 		    if (vim_ispathsep(*rest_of_wildcards))
@@ -4854,7 +4799,10 @@ vim_findfile(void *search_ctx_arg)
 			    STRCAT(file_path, search_ctx->ffsc_file_to_search);
 			}
 			else
+			{
+			    ff_free_stack_element(stackp);
 			    goto fail;
+			}
 
 			/*
 			 * Try without extra suffix and then with suffixes
@@ -4903,7 +4851,7 @@ vim_findfile(void *search_ctx_arg)
 					smsg("Already: %s",
 								   file_path);
 					/* don't overwrite this either */
-					msg_puts((char_u *)"\n");
+					msg_puts("\n");
 					verbose_leave_scroll();
 				    }
 				    continue;
@@ -4930,7 +4878,7 @@ vim_findfile(void *search_ctx_arg)
 				    verbose_enter_scroll();
 				    smsg("HIT: %s", file_path);
 				    /* don't overwrite this either */
-				    msg_puts((char_u *)"\n");
+				    msg_puts("\n");
 				    verbose_leave_scroll();
 				}
 #endif
@@ -5131,7 +5079,7 @@ ff_get_visited_list(
 		    smsg("ff_get_visited_list: FOUND list for %s",
 								    filename);
 		    /* don't overwrite this either */
-		    msg_puts((char_u *)"\n");
+		    msg_puts("\n");
 		    verbose_leave_scroll();
 		}
 #endif
@@ -5147,7 +5095,7 @@ ff_get_visited_list(
 	verbose_enter_scroll();
 	smsg("ff_get_visited_list: new list for %s", filename);
 	/* don't overwrite this either */
-	msg_puts((char_u *)"\n");
+	msg_puts("\n");
 	verbose_leave_scroll();
     }
 #endif
@@ -6372,8 +6320,7 @@ time_to_bytes(time_T the_time, char_u *buf)
 
 #endif
 
-#if (defined(FEAT_MBYTE) && defined(FEAT_QUICKFIX)) \
-	|| defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return TRUE if string "s" contains a non-ASCII character (128 or higher).
  * When "s" is NULL FALSE is returned.
@@ -6439,6 +6386,9 @@ parse_queued_messages(void)
 	// changes, e.g. stdin may have been closed.
 	if (job_check_ended())
 	    continue;
+# endif
+# ifdef FEAT_TERMINAL
+	free_unused_terminals();
 # endif
 	break;
     }

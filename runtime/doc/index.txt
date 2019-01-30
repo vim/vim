@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.1.  Last change: 2018 Apr 19
+*index.txt*     For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1457,8 +1457,9 @@ tag	      command	      action ~
 |:recover|	:rec[over]	recover a file from a swap file
 |:redo|		:red[o]		redo one undone change
 |:redir|	:redi[r]	redirect messages to a file or register
-|:redraw|	:redr[aw]	force a redraw of the display
-|:redrawstatus|	:redraws[tatus]	force a redraw of the status line(s)
+|:redraw|	:redr[aw]	  force a redraw of the display
+|:redrawstatus|	:redraws[tatus]	  force a redraw of the status line(s)
+|:redrawtabline|  :redrawt[abline]  force a redraw of the tabline
 |:registers|	:reg[isters]	display the contents of registers
 |:resize|	:res[ize]	change current window height
 |:retab|	:ret[ab]	change tab size
@@ -1643,7 +1644,6 @@ tag	      command	      action ~
 				argument list
 |:wq|		:wq		write to a file and quit window or Vim
 |:wqall|	:wqa[ll]	write all changed buffers and quit Vim
-|:wsverb|	:ws[verb]	pass the verb to workshop over IPC
 |:wundo|	:wu[ndo]	write undo information to a file
 |:wviminfo|	:wv[iminfo]	write to viminfo file
 |:xit|		:x[it]		write if buffer changed and quit window or Vim

@@ -508,10 +508,10 @@ main(int argc, char *argv[])
 	}
       else if (!STRNCMP(pp, "-c", 2))
 	{
-	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
-	    cols = (int)strtol(pp + 2, NULL, 0);
-	  else if (pp[2] && STRNCMP("apitalize", pp + 2, 9))
+	  if (pp[2] && !STRNCMP("apitalize", pp + 2, 9))
 	    capitalize = 1;
+	  else if (pp[2] && STRNCMP("ols", pp + 2, 3))
+	    cols = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
@@ -523,7 +523,7 @@ main(int argc, char *argv[])
 	}
       else if (!STRNCMP(pp, "-g", 2))
 	{
-	  if (pp[2] && STRNCMP("group", pp + 2, 5))
+	  if (pp[2] && STRNCMP("roup", pp + 2, 4))
 	    octspergrp = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {

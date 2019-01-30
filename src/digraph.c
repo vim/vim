@@ -15,11 +15,7 @@
 
 #if defined(FEAT_DIGRAPHS) || defined(PROTO)
 
-#ifdef FEAT_MBYTE
 typedef int result_T;
-#else
-typedef char_u result_T;
-#endif
 
 typedef struct digraph
 {
@@ -38,8 +34,8 @@ static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
  * compilers cannot handle them (Amiga SAS/C is the most picky one).
  */
 static digr_T digraphdefault[] =
-#ifdef __MINT__
 
+#ifdef __MINT__
 	/*
 	 * ATARI digraphs
 	 */
@@ -320,137 +316,7 @@ static digr_T digraphdefault[] =
 	};
 
 #  else
-#   if defined(MACOS_X) && !defined(FEAT_MBYTE)
-
-	/*
-	 * Macintosh digraphs
-	 */
-       {{'a', 't', 64},		/* @ */
-	{'A', '"', 128},	/* ~@ XX */
-	{'A', 'o', 129},	/* ≈ */
-	{'C', ',', 130},	/* « */
-	{'E', '\'', 131},	/* … */
-	{'N', '~', 132},	/* — */
-	{'O', '"', 133},	/* ÷ */
-	{'U', '"', 134},	/* ‹ */
-	{'a', '\'', 135},	/* ~G XX */
-	{'a', '`', 136},	/* ~H XX */
-	{'a', '^', 137},	/* ‚ */
-	{'a', '"', 138},	/* ‰ */
-	{'a', '~', 139},	/* „ */
-	{'a', 'o', 140},	/* Â */
-	{'c', ',', 141},	/* Á */
-	{'e', '\'', 142},	/* È */
-	{'e', '`', 143},	/* Ë */
-	{'e', '^', 144},	/* Í */
-	{'e', '"', 145},	/* Î */
-	{'i', '\'', 146},	/* Ì */
-	{'i', '`', 147},	/* Ï */
-	{'i', '^', 148},	/* Ó */
-	{'i', '"', 149},	/* Ô */
-	{'n', '~', 150},	/* Ò */
-	{'o', '\'', 151},	/* Û */
-	{'o', '`', 152},	/* Ú */
-	{'o', '^', 153},	/* Ù */
-	{'o', '"', 154},	/* ˆ */
-	{'o', '~', 155},	/* o */
-	{'u', '\'', 156},	/* ˙ */
-	{'u', '`', 157},	/* ~] XX */
-	{'u', '^', 158},	/* ˚ */
-	{'u', '"', 159},	/* ¸ */
-	{'+', '_', 160},	/* › */
-	{'~', 'o', 161},	/* ∞ */
-	{'c', '|', 162},	/* ¢ */
-	{'$', '$', 163},	/* £ */
-	{'p', 'a', 164},	/* ß */
-	{'.', '.', 165},	/* * */
-	{'P', 'P', 166},	/* ∂ */
-	{'s', 's', 167},	/* ﬂ */
-	{'r', 'O', 168},	/* Æ */
-	{'c', 'O', 169},	/* © */
-	{'T', 'M', 170},	/* Å */
-	{'=', '/', 173},	/* Ç */
-	{'A', 'E', 174},	/* ∆ */
-	{'O', '/', 175},	/* ÿ */
-	{'0', '0', 176},	/* É */
-	{'+', '-', 177},	/* ± */
-	{'<', '=', 178},	/* æ */
-	{'>', '=', 179},	/* Ñ */
-	{'Y', '-', 180},	/* • */
-	{'j', 'u', 181},	/* µ */
-	{'m', 'u', 181},	/* µ */
-	{'d', 'd', 182},	/* è */
-	{'S', 'S', 183},	/* Ö */
-	{'S', 'I', 183},	/* Ö */
-	{'P', 'I', 184},	/* Ω */
-	{'p', 'i', 185},	/* º */
-	{'I', 'I', 186},	/* Ü */
-	{'a', '-', 187},	/* ª */
-	{'o', '-', 188},	/* ∫ */
-	{'O', 'M', 189},	/* Ω */
-	{'a', 'e', 190},	/* Ê */
-	{'o', '/', 191},	/* ¯ */
-	{'~', '?', 192},	/* ø */
-	{'~', '!', 193},	/* ° */
-	{'-', ',', 194},	/* ¨ */
-	{'v', '-', 195},	/* ~H XX */
-	{'f', '-', 196},	/* ü */
-	{'~', '~', 197},	/* â */
-	{'D', 'E', 198},	/* ê */
-	{'<', '<', 199},	/* ´ */
-	{'>', '>', 200},	/* ª */
-	{'.', ':', 201},	/* ä */
-	{'A', '`', 203},	/* ¿ */
-	{'A', '~', 204},	/* √ */
-	{'O', '~', 205},	/* ’ */
-	{'O', 'E', 206},	/* ë */
-	{'o', 'e', 207},	/* ¶ */
-	{'-', '.', 208},	/* - */
-	{'-', '-', 209},	/* - */
-	{'`', '`', 210},	/* " */
-	{'\'', '\'', 211},	/* " */
-	{'`', ' ', 212},	/* ' */
-	{'\'', ' ', 213},	/* ' */
-	{'-', ':', 214},	/* ˜ */
-	{'D', 'I', 215},	/* ◊ */
-	{'y', ':', 216},	/* ˇ */
-	{'Y', ':', 217},	/* ç */
-	{'/', '/', 218},	/* é */
-	{'E', '=', 219},	/* § Euro System >=8.5 */
-	{'o', 'x', 219},	/* § Currency System <=8.1*/
-	{'<', ' ', 220},	/* – */
-	{'>', ' ', 221},	/*  */
-	{'f', 'i', 222},	/* ﬁ */
-	{'f', 'l', 223},	/* ˛ */
-	{'+', '+', 224},	/* ˝ */
-	{'~', '.', 225},	/* ∑ */
-	{',', ' ', 226},	/* í */
-	{',', ',', 227},	/* ì */
-	{'%', '.', 228},	/* î */
-	{'%', '0', 228},	/* î */
-	{'A', '^', 229},	/* ¬ */
-	{'E', '^', 230},	/*   */
-	{'A', '\'', 231},	/* ¡ */
-	{'E', '"', 232},	/* À */
-	{'E', '`', 233},	/* » */
-	{'I', '\'', 234},	/* Õ */
-	{'I', '^', 235},	/* Œ */
-	{'I', '"', 236},	/* œ */
-	{'I', '`', 237},	/* Ã */
-	{'O', '\'', 238},	/* ” */
-	{'O', '^', 239},	/* ‘ */
-	{'A', 'P', 240},	/* ï */
-	{'O', '`', 241},	/* “ */
-	{'U', '\'', 242},	/* ⁄ */
-	{'U', '^', 243},	/* € */
-	{'U', '`', 244},	/* Ÿ */
-	{'i', '.', 245},	/* û */
-	{NUL, NUL, NUL}
-	};
-
-#   else	/* !MACOS_X */
-
-#    ifdef OLD_DIGRAPHS
+#   ifdef OLD_DIGRAPHS
 
 	/*
 	 * digraphs compatible with Vim 5.x
@@ -557,7 +423,7 @@ static digr_T digraphdefault[] =
 	{'y', '"', 255},	/* x XX */
 	{NUL, NUL, NUL}
 	};
-#    else /* OLD_DIGRAPHS */
+#   else /* OLD_DIGRAPHS */
 
 	/*
 	 * digraphs for Unicode from RFC1345
@@ -792,7 +658,6 @@ static digr_T digraphdefault[] =
 	{'y', ':', 0xff},
 	{'y', '"', 0xff},	// x XX  Vim 5.x compatible
 
-#      ifdef FEAT_MBYTE
 #	define USE_UNICODE_DIGRAPHS
 
 	{'A', '-', 0x0100},
@@ -1957,14 +1822,11 @@ static digr_T digraphdefault[] =
 	{'f', 'l', 0xfb02},
 	{'f', 't', 0xfb05},
 	{'s', 't', 0xfb06},
-#      endif /* FEAT_MBYTE */
 
 	{NUL, NUL, NUL}
        };
 
-#    endif /* OLD_DIGRAPHS */
-
-#   endif /* Macintosh */
+#   endif /* OLD_DIGRAPHS */
 #  endif /* EBCDIC */
 # endif    /* !HPUX_DIGRAPHS */
 #endif	/* !__MINT__ */
@@ -2141,8 +2003,7 @@ getexactdigraph(int char1, int char2, int meta_char)
 	    ++dp;
 	}
     }
-#ifdef FEAT_MBYTE
-# ifdef USE_UNICODE_DIGRAPHS
+#ifdef USE_UNICODE_DIGRAPHS
     if (retval != 0 && !enc_utf8)
     {
 	char_u	    buf[6], *to;
@@ -2166,12 +2027,11 @@ getexactdigraph(int char1, int char2, int meta_char)
 	    (void)convert_setup(&vc, NULL, NULL);
 	}
     }
-# endif
+#endif
 
     /* Ignore multi-byte characters when not in multi-byte mode. */
     if (!has_mbyte && retval > 0xff)
 	retval = 0;
-#endif
 
     if (retval == 0)		/* digraph deleted or not found */
     {
@@ -2297,10 +2157,7 @@ listdigraphs(int use_headers)
 #else
 
 	if (getexactdigraph(dp->char1, dp->char2, FALSE) == dp->result
-# ifdef FEAT_MBYTE
-		&& (has_mbyte || dp->result <= 255)
-# endif
-		)
+		&& (has_mbyte || dp->result <= 255))
 	    printdigraph(dp, use_headers ? &previous : NULL);
 #endif
 	++dp;
@@ -2364,11 +2221,7 @@ printdigraph(digr_T *dp, result_T *previous)
 
     int		list_width;
 
-    if ((dy_flags & DY_UHEX)
-#ifdef FEAT_MBYTE
-	    || has_mbyte
-#endif
-	    )
+    if ((dy_flags & DY_UHEX) || has_mbyte)
 	list_width = 13;
     else
 	list_width = 11;
@@ -2404,7 +2257,6 @@ printdigraph(digr_T *dp, result_T *previous)
 	*p = NUL;
 	msg_outtrans(buf);
 	p = buf;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    /* add a space to draw a composing char on */
@@ -2413,7 +2265,6 @@ printdigraph(digr_T *dp, result_T *previous)
 	    p += (*mb_char2bytes)(dp->result, p);
 	}
 	else
-#endif
 	    *p++ = (char_u)dp->result;
 	*p = NUL;
 	msg_outtrans_attr(buf, HL_ATTR(HLF_8));
@@ -2465,21 +2316,15 @@ keymap_init(void)
 
 	/* Source the keymap file.  It will contain a ":loadkeymap" command
 	 * which will call ex_loadkeymap() below. */
-	buflen = STRLEN(curbuf->b_p_keymap)
-# ifdef FEAT_MBYTE
-					   + STRLEN(p_enc)
-# endif
-						       + 14;
+	buflen = STRLEN(curbuf->b_p_keymap) + STRLEN(p_enc) + 14;
 	buf = alloc((unsigned)buflen);
 	if (buf == NULL)
 	    return e_outofmem;
 
-# ifdef FEAT_MBYTE
 	/* try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath' */
 	vim_snprintf((char *)buf, buflen, "keymap/%s_%s.vim",
 						   curbuf->b_p_keymap, p_enc);
 	if (source_runtime(buf, 0) == FAIL)
-# endif
 	{
 	    /* try finding "keymap/'keymap'.vim" in 'runtimepath'  */
 	    vim_snprintf((char *)buf, buflen, "keymap/%s.vim",

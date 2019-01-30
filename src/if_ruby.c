@@ -1057,11 +1057,11 @@ static void error_print(int state)
 # ifdef RUBY21_OR_LATER
 	bt = rb_funcallv(error, rb_intern("backtrace"), 0, 0);
 	for (i = 0; i < RARRAY_LEN(bt); i++)
-	    msg_attr((char_u *)RSTRING_PTR(RARRAY_AREF(bt, i)), attr);
+	    msg_attr(RSTRING_PTR(RARRAY_AREF(bt, i)), attr);
 # else
 	bt = rb_funcall2(error, rb_intern("backtrace"), 0, 0);
 	for (i = 0; i < RARRAY_LEN(bt); i++)
-	    msg_attr((char_u *)RSTRING_PTR(RARRAY_PTR(bt)[i]), attr);
+	    msg_attr(RSTRING_PTR(RARRAY_PTR(bt)[i]), attr);
 # endif
 	break;
     default:
@@ -1083,11 +1083,11 @@ static VALUE vim_message(VALUE self UNUSED, VALUE str)
 	strcpy(buff, RSTRING_PTR(str));
 	p = strchr(buff, '\n');
 	if (p) *p = '\0';
-	MSG(buff);
+	msg(buff);
     }
     else
     {
-	MSG("");
+	msg("");
     }
     return Qnil;
 }
@@ -1641,7 +1641,7 @@ static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 	if (i > 0) rb_str_cat(str, ", ", 2);
 	rb_str_concat(str, rb_inspect(argv[i]));
     }
-    MSG(RSTRING_PTR(str));
+    msg(RSTRING_PTR(str));
 
     if (argc == 1)
 	ret = argv[0];

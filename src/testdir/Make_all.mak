@@ -105,6 +105,7 @@ NEW_TESTS = \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
+	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
 	test_exit \
@@ -121,6 +122,7 @@ NEW_TESTS = \
 	test_feedkeys \
 	test_file_perm \
 	test_file_size \
+	test_filechanged \
 	test_fileformat \
 	test_filetype \
 	test_filter_cmd \
@@ -243,6 +245,7 @@ NEW_TESTS = \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
+	test_termencoding \
 	test_terminal \
 	test_terminal_fail \
 	test_textformat \
@@ -315,6 +318,7 @@ NEW_TESTS_RES = \
 	test_exit.res \
 	test_farsi.res \
 	test_file_size.res \
+	test_filechanged.res \
 	test_find_complete.res \
 	test_fixeol.res \
 	test_fnameescape.res \
@@ -389,6 +393,7 @@ NEW_TESTS_RES = \
 	test_system.res \
 	test_tab.res \
 	test_tcl.res \
+	test_termencoding.res \
 	test_terminal.res \
 	test_terminal_fail.res \
 	test_textformat.res \

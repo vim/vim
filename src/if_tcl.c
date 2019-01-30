@@ -1832,11 +1832,11 @@ tclmsg(char *text)
     while ((next=strchr(text, '\n')))
     {
 	*next++ = '\0';
-	MSG(text);
+	msg(text);
 	text = next;
     }
     if (*text)
-	MSG(text);
+	msg(text);
 }
 
     static void

@@ -162,7 +162,7 @@ sign_group_get_next_signid(buf_T *buf, char_u *groupname)
 	group = HI2SG(hi);
     }
 
-    // Search for the next usuable sign identifier
+    // Search for the next usable sign identifier
     while (!found)
     {
 	if (group == NULL)
@@ -611,7 +611,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
     char	lbuf[MSG_BUF_LEN];
     char	group[MSG_BUF_LEN];
 
-    MSG_PUTS_TITLE(_("\n--- Signs ---"));
+    msg_puts_title(_("\n--- Signs ---"));
     msg_putchar('\n');
     if (rbuf == NULL)
 	buf = firstbuf;
@@ -622,7 +622,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 	if (buf->b_signlist != NULL)
 	{
 	    vim_snprintf(lbuf, MSG_BUF_LEN, _("Signs for %s:"), buf->b_fname);
-	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
+	    msg_puts_attr(lbuf, HL_ATTR(HLF_D));
 	    msg_putchar('\n');
 	}
 	FOR_ALL_SIGNS_IN_BUF(buf, sign)
@@ -640,7 +640,7 @@ sign_list_placed(buf_T *rbuf, char_u *sign_group)
 			   _("    line=%ld  id=%d%s  name=%s  priority=%d"),
 			   (long)sign->lnum, sign->id, group,
 			   sign_typenr2name(sign->typenr), sign->priority);
-	    MSG_PUTS(lbuf);
+	    msg_puts(lbuf);
 	    msg_putchar('\n');
 	}
 	if (rbuf != NULL)
@@ -660,18 +660,28 @@ sign_mark_adjust(
     long	amount_after)
 {
     signlist_T	*sign;		// a sign in a b_signlist
+    linenr_T	new_lnum;
 
     FOR_ALL_SIGNS_IN_BUF(curbuf, sign)
     {
+	// Ignore changes to lines after the sign
+	if (sign->lnum < line1)
+	    continue;
+	new_lnum = sign->lnum;
 	if (sign->lnum >= line1 && sign->lnum <= line2)
 	{
-	    if (amount == MAXLNUM)
-		sign->lnum = line1;
-	    else
-		sign->lnum += amount;
+	    if (amount != MAXLNUM)
+		new_lnum += amount;
 	}
 	else if (sign->lnum > line2)
-	    sign->lnum += amount_after;
+	    // Lines inserted or deleted before the sign
+	    new_lnum += amount_after;
+
+	// If the new sign line number is past the last line in the buffer,
+	// then don't adjust the line number. Otherwise, it will always be past
+	// the last line and will not be visible.
+	if (new_lnum <= curbuf->b_ml.ml_line_count)
+	    sign->lnum = new_lnum;
     }
 }
 
@@ -717,6 +727,138 @@ sign_find(char_u *name, sign_T **sp_prev)
 }
 
 /*
+ * Allocate a new sign
+ */
+    static sign_T *
+alloc_new_sign(char_u *name)
+{
+    sign_T	*sp;
+    sign_T	*lp;
+    int	start = next_sign_typenr;
+
+    // Allocate a new sign.
+    sp = (sign_T *)alloc_clear_id((unsigned)sizeof(sign_T),
+	    aid_sign_define_by_name);
+    if (sp == NULL)
+	return NULL;
+
+    // Check that next_sign_typenr is not already being used.
+    // This only happens after wrapping around.  Hopefully
+    // another one got deleted and we can use its number.
+    for (lp = first_sign; lp != NULL; )
+    {
+	if (lp->sn_typenr == next_sign_typenr)
+	{
+	    ++next_sign_typenr;
+	    if (next_sign_typenr == MAX_TYPENR)
+		next_sign_typenr = 1;
+	    if (next_sign_typenr == start)
+	    {
+		vim_free(sp);
+		emsg(_("E612: Too many signs defined"));
+		return NULL;
+	    }
+	    lp = first_sign;  // start all over
+	    continue;
+	}
+	lp = lp->sn_next;
+    }
+
+    sp->sn_typenr = next_sign_typenr;
+    if (++next_sign_typenr == MAX_TYPENR)
+	next_sign_typenr = 1; // wrap around
+
+    sp->sn_name = vim_strsave(name);
+    if (sp->sn_name == NULL)  // out of memory
+    {
+	vim_free(sp);
+	return NULL;
+    }
+
+    return sp;
+}
+
+/*
+ * Initialize the icon information for a new sign
+ */
+    static void
+sign_define_init_icon(sign_T *sp, char_u *icon)
+{
+    vim_free(sp->sn_icon);
+    sp->sn_icon = vim_strsave(icon);
+    backslash_halve(sp->sn_icon);
+# ifdef FEAT_SIGN_ICONS
+    if (gui.in_use)
+    {
+	out_flush();
+	if (sp->sn_image != NULL)
+	    gui_mch_destroy_sign(sp->sn_image);
+	sp->sn_image = gui_mch_register_sign(sp->sn_icon);
+    }
+# endif
+}
+
+/*
+ * Initialize the text for a new sign
+ */
+    static int
+sign_define_init_text(sign_T *sp, char_u *text)
+{
+    char_u	*s;
+    char_u	*endp;
+    int		cells;
+    int		len;
+
+    endp = text + (int)STRLEN(text);
+
+    // Remove backslashes so that it is possible to use a space.
+    for (s = text; s + 1 < endp; ++s)
+	if (*s == '\\')
+	{
+	    STRMOVE(s, s + 1);
+	    --endp;
+	}
+
+    // Count cells and check for non-printable chars
+    if (has_mbyte)
+    {
+	cells = 0;
+	for (s = text; s < endp; s += (*mb_ptr2len)(s))
+	{
+	    if (!vim_isprintc((*mb_ptr2char)(s)))
+		break;
+	    cells += (*mb_ptr2cells)(s);
+	}
+    }
+    else
+    {
+	for (s = text; s < endp; ++s)
+	    if (!vim_isprintc(*s))
+		break;
+	cells = (int)(s - text);
+    }
+
+    // Currently sign text must be one or two display cells
+    if (s != endp || cells < 1 || cells > 2)
+    {
+	semsg(_("E239: Invalid sign text: %s"), text);
+	return FAIL;
+    }
+
+    vim_free(sp->sn_text);
+    // Allocate one byte more if we need to pad up
+    // with a space.
+    len = (int)(endp - text + ((cells == 1) ? 1 : 0));
+    sp->sn_text = vim_strnsave(text, len);
+
+    // For single character sign text, pad with a space.
+    if (sp->sn_text != NULL && cells == 1)
+	STRCPY(sp->sn_text + len - 1, " ");
+
+    return OK;
+}
+
+/*
  * Define a new sign or update an existing sign
  */
     int
@@ -733,47 +875,9 @@ sign_define_by_name(
     sp = sign_find(name, &sp_prev);
     if (sp == NULL)
     {
-	sign_T	*lp;
-	int	start = next_sign_typenr;
-
-	// Allocate a new sign.
-	sp = (sign_T *)alloc_clear_id((unsigned)sizeof(sign_T),
-						aid_sign_define_by_name);
+	sp = alloc_new_sign(name);
 	if (sp == NULL)
 	    return FAIL;
-
-	// Check that next_sign_typenr is not already being used.
-	// This only happens after wrapping around.  Hopefully
-	// another one got deleted and we can use its number.
-	for (lp = first_sign; lp != NULL; )
-	{
-	    if (lp->sn_typenr == next_sign_typenr)
-	    {
-		++next_sign_typenr;
-		if (next_sign_typenr == MAX_TYPENR)
-		    next_sign_typenr = 1;
-		if (next_sign_typenr == start)
-		{
-		    vim_free(sp);
-		    emsg(_("E612: Too many signs defined"));
-		    return FAIL;
-		}
-		lp = first_sign;  // start all over
-		continue;
-	    }
-	    lp = lp->sn_next;
-	}
-
-	sp->sn_typenr = next_sign_typenr;
-	if (++next_sign_typenr == MAX_TYPENR)
-	    next_sign_typenr = 1; // wrap around
-
-	sp->sn_name = vim_strsave(name);
-	if (sp->sn_name == NULL)  // out of memory
-	{
-	    vim_free(sp);
-	    return FAIL;
-	}
 
 	// add the new sign to the list of signs
 	if (sp_prev == NULL)
@@ -784,73 +888,10 @@ sign_define_by_name(
 
     // set values for a defined sign.
     if (icon != NULL)
-    {
-	vim_free(sp->sn_icon);
-	sp->sn_icon = vim_strsave(icon);
-	backslash_halve(sp->sn_icon);
-# ifdef FEAT_SIGN_ICONS
-	if (gui.in_use)
-	{
-	    out_flush();
-	    if (sp->sn_image != NULL)
-		gui_mch_destroy_sign(sp->sn_image);
-	    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
-	}
-# endif
-    }
+	sign_define_init_icon(sp, icon);
 
-    if (text != NULL)
-    {
-	char_u	*s;
-	char_u	*endp;
-	int	cells;
-	int	len;
-
-	endp = text + (int)STRLEN(text);
-	for (s = text; s + 1 < endp; ++s)
-	    if (*s == '\\')
-	    {
-		// Remove a backslash, so that it is possible
-		// to use a space.
-		STRMOVE(s, s + 1);
-		--endp;
-	    }
-# ifdef FEAT_MBYTE
-	// Count cells and check for non-printable chars
-	if (has_mbyte)
-	{
-	    cells = 0;
-	    for (s = text; s < endp; s += (*mb_ptr2len)(s))
-	    {
-		if (!vim_isprintc((*mb_ptr2char)(s)))
-		    break;
-		cells += (*mb_ptr2cells)(s);
-	    }
-	}
-	else
-# endif
-	{
-	    for (s = text; s < endp; ++s)
-		if (!vim_isprintc(*s))
-		    break;
-	    cells = (int)(s - text);
-	}
-	// Currently must be one or two display cells
-	if (s != endp || cells < 1 || cells > 2)
-	{
-	    semsg(_("E239: Invalid sign text: %s"), text);
-	    return FAIL;
-	}
-
-	vim_free(sp->sn_text);
-	// Allocate one byte more if we need to pad up
-	// with a space.
-	len = (int)(endp - text + ((cells == 1) ? 1 : 0));
-	sp->sn_text = vim_strnsave(text, len);
-
-	if (sp->sn_text != NULL && cells == 1)
-	    STRCPY(sp->sn_text + len - 1, " ");
-    }
+    if (text != NULL && (sign_define_init_text(sp, text) == FAIL))
+	return FAIL;
 
     if (linehl != NULL)
 	sp->sn_line_hl = syn_check_group(linehl, (int)STRLEN(linehl));
@@ -996,7 +1037,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 
     if ((lnum = buf_findsign(buf, sign_id, sign_group)) <= 0)
     {
-	semsg(_("E157: Invalid sign ID: %ld"), sign_id);
+	semsg(_("E157: Invalid sign ID: %d"), sign_id);
 	return -1;
     }
 
@@ -1597,37 +1638,37 @@ sign_list_defined(sign_T *sp)
     smsg("sign %s", sp->sn_name);
     if (sp->sn_icon != NULL)
     {
-	MSG_PUTS(" icon=");
+	msg_puts(" icon=");
 	msg_outtrans(sp->sn_icon);
 # ifdef FEAT_SIGN_ICONS
 	if (sp->sn_image == NULL)
-	    MSG_PUTS(_(" (NOT FOUND)"));
+	    msg_puts(_(" (NOT FOUND)"));
 # else
-	MSG_PUTS(_(" (not supported)"));
+	msg_puts(_(" (not supported)"));
 # endif
     }
     if (sp->sn_text != NULL)
     {
-	MSG_PUTS(" text=");
+	msg_puts(" text=");
 	msg_outtrans(sp->sn_text);
     }
     if (sp->sn_line_hl > 0)
     {
-	MSG_PUTS(" linehl=");
+	msg_puts(" linehl=");
 	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
 	if (p == NULL)
-	    MSG_PUTS("NONE");
+	    msg_puts("NONE");
 	else
-	    msg_puts(p);
+	    msg_puts((char *)p);
     }
     if (sp->sn_text_hl > 0)
     {
-	MSG_PUTS(" texthl=");
+	msg_puts(" texthl=");
 	p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
 	if (p == NULL)
-	    MSG_PUTS("NONE");
+	    msg_puts("NONE");
 	else
-	    msg_puts(p);
+	    msg_puts((char *)p);
     }
 }
 

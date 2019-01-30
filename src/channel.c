@@ -80,12 +80,34 @@ fd_read(sock_T fd, char *buf, size_t len)
     static int
 fd_write(sock_T fd, char *buf, size_t len)
 {
-    HANDLE h = (HANDLE)fd;
-    DWORD nwrite;
+    size_t	todo = len;
+    HANDLE	h = (HANDLE)fd;
+    DWORD	nwrite, size, done = 0;
+    OVERLAPPED	ov;
 
-    if (!WriteFile(h, buf, (DWORD)len, &nwrite, NULL))
-	return -1;
-    return (int)nwrite;
+    while (todo > 0)
+    {
+	if (todo > MAX_NAMED_PIPE_SIZE)
+	    size = MAX_NAMED_PIPE_SIZE;
+	else
+	    size = (DWORD)todo;
+	// If the pipe overflows while the job does not read the data, WriteFile
+	// will block forever. This abandons the write.
+	memset(&ov, 0, sizeof(ov));
+	if (!WriteFile(h, buf + done, size, &nwrite, &ov))
+	{
+	    DWORD err = GetLastError();
+
+	    if (err != ERROR_IO_PENDING)
+		return -1;
+	    if (!GetOverlappedResult(h, &ov, &nwrite, FALSE))
+		return -1;
+	    FlushFileBuffers(h);
+	}
+	todo -= nwrite;
+	done += nwrite;
+    }
+    return (int)done;
 }
 
     static void
@@ -1026,7 +1048,7 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 # if defined(UNIX)
 	/* Do not end the job when all output channels are closed, wait until
 	 * the job ended. */
-	if (isatty(in))
+	if (mch_isatty(in))
 	    channel->ch_to_be_closed |= (1U << PART_IN);
 # endif
     }
@@ -2752,6 +2774,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     return TRUE;
 }
 
+#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 /*
  * Return TRUE when channel "channel" is open for writing to.
  * Also returns FALSE or invalid "channel".
@@ -2762,6 +2785,7 @@ channel_can_write_to(channel_T *channel)
     return channel != NULL && (channel->CH_SOCK_FD != INVALID_FD
 			  || channel->CH_IN_FD != INVALID_FD);
 }
+#endif
 
 /*
  * Return TRUE when channel "channel" is open for reading or writing.
@@ -3181,21 +3205,14 @@ channel_wait(channel_T *channel, sock_T fd, int timeout)
 
 	    if (r && nread > 0)
 		return CW_READY;
-	    if (r == 0)
+
+	    if (channel->ch_named_pipe)
 	    {
-		DWORD err = GetLastError();
-
-		if (err != ERROR_BAD_PIPE && err != ERROR_BROKEN_PIPE)
-		    return CW_ERROR;
-
-		if (channel->ch_named_pipe)
-		{
-		    DisconnectNamedPipe((HANDLE)fd);
-		    ConnectNamedPipe((HANDLE)fd, NULL);
-		}
-		else
-		    return CW_ERROR;
+		DisconnectNamedPipe((HANDLE)fd);
+		ConnectNamedPipe((HANDLE)fd, NULL);
 	    }
+	    else if (r == 0)
+		return CW_ERROR;
 
 	    /* perhaps write some buffer lines */
 	    channel_write_any_lines();
@@ -3835,7 +3852,6 @@ channel_send(
 		ConnectNamedPipe((HANDLE)fd, NULL);
 	    }
 #endif
-
 	}
 	if (res < 0 && (errno == EWOULDBLOCK
 #ifdef EAGAIN
@@ -4078,7 +4094,7 @@ ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
     else
     {
 	text = tv_get_string_buf(&argvars[1], buf);
-	len = STRLEN(text);
+	len = (int)STRLEN(text);
     }
     channel = send_common(argvars, text, len, 0, eval, &opt,
 			      eval ? "ch_evalraw" : "ch_sendraw", &part_read);
@@ -4304,7 +4320,7 @@ channel_parse_messages(void)
     int		r;
     ch_part_T	part = PART_SOCK;
 #ifdef ELAPSED_FUNC
-    ELAPSED_TYPE  start_tv;
+    elapsed_T	start_tv;
 
     ELAPSED_INIT(start_tv);
 #endif
@@ -5181,8 +5197,11 @@ job_free_contents(job_T *job)
     }
 }
 
+/*
+ * Remove "job" from the list of jobs.
+ */
     static void
-job_free_job(job_T *job)
+job_unlink(job_T *job)
 {
     if (job->jv_next != NULL)
 	job->jv_next->jv_prev = job->jv_prev;
@@ -5190,6 +5209,12 @@ job_free_job(job_T *job)
 	first_job = job->jv_next;
     else
 	job->jv_prev->jv_next = job->jv_next;
+}
+
+    static void
+job_free_job(job_T *job)
+{
+    job_unlink(job);
     vim_free(job);
 }
 
@@ -5203,12 +5228,44 @@ job_free(job_T *job)
     }
 }
 
+job_T *jobs_to_free = NULL;
+
+/*
+ * Put "job" in a list to be freed later, when it's no longer referenced.
+ */
+    static void
+job_free_later(job_T *job)
+{
+    job_unlink(job);
+    job->jv_next = jobs_to_free;
+    jobs_to_free = job;
+}
+
+    static void
+free_jobs_to_free_later(void)
+{
+    job_T *job;
+
+    while (jobs_to_free != NULL)
+    {
+	job = jobs_to_free;
+	jobs_to_free = job->jv_next;
+	job_free_contents(job);
+	vim_free(job);
+    }
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 job_free_all(void)
 {
     while (first_job != NULL)
 	job_free(first_job);
+    free_jobs_to_free_later();
+
+# ifdef FEAT_TERMINAL
+    free_unused_terminals();
+# endif
 }
 #endif
 
@@ -5379,6 +5436,8 @@ win32_build_cmd(list_T *l, garray_T *gap)
  * NOTE: Must call job_cleanup() only once right after the status of "job"
  * changed to JOB_ENDED (i.e. after job_status() returned "dead" first or
  * mch_detect_ended_job() returned non-NULL).
+ * If the job is no longer used it will be removed from the list of jobs, and
+ * deleted a bit later.
  */
     void
 job_cleanup(job_T *job)
@@ -5424,15 +5483,13 @@ job_cleanup(job_T *job)
 	--safe_to_invoke_callback;
     }
 
-    /* Do not free the job in case the close callback of the associated channel
-     * isn't invoked yet and may get information by job_info(). */
+    // Do not free the job in case the close callback of the associated channel
+    // isn't invoked yet and may get information by job_info().
     if (job->jv_refcount == 0 && !job_channel_still_useful(job))
-    {
-	/* The job was already unreferenced and the associated channel was
-	 * detached, now that it ended it can be freed. Careful: caller must
-	 * not use "job" after this! */
-	job_free(job);
-    }
+	// The job was already unreferenced and the associated channel was
+	// detached, now that it ended it can be freed. However, a caller might
+	// still use it, thus free it a bit later.
+	job_free_later(job);
 }
 
 /*
@@ -5639,8 +5696,11 @@ job_check_ended(void)
 	if (job == NULL)
 	    break;
 	did_end = TRUE;
-	job_cleanup(job); // may free "job"
+	job_cleanup(job); // may add "job" to jobs_to_free
     }
+
+    // Actually free jobs that were cleaned up.
+    free_jobs_to_free_later();
 
     if (channel_need_redraw)
     {

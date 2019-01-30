@@ -508,17 +508,12 @@ check_cursor_moved(win_T *wp)
     }
     else if (wp->w_cursor.col != wp->w_valid_cursor.col
 	     || wp->w_leftcol != wp->w_valid_leftcol
-#ifdef FEAT_VIRTUALEDIT
-	     || wp->w_cursor.coladd != wp->w_valid_cursor.coladd
-#endif
-	     )
+	     || wp->w_cursor.coladd != wp->w_valid_cursor.coladd)
     {
 	wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 	wp->w_valid_cursor.col = wp->w_cursor.col;
 	wp->w_valid_leftcol = wp->w_leftcol;
-#ifdef FEAT_VIRTUALEDIT
 	wp->w_valid_cursor.coladd = wp->w_cursor.coladd;
-#endif
     }
 }
 
@@ -934,7 +929,7 @@ curwin_col_off2(void)
 }
 
 /*
- * compute curwin->w_wcol and curwin->w_virtcol.
+ * Compute curwin->w_wcol and curwin->w_virtcol.
  * Also updates curwin->w_wrow and curwin->w_cline_row.
  * Also updates curwin->w_leftcol.
  */
@@ -2800,9 +2795,7 @@ do_check_cursorbind(void)
 {
     linenr_T	line = curwin->w_cursor.lnum;
     colnr_T	col = curwin->w_cursor.col;
-# ifdef FEAT_VIRTUALEDIT
     colnr_T	coladd = curwin->w_cursor.coladd;
-# endif
     colnr_T	curswant = curwin->w_curswant;
     int		set_curswant = curwin->w_set_curswant;
     win_T	*old_curwin = curwin;
@@ -2829,9 +2822,7 @@ do_check_cursorbind(void)
 # endif
 		curwin->w_cursor.lnum = line;
 	    curwin->w_cursor.col = col;
-# ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = coladd;
-# endif
 	    curwin->w_curswant = curswant;
 	    curwin->w_set_curswant = set_curswant;
 
@@ -2845,11 +2836,9 @@ do_check_cursorbind(void)
 		validate_cursor();
 # endif
 	    restart_edit = restart_edit_save;
-# ifdef FEAT_MBYTE
 	    /* Correct cursor for multi-byte character. */
 	    if (has_mbyte)
 		mb_adjust_cursor();
-# endif
 	    redraw_later(VALID);
 
 	    /* Only scroll when 'scrollbind' hasn't done this. */

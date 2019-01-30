@@ -310,7 +310,7 @@ newwindow:
 /* move window to new tab page */
     case 'T':
 		if (one_window())
-		    MSG(_(m_onlyone));
+		    msg(_(m_onlyone));
 		else
 		{
 		    tabpage_T	*oldtab = curtab;
@@ -3379,7 +3379,7 @@ close_others(
     if (one_window())
     {
 	if (message && !autocmd_busy)
-	    MSG(_(m_onlyone));
+	    msg(_(m_onlyone));
 	return;
     }
 
@@ -3439,9 +3439,7 @@ win_init_empty(win_T *wp)
     wp->w_lines_valid = 0;
     wp->w_cursor.lnum = 1;
     wp->w_curswant = wp->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     wp->w_cursor.coladd = 0;
-#endif
     wp->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
     wp->w_pcmark.col = 0;
     wp->w_prev_pcmark.lnum = 0;
@@ -4418,10 +4416,8 @@ win_enter_ext(
     curwin = wp;
     curbuf = wp->w_buffer;
     check_cursor();
-#ifdef FEAT_VIRTUALEDIT
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
-#endif
     changed_line_abv_curs();	/* assume cursor position needs updating */
 
     if (curwin->w_localdir != NULL)
@@ -6180,12 +6176,9 @@ file_name_in_line(
      */
     while (ptr > line)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte && (len = (*mb_head_off)(line, ptr - 1)) > 0)
 	    ptr -= len + 1;
-	else
-#endif
-	if (vim_isfilec(ptr[-1])
+	else if (vim_isfilec(ptr[-1])
 		|| ((options & FNAME_HYP) && path_is_url(ptr - 1)))
 	    --ptr;
 	else
@@ -6214,11 +6207,9 @@ file_name_in_line(
 	if (ptr[len] == '\\')
 	    /* Skip over the "\" in "\ ". */
 	    ++len;
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    len += (*mb_ptr2len)(ptr + len);
 	else
-#endif
 	    ++len;
     }
 
@@ -6782,7 +6773,7 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %ld (must be greater than or equal to 1)"), id);
+	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"), id);
 	return -1;
     }
     if (id != -1)
@@ -6792,7 +6783,7 @@ match_add(
 	{
 	    if (cur->id == id)
 	    {
-		semsg(_("E801: ID already taken: %ld"), id);
+		semsg(_("E801: ID already taken: %d"), id);
 		return -1;
 	    }
 	    cur = cur->next;
@@ -6829,7 +6820,7 @@ match_add(
     m->match.regprog = regprog;
     m->match.rmm_ic = FALSE;
     m->match.rmm_maxcol = 0;
-# if defined(FEAT_CONCEAL) && defined(FEAT_MBYTE)
+# if defined(FEAT_CONCEAL)
     m->conceal_char = 0;
     if (conceal_char != NULL)
 	m->conceal_char = (*mb_ptr2char)(conceal_char);
@@ -6969,7 +6960,7 @@ match_delete(win_T *wp, int id, int perr)
     if (id < 1)
     {
 	if (perr == TRUE)
-	    semsg(_("E802: Invalid ID: %ld (must be greater than or equal to 1)"),
+	    semsg(_("E802: Invalid ID: %d (must be greater than or equal to 1)"),
 									  id);
 	return -1;
     }
@@ -6981,7 +6972,7 @@ match_delete(win_T *wp, int id, int perr)
     if (cur == NULL)
     {
 	if (perr == TRUE)
-	    semsg(_("E803: ID not found: %ld"), id);
+	    semsg(_("E803: ID not found: %d"), id);
 	return -1;
     }
     if (cur == prev)

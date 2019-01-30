@@ -21,30 +21,23 @@ typedef unsigned short	short_u;
 #endif
 
 /*
- * position in file or buffer
+ * Position in file or buffer.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
-#ifdef FEAT_VIRTUALEDIT
-    colnr_T	coladd;
-#endif
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
+    colnr_T	coladd; // extra virtual column
 } pos_T;
 
-#ifdef FEAT_VIRTUALEDIT
-# define INIT_POS_T(l, c, ca) {l, c, ca}
-#else
-# define INIT_POS_T(l, c, ca) {l, c}
-#endif
 
 /*
  * Same, but without coladd.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
 } lpos_T;
 
 /*
@@ -397,9 +390,7 @@ struct u_header
     u_entry_T	*uh_entry;	/* pointer to first entry */
     u_entry_T	*uh_getbot_entry; /* pointer to where ue_bot must be set */
     pos_T	uh_cursor;	/* cursor position before saving */
-#ifdef FEAT_VIRTUALEDIT
     long	uh_cursor_vcol;
-#endif
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
@@ -418,12 +409,8 @@ struct u_header
 /*
  * structures used in undo.c
  */
-#if VIM_SIZEOF_INT > 2
-# define ALIGN_LONG	/* longword alignment and use filler byte */
-# define ALIGN_SIZE (sizeof(long))
-#else
-# define ALIGN_SIZE (sizeof(short))
-#endif
+#define ALIGN_LONG	/* longword alignment and use filler byte */
+#define ALIGN_SIZE (sizeof(long))
 
 #define ALIGN_MASK (ALIGN_SIZE - 1)
 
@@ -1105,9 +1092,7 @@ typedef struct
 {
     char_u	*vir_line;	/* text of the current line */
     FILE	*vir_fd;	/* file descriptor */
-#ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
-#endif
     int		vir_version;	/* viminfo version detected or -1 */
     garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
@@ -1233,19 +1218,11 @@ typedef unsigned long	    uvarnumber_T;
 # endif
 #else
 /* Use 32-bit Number. */
-# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#define VARNUM_MIN	    LONG_MIN
-#define VARNUM_MAX	    LONG_MAX
-#define UVARNUM_MAX	    ULONG_MAX
-# else
 typedef int		    varnumber_T;
 typedef unsigned int	    uvarnumber_T;
 #define VARNUM_MIN	    INT_MIN
 #define VARNUM_MAX	    INT_MAX
 #define UVARNUM_MAX	    UINT_MAX
-# endif
 #endif
 
 typedef double	float_T;
@@ -1946,6 +1923,10 @@ typedef struct {
 # define CRYPT_M_BF	1
 # define CRYPT_M_BF2	2
 # define CRYPT_M_COUNT	3 /* number of crypt methods */
+
+// Currently all crypt methods work inplace.  If one is added that isn't then
+// define this.
+//  # define CRYPT_NOT_INPLACE 1
 #endif
 
 
@@ -2015,16 +1996,12 @@ typedef struct {
     /* for spell checking */
     garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
     char_u	b_spell_ismw[256];/* flags: is midword char */
-# ifdef FEAT_MBYTE
     char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
-# endif
     char_u	*b_p_spc;	/* 'spellcapcheck' */
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
-# ifdef FEAT_MBYTE
     int		b_cjk;		/* all CJK letters as OK */
-# endif
 #endif
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
     int		dummy;
@@ -2235,9 +2212,7 @@ struct file_buffer
     unsigned	b_bkc_flags;    /* flags for 'backupcopy' */
     int		b_p_ci;		/* 'copyindent' */
     int		b_p_bin;	/* 'binary' */
-#ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
-#endif
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
 #ifdef FEAT_QUICKFIX
@@ -2272,9 +2247,7 @@ struct file_buffer
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
     int	        b_p_et_nopaste; /* b_p_et saved for paste mode */
-#ifdef FEAT_MBYTE
     char_u	*b_p_fenc;	/* 'fileencoding' */
-#endif
     char_u	*b_p_ff;	/* 'fileformat' */
     char_u	*b_p_ft;	/* 'filetype' */
     char_u	*b_p_fo;	/* 'formatoptions' */
@@ -2306,9 +2279,7 @@ struct file_buffer
 #ifdef FEAT_LISP
     int		b_p_lisp;	/* 'lisp' */
 #endif
-#ifdef FEAT_MBYTE
     char_u	*b_p_menc;	/* 'makeencoding' */
-#endif
     char_u	*b_p_mps;	/* 'matchpairs' */
     int		b_p_ml;		/* 'modeline' */
     int		b_p_ml_nobin;	/* b_p_ml saved for binary mode */
@@ -2427,11 +2398,9 @@ struct file_buffer
 
     int		b_start_eol;	/* last line had eol when it was read */
     int		b_start_ffc;	/* first char of 'ff' when edit started */
-#ifdef FEAT_MBYTE
     char_u	*b_start_fenc;	/* 'fileencoding' when edit started or NULL */
     int		b_bad_char;	/* "++bad=" argument when edit started or 0 */
     int		b_start_bomb;	/* 'bomb' when it was read */
-#endif
 
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
@@ -3109,10 +3078,8 @@ typedef struct cmdarg_S
     int		prechar;	/* prefix character (optional, always 'g') */
     int		cmdchar;	/* command character */
     int		nchar;		/* next command character (optional) */
-#ifdef FEAT_MBYTE
     int		ncharC1;	/* first composing character (optional) */
     int		ncharC2;	/* second composing character (optional) */
-#endif
     int		extra_char;	/* yet another character (optional) */
     long	opcount;	/* count before an operator */
     long	count0;		/* count before command, default 0 */

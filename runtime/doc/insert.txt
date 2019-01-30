@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2018 Feb 10
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

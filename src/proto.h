@@ -62,6 +62,7 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "autocmd.pro"
 # include "buffer.pro"
 # include "charset.pro"
 # ifdef FEAT_CSCOPE
@@ -108,19 +109,31 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg(const char *, ...);
+smsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr(int, const char *, ...);
+smsg_attr(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr_keep(int, const char *, ...);
+smsg_attr_keep(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
@@ -156,10 +169,7 @@ char_u *vim_strpbrk(char_u *s, char_u *charset);
 void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
 # include "move.pro"
-# if defined(FEAT_MBYTE) || defined(FEAT_XIM) || defined(FEAT_KEYMAP) \
-	|| defined(FEAT_POSTSCRIPT)
-#  include "mbyte.pro"
-# endif
+# include "mbyte.pro"
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
@@ -244,7 +254,7 @@ void ch_log(channel_T *ch, const char *fmt, ...)
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
-#  if defined(UNIX) || defined(MACOS_X)
+#  if defined(UNIX) || defined(MACOS_X) || defined(VMS)
 #   include "pty.pro"
 #  endif
 # endif
@@ -282,9 +292,6 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #  endif
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"
-#  endif
-#  ifdef FEAT_SUN_WORKSHOP
-#   include "workshop.pro"
 #  endif
 # endif	/* FEAT_GUI */
 

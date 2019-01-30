@@ -69,13 +69,11 @@
 #endif
 
 
-#ifdef FEAT_MBYTE
 /* Possible values for 'encoding' */
-# define ENC_UCSBOM	"ucs-bom"	/* check for BOM at start of file */
+#define ENC_UCSBOM	"ucs-bom"	/* check for BOM at start of file */
 
 /* default value for 'encoding' */
-# define ENC_DFLT	"latin1"
-#endif
+#define ENC_DFLT	"latin1"
 
 /* end-of-line style */
 #define EOL_UNKNOWN	-1	/* not defined yet */
@@ -315,10 +313,8 @@ EXTERN long	p_aleph;	/* 'aleph' */
 #ifdef FEAT_AUTOCHDIR
 EXTERN int	p_acd;		/* 'autochdir' */
 #endif
-#ifdef FEAT_MBYTE
 EXTERN char_u	*p_ambw;	/* 'ambiwidth' */
 EXTERN char_u	*p_emoji;	/* 'emoji' */
-#endif
 #if defined(FEAT_GUI) && defined(MACOS_X)
 EXTERN int	*p_antialias;	/* 'antialias' */
 #endif
@@ -395,21 +391,17 @@ EXTERN char_u	*p_bsdir;	/* 'browsedir' */
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_breakat;	/* 'breakat' */
 #endif
-#ifdef FEAT_MBYTE
 EXTERN char_u	*p_cmp;		/* 'casemap' */
 EXTERN unsigned	cmp_flags;
-# ifdef IN_OPTION_C
+#ifdef IN_OPTION_C
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
-# endif
-# define CMP_INTERNAL		0x001
-# define CMP_KEEPASCII		0x002
 #endif
-#ifdef FEAT_MBYTE
+#define CMP_INTERNAL		0x001
+#define CMP_KEEPASCII		0x002
 EXTERN char_u	*p_enc;		/* 'encoding' */
 EXTERN int	p_deco;		/* 'delcombine' */
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 EXTERN char_u	*p_ccv;		/* 'charconvert' */
-# endif
 #endif
 #ifdef FEAT_CMDWIN
 EXTERN char_u	*p_cedit;	/* 'cedit' */
@@ -482,9 +474,7 @@ EXTERN char_u	*p_gp;		/* 'grepprg' */
 EXTERN char_u	*p_ei;		/* 'eventignore' */
 EXTERN int	p_ek;		/* 'esckeys' */
 EXTERN int	p_exrc;		/* 'exrc' */
-#ifdef FEAT_MBYTE
 EXTERN char_u	*p_fencs;	/* 'fileencodings' */
-#endif
 EXTERN char_u	*p_ffs;		/* 'fileformats' */
 EXTERN long	p_fic;		/* 'fileignorecase' */
 #ifdef FEAT_FOLDING
@@ -519,10 +509,8 @@ EXTERN char_u	*p_pdev;	/* 'printdevice' */
 # ifdef FEAT_POSTSCRIPT
 EXTERN char_u	*p_penc;	/* 'printencoding' */
 EXTERN char_u	*p_pexpr;	/* 'printexpr' */
-#   ifdef FEAT_MBYTE
 EXTERN char_u	*p_pmfn;	/* 'printmbfont' */
 EXTERN char_u	*p_pmcs;	/* 'printmbcharset' */
-#   endif
 # endif
 EXTERN char_u	*p_pfn;		/* 'printfont' */
 EXTERN char_u	*p_popt;	/* 'printoptions' */
@@ -534,9 +522,7 @@ EXTERN char_u	*p_guifont;	/* 'guifont' */
 # ifdef FEAT_XFONTSET
 EXTERN char_u	*p_guifontset;	/* 'guifontset' */
 # endif
-# ifdef FEAT_MBYTE
 EXTERN char_u	*p_guifontwide;	/* 'guifontwide' */
-# endif
 EXTERN int	p_guipty;	/* 'guipty' */
 #endif
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
@@ -586,14 +572,12 @@ EXTERN char_u	*p_imak;	/* 'imactivatekey' */
 #define IM_OVER_THE_SPOT	1L
 EXTERN long	p_imst;		/* 'imstyle' */
 #endif
-#if defined(FEAT_EVAL) && defined(FEAT_MBYTE)
+#if defined(FEAT_EVAL)
 EXTERN char_u	*p_imaf;	/* 'imactivatefunc' */
 EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
 #endif
-#ifdef FEAT_MBYTE
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
-#endif
 EXTERN int	p_is;		/* 'incsearch' */
 EXTERN int	p_im;		/* 'insertmode' */
 EXTERN char_u	*p_isf;		/* 'isfname' */
@@ -629,9 +613,7 @@ EXTERN char_u	*p_luadll;	/* 'luadll' */
 EXTERN int	p_macatsui;	/* 'macatsui' */
 #endif
 EXTERN int	p_magic;	/* 'magic' */
-#ifdef FEAT_MBYTE
 EXTERN char_u	*p_menc;	/* 'makeencoding' */
-#endif
 #ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_mef;		/* 'makeef' */
 EXTERN char_u	*p_mp;		/* 'makeprg' */
@@ -644,9 +626,7 @@ EXTERN char_u   *p_cc;		/* 'colorcolumn' */
 EXTERN int      p_cc_cols[256]; /* array for 'colorcolumn' columns */
 #endif
 EXTERN long	p_mat;		/* 'matchtime' */
-#ifdef FEAT_MBYTE
 EXTERN long	p_mco;		/* 'maxcombine' */
-#endif
 #ifdef FEAT_EVAL
 EXTERN long	p_mfd;		/* 'maxfuncdepth' */
 #endif
@@ -850,9 +830,7 @@ EXTERN char_u	*p_tcldll;	/* 'tcldll' */
 #ifdef FEAT_ARABIC
 EXTERN int	p_tbidi;	/* 'termbidi' */
 #endif
-#ifdef FEAT_MBYTE
 EXTERN char_u	*p_tenc;	/* 'termencoding' */
-#endif
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
@@ -930,17 +908,15 @@ EXTERN char_u	*p_vop;		/* 'viewoptions' */
 EXTERN unsigned	vop_flags;	/* uses SSOP_ flags */
 #endif
 EXTERN int	p_vb;		/* 'visualbell' */
-#ifdef FEAT_VIRTUALEDIT
 EXTERN char_u	*p_ve;		/* 'virtualedit' */
 EXTERN unsigned ve_flags;
-# ifdef IN_OPTION_C
+#ifdef IN_OPTION_C
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", NULL};
-# endif
-# define VE_BLOCK	5	/* includes "all" */
-# define VE_INSERT	6	/* includes "all" */
-# define VE_ALL		4
-# define VE_ONEMORE	8
 #endif
+#define VE_BLOCK	5	/* includes "all" */
+#define VE_INSERT	6	/* includes "all" */
+#define VE_ALL		4
+#define VE_ONEMORE	8
 EXTERN long	p_verbose;	/* 'verbose' */
 #ifdef IN_OPTION_C
 char_u	*p_vfile = (char_u *)""; /* used before options are initialized */
@@ -1001,9 +977,7 @@ enum
 #endif
     , BV_BIN
     , BV_BL
-#ifdef FEAT_MBYTE
     , BV_BOMB
-#endif
     , BV_CI
 #ifdef FEAT_CINDENT
     , BV_CIN
@@ -1068,9 +1042,7 @@ enum
     , BV_LISP
     , BV_LW
 #endif
-#ifdef FEAT_MBYTE
     , BV_MENC
-#endif
     , BV_MA
     , BV_ML
     , BV_MOD

@@ -1541,7 +1541,7 @@ nb_do_cmd(
 		if (!buf->bufp->b_netbeans_file)
 		{
 		    nbdebug(("E658: NetBeans connection lost for buffer %ld\n", buf->bufp->b_fnum));
-		    semsg(_("E658: NetBeans connection lost for buffer %ld"),
+		    semsg(_("E658: NetBeans connection lost for buffer %d"),
 							   buf->bufp->b_fnum);
 		}
 		else
@@ -2273,9 +2273,7 @@ coloncmd(char *cmd, ...)
 
     nbdebug(("    COLONCMD %s\n", buf));
 
-/*     ALT_INPUT_LOCK_ON; */
     do_cmdline((char_u *)buf, NULL, NULL, DOCMD_NOWAIT | DOCMD_KEYTYPED);
-/*     ALT_INPUT_LOCK_OFF; */
 
     setcursor();		/* restore the cursor position */
     out_flush_cursor(TRUE, FALSE);
@@ -3346,9 +3344,7 @@ off2pos(buf_T *buf, long offset)
 
     pos.lnum = 0;
     pos.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = 0;
-#endif
 
     if (!(buf->b_ml.ml_flags & ML_EMPTY))
     {
@@ -3380,9 +3376,7 @@ get_off_or_lnum(buf_T *buf, char_u **argp)
 	mypos.lnum = (linenr_T)off;
 	++*argp;
 	mypos.col = strtol((char *)*argp, (char **)argp, 10);
-#ifdef FEAT_VIRTUALEDIT
 	mypos.coladd = 0;
-#endif
 	return &mypos;
     }
     return off2pos(buf, off);
@@ -3439,7 +3433,7 @@ print_read_msg(nbbuf_T *buf)
     /* Now display it */
     VIM_CLEAR(keep_msg);
     msg_scrolled_ign = TRUE;
-    msg_trunc_attr(IObuff, FALSE, 0);
+    msg_trunc_attr((char *)IObuff, FALSE, 0);
     msg_scrolled_ign = FALSE;
 }
 
@@ -3466,7 +3460,7 @@ print_save_msg(nbbuf_T *buf, off_T nchars)
 
 	VIM_CLEAR(keep_msg);
 	msg_scrolled_ign = TRUE;
-	p = msg_trunc_attr(IObuff, FALSE, 0);
+	p = (char_u *)msg_trunc_attr((char *)IObuff, FALSE, 0);
 	if ((msg_scrolled && !need_wait_return) || !buf->initDone)
 	{
 	    /* Need to repeat the message after redrawing when:

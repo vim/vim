@@ -22,15 +22,19 @@
 #include <X11/cursorfont.h>
 
 /*
- * For Workshop XpmP.h is preferred, because it makes the signs drawn with a
- * transparent background instead of black.
+ * XpmP.h is preferred, because it makes the signs drawn with a transparent
+ * background instead of black.
  */
 #if defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF) \
-	&& (!defined(HAVE_X11_XPM_H) || defined(FEAT_SUN_WORKSHOP))
+	&& !defined(HAVE_X11_XPM_H)
 # include <Xm/XpmP.h>
 #else
 # ifdef HAVE_X11_XPM_H
-#  include <X11/xpm.h>
+#  ifdef VMS
+#   include <xpm.h>
+#  else
+#   include <X11/xpm.h>
+#  endif
 # endif
 #endif
 
@@ -469,7 +473,7 @@ static XtResource vim_resources[] =
 	XtRString,
 	DFLT_TOOLTIP_FONT
     },
-    /* This one isn't really needed, keep for Sun Workshop? */
+    /* This one may not be really needed? */
     {
 	"balloonEvalFontSet",
 	XtCFontSet,
@@ -636,8 +640,7 @@ gui_x11_expose_cb(
     gui_mch_update();
 }
 
-#if ((defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)) \
-	&& defined(FEAT_GUI_MOTIF)) || defined(PROTO)
+#if (defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)) || defined(PROTO)
 /*
  * This function fills in the XRectangle object with the current x,y
  * coordinates and height, width so that an XtVaSetValues to the same shell of
@@ -701,15 +704,6 @@ gui_x11_resize_window_cb(
 #endif
 		     );
     }
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-    {
-	XRectangle  rec;
-
-	shellRectangle(w, &rec);
-	workshop_frame_moved(rec.x, rec.y, rec.width, rec.height);
-    }
-#endif
 #if defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)
     if (netbeans_active())
     {
@@ -754,7 +748,7 @@ gui_x11_leave_cb(
     gui_focus_change(FALSE);
 }
 
-#if defined(X_HAVE_UTF8_STRING) && defined(FEAT_MBYTE)
+#if defined(X_HAVE_UTF8_STRING)
 # if X_HAVE_UTF8_STRING
 #  define USE_UTF8LOOKUP
 # endif
@@ -816,13 +810,12 @@ gui_x11_key_hit_cb(
 	if (status == XLookupNone || status == XLookupChars)
 	    key_sym = XK_VoidSymbol;
 
-# ifdef FEAT_MBYTE
 	/* Do conversion from 'termencoding' to 'encoding'.  When using
 	 * Xutf8LookupString() it has already been done. */
 	if (len > 0 && input_conv.vc_type != CONV_NONE
-#  ifdef USE_UTF8LOOKUP
+# ifdef USE_UTF8LOOKUP
 		&& !enc_utf8
-#  endif
+# endif
 		)
 	{
 	    int		maxlen = len * 4 + 40;	/* guessed */
@@ -835,7 +828,6 @@ gui_x11_key_hit_cb(
 	    string_alloced = True;
 	    len = convert_input(p, len, maxlen);
 	}
-# endif
 
 	/* Translate CSI to K_CSI, otherwise it could be recognized as the
 	 * start of a special key. */
@@ -907,10 +899,7 @@ gui_x11_key_hit_cb(
 	    && (ev_press->state & Mod1Mask)
 	    && !(key_sym == XK_BackSpace || key_sym == XK_Delete)
 	    && (string[0] & 0x80) == 0
-#ifdef FEAT_MBYTE
-	    && !enc_dbcs
-#endif
-	    )
+	    && !enc_dbcs)
     {
 #if defined(FEAT_MENU) && defined(FEAT_GUI_MOTIF)
 	/* Ignore ALT keys when they are used for the menu only */
@@ -936,7 +925,6 @@ gui_x11_key_hit_cb(
 		&& !(key_sym == XK_Tab && (ev_press->state & ShiftMask)))
 	{
 	    string[0] |= 0x80;
-#ifdef FEAT_MBYTE
 	    if (enc_utf8) /* convert to utf-8 */
 	    {
 		string[1] = string[0] & 0xbf;
@@ -950,7 +938,6 @@ gui_x11_key_hit_cb(
 		else
 		    len = 2;
 	    }
-#endif
 	}
 	else
 	    ev_press->state |= Mod1Mask;
@@ -989,10 +976,7 @@ gui_x11_key_hit_cb(
     if (len == -3 || key_sym == XK_space || key_sym == XK_Tab
 	    || key_sym == XK_Return || key_sym == XK_Linefeed
 	    || key_sym == XK_Escape
-#ifdef FEAT_MBYTE
-	    || (enc_dbcs && len == 1 && (ev_press->state & Mod1Mask))
-#endif
-       )
+	    || (enc_dbcs && len == 1 && (ev_press->state & Mod1Mask)))
     {
 	modifiers = 0;
 	if (ev_press->state & ShiftMask)
@@ -1224,22 +1208,6 @@ gui_mch_prepare(int *argc, char **argv)
 	    argv[*argc] = NULL;
 	}
 	else
-#ifdef FEAT_SUN_WORKSHOP
-	    if (strcmp("-ws", argv[arg]) == 0)
-	{
-	    usingSunWorkShop++;
-	    p_acd = TRUE;
-	    gui.dofork = FALSE;	/* don't fork() when starting GUI */
-	    mch_memmove(&argv[arg], &argv[arg + 1],
-					    (--*argc - arg) * sizeof(char *));
-	    argv[*argc] = NULL;
-# ifdef WSDEBUG
-	    wsdebug_wait(WT_ENV | WT_WAIT | WT_STOP, "SPRO_GVIM_WAIT", 20);
-	    wsdebug_log_init("SPRO_GVIM_DEBUG", "SPRO_GVIM_DLEVEL");
-# endif
-	}
-	else
-#endif
 #ifdef FEAT_NETBEANS_INTG
 	    if (strncmp("-nb", argv[arg], 3) == 0)
 	{
@@ -1543,11 +1511,6 @@ gui_mch_init(void)
     if (gui.color_approx)
 	emsg(_("Vim E458: Cannot allocate colormap entry, some colors may be incorrect"));
 
-#ifdef FEAT_SUN_WORKSHOP
-    if (usingSunWorkShop)
-	workshop_connect(app_context);
-#endif
-
 #ifdef FEAT_BEVAL_GUI
     gui_init_tooltip_font();
 #endif
@@ -1680,9 +1643,6 @@ gui_mch_open(void)
 #endif
 #ifdef FEAT_XIM
     xim_init();
-#endif
-#ifdef FEAT_SUN_WORKSHOP
-    workshop_postinit();
 #endif
 
     return OK;
@@ -2209,10 +2169,11 @@ check_fontset_sanity(XFontSet fs)
 	{
 	    semsg(_("E253: Fontset name: %s"), base_name);
 	    semsg(_("Font0: %s"), font_name[min_font_idx]);
-	    semsg(_("Font1: %s"), font_name[i]);
-	    semsg(_("Font%ld width is not twice that of font0"), i);
-	    semsg(_("Font0 width: %ld"), xfs[min_font_idx]->max_bounds.width);
-	    semsg(_("Font1 width: %ld"), xfs[i]->max_bounds.width);
+	    semsg(_("Font%d: %s"), i, font_name[i]);
+	    semsg(_("Font%d width is not twice that of font0"), i);
+	    semsg(_("Font0 width: %d"),
+				     (int)xfs[min_font_idx]->max_bounds.width);
+	    semsg(_("Font%d width: %d"), i, (int)xfs[i]->max_bounds.width);
 	    return FAIL;
 	}
     }
@@ -2404,7 +2365,6 @@ gui_mch_draw_string(
     int		flags)
 {
     int			cells = len;
-#ifdef FEAT_MBYTE
     static void		*buf = NULL;
     static int		buflen = 0;
     char_u		*p;
@@ -2428,17 +2388,17 @@ gui_mch_draw_string(
 	while (p < s + len)
 	{
 	    c = utf_ptr2char(p);
-# ifdef FEAT_XFONTSET
+#ifdef FEAT_XFONTSET
 	    if (current_fontset != NULL)
 	    {
-#  ifdef SMALL_WCHAR_T
+# ifdef SMALL_WCHAR_T
 		if (c >= 0x10000)
 		    c = 0xbf;		/* show chars > 0xffff as ? */
-#  endif
+# endif
 		((wchar_t *)buf)[wlen] = c;
 	    }
 	    else
-# endif
+#endif
 	    {
 		if (c >= 0x10000)
 		    c = 0xbf;		/* show chars > 0xffff as ? */
@@ -2460,8 +2420,6 @@ gui_mch_draw_string(
 	}
     }
 
-#endif
-
 #ifdef FEAT_XFONTSET
     if (current_fontset != NULL)
     {
@@ -2481,12 +2439,10 @@ gui_mch_draw_string(
 
     if (flags & DRAW_TRANSP)
     {
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    XDrawString16(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), buf, wlen);
 	else
-#endif
 	    XDrawString(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), (char *)s, len);
     }
@@ -2501,24 +2457,20 @@ gui_mch_draw_string(
 		FILL_Y(row), gui.char_width * cells, gui.char_height);
 	XSetForeground(gui.dpy, gui.text_gc, prev_fg_color);
 
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    XDrawString16(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), buf, wlen);
 	else
-#endif
 	    XDrawString(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), (char *)s, len);
     }
     else
     {
 	/* XmbDrawImageString has bug, don't use it for fontset. */
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    XDrawImageString16(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), buf, wlen);
 	else
-#endif
 	    XDrawImageString(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col),
 		    TEXT_Y(row), (char *)s, len);
     }
@@ -2526,12 +2478,10 @@ gui_mch_draw_string(
     /* Bold trick: draw the text again with a one-pixel offset. */
     if (flags & DRAW_BOLD)
     {
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    XDrawString16(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col) + 1,
 		    TEXT_Y(row), buf, wlen);
 	else
-#endif
 	    XDrawString(gui.dpy, gui.wid, gui.text_gc, TEXT_X(col) + 1,
 		    TEXT_Y(row), (char *)s, len);
     }
@@ -2657,10 +2607,8 @@ gui_mch_draw_hollow_cursor(guicolor_T color)
 {
     int		w = 1;
 
-#ifdef FEAT_MBYTE
     if (mb_lefthalve(gui.row, gui.col))
 	w = 2;
-#endif
     gui_mch_set_fg_color(color);
     XDrawRectangle(gui.dpy, gui.wid, gui.text_gc, FILL_X(gui.col),
 	    FILL_Y(gui.row), w * gui.char_width - 1, gui.char_height - 1);
@@ -2735,9 +2683,10 @@ gui_mch_wait_for_chars(long wtime)
 
     timed_out = FALSE;
 
-    if (wtime > 0)
-	timer = XtAppAddTimeOut(app_context, (long_u)wtime, gui_x11_timer_cb,
-								  &timed_out);
+    if (wtime >= 0)
+	timer = XtAppAddTimeOut(app_context,
+				(long_u)(wtime == 0 ? 1L : wtime),
+						 gui_x11_timer_cb, &timed_out);
 #ifdef FEAT_JOB_CHANNEL
     /* If there is a channel with the keep_open flag we need to poll for input
      * on them. */
@@ -2747,12 +2696,7 @@ gui_mch_wait_for_chars(long wtime)
 #endif
 
     focus = gui.in_focus;
-#ifdef ALT_X_INPUT
-    if (suppress_alternate_input)
-	desired = (XtIMXEvent | XtIMTimer);
-    else
-#endif
-	desired = (XtIMAll);
+    desired = (XtIMAll);
     while (!timed_out)
     {
 	/* Stop or start blinking when focus changes */

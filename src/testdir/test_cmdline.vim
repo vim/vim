@@ -430,8 +430,9 @@ func Test_cmdline_complete_user_names()
     let names = system('net user')
     if names =~ 'Administrator'
       " Trying completion of  :e ~A  should complete to Administrator.
+      " There could be other names starting with "A" before Administrator.
       call feedkeys(':e ~A' . "\<c-a>\<c-B>\"\<cr>", 'tx')
-      call assert_match('^"e \~Administrator', @:)
+      call assert_match('^"e \~.*Administrator', @:)
     endif
   endif
 endfunc
@@ -582,7 +583,7 @@ func Test_setcmdpos()
 endfunc
 
 func Test_cmdline_overstrike()
-  let encodings = has('multi_byte') ? [ 'latin1', 'utf8' ] : [ 'latin1' ]
+  let encodings = ['latin1', 'utf8']
   let encoding_save = &encoding
 
   for e in encodings
@@ -601,11 +602,9 @@ func Test_cmdline_overstrike()
     call assert_equal('"ab0cd3ef4', @:)
   endfor
 
-  if has('multi_byte')
-    " Test overstrike with multi-byte characters.
-    call feedkeys(":\"テキストエディタ\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
-    call assert_equal('"テabキcdエディタ', @:)
-  endif
+  " Test overstrike with multi-byte characters.
+  call feedkeys(":\"テキストエディタ\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
+  call assert_equal('"テabキcdエディタ', @:)
 
   let &encoding = encoding_save
 endfunc

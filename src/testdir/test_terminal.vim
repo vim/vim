@@ -217,9 +217,6 @@ func Test_terminal_scrape_123()
 endfunc
 
 func Test_terminal_scrape_multibyte()
-  if !has('multi_byte')
-    return
-  endif
   call writefile(["léttまrs"], 'Xtext')
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
@@ -570,7 +567,7 @@ endfunction
 
 func Test_terminal_noblock()
   let buf = term_start(&shell)
-  if has('mac')
+  if has('bsd') || has('mac') || has('sun')
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
@@ -654,19 +651,17 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work in the GUI
-  if !has('gui_running')
-    return
-  endif
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
   let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
-  if has('win32')
-    silent exe '!start cmd /c "echo look here > ' . pty . '"'
-  else
+  if has('gui_running') && !has('win32')
+    " In the GUI job_start() doesn't work, it does not read from the pty.
     call system('echo "look here" > ' . pty)
+  else
+    " Otherwise using a job works on all systems.
+    call job_start([&shell, &shellcmdflag, 'echo "look here" > ' . pty])
   endif
   call WaitForAssert({-> assert_match('look here', term_getline(buf, 1))})
 
@@ -1708,39 +1703,6 @@ func Test_terminal_does_not_truncate_last_newlines()
   call delete('Xfile')
 endfunc
 
-func Test_stop_in_terminal()
-  " We can't expect this to work on all systems, just test on Linux for now.
-  if !has('unix') || system('uname') !~ 'Linux'
-    return
-  endif
-  term /bin/sh
-  let bufnr = bufnr('')
-  call WaitForAssert({-> assert_equal('running', term_getstatus(bufnr))})
-  let lastrow = term_getsize(bufnr)[0]
-
-  call term_sendkeys(bufnr, GetVimCommandClean() . "\r")
-  call term_sendkeys(bufnr, ":echo 'ready'\r")
-  call WaitForAssert({-> assert_match('ready', Get_terminal_text(bufnr, lastrow))})
-
-  call term_sendkeys(bufnr, ":stop\r")
-  " Not sure where "Stopped" shows up, need five lines for Arch.
-  call WaitForAssert({-> assert_match('Stopped',
-	\ Get_terminal_text(bufnr, 1) . 
-	\ Get_terminal_text(bufnr, 2) . 
-	\ Get_terminal_text(bufnr, 3) . 
-	\ Get_terminal_text(bufnr, 4) . 
-	\ Get_terminal_text(bufnr, 5))})
-
-  call term_sendkeys(bufnr, "fg\r")
-  call term_sendkeys(bufnr, ":echo 'back again'\r")
-  call WaitForAssert({-> assert_match('back again', Get_terminal_text(bufnr, lastrow))})
-
-  call term_sendkeys(bufnr, ":quit\r")
-  call term_wait(bufnr)
-  call Stop_shell_in_terminal(bufnr)
-  exe bufnr . 'bwipe'
-endfunc
-
 func Test_terminal_no_job()
   let term = term_start('false', {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
@@ -1768,4 +1730,29 @@ func Test_term_gettitle()
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
 
   exe term . 'bwipe!'
+endfunc
+
+" When drawing the statusline the cursor position may not have been updated
+" yet.
+" 1. create a terminal, make it show 2 lines
+" 2. 0.5 sec later: leave terminal window, execute "i"
+" 3. 0.5 sec later: clear terminal window, now it's 1 line
+" 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
+" 4. 0.5 sec later: should be done, clean up
+func Test_terminal_statusline()
+  if !has('unix')
+    return
+  endif
+  set statusline=x
+  terminal
+  let tbuf = bufnr('')
+  call term_sendkeys(tbuf, "clear; echo a; echo b; sleep 1; clear\n")
+  call timer_start(500, { tid -> feedkeys("\<C-w>j", 'tx') })
+  call timer_start(1500, { tid -> feedkeys("\<C-l>", 'tx') })
+  au BufLeave * if &buftype == 'terminal' | silent! normal i | endif
+
+  sleep 2
+  exe tbuf . 'bwipe!'
+  au! BufLeave
+  set statusline=
 endfunc

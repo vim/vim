@@ -24,11 +24,7 @@ static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception
 typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #endif
 
-#ifdef FEAT_MBYTE
-# define ENC_OPT ((char *)p_enc)
-#else
-# define ENC_OPT "latin1"
-#endif
+#define ENC_OPT ((char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"
 
 static const char *vim_special_path = "_vim_path_";
@@ -410,12 +406,6 @@ writer(writefn fn, char_u *str, PyInt n)
 }
 
     static int
-msg_wrapper(char *text)
-{
-    return msg((char_u *)text);
-}
-
-    static int
 write_output(OutputObject *self, PyObject *string)
 {
     Py_ssize_t	len = 0;
@@ -427,7 +417,7 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
-    writer((writefn)(error ? emsg : msg_wrapper), (char_u *)str, len);
+    writer((writefn)(error ? emsg : msg), (char_u *)str, len);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
     PyMem_Free(str);
@@ -991,11 +981,7 @@ VimStrwidth(PyObject *self UNUSED, PyObject *string)
     if (!(str = StringToChars(string, &todecref)))
 	return NULL;
 
-#ifdef FEAT_MBYTE
     len = mb_string2cells(str, (int)STRLEN(str));
-#else
-    len = STRLEN(str);
-#endif
 
     Py_XDECREF(todecref);
 
@@ -4047,9 +4033,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 	self->win->w_cursor.lnum = lnum;
 	self->win->w_cursor.col = col;
 	self->win->w_set_curswant = TRUE;
-#ifdef FEAT_VIRTUALEDIT
 	self->win->w_cursor.coladd = 0;
-#endif
 	/* When column is out of range silently correct it. */
 	check_cursor_col_win(self->win);
 

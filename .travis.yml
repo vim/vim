@@ -10,6 +10,7 @@ compiler:
   - gcc
 
 env:
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
   - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     # ASAN build
   - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
@@ -28,9 +29,12 @@ sudo: false
 
 # instead of a 2*2*7 matrix (2*os + 2*compiler + 7*env),
 # exclude some builds on mac os x and linux
+# on mac os x "tiny" is always without GUI
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
 matrix:
   exclude:
+    - os: osx
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - os: osx
       env: BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
     - os: osx
@@ -78,6 +82,10 @@ addons:
       - tcl-dev
       - cscope
       - libgtk2.0-dev
+  homebrew:
+    packages:
+      - lua
+    update: true
 
 before_install:
   - rvm reset
@@ -89,7 +97,7 @@ before_install:
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export HOMEBREW_NO_AUTO_UPDATE=1; brew update; brew install lua; export LUA_PREFIX=/usr/local; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export LUA_PREFIX=/usr/local; fi
     # Use llvm-cov instead of gcov when compiler is clang.
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
 

@@ -404,15 +404,11 @@ static void	ex_folddo(exarg_T *eap);
 # define ex_foldopen		ex_ni
 # define ex_folddo		ex_ni
 #endif
-#if !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)))
+#if !(defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 # define ex_language		ex_ni
 #endif
 #ifndef FEAT_SIGNS
 # define ex_sign		ex_ni
-#endif
-#ifndef FEAT_SUN_WORKSHOP
-# define ex_wsverb		ex_ni
 #endif
 #ifndef FEAT_NETBEANS_INTG
 # define ex_nbclose		ex_ni
@@ -565,7 +561,7 @@ do_exmode(
     ++hold_gui_events;
 #endif
 
-    MSG(_("Entering Ex mode.  Type \"visual\" to go to Normal mode."));
+    msg(_("Entering Ex mode.  Type \"visual\" to go to Normal mode."));
     while (exmode_active)
     {
 	/* Check for a ":normal" command and no more characters left. */
@@ -1022,7 +1018,7 @@ do_cmdline(
 	    smsg(_("line %ld: %s"),
 					   (long)sourcing_lnum, cmdline_copy);
 	    if (msg_silent == 0)
-		msg_puts((char_u *)"\n");   /* don't overwrite this */
+		msg_puts("\n");   /* don't overwrite this */
 
 	    verbose_leave_scroll();
 	    --no_wait_return;
@@ -1347,7 +1343,7 @@ do_cmdline(
 	    }
 	    else if (p != NULL)
 	    {
-		semsg(p);
+		emsg(p);
 		vim_free(p);
 	    }
 	    vim_free(sourcing_name);
@@ -1553,7 +1549,6 @@ getline_equal(
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * If "fgetline" is get_loop_line(), return the cookie used by the original
  * getline function.  Otherwise return "cookie".
@@ -1563,7 +1558,7 @@ getline_cookie(
     char_u	*(*fgetline)(int, void *, int) UNUSED,
     void	*cookie)		/* argument for fgetline() */
 {
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
     char_u		*(*gp)(int, void *, int);
     struct loop_cookie *cp;
 
@@ -1578,11 +1573,10 @@ getline_cookie(
 	cp = cp->cookie;
     }
     return cp;
-# else
+#else
     return cookie;
-# endif
-}
 #endif
+}
 
 
 /*
@@ -3119,17 +3113,9 @@ append_command(char_u *cmd)
     d = IObuff + STRLEN(IObuff);
     while (*s != NUL && d - IObuff < IOSIZE - 7)
     {
-	if (
-#ifdef FEAT_MBYTE
-		enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) :
-#endif
-		*s == 0xa0)
+	if (enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) : *s == 0xa0)
 	{
-	    s +=
-#ifdef FEAT_MBYTE
-		enc_utf8 ? 2 :
-#endif
-		1;
+	    s += enc_utf8 ? 2 : 1;
 	    STRCPY(d, "<a0>");
 	    d += 4;
 	}
@@ -3755,11 +3741,9 @@ set_one_cmd_context(
 	p = xp->xp_pattern;
 	while (*p != NUL)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		c = mb_ptr2char(p);
 	    else
-#endif
 		c = *p;
 	    if (c == '\\' && p[1] != NUL)
 		++p;
@@ -3783,19 +3767,15 @@ set_one_cmd_context(
 		len = 0;  /* avoid getting stuck when space is in 'isfname' */
 		while (*p != NUL)
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			c = mb_ptr2char(p);
 		    else
-#endif
 			c = *p;
 		    if (c == '`' || vim_isfilec_or_wc(c))
 			break;
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			len = (*mb_ptr2len)(p);
 		    else
-#endif
 			len = 1;
 		    MB_PTR_ADV(p);
 		}
@@ -4320,8 +4300,7 @@ set_one_cmd_context(
 	    xp->xp_pattern = arg;
 	    break;
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 	case CMD_language:
 	    p = skiptowhite(arg);
 	    if (*p == NUL)
@@ -4671,9 +4650,7 @@ get_address(
 			pos.col = MAXCOL;
 		    else
 			pos.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 		    pos.coladd = 0;
-#endif
 		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
 				(char_u *)"", 1L, SEARCH_MSG,
@@ -5411,7 +5388,6 @@ skip_cmd_arg(
     return p;
 }
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
     int
 get_bad_opt(char_u *p, exarg_T *eap)
 {
@@ -5425,7 +5401,6 @@ get_bad_opt(char_u *p, exarg_T *eap)
 	return FAIL;
     return OK;
 }
-#endif
 
 /*
  * Get "++opt=arg" argument.
@@ -5436,10 +5411,8 @@ getargopt(exarg_T *eap)
 {
     char_u	*arg = eap->arg + 2;
     int		*pp = NULL;
-#ifdef FEAT_MBYTE
     int		bad_char_idx;
     char_u	*p;
-#endif
 
     /* ":edit ++[no]bin[ary] file" */
     if (STRNCMP(arg, "bin", 3) == 0 || STRNCMP(arg, "nobin", 5) == 0)
@@ -5475,7 +5448,6 @@ getargopt(exarg_T *eap)
 	arg += 10;
 	pp = &eap->force_ff;
     }
-#ifdef FEAT_MBYTE
     else if (STRNCMP(arg, "enc", 3) == 0)
     {
 	if (STRNCMP(arg, "encoding", 8) == 0)
@@ -5489,7 +5461,6 @@ getargopt(exarg_T *eap)
 	arg += 3;
 	pp = &bad_char_idx;
     }
-#endif
 
     if (pp == NULL || *arg != '=')
 	return FAIL;
@@ -5500,14 +5471,11 @@ getargopt(exarg_T *eap)
     eap->arg = skipwhite(arg);
     *arg = NUL;
 
-#ifdef FEAT_MBYTE
     if (pp == &eap->force_ff)
     {
-#endif
 	if (check_ff_value(eap->cmd + eap->force_ff) == FAIL)
 	    return FAIL;
 	eap->force_ff = eap->cmd[eap->force_ff];
-#ifdef FEAT_MBYTE
     }
     else if (pp == &eap->force_enc)
     {
@@ -5522,7 +5490,6 @@ getargopt(exarg_T *eap)
 	if (get_bad_opt(eap->cmd + bad_char_idx, eap) == FAIL)
 	    return FAIL;
     }
-#endif
 
     return OK;
 }
@@ -5788,8 +5755,8 @@ check_more(
 		return FAIL;
 	    }
 #endif
-	    semsg(NGETTEXT("E173: %ld more file to edit",
-			"E173: %ld more files to edit", n), n);
+	    semsg(NGETTEXT("E173: %d more file to edit",
+			"E173: %d more files to edit", n), n);
 	    quitmore = 2;	    /* next try to quit is allowed */
 	}
 	return FAIL;
@@ -5993,8 +5960,7 @@ static struct
 #if defined(FEAT_CMDHIST)
     {EXPAND_HISTORY, "history"},
 #endif
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif
     {EXPAND_MAPCLEAR, "mapclear"},
@@ -6046,7 +6012,7 @@ uc_list(char_u *name, size_t name_len)
 
 	    /* Put out the title first time */
 	    if (!found)
-		MSG_PUTS_TITLE(_("\n    Name        Args       Address   Complete  Definition"));
+		msg_puts_title(_("\n    Name        Args       Address   Complete  Definition"));
 	    found = TRUE;
 	    msg_putchar('\n');
 	    if (got_int)
@@ -6153,7 +6119,7 @@ uc_list(char_u *name, size_t name_len)
     }
 
     if (!found)
-	MSG(_("No user-defined commands found"));
+	msg(_("No user-defined commands found"));
 }
 
     static char *
@@ -6510,14 +6476,10 @@ uc_split_args(char_u *arg, size_t *lenp)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    int charlen = (*mb_ptr2len)(p);
+
 	    len += charlen;
 	    p += charlen;
-#else
-	    ++len;
-	    ++p;
-#endif
 	}
     }
 
@@ -6688,13 +6650,11 @@ uc_check_code(
 	    result = STRLEN(eap->arg) + 2;
 	    for (p = eap->arg; *p; ++p)
 	    {
-#ifdef  FEAT_MBYTE
 		if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
 		    /* DBCS can contain \ in a trail byte, skip the
 		     * double-byte character. */
 		    ++p;
 		else
-#endif
 		     if (*p == '\\' || *p == '"')
 		    ++result;
 	    }
@@ -6704,13 +6664,11 @@ uc_check_code(
 		*buf++ = '"';
 		for (p = eap->arg; *p; ++p)
 		{
-#ifdef  FEAT_MBYTE
 		    if (enc_dbcs != 0 && (*mb_ptr2len)(p) == 2)
 			/* DBCS can contain \ in a trail byte, copy the
 			 * double-byte character to avoid escaping. */
 			*buf++ = *p++;
 		    else
-#endif
 			 if (*p == '\\' || *p == '"')
 			*buf++ = '\\';
 		    *buf++ = *p;
@@ -6958,7 +6916,7 @@ do_ucmd(exarg_T *eap)
 		}
 	    }
 
-	    /* break if there no <item> is found */
+	    /* break if no <item> is found */
 	    if (start == NULL || end == NULL)
 		break;
 
@@ -7242,24 +7200,33 @@ ex_colorscheme(exarg_T *eap)
 	}
 	if (p != NULL)
 	{
-	    MSG(p);
+	    msg((char *)p);
 	    vim_free(p);
 	}
 	else
-	    MSG("default");
+	    msg("default");
 #else
-	MSG(_("unknown"));
+	msg(_("unknown"));
 #endif
     }
     else if (load_colors(eap->arg) == FAIL)
 	semsg(_("E185: Cannot find color scheme '%s'"), eap->arg);
+
+#ifdef FEAT_VTP
+    else if (has_vtp_working())
+    {
+	// background color change requires clear + redraw
+	update_screen(CLEAR);
+	redrawcmd();
+    }
+#endif
 }
 
     static void
 ex_highlight(exarg_T *eap)
 {
     if (*eap->arg == NUL && eap->cmd[2] == '!')
-	MSG(_("Greetings, Vim user!"));
+	msg(_("Greetings, Vim user!"));
     do_highlight(eap->arg, eap->forceit, FALSE);
 }
 
@@ -7591,7 +7558,7 @@ get_tabpage_arg(exarg_T *eap)
 	else
 	{
 	    tab_number = eap->line2;
-	    if (!unaccept_arg0 && **eap->cmdlinep == '-')
+	    if (!unaccept_arg0 && *skipwhite(*eap->cmdlinep) == '-')
 	    {
 		--tab_number;
 		if (tab_number < unaccept_arg0)
@@ -7675,7 +7642,7 @@ ex_tabonly(exarg_T *eap)
     else
 # endif
 	if (first_tabpage->tp_next == NULL)
-	    MSG(_("Already only one tab page"));
+	    msg(_("Already only one tab page"));
 	else
 	{
 	    tab_number = get_tabpage_arg(eap);
@@ -8022,7 +7989,7 @@ handle_drop_internal(void)
 /*
  * Handle a file drop. The code is here because a drop is *nearly* like an
  * :args command, but not quite (we have a list of exact filenames, so we
- * don't want to (a) parse a command line, or (b) expand wildcards. So the
+ * don't want to (a) parse a command line, or (b) expand wildcards). So the
  * code is very similar to :args and hence needs access to a lot of the static
  * functions in this file.
  *
@@ -8924,9 +8891,9 @@ ex_popup(exarg_T *eap)
 ex_swapname(exarg_T *eap UNUSED)
 {
     if (curbuf->b_ml.ml_mfp == NULL || curbuf->b_ml.ml_mfp->mf_fname == NULL)
-	MSG(_("No swap file"));
+	msg(_("No swap file"));
     else
-	msg(curbuf->b_ml.ml_mfp->mf_fname);
+	msg((char *)curbuf->b_ml.ml_mfp->mf_fname);
 }
 
 /*
@@ -9224,7 +9191,7 @@ ex_pwd(exarg_T *eap UNUSED)
 #ifdef BACKSLASH_IN_FILENAME
 	slash_adjust(NameBuff);
 #endif
-	msg(NameBuff);
+	msg((char *)NameBuff);
     }
     else
 	emsg(_("E187: Unknown"));
@@ -9405,7 +9372,7 @@ ex_winpos(exarg_T *eap)
 #  endif
 	{
 	    sprintf((char *)IObuff, _("Window position: X %d, Y %d"), x, y);
-	    msg(IObuff);
+	    msg((char *)IObuff);
 	}
 	else
 # endif
@@ -9461,9 +9428,7 @@ ex_operators(exarg_T *eap)
     oa.end.lnum = eap->line2;
     oa.line_count = eap->line2 - eap->line1 + 1;
     oa.motion_type = MLINE;
-#ifdef FEAT_VIRTUALEDIT
     virtual_op = FALSE;
-#endif
     if (eap->cmdidx != CMD_yank)	/* position cursor for undo */
     {
 	setpcmark();
@@ -9500,9 +9465,7 @@ ex_operators(exarg_T *eap)
 	    op_shift(&oa, FALSE, eap->amount);
 	    break;
     }
-#ifdef FEAT_VIRTUALEDIT
     virtual_op = MAYBE;
-#endif
     ex_may_print(eap);
 }
 
@@ -10331,11 +10294,9 @@ restore_current_state(save_state_T *sst)
 ex_normal(exarg_T *eap)
 {
     save_state_T save_state;
-#ifdef FEAT_MBYTE
     char_u	*arg = NULL;
     int		l;
     char_u	*p;
-#endif
 
     if (ex_normal_lock > 0)
     {
@@ -10348,7 +10309,6 @@ ex_normal(exarg_T *eap)
 	return;
     }
 
-#ifdef FEAT_MBYTE
     /*
      * vgetc() expects a CSI and K_SPECIAL to have been escaped.  Don't do
      * this for the K_SPECIAL leading byte, otherwise special keys will not
@@ -10361,15 +10321,15 @@ ex_normal(exarg_T *eap)
 	/* Count the number of characters to be escaped. */
 	for (p = eap->arg; *p != NUL; ++p)
 	{
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	    if (*p == CSI)  /* leadbyte CSI */
 		len += 2;
-# endif
+#endif
 	    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		if (*++p == K_SPECIAL	  /* trailbyte K_SPECIAL or CSI */
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			|| *p == CSI
-# endif
+#endif
 			)
 		    len += 2;
 	}
@@ -10382,13 +10342,13 @@ ex_normal(exarg_T *eap)
 		for (p = eap->arg; *p != NUL; ++p)
 		{
 		    arg[len++] = *p;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		    if (*p == CSI)
 		    {
 			arg[len++] = KS_EXTRA;
 			arg[len++] = (int)KE_CSI;
 		    }
-# endif
+#endif
 		    for (l = (*mb_ptr2len)(p) - 1; l > 0; --l)
 		    {
 			arg[len++] = *++p;
@@ -10397,20 +10357,19 @@ ex_normal(exarg_T *eap)
 			    arg[len++] = KS_SPECIAL;
 			    arg[len++] = KE_FILLER;
 			}
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 			else if (*p == CSI)
 			{
 			    arg[len++] = KS_EXTRA;
 			    arg[len++] = (int)KE_CSI;
 			}
-# endif
+#endif
 		    }
 		    arg[len] = NUL;
 		}
 	    }
 	}
     }
-#endif
 
     ++ex_normal_busy;
     if (save_current_state(&save_state))
@@ -10429,11 +10388,9 @@ ex_normal(exarg_T *eap)
 		check_cursor_moved(curwin);
 	    }
 
-	    exec_normal_cmd(
-#ifdef FEAT_MBYTE
-		    arg != NULL ? arg :
-#endif
-		    eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, FALSE);
+	    exec_normal_cmd(arg != NULL
+		     ? arg
+		     : eap->arg, eap->forceit ? REMAP_NONE : REMAP_YES, FALSE);
 	}
 	while (eap->addr_count > 0 && eap->line1 <= eap->line2 && !got_int);
     }
@@ -10450,9 +10407,7 @@ ex_normal(exarg_T *eap)
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
 
-#ifdef FEAT_MBYTE
     vim_free(arg);
-#endif
 }
 
 /*
@@ -10942,7 +10897,7 @@ eval_vars(
 			return NULL;
 		    }
 #else
-		    *errormsg = (char_u *)_("E809: #< is not available without the +eval feature");
+		    *errormsg = _("E809: #< is not available without the +eval feature");
 		    return NULL;
 #endif
 		}
@@ -11334,26 +11289,6 @@ makeopens(
     if (put_line(fd, "set shortmess=aoO") == FAIL)
 	return FAIL;
 
-    /* Now put the other buffers into the buffer list */
-    FOR_ALL_BUFFERS(buf)
-    {
-	if (!(only_save_windows && buf->b_nwindows == 0)
-		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
-#ifdef FEAT_TERMINAL
-		/* skip terminal buffers: finished ones are not useful, others
-		 * will be resurrected and result in a new buffer */
-		&& !bt_terminal(buf)
-#endif
-		&& buf->b_fname != NULL
-		&& buf->b_p_bl)
-	{
-	    if (fprintf(fd, "badd +%ld ", buf->b_wininfo == NULL ? 1L
-					   : buf->b_wininfo->wi_fpos.lnum) < 0
-		    || ses_fname(fd, buf, &ssop_flags, TRUE) == FAIL)
-		return FAIL;
-	}
-    }
-
     /* the global argument list */
     if (ses_arglist(fd, "argglobal", &global_alist.al_ga,
 			    !(ssop_flags & SSOP_CURDIR), &ssop_flags) == FAIL)
@@ -11404,26 +11339,14 @@ makeopens(
     tab_topframe = topframe;
     if ((ssop_flags & SSOP_TABPAGES))
     {
-	int	num_tabs;
+	tabpage_T *tp;
 
-	/*
-	 * Similar to ses_win_rec() below, populate the tab pages first so
-	 * later local options won't be copied to the new tabs.
-	 */
-	for (tabnr = 1; ; ++tabnr)
-	{
-	    tabpage_T *tp = find_tabpage(tabnr);
-
-	    if (tp == NULL)	/* done all tab pages */
-		break;
-
-	    if (tabnr > 1 && put_line(fd, "tabnew") == FAIL)
+	// Similar to ses_win_rec() below, populate the tab pages first so
+	// later local options won't be copied to the new tabs.
+	FOR_ALL_TABPAGES(tp)
+	    if (tp->tp_next != NULL && put_line(fd, "tabnew") == FAIL)
 		return FAIL;
-	}
-
-	num_tabs = tabnr - 1;
-	if (num_tabs > 1 && (fprintf(fd, "tabnext -%d", num_tabs - 1) < 0
-						       || put_eol(fd) == FAIL))
+	if (first_tabpage->tp_next != NULL && put_line(fd, "tabrewind") == FAIL)
 	    return FAIL;
     }
     for (tabnr = 1; ; ++tabnr)
@@ -11580,6 +11503,29 @@ makeopens(
     }
     if (restore_stal && put_line(fd, "set stal=1") == FAIL)
 	return FAIL;
+
+    // Now put the remaining buffers into the buffer list.
+    // This is near the end, so that when 'hidden' is set we don't create extra
+    // buffers.  If the buffer was already created with another command the
+    // ":badd" will have no effect.
+    FOR_ALL_BUFFERS(buf)
+    {
+	if (!(only_save_windows && buf->b_nwindows == 0)
+		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
+#ifdef FEAT_TERMINAL
+		// Skip terminal buffers: finished ones are not useful, others
+		// will be resurrected and result in a new buffer.
+		&& !bt_terminal(buf)
+#endif
+		&& buf->b_fname != NULL
+		&& buf->b_p_bl)
+	{
+	    if (fprintf(fd, "badd +%ld ", buf->b_wininfo == NULL ? 1L
+					   : buf->b_wininfo->wi_fpos.lnum) < 0
+		    || ses_fname(fd, buf, &ssop_flags, TRUE) == FAIL)
+		return FAIL;
+	}
+    }
 
     /*
      * Wipe out an empty unnamed buffer we started in.
@@ -11853,9 +11799,9 @@ put_view(
 	     * edit that buffer, to not lose folding information (:edit resets
 	     * folds in other buffers)
 	     */
-	    if (fputs("if bufexists('", fd) < 0
+	    if (fputs("if bufexists(\"", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
-		    || fputs("') | buffer ", fd) < 0
+		    || fputs("\") | buffer ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
 		    || fputs(" | else | edit ", fd) < 0
 		    || ses_fname(fd, wp->w_buffer, flagp, FALSE) == FAIL
@@ -12010,7 +11956,7 @@ ses_arglist(
 
     if (fputs(cmd, fd) < 0 || put_eol(fd) == FAIL)
 	return FAIL;
-    if (put_line(fd, "silent! argdel *") == FAIL)
+    if (put_line(fd, "%argdel") == FAIL)
 	return FAIL;
     for (i = 0; i < gap->ga_len; ++i)
     {
@@ -12317,6 +12263,7 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
 }
 #endif
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_mapclear_arg(expand_T *xp UNUSED, int idx)
 {
@@ -12324,6 +12271,7 @@ get_mapclear_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"<buffer>";
     return NULL;
 }
+#endif
 
 static int filetype_detect = FALSE;
 static int filetype_plugin = FALSE;

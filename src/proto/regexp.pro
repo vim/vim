@@ -1,6 +1,5 @@
 /* regexp.c */
 int re_multiline(regprog_T *prog);
-int re_lookbehind(regprog_T *prog);
 char_u *skip_regexp(char_u *startp, int dirc, int magic, char_u **newp);
 int vim_regcomp_had_eol(void);
 void free_regexp_stuff(void);

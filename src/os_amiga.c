@@ -165,18 +165,12 @@ mch_inchar(
 
     for (;;)	    /* repeat until we got a character */
     {
-#  ifdef FEAT_MBYTE
 	len = Read(raw_in, (char *)buf, (long)maxlen / input_conv.vc_factor);
-#  else
-	len = Read(raw_in, (char *)buf, (long)maxlen);
-#  endif
 	if (len > 0)
 	{
-#ifdef FEAT_MBYTE
 	    /* Convert from 'termencoding' to 'encoding'. */
 	    if (input_conv.vc_type != CONV_NONE)
 		len = convert_input(buf, len, maxlen);
-#endif
 	    return len;
 	}
     }
@@ -1230,10 +1224,10 @@ mch_call_shell(
     if (x < 0)
 # endif
     {
-	MSG_PUTS(_("Cannot execute "));
+	msg_puts(_("Cannot execute "));
 	if (cmd == NULL)
 	{
-	    MSG_PUTS(_("shell "));
+	    msg_puts(_("shell "));
 	    msg_outtrans(p_sh);
 	}
 	else
@@ -1253,7 +1247,7 @@ mch_call_shell(
 	    {
 		msg_putchar('\n');
 		msg_outnum((long)x);
-		MSG_PUTS(_(" returned\n"));
+		msg_puts(_(" returned\n"));
 	    }
 	    retval = x;
 	}
@@ -1320,7 +1314,7 @@ mch_call_shell(
     if (x < 0)
 # endif
     {
-	MSG_PUTS(_("Cannot execute "));
+	msg_puts(_("Cannot execute "));
 	if (use_execute)
 	{
 	    if (cmd == NULL)
@@ -1330,7 +1324,7 @@ mch_call_shell(
 	}
 	else
 	{
-	    MSG_PUTS(_("shell "));
+	    msg_puts(_("shell "));
 	    msg_outtrans(shellcmd);
 	}
 	msg_putchar('\n');
@@ -1355,7 +1349,7 @@ mch_call_shell(
 	    {
 		msg_putchar('\n');
 		msg_outnum((long)x);
-		MSG_PUTS(_(" returned\n"));
+		msg_puts(_(" returned\n"));
 	    }
 	    retval = x;
 	}
