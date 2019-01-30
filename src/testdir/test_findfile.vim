@@ -82,33 +82,35 @@ func Test_findfile()
 
   " Test upwards search.
   cd Xdir2/Xdir3
-  call assert_equal('bar',                         findfile('bar', ';'))
-  call assert_equal(save_dir . '/Xdir1/Xdir2/foo', findfile('foo', ';'))
-  call assert_equal(save_dir . '/Xdir1/Xdir2/foo', findfile('foo', ';', 1))
-  call assert_equal(save_dir . '/Xdir1/foo',       findfile('foo', ';', 2))
-  call assert_equal(save_dir . '/Xdir1/foo',       findfile('foo', ';', 2))
-  call assert_equal(save_dir . '/Xdir1/Xdir2/foo', findfile('foo', 'Xdir2;', 1))
-  call assert_equal('',                            findfile('foo', 'Xdir2;', 2))
+  call assert_equal('bar',                findfile('bar', ';'))
+  call assert_match('.*/Xdir1/Xdir2/foo', findfile('foo', ';'))
+  call assert_match('.*/Xdir1/Xdir2/foo', findfile('foo', ';', 1))
+  call assert_match('.*/Xdir1/foo',       findfile('foo', ';', 2))
+  call assert_match('.*/Xdir1/foo',       findfile('foo', ';', 2))
+  call assert_match('.*/Xdir1/Xdir2/foo', findfile('foo', 'Xdir2;', 1))
+  call assert_equal('',                   findfile('foo', 'Xdir2;', 2))
 
   " List l should have at least 2 values (possibly more if foo file
   " happens to be found upwards above Xdir1).
   let l = findfile('foo', ';', -1)
-  call assert_equal(save_dir . '/Xdir1/Xdir2/foo', l[0])
-  call assert_equal(save_dir . '/Xdir1/foo',       l[1])
+  call assert_match('.*/Xdir1/Xdir2/foo', l[0])
+  call assert_match('.*/Xdir1/foo',       l[1])
 
   " Test upwards search with stop-directory.
   cd Xdir2
   let l = findfile('bar', ';' . save_dir . '/Xdir1/Xdir2/', -1)
-  call assert_equal([save_dir . '/Xdir1/Xdir2/Xdir3/bar'], l)
+  call assert_equal(1, len(l))
+  call assert_match('.*/Xdir1/Xdir2/Xdir3/bar', l[0])
 
   let l = findfile('bar', ';' . save_dir . '/Xdir1/', -1)
-  cal assert_equal([ save_dir . '/Xdir1/Xdir2/Xdir3/bar',
-  \                  save_dir . '/Xdir1/bar' ], l)
+  call assert_equal(2, len(l))
+  call assert_match('.*/Xdir1/Xdir2/Xdir3/bar', l[0])
+  call assert_match('.*/Xdir1/bar',             l[1])
 
   " Test combined downwards and upwards search from Xdir2/.
   cd ../..
-  call assert_equal('Xdir3/bar',             findfile('bar', '**;', 1))
-  call assert_equal(save_dir . '/Xdir1/bar', findfile('bar', '**;', 2))
+  call assert_equal('Xdir3/bar',    findfile('bar', '**;', 1))
+  call assert_match('.*/Xdir1/bar', findfile('bar', '**;', 2))
 
   bwipe!
   exe 'cd  ' . save_dir
@@ -147,18 +149,18 @@ func Test_finddir()
 
   " Test upwards dir search.
   cd Xdir2/Xdir3
-  call assert_equal(save_dir . '/Xdir1', finddir('Xdir1', ';'))
+  call assert_match('.*/Xdir1', finddir('Xdir1', ';'))
 
   " Test upwards search with stop-directory.
-  call assert_equal(save_dir . '/Xdir1', finddir('Xdir1', ';' . save_dir . '/'))
-  call assert_equal('',                  finddir('Xdir1', ';' . save_dir . '/Xdir1/'))
+  call assert_match('.*/Xdir1', finddir('Xdir1', ';' . save_dir . '/'))
+  call assert_equal('',         finddir('Xdir1', ';' . save_dir . '/Xdir1/'))
 
   " Test combined downwards and upwards dir search from Xdir2/.
   cd ..
-  call assert_equal(save_dir . '/Xdir1',       finddir('Xdir1', '**;', 1))
-  call assert_equal('Xdir3/Xdir2',             finddir('Xdir2', '**;', 1))
-  call assert_equal(save_dir . '/Xdir1/Xdir2', finddir('Xdir2', '**;', 2))
-  call assert_equal('Xdir3',                   finddir('Xdir3', '**;', 1))
+  call assert_match('.*/Xdir1',       finddir('Xdir1', '**;', 1))
+  call assert_equal('Xdir3/Xdir2',    finddir('Xdir2', '**;', 1))
+  call assert_match('.*/Xdir1/Xdir2', finddir('Xdir2', '**;', 2))
+  call assert_equal('Xdir3',          finddir('Xdir3', '**;', 1))
 
   exe 'cd  ' . save_dir
   call CleanFiles()
