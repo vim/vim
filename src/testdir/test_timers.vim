@@ -251,9 +251,8 @@ func Test_peek_and_get_char()
 endfunc
 
 func Test_getchar_zero()
-  if has('win32')
+  if has('win32') && !has('gui_running')
     " Console: no low-level input
-    " GUI: somehow doesn't work
     return
   endif
 
