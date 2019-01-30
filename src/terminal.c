@@ -5477,25 +5477,37 @@ term_getjob(term_T *term)
  * 2. MS-Windows implementation.
  */
 
-typedef HRESULT (WINAPI *PfnCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
-static PfnCreatePseudoConsole pCreatePseudoConsole;
-typedef HRESULT (WINAPI *PfnResizePseudoConsole)(HPCON, COORD);
-static PfnResizePseudoConsole pResizePseudoConsole;
-typedef HRESULT (WINAPI *PfnClosePseudoConsole)(HPCON);
-static PfnClosePseudoConsole pClosePseudoConsole;
-typedef BOOL (*PfnInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
-static PfnInitializeProcThreadAttributeList pInitializeProcThreadAttributeList;
-typedef BOOL (*PfnUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
-static PfnUpdateProcThreadAttribute pUpdateProcThreadAttribute;
-typedef void (*PfnDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
-static PfnDeleteProcThreadAttributeList pDeleteProcThreadAttributeList;
+HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
+HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);
+HRESULT (WINAPI *pClosePseudoConsole)(HPCON);
+BOOL (*pInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
+BOOL (*pUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
+void (*pDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
 
     static int
-dyn_conpty_init(void)
+dyn_conpty_init(int verbose)
 {
     static BOOL	handled = FALSE;
     static int	result;
     HMODULE	hKerneldll;
+    int		i;
+    static struct
+    {
+	char	*name;
+	FARPROC	*ptr;
+    } conpty_entry[] =
+    {
+	{"CreatePseudoConsole", (FARPROC*)&pCreatePseudoConsole},
+	{"ResizePseudoConsole", (FARPROC*)&pResizePseudoConsole},
+	{"ClosePseudoConsole", (FARPROC*)&pClosePseudoConsole},
+	{"InitializeProcThreadAttributeList",
+				(FARPROC*)&pInitializeProcThreadAttributeList},
+	{"UpdateProcThreadAttribute",
+				(FARPROC*)&pUpdateProcThreadAttribute},
+	{"DeleteProcThreadAttributeList",
+				(FARPROC*)&pDeleteProcThreadAttributeList},
+	{NULL, NULL}
+    };
 
     if (handled)
 	return result;
@@ -5507,40 +5519,22 @@ dyn_conpty_init(void)
 	return FAIL;
     }
 
-    hKerneldll = GetModuleHandle("kernel32.dll");
-    if (hKerneldll != NULL)
+    hKerneldll = vimLoadLib("kernel32.dll");
+    for (i = 0; conpty_entry[i].name != NULL
+					&& conpty_entry[i].ptr != NULL; ++i)
     {
-	pCreatePseudoConsole =
-		(PfnCreatePseudoConsole)GetProcAddress(
-		hKerneldll, "CreatePseudoConsole");
-	pResizePseudoConsole =
-		(PfnResizePseudoConsole)GetProcAddress(
-		hKerneldll, "ResizePseudoConsole");
-	pClosePseudoConsole =
-		(PfnClosePseudoConsole)GetProcAddress(
-		hKerneldll, "ClosePseudoConsole");
-	pInitializeProcThreadAttributeList =
-		(PfnInitializeProcThreadAttributeList)GetProcAddress(
-		hKerneldll, "InitializeProcThreadAttributeList");
-	pUpdateProcThreadAttribute =
-		(PfnUpdateProcThreadAttribute)GetProcAddress(
-		hKerneldll, "UpdateProcThreadAttribute");
-	pDeleteProcThreadAttributeList =
-		(PfnDeleteProcThreadAttributeList)GetProcAddress(
-		hKerneldll, "DeleteProcThreadAttributeList");
-	if (pCreatePseudoConsole != NULL
-		&& pResizePseudoConsole != NULL
-		&& pClosePseudoConsole != NULL
-		&& pInitializeProcThreadAttributeList != NULL
-		&& pUpdateProcThreadAttribute != NULL
-		&& pDeleteProcThreadAttributeList != NULL)
+	if ((*conpty_entry[i].ptr = (FARPROC)GetProcAddress(hKerneldll,
+						conpty_entry[i].name)) == NULL)
 	{
-	    handled = TRUE;
-	    result = OK;
-	    return OK;
+	    if (verbose)
+		semsg(_(e_loadfunc), conpty_entry[i].name);
+	    return FAIL;
 	}
     }
-    return FAIL;
+
+    handled = TRUE;
+    result = OK;
+    return OK;
 }
 
     static int
@@ -5922,7 +5916,7 @@ term_and_job_init(
     char_u	    *cmd = NULL;
 
     has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
-    has_conpty = dyn_conpty_init() != FAIL ? TRUE : FALSE;
+    has_conpty = dyn_conpty_init(FALSE) != FAIL ? TRUE : FALSE;
 
     if (!has_winpty && !has_conpty)
 	return dyn_winpty_init(TRUE);
@@ -5950,30 +5944,18 @@ term_and_job_init(
 
     if (STRICMP(curwin->w_p_tmod, "winpty") == 0)
     {
-	if (has_conpty)
-	    if (has_winpty)
-		goto to_winpty;
-	    else
-		goto to_error;
+	if (has_winpty)
+	    goto to_winpty;
 	else
-	    if (has_winpty)
-		goto to_winpty;
-	    else
-		goto to_error;
+	    goto to_error;
     }
 
     if (STRICMP(curwin->w_p_tmod, "conpty") == 0)
     {
 	if (has_conpty)
-	    if (has_winpty)
-		goto to_conpty;
-	    else
-		goto to_conpty;
+	    goto to_conpty;
 	else
-	    if (has_winpty)
-		goto to_winpty;
-	    else
-		goto to_error;
+	    return dyn_conpty_init(TRUE);
     }
 
 to_error:
@@ -6276,7 +6258,7 @@ term_report_winsize(term_T *term, int rows, int cols)
     int
 terminal_enabled(void)
 {
-    return dyn_winpty_init(FALSE) == OK || dyn_conpty_init() == OK;
+    return dyn_winpty_init(FALSE) == OK || dyn_conpty_init(FALSE) == OK;
 }
 
 # else
