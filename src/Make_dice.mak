@@ -50,6 +50,7 @@ SRC = \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -108,6 +109,7 @@ OBJ =	o/arabic.o \
 	o/getchar.o \
 	o/hardcopy.o \
 	o/hashtab.o \
+	o/indent.o \
 	o/json.o \
 	o/list.o \
 	o/main.o \
@@ -208,6 +210,8 @@ o/getchar.o: getchar.c	$(SYMS)
 o/hardcopy.o: hardcopy.c	$(SYMS)
 
 o/hashtab.o: hashtab.c	$(SYMS)
+
+o/indent.o:	indent.c  $(SYMS)
 
 o/json.o:	json.c  $(SYMS)
 
