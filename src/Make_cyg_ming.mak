@@ -931,7 +931,8 @@ endif
 ifeq (yes, $(USE_STDCPLUS))
 LINK = $(CXX)
 ifeq (yes, $(STATIC_STDCPLUS))
-LIB += -static-libstdc++ -static-libgcc
+#LIB += -static-libstdc++ -static-libgcc
+LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
 endif
 else
 LINK = $(CC)
