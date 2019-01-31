@@ -4587,6 +4587,10 @@ nv_mousescroll(cmdarg_T *cap)
 	}
     }
 # endif
+# ifdef FEAT_SYN_HL
+    if (curwin != old_curwin && curwin->w_p_cul)
+	redraw_for_cursorline(curwin);
+# endif
 
     curwin->w_redr_status = TRUE;
 
