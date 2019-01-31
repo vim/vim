@@ -89,8 +89,8 @@ addons:
 
 before_install:
   - rvm reset
-    # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
-    # ("pyenv global system" doesn't seem to work.)
+  # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
+  # ("pyenv global system" doesn't seem to work.)
   - |
     if [ "${TRAVIS_OS_NAME}" = "linux" ] && which python3 | grep -qs '/opt/python/'; then
       export PATH=$(echo ${PATH} | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##")
@@ -99,25 +99,25 @@ before_install:
     if [ "${COVERAGE}" = "yes" ]; then
       pip install --user cpp-coveralls
     fi
-    # needed for https support for coveralls
-    # building cffi only works with gcc, not with clang
+  # needed for https support for coveralls
+  # building cffi only works with gcc, not with clang
   - |
     if [ "${COVERAGE}" = "yes" ]; then
       CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
     fi
-    # Lua is not installed on Travis OSX
+  # Lua is not installed on Travis OSX
   - |
     if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
       export LUA_PREFIX=/usr/local
     fi
-    # Use llvm-cov instead of gcov when compiler is clang.
+  # Use llvm-cov instead of gcov when compiler is clang.
   - |
     if [ "${TRAVIS_OS_NAME}" = "linux" -a "${CC}" = "clang" ]; then
       ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
     fi
 
 before_script:
-    # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
+  # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
   - |
     if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
       export DISPLAY=:99.0
@@ -139,7 +139,7 @@ script:
     if [ "$?" -eq 0 -a "${BUILD}" = "yes" ]; then
       make ${SHADOWOPT} -j${NPROC}
     fi
-    # Show Vim version and also if_xx versions.
+  # Show Vim version and also if_xx versions.
   - |
     if [ "${BUILD}" = "yes" ]; then
       "${SRCDIR}"/vim --version
