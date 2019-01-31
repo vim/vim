@@ -6590,14 +6590,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'scrolloff'* *'so'*
 'scrolloff' 'so'	number	(default 0, set to 5 in |defaults.vim|)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	Minimal number of screen lines to keep above and below the cursor.
 	This will make some context visible around where you are working.  If
 	you set it to a very large value (999) the cursor line will always be
 	in the middle of the window (except at the start or end of the file or
 	when long lines wrap).
-	For scrolling horizontally see 'sidescrolloff'.
+	After using the local value, go back the global value with one of
+	these two: >
+		setlocal scrolloff<
+		setlocal scrolloff=-1
+<	For scrolling horizontally see 'sidescrolloff'.
 	NOTE: This option is set to 0 when 'compatible' is set.
 
 						*'scrollopt'* *'sbo'*
@@ -7152,7 +7156,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'sidescrolloff'* *'siso'*
 'sidescrolloff' 'siso'	number (default 0)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	The minimal number of screen columns to keep to the left and to the
 	right of the cursor if 'nowrap' is set.  Setting this option to a
@@ -7162,7 +7166,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to a large value (like 999) has the effect of keeping the cursor
 	horizontally centered in the window, as long as one does not come too
 	close to the beginning of the line.
-	NOTE: This option is set to 0 when 'compatible' is set.
+	After using the local value, go back the global value with one of
+	these two: >
+		setlocal sidescrolloff<
+		setlocal sidescrolloff=-1
+<	NOTE: This option is set to 0 when 'compatible' is set.
 
 	Example: Try this together with 'sidescroll' and 'listchars' as
 		 in the following example to never allow the cursor to move

@@ -76,6 +76,8 @@ long get_sw_value_indent(buf_T *buf);
 long get_sw_value_pos(buf_T *buf, pos_T *pos);
 long get_sw_value_col(buf_T *buf, colnr_T col);
 long get_sts_value(void);
+long get_scrolloff_value(void);
+long get_sidescrolloff_value(void);
 void find_mps_values(int *initc, int *findc, int *backwards, int switchit);
 unsigned int get_bkc_value(buf_T *buf);
 int signcolumn_on(win_T *wp);

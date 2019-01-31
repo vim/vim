@@ -728,7 +728,7 @@ edit(
 		(int)curwin->w_wcol < mincol - curbuf->b_p_ts
 #endif
 		    && curwin->w_wrow == W_WINROW(curwin)
-						 + curwin->w_height - 1 - p_so
+				 + curwin->w_height - 1 - get_scrolloff_value()
 		    && (curwin->w_cursor.lnum != curwin->w_topline
 #ifdef FEAT_DIFF
 			|| curwin->w_topfill > 0

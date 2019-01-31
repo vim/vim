@@ -227,6 +227,8 @@
 #endif
 #define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
+#define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
+#define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
 #ifdef FEAT_SPELL
 # define PV_SPELL	OPT_WIN(WV_SPELL)
 #endif
@@ -2333,7 +2335,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_sj, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
     {"scrolloff",   "so",   P_NUM|P_VI_DEF|P_VIM|P_RALL,
-			    (char_u *)&p_so, PV_NONE,
+			    (char_u *)&p_so, PV_SO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"scrollopt",   "sbo",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_sbo, PV_NONE,
@@ -2490,7 +2492,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ss, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"sidescrolloff", "siso", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
-			    (char_u *)&p_siso, PV_NONE,
+			    (char_u *)&p_siso, PV_SISO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SIGNS
@@ -3736,11 +3738,19 @@ set_option_default(
 		win_comp_scroll(curwin);
 	    else
 	    {
-		*(long *)varp = (long)(long_i)options[opt_idx].def_val[dvi];
+		long def_val = (long)(long_i)options[opt_idx].def_val[dvi];
+
+		if ((long *)varp == &curwin->w_p_so
+			|| (long *)varp == &curwin->w_p_siso)
+		    // 'scrolloff' and 'sidescrolloff' local values have a
+		    // different default value than the global default.
+		    *(long *)varp = -1;
+		else
+		    *(long *)varp = def_val;
 		/* May also set global value for local option. */
 		if (both)
 		    *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) =
-								*(long *)varp;
+								def_val;
 	    }
 	}
 	else	/* P_BOOL */
@@ -9382,7 +9392,7 @@ set_num_option(
     }
     if (p_so < 0 && full_screen)
     {
-	errmsg = e_scroll;
+	errmsg = e_positive;
 	p_so = 0;
     }
     if (p_siso < 0 && full_screen)
@@ -10657,6 +10667,12 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_tc);
 	    buf->b_tc_flags = 0;
 	    break;
+        case PV_SISO:
+            curwin->w_p_siso = -1;
+            break;
+        case PV_SO:
+            curwin->w_p_so = -1;
+            break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -10745,6 +10761,8 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
+            case PV_SISO: return (char_u *)&(curwin->w_p_siso);
+            case PV_SO:   return (char_u *)&(curwin->w_p_so);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -10803,6 +10821,10 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curbuf->b_p_tc) : p->var;
 	case PV_BKC:	return *curbuf->b_p_bkc != NUL
 				    ? (char_u *)&(curbuf->b_p_bkc) : p->var;
+	case PV_SISO:	return curwin->w_p_siso >= 0
+				    ? (char_u *)&(curwin->w_p_siso) : p->var;
+	case PV_SO:	return curwin->w_p_so >= 0
+				    ? (char_u *)&(curwin->w_p_so) : p->var;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:	return *curbuf->b_p_def != NUL
 				    ? (char_u *)&(curbuf->b_p_def) : p->var;
@@ -13096,6 +13118,26 @@ get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
 get_sts_value(void)
 {
     return curbuf->b_p_sts < 0 ? get_sw_value(curbuf) : curbuf->b_p_sts;
+}
+
+/*
+ * Return the effective 'scrolloff' value for the current window, using the
+ * global value when appropriate.
+ */
+    long
+get_scrolloff_value(void)
+{
+    return curwin->w_p_so < 0 ? p_so : curwin->w_p_so;
+}
+
+/*
+ * Return the effective 'sidescrolloff' value for the current window, using the
+ * global value when appropriate.
+ */
+    long
+get_sidescrolloff_value(void)
+{
+    return curwin->w_p_siso < 0 ? p_siso : curwin->w_p_siso;
 }
 
 /*

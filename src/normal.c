@@ -2814,7 +2814,7 @@ do_mouse(
 
     /* Set global flag that we are extending the Visual area with mouse
      * dragging; temporarily minimize 'scrolloff'. */
-    if (VIsual_active && is_drag && p_so)
+    if (VIsual_active && is_drag && get_scrolloff_value())
     {
 	/* In the very first line, allow scrolling one line */
 	if (mouse_row == 0)
@@ -4635,7 +4635,7 @@ scroll_redraw(int up, long count)
 	scrollup(count, TRUE);
     else
 	scrolldown(count, TRUE);
-    if (p_so)
+    if (get_scrolloff_value())
     {
 	/* Adjust the cursor position for 'scrolloff'.  Mark w_topline as
 	 * valid, otherwise the screen jumps back at the end of the file. */
@@ -4692,6 +4692,7 @@ nv_zet(cmdarg_T *cap)
 #ifdef FEAT_SPELL
     int		undo = FALSE;
 #endif
+    long        siso = get_sidescrolloff_value();
 
     if (VIM_ISDIGIT(nchar))
     {
@@ -4874,8 +4875,8 @@ dozet:
 		    else
 #endif
 		    getvcol(curwin, &curwin->w_cursor, &col, NULL, NULL);
-		    if ((long)col > p_siso)
-			col -= p_siso;
+		    if ((long)col > siso)
+			col -= siso;
 		    else
 			col = 0;
 		    if (curwin->w_leftcol != col)
@@ -4896,10 +4897,10 @@ dozet:
 #endif
 		    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
 		    n = curwin->w_width - curwin_col_off();
-		    if ((long)col + p_siso < n)
+		    if ((long)col + siso < n)
 			col = 0;
 		    else
-			col = col + p_siso - n + 1;
+			col = col + siso - n + 1;
 		    if (curwin->w_leftcol != col)
 		    {
 			curwin->w_leftcol = col;
