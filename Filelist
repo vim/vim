@@ -49,6 +49,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/indent.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -175,6 +176,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/indent.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \

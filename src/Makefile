@@ -1599,6 +1599,7 @@ BASIC_SRC = \
 	hashtab.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -1712,6 +1713,7 @@ OBJ_COMMON = \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
+	objects/indent.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -1842,6 +1844,7 @@ PRO_AUTO = \
 	if_python3.pro \
 	if_ruby.pro \
 	if_xcmdsrv.pro \
+	indent.pro \
 	json.pro \
 	list.pro \
 	main.pro \
@@ -3093,6 +3096,9 @@ objects/if_ruby.o: if_ruby.c
 objects/if_tcl.o: if_tcl.c
 	$(CCC_NF) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ if_tcl.c
 
+objects/indent.o: indent.c
+	$(CCC) -o $@ indent.c
+
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
 
@@ -3490,6 +3496,10 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h version.h
+objects/indent.o: indent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+  os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h structs.h \
+  regexp.h gui.h alloc.h ex_cmds.h spell.h proto.h globals.h farsi.h \
+  arabic.h
 objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -48,6 +48,7 @@ SRC =	arabic.c						\
 	getchar.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	indent.c						\
 	json.c							\
 	list.c							\
 	main.c							\
