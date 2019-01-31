@@ -5655,6 +5655,23 @@ failed:
 	close(pty_slave_fd);
 }
 
+    static char_u *
+get_signal_name(int sig)
+{
+    int		i;
+    char_u	numbuf[NUMBUFLEN];
+
+    if (sig == SIGKILL)
+	return vim_strsave((char_u *)"kill");
+
+    for (i = 0; signal_info[i].sig != -1; i++)
+	if (sig == signal_info[i].sig)
+	    return strlow_save((char_u *)signal_info[i].name);
+
+    vim_snprintf((char *)numbuf, NUMBUFLEN, "%d", sig);
+    return vim_strsave(numbuf);
+}
+
     char *
 mch_job_status(job_T *job)
 {
@@ -5691,8 +5708,10 @@ mch_job_status(job_T *job)
     if (WIFSIGNALED(status))
     {
 	job->jv_exitval = -1;
-	if (job->jv_status < JOB_ENDED)
-	    ch_log(job->jv_channel, "Job terminated by a signal");
+	job->jv_termsig = get_signal_name(WTERMSIG(status));
+	if (job->jv_status < JOB_ENDED && job->jv_termsig != NULL)
+	    ch_log(job->jv_channel, "Job terminated by signal \"%s\"",
+							      job->jv_termsig);
 	goto return_dead;
     }
     return "run";
@@ -5738,7 +5757,10 @@ mch_detect_ended_job(job_T *job_list)
 		/* LINTED avoid "bitwise operation on signed value" */
 		job->jv_exitval = WEXITSTATUS(status);
 	    else if (WIFSIGNALED(status))
+	    {
 		job->jv_exitval = -1;
+		job->jv_termsig = get_signal_name(WTERMSIG(status));
+	    }
 	    if (job->jv_status < JOB_ENDED)
 	    {
 		ch_log(job->jv_channel, "Job ended");

@@ -5745,6 +5745,11 @@ job_info([{job}])					*job_info()*
 		   "exit_cb"	function to be called on exit
 		   "stoponexit"	|job-stoponexit|
 
+		   Only in Unix:
+		   "termsig"	the signal which terminated the process
+				(See |job_stop()| for the values)
+				only valid when "status" is "dead"
+
 		Without any arguments, returns a List with all Job objects.
 
 job_setoptions({job}, {options})			*job_setoptions()*

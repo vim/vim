@@ -2002,3 +2002,27 @@ func Test_raw_large_data()
     unlet g:out
   endtry
 endfunc
+
+func Test_job_exitval_and_termsig()
+  if !has('unix')
+    return
+  endif
+
+  " Terminate job normally
+  let cmd = ['echo']
+  let job = job_start(cmd)
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  let info = job_info(job)
+  call assert_equal(0, info.exitval)
+  call assert_equal("", info.termsig)
+
+  " Terminate job by signal
+  let cmd = ['sleep', '10']
+  let job = job_start(cmd)
+  sleep 10m
+  call job_stop(job)
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  let info = job_info(job)
+  call assert_equal(-1, info.exitval)
+  call assert_equal("term", info.termsig)
+endfunc
