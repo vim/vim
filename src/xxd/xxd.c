@@ -472,6 +472,7 @@ main(int argc, char *argv[])
   unsigned long displayoff = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
+  int addrlen = 9;
 
 #ifdef AMIGA
   /* This program doesn't work when started from the Workbench */
@@ -820,7 +821,6 @@ main(int argc, char *argv[])
   else	/* hextype == HEX_BITS */
     grplen = 8 * octspergrp + 1;
 
-  int addrlen = 9;
   e = 0;
   while ((length < 0 || n < length) && (e = getc(fp)) != EOF)
     {
