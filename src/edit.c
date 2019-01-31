@@ -377,7 +377,6 @@ edit(
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
 #endif
 
-ch_log(NULL, "ENTERING Insert mode");
     /*
      * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".
      */
@@ -1048,7 +1047,6 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
-ch_log(NULL, "LEAVING Insert mode");
 		return (c == Ctrl_O);
 	    }
 	    continue;
