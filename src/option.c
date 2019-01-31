@@ -483,6 +483,9 @@ struct vimoption
 # define DEFAULT_PYTHON_VER	0
 #endif
 
+// used for 'cinkeys' and 'indentkeys'
+#define INDENTKEYS_DEFAULT (char_u *)"0{,0},0),0],:,0#,!^F,o,O,e"
+
 /*
  * options[] is initialized here.
  * The order of the options MUST be alphabetic for ":set all" and findoption().
@@ -757,7 +760,7 @@ static struct vimoption options[] =
     {"cinkeys",	    "cink", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_CINDENT
 			    (char_u *)&p_cink, PV_CINK,
-			    {(char_u *)"0{,0},0),:,0#,!^F,o,O,e", (char_u *)0L}
+			    {INDENTKEYS_DEFAULT, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -1570,7 +1573,7 @@ static struct vimoption options[] =
     {"indentkeys", "indk",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 			    (char_u *)&p_indk, PV_INDK,
-			    {(char_u *)"0{,0},:,0#,!^F,o,O,e", (char_u *)0L}
+			    {INDENTKEYS_DEFAULT, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}

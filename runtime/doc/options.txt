@@ -1564,7 +1564,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 							*'cinkeys'* *'cink'*
-'cinkeys' 'cink'	string	(default "0{,0},0),:,0#,!^F,o,O,e")
+'cinkeys' 'cink'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+cindent|
@@ -4607,7 +4607,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'indentkeys'* *'indk'*
-'indentkeys' 'indk'	string	(default "0{,0},:,0#,!^F,o,O,e")
+'indentkeys' 'indk'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+cindent|
