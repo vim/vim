@@ -16,10 +16,6 @@
 # include <X11/StringDefs.h>
 #endif
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
-# include "gui_beval.h"
-#endif
-
 #ifdef FEAT_GUI_GTK
 # ifdef VMS /* undef MIN and MAX because Intrinsic.h redefines them anyway */
 #  ifdef MAX
@@ -69,8 +65,9 @@
 /*
  * GUIs that support dropping files on a running Vim.
  */
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_GTK)
+#if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC)
 # define HAVE_DROP_FILE
 #endif
 
@@ -142,6 +139,7 @@
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
+#define DRAW_STRIKE		0x40	/* strikethrough */
 
 /* For our own tearoff menu item */
 #define TEAR_STRING		"-->Detach"
@@ -179,9 +177,7 @@ typedef struct GuiScrollbar
     /* Values measured in characters: */
     int		top;		/* Top of scroll bar (chars from row 0) */
     int		height;		/* Current height of scroll bar in rows */
-#ifdef FEAT_WINDOWS
     int		width;		/* Current width of scroll bar in cols */
-#endif
     int		status_height;	/* Height of status line */
 #ifdef FEAT_GUI_X11
     Widget	id;		/* Id of real scroll bar */
@@ -212,6 +208,8 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #define INVALCOLOR (guicolor_T)-11111	/* number for invalid color; on 32 bit
 				   displays there is a tiny chance this is an
 				   actual color */
+#define CTERMCOLOR (guicolor_T)-11110	/* only used for cterm.bg_rgb and
+					   cterm.fg_rgb: use cterm color */
 
 #ifdef FEAT_GUI_GTK
   typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */
@@ -305,13 +303,11 @@ typedef struct Gui
     GuiFont	menu_font;	    /* menu item font */
 # endif
 #endif
-#ifdef FEAT_MBYTE
     GuiFont	wide_font;	    /* Normal 'guifontwide' font */
-# ifndef FEAT_GUI_GTK
+#ifndef FEAT_GUI_GTK
     GuiFont	wide_bold_font;	    /* Bold 'guifontwide' font */
     GuiFont	wide_ital_font;	    /* Italic 'guifontwide' font */
     GuiFont	wide_boldital_font; /* Bold-Italic 'guifontwide' font */
-# endif
 #endif
 #ifdef FEAT_XFONTSET
     GuiFontset	fontset;	    /* set of fonts for multi-byte chars */
@@ -567,3 +563,7 @@ typedef enum
 #  define FUNC2GENERIC(func) G_CALLBACK(func)
 # endif
 #endif /* FEAT_GUI_GTK */
+
+#if defined(UNIX) && !defined(FEAT_GUI_MAC)
+# define GUI_MAY_FORK
+#endif

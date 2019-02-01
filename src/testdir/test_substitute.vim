@@ -1,6 +1,6 @@
 " Tests for multi-line regexps with ":s".
 
-function! Test_multiline_subst()
+func Test_multiline_subst()
   enew!
   call append(0, ["1 aa",
 	      \ "bb",
@@ -38,9 +38,9 @@ function! Test_multiline_subst()
   call assert_equal('7x7f', getline(12))
   call assert_equal('xxxxx', getline(13))
   enew!
-endfunction
+endfunc
 
-function! Test_substitute_variants()
+func Test_substitute_variants()
   " Validate that all the 2-/3-letter variants which embed the flags into the
   " command name actually work.
   enew!
@@ -105,7 +105,7 @@ function! Test_substitute_variants()
       call assert_equal(var.exp, getline('.'), msg)
     endfor
   endfor
-endfunction
+endfunc
 
 func Test_substitute_repeat()
   " This caused an invalid memory access.
@@ -113,4 +113,390 @@ func Test_substitute_repeat()
   s/^/x
   call feedkeys("Qsc\<CR>y", 'tx')
   bwipe!
+endfunc
+
+" Test for *sub-replace-special* and *sub-replace-expression* on substitute().
+func Test_sub_replace_1()
+  " Run the tests with 'magic' on
+  set magic
+  set cpo&
+  call assert_equal('AA', substitute('A', 'A', '&&', ''))
+  call assert_equal('&', substitute('B', 'B', '\&', ''))
+  call assert_equal('C123456789987654321', substitute('C123456789', 'C\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)', '\0\9\8\7\6\5\4\3\2\1', ''))
+  call assert_equal('d', substitute('D', 'D', 'd', ''))
+  call assert_equal('~', substitute('E', 'E', '~', ''))
+  call assert_equal('~', substitute('F', 'F', '\~', ''))
+  call assert_equal('Gg', substitute('G', 'G', '\ugg', ''))
+  call assert_equal('Hh', substitute('H', 'H', '\Uh\Eh', ''))
+  call assert_equal('iI', substitute('I', 'I', '\lII', ''))
+  call assert_equal('jJ', substitute('J', 'J', '\LJ\EJ', ''))
+  call assert_equal('Kk', substitute('K', 'K', '\Uk\ek', ''))
+  call assert_equal("l\<C-V>\<C-M>l",
+			\ substitute('lLl', 'L', "\<C-V>\<C-M>", ''))
+  call assert_equal("m\<C-M>m", substitute('mMm', 'M', '\r', ''))
+  call assert_equal("n\<C-V>\<C-M>n",
+			\ substitute('nNn', 'N', "\\\<C-V>\<C-M>", ''))
+  call assert_equal("o\no", substitute('oOo', 'O', '\n', ''))
+  call assert_equal("p\<C-H>p", substitute('pPp', 'P', '\b', ''))
+  call assert_equal("q\tq", substitute('qQq', 'Q', '\t', ''))
+  call assert_equal('r\r', substitute('rRr', 'R', '\\', ''))
+  call assert_equal('scs', substitute('sSs', 'S', '\c', ''))
+  call assert_equal("u\nu", substitute('uUu', 'U', "\n", ''))
+  call assert_equal("v\<C-H>v", substitute('vVv', 'V', "\b", ''))
+  call assert_equal("w\\w", substitute('wWw', 'W', "\\", ''))
+  call assert_equal("x\<C-M>x", substitute('xXx', 'X', "\r", ''))
+  call assert_equal("YyyY", substitute('Y', 'Y', '\L\uyYy\l\EY', ''))
+  call assert_equal("zZZz", substitute('Z', 'Z', '\U\lZzZ\u\Ez', ''))
+endfunc
+
+func Test_sub_replace_2()
+  " Run the tests with 'magic' off
+  set nomagic
+  set cpo&
+  call assert_equal('AA', substitute('A', 'A', '&&', ''))
+  call assert_equal('&', substitute('B', 'B', '\&', ''))
+  call assert_equal('C123456789987654321', substitute('C123456789', 'C\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)', '\0\9\8\7\6\5\4\3\2\1', ''))
+  call assert_equal('d', substitute('D', 'D', 'd', ''))
+  call assert_equal('~', substitute('E', 'E', '~', ''))
+  call assert_equal('~', substitute('F', 'F', '\~', ''))
+  call assert_equal('Gg', substitute('G', 'G', '\ugg', ''))
+  call assert_equal('Hh', substitute('H', 'H', '\Uh\Eh', ''))
+  call assert_equal('iI', substitute('I', 'I', '\lII', ''))
+  call assert_equal('jJ', substitute('J', 'J', '\LJ\EJ', ''))
+  call assert_equal('Kk', substitute('K', 'K', '\Uk\ek', ''))
+  call assert_equal("l\<C-V>\<C-M>l",
+			\ substitute('lLl', 'L', "\<C-V>\<C-M>", ''))
+  call assert_equal("m\<C-M>m", substitute('mMm', 'M', '\r', ''))
+  call assert_equal("n\<C-V>\<C-M>n",
+			\ substitute('nNn', 'N', "\\\<C-V>\<C-M>", ''))
+  call assert_equal("o\no", substitute('oOo', 'O', '\n', ''))
+  call assert_equal("p\<C-H>p", substitute('pPp', 'P', '\b', ''))
+  call assert_equal("q\tq", substitute('qQq', 'Q', '\t', ''))
+  call assert_equal('r\r', substitute('rRr', 'R', '\\', ''))
+  call assert_equal('scs', substitute('sSs', 'S', '\c', ''))
+  call assert_equal("t\<C-M>t", substitute('tTt', 'T', "\r", ''))
+  call assert_equal("u\nu", substitute('uUu', 'U', "\n", ''))
+  call assert_equal("v\<C-H>v", substitute('vVv', 'V', "\b", ''))
+  call assert_equal('w\w', substitute('wWw', 'W', "\\", ''))
+  call assert_equal('XxxX', substitute('X', 'X', '\L\uxXx\l\EX', ''))
+  call assert_equal('yYYy', substitute('Y', 'Y', '\U\lYyY\u\Ey', ''))
+endfunc
+
+func Test_sub_replace_3()
+  set magic&
+  set cpo&
+  call assert_equal('a\a', substitute('aAa', 'A', '\="\\"', ''))
+  call assert_equal('b\\b', substitute('bBb', 'B', '\="\\\\"', ''))
+  call assert_equal("c\rc", substitute('cCc', 'C', "\\=\"\r\"", ''))
+  call assert_equal("d\\\rd", substitute('dDd', 'D', "\\=\"\\\\\r\"", ''))
+  call assert_equal("e\\\\\re", substitute('eEe', 'E', "\\=\"\\\\\\\\\r\"", ''))
+  call assert_equal('f\rf', substitute('fFf', 'F', '\="\\r"', ''))
+  call assert_equal('j\nj', substitute('jJj', 'J', '\="\\n"', ''))
+  call assert_equal("k\<C-M>k", substitute('kKk', 'K', '\="\r"', ''))
+  call assert_equal("l\nl", substitute('lLl', 'L', '\="\n"', ''))
+endfunc
+
+" Test for submatch() on substitute().
+func Test_sub_replace_4()
+  set magic&
+  set cpo&
+  call assert_equal('a\a', substitute('aAa', 'A',
+		\ '\=substitute(submatch(0), ".", "\\", "")', ''))
+  call assert_equal('b\b', substitute('bBb', 'B',
+		\ '\=substitute(submatch(0), ".", "\\\\", "")', ''))
+  call assert_equal("c\<C-V>\<C-M>c", substitute('cCc', 'C', '\=substitute(submatch(0), ".", "\<C-V>\<C-M>", "")', ''))
+  call assert_equal("d\<C-V>\<C-M>d", substitute('dDd', 'D', '\=substitute(submatch(0), ".", "\\\<C-V>\<C-M>", "")', ''))
+  call assert_equal("e\\\<C-V>\<C-M>e", substitute('eEe', 'E', '\=substitute(submatch(0), ".", "\\\\\<C-V>\<C-M>", "")', ''))
+  call assert_equal("f\<C-M>f", substitute('fFf', 'F', '\=substitute(submatch(0), ".", "\\r", "")', ''))
+  call assert_equal("j\nj", substitute('jJj', 'J', '\=substitute(submatch(0), ".", "\\n", "")', ''))
+  call assert_equal("k\rk", substitute('kKk', 'K', '\=substitute(submatch(0), ".", "\r", "")', ''))
+  call assert_equal("l\nl", substitute('lLl', 'L', '\=substitute(submatch(0), ".", "\n", "")', ''))
+endfunc
+
+func Test_sub_replace_5()
+  set magic&
+  set cpo&
+  call assert_equal('A123456789987654321', substitute('A123456789',
+		\ 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)',
+		\ '\=submatch(0) . submatch(9) . submatch(8) . ' .
+		\ 'submatch(7) . submatch(6) . submatch(5) . ' .
+		\ 'submatch(4) . submatch(3) . submatch(2) . submatch(1)',
+		\ ''))
+   call assert_equal("[['A123456789'], ['9'], ['8'], ['7'], ['6'], " .
+		\ "['5'], ['4'], ['3'], ['2'], ['1']]",
+		\ substitute('A123456789',
+		\ 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)',
+		\ '\=string([submatch(0, 1), submatch(9, 1), ' .
+		\ 'submatch(8, 1), submatch(7, 1), submatch(6, 1), ' .
+		\ 'submatch(5, 1), submatch(4, 1), submatch(3, 1), ' .
+		\ 'submatch(2, 1), submatch(1, 1)])',
+		\ ''))
+endfunc
+
+func Test_sub_replace_6()
+  set magic&
+  set cpo+=/
+  call assert_equal('a', substitute('A', 'A', 'a', ''))
+  call assert_equal('%', substitute('B', 'B', '%', ''))
+  set cpo-=/
+  call assert_equal('c', substitute('C', 'C', 'c', ''))
+  call assert_equal('%', substitute('D', 'D', '%', ''))
+endfunc
+
+func Test_sub_replace_7()
+  set magic&
+  set cpo&
+  call assert_equal('AA', substitute('AA', 'A.', '\=submatch(0)', ''))
+  call assert_equal("B\nB", substitute("B\nB", 'B.', '\=submatch(0)', ''))
+  call assert_equal("['B\n']B", substitute("B\nB", 'B.', '\=string(submatch(0, 1))', ''))
+  call assert_equal('-abab', substitute('-bb', '\zeb', 'a', 'g'))
+  call assert_equal('c-cbcbc', substitute('-bb', '\ze', 'c', 'g'))
+endfunc
+
+" Test for *:s%* on :substitute.
+func Test_sub_replace_8()
+  new
+  set magic&
+  set cpo&
+  $put =',,X'
+  s/\(^\|,\)\ze\(,\|X\)/\1N/g
+  call assert_equal('N,,NX', getline("$"))
+  $put =',,Y'
+  let cmd = ':s/\(^\|,\)\ze\(,\|Y\)/\1N/gc'
+  call feedkeys(cmd . "\<CR>a", "xt")
+  call assert_equal('N,,NY', getline("$"))
+  :$put =',,Z'
+  let cmd = ':s/\(^\|,\)\ze\(,\|Z\)/\1N/gc'
+  call feedkeys(cmd . "\<CR>yy", "xt")
+  call assert_equal('N,,NZ', getline("$"))
+  enew! | close
+endfunc
+
+func Test_sub_replace_9()
+  new
+  set magic&
+  set cpo&
+  $put ='xxx'
+  call feedkeys(":s/x/X/gc\<CR>yyq", "xt")
+  call assert_equal('XXx', getline("$"))
+  enew! | close
+endfunc
+
+func Test_sub_replace_10()
+   set magic&
+   set cpo&
+   call assert_equal('a1a2a3a', substitute('123', '\zs', 'a', 'g'))
+   call assert_equal('aaa', substitute('123', '\zs.', 'a', 'g'))
+   call assert_equal('1a2a3a', substitute('123', '.\zs', 'a', 'g'))
+   call assert_equal('a1a2a3a', substitute('123', '\ze', 'a', 'g'))
+   call assert_equal('a1a2a3', substitute('123', '\ze.', 'a', 'g'))
+   call assert_equal('aaa', substitute('123', '.\ze', 'a', 'g'))
+   call assert_equal('aa2a3a', substitute('123', '1\|\ze', 'a', 'g'))
+   call assert_equal('1aaa', substitute('123', '1\zs\|[23]', 'a', 'g'))
+endfunc
+
+" Tests for *sub-replace-special* and *sub-replace-expression* on :substitute.
+
+" Execute a list of :substitute command tests
+func Run_SubCmd_Tests(tests)
+  enew!
+  for t in a:tests
+    let start = line('.') + 1
+    let end = start + len(t[2]) - 1
+    exe "normal o" . t[0]
+    call cursor(start, 1)
+    exe t[1]
+    call assert_equal(t[2], getline(start, end), t[1])
+  endfor
+  enew!
+endfunc
+
+func Test_sub_cmd_1()
+  set magic
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [['A', 's/A/&&/', ['AA']],
+	      \ ['B', 's/B/\&/', ['&']],
+	      \ ['C123456789', 's/C\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)/\0\9\8\7\6\5\4\3\2\1/', ['C123456789987654321']],
+	      \ ['D', 's/D/d/', ['d']],
+	      \ ['E', 's/E/~/', ['d']],
+	      \ ['F', 's/F/\~/', ['~']],
+	      \ ['G', 's/G/\ugg/', ['Gg']],
+	      \ ['H', 's/H/\Uh\Eh/', ['Hh']],
+	      \ ['I', 's/I/\lII/', ['iI']],
+	      \ ['J', 's/J/\LJ\EJ/', ['jJ']],
+	      \ ['K', 's/K/\Uk\ek/', ['Kk']],
+	      \ ['lLl', "s/L/\<C-V>\<C-M>/", ["l\<C-V>", 'l']],
+	      \ ['mMm', 's/M/\r/', ['m', 'm']],
+	      \ ['nNn', "s/N/\\\<C-V>\<C-M>/", ["n\<C-V>", 'n']],
+	      \ ['oOo', 's/O/\n/', ["o\no"]],
+	      \ ['pPp', 's/P/\b/', ["p\<C-H>p"]],
+	      \ ['qQq', 's/Q/\t/', ["q\tq"]],
+	      \ ['rRr', 's/R/\\/', ['r\r']],
+	      \ ['sSs', 's/S/\c/', ['scs']],
+	      \ ['tTt', "s/T/\<C-V>\<C-J>/", ["t\<C-V>\<C-J>t"]],
+	      \ ['U', 's/U/\L\uuUu\l\EU/', ['UuuU']],
+	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']]
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+endfunc
+
+func Test_sub_cmd_2()
+  set nomagic
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [['A', 's/A/&&/', ['&&']],
+	      \ ['B', 's/B/\&/', ['B']],
+	      \ ['C123456789', 's/\mC\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)/\0\9\8\7\6\5\4\3\2\1/', ['C123456789987654321']],
+	      \ ['D', 's/D/d/', ['d']],
+	      \ ['E', 's/E/~/', ['~']],
+	      \ ['F', 's/F/\~/', ['~']],
+	      \ ['G', 's/G/\ugg/', ['Gg']],
+	      \ ['H', 's/H/\Uh\Eh/', ['Hh']],
+	      \ ['I', 's/I/\lII/', ['iI']],
+	      \ ['J', 's/J/\LJ\EJ/', ['jJ']],
+	      \ ['K', 's/K/\Uk\ek/', ['Kk']],
+	      \ ['lLl', "s/L/\<C-V>\<C-M>/", ["l\<C-V>", 'l']],
+	      \ ['mMm', 's/M/\r/', ['m', 'm']],
+	      \ ['nNn', "s/N/\\\<C-V>\<C-M>/", ["n\<C-V>", 'n']],
+	      \ ['oOo', 's/O/\n/', ["o\no"]],
+	      \ ['pPp', 's/P/\b/', ["p\<C-H>p"]],
+	      \ ['qQq', 's/Q/\t/', ["q\tq"]],
+	      \ ['rRr', 's/R/\\/', ['r\r']],
+	      \ ['sSs', 's/S/\c/', ['scs']],
+	      \ ['tTt', "s/T/\<C-V>\<C-J>/", ["t\<C-V>\<C-J>t"]],
+	      \ ['U', 's/U/\L\uuUu\l\EU/', ['UuuU']],
+	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']]
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+endfunc
+
+func Test_sub_cmd_3()
+  set nomagic
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [['aAa', "s/A/\\='\\'/", ['a\a']],
+	      \ ['bBb', "s/B/\\='\\\\'/", ['b\\b']],
+	      \ ['cCc', "s/C/\\='\<C-V>\<C-M>'/", ["c\<C-V>", 'c']],
+	      \ ['dDd', "s/D/\\='\\\<C-V>\<C-M>'/", ["d\\\<C-V>", 'd']],
+	      \ ['eEe', "s/E/\\='\\\\\<C-V>\<C-M>'/", ["e\\\\\<C-V>", 'e']],
+	      \ ['fFf', "s/F/\\='\r'/", ['f', 'f']],
+	      \ ['gGg', "s/G/\\='\<C-V>\<C-J>'/", ["g\<C-V>", 'g']],
+	      \ ['hHh', "s/H/\\='\\\<C-V>\<C-J>'/", ["h\\\<C-V>", 'h']],
+	      \ ['iIi', "s/I/\\='\\\\\<C-V>\<C-J>'/", ["i\\\\\<C-V>", 'i']],
+	      \ ['jJj', "s/J/\\='\n'/", ['j', 'j']],
+	      \ ['kKk', 's/K/\="\r"/', ['k', 'k']],
+	      \ ['lLl', 's/L/\="\n"/', ['l', 'l']]
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+endfunc
+
+" Test for submatch() on :substitue.
+func Test_sub_cmd_4()
+  set magic&
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [ ['aAa', "s/A/\\=substitute(submatch(0), '.', '\\', '')/",
+	      \				['a\a']],
+	      \ ['bBb', "s/B/\\=substitute(submatch(0), '.', '\\', '')/",
+	      \				['b\b']],
+	      \ ['cCc', "s/C/\\=substitute(submatch(0), '.', '\<C-V>\<C-M>', '')/",
+	      \				["c\<C-V>", 'c']],
+	      \ ['dDd', "s/D/\\=substitute(submatch(0), '.', '\\\<C-V>\<C-M>', '')/",
+	      \				["d\<C-V>", 'd']],
+	      \ ['eEe', "s/E/\\=substitute(submatch(0), '.', '\\\\\<C-V>\<C-M>', '')/",
+	      \				["e\\\<C-V>", 'e']],
+	      \ ['fFf', "s/F/\\=substitute(submatch(0), '.', '\\r', '')/",
+	      \				['f', 'f']],
+	      \ ['gGg', 's/G/\=substitute(submatch(0), ".", "\<C-V>\<C-J>", "")/',
+	      \				["g\<C-V>", 'g']],
+	      \ ['hHh', 's/H/\=substitute(submatch(0), ".", "\\\<C-V>\<C-J>", "")/',
+	      \				["h\<C-V>", 'h']],
+	      \ ['iIi', 's/I/\=substitute(submatch(0), ".", "\\\\\<C-V>\<C-J>", "")/',
+	      \				["i\\\<C-V>", 'i']],
+	      \ ['jJj', "s/J/\\=substitute(submatch(0), '.', '\\n', '')/",
+	      \				['j', 'j']],
+	      \ ['kKk', "s/K/\\=substitute(submatch(0), '.', '\\r', '')/",
+	      \				['k', 'k']],
+	      \ ['lLl', "s/L/\\=substitute(submatch(0), '.', '\\n', '')/",
+	      \				['l', 'l']],
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+endfunc
+
+func Test_sub_cmd_5()
+  set magic&
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [ ['A123456789', 's/A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)/\=submatch(0) . submatch(9) . submatch(8) . submatch(7) . submatch(6) . submatch(5) . submatch(4) . submatch(3) . submatch(2) . submatch(1)/', ['A123456789987654321']],
+	      \ ['B123456789', 's/B\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)/\=string([submatch(0, 1), submatch(9, 1), submatch(8, 1), submatch(7, 1), submatch(6, 1), submatch(5, 1), submatch(4, 1), submatch(3, 1), submatch(2, 1), submatch(1, 1)])/', ["[['B123456789'], ['9'], ['8'], ['7'], ['6'], ['5'], ['4'], ['3'], ['2'], ['1']]"]],
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+endfunc
+
+" Test for *:s%* on :substitute.
+func Test_sub_cmd_6()
+  set magic&
+  set cpo+=/
+
+  " List entry format: [input, cmd, output]
+  let tests = [ ['A', 's/A/a/', ['a']],
+	      \ ['B', 's/B/%/', ['a']],
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+
+  set cpo-=/
+  let tests = [ ['C', 's/C/c/', ['c']],
+	      \ ['D', 's/D/%/', ['%']],
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+
+  set cpo&
+endfunc
+
+" Test for :s replacing \n with  line break.
+func Test_sub_cmd_7()
+  set magic&
+  set cpo&
+
+  " List entry format: [input, cmd, output]
+  let tests = [ ["A\<C-V>\<C-M>A", 's/A./\=submatch(0)/', ['A', 'A']],
+	      \ ["B\<C-V>\<C-J>B", 's/B./\=submatch(0)/', ['B', 'B']],
+	      \ ["C\<C-V>\<C-J>C", 's/C./\=strtrans(string(submatch(0, 1)))/', [strtrans("['C\<C-J>']C")]],
+	      \ ["D\<C-V>\<C-J>\nD", 's/D.\nD/\=strtrans(string(submatch(0, 1)))/', [strtrans("['D\<C-J>', 'D']")]],
+	      \ ["E\<C-V>\<C-J>\n\<C-V>\<C-J>\n\<C-V>\<C-J>\n\<C-V>\<C-J>\n\<C-V>\<C-J>E", 's/E\_.\{-}E/\=strtrans(string(submatch(0, 1)))/', [strtrans("['E\<C-J>', '\<C-J>', '\<C-J>', '\<C-J>', '\<C-J>E']")]],
+	      \ ]
+  call Run_SubCmd_Tests(tests)
+
+  exe "normal oQ\nQ\<Esc>k"
+  call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486')
+  enew!
+endfunc
+
+func TitleString()
+  let check = 'foo' =~ 'bar'
+  return ""
+endfunc
+
+func Test_sub_cmd_8()
+  set titlestring=%{TitleString()}
+
+  enew!
+  call append(0, ['', 'test_one', 'test_two'])
+  call cursor(1,1)
+  /^test_one/s/.*/\="foo\nbar"/
+  call assert_equal('foo', getline(2))
+  call assert_equal('bar', getline(3))
+  call feedkeys(':/^test_two/s/.*/\="foo\nbar"/c', "t")
+  call feedkeys("\<CR>y", "xt")
+  call assert_equal('foo', getline(4))
+  call assert_equal('bar', getline(5))
+
+  enew!
+  set titlestring&
 endfunc

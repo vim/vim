@@ -76,7 +76,7 @@ Nota: Las teclas de movimiento del cursor también funcionan. Pero usando
   1. Mueva el cursor a la línea de abajo señalada con --->.
 
   2. Para corregir los errores, mueva el cursor hasta que esté bajo el
-     carácter que va aser borrado.
+     carácter que va a ser borrado.
 
   3. Pulse la tecla  x	para borrar el carácter sobrante.
 
@@ -256,7 +256,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
 
   2. Para borrar desde el cursor hasta el final de una línea pulse:	d$
 
-  3. Para borrar una línea enter pulse:    dd
+  3. Para borrar una línea entera pulse:    dd
 
   4. El formato de un mandato en modo Normal es:
 

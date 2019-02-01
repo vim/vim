@@ -20,7 +20,7 @@
 #
 # "make upx" makes *compressed* versions of the 32 bit GUI and console EXEs,
 # using the excellent UPX compressor:
-#     http://upx.sourceforge.net/
+#     https://upx.github.io/
 # "make mpress" uses the MPRESS compressor for 32- and 64-bit EXEs:
 #     http://www.matcode.com/mpress.htm
 #
@@ -28,54 +28,83 @@
 # Updated 2014 Oct 13.
 
 #>>>>> choose options:
-# set to yes for a debug build
-DEBUG=no
-# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
-OPTIMIZE=MAXSPEED
-# set to yes to make gvim, no for vim
-GUI=yes
-# set to yes if you want to use DirectWrite (DirectX)
-# MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
-DIRECTX=no
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
 FEATURES=HUGE
+
+# set to yes for a debug build
+DEBUG=no
+
+# set to yes to create a mapfile
+# MAP=yes
+
+# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
+OPTIMIZE=MAXSPEED
+
+# set to yes to make gvim, no for vim
+GUI=yes
+
+# set to no if you do not want to use DirectWrite (DirectX)
+# MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
+DIRECTX=yes
+
+# Disable Color emoji support
+# (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
+#COLOR_EMOJI=no
+
 # Set to one of i386, i486, i586, i686 as the minimum target processor.
 # For amd64/x64 architecture set ARCH=x86-64 .
 # If not set, it will be automatically detected. (Normally i686 or x86-64.)
 #ARCH=i686
 # Set to yes to cross-compile from unix; no=native Windows (and Cygwin).
 CROSS=no
+
 # Set to path to iconv.h and libiconv.a to enable using 'iconv.dll'.
+# Use "yes" when the path does not need to be define.
 #ICONV="."
 ICONV=yes
 GETTEXT=yes
-# Set to yes to include multibyte support.
-MBYTE=yes
+
 # Set to yes to include IME support.
 IME=yes
 DYNAMIC_IME=yes
+
 # Set to yes to enable writing a postscript file with :hardcopy.
 POSTSCRIPT=no
+
 # Set to yes to enable OLE support.
 OLE=no
-# Set the default $(WINVER) to make it work with WinXP.
+
+# Set the default $(WINVER).  Use 0x0501 to make it work with WinXP.
 ifndef WINVER
-WINVER = 0x0501
+# WINVER = 0x0501
+WINVER = 0x0600
 endif
+
 # Set to yes to enable Cscope support.
 CSCOPE=yes
+
 # Set to yes to enable Netbeans support (requires CHANNEL).
 NETBEANS=$(GUI)
+
 # Set to yes to enable inter process communication.
 ifeq (HUGE, $(FEATURES))
 CHANNEL=yes
 else
 CHANNEL=$(GUI)
 endif
-# Set to yes to enable terminal support.
-TERMINAL=no
 
+# Set to yes to enable terminal support.
+ifeq (HUGE, $(FEATURES))
+TERMINAL=yes
+else
+TERMINAL=no
+endif
+
+ifndef CTAGS
+# this assumes ctags is Exuberant ctags
+CTAGS = ctags -I INIT+ --fields=+S
+endif
 
 # Link against the shared version of libstdc++ by default.  Set
 # STATIC_STDCPLUS to "yes" to link against static version instead.
@@ -89,6 +118,9 @@ endif
 ifndef STATIC_WINPTHREAD
 STATIC_WINPTHREAD=$(STATIC_STDCPLUS)
 endif
+# If you use TDM-GCC(-64), change HAS_GCC_EH to "no".
+# This is used when STATIC_STDCPLUS=yes.
+HAS_GCC_EH=yes
 
 # If the user doesn't want gettext, undefine it.
 ifeq (no, $(GETTEXT))
@@ -137,6 +169,25 @@ else
 ifndef CROSS_COMPILE
 CROSS_COMPILE =
 endif
+
+# About the "sh.exe" condition, as explained by Ken Takata:
+#
+# If the makefile is executed with mingw32-make and sh.exe is not found in
+# $PATH, then $SHELL is set to "sh.exe" (without any path). In this case,
+# unix-like commands might not work and a dos-style path is needed.
+# 
+# If the makefile is executed with mingw32-make and sh.exe IS found in $PATH,
+# then $SHELL is set with the actual path of sh.exe (e.g.
+# "C:/msys64/usr/bin/sh.exe").  In this case, unix-like commands can be used.
+# 
+# If it is executed by the "make" command from cmd.exe, $SHELL is set to
+# "/bin/sh". If the "make" command is in the $PATH, other unix-like commands
+# might also work.
+# 
+# If it is executed by the "make" command from a unix-like shell,
+# $SHELL is set with the unix-style path (e.g. "/bin/bash").
+# In this case, unix-like commands can be used.
+#
 ifneq (sh.exe, $(SHELL))
 DEL = rm
 MKDIR = mkdir -p
@@ -196,6 +247,8 @@ endif
 
 #	Lua interface:
 #	  LUA=[Path to Lua directory] (Set inside Make_cyg.mak or Make_ming.mak)
+#	  LUA_LIBDIR=[Path to Lua library directory] (default: $LUA/lib)
+#	  LUA_INCDIR=[Path to Lua include directory] (default: $LUA/include)
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
 #	  LUA_VER=[Lua version, eg 51, 52] (default is 53)
 ifdef LUA
@@ -208,7 +261,8 @@ LUA_VER=53
 endif
 
 ifeq (no,$(DYNAMIC_LUA))
-LUA_LIB = -L$(LUA)/lib -llua
+LUA_LIBDIR = $(LUA)/lib
+LUA_LIB = -L$(LUA_LIBDIR) -llua
 endif
 
 endif
@@ -217,6 +271,8 @@ endif
 #	  MZSCHEME=[Path to MzScheme directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLL dynamically)
 #	  MZSCHEME_VER=[MzScheme version] (default is 3m_a0solc (6.6))
+#	  	Used for the DLL file name. E.g.:
+#	  	C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
 #	  MZSCHEME_DEBUG=no
 ifdef MZSCHEME
 ifndef DYNAMIC_MZSCHEME
@@ -305,14 +361,14 @@ endif
 #	Python3 interface:
 #	  PYTHON3=[Path to Python3 directory] (Set inside Make_cyg.mak or Make_ming.mak)
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
-#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 35)
+#	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 36)
 ifdef PYTHON3
 ifndef DYNAMIC_PYTHON3
 DYNAMIC_PYTHON3=yes
 endif
 
 ifndef PYTHON3_VER
-PYTHON3_VER=35
+PYTHON3_VER=36
 endif
 ifndef DYNAMIC_PYTHON3_DLL
 DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
@@ -340,6 +396,7 @@ endif
 #	  TCL_VER=[TCL version, eg 83, 84] (default is 86)
 #	  TCL_VER_LONG=[Tcl version, eg 8.3] (default is 8.6)
 #	    You must set TCL_VER_LONG when you set TCL_VER.
+#	  TCL_DLL=[TCL dll name, eg tcl86.dll] (default is tcl86.dll)
 ifdef TCL
 ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
@@ -350,13 +407,16 @@ endif
 ifndef TCL_VER_LONG
 TCL_VER_LONG = 8.6
 endif
+ifndef TCL_DLL
+TCL_DLL = tcl$(TCL_VER).dll
+endif
 TCLINC += -I$(TCL)/include
 endif
 
 
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory] (Set inside Make_cyg.mak or Make_ming.mak)
-#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
+#	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically, "no" for static)
 #	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
 #	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
 #			    (default is 2.2.0)
@@ -418,9 +478,10 @@ ifeq (19, $(word 1,$(sort 19 $(RUBY_VER))))
 RUBY_19_OR_LATER = 1
 endif
 
-RUBYINC = -I $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
 ifdef RUBY_19_OR_LATER
-RUBYINC += -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
+RUBYINC = -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
+else
+RUBYINC = -I $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
 endif
 ifeq (no, $(DYNAMIC_RUBY))
 RUBYLIB = -L$(RUBY)/lib -l$(RUBY_INSTALL_NAME)
@@ -440,7 +501,7 @@ endif
 #>>>>> end of choices
 ###########################################################################
 
-CFLAGS = -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
 CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
 EXTRA_LIBS =
@@ -470,7 +531,8 @@ endif
 endif
 
 ifdef LUA
-CFLAGS += -I$(LUA)/include -I$(LUA) -DFEAT_LUA
+LUA_INCDIR = $(LUA)/include
+CFLAGS += -I$(LUA_INCDIR) -I$(LUA) -DFEAT_LUA
 ifeq (yes, $(DYNAMIC_LUA))
 CFLAGS += -DDYNAMIC_LUA -DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
 endif
@@ -503,6 +565,9 @@ ifeq (yes, $(DYNAMIC_RUBY))
 CFLAGS += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 CFLAGS += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
 endif
+ifeq (no, $(DYNAMIC_RUBY))
+CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
+endif
 ifneq ($(findstring w64-mingw32,$(CC)),)
 # A workaround for MinGW-w64
 CFLAGS += -DHAVE_STRUCT_TIMESPEC -DHAVE_STRUCT_TIMEZONE
@@ -526,7 +591,7 @@ endif
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
 ifeq (yes, $(DYNAMIC_TCL))
-CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
+CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 endif
 endif
 
@@ -574,6 +639,9 @@ ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
 ifeq (yes, $(GUI))
 DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
+ifneq ($(COLOR_EMOJI),no)
+DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
+endif
 endif
 endif
 
@@ -622,11 +690,14 @@ endif
 CFLAGS += -s
 endif
 
-LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lversion
+LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
+	$(OUTDIR)/autocmd.o \
+	$(OUTDIR)/beval.o \
+	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
@@ -649,6 +720,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/indent.o \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
@@ -674,11 +746,13 @@ OBJ = \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/sha256.o \
+	$(OUTDIR)/sign.o \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/spellfile.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
+	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/userfunc.o \
@@ -757,17 +831,34 @@ endif
 
 ifeq ($(TERMINAL),yes)
 OBJ += $(OUTDIR)/terminal.o \
-	$(OUTDIR)/term_encoding.o \
-	$(OUTDIR)/term_keyboard.o \
-	$(OUTDIR)/term_mouse.o \
-	$(OUTDIR)/term_parser.o \
-	$(OUTDIR)/term_pen.o \
-	$(OUTDIR)/term_screen.o \
-	$(OUTDIR)/term_state.o \
-	$(OUTDIR)/term_unicode.o \
-	$(OUTDIR)/term_vterm.o
+	$(OUTDIR)/encoding.o \
+	$(OUTDIR)/keyboard.o \
+	$(OUTDIR)/mouse.o \
+	$(OUTDIR)/parser.o \
+	$(OUTDIR)/pen.o \
+	$(OUTDIR)/termscreen.o \
+	$(OUTDIR)/state.o \
+	$(OUTDIR)/unicode.o \
+	$(OUTDIR)/vterm.o
 endif
 
+# Include xdiff
+OBJ +=  $(OUTDIR)/xdiffi.o \
+	$(OUTDIR)/xemit.o \
+	$(OUTDIR)/xprepare.o \
+	$(OUTDIR)/xutils.o \
+	$(OUTDIR)/xhistogram.o \
+	$(OUTDIR)/xpatience.o
+
+XDIFF_DEPS = \
+	xdiff/xdiff.h \
+	xdiff/xdiffi.h \
+	xdiff/xemit.h \
+	xdiff/xinclude.h \
+	xdiff/xmacros.h \
+	xdiff/xprepare.h \
+	xdiff/xtypes.h \
+	xdiff/xutils.h
 
 ifdef MZSCHEME
 MZSCHEME_SUFFIX = Z
@@ -820,10 +911,6 @@ OBJ += $(OUTDIR)/if_ole.o
 USE_STDCPLUS = yes
 endif
 
-ifeq (yes, $(MBYTE))
-DEFINES += -DFEAT_MBYTE
-endif
-
 ifeq (yes, $(IME))
 DEFINES += -DFEAT_MBYTE_IME
 ifeq (yes, $(DYNAMIC_IME))
@@ -842,18 +929,27 @@ DEFINES+=-DDYNAMIC_ICONV
 endif
 
 ifeq (yes, $(USE_STDCPLUS))
+LINK = $(CXX)
 ifeq (yes, $(STATIC_STDCPLUS))
+#LIB += -static-libstdc++ -static-libgcc
 LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
-else
-LIB += -lstdc++
 endif
+else
+LINK = $(CC)
 endif
 
 ifeq (yes, $(STATIC_WINPTHREAD))
+ifeq (yes, $(HAS_GCC_EH))
+LIB += -lgcc_eh
+endif
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 
-all: $(TARGET) vimrun.exe xxd/xxd.exe install.exe uninstal.exe GvimExt/gvimext.dll
+ifeq (yes, $(MAP))
+LFLAGS += -Wl,-Map=$(TARGET).map
+endif
+
+all: $(TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -865,7 +961,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 
 upx: exes
 	upx gvim.exe
@@ -878,79 +974,95 @@ mpress: exes
 xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) -C xxd -f Make_ming.mak CC='$(CC)'
 
+tee/tee.exe: tee/tee.c
+	$(MAKE) -C tee CC='$(CC)'
+
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
+
+tags: notags
+	$(CTAGS) $(TAGS_FILES)
+
+notags:
+	-$(DEL) tags
 
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-rmdir $(OUTDIR)
-	-$(DEL) *.exe
+	-$(DEL) $(TARGET) vimrun.exe install.exe uninstal.exe
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
+	-$(DEL) auto$(DIRSLASH)if_perl.c
 endif
 ifdef MZSCHEME
 	-$(DEL) mzscheme_base.c
 endif
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
 	$(MAKE) -C xxd -f Make_ming.mak clean
+	$(MAKE) -C tee clean
 
 ###########################################################################
-INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
-	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
-	gui.h
+INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
+	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
+	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
+GUI_INCL = gui.h
 CUI_INCL = iscygpty.h
 
-$(OUTDIR)/if_python.o : if_python.c if_py_both.h $(INCL)
+$(OUTDIR)/if_python.o:	if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
 
-$(OUTDIR)/if_python3.o : if_python3.c if_py_both.h $(INCL)
+$(OUTDIR)/if_python3.o:	if_python3.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHON3INC) $(PYTHON3_HOME_DEF) $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/vimrc.o: vim.rc version.h gui_w32_rc.h
+$(OUTDIR)/vimrc.o:	vim.rc version.h gui_w32_rc.h
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
-$(OUTDIR)/channel.o:	channel.c $(INCL)
-	$(CC) -c $(CFLAGS) channel.c -o $(OUTDIR)/channel.o
-
-$(OUTDIR)/ex_docmd.o:	ex_docmd.c $(INCL) ex_cmds.h
-	$(CC) -c $(CFLAGS) ex_docmd.c -o $(OUTDIR)/ex_docmd.o
-
-$(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
-	$(CC) -c $(CFLAGS) ex_eval.c -o $(OUTDIR)/ex_eval.o
-
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL)
+$(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) gui.c -o $(OUTDIR)/gui.o
+
+$(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) beval.c -o $(OUTDIR)/beval.o
+
+$(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
+	$(CC) -c $(CFLAGS) gui_beval.c -o $(OUTDIR)/gui_beval.o
+
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
-$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
+$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
 	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
 
 mzscheme_base.c:
 	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
-$(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
+$(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL) if_ole.h
 	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
-if_perl.c: if_perl.xs typemap
+auto/if_perl.c:		if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs -output $@
 
-$(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
+$(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
+	$(CC) -c $(CFLAGS) auto/if_perl.c -o $(OUTDIR)/if_perl.o
+
+
+$(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
 	$(CC) $(CFLAGS) -U_WIN32 -c -o $(OUTDIR)/if_ruby.o if_ruby.c
 endif
@@ -958,47 +1070,74 @@ endif
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
-$(OUTDIR)/main.o:		main.c $(INCL) $(CUI_INCL)
+$(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
 	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
-$(OUTDIR)/regexp.o:		regexp.c regexp_nfa.c $(INCL)
+$(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
+	$(CC) -c $(CFLAGS) os_win32.c -o $(OUTDIR)/os_win32.o
+
+$(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
 	$(CC) -c $(CFLAGS) terminal.c -o $(OUTDIR)/terminal.o
 
+$(OUTDIR)/textprop.o:	textprop.c $(INCL)
+	$(CC) -c $(CFLAGS) textprop.c -o $(OUTDIR)/textprop.o
 
-CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" -DVSNPRINTF=vim_vsnprintf
-$(OUTDIR)/term_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+
+CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
+	  -DVSNPRINTF=vim_vsnprintf \
+	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
+	  -DWCWIDTH_FUNCTION=utf_uint2cells
+
+$(OUTDIR)/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/encoding.c -o $@
 
-$(OUTDIR)/term_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+$(OUTDIR)/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/keyboard.c -o $@
 
-$(OUTDIR)/term_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+$(OUTDIR)/mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/mouse.c -o $@
 
-$(OUTDIR)/term_parser.o: libvterm/src/parser.c $(TERM_DEPS)
+$(OUTDIR)/parser.o: libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/parser.c -o $@
 
-$(OUTDIR)/term_pen.o: libvterm/src/pen.c $(TERM_DEPS)
+$(OUTDIR)/pen.o: libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/pen.c -o $@
 
-$(OUTDIR)/term_screen.o: libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/screen.c -o $@
+$(OUTDIR)/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
+	$(CCCTERM) libvterm/src/termscreen.c -o $@
 
-$(OUTDIR)/term_state.o: libvterm/src/state.c $(TERM_DEPS)
+$(OUTDIR)/state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/state.c -o $@
 
-$(OUTDIR)/term_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+$(OUTDIR)/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/unicode.c -o $@
 
-$(OUTDIR)/term_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+$(OUTDIR)/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) libvterm/src/vterm.c -o $@
 
+$(OUTDIR)/xdiffi.o: xdiff/xdiffi.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xdiffi.c -o $(OUTDIR)/xdiffi.o
+
+$(OUTDIR)/xemit.o: xdiff/xemit.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xemit.c -o $(OUTDIR)/xemit.o
+
+$(OUTDIR)/xprepare.o: xdiff/xprepare.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xprepare.c -o $(OUTDIR)/xprepare.o
+
+$(OUTDIR)/xutils.o: xdiff/xutils.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xutils.c -o $(OUTDIR)/xutils.o
+
+$(OUTDIR)/xhistogram.o: xdiff/xhistogram.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xhistogram.c -o $(OUTDIR)/xhistogram.o
+
+$(OUTDIR)/xpatience.o: xdiff/xpatience.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) xdiff/xpatience.c -o $(OUTDIR)/xpatience.o
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))
@@ -1008,7 +1147,7 @@ ifneq (sh.exe, $(SHELL))
 	@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' >> pathdef.c
 	@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' >> pathdef.c
 	@echo 'char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)";' >> pathdef.c
-	@echo 'char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
+	@echo 'char_u *all_lflags = (char_u *)"$(LINK) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
 	@echo 'char_u *compiled_user = (char_u *)"$(USERNAME)";' >> pathdef.c
 	@echo 'char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";' >> pathdef.c
 else
@@ -1022,3 +1161,5 @@ else
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> pathdef.c
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> pathdef.c
 endif
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Charles E. Campbell <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jan 31, 2017
-" Version:	103
+" Last Change:	Nov 02, 2018
+" Version:	111
 " URL:		http://www.drchip.org/astronaut/vim/index.html#SYNTAX_TEX
 "
 " Notes: {{{1
@@ -159,9 +159,9 @@ syn cluster texFoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,tex
 syn cluster texBoldGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texBoldStyle,texBoldItalStyle,texNoSpell
 syn cluster texItalGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texBeginEnd,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract,texItalStyle,texItalBoldStyle,texNoSpell
 if !s:tex_nospell
- syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,@Spell
- syn cluster texMatchNMGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcherNM,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,@Spell
- syn cluster texStyleGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,texStyleStatement,@Spell,texStyleMatcher
+ syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
+ syn cluster texMatchNMGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcherNM,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,@Spell
+ syn cluster texStyleGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texBoldStyle,texBoldItalStyle,texItalStyle,texItalBoldStyle,texZone,texInputFile,texOption,texStyleStatement,texStyleMatcher,@Spell
 else
  syn cluster texMatchGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
  syn cluster texMatchNMGroup		contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcherNM,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption
@@ -258,6 +258,7 @@ syn match texAccent		"\\[bcdvuH]$"
 syn match texAccent		+\\[=^.\~"`']+
 syn match texAccent		+\\['=t'.c^ud"vb~Hr]{\a}+
 syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)$"
+
 
 " \begin{}/\end{} section markers: {{{1
 syn match  texBeginEnd		"\\begin\>\|\\end\>" nextgroup=texBeginEndName
@@ -395,8 +396,8 @@ endif
 
 " Bad Math (mismatched): {{{1
 if !exists("g:tex_no_math") && !s:tex_no_error
- syn match texBadMath		"\\end\s*{\s*\(array\|gathered\|bBpvV]matrix\|split\|subequations\|smallmatrix\|xxalignat\)\s*}"
- syn match texBadMath		"\\end\s*{\s*\(align\|alignat\|displaymath\|displaymath\|eqnarray\|equation\|flalign\|gather\|math\|multline\|xalignat\)\*\=\s*}"
+ syn match texBadMath		"\\end\s*{\s*\(array\|[bBpvV]matrix\|split\|smallmatrix\)\s*}"
+ syn match texBadMath		"\\end\s*{\s*\(displaymath\|equation\|eqnarray\|math\)\*\=\s*}"
  syn match texBadMath		"\\[\])]"
 endif
 
@@ -435,17 +436,10 @@ if !exists("g:tex_no_math")
  endfun
 
  " Standard Math Zones: {{{2
- call TexNewMathZone("A","align",1)
- call TexNewMathZone("B","alignat",1)
- call TexNewMathZone("C","displaymath",1)
- call TexNewMathZone("D","eqnarray",1)
- call TexNewMathZone("E","equation",1)
- call TexNewMathZone("F","flalign",1)
- call TexNewMathZone("G","gather",1)
- call TexNewMathZone("H","math",1)
- call TexNewMathZone("I","multline",1)
- call TexNewMathZone("J","xalignat",1)
- call TexNewMathZone("K","xxalignat",0)
+ call TexNewMathZone("A","displaymath",1)
+ call TexNewMathZone("B","eqnarray",1)
+ call TexNewMathZone("C","equation",1)
+ call TexNewMathZone("D","math",1)
 
  " Inline Math Zones: {{{2
  if s:tex_fast =~# 'M'
@@ -588,12 +582,20 @@ else
  endif
 endif
 
+" %begin-include ... %end-include acts like a texDocZone for \include'd files.  Permits spell checking, for example, in such files.
+if !s:tex_nospell
+ TexFold syn region texDocZone			matchgroup=texSection start='^\s*%begin-include\>'	 end='^\s*%end-include\>'											contains=@texFoldGroup,@texDocGroup,@Spell
+else
+ TexFold syn region texDocZone			matchgroup=texSection start='^\s*%begin-include\>'	 end='^\s*%end-include\>'											contains=@texFoldGroup,@texDocGroup
+endif
+
 " Separate lines used for verb` and verb# so that the end conditions {{{1
 " will appropriately terminate.
 " If g:tex_verbspell exists, then verbatim texZones will permit spellchecking there.
 if s:tex_fast =~# 'v'
   if exists("g:tex_verbspell") && g:tex_verbspell
    syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"	contains=@Spell
+   " listings package:
    if b:tex_stylish
     syn region texZone		start="\\verb\*\=\z([^\ta-zA-Z@]\)"	end="\z1\|%stopzone\>"			contains=@Spell
    else
@@ -680,13 +682,7 @@ if has("conceal") && &enc == 'utf-8'
     \ ['approx'		, '≈'],
     \ ['ast'		, '∗'],
     \ ['asymp'		, '≍'],
-    \ ['backepsilon'	, '∍'],
-    \ ['backsimeq'	, '≃'],
     \ ['backslash'	, '∖'],
-    \ ['barwedge'	, '⊼'],
-    \ ['because'	, '∵'],
-    \ ['beth'           , 'ܒ'],
-    \ ['between'	, '≬'],
     \ ['bigcap'		, '∩'],
     \ ['bigcirc'	, '○'],
     \ ['bigcup'		, '∪'],
@@ -698,38 +694,18 @@ if has("conceal") && &enc == 'utf-8'
     \ ['bigtriangleup'	, '∆'],
     \ ['bigvee'		, '⋁'],
     \ ['bigwedge'	, '⋀'],
-    \ ['blacksquare'	, '∎'],
     \ ['bot'		, '⊥'],
     \ ['bowtie'	        , '⋈'],
-    \ ['boxdot'		, '⊡'],
-    \ ['boxminus'	, '⊟'],
-    \ ['boxplus'	, '⊞'],
-    \ ['boxtimes'	, '⊠'],
-    \ ['Box'            , '☐'],
     \ ['bullet'	        , '•'],
-    \ ['bumpeq'		, '≏'],
-    \ ['Bumpeq'		, '≎'],
     \ ['cap'		, '∩'],
-    \ ['Cap'		, '⋒'],
     \ ['cdot'		, '·'],
     \ ['cdots'		, '⋯'],
     \ ['circ'		, '∘'],
-    \ ['circeq'		, '≗'],
-    \ ['circlearrowleft', '↺'],
-    \ ['circlearrowright', '↻'],
-    \ ['circledast'	, '⊛'],
-    \ ['circledcirc'	, '⊚'],
     \ ['clubsuit'	, '♣'],
-    \ ['complement'	, '∁'],
     \ ['cong'		, '≅'],
     \ ['coprod'		, '∐'],
     \ ['copyright'	, '©'],
     \ ['cup'		, '∪'],
-    \ ['Cup'		, '⋓'],
-    \ ['curlyeqprec'	, '⋞'],
-    \ ['curlyeqsucc'	, '⋟'],
-    \ ['curlyvee'	, '⋎'],
-    \ ['curlywedge'	, '⋏'],
     \ ['dagger'	        , '†'],
     \ ['dashv'		, '⊣'],
     \ ['ddagger'	, '‡'],
@@ -738,50 +714,27 @@ if has("conceal") && &enc == 'utf-8'
     \ ['diamondsuit'	, '♢'],
     \ ['div'		, '÷'],
     \ ['doteq'		, '≐'],
-    \ ['doteqdot'	, '≑'],
-    \ ['dotplus'	, '∔'],
     \ ['dots'		, '…'],
-    \ ['dotsb'		, '⋯'],
-    \ ['dotsc'		, '…'],
-    \ ['dotsi'		, '⋯'],
-    \ ['dotso'		, '…'],
-    \ ['doublebarwedge'	, '⩞'],
     \ ['downarrow'	, '↓'],
     \ ['Downarrow'	, '⇓'],
     \ ['ell'		, 'ℓ'],
     \ ['emptyset'	, '∅'],
-    \ ['eqcirc'		, '≖'],
-    \ ['eqsim'		, '≂'],
-    \ ['eqslantgtr'	, '⪖'],
-    \ ['eqslantless'	, '⪕'],
     \ ['equiv'		, '≡'],
-    \ ['eth'            , 'ð'],
     \ ['exists'		, '∃'],
-    \ ['fallingdotseq'	, '≒'],
     \ ['flat'		, '♭'],
     \ ['forall'		, '∀'],
     \ ['frown'		, '⁔'],
     \ ['ge'		, '≥'],
     \ ['geq'		, '≥'],
-    \ ['geqq'		, '≧'],
     \ ['gets'		, '←'],
-    \ ['gimel'          , 'ℷ'],
     \ ['gg'		, '⟫'],
-    \ ['gneqq'		, '≩'],
-    \ ['gtrdot'		, '⋗'],
-    \ ['gtreqless'	, '⋛'],
-    \ ['gtrless'	, '≷'],
-    \ ['gtrsim'		, '≳'],
     \ ['hbar'		, 'ℏ'],
     \ ['heartsuit'	, '♡'],
     \ ['hookleftarrow'	, '↩'],
     \ ['hookrightarrow'	, '↪'],
     \ ['iff'            , '⇔'],
-    \ ['iiint'		, '∭'],
-    \ ['iint'		, '∬'],
     \ ['Im'		, 'ℑ'],
     \ ['imath'		, 'ɩ'],
-    \ ['implies'	, '⇒'],
     \ ['in'		, '∈'],
     \ ['infty'		, '∞'],
     \ ['int'		, '∫'],
@@ -790,69 +743,33 @@ if has("conceal") && &enc == 'utf-8'
     \ ['lceil'		, '⌈'],
     \ ['ldots'		, '…'],
     \ ['le'		, '≤'],
-    \ ['leadsto'	, '↝'],
     \ ['left('		, '('],
     \ ['left\['		, '['],
     \ ['left\\{'	, '{'],
     \ ['leftarrow'	, '←'],
     \ ['Leftarrow'	, '⇐'],
-    \ ['leftarrowtail'	, '↢'],
     \ ['leftharpoondown', '↽'],
     \ ['leftharpoonup'	, '↼'],
     \ ['leftrightarrow'	, '↔'],
     \ ['Leftrightarrow'	, '⇔'],
-    \ ['leftrightsquigarrow', '↭'],
-    \ ['leftthreetimes'	, '⋋'],
     \ ['leq'		, '≤'],
     \ ['leq'		, '≤'],
-    \ ['leqq'		, '≦'],
-    \ ['lessdot'	, '⋖'],
-    \ ['lesseqgtr'	, '⋚'],
-    \ ['lesssim'	, '≲'],
     \ ['lfloor'		, '⌊'],
     \ ['ll'		, '≪'],
     \ ['lmoustache'     , '╭'],
-    \ ['lneqq'		, '≨'],
     \ ['lor'		, '∨'],
-    \ ['ltimes'		, '⋉'],
     \ ['mapsto'		, '↦'],
-    \ ['measuredangle'	, '∡'],
     \ ['mid'		, '∣'],
     \ ['models'		, '╞'],
     \ ['mp'		, '∓'],
     \ ['nabla'		, '∇'],
     \ ['natural'	, '♮'],
-    \ ['ncong'		, '≇'],
     \ ['ne'		, '≠'],
     \ ['nearrow'	, '↗'],
     \ ['neg'		, '¬'],
     \ ['neq'		, '≠'],
-    \ ['nexists'	, '∄'],
-    \ ['ngeq'		, '≱'],
-    \ ['ngeqq'		, '≱'],
-    \ ['ngtr'		, '≯'],
     \ ['ni'		, '∋'],
-    \ ['nleftarrow'	, '↚'],
-    \ ['nLeftarrow'	, '⇍'],
-    \ ['nLeftrightarrow', '⇎'],
-    \ ['nleq'		, '≰'],
-    \ ['nleqq'		, '≰'],
-    \ ['nless'		, '≮'],
-    \ ['nmid'		, '∤'],
     \ ['notin'		, '∉'],
-    \ ['nparallel'      , '∦'],
-    \ ['nprec'		, '⊀'],
-    \ ['nrightarrow'	, '↛'],
-    \ ['nRightarrow'	, '⇏'],
-    \ ['nsim'		, '≁'],
-    \ ['nsucc'		, '⊁'],
-    \ ['ntriangleleft'	, '⋪'],
-    \ ['ntrianglelefteq', '⋬'],
-    \ ['ntriangleright'	, '⋫'],
-    \ ['ntrianglerighteq', '⋭'],
-    \ ['nvdash'		, '⊬'],
-    \ ['nvDash'		, '⊭'],
-    \ ['nVdash'		, '⊮'],
     \ ['nwarrow'	, '↖'],
     \ ['odot'		, '⊙'],
     \ ['oint'		, '∮'],
@@ -865,15 +782,9 @@ if has("conceal") && &enc == 'utf-8'
     \ ['parallel'	, '║'],
     \ ['partial'	, '∂'],
     \ ['perp'		, '⊥'],
-    \ ['pitchfork'	, '⋔'],
     \ ['pm'		, '±'],
     \ ['prec'		, '≺'],
-    \ ['precapprox'	, '⪷'],
-    \ ['preccurlyeq'	, '≼'],
     \ ['preceq'		, '⪯'],
-    \ ['precnapprox'	, '⪹'],
-    \ ['precneqq'	, '⪵'],
-    \ ['precsim'	, '≾'],
     \ ['prime'		, '′'],
     \ ['prod'		, '∏'],
     \ ['propto'		, '∝'],
@@ -885,13 +796,8 @@ if has("conceal") && &enc == 'utf-8'
     \ ['right\\}'	, '}'],
     \ ['rightarrow'	, '→'],
     \ ['Rightarrow'	, '⇒'],
-    \ ['rightarrowtail'	, '↣'],
     \ ['rightleftharpoons', '⇌'],
-    \ ['rightsquigarrow', '↝'],
-    \ ['rightthreetimes', '⋌'],
-    \ ['risingdotseq'	, '≓'],
     \ ['rmoustache'     , '╮'],
-    \ ['rtimes'		, '⋊'],
     \ ['S'	        , '§'],
     \ ['searrow'	, '↘'],
     \ ['setminus'	, '∖'],
@@ -900,7 +806,6 @@ if has("conceal") && &enc == 'utf-8'
     \ ['simeq'		, '⋍'],
     \ ['smile'		, '‿'],
     \ ['spadesuit'	, '♠'],
-    \ ['sphericalangle'	, '∢'],
     \ ['sqcap'		, '⊓'],
     \ ['sqcup'		, '⊔'],
     \ ['sqsubset'	, '⊏'],
@@ -909,60 +814,30 @@ if has("conceal") && &enc == 'utf-8'
     \ ['sqsupseteq'	, '⊒'],
     \ ['star'		, '✫'],
     \ ['subset'		, '⊂'],
-    \ ['Subset'		, '⋐'],
     \ ['subseteq'	, '⊆'],
-    \ ['subseteqq'	, '⫅'],
-    \ ['subsetneq'	, '⊊'],
-    \ ['subsetneqq'	, '⫋'],
     \ ['succ'		, '≻'],
-    \ ['succapprox'	, '⪸'],
-    \ ['succcurlyeq'	, '≽'],
     \ ['succeq'		, '⪰'],
-    \ ['succnapprox'	, '⪺'],
-    \ ['succneqq'	, '⪶'],
-    \ ['succsim'	, '≿'],
     \ ['sum'		, '∑'],
     \ ['supset'		, '⊃'],
-    \ ['Supset'		, '⋑'],
     \ ['supseteq'	, '⊇'],
-    \ ['supseteqq'	, '⫆'],
-    \ ['supsetneq'	, '⊋'],
-    \ ['supsetneqq'	, '⫌'],
     \ ['surd'		, '√'],
     \ ['swarrow'	, '↙'],
-    \ ['therefore'	, '∴'],
     \ ['times'		, '×'],
     \ ['to'		, '→'],
     \ ['top'		, '⊤'],
     \ ['triangle'	, '∆'],
     \ ['triangleleft'	, '⊲'],
-    \ ['trianglelefteq'	, '⊴'],
-    \ ['triangleq'	, '≜'],
     \ ['triangleright'	, '⊳'],
-    \ ['trianglerighteq', '⊵'],
-    \ ['twoheadleftarrow', '↞'],
-    \ ['twoheadrightarrow', '↠'],
-    \ ['ulcorner'       , '⌜'],
     \ ['uparrow'	, '↑'],
     \ ['Uparrow'	, '⇑'],
     \ ['updownarrow'	, '↕'],
     \ ['Updownarrow'	, '⇕'],
-    \ ['urcorner'       , '⌝'],
-    \ ['varnothing'	, '∅'],
-    \ ['vartriangle'	, '∆'],
     \ ['vdash'		, '⊢'],
-    \ ['vDash'		, '⊨'],
-    \ ['Vdash'		, '⊩'],
     \ ['vdots'		, '⋮'],
     \ ['vee'		, '∨'],
-    \ ['veebar'		, '⊻'],
-    \ ['Vvdash'		, '⊪'],
     \ ['wedge'		, '∧'],
     \ ['wp'		, '℘'],
     \ ['wr'		, '≀']]
-"    \ ['jmath'		, 'X']
-"    \ ['uminus'	, 'X']
-"    \ ['uplus'		, 'X']
   if &ambw == "double" || exists("g:tex_usedblwidth")
     let s:texMathList= s:texMathList + [
     \ ['right\\rangle'	, '〉'],
@@ -1009,6 +884,48 @@ if has("conceal") && &enc == 'utf-8'
   syn match texMathSymbol '\\hat{y}' contained conceal cchar=ŷ
   syn match texMathSymbol '\\hat{Y}' contained conceal cchar=Ŷ
 "  syn match texMathSymbol '\\bar{a}' contained conceal cchar=a̅
+
+  syn match texMathSymbol '\\dot{B}' contained conceal cchar=Ḃ
+  syn match texMathSymbol '\\dot{b}' contained conceal cchar=ḃ
+  syn match texMathSymbol '\\dot{D}' contained conceal cchar=Ḋ
+  syn match texMathSymbol '\\dot{d}' contained conceal cchar=ḋ
+  syn match texMathSymbol '\\dot{F}' contained conceal cchar=Ḟ
+  syn match texMathSymbol '\\dot{f}' contained conceal cchar=ḟ
+  syn match texMathSymbol '\\dot{H}' contained conceal cchar=Ḣ
+  syn match texMathSymbol '\\dot{h}' contained conceal cchar=ḣ
+  syn match texMathSymbol '\\dot{M}' contained conceal cchar=Ṁ
+  syn match texMathSymbol '\\dot{m}' contained conceal cchar=ṁ
+  syn match texMathSymbol '\\dot{N}' contained conceal cchar=Ṅ
+  syn match texMathSymbol '\\dot{n}' contained conceal cchar=ṅ
+  syn match texMathSymbol '\\dot{P}' contained conceal cchar=Ṗ
+  syn match texMathSymbol '\\dot{p}' contained conceal cchar=ṗ
+  syn match texMathSymbol '\\dot{R}' contained conceal cchar=Ṙ
+  syn match texMathSymbol '\\dot{r}' contained conceal cchar=ṙ
+  syn match texMathSymbol '\\dot{S}' contained conceal cchar=Ṡ
+  syn match texMathSymbol '\\dot{s}' contained conceal cchar=ṡ
+  syn match texMathSymbol '\\dot{T}' contained conceal cchar=Ṫ
+  syn match texMathSymbol '\\dot{t}' contained conceal cchar=ṫ
+  syn match texMathSymbol '\\dot{W}' contained conceal cchar=Ẇ
+  syn match texMathSymbol '\\dot{w}' contained conceal cchar=ẇ
+  syn match texMathSymbol '\\dot{X}' contained conceal cchar=Ẋ
+  syn match texMathSymbol '\\dot{x}' contained conceal cchar=ẋ
+  syn match texMathSymbol '\\dot{Y}' contained conceal cchar=Ẏ
+  syn match texMathSymbol '\\dot{y}' contained conceal cchar=ẏ
+  syn match texMathSymbol '\\dot{Z}' contained conceal cchar=Ż
+  syn match texMathSymbol '\\dot{z}' contained conceal cchar=ż
+
+  syn match texMathSymbol '\\dot{C}' contained conceal cchar=Ċ
+  syn match texMathSymbol '\\dot{c}' contained conceal cchar=ċ
+  syn match texMathSymbol '\\dot{E}' contained conceal cchar=Ė
+  syn match texMathSymbol '\\dot{e}' contained conceal cchar=ė
+  syn match texMathSymbol '\\dot{G}' contained conceal cchar=Ġ
+  syn match texMathSymbol '\\dot{g}' contained conceal cchar=ġ
+  syn match texMathSymbol '\\dot{I}' contained conceal cchar=İ
+
+  syn match texMathSymbol '\\dot{A}' contained conceal cchar=Ȧ
+  syn match texMathSymbol '\\dot{a}' contained conceal cchar=ȧ
+  syn match texMathSymbol '\\dot{O}' contained conceal cchar=Ȯ
+  syn match texMathSymbol '\\dot{o}' contained conceal cchar=ȯ
  endif
 
  " Greek {{{2
@@ -1183,11 +1100,13 @@ if has("conceal") && &enc == 'utf-8'
   delfun s:SuperSub
  endif
 
- " Accented characters: {{{2
+ " Accented characters and Ligatures: {{{2
  if s:tex_conceal =~# 'a'
   if b:tex_stylish
    syn match texAccent		"\\[bcdvuH][^a-zA-Z@]"me=e-1
-   syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)[^a-zA-Z@]"me=e-1
+   syn match texLigature	"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)[^a-zA-Z@]"me=e-1
+   syn match texLigature	'--'
+   syn match texLigature	'---'
   else
    fun! s:Accents(chr,...)
      let i= 1
@@ -1248,15 +1167,17 @@ if has("conceal") && &enc == 'utf-8'
    call s:Accents('\\i','ì','í','î','ï','ĩ','į',' ',' ',' ',' ',' ','ĭ',' ')
    "                    \`  \'  \^  \"  \~  \.  \=  \c  \H  \k  \r  \u  \v
    delfun s:Accents
-   syn match texAccent   '\\aa\>'	conceal cchar=å
-   syn match texAccent   '\\AA\>'	conceal cchar=Å
-   syn match texAccent	'\\o\>'		conceal cchar=ø
-   syn match texAccent	'\\O\>'		conceal cchar=Ø
+   syn match texAccent		'\\aa\>'	conceal cchar=å
+   syn match texAccent		'\\AA\>'	conceal cchar=Å
+   syn match texAccent		'\\o\>'		conceal cchar=ø
+   syn match texAccent		'\\O\>'		conceal cchar=Ø
    syn match texLigature	'\\AE\>'	conceal cchar=Æ
    syn match texLigature	'\\ae\>'	conceal cchar=æ
    syn match texLigature	'\\oe\>'	conceal cchar=œ
    syn match texLigature	'\\OE\>'	conceal cchar=Œ
    syn match texLigature	'\\ss\>'	conceal cchar=ß
+   syn match texLigature	'--'		conceal cchar=–
+   syn match texLigature	'---'		conceal cchar=—
   endif
  endif
 endif

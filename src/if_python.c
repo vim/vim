@@ -70,15 +70,11 @@
 # undef PY_SSIZE_T_CLEAN
 #endif
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-# include "macglue.h"
-# include <CodeFragments.h>
-#endif
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
 #define PyBytes_FromString      PyString_FromString
-#define PyBytes_Check           PyString_Check
+#define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
@@ -251,6 +247,7 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PySys_GetObject dll_PySys_GetObject
 # define PySys_SetArgv dll_PySys_SetArgv
 # define PyType_Type (*dll_PyType_Type)
+# define PyFile_Type (*dll_PyFile_Type)
 # define PySlice_Type (*dll_PySlice_Type)
 # define PyType_Ready (*dll_PyType_Ready)
 # define PyType_GenericAlloc dll_PyType_GenericAlloc
@@ -399,6 +396,7 @@ static int(*dll_PySys_SetObject)(char *, PyObject *);
 static PyObject *(*dll_PySys_GetObject)(char *);
 static int(*dll_PySys_SetArgv)(int, char **);
 static PyTypeObject* dll_PyType_Type;
+static PyTypeObject* dll_PyFile_Type;
 static PyTypeObject* dll_PySlice_Type;
 static int (*dll_PyType_Ready)(PyTypeObject *type);
 static PyObject* (*dll_PyType_GenericAlloc)(PyTypeObject *type, PyInt nitems);
@@ -584,6 +582,7 @@ static struct
     {"PySys_GetObject", (PYTHON_PROC*)&dll_PySys_GetObject},
     {"PySys_SetArgv", (PYTHON_PROC*)&dll_PySys_SetArgv},
     {"PyType_Type", (PYTHON_PROC*)&dll_PyType_Type},
+    {"PyFile_Type", (PYTHON_PROC*)&dll_PyFile_Type},
     {"PySlice_Type", (PYTHON_PROC*)&dll_PySlice_Type},
     {"PyType_Ready", (PYTHON_PROC*)&dll_PyType_Ready},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&dll_PyType_GenericAlloc},
@@ -676,7 +675,8 @@ end_dynamic_python(void)
 python_runtime_link_init(char *libname, int verbose)
 {
     int i;
-    void *ucs_as_encoded_string;
+    PYTHON_PROC *ucs_as_encoded_string =
+				   (PYTHON_PROC*)&py_PyUnicode_AsEncodedString;
 
 #if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
@@ -685,7 +685,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (python3_loaded())
     {
 	if (verbose)
-	    EMSG(_("E836: This Vim cannot execute :python after using :py3"));
+	    emsg(_("E836: This Vim cannot execute :python after using :py3"));
 	return FAIL;
     }
 #endif
@@ -696,7 +696,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (!hinstPython)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -708,26 +708,24 @@ python_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPython);
 	    hinstPython = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), python_funcname_table[i].name);
+		semsg(_(e_loadfunc), python_funcname_table[i].name);
 	    return FAIL;
 	}
     }
 
     /* Load unicode functions separately as only the ucs2 or the ucs4 functions
      * will be present in the library. */
-    ucs_as_encoded_string = symbol_from_dll(hinstPython,
+    *ucs_as_encoded_string = symbol_from_dll(hinstPython,
 					     "PyUnicodeUCS2_AsEncodedString");
-    if (ucs_as_encoded_string == NULL)
-	ucs_as_encoded_string = symbol_from_dll(hinstPython,
+    if (*ucs_as_encoded_string == NULL)
+	*ucs_as_encoded_string = symbol_from_dll(hinstPython,
 					     "PyUnicodeUCS4_AsEncodedString");
-    if (ucs_as_encoded_string != NULL)
-	py_PyUnicode_AsEncodedString = ucs_as_encoded_string;
-    else
+    if (*ucs_as_encoded_string == NULL)
     {
 	close_dll(hinstPython);
 	hinstPython = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -916,6 +914,8 @@ python_loaded(void)
 }
 #endif
 
+static char *py_home_buf = NULL;
+
     static int
 Python_Init(void)
 {
@@ -928,15 +928,20 @@ Python_Init(void)
 #ifdef DYNAMIC_PYTHON
 	if (!python_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
 
+	if (*p_pyhome != NUL)
+	{
+	    /* The string must not change later, make a copy in static memory. */
+	    py_home_buf = (char *)vim_strsave(p_pyhome);
+	    if (py_home_buf != NULL)
+		Py_SetPythonHome(py_home_buf);
+	}
 #ifdef PYTHON_HOME
-# ifdef DYNAMIC_PYTHON
-	if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
-# endif
+	else if (mch_getenv((char_u *)"PYTHONHOME") == NULL)
 	    Py_SetPythonHome(PYTHON_HOME);
 #endif
 
@@ -948,18 +953,14 @@ Python_Init(void)
 	Py_NoSiteFlag++;
 #endif
 
-#if !defined(MACOS) || defined(MACOS_X_UNIX)
 	Py_Initialize();
-#else
-	PyMac_Initialize();
-#endif
 
 #if defined(PY_VERSION_HEX) && PY_VERSION_HEX >= 0x02070000
 	/* 'import site' explicitly. */
 	site = PyImport_ImportModule("site");
 	if (site == NULL)
 	{
-	    EMSG(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+	    emsg(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
 	    goto fail;
 	}
 	Py_DECREF(site);
@@ -1024,9 +1025,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     static int		recursive = 0;
 #endif
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GrafPtr		oldPort;
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     char		*saved_locale;
 #endif
@@ -1037,7 +1035,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     if (recursive)
     {
-	EMSG(_("E659: Cannot invoke Python recursively"));
+	emsg(_("E659: Cannot invoke Python recursively"));
 	return;
     }
     ++recursive;
@@ -1045,12 +1043,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     if (python_end_called)
 	return;
 
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    GetPort(&oldPort);
-    /* Check if the Python library is available */
-    if ((Ptr)PyMac_Initialize == (Ptr)kUnresolvedCFragSymbolAddress)
-	goto theend;
-#endif
     if (Python_Init())
 	goto theend;
 
@@ -1099,9 +1091,6 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 
     Python_Lock_Vim();		    /* enter vim */
     PythonIO_Flush();
-#if defined(MACOS) && !defined(MACOS_X_UNIX)
-    SetPort(oldPort);
-#endif
 
 theend:
 #ifndef PY_CAN_RECURSE
@@ -1438,7 +1427,6 @@ python_buffer_free(buf_T *buf)
     }
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
     void
 python_window_free(win_T *win)
 {
@@ -1460,7 +1448,6 @@ python_tabpage_free(tabpage_T *tab)
 	TAB_PYTHON_REF(tab) = NULL;
     }
 }
-#endif
 
     static int
 PythonMod_Init(void)
@@ -1588,6 +1575,7 @@ do_pyeval (char_u *str, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    break;
     }
 }

@@ -1,5 +1,5 @@
 " Test for :match, :2match, :3match, clearmatches(), getmatches(), matchadd(),
-" matchaddpos(), matcharg(), matchdelete(), matchstrpos() and setmatches().
+" matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red
@@ -114,52 +114,37 @@ function Test_match()
   call assert_equal([{'group': 'MyGroup1', 'id': 3, 'priority': 10, 'pos1': [1, 5, 1], 'pos2': [1, 8, 3]}], getmatches())
   call clearmatches()
 
-  "
-  if has('multi_byte')
-    call setline(1, 'abcdΣabcdef')
-    call matchaddpos("MyGroup1", [[1, 4, 2], [1, 9, 2]])
-    1
-    redraw!
-    let v1 = screenattr(1, 1)
-    let v4 = screenattr(1, 4)
-    let v5 = screenattr(1, 5)
-    let v6 = screenattr(1, 6)
-    let v7 = screenattr(1, 7)
-    let v8 = screenattr(1, 8)
-    let v9 = screenattr(1, 9)
-    let v10 = screenattr(1, 10)
-    call assert_equal([{'group': 'MyGroup1', 'id': 11, 'priority': 10, 'pos1': [1, 4, 2], 'pos2': [1, 9, 2]}], getmatches())
-    call assert_notequal(v1, v4)
-    call assert_equal(v5, v4)
-    call assert_equal(v6, v1)
-    call assert_equal(v7, v1)
-    call assert_equal(v8, v4)
-    call assert_equal(v9, v4)
-    call assert_equal(v10, v1)
+  call setline(1, 'abcdΣabcdef')
+  call matchaddpos("MyGroup1", [[1, 4, 2], [1, 9, 2]])
+  1
+  redraw!
+  let v1 = screenattr(1, 1)
+  let v4 = screenattr(1, 4)
+  let v5 = screenattr(1, 5)
+  let v6 = screenattr(1, 6)
+  let v7 = screenattr(1, 7)
+  let v8 = screenattr(1, 8)
+  let v9 = screenattr(1, 9)
+  let v10 = screenattr(1, 10)
+  call assert_equal([{'group': 'MyGroup1', 'id': 11, 'priority': 10, 'pos1': [1, 4, 2], 'pos2': [1, 9, 2]}], getmatches())
+  call assert_notequal(v1, v4)
+  call assert_equal(v5, v4)
+  call assert_equal(v6, v1)
+  call assert_equal(v7, v1)
+  call assert_equal(v8, v4)
+  call assert_equal(v9, v4)
+  call assert_equal(v10, v1)
 
-    " Check, that setmatches() can correctly restore the matches from matchaddpos()
-    call matchadd('MyGroup1', '\%2lmatchadd')
-    let m=getmatches()
-    call clearmatches()
-    call setmatches(m)
-    call assert_equal([{'group': 'MyGroup1', 'id': 11, 'priority': 10, 'pos1': [1, 4, 2], 'pos2': [1,9, 2]}, {'group': 'MyGroup1', 'pattern': '\%2lmatchadd', 'priority': 10, 'id': 12}], getmatches())
-  endif
+  " Check, that setmatches() can correctly restore the matches from matchaddpos()
+  call matchadd('MyGroup1', '\%2lmatchadd')
+  let m=getmatches()
+  call clearmatches()
+  call setmatches(m)
+  call assert_equal([{'group': 'MyGroup1', 'id': 11, 'priority': 10, 'pos1': [1, 4, 2], 'pos2': [1,9, 2]}, {'group': 'MyGroup1', 'pattern': '\%2lmatchadd', 'priority': 10, 'id': 12}], getmatches())
 
   highlight MyGroup1 NONE
   highlight MyGroup2 NONE
   highlight MyGroup3 NONE
-endfunc
-
-func Test_matchstrpos()
-  call assert_equal(['ing', 4, 7], matchstrpos('testing', 'ing'))
-
-  call assert_equal(['ing', 4, 7], matchstrpos('testing', 'ing', 2))
-
-  call assert_equal(['', -1, -1], matchstrpos('testing', 'ing', 5))
-
-  call assert_equal(['ing', 1, 4, 7], matchstrpos(['vim', 'testing', 'execute'], 'ing'))
-
-  call assert_equal(['', -1, -1, -1], matchstrpos(['vim', 'testing', 'execute'], 'img'))
 endfunc
 
 func Test_matchaddpos()
@@ -202,6 +187,28 @@ func Test_matchaddpos()
   call clearmatches()
   syntax off
   set hlsearch&
+endfunc
+
+func Test_matchaddpos_otherwin()
+  syntax on
+  new
+  call setline(1, ['12345', 'NP'])
+  let winid = win_getid()
+
+  wincmd w
+  call matchadd('Search', '4', 10, -1, {'window': winid})
+  call matchaddpos('Error', [[1,2], [2,2]], 10, -1, {'window': winid})
+  redraw!
+  call assert_notequal(screenattr(1,2), 0)
+  call assert_notequal(screenattr(1,4), 0)
+  call assert_notequal(screenattr(2,2), 0)
+  call assert_equal(screenattr(1,2), screenattr(2,2))
+  call assert_notequal(screenattr(1,2), screenattr(1,4))
+
+  wincmd w
+  bwipe!
+  call clearmatches()
+  syntax off
 endfunc
 
 func Test_matchaddpos_using_negative_priority()

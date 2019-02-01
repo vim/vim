@@ -2,6 +2,8 @@
 void ui_write(char_u *s, int len);
 void ui_inchar_undo(char_u *s, int len);
 int ui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
+int inchar_loop(char_u *buf, int maxlen, long wtime, int tb_change_cnt, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int (*resize_func)(int check_only));
+int ui_wait_for_chars_or_timer(long wtime, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int *interrupted, int ignore_input);
 int ui_char_avail(void);
 void ui_delay(long msec, int ignoreinput);
 void ui_suspend(void);
@@ -47,6 +49,7 @@ void trash_input_buf(void);
 int read_from_input_buf(char_u *buf, long maxlen);
 void fill_input_buf(int exit_on_error);
 void read_error_exit(void);
+void ui_cursor_shape_forced(int forced);
 void ui_cursor_shape(void);
 int check_col(int col);
 int check_row(int row);

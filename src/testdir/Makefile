@@ -4,9 +4,15 @@
 
 # Use console or GUI.
 VIMPROG = ../vim
+XXDPROG = ../xxd/xxd
 # VIMPROG = ../gvim
 
 SCRIPTSOURCE = ../../runtime
+
+# Comment out this line to see the verbose output of tests.
+#
+# Catches SwapExists to avoid hanging at the ATTENTION prompt.
+REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' > /dev/null
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
@@ -17,15 +23,20 @@ SCRIPTSOURCE = ../../runtime
 default: nongui
 
 # The list of tests is common to all systems.
-# This defines NEW_TESTS, SCRIPTS_ALL, SCRIPTS_MORE* and SCRIPTS_GUI.
+# This defines NEW_TESTS, NEW_TESTS_RES, SCRIPTS_ALL, SCRIPTS_MORE* and
+# SCRIPTS_GUI.
 include Make_all.mak
 
 
 SCRIPTS = $(SCRIPTS_ALL) \
 	  $(SCRIPTS_MORE1) \
 	  $(SCRIPTS_MORE2) \
-	  $(SCRIPTS_MORE3) \
 	  $(SCRIPTS_MORE4)
+
+# Explicit dependencies.
+test49.out: test49.vim
+
+test_options.res test_alot.res: opt_test.vim
 
 SCRIPTS_BENCH = bench_re_freeze.out
 
@@ -45,13 +56,24 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(VIMPROG)
+$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(VIMPROG)
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+
+
+# Execute an individual new style test, e.g.:
+# 	make test_largefile
+$(NEW_TESTS):
+	rm -f $@.res test.log messages
+	$(MAKE) -f Makefile $@.res
+	@if test -f test.log; then \
+		cat test.log; \
+	fi
+	cat messages
 
 RM_ON_RUN = test.out X* viminfo
-RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim lua.vim test.ok benchmark.out
+RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 clean:
@@ -59,7 +81,7 @@ clean:
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f wrongtermsize; \
 		then echo; \
 		echo test1 FAILED - terminal size must be 80x24 or larger; \
@@ -78,7 +100,7 @@ test1.out: test1.in
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 
 	# For flaky tests retry one time.  No tests at the moment.
 	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
@@ -108,7 +130,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 	# 200 msec is sufficient, but only modern sleep supports a fraction of
 	# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in
+	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
 
 nolog:
@@ -121,25 +143,31 @@ nolog:
 RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
 
 newtests: newtestssilent
-	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages && if test -f test.log; then cat test.log; fi ; fi"
+	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages; fi"
 
-newtestssilent: $(NEW_TESTS)
+newtestssilent: $(NEW_TESTS_RES)
 
 
-.vim.res:
-	@echo "$(RUN_VIMTEST)" > vimcmd
-	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
+.vim.res: writevimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_VIMTEST)" >> vimcmd
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
 	@rm vimcmd
 
 test_gui.res: test_gui.vim
-	@echo "$(RUN_GVIMTEST)" > vimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_GVIMTEST)" >> vimcmd
 	$(RUN_VIMTEST) -u NONE $(NO_INITS) -S runtest.vim $<
 	@rm vimcmd
 
 test_gui_init.res: test_gui_init.vim
-	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" > vimcmd
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_GVIMTEST_WITH_GVIMRC)" >> vimcmd
 	$(RUN_VIMTEST) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@rm vimcmd
 
 opt_test.vim: ../option.c gen_opt_test.vim
 	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../option.c
+
+test_xxd.res:
+	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim

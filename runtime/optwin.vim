@@ -1,20 +1,17 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Aug 01
+" Last Change:	2018 May 15
 
 " If there already is an option window, jump to that one.
-if bufwinnr("option-window") > 0
-  let s:thiswin = winnr()
-  while 1
-    if @% == "option-window"
+let buf = bufnr('option-window')
+if buf >= 0
+  let winids = win_findbuf(buf)
+  if len(winids) > 0
+    if win_gotoid(winids[0]) == 1
       finish
     endif
-    wincmd w
-    if s:thiswin == winnr()
-      break
-    endif
-  endwhile
+  endif
 endif
 
 " Make sure the '<' flag is not included in 'cpoptions', otherwise <CR> would
@@ -125,11 +122,13 @@ fun! <SID>Update(lnum, line, local, thiswin)
 endfun
 
 " Reset 'title' and 'icon' to make it work faster.
+" Reset 'undolevels' to avoid undo'ing until the buffer is empty.
 let s:old_title = &title
 let s:old_icon = &icon
 let s:old_sc = &sc
 let s:old_ru = &ru
-set notitle noicon nosc noru
+let s:old_ul = &ul
+set notitle noicon nosc noru ul=-1
 
 " If the current window is a help window, try finding a non-help window.
 " Relies on syntax highlighting to be switched on.
@@ -141,8 +140,8 @@ while exists("b:current_syntax") && b:current_syntax == "help"
   endif
 endwhile
 
-" Open the window
-new option-window
+" Open the window.  $OPTWIN_CMD is set to "tab" for ":tab options".
+exe $OPTWIN_CMD . ' new option-window'
 setlocal ts=15 tw=0 noro buftype=nofile
 
 " Insert help and a "set" command for each option.
@@ -326,7 +325,8 @@ call <SID>OptionL("scr")
 call append("$", "scrolloff\tnumber of screen lines to show around the cursor")
 call append("$", " \tset so=" . &so)
 call append("$", "wrap\tlong lines wrap")
-call <SID>BinOptionG("wrap", &wrap)
+call append("$", "\t(local to window)")
+call <SID>BinOptionL("wrap")
 call append("$", "linebreak\twrap long lines at a character in 'breakat'")
 call append("$", "\t(local to window)")
 call <SID>BinOptionL("lbr")
@@ -507,12 +507,19 @@ if has("cursorbind")
   call <SID>BinOptionL("crb")
 endif
 if has("terminal")
-  call append("$", "termsize\tsize of a terminal window")
+  call append("$", "termwinsize\tsize of a terminal window")
   call append("$", "\t(local to window)")
-  call <SID>OptionL("tms")
-  call append("$", "termkey\tkey that precedes Vim commands in a terminal window")
+  call <SID>OptionL("tws")
+  call append("$", "termwinkey\tkey that precedes Vim commands in a terminal window")
   call append("$", "\t(local to window)")
-  call <SID>OptionL("tk")
+  call <SID>OptionL("twk")
+  call append("$", "termwinscroll\tmax number of lines to keep for scrollback in a terminal window")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("twsl")
+  if exists("&winptydll")
+    call append("$", "winptydll\tname of the winpty dynamic library")
+    call <SID>OptionG("winptydll", &winptydll)
+  endif
 endif
 
 
@@ -646,11 +653,17 @@ if has("gui")
   endif
   call append("$", "linespace\tnumber of pixel lines to use between characters")
   call append("$", " \tset lsp=" . &lsp)
-  if has("balloon_eval")
+  if has("balloon_eval") || has("balloon_eval_term")
     call append("$", "balloondelay\tdelay in milliseconds before a balloon may pop up")
     call append("$", " \tset bdlay=" . &bdlay)
-    call append("$", "ballooneval\twhether the balloon evaluation is to be used")
-    call <SID>BinOptionG("beval", &beval)
+    if has("balloon_eval")
+      call append("$", "ballooneval\tuse balloon evaluation in the GUI")
+      call <SID>BinOptionG("beval", &beval)
+    endif
+    if has("balloon_eval_term")
+      call append("$", "balloonevalterm\tuse balloon evaluation in the terminal")
+      call <SID>BinOptionG("bevalterm", &beval)
+    endif
     if has("eval")
       call append("$", "balloonexpr\texpression to show in balloon eval")
       call append("$", " \tset bexpr=" . &bexpr)
@@ -749,7 +762,7 @@ call <SID>OptionG("km", &km)
 call <SID>Header("editing text")
 call append("$", "undolevels\tmaximum number of changes that can be undone")
 call append("$", "\t(global or local to buffer)")
-call append("$", " \tset ul=" . &ul)
+call append("$", " \tset ul=" . s:old_ul)
 call append("$", "undofile\tautomatically save and restore undo history")
 call <SID>BinOptionG("udf", &udf)
 call append("$", "undodir\tlist of directories for undo files")
@@ -795,6 +808,8 @@ if has("insert_expand")
   call <SID>OptionG("cot", &cot)
   call append("$", "pumheight\tmaximum height of the popup menu")
   call <SID>OptionG("ph", &ph)
+  call append("$", "pumwidth\tminimum width of the popup menu")
+  call <SID>OptionG("pw", &pw)
   call append("$", "completefunc\tuser defined function for Insert mode completion")
   call append("$", "\t(local to buffer)")
   call <SID>OptionL("cfu")
@@ -841,6 +856,14 @@ call <SID>OptionL("ts")
 call append("$", "shiftwidth\tnumber of spaces used for each step of (auto)indent")
 call append("$", "\t(local to buffer)")
 call <SID>OptionL("sw")
+if has("vartabs")
+  call append("$", "vartabstop\tlist of number of spaces a tab counts for")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("vts")
+  call append("$", "varsofttabstop\tlist of number of spaces a soft tabsstop counts for")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("vsts")
+endif
 call append("$", "smarttab\ta <Tab> in an indent inserts 'shiftwidth' spaces")
 call <SID>BinOptionG("sta", &sta)
 call append("$", "softtabstop\tif non-zero, number of spaces to insert for a <Tab>")
@@ -1224,6 +1247,8 @@ endif
 call append("$", "iminsert\tin Insert mode: 1: use :lmap; 2: use IM; 0: neither")
 call append("$", "\t(local to window)")
 call <SID>OptionL("imi")
+call append("$", "imstyle\tinput method style, 0: on-the-spot, 1: over-the-spot")
+call <SID>OptionG("imst", &imst)
 call append("$", "imsearch\tentering a search pattern: 1: use :lmap; 2: use IM; 0: neither")
 call append("$", "\t(local to window)")
 call <SID>OptionL("ims")
@@ -1345,9 +1370,17 @@ if exists("&pythondll")
   call append("$", "pythondll\tname of the Python 2 dynamic library")
   call <SID>OptionG("pythondll", &pythondll)
 endif
+if exists("&pythonhome")
+  call append("$", "pythonhome\tname of the Python 2 home directory")
+  call <SID>OptionG("pythonhome", &pythonhome)
+endif
 if exists("&pythonthreedll")
   call append("$", "pythonthreedll\tname of the Python 3 dynamic library")
   call <SID>OptionG("pythonthreedll", &pythonthreedll)
+endif
+if exists("&pythonthreehome")
+  call append("$", "pythonthreehome\tname of the Python 3 home directory")
+  call <SID>OptionG("pythonthreehome", &pythonthreehome)
 endif
 if exists("&rubydll")
   call append("$", "rubydll\tname of the Ruby dynamic library")
@@ -1356,6 +1389,12 @@ endif
 if exists("&tcldll")
   call append("$", "tcldll\tname of the Tcl dynamic library")
   call <SID>OptionG("tcldll", &tcldll)
+endif
+if exists("&mzschemedll")
+  call append("$", "mzschemedll\tname of the Tcl dynamic library")
+  call <SID>OptionG("mzschemedll", &mzschemedll)
+  call append("$", "mzschemegcdll\tname of the Tcl GC dynamic library")
+  call <SID>OptionG("mzschemegcdll", &mzschemegcdll)
 endif
 
 set cpo&vim
@@ -1413,6 +1452,7 @@ let &icon = s:old_icon
 let &ru = s:old_ru
 let &sc = s:old_sc
 let &cpo = s:cpo_save
-unlet s:old_title s:old_icon s:old_ru s:old_sc s:cpo_save s:idx s:lnum
+let &ul = s:old_ul
+unlet s:old_title s:old_icon s:old_ru s:old_sc s:cpo_save s:idx s:lnum s:old_ul
 
 " vim: ts=8 sw=2 sts=2

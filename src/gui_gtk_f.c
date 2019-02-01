@@ -150,21 +150,13 @@ gtk_form_put(GtkForm	*form,
      * that gtk_widget_set_parent() realizes the widget if it's visible
      * and its parent is mapped.
      */
-#if GTK_CHECK_VERSION(3,0,0)
     if (gtk_widget_get_realized(GTK_WIDGET(form)))
-#else
-    if (GTK_WIDGET_REALIZED(form))
-#endif
 	gtk_form_attach_child_window(form, child);
 
     gtk_widget_set_parent(child_widget, GTK_WIDGET(form));
 
-#if GTK_CHECK_VERSION(3,0,0)
     if (gtk_widget_get_realized(GTK_WIDGET(form))
 	    && !gtk_widget_get_realized(child_widget))
-#else
-    if (GTK_WIDGET_REALIZED(form) && !GTK_WIDGET_REALIZED(child_widget))
-#endif
 	gtk_form_realize_child(form, child);
 
     gtk_form_position_child(form, child, TRUE);
@@ -300,32 +292,19 @@ gtk_form_realize(GtkWidget *widget)
     GtkForm *form;
     GdkWindowAttr attributes;
     gint attributes_mask;
+    GtkAllocation allocation;
 
     g_return_if_fail(GTK_IS_FORM(widget));
 
     form = GTK_FORM(widget);
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_realized(widget, TRUE);
-#else
-    GTK_WIDGET_SET_FLAGS(form, GTK_REALIZED);
-#endif
 
+    gtk_widget_get_allocation(widget, &allocation);
     attributes.window_type = GDK_WINDOW_CHILD;
-#if GTK_CHECK_VERSION(3,0,0)
-    {
-	GtkAllocation allocation;
-	gtk_widget_get_allocation(widget, &allocation);
-	attributes.x = allocation.x;
-	attributes.y = allocation.y;
-	attributes.width = allocation.width;
-	attributes.height = allocation.height;
-    }
-#else
-    attributes.x = widget->allocation.x;
-    attributes.y = widget->allocation.y;
-    attributes.width = widget->allocation.width;
-    attributes.height = widget->allocation.height;
-#endif
+    attributes.x = allocation.x;
+    attributes.y = allocation.y;
+    attributes.width = allocation.width;
+    attributes.height = allocation.height;
     attributes.wclass = GDK_INPUT_OUTPUT;
     attributes.visual = gtk_widget_get_visual(widget);
 #if GTK_CHECK_VERSION(3,0,0)
@@ -341,28 +320,17 @@ gtk_form_realize(GtkWidget *widget)
     attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_window(widget,
 			  gdk_window_new(gtk_widget_get_parent_window(widget),
 					 &attributes, attributes_mask));
     gdk_window_set_user_data(gtk_widget_get_window(widget), widget);
-#else
-    widget->window = gdk_window_new(gtk_widget_get_parent_window(widget),
-				    &attributes, attributes_mask);
-    gdk_window_set_user_data(widget->window, widget);
-#endif
 
     attributes.x = 0;
     attributes.y = 0;
     attributes.event_mask = gtk_widget_get_events(widget);
 
-#if GTK_CHECK_VERSION(3,0,0)
     form->bin_window = gdk_window_new(gtk_widget_get_window(widget),
 				      &attributes, attributes_mask);
-#else
-    form->bin_window = gdk_window_new(widget->window,
-				      &attributes, attributes_mask);
-#endif
     gdk_window_set_user_data(form->bin_window, widget);
 
 #if GTK_CHECK_VERSION(3,0,0)
@@ -388,11 +356,7 @@ gtk_form_realize(GtkWidget *widget)
 
 	gtk_form_attach_child_window(form, child);
 
-#if GTK_CHECK_VERSION(3,0,0)
 	if (gtk_widget_get_visible(child->widget))
-#else
-	if (GTK_WIDGET_VISIBLE(child->widget))
-#endif
 	    gtk_form_realize_child(form, child);
     }
 }
@@ -416,30 +380,17 @@ gtk_form_map(GtkWidget *widget)
 
     form = GTK_FORM(widget);
 
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_mapped(widget, TRUE);
-#else
-    GTK_WIDGET_SET_FLAGS(widget, GTK_MAPPED);
-#endif
 
-#if GTK_CHECK_VERSION(3,0,0)
     gdk_window_show(gtk_widget_get_window(widget));
-#else
-    gdk_window_show(widget->window);
-#endif
     gdk_window_show(form->bin_window);
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
     {
 	GtkFormChild *child = tmp_list->data;
 
-#if GTK_CHECK_VERSION(3,0,0)
 	if (gtk_widget_get_visible(child->widget)
 		&& !gtk_widget_get_mapped(child->widget))
-#else
-	if (GTK_WIDGET_VISIBLE(child->widget)
-		&& !GTK_WIDGET_MAPPED(child->widget))
-#endif
 	    gtk_widget_map(child->widget);
     }
 }
@@ -466,21 +417,12 @@ gtk_form_unrealize(GtkWidget *widget)
 
 	if (child->window != NULL)
 	{
-#if GTK_CHECK_VERSION(3,0,0)
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
 		    FUNC2GENERIC(gtk_form_child_map),
 		    child);
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
 		    FUNC2GENERIC(gtk_form_child_unmap),
 		    child);
-#else
-	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-		    GTK_SIGNAL_FUNC(gtk_form_child_map),
-		    child);
-	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-		    GTK_SIGNAL_FUNC(gtk_form_child_unmap),
-		    child);
-#endif
 
 	    gdk_window_set_user_data(child->window, NULL);
 	    gdk_window_destroy(child->window);
@@ -544,34 +486,20 @@ gtk_form_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     GList *tmp_list;
     GtkForm *form;
     gboolean need_reposition;
-#if GTK_CHECK_VERSION(3,0,0)
     GtkAllocation cur_alloc;
-#endif
 
     g_return_if_fail(GTK_IS_FORM(widget));
 
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_get_allocation(widget, &cur_alloc);
 
     if (cur_alloc.x == allocation->x
 	    && cur_alloc.y == allocation->y
 	    && cur_alloc.width == allocation->width
 	    && cur_alloc.height == allocation->height)
-#else
-    if (widget->allocation.x == allocation->x
-	    && widget->allocation.y == allocation->y
-	    && widget->allocation.width == allocation->width
-	    && widget->allocation.height == allocation->height)
-#endif
 	return;
 
-#if GTK_CHECK_VERSION(3,0,0)
     need_reposition = cur_alloc.width != allocation->width
 		   || cur_alloc.height != allocation->height;
-#else
-    need_reposition = widget->allocation.width != allocation->width
-		   || widget->allocation.height != allocation->height;
-#endif
     form = GTK_FORM(widget);
 
     if (need_reposition)
@@ -587,30 +515,16 @@ gtk_form_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 	}
     }
 
-#if GTK_CHECK_VERSION(3,0,0)
     if (gtk_widget_get_realized(widget))
-#else
-    if (GTK_WIDGET_REALIZED(widget))
-#endif
     {
-#if GTK_CHECK_VERSION(3,0,0)
 	gdk_window_move_resize(gtk_widget_get_window(widget),
 			       allocation->x, allocation->y,
 			       allocation->width, allocation->height);
-#else
-	gdk_window_move_resize(widget->window,
-			       allocation->x, allocation->y,
-			       allocation->width, allocation->height);
-#endif
 	gdk_window_move_resize(GTK_FORM(widget)->bin_window,
 			       0, 0,
 			       allocation->width, allocation->height);
     }
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_allocation(widget, allocation);
-#else
-    widget->allocation = *allocation;
-#endif
     if (need_reposition)
 	gtk_form_send_configure(form);
 }
@@ -713,17 +627,10 @@ gtk_form_remove(GtkContainer *container, GtkWidget *widget)
 #endif
 	if (child->window)
 	{
-#if GTK_CHECK_VERSION(3,0,0)
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
 		    FUNC2GENERIC(&gtk_form_child_map), child);
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
 		    FUNC2GENERIC(&gtk_form_child_unmap), child);
-#else
-	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-		    GTK_SIGNAL_FUNC(&gtk_form_child_map), child);
-	    gtk_signal_disconnect_by_func(GTK_OBJECT(child->widget),
-		    GTK_SIGNAL_FUNC(&gtk_form_child_unmap), child);
-#endif
 
 	    /* FIXME: This will cause problems for reparenting NO_WINDOW
 	     * widgets out of a GtkForm
@@ -776,34 +683,25 @@ gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
     if (child->window != NULL)
 	return; /* been there, done that */
 
-#if GTK_CHECK_VERSION(3,0,0)
     if (!gtk_widget_get_has_window(child->widget))
-#else
-    if (GTK_WIDGET_NO_WINDOW(child->widget))
-#endif
     {
 	GtkWidget	*widget;
 	GdkWindowAttr	attributes;
 	gint		attributes_mask;
+	GtkRequisition	requisition;
 
 	widget = GTK_WIDGET(form);
 
+#if GTK_CHECK_VERSION(3,0,0)
+	gtk_widget_get_preferred_size(child->widget, &requisition, NULL);
+#else
+	requisition = child->widget->requisition;
+#endif
 	attributes.window_type = GDK_WINDOW_CHILD;
 	attributes.x = child->x;
 	attributes.y = child->y;
-#if GTK_CHECK_VERSION(3,0,0)
-	{
-	    GtkRequisition requisition;
-
-	    gtk_widget_get_preferred_size(child->widget, &requisition, NULL);
-
-	    attributes.width = requisition.width;
-	    attributes.height = requisition.height;
-	}
-#else
-	attributes.width = child->widget->requisition.width;
-	attributes.height = child->widget->requisition.height;
-#endif
+	attributes.width = requisition.width;
+	attributes.height = requisition.height;
 	attributes.wclass = GDK_INPUT_OUTPUT;
 	attributes.visual = gtk_widget_get_visual(widget);
 #if !GTK_CHECK_VERSION(3,0,0)
@@ -840,23 +738,12 @@ gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
 	 * Install signal handlers to map/unmap child->window
 	 * alongside with the actual widget.
 	 */
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(child->widget), "map",
 			 G_CALLBACK(&gtk_form_child_map), child);
 	g_signal_connect(G_OBJECT(child->widget), "unmap",
 			 G_CALLBACK(&gtk_form_child_unmap), child);
-#else
-	gtk_signal_connect(GTK_OBJECT(child->widget), "map",
-			   GTK_SIGNAL_FUNC(&gtk_form_child_map), child);
-	gtk_signal_connect(GTK_OBJECT(child->widget), "unmap",
-			   GTK_SIGNAL_FUNC(&gtk_form_child_unmap), child);
-#endif
     }
-#if GTK_CHECK_VERSION(3,0,0)
     else if (!gtk_widget_get_realized(child->widget))
-#else
-    else if (!GTK_WIDGET_REALIZED(child->widget))
-#endif
     {
 	gtk_widget_set_parent_window(child->widget, form->bin_window);
     }
@@ -884,18 +771,10 @@ gtk_form_position_child(GtkForm *form, GtkFormChild *child,
     {
 	if (!child->mapped)
 	{
-#if GTK_CHECK_VERSION(3,0,0)
 	    if (gtk_widget_get_mapped(GTK_WIDGET(form))
 		    && gtk_widget_get_visible(child->widget))
-#else
-	    if (GTK_WIDGET_MAPPED(form) && GTK_WIDGET_VISIBLE(child->widget))
-#endif
 	    {
-#if GTK_CHECK_VERSION(3,0,0)
 		if (!gtk_widget_get_mapped(child->widget))
-#else
-		if (!GTK_WIDGET_MAPPED(child->widget))
-#endif
 		    gtk_widget_map(child->widget);
 
 		child->mapped = TRUE;
@@ -906,31 +785,22 @@ gtk_form_position_child(GtkForm *form, GtkFormChild *child,
 	if (force_allocate)
 	{
 	    GtkAllocation allocation;
-#if GTK_CHECK_VERSION(3,0,0)
 	    GtkRequisition requisition;
 
+#if GTK_CHECK_VERSION(3,0,0)
 	    gtk_widget_get_preferred_size(child->widget, &requisition, NULL);
+#else
+	    requisition = child->widget->requisition;
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
 	    if (!gtk_widget_get_has_window(child->widget))
-#else
-	    if (GTK_WIDGET_NO_WINDOW(child->widget))
-#endif
 	    {
 		if (child->window)
 		{
-#if GTK_CHECK_VERSION(3,0,0)
 		    gdk_window_move_resize(child->window,
 			    x, y,
 			    requisition.width,
 			    requisition.height);
-#else
-		    gdk_window_move_resize(child->window,
-			    x, y,
-			    child->widget->requisition.width,
-			    child->widget->requisition.height);
-#endif
 		}
 
 		allocation.x = 0;
@@ -942,13 +812,8 @@ gtk_form_position_child(GtkForm *form, GtkFormChild *child,
 		allocation.y = y;
 	    }
 
-#if GTK_CHECK_VERSION(3,0,0)
 	    allocation.width = requisition.width;
 	    allocation.height = requisition.height;
-#else
-	    allocation.width = child->widget->requisition.width;
-	    allocation.height = child->widget->requisition.height;
-#endif
 
 	    gtk_widget_size_allocate(child->widget, &allocation);
 	}
@@ -959,11 +824,7 @@ gtk_form_position_child(GtkForm *form, GtkFormChild *child,
 	{
 	    child->mapped = FALSE;
 
-#if GTK_CHECK_VERSION(3,0,0)
 	    if (gtk_widget_get_mapped(child->widget))
-#else
-	    if (GTK_WIDGET_MAPPED(child->widget))
-#endif
 		gtk_widget_unmap(child->widget);
 	}
     }
@@ -997,28 +858,17 @@ gtk_form_send_configure(GtkForm *form)
 {
     GtkWidget *widget;
     GdkEventConfigure event;
+    GtkAllocation allocation;
 
     widget = GTK_WIDGET(form);
 
+    gtk_widget_get_allocation(widget, &allocation);
     event.type = GDK_CONFIGURE;
-#if GTK_CHECK_VERSION(3,0,0)
     event.window = gtk_widget_get_window(widget);
-    {
-	GtkAllocation allocation;
-
-	gtk_widget_get_allocation(widget, &allocation);
-	event.x = allocation.x;
-	event.y = allocation.y;
-	event.width = allocation.width;
-	event.height = allocation.height;
-    }
-#else
-    event.window = widget->window;
-    event.x = widget->allocation.x;
-    event.y = widget->allocation.y;
-    event.width = widget->allocation.width;
-    event.height = widget->allocation.height;
-#endif
+    event.x = allocation.x;
+    event.y = allocation.y;
+    event.width = allocation.width;
+    event.height = allocation.height;
 
     gtk_main_do_event((GdkEvent*)&event);
 }

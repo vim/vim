@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2017 Jul 30
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,29 +52,11 @@ an introduction to the use of Vi or Vim, it gets a bit complicated here and
 there.  For beginners, there is a hands-on |tutor|.  To learn using Vim, read
 the user manual |usr_toc.txt|.
 
-							*book*
-There are many books on Vi that contain a section for beginners.  There are
-two books I can recommend:
-
-	"Vim - Vi Improved" by Steve Oualline
-
-This is the very first book completely dedicated to Vim.  It is very good for
-beginners.  The most often used commands are explained with pictures and
-examples.  The less often used commands are also explained, the more advanced
-features are summarized.  There is a comprehensive index and a quick
-reference.  Parts of this book have been included in the user manual
-|frombook|.
-Published by New Riders Publishing.  ISBN: 0735710015
-For more information try one of these:
-	http://iccf-holland.org/click5.html
-	http://www.vim.org/iccf/click5.html
-
-	"Learning the Vi editor" by Linda Lamb and Arnold Robbins
-
-This is a book about Vi that includes a chapter on Vim (in the sixth edition).
-The first steps in Vi are explained very well.  The commands that Vim adds are
-only briefly mentioned.  There is also a German translation.
-Published by O'Reilly.  ISBN: 1-56592-426-6.
+							*book* *books*
+Most books on Vi and Vim contain a section for beginners.  Others are spending
+more words on specific functionality.  You can find an overview of Vim books
+here:
+	http://iccf-holland.org/vim_books.html
 
 ==============================================================================
 2. Vim on the internet					*internet*
@@ -84,9 +66,9 @@ The Vim pages contain the most recent information about Vim.  They also
 contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
-	Vim home page:	  http://www.vim.org/
-	Vim FAQ:	  http://vimdoc.sf.net/
-	Downloading:	  ftp://ftp.vim.org/pub/vim/MIRRORS
+	Vim home page:	  https://www.vim.org/
+	Vim FAQ:	  https://vimhelp.appspot.com/vim_faq.txt.html
+	Downloading:	  https://www.vim.org/download.php
 
 
 Usenet News group where Vim is discussed:		*news* *usenet*
@@ -114,10 +96,12 @@ There are several mailing lists for Vim:
 See http://www.vim.org/maillist.php for the latest information.
 
 NOTE:
+- Anyone can see the archive, e.g. on Google groups.  Search this if you have
+  questions.
 - You can only send messages to these lists if you have subscribed!
+- The first message is moderated, thus it may take a few hours to show up.
 - You need to send the messages from the same location as where you subscribed
   from (to avoid spam mail).
-- Maximum message size is 40000 characters.
 
 						*subscribe-maillist*
 If you want to join, send a message to
@@ -138,7 +122,7 @@ There are two ways to report bugs, both work:
    see the message.  If you don't want that, e.g. because it is a security
    issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
    (that's Bram).
-2. Open issue on GitHub: https://github.com/vim/vim/issues
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
    The text will be forwarded to the vim-dev maillist.
 
 Please be brief; all the time that is spent on answering mail is subtracted
@@ -150,7 +134,10 @@ Preferably start Vim with: >
 Where reproduce.vim is a script that reproduces the problem.  Try different
 machines, if relevant (is this an MS-Windows specific bug perhaps?).
 
-Send me patches if you can!
+Send me patches if you can!  If you create a pull request on
+https://github.com/vim/vim then the automated checks will run and report any
+obvious problems.  But you can also send the patch by email (use an attachment
+to avoid white space changes).
 
 It will help to include information about the version of Vim you are using and
 your setup.  You can get the information with this command: >
@@ -189,7 +176,7 @@ introduce Y2K problems, but those are not really part of Vim itself.
 ==============================================================================
 3. Credits				*credits* *author* *Bram* *Moolenaar*
 
-Most of Vim was written by Bram Moolenaar <Bram@vim.org>.
+Most of Vim was created by Bram Moolenaar <Bram@vim.org>.
 
 Parts of the documentation come from several Vi manuals, written by:
 	W.N. Joy
@@ -264,6 +251,11 @@ Vim would never have become what it is now, without the help of these people!
 	Juergen Weigert		Lattice version, AUX improvements, UNIX and
 				MS-DOS ports, autoconf
 	Stefan 'Sec' Zehl	Maintainer of vim.org
+	Yasuhiro Matsumoto	many MS-Windows improvements
+	Ken Takata		fixes and features
+	Kazunobu Kuriyama	GTK 3
+	Christian Brabandt	many fixes, features, user support, etc.
+	Yegappan Lakshmanan	many quickfix features
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without
@@ -276,9 +268,9 @@ In this documentation there are several references to other versions of Vi:
 Vi	"the original".  Without further remarks this is the version
 	of Vi that appeared in Sun OS 4.x.  ":version" returns
 	"Version 3.7, 6/7/85".  Sometimes other versions are referred
-	to.  Only runs under Unix.  Source code only available with a
-	license.  More information on Vi can be found through:
-		http://vi-editor.org	[doesn't currently work...]
+	to.  Only runs under Unix.  Source code is now available under a
+	BSD-style license.  More information on Vi can be found through:
+		http://ex-vi.sourceforge.net/
 							*Posix*
 Posix	From the IEEE standard 1003.2, Part 2: Shell and utilities.
 	Generally known as "Posix".  This is a textual description of
@@ -293,9 +285,14 @@ Nvi	The "New" Vi.  The version of Vi that comes with BSD 4.4 and FreeBSD.
 	Source code is freely available.
 							*Elvis*
 Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
-	as flexible as Vim.
-	The version used is 2.1.  It is still being developed.  Source code is
-	freely available.
+	as flexible as Vim.  Development has stalled, Elvis has left the
+	building!  Source code is freely available.
+							*Neovim*
+Neovim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
+	Very much bound to github and has many more dependencies, making
+	development more complex and limiting portability.  Code has been
+	refactored, resulting in patches not being exchangeable with Vim.
+	Supports a remote GUI and integration with scripting languages.
 
 ==============================================================================
 4. Notation						*notation*
@@ -530,7 +527,7 @@ examples and use them directly.  Or type them literally, including the '<' and
 ==============================================================================
 5. Modes, introduction				*vim-modes-intro* *vim-modes*
 
-Vim has six BASIC modes:
+Vim has seven BASIC modes:
 
 					*Normal* *Normal-mode* *command-mode*
 Normal mode		In Normal mode you can enter all the normal editor
@@ -566,6 +563,11 @@ Ex mode			Like Command-line mode, but after entering a command
 			you remain in Ex mode.  Very limited editing of the
 			command line.  |Ex-mode|
 
+Terminal-Job mode	Interacting with a job in a terminal window.  Typed
+			keys go to the job and the job output is displayed in
+			the terminal window.  See |terminal| about how to
+			switch to other modes.
+
 There are seven ADDITIONAL modes.  These are variants of the BASIC modes:
 
 				*Operator-pending* *Operator-pending-mode*
@@ -586,16 +588,15 @@ Virtual Replace mode	Virtual Replace mode is similar to Replace mode, but
 			If the 'showmode' option is on "-- VREPLACE --" is
 			shown at the bottom of the window.
 
-Insert Normal mode	Entered when CTRL-O given in Insert mode.  This is
-			like Normal mode, but after executing one command Vim
-			returns to Insert mode.
+Insert Normal mode	Entered when CTRL-O is typed in Insert mode (see
+			|i_CTRL-O|).  This is like Normal mode, but after
+			executing one command Vim returns to Insert mode.
 			If the 'showmode' option is on "-- (insert) --" is
 			shown at the bottom of the window.
 
-Terminal Normal mode	Using Normal mode in a terminal window.  Making
-			changes is impossible.  Use a insert command, such as
-			"a" or "i", to return control to the job running in
-			the terminal.  Also called |Terminal-mode|.
+Terminal-Normal mode	Using Normal mode in a terminal window.  Making
+			changes is impossible.  Use an insert command, such as
+			"a" or "i", to return to Terminal-Job mode.
 
 Insert Visual mode	Entered when starting a Visual selection from Insert
 			mode, e.g., by using CTRL-O and then "v", "V" or
@@ -671,6 +672,8 @@ Normal mode from any other mode.  This can be used to make sure Vim is in
 Normal mode, without causing a beep like <Esc> would.  However, this does not
 work in Ex mode.  When used after a command that takes an argument, such as
 |f| or |m|, the timeout set with 'ttimeoutlen' applies.
+When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode for only
+one command, see |t_CTRL-\_CTRL-N|.
 
 	*CTRL-\_CTRL-G* *i_CTRL-\_CTRL-G* *c_CTRL-\_CTRL-G* *v_CTRL-\_CTRL-G*
 The command CTRL-\ CTRL-G or <C-\><C-G> can be used to go to Insert mode when
@@ -833,10 +836,12 @@ by Vim.  {Vi: not ok}
 ==============================================================================
 8. Definitions						*definitions*
 
+  buffer		Contains lines of text, usually read from a file.
   screen		The whole area that Vim uses to work in.  This can be
 			a terminal emulator window.  Also called "the Vim
 			window".
-  window		A view on a buffer.
+  window		A view on a buffer.  There can be multiple windows for
+			one buffer.
 
 A screen contains one or more windows, separated by status lines and with the
 command line at the bottom.
@@ -894,4 +899,4 @@ buffer lines	logical lines	window lines	screen lines ~
 				6. ~ 
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

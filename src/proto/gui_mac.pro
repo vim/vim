@@ -17,7 +17,7 @@ short gui_mch_get_mac_menu_item_index(vimmenu_T *menu, vimmenu_T *parent);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 void gui_mch_getmouse(int *x, int *y);
 void gui_mch_setmouse(int x, int y);

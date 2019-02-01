@@ -1,10 +1,9 @@
 /* gui_w32.c */
-int directx_enabled(void);
 int gui_mch_set_rendering_options(char_u *s);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 LRESULT WINAPI vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 void gui_mch_new_colors(void);
@@ -37,7 +36,6 @@ void gui_mch_set_menu_pos(int x, int y, int w, int h);
 void gui_mch_menu_hidden(vimmenu_T *menu, int hidden);
 void gui_mch_draw_menubar(void);
 guicolor_T gui_mch_get_rgb(guicolor_T pixel);
-void gui_mch_activate_window(void);
 void gui_mch_show_toolbar(int showit);
 void gui_mch_show_tabline(int showit);
 int gui_mch_showing_tabline(void);
