@@ -126,6 +126,14 @@ func Test_filter_commands()
   let res = split(execute("filter /\.c$/ jumps"), "\n")[1:]
   call assert_equal(["   2     1    0 file.c", ">"], res)
 
+  " Test filtering :marks command
+  b file.c
+  mark A
+  b file.h
+  mark B
+  let res = split(execute("filter /\.c$/ marks"), "\n")[1:]
+  call assert_equal([" A      1    0 file.c"], res)
+
   bwipe file.c
   bwipe file.h
   bwipe file.hs

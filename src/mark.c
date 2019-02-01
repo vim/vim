@@ -724,7 +724,7 @@ do_marks(exarg_T *eap)
 	    name = fm_getname(&namedfm[i].fmark, 15);
 	else
 	    name = namedfm[i].fname;
-	if (name != NULL)
+	if (name != NULL && !message_filtered(name))
 	{
 	    show_one_mark(i >= NMARKS ? i - NMARKS + '0' : i + 'A',
 		    arg, &namedfm[i].fmark.mark, name,
@@ -733,14 +733,16 @@ do_marks(exarg_T *eap)
 		vim_free(name);
 	}
     }
-    show_one_mark('"', arg, &curbuf->b_last_cursor, NULL, TRUE);
-    show_one_mark('[', arg, &curbuf->b_op_start, NULL, TRUE);
-    show_one_mark(']', arg, &curbuf->b_op_end, NULL, TRUE);
-    show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
-    show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
-    show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
-    show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
-    show_one_mark(-1, arg, NULL, NULL, FALSE);
+    if (cmdmod.filter_regmatch.regprog == NULL) {
+	show_one_mark('"', arg, &curbuf->b_last_cursor, NULL, TRUE);
+	show_one_mark('[', arg, &curbuf->b_op_start, NULL, TRUE);
+	show_one_mark(']', arg, &curbuf->b_op_end, NULL, TRUE);
+	show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
+	show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
+	show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
+	show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
+	show_one_mark(-1, arg, NULL, NULL, FALSE);
+    }
 }
 
     static void
@@ -753,6 +755,9 @@ show_one_mark(
 {
     static int	did_title = FALSE;
     int		mustfree = FALSE;
+
+    if (message_filtered(mark_line(p, 15)))
+	return;
 
     if (c == -1)			    /* finish up */
     {
