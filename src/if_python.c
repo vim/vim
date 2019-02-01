@@ -73,9 +73,11 @@
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
+// Perhaps leave this out for Python 2.6, which supports bytes?
 #define PyBytes_FromString      PyString_FromString
 #define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
+#define PyBytes_FromStringAndSize   PyString_FromStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
 /* Use this to be able to generate prototypes without python being used. */
@@ -120,10 +122,10 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PY_CAN_RECURSE
 #endif
 
-# if defined(DYNAMIC_PYTHON) || defined(PROTO)
-#  ifndef DYNAMIC_PYTHON
-#   define HINSTANCE long_u		/* for generating prototypes */
-#  endif
+#if defined(DYNAMIC_PYTHON) || defined(PROTO)
+# ifndef DYNAMIC_PYTHON
+#  define HINSTANCE long_u		/* for generating prototypes */
+# endif
 
 # ifndef WIN3264
 #  include <dlfcn.h>
@@ -489,15 +491,15 @@ static struct
     PYTHON_PROC *ptr;
 } python_funcname_table[] =
 {
-#ifndef PY_SSIZE_T_CLEAN
+# ifndef PY_SSIZE_T_CLEAN
     {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
-#else
+# else
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&dll_Py_BuildValue},
-#endif
+# endif
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
@@ -678,7 +680,7 @@ python_runtime_link_init(char *libname, int verbose)
     PYTHON_PROC *ucs_as_encoded_string =
 				   (PYTHON_PROC*)&py_PyUnicode_AsEncodedString;
 
-#if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
+# if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
      * It cause a crash, because RTLD_GLOBAL is needed for
      * standard C extension libraries of one or both python versions. */
@@ -688,7 +690,7 @@ python_runtime_link_init(char *libname, int verbose)
 	    emsg(_("E836: This Vim cannot execute :python after using :py3"));
 	return FAIL;
     }
-#endif
+# endif
 
     if (hinstPython)
 	return OK;
