@@ -7644,9 +7644,6 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:
 	    rettv->vval.v_number = blob_len(argvars[0].vval.v_blob);
 	    break;
-	case VAR_BLOB:
-	    rettv->vval.v_number = blob_len(argvars[0].vval.v_blob);
-	    break;
 	case VAR_LIST:
 	    rettv->vval.v_number = list_len(argvars[0].vval.v_list);
 	    break;
@@ -9101,7 +9098,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    EMSG("cannot read file");
+	    emsg("cannot read file");
 	    blob_free(rettv->vval.v_blob);
 	}
 	fclose(fd);

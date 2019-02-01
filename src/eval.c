@@ -2585,7 +2585,6 @@ eval_for_line(
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
-    blob_T  	*b;
 
     *errp = TRUE;	/* default: there is an error */
 
@@ -8190,7 +8189,6 @@ item_copy(
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
-	case VAR_BLOB:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

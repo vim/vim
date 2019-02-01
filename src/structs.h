@@ -1386,14 +1386,8 @@ struct dictvar_S
  */
 struct blobvar_S
 {
-<<<<<<< HEAD
-    garray_T	bv_ga;		// growarray
-    int		bv_refcount;	// reference count
-    int		bv_cap;		// capacity of buffer
-=======
     garray_T	bv_ga;		// growarray with the data
     int		bv_refcount;	// reference count
->>>>>>> master
     char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 

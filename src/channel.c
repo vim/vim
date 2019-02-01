@@ -1161,7 +1161,7 @@ channel_open_func(typval_T *argvars)
 	p = vim_strchr(address, ':');
 	if (p == NULL)
 	{
-	    smesg(_(e_invarg2), address);
+	    smsg(_(e_invarg2), address);
 	    return NULL;
 	}
 	*p++ = NUL;
@@ -1169,7 +1169,7 @@ channel_open_func(typval_T *argvars)
 	if (*address == NUL || port <= 0 || *rest != NUL)
 	{
 	    p[-1] = ':';
-	    smesg(_(e_invarg2), address);
+	    smsg(_(e_invarg2), address);
 	    return NULL;
 	}
     }
@@ -1219,11 +1219,11 @@ channel_listen_func(typval_T *argvars)
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
-    address = get_tv_string(&argvars[0]);
+    address = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
 	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return NULL;
     }
 
@@ -1237,7 +1237,7 @@ channel_listen_func(typval_T *argvars)
 	p = vim_strchr(address, ':');
 	if (p == NULL)
 	{
-	    smesg(_(e_invarg2), address);
+	    smsg(_(e_invarg2), address);
 	    return NULL;
 	}
 	*p++ = NUL;
@@ -1245,7 +1245,7 @@ channel_listen_func(typval_T *argvars)
 	if (port <= 0 || *rest != NUL)
 	{
 	    p[-1] = ':';
-	    smesg(_(e_invarg2), address);
+	    smsg(_(e_invarg2), address);
 	    return NULL;
 	}
     }
@@ -1257,7 +1257,7 @@ channel_listen_func(typval_T *argvars)
 	goto theend;
     if (opt.jo_timeout < 0)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto theend;
     }
 

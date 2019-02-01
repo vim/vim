@@ -1689,7 +1689,7 @@ static void ruby_vim_init(void)
     rb_define_module_function(mVIM, "evaluate", vim_evaluate, 1);
     rb_define_module_function(mVIM, "blob", vim_blob, 1);
 
-    rb_define_method(rb_cString, "to_blob", str_to_blob, 0);
+    rb_define_method(rb_cString, "to_blob", string2blob, 0);
 
     eDeletedBufferError = rb_define_class_under(mVIM, "DeletedBufferError",
 						rb_eStandardError);
