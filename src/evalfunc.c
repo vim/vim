@@ -9051,7 +9051,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
     return;
 
 theend:
-    EMSG2(_(e_invarg2), get_tv_string(&argvars[0]));
+    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
 }
 
 /*
@@ -12602,7 +12602,7 @@ f_srand(typval_T *argvars, typval_T *rettv)
     else
     {
 	int error = FALSE;
-	UINT32_TYPEDEF x = (UINT32_TYPEDEF)get_tv_number_chk(&argvars[0], &error);
+	UINT32_TYPEDEF x = (UINT32_TYPEDEF)tv_get_number_chk(&argvars[0], &error);
 	if (error)
 	    return;
 

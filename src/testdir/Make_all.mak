@@ -374,7 +374,7 @@ NEW_TESTS_RES = \
 	test_pyx3.res \
 	test_quickfix.res \
 	test_quotestar.res \
-    test_rand.res \
+	test_rand.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_retab.res \
