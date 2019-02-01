@@ -34,9 +34,12 @@
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
-
 #ifdef HAVE_X11_XPM_H
-# include <X11/xpm.h>
+# if defined(VMS)
+#  include <xpm.h>
+# else
+#  include <X11/xpm.h>
+# endif
 #else
 # ifdef HAVE_XM_XPMP_H
 #  include <Xm/XpmP.h>
@@ -514,21 +517,18 @@ gui_x11_create_widgets(void)
     XtVaSetValues(scroller, XmNwidth, 0, XmNresizable, False,
 		  XmNtraversalOn, False, NULL);
 
-    /* Create the tabline popup menu */
+    // Create the tabline popup menu
     tabLine_menu = XmCreatePopupMenu(tabLine, "tabline popup", NULL, 0);
 
-    /* Add the buttons to the menu */
-    if (first_tabpage->tp_next != NULL)
-    {
-	n = 0;
-	XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
-	xms = XmStringCreate((char *)"Close tab", STRING_TAG);
-	XtSetArg(args[n], XmNlabelString, xms); n++;
-	button = XmCreatePushButton(tabLine_menu, "Close", args, n);
-	XtAddCallback(button, XmNactivateCallback,
-		      (XtCallbackProc)tabline_button_cb, NULL);
-	XmStringFree(xms);
-    }
+    // Add the buttons to the tabline popup menu
+    n = 0;
+    XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
+    xms = XmStringCreate((char *)"Close tab", STRING_TAG);
+    XtSetArg(args[n], XmNlabelString, xms); n++;
+    button = XmCreatePushButton(tabLine_menu, "Close", args, n);
+    XtAddCallback(button, XmNactivateCallback,
+		  (XtCallbackProc)tabline_button_cb, NULL);
+    XmStringFree(xms);
 
     n = 0;
     XtSetArg(args[n], XmNuserData, TABLINE_MENU_NEW); n++;
@@ -701,8 +701,7 @@ manage_centered(Widget dialog_child)
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
-#if defined(FEAT_MENU) || defined(FEAT_SUN_WORKSHOP) \
-	|| defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_MENU) || defined(FEAT_GUI_DIALOG) || defined(PROTO)
 
 /*
  * Encapsulate the way an XmFontList is created.

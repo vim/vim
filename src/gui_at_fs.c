@@ -1063,7 +1063,7 @@ SFinitFont(void)
 #endif
 	if (!SFfont)
 	{
-	    EMSG2(_("E616: vim_SelFile: can't get font %s"), SF_DEFAULT_FONT);
+	    semsg(_("E616: vim_SelFile: can't get font %s"), SF_DEFAULT_FONT);
 	    SFstatus = SEL_FILE_CANCEL;
 	    return;
 	}
@@ -2629,7 +2629,7 @@ SFprepareToReturn(void)
     XtRemoveTimeOut(SFdirModTimerId);
     if (SFchdir(SFstartDir))
     {
-	EMSG(_("E614: vim_SelFile: can't return to current directory"));
+	emsg(_("E614: vim_SelFile: can't return to current directory"));
 	SFstatus = SEL_FILE_CANCEL;
     }
 }
@@ -2658,7 +2658,7 @@ vim_SelFile(
 
     if (mch_dirname((char_u *)SFstartDir, MAXPATHL) == FAIL)
     {
-	EMSG(_("E615: vim_SelFile: can't get current directory"));
+	emsg(_("E615: vim_SelFile: can't get current directory"));
 	return NULL;
     }
 

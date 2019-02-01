@@ -10,12 +10,13 @@ compiler:
   - gcc
 
 env:
+  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
   - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     # ASAN build
   - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
     FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-  - BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
   - BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
   - BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
@@ -26,11 +27,14 @@ env:
 
 sudo: false
 
-# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
+# instead of a 2*2*7 matrix (2*os + 2*compiler + 7*env),
 # exclude some builds on mac os x and linux
+# on mac os x "tiny" is always without GUI
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
 matrix:
   exclude:
+    - os: osx
+      env: BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - os: osx
       env: BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
     - os: osx
@@ -38,7 +42,7 @@ matrix:
     - os: osx
       env: BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - os: osx
-      env: BUILD=yes TEST=scripttests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      env: BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
             "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
     - os: osx
       env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
@@ -78,6 +82,10 @@ addons:
       - tcl-dev
       - cscope
       - libgtk2.0-dev
+  homebrew:
+    packages:
+      - lua
+    update: true
 
 before_install:
   - rvm reset
@@ -89,7 +97,7 @@ before_install:
     # building cffi only works with gcc, not with clang
   - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
     # Lua is not installed on Travis OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export HOMEBREW_NO_AUTO_UPDATE=1; brew update; brew install lua; export LUA_PREFIX=/usr/local; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export LUA_PREFIX=/usr/local; fi
     # Use llvm-cov instead of gcov when compiler is clang.
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
 
@@ -109,7 +117,7 @@ script:
   - if [ -n "$err" ]; then exit 1; fi
 
 after_success:
-  - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b ${SRCDIR} -x .xs -e ${SRCDIR}/xxd -e ${SRCDIR}/if_perl.c --encodings utf-8 latin-1 EUC-KR; fi
+  - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b ${SRCDIR} -x .xs -e ${SRCDIR}/if_perl.c -e ${SRCDIR}/xxd -e ${SRCDIR}/libvterm --encodings utf-8 latin-1 EUC-KR; fi
   - if [ "$COVERAGE" = "yes" ]; then  cd ${SRCDIR} && bash <(curl -s https://codecov.io/bash) ; fi
 
 # vim:set sts=2 sw=2 tw=0 et:

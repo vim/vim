@@ -1,4 +1,5 @@
 This directory contains tests for various Vim features.
+For testing an indent script see runtime/indent/testdir/README.txt.
 
 If it makes sense, add a new test method to an already existing file.  You may
 want to separate it from other tests with comment lines.
@@ -14,10 +15,10 @@ can.  Use an old style test when it needs to run without the +eval feature.
 TO ADD A NEW STYLE TEST:
 
 1) Create a test_<subject>.vim file.
-2) Add test_<subject>.res to NEW_TESTS in Make_all.mak in alphabetical order.
-3) Also add an entry "test_<subject>" in src/Make_all.mak.
-4) Use make test_<subject>.res to run a single test in src/testdir/.
-   Use make test_<subject>  to run a single test in src/.
+2) Add test_<subject>.res to NEW_TESTS_RES in Make_all.mak in alphabetical
+   order.
+3) Also add an entry "test_<subject>" to NEW_TESTS in Make_all.mak.
+4) Use make test_<subject> to run a single test.
 
 At 2), instead of running the test separately, it can be included in
 "test_alot".  Do this for quick tests without side effects.  The test runs a

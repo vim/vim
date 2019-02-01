@@ -1299,6 +1299,28 @@ func SetXlistTests(cchar, bnum)
   let l = g:Xgetlist()
   call g:Xsetlist(l)
   call assert_equal(0, g:Xgetlist()[0].valid)
+  " Adding a non-valid entry should not mark the list as having valid entries
+  call g:Xsetlist([{'bufnr':a:bnum, 'lnum':5, 'valid':0}], 'a')
+  Xwindow
+  call assert_equal(1, winnr('$'))
+
+  " :cnext/:cprev should still work even with invalid entries in the list
+  let l = [{'bufnr' : a:bnum, 'lnum' : 1, 'text' : '1', 'valid' : 0},
+	      \ {'bufnr' : a:bnum, 'lnum' : 2, 'text' : '2', 'valid' : 0}]
+  call g:Xsetlist(l)
+  Xnext
+  call assert_equal(2, g:Xgetlist({'idx' : 0}).idx)
+  Xprev
+  call assert_equal(1, g:Xgetlist({'idx' : 0}).idx)
+  " :cnext/:cprev should still work after appending invalid entries to an
+  " empty list
+  call g:Xsetlist([])
+  call g:Xsetlist(l, 'a')
+  Xnext
+  call assert_equal(2, g:Xgetlist({'idx' : 0}).idx)
+  Xprev
+  call assert_equal(1, g:Xgetlist({'idx' : 0}).idx)
+
   call g:Xsetlist([{'text':'Text1', 'valid':1}])
   Xwindow
   call assert_equal(2, winnr('$'))
@@ -1789,6 +1811,13 @@ func HistoryTest(cchar)
   call g:Xsetlist([], 'f')
   let l = split(execute(a:cchar . 'hist'), "\n")
   call assert_equal('No entries', l[0])
+
+  " An empty list should still show the stack history
+  call g:Xsetlist([])
+  let res = split(execute(a:cchar . 'hist'), "\n")
+  call assert_equal('> error list 1 of 1; 0 ' . common, res[0])
+
+  call g:Xsetlist([], 'f')
 endfunc
 
 func Test_history()
@@ -2044,6 +2073,56 @@ endfunc
 func Test_qf_property()
     call Xproperty_tests('c')
     call Xproperty_tests('l')
+endfunc
+
+" Test for setting the current index in the location/quickfix list
+func Xtest_setqfidx(cchar)
+  call s:setup_commands(a:cchar)
+
+  Xgetexpr "F1:10:1:Line1\nF2:20:2:Line2\nF3:30:3:Line3"
+  Xgetexpr "F4:10:1:Line1\nF5:20:2:Line2\nF6:30:3:Line3"
+  Xgetexpr "F7:10:1:Line1\nF8:20:2:Line2\nF9:30:3:Line3"
+
+  call g:Xsetlist([], 'a', {'nr' : 3, 'idx' : 2})
+  call g:Xsetlist([], 'a', {'nr' : 2, 'idx' : 2})
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : 3})
+  Xolder 2
+  Xopen
+  call assert_equal(3, line('.'))
+  Xnewer
+  call assert_equal(2, line('.'))
+  Xnewer
+  call assert_equal(2, line('.'))
+  " Update the current index with the quickfix window open
+  wincmd w
+  call g:Xsetlist([], 'a', {'nr' : 3, 'idx' : 3})
+  Xopen
+  call assert_equal(3, line('.'))
+  Xclose
+
+  " Set the current index to the last entry
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : '$'})
+  call assert_equal(3, g:Xgetlist({'nr' : 1, 'idx' : 0}).idx)
+  " A large value should set the index to the last index
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : 1})
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : 999})
+  call assert_equal(3, g:Xgetlist({'nr' : 1, 'idx' : 0}).idx)
+  " Invalid index values
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : -1})
+  call assert_equal(3, g:Xgetlist({'nr' : 1, 'idx' : 0}).idx)
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : 0})
+  call assert_equal(3, g:Xgetlist({'nr' : 1, 'idx' : 0}).idx)
+  call g:Xsetlist([], 'a', {'nr' : 1, 'idx' : 'xx'})
+  call assert_equal(3, g:Xgetlist({'nr' : 1, 'idx' : 0}).idx)
+  call assert_fails("call g:Xsetlist([], 'a', {'nr':1, 'idx':[]})", 'E745:')
+
+  call g:Xsetlist([], 'f')
+  new | only
+endfunc
+
+func Test_setqfidx()
+  call Xtest_setqfidx('c')
+  call Xtest_setqfidx('l')
 endfunc
 
 " Tests for the QuickFixCmdPre/QuickFixCmdPost autocommands
@@ -3763,4 +3842,60 @@ func Test_splitview()
 
   call delete('Xtestfile1')
   call delete('Xtestfile2')
+endfunc
+
+" Test for parsing entries using visual screen column
+func Test_viscol()
+  enew
+  call writefile(["Col1\tCol2\tCol3"], 'Xfile1')
+  edit Xfile1
+
+  " Use byte offset for column number
+  set efm&
+  cexpr "Xfile1:1:5:XX\nXfile1:1:9:YY\nXfile1:1:20:ZZ"
+  call assert_equal([5, 8], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([9, 12], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([14, 20], [col('.'), virtcol('.')])
+
+  " Use screen column offset for column number
+  set efm=%f:%l:%v:%m
+  cexpr "Xfile1:1:8:XX\nXfile1:1:12:YY\nXfile1:1:20:ZZ"
+  call assert_equal([5, 8], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([9, 12], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([14, 20], [col('.'), virtcol('.')])
+  cexpr "Xfile1:1:6:XX\nXfile1:1:15:YY\nXfile1:1:24:ZZ"
+  call assert_equal([5, 8], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([10, 16], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([14, 20], [col('.'), virtcol('.')])
+
+  enew
+  call writefile(["Col1\täü\töß\tCol4"], 'Xfile1')
+
+  " Use byte offset for column number
+  set efm&
+  cexpr "Xfile1:1:8:XX\nXfile1:1:11:YY\nXfile1:1:16:ZZ"
+  call assert_equal([8, 10], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([11, 17], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([16, 25], [col('.'), virtcol('.')])
+
+  " Use screen column offset for column number
+  set efm=%f:%l:%v:%m
+  cexpr "Xfile1:1:10:XX\nXfile1:1:17:YY\nXfile1:1:25:ZZ"
+  call assert_equal([8, 10], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([11, 17], [col('.'), virtcol('.')])
+  cnext
+  call assert_equal([16, 25], [col('.'), virtcol('.')])
+
+  enew | only
+  set efm&
+  call delete('Xfile1')
 endfunc

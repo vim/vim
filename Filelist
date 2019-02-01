@@ -14,8 +14,10 @@ SRC_ALL =	\
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/autocmd.c \
 		src/beval.c \
 		src/beval.h \
+		src/blob.c \
 		src/blowfish.c \
 		src/buffer.c \
 		src/channel.c \
@@ -47,6 +49,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/indent.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -81,16 +84,18 @@ SRC_ALL =	\
 		src/screen.c \
 		src/search.c \
 		src/sha256.c \
-		src/structs.h \
+		src/sign.c \
 		src/spell.c \
 		src/spell.h \
 		src/spellfile.c \
+		src/structs.h \
 		src/syntax.c \
 		src/tag.c \
 		src/term.c \
 		src/terminal.c \
 		src/term.h \
 		src/termlib.c \
+		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
 		src/userfunc.c \
@@ -143,7 +148,9 @@ SRC_ALL =	\
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
+		src/proto/autocmd.pro \
 		src/proto/beval.pro \
+		src/proto/blob.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/channel.pro \
@@ -169,6 +176,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/indent.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \
@@ -191,6 +199,7 @@ SRC_ALL =	\
 		src/proto/screen.pro \
 		src/proto/search.pro \
 		src/proto/sha256.pro \
+		src/proto/sign.pro \
 		src/proto/spell.pro \
 		src/proto/spellfile.pro \
 		src/proto/syntax.pro \
@@ -198,6 +207,7 @@ SRC_ALL =	\
 		src/proto/term.pro \
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
+		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/userfunc.pro \
@@ -330,8 +340,6 @@ SRC_UNIX =	\
 		src/gui_x11_pm.h \
 		src/hangulin.c \
 		src/if_xcmdsrv.c \
-		src/integration.c \
-		src/integration.h \
 		src/link.sh \
 		src/installman.sh \
 		src/installml.sh \
@@ -354,7 +362,6 @@ SRC_UNIX =	\
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \
-		src/proto/workshop.pro \
 		src/pty.c \
 		src/testdir/Makefile \
 		src/testdir/unix.vim \
@@ -364,10 +371,6 @@ SRC_UNIX =	\
 		src/vimtutor \
 		src/gvimtutor \
 		src/which.sh \
-		src/workshop.c \
-		src/workshop.h \
-		src/wsdebug.c \
-		src/wsdebug.h \
 		src/tee/Makefile \
 		src/xxd/Makefile \
 
@@ -473,8 +476,8 @@ SRC_DOS =	\
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
 		nsis/gvim_version.nsh \
-		nsis/vimrc.ini \
 		nsis/README.txt \
+		nsis/lang/*.nsi \
 		uninstal.txt \
 		src/VisVim/Commands.cpp \
 		src/VisVim/Commands.h \
@@ -513,8 +516,7 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
 		src/xpm/x86/lib-vc14/libXpm.lib \
-		nsis/icons/*.bmp \
-		nsis/icons/*.ico \
+		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)
 SRC_AMI_DOS =	\

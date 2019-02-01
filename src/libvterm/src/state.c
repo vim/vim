@@ -53,6 +53,8 @@ static VTermState *vterm_state_new(VTerm *vt)
 {
   VTermState *state = vterm_allocator_malloc(vt, sizeof(VTermState));
 
+  if (state == NULL)
+    return NULL;
   state->vt = vt;
 
   state->rows = vt->rows;
@@ -1693,6 +1695,10 @@ static const VTermParserCallbacks parser_callbacks = {
   on_resize /* resize */
 };
 
+/*
+ * Return the existing state or create a new one.
+ * Returns NULL when out of memory.
+ */
 VTermState *vterm_obtain_state(VTerm *vt)
 {
   VTermState *state;
@@ -1700,6 +1706,8 @@ VTermState *vterm_obtain_state(VTerm *vt)
     return vt->state;
 
   state = vterm_state_new(vt);
+  if (state == NULL)
+    return NULL;
   vt->state = state;
 
   state->combine_chars_size = 16;

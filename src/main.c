@@ -119,7 +119,7 @@ main
      */
     mch_early_init();
 
-#if defined(WIN32) && defined(FEAT_MBYTE)
+#if defined(WIN32)
     /*
      * MinGW expands command line arguments, which confuses our code to
      * convert when 'encoding' changes.  Get the unexpanded arguments.
@@ -250,7 +250,7 @@ main
 	params.fname = alist_name(&GARGLIST[0]);
     }
 
-#if defined(WIN32) && defined(FEAT_MBYTE)
+#if defined(WIN32)
     {
 	extern void set_alist_count(void);
 
@@ -592,9 +592,7 @@ vim_main2(void)
     {
 	char_u	*enc = NULL;
 
-# ifdef FEAT_MBYTE
 	enc = p_menc;
-# endif
 	if (params.use_ef != NULL)
 	    set_string_option_direct((char_u *)"ef", -1,
 					   params.use_ef, OPT_FREE, SID_CARG);
@@ -628,10 +626,7 @@ vim_main2(void)
      */
     if (gui.in_use)
     {
-# ifdef FEAT_SUN_WORKSHOP
-	if (!usingSunWorkShop)
-# endif
-	    gui_wait_for_chars(50L, typebuf.tb_change_cnt);
+	gui_wait_for_chars(50L, typebuf.tb_change_cnt);
 	TIME_MSG("GUI delay");
     }
 #endif
@@ -816,7 +811,7 @@ vim_main2(void)
     /* Must come before the may_req_ calls. */
     starting = 0;
 
-#if defined(FEAT_TERMRESPONSE) && defined(FEAT_MBYTE)
+#if defined(FEAT_TERMRESPONSE)
     /* Must be done before redrawing, puts a few characters on the screen. */
     may_req_ambiguous_char_width();
 #endif
@@ -929,9 +924,7 @@ common_init(mparm_T *paramp)
 {
     cmdline_init();
 
-#ifdef FEAT_MBYTE
     (void)mb_init();	/* init mb_bytelen_tab[] to ones */
-#endif
 #ifdef FEAT_EVAL
     eval_init();	/* init global variables */
 #endif
@@ -945,7 +938,7 @@ common_init(mparm_T *paramp)
 
     /*
      * Allocate space for the generic buffers (needed for set_init_1() and
-     * EMSG2()).
+     * emsg()).
      */
     if ((IObuff = alloc(IOSIZE)) == NULL
 	    || (NameBuff = alloc(MAXPATHL)) == NULL)
@@ -983,9 +976,6 @@ common_init(mparm_T *paramp)
      */
     early_arg_scan(paramp);
 
-#ifdef FEAT_SUN_WORKSHOP
-    findYourself(paramp->argv[0]);
-#endif
 #if defined(FEAT_GUI)
     /* Prepare for possibly starting GUI sometime */
     gui_prepare(&paramp->argc, paramp->argv);
@@ -1031,6 +1021,10 @@ common_init(mparm_T *paramp)
 
 #ifdef FEAT_EVAL
     set_lang_var();		/* set v:lang and v:ctype */
+#endif
+
+#ifdef FEAT_SIGNS
+    init_signs();
 #endif
 }
 
@@ -1166,6 +1160,10 @@ main_loop(
 	    // locked, this would be a good time to handle the drop.
 	    handle_any_postponed_drop();
 #endif
+#ifdef FEAT_CONCEAL
+	    if (curwin->w_p_cole == 0)
+		conceal_update_lines = FALSE;
+#endif
 
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
@@ -1189,6 +1187,23 @@ main_loop(
 # endif
 		last_cursormoved = curwin->w_cursor;
 	    }
+
+#if defined(FEAT_CONCEAL)
+	    if (conceal_update_lines
+		    && (conceal_old_cursor_line != conceal_new_cursor_line
+			|| conceal_cursor_line(curwin)
+			|| need_cursor_line_redraw))
+	    {
+		if (conceal_old_cursor_line != conceal_new_cursor_line
+			&& conceal_old_cursor_line != 0
+			&& conceal_old_cursor_line
+						<= curbuf->b_ml.ml_line_count)
+		    redrawWinline(curwin, conceal_old_cursor_line);
+		redrawWinline(curwin, conceal_new_cursor_line);
+		curwin->w_valid &= ~VALID_CROW;
+		need_cursor_line_redraw = FALSE;
+	    }
+#endif
 
 	    /* Trigger TextChanged if b:changedtick differs. */
 	    if (!finish_op && has_textchanged()
@@ -1269,7 +1284,7 @@ main_loop(
 		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
 		 * to check for duplicates. */
 		p = keep_msg;
-		msg_attr(p, keep_msg_attr);
+		msg_attr((char *)p, keep_msg_attr);
 		vim_free(p);
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
@@ -1284,22 +1299,6 @@ main_loop(
 	    may_clear_sb_text();	/* clear scroll-back text on next msg */
 	    showruler(FALSE);
 
-#if defined(FEAT_CONCEAL)
-	    if (conceal_update_lines
-		    && (conceal_old_cursor_line != conceal_new_cursor_line
-			|| conceal_cursor_line(curwin)
-			|| need_cursor_line_redraw))
-	    {
-		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
-		if (conceal_old_cursor_line != conceal_new_cursor_line
-			&& conceal_old_cursor_line
-						<= curbuf->b_ml.ml_line_count)
-		    update_single_line(curwin, conceal_old_cursor_line);
-		update_single_line(curwin, conceal_new_cursor_line);
-		mch_enable_flush();
-		curwin->w_valid &= ~VALID_CROW;
-	    }
-#endif
 	    setcursor();
 	    cursor_on();
 
@@ -1546,7 +1545,7 @@ getout(int exitval)
     if (garbage_collect_at_exit)
 	garbage_collect(FALSE);
 #endif
-#if defined(WIN32) && defined(FEAT_MBYTE)
+#if defined(WIN32)
     free_cmd_argsW();
 #endif
 
@@ -2498,7 +2497,7 @@ scripterror:
 #endif
 		    );
 
-#if defined(FEAT_MBYTE) && defined(WIN32)
+#if defined(WIN32)
 	    {
 		/* Remember this argument has been added to the argument list.
 		 * Needed when 'encoding' is changed. */
@@ -2581,7 +2580,7 @@ check_tty(mparm_T *parmp)
 #if defined(WIN3264) && !defined(FEAT_GUI_W32)
 	if (is_cygpty_used())
 	{
-# if defined(FEAT_MBYTE) && defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
+# if defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
 	&& defined(FEAT_GETTEXT)
 	    char    *s, *tofree = NULL;
 
@@ -3016,7 +3015,7 @@ source_startup_scripts(mparm_T *parmp)
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
-		EMSG2(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
+		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
     else if (!silent_mode)
@@ -3657,9 +3656,7 @@ exec_on_server(mparm_T *parmp)
 	{
 	    cmdsrv_main(&parmp->argc, parmp->argv,
 				    parmp->serverName_arg, &parmp->serverStr);
-# ifdef FEAT_MBYTE
 	    parmp->serverStrEnc = vim_strsave(p_enc);
-# endif
 	}
 
 	/* If we're still running, get the name to register ourselves.
@@ -4278,7 +4275,6 @@ serverConvert(
     char_u	*res = data;
 
     *tofree = NULL;
-# ifdef FEAT_MBYTE
     if (client_enc != NULL && p_enc != NULL)
     {
 	vimconv_T	vimconv;
@@ -4295,7 +4291,6 @@ serverConvert(
 	}
 	convert_setup(&vimconv, NULL, NULL);
     }
-# endif
     return res;
 }
 #endif

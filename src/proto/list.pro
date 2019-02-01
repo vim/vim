@@ -5,6 +5,7 @@ void list_fix_watch(list_T *l, listitem_T *item);
 list_T *list_alloc(void);
 list_T *list_alloc_id(alloc_id_T id);
 int rettv_list_alloc(typval_T *rettv);
+int rettv_list_alloc_id(typval_T *rettv, alloc_id_T id);
 void rettv_list_set(typval_T *rettv, list_T *l);
 void list_unref(list_T *l);
 int list_free_nonref(int copyID);

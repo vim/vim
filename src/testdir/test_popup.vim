@@ -701,6 +701,28 @@ func Test_popup_and_preview_autocommand()
   bw!
 endfunc
 
+func Test_popup_and_previewwindow_dump()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+    \ 'set previewheight=9',
+    \ 'silent! pedit',
+    \ 'call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))',
+    \ 'exec "norm! G\<C-E>\<C-E>"',
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+
+  " Test that popup and previewwindow do not overlap.
+  call term_sendkeys(buf, "o\<C-X>\<C-N>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_popup_and_previewwindow_01', {})
+
+  call term_sendkeys(buf, "\<Esc>u")
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+endfunc
+
 func Test_balloon_split()
   if !exists('*balloon_split')
     return
@@ -860,5 +882,18 @@ func Test_complete_o_tab()
   delfunc s:act_on_text_changed
 endfunc
 
+func Test_menu_only_exists_in_terminal()
+  if !exists(':tlmenu') || has('gui_running')
+    return
+  endif
+  tlnoremenu  &Edit.&Paste<Tab>"+gP  <C-W>"+
+  aunmenu *
+  try
+    popup Edit
+    call assert_false(1, 'command should have failed')
+  catch
+    call assert_exception('E328:')
+  endtry
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

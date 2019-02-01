@@ -90,6 +90,7 @@ PROPT = DEF=PROTO GPROTO GPPARM MAXIMUMERRORS=999 GENPROTOSTATICS GENPROTOPARAME
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -112,6 +113,7 @@ SRC = \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -134,6 +136,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -147,6 +150,7 @@ SRC = \
 
 OBJ = \
 	arabic.o \
+	autocmd.o \
 	blowfish.o \
 	buffer.o \
 	charset.o \
@@ -169,6 +173,7 @@ OBJ = \
 	getchar.o \
 	hardcopy.o \
 	hashtab.o \
+	indent.o \
 	json.o \
 	list.o \
 	main.o \
@@ -191,6 +196,7 @@ OBJ = \
 	screen.o \
 	search.o \
 	sha256.o \
+	sign.o \
 	spell.o \
 	spellfile.o \
 	syntax.o \
@@ -204,6 +210,7 @@ OBJ = \
 
 PRO = \
 	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
@@ -226,6 +233,7 @@ PRO = \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -248,6 +256,7 @@ PRO = \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
@@ -316,6 +325,8 @@ $(PRO): $(GST) vim.h
 # dependencies
 arabic.o:		arabic.c
 proto/arabic.pro:	arabic.c
+autocmd.o:		autocmd.c
+proto/autocmd.pro:	autocmd.c
 blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c
@@ -360,6 +371,8 @@ hardcopy.o:		hardcopy.c
 proto/hardcopy.pro:	hardcopy.c
 hashtab.o:		hashtab.c
 proto/hashtab.pro:	hashtab.c
+indent.o:		indent.c
+proto/indent.pro:	indent.c
 json.o:			json.c
 proto/json.pro:		json.c
 list.o:			list.c
@@ -404,6 +417,8 @@ search.o:		search.c
 proto/search.pro:	search.c
 sha256.o:		sha256.c
 proto/sha256.pro:	sha256.c
+sign.o:			sign.c
+proto/sign.pro:		sign.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
 spellfile.o:		spellfile.c

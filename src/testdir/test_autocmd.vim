@@ -2,7 +2,7 @@
 
 source shared.vim
 
-func! s:cleanup_buffers() abort
+func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
       execute 'bd! ' . bnr
@@ -32,6 +32,28 @@ if has('timers')
     call timer_start(100, 'ExitInsertMode')
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
+    unlet g:triggered
+    au! CursorHoldI
+    set updatetime&
+  endfunc
+
+  func Test_cursorhold_insert_with_timer_interrupt()
+    if !has('job')
+      return
+    endif
+    " Need to move the cursor.
+    call feedkeys("ggG", "xt")
+
+    " Confirm the timer invoked in exit_cb of the job doesn't disturb
+    " CursorHoldI event.
+    let g:triggered = 0
+    au CursorHoldI * let g:triggered += 1
+    set updatetime=500
+    call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
+          \ {'exit_cb': {-> timer_start(1000, 'ExitInsertMode')}})
+    call feedkeys('a', 'x!')
+    call assert_equal(1, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
@@ -44,6 +66,7 @@ if has('timers')
     " CursorHoldI does not trigger after CTRL-X
     call feedkeys("a\<C-X>", 'x!')
     call assert_equal(0, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
@@ -452,7 +475,7 @@ func s:AutoCommandOptionSet(match)
 endfunc
 
 func Test_OptionSet()
-  if !has("eval") || !has("autocmd") || !exists("+autochdir")
+  if !has("eval") || !exists("+autochdir")
     return
   endif
 
@@ -595,7 +618,7 @@ endfunc
 
 func Test_OptionSet_diffmode()
   call test_override('starting', 1)
-  " 18: Changing an option when enetering diff mode
+  " 18: Changing an option when entering diff mode
   new
   au OptionSet diff :let &l:cul=v:option_new
 
@@ -648,6 +671,28 @@ func Test_OptionSet_diffmode_close()
   au! OptionSet
   call test_override('starting', 0)
   "delfunc! AutoCommandOptionSet
+endfunc
+
+func Test_OptionSet_modeline()
+  call test_override('starting', 1)
+  au! OptionSet
+  augroup set_tabstop
+    au OptionSet tabstop call timer_start(1, {-> execute("echo 'Handler called'", "")})
+  augroup END
+  call writefile(['vim: set ts=7 sw=5 :', 'something'], 'XoptionsetModeline')
+  set modeline
+  let v:errmsg = ''
+  call assert_fails('split XoptionsetModeline', 'E12:')
+  call assert_equal(7, &ts)
+  call assert_equal('', v:errmsg)
+
+  augroup set_tabstop
+    au!
+  augroup END
+  bwipe!
+  set ts&
+  call delete('XoptionsetModeline')
+  call test_override('starting', 0)
 endfunc
 
 " Test for Bufleave autocommand that deletes the buffer we are about to edit.
@@ -1205,13 +1250,16 @@ function s:Before_test_dirchanged()
   augroup END
   let s:li = []
   let s:dir_this = getcwd()
-  let s:dir_other = s:dir_this . '/foo'
-  call mkdir(s:dir_other)
+  let s:dir_foo = s:dir_this . '/foo'
+  call mkdir(s:dir_foo)
+  let s:dir_bar = s:dir_this . '/bar'
+  call mkdir(s:dir_bar)
 endfunc
 
 function s:After_test_dirchanged()
   exe 'cd' s:dir_this
-  call delete(s:dir_other, 'd')
+  call delete(s:dir_foo, 'd')
+  call delete(s:dir_bar, 'd')
   augroup test_dirchanged
     autocmd!
   augroup END
@@ -1221,10 +1269,12 @@ function Test_dirchanged_global()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
   autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_other
-  call assert_equal(["cd:", s:dir_other], s:li)
-  exe 'lcd' s:dir_other
-  call assert_equal(["cd:", s:dir_other], s:li)
+  exe 'cd' s:dir_foo
+  call assert_equal(["cd:", s:dir_foo], s:li)
+  exe 'cd' s:dir_foo
+  call assert_equal(["cd:", s:dir_foo], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["cd:", s:dir_foo], s:li)
   call s:After_test_dirchanged()
 endfunc
 
@@ -1232,10 +1282,12 @@ function Test_dirchanged_local()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged window call add(s:li, "lcd:")
   autocmd test_dirchanged DirChanged window call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_other
+  exe 'cd' s:dir_foo
   call assert_equal([], s:li)
-  exe 'lcd' s:dir_other
-  call assert_equal(["lcd:", s:dir_other], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["lcd:", s:dir_bar], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["lcd:", s:dir_bar], s:li)
   call s:After_test_dirchanged()
 endfunc
 
@@ -1250,9 +1302,9 @@ function Test_dirchanged_auto()
   set acd
   exe 'cd ..'
   call assert_equal([], s:li)
-  exe 'edit ' . s:dir_other . '/Xfile'
-  call assert_equal(s:dir_other, getcwd())
-  call assert_equal(["auto:", s:dir_other], s:li)
+  exe 'edit ' . s:dir_foo . '/Xfile'
+  call assert_equal(s:dir_foo, getcwd())
+  call assert_equal(["auto:", s:dir_foo], s:li)
   set noacd
   bwipe!
   call s:After_test_dirchanged()
@@ -1314,7 +1366,7 @@ func Test_ChangedP()
 endfunc
 
 let g:setline_handled = v:false
-func! SetLineOne()
+func SetLineOne()
   if !g:setline_handled
     call setline(1, "(x)")
     let g:setline_handled = v:true
@@ -1356,3 +1408,5 @@ func Test_Changed_FirstTime()
   call delete('Xchanged.txt')
   bwipe!
 endfunc
+
+" FileChangedShell tested in test_filechanged.vim

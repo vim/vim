@@ -19,6 +19,8 @@ static int pum_size;			/* nr of items in "pum_array" */
 static int pum_selected;		/* index of selected item or -1 */
 static int pum_first = 0;		/* index of top item */
 
+static int call_update_screen = FALSE;
+
 static int pum_height;			/* nr of displayed pum items */
 static int pum_width;			/* width of displayed pum items */
 static int pum_base_width;		/* width of pum items base */
@@ -36,12 +38,12 @@ static int pum_win_col;
 static int pum_win_wcol;
 static int pum_win_width;
 
-static int pum_do_redraw = FALSE;	/* do redraw anyway */
+static int pum_do_redraw = FALSE;	// do redraw anyway
+static int pum_skip_redraw = FALSE;	// skip redraw
 
 static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
-#define PUM_DEF_WIDTH  15
 
     static void
 pum_compute_size(void)
@@ -196,20 +198,11 @@ pum_display(
 	    return;
 
 #if defined(FEAT_QUICKFIX)
-	// If there is a preview window at the above avoid drawing over it.
-	// Do keep at least 10 entries.
-	if (pvwin != NULL && pum_row < above_row && pum_height > 10)
+	// If there is a preview window above avoid drawing over it.
+	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
 	{
-	    if (pum_win_row - above_row < 10)
-	    {
-		pum_row = pum_win_row - 10;
-		pum_height = 10;
-	    }
-	    else
-	    {
-		pum_row = above_row;
-		pum_height = pum_win_row - above_row;
-	    }
+	    pum_row = above_row;
+	    pum_height = pum_win_row - above_row;
 	}
 #endif
 
@@ -364,6 +357,36 @@ pum_display(
 }
 
 /*
+ * Set a flag that when pum_redraw() is called it first calls update_screen().
+ * This will avoid clearing and redrawing the popup menu, prevent flicker.
+ */
+    void
+pum_call_update_screen()
+{
+    call_update_screen = TRUE;
+
+    // Update the cursor position to be able to compute the popup menu
+    // position.  The cursor line length may have changed because of the
+    // inserted completion.
+    curwin->w_valid &= ~(VALID_CROW|VALID_CHEIGHT);
+    validate_cursor();
+}
+
+/*
+ * Return TRUE if we are going to redraw the popup menu and the screen position
+ * "row"/"col" is under the popup menu.
+ */
+    int
+pum_under_menu(int row, int col)
+{
+    return pum_skip_redraw
+	    && row >= pum_row
+	    && row < pum_row + pum_height
+	    && col >= pum_col - 1
+	    && col < pum_col + pum_width;
+}
+
+/*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
     void
@@ -386,7 +409,15 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    /* Never display more than we have */
+    if (call_update_screen)
+    {
+	call_update_screen = FALSE;
+	pum_skip_redraw = TRUE;  // do not redraw in pum_may_redraw().
+	update_screen(0);
+	pum_skip_redraw = FALSE;
+    }
+
+    // never display more than we have
     if (pum_first > pum_size - pum_height)
 	pum_first = pum_size - pum_height;
 
@@ -799,6 +830,7 @@ pum_set_selected(int n, int repeat)
 			pum_do_redraw = TRUE;
 			update_screen(0);
 			pum_do_redraw = FALSE;
+			call_update_screen = FALSE;
 		    }
 		}
 	    }
@@ -854,7 +886,7 @@ pum_may_redraw(void)
     int		len = pum_size;
     int		selected = pum_selected;
 
-    if (!pum_visible())
+    if (!pum_visible() || pum_skip_redraw)
 	return;  // nothing to do
 
     if (pum_window != curwin
@@ -1112,7 +1144,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	    return;
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
-	    char_u *text = get_tv_string_chk(&li->li_tv);
+	    char_u *text = tv_get_string_chk(&li->li_tv);
 
 	    balloon_array[idx].pum_text = vim_strsave(
 					   text == NULL ? (char_u *)"" : text);
@@ -1204,6 +1236,14 @@ pum_show_popupmenu(vimmenu_T *menu)
 	if (menu_is_separator(mp->dname)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
+
+    // When there are only Terminal mode menus, using "popup Edit" results in
+    // pum_size being zero.
+    if (pum_size <= 0)
+    {
+	emsg(e_menuothermode);
+	return;
+    }
 
     array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
     if (array == NULL)

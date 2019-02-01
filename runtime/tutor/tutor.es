@@ -256,7 +256,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
 
   2. Para borrar desde el cursor hasta el final de una línea pulse:	d$
 
-  3. Para borrar una línea enter pulse:    dd
+  3. Para borrar una línea entera pulse:    dd
 
   4. El formato de un mandato en modo Normal es:
 

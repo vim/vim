@@ -42,7 +42,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 myfile.write(received)
 
             response = ''
-            if received.find('README.txt') > 0:
+            if received.find('XREADME.txt') > 0:
                 name = received.split('"')[1]
                 response = '5:putBufferNumber!33 "' + name + '"\n'
                 response += '5:setDot!1 3/19\n'

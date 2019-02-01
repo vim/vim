@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.1.  Last change: 2014 May 24
+*undo.txt*      For Vim version 8.1.  Last change: 2019 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -258,6 +258,12 @@ changed with the 'undodir' option.
 
 When the file is encrypted, the text in the undo file is also crypted.  The
 same key and method is used. |encryption|
+
+Note that text properties are not stored in the undo file.  You can restore
+text properties so long as a buffer is loaded, but you cannot restore them
+from an undo file.  Rationale: It would require the associated text property
+types to be defined in exactly the same was as before, which cannot be
+guaranteed.
 
 You can also save and restore undo histories by using ":wundo" and ":rundo"
 respectively:

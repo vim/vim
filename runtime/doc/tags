@@ -1356,6 +1356,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +terminfo	various.txt	/*+terminfo*
 +termresponse	various.txt	/*+termresponse*
 +textobjects	various.txt	/*+textobjects*
++textprop	various.txt	/*+textprop*
 +tgetent	various.txt	/*+tgetent*
 +timers	various.txt	/*+timers*
 +title	various.txt	/*+title*
@@ -1948,6 +1949,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :AdaTypes	ft_ada.txt	/*:AdaTypes*
 :Arguments	terminal.txt	/*:Arguments*
 :Break	terminal.txt	/*:Break*
+:Cfilter	quickfix.txt	/*:Cfilter*
 :Clear	terminal.txt	/*:Clear*
 :CompilerSet	usr_41.txt	/*:CompilerSet*
 :Continue	terminal.txt	/*:Continue*
@@ -1967,6 +1969,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :LPE	pi_logipat.txt	/*:LPE*
 :LPF	pi_logipat.txt	/*:LPF*
 :Lexplore	pi_netrw.txt	/*:Lexplore*
+:Lfilter	quickfix.txt	/*:Lfilter*
 :LogiPat	pi_logipat.txt	/*:LogiPat*
 :Man	filetype.txt	/*:Man*
 :MkVimball	pi_vimball.txt	/*:MkVimball*
@@ -2235,6 +2238,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cp	quickfix.txt	/*:cp*
 :cpf	quickfix.txt	/*:cpf*
 :cpfile	quickfix.txt	/*:cpfile*
+:cprev	quickfix.txt	/*:cprev*
 :cprevious	quickfix.txt	/*:cprevious*
 :cq	quickfix.txt	/*:cq*
 :cquit	quickfix.txt	/*:cquit*
@@ -2581,6 +2585,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lp	quickfix.txt	/*:lp*
 :lpf	quickfix.txt	/*:lpf*
 :lpfile	quickfix.txt	/*:lpfile*
+:lprev	quickfix.txt	/*:lprev*
 :lprevious	quickfix.txt	/*:lprevious*
 :lr	quickfix.txt	/*:lr*
 :lrewind	quickfix.txt	/*:lrewind*
@@ -2835,6 +2840,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :redraw	various.txt	/*:redraw*
 :redraws	various.txt	/*:redraws*
 :redrawstatus	various.txt	/*:redrawstatus*
+:redrawt	various.txt	/*:redrawt*
+:redrawtabline	various.txt	/*:redrawtabline*
 :reg	change.txt	/*:reg*
 :registers	change.txt	/*:registers*
 :res	windows.txt	/*:res*
@@ -2919,6 +2926,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :scl	change.txt	/*:scl*
 :scp	change.txt	/*:scp*
 :scr	repeat.txt	/*:scr*
+:script	repeat.txt	/*:script*
 :scripte	repeat.txt	/*:scripte*
 :scriptencoding	repeat.txt	/*:scriptencoding*
 :scriptnames	repeat.txt	/*:scriptnames*
@@ -3311,8 +3319,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :write_a	editing.txt	/*:write_a*
 :write_c	editing.txt	/*:write_c*
 :write_f	editing.txt	/*:write_f*
-:ws	workshop.txt	/*:ws*
-:wsverb	workshop.txt	/*:wsverb*
 :wundo	undo.txt	/*:wundo*
 :wv	starting.txt	/*:wv*
 :wviminfo	starting.txt	/*:wviminfo*
@@ -3572,6 +3578,9 @@ Athena	gui_x11.txt	/*Athena*
 B	motion.txt	/*B*
 BeBox	os_beos.txt	/*BeBox*
 BeOS	os_beos.txt	/*BeOS*
+Blob	eval.txt	/*Blob*
+Blobs	eval.txt	/*Blobs*
+Boolean	eval.txt	/*Boolean*
 Bram	intro.txt	/*Bram*
 BufAdd	autocmd.txt	/*BufAdd*
 BufCreate	autocmd.txt	/*BufCreate*
@@ -3715,7 +3724,6 @@ CTRL-\_CTRL-N	intro.txt	/*CTRL-\\_CTRL-N*
 CTRL-]	tagsrch.txt	/*CTRL-]*
 CTRL-^	editing.txt	/*CTRL-^*
 CTRL-{char}	intro.txt	/*CTRL-{char}*
-Cfilter	quickfix.txt	/*Cfilter*
 Channel	eval.txt	/*Channel*
 Channels	eval.txt	/*Channels*
 Chinese	mbyte.txt	/*Chinese*
@@ -3745,6 +3753,7 @@ D	change.txt	/*D*
 DOS	os_dos.txt	/*DOS*
 DOS-format	editing.txt	/*DOS-format*
 DOS-format-write	editing.txt	/*DOS-format-write*
+Dict	eval.txt	/*Dict*
 Dictionaries	eval.txt	/*Dictionaries*
 Dictionary	eval.txt	/*Dictionary*
 Dictionary-function	eval.txt	/*Dictionary-function*
@@ -4125,7 +4134,6 @@ E457	print.txt	/*E457*
 E458	message.txt	/*E458*
 E459	message.txt	/*E459*
 E46	message.txt	/*E46*
-E460	message.txt	/*E460*
 E461	eval.txt	/*E461*
 E462	editing.txt	/*E462*
 E463	netbeans.txt	/*E463*
@@ -4584,7 +4592,10 @@ E892	eval.txt	/*E892*
 E893	eval.txt	/*E893*
 E894	eval.txt	/*E894*
 E895	if_mzsch.txt	/*E895*
+E896	eval.txt	/*E896*
+E897	eval.txt	/*E897*
 E898	channel.txt	/*E898*
+E899	eval.txt	/*E899*
 E90	message.txt	/*E90*
 E901	channel.txt	/*E901*
 E902	channel.txt	/*E902*
@@ -4653,8 +4664,26 @@ E96	diff.txt	/*E96*
 E960	options.txt	/*E960*
 E961	cmdline.txt	/*E961*
 E962	eval.txt	/*E962*
+E963	eval.txt	/*E963*
+E964	eval.txt	/*E964*
+E965	eval.txt	/*E965*
+E966	eval.txt	/*E966*
+E967	textprop.txt	/*E967*
+E968	eval.txt	/*E968*
+E969	eval.txt	/*E969*
 E97	diff.txt	/*E97*
+E970	eval.txt	/*E970*
+E971	textprop.txt	/*E971*
+E972	eval.txt	/*E972*
+E973	eval.txt	/*E973*
+E974	eval.txt	/*E974*
+E975	eval.txt	/*E975*
+E976	eval.txt	/*E976*
+E977	eval.txt	/*E977*
+E978	eval.txt	/*E978*
+E979	eval.txt	/*E979*
 E98	diff.txt	/*E98*
+E980	eval.txt	/*E980*
 E99	diff.txt	/*E99*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -4727,7 +4756,6 @@ KVim	gui_x11.txt	/*KVim*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*
-Lfilter	quickfix.txt	/*Lfilter*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
@@ -4759,8 +4787,11 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NFA	pattern.txt	/*NFA*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
+Neovim	intro.txt	/*Neovim*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
+NetBeans	netbeans.txt	/*NetBeans*
 NetUserPass()	pi_netrw.txt	/*NetUserPass()*
+None	eval.txt	/*None*
 Normal	intro.txt	/*Normal*
 Normal-mode	intro.txt	/*Normal-mode*
 Number	eval.txt	/*Number*
@@ -4868,6 +4899,7 @@ SessionLoadPost	autocmd.txt	/*SessionLoadPost*
 ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
 SourceCmd	autocmd.txt	/*SourceCmd*
+SourcePost	autocmd.txt	/*SourcePost*
 SourcePre	autocmd.txt	/*SourcePre*
 Special	eval.txt	/*Special*
 SpellFileMissing	autocmd.txt	/*SpellFileMissing*
@@ -5270,6 +5302,11 @@ beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 binary-number	eval.txt	/*binary-number*
 bitwise-function	usr_41.txt	/*bitwise-function*
+blob	eval.txt	/*blob*
+blob-identity	eval.txt	/*blob-identity*
+blob-index	eval.txt	/*blob-index*
+blob-literal	eval.txt	/*blob-literal*
+blob-modification	eval.txt	/*blob-modification*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
@@ -5280,6 +5317,7 @@ bold	syntax.txt	/*bold*
 bom-bytes	mbyte.txt	/*bom-bytes*
 book	intro.txt	/*book*
 bookmark	usr_03.txt	/*bookmark*
+books	intro.txt	/*books*
 boolean	options.txt	/*boolean*
 break-finally	eval.txt	/*break-finally*
 browse()	eval.txt	/*browse()*
@@ -5449,6 +5487,7 @@ ch_log()	eval.txt	/*ch_log()*
 ch_logfile()	eval.txt	/*ch_logfile()*
 ch_open()	eval.txt	/*ch_open()*
 ch_read()	eval.txt	/*ch_read()*
+ch_readblob()	eval.txt	/*ch_readblob()*
 ch_readraw()	eval.txt	/*ch_readraw()*
 ch_sendexpr()	eval.txt	/*ch_sendexpr()*
 ch_sendraw()	eval.txt	/*ch_sendraw()*
@@ -6181,6 +6220,7 @@ foldtext()	eval.txt	/*foldtext()*
 foldtextresult()	eval.txt	/*foldtextresult()*
 font-sizes	gui_x11.txt	/*font-sizes*
 fontset	mbyte.txt	/*fontset*
+forced-motion	motion.txt	/*forced-motion*
 foreground()	eval.txt	/*foreground()*
 fork	os_unix.txt	/*fork*
 form.vim	syntax.txt	/*form.vim*
@@ -7328,6 +7368,7 @@ locale	mbyte.txt	/*locale*
 locale-name	mbyte.txt	/*locale-name*
 localtime()	eval.txt	/*localtime()*
 location-list	quickfix.txt	/*location-list*
+location-list-file-window	quickfix.txt	/*location-list-file-window*
 location-list-window	quickfix.txt	/*location-list-window*
 log()	eval.txt	/*log()*
 log10()	eval.txt	/*log10()*
@@ -7573,6 +7614,7 @@ netbeans-protocol	netbeans.txt	/*netbeans-protocol*
 netbeans-run	netbeans.txt	/*netbeans-run*
 netbeans-setup	netbeans.txt	/*netbeans-setup*
 netbeans-support	netbeans.txt	/*netbeans-support*
+netbeans-xpm	netbeans.txt	/*netbeans-xpm*
 netbeans.txt	netbeans.txt	/*netbeans.txt*
 netreadfixup	pi_netrw.txt	/*netreadfixup*
 netrw	pi_netrw.txt	/*netrw*
@@ -8006,6 +8048,7 @@ peace	intro.txt	/*peace*
 penc-option	print.txt	/*penc-option*
 perl	if_perl.txt	/*perl*
 perl-Append	if_perl.txt	/*perl-Append*
+perl-Blob	if_perl.txt	/*perl-Blob*
 perl-Buffer	if_perl.txt	/*perl-Buffer*
 perl-Buffers	if_perl.txt	/*perl-Buffers*
 perl-Count	if_perl.txt	/*perl-Count*
@@ -8114,7 +8157,18 @@ prompt-buffer	channel.txt	/*prompt-buffer*
 prompt_setcallback()	eval.txt	/*prompt_setcallback()*
 prompt_setinterrupt()	eval.txt	/*prompt_setinterrupt()*
 prompt_setprompt()	eval.txt	/*prompt_setprompt()*
+promptbuffer-functions	usr_41.txt	/*promptbuffer-functions*
 pronounce	intro.txt	/*pronounce*
+prop_add()	eval.txt	/*prop_add()*
+prop_clear()	eval.txt	/*prop_clear()*
+prop_find()	eval.txt	/*prop_find()*
+prop_list()	eval.txt	/*prop_list()*
+prop_remove()	eval.txt	/*prop_remove()*
+prop_type_add()	eval.txt	/*prop_type_add()*
+prop_type_change()	eval.txt	/*prop_type_change()*
+prop_type_delete()	eval.txt	/*prop_type_delete()*
+prop_type_get()	eval.txt	/*prop_type_get()*
+prop_type_list()	eval.txt	/*prop_type_list()*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
@@ -8189,6 +8243,7 @@ quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
 quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
+quickfix-index	quickfix.txt	/*quickfix-index*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
@@ -8308,6 +8363,7 @@ rrst.vim	syntax.txt	/*rrst.vim*
 rst.vim	syntax.txt	/*rst.vim*
 rsync	pi_netrw.txt	/*rsync*
 ruby	if_ruby.txt	/*ruby*
+ruby-blob	if_ruby.txt	/*ruby-blob*
 ruby-buffer	if_ruby.txt	/*ruby-buffer*
 ruby-command	if_ruby.txt	/*ruby-command*
 ruby-commands	if_ruby.txt	/*ruby-commands*
@@ -8458,10 +8514,22 @@ shift-left-right	change.txt	/*shift-left-right*
 shiftwidth()	eval.txt	/*shiftwidth()*
 short-name-changed	version4.txt	/*short-name-changed*
 showing-menus	gui.txt	/*showing-menus*
+sign-column	sign.txt	/*sign-column*
 sign-commands	sign.txt	/*sign-commands*
+sign-functions	usr_41.txt	/*sign-functions*
+sign-group	sign.txt	/*sign-group*
+sign-identifier	sign.txt	/*sign-identifier*
 sign-intro	sign.txt	/*sign-intro*
+sign-priority	sign.txt	/*sign-priority*
 sign-support	sign.txt	/*sign-support*
 sign.txt	sign.txt	/*sign.txt*
+sign_define()	eval.txt	/*sign_define()*
+sign_getdefined()	eval.txt	/*sign_getdefined()*
+sign_getplaced()	eval.txt	/*sign_getplaced()*
+sign_jump()	eval.txt	/*sign_jump()*
+sign_place()	eval.txt	/*sign_place()*
+sign_undefine()	eval.txt	/*sign_undefine()*
+sign_unplace()	eval.txt	/*sign_unplace()*
 signs	sign.txt	/*signs*
 simple-change	change.txt	/*simple-change*
 simplify()	eval.txt	/*simplify()*
@@ -8498,6 +8566,7 @@ spell-CHECKCOMPOUNDDUP	spell.txt	/*spell-CHECKCOMPOUNDDUP*
 spell-CHECKCOMPOUNDPATTERN	spell.txt	/*spell-CHECKCOMPOUNDPATTERN*
 spell-CHECKCOMPOUNDREP	spell.txt	/*spell-CHECKCOMPOUNDREP*
 spell-CHECKCOMPOUNDTRIPLE	spell.txt	/*spell-CHECKCOMPOUNDTRIPLE*
+spell-CHECKSHARPS	spell.txt	/*spell-CHECKSHARPS*
 spell-CIRCUMFIX	spell.txt	/*spell-CIRCUMFIX*
 spell-COMMON	spell.txt	/*spell-COMMON*
 spell-COMPLEXPREFIXES	spell.txt	/*spell-COMPLEXPREFIXES*
@@ -8507,6 +8576,7 @@ spell-COMPOUNDEND	spell.txt	/*spell-COMPOUNDEND*
 spell-COMPOUNDFIRST	spell.txt	/*spell-COMPOUNDFIRST*
 spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
 spell-COMPOUNDFORBIDFLAG	spell.txt	/*spell-COMPOUNDFORBIDFLAG*
+spell-COMPOUNDLAST	spell.txt	/*spell-COMPOUNDLAST*
 spell-COMPOUNDMIDDLE	spell.txt	/*spell-COMPOUNDMIDDLE*
 spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
 spell-COMPOUNDPERMITFLAG	spell.txt	/*spell-COMPOUNDPERMITFLAG*
@@ -8810,6 +8880,7 @@ t_ZH	term.txt	/*t_ZH*
 t_ZR	term.txt	/*t_ZR*
 t_al	term.txt	/*t_al*
 t_bc	term.txt	/*t_bc*
+t_blob-variable	eval.txt	/*t_blob-variable*
 t_bool-variable	eval.txt	/*t_bool-variable*
 t_cd	term.txt	/*t_cd*
 t_cdl	version4.txt	/*t_cdl*
@@ -8936,6 +9007,7 @@ tag-binary-search	tagsrch.txt	/*tag-binary-search*
 tag-blocks	motion.txt	/*tag-blocks*
 tag-commands	tagsrch.txt	/*tag-commands*
 tag-details	tagsrch.txt	/*tag-details*
+tag-functions	usr_41.txt	/*tag-functions*
 tag-highlight	syntax.txt	/*tag-highlight*
 tag-matchlist	tagsrch.txt	/*tag-matchlist*
 tag-old-static	tagsrch.txt	/*tag-old-static*
@@ -9100,6 +9172,7 @@ test_autochdir()	eval.txt	/*test_autochdir()*
 test_feedinput()	eval.txt	/*test_feedinput()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
 test_ignore_error()	eval.txt	/*test_ignore_error()*
+test_null_blob()	eval.txt	/*test_null_blob()*
 test_null_channel()	eval.txt	/*test_null_channel()*
 test_null_dict()	eval.txt	/*test_null_dict()*
 test_null_job()	eval.txt	/*test_null_job()*
@@ -9132,7 +9205,12 @@ tex.vim	syntax.txt	/*tex.vim*
 text-functions	usr_41.txt	/*text-functions*
 text-objects	motion.txt	/*text-objects*
 text-objects-changed	version5.txt	/*text-objects-changed*
+text-prop-changes	textprop.txt	/*text-prop-changes*
+text-prop-functions	textprop.txt	/*text-prop-functions*
+text-prop-intro	textprop.txt	/*text-prop-intro*
+text-properties	textprop.txt	/*text-properties*
 textlock	eval.txt	/*textlock*
+textprop.txt	textprop.txt	/*textprop.txt*
 tf.vim	syntax.txt	/*tf.vim*
 this_session-variable	eval.txt	/*this_session-variable*
 throw-catch	eval.txt	/*throw-catch*
@@ -9318,6 +9396,7 @@ v:swapchoice	eval.txt	/*v:swapchoice*
 v:swapcommand	eval.txt	/*v:swapcommand*
 v:swapname	eval.txt	/*v:swapname*
 v:t_TYPE	eval.txt	/*v:t_TYPE*
+v:t_blob	eval.txt	/*v:t_blob*
 v:t_bool	eval.txt	/*v:t_bool*
 v:t_channel	eval.txt	/*v:t_channel*
 v:t_dict	eval.txt	/*v:t_dict*
@@ -9688,12 +9767,7 @@ word-motions	motion.txt	/*word-motions*
 wordcount()	eval.txt	/*wordcount()*
 workbench	starting.txt	/*workbench*
 workshop	workshop.txt	/*workshop*
-workshop-commands	workshop.txt	/*workshop-commands*
-workshop-compiling	workshop.txt	/*workshop-compiling*
-workshop-configure	workshop.txt	/*workshop-configure*
-workshop-intro	workshop.txt	/*workshop-intro*
 workshop-support	workshop.txt	/*workshop-support*
-workshop-xpm	workshop.txt	/*workshop-xpm*
 workshop.txt	workshop.txt	/*workshop.txt*
 wrap-off	intro.txt	/*wrap-off*
 write-compiler-plugin	usr_41.txt	/*write-compiler-plugin*

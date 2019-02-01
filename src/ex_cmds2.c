@@ -143,25 +143,25 @@ do_debug(char_u *cmd)
     debug_mode = TRUE;
 
     if (!debug_did_msg)
-	MSG(_("Entering Debug mode.  Type \"cont\" to continue."));
+	msg(_("Entering Debug mode.  Type \"cont\" to continue."));
     if (debug_oldval != NULL)
     {
-	smsg((char_u *)_("Oldval = \"%s\""), debug_oldval);
+	smsg(_("Oldval = \"%s\""), debug_oldval);
 	vim_free(debug_oldval);
 	debug_oldval = NULL;
     }
     if (debug_newval != NULL)
     {
-	smsg((char_u *)_("Newval = \"%s\""), debug_newval);
+	smsg(_("Newval = \"%s\""), debug_newval);
 	vim_free(debug_newval);
 	debug_newval = NULL;
     }
     if (sourcing_name != NULL)
-	msg(sourcing_name);
+	msg((char *)sourcing_name);
     if (sourcing_lnum != 0)
-	smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
+	smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
-	smsg((char_u *)_("cmd: %s"), cmd);
+	smsg(_("cmd: %s"), cmd);
     /*
      * Repeat getting a command and executing it.
      */
@@ -390,7 +390,7 @@ do_checkbacktracelevel(void)
     if (debug_backtrace_level < 0)
     {
 	debug_backtrace_level = 0;
-	MSG(_("frame is zero"));
+	msg(_("frame is zero"));
     }
     else
     {
@@ -399,7 +399,7 @@ do_checkbacktracelevel(void)
 	if (debug_backtrace_level > max)
 	{
 	    debug_backtrace_level = max;
-	    smsg((char_u *)_("frame at highest level: %d"), max);
+	    smsg(_("frame at highest level: %d"), max);
 	}
     }
 }
@@ -421,9 +421,9 @@ do_showbacktrace(char_u *cmd)
 	    if (next != NULL)
 		*next = NUL;
 	    if (i == max - debug_backtrace_level)
-		smsg((char_u *)"->%d %s", max - i, cur);
+		smsg("->%d %s", max - i, cur);
 	    else
-		smsg((char_u *)"  %d %s", max - i, cur);
+		smsg("  %d %s", max - i, cur);
 	    ++i;
 	    if (next == NULL)
 		break;
@@ -432,9 +432,9 @@ do_showbacktrace(char_u *cmd)
 	}
     }
     if (sourcing_lnum != 0)
-       smsg((char_u *)_("line %ld: %s"), (long)sourcing_lnum, cmd);
+       smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
-       smsg((char_u *)_("cmd: %s"), cmd);
+       smsg(_("cmd: %s"), cmd);
 }
 
 /*
@@ -487,7 +487,7 @@ dbg_check_breakpoint(exarg_T *eap)
 		p = (char_u *)"<SNR>";
 	    else
 		p = (char_u *)"";
-	    smsg((char_u *)_("Breakpoint in \"%s%s\" line %ld"),
+	    smsg(_("Breakpoint in \"%s%s\" line %ld"),
 		    p,
 		    debug_breakpoint_name + (*p == NUL ? 0 : 3),
 		    (long)debug_breakpoint_lnum);
@@ -607,7 +607,7 @@ dbg_parsearg(
     {
 	if (curbuf->b_ffname == NULL)
 	{
-	    EMSG(_(e_noname));
+	    emsg(_(e_noname));
 	    return FAIL;
 	}
 	bp->dbg_type = DBG_FILE;
@@ -621,7 +621,7 @@ dbg_parsearg(
 	bp->dbg_type = DBG_EXPR;
     else
     {
-	EMSG2(_(e_invarg2), p);
+	semsg(_(e_invarg2), p);
 	return FAIL;
     }
     p = skipwhite(p + 4);
@@ -646,7 +646,7 @@ dbg_parsearg(
 	    || (here && *p != NUL)
 	    || (bp->dbg_type == DBG_FUNC && strstr((char *)p, "()") != NULL))
     {
-	EMSG2(_(e_invarg2), arg);
+	semsg(_(e_invarg2), arg);
 	return FAIL;
     }
 
@@ -817,7 +817,7 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	EMSG2(_("E161: Breakpoint not found: %s"), eap->arg);
+	semsg(_("E161: Breakpoint not found: %s"), eap->arg);
     else
     {
 	while (gap->ga_len > 0)
@@ -857,7 +857,7 @@ ex_breaklist(exarg_T *eap UNUSED)
     int		i;
 
     if (dbg_breakp.ga_len == 0)
-	MSG(_("No breakpoints defined"));
+	msg(_("No breakpoints defined"));
     else
 	for (i = 0; i < dbg_breakp.ga_len; ++i)
 	{
@@ -865,13 +865,13 @@ ex_breaklist(exarg_T *eap UNUSED)
 	    if (bp->dbg_type == DBG_FILE)
 		home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
 	    if (bp->dbg_type != DBG_EXPR)
-		smsg((char_u *)_("%3d  %s %s  line %ld"),
+		smsg(_("%3d  %s %s  line %ld"),
 		    bp->dbg_nr,
 		    bp->dbg_type == DBG_FUNC ? "func" : "file",
 		    bp->dbg_type == DBG_FUNC ? bp->dbg_name : NameBuff,
 		    (long)bp->dbg_lnum);
 	    else
-		smsg((char_u *)_("%3d  expr %s"),
+		smsg(_("%3d  expr %s"),
 		    bp->dbg_nr, bp->dbg_name);
 	}
 }
@@ -1578,7 +1578,7 @@ timer_free_all()
 #  endif
 # endif
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT) && defined(FEAT_PROFILE)
 # if defined(HAVE_MATH_H)
 #  include <math.h>
 # endif
@@ -1726,7 +1726,7 @@ ex_profile(exarg_T *eap)
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
     else if (do_profiling == PROF_NONE)
-	EMSG(_("E750: First use \":profile start {fname}\""));
+	emsg(_("E750: First use \":profile start {fname}\""));
     else if (STRCMP(eap->arg, "pause") == 0)
     {
 	if (do_profiling == PROF_YES)
@@ -1828,7 +1828,7 @@ profile_dump(void)
     {
 	fd = mch_fopen((char *)profile_fname, "w");
 	if (fd == NULL)
-	    EMSG2(_(e_notopen), profile_fname);
+	    semsg(_(e_notopen), profile_fname);
 	else
 	{
 	    script_dump_profile(fd);
@@ -1957,7 +1957,7 @@ script_dump_profile(FILE *fd)
 		    if (IObuff[IOSIZE - 2] != NUL && IObuff[IOSIZE - 2] != NL)
 		    {
 			int n = IOSIZE - 2;
-# ifdef FEAT_MBYTE
+
 			if (enc_utf8)
 			{
 			    /* Move to the first byte of this char.
@@ -1968,7 +1968,6 @@ script_dump_profile(FILE *fd)
 			}
 			else if (has_mbyte)
 			    n -= mb_head_off(IObuff, IObuff + n);
-# endif
 			IObuff[n] = NL;
 			IObuff[n + 1] = NUL;
 		    }
@@ -2357,11 +2356,11 @@ check_changed_any(
 	if (
 #ifdef FEAT_TERMINAL
 		term_job_running(buf->b_term)
-		    ? EMSG2(_("E947: Job still running in buffer \"%s\""),
+		    ? semsg(_("E947: Job still running in buffer \"%s\""),
 								  buf->b_fname)
 		    :
 #endif
-		EMSG2(_("E162: No write since last change for buffer \"%s\""),
+		semsg(_("E162: No write since last change for buffer \"%s\""),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname))
 	{
 	    save = no_wait_return;
@@ -2407,7 +2406,7 @@ check_fname(void)
 {
     if (curbuf->b_ffname == NULL)
     {
-	EMSG(_(e_noname));
+	emsg(_(e_noname));
 	return FAIL;
     }
     return OK;
@@ -2430,7 +2429,7 @@ buf_write_all(buf_T *buf, int forceit)
     if (curbuf != old_curbuf)
     {
 	msg_source(HL_ATTR(HLF_W));
-	MSG(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
+	msg(_("Warning: Entered other buffer unexpectedly (check autocommands)"));
     }
     return retval;
 }
@@ -2629,7 +2628,7 @@ do_arglist(
 	    vim_regfree(regmatch.regprog);
 	    vim_free(p);
 	    if (!didone)
-		EMSG2(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);
+		semsg(_(e_nomatch2), ((char_u **)new_ga.ga_data)[i]);
 	}
 	ga_clear(&new_ga);
     }
@@ -2640,7 +2639,7 @@ do_arglist(
 	ga_clear(&new_ga);
 	if (i == FAIL || exp_count == 0)
 	{
-	    EMSG(_(e_nomatch));
+	    emsg(_(e_nomatch));
 	    return FAIL;
 	}
 
@@ -2738,7 +2737,7 @@ ex_args(exarg_T *eap)
 	    alist_new();
     }
 
-    if (!ends_excmd(*eap->arg))
+    if (*eap->arg != NUL)
     {
 	/*
 	 * ":args file ..": define new argument list, handle like ":next"
@@ -2847,11 +2846,11 @@ do_argfile(exarg_T *eap, int argn)
     if (argn < 0 || argn >= ARGCOUNT)
     {
 	if (ARGCOUNT <= 1)
-	    EMSG(_("E163: There is only one file to edit"));
+	    emsg(_("E163: There is only one file to edit"));
 	else if (argn < 0)
-	    EMSG(_("E164: Cannot go before first file"));
+	    emsg(_("E164: Cannot go before first file"));
 	else
-	    EMSG(_("E165: Cannot go beyond last file"));
+	    emsg(_("E165: Cannot go beyond last file"));
     }
     else
     {
@@ -2992,12 +2991,12 @@ ex_argdelete(exarg_T *eap)
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
 	    /* Can't have both a range and an argument. */
-	    EMSG(_(e_invarg));
+	    emsg(_(e_invarg));
 	else if (n <= 0)
 	{
 	    /* Don't give an error for ":%argdel" if the list is empty. */
 	    if (eap->line1 != 1 || eap->line2 != 0)
-		EMSG(_(e_invrange));
+		emsg(_(e_invrange));
 	}
 	else
 	{
@@ -3017,7 +3016,7 @@ ex_argdelete(exarg_T *eap)
 	}
     }
     else if (*eap->arg == NUL)
-	EMSG(_(e_argreq));
+	emsg(_(e_argreq));
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
 #ifdef FEAT_TITLE
@@ -3364,7 +3363,7 @@ ex_compiler(exarg_T *eap)
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
 	    if (source_runtime(buf, DIP_ALL) == FAIL)
-		EMSG2(_("E666: compiler not supported: %s"), eap->arg);
+		semsg(_("E666: compiler not supported: %s"), eap->arg);
 	    vim_free(buf);
 
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");
@@ -3476,7 +3475,7 @@ do_in_path(
 	if (p_verbose > 1 && name != NULL)
 	{
 	    verbose_enter();
-	    smsg((char_u *)_("Searching for \"%s\" in \"%s\""),
+	    smsg(_("Searching for \"%s\" in \"%s\""),
 						 (char *)name, (char *)path);
 	    verbose_leave();
 	}
@@ -3524,7 +3523,7 @@ do_in_path(
 		    if (p_verbose > 2)
 		    {
 			verbose_enter();
-			smsg((char_u *)_("Searching for \"%s\""), buf);
+			smsg(_("Searching for \"%s\""), buf);
 			verbose_leave();
 		    }
 
@@ -3552,11 +3551,11 @@ do_in_path(
 	char *basepath = path == p_rtp ? "runtimepath" : "packpath";
 
 	if (flags & DIP_ERR)
-	    EMSG3(_(e_dirnotf), basepath, name);
+	    semsg(_(e_dirnotf), basepath, name);
 	else if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    smsg((char_u *)_("not found in '%s': \"%s\""), basepath, name);
+	    smsg(_("not found in '%s': \"%s\""), basepath, name);
 	    verbose_leave();
 	}
     }
@@ -4112,7 +4111,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W20: Required python version 2.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
@@ -4124,7 +4123,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		_("W21: Required python version 3.x not supported, ignoring file: %s"),
 		fname);
-	MSG(IObuff);
+	msg((char *)IObuff);
 # endif
 	return;
     }
@@ -4208,7 +4207,7 @@ ex_source(exarg_T *eap)
 cmd_source(char_u *fname, exarg_T *eap)
 {
     if (*fname == NUL)
-	EMSG(_(e_argreq));
+	emsg(_(e_argreq));
 
     else if (eap != NULL && eap->forceit)
 	/* ":source!": read Normal mode commands
@@ -4227,7 +4226,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 
     /* ":source" read ex commands */
     else if (do_source(fname, FALSE, DOSO_NONE) == FAIL)
-	EMSG2(_(e_notopen), fname);
+	semsg(_(e_notopen), fname);
 }
 
 /*
@@ -4254,9 +4253,7 @@ struct source_cookie
     int		dbg_tick;	/* debug_tick when breakpoint was set */
     int		level;		/* top nesting level of sourced file */
 #endif
-#ifdef FEAT_MBYTE
     vimconv_T	conv;		/* type of conversion */
-#endif
 };
 
 #ifdef FEAT_EVAL
@@ -4360,6 +4357,7 @@ do_source(
 #ifdef FEAT_PROFILE
     proftime_T		    wait_start;
 #endif
+    int			    trigger_source_post = FALSE;
 
     p = expand_env_save(fname);
     if (p == NULL)
@@ -4370,7 +4368,7 @@ do_source(
 	return retval;
     if (mch_isdir(fname_exp))
     {
-	smsg((char_u *)_("Cannot source a directory: \"%s\""), fname);
+	smsg(_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
 
@@ -4384,6 +4382,10 @@ do_source(
 #else
 	retval = OK;
 #endif
+	if (retval == OK)
+	    // Apply SourcePost autocommands.
+	    apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp,
+								FALSE, curbuf);
 	goto theend;
     }
 
@@ -4425,9 +4427,9 @@ do_source(
 	{
 	    verbose_enter();
 	    if (sourcing_name == NULL)
-		smsg((char_u *)_("could not source \"%s\""), fname);
+		smsg(_("could not source \"%s\""), fname);
 	    else
-		smsg((char_u *)_("line %ld: could not source \"%s\""),
+		smsg(_("line %ld: could not source \"%s\""),
 							sourcing_lnum, fname);
 	    verbose_leave();
 	}
@@ -4443,9 +4445,9 @@ do_source(
     {
 	verbose_enter();
 	if (sourcing_name == NULL)
-	    smsg((char_u *)_("sourcing \"%s\""), fname);
+	    smsg(_("sourcing \"%s\""), fname);
 	else
-	    smsg((char_u *)_("line %ld: sourcing \"%s\""),
+	    smsg(_("line %ld: sourcing \"%s\""),
 							sourcing_lnum, fname);
 	verbose_leave();
     }
@@ -4551,7 +4553,7 @@ do_source(
 	}
 	si = &SCRIPT_ITEM(current_sctx.sc_sid);
 	si->sn_name = fname_exp;
-	fname_exp = NULL;
+	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 # ifdef UNIX
 	if (stat_ok)
 	{
@@ -4588,7 +4590,6 @@ do_source(
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
     cookie.conv.vc_type = CONV_NONE;		/* no conversion */
 
     /* Read the first line so we can check for a UTF-8 BOM. */
@@ -4607,7 +4608,6 @@ do_source(
 	    firstline = p;
 	}
     }
-#endif
 
     /*
      * Call do_cmdline, which will call getsourceline() to get the lines.
@@ -4633,15 +4633,15 @@ do_source(
 #endif
 
     if (got_int)
-	EMSG(_(e_interr));
+	emsg(_(e_interr));
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
     if (p_verbose > 1)
     {
 	verbose_enter();
-	smsg((char_u *)_("finished sourcing %s"), fname);
+	smsg(_("finished sourcing %s"), fname);
 	if (sourcing_name != NULL)
-	    smsg((char_u *)_("continuing in %s"), sourcing_name);
+	    smsg(_("continuing in %s"), sourcing_name);
 	verbose_leave();
     }
 #ifdef STARTUPTIME
@@ -4652,6 +4652,9 @@ do_source(
 	time_pop(&tv_rel);
     }
 #endif
+
+    if (!got_int)
+	trigger_source_post = TRUE;
 
 #ifdef FEAT_EVAL
     /*
@@ -4675,9 +4678,10 @@ almosttheend:
     fclose(cookie.fp);
     vim_free(cookie.nextline);
     vim_free(firstline);
-#ifdef FEAT_MBYTE
     convert_setup(&cookie.conv, NULL, NULL);
-#endif
+
+    if (trigger_source_post)
+	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
     vim_free(fname_exp);
@@ -4690,16 +4694,29 @@ theend:
  * ":scriptnames"
  */
     void
-ex_scriptnames(exarg_T *eap UNUSED)
+ex_scriptnames(exarg_T *eap)
 {
     int i;
+
+    if (eap->addr_count > 0)
+    {
+	// :script {scriptId}: edit the script
+	if (eap->line2 < 1 || eap->line2 > script_items.ga_len)
+	    emsg(_(e_invarg));
+	else
+	{
+	    eap->arg = SCRIPT_ITEM(eap->line2).sn_name;
+	    do_exedit(eap, NULL);
+	}
+	return;
+    }
 
     for (i = 1; i <= script_items.ga_len && !got_int; ++i)
 	if (SCRIPT_ITEM(i).sn_name != NULL)
 	{
 	    home_replace(NULL, SCRIPT_ITEM(i).sn_name,
 						    NameBuff, MAXPATHL, TRUE);
-	    smsg((char_u *)"%3d: %s", i, NameBuff);
+	    smsg("%3d: %s", i, NameBuff);
 	}
 }
 
@@ -4900,7 +4917,6 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	}
     }
 
-#ifdef FEAT_MBYTE
     if (line != NULL && sp->conv.vc_type != CONV_NONE)
     {
 	char_u	*s;
@@ -4913,7 +4929,6 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	    line = s;
 	}
     }
-#endif
 
 #ifdef FEAT_EVAL
     /* Did we encounter a breakpoint? */
@@ -5043,7 +5058,7 @@ get_one_sourceline(struct source_cookie *sp)
 		    if (!sp->error)
 		    {
 			msg_source(HL_ATTR(HLF_W));
-			EMSG(_("W15: Warning: Wrong line separator, ^M may be missing"));
+			emsg(_("W15: Warning: Wrong line separator, ^M may be missing"));
 		    }
 		    sp->error = TRUE;
 		    sp->fileformat = EOL_UNIX;
@@ -5170,13 +5185,12 @@ script_line_end(void)
     void
 ex_scriptencoding(exarg_T *eap UNUSED)
 {
-#ifdef FEAT_MBYTE
     struct source_cookie	*sp;
     char_u			*name;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	EMSG(_("E167: :scriptencoding used outside of a sourced file"));
+	emsg(_("E167: :scriptencoding used outside of a sourced file"));
 	return;
     }
 
@@ -5195,7 +5209,6 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 
     if (name != eap->arg)
 	vim_free(name);
-#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -5208,7 +5221,7 @@ ex_finish(exarg_T *eap)
     if (getline_equal(eap->getline, eap->cookie, getsourceline))
 	do_finish(eap, FALSE);
     else
-	EMSG(_("E168: :finish used outside of a sourced file"));
+	emsg(_("E168: :finish used outside of a sourced file"));
 }
 
 /*
@@ -5408,7 +5421,6 @@ get_mess_lang(void)
 #if (defined(FEAT_EVAL) && !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	    && defined(LC_MESSAGES))) \
 	|| ((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-		&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE)) \
 		&& !defined(LC_MESSAGES))
 /*
  * Get the language used for messages from the environment.
@@ -5472,8 +5484,7 @@ set_lang_var(void)
 }
 #endif
 
-#if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
-	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE) \
 /*
  * ":language":  Set the language (locale).
  */
@@ -5529,7 +5540,7 @@ ex_language(exarg_T *eap)
 	    p = (char_u *)setlocale(what, NULL);
 	if (p == NULL || *p == NUL)
 	    p = (char_u *)"Unknown";
-	smsg((char_u *)_("Current %slanguage: \"%s\""), whatstr, p);
+	smsg(_("Current %slanguage: \"%s\""), whatstr, p);
     }
     else
     {
@@ -5546,7 +5557,7 @@ ex_language(exarg_T *eap)
 #endif
 	}
 	if (loc == NULL)
-	    EMSG2(_("E197: Cannot set language to \"%s\""), name);
+	    semsg(_("E197: Cannot set language to \"%s\""), name);
 	else
 	{
 #ifdef HAVE_NL_MSG_CAT_CNTR

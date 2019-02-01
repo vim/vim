@@ -21,7 +21,6 @@
 /* This file has to be included because the tested functions are static */
 #include "charset.c"
 
-#ifdef FEAT_MBYTE
 /*
  * Test the results of vim_iswordc() and vim_iswordp() are matched.
  */
@@ -73,13 +72,10 @@ test_isword_funcs_utf8(void)
 	}
     }
 }
-#endif
 
     int
 main(void)
 {
-#ifdef FEAT_MBYTE
     test_isword_funcs_utf8();
-#endif
     return 0;
 }

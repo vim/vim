@@ -21,30 +21,23 @@ typedef unsigned short	short_u;
 #endif
 
 /*
- * position in file or buffer
+ * Position in file or buffer.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
-#ifdef FEAT_VIRTUALEDIT
-    colnr_T	coladd;
-#endif
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
+    colnr_T	coladd; // extra virtual column
 } pos_T;
 
-#ifdef FEAT_VIRTUALEDIT
-# define INIT_POS_T(l, c, ca) {l, c, ca}
-#else
-# define INIT_POS_T(l, c, ca) {l, c}
-#endif
 
 /*
  * Same, but without coladd.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
 } lpos_T;
 
 /*
@@ -347,6 +340,14 @@ typedef struct
  * structures used for undo
  */
 
+// One line saved for undo.  After the NUL terminated text there might be text
+// properties, thus ul_len can be larger than STRLEN(ul_line) + 1.
+typedef struct {
+    char_u	*ul_line;	// text of the line
+    long	ul_len;		// length of the line including NUL, plus text
+				// properties
+} undoline_T;
+
 typedef struct u_entry u_entry_T;
 typedef struct u_header u_header_T;
 struct u_entry
@@ -355,7 +356,7 @@ struct u_entry
     linenr_T	ue_top;		/* number of line above undo block */
     linenr_T	ue_bot;		/* number of line below undo block */
     linenr_T	ue_lcount;	/* linecount when u_save called */
-    char_u	**ue_array;	/* array of lines in undo block */
+    undoline_T	*ue_array;	/* array of lines in undo block */
     long	ue_size;	/* number of lines in ue_array */
 #ifdef U_DEBUG
     int		ue_magic;	/* magic number to check allocation */
@@ -387,9 +388,7 @@ struct u_header
     u_entry_T	*uh_entry;	/* pointer to first entry */
     u_entry_T	*uh_getbot_entry; /* pointer to where ue_bot must be set */
     pos_T	uh_cursor;	/* cursor position before saving */
-#ifdef FEAT_VIRTUALEDIT
     long	uh_cursor_vcol;
-#endif
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
@@ -408,12 +407,8 @@ struct u_header
 /*
  * structures used in undo.c
  */
-#if VIM_SIZEOF_INT > 2
-# define ALIGN_LONG	/* longword alignment and use filler byte */
-# define ALIGN_SIZE (sizeof(long))
-#else
-# define ALIGN_SIZE (sizeof(short))
-#endif
+#define ALIGN_LONG	/* longword alignment and use filler byte */
+#define ALIGN_SIZE (sizeof(long))
 
 #define ALIGN_MASK (ALIGN_SIZE - 1)
 
@@ -684,6 +679,7 @@ typedef struct memline
 
     linenr_T	ml_line_lnum;	/* line number of cached line, 0 if not valid */
     char_u	*ml_line_ptr;	/* pointer to cached line */
+    colnr_T	ml_line_len;	/* length of the cached line, including NUL */
 
     bhdr_T	*ml_locked;	/* block used by last ml_get */
     linenr_T	ml_locked_low;	/* first line in ml_locked */
@@ -696,7 +692,48 @@ typedef struct memline
 #endif
 } memline_T;
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+
+/*
+ * Structure defining text properties.  These stick with the text.
+ * When stored in memline they are after the text, ml_line_len is larger than
+ * STRLEN(ml_line_ptr) + 1.
+ */
+typedef struct textprop_S
+{
+    colnr_T	tp_col;		// start column (one based, in bytes)
+    colnr_T	tp_len;		// length in bytes
+    int		tp_id;		// identifier
+    int		tp_type;	// property type
+    int		tp_flags;	// TP_FLAG_ values
+} textprop_T;
+
+#define TP_FLAG_CONT_NEXT	1	// property continues in next line
+#define TP_FLAG_CONT_PREV	2	// property was continued from prev line
+
+/*
+ * Structure defining a property type.
+ */
+typedef struct proptype_S
+{
+    int		pt_id;		// value used for tp_id
+    int		pt_type;	// number used for tp_type
+    int		pt_hl_id;	// highlighting
+    int		pt_priority;	// priority
+    int		pt_flags;	// PT_FLAG_ values
+    char_u	pt_name[1];	// property type name, actually longer
+} proptype_T;
+
+#define PT_FLAG_INS_START_INCL	1	// insert at start included in property
+#define PT_FLAG_INS_END_INCL	2	// insert at end included in property
+
+// Sign group
+typedef struct signgroup_S
+{
+    short_u	refcount;		// number of signs in this group
+    int		next_sign_id;		// next sign id for this group
+    char_u	sg_name[1];		// sign group name
+} signgroup_T;
+
 typedef struct signlist signlist_T;
 
 struct signlist
@@ -704,9 +741,19 @@ struct signlist
     int		id;		/* unique identifier for each placed sign */
     linenr_T	lnum;		/* line number which has this sign */
     int		typenr;		/* typenr of sign */
+    signgroup_T	*group;		/* sign group */
+    int		priority;	/* priority for highlighting */
     signlist_T	*next;		/* next signlist entry */
     signlist_T  *prev;		/* previous entry -- for easy reordering */
 };
+
+#if defined(FEAT_SIGNS) || defined(PROTO)
+// Macros to get the sign group structure from the group name
+#define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
+#define HI2SG(hi)	((signgroup_T *)((hi)->hi_key - SGN_KEY_OFF))
+
+// Default sign priority for highlighting
+#define SIGN_DEF_PRIO	10
 
 /* type argument for buf_getsigntype() */
 #define SIGN_ANY	0
@@ -829,8 +876,8 @@ struct condstack
  */
 struct msglist
 {
-    char_u		*msg;		/* original message */
-    char_u		*throw_msg;	/* msg to throw: usually original one */
+    char		*msg;		/* original message */
+    char		*throw_msg;	/* msg to throw: usually original one */
     struct msglist	*next;		/* next of several messages in a row */
 };
 
@@ -852,7 +899,7 @@ typedef struct vim_exception except_T;
 struct vim_exception
 {
     except_type_T	type;		/* exception type */
-    char_u		*value;		/* exception value */
+    char		*value;		/* exception value */
     struct msglist	*messages;	/* message(s) causing error exception */
     char_u		*throw_name;	/* name of the throw point */
     linenr_T		throw_lnum;	/* line number of the throw point */
@@ -1043,9 +1090,7 @@ typedef struct
 {
     char_u	*vir_line;	/* text of the current line */
     FILE	*vir_fd;	/* file descriptor */
-#ifdef FEAT_MBYTE
     vimconv_T	vir_conv;	/* encoding conversion */
-#endif
     int		vir_version;	/* viminfo version detected or -1 */
     garray_T	vir_barlines;	/* lines starting with | */
 } vir_T;
@@ -1171,19 +1216,11 @@ typedef unsigned long	    uvarnumber_T;
 # endif
 #else
 /* Use 32-bit Number. */
-# if VIM_SIZEOF_INT <= 3	/* use long if int is smaller than 32 bits */
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#define VARNUM_MIN	    LONG_MIN
-#define VARNUM_MAX	    LONG_MAX
-#define UVARNUM_MAX	    ULONG_MAX
-# else
 typedef int		    varnumber_T;
 typedef unsigned int	    uvarnumber_T;
 #define VARNUM_MIN	    INT_MIN
 #define VARNUM_MAX	    INT_MAX
 #define UVARNUM_MAX	    UINT_MAX
-# endif
 #endif
 
 typedef double	float_T;
@@ -1349,9 +1386,14 @@ struct dictvar_S
  */
 struct blobvar_S
 {
+<<<<<<< HEAD
     garray_T	bv_ga;		// growarray
     int		bv_refcount;	// reference count
     int		bv_cap;		// capacity of buffer
+=======
+    garray_T	bv_ga;		// growarray with the data
+    int		bv_refcount;	// reference count
+>>>>>>> master
     char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
@@ -1514,7 +1556,10 @@ struct jobvar_S
     char_u	*jv_tty_in;	/* controlling tty input, allocated */
     char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
-    char_u	*jv_stoponexit; /* allocated */
+    char_u	*jv_stoponexit;	/* allocated */
+#ifdef UNIX
+    char_u	*jv_termsig;	/* allocated */
+#endif
     int		jv_exitval;
     char_u	*jv_exit_cb;	/* allocated */
     partial_T	*jv_exit_partial;
@@ -1882,6 +1927,10 @@ typedef struct {
 # define CRYPT_M_BF	1
 # define CRYPT_M_BF2	2
 # define CRYPT_M_COUNT	3 /* number of crypt methods */
+
+// Currently all crypt methods work inplace.  If one is added that isn't then
+// define this.
+//  # define CRYPT_NOT_INPLACE 1
 #endif
 
 
@@ -1951,16 +2000,12 @@ typedef struct {
     /* for spell checking */
     garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
     char_u	b_spell_ismw[256];/* flags: is midword char */
-# ifdef FEAT_MBYTE
     char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
-# endif
     char_u	*b_p_spc;	/* 'spellcapcheck' */
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
-# ifdef FEAT_MBYTE
     int		b_cjk;		/* all CJK letters as OK */
-# endif
 #endif
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
     int		dummy;
@@ -2130,7 +2175,7 @@ struct file_buffer
     /*
      * variables for "U" command in undo.c
      */
-    char_u	*b_u_line_ptr;	/* saved line for "U" command */
+    undoline_T	b_u_line_ptr;	/* saved line for "U" command */
     linenr_T	b_u_line_lnum;	/* line number of line in u_line */
     colnr_T	b_u_line_colnr;	/* optional column number */
 
@@ -2171,9 +2216,7 @@ struct file_buffer
     unsigned	b_bkc_flags;    /* flags for 'backupcopy' */
     int		b_p_ci;		/* 'copyindent' */
     int		b_p_bin;	/* 'binary' */
-#ifdef FEAT_MBYTE
     int		b_p_bomb;	/* 'bomb' */
-#endif
     char_u	*b_p_bh;	/* 'bufhidden' */
     char_u	*b_p_bt;	/* 'buftype' */
 #ifdef FEAT_QUICKFIX
@@ -2208,9 +2251,7 @@ struct file_buffer
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
     int	        b_p_et_nopaste; /* b_p_et saved for paste mode */
-#ifdef FEAT_MBYTE
     char_u	*b_p_fenc;	/* 'fileencoding' */
-#endif
     char_u	*b_p_ff;	/* 'fileformat' */
     char_u	*b_p_ft;	/* 'filetype' */
     char_u	*b_p_fo;	/* 'formatoptions' */
@@ -2242,9 +2283,7 @@ struct file_buffer
 #ifdef FEAT_LISP
     int		b_p_lisp;	/* 'lisp' */
 #endif
-#ifdef FEAT_MBYTE
     char_u	*b_p_menc;	/* 'makeencoding' */
-#endif
     char_u	*b_p_mps;	/* 'matchpairs' */
     int		b_p_ml;		/* 'modeline' */
     int		b_p_ml_nobin;	/* b_p_ml saved for binary mode */
@@ -2363,15 +2402,17 @@ struct file_buffer
 
     int		b_start_eol;	/* last line had eol when it was read */
     int		b_start_ffc;	/* first char of 'ff' when edit started */
-#ifdef FEAT_MBYTE
     char_u	*b_start_fenc;	/* 'fileencoding' when edit started or NULL */
     int		b_bad_char;	/* "++bad=" argument when edit started or 0 */
     int		b_start_bomb;	/* 'bomb' when it was read */
-#endif
 
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
     dict_T	*b_vars;	/* internal variables, local to buffer */
+#endif
+#ifdef FEAT_TEXT_PROP
+    int		b_has_textprop;	// TRUE when text props were added
+    hashtab_T	*b_proptypes;	// text property types local to buffer
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
@@ -2898,6 +2939,8 @@ struct window_S
     int		w_p_brishift;	    /* additional shift for breakindent */
     int		w_p_brisbr;	    /* sbr in 'briopt' */
 #endif
+    long        w_p_siso;           /* 'sidescrolloff' local value */
+    long        w_p_so;             /* 'scrolloff' local value */
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
@@ -3041,10 +3084,8 @@ typedef struct cmdarg_S
     int		prechar;	/* prefix character (optional, always 'g') */
     int		cmdchar;	/* command character */
     int		nchar;		/* next command character (optional) */
-#ifdef FEAT_MBYTE
     int		ncharC1;	/* first composing character (optional) */
     int		ncharC2;	/* second composing character (optional) */
-#endif
     int		extra_char;	/* yet another character (optional) */
     long	opcount;	/* count before an operator */
     long	count0;		/* count before command, default 0 */
@@ -3223,6 +3264,7 @@ typedef struct
     int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
+    win_T	*save_prevwin;	/* saved prevwin */
     bufref_T	new_curbuf;	/* new curbuf */
     char_u	*globaldir;	/* saved value of globaldir */
 } aco_save_T;

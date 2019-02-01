@@ -139,7 +139,7 @@ func Test_list_func_remove()
   call assert_fails("call remove(l, 5)", 'E684:')
   call assert_fails("call remove(l, 1, 5)", 'E684:')
   call assert_fails("call remove(l, 3, 2)", 'E16:')
-  call assert_fails("call remove(1, 0)", 'E712:')
+  call assert_fails("call remove(1, 0)", 'E896:')
   call assert_fails("call remove(l, l)", 'E745:')
 endfunc
 
@@ -499,19 +499,19 @@ func Test_dict_lock_extend()
 endfunc
 
 " No remove() of write-protected scope-level variable
-func! Tfunc(this_is_a_long_parameter_name)
+func Tfunc1(this_is_a_long_parameter_name)
   call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E795')
-endfun
+endfunc
 func Test_dict_scope_var_remove()
-  call Tfunc('testval')
+  call Tfunc1('testval')
 endfunc
 
 " No extend() of write-protected scope-level variable
-func! Tfunc(this_is_a_long_parameter_name)
+func Tfunc2(this_is_a_long_parameter_name)
   call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
 endfunc
 func Test_dict_scope_var_extend()
-  call Tfunc('testval')
+  call Tfunc2('testval')
 endfunc
 
 " No :unlet of variable in locked scope
@@ -596,6 +596,8 @@ func Test_reverse_sort_uniq()
   call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 1))
   call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
   call assert_equal(['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l)))
+
+  call assert_fails('call reverse("")', 'E899:')
 endfunc
 
 " splitting a string to a List

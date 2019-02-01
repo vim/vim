@@ -217,6 +217,15 @@ func Test_list_arguments()
   %argdelete
 endfunc
 
+func Test_args_with_quote()
+  " Only on Unix can a file name include a double quote.
+  if has('unix')
+    args \"foobar
+    call assert_equal('"foobar', argv(0))
+    %argdelete
+  endif
+endfunc
+
 " Test for 0argadd and 0argedit
 " Ported from the test_argument_0count.in test script
 func Test_zero_argadd()
@@ -393,6 +402,18 @@ func Test_argdelete()
   call assert_equal(['b'], argv())
   call assert_fails('argdelete', 'E471:')
   call assert_fails('1,100argdelete', 'E16:')
+  %argd
+endfunc
+
+func Test_argdelete_completion()
+  args foo bar
+
+  call feedkeys(":argdelete \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"argdelete bar foo', @:)
+
+  call feedkeys(":argdelete x \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"argdelete x bar foo', @:)
+
   %argd
 endfunc
 

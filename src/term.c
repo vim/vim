@@ -92,7 +92,7 @@ static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
 #ifdef HAVE_TGETENT
-static char_u *tgetent_error(char_u *, char_u *);
+static char *tgetent_error(char_u *, char_u *);
 
 /*
  * Here is our own prototype for tgetstr(), any prototypes from the include
@@ -1357,7 +1357,7 @@ termgui_get_color(char_u *name)
     t = termgui_mch_get_color(name);
 
     if (t == INVALCOLOR)
-	EMSG2(_("E254: Cannot allocate color %s"), name);
+	semsg(_("E254: Cannot allocate color %s"), name);
     return t;
 }
 
@@ -1696,14 +1696,14 @@ get_term_entries(int *height, int *width)
 #endif
 
     static void
-report_term_error(char_u *error_msg, char_u *term)
+report_term_error(char *error_msg, char_u *term)
 {
     struct builtin_term *termp;
 
     mch_errmsg("\r\n");
     if (error_msg != NULL)
     {
-	mch_errmsg((char *)error_msg);
+	mch_errmsg(error_msg);
 	mch_errmsg("\r\n");
     }
     mch_errmsg("'");
@@ -1756,7 +1756,7 @@ set_termname(char_u *term)
     int		termcap_cleared = FALSE;
 #endif
     int		width = 0, height = 0;
-    char_u	*error_msg = NULL;
+    char	*error_msg = NULL;
     char_u	*bs_p, *del_p;
 
     /* In silect mode (ex -s) we don't use the 'term' option. */
@@ -2191,7 +2191,7 @@ del_mouse_termcode(
  * Call tgetent()
  * Return error message if it fails, NULL if it's OK.
  */
-    static char_u *
+    static char *
 tgetent_error(char_u *tbuf, char_u *term)
 {
     int	    i;
@@ -2210,13 +2210,13 @@ tgetent_error(char_u *tbuf, char_u *term)
 
 	if (i < 0)
 # ifdef TGETENT_ZERO_ERR
-	    return (char_u *)_("E557: Cannot open termcap file");
+	    return _("E557: Cannot open termcap file");
 	if (i == 0)
 # endif
 #ifdef TERMINFO
-	    return (char_u *)_("E558: Terminal entry not found in terminfo");
+	    return _("E558: Terminal entry not found in terminfo");
 #else
-	    return (char_u *)_("E559: Terminal entry not found in termcap");
+	    return _("E559: Terminal entry not found in termcap");
 #endif
     }
     return NULL;
@@ -2282,7 +2282,7 @@ add_termcap_entry(char_u *name, int force)
     char_u  tbuf[TBUFSZ];
     char_u  tstrbuf[TBUFSZ];
     char_u  *tp = tstrbuf;
-    char_u  *error_msg = NULL;
+    char    *error_msg = NULL;
 #endif
 
 /*
@@ -2369,10 +2369,10 @@ add_termcap_entry(char_u *name, int force)
     {
 #ifdef HAVE_TGETENT
 	if (error_msg != NULL)
-	    EMSG(error_msg);
+	    emsg(error_msg);
 	else
 #endif
-	    EMSG2(_("E436: No \"%s\" entry in termcap"), name);
+	    semsg(_("E436: No \"%s\" entry in termcap"), name);
     }
     return FAIL;
 }
@@ -2585,7 +2585,6 @@ out_flush_cursor(
 }
 
 
-#if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Sometimes a byte out of a multi-byte character is written with out_char().
  * To avoid flushing half of the character, call this function first.
@@ -2596,7 +2595,6 @@ out_flush_check(void)
     if (enc_dbcs != 0 && out_pos >= OUT_SIZE - MB_MAXBYTES)
 	out_flush();
 }
-#endif
 
 #ifdef FEAT_GUI
 /*
@@ -2838,6 +2836,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
+#  if (defined(FEAT_EVAL) && defined(HAVE_TGETENT)) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -2885,6 +2884,7 @@ term_get_winpos(int *x, int *y, varnumber_T timeout)
 
     return FALSE;
 }
+#  endif
 # endif
 
     void
@@ -3055,7 +3055,7 @@ ttest(int pairs)
      * MUST have "cm": cursor motion.
      */
     if (*T_CM == NUL)
-	EMSG(_("E437: terminal capability \"cm\" required"));
+	emsg(_("E437: terminal capability \"cm\" required"));
 
     /*
      * if "cs" defined, use a scroll region, it's faster.
@@ -3618,7 +3618,6 @@ may_req_termresponse(void)
     }
 }
 
-# if defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Check how the terminal treats ambiguous character width (UAX #11).
  * First, we move the cursor to (1, 0) and print a test ambiguous character
@@ -3664,7 +3663,6 @@ may_req_ambiguous_char_width(void)
 	 (void)vpeekc_nomap();
     }
 }
-# endif
 
 /*
  * Similar to requesting the version string: Request the terminal background
@@ -4604,9 +4602,7 @@ check_termcode(
 	    {
 		int col = 0;
 		int semicols = 0;
-#ifdef FEAT_MBYTE
 		int row_char = NUL;
-#endif
 
 		extra = 0;
 		for (i = 2 + (tp[0] != CSI); i < len
@@ -4615,9 +4611,7 @@ check_termcode(
 		    if (tp[i] == ';' && ++semicols == 1)
 		    {
 			extra = i + 1;
-#ifdef FEAT_MBYTE
 			row_char = tp[i - 1];
-#endif
 		    }
 		if (i == len)
 		{
@@ -4627,7 +4621,6 @@ check_termcode(
 		if (extra > 0)
 		    col = atoi((char *)tp + extra);
 
-#ifdef FEAT_MBYTE
 		/* Eat it when it has 2 arguments and ends in 'R'. Also when
 		 * u7_status is not "sent", it may be from a previous Vim that
 		 * just exited.  But not for <S-F3>, it sends something
@@ -4670,10 +4663,9 @@ check_termcode(
 		    set_vim_var_string(VV_TERMU7RESP, tp, slen);
 # endif
 		}
-		else
-#endif
 		/* eat it when at least one digit and ending in 'c' */
-		if (*T_CRV != NUL && i > 2 + (tp[0] != CSI) && tp[i] == 'c')
+		else if (*T_CRV != NUL && i > 2 + (tp[0] != CSI)
+							       && tp[i] == 'c')
 		{
 		    int version = col;
 
@@ -4698,6 +4690,12 @@ check_termcode(
 			int need_flush = FALSE;
 # ifdef FEAT_MOUSE_SGR
 			int is_iterm2 = FALSE;
+			int is_mintty = FALSE;
+
+			// mintty 2.9.5 sends 77;20905;0c.
+			// (77 is ASCII 'M' for mintty.)
+			if (STRNCMP(tp + extra - 3, "77;", 3) == 0)
+			    is_mintty = TRUE;
 # endif
 
 			/* if xterm version >= 141 try to get termcap codes */
@@ -4751,8 +4749,9 @@ check_termcode(
 			{
 # ifdef FEAT_MOUSE_SGR
 			    /* Xterm version 277 supports SGR.  Also support
-			     * Terminal.app and iTerm2. */
-			    if (version >= 277 || is_iterm2 || is_mac_terminal)
+			     * Terminal.app, iTerm2 and mintty. */
+			    if (version >= 277 || is_iterm2 || is_mac_terminal
+				    || is_mintty)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    else
@@ -5964,11 +5963,9 @@ check_termcode(
 	if (key_name[0] == KS_KEY)
 	{
 	    /* from ":set <M-b>=xx" */
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		new_slen += (*mb_char2bytes)(key_name[1], string + new_slen);
 	    else
-#endif
 		string[new_slen++] = key_name[1];
 	}
 	else if (new_slen == 0 && key_name[0] == KS_EXTRA
@@ -6146,7 +6143,7 @@ replace_termcodes(
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
 		if (current_sctx.sc_sid <= 0)
-		    EMSG(_(e_usingsid));
+		    emsg(_(e_usingsid));
 		else
 		{
 		    src += 5;
@@ -6248,10 +6245,8 @@ replace_termcodes(
 	    }
 	}
 
-#ifdef FEAT_MBYTE
 	/* skip multibyte char correctly */
 	for (i = (*mb_ptr2len)(src); i > 0; --i)
-#endif
 	{
 	    /*
 	     * If the character is K_SPECIAL, replace it with K_SPECIAL
@@ -6366,7 +6361,7 @@ show_termcodes(void)
 	return;
 
     /* Highlight title */
-    MSG_PUTS_TITLE(_("\n--- Terminal keys ---"));
+    msg_puts_title(_("\n--- Terminal keys ---"));
 
     /*
      * do the loop two times:
@@ -6468,9 +6463,9 @@ show_one_termcode(char_u *name, char_u *code, int printit)
 
     if (printit)
     {
-	msg_puts(IObuff);
+	msg_puts((char *)IObuff);
 	if (code == NULL)
-	    msg_puts((char_u *)"NULL");
+	    msg_puts("NULL");
 	else
 	    msg_outtrans(code);
     }
@@ -7006,7 +7001,7 @@ gui_get_color_cmn(char_u *name)
 	if (fd == NULL)
 	{
 	    if (p_verbose > 1)
-		verb_msg((char_u *)_("Cannot open $VIMRUNTIME/rgb.txt"));
+		verb_msg(_("Cannot open $VIMRUNTIME/rgb.txt"));
 	    return INVALCOLOR;
 	}
 

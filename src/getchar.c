@@ -237,7 +237,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	/* buffer has already been read */
     {
-	IEMSG(_("E222: Add to read buffer"));
+	iemsg(_("E222: Add to read buffer"));
 	return;
     }
     else if (buf->bh_index != 0)
@@ -291,14 +291,11 @@ add_num_buff(buffheader_T *buf, long n)
     static void
 add_char_buff(buffheader_T *buf, int c)
 {
-#ifdef FEAT_MBYTE
     char_u	bytes[MB_MAXBYTES + 1];
     int		len;
     int		i;
-#endif
     char_u	temp[4];
 
-#ifdef FEAT_MBYTE
     if (IS_SPECIAL(c))
 	len = 1;
     else
@@ -307,7 +304,6 @@ add_char_buff(buffheader_T *buf, int c)
     {
 	if (!IS_SPECIAL(c))
 	    c = bytes[i];
-#endif
 
 	if (IS_SPECIAL(c) || c == K_SPECIAL || c == NUL)
 	{
@@ -333,9 +329,7 @@ add_char_buff(buffheader_T *buf, int c)
 	    temp[1] = NUL;
 	}
 	add_buff(buf, temp, -1L);
-#ifdef FEAT_MBYTE
     }
-#endif
 }
 
 /* First read ahead buffer. Used for translated commands. */
@@ -413,6 +407,7 @@ stuff_empty(void)
 	 && readbuf2.bh_first.b_next == NULL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if readbuf1 is empty.  There may still be redo characters in
  * redbuf2.
@@ -422,6 +417,7 @@ readbuf1_empty(void)
 {
     return (readbuf1.bh_first.b_next == NULL);
 }
+#endif
 
 /*
  * Set a typeahead character that won't be flushed.
@@ -594,12 +590,10 @@ AppendToRedobuffLit(
 	    break;
 
 	/* Handle a special or multibyte character. */
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    /* Handle composing chars separately. */
 	    c = mb_cptr2char_adv(&s);
 	else
-#endif
 	    c = *s++;
 	if (c < ' ' || c == DEL || (*s == NUL && (c == '0' || c == '^')))
 	    add_char_buff(&redobuff, Ctrl_V);
@@ -684,11 +678,7 @@ stuffReadbuffSpec(char_u *s)
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    c = mb_ptr2char_adv(&s);
-#else
-	    c = *s++;
-#endif
 	    if (c == CAR || c == NL || c == ESC)
 		c = ' ';
 	    stuffcharReadbuff(c);
@@ -730,11 +720,9 @@ read_redo(int init, int old_redo)
     static buffblock_T	*bp;
     static char_u	*p;
     int			c;
-#ifdef FEAT_MBYTE
     int			n;
     char_u		buf[MB_MAXBYTES + 1];
     int			i;
-#endif
 
     if (init)
     {
@@ -750,7 +738,6 @@ read_redo(int init, int old_redo)
     if ((c = *p) != NUL)
     {
 	/* Reverse the conversion done by add_char_buff() */
-#ifdef FEAT_MBYTE
 	/* For a multi-byte character get all the bytes and return the
 	 * converted character. */
 	if (has_mbyte && (c != K_SPECIAL || p[1] == KS_SPECIAL))
@@ -758,7 +745,6 @@ read_redo(int init, int old_redo)
 	else
 	    n = 1;
 	for (i = 0; ; ++i)
-#endif
 	{
 	    if (c == K_SPECIAL) /* special key or escaped K_SPECIAL */
 	    {
@@ -774,7 +760,6 @@ read_redo(int init, int old_redo)
 		bp = bp->b_next;
 		p = bp->b_str;
 	    }
-#ifdef FEAT_MBYTE
 	    buf[i] = c;
 	    if (i == n - 1)	/* last byte of a character */
 	    {
@@ -785,7 +770,6 @@ read_redo(int init, int old_redo)
 	    c = *p;
 	    if (c == NUL)	/* cannot happen? */
 		break;
-#endif
 	}
     }
 
@@ -998,7 +982,7 @@ ins_typebuf(
 	newlen = typebuf.tb_len + addlen + newoff + 4 * (MAXMAPLEN + 4);
 	if (newlen < 0)		    /* string is getting too long */
 	{
-	    EMSG(_(e_toocompl));    /* also calls flush_buffers */
+	    emsg(_(e_toocompl));    /* also calls flush_buffers */
 	    setcursor();
 	    return FAIL;
 	}
@@ -1091,11 +1075,7 @@ ins_typebuf(
     void
 ins_char_typebuf(int c)
 {
-#ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
-#else
-    char_u	buf[4];
-#endif
     if (IS_SPECIAL(c))
     {
 	buf[0] = K_SPECIAL;
@@ -1104,14 +1084,7 @@ ins_char_typebuf(int c)
 	buf[3] = NUL;
     }
     else
-    {
-#ifdef FEAT_MBYTE
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
-#else
-	buf[0] = c;
-	buf[1] = NUL;
-#endif
-    }
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
 }
 
@@ -1431,7 +1404,7 @@ openscript(
 {
     if (curscript + 1 == NSCRIPT)
     {
-	EMSG(_(e_nesting));
+	emsg(_(e_nesting));
 	return;
     }
 #ifdef FEAT_EVAL
@@ -1446,7 +1419,7 @@ openscript(
     expand_env(name, NameBuff, MAXPATHL);
     if ((scriptin[curscript] = mch_fopen((char *)NameBuff, READBIN)) == NULL)
     {
-	EMSG2(_(e_notopen), name);
+	semsg(_(e_notopen), name);
 	if (curscript)
 	    --curscript;
 	return;
@@ -1577,11 +1550,9 @@ updatescript(int c)
 vgetc(void)
 {
     int		c, c2;
-#ifdef FEAT_MBYTE
     int		n;
     char_u	buf[MB_MAXBYTES + 1];
     int		i;
-#endif
 
 #ifdef FEAT_EVAL
     /* Do garbage collection when garbagecollect() was called previously and
@@ -1761,7 +1732,6 @@ vgetc(void)
 	    case K_XRIGHT:	c = K_RIGHT; break;
 	}
 
-#ifdef FEAT_MBYTE
 	/* For a multi-byte character get all the bytes and return the
 	 * converted character.
 	 * Note: This will loop until enough bytes are received!
@@ -1792,7 +1762,6 @@ vgetc(void)
 	    --no_mapping;
 	    c = (*mb_ptr2char)(buf);
 	}
-#endif
 
 	break;
       }
@@ -1942,7 +1911,7 @@ vungetc(int c)
 }
 
 /*
- * Get a character:
+ * Get a byte:
  * 1. from the stuffbuffer
  *	This is used for abbreviated commands like "D" -> "d$".
  *	Also used to redo a command for ".".
@@ -2210,7 +2179,6 @@ vgetorpeek(int advance)
 					break;
 				}
 
-#ifdef FEAT_MBYTE
 				/* Don't allow mapping the first byte(s) of a
 				 * multi-byte char.  Happens when mapping
 				 * <M-a> and then changing 'encoding'. Beware
@@ -2223,7 +2191,6 @@ vgetorpeek(int advance)
 					  && MB_BYTE2LEN(c1) > MB_PTR2LEN(p2))
 					mlen = 0;
 				}
-#endif
 				/*
 				 * Check an entry whether it matches.
 				 * - Full match: mlen == keylen
@@ -2508,7 +2475,7 @@ vgetorpeek(int advance)
 			 */
 			if (++mapdepth >= p_mmd)
 			{
-			    EMSG(_("E223: recursive mapping"));
+			    emsg(_("E223: recursive mapping"));
 			    if (State & CMDLINE)
 				redrawcmdline();
 			    else
@@ -2683,38 +2650,29 @@ vgetorpeek(int advance)
 					curwin->w_wcol = vcol;
 				    vcol += lbr_chartabsize(ptr, ptr + col,
 							       (colnr_T)vcol);
-#ifdef FEAT_MBYTE
 				    if (has_mbyte)
 					col += (*mb_ptr2len)(ptr + col);
 				    else
-#endif
 					++col;
 				}
 				curwin->w_wrow = curwin->w_cline_row
 					   + curwin->w_wcol / curwin->w_width;
 				curwin->w_wcol %= curwin->w_width;
 				curwin->w_wcol += curwin_col_off();
-#ifdef FEAT_MBYTE
 				col = 0;	/* no correction needed */
-#endif
 			    }
 			    else
 			    {
 				--curwin->w_wcol;
-#ifdef FEAT_MBYTE
 				col = curwin->w_cursor.col - 1;
-#endif
 			    }
 			}
 			else if (curwin->w_p_wrap && curwin->w_wrow)
 			{
 			    --curwin->w_wrow;
 			    curwin->w_wcol = curwin->w_width - 1;
-#ifdef FEAT_MBYTE
 			    col = curwin->w_cursor.col - 1;
-#endif
 			}
-#ifdef FEAT_MBYTE
 			if (has_mbyte && col > 0 && curwin->w_wcol > 0)
 			{
 			    /* Correct when the cursor is on the right halve
@@ -2724,7 +2682,6 @@ vgetorpeek(int advance)
 			    if ((*mb_ptr2cells)(ptr + col) > 1)
 				--curwin->w_wcol;
 			}
-#endif
 		    }
 		    setcursor();
 		    out_flush();
@@ -3082,9 +3039,10 @@ inchar(
 
 	/*
 	 * Always flush the output characters when getting input characters
-	 * from the user.
+	 * from the user and not just peeking.
 	 */
-	out_flush();
+	if (wait_time == -1L || wait_time > 10L)
+	    out_flush();
 
 	/*
 	 * Fill up to a third of the buffer, because each character may be
@@ -3432,7 +3390,6 @@ do_map(
 	     * Otherwise we won't be able to find the start of it in a
 	     * vi-compatible way.
 	     */
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		int	first, last;
@@ -3456,9 +3413,7 @@ do_map(
 		    goto theend;
 		}
 	    }
-	    else
-#endif
-		if (vim_iswordc(keys[len - 1]))	/* ends in keyword char */
+	    else if (vim_iswordc(keys[len - 1]))  // ends in keyword char
 		    for (n = 0; n < len - 2; ++n)
 			if (vim_iswordc(keys[n]) != vim_iswordc(keys[len - 2]))
 			{
@@ -3508,10 +3463,10 @@ do_map(
 			&& STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
 		{
 		    if (abbrev)
-			EMSG2(_("E224: global abbreviation already exists for %s"),
+			semsg(_("E224: global abbreviation already exists for %s"),
 				mp->m_keys);
 		    else
-			EMSG2(_("E225: global mapping already exists for %s"),
+			semsg(_("E225: global mapping already exists for %s"),
 				mp->m_keys);
 		    retval = 5;
 		    goto theend;
@@ -3643,10 +3598,10 @@ do_map(
 			else if (unique)
 			{
 			    if (abbrev)
-				EMSG2(_("E226: abbreviation already exists for %s"),
+				semsg(_("E226: abbreviation already exists for %s"),
 									   p);
 			    else
-				EMSG2(_("E227: mapping already exists for %s"), p);
+				semsg(_("E227: mapping already exists for %s"), p);
 			    retval = 5;
 			    goto theend;
 			}
@@ -3728,9 +3683,9 @@ do_map(
 		)
 	{
 	    if (abbrev)
-		MSG(_("No abbreviation found"));
+		msg(_("No abbreviation found"));
 	    else
-		MSG(_("No mapping found"));
+		msg(_("No mapping found"));
 	}
 	goto theend;			    /* listing finished */
     }
@@ -3892,7 +3847,7 @@ map_clear(
     local = (STRCMP(arg, "<buffer>") == 0);
     if (!local && *arg != NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 #endif
@@ -4047,7 +4002,7 @@ showmap(
     mapchars = map_mode_to_chars(mp->m_mode);
     if (mapchars != NULL)
     {
-	msg_puts(mapchars);
+	msg_puts((char *)mapchars);
 	len = (int)STRLEN(mapchars);
 	vim_free(mapchars);
     }
@@ -4064,9 +4019,9 @@ showmap(
     } while (len < 12);
 
     if (mp->m_noremap == REMAP_NONE)
-	msg_puts_attr((char_u *)"*", HL_ATTR(HLF_8));
+	msg_puts_attr("*", HL_ATTR(HLF_8));
     else if (mp->m_noremap == REMAP_SCRIPT)
-	msg_puts_attr((char_u *)"&", HL_ATTR(HLF_8));
+	msg_puts_attr("&", HL_ATTR(HLF_8));
     else
 	msg_putchar(' ');
 
@@ -4078,7 +4033,7 @@ showmap(
     /* Use FALSE below if we only want things like <Up> to show up as such on
      * the rhs, and not M-x etc, TRUE gets both -- webb */
     if (*mp->m_str == NUL)
-	msg_puts_attr((char_u *)"<Nop>", HL_ATTR(HLF_8));
+	msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
     else
     {
 	/* Remove escaping of CSI, because "m_str" is in a format to be used
@@ -4456,9 +4411,7 @@ check_abbr(
 #ifdef FEAT_LOCALMAP
     mapblock_T	*mp2;
 #endif
-#ifdef FEAT_MBYTE
     int		clen = 0;	/* length in characters */
-#endif
     int		is_id = TRUE;
     int		vim_abbr;
 
@@ -4478,7 +4431,6 @@ check_abbr(
     if (col == 0)				/* cannot be an abbr. */
 	return FALSE;
 
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	char_u *p;
@@ -4506,7 +4458,6 @@ check_abbr(
 	scol = (int)(p - ptr);
     }
     else
-#endif
     {
 	if (!vim_iswordc(ptr[col - 1]))
 	    vim_abbr = TRUE;			/* Vim added abbr. */
@@ -4599,7 +4550,6 @@ check_abbr(
 		{
 		    if (c < ABBR_OFF && (c < ' ' || c > '~'))
 			tb[j++] = Ctrl_V;	/* special char needs CTRL-V */
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			/* if ABBR_OFF has been added, remove it here */
@@ -4608,7 +4558,6 @@ check_abbr(
 			j += (*mb_char2bytes)(c, tb + j);
 		    }
 		    else
-#endif
 			tb[j++] = c;
 		}
 		tb[j] = NUL;
@@ -4635,10 +4584,8 @@ check_abbr(
 
 	    tb[0] = Ctrl_H;
 	    tb[1] = NUL;
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		len = clen;	/* Delete characters instead of bytes */
-#endif
 	    while (len-- > 0)		/* delete the from string */
 		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
 	    return TRUE;
@@ -4713,13 +4660,7 @@ vim_strsave_escape_csi(
     /* Need a buffer to hold up to three times as much.  Four in case of an
      * illegal utf-8 byte:
      * 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER */
-    res = alloc((unsigned)(STRLEN(p) *
-#ifdef FEAT_MBYTE
-			4
-#else
-			3
-#endif
-			    ) + 1);
+    res = alloc((unsigned)(STRLEN(p) * 4) + 1);
     if (res != NULL)
     {
 	d = res;
@@ -4920,7 +4861,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			IEMSG(_("E228: makemap: Illegal mode"));
+			iemsg(_("E228: makemap: Illegal mode"));
 			return FAIL;
 		}
 		do	/* do this twice if c2 is set, 3 times with c3 */
@@ -5010,7 +4951,6 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 
     for ( ; *str != NUL; ++str)
     {
-#ifdef FEAT_MBYTE
 	char_u	*p;
 
 	/* Check for a multi-byte character, which may contain escaped
@@ -5024,7 +4964,6 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	    --str;
 	    continue;
 	}
-#endif
 
 	c = *str;
 	/*

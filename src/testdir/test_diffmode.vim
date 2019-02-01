@@ -813,8 +813,16 @@ func Test_diff_screen()
   call term_sendkeys(buf, ":set diffopt+=internal\<cr>")
   call VerifyScreenDump(buf, 'Test_diff_10', {})
 
-  call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>")
-  call VerifyScreenDump(buf, 'Test_diff_11', {})
+  " Leave trailing : at commandline!
+  call term_sendkeys(buf, ":set diffopt+=indent-heuristic\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_11', {}, 'one')
+  " shouldn't matter, if indent-algorithm comes before or after the algorithm
+  call term_sendkeys(buf, ":set diffopt&\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=indent-heuristic,algorithm:patience\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_11', {}, 'two')
+  call term_sendkeys(buf, ":set diffopt&\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=algorithm:patience,indent-heuristic\<cr>:\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_11', {}, 'three')
 
   " Test 12: diff the same file
   call WriteDiffFiles(buf, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])

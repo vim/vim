@@ -106,11 +106,9 @@ func Test_strwidth()
     call assert_equal(4, strwidth(1234))
     call assert_equal(5, strwidth(-1234))
 
-    if has('multi_byte')
-      call assert_equal(2, strwidth('😉'))
-      call assert_equal(17, strwidth('Eĥoŝanĝo ĉiuĵaŭde'))
-      call assert_equal((aw == 'single') ? 6 : 7, strwidth('Straße'))
-    endif
+    call assert_equal(2, strwidth('😉'))
+    call assert_equal(17, strwidth('Eĥoŝanĝo ĉiuĵaŭde'))
+    call assert_equal((aw == 'single') ? 6 : 7, strwidth('Straße'))
 
     call assert_fails('call strwidth({->0})', 'E729:')
     call assert_fails('call strwidth([])', 'E730:')
@@ -277,10 +275,8 @@ func Test_strpart()
   call assert_equal('fg', strpart('abcdefg', 5, 4))
   call assert_equal('defg', strpart('abcdefg', 3))
 
-  if has('multi_byte')
-    call assert_equal('lép', strpart('éléphant', 2, 4))
-    call assert_equal('léphant', strpart('éléphant', 2))
-  endif
+  call assert_equal('lép', strpart('éléphant', 2, 4))
+  call assert_equal('léphant', strpart('éléphant', 2))
 endfunc
 
 func Test_tolower()
@@ -289,10 +285,6 @@ func Test_tolower()
   " Test with all printable ASCII characters.
   call assert_equal(' !"#$%&''()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
           \ tolower(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'))
-
-  if !has('multi_byte')
-    return
-  endif
 
   " Test with a few uppercase diacritics.
   call assert_equal("aàáâãäåāăąǎǟǡả", tolower("AÀÁÂÃÄÅĀĂĄǍǞǠẢ"))
@@ -367,10 +359,6 @@ func Test_toupper()
   " Test with all printable ASCII characters.
   call assert_equal(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~',
           \ toupper(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'))
-
-  if !has('multi_byte')
-    return
-  endif
 
   " Test with a few lowercase diacritics.
   call assert_equal("AÀÁÂÃÄÅĀĂĄǍǞǠẢ", toupper("aàáâãäåāăąǎǟǡả"))
@@ -1066,22 +1054,31 @@ func Test_libcall_libcallnr()
     let libc = 'msvcrt.dll'
   elseif has('mac')
     let libc = 'libSystem.B.dylib'
-  elseif system('uname -s') =~ 'SunOS'
-    " Set the path to libc.so according to the architecture.
-    let test_bits = system('file ' . GetVimProg())
-    let test_arch = system('uname -p')
-    if test_bits =~ '64-bit' && test_arch =~ 'sparc'
-      let libc = '/usr/lib/sparcv9/libc.so'
-    elseif test_bits =~ '64-bit' && test_arch =~ 'i386'
-      let libc = '/usr/lib/amd64/libc.so'
-    else
-      let libc = '/usr/lib/libc.so'
-    endif
-  else
+  elseif executable('ldd')
+    let libc = matchstr(split(system('ldd ' . GetVimProg())), '/libc\.so\>')
+  endif
+  if get(l:, 'libc', '') ==# ''
     " On Unix, libc.so can be in various places.
-    " Interestingly, using an empty string for the 1st argument of libcall
-    " allows to call functions from libc which is not documented.
-    let libc = ''
+    if has('linux')
+      " There is not documented but regarding the 1st argument of glibc's
+      " dlopen an empty string and nullptr are equivalent, so using an empty
+      " string for the 1st argument of libcall allows to call functions.
+      let libc = ''
+    elseif has('sun')
+      " Set the path to libc.so according to the architecture.
+      let test_bits = system('file ' . GetVimProg())
+      let test_arch = system('uname -p')
+      if test_bits =~ '64-bit' && test_arch =~ 'sparc'
+        let libc = '/usr/lib/sparcv9/libc.so'
+      elseif test_bits =~ '64-bit' && test_arch =~ 'i386'
+        let libc = '/usr/lib/amd64/libc.so'
+      else
+        let libc = '/usr/lib/libc.so'
+      endif
+    else
+      " Unfortunately skip this test until a good way is found.
+      return
+    endif
   endif
 
   if has('win32')
@@ -1164,4 +1161,88 @@ func Test_func_exists_on_reload()
   call delete('Xfuncexists2')
   call delete('Xfuncexists')
   delfunc ExistingFunction
+endfunc
+
+" Test confirm({msg} [, {choices} [, {default} [, {type}]]])
+func Test_confirm()
+  if !has('unix') || has('gui_running')
+    return
+  endif
+
+  call feedkeys('o', 'L')
+  let a = confirm('Press O to proceed')
+  call assert_equal(1, a)
+
+  call feedkeys('y', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys('n', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(2, a)
+
+  " confirm() should return 0 when pressing CTRL-C.
+  call feedkeys("\<C-c>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(0, a)
+
+  " <Esc> requires another character to avoid it being seen as the start of an
+  " escape sequence.  Zero should be harmless.
+  call feedkeys("\<Esc>0", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(0, a)
+
+  " Default choice is returned when pressing <CR>.
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 2)
+  call assert_equal(2, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 0)
+  call assert_equal(0, a)
+
+  " Test with the {type} 4th argument
+  for type in ['Error', 'Question', 'Info', 'Warning', 'Generic']
+    call feedkeys('y', 'L')
+    let a = confirm('Are you sure?', "&Yes\n&No\n", 1, type)
+    call assert_equal(1, a)
+  endfor
+
+  call assert_fails('call confirm([])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", [])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", [])', 'E745:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", 0, [])', 'E730:')
+endfunc
+
+func Test_platform_name()
+  " The system matches at most only one name.
+  let names = ['amiga', 'beos', 'bsd', 'hpux', 'linux', 'mac', 'qnx', 'sun', 'vms', 'win32', 'win32unix']
+  call assert_inrange(0, 1, len(filter(copy(names), 'has(v:val)')))
+
+  " Is Unix?
+  call assert_equal(has('beos'), has('beos') && has('unix'))
+  call assert_equal(has('bsd'), has('bsd') && has('unix'))
+  call assert_equal(has('hpux'), has('hpux') && has('unix'))
+  call assert_equal(has('linux'), has('linux') && has('unix'))
+  call assert_equal(has('mac'), has('mac') && has('unix'))
+  call assert_equal(has('qnx'), has('qnx') && has('unix'))
+  call assert_equal(has('sun'), has('sun') && has('unix'))
+  call assert_equal(has('win32'), has('win32') && !has('unix'))
+  call assert_equal(has('win32unix'), has('win32unix') && has('unix'))
+
+  if has('unix') && executable('uname')
+    let uname = system('uname')
+    call assert_equal(uname =~? 'BeOS', has('beos'))
+    call assert_equal(uname =~? 'BSD\|DragonFly', has('bsd'))
+    call assert_equal(uname =~? 'HP-UX', has('hpux'))
+    call assert_equal(uname =~? 'Linux', has('linux'))
+    call assert_equal(uname =~? 'Darwin', has('mac'))
+    call assert_equal(uname =~? 'QNX', has('qnx'))
+    call assert_equal(uname =~? 'SunOS', has('sun'))
+    call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
+  endif
 endfunc

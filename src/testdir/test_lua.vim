@@ -298,17 +298,18 @@ func Test_list()
   lua l:add('abc')
   lua l:add(true)
   lua l:add(false)
+  lua l:add(nil)
   lua l:add(vim.eval("[1, 2, 3]"))
   lua l:add(vim.eval("{'a':1, 'b':2, 'c':3}"))
-  call assert_equal([123.0, 'abc', v:true, v:false, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
-  call assert_equal(6.0, luaeval('#l'))
+  call assert_equal([123.0, 'abc', v:true, v:false, v:null, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(7.0, luaeval('#l'))
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
   lua l[0] = 124
-  lua l[4] = nil
+  lua l[5] = nil
   lua l:insert('first')
   lua l:insert('xx', 3)
-  call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
 
   lockvar 1 l
   call assert_fails('lua l:add("x")', '[string "vim chunk"]:1: list is locked')

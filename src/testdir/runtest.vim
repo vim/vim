@@ -26,7 +26,7 @@
 " It will be called after each Test_ function.
 "
 " When debugging a test it can be useful to add messages to v:errors:
-" 	call add(v:errors, "this happened")
+"	call add(v:errors, "this happened")
 
 
 " Without the +eval feature we can't run these tests, bail out.
@@ -49,13 +49,9 @@ source setup.vim
 " This also enables use of line continuation.
 set nocp viminfo+=nviminfo
 
-" Use utf-8 or latin1 by default, instead of whatever the system default
-" happens to be.  Individual tests can overrule this at the top of the file.
-if has('multi_byte')
-  set encoding=utf-8
-else
-  set encoding=latin1
-endif
+" Use utf-8 by default, instead of whatever the system default happens to be.
+" Individual tests can overrule this at the top of the file.
+set encoding=utf-8
 
 " REDIR_TEST_TO_NULL has a very permissive SwapExists autocommand which is for
 " the test_name.vim file itself. Replace it here with a more restrictive one,
@@ -148,6 +144,10 @@ func RunTheTest(test)
       call add(v:errors, 'Caught exception in ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
     endtry
   endif
+
+  " In case 'insertmode' was set and something went wrong, make sure it is
+  " reset to avoid trouble with anything else.
+  set noinsertmode
 
   if exists("*TearDown")
     try
@@ -281,6 +281,7 @@ let s:flaky_tests = [
       \ 'Test_close_callback()',
       \ 'Test_close_handle()',
       \ 'Test_close_lambda()',
+      \ 'Test_close_output_buffer()',
       \ 'Test_close_partial()',
       \ 'Test_collapse_buffers()',
       \ 'Test_communicate()',

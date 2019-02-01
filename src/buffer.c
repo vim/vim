@@ -162,10 +162,10 @@ open_buffer(
 	 */
 	if (curbuf == NULL)
 	{
-	    EMSG(_("E82: Cannot allocate any buffer, exiting..."));
+	    emsg(_("E82: Cannot allocate any buffer, exiting..."));
 	    getout(2);
 	}
-	EMSG(_("E83: Cannot allocate buffer, using other one..."));
+	emsg(_("E83: Cannot allocate buffer, using other one..."));
 	enter_buffer(curbuf);
 #ifdef FEAT_SYN_HL
 	if (old_tw != curbuf->b_p_tw)
@@ -396,7 +396,7 @@ buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
     if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
-	EMSG(_("E931: Buffer cannot be registered"));
+	emsg(_("E931: Buffer cannot be registered"));
 }
 
     static void
@@ -430,7 +430,7 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	EMSG(_("E937: Attempt to delete a buffer that is in use"));
+	emsg(_("E937: Attempt to delete a buffer that is in use"));
     return can_unload;
 }
 
@@ -548,7 +548,7 @@ close_buffer(
 	{
 	    /* Autocommands deleted the buffer. */
 aucmd_abort:
-	    EMSG(_(e_auabort));
+	    emsg(_(e_auabort));
 	    return;
 	}
 	--buf->b_locked;
@@ -658,11 +658,6 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
-#ifdef FEAT_SUN_WORKSHOP
-	if (usingSunWorkShop)
-	    workshop_file_closed_lineno((char *)buf->b_ffname,
-			(int)buf->b_last_cursor.lnum);
-#endif
 	if (buf->b_sfname != buf->b_ffname)
 	    VIM_CLEAR(buf->b_sfname);
 	else
@@ -709,10 +704,8 @@ buf_clear_file(buf_T *buf)
     buf->b_shortname = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
-#ifdef FEAT_MBYTE
     buf->b_p_bomb = FALSE;
     buf->b_start_bomb = FALSE;
-#endif
     buf->b_ml.ml_mfp = NULL;
     buf->b_ml.ml_flags = ML_EMPTY;		/* empty buffer */
 #ifdef FEAT_NETBEANS_INTG
@@ -822,6 +815,9 @@ buf_freeall(buf_T *buf, int flags)
     }
 #ifdef FEAT_SYN_HL
     syntax_clear(&buf->b_s);	    /* reset syntax info */
+#endif
+#ifdef FEAT_TEXT_PROP
+    clear_buf_prop_types(buf);
 #endif
     buf->b_flags &= ~BF_READERR;    /* a read error is no longer relevant */
 }
@@ -933,7 +929,7 @@ free_buffer_stuff(
     uc_clear(&buf->b_ucmds);		/* clear local user commands */
 #endif
 #ifdef FEAT_SIGNS
-    buf_delete_signs(buf);		/* delete any signs */
+    buf_delete_signs(buf, (char_u *)"*");	// delete any signs */
 #endif
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
@@ -942,9 +938,7 @@ free_buffer_stuff(
     map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  /* clear local mappings */
     map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   /* clear local abbrevs */
 #endif
-#ifdef FEAT_MBYTE
     VIM_CLEAR(buf->b_start_fenc);
-#endif
 }
 
 /*
@@ -1085,7 +1079,7 @@ handle_swap_exists(bufref_T *old_curbuf)
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
 	ml_recover();
-	MSG_PUTS("\n");	/* don't overwrite the last message */
+	msg_puts("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
 	do_modelines(0);
 
@@ -1112,7 +1106,7 @@ handle_swap_exists(bufref_T *old_curbuf)
  *
  * Returns error message or NULL
  */
-    char_u *
+    char *
 do_bufdel(
     int		command,
     char_u	*arg,		/* pointer to extra arguments */
@@ -1123,7 +1117,7 @@ do_bufdel(
 {
     int		do_current = 0;	/* delete current buffer? */
     int		deleted = 0;	/* number of buffers deleted */
-    char_u	*errormsg = NULL; /* return value */
+    char	*errormsg = NULL; /* return value */
     int		bnr;		/* buffer number */
     char_u	*p;
 
@@ -1136,7 +1130,7 @@ do_bufdel(
 	if (addr_count == 2)
 	{
 	    if (*arg)		/* both range and argument is not allowed */
-		return (char_u *)_(e_trailing);
+		return _(e_trailing);
 	    bnr = start_bnr;
 	}
 	else	/* addr_count == 1 */
@@ -1194,18 +1188,18 @@ do_bufdel(
 		STRCPY(IObuff, _("E516: No buffers were deleted"));
 	    else
 		STRCPY(IObuff, _("E517: No buffers were wiped out"));
-	    errormsg = IObuff;
+	    errormsg = (char *)IObuff;
 	}
 	else if (deleted >= p_report)
 	{
 	    if (command == DOBUF_UNLOAD)
-		smsg((char_u *)NGETTEXT("%d buffer unloaded",
+		smsg(NGETTEXT("%d buffer unloaded",
 			    "%d buffers unloaded", deleted), deleted);
 	    else if (command == DOBUF_DEL)
-		smsg((char_u *)NGETTEXT("%d buffer deleted",
+		smsg(NGETTEXT("%d buffer deleted",
 			    "%d buffers deleted", deleted), deleted);
 	    else
-		smsg((char_u *)NGETTEXT("%d buffer wiped out",
+		smsg(NGETTEXT("%d buffer wiped out",
 			    "%d buffers wiped out", deleted), deleted);
 	}
     }
@@ -1230,7 +1224,7 @@ empty_curbuf(
 
     if (action == DOBUF_UNLOAD)
     {
-	EMSG(_("E90: Cannot unload last buffer"));
+	emsg(_("E90: Cannot unload last buffer"));
 	return FAIL;
     }
 
@@ -1304,7 +1298,7 @@ do_buffer(
 	}
 	if (!bufIsChanged(buf))
 	{
-	    EMSG(_("E84: No modified buffer found"));
+	    emsg(_("E84: No modified buffer found"));
 	    return FAIL;
 	}
     }
@@ -1343,7 +1337,7 @@ do_buffer(
 	    if (bp == buf)
 	    {
 		/* back where we started, didn't find anything. */
-		EMSG(_("E85: There is no listed buffer"));
+		emsg(_("E85: There is no listed buffer"));
 		return FAIL;
 	    }
 	}
@@ -1355,12 +1349,12 @@ do_buffer(
 	{
 	    /* don't warn when deleting */
 	    if (!unload)
-		EMSGN(_(e_nobufnr), count);
+		semsg(_(e_nobufnr), count);
 	}
 	else if (dir == FORWARD)
-	    EMSG(_("E87: Cannot go beyond last buffer"));
+	    emsg(_("E87: Cannot go beyond last buffer"));
 	else
-	    EMSG(_("E88: Cannot go before first buffer"));
+	    emsg(_("E88: Cannot go before first buffer"));
 	return FAIL;
     }
 
@@ -1404,7 +1398,7 @@ do_buffer(
 	    else
 #endif
 	    {
-		EMSGN(_("E89: No write since last change for buffer %ld (add ! to override)"),
+		semsg(_("E89: No write since last change for buffer %d (add ! to override)"),
 								 buf->b_fnum);
 		return FAIL;
 	    }
@@ -1735,9 +1729,7 @@ enter_buffer(buf_T *buf)
     /* Cursor on first line by default. */
     curwin->w_cursor.lnum = 1;
     curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     curwin->w_set_curswant = TRUE;
     curwin->w_topline_was_set = FALSE;
 
@@ -1829,10 +1821,10 @@ no_write_message(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(curbuf->b_term))
-	EMSG(_("E948: Job still running (add ! to end the job)"));
+	emsg(_("E948: Job still running (add ! to end the job)"));
     else
 #endif
-	EMSG(_("E37: No write since last change (add ! to override)"));
+	emsg(_("E37: No write since last change (add ! to override)"));
 }
 
     void
@@ -1840,10 +1832,10 @@ no_write_message_nobang(buf_T *buf UNUSED)
 {
 #ifdef FEAT_TERMINAL
     if (term_job_running(buf->b_term))
-	EMSG(_("E948: Job still running"));
+	emsg(_("E948: Job still running"));
     else
 #endif
-	EMSG(_("E37: No write since last change"));
+	emsg(_("E37: No write since last change"));
 }
 
 /*
@@ -2054,7 +2046,7 @@ buflist_new(
 	buf->b_fnum = top_file_num++;
 	if (top_file_num < 0)		/* wrap around (may cause duplicates) */
 	{
-	    EMSG(_("W14: Warning: List of file names overflow"));
+	    emsg(_("W14: Warning: List of file names overflow"));
 	    if (emsg_silent == 0)
 	    {
 		out_flush();
@@ -2135,9 +2127,7 @@ free_buf_options(
 {
     if (free_p_ff)
     {
-#ifdef FEAT_MBYTE
 	clear_string_option(&buf->b_p_fenc);
-#endif
 	clear_string_option(&buf->b_p_ff);
 	clear_string_option(&buf->b_p_bh);
 	clear_string_option(&buf->b_p_bt);
@@ -2247,9 +2237,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_lw);
 #endif
     clear_string_option(&buf->b_p_bkc);
-#ifdef FEAT_MBYTE
     clear_string_option(&buf->b_p_menc);
-#endif
 }
 
 /*
@@ -2278,9 +2266,9 @@ buflist_getfile(
     if (buf == NULL)
     {
 	if ((options & GETF_ALT) && n == 0)
-	    EMSG(_(e_noalt));
+	    emsg(_(e_noalt));
 	else
-	    EMSGN(_("E92: Buffer %ld not found"), n);
+	    semsg(_("E92: Buffer %d not found"), n);
 	return FAIL;
     }
 
@@ -2343,9 +2331,7 @@ buflist_getfile(
 	{
 	    curwin->w_cursor.col = col;
 	    check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
 	    curwin->w_set_curswant = TRUE;
 	}
 	return OK;
@@ -2373,9 +2359,7 @@ buflist_getfpos(void)
     {
 	curwin->w_cursor.col = fpos->col;
 	check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
 	curwin->w_set_curswant = TRUE;
     }
 }
@@ -2565,9 +2549,9 @@ buflist_findpat(
     }
 
     if (match == -2)
-	EMSG2(_("E93: More than one match for %s"), pattern);
+	semsg(_("E93: More than one match for %s"), pattern);
     else if (match < 0)
-	EMSG2(_("E94: No matching buffer for %s"), pattern);
+	semsg(_("E94: No matching buffer for %s"), pattern);
     return match;
 }
 
@@ -2968,7 +2952,7 @@ get_winopts(buf_T *buf)
 buflist_findfpos(buf_T *buf)
 {
     wininfo_T	*wip;
-    static pos_T no_position = INIT_POS_T(1, 0, 0);
+    static pos_T no_position = {1, 0, 0};
 
     wip = find_wininfo(buf, FALSE);
     if (wip != NULL)
@@ -3169,7 +3153,7 @@ setfname(
 	    if (obuf->b_ml.ml_mfp != NULL)	/* it's loaded, fail */
 	    {
 		if (message)
-		    EMSG(_("E95: Buffer with this name already exists"));
+		    emsg(_("E95: Buffer with this name already exists"));
 		vim_free(ffname);
 		return FAIL;
 	    }
@@ -3295,7 +3279,7 @@ getaltfname(
     if (buflist_name_nr(0, &fname, &dummy) == FAIL)
     {
 	if (errmsg)
-	    EMSG(_(e_noalt));
+	    emsg(_(e_noalt));
 	return NULL;
     }
     return fname;
@@ -3451,17 +3435,17 @@ fileinfo(
 {
     char_u	*name;
     int		n;
-    char_u	*p;
-    char_u	*buffer;
+    char	*p;
+    char	*buffer;
     size_t	len;
 
-    buffer = alloc(IOSIZE);
+    buffer = (char *)alloc(IOSIZE);
     if (buffer == NULL)
 	return;
 
     if (fullname > 1)	    /* 2 CTRL-G: include buffer number */
     {
-	vim_snprintf((char *)buffer, IOSIZE, "buf %d: ", curbuf->b_fnum);
+	vim_snprintf(buffer, IOSIZE, "buf %d: ", curbuf->b_fnum);
 	p = buffer + STRLEN(buffer);
     }
     else
@@ -3469,18 +3453,18 @@ fileinfo(
 
     *p++ = '"';
     if (buf_spname(curbuf) != NULL)
-	vim_strncpy(p, buf_spname(curbuf), IOSIZE - (p - buffer) - 1);
+	vim_strncpy((char_u *)p, buf_spname(curbuf), IOSIZE - (p - buffer) - 1);
     else
     {
 	if (!fullname && curbuf->b_fname != NULL)
 	    name = curbuf->b_fname;
 	else
 	    name = curbuf->b_ffname;
-	home_replace(shorthelp ? curbuf : NULL, name, p,
+	home_replace(shorthelp ? curbuf : NULL, name, (char_u *)p,
 					  (int)(IOSIZE - (p - buffer)), TRUE);
     }
 
-    vim_snprintf_add((char *)buffer, IOSIZE, "\"%s%s%s%s%s%s",
+    vim_snprintf_add(buffer, IOSIZE, "\"%s%s%s%s%s%s",
 	    curbufIsChanged() ? (shortmess(SHM_MOD)
 					  ?  " [+]" : _(" [Modified]")) : " ",
 	    (curbuf->b_flags & BF_NOTEDITED)
@@ -3508,29 +3492,30 @@ fileinfo(
 	n = (int)(((long)curwin->w_cursor.lnum * 100L) /
 					    (long)curbuf->b_ml.ml_line_count);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
-	vim_snprintf_add((char *)buffer, IOSIZE, "%s", _(no_lines_msg));
+	vim_snprintf_add(buffer, IOSIZE, "%s", _(no_lines_msg));
 #ifdef FEAT_CMDL_INFO
     else if (p_ru)
 	/* Current line and column are already on the screen -- webb */
-	vim_snprintf_add((char *)buffer, IOSIZE,
+	vim_snprintf_add(buffer, IOSIZE,
 		NGETTEXT("%ld line --%d%%--", "%ld lines --%d%%--",
 						   curbuf->b_ml.ml_line_count),
 		(long)curbuf->b_ml.ml_line_count, n);
 #endif
     else
     {
-	vim_snprintf_add((char *)buffer, IOSIZE,
+	vim_snprintf_add(buffer, IOSIZE,
 		_("line %ld of %ld --%d%%-- col "),
 		(long)curwin->w_cursor.lnum,
 		(long)curbuf->b_ml.ml_line_count,
 		n);
 	validate_virtcol();
 	len = STRLEN(buffer);
-	col_print(buffer + len, IOSIZE - len,
+	col_print((char_u *)buffer + len, IOSIZE - len,
 		   (int)curwin->w_cursor.col + 1, (int)curwin->w_virtcol + 1);
     }
 
-    (void)append_arg_number(curwin, buffer, IOSIZE, !shortmess(SHM_FILE));
+    (void)append_arg_number(curwin, (char_u *)buffer, IOSIZE,
+							 !shortmess(SHM_FILE));
 
     if (dont_truncate)
     {
@@ -3544,14 +3529,14 @@ fileinfo(
     }
     else
     {
-	p = msg_trunc_attr(buffer, FALSE, 0);
+	p = (char *)msg_trunc_attr(buffer, FALSE, 0);
 	if (restart_edit != 0 || (msg_scrolled && !need_wait_return))
 	    /* Need to repeat the message after redrawing when:
 	     * - When restart_edit is set (otherwise there will be a delay
 	     *   before redrawing).
 	     * - When the screen was scrolled but there is no wait-return
 	     *   prompt. */
-	    set_keep_msg(p, 0);
+	    set_keep_msg((char_u *)p, 0);
     }
 
     vim_free(buffer);
@@ -3779,10 +3764,8 @@ maketitle(void)
 	    if (len > 100)
 	    {
 		len -= 100;
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		    len += (*mb_tail_off)(p, p + len) + 1;
-#endif
 		p += len;
 	    }
 	    STRCPY(icon_str, p);
@@ -3870,6 +3853,8 @@ build_stl_str_hl(
     struct stl_hlrec *hltab,	/* return: HL attributes (can be NULL) */
     struct stl_hlrec *tabtab)	/* return: tab page nrs (can be NULL) */
 {
+    linenr_T	lnum;
+    size_t	len;
     char_u	*p;
     char_u	*s;
     char_u	*t;
@@ -3938,27 +3923,37 @@ build_stl_str_hl(
 
     if (fillchar == 0)
 	fillchar = ' ';
-#ifdef FEAT_MBYTE
     /* Can't handle a multi-byte fill character yet. */
     else if (mb_char2len(fillchar) > 1)
 	fillchar = '-';
-#endif
 
-    /* Get line & check if empty (cursorpos will show "0-1").  Note that
-     * p will become invalid when getting another buffer line. */
-    p = ml_get_buf(wp->w_buffer, wp->w_cursor.lnum, FALSE);
+    // The cursor in windows other than the current one isn't always
+    // up-to-date, esp. because of autocommands and timers.
+    lnum = wp->w_cursor.lnum;
+    if (lnum > wp->w_buffer->b_ml.ml_line_count)
+    {
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+	wp->w_cursor.lnum = lnum;
+    }
+
+    // Get line & check if empty (cursorpos will show "0-1").  Note that
+    // p will become invalid when getting another buffer line.
+    p = ml_get_buf(wp->w_buffer, lnum, FALSE);
     empty_line = (*p == NUL);
 
-    /* Get the byte value now, in case we need it below. This is more
-     * efficient than making a copy of the line. */
-    if (wp->w_cursor.col > (colnr_T)STRLEN(p))
+    // Get the byte value now, in case we need it below. This is more efficient
+    // than making a copy of the line.
+    len = STRLEN(p);
+    if (wp->w_cursor.col > (colnr_T)len)
+    {
+	// Line may have changed since checking the cursor column, or the lnum
+	// was adjusted above.
+	wp->w_cursor.col = (colnr_T)len;
+	wp->w_cursor.coladd = 0;
 	byteval = 0;
+    }
     else
-#ifdef FEAT_MBYTE
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
-#else
-	byteval = p[wp->w_cursor.col];
-#endif
 
     groupdepth = 0;
     p = out;
@@ -4060,7 +4055,6 @@ build_stl_str_hl(
 	    if (l > item[groupitem[groupdepth]].maxwid)
 	    {
 		/* truncate, remove n bytes of text at the start */
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    /* Find the first character that should be included. */
@@ -4072,17 +4066,15 @@ build_stl_str_hl(
 		    }
 		}
 		else
-#endif
 		    n = (long)(p - t) - item[groupitem[groupdepth]].maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, (size_t)(p - (t + n)));
 		p = p - n + 1;
-#ifdef FEAT_MBYTE
-		/* Fill up space left over by half a double-wide char. */
+
+		// Fill up space left over by half a double-wide char.
 		while (++l < item[groupitem[groupdepth]].minwid)
 		    *p++ = fillchar;
-#endif
 
 		/* correct the start of the items for the truncation */
 		for (l = groupitem[groupdepth] + 1; l < curitem; l++)
@@ -4464,14 +4456,12 @@ build_stl_str_hl(
 	    if (l > maxwid)
 	    {
 		while (l >= maxwid)
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			l -= ptr2cells(t);
 			t += (*mb_ptr2len)(t);
 		    }
 		    else
-#endif
 			l -= byte2cells(*t++);
 		if (p + 1 >= out + outlen)
 		    break;
@@ -4591,7 +4581,6 @@ build_stl_str_hl(
 	if (width - vim_strsize(s) >= maxwidth)
 	{
 	    /* Truncation mark is beyond max length */
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		s = out;
@@ -4608,7 +4597,6 @@ build_stl_str_hl(
 		    *s++ = fillchar;
 	    }
 	    else
-#endif
 		s = out + maxwidth - 1;
 	    for (l = 0; l < itemcnt; l++)
 		if (item[l].start > s)
@@ -4619,7 +4607,6 @@ build_stl_str_hl(
 	}
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		n = 0;
@@ -4630,7 +4617,6 @@ build_stl_str_hl(
 		}
 	    }
 	    else
-#endif
 		n = width - maxwidth + 1;
 	    p = s + n;
 	    STRMOVE(s + 1, p);
@@ -5516,13 +5502,19 @@ chk_modeline(
 
 	    if (*s != NUL)		/* skip over an empty "::" */
 	    {
+		int secure_save = secure;
 #ifdef FEAT_EVAL
 		save_current_sctx = current_sctx;
 		current_sctx.sc_sid = SID_MODELINE;
 		current_sctx.sc_seq = 0;
 		current_sctx.sc_lnum = 0;
 #endif
+		// Make sure no risky things are executed as a side effect.
+		++secure;
+
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
+
+		secure = secure_save;
 #ifdef FEAT_EVAL
 		current_sctx = save_current_sctx;
 #endif
@@ -5655,6 +5647,7 @@ bt_normal(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == NUL;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
@@ -5663,7 +5656,9 @@ bt_quickfix(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 'q';
 }
+#endif
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
@@ -5672,6 +5667,7 @@ bt_terminal(buf_T *buf)
 {
     return buf != NULL && buf->b_p_bt[0] == 't';
 }
+#endif
 
 /*
  * Return TRUE if "buf" is a help buffer.
@@ -5716,16 +5712,18 @@ bt_dontwrite(buf_T *buf)
 	         || buf->b_p_bt[0] == 'p');
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
     int
 bt_dontwrite_msg(buf_T *buf)
 {
     if (bt_dontwrite(buf))
     {
-	EMSG(_("E382: Cannot write, 'buftype' option is set"));
+	emsg(_("E382: Cannot write, 'buftype' option is set"));
 	return TRUE;
     }
     return FALSE;
 }
+#endif
 
 /*
  * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"
@@ -5854,367 +5852,6 @@ win_found:
     return OK;
 }
 #endif
-
-#if defined(FEAT_SIGNS) || defined(PROTO)
-/*
- * Insert the sign into the signlist.
- */
-    static void
-insert_sign(
-    buf_T	*buf,		/* buffer to store sign in */
-    signlist_T	*prev,		/* previous sign entry */
-    signlist_T	*next,		/* next sign entry */
-    int		id,		/* sign ID */
-    linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr)		/* typenr of sign we are adding */
-{
-    signlist_T	*newsign;
-
-    newsign = (signlist_T *)lalloc((long_u)sizeof(signlist_T), FALSE);
-    if (newsign != NULL)
-    {
-	newsign->id = id;
-	newsign->lnum = lnum;
-	newsign->typenr = typenr;
-	newsign->next = next;
-	newsign->prev = prev;
-	if (next != NULL)
-	    next->prev = newsign;
-
-	if (prev == NULL)
-	{
-	    /* When adding first sign need to redraw the windows to create the
-	     * column for signs. */
-	    if (buf->b_signlist == NULL)
-	    {
-		redraw_buf_later(buf, NOT_VALID);
-		changed_cline_bef_curs();
-	    }
-
-	    /* first sign in signlist */
-	    buf->b_signlist = newsign;
-#ifdef FEAT_NETBEANS_INTG
-	    if (netbeans_active())
-		buf->b_has_sign_column = TRUE;
-#endif
-	}
-	else
-	    prev->next = newsign;
-    }
-}
-
-/*
- * Add the sign into the signlist. Find the right spot to do it though.
- */
-    void
-buf_addsign(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		id,		/* sign ID */
-    linenr_T	lnum,		/* line number which gets the mark */
-    int		typenr)		/* typenr of sign we are adding */
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-    signlist_T	*prev;		/* the previous sign */
-
-    prev = NULL;
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-    {
-	if (lnum == sign->lnum && id == sign->id)
-	{
-	    sign->typenr = typenr;
-	    return;
-	}
-	else if (lnum < sign->lnum)
-	{
-	    // keep signs sorted by lnum: insert new sign at head of list for
-	    // this lnum
-	    while (prev != NULL && prev->lnum == lnum)
-		prev = prev->prev;
-	    if (prev == NULL)
-		sign = buf->b_signlist;
-	    else
-		sign = prev->next;
-	    insert_sign(buf, prev, sign, id, lnum, typenr);
-	    return;
-	}
-	prev = sign;
-    }
-
-    // insert new sign at head of list for this lnum
-    while (prev != NULL && prev->lnum == lnum)
-	prev = prev->prev;
-    if (prev == NULL)
-	sign = buf->b_signlist;
-    else
-	sign = prev->next;
-    insert_sign(buf, prev, sign, id, lnum, typenr);
-
-    return;
-}
-
-/*
- * For an existing, placed sign "markId" change the type to "typenr".
- * Returns the line number of the sign, or zero if the sign is not found.
- */
-    linenr_T
-buf_change_sign_type(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		markId,		/* sign ID */
-    int		typenr)		/* typenr of sign we are adding */
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-    {
-	if (sign->id == markId)
-	{
-	    sign->typenr = typenr;
-	    return sign->lnum;
-	}
-    }
-
-    return (linenr_T)0;
-}
-
-    int
-buf_getsigntype(
-    buf_T	*buf,
-    linenr_T	lnum,
-    int		type)	/* SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL */
-{
-    signlist_T	*sign;		/* a sign in a b_signlist */
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->lnum == lnum
-		&& (type == SIGN_ANY
-# ifdef FEAT_SIGN_ICONS
-		    || (type == SIGN_ICON
-			&& sign_get_image(sign->typenr) != NULL)
-# endif
-		    || (type == SIGN_TEXT
-			&& sign_get_text(sign->typenr) != NULL)
-		    || (type == SIGN_LINEHL
-			&& sign_get_attr(sign->typenr, TRUE) != 0)))
-	    return sign->typenr;
-    return 0;
-}
-
-
-    linenr_T
-buf_delsign(
-    buf_T	*buf,		/* buffer sign is stored in */
-    int		id)		/* sign id */
-{
-    signlist_T	**lastp;	/* pointer to pointer to current sign */
-    signlist_T	*sign;		/* a sign in a b_signlist */
-    signlist_T	*next;		/* the next sign in a b_signlist */
-    linenr_T	lnum;		/* line number whose sign was deleted */
-
-    lastp = &buf->b_signlist;
-    lnum = 0;
-    for (sign = buf->b_signlist; sign != NULL; sign = next)
-    {
-	next = sign->next;
-	if (sign->id == id)
-	{
-	    *lastp = next;
-	    if (next != NULL)
-		next->prev = sign->prev;
-	    lnum = sign->lnum;
-	    vim_free(sign);
-	    break;
-	}
-	else
-	    lastp = &sign->next;
-    }
-
-    /* When deleted the last sign need to redraw the windows to remove the
-     * sign column. */
-    if (buf->b_signlist == NULL)
-    {
-	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
-    }
-
-    return lnum;
-}
-
-
-/*
- * Find the line number of the sign with the requested id. If the sign does
- * not exist, return 0 as the line number. This will still let the correct file
- * get loaded.
- */
-    int
-buf_findsign(
-    buf_T	*buf,		/* buffer to store sign in */
-    int		id)		/* sign ID */
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->id == id)
-	    return sign->lnum;
-
-    return 0;
-}
-
-    int
-buf_findsign_id(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    linenr_T	lnum)		/* line number of sign */
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->lnum == lnum)
-	    return sign->id;
-
-    return 0;
-}
-
-
-# if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
-/*
- * See if a given type of sign exists on a specific line.
- */
-    int
-buf_findsigntype_id(
-    buf_T	*buf,		/* buffer whose sign we are searching for */
-    linenr_T	lnum,		/* line number of sign */
-    int		typenr)		/* sign type number */
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->lnum == lnum && sign->typenr == typenr)
-	    return sign->id;
-
-    return 0;
-}
-
-
-#  if defined(FEAT_SIGN_ICONS) || defined(PROTO)
-/*
- * Return the number of icons on the given line.
- */
-    int
-buf_signcount(buf_T *buf, linenr_T lnum)
-{
-    signlist_T	*sign;		/* a sign in the signlist */
-    int		count = 0;
-
-    for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
-	if (sign->lnum == lnum)
-	    if (sign_get_image(sign->typenr) != NULL)
-		count++;
-
-    return count;
-}
-#  endif /* FEAT_SIGN_ICONS */
-# endif /* FEAT_NETBEANS_INTG */
-
-
-/*
- * Delete signs in buffer "buf".
- */
-    void
-buf_delete_signs(buf_T *buf)
-{
-    signlist_T	*next;
-
-    /* When deleting the last sign need to redraw the windows to remove the
-     * sign column. Not when curwin is NULL (this means we're exiting). */
-    if (buf->b_signlist != NULL && curwin != NULL)
-    {
-	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
-    }
-
-    while (buf->b_signlist != NULL)
-    {
-	next = buf->b_signlist->next;
-	vim_free(buf->b_signlist);
-	buf->b_signlist = next;
-    }
-}
-
-/*
- * Delete all signs in all buffers.
- */
-    void
-buf_delete_all_signs(void)
-{
-    buf_T	*buf;		/* buffer we are checking for signs */
-
-    FOR_ALL_BUFFERS(buf)
-	if (buf->b_signlist != NULL)
-	    buf_delete_signs(buf);
-}
-
-/*
- * List placed signs for "rbuf".  If "rbuf" is NULL do it for all buffers.
- */
-    void
-sign_list_placed(buf_T *rbuf)
-{
-    buf_T	*buf;
-    signlist_T	*p;
-    char	lbuf[BUFSIZ];
-
-    MSG_PUTS_TITLE(_("\n--- Signs ---"));
-    msg_putchar('\n');
-    if (rbuf == NULL)
-	buf = firstbuf;
-    else
-	buf = rbuf;
-    while (buf != NULL && !got_int)
-    {
-	if (buf->b_signlist != NULL)
-	{
-	    vim_snprintf(lbuf, BUFSIZ, _("Signs for %s:"), buf->b_fname);
-	    MSG_PUTS_ATTR(lbuf, HL_ATTR(HLF_D));
-	    msg_putchar('\n');
-	}
-	for (p = buf->b_signlist; p != NULL && !got_int; p = p->next)
-	{
-	    vim_snprintf(lbuf, BUFSIZ, _("    line=%ld  id=%d  name=%s"),
-			   (long)p->lnum, p->id, sign_typenr2name(p->typenr));
-	    MSG_PUTS(lbuf);
-	    msg_putchar('\n');
-	}
-	if (rbuf != NULL)
-	    break;
-	buf = buf->b_next;
-    }
-}
-
-/*
- * Adjust a placed sign for inserted/deleted lines.
- */
-    void
-sign_mark_adjust(
-    linenr_T	line1,
-    linenr_T	line2,
-    long	amount,
-    long	amount_after)
-{
-    signlist_T	*sign;		/* a sign in a b_signlist */
-
-    for (sign = curbuf->b_signlist; sign != NULL; sign = sign->next)
-    {
-	if (sign->lnum >= line1 && sign->lnum <= line2)
-	{
-	    if (amount == MAXLNUM)
-		sign->lnum = line1;
-	    else
-		sign->lnum += amount;
-	}
-	else if (sign->lnum > line2)
-	    sign->lnum += amount_after;
-    }
-}
-#endif /* FEAT_SIGNS */
 
 /*
  * Set 'buflisted' for curbuf to "on" and trigger autocommands if it changed.
