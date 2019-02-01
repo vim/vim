@@ -260,15 +260,15 @@
 # define SUN_SYSTEM
 #endif
 
-/* if we're compiling in C++ (currently only KVim), the system
+/* If we're compiling in C++ (currently only KVim), the system
  * headers must have the correct prototypes or nothing will build.
- * conversely, our prototypes might clash due to throw() specifiers and
+ * Conversely, our prototypes might clash due to throw() specifiers and
  * cause compilation failures even though the headers are correct.  For
  * a concrete example, gcc-3.2 enforces exception specifications, and
  * glibc-2.2.5 has them in their system headers.
  */
 #if !defined(__cplusplus) && defined(UNIX) \
-  && !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
+	&& !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
 # include "auto/osdef.h"	/* bring missing declarations in */
 #endif
 
@@ -2583,6 +2583,9 @@ long elapsed(struct timeval *start_tv);
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)
+# ifdef PROTO
+typedef int DWORD;
+# endif
 typedef DWORD elapsed_T;
 # ifndef PROTO
 long elapsed(DWORD start_tick);
