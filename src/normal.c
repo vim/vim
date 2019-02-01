@@ -8040,11 +8040,14 @@ nv_g_cmd(cmdarg_T *cap)
 	    oap->inclusive = FALSE;
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
-		i = mb_string2cells(ptr, STRLEN(ptr)) / 2;
+		i = mb_string2cells(ptr, STRLEN(ptr));
 	    else
 #endif
-		i = (int)STRLEN(ptr) / 2;
-	    coladvance((colnr_T)i);
+		i = (int)STRLEN(ptr);
+	    if (cap->count0 == 0)
+		coladvance((colnr_T)(i / 2));
+	    else if (cap->count0 <= 100)
+		coladvance((colnr_T)(i * cap->count0 / 100));
 	    curwin->w_set_curswant = TRUE;
 	}
 	break;
