@@ -1673,6 +1673,7 @@ struct channel_S {
 				 * the other side has exited, only mention the
 				 * first error until the connection works
 				 * again. */
+    int		ch_listen;	/* When TRUE channel is listen socket. */
 
     void	(*ch_nb_close_cb)(void);
 				/* callback for Netbeans when channel is

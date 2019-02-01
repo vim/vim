@@ -1801,6 +1801,32 @@ func Test_close_lambda()
   call s:run_server('Ch_test_close_lambda')
 endfunc
 
+let g:server_received_addr = ''
+let g:server_received_msg = ''
+func s:test_listen_accept(ch, addr)
+  let g:server_received_addr = a:addr
+  let g:server_received_msg = ch_readraw(a:ch)
+endfunction
+
+func Test_listen()
+  call ch_log('Test_listen()')
+  let server = ch_listen('127.0.0.1:' . 12345, {"callback": function("s:test_listen_accept")})
+  if ch_status(server) == "fail"
+    call assert_report("Can't listen channel")
+    return
+  endif
+  let handle = ch_open('127.0.0.1:' . 12345, s:chopt)
+  if ch_status(handle) == "fail"
+    call assert_report("Can't open channel")
+    return
+  endif
+  call ch_sendraw(handle, 'hello')
+  call WaitFor('"" != g:server_received_msg')
+  call ch_close(handle)
+  call ch_close(server)
+  call assert_equal('hello', g:server_received_msg)
+endfunc
+
 func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''

@@ -92,6 +92,7 @@ static void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 static void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
 static void f_ch_getjob(typval_T *argvars, typval_T *rettv);
 static void f_ch_info(typval_T *argvars, typval_T *rettv);
+static void f_ch_listen(typval_T *argvars, typval_T *rettv);
 static void f_ch_log(typval_T *argvars, typval_T *rettv);
 static void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 static void f_ch_open(typval_T *argvars, typval_T *rettv);
@@ -559,6 +560,7 @@ static struct fst
     {"ch_getbufnr",	2, 2, f_ch_getbufnr},
     {"ch_getjob",	1, 1, f_ch_getjob},
     {"ch_info",		1, 1, f_ch_info},
+    {"ch_listen",	1, 2, f_ch_listen},
     {"ch_log",		1, 2, f_ch_log},
     {"ch_logfile",	1, 2, f_ch_logfile},
     {"ch_open",		1, 2, f_ch_open},
@@ -2219,6 +2221,18 @@ f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (channel != NULL && rettv_dict_alloc(rettv) != FAIL)
 	channel_info(channel, rettv->vval.v_dict);
+}
+
+/*
+ * "ch_listen()" function
+ */
+    static void
+f_ch_listen(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    rettv->v_type = VAR_CHANNEL;
+    if (check_restricted() || check_secure())
+	return;
+    rettv->vval.v_channel = channel_listen_func(argvars);
 }
 
 /*

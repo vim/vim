@@ -100,6 +100,7 @@
 # define COBJMACROS	/* For OLE: Enable "friendlier" access to objects */
 #endif
 #ifndef PROTO
+# include <ws2tcpip.h>
 # include <windows.h>
 # ifndef SM_CXPADDEDBORDER
 #  define SM_CXPADDEDBORDER     92

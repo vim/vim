@@ -2096,6 +2096,8 @@ ch_evalraw({handle}, {string} [, {options}])
 ch_getbufnr({handle}, {what})	Number	get buffer number for {handle}/{what}
 ch_getjob({channel})		Job	get the Job of {channel}
 ch_info({handle})		String	info about channel {handle}
+ch_listen({address} [, {options}])
+				Channel	listen to a channel with {address}
 ch_log({msg} [, {handle}])	none	write {msg} in the channel log file
 ch_logfile({fname} [, {mode}])	none	start logging channel activity
 ch_open({address} [, {options}])
@@ -3134,6 +3136,18 @@ ch_info({handle})						*ch_info()*
 		   "in_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "in_io"	  "null", "pipe", "file" or "buffer"
 		   "in_timeout"	  timeout in msec
+
+ch_listen({address} [, {options}])				*ch_listen()*
+		Listen to a channel with {address}.  See |channel|.
+		Returns a Channel.  Use |ch_status()| to check for failure.
+
+		{address} has the form "hostname:port", e.g.,
+		"localhost:8765" or ":8765".
+
+		If {options} is given it must be a |Dictionary|.
+		See |channel-open-options|.
+
+		{only available when compiled with the |+channel| feature}
 
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write {msg} in the channel log file, if it was opened with
