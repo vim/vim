@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.0.  Last change: 2017 Aug 27
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7,9 +7,9 @@
 			      TODO list for Vim		*todo*
 
 This is a veeeery long list of known bugs, current work and desired
-improvements.  To make it a little bit accessible, the items are grouped by
-subject.  In the first column of the line a classification is used to be able
-to look for "the next thing to do":
+improvements.  To make it a little bit accessible, the older items are grouped
+by subject.  In the first column of the line a classification is used to be
+able to look for "the next thing to do":
 
 Priority classification:
 9   next point release
@@ -32,128 +32,474 @@ Only use this for bug reports, not for questions!  Those belong on the
 maillist.  Updates will be forwarded to the |vim_dev| maillist.  Issues
 entered there will not be repeated below, unless there is extra information.
 
+The #1234 numbers refer to an issue or pull request on github.  To see it in a
+browser use: https://github.com/vim/vim/issues/1234
+(replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-No maintainer for Vietnamese translations.
-No maintainer for Simplified Chinese translations.
+'incsearch' with :s: (#3321)
+- Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
+  was set. (#3837)
+- :s/foo  using CTRL-G moves to another line, should not happen, or use the
+  correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
+- :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
+   pass delim to do_search() ?
+- Also support range: :/foo/,/bar/delete
+- Also support for user command, e.g. Cfilter
+- :%s/foo should take the first match below the cursor line, unless there
+  isn't one?
+  Then :%s?foo should take the first match above the cursor line.
 
+Prompt buffer:
+- Add a command line history.
+- delay next prompt until plugin gives OK?
+- add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
+
+Terminal debugger:
+- Make prompt-buffer variant work better.
+- Add option to not open the program window.  It's not used when attaching to
+  an already running program. (M. Kelly)
+- When only gdb window exists, on "quit" edit another buffer.
+- Termdebug does not work when Vim was build with mzscheme: gdb hangs just
+  after "run".  Everything else works, including communication channel.  Not
+  initializing mzscheme avoid the problem, thus it's not some #ifdef.
+- Add support for lldb?  #3565
+- Could we do something similar for debugging Vim scripts?  At least see the
+  script while stepping through it.  Simple version would use an extra window.
+  More complete solution would actually run Vim in a Terminal and control it
+  with another Vim instance.
 
 Terminal emulator window:
-- Lots of stuff to implement, see src/terminal.c
-- Add debugger interface.  Implementation for gdb by Xavier de Gaye.  Should
-  work like an IDE.  Try to keep it generic.  Now found here:
-    http://clewn.sf.net.
-  Can this replace Agide?  http://www.a-a-p.org/images/debugfull.png
-    - make showballoon() work in a terminal.  Requires getting mouse-move
-      events.
-    - send 'balloonText' events for the cursor position (using CursorHold ?)
-      in terminal mode.
-    - Implement the right-click popup menu for the terminal. Can use the
-      completion popup menu code and mouse dragging.
-- Look into the idevim plugin/script.
-- Related wishes for NetBeans commands:
-    - make it possible to have 'defineAnnoType' also handle terminal colors.
+- When Vim runs in the terminal and changes the title, the statusline needs to
+  be redrawn.
+- GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
+  (#3327)
+- Terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
+- GUI: hang until key typed. (#3530)
+- When the job in the terminal doesn't use mouse events, let the scroll wheel
+  scroll the scrollback, like a terminal does at the shell prompt. #2490
+  And use modeless selection.  #2962
+- Allow for specifying the directory, with ++cwd={dir}.
+- With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
+  #2977)
+- Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
+  directly.  Perhaps ":term ++shell cmd". (#3340)
+- When pasting should call vterm_keyboard_start_paste(), e.g. when using
+  K_MIDDLEMOUSE, calling insert_reg().
+- Users expect parsing the :term argument like a shell does, also support
+  single quotes.  E.g. with:  :term grep 'alice says "hello"'  (#1999)
+- Win32: Redirecting input does not work, half of Test_terminal_redir_file()
+  is disabled.
+- Win32: Redirecting output works but includes escape sequences.
+- Win32: Make terminal used for :!cmd in the GUI work better.  Allow for
+  redirection.
+- When the job only outputs lines, we could handle resizing the terminal
+  better: store lines separated by line breaks, instead of screen lines,
+  then when the window is resized redraw those lines.
+- Redrawing is slow with Athena and Motif. (Ramel Eshed)
+- For the GUI fill termios with default values, perhaps like pangoterm:
+  http://bazaar.launchpad.net/~leonerd/pangoterm/trunk/view/head:/main.c#L134
+- When 'encoding' is not utf-8, or the job is using another encoding, setup
+  conversions.
 
-+channel:
-- Try out background make plugin: 
+Problem with Visual yank when 'linebreak' and 'showbreak' are set.
+Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
+Nov 17)  Asked about this, Dec 22. Christian will have a look.
+
+Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
+#3417)
+Another report, with reproduction steps. (#3799)
+Is this fixed by 8.1.0761?
+
+Does not build with MinGW out of the box:
+- _stat64 is not defined, need to use "struct stat" in vim.h
+- WINVER conflict, should use 0x0600 by default?
+
+js_decode() does not handle infinity properly. (Dominique Pelle, 2019 Jan 10,
+#3788)
+
+Patch to avoid skipping buffers when loading a session. (Jason Franklin, 2019
+Jan 20)
+
+Patch to update example of how to restore the cursor. (Ken Takata, 2019 Jan
+21)
+
+Patch to fix problems with timer in GUI. (Ozaki Kiichi, #3817)
+Should also fix #3824.
+Change the order in which GUI handles events?  Make it work like os_unix.c,
+check timer on lower level, check for pending messages higher up.
+
+Signs:
+-   screen not redrawn correctly. (Dominique Pelle, 2019 Jan 14, #3803)
+-   Use a sign group in the Termdebug plugin.
+-   Avoid that "sign unplace id" does a redraw right away, esp. when there is
+    a sequence of these commands. (Andy Stewart, 2018 Mar 16)
+
+Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
+13, #2910)  Can't reproduce?
+
+Patch to recognize more systems with has().  (Ozaki Kiichi, #3855)
+
+Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+
+Errors found with random data:
+    heap-buffer-overflow in alist_add (#2472)
+
+Patch for xxd to make it work with 64 bit numbers. (Christer Jense, 2019 Jan
+11, #3791)
+
+Win32 key codes are messy.  Mike Williams tried to fix that, but now old
+mappings no longer work.  Create a new terminal for the better solution?
+
+Improve fallback for menu translations, to avoid having to create lots of
+files that source the actual file.  E.g. menu_da_de -> menu_da
+Include part of #3242?
+
+When a terminal exit_cb closes the window, a following typed key is lost, if
+it's in a mapping. (2018 Oct 6, #2302, #3522)
+
+Completion mixes results from the current buffer with tags and other files.
+Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
+terminal.c and then CTRL-N twice.
+Should do current file first and not split it up when more results are found.
+(Also #1890)
+
+Internal diff doesn't handle binary file like external diff does. (Mike
+Williams, 2018 Oct 30)
+
+Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
+
+When using a timer callback vgetc_busy is reset, allowing for using input().
+But in a channel callback this does not happen.  We need to do something
+similar to check_due_timer().  Also see #3809.
+
+C syntax: {} inside () causes following {} to be highlighted as error.
+(Michalis Giannakidis, 2006 Jun 1)
+
+Patch on #3690 to fix that "wincmd p" does not always behave properly.
+(Christian Brabandt, 2018 Dec 17)
+
+Patch: When using %v in 'errorformat', assume the number is the screen column
+not bytes, also handle multi-byte charactes. (Yegappan Lakshmanan, #3700)
+
+Support setting the character displayed below the last line?  Neovim uses
+"eob:X" in 'fillchars'.
+
+Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
+#2948. (related to #1512?)
+On Win32 it stops showing, because showState is already ShS_SHOWING.
+balloon_show() does not work properly in the terminal. (Ben Jackson, 2017 Dec
+20, #2481)
+Also see #2352, want better control over balloon, perhaps set the position.
+Should also be possible to add highlighting, like in the status line?
+balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
+2018 Sep 14)
+Another request: #3811.
+
+Patch for MinGW build with static libraries. (Ken Takata, 2018 Dec 16)
+
+Patch to add new regexp classes :ident:, :keyword:, :fname:.
+(ichizok, 2016 Jan 12, #1373)
+
+Patch to add "termsig" - signal that caused job to end. (Ozaki Kiichi, 2019
+Jan 10, #3786)
+
+More warnings from static analysis:
+https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
+
+Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
+    missing a test.
+7   Make 'scrolloff' a global-local option, so that it can be different in the
+    quickfix window, for example. (Gary Holloway)
+    Also do 'sidescrolloff'.
+
+Patch for ConPTY support, new one: #3794 Does this work now?
+(Nobuhiro Takasaki)
+
+Issue #3649: Retrying the X server connection once may be insufficient.
+Since patch 8.1.0615 we try reconnecting five times.  Does it work?
+
+nvo-mode mapping works on Windows, not on Linux. (#3678)
+
+Patch to be able to separately map CTRL-H and BS on Windows.
+(Linwei, 2017 Jul 11, #1833)
+
+Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
+Related to bracketed paste.  I cannot reproduce it.
+
+Using CTRL-L to add a character to the search string doesn't work for the last
+character in the file. (Smylers, 2018 Nov 17, #3620)
+Suggested patch by Hirohito Higashi, 2018 Nov 18.
+
+Using CTRL-L to add a character to the search string that contains \v,
+punctiuation is repeated. (Smylers, 2018 Nov 17, #3621)
+
+Using CTRL-L during search only picks up the base character, not a combining
+character. (Rick, 2018 Dec 11, #3682)
+
+ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
+
+Patch to convert temp file name. (Yasuhiro Matsumoto, #3520)
+Not ready to include yet.
+
+Problem with two buffers with the same name a/b, if it didn't exist before and
+is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
+
+When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
+scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
+using CTRL-E. (Yee Cheng Chin, #3721)
+
+Patch to add ":vsbuffer" - vertical split + :sbuffer. (Rob Pilling, 2019 Jan
+17, #3816)  Do we really need this?
+
+Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
+#3405)  Introduced by 8.0.1517, which was fixing another memory access error.
+(Sep 8)
+
+Add function to make use of internal diff, working on two lists and returning
+unified diff (list of lines).
+
+Patch to implement 'diffref' option. (#3535)
+  Easier to use a 'diffmaster' option, is the extra complexity needed?
+
+Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
+
+Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
+(#3692)
+
+cursorline highlighting not removed after yanking in Visual mode.
+(Matéo Zanibelli, 2018 Oct 30, #3578)
+Patch by Christian, Oct 30.
+
+Memory leaks in test_channel? (or is it because of fork())
+Using uninitialized value in test_crypt.
+Memory leak in test_terminal:
+==23530==    by 0x2640D7: alloc (misc2.c:874)
+==23530==    by 0x2646D6: vim_strsave (misc2.c:1315)
+==23530==    by 0x25841D: FullName_save (misc1.c:5443)
+==23530==    by 0x17CB4F: fix_fname (buffer.c:4794)
+==23530==    by 0x17CB9A: fname_expand (buffer.c:4838)
+==23530==    by 0x1759AB: buflist_new (buffer.c:1889)
+==23530==    by 0x35C923: term_start (terminal.c:421)
+==23530==    by 0x2AFF30: mch_call_shell_terminal (os_unix.c:4377)
+==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
+
+gethostbyname() is old, use getaddrinfo() if available. (#3227)
+
+Patch to add match count and current index "3/44" when using "n" command.
+(Christian Brabandt, on issue #453).  Only when search string was typed?
+
+matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
+19.
+
+Sourceforge Vim pages still have content, redirect from empty page.
+Check for PHP errors. (Wayne Davison, 2018 Oct 26)
+
+Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
+Use something like ":tag {kind}/{tagname}".
+Not ready to include.
+
+:pedit resets the 'buflisted' option unexpectedly. (Wang Shidong, 2018 Oct 12,
+#3536)
+
+home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
+
+When the status line uses term_gettitle(), it does not get updated when the
+terminal title changes. (Josh Triplett, 2018 Sep 9, #3418)
+How would we know that the status line needs to be updated?
+
+Adjust windows installer explanation of behavior. (scootergrisen, #3310)
+
+Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
+(Daniel Hahler, 2018 Aug 8, #3299)
+
+Update for xim-input-style help (Tony Mechelynck, 2019 Jan 10).
+Feedback from someone who uses this?
+
+ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
+
+Patch to use forward slash for completion even when 'shellslash' is set.
+Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
+
+Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  (Daniel Hahler, 2018 Sep 25)
+Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
+values.
+
+Further xdiff changes:
+- More options, e.g. different kind of whitespace diff.
+- when editing text, update the surrounding diff blocks.
+- omit diff.exe from distribution
+- Can we make this show differences within a line?
+- add option to use external diff above a certain size.
+
+Difference between two regexp engines: #3373
+
+Patch to add ch_listen() (Yasuhiro Matsumoto, 2018 Nov 26, #3639)
+What is the practical use for this?
+
+When the last line wraps, selecting with the mouse below that line only
+includes the first screen line. (2018 Aug 23, #3368)
+
+Refactored HTML indent file. (Michael Lee, #1821)
+Ask to write a test first.
+
+Patch to add getregpoint() and setreg() with an option to set "".
+(Andy Massimino, 2018 Aug 24, #3370)
+Better name?
+
+MS-Windows: .lnk file not resolved properly when 'encoding' is set.
+(lkintact, 2018 Sep 22, #3473)
+
+Script generated by :mksession does not work well if there are windows with
+modified buffers
+  change "silent only" into "silent only!"
+  change "edit fname" of first buffer to "hide edit fname"
+  skip "badd fname" if "fname" is already in the buffer list
+  remove remark about unloading buffers from documentation
+
+Compiler warnings (geeknik, 2017 Oct 26):
+- signed integer overflow in do_sub() (#2249)
+- signed integer overflow in get_address() (#2248)
+- signed integer overflow in getdecchrs() (#2254)
+- undefined left shift in get_string_tv() (#2250)
+
+Win32 console: <F11> and <F12> typed in Insert mode don't result in normal
+characters. (#3246)
+
+'foldtext' is evaluated too often. (Daniel Hahler, #2773)
+
+Add Native language protocol server (LSP) support. (Yegappan Lakshmanan, 2018
+Oct 28)
+
+ml_get error when using a Python script. (Yggdroot, 2017 Jun 1, #1737)
+Lemonboy can reproduce (2017 Jun 5)
+Also reproduced by Benjamin Doherty, 2018 Oct 4.
+Simpler way: Ken Takata, Oct 6.
+
+Height of quickfix window is not retained with vertical splits. (Lifepillar,
+2018 Aug 24, #2998)
+
+Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
+#2999)
+
+Tests failing for "make testgui" with GTK:
+- Test_setbufvar_options()
+- Test_exit_callback_interval()
+
+When using CTRL-W CR in the quickfix window, the jumplist in the opened window
+is cleared, to avoid going back to the list of errors buffer (would have two
+windows with it).  Can we just remove the jump list entries for the quickfix
+buffer?
+
+Patch to fix that executable() may fail on very long filename in MS-Windows.
+(Ken Takata, 2016 Feb 1, update 2018 Oct 7)
+
+Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
+Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
+Patch to be able to disable default digraphs (incomplete) (Eric Pruitt, 2018
+Nov 22).
+
+Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
-- Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
-- Writing raw mode to a buffer should still handle NL characters as line
-  breaks. (Dmitry Zotikov, 2017 Aug 16)
-- When out_cb executes :sleep, the close_cb may be invoked. (Daniel Hahler,
-  2016 Dec 11, #1320)
-- Implement |job-term| ?
-- Channel test fails with Motif.  Sometimes kills the X11 server.
-- When a message in the queue but there is no callback, drop it after a while?
-  Add timestamp to queued messages and callbacks with ID, remove after a
-  minute.  Option to set the droptime.
-- Add an option to drop text of very long lines?  Default to 1 Mbyte.
-- Add remark about undo sync, is there a way to force it?
-- When starting a job, have an option to open the server socket, so we know
-  the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
-  Feb 9)  How to do this on MS-Windows?
-- For connection to server, a "keep open" flag would be useful.  Retry
-  connecting in the main loop with zero timeout.
-- job_start(): run job in a newly opened terminal (not a terminal window).
-    With xterm could use -S{pty}.
-    Although user could use "xterm -e 'cmd arg'".
+or asyncmake: 
+  https://github.com/yegappan/asyncmake
 
-Regexp problems:
-- Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
-  (Manuel Ortega, 2016 Apr 24)
-  Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
-  LC_CTYPE
-- The old engine does not find a match for "/\%#=1\(\)\{80}", the new engine
-  matches everywhere.
-- Using win_linetabsize() can still be slow. Cache the result, store col and
-  vcol. Reset them when moving to another line.
-- Very slow with a long line and Ruby highlighting. (John Whitley, 2014 Dec 4)
-- Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
-  (Lech Lorens, 2014 Feb 3)
-- Issue 164: freeze on regexp search.
-- Ignorecase not handled properly for multi-byte characters. (Axel Bender,
-  2013 Dec 11)
-- Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin
-  Szamotulski; Remark from Brett 2014 Jan 6 and 7.
-- NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
-- Does not work with NFA regexp engine:
-  \%u, \%x, \%o, \%d followed by a composing character
-- Search for \%d0\+ may fail with E363. (Christian Brabandt, 2016 Oct 4)
-- \%'[ does not work.  '%'] does work.  (Masaaki Nakamura, 2016 Apr 4)
-- Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
-- New RE does not give an error for empty group: "\(\)\{2}" (Dominique Pelle,
-  2015 Feb 7)
-- Using back reference before the capturing group sometimes works with the old
-  engine, can we do this with the new engine?  E.g. with
-  "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
-  This problem is probably the same: "\%(^\1.*$\n\)\@<=\(\d\+\).*$".
-  (guotuofeng, 2015 Jun 22)
-- Strange matching with "\(Hello\n\)\@<=A". (Anas Syed, 2015 Feb 12)
-- Problem with \v(A)@<=b+\1c. (Issue 334)
-- Diff highlighting can be very slow. (Issue 309)
-- Using %> for a virtual column has a check based on 'tabsize'.  Better would
-  be to cache the result of win_linetabsize(col), storing both col and vcol,
-  and use them to decide whether win_linetabsize() needs to be called.  Reset
-  col and vcol when moving to another line.
-- this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
-  out the \& works.  Seems any column check after \& fails.
-- Difference between two engines: ".*\zs\/\@>\/" on text "///"
-  (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
-  Another one: echom matchstr(" sdfsfsf\n sfdsdfsdf",'[^\n]*')
-  (2017 May 15, #1252)
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode, as what's returned from mode().  Also used for switching Terminal mode.
 
-Patch to turn test80 into a new style test. (Yegappan Lakshmanan, 2017 Aug 20)
+Add an option with file patterns, to be used when unloading a buffer: If there
+is a match, remove entries for the buffer from marks, jumplist, etc.  To be
+used for git temp files.
 
-Include a few color schemes, based on popularity:
-http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
-http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their appearnce (Christian Brabandt, 2017 Aug 3)
-- monokai - Xia Crusoe (2017 Aug 4)
-- seoul256 - Christian Brabandt (2017 Aug 3)
-- gruvbox -  Christian Brabandt (2017 Aug 3)
-- janah - Marco Hinz (2017 Aug 4)
-- apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
-Suggested by Hiroki Kokubun:
-- [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
-- [hybrid](https://github.com/w0ng/vim-hybrid)
+Cursor in wrong position when line wraps. (#2540)
 
-When starting with --clean packages under "start" are not loaded.  Make this
-work:  :packadd START {name}  similar to :runtime START name
+Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+#2546)  Fixes #1057.  Missing a test.
+
+Setting 'columns' in a BufEnter autocommand causes a second tab width to
+behave strangely, as if there is a gap and a vertical window separator.
+(Michael Soyka, 2018 Sep 23, #3477)
+
+Make {skip} argument of searchpair() consistent with other places where we
+pass an expression to evaluate.  Allow passing zero for "never skip".
+
+The 'scrolloff' option is global, make it global-local. #3195
+
+Add an option similar to 'lazyredraw' to skip redrawing while executing a
+script or function.
+
+Universal solution to detect if t_RS is working, using cursor position.
+Koichi Iwamoto, #2126
+
+When using a menu item while the "more" prompt is displayed doesn't work well.
+E.g. after using help->version.  Have a key that ends the "more" prompt and
+does nothing otherwise?
+
+MS-Windows: write may fail if another program is reading the file.
+If 'readonly' is not set but the file appears to be readonly later, try again
+(wait a little while).
+CreateFile() returns ERROR_SHARING_VIOLATION (Linwei, 2018 May 5)
+
+Using --remote to open a file in which a # appears does not work on
+MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
+2017 Feb 9)  Can we expand wildcards first and send the path literally to the
+receiving Vim?  Or make an exception for #, it's not useful remotely.
+
+Should add a test for every command line argument.  Check coverage for what is
+missing: --nofork, -A , -b, -h, etc.
+
+":au * * command" should not be allowed, only use * for event when listing or
+deleting autocmds, not when adding them.
+
+Quickfix window height is not kept with a vertical split. (Lifepillar, 2018
+Jun 10, #2998)
+
+Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
+
+Delete all the specific stuff for the Borland compiler? (#3374)
+Patch in #3377 (Thomas Dziedzic)
+
+With 'foldmethod' "indent" and appending an empty line, what follows isn't
+included in the existing fold.  Deleting the empty line and undo fixes it.
+(Oleg Koshovetc, 2018 Jul 15, #3214)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
-After 8.0.0962 pasting leaves the cursor in another position. (Ken Takata,
-2017 Aug 23, #2015) Also (zdm, 2017 Aug 23)
+Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
+Lacks a test.
 
-Patch to add quickfix list identifier. (Yegappan, 2017 Aug 15)
+Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
+Jan 15, #2555)
 
-Mac Terminal.app: ctermbg=15 gives light grey instead of white.
-ctermbg=256 breaks clearing till end of the line.  Both work fine in xterm.
+":bufdo e" disabled syntax HL in windows other than the current. (BPJ)
 
-Patch to avoid editing a file in the session file twice. (Christian Brabandt,
-2017 Aug 21)  #1958
+Check argument of systemlist(). (Pavlov)
+
+No maintainer for Vietnamese translations.
+No maintainer for Simplified Chinese translations.
+
+Python indenting: alternative way to indent arguments:
+http://orchistro.tistory.com/236
+Should be supported with a flag.
+
+Starting job with cwd option, when the directory does not exist, gives a
+confusing error message. (Wang Shidong, 2018 Jan 2, #2519)
+
+Add the debug command line history to viminfo.
+
+Add Makefiles to the runtime/spell directory tree, since nobody uses Aap.
+Will have to explain the manual steps (downloading the .aff and .dic files,
+applying the diff, etc.
+
+Pasting a register in Visual mode cannot be repeated. (Mahmoud Al-Qudsi, 2018
+Apr 26, #2849)
+
+User dictionary ~/.vim/spell/lang.utf-8.add not used for spell checking until a
+word is re-added to it. (Matej Cepl, 2018 Feb 6)
+
+Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
 With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 (Marcin Szewczyk, 2017 Apr 26)
@@ -161,65 +507,143 @@ With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
 Using 'wildignore' also applies to literally entered file name.  Also with
 :drop (remote commands).
 
-ml_get error when using a Python. (Yggdroot, 2017 Jun 1, #1737)
-Lemonboy can reproduce (2017 Jun 5)
+Inserting a line in a CompleteDone autocommand may confuse undo. (micbou,
+2018 Jun 18, #3027)
+
+Implement option_save() and option_restore():
+option_restore({list})					*option_restore()*
+		Restore options previously saved by option_save().
+		When buffer-local options have been saved, this function must
+		be called when the same buffer is the current buffer.
+		When window-local options have been saved, this function must
+		be called when the same window is the current window.
+		When in the wrong buffer and/or window an error is given and
+		the local options won't be restored.
+
+option_save({list})					*option_save()*
+		Saves the options named in {list}.  The returned value can be
+		passed to option_restore().  Example: >
+			let s:saved_options = option_save([
+			    \ 'ignorecase',
+			    \ 'iskeyword',
+			    \ ])
+			 au <buffer> BufLeave *
+			    \ call option_restore(s:saved_options)
+<		The advantage over using `:let` is that global and local
+		values are handled and the script ID is restored, so that
+		`:verbose set` will show where the option was originally set,
+		not where it was restored.
+  Alternatively: save and restore ALL options.  Implementation needs to use
+	copy-on-write.  Return an ID from option_save(), when
+	option_restore(ID) is called give an error if another option_save()
+	was called in the meantime, they must be balanced.
+
+"gvim --remote" from a directory with non-word characters changes the current
+directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
+Also see #1689.
+
+crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
+17, #2652)
+
+When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
+highlighted. (van-de-bugger, 2018 Jan 23, #2576)
+
+":file" does not show anything when 'shortmess' contains 'F'. (#3070)
+
+No profile information for function that executes ":quit". (Daniel Hahler,
+2017 Dec 26, #2501)
+
+A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
+
+Add script number to profile?  (#3330 breaks tests).
+
+A function defined locally and lambda's are not easily recognized.
+Mention where they were defined somewhere.
+
+Invalid range error when using BufWinLeave for closing terminal.
+(Gabriel Barta, 2017 Nov 15, #2339)
 
 ml_get errors with buggy script. (Dominique, 2017 Apr 30)
 
 Error in emsg with buggy script. (Dominique, 2017 Apr 30)
 
+Join truncates xml comment. (Dmitrii Tcyganok, 2017 Dec 24, #2494)
+Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
+
+Patch to support hunspell. (Matej Cepl, Jan 2018, #2500) Based on older patch
+in #846)
+Doesn't work on Windows yet.  Not ready to included, hard coded paths.
+
+Win32 GUI: when running a fast timer, the cursor no longer blinks.
+Was reported: cursor blinks in terminal on widows with a timer. (xtal8, #2142)
+
+When a timer is running and typing CTRL-R on the command line, it is not
+redrawn properly. (xtal8, 2017 Oct 23, #2241)
+
+In an optional package the "after" directory is not scanned?
+(Renato Fabbri, 2018 Feb 22)
+
+Patch for Neovim concerning restoring when closing help window. (glacambre
+neovim #7431)
+
+Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
+Nov 21)
+
+When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
+triggered.  Use the code from the end of set_num_option() in
+set_color_count().
+
+Add another autocommand like TermResponse that is fired for the other terminal
+responses, such as bg and fg.  Use "bg", "fg", "blink", etc. for the name.
+
+When using command line window, CmdlineLeave is triggered without
+CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
+Add some way to get the nested state.  Although CmdwinEnter is obviously
+always nested.
+
+matchit hasn't been maintained for a long time.  #955.
+
+Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
+
+MS-Windows: buffer completion doesn't work when using backslash (or slash)
+for a path separator. (xtal8, #2201)
+
+Would be nice for insert mode completion to highlight the text that was added
+(and may change when picking another completion).
+
 Test runtime files.
 Start with filetype detection: testdir/test_filetype.vim
 
-Patch to support on-the-spot and over-the-spot input method. (Ken Takata, 2017
-Feb 14).  Also see #1215.
-
-Patch to ignore case when 'diffopt' has "icase" for finding the difference
-inside a line. (Rick Howe, 2017 Aug 21, 22 with test)
-
-Patch to support strikethrough next to bold and italic. (Christian Brabandt,
-2013 Jul 30)  Update from Ken Takata, 2013 Oct 12.
-Update mentioned by Christian, 2016 Apr 25.
-Update from Ken Takata, 2017 Aug 23.
-
-Patch to add setbufline(). (email from Yasuhiro Matsumoto, patch by Ozaki
-Kiichi, 2016 Feb 28)
-Update Mar 8: https://gist.github.com/mattn/23c1f50999084992ca98
-Update Mar 13: https://gist.github.com/mattn/23c1f50999084992ca98
-Update Aug 2017: #1953
-
-Patch to fix indenting for raw C++ string. (Christian Brabandt, 2017 Aug 24,
-#2019)
+Window not closed when deleting buffer. (Harm te Hennepe, 2017 Aug 27, #2029)
 
 Add options_default() / options_restore() to set several options to Vim
 defaults for a plugin. Comments from Zyx, 2017 May 10.
 Perhaps use a vimcontext / endvimcontext command block.
 
-Patch to fix bogus characters inserted in visual-block append. (Christian
-Brabandt, 2017 Aug 23)
-
-Illegal memory access, requires ASAN to see. (Dominique Pelle, 2015 Jul 28)
-Still happens (2017 Jul 9)
+After using :noautocmd CursorMoved may still trigger. (Andy Stewart, 2017 Sep
+13, #2084).  Set old position after the command.
 
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
 
-This example in the help does not work (Andy Wokula, 2017 Aug 20):
-    augroup mine | au! BufRead | augroup END
+The ":move" command does not honor closed folds. (Ryan Lue, #2351)
 
-Memory leak in test_arabic.
+Patch to fix increment/decrement not working properly when 'virtualedit' is
+set. (Hirohito Higashi, 2016 Aug 1, #923)
 
-Include Haiku port? (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
+Patch to make gM move to middle of line. (Yasuhiro Matsumoto, Sep 8, #2070)
+
+Cannot copy modeless selection when cursor is inside it. (lkintact, #2300)
+
+Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
-Now on github: #1856.  Is now up-to-date?
+Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
-
-Refactored HTML indent file. (Michael Lee, #1821)
-
-Using uninitialized value in test_crypt.
 
 Test_writefile_fails_conversion failure on Solaris because if different iconv
 behavior.  Skip when "uname" returns "SunOS"? (Pavel Heimlich, #1872)
+
+'tagrelative' is broken in specific situation. (xaizek, 2017 Oct 19, #2221)
 
 All functions are global, which makes functions like get() and len() awkward.
 For the future use the ~get() and ~len() syntax, e.g.:
@@ -235,6 +659,19 @@ Alternatives for ~:
 
 The ++ options for the :edit command are also useful on the Vim command line.
 
+When recovering a file, put the swap file name in b:recovered_swapfile.  Then
+a command can delete it.
+
+When a swap file exists, is not for a running process, is from the same
+machine and recovering results in the same text, we could silently delete it.
+#1237
+
+Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
+#2089)  Patch with possible solution by Björn Linse.
+
+The change list index is local to a buffer, but it doesn't make sense using it
+for another buffer.  (lacygoll) Copy w_changelistidx to wininfo_S and back.
+
 X11: Putting more than about 262040 characters of text on the clipboard and
 pasting it in another Vim doesn't work.  (Dominique Pelle, 2008 Aug 21-23)
 clip_x11_request_selection_cb() is called with zero value and length.
@@ -243,20 +680,42 @@ Seems to happen when the selection is requested the second time, but before
 clip_x11_convert_selection_cb() is invoked, thus in X library code.
 Kazunobu Kuriyama is working on a proper fix. (2017 Jul 25)
 
+Include a few color schemes, based on popularity:
+http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
+http://vimawesome.com/?q=tag:color-scheme
+Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
+- monokai - Xia Crusoe (2017 Aug 4) 
+- seoul256 - Christian Brabandt (2017 Aug 3)
+- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
+      Lifepillar, 2018 Jan 22, #2573)
+- janah - Marco Hinz (2017 Aug 4)
+- apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
+Suggested by Hiroki Kokubun:
+- [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
+- [hybrid](https://github.com/w0ng/vim-hybrid)
+Include solarized color scheme?, it does not support termguicolors.
+- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
+
 Problem with three-piece comment. (Michael Lee, 2017 May 11, #1696)
 
 Creating a partial with an autoload function is confused about the "self"
 attribute of the function.  For an unknown function assume "self" and make
 that optiona? (Bjorn Linse, 2017 Aug 5)
 
-Completion mixes results from the current buffer with tags and other files.
-Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
-terminal.c and then CTRL-N twice.
-Should do current file first and not split it up when more results are found.
-(Also #1890)
+Cindent: returning a structure has more indent for the second item.
+(Sam Pagenkopf, 2017 Sep 14, #2090)
+
+Patch from Christian Brabandt to preserve upper case marks when wiping out a
+buffer. (2013 Dec 9)
+Also fixes #2166?
+
+Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
 
 Python: After "import vim" error messages only show the first line of the
 stack trace. (Yggdroot, 2017 Jul 28, #1887)
+
+Profile of a dict function is lost when the dict is deleted.  Would it be
+possible to collect this?  (Daniel Hahler, #2350)
 
 When checking if a bufref is valid, also check the buffer number, to catch the
 case of :bwipe followed by :new.
@@ -281,8 +740,6 @@ Or is this not an actual problem?
 
 Better TeX indent file. (Christian Brabandt, 2017 May 3)
 
-Openhab syntax file (mueller, #1678)
-
 Patch to use a separate code for BS on Windows. (Linwei, #1823)
 
 Use gvimext.dll from the nightly build? (Issue #249)
@@ -292,8 +749,6 @@ Use gvimext.dll from the nightly build? (Issue #249)
 
 Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
 8, #1690)
-
-Include solarized color scheme?
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
@@ -313,9 +768,6 @@ Is it possible to keep the complete menu open when calling complete()?
 
 Memory leak in test97?  The string is actually freed.  Weird.
 
-Patch to add configure flags to skip rtl, farsi and arabic support.
-(Diego Carrión, #1867)
-
 assert_fails() can only check for the first error.  Make it possible to have
 it catch multiple errors and check all of them.
 
@@ -334,7 +786,7 @@ Perhaps simpler: actually delete the mappings.  Use maplist() to list matching
 mappings (with a lhs prefix, like maparg()), mapdelete() to delete,
 maprestore() to restore (using the output of maplist()).
 
-Add an argument to :mkvimrc (or add aother command) to skip mappings from
+Add an argument to :mkvimrc (or add another command) to skip mappings from
 plugins (source is a Vim script).  No need to put these in a .vimrc, they will
 be defined when the plugin is loaded.
 
@@ -370,10 +822,6 @@ Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
 Completion for :!cmd shows each match twice. #1435
-
-Patch to change GUI behavior: instead of changing the window size change the
-lines/columns when menu/toolbar/etc. is added/removed. (Ychin, 2016 Mar 20,
-#703)
 
 GTK: When adding a timer from 'balloonexpr' it won't fire, because
 g_main_context_iteration() doesn't return.  Need to trigger an event when the
@@ -427,9 +875,6 @@ Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
 Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca
 Update Aug 2017: #1954
 
-Characters deleted on completion. (Adrià Farrés, 2017 Apr 20, #1645)
-Remarks from Christian Brabandt (Apr 21)
-
 The TermResponse event is not triggered when a plugin has set 'eventignore' to
 "all".  Netrw does this. (Gary Johnson, 2017 Jan 24)
 Postpone the event until 'eventignore' is reset.
@@ -443,15 +888,11 @@ Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
 Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
 #1053)  With patch, does it work?
 
-Using --remote to open a file in which a # appears does not work on
-MS-Windows.  Perhaps in \#  the \ is seen as a path separator. (Axel Bender,
-2017 Feb 9)  Can we expand wildcards first and send the path literally to the
-receiving Vim?  Or make an exception for #, it's not useful remotely.
-
 ":sbr" docs state it respects 'switchbuf', but "vsplit" does not cause a
 vertical split. (Haldean Brown, 2017 Mar 1)
 
 Use ADDR_OTHER instead of ADDR_LINES for many more commands.
+E.g. all the location list commands use a count.
 Add tests for using number larger than number of lines in buffer.
 
 Might be useful to have isreadonly(), like we have islocked().
@@ -467,25 +908,12 @@ Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 Does this also fix #1408 ?
 
-Patch to add "module" to quickfix entries. (Coot, 2017 Jun 8, #1757)
-
 'cursorline' and match interfere. (Ozaki Kiichi, 2017 Jun 23, #1792)
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
-Patch to be able to separately map CTRL-H and BS on Windows.
-(Linwei, 2017 Jul 11, #1833)
-
 When 'completeopt' has "noselect" does not insert a newline. (Lifepillar, 2017
 Apr 23, #1653)
-
-Using an external diff is inefficient.  Not all systems have a good diff
-program available (esp. MS-Windows).  Would be nice to have in internal diff
-implementation.  Can then also use this for displaying changes within a line.
-Olaf Dabrunz is working on this. (10 Jan 2016)
-9   Instead invoking an external diff program, use builtin code.  One can be
-    found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
-    It's complicated and badly documented.
 
 Window resizing with 'winfixheight': With a vertical split the height changes
 anyway. (Tommy allen, 2017 Feb 21, #1502)
@@ -501,8 +929,6 @@ Patch to make it possible to extend a list with itself.
 (Nikolai Pavlov, 2016 Sep 23)
 
 Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
-
-Patch to add trim() function. (Bukn, 2016 Nov 25, #1280)
 
 Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
 
@@ -526,6 +952,80 @@ no longer support.
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
 
++channel:
+- Add a separate timeout for opening a socket.  Currently it's fixed at 50
+  msec, which is too small for a remote connection. (tverniquet, #2130)
+- Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
+- Writing raw mode to a buffer should still handle NL characters as line
+  breaks. (Dmitry Zotikov, 2017 Aug 16)
+- When out_cb executes :sleep, the close_cb may be invoked. (Daniel Hahler,
+  2016 Dec 11, #1320)
+- Implement |job-term| ?
+- Calling a function when receiving a "call" on a channel, using feedkeys()
+  does not work.  It does work from a timer. (Qiming Zhao, #3852)
+- Channel test fails with Motif.  Sometimes kills the X11 server.
+- When a message in the queue but there is no callback, drop it after a while?
+  Add timestamp to queued messages and callbacks with ID, remove after a
+  minute.  Option to set the droptime.
+- Add an option to drop text of very long lines?  Default to 1 Mbyte.
+- Add remark about undo sync, is there a way to force it?
+- When starting a job, have an option to open the server socket, so we know
+  the port, and pass it to the command with --socket-fd {nr}. (Olaf Dabrunz,
+  Feb 9)  How to do this on MS-Windows?
+- For connection to server, a "keep open" flag would be useful.  Retry
+  connecting in the main loop with zero timeout.
+- job_start(): run job in a newly opened terminal (not a terminal window).
+    With xterm could use -S{pty}.
+    Although user could use "xterm -e 'cmd arg'".
+
+Regexp problems:
+- When search pattern has the base character both with and without combining
+  character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
+- [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
+  characters, esp. including 0xa0.  Use character class zero.
+- Since 7.4.704 the old regex engine fails to match [[:print:]] in 0xf6.
+  (Manuel Ortega, 2016 Apr 24)
+  Test fails on Mac.  Avoid using isalpha(), isalnum(), etc?  Depends on
+  LC_CTYPE
+- The old engine does not find a match for "/\%#=1\(\)\{80}", the new engine
+  matches everywhere.
+- Using win_linetabsize() can still be slow. Cache the result, store col and
+  vcol. Reset them when moving to another line.
+- Very slow with a long line and Ruby highlighting. (John Whitley, 2014 Dec 4)
+- Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
+  (Lech Lorens, 2014 Feb 3)
+- Issue 164: freeze on regexp search.
+- Ignorecase not handled properly for multi-byte characters. (Axel Bender,
+  2013 Dec 11)
+- Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin
+  Szamotulski; Remark from Brett 2014 Jan 6 and 7.
+- NFA regexp doesn't handle \%<v correctly. (Ingo Karkat, 2014 May 12)
+- Does not work with NFA regexp engine:
+  \%u, \%x, \%o, \%d followed by a composing character
+- Search for \%d0\+ may fail with E363. (Christian Brabandt, 2016 Oct 4)
+- \%'[ does not work.  '%'] does work.  (Masaaki Nakamura, 2016 Apr 4)
+- Bug relating to back references. (Ingo Karkat, 2014 Jul 24)
+- New RE does not give an error for empty group: "\(\)\{2}" (Dominique Pelle,
+  2015 Feb 7)
+- Using back reference before the capturing group sometimes works with the old
+  engine, can we do this with the new engine?  E.g. with
+  "/\%(<\1>\)\@<=.*\%(<\/\(\w\+\)>\)\@=" matching text inside HTML tags.
+  This problem is probably the same: "\%(^\1.*$\n\)\@<=\(\d\+\).*$".
+  (guotuofeng, 2015 Jun 22)
+- Strange matching with "\(Hello\n\)\@<=A". (Anas Syed, 2015 Feb 12)
+- Problem with \v(A)@<=b+\1c. (Issue 334)
+- Diff highlighting can be very slow. (Issue 309)
+- Using %> for a virtual column has a check based on 'tabsize'.  Better would
+  be to cache the result of win_linetabsize(col), storing both col and vcol,
+  and use them to decide whether win_linetabsize() needs to be called.  Reset
+  col and vcol when moving to another line.
+- this doesn't work: "syntax match ErrorMsg /.\%9l\%>20c\&\%<28c/".  Leaving
+  out the \& works.  Seems any column check after \& fails.
+- Difference between two engines: ".*\zs\/\@>\/" on text "///"
+  (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
+  Another one: echom matchstr(" sdfsfsf\n sfdsdfsdf",'[^\n]*')
+  (2017 May 15, #1252)
+
 Patch to add "cmdline" completion to getcompletion(). (Shougo, Oct 1, #1140)
 
 Feature request: Complete members of a dictionary. (Luc Hermitte, 2017 Jan 4,
@@ -548,6 +1048,8 @@ command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
 
 Patch to support CamelCase for spell checking: See a lower-to-upper case
 change as a word boundary. (btucker-MPCData, 2016 Nov 6, #1235)
+patch for 'spellcamelcase' option: spellcheck each CamelCased word.
+(Ben Tucker, 2016 Dec 2)
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.
@@ -555,7 +1057,7 @@ Probably list of keystrokes, with some annotations for mode changes.
 Could store in logfile to be able to analyse it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
-execute() cannot be used with command completeion. (Daniel Hahler, 2016 Oct 1,
+execute() cannot be used with command completion. (Daniel Hahler, 2016 Oct 1,
 #1141)
 
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
@@ -563,9 +1065,6 @@ cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 :map X may print invalid data. (Nikolay Pavlov, 2017 Jul 3, #1816)
 
 Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
-
-patch for 'spellcamelcase' option: spellcheck each CamelCased word.
-(Ben Tucker, 2016 Dec 2)
 
 When using ":diffput" through a mapping, undo in the target buffer isn't
 synced.  (Ryan Carney, 2016 Sep 14)
@@ -586,9 +1085,6 @@ Patch to add ":syn foldlevel" to use fold level further down the line.
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
-
-Patch to fix wrong encoding of error message on Cygwin/MSYS terminal.
-(Ken Takata, 2016 Oct 4)
 
 Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
@@ -612,9 +1108,6 @@ Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 Have a way to get the call stack, in a function and from an exception.
 #1125
 
-Patch to add 'pythonhome' and 'pythonthreehome' options. (Kazuki Sakamoto,
-2016 Nov 21, #1266)
-
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
 
@@ -629,11 +1122,6 @@ Patch to improve map documentation. Issue #799.
 
 Patch for syntax folding optimization. (Shougo, 2016 Sep 6, #1045)
 
-Patch for drag&drop reordering of GUI tab pages reordering.
-(Ken Takata, 2013 Nov 22, second one, also by Masamichi Abe)
-Now on Git: https://gist.github.com/nocd5/165286495c782b815b94
-Update 2016 Aug 10.
-
 We can use '. to go to the last change in the current buffer, but how about
 the last change in any buffer?  Can we use ', (, is next to .)?
 
@@ -644,9 +1132,6 @@ emoji_width table has only one entry.
 
 It's possible to add ",," to 'wildignore', an empty entry.  Causes problems.
 Reject the value? #710.
-
-Patch to fix increment/decrement not working properly when 'virtualedit' is
-set. (Hirohito Higashi, 2016 Aug 1, #923)
 
 When doing "vi buf.md" a BufNew autocommand for *.md is not triggered.
 Because of using the initial buffer? (Dun Peal, 2016 May 12)
@@ -671,15 +1156,12 @@ Possibly include the needed code so that it can be build everywhere.
 Add a way to restart a timer.  It's similar to timer_stop() and timer_start(),
 but the reference remains valid.
 
-Need to try out instructions in INSSTALLpc.txt about how to install all
+Need to try out instructions in INSTALLpc.txt about how to install all
 interfaces and how to build Vim with them.
 Appveyor build with self-installing executable, includes getting most
 interfaces: https://github.com/k-takata/vim/tree/chrisbra-appveyor-build
 result: https://ci.appveyor.com/project/k-takata/vim/history
 
-Duplication of completion suggestions for ":!hom".  Issue 539.
-Patch by Christian, 2016 Jan 29
->
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 
@@ -725,20 +1207,11 @@ Added tests (James McCoy, 2016 Aug 3).  Still needs more work.
 Feature request: add the "al" text object, to manipulate a screen line.
 Especially useful when using 'linebreak'
 
-Access to uninitialized memory in match_backref() regexp_nda.c:4882
-(Dominique Pelle, 2015 Nov 6)
-
 ":cd C:\Windows\System32\drivers\etc*" does not work, even though the
 directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 In debug mode one can inspect variables, but not the function parameters
 (starting with a:). (Luc Hermitte, 2017 Jan 4, #1352)
-
-7   Add a watchpoint in the debug mode: An expression that breaks execution
-    when evaluating to non-zero.  Add the "watchadd expr" command, stop when
-    the value of the expression changes.  ":watchdel" deletes an item,
-    ":watchlist" lists the items. (Charles Campbell)
-Patch by Christian Brabandt, 2016 Jun 10, #859
 
 If ":bd" also closes a Tab page then the " mark is not set.  (Harm te Hennepe,
 2016 Apr 25, #780)
@@ -748,9 +1221,6 @@ Patch to avoid redrawing tabline when the popup menu is visible.
 
 Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
 Update 2016 Jun 10, #861
-
-Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
-Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 
 Patch to show search statistics. (Christian Brabandt, 2016 Jul 22)
 
@@ -766,9 +1236,6 @@ Patch to add <restore> to :windo, :bufdo, etc. (Christian Brabandt, 2015 Jan
 6, 2nd message)
 Alternative: ":keeppos" command modifier: ":keeppos windo {cmd}".
 
-Patch to fix that executable() may fail on very long filename in MS-Windows.
-(Ken Takata, 2016 Feb 1)
-
 Patch to fix display of listchars on the cursorline. (Nayuri Aohime, 2013)
 Update suggested by Yasuhiro Matsumoto, 2014 Nov 25:
 https://gist.github.com/presuku/d3d6b230b9b6dcfc0477
@@ -783,7 +1250,7 @@ Patch to add TagNotFound autocommand. (Anton Lindqvist, 2016 Feb 3)
 Patch to add Error autocommand. (Anton Lindqvist, 2016 Feb 17)
 Only remembers one error.
 
-Gvim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
+GVim: when both Tab and CTRL-I are mapped, use CTRL-I not for Tab.
 
 Unexpected delay when using CTRL-O u.  It's not timeoutlen.
 (Gary Johnson, 2015 Aug 28)
@@ -792,10 +1259,6 @@ Instead of separately uploading patches to the ftp site, we can get them from
 github with a URL like this:
    https://github.com/vim/vim/compare/v7.4.920%5E...v7.4.920.diff
 Diff for version.c contains more context, can't skip a patch.
-
-When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
-triggered.  Use the code from the end of set_num_option() in
-set_color_count().
 
 Python: ":py raw_input('prompt')" doesn't work. (Manu Hack)
 
@@ -834,10 +1297,6 @@ I can't recommend it though.
 Build with Python on Mac does not always use the right library.
 (Kazunobu Kuriyama, 2015 Mar 28)
 
-Patch to add arguments to argc() and argv(). (Yegappan Lakshmanan, 2016 Jan
-24)  Also need a way to get the global arg list?  Update later on Jan 24
-Update Mar 5. Update Apr 7.  Update Jun 5.
-
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
 
@@ -867,9 +1326,6 @@ Update Aug 14.
 
 When using --remote-tab on MS-Windows 'encoding' hasn't been initialized yet,
 the file name ends up encoded wrong. (Raul Coronado, 2015 Dec 21)
-
-Patch for problem with restoring screen on Windows. (Nobuhiro Takasaki, 2015
-Sep 10)
 
 Example in editing.txt uses $HOME with the expectation that it ends in a
 slash.  For me it does, but perhaps not for everybody.  Add a function that
@@ -917,9 +1373,6 @@ Doesn't work completely (Dominique Orban)
 
 Patch to add a "literal" argument to bufnr().  (Olaf Dabrunz, 2015 Aug 4)
 
-Cannot execute the shell when it's in a directory with a space.
-Issue #459.
-
 When a session file is created and there are "nofile" buffers, these are not
 filled.  Need to trigger BufReadCmd autocommands.  Also handle deleting the
 initial empty buffer better. (ZyX, 2015 March 8)
@@ -948,12 +1401,6 @@ Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
 
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
-Should be easy to highlight all matches with 'incsearch'.  Idea by Itchyny,
-2015 Feb 6.
-
-Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014 Dec 4.
-Is this a good solution?
-
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
 
@@ -971,18 +1418,11 @@ Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
 Updated patch by Roland Eggner, Dec 16
 Updated patch from Charles, 2016 Jul 2
 
-Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
-
 Patch for building a 32bit Vim with 64bit MingW compiler.
 (Michael Soyka, 2014 Oct 15)
 
-Delete old code in os_msdos.c, mch_FullName().
-
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
-
-Patch for variable tabstops.  On github (Christian Brabandt, 2014 May 15)
-Update 2016 Jun 10, # 857
 
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
@@ -1005,8 +1445,6 @@ Jun 8)
 Bug: Autocompleting ":tag/pat" replaces "/pat" with a match but does not
 insert a space. (Micha Mos, 2014 Nov 7)
 
-Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
-
 No error for missing endwhile. (ZyX, 2014 Mar 20)
 
 Patch to make extend() fail early when it might fail at some point.
@@ -1023,6 +1461,9 @@ Spell files use a latin single quote. Unicode also has another single quote:
 New OpenOffice spell files support this with ICONV.  But they are not
 compatible with Vim spell files.  The old files can no longer be downloaded.
 
+Spell checking: Add a feature to only consider two spaces after a dot to start
+a new sentence.  Don't give the capitalization error when there is one space.
+
 xterm should be able to pass focus changes to Vim, so that Vim can check for
 buffers that changed.  Perhaps in misc.c, function selectwindow().
 Xterm 224 supports it!
@@ -1034,9 +1475,6 @@ We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
 its height?  It's like dragging the status bar above it at the same time.
-
-Can we make ":unlet $VAR" use unsetenv() to delete the env var?
-What for systems that don't have unsetenv()?  (Issue #1116)
 
 Patch to add a :domodeline command. (Christian Brabandt, 2014 Oct 21)
 
@@ -1125,12 +1563,7 @@ possible. (Christian Brabandt, 2014 Mar 12, update Aug 22)
 
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
-Patch to right-align signs. (James Kolb (email james), 2013 Sep 23)
-
 Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
-
-Patch to add "ntab" item in 'listchars' to repeat first character. (Nathaniel
-Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
 
 7   Windows XP: When using "ClearType" for text smoothing, a column of yellow
     pixels remains when typing spaces in front of a "D" ('guifont' set to
@@ -1138,9 +1571,6 @@ Braun, pragm, 2013 Oct 13)  A better solution 2014 Mar 5.
 Patch by Thomas Tuegel, also for GTK, 2013 Nov 24
 
 :help gives example for z?, but it does not work.  m? and t? do work.
-
-Patch to add funcref to Lua.  (Luis Carvalho, 2013 Sep 4)
-With tests: Sep 5.
 
 Discussion about canonicalization of Hebrew. (Ron Aaron, 2011 April 10)
 
@@ -1150,10 +1580,7 @@ When evaluating expression in backticks, autoload doesn't work.
 (Andy Wokula, 2013 Dec 14)
 
 Using <nr>ifoobar<esc> can slow down Vim.  Patch by Christian Brabandt, 2013
-Dec 13.
-
-Patch from Christian Brabandt to preserve upper case marks when wiping out a
-buffer. (2013 Dec 9)
+Dec 13.  Only helps a bit, 10000ii<Esc> is still too slow.
 
 GTK: problem with 'L' in 'guioptions' changing the window width.
 (Aaron Cornelius, 2012 Feb 6)
@@ -1174,13 +1601,6 @@ The CompleteDone autocommand needs some info passed to it:
 Patch to allow more types in remote_expr(). (Lech Lorens, 2014 Jan 5)
 Doesn't work for string in list.  Other way to pass all types of variables
 reliably?
-
-Using ":call foo#d.f()" doesn't autoload the "foo.vim" file.
-That is, calling a dictionary function on an autoloaded dict.
-Works OK for echo, just not for  ":call" and ":call call()". (Ted, 2011 Mar
-17)
-Patch by Christian Brabandt, 2013 Mar 23.
-Not 100% sure this is the right solution.
 
 Patch to add {lhs} to :mapclear: clear all maps starting with {lhs}.
 (Christian Brabandt, 2013 Dec 9)
@@ -1207,23 +1627,7 @@ Two highlighting bugs. (ZyX, 2013 Aug 18)
 Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 28)  With tests: Oct 9.
 
-Patch from Christian Brabandt to make the "buffer" argument for ":sign place"
-optional. (2013 Jul 12)
-
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
-
-Improve the installer for MS-Windows.  There are a few alternatives:
-- Add silent install option. (Shane Lee, #751)
-- Installer from Cream (Steve Hall).
-- Modern UI 2.0 for the Nsis installer. (Guopeng Wen)
-    https://github.com/gpwen/vim-installer-mui2
--  make it possible to do a silent install, see
-    http://nsis.sourceforge.net/Docs/Chapter4.html#4.12
-    Version from Guopeng Wen does this.
-- MSI installer: https://github.com/petrkle/vim-msi/
-- The one on Issue 279.
-Problem: they all work slightly different (e.g. don't install vimrun.exe).
-How to test that it works well for all Vim users?
 
 Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
 
@@ -1247,10 +1651,6 @@ Or use expand('<sid>')?
 
 Patch to make confirm() display colors. (Christian Brabandt, 2012 Nov 9)
 
-Patch to add functions for signs. (Christian Brabandt, 2013 Jan 27)
-
-Patch to remove flicker from popup menu. (Yasuhiro Matsumoto, 2013 Aug 15)
-
 Problem with refresh:always in completion. (Tyler Wade, 2013 Mar 17)
 
 b:undo_ftplugin cannot call a script-local function. (Boris Danilov, 2013 Jan
@@ -1268,9 +1668,6 @@ Patch for :tabcloseleft, after closing a tab go to left tab. (William Bowers,
 
 Patch to improve equivalence classes in regexp patterns.
 (Christian Brabandt, 2013 Jan 16, update Jan 17)
-
-Patch to add new regexp classes :ident:, :keyword:, :fname:.
-(ichizok, 2016 Jan 12, #1373)
 
 Patch with suggestions for starting.txt. (Tony Mechelynck, 2012 Oct 24)
 But use Gnome instead of GTK?
@@ -1297,9 +1694,6 @@ of many matches. (Cody Cutler, 2013 Mar 28)
 The input map for CTRL-O in mswin.vim causes problems after CTRL-X CTRL-O.
 Suggestion for another map. (Philip Mat, 2012 Jun 18)
 But use "gi" instead of "a".  Or use CTRL-\ CTRL-O.
-
-Patch to support user name completion on MS-Windows. (Yasuhiro Matsumoto, 2012
-Aug 16)
 
 When there are no command line arguments ":next" and ":argu" give E163, which
 is confusing.  Should say "the argument list is empty".
@@ -1428,11 +1822,10 @@ Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
 BT regexp engine: After trying a \@> match and failing, submatches are not
 cleared.  See test64.
 
-Changes to manpage plugin. (Elias Toivanen, 2011 Jul 25)
-
 Patch to make "z=" work when 'spell' is off.  Does this have nasty side
 effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
 Would also need to do this for spellbadword() and spellsuggest().
+https://github.com/chrisbra/vim-mq-patches/blob/master/enable_spellchecking
 
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
@@ -1452,9 +1845,6 @@ doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
 
 Behavior of i" and a" text objects isn't logical. (Ben Fritz, 2013 Nov 19)
 
-7   Make "ga" show the digraph for a character, if it exists.
-Patch from Christian Brabandt, 2011 Aug 19.
-
 maparg() does not show the <script> flag.  When temporarily changing a
 mapping, how to restore the script ID?
 
@@ -1471,9 +1861,6 @@ Also for another example (ZyX, 2011 Jan 24)
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
 "0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
-
-Patch to add TextDeletePost and TextYankPost events. (Philippe Vaucher, 2011
-May 24)  Update May 26.
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
@@ -1518,6 +1905,9 @@ GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
 
 Win32: tear-off menu does not work when menu language is German. (Markus
 Bossler, 2011 Mar 2)  Fixed by 7.3.095?
+
+Wish for NetBeans commands:
+    - make it possible to have 'defineAnnoType' also handle terminal colors.
 
 Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
 
@@ -1584,13 +1974,6 @@ Ruby: ":ruby print $buffer.number" returns zero.
 
 setpos() does not restore cursor position after :normal. (Tyru, 2010 Aug 11)
 
-7   The 'directory' option supports changing path separators to "%" to make
-    file names unique, also support this for 'backupdir'. (Mikolaj Machowski)
-    Patch by Christian Brabandt, 2010 Oct 21.
-    Is this an update:  related to: #179
-    https://github.com/chrisbra/vim-mq-patches/blob/master/backupdir
-    Fixed patch 2017 Jul 1.
-
 With "tw=55 fo+=a" typing space before ) doesn't work well. (Scott Mcdermott,
 2010 Oct 24)
 
@@ -1618,7 +2001,7 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 Don't call check_restricted() for histadd(), setbufvar(), settabvar(),
 setwinvar().
 
-Patch for GVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
+Patch for gVimExt to show an icon. (Dominik Riebeling, 2010 Nov 7)
 
 When 'lines' is 25 and 'scrolloff' is 12, "j" scrolls zero or two lines
 instead of one. (Constantin Pan, 2010 Sep 10)
@@ -1685,9 +2068,6 @@ Patch to support :undo absolute jump to file save number. (Christian Brabandt,
 
 Patch to use 'foldnestmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
 Jan 7)
-
-Bug with 'incsearch' going to wrong line. (Wolfram Kresse, 2009 Aug 17)
-Only with "vim -u NONE".
 
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 
@@ -1851,8 +2231,6 @@ Haskell, 2010 Aug 24)
 
 This does not work yet: "a\(%C\)" (get composing characters into a submatch).
 
-A function on a dictionary is not profiled. (ZyX, 2010 Dec 25)
-
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages
 es_ES.utf-8" gives an error and doesn't switch messages. (Dominique Pelle,
@@ -1898,15 +2276,10 @@ still delete them.  Also convert all buffer file names?
 "gqip" in Insert mode has an off-by-one error, causing it to reflow text.
 (Raul Coronado, 2009 Nov 2)
 
-Update src/testdir/main.aap.
-
 Something wrong with session that has "cd" commands and "badd", in such a way
 that Vim doesn't find the edited file in the buffer list, causing the
 ATTENTION message?  (Tony Mechelynck, 2008 Dec 1)
 Also: swap files are in ~/tmp/  One has relative file name ".mozilla/...".
-
-Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-Maybe call it v:motiontype.
 
 MS-Windows: editing the first, empty buffer, 'ffs' set to "unix,dos", ":enew"
 doesn't set 'ff' to "unix".  (Ben Fritz, 2008 Dec 5) Reusing the old buffer
@@ -2097,9 +2470,6 @@ Syntax highlighting wrong for transparent region. (Doug Kearns, 2007 Feb 26)
 Bug in using a transparent syntax region. (Hanlen in vim-dev maillist, 2007
 Jul 31)
 
-C syntax: {} inside () causes following {} to be highlighted as error.
-(Michalis Giannakidis, 2006 Jun 1)
-
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
 
@@ -2202,11 +2572,8 @@ with "gvim -nb:localhost:55555:foo".  From nc do: '1:editFile!0 "foo"'.  Then
 go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
 
-Windows installer should install 32-bit version of right-click handler also on
-64-bit systems. (Brian Cunningham, 2011 Dec 28)
-
 Windows installer could add a "open in new tab of existing Vim" menu entry.
-Gvimext: patch to add "Edit with single Vim &tabbed" menu entry.
+GvimExt: patch to add "Edit with single Vim &tabbed" menu entry.
 Just have two choices, always using one Vim and selecting between using an
 argument list or opening each file in a separate tab.
 (Erik Falor, 2008 May 21, 2008 Jun 26)
@@ -2282,7 +2649,7 @@ C++ indenting wrong with "=". (James Kanze, 2007 Jan 26)
 When using --remote-silent and the file name matches 'wildignore' get an E479
 error.  without --remote-silent it works fine. (Ben Fritz, 2008 Jun 20)
 
-Gvim: dialog for closing Vim should check if Vim is busy writing a file.  Then
+GVim: dialog for closing Vim should check if Vim is busy writing a file.  Then
 use a different dialog: "busy saving, really quit? yes / no".
 
 Check other interfaces for changing curbuf in a wrong way.  Patch like for
@@ -2565,8 +2932,6 @@ More patches:
 -   Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
     Needs a few tests.
 -   Add 'cscopeignorecase' option. (Liang Wenzhi, 2006 Sept 3)
--   Load intl.dll too, not only libintl.dll. (Mike Williams, 2006 May 9, docs
-    patch May 10)
 -   Extra argument to strtrans() to translate special keys to their name (Eric
     Arnold, 2006 May 22)
 -   'threglookexp' option: only match with first word in thesaurus file.
@@ -3169,8 +3534,6 @@ Macintosh:
     'magic' in history.  (Margo)
 9   optwin.vim: Restoring a mapping for <Space> or <CR> is not correct for
     ":noremap".  Add "mapcmd({string}, {mode})?  Use code from ":mkexrc".
-9   incsearch is incorrect for "/that/<Return>/this/;//" (last search pattern
-    isn't updated).
 9   term_console is used before it is set (msdos, Amiga).
 9   Get out-of-memory for ":g/^/,$s//@/" on 1000 lines, this is not handled
     correctly.  Get many error messages while redrawing the screen, which
@@ -3191,9 +3554,6 @@ Macintosh:
 7   X11: Some people prefer to use CLIPBOARD instead of PRIMARY for the normal
     selection.  Add an "xclipboard" argument to the 'clipboard' option? (Mark
     Waggoner)
-8   For xterm need to open a connection to the X server to get the window
-    title, which can be slow.  Can also get the title with "<Esc>[21t", no
-    need to use X11 calls.  This returns "<Esc>]l{title}<Esc>\".
 6   When the xterm reports the number of colors, a redraw occurs.  This is
     annoying on a slow connection.  Wait for the xterm to report the number of
     colors before drawing the screen.  With a timeout.
@@ -3395,6 +3755,7 @@ Most interesting new features to be added when all bugs have been fixed:
     Alternative: Make a function for Ex commands: cmd_edit().
 -   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
     can be selected with CTRL-V.  Allow '$' (end of line) for col2.
+    (issue #3292)
 -   ECLIPSE plugin.  Problem is: the interface is very complicated.  Need to
     implement part in Java and then connect to Vim.  Some hints from Alexandru
     Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
@@ -3709,7 +4070,7 @@ Multi-byte characters:
     at a multi-byte character >= 0x100.
 -   Add the possibility to enter mappings which are used whenever normal text
     could be entered.  E.g., for "f" command.  But not in Normal mode.  Sort
-    of opposite of 'langmap'.  Use ":tmap" command?
+    of opposite of 'langmap'.  Use ":amap" command?
 -   When breaking a line, take properties of multi-byte characters into
     account.  The "linebreak" program from Bruno Haible can do it:
     ftp://ftp.ilog.fr/pub/Users/haible/gnu/linebreak-0.1.tar.gz
@@ -3965,8 +4326,6 @@ Vim script language:
 	virtualmode()		add argument to obtain whether "$" was used in
 				Visual block mode.
 	getacp()		Win32: get codepage (Glenn Maynard)
-	deletebufline()		delete line in any buffer
-	appendbufline()		append line in any buffer
 	libcall()		Allow more than one argument.
 	libcallext()		Like libcall(), but using a callback function
 				to allow the library to execute a command or
@@ -4084,7 +4443,6 @@ Performance:
 -   Have a look at how pdksh does memory allocation (alloc.c). (Dalecki)
 -   Do profiling on:
     - :g/pat/normal cmd
-    - 1000ii<Esc>
     - deleting 10Mbyte worth of lines (netscape binary)
     - "[i" and "[d" (Yegappan Lakshmanan)
     - ":g/^/m0" on a 450Kbyte file.  And the "u".
@@ -4103,8 +4461,6 @@ Performance:
 -   Executing a register, e.g. "10000@@" is slow, because ins_typebuf has to
     move the previous commands forward each time.  Pass count from
     normal_cmd() down to do_execreg().
--   Repeating insert "1000i-<Esc>" displays --INSERT-- all the time, because of
-    the <Esc> at the end.  Make this work faster (disable redrawing).
 -   Avoid calls to plines() for cursor line, use w_cline_height.
 -   After ":set nowrap" remove superfluous redraw with wrong hor. offset if
     cursor is right of the screen.
@@ -4220,6 +4576,8 @@ Perl interface:
 
 
 Shared libraries:
+8   libcall() can keep the library around instead of always calling dlclose().
+    (Jason Felice, 2018 Mar 20)
 6   Add support for loading shared libraries, and calling functions in it.
 	:libload internal-name libname
 	:libunload internal-name
@@ -4440,12 +4798,7 @@ Autocommands:
     command used dos fileformat.  Same for 'fileencoding'.
 -   Add events to autocommands:
     Error	    - When an error happens
-    NormalEnter	    - Entering Normal mode
-    ReplaceEnter    - Entering Replace mode
-    CmdEnter	    - Entering Cmdline mode (with type of cmdline to allow
-			different mapping)
-    VisualEnter	    - Entering Visual mode
-    *Leave	    - Leaving a mode (in pair with the above *Enter)
+    ModeChange	    - after changing mode (before waiting for a char)
     VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled
 		      when exiting isn't a good idea.
     CursorHoldC     - CursorHold while command-line editing
@@ -4641,7 +4994,7 @@ Command line history:
 -   Add "KeyWasTyped" flag: It's reset before each command and set when a
     character from the keyboard is consumed. Value is used to decide to put a
     command line in history or not. Put line in history if it didn't
-    completely resulted from one mapping.
+    completely result from one mapping.
 -   When using ":browse", also put the resulting edit command in the history,
     so that it can be repeated. (Demirel)
 
@@ -4957,16 +5310,22 @@ Mappings and Abbreviations:
 
 
 Incsearch:
--   Add a limit to the number of lines that are searched for 'incsearch'?
+-   Wrong scrolling when using incsearch.  Patch by Christian Brabandt, 2014
+    Dec 4.  Is this a good solution?
+-   Temporarily open folds to show where the search ends up.  Restore the
+    folds when going to another line.
+    Patch to open folds for 'incsearch'. (Christian Brabandt, 2015 Jan 6)
+-   Bug with 'incsearch' going to wrong line. (Wolfram Kresse, 2009 Aug 17)
+    Only with "vim -u NONE".
 -   When no match is found and the user types more, the screen is redrawn
     anyway.  Could skip that.  Esp. if the line wraps and the text is scrolled
     up every time.
--   Temporarily open folds to show where the search ends up.  Restore the
-    folds when going to another line.
 -   When incsearch used and hitting return, no need to search again in many
     cases, saves a lot of time in big files. (Slootman wants to work on this?)
     When not using special characters, can continue search from the last match
     (or not at all, when there was no match).  See oldmail/webb/in.872.
+9   incsearch is incorrect for "/that/<Return>/this/;//" (last search pattern
+    isn't updated).
 
 
 Searching:
@@ -5189,7 +5548,7 @@ Swap (.swp) files:
 -   Add an option to create a swap file only when making the first change to
     the buffer.  (Liang)  Or only when the buffer is not read-only.
 -   Add option to set "umask" for backup files and swap files (Antwerpen).
-    'backupumask' and 'swapumask'?  Or 'umaskback' and 'umaskswap'?
+    'backupumask' and 'swapumask'?  Or 'umaskbackup' and 'umaskswap'?
 -   When editing a readonly file, don't use a swap file but read parts from the
     original file.  Also do this when the file is huge (>'maxmem').  We do
     need to load the file once to count the number of lines?  Perhaps keep a
@@ -5269,9 +5628,6 @@ Options:
     that marks if the option was set.  Useful to keep the effect of setting
     'compatible' after ":syntax on" has been used.
 7   There is 'titleold', why is there no 'iconold'? (Chazelas)
-7   Make 'scrolloff' a global-local option, so that it can be different in the
-    quickfix window, for example. (Gary Holloway)
-    Also do 'sidescrolloff'.
 
 
 External commands:
@@ -5451,7 +5807,6 @@ Debug mode:
 8   Add breakpoints for assigning to a variable.
 7   Store the history from debug mode in viminfo.
 7   Make the debug mode history available with histget() et al.
-
 
 Various improvements:
 7   Add plugins for formatting?  Should be able to make a choice depending on
@@ -5880,5 +6235,5 @@ Far future and "big" extensions:
     are reflected in each Vim immediately.  Could work with local files but
     also over the internet.  See http://www.codingmonkeys.de/subethaedit/.
 
-vim:tw=78:sw=4:sts=4:ts=8:ft=help:norl:
+vim:tw=78:sw=4:sts=4:ts=8:noet:ft=help:norl:
 vim: set fo+=n :

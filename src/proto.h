@@ -62,6 +62,7 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "autocmd.pro"
 # include "buffer.pro"
 # include "charset.pro"
 # ifdef FEAT_CSCOPE
@@ -86,8 +87,10 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "indent.pro"
 # include "json.pro"
 # include "list.pro"
+# include "blob.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
@@ -107,28 +110,54 @@ int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg(char_u *, ...);
+smsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-smsg_attr(int, char_u *, ...);
+smsg_attr(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf_add(char *, size_t, char *, ...);
+smsg_attr_keep(int, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
 
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
-vim_snprintf(char *, size_t, char *, ...);
+vim_snprintf_add(char *, size_t, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 3, 4)))
+#endif
+    ;
 
-int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap);
-int vim_vsnprintf_typval(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+vim_snprintf(char *, size_t, const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 3, 4)))
+#endif
+    ;
+
+int vim_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
+int vim_vsnprintf_typval(char *str, size_t str_m, const char *fmt, va_list ap, typval_T *tvs);
 
 # include "message.pro"
 # include "misc1.pro"
@@ -141,10 +170,7 @@ char_u *vim_strpbrk(char_u *s, char_u *charset);
 void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
 # include "move.pro"
-# if defined(FEAT_MBYTE) || defined(FEAT_XIM) || defined(FEAT_KEYMAP) \
-	|| defined(FEAT_POSTSCRIPT)
-#  include "mbyte.pro"
-# endif
+# include "mbyte.pro"
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
@@ -158,6 +184,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "sha256.pro"
 # endif
 # include "search.pro"
+# ifdef FEAT_SIGNS
+# include "sign.pro"
+# endif
 # include "spell.pro"
 # include "spellfile.pro"
 # include "syntax.pro"
@@ -168,6 +197,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
+# endif
+# ifdef FEAT_TEXT_PROP
+#  include "textprop.pro"
 # endif
 # include "ui.pro"
 # include "undo.pro"
@@ -201,7 +233,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 
 /* Ugly solution for "BalloonEval" not being defined while it's used in some
  * .pro files. */
-# ifndef FEAT_BEVAL
+# ifdef FEAT_BEVAL
+#  include "beval.pro"
+# else
 #  define BalloonEval int
 # endif
 
@@ -210,10 +244,18 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # ifdef FEAT_JOB_CHANNEL
 #  include "channel.pro"
+
+/* Not generated automatically, to add extra attribute. */
+void ch_log(channel_T *ch, const char *fmt, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 2, 3)))
+#endif
+    ;
+
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
-#  if defined(UNIX) || defined(MACOS)
+#  if defined(UNIX) || defined(MACOS_X) || defined(VMS)
 #   include "pty.pro"
 #  endif
 # endif
@@ -252,9 +294,6 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #  ifdef FEAT_GUI_PHOTON
 #   include "gui_photon.pro"
 #  endif
-#  ifdef FEAT_SUN_WORKSHOP
-#   include "workshop.pro"
-#  endif
 # endif	/* FEAT_GUI */
 
 # ifdef FEAT_OLE
@@ -286,7 +325,7 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #ifdef MACOS_CONVERT
 # include "os_mac_conv.pro"
 #endif
-#if defined(MACOS_X_UNIX) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+#if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
 void clip_mch_lose_selection(VimClipboard *cbd);
 int clip_mch_own_selection(VimClipboard *cbd);

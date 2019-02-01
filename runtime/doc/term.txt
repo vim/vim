@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.0.  Last change: 2017 Aug 26
+*term.txt*      For Vim version 8.1.  Last change: 2019 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -111,6 +111,16 @@ have a problem with this, disable bracketed paste by putting this in your
 If this is done while Vim is running the 't_BD' will be sent to the terminal
 to disable bracketed paste.
 
+If your terminal supports bracketed paste, but the options are not set
+automatically, you can try using something like this: >
+
+	if &term =~ "screen"
+	  let &t_BE = "\e[?2004h"
+	  let &t_BD = "\e[?2004l"
+	  exec "set t_PS=\e[200~"
+	  exec "set t_PE=\e[201~"
+	endif
+<
 							*cs7-problem*
 Note: If the terminal settings are changed after running Vim, you might have
 an illegal combination of settings.  This has been reported on Solaris 2.5
@@ -295,8 +305,6 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
 	t_ue	underline end					*t_ue* *'t_ue'*
 	t_us	underline mode					*t_us* *'t_us'*
-	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
-	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_ut	clearing uses the current background color	*t_ut* *'t_ut'*
 	t_vb	visual bell					*t_vb* *'t_vb'*
 	t_ve	cursor visible					*t_ve* *'t_ve'*
@@ -311,6 +319,10 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
 Added by Vim (there are no standard codes for these):
+	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
+	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
+	t_Te	strikethrough end				*t_Te* *'t_Te'*
+	t_Ts	strikethrough mode				*t_Ts* *'t_Ts'*
 	t_IS	set icon text start				*t_IS* *'t_IS'*
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
@@ -322,10 +334,15 @@ Added by Vim (there are no standard codes for these):
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
-		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+		The response is stored in |v:termresponse|
+		|xterm-8bit| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
+		The response is stored in |v:termu7resp|
+	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
+		The response is stored in |v:termrfgresp|
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
+		The response is stored in |v:termrbgresp|
 	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
@@ -337,7 +354,14 @@ Added by Vim (there are no standard codes for these):
 	t_SC	set cursor color start				*t_SC* *'t_SC'*
 	t_EC	set cursor color end				*t_EC* *'t_EC'*
 	t_SH	set cursor shape				*t_SH* *'t_SH'*
+	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
+		The response is stored in |v:termblinkresp|
 	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
+		The response is stored in |v:termstyleresp|
+	t_ST	save window title to stack			*t_ST* *'t_ST'*
+	t_RT	restore window title from stack			*t_RT* *'t_RT'*
+	t_Si	save icon text to stack				*t_Si* *'t_Si'*
+	t_Ri	restore icon text from stack			*t_Ri* *'t_Ri'*
 
 Some codes have a start, middle and end part.  The start and end are defined
 by the termcap option, the middle part is text.
@@ -963,4 +987,4 @@ To swap the meaning of the left and right mouse buttons: >
 	:noremap!	<RightDrag>	<LeftDrag>
 	:noremap!	<RightRelease>	<LeftRelease>
 <
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

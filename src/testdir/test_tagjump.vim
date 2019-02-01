@@ -137,4 +137,233 @@ function Test_keyword_jump()
   call delete('Xinclude')
 endfunction
 
+" Test for jumping to a tag with 'hidden' set, with symbolic link in path of
+" tag.  This only works for Unix, because of the symbolic link.
+func Test_tag_symbolic()
+  if !has('unix')
+    return
+  endif
+  set hidden
+  call delete("Xtest.dir", "rf")
+  call system("ln -s . Xtest.dir")
+  " Create a tags file with the current directory name inserted.
+  call writefile([
+        \ "SECTION_OFF	" . getcwd() . "/Xtest.dir/Xtest.c	/^#define  SECTION_OFF  3$/",
+        \ '',
+        \ ], 'Xtags')
+  call writefile(['#define  SECTION_OFF  3',
+        \ '#define  NUM_SECTIONS 3'], 'Xtest.c')
+
+  " Try jumping to a tag, but with a path that contains a symbolic link.  When
+  " wrong, this will give the ATTENTION message.  The next space will then be
+  " eaten by hit-return, instead of moving the cursor to 'd'.
+  set tags=Xtags
+  enew!
+  call append(0, 'SECTION_OFF')
+  call cursor(1,1)
+  exe "normal \<C-]> "
+  call assert_equal('Xtest.c', expand('%:t'))
+  call assert_equal(2, col('.'))
+
+  set hidden&
+  set tags&
+  enew!
+  call delete('Xtags')
+  call delete('Xtest.c')
+  call delete("Xtest.dir", "rf")
+  %bwipe!
+endfunc
+
+" Tests for tag search with !_TAG_FILE_ENCODING.
+" Depends on the test83-tags2 and test83-tags3 files.
+func Test_tag_file_encoding()
+  if has('vms')
+    return
+  endif
+
+  if !has('iconv') || iconv("\x82\x60", "cp932", "utf-8") != "\uff21"
+    return
+  endif
+
+  let save_enc = &encoding
+  set encoding=utf8
+
+  let content = ['text for tags1', 'abcdefghijklmnopqrs']
+  call writefile(content, 'Xtags1.txt')
+  let content = ['text for tags2', 'ＡＢＣ']
+  call writefile(content, 'Xtags2.txt')
+  let content = ['text for tags3', 'ＡＢＣ']
+  call writefile(content, 'Xtags3.txt')
+  let content = ['!_TAG_FILE_ENCODING	utf-8	//', 'abcdefghijklmnopqrs	Xtags1.txt	/abcdefghijklmnopqrs']
+  call writefile(content, 'Xtags1')
+
+  " case1:
+  new
+  set tags=Xtags1
+  tag abcdefghijklmnopqrs
+  call assert_equal('Xtags1.txt', expand('%:t'))
+  call assert_equal('abcdefghijklmnopqrs', getline('.'))
+  close
+
+  " case2:
+  new
+  set tags=test83-tags2
+  tag /.ＢＣ
+  call assert_equal('Xtags2.txt', expand('%:t'))
+  call assert_equal('ＡＢＣ', getline('.'))
+  close
+
+  " case3:
+  new
+  set tags=test83-tags3
+  tag abc50
+  call assert_equal('Xtags3.txt', expand('%:t'))
+  call assert_equal('ＡＢＣ', getline('.'))
+  close
+
+  set tags&
+  let &encoding = save_enc
+  call delete('Xtags1.txt')
+  call delete('Xtags2.txt')
+  call delete('Xtags3.txt')
+  call delete('Xtags1')
+endfunc
+
+func Test_tagjump_etags()
+  if !has('emacs_tags')
+    return
+  endif
+  call writefile([
+        \ "void foo() {}",
+        \ "int main(int argc, char **argv)",
+        \ "{",
+        \ "\tfoo();",
+        \ "\treturn 0;",
+        \ "}",
+        \ ], 'Xmain.c')
+
+  call writefile([
+	\ "\x0c",
+        \ "Xmain.c,64",
+        \ "void foo() {}\x7ffoo\x011,0",
+        \ "int main(int argc, char **argv)\x7fmain\x012,14",
+	\ ], 'Xtags')
+  set tags=Xtags
+  ta foo
+  call assert_equal('void foo() {}', getline('.'))
+
+  call delete('Xtags')
+  call delete('Xmain.c')
+  bwipe!
+endfunc
+
+" Test for getting and modifying the tag stack
+func Test_getsettagstack()
+  call writefile(['line1', 'line2', 'line3'], 'Xfile1')
+  call writefile(['line1', 'line2', 'line3'], 'Xfile2')
+  call writefile(['line1', 'line2', 'line3'], 'Xfile3')
+
+  enew | only
+  call settagstack(1, {'items' : []})
+  call assert_equal(0, gettagstack(1).length)
+  call assert_equal([], gettagstack(1).items)
+  " Error cases
+  call assert_equal({}, gettagstack(100))
+  call assert_equal(-1, settagstack(100, {'items' : []}))
+  call assert_fails('call settagstack(1, [1, 10])', 'E715')
+  call assert_fails("call settagstack(1, {'items' : 10})", 'E714')
+  call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928')
+  call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962')
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile1\t1",
+        \ "three\tXfile3\t3",
+        \ "two\tXfile2\t2"],
+        \ 'Xtags')
+
+  let stk = []
+  call add(stk, {'bufnr' : bufnr('%'), 'tagname' : 'one',
+	\ 'from' : [bufnr('%'), line('.'), col('.'), 0], 'matchnr' : 1})
+  tag one
+  call add(stk, {'bufnr' : bufnr('%'), 'tagname' : 'two',
+	\ 'from' : [bufnr('%'), line('.'), col('.'), 0], 'matchnr' : 1})
+  tag two
+  call add(stk, {'bufnr' : bufnr('%'), 'tagname' : 'three',
+	\ 'from' : [bufnr('%'), line('.'), col('.'), 0], 'matchnr' : 1})
+  tag three
+  call assert_equal(3, gettagstack(1).length)
+  call assert_equal(stk, gettagstack(1).items)
+  " Check for default - current window
+  call assert_equal(3, gettagstack().length)
+  call assert_equal(stk, gettagstack().items)
+
+  " Try to set current index to invalid values
+  call settagstack(1, {'curidx' : -1})
+  call assert_equal(1, gettagstack().curidx)
+  call settagstack(1, {'curidx' : 50})
+  call assert_equal(4, gettagstack().curidx)
+
+  " Try pushing invalid items onto the stack
+  call settagstack(1, {'items' : []})
+  call settagstack(1, {'items' : ["plate"]}, 'a')
+  call assert_equal(0, gettagstack().length)
+  call assert_equal([], gettagstack().items)
+  call settagstack(1, {'items' : [{"tagname" : "abc"}]}, 'a')
+  call assert_equal(0, gettagstack().length)
+  call assert_equal([], gettagstack().items)
+  call settagstack(1, {'items' : [{"from" : 100}]}, 'a')
+  call assert_equal(0, gettagstack().length)
+  call assert_equal([], gettagstack().items)
+  call settagstack(1, {'items' : [{"from" : [2, 1, 0, 0]}]}, 'a')
+  call assert_equal(0, gettagstack().length)
+  call assert_equal([], gettagstack().items)
+
+  " Push one item at a time to the stack
+  call settagstack(1, {'items' : []})
+  call settagstack(1, {'items' : [stk[0]]}, 'a')
+  call settagstack(1, {'items' : [stk[1]]}, 'a')
+  call settagstack(1, {'items' : [stk[2]]}, 'a')
+  call settagstack(1, {'curidx' : 4})
+  call assert_equal({'length' : 3, 'curidx' : 4, 'items' : stk},
+        \ gettagstack(1))
+
+  " Try pushing items onto a full stack
+  for i in range(7)
+    call settagstack(1, {'items' : stk}, 'a')
+  endfor
+  call assert_equal(20, gettagstack().length)
+  call settagstack(1,
+        \ {'items' : [{'tagname' : 'abc', 'from' : [1, 10, 1, 0]}]}, 'a')
+  call assert_equal('abc', gettagstack().items[19].tagname)
+
+  " Tag with multiple matches
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "two\tXfile1\t1",
+        \ "two\tXfile2\t3",
+        \ "two\tXfile3\t2"],
+        \ 'Xtags')
+  call settagstack(1, {'items' : []})
+  tag two
+  tnext
+  tnext
+  call assert_equal(1, gettagstack().length)
+  call assert_equal(3, gettagstack().items[0].matchnr)
+
+  " Memory allocation failures
+  call test_alloc_fail(GetAllocId('tagstack_items'), 0, 0)
+  call assert_fails('call gettagstack()', 'E342:')
+  call test_alloc_fail(GetAllocId('tagstack_from'), 0, 0)
+  call assert_fails('call gettagstack()', 'E342:')
+  call test_alloc_fail(GetAllocId('tagstack_details'), 0, 0)
+  call assert_fails('call gettagstack()', 'E342:')
+
+  call settagstack(1, {'items' : []})
+  call delete('Xfile1')
+  call delete('Xfile2')
+  call delete('Xfile3')
+  call delete('Xtags')
+  set tags&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

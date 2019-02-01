@@ -5,7 +5,7 @@ endif
 
 source view_util.vim
 
-func! Test_display_foldcolumn()
+func Test_display_foldcolumn()
   if !has("folding")
     return
   endif
@@ -38,8 +38,8 @@ func! Test_display_foldcolumn()
   quit!
 endfunc
 
-func! Test_display_foldtext_mbyte()
-  if !has("folding") || !has("multi_byte")
+func Test_display_foldtext_mbyte()
+  if !has("folding")
     return
   endif
   call NewWindow(10, 40)

@@ -3,8 +3,9 @@
 " Maintainer:           Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 " Previous Maintainer:  Claudio Fleiner <claudio@fleiner.com>
 " Repository:           https://notabug.org/jorgesumle/vim-html-syntax
-" Last Change:          2017 Jan 21
-"                       included patch from Jorge Maldonado Ventura
+" Last Change:          2018 May 31
+" Included patch from Jay Sitter to add WAI-ARIA htmlArg keywords
+"
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -45,13 +46,13 @@ syn keyword htmlTagName contained cite code dd dfn dir div dl dt font
 syn keyword htmlTagName contained form hr html img
 syn keyword htmlTagName contained input isindex kbd li link map menu
 syn keyword htmlTagName contained meta ol option param pre p samp span
-syn keyword htmlTagName contained select small strike sub sup
+syn keyword htmlTagName contained select small sub sup
 syn keyword htmlTagName contained table td textarea th tr tt ul var xmp
 syn match htmlTagName contained "\<\(b\|i\|u\|h[1-6]\|em\|strong\|head\|body\|title\)\>"
 
 " new html 4.0 tags
 syn keyword htmlTagName contained abbr acronym bdo button col label
-syn keyword htmlTagName contained colgroup del fieldset iframe ins legend
+syn keyword htmlTagName contained colgroup fieldset iframe ins legend
 syn keyword htmlTagName contained object optgroup q s tbody tfoot thead
 
 " new html 5 tags
@@ -76,6 +77,29 @@ syn keyword htmlArg contained size src start target text type url
 syn keyword htmlArg contained usemap ismap valign value vlink vspace width wrap
 syn match   htmlArg contained "\<\(http-equiv\|href\|title\)="me=e-1
 
+" aria attributes
+syn match htmlArg contained "\<\(aria-activedescendant\|aria-atomic\)\>"
+syn match htmlArg contained "\<\(aria-autocomplete\|aria-busy\|aria-checked\)\>"
+syn match htmlArg contained "\<\(aria-colcount\|aria-colindex\|aria-colspan\)\>"
+syn match htmlArg contained "\<\(aria-controls\|aria-current\)\>"
+syn match htmlArg contained "\<\(aria-describedby\|aria-details\)\>"
+syn match htmlArg contained "\<\(aria-disabled\|aria-dropeffect\)\>"
+syn match htmlArg contained "\<\(aria-errormessage\|aria-expanded\)\>"
+syn match htmlArg contained "\<\(aria-flowto\|aria-grabbed\|aria-haspopup\)\>"
+syn match htmlArg contained "\<\(aria-hidden\|aria-invalid\)\>"
+syn match htmlArg contained "\<\(aria-keyshortcuts\|aria-label\)\>"
+syn match htmlArg contained "\<\(aria-labelledby\|aria-level\|aria-live\)\>"
+syn match htmlArg contained "\<\(aria-modal\|aria-multiline\)\>"
+syn match htmlArg contained "\<\(aria-multiselectable\|aria-orientation\)\>"
+syn match htmlArg contained "\<\(aria-owns\|aria-placeholder\|aria-posinset\)\>"
+syn match htmlArg contained "\<\(aria-pressed\|aria-readonly\|aria-relevant\)\>"
+syn match htmlArg contained "\<\(aria-required\|aria-roledescription\)\>"
+syn match htmlArg contained "\<\(aria-rowcount\|aria-rowindex\|aria-rowspan\)\>"
+syn match htmlArg contained "\<\(aria-selected\|aria-setsize\|aria-sort\)\>"
+syn match htmlArg contained "\<\(aria-valuemax\|aria-valuemin\)\>"
+syn match htmlArg contained "\<\(aria-valuenow\|aria-valuetext\)\>"
+syn keyword htmlArg contained role
+
 " Netscape extensions
 syn keyword htmlTagName contained frame noframes frameset nobr blink
 syn keyword htmlTagName contained layer ilayer nolayer spacer
@@ -99,11 +123,11 @@ syn keyword htmlArg contained summary tabindex valuetype version
 " html 5 arg names
 syn keyword htmlArg contained allowfullscreen async autocomplete autofocus
 syn keyword htmlArg contained autoplay challenge contenteditable contextmenu
-syn keyword htmlArg contained controls crossorigin default dirname download
-syn keyword htmlArg contained draggable dropzone form formaction formenctype
-syn keyword htmlArg contained formmethod formnovalidate formtarget hidden
-syn keyword htmlArg contained high icon inputmode keytype kind list loop low
-syn keyword htmlArg contained max min minlength muted nonce novalidate open
+syn keyword htmlArg contained controls crossorigin default dialog dirname
+syn keyword htmlArg contained download draggable dropzone form formaction
+syn keyword htmlArg contained formenctype formmethod formnovalidate formtarget
+syn keyword htmlArg contained hidden high icon inputmode keytype kind list loop
+syn keyword htmlArg contained low max min minlength muted nonce novalidate open
 syn keyword htmlArg contained optimum pattern placeholder poster preload
 syn keyword htmlArg contained radiogroup required reversed sandbox spellcheck
 syn keyword htmlArg contained sizes srcset srcdoc srclang step title translate
@@ -134,6 +158,9 @@ syn match htmlPreProcAttrName contained "\(expr\|errmsg\|sizefmt\|timefmt\|var\|
 if !exists("html_no_rendering")
   " rendering
   syn cluster htmlTop contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLink,javaScript,@htmlPreproc
+
+  syn region htmlStrike start="<del\>" end="</del>"me=e-6 contains=@htmlTop
+  syn region htmlStrike start="<strike\>" end="</strike>"me=e-9 contains=@htmlTop
 
   syn region htmlBold start="<b\>" end="</b>"me=e-4 contains=@htmlTop,htmlBoldUnderline,htmlBoldItalic
   syn region htmlBold start="<strong\>" end="</strong>"me=e-9 contains=@htmlTop,htmlBoldUnderline,htmlBoldItalic
@@ -268,6 +295,11 @@ if !exists("html_no_rendering")
     hi def htmlUnderline           term=underline cterm=underline gui=underline
     hi def htmlUnderlineItalic     term=italic,underline cterm=italic,underline gui=italic,underline
     hi def htmlItalic              term=italic cterm=italic gui=italic
+    if v:version > 800 || v:version == 800 && has("patch1038")
+        hi def htmlStrike              term=strikethrough cterm=strikethrough gui=strikethrough
+    else
+        hi def htmlStrike              term=underline cterm=underline gui=underline
+    endif
   endif
 endif
 

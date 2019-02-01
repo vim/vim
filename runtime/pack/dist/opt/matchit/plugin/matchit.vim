@@ -1,5 +1,5 @@
 "  matchit.vim: (global plugin) Extended "%" matching
-"  Last Change: 2017 March 26
+"  Last Change: 2018 Dec 31
 "  Maintainer:  Benji Fisher PhD   <benji@member.AMS.org>
 "  Version:     1.13.3, for Vim 6.3+
 "		Fix from Fernando Torres included.
@@ -37,8 +37,7 @@
 " TODO:  Add a level of indirection, so that custom % scripts can use my
 "   work but extend it.
 
-" allow user to prevent loading
-" and prevent duplicate loading
+" Allow user to prevent loading and prevent duplicate loading.
 if exists("loaded_matchit") || &cp
   finish
 endif
@@ -272,7 +271,7 @@ function! s:Match_wrapper(word, forward, mode) range
   "   execute "normal!" . curcol . "l"
   " endif
   if skip =~ 'synID' && !(has("syntax") && exists("g:syntax_on"))
-    let skip = "0"
+    let skip = '0'
   else
     execute "if " . skip . "| let skip = '0' | endif"
   endif
@@ -704,9 +703,8 @@ fun! s:MultiMatch(spflag, mode)
     let skip = 's:comment\|string'
   endif
   let skip = s:ParseSkip(skip)
-  " let restore_cursor = line(".") . "G" . virtcol(".") . "|"
-  " normal! H
-  " let restore_cursor = "normal!" . line(".") . "Gzt" . restore_cursor
+  " save v:count1 variable, might be reset from the restore_cursor command
+  let level = v:count1
   let restore_cursor = virtcol(".") . "|"
   normal! g0
   let restore_cursor = line(".") . "G" .  virtcol(".") . "|zs" . restore_cursor
@@ -720,13 +718,18 @@ fun! s:MultiMatch(spflag, mode)
   let openpat = substitute(openpat, ',', '\\|', 'g')
   let closepat = substitute(close, '\(\\\@<!\(\\\\\)*\)\@<=\\(', '\\%(', 'g')
   let closepat = substitute(closepat, ',', '\\|', 'g')
+
   if skip =~ 'synID' && !(has("syntax") && exists("g:syntax_on"))
     let skip = '0'
   else
-    execute "if " . skip . "| let skip = '0' | endif"
+    try
+      execute "if " . skip . "| let skip = '0' | endif"
+    catch /^Vim\%((\a\+)\)\=:E363/
+      " We won't find anything, so skip searching, should keep Vim responsive.
+      return
+    endtry
   endif
   mark '
-  let level = v:count1
   while level
     if searchpair(openpat, '', closepat, a:spflag, skip) < 1
       call s:CleanUp(restore_options, a:mode, startline, startcol)

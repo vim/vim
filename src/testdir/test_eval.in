@@ -1,5 +1,7 @@
 Test for various eval features.   vim: set ft=vim :
 
+NOTE: Do not add more here, use new style test test_eval_stuff.vim
+
 Note: system clipboard is saved, changed and restored.
 
 clipboard contents
@@ -134,10 +136,10 @@ if has('clipboard')
 let _clipreg = ['*', getreg('*'), getregtype('*')]
 let _clipopt = &cb
 let &cb='unnamed'
-5y
+7y
 AR *
 tabdo :windo :echo "hi"
-6y
+8y
 AR *
 let &cb=_clipopt
 call call('setreg', _clipreg)

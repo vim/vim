@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.0.  Last change: 2017 Feb 03
+*diff.txt*      For Vim version 8.1.  Last change: 2017 Oct 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,7 @@ eight versions of the same file.
 
 The basics are explained in section |08.7| of the user manual.
 
-1. Starting diff mode		|vimdiff|
+1. Starting diff mode		|start-vimdiff|
 2. Viewing diffs		|view-diffs|
 3. Jumping to diffs		|jumpto-diffs|
 4. Copying diffs		|copy-diffs|
@@ -19,7 +19,7 @@ The basics are explained in section |08.7| of the user manual.
 {not in Vi}
 
 ==============================================================================
-1. Starting diff mode
+1. Starting diff mode					*start-vimdiff*
 
 The easiest way to start editing in diff mode is with the "vimdiff" command.
 This starts Vim as usual, and additionally sets up for viewing the differences
@@ -39,7 +39,9 @@ The second and following arguments may also be a directory name.  Vim will
 then append the file name of the first argument to the directory name to find
 the file.
 
-This only works when a standard "diff" command is available.  See 'diffexpr'.
+By default an internal diff library will be used.  When 'diffopt' or
+'diffexpr' has been set an external "diff" command will be used.  This only
+works when such a diff program is available.
 
 Diffs are local to the current tab page |tab-page|.  You can't see diffs with
 a window in another tab page.  This does make it possible to have several
@@ -226,8 +228,8 @@ The diffs are highlighted with these groups:
 				(searching from the end of the line).  The
 				text in between is highlighted.  This means
 				that parts in the middle that are still the
-				same are highlighted anyway.  Only "iwhite" of
-				'diffopt' is used here.
+				same are highlighted anyway.  The 'diffopt'
+				flags "iwhite" and "icase" are used here.
 |hl-DiffDelete|	DiffDelete	Deleted lines.  Also called filler lines,
 				because they don't really exist in this
 				buffer.
@@ -326,7 +328,7 @@ g:diff_translations to zero: >
 
     let g:diff_translations = 0
 <
-After setting this variable, Reload the syntax script: >
+After setting this variable, reload the syntax script: >
 
     set syntax=diff
 <
@@ -344,8 +346,9 @@ between file1 and file2: >
 
 The ">" is replaced with the value of 'shellredir'.
 
-The output of "diff" must be a normal "ed" style diff.  Do NOT use a context
-diff.  This example explains the format that Vim expects: >
+The output of "diff" must be a normal "ed" style diff or a unified diff.  Do
+NOT use a context diff.  This example explains the format that Vim expects for
+the "ed" style diff: >
 
 	1a2
 	> bbb
@@ -384,11 +387,15 @@ Example (this does almost the same as 'diffexpr' being empty): >
 	   endif
 	   silent execute "!diff -a --binary " . opt . v:fname_in . " " . v:fname_new .
 		\  " > " . v:fname_out
+	   redraw!
 	endfunction
 
 The "-a" argument is used to force comparing the files as text, comparing as
 binaries isn't useful.  The "--binary" argument makes the files read in binary
 mode, so that a CTRL-Z doesn't end the text on DOS.
+
+The `redraw!` command may not be needed, depending on whether executing a
+shell command shows something on the display or not.
 
 						*E810* *E97*
 Vim will do a test if the diff output looks alright.  If it doesn't, you will
@@ -441,4 +448,4 @@ evaluating 'patchexpr'.  This hopefully avoids that files in the current
 directory are accidentally patched.  Vim will also delete files starting with
 v:fname_in and ending in ".rej" and ".orig".
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

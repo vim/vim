@@ -62,20 +62,18 @@
 //#define USE_DYNFILEID
 #ifdef USE_DYNFILEID
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
-		HANDLE                    hFile,
-		FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-		LPVOID                    lpFileInformation,
-		DWORD                     dwBufferSize
-);
+		HANDLE						hFile,
+		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+		LPVOID						lpFileInformation,
+		DWORD						dwBufferSize);
 static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
 # ifndef USE_FILEEXTD
 static BOOL WINAPI stub_GetFileInformationByHandleEx(
-		HANDLE                    hFile,
-		FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-		LPVOID                    lpFileInformation,
-		DWORD                     dwBufferSize
-		)
+		HANDLE						hFile,
+		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+		LPVOID						lpFileInformation,
+		DWORD						dwBufferSize)
 {
 	return FALSE;
 }

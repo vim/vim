@@ -35,7 +35,13 @@
 # include <Xm/XpmP.h>
 # define UNHIGHLIGHTT
 #else
-# include <X11/xpm.h>
+# ifdef HAVE_X11_XPM_H
+#  ifdef VMS
+#   include <xpm.h>
+#  else
+#   include <X11/xpm.h>
+#  endif
+# endif
 #endif
 #include <Xm/ManagerP.h>
 #include <Xm/Display.h>
@@ -50,7 +56,7 @@
  * implementation.  Also missing in Motif 1.2 and earlier.
  *
  * We neither use XmeGetPixmapData or _XmGetPixmapData, since with LessTif the
- * pixmap will not appear in it's caches properly. We cache the interesting
+ * pixmap will not appear in its caches properly. We cache the interesting
  * values in XmEnhancedButtonPart instead ourself.
  */
 #if defined(LESSTIF_VERSION) || (XmVersion <= 1002)

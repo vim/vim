@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2016 Feb 16
+" Last Change: 2018 Jul 3
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -103,18 +103,28 @@ function! s:Highlight_Matching_Pair()
     call cursor(c_lnum, c_col - before)
   endif
 
-  " Build an expression that detects whether the current cursor position is in
-  " certain syntax types (string, comment, etc.), for use as searchpairpos()'s
-  " skip argument.
-  " We match "escape" for special items, such as lispEscapeSpecial.
-  let s_skip = '!empty(filter(map(synstack(line("."), col(".")), ''synIDattr(v:val, "name")''), ' .
+  if !has("syntax") || !exists("g:syntax_on")
+    let s_skip = "0"
+  else
+    " Build an expression that detects whether the current cursor position is
+    " in certain syntax types (string, comment, etc.), for use as
+    " searchpairpos()'s skip argument.
+    " We match "escape" for special items, such as lispEscapeSpecial.
+    let s_skip = '!empty(filter(map(synstack(line("."), col(".")), ''synIDattr(v:val, "name")''), ' .
 	\ '''v:val =~? "string\\|character\\|singlequote\\|escape\\|comment"''))'
-  " If executing the expression determines that the cursor is currently in
-  " one of the syntax types, then we want searchpairpos() to find the pair
-  " within those syntax types (i.e., not skip).  Otherwise, the cursor is
-  " outside of the syntax types and s_skip should keep its value so we skip any
-  " matching pair inside the syntax types.
-  execute 'if' s_skip '| let s_skip = 0 | endif'
+    " If executing the expression determines that the cursor is currently in
+    " one of the syntax types, then we want searchpairpos() to find the pair
+    " within those syntax types (i.e., not skip).  Otherwise, the cursor is
+    " outside of the syntax types and s_skip should keep its value so we skip
+    " any matching pair inside the syntax types.
+    " Catch if this throws E363: pattern uses more memory than 'maxmempattern'.
+    try
+      execute 'if ' . s_skip . ' | let s_skip = "0" | endif'
+    catch /^Vim\%((\a\+)\)\=:E363/
+      " We won't find anything, so skip searching, should keep Vim responsive.
+      return
+    endtry
+  endif
 
   " Limit the search to lines visible in the window.
   let stoplinebottom = line('w$')
@@ -186,9 +196,23 @@ function! s:Highlight_Matching_Pair()
 endfunction
 
 " Define commands that will disable and enable the plugin.
-command! NoMatchParen windo silent! call matchdelete(3) | unlet! g:loaded_matchparen |
-	  \ au! matchparen
-command! DoMatchParen runtime plugin/matchparen.vim | windo doau CursorMoved
+command! DoMatchParen call s:DoMatchParen()
+command! NoMatchParen call s:NoMatchParen()
+
+func! s:NoMatchParen()
+  let w = winnr()
+  noau windo silent! call matchdelete(3)
+  unlet! g:loaded_matchparen
+  exe "noau ". w . "wincmd w"
+  au! matchparen
+endfunc
+
+func! s:DoMatchParen()
+  runtime plugin/matchparen.vim
+  let w = winnr()
+  silent windo doau CursorMoved
+  exe "noau ". w . "wincmd w"
+endfunc
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

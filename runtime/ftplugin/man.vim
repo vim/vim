@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2017 Jan 18
+" Last Change: 	2019 Jan 22
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -14,38 +14,47 @@ if &filetype == "man"
     finish
   endif
   let b:did_ftplugin = 1
+endif
 
-  " Ensure Vim is not recursively invoked (man-db does this)
-  " when doing ctrl-[ on a man page reference.
-  if exists("$MANPAGER")
-    let $MANPAGER = ""
-  endif
+let s:cpo_save = &cpo
+set cpo-=C
 
+if &filetype == "man"
   " allow dot and dash in manual page name.
   setlocal iskeyword+=\.,-
+  let b:undo_ftplugin = "setlocal iskeyword<"
 
   " Add mappings, unless the user didn't want this.
   if !exists("no_plugin_maps") && !exists("no_man_maps")
     if !hasmapto('<Plug>ManBS')
       nmap <buffer> <LocalLeader>h <Plug>ManBS
+      let b:undo_ftplugin = b:undo_ftplugin
+	    \ . '|silent! nunmap <buffer> <LocalLeader>h'
     endif
     nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
 
     nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
     nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
     nnoremap <buffer> <silent> q :q<CR>
+
+    " Add undo commands for the maps
+    let b:undo_ftplugin = b:undo_ftplugin
+	  \ . '|silent! nunmap <buffer> <Plug>ManBS'
+	  \ . '|silent! nunmap <buffer> <c-]>'
+	  \ . '|silent! nunmap <buffer> <c-t>'
+	  \ . '|silent! nunmap <buffer> q'
   endif
 
   if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
     setlocal foldmethod=indent foldnestmax=1 foldenable
+    let b:undo_ftplugin = b:undo_ftplugin
+	  \ . '|silent! setl fdm< fdn< fen<'
   endif
-
-  let b:undo_ftplugin = "setlocal iskeyword<"
 
 endif
 
 if exists(":Man") != 2
-  com -nargs=+ Man call s:GetPage(<f-args>)
+  com -nargs=+ -complete=shellcmd Man call s:GetPage(<q-mods>, <f-args>)
   nmap <Leader>K :call <SID>PreGetPage(0)<CR>
   nmap <Plug>ManPreGetPage :call <SID>PreGetPage(0)<CR>
 endif
@@ -106,7 +115,7 @@ func <SID>FindPage(sect, page)
   return 1
 endfunc
 
-func <SID>GetPage(...)
+func <SID>GetPage(cmdmods, ...)
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -160,7 +169,11 @@ func <SID>GetPage(...)
           new
         endif
       else
-        new
+	if a:cmdmods != ''
+	  exe a:cmdmods . ' new'
+	else
+	  new
+	endif
       endif
       setl nonu fdc=0
     endif
@@ -170,22 +183,34 @@ func <SID>GetPage(...)
   setl buftype=nofile noswapfile
 
   setl ma nonu nornu nofen
-  silent exec "norm 1GdG"
+  silent exec "norm! 1GdG"
   let unsetwidth = 0
   if empty($MANWIDTH)
     let $MANWIDTH = winwidth(0)
     let unsetwidth = 1
   endif
-  silent exec "r !man ".s:GetCmdArg(sect, page)." | col -b"
+
+  " Ensure Vim is not recursively invoked (man-db does this) when doing ctrl-[
+  " on a man page reference by unsetting MANPAGER.
+  " Some versions of env(1) do not support the '-u' option, and in such case
+  " we set MANPAGER=cat.
+  if !exists('s:env_has_u')
+    call system('env -u x true')
+    let s:env_has_u = (v:shell_error == 0)
+  endif
+  let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
+  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
+  silent exec "r !" . man_cmd
+
   if unsetwidth
     let $MANWIDTH = ''
   endif
   " Remove blank lines from top and bottom.
-  while getline(1) =~ '^\s*$'
-    silent keepj norm ggdd
+  while line('$') > 1 && getline(1) =~ '^\s*$'
+    silent keepj norm! ggdd
   endwhile
-  while getline('$') =~ '^\s*$'
-    silent keepj norm Gdd
+  while line('$') > 1 && getline('$') =~ '^\s*$'
+    silent keepj norm! Gdd
   endwhile
   1
   setl ft=man nomod
@@ -202,7 +227,7 @@ func <SID>PopPage()
     exec "let s:man_tag_col=s:man_tag_col_".s:man_tag_depth
     exec s:man_tag_buf."b"
     exec s:man_tag_lin
-    exec "norm ".s:man_tag_col."|"
+    exec "norm! ".s:man_tag_col."|"
     exec "unlet s:man_tag_buf_".s:man_tag_depth
     exec "unlet s:man_tag_lin_".s:man_tag_depth
     exec "unlet s:man_tag_col_".s:man_tag_depth
@@ -211,5 +236,8 @@ func <SID>PopPage()
 endfunc
 
 endif
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set sw=2 ts=8 noet:

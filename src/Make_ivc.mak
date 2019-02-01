@@ -88,7 +88,7 @@ LINK32=link.exe
 CPP_PROJ= /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 # ADD CPP /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 
-LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
+LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib netapi32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # ADD LINK32  oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # SUBTRACT LINK32 /incremental:yes
 
@@ -211,6 +211,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 LINK32_OBJS= \
 	$(EXTRAS) \
 	"$(INTDIR)/arabic.obj" \
+	"$(INTDIR)/autocmd.obj" \
 	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
@@ -233,6 +234,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/getchar.obj" \
 	"$(INTDIR)/hardcopy.obj" \
 	"$(INTDIR)/hashtab.obj" \
+	"$(INTDIR)/indent.obj" \
 	"$(INTDIR)/json.obj" \
 	"$(INTDIR)/list.obj" \
 	"$(INTDIR)/main.obj" \
@@ -257,6 +259,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/screen.obj" \
 	"$(INTDIR)/search.obj" \
 	"$(INTDIR)/sha256.obj" \
+	"$(INTDIR)/sign.obj" \
 	"$(INTDIR)/spell.obj" \
 	"$(INTDIR)/spellfile.obj" \
 	"$(INTDIR)/syntax.obj" \
@@ -338,6 +341,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 # Begin Source File
 
 SOURCE=.\arabic.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\autocmd.c
 # End Source File
 # Begin Source File
 
@@ -426,6 +433,10 @@ SOURCE=.\hardcopy.c
 # Begin Source File
 
 SOURCE=.\hashtab.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\indent.c
 # End Source File
 # Begin Source File
 
@@ -672,6 +683,10 @@ SOURCE=.\search.c
 # Begin Source File
 
 SOURCE=.\sha256.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sign.c
 # End Source File
 # Begin Source File
 

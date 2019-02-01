@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 8.0.  Last change: 2008 Sep 10
+*usr_90.txt*	For Vim version 8.1.  Last change: 2008 Sep 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -495,4 +495,4 @@ files that you created.  You might want to keep that.
 
 Table of contents: |usr_toc.txt|
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

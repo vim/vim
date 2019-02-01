@@ -186,7 +186,7 @@
 
 /* special Farsi text messages */
 
-EXTERN char_u farsi_text_1[]
+EXTERN char farsi_text_1[]
 #ifdef DO_INIT
 		= { YE_, _SIN, RE, ALEF_, _FE, ' ', 'V', 'I', 'M',
 		    ' ', F_HE, _BE, ' ', SHIN, RE, _GAF, DAL,' ', NOON,
@@ -194,7 +194,7 @@ EXTERN char_u farsi_text_1[]
 #endif
 		     ;
 
-EXTERN char_u farsi_text_2[]
+EXTERN char farsi_text_2[]
 #ifdef DO_INIT
 		= { YE_, _SIN, RE, ALEF_, _FE, ' ', FARSI_3, FARSI_3,
 		    FARSI_4, FARSI_2, ' ', DAL, RE, ALEF, DAL, _NOON,
@@ -203,7 +203,7 @@ EXTERN char_u farsi_text_2[]
 #endif
 		     ;
 
-EXTERN char_u farsi_text_3[]
+EXTERN char farsi_text_3[]
 #ifdef DO_INIT
 		= { DAL, WAW, _SHIN, _YE, _MIM, _NOON, ' ', YE_, _NOON,
 		    ALEF_,_BE, _YE, _TE, _SHIN, _PE, ' ', 'R','E','P','L',
@@ -227,7 +227,7 @@ EXTERN char_u farsi_text_4[]
 		    ;
 #endif
 
-EXTERN char_u farsi_text_5[]
+EXTERN char farsi_text_5[]
 #ifdef DO_INIT
 		= { ' ', YE_, _SIN, RE, ALEF_, _FE, '\0'}
 #endif

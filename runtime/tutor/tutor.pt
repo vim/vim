@@ -455,8 +455,8 @@ de Inserção.
 
   4. Mova o cursor até o primeiro erro.
 
-  5. Digite  c$  para tornar o resto da linha igual à segunda e pressione
-     <ESC>.
+  5. Digite  c$  e digite o resto da segunda para torná-las iguais e 
+     pressione  <ESC>.
 
 ---> O fim desta linha precisa de ajuda para ficar igual à segunda.
 ---> O fim desta linha precisa ser corrigido usando o comando  c$.

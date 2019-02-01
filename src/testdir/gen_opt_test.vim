@@ -19,6 +19,9 @@ let script = [
 /#define p_term
 let end = line('.')
 
+" font name that works everywhere (hopefully)
+let fontname = has('win32') ? 'fixedsys' : 'fixed'
+
 " Two lists with values: values that work and values that fail.
 " When not listed, "othernum" or "otherstring" is used.
 let test_values = {
@@ -78,7 +81,7 @@ let test_values = {
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
       \ 'cscopequickfix': [['', 's-', 's-,c+,e0'], ['xxx', 's,g,d']],
       \ 'debug': [['', 'msg', 'msg', 'beep'], ['xxx']],
-      \ 'diffopt': [['', 'filler', 'icase,iwhite'], ['xxx']],
+      \ 'diffopt': [['', 'filler', 'icase,iwhite'], ['xxx', 'algorithm:xxx', 'algorithm:']],
       \ 'display': [['', 'lastline', 'lastline,uhex'], ['xxx']],
       \ 'eadirection': [['', 'both', 'ver'], ['xxx', 'ver,hor']],
       \ 'encoding': [['latin1'], ['xxx', '']],
@@ -93,8 +96,9 @@ let test_values = {
       \ 'foldmarker': [['((,))'], ['', 'xxx']],
       \ 'formatoptions': [['', 'vt', 'v,t'], ['xxx']],
       \ 'guicursor': [['', 'n:block-Cursor'], ['xxx']],
-      \ 'guifont': [['', 'fixedsys'], []],
-      \ 'guifontwide': [['', 'fixedsys'], []],
+      \ 'guifont': [['', fontname], []],
+      \ 'guifontwide': [['', fontname], []],
+      \ 'guifontset': [['', fontname], []],
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [['', 'S-space'], ['xxx']],
@@ -125,11 +129,15 @@ let test_values = {
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],
       \ 'term': [[], []],
-      \ 'termsize': [['', '24x80', '0x80', '32x0', '0x0'], ['xxx', '80', '8ax9', '24x80b']],
+      \ 'termguicolors': [[], []],
+      \ 'termencoding': [has('gui_gtk') ? [] : ['', 'utf-8'], ['xxx']],
+      \ 'termwinsize': [['', '24x80', '0x80', '32x0', '0x0'], ['xxx', '80', '8ax9', '24x80b']],
       \ 'toolbar': [['', 'icons', 'text'], ['xxx']],
       \ 'toolbariconsize': [['', 'tiny', 'huge'], ['xxx']],
       \ 'ttymouse': [['', 'xterm'], ['xxx']],
       \ 'ttytype': [[], []],
+      \ 'varsofttabstop': [['8', '4,8,16,32'], ['xxx', '-1', '4,-1,20']],
+      \ 'vartabstop': [['8', '4,8,16,32'], ['xxx', '-1', '4,-1,20']],
       \ 'viewoptions': [['', 'cursor', 'unix,slash'], ['xxx']],
       \ 'viminfo': [['', '''50', '"30'], ['xxx']],
       \ 'virtualedit': [['', 'all', 'all,block'], ['xxx']],
@@ -189,8 +197,11 @@ while 1
       call add(script, "endif")
     endif
 
-    call add(script, 'set ' . name . '&')
-    call add(script, 'set ' . shortname . '&')
+    " cannot change 'termencoding' in GTK
+    if name != 'termencoding' || !has('gui_gtk')
+      call add(script, 'set ' . name . '&')
+      call add(script, 'set ' . shortname . '&')
+    endif
     if name == 'verbosefile'
       call add(script, 'call delete("xxx")')
     endif

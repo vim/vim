@@ -2,7 +2,7 @@
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
 " Version:     16.0
-" Last Change: 2015 Dec 29
+" Last Change: 2017 Oct 15
 " Homepage:    http://www.vim.org/scripts/script.php?script_id=1572
 " Usage:       For detailed help
 "              ":help sql.txt"
@@ -860,7 +860,7 @@ function! s:SQLCGetColumns(table_name, list_type)
 
          " Start characterwise visual mode
          " Advance right one character
-         " Search foward until one of the following:
+         " Search forward until one of the following:
          "     1.  Another select/update/delete statement
          "     2.  A ; at the end of a line (the delimiter)
          "     3.  The end of the file (incase no delimiter)

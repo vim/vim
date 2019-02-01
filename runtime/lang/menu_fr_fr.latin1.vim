@@ -2,7 +2,7 @@
 " Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
 " Last Modification:    David Blanchet <david.blanchet@free.fr>
-" Last Change:		2012 May 01
+" Last Change:		2018 Apr 25
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -47,7 +47,7 @@ menutrans &Close<Tab>:close			&Fermer<Tab>:close
 menutrans &Save<Tab>:w				&Enregistrer<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav		Enregistrer\ &sous\.\.\.<Tab>:sav
 " -SEP2-
-menutrans Split\ &Diff\ with\.\.\.		&Difference\ avec\.\.\.
+menutrans Split\ &Diff\ with\.\.\.		&Différence\ avec\.\.\.
 "menutrans Split\ Patched\ &By\.\.\.		&Patcher\ avec\.\.\.
 menutrans Split\ Patched\ &By\.\.\.		&Tester\ un\ patch\.\.\.
 " -SEP3-
@@ -121,7 +121,7 @@ menutrans Soft\ &Tabstop				&Pseudo-tabulations
 menutrans Te&xt\ Width\.\.\.				Largeur\ du\ te&xte\.\.\.
 menutrans &File\ Format\.\.\.				Format\ du\ &fichier\.\.\.
 
-let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour désactiver le formattage)."
+let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour désactiver le formatage)."
 let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel écrire le fichier."
 let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annuler "
 
@@ -340,7 +340,7 @@ fun! Do_toolbar_tmenu()
   tmenu ToolBar.WinClose			Fermer fenêtre
  endif
   tmenu ToolBar.LoadSesn			Ouvrir session
-  tmenu ToolBar.SaveSesn			Enregister session courante
+  tmenu ToolBar.SaveSesn			Enregistrer session courante
   tmenu ToolBar.RunScript			Lancer un script Vim
   tmenu ToolBar.Make				Lancer make
   tmenu ToolBar.RunCtags			Créer les étiquettes

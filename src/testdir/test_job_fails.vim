@@ -6,14 +6,11 @@ source shared.vim
 
 func Test_job_start_fails()
   if has('job')
-    let g:job = job_start('axdfxsdf')
+    let job = job_start('axdfxsdf')
     if has('unix')
-      call WaitFor('job_status(g:job) == "dead"')
-      call assert_equal('dead', job_status(g:job))
+      call WaitForAssert({-> assert_equal("dead", job_status(job))})
     else
-      call WaitFor('job_status(g:job) == "fail"')
-      call assert_equal('fail', job_status(g:job))
+      call WaitForAssert({-> assert_equal("fail", job_status(job))})
     endif
-    unlet g:job
   endif
 endfunc

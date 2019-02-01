@@ -3,7 +3,7 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-if !has('multi_byte') || !has('mksession')
+if !has('mksession')
   finish
 endif
 
@@ -99,6 +99,7 @@ func Test_mksession_utf8()
   call delete('test_mks.out')
   call delete(tmpfile)
   let &wrap = wrap_save
+  set sessionoptions& splitbelow& fileencoding&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
