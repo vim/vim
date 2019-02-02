@@ -92,34 +92,34 @@ before_install:
   # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
   # ("pyenv global system" doesn't seem to work.)
   - |
-    if [ "${TRAVIS_OS_NAME}" = "linux" ] && which python3 | grep -qs '/opt/python/'; then
-      export PATH=$(echo ${PATH} | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##")
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "$(which python3)" =~ ^/opt/python/ ]]; then
+      export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
     fi
   - |
-    if [ "${COVERAGE}" = "yes" ]; then
+    if [[ "${COVERAGE}" = "yes" ]]; then
       pip install --user cpp-coveralls
     fi
   # needed for https support for coveralls
   # building cffi only works with gcc, not with clang
   - |
-    if [ "${COVERAGE}" = "yes" ]; then
+    if [[ "${COVERAGE}" = "yes" ]]; then
       CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
     fi
   # Lua is not installed on Travis OSX
   - |
-    if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+    if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
       export LUA_PREFIX=/usr/local
     fi
   # Use llvm-cov instead of gcov when compiler is clang.
   - |
-    if [ "${TRAVIS_OS_NAME}" = "linux" -a "${CC}" = "clang" ]; then
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "${CC}" = "clang" ]]; then
       ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
     fi
 
 before_script:
   # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
   - |
-    if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
       export DISPLAY=:99.0
       sh -e /etc/init.d/xvfb start && sleep 3
     fi
@@ -127,23 +127,23 @@ before_script:
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
   - |
-    if [ "${CHECK_AUTOCONF}" = "yes" -a "${CC}" = "gcc" ]; then
+    if [[ "${CHECK_AUTOCONF}" = "yes" ]] && [[ "${CC}" = "gcc" ]]; then
       make -C src autoconf
     fi
   - |
-    if [ -n "${SHADOWOPT}" ]; then
+    if [[ -n "${SHADOWOPT}" ]]; then
       make -C src shadow
     fi
   - |
     (
     cd "${SRCDIR}" \
       && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
-    ) && if [ "${BUILD}" = "yes" ]; then
+    ) && if [[ "${BUILD}" = "yes" ]]; then
       make ${SHADOWOPT} -j${NPROC}
     fi
   # Show Vim version and also if_xx versions.
   - |
-    if [ "${BUILD}" = "yes" ]; then
+    if [[ "${BUILD}" = "yes" ]]; then
       "${SRCDIR}"/vim --version
       "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-1.vim -c quit > /dev/null
       "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
@@ -151,24 +151,20 @@ script:
     fi
   - make ${SHADOWOPT} ${TEST}
   - |
-    if [ -n "${ASAN_OPTIONS}" ]; then
+    if [[ -n "${ASAN_OPTIONS}" ]]; then
       while read log; do
         asan_symbolize < "${log}"
-        err=1
       done < <(find . -type f -name 'asan.*' -size +0)
-    fi
-  - |
-    if [ -n "${err}" ]; then
-      exit 1
+      [[ -n "${log}" ]]
     fi
 
 after_success:
   - |
-    if [ "${COVERAGE}" = "yes" ]; then
+    if [[ "${COVERAGE}" = "yes" ]]; then
       ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
     fi
   - |
-    if [ "${COVERAGE}" = "yes" ]; then
+    if [[ "${COVERAGE}" = "yes" ]]; then
       (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
     fi
 
