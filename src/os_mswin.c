@@ -1821,8 +1821,48 @@ mch_print_set_fg(long_u fgcol)
 #if defined(FEAT_SHORTCUT) || defined(PROTO)
 # ifndef PROTO
 #  include <shlobj.h>
-#  include <fileapi.h>
 # endif
+
+typedef DWORD (*PfnGetFinalPathNameByHandleA)(
+  HANDLE hFile,
+  LPSTR  lpszFilePath,
+  DWORD  cchFilePath,
+  DWORD  dwFlags
+);
+
+typedef DWORD (*PfnGetFinalPathNameByHandleW)(
+  HANDLE hFile,
+  LPWSTR  lpszFilePath,
+  DWORD  cchFilePath,
+  DWORD  dwFlags
+);
+
+static PfnGetFinalPathNameByHandleA pfnGetFinalPathNameByHandleA;
+static PfnGetFinalPathNameByHandleW pfnGetFinalPathNameByHandleW;
+
+    static int
+init_GetFinalPathNameByHandle()
+{
+    HANDLE	hlib;
+
+    if (pfnGetFinalPathNameByHandleA != NULL &&
+	    pfnGetFinalPathNameByHandleW != NULL)
+	return OK;
+
+    hlib = GetModuleHandle("kernel32.dll");
+    if (hlib == NULL)
+	return FAIL;
+
+    pfnGetFinalPathNameByHandleA =
+	    (PfnGetFinalPathNameByHandleA)GetProcAddress(
+	    hlib, "GetFinalPathNameByHandleA");
+    pfnGetFinalPathNameByHandleW =
+	    (PfnGetFinalPathNameByHandleW)GetProcAddress(
+	    hlib, "GetFinalPathNameByHandleW");
+
+    return pfnGetFinalPathNameByHandleA != NULL &&
+	    pfnGetFinalPathNameByHandleW != NULL ? OK : FAIL;
+}
 
     char_u *
 resolve_reparse_point(char_u *fname)
@@ -1832,9 +1872,14 @@ resolve_reparse_point(char_u *fname)
     WCHAR	wdest[MAX_PATH], *pwdest = wdest;
     CHAR	dest[MAX_PATH];
 
+    if (init_GetFinalPathNameByHandle() == FAIL)
+	return NULL;
+
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	WCHAR	*p = enc_to_utf16(fname, NULL);
+	WCHAR	*p;
+
+	p = enc_to_utf16(fname, NULL);
 	if (p == NULL)
 	    return NULL;
 
@@ -1846,7 +1891,7 @@ resolve_reparse_point(char_u *fname)
 	if (h == INVALID_HANDLE_VALUE)
 	    return NULL;
 
-	size = GetFinalPathNameByHandleW(h, wdest, MAX_PATH,
+	size = pfnGetFinalPathNameByHandleW(h, wdest, MAX_PATH,
 		FILE_NAME_NORMALIZED);
 	CloseHandle(h);
 
@@ -1866,7 +1911,7 @@ resolve_reparse_point(char_u *fname)
     if (h == INVALID_HANDLE_VALUE)
 	return NULL;
 
-    size = GetFinalPathNameByHandle(h, dest, MAX_PATH,
+    size = pfnGetFinalPathNameByHandleA(h, dest, MAX_PATH,
 	    FILE_NAME_NORMALIZED);
     CloseHandle(h);
 
