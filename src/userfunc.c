@@ -679,10 +679,10 @@ cleanup_function_call(funccall_T *fc)
 	{
 	    // We have made a lot of copies.  This can happen when
 	    // repetitively calling a function that creates a reference to
-	    // itself somehow.  Call the garbage collector here to avoid using
+	    // itself somehow.  Call the garbage collector soon to avoid using
 	    // too much memory.
 	    made_copy = 0;
-	    (void)garbage_collect(FALSE);
+	    want_garbage_collect = TRUE;
 	}
     }
 }
