@@ -135,8 +135,10 @@ script:
       make -C src shadow
     fi
   - |
-    (cd "${SRCDIR}" && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing)
-    if [ "$?" -eq 0 -a "${BUILD}" = "yes" ]; then
+    (
+    cd "${SRCDIR}" \
+      && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
+    ) && if [ "${BUILD}" = "yes" ]; then
       make ${SHADOWOPT} -j${NPROC}
     fi
   # Show Vim version and also if_xx versions.
