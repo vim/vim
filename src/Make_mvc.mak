@@ -721,6 +721,7 @@ OBJ = \
 	$(OUTDIR)\ex_getln.obj \
 	$(OUTDIR)\farsi.obj \
 	$(OUTDIR)\fileio.obj \
+	$(OUTDIR)\findfile.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
@@ -1407,6 +1408,8 @@ $(OUTDIR)/farsi.obj:	$(OUTDIR) farsi.c  $(INCL)
 
 $(OUTDIR)/fileio.obj:	$(OUTDIR) fileio.c  $(INCL)
 
+$(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
+
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
@@ -1645,6 +1648,7 @@ proto.h: \
 	proto/ex_getln.pro \
 	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \

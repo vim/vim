@@ -544,6 +544,7 @@ vimobj =  \
 	$(OBJDIR)\ex_getln.obj \
 	$(OBJDIR)\farsi.obj \
 	$(OBJDIR)\fileio.obj \
+	$(OBJDIR)\findfile.obj \
 	$(OBJDIR)\fold.obj \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \

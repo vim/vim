@@ -41,6 +41,7 @@ SRC_ALL =	\
 		src/farsi.h \
 		src/feature.h \
 		src/fileio.c \
+		src/findfile.c \
 		src/fold.c \
 		src/getchar.c \
 		src/globals.h \
@@ -170,6 +171,7 @@ SRC_ALL =	\
 		src/proto/ex_getln.pro \
 		src/proto/farsi.pro \
 		src/proto/fileio.pro \
+		src/proto/findfile.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
 		src/proto/gui.pro \
