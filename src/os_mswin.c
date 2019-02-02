@@ -1821,6 +1821,7 @@ mch_print_set_fg(long_u fgcol)
 #if defined(FEAT_SHORTCUT) || defined(PROTO)
 # ifndef PROTO
 #  include <shlobj.h>
+#  include <fileapi.h>
 # endif
 
     char_u *
