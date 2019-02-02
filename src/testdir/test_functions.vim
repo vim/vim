@@ -239,27 +239,36 @@ func Test_resolve_win32()
     return
   endif
 
-  new Xfile
-  wq
-  silent !mklink Xlink1 Xfile > NUL
-  silent !mkdir Xdir
-  silent !mklink /D Xlink2 Xdir > NUL
-  call assert_equal(getcwd() . '\Xfile', resolve('./Xlink1'))
-  call assert_equal(getcwd() . '\Xdir', resolve(getcwd() . '/Xlink2'))
-  call delete('Xfile')
-  call delete('Xlink1')
-  call delete('Xdir', 'd')
-  call delete('Xlink2', 'd')
-
   if !executable('cscript')
-    return
+    call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "test_function.vim")', 'shortcut.Save'], 'link.vbs')
+    silent !cscript link.vbs
+    call delete('link.vbs')
+    call assert_equal(getcwd() . '\test_function.vim', resolve('./Xlink.lnk'))
+    call delete('Xlink.lnk')
   endif
 
-  call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "test_function.vim")', 'shortcut.Save'], 'link.vbs')
-  silent !cscript link.vbs
-  call delete('link.vbs')
-  call assert_equal(getcwd() . '\test_function.vim', resolve('./Xlink.lnk'))
-  call delete('Xlink.lnk')
+  new Xfile
+  wq
+  silent !mklink Xlink Xfile > NUL
+  if v:shell_error
+    " mklink require Administrator rights.
+     call delete('Xfile')
+    return
+  endif
+  call assert_equal(getcwd() . '\Xfile', resolve('./Xlink'))
+  call delete('Xlink')
+
+  silent !mkdir Xdir
+  silent !mklink /D Xlink Xdir > NUL
+  if v:shell_error
+    " mklink require Administrator rights.
+     call delete('Xdir', 'd')
+    return
+  endif
+  call assert_equal(getcwd() . '\Xdir', resolve(getcwd() . '/Xlink'))
+  call delete('Xfile')
+  call delete('Xdir', 'd')
+  call delete('Xlink', 'd')
 endfunc
 
 func Test_simplify()
