@@ -313,16 +313,15 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
 
 SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c charset.c \
-	crypt.c crypt_zip.c dict.c diff.c digraph.c edit.c eval.c \
-	evalfunc.c ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c \
-	if_cscope.c if_xcmdsrv.c farsi.c fileio.c findfile.c fold.c \
-	getchar.c hardcopy.c hashtab.c indent.c json.c list.c main.c mark.c \
-	menu.c mbyte.c memfile.c memline.c message.c misc1.c \
-	misc2.c move.c normal.c ops.c option.c popupmnu.c quickfix.c regexp.c \
-	search.c sha256.c sign.c \
- 	spell.c spellfile.c syntax.c tag.c term.c termlib.c textprop.c ui.c \
-	undo.c userfunc.c version.c screen.c \
-	window.c os_unix.c os_vms.c pathdef.c \
+	crypt.c crypt_zip.c dict.c diff.c digraph.c edit.c eval.c evalfunc.c \
+	ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c if_cscope.c \
+	if_xcmdsrv.c farsi.c fileio.c findfile.c fold.c getchar.c hardcopy.c \
+	hashtab.c indent.c json.c list.c main.c mark.c menu.c mbyte.c \
+	memfile.c memline.c message.c misc1.c misc2.c move.c normal.c ops.c \
+	option.c popupmnu.c quickfix.c regexp.c search.c sha256.c sign.c \
+	spell.c spellfile.c syntax.c tag.c term.c termlib.c textprop.c ui.c \
+	undo.c userfunc.c version.c screen.c window.c os_unix.c os_vms.c \
+	pathdef.c
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) \
  	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
@@ -336,8 +335,8 @@ OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj \
 	normal.obj ops.obj option.obj popupmnu.obj quickfix.obj regexp.obj \
 	search.obj sha256.obj sign.obj spell.obj spellfile.obj syntax.obj \
 	tag.obj term.obj termlib.obj textprop.obj ui.obj undo.obj \
-	userfunc.obj screen.obj version.obj window.obj os_unix.obj \
-	os_vms.obj pathdef.obj if_mzsch.obj \
+	userfunc.obj screen.obj version.obj window.obj os_unix.obj os_vms.obj \
+	pathdef.obj if_mzsch.obj \
 	$(GUI_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(TCL_OBJ) \
  	$(RUBY_OBJ) $(HANGULIN_OBJ) $(MZSCH_OBJ) $(XDIFF_OBJ)
 
