@@ -2968,12 +2968,11 @@ ins_compl_mode(void)
 	"unknown",	    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
 	"eval",
     };
-    char *mode = "";
 
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
-	mode = mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+	return mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
 
-    return (char_u *)mode;
+    return (char_u *)"";
 }
 
 /* "compl_match_array" points the currently displayed list of entries in the
