@@ -900,7 +900,7 @@ func Test_popup_complete_mode()
   new
   inoremap <buffer><f5> <c-r>=complete_mode()<cr>
   call writefile([
-        \ '!rm	src/testdir/amiga.vim	/^cmap !rm !Delete all$/;"	m',
+        \ 'dummy	dummy.txt	1',
         \], 'Xdummy.txt')
   setlocal tags=Xdummy.txt
   setlocal dictionary=Xdummy.txt
@@ -909,6 +909,7 @@ func Test_popup_complete_mode()
   setlocal completefunc=syntaxcomplete#Complete
   setlocal spell
   for [key, expected] in [
+        \ ["", ''],
         \ ["\<C-X>", 'ctrl_x'],
         \ ["\<C-X>\<C-N>", 'keyword'],
         \ ["\<C-X>\<C-L>", 'whole_line'],

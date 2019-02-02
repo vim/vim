@@ -16,6 +16,8 @@
 #ifdef FEAT_INS_EXPAND
 /*
  * definitions used for CTRL-X submode
+ * Note: If you add CTRL-X submode, you also need to maintain both
+ * ctrl_x_msgs[] and mode_names[] in ins_compl_mode().
  */
 # define CTRL_X_WANT_IDENT	0x100
 
@@ -2945,36 +2947,6 @@ set_completion(colnr_T startcol, list_T *list)
     out_flush();
 }
 
-// complete_mode() implementation.
-    char_u *
-ins_compl_mode(void)
-{
-    static char *mode_names[] = {
-	"keyword",
-	"ctrl_x",
-	"unknown",	    // CTRL_X_SCROLL
-	"whole_line",
-	"files",
-	"tags",
-	"path_patterns",
-	"path_defines",
-	"unknown",	    // CTRL_X_FINISHED
-	"dictionary",
-	"thesaurus",
-	"cmdline",
-	"function",
-	"omni",
-	"spell",
-	"unknown",	    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
-	"eval",
-    };
-
-    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
-	return mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
-
-    return (char_u *)"";
-}
-
 /* "compl_match_array" points the currently displayed list of entries in the
  * popup menu.  It is NULL when there is no popup menu. */
 static pumitem_T *compl_match_array = NULL;
@@ -3552,6 +3524,36 @@ ins_compl_clear(void)
 ins_compl_active(void)
 {
     return compl_started;
+}
+
+// Return Insert completion mode name string
+    char_u *
+ins_compl_mode(void)
+{
+    static char *mode_names[] = {
+	"keyword",
+	"ctrl_x",
+	"unknown",	    // CTRL_X_SCROLL
+	"whole_line",
+	"files",
+	"tags",
+	"path_patterns",
+	"path_defines",
+	"unknown",	    // CTRL_X_FINISHED
+	"dictionary",
+	"thesaurus",
+	"cmdline",
+	"function",
+	"omni",
+	"spell",
+	"unknown",	    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+	"eval",
+    };
+
+    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
+	return mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+
+    return (char_u *)"";
 }
 
 /*
