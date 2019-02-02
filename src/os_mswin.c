@@ -1823,13 +1823,65 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
+    char_u *
+resolve_reparse_point(char_u *fname)
+{
+    HANDLE	h;
+    DWORD	size;
+    WCHAR	wdest[MAX_PATH], *pwdest = wdest;
+    CHAR	dest[MAX_PATH];
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p = enc_to_utf16(fname, NULL);
+	if (p == NULL)
+	    return NULL;
+
+	h = CreateFileW(p, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
+		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	vim_free(p);
+
+	if (h == INVALID_HANDLE_VALUE)
+	    return NULL;
+
+	size = GetFinalPathNameByHandleW(h, wdest, MAX_PATH,
+		FILE_NAME_NORMALIZED);
+	CloseHandle(h);
+
+	if (size == 0 || size >= MAX_PATH)
+	    return NULL;
+
+	if (wdest[0] == '\\' && wdest[1] == '\\' &&
+		wdest[2] == '?' && wdest[3] == '\\')
+	    pwdest += 4;
+	return utf16_to_enc(pwdest, NULL);
+    }
+
+    h = CreateFile((char*) fname, GENERIC_READ,
+	    FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
+	    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+    if (h == INVALID_HANDLE_VALUE)
+	return NULL;
+
+    size = GetFinalPathNameByHandle(h, dest, MAX_PATH,
+	    FILE_NAME_NORMALIZED);
+    CloseHandle(h);
+
+    if (size == 0 || size >= MAX_PATH)
+	    return NULL;
+
+    return vim_strsave((char_u*) dest);
+}
+
 /*
  * When "fname" is the name of a shortcut (*.lnk) resolve the file it points
  * to and return that name in allocated memory.
  * Otherwise NULL is returned.
  */
-    char_u *
-mch_resolve_shortcut(char_u *fname)
+    static char_u *
+resolve_shortcut(char_u *fname)
 {
     HRESULT		hr;
     IShellLink		*psl = NULL;
@@ -1936,6 +1988,15 @@ shortcut_end:
 
     CoUninitialize();
     return rfname;
+}
+
+    char_u *
+mch_resolve_path(char_u *fname)
+{
+    char_u  *path = resolve_shortcut(fname);
+    if (path == NULL)
+	path = resolve_reparse_point(fname);
+    return path;
 }
 #endif
 
