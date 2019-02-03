@@ -506,7 +506,11 @@ SIGNED_VALUE rb_num2long_stub(VALUE x)
 {
     return dll_rb_num2long(x);
 }
+#  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 26
+VALUE rb_int2big_stub(intptr_t x)
+#  else
 VALUE rb_int2big_stub(SIGNED_VALUE x)
+#  endif
 {
     return dll_rb_int2big(x);
 }
