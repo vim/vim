@@ -65,6 +65,23 @@ typedef struct sb_line_S {
     cellattr_T	sb_fill_attr;	/* for short line */
 } sb_line_T;
 
+#ifdef WIN3264
+# ifndef HPCON
+#  define HPCON VOID*
+# endif
+# ifndef EXTENDED_STARTUPINFO_PRESENT
+#  define EXTENDED_STARTUPINFO_PRESENT 0x00080000
+# endif
+# ifndef PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE
+#  define PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE 0x00020016
+# endif
+typedef struct _DYN_STARTUPINFOEXW
+{
+    STARTUPINFOW StartupInfo;
+    LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList;
+} DYN_STARTUPINFOEXW, *PDYN_STARTUPINFOEXW;
+#endif
+
 /* typedef term_T in structs.h */
 struct terminal_S {
     term_T	*tl_next;
@@ -92,9 +109,14 @@ struct terminal_S {
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
 
+    char_u	*tl_arg0_cmd;	// To format the status bar
+
 #ifdef WIN3264
     void	*tl_winpty_config;
     void	*tl_winpty;
+
+    HPCON	tl_conpty;
+    DYN_STARTUPINFOEXW tl_siex;	// Structure that always needs to be hold
 
     FILE	*tl_out_fd;
 #endif
@@ -146,6 +168,11 @@ static term_T *first_term = NULL;
 
 /* Terminal active in terminal_loop(). */
 static term_T *in_terminal_loop = NULL;
+
+#ifdef WIN3264
+static BOOL has_winpty = FALSE;
+static BOOL has_conpty = FALSE;
+#endif
 
 #define MAX_ROW 999999	    /* used for tl_dirty_row_end to update all rows */
 #define KEY_BUF_LEN 200
@@ -715,6 +742,16 @@ ex_terminal(exarg_T *eap)
 	    vim_free(buf);
 	    *p = ' ';
 	}
+	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "winpty", 6) == 0)
+	{
+	    opt.jo_set2 |= JO2_TERM_MODE;
+	    opt.jo_term_mode = 'w';
+	}
+	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "conpty", 6) == 0)
+	{
+	    opt.jo_set2 |= JO2_TERM_MODE;
+	    opt.jo_term_mode = 'c';
+	}
 	else
 	{
 	    if (*p)
@@ -771,6 +808,11 @@ term_write_session(FILE *fd, win_T *wp)
     if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
+#ifdef WIN3264
+    if (*wp->w_p_tmod != NUL)
+	if (fprintf(fd, "++%s ", wp->w_p_tmod) < 0)
+	    return FAIL;
+#endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
 
@@ -871,6 +913,7 @@ free_unused_terminals()
 	vim_free(term->tl_status_text);
 	vim_free(term->tl_opencmd);
 	vim_free(term->tl_eof_chars);
+	vim_free(term->tl_arg0_cmd);
 #ifdef WIN3264
 	if (term->tl_out_fd != NULL)
 	    fclose(term->tl_out_fd);
@@ -2639,9 +2682,17 @@ handle_settermprop(
     {
 	case VTERM_PROP_TITLE:
 	    vim_free(term->tl_title);
-	    /* a blank title isn't useful, make it empty, so that "running" is
-	     * displayed */
+	    // a blank title isn't useful, make it empty, so that "running" is
+	    // displayed
 	    if (*skipwhite((char_u *)value->string) == NUL)
+		term->tl_title = NULL;
+	    // Same as blank
+	    else if (term->tl_arg0_cmd != NULL
+		    && STRNCMP(term->tl_arg0_cmd, (char_u *)value->string,
+					  (int)STRLEN(term->tl_arg0_cmd)) == 0)
+		term->tl_title = NULL;
+	    // Empty corrupted data of winpty
+	    else if (STRNCMP("  - ", (char_u *)value->string, 4) == 0)
 		term->tl_title = NULL;
 #ifdef WIN3264
 	    else if (!enc_utf8 && enc_codepage > 0)
@@ -5318,7 +5369,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
 		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS) == FAIL)
+		    + JO2_ANSI_COLORS + JO2_TERM_MODE) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -5426,6 +5477,327 @@ term_getjob(term_T *term)
  * 2. MS-Windows implementation.
  */
 
+HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
+HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);
+HRESULT (WINAPI *pClosePseudoConsole)(HPCON);
+BOOL (*pInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
+BOOL (*pUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
+void (*pDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
+
+    static int
+dyn_conpty_init(int verbose)
+{
+    static BOOL	handled = FALSE;
+    static int	result;
+    HMODULE	hKerneldll;
+    int		i;
+    static struct
+    {
+	char	*name;
+	FARPROC	*ptr;
+    } conpty_entry[] =
+    {
+	{"CreatePseudoConsole", (FARPROC*)&pCreatePseudoConsole},
+	{"ResizePseudoConsole", (FARPROC*)&pResizePseudoConsole},
+	{"ClosePseudoConsole", (FARPROC*)&pClosePseudoConsole},
+	{"InitializeProcThreadAttributeList",
+				(FARPROC*)&pInitializeProcThreadAttributeList},
+	{"UpdateProcThreadAttribute",
+				(FARPROC*)&pUpdateProcThreadAttribute},
+	{"DeleteProcThreadAttributeList",
+				(FARPROC*)&pDeleteProcThreadAttributeList},
+	{NULL, NULL}
+    };
+
+    if (handled)
+	return result;
+
+    if (!has_vtp_working())
+    {
+	handled = TRUE;
+	result = FAIL;
+	return FAIL;
+    }
+
+    hKerneldll = vimLoadLib("kernel32.dll");
+    for (i = 0; conpty_entry[i].name != NULL
+					&& conpty_entry[i].ptr != NULL; ++i)
+    {
+	if ((*conpty_entry[i].ptr = (FARPROC)GetProcAddress(hKerneldll,
+						conpty_entry[i].name)) == NULL)
+	{
+	    if (verbose)
+		semsg(_(e_loadfunc), conpty_entry[i].name);
+	    return FAIL;
+	}
+    }
+
+    handled = TRUE;
+    result = OK;
+    return OK;
+}
+
+    static int
+conpty_term_and_job_init(
+	term_T	    *term,
+	typval_T    *argvar,
+	char	    **argv,
+	jobopt_T    *opt,
+	jobopt_T    *orig_opt)
+{
+    WCHAR	    *cmd_wchar = NULL;
+    WCHAR	    *cmd_wchar_copy = NULL;
+    WCHAR	    *cwd_wchar = NULL;
+    WCHAR	    *env_wchar = NULL;
+    channel_T	    *channel = NULL;
+    job_T	    *job = NULL;
+    HANDLE	    jo = NULL;
+    garray_T	    ga_cmd, ga_env;
+    char_u	    *cmd = NULL;
+    HRESULT	    hr;
+    COORD	    consize;
+    SIZE_T	    breq;
+    PROCESS_INFORMATION proc_info;
+    HANDLE	    i_theirs = NULL;
+    HANDLE	    o_theirs = NULL;
+    HANDLE	    i_ours = NULL;
+    HANDLE	    o_ours = NULL;
+
+    ga_init2(&ga_cmd, (int)sizeof(char*), 20);
+    ga_init2(&ga_env, (int)sizeof(char*), 20);
+
+    if (argvar->v_type == VAR_STRING)
+    {
+	cmd = argvar->vval.v_string;
+    }
+    else if (argvar->v_type == VAR_LIST)
+    {
+	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
+	    goto failed;
+	cmd = ga_cmd.ga_data;
+    }
+    if (cmd == NULL || *cmd == NUL)
+    {
+	emsg(_(e_invarg));
+	goto failed;
+    }
+
+    term->tl_arg0_cmd = vim_strsave(cmd);
+
+    cmd_wchar = enc_to_utf16(cmd, NULL);
+
+    if (cmd_wchar != NULL)
+    {
+	/* Request by CreateProcessW */
+	breq = wcslen(cmd_wchar) + 1 + 1;	/* Addition of NUL by API */
+	cmd_wchar_copy = (PWSTR)alloc((int)(breq * sizeof(WCHAR)));
+	wcsncpy(cmd_wchar_copy, cmd_wchar, breq - 1);
+    }
+
+    ga_clear(&ga_cmd);
+    if (cmd_wchar == NULL)
+	goto failed;
+    if (opt->jo_cwd != NULL)
+	cwd_wchar = enc_to_utf16(opt->jo_cwd, NULL);
+
+    win32_build_env(opt->jo_env, &ga_env, TRUE);
+    env_wchar = ga_env.ga_data;
+
+    if (!CreatePipe(&i_theirs, &i_ours, NULL, 0))
+	goto failed;
+    if (!CreatePipe(&o_ours, &o_theirs, NULL, 0))
+	goto failed;
+
+    consize.X = term->tl_cols;
+    consize.Y = term->tl_rows;
+    hr = pCreatePseudoConsole(consize, i_theirs, o_theirs, 0,
+							     &term->tl_conpty);
+    if (FAILED(hr))
+	goto failed;
+
+    term->tl_siex.StartupInfo.cb = sizeof(term->tl_siex);
+
+    /* Set up pipe inheritance safely: Vista or later. */
+    pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
+    term->tl_siex.lpAttributeList =
+	    (PPROC_THREAD_ATTRIBUTE_LIST)alloc((int)breq);
+    if (!term->tl_siex.lpAttributeList)
+	goto failed;
+    if (!pInitializeProcThreadAttributeList(term->tl_siex.lpAttributeList, 1,
+								     0, &breq))
+	goto failed;
+    if (!pUpdateProcThreadAttribute(
+	    term->tl_siex.lpAttributeList, 0,
+	    PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE, term->tl_conpty,
+	    sizeof(HPCON), NULL, NULL))
+	goto failed;
+
+    channel = add_channel();
+    if (channel == NULL)
+	goto failed;
+
+    job = job_alloc();
+    if (job == NULL)
+	goto failed;
+    if (argvar->v_type == VAR_STRING)
+    {
+	int argc;
+
+	build_argv_from_string(cmd, &job->jv_argv, &argc);
+    }
+    else
+    {
+	int argc;
+
+	build_argv_from_list(argvar->vval.v_list, &job->jv_argv, &argc);
+    }
+
+    if (opt->jo_set & JO_IN_BUF)
+	job->jv_in_buf = buflist_findnr(opt->jo_io_buf[PART_IN]);
+
+    if (!CreateProcessW(NULL, cmd_wchar_copy, NULL, NULL, FALSE,
+	    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT
+	    | CREATE_SUSPENDED | CREATE_NEW_PROCESS_GROUP
+	    | CREATE_DEFAULT_ERROR_MODE,
+	    env_wchar, cwd_wchar,
+	    &term->tl_siex.StartupInfo, &proc_info))
+	goto failed;
+
+    CloseHandle(i_theirs);
+    CloseHandle(o_theirs);
+
+    channel_set_pipes(channel,
+	    (sock_T)i_ours,
+	    (sock_T)o_ours,
+	    (sock_T)o_ours);
+
+    /* Write lines with CR instead of NL. */
+    channel->ch_write_text_mode = TRUE;
+
+    /* Use to explicitly delete anonymous pipe handle. */
+    channel->ch_anonymous_pipe = TRUE;
+
+    jo = CreateJobObject(NULL, NULL);
+    if (jo == NULL)
+	goto failed;
+
+    if (!AssignProcessToJobObject(jo, proc_info.hProcess))
+    {
+	/* Failed, switch the way to terminate process with TerminateProcess. */
+	CloseHandle(jo);
+	jo = NULL;
+    }
+
+    ResumeThread(proc_info.hThread);
+    CloseHandle(proc_info.hThread);
+
+    vim_free(cmd_wchar);
+    vim_free(cmd_wchar_copy);
+    vim_free(cwd_wchar);
+    vim_free(env_wchar);
+
+    if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
+	goto failed;
+
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    if (opt->jo_set2 & JO2_ANSI_COLORS)
+	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
+    else
+	init_vterm_ansi_colors(term->tl_vterm);
+#endif
+
+    channel_set_job(channel, job, opt);
+    job_set_options(job, opt);
+
+    job->jv_channel = channel;
+    job->jv_proc_info = proc_info;
+    job->jv_job_object = jo;
+    job->jv_status = JOB_STARTED;
+    ++job->jv_refcount;
+    term->tl_job = job;
+
+    /* Redirecting stdout and stderr doesn't work at the job level.  Instead
+     * open the file here and handle it in.  opt->jo_io was changed in
+     * setup_job_options(), use the original flags here. */
+    if (orig_opt->jo_io[PART_OUT] == JIO_FILE)
+    {
+	char_u *fname = opt->jo_io_name[PART_OUT];
+
+	ch_log(channel, "Opening output file %s", fname);
+	term->tl_out_fd = mch_fopen((char *)fname, WRITEBIN);
+	if (term->tl_out_fd == NULL)
+	    semsg(_(e_notopen), fname);
+    }
+
+    return OK;
+
+failed:
+    ga_clear(&ga_cmd);
+    ga_clear(&ga_env);
+    vim_free(cmd_wchar);
+    vim_free(cmd_wchar_copy);
+    vim_free(cwd_wchar);
+    if (channel != NULL)
+	channel_clear(channel);
+    if (job != NULL)
+    {
+	job->jv_channel = NULL;
+	job_cleanup(job);
+    }
+    term->tl_job = NULL;
+    if (jo != NULL)
+	CloseHandle(jo);
+
+    if (term->tl_siex.lpAttributeList != NULL)
+    {
+	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
+	vim_free(term->tl_siex.lpAttributeList);
+    }
+    term->tl_siex.lpAttributeList = NULL;
+    if (o_theirs != NULL)
+	CloseHandle(o_theirs);
+    if (o_ours != NULL)
+	CloseHandle(o_ours);
+    if (i_ours != NULL)
+	CloseHandle(i_ours);
+    if (i_theirs != NULL)
+	CloseHandle(i_theirs);
+    if (term->tl_conpty != NULL)
+	pClosePseudoConsole(term->tl_conpty);
+    term->tl_conpty = NULL;
+    return FAIL;
+}
+
+    static void
+conpty_term_report_winsize(term_T *term, int rows, int cols)
+{
+    COORD consize;
+
+    consize.X = cols;
+    consize.Y = rows;
+    pResizePseudoConsole(term->tl_conpty, consize);
+}
+
+    void
+term_free_conpty(term_T *term)
+{
+    if (term->tl_siex.lpAttributeList != NULL)
+    {
+	pDeleteProcThreadAttributeList(term->tl_siex.lpAttributeList);
+	vim_free(term->tl_siex.lpAttributeList);
+    }
+    term->tl_siex.lpAttributeList = NULL;
+    if (term->tl_conpty != NULL)
+	pClosePseudoConsole(term->tl_conpty);
+    term->tl_conpty = NULL;
+}
+
+    int
+use_conpty(void)
+{
+    return has_conpty;
+}
+
 #  ifndef PROTO
 
 #define WINPTY_SPAWN_FLAG_AUTO_SHUTDOWN 1ul
@@ -5516,16 +5888,11 @@ dyn_winpty_init(int verbose)
     return OK;
 }
 
-/*
- * Create a new terminal of "rows" by "cols" cells.
- * Store a reference in "term".
- * Return OK or FAIL.
- */
     static int
-term_and_job_init(
+winpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv UNUSED,
+	char	    **argv,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
@@ -5543,8 +5910,6 @@ term_and_job_init(
     garray_T	    ga_cmd, ga_env;
     char_u	    *cmd = NULL;
 
-    if (dyn_winpty_init(TRUE) == FAIL)
-	return FAIL;
     ga_init2(&ga_cmd, (int)sizeof(char*), 20);
     ga_init2(&ga_env, (int)sizeof(char*), 20);
 
@@ -5563,6 +5928,8 @@ term_and_job_init(
 	emsg(_(e_invarg));
 	goto failed;
     }
+
+    term->tl_arg0_cmd = vim_strsave(cmd);
 
     cmd_wchar = enc_to_utf16(cmd, NULL);
     ga_clear(&ga_cmd);
@@ -5676,9 +6043,9 @@ term_and_job_init(
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
     job->jv_tty_in = utf16_to_enc(
-	    (short_u*)winpty_conin_name(term->tl_winpty), NULL);
+	    (short_u *)winpty_conin_name(term->tl_winpty), NULL);
     job->jv_tty_out = utf16_to_enc(
-	    (short_u*)winpty_conout_name(term->tl_winpty), NULL);
+	    (short_u *)winpty_conout_name(term->tl_winpty), NULL);
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -5722,13 +6089,83 @@ failed:
     term->tl_winpty_config = NULL;
     if (winpty_err != NULL)
     {
-	char_u *msg = utf16_to_enc(
+	char *msg = (char *)utf16_to_enc(
 				(short_u *)winpty_error_msg(winpty_err), NULL);
 
 	emsg(msg);
 	winpty_error_free(winpty_err);
     }
     return FAIL;
+}
+
+/*
+ * Create a new terminal of "rows" by "cols" cells.
+ * Store a reference in "term".
+ * Return OK or FAIL.
+ */
+    static int
+term_and_job_init(
+	term_T	    *term,
+	typval_T    *argvar,
+	char	    **argv UNUSED,
+	jobopt_T    *opt,
+	jobopt_T    *orig_opt)
+{
+    int		    use_winpty = FALSE;
+    int		    use_conpty = FALSE;
+
+    has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
+    has_conpty = dyn_conpty_init(FALSE) != FAIL ? TRUE : FALSE;
+
+    if (!has_winpty && !has_conpty)
+	// If neither is available give the errors for winpty, since when
+	// conpty is not available it can't be installed either.
+	return dyn_winpty_init(TRUE);
+
+    if (opt->jo_term_mode == 'w')
+	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"winpty",
+							OPT_FREE|OPT_LOCAL, 0);
+    if (opt->jo_term_mode == 'c')
+	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"conpty",
+							OPT_FREE|OPT_LOCAL, 0);
+
+    if (curwin->w_p_tmod == NULL || *curwin->w_p_tmod == NUL)
+    {
+	if (has_conpty)
+	    use_conpty = TRUE;
+	else if (has_winpty)
+	    use_winpty = TRUE;
+	// else: error
+    }
+    else if (STRICMP(curwin->w_p_tmod, "winpty") == 0)
+    {
+	if (has_winpty)
+	    use_winpty = TRUE;
+    }
+    else if (STRICMP(curwin->w_p_tmod, "conpty") == 0)
+    {
+	if (has_conpty)
+	    use_conpty = TRUE;
+	else
+	    return dyn_conpty_init(TRUE);
+    }
+
+    if (use_conpty)
+    {
+	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"conpty",
+							OPT_FREE|OPT_LOCAL, 0);
+	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
+    }
+
+    if (use_winpty)
+    {
+	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"winpty",
+							OPT_FREE|OPT_LOCAL, 0);
+	return winpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
+    }
+
+    // error
+    return dyn_winpty_init(TRUE);
 }
 
     static int
@@ -5804,6 +6241,7 @@ failed:
     static void
 term_free_vterm(term_T *term)
 {
+    term_free_conpty(term);
     if (term->tl_winpty != NULL)
 	winpty_free(term->tl_winpty);
     term->tl_winpty = NULL;
@@ -5821,6 +6259,8 @@ term_free_vterm(term_T *term)
     static void
 term_report_winsize(term_T *term, int rows, int cols)
 {
+    if (term->tl_conpty)
+	conpty_term_report_winsize(term, rows, cols);
     if (term->tl_winpty)
 	winpty_set_size(term->tl_winpty, cols, rows, NULL);
 }
@@ -5828,7 +6268,7 @@ term_report_winsize(term_T *term, int rows, int cols)
     int
 terminal_enabled(void)
 {
-    return dyn_winpty_init(FALSE) == OK;
+    return dyn_winpty_init(FALSE) == OK || dyn_conpty_init(FALSE) == OK;
 }
 
 # else
@@ -5852,6 +6292,8 @@ term_and_job_init(
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt UNUSED)
 {
+    term->tl_arg0_cmd = NULL;
+
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	return FAIL;
 

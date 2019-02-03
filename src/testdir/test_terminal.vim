@@ -39,8 +39,11 @@ func Test_terminal_basic()
     call assert_match('^/dev/', job_info(g:job).tty_out)
     call assert_match('^/dev/', term_gettty(''))
   else
-    call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
-    call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    " ConPTY works on anonymous pipe.
+    if !has('conpty')
+      call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
+      call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    endif
   endif
   call assert_equal('t', mode())
   call assert_equal('yes', b:done)
@@ -129,7 +132,12 @@ endfunc
 
 func Get_cat_123_cmd()
   if has('win32')
-    return 'cmd /c "cls && color 2 && echo 123"'
+    if !has('conpty')
+      return 'cmd /c "cls && color 2 && echo 123"'
+    else
+      " When clearing twice, extra sequence is not output.
+      return 'cmd /c "cls && cls && color 2 && echo 123"'
+    endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
     return "cat Xtext"
@@ -143,8 +151,8 @@ func Test_terminal_nasty_cb()
 
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
   call WaitForAssert({-> assert_equal(0, g:buf)})
-  unlet g:buf
   unlet g:job
+  unlet g:buf
   call delete('Xtext')
 endfunc
 
@@ -563,6 +571,9 @@ func Test_terminal_noblock()
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
+  " NPFS is used in Windows, nonblocking mode does not work properly.
+  elseif has('win32')
+    let len = 1
   else
     let len = 5000
   endif
@@ -693,8 +704,11 @@ func Test_terminal_redir_file()
   let cmd = Get_cat_123_cmd()
   let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
   call term_wait(buf)
-  call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
-  call assert_match('123', readfile('Xfile')[0])
+  " ConPTY may precede escape sequence. There are things that are not so.
+  if !has('conpty')
+    call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
+    call assert_match('123', readfile('Xfile')[0])
+  endif
   let g:job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
   call delete('Xfile')
@@ -1661,6 +1675,10 @@ func Test_terminal_hidden_and_close()
 endfunc
 
 func Test_terminal_does_not_truncate_last_newlines()
+  " This test does not pass through ConPTY.
+  if has('conpty')
+    return
+  endif
   let contents = [
   \   [ 'One', '', 'X' ],
   \   [ 'Two', '', '' ],

@@ -1720,11 +1720,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     char_u  *res;
     char_u  *p;
 
-    /* If there is only one buffer just get that one. */
-    if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
-	return channel_get(channel, part, outlen);
-
-    /* Concatenate everything into one buffer. */
+    // Concatenate everything into one buffer.
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
     res = lalloc(len + 1, TRUE);
@@ -1738,7 +1734,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     }
     *p = NUL;
 
-    /* Free all buffers */
+    // Free all buffers
     do
     {
 	p = channel_get(channel, part, NULL);
@@ -1747,16 +1743,37 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
 
     if (outlen != NULL)
     {
+	// Returning the length, keep NUL characters.
 	*outlen += len;
 	return res;
     }
 
-    /* turn all NUL into NL */
-    while (len > 0)
+    // Turn all NUL into NL, so that the result can be used as a string.
+    p = res;
+    while (p < res + len)
     {
-	--len;
-	if (res[len] == NUL)
-	    res[len] = NL;
+	if (*p == NUL)
+	    *p = NL;
+#ifdef WIN32
+	else if (*p == 0x1b)
+	{
+	    // crush the escape sequence OSC 0/1/2: ESC ]0;
+	    if (p + 3 < res + len
+		    && p[1] == ']'
+		    && (p[2] == '0' || p[2] == '1' || p[2] == '2')
+		    && p[3] == ';')
+	    {
+		// '\a' becomes a NL
+	        while (p < res + (len - 1) && *p != '\a')
+		    ++p;
+		// BEL is zero width characters, suppress display mistake
+		// ConPTY (after 10.0.18317) requires advance checking
+		if (p[-1] == NUL)
+		    p[-1] = 0x07;
+	    }
+	}
+#endif
+	++p;
     }
 
     return res;
@@ -4330,7 +4347,7 @@ channel_parse_messages(void)
 	    channel = first_channel;
 	    continue;
 	}
-	if (channel->ch_to_be_freed)
+	if (channel->ch_to_be_freed || channel->ch_killing)
 	{
 	    channel_free(channel);
 	    /* channel has been freed, start over */
@@ -4930,6 +4947,28 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = tv_get_string_chk(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "term_mode") == 0)
+	    {
+		char_u *p;
+
+		if (!(supported2 & JO2_TERM_MODE))
+		    break;
+		opt->jo_set2 |= JO2_TERM_MODE;
+		p = tv_get_string_chk(item);
+		if (p == NULL)
+		{
+		    semsg(_(e_invargval), "term_mode");
+		    return FAIL;
+		}
+		// Allow empty string, "winpty", "conpty".
+		if (!(*p == NUL || STRCMP(p, "winpty") == 0
+					          || STRCMP(p, "conpty") == 0))
+		{
+		    semsg(_(e_invargval), "term_mode");
+		    return FAIL;
+		}
+		opt->jo_term_mode = p[0];
+	    }
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
 	    {
@@ -5438,6 +5477,16 @@ job_cleanup(job_T *job)
 	clear_tv(&rettv);
 	--job->jv_refcount;
 	channel_need_redraw = TRUE;
+    }
+
+    if (job->jv_channel != NULL
+	 && job->jv_channel->ch_anonymous_pipe && !job->jv_channel->ch_killing)
+    {
+	++safe_to_invoke_callback;
+	channel_free_contents(job->jv_channel);
+	job->jv_channel->ch_job = NULL;
+	job->jv_channel = NULL;
+	--safe_to_invoke_callback;
     }
 
     // Do not free the job in case the close callback of the associated channel

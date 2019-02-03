@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jan 29
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -696,7 +696,7 @@ similar to -1. >
 	:let otherblob = myblob[:]	" make a copy of the Blob
 
 If the first index is beyond the last byte of the Blob or the second index is
-before the first index, the result is an empty list.  There is no error
+before the first index, the result is an empty Blob.  There is no error
 message.
 
 If the second index is equal to or greater than the length of the list the
@@ -9469,6 +9469,10 @@ term_start({cmd}, {options})				*term_start()*
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
 				     color modes.  See |g:terminal_ansi_colors|.
+		   "term_mode"	     (MS-Windows only): Specify which pty to
+				     use:
+					"winpty": Use winpty
+					"conpty": Use ConPTY (if available)
 
 		{only available when compiled with the |+terminal| feature}
 
@@ -10186,6 +10190,7 @@ cmdline_hist		Compiled with |cmdline-history| support.
 cmdline_info		Compiled with 'showcmd' and 'ruler' support.
 comments		Compiled with |'comments'| support.
 compatible		Compiled to be very Vi compatible.
+conpty			Platform where |ConPTY| can be used.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
 cursorbind		Compiled with |cursorbind| (always true)

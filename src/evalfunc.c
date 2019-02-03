@@ -6738,6 +6738,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "terminal") == 0)
 	    n = terminal_enabled();
 #endif
+#if defined(FEAT_TERMINAL) && defined(WIN3264)
+	else if (STRICMP(name, "conpty") == 0)
+	    n = use_conpty();
+#endif
     }
 
     rettv->vval.v_number = n;

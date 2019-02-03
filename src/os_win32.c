@@ -186,8 +186,10 @@ static int win32_getattrs(char_u *name);
 static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
-#ifndef FEAT_GUI_W32
 static int vtp_working = 0;
+static void vtp_flag_init();
+
+#ifndef FEAT_GUI_W32
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -247,6 +249,7 @@ static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
 typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
 static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
 static BOOL has_csbiex = FALSE;
+#endif
 
 /*
  * Get version number including build number
@@ -276,7 +279,7 @@ get_build_number(void)
     return ver;
 }
 
-
+#ifndef FEAT_GUI_W32
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -1508,9 +1511,8 @@ WaitForChar(long msec, int ignore_input)
 	/* Wait forever. */
 	dwEndTime = INFINITE;
 
-    /* We need to loop until the end of the time period, because
-     * we might get multiple unusable mouse events in that time.
-     */
+    // We need to loop until the end of the time period, because
+    // we might get multiple unusable mouse events in that time.
     for (;;)
     {
 	// Only process messages when waiting.
@@ -2175,6 +2177,8 @@ mch_init(void)
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
 #endif
+
+    vtp_flag_init();
 }
 
 
@@ -2675,6 +2679,7 @@ mch_init(void)
     win_clip_init();
 #endif
 
+    vtp_flag_init();
     vtp_init();
 }
 
@@ -5683,7 +5688,11 @@ mch_signal_job(job_T *job, char_u *how)
     {
 	/* deadly signal */
 	if (job->jv_job_object != NULL)
+	{
+	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
+		job->jv_channel->ch_killing = TRUE;
 	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	}
 	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
     }
 
@@ -7621,30 +7630,52 @@ mch_setenv(char *var, char *value, int x)
     return 0;
 }
 
-#ifndef FEAT_GUI_W32
-
 /*
  * Support for 256 colors and 24-bit colors was added in Windows 10
  * version 1703 (Creators update).
  */
-# define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+#define VTP_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 15063)
+
+/*
+ * Support for pseudo-console (ConPTY) was added in windows 10
+ * version 1809 (October 2018 update).
+ */
+#define CONPTY_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 17763)
+
+    static void
+vtp_flag_init(void)
+{
+    DWORD   ver = get_build_number();
+#ifndef FEAT_GUI_W32
+    DWORD   mode;
+    HANDLE  out;
+
+    out = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
+    GetConsoleMode(out, &mode);
+    mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    if (SetConsoleMode(out, mode) == 0)
+	vtp_working = 0;
+#endif
+
+#ifdef FEAT_GUI_W32
+    if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
+	vtp_working = 1;
+#endif
+
+}
+
+#ifndef FEAT_GUI_W32
 
     static void
 vtp_init(void)
 {
-    DWORD   ver, mode;
     HMODULE hKerneldll;
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
     COLORREF fg, bg;
 # endif
-
-    ver = get_build_number();
-    vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
-    GetConsoleMode(g_hConOut, &mode);
-    mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    if (SetConsoleMode(g_hConOut, mode) == 0)
-	vtp_working = 0;
 
     /* Use functions supported from Vista */
     hKerneldll = GetModuleHandle("kernel32.dll");
@@ -7829,12 +7860,6 @@ control_console_color_rgb(void)
 }
 
     int
-has_vtp_working(void)
-{
-    return vtp_working;
-}
-
-    int
 use_vtp(void)
 {
     return USE_VTP;
@@ -7847,3 +7872,9 @@ is_term_win32(void)
 }
 
 #endif
+
+    int
+has_vtp_working(void)
+{
+    return vtp_working;
+}
