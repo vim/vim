@@ -1823,31 +1823,10 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
-#ifdef USE_FILEEXTD
-/* VC 7.1 or earlier doesn't support SAL. */
-# if !defined(_MSC_VER) || (_MSC_VER < 1400)
-#  define __out
-#  define __in
-#  define __in_opt
-# endif
-/* Win32 FileID API Library:
- * http://www.microsoft.com/en-us/download/details.aspx?id=22599
- * Needed for WinXP. */
-# include <fileextd.h>
-#else /* USE_FILEEXTD */
-/* VC 8 or earlier. */
-# if defined(_MSC_VER) && (_MSC_VER < 1500)
-#  ifdef ENABLE_STUB_IMPL
-#   define STUB_IMPL
-#  else
-#   error "Win32 FileID API Library is required for VC2005 or earlier."
-#  endif
-# endif
-#endif /* USE_FILEEXTD */
-
     char_u *
 resolve_reparse_point(char_u *fname)
 {
+# if !defined(_MSC_VER) || (_MSC_VER < 1400)
     HANDLE	    h = INVALID_HANDLE_VALUE;
     DWORD	    size;
     char_u	    *rfname = NULL;
@@ -1931,6 +1910,9 @@ fail:
 	vim_free(volnames);
 
     return rfname;
+# else
+    return NULL;
+# endif
 }
 
 /*
