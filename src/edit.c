@@ -3526,7 +3526,9 @@ ins_compl_active(void)
     return compl_started;
 }
 
-// Return Insert completion mode name string
+/*
+ * Return Insert completion mode name string
+ */
     char_u *
 ins_compl_mode(void)
 {
@@ -3551,7 +3553,7 @@ ins_compl_mode(void)
     };
 
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
-	return mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+	return (char_u *)mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
 
     return (char_u *)"";
 }

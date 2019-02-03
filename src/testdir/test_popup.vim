@@ -912,6 +912,7 @@ func Test_popup_complete_mode()
         \ ["", ''],
         \ ["\<C-X>", 'ctrl_x'],
         \ ["\<C-X>\<C-N>", 'keyword'],
+        \ ["\<C-X>\<C-P>", 'keyword'],
         \ ["\<C-X>\<C-L>", 'whole_line'],
         \ ["\<C-X>\<C-F>", 'files'],
         \ ["\<C-X>\<C-]>", 'tags'],

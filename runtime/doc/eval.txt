@@ -3548,10 +3548,8 @@ complete_mode()
 		   "whole_line"	Whole lines |i_CTRL-X_CTRL-L|
 		   "files"	File names |i_CTRL-X_CTRL-F|
 		   "tags"	Tags |i_CTRL-X_CTRL-]|
-		   "path_defines"
-				Definition completion |i_CTRL-X_CTRL-D|
-		   "path_patterns"
-		   		Include completion |i_CTRL-X_CTRL-I|
+		   "path_defines"    Definition completion |i_CTRL-X_CTRL-D|
+		   "path_patterns"   Include completion |i_CTRL-X_CTRL-I|
 		   "dictionary"	Dictionary |i_CTRL-X_CTRL-K|
 		   "thesaurus"	Thesaurus |i_CTRL-X_CTRL-T|
 		   "cmdline"	Vim Command line completion |i_CTRL-X_CTRL-V|
