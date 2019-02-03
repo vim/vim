@@ -3098,13 +3098,11 @@ get_c_indent(void)
 			}
 		    }
 
-		    /*
-		     * Skip over continuation lines to find the one to get the
-		     * indent from
-		     * char *usethis = "bla\
-		     *		 bla",
-		     *      here;
-		     */
+		    // Skip over continuation lines to find the one to get the
+		    // indent from
+		    // char *usethis = "bla\
+		    //		 bla",
+		    //      here;
 		    if (terminated == ',')
 		    {
 			while (curwin->w_cursor.lnum > 1)
