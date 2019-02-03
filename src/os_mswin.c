@@ -1823,57 +1823,16 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
-typedef DWORD (*PfnGetFinalPathNameByHandleA)(
-  HANDLE hFile,
-  LPSTR  lpszFilePath,
-  DWORD  cchFilePath,
-  DWORD  dwFlags
-);
-
-typedef DWORD (*PfnGetFinalPathNameByHandleW)(
-  HANDLE hFile,
-  LPWSTR  lpszFilePath,
-  DWORD  cchFilePath,
-  DWORD  dwFlags
-);
-
-static PfnGetFinalPathNameByHandleA pfnGetFinalPathNameByHandleA;
-static PfnGetFinalPathNameByHandleW pfnGetFinalPathNameByHandleW;
-
-    static int
-init_GetFinalPathNameByHandle()
-{
-    HANDLE	hlib;
-
-    if (pfnGetFinalPathNameByHandleA != NULL &&
-	    pfnGetFinalPathNameByHandleW != NULL)
-	return OK;
-
-    hlib = GetModuleHandle("kernel32.dll");
-    if (hlib == NULL)
-	return FAIL;
-
-    pfnGetFinalPathNameByHandleA =
-	    (PfnGetFinalPathNameByHandleA)GetProcAddress(
-	    hlib, "GetFinalPathNameByHandleA");
-    pfnGetFinalPathNameByHandleW =
-	    (PfnGetFinalPathNameByHandleW)GetProcAddress(
-	    hlib, "GetFinalPathNameByHandleW");
-
-    return pfnGetFinalPathNameByHandleA != NULL &&
-	    pfnGetFinalPathNameByHandleW != NULL ? OK : FAIL;
-}
-
     char_u *
 resolve_reparse_point(char_u *fname)
 {
-    HANDLE	h;
-    DWORD	size;
-    WCHAR	wdest[MAX_PATH], *pwdest = wdest;
-    CHAR	dest[MAX_PATH];
-
-    if (init_GetFinalPathNameByHandle() == FAIL)
-	return NULL;
+    HANDLE	    h = INVALID_HANDLE_VALUE;
+    DWORD	    size;
+    char_u	    *rfname = NULL;
+    FILE_NAME_INFO  *nameinfo = NULL;
+    WCHAR	    buff[MAX_PATH], *volnames = NULL;
+    HANDLE	    hv;
+    DWORD	    snfile, snfind;
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
@@ -1881,44 +1840,75 @@ resolve_reparse_point(char_u *fname)
 
 	p = enc_to_utf16(fname, NULL);
 	if (p == NULL)
-	    return NULL;
+	    goto fail;
 
 	h = CreateFileW(p, GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
 		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	vim_free(p);
-
-	if (h == INVALID_HANDLE_VALUE)
-	    return NULL;
-
-	size = pfnGetFinalPathNameByHandleW(h, wdest, MAX_PATH,
-		FILE_NAME_NORMALIZED);
-	CloseHandle(h);
-
-	if (size == 0 || size >= MAX_PATH)
-	    return NULL;
-
-	if (wdest[0] == '\\' && wdest[1] == '\\' &&
-		wdest[2] == '?' && wdest[3] == '\\')
-	    pwdest += 4;
-	return utf16_to_enc(pwdest, NULL);
     }
-
-    h = CreateFile((char*) fname, GENERIC_READ,
-	    FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
-	    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    else
+	h = CreateFile((char*) fname, GENERIC_READ,
+		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
+		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (h == INVALID_HANDLE_VALUE)
-	return NULL;
+	goto fail;
 
-    size = pfnGetFinalPathNameByHandleA(h, dest, MAX_PATH,
-	    FILE_NAME_NORMALIZED);
-    CloseHandle(h);
+    size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
+    nameinfo = (FILE_NAME_INFO*)alloc(size + sizeof(WCHAR));
 
-    if (size == 0 || size >= MAX_PATH)
-	    return NULL;
+    if (!GetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size))
+	goto fail;
 
-    return vim_strsave((char_u*) dest);
+    nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
+
+    if (!GetVolumeInformationByHandleW(
+	    h, NULL, 0, &snfile, NULL, NULL, NULL, 0))
+	goto fail;
+
+    hv = FindFirstVolumeW(buff, MAX_PATH);
+    if (hv == INVALID_HANDLE_VALUE)
+	goto fail;
+
+    do {
+	GetVolumeInformationW(
+		buff, NULL, 0, &snfind, NULL, NULL, NULL, 0);
+	if (snfind == snfile)
+	    break;
+    } while (FindNextVolumeW(hv, buff, MAX_PATH));
+
+    FindVolumeClose(hv);
+
+    if (snfind != snfile)
+	goto fail;
+
+    size = 0;
+    if (!GetVolumePathNamesForVolumeNameW(buff, NULL, 0, &size) &&
+	    GetLastError() != ERROR_MORE_DATA)
+	goto fail;
+
+    volnames = (WCHAR*)alloc(size * sizeof(WCHAR));
+    if (!GetVolumePathNamesForVolumeNameW(buff, volnames, size,
+		&size))
+	goto fail;
+
+    wcscpy(buff, volnames);
+    if (nameinfo->FileName[0] == '\\')
+	wcscat(buff, nameinfo->FileName + 1);
+    else
+	wcscat(buff, nameinfo->FileName);
+    rfname = utf16_to_enc(buff, NULL);
+
+fail:
+    if (h != INVALID_HANDLE_VALUE)
+	CloseHandle(h);
+    if (nameinfo != NULL)
+	vim_free(nameinfo);
+    if (volnames != NULL)
+	vim_free(volnames);
+
+    return rfname;
 }
 
 /*
