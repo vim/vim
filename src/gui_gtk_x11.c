@@ -6320,7 +6320,7 @@ gui_mch_wait_for_chars(long wtime)
     // This timeout makes sure that we will return if no characters arrived in
     // time. If "wtime" is zero just use one.
     if (wtime >= 0)
-	timer = timeout_add(wtime <= 0 ? 1L : wtime,
+	timer = timeout_add(wtime == 0 ? 1L : wtime,
 						   input_timer_cb, &timed_out);
     else
 	timer = 0;
