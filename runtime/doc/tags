@@ -1092,6 +1092,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
+'termmode'	options.txt	/*'termmode'*
 'termwinkey'	options.txt	/*'termwinkey'*
 'termwinscroll'	options.txt	/*'termwinscroll'*
 'termwinsize'	options.txt	/*'termwinsize'*
@@ -1112,6 +1113,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'titlestring'	options.txt	/*'titlestring'*
 'tl'	options.txt	/*'tl'*
 'tm'	options.txt	/*'tm'*
+'tmod'	options.txt	/*'tmod'*
 'to'	options.txt	/*'to'*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
@@ -1717,6 +1719,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 05.6	usr_05.txt	/*05.6*
 05.7	usr_05.txt	/*05.7*
 05.8	usr_05.txt	/*05.8*
+05.9	usr_05.txt	/*05.9*
 06.1	usr_06.txt	/*06.1*
 06.2	usr_06.txt	/*06.2*
 06.3	usr_06.txt	/*06.3*
@@ -3741,6 +3744,7 @@ ColorSchemePre	autocmd.txt	/*ColorSchemePre*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
 CompleteDone	autocmd.txt	/*CompleteDone*
+ConPTY	terminal.txt	/*ConPTY*
 Contents	quickref.txt	/*Contents*
 Cscope	if_cscop.txt	/*Cscope*
 CursorHold	autocmd.txt	/*CursorHold*
@@ -5012,7 +5016,10 @@ ZZ	editing.txt	/*ZZ*
 [:cntrl:]	pattern.txt	/*[:cntrl:]*
 [:digit:]	pattern.txt	/*[:digit:]*
 [:escape:]	pattern.txt	/*[:escape:]*
+[:fname:]	pattern.txt	/*[:fname:]*
 [:graph:]	pattern.txt	/*[:graph:]*
+[:ident:]	pattern.txt	/*[:ident:]*
+[:keyword:]	pattern.txt	/*[:keyword:]*
 [:lower:]	pattern.txt	/*[:lower:]*
 [:print:]	pattern.txt	/*[:print:]*
 [:punct:]	pattern.txt	/*[:punct:]*
@@ -5847,6 +5854,7 @@ dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
 deepcopy()	eval.txt	/*deepcopy()*
 defaults.vim	starting.txt	/*defaults.vim*
+defaults.vim-explained	usr_05.txt	/*defaults.vim-explained*
 definition-search	tagsrch.txt	/*definition-search*
 definitions	intro.txt	/*definitions*
 delete()	eval.txt	/*delete()*
@@ -7313,7 +7321,7 @@ lambda	eval.txt	/*lambda*
 lang-variable	eval.txt	/*lang-variable*
 language-mapping	map.txt	/*language-mapping*
 last-pattern	pattern.txt	/*last-pattern*
-last-position-jump	eval.txt	/*last-position-jump*
+last-position-jump	usr_05.txt	/*last-position-jump*
 last_buffer_nr()	eval.txt	/*last_buffer_nr()*
 latex-syntax	syntax.txt	/*latex-syntax*
 lc_time-variable	eval.txt	/*lc_time-variable*

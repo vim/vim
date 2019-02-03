@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jan 26
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Timer test doesn't work on MS-Windows console, any way to make it work?
+
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
   was set. (#3837)
@@ -61,6 +63,7 @@ Terminal debugger:
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
+- Use a sign group
 - Termdebug does not work when Vim was build with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
@@ -107,47 +110,17 @@ Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
 
-Key mapping times out when using a timer in Gvim. (Michael Henry, 2018 Sep 9,
-#3417)
-Another report, with reproduction steps. (#3799)
-Is this fixed by 8.1.0761?
-
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
 
-js_decode() does not handle infinity properly. (Dominique Pelle, 2019 Jan 10,
-#3788)
-
-Patch to avoid skipping buffers when loading a session. (Jason Franklin, 2019
-Jan 20)
-
-Patch to update example of how to restore the cursor. (Ken Takata, 2019 Jan
-21)
-
-Patch to fix problems with timer in GUI. (Ozaki Kiichi, #3817)
-Should also fix #3824.
-Change the order in which GUI handles events?  Make it work like os_unix.c,
-check timer on lower level, check for pending messages higher up.
-
-Signs:
--   screen not redrawn correctly. (Dominique Pelle, 2019 Jan 14, #3803)
--   Use a sign group in the Termdebug plugin.
--   Avoid that "sign unplace id" does a redraw right away, esp. when there is
-    a sequence of these commands. (Andy Stewart, 2018 Mar 16)
-
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
-
-Patch to recognize more systems with has().  (Ozaki Kiichi, #3855)
 
 Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
-
-Patch for xxd to make it work with 64 bit numbers. (Christer Jense, 2019 Jan
-11, #3791)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
@@ -177,12 +150,6 @@ similar to check_due_timer().  Also see #3809.
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
 
-Patch on #3690 to fix that "wincmd p" does not always behave properly.
-(Christian Brabandt, 2018 Dec 17)
-
-Patch: When using %v in 'errorformat', assume the number is the screen column
-not bytes, also handle multi-byte charactes. (Yegappan Lakshmanan, #3700)
-
 Support setting the character displayed below the last line?  Neovim uses
 "eob:X" in 'fillchars'.
 
@@ -197,36 +164,23 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 Another request: #3811.
 
-Patch for MinGW build with static libraries. (Ken Takata, 2018 Dec 16)
-
-Patch to add new regexp classes :ident:, :keyword:, :fname:.
-(ichizok, 2016 Jan 12, #1373)
-
-Patch to add "termsig" - signal that caused job to end. (Ozaki Kiichi, 2019
-Jan 10, #3786)
-
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
-
-Patch for this: (Aron Widforss, 2018 Oct 13, #3539)
-    missing a test.
-7   Make 'scrolloff' a global-local option, so that it can be different in the
-    quickfix window, for example. (Gary Holloway)
-    Also do 'sidescrolloff'.
-
-Patch for ConPTY support, new one: #3794 Does this work now?
-(Nobuhiro Takasaki)
-
-Issue #3649: Retrying the X server connection once may be insufficient.
-Since patch 8.1.0615 we try reconnecting five times.  Does it work?
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
 
 Patch to be able to separately map CTRL-H and BS on Windows.
 (Linwei, 2017 Jul 11, #1833)
 
+Patch to improve readability of complicated if(). (ichizok, 2019 Jan 29,
+#3879)
+
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
+
+When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
+case. (Nate Peterson, 2019 Jan 31, #3892)
+For "silent! q" it should not prompt and just fail.
 
 Using CTRL-L to add a character to the search string doesn't work for the last
 character in the file. (Smylers, 2018 Nov 17, #3620)
@@ -250,12 +204,15 @@ When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
 scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
 using CTRL-E. (Yee Cheng Chin, #3721)
 
-Patch to add ":vsbuffer" - vertical split + :sbuffer. (Rob Pilling, 2019 Jan
-17, #3816)  Do we really need this?
-
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
+
+Patch to add complete_mode().  Shougo - #3866.  Alternate patch by Hirohito
+Higashi, 2019 Jan 27, included now?
+
+Patch for ConPTY support, new one: #3794 Does this work now?  It should.
+(Nobuhiro Takasaki)
 
 Add function to make use of internal diff, working on two lists and returning
 unified diff (list of lines).
@@ -271,6 +228,8 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 cursorline highlighting not removed after yanking in Visual mode.
 (Matéo Zanibelli, 2018 Oct 30, #3578)
 Patch by Christian, Oct 30.
+
+Patch to clean up CI configs. (Ozaki Kiichi, 2019 Feb 1, #3890)
 
 Memory leaks in test_channel? (or is it because of fork())
 Using uninitialized value in test_crypt.
@@ -292,6 +251,11 @@ Patch to add match count and current index "3/44" when using "n" command.
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
+
+Should make 'listchars' global-local.  Local to window or to buffer?
+Probably window.
+Add something like 'fillchars' local to window, but allow for specifying a
+highlight name.  Esp. for the statusline.
 
 Sourceforge Vim pages still have content, redirect from empty page.
 Check for PHP errors. (Wayne Davison, 2018 Oct 26)
@@ -334,6 +298,9 @@ Further xdiff changes:
 - add option to use external diff above a certain size.
 
 Difference between two regexp engines: #3373
+
+Patch to properly break CJK lines: #3875
+Requires more tests.  dbcs_ functions are not implemented.
 
 Patch to add ch_listen() (Yasuhiro Matsumoto, 2018 Nov 26, #3639)
 What is the practical use for this?
@@ -423,8 +390,6 @@ behave strangely, as if there is a gap and a vertical window separator.
 
 Make {skip} argument of searchpair() consistent with other places where we
 pass an expression to evaluate.  Allow passing zero for "never skip".
-
-The 'scrolloff' option is global, make it global-local. #3195
 
 Add an option similar to 'lazyredraw' to skip redrawing while executing a
 script or function.

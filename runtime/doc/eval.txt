@@ -10193,7 +10193,7 @@ compatible		Compiled to be very Vi compatible.
 conpty			Platform where |ConPTY| can be used.
 cryptv			Compiled with encryption support |encryption|.
 cscope			Compiled with |cscope| support.
-cursorbind		Compiled with |cursorbind| (always true)
+cursorbind		Compiled with |'cursorbind'| (always true)
 debug			Compiled with "DEBUG" defined.
 dialog_con		Compiled with console dialog support.
 dialog_gui		Compiled with GUI dialog support.
