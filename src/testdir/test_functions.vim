@@ -239,7 +239,7 @@ func Test_resolve_win32()
     return
   endif
 
-  if !executable('cscript')
+  if executable('cscript')
     call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "test_function.vim")', 'shortcut.Save'], 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
