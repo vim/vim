@@ -1916,9 +1916,7 @@ resolve_reparse_point(char_u *fname)
 	    goto fail;
 	}
 
-	h = CreateFileW(p, GENERIC_READ,
-		0, NULL,
-		OPEN_EXISTING,
+	h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
 		FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	vim_free(p);
     }
@@ -1928,11 +1926,8 @@ resolve_reparse_point(char_u *fname)
 		    FILE_ATTRIBUTE_REPARSE_POINT) == 0)
 	    goto fail;
 
-	h = CreateFile((char*) fname, GENERIC_READ,
-		0, NULL,
-		OPEN_EXISTING,
-		FILE_FLAG_BACKUP_SEMANTICS,
-		NULL);
+	h = CreateFile((char*) fname, 0, 0, NULL, OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS, NULL);
     }
 
     if (h == INVALID_HANDLE_VALUE)
