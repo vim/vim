@@ -235,7 +235,7 @@ func Test_resolve_unix()
 endfunc
 
 func s:normalize_fname(fname)
-  let ret = substitute(a:fname, '\\', '/', 'g')
+  let ret = substitute(a:fname, '\', '/', 'g')
   let ret = substitute(ret, '//', '/', 'g')
   let ret = tolower(ret)
 endfunc
