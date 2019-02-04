@@ -263,31 +263,16 @@ func Test_resolve_win32()
   wq
   silent !mklink Xlink Xfile
   if v:shell_error
-    " mklink require Administrator rights.
     call delete('Xfile')
     return
   endif
   call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
   call delete('Xlink')
 
-  " test for symbolic link to a directory
-  call mkdir('Xdir')
-  silent !mklink /D Xlink Xdir
-  if v:shell_error
-    " mklink require Administrator rights.
-    call delete('Xdir', 'd')
-    return
-  endif
-  call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
-  call delete('Xfile')
-  call delete('Xdir', 'd')
-  call delete('Xlink', 'd')
-
   " test for junktion link to a directory
   call mkdir('Xdir')
   silent !mklink /J Xlink Xdir
   if v:shell_error
-    " mklink require Administrator rights.
     call delete('Xdir', 'd')
     return
   endif
