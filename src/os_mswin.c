@@ -1890,15 +1890,27 @@ resolve_reparse_point(char_u *fname)
 	if (p == NULL)
 	    goto fail;
 
+	if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+	{
+	    vim_free(p);
+	    goto fail;
+	}
+
 	h = CreateFileW(p, GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
 		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	vim_free(p);
     }
     else
+    {
+	if ((GetFileAttributes((char*) fname) &
+		    FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+	    goto fail;
+
 	h = CreateFile((char*) fname, GENERIC_READ,
 		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
 		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    }
 
     if (h == INVALID_HANDLE_VALUE)
 	goto fail;
