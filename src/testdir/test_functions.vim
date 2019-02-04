@@ -269,7 +269,7 @@ func Test_resolve_win32()
   call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
   call delete('Xlink')
 
-  " test for junktion link to a directory
+  " test for junction to a directory
   call mkdir('Xdir')
   silent !mklink /J Xlink Xdir
   if v:shell_error
