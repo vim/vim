@@ -245,6 +245,7 @@ func Test_resolve_win32()
     return
   endif
 
+  " test for shortcut file
   if executable('cscript')
     call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "test_function.vim")', 'shortcut.Save'], 'link.vbs')
     silent !cscript link.vbs
@@ -253,22 +254,41 @@ func Test_resolve_win32()
     call delete('Xlink.lnk')
   endif
 
+  call delete('Xlink')
+  call delete('Xdir', 'd')
+  call delete('Xfile')
+
+  " test for symbolic link to a file
   new Xfile
   wq
-  silent !mklink Xlink Xfile > NUL
+  silent !mklink Xlink Xfile
   if v:shell_error
     " mklink require Administrator rights.
-     call delete('Xfile')
+    call delete('Xfile')
     return
   endif
   call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
   call delete('Xlink')
 
-  silent !mkdir Xdir
-  silent !mklink /D Xlink Xdir > NUL
+  " test for symbolic link to a directory
+  call mkdir('Xdir')
+  silent !mklink /D Xlink Xdir
   if v:shell_error
     " mklink require Administrator rights.
-     call delete('Xdir', 'd')
+    call delete('Xdir', 'd')
+    return
+  endif
+  call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+  call delete('Xfile')
+  call delete('Xdir', 'd')
+  call delete('Xlink', 'd')
+
+  " test for junktion link to a directory
+  call mkdir('Xdir')
+  silent !mklink /J Xlink Xdir
+  if v:shell_error
+    " mklink require Administrator rights.
+    call delete('Xdir', 'd')
     return
   endif
   call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
