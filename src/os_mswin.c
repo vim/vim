@@ -1823,6 +1823,33 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
+typedef enum _FILE_INFO_BY_HANDLE_CLASS_ {
+  FileBasicInfo_,
+  FileStandardInfo_,
+  FileNameInfo_,
+  FileRenameInfo_,
+  FileDispositionInfo_,
+  FileAllocationInfo_,
+  FileEndOfFileInfo_,
+  FileStreamInfo_,
+  FileCompressionInfo_,
+  FileAttributeTagInfo_,
+  FileIdBothDirectoryInfo_,
+  FileIdBothDirectoryRestartInfo_,
+  FileIoPriorityHintInfo_,
+  FileRemoteProtocolInfo_,
+  FileFullDirectoryInfo_,
+  FileFullDirectoryRestartInfo_,
+  FileStorageInfo_,
+  FileAlignmentInfo_,
+  FileIdInfo_,
+  FileIdExtdDirectoryInfo_,
+  FileIdExtdDirectoryRestartInfo_,
+  FileDispositionInfoEx_,
+  FileRenameInfoEx_,
+  MaximumFileInfoByHandleClass_
+} FILE_INFO_BY_HANDLE_CLASS_;
+
 typedef struct _FILE_NAME_INFO_ {
   DWORD FileNameLength;
   WCHAR FileName[1];
@@ -1830,7 +1857,7 @@ typedef struct _FILE_NAME_INFO_ {
 
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
 	HANDLE				hFile,
-	FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+	FILE_INFO_BY_HANDLE_CLASS_	FileInformationClass,
 	LPVOID				lpFileInformation,
 	DWORD				dwBufferSize);
 static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
@@ -1879,7 +1906,7 @@ resolve_reparse_point(char_u *fname)
     size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
     nameinfo = (FILE_NAME_INFO_*)alloc(size + sizeof(WCHAR));
 
-    if (!pGetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size))
+    if (!pGetFileInformationByHandleEx(h, FileNameInfo_, nameinfo, size))
 	goto fail;
 
     nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
