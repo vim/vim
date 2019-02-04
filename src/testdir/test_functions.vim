@@ -268,6 +268,7 @@ func Test_resolve_win32()
   endif
   call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
   call delete('Xlink')
+  call delete('Xfile')
 
   " test for junction to a directory
   call mkdir('Xdir')
@@ -277,8 +278,9 @@ func Test_resolve_win32()
     return
   endif
   call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
-  call delete('Xfile')
   call delete('Xdir', 'd')
+
+  call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
   call delete('Xlink', 'd')
 endfunc
 
