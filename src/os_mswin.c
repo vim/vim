@@ -1917,6 +1917,8 @@ resolve_reparse_point(char_u *fname)
 
     size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
     nameinfo = (FILE_NAME_INFO_*)alloc(size + sizeof(WCHAR));
+    if (nameinfo == NULL)
+	goto fail;
 
     if (!pGetFileInformationByHandleEx(h, FileNameInfo_, nameinfo, size))
 	goto fail;
