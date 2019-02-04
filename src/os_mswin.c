@@ -1823,17 +1823,37 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
+typedef struct _FILE_NAME_INFO_ {
+  DWORD FileNameLength;
+  WCHAR FileName[1];
+} FILE_NAME_INFO_;
+
+typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
+	HANDLE				hFile,
+	FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
+	LPVOID				lpFileInformation,
+	DWORD				dwBufferSize);
+static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
+
     char_u *
 resolve_reparse_point(char_u *fname)
 {
-# if !defined(_MSC_VER) || (_MSC_VER < 1400)
     HANDLE	    h = INVALID_HANDLE_VALUE;
     DWORD	    size;
     char_u	    *rfname = NULL;
-    FILE_NAME_INFO  *nameinfo = NULL;
+    FILE_NAME_INFO_ *nameinfo = NULL;
     WCHAR	    buff[MAX_PATH], *volnames = NULL;
     HANDLE	    hv;
     DWORD	    snfile, snfind;
+
+    if (pGetFileInformationByHandleEx == NULL)
+    {
+	pGetFileInformationByHandleEx = (pfnGetFileInformationByHandleEx)
+		GetProcAddress(GetModuleHandle("kernel32.dll"),
+				"GetFileInformationByHandleEx");
+	if (pGetFileInformationByHandleEx == NULL)
+	    return NULL;
+    }
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
@@ -1856,10 +1876,10 @@ resolve_reparse_point(char_u *fname)
     if (h == INVALID_HANDLE_VALUE)
 	goto fail;
 
-    size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
-    nameinfo = (FILE_NAME_INFO*)alloc(size + sizeof(WCHAR));
+    size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
+    nameinfo = (FILE_NAME_INFO_*)alloc(size + sizeof(WCHAR));
 
-    if (!GetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size))
+    if (!pGetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size))
 	goto fail;
 
     nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
@@ -1910,9 +1930,6 @@ fail:
 	vim_free(volnames);
 
     return rfname;
-# else
-    return NULL;
-# endif
 }
 
 /*
