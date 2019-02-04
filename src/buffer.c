@@ -5753,17 +5753,14 @@ buf_spname(buf_T *buf)
 #if defined(FEAT_QUICKFIX)
     if (bt_quickfix(buf))
     {
-	win_T	    *win;
-	tabpage_T   *tp;
-
 	/*
-	 * For location list window, w_llist_ref points to the location list.
-	 * For quickfix window, w_llist_ref is NULL.
+	 * Differentiate between the quickfix and location list buffers using
+	 * the buffer number stored in the global quickfix stack.
 	 */
-	if (find_win_for_buf(buf, &win, &tp) == OK && win->w_llist_ref != NULL)
-	    return (char_u *)_(msg_loclist);
-	else
+	if (buf->b_fnum == qf_stack_get_bufnr())
 	    return (char_u *)_(msg_qflist);
+	else
+	    return (char_u *)_(msg_loclist);
     }
 #endif
 
