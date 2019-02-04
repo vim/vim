@@ -1860,7 +1860,7 @@ typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
 	FILE_INFO_BY_HANDLE_CLASS_	FileInformationClass,
 	LPVOID				lpFileInformation,
 	DWORD				dwBufferSize);
-static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx;
+static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
     char_u *
 resolve_reparse_point(char_u *fname)
@@ -1872,7 +1872,7 @@ resolve_reparse_point(char_u *fname)
     WCHAR	    buff[MAX_PATH], *volnames = NULL;
     HANDLE	    hv;
     DWORD	    snfile, snfind;
-    static BOOL	    loaded;
+    static BOOL	    loaded = FALSE;
 
     if (pGetFileInformationByHandleEx == NULL)
     {
