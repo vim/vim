@@ -247,10 +247,15 @@ func Test_resolve_win32()
 
   " test for shortcut file
   if executable('cscript')
-    call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "test_function.vim")', 'shortcut.Save'], 'link.vbs')
+    new Xfile
+    wq
+    call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 'shortcut.Save'], 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
-    call assert_equal(s:normalize_fname(getcwd() . '\test_function.vim'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xfile')
+
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
     call delete('Xlink.lnk')
   endif
 
