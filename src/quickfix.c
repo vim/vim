@@ -48,7 +48,7 @@ struct qfline_S
  */
 #define LISTCOUNT   10
 #define INVALID_QFIDX (-1)
-#define INVALID_QFBUFNR (-1)
+#define INVALID_QFBUFNR (0)
 
 /*
  * Quickfix list type.
