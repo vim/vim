@@ -1860,7 +1860,7 @@ typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
 	FILE_INFO_BY_HANDLE_CLASS_	FileInformationClass,
 	LPVOID				lpFileInformation,
 	DWORD				dwBufferSize);
-static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
+static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx;
 
     char_u *
 resolve_reparse_point(char_u *fname)
@@ -1872,12 +1872,16 @@ resolve_reparse_point(char_u *fname)
     WCHAR	    buff[MAX_PATH], *volnames = NULL;
     HANDLE	    hv;
     DWORD	    snfile, snfind;
+    static BOOL	    loaded;
 
     if (pGetFileInformationByHandleEx == NULL)
     {
+	if (loaded == TRUE)
+	    return NULL;
 	pGetFileInformationByHandleEx = (pfnGetFileInformationByHandleEx)
 		GetProcAddress(GetModuleHandle("kernel32.dll"),
 				"GetFileInformationByHandleEx");
+	loaded = TRUE;
 	if (pGetFileInformationByHandleEx == NULL)
 	    return NULL;
     }
