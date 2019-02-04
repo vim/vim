@@ -1885,7 +1885,7 @@ resolve_reparse_point(char_u *fname)
     DWORD	    snfile, snfind;
     static BOOL	    loaded = FALSE;
 
-    if (pGetFileInformationByHandleEx == NULL &&
+    if (pGetFileInformationByHandleEx == NULL ||
 	    pGetVolumeInformationByHandleW == NULL)
     {
 	HMODULE hmod = GetModuleHandle("kernel32.dll");
@@ -1897,7 +1897,7 @@ resolve_reparse_point(char_u *fname)
 	pGetVolumeInformationByHandleW = (pfnGetVolumeInformationByHandleW)
 		GetProcAddress(hmod, "GetVolumeInformationByHandleW");
 	loaded = TRUE;
-	if (pGetFileInformationByHandleEx == NULL &&
+	if (pGetFileInformationByHandleEx == NULL ||
 		pGetVolumeInformationByHandleW == NULL)
 	    return NULL;
     }
