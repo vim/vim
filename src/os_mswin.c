@@ -1862,6 +1862,17 @@ typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
 	DWORD				dwBufferSize);
 static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
+typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
+	HANDLE	hFile,
+	LPWSTR	lpVolumeNameBuffer,
+	DWORD	nVolumeNameSize,
+	LPDWORD	lpVolumeSerialNumber,
+	LPDWORD	lpMaximumComponentLength,
+	LPDWORD	lpFileSystemFlags,
+	LPWSTR	lpFileSystemNameBuffer,
+	DWORD	nFileSystemNameSize);
+static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
+
     char_u *
 resolve_reparse_point(char_u *fname)
 {
@@ -1874,15 +1885,20 @@ resolve_reparse_point(char_u *fname)
     DWORD	    snfile, snfind;
     static BOOL	    loaded = FALSE;
 
-    if (pGetFileInformationByHandleEx == NULL)
+    if (pGetFileInformationByHandleEx == NULL &&
+	    pGetVolumeInformationByHandleW == NULL)
     {
+	HMODULE hmod = GetModuleHandle("kernel32.dll");
+
 	if (loaded == TRUE)
 	    return NULL;
 	pGetFileInformationByHandleEx = (pfnGetFileInformationByHandleEx)
-		GetProcAddress(GetModuleHandle("kernel32.dll"),
-				"GetFileInformationByHandleEx");
+		GetProcAddress(hmod, "GetFileInformationByHandleEx");
+	pGetVolumeInformationByHandleW = (pfnGetVolumeInformationByHandleW)
+		GetProcAddress(hmod, "GetVolumeInformationByHandleW");
 	loaded = TRUE;
-	if (pGetFileInformationByHandleEx == NULL)
+	if (pGetFileInformationByHandleEx == NULL &&
+		pGetVolumeInformationByHandleW == NULL)
 	    return NULL;
     }
 
@@ -1901,8 +1917,9 @@ resolve_reparse_point(char_u *fname)
 	}
 
 	h = CreateFileW(p, GENERIC_READ,
-		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
-		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+		0, NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	vim_free(p);
     }
     else
@@ -1912,8 +1929,10 @@ resolve_reparse_point(char_u *fname)
 	    goto fail;
 
 	h = CreateFile((char*) fname, GENERIC_READ,
-		FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
-		OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+		0, NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS,
+		NULL);
     }
 
     if (h == INVALID_HANDLE_VALUE)
@@ -1929,7 +1948,7 @@ resolve_reparse_point(char_u *fname)
 
     nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
 
-    if (!GetVolumeInformationByHandleW(
+    if (!pGetVolumeInformationByHandleW(
 	    h, NULL, 0, &snfile, NULL, NULL, NULL, 0))
 	goto fail;
 
