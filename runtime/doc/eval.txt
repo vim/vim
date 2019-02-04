@@ -7380,7 +7380,7 @@ repeat({expr}, {count})					*repeat()*
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
 		returns the path the shortcut points to in a simplified form.
-		When {filename} is a symbolic links or junction points, return
+		When {filename} is a symbolic link or junction point, return
 		the path to the target.
 		On Unix, repeat resolving symbolic links in all path
 		components of {filename} and return the simplified result.
