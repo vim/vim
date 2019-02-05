@@ -16,6 +16,7 @@ char_u *find_file_name_in_path(char_u *ptr, int len, int options, long count, ch
 int path_with_url(char_u *fname);
 int vim_isAbsName(char_u *name);
 int vim_FullName(char_u *fname, char_u *buf, int len, int force);
+int vim_ispathlistsep(int c);
 void uniquefy_paths(garray_T *gap, char_u *pattern);
 int expand_in_path(garray_T *gap, char_u *pattern, int flags);
 /* vim: set ft=c : */
