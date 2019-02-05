@@ -257,8 +257,11 @@ func Test_resolve_win32()
 
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
     call delete('Xlink.lnk')
+  else
+    echomsg 'skipped test for shortcut file'
   endif
 
+  " remove files
   call delete('Xlink')
   call delete('Xdir', 'd')
   call delete('Xfile')
@@ -267,38 +270,58 @@ func Test_resolve_win32()
   new Xfile
   wq
   silent !mklink Xlink Xfile
-  if v:shell_error
-    call delete('Xfile')
-    return
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for symbolic link to a file'
   endif
-  call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
-  call delete('Xlink')
   call delete('Xfile')
 
   " test for junction to a directory
   call mkdir('Xdir')
   silent !mklink /J Xlink Xdir
-  if v:shell_error
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+
     call delete('Xdir', 'd')
-    return
+
+    " test for junction already removed
+    call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for junction to a directory'
+    call delete('Xdir', 'd')
   endif
-  call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
-  call delete('Xdir', 'd')
 
-  call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
-  call delete('Xlink', 'd')
+  " test for symbolic link to a directory
+  call mkdir('Xdir')
+  silent !mklink /D Xlink Xdir
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
 
+    call delete('Xdir', 'd')
+
+    " test for symbolic link already removed
+    call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for symbolic link to a directory'
+    call delete('Xdir', 'd')
+  endif
+
+  " test for buffer name
   new Xfile
   wq
   silent !mklink Xlink Xfile
-  if v:shell_error
-    call delete('Xfile')
-    return
+  if !v:shell_error
+    edit Xlink
+    call assert_equal('Xlink', bufname('%'))
+    call delete('Xlink')
+    bw!
+  else
+    echomsg 'skipped test for buffer name'
   endif
-  edit Xlink
-  
-  call assert_equal('Xlink', bufname('%'))
-  call delete('Xlink')
   call delete('Xfile')
 endfunc
 
