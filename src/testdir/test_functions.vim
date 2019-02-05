@@ -287,6 +287,19 @@ func Test_resolve_win32()
 
   call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
   call delete('Xlink', 'd')
+
+  new Xfile
+  wq
+  silent !mklink Xlink Xfile
+  if v:shell_error
+    call delete('Xfile')
+    return
+  endif
+  edit Xlink
+  
+  call assert_equal('Xlink', bufname('%'))
+  call delete('Xlink')
+  call delete('Xfile')
 endfunc
 
 func Test_simplify()
