@@ -5021,9 +5021,13 @@ ins_compl_next(
 	/* may undisplay the popup menu first */
 	ins_compl_upd_pum();
 
-	// Redraw before showing the popup menu to show the user what was
-	// inserted.
-	pum_call_update_screen();
+	if (pum_enough_matches())
+	    // Will display the popup menu, don't redraw yet to avoid flicker.
+	    pum_call_update_screen();
+	else
+	    // Not showing the popup menu yet, redraw to show the user what was
+	    // inserted.
+	    update_screen(0);
 
 	/* display the updated popup menu */
 	ins_compl_show_pum();
