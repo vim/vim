@@ -9894,7 +9894,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
     {
 	char_u	*v = NULL;
 
-	v = mch_resolve_path(p);
+	v = mch_resolve_path(p, TRUE);
 	if (v != NULL)
 	    rettv->vval.v_string = v;
 	else

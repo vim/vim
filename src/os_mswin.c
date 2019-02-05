@@ -2107,10 +2107,10 @@ shortcut_end:
 }
 
     char_u *
-mch_resolve_path(char_u *fname)
+mch_resolve_path(char_u *fname, int reparse_point)
 {
     char_u  *path = resolve_shortcut(fname);
-    if (path == NULL)
+    if (path == NULL && reparse_point)
 	path = resolve_reparse_point(fname);
     return path;
 }
