@@ -98,4 +98,7 @@ char_u *get_cmd_output(char_u *cmd, char_u *infile, int flags, int *ret_len);
 void FreeWild(int count, char_u **files);
 int goto_im(void);
 char_u *get_isolated_shell_name(void);
+int path_with_url(char_u *fname);
+int vim_isAbsName(char_u *name);
+int vim_FullName(char_u *fname, char_u *buf, int len, int force);
 /* vim: set ft=c : */

@@ -2078,6 +2078,44 @@ ga_grow(garray_T *gap, int n)
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_SEARCHPATH) || defined(PROTO)
+/*
+ * For a growing array that contains a list of strings: concatenate all the
+ * strings with a separating "sep".
+ * Returns NULL when out of memory.
+ */
+    char_u *
+ga_concat_strings(garray_T *gap, char *sep)
+{
+    int		i;
+    int		len = 0;
+    int		sep_len = (int)STRLEN(sep);
+    char_u	*s;
+    char_u	*p;
+
+    for (i = 0; i < gap->ga_len; ++i)
+	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + sep_len;
+
+    s = alloc(len + 1);
+    if (s != NULL)
+    {
+	*s = NUL;
+	p = s;
+	for (i = 0; i < gap->ga_len; ++i)
+	{
+	    if (p != s)
+	    {
+		STRCPY(p, sep);
+		p += sep_len;
+	    }
+	    STRCPY(p, ((char_u **)(gap->ga_data))[i]);
+	    p += STRLEN(p);
+	}
+    }
+    return s;
+}
+#endif
+
 #if defined(FEAT_VIMINFO) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Make a copy of string "p" and add it to "gap".

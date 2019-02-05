@@ -20,6 +20,10 @@
 
 static char_u *vim_version_dir(char_u *vimdir);
 static char_u *remove_tail(char_u *p, char_u *pend, char_u *name);
+static int path_is_url(char_u *p);
+
+#define URL_SLASH	1		/* path_is_url() has found "://" */
+#define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
 
 /* All user names (for ~user completion as done by shell). */
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
@@ -6666,4 +6670,76 @@ get_isolated_shell_name(void)
     }
 #endif
     return p;
+}
+
+/*
+ * Check if the "://" of a URL is at the pointer, return URL_SLASH.
+ * Also check for ":\\", which MS Internet Explorer accepts, return
+ * URL_BACKSLASH.
+ */
+    static int
+path_is_url(char_u *p)
+{
+    if (STRNCMP(p, "://", (size_t)3) == 0)
+	return URL_SLASH;
+    else if (STRNCMP(p, ":\\\\", (size_t)3) == 0)
+	return URL_BACKSLASH;
+    return 0;
+}
+
+/*
+ * Check if "fname" starts with "name://".  Return URL_SLASH if it does.
+ * Return URL_BACKSLASH for "name:\\".
+ * Return zero otherwise.
+ */
+    int
+path_with_url(char_u *fname)
+{
+    char_u *p;
+
+    for (p = fname; isalpha(*p); ++p)
+	;
+    return path_is_url(p);
+}
+
+/*
+ * Return TRUE if "name" is a full (absolute) path name or URL.
+ */
+    int
+vim_isAbsName(char_u *name)
+{
+    return (path_with_url(name) != 0 || mch_isFullName(name));
+}
+
+/*
+ * Get absolute file name into buffer "buf[len]".
+ *
+ * return FAIL for failure, OK otherwise
+ */
+    int
+vim_FullName(
+    char_u	*fname,
+    char_u	*buf,
+    int		len,
+    int		force)	    /* force expansion even when already absolute */
+{
+    int		retval = OK;
+    int		url;
+
+    *buf = NUL;
+    if (fname == NULL)
+	return FAIL;
+
+    url = path_with_url(fname);
+    if (!url)
+	retval = mch_FullName(fname, buf, len, force);
+    if (url || retval == FAIL)
+    {
+	/* something failed; use the file name (truncate when too long) */
+	vim_strncpy(buf, fname, len - 1);
+    }
+#if defined(MSWIN)
+    slash_adjust(buf);
+#endif
+    return retval;
 }
