@@ -3233,7 +3233,7 @@ f_environ(typval_T *argvars, typval_T *rettv)
 	    vim_free(name);
 	    return;
 	}
-	dict_add_nr_str(rettv->vval.v_dict, (char*)name, 0L, value);
+	dict_add_string(rettv->vval.v_dict, (char*)name, value);
 	i++;
     } while (1);
 #endif
