@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.0.  Last change: 2018 Apr 18
+*develop.txt*   For Vim version 8.1.  Last change: 2018 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,7 +18,8 @@ See the file README.txt in the "src" directory for an overview of the source
 code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
-improving Vim.  For sending patches a context diff "diff -c" is preferred.
+improving Vim.  For sending patches a unified diff "diff -u" is preferred.
+You can create a pull request on github, but it's not required.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 ==============================================================================
@@ -182,7 +183,7 @@ The basic steps to make changes to the code:
    include the diff. Or create a pull request on github.
 
 
-C COMPILER						*style-compiler*
+C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
 
 The minimal C compiler version supported is C89, also known as ANSI C.
 Later standards, such as C99, are not widely supported, or at least not 100%
@@ -562,4 +563,4 @@ long	    32 or 64 bit signed, can hold a pointer
 Note that some compilers cannot handle long lines or strings.  The C89
 standard specifies a limit of 509 characters.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

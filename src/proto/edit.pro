@@ -1,6 +1,8 @@
 /* edit.c */
 int edit(int cmdchar, int startln, long count);
 void edit_putchar(int c, int highlight);
+char_u *prompt_text(void);
+int prompt_curpos_editable(void);
 void edit_unputchar(void);
 void display_dollar(colnr_T col);
 void change_indent(int type, int amount, int round, int replaced, int call_changed_bytes);
@@ -36,12 +38,10 @@ char_u *get_last_insert(void);
 char_u *get_last_insert_save(void);
 void replace_push(int c);
 int replace_push_mb(char_u *p);
-void fixthisline(int (*get_the_indent)(void));
-void fix_indent(void);
-int in_cinkeys(int keytyped, int when, int line_is_empty);
 int hkmap(int c);
 int bracketed_paste(paste_mode_T mode, int drop, garray_T *gap);
 void ins_scroll(void);
 void ins_horscroll(void);
 int ins_copychar(linenr_T lnum);
+colnr_T get_nolist_virtcol(void);
 /* vim: set ft=c : */

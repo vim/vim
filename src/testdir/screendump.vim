@@ -5,18 +5,17 @@ if exists('*CanRunVimInTerminal')
   finish
 endif
 
-" Need to be able to run terminal Vim with 256 colors.  On MS-Windows the
-" console only has 16 colors and the GUI can't run in a terminal.
-if !has('terminal') || has('win32')
-  func CanRunVimInTerminal()
-    return 0
-  endfunc
+" For most tests we need to be able to run terminal Vim with 256 colors.  On
+" MS-Windows the console only has 16 colors and the GUI can't run in a
+" terminal.
+func CanRunVimInTerminal()
+  return has('terminal') && !has('win32')
+endfunc
+
+" Skip the rest if there is no terminal feature at all.
+if !has('terminal')
   finish
 endif
-
-func CanRunVimInTerminal()
-  return 1
-endfunc
 
 source shared.vim
 
@@ -54,19 +53,31 @@ func RunVimInTerminal(arguments, options)
   let cols = get(a:options, 'cols', 75)
 
   let cmd = GetVimCommandClean()
+
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
-  if &termsize == ''
+  if &termwinsize == ''
+    " in the GUI we may end up with a different size, try to set it.
+    if term_getsize(buf) != [rows, cols]
+      call term_setsize(buf, rows, cols)
+    endif
     call assert_equal([rows, cols], term_getsize(buf))
   else
     let rows = term_getsize(buf)[0]
     let cols = term_getsize(buf)[1]
   endif
 
-  " Wait for "All" of the ruler in the status line to be shown.
-  " This can be quite slow (e.g. when using valgrind).
-  call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1})
+  " Wait for "All" or "Top" of the ruler to be shown in the last line or in
+  " the status line of the last window. This can be quite slow (e.g. when
+  " using valgrind).
+  " If it fails then show the terminal contents for debugging.
+  try
+    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - 1)) >= cols - 1})
+  catch /timed out after/
+    let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
+    call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
+  endtry
 
   return buf
 endfunc
@@ -74,21 +85,30 @@ endfunc
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
   call assert_equal("running", term_getstatus(a:buf))
-  call term_sendkeys(a:buf, "\<Esc>\<Esc>:qa!\<cr>")
-  call WaitFor('term_getstatus(' . a:buf . ') == "finished"')
+
+  " CTRL-O : works both in Normal mode and Insert mode to start a command line.
+  " In Command-line it's inserted, the CTRL-U removes it again.
+  call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
+
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
 
 " Verify that Vim running in terminal buffer "buf" matches the screen dump.
 " "options" is passed to term_dumpwrite().
 " The file name used is "dumps/{filename}.dump".
+" Optionally an extra argument can be passed which is prepended to the error
+" message.  Use this when using the same dump file with different options.
 " Will wait for up to a second for the screen dump to match.
-func VerifyScreenDump(buf, filename, options)
+" Returns non-zero when verification fails.
+func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
   let testfile = a:filename . '.dump.failed'
 
   let i = 0
   while 1
+    " leave some time for updating the original window
+    sleep 10m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
     if readfile(reference) == readfile(testfile)
@@ -97,10 +117,14 @@ func VerifyScreenDump(buf, filename, options)
     endif
     if i == 100
       " Leave the test file around for inspection.
-      call assert_report('See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")')
-      break
+      let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
+      if a:0 == 1
+        let msg = a:1 . ': ' . msg
+      endif
+      call assert_report(msg)
+      return 1
     endif
-    sleep 10m
     let i += 1
   endwhile
+  return 0
 endfunc

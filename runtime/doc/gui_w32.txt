@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.0.  Last change: 2017 Oct 27
+*gui_w32.txt*   For Vim version 8.1.  Last change: 2017 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -442,7 +442,7 @@ with the Intellimouse driver 2.2 and when "Universal Scrolling" is turned on.
 
 XPM support						*w32-xpm-support*
 
-Gvim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
+GVim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
 See the Make_mvc.mak file for instructions, search for XPM.
 
 To try out if XPM support works do this: >
@@ -451,4 +451,4 @@ To try out if XPM support works do this: >
 	:exe 'sign place 1 line=1 name=vimxpm file=' . expand('%:p')
 <
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

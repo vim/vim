@@ -1,7 +1,7 @@
 " Vim functions for file type detection
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Dec 05
+" Last Change:	2019 Jan 18
 
 " These functions are moved here from runtime/filetype.vim to make startup
 " faster.
@@ -126,7 +126,7 @@ endfunc
 " This function checks if one of the first ten lines start with a '@'.  In
 " that case it is probably a change file.
 " If the first line starts with # or ! it's probably a ch file.
-" If a line has "main", "include", "//" ir "/*" it's probably ch.
+" If a line has "main", "include", "//" or "/*" it's probably ch.
 " Otherwise CHILL is assumed.
 func dist#ft#FTchange()
   let lnum = 1
@@ -484,6 +484,10 @@ endfunc
 
 " Called from filetype.vim and scripts.vim.
 func dist#ft#SetFileTypeSH(name)
+  if did_filetype()
+    " Filetype was already detected
+    return
+  endif
   if expand("<amatch>") =~ g:ft_ignore_pat
     return
   endif
@@ -531,6 +535,10 @@ endfunc
 " as used for Tcl.
 " Also called from scripts.vim, thus can't be local to this script.
 func dist#ft#SetFileTypeShell(name)
+  if did_filetype()
+    " Filetype was already detected
+    return
+  endif
   if expand("<amatch>") =~ g:ft_ignore_pat
     return
   endif
@@ -551,6 +559,10 @@ func dist#ft#SetFileTypeShell(name)
 endfunc
 
 func dist#ft#CSH()
+  if did_filetype()
+    " Filetype was already detected
+    return
+  endif
   if exists("g:filetype_csh")
     call dist#ft#SetFileTypeShell(g:filetype_csh)
   elseif &shell =~ "tcsh"
@@ -632,7 +644,7 @@ endfunc
 " Choose context, plaintex, or tex (LaTeX) based on these rules:
 " 1. Check the first line of the file for "%&<format>".
 " 2. Check the first 1000 non-comment lines for LaTeX or ConTeXt keywords.
-" 3. Default to "latex" or to g:tex_flavor, can be set in user's vimrc.
+" 3. Default to "plain" or to g:tex_flavor, can be set in user's vimrc.
 func dist#ft#FTtex()
   let firstline = getline(1)
   if firstline =~ '^%&\s*\a\+'

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2018 Jan 28
+" Last Change:	2019 Jan 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -97,6 +97,7 @@ au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')
 
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
+au BufNewFile,BufRead */etc/apache2/sites-*/*.com		setf apache
 
 " XA65 MOS6510 cross assembler
 au BufNewFile,BufRead *.a65			setf a65
@@ -429,6 +430,13 @@ au BufNewFile,BufRead control
 	\|   setf debcontrol
 	\| endif
 
+" Debian Copyright
+au BufNewFile,BufRead */debian/copyright	setf debcopyright
+au BufNewFile,BufRead copyright
+	\  if getline(1) =~ '^Format:'
+	\|   setf debcopyright
+	\| endif
+
 " Debian Sources.list
 au BufNewFile,BufRead */etc/apt/sources.list		setf debsources
 au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
@@ -579,7 +587,7 @@ au BufNewFile,BufRead auto.master		setf conf
 au BufNewFile,BufRead *.mas,*.master		setf master
 
 " Forth
-au BufNewFile,BufRead *.fs,*.ft			setf forth
+au BufNewFile,BufRead *.fs,*.ft,*.fth		setf forth
 
 " Reva Forth
 au BufNewFile,BufRead *.frt			setf reva
@@ -606,12 +614,12 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
-au BufNewFile,BufRead *.git/modules/*/config	setf gitconfig
-au BufNewFile,BufRead */.config/git/config	setf gitconfig
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig 	setf gitconfig
+au BufNewFile,BufRead */.config/git/config			setf gitconfig
+au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
-  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config	setf gitconfig
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
 endif
 au BufNewFile,BufRead git-rebase-todo		setf gitrebase
 au BufRead,BufNewFile .gitsendemail.msg.??????	setf gitsendemail
@@ -1122,7 +1130,7 @@ au BufNewFile,BufRead *.dpr			setf pascal
 " PDF
 au BufNewFile,BufRead *.pdf			setf pdf
 
-" PCMK - HAE - crm configure edit 
+" PCMK - HAE - crm configure edit
 au BufNewFile,BufRead *.pcmk 			setf pcmk
 
 " Perl
@@ -1256,9 +1264,9 @@ au BufNewFile,BufRead */etc/protocols		setf protocols
 " Pyrex
 au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
-" Python, Python Shell Startup Files
+" Python, Python Shell Startup and Python Stub Files
 " Quixote (Python-based web framework)
-au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl  setf python
+au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl,*.pyi  setf python
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -1407,8 +1415,8 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 " sed
 au BufNewFile,BufRead *.sed			setf sed
 
-" Sieve (RFC 3028)
-au BufNewFile,BufRead *.siv			setf sieve
+" Sieve (RFC 3028, 5228)
+au BufNewFile,BufRead *.siv,*.sieve		setf sieve
 
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm
@@ -1455,9 +1463,11 @@ au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
 " Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts
-au BufNewFile,BufRead .bashrc*,bashrc,bash.bashrc,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD* call dist#ft#SetFileTypeSH("bash")
-au BufNewFile,BufRead .kshrc*,*.ksh call dist#ft#SetFileTypeSH("ksh")
-au BufNewFile,BufRead */etc/profile,.profile*,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
+" NOTE: Patterns ending in a star are further down, these have lower priority.
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
+au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
+
 
 " Shell script (Arch Linux) or PHP file (Drupal)
 au BufNewFile,BufRead *.install
@@ -1467,15 +1477,16 @@ au BufNewFile,BufRead *.install
 	\   call dist#ft#SetFileTypeSH("bash") |
 	\ endif
 
-" tcsh scripts
-au BufNewFile,BufRead .tcshrc*,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFileTypeShell("tcsh")
+" tcsh scripts (patterns ending in a star further below)
+au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFileTypeShell("tcsh")
 
 " csh scripts, but might also be tcsh scripts (on some systems csh is tcsh)
-au BufNewFile,BufRead .login*,.cshrc*,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
+" (patterns ending in a start further below)
+au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Z-Shell script
+" Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
-au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
+au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump setf zsh
 au BufNewFile,BufRead *.zsh			setf zsh
 
 " Scheme
@@ -1759,6 +1770,9 @@ au BufNewFile,BufRead *.vroom			setf vroom
 " Webmacro
 au BufNewFile,BufRead *.wm			setf webmacro
 
+" WebAssembly
+au BufNewFile,BufRead *.wast,*.wat		setf wast
+
 " Wget config
 au BufNewFile,BufRead .wgetrc,wgetrc		setf wget
 
@@ -1855,6 +1869,9 @@ au BufNewFile,BufRead */etc/xdg/menus/*.menu	setf xml
 " ATI graphics driver configuration
 au BufNewFile,BufRead fglrxrc			setf xml
 
+" Web Services Description Language (WSDL)
+au BufNewFile,BufRead *.wsdl			setf xml
+
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml
 au BufNewFile,BufRead *.xliff			setf xml
@@ -1880,8 +1897,11 @@ au BufNewFile,BufRead *.yy,*.yxx,*.y++		setf yacc
 " Yacc or racc
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
-" Yaml or Raml
-au BufNewFile,BufRead *.yaml,*.yml,*.raml	setf yaml
+" Yaml
+au BufNewFile,BufRead *.yaml,*.yml		setf yaml
+
+" Raml
+au BufNewFile,BufRead *.raml			setf raml
 
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.conf		setf dosini
@@ -2058,6 +2078,17 @@ au BufRead,BufNewFile *.rdf			call dist#ft#Redif()
 " Remind
 au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 
+" Shell scripts ending in a star
+au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,,PKGBUILD* call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .kshrc* call dist#ft#SetFileTypeSH("ksh")
+au BufNewFile,BufRead .profile* call dist#ft#SetFileTypeSH(getline(1))
+
+" tcsh scripts ending in a star
+au BufNewFile,BufRead .tcshrc*	call dist#ft#SetFileTypeShell("tcsh")
+
+" csh scripts ending in a star
+au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
+
 " Vim script
 au BufNewFile,BufRead *vimrc*			call s:StarSetf('vim')
 
@@ -2085,7 +2116,8 @@ au BufNewFile,BufRead */etc/xinetd.d/*		call s:StarSetf('xinetd')
 " yum conf (close enough to dosini)
 au BufNewFile,BufRead */etc/yum.repos.d/*	call s:StarSetf('dosini')
 
-" Z-Shell script
+" Z-Shell script ending in a star
+au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 
 
@@ -2094,7 +2126,7 @@ au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 au BufNewFile,BufRead *.text,README		setf text
 
 " Help files match *.txt but should have a last line that is a modeline.
-au BufNewFile,BufRead *.txt	
+au BufNewFile,BufRead *.txt
 	\  if getline('$') !~ 'vim:.*ft=help'
 	\|   setf text
 	\| endif

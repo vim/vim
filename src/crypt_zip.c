@@ -24,19 +24,13 @@
  */
 
 /* Need a type that should be 32 bits. 64 also works but wastes space. */
-# if VIM_SIZEOF_INT >= 4
 typedef unsigned int u32_T;	/* int is at least 32 bits */
-# else
-typedef unsigned long u32_T;	/* long should be 32 bits or more */
-# endif
 
 /* The state of encryption, referenced by cryptstate_T. */
 typedef struct {
     u32_T keys[3];
 } zip_state_T;
 
-
-static void make_crc_tab(void);
 
 static u32_T crc_32_table[256];
 

@@ -1,6 +1,6 @@
 " Tests for digraphs
 
-if !has("digraphs") || !has("multi_byte")
+if !has("digraphs")
   finish
 endif
 
@@ -462,6 +462,15 @@ func Test_show_digraph()
   new
   call Put_Dig("e=")
   call assert_equal("\n<е> 1077, Hex 0435, Oct 2065, Digr e=", execute('ascii'))
+  bwipe!
+endfunc
+
+func Test_show_digraph_cp1251()
+  new
+  set encoding=cp1251
+  call Put_Dig("='")
+  call assert_equal("\n<\xfa>  <|z>  <M-z>  250,  Hex fa,  Oct 372, Digr ='", execute('ascii'))
+  set encoding=utf-8
   bwipe!
 endfunc
 

@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.0.  Last change: 2018 Mar 18
+*version6.txt*  For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -943,7 +943,7 @@ Added the ":sign" command to define and place signs.  They can be displayed
 with two ASCII characters or an icon.  The line after it can be highlighted.
 Useful to display breakpoints and the current PC position.
 
-Added the |:wsverb| command to execute debugger commands.
+Added the :wsverb command to execute debugger commands.
 
 Added balloon stuff: 'balloondelay' and 'ballooneval' options.
 
@@ -2967,7 +2967,7 @@ DOS and Windows: Expanding *.vim also matched file.vimfoo.  Expand path like
 Unix to avoid problems with Windows dir functions.  Merged the DOS and Win32
 functions.
 
-Win32: Gvimext could not edit more than a few files at once, the length of the
+Win32: GvimExt could not edit more than a few files at once, the length of the
 argument was fixed.
 
 "ls -1 * | xargs vim" worked, but the input was in cooked mode.  Now switch to
@@ -14527,4 +14527,4 @@ Solution:   Don't advance the cursor to include a line break when it's already
 Files:	    src/search.c
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

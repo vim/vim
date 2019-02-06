@@ -24,8 +24,6 @@
 
 #if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 
-static void sha256_process(context_sha256_T *ctx, char_u data[64]);
-
 #define GET_UINT32(n, b, i)		    \
 {					    \
     (n) = ( (UINT32_T)(b)[(i)	 ] << 24)   \
@@ -265,8 +263,6 @@ sha256_finish(context_sha256_T *ctx, char_u digest[32])
 #endif /* FEAT_CRYPT || FEAT_PERSISTENT_UNDO */
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
-static unsigned int get_some_time(void);
-
 /*
  * Returns hex digest of "buf[buf_len]" in a static array.
  * if "salt" is not NULL also do "salt[salt_len]".

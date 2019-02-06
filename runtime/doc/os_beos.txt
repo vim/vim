@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 8.0.  Last change: 2016 Mar 28
+*os_beos.txt*	For Vim version 8.1.  Last change: 2016 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,7 +144,7 @@ The default value for $VIM is set at compile time and can be determined with >
   :version
 
 The normal value is /boot/home/config/share/vim.  If you don't like it you can
-set the Vim environment variable to override this, or set 'helpfile' in your
+set the VIM environment variable to override this, or set 'helpfile' in your
 .vimrc: >
 
   :if version >= 500
@@ -317,4 +317,4 @@ it is about 1191K.
 <rhialto@polder.ubc.kun.nl>
 http://polder.ubc.kun.nl/~rhialto/be
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

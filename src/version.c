@@ -37,7 +37,7 @@ char	longVersion[sizeof(VIM_VERSION_LONG_DATE) + sizeof(__DATE__)
 						      + sizeof(__TIME__) + 3];
 
     void
-make_version(void)
+init_longVersion(void)
 {
     /*
      * Construct the long version string.  Necessary because
@@ -49,14 +49,35 @@ make_version(void)
     strcat(longVersion, __TIME__);
     strcat(longVersion, ")");
 }
+
 # else
-char	*longVersion = VIM_VERSION_LONG_DATE __DATE__ " " __TIME__ ")";
+    void
+init_longVersion(void)
+{
+    char *date_time = __DATE__ " " __TIME__;
+    char *msg = _("%s (%s, compiled %s)");
+    size_t len = strlen(msg)
+		+ strlen(VIM_VERSION_LONG_ONLY)
+		+ strlen(VIM_VERSION_DATE_ONLY)
+		+ strlen(date_time);
+
+    longVersion = (char *)alloc((unsigned)len);
+    if (longVersion == NULL)
+	longVersion = VIM_VERSION_LONG;
+    else
+	vim_snprintf(longVersion, len, msg,
+		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+}
 # endif
 #else
 char	*longVersion = VIM_VERSION_LONG;
-#endif
 
-static void list_features(void);
+    void
+init_longVersion(void)
+{
+    // nothing to do
+}
+#endif
 
 static char *(features[]) =
 {
@@ -78,6 +99,11 @@ static char *(features[]) =
 	"-arabic",
 #endif
 	"+autocmd",
+#ifdef FEAT_AUTOCHDIR
+       "+autochdir",
+#else
+       "-autochdir",
+#endif
 #ifdef FEAT_AUTOSERVERNAME
 	"+autoservername",
 #else
@@ -433,11 +459,7 @@ static char *(features[]) =
 	"+multi_byte_ime",
 # endif
 #else
-# ifdef FEAT_MBYTE
 	"+multi_byte",
-# else
-	"-multi_byte",
-# endif
 #endif
 #ifdef FEAT_MULTI_LANG
 	"+multi_lang",
@@ -470,7 +492,11 @@ static char *(features[]) =
 	"-ole",
 # endif
 #endif
+#ifdef FEAT_EVAL
 	"+packages",
+#else
+	"-packages",
+#endif
 #ifdef FEAT_PATH_EXTRA
 	"+path_extra",
 #else
@@ -568,11 +594,7 @@ static char *(features[]) =
 #else
 	"-statusline",
 #endif
-#ifdef FEAT_SUN_WORKSHOP
-	"+sun_workshop",
-#else
 	"-sun_workshop",
-#endif
 #ifdef FEAT_SYN_HL
 	"+syntax",
 #else
@@ -623,12 +645,6 @@ static char *(features[]) =
 # else
 	"-terminfo",
 # endif
-#else		    /* unix always includes termcap support */
-# ifdef HAVE_TGETENT
-	"+tgetent",
-# else
-	"-tgetent",
-# endif
 #endif
 #ifdef FEAT_TERMRESPONSE
 	"+termresponse",
@@ -639,6 +655,19 @@ static char *(features[]) =
 	"+textobjects",
 #else
 	"-textobjects",
+#endif
+#ifdef FEAT_TEXT_PROP
+	"+textprop",
+#else
+	"-textprop",
+#endif
+#if !defined(UNIX)
+/* unix always includes termcap support */
+# ifdef HAVE_TGETENT
+	"+tgetent",
+# else
+	"-tgetent",
+# endif
 #endif
 #ifdef FEAT_TIMERS
 	"+timers",
@@ -660,28 +689,21 @@ static char *(features[]) =
 #else
 	"-user_commands",
 #endif
+#ifdef FEAT_VARTABS
+	"+vartabs",
+#else
+	"-vartabs",
+#endif
 	"+vertsplit",
-#ifdef FEAT_VIRTUALEDIT
 	"+virtualedit",
-#else
-	"-virtualedit",
-#endif
 	"+visual",
-#ifdef FEAT_VISUALEXTRA
 	"+visualextra",
-#else
-	"-visualextra",
-#endif
 #ifdef FEAT_VIMINFO
 	"+viminfo",
 #else
 	"-viminfo",
 #endif
-#ifdef FEAT_VREPLACE
 	"+vreplace",
-#else
-	"-vreplace",
-#endif
 #ifdef WIN3264
 # ifdef FEAT_VTP
 	"+vtp",
@@ -761,1732 +783,6 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
-/**/
-    1740,
-/**/
-    1739,
-/**/
-    1738,
-/**/
-    1737,
-/**/
-    1736,
-/**/
-    1735,
-/**/
-    1734,
-/**/
-    1733,
-/**/
-    1732,
-/**/
-    1731,
-/**/
-    1730,
-/**/
-    1729,
-/**/
-    1728,
-/**/
-    1727,
-/**/
-    1726,
-/**/
-    1725,
-/**/
-    1724,
-/**/
-    1723,
-/**/
-    1722,
-/**/
-    1721,
-/**/
-    1720,
-/**/
-    1719,
-/**/
-    1718,
-/**/
-    1717,
-/**/
-    1716,
-/**/
-    1715,
-/**/
-    1714,
-/**/
-    1713,
-/**/
-    1712,
-/**/
-    1711,
-/**/
-    1710,
-/**/
-    1709,
-/**/
-    1708,
-/**/
-    1707,
-/**/
-    1706,
-/**/
-    1705,
-/**/
-    1704,
-/**/
-    1703,
-/**/
-    1702,
-/**/
-    1701,
-/**/
-    1700,
-/**/
-    1699,
-/**/
-    1698,
-/**/
-    1697,
-/**/
-    1696,
-/**/
-    1695,
-/**/
-    1694,
-/**/
-    1693,
-/**/
-    1692,
-/**/
-    1691,
-/**/
-    1690,
-/**/
-    1689,
-/**/
-    1688,
-/**/
-    1687,
-/**/
-    1686,
-/**/
-    1685,
-/**/
-    1684,
-/**/
-    1683,
-/**/
-    1682,
-/**/
-    1681,
-/**/
-    1680,
-/**/
-    1679,
-/**/
-    1678,
-/**/
-    1677,
-/**/
-    1676,
-/**/
-    1675,
-/**/
-    1674,
-/**/
-    1673,
-/**/
-    1672,
-/**/
-    1671,
-/**/
-    1670,
-/**/
-    1669,
-/**/
-    1668,
-/**/
-    1667,
-/**/
-    1666,
-/**/
-    1665,
-/**/
-    1664,
-/**/
-    1663,
-/**/
-    1662,
-/**/
-    1661,
-/**/
-    1660,
-/**/
-    1659,
-/**/
-    1658,
-/**/
-    1657,
-/**/
-    1656,
-/**/
-    1655,
-/**/
-    1654,
-/**/
-    1653,
-/**/
-    1652,
-/**/
-    1651,
-/**/
-    1650,
-/**/
-    1649,
-/**/
-    1648,
-/**/
-    1647,
-/**/
-    1646,
-/**/
-    1645,
-/**/
-    1644,
-/**/
-    1643,
-/**/
-    1642,
-/**/
-    1641,
-/**/
-    1640,
-/**/
-    1639,
-/**/
-    1638,
-/**/
-    1637,
-/**/
-    1636,
-/**/
-    1635,
-/**/
-    1634,
-/**/
-    1633,
-/**/
-    1632,
-/**/
-    1631,
-/**/
-    1630,
-/**/
-    1629,
-/**/
-    1628,
-/**/
-    1627,
-/**/
-    1626,
-/**/
-    1625,
-/**/
-    1624,
-/**/
-    1623,
-/**/
-    1622,
-/**/
-    1621,
-/**/
-    1620,
-/**/
-    1619,
-/**/
-    1618,
-/**/
-    1617,
-/**/
-    1616,
-/**/
-    1615,
-/**/
-    1614,
-/**/
-    1613,
-/**/
-    1612,
-/**/
-    1611,
-/**/
-    1610,
-/**/
-    1609,
-/**/
-    1608,
-/**/
-    1607,
-/**/
-    1606,
-/**/
-    1605,
-/**/
-    1604,
-/**/
-    1603,
-/**/
-    1602,
-/**/
-    1601,
-/**/
-    1600,
-/**/
-    1599,
-/**/
-    1598,
-/**/
-    1597,
-/**/
-    1596,
-/**/
-    1595,
-/**/
-    1594,
-/**/
-    1593,
-/**/
-    1592,
-/**/
-    1591,
-/**/
-    1590,
-/**/
-    1589,
-/**/
-    1588,
-/**/
-    1587,
-/**/
-    1586,
-/**/
-    1585,
-/**/
-    1584,
-/**/
-    1583,
-/**/
-    1582,
-/**/
-    1581,
-/**/
-    1580,
-/**/
-    1579,
-/**/
-    1578,
-/**/
-    1577,
-/**/
-    1576,
-/**/
-    1575,
-/**/
-    1574,
-/**/
-    1573,
-/**/
-    1572,
-/**/
-    1571,
-/**/
-    1570,
-/**/
-    1569,
-/**/
-    1568,
-/**/
-    1567,
-/**/
-    1566,
-/**/
-    1565,
-/**/
-    1564,
-/**/
-    1563,
-/**/
-    1562,
-/**/
-    1561,
-/**/
-    1560,
-/**/
-    1559,
-/**/
-    1558,
-/**/
-    1557,
-/**/
-    1556,
-/**/
-    1555,
-/**/
-    1554,
-/**/
-    1553,
-/**/
-    1552,
-/**/
-    1551,
-/**/
-    1550,
-/**/
-    1549,
-/**/
-    1548,
-/**/
-    1547,
-/**/
-    1546,
-/**/
-    1545,
-/**/
-    1544,
-/**/
-    1543,
-/**/
-    1542,
-/**/
-    1541,
-/**/
-    1540,
-/**/
-    1539,
-/**/
-    1538,
-/**/
-    1537,
-/**/
-    1536,
-/**/
-    1535,
-/**/
-    1534,
-/**/
-    1533,
-/**/
-    1532,
-/**/
-    1531,
-/**/
-    1530,
-/**/
-    1529,
-/**/
-    1528,
-/**/
-    1527,
-/**/
-    1526,
-/**/
-    1525,
-/**/
-    1524,
-/**/
-    1523,
-/**/
-    1522,
-/**/
-    1521,
-/**/
-    1520,
-/**/
-    1519,
-/**/
-    1518,
-/**/
-    1517,
-/**/
-    1516,
-/**/
-    1515,
-/**/
-    1514,
-/**/
-    1513,
-/**/
-    1512,
-/**/
-    1511,
-/**/
-    1510,
-/**/
-    1509,
-/**/
-    1508,
-/**/
-    1507,
-/**/
-    1506,
-/**/
-    1505,
-/**/
-    1504,
-/**/
-    1503,
-/**/
-    1502,
-/**/
-    1501,
-/**/
-    1500,
-/**/
-    1499,
-/**/
-    1498,
-/**/
-    1497,
-/**/
-    1496,
-/**/
-    1495,
-/**/
-    1494,
-/**/
-    1493,
-/**/
-    1492,
-/**/
-    1491,
-/**/
-    1490,
-/**/
-    1489,
-/**/
-    1488,
-/**/
-    1487,
-/**/
-    1486,
-/**/
-    1485,
-/**/
-    1484,
-/**/
-    1483,
-/**/
-    1482,
-/**/
-    1481,
-/**/
-    1480,
-/**/
-    1479,
-/**/
-    1478,
-/**/
-    1477,
-/**/
-    1476,
-/**/
-    1475,
-/**/
-    1474,
-/**/
-    1473,
-/**/
-    1472,
-/**/
-    1471,
-/**/
-    1470,
-/**/
-    1469,
-/**/
-    1468,
-/**/
-    1467,
-/**/
-    1466,
-/**/
-    1465,
-/**/
-    1464,
-/**/
-    1463,
-/**/
-    1462,
-/**/
-    1461,
-/**/
-    1460,
-/**/
-    1459,
-/**/
-    1458,
-/**/
-    1457,
-/**/
-    1456,
-/**/
-    1455,
-/**/
-    1454,
-/**/
-    1453,
-/**/
-    1452,
-/**/
-    1451,
-/**/
-    1450,
-/**/
-    1449,
-/**/
-    1448,
-/**/
-    1447,
-/**/
-    1446,
-/**/
-    1445,
-/**/
-    1444,
-/**/
-    1443,
-/**/
-    1442,
-/**/
-    1441,
-/**/
-    1440,
-/**/
-    1439,
-/**/
-    1438,
-/**/
-    1437,
-/**/
-    1436,
-/**/
-    1435,
-/**/
-    1434,
-/**/
-    1433,
-/**/
-    1432,
-/**/
-    1431,
-/**/
-    1430,
-/**/
-    1429,
-/**/
-    1428,
-/**/
-    1427,
-/**/
-    1426,
-/**/
-    1425,
-/**/
-    1424,
-/**/
-    1423,
-/**/
-    1422,
-/**/
-    1421,
-/**/
-    1420,
-/**/
-    1419,
-/**/
-    1418,
-/**/
-    1417,
-/**/
-    1416,
-/**/
-    1415,
-/**/
-    1414,
-/**/
-    1413,
-/**/
-    1412,
-/**/
-    1411,
-/**/
-    1410,
-/**/
-    1409,
-/**/
-    1408,
-/**/
-    1407,
-/**/
-    1406,
-/**/
-    1405,
-/**/
-    1404,
-/**/
-    1403,
-/**/
-    1402,
-/**/
-    1401,
-/**/
-    1400,
-/**/
-    1399,
-/**/
-    1398,
-/**/
-    1397,
-/**/
-    1396,
-/**/
-    1395,
-/**/
-    1394,
-/**/
-    1393,
-/**/
-    1392,
-/**/
-    1391,
-/**/
-    1390,
-/**/
-    1389,
-/**/
-    1388,
-/**/
-    1387,
-/**/
-    1386,
-/**/
-    1385,
-/**/
-    1384,
-/**/
-    1383,
-/**/
-    1382,
-/**/
-    1381,
-/**/
-    1380,
-/**/
-    1379,
-/**/
-    1378,
-/**/
-    1377,
-/**/
-    1376,
-/**/
-    1375,
-/**/
-    1374,
-/**/
-    1373,
-/**/
-    1372,
-/**/
-    1371,
-/**/
-    1370,
-/**/
-    1369,
-/**/
-    1368,
-/**/
-    1367,
-/**/
-    1366,
-/**/
-    1365,
-/**/
-    1364,
-/**/
-    1363,
-/**/
-    1362,
-/**/
-    1361,
-/**/
-    1360,
-/**/
-    1359,
-/**/
-    1358,
-/**/
-    1357,
-/**/
-    1356,
-/**/
-    1355,
-/**/
-    1354,
-/**/
-    1353,
-/**/
-    1352,
-/**/
-    1351,
-/**/
-    1350,
-/**/
-    1349,
-/**/
-    1348,
-/**/
-    1347,
-/**/
-    1346,
-/**/
-    1345,
-/**/
-    1344,
-/**/
-    1343,
-/**/
-    1342,
-/**/
-    1341,
-/**/
-    1340,
-/**/
-    1339,
-/**/
-    1338,
-/**/
-    1337,
-/**/
-    1336,
-/**/
-    1335,
-/**/
-    1334,
-/**/
-    1333,
-/**/
-    1332,
-/**/
-    1331,
-/**/
-    1330,
-/**/
-    1329,
-/**/
-    1328,
-/**/
-    1327,
-/**/
-    1326,
-/**/
-    1325,
-/**/
-    1324,
-/**/
-    1323,
-/**/
-    1322,
-/**/
-    1321,
-/**/
-    1320,
-/**/
-    1319,
-/**/
-    1318,
-/**/
-    1317,
-/**/
-    1316,
-/**/
-    1315,
-/**/
-    1314,
-/**/
-    1313,
-/**/
-    1312,
-/**/
-    1311,
-/**/
-    1310,
-/**/
-    1309,
-/**/
-    1308,
-/**/
-    1307,
-/**/
-    1306,
-/**/
-    1305,
-/**/
-    1304,
-/**/
-    1303,
-/**/
-    1302,
-/**/
-    1301,
-/**/
-    1300,
-/**/
-    1299,
-/**/
-    1298,
-/**/
-    1297,
-/**/
-    1296,
-/**/
-    1295,
-/**/
-    1294,
-/**/
-    1293,
-/**/
-    1292,
-/**/
-    1291,
-/**/
-    1290,
-/**/
-    1289,
-/**/
-    1288,
-/**/
-    1287,
-/**/
-    1286,
-/**/
-    1285,
-/**/
-    1284,
-/**/
-    1283,
-/**/
-    1282,
-/**/
-    1281,
-/**/
-    1280,
-/**/
-    1279,
-/**/
-    1278,
-/**/
-    1277,
-/**/
-    1276,
-/**/
-    1275,
-/**/
-    1274,
-/**/
-    1273,
-/**/
-    1272,
-/**/
-    1271,
-/**/
-    1270,
-/**/
-    1269,
-/**/
-    1268,
-/**/
-    1267,
-/**/
-    1266,
-/**/
-    1265,
-/**/
-    1264,
-/**/
-    1263,
-/**/
-    1262,
-/**/
-    1261,
-/**/
-    1260,
-/**/
-    1259,
-/**/
-    1258,
-/**/
-    1257,
-/**/
-    1256,
-/**/
-    1255,
-/**/
-    1254,
-/**/
-    1253,
-/**/
-    1252,
-/**/
-    1251,
-/**/
-    1250,
-/**/
-    1249,
-/**/
-    1248,
-/**/
-    1247,
-/**/
-    1246,
-/**/
-    1245,
-/**/
-    1244,
-/**/
-    1243,
-/**/
-    1242,
-/**/
-    1241,
-/**/
-    1240,
-/**/
-    1239,
-/**/
-    1238,
-/**/
-    1237,
-/**/
-    1236,
-/**/
-    1235,
-/**/
-    1234,
-/**/
-    1233,
-/**/
-    1232,
-/**/
-    1231,
-/**/
-    1230,
-/**/
-    1229,
-/**/
-    1228,
-/**/
-    1227,
-/**/
-    1226,
-/**/
-    1225,
-/**/
-    1224,
-/**/
-    1223,
-/**/
-    1222,
-/**/
-    1221,
-/**/
-    1220,
-/**/
-    1219,
-/**/
-    1218,
-/**/
-    1217,
-/**/
-    1216,
-/**/
-    1215,
-/**/
-    1214,
-/**/
-    1213,
-/**/
-    1212,
-/**/
-    1211,
-/**/
-    1210,
-/**/
-    1209,
-/**/
-    1208,
-/**/
-    1207,
-/**/
-    1206,
-/**/
-    1205,
-/**/
-    1204,
-/**/
-    1203,
-/**/
-    1202,
-/**/
-    1201,
-/**/
-    1200,
-/**/
-    1199,
-/**/
-    1198,
-/**/
-    1197,
-/**/
-    1196,
-/**/
-    1195,
-/**/
-    1194,
-/**/
-    1193,
-/**/
-    1192,
-/**/
-    1191,
-/**/
-    1190,
-/**/
-    1189,
-/**/
-    1188,
-/**/
-    1187,
-/**/
-    1186,
-/**/
-    1185,
-/**/
-    1184,
-/**/
-    1183,
-/**/
-    1182,
-/**/
-    1181,
-/**/
-    1180,
-/**/
-    1179,
-/**/
-    1178,
-/**/
-    1177,
-/**/
-    1176,
-/**/
-    1175,
-/**/
-    1174,
-/**/
-    1173,
-/**/
-    1172,
-/**/
-    1171,
-/**/
-    1170,
-/**/
-    1169,
-/**/
-    1168,
-/**/
-    1167,
-/**/
-    1166,
-/**/
-    1165,
-/**/
-    1164,
-/**/
-    1163,
-/**/
-    1162,
-/**/
-    1161,
-/**/
-    1160,
-/**/
-    1159,
-/**/
-    1158,
-/**/
-    1157,
-/**/
-    1156,
-/**/
-    1155,
-/**/
-    1154,
-/**/
-    1153,
-/**/
-    1152,
-/**/
-    1151,
-/**/
-    1150,
-/**/
-    1149,
-/**/
-    1148,
-/**/
-    1147,
-/**/
-    1146,
-/**/
-    1145,
-/**/
-    1144,
-/**/
-    1143,
-/**/
-    1142,
-/**/
-    1141,
-/**/
-    1140,
-/**/
-    1139,
-/**/
-    1138,
-/**/
-    1137,
-/**/
-    1136,
-/**/
-    1135,
-/**/
-    1134,
-/**/
-    1133,
-/**/
-    1132,
-/**/
-    1131,
-/**/
-    1130,
-/**/
-    1129,
-/**/
-    1128,
-/**/
-    1127,
-/**/
-    1126,
-/**/
-    1125,
-/**/
-    1124,
-/**/
-    1123,
-/**/
-    1122,
-/**/
-    1121,
-/**/
-    1120,
-/**/
-    1119,
-/**/
-    1118,
-/**/
-    1117,
-/**/
-    1116,
-/**/
-    1115,
-/**/
-    1114,
-/**/
-    1113,
-/**/
-    1112,
-/**/
-    1111,
-/**/
-    1110,
-/**/
-    1109,
-/**/
-    1108,
-/**/
-    1107,
-/**/
-    1106,
-/**/
-    1105,
-/**/
-    1104,
-/**/
-    1103,
-/**/
-    1102,
-/**/
-    1101,
-/**/
-    1100,
-/**/
-    1099,
-/**/
-    1098,
-/**/
-    1097,
-/**/
-    1096,
-/**/
-    1095,
-/**/
-    1094,
-/**/
-    1093,
-/**/
-    1092,
-/**/
-    1091,
-/**/
-    1090,
-/**/
-    1089,
-/**/
-    1088,
-/**/
-    1087,
-/**/
-    1086,
-/**/
-    1085,
-/**/
-    1084,
-/**/
-    1083,
-/**/
-    1082,
-/**/
-    1081,
-/**/
-    1080,
-/**/
-    1079,
-/**/
-    1078,
-/**/
-    1077,
-/**/
-    1076,
-/**/
-    1075,
-/**/
-    1074,
-/**/
-    1073,
-/**/
-    1072,
-/**/
-    1071,
-/**/
-    1070,
-/**/
-    1069,
-/**/
-    1068,
-/**/
-    1067,
-/**/
-    1066,
-/**/
-    1065,
-/**/
-    1064,
-/**/
-    1063,
-/**/
-    1062,
-/**/
-    1061,
-/**/
-    1060,
-/**/
-    1059,
-/**/
-    1058,
-/**/
-    1057,
-/**/
-    1056,
-/**/
-    1055,
-/**/
-    1054,
-/**/
-    1053,
-/**/
-    1052,
-/**/
-    1051,
-/**/
-    1050,
-/**/
-    1049,
-/**/
-    1048,
-/**/
-    1047,
-/**/
-    1046,
-/**/
-    1045,
-/**/
-    1044,
-/**/
-    1043,
-/**/
-    1042,
-/**/
-    1041,
-/**/
-    1040,
-/**/
-    1039,
-/**/
-    1038,
-/**/
-    1037,
-/**/
-    1036,
-/**/
-    1035,
-/**/
-    1034,
-/**/
-    1033,
-/**/
-    1032,
-/**/
-    1031,
-/**/
-    1030,
-/**/
-    1029,
-/**/
-    1028,
-/**/
-    1027,
-/**/
-    1026,
-/**/
-    1025,
-/**/
-    1024,
-/**/
-    1023,
-/**/
-    1022,
-/**/
-    1021,
-/**/
-    1020,
-/**/
-    1019,
-/**/
-    1018,
-/**/
-    1017,
-/**/
-    1016,
-/**/
-    1015,
-/**/
-    1014,
-/**/
-    1013,
-/**/
-    1012,
-/**/
-    1011,
-/**/
-    1010,
-/**/
-    1009,
-/**/
-    1008,
-/**/
-    1007,
-/**/
-    1006,
-/**/
-    1005,
-/**/
-    1004,
-/**/
-    1003,
-/**/
-    1002,
-/**/
-    1001,
-/**/
-    1000,
-/**/
-    999,
-/**/
-    998,
-/**/
-    997,
-/**/
-    996,
-/**/
-    995,
-/**/
-    994,
-/**/
-    993,
-/**/
-    992,
-/**/
-    991,
-/**/
-    990,
-/**/
-    989,
-/**/
-    988,
-/**/
-    987,
-/**/
-    986,
-/**/
-    985,
-/**/
-    984,
-/**/
-    983,
-/**/
-    982,
-/**/
-    981,
-/**/
-    980,
-/**/
-    979,
-/**/
-    978,
-/**/
-    977,
-/**/
-    976,
-/**/
-    975,
-/**/
-    974,
-/**/
-    973,
-/**/
-    972,
-/**/
-    971,
-/**/
-    970,
-/**/
-    969,
-/**/
-    968,
-/**/
-    967,
-/**/
-    966,
-/**/
-    965,
-/**/
-    964,
-/**/
-    963,
-/**/
-    962,
-/**/
-    961,
-/**/
-    960,
-/**/
-    959,
-/**/
-    958,
-/**/
-    957,
-/**/
-    956,
-/**/
-    955,
-/**/
-    954,
-/**/
-    953,
-/**/
-    952,
-/**/
-    951,
-/**/
-    950,
-/**/
-    949,
-/**/
-    948,
-/**/
-    947,
-/**/
-    946,
-/**/
-    945,
-/**/
-    944,
-/**/
-    943,
-/**/
-    942,
-/**/
-    941,
-/**/
-    940,
-/**/
-    939,
-/**/
-    938,
-/**/
-    937,
-/**/
-    936,
-/**/
-    935,
-/**/
-    934,
-/**/
-    933,
-/**/
-    932,
-/**/
-    931,
-/**/
-    930,
-/**/
-    929,
-/**/
-    928,
-/**/
-    927,
-/**/
-    926,
-/**/
-    925,
-/**/
-    924,
-/**/
-    923,
-/**/
-    922,
-/**/
-    921,
-/**/
-    920,
-/**/
-    919,
-/**/
-    918,
-/**/
-    917,
-/**/
-    916,
-/**/
-    915,
-/**/
-    914,
-/**/
-    913,
-/**/
-    912,
-/**/
-    911,
-/**/
-    910,
-/**/
-    909,
-/**/
-    908,
-/**/
-    907,
-/**/
-    906,
-/**/
-    905,
-/**/
-    904,
-/**/
-    903,
-/**/
-    902,
-/**/
-    901,
-/**/
-    900,
-/**/
-    899,
-/**/
-    898,
-/**/
-    897,
-/**/
-    896,
-/**/
-    895,
-/**/
-    894,
-/**/
-    893,
-/**/
-    892,
-/**/
-    891,
-/**/
-    890,
-/**/
-    889,
-/**/
-    888,
-/**/
-    887,
-/**/
-    886,
-/**/
-    885,
-/**/
-    884,
-/**/
-    883,
-/**/
-    882,
-/**/
-    881,
-/**/
-    880,
-/**/
-    879,
-/**/
-    878,
 /**/
     877,
 /**/
@@ -4315,10 +2611,10 @@ version_msg_wrap(char_u *s, int wrap)
     if (!got_int)
     {
 	if (wrap)
-	    MSG_PUTS("[");
-	MSG_PUTS(s);
+	    msg_puts("[");
+	msg_puts((char *)s);
 	if (wrap)
-	    MSG_PUTS("]");
+	    msg_puts("]");
     }
 }
 
@@ -4350,6 +2646,9 @@ list_in_columns(char_u **items, int size, int current)
     int		nrow;
     int		item_count = 0;
     int		width = 0;
+#ifdef FEAT_SYN_HL
+    int		use_highlight = (items == (char_u **)features);
+#endif
 
     /* Find the length of the longest item, use that + 1 as the column
      * width. */
@@ -4366,7 +2665,7 @@ list_in_columns(char_u **items, int size, int current)
     if (Columns < width)
     {
 	/* Not enough screen columns - show one per line */
-	for (i = 0; items[i] != NULL; ++i)
+	for (i = 0; i < item_count; ++i)
 	{
 	    version_msg_wrap(items[i], i == current);
 	    if (msg_col > 0)
@@ -4391,7 +2690,12 @@ list_in_columns(char_u **items, int size, int current)
 
 	    if (idx == current)
 		msg_putchar('[');
-	    msg_puts(items[idx]);
+#ifdef FEAT_SYN_HL
+	    if (use_highlight && items[idx][0] == '-')
+		msg_puts_attr((char *)items[idx], HL_ATTR(HLF_W));
+	    else
+#endif
+		msg_puts((char *)items[idx]);
 	    if (idx == current)
 		msg_putchar(']');
 	    if (last_col)
@@ -4424,40 +2728,41 @@ list_version(void)
      * When adding features here, don't forget to update the list of
      * internal variables in eval.c!
      */
-    MSG(longVersion);
+    init_longVersion();
+    msg(longVersion);
 #ifdef WIN3264
 # ifdef FEAT_GUI_W32
 #  ifdef _WIN64
-    MSG_PUTS(_("\nMS-Windows 64-bit GUI version"));
+    msg_puts(_("\nMS-Windows 64-bit GUI version"));
 #  else
-    MSG_PUTS(_("\nMS-Windows 32-bit GUI version"));
+    msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #  endif
 # ifdef FEAT_OLE
-    MSG_PUTS(_(" with OLE support"));
+    msg_puts(_(" with OLE support"));
 # endif
 # else
 #  ifdef _WIN64
-    MSG_PUTS(_("\nMS-Windows 64-bit console version"));
+    msg_puts(_("\nMS-Windows 64-bit console version"));
 #  else
-    MSG_PUTS(_("\nMS-Windows 32-bit console version"));
+    msg_puts(_("\nMS-Windows 32-bit console version"));
 #  endif
 # endif
 #endif
 #if defined(MACOS_X)
 # if defined(MACOS_X_DARWIN)
-    MSG_PUTS(_("\nmacOS version"));
+    msg_puts(_("\nmacOS version"));
 # else
-    MSG_PUTS(_("\nmacOS version w/o darwin feat."));
+    msg_puts(_("\nmacOS version w/o darwin feat."));
 # endif
 #endif
 
 #ifdef VMS
-    MSG_PUTS(_("\nOpenVMS version"));
+    msg_puts(_("\nOpenVMS version"));
 # ifdef HAVE_PATHDEF
     if (*compiled_arch != NUL)
     {
-	MSG_PUTS(" - ");
-	MSG_PUTS(compiled_arch);
+	msg_puts(" - ");
+	msg_puts((char *)compiled_arch);
     }
 # endif
 
@@ -4467,7 +2772,7 @@ list_version(void)
     /* Print a range when patches are consecutive: "1-10, 12, 15-40, 42-45" */
     if (included_patches[0] != 0)
     {
-	MSG_PUTS(_("\nIncluded patches: "));
+	msg_puts(_("\nIncluded patches: "));
 	first = -1;
 	/* find last one */
 	for (i = 0; included_patches[i] != 0; ++i)
@@ -4478,12 +2783,12 @@ list_version(void)
 		first = included_patches[i];
 	    if (i == 0 || included_patches[i - 1] != included_patches[i] + 1)
 	    {
-		MSG_PUTS(s);
+		msg_puts(s);
 		s = ", ";
 		msg_outnum((long)first);
 		if (first != included_patches[i])
 		{
-		    MSG_PUTS("-");
+		    msg_puts("-");
 		    msg_outnum((long)included_patches[i]);
 		}
 		first = -1;
@@ -4494,91 +2799,91 @@ list_version(void)
     /* Print the list of extra patch descriptions if there is at least one. */
     if (extra_patches[0] != NULL)
     {
-	MSG_PUTS(_("\nExtra patches: "));
+	msg_puts(_("\nExtra patches: "));
 	s = "";
 	for (i = 0; extra_patches[i] != NULL; ++i)
 	{
-	    MSG_PUTS(s);
+	    msg_puts(s);
 	    s = ", ";
-	    MSG_PUTS(extra_patches[i]);
+	    msg_puts(extra_patches[i]);
 	}
     }
 
 #ifdef MODIFIED_BY
-    MSG_PUTS("\n");
-    MSG_PUTS(_("Modified by "));
-    MSG_PUTS(MODIFIED_BY);
+    msg_puts("\n");
+    msg_puts(_("Modified by "));
+    msg_puts(MODIFIED_BY);
 #endif
 
 #ifdef HAVE_PATHDEF
     if (*compiled_user != NUL || *compiled_sys != NUL)
     {
-	MSG_PUTS(_("\nCompiled "));
+	msg_puts(_("\nCompiled "));
 	if (*compiled_user != NUL)
 	{
-	    MSG_PUTS(_("by "));
-	    MSG_PUTS(compiled_user);
+	    msg_puts(_("by "));
+	    msg_puts((char *)compiled_user);
 	}
 	if (*compiled_sys != NUL)
 	{
-	    MSG_PUTS("@");
-	    MSG_PUTS(compiled_sys);
+	    msg_puts("@");
+	    msg_puts((char *)compiled_sys);
 	}
     }
 #endif
 
 #ifdef FEAT_HUGE
-    MSG_PUTS(_("\nHuge version "));
+    msg_puts(_("\nHuge version "));
 #else
 # ifdef FEAT_BIG
-    MSG_PUTS(_("\nBig version "));
+    msg_puts(_("\nBig version "));
 # else
 #  ifdef FEAT_NORMAL
-    MSG_PUTS(_("\nNormal version "));
+    msg_puts(_("\nNormal version "));
 #  else
 #   ifdef FEAT_SMALL
-    MSG_PUTS(_("\nSmall version "));
+    msg_puts(_("\nSmall version "));
 #   else
-    MSG_PUTS(_("\nTiny version "));
+    msg_puts(_("\nTiny version "));
 #   endif
 #  endif
 # endif
 #endif
 #ifndef FEAT_GUI
-    MSG_PUTS(_("without GUI."));
+    msg_puts(_("without GUI."));
 #else
 # ifdef FEAT_GUI_GTK
 #  ifdef USE_GTK3
-    MSG_PUTS(_("with GTK3 GUI."));
+    msg_puts(_("with GTK3 GUI."));
 #  else
 #   ifdef FEAT_GUI_GNOME
-     MSG_PUTS(_("with GTK2-GNOME GUI."));
+     msg_puts(_("with GTK2-GNOME GUI."));
 #   else
-     MSG_PUTS(_("with GTK2 GUI."));
+     msg_puts(_("with GTK2 GUI."));
 #   endif
 # endif
 # else
 #  ifdef FEAT_GUI_MOTIF
-    MSG_PUTS(_("with X11-Motif GUI."));
+    msg_puts(_("with X11-Motif GUI."));
 #  else
 #   ifdef FEAT_GUI_ATHENA
 #    ifdef FEAT_GUI_NEXTAW
-    MSG_PUTS(_("with X11-neXtaw GUI."));
+    msg_puts(_("with X11-neXtaw GUI."));
 #    else
-    MSG_PUTS(_("with X11-Athena GUI."));
+    msg_puts(_("with X11-Athena GUI."));
 #    endif
 #   else
 #     ifdef FEAT_GUI_PHOTON
-    MSG_PUTS(_("with Photon GUI."));
+    msg_puts(_("with Photon GUI."));
 #     else
 #      if defined(MSWIN)
-    MSG_PUTS(_("with GUI."));
+    msg_puts(_("with GUI."));
 #      else
 #	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON
-    MSG_PUTS(_("with Carbon GUI."));
+    msg_puts(_("with Carbon GUI."));
 #	else
 #	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
-    MSG_PUTS(_("with Cocoa GUI."));
+    msg_puts(_("with Cocoa GUI."));
 #	 else
 #	 endif
 #	endif
@@ -4875,14 +3180,12 @@ do_intro_line(
 	for (l = 0; p[l] != NUL
 			 && (l == 0 || (p[l] != '<' && p[l - 1] != '>')); ++l)
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		clen += ptr2cells(p + l);
 		l += (*mb_ptr2len)(p + l) - 1;
 	    }
 	    else
-#endif
 		clen += byte2cells(p[l]);
 	}
 	screen_puts_len(p, l, row, col, *p == '<' ? HL_ATTR(HLF_8) : attr);

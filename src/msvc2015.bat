@@ -7,6 +7,10 @@ rem   For x86 builds run this without options:
 rem     msvc2015
 rem   For x64 builds run this with "x86_amd64" option:
 rem     msvc2015 x86_amd64
+rem   This works on any editions including Express edition.
+rem   If you use Community (or Professional) edition, you can also use "x64"
+rem   option:
+rem     msvc2015 x64
 @echo on
 
 call "%VS140COMNTOOLS%..\..\VC\vcvarsall.bat" %*
@@ -23,7 +27,7 @@ if not exist "%WinSdk71%" (
 )
 
 set INCLUDE=%WinSdk71%\Include;%INCLUDE%
-if "%Platform%"=="x64" (
+if /i "%Platform%"=="x64" (
 	set "LIB=%WinSdk71%\Lib\x64;%LIB%"
 	set SUBSYSTEM_VER=5.02
 ) else (

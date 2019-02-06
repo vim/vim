@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.0.  Last change: 2017 Nov 24
+*if_perl.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -44,8 +44,9 @@ The Perl patches for Vim were made by:
 	Sven Verdoolaege <skimo@breughel.ufsia.ac.be>
 	Matt Gerassimof
 
-Perl for MS-Windows can be found at: http://www.perl.com/
-The ActiveState one should work.
+Perl for MS-Windows (and other platforms) can be found at:
+	http://www.perl.org/
+The ActiveState one should work, Strawberry Perl is a good alternative.
 
 ==============================================================================
 3. Using the Perl interface				*perl-using*
@@ -190,6 +191,9 @@ VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list
 			A |List| is turned into a string by joining the items
 			and inserting line breaks.
 
+							*perl-Blob*
+VIM::Blob({expr})	Return |Blob| literal string 0zXXXX from scalar value.
+
 							*perl-SetHeight*
 Window->SetHeight({height})
 			Sets the Window height to {height}, within screen
@@ -303,4 +307,4 @@ version of the shared library must match the Perl version Vim was compiled
 with.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

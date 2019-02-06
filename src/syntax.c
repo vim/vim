@@ -58,7 +58,7 @@ struct hl_group
     int		sg_link;	/* link to this highlight group ID */
     int		sg_set;		/* combination of SG_* flags */
 #ifdef FEAT_EVAL
-    scid_T	sg_scriptID;	/* script in which the group was last set */
+    sctx_T	sg_script_ctx;	/* script in which the group was last set */
 #endif
 };
 
@@ -91,7 +91,6 @@ static int hl_attr_table[] =
     {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
 #define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? attr_b : (attr_a)) | (attr_b))
 
-static int get_attr_entry(garray_T *table, attrentry_T *aep);
 static void syn_unadd_group(void);
 static void set_hl_attr(int idx);
 static void highlight_list_one(int id);
@@ -106,10 +105,6 @@ static void gui_do_one_color(int idx, int do_menu, int do_tooltip);
 #endif
 #ifdef FEAT_GUI
 static int  set_group_colors(char_u *name, guicolor_T *fgp, guicolor_T *bgp, int do_menu, int use_norm, int do_tooltip);
-static GuiFont font_name2handle(char_u *name);
-# ifdef FEAT_XFONTSET
-static GuiFontset fontset_name2handle(char_u *name, int fixed_width);
-# endif
 static void hl_do_font(int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip, int free_font);
 #endif
 
@@ -357,7 +352,7 @@ static reg_extmatch_T *next_match_extmatch = NULL;
 
 /*
  * A state stack is an array of integers or stateitem_T, stored in a
- * garray_T.  A state stack is invalid if it's itemsize entry is zero.
+ * garray_T.  A state stack is invalid if its itemsize entry is zero.
  */
 #define INVALID_STATE(ssp)  ((ssp)->ga_itemsize == 0)
 #define VALID_STATE(ssp)    ((ssp)->ga_itemsize != 0)
@@ -386,8 +381,6 @@ static int	current_line_id = 0;	/* unique number for current line */
 #define CUR_STATE(idx)	((stateitem_T *)(current_state.ga_data))[idx]
 
 static void syn_sync(win_T *wp, linenr_T lnum, synstate_T *last_valid);
-static void save_chartab(char_u *chartab);
-static void restore_chartab(char_u *chartab);
 static int syn_match_linecont(linenr_T lnum);
 static void syn_start_line(void);
 static void syn_update_ends(int startofline);
@@ -415,11 +408,6 @@ static void pop_current_state(void);
 #ifdef FEAT_PROFILE
 static void syn_clear_time(syn_time_T *tt);
 static void syntime_clear(void);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_syntime(const void *v1, const void *v2);
-#else
-static int syn_compare_syntime(const void *v1, const void *v2);
-#endif
 static void syntime_report(void);
 static int syn_time_on = FALSE;
 # define IF_SYN_TIME(p) (p)
@@ -430,8 +418,6 @@ typedef int syn_time_T;
 
 static void syn_stack_apply_changes_block(synblock_T *block, buf_T *buf);
 static void find_endpos(int idx, lpos_T *startpos, lpos_T *m_endpos, lpos_T *hl_endpos, long *flagsp, lpos_T *end_endpos, int *end_idx, reg_extmatch_T *start_ext);
-static void clear_syn_state(synstate_T *p);
-static void clear_current_state(void);
 
 static void limit_pos(lpos_T *pos, lpos_T *limit);
 static void limit_pos_zero(lpos_T *pos, lpos_T *limit);
@@ -440,25 +426,13 @@ static void syn_add_start_off(lpos_T *result, regmmatch_T *regmatch, synpat_T *s
 static char_u *syn_getcurline(void);
 static int syn_regexec(regmmatch_T *rmp, linenr_T lnum, colnr_T col, syn_time_T *st);
 static int check_keyword_id(char_u *line, int startcol, int *endcol, long *flags, short **next_list, stateitem_T *cur_si, int *ccharp);
-static void syn_cmd_case(exarg_T *eap, int syncing);
-static void syn_cmd_spell(exarg_T *eap, int syncing);
-static void syntax_sync_clear(void);
 static void syn_remove_pattern(synblock_T *block, int idx);
 static void syn_clear_pattern(synblock_T *block, int i);
 static void syn_clear_cluster(synblock_T *block, int i);
-static void syn_cmd_clear(exarg_T *eap, int syncing);
-static void syn_cmd_conceal(exarg_T *eap, int syncing);
 static void syn_clear_one(int id, int syncing);
-static void syn_cmd_on(exarg_T *eap, int syncing);
-static void syn_cmd_enable(exarg_T *eap, int syncing);
-static void syn_cmd_reset(exarg_T *eap, int syncing);
-static void syn_cmd_manual(exarg_T *eap, int syncing);
-static void syn_cmd_off(exarg_T *eap, int syncing);
 static void syn_cmd_onoff(exarg_T *eap, char *name);
-static void syn_cmd_list(exarg_T *eap, int syncing);
 static void syn_lines_msg(void);
 static void syn_match_msg(void);
-static void syn_stack_free_block(synblock_T *block);
 static void syn_list_one(int id, int syncing, int link_only);
 static void syn_list_cluster(int id);
 static void put_id_list(char_u *name, short *list, int attr);
@@ -466,30 +440,13 @@ static void put_pattern(char *s, int c, synpat_T *spp, int attr);
 static int syn_list_keywords(int id, hashtab_T *ht, int did_header, int attr);
 static void syn_clear_keyword(int id, hashtab_T *ht);
 static void clear_keywtab(hashtab_T *ht);
-static void add_keyword(char_u *name, int id, int flags, short *cont_in_list, short *next_list, int conceal_char);
-static char_u *get_group_name(char_u *arg, char_u **name_end);
-static char_u *get_syn_options(char_u *arg, syn_opt_arg_T *opt, int *conceal_char, int skip);
-static void syn_cmd_include(exarg_T *eap, int syncing);
-static void syn_cmd_iskeyword(exarg_T *eap, int syncing);
-static void syn_cmd_keyword(exarg_T *eap, int syncing);
-static void syn_cmd_match(exarg_T *eap, int syncing);
-static void syn_cmd_region(exarg_T *eap, int syncing);
-#ifdef __BORLANDC__
-static int _RTLENTRYF syn_compare_stub(const void *v1, const void *v2);
-#else
-static int syn_compare_stub(const void *v1, const void *v2);
-#endif
-static void syn_cmd_cluster(exarg_T *eap, int syncing);
-static int syn_scl_name2id(char_u *name);
 static int syn_scl_namen2id(char_u *linep, int len);
 static int syn_check_cluster(char_u *pp, int len);
 static int syn_add_cluster(char_u *name);
 static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
-static void syn_cmd_sync(exarg_T *eap, int syncing);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
-static void syn_incl_toplevel(int id, int *flagsp);
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
 /*
@@ -1192,6 +1149,7 @@ syn_stack_free_block(synblock_T *block)
 	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
 	    clear_syn_state(p);
 	VIM_CLEAR(block->b_sst_array);
+	block->b_sst_first = NULL;
 	block->b_sst_len = 0;
     }
 }
@@ -1323,9 +1281,6 @@ syn_stack_apply_changes_block(synblock_T *block, buf_T *buf)
     synstate_T	*p, *prev, *np;
     linenr_T	n;
 
-    if (block->b_sst_array == NULL)	/* nothing to do */
-	return;
-
     prev = NULL;
     for (p = block->b_sst_first; p != NULL; )
     {
@@ -1378,7 +1333,7 @@ syn_stack_cleanup(void)
     int		dist;
     int		retval = FALSE;
 
-    if (syn_block->b_sst_array == NULL || syn_block->b_sst_first == NULL)
+    if (syn_block->b_sst_first == NULL)
 	return retval;
 
     /* Compute normal distance between non-displayed entries. */
@@ -2019,12 +1974,9 @@ syn_current_attr(
 	      if (vim_iswordp_buf(line + current_col, syn_buf)
 		      && (current_col == 0
 			  || !vim_iswordp_buf(line + current_col - 1
-#ifdef FEAT_MBYTE
 			      - (has_mbyte
 				  ? (*mb_head_off)(line, line + current_col - 1)
-				  : 0)
-#endif
-			       , syn_buf)))
+				  : 0) , syn_buf)))
 	      {
 		syn_id = check_keyword_id(line, (int)current_col,
 					 &endcol, &flags, &next_list, cur_si,
@@ -3327,6 +3279,12 @@ syn_regexec(
 	profile_start(&pt);
 #endif
 
+    if (rmp->regprog == NULL)
+	// This can happen if a previous call to vim_regexec_multi() tried to
+	// use the NFA engine, which resulted in NFA_TOO_EXPENSIVE, and
+	// compiling the pattern with the other engine fails.
+	return FALSE;
+
     rmp->rmm_maxcol = syn_buf->b_p_smc;
     r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col,
 #ifdef FEAT_RELTIME
@@ -3349,8 +3307,11 @@ syn_regexec(
     }
 #endif
 #ifdef FEAT_RELTIME
-    if (timed_out)
+    if (timed_out && !syn_win->w_s->b_syn_slow)
+    {
 	syn_win->w_s->b_syn_slow = TRUE;
+	msg(_("'redrawtime' exceeded, syntax highlighting disabled"));
+    }
 #endif
 
     if (r > 0)
@@ -3391,11 +3352,9 @@ check_keyword_id(
     kwlen = 0;
     do
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    kwlen += (*mb_ptr2len)(kwp + kwlen);
 	else
-#endif
 	    ++kwlen;
     }
     while (vim_iswordp_buf(kwp + kwlen, syn_buf));
@@ -3471,16 +3430,16 @@ syn_cmd_conceal(exarg_T *eap UNUSED, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_conceal)
-	    MSG(_("syntax conceal on"));
+	    msg(_("syntax conceal on"));
 	else
-	    MSG(_("syntax conceal off"));
+	    msg(_("syntax conceal off"));
     }
     else if (STRNICMP(arg, "on", 2) == 0 && next - arg == 2)
 	curwin->w_s->b_syn_conceal = TRUE;
     else if (STRNICMP(arg, "off", 3) == 0 && next - arg == 3)
 	curwin->w_s->b_syn_conceal = FALSE;
     else
-	EMSG2(_("E390: Illegal argument: %s"), arg);
+	semsg(_("E390: Illegal argument: %s"), arg);
 #endif
 }
 
@@ -3501,16 +3460,16 @@ syn_cmd_case(exarg_T *eap, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_ic)
-	    MSG(_("syntax case ignore"));
+	    msg(_("syntax case ignore"));
 	else
-	    MSG(_("syntax case match"));
+	    msg(_("syntax case match"));
     }
     else if (STRNICMP(arg, "match", 5) == 0 && next - arg == 5)
 	curwin->w_s->b_syn_ic = FALSE;
     else if (STRNICMP(arg, "ignore", 6) == 0 && next - arg == 6)
 	curwin->w_s->b_syn_ic = TRUE;
     else
-	EMSG2(_("E390: Illegal argument: %s"), arg);
+	semsg(_("E390: Illegal argument: %s"), arg);
 }
 
 /*
@@ -3530,11 +3489,11 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
     if (*arg == NUL)
     {
 	if (curwin->w_s->b_syn_spell == SYNSPL_TOP)
-	    MSG(_("syntax spell toplevel"));
+	    msg(_("syntax spell toplevel"));
 	else if (curwin->w_s->b_syn_spell == SYNSPL_NOTOP)
-	    MSG(_("syntax spell notoplevel"));
+	    msg(_("syntax spell notoplevel"));
 	else
-	    MSG(_("syntax spell default"));
+	    msg(_("syntax spell default"));
     }
     else if (STRNICMP(arg, "toplevel", 8) == 0 && next - arg == 8)
 	curwin->w_s->b_syn_spell = SYNSPL_TOP;
@@ -3544,7 +3503,7 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
 	curwin->w_s->b_syn_spell = SYNSPL_DEFAULT;
     else
     {
-	EMSG2(_("E390: Illegal argument: %s"), arg);
+	semsg(_("E390: Illegal argument: %s"), arg);
 	return;
     }
 
@@ -3568,12 +3527,14 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
     arg = skipwhite(arg);
     if (*arg == NUL)
     {
-	MSG_PUTS("\n");
-	MSG_PUTS(_("syntax iskeyword "));
+	msg_puts("\n");
 	if (curwin->w_s->b_syn_isk != empty_option)
+	{
+	    msg_puts(_("syntax iskeyword "));
 	    msg_outtrans(curwin->w_s->b_syn_isk);
+	}
 	else
-	    msg_outtrans((char_u *)"not set");
+	    msg_outtrans((char_u *)_("syntax iskeyword not set"));
     }
     else
     {
@@ -3798,7 +3759,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
 		{
-		    EMSG2(_("E391: No such syntax cluster: %s"), arg);
+		    semsg(_("E391: No such syntax cluster: %s"), arg);
 		    break;
 		}
 		else
@@ -3818,7 +3779,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_namen2id(arg, (int)(arg_end - arg));
 		if (id == 0)
 		{
-		    EMSG2(_(e_nogroup), arg);
+		    semsg(_(e_nogroup), arg);
 		    break;
 		}
 		else
@@ -3943,7 +3904,7 @@ syn_cmd_list(
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
 
@@ -3951,7 +3912,7 @@ syn_cmd_list(
     {
 	if (curwin->w_s->b_syn_sync_flags & SF_CCOMMENT)
 	{
-	    MSG_PUTS(_("syncing on C-style comments"));
+	    msg_puts(_("syncing on C-style comments"));
 	    syn_lines_msg();
 	    syn_match_msg();
 	    return;
@@ -3959,28 +3920,28 @@ syn_cmd_list(
 	else if (!(curwin->w_s->b_syn_sync_flags & SF_MATCH))
 	{
 	    if (curwin->w_s->b_syn_sync_minlines == 0)
-		MSG_PUTS(_("no syncing"));
+		msg_puts(_("no syncing"));
 	    else
 	    {
-		MSG_PUTS(_("syncing starts "));
+		msg_puts(_("syncing starts "));
 		msg_outnum(curwin->w_s->b_syn_sync_minlines);
-		MSG_PUTS(_(" lines before top line"));
+		msg_puts(_(" lines before top line"));
 		syn_match_msg();
 	    }
 	    return;
 	}
-	MSG_PUTS_TITLE(_("\n--- Syntax sync items ---"));
+	msg_puts_title(_("\n--- Syntax sync items ---"));
 	if (curwin->w_s->b_syn_sync_minlines > 0
 		|| curwin->w_s->b_syn_sync_maxlines > 0
 		|| curwin->w_s->b_syn_sync_linebreaks > 0)
 	{
-	    MSG_PUTS(_("\nsyncing on items"));
+	    msg_puts(_("\nsyncing on items"));
 	    syn_lines_msg();
 	    syn_match_msg();
 	}
     }
     else
-	MSG_PUTS_TITLE(_("\n--- Syntax items ---"));
+	msg_puts_title(_("\n--- Syntax items ---"));
     if (ends_excmd(*arg))
     {
 	/*
@@ -4003,7 +3964,7 @@ syn_cmd_list(
 	    {
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
-		    EMSG2(_("E392: No such syntax cluster: %s"), arg);
+		    semsg(_("E392: No such syntax cluster: %s"), arg);
 		else
 		    syn_list_cluster(id - SYNID_CLUSTER);
 	    }
@@ -4011,7 +3972,7 @@ syn_cmd_list(
 	    {
 		id = syn_namen2id(arg, (int)(arg_end - arg));
 		if (id == 0)
-		    EMSG2(_(e_nogroup), arg);
+		    semsg(_(e_nogroup), arg);
 		else
 		    syn_list_one(id, syncing, TRUE);
 	    }
@@ -4027,20 +3988,20 @@ syn_lines_msg(void)
     if (curwin->w_s->b_syn_sync_maxlines > 0
 				      || curwin->w_s->b_syn_sync_minlines > 0)
     {
-	MSG_PUTS("; ");
+	msg_puts("; ");
 	if (curwin->w_s->b_syn_sync_minlines > 0)
 	{
-	    MSG_PUTS(_("minimal "));
+	    msg_puts(_("minimal "));
 	    msg_outnum(curwin->w_s->b_syn_sync_minlines);
 	    if (curwin->w_s->b_syn_sync_maxlines)
-		MSG_PUTS(", ");
+		msg_puts(", ");
 	}
 	if (curwin->w_s->b_syn_sync_maxlines > 0)
 	{
-	    MSG_PUTS(_("maximal "));
+	    msg_puts(_("maximal "));
 	    msg_outnum(curwin->w_s->b_syn_sync_maxlines);
 	}
-	MSG_PUTS(_(" lines before top line"));
+	msg_puts(_(" lines before top line"));
     }
 }
 
@@ -4049,9 +4010,9 @@ syn_match_msg(void)
 {
     if (curwin->w_s->b_syn_sync_linebreaks > 0)
     {
-	MSG_PUTS(_("; match "));
+	msg_puts(_("; match "));
 	msg_outnum(curwin->w_s->b_syn_sync_linebreaks);
-	MSG_PUTS(_(" line breaks"));
+	msg_puts(_(" line breaks"));
     }
 }
 
@@ -4156,15 +4117,15 @@ syn_list_one(
 	if (spp->sp_flags & (HL_SYNC_HERE|HL_SYNC_THERE))
 	{
 	    if (spp->sp_flags & HL_SYNC_HERE)
-		msg_puts_attr((char_u *)"grouphere", attr);
+		msg_puts_attr("grouphere", attr);
 	    else
-		msg_puts_attr((char_u *)"groupthere", attr);
+		msg_puts_attr("groupthere", attr);
 	    msg_putchar(' ');
 	    if (spp->sp_sync_idx >= 0)
 		msg_outtrans(HL_TABLE()[SYN_ITEMS(curwin->w_s)
 				   [spp->sp_sync_idx].sp_syn.id - 1].sg_name);
 	    else
-		MSG_PUTS("NONE");
+		msg_puts("NONE");
 	    msg_putchar(' ');
 	}
     }
@@ -4173,7 +4134,7 @@ syn_list_one(
     if (HL_TABLE()[id - 1].sg_link && (did_header || link_only) && !got_int)
     {
 	(void)syn_list_header(did_header, 999, id);
-	msg_puts_attr((char_u *)"links to", attr);
+	msg_puts_attr("links to", attr);
 	msg_putchar(' ');
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
@@ -4187,7 +4148,7 @@ syn_list_flags(struct name_list *nlist, int flags, int attr)
     for (i = 0; nlist[i].flag != 0; ++i)
 	if (flags & nlist[i].flag)
 	{
-	    msg_puts_attr((char_u *)nlist[i].name, attr);
+	    msg_puts_attr(nlist[i].name, attr);
 	    msg_putchar(' ');
 	}
 }
@@ -4217,8 +4178,8 @@ syn_list_cluster(int id)
     }
     else
     {
-	msg_puts_attr((char_u *)"cluster", HL_ATTR(HLF_D));
-	msg_puts((char_u *)"=NONE");
+	msg_puts_attr("cluster", HL_ATTR(HLF_D));
+	msg_puts("=NONE");
     }
 }
 
@@ -4227,24 +4188,24 @@ put_id_list(char_u *name, short *list, int attr)
 {
     short		*p;
 
-    msg_puts_attr(name, attr);
+    msg_puts_attr((char *)name, attr);
     msg_putchar('=');
     for (p = list; *p; ++p)
     {
 	if (*p >= SYNID_ALLBUT && *p < SYNID_TOP)
 	{
 	    if (p[1])
-		MSG_PUTS("ALLBUT");
+		msg_puts("ALLBUT");
 	    else
-		MSG_PUTS("ALL");
+		msg_puts("ALL");
 	}
 	else if (*p >= SYNID_TOP && *p < SYNID_CONTAINED)
 	{
-	    MSG_PUTS("TOP");
+	    msg_puts("TOP");
 	}
 	else if (*p >= SYNID_CONTAINED && *p < SYNID_CLUSTER)
 	{
-	    MSG_PUTS("CONTAINED");
+	    msg_puts("CONTAINED");
 	}
 	else if (*p >= SYNID_CLUSTER)
 	{
@@ -4278,7 +4239,7 @@ put_pattern(
     if (last_matchgroup != spp->sp_syn_match_id)
     {
 	last_matchgroup = spp->sp_syn_match_id;
-	msg_puts_attr((char_u *)"matchgroup", attr);
+	msg_puts_attr("matchgroup", attr);
 	msg_putchar('=');
 	if (last_matchgroup == 0)
 	    msg_outtrans((char_u *)"NONE");
@@ -4288,7 +4249,7 @@ put_pattern(
     }
 
     /* output the name of the pattern and an '=' or ' ' */
-    msg_puts_attr((char_u *)s, attr);
+    msg_puts_attr(s, attr);
     msg_putchar(c);
 
     /* output the pattern, in between a char that is not in the pattern */
@@ -4311,7 +4272,7 @@ put_pattern(
 	{
 	    if (!first)
 		msg_putchar(',');	/* separate with commas */
-	    msg_puts((char_u *)spo_name_tab[i]);
+	    msg_puts(spo_name_tab[i]);
 	    n = spp->sp_offsets[i];
 	    if (i != SPO_LC_OFF)
 	    {
@@ -4388,7 +4349,7 @@ syn_list_keywords(
 		    did_header = TRUE;
 		    if (prev_contained != (kp->flags & HL_CONTAINED))
 		    {
-			msg_puts_attr((char_u *)"contained", attr);
+			msg_puts_attr("contained", attr);
 			msg_putchar(' ');
 			prev_contained = (kp->flags & HL_CONTAINED);
 		    }
@@ -4406,19 +4367,19 @@ syn_list_keywords(
 			prev_next_list = kp->next_list;
 			if (kp->flags & HL_SKIPNL)
 			{
-			    msg_puts_attr((char_u *)"skipnl", attr);
+			    msg_puts_attr("skipnl", attr);
 			    msg_putchar(' ');
 			    prev_skipnl = (kp->flags & HL_SKIPNL);
 			}
 			if (kp->flags & HL_SKIPWHITE)
 			{
-			    msg_puts_attr((char_u *)"skipwhite", attr);
+			    msg_puts_attr("skipwhite", attr);
 			    msg_putchar(' ');
 			    prev_skipwhite = (kp->flags & HL_SKIPWHITE);
 			}
 			if (kp->flags & HL_SKIPEMPTY)
 			{
-			    msg_puts_attr((char_u *)"skipempty", attr);
+			    msg_puts_attr("skipempty", attr);
 			    msg_putchar(' ');
 			    prev_skipempty = (kp->flags & HL_SKIPEMPTY);
 			}
@@ -4684,7 +4645,7 @@ get_syn_options(
 	{
 	    if (!opt->has_cont_list)
 	    {
-		EMSG(_("E395: contains argument not accepted here"));
+		emsg(_("E395: contains argument not accepted here"));
 		return NULL;
 	    }
 	    if (get_id_list(&arg, 8, &opt->cont_list, skip) == FAIL)
@@ -4702,17 +4663,15 @@ get_syn_options(
 	}
 	else if (flagtab[fidx].argtype == 11 && arg[5] == '=')
 	{
-#ifdef FEAT_MBYTE
 	    /* cchar=? */
 	    if (has_mbyte)
 	    {
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_CONCEAL
 		*conceal_char = mb_ptr2char(arg + 6);
-# endif
+#endif
 		arg += mb_ptr2len(arg + 6) - 1;
 	    }
 	    else
-#endif
 	    {
 #ifdef FEAT_CONCEAL
 		*conceal_char = arg[6];
@@ -4723,7 +4682,7 @@ get_syn_options(
 #ifdef FEAT_CONCEAL
 	    if (!vim_isprintc_strict(*conceal_char))
 	    {
-		EMSG(_("E844: invalid cchar value"));
+		emsg(_("E844: invalid cchar value"));
 		return NULL;
 	    }
 #endif
@@ -4739,7 +4698,7 @@ get_syn_options(
 	    {
 		if (opt->sync_idx == NULL)
 		{
-		    EMSG(_("E393: group[t]here not accepted here"));
+		    emsg(_("E393: group[t]here not accepted here"));
 		    return NULL;
 		}
 		gname_start = arg;
@@ -4763,7 +4722,7 @@ get_syn_options(
 			}
 		    if (i < 0)
 		    {
-			EMSG2(_("E394: Didn't find region item for %s"), gname);
+			semsg(_("E394: Didn't find region item for %s"), gname);
 			vim_free(gname);
 			return NULL;
 		    }
@@ -4821,7 +4780,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
     int		sgl_id = 1;
     char_u	*group_name_end;
     char_u	*rest;
-    char_u	*errormsg = NULL;
+    char	*errormsg = NULL;
     int		prev_toplvl_grp;
     int		prev_syn_inc_tag;
     int		source = FALSE;
@@ -4836,7 +4795,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
 	rest = get_group_name(arg, &group_name_end);
 	if (rest == NULL)
 	{
-	    EMSG((char_u *)_("E397: Filename required"));
+	    emsg(_("E397: Filename required"));
 	    return;
 	}
 	sgl_id = syn_check_cluster(arg, (int)(group_name_end - arg));
@@ -4861,7 +4820,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
 	if (expand_filename(eap, syn_cmdlinep, &errormsg) == FAIL)
 	{
 	    if (errormsg != NULL)
-		EMSG(errormsg);
+		emsg(errormsg);
 	    return;
 	}
     }
@@ -4872,7 +4831,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
      */
     if (running_syn_inc_tag >= MAX_SYN_INC_TAG)
     {
-	EMSG((char_u *)_("E847: Too many syntax includes"));
+	emsg(_("E847: Too many syntax includes"));
 	return;
     }
     prev_syn_inc_tag = current_syn_inc_tag;
@@ -4881,7 +4840,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
     curwin->w_s->b_syn_topgrp = sgl_id;
     if (source ? do_source(eap->arg, FALSE, DOSO_NONE) == FAIL
 				: source_runtime(eap->arg, DIP_ALL) == FAIL)
-	EMSG2(_(e_notopen), eap->arg);
+	semsg(_(e_notopen), eap->arg);
     curwin->w_s->b_syn_topgrp = prev_toplvl_grp;
     current_syn_inc_tag = prev_syn_inc_tag;
 }
@@ -4968,21 +4927,20 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			    break;
 			if (p[1] == NUL)
 			{
-			    EMSG2(_("E789: Missing ']': %s"), kw);
+			    semsg(_("E789: Missing ']': %s"), kw);
 			    goto error;
 			}
 			if (p[1] == ']')
 			{
 			    if (p[2] != NUL)
 			    {
-				EMSG3(_("E890: trailing char after ']': %s]%s"),
+				semsg(_("E890: trailing char after ']': %s]%s"),
 								kw, &p[2]);
 				goto error;
 			    }
 			    kw = p + 1;		/* skip over the "]" */
 			    break;
 			}
-#ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
 			    int l = (*mb_ptr2len)(p + 1);
@@ -4991,7 +4949,6 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 			    p += l;
 			}
 			else
-#endif
 			{
 			    p[0] = p[1];
 			    ++p;
@@ -5009,7 +4966,7 @@ error:
     if (rest != NULL)
 	eap->nextcmd = check_nextcmd(rest);
     else
-	EMSG2(_(e_invarg2), arg);
+	semsg(_(e_invarg2), arg);
 
     redraw_curbuf_later(SOME_VALID);
     syn_stack_free_all(curwin->w_s);		/* Need to recompute all syntax. */
@@ -5117,7 +5074,7 @@ syn_cmd_match(
     vim_free(syn_opt_arg.next_list);
 
     if (rest == NULL)
-	EMSG2(_(e_invarg2), arg);
+	semsg(_(e_invarg2), arg);
 }
 
 /*
@@ -5218,7 +5175,7 @@ syn_cmd_region(
 	if (*rest != '=')
 	{
 	    rest = NULL;
-	    EMSG2(_("E398: Missing '=': %s"), arg);
+	    semsg(_("E398: Missing '=': %s"), arg);
 	    break;
 	}
 	rest = skipwhite(rest + 1);
@@ -5381,9 +5338,9 @@ syn_cmd_region(
 	vim_free(syn_opt_arg.cont_in_list);
 	vim_free(syn_opt_arg.next_list);
 	if (not_enough)
-	    EMSG2(_("E399: Not enough arguments: syntax region %s"), arg);
+	    semsg(_("E399: Not enough arguments: syntax region %s"), arg);
 	else if (illegal || rest == NULL)
-	    EMSG2(_(e_invarg2), arg);
+	    semsg(_(e_invarg2), arg);
     }
 }
 
@@ -5612,7 +5569,7 @@ syn_add_cluster(char_u *name)
     len = curwin->w_s->b_syn_clusters.ga_len;
     if (len >= MAX_CLUSTER_ID)
     {
-	EMSG((char_u *)_("E848: Too many syntax clusters"));
+	emsg(_("E848: Too many syntax clusters"));
 	vim_free(name);
 	return 0;
     }
@@ -5695,7 +5652,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
 	    clstr_list = NULL;
 	    if (get_id_list(&rest, opt_len, &clstr_list, eap->skip) == FAIL)
 	    {
-		EMSG2(_(e_invarg2), rest);
+		semsg(_(e_invarg2), rest);
 		break;
 	    }
 	    if (scl_id >= 0)
@@ -5714,9 +5671,9 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
     }
 
     if (!got_clstr)
-	EMSG(_("E400: No cluster specified"));
+	emsg(_("E400: No cluster specified"));
     if (rest == NULL || !ends_excmd(*rest))
-	EMSG2(_(e_invarg2), arg);
+	semsg(_(e_invarg2), arg);
 }
 
 /*
@@ -5749,7 +5706,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
     end = skip_regexp(arg + 1, *arg, TRUE, NULL);
     if (*end != *arg)			    /* end delimiter not found */
     {
-	EMSG2(_("E401: Pattern delimiter not found: %s"), arg);
+	semsg(_("E401: Pattern delimiter not found: %s"), arg);
 	return NULL;
     }
     /* store the pattern and compiled regexp program */
@@ -5827,7 +5784,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
 
     if (!ends_excmd(*end) && !VIM_ISWHITE(*end))
     {
-	EMSG2(_("E402: Garbage after pattern: %s"), arg);
+	semsg(_("E402: Garbage after pattern: %s"), arg);
 	return NULL;
     }
     return skipwhite(end);
@@ -5919,7 +5876,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	    }
 	    if (curwin->w_s->b_syn_linecont_pat != NULL)
 	    {
-		EMSG(_("E403: syntax sync: line continuations pattern specified twice"));
+		emsg(_("E403: syntax sync: line continuations pattern specified twice"));
 		finished = TRUE;
 		break;
 	    }
@@ -5978,7 +5935,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
     }
     vim_free(key);
     if (illegal)
-	EMSG2(_("E404: Illegal arguments: %s"), arg_start);
+	semsg(_("E404: Illegal arguments: %s"), arg_start);
     else if (!finished)
     {
 	eap->nextcmd = check_nextcmd(arg_start);
@@ -6029,13 +5986,13 @@ get_id_list(
 	p = skipwhite(*arg + keylen);
 	if (*p != '=')
 	{
-	    EMSG2(_("E405: Missing equal sign: %s"), *arg);
+	    semsg(_("E405: Missing equal sign: %s"), *arg);
 	    break;
 	}
 	p = skipwhite(p + 1);
 	if (ends_excmd(*p))
 	{
-	    EMSG2(_("E406: Empty argument: %s"), *arg);
+	    semsg(_("E406: Empty argument: %s"), *arg);
 	    break;
 	}
 
@@ -6061,14 +6018,14 @@ get_id_list(
 	    {
 		if (TOUPPER_ASC(**arg) != 'C')
 		{
-		    EMSG2(_("E407: %s not allowed here"), name + 1);
+		    semsg(_("E407: %s not allowed here"), name + 1);
 		    failed = TRUE;
 		    vim_free(name);
 		    break;
 		}
 		if (count != 0)
 		{
-		    EMSG2(_("E408: %s must be first in contains list"),
+		    semsg(_("E408: %s must be first in contains list"),
 								     name + 1);
 		    failed = TRUE;
 		    vim_free(name);
@@ -6142,7 +6099,7 @@ get_id_list(
 	    vim_free(name);
 	    if (id == 0)
 	    {
-		EMSG2(_("E409: Unknown group name: %s"), p);
+		semsg(_("E409: Unknown group name: %s"), p);
 		failed = TRUE;
 		break;
 	    }
@@ -6377,7 +6334,7 @@ ex_syntax(exarg_T *eap)
 	{
 	    if (subcommands[i].name == NULL)
 	    {
-		EMSG2(_("E410: Invalid :syntax subcommand: %s"), subcmd_name);
+		semsg(_("E410: Invalid :syntax subcommand: %s"), subcmd_name);
 		break;
 	    }
 	    if (STRCMP(subcmd_name, (char_u *)subcommands[i].name) == 0)
@@ -6682,7 +6639,7 @@ ex_syntime(exarg_T *eap)
     else if (STRCMP(eap->arg, "report") == 0)
 	syntime_report();
     else
-	EMSG2(_(e_invarg2), eap->arg);
+	semsg(_(e_invarg2), eap->arg);
 }
 
     static void
@@ -6705,7 +6662,7 @@ syntime_clear(void)
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
     for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
@@ -6776,7 +6733,7 @@ syntime_report(void)
 
     if (!syntax_present(curwin))
     {
-	MSG(_(msg_no_items));
+	msg(_(msg_no_items));
 	return;
     }
 
@@ -6811,31 +6768,31 @@ syntime_report(void)
 	qsort(ga.ga_data, (size_t)ga.ga_len, sizeof(time_entry_T),
 							 syn_compare_syntime);
 
-    MSG_PUTS_TITLE(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
-    MSG_PUTS("\n");
+    msg_puts_title(_("  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"));
+    msg_puts("\n");
     for (idx = 0; idx < ga.ga_len && !got_int; ++idx)
     {
 	p = ((time_entry_T *)ga.ga_data) + idx;
 
-	MSG_PUTS(profile_msg(&p->total));
-	MSG_PUTS(" "); /* make sure there is always a separating space */
+	msg_puts(profile_msg(&p->total));
+	msg_puts(" "); /* make sure there is always a separating space */
 	msg_advance(13);
 	msg_outnum(p->count);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 	msg_advance(20);
 	msg_outnum(p->match);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 	msg_advance(26);
-	MSG_PUTS(profile_msg(&p->slowest));
-	MSG_PUTS(" ");
+	msg_puts(profile_msg(&p->slowest));
+	msg_puts(" ");
 	msg_advance(38);
 # ifdef FEAT_FLOAT
-	MSG_PUTS(profile_msg(&p->average));
-	MSG_PUTS(" ");
+	msg_puts(profile_msg(&p->average));
+	msg_puts(" ");
 # endif
 	msg_advance(50);
 	msg_outtrans(HL_TABLE()[p->id - 1].sg_name);
-	MSG_PUTS(" ");
+	msg_puts(" ");
 
 	msg_advance(69);
 	if (Columns < 80)
@@ -6845,16 +6802,16 @@ syntime_report(void)
 	if (len > (int)STRLEN(p->pattern))
 	    len = (int)STRLEN(p->pattern);
 	msg_outtrans_len(p->pattern, len);
-	MSG_PUTS("\n");
+	msg_puts("\n");
     }
     ga_clear(&ga);
     if (!got_int)
     {
-	MSG_PUTS("\n");
-	MSG_PUTS(profile_msg(&total_total));
+	msg_puts("\n");
+	msg_puts(profile_msg(&total_total));
 	msg_advance(13);
 	msg_outnum(total_count);
-	MSG_PUTS("\n");
+	msg_puts("\n");
     }
 }
 #endif
@@ -7192,7 +7149,7 @@ init_highlight(
 	static int	recursive = 0;
 
 	if (recursive >= 5)
-	    EMSG(_("E679: recursive loop loading syncolor.vim"));
+	    emsg(_("E679: recursive loop loading syncolor.vim"));
 	else
 	{
 	    ++recursive;
@@ -7224,6 +7181,8 @@ load_colors(char_u *name)
     buf = alloc((unsigned)(STRLEN(name) + 12));
     if (buf != NULL)
     {
+	apply_autocmds(EVENT_COLORSCHEMEPRE, name,
+					       curbuf->b_fname, FALSE, curbuf);
 	sprintf((char *)buf, "colors/%s.vim", name);
 	retval = source_runtime(buf, DIP_START + DIP_OPT);
 	vim_free(buf);
@@ -7439,7 +7398,7 @@ do_highlight(
     {
 	id = syn_namen2id(line, (int)(name_end - line));
 	if (id == 0)
-	    EMSG2(_("E411: highlight group not found: %s"), line);
+	    semsg(_("E411: highlight group not found: %s"), line);
 	else
 	    highlight_list_one(id);
 	return;
@@ -7463,14 +7422,14 @@ do_highlight(
 
 	if (ends_excmd(*from_start) || ends_excmd(*to_start))
 	{
-	    EMSG2(_("E412: Not enough arguments: \":highlight link %s\""),
+	    semsg(_("E412: Not enough arguments: \":highlight link %s\""),
 								  from_start);
 	    return;
 	}
 
 	if (!ends_excmd(*skipwhite(to_end)))
 	{
-	    EMSG2(_("E413: Too many arguments: \":highlight link %s\""), from_start);
+	    semsg(_("E413: Too many arguments: \":highlight link %s\""), from_start);
 	    return;
 	}
 
@@ -7490,11 +7449,12 @@ do_highlight(
 				   && hl_has_settings(from_id - 1, dodefault))
 	    {
 		if (sourcing_name == NULL && !dodefault)
-		    EMSG(_("E414: group has settings, highlight link ignored"));
+		    emsg(_("E414: group has settings, highlight link ignored"));
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
 #ifdef FEAT_EVAL
-		    || HL_TABLE()[from_id - 1].sg_scriptID != current_SID
+		    || HL_TABLE()[from_id - 1].sg_script_ctx.sc_sid
+							 != current_sctx.sc_sid
 #endif
 		    || HL_TABLE()[from_id - 1].sg_cleared)
 	    {
@@ -7502,7 +7462,8 @@ do_highlight(
 		    HL_TABLE()[from_id - 1].sg_set |= SG_LINK;
 		HL_TABLE()[from_id - 1].sg_link = to_id;
 #ifdef FEAT_EVAL
-		HL_TABLE()[from_id - 1].sg_scriptID = current_SID;
+		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
+		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += sourcing_lnum;
 #endif
 		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
@@ -7635,7 +7596,7 @@ do_highlight(
 	key_start = linep;
 	if (*linep == '=')
 	{
-	    EMSG2(_("E415: unexpected equal sign: %s"), key_start);
+	    semsg(_("E415: unexpected equal sign: %s"), key_start);
 	    error = TRUE;
 	    break;
 	}
@@ -7671,7 +7632,7 @@ do_highlight(
 	 */
 	if (*linep != '=')
 	{
-	    EMSG2(_("E416: missing equal sign: %s"), key_start);
+	    semsg(_("E416: missing equal sign: %s"), key_start);
 	    error = TRUE;
 	    break;
 	}
@@ -7687,7 +7648,7 @@ do_highlight(
 	    linep = vim_strchr(linep, '\'');
 	    if (linep == NULL)
 	    {
-		EMSG2(_(e_invarg2), key_start);
+		semsg(_(e_invarg2), key_start);
 		error = TRUE;
 		break;
 	    }
@@ -7699,7 +7660,7 @@ do_highlight(
 	}
 	if (linep == arg_start)
 	{
-	    EMSG2(_("E417: missing argument: %s"), key_start);
+	    semsg(_("E417: missing argument: %s"), key_start);
 	    error = TRUE;
 	    break;
 	}
@@ -7736,7 +7697,7 @@ do_highlight(
 		}
 		if (i < 0)
 		{
-		    EMSG2(_("E418: Illegal value: %s"), arg);
+		    semsg(_("E418: Illegal value: %s"), arg);
 		    error = TRUE;
 		    break;
 		}
@@ -7861,7 +7822,7 @@ do_highlight(
 		    color = cterm_normal_fg_color - 1;
 		else
 		{
-		    EMSG(_("E419: FG color unknown"));
+		    emsg(_("E419: FG color unknown"));
 		    error = TRUE;
 		    break;
 		}
@@ -7872,7 +7833,7 @@ do_highlight(
 		    color = cterm_normal_bg_color - 1;
 		else
 		{
-		    EMSG(_("E420: BG color unknown"));
+		    emsg(_("E420: BG color unknown"));
 		    error = TRUE;
 		    break;
 		}
@@ -7896,7 +7857,7 @@ do_highlight(
 			break;
 		if (i < 0)
 		{
-		    EMSG2(_("E421: Color name or number not recognized: %s"), key_start);
+		    semsg(_("E421: Color name or number not recognized: %s"), key_start);
 		    error = TRUE;
 		    break;
 		}
@@ -8143,7 +8104,7 @@ do_highlight(
 		    /* Append it to the already found stuff */
 		    if ((int)(STRLEN(buf) + STRLEN(p)) >= 99)
 		    {
-			EMSG2(_("E422: terminal code too long: %s"), arg);
+			semsg(_("E422: terminal code too long: %s"), arg);
 			error = TRUE;
 			break;
 		    }
@@ -8190,7 +8151,7 @@ do_highlight(
 	}
 	else
 	{
-	    EMSG2(_("E423: Illegal argument: %s"), key_start);
+	    semsg(_("E423: Illegal argument: %s"), key_start);
 	    error = TRUE;
 	    break;
 	}
@@ -8264,7 +8225,8 @@ do_highlight(
 	else
 	    set_hl_attr(idx);
 #ifdef FEAT_EVAL
-	HL_TABLE()[idx].sg_scriptID = current_SID;
+	HL_TABLE()[idx].sg_script_ctx = current_sctx;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum += sourcing_lnum;
 #endif
     }
 
@@ -8391,7 +8353,10 @@ highlight_clear(int idx)
     /* Clear the script ID only when there is no link, since that is not
      * cleared. */
     if (HL_TABLE()[idx].sg_link == 0)
-	HL_TABLE()[idx].sg_scriptID = 0;
+    {
+	HL_TABLE()[idx].sg_script_ctx.sc_sid = 0;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum = 0;
+    }
 #endif
 }
 
@@ -8853,7 +8818,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	 */
 	if (recursive)
 	{
-	    EMSG(_("E424: Too many different highlighting attributes in use"));
+	    emsg(_("E424: Too many different highlighting attributes in use"));
 	    return 0;
 	}
 	recursive = TRUE;
@@ -8913,6 +8878,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     return (table->ga_len - 1 + ATTR_OFF);
 }
 
+#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -8932,8 +8898,9 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     at_en.ae_u.cterm.bg_color = bg;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
+#endif
 
-#if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
 /*
  * Get an attribute index for a 'termguicolors' entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -8961,7 +8928,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(PROTO)
+#if (defined(FEAT_TERMINAL) && defined(FEAT_GUI)) || defined(PROTO)
 /*
  * Get an attribute index for a cterm entry.
  * Uses an existing entry when possible or adds one when needed.
@@ -9215,7 +9182,10 @@ highlight_list_one(int id)
     struct hl_group	*sgp;
     int			didh = FALSE;
 
-    sgp = &HL_TABLE()[id - 1];	    /* index is ID minus one */
+    sgp = &HL_TABLE()[id - 1];	    // index is ID minus one
+
+    if (message_filtered(sgp->sg_name))
+	return;
 
     didh = highlight_list_arg(id, didh, LIST_ATTR,
 				    sgp->sg_term, NULL, "term");
@@ -9250,7 +9220,7 @@ highlight_list_one(int id)
     {
 	(void)syn_list_header(didh, 9999, id);
 	didh = TRUE;
-	msg_puts_attr((char_u *)"links to", HL_ATTR(HLF_D));
+	msg_puts_attr("links to", HL_ATTR(HLF_D));
 	msg_putchar(' ');
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
@@ -9259,7 +9229,7 @@ highlight_list_one(int id)
 	highlight_list_arg(id, didh, LIST_STRING, 0, (char_u *)"cleared", "");
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
-	last_set_msg(sgp->sg_scriptID);
+	last_set_msg(sgp->sg_script_ctx);
 #endif
 }
 
@@ -9307,8 +9277,8 @@ highlight_list_arg(
 	{
 	    if (*name != NUL)
 	    {
-		MSG_PUTS_ATTR(name, HL_ATTR(HLF_D));
-		MSG_PUTS_ATTR("=", HL_ATTR(HLF_D));
+		msg_puts_attr(name, HL_ATTR(HLF_D));
+		msg_puts_attr("=", HL_ATTR(HLF_D));
 	    }
 	    msg_outtrans(ts);
 	}
@@ -9507,7 +9477,7 @@ syn_list_header(
     /* Show "xxx" with the attributes. */
     if (!did_header)
     {
-	msg_puts_attr((char_u *)"xxx", syn_id2attr(id));
+	msg_puts_attr("xxx", syn_id2attr(id));
 	msg_putchar(' ');
     }
 
@@ -9739,7 +9709,7 @@ syn_add_group(char_u *name)
     {
 	if (!vim_isprintc(*p))
 	{
-	    EMSG(_("E669: Unprintable character in group name"));
+	    emsg(_("E669: Unprintable character in group name"));
 	    vim_free(name);
 	    return 0;
 	}
@@ -9748,7 +9718,7 @@ syn_add_group(char_u *name)
 	    /* This is an error, but since there previously was no check only
 	     * give a warning. */
 	    msg_source(HL_ATTR(HLF_W));
-	    MSG(_("W18: Invalid character in group name"));
+	    msg(_("W18: Invalid character in group name"));
 	    break;
 	}
     }
@@ -9764,7 +9734,7 @@ syn_add_group(char_u *name)
 
     if (highlight_ga.ga_len >= MAX_HL_ID)
     {
-	EMSG(_("E849: Too many highlight and syntax groups"));
+	emsg(_("E849: Too many highlight and syntax groups"));
 	vim_free(name);
 	return 0;
     }
@@ -9852,7 +9822,9 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
 }
 #endif
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
+#if (defined(WIN3264) \
+	&& !defined(FEAT_GUI_W32) \
+	&& defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
     void
 syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 {
@@ -10285,7 +10257,7 @@ highlight_list(void)
     static void
 highlight_list_two(int cnt, int attr)
 {
-    msg_puts_attr((char_u *)&("N \bI \b!  \b"[cnt / 11]), attr);
+    msg_puts_attr(&("N \bI \b!  \b"[cnt / 11]), attr);
     msg_clr_eos();
     out_flush();
     ui_delay(cnt == 99 ? 40L : (long)cnt * 50L, FALSE);

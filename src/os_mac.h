@@ -37,9 +37,7 @@
 # include <Memory.h>
 # include <OSUtils.h>
 # include <Files.h>
-# ifdef FEAT_MBYTE
-#  include <Script.h>
-# endif
+# include <Script.h>
 #endif
 
 /*
@@ -101,7 +99,6 @@
 #define HAVE_AVAIL_MEM
 
 #ifndef HAVE_CONFIG_H
-/* #define SYNC_DUP_CLOSE	   sync() a file with dup() and close() */
 # define HAVE_STRING_H
 # define HAVE_STRCSPN
 # define HAVE_MEMSET

@@ -1,6 +1,7 @@
 /* ops.c */
 int get_op_type(int char1, int char2);
 int op_on_lines(int op);
+int op_is_change(int op);
 int get_op_char(int optype);
 int get_extra_op_char(int optype);
 void op_shift(oparg_T *oap, int curs_top, int amount);
@@ -21,7 +22,7 @@ int do_record(int c);
 int do_execreg(int regname, int colon, int addcr, int silent);
 int insert_reg(int regname, int literally_arg);
 int get_spec_reg(int regname, char_u **argp, int *allocated, int errmsg);
-int cmdline_paste_reg(int regname, int literally, int remcr);
+int cmdline_paste_reg(int regname, int literally_arg, int remcr);
 void adjust_clip_reg(int *rp);
 void shift_delete_registers(void);
 int op_delete(oparg_T *oap);

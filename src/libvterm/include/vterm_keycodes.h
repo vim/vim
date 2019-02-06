@@ -55,7 +55,7 @@ typedef enum {
   VTERM_KEY_KP_ENTER,
   VTERM_KEY_KP_EQUAL,
 
-  VTERM_KEY_MAX, /* Must be last */
+  VTERM_KEY_MAX, // Must be last
   VTERM_N_KEYS = VTERM_KEY_MAX
 } VTermKey;
 

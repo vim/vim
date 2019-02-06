@@ -68,6 +68,47 @@ func Test_z_equal_on_invalid_utf8_word()
   bwipe!
 endfunc
 
+" Test spellbadword() with argument
+func Test_spellbadword()
+  set spell
+
+  call assert_equal(['bycycle', 'bad'],  spellbadword('My bycycle.'))
+  call assert_equal(['another', 'caps'], spellbadword('A sentence. another sentence'))
+
+  set spelllang=en
+  call assert_equal(['', ''],            spellbadword('centre'))
+  call assert_equal(['', ''],            spellbadword('center'))
+  set spelllang=en_us
+  call assert_equal(['centre', 'local'], spellbadword('centre'))
+  call assert_equal(['', ''],            spellbadword('center'))
+  set spelllang=en_gb
+  call assert_equal(['', ''],            spellbadword('centre'))
+  call assert_equal(['center', 'local'], spellbadword('center'))
+
+  " Create a small word list to test that spellbadword('...')
+  " can return ['...', 'rare'].
+  e Xwords
+  insert
+foo
+foobar/?
+.
+   w!
+   mkspell! Xwords.spl Xwords
+   set spelllang=Xwords.spl
+   call assert_equal(['foobar', 'rare'], spellbadword('foo foobar'))
+
+  " Typo should not be detected without the 'spell' option.
+  set spelllang=en_gb nospell
+  call assert_equal(['', ''], spellbadword('centre'))
+  call assert_equal(['', ''], spellbadword('My bycycle.'))
+  call assert_equal(['', ''], spellbadword('A sentence. another sentence'))
+
+  call delete('Xwords.spl')
+  call delete('Xwords')
+  set spelllang&
+  set spell&
+endfunc
+
 func Test_spellreall()
   new
   set spell
@@ -83,6 +124,33 @@ func Test_spellreall()
   call assert_fails('spellrepall', 'E753:')
   set spell&
   bwipe!
+endfunc
+
+func Test_spellinfo()
+  new
+
+  set enc=latin1 spell spelllang=en
+  call assert_match("^\nfile: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+
+  set enc=cp1250 spell spelllang=en
+  call assert_match("^\nfile: .*/runtime/spell/en.ascii.spl\n$", execute('spellinfo'))
+
+  set enc=utf-8 spell spelllang=en
+  call assert_match("^\nfile: .*/runtime/spell/en.utf-8.spl\n$", execute('spellinfo'))
+
+  set enc=latin1 spell spelllang=en_us,en_nz
+  call assert_match("^\n" .
+                 \  "file: .*/runtime/spell/en.latin1.spl\n" .
+                 \  "file: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+
+  set spell spelllang=
+  call assert_fails('spellinfo', 'E756:')
+
+  set nospell spelllang=en
+  call assert_fails('spellinfo', 'E756:')
+
+  set enc& spell& spelllang&
+  bwipe
 endfunc
 
 func Test_zz_basic()

@@ -1,4 +1,5 @@
 " Tests for various functions.
+source shared.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -96,6 +97,28 @@ func Test_min()
   call assert_fails('call min(v:none)', 'E712:')
 endfunc
 
+func Test_strwidth()
+  for aw in ['single', 'double']
+    exe 'set ambiwidth=' . aw
+    call assert_equal(0, strwidth(''))
+    call assert_equal(1, strwidth("\t"))
+    call assert_equal(3, strwidth('Vim'))
+    call assert_equal(4, strwidth(1234))
+    call assert_equal(5, strwidth(-1234))
+
+    call assert_equal(2, strwidth('😉'))
+    call assert_equal(17, strwidth('Eĥoŝanĝo ĉiuĵaŭde'))
+    call assert_equal((aw == 'single') ? 6 : 7, strwidth('Straße'))
+
+    call assert_fails('call strwidth({->0})', 'E729:')
+    call assert_fails('call strwidth([])', 'E730:')
+    call assert_fails('call strwidth({})', 'E731:')
+    call assert_fails('call strwidth(1.2)', 'E806:')
+  endfor
+
+  set ambiwidth&
+endfunc
+
 func Test_str2nr()
   call assert_equal(0, str2nr(''))
   call assert_equal(1, str2nr('1'))
@@ -165,6 +188,52 @@ func Test_strftime()
   call assert_fails('call strftime("%Y", [])', 'E745:')
 endfunc
 
+func Test_resolve()
+  if !has('unix')
+    return
+  endif
+
+  " Xlink1 -> Xlink2
+  " Xlink2 -> Xlink3
+  silent !ln -s -f Xlink2 Xlink1
+  silent !ln -s -f Xlink3 Xlink2
+  call assert_equal('Xlink3', resolve('Xlink1'))
+  call assert_equal('./Xlink3', resolve('./Xlink1'))
+  call assert_equal('Xlink3/', resolve('Xlink2/'))
+  " FIXME: these tests result in things like "Xlink2/" instead of "Xlink3/"?!
+  "call assert_equal('Xlink3/', resolve('Xlink1/'))
+  "call assert_equal('./Xlink3/', resolve('./Xlink1/'))
+  "call assert_equal(getcwd() . '/Xlink3/', resolve(getcwd() . '/Xlink1/'))
+  call assert_equal(getcwd() . '/Xlink3', resolve(getcwd() . '/Xlink1'))
+
+  " Test resolve() with a symlink cycle.
+  " Xlink1 -> Xlink2
+  " Xlink2 -> Xlink3
+  " Xlink3 -> Xlink1
+  silent !ln -s -f Xlink1 Xlink3
+  call assert_fails('call resolve("Xlink1")',   'E655:')
+  call assert_fails('call resolve("./Xlink1")', 'E655:')
+  call assert_fails('call resolve("Xlink2")',   'E655:')
+  call assert_fails('call resolve("Xlink3")',   'E655:')
+  call delete('Xlink1')
+  call delete('Xlink2')
+  call delete('Xlink3')
+
+  silent !ln -s -f Xdir//Xfile Xlink
+  call assert_equal('Xdir/Xfile', resolve('Xlink'))
+  call delete('Xlink')
+
+  silent !ln -s -f Xlink2/ Xlink1
+  call assert_equal('Xlink2', resolve('Xlink1'))
+  call assert_equal('Xlink2/', resolve('Xlink1/'))
+  call delete('Xlink1')
+
+  silent !ln -s -f ./Xlink2 Xlink1
+  call assert_equal('Xlink2', resolve('Xlink1'))
+  call assert_equal('./Xlink2', resolve('./Xlink1'))
+  call delete('Xlink1')
+endfunc
+
 func Test_simplify()
   call assert_equal('',            simplify(''))
   call assert_equal('/',           simplify('/'))
@@ -184,6 +253,21 @@ func Test_simplify()
   call assert_fails('call simplify(1.2)', 'E806:')
 endfunc
 
+func Test_pathshorten()
+  call assert_equal('', pathshorten(''))
+  call assert_equal('foo', pathshorten('foo'))
+  call assert_equal('/foo', pathshorten('/foo'))
+  call assert_equal('f/', pathshorten('foo/'))
+  call assert_equal('f/bar', pathshorten('foo/bar'))
+  call assert_equal('f/b/foobar', pathshorten('foo/bar/foobar'))
+  call assert_equal('/f/b/foobar', pathshorten('/foo/bar/foobar'))
+  call assert_equal('.f/bar', pathshorten('.foo/bar'))
+  call assert_equal('~f/bar', pathshorten('~foo/bar'))
+  call assert_equal('~.f/bar', pathshorten('~.foo/bar'))
+  call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
+  call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
+endfunc
+
 func Test_strpart()
   call assert_equal('de', strpart('abcdefg', 3, 2))
   call assert_equal('ab', strpart('abcdefg', -2, 4))
@@ -191,10 +275,8 @@ func Test_strpart()
   call assert_equal('fg', strpart('abcdefg', 5, 4))
   call assert_equal('defg', strpart('abcdefg', 3))
 
-  if has('multi_byte')
-    call assert_equal('lép', strpart('éléphant', 2, 4))
-    call assert_equal('léphant', strpart('éléphant', 2))
-  endif
+  call assert_equal('lép', strpart('éléphant', 2, 4))
+  call assert_equal('léphant', strpart('éléphant', 2))
 endfunc
 
 func Test_tolower()
@@ -203,10 +285,6 @@ func Test_tolower()
   " Test with all printable ASCII characters.
   call assert_equal(' !"#$%&''()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`abcdefghijklmnopqrstuvwxyz{|}~',
           \ tolower(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'))
-
-  if !has('multi_byte')
-    return
-  endif
 
   " Test with a few uppercase diacritics.
   call assert_equal("aàáâãäåāăąǎǟǡả", tolower("AÀÁÂÃÄÅĀĂĄǍǞǠẢ"))
@@ -281,10 +359,6 @@ func Test_toupper()
   " Test with all printable ASCII characters.
   call assert_equal(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~',
           \ toupper(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'))
-
-  if !has('multi_byte')
-    return
-  endif
 
   " Test with a few lowercase diacritics.
   call assert_equal("AÀÁÂÃÄÅĀĂĄǍǞǠẢ", toupper("aàáâãäåāăąǎǟǡả"))
@@ -439,6 +513,18 @@ func Test_mode()
 
   call assert_equal('n', mode(0))
   call assert_equal('n', mode(1))
+
+  " i_CTRL-O
+  exe "normal i\<C-O>:call Save_mode()\<Cr>\<Esc>"
+  call assert_equal("n-niI", g:current_modes)
+
+  " R_CTRL-O
+  exe "normal R\<C-O>:call Save_mode()\<Cr>\<Esc>"
+  call assert_equal("n-niR", g:current_modes)
+
+  " gR_CTRL-O
+  exe "normal gR\<C-O>:call Save_mode()\<Cr>\<Esc>"
+  call assert_equal("n-niV", g:current_modes)
 
   " How to test operator-pending mode?
 
@@ -631,6 +717,7 @@ endfunc
 
 func Test_byte2line_line2byte()
   new
+  set endofline
   call setline(1, ['a', 'bc', 'd'])
 
   set fileformat=unix
@@ -651,7 +738,16 @@ func Test_byte2line_line2byte()
   call assert_equal([-1, -1, 1, 4, 8, 11, -1],
   \                 map(range(-1, 5), 'line2byte(v:val)'))
 
-  set fileformat&
+  bw!
+  set noendofline nofixendofline
+  normal a-
+  for ff in ["unix", "mac", "dos"]
+    let &fileformat = ff
+    call assert_equal(1, line2byte(1))
+    call assert_equal(2, line2byte(2))  " line2byte(line("$") + 1) is the buffer size plus one (as per :help line2byte).
+  endfor
+
+  set endofline& fixendofline& fileformat&
   bw!
 endfunc
 
@@ -738,6 +834,19 @@ func Test_filewritable()
   bw!
 endfunc
 
+func Test_Executable()
+  if has('win32')
+    call assert_equal(1, executable('notepad'))
+    call assert_equal(1, executable('notepad.exe'))
+    call assert_equal(0, executable('notepad.exe.exe'))
+    call assert_equal(0, executable('shell32.dll'))
+    call assert_equal(0, executable('win.ini'))
+  elseif has('unix')
+    call assert_equal(1, executable('cat'))
+    call assert_equal(0, executable('nodogshere'))
+  endif
+endfunc
+
 func Test_hostname()
   let hostname_vim = hostname()
   if has('unix')
@@ -784,6 +893,17 @@ func Test_col()
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
   bw!
+endfunc
+
+func Test_inputlist()
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<cr>", 'tx')
+  call assert_equal(1, c)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>2\<cr>", 'tx')
+  call assert_equal(2, c)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>3\<cr>", 'tx')
+  call assert_equal(3, c)
+
+  call assert_fails('call inputlist("")', 'E686:')
 endfunc
 
 func Test_balloon_show()
@@ -898,4 +1018,231 @@ func Test_trim()
 
   let chars = join(map(range(1, 0x20) + [0xa0], {n -> nr2char(n)}), '')
   call assert_equal("x", trim(chars . "x" . chars))
+endfunc
+
+" Test for reg_recording() and reg_executing()
+func Test_reg_executing_and_recording()
+  let s:reg_stat = ''
+  func s:save_reg_stat()
+    let s:reg_stat = reg_recording() . ':' . reg_executing()
+    return ''
+  endfunc
+
+  new
+  call s:save_reg_stat()
+  call assert_equal(':', s:reg_stat)
+  call feedkeys("qa\"=s:save_reg_stat()\<CR>pq", 'xt')
+  call assert_equal('a:', s:reg_stat)
+  call feedkeys("@a", 'xt')
+  call assert_equal(':a', s:reg_stat)
+  call feedkeys("qb@aq", 'xt')
+  call assert_equal('b:a', s:reg_stat)
+  call feedkeys("q\"\"=s:save_reg_stat()\<CR>pq", 'xt')
+  call assert_equal('":', s:reg_stat)
+
+  bwipe!
+  delfunc s:save_reg_stat
+  unlet s:reg_stat
+endfunc
+
+func Test_libcall_libcallnr()
+  if !has('libcall')
+    return
+  endif
+
+  if has('win32')
+    let libc = 'msvcrt.dll'
+  elseif has('mac')
+    let libc = 'libSystem.B.dylib'
+  elseif executable('ldd')
+    let libc = matchstr(split(system('ldd ' . GetVimProg())), '/libc\.so\>')
+  endif
+  if get(l:, 'libc', '') ==# ''
+    " On Unix, libc.so can be in various places.
+    if has('linux')
+      " There is not documented but regarding the 1st argument of glibc's
+      " dlopen an empty string and nullptr are equivalent, so using an empty
+      " string for the 1st argument of libcall allows to call functions.
+      let libc = ''
+    elseif has('sun')
+      " Set the path to libc.so according to the architecture.
+      let test_bits = system('file ' . GetVimProg())
+      let test_arch = system('uname -p')
+      if test_bits =~ '64-bit' && test_arch =~ 'sparc'
+        let libc = '/usr/lib/sparcv9/libc.so'
+      elseif test_bits =~ '64-bit' && test_arch =~ 'i386'
+        let libc = '/usr/lib/amd64/libc.so'
+      else
+        let libc = '/usr/lib/libc.so'
+      endif
+    else
+      " Unfortunately skip this test until a good way is found.
+      return
+    endif
+  endif
+
+  if has('win32')
+    call assert_equal($USERPROFILE, libcall(libc, 'getenv', 'USERPROFILE'))
+  else
+    call assert_equal($HOME, libcall(libc, 'getenv', 'HOME'))
+  endif
+
+  " If function returns NULL, libcall() should return an empty string.
+  call assert_equal('', libcall(libc, 'getenv', 'X_ENV_DOES_NOT_EXIT'))
+
+  " Test libcallnr() with string and integer argument.
+  call assert_equal(4, libcallnr(libc, 'strlen', 'abcd'))
+  call assert_equal(char2nr('A'), libcallnr(libc, 'toupper', char2nr('a')))
+
+  call assert_fails("call libcall(libc, 'Xdoesnotexist_', '')", 'E364:')
+  call assert_fails("call libcallnr(libc, 'Xdoesnotexist_', '')", 'E364:')
+
+  call assert_fails("call libcall('Xdoesnotexist_', 'getenv', 'HOME')", 'E364:')
+  call assert_fails("call libcallnr('Xdoesnotexist_', 'strlen', 'abcd')", 'E364:')
+endfunc
+
+sandbox function Fsandbox()
+  normal ix
+endfunc
+
+func Test_func_sandbox()
+  sandbox let F = {-> 'hello'}
+  call assert_equal('hello', F())
+
+  sandbox let F = {-> execute("normal ix\<Esc>")}
+  call assert_fails('call F()', 'E48:')
+  unlet F
+
+  call assert_fails('call Fsandbox()', 'E48:')
+  delfunc Fsandbox
+endfunc
+
+func EditAnotherFile()
+  let word = expand('<cword>')
+  edit Xfuncrange2
+endfunc
+
+func Test_func_range_with_edit()
+  " Define a function that edits another buffer, then call it with a range that
+  " is invalid in that buffer.
+  call writefile(['just one line'], 'Xfuncrange2')
+  new
+  call setline(1, range(10))
+  write Xfuncrange1
+  call assert_fails('5,8call EditAnotherFile()', 'E16:')
+
+  call delete('Xfuncrange1')
+  call delete('Xfuncrange2')
+  bwipe!
+endfunc
+
+func Test_func_exists_on_reload()
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists')
+  call assert_equal(0, exists('*ExistingFunction'))
+  source Xfuncexists
+  call assert_equal(1, exists('*ExistingFunction'))
+  " Redefining a function when reloading a script is OK.
+  source Xfuncexists
+  call assert_equal(1, exists('*ExistingFunction'))
+
+  " But redefining in another script is not OK.
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2')
+  call assert_fails('source Xfuncexists2', 'E122:')
+
+  delfunc ExistingFunction
+  call assert_equal(0, exists('*ExistingFunction'))
+  call writefile([
+	\ 'func ExistingFunction()', 'echo "yes"', 'endfunc',
+	\ 'func ExistingFunction()', 'echo "no"', 'endfunc',
+	\ ], 'Xfuncexists')
+  call assert_fails('source Xfuncexists', 'E122:')
+  call assert_equal(1, exists('*ExistingFunction'))
+
+  call delete('Xfuncexists2')
+  call delete('Xfuncexists')
+  delfunc ExistingFunction
+endfunc
+
+" Test confirm({msg} [, {choices} [, {default} [, {type}]]])
+func Test_confirm()
+  if !has('unix') || has('gui_running')
+    return
+  endif
+
+  call feedkeys('o', 'L')
+  let a = confirm('Press O to proceed')
+  call assert_equal(1, a)
+
+  call feedkeys('y', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys('n', 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(2, a)
+
+  " confirm() should return 0 when pressing CTRL-C.
+  call feedkeys("\<C-c>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(0, a)
+
+  " <Esc> requires another character to avoid it being seen as the start of an
+  " escape sequence.  Zero should be harmless.
+  call feedkeys("\<Esc>0", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(0, a)
+
+  " Default choice is returned when pressing <CR>.
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No")
+  call assert_equal(1, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 2)
+  call assert_equal(2, a)
+
+  call feedkeys("\<CR>", 'L')
+  let a = confirm('Are you sure?', "&Yes\n&No", 0)
+  call assert_equal(0, a)
+
+  " Test with the {type} 4th argument
+  for type in ['Error', 'Question', 'Info', 'Warning', 'Generic']
+    call feedkeys('y', 'L')
+    let a = confirm('Are you sure?', "&Yes\n&No\n", 1, type)
+    call assert_equal(1, a)
+  endfor
+
+  call assert_fails('call confirm([])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", [])', 'E730:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", [])', 'E745:')
+  call assert_fails('call confirm("Are you sure?", "&Yes\n&No\n", 0, [])', 'E730:')
+endfunc
+
+func Test_platform_name()
+  " The system matches at most only one name.
+  let names = ['amiga', 'beos', 'bsd', 'hpux', 'linux', 'mac', 'qnx', 'sun', 'vms', 'win32', 'win32unix']
+  call assert_inrange(0, 1, len(filter(copy(names), 'has(v:val)')))
+
+  " Is Unix?
+  call assert_equal(has('beos'), has('beos') && has('unix'))
+  call assert_equal(has('bsd'), has('bsd') && has('unix'))
+  call assert_equal(has('hpux'), has('hpux') && has('unix'))
+  call assert_equal(has('linux'), has('linux') && has('unix'))
+  call assert_equal(has('mac'), has('mac') && has('unix'))
+  call assert_equal(has('qnx'), has('qnx') && has('unix'))
+  call assert_equal(has('sun'), has('sun') && has('unix'))
+  call assert_equal(has('win32'), has('win32') && !has('unix'))
+  call assert_equal(has('win32unix'), has('win32unix') && has('unix'))
+
+  if has('unix') && executable('uname')
+    let uname = system('uname')
+    call assert_equal(uname =~? 'BeOS', has('beos'))
+    call assert_equal(uname =~? 'BSD\|DragonFly', has('bsd'))
+    call assert_equal(uname =~? 'HP-UX', has('hpux'))
+    call assert_equal(uname =~? 'Linux', has('linux'))
+    call assert_equal(uname =~? 'Darwin', has('mac'))
+    call assert_equal(uname =~? 'QNX', has('qnx'))
+    call assert_equal(uname =~? 'SunOS', has('sun'))
+    call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
+  endif
 endfunc

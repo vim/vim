@@ -1,4 +1,4 @@
-README_unix.txt for version 8.0 of Vim: Vi IMproved.
+README_unix.txt for version 8.1 of Vim: Vi IMproved.
 
 This file explains the installation of Vim on Unix systems.
 See "README.txt" for general information about Vim.
