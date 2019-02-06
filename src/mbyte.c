@@ -4456,7 +4456,7 @@ enc_canonize(char_u *enc)
 	// Use the default encoding as it's found by set_init_1().
 	r = get_encoding_default();
 	if (r == NULL)
-	    r = (char_u *)"latin1";
+	    r = (char_u *)ENC_DFLT;
 	return vim_strsave(r);
     }
 
@@ -4603,19 +4603,7 @@ enc_locale_env(char *locale)
 enc_locale(void)
 {
 #ifdef MSWIN
-    char	buf[50];
-    long	acp = GetACP();
-
-    if (acp == 1200)
-	STRCPY(buf, "ucs-2le");
-    else if (acp == 1252)	    // cp1252 is used as latin1
-	STRCPY(buf, "latin1");
-    else if (acp == 65001)
-	STRCPY(buf, "utf-8");
-    else
-	sprintf(buf, "cp%ld", acp);
-
-    return enc_canonize((char_u *)buf);
+    return vim_strsave((char_u *)ENC_DFLT);
 #else
     char	*s;
 
