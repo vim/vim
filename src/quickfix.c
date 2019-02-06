@@ -1899,23 +1899,24 @@ ll_free_all(qf_info_T **pqi)
 	return;
     *pqi = NULL;	// Remove reference to this list
 
+    // If the location list is still in use, then queue the delete request
+    // to be processed later.
+    if (quickfix_busy > 0)
+    {
+	locstack_queue_delreq(qi);
+	return;
+    }
+
     qi->qf_refcount--;
     if (qi->qf_refcount < 1)
     {
 	// No references to this location list.
-	// If the location list is still in use, then queue the delete request
-	// to be processed later.
-	if (quickfix_busy > 0)
-	    locstack_queue_delreq(qi);
-	else
-	{
-	    // If the quickfix window buffer is loaded, then wipe it
-	    wipe_qf_buffer(qi);
+	// If the quickfix window buffer is loaded, then wipe it
+	wipe_qf_buffer(qi);
 
-	    for (i = 0; i < qi->qf_listcount; ++i)
-		qf_free(&qi->qf_lists[i]);
-	    vim_free(qi);
-	}
+	for (i = 0; i < qi->qf_listcount; ++i)
+	    qf_free(&qi->qf_lists[i]);
+	vim_free(qi);
     }
 }
 
@@ -3304,6 +3305,8 @@ qf_jump_newwin(qf_info_T	*qi,
 	return;
     }
 
+    incr_quickfix_busy();
+
     qfl = &qi->qf_lists[qi->qf_curlist];
 
     qf_ptr = qfl->qf_ptr;
@@ -3371,6 +3374,7 @@ theend:
 	else
 	    free_string_option(old_swb);
     }
+    decr_quickfix_busy();
 }
 
 // Highlight attributes used for displaying entries from the quickfix list.
@@ -4004,9 +4008,9 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     if (IS_LL_STACK(qi))
     {
 	// For the location list window, create a reference to the
-	// location list from the window 'win'.
-	curwin->w_llist_ref = win->w_llist;
-	win->w_llist->qf_refcount++;
+	// location list stack from the window 'win'.
+	curwin->w_llist_ref = qi;
+	qi->qf_refcount++;
     }
 
     if (oldwin != curwin)

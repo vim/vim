@@ -3933,12 +3933,49 @@ func Xqfbuf_test(cchar)
     call assert_match(qfbnum . '  h-  "\[Location List]"', execute('ls'))
     call assert_true(bufloaded(qfbnum))
 
+    " When the location list is cleared for the window, the buffer should be
+    " removed
+    call setloclist(0, [], 'f')
+    call assert_false(bufexists(qfbnum))
+
+    " When the location list is freed with the location list window open, the
+    " location list buffer should not be lost. It should be reused when the
+    " location list is again populated.
+    lexpr "F1:10:Line10"
+    lopen
+    let wid = win_getid()
+    let qfbnum = bufnr('')
+    wincmd p
+    call setloclist(0, [], 'f')
+    lexpr "F1:10:Line10"
+    lopen
+    call assert_equal(wid, win_getid())
+    call assert_equal(qfbnum, bufnr(''))
+    lclose
+
+    " When the window with the location list is closed, the buffer should be
+    " removed
     new | only
-    call assert_false(bufloaded(qfbnum))
+    call assert_false(bufexists(qfbnum))
   endif
 endfunc
 
 func Test_qfbuf()
   call Xqfbuf_test('c')
   call Xqfbuf_test('l')
+endfunc
+
+" If there is an autocmd to use only one window, then opening the location
+" list window used to crash Vim.
+func Test_winonly_autocmd()
+  autocmd WinEnter * only
+  new | only
+  lexpr "F1:10:Line10"
+  let loclistid = getloclist(0, {'id' : 0}).id
+  lopen
+  call assert_equal(loclistid, getloclist(0, {'id' : 0}).id)
+  silent! ll
+  call assert_equal(loclistid, getloclist(0, {'id' : 0}).id)
+  autocmd! WinEnter
+  new | only
 endfunc
