@@ -1,4 +1,4 @@
-*usr_42.txt*	For Vim version 8.0.  Last change: 2008 May 05
+*usr_42.txt*	For Vim version 8.1.  Last change: 2008 May 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -150,7 +150,8 @@ like the variations on the ":map" command:
 	:menu!		Insert and Command-line mode
 	:imenu		Insert mode
 	:cmenu		Command-line mode
-	:amenu		All modes
+	:tlmenu		Terminal mode
+	:amenu		All modes (except for Terminal mode)
 
 To avoid that the commands of a menu item are being mapped, use the command
 ":noremenu", ":nnoremenu", ":anoremenu", etc.
@@ -362,4 +363,4 @@ is...
 
 Next chapter: |usr_43.txt|  Using filetypes
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

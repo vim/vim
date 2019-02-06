@@ -3,135 +3,11 @@
 # Include stuff found by configure.
 include ../auto/config.mk
 
-# TODO make this configurable
+# get LANGUAGES, MOFILES, MOCONVERTED and CHECKFILES
+include Make_all.mak
+
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
 # not installed on Unix
-
-LANGUAGES = \
-		af \
-		ca \
-		cs \
-		de \
-		en_GB \
-		eo \
-		es \
-		fi \
-		fr \
-		ga \
-		it \
-		ja \
-		ko \
-		ko.UTF-8 \
-                lv \
-		nb \
-		nl \
-		no \
-		pl \
-		pt_BR \
-		ru \
-		sk \
-		sr \
-		sv \
-		uk \
-		vi \
-		zh_CN \
-		zh_CN.UTF-8 \
-		zh_TW \
-		zh_TW.UTF-8
-
-CONVERTED = \
-		cs.cp1250 \
-		ja.sjis \
-		ja.euc-jp \
-		pl.cp1250 \
-		pl.UTF-8 \
-		ru.cp1251 \
-		sk.cp1250 \
-		uk.cp1251 \
-		zh_CN.cp936
-
-MOFILES = \
-		af.mo \
-		ca.mo \
-		cs.mo \
-		de.mo \
-		en_GB.mo \
-		eo.mo \
-		es.mo \
-		fi.mo \
-		fr.mo \
-		ga.mo \
-		it.mo \
-		ja.mo \
-		ko.mo \
-		ko.UTF-8.mo \
-                lv.mo \
-		nb.mo \
-		nl.mo \
-		no.mo \
-		pl.mo \
-		pt_BR.mo \
-		ru.mo \
-		sk.mo \
-		sr.mo \
-		sv.mo \
-		uk.mo \
-		vi.mo \
-		zh_CN.UTF-8.mo \
-		zh_CN.mo \
-		zh_TW.UTF-8.mo \
-		zh_TW.mo
-
-MOCONVERTED = \
-		cs.cp1250.mo \
-		ja.sjis.mo \
-		ja.euc-jp.mo \
-		pl.cp1250.mo \
-		pl.UTF-8.mo \
-		ru.cp1251.mo \
-		sk.cp1250.mo \
-		uk.cp1251.mo \
-		zh_CN.cp936.mo
-
-CHECKFILES = \
-		af.ck \
-		ca.ck \
-		cs.ck \
-		de.ck \
-		en_GB.ck \
-		eo.ck \
-		es.ck \
-		fi.ck \
-		fr.ck \
-		ga.ck \
-		it.ck \
-		ja.ck \
-		ko.ck \
-		ko.UTF-8.ck \
-		nb.ck \
-		nl.ck \
-		no.ck \
-		pl.ck \
-		pt_BR.ck \
-		ru.ck \
-		sk.ck \
-		sr.ck \
-		sv.ck \
-		uk.ck \
-		vi.ck \
-		zh_CN.UTF-8.ck \
-		zh_CN.ck \
-		zh_TW.UTF-8.ck \
-		zh_TW.ck \
-		cs.cp1250.ck \
-		ja.sjis.ck \
-		ja.euc-jp.ck \
-		pl.cp1250.ck \
-		pl.UTF-8.ck \
-		ru.cp1251.ck \
-		sk.cp1250.ck \
-		uk.cp1251.ck \
-		zh_CN.cp936.ck
 
 PACKAGE = vim
 SHELL = /bin/sh
@@ -147,7 +23,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot .ck
-.PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES) $(CONVERTED)
+.PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES)
 
 .po.mo:
 	$(MSGFMTCMD) -o $@ $<
@@ -162,7 +38,7 @@ check: $(CHECKFILES)
 
 install: $(MOFILES) $(MOCONVERTED)
 	@$(MAKE) prefixcheck
-	for lang in $(LANGUAGES) $(CONVERTED); do \
+	for lang in $(LANGUAGES); do \
 	  dir=$(LOCALEDIR)/$$lang/; \
 	  if test ! -x "$$dir"; then \
 	    mkdir $$dir; chmod 755 $$dir; \
@@ -211,7 +87,7 @@ sjiscorr: sjiscorr.c
 
 ja.euc-jp.po: ja.po
 	iconv -f utf-8 -t euc-jp ja.po | \
-		sed -e 's/charset=utf-8/charset=euc-jp/' -e 's/# Original translations/# Generated from ja.po, DO NOT EDIT/' > ja.euc-jp.po
+		sed -e 's/charset=[uU][tT][fF]-8/charset=euc-jp/' -e 's/# Original translations/# Generated from ja.po, DO NOT EDIT/' > ja.euc-jp.po
 
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po: cs.po
@@ -229,7 +105,7 @@ pl.cp1250.po: pl.po
 pl.UTF-8.po: pl.po
 	rm -f pl.UTF-8.po
 	iconv -f iso-8859-2 -t utf-8 pl.po | \
-		sed -e 's/charset=ISO-8859-2/charset=utf-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
+		sed -e 's/charset=ISO-8859-2/charset=UTF-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
 
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po: sk.po
@@ -243,7 +119,7 @@ sk.cp1250.po: sk.po
 zh_CN.cp936.po: zh_CN.UTF-8.po
 	rm -f zh_CN.cp936.po
 	iconv -f UTF-8 -t cp936 zh_CN.UTF-8.po | \
-		sed -e 's/charset=utf-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
+		sed -e 's/charset=[uU][tT][fF]-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
 
 # Convert ko.UTF-8.po to create ko.po.
 ko.po: ko.UTF-8.po
@@ -257,13 +133,13 @@ ko.po: ko.UTF-8.po
 ru.cp1251.po: ru.po
 	rm -f ru.cp1251.po
 	iconv -f utf-8 -t cp1251 ru.po | \
-		sed -e 's/charset=utf-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
+		sed -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
 
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po: uk.po
 	rm -f uk.cp1251.po
 	iconv -f utf-8 -t cp1251 uk.po | \
-		sed -e 's/charset=utf-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
+		sed -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
 
 prefixcheck:
 	@if test "x" = "x$(prefix)"; then \

@@ -32,15 +32,18 @@ func Run_shell_in_terminal(options)
 endfunc
 
 func Test_terminal_basic()
-  au BufWinEnter * if &buftype == 'terminal' | let b:done = 'yes' | endif
+  au TerminalOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
 
   if has("unix")
     call assert_match('^/dev/', job_info(g:job).tty_out)
     call assert_match('^/dev/', term_gettty(''))
   else
-    call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
-    call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    " ConPTY works on anonymous pipe.
+    if !has('conpty')
+      call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
+      call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    endif
   endif
   call assert_equal('t', mode())
   call assert_equal('yes', b:done)
@@ -61,7 +64,7 @@ func Test_terminal_basic()
   close
   call assert_equal("", bufname(buf))
 
-  au! BufWinEnter
+  au! TerminalOpen
   unlet g:job
 endfunc
 
@@ -122,14 +125,19 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
-func! s:Nasty_exit_cb(job, st)
+func s:Nasty_exit_cb(job, st)
   exe g:buf . 'bwipe!'
   let g:buf = 0
 endfunc
 
 func Get_cat_123_cmd()
   if has('win32')
-    return 'cmd /c "cls && color 2 && echo 123"'
+    if !has('conpty')
+      return 'cmd /c "cls && color 2 && echo 123"'
+    else
+      " When clearing twice, extra sequence is not output.
+      return 'cmd /c "cls && cls && color 2 && echo 123"'
+    endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
     return "cat Xtext"
@@ -143,8 +151,8 @@ func Test_terminal_nasty_cb()
 
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
   call WaitForAssert({-> assert_equal(0, g:buf)})
-  unlet g:buf
   unlet g:job
+  unlet g:buf
   call delete('Xtext')
 endfunc
 
@@ -159,10 +167,16 @@ func Check_123(buf)
   call assert_equal('2', l[1].chars)
   call assert_equal('3', l[2].chars)
   call assert_equal('#00e000', l[0].fg)
-  if &background == 'light'
-    call assert_equal('#ffffff', l[0].bg)
+  if has('win32')
+    " On Windows 'background' always defaults to dark, even though the terminal
+    " may use a light background.  Therefore accept both white and black.
+    call assert_match('#ffffff\|#000000', l[0].bg)
   else
-    call assert_equal('#000000', l[0].bg)
+    if &background == 'light'
+      call assert_equal('#ffffff', l[0].bg)
+    else
+      call assert_equal('#000000', l[0].bg)
+    endif
   endif
 
   let l = term_getline(a:buf, -1)
@@ -203,9 +217,6 @@ func Test_terminal_scrape_123()
 endfunc
 
 func Test_terminal_scrape_multibyte()
-  if !has('multi_byte')
-    return
-  endif
   call writefile(["léttまrs"], 'Xtext')
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
@@ -270,7 +281,7 @@ func Test_terminal_scroll()
 endfunc
 
 func Test_terminal_scrollback()
-  let buf = Run_shell_in_terminal({})
+  let buf = Run_shell_in_terminal({'term_rows': 15})
   set termwinscroll=100
   call writefile(range(150), 'Xtext')
   if has('win32')
@@ -384,7 +395,8 @@ endfunc
 func s:get_sleep_cmd()
   if s:python != ''
     let cmd = s:python . " test_short_sleep.py"
-    let waittime = 500
+    " 500 was not enough for Travis
+    let waittime = 900
   else
     echo 'This will take five seconds...'
     let waittime = 2000
@@ -477,22 +489,54 @@ func Test_terminal_cwd()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_terminal_cwd_failure()
+  " Case 1: Provided directory is not actually a directory.  Attempt to make
+  " the file executable as well.
+  call writefile([], 'Xfile')
+  call setfperm('Xfile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xfile'})", 'E475:')
+  call delete('Xfile')
+
+  " Case 2: Directory does not exist.
+  call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
+
+  " Case 3: Directory exists but is not accessible.
+  " Skip this for root, it will be accessible anyway.
+  if $USER != 'root'
+    call mkdir('XdirNoAccess', '', '0600')
+    " return early if the directory permissions could not be set properly
+    if getfperm('XdirNoAccess')[2] == 'x'
+      call delete('XdirNoAccess', 'rf')
+      return
+    endif
+    call assert_fails("call term_start(&shell, {'cwd': 'XdirNoAccess'})", 'E475:')
+    call delete('XdirNoAccess', 'rf')
+  endif
+endfunc
+
 func Test_terminal_servername()
   if !has('clientserver')
     return
   endif
+  call s:test_environment("VIM_SERVERNAME", v:servername)
+endfunc
+
+func Test_terminal_version()
+  call s:test_environment("VIM_TERMINAL", string(v:version))
+endfunc
+
+func s:test_environment(name, value)
   let buf = Run_shell_in_terminal({})
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   if has('win32')
-    call term_sendkeys(buf, "echo %VIM_SERVERNAME%\r")
+    call term_sendkeys(buf, "echo %" . a:name . "%\r")
   else
-    call term_sendkeys(buf, "echo $VIM_SERVERNAME\r")
+    call term_sendkeys(buf, "echo $" . a:name . "\r")
   endif
   call term_wait(buf)
   call Stop_shell_in_terminal(buf)
-  call WaitFor('getline(2) == v:servername')
-  call assert_equal(v:servername, getline(2))
+  call WaitForAssert({-> assert_equal(a:value, getline(2))})
 
   exe buf . 'bwipe'
   unlet buf
@@ -514,29 +558,6 @@ func Test_terminal_env()
   exe buf . 'bwipe'
 endfunc
 
-" must be last, we can't go back from GUI to terminal
-func Test_zz_terminal_in_gui()
-  if !CanRunGui()
-    return
-  endif
-
-  " Ignore the "failed to create input context" error.
-  call test_ignore_error('E285:')
-
-  gui -f
-
-  call assert_equal(1, winnr('$'))
-  let buf = Run_shell_in_terminal({'term_finish': 'close'})
-  call Stop_shell_in_terminal(buf)
-  call term_wait(buf)
-
-  " closing window wipes out the terminal buffer a with finished job
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-  call assert_equal("", bufname(buf))
-
-  unlet g:job
-endfunc
-
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
   call assert_fails(buf . 'bwipe', 'E517')
@@ -546,10 +567,13 @@ endfunction
 
 func Test_terminal_noblock()
   let buf = term_start(&shell)
-  if has('mac')
+  if has('bsd') || has('mac') || has('sun')
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
+  " NPFS is used in Windows, nonblocking mode does not work properly.
+  elseif has('win32')
+    let len = 1
   else
     let len = 5000
   endif
@@ -579,6 +603,10 @@ endfunc
 func Test_terminal_write_stdin()
   if !executable('wc')
     throw 'skipped: wc command not available'
+  endif
+  if has('win32')
+    " TODO: enable once writing to stdin works on MS-Windows
+    return
   endif
   new
   call setline(1, ['one', 'two', 'three'])
@@ -623,19 +651,17 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work in the GUI
-  if !has('gui_running')
-    return
-  endif
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
   let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
-  if has('win32')
-    silent exe '!start cmd /c "echo look here > ' . pty . '"'
-  else
+  if has('gui_running') && !has('win32')
+    " In the GUI job_start() doesn't work, it does not read from the pty.
     call system('echo "look here" > ' . pty)
+  else
+    " Otherwise using a job works on all systems.
+    call job_start([&shell, &shellcmdflag, 'echo "look here" > ' . pty])
   endif
   call WaitForAssert({-> assert_match('look here', term_getline(buf, 1))})
 
@@ -675,18 +701,18 @@ func Test_terminal_wrong_options()
 endfunc
 
 func Test_terminal_redir_file()
-  " TODO: this should work on MS-Window
-  if has('unix')
-    let cmd = Get_cat_123_cmd()
-    let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
-    call term_wait(buf)
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+  call term_wait(buf)
+  " ConPTY may precede escape sequence. There are things that are not so.
+  if !has('conpty')
     call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
     call assert_match('123', readfile('Xfile')[0])
-    let g:job = term_getjob(buf)
-    call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
-    call delete('Xfile')
-    bwipe
   endif
+  let g:job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
+  call delete('Xfile')
+  bwipe
 
   if has('unix')
     call writefile(['one line'], 'Xfile')
@@ -1486,4 +1512,247 @@ func Test_terminal_termwinkey()
   let job = term_getjob(buf)
   call feedkeys("\<C-L>\<C-C>", 'tx')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
+endfunc
+
+func Test_terminal_out_err()
+  if !has('unix')
+    return
+  endif
+  call writefile([
+	\ '#!/bin/sh',
+	\ 'echo "this is standard error" >&2',
+	\ 'echo "this is standard out" >&1',
+	\ ], 'Xechoerrout.sh')
+  call setfperm('Xechoerrout.sh', 'rwxrwx---')
+
+  let outfile = 'Xtermstdout'
+  let buf = term_start(['./Xechoerrout.sh'], {'out_io': 'file', 'out_name': outfile})
+
+  call WaitFor({-> !empty(readfile(outfile)) && !empty(term_getline(buf, 1))})
+  call assert_equal(['this is standard out'], readfile(outfile))
+  call assert_equal('this is standard error', term_getline(buf, 1))
+
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+  exe buf . 'bwipe'
+  call delete('Xechoerrout.sh')
+  call delete(outfile)
+endfunc
+
+func Test_terminwinscroll()
+  if !has('unix')
+    return
+  endif
+
+  " Let the terminal output more than 'termwinscroll' lines, some at the start
+  " will be dropped.
+  exe 'set termwinscroll=' . &lines
+  let buf = term_start('/bin/sh')
+  for i in range(1, &lines)
+    call feedkeys("echo " . i . "\<CR>", 'xt')
+    call WaitForAssert({-> assert_match(string(i), term_getline(buf, term_getcursor(buf)[0] - 1))})
+  endfor
+  " Go to Terminal-Normal mode to update the buffer.
+  call feedkeys("\<C-W>N", 'xt')
+  call assert_inrange(&lines, &lines * 110 / 100 + winheight(0), line('$'))
+
+  " Every "echo nr" must only appear once
+  let lines = getline(1, line('$'))
+  for i in range(&lines - len(lines) / 2 + 2, &lines)
+    let filtered = filter(copy(lines), {idx, val -> val =~ 'echo ' . i . '\>'})
+    call assert_equal(1, len(filtered), 'for "echo ' . i . '"')
+  endfor
+
+  exe buf . 'bwipe!'
+endfunc
+
+" Resizing the terminal window caused an ml_get error.
+" TODO: This does not reproduce the original problem.
+func Test_terminal_resize()
+  set statusline=x
+  terminal
+  call assert_equal(2, winnr('$'))
+
+  " Fill the terminal with text.
+  if has('win32')
+    call feedkeys("dir\<CR>", 'xt')
+  else
+    call feedkeys("ls\<CR>", 'xt')
+  endif
+  " Go to Terminal-Normal mode for a moment.
+  call feedkeys("\<C-W>N", 'xt')
+  " Open a new window
+  call feedkeys("i\<C-W>n", 'xt')
+  call assert_equal(3, winnr('$'))
+  redraw
+
+  close
+  call assert_equal(2, winnr('$'))
+  call feedkeys("exit\<CR>", 'xt')
+  set statusline&
+endfunc
+
+" must be nearly the last, we can't go back from GUI to terminal
+func Test_zz1_terminal_in_gui()
+  if !CanRunGui()
+    return
+  endif
+
+  " Ignore the "failed to create input context" error.
+  call test_ignore_error('E285:')
+
+  gui -f
+
+  call assert_equal(1, winnr('$'))
+  let buf = Run_shell_in_terminal({'term_finish': 'close'})
+  call Stop_shell_in_terminal(buf)
+  call term_wait(buf)
+
+  " closing window wipes out the terminal buffer a with finished job
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+func Test_zz2_terminal_guioptions_bang()
+  if !has('gui_running')
+    return
+  endif
+  set guioptions+=!
+
+  let filename = 'Xtestscript'
+  if has('win32')
+    let filename .= '.bat'
+    let prefix = ''
+    let contents = ['@echo off', 'exit %1']
+  else
+    let filename .= '.sh'
+    let prefix = './'
+    let contents = ['#!/bin/sh', 'exit $1']
+  endif
+  call writefile(contents, filename)
+  call setfperm(filename, 'rwxrwx---')
+
+  " Check if v:shell_error is equal to the exit status.
+  let exitval = 0
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  let exitval = 9
+  execute printf(':!%s%s %d', prefix, filename, exitval)
+  call assert_equal(exitval, v:shell_error)
+
+  set guioptions&
+  call delete(filename)
+endfunc
+
+func Test_terminal_hidden()
+  if !has('unix')
+    return
+  endif
+  term ++hidden cat
+  let bnr = bufnr('$')
+  call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+  exe 'sbuf ' . bnr
+  call assert_equal('terminal', &buftype)
+  call term_sendkeys(bnr, "asdf\<CR>")
+  call WaitForAssert({-> assert_match('asdf', term_getline(bnr, 2))})
+  call term_sendkeys(bnr, "\<C-D>")
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
+  bwipe!
+endfunc
+
+func Test_terminal_hidden_and_close()
+  if !has('unix')
+    return
+  endif
+  call assert_equal(1, winnr('$'))
+  term ++hidden ++close ls
+  let bnr = bufnr('$')
+  call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+  call WaitForAssert({-> assert_false(bufexists(bnr))})
+  call assert_equal(1, winnr('$'))
+endfunc
+
+func Test_terminal_does_not_truncate_last_newlines()
+  " This test does not pass through ConPTY.
+  if has('conpty')
+    return
+  endif
+  let contents = [
+  \   [ 'One', '', 'X' ],
+  \   [ 'Two', '', '' ],
+  \   [ 'Three' ] + repeat([''], 30)
+  \ ]
+
+  for c in contents
+    call writefile(c, 'Xfile')
+    if has('win32')
+      term cmd /c type Xfile
+    else
+      term cat Xfile
+    endif
+    let bnr = bufnr('$')
+    call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+    call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
+    sleep 100m
+    call assert_equal(c, getline(1, line('$')))
+    quit
+  endfor
+
+  call delete('Xfile')
+endfunc
+
+func Test_terminal_no_job()
+  let term = term_start('false', {'term_finish': 'close'})
+  call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
+endfunc
+
+func Test_term_gettitle()
+  if !has('title') || empty(&t_ts)
+    return
+  endif
+  " TODO: this fails on Travis
+  return
+
+  " term_gettitle() returns an empty string for a non-terminal buffer
+  " or for a non-existing buffer.
+  call assert_equal('', term_gettitle(bufnr('%')))
+  call assert_equal('', term_gettitle(bufnr('$') + 1))
+
+  let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
+  call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":e Xfoo\r")
+  call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
+
+  call term_sendkeys(term, ":set titlestring=foo\r")
+  call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
+
+  exe term . 'bwipe!'
+endfunc
+
+" When drawing the statusline the cursor position may not have been updated
+" yet.
+" 1. create a terminal, make it show 2 lines
+" 2. 0.5 sec later: leave terminal window, execute "i"
+" 3. 0.5 sec later: clear terminal window, now it's 1 line
+" 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
+" 4. 0.5 sec later: should be done, clean up
+func Test_terminal_statusline()
+  if !has('unix')
+    return
+  endif
+  set statusline=x
+  terminal
+  let tbuf = bufnr('')
+  call term_sendkeys(tbuf, "clear; echo a; echo b; sleep 1; clear\n")
+  call timer_start(500, { tid -> feedkeys("\<C-w>j", 'tx') })
+  call timer_start(1500, { tid -> feedkeys("\<C-l>", 'tx') })
+  au BufLeave * if &buftype == 'terminal' | silent! normal i | endif
+
+  sleep 2
+  exe tbuf . 'bwipe!'
+  au! BufLeave
+  set statusline=
 endfunc

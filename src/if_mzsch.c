@@ -117,51 +117,12 @@ static void sandbox_check(void);
 #endif
 /*  Buffer-related commands */
 static Scheme_Object *buffer_new(buf_T *buf);
-static Scheme_Object *get_buffer_by_name(void *, int, Scheme_Object **);
 static Scheme_Object *get_buffer_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_name(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_buffer_size(void *, int, Scheme_Object **);
-static Scheme_Object *get_curr_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_next_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_prev_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *mzscheme_open_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line(void *, int, Scheme_Object **);
-static Scheme_Object *set_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *insert_buffer_line_list(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_start(void *, int, Scheme_Object **);
-static Scheme_Object *get_range_end(void *, int, Scheme_Object **);
 static vim_mz_buffer *get_vim_curr_buffer(void);
 
 /*  Window-related commands */
 static Scheme_Object *window_new(win_T *win);
-static Scheme_Object *get_curr_win(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_count(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_by_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_num(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_buffer(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_height(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_height(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_width(void *, int, Scheme_Object **);
-static Scheme_Object *set_window_width(void *, int, Scheme_Object **);
-static Scheme_Object *get_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *set_cursor(void *, int, Scheme_Object **);
-static Scheme_Object *get_window_list(void *, int, Scheme_Object **);
 static vim_mz_window *get_vim_curr_window(void);
-
-/*  Vim-related commands */
-static Scheme_Object *mzscheme_beep(void *, int, Scheme_Object **);
-static Scheme_Object *get_option(void *, int, Scheme_Object **);
-static Scheme_Object *set_option(void *, int, Scheme_Object **);
-static Scheme_Object *vim_command(void *, int, Scheme_Object **);
-static Scheme_Object *vim_eval(void *, int, Scheme_Object **);
-static Scheme_Object *vim_bufferp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_windowp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_buffer_validp(void *data, int, Scheme_Object **);
-static Scheme_Object *vim_window_validp(void *data, int, Scheme_Object **);
 
 /*
  *========================================================================
@@ -711,14 +672,14 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
     if (!hMzGC)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), gc_dll);
+	    semsg(_(e_loadlib), gc_dll);
 	return FAIL;
     }
 
     if (!hMzSch)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), sch_dll);
+	    semsg(_(e_loadlib), sch_dll);
 	return FAIL;
     }
 
@@ -732,7 +693,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), thunk->name);
+		semsg(_(e_loadfunc), thunk->name);
 	    return FAIL;
 	}
     }
@@ -746,7 +707,7 @@ mzscheme_runtime_link_init(char *sch_dll, char *gc_dll, int verbose)
 	    FreeLibrary(hMzGC);
 	    hMzGC = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), thunk->name);
+		semsg(_(e_loadfunc), thunk->name);
 	    return FAIL;
 	}
     }
@@ -850,11 +811,7 @@ static int mz_threads_allow = 0;
 static void CALLBACK timer_proc(HWND, UINT, UINT_PTR, DWORD);
 static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
-# if GTK_CHECK_VERSION(3,0,0)
 static gboolean timer_proc(gpointer);
-# else
-static gint timer_proc(gpointer);
-# endif
 static guint timer_id = 0;
 #elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 static void timer_proc(XtPointer, XtIntervalId *);
@@ -894,11 +851,7 @@ static void remove_timer(void);
     static void CALLBACK
 timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
-#  if GTK_CHECK_VERSION(3,0,0)
     static gboolean
-#  else
-    static gint
-#  endif
 timer_proc(gpointer data UNUSED)
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     static void
@@ -925,11 +878,7 @@ setup_timer(void)
 # if defined(FEAT_GUI_W32)
     timer_id = SetTimer(NULL, 0, p_mzq, timer_proc);
 # elif defined(FEAT_GUI_GTK)
-#  if GTK_CHECK_VERSION(3,0,0)
     timer_id = g_timeout_add((guint)p_mzq, (GSourceFunc)timer_proc, NULL);
-#  else
-    timer_id = gtk_timeout_add((guint32)p_mzq, (GtkFunction)timer_proc, NULL);
-#  endif
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     timer_id = XtAppAddTimeOut(app_context, p_mzq, timer_proc, NULL);
 # elif defined(FEAT_GUI_MAC)
@@ -945,11 +894,7 @@ remove_timer(void)
 # if defined(FEAT_GUI_W32)
     KillTimer(NULL, timer_id);
 # elif defined(FEAT_GUI_GTK)
-#  if GTK_CHECK_VERSION(3,0,0)
     g_source_remove(timer_id);
-#  else
-    gtk_timeout_remove(timer_id);
-#  endif
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     XtRemoveTimeOut(timer_id);
 # elif defined(FEAT_GUI_MAC)
@@ -1315,13 +1260,13 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (disabled || !mzscheme_enabled(TRUE))
 	{
-	    EMSG(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    emsg(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
 	    return -1;
 	}
 #endif
 	if (load_base_module_failed || startup_mzscheme())
 	{
-	    EMSG(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
+	    emsg(_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
 	    return -1;
 	}
 	initialized = TRUE;
@@ -1627,17 +1572,17 @@ do_intrnl_output(char *mesg, int error)
     {
 	*p = '\0';
 	if (error)
-	    EMSG(prev);
+	    emsg(prev);
 	else
-	    MSG(prev);
+	    msg(prev);
 	prev = p + 1;
 	p = strchr(prev, '\n');
     }
 
     if (error)
-	EMSG(prev);
+	emsg(prev);
     else
-	MSG(prev);
+	msg(prev);
 }
 
     static void
@@ -2132,6 +2077,7 @@ set_cursor(void *data, int argc, Scheme_Object **argv)
 
     win->win->w_cursor.lnum = lnum;
     win->win->w_cursor.col = col;
+    win->win->w_set_curswant = TRUE;
     update_screen(VALID);
 
     raise_if_error();

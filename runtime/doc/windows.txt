@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.0.  Last change: 2018 Apr 24
+*windows.txt*   For Vim version 8.1.  Last change: 2018 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -81,6 +81,10 @@ will not change within a Vim session. The |win_getid()| and |win_id2tabwin()|
 functions can be used to convert between the window/tab number and the
 identifier.  There is also the window number, which may change whenever
 windows are opened or closed, see |winnr()|.
+The window number is only valid in one specific tab.  The window ID is valid
+across tabs.  For most functions that take a window ID or a window number, the
+window number only applies to the current tab, while the window ID can refer
+to a window in any tab.
 
 Each buffer has a unique number and the number will not change within a Vim
 session.  The |bufnr()| and |bufname()| functions can be used to convert
@@ -218,14 +222,16 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		|:find|.  Doesn't split if {file} is not found.
 
 CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
-CTRL-W ^	Does ":split #", split window in two and edit alternate file.
-		When a count is given, it becomes ":split #N", split window
-		and edit buffer N.
+CTRL-W ^	Split the current window in two and edit the alternate file.
+		When a count N is given, split the current window and edit
+		buffer N.  Similar to ":sp #" and ":sp #N", but it allows the
+		other buffer to be unnamed.  This command matches the behavior
+		of |CTRL-^|, except that it splits a window first.
 
 						*CTRL-W_:*
-CTRL-W :	Does the same as typing |:| : edit a command line.  Useful in a
+CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
 		terminal window, where all Vim commands must be preceded with
-		CTRL-W or 'termkey'.
+		CTRL-W or 'termwinkey'.
 
 Note that the 'splitbelow' and 'splitright' options influence where a new
 window will appear.
@@ -1311,4 +1317,4 @@ unlisted	The buffer is not in the buffer list.  It is not used for
 			:setlocal nobuflisted
 <
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

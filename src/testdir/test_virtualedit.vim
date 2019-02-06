@@ -42,6 +42,20 @@ func Test_paste_end_of_line()
   set virtualedit=
 endfunc
 
+func Test_replace_end_of_line()
+  new
+  set virtualedit=all
+  call setline(1, range(20))
+  exe "normal! gg2jv10lr-"
+  call assert_equal(["1", "-----------", "3"], getline(2,4))
+  call setline(1, range(20))
+  exe "normal! gg2jv10lr\<c-k>hh"
+  call assert_equal(["1", "───────────", "3"], getline(2,4))
+
+  bwipe!
+  set virtualedit=
+endfunc
+
 func Test_edit_CTRL_G()
   new
   set virtualedit=insert

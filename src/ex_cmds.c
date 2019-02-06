@@ -50,7 +50,6 @@ do_ascii(exarg_T *eap UNUSED)
 #ifdef FEAT_DIGRAPHS
     char_u      *dig;
 #endif
-#ifdef FEAT_MBYTE
     int		cc[MAX_MCO];
     int		ci = 0;
     int		len;
@@ -58,18 +57,15 @@ do_ascii(exarg_T *eap UNUSED)
     if (enc_utf8)
 	c = utfc_ptr2char(ml_get_cursor(), cc);
     else
-#endif
 	c = gchar_cursor();
     if (c == NUL)
     {
-	MSG("NUL");
+	msg("NUL");
 	return;
     }
 
-#ifdef FEAT_MBYTE
     IObuff[0] = NUL;
     if (!has_mbyte || (enc_dbcs != 0 && c < 0x100) || c < 0x80)
-#endif
     {
 	if (c == NL)	    /* NUL is stored as NL */
 	    c = NUL;
@@ -106,15 +102,12 @@ do_ascii(exarg_T *eap UNUSED)
 	    vim_snprintf((char *)IObuff, IOSIZE,
 		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
 				  transchar(c), buf1, buf2, cval, cval, cval);
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    c = cc[ci++];
 	else
 	    c = 0;
-#endif
     }
 
-#ifdef FEAT_MBYTE
     /* Repeat for combining characters. */
     while (has_mbyte && (c >= 0x100 || (enc_utf8 && c >= 0x80)))
     {
@@ -150,9 +143,8 @@ do_ascii(exarg_T *eap UNUSED)
 	else
 	    c = 0;
     }
-#endif
 
-    msg(IObuff);
+    msg((char *)IObuff);
 }
 
 /*
@@ -281,7 +273,7 @@ linelen(int *has_tab)
     *last = NUL;
     len = linetabsize(line);		/* get line length */
     if (has_tab != NULL)		/* check for embedded TAB */
-	*has_tab = (vim_strrchr(first, TAB) != NULL);
+	*has_tab = (vim_strchr(first, TAB) != NULL);
     *last = save;
 
     return len;
@@ -398,6 +390,7 @@ ex_sort(exarg_T *eap)
     colnr_T	end_col;
     int		sort_what = 0;
     int		format_found = 0;
+    int		change_occurred = FALSE; // Buffer contents changed.
 
     /* Sorting one line is really quick! */
     if (count <= 1)
@@ -466,7 +459,7 @@ ex_sort(exarg_T *eap)
 	    s = skip_regexp(p + 1, *p, TRUE, NULL);
 	    if (*s != *p)
 	    {
-		EMSG(_(e_invalpat));
+		emsg(_(e_invalpat));
 		goto sortend;
 	    }
 	    *s = NUL;
@@ -475,7 +468,7 @@ ex_sort(exarg_T *eap)
 	    {
 		if (last_search_pat() == NULL)
 		{
-		    EMSG(_(e_noprevre));
+		    emsg(_(e_noprevre));
 		    goto sortend;
 		}
 		regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
@@ -489,7 +482,7 @@ ex_sort(exarg_T *eap)
 	}
 	else
 	{
-	    EMSG2(_(e_invarg2), p);
+	    semsg(_(e_invarg2), p);
 	    goto sortend;
 	}
     }
@@ -497,7 +490,7 @@ ex_sort(exarg_T *eap)
     /* Can only have one of 'n', 'b', 'o' and 'x'. */
     if (format_found > 1)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	goto sortend;
     }
 
@@ -616,12 +609,19 @@ ex_sort(exarg_T *eap)
     lnum = eap->line2;
     for (i = 0; i < count; ++i)
     {
-	s = ml_get(nrs[eap->forceit ? count - i - 1 : i].lnum);
+	linenr_T get_lnum = nrs[eap->forceit ? count - i - 1 : i].lnum;
+
+	// If the original line number of the line being placed is not the same
+	// as "lnum" (accounting for offset), we know that the buffer changed.
+	if (get_lnum + ((linenr_T)count - 1) != lnum)
+	    change_occurred = TRUE;
+
+	s = ml_get(get_lnum);
 	if (!unique || i == 0
 		|| (sort_ic ? STRICMP(s, sortbuf1) : STRCMP(s, sortbuf1)) != 0)
 	{
-	    /* Copy the line into a buffer, it may become invalid in
-	     * ml_append(). And it's needed for "unique". */
+	    // Copy the line into a buffer, it may become invalid in
+	    // ml_append(). And it's needed for "unique".
 	    STRCPY(sortbuf1, s);
 	    if (ml_append(lnum++, sortbuf1, (colnr_T)0, FALSE) == FAIL)
 		break;
@@ -641,10 +641,15 @@ ex_sort(exarg_T *eap)
     /* Adjust marks for deleted (or added) lines and prepare for displaying. */
     deleted = (long)(count - (lnum - eap->line2));
     if (deleted > 0)
+    {
 	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
+	msgmore(-deleted);
+    }
     else if (deleted < 0)
 	mark_adjust(eap->line2, MAXLNUM, -deleted, 0L);
-    changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
+
+    if (change_occurred || deleted != 0)
+	changed_lines(eap->line1, 0, eap->line2 + 1, -deleted);
 
     curwin->w_cursor.lnum = eap->line1;
     beginline(BL_WHITE | BL_FIX);
@@ -655,7 +660,7 @@ sortend:
     vim_free(sortbuf2);
     vim_regfree(regmatch.regprog);
     if (got_int)
-	EMSG(_(e_interr));
+	emsg(_(e_interr));
 }
 
 /*
@@ -673,12 +678,17 @@ ex_retab(exarg_T *eap)
     long	vcol;
     long	start_col = 0;		/* For start of white-space string */
     long	start_vcol = 0;		/* For start of white-space string */
-    int		temp;
     long	old_len;
     char_u	*ptr;
     char_u	*new_line = (char_u *)1;    /* init to non-NULL */
     int		did_undo;		/* called u_save for current line */
+#ifdef FEAT_VARTABS
+    int		*new_vts_array = NULL;
+    char_u	*new_ts_str;		/* string value of tab argument */
+#else
+    int		temp;
     int		new_ts;
+#endif
     int		save_list;
     linenr_T	first_line = 0;		/* first changed line */
     linenr_T	last_line = 0;		/* last changed line */
@@ -686,14 +696,33 @@ ex_retab(exarg_T *eap)
     save_list = curwin->w_p_list;
     curwin->w_p_list = 0;	    /* don't want list mode here */
 
+#ifdef FEAT_VARTABS
+    new_ts_str = eap->arg;
+    if (!tabstop_set(eap->arg, &new_vts_array))
+	return;
+    while (vim_isdigit(*(eap->arg)) || *(eap->arg) == ',')
+	++(eap->arg);
+
+    // This ensures that either new_vts_array and new_ts_str are freshly
+    // allocated, or new_vts_array points to an existing array and new_ts_str
+    // is null.
+    if (new_vts_array == NULL)
+    {
+	new_vts_array = curbuf->b_p_vts_array;
+	new_ts_str = NULL;
+    }
+    else
+	new_ts_str = vim_strnsave(new_ts_str, eap->arg - new_ts_str);
+#else
     new_ts = getdigits(&(eap->arg));
     if (new_ts < 0)
     {
-	EMSG(_(e_positive));
+	emsg(_(e_positive));
 	return;
     }
     if (new_ts == 0)
 	new_ts = curbuf->b_p_ts;
+#endif
     for (lnum = eap->line1; !got_int && lnum <= eap->line2; ++lnum)
     {
 	ptr = ml_get(lnum);
@@ -726,6 +755,14 @@ ex_retab(exarg_T *eap)
 		    num_tabs = 0;
 		    if (!curbuf->b_p_et)
 		    {
+#ifdef FEAT_VARTABS
+			int t, s;
+
+			tabstop_fromto(start_vcol, vcol,
+					curbuf->b_p_ts, new_vts_array, &t, &s);
+			num_tabs = t;
+			num_spaces = s;
+#else
 			temp = new_ts - (start_vcol % new_ts);
 			if (num_spaces >= temp)
 			{
@@ -734,6 +771,7 @@ ex_retab(exarg_T *eap)
 			}
 			num_tabs += num_spaces / new_ts;
 			num_spaces -= (num_spaces / new_ts) * new_ts;
+#endif
 		    }
 		    if (curbuf->b_p_et || got_tab ||
 					(num_spaces + num_tabs < len))
@@ -777,11 +815,9 @@ ex_retab(exarg_T *eap)
 	    if (ptr[col] == NUL)
 		break;
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		col += (*mb_ptr2len)(ptr + col);
 	    else
-#endif
 		++col;
 	}
 	if (new_line == NULL)		    /* out of memory */
@@ -789,16 +825,55 @@ ex_retab(exarg_T *eap)
 	line_breakcheck();
     }
     if (got_int)
-	EMSG(_(e_interr));
+	emsg(_(e_interr));
 
+#ifdef FEAT_VARTABS
+    // If a single value was given then it can be considered equal to
+    // either the value of 'tabstop' or the value of 'vartabstop'.
+    if (tabstop_count(curbuf->b_p_vts_array) == 0
+	&& tabstop_count(new_vts_array) == 1
+	&& curbuf->b_p_ts == tabstop_first(new_vts_array))
+	; /* not changed */
+    else if (tabstop_count(curbuf->b_p_vts_array) > 0
+        && tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
+	; /* not changed */
+    else
+	redraw_curbuf_later(NOT_VALID);
+#else
     if (curbuf->b_p_ts != new_ts)
 	redraw_curbuf_later(NOT_VALID);
+#endif
     if (first_line != 0)
 	changed_lines(first_line, 0, last_line + 1, 0L);
 
     curwin->w_p_list = save_list;	/* restore 'list' */
 
+#ifdef FEAT_VARTABS
+    if (new_ts_str != NULL)		/* set the new tabstop */
+    {
+	// If 'vartabstop' is in use or if the value given to retab has more
+	// than one tabstop then update 'vartabstop'.
+	int *old_vts_ary = curbuf->b_p_vts_array;
+
+	if (tabstop_count(old_vts_ary) > 0 || tabstop_count(new_vts_array) > 1)
+	{
+	    set_string_option_direct((char_u *)"vts", -1, new_ts_str,
+							OPT_FREE|OPT_LOCAL, 0);
+	    curbuf->b_p_vts_array = new_vts_array;
+	    vim_free(old_vts_ary);
+	}
+	else
+	{
+	    // 'vartabstop' wasn't in use and a single value was given to
+	    // retab then update 'tabstop'.
+	    curbuf->b_p_ts = tabstop_first(new_vts_array);
+	    vim_free(new_vts_array);
+	}
+	vim_free(new_ts_str);
+    }
+#else
     curbuf->b_p_ts = new_ts;
+#endif
     coladvance(curwin->w_curswant);
 
     u_clearline();
@@ -814,9 +889,9 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 {
     char_u	*str;
     linenr_T	l;
-    linenr_T	extra;	    /* Num lines added before line1 */
-    linenr_T	num_lines;  /* Num lines moved */
-    linenr_T	last_line;  /* Last line in file after adding new text */
+    linenr_T	extra;	    // Num lines added before line1
+    linenr_T	num_lines;  // Num lines moved
+    linenr_T	last_line;  // Last line in file after adding new text
 #ifdef FEAT_FOLDING
     win_T	*win;
     tabpage_T	*tp;
@@ -824,8 +899,22 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 
     if (dest >= line1 && dest < line2)
     {
-	EMSG(_("E134: Move lines into themselves"));
+	emsg(_("E134: Cannot move a range of lines into itself"));
 	return FAIL;
+    }
+
+    // Do nothing if we are not actually moving any lines.  This will prevent
+    // the 'modified' flag from being set without cause.
+    if (dest == line1 - 1 || dest == line2)
+    {
+	// Move the cursor as if lines were moved (see below) to be backwards
+	// compatible.
+	if (dest >= line1)
+	    curwin->w_cursor.lnum = dest;
+	else
+	    curwin->w_cursor.lnum = dest + (line2 - line1) + 1;
+
+	return OK;
     }
 
     num_lines = line2 - line1 + 1;
@@ -903,12 +992,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	ml_delete(line1 + extra, TRUE);
 
     if (!global_busy && num_lines > p_report)
-    {
-	if (num_lines == 1)
-	    MSG(_("1 line moved"));
-	else
-	    smsg((char_u *)_("%ld lines moved"), num_lines);
-    }
+	smsg(NGETTEXT("%ld line moved", "%ld lines moved", num_lines),
+			(long)num_lines);
 
     /*
      * Leave the cursor on the last of the moved lines.
@@ -1052,7 +1137,7 @@ do_bang(
 	{
 	    if (prevcmd == NULL)
 	    {
-		EMSG(_(e_noprev));
+		emsg(_(e_noprev));
 		vim_free(newcmd);
 		return;
 	    }
@@ -1239,7 +1324,7 @@ do_filter(
 	if ((do_in && (itmp = vim_tempname('i', FALSE)) == NULL)
 		|| (do_out && (otmp = vim_tempname('o', FALSE)) == NULL))
 	{
-	    EMSG(_(e_notmp));
+	    emsg(_(e_notmp));
 	    goto filterend;
 	}
 
@@ -1256,7 +1341,7 @@ do_filter(
 #if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
-	    (void)EMSG2(_(e_notcreate), itmp);	/* will call wait_return */
+	    (void)semsg(_(e_notcreate), itmp);	/* will call wait_return */
 	goto filterend;
     }
     if (curbuf != old_curbuf)
@@ -1331,7 +1416,7 @@ do_filter(
 #endif
 		{
 		    msg_putchar('\n');
-		    EMSG2(_(e_notread), otmp);
+		    semsg(_(e_notread), otmp);
 		}
 		goto error;
 	    }
@@ -1395,11 +1480,11 @@ do_filter(
 	{
 	    if (do_in)
 	    {
-		vim_snprintf((char *)msg_buf, sizeof(msg_buf),
+		vim_snprintf(msg_buf, sizeof(msg_buf),
 				    _("%ld lines filtered"), (long)linecount);
 		if (msg(msg_buf) && !msg_scroll)
 		    /* save message to display it after redraw */
-		    set_keep_msg(msg_buf, 0);
+		    set_keep_msg((char_u *)msg_buf, 0);
 	    }
 	    else
 		msgmore((long)linecount);
@@ -1419,7 +1504,7 @@ filterend:
     if (curbuf != old_curbuf)
     {
 	--no_wait_return;
-	EMSG(_("E135: *Filter* Autocommands must not change current buffer"));
+	emsg(_("E135: *Filter* Autocommands must not change current buffer"));
     }
     if (itmp != NULL)
 	mch_remove(itmp);
@@ -1491,7 +1576,7 @@ do_shell(
 		if (!winstart)
 		    starttermcap();	/* don't want a message box here */
 #endif
-		MSG_PUTS(_("[No write since last change]\n"));
+		msg_puts(_("[No write since last change]\n"));
 #ifdef FEAT_GUI_MSWIN
 		if (!winstart)
 		    stoptermcap();
@@ -1595,6 +1680,26 @@ do_shell(
     apply_autocmds(EVENT_SHELLCMDPOST, NULL, NULL, FALSE, curbuf);
 }
 
+#if !defined(UNIX)
+    static char_u *
+find_pipe(char_u *cmd)
+{
+    char_u  *p;
+    int	    inquote = FALSE;
+
+    for (p = cmd; *p != NUL; ++p)
+    {
+	if (!inquote && *p == '|')
+	    return p;
+	if (*p == '"')
+	    inquote = !inquote;
+	else if (rem_backslash(p))
+	    ++p;
+    }
+    return NULL;
+}
+#endif
+
 /*
  * Create a shell command from a command string, input redirection file and
  * output redirection file.
@@ -1665,7 +1770,7 @@ make_filter_cmd(
 	 */
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(buf, '|');
+	    p = find_pipe(buf);
 	    if (p != NULL)
 		*p = NUL;
 	}
@@ -1673,7 +1778,7 @@ make_filter_cmd(
 	STRCAT(buf, itmp);
 	if (*p_shq == NUL)
 	{
-	    p = vim_strchr(cmd, '|');
+	    p = find_pipe(cmd);
 	    if (p != NULL)
 	    {
 		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
@@ -1732,7 +1837,6 @@ append_redir(
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
-static int no_viminfo(void);
 static int read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing);
 static void write_viminfo_version(FILE *fp_out);
 static void write_viminfo_barlines(vir_T *virp, FILE *fp_out);
@@ -1757,10 +1861,10 @@ viminfo_error(char *errnum, char *message, char_u *line)
     STRNCAT(IObuff, line, IOSIZE - STRLEN(IObuff) - 1);
     if (IObuff[STRLEN(IObuff) - 1] == '\n')
 	IObuff[STRLEN(IObuff) - 1] = NUL;
-    emsg(IObuff);
+    emsg((char *)IObuff);
     if (++viminfo_errcnt >= 10)
     {
-	EMSG(_("E136: viminfo: Too many errors, skipping rest of file"));
+	emsg(_("E136: viminfo: Too many errors, skipping rest of file"));
 	return TRUE;
     }
     return FALSE;
@@ -1789,7 +1893,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg((char_u *)_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",
@@ -1889,7 +1993,7 @@ write_viminfo(char_u *file, int forceit)
 	    int	tt = msg_didany;
 
 	    /* avoid a wait_return for this message, it's annoying */
-	    EMSG2(_("E137: Viminfo file is not writable: %s"), fname);
+	    semsg(_("E137: Viminfo file is not writable: %s"), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);
 	    goto end;
@@ -2012,7 +2116,7 @@ write_viminfo(char_u *file, int forceit)
 		{
 		    /* They all exist?  Must be something wrong! Don't write
 		     * the viminfo file then. */
-		    EMSG2(_("E929: Too many viminfo temp files, like %s!"),
+		    semsg(_("E929: Too many viminfo temp files, like %s!"),
 								     tempname);
 		    break;
 		}
@@ -2039,7 +2143,7 @@ write_viminfo(char_u *file, int forceit)
 		if (st_old.st_uid != tmp_st.st_uid)
 		    /* Changing the owner might fail, in which case the
 		     * file will now owned by the current user, oh well. */
-		    ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
+		    vim_ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
 		if (st_old.st_gid != tmp_st.st_gid
 			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
 		    /* can't set the group to what it should be, remove
@@ -2058,7 +2162,7 @@ write_viminfo(char_u *file, int forceit)
      */
     if (fp_out == NULL)
     {
-	EMSG2(_("E138: Can't write viminfo file %s!"),
+	semsg(_("E138: Can't write viminfo file %s!"),
 		       (fp_in == NULL || tempname == NULL) ? fname : tempname);
 	if (fp_in != NULL)
 	    fclose(fp_in);
@@ -2068,7 +2172,7 @@ write_viminfo(char_u *file, int forceit)
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg((char_u *)_("Writing viminfo file \"%s\""), fname);
+	smsg(_("Writing viminfo file \"%s\""), fname);
 	verbose_leave();
     }
 
@@ -2089,7 +2193,7 @@ write_viminfo(char_u *file, int forceit)
 	    if (vim_rename(tempname, fname) == -1)
 	    {
 		++viminfo_errcnt;
-		EMSG2(_("E886: Can't rename viminfo file to %s!"), fname);
+		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
 	    }
 # ifdef WIN3264
 	    /* If the viminfo file was hidden then also hide the new file. */
@@ -2168,9 +2272,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     if ((vir.vir_line = alloc(LSIZE)) == NULL)
 	return;
     vir.vir_fd = fp_in;
-#ifdef FEAT_MBYTE
     vir.vir_conv.vc_type = CONV_NONE;
-#endif
     ga_init2(&vir.vir_barlines, (int)sizeof(char_u *), 100);
     vir.vir_version = -1;
 
@@ -2207,10 +2309,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 							  VIM_VERSION_MEDIUM);
 	fputs(_("# You may edit it if you're careful!\n\n"), fp_out);
 	write_viminfo_version(fp_out);
-#ifdef FEAT_MBYTE
 	fputs(_("# Value of 'encoding' when this file was written\n"), fp_out);
 	fprintf(fp_out, "*encoding=%s\n\n", p_enc);
-#endif
 	write_viminfo_search_pattern(fp_out);
 	write_viminfo_sub_string(fp_out);
 #ifdef FEAT_CMDHIST
@@ -2239,10 +2339,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     }
 
     vim_free(vir.vir_line);
-#ifdef FEAT_MBYTE
     if (vir.vir_conv.vc_type != CONV_NONE)
 	convert_setup(&vir.vir_conv, NULL, NULL);
-#endif
     ga_clear_strings(&vir.vir_barlines);
 }
 
@@ -2370,7 +2468,6 @@ read_viminfo_up_to_marks(
     static int
 viminfo_encoding(vir_T *virp)
 {
-#ifdef FEAT_MBYTE
     char_u	*p;
     int		i;
 
@@ -2388,7 +2485,6 @@ viminfo_encoding(vir_T *virp)
 	    convert_setup(&virp->vir_conv, p, p_enc);
 	}
     }
-#endif
     return viminfo_readline(virp);
 }
 
@@ -2460,7 +2556,6 @@ viminfo_readstring(
     }
     *d = NUL;
 
-#ifdef FEAT_MBYTE
     if (convert && virp->vir_conv.vc_type != CONV_NONE && *retval != NUL)
     {
 	d = string_convert(&virp->vir_conv, retval, NULL);
@@ -2470,7 +2565,6 @@ viminfo_readstring(
 	    retval = d;
 	}
     }
-#endif
 
     return retval;
 }
@@ -2594,10 +2688,8 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
     int	    i;
     int	    allocated = FALSE;
     int	    eof;
-#ifdef FEAT_MBYTE
     char_u  *sconv;
     int	    converted;
-#endif
 
     while (*p == ',')
     {
@@ -2721,7 +2813,6 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    ++p;
 	    s[len] = NUL;
 
-#ifdef FEAT_MBYTE
 	    converted = FALSE;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
@@ -2735,7 +2826,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		    converted = TRUE;
 		}
 	    }
-#endif
+
 	    /* Need to copy in allocated memory if the string wasn't allocated
 	     * above and we did allocate before, thus vir_line may change. */
 	    if (s != buf && allocated)
@@ -2743,11 +2834,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
 	    value->bv_len = len;
-	    value->bv_allocated = allocated
-#ifdef FEAT_MBYTE
-					    || converted
-#endif
-						;
+	    value->bv_allocated = allocated || converted;
 	    ++values->ga_len;
 	    if (nextp != NULL)
 	    {
@@ -2914,11 +3001,11 @@ print_line_no_prefix(
     int		use_number,
     int		list)
 {
-    char_u	numbuf[30];
+    char	numbuf[30];
 
     if (curwin->w_p_nu || use_number)
     {
-	vim_snprintf((char *)numbuf, sizeof(numbuf),
+	vim_snprintf(numbuf, sizeof(numbuf),
 				   "%*ld ", number_width(curwin), (long)lnum);
 	msg_puts_attr(numbuf, HL_ATTR(HLF_N));	/* Highlight line nrs */
     }
@@ -3013,7 +3100,7 @@ ex_file(exarg_T *eap)
 		|| eap->line2 > 0
 		|| eap->addr_count > 1))
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -3021,11 +3108,12 @@ ex_file(exarg_T *eap)
     {
 	if (rename_buffer(eap->arg) == FAIL)
 	    return;
+	redraw_tabline = TRUE;
     }
-    /* print full file name if :cd used */
-    if (!shortmess(SHM_FILEINFO))
+
+    // print file name if no argument or 'F' is not in 'shortmess'
+    if (*eap->arg == NUL || !shortmess(SHM_FILEINFO))
 	fileinfo(FALSE, FALSE, eap->forceit);
-    redraw_tabline = TRUE;
 }
 
 /*
@@ -3090,7 +3178,7 @@ do_write(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_saveas)
 	{
-	    EMSG(_(e_argreq));
+	    emsg(_(e_argreq));
 	    goto theend;
 	}
 	other = FALSE;
@@ -3122,7 +3210,7 @@ do_write(exarg_T *eap)
 	{
 	    /* Overwriting a file that is loaded in another buffer is not a
 	     * good idea. */
-	    EMSG(_(e_bufloaded));
+	    emsg(_(e_bufloaded));
 	    goto theend;
 	}
     }
@@ -3163,7 +3251,7 @@ do_write(exarg_T *eap)
 	    else
 #endif
 	    {
-		EMSG(_("E140: Use ! to write partial buffer"));
+		emsg(_("E140: Use ! to write partial buffer"));
 		goto theend;
 	    }
 	}
@@ -3302,7 +3390,7 @@ check_overwrite(
 	    /* with UNIX it is possible to open a directory */
 	    if (mch_isdir(ffname))
 	    {
-		EMSG2(_(e_isadir2), ffname);
+		semsg(_(e_isadir2), ffname);
 		return FAIL;
 	    }
 #endif
@@ -3319,7 +3407,7 @@ check_overwrite(
 	    else
 #endif
 	    {
-		EMSG(_(e_exists));
+		emsg(_(e_exists));
 		return FAIL;
 	    }
 	}
@@ -3376,7 +3464,7 @@ check_overwrite(
 		else
 #endif
 		{
-		    EMSG2(_("E768: Swap file exists: %s (:silent! overrides)"),
+		    semsg(_("E768: Swap file exists: %s (:silent! overrides)"),
 								    swapname);
 		    vim_free(swapname);
 		    return FAIL;
@@ -3450,7 +3538,7 @@ do_wqall(exarg_T *eap)
 #endif
 	    if (buf->b_ffname == NULL)
 	    {
-		EMSGN(_("E141: No file name for buffer %ld"), (long)buf->b_fnum);
+		semsg(_("E141: No file name for buffer %ld"), (long)buf->b_fnum);
 		++error;
 	    }
 	    else if (check_readonly(&eap->forceit, buf)
@@ -3490,7 +3578,7 @@ not_writing(void)
 {
     if (p_write)
 	return FALSE;
-    EMSG(_("E142: File not written: Writing is disabled by 'write' option"));
+    emsg(_("E142: File not written: Writing is disabled by 'write' option"));
     return TRUE;
 }
 
@@ -3536,9 +3624,9 @@ check_readonly(int *forceit, buf_T *buf)
 	else
 #endif
 	if (buf->b_p_ro)
-	    EMSG(_(e_readonly));
+	    emsg(_(e_readonly));
 	else
-	    EMSG2(_("E505: \"%s\" is read-only (add ! to override)"),
+	    semsg(_("E505: \"%s\" is read-only (add ! to override)"),
 		    buf->b_fname);
 	return TRUE;
     }
@@ -3547,8 +3635,8 @@ check_readonly(int *forceit, buf_T *buf)
 }
 
 /*
- * Try to abandon current file and edit a new or existing file.
- * "fnum" is the number of the file, if zero use ffname/sfname.
+ * Try to abandon the current file and edit a new or existing file.
+ * "fnum" is the number of the file, if zero use "ffname_arg"/"sfname_arg".
  * "lnum" is the line number for the cursor in the new file (if non-zero).
  *
  * Return:
@@ -3560,12 +3648,14 @@ check_readonly(int *forceit, buf_T *buf)
     int
 getfile(
     int		fnum,
-    char_u	*ffname,
-    char_u	*sfname,
+    char_u	*ffname_arg,
+    char_u	*sfname_arg,
     int		setpm,
     linenr_T	lnum,
     int		forceit)
 {
+    char_u	*ffname = ffname_arg;
+    char_u	*sfname = sfname_arg;
     int		other;
     int		retval;
     char_u	*free_me = NULL;
@@ -3688,15 +3778,13 @@ do_ecmd(
     int		newcol = -1;
     int		solcol = -1;
     pos_T	*pos;
-#ifdef FEAT_SUN_WORKSHOP
-    char_u	*cp;
-#endif
     char_u	*command = NULL;
 #ifdef FEAT_SPELL
     int		did_get_winopts = FALSE;
 #endif
     int		readfile_flags = 0;
     int		did_inc_redrawing_disabled = FALSE;
+    long        *so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -3764,11 +3852,6 @@ do_ecmd(
 	    if (free_fname != NULL)
 		ffname = free_fname;
 	    other_file = otherfile(ffname);
-#ifdef FEAT_SUN_WORKSHOP
-	    if (usingSunWorkShop && p_acd
-				   && (cp = vim_strrchr(sfname, '/')) != NULL)
-		sfname = ++cp;
-#endif
 	}
     }
 
@@ -3985,9 +4068,7 @@ do_ecmd(
 		    if (!oldbuf && eap != NULL)
 		    {
 			set_file_options(TRUE, eap);
-#ifdef FEAT_MBYTE
 			set_forced_fenc(eap);
-#endif
 		    }
 		}
 
@@ -4193,11 +4274,18 @@ do_ecmd(
 	check_arg_idx(curwin);
 
 	/* If autocommands change the cursor position or topline, we should
-	 * keep it.  Also when it moves within a line. */
+	 * keep it.  Also when it moves within a line. But not when it moves
+	 * to the first non-blank. */
 	if (!EQUAL_POS(curwin->w_cursor, orig_pos))
 	{
-	    newlnum = curwin->w_cursor.lnum;
-	    newcol = curwin->w_cursor.col;
+	    char_u *text = ml_get_curline();
+
+	    if (curwin->w_cursor.lnum != orig_pos.lnum
+		    || curwin->w_cursor.col != (int)(skipwhite(text) - text))
+	    {
+		newlnum = curwin->w_cursor.lnum;
+		newcol = curwin->w_cursor.col;
+	    }
 	}
 	if (curwin->w_topline == topline)
 	    topline = 0;
@@ -4245,9 +4333,7 @@ do_ecmd(
 		/* 'sol' is off: Use last known column. */
 		curwin->w_cursor.col = solcol;
 		check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 		curwin->w_cursor.coladd = 0;
-#endif
 		curwin->w_set_curswant = TRUE;
 	    }
 	    else
@@ -4304,12 +4390,12 @@ do_ecmd(
     did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
-	n = p_so;
+	n = *so_ptr;
 	if (topline == 0 && command == NULL)
-	    p_so = 999;			/* force cursor halfway the window */
+	    *so_ptr = 9999;		// force cursor halfway the window
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
-	p_so = n;
+	*so_ptr = n;
 	redraw_curbuf_later(NOT_VALID);	/* redraw this buffer later */
     }
 
@@ -4333,13 +4419,9 @@ do_ecmd(
     }
 #endif
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
+#if defined(FEAT_NETBEANS_INTG)
     if (curbuf->b_ffname != NULL)
     {
-# ifdef FEAT_SUN_WORKSHOP
-	if (gui.in_use && usingSunWorkShop)
-	    workshop_file_opened((char *)curbuf->b_ffname, curbuf->b_p_ro);
-# endif
 # ifdef FEAT_NETBEANS_INTG
 	if ((flags & ECMD_SET_HELP) != ECMD_SET_HELP)
 	    netbeans_file_opened(curbuf);
@@ -4364,7 +4446,7 @@ theend:
     static void
 delbuf_msg(char_u *name)
 {
-    EMSG2(_("E143: Autocommands unexpectedly deleted new buffer %s"),
+    semsg(_("E143: Autocommands unexpectedly deleted new buffer %s"),
 	    name == NULL ? (char_u *)"" : name);
     vim_free(name);
     au_new_curbuf.br_buf = NULL;
@@ -4583,7 +4665,7 @@ ex_z(exarg_T *eap)
     {
 	if (!VIM_ISDIGIT(*x))
 	{
-	    EMSG(_("E144: non-numeric argument to :z"));
+	    emsg(_("E144: non-numeric argument to :z"));
 	    return;
 	}
 	else
@@ -4693,7 +4775,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	EMSG(_("E145: Shell commands not allowed in rvim"));
+	emsg(_("E145: Shell commands not allowed in rvim"));
 	return TRUE;
     }
     return FALSE;
@@ -4710,7 +4792,7 @@ check_secure(void)
     if (secure)
     {
 	secure = 2;
-	EMSG(_(e_curdir));
+	emsg(_(e_curdir));
 	return TRUE;
     }
 #ifdef HAVE_SANDBOX
@@ -4720,7 +4802,7 @@ check_secure(void)
      */
     if (sandbox != 0)
     {
-	EMSG(_(e_sandbox));
+	emsg(_(e_sandbox));
 	return TRUE;
     }
 #endif
@@ -4809,7 +4891,7 @@ do_sub(exarg_T *eap)
 				/* don't accept alphanumeric for separator */
 	if (isalpha(*cmd))
 	{
-	    EMSG(_("E146: Regular expressions can't be delimited by letters"));
+	    emsg(_("E146: Regular expressions can't be delimited by letters"));
 	    return;
 	}
 	/*
@@ -4822,7 +4904,7 @@ do_sub(exarg_T *eap)
 	    ++cmd;
 	    if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	    {
-		EMSG(_(e_backslash));
+		emsg(_(e_backslash));
 		return;
 	    }
 	    if (*cmd != '&')
@@ -4870,7 +4952,7 @@ do_sub(exarg_T *eap)
 	    {
 		if (old_sub == NULL)	/* there is no previous command */
 		{
-		    EMSG(_(e_nopresub));
+		    emsg(_(e_nopresub));
 		    return;
 		}
 		sub = old_sub;
@@ -4886,7 +4968,7 @@ do_sub(exarg_T *eap)
     {
 	if (old_sub == NULL)	/* there is no previous command */
 	{
-	    EMSG(_(e_nopresub));
+	    emsg(_(e_nopresub));
 	    return;
 	}
 	pat = NULL;		/* search_regcomp() will use previous pattern */
@@ -5013,7 +5095,7 @@ do_sub(exarg_T *eap)
 	i = getdigits(&cmd);
 	if (i <= 0 && !eap->skip && subflags.do_error)
 	{
-	    EMSG(_(e_zerocount));
+	    emsg(_(e_zerocount));
 	    return;
 	}
 	eap->line1 = eap->line2;
@@ -5031,7 +5113,7 @@ do_sub(exarg_T *eap)
 	eap->nextcmd = check_nextcmd(cmd);
 	if (eap->nextcmd == NULL)
 	{
-	    EMSG(_(e_trailing));
+	    emsg(_(e_trailing));
 	    return;
 	}
     }
@@ -5042,14 +5124,14 @@ do_sub(exarg_T *eap)
     if (!subflags.do_count && !curbuf->b_p_ma)
     {
 	/* Substitution is not allowed in non-'modifiable' buffer */
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return;
     }
 
     if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
-	    EMSG(_(e_invcmd));
+	    emsg(_(e_invcmd));
 	return;
     }
 
@@ -5205,11 +5287,9 @@ do_sub(exarg_T *eap)
 		    else
 		    {
 			 /* search for a match at next column */
-#ifdef FEAT_MBYTE
 			if (has_mbyte)
 			    matchcol += mb_ptr2len(sub_firstline + matchcol);
 			else
-#endif
 			    ++matchcol;
 		    }
 		    goto skip;
@@ -5372,7 +5452,7 @@ do_sub(exarg_T *eap)
 			    /* write message same highlighting as for
 			     * wait_return */
 			    smsg_attr(HL_ATTR(HLF_R),
-				    (char_u *)_("replace with %s (y/n/a/q/l/^E/^Y)?"), sub);
+				_("replace with %s (y/n/a/q/l/^E/^Y)?"), sub);
 			    msg_no_more = FALSE;
 			    msg_scroll = i;
 			    showruler(TRUE);
@@ -5504,9 +5584,19 @@ do_sub(exarg_T *eap)
 		 * - original text up to match
 		 * - length of substituted part
 		 * - original text after match
+		 * Adjust text properties here, since we have all information
+		 * needed.
 		 */
 		if (nmatch == 1)
+		{
 		    p1 = sub_firstline;
+#ifdef FEAT_TEXT_PROP
+		    if (curbuf->b_has_textprop)
+			adjust_prop_columns(lnum, regmatch.startpos[0].col,
+			      sublen - 1 - (regmatch.endpos[0].col
+						  - regmatch.startpos[0].col));
+#endif
+		}
 		else
 		{
 		    p1 = ml_get(sub_firstlnum + nmatch - 1);
@@ -5608,11 +5698,12 @@ do_sub(exarg_T *eap)
 			STRMOVE(p1, p1 + 1);
 		    else if (*p1 == CAR)
 		    {
-			if (u_inssub(lnum) == OK)   /* prepare for undo */
+			if (u_inssub(lnum) == OK)   // prepare for undo
 			{
-			    *p1 = NUL;		    /* truncate up to the CR */
-			    ml_append(lnum - 1, new_start,
-					(colnr_T)(p1 - new_start + 1), FALSE);
+			    colnr_T	plen = (colnr_T)(p1 - new_start + 1);
+
+			    *p1 = NUL;		    // truncate up to the CR
+			    ml_append(lnum - 1, new_start, plen, FALSE);
 			    mark_adjust(lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 			    if (subflags.do_ask)
 				appended_lines(lnum - 1, 1L);
@@ -5622,21 +5713,22 @@ do_sub(exarg_T *eap)
 				    first_line = lnum;
 				last_line = lnum + 1;
 			    }
-			    /* All line numbers increase. */
+#ifdef FEAT_TEXT_PROP
+			    adjust_props_for_split(lnum, plen, 1);
+#endif
+			    // all line numbers increase
 			    ++sub_firstlnum;
 			    ++lnum;
 			    ++line2;
-			    /* move the cursor to the new line, like Vi */
+			    // move the cursor to the new line, like Vi
 			    ++curwin->w_cursor.lnum;
-			    /* copy the rest */
+			    // copy the rest
 			    STRMOVE(new_start, p1 + 1);
 			    p1 = new_start - 1;
 			}
 		    }
-#ifdef FEAT_MBYTE
 		    else if (has_mbyte)
 			p1 += (*mb_ptr2len)(p1) - 1;
-#endif
 		}
 
 		/*
@@ -5800,7 +5892,7 @@ outofmem:
 		    beginline(BL_WHITE | BL_FIX);
 	    }
 	    if (!do_sub_msg(subflags.do_count) && subflags.do_ask)
-		MSG("");
+		msg("");
 	}
 	else
 	    global_need_beginline = TRUE;
@@ -5811,11 +5903,11 @@ outofmem:
     else if (!global_busy)
     {
 	if (got_int)		/* interrupted */
-	    EMSG(_(e_interr));
+	    emsg(_(e_interr));
 	else if (got_match)	/* did find something but nothing substituted */
-	    MSG("");
+	    msg("");
 	else if (subflags.do_error)	/* nothing found */
-	    EMSG2(_(e_patnotf2), get_search_pat());
+	    semsg(_(e_patnotf2), get_search_pat());
     }
 
 #ifdef FEAT_FOLDING
@@ -5850,31 +5942,37 @@ do_sub_msg(
 		|| count_only)
 	    && messaging())
     {
+	char	*msg_single;
+	char	*msg_plural;
+
 	if (got_int)
 	    STRCPY(msg_buf, _("(Interrupted) "));
 	else
 	    *msg_buf = NUL;
-	if (sub_nsubs == 1)
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    "%s", count_only ? _("1 match") : _("1 substitution"));
-	else
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    count_only ? _("%ld matches") : _("%ld substitutions"),
-								   sub_nsubs);
-	if (sub_nlines == 1)
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    "%s", _(" on 1 line"));
-	else
-	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
-		    _(" on %ld lines"), (long)sub_nlines);
+
+	msg_single = count_only
+		    ? NGETTEXT("%ld match on %ld line",
+					  "%ld matches on %ld line", sub_nsubs)
+		    : NGETTEXT("%ld substitution on %ld line",
+				   "%ld substitutions on %ld line", sub_nsubs);
+	msg_plural = count_only
+		    ? NGETTEXT("%ld match on %ld lines",
+					 "%ld matches on %ld lines", sub_nsubs)
+		    : NGETTEXT("%ld substitution on %ld lines",
+				  "%ld substitutions on %ld lines", sub_nsubs);
+
+	vim_snprintf_add(msg_buf, sizeof(msg_buf),
+				 NGETTEXT(msg_single, msg_plural, sub_nlines),
+				 sub_nsubs, (long)sub_nlines);
+
 	if (msg(msg_buf))
 	    /* save message to display it after redraw */
-	    set_keep_msg(msg_buf, 0);
+	    set_keep_msg((char_u *)msg_buf, 0);
 	return TRUE;
     }
     if (got_int)
     {
-	EMSG(_(e_interr));
+	emsg(_(e_interr));
 	return TRUE;
     }
     return FALSE;
@@ -5927,7 +6025,7 @@ ex_global(exarg_T *eap)
 				  || eap->line2 != curbuf->b_ml.ml_line_count))
     {
 	/* will increment global_busy to break out of the loop */
-	EMSG(_("E147: Cannot do :global recursive with a range"));
+	emsg(_("E147: Cannot do :global recursive with a range"));
 	return;
     }
 
@@ -5948,7 +6046,7 @@ ex_global(exarg_T *eap)
 	++cmd;
 	if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	{
-	    EMSG(_(e_backslash));
+	    emsg(_(e_backslash));
 	    return;
 	}
 	if (*cmd == '&')
@@ -5960,7 +6058,7 @@ ex_global(exarg_T *eap)
     }
     else if (*cmd == NUL)
     {
-	EMSG(_("E148: Regular expression missing from global"));
+	emsg(_("E148: Regular expression missing from global"));
 	return;
     }
     else
@@ -5981,7 +6079,7 @@ ex_global(exarg_T *eap)
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
-	EMSG(_(e_invcmd));
+	emsg(_(e_invcmd));
 	return;
     }
 
@@ -6015,13 +6113,13 @@ ex_global(exarg_T *eap)
 	 * pass 2: execute the command for each line that has been marked
 	 */
 	if (got_int)
-	    MSG(_(e_interr));
+	    msg(_(e_interr));
 	else if (ndone == 0)
 	{
 	    if (type == 'v')
-		smsg((char_u *)_("Pattern found in every line: %s"), pat);
+		smsg(_("Pattern found in every line: %s"), pat);
 	    else
-		smsg((char_u *)_("Pattern not found: %s"), pat);
+		smsg(_("Pattern not found: %s"), pat);
 	}
 	else
 	{
@@ -6222,7 +6320,7 @@ ex_help(exarg_T *eap)
 
 	if (eap->forceit && *arg == NUL && !curbuf->b_help)
 	{
-	    EMSG(_("E478: Don't panic!"));
+	    emsg(_("E478: Don't panic!"));
 	    return;
 	}
 
@@ -6268,10 +6366,10 @@ ex_help(exarg_T *eap)
     {
 #ifdef FEAT_MULTI_LANG
 	if (lang != NULL)
-	    EMSG3(_("E661: Sorry, no '%s' help for %s"), lang, arg);
+	    semsg(_("E661: Sorry, no '%s' help for %s"), lang, arg);
 	else
 #endif
-	    EMSG2(_("E149: Sorry, no help for %s"), arg);
+	    semsg(_("E149: Sorry, no help for %s"), arg);
 	if (n != FAIL)
 	    FreeWild(num_matches, matches);
 	return;
@@ -6307,7 +6405,7 @@ ex_help(exarg_T *eap)
 	     */
 	    if ((helpfd = mch_fopen((char *)p_hf, READBIN)) == NULL)
 	    {
-		smsg((char_u *)_("Sorry, help file \"%s\" not found"), p_hf);
+		smsg(_("Sorry, help file \"%s\" not found"), p_hf);
 		goto erret;
 	    }
 	    fclose(helpfd);
@@ -6494,6 +6592,7 @@ find_help_tags(
 			       "/*", "/\\*", "\"*", "**",
 			       "cpo-*", "/\\(\\)", "/\\%(\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
 			       "[count]", "[quotex]",
 			       "[range]", ":[range]",
@@ -6504,26 +6603,42 @@ find_help_tags(
 			       "/star", "/\\\\star", "quotestar", "starstar",
 			       "cpo-star", "/\\\\(\\\\)", "/\\\\%(\\\\)",
 			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
+			       "-?", "q?", "v_g?",
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]",
 			       "\\[range]", ":\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
 			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
 			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
+    static char *(expr_table[]) = {"!=?", "!~?", "<=?", "<?", "==?", "=~?",
+				">=?", ">?", "is?", "isnot?"};
     int flags;
 
     d = IObuff;		    /* assume IObuff is long enough! */
 
-    /*
-     * Recognize a few exceptions to the rule.	Some strings that contain '*'
-     * with "star".  Otherwise '*' is recognized as a wildcard.
-     */
-    for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
-	if (STRCMP(arg, mtable[i]) == 0)
-	{
-	    STRCPY(d, rtable[i]);
-	    break;
-	}
+    if (STRNICMP(arg, "expr-", 5) == 0)
+    {
+	// When the string starting with "expr-" and containing '?' and matches
+	// the table, it is taken literally.  Otherwise '?' is recognized as a
+	// wildcard.
+	for (i = (int)(sizeof(expr_table) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg + 5, expr_table[i]) == 0)
+	    {
+		STRCPY(d, arg);
+		break;
+	    }
+    }
+    else
+    {
+	// Recognize a few exceptions to the rule.  Some strings that contain
+	// '*' with "star".  Otherwise '*' is recognized as a wildcard.
+	for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
+	    if (STRCMP(arg, mtable[i]) == 0)
+	    {
+		STRCPY(d, rtable[i]);
+		break;
+	    }
+    }
 
     if (i < 0)	/* no match in table */
     {
@@ -6868,10 +6983,8 @@ fix_help_buffer(void)
 		    FILE	*fd;
 		    char_u	*s;
 		    int		fi;
-#ifdef FEAT_MBYTE
 		    vimconv_T	vc;
 		    char_u	*cp;
-#endif
 
 		    /* Find all "doc/ *.txt" files in this directory. */
 		    add_pathsep(NameBuff);
@@ -6937,9 +7050,8 @@ fix_help_buffer(void)
 					&& (s = vim_strchr(IObuff + 1, '*'))
 								  != NULL)
 				{
-#ifdef FEAT_MBYTE
 				    int	this_utf = MAYBE;
-#endif
+
 				    /* Change tag definition to a
 				     * reference and remove <CR>/<NL>. */
 				    IObuff[0] = '|';
@@ -6948,7 +7060,6 @@ fix_help_buffer(void)
 				    {
 					if (*s == '\r' || *s == '\n')
 					    *s = NUL;
-#ifdef FEAT_MBYTE
 					/* The text is utf-8 when a byte
 					 * above 127 is found and no
 					 * illegal byte sequence is found.
@@ -6963,10 +7074,9 @@ fix_help_buffer(void)
 						this_utf = FALSE;
 					    s += l - 1;
 					}
-#endif
 					++s;
 				    }
-#ifdef FEAT_MBYTE
+
 				    /* The help file is latin1 or utf-8;
 				     * conversion to the current
 				     * 'encoding' may be required. */
@@ -6991,10 +7101,6 @@ fix_help_buffer(void)
 				    ml_append(lnum, cp, (colnr_T)0, FALSE);
 				    if (cp != IObuff)
 					vim_free(cp);
-#else
-				    ml_append(lnum, IObuff, (colnr_T)0,
-								   FALSE);
-#endif
 				    ++lnum;
 				}
 				fclose(fd);
@@ -7050,12 +7156,10 @@ helptags_one(
     int		i;
     char_u	*fname;
     int		dirlen;
-# ifdef FEAT_MBYTE
     int		utf8 = MAYBE;
     int		this_utf8;
     int		firstline;
     int		mix = FALSE;	/* detected mixed encodings */
-# endif
 
     /*
      * Find all *.txt files.
@@ -7069,7 +7173,7 @@ helptags_one(
 	    || filecount == 0)
     {
 	if (!got_int)
-	    EMSG2(_("E151: No match: %s"), NameBuff);
+	    semsg(_("E151: No match: %s"), NameBuff);
 	return;
     }
 
@@ -7083,7 +7187,7 @@ helptags_one(
     fd_tags = mch_fopen((char *)NameBuff, "w");
     if (fd_tags == NULL)
     {
-	EMSG2(_("E152: Cannot open %s for writing"), NameBuff);
+	semsg(_("E152: Cannot open %s for writing"), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }
@@ -7120,17 +7224,14 @@ helptags_one(
 	fd = mch_fopen((char *)files[fi], "r");
 	if (fd == NULL)
 	{
-	    EMSG2(_("E153: Unable to open %s for reading"), files[fi]);
+	    semsg(_("E153: Unable to open %s for reading"), files[fi]);
 	    continue;
 	}
 	fname = files[fi] + dirlen + 1;
 
-# ifdef FEAT_MBYTE
 	firstline = TRUE;
-# endif
 	while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
 	{
-# ifdef FEAT_MBYTE
 	    if (firstline)
 	    {
 		/* Detect utf-8 file by a non-ASCII char in the first line. */
@@ -7156,13 +7257,12 @@ helptags_one(
 		    utf8 = this_utf8;
 		else if (utf8 != this_utf8)
 		{
-		    EMSG2(_("E670: Mix of help file encodings within a language: %s"), files[fi]);
+		    semsg(_("E670: Mix of help file encodings within a language: %s"), files[fi]);
 		    mix = !got_int;
 		    got_int = TRUE;
 		}
 		firstline = FALSE;
 	    }
-# endif
 	    p1 = vim_strchr(IObuff, '*');	/* find first '*' */
 	    while (p1 != NULL)
 	    {
@@ -7240,7 +7340,7 @@ helptags_one(
 		    vim_snprintf((char *)NameBuff, MAXPATHL,
 			    _("E154: Duplicate tag \"%s\" in file %s/%s"),
 				     ((char_u **)ga.ga_data)[i], dir, p2 + 1);
-		    EMSG(NameBuff);
+		    emsg((char *)NameBuff);
 		    *p2 = '\t';
 		    break;
 		}
@@ -7249,10 +7349,8 @@ helptags_one(
 	    }
 	}
 
-# ifdef FEAT_MBYTE
 	if (utf8 == TRUE)
 	    fprintf(fd_tags, "!_TAG_FILE_ENCODING\tutf-8\t//\n");
-# endif
 
 	/*
 	 * Write the tags into the file.
@@ -7277,10 +7375,8 @@ helptags_one(
 	    }
 	}
     }
-#ifdef FEAT_MBYTE
     if (mix)
 	got_int = FALSE;    /* continue with other languages */
-#endif
 
     for (i = 0; i < ga.ga_len; ++i)
 	vim_free(((char_u **)ga.ga_data)[i]);
@@ -7312,7 +7408,7 @@ do_helptags(char_u *dirname, int add_help_tags)
 						    EW_FILE|EW_SILENT) == FAIL
 	    || filecount == 0)
     {
-	EMSG2(_("E151: No match: %s"), NameBuff);
+	semsg(_("E151: No match: %s"), NameBuff);
 	return;
     }
 
@@ -7425,829 +7521,12 @@ ex_helptags(exarg_T *eap)
 	dirname = ExpandOne(&xpc, eap->arg, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
 	if (dirname == NULL || !mch_isdir(dirname))
-	    EMSG2(_("E150: Not a directory: %s"), eap->arg);
+	    semsg(_("E150: Not a directory: %s"), eap->arg);
 	else
 	    do_helptags(dirname, add_help_tags);
 	vim_free(dirname);
     }
 }
-
-#if defined(FEAT_SIGNS) || defined(PROTO)
-
-/*
- * Struct to hold the sign properties.
- */
-typedef struct sign sign_T;
-
-struct sign
-{
-    sign_T	*sn_next;	/* next sign in list */
-    int		sn_typenr;	/* type number of sign */
-    char_u	*sn_name;	/* name of sign */
-    char_u	*sn_icon;	/* name of pixmap */
-# ifdef FEAT_SIGN_ICONS
-    void	*sn_image;	/* icon image */
-# endif
-    char_u	*sn_text;	/* text used instead of pixmap */
-    int		sn_line_hl;	/* highlight ID for line */
-    int		sn_text_hl;	/* highlight ID for text */
-};
-
-static sign_T	*first_sign = NULL;
-static int	next_sign_typenr = 1;
-
-static int sign_cmd_idx(char_u *begin_cmd, char_u *end_cmd);
-static void sign_list_defined(sign_T *sp);
-static void sign_undefine(sign_T *sp, sign_T *sp_prev);
-
-static char *cmds[] = {
-			"define",
-# define SIGNCMD_DEFINE	0
-			"undefine",
-# define SIGNCMD_UNDEFINE 1
-			"list",
-# define SIGNCMD_LIST	2
-			"place",
-# define SIGNCMD_PLACE	3
-			"unplace",
-# define SIGNCMD_UNPLACE 4
-			"jump",
-# define SIGNCMD_JUMP	5
-			NULL
-# define SIGNCMD_LAST	6
-};
-
-/*
- * Find index of a ":sign" subcmd from its name.
- * "*end_cmd" must be writable.
- */
-    static int
-sign_cmd_idx(
-    char_u	*begin_cmd,	/* begin of sign subcmd */
-    char_u	*end_cmd)	/* just after sign subcmd */
-{
-    int		idx;
-    char	save = *end_cmd;
-
-    *end_cmd = NUL;
-    for (idx = 0; ; ++idx)
-	if (cmds[idx] == NULL || STRCMP(begin_cmd, cmds[idx]) == 0)
-	    break;
-    *end_cmd = save;
-    return idx;
-}
-
-/*
- * ":sign" command
- */
-    void
-ex_sign(exarg_T *eap)
-{
-    char_u	*arg = eap->arg;
-    char_u	*p;
-    int		idx;
-    sign_T	*sp;
-    sign_T	*sp_prev;
-    buf_T	*buf = NULL;
-
-    /* Parse the subcommand. */
-    p = skiptowhite(arg);
-    idx = sign_cmd_idx(arg, p);
-    if (idx == SIGNCMD_LAST)
-    {
-	EMSG2(_("E160: Unknown sign command: %s"), arg);
-	return;
-    }
-    arg = skipwhite(p);
-
-    if (idx <= SIGNCMD_LIST)
-    {
-	/*
-	 * Define, undefine or list signs.
-	 */
-	if (idx == SIGNCMD_LIST && *arg == NUL)
-	{
-	    /* ":sign list": list all defined signs */
-	    for (sp = first_sign; sp != NULL && !got_int; sp = sp->sn_next)
-		sign_list_defined(sp);
-	}
-	else if (*arg == NUL)
-	    EMSG(_("E156: Missing sign name"));
-	else
-	{
-	    /* Isolate the sign name.  If it's a number skip leading zeroes,
-	     * so that "099" and "99" are the same sign.  But keep "0". */
-	    p = skiptowhite(arg);
-	    if (*p != NUL)
-		*p++ = NUL;
-	    while (arg[0] == '0' && arg[1] != NUL)
-		++arg;
-
-	    sp_prev = NULL;
-	    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	    {
-		if (STRCMP(sp->sn_name, arg) == 0)
-		    break;
-		sp_prev = sp;
-	    }
-	    if (idx == SIGNCMD_DEFINE)
-	    {
-		/* ":sign define {name} ...": define a sign */
-		if (sp == NULL)
-		{
-		    sign_T	*lp;
-		    int		start = next_sign_typenr;
-
-		    /* Allocate a new sign. */
-		    sp = (sign_T *)alloc_clear((unsigned)sizeof(sign_T));
-		    if (sp == NULL)
-			return;
-
-		    /* Check that next_sign_typenr is not already being used.
-		     * This only happens after wrapping around.  Hopefully
-		     * another one got deleted and we can use its number. */
-		    for (lp = first_sign; lp != NULL; )
-		    {
-			if (lp->sn_typenr == next_sign_typenr)
-			{
-			    ++next_sign_typenr;
-			    if (next_sign_typenr == MAX_TYPENR)
-				next_sign_typenr = 1;
-			    if (next_sign_typenr == start)
-			    {
-				vim_free(sp);
-				EMSG(_("E612: Too many signs defined"));
-				return;
-			    }
-			    lp = first_sign;  /* start all over */
-			    continue;
-			}
-			lp = lp->sn_next;
-		    }
-
-		    sp->sn_typenr = next_sign_typenr;
-		    if (++next_sign_typenr == MAX_TYPENR)
-			next_sign_typenr = 1; /* wrap around */
-
-		    sp->sn_name = vim_strsave(arg);
-		    if (sp->sn_name == NULL)  /* out of memory */
-		    {
-			vim_free(sp);
-			return;
-		    }
-
-		    /* add the new sign to the list of signs */
-		    if (sp_prev == NULL)
-			first_sign = sp;
-		    else
-			sp_prev->sn_next = sp;
-		}
-
-		/* set values for a defined sign. */
-		for (;;)
-		{
-		    arg = skipwhite(p);
-		    if (*arg == NUL)
-			break;
-		    p = skiptowhite_esc(arg);
-		    if (STRNCMP(arg, "icon=", 5) == 0)
-		    {
-			arg += 5;
-			vim_free(sp->sn_icon);
-			sp->sn_icon = vim_strnsave(arg, (int)(p - arg));
-			backslash_halve(sp->sn_icon);
-# ifdef FEAT_SIGN_ICONS
-			if (gui.in_use)
-			{
-			    out_flush();
-			    if (sp->sn_image != NULL)
-				gui_mch_destroy_sign(sp->sn_image);
-			    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
-			}
-# endif
-		    }
-		    else if (STRNCMP(arg, "text=", 5) == 0)
-		    {
-			char_u	*s;
-			int	cells;
-			int	len;
-
-			arg += 5;
-# ifdef FEAT_MBYTE
-			/* Count cells and check for non-printable chars */
-			if (has_mbyte)
-			{
-			    cells = 0;
-			    for (s = arg; s < p; s += (*mb_ptr2len)(s))
-			    {
-				if (!vim_isprintc((*mb_ptr2char)(s)))
-				    break;
-				cells += (*mb_ptr2cells)(s);
-			    }
-			}
-			else
-# endif
-			{
-			    for (s = arg; s < p; ++s)
-				if (!vim_isprintc(*s))
-				    break;
-			    cells = (int)(s - arg);
-			}
-			/* Currently must be one or two display cells */
-			if (s != p || cells < 1 || cells > 2)
-			{
-			    *p = NUL;
-			    EMSG2(_("E239: Invalid sign text: %s"), arg);
-			    return;
-			}
-
-			vim_free(sp->sn_text);
-			/* Allocate one byte more if we need to pad up
-			 * with a space. */
-			len = (int)(p - arg + ((cells == 1) ? 1 : 0));
-			sp->sn_text = vim_strnsave(arg, len);
-
-			if (sp->sn_text != NULL && cells == 1)
-			    STRCPY(sp->sn_text + len - 1, " ");
-		    }
-		    else if (STRNCMP(arg, "linehl=", 7) == 0)
-		    {
-			arg += 7;
-			sp->sn_line_hl = syn_check_group(arg, (int)(p - arg));
-		    }
-		    else if (STRNCMP(arg, "texthl=", 7) == 0)
-		    {
-			arg += 7;
-			sp->sn_text_hl = syn_check_group(arg, (int)(p - arg));
-		    }
-		    else
-		    {
-			EMSG2(_(e_invarg2), arg);
-			return;
-		    }
-		}
-	    }
-	    else if (sp == NULL)
-		EMSG2(_("E155: Unknown sign: %s"), arg);
-	    else if (idx == SIGNCMD_LIST)
-		/* ":sign list {name}" */
-		sign_list_defined(sp);
-	    else
-		/* ":sign undefine {name}" */
-		sign_undefine(sp, sp_prev);
-	}
-    }
-    else
-    {
-	int		id = -1;
-	linenr_T	lnum = -1;
-	char_u		*sign_name = NULL;
-	char_u		*arg1;
-
-	if (*arg == NUL)
-	{
-	    if (idx == SIGNCMD_PLACE)
-	    {
-		/* ":sign place": list placed signs in all buffers */
-		sign_list_placed(NULL);
-	    }
-	    else if (idx == SIGNCMD_UNPLACE)
-	    {
-		/* ":sign unplace": remove placed sign at cursor */
-		id = buf_findsign_id(curwin->w_buffer, curwin->w_cursor.lnum);
-		if (id > 0)
-		{
-		    buf_delsign(curwin->w_buffer, id);
-		    update_debug_sign(curwin->w_buffer, curwin->w_cursor.lnum);
-		}
-		else
-		    EMSG(_("E159: Missing sign number"));
-	    }
-	    else
-		EMSG(_(e_argreq));
-	    return;
-	}
-
-	if (idx == SIGNCMD_UNPLACE && arg[0] == '*' && arg[1] == NUL)
-	{
-	    /* ":sign unplace *": remove all placed signs */
-	    buf_delete_all_signs();
-	    return;
-	}
-
-	/* first arg could be placed sign id */
-	arg1 = arg;
-	if (VIM_ISDIGIT(*arg))
-	{
-	    id = getdigits(&arg);
-	    if (!VIM_ISWHITE(*arg) && *arg != NUL)
-	    {
-		id = -1;
-		arg = arg1;
-	    }
-	    else
-	    {
-		arg = skipwhite(arg);
-		if (idx == SIGNCMD_UNPLACE && *arg == NUL)
-		{
-		    /* ":sign unplace {id}": remove placed sign by number */
-		    FOR_ALL_BUFFERS(buf)
-			if ((lnum = buf_delsign(buf, id)) != 0)
-			    update_debug_sign(buf, lnum);
-		    return;
-		}
-	    }
-	}
-
-	/*
-	 * Check for line={lnum} name={name} and file={fname} or buffer={nr}.
-	 * Leave "arg" pointing to {fname}.
-	 */
-	for (;;)
-	{
-	    if (STRNCMP(arg, "line=", 5) == 0)
-	    {
-		arg += 5;
-		lnum = atoi((char *)arg);
-		arg = skiptowhite(arg);
-	    }
-	    else if (STRNCMP(arg, "*", 1) == 0 && idx == SIGNCMD_UNPLACE)
-	    {
-		if (id != -1)
-		{
-		    EMSG(_(e_invarg));
-		    return;
-		}
-		id = -2;
-		arg = skiptowhite(arg + 1);
-	    }
-	    else if (STRNCMP(arg, "name=", 5) == 0)
-	    {
-		arg += 5;
-		sign_name = arg;
-		arg = skiptowhite(arg);
-		if (*arg != NUL)
-		    *arg++ = NUL;
-		while (sign_name[0] == '0' && sign_name[1] != NUL)
-		    ++sign_name;
-	    }
-	    else if (STRNCMP(arg, "file=", 5) == 0)
-	    {
-		arg += 5;
-		buf = buflist_findname(arg);
-		break;
-	    }
-	    else if (STRNCMP(arg, "buffer=", 7) == 0)
-	    {
-		arg += 7;
-		buf = buflist_findnr((int)getdigits(&arg));
-		if (*skipwhite(arg) != NUL)
-		    EMSG(_(e_trailing));
-		break;
-	    }
-	    else
-	    {
-		EMSG(_(e_invarg));
-		return;
-	    }
-	    arg = skipwhite(arg);
-	}
-
-	if (buf == NULL)
-	{
-	    EMSG2(_("E158: Invalid buffer name: %s"), arg);
-	}
-	else if (id <= 0 && !(idx == SIGNCMD_UNPLACE && id == -2))
-	{
-	    if (lnum >= 0 || sign_name != NULL)
-		EMSG(_(e_invarg));
-	    else
-		/* ":sign place file={fname}": list placed signs in one file */
-		sign_list_placed(buf);
-	}
-	else if (idx == SIGNCMD_JUMP)
-	{
-	    /* ":sign jump {id} file={fname}" */
-	    if (lnum >= 0 || sign_name != NULL)
-		EMSG(_(e_invarg));
-	    else if ((lnum = buf_findsign(buf, id)) > 0)
-	    {				/* goto a sign ... */
-		if (buf_jump_open_win(buf) != NULL)
-		{			/* ... in a current window */
-		    curwin->w_cursor.lnum = lnum;
-		    check_cursor_lnum();
-		    beginline(BL_WHITE);
-		}
-		else
-		{			/* ... not currently in a window */
-		    char_u	*cmd;
-
-		    if (buf->b_fname == NULL)
-		    {
-			EMSG(_("E934: Cannot jump to a buffer that does not have a name"));
-			return;
-		    }
-		    cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
-		    if (cmd == NULL)
-			return;
-		    sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);
-		    do_cmdline_cmd(cmd);
-		    vim_free(cmd);
-		}
-# ifdef FEAT_FOLDING
-		foldOpenCursor();
-# endif
-	    }
-	    else
-		EMSGN(_("E157: Invalid sign ID: %ld"), id);
-	}
-	else if (idx == SIGNCMD_UNPLACE)
-	{
-	    if (lnum >= 0 || sign_name != NULL)
-		EMSG(_(e_invarg));
-	    else if (id == -2)
-	    {
-		/* ":sign unplace * file={fname}" */
-		redraw_buf_later(buf, NOT_VALID);
-		buf_delete_signs(buf);
-	    }
-	    else
-	    {
-		/* ":sign unplace {id} file={fname}" */
-		lnum = buf_delsign(buf, id);
-		update_debug_sign(buf, lnum);
-	    }
-	}
-	    /* idx == SIGNCMD_PLACE */
-	else if (sign_name != NULL)
-	{
-	    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-		if (STRCMP(sp->sn_name, sign_name) == 0)
-		    break;
-	    if (sp == NULL)
-	    {
-		EMSG2(_("E155: Unknown sign: %s"), sign_name);
-		return;
-	    }
-	    if (lnum > 0)
-		/* ":sign place {id} line={lnum} name={name} file={fname}":
-		 * place a sign */
-		buf_addsign(buf, id, lnum, sp->sn_typenr);
-	    else
-		/* ":sign place {id} file={fname}": change sign type */
-		lnum = buf_change_sign_type(buf, id, sp->sn_typenr);
-	    if (lnum > 0)
-		update_debug_sign(buf, lnum);
-	    else
-		EMSG2(_("E885: Not possible to change sign %s"), sign_name);
-	}
-	else
-	    EMSG(_(e_invarg));
-    }
-}
-
-# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
-/*
- * Allocate the icons.  Called when the GUI has started.  Allows defining
- * signs before it starts.
- */
-    void
-sign_gui_started(void)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_icon != NULL)
-	    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
-}
-# endif
-
-/*
- * List one sign.
- */
-    static void
-sign_list_defined(sign_T *sp)
-{
-    char_u	*p;
-
-    smsg((char_u *)"sign %s", sp->sn_name);
-    if (sp->sn_icon != NULL)
-    {
-	MSG_PUTS(" icon=");
-	msg_outtrans(sp->sn_icon);
-# ifdef FEAT_SIGN_ICONS
-	if (sp->sn_image == NULL)
-	    MSG_PUTS(_(" (NOT FOUND)"));
-# else
-	MSG_PUTS(_(" (not supported)"));
-# endif
-    }
-    if (sp->sn_text != NULL)
-    {
-	MSG_PUTS(" text=");
-	msg_outtrans(sp->sn_text);
-    }
-    if (sp->sn_line_hl > 0)
-    {
-	MSG_PUTS(" linehl=");
-	p = get_highlight_name_ext(NULL, sp->sn_line_hl - 1, FALSE);
-	if (p == NULL)
-	    MSG_PUTS("NONE");
-	else
-	    msg_puts(p);
-    }
-    if (sp->sn_text_hl > 0)
-    {
-	MSG_PUTS(" texthl=");
-	p = get_highlight_name_ext(NULL, sp->sn_text_hl - 1, FALSE);
-	if (p == NULL)
-	    MSG_PUTS("NONE");
-	else
-	    msg_puts(p);
-    }
-}
-
-/*
- * Undefine a sign and free its memory.
- */
-    static void
-sign_undefine(sign_T *sp, sign_T *sp_prev)
-{
-    vim_free(sp->sn_name);
-    vim_free(sp->sn_icon);
-# ifdef FEAT_SIGN_ICONS
-    if (sp->sn_image != NULL)
-    {
-	out_flush();
-	gui_mch_destroy_sign(sp->sn_image);
-    }
-# endif
-    vim_free(sp->sn_text);
-    if (sp_prev == NULL)
-	first_sign = sp->sn_next;
-    else
-	sp_prev->sn_next = sp->sn_next;
-    vim_free(sp);
-}
-
-/*
- * Get highlighting attribute for sign "typenr".
- * If "line" is TRUE: line highl, if FALSE: text highl.
- */
-    int
-sign_get_attr(int typenr, int line)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	{
-	    if (line)
-	    {
-		if (sp->sn_line_hl > 0)
-		    return syn_id2attr(sp->sn_line_hl);
-	    }
-	    else
-	    {
-		if (sp->sn_text_hl > 0)
-		    return syn_id2attr(sp->sn_text_hl);
-	    }
-	    break;
-	}
-    return 0;
-}
-
-/*
- * Get text mark for sign "typenr".
- * Returns NULL if there isn't one.
- */
-    char_u *
-sign_get_text(int typenr)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	    return sp->sn_text;
-    return NULL;
-}
-
-# if defined(FEAT_SIGN_ICONS) || defined(PROTO)
-    void *
-sign_get_image(
-    int		typenr)		/* the attribute which may have a sign */
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	    return sp->sn_image;
-    return NULL;
-}
-# endif
-
-/*
- * Get the name of a sign by its typenr.
- */
-    char_u *
-sign_typenr2name(int typenr)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	    return sp->sn_name;
-    return (char_u *)_("[Deleted]");
-}
-
-# if defined(EXITFREE) || defined(PROTO)
-/*
- * Undefine/free all signs.
- */
-    void
-free_signs(void)
-{
-    while (first_sign != NULL)
-	sign_undefine(first_sign, NULL);
-}
-# endif
-
-# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-static enum
-{
-    EXP_SUBCMD,		/* expand :sign sub-commands */
-    EXP_DEFINE,		/* expand :sign define {name} args */
-    EXP_PLACE,		/* expand :sign place {id} args */
-    EXP_UNPLACE,	/* expand :sign unplace" */
-    EXP_SIGN_NAMES	/* expand with name of placed signs */
-} expand_what;
-
-/*
- * Function given to ExpandGeneric() to obtain the sign command
- * expansion.
- */
-    char_u *
-get_sign_name(expand_T *xp UNUSED, int idx)
-{
-    sign_T	*sp;
-    int		current_idx;
-
-    switch (expand_what)
-    {
-    case EXP_SUBCMD:
-	return (char_u *)cmds[idx];
-    case EXP_DEFINE:
-	{
-	    char *define_arg[] =
-	    {
-		"icon=", "linehl=", "text=", "texthl=", NULL
-	    };
-	    return (char_u *)define_arg[idx];
-	}
-    case EXP_PLACE:
-	{
-	    char *place_arg[] =
-	    {
-		"line=", "name=", "file=", "buffer=", NULL
-	    };
-	    return (char_u *)place_arg[idx];
-	}
-    case EXP_UNPLACE:
-	{
-	    char *unplace_arg[] = { "file=", "buffer=", NULL };
-	    return (char_u *)unplace_arg[idx];
-	}
-    case EXP_SIGN_NAMES:
-	/* Complete with name of signs already defined */
-	current_idx = 0;
-	for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	    if (current_idx++ == idx)
-		return sp->sn_name;
-	return NULL;
-    default:
-	return NULL;
-    }
-}
-
-/*
- * Handle command line completion for :sign command.
- */
-    void
-set_context_in_sign_cmd(expand_T *xp, char_u *arg)
-{
-    char_u	*p;
-    char_u	*end_subcmd;
-    char_u	*last;
-    int		cmd_idx;
-    char_u	*begin_subcmd_args;
-
-    /* Default: expand subcommands. */
-    xp->xp_context = EXPAND_SIGN;
-    expand_what = EXP_SUBCMD;
-    xp->xp_pattern = arg;
-
-    end_subcmd = skiptowhite(arg);
-    if (*end_subcmd == NUL)
-	/* expand subcmd name
-	 * :sign {subcmd}<CTRL-D>*/
-	return;
-
-    cmd_idx = sign_cmd_idx(arg, end_subcmd);
-
-    /* :sign {subcmd} {subcmd_args}
-     *		      |
-     *		      begin_subcmd_args */
-    begin_subcmd_args = skipwhite(end_subcmd);
-    p = skiptowhite(begin_subcmd_args);
-    if (*p == NUL)
-    {
-	/*
-	 * Expand first argument of subcmd when possible.
-	 * For ":jump {id}" and ":unplace {id}", we could
-	 * possibly expand the ids of all signs already placed.
-	 */
-	xp->xp_pattern = begin_subcmd_args;
-	switch (cmd_idx)
-	{
-	    case SIGNCMD_LIST:
-	    case SIGNCMD_UNDEFINE:
-		/* :sign list <CTRL-D>
-		 * :sign undefine <CTRL-D> */
-		expand_what = EXP_SIGN_NAMES;
-		break;
-	    default:
-		xp->xp_context = EXPAND_NOTHING;
-	}
-	return;
-    }
-
-    /* expand last argument of subcmd */
-
-    /* :sign define {name} {args}...
-     *		    |
-     *		    p */
-
-    /* Loop until reaching last argument. */
-    do
-    {
-	p = skipwhite(p);
-	last = p;
-	p = skiptowhite(p);
-    } while (*p != NUL);
-
-    p = vim_strchr(last, '=');
-
-    /* :sign define {name} {args}... {last}=
-     *				     |	   |
-     *				  last	   p */
-    if (p == NULL)
-    {
-	/* Expand last argument name (before equal sign). */
-	xp->xp_pattern = last;
-	switch (cmd_idx)
-	{
-	    case SIGNCMD_DEFINE:
-		expand_what = EXP_DEFINE;
-		break;
-	    case SIGNCMD_PLACE:
-		expand_what = EXP_PLACE;
-		break;
-	    case SIGNCMD_JUMP:
-	    case SIGNCMD_UNPLACE:
-		expand_what = EXP_UNPLACE;
-		break;
-	    default:
-		xp->xp_context = EXPAND_NOTHING;
-	}
-    }
-    else
-    {
-	/* Expand last argument value (after equal sign). */
-	xp->xp_pattern = p + 1;
-	switch (cmd_idx)
-	{
-	    case SIGNCMD_DEFINE:
-		if (STRNCMP(last, "texthl", p - last) == 0 ||
-		    STRNCMP(last, "linehl", p - last) == 0)
-		    xp->xp_context = EXPAND_HIGHLIGHT;
-		else if (STRNCMP(last, "icon", p - last) == 0)
-		    xp->xp_context = EXPAND_FILES;
-		else
-		    xp->xp_context = EXPAND_NOTHING;
-		break;
-	    case SIGNCMD_PLACE:
-		if (STRNCMP(last, "name", p - last) == 0)
-		    expand_what = EXP_SIGN_NAMES;
-		else
-		    xp->xp_context = EXPAND_NOTHING;
-		break;
-	    default:
-		xp->xp_context = EXPAND_NOTHING;
-	}
-    }
-}
-# endif
-#endif
 
 /*
  * Make the user happy.
@@ -8423,7 +7702,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
     char_u	*fname;
 
     if (l == NULL)
-	msg((char_u *)_("No old files"));
+	msg(_("No old files"));
     else
     {
 	msg_start();
@@ -8431,11 +7710,11 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
 	{
 	    ++nr;
-	    fname = get_tv_string(&li->li_tv);
+	    fname = tv_get_string(&li->li_tv);
 	    if (!message_filtered(fname))
 	    {
 		msg_outnum((long)nr);
-		MSG_PUTS(": ");
+		msg_puts(": ");
 		msg_outtrans(fname);
 		msg_clr_eos();
 		msg_putchar('\n');

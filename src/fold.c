@@ -155,6 +155,7 @@ hasFoldingWin(
     int		low_level = 0;
 
     checkupdate(win);
+
     /*
      * Return quickly when there is no folding at all in this window.
      */
@@ -409,7 +410,7 @@ opFoldRange(
 	    (void)hasFolding(lnum, NULL, &lnum_next);
     }
     if (done == DONE_NOTHING)
-	EMSG(_(e_nofold));
+	emsg(_(e_nofold));
     /* Force a redraw to remove the Visual highlighting. */
     if (had_visual)
 	redraw_curbuf_later(INVERTED);
@@ -560,9 +561,9 @@ foldManualAllowed(int create)
     if (foldmethodIsManual(curwin) || foldmethodIsMarker(curwin))
 	return TRUE;
     if (create)
-	EMSG(_("E350: Cannot create fold with current 'foldmethod'"));
+	emsg(_("E350: Cannot create fold with current 'foldmethod'"));
     else
-	EMSG(_("E351: Cannot delete fold with current 'foldmethod'"));
+	emsg(_("E351: Cannot delete fold with current 'foldmethod'"));
     return FALSE;
 }
 
@@ -774,7 +775,7 @@ deleteFold(
     }
     if (!did_one)
     {
-	EMSG(_(e_nofold));
+	emsg(_(e_nofold));
 	/* Force a redraw to remove the Visual highlighting. */
 	if (had_visual)
 	    redraw_curbuf_later(INVERTED);
@@ -1056,11 +1057,9 @@ foldAdjustVisual(void)
 	end->col = (colnr_T)STRLEN(ptr);
 	if (end->col > 0 && *p_sel == 'o')
 	    --end->col;
-#ifdef FEAT_MBYTE
 	/* prevent cursor from moving on the trail byte */
 	if (has_mbyte)
 	    mb_adjust_cursor();
-#endif
     }
 }
 
@@ -1210,7 +1209,7 @@ setFoldRepeat(linenr_T lnum, long count, int do_open)
 	{
 	    /* Only give an error message when no fold could be opened. */
 	    if (n == 0 && !(done & DONE_FOLD))
-		EMSG(_(e_nofold));
+		emsg(_(e_nofold));
 	    break;
 	}
     }
@@ -1362,7 +1361,7 @@ setManualFoldWin(
 	done |= DONE_FOLD;
     }
     else if (donep == NULL && wp == curwin)
-	EMSG(_(e_nofold));
+	emsg(_(e_nofold));
 
     if (donep != NULL)
 	*donep |= done;
@@ -1734,7 +1733,7 @@ foldCreateMarkers(linenr_T start, linenr_T end)
 {
     if (!curbuf->b_p_ma)
     {
-	EMSG(_(e_modifiable));
+	emsg(_(e_modifiable));
 	return;
     }
     parseMarker(curwin);
@@ -1945,7 +1944,6 @@ get_foldtext(
 	     * replace a TAB with a space. */
 	    for (p = text; *p != NUL; ++p)
 	    {
-# ifdef FEAT_MBYTE
 		int	len;
 
 		if (has_mbyte && (len = (*mb_ptr2len)(p)) > 1)
@@ -1955,7 +1953,6 @@ get_foldtext(
 		    p += len - 1;
 		}
 		else
-# endif
 		    if (*p == TAB)
 			*p = ' ';
 		    else if (ptr2cells(p) > 1)
@@ -3219,7 +3216,7 @@ foldlevelIndent(fline_T *flp)
 	    flp->lvl = -1;
     }
     else
-	flp->lvl = get_indent_buf(buf, lnum) / get_sw_value(curbuf);
+	flp->lvl = get_indent_buf(buf, lnum) / get_sw_value(buf);
     if (flp->lvl > flp->wp->w_p_fdn)
     {
 	flp->lvl = flp->wp->w_p_fdn;

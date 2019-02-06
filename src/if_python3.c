@@ -167,6 +167,11 @@ typedef PySliceObject PySliceObject_T;
 # define PySequence_Fast py3_PySequence_Fast
 # define PyTuple_Size py3_PyTuple_Size
 # define PyTuple_GetItem py3_PyTuple_GetItem
+# if PY_VERSION_HEX >= 0x030601f0
+#  define PySlice_AdjustIndices py3_PySlice_AdjustIndices
+#  define PySlice_Unpack py3_PySlice_Unpack
+# endif
+# undef PySlice_GetIndicesEx
 # define PySlice_GetIndicesEx py3_PySlice_GetIndicesEx
 # define PyImport_ImportModule py3_PyImport_ImportModule
 # define PyObject_Init py3__PyObject_Init
@@ -227,10 +232,13 @@ typedef PySliceObject PySliceObject_T;
 # endif
 # undef PyBytes_FromString
 # define PyBytes_FromString py3_PyBytes_FromString
+# undef PyBytes_FromStringAndSize
+# define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
 # define PyType_Type (*py3_PyType_Type)
+# define PyStdPrinter_Type (*py3_PyStdPrinter_Type)
 # define PySlice_Type (*py3_PySlice_Type)
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
@@ -304,6 +312,12 @@ static Py_ssize_t (*py3_PyTuple_Size)(PyObject *);
 static PyObject* (*py3_PyTuple_GetItem)(PyObject *, Py_ssize_t);
 static int (*py3_PyMapping_Check)(PyObject *);
 static PyObject* (*py3_PyMapping_Keys)(PyObject *);
+# if PY_VERSION_HEX >= 0x030601f0
+static int (*py3_PySlice_AdjustIndices)(Py_ssize_t length,
+		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t step);
+static int (*py3_PySlice_Unpack)(PyObject *slice,
+		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step);
+# endif
 static int (*py3_PySlice_GetIndicesEx)(PySliceObject_T *r, Py_ssize_t length,
 		     Py_ssize_t *start, Py_ssize_t *stop, Py_ssize_t *step,
 		     Py_ssize_t *slicelen);
@@ -382,12 +396,14 @@ static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char*
 static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
+static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PyType_Type;
+static PyTypeObject* py3_PyStdPrinter_Type;
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
 static PyTypeObject* py3_PyBool_Type;
@@ -472,6 +488,10 @@ static struct
     {"PySequence_Fast", (PYTHON_PROC*)&py3_PySequence_Fast},
     {"PyTuple_Size", (PYTHON_PROC*)&py3_PyTuple_Size},
     {"PyTuple_GetItem", (PYTHON_PROC*)&py3_PyTuple_GetItem},
+# if PY_VERSION_HEX >= 0x030601f0
+    {"PySlice_AdjustIndices", (PYTHON_PROC*)&py3_PySlice_AdjustIndices},
+    {"PySlice_Unpack", (PYTHON_PROC*)&py3_PySlice_Unpack},
+# endif
     {"PySlice_GetIndicesEx", (PYTHON_PROC*)&py3_PySlice_GetIndicesEx},
     {"PyErr_NoMemory", (PYTHON_PROC*)&py3_PyErr_NoMemory},
     {"Py_Finalize", (PYTHON_PROC*)&py3_Py_Finalize},
@@ -542,12 +562,14 @@ static struct
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
+    {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
+    {"PyStdPrinter_Type", (PYTHON_PROC*)&py3_PyStdPrinter_Type},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
@@ -612,7 +634,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    EMSG(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
 	return FAIL;
     }
 # endif
@@ -624,7 +646,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (!hinstPy3)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -636,7 +658,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPy3);
 	    hinstPy3 = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), py3_funcname_table[i].name);
+		semsg(_(e_loadfunc), py3_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -671,7 +693,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -691,8 +713,6 @@ python3_enabled(int verbose)
 /* Load the standard Python exceptions - don't import the symbols from the
  * DLL, as this can cause errors (importing data symbols is not reliable).
  */
-static void get_py3_exceptions(void);
-
     static void
 get_py3_exceptions(void)
 {
@@ -770,8 +790,6 @@ static PyObject *ListGetattro(PyObject *, PyObject *);
 static int ListSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *FunctionGetattro(PyObject *, PyObject *);
 
-static PyObject *VimPathHook(PyObject *, PyObject *);
-
 static struct PyModuleDef vimmodule;
 
 #define PY_CAN_RECURSE
@@ -846,7 +864,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
@@ -1666,6 +1684,7 @@ do_py3eval (char_u *str, typval_T *rettv)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_BLOB:
 	    break;
     }
 }

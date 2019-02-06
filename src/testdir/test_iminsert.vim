@@ -1,7 +1,3 @@
-if !has('multi_byte')
-  finish
-endif
-
 source view_util.vim
 
 let s:imactivatefunc_called = 0

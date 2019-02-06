@@ -5,5 +5,5 @@
 " Copyright (C) 2004,12 MURAOKA Taro <koron.kaoriya@gmail.com>
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
 
-" eucjp is the same as euc-jp.  Source the other one from here.
+" ja is the same as ja_jp.  Source the other one from here.
 source <sfile>:p:h/menu_ja_jp.euc-jp.vim

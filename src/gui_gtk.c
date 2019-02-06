@@ -756,13 +756,8 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 #  endif
 
 	    if (gtk_socket_id != 0)
-#  if GTK_CHECK_VERSION(3,0,0)
 		g_signal_connect(G_OBJECT(menu->id), "focus-in-event",
 			G_CALLBACK(toolbar_button_focus_in_event), NULL);
-#  else
-		gtk_signal_connect(GTK_OBJECT(menu->id), "focus_in_event",
-			GTK_SIGNAL_FUNC(toolbar_button_focus_in_event), NULL);
-#  endif
 
 	    CONVERT_TO_UTF8_FREE(text);
 	    CONVERT_TO_UTF8_FREE(tooltip);
@@ -792,12 +787,8 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	    gtk_widget_set_sensitive(menu->id, FALSE);
 # endif
 	    gtk_widget_show(menu->id);
-# if GTK_CHECK_VERSION(3,0,0)
 	    gtk_menu_shell_insert(GTK_MENU_SHELL(parent->submenu_id),
 		    menu->id, idx);
-# else
-	    gtk_menu_insert(GTK_MENU(parent->submenu_id), menu->id, idx);
-# endif
 
 	    return;
 	}
@@ -805,21 +796,12 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	/* Add textual menu item. */
 	menu_item_new(menu, parent->submenu_id);
 	gtk_widget_show(menu->id);
-# if GTK_CHECK_VERSION(3,0,0)
 	gtk_menu_shell_insert(GTK_MENU_SHELL(parent->submenu_id),
 		menu->id, idx);
-# else
-	gtk_menu_insert(GTK_MENU(parent->submenu_id), menu->id, idx);
-# endif
 
 	if (menu->id != NULL)
-# if GTK_CHECK_VERSION(3,0,0)
 	    g_signal_connect(G_OBJECT(menu->id), "activate",
 			     G_CALLBACK(menu_item_activate), menu);
-# else
-	    gtk_signal_connect(GTK_OBJECT(menu->id), "activate",
-			       GTK_SIGNAL_FUNC(menu_item_activate), menu);
-# endif
     }
 }
 #endif /* FEAT_MENU */
@@ -943,7 +925,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	g_object_ref(menu->id);
 
     /* Workaround for a spurious gtk warning in Ubuntu: "Trying to remove
-     * a child that doesn't believe we're it's parent."
+     * a child that doesn't believe we're its parent."
      * Remove widget from gui.menubar before destroying it. */
     if (menu->id != NULL && gui.menubar != NULL
 			    && gtk_widget_get_parent(menu->id) == gui.menubar)
@@ -1000,7 +982,6 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
-#if GTK_CHECK_VERSION(3,0,0)
 	gtk_adjustment_set_lower(adjustment, 0.0);
 	gtk_adjustment_set_value(adjustment, val);
 	gtk_adjustment_set_upper(adjustment, max + 1);
@@ -1008,34 +989,15 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 	gtk_adjustment_set_page_increment(adjustment,
 					  size < 3L ? 1L : size - 2L);
 	gtk_adjustment_set_step_increment(adjustment, 1.0);
-#else
-	adjustment->lower = 0.0;
-	adjustment->value = val;
-	adjustment->upper = max + 1;
-	adjustment->page_size = size;
-	adjustment->page_increment = size < 3L ? 1L : size - 2L;
-	adjustment->step_increment = 1.0;
-#endif
 
-#if GTK_CHECK_VERSION(3,0,0)
-	g_signal_handler_block(G_OBJECT(adjustment),
-						      (gulong)sb->handler_id);
-#else
-	g_signal_handler_block(GTK_OBJECT(adjustment),
-						      (gulong)sb->handler_id);
-#endif
+	g_signal_handler_block(G_OBJECT(adjustment), (gulong)sb->handler_id);
 
 #if !GTK_CHECK_VERSION(3,18,0)
 	gtk_adjustment_changed(adjustment);
 #endif
 
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_handler_unblock(G_OBJECT(adjustment),
 						      (gulong)sb->handler_id);
-#else
-	g_signal_handler_unblock(GTK_OBJECT(adjustment),
-						      (gulong)sb->handler_id);
-#endif
     }
 }
 
@@ -1063,11 +1025,7 @@ adjustment_value_changed(GtkAdjustment *adjustment, gpointer data)
 #endif
 
     sb = gui_find_scrollbar((long)data);
-#if GTK_CHECK_VERSION(3,0,0)
     value = gtk_adjustment_get_value(adjustment);
-#else
-    value = (long)adjustment->value;
-#endif
 #if !GTK_CHECK_VERSION(3,0,0)
     /*
      * The dragging argument must be right for the scrollbar to work with
@@ -1136,26 +1094,15 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
     {
 	GtkAdjustment *adjustment;
 
-#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_can_focus(sb->id, FALSE);
-#else
-	GTK_WIDGET_UNSET_FLAGS(sb->id, GTK_CAN_FOCUS);
-#endif
 	gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
-#if GTK_CHECK_VERSION(3,0,0)
 	sb->handler_id = g_signal_connect(
 			     G_OBJECT(adjustment), "value-changed",
 			     G_CALLBACK(adjustment_value_changed),
 			     GINT_TO_POINTER(sb->ident));
-#else
-	sb->handler_id = gtk_signal_connect(
-			     GTK_OBJECT(adjustment), "value_changed",
-			     GTK_SIGNAL_FUNC(adjustment_value_changed),
-			     GINT_TO_POINTER(sb->ident));
-#endif
 	gui_mch_update();
     }
 }
@@ -1803,7 +1750,7 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 
     /* Allow activation of mnemonic accelerators without pressing <Alt> when
      * there is no textfield.  Handle pressing Esc. */
-    g_signal_connect(G_OBJECT(dialog), "key_press_event",
+    g_signal_connect(G_OBJECT(dialog), "key-press-event",
 			 G_CALLBACK(&dialog_key_press_event_cb), &dialoginfo);
 
     if (def_but > 0)
@@ -1932,11 +1879,7 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 			 gboolean *push_in UNUSED,
 			 gpointer user_data UNUSED)
 {
-# if GTK_CHECK_VERSION(3,0,0)
     gdk_window_get_origin(gtk_widget_get_window(gui.drawarea), x, y);
-# else
-    gdk_window_get_origin(gui.drawarea->window, x, y);
-# endif
 
     if (popup_mouse_pos)
     {
@@ -1946,12 +1889,8 @@ popup_menu_position_func(GtkMenu *menu UNUSED,
 	*x += mx;
 	*y += my;
     }
-# if GTK_CHECK_VERSION(3,0,0)
     else if (curwin != NULL && gui.drawarea != NULL &&
 	     gtk_widget_get_window(gui.drawarea) != NULL)
-# else
-    else if (curwin != NULL && gui.drawarea != NULL && gui.drawarea->window != NULL)
-# endif
     {
 	/* Find the cursor position in the current window */
 	*x += FILL_X(curwin->w_wincol + curwin->w_wcol + 1) + 1;
@@ -2211,17 +2150,10 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	if (entry_text != NULL)
 	{
 	    gtk_entry_set_text(GTK_ENTRY(frdp->what), (char *)entry_text);
-#if GTK_CHECK_VERSION(3,0,0)
 	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->wword),
 							     (gboolean)wword);
 	    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->mcase),
 							     (gboolean)mcase);
-#else
-	    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(frdp->wword),
-							     (gboolean)wword);
-	    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(frdp->mcase),
-							     (gboolean)mcase);
-#endif
 	}
 	gtk_window_present(GTK_WINDOW(frdp->dialog));
 
@@ -2286,11 +2218,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	table = gtk_table_new(1024, 3, FALSE);
 #endif
     gtk_box_pack_start(GTK_BOX(hbox), table, TRUE, TRUE, 0);
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_container_set_border_width(GTK_CONTAINER(table), 4);
-#else
-    gtk_container_border_width(GTK_CONTAINER(table), 4);
-#endif
 
     tmp = gtk_label_new(CONV(_("Find what:")));
 #if GTK_CHECK_VERSION(3,16,0)
@@ -2323,19 +2251,11 @@ find_replace_dialog_create(char_u *arg, int do_replace)
     sensitive = (entry_text != NULL && entry_text[0] != NUL);
     if (entry_text != NULL)
 	gtk_entry_set_text(GTK_ENTRY(frdp->what), (char *)entry_text);
-#if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(frdp->what), "changed",
 		     G_CALLBACK(entry_changed_cb), frdp->dialog);
     g_signal_connect_after(G_OBJECT(frdp->what), "key-press-event",
 			   G_CALLBACK(find_key_press_event),
 			   (gpointer) frdp);
-#else
-    gtk_signal_connect(GTK_OBJECT(frdp->what), "changed",
-		       GTK_SIGNAL_FUNC(entry_changed_cb), frdp->dialog);
-    gtk_signal_connect_after(GTK_OBJECT(frdp->what), "key_press_event",
-				 GTK_SIGNAL_FUNC(find_key_press_event),
-				 (gpointer) frdp);
-#endif
 #if GTK_CHECK_VERSION(3,4,0)
     gtk_grid_attach(GTK_GRID(table), frdp->what, 2, 0, 5, 1);
 #else
@@ -2373,21 +2293,12 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 			 GTK_FILL, GTK_EXPAND, 2, 2);
 #endif
 	frdp->with = gtk_entry_new();
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(frdp->with), "activate",
 			 G_CALLBACK(find_replace_cb),
 			 GINT_TO_POINTER(FRD_R_FINDNEXT));
 	g_signal_connect_after(G_OBJECT(frdp->with), "key-press-event",
 			       G_CALLBACK(find_key_press_event),
 			       (gpointer) frdp);
-#else
-	gtk_signal_connect(GTK_OBJECT(frdp->with), "activate",
-			   GTK_SIGNAL_FUNC(find_replace_cb),
-			   GINT_TO_POINTER(FRD_R_FINDNEXT));
-	gtk_signal_connect_after(GTK_OBJECT(frdp->with), "key_press_event",
-				 GTK_SIGNAL_FUNC(find_key_press_event),
-				 (gpointer) frdp);
-#endif
 #if GTK_CHECK_VERSION(3,4,0)
 	gtk_grid_attach(GTK_GRID(table), frdp->with, 2, 1, 5, 1);
 #else
@@ -2399,39 +2310,23 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	 * Make the entry activation only change the input focus onto the
 	 * with item.
 	 */
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(frdp->what), "activate",
 			 G_CALLBACK(entry_activate_cb), frdp->with);
-#else
-	gtk_signal_connect(GTK_OBJECT(frdp->what), "activate",
-			   GTK_SIGNAL_FUNC(entry_activate_cb), frdp->with);
-#endif
     }
     else
     {
 	/*
 	 * Make the entry activation do the search.
 	 */
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(frdp->what), "activate",
 			 G_CALLBACK(find_replace_cb),
 			 GINT_TO_POINTER(FRD_FINDNEXT));
-#else
-	gtk_signal_connect(GTK_OBJECT(frdp->what), "activate",
-			   GTK_SIGNAL_FUNC(find_replace_cb),
-			   GINT_TO_POINTER(FRD_FINDNEXT));
-#endif
     }
 
     /* whole word only button */
     frdp->wword = gtk_check_button_new_with_label(CONV(_("Match whole word only")));
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->wword),
 							(gboolean)wword);
-#else
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(frdp->wword),
-							(gboolean)wword);
-#endif
     if (do_replace)
 #if GTK_CHECK_VERSION(3,4,0)
 	gtk_grid_attach(GTK_GRID(table), frdp->wword, 0, 2, 5, 1);
@@ -2449,13 +2344,8 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 
     /* match case button */
     frdp->mcase = gtk_check_button_new_with_label(CONV(_("Match case")));
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->mcase),
 							     (gboolean)mcase);
-#else
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(frdp->mcase),
-							     (gboolean)mcase);
-#endif
     if (do_replace)
 #if GTK_CHECK_VERSION(3,4,0)
 	gtk_grid_attach(GTK_GRID(table), frdp->mcase, 0, 3, 5, 1);
@@ -2492,30 +2382,16 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #else
     vbox = gtk_vbox_new(FALSE, 0);
 #endif
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 0);
-#else
-    gtk_container_border_width(GTK_CONTAINER(vbox), 0);
-#endif
     gtk_container_add(GTK_CONTAINER(tmp), vbox);
 
     /* 'Up' and 'Down' buttons */
     frdp->up = gtk_radio_button_new_with_label(NULL, CONV(_("Up")));
     gtk_box_pack_start(GTK_BOX(vbox), frdp->up, TRUE, TRUE, 0);
-#if GTK_CHECK_VERSION(3,0,0)
     frdp->down = gtk_radio_button_new_with_label(
 			gtk_radio_button_get_group(GTK_RADIO_BUTTON(frdp->up)),
 			CONV(_("Down")));
-#else
-    frdp->down = gtk_radio_button_new_with_label(
-			gtk_radio_button_group(GTK_RADIO_BUTTON(frdp->up)),
-			CONV(_("Down")));
-#endif
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(frdp->down), TRUE);
-#else
-    gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(frdp->down), TRUE);
-#endif
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 2);
     gtk_box_pack_start(GTK_BOX(vbox), frdp->down, TRUE, TRUE, 0);
 
@@ -2525,11 +2401,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #else
     actionarea = gtk_vbutton_box_new();
 #endif
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_container_set_border_width(GTK_CONTAINER(actionarea), 2);
-#else
-    gtk_container_border_width(GTK_CONTAINER(actionarea), 2);
-#endif
     gtk_box_pack_end(GTK_BOX(hbox), actionarea, FALSE, FALSE, 0);
 
     /* 'Find Next' button */
@@ -2540,23 +2412,12 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #endif
     gtk_widget_set_sensitive(frdp->find, sensitive);
 
-#if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(frdp->find), "clicked",
 		     G_CALLBACK(find_replace_cb),
 		     (do_replace) ? GINT_TO_POINTER(FRD_R_FINDNEXT)
 				  : GINT_TO_POINTER(FRD_FINDNEXT));
-#else
-    gtk_signal_connect(GTK_OBJECT(frdp->find), "clicked",
-		       GTK_SIGNAL_FUNC(find_replace_cb),
-		       (do_replace) ? GINT_TO_POINTER(FRD_R_FINDNEXT)
-				    : GINT_TO_POINTER(FRD_FINDNEXT));
-#endif
 
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_can_default(frdp->find, TRUE);
-#else
-    GTK_WIDGET_SET_FLAGS(frdp->find, GTK_CAN_DEFAULT);
-#endif
     gtk_box_pack_start(GTK_BOX(actionarea), frdp->find, FALSE, FALSE, 0);
     gtk_widget_grab_default(frdp->find);
 
@@ -2569,21 +2430,11 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	frdp->replace = create_image_button(GTK_STOCK_CONVERT, _("Replace"));
 #endif
 	gtk_widget_set_sensitive(frdp->replace, sensitive);
-#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_can_default(frdp->find, TRUE);
-#else
-	GTK_WIDGET_SET_FLAGS(frdp->replace, GTK_CAN_DEFAULT);
-#endif
 	gtk_box_pack_start(GTK_BOX(actionarea), frdp->replace, FALSE, FALSE, 0);
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(frdp->replace), "clicked",
 			 G_CALLBACK(find_replace_cb),
 			 GINT_TO_POINTER(FRD_REPLACE));
-#else
-	gtk_signal_connect(GTK_OBJECT(frdp->replace), "clicked",
-			   GTK_SIGNAL_FUNC(find_replace_cb),
-			   GINT_TO_POINTER(FRD_REPLACE));
-#endif
 
 	/* 'Replace All' button */
 #if GTK_CHECK_VERSION(3,10,0)
@@ -2592,21 +2443,11 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	frdp->all = create_image_button(GTK_STOCK_CONVERT, _("Replace All"));
 #endif
 	gtk_widget_set_sensitive(frdp->all, sensitive);
-#if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_set_can_default(frdp->all, TRUE);
-#else
-	GTK_WIDGET_SET_FLAGS(frdp->all, GTK_CAN_DEFAULT);
-#endif
 	gtk_box_pack_start(GTK_BOX(actionarea), frdp->all, FALSE, FALSE, 0);
-#if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(frdp->all), "clicked",
 			 G_CALLBACK(find_replace_cb),
 			 GINT_TO_POINTER(FRD_REPLACEALL));
-#else
-	gtk_signal_connect(GTK_OBJECT(frdp->all), "clicked",
-			   GTK_SIGNAL_FUNC(find_replace_cb),
-			   GINT_TO_POINTER(FRD_REPLACEALL));
-#endif
     }
 
     /* 'Cancel' button */
@@ -2615,27 +2456,14 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 #else
     tmp = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
 #endif
-#if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_can_default(tmp, TRUE);
-#else
-    GTK_WIDGET_SET_FLAGS(tmp, GTK_CAN_DEFAULT);
-#endif
     gtk_box_pack_end(GTK_BOX(actionarea), tmp, FALSE, FALSE, 0);
-#if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect_swapped(G_OBJECT(tmp),
 			     "clicked", G_CALLBACK(gtk_widget_hide),
 			     G_OBJECT(frdp->dialog));
     g_signal_connect_swapped(G_OBJECT(frdp->dialog),
 			     "delete-event", G_CALLBACK(gtk_widget_hide_on_delete),
 			     G_OBJECT(frdp->dialog));
-#else
-    gtk_signal_connect_object(GTK_OBJECT(tmp),
-			      "clicked", GTK_SIGNAL_FUNC(gtk_widget_hide),
-			      GTK_OBJECT(frdp->dialog));
-    gtk_signal_connect_object(GTK_OBJECT(frdp->dialog),
-			      "delete_event", GTK_SIGNAL_FUNC(gtk_widget_hide_on_delete),
-			      GTK_OBJECT(frdp->dialog));
-#endif
 
 #if GTK_CHECK_VERSION(3,2,0)
     tmp = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
@@ -2701,23 +2529,11 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     }
 
     find_text = (char_u *)gtk_entry_get_text(GTK_ENTRY(sfr->what));
-#if GTK_CHECK_VERSION(3,0,0)
     direction_down = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sfr->down));
-#else
-    direction_down = GTK_TOGGLE_BUTTON(sfr->down)->active;
-#endif
 
-#if GTK_CHECK_VERSION(3,0,0)
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sfr->wword)))
-#else
-    if (GTK_TOGGLE_BUTTON(sfr->wword)->active)
-#endif
 	flags |= FRD_WHOLE_WORD;
-#if GTK_CHECK_VERSION(3,0,0)
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sfr->mcase)))
-#else
-    if (GTK_TOGGLE_BUTTON(sfr->mcase)->active)
-#endif
 	flags |= FRD_MATCH_CASE;
 
     repl_text = CONVERT_FROM_UTF8(repl_text);

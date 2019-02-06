@@ -9,10 +9,7 @@
 #ifndef VIM__H
 # define VIM__H
 
-#ifdef PROTO
-/* cproto runs into trouble when this type is missing */
-typedef double _Float128;
-#endif
+#include "protodef.h"
 
 /* use fastcall for Borland, when compiling for Win32 */
 #if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
@@ -160,6 +157,10 @@ typedef double _Float128;
 #  define VIM_SIZEOF_INT __SIZEOF_INT__
 #endif
 
+#if VIM_SIZEOF_INT < 4 && !defined(PROTO)
+    Error: Vim only works with 32 bit int or larger
+#endif
+
 /*
  * #defines for optionals and features
  * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
@@ -213,7 +214,7 @@ typedef double _Float128;
 #endif
 
 /* The Mac conversion stuff doesn't work under X11. */
-#if defined(FEAT_MBYTE) && defined(MACOS_X_DARWIN)
+#if defined(MACOS_X_DARWIN)
 # define MACOS_CONVERT
 #endif
 
@@ -259,15 +260,15 @@ typedef double _Float128;
 # define SUN_SYSTEM
 #endif
 
-/* if we're compiling in C++ (currently only KVim), the system
+/* If we're compiling in C++ (currently only KVim), the system
  * headers must have the correct prototypes or nothing will build.
- * conversely, our prototypes might clash due to throw() specifiers and
+ * Conversely, our prototypes might clash due to throw() specifiers and
  * cause compilation failures even though the headers are correct.  For
  * a concrete example, gcc-3.2 enforces exception specifications, and
  * glibc-2.2.5 has them in their system headers.
  */
 #if !defined(__cplusplus) && defined(UNIX) \
-  && !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
+	&& !defined(MACOS_X) /* MACOS_X doesn't yet support osdef.h */
 # include "auto/osdef.h"	/* bring missing declarations in */
 #endif
 
@@ -289,10 +290,6 @@ typedef double _Float128;
 
 #ifdef __QNX__
 # include "os_qnx.h"
-#endif
-
-#ifdef FEAT_SUN_WORKSHOP
-# include "workshop.h"
 #endif
 
 #ifdef X_LOCALE
@@ -344,6 +341,17 @@ typedef double _Float128;
 typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
+
+/* Older systems do not have support for long long
+ * use a typedef instead of hadcoded long long */
+#ifdef HAVE_NO_LONG_LONG
+ typedef long long_long_T;
+ typedef long unsigned long_long_u_T;
+#else
+ typedef long long long_long_T;
+ typedef long long unsigned long_long_u_T;
+#endif
+
 /* Make sure long_u is big enough to hold a pointer.
  * On Win64, longs are 32 bits and pointers are 64 bits.
  * For printf() and scanf(), we need to take care of long_u specifically. */
@@ -423,21 +431,9 @@ typedef unsigned short sattr_T;
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
- * We normally use 32 bits now, since some Asian characters don't fit in 16
- * bits.  u8char_T is only used for displaying, it could be 16 bits to save
- * memory.
+ * We use 32 bits, since some Asian characters don't fit in 16 bits.
  */
-#ifdef FEAT_MBYTE
-# ifdef UNICODE16
-typedef unsigned short u8char_T;    /* short should be 16 bits */
-# else
-#  if VIM_SIZEOF_INT >= 4
-typedef unsigned int u8char_T;	    /* int is 32 bits */
-#  else
-typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
-#  endif
-# endif
-#endif
+typedef unsigned int u8char_T;	// int is 32 bits or more
 
 #ifndef UNIX		    /* For Unix this is included in os_unix.h */
 # include <stdio.h>
@@ -553,6 +549,10 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 /*
  * The _() stuff is for using gettext().  It is a no-op when libintl.h is not
  * found or the +multilang feature is disabled.
+ * Use NGETTEXT(single, multi, number) to get plural behavior:
+ * - single - message for singular form
+ * - multi  - message for plural form
+ * - number - the count
  */
 #ifdef FEAT_GETTEXT
 # ifdef DYNAMIC_GETTEXT
@@ -675,10 +675,8 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 
 #define REPLACE_FLAG	0x40	/* Replace mode flag */
 #define REPLACE		(REPLACE_FLAG + INSERT)
-#ifdef FEAT_VREPLACE
-# define VREPLACE_FLAG	0x80	/* Virtual-replace mode flag */
-# define VREPLACE	(REPLACE_FLAG + VREPLACE_FLAG + INSERT)
-#endif
+#define VREPLACE_FLAG	0x80	/* Virtual-replace mode flag */
+#define VREPLACE	(REPLACE_FLAG + VREPLACE_FLAG + INSERT)
 #define LREPLACE	(REPLACE_FLAG + LANGMAP)
 
 #define NORMAL_BUSY	(0x100 + NORMAL) /* Normal mode, busy with a command */
@@ -1013,6 +1011,7 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 /* values for reg_do_extmatch */
 # define REX_SET	1	/* to allow \z\(...\), */
 # define REX_USE	2	/* to allow \z\1 et al. */
+# define REX_ALL	(REX_SET | REX_USE)
 #endif
 
 /* Return values for fullpathcmp() */
@@ -1238,7 +1237,7 @@ typedef struct {
 #define MIN_SWAP_PAGE_SIZE 1048
 #define MAX_SWAP_PAGE_SIZE 50000
 
-/* Special values for current_SID. */
+/* Special values for current_sctx.sc_sid. */
 #define SID_MODELINE	-1	/* when using a modeline */
 #define SID_CMDARG	-2	/* for "--cmd" argument */
 #define SID_CARG	-3	/* for "-c" argument */
@@ -1251,104 +1250,106 @@ typedef struct {
  */
 enum auto_event
 {
-    EVENT_BUFADD = 0,		/* after adding a buffer to the buffer list */
-    EVENT_BUFDELETE,		/* deleting a buffer from the buffer list */
-    EVENT_BUFENTER,		/* after entering a buffer */
-    EVENT_BUFFILEPOST,		/* after renaming a buffer */
-    EVENT_BUFFILEPRE,		/* before renaming a buffer */
-    EVENT_BUFHIDDEN,		/* just after buffer becomes hidden */
-    EVENT_BUFLEAVE,		/* before leaving a buffer */
-    EVENT_BUFNEW,		/* after creating any buffer */
-    EVENT_BUFNEWFILE,		/* when creating a buffer for a new file */
-    EVENT_BUFREADCMD,		/* read buffer using command */
-    EVENT_BUFREADPOST,		/* after reading a buffer */
-    EVENT_BUFREADPRE,		/* before reading a buffer */
-    EVENT_BUFUNLOAD,		/* just before unloading a buffer */
-    EVENT_BUFWINENTER,		/* after showing a buffer in a window */
-    EVENT_BUFWINLEAVE,		/* just after buffer removed from window */
-    EVENT_BUFWIPEOUT,		/* just before really deleting a buffer */
-    EVENT_BUFWRITECMD,		/* write buffer using command */
-    EVENT_BUFWRITEPOST,		/* after writing a buffer */
-    EVENT_BUFWRITEPRE,		/* before writing a buffer */
-    EVENT_CMDLINECHANGED,	/* command line was modified*/
-    EVENT_CMDLINEENTER,		/* after entering the command line */
-    EVENT_CMDLINELEAVE,		/* before leaving the command line */
-    EVENT_CMDUNDEFINED,		/* command undefined */
-    EVENT_CMDWINENTER,		/* after entering the cmdline window */
-    EVENT_CMDWINLEAVE,		/* before leaving the cmdline window */
-    EVENT_COLORSCHEME,		/* after loading a colorscheme */
-    EVENT_COLORSCHEMEPRE,	/* before loading a colorscheme */
-    EVENT_COMPLETEDONE,		/* after finishing insert complete */
-    EVENT_CURSORHOLD,		/* cursor in same position for a while */
-    EVENT_CURSORHOLDI,		/* idem, in Insert mode */
-    EVENT_CURSORMOVED,		/* cursor was moved */
-    EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */
-    EVENT_DIRCHANGED,		/* after user changed directory */
-    EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
-    EVENT_EXITPRE,		/* before exiting */
-    EVENT_FILEAPPENDCMD,	/* append to a file using command */
-    EVENT_FILEAPPENDPOST,	/* after appending to a file */
-    EVENT_FILEAPPENDPRE,	/* before appending to a file */
-    EVENT_FILECHANGEDRO,	/* before first change to read-only file */
-    EVENT_FILECHANGEDSHELL,	/* after shell command that changed file */
-    EVENT_FILECHANGEDSHELLPOST,	/* after (not) reloading changed file */
-    EVENT_FILEREADCMD,		/* read from a file using command */
-    EVENT_FILEREADPOST,		/* after reading a file */
-    EVENT_FILEREADPRE,		/* before reading a file */
-    EVENT_FILETYPE,		/* new file type detected (user defined) */
-    EVENT_FILEWRITECMD,		/* write to a file using command */
-    EVENT_FILEWRITEPOST,	/* after writing a file */
-    EVENT_FILEWRITEPRE,		/* before writing a file */
-    EVENT_FILTERREADPOST,	/* after reading from a filter */
-    EVENT_FILTERREADPRE,	/* before reading from a filter */
-    EVENT_FILTERWRITEPOST,	/* after writing to a filter */
-    EVENT_FILTERWRITEPRE,	/* before writing to a filter */
-    EVENT_FOCUSGAINED,		/* got the focus */
-    EVENT_FOCUSLOST,		/* lost the focus to another app */
-    EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */
-    EVENT_GUIENTER,		/* after starting the GUI */
-    EVENT_GUIFAILED,		/* after starting the GUI failed */
-    EVENT_INSERTCHANGE,		/* when changing Insert/Replace mode */
-    EVENT_INSERTCHARPRE,	/* before inserting a char */
-    EVENT_INSERTENTER,		/* when entering Insert mode */
-    EVENT_INSERTLEAVE,		/* when leaving Insert mode */
-    EVENT_MENUPOPUP,		/* just before popup menu is displayed */
-    EVENT_OPTIONSET,		/* option was set */
-    EVENT_QUICKFIXCMDPOST,	/* after :make, :grep etc. */
-    EVENT_QUICKFIXCMDPRE,	/* before :make, :grep etc. */
-    EVENT_QUITPRE,		/* before :quit */
-    EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
-    EVENT_SESSIONLOADPOST,	/* after loading a session file */
-    EVENT_SHELLCMDPOST,		/* after ":!cmd" */
-    EVENT_SHELLFILTERPOST,	/* after ":1,2!cmd", ":w !cmd", ":r !cmd". */
-    EVENT_SOURCECMD,		/* sourcing a Vim script using command */
-    EVENT_SOURCEPRE,		/* before sourcing a Vim script */
-    EVENT_SPELLFILEMISSING,	/* spell file missing */
-    EVENT_STDINREADPOST,	/* after reading from stdin */
-    EVENT_STDINREADPRE,		/* before reading from stdin */
-    EVENT_SWAPEXISTS,		/* found existing swap file */
-    EVENT_SYNTAX,		/* syntax selected */
-    EVENT_TABCLOSED,		/* after closing a tab page */
-    EVENT_TABENTER,		/* after entering a tab page */
-    EVENT_TABLEAVE,		/* before leaving a tab page */
-    EVENT_TABNEW,		/* when entering a new tab page */
-    EVENT_TERMCHANGED,		/* after changing 'term' */
-    EVENT_TERMINALOPEN,		/* after a terminal buffer was created */
-    EVENT_TERMRESPONSE,		/* after setting "v:termresponse" */
-    EVENT_TEXTCHANGED,		/* text was modified not in Insert mode */
-    EVENT_TEXTCHANGEDI,         /* text was modified in Insert mode */
-    EVENT_TEXTCHANGEDP,         /* TextChangedI with popup menu visible */
-    EVENT_TEXTYANKPOST,		/* after some text was yanked */
-    EVENT_USER,			/* user defined autocommand */
-    EVENT_VIMENTER,		/* after starting Vim */
-    EVENT_VIMLEAVE,		/* before exiting Vim */
-    EVENT_VIMLEAVEPRE,		/* before exiting Vim and writing .viminfo */
-    EVENT_VIMRESIZED,		/* after Vim window was resized */
-    EVENT_WINENTER,		/* after entering a window */
-    EVENT_WINLEAVE,		/* before leaving a window */
-    EVENT_WINNEW,		/* when entering a new window */
+    EVENT_BUFADD = 0,		// after adding a buffer to the buffer list
+    EVENT_BUFDELETE,		// deleting a buffer from the buffer list
+    EVENT_BUFENTER,		// after entering a buffer
+    EVENT_BUFFILEPOST,		// after renaming a buffer
+    EVENT_BUFFILEPRE,		// before renaming a buffer
+    EVENT_BUFHIDDEN,		// just after buffer becomes hidden
+    EVENT_BUFLEAVE,		// before leaving a buffer
+    EVENT_BUFNEW,		// after creating any buffer
+    EVENT_BUFNEWFILE,		// when creating a buffer for a new file
+    EVENT_BUFREADCMD,		// read buffer using command
+    EVENT_BUFREADPOST,		// after reading a buffer
+    EVENT_BUFREADPRE,		// before reading a buffer
+    EVENT_BUFUNLOAD,		// just before unloading a buffer
+    EVENT_BUFWINENTER,		// after showing a buffer in a window
+    EVENT_BUFWINLEAVE,		// just after buffer removed from window
+    EVENT_BUFWIPEOUT,		// just before really deleting a buffer
+    EVENT_BUFWRITECMD,		// write buffer using command
+    EVENT_BUFWRITEPOST,		// after writing a buffer
+    EVENT_BUFWRITEPRE,		// before writing a buffer
+    EVENT_CMDLINECHANGED,	// command line was modified
+    EVENT_CMDLINEENTER,		// after entering the command line
+    EVENT_CMDLINELEAVE,		// before leaving the command line
+    EVENT_CMDUNDEFINED,		// command undefined
+    EVENT_CMDWINENTER,		// after entering the cmdline window
+    EVENT_CMDWINLEAVE,		// before leaving the cmdline window
+    EVENT_COLORSCHEME,		// after loading a colorscheme
+    EVENT_COLORSCHEMEPRE,	// before loading a colorscheme
+    EVENT_COMPLETEDONE,		// after finishing insert complete
+    EVENT_CURSORHOLD,		// cursor in same position for a while
+    EVENT_CURSORHOLDI,		// idem, in Insert mode
+    EVENT_CURSORMOVED,		// cursor was moved
+    EVENT_CURSORMOVEDI,		// cursor was moved in Insert mode
+    EVENT_DIFFUPDATED,		// after diffs were updated
+    EVENT_DIRCHANGED,		// after user changed directory
+    EVENT_ENCODINGCHANGED,	// after changing the 'encoding' option
+    EVENT_EXITPRE,		// before exiting
+    EVENT_FILEAPPENDCMD,	// append to a file using command
+    EVENT_FILEAPPENDPOST,	// after appending to a file
+    EVENT_FILEAPPENDPRE,	// before appending to a file
+    EVENT_FILECHANGEDRO,	// before first change to read-only file
+    EVENT_FILECHANGEDSHELL,	// after shell command that changed file
+    EVENT_FILECHANGEDSHELLPOST,	// after (not) reloading changed file
+    EVENT_FILEREADCMD,		// read from a file using command
+    EVENT_FILEREADPOST,		// after reading a file
+    EVENT_FILEREADPRE,		// before reading a file
+    EVENT_FILETYPE,		// new file type detected (user defined)
+    EVENT_FILEWRITECMD,		// write to a file using command
+    EVENT_FILEWRITEPOST,	// after writing a file
+    EVENT_FILEWRITEPRE,		// before writing a file
+    EVENT_FILTERREADPOST,	// after reading from a filter
+    EVENT_FILTERREADPRE,	// before reading from a filter
+    EVENT_FILTERWRITEPOST,	// after writing to a filter
+    EVENT_FILTERWRITEPRE,	// before writing to a filter
+    EVENT_FOCUSGAINED,		// got the focus
+    EVENT_FOCUSLOST,		// lost the focus to another app
+    EVENT_FUNCUNDEFINED,	// if calling a function which doesn't exist
+    EVENT_GUIENTER,		// after starting the GUI
+    EVENT_GUIFAILED,		// after starting the GUI failed
+    EVENT_INSERTCHANGE,		// when changing Insert/Replace mode
+    EVENT_INSERTCHARPRE,	// before inserting a char
+    EVENT_INSERTENTER,		// when entering Insert mode
+    EVENT_INSERTLEAVE,		// when leaving Insert mode
+    EVENT_MENUPOPUP,		// just before popup menu is displayed
+    EVENT_OPTIONSET,		// option was set
+    EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
+    EVENT_QUICKFIXCMDPRE,	// before :make, :grep etc.
+    EVENT_QUITPRE,		// before :quit
+    EVENT_REMOTEREPLY,		// upon string reception from a remote vim
+    EVENT_SESSIONLOADPOST,	// after loading a session file
+    EVENT_SHELLCMDPOST,		// after ":!cmd"
+    EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
+    EVENT_SOURCECMD,		// sourcing a Vim script using command
+    EVENT_SOURCEPRE,		// before sourcing a Vim script
+    EVENT_SOURCEPOST,		// after sourcing a Vim script
+    EVENT_SPELLFILEMISSING,	// spell file missing
+    EVENT_STDINREADPOST,	// after reading from stdin
+    EVENT_STDINREADPRE,		// before reading from stdin
+    EVENT_SWAPEXISTS,		// found existing swap file
+    EVENT_SYNTAX,		// syntax selected
+    EVENT_TABCLOSED,		// after closing a tab page
+    EVENT_TABENTER,		// after entering a tab page
+    EVENT_TABLEAVE,		// before leaving a tab page
+    EVENT_TABNEW,		// when entering a new tab page
+    EVENT_TERMCHANGED,		// after changing 'term'
+    EVENT_TERMINALOPEN,		// after a terminal buffer was created
+    EVENT_TERMRESPONSE,		// after setting "v:termresponse"
+    EVENT_TEXTCHANGED,		// text was modified not in Insert mode
+    EVENT_TEXTCHANGEDI,         // text was modified in Insert mode
+    EVENT_TEXTCHANGEDP,         // TextChangedI with popup menu visible
+    EVENT_TEXTYANKPOST,		// after some text was yanked
+    EVENT_USER,			// user defined autocommand
+    EVENT_VIMENTER,		// after starting Vim
+    EVENT_VIMLEAVE,		// before exiting Vim
+    EVENT_VIMLEAVEPRE,		// before exiting Vim and writing .viminfo
+    EVENT_VIMRESIZED,		// after Vim window was resized
+    EVENT_WINENTER,		// after entering a window
+    EVENT_WINLEAVE,		// before leaving a window
+    EVENT_WINNEW,		// when entering a new window
 
-    NUM_EVENTS			/* MUST be the last one */
+    NUM_EVENTS			// MUST be the last one
 };
 
 typedef enum auto_event event_T;
@@ -1507,14 +1508,9 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 #define DIALOG_MSG_SIZE 1000	/* buffer size for dialog_msg() */
 
-#ifdef FEAT_MBYTE
-# define MSG_BUF_LEN 480	/* length of buffer for small messages */
-# define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8
+#define MSG_BUF_LEN 480	/* length of buffer for small messages */
+#define MSG_BUF_CLEN  (MSG_BUF_LEN / 6)    /* cell length (worst case: utf-8
 					       takes 6 bytes for one cell) */
-#else
-# define MSG_BUF_LEN 80		/* length of buffer for small messages */
-# define MSG_BUF_CLEN  MSG_BUF_LEN	    /* cell length */
-#endif
 
 #define FOLD_TEXT_LEN  51	/* buffer size for get_foldtext() */
 
@@ -1600,7 +1596,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
 /* We need to call mb_stricmp() even when we aren't dealing with a multi-byte
  * encoding because mb_stricmp() takes care of all ascii and non-ascii
  * encodings, including characters with umlauts in latin1, etc., while
@@ -1609,10 +1604,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 
 # define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
 # define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
-#else
-# define MB_STRICMP(d, s)	STRICMP((d), (s))
-# define MB_STRNICMP(d, s, n)	STRNICMP((d), (s), (n))
-#endif
 
 #define STRCAT(d, s)	    strcat((char *)(d), (char *)(s))
 #define STRNCAT(d, s, n)    strncat((char *)(d), (char *)(s), (size_t)(n))
@@ -1621,23 +1612,8 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define vim_strpbrk(s, cs) (char_u *)strpbrk((char *)(s), (char *)(cs))
 #endif
 
-#define MSG(s)			    msg((char_u *)(s))
-#define MSG_ATTR(s, attr)	    msg_attr((char_u *)(s), (attr))
-#define EMSG(s)			    emsg((char_u *)(s))
-#define EMSG2(s, p)		    emsg2((char_u *)(s), (char_u *)(p))
-#define EMSG3(s, p, q)		    emsg3((char_u *)(s), (char_u *)(p), (char_u *)(q))
-#define EMSGN(s, n)		    emsgn((char_u *)(s), (long)(n))
-#define EMSGU(s, n)		    emsgu((char_u *)(s), (long_u)(n))
-#define IEMSG(s)		    iemsg((char_u *)(s))
-#define IEMSG2(s, p)		    iemsg2((char_u *)(s), (char_u *)(p))
-#define IEMSGN(s, n)		    iemsgn((char_u *)(s), (long)(n))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))
-#define MSG_PUTS(s)		    msg_puts((char_u *)(s))
-#define MSG_PUTS_ATTR(s, a)	    msg_puts_attr((char_u *)(s), (a))
-#define MSG_PUTS_TITLE(s)	    msg_puts_title((char_u *)(s))
-#define MSG_PUTS_LONG(s)	    msg_puts_long_attr((char_u *)(s), 0)
-#define MSG_PUTS_LONG_ATTR(s, a)    msg_puts_long_attr((char_u *)(s), (a))
 
 #ifdef FEAT_GUI
 # ifdef FEAT_TERMGUICOLORS
@@ -1674,10 +1650,10 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define GUI_GET_COLOR		    GUI_FUNCTION(get_color)
 #endif
 
-/* Prefer using emsg3(), because perror() may send the output to the wrong
+/* Prefer using emsgf(), because perror() may send the output to the wrong
  * destination and mess up the screen. */
 #ifdef HAVE_STRERROR
-# define PERROR(msg)		    (void)emsg3((char_u *)"%s: %s", (char_u *)msg, (char_u *)strerror(errno))
+# define PERROR(msg)		    (void)semsg("%s: %s", (char *)msg, strerror(errno))
 #else
 # define PERROR(msg)		    do_perror(msg)
 #endif
@@ -1685,8 +1661,6 @@ typedef UINT32_TYPEDEF UINT32_T;
 typedef long	linenr_T;		/* line number type */
 typedef int	colnr_T;		/* column number type */
 typedef unsigned short disptick_T;	/* display tick type */
-
-#define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
 
 /*
  * Well, you won't believe it, but some S/390 machines ("host", now also known
@@ -1697,14 +1671,12 @@ typedef unsigned short disptick_T;	/* display tick type */
  * With this we restrict the maximum line length to 1073741823. I guess this is
  * not a real problem. BTW:  Longer lines are split.
  */
-#if VIM_SIZEOF_INT >= 4
-# ifdef __MVS__
-#  define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
-# else
-#  define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
-# endif
+#ifdef __MVS__
+# define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
+# define MAXLNUM (0x3fffffffL)		/* maximum (invalid) line number */
 #else
-# define MAXCOL	(0x7fff)		/* maximum column number, 15 bits */
+# define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
+# define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
 #endif
 
 #define SHOWCMD_COLS 10			/* columns needed by shown command */
@@ -1772,16 +1744,12 @@ void *vim_memset(void *, int, size_t);
 # endif
 #endif
 
-#ifdef FEAT_MBYTE
-# define MAX_MCO	6	/* maximum value for 'maxcombine' */
+#define MAX_MCO	6	/* maximum value for 'maxcombine' */
 
 /* Maximum number of bytes in a multi-byte character.  It can be one 32-bit
  * character of up to 6 bytes, or one 16-bit character of up to three bytes
  * plus six following composing characters of three bytes each. */
-# define MB_MAXBYTES	21
-#else
-# define MB_MAXBYTES	1
-#endif
+#define MB_MAXBYTES	21
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef WIN3264
@@ -1992,13 +1960,14 @@ typedef int sock_T;
 #define VV_TYPE_NONE	78
 #define VV_TYPE_JOB	79
 #define VV_TYPE_CHANNEL	80
-#define VV_TERMRFGRESP	81
-#define VV_TERMRBGRESP	82
-#define VV_TERMU7RESP	83
-#define VV_TERMSTYLERESP 84
-#define VV_TERMBLINKRESP 85
-#define VV_EVENT	86
-#define VV_LEN		87	/* number of v: vars */
+#define VV_TYPE_BLOB	81
+#define VV_TERMRFGRESP	82
+#define VV_TERMRBGRESP	83
+#define VV_TERMU7RESP	84
+#define VV_TERMSTYLERESP 85
+#define VV_TERMBLINKRESP 86
+#define VV_EVENT	87
+#define VV_LEN		88	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
@@ -2017,6 +1986,7 @@ typedef int sock_T;
 #define VAR_TYPE_NONE	    7
 #define VAR_TYPE_JOB	    8
 #define VAR_TYPE_CHANNEL    9
+#define VAR_TYPE_BLOB	    10
 
 #ifdef FEAT_CLIPBOARD
 
@@ -2107,6 +2077,13 @@ typedef enum {
     PASTE_ONE_CHAR	/* return first character */
 } paste_mode_T;
 
+// Argument for flush_buffers().
+typedef enum {
+    FLUSH_MINIMAL,
+    FLUSH_TYPEAHEAD,	// flush current typebuf contents
+    FLUSH_INPUT		// flush typebuf and inchar() input
+} flush_buffers_T;
+
 #include "ex_cmds.h"	    /* Ex command defines */
 #include "spell.h"	    /* spell checking stuff */
 
@@ -2125,7 +2102,7 @@ typedef enum {
 # define USE_MCH_ERRMSG
 #endif
 
-# if defined(FEAT_MBYTE) && defined(FEAT_EVAL) \
+# if defined(FEAT_EVAL) \
 	&& (!defined(FEAT_GUI_W32) \
 	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
@@ -2136,18 +2113,13 @@ typedef enum {
 # define IME_WITHOUT_XIM
 #endif
 
-#if defined(FEAT_MBYTE) && (defined(FEAT_XIM) \
+#if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
 	|| (defined(FEAT_GUI_W32) \
 	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	|| defined(FEAT_GUI_MAC))
+	|| defined(FEAT_GUI_MAC)
 /* im_set_active() is available */
 # define HAVE_INPUT_METHOD
-#endif
-
-#ifndef FEAT_MBYTE
-# define after_pathsep(b, p)	vim_ispathsep(*((p) - 1))
-# define transchar_byte(c)	transchar(c)
 #endif
 
 #ifndef FEAT_LINEBREAK
@@ -2157,18 +2129,12 @@ typedef enum {
 
 /* This must come after including proto.h.
  * For VMS this is defined in macros.h. */
-#if !(defined(FEAT_MBYTE) && defined(WIN3264)) && !defined(VMS)
+#if !defined(WIN3264) && !defined(VMS)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
 
 #include "globals.h"	    /* global variables and messages */
-
-#ifndef FEAT_VIRTUALEDIT
-# define getvvcol(w, p, s, c, e) getvcol((w), (p), (s), (c), (e))
-# define virtual_active() FALSE
-# define virtual_op FALSE
-#endif
 
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
@@ -2234,70 +2200,45 @@ typedef enum {
 #endif
 
 /*
- * The following macros stop display/event loop nesting at the wrong time.
- */
-#ifdef ALT_X_INPUT
-# define ALT_INPUT_LOCK_OFF	suppress_alternate_input = FALSE
-# define ALT_INPUT_LOCK_ON	suppress_alternate_input = TRUE
-#endif
-
-#ifdef FEAT_MBYTE
-/*
  * Return byte length of character that starts with byte "b".
  * Returns 1 for a single-byte character.
  * MB_BYTE2LEN_CHECK() can be used to count a special key as one byte.
  * Don't call MB_BYTE2LEN(b) with b < 0 or b > 255!
  */
-# define MB_BYTE2LEN(b)		mb_bytelen_tab[b]
-# define MB_BYTE2LEN_CHECK(b)	(((b) < 0 || (b) > 255) ? 1 : mb_bytelen_tab[b])
-#endif
+#define MB_BYTE2LEN(b)		mb_bytelen_tab[b]
+#define MB_BYTE2LEN_CHECK(b)	(((b) < 0 || (b) > 255) ? 1 : mb_bytelen_tab[b])
 
-#if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
 /* properties used in enc_canon_table[] (first three mutually exclusive) */
-# define ENC_8BIT	0x01
-# define ENC_DBCS	0x02
-# define ENC_UNICODE	0x04
+#define ENC_8BIT	0x01
+#define ENC_DBCS	0x02
+#define ENC_UNICODE	0x04
 
-# define ENC_ENDIAN_B	0x10	    /* Unicode: Big endian */
-# define ENC_ENDIAN_L	0x20	    /* Unicode: Little endian */
+#define ENC_ENDIAN_B	0x10	    /* Unicode: Big endian */
+#define ENC_ENDIAN_L	0x20	    /* Unicode: Little endian */
 
-# define ENC_2BYTE	0x40	    /* Unicode: UCS-2 */
-# define ENC_4BYTE	0x80	    /* Unicode: UCS-4 */
-# define ENC_2WORD	0x100	    /* Unicode: UTF-16 */
+#define ENC_2BYTE	0x40	    /* Unicode: UCS-2 */
+#define ENC_4BYTE	0x80	    /* Unicode: UCS-4 */
+#define ENC_2WORD	0x100	    /* Unicode: UTF-16 */
 
-# define ENC_LATIN1	0x200	    /* Latin1 */
-# define ENC_LATIN9	0x400	    /* Latin9 */
-# define ENC_MACROMAN	0x800	    /* Mac Roman (not Macro Man! :-) */
-#endif
+#define ENC_LATIN1	0x200	    /* Latin1 */
+#define ENC_LATIN9	0x400	    /* Latin9 */
+#define ENC_MACROMAN	0x800	    /* Mac Roman (not Macro Man! :-) */
 
-#ifdef FEAT_MBYTE
-# ifdef USE_ICONV
-#  ifndef EILSEQ
-#   define EILSEQ 123
-#  endif
-#  ifdef DYNAMIC_ICONV
-/* On Win32 iconv.dll is dynamically loaded. */
-#   define ICONV_ERRNO (*iconv_errno())
-#   define ICONV_E2BIG  7
-#   define ICONV_EINVAL 22
-#   define ICONV_EILSEQ 42
-#  else
-#   define ICONV_ERRNO errno
-#   define ICONV_E2BIG  E2BIG
-#   define ICONV_EINVAL EINVAL
-#   define ICONV_EILSEQ EILSEQ
-#  endif
+#ifdef USE_ICONV
+# ifndef EILSEQ
+#  define EILSEQ 123
 # endif
-
-#endif
-
-/* ISSYMLINK(mode) tests if a file is a symbolic link. */
-#if (defined(S_IFMT) && defined(S_IFLNK)) || defined(S_ISLNK)
-# define HAVE_ISSYMLINK
-# if defined(S_IFMT) && defined(S_IFLNK)
-#  define ISSYMLINK(mode) (((mode) & S_IFMT) == S_IFLNK)
+# ifdef DYNAMIC_ICONV
+/* On Win32 iconv.dll is dynamically loaded. */
+#  define ICONV_ERRNO (*iconv_errno())
+#  define ICONV_E2BIG  7
+#  define ICONV_EINVAL 22
+#  define ICONV_EILSEQ 42
 # else
-#  define ISSYMLINK(mode) S_ISLNK(mode)
+#  define ICONV_ERRNO errno
+#  define ICONV_E2BIG  E2BIG
+#  define ICONV_EINVAL EINVAL
+#  define ICONV_EILSEQ EILSEQ
 # endif
 #endif
 
@@ -2332,6 +2273,61 @@ typedef enum {
 #if defined(FEAT_BROWSE) && defined(GTK_CHECK_VERSION)
 # if GTK_CHECK_VERSION(2,4,0)
 #  define USE_FILE_CHOOSER
+# endif
+#endif
+
+#ifdef FEAT_GUI_GTK
+# if !GTK_CHECK_VERSION(2,14,0)
+#  define gtk_widget_get_window(wid)	((wid)->window)
+#  define gtk_plug_get_socket_window(wid)	((wid)->socket_window)
+#  define gtk_selection_data_get_data(sel)	((sel)->data)
+#  define gtk_selection_data_get_data_type(sel)	((sel)->type)
+#  define gtk_selection_data_get_format(sel)	((sel)->format)
+#  define gtk_selection_data_get_length(sel)	((sel)->length)
+#  define gtk_adjustment_set_lower(adj, low) \
+    do { (adj)->lower = low; } while (0)
+#  define gtk_adjustment_set_upper(adj, up) \
+    do { (adj)->upper = up; } while (0)
+#  define gtk_adjustment_set_page_size(adj, size) \
+    do { (adj)->page_size = size; } while (0)
+#  define gtk_adjustment_set_page_increment(adj, inc) \
+    do { (adj)->page_increment = inc; } while (0)
+#  define gtk_adjustment_set_step_increment(adj, inc) \
+    do { (adj)->step_increment = inc; } while (0)
+# endif
+# if !GTK_CHECK_VERSION(2,16,0)
+#  define gtk_selection_data_get_selection(sel)	((sel)->selection)
+# endif
+# if !GTK_CHECK_VERSION(2,18,0)
+#  define gtk_widget_get_allocation(wid, alloc) \
+    do { *(alloc) = (wid)->allocation; } while (0)
+#  define gtk_widget_set_allocation(wid, alloc) \
+    do { (wid)->allocation = *(alloc); } while (0)
+#  define gtk_widget_get_has_window(wid)	!GTK_WIDGET_NO_WINDOW(wid)
+#  define gtk_widget_get_sensitive(wid)	GTK_WIDGET_SENSITIVE(wid)
+#  define gtk_widget_get_visible(wid)	GTK_WIDGET_VISIBLE(wid)
+#  define gtk_widget_has_focus(wid)	GTK_WIDGET_HAS_FOCUS(wid)
+#  define gtk_widget_set_window(wid, win) \
+    do { (wid)->window = (win); } while (0)
+#  define gtk_widget_set_can_default(wid, can) \
+    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_DEFAULT); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_DEFAULT); } } while (0)
+#  define gtk_widget_set_can_focus(wid, can) \
+    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_FOCUS); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_FOCUS); } } while (0)
+#  define gtk_widget_set_visible(wid, vis) \
+    do { if (vis) { gtk_widget_show(wid); } \
+	else { gtk_widget_hide(wid); } } while (0)
+# endif
+# if !GTK_CHECK_VERSION(2,20,0)
+#  define gtk_widget_get_mapped(wid)	GTK_WIDGET_MAPPED(wid)
+#  define gtk_widget_get_realized(wid)	GTK_WIDGET_REALIZED(wid)
+#  define gtk_widget_set_mapped(wid, map) \
+    do { if (map) { GTK_WIDGET_SET_FLAGS(wid, GTK_MAPPED); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_MAPPED); } } while (0)
+#  define gtk_widget_set_realized(wid, rea) \
+    do { if (rea) { GTK_WIDGET_SET_FLAGS(wid, GTK_REALIZED); } \
+	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_REALIZED); } } while (0)
 # endif
 #endif
 
@@ -2465,6 +2461,10 @@ typedef enum {
 # define MAX_OPEN_CHANNELS 0
 #endif
 
+#if defined(WIN32)
+# define MAX_NAMED_PIPE_SIZE 65535
+#endif
+
 /* Options for json_encode() and json_decode. */
 #define JSON_JS		1   /* use JS instead of JSON */
 #define JSON_NO_NONE	2   /* v:none item not allowed */
@@ -2518,25 +2518,77 @@ typedef enum {
 
 /* BSD is supposed to cover FreeBSD and similar systems. */
 #if (defined(SUN_SYSTEM) || defined(BSD) || defined(__FreeBSD_kernel__)) \
-	&& defined(S_ISCHR)
+	&& (defined(S_ISCHR) || defined(S_IFCHR))
 # define OPEN_CHR_FILES
+#endif
+
+/* stat macros */
+#ifndef S_ISDIR
+# ifdef S_IFDIR
+#  define S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
+# else
+#  define S_ISDIR(m)	0
+# endif
+#endif
+#ifndef S_ISREG
+# ifdef S_IFREG
+#  define S_ISREG(m)	(((m) & S_IFMT) == S_IFREG)
+# else
+#  define S_ISREG(m)	0
+# endif
+#endif
+#ifndef S_ISBLK
+# ifdef S_IFBLK
+#  define S_ISBLK(m)	(((m) & S_IFMT) == S_IFBLK)
+# else
+#  define S_ISBLK(m)	0
+# endif
+#endif
+#ifndef S_ISSOCK
+# ifdef S_IFSOCK
+#  define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
+# else
+#  define S_ISSOCK(m)	0
+# endif
+#endif
+#ifndef S_ISFIFO
+# ifdef S_IFIFO
+#  define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
+# else
+#  define S_ISFIFO(m)	0
+# endif
+#endif
+#ifndef S_ISCHR
+# ifdef S_IFCHR
+#  define S_ISCHR(m)	(((m) & S_IFMT) == S_IFCHR)
+# else
+#  define S_ISCHR(m)	0
+# endif
+#endif
+#ifndef S_ISLNK
+# ifdef S_IFLNK
+#  define S_ISLNK(m)	(((m) & S_IFMT) == S_IFLNK)
+# else
+#  define S_ISLNK(m)	0
+# endif
 #endif
 
 #if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
 # define ELAPSED_TIMEVAL
 # define ELAPSED_INIT(v) gettimeofday(&v, NULL)
 # define ELAPSED_FUNC(v) elapsed(&v)
-# define ELAPSED_TYPE struct timeval
-    long elapsed(struct timeval *start_tv);
-#else
-# if defined(WIN32)
-#  define ELAPSED_TICKCOUNT
-#  define ELAPSED_INIT(v) v = GetTickCount()
-#  define ELAPSED_FUNC(v) elapsed(v)
-#  define ELAPSED_TYPE DWORD
-#   ifndef PROTO
-     long elapsed(DWORD start_tick);
-#   endif
+typedef struct timeval elapsed_T;
+long elapsed(struct timeval *start_tv);
+#elif defined(WIN32)
+# define ELAPSED_TICKCOUNT
+# define ELAPSED_INIT(v) v = GetTickCount()
+# define ELAPSED_FUNC(v) elapsed(v)
+# ifdef PROTO
+typedef int DWORD;
+# endif
+typedef DWORD elapsed_T;
+# ifndef PROTO
+long elapsed(DWORD start_tick);
 # endif
 #endif
 
@@ -2548,5 +2600,10 @@ typedef enum {
 #define TERM_START_NOJOB	1
 #define TERM_START_FORCEIT	2
 #define TERM_START_SYSTEM	4
+
+// Used for icon/title save and restore.
+#define SAVE_RESTORE_TITLE	1
+#define SAVE_RESTORE_ICON	2
+#define SAVE_RESTORE_BOTH	(SAVE_RESTORE_TITLE | SAVE_RESTORE_ICON)
 
 #endif /* VIM__H */

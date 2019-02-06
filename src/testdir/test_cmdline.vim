@@ -1,6 +1,5 @@
 " Tests for editing the command line.
 
-
 func Test_complete_tab()
   call writefile(['testfile'], 'Xtestfile')
   call feedkeys(":e Xtest\t\r", "tx")
@@ -231,6 +230,15 @@ func Test_getcompletion()
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
 
+  let l = getcompletion('.', 'shellcmd')
+  call assert_equal(['./', '../'], filter(l, 'v:val =~ "\\./"'))
+  call assert_equal(-1, match(l[2:], '^\.\.\?/$'))
+  let root = has('win32') ? 'C:\\' : '/'
+  let l = getcompletion(root, 'shellcmd')
+  let expected = map(filter(glob(root . '*', 0, 1),
+        \ 'isdirectory(v:val) || executable(v:val)'), 'isdirectory(v:val) ? v:val . ''/'' : v:val')
+  call assert_equal(expected, l)
+
   if has('cscope')
     let l = getcompletion('', 'cscope')
     let cmds = ['add', 'find', 'help', 'kill', 'reset', 'show']
@@ -258,8 +266,7 @@ func Test_getcompletion()
   endif
 
   " For others test if the name is recognized.
-  let names = ['buffer', 'environment', 'file_in_path',
-	\ 'mapping', 'shellcmd', 'tag', 'tag_listfiles', 'user']
+  let names = ['buffer', 'environment', 'file_in_path', 'mapping', 'tag', 'tag_listfiles', 'user']
   if has('cmdline_hist')
     call add(names, 'history')
   endif
@@ -281,6 +288,29 @@ func Test_getcompletion()
   call delete('Xtags')
 
   call assert_fails('call getcompletion("", "burp")', 'E475:')
+endfunc
+
+func Test_shellcmd_completion()
+  let save_path = $PATH
+
+  call mkdir('Xpathdir/Xpathsubdir', 'p')
+  call writefile([''], 'Xpathdir/Xfile.exe')
+  call setfperm('Xpathdir/Xfile.exe', 'rwx------')
+
+  " Set PATH to example directory without trailing slash.
+  let $PATH = getcwd() . '/Xpathdir'
+
+  " Test for the ":!<TAB>" case.  Previously, this would include subdirs of
+  " dirs in the PATH, even though they won't be executed.  We check that only
+  " subdirs of the PWD and executables from the PATH are included in the
+  " suggestions.
+  let actual = getcompletion('X', 'shellcmd')
+  let expected = map(filter(glob('*', 0, 1), 'isdirectory(v:val) && v:val[0] == "X"'), 'v:val . "/"')
+  call insert(expected, 'Xfile.exe')
+  call assert_equal(expected, actual)
+
+  call delete('Xpathdir', 'rf')
+  let $PATH = save_path
 endfunc
 
 func Test_expand_star_star()
@@ -384,6 +414,51 @@ func Test_cmdline_complete_user_cmd()
   delcommand Foo
 endfunc
 
+func Test_cmdline_complete_user_names()
+  if has('unix') && executable('whoami')
+    let whoami = systemlist('whoami')[0]
+    let first_letter = whoami[0]
+    if len(first_letter) > 0
+      " Trying completion of  :e ~x  where x is the first letter of
+      " the user name should complete to at least the user name.
+      call feedkeys(':e ~' . first_letter . "\<c-a>\<c-B>\"\<cr>", 'tx')
+      call assert_match('^"e \~.*\<' . whoami . '\>', @:)
+    endif
+  endif
+  if has('win32')
+    " Just in case: check that the system has an Administrator account.
+    let names = system('net user')
+    if names =~ 'Administrator'
+      " Trying completion of  :e ~A  should complete to Administrator.
+      " There could be other names starting with "A" before Administrator.
+      call feedkeys(':e ~A' . "\<c-a>\<c-B>\"\<cr>", 'tx')
+      call assert_match('^"e \~.*Administrator', @:)
+    endif
+  endif
+endfunc
+
+funct Test_cmdline_complete_languages()
+  let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
+
+  call feedkeys(":language \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<ctype\>.*\<messages\>.*\<time\>', @:)
+
+  if has('unix')
+    " TODO: these tests don't work on Windows. lang appears to be 'C'
+    " but C does not appear in the completion. Why?
+    call assert_match('^"language .*\<' . lang . '\>', @:)
+
+    call feedkeys(":language messages \<c-a>\<c-b>\"\<cr>", 'tx')
+    call assert_match('^"language .*\<' . lang . '\>', @:)
+
+    call feedkeys(":language ctype \<c-a>\<c-b>\"\<cr>", 'tx')
+    call assert_match('^"language .*\<' . lang . '\>', @:)
+
+    call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
+    call assert_match('^"language .*\<' . lang . '\>', @:)
+  endif
+endfunc
+
 func Test_cmdline_write_alternatefile()
   new
   call setline('.', ['one', 'two'])
@@ -460,6 +535,22 @@ func Test_getcmdtype()
   cunmap <F6>
 endfunc
 
+func Test_getcmdwintype()
+  call feedkeys("q/:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
+  call assert_equal('/', a)
+
+  call feedkeys("q?:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
+  call assert_equal('?', a)
+
+  call feedkeys("q::let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
+  call assert_equal(':', a)
+
+  call feedkeys(":\<C-F>:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
+  call assert_equal(':', a)
+
+  call assert_equal('', getcmdwintype())
+endfunc
+
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'
@@ -468,6 +559,54 @@ func Test_verbosefile()
   let log = readfile('Xlog')
   call assert_match("foo\nbar", join(log, "\n"))
   call delete('Xlog')
+endfunc
+
+func Test_setcmdpos()
+  func InsertTextAtPos(text, pos)
+    call assert_equal(0, setcmdpos(a:pos))
+    return a:text
+  endfunc
+
+  " setcmdpos() with position in the middle of the command line.
+  call feedkeys(":\"12\<C-R>=InsertTextAtPos('a', 3)\<CR>b\<CR>", 'xt')
+  call assert_equal('"1ab2', @:)
+
+  call feedkeys(":\"12\<C-R>\<C-R>=InsertTextAtPos('a', 3)\<CR>b\<CR>", 'xt')
+  call assert_equal('"1b2a', @:)
+
+  " setcmdpos() with position beyond the end of the command line.
+  call feedkeys(":\"12\<C-B>\<C-R>=InsertTextAtPos('a', 10)\<CR>b\<CR>", 'xt')
+  call assert_equal('"12ab', @:)
+
+  " setcmdpos() returns 1 when not editing the command line.
+  call assert_equal(1, setcmdpos(3))
+endfunc
+
+func Test_cmdline_overstrike()
+  let encodings = ['latin1', 'utf8']
+  let encoding_save = &encoding
+
+  for e in encodings
+    exe 'set encoding=' . e
+
+    " Test overstrike in the middle of the command line.
+    call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
+    call assert_equal('"0ab1cd4', @:)
+
+    " Test overstrike going beyond end of command line.
+    call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cdefgh\<enter>", 'xt')
+    call assert_equal('"0ab1cdefgh', @:)
+
+    " Test toggling insert/overstrike a few times.
+    call feedkeys(":\"01234\<home>\<right>ab\<right>\<insert>cd\<right>\<insert>ef\<enter>", 'xt')
+    call assert_equal('"ab0cd3ef4', @:)
+  endfor
+
+  " Test overstrike with multi-byte characters.
+  call feedkeys(":\"テキストエディタ\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
+  call assert_equal('"テabキcdエディタ', @:)
+
+  let &encoding = encoding_save
 endfunc
 
 set cpo&

@@ -661,8 +661,6 @@ CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
 NETBEANS_SRC
-WORKSHOP_OBJ
-WORKSHOP_SRC
 RUBY_LIBS
 RUBY_CFLAGS
 RUBY_PRO
@@ -812,12 +810,14 @@ with_tclsh
 enable_rubyinterp
 with_ruby_command
 enable_cscope
-enable_workshop
 enable_netbeans
 enable_channel
 enable_terminal
 enable_autoservername
 enable_multibyte
+enable_rightleft
+enable_arabic
+enable_farsi
 enable_hangulinput
 enable_xim
 enable_fontset
@@ -1491,12 +1491,14 @@ Optional Features:
   --enable-tclinterp=OPTS      Include Tcl interpreter. default=no OPTS=no/yes/dynamic
   --enable-rubyinterp=OPTS     Include Ruby interpreter.  default=no OPTS=no/yes/dynamic
   --enable-cscope         Include cscope interface.
-  --enable-workshop       Include Sun Visual Workshop support.
   --disable-netbeans      Disable NetBeans integration support.
   --disable-channel       Disable process communication support.
   --enable-terminal       Enable terminal emulation support.
   --enable-autoservername Automatically define servername at vim startup.
   --enable-multibyte      Include multibyte editing support.
+  --disable-rightleft     Do not include Right-to-Left language support.
+  --disable-arabic        Do not include Arabic language support.
+  --disable-farsi         Do not include Farsi language support.
   --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
@@ -1527,7 +1529,7 @@ Optional Packages:
   --with-vim-name=NAME    what to call the Vim executable
   --with-ex-name=NAME     what to call the Ex executable
   --with-view-name=NAME   what to call the View executable
-  --with-global-runtime=DIR    global runtime directory in 'runtimepath'
+  --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories
   --with-modified-by=NAME       name of who modified a release version
   --with-features=TYPE    tiny, small, normal, big or huge (default: huge)
   --with-compiledby=NAME  name to show in :version message
@@ -4466,6 +4468,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $fail_if_missing" >&5
 $as_echo "$fail_if_missing" >&6; }
 
+with_x_arg="$with_x"
+
 if test -z "$CFLAGS"; then
   CFLAGS="-O"
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall"
@@ -4556,7 +4560,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   MACOS_X=yes
-  CPPFLAGS="$CPPFLAGS -D_DARWIN_C_SOURCE -DMACOS_X"
+  CPPFLAGS="$CPPFLAGS -DMACOS_X"
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-darwin argument" >&5
 $as_echo_n "checking --disable-darwin argument... " >&6; }
@@ -4882,16 +4886,25 @@ $as_echo_n "checking --with-global-runtime argument... " >&6; }
 
 # Check whether --with-global-runtime was given.
 if test "${with_global_runtime+set}" = set; then :
-  withval=$with_global_runtime; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }; cat >>confdefs.h <<_ACEOF
-#define RUNTIME_GLOBAL "$withval"
-_ACEOF
-
+  withval=$with_global_runtime; RUNTIME_GLOBAL="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
+$as_echo "$withval" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
+
+if test "X$RUNTIME_GLOBAL" != "X"; then
+  RUNTIME_GLOBAL_AFTER=$(printf -- "$RUNTIME_GLOBAL\\n" | $AWK -F, 'BEGIN { comma=0 } { for (i = NF; i > 0; i--) { if (comma) { printf ",%s/after", $i } else { printf "%s/after", $i; comma=1 } } } END { printf "\n" }')
+  cat >>confdefs.h <<_ACEOF
+#define RUNTIME_GLOBAL "$RUNTIME_GLOBAL"
+_ACEOF
+
+  cat >>confdefs.h <<_ACEOF
+#define RUNTIME_GLOBAL_AFTER "$RUNTIME_GLOBAL_AFTER"
+_ACEOF
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-modified-by argument" >&5
 $as_echo_n "checking --with-modified-by argument... " >&6; }
@@ -7604,6 +7617,9 @@ $as_echo "$rubyhdrdir" >&6; }
 
 	if test "$enable_rubyinterp" = "dynamic"; then
 	  libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG['LIBRUBY_ALIASES'].split[0]"`
+	  if test -z "$libruby_soname"; then
+	    libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG['LIBRUBY_SO']"`
+	  fi
 	  $as_echo "#define DYNAMIC_RUBY 1" >>confdefs.h
 
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
@@ -7643,29 +7659,6 @@ $as_echo "$enable_cscope" >&6; }
 if test "$enable_cscope" = "yes"; then
   $as_echo "#define FEAT_CSCOPE 1" >>confdefs.h
 
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-workshop argument" >&5
-$as_echo_n "checking --enable-workshop argument... " >&6; }
-# Check whether --enable-workshop was given.
-if test "${enable_workshop+set}" = set; then :
-  enableval=$enable_workshop;
-else
-  enable_workshop="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_workshop" >&5
-$as_echo "$enable_workshop" >&6; }
-if test "$enable_workshop" = "yes"; then
-  $as_echo "#define FEAT_SUN_WORKSHOP 1" >>confdefs.h
-
-  WORKSHOP_SRC="workshop.c integration.c"
-
-  WORKSHOP_OBJ="objects/workshop.o objects/integration.o"
-
-  if test "${enable_gui-xxx}" = xxx; then
-    enable_gui=motif
-  fi
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-netbeans argument" >&5
@@ -7911,9 +7904,9 @@ fi
 if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
 
-  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
 
-  TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
+  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/mouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
 
 fi
 
@@ -7939,13 +7932,70 @@ $as_echo_n "checking --enable-multibyte argument... " >&6; }
 if test "${enable_multibyte+set}" = set; then :
   enableval=$enable_multibyte;
 else
-  enable_multibyte="no"
+  enable_multibyte="yes"
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multibyte" >&5
 $as_echo "$enable_multibyte" >&6; }
-if test "$enable_multibyte" = "yes"; then
-  $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
+if test "$enable_multibyte" != "yes"; then
+  as_fn_error $? "The multi-byte feature can no longer be disabled. If you have
+		a problem with this, discuss on the Vim mailing list." "$LINENO" 5
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-rightleft argument" >&5
+$as_echo_n "checking --disable-rightleft argument... " >&6; }
+# Check whether --enable-rightleft was given.
+if test "${enable_rightleft+set}" = set; then :
+  enableval=$enable_rightleft;
+else
+  enable_rightleft="yes"
+fi
+
+if test "$enable_rightleft" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_RIGHTLEFT 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-arabic argument" >&5
+$as_echo_n "checking --disable-arabic argument... " >&6; }
+# Check whether --enable-arabic was given.
+if test "${enable_arabic+set}" = set; then :
+  enableval=$enable_arabic;
+else
+  enable_arabic="yes"
+fi
+
+if test "$enable_arabic" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_ARABIC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-farsi argument" >&5
+$as_echo_n "checking --disable-farsi argument... " >&6; }
+# Check whether --enable-farsi was given.
+if test "${enable_farsi+set}" = set; then :
+  enableval=$enable_farsi;
+else
+  enable_farsi="yes"
+fi
+
+if test "$enable_farsi" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	$as_echo "#define DISABLE_FARSI 1" >>confdefs.h
 
 fi
 
@@ -9003,6 +9053,10 @@ $as_echo "$ac_cv_small_wchar_t" >&6; }
   fi
 fi
 
+if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
+    as_fn_error $? "could not configure X" "$LINENO" 5
+fi
+
 test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-gui argument" >&5
@@ -9034,10 +9088,9 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
     no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
 $as_echo "no GUI support" >&6; }
 		SKIP_PHOTON=YES ;;
-    yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
-$as_echo "yes - automatic GUI support" >&6; } ;;
-    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - automatic GUI support" >&5
-$as_echo "auto - automatic GUI support" >&6; } ;;
+    yes|""|auto) { $as_echo "$as_me:${as_lineno-$LINENO}: result: automatic GUI support" >&5
+$as_echo "automatic GUI support" >&6; }
+    		gui_auto=yes ;;
     photon)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Photon GUI support" >&5
 $as_echo "Photon GUI support" >&6; } ;;
     *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
@@ -9052,7 +9105,8 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
 $as_echo "no GUI support" >&6; }
 		SKIP_CARBON=YES ;;
     yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
-$as_echo "yes - automatic GUI support" >&6; } ;;
+$as_echo "yes - automatic GUI support" >&6; }
+    		gui_auto=yes ;;
     auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - Carbon GUI is outdated - disable GUI support" >&5
 $as_echo "auto - Carbon GUI is outdated - disable GUI support" >&6; }
 		SKIP_CARBON=YES ;;
@@ -9070,6 +9124,7 @@ else
 $as_echo "no GUI support" >&6; } ;;
     yes|""|auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes/auto - automatic GUI support" >&5
 $as_echo "yes/auto - automatic GUI support" >&6; }
+		gui_auto=yes
 		SKIP_GTK2=
 		SKIP_GNOME=
 		SKIP_MOTIF=
@@ -9501,6 +9556,9 @@ $as_echo "no" >&6; }
       GTK_CFLAGS=""
       GTK_LIBS=""
       :
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	as_fn_error $? "could not configure GTK" "$LINENO" 5
+      fi
     }
     fi
   }
@@ -9852,6 +9910,9 @@ $as_echo "no" >&6; }
       GTK_CFLAGS=""
       GTK_LIBS=""
       :
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	as_fn_error $? "could not configure GTK" "$LINENO" 5
+      fi
     }
     fi
   }
@@ -11070,7 +11131,7 @@ for ac_header in stdint.h stdlib.h string.h \
 	unistd.h stropts.h errno.h sys/resource.h \
 	sys/systeminfo.h locale.h sys/stream.h termios.h \
 	libc.h sys/statfs.h poll.h sys/poll.h pwd.h \
-	utime.h sys/param.h libintl.h libgen.h \
+	utime.h sys/param.h sys/ptms.h libintl.h libgen.h \
 	util/debug.h util/msg18n.h frame.h sys/acl.h \
 	sys/access.h sys/sysinfo.h wchar.h wctype.h
 do :
@@ -12609,7 +12670,7 @@ for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen ftruncate
+	usleep utime utimes mblen ftruncate unsetenv
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -12620,6 +12681,81 @@ _ACEOF
 
 fi
 done
+
+for ac_header in sys/select.h sys/socket.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking types of arguments for select" >&5
+$as_echo_n "checking types of arguments for select... " >&6; }
+if ${ac_cv_func_select_args+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  for ac_arg234 in 'fd_set *' 'int *' 'void *'; do
+ for ac_arg1 in 'int' 'size_t' 'unsigned long int' 'unsigned int'; do
+  for ac_arg5 in 'struct timeval *' 'const struct timeval *'; do
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+
+int
+main ()
+{
+extern int select ($ac_arg1,
+					    $ac_arg234, $ac_arg234, $ac_arg234,
+					    $ac_arg5);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_func_select_args="$ac_arg1,$ac_arg234,$ac_arg5"; break 3
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  done
+ done
+done
+# Provide a safe default value.
+: "${ac_cv_func_select_args=int,int *,struct timeval *}"
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_select_args" >&5
+$as_echo "$ac_cv_func_select_args" >&6; }
+ac_save_IFS=$IFS; IFS=','
+set dummy `echo "$ac_cv_func_select_args" | sed 's/\*/\*/g'`
+IFS=$ac_save_IFS
+shift
+
+cat >>confdefs.h <<_ACEOF
+#define SELECT_TYPE_ARG1 $1
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SELECT_TYPE_ARG234 ($2)
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SELECT_TYPE_ARG5 ($3)
+_ACEOF
+
+rm -f conftest*
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _LARGEFILE_SOURCE value needed for large files" >&5
 $as_echo_n "checking for _LARGEFILE_SOURCE value needed for large files... " >&6; }
@@ -14650,28 +14786,13 @@ $as_echo "yes, we need Carbon" >&6; }
     if test "$features" = "tiny"; then
             OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      if test "$enable_multibyte" = "yes"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need CoreServices" >&5
 $as_echo "yes, we need CoreServices" >&6; }
-        LIBS="$LIBS -framework CoreServices"
-      else
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
-        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
-      fi
+      LIBS="$LIBS -framework CoreServices"
     else
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need AppKit" >&5
 $as_echo "yes, we need AppKit" >&6; }
       LIBS="$LIBS -framework AppKit"
-      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
-                                { $as_echo "$as_me:${as_lineno-$LINENO}: +multi_byte will be set in favor of +clipboard" >&5
-$as_echo "$as_me: +multi_byte will be set in favor of +clipboard" >&6;}
-        enable_multibyte=yes
-        $as_echo "#define FEAT_MBYTE 1" >>confdefs.h
-
-      fi
     fi
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5

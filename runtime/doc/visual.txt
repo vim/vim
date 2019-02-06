@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.0.  Last change: 2017 Sep 02
+*visual.txt*    For Vim version 8.1.  Last change: 2019 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -305,8 +305,6 @@ mode.
 ==============================================================================
 5. Blockwise operators					*blockwise-operators*
 
-{not available when compiled without the |+visualextra| feature}
-
 Reminder: Use 'virtualedit' to be able to select blocks that start or end
 after the end of a line or halfway a tab.
 
@@ -538,4 +536,4 @@ g CTRL-H		Start Select mode, blockwise.  This is like CTRL-V,
 			but starts Select mode instead of Visual mode.
 			Mnemonic: "get Highlighted".
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

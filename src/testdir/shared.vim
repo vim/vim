@@ -49,7 +49,8 @@ endfunc
 " Read the port number from the Xportnr file.
 func GetPort()
   let l = []
-  for i in range(200)
+  " with 200 it sometimes failed
+  for i in range(400)
     try
       let l = readfile("Xportnr")
     catch
@@ -227,6 +228,8 @@ func GetVimProg()
   return readfile('vimcmd')[0]
 endfunc
 
+let g:valgrind_cnt = 1
+
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
 func GetVimCommand(...)
@@ -244,14 +247,26 @@ func GetVimCommand(...)
   " For Unix Makefile writes the command to use in the second line of the
   " "vimcmd" file, including environment options.
   " Other Makefiles just write the executable in the first line, so fall back
-  " to that if there is no second line.
-  let cmd = get(lines, 1, lines[0])
+  " to that if there is no second line or it is empty.
+  if len(lines) > 1 && lines[1] != ''
+    let cmd = lines[1]
+  else
+    let cmd = lines[0]
+  endif
+
   let cmd = substitute(cmd, '-u \f\+', '-u ' . name, '')
   if cmd !~ '-u '. name
     let cmd = cmd . ' -u ' . name
   endif
   let cmd .= ' --not-a-term'
   let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
+
+  " If using valgrind, make sure every run uses a different log file.
+  if cmd =~ 'valgrind.*--log-file='
+    let cmd = substitute(cmd, '--log-file=\(^\s*\)', '--log-file=\1.' . g:valgrind_cnt, '')
+    let g:valgrind_cnt += 1
+  endif
+
   return cmd
 endfunc
 
@@ -260,6 +275,10 @@ func GetVimCommandClean()
   let cmd = GetVimCommand()
   let cmd = substitute(cmd, '-u NONE', '--clean', '')
   let cmd = substitute(cmd, '--not-a-term', '', '')
+
+  " Optionally run Vim under valgrind
+  " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
+
   return cmd
 endfunc
 
@@ -274,9 +293,6 @@ endfunc
 
 func RunVimPiped(before, after, arguments, pipecmd)
   let cmd = GetVimCommand()
-  if cmd == ''
-    return 0
-  endif
   let args = ''
   if len(a:before) > 0
     call writefile(a:before, 'Xbefore.vim')
@@ -328,4 +344,14 @@ func Stop_shell_in_terminal(buf)
   call term_sendkeys(a:buf, "exit\r")
   let job = term_getjob(a:buf)
   call WaitFor({-> job_status(job) == "dead"})
+endfunc
+
+" Gets the text of a terminal line, using term_scrape()
+func Get_terminal_text(bufnr, row)
+  let list = term_scrape(a:bufnr, a:row)
+  let text = ''
+  for item in list
+    let text .= item.chars
+  endfor
+  return text
 endfunc

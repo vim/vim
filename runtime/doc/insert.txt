@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.0.  Last change: 2018 Feb 10
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,11 +434,11 @@ An example for using CTRL-G U: >
 
 This makes it possible to use the cursor keys in Insert mode, without breaking
 the undo sequence and therefore using |.| (redo) will work as expected.
-Also entering a text like (with the "(" mapping from above): >
+Also entering a text like (with the "(" mapping from above):
 
    Lorem ipsum (dolor
 
-will be repeatable by the |.|to the expected
+will be repeatable by using |.| to the expected
 
    Lorem ipsum (dolor)
 
@@ -1051,13 +1051,13 @@ The function must return the column where the completion starts.  It must be a
 number between zero and the cursor column "col('.')".  This involves looking
 at the characters just before the cursor and including those characters that
 could be part of the completed item.  The text between this column and the
-cursor column will be replaced with the matches.
+cursor column will be replaced with the matches.  If the returned value is
+larger than the cursor column, the cursor column is used.
 
-Special return values:
-   -1 If no completion can be done, the completion will be cancelled with an
-      error message.
-   -2 To cancel silently and stay in completion mode.
-   -3 To cancel silently and leave completion mode.
+Negative return values:
+   -2 	To cancel silently and stay in completion mode.
+   -3 	To cancel silently and leave completion mode.
+   Another negative value: completion starts at the cursor column
 
 On the second invocation the arguments are:
    a:findstart  0
@@ -1076,6 +1076,11 @@ that contains the List.  The Dict can have these items:
 			The only value currently recognized is "always", the
 			effect is that the function is called whenever the
 			leading text is changed.
+
+If you want to suppress the warning message for an empty result, return
+|v:none|.  This is useful to implement asynchronous completion with
+|complete()|.
+
 Other items are ignored.
 
 For acting upon end of completion, see the |CompleteDone| autocommand event.
@@ -1535,7 +1540,7 @@ phpFunctions.
 
 If you wish non-filetype syntax items to also be included, you can use a
 regular expression syntax (added in version 13.0 of
-autoload\syntaxcomplete.vim) to add items.  Looking at the output from
+autoload/syntaxcomplete.vim) to add items.  Looking at the output from
 ":syntax list" while editing a PHP file I can see some of these entries: >
     htmlArg,htmlTag,htmlTagName,javaScriptStatement,javaScriptGlobalObjects
 
@@ -2005,4 +2010,4 @@ self explanatory.  Using the long or the short version depends on the
 	[READ ERRORS]			not all of the file could be read
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

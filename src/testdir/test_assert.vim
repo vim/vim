@@ -31,6 +31,10 @@ func Test_assert_equal()
   call assert_equal(1, assert_equal('bar', s))
   call assert_match("Expected 'bar' but got 'foo'", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal('XxxxxxxxxxxxxxxxxxxxxxX', 'XyyyyyyyyyyyyyyyyyyyyyyyyyX')
+  call assert_match("Expected 'X\\\\\\[x occurs 21 times]X' but got 'X\\\\\\[y occurs 25 times]X'", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_equalfile()
@@ -152,6 +156,14 @@ func Test_assert_fail_fails()
   call assert_equal(1, assert_fails('xxx', {}))
   call assert_match("Expected {} but got 'E731:", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('xxx', {}, 'stupid'))
+  call assert_match("stupid: Expected {} but got 'E731:", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('echo', '', 'echo command'))
+  call assert_match("command did not fail: echo command", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_beeps()
@@ -197,4 +209,10 @@ endfunc
 func Test_user_is_happy()
   smile
   sleep 300m
+endfunc
+
+" Must be last.
+func Test_zz_quit_detected()
+  " Verify that if a test function ends Vim the test script detects this.
+  quit
 endfunc

@@ -65,8 +65,9 @@
 /*
  * GUIs that support dropping files on a running Vim.
  */
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_GTK)
+#if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC)
 # define HAVE_DROP_FILE
 #endif
 
@@ -302,13 +303,11 @@ typedef struct Gui
     GuiFont	menu_font;	    /* menu item font */
 # endif
 #endif
-#ifdef FEAT_MBYTE
     GuiFont	wide_font;	    /* Normal 'guifontwide' font */
-# ifndef FEAT_GUI_GTK
+#ifndef FEAT_GUI_GTK
     GuiFont	wide_bold_font;	    /* Bold 'guifontwide' font */
     GuiFont	wide_ital_font;	    /* Italic 'guifontwide' font */
     GuiFont	wide_boldital_font; /* Bold-Italic 'guifontwide' font */
-# endif
 #endif
 #ifdef FEAT_XFONTSET
     GuiFontset	fontset;	    /* set of fonts for multi-byte chars */
@@ -564,3 +563,7 @@ typedef enum
 #  define FUNC2GENERIC(func) G_CALLBACK(func)
 # endif
 #endif /* FEAT_GUI_GTK */
+
+#if defined(UNIX) && !defined(FEAT_GUI_MAC)
+# define GUI_MAY_FORK
+#endif

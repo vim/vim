@@ -1,5 +1,5 @@
 /* ex_cmds2.c */
-int has_watchexpr (void);
+int has_watchexpr(void);
 void do_debug(char_u *cmd);
 void ex_debug(exarg_T *eap);
 void dbg_check_breakpoint(exarg_T *eap);
@@ -19,6 +19,7 @@ float_T profile_float(proftime_T *tm);
 void profile_setlimit(long msec, proftime_T *tm);
 int profile_passed_limit(proftime_T *tm);
 void profile_zero(proftime_T *tm);
+long proftime_time_left(proftime_T *due, proftime_T *now);
 timer_T *create_timer(long msec, int repeat);
 long check_due_timer(void);
 timer_T *find_timer(long id);

@@ -63,8 +63,13 @@ clip_mch_request_selection(VimClipboard *cbd)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+    NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
+	    NSPasteboardTypeString, nil];
+#else
     NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 	    NSStringPboardType, nil];
+#endif
     NSString *bestType = [pb availableTypeFromArray:supportedTypes];
     if (!bestType) goto releasepool;
 
@@ -76,7 +81,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 	/* This type should consist of an array with two objects:
 	 *   1. motion type (NSNumber)
 	 *   2. text (NSString)
-	 * If this is not the case we fall back on using NSStringPboardType.
+	 * If this is not the case we fall back on using NSPasteboardTypeString.
 	 */
 	id plist = [pb propertyListForType:VimPboardType];
 	if ([plist isKindOfClass:[NSArray class]] && [plist count] == 2)
@@ -92,10 +97,15 @@ clip_mch_request_selection(VimClipboard *cbd)
 
     if (!string)
     {
-	/* Use NSStringPboardType.  The motion type is detected automatically.
+	/* Use NSPasteboardTypeString.  The motion type is detected automatically.
 	 */
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	NSMutableString *mstring =
+		[[pb stringForType:NSPasteboardTypeString] mutableCopy];
+#else
 	NSMutableString *mstring =
 		[[pb stringForType:NSStringPboardType] mutableCopy];
+#endif
 	if (!mstring) goto releasepool;
 
 	/* Replace unrecognized end-of-line sequences with \x0a (line feed). */
@@ -120,18 +130,14 @@ clip_mch_request_selection(VimClipboard *cbd)
     char_u *str = (char_u*)[string UTF8String];
     int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	str = string_convert(&input_conv, str, &len);
-#endif
 
     if (str)
 	clip_yank_selection(motion_type, str, len, cbd);
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(str);
-#endif
 
 releasepool:
     [pool release];
@@ -159,7 +165,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 
     /* TODO: Avoid overflow. */
     int len = (int)llen;
-#ifdef FEAT_MBYTE
     if (output_conv.vc_type != CONV_NONE)
     {
 	char_u *conv_str = string_convert(&output_conv, str, &len);
@@ -169,7 +174,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    str = conv_str;
 	}
     }
-#endif
 
     if (len > 0)
     {
@@ -178,15 +182,24 @@ clip_mch_set_selection(VimClipboard *cbd)
 
 	/* See clip_mch_request_selection() for info on pasteboard types. */
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
+		NSPasteboardTypeString, nil];
+#else
 	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 		NSStringPboardType, nil];
+#endif
 	[pb declareTypes:supportedTypes owner:nil];
 
 	NSNumber *motion = [NSNumber numberWithInt:motion_type];
 	NSArray *plist = [NSArray arrayWithObjects:motion, string, nil];
 	[pb setPropertyList:plist forType:VimPboardType];
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+	[pb setString:string forType:NSPasteboardTypeString];
+#else
 	[pb setString:string forType:NSStringPboardType];
+#endif
 
 	[string release];
     }

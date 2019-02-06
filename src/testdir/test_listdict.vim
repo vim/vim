@@ -106,6 +106,43 @@ func Test_list_range_assign()
   call assert_equal([1, 2], l)
 endfunc
 
+" Test removing items in list
+func Test_list_func_remove()
+  " Test removing 1 element
+  let l = [1, 2, 3, 4]
+  call assert_equal(1, remove(l, 0))
+  call assert_equal([2, 3, 4], l)
+
+  let l = [1, 2, 3, 4]
+  call assert_equal(2, remove(l, 1))
+  call assert_equal([1, 3, 4], l)
+
+  let l = [1, 2, 3, 4]
+  call assert_equal(4, remove(l, -1))
+  call assert_equal([1, 2, 3], l)
+
+  " Test removing range of element(s)
+  let l = [1, 2, 3, 4]
+  call assert_equal([3], remove(l, 2, 2))
+  call assert_equal([1, 2, 4], l)
+
+  let l = [1, 2, 3, 4]
+  call assert_equal([2, 3], remove(l, 1, 2))
+  call assert_equal([1, 4], l)
+
+  let l = [1, 2, 3, 4]
+  call assert_equal([2, 3], remove(l, -3, -2))
+  call assert_equal([1, 4], l)
+
+  " Test invalid cases
+  let l = [1, 2, 3, 4]
+  call assert_fails("call remove(l, 5)", 'E684:')
+  call assert_fails("call remove(l, 1, 5)", 'E684:')
+  call assert_fails("call remove(l, 3, 2)", 'E16:')
+  call assert_fails("call remove(1, 0)", 'E896:')
+  call assert_fails("call remove(l, l)", 'E745:')
+endfunc
+
 " Tests for Dictionary type
 
 func Test_dict()
@@ -220,6 +257,17 @@ func Test_script_local_dict_func()
   call insert(g:dict.foo, function('strlen'))
   call assert_equal('g:dict.func-4', g:dict.func())
   unlet g:dict
+endfunc
+
+" Test removing items in la dictionary
+func Test_dict_func_remove()
+  let d = {1:'a', 2:'b', 3:'c'}
+  call assert_equal('b', remove(d, 2))
+  call assert_equal({1:'a', 3:'c'}, d)
+
+  call assert_fails("call remove(d, 1, 2)", 'E118:')
+  call assert_fails("call remove(d, 'a')", 'E716:')
+  call assert_fails("call remove(d, [])", 'E730:')
 endfunc
 
 " Nasty: remove func from Dict that's being called (works)
@@ -451,19 +499,19 @@ func Test_dict_lock_extend()
 endfunc
 
 " No remove() of write-protected scope-level variable
-func! Tfunc(this_is_a_long_parameter_name)
+func Tfunc1(this_is_a_long_parameter_name)
   call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E795')
-endfun
+endfunc
 func Test_dict_scope_var_remove()
-  call Tfunc('testval')
+  call Tfunc1('testval')
 endfunc
 
 " No extend() of write-protected scope-level variable
-func! Tfunc(this_is_a_long_parameter_name)
+func Tfunc2(this_is_a_long_parameter_name)
   call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
 endfunc
 func Test_dict_scope_var_extend()
-  call Tfunc('testval')
+  call Tfunc2('testval')
 endfunc
 
 " No :unlet of variable in locked scope
@@ -548,6 +596,8 @@ func Test_reverse_sort_uniq()
   call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 1))
   call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
   call assert_equal(['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l)))
+
+  call assert_fails('call reverse("")', 'E899:')
 endfunc
 
 " splitting a string to a List

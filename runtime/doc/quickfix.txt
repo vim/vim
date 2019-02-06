@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.0.  Last change: 2018 Apr 28
+*quickfix.txt*  For Vim version 8.1.  Last change: 2019 Jan 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,7 +46,7 @@ compiler (see |errorformat| below).
 
 							*quickfix-ID*
 Each quickfix list has a unique identifier called the quickfix ID and this
-number will not change within a Vim session. The getqflist() function can be
+number will not change within a Vim session. The |getqflist()| function can be
 used to get the identifier assigned to a list. There is also a quickfix list
 number which may change whenever more than ten lists are added to a quickfix
 stack.
@@ -56,6 +56,7 @@ A location list is a window-local quickfix list. You get one after commands
 like `:lvimgrep`, `:lgrep`, `:lhelpgrep`, `:lmake`, etc., which create a
 location list instead of a quickfix list as the corresponding `:vimgrep`,
 `:grep`, `:helpgrep`, `:make` do.
+						*location-list-file-window*
 A location list is associated with a window and each window can have a
 separate location list.  A location list can be associated with only one
 window.  The location list is independent of the quickfix list.
@@ -68,7 +69,7 @@ the location list is destroyed.
 Every quickfix and location list has a read-only changedtick variable that
 tracks the total number of changes made to the list.  Every time the quickfix
 list is modified, this count is incremented. This can be used to perform an
-action only when the list has changed.  The getqflist() and getloclist()
+action only when the list has changed.  The |getqflist()| and |getloclist()|
 functions can be used to query the current value of changedtick.  You cannot
 change the changedtick variable.
 
@@ -110,14 +111,14 @@ processing a quickfix or location list command, it will be aborted.
 :[count]lne[xt][!]	Same as ":cnext", except the location list for the
 			current window is used instead of the quickfix list.
 
-:[count]cN[ext][!]			*:cp* *:cprevious* *:cN* *:cNext*
+:[count]cN[ext][!]		*:cp* *:cprevious*  *:cprev* *:cN* *:cNext*
 :[count]cp[revious][!]	Display the [count] previous error in the list that
 			includes a file name.  If there are no file names at
 			all, go to the [count] previous error.  See |:cc| for
 			[!] and 'switchbuf'.
 
 
-:[count]lN[ext][!]			*:lp* *:lprevious* *:lN* *:lNext*
+:[count]lN[ext][!]		*:lp* *:lprevious* *:lprev* *:lN* *:lNext*
 :[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
 			list for the current window is used instead of the
 			quickfix list.
@@ -298,6 +299,10 @@ processing a quickfix or location list command, it will be aborted.
 			from the last error backwards, -1 being the last error.
 			The 'switchbuf' settings are respected when jumping
 			to a buffer.
+			The |:filter| command can be used to display only the
+			quickfix entries matching a supplied pattern. The
+			pattern is matched against the filename, module name,
+			pattern and text of the entry.
 
 :cl[ist] +{count}	List the current and next {count} valid errors.  This
 			is similar to ":clist from from+count", where "from"
@@ -359,6 +364,23 @@ modify the title of a quickfix and location list respectively. Examples: >
 	echo getqflist({'title' : 1})
 	call setloclist(3, [], 'a', {'title' : 'Cmd output'})
 	echo getloclist(3, {'title' : 1})
+<
+							*quickfix-index*
+When you jump to a quickfix/location list entry using any of the quickfix
+commands (e.g. |:cc|, |:cnext|, |:cprev|, etc.), that entry becomes the
+currently selected entry. The index of the currently selected entry in a
+quickfix/location list can be obtained using the getqflist()/getloclist()
+functions. Examples: >
+	echo getqflist({'idx' : 0}).idx
+	echo getqflist({'id' : qfid, 'idx' : 0}).idx
+	echo getloclist(2, {'idx' : 0}).idx
+<
+For a new quickfix list, the first entry is selected and the index is 1.  Any
+entry in any quickfix/location list can be set as the currently selected entry
+using the setqflist() function. Examples: >
+	call setqflist([], 'a', {'idx' : 12})
+	call setqflist([], 'a', {'id' : qfid, 'idx' : 7})
+	call setloclist(1, [], 'a', {'idx' : 7})
 <
 							*quickfix-size*
 You can get the number of entries (size) in a quickfix and a location list
@@ -598,7 +620,7 @@ present).  Examples: >
 	echo getloclist(2, {'winid' : 1}).winid
 <
 							*getqflist-examples*
-The getqflist() and getloclist() functions can be used to get the various
+The |getqflist()| and |getloclist()| functions can be used to get the various
 attributes of a quickfix and location list respectively. Some examples for
 using these functions are below:
 >
@@ -607,6 +629,12 @@ using these functions are below:
 
     " get the identifier of the current quickfix list
     :let qfid = getqflist({'id' : 0}).id
+
+    " get the identifier of the fourth quickfix list in the stack
+    :let qfid = getqflist({'nr' : 4, 'id' : 0}).id
+
+    " check whether a quickfix list with a specific identifier exists
+    :if getqflist({'id' : qfid}).id == qfid
 
     " get the index of the current quickfix list in the stack
     :let qfnum = getqflist({'nr' : 0}).nr
@@ -647,14 +675,25 @@ using these functions are below:
 
     " get the location list window id of the third window
     :echo getloclist(3, {'winid' : 0}).winid
+
+    " get the file window id of a location list window (winnr: 4)
+    :echo getloclist(4, {'filewinid' : 0}).filewinid
 <
 							*setqflist-examples*
-The setqflist() and setloclist() functions can be used to set the various
+The |setqflist()| and |setloclist()| functions can be used to set the various
 attributes of a quickfix and location list respectively. Some examples for
 using these functions are below:
 >
+    " create an empty quickfix list with a title and a context
+    :let t = 'Search results'
+    :let c = {'cmd' : 'grep'}
+    :call setqflist([], ' ', {'title' : t, 'context' : c})
+
     " set the title of the current quickfix list
     :call setqflist([], 'a', {'title' : 'Mytitle'})
+
+    " change the current entry in the list specified by an identifier
+    :call setqflist([], 'a', {'id' : qfid, 'idx' : 10})
 
     " set the context of a quickfix list specified by an identifier
     :call setqflist([], 'a', {'id' : qfid, 'context' : {'val' : 100}})
@@ -670,6 +709,9 @@ using these functions are below:
     :let newItems = [{'filename' : 'a.txt', 'lnum' : 10, 'text' : "Apple"},
 		    \ {'filename' : 'b.txt', 'lnum' : 20, 'text' : "Orange"}]
     :call setqflist([], 'a', {'id' : qfid, 'items' : newItems})
+
+    " empty a quickfix list specified by an identifier
+    :call setqflist([], 'r', {'id' : qfid, 'items' : []})
 
     " free all the quickfix lists in the stack
     :call setqflist([], 'f')
@@ -880,7 +922,7 @@ commands can be combined to create a NewGrep command: >
 			'smartcase' is not used.
 			If {pattern} is empty (e.g. // is specified), the last
 			used search pattern is used. |last-pattern|
-
+:{count}vim[grep] ...
 			When a number is put before the command this is used
 			as the maximum number of matches to find.  Use
 			":1vimgrep pattern file" to find only the first.
@@ -1257,7 +1299,7 @@ or >
 to indicate the column of the error.  This is to be used in a multi-line error
 message.  See |errorformat-javac| for a  useful example.
 
-The "%s" conversion specifies the text to search for to locate the error line.
+The "%s" conversion specifies the text to search for, to locate the error line.
 The text is used as a literal string.  The anchors "^" and "$" are added to
 the text to locate the error line exactly matching the search text and the
 text is prefixed with the "\V" atom to make it "very nomagic".  The "%s"
@@ -1273,7 +1315,7 @@ to the file.
 Changing directory
 
 The following uppercase conversion characters specify the type of special
-format strings.  At most one of them may be given as a prefix at the begin
+format strings.  At most one of them may be given as a prefix at the beginning
 of a single comma-separated format pattern.
 Some compilers produce messages that consist of directory names that have to
 be prepended to each file name read by %f (example: GNU make).  The following
@@ -1533,6 +1575,22 @@ The backslashes before the pipe character are required to avoid it to be
 recognized as a command separator.  The backslash before each space is
 required for the set command.
 
+				    *cfilter-plugin* *:Cfilter* *:Lfilter*
+If you have too many matching messages, you can use the cfilter plugin to
+reduce the number of entries.  Load the plugin with: >
+   packadd cfilter
+
+Then you can use these command: >
+   :Cfilter[!] /{pat}/
+   :Lfilter[!] /{pat}/
+
+:Cfilter creates a new quickfix list from entries matching {pat} in the
+current quickfix list. Both the file name and the text of the entries are
+matched against {pat}. If ! is supplied, then entries not matching {pat} are
+used.
+
+:Lfilter does the same as :Cfilter but operates on the current location list.
+
 =============================================================================
 8. The directory stack				*quickfix-directory-stack*
 
@@ -1776,4 +1834,4 @@ start of the file about how to use it.  (This script is deprecated, see
 
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

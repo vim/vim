@@ -759,7 +759,7 @@ extern "C" void InitOLE(int *pbDoRestart)
     hr = RegisterActiveObject(
 	app,
 	MYCLSID,
-	NULL,
+	0,
 	&app_id);
 
     if (FAILED(hr))

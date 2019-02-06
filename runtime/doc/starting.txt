@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2018 Mar 14
+*starting.txt*  For Vim version 8.1.  Last change: 2018 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -127,7 +127,8 @@ argument.
 On VMS all option arguments are assumed to be lowercase, unless preceded with
 a slash.  Thus "-R" means recovery and "-/R" readonly.
 
---help							*-h* *--help*
+--help							*-h* *--help* *-?*
+-?
 -h		Give usage (help) message and exit.  {not in Vi}
 		See |info-message| about capturing the text.
 
@@ -486,7 +487,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 		When {vimrc} is equal to "DEFAULTS" (all uppercase), this has
 		the same effect as "NONE", but the |defaults.vim| script is
-		loaded, which will also set 'nocompatible'.
+		loaded, which will also set 'nocompatible'.  Also see
+		|--clean|.
 
 		Using the "-u" argument with another argument than DEFAULTS
 		has the side effect that the 'compatible' option will be on by
@@ -510,14 +512,16 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{not in Vi}
 
 							*--clean*
---clean		Equal to "-u DEFAULTS -U NONE -i NONE":
+--clean		Similar to "-u DEFAULTS -U NONE -i NONE":
 		- initializations from files and environment variables is
 		  skipped
+		- 'runtimepath' and 'packpath' are set to exclude home
+		  directory entries (does not happen with -u DEFAULTS).
 		- the |defaults.vim| script is loaded, which implies
 		  'nocompatible': use Vim defaults
 		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
-		- the home directory is excluded from 'runtimepath'
+
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
 		which is then stored in the 'key' option.  All writes will
@@ -1593,6 +1597,8 @@ VIMINFO FILE NAME					*viminfo-file-name*
 - The "-i" Vim argument can be used to set another file name, |-i|.  When the
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
+- The 'viminfofile' option can be used like the "-i" argument.  In fact, the
+  value form the "-i" argument is stored in the 'viminfofile' option.
 - For the commands below, another file name can be given, overriding the
   default and the name given with 'viminfo' or "-i" (unless it's NONE).
 
@@ -1682,4 +1688,4 @@ most of the information will be restored).
 			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,10 +1,10 @@
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Apr 20
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-Terminal window support					*terminal*
+Terminal window support				*terminal* *terminal-window*
 
 
 The terminal feature is optional, use this to check if your Vim has it: >
@@ -19,8 +19,8 @@ If the result is "1" you have it.
       Resizing				|terminal-resizing|
       Terminal Modes			|Terminal-mode|
       Cursor style			|terminal-cursor-style|
-      Special keys			|terminal-special-keys|
       Session				|terminal-session|
+      Special keys			|terminal-special-keys|
       Unix				|terminal-unix|
       MS-Windows			|terminal-ms-windows|
 2. Terminal communication	|terminal-communication|
@@ -38,6 +38,7 @@ If the result is "1" you have it.
       Stepping through code		|termdebug-stepping|
       Inspecting variables		|termdebug-variables|
       Other commands			|termdebug-commands|
+      Prompt mode			|termdebug-prompt|
       Communication			|termdebug-communication|
       Customizing			|termdebug-customizing|
 
@@ -86,7 +87,8 @@ to the job.  For example:
 	'termwinkey' CTRL-W    move focus to the next window
 	'termwinkey' :	       enter an Ex command
 	'termwinkey' 'termwinkey' send 'termwinkey' to the job in the terminal
-	'termwinkey' .	       send a CTRL-W to the job in the terminal
+	'termwinkey' .	       send 'termwinkey' to the job in the terminal
+	'termwinkey' CTRL-\    send a CTRL-\ to the job in the terminal
 	'termwinkey' N	       go to terminal Normal mode, see below
 	'termwinkey' CTRL-N    same as CTRL-W N
 	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
@@ -108,15 +110,21 @@ sent to the job running in the terminal.  For example, to make F1 switch
 to Terminal-Normal mode: >
    tnoremap <F1> <C-W>N
 You can use Esc, but you need to make sure it won't cause other keys to
-break: >
+break (cursor keys start with an Esc, so they may break): >
    tnoremap <Esc> <C-W>N
    set notimeout ttimeout timeoutlen=100
 
+You can also create menus similar to terminal mode mappings, but you have to
+use |:tlmenu| instead of |:tmenu|.
+
 <							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
-BufWinEnter autocommand event is triggered.  This makes it possible to set
+TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
-   au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+   au TerminalOpen * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+The <abuf> is set to the terminal buffer, but if there is no window (hidden
+terminal) then setting options will happen in the wrong buffer, therefore the
+check for &buftype in the example.
 
 Mouse events (click and drag) are passed to the terminal.  Mouse move events
 are only passed when Vim itself is receiving them.  For a terminal that is
@@ -204,7 +212,7 @@ Syntax ~
 			++rows={height} Use {height} for the terminal window
 					height.  If the terminal uses the full
 					Vim height (no window above or below
-					th terminal window) the command line
+					the terminal window) the command line
 					height will be reduced as needed.
 			++cols={width}  Use {width} for the terminal window
 					width. If the terminal uses the full
@@ -220,9 +228,14 @@ Syntax ~
 					for Python "++eof=exit()".  Special
 					codes can be used like with `:map`,
 					e.g. "<C-Z>" for CTRL-Z.
-
+			++winpty	Use winpty as the virtual console.
+			++conpty	Use |ConPTY| as the virtual console.
 			If you want to use more options use the |term_start()|
 			function.
+			If you want to split the window vertically, use: >
+				:vertical terminal
+<			Or short: >
+				:vert ter
 
 When the buffer associated with the terminal is forcibly unloaded or wiped out
 the job is killed, similar to calling `job_stop(job, "kill")` .
@@ -243,7 +256,7 @@ Trying to close the window with `CTRL-W :close` also fails.   Using
 You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
-fails, use !  to force, as usual.
+fails, use ! to force, as usual.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
@@ -317,7 +330,7 @@ the job ends while in Terminal-Normal mode this changes to
 When the job outputs lines in the terminal, such that the contents scrolls off
 the top, those lines are remembered and can be seen in Terminal-Normal mode.
 The number of lines is limited by the 'termwinscroll' option. When going over
-this limit, the first 10% of the scrolled lins are deleted and are lost.
+this limit, the first 10% of the scrolled lines are deleted and are lost.
 
 
 Cursor style ~
@@ -376,6 +389,7 @@ Environment variables are used to pass information to the running job:
     COLUMNS		number of columns in the terminal initially
     COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
     VIM_SERVERNAME	v:servername
+    VIM_TERMINAL	v:version
 
 
 MS-Windows ~
@@ -397,6 +411,13 @@ Just put the files somewhere in your PATH.  You can set the 'winptydll' option
 to point to the right file, if needed.  If you have both the 32-bit and 64-bit
 version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
+							*ConPTY*
+On more recent versions of MS-Windows 10 (beginning with the "October 2018
+Update"), winpty is no longer required. On those versions, |:terminal| will use
+Windows' built-in support for hosting terminal applications, "ConPTY".  When
+ConPTY is in use, there may be rendering artifacts regarding ambiguous-width
+characters. If you encounter any such issues, set 'termmode' to winpty (which
+you then must have instlled).
 
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername
@@ -446,7 +467,7 @@ Currently supported commands:
 		of the terminal and {argument}, the decoded JSON argument. 
 		The function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
-		terminal API
+		terminal API.
 		The user function should sanity check the argument.
 		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
@@ -466,6 +487,8 @@ Currently supported commands:
 		Let Vim open a file, like the `:drop` command.  If {filename}
 		is already open in a window, switch to that window.  Otherwise
 		open a new window to edit {filename}.
+		Note that both the job and Vim may change the current
+		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
 		it must be a Dict.  Similarly to |++opt|, These entries are recognized:
@@ -515,9 +538,9 @@ inspects the resulting screen state.
 
 Functions ~
 
-term_sendkeys()		send keystrokes to a terminal (not subject to tmap)
-term_wait()		wait for screen to be updated
-term_scrape()		inspect terminal screen
+|term_sendkeys()|	send keystrokes to a terminal (not subject to tmap)
+|term_wait()|		wait for screen to be updated
+|term_scrape()|		inspect terminal screen
 
 
 ==============================================================================
@@ -544,7 +567,7 @@ src/testdir/test_syntax.vim.  The main parts are:
   characters.  This makes sure the dump is always this size.  The function
   RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
   command.
-- Send any commands to Vim using term_sendkeys().  For example: >
+- Send any commands to Vim using |term_sendkeys()|.  For example: >
 	call term_sendkeys(buf, ":echo &lines &columns\<CR>")
 - Check that the screen is now in the expected state, using
   VerifyScreenDump().  This expects the reference screen dump to be in the
@@ -572,13 +595,13 @@ Creating a screen dump ~
 							*terminal-screendump*
 
 To create the screen dump, run Vim (or any other program) in a terminal and
-make it show the desired state.  Then use the term_dumpwrite() function to
+make it show the desired state.  Then use the |term_dumpwrite()| function to
 create a screen dump file.  For example: >
 	:call term_dumpwrite(77, "mysyntax.dump")
 
 Here "77" is the buffer number of the terminal.  Use `:ls!` to see it.
 
-You can view the screen dump with term_dumpload(): >
+You can view the screen dump with |term_dumpload()|: >
 	:call term_dumpload("mysyntax.dump")
 
 To verify that Vim still shows exactly the same screen, run Vim again with
@@ -586,7 +609,7 @@ exactly the same way to show the desired state.  Then create a screen dump
 again, using a different file name: >
 	:call term_dumpwrite(88, "test.dump")
 
-To assert that the files are exactly the same use assert_equalfile(): >
+To assert that the files are exactly the same use |assert_equalfile()|: >
 	call assert_equalfile("mysyntax.dump", "test.dump")
 
 If there are differences then v:errors will contain the error message.
@@ -595,8 +618,8 @@ If there are differences then v:errors will contain the error message.
 Comparing screen dumps ~
 						*terminal-diffscreendump*
 
-assert_equalfile() does not make it easy to see what is different.
-To spot the problem use term_dumpdiff(): >
+|assert_equalfile()| does not make it easy to see what is different.
+To spot the problem use |term_dumpdiff()|: >
 	call term_dumpdiff("mysyntax.dump", "test.dump")
 
 This will open a window consisting of three parts:
@@ -605,17 +628,32 @@ This will open a window consisting of three parts:
 3.  The contents of the second dump
 
 You can usually see what differs in the second part.  Use the 'ruler' to
-relate it to the position in the first or second dump.
+relate it to the position in the first or second dump.  Letters indicate the
+kind of difference:
+	X	different character
+	>	cursor in first but not in second
+	<	cursor in second but not in first
+	w	character width differs (single vs double width)
+	f	foreground color differs
+	b	background color differs
+	a	attribute differs (bold, underline, reverse, etc.)
+	?	character missing in both
+	+	character missing in first
+	-	character missing in second
 
 Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-5. Debugging						*terminal-debug*
+5. Debugging				*terminal-debug* *terminal-debugger*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside
 Vim this also works remotely over an ssh connection.
+
+When the |+terminal| feature is missing, the plugin will use the "prompt"
+buffer type, if possible.  The running program will then use a newly opened
+terminal window.  See |termdebug-prompt| below for details.
 
 
 Starting ~
@@ -623,7 +661,7 @@ Starting ~
 Load the plugin with this command: >
 	packadd termdebug
 <							*:Termdebug*
-To start debugging use `:Termdebug` or `:TermdebugCommand`` followed by the
+To start debugging use `:Termdebug` or `:TermdebugCommand` followed by the
 command name, for example: >
 	:Termdebug vim
 
@@ -693,11 +731,11 @@ Put focus on the gdb window and type: >
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
 Gdb will run into the ex_help breakpoint.  The source window now shows the 
-ex_cmds.c file.  A ">>" marker will appear where the breakpoint was set.  The
-line where the debugger stopped is highlighted.  You can now step through the
-program.  Let's use the mouse: click on the "Next" button in the window
-toolbar.  You will see the highlighting move as the debugger executes a line
-of source code.
+ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
+breakpoint was set.  The line where the debugger stopped is highlighted.  You
+can now step through the program.  Let's use the mouse: click on the "Next"
+button in the window toolbar.  You will see the highlighting move as the
+debugger executes a line of source code.
 
 Click "Next" a few times until the for loop is highlighted.  Put the cursor on
 the end of "eap->arg", then click "Eval" in the toolbar.  You will see this
@@ -776,6 +814,13 @@ source code, a new window will be created for the source code.  This also
 happens if the buffer in the source code window has been modified and can't be
 abandoned.
 
+Gdb gives each breakpoint a number.  In Vim the number shows up in the sign
+column, with a red background.  You can use these gdb commands:
+- info break	list breakpoints
+- delete N	delete breakpoint N
+You can also use the `:Clear` command if the cursor is in the line with the
+breakpoint, or use the "Clear breakpoint" right-click menu entry.
+
 
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
@@ -796,11 +841,35 @@ Other commands ~
 	     isn't one
 
 
+Prompt mode ~
+						*termdebug-prompt*
+When the |+terminal| feature is not supported and on MS-Windows, gdb will run
+in a buffer with 'buftype' set to "prompt".  This works slightly differently:
+- The gdb window will be in Insert mode while typing commands.  Go to Normal
+  mode with <Esc>, then you can move around in the buffer, copy/paste, etc.
+  Go back to editing the gdb command with any command that starts Insert mode,
+  such as `a` or `i`.
+- The program being debugged will run in a separate window.  On MS-Windows
+  this is a new console window.  On Unix, if the |+terminal| feature is
+  available a Terminal window will be opened to run the debugged program in.
+
+						*termdebug_use_prompt*
+Prompt mode can be used even when the |+terminal| feature is present with: >
+	let g:termdebug_use_prompt = 1
+
+
 Communication ~
 						*termdebug-communication*
 There is another, hidden, buffer, which is used for Vim to communicate with
 gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
 will break the debugger.
+
+Gdb has some weird behavior, the plugin does its best to work around that.
+For example, after typing "continue" in the gdb window a CTRL-C can be used to
+interrupt the running program.  But after using the MI command
+"-exec-continue"  pressing CTRL-C does not interrupt.  Therefore you will see
+"continue" being used for the `:Continue` command, instead of using the
+communication channel.
 
 
 Customizing ~
@@ -833,6 +902,14 @@ When 'background' is "dark":
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
 
+Shorcuts						*termdebug_shortcuts*
+
+You can define your own shortcuts (mappings) to control gdb, that can work in
+any window, using the TermDebugSendCommand() function.  Example: >
+	map ,w :call TermDebugSendCommand('where')<CR>
+The argument is the gdb command.
+
+
 Popup menu						*termdebug_popup*
 
 By default the Termdebug plugin sets 'mousemodel' to "popup_setpos" and adds
@@ -849,13 +926,13 @@ Vim window width						*termdebug_wide*
 To change the width of the Vim window when debugging starts, and use a
 vertical split: >
   let g:termdebug_wide = 163
-This will set &columns to 163 when :Termdebug is used.  The value is restored
+This will set &columns to 163 when `:Termdebug` is used.  The value is restored
 when quitting the debugger.
-If g:termdebug_wide is set and &Columns is already  larger than
+If g:termdebug_wide is set and &columns is already larger than
 g:termdebug_wide then a vertical split will be used without changing &columns.
 Set it to 1 to get a vertical split without every changing &columns (useful
 for when the terminal can't be resized by Vim).
 
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

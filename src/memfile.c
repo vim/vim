@@ -245,7 +245,7 @@ mf_close(memfile_T *mfp, int del_file)
     if (mfp->mf_fd >= 0)
     {
 	if (close(mfp->mf_fd) < 0)
-	    EMSG(_(e_swapclose));
+	    emsg(_(e_swapclose));
     }
     if (del_file && mfp->mf_fname != NULL)
 	mch_remove(mfp->mf_fname);
@@ -291,7 +291,7 @@ mf_close_file(
     }
 
     if (close(mfp->mf_fd) < 0)			/* close the file */
-	EMSG(_(e_swapclose));
+	emsg(_(e_swapclose));
     mfp->mf_fd = -1;
 
     if (mfp->mf_fname != NULL)
@@ -480,7 +480,7 @@ mf_put(
     flags = hp->bh_flags;
 
     if ((flags & BH_LOCKED) == 0)
-	IEMSG(_("E293: block was not locked"));
+	iemsg(_("E293: block was not locked"));
     flags &= ~BH_LOCKED;
     if (dirty)
     {
@@ -539,9 +539,6 @@ mf_sync(memfile_T *mfp, int flags)
 {
     int		status;
     bhdr_T	*hp;
-#if defined(SYNC_DUP_CLOSE)
-    int		fd;
-#endif
     int		got_int_save = got_int;
 
     if (mfp->mf_fd < 0)	    /* there is no file, nothing to do */
@@ -624,13 +621,9 @@ mf_sync(memfile_T *mfp, int flags)
 		status = FAIL;
 	}
 #endif
-#ifdef SYNC_DUP_CLOSE
-	/*
-	 * Win32 is a bit more work: Duplicate the file handle and close it.
-	 * This should flush the file to disk.
-	 */
-	if ((fd = dup(mfp->mf_fd)) >= 0)
-	    close(fd);
+#ifdef WIN32
+	if (_commit(mfp->mf_fd))
+	    status = FAIL;
 #endif
 #ifdef AMIGA
 # if defined(__AROS__) || defined(__amigaos4__)
@@ -1047,7 +1040,7 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 	     * space becomes available.
 	     */
 	    if (!did_swapwrite_msg)
-		EMSG(_("E297: Write error in swap file"));
+		emsg(_("E297: Write error in swap file"));
 	    did_swapwrite_msg = TRUE;
 	    return FAIL;
 	}
@@ -1263,7 +1256,7 @@ mf_do_open(
     if ((flags & O_CREAT) && mch_lstat((char *)mfp->mf_fname, &sb) >= 0)
     {
 	mfp->mf_fd = -1;
-	EMSG(_("E300: Swap file already exists (symlink attack?)"));
+	emsg(_("E300: Swap file already exists (symlink attack?)"));
     }
     else
 #endif

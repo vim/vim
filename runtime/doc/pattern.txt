@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 8.0.  Last change: 2018 Mar 13
+*pattern.txt*   For Vim version 8.1.  Last change: 2018 Dec 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -293,6 +293,14 @@ the "#" is under your left hand middle finger (search to the left and up) and
 the "*" is under your right hand middle finger (search to the right and down).
 (this depends on your keyboard layout though).
 
+								*E956*
+In very rare cases a regular expression is used recursively.  This can happen
+when executing a pattern takes a long time and when checking for messages on
+channels a callback is invoked that also uses a pattern or an autocommand is
+triggered.  In most cases this should be fine, but if a pattern is in use when
+it's used again it fails.  Usually this means there is something wrong with
+the pattern.
+
 ==============================================================================
 2. The definition of a pattern		*search-pattern* *pattern* *[pattern]*
 					*regular-expression* *regexp* *Pattern*
@@ -390,11 +398,11 @@ Use of "\m" makes the pattern after it be interpreted as if 'magic' is set,
 ignoring the actual value of the 'magic' option.
 Use of "\M" makes the pattern after it be interpreted as if 'nomagic' is used.
 							*/\v* */\V*
-Use of "\v" means that in the pattern after it all ASCII characters except
-'0'-'9', 'a'-'z', 'A'-'Z' and '_' have a special meaning.  "very magic"
+Use of "\v" means that after it, all ASCII characters except '0'-'9', 'a'-'z',
+'A'-'Z' and '_' have special meaning: "very magic"
 
-Use of "\V" means that in the pattern after it only the backslash and the
-terminating character (/ or ?) has a special meaning.  "very nomagic"
+Use of "\V" means that after it, only a backslash and terminating character
+(usually / or ?) have special meaning: "very nomagic"
 
 Examples:
 after:	  \v	   \m	    \M	     \V		matches ~
@@ -1110,6 +1118,9 @@ x	A single character, with no special meaning, matches itself
 *[:tab:]*	  [:tab:]		the <Tab> character
 *[:escape:]*	  [:escape:]		the <Esc> character
 *[:backspace:]*	  [:backspace:]		the <BS> character
+*[:ident:]*	  [:ident:]		identifier character (same as "\i")
+*[:keyword:]*	  [:keyword:]		keyword character (same as "\k")
+*[:fname:]*	  [:fname:]		file name character (same as "\f")
 	  The brackets in character class expressions are additional to the
 	  brackets delimiting a collection.  For example, the following is a
 	  plausible pattern for a UNIX filename: "[-./[:alnum:]_~]\+" That is,
@@ -1409,4 +1420,4 @@ Finally, these constructs are unique to Perl:
 		":2match" for another plugin.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

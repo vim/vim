@@ -16,16 +16,10 @@
 
 #include "vim.h"
 
-static int other_sourcing_name(void);
-static char_u *get_emsg_source(void);
-static char_u *get_emsg_lnum(void);
 static void add_msg_hist(char_u *s, int len, int attr);
 static void hit_return_msg(void);
 static void msg_home_replace_attr(char_u *fname, int attr);
-#ifdef FEAT_MBYTE
-static char_u *screen_puts_mbyte(char_u *s, int l, int attr);
-#endif
-static void msg_puts_attr_len(char_u *str, int maxlen, int attr);
+static void msg_puts_attr_len(char *str, int maxlen, int attr);
 static void msg_puts_display(char_u *str, int maxlen, int attr, int recurse);
 static void msg_scroll_up(void);
 static void inc_msg_scrolled(void);
@@ -102,7 +96,7 @@ static int  verbose_did_open = FALSE;
  * return TRUE if wait_return not called
  */
     int
-msg(char_u *s)
+msg(char *s)
 {
     return msg_attr_keep(s, 0, FALSE);
 }
@@ -113,7 +107,7 @@ msg(char_u *s)
  * Like msg() but keep it silent when 'verbosefile' is set.
  */
     int
-verb_msg(char_u *s)
+verb_msg(char *s)
 {
     int		n;
 
@@ -126,14 +120,14 @@ verb_msg(char_u *s)
 #endif
 
     int
-msg_attr(char_u *s, int attr)
+msg_attr(char *s, int attr)
 {
     return msg_attr_keep(s, attr, FALSE);
 }
 
     int
 msg_attr_keep(
-    char_u	*s,
+    char	*s,
     int		attr,
     int		keep)	    /* TRUE: set keep_msg if it doesn't scroll */
 {
@@ -143,12 +137,12 @@ msg_attr_keep(
 
     /* Skip messages not matching ":filter pattern".
      * Don't filter when there is an error. */
-    if (!emsg_on_display && message_filtered(s))
+    if (!emsg_on_display && message_filtered((char_u *)s))
 	return TRUE;
 
 #ifdef FEAT_EVAL
     if (attr == 0)
-	set_vim_var_string(VV_STATUSMSG, s, -1);
+	set_vim_var_string(VV_STATUSMSG, (char_u *)s, -1);
 #endif
 
     /*
@@ -162,12 +156,12 @@ msg_attr_keep(
 
     /* Add message to history (unless it's a repeated kept message or a
      * truncated message) */
-    if (s != keep_msg
+    if ((char_u *)s != keep_msg
 	    || (*s != '<'
 		&& last_msg_hist != NULL
 		&& last_msg_hist->msg != NULL
 		&& STRCMP(s, last_msg_hist->msg)))
-	add_msg_hist(s, -1, attr);
+	add_msg_hist((char_u *)s, -1, attr);
 
 #ifdef FEAT_JOB_CHANNEL
     if (emsg_to_channel_log)
@@ -177,22 +171,22 @@ msg_attr_keep(
 
     /* When displaying keep_msg, don't let msg_start() free it, caller must do
      * that. */
-    if (s == keep_msg)
+    if ((char_u *)s == keep_msg)
 	keep_msg = NULL;
 
     /* Truncate the message if needed. */
     msg_start();
-    buf = msg_strtrunc(s, FALSE);
+    buf = msg_strtrunc((char_u *)s, FALSE);
     if (buf != NULL)
-	s = buf;
+	s = (char *)buf;
 
-    msg_outtrans_attr(s, attr);
+    msg_outtrans_attr((char_u *)s, attr);
     msg_clr_eos();
     retval = msg_end();
 
-    if (keep && retval && vim_strsize(s) < (int)(Rows - cmdline_row - 1)
-							   * Columns + sc_col)
-	set_keep_msg(s, 0);
+    if (keep && retval && vim_strsize((char_u *)s)
+			    < (int)(Rows - cmdline_row - 1) * Columns + sc_col)
+	set_keep_msg((char_u *)s, 0);
 
     vim_free(buf);
     --entered;
@@ -225,7 +219,6 @@ msg_strtrunc(
 	    room = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
 	if (len > room && room > 0)
 	{
-#ifdef FEAT_MBYTE
 	    if (enc_utf8)
 		/* may have up to 18 bytes per cell (6 per char, up to two
 		 * composing chars) */
@@ -234,7 +227,6 @@ msg_strtrunc(
 		/* may have up to 2 bytes per cell for euc-jp */
 		len = (room + 2) * 2;
 	    else
-#endif
 		len = room + 2;
 	    buf = alloc(len);
 	    if (buf != NULL)
@@ -280,7 +272,6 @@ trunc_string(
 	    break;
 	len += n;
 	buf[e] = s[e];
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	    for (n = (*mb_ptr2len)(s + e); --n > 0; )
 	    {
@@ -288,12 +279,10 @@ trunc_string(
 		    break;
 		buf[e] = s[e];
 	    }
-#endif
     }
 
     /* Last part: End of the string. */
     i = e;
-#ifdef FEAT_MBYTE
     if (enc_dbcs != 0)
     {
 	/* For DBCS going backwards in a string is slow, but
@@ -323,7 +312,6 @@ trunc_string(
 	}
     }
     else
-#endif
     {
 	for (i = (int)STRLEN(s); len + (n = ptr2cells(s + i - 1)) <= room; --i)
 	    len += n;
@@ -364,39 +352,53 @@ trunc_string(
 
 /*
  * Automatic prototype generation does not understand this function.
- * Note: Caller of smgs() and smsg_attr() must check the resulting string is
+ * Note: Caller of smsg() and smsg_attr() must check the resulting string is
  * shorter than IOSIZE!!!
  */
 #ifndef PROTO
 
-int vim_snprintf(char *str, size_t str_m, char *fmt, ...);
+int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
 
     int
 # ifdef __BORLANDC__
 _RTLENTRYF
 # endif
-smsg(char_u *s, ...)
+smsg(const char *s, ...)
 {
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
     va_end(arglist);
-    return msg(IObuff);
+    return msg((char *)IObuff);
 }
 
     int
 # ifdef __BORLANDC__
 _RTLENTRYF
 # endif
-smsg_attr(int attr, char_u *s, ...)
+smsg_attr(int attr, const char *s, ...)
 {
     va_list arglist;
 
     va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, (char *)s, arglist);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
     va_end(arglist);
-    return msg_attr(IObuff, attr);
+    return msg_attr((char *)IObuff, attr);
+}
+
+    int
+# ifdef __BORLANDC__
+_RTLENTRYF
+# endif
+smsg_attr_keep(int attr, const char *s, ...)
+{
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg_attr_keep((char *)IObuff, attr, TRUE);
 }
 
 #endif
@@ -494,13 +496,13 @@ msg_source(int attr)
     p = get_emsg_source();
     if (p != NULL)
     {
-	msg_attr(p, attr);
+	msg_attr((char *)p, attr);
 	vim_free(p);
     }
     p = get_emsg_lnum();
     if (p != NULL)
     {
-	msg_attr(p, HL_ATTR(HLF_N));
+	msg_attr((char *)p, HL_ATTR(HLF_N));
 	vim_free(p);
 	last_sourcing_lnum = sourcing_lnum;  /* only once for each line */
     }
@@ -545,7 +547,10 @@ ignore_error_for_testing(char_u *error)
     if (ignore_error_list.ga_itemsize == 0)
 	ga_init2(&ignore_error_list, sizeof(char_u *), 1);
 
-    ga_add_string(&ignore_error_list, error);
+    if (STRCMP("RESET", error) == 0)
+	ga_clear_strings(&ignore_error_list);
+    else
+	ga_add_string(&ignore_error_list, error);
 }
 
     static int
@@ -571,21 +576,22 @@ do_perror(char *msg)
 {
     perror(msg);
     ++emsg_silent;
-    emsg((char_u *)msg);
+    emsg(msg);
     --emsg_silent;
 }
 #endif
 
 /*
- * emsg() - display an error message
+ * emsg_core() - display an error message
  *
  * Rings the bell, if appropriate, and calls message() to do the real work
  * When terminal not initialized (yet) mch_errmsg(..) is used.
  *
- * return TRUE if wait_return not called
+ * Return TRUE if wait_return not called.
+ * Note: caller must check 'emsg_not_now()' before calling this.
  */
-    int
-emsg(char_u *s)
+    static int
+emsg_core(char_u *s)
 {
     int		attr;
     char_u	*p;
@@ -595,15 +601,11 @@ emsg(char_u *s)
     int		severe;
 #endif
 
-    /* Skip this if not giving error messages at the moment. */
-    if (emsg_not_now())
-	return TRUE;
-
 #ifdef FEAT_EVAL
     /* When testing some errors are turned into a normal message. */
     if (ignore_error(s))
 	/* don't call msg() if it results in a dialog */
-	return msg_use_printf() ? FALSE : msg(s);
+	return msg_use_printf() ? FALSE : msg((char *)s);
 #endif
 
     called_emsg = TRUE;
@@ -628,7 +630,7 @@ emsg(char_u *s)
 	if (cause_errthrow(s, severe, &ignore) == TRUE)
 	{
 	    if (!ignore)
-		did_emsg = TRUE;
+		++did_emsg;
 	    return TRUE;
 	}
 
@@ -680,8 +682,8 @@ emsg(char_u *s)
 	if (p_eb)
 	    beep_flush();		/* also includes flush_buffers() */
 	else
-	    flush_buffers(FALSE);	/* flush internal buffers */
-	did_emsg = TRUE;		/* flag for DoOneCmd() */
+	    flush_buffers(FLUSH_MINIMAL);  // flush internal buffers
+	++did_emsg;			   // flag for DoOneCmd()
 #ifdef FEAT_EVAL
 	did_uncaught_emsg = TRUE;
 #endif
@@ -708,7 +710,7 @@ emsg(char_u *s)
      * Display the error message itself.
      */
     msg_nowait = FALSE;			/* wait for this msg */
-    r = msg_attr(s, attr);
+    r = msg_attr((char *)s, attr);
 
 #ifdef FEAT_JOB_CHANNEL
     emsg_to_channel_log = FALSE;
@@ -716,40 +718,36 @@ emsg(char_u *s)
     return r;
 }
 
-
 /*
- * Print an error message with one "%s" and one string argument.
+ * Print an error message.
  */
     int
-emsg2(char_u *s, char_u *a1)
+emsg(char *s)
 {
-    return emsg3(s, a1, NULL);
+    /* Skip this if not giving error messages at the moment. */
+    if (!emsg_not_now())
+	return emsg_core((char_u *)s);
+    return TRUE;		/* no error messages at the moment */
 }
 
 /*
- * Print an error message with one or two "%s" and one or two string arguments.
- * This is not in message.c to avoid a warning for prototypes.
+ * Print an error message with format string and variable arguments.
+ * Note: caller must not pass 'IObuff' as 1st argument.
  */
     int
-emsg3(char_u *s, char_u *a1, char_u *a2)
+semsg(const char *s, ...)
 {
-    if (emsg_not_now())
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, a1, a2);
-    return emsg(IObuff);
-}
+    /* Skip this if not giving error messages at the moment. */
+    if (!emsg_not_now())
+    {
+	va_list ap;
 
-/*
- * Print an error message with one "%ld" and one long int argument.
- * This is not in message.c to avoid a warning for prototypes.
- */
-    int
-emsgn(char_u *s, long n)
-{
-    if (emsg_not_now())
-	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
-    return emsg(IObuff);
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	return emsg_core(IObuff);
+    }
+    return TRUE;		/* no error messages at the moment */
 }
 
 /*
@@ -758,38 +756,33 @@ emsgn(char_u *s, long n)
  * detected when fuzzing vim.
  */
     void
-iemsg(char_u *s)
+iemsg(char *s)
 {
-    emsg(s);
-#ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
-#endif
-}
-
-
-/*
- * Same as emsg2(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
- * defined. It is used for internal errors only, so that they can be
- * detected when fuzzing vim.
- */
-    void
-iemsg2(char_u *s, char_u *a1)
-{
-    emsg2(s, a1);
+    if (!emsg_not_now())
+	emsg_core((char_u *)s);
 #ifdef ABORT_ON_INTERNAL_ERROR
     abort();
 #endif
 }
 
 /*
- * Same as emsgn(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
+ * Same as semsg(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
  * defined. It is used for internal errors only, so that they can be
  * detected when fuzzing vim.
+ * Note: caller must not pass 'IObuff' as 1st argument.
  */
     void
-iemsgn(char_u *s, long n)
+siemsg(const char *s, ...)
 {
-    emsgn(s, n);
+    if (!emsg_not_now())
+    {
+	va_list ap;
+
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	emsg_core(IObuff);
+    }
 #ifdef ABORT_ON_INTERNAL_ERROR
     abort();
 #endif
@@ -801,7 +794,7 @@ iemsgn(char_u *s, long n)
     void
 internal_error(char *where)
 {
-    IEMSG2(_(e_intern2), where);
+    siemsg(_(e_intern2), where);
 }
 
 /* emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes. */
@@ -809,7 +802,7 @@ internal_error(char *where)
     void
 emsg_invreg(int name)
 {
-    EMSG2(_("E354: Invalid register name: '%s'"), transchar(name));
+    semsg(_("E354: Invalid register name: '%s'"), transchar(name));
 }
 
 /*
@@ -818,22 +811,23 @@ emsg_invreg(int name)
  * Careful: The string may be changed by msg_may_trunc()!
  * Returns a pointer to the printed message, if wait_return() not called.
  */
-    char_u *
-msg_trunc_attr(char_u *s, int force, int attr)
+    char *
+msg_trunc_attr(char *s, int force, int attr)
 {
     int		n;
+    char	*ts;
 
     /* Add message to history before truncating */
-    add_msg_hist(s, -1, attr);
+    add_msg_hist((char_u *)s, -1, attr);
 
-    s = msg_may_trunc(force, s);
+    ts = (char *)msg_may_trunc(force, (char_u *)s);
 
     msg_hist_off = TRUE;
-    n = msg_attr(s, attr);
+    n = msg_attr(ts, attr);
     msg_hist_off = FALSE;
 
     if (n)
-	return s;
+	return ts;
     return NULL;
 }
 
@@ -852,7 +846,6 @@ msg_may_trunc(int force, char_u *s)
     if ((force || (shortmess(SHM_TRUNC) && !exmode_active))
 	    && (n = (int)STRLEN(s) - room) > 0)
     {
-#ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
 	    int	size = vim_strsize(s);
@@ -868,7 +861,6 @@ msg_may_trunc(int force, char_u *s)
 	    }
 	    --n;
 	}
-#endif
 	s += n;
 	*s = '<';
     }
@@ -958,7 +950,7 @@ ex_messages(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
 	return;
     }
 
@@ -982,7 +974,11 @@ ex_messages(exarg_T *eap)
     {
 	s = mch_getenv((char_u *)"LANG");
 	if (s != NULL && *s != NUL)
-	    msg_attr((char_u *)
+	    // The next comment is extracted by xgettext and put in po file for
+	    // translators to read.
+	    msg_attr(
+		    // Translator: Please replace the name and email address
+		    // with the appropriate text for your translation.
 		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
 		    HL_ATTR(HLF_T));
     }
@@ -990,7 +986,7 @@ ex_messages(exarg_T *eap)
     /* Display what was not skipped. */
     for (; p != NULL && !got_int; p = p->next)
 	if (p->msg != NULL)
-	    msg_attr(p->msg, p->attr);
+	    msg_attr((char *)p->msg, p->attr);
 
     msg_hist_off = FALSE;
 }
@@ -1013,10 +1009,10 @@ msg_end_prompt(void)
 #endif
 
 /*
- * wait for the user to hit a key (normally a return)
- * if 'redraw' is TRUE, clear and redraw the screen
- * if 'redraw' is FALSE, just redraw the screen
- * if 'redraw' is -1, don't redraw at all
+ * Wait for the user to hit a key (normally Enter).
+ * If "redraw" is TRUE, clear and redraw the screen.
+ * If "redraw" is FALSE, just redraw the screen.
+ * If "redraw" is -1, don't redraw at all.
  */
     void
 wait_return(int redraw)
@@ -1025,7 +1021,7 @@ wait_return(int redraw)
     int		oldState;
     int		tmpState;
     int		had_got_int;
-    int		save_Recording;
+    int		save_reg_recording;
     FILE	*save_scriptout;
 
     if (redraw == TRUE)
@@ -1062,7 +1058,7 @@ wait_return(int redraw)
     }
     else if (exmode_active)
     {
-	MSG_PUTS(" ");		/* make sure the cursor is on the right line */
+	msg_puts(" ");		/* make sure the cursor is on the right line */
 	c = CAR;		/* no need for a return in ex mode */
 	got_int = FALSE;
     }
@@ -1103,16 +1099,16 @@ wait_return(int redraw)
 	    /* Temporarily disable Recording. If Recording is active, the
 	     * character will be recorded later, since it will be added to the
 	     * typebuf after the loop */
-	    save_Recording = Recording;
+	    save_reg_recording = reg_recording;
 	    save_scriptout = scriptout;
-	    Recording = FALSE;
+	    reg_recording = 0;
 	    scriptout = NULL;
 	    c = safe_vgetc();
 	    if (had_got_int && !global_busy)
 		got_int = FALSE;
 	    --no_mapping;
 	    --allow_keys;
-	    Recording = save_Recording;
+	    reg_recording = save_reg_recording;
 	    scriptout = save_scriptout;
 
 #ifdef FEAT_CLIPBOARD
@@ -1219,6 +1215,9 @@ wait_return(int redraw)
 	    cmdline_row = msg_row;
 	skip_redraw = TRUE;	    /* skip redraw once */
 	do_redraw = FALSE;
+#ifdef FEAT_TERMINAL
+	skip_term_loop = TRUE;
+#endif
     }
 
     /*
@@ -1275,9 +1274,9 @@ hit_return_msg(void)
     if (msg_didout)	/* start on a new line */
 	msg_putchar('\n');
     if (got_int)
-	MSG_PUTS(_("Interrupt: "));
+	msg_puts(_("Interrupt: "));
 
-    MSG_PUTS_ATTR(_("Press ENTER or type command to continue"), HL_ATTR(HLF_R));
+    msg_puts_attr(_("Press ENTER or type command to continue"), HL_ATTR(HLF_R));
     if (!msg_use_printf())
 	msg_clr_eos();
     p_more = save_p_more;
@@ -1381,11 +1380,7 @@ msg_putchar(int c)
     void
 msg_putchar_attr(int c, int attr)
 {
-#ifdef FEAT_MBYTE
     char_u	buf[MB_MAXBYTES + 1];
-#else
-    char_u	buf[4];
-#endif
 
     if (IS_SPECIAL(c))
     {
@@ -1395,23 +1390,16 @@ msg_putchar_attr(int c, int attr)
 	buf[3] = NUL;
     }
     else
-    {
-#ifdef FEAT_MBYTE
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
-#else
-	buf[0] = c;
-	buf[1] = NUL;
-#endif
-    }
-    msg_puts_attr(buf, attr);
+    msg_puts_attr((char *)buf, attr);
 }
 
     void
 msg_outnum(long n)
 {
-    char_u	buf[20];
+    char	buf[20];
 
-    sprintf((char *)buf, "%ld", n);
+    sprintf(buf, "%ld", n);
     msg_puts(buf);
 }
 
@@ -1471,7 +1459,6 @@ msg_outtrans_len(char_u *str, int len)
     char_u *
 msg_outtrans_one(char_u *p, int attr)
 {
-#ifdef FEAT_MBYTE
     int		l;
 
     if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
@@ -1479,8 +1466,7 @@ msg_outtrans_one(char_u *p, int attr)
 	msg_outtrans_len_attr(p, l, attr);
 	return p + l;
     }
-#endif
-    msg_puts_attr(transchar_byte(*p), attr);
+    msg_puts_attr((char *)transchar_byte(*p), attr);
     return p + 1;
 }
 
@@ -1491,10 +1477,8 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     char_u	*str = msgstr;
     char_u	*plain_start = msgstr;
     char_u	*s;
-#ifdef FEAT_MBYTE
     int		mb_l;
     int		c;
-#endif
 
     /* if MSG_HIST flag set, add message to history */
     if (attr & MSG_HIST)
@@ -1503,12 +1487,10 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	attr &= ~MSG_HIST;
     }
 
-#ifdef FEAT_MBYTE
     /* If the string starts with a composing character first draw a space on
      * which the composing char can be drawn. */
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(msgstr)))
-	msg_puts_attr((char_u *)" ", attr);
-#endif
+	msg_puts_attr(" ", attr);
 
     /*
      * Go over the string.  Special characters are translated and printed.
@@ -1516,7 +1498,6 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
      */
     while (--len >= 0)
     {
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    /* Don't include composing chars after the end. */
 	    mb_l = utfc_ptr2len_len(str, len + 1);
@@ -1535,17 +1516,17 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 		/* unprintable multi-byte char: print the printable chars so
 		 * far and the translation of the unprintable char. */
 		if (str > plain_start)
-		    msg_puts_attr_len(plain_start, (int)(str - plain_start),
-									attr);
+		    msg_puts_attr_len((char *)plain_start,
+					       (int)(str - plain_start), attr);
 		plain_start = str + mb_l;
-		msg_puts_attr(transchar(c), attr == 0 ? HL_ATTR(HLF_8) : attr);
+		msg_puts_attr((char *)transchar(c),
+					    attr == 0 ? HL_ATTR(HLF_8) : attr);
 		retval += char2cells(c);
 	    }
 	    len -= mb_l - 1;
 	    str += mb_l;
 	}
 	else
-#endif
 	{
 	    s = transchar_byte(*str);
 	    if (s[1] != NUL)
@@ -1553,10 +1534,10 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 		/* unprintable char: print the printable chars so far and the
 		 * translation of the unprintable char. */
 		if (str > plain_start)
-		    msg_puts_attr_len(plain_start, (int)(str - plain_start),
-									attr);
+		    msg_puts_attr_len((char *)plain_start,
+					       (int)(str - plain_start), attr);
 		plain_start = str + 1;
-		msg_puts_attr(s, attr == 0 ? HL_ATTR(HLF_8) : attr);
+		msg_puts_attr((char *)s, attr == 0 ? HL_ATTR(HLF_8) : attr);
 		retval += (int)STRLEN(s);
 	    }
 	    else
@@ -1567,7 +1548,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 
     if (str > plain_start)
 	/* print the printable chars at the end */
-	msg_puts_attr_len(plain_start, (int)(str - plain_start), attr);
+	msg_puts_attr_len((char *)plain_start, (int)(str - plain_start), attr);
 
     return retval;
 }
@@ -1613,7 +1594,7 @@ msg_outtrans_special(
 {
     char_u	*str = strstart;
     int		retval = 0;
-    char_u	*string;
+    char	*text;
     int		attr;
     int		len;
 
@@ -1623,18 +1604,15 @@ msg_outtrans_special(
 	/* Leading and trailing spaces need to be displayed in <> form. */
 	if ((str == strstart || str[1] == NUL) && *str == ' ')
 	{
-	    string = (char_u *)"<Space>";
+	    text = "<Space>";
 	    ++str;
 	}
 	else
-	    string = str2special(&str, from);
-	len = vim_strsize(string);
+	    text = (char *)str2special(&str, from);
+	len = vim_strsize((char_u *)text);
 	/* Highlight special keys */
-	msg_puts_attr(string, len > 1
-#ifdef FEAT_MBYTE
-		&& (*mb_ptr2len)(string) <= 1
-#endif
-		? attr : 0);
+	msg_puts_attr(text, len > 1
+		&& (*mb_ptr2len)((char_u *)text) <= 1 ? attr : 0);
 	retval += len;
     }
     return retval;
@@ -1677,7 +1655,6 @@ str2special(
     int			modifiers = 0;
     int			special = FALSE;
 
-#ifdef FEAT_MBYTE
     if (has_mbyte)
     {
 	char_u	*p;
@@ -1688,7 +1665,6 @@ str2special(
 	if (p != NULL)
 	    return p;
     }
-#endif
 
     c = *str;
     if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
@@ -1708,7 +1684,6 @@ str2special(
 	    special = TRUE;
     }
 
-#ifdef FEAT_MBYTE
     if (has_mbyte && !IS_SPECIAL(c))
     {
 	int len = (*mb_ptr2len)(str);
@@ -1726,7 +1701,6 @@ str2special(
 	*sp = str + len;
     }
     else
-#endif
 	*sp = str + 1;
 
     /* Make unprintable characters in <> form, also <M-Space> and <Tab>.
@@ -1765,14 +1739,13 @@ msg_prt_line(char_u *s, int list)
     int		col = 0;
     int		n_extra = 0;
     int		c_extra = 0;
+    int		c_final = 0;
     char_u	*p_extra = NULL;	    /* init to make SASC shut up */
     int		n;
     int		attr = 0;
     char_u	*trail = NULL;
-#ifdef FEAT_MBYTE
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
-#endif
 
     if (curwin->w_p_list)
 	list = TRUE;
@@ -1795,12 +1768,13 @@ msg_prt_line(char_u *s, int list)
 	if (n_extra > 0)
 	{
 	    --n_extra;
-	    if (c_extra)
+	    if (n_extra == 0 && c_final)
+		c = c_final;
+	    else if (c_extra)
 		c = c_extra;
 	    else
 		c = *p_extra++;
 	}
-#ifdef FEAT_MBYTE
 	else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
 	{
 	    col += (*mb_ptr2cells)(s);
@@ -1816,11 +1790,10 @@ msg_prt_line(char_u *s, int list)
 		mch_memmove(buf, s, (size_t)l);
 		buf[l] = NUL;
 	    }
-	    msg_puts(buf);
+	    msg_puts((char *)buf);
 	    s += l;
 	    continue;
 	}
-#endif
 	else
 	{
 	    attr = 0;
@@ -1828,16 +1801,23 @@ msg_prt_line(char_u *s, int list)
 	    if (c == TAB && (!list || lcs_tab1))
 	    {
 		/* tab amount depends on current column */
+#ifdef FEAT_VARTABS
+		n_extra = tabstop_padding(col, curbuf->b_p_ts,
+						    curbuf->b_p_vts_array) - 1;
+#else
 		n_extra = curbuf->b_p_ts - col % curbuf->b_p_ts - 1;
+#endif
 		if (!list)
 		{
 		    c = ' ';
 		    c_extra = ' ';
+		    c_final = NUL;
 		}
 		else
 		{
-		    c = lcs_tab1;
+		    c = (n_extra == 0 && lcs_tab3) ? lcs_tab3 : lcs_tab1;
 		    c_extra = lcs_tab2;
+		    c_final = lcs_tab3;
 		    attr = HL_ATTR(HLF_8);
 		}
 	    }
@@ -1850,6 +1830,7 @@ msg_prt_line(char_u *s, int list)
 	    {
 		p_extra = (char_u *)"";
 		c_extra = NUL;
+		c_final = NUL;
 		n_extra = 1;
 		c = lcs_eol;
 		attr = HL_ATTR(HLF_AT);
@@ -1860,6 +1841,7 @@ msg_prt_line(char_u *s, int list)
 		n_extra = n - 1;
 		p_extra = transchar_byte(c);
 		c_extra = NUL;
+		c_final = NUL;
 		c = *p_extra++;
 		/* Use special coloring to be able to distinguish <hex> from
 		 * the same in plain text. */
@@ -1886,7 +1868,6 @@ msg_prt_line(char_u *s, int list)
     msg_clr_eos();
 }
 
-#ifdef FEAT_MBYTE
 /*
  * Use screen_puts() to output one multi-byte character.
  * Return the pointer "s" advanced to the next character.
@@ -1932,21 +1913,19 @@ screen_puts_mbyte(char_u *s, int l, int attr)
     }
     return s + l;
 }
-#endif
 
 /*
  * Output a string to the screen at position msg_row, msg_col.
  * Update msg_row and msg_col for the next message.
  */
     void
-msg_puts(char_u *s)
+msg_puts(char *s)
 {
     msg_puts_attr(s, 0);
 }
 
     void
-msg_puts_title(
-    char_u	*s)
+msg_puts_title(char *s)
 {
     msg_puts_attr(s, HL_ATTR(HLF_T));
 }
@@ -1957,13 +1936,13 @@ msg_puts_title(
  * Does not handle multi-byte characters!
  */
     void
-msg_puts_long_attr(char_u *longstr, int attr)
+msg_outtrans_long_attr(char_u *longstr, int attr)
 {
-    msg_puts_long_len_attr(longstr, (int)STRLEN(longstr), attr);
+    msg_outtrans_long_len_attr(longstr, (int)STRLEN(longstr), attr);
 }
 
     void
-msg_puts_long_len_attr(char_u *longstr, int len, int attr)
+msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
 {
     int		slen = len;
     int		room;
@@ -1973,7 +1952,7 @@ msg_puts_long_len_attr(char_u *longstr, int len, int attr)
     {
 	slen = (room - 3) / 2;
 	msg_outtrans_len_attr(longstr, slen, attr);
-	msg_puts_attr((char_u *)"...", HL_ATTR(HLF_8));
+	msg_puts_attr("...", HL_ATTR(HLF_8));
     }
     msg_outtrans_len_attr(longstr + len - slen, slen, attr);
 }
@@ -1982,7 +1961,7 @@ msg_puts_long_len_attr(char_u *longstr, int len, int attr)
  * Basic function for writing a message with highlight attributes.
  */
     void
-msg_puts_attr(char_u *s, int attr)
+msg_puts_attr(char *s, int attr)
 {
     msg_puts_attr_len(s, -1, attr);
 }
@@ -1993,12 +1972,12 @@ msg_puts_attr(char_u *s, int attr)
  * When "maxlen" is >= 0 the message is not put in the history.
  */
     static void
-msg_puts_attr_len(char_u *str, int maxlen, int attr)
+msg_puts_attr_len(char *str, int maxlen, int attr)
 {
     /*
      * If redirection is on, also write to the redirection file.
      */
-    redir_write(str, maxlen);
+    redir_write((char_u *)str, maxlen);
 
     /*
      * Don't print anything when using ":silent cmd".
@@ -2009,7 +1988,7 @@ msg_puts_attr_len(char_u *str, int maxlen, int attr)
     /* if MSG_HIST flag set, add message to history */
     if ((attr & MSG_HIST) && maxlen < 0)
     {
-	add_msg_hist(str, -1, attr);
+	add_msg_hist((char_u *)str, -1, attr);
 	attr &= ~MSG_HIST;
     }
 
@@ -2031,9 +2010,9 @@ msg_puts_attr_len(char_u *str, int maxlen, int attr)
      * cursor is.
      */
     if (msg_use_printf())
-	msg_puts_printf(str, maxlen);
+	msg_puts_printf((char_u *)str, maxlen);
     else
-	msg_puts_display(str, maxlen, attr, FALSE);
+	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
 }
 
 /*
@@ -2050,10 +2029,8 @@ msg_puts_display(
     char_u	*s = str;
     char_u	*t_s = str;	/* string from "t_s" to "s" is still todo */
     int		t_col = 0;	/* screen cells todo, 0 when "t_s" not used */
-#ifdef FEAT_MBYTE
     int		l;
     int		cw;
-#endif
     char_u	*sb_str = str;
     int		sb_col = msg_col;
     int		wrap;
@@ -2072,20 +2049,14 @@ msg_puts_display(
 		    cmdmsg_rl
 		    ? (
 			msg_col <= 1
-			|| (*s == TAB && msg_col <= 7)
-# ifdef FEAT_MBYTE
-			|| (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2)
-# endif
-		      )
+		      || (*s == TAB && msg_col <= 7)
+		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
 		      (msg_col + t_col >= Columns - 1
 		       || (*s == TAB && msg_col + t_col >= ((Columns - 1) & ~7))
-# ifdef FEAT_MBYTE
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					    && msg_col + t_col >= Columns - 2)
-# endif
-		      ))))
+					 && msg_col + t_col >= Columns - 2)))))
 	{
 	    /*
 	     * The screen is scrolled up when at the last row (some terminals
@@ -2114,7 +2085,6 @@ msg_puts_display(
 #endif
 	       )
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
 		    if (enc_utf8 && maxlen >= 0)
@@ -2125,7 +2095,6 @@ msg_puts_display(
 		    s = screen_puts_mbyte(s, l, attr);
 		}
 		else
-#endif
 		    msg_screen_putchar(*s++, attr);
 		did_last_char = TRUE;
 	    }
@@ -2169,11 +2138,8 @@ msg_puts_display(
 
 	wrap = *s == '\n'
 		    || msg_col + t_col >= Columns
-#ifdef FEAT_MBYTE
 		    || (has_mbyte && (*mb_ptr2cells)(s) > 1
-					    && msg_col + t_col >= Columns - 1)
-#endif
-		    ;
+					    && msg_col + t_col >= Columns - 1);
 	if (t_col > 0 && (wrap || *s == '\r' || *s == '\b'
 						 || *s == '\t' || *s == BELL))
 	    /* output any postponed text */
@@ -2214,7 +2180,6 @@ msg_puts_display(
 	    vim_beep(BO_SH);
 	else
 	{
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		cw = (*mb_ptr2cells)(s);
@@ -2229,42 +2194,28 @@ msg_puts_display(
 		cw = 1;
 		l = 1;
 	    }
-#endif
+
 	    /* When drawing from right to left or when a double-wide character
 	     * doesn't fit, draw a single character here.  Otherwise collect
 	     * characters and draw them all at once later. */
-#if defined(FEAT_RIGHTLEFT) || defined(FEAT_MBYTE)
 	    if (
 # ifdef FEAT_RIGHTLEFT
-		    cmdmsg_rl
-#  ifdef FEAT_MBYTE
-		    ||
-#  endif
+		    cmdmsg_rl ||
 # endif
-# ifdef FEAT_MBYTE
-		    (cw > 1 && msg_col + t_col >= Columns - 1)
-# endif
-		    )
+		    (cw > 1 && msg_col + t_col >= Columns - 1))
 	    {
-# ifdef FEAT_MBYTE
 		if (l > 1)
 		    s = screen_puts_mbyte(s, l, attr) - 1;
 		else
-# endif
 		    msg_screen_putchar(*s, attr);
 	    }
 	    else
-#endif
 	    {
 		/* postpone this character until later */
 		if (t_col == 0)
 		    t_s = s;
-#ifdef FEAT_MBYTE
 		t_col += cw;
 		s += l - 1;
-#else
-		++t_col;
-#endif
 	    }
 	}
 	++s;
@@ -2381,7 +2332,6 @@ struct msgchunk_S
 static msgchunk_T *last_msgchunk = NULL; /* last displayed text */
 
 static msgchunk_T *msg_sb_start(msgchunk_T *mps);
-static msgchunk_T *disp_sb_line(int row, msgchunk_T *smp);
 
 typedef enum {
     SB_CLEAR_NONE = 0,
@@ -2583,12 +2533,10 @@ t_puts(
     screen_puts_len(t_s, (int)(s - t_s), msg_row, msg_col, attr);
     msg_col += *t_col;
     *t_col = 0;
-#ifdef FEAT_MBYTE
     /* If the string starts with a composing character don't increment the
      * column position for it. */
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(t_s)))
 	--msg_col;
-#endif
     if (msg_col >= Columns)
     {
 	msg_col = 0;
@@ -2625,14 +2573,14 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	buf[4];
     char_u	*p;
 #ifdef WIN3264
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     char_u	*ccp = NULL;
 
 # endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
 
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
     {
 	int	inlen = (int)STRLEN(str);
@@ -2690,7 +2638,7 @@ msg_puts_printf(char_u *str, int maxlen)
     msg_didout = TRUE;	    /* assume that line is not empty */
 
 #ifdef WIN3264
-# if defined(FEAT_MBYTE) && !defined(FEAT_GUI_MSWIN)
+# if !defined(FEAT_GUI_MSWIN)
     vim_free(ccp);
 # endif
     if (!(silent_mode && p_verbose == 0))
@@ -2827,6 +2775,9 @@ do_more_prompt(int typed_char)
 		/* Since got_int is set all typeahead will be flushed, but we
 		 * want to keep this ':', remember that in a special way. */
 		typeahead_noflush(':');
+#ifdef FEAT_TERMINAL
+		skip_term_loop = TRUE;
+#endif
 		cmdline_row = Rows - 1;		/* put ':' on this line */
 		skip_redraw = TRUE;		/* skip redraw once */
 		need_wait_return = FALSE;	/* don't wait in main() */
@@ -3448,7 +3399,7 @@ verbose_open(void)
 	verbose_fd = mch_fopen((char *)p_vfile, "a");
 	if (verbose_fd == NULL)
 	{
-	    EMSG2(_(e_notopen), p_vfile);
+	    semsg(_(e_notopen), p_vfile);
 	    return FAIL;
 	}
     }
@@ -3477,7 +3428,7 @@ give_warning(char_u *message, int hl)
 	keep_msg_attr = HL_ATTR(HLF_W);
     else
 	keep_msg_attr = 0;
-    if (msg_attr(message, keep_msg_attr) && msg_scrolled == 0)
+    if (msg_attr((char *)message, keep_msg_attr) && msg_scrolled == 0)
 	set_keep_msg(message, keep_msg_attr);
     msg_didout = FALSE;	    /* overwrite this message */
     msg_nowait = TRUE;	    /* don't wait for this message */
@@ -3486,12 +3437,14 @@ give_warning(char_u *message, int hl)
     --no_wait_return;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
 give_warning2(char_u *message, char_u *a1, int hl)
 {
     vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
     give_warning(IObuff, hl);
 }
+#endif
 
 /*
  * Advance msg cursor to column "col".
@@ -3623,7 +3576,6 @@ do_dialog(
 		retval = 1;
 		for (i = 0; hotkeys[i]; ++i)
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			if ((*mb_ptr2char)(hotkeys + i) == c)
@@ -3631,7 +3583,6 @@ do_dialog(
 			i += (*mb_ptr2len)(hotkeys + i) - 1;
 		    }
 		    else
-#endif
 			if (hotkeys[i] == c)
 			    break;
 		    ++retval;
@@ -3657,8 +3608,6 @@ do_dialog(
     return retval;
 }
 
-static int copy_char(char_u *from, char_u *to, int lowercase);
-
 /*
  * Copy one character from "*from" to "*to", taking care of multi-byte
  * characters.  Return the length of the character in bytes.
@@ -3669,7 +3618,6 @@ copy_char(
     char_u	*to,
     int		lowercase)	/* make character lower case */
 {
-#ifdef FEAT_MBYTE
     int		len;
     int		c;
 
@@ -3688,7 +3636,6 @@ copy_char(
 	}
     }
     else
-#endif
     {
 	if (lowercase)
 	    *to = (char_u)TOLOWER_LOC(*from);
@@ -3714,11 +3661,7 @@ msg_show_console_dialog(
     int		dfltbutton)
 {
     int		len = 0;
-#ifdef FEAT_MBYTE
-# define HOTK_LEN (has_mbyte ? MB_MAXBYTES : 1)
-#else
-# define HOTK_LEN 1
-#endif
+#define HOTK_LEN (has_mbyte ? MB_MAXBYTES : 1)
     int		lenhotkey = HOTK_LEN;	/* count first button */
     char_u	*hotk = NULL;
     char_u	*msgp = NULL;
@@ -3750,11 +3693,9 @@ msg_show_console_dialog(
 		    *msgp++ = ' ';	    /* '\n' -> ', ' */
 
 		    /* advance to next hotkey and set default hotkey */
-#ifdef FEAT_MBYTE
 		    if (has_mbyte)
 			hotkp += STRLEN(hotkp);
 		    else
-#endif
 			++hotkp;
 		    hotkp[copy_char(r + 1, hotkp, TRUE)] = NUL;
 		    if (dfltbutton)
@@ -3873,7 +3814,7 @@ display_confirm_msg(void)
     /* avoid that 'q' at the more prompt truncates the message here */
     ++confirm_msg_used;
     if (confirm_msg != NULL)
-	msg_puts_attr(confirm_msg, HL_ATTR(HLF_M));
+	msg_puts_attr((char *)confirm_msg, HL_ATTR(HLF_M));
     --confirm_msg_used;
 }
 
@@ -4069,7 +4010,7 @@ do_browse(
 # endif
     {
 	/* TODO: non-GUI file selector here */
-	EMSG(_("E338: Sorry, no file browser in console mode"));
+	emsg(_("E338: Sorry, no file browser in console mode"));
 	fname = NULL;
     }
 
@@ -4102,12 +4043,6 @@ do_browse(
 #if defined(FEAT_EVAL)
 static char *e_printf = N_("E766: Insufficient arguments for printf()");
 
-static varnumber_T tv_nr(typval_T *tvs, int *idxp);
-static char *tv_str(typval_T *tvs, int *idxp, char_u **tofree);
-# ifdef FEAT_FLOAT
-static double tv_float(typval_T *tvs, int *idxp);
-# endif
-
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
  */
@@ -4119,11 +4054,11 @@ tv_nr(typval_T *tvs, int *idxp)
     int		err = FALSE;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
-	n = get_tv_number_chk(&tvs[idx], &err);
+	n = tv_get_number_chk(&tvs[idx], &err);
 	if (err)
 	    n = 0;
     }
@@ -4132,7 +4067,7 @@ tv_nr(typval_T *tvs, int *idxp)
 
 /*
  * Get string argument from "idxp" entry in "tvs".  First entry is 1.
- * If "tofree" is NULL get_tv_string_chk() is used.  Some types (e.g. List)
+ * If "tofree" is NULL tv_get_string_chk() is used.  Some types (e.g. List)
  * are not converted to a string.
  * If "tofree" is not NULL echo_string() is used.  All types are converted to
  * a string with the same format as ":echo".  The caller must free "*tofree".
@@ -4146,14 +4081,14 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     static char_u   numbuf[NUMBUFLEN];
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
 	if (tofree != NULL)
 	    s = (char *)echo_string(&tvs[idx], tofree, numbuf, get_copyID());
 	else
-	    s = (char *)get_tv_string_chk(&tvs[idx]);
+	    s = (char *)tv_get_string_chk(&tvs[idx]);
     }
     return s;
 }
@@ -4169,7 +4104,7 @@ tv_float(typval_T *tvs, int *idxp)
     double	f = 0;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	EMSG(_(e_printf));
+	emsg(_(e_printf));
     else
     {
 	++*idxp;
@@ -4178,7 +4113,7 @@ tv_float(typval_T *tvs, int *idxp)
 	else if (tvs[idx].v_type == VAR_NUMBER)
 	    f = (double)tvs[idx].vval.v_number;
 	else
-	    EMSG(_("E807: Expected Float argument for printf()"));
+	    emsg(_("E807: Expected Float argument for printf()"));
     }
     return f;
 }
@@ -4257,7 +4192,7 @@ infinity_str(int positive,
 
 /* Like vim_vsnprintf() but append to the string. */
     int
-vim_snprintf_add(char *str, size_t str_m, char *fmt, ...)
+vim_snprintf_add(char *str, size_t str_m, const char *fmt, ...)
 {
     va_list	ap;
     int		str_l;
@@ -4275,7 +4210,7 @@ vim_snprintf_add(char *str, size_t str_m, char *fmt, ...)
 }
 
     int
-vim_snprintf(char *str, size_t str_m, char *fmt, ...)
+vim_snprintf(char *str, size_t str_m, const char *fmt, ...)
 {
     va_list	ap;
     int		str_l;
@@ -4290,7 +4225,7 @@ vim_snprintf(char *str, size_t str_m, char *fmt, ...)
 vim_vsnprintf(
     char	*str,
     size_t	str_m,
-    char	*fmt,
+    const char	*fmt,
     va_list	ap)
 {
     return vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
@@ -4300,12 +4235,12 @@ vim_vsnprintf(
 vim_vsnprintf_typval(
     char	*str,
     size_t	str_m,
-    char	*fmt,
+    const char	*fmt,
     va_list	ap,
     typval_T	*tvs)
 {
     size_t	str_l = 0;
-    char	*p = fmt;
+    const char	*p = fmt;
     int		arg_idx = 1;
 
     if (p == NULL)
@@ -4353,7 +4288,7 @@ vim_vsnprintf_typval(
 	    char    tmp[TMP_LEN];
 
 	    /* string address in case of string argument */
-	    char    *str_arg;
+	    const char  *str_arg = NULL;
 
 	    /* natural field width of arg without padding and sign */
 	    size_t  str_arg_l;
@@ -4377,7 +4312,6 @@ vim_vsnprintf_typval(
 	    char_u  *tofree = NULL;
 
 
-	    str_arg = NULL;
 	    p++;  /* skip '%' */
 
 	    /* parse flags */
@@ -4558,18 +4492,13 @@ vim_vsnprintf_typval(
 		    {
 			/* Don't put the #if inside memchr(), it can be a
 			 * macro. */
-# if VIM_SIZEOF_INT <= 2
-			char *q = memchr(str_arg, '\0', precision);
-# else
 			/* memchr on HP does not like n > 2^31  !!! */
 			char *q = memchr(str_arg, '\0',
 				  precision <= (size_t)0x7fffffffL ? precision
 						       : (size_t)0x7fffffffL);
-# endif
 			str_arg_l = (q == NULL) ? precision
 						      : (size_t)(q - str_arg);
 		    }
-# ifdef FEAT_MBYTE
 		    if (fmt_spec == 'S')
 		    {
 			if (min_field_width != 0)
@@ -4586,7 +4515,6 @@ vim_vsnprintf_typval(
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
 		    }
-# endif
 		    break;
 
 		default:
@@ -5222,7 +5150,7 @@ vim_vsnprintf_typval(
     }
 
     if (tvs != NULL && tvs[arg_idx - 1].v_type != VAR_UNKNOWN)
-	EMSG(_("E767: Too many arguments to printf()"));
+	emsg(_("E767: Too many arguments to printf()"));
 
     /* Return the number of characters formatted (excluding trailing nul
      * character), that is, the number of characters that would have been
