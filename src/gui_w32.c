@@ -1152,10 +1152,7 @@ _OnFindRepl(void)
     int	    flags = 0;
     int	    down;
 
-    /* If the OS is Windows NT, and 'encoding' differs from active codepage:
-     * convert text from wide string. */
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
+    findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
 
     if (s_findrep_struct.Flags & FR_DIALOGTERM)
 	/* Give main window the focus back. */
@@ -2332,21 +2329,15 @@ GetTextWidthEnc(HDC hdc, char_u *str, int len)
     int		n;
     int		wlen = len;
 
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	/* 'encoding' differs from active codepage: convert text and use wide
-	 * function */
-	wstr = enc_to_utf16(str, &wlen);
-	if (wstr != NULL)
-	{
-	    n = GetTextExtentPointW(hdc, wstr, wlen, &size);
-	    vim_free(wstr);
-	    if (n)
-		return size.cx;
-	}
-    }
+    wstr = enc_to_utf16(str, &wlen);
+    if (wstr == NULL)
+	return 0;
 
-    return GetTextWidth(hdc, str, len);
+    n = GetTextExtentPointW(hdc, wstr, wlen, &size);
+    vim_free(wstr);
+    if (n)
+	return size.cx;
+    return 0;
 }
 
 static void get_work_area(RECT *spi_rect);
@@ -2426,9 +2417,9 @@ gui_mch_show_toolbar(int showit)
     /* For older compilers.  We assume this never changes. */
 #  define TB_SETUNICODEFORMAT 0x2005
 # endif
-	/* Enable/disable unicode support */
-	int uu = (enc_codepage >= 0 && (int)GetACP() != enc_codepage);
-	SendMessage(s_toolbarhwnd, TB_SETUNICODEFORMAT, (WPARAM)uu, (LPARAM)0);
+	/* Enable unicode support */
+	SendMessage(s_toolbarhwnd, TB_SETUNICODEFORMAT, (WPARAM)TRUE,
+								(LPARAM)0);
 	ShowWindow(s_toolbarhwnd, SW_SHOW);
     }
     else
@@ -2444,40 +2435,21 @@ gui_mch_show_toolbar(int showit)
     static void
 add_tabline_popup_menu_entry(HMENU pmenu, UINT item_id, char_u *item_text)
 {
-    WCHAR	*wn = NULL;
+    WCHAR	    *wn;
+    MENUITEMINFOW   infow;
 
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	/* 'encoding' differs from active codepage: convert menu name
-	 * and use wide function */
-	wn = enc_to_utf16(item_text, NULL);
-	if (wn != NULL)
-	{
-	    MENUITEMINFOW	infow;
-
-	    infow.cbSize = sizeof(infow);
-	    infow.fMask = MIIM_TYPE | MIIM_ID;
-	    infow.wID = item_id;
-	    infow.fType = MFT_STRING;
-	    infow.dwTypeData = wn;
-	    infow.cch = (UINT)wcslen(wn);
-	    InsertMenuItemW(pmenu, item_id, FALSE, &infow);
-	    vim_free(wn);
-	}
-    }
-
+    wn = enc_to_utf16(item_text, NULL);
     if (wn == NULL)
-    {
-	MENUITEMINFO	info;
+	return;
 
-	info.cbSize = sizeof(info);
-	info.fMask = MIIM_TYPE | MIIM_ID;
-	info.wID = item_id;
-	info.fType = MFT_STRING;
-	info.dwTypeData = (LPTSTR)item_text;
-	info.cch = (UINT)STRLEN(item_text);
-	InsertMenuItem(pmenu, item_id, FALSE, &info);
-    }
+    infow.cbSize = sizeof(infow);
+    infow.fMask = MIIM_TYPE | MIIM_ID;
+    infow.wID = item_id;
+    infow.fType = MFT_STRING;
+    infow.dwTypeData = wn;
+    infow.cch = (UINT)wcslen(wn);
+    InsertMenuItemW(pmenu, item_id, FALSE, &infow);
+    vim_free(wn);
 }
 
     static void
@@ -2573,8 +2545,6 @@ gui_mch_update_tabline(void)
     int		nr = 0;
     int		curtabidx = 0;
     int		tabadded = 0;
-    static int	use_unicode = FALSE;
-    int		uu;
     WCHAR	*wstr = NULL;
 
     if (s_tabhwnd == NULL)
@@ -2584,13 +2554,8 @@ gui_mch_update_tabline(void)
     /* For older compilers.  We assume this never changes. */
 # define CCM_SETUNICODEFORMAT 0x2005
 #endif
-    uu = (enc_codepage >= 0 && (int)GetACP() != enc_codepage);
-    if (uu != use_unicode)
-    {
-	/* Enable/disable unicode support */
-	SendMessage(s_tabhwnd, CCM_SETUNICODEFORMAT, (WPARAM)uu, (LPARAM)0);
-	use_unicode = uu;
-    }
+    /* Enable unicode support */
+    SendMessage(s_tabhwnd, CCM_SETUNICODEFORMAT, (WPARAM)TRUE, (LPARAM)0);
 
     tie.mask = TCIF_TEXT;
     tie.iImage = -1;
@@ -2614,24 +2579,18 @@ gui_mch_update_tabline(void)
 
 	get_tabline_label(tp, FALSE);
 	tie.pszText = (LPSTR)NameBuff;
-	wstr = NULL;
-	if (use_unicode)
-	{
-	    /* Need to go through Unicode. */
-	    wstr = enc_to_utf16(NameBuff, NULL);
-	    if (wstr != NULL)
-	    {
-		TCITEMW		tiw;
 
-		tiw.mask = TCIF_TEXT;
-		tiw.iImage = -1;
-		tiw.pszText = wstr;
-		SendMessage(s_tabhwnd, TCM_SETITEMW, (WPARAM)nr, (LPARAM)&tiw);
-		vim_free(wstr);
-	    }
+	wstr = enc_to_utf16(NameBuff, NULL);
+	if (wstr != NULL)
+	{
+	    TCITEMW		tiw;
+
+	    tiw.mask = TCIF_TEXT;
+	    tiw.iImage = -1;
+	    tiw.pszText = wstr;
+	    SendMessage(s_tabhwnd, TCM_SETITEMW, (WPARAM)nr, (LPARAM)&tiw);
+	    vim_free(wstr);
 	}
-	if (wstr == NULL)
-	    TabCtrl_SetItem(s_tabhwnd, nr, &tie);
     }
 
     /* Remove any old labels. */
@@ -2729,7 +2688,7 @@ initialise_findrep(char_u *initial_string)
     static void
 set_window_title(HWND hwnd, char *title)
 {
-    if (title != NULL && enc_codepage >= 0 && enc_codepage != (int)GetACP())
+    if (title != NULL)
     {
 	WCHAR	*wbuf;
 
@@ -2740,9 +2699,9 @@ set_window_title(HWND hwnd, char *title)
 	    SetWindowTextW(hwnd, wbuf);
 	    vim_free(wbuf);
 	}
-	return;
     }
-    (void)SetWindowText(hwnd, (LPCSTR)title);
+    else
+	(void)SetWindowTextW(hwnd, NULL);
 }
 
     void
@@ -2757,16 +2716,8 @@ gui_mch_find_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    /* If the OS is Windows NT, and 'encoding' differs from active
-	     * codepage: convert text and use wide function. */
-	    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	    {
-		findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
-		s_findrep_hwnd = FindTextW(
-					(LPFINDREPLACEW) &s_findrep_struct_w);
-	    }
-	    else
-		s_findrep_hwnd = FindText((LPFINDREPLACE) &s_findrep_struct);
+	    findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
+	    s_findrep_hwnd = FindTextW((LPFINDREPLACEW) &s_findrep_struct_w);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find string"));
@@ -2790,15 +2741,9 @@ gui_mch_replace_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	    {
-		findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
-		s_findrep_hwnd = ReplaceTextW(
+	    findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
+	    s_findrep_hwnd = ReplaceTextW(
 					(LPFINDREPLACEW) &s_findrep_struct_w);
-	    }
-	    else
-		s_findrep_hwnd = ReplaceText(
-					   (LPFINDREPLACE) &s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find & Replace"));
@@ -6344,49 +6289,26 @@ gui_mch_add_menu(
 
     if (menu_is_menubar(menu->name))
     {
-	WCHAR	*wn = NULL;
+	WCHAR	*wn;
+	MENUITEMINFOW	infow;
 
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	{
-	    /* 'encoding' differs from active codepage: convert menu name
-	     * and use wide function */
-	    wn = enc_to_utf16(menu->name, NULL);
-	    if (wn != NULL)
-	    {
-		MENUITEMINFOW	infow;
-
-		infow.cbSize = sizeof(infow);
-		infow.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID
-		    | MIIM_SUBMENU;
-		infow.dwItemData = (long_u)menu;
-		infow.wID = menu->id;
-		infow.fType = MFT_STRING;
-		infow.dwTypeData = wn;
-		infow.cch = (UINT)wcslen(wn);
-		infow.hSubMenu = menu->submenu_id;
-		InsertMenuItemW((parent == NULL)
-			? s_menuBar : parent->submenu_id,
-			(UINT)pos, TRUE, &infow);
-		vim_free(wn);
-	    }
-	}
-
+	wn = enc_to_utf16(menu->name, NULL);
 	if (wn == NULL)
-	{
-	    MENUITEMINFO	info;
+	    return;
 
-	    info.cbSize = sizeof(info);
-	    info.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID | MIIM_SUBMENU;
-	    info.dwItemData = (long_u)menu;
-	    info.wID = menu->id;
-	    info.fType = MFT_STRING;
-	    info.dwTypeData = (LPTSTR)menu->name;
-	    info.cch = (UINT)STRLEN(menu->name);
-	    info.hSubMenu = menu->submenu_id;
-	    InsertMenuItem((parent == NULL)
-		    ? s_menuBar : parent->submenu_id,
-		    (UINT)pos, TRUE, &info);
-	}
+	infow.cbSize = sizeof(infow);
+	infow.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID
+	    | MIIM_SUBMENU;
+	infow.dwItemData = (long_u)menu;
+	infow.wID = menu->id;
+	infow.fType = MFT_STRING;
+	infow.dwTypeData = wn;
+	infow.cch = (UINT)wcslen(wn);
+	infow.hSubMenu = menu->submenu_id;
+	InsertMenuItemW((parent == NULL)
+		? s_menuBar : parent->submenu_id,
+		(UINT)pos, TRUE, &infow);
+	vim_free(wn);
     }
 
     /* Fix window size if menu may have wrapped */
@@ -6499,27 +6421,17 @@ gui_mch_add_menu_item(
     else
 #endif
     {
-	WCHAR	*wn = NULL;
+	WCHAR	*wn;
 
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	wn = enc_to_utf16(menu->name, NULL);
+	if (wn != NULL)
 	{
-	    /* 'encoding' differs from active codepage: convert menu item name
-	     * and use wide function */
-	    wn = enc_to_utf16(menu->name, NULL);
-	    if (wn != NULL)
-	    {
-		InsertMenuW(parent->submenu_id, (UINT)idx,
-			(menu_is_separator(menu->name)
-				 ? MF_SEPARATOR : MF_STRING) | MF_BYPOSITION,
-			(UINT)menu->id, wn);
-		vim_free(wn);
-	    }
+	    InsertMenuW(parent->submenu_id, (UINT)idx,
+		    (menu_is_separator(menu->name)
+		     ? MF_SEPARATOR : MF_STRING) | MF_BYPOSITION,
+		    (UINT)menu->id, wn);
+	    vim_free(wn);
 	}
-	if (wn == NULL)
-	    InsertMenu(parent->submenu_id, (UINT)idx,
-		(menu_is_separator(menu->name) ? MF_SEPARATOR : MF_STRING)
-							      | MF_BYPOSITION,
-		(UINT)menu->id, (LPCTSTR)menu->name);
 #ifdef FEAT_TEAROFF
 	if (IsWindow(parent->tearoff_handle))
 	    rebuild_tearoff(parent);
@@ -6709,22 +6621,14 @@ dialog_callback(
 	/* If the edit box exists, copy the string. */
 	if (s_textfield != NULL)
 	{
-	    /* If the OS is Windows NT, and 'encoding' differs from active
-	     * codepage: use wide function and convert text. */
-	    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	    {
-	       WCHAR  *wp = (WCHAR *)alloc(IOSIZE * sizeof(WCHAR));
-	       char_u *p;
+	    WCHAR  *wp = (WCHAR *)alloc(IOSIZE * sizeof(WCHAR));
+	    char_u *p;
 
-	       GetDlgItemTextW(hwnd, DLG_NONBUTTON_CONTROL + 2, wp, IOSIZE);
-	       p = utf16_to_enc(wp, NULL);
-	       vim_strncpy(s_textfield, p, IOSIZE);
-	       vim_free(p);
-	       vim_free(wp);
-	    }
-	    else
-		GetDlgItemText(hwnd, DLG_NONBUTTON_CONTROL + 2,
-						(LPSTR)s_textfield, IOSIZE);
+	    GetDlgItemTextW(hwnd, DLG_NONBUTTON_CONTROL + 2, wp, IOSIZE);
+	    p = utf16_to_enc(wp, NULL);
+	    vim_strncpy(s_textfield, p, IOSIZE);
+	    vim_free(p);
+	    vim_free(wp);
 	}
 
 	/*
@@ -8411,7 +8315,7 @@ multiline_balloon_available(void)
 }
 
     static void
-make_tooltipw(BalloonEval *beval, char *text, POINT pt)
+make_tooltip(BalloonEval *beval, char *text, POINT pt)
 {
     TOOLINFOW	*pti;
     int		ToolInfoSize;
@@ -8470,77 +8374,6 @@ make_tooltipw(BalloonEval *beval, char *text, POINT pt)
     // I've performed some tests and it seems the longest possible life time
     // of tooltip is 30 seconds.
     SendMessageW(beval->balloon, TTM_SETDELAYTIME, TTDT_AUTOPOP, 30000);
-    /*
-     * HACK: force tooltip to appear, because it'll not appear until
-     * first mouse move. D*mn M$
-     * Amazingly moving (2, 2) and then (-1, -1) the mouse doesn't move.
-     */
-    mouse_event(MOUSEEVENTF_MOVE, 2, 2, 0, 0);
-    mouse_event(MOUSEEVENTF_MOVE, (DWORD)-1, (DWORD)-1, 0, 0);
-    vim_free(pti);
-}
-
-    static void
-make_tooltip(BalloonEval *beval, char *text, POINT pt)
-{
-    TOOLINFO	*pti;
-    int		ToolInfoSize;
-
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	make_tooltipw(beval, text, pt);
-	return;
-    }
-
-    if (multiline_balloon_available() == TRUE)
-	ToolInfoSize = sizeof(TOOLINFO_NEW);
-    else
-	ToolInfoSize = sizeof(TOOLINFO);
-
-    pti = (TOOLINFO *)alloc(ToolInfoSize);
-    if (pti == NULL)
-	return;
-
-    beval->balloon = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS,
-	    NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
-	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-	    beval->target, NULL, s_hinst, NULL);
-
-    SetWindowPos(beval->balloon, HWND_TOPMOST, 0, 0, 0, 0,
-	    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-    pti->cbSize = ToolInfoSize;
-    pti->uFlags = TTF_SUBCLASS;
-    pti->hwnd = beval->target;
-    pti->hinst = 0; /* Don't use string resources */
-    pti->uId = ID_BEVAL_TOOLTIP;
-
-    if (multiline_balloon_available() == TRUE)
-    {
-	RECT rect;
-	TOOLINFO_NEW *ptin = (TOOLINFO_NEW *)pti;
-	pti->lpszText = LPSTR_TEXTCALLBACK;
-	beval->tofree = vim_strsave((char_u*)text);
-	ptin->lParam = (LPARAM)beval->tofree;
-	if (GetClientRect(s_textArea, &rect)) /* switch multiline tooltips on */
-	    SendMessage(beval->balloon, TTM_SETMAXTIPWIDTH, 0,
-		    (LPARAM)rect.right);
-    }
-    else
-	pti->lpszText = text; /* do this old way */
-
-    /* Limit ballooneval bounding rect to CursorPos neighbourhood */
-    pti->rect.left = pt.x - 3;
-    pti->rect.top = pt.y - 3;
-    pti->rect.right = pt.x + 3;
-    pti->rect.bottom = pt.y + 3;
-
-    SendMessage(beval->balloon, TTM_ADDTOOL, 0, (LPARAM)pti);
-    /* Make tooltip appear sooner */
-    SendMessage(beval->balloon, TTM_SETDELAYTIME, TTDT_INITIAL, 10);
-    /* I've performed some tests and it seems the longest possible life time
-     * of tooltip is 30 seconds */
-    SendMessage(beval->balloon, TTM_SETDELAYTIME, TTDT_AUTOPOP, 30000);
     /*
      * HACK: force tooltip to appear, because it'll not appear until
      * first mouse move. D*mn M$
