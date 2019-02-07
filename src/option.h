@@ -1068,6 +1068,9 @@ enum
 #endif
     , BV_SW
     , BV_SWF
+#ifdef FEAT_COMPL_FUNC
+    , BV_TFU
+#endif
     , BV_TAGS
     , BV_TC
     , BV_TS

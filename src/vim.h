@@ -1143,6 +1143,7 @@ typedef struct {
 #define TAG_VERBOSE	32	/* message verbosity */
 #define TAG_INS_COMP	64	/* Currently doing insert completion */
 #define TAG_KEEP_LANG	128	/* keep current language */
+#define TAG_NO_TFU	256	/* don't evaluate 'tagfunc' */
 
 #define TAG_MANY	300	/* When finding many tags (for completion),
 				   find up to this many tags */

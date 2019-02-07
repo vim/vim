@@ -167,6 +167,9 @@
 #endif
 #define PV_SW		OPT_BUF(BV_SW)
 #define PV_SWF		OPT_BUF(BV_SWF)
+#ifdef FEAT_COMPL_FUNC
+# define PV_TFU		OPT_BUF(BV_TFU)
+#endif
 #define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
 #define PV_TC		OPT_BOTH(OPT_BUF(BV_TC))
 #define PV_TS		OPT_BUF(BV_TS)
@@ -302,6 +305,7 @@ static char_u	*p_cpt;
 #ifdef FEAT_COMPL_FUNC
 static char_u	*p_cfu;
 static char_u	*p_ofu;
+static char_u	*p_tfu;
 #endif
 static int	p_eol;
 static int	p_fixeol;
@@ -2642,6 +2646,15 @@ static struct vimoption options[] =
     {"tagcase",	    "tc",   P_STRING|P_VIM,
 			    (char_u *)&p_tc, PV_TC,
 			    {(char_u *)"followic", (char_u *)"followic"} SCTX_INIT},
+    {"tagfunc",    "tfu",   P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_COMPL_FUNC
+			    (char_u *)&p_tfu, PV_TFU,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"taglength",   "tl",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_tl, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
@@ -5688,6 +5701,7 @@ check_buf_options(buf_T *buf)
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
+    check_string_option(&buf->b_p_tfu);
 #endif
 #ifdef FEAT_KEYMAP
     check_string_option(&buf->b_p_keymap);
@@ -10943,6 +10957,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
 	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
+	case PV_TFU:	return (char_u *)&(curbuf->b_p_tfu);
 #endif
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_FIXEOL:	return (char_u *)&(curbuf->b_p_fixeol);
@@ -11331,6 +11346,7 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);
 	    buf->b_p_ofu = vim_strsave(p_ofu);
+	    buf->b_p_tfu = vim_strsave(p_tfu);
 #endif
 	    buf->b_p_sts = p_sts;
 	    buf->b_p_sts_nopaste = p_sts_nopaste;
