@@ -70,7 +70,7 @@ void gui_mch_set_font(GuiFont font);
 void gui_mch_set_fg_color(guicolor_T color);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_sp_color(guicolor_T color);
-void im_set_font(LOGFONT *lf);
+void im_set_font(LOGFONTW *lf);
 void im_set_position(int row, int col);
 void im_set_active(int active);
 int im_get_status(void);
