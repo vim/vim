@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Jan 27
+" Last Change:	2019 Feb 08
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -503,6 +503,10 @@ if has("terminal")
   call <SID>OptionL("twk")
   call append("$", "termwinscroll\tmax number of lines to keep for scrollback in a terminal window")
   call append("$", "\t(local to window)")
+  if has('win32')
+    call append("$", "termwintype\ttype of pty to use for a terminal window")
+    call <SID>OptionG("twt", &twt)
+  endif
   call <SID>OptionL("twsl")
   if exists("&winptydll")
     call append("$", "winptydll\tname of the winpty dynamic library")
