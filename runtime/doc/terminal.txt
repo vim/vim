@@ -228,9 +228,6 @@ Syntax ~
 					for Python "++eof=exit()".  Special
 					codes can be used like with `:map`,
 					e.g. "<C-Z>" for CTRL-Z.
-			++type={pty}	(MS-Windows only): Use {pty} as the
-					virtual console.  See 'termwintype'
-					for the values.
 
 			If you want to use more options use the |term_start()|
 			function.

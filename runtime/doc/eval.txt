@@ -9474,8 +9474,6 @@ term_start({cmd}, {options})				*term_start()*
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
 				     color modes.  See |g:terminal_ansi_colors|.
-		   "tty_type"	     (MS-Windows only): Specify which pty to
-				     use.  See 'termwintype' for the values.
 
 		{only available when compiled with the |+terminal| feature}
 
