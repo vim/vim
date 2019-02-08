@@ -314,8 +314,7 @@ static int		destroying = FALSE;	/* call DestroyWindow() ourselves */
 
 #ifdef MSWIN_FIND_REPLACE
 static UINT		s_findrep_msg = 0;	/* set in gui_w[16/32].c */
-static FINDREPLACE	s_findrep_struct;
-static FINDREPLACEW	s_findrep_struct_w;
+static FINDREPLACEW	s_findrep_struct;
 static HWND		s_findrep_hwnd = NULL;
 static int		s_findrep_is_find;	/* TRUE for find dialog, FALSE
 						   for find/replace dialog */
@@ -1107,43 +1106,6 @@ _OnMenu(
 
 #ifdef MSWIN_FIND_REPLACE
 /*
- * copy useful data from structure LPFINDREPLACE to structure LPFINDREPLACEW
- */
-    static void
-findrep_atow(LPFINDREPLACEW lpfrw, LPFINDREPLACE lpfr)
-{
-    WCHAR *wp;
-
-    lpfrw->hwndOwner = lpfr->hwndOwner;
-    lpfrw->Flags = lpfr->Flags;
-
-    wp = enc_to_utf16((char_u *)lpfr->lpstrFindWhat, NULL);
-    wcsncpy(lpfrw->lpstrFindWhat, wp, lpfrw->wFindWhatLen - 1);
-    vim_free(wp);
-
-    /* the field "lpstrReplaceWith" doesn't need to be copied */
-}
-
-/*
- * copy useful data from structure LPFINDREPLACEW to structure LPFINDREPLACE
- */
-    static void
-findrep_wtoa(LPFINDREPLACE lpfr, LPFINDREPLACEW lpfrw)
-{
-    char_u *p;
-
-    lpfr->Flags = lpfrw->Flags;
-
-    p = utf16_to_enc((short_u*)lpfrw->lpstrFindWhat, NULL);
-    vim_strncpy((char_u *)lpfr->lpstrFindWhat, p, lpfr->wFindWhatLen - 1);
-    vim_free(p);
-
-    p = utf16_to_enc((short_u*)lpfrw->lpstrReplaceWith, NULL);
-    vim_strncpy((char_u *)lpfr->lpstrReplaceWith, p, lpfr->wReplaceWithLen - 1);
-    vim_free(p);
-}
-
-/*
  * Handle a Find/Replace window message.
  */
     static void
@@ -1151,8 +1113,6 @@ _OnFindRepl(void)
 {
     int	    flags = 0;
     int	    down;
-
-    findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
 
     if (s_findrep_struct.Flags & FR_DIALOGTERM)
 	/* Give main window the focus back. */
@@ -1181,14 +1141,20 @@ _OnFindRepl(void)
 
     if (flags != 0)
     {
+	char_u	*p, *q;
+
 	/* Call the generic GUI function to do the actual work. */
 	if (s_findrep_struct.Flags & FR_WHOLEWORD)
 	    flags |= FRD_WHOLE_WORD;
 	if (s_findrep_struct.Flags & FR_MATCHCASE)
 	    flags |= FRD_MATCH_CASE;
 	down = (s_findrep_struct.Flags & FR_DOWN) != 0;
-	gui_do_findrepl(flags, (char_u *)s_findrep_struct.lpstrFindWhat,
-			     (char_u *)s_findrep_struct.lpstrReplaceWith, down);
+	p = utf16_to_enc(s_findrep_struct.lpstrFindWhat, NULL);
+	q = utf16_to_enc(s_findrep_struct.lpstrReplaceWith, NULL);
+	if (p != NULL && q != NULL)
+	    gui_do_findrepl(flags, p, q, down);
+	vim_free(p);
+	vim_free(q);
     }
 }
 #endif
@@ -2679,8 +2645,16 @@ initialise_findrep(char_u *initial_string)
     if (wword)
 	s_findrep_struct.Flags |= FR_WHOLEWORD;
     if (entry_text != NULL && *entry_text != NUL)
-	vim_strncpy((char_u *)s_findrep_struct.lpstrFindWhat, entry_text,
-					   s_findrep_struct.wFindWhatLen - 1);
+    {
+	WCHAR *p = enc_to_utf16(entry_text, NULL);
+	if (p != NULL)
+	{
+	    int len = s_findrep_struct.wFindWhatLen - 1;
+	    wcsncpy(s_findrep_struct.lpstrFindWhat, p, len);
+	    s_findrep_struct.lpstrFindWhat[len] = NUL;
+	    vim_free(p);
+	}
+    }
     vim_free(entry_text);
 }
 #endif
@@ -2716,8 +2690,7 @@ gui_mch_find_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
-	    s_findrep_hwnd = FindTextW((LPFINDREPLACEW) &s_findrep_struct_w);
+	    s_findrep_hwnd = FindTextW((LPFINDREPLACEW) &s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find string"));
@@ -2741,9 +2714,7 @@ gui_mch_replace_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
-	    s_findrep_hwnd = ReplaceTextW(
-					(LPFINDREPLACEW) &s_findrep_struct_w);
+	    s_findrep_hwnd = ReplaceTextW((LPFINDREPLACEW) &s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd, _("Find & Replace"));
@@ -5244,21 +5215,14 @@ gui_mch_init(void)
 
     /* Initialise the struct */
     s_findrep_struct.lStructSize = sizeof(s_findrep_struct);
-    s_findrep_struct.lpstrFindWhat = (LPSTR)alloc(MSWIN_FR_BUFSIZE);
+    s_findrep_struct.lpstrFindWhat =
+			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
     s_findrep_struct.lpstrFindWhat[0] = NUL;
-    s_findrep_struct.lpstrReplaceWith = (LPSTR)alloc(MSWIN_FR_BUFSIZE);
+    s_findrep_struct.lpstrReplaceWith =
+			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
     s_findrep_struct.lpstrReplaceWith[0] = NUL;
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
-    s_findrep_struct_w.lStructSize = sizeof(s_findrep_struct_w);
-    s_findrep_struct_w.lpstrFindWhat =
-			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
-    s_findrep_struct_w.lpstrFindWhat[0] = NUL;
-    s_findrep_struct_w.lpstrReplaceWith =
-			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
-    s_findrep_struct_w.lpstrReplaceWith[0] = NUL;
-    s_findrep_struct_w.wFindWhatLen = MSWIN_FR_BUFSIZE;
-    s_findrep_struct_w.wReplaceWithLen = MSWIN_FR_BUFSIZE;
 #endif
 
 #ifdef FEAT_EVAL
