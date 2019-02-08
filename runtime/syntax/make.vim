@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:	Makefile
-" Maintainer:	Claudio Fleiner <claudio@fleiner.com>
-" URL:		http://www.fleiner.com/vim/syntax/make.vim
-" Last Change:	2015 Feb 28
+" Maintainer:	Roland Hieber <rohieb+vim-iR0jGdkV@rohieb.name>
+" Previous Maintainer:	Claudio Fleiner <claudio@fleiner.com>
+" URL:		https://github.com/vim/vim/syntax/make.vim
+" Last Change:	2019 Feb 08
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
