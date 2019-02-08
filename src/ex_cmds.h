@@ -57,6 +57,7 @@
 				 * curbuf_lock is set */
 #define MODIFY       0x200000L	/* forbidden in non-'modifiable' buffer */
 #define EXFLAGS      0x400000L	/* allow flags after count in argument */
+#define RESTRICT     0x800000L	/* started as "rvim" */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1	(EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1	(FILES | NOSPC)	/* 1 file allowed, defaults to current file */
