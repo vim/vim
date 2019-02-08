@@ -94,6 +94,7 @@ fd_write(sock_T fd, char *buf, size_t len)
 	// If the pipe overflows while the job does not read the data, WriteFile
 	// will block forever. This abandons the write.
 	memset(&ov, 0, sizeof(ov));
+	nwrite = 0;
 	if (!WriteFile(h, buf + done, size, &nwrite, &ov))
 	{
 	    DWORD err = GetLastError();
