@@ -2026,3 +2026,55 @@ func Test_job_exitval_and_termsig()
   call assert_equal(-1, info.exitval)
   call assert_equal("term", info.termsig)
 endfunc
+
+func Test_job_tty_in_out()
+  if !has('job') || !has('unix')
+    return
+  endif
+
+  call writefile(['test'], 'Xtestin')
+  let in_opts = [{},
+        \ {'in_io': 'null'},
+        \ {'in_io': 'file', 'in_name': 'Xtestin'}]
+  let out_opts = [{},
+        \ {'out_io': 'null'},
+        \ {'out_io': 'file', 'out_name': 'Xtestout'}]
+  let err_opts = [{},
+        \ {'err_io': 'null'},
+        \ {'err_io': 'file', 'err_name': 'Xtesterr'},
+        \ {'err_io': 'out'}]
+  let opts = []
+
+  for in_opt in in_opts
+    let x = copy(in_opt)
+    for out_opt in out_opts
+      call extend(x, out_opt)
+      for err_opt in err_opts
+        call extend(x, err_opt)
+        let opts += [extend({'pty': 1}, x)]
+      endfor
+    endfor
+  endfor
+
+  for opt in opts
+    let job = job_start('echo', opt)
+    let info = job_info(job)
+    let msg = printf('option={"in_io": "%s", "out_io": "%s", "err_io": "%s"}',
+          \ get(opt, 'in_io', 'tty'),
+          \ get(opt, 'out_io', 'tty'),
+          \ get(opt, 'err_io', 'tty'))
+
+    if !has_key(opt, 'in_io') || !has_key(opt, 'out_io') || !has_key(opt, 'err_io')
+      call assert_notequal('', info.tty_in, msg)
+    else
+      call assert_equal('', info.tty_in, msg)
+    endif
+    call assert_equal(info.tty_in, info.tty_out, msg)
+
+    call WaitForAssert({-> assert_equal('dead', job_status(job))})
+  endfor
+
+  call delete('Xtestin')
+  call delete('Xtestout')
+  call delete('Xtesterr')
+endfunc
