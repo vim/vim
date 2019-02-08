@@ -2009,15 +2009,11 @@ func Test_no_hang_windows()
   endif
 
   try
-    let g:out = ''
     let job = job_start(s:python . " test_channel_pipe.py busy",
           \ {'mode': 'raw', 'drop': 'never', 'noblock': 0})
-
     call assert_fails('call ch_sendraw(job, repeat("X", 80000))', 'E631:')
-  catch
   finally
     call job_stop(job)
-    unlet g:out
   endtry
 endfunc
 
