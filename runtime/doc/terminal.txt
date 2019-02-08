@@ -228,8 +228,10 @@ Syntax ~
 					for Python "++eof=exit()".  Special
 					codes can be used like with `:map`,
 					e.g. "<C-Z>" for CTRL-Z.
-			++winpty	Use winpty as the virtual console.
-			++conpty	Use |ConPTY| as the virtual console.
+			++type={pty}	(MS-Windows only): Use {pty} as the
+					virtual console.  See 'termwintype'
+					for the values.
+
 			If you want to use more options use the |term_start()|
 			function.
 			If you want to split the window vertically, use: >
@@ -416,8 +418,8 @@ On more recent versions of MS-Windows 10 (beginning with the "October 2018
 Update"), winpty is no longer required. On those versions, |:terminal| will use
 Windows' built-in support for hosting terminal applications, "ConPTY".  When
 ConPTY is in use, there may be rendering artifacts regarding ambiguous-width
-characters. If you encounter any such issues, set 'termmode' to winpty (which
-you then must have instlled).
+characters. If you encounter any such issues, set 'termwintype' to "winpty"
+(which you then must have instlled).
 
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername

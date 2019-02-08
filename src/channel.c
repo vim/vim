@@ -4947,27 +4947,27 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = tv_get_string_chk(item);
 	    }
-	    else if (STRCMP(hi->hi_key, "term_mode") == 0)
+	    else if (STRCMP(hi->hi_key, "tty_type") == 0)
 	    {
 		char_u *p;
 
-		if (!(supported2 & JO2_TERM_MODE))
+		if (!(supported2 & JO2_TTY_TYPE))
 		    break;
-		opt->jo_set2 |= JO2_TERM_MODE;
+		opt->jo_set2 |= JO2_TTY_TYPE;
 		p = tv_get_string_chk(item);
 		if (p == NULL)
 		{
-		    semsg(_(e_invargval), "term_mode");
+		    semsg(_(e_invargval), "tty_type");
 		    return FAIL;
 		}
 		// Allow empty string, "winpty", "conpty".
 		if (!(*p == NUL || STRCMP(p, "winpty") == 0
 					          || STRCMP(p, "conpty") == 0))
 		{
-		    semsg(_(e_invargval), "term_mode");
+		    semsg(_(e_invargval), "tty_type");
 		    return FAIL;
 		}
-		opt->jo_term_mode = p[0];
+		opt->jo_tty_type = p[0];
 	    }
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
@@ -5193,6 +5193,9 @@ job_free_contents(job_T *job)
     vim_free(job->jv_stoponexit);
 #ifdef UNIX
     vim_free(job->jv_termsig);
+#endif
+#ifdef WIN3264
+    vim_free(job->jv_tty_type);
 #endif
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
     if (job->jv_argv != NULL)
@@ -5962,6 +5965,9 @@ job_info(job_T *job, dict_T *dict)
     dict_add_string(dict, "stoponexit", job->jv_stoponexit);
 #ifdef UNIX
     dict_add_string(dict, "termsig", job->jv_termsig);
+#endif
+#ifdef WIN3264
+    dict_add_string(dict, "tty_type", job->jv_tty_type);
 #endif
 
     l = list_alloc();

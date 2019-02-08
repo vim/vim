@@ -5750,6 +5750,11 @@ job_info([{job}])					*job_info()*
 				(See |job_stop()| for the values)
 				only valid when "status" is "dead"
 
+		   Only in MS-Windows:
+		   "tty_type"	Type of virtual console in use.
+				Values are "winpty" or "conpty".
+				See 'termwintype'.
+
 		Without any arguments, returns a List with all Job objects.
 
 job_setoptions({job}, {options})			*job_setoptions()*
@@ -9469,10 +9474,8 @@ term_start({cmd}, {options})				*term_start()*
 		   "ansi_colors"     A list of 16 color names or hex codes
 				     defining the ANSI palette used in GUI
 				     color modes.  See |g:terminal_ansi_colors|.
-		   "term_mode"	     (MS-Windows only): Specify which pty to
-				     use:
-					"winpty": Use winpty
-					"conpty": Use ConPTY (if available)
+		   "tty_type"	     (MS-Windows only): Specify which pty to
+				     use.  See 'termwintype' for the values.
 
 		{only available when compiled with the |+terminal| feature}
 

@@ -8054,23 +8054,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
-						*'termmode'* *'tmod'*
-'termmode' 'tmod'	string  (default "")
-			local to window
-			{not in Vi, MS-Windows only}
-	Whether the window uses winpty or |ConPTY| as the virtual console.
-	When set before opening the terminal, it influences what pty is used.
-	When opening the terminal it will be set to the actually used pty.
-
-	Possible values are:
-	    ""		use ConPTY if possible, winpty otherwise
-	    "winpty"	use winpty, fail if not supported
-	    "conpty"	use |ConPTY|, fail if not supported
-
-	|ConPTY| support depends on the platform (Windows 10 October 2018
-	edition).  winpty support needs to be installed.  If neither is
-	supported then you cannot open a terminal window.
-
 						*'termwinscroll'* *'twsl'*
 'termwinscroll' 'twsl'	number	(default 10000)
 			local to buffer
@@ -8118,6 +8101,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the command running in the terminal window may still change
 	the size of the terminal.  In that case the Vim window will be
 	adjusted to that size, if possible.
+
+						*'termwintype'* *'twt'*
+'termwintype' 'twt'	string  (default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |terminal|
+			feature on MS-Windows}
+	Specify the virtual console (pty) used when opening the terminal
+	window.
+
+	Possible values are:
+	    ""		use ConPTY if possible, winpty otherwise
+	    "winpty"	use winpty, fail if not supported
+	    "conpty"	use |ConPTY|, fail if not supported
+
+	|ConPTY| support depends on the platform (Windows 10 October 2018
+	edition).  winpty support needs to be installed.  If neither is
+	supported then you cannot open a terminal window.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)

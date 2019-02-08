@@ -282,8 +282,6 @@ typedef struct
 # define w_p_twk w_onebuf_opt.wo_twk	/* 'termwinkey' */
     char_u	*wo_tws;
 # define w_p_tws w_onebuf_opt.wo_tws	/* 'termwinsize' */
-    char_u	*wo_tmod;
-# define w_p_tmod w_onebuf_opt.wo_tmod	/* 'termmode' */
 #endif
 
 #ifdef FEAT_EVAL
@@ -1556,6 +1554,9 @@ struct jobvar_S
 #ifdef UNIX
     char_u	*jv_termsig;	/* allocated */
 #endif
+#ifdef WIN3264
+    char_u	*jv_tty_type;	// allocated
+#endif
     int		jv_exitval;
     char_u	*jv_exit_cb;	/* allocated */
     partial_T	*jv_exit_partial;
@@ -1791,7 +1792,7 @@ struct channel_S {
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
 #define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
-#define JO2_TERM_MODE	    0x10000	/* "term_mode" */
+#define JO2_TTY_TYPE	    0x10000	/* "tty_type" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1864,7 +1865,7 @@ typedef struct
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
-    int		jo_term_mode;	    // first character of "term_mode"
+    int		jo_tty_type;	    // first character of "tty_type"
 #endif
 } jobopt_T;
 

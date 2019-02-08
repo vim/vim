@@ -742,16 +742,26 @@ ex_terminal(exarg_T *eap)
 	    vim_free(buf);
 	    *p = ' ';
 	}
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "winpty", 6) == 0)
+#ifdef WIN3264
+	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "type", 4) == 0
+								 && ep != NULL)
 	{
-	    opt.jo_set2 |= JO2_TERM_MODE;
-	    opt.jo_term_mode = 'w';
+	    int tty_type = NUL;
+
+	    p = skiptowhite(cmd);
+	    if (STRNICMP(ep + 1, "winpty", p - (ep + 1)) == 0)
+		tty_type = 'w';
+	    else if (STRNICMP(ep + 1, "conpty", p - (ep + 1)) == 0)
+		tty_type = 'c';
+	    else
+	    {
+		semsg(e_invargval, "type");
+		goto theend;
+	    }
+	    opt.jo_set2 |= JO2_TTY_TYPE;
+	    opt.jo_tty_type = tty_type;
 	}
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "conpty", 6) == 0)
-	{
-	    opt.jo_set2 |= JO2_TERM_MODE;
-	    opt.jo_term_mode = 'c';
-	}
+#endif
 	else
 	{
 	    if (*p)
@@ -809,9 +819,8 @@ term_write_session(FILE *fd, win_T *wp)
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
 #ifdef WIN3264
-    if (*wp->w_p_tmod != NUL)
-	if (fprintf(fd, "++%s ", wp->w_p_tmod) < 0)
-	    return FAIL;
+    if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
+	return FAIL;
 #endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
@@ -5369,7 +5378,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
 		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS + JO2_TERM_MODE) == FAIL)
+		    + JO2_ANSI_COLORS + JO2_TTY_TYPE) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -5713,6 +5722,7 @@ conpty_term_and_job_init(
     job->jv_proc_info = proc_info;
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
+    job->jv_tty_type = vim_strsave("conpty");
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -6046,6 +6056,7 @@ winpty_term_and_job_init(
 	    (short_u *)winpty_conin_name(term->tl_winpty), NULL);
     job->jv_tty_out = utf16_to_enc(
 	    (short_u *)winpty_conout_name(term->tl_winpty), NULL);
+    job->jv_tty_type = vim_strsave("winpty");
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -6113,6 +6124,7 @@ term_and_job_init(
 {
     int		    use_winpty = FALSE;
     int		    use_conpty = FALSE;
+    int		    tty_type = *p_twt;
 
     has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
     has_conpty = dyn_conpty_init(FALSE) != FAIL ? TRUE : FALSE;
@@ -6122,14 +6134,10 @@ term_and_job_init(
 	// conpty is not available it can't be installed either.
 	return dyn_winpty_init(TRUE);
 
-    if (opt->jo_term_mode == 'w')
-	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"winpty",
-							OPT_FREE|OPT_LOCAL, 0);
-    if (opt->jo_term_mode == 'c')
-	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"conpty",
-							OPT_FREE|OPT_LOCAL, 0);
+    if (opt->jo_tty_type != NUL)
+	tty_type = opt->jo_tty_type;
 
-    if (curwin->w_p_tmod == NULL || *curwin->w_p_tmod == NUL)
+    if (tty_type == NUL)
     {
 	if (has_conpty)
 	    use_conpty = TRUE;
@@ -6137,12 +6145,12 @@ term_and_job_init(
 	    use_winpty = TRUE;
 	// else: error
     }
-    else if (STRICMP(curwin->w_p_tmod, "winpty") == 0)
+    else if (tty_type == 'w')	// winpty
     {
 	if (has_winpty)
 	    use_winpty = TRUE;
     }
-    else if (STRICMP(curwin->w_p_tmod, "conpty") == 0)
+    else if (tty_type == 'c')	// conpty
     {
 	if (has_conpty)
 	    use_conpty = TRUE;
@@ -6152,15 +6160,11 @@ term_and_job_init(
 
     if (use_conpty)
     {
-	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"conpty",
-							OPT_FREE|OPT_LOCAL, 0);
 	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
     }
 
     if (use_winpty)
     {
-	set_string_option_direct((char_u *)"tmod", -1, (char_u *)"winpty",
-							OPT_FREE|OPT_LOCAL, 0);
 	return winpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
     }
 
