@@ -104,6 +104,9 @@ fd_write(sock_T fd, char *buf, size_t len)
 		return -1;
 	    FlushFileBuffers(h);
 	}
+	else if (nwrite == 0)
+	    // WriteFile return TRUE but no-writes. This make hang
+	    break;
 	todo -= nwrite;
 	done += nwrite;
     }
