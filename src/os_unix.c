@@ -4195,33 +4195,35 @@ set_default_child_environment(int is_terminal)
 #if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)
 /*
  * Open a PTY, with FD for the master and slave side.
- * When failing "pty_master_fd" and "pty_slave_fd" are -1.
- * When successful both file descriptors are stored.
+ * When failing "pty_master_fd" and "pty_slave_fd" are -1, and return NULL.
+ * When successful both file descriptors are stored, and return the name of
+ * the slave device.
  */
-    static void
-open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
+    static char_u *
+open_pty(int *pty_master_fd, int *pty_slave_fd)
 {
-    char	*tty_name;
+    char	*tty_name = NULL;
 
-    *pty_master_fd = mch_openpty(&tty_name);	    // open pty
-    if (*pty_master_fd >= 0)
-    {
-	/* Leaving out O_NOCTTY may lead to waitpid() always returning
-	 * 0 on Mac OS X 10.7 thereby causing freezes. Let's assume
-	 * adding O_NOCTTY always works when defined. */
+    // Open a PTY. "tty_name" obtains the static storage in mch_openpty().
+    *pty_master_fd = mch_openpty(&tty_name);
+    if (*pty_master_fd < 0)
+	return NULL;
+
+    // Leaving out O_NOCTTY may lead to waitpid() always returning 0 on
+    // Mac OS X 10.7 thereby causing freezes. Let's assume adding O_NOCTTY
+    // always works when defined.
 #ifdef O_NOCTTY
-	*pty_slave_fd = open(tty_name, O_RDWR | O_NOCTTY | O_EXTRA, 0);
+    *pty_slave_fd = open(tty_name, O_RDWR | O_NOCTTY | O_EXTRA, 0);
 #else
-	*pty_slave_fd = open(tty_name, O_RDWR | O_EXTRA, 0);
+    *pty_slave_fd = open(tty_name, O_RDWR | O_EXTRA, 0);
 #endif
-	if (*pty_slave_fd < 0)
-	{
-	    close(*pty_master_fd);
-	    *pty_master_fd = -1;
-	}
-	else if (namep != NULL)
-	    *namep = vim_strsave((char_u *)tty_name);
+    if (*pty_slave_fd < 0)
+    {
+	close(*pty_master_fd);
+	*pty_master_fd = -1;
+	return NULL;
     }
+    return (char_u *)tty_name;
 }
 #endif
 
@@ -4513,7 +4515,7 @@ mch_call_shell_fork(
 	 * If the slave can't be opened, close the master pty.
 	 */
 	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
-	    open_pty(&pty_master_fd, &pty_slave_fd, NULL);
+	    open_pty(&pty_master_fd, &pty_slave_fd);
 	/*
 	 * If not opening a pty or it didn't work, try using pipes.
 	 */
@@ -5333,6 +5335,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
     int		fd_err[2] = {-1, -1};	/* for stderr */
     int		pty_master_fd = -1;
     int		pty_slave_fd = -1;
+    char_u	*tty_name = NULL;
     channel_T	*channel = NULL;
     int		use_null_for_in = options->jo_io[PART_IN] == JIO_NULL;
     int		use_null_for_out = options->jo_io[PART_OUT] == JIO_NULL;
@@ -5352,12 +5355,15 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 
     if (options->jo_pty
 	    && (!(use_file_for_in || use_null_for_in)
-		|| !(use_file_for_in || use_null_for_out)
+		|| !(use_file_for_out || use_null_for_out)
 		|| !(use_out_for_err || use_file_for_err || use_null_for_err)))
     {
-	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
-	if (job->jv_tty_out != NULL)
-	    job->jv_tty_in = vim_strsave(job->jv_tty_out);
+	tty_name = open_pty(&pty_master_fd, &pty_slave_fd);
+	if (tty_name != NULL)
+	{
+	    job->jv_tty_in = vim_strsave(tty_name);
+	    job->jv_tty_out = vim_strsave(tty_name);
+	}
     }
 
     /* TODO: without the channel feature connect the child to /dev/null? */
@@ -5421,9 +5427,8 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    channel = add_channel();
 	if (channel == NULL)
 	    goto failed;
-	if (job->jv_tty_out != NULL)
-	    ch_log(channel, "using pty %s on fd %d",
-					       job->jv_tty_out, pty_master_fd);
+	if (tty_name != NULL)
+	    ch_log(channel, "using pty %s on fd %d", tty_name, pty_master_fd);
     }
 
     BLOCK_SIGNALS(&curset);
@@ -5832,11 +5837,15 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
 {
     int		pty_master_fd = -1;
     int		pty_slave_fd = -1;
+    char_u	*tty_name = NULL;
     channel_T	*channel;
 
-    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
-    if (job->jv_tty_out != NULL)
-	job->jv_tty_in = vim_strsave(job->jv_tty_out);
+    tty_name = open_pty(&pty_master_fd, &pty_slave_fd);
+    if (tty_name != NULL)
+    {
+	job->jv_tty_in = vim_strsave(tty_name);
+	job->jv_tty_out = vim_strsave(tty_name);
+    }
     close(pty_slave_fd);
 
     channel = add_channel();
@@ -5845,9 +5854,8 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
 	close(pty_master_fd);
 	return FAIL;
     }
-    if (job->jv_tty_out != NULL)
-	ch_log(channel, "using pty %s on fd %d",
-					       job->jv_tty_out, pty_master_fd);
+    if (tty_name != NULL)
+	ch_log(channel, "using pty %s on fd %d", tty_name, pty_master_fd);
     job->jv_channel = channel;  /* ch_refcount was set by add_channel() */
     channel->ch_keep_open = TRUE;
 
