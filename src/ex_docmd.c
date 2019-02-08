@@ -2007,11 +2007,16 @@ do_one_cmd(
 #ifdef HAVE_SANDBOX
 	if (sandbox != 0 && !(ea.argt & SBOXOK))
 	{
-	    /* Command not allowed in sandbox. */
+	    // Command not allowed in sandbox.
 	    errormsg = _(e_sandbox);
 	    goto doend;
 	}
 #endif
+	if (restricted != 0 && (ea.argt & RESTRICT))
+	{
+	    errormsg = _("E981: Command not allowed in rvim");
+	    goto doend;
+	}
 	if (!curbuf->b_p_ma && (ea.argt & MODIFY))
 	{
 	    /* Command not allowed in non-'modifiable' buffer */

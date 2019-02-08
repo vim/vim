@@ -213,6 +213,7 @@ NEW_TESTS = \
 	test_regexp_utf8 \
 	test_registers \
 	test_reltime \
+	test_restricted \
 	test_retab \
 	test_ruby \
 	test_scriptnames \
@@ -375,6 +376,7 @@ NEW_TESTS_RES = \
 	test_quotestar.res \
 	test_regex_char_classes.res \
 	test_registers.res \
+	test_restricted.res \
 	test_retab.res \
 	test_ruby.res \
 	test_scriptnames.res \

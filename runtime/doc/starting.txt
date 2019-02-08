@@ -248,12 +248,18 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		changes and writing.
 		{not in Vi}
 
-						*-Z* *restricted-mode* *E145*
+					*-Z* *restricted-mode* *E145* *E981*
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
-		":sh", filtering, the system() function, backtick expansion,
-		delete(), rename(), mkdir(), writefile(), libcall(),
-		job_start(), etc.
+		":sh", filtering, the system() function, backtick expansion
+		and libcall().
+		Also disallowed are delete(), rename(), mkdir(), job_start(),
+		etc.
+		Interfaces, such as Python, Ruby and Lua, are also disabled,
+		since they could be used to execute shell commands.  Perl uses
+		the Safe module.
+		Note that the user may still find a loophole to execute a
+		shell command, it has only been made difficult.
 		{not in Vi}
 
 							*-g*

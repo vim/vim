@@ -6817,7 +6817,7 @@ f_histadd(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 
     rettv->vval.v_number = FALSE;
-    if (check_restricted() || check_secure())
+    if (check_secure())
 	return;
 #ifdef FEAT_CMDHIST
     str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
@@ -7898,6 +7898,9 @@ f_luaeval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (check_restricted() || check_secure())
+	return;
+
     str = tv_get_string_buf(&argvars[0], buf);
     do_luaeval(str, argvars + 1, rettv);
 }
@@ -8644,6 +8647,8 @@ f_mzeval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (check_restricted() || check_secure())
+	return;
     str = tv_get_string_buf(&argvars[0], buf);
     do_mzeval(str, rettv);
 }
@@ -8932,6 +8937,9 @@ f_py3eval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (check_restricted() || check_secure())
+	return;
+
     if (p_pyx == 0)
 	p_pyx = 3;
 
@@ -8950,6 +8958,9 @@ f_pyeval(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     char_u	buf[NUMBUFLEN];
 
+    if (check_restricted() || check_secure())
+	return;
+
     if (p_pyx == 0)
 	p_pyx = 2;
 
@@ -8965,6 +8976,9 @@ f_pyeval(typval_T *argvars, typval_T *rettv)
     static void
 f_pyxeval(typval_T *argvars, typval_T *rettv)
 {
+    if (check_restricted() || check_secure())
+	return;
+
 # if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
     init_pyxversion();
     if (p_pyx == 2)
@@ -10819,7 +10833,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     typval_T	*varp;
     char_u	nbuf[NUMBUFLEN];
 
-    if (check_restricted() || check_secure())
+    if (check_secure())
 	return;
     (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
     varname = tv_get_string_chk(&argvars[1]);
@@ -11341,7 +11355,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = 0;
 
-    if (check_restricted() || check_secure())
+    if (check_secure())
 	return;
 
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
@@ -14714,7 +14728,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     blob_T	*blob = NULL;
 
     rettv->vval.v_number = -1;
-    if (check_restricted() || check_secure())
+    if (check_secure())
 	return;
 
     if (argvars[0].v_type == VAR_LIST)

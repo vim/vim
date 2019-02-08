@@ -4775,7 +4775,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	emsg(_("E145: Shell commands not allowed in rvim"));
+	emsg(_("E145: Shell commands and some functionality not allowed in rvim"));
 	return TRUE;
     }
     return FALSE;
