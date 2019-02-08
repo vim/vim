@@ -742,26 +742,6 @@ ex_terminal(exarg_T *eap)
 	    vim_free(buf);
 	    *p = ' ';
 	}
-#ifdef WIN3264
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "type", 4) == 0
-								 && ep != NULL)
-	{
-	    int tty_type = NUL;
-
-	    p = skiptowhite(cmd);
-	    if (STRNICMP(ep + 1, "winpty", p - (ep + 1)) == 0)
-		tty_type = 'w';
-	    else if (STRNICMP(ep + 1, "conpty", p - (ep + 1)) == 0)
-		tty_type = 'c';
-	    else
-	    {
-		semsg(e_invargval, "type");
-		goto theend;
-	    }
-	    opt.jo_set2 |= JO2_TTY_TYPE;
-	    opt.jo_tty_type = tty_type;
-	}
-#endif
 	else
 	{
 	    if (*p)
@@ -818,10 +798,6 @@ term_write_session(FILE *fd, win_T *wp)
     if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
-#ifdef WIN3264
-    if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
-	return FAIL;
-#endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
 
@@ -5377,8 +5353,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		JO2_TERM_NAME + JO2_TERM_FINISH + JO2_HIDDEN + JO2_TERM_OPENCMD
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
-		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS + JO2_TTY_TYPE) == FAIL)
+		    + JO2_NORESTORE + JO2_TERM_KILL + JO2_ANSI_COLORS) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -6124,7 +6099,6 @@ term_and_job_init(
 {
     int		    use_winpty = FALSE;
     int		    use_conpty = FALSE;
-    int		    tty_type = *p_twt;
 
     has_winpty = dyn_winpty_init(FALSE) != FAIL ? TRUE : FALSE;
     has_conpty = dyn_conpty_init(FALSE) != FAIL ? TRUE : FALSE;
@@ -6134,10 +6108,7 @@ term_and_job_init(
 	// conpty is not available it can't be installed either.
 	return dyn_winpty_init(TRUE);
 
-    if (opt->jo_tty_type != NUL)
-	tty_type = opt->jo_tty_type;
-
-    if (tty_type == NUL)
+    if (*p_twt == NUL)
     {
 	if (has_conpty)
 	    use_conpty = TRUE;
@@ -6145,12 +6116,12 @@ term_and_job_init(
 	    use_winpty = TRUE;
 	// else: error
     }
-    else if (tty_type == 'w')	// winpty
+    else if (*p_twt == 'w')	// winpty
     {
 	if (has_winpty)
 	    use_winpty = TRUE;
     }
-    else if (tty_type == 'c')	// conpty
+    else if (*p_twt == 'c')	// conpty
     {
 	if (has_conpty)
 	    use_conpty = TRUE;

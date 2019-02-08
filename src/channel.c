@@ -4947,28 +4947,6 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = tv_get_string_chk(item);
 	    }
-	    else if (STRCMP(hi->hi_key, "tty_type") == 0)
-	    {
-		char_u *p;
-
-		if (!(supported2 & JO2_TTY_TYPE))
-		    break;
-		opt->jo_set2 |= JO2_TTY_TYPE;
-		p = tv_get_string_chk(item);
-		if (p == NULL)
-		{
-		    semsg(_(e_invargval), "tty_type");
-		    return FAIL;
-		}
-		// Allow empty string, "winpty", "conpty".
-		if (!(*p == NUL || STRCMP(p, "winpty") == 0
-					          || STRCMP(p, "conpty") == 0))
-		{
-		    semsg(_(e_invargval), "tty_type");
-		    return FAIL;
-		}
-		opt->jo_tty_type = p[0];
-	    }
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
 	    {
