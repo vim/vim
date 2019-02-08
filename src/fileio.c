@@ -7471,7 +7471,7 @@ vim_tempname(
 	    if (*p == '\\')
 		*p = '/';
 
-#if defined(FEAT_MBYTE) && defined(WIN3264)
+#if defined(WIN3264)
     if (enc_utf8)
     {
 	int	len;
