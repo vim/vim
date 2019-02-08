@@ -291,6 +291,7 @@ findoldfile(char **destination)
 {
     char	*bp = *destination;
     size_t	indir_l = strlen(installdir);
+    char	*cp;
     char	*tmpname;
     char	*farname;
 
@@ -300,7 +301,7 @@ findoldfile(char **destination)
     if (bp == NULL)
 	return;
     
-    char	*cp = bp + indir_l;
+    cp = bp + indir_l;
     if (strnicmp(bp, installdir, indir_l) != 0
 	    || strchr("/\\", *cp++) == NULL
 	    || strchr(cp, '\\') != NULL
