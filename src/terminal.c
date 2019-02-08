@@ -6159,14 +6159,10 @@ term_and_job_init(
     }
 
     if (use_conpty)
-    {
 	return conpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
-    }
 
     if (use_winpty)
-    {
 	return winpty_term_and_job_init(term, argvar, argv, opt, orig_opt);
-    }
 
     // error
     return dyn_winpty_init(TRUE);
