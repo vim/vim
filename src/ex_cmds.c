@@ -2098,7 +2098,7 @@ write_viminfo(char_u *file, int forceit)
 			fp_out = NULL;
 # ifdef EEXIST
 			/* Avoid trying lots of names while the problem is lack
-			 * of premission, only retry if the file already
+			 * of permission, only retry if the file already
 			 * exists. */
 			if (errno != EEXIST)
 			    break;
@@ -5040,6 +5040,7 @@ do_sub(exarg_T *eap)
 	}
 	subflags.do_error = TRUE;
 	subflags.do_print = FALSE;
+	subflags.do_list = FALSE;
 	subflags.do_count = FALSE;
 	subflags.do_number = FALSE;
 	subflags.do_ic = 0;
