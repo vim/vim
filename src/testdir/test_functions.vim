@@ -249,7 +249,13 @@ func Test_resolve_win32()
   if executable('cscript')
     new Xfile
     wq
-    call writefile(['Set fs = CreateObject("Scripting.FileSystemObject")', 'Set ws = WScript.CreateObject("WScript.Shell")', 'Set shortcut = ws.CreateShortcut("Xlink.lnk")', 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 'shortcut.Save'], 'link.vbs')
+    call writefile([
+    \ 'Set fs = CreateObject("Scripting.FileSystemObject")',
+    \ 'Set ws = WScript.CreateObject("WScript.Shell")',
+    \ 'Set shortcut = ws.CreateShortcut("Xlink.lnk")',
+    \ 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 
+    \ 'shortcut.Save'
+    \], 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
