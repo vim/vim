@@ -3334,7 +3334,7 @@ qf_jump_newwin(qf_info_T	*qi,
     if (retval == NOTDONE)
 	goto theend;
 
-    retval = qf_jump_to_buffer(qi, qf_index, qf_ptr, forceit, oldwin,
+    retval = qf_jump_to_buffer(qi, qf_index, qf_ptr, forceit, curwin,
 	    &opened_window, old_KeyTyped, print_message);
     if (retval == NOTDONE)
     {
@@ -3362,7 +3362,7 @@ theend:
 	qfl->qf_ptr = qf_ptr;
 	qfl->qf_index = qf_index;
     }
-    if (p_swb != old_swb && opened_window)
+    if (p_swb != old_swb)
     {
 	// Restore old 'switchbuf' value, but not when an autocommand or
 	// modeline has changed the value.

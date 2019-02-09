@@ -3974,7 +3974,7 @@ func Test_winonly_autocmd()
   let loclistid = getloclist(0, {'id' : 0}).id
   lopen
   call assert_equal(loclistid, getloclist(0, {'id' : 0}).id)
-  silent! ll
+  ll
   call assert_equal(loclistid, getloclist(0, {'id' : 0}).id)
   autocmd! WinEnter
   new | only
