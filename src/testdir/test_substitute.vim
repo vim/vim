@@ -108,7 +108,7 @@ func Test_substitute_variants()
 endfunc
 
 " Test the l, p, # flags.
-func Test_sustitutue_flags_lp()
+func Test_substitute_flags_lp()
   new
   call setline(1, "abc\tdef\<C-h>ghi")
 
