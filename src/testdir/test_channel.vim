@@ -2003,6 +2003,20 @@ func Test_raw_large_data()
   endtry
 endfunc
 
+func Test_no_hang_windows()
+  if !has('job') || !has('win32')
+    return
+  endif
+
+  try
+    let job = job_start(s:python . " test_channel_pipe.py busy",
+          \ {'mode': 'raw', 'drop': 'never', 'noblock': 0})
+    call assert_fails('call ch_sendraw(job, repeat("X", 80000))', 'E631:')
+  finally
+    call job_stop(job)
+  endtry
+endfunc
+
 func Test_job_exitval_and_termsig()
   if !has('unix')
     return

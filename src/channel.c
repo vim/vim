@@ -91,9 +91,10 @@ fd_write(sock_T fd, char *buf, size_t len)
 	    size = MAX_NAMED_PIPE_SIZE;
 	else
 	    size = (DWORD)todo;
-	// If the pipe overflows while the job does not read the data, WriteFile
-	// will block forever. This abandons the write.
+	// If the pipe overflows while the job does not read the data,
+	// WriteFile() will block forever. This abandons the write.
 	memset(&ov, 0, sizeof(ov));
+	nwrite = 0;
 	if (!WriteFile(h, buf + done, size, &nwrite, &ov))
 	{
 	    DWORD err = GetLastError();
@@ -104,6 +105,10 @@ fd_write(sock_T fd, char *buf, size_t len)
 		return -1;
 	    FlushFileBuffers(h);
 	}
+	else if (nwrite == 0)
+	    // WriteFile() returns TRUE but did not write anything. This causes
+	    // a hang, so bail out.
+	    break;
 	todo -= nwrite;
 	done += nwrite;
     }
