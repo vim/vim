@@ -4196,12 +4196,18 @@ set_default_child_environment(int is_terminal)
 /*
  * Open a PTY, with FD for the master and slave side.
  * When failing "pty_master_fd" and "pty_slave_fd" are -1.
- * When successful both file descriptors are stored.
+ * When successful both file descriptors are stored and the allocated pty name
+ * is stored in both "*name1" and "*name2".
  */
     static void
-open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
+open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
 {
     char	*tty_name;
+
+    if (name1 != NULL)
+	*name1 = NULL;
+    if (name2 != NULL)
+	*name2 = NULL;
 
     *pty_master_fd = mch_openpty(&tty_name);	    // open pty
     if (*pty_master_fd >= 0)
@@ -4219,8 +4225,13 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **namep)
 	    close(*pty_master_fd);
 	    *pty_master_fd = -1;
 	}
-	else if (namep != NULL)
-	    *namep = vim_strsave((char_u *)tty_name);
+	else
+	{
+	    if (name1 != NULL)
+		*name1 = vim_strsave((char_u *)tty_name);
+	    if (name2 != NULL)
+		*name2 = vim_strsave((char_u *)tty_name);
+	}
     }
 }
 #endif
@@ -4513,7 +4524,7 @@ mch_call_shell_fork(
 	 * If the slave can't be opened, close the master pty.
 	 */
 	if (p_guipty && !(options & (SHELL_READ|SHELL_WRITE)))
-	    open_pty(&pty_master_fd, &pty_slave_fd, NULL);
+	    open_pty(&pty_master_fd, &pty_slave_fd, NULL, NULL);
 	/*
 	 * If not opening a pty or it didn't work, try using pipes.
 	 */
@@ -5352,13 +5363,10 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 
     if (options->jo_pty
 	    && (!(use_file_for_in || use_null_for_in)
-		|| !(use_file_for_in || use_null_for_out)
+		|| !(use_file_for_out || use_null_for_out)
 		|| !(use_out_for_err || use_file_for_err || use_null_for_err)))
-    {
-	open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
-	if (job->jv_tty_out != NULL)
-	    job->jv_tty_in = vim_strsave(job->jv_tty_out);
-    }
+	open_pty(&pty_master_fd, &pty_slave_fd,
+					    &job->jv_tty_out, &job->jv_tty_in);
 
     /* TODO: without the channel feature connect the child to /dev/null? */
     /* Open pipes for stdin, stdout, stderr. */
@@ -5834,9 +5842,7 @@ mch_create_pty_channel(job_T *job, jobopt_T *options)
     int		pty_slave_fd = -1;
     channel_T	*channel;
 
-    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out);
-    if (job->jv_tty_out != NULL)
-	job->jv_tty_in = vim_strsave(job->jv_tty_out);
+    open_pty(&pty_master_fd, &pty_slave_fd, &job->jv_tty_out, &job->jv_tty_in);
     close(pty_slave_fd);
 
     channel = add_channel();
