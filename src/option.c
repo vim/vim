@@ -227,6 +227,8 @@
 #endif
 #define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
+#define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
+#define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
 #ifdef FEAT_SPELL
 # define PV_SPELL	OPT_WIN(WV_SPELL)
 #endif
@@ -482,6 +484,9 @@ struct vimoption
 #else
 # define DEFAULT_PYTHON_VER	0
 #endif
+
+// used for 'cinkeys' and 'indentkeys'
+#define INDENTKEYS_DEFAULT (char_u *)"0{,0},0),0],:,0#,!^F,o,O,e"
 
 /*
  * options[] is initialized here.
@@ -757,7 +762,7 @@ static struct vimoption options[] =
     {"cinkeys",	    "cink", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_CINDENT
 			    (char_u *)&p_cink, PV_CINK,
-			    {(char_u *)"0{,0},0),:,0#,!^F,o,O,e", (char_u *)0L}
+			    {INDENTKEYS_DEFAULT, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -1570,7 +1575,7 @@ static struct vimoption options[] =
     {"indentkeys", "indk",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 			    (char_u *)&p_indk, PV_INDK,
-			    {(char_u *)"0{,0},:,0#,!^F,o,O,e", (char_u *)0L}
+			    {INDENTKEYS_DEFAULT, (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -2330,7 +2335,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_sj, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
     {"scrolloff",   "so",   P_NUM|P_VI_DEF|P_VIM|P_RALL,
-			    (char_u *)&p_so, PV_NONE,
+			    (char_u *)&p_so, PV_SO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"scrollopt",   "sbo",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_sbo, PV_NONE,
@@ -2487,7 +2492,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ss, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"sidescrolloff", "siso", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
-			    (char_u *)&p_siso, PV_NONE,
+			    (char_u *)&p_siso, PV_SISO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SIGNS
@@ -2722,6 +2727,15 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"termwintype", "twt",  P_STRING|P_ALLOCED|P_VI_DEF,
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+			    (char_u *)&p_twt, PV_NONE,
+			    {(char_u *)"", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"terse",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_terse, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
@@ -2939,13 +2953,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"virtualedit", "ve",   P_STRING|P_ONECOMMA|P_NODUP|P_VI_DEF
 							    |P_VIM|P_CURSWANT,
-#ifdef FEAT_VIRTUALEDIT
 			    (char_u *)&p_ve, PV_NONE,
 			    {(char_u *)"", (char_u *)""}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"visualbell",  "vb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_vb, PV_NONE,
@@ -3207,6 +3216,9 @@ static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noins
 #endif
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
+#endif
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
 
 static void set_options_default(int opt_flags);
@@ -3661,7 +3673,12 @@ set_init_1(int clean_arg)
 	    {
 		char	buf[50];
 
-		sprintf(buf, "cp%ld", (long)GetConsoleCP());
+		/* Win32 console: In ConPTY, GetConsoleCP() returns zero.
+		 * Use an alternative value. */
+		if (GetConsoleCP() == 0)
+		    sprintf(buf, "cp%ld", (long)GetACP());
+		else
+		    sprintf(buf, "cp%ld", (long)GetConsoleCP());
 		p_tenc = vim_strsave((char_u *)buf);
 		if (p_tenc != NULL)
 		{
@@ -3738,11 +3755,19 @@ set_option_default(
 		win_comp_scroll(curwin);
 	    else
 	    {
-		*(long *)varp = (long)(long_i)options[opt_idx].def_val[dvi];
+		long def_val = (long)(long_i)options[opt_idx].def_val[dvi];
+
+		if ((long *)varp == &curwin->w_p_so
+			|| (long *)varp == &curwin->w_p_siso)
+		    // 'scrolloff' and 'sidescrolloff' local values have a
+		    // different default value than the global default.
+		    *(long *)varp = -1;
+		else
+		    *(long *)varp = def_val;
 		/* May also set global value for local option. */
 		if (both)
 		    *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) =
-								*(long *)varp;
+								def_val;
 	    }
 	}
 	else	/* P_BOOL */
@@ -5526,9 +5551,7 @@ didset_options(void)
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
-#ifdef FEAT_VIRTUALEDIT
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
-#endif
 #if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
@@ -7374,7 +7397,6 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_VIRTUALEDIT
     /* 'virtualedit' */
     else if (varp == &p_ve)
     {
@@ -7388,7 +7410,6 @@ did_set_string_option(
 	    coladvance(curwin->w_virtcol);
 	}
     }
-#endif
 
 #if defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)
     else if (varp == &p_csqf)
@@ -7464,14 +7485,14 @@ did_set_string_option(
 #endif
 
 #ifdef FEAT_TERMINAL
-    /* 'termwinkey' */
+    // 'termwinkey'
     else if (varp == &curwin->w_p_twk)
     {
 	if (*curwin->w_p_twk != NUL
 				  && string_to_key(curwin->w_p_twk, TRUE) == 0)
 	    errmsg = e_invarg;
     }
-    /* 'termwinsize' */
+    // 'termwinsize'
     else if (varp == &curwin->w_p_tws)
     {
 	if (*curwin->w_p_tws != NUL)
@@ -7483,6 +7504,14 @@ did_set_string_option(
 		errmsg = e_invarg;
 	}
     }
+# if defined(WIN3264)
+    // 'termwintype'
+    else if (varp == &p_twt)
+    {
+	if (check_opt_strings(*varp, p_twt_values, FALSE) != OK)
+	    errmsg = e_invarg;
+    }
+# endif
 #endif
 
 #ifdef FEAT_VARTABS
@@ -8834,7 +8863,7 @@ set_bool_option(
 	if (!has_vtp_working())
 	{
 	    p_tgc = 0;
-	    return (char_u*)N_("E954: 24-bit colors are not supported on this environment");
+	    return N_("E954: 24-bit colors are not supported on this environment");
 	}
 	if (is_term_win32())
 	    swap_tcap();
@@ -9388,7 +9417,7 @@ set_num_option(
     }
     if (p_so < 0 && full_screen)
     {
-	errmsg = e_scroll;
+	errmsg = e_positive;
 	p_so = 0;
     }
     if (p_siso < 0 && full_screen)
@@ -10663,6 +10692,12 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_tc);
 	    buf->b_tc_flags = 0;
 	    break;
+        case PV_SISO:
+            curwin->w_p_siso = -1;
+            break;
+        case PV_SO:
+            curwin->w_p_so = -1;
+            break;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
@@ -10751,6 +10786,8 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 	    case PV_TC:   return (char_u *)&(curbuf->b_p_tc);
+            case PV_SISO: return (char_u *)&(curwin->w_p_siso);
+            case PV_SO:   return (char_u *)&(curwin->w_p_so);
 #ifdef FEAT_FIND_ID
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
@@ -10809,6 +10846,10 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curbuf->b_p_tc) : p->var;
 	case PV_BKC:	return *curbuf->b_p_bkc != NUL
 				    ? (char_u *)&(curbuf->b_p_bkc) : p->var;
+	case PV_SISO:	return curwin->w_p_siso >= 0
+				    ? (char_u *)&(curwin->w_p_siso) : p->var;
+	case PV_SO:	return curwin->w_p_so >= 0
+				    ? (char_u *)&(curwin->w_p_so) : p->var;
 #ifdef FEAT_FIND_ID
 	case PV_DEF:	return *curbuf->b_p_def != NUL
 				    ? (char_u *)&(curbuf->b_p_def) : p->var;
@@ -13102,6 +13143,26 @@ get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
 get_sts_value(void)
 {
     return curbuf->b_p_sts < 0 ? get_sw_value(curbuf) : curbuf->b_p_sts;
+}
+
+/*
+ * Return the effective 'scrolloff' value for the current window, using the
+ * global value when appropriate.
+ */
+    long
+get_scrolloff_value(void)
+{
+    return curwin->w_p_so < 0 ? p_so : curwin->w_p_so;
+}
+
+/*
+ * Return the effective 'sidescrolloff' value for the current window, using the
+ * global value when appropriate.
+ */
+    long
+get_sidescrolloff_value(void)
+{
+    return curwin->w_p_siso < 0 ? p_siso : curwin->w_p_siso;
 }
 
 /*

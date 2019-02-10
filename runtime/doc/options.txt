@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Jan 16
+*options.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -354,12 +354,12 @@ files.  You use this command: >
 	:setlocal makeprg=perlmake
 You can switch back to using the global value by making the local value empty: >
 	:setlocal makeprg=
-This only works for a string option.  For a boolean option you need to use the
-"<" flag, like this: >
+This only works for a string option.  For a number or boolean option you need
+to use the "<" flag, like this: >
 	:setlocal autoread<
-Note that for non-boolean options using "<" copies the global value to the
-local value, it doesn't switch back to using the global value (that matters
-when the global value changes later).  You can also use: >
+Note that for non-boolean and non-number options using "<" copies the global
+value to the local value, it doesn't switch back to using the global value
+(that matters when the global value changes later).  You can also use: >
 	:set path<
 This will make the local value of 'path' empty, so that the global value is
 used.  Thus it does the same as: >
@@ -1564,7 +1564,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is reset when 'compatible' is set.
 
 							*'cinkeys'* *'cink'*
-'cinkeys' 'cink'	string	(default "0{,0},0),:,0#,!^F,o,O,e")
+'cinkeys' 'cink'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+cindent|
@@ -4607,7 +4607,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'indentkeys'* *'indk'*
-'indentkeys' 'indk'	string	(default "0{,0},:,0#,!^F,o,O,e")
+'indentkeys' 'indk'	string	(default "0{,0},0),0],:,0#,!^F,o,O,e")
 			local to buffer
 			{not in Vi}
 			{not available when compiled without the |+cindent|
@@ -6590,14 +6590,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'scrolloff'* *'so'*
 'scrolloff' 'so'	number	(default 0, set to 5 in |defaults.vim|)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	Minimal number of screen lines to keep above and below the cursor.
 	This will make some context visible around where you are working.  If
 	you set it to a very large value (999) the cursor line will always be
 	in the middle of the window (except at the start or end of the file or
 	when long lines wrap).
-	For scrolling horizontally see 'sidescrolloff'.
+	After using the local value, go back the global value with one of
+	these two: >
+		setlocal scrolloff<
+		setlocal scrolloff=-1
+<	For scrolling horizontally see 'sidescrolloff'.
 	NOTE: This option is set to 0 when 'compatible' is set.
 
 						*'scrollopt'* *'sbo'*
@@ -7152,7 +7156,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'sidescrolloff'* *'siso'*
 'sidescrolloff' 'siso'	number (default 0)
-			global
+			global or local to window |global-local|
 			{not in Vi}
 	The minimal number of screen columns to keep to the left and to the
 	right of the cursor if 'nowrap' is set.  Setting this option to a
@@ -7162,7 +7166,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to a large value (like 999) has the effect of keeping the cursor
 	horizontally centered in the window, as long as one does not come too
 	close to the beginning of the line.
-	NOTE: This option is set to 0 when 'compatible' is set.
+	After using the local value, go back the global value with one of
+	these two: >
+		setlocal sidescrolloff<
+		setlocal sidescrolloff=-1
+<	NOTE: This option is set to 0 when 'compatible' is set.
 
 	Example: Try this together with 'sidescroll' and 'listchars' as
 		 in the following example to never allow the cursor to move
@@ -8093,6 +8101,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the command running in the terminal window may still change
 	the size of the terminal.  In that case the Vim window will be
 	adjusted to that size, if possible.
+
+						*'termwintype'* *'twt'*
+'termwintype' 'twt'	string  (default "")
+			global
+			{not in Vi}
+			{only available when compiled with the |terminal|
+			feature on MS-Windows}
+	Specify the virtual console (pty) used when opening the terminal
+	window.
+
+	Possible values are:
+	    ""		use ConPTY if possible, winpty otherwise
+	    "winpty"	use winpty, fail if not supported
+	    "conpty"	use |ConPTY|, fail if not supported
+
+	|ConPTY| support depends on the platform (Windows 10 October 2018
+	edition).  winpty support needs to be installed.  If neither is
+	supported then you cannot open a terminal window.
 
 						*'terse'* *'noterse'*
 'terse'			boolean	(default off)

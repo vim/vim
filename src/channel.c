@@ -90,7 +90,7 @@ fd_write(sock_T fd, char *buf, size_t len)
 	if (todo > MAX_NAMED_PIPE_SIZE)
 	    size = MAX_NAMED_PIPE_SIZE;
 	else
-	    size = todo;
+	    size = (DWORD)todo;
 	// If the pipe overflows while the job does not read the data, WriteFile
 	// will block forever. This abandons the write.
 	memset(&ov, 0, sizeof(ov));
@@ -1048,7 +1048,7 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
 # if defined(UNIX)
 	/* Do not end the job when all output channels are closed, wait until
 	 * the job ended. */
-	if (isatty(in))
+	if (mch_isatty(in))
 	    channel->ch_to_be_closed |= (1U << PART_IN);
 # endif
     }
@@ -1720,11 +1720,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     char_u  *res;
     char_u  *p;
 
-    /* If there is only one buffer just get that one. */
-    if (head->rq_next == NULL || head->rq_next->rq_next == NULL)
-	return channel_get(channel, part, outlen);
-
-    /* Concatenate everything into one buffer. */
+    // Concatenate everything into one buffer.
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
     res = lalloc(len + 1, TRUE);
@@ -1738,7 +1734,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     }
     *p = NUL;
 
-    /* Free all buffers */
+    // Free all buffers
     do
     {
 	p = channel_get(channel, part, NULL);
@@ -1747,16 +1743,37 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
 
     if (outlen != NULL)
     {
+	// Returning the length, keep NUL characters.
 	*outlen += len;
 	return res;
     }
 
-    /* turn all NUL into NL */
-    while (len > 0)
+    // Turn all NUL into NL, so that the result can be used as a string.
+    p = res;
+    while (p < res + len)
     {
-	--len;
-	if (res[len] == NUL)
-	    res[len] = NL;
+	if (*p == NUL)
+	    *p = NL;
+#ifdef WIN32
+	else if (*p == 0x1b)
+	{
+	    // crush the escape sequence OSC 0/1/2: ESC ]0;
+	    if (p + 3 < res + len
+		    && p[1] == ']'
+		    && (p[2] == '0' || p[2] == '1' || p[2] == '2')
+		    && p[3] == ';')
+	    {
+		// '\a' becomes a NL
+	        while (p < res + (len - 1) && *p != '\a')
+		    ++p;
+		// BEL is zero width characters, suppress display mistake
+		// ConPTY (after 10.0.18317) requires advance checking
+		if (p[-1] == NUL)
+		    p[-1] = 0x07;
+	    }
+	}
+#endif
+	++p;
     }
 
     return res;
@@ -4330,7 +4347,7 @@ channel_parse_messages(void)
 	    channel = first_channel;
 	    continue;
 	}
-	if (channel->ch_to_be_freed)
+	if (channel->ch_to_be_freed || channel->ch_killing)
 	{
 	    channel_free(channel);
 	    /* channel has been freed, start over */
@@ -4930,6 +4947,28 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_TERM_KILL;
 		opt->jo_term_kill = tv_get_string_chk(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "tty_type") == 0)
+	    {
+		char_u *p;
+
+		if (!(supported2 & JO2_TTY_TYPE))
+		    break;
+		opt->jo_set2 |= JO2_TTY_TYPE;
+		p = tv_get_string_chk(item);
+		if (p == NULL)
+		{
+		    semsg(_(e_invargval), "tty_type");
+		    return FAIL;
+		}
+		// Allow empty string, "winpty", "conpty".
+		if (!(*p == NUL || STRCMP(p, "winpty") == 0
+					          || STRCMP(p, "conpty") == 0))
+		{
+		    semsg(_(e_invargval), "tty_type");
+		    return FAIL;
+		}
+		opt->jo_tty_type = p[0];
+	    }
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	    else if (STRCMP(hi->hi_key, "ansi_colors") == 0)
 	    {
@@ -5152,6 +5191,12 @@ job_free_contents(job_T *job)
     vim_free(job->jv_tty_in);
     vim_free(job->jv_tty_out);
     vim_free(job->jv_stoponexit);
+#ifdef UNIX
+    vim_free(job->jv_termsig);
+#endif
+#ifdef WIN3264
+    vim_free(job->jv_tty_type);
+#endif
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
     if (job->jv_argv != NULL)
     {
@@ -5161,8 +5206,11 @@ job_free_contents(job_T *job)
     }
 }
 
+/*
+ * Remove "job" from the list of jobs.
+ */
     static void
-job_free_job(job_T *job)
+job_unlink(job_T *job)
 {
     if (job->jv_next != NULL)
 	job->jv_next->jv_prev = job->jv_prev;
@@ -5170,6 +5218,12 @@ job_free_job(job_T *job)
 	first_job = job->jv_next;
     else
 	job->jv_prev->jv_next = job->jv_next;
+}
+
+    static void
+job_free_job(job_T *job)
+{
+    job_unlink(job);
     vim_free(job);
 }
 
@@ -5183,12 +5237,44 @@ job_free(job_T *job)
     }
 }
 
+job_T *jobs_to_free = NULL;
+
+/*
+ * Put "job" in a list to be freed later, when it's no longer referenced.
+ */
+    static void
+job_free_later(job_T *job)
+{
+    job_unlink(job);
+    job->jv_next = jobs_to_free;
+    jobs_to_free = job;
+}
+
+    static void
+free_jobs_to_free_later(void)
+{
+    job_T *job;
+
+    while (jobs_to_free != NULL)
+    {
+	job = jobs_to_free;
+	jobs_to_free = job->jv_next;
+	job_free_contents(job);
+	vim_free(job);
+    }
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 job_free_all(void)
 {
     while (first_job != NULL)
 	job_free(first_job);
+    free_jobs_to_free_later();
+
+# ifdef FEAT_TERMINAL
+    free_unused_terminals();
+# endif
 }
 #endif
 
@@ -5359,6 +5445,8 @@ win32_build_cmd(list_T *l, garray_T *gap)
  * NOTE: Must call job_cleanup() only once right after the status of "job"
  * changed to JOB_ENDED (i.e. after job_status() returned "dead" first or
  * mch_detect_ended_job() returned non-NULL).
+ * If the job is no longer used it will be removed from the list of jobs, and
+ * deleted a bit later.
  */
     void
 job_cleanup(job_T *job)
@@ -5394,15 +5482,23 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-    /* Do not free the job in case the close callback of the associated channel
-     * isn't invoked yet and may get information by job_info(). */
-    if (job->jv_refcount == 0 && !job_channel_still_useful(job))
+    if (job->jv_channel != NULL
+	 && job->jv_channel->ch_anonymous_pipe && !job->jv_channel->ch_killing)
     {
-	/* The job was already unreferenced and the associated channel was
-	 * detached, now that it ended it can be freed. Careful: caller must
-	 * not use "job" after this! */
-	job_free(job);
+	++safe_to_invoke_callback;
+	channel_free_contents(job->jv_channel);
+	job->jv_channel->ch_job = NULL;
+	job->jv_channel = NULL;
+	--safe_to_invoke_callback;
     }
+
+    // Do not free the job in case the close callback of the associated channel
+    // isn't invoked yet and may get information by job_info().
+    if (job->jv_refcount == 0 && !job_channel_still_useful(job))
+	// The job was already unreferenced and the associated channel was
+	// detached, now that it ended it can be freed. However, a caller might
+	// still use it, thus free it a bit later.
+	job_free_later(job);
 }
 
 /*
@@ -5609,8 +5705,11 @@ job_check_ended(void)
 	if (job == NULL)
 	    break;
 	did_end = TRUE;
-	job_cleanup(job); // may free "job"
+	job_cleanup(job); // may add "job" to jobs_to_free
     }
+
+    // Actually free jobs that were cleaned up.
+    free_jobs_to_free_later();
 
     if (channel_need_redraw)
     {
@@ -5864,6 +5963,12 @@ job_info(job_T *job, dict_T *dict)
     dict_add_number(dict, "exitval", job->jv_exitval);
     dict_add_string(dict, "exit_cb", job->jv_exit_cb);
     dict_add_string(dict, "stoponexit", job->jv_stoponexit);
+#ifdef UNIX
+    dict_add_string(dict, "termsig", job->jv_termsig);
+#endif
+#ifdef WIN3264
+    dict_add_string(dict, "tty_type", job->jv_tty_type);
+#endif
 
     l = list_alloc();
     if (l != NULL)

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-12 15:34+0100\n"
+"POT-Creation-Date: 2019-01-28 19:23+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -20,6 +20,67 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "--Deleted--"
+msgstr "--gelöscht--"
+
+#, c-format
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "Entferne Autokommando: %s <buffer=%d>"
+
+#, c-format
+msgid "E367: No such group: \"%s\""
+msgstr "E367: Keine solche Gruppe: \"%s\""
+
+msgid "E936: Cannot delete the current group"
+msgstr "E936: Kann die aktuelle Gruppe nicht löschen."
+
+msgid "W19: Deleting augroup that is still in use"
+msgstr "W19: Lösche Autogruppe, die noch in Benutzung ist."
+
+#, c-format
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: Unzulässiges Zeichen nach *: %s"
+
+#, c-format
+msgid "E216: No such event: %s"
+msgstr "E216: Kein derartiges Ereignis: %s"
+
+#, c-format
+msgid "E216: No such group or event: %s"
+msgstr "E216: Keine solche Gruppe oder Ereignis: %s"
+
+msgid ""
+"\n"
+"--- Autocommands ---"
+msgstr ""
+"\n"
+"--- Autokommandos ---"
+
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <buffer=%d>: Ungültige Puffer Nummer "
+
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr "E217: Autokommandos können nicht für ALL Ereignisse ausgeführt werden"
+
+msgid "No matching autocommands"
+msgstr "Keine passenden Autokommandos"
+
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: Autokommando-Schachtelung zu tief"
+
+#, c-format
+msgid "%s Autocommands for \"%s\""
+msgstr "%s Autokommandos für \"%s\""
+
+#, c-format
+msgid "Executing %s"
+msgstr "Ausführung von %s"
+
+#, c-format
+msgid "autocommand %s"
+msgstr "Autokommando %s"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: bf_key_init() mit leerem Passwort aufgerufen."
@@ -100,9 +161,9 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88: Kann nicht vor den ersten Puffer gehen."
 
 #, c-format
-msgid "E89: No write since last change for buffer %ld (add ! to override)"
+msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Puffer %ld seit der letzten Änderung nicht gesichert (erzwinge mit !)"
+"E89: Puffer %d seit der letzten Änderung nicht gesichert (erzwinge mit !)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: Job läuft noch (Beenden mit !)"
@@ -120,8 +181,8 @@ msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Achtung: Überlauf der Dateinamensliste."
 
 #, c-format
-msgid "E92: Buffer %ld not found"
-msgstr "E92: Puffer %ld nicht gefunden."
+msgid "E92: Buffer %d not found"
+msgstr "E92: Puffer %d nicht gefunden."
 
 #, c-format
 msgid "E93: More than one match for %s"
@@ -202,21 +263,6 @@ msgstr "[Prompt]"
 
 msgid "[Scratch]"
 msgstr "[Scratch]"
-
-msgid ""
-"\n"
-"--- Signs ---"
-msgstr ""
-"\n"
-"--- Zeichen ---"
-
-#, c-format
-msgid "Signs for %s:"
-msgstr "Zeichen für %s:"
-
-#, c-format
-msgid "    line=%ld  id=%d  name=%s"
-msgstr "    Zeile=%ld  id=%d  Name=%s"
 
 msgid "E902: Cannot connect to port"
 msgstr "E902: Kann keine Verbindung zu Port herstellen."
@@ -312,8 +358,8 @@ msgid "E737: Key already exists: %s"
 msgstr "E737: Schlüssel existiert bereits: %s"
 
 #, c-format
-msgid "E96: Cannot diff more than %ld buffers"
-msgstr "E96: Kann Diff für mehr als %ld Puffer nicht erstellen."
+msgid "E96: Cannot diff more than %d buffers"
+msgstr "E96: Kann Diff für mehr als %d Puffer nicht erstellen."
 
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
@@ -367,6 +413,81 @@ msgstr "E787: Puffer änderte sich unerwartet."
 
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: <Escape> ist in einem Digraphen nicht erlaubt."
+
+msgid "Custom"
+msgstr "Benutzerdefinierte Digraphs"
+
+msgid "Latin supplement"
+msgstr "Lateinisch Ergänzung"
+
+msgid "Greek and Coptic"
+msgstr "Griechisch und Koptisch"
+
+msgid "Cyrillic"
+msgstr "Kyrillisch"
+
+msgid "Hebrew"
+msgstr "Hebräisch"
+
+msgid "Arabic"
+msgstr "Arabisch"
+
+msgid "Latin extended"
+msgstr "Lateinisch Zusatz"
+
+msgid "Greek extended"
+msgstr "Griechisch Zusatz"
+
+msgid "Punctuation"
+msgstr "Interpunktion"
+
+msgid "Super- and subscripts"
+msgstr "Hoch- und tiefgestellte Zeichen"
+
+msgid "Currency"
+msgstr "Währungszeichen"
+
+msgid "Other"
+msgstr "Andere Zeichen"
+
+msgid "Roman numbers"
+msgstr "Römische Ziffern"
+
+msgid "Arrows"
+msgstr "Pfeile"
+
+msgid "Mathematical operators"
+msgstr "Mathematische Operatoren"
+
+msgid "Technical"
+msgstr "Technische Zeichen"
+
+msgid "Box drawing"
+msgstr "Rahmenzeichen"
+
+msgid "Block elements"
+msgstr "Blockelemente"
+
+msgid "Geometric shapes"
+msgstr "Geometrische Formen"
+
+msgid "Symbols"
+msgstr "Verschiedene Symbole"
+
+msgid "Dingbats"
+msgstr "Dingbats"
+
+msgid "CJK symbols and punctuation"
+msgstr "CJK Symbole und Interpunktion"
+
+msgid "Hiragana"
+msgstr "Hiragana"
+
+msgid "Katakana"
+msgstr "Katakana"
+
+msgid "Bopomofo"
+msgstr "Bopomofo"
 
 msgid "E544: Keymap file not found"
 msgstr "E544: Keymap-Datei für die Tastaturbelegung nicht gefunden."
@@ -514,14 +635,17 @@ msgstr "Doppeltes ; in der Liste von Variablen"
 msgid "E738: Can't list variables for %s"
 msgstr "E738: Kann Variablen nicht auflisten: %s"
 
-msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: Kann nur Listen und Dictionary indizieren"
+msgid "E689: Can only index a List, Dictionary or Blob"
+msgstr "E689: Kann nur Listen, Dictionary oder Blob indizieren"
 
 msgid "E708: [:] must come last"
 msgstr "E708: [:] muss am Schluss kommen."
 
-msgid "E709: [:] requires a List value"
-msgstr "E709: [:] benötigt einen Listenwert"
+msgid "E709: [:] requires a List or Blob value"
+msgstr "E709: [:] benötigt einen Listen- oder Blobwert"
+
+msgid "E972: Blob value does not have the right number of bytes"
+msgstr "E972: Blobwert hat nicht die richtige Anzahl an Bytes"
 
 msgid "E710: List value has more items than target"
 msgstr "E710: Listenwert hat mehr Einträge als das Ziel."
@@ -548,6 +672,9 @@ msgstr "E109: Fehlender ':' nach '?'"
 
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Kann '%' mit Floats benutzen."
+
+msgid "E973: Blob literal should have an even number of hex characters"
+msgstr "E973: Blob-Literal sollte eine gerade Anzahl von Hex-Zeichen haben"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Fehlendes ')'"
@@ -600,6 +727,9 @@ msgstr "E910: Job als Zahl verwendet."
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Channel als Zahl verwendet."
 
+msgid "E974: Using a Blob as a Number"
+msgstr "E974: Blob als Zahl verwendet."
+
 msgid "E891: Using a Funcref as a Float"
 msgstr "E891: Funktionsreferenz als Float verwendet."
 
@@ -616,10 +746,13 @@ msgid "E907: Using a special value as a Float"
 msgstr "E907: Benutze Spezialvariable als Float."
 
 msgid "E911: Using a Job as a Float"
-msgstr "E911: Benutzte Job als Float."
+msgstr "E911: Job als Float verwendet"
 
 msgid "E914: Using a Channel as a Float"
-msgstr "E914: Channel als Float verwendet."
+msgstr "E914: Channel als Float verwendet"
+
+msgid "E975: Using a Blob as a Float"
+msgstr "E975: Blob als Float verwendet"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: Funktionsreferenz als String verwendet"
@@ -629,6 +762,9 @@ msgstr "E730: Liste als String verwendet"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary als String verwendet"
+
+msgid "E976: using Blob as a String"
+msgstr "E976: Blob als String verwendet"
 
 msgid "E908: using an invalid value as a String"
 msgstr "E908: Ungültiger Wert als String verwendet."
@@ -681,8 +817,11 @@ msgstr ""
 msgid " line "
 msgstr " Zeile "
 
+msgid "E977: Can only compare Blob with Blob"
+msgstr "E977: Kann nur einen Blob mit einem Blob vergleichen"
+
 msgid "E691: Can only compare List with List"
-msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen."
+msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen"
 
 msgid "E692: Invalid operation for List"
 msgstr "E692: Unzulässige Operation für Listen"
@@ -706,6 +845,10 @@ msgstr "filter() Argument"
 msgid "E686: Argument of %s must be a List"
 msgstr "E686: Argument von %s muss eine Liste sein."
 
+#, c-format
+msgid "E899: Argument of %s must be a List or Blob"
+msgstr "E899: Argument von %s muss eine Liste oder ein Blob sein."
+
 msgid "E928: String required"
 msgstr "E928: String wird benötigt."
 
@@ -715,11 +858,18 @@ msgstr "E808: Zahl oder Float benötigt."
 msgid "add() argument"
 msgstr "add() Argument"
 
+#, c-format
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: ungültige Puffernummer: %s"
+
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() kann nur im Einfüge-Modus verwendet werden."
 
 msgid "&Ok"
 msgstr "&Ok"
+
+msgid "E980: lowlevel input not supported"
+msgstr "E980: Low-Level Eingabe wird nicht unterstützt"
 
 #, c-format
 msgid "+-%s%3ld line: "
@@ -765,8 +915,8 @@ msgid "E957: Invalid window number"
 msgstr "E957: Ungültige Fensternummer"
 
 #, c-format
-msgid "E798: ID is reserved for \":match\": %ld"
-msgstr "E798: ID ist für \":match\" reserviert: %ld"
+msgid "E798: ID is reserved for \":match\": %d"
+msgstr "E798: ID ist für \":match\" reserviert: %d"
 
 msgid "E726: Stride is zero"
 msgstr "E726: Stride ist Null"
@@ -1111,51 +1261,6 @@ msgstr "E154: Doppelter Tag \"%s\" in der Datei %s/%s"
 msgid "E150: Not a directory: %s"
 msgstr "E150: Kein Verzeichnis: %s"
 
-#, c-format
-msgid "E160: Unknown sign command: %s"
-msgstr "E160: Unbekannter \"sign\"-Befehl: %s"
-
-msgid "E156: Missing sign name"
-msgstr "E156: Name des Zeichens fehlt"
-
-msgid "E612: Too many signs defined"
-msgstr "E612: Zu viele Zeichen definiert"
-
-#, c-format
-msgid "E239: Invalid sign text: %s"
-msgstr "E239: Ungültiger Text für ein Zeichen: %s"
-
-#, c-format
-msgid "E155: Unknown sign: %s"
-msgstr "E155: Unbekanntes Zeichen: %s"
-
-msgid "E159: Missing sign number"
-msgstr "E159: Fehlende Zeichennummer"
-
-#, c-format
-msgid "E158: Invalid buffer name: %s"
-msgstr "E158: ungültige Puffernummer: %s"
-
-msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Kann nicht zu einem Puffer ohne Namen springen."
-
-#, c-format
-msgid "E157: Invalid sign ID: %ld"
-msgstr "E157: Ungültige Zeichen-ID: %ld"
-
-#, c-format
-msgid "E885: Not possible to change sign %s"
-msgstr "E885: Nicht möglich Zeichen %s zu ändern."
-
-msgid " (NOT FOUND)"
-msgstr " (NICHT GEFUNDEN)"
-
-msgid " (not supported)"
-msgstr " (nicht unterstützt)"
-
-msgid "[Deleted]"
-msgstr "[Gelöscht]"
-
 msgid "No old files"
 msgstr "Keine Alt-Dateien"
 
@@ -1371,10 +1476,10 @@ msgstr[0] "%d weitere Datei zum Editieren. Trotzdem beenden?"
 msgstr[1] "%d weitere Dateien zum Editieren. Trotzdem beenden?"
 
 #, c-format
-msgid "E173: %ld more file to edit"
-msgid_plural "E173: %ld more files to edit"
-msgstr[0] "E173: %ld weitere Datei zum Editieren"
-msgstr[1] "E173: %ld weitere Dateien zum Editieren"
+msgid "E173: %d more file to edit"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: %d weitere Datei zum Editieren"
+msgstr[1] "E173: %d weitere Dateien zum Editieren"
 
 #, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
@@ -2042,67 +2147,6 @@ msgstr "E462: Konnte das Neuladen von \"%s\" nicht vorbereiten"
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" konnte nicht neu geladen werden"
 
-msgid "--Deleted--"
-msgstr "--gelöscht--"
-
-#, c-format
-msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "Entferne Autokommando: %s <buffer=%d>"
-
-#, c-format
-msgid "E367: No such group: \"%s\""
-msgstr "E367: Keine solche Gruppe: \"%s\""
-
-msgid "E936: Cannot delete the current group"
-msgstr "E936: Kann die aktuelle Gruppe nicht löschen."
-
-msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: Lösche Autogruppe, die noch in Benutzung ist."
-
-#, c-format
-msgid "E215: Illegal character after *: %s"
-msgstr "E215: Unzulässiges Zeichen nach *: %s"
-
-#, c-format
-msgid "E216: No such event: %s"
-msgstr "E216: Kein derartiges Ereignis: %s"
-
-#, c-format
-msgid "E216: No such group or event: %s"
-msgstr "E216: Keine solche Gruppe oder Ereignis: %s"
-
-msgid ""
-"\n"
-"--- Autocommands ---"
-msgstr ""
-"\n"
-"--- Autokommandos ---"
-
-#, c-format
-msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <buffer=%d>: Ungültige Puffer Nummer "
-
-msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E217: Autokommandos können nicht für ALL Ereignisse ausgeführt werden"
-
-msgid "No matching autocommands"
-msgstr "Keine passenden Autokommandos"
-
-msgid "E218: autocommand nesting too deep"
-msgstr "E218: Autokommando-Schachtelung zu tief"
-
-#, c-format
-msgid "%s Autocommands for \"%s\""
-msgstr "%s Autokommandos für \"%s\""
-
-#, c-format
-msgid "Executing %s"
-msgstr "Ausführung von %s"
-
-#, c-format
-msgid "autocommand %s"
-msgstr "Autokommando %s"
-
 msgid "E219: Missing {."
 msgstr "E219: Es fehlt ein {."
 
@@ -2393,20 +2437,20 @@ msgid "Font0: %s"
 msgstr "Schriftart 0: %s"
 
 #, c-format
-msgid "Font1: %s"
-msgstr "Schriftart 1: %s"
+msgid "Font%d: %s"
+msgstr "Schriftart %d: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0"
-msgstr "Breite der Schriftart%ld ist nicht doppelt so breit wie Schriftart0"
+msgid "Font%d width is not twice that of font0"
+msgstr "Breite der Schriftart%d ist nicht doppelt so breit wie Schriftart0"
 
 #, c-format
-msgid "Font0 width: %ld"
-msgstr "Schriftart 0 Breite: %ld"
+msgid "Font0 width: %d"
+msgstr "Schriftart 0 Breite: %d"
 
 #, c-format
-msgid "Font1 width: %ld"
-msgstr "Schriftart 1 Breite: %ld"
+msgid "Font%d width: %d"
+msgstr "Schriftart %d Breite: %d"
 
 msgid "Invalid font specification"
 msgstr "Ungültige Spezifikation der Schriftart"
@@ -2582,8 +2626,8 @@ msgid "Added cscope database %s"
 msgstr "csope Datenbank %s hinzugefügt"
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
-msgstr "E262: Fehler beim Lesen der cscope Verbindung %ld"
+msgid "E262: error reading cscope connection %d"
+msgstr "E262: Fehler beim Lesen der cscope Verbindung %d"
 
 msgid "E561: unknown cscope search type"
 msgstr "E561: Unbekannter cscope Suchtyp"
@@ -3921,9 +3965,6 @@ msgstr "E326: Zu viele Auslagerungsdateien gefunden"
 msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Teil des Menüpunkt-Pfades muss zum Untermenü führen"
 
-msgid "E328: Menu only exists in another mode"
-msgstr "E328: Menü existiert nur in anderen Modi"
-
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: Kein Menü \"%s\""
@@ -4158,8 +4199,8 @@ msgstr ""
 "\""
 
 #, c-format
-msgid "E658: NetBeans connection lost for buffer %ld"
-msgstr "E658: Verbindung zu NetBeans für Puffer %ld verloren"
+msgid "E658: NetBeans connection lost for buffer %d"
+msgstr "E658: Verbindung zu NetBeans für Puffer %d verloren"
 
 msgid "E838: netbeans is not supported with this GUI"
 msgstr "E838: netbeans wird nicht unterstützt mit dieser GUI."
@@ -5110,6 +5151,66 @@ msgstr ""
 "# Letztes %sSuchmuster:\n"
 "~"
 
+msgid "[Deleted]"
+msgstr "[Gelöscht]"
+
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- Zeichen ---"
+
+#, c-format
+msgid "Signs for %s:"
+msgstr "Zeichen für %s:"
+
+#, c-format
+msgid "  group=%s"
+msgstr " Gruppe=%s"
+
+#, c-format
+msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
+msgstr "    Zeile=%ld  id=%d%s  Name=%s Priorität=%d"
+
+msgid "E612: Too many signs defined"
+msgstr "E612: Zu viele Zeichen definiert"
+
+#, c-format
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: Ungültiger Text für ein Zeichen: %s"
+
+#, c-format
+msgid "E155: Unknown sign: %s"
+msgstr "E155: Unbekanntes Zeichen: %s"
+
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: Nicht möglich Zeichen %s zu ändern."
+
+msgid "E159: Missing sign number"
+msgstr "E159: Fehlende Zeichennummer"
+
+#, c-format
+msgid "E157: Invalid sign ID: %d"
+msgstr "E157: Ungültige Zeichen-ID: %d"
+
+msgid "E934: Cannot jump to a buffer that does not have a name"
+msgstr "E934: Kann nicht zu einem Puffer ohne Namen springen."
+
+#, c-format
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: Unbekannter \"sign\"-Befehl: %s"
+
+msgid "E156: Missing sign name"
+msgstr "E156: Name des Zeichens fehlt"
+
+msgid " (NOT FOUND)"
+msgstr " (NICHT GEFUNDEN)"
+
+msgid " (not supported)"
+msgstr " (nicht unterstützt)"
+
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Rechtschreibprüfung ist nicht aktiviert"
 
@@ -5219,10 +5320,6 @@ msgstr "Umwandlungsfehler beim Wort in %s Zeile %d: %s"
 #, c-format
 msgid "Conversion in %s not supported: from %s to %s"
 msgstr "Umwandlung in %s nicht unterstützt: von %s nach %s"
-
-#, c-format
-msgid "Conversion in %s not supported"
-msgstr "Umwandlung in %s nicht unterstützt"
 
 #, c-format
 msgid "Invalid value for FLAG in %s line %d: %s"
@@ -5445,8 +5542,8 @@ msgid "E751: Output file name must not have region name"
 msgstr "E751: Ausgabedatei darf keinen Regionsnamen haben"
 
 #, c-format
-msgid "E754: Only up to %ld regions supported"
-msgstr "E754: Maximal %ld Regionen unterstützt"
+msgid "E754: Only up to %d regions supported"
+msgstr "E754: Maximal %d Regionen unterstützt"
 
 #, c-format
 msgid "E755: Invalid region in %s"
@@ -5463,8 +5560,8 @@ msgid "Done!"
 msgstr "Fertig!"
 
 #, c-format
-msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E765: 'spellfile' hat keine %ld Einträge"
+msgid "E765: 'spellfile' does not have %d entries"
+msgstr "E765: 'spellfile' hat nicht %d Einträge"
 
 #, c-format
 msgid "Word '%.*s' removed from %s"
@@ -5870,6 +5967,35 @@ msgstr "E953: Datei existiert bereits: %s"
 
 msgid "E955: Not a terminal buffer"
 msgstr "E955: Kein Terminal Puffer"
+
+#, c-format
+msgid "E971: Property type %s does not exist"
+msgstr "E971: Der Eigenschaftstyp %s existiert nicht"
+
+#, c-format
+msgid "E964: Invalid column number: %ld"
+msgstr "E964: Ungültige Spaltennummer: %ld"
+
+#, c-format
+msgid "E966: Invalid line number: %ld"
+msgstr "E966: Ungültige Zeilennummer: %ld"
+
+msgid "E965: missing property type name"
+msgstr "E965: Fehlender Eigenschaften Typname"
+
+msgid "E967: text property info corrupted"
+msgstr "E967: Texteigenschaft-Info beschädigt"
+
+msgid "E968: Need at least one of 'id' or 'type'"
+msgstr "E968: Benötige entweder 'id' oder 'type'"
+
+#, c-format
+msgid "E969: Property type %s already defined"
+msgstr "E969: Eigenschaftentyp %s bereits definiert"
+
+#, c-format
+msgid "E970: Unknown highlight group name: '%s'"
+msgstr "E970: Unbekannter Highlighting-Gruppenname: '%s'"
 
 msgid "new shell started\n"
 msgstr "neue Shell gestartet\n"
@@ -6434,6 +6560,10 @@ msgstr "Menü   Hilfe->Sponsor/Register  für mehr Informationen    "
 msgid "Already only one window"
 msgstr "Bereits nur ein Fenster"
 
+#, c-format
+msgid "E92: Buffer %ld not found"
+msgstr "E92: Puffer %ld nicht gefunden."
+
 msgid "E441: There is no preview window"
 msgstr "E441: Es gibt kein Vorschaufenster"
 
@@ -6467,23 +6597,23 @@ msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Kann Datei \"%s\" nicht im Pfad finden"
 
 #, c-format
-msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E799: Ungültige ID: %ld (muss größer gleich 1 sein)"
+msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E799: Ungültige ID: %d (muss größer gleich 1 sein)"
 
 #, c-format
-msgid "E801: ID already taken: %ld"
-msgstr "E801: ID bereits benutzt: %ld"
+msgid "E801: ID already taken: %d"
+msgstr "E801: ID bereits benutzt: %d"
 
 msgid "List or number required"
 msgstr "Liste oder Nummer erforderlich"
 
 #, c-format
-msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E802: Ungültige ID: %ld (muss größer gleich 1 sein)"
+msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E802: Ungültige ID: %d (muss größer gleich 1 sein)"
 
 #, c-format
-msgid "E803: ID not found: %ld"
-msgstr "E803: ID nicht gefunden: %ld"
+msgid "E803: ID not found: %d"
+msgstr "E803: ID nicht gefunden: %d"
 
 #, c-format
 msgid "E370: Could not load library %s"
@@ -6796,7 +6926,14 @@ msgstr "E715: Dictionary benötigt"
 
 #, c-format
 msgid "E684: list index out of range: %ld"
-msgstr "E684: Index der Liste außerhalb des zulässigen Bereichs: %ld."
+msgstr "E684: Index der Liste außerhalb des zulässigen Bereichs: %ld"
+
+#, c-format
+msgid "E979: Blob index out of range: %ld"
+msgstr "E979: Blobindex außerhalb des Bereichs: %ld"
+
+msgid "E978: Invalid operation for Blob"
+msgstr "E978: Unzulässige Operation für Blob"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
@@ -6809,9 +6946,16 @@ msgstr "E716: Schlüssel %s nicht im Dictionary vorhanden."
 msgid "E714: List required"
 msgstr "E714: Liste benötigt"
 
+msgid "E897: List or Blob required"
+msgstr "E897: Liste oder Blob benötigt"
+
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "E712: Argument von %s muss eine Liste oder ein Wörterbuch sein."
+msgstr "E712: Argument von %s muss eine Liste oder ein Dictionary sein."
+
+#, c-format
+msgid "E896: Argument of %s must be a List, Dictionary or Blob"
+msgstr "E896: Argument von %s muss eine Liste, Dictionary oder ein Blob sein."
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Fehler während des Lesens der Fehlerdatei"
@@ -6914,6 +7058,9 @@ msgstr "E919: Verzeichnis nicht gefunden in '%s': \"%s\""
 
 msgid "E952: Autocommand caused recursive behavior"
 msgstr "E952: Autokommando verursachten Rekursion"
+
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: Menü existiert nur in anderen Modi"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Suche erreichte den ANFANG und wurde am ENDE fortgesetzt"

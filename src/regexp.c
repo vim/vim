@@ -484,6 +484,12 @@ get_char_class(char_u **pp)
 #define CLASS_BACKSPACE 14
 	"escape:]",
 #define CLASS_ESCAPE 15
+	"ident:]",
+#define CLASS_IDENT 16
+	"keyword:]",
+#define CLASS_KEYWORD 17
+	"fname:]",
+#define CLASS_FNAME 18
     };
 #define CLASS_NONE 99
     int i;
@@ -698,6 +704,7 @@ static char_u	*re_put_long(char_u *pr, long_u val);
 static int	read_limits(long *, long *);
 static void	regtail(char_u *, char_u *);
 static void	regoptail(char_u *, char_u *);
+static int	reg_iswordc(int);
 
 static regengine_T bt_regengine;
 static regengine_T nfa_regengine;
@@ -2545,6 +2552,21 @@ collection:
 			    case CLASS_ESCAPE:
 				regc('\033');
 				break;
+			    case CLASS_IDENT:
+				for (cu = 1; cu <= 255; cu++)
+				    if (vim_isIDc(cu))
+					regmbc(cu);
+				break;
+			    case CLASS_KEYWORD:
+				for (cu = 1; cu <= 255; cu++)
+				    if (reg_iswordc(cu))
+					regmbc(cu);
+				break;
+			    case CLASS_FNAME:
+				for (cu = 1; cu <= 255; cu++)
+				    if (vim_isfilec(cu))
+					regmbc(cu);
+				break;
 			}
 		    }
 		    else
@@ -3588,6 +3610,16 @@ free_regexp_stuff(void)
     vim_free(reg_prev_sub);
 }
 #endif
+
+/*
+ * Return TRUE if character 'c' is included in 'iskeyword' option for
+ * "reg_buf" buffer.
+ */
+    static int
+reg_iswordc(int c)
+{
+    return vim_iswordc_buf(c, rex.reg_buf);
+}
 
 /*
  * Get pointer to the line "lnum", which is relative to "reg_firstlnum".

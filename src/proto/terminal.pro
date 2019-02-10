@@ -5,6 +5,7 @@ void ex_terminal(exarg_T *eap);
 int term_write_session(FILE *fd, win_T *wp);
 int term_should_restore(buf_T *buf);
 void free_terminal(buf_T *buf);
+void free_unused_terminals(void);
 void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
 int term_job_running(term_T *term);
 int term_none_open(term_T *term);
@@ -56,4 +57,6 @@ void f_term_wait(typval_T *argvars, typval_T *rettv);
 void term_send_eof(channel_T *ch);
 job_T *term_getjob(term_T *term);
 int terminal_enabled(void);
+void term_free_conpty(term_T *term);
+int use_conpty(void);
 /* vim: set ft=c : */

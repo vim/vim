@@ -1344,8 +1344,9 @@ gui_mch_wait_for_chars(int wtime)
 {
     is_timeout = FALSE;
 
-    if (wtime > 0)
-	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL, wtime, 0);
+    if (wtime >= 0)
+	PtSetResource(gui_ph_timer_timeout, Pt_ARG_TIMER_INITIAL,
+						    wtime == 0 ? 1 : wtime, 0);
 
     while (1)
     {

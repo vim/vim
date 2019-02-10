@@ -700,6 +700,7 @@ INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
 
 OBJ = \
 	$(OUTDIR)\arabic.obj \
+	$(OUTDIR)\autocmd.obj \
 	$(OUTDIR)\beval.obj \
 	$(OUTDIR)\blob.obj \
 	$(OUTDIR)\blowfish.obj \
@@ -724,6 +725,7 @@ OBJ = \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
+	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
@@ -1345,6 +1347,8 @@ $(NEW_TESTS):
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
+$(OUTDIR)/autocmd.obj:	$(OUTDIR) autocmd.c  $(INCL)
+
 $(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
 
 $(OUTDIR)/blob.obj:	$(OUTDIR) blob.c  $(INCL)
@@ -1410,6 +1414,8 @@ $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
 
 $(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
+
+$(OUTDIR)/indent.obj:	$(OUTDIR) indent.c  $(INCL)
 
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
@@ -1619,6 +1625,7 @@ auto:
 # End Custom Build
 proto.h: \
 	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
@@ -1641,6 +1648,7 @@ proto.h: \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \

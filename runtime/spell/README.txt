@@ -17,10 +17,10 @@ ftp://ftp.gnu.org/gnu/aspell/dict/.  Most go under the GPL or LGPL copyright.
 
 GENERATING .SPL FILES
 
-This involves downloading the files from the OpenOffice.org server, applying a
+This involves downloading the files from the github server, applying a
 patch and running Vim to generate the .spl file.  To do this all in one go use
 the Aap program (www.a-a-p.org).  It's simple to install, it only requires
-Python.
+Python (http://www.a-a-p.org/download.html)
 
 Before generating spell files, verify your system has the required locale
 support.  Source the check_locales.vim script to find out.  If something is
@@ -29,7 +29,7 @@ missing, see LOCALE below.
 
 You can also do it manually:
 1. Fetch the right spell file from:
-   http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
+   https://github.com/LibreOffice/dictionaries
 
 2. Unzip the archive:
 	unzip LL_RR.zip
@@ -56,12 +56,11 @@ Now you understand why I prefer using the Aap recipe :-).
 MAINTAINING A LANGUAGE
 
 Every language should have a maintainer.  His tasks are to track the changes
-in the OpenOffice.org spell files and make updated patches.  Words that
-haven't been added/removed from the OpenOffice lists can also be handled by
-the patches.
+in the spell files and make updated patches.  Words that haven't been
+added/removed from the LibreOffice lists can also be handled by the patches.
 
 It is important to keep the version of the .dic and .aff files that you
-started with.  When OpenOffice brings out new versions of these files you can
+started with.  When LibreOffice brings out new versions of these files you can
 find out what changed and take over these changes in your patch.  When there
 are very many changes you can do it the other way around: re-apply the changes
 for Vim to the new versions of the .dic and .aff files.
@@ -79,20 +78,25 @@ This procedure should work well:
    aren't really words, they mess up the suggestions (English has this
    problem).  You can use the "fixdup.vim" Vim script to find duplicate words.
 
-3. Make the diff file.  "aap diff" will do this for you.  If a diff would be
+3. Include needed parts from the aspell phonetic dictionary to the aff files. For
+   example add the relevant SAL lines to the .aff file (this is needed to make good
+   suggestions). The aspell dictionaries can be found here:
+   https://ftp.gnu.org/gnu/aspell/dict/0index.html
+
+4. Make the diff file.  "aap diff" will do this for you.  If a diff would be
    too big you might consider writing a Vim script to do systematic changes.
    Do check that someone else can reproduce building the spell file.  Send the
    result to Bram for inclusion in the distribution.  Bram will generate the
    .spl file and upload it to the ftp server (if he can't generate it you will
    have to send him the .spl file too).
 
-4. When OpenOffice makes a new zip file available you need to update the
+5. When OpenOffice makes a new zip file available you need to update the
    patch.  "aap check" should do most of the work for you: if there are
    changes the .new.dic and .new.aff files will appear.  You can now figure
    out the differences with .orig.dic and .orig.aff, adjust the .dic and .aff
    files and finally move the .new.dic to .orig.dic and .new.aff to .orig.aff.
 
-5. Repeat step 4. regularly.
+6. Repeat step 5. regularly.
 
 
 LOCALE

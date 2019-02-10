@@ -679,10 +679,10 @@ cleanup_function_call(funccall_T *fc)
 	{
 	    // We have made a lot of copies.  This can happen when
 	    // repetitively calling a function that creates a reference to
-	    // itself somehow.  Call the garbage collector here to avoid using
+	    // itself somehow.  Call the garbage collector soon to avoid using
 	    // too much memory.
 	    made_copy = 0;
-	    (void)garbage_collect(FALSE);
+	    want_garbage_collect = TRUE;
 	}
     }
 }
@@ -3178,9 +3178,7 @@ ex_call(exarg_T *eap)
 	    }
 	    curwin->w_cursor.lnum = lnum;
 	    curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	    curwin->w_cursor.coladd = 0;
-#endif
 	}
 	arg = startarg;
 	if (get_func_tv(name, (int)STRLEN(name), &rettv, &arg,

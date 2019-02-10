@@ -27,6 +27,7 @@ LD = dcc
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -49,6 +50,7 @@ SRC = \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -84,6 +86,7 @@ SRC = \
 	version.c
 
 OBJ =	o/arabic.o \
+	o/autocmd.o \
 	o/blowfish.o \
 	o/buffer.o \
 	o/charset.o \
@@ -106,6 +109,7 @@ OBJ =	o/arabic.o \
 	o/getchar.o \
 	o/hardcopy.o \
 	o/hashtab.o \
+	o/indent.o \
 	o/json.o \
 	o/list.o \
 	o/main.o \
@@ -161,6 +165,8 @@ $(SYMS)  : vim.h globals.h keymap.h macros.h ascii.h term.h os_amiga.h structs.h
 
 o/arabic.o:	arabic.c  $(SYMS)
 
+o/autocmd.o:	autocmd.c  $(SYMS)
+
 o/blowfish.o:	blowfish.c  $(SYMS)
 
 o/buffer.o:	buffer.c  $(SYMS)
@@ -204,6 +210,8 @@ o/getchar.o: getchar.c	$(SYMS)
 o/hardcopy.o: hardcopy.c	$(SYMS)
 
 o/hashtab.o: hashtab.c	$(SYMS)
+
+o/indent.o:	indent.c  $(SYMS)
 
 o/json.o:	json.c  $(SYMS)
 

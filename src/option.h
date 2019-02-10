@@ -834,6 +834,9 @@ EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
+#if defined(WIN3264) && defined(FEAT_TERMINAL)
+EXTERN char_u	*p_twt;		// 'termwintype'
+#endif
 EXTERN int	p_terse;	/* 'terse' */
 EXTERN int	p_ta;		/* 'textauto' */
 EXTERN int	p_to;		/* 'tildeop' */
@@ -908,17 +911,15 @@ EXTERN char_u	*p_vop;		/* 'viewoptions' */
 EXTERN unsigned	vop_flags;	/* uses SSOP_ flags */
 #endif
 EXTERN int	p_vb;		/* 'visualbell' */
-#ifdef FEAT_VIRTUALEDIT
 EXTERN char_u	*p_ve;		/* 'virtualedit' */
 EXTERN unsigned ve_flags;
-# ifdef IN_OPTION_C
+#ifdef IN_OPTION_C
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", NULL};
-# endif
-# define VE_BLOCK	5	/* includes "all" */
-# define VE_INSERT	6	/* includes "all" */
-# define VE_ALL		4
-# define VE_ONEMORE	8
 #endif
+#define VE_BLOCK	5	/* includes "all" */
+#define VE_INSERT	6	/* includes "all" */
+#define VE_ALL		4
+#define VE_ONEMORE	8
 EXTERN long	p_verbose;	/* 'verbose' */
 #ifdef IN_OPTION_C
 char_u	*p_vfile = (char_u *)""; /* used before options are initialized */
@@ -1154,6 +1155,8 @@ enum
 #endif
     , WV_SCBIND
     , WV_SCROLL
+    , WV_SISO
+    , WV_SO
 #ifdef FEAT_SPELL
     , WV_SPELL
 #endif

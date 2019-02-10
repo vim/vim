@@ -548,12 +548,10 @@ u_savecommon(
 	uhp->uh_entry = NULL;
 	uhp->uh_getbot_entry = NULL;
 	uhp->uh_cursor = curwin->w_cursor;	/* save cursor pos. for undo */
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_active() && curwin->w_cursor.coladd > 0)
 	    uhp->uh_cursor_vcol = getviscol();
 	else
 	    uhp->uh_cursor_vcol = -1;
-#endif
 
 	/* save changed and buffer empty flag for undo */
 	uhp->uh_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
@@ -1250,11 +1248,7 @@ serialize_uhp(bufinfo_T *bi, u_header_T *uhp)
     put_header_ptr(bi, uhp->uh_alt_prev.ptr);
     undo_write_bytes(bi, uhp->uh_seq, 4);
     serialize_pos(bi, uhp->uh_cursor);
-#ifdef FEAT_VIRTUALEDIT
     undo_write_bytes(bi, (long_u)uhp->uh_cursor_vcol, 4);
-#else
-    undo_write_bytes(bi, (long_u)0, 4);
-#endif
     undo_write_bytes(bi, (long_u)uhp->uh_flags, 2);
     /* Assume NMARKS will stay the same. */
     for (i = 0; i < NMARKS; ++i)
@@ -1309,11 +1303,7 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
 	return NULL;
     }
     unserialize_pos(bi, &uhp->uh_cursor);
-#ifdef FEAT_VIRTUALEDIT
     uhp->uh_cursor_vcol = undo_read_4c(bi);
-#else
-    (void)undo_read_4c(bi);
-#endif
     uhp->uh_flags = undo_read_2c(bi);
     for (i = 0; i < NMARKS; ++i)
 	unserialize_pos(bi, &uhp->uh_namedm[i]);
@@ -1458,11 +1448,7 @@ serialize_pos(bufinfo_T *bi, pos_T pos)
 {
     undo_write_bytes(bi, (long_u)pos.lnum, 4);
     undo_write_bytes(bi, (long_u)pos.col, 4);
-#ifdef FEAT_VIRTUALEDIT
     undo_write_bytes(bi, (long_u)pos.coladd, 4);
-#else
-    undo_write_bytes(bi, (long_u)0, 4);
-#endif
 }
 
 /*
@@ -1477,13 +1463,9 @@ unserialize_pos(bufinfo_T *bi, pos_T *pos)
     pos->col = undo_read_4c(bi);
     if (pos->col < 0)
 	pos->col = 0;
-#ifdef FEAT_VIRTUALEDIT
     pos->coladd = undo_read_4c(bi);
     if (pos->coladd < 0)
 	pos->coladd = 0;
-#else
-    (void)undo_read_4c(bi);
-#endif
 }
 
 /*
@@ -2855,12 +2837,10 @@ u_undoredo(int undo)
 	if (curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
 	{
 	    curwin->w_cursor.col = curhead->uh_cursor.col;
-#ifdef FEAT_VIRTUALEDIT
 	    if (virtual_active() && curhead->uh_cursor_vcol >= 0)
 		coladvance((colnr_T)curhead->uh_cursor_vcol);
 	    else
 		curwin->w_cursor.coladd = 0;
-#endif
 	}
 	else
 	    beginline(BL_SOL | BL_FIX);
@@ -2872,9 +2852,7 @@ u_undoredo(int undo)
 	 * check_cursor() will move the cursor to the last line.  Move it to
 	 * the first column here. */
 	curwin->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
-#endif
     }
 
     /* Make sure the cursor is on an existing line and column. */

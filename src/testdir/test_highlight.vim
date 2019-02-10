@@ -1,6 +1,7 @@
 " Tests for ":highlight" and highlighting.
 
 source view_util.vim
+source screendump.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -129,10 +130,6 @@ func Test_highlight_eol_with_cursorline()
 endfunc
 
 func Test_highlight_eol_with_cursorline_vertsplit()
-  if !has('vertsplit')
-    return
-  endif
-
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 5)
@@ -532,4 +529,26 @@ func Test_termguicolors()
   redraw
   set t_Co=0
   redraw
+endfunc
+
+func Test_cursorline_after_yank()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'set cul rnu',
+	\ 'call setline(1, ["","1","2","3",""])',
+	\ ], 'Xtest_cursorline_yank')
+  let buf = RunVimInTerminal('-S Xtest_cursorline_yank', {'rows': 8})
+  call term_wait(buf)
+  call term_sendkeys(buf, "Gy3k")
+  call term_wait(buf)
+  call term_sendkeys(buf, "jj")
+
+  call VerifyScreenDump(buf, 'Test_cursorline_yank_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_cursorline_yank')
 endfunc

@@ -3784,6 +3784,7 @@ do_ecmd(
 #endif
     int		readfile_flags = 0;
     int		did_inc_redrawing_disabled = FALSE;
+    long        *so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -4332,9 +4333,7 @@ do_ecmd(
 		/* 'sol' is off: Use last known column. */
 		curwin->w_cursor.col = solcol;
 		check_cursor_col();
-#ifdef FEAT_VIRTUALEDIT
 		curwin->w_cursor.coladd = 0;
-#endif
 		curwin->w_set_curswant = TRUE;
 	    }
 	    else
@@ -4391,12 +4390,12 @@ do_ecmd(
     did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
-	n = p_so;
+	n = *so_ptr;
 	if (topline == 0 && command == NULL)
-	    p_so = 999;			/* force cursor halfway the window */
+	    *so_ptr = 9999;		// force cursor halfway the window
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
-	p_so = n;
+	*so_ptr = n;
 	redraw_curbuf_later(NOT_VALID);	/* redraw this buffer later */
     }
 
@@ -4776,7 +4775,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	emsg(_("E145: Shell commands not allowed in rvim"));
+	emsg(_("E145: Shell commands and some functionality not allowed in rvim"));
 	return TRUE;
     }
     return FALSE;

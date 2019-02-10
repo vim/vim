@@ -695,6 +695,7 @@ GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
+	$(OUTDIR)/autocmd.o \
 	$(OUTDIR)/beval.o \
 	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
@@ -719,6 +720,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/indent.o \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
@@ -929,7 +931,8 @@ endif
 ifeq (yes, $(USE_STDCPLUS))
 LINK = $(CXX)
 ifeq (yes, $(STATIC_STDCPLUS))
-LIB += -static-libstdc++ -static-libgcc
+#LIB += -static-libstdc++ -static-libgcc
+LIB += -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic
 endif
 else
 LINK = $(CC)

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jan 11
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -311,6 +311,7 @@ Name			triggered by ~
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
 |SourcePre|		before sourcing a Vim script
+|SourcePost|		after sourcing a Vim script
 |SourceCmd|		before sourcing a Vim script |Cmd-event|
 
 |VimResized|		after the Vim window size changed

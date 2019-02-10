@@ -1029,11 +1029,9 @@ searchit(
 			    end_pos->col = endpos.col;
 			}
 		    }
-#ifdef FEAT_VIRTUALEDIT
 		    pos->coladd = 0;
 		    if (end_pos != NULL)
 			end_pos->coladd = 0;
-#endif
 		    found = 1;
 		    first_match = FALSE;
 
@@ -1919,9 +1917,7 @@ findmatchlimit(
 #endif
 
     pos = curwin->w_cursor;
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = 0;
-#endif
     linep = ml_get(pos.lnum);
 
     cpo_match = (vim_strchr(p_cpo, CPO_MATCH) != NULL);
@@ -2605,6 +2601,8 @@ showmatch(
 #endif
     colnr_T	save_dollar_vcol;
     char_u	*p;
+    long        *so = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
+    long        *siso = curwin->w_p_siso >= 0 ? &curwin->w_p_siso : &p_siso;
 
     /*
      * Only show match for chars in the 'matchpairs' option.
@@ -2639,8 +2637,8 @@ showmatch(
 	{
 	    mpos = *lpos;    /* save the pos, update_screen() may change it */
 	    save_cursor = curwin->w_cursor;
-	    save_so = p_so;
-	    save_siso = p_siso;
+	    save_so = *so;
+	    save_siso = *siso;
 	    /* Handle "$" in 'cpo': If the ')' is typed on top of the "$",
 	     * stop displaying the "$". */
 	    if (dollar_vcol >= 0 && dollar_vcol == curwin->w_virtcol)
@@ -2655,8 +2653,8 @@ showmatch(
 	    ui_cursor_shape();		/* may show different cursor shape */
 #endif
 	    curwin->w_cursor = mpos;	/* move to matching char */
-	    p_so = 0;			/* don't use 'scrolloff' here */
-	    p_siso = 0;			/* don't use 'sidescrolloff' here */
+	    *so = 0;			/* don't use 'scrolloff' here */
+	    *siso = 0;			/* don't use 'sidescrolloff' here */
 	    showruler(FALSE);
 	    setcursor();
 	    cursor_on();		/* make sure that the cursor is shown */
@@ -2676,8 +2674,8 @@ showmatch(
 	    else if (!char_avail())
 		ui_delay(p_mat * 100L, FALSE);
 	    curwin->w_cursor = save_cursor;	/* restore cursor position */
-	    p_so = save_so;
-	    p_siso = save_siso;
+	    *so = save_so;
+	    *siso = save_siso;
 #ifdef CURSOR_SHAPE
 	    State = save_state;
 	    ui_cursor_shape();		/* may show different cursor shape */
@@ -3027,9 +3025,7 @@ fwd_word(
     int		i;
     int		last_line;
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     cls_bigword = bigword;
     while (--count >= 0)
     {
@@ -3094,9 +3090,7 @@ bck_word(long count, int bigword, int stop)
 {
     int		sclass;	    /* starting class */
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     cls_bigword = bigword;
     while (--count >= 0)
     {
@@ -3163,9 +3157,7 @@ end_word(
 {
     int		sclass;	    /* starting class */
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     cls_bigword = bigword;
     while (--count >= 0)
     {
@@ -3233,9 +3225,7 @@ bckend_word(
     int		sclass;	    /* starting class */
     int		i;
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     cls_bigword = bigword;
     while (--count >= 0)
     {

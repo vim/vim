@@ -21,30 +21,23 @@ typedef unsigned short	short_u;
 #endif
 
 /*
- * position in file or buffer
+ * Position in file or buffer.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
-#ifdef FEAT_VIRTUALEDIT
-    colnr_T	coladd;
-#endif
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
+    colnr_T	coladd; // extra virtual column
 } pos_T;
 
-#ifdef FEAT_VIRTUALEDIT
-# define INIT_POS_T(l, c, ca) {l, c, ca}
-#else
-# define INIT_POS_T(l, c, ca) {l, c}
-#endif
 
 /*
  * Same, but without coladd.
  */
 typedef struct
 {
-    linenr_T	lnum;	/* line number */
-    colnr_T	col;	/* column number */
+    linenr_T	lnum;	// line number
+    colnr_T	col;	// column number
 } lpos_T;
 
 /*
@@ -395,9 +388,7 @@ struct u_header
     u_entry_T	*uh_entry;	/* pointer to first entry */
     u_entry_T	*uh_getbot_entry; /* pointer to where ue_bot must be set */
     pos_T	uh_cursor;	/* cursor position before saving */
-#ifdef FEAT_VIRTUALEDIT
     long	uh_cursor_vcol;
-#endif
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
@@ -1559,7 +1550,13 @@ struct jobvar_S
     char_u	*jv_tty_in;	/* controlling tty input, allocated */
     char_u	*jv_tty_out;	/* controlling tty output, allocated */
     jobstatus_T	jv_status;
-    char_u	*jv_stoponexit; /* allocated */
+    char_u	*jv_stoponexit;	/* allocated */
+#ifdef UNIX
+    char_u	*jv_termsig;	/* allocated */
+#endif
+#ifdef WIN3264
+    char_u	*jv_tty_type;	// allocated
+#endif
     int		jv_exitval;
     char_u	*jv_exit_cb;	/* allocated */
     partial_T	*jv_exit_partial;
@@ -1734,13 +1731,15 @@ struct channel_S {
     int		ch_keep_open;	/* do not close on read error */
     int		ch_nonblock;
 
-    job_T	*ch_job;	/* Job that uses this channel; this does not
-				 * count as a reference to avoid a circular
-				 * reference, the job refers to the channel. */
-    int		ch_job_killed;	/* TRUE when there was a job and it was killed
-				 * or we know it died. */
+    job_T	*ch_job;	// Job that uses this channel; this does not
+				// count as a reference to avoid a circular
+				// reference, the job refers to the channel.
+    int		ch_job_killed;	// TRUE when there was a job and it was killed
+				// or we know it died.
+    int		ch_anonymous_pipe;  // ConPTY
+    int		ch_killing;	    // TerminateJobObject() was called
 
-    int		ch_refcount;	/* reference count */
+    int		ch_refcount;	// reference count
     int		ch_copyID;
 };
 
@@ -1793,6 +1792,7 @@ struct channel_S {
 #define JO2_NORESTORE	    0x2000	/* "norestore" */
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
 #define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
+#define JO2_TTY_TYPE	    0x10000	/* "tty_type" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1865,6 +1865,7 @@ typedef struct
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
+    int		jo_tty_type;	    // first character of "tty_type"
 #endif
 } jobopt_T;
 
@@ -2938,6 +2939,8 @@ struct window_S
     int		w_p_brishift;	    /* additional shift for breakindent */
     int		w_p_brisbr;	    /* sbr in 'briopt' */
 #endif
+    long        w_p_siso;           /* 'sidescrolloff' local value */
+    long        w_p_so;             /* 'scrolloff' local value */
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))

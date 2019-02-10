@@ -3994,9 +3994,7 @@ utf_find_illegal(void)
 	convert_setup(&vimconv, p_enc, curbuf->b_p_fenc);
     }
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     for (;;)
     {
 	p = ml_get_cursor();
@@ -4118,18 +4116,13 @@ mb_adjustpos(buf_T *buf, pos_T *lp)
 {
     char_u	*p;
 
-    if (lp->col > 0
-#ifdef FEAT_VIRTUALEDIT
-	    || lp->coladd > 1
-#endif
-	    )
+    if (lp->col > 0 || lp->coladd > 1)
     {
 	p = ml_get_buf(buf, lp->lnum, FALSE);
 	if (*p == NUL || (int)STRLEN(p) < lp->col)
 	    lp->col = 0;
 	else
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
-#ifdef FEAT_VIRTUALEDIT
 	/* Reset "coladd" when the cursor would be on the right half of a
 	 * double-wide character. */
 	if (lp->coladd == 1
@@ -4137,7 +4130,6 @@ mb_adjustpos(buf_T *buf, pos_T *lp)
 		&& vim_isprintc((*mb_ptr2char)(p + lp->col))
 		&& ptr2cells(p + lp->col) > 1)
 	    lp->coladd = 0;
-#endif
     }
 }
 

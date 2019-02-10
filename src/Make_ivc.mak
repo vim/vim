@@ -211,6 +211,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 LINK32_OBJS= \
 	$(EXTRAS) \
 	"$(INTDIR)/arabic.obj" \
+	"$(INTDIR)/autocmd.obj" \
 	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
@@ -233,6 +234,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/getchar.obj" \
 	"$(INTDIR)/hardcopy.obj" \
 	"$(INTDIR)/hashtab.obj" \
+	"$(INTDIR)/indent.obj" \
 	"$(INTDIR)/json.obj" \
 	"$(INTDIR)/list.obj" \
 	"$(INTDIR)/main.obj" \
@@ -341,6 +343,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 SOURCE=.\arabic.c
 # End Source File
 # Begin Source File
+#
+SOURCE=.\autocmd.c
+# End Source File
+# Begin Source File
 
 SOURCE=.\blowfish.c
 # End Source File
@@ -427,6 +433,10 @@ SOURCE=.\hardcopy.c
 # Begin Source File
 
 SOURCE=.\hashtab.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\indent.c
 # End Source File
 # Begin Source File
 

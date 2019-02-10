@@ -58,6 +58,10 @@ func RunVimInTerminal(arguments, options)
   let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
   if &termwinsize == ''
+    " in the GUI we may end up with a different size, try to set it.
+    if term_getsize(buf) != [rows, cols]
+      call term_setsize(buf, rows, cols)
+    endif
     call assert_equal([rows, cols], term_getsize(buf))
   else
     let rows = term_getsize(buf)[0]

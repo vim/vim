@@ -62,6 +62,7 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "autocmd.pro"
 # include "buffer.pro"
 # include "charset.pro"
 # ifdef FEAT_CSCOPE
@@ -86,6 +87,7 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "indent.pro"
 # include "json.pro"
 # include "list.pro"
 # include "blob.pro"

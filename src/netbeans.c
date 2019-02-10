@@ -3344,9 +3344,7 @@ off2pos(buf_T *buf, long offset)
 
     pos.lnum = 0;
     pos.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     pos.coladd = 0;
-#endif
 
     if (!(buf->b_ml.ml_flags & ML_EMPTY))
     {
@@ -3378,9 +3376,7 @@ get_off_or_lnum(buf_T *buf, char_u **argp)
 	mypos.lnum = (linenr_T)off;
 	++*argp;
 	mypos.col = strtol((char *)*argp, (char **)argp, 10);
-#ifdef FEAT_VIRTUALEDIT
 	mypos.coladd = 0;
-#endif
 	return &mypos;
     }
     return off2pos(buf, off);

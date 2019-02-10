@@ -1802,12 +1802,10 @@ op_delete(oparg_T *oap)
 	 * It's an error to operate on an empty region, when 'E' included in
 	 * 'cpoptions' (Vi compatible).
 	 */
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_op)
 	    /* Virtual editing: Nothing gets deleted, but we set the '[ and ']
 	     * marks as if it happened. */
 	    goto setmarks;
-#endif
 	if (vim_strchr(p_cpo, CPO_EMPTYREGION) != NULL)
 	    beep_flush();
 	return OK;
@@ -1909,9 +1907,7 @@ op_delete(oparg_T *oap)
 	    if (lnum == curwin->w_cursor.lnum)
 	    {
 		curwin->w_cursor.col = bd.textcol + bd.startspaces;
-# ifdef FEAT_VIRTUALEDIT
 		curwin->w_cursor.coladd = 0;
-# endif
 	    }
 
 	    /* n == number of chars deleted
@@ -1979,7 +1975,6 @@ op_delete(oparg_T *oap)
     }
     else
     {
-#ifdef FEAT_VIRTUALEDIT
 	if (virtual_op)
 	{
 	    int		endcol = 0;
@@ -2016,7 +2011,6 @@ op_delete(oparg_T *oap)
 		curwin->w_cursor = oap->start;
 	    }
 	}
-#endif
 
 	if (oap->line_count == 1)	/* delete characters within one line */
 	{
@@ -2032,7 +2026,6 @@ op_delete(oparg_T *oap)
 
 	    n = oap->end.col - oap->start.col + 1 - !oap->inclusive;
 
-#ifdef FEAT_VIRTUALEDIT
 	    if (virtual_op)
 	    {
 		/* fix up things for virtualedit-delete:
@@ -2053,7 +2046,6 @@ op_delete(oparg_T *oap)
 		if (gchar_cursor() != NUL)
 		    curwin->w_cursor.coladd = 0;
 	    }
-#endif
 	    (void)del_bytes((long)n, !virtual_op,
 			    oap->op_type == OP_DELETE && !oap->is_VIsual);
 	}
@@ -2084,9 +2076,7 @@ op_delete(oparg_T *oap)
 
     msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 
-#ifdef FEAT_VIRTUALEDIT
 setmarks:
-#endif
     if (oap->block_mode)
     {
 	curbuf->b_op_end.lnum = oap->end.lnum;
@@ -2183,7 +2173,6 @@ op_replace(oparg_T *oap, int c)
 	     * If we split a TAB, it may be replaced by several characters.
 	     * Thus the number of characters may increase!
 	     */
-#ifdef FEAT_VIRTUALEDIT
 	    /* If the range starts in virtual space, count the initial
 	     * coladd offset as part of "startspaces" */
 	    if (virtual_op && bd.is_short && *bd.textstart == NUL)
@@ -2196,15 +2185,12 @@ op_replace(oparg_T *oap, int c)
 		n = bd.startspaces;
 	    }
 	    else
-#endif
 		/* allow for pre spaces */
 		n = (bd.startspaces ? bd.start_char_vcols - 1 : 0);
 
 	    /* allow for post spp */
 	    n += (bd.endspaces
-#ifdef FEAT_VIRTUALEDIT
 		    && !bd.is_oneChar
-#endif
 		    && bd.end_char_vcols > 0) ? bd.end_char_vcols - 1 : 0;
 	    /* Figure out how many characters to replace. */
 	    numc = oap->end_vcol - oap->start_vcol + 1;
@@ -2311,7 +2297,6 @@ op_replace(oparg_T *oap, int c)
 		}
 		else
 		{
-#ifdef FEAT_VIRTUALEDIT
 		    if (n == TAB)
 		    {
 			int end_vcol = 0;
@@ -2327,11 +2312,9 @@ op_replace(oparg_T *oap, int c)
 			if (curwin->w_cursor.lnum == oap->end.lnum)
 			    getvpos(&oap->end, end_vcol);
 		    }
-#endif
 		    PBYTE(curwin->w_cursor, c);
 		}
 	    }
-#ifdef FEAT_VIRTUALEDIT
 	    else if (virtual_op && curwin->w_cursor.lnum == oap->end.lnum)
 	    {
 		int virtcols = oap->end.coladd;
@@ -2355,7 +2338,6 @@ op_replace(oparg_T *oap, int c)
 		       break;
 		}
 	    }
-#endif
 
 	    /* Advance to next character, stop at the end of the file. */
 	    if (inc_cursor() == -1)
@@ -2609,7 +2591,6 @@ op_insert(oparg_T *oap, long count1)
 
     if (oap->block_mode)
     {
-#ifdef FEAT_VIRTUALEDIT
 	/* When 'virtualedit' is used, need to insert the extra spaces before
 	 * doing block_prep().  When only "block" is used, virtual edit is
 	 * already disabled, but still need it when calling
@@ -2627,7 +2608,6 @@ op_insert(oparg_T *oap, long count1)
 		--curwin->w_cursor.col;
 	    ve_flags = old_ve_flags;
 	}
-#endif
 	/* Get the info about the block before entering the text */
 	block_prep(oap, &bd, oap->start.lnum, TRUE);
 	/* Get indent information */
@@ -2641,11 +2621,7 @@ op_insert(oparg_T *oap, long count1)
 
     if (oap->op_type == OP_APPEND)
     {
-	if (oap->block_mode
-#ifdef FEAT_VIRTUALEDIT
-		&& curwin->w_cursor.coladd == 0
-#endif
-	   )
+	if (oap->block_mode && curwin->w_cursor.coladd == 0)
 	{
 	    /* Move the cursor to the character right of the block. */
 	    curwin->w_set_curswant = TRUE;
@@ -2715,45 +2691,23 @@ op_insert(oparg_T *oap, long count1)
 						  && !bd.is_MAX && !did_indent)
 	{
 	    if (oap->op_type == OP_INSERT
-		    && oap->start.col
-#ifdef FEAT_VIRTUALEDIT
-			    + oap->start.coladd
-#endif
+		    && oap->start.col + oap->start.coladd
 			!= curbuf->b_op_start_orig.col
-#ifdef FEAT_VIRTUALEDIT
-			    + curbuf->b_op_start_orig.coladd
-#endif
-			)
+					      + curbuf->b_op_start_orig.coladd)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-#ifdef FEAT_VIRTUALEDIT
-					      curbuf->b_op_start_orig.coladd
-#else
-					      0
-#endif
-					      );
+					      curbuf->b_op_start_orig.coladd);
 		oap->start.col = curbuf->b_op_start_orig.col;
 		pre_textlen -= t - oap->start_vcol;
 		oap->start_vcol = t;
 	    }
 	    else if (oap->op_type == OP_APPEND
-		      && oap->end.col
-#ifdef FEAT_VIRTUALEDIT
-			    + oap->end.coladd
-#endif
+		      && oap->end.col + oap->end.coladd
 			>= curbuf->b_op_start_orig.col
-#ifdef FEAT_VIRTUALEDIT
-			    + curbuf->b_op_start_orig.coladd
-#endif
-			)
+					      + curbuf->b_op_start_orig.coladd)
 	    {
 		int t = getviscol2(curbuf->b_op_start_orig.col,
-#ifdef FEAT_VIRTUALEDIT
-					      curbuf->b_op_start_orig.coladd
-#else
-					      0
-#endif
-					      );
+					      curbuf->b_op_start_orig.coladd);
 		oap->start.col = curbuf->b_op_start_orig.col;
 		/* reset pre_textlen to the value of OP_INSERT */
 		pre_textlen += bd.textlen;
@@ -2865,12 +2819,10 @@ op_change(oparg_T *oap)
     /* skip blank lines too */
     if (oap->block_mode)
     {
-#ifdef FEAT_VIRTUALEDIT
 	/* Add spaces before getting the current line length. */
 	if (virtual_op && (curwin->w_cursor.coladd > 0
 						    || gchar_cursor() == NUL))
 	    coladvance_force(getviscol());
-#endif
 	firstline = ml_get(oap->start.lnum);
 	pre_textlen = (long)STRLEN(firstline);
 	pre_indent = (long)getwhitecols(firstline);
@@ -2916,7 +2868,6 @@ op_change(oparg_T *oap)
 		    block_prep(oap, &bd, linenr, TRUE);
 		    if (!bd.is_short || virtual_op)
 		    {
-#ifdef FEAT_VIRTUALEDIT
 			pos_T vpos;
 
 			/* If the block starts in virtual space, count the
@@ -2928,22 +2879,16 @@ op_change(oparg_T *oap)
 			}
 			else
 			    vpos.coladd = 0;
-#endif
 			oldp = ml_get(linenr);
 			newp = alloc_check((unsigned)(STRLEN(oldp)
-#ifdef FEAT_VIRTUALEDIT
-							+ vpos.coladd
-#endif
-							      + ins_len + 1));
+						 + vpos.coladd + ins_len + 1));
 			if (newp == NULL)
 			    continue;
 			/* copy up to block start */
 			mch_memmove(newp, oldp, (size_t)bd.textcol);
 			offset = bd.textcol;
-#ifdef FEAT_VIRTUALEDIT
 			vim_memset(newp + offset, ' ', (size_t)vpos.coladd);
 			offset += vpos.coladd;
-#endif
 			mch_memmove(newp + offset, ins_text, (size_t)ins_len);
 			offset += ins_len;
 			oldp += bd.textcol;
@@ -3148,10 +3093,9 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	    case MCHAR:
 		{
 		    colnr_T startcol = 0, endcol = MAXCOL;
-#ifdef FEAT_VIRTUALEDIT
 		    int is_oneChar = FALSE;
 		    colnr_T cs, ce;
-#endif
+
 		    p = ml_get(lnum);
 		    bd.startspaces = 0;
 		    bd.endspaces = 0;
@@ -3159,7 +3103,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		    if (lnum == oap->start.lnum)
 		    {
 			startcol = oap->start.col;
-#ifdef FEAT_VIRTUALEDIT
 			if (virtual_op)
 			{
 			    getvcol(curwin, &oap->start, &cs, NULL, &ce);
@@ -3172,13 +3115,11 @@ op_yank(oparg_T *oap, int deleting, int mess)
 				startcol++;
 			    }
 			}
-#endif
 		    }
 
 		    if (lnum == oap->end.lnum)
 		    {
 			endcol = oap->end.col;
-#ifdef FEAT_VIRTUALEDIT
 			if (virtual_op)
 			{
 			    getvcol(curwin, &oap->end, &cs, NULL, &ce);
@@ -3205,15 +3146,10 @@ op_yank(oparg_T *oap, int deleting, int mess)
 				}
 			    }
 			}
-#endif
 		    }
 		    if (endcol == MAXCOL)
 			endcol = (colnr_T)STRLEN(p);
-		    if (startcol > endcol
-#ifdef FEAT_VIRTUALEDIT
-			    || is_oneChar
-#endif
-			    )
+		    if (startcol > endcol || is_oneChar)
 			bd.textlen = 0;
 		    else
 		    {
@@ -3661,7 +3597,6 @@ do_put(
 
     yanklen = (int)STRLEN(y_array[0]);
 
-#ifdef FEAT_VIRTUALEDIT
     if (ve_flags == VE_ALL && y_type == MCHAR)
     {
 	if (gchar_cursor() == TAB)
@@ -3687,7 +3622,6 @@ do_put(
 	else if (curwin->w_cursor.coladd > 0 || gchar_cursor() == NUL)
 	    coladvance_force(getviscol() + (dir == FORWARD));
     }
-#endif
 
     lnum = curwin->w_cursor.lnum;
     col = curwin->w_cursor.col;
@@ -3702,27 +3636,22 @@ do_put(
 
 	if (dir == FORWARD && c != NUL)
 	{
-#ifdef FEAT_VIRTUALEDIT
 	    if (ve_flags == VE_ALL)
 		getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
 	    else
-#endif
 		getvcol(curwin, &curwin->w_cursor, NULL, NULL, &col);
 
 	    if (has_mbyte)
 		/* move to start of next multi-byte character */
 		curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 	    else
-#ifdef FEAT_VIRTUALEDIT
 	    if (c != TAB || ve_flags != VE_ALL)
-#endif
 		++curwin->w_cursor.col;
 	    ++col;
 	}
 	else
 	    getvcol(curwin, &curwin->w_cursor, &col, NULL, &endcol2);
 
-#ifdef FEAT_VIRTUALEDIT
 	col += curwin->w_cursor.coladd;
 	if (ve_flags == VE_ALL
 		&& (curwin->w_cursor.coladd > 0
@@ -3741,7 +3670,6 @@ do_put(
 	    }
 	}
 	curwin->w_cursor.coladd = 0;
-#endif
 	bd.textcol = 0;
 	for (i = 0; i < y_size; ++i)
 	{
@@ -3850,9 +3778,7 @@ do_put(
 	/* adjust '] mark */
 	curbuf->b_op_end.lnum = curwin->w_cursor.lnum - 1;
 	curbuf->b_op_end.col = bd.textcol + totlen - 1;
-# ifdef FEAT_VIRTUALEDIT
 	curbuf->b_op_end.coladd = 0;
-# endif
 	if (flags & PUT_CURSEND)
 	{
 	    colnr_T len;
@@ -4144,15 +4070,12 @@ adjust_cursor_eol(void)
 {
     if (curwin->w_cursor.col > 0
 	    && gchar_cursor() == NUL
-#ifdef FEAT_VIRTUALEDIT
 	    && (ve_flags & VE_ONEMORE) == 0
-#endif
 	    && !(restart_edit || (State & INSERT)))
     {
 	/* Put the cursor on the last character in the line. */
 	dec_cursor();
 
-#ifdef FEAT_VIRTUALEDIT
 	if (ve_flags == VE_ALL)
 	{
 	    colnr_T	    scol, ecol;
@@ -4161,7 +4084,6 @@ adjust_cursor_eol(void)
 	    getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
 	    curwin->w_cursor.coladd = ecol - scol + 1;
 	}
-#endif
     }
 }
 
@@ -4704,9 +4626,7 @@ do_join(
 		    (vim_strchr(p_cpo, CPO_JOINCOL) != NULL ? currsize : col);
     check_cursor_col();
 
-#ifdef FEAT_VIRTUALEDIT
     curwin->w_cursor.coladd = 0;
-#endif
     curwin->w_set_curswant = TRUE;
 
 theend:
@@ -7394,13 +7314,9 @@ cursor_pos_info(dict_T *dict)
 		switch (VIsual_mode)
 		{
 		    case Ctrl_V:
-#ifdef FEAT_VIRTUALEDIT
 			virtual_op = virtual_active();
-#endif
 			block_prep(&oparg, &bd, lnum, 0);
-#ifdef FEAT_VIRTUALEDIT
 			virtual_op = MAYBE;
-#endif
 			s = bd.textstart;
 			len = (long)bd.textlen;
 			break;

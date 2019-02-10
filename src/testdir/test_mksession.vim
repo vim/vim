@@ -225,6 +225,29 @@ func Test_mksession_blank_tabs()
   call delete('Xtest_mks.out')
 endfunc
 
+func Test_mksession_buffer_count()
+  set hidden
+
+  " Edit exactly three files in the current session.
+  %bwipe!
+  e Xfoo | tabe Xbar | tabe Xbaz
+  tabdo write
+  mksession! Xtest_mks.out
+
+  " Verify that loading the session does not create additional buffers.
+  %bwipe!
+  source Xtest_mks.out
+  call assert_equal(3, len(getbufinfo()))
+
+  " Clean up.
+  call delete('Xfoo')
+  call delete('Xbar')
+  call delete('Xbaz')
+  call delete('Xtest_mks.out')
+  %bwipe!
+  set hidden&
+endfunc
+
 if has('extra_search')
 
 func Test_mksession_hlsearch()
@@ -272,7 +295,7 @@ func Test_mksession_terminal_shell()
       call assert_report('unexpected shell line: ' . line)
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*$', term_cmd)
+  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
 
   call Stop_shell_in_terminal(bufnr('%'))
   call delete('Xtest_mks.out')
@@ -352,7 +375,7 @@ func Test_mksession_terminal_restore_other()
       let term_cmd = line
     endif
   endfor
-  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+ other', term_cmd)
+  call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
 
   call Stop_shell_in_terminal(bufnr('%'))
   call delete('Xtest_mks.out')

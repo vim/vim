@@ -3439,9 +3439,7 @@ win_init_empty(win_T *wp)
     wp->w_lines_valid = 0;
     wp->w_cursor.lnum = 1;
     wp->w_curswant = wp->w_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     wp->w_cursor.coladd = 0;
-#endif
     wp->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
     wp->w_pcmark.col = 0;
     wp->w_prev_pcmark.lnum = 0;
@@ -4418,10 +4416,8 @@ win_enter_ext(
     curwin = wp;
     curbuf = wp->w_buffer;
     check_cursor();
-#ifdef FEAT_VIRTUALEDIT
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
-#endif
     changed_line_abv_curs();	/* assume cursor position needs updating */
 
     if (curwin->w_localdir != NULL)
@@ -4597,6 +4593,10 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
     new_wp->w_botline = 2;
     new_wp->w_cursor.lnum = 1;
     new_wp->w_scbind_pos = 1;
+
+    // use global option value for global-local options
+    new_wp->w_p_so = -1;
+    new_wp->w_p_siso = -1;
 
     /* We won't calculate w_fraction until resizing the window */
     new_wp->w_fraction = 0;
@@ -5875,7 +5875,7 @@ scroll_to_fraction(win_T *wp, int prev_height)
 
     if (wp == curwin)
     {
-	if (p_so)
+	if (get_scrolloff_value())
 	    update_topline();
 	curs_columns(FALSE);	/* validate w_wrow */
     }

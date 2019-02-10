@@ -7,13 +7,14 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		appveyor.yml \
+		ci/appveyor.bat \
 		src/Make_all.mak \
-		src/appveyor.bat \
 		src/README.txt \
 		src/alloc.h \
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/autocmd.c \
 		src/beval.c \
 		src/beval.h \
 		src/blob.c \
@@ -48,6 +49,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/indent.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -146,6 +148,7 @@ SRC_ALL =	\
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
+		src/proto/autocmd.pro \
 		src/proto/beval.pro \
 		src/proto/blob.pro \
 		src/proto/blowfish.pro \
@@ -173,6 +176,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/indent.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \
@@ -660,6 +664,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
 		runtime/pack/dist/opt/matchit/doc/tags \
+		runtime/pack/dist/opt/matchit/autoload/*.vim \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \

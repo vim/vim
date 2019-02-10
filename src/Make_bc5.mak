@@ -525,6 +525,7 @@ vimwinmain = \
 
 vimobj =  \
 	$(OBJDIR)\arabic.obj \
+	$(OBJDIR)\autocmd.obj \
 	$(OBJDIR)\blowfish.obj \
 	$(OBJDIR)\buffer.obj \
 	$(OBJDIR)\charset.obj \
@@ -547,6 +548,7 @@ vimobj =  \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
+	$(OBJDIR)\indent.obj \
 	$(OBJDIR)\json.obj \
 	$(OBJDIR)\list.obj \
 	$(OBJDIR)\main.obj \
