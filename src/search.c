@@ -4732,18 +4732,14 @@ current_search(
     VIsual_active = TRUE;
     VIsual_mode = 'v';
 
-    if (VIsual_active)
+    redraw_curbuf_later(INVERTED);	/* update the inversion */
+    if (*p_sel == 'e')
     {
-	redraw_curbuf_later(INVERTED);	/* update the inversion */
-	if (*p_sel == 'e')
-	{
-	    /* Correction for exclusive selection depends on the direction. */
-	    if (forward && LTOREQ_POS(VIsual, curwin->w_cursor))
-		inc_cursor();
-	    else if (!forward && LTOREQ_POS(curwin->w_cursor, VIsual))
-		inc(&VIsual);
-	}
-
+	/* Correction for exclusive selection depends on the direction. */
+	if (forward && LTOREQ_POS(VIsual, curwin->w_cursor))
+	    inc_cursor();
+	else if (!forward && LTOREQ_POS(curwin->w_cursor, VIsual))
+	    inc(&VIsual);
     }
 
 #ifdef FEAT_FOLDING
