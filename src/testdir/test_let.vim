@@ -142,7 +142,7 @@ func Test_let_varg_fail()
   call assert_fails('call s:set_varg4(1)', 'E742:')
   call s:set_varg5([0])
   call assert_fails('call s:set_varg6(1)', 'E742:')
-  " call assert_fails('call s:set_varg7(1)', 'E46:')
+  call assert_fails('call s:set_varg7(1)', 'E742:')
   call assert_fails('call s:set_varg8(1)', 'E742:')
   call s:set_varg9([0])
 endfunction
