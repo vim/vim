@@ -7322,6 +7322,8 @@ vim_tempname(
 {
 #ifdef USE_TMPNAM
     char_u	itmp[L_tmpnam];	/* use tmpnam() */
+#elif defined(WIN3264)
+    WCHAR	itmp[TEMPNAMELEN];
 #else
     char_u	itmp[TEMPNAMELEN];
 #endif
@@ -7443,51 +7445,33 @@ vim_tempname(
 #else /* TEMPDIRNAMES */
 
 # ifdef WIN3264
-    char	szTempFile[_MAX_PATH + 1];
-    char	buf4[4];
+    WCHAR	wszTempFile[_MAX_PATH + 1];
+    WCHAR	buf4[4];
     char_u	*retval;
     char_u	*p;
 
-    STRCPY(itmp, "");
-    if (GetTempPath(_MAX_PATH, szTempFile) == 0)
+    wcscpy(itmp, L"");
+    if (GetTempPathW(_MAX_PATH, wszTempFile) == 0)
     {
-	szTempFile[0] = '.';	/* GetTempPath() failed, use current dir */
-	szTempFile[1] = NUL;
+	wszTempFile[0] = L'.';	// GetTempPathW() failed, use current dir
+	wszTempFile[1] = NUL;
     }
-    strcpy(buf4, "VIM");
+    wcscpy(buf4, L"VIM");
     buf4[2] = extra_char;   /* make it "VIa", "VIb", etc. */
-    if (GetTempFileName(szTempFile, buf4, 0, (LPSTR)itmp) == 0)
+    if (GetTempFileNameW(wszTempFile, buf4, 0, itmp) == 0)
 	return NULL;
     if (!keep)
-	/* GetTempFileName() will create the file, we don't want that */
-	(void)DeleteFile((LPSTR)itmp);
+	// GetTempFileName() will create the file, we don't want that
+	(void)DeleteFileW(itmp);
 
-    /* Backslashes in a temp file name cause problems when filtering with
-     * "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
-     * didn't set 'shellslash'. */
-    retval = vim_strsave(itmp);
+    // Backslashes in a temp file name cause problems when filtering with
+    // "sh".  NOTE: This also checks 'shellcmdflag' to help those people who
+    // didn't set 'shellslash'.
+    retval = utf16_to_enc(itmp, NULL);
     if (*p_shcf == '-' || p_ssl)
 	for (p = retval; *p; ++p)
 	    if (*p == '\\')
 		*p = '/';
-
-#if defined(WIN3264)
-    if (enc_utf8)
-    {
-	int	len;
-	char_u  *pp = NULL;
-
-	// Convert from active codepage to UTF-8 since mch_call_shell()
-	// converts command-line to wide string from encoding.
-	acp_to_enc(retval, (int)STRLEN(retval), &pp, &len);
-	if (pp != NULL)
-	{
-	    vim_free(retval);
-	    return pp;
-	}
-    }
-#endif
-
     return retval;
 
 # else /* WIN3264 */
