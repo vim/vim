@@ -5800,7 +5800,7 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	wparg = win_id2wp(argvars);
+	wparg = win_id2wp(tv_get_number(&argvars[0]));
 	if (wparg == NULL)
 	    return;
     }

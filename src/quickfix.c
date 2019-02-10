@@ -3019,7 +3019,7 @@ qf_jump_edit_buffer(
 	qf_info_T	*qi,
 	qfline_T	*qf_ptr,
 	int		forceit,
-	win_T		*oldwin,
+	int		prev_winid,
 	int		*opened_window)
 {
     qf_list_T	*qfl = &qi->qf_lists[qi->qf_curlist];
@@ -3040,7 +3040,7 @@ qf_jump_edit_buffer(
 
 	retval = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
 		ECMD_HIDE + ECMD_SET_HELP,
-		oldwin == curwin ? curwin : NULL);
+		prev_winid == curwin->w_id ? curwin : NULL);
     }
     else
 	retval = buflist_getfile(qf_ptr->qf_fnum,
@@ -3048,11 +3048,15 @@ qf_jump_edit_buffer(
 
     // If a location list, check whether the associated window is still
     // present.
-    if (qfl_type == QFLT_LOCATION && !win_valid_any_tab(oldwin))
+    if (qfl_type == QFLT_LOCATION)
     {
-	emsg(_("E924: Current window was closed"));
-	*opened_window = FALSE;
-	return NOTDONE;
+	win_T	*wp = win_id2wp(prev_winid);
+	if (wp == NULL && curwin->w_llist != qi)
+	{
+	    emsg(_("E924: Current window was closed"));
+	    *opened_window = FALSE;
+	    return NOTDONE;
+	}
     }
 
     if (qfl_type == QFLT_QUICKFIX && !qflist_valid(NULL, save_qfid))
@@ -3212,7 +3216,7 @@ qf_jump_to_buffer(
 	int		qf_index,
 	qfline_T	*qf_ptr,
 	int		forceit,
-	win_T		*oldwin,
+	int		prev_winid,
 	int		*opened_window,
 	int		openfold,
 	int		print_message)
@@ -3228,7 +3232,7 @@ qf_jump_to_buffer(
 
     if (qf_ptr->qf_fnum != 0)
     {
-	retval = qf_jump_edit_buffer(qi, qf_ptr, forceit, oldwin,
+	retval = qf_jump_edit_buffer(qi, qf_ptr, forceit, prev_winid,
 						opened_window);
 	if (retval != OK)
 	    return retval;
@@ -3288,8 +3292,8 @@ qf_jump_newwin(qf_info_T	*qi,
     int			old_qf_index;
     char_u		*old_swb = p_swb;
     unsigned		old_swb_flags = swb_flags;
+    int			prev_winid;
     int			opened_window = FALSE;
-    win_T		*oldwin = curwin;
     int			print_message = TRUE;
 #ifdef FEAT_FOLDING
     int			old_KeyTyped = KeyTyped; // getting file may reset it
@@ -3328,13 +3332,15 @@ qf_jump_newwin(qf_info_T	*qi,
 	// window
 	print_message = FALSE;
 
+    prev_winid = curwin->w_id;
+
     retval = qf_jump_open_window(qi, qf_ptr, newwin, &opened_window);
     if (retval == FAIL)
 	goto failed;
     if (retval == NOTDONE)
 	goto theend;
 
-    retval = qf_jump_to_buffer(qi, qf_index, qf_ptr, forceit, curwin,
+    retval = qf_jump_to_buffer(qi, qf_index, qf_ptr, forceit, prev_winid,
 	    &opened_window, old_KeyTyped, print_message);
     if (retval == NOTDONE)
     {
