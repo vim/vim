@@ -2092,8 +2092,9 @@ get_lval(
 
 	    if (lp->ll_di == NULL)
 	    {
-		/* Can't add "v:" variable. */
-		if (lp->ll_dict == &vimvardict)
+		/* Can't add "v:" or "a:" variable. */
+		if (lp->ll_dict == &vimvardict
+			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 		{
 		    semsg(_(e_illvar), name);
 		    return NULL;
@@ -7919,8 +7920,8 @@ set_var(
     }
     else		    /* add a new variable */
     {
-	/* Can't add "v:" variable. */
-	if (ht == &vimvarht)
+	/* Can't add "v:" or "a:" variable. */
+	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
 	    semsg(_(e_illvar), name);
 	    return;
