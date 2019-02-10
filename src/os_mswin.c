@@ -1823,13 +1823,181 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
+typedef enum _FILE_INFO_BY_HANDLE_CLASS_ {
+  FileBasicInfo_,
+  FileStandardInfo_,
+  FileNameInfo_,
+  FileRenameInfo_,
+  FileDispositionInfo_,
+  FileAllocationInfo_,
+  FileEndOfFileInfo_,
+  FileStreamInfo_,
+  FileCompressionInfo_,
+  FileAttributeTagInfo_,
+  FileIdBothDirectoryInfo_,
+  FileIdBothDirectoryRestartInfo_,
+  FileIoPriorityHintInfo_,
+  FileRemoteProtocolInfo_,
+  FileFullDirectoryInfo_,
+  FileFullDirectoryRestartInfo_,
+  FileStorageInfo_,
+  FileAlignmentInfo_,
+  FileIdInfo_,
+  FileIdExtdDirectoryInfo_,
+  FileIdExtdDirectoryRestartInfo_,
+  FileDispositionInfoEx_,
+  FileRenameInfoEx_,
+  MaximumFileInfoByHandleClass_
+} FILE_INFO_BY_HANDLE_CLASS_;
+
+typedef struct _FILE_NAME_INFO_ {
+  DWORD FileNameLength;
+  WCHAR FileName[1];
+} FILE_NAME_INFO_;
+
+typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
+	HANDLE				hFile,
+	FILE_INFO_BY_HANDLE_CLASS_	FileInformationClass,
+	LPVOID				lpFileInformation,
+	DWORD				dwBufferSize);
+static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
+
+typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
+	HANDLE	hFile,
+	LPWSTR	lpVolumeNameBuffer,
+	DWORD	nVolumeNameSize,
+	LPDWORD	lpVolumeSerialNumber,
+	LPDWORD	lpMaximumComponentLength,
+	LPDWORD	lpFileSystemFlags,
+	LPWSTR	lpFileSystemNameBuffer,
+	DWORD	nFileSystemNameSize);
+static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
+
+    char_u *
+resolve_reparse_point(char_u *fname)
+{
+    HANDLE	    h = INVALID_HANDLE_VALUE;
+    DWORD	    size;
+    char_u	    *rfname = NULL;
+    FILE_NAME_INFO_ *nameinfo = NULL;
+    WCHAR	    buff[MAX_PATH], *volnames = NULL;
+    HANDLE	    hv;
+    DWORD	    snfile, snfind;
+    static BOOL	    loaded = FALSE;
+
+    if (pGetFileInformationByHandleEx == NULL ||
+	    pGetVolumeInformationByHandleW == NULL)
+    {
+	HMODULE hmod = GetModuleHandle("kernel32.dll");
+
+	if (loaded == TRUE)
+	    return NULL;
+	pGetFileInformationByHandleEx = (pfnGetFileInformationByHandleEx)
+		GetProcAddress(hmod, "GetFileInformationByHandleEx");
+	pGetVolumeInformationByHandleW = (pfnGetVolumeInformationByHandleW)
+		GetProcAddress(hmod, "GetVolumeInformationByHandleW");
+	loaded = TRUE;
+	if (pGetFileInformationByHandleEx == NULL ||
+		pGetVolumeInformationByHandleW == NULL)
+	    return NULL;
+    }
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	WCHAR	*p;
+
+	p = enc_to_utf16(fname, NULL);
+	if (p == NULL)
+	    goto fail;
+
+	if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+	{
+	    vim_free(p);
+	    goto fail;
+	}
+
+	h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	vim_free(p);
+    }
+    else
+    {
+	if ((GetFileAttributes((char*) fname) &
+		    FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+	    goto fail;
+
+	h = CreateFile((char*) fname, 0, 0, NULL, OPEN_EXISTING,
+		FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    }
+
+    if (h == INVALID_HANDLE_VALUE)
+	goto fail;
+
+    size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
+    nameinfo = (FILE_NAME_INFO_*)alloc(size + sizeof(WCHAR));
+    if (nameinfo == NULL)
+	goto fail;
+
+    if (!pGetFileInformationByHandleEx(h, FileNameInfo_, nameinfo, size))
+	goto fail;
+
+    nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
+
+    if (!pGetVolumeInformationByHandleW(
+	    h, NULL, 0, &snfile, NULL, NULL, NULL, 0))
+	goto fail;
+
+    hv = FindFirstVolumeW(buff, MAX_PATH);
+    if (hv == INVALID_HANDLE_VALUE)
+	goto fail;
+
+    do {
+	GetVolumeInformationW(
+		buff, NULL, 0, &snfind, NULL, NULL, NULL, 0);
+	if (snfind == snfile)
+	    break;
+    } while (FindNextVolumeW(hv, buff, MAX_PATH));
+
+    FindVolumeClose(hv);
+
+    if (snfind != snfile)
+	goto fail;
+
+    size = 0;
+    if (!GetVolumePathNamesForVolumeNameW(buff, NULL, 0, &size) &&
+	    GetLastError() != ERROR_MORE_DATA)
+	goto fail;
+
+    volnames = (WCHAR*)alloc(size * sizeof(WCHAR));
+    if (!GetVolumePathNamesForVolumeNameW(buff, volnames, size,
+		&size))
+	goto fail;
+
+    wcscpy(buff, volnames);
+    if (nameinfo->FileName[0] == '\\')
+	wcscat(buff, nameinfo->FileName + 1);
+    else
+	wcscat(buff, nameinfo->FileName);
+    rfname = utf16_to_enc(buff, NULL);
+
+fail:
+    if (h != INVALID_HANDLE_VALUE)
+	CloseHandle(h);
+    if (nameinfo != NULL)
+	vim_free(nameinfo);
+    if (volnames != NULL)
+	vim_free(volnames);
+
+    return rfname;
+}
+
 /*
  * When "fname" is the name of a shortcut (*.lnk) resolve the file it points
  * to and return that name in allocated memory.
  * Otherwise NULL is returned.
  */
-    char_u *
-mch_resolve_shortcut(char_u *fname)
+    static char_u *
+resolve_shortcut(char_u *fname)
 {
     HRESULT		hr;
     IShellLink		*psl = NULL;
@@ -1936,6 +2104,16 @@ shortcut_end:
 
     CoUninitialize();
     return rfname;
+}
+
+    char_u *
+mch_resolve_path(char_u *fname, int reparse_point)
+{
+    char_u  *path = resolve_shortcut(fname);
+
+    if (path == NULL && reparse_point)
+	path = resolve_reparse_point(fname);
+    return path;
 }
 #endif
 

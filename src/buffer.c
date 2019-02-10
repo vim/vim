@@ -4847,7 +4847,7 @@ fname_expand(
 	char_u  *rfname;
 
 	// If the file name is a shortcut file, use the file it links to.
-	rfname = mch_resolve_shortcut(*ffname);
+	rfname = mch_resolve_path(*ffname, FALSE);
 	if (rfname != NULL)
 	{
 	    vim_free(*ffname);
