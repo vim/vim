@@ -772,7 +772,7 @@ call_user_func(
 	v = &fc->fixvar[fixvar_idx++].var;
 	name = v->di_key;
 	STRCPY(name, "self");
-	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
+	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	hash_add(&fc->l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;
 	v->di_tv.v_lock = 0;
@@ -788,6 +788,7 @@ call_user_func(
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
     add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount - fp->uf_args.ga_len));
+    fc->l_avars.dv_lock = VAR_FIXED;
     /* Use "name" to avoid a warning from some compiler that checks the
      * destination size. */
     v = &fc->fixvar[fixvar_idx++].var;
