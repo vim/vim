@@ -8587,7 +8587,7 @@ find_win_by_nr_or_id(typval_T *vp)
     int	nr = (int)tv_get_number_chk(vp, NULL);
 
     if (nr >= LOWEST_WIN_ID)
-	return win_id2wp(vp);
+	return win_id2wp(tv_get_number(vp));
     return find_win_by_nr(vp, NULL);
 }
 
