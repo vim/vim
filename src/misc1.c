@@ -20,7 +20,6 @@
 
 static char_u *vim_version_dir(char_u *vimdir);
 static char_u *remove_tail(char_u *p, char_u *pend, char_u *name);
-static int path_is_url(char_u *p);
 
 #define URL_SLASH	1		/* path_is_url() has found "://" */
 #define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
@@ -6677,7 +6676,7 @@ get_isolated_shell_name(void)
  * Also check for ":\\", which MS Internet Explorer accepts, return
  * URL_BACKSLASH.
  */
-    static int
+    int
 path_is_url(char_u *p)
 {
     if (STRNCMP(p, "://", (size_t)3) == 0)
