@@ -127,9 +127,6 @@
 #if defined(FEAT_GUI_W32)
 # define FEAT_GUI_MSWIN
 #endif
-#if defined(WIN32) || defined(_WIN64)
-# define MSWIN
-#endif
 /* Practically everything is common to both Win32 and Win64 */
 #if defined(WIN32) || defined(_WIN64)
 # define WIN3264
@@ -452,7 +449,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 #ifdef _DCC
 # include <sys/stat.h>
 #endif
-#if defined(MSWIN)
+#if defined(WIN3264)
 # include <sys/stat.h>
 #endif
 
@@ -1713,7 +1710,7 @@ void *vim_memset(void *, int, size_t);
 # define write_eintr(fd, buf, count) vim_write((fd), (buf), (count))
 #endif
 
-#ifdef MSWIN
+#ifdef WIN3264
 /* On MS-Windows the third argument isn't size_t.  This matters for Win64,
  * where sizeof(size_t)==8, not 4 */
 # define vim_read(fd, buf, count)   read((fd), (char *)(buf), (unsigned int)(count))
@@ -2039,7 +2036,7 @@ typedef struct VimClipboard
     GdkAtom     gtk_sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
 # endif
 
-# if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+# if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
     int_u	format;		/* Vim's own special clipboard format */
     int_u	format_raw;	/* Vim's raw text clipboard format */
 # endif

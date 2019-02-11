@@ -2912,7 +2912,7 @@ list_version(void)
 #     ifdef FEAT_GUI_PHOTON
     msg_puts(_("with Photon GUI."));
 #     else
-#      if defined(MSWIN)
+#      if defined(WIN3264)
     msg_puts(_("with GUI."));
 #      else
 #	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON

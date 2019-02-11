@@ -61,7 +61,7 @@
  * Note: It is often better to use MB_TOLOWER() and MB_TOUPPER(), because many
  * toupper() and tolower() implementations only work for ASCII.
  */
-#ifdef MSWIN
+#ifdef WIN3264
 #  define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
 #  define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
 #else
@@ -164,7 +164,7 @@
 #   define mch_access(n, p)	access((n), (p))
 # endif
 # define mch_fstat(n, p)	fstat((n), (p))
-# ifdef MSWIN	/* has its own mch_stat() function */
+# ifdef WIN3264	/* has its own mch_stat() function */
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
@@ -194,7 +194,7 @@
 #if defined(UNIX) || defined(VMS)  /* open in rw------- mode */
 # define mch_open_rw(n, f)	mch_open((n), (f), (mode_t)0600)
 #else
-# if defined(MSWIN)  /* open read/write */
+# if defined(WIN3264)  /* open read/write */
 #  define mch_open_rw(n, f)	mch_open((n), (f), S_IREAD | S_IWRITE)
 # else
 #  define mch_open_rw(n, f)	mch_open((n), (f), 0)

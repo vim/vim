@@ -656,7 +656,7 @@ EXTERN char_u	*p_mzschemedll;	/* 'mzschemedll' */
 EXTERN char_u	*p_mzschemegcdll; /* 'mzschemegcdll' */
 # endif
 #endif
-#if defined(MSWIN)
+#if defined(WIN3264)
 EXTERN int	p_odev;		/* 'opendevice' */
 #endif
 EXTERN char_u	*p_opfunc;	/* 'operatorfunc' */

@@ -1575,7 +1575,7 @@ gui_set_shellsize(
     if (!gui.shell_created)
 	return;
 
-#if defined(MSWIN) || defined(FEAT_GUI_GTK)
+#if defined(WIN3264) || defined(FEAT_GUI_GTK)
     /* If not setting to a user specified size and maximized, calculate the
      * number of characters that fit in the maximized window. */
     if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL

@@ -1375,7 +1375,7 @@ termgui_mch_get_rgb(guicolor_T color)
 # define DEFAULT_TERM	(char_u *)"amiga"
 #endif
 
-#ifdef MSWIN
+#ifdef WIN3264
 # define DEFAULT_TERM	(char_u *)"win32"
 #endif
 
@@ -2520,7 +2520,7 @@ termcapinit(char_u *name)
 		 && strcmp((char *)mch_getenv((char_u *)"TERM"), "ansi") == 0)
 	term = DEFAULT_TERM;
 #endif
-#ifndef MSWIN
+#ifndef WIN3264
     if (term == NULL)
 	term = mch_getenv((char_u *)"TERM");
 #endif
@@ -5277,7 +5277,7 @@ check_termcode(
 #endif
 	    )
 	{
-#  if !defined(MSWIN)
+#  if !defined(WIN3264)
 		/*
 		 * Handle mouse events.
 		 * Recognize the xterm mouse wheel, but not in the GUI, the

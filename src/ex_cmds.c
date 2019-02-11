@@ -1527,7 +1527,7 @@ do_shell(
 #ifndef FEAT_GUI_MSWIN
     int		save_nwr;
 #endif
-#ifdef MSWIN
+#ifdef WIN3264
     int		winstart = FALSE;
 #endif
 
@@ -1542,7 +1542,7 @@ do_shell(
 	return;
     }
 
-#ifdef MSWIN
+#ifdef WIN3264
     /*
      * Check if ":!start" is used.
      */
@@ -1557,12 +1557,12 @@ do_shell(
     msg_putchar('\r');			/* put cursor at start of line */
     if (!autocmd_busy)
     {
-#ifdef MSWIN
+#ifdef WIN3264
 	if (!winstart)
 #endif
 	    stoptermcap();
     }
-#ifdef MSWIN
+#ifdef WIN3264
     if (!winstart)
 #endif
 	msg_putchar('\n');		/* may shift screen one line up */
@@ -1645,7 +1645,7 @@ do_shell(
 	}
 #endif /* FEAT_GUI_W32 */
 
-#ifdef MSWIN
+#ifdef WIN3264
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
 #endif
 	    starttermcap();	/* start termcap if not done by wait_return() */
@@ -2231,7 +2231,7 @@ viminfo_filename(char_u *file)
 # ifdef VMS
 	    if (mch_getenv((char_u *)"SYS$LOGIN") == NULL)
 # else
-#  ifdef MSWIN
+#  ifdef WIN3264
 	    /* Use $VIM only if $HOME is the default "C:/". */
 	    if (STRCMP(vim_getenv((char_u *)"HOME", NULL), "C:/") == 0
 		    && mch_getenv((char_u *)"HOME") == NULL)

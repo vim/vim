@@ -44,7 +44,7 @@ static long diff_algorithm = 0;
 
 static int diff_a_works = MAYBE; /* TRUE when "diff -a" works, FALSE when it
 				    doesn't work, MAYBE when not checked yet */
-#if defined(MSWIN)
+#if defined(WIN3264)
 static int diff_bin_works = MAYBE; /* TRUE when "diff --binary" works, FALSE
 				      when it doesn't work, MAYBE when not
 				      checked yet */
@@ -1015,7 +1015,7 @@ check_external_diff(diffio_T *diffio)
 	    break;
 #endif
 
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/* If the "-a" argument works, also check if "--binary" works. */
 	if (ok && diff_a_works == MAYBE && diff_bin_works == MAYBE)
 	{
@@ -1046,7 +1046,7 @@ check_external_diff(diffio_T *diffio)
 	    emsg(_("E810: Cannot read or write temp files"));
 	emsg(_("E97: Cannot create diffs"));
 	diff_a_works = MAYBE;
-#if defined(MSWIN)
+#if defined(WIN3264)
 	diff_bin_works = MAYBE;
 #endif
 	return FAIL;
@@ -1136,7 +1136,7 @@ diff_file(diffio_T *dio)
 	// non-zero when differences have been found.
 	vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s%s%s%s %s",
 		diff_a_works == FALSE ? "" : "-a ",
-#if defined(MSWIN)
+#if defined(WIN3264)
 		diff_bin_works == TRUE ? "--binary " : "",
 #else
 		"",

@@ -5442,7 +5442,7 @@ expand_shellcmd(
     hash_init(&found_ht);
     for (s = path; ; s = e)
     {
-#if defined(MSWIN)
+#if defined(WIN3264)
 	e = vim_strchr(s, ';');
 #else
 	e = vim_strchr(s, ':');
@@ -5849,7 +5849,7 @@ globpath(
 	copy_option_part(&path, buf, MAXPATHL, ",");
 	if (STRLEN(buf) + STRLEN(file) + 2 < MAXPATHL)
 	{
-# if defined(MSWIN)
+# if defined(WIN3264)
 	    /* Using the platform's path separator (\) makes vim incorrectly
 	     * treat it as an escape character, use '/' instead. */
 	    if (*buf != NUL && !after_pathsep(buf, buf + STRLEN(buf)))

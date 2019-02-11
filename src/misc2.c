@@ -3344,7 +3344,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
-	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
+	|| defined(WIN3264) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
@@ -5581,7 +5581,7 @@ find_file_in_path_option(
     if (vim_isAbsName(ff_file_to_find)
 	    /* "..", "../path", "." and "./path": don't use the path_option */
 	    || rel_to_curdir
-#if defined(MSWIN)
+#if defined(WIN3264)
 	    /* handle "\tmp" as absolute path */
 	    || vim_ispathsep(ff_file_to_find[0])
 	    /* handle "c:name" as absolute path */

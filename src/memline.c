@@ -626,7 +626,7 @@ ml_setname(buf_T *buf)
     memfile_T	*mfp;
     char_u	*fname;
     char_u	*dirp;
-#if defined(MSWIN)
+#if defined(WIN3264)
     char_u	*p;
 #endif
 
@@ -657,7 +657,7 @@ ml_setname(buf_T *buf)
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/*
 	 * Set full pathname for swap file now, because a ":!cd dir" may
 	 * change directory without us knowing it.
@@ -689,7 +689,7 @@ ml_setname(buf_T *buf)
 	    vim_free(mfp->mf_fname);
 	    mfp->mf_fname = fname;
 	    vim_free(mfp->mf_ffname);
-#if defined(MSWIN)
+#if defined(WIN3264)
 	    mfp->mf_ffname = NULL;  /* mf_fname is full pathname already */
 #else
 	    mf_set_ffname(mfp);
@@ -782,7 +782,7 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
 	{
-#if defined(MSWIN)
+#if defined(WIN3264)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
 	     * change directory without us knowing it.
@@ -973,7 +973,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	b0p->b0_fname[0] = NUL;
     else
     {
-#if defined(MSWIN) || defined(AMIGA)
+#if defined(WIN3264) || defined(AMIGA)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
@@ -1264,7 +1264,7 @@ ml_recover(void)
     {
 	msg_start();
 	msg_outtrans_attr(mfp->mf_fname, attr | MSG_HIST);
-#if defined(MSWIN)
+#if defined(WIN3264)
 	if (STRNCMP(b0p->b0_hname, "PC ", 3) == 0)
 	    msg_puts_attr(_(" cannot be used with this version of Vim.\n"),
 							     attr | MSG_HIST);
@@ -2175,7 +2175,7 @@ swapfile_info(char_u *fname)
 
 		if (b0_magic_wrong(&b0))
 		{
-#if defined(MSWIN)
+#if defined(WIN3264)
 		    if (STRNCMP(b0.b0_hname, "PC ", 3) == 0)
 			msg_puts(_("\n         [not usable with this version of Vim]"));
 		    else

@@ -413,7 +413,7 @@ readfile(
 	    return retval;
 	}
 #endif
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/*
 	 * MS-Windows allows opening a device, but we will probably get stuck
 	 * trying to read it.
@@ -494,7 +494,7 @@ readfile(
     file_readonly = FALSE;
     if (read_stdin)
     {
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/* Force binary I/O on stdin to avoid CR-LF -> LF conversion. */
 	setmode(0, O_BINARY);
 #endif
@@ -3499,7 +3499,7 @@ buf_write(
     }
     if (c == NODE_WRITABLE)
     {
-# if defined(MSWIN)
+# if defined(WIN3264)
 	/* MS-Windows allows opening a device, but we will probably get stuck
 	 * trying to write to it.  */
 	if (!p_odev)
@@ -3673,7 +3673,7 @@ buf_write(
 		     * can't delete an open file. */
 		    close(fd);
 		    mch_remove(IObuff);
-# ifdef MSWIN
+# ifdef WIN3264
 		    /* MS-Windows may trigger a virus scanner to open the
 		     * file, we can't delete it then.  Keep trying for half a
 		     * second. */
@@ -5278,7 +5278,7 @@ check_mtime(buf_T *buf, stat_T *st)
     static int
 time_differs(long t1, long t2)
 {
-#if defined(__linux__) || defined(MSWIN)
+#if defined(__linux__) || defined(WIN3264)
     /* On a FAT filesystem, esp. under Linux, there are only 5 bits to store
      * the seconds.  Since the roundoff is done when flushing the inode, the
      * time may change unexpectedly by one second!!! */
@@ -6022,11 +6022,11 @@ shorten_fname(char_u *full_path, char_u *dir_name)
     if (fnamencmp(dir_name, full_path, len) == 0)
     {
 	p = full_path + len;
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/*
-	 * MSWIN: when a file is in the root directory, dir_name will end in a
-	 * slash, since C: by itself does not define a specific dir. In this
-	 * case p may already be correct. <negri>
+	 * MS-Windows: when a file is in the root directory, dir_name will end
+	 * in a slash, since C: by itself does not define a specific dir. In
+	 * this case p may already be correct. <negri>
 	 */
 	if (!((len > 2) && (*(p - 2) == ':')))
 #endif
@@ -6039,7 +6039,7 @@ shorten_fname(char_u *full_path, char_u *dir_name)
 #endif
 	}
     }
-#if defined(MSWIN)
+#if defined(WIN3264)
     /*
      * When using a file in the current drive, remove the drive name:
      * "A:\dir\file" -> "\dir\file".  This helps when moving a session file on

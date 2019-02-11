@@ -6403,7 +6403,7 @@ vim_FullName(
 	/* something failed; use the file name (truncate when too long) */
 	vim_strncpy(buf, fname, len - 1);
     }
-#if defined(MSWIN)
+#if defined(WIN3264)
     slash_adjust(buf);
 #endif
     return retval;

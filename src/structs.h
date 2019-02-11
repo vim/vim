@@ -3467,7 +3467,7 @@ typedef struct
 # define EXPAND_FILENAMES
     int		literal;		/* don't expand file names */
 #endif
-#ifdef MSWIN
+#ifdef WIN3264
     int		full_path;		/* file name argument was full path */
 #endif
 #ifdef FEAT_DIFF

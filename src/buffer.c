@@ -4799,7 +4799,7 @@ fix_fname(char_u  *fname)
 # ifdef BACKSLASH_IN_FILENAME
 	    || strstr((char *)fname, "\\\\") != NULL
 # endif
-# if defined(MSWIN)
+# if defined(WIN3264)
 	    || vim_strchr(fname, '~') != NULL
 # endif
 	    )

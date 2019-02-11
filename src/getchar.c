@@ -5219,7 +5219,7 @@ check_map(
 }
 #endif
 
-#if defined(MSWIN) || defined(MACOS_X)
+#if defined(WIN3264) || defined(MACOS_X)
 
 #define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
 
@@ -5232,7 +5232,7 @@ static struct initmap
     int		mode;
 } initmappings[] =
 {
-#if defined(MSWIN)
+#if defined(WIN3264)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
 	/* paste, copy and cut */
@@ -5291,7 +5291,7 @@ static struct initmap
     void
 init_mappings(void)
 {
-#if defined(MSWIN) || defined(MACOS_X)
+#if defined(WIN3264) || defined(MACOS_X)
     int		i;
 
     for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
@@ -5299,7 +5299,7 @@ init_mappings(void)
 #endif
 }
 
-#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
+#if defined(WIN3264) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
 							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".

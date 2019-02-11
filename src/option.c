@@ -466,7 +466,7 @@ struct vimoption
 
 /* 'isprint' for latin1 is also used for MS-Windows cp1252, where 0x80 is used
  * for the currency sign. */
-#if defined(MSWIN)
+#if defined(WIN3264)
 # define ISP_LATIN1 (char_u *)"@,~-255"
 #else
 # define ISP_LATIN1 (char_u *)"@,161-255"
@@ -1613,7 +1613,7 @@ static struct vimoption options[] =
     {"isident",	    "isi",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_isi, PV_NONE,
 			    {
-#if defined(MSWIN)
+#if defined(WIN3264)
 			    (char_u *)"@,48-57,_,128-167,224-235",
 #else
 # ifdef EBCDIC
@@ -1639,7 +1639,7 @@ static struct vimoption options[] =
 				    "251-254",
 #else
 				(char_u *)"@,48-57,_",
-# if defined(MSWIN)
+# if defined(WIN3264)
 				(char_u *)"@,48-57,_,128-167,224-235"
 # else
 				ISK_LATIN1
@@ -1649,7 +1649,7 @@ static struct vimoption options[] =
     {"isprint",	    "isp",  P_STRING|P_VI_DEF|P_RALL|P_COMMA|P_NODUP,
 			    (char_u *)&p_isp, PV_NONE,
 			    {
-#if defined(MSWIN) || defined(VMS)
+#if defined(WIN3264) || defined(VMS)
 			    (char_u *)"@,~-255",
 #else
 # ifdef EBCDIC
@@ -1687,7 +1687,7 @@ static struct vimoption options[] =
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
-#ifdef MSWIN
+#ifdef WIN3264
 			    (char_u *)":help",
 #else
 # ifdef VMS
@@ -1928,7 +1928,7 @@ static struct vimoption options[] =
     {"mousemodel",  "mousem", P_STRING|P_VI_DEF,
 			    (char_u *)&p_mousem, PV_NONE,
 			    {
-#if defined(MSWIN)
+#if defined(WIN3264)
 				(char_u *)"popup",
 #else
 # if defined(MACOS_X)
@@ -2005,7 +2005,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"opendevice",  "odev", P_BOOL|P_VI_DEF,
-#if defined(MSWIN)
+#if defined(WIN3264)
 			    (char_u *)&p_odev, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -2051,7 +2051,7 @@ static struct vimoption options[] =
     {"path",	    "pa",   P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 			    (char_u *)&p_path, PV_PATH,
 			    {
-#if defined(AMIGA) || defined(MSWIN)
+#if defined(AMIGA) || defined(WIN3264)
 			    (char_u *)".,,",
 #else
 			    (char_u *)".,/usr/include,,",
@@ -2114,7 +2114,7 @@ static struct vimoption options[] =
 #ifdef FEAT_PRINTER
 			    (char_u *)&p_pfn, PV_NONE,
 			    {
-# ifdef MSWIN
+# ifdef WIN3264
 				(char_u *)"Courier_New:h10",
 # else
 				(char_u *)"courier",
@@ -2381,7 +2381,7 @@ static struct vimoption options[] =
     {"shellcmdflag","shcf", P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_shcf, PV_NONE,
 			    {
-#if defined(MSWIN)
+#if defined(WIN3264)
 			    (char_u *)"/c",
 #else
 			    (char_u *)"-c",
@@ -2926,7 +2926,7 @@ static struct vimoption options[] =
     {"viminfo",	    "vi",   P_STRING|P_ONECOMMA|P_NODUP|P_SECURE,
 #ifdef FEAT_VIMINFO
 			    (char_u *)&p_viminfo, PV_NONE,
-#if defined(MSWIN)
+#if defined(WIN3264)
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h,rA:,rB:"}
 #else
 # ifdef AMIGA
@@ -3312,7 +3312,7 @@ set_init_1(int clean_arg)
      * Don't use it if it is empty.
      */
     if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
-#if defined(MSWIN)
+#if defined(WIN3264)
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
 # ifdef WIN3264
 	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
@@ -3453,10 +3453,10 @@ set_init_1(int clean_arg)
     }
 #endif
 
-#if defined(FEAT_POSTSCRIPT) && (defined(MSWIN) || defined(VMS) || defined(EBCDIC) || defined(MAC) || defined(hpux))
+#if defined(FEAT_POSTSCRIPT) && (defined(WIN3264) || defined(VMS) || defined(EBCDIC) || defined(MAC) || defined(hpux))
     /* Set print encoding on platforms that don't default to latin1 */
     set_string_default("penc",
-# if defined(MSWIN)
+# if defined(WIN3264)
 		       (char_u *)"cp1252"
 # else
 #  ifdef VMS
@@ -3479,7 +3479,7 @@ set_init_1(int clean_arg)
 #ifdef FEAT_POSTSCRIPT
     /* 'printexpr' must be allocated to be able to evaluate it. */
     set_string_default("pexpr",
-# if defined(MSWIN)
+# if defined(WIN3264)
 	    (char_u *)"system('copy' . ' ' . v:fname_in . (&printdevice == '' ? ' LPT1:' : (' \"' . &printdevice . '\"'))) . delete(v:fname_in)"
 # else
 #  ifdef VMS
@@ -3646,7 +3646,7 @@ set_init_1(int clean_arg)
 		options[opt_idx].flags |= P_DEF_ALLOCED;
 	    }
 
-#if defined(MSWIN) || defined(MACOS_X) || defined(VMS)
+#if defined(WIN3264) || defined(MACOS_X) || defined(VMS)
 	    if (STRCMP(p_enc, "latin1") == 0 || enc_utf8)
 	    {
 		/* Adjust the default for 'isprint' and 'iskeyword' to match

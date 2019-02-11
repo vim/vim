@@ -64,7 +64,7 @@
 # if defined(UNIX) || defined(WIN3264) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
+#  if defined(WIN3264) || defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
@@ -407,12 +407,12 @@
  * +printer		":hardcopy" command
  * +postscript		Printing uses PostScript file output.
  */
-#if defined(FEAT_NORMAL) && (defined(MSWIN) || defined(FEAT_EVAL)) \
+#if defined(FEAT_NORMAL) && (defined(WIN3264) || defined(FEAT_EVAL)) \
 	&& !defined(AMIGA)
 # define FEAT_PRINTER
 #endif
-#if defined(FEAT_PRINTER) && ((defined(MSWIN) && defined(MSWINPS)) \
-	|| (!defined(MSWIN) && defined(FEAT_EVAL)))
+#if defined(FEAT_PRINTER) && ((defined(WIN3264) && defined(MSWINPS)) \
+	|| (!defined(WIN3264) && defined(FEAT_EVAL)))
 # define FEAT_POSTSCRIPT
 #endif
 

@@ -1111,7 +1111,7 @@ EXTERN int  wild_menu_showing INIT(= 0);
 # define WM_SCROLLED	2		/* wildmenu showing with scroll */
 #endif
 
-#ifdef MSWIN
+#ifdef WIN3264
 EXTERN char_u	toupper_tab[256];	/* table for toupper() */
 EXTERN char_u	tolower_tab[256];	/* table for tolower() */
 #endif
@@ -1526,7 +1526,7 @@ EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 EXTERN char e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
 #endif
 EXTERN char e_secure[]	INIT(= N_("E523: Not allowed here"));
-#if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
+#if defined(AMIGA) || defined(MACOS_X) || defined(WIN3264)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
 #endif

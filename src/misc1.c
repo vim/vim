@@ -4054,7 +4054,7 @@ expand_env_esc(
 		    && at_start
 #endif
 	   )
-#if defined(MSWIN)
+#if defined(WIN3264)
 		|| *src == '%'
 #endif
 		|| (*src == '~' && at_start))
@@ -4083,7 +4083,7 @@ expand_env_esc(
 #endif
 		{
 		    while (c-- > 0 && *tail != NUL && ((vim_isIDc(*tail))
-#if defined(MSWIN)
+#if defined(WIN3264)
 			    || (*src == '%' && *tail != '%')
 #endif
 			    ))
@@ -4092,7 +4092,7 @@ expand_env_esc(
 		    }
 		}
 
-#if defined(MSWIN) || defined(UNIX)
+#if defined(WIN3264) || defined(UNIX)
 # ifdef UNIX
 		if (src[1] == '{' && *tail != '}')
 # else
@@ -4110,7 +4110,7 @@ expand_env_esc(
 #endif
 		    *var = NUL;
 		    var = vim_getenv(dst, &mustfree);
-#if defined(MSWIN) || defined(UNIX)
+#if defined(WIN3264) || defined(UNIX)
 		}
 #endif
 	    }
@@ -4303,7 +4303,7 @@ vim_getenv(char_u *name, int *mustfree)
     char_u	*pend;
     int		vimruntime;
 
-#if defined(MSWIN)
+#if defined(WIN3264)
     /* use "C:/" when $HOME is not set */
     if (STRCMP(name, "HOME") == 0)
 	return homedir;
@@ -5105,7 +5105,7 @@ get_past_head(char_u *path)
 {
     char_u  *retval;
 
-#if defined(MSWIN)
+#if defined(WIN3264)
     /* may skip "c:" */
     if (isalpha(path[0]) && path[1] == ':')
 	retval = path + 2;
@@ -6302,7 +6302,7 @@ expand_path_option(char_u *curdir, garray_T *gap)
 	if (ga_grow(gap, 1) == FAIL)
 	    break;
 
-# if defined(MSWIN)
+# if defined(WIN3264)
 	/* Avoid the path ending in a backslash, it fails when a comma is
 	 * appended. */
 	len = (int)STRLEN(buf);
@@ -6340,7 +6340,7 @@ get_path_cutoff(char_u *fname, garray_T *gap)
 	int j = 0;
 
 	while ((fname[j] == path_part[i][j]
-# if defined(MSWIN)
+# if defined(WIN3264)
 		|| (vim_ispathsep(fname[j]) && vim_ispathsep(path_part[i][j]))
 #endif
 			     ) && fname[j] != NUL && path_part[i][j] != NUL)
@@ -6477,7 +6477,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
 	     */
 	    short_name = shorten_fname(path, curdir);
 	    if (short_name != NULL && short_name > path + 1
-#if defined(MSWIN)
+#if defined(WIN3264)
 		    /* On windows,
 		     *	    shorten_fname("c:\a\a.txt", "c:\a\b")
 		     * returns "\a\a.txt", which is not really the short
@@ -6620,7 +6620,7 @@ has_env_var(char_u *p)
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else if (vim_strchr((char_u *)
-#if defined(MSWIN)
+#if defined(WIN3264)
 				    "$%"
 #else
 				    "$"

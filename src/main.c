@@ -260,7 +260,7 @@ main
     }
 #endif
 
-#ifdef MSWIN
+#ifdef WIN3264
     if (GARGCOUNT == 1 && params.full_path)
     {
 	/*
@@ -2436,7 +2436,7 @@ scripterror:
 		mainerr(ME_TOO_MANY_ARGS, (char_u *)argv[0]);
 	    parmp->edit_type = EDIT_FILE;
 
-#ifdef MSWIN
+#ifdef WIN3264
 	    /* Remember if the argument was a full path before changing
 	     * slashes to backslashes. */
 	    if (argv[0][0] != NUL && argv[0][1] == ':' && argv[0][2] == '\\')
