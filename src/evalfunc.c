@@ -5271,6 +5271,8 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	return;
 
+    cleanup_jumplist(wp, TRUE);
+
     l = list_alloc();
     if (l == NULL)
 	return;
@@ -5278,8 +5280,6 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
 	return;
     list_append_number(rettv->vval.v_list, (varnumber_T)wp->w_jumplistidx);
-
-    cleanup_jumplist(wp, TRUE);
 
     for (i = 0; i < wp->w_jumplistlen; ++i)
     {
