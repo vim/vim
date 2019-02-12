@@ -2176,7 +2176,7 @@ ga_append(garray_T *gap, int c)
     }
 }
 
-#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(WIN3264) \
+#if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(MSWIN) \
 	|| defined(PROTO)
 /*
  * Append the text in "gap" below the cursor line and clear "gap".
@@ -3344,7 +3344,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
-	|| defined(WIN3264) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
+	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
@@ -5581,7 +5581,7 @@ find_file_in_path_option(
     if (vim_isAbsName(ff_file_to_find)
 	    /* "..", "../path", "." and "./path": don't use the path_option */
 	    || rel_to_curdir
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    /* handle "\tmp" as absolute path */
 	    || vim_ispathsep(ff_file_to_find[0])
 	    /* handle "c:name" as absolute path */
@@ -6111,7 +6111,7 @@ filewritable(char_u *fname)
     perm = mch_getperm(fname);
 #endif
     if (
-# ifdef WIN3264
+# ifdef MSWIN
 	    mch_writable(fname) &&
 # else
 # if defined(UNIX) || defined(VMS)

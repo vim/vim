@@ -275,7 +275,7 @@ static void	ex_sleep(exarg_T *eap);
 static void	do_exmap(exarg_T *eap, int isabbrev);
 static void	ex_winsize(exarg_T *eap);
 static void	ex_wincmd(exarg_T *eap);
-#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(WIN3264)
+#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(MSWIN)
 static void	ex_winpos(exarg_T *eap);
 #else
 # define ex_winpos	    ex_ni
@@ -3814,7 +3814,7 @@ set_one_cmd_context(
 
 	/* Check for environment variable */
 	if (*xp->xp_pattern == '$'
-#if defined(WIN3264)
+#if defined(MSWIN)
 		|| *xp->xp_pattern == '%'
 #endif
 		)
@@ -9356,7 +9356,7 @@ ex_wincmd(exarg_T *eap)
     }
 }
 
-#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(WIN3264)
+#if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(MSWIN)
 /*
  * ":winpos".
  */
@@ -9369,7 +9369,7 @@ ex_winpos(exarg_T *eap)
 
     if (*arg == NUL)
     {
-# if defined(FEAT_GUI) || defined(WIN3264)
+# if defined(FEAT_GUI) || defined(MSWIN)
 #  ifdef FEAT_GUI
 	if (gui.in_use && gui_mch_get_winpos(&x, &y) != FAIL)
 #  else
@@ -9407,7 +9407,7 @@ ex_winpos(exarg_T *eap)
 	else
 #  endif
 # else
-#  ifdef WIN3264
+#  ifdef MSWIN
 	    mch_set_winpos(x, y);
 #  endif
 # endif

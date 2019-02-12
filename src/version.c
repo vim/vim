@@ -704,7 +704,7 @@ static char *(features[]) =
 	"-viminfo",
 #endif
 	"+vreplace",
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_VTP
 	"+vtp",
 # else
@@ -744,7 +744,7 @@ static char *(features[]) =
 #else
 	"-xim",
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_XPM_W32
 	"+xpm_w32",
 # else
@@ -2770,7 +2770,7 @@ list_version(void)
      */
     init_longVersion();
     msg(longVersion);
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_GUI_W32
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit GUI version"));
@@ -2916,7 +2916,7 @@ list_version(void)
 #     ifdef FEAT_GUI_PHOTON
     msg_puts(_("with Photon GUI."));
 #     else
-#      if defined(WIN3264)
+#      if defined(MSWIN)
     msg_puts(_("with GUI."));
 #      else
 #	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON

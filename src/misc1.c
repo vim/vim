@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_CMDL_COMPL) && defined(WIN3264)
+#if defined(FEAT_CMDL_COMPL) && defined(MSWIN)
 # include <lm.h>
 #endif
 
@@ -3849,7 +3849,7 @@ init_homedir(void)
     var = mch_getenv((char_u *)"HOME");
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
     /*
      * Typically, $HOME is not defined on Windows, unless the user has
      * specifically defined it for Vim's sake.  However, on Windows NT
@@ -4054,7 +4054,7 @@ expand_env_esc(
 		    && at_start
 #endif
 	   )
-#if defined(WIN3264)
+#if defined(MSWIN)
 		|| *src == '%'
 #endif
 		|| (*src == '~' && at_start))
@@ -4083,7 +4083,7 @@ expand_env_esc(
 #endif
 		{
 		    while (c-- > 0 && *tail != NUL && ((vim_isIDc(*tail))
-#if defined(WIN3264)
+#if defined(MSWIN)
 			    || (*src == '%' && *tail != '%')
 #endif
 			    ))
@@ -4092,7 +4092,7 @@ expand_env_esc(
 		    }
 		}
 
-#if defined(WIN3264) || defined(UNIX)
+#if defined(MSWIN) || defined(UNIX)
 # ifdef UNIX
 		if (src[1] == '{' && *tail != '}')
 # else
@@ -4110,7 +4110,7 @@ expand_env_esc(
 #endif
 		    *var = NUL;
 		    var = vim_getenv(dst, &mustfree);
-#if defined(WIN3264) || defined(UNIX)
+#if defined(MSWIN) || defined(UNIX)
 		}
 #endif
 	    }
@@ -4303,7 +4303,7 @@ vim_getenv(char_u *name, int *mustfree)
     char_u	*pend;
     int		vimruntime;
 
-#if defined(WIN3264)
+#if defined(MSWIN)
     /* use "C:/" when $HOME is not set */
     if (STRCMP(name, "HOME") == 0)
 	return homedir;
@@ -4315,7 +4315,7 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
     {
-#if defined(WIN3264)
+#if defined(MSWIN)
 	if (enc_utf8)
 	{
 	    int	    len;
@@ -4359,7 +4359,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    else
 		p = mch_getenv((char_u *)"VIM");
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    if (enc_utf8)
 	    {
 		int	len;
@@ -4685,7 +4685,7 @@ init_users(void)
 	    add_user((char_u *)pw->pw_name, TRUE);
 	endpwent();
     }
-# elif defined(WIN3264)
+# elif defined(MSWIN)
     {
 	DWORD		nusers = 0, ntotal = 0, i;
 	PUSER_INFO_0	uinfo;
@@ -4817,7 +4817,7 @@ home_replace(
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     if (homedir_env == NULL)
 	homedir_env_orig = homedir_env = mch_getenv((char_u *)"USERPROFILE");
 #endif
@@ -5105,7 +5105,7 @@ get_past_head(char_u *path)
 {
     char_u  *retval;
 
-#if defined(WIN3264)
+#if defined(MSWIN)
     /* may skip "c:" */
     if (isalpha(path[0]) && path[1] == ':')
 	retval = path + 2;
@@ -5668,7 +5668,7 @@ static int vim_backtick(char_u *p);
 static int expand_backtick(garray_T *gap, char_u *pat, int flags);
 # endif
 
-# if defined(WIN3264)
+# if defined(MSWIN)
 /*
  * File name expansion code for MS-DOS, Win16 and Win32.  It's here because
  * it's shared between these systems.
@@ -5947,7 +5947,7 @@ mch_expandpath(
 {
     return dos_expandpath(gap, path, 0, flags, FALSE);
 }
-# endif /* WIN3264 */
+# endif // MSWIN
 
 #if (defined(UNIX) && !defined(VMS)) || defined(USE_UNIXFILENAME) \
 	|| defined(PROTO)
@@ -6302,7 +6302,7 @@ expand_path_option(char_u *curdir, garray_T *gap)
 	if (ga_grow(gap, 1) == FAIL)
 	    break;
 
-# if defined(WIN3264)
+# if defined(MSWIN)
 	/* Avoid the path ending in a backslash, it fails when a comma is
 	 * appended. */
 	len = (int)STRLEN(buf);
@@ -6340,7 +6340,7 @@ get_path_cutoff(char_u *fname, garray_T *gap)
 	int j = 0;
 
 	while ((fname[j] == path_part[i][j]
-# if defined(WIN3264)
+# if defined(MSWIN)
 		|| (vim_ispathsep(fname[j]) && vim_ispathsep(path_part[i][j]))
 #endif
 			     ) && fname[j] != NUL && path_part[i][j] != NUL)
@@ -6477,7 +6477,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
 	     */
 	    short_name = shorten_fname(path, curdir);
 	    if (short_name != NULL && short_name > path + 1
-#if defined(WIN3264)
+#if defined(MSWIN)
 		    /* On windows,
 		     *	    shorten_fname("c:\a\a.txt", "c:\a\b")
 		     * returns "\a\a.txt", which is not really the short
@@ -6620,7 +6620,7 @@ has_env_var(char_u *p)
 	if (*p == '\\' && p[1] != NUL)
 	    ++p;
 	else if (vim_strchr((char_u *)
-#if defined(WIN3264)
+#if defined(MSWIN)
 				    "$%"
 #else
 				    "$"
@@ -7096,7 +7096,7 @@ get_isolated_shell_name(void)
 {
     char_u *p;
 
-#ifdef WIN3264
+#ifdef MSWIN
     p = gettail(p_sh);
     p = vim_strnsave(p, (int)(skiptowhite(p) - p));
 #else

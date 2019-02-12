@@ -1073,7 +1073,7 @@ typedef struct
 {
     int		vc_type;	/* zero or one of the CONV_ values */
     int		vc_factor;	/* max. expansion factor */
-# ifdef WIN3264
+# ifdef MSWIN
     int		vc_cpfrom;	/* codepage to convert from (CONV_CODEPAGE) */
     int		vc_cpto;	/* codepage to convert to (CONV_CODEPAGE) */
 # endif
@@ -1101,7 +1101,7 @@ typedef struct
 #define CONV_TO_LATIN1		3
 #define CONV_TO_LATIN9		4
 #define CONV_ICONV		5
-#ifdef WIN3264
+#ifdef MSWIN
 # define CONV_CODEPAGE		10	/* codepage -> codepage */
 #endif
 #ifdef MACOS_X
@@ -1187,7 +1187,7 @@ typedef long_u hash_T;		/* Type for hi_hash */
 
 #ifdef FEAT_NUM64
 /* Use 64-bit Number. */
-# ifdef WIN3264
+# ifdef MSWIN
 #  ifdef PROTO
 typedef long		    varnumber_T;
 typedef unsigned long	    uvarnumber_T;
@@ -1554,7 +1554,7 @@ struct jobvar_S
 #ifdef UNIX
     char_u	*jv_termsig;	/* allocated */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     char_u	*jv_tty_type;	// allocated
 #endif
     int		jv_exitval;
@@ -3467,7 +3467,7 @@ typedef struct
 # define EXPAND_FILENAMES
     int		literal;		/* don't expand file names */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		full_path;		/* file name argument was full path */
 #endif
 #ifdef FEAT_DIFF

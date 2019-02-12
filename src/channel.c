@@ -5199,7 +5199,7 @@ job_free_contents(job_T *job)
 #ifdef UNIX
     vim_free(job->jv_termsig);
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     vim_free(job->jv_tty_type);
 #endif
     free_callback(job->jv_exit_cb, job->jv_exit_partial);
@@ -5971,7 +5971,7 @@ job_info(job_T *job, dict_T *dict)
 #ifdef UNIX
     dict_add_string(dict, "termsig", job->jv_termsig);
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     dict_add_string(dict, "tty_type", job->jv_tty_type);
 #endif
 

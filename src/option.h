@@ -18,7 +18,7 @@
 #ifdef AMIGA
 # define DFLT_EFM	"%f>%l:%c:%t:%n:%m,%f:%l: %t%*\\D%n: %m,%f %l %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f:%l:%m,%f|%l| %m"
 #else
-# if defined(WIN3264)
+# if defined(MSWIN)
 #  define DFLT_EFM	"%f(%l) \\=: %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f(%l) \\=: %m,%*[^ ] %f %l: %m,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,%f|%l| %m"
 # else
 #  if defined(__QNX__)
@@ -656,7 +656,7 @@ EXTERN char_u	*p_mzschemedll;	/* 'mzschemedll' */
 EXTERN char_u	*p_mzschemegcdll; /* 'mzschemegcdll' */
 # endif
 #endif
-#if defined(WIN3264)
+#if defined(MSWIN)
 EXTERN int	p_odev;		/* 'opendevice' */
 #endif
 EXTERN char_u	*p_opfunc;	/* 'operatorfunc' */
@@ -701,7 +701,7 @@ EXTERN long	p_report;	/* 'report' */
 #if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		/* 'previewheight' */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 EXTERN int	p_rs;		/* 'restorescreen' */
 #endif
 #ifdef FEAT_RIGHTLEFT
@@ -834,7 +834,7 @@ EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
-#if defined(WIN3264) && defined(FEAT_TERMINAL)
+#if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_twt;		// 'termwintype'
 #endif
 EXTERN int	p_terse;	/* 'terse' */
@@ -952,7 +952,7 @@ EXTERN long	p_wh;		/* 'winheight' */
 EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
-#if defined(WIN3264) && defined(FEAT_TERMINAL)
+#if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_winptydll;	/* 'winptydll' */
 #endif
 EXTERN int	p_ws;		/* 'wrapscan' */

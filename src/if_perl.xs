@@ -154,7 +154,7 @@ EXTERN_C void boot_DynaLoader(pTHX_ CV*);
 #if defined(DYNAMIC_PERL) || defined(PROTO)
 
 # ifndef DYNAMIC_PERL /* just generating prototypes */
-#  ifdef WIN3264
+#  ifdef MSWIN
 typedef int HANDLE;
 #  endif
 typedef int XSINIT_t;
@@ -164,7 +164,7 @@ typedef int XSUBADDR_t;
 typedef int perl_key;
 # endif
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define HANDLE void*
 #  define PERL_PROC void*

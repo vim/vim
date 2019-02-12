@@ -626,7 +626,7 @@ ml_setname(buf_T *buf)
     memfile_T	*mfp;
     char_u	*fname;
     char_u	*dirp;
-#if defined(WIN3264)
+#if defined(MSWIN)
     char_u	*p;
 #endif
 
@@ -657,7 +657,7 @@ ml_setname(buf_T *buf)
 	if (fname == NULL)	    /* no file name found for this dir */
 	    continue;
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 	/*
 	 * Set full pathname for swap file now, because a ":!cd dir" may
 	 * change directory without us knowing it.
@@ -689,7 +689,7 @@ ml_setname(buf_T *buf)
 	    vim_free(mfp->mf_fname);
 	    mfp->mf_fname = fname;
 	    vim_free(mfp->mf_ffname);
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    mfp->mf_ffname = NULL;  /* mf_fname is full pathname already */
 #else
 	    mf_set_ffname(mfp);
@@ -782,7 +782,7 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	/* consumes fname! */
 	{
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
 	     * change directory without us knowing it.
@@ -973,7 +973,7 @@ set_b0_fname(ZERO_BL *b0p, buf_T *buf)
 	b0p->b0_fname[0] = NUL;
     else
     {
-#if defined(WIN3264) || defined(AMIGA)
+#if defined(MSWIN) || defined(AMIGA)
 	/* Systems that cannot translate "~user" back into a path: copy the
 	 * file name unmodified.  Do use slashes instead of backslashes for
 	 * portability. */
@@ -1264,7 +1264,7 @@ ml_recover(void)
     {
 	msg_start();
 	msg_outtrans_attr(mfp->mf_fname, attr | MSG_HIST);
-#if defined(WIN3264)
+#if defined(MSWIN)
 	if (STRNCMP(b0p->b0_hname, "PC ", 3) == 0)
 	    msg_puts_attr(_(" cannot be used with this version of Vim.\n"),
 							     attr | MSG_HIST);
@@ -1807,7 +1807,7 @@ recover_names(
 #else
 		names[0] = vim_strsave((char_u *)"*.sw?");
 #endif
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 		/* For Unix names starting with a dot are special.  MS-Windows
 		 * supports this too, on some file systems. */
 		names[1] = vim_strsave((char_u *)".*.sw?");
@@ -1834,7 +1834,7 @@ recover_names(
 #else
 		names[0] = concat_fnames(dir_name, (char_u *)"*.sw?", TRUE);
 #endif
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 		/* For Unix names starting with a dot are special.  MS-Windows
 		 * supports this too, on some file systems. */
 		names[1] = concat_fnames(dir_name, (char_u *)".*.sw?", TRUE);
@@ -1851,7 +1851,7 @@ recover_names(
 	    }
 	    else
 	    {
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 		int	len = (int)STRLEN(dir_name);
 
 		p = dir_name + len;
@@ -1999,7 +1999,7 @@ recover_names(
     return file_count;
 }
 
-#if defined(UNIX) || defined(WIN3264) || defined(PROTO)
+#if defined(UNIX) || defined(MSWIN) || defined(PROTO)
 /*
  * Need _very_ long file names.
  * Append the full path to name with path separators made into percent
@@ -2175,7 +2175,7 @@ swapfile_info(char_u *fname)
 
 		if (b0_magic_wrong(&b0))
 		{
-#if defined(WIN3264)
+#if defined(MSWIN)
 		    if (STRNCMP(b0.b0_hname, "PC ", 3) == 0)
 			msg_puts(_("\n         [not usable with this version of Vim]"));
 		    else
@@ -2207,7 +2207,7 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
      */
     char_u	*p;
     int		i;
-# ifndef WIN3264
+# ifndef MSWIN
     int	    shortname = curbuf->b_shortname;
 
     curbuf->b_shortname = FALSE;
@@ -2252,7 +2252,7 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
     else
 	++num_names;
 
-# ifndef WIN3264
+# ifndef MSWIN
     /*
      * Also try with 'shortname' set, in case the file is on a DOS filesystem.
      */
@@ -2279,7 +2279,7 @@ recov_file_names(char_u **names, char_u *path, int prepend_dot)
 # endif
 
 end:
-# ifndef WIN3264
+# ifndef MSWIN
     curbuf->b_shortname = shortname;
 # endif
 
@@ -4253,7 +4253,7 @@ makeswapname(
     char_u	fname_buf[MAXPATHL];
 #endif
 
-#if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
+#if defined(UNIX) || defined(MSWIN)  // Need _very_ long file names
     int		len = (int)STRLEN(dir_name);
 
     s = dir_name + len;
@@ -4343,7 +4343,7 @@ get_file_in_dir(
     else
 	retval = concat_fnames(dname, tail, TRUE);
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (retval != NULL)
 	for (t = gettail(retval); *t != NUL; MB_PTR_ADV(t))
 	    if (*t == ':')
@@ -4474,7 +4474,7 @@ findswapname(
 # define CREATE_DUMMY_FILE
     FILE	*dummyfd = NULL;
 
-# ifdef WIN3264
+# ifdef MSWIN
     if (buf_fname != NULL && !mch_isFullName(buf_fname)
 				       && vim_strchr(gettail(buf_fname), ':'))
     {
@@ -4927,7 +4927,7 @@ findswapname(
 	mch_remove(buf_fname);
     }
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     if (buf_fname != buf->b_fname)
 	vim_free(buf_fname);
 #endif

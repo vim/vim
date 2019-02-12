@@ -61,10 +61,10 @@
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
-# if defined(UNIX) || defined(WIN3264) || defined(MACOS_X)
+# if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(WIN3264) || defined(VMS) || defined(AMIGA)
+#  if defined(MSWIN) || defined(VMS) || defined(AMIGA)
 #   define FEAT_BIG
 #  else
 #   define FEAT_NORMAL
@@ -343,10 +343,10 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
-# if defined(HAVE_FLOAT_FUNCS) || defined(WIN3264) || defined(MACOS_X)
+# if defined(HAVE_FLOAT_FUNCS) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_FLOAT
 # endif
-# if defined(HAVE_STDINT_H) || defined(WIN3264) || (VIM_SIZEOF_LONG >= 8)
+# if defined(HAVE_STDINT_H) || defined(MSWIN) || (VIM_SIZEOF_LONG >= 8)
 #  define FEAT_NUM64
 # endif
 #endif
@@ -361,7 +361,7 @@
 #if defined(FEAT_HUGE) \
 	&& defined(FEAT_EVAL) \
 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
-		|| defined(WIN3264))
+		|| defined(MSWIN))
 # define FEAT_PROFILE
 #endif
 
@@ -371,7 +371,7 @@
 #if defined(FEAT_NORMAL) \
 	&& defined(FEAT_EVAL) \
 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
-		|| defined(WIN3264))
+		|| defined(MSWIN))
 # define FEAT_RELTIME
 #endif
 
@@ -407,12 +407,12 @@
  * +printer		":hardcopy" command
  * +postscript		Printing uses PostScript file output.
  */
-#if defined(FEAT_NORMAL) && (defined(WIN3264) || defined(FEAT_EVAL)) \
+#if defined(FEAT_NORMAL) && (defined(MSWIN) || defined(FEAT_EVAL)) \
 	&& !defined(AMIGA)
 # define FEAT_PRINTER
 #endif
-#if defined(FEAT_PRINTER) && ((defined(WIN3264) && defined(MSWINPS)) \
-	|| (!defined(WIN3264) && defined(FEAT_EVAL)))
+#if defined(FEAT_PRINTER) && ((defined(MSWIN) && defined(MSWINPS)) \
+	|| (!defined(MSWIN) && defined(FEAT_EVAL)))
 # define FEAT_POSTSCRIPT
 #endif
 
@@ -659,7 +659,7 @@
 #if defined(HAVE_DLOPEN) && defined(HAVE_DLSYM)
 # define USE_DLOPEN
 #endif
-#if defined(FEAT_EVAL) && (defined(WIN3264) || ((defined(UNIX) || defined(VMS)) \
+#if defined(FEAT_EVAL) && (defined(MSWIN) || ((defined(UNIX) || defined(VMS)) \
 	&& (defined(USE_DLOPEN) || defined(HAVE_SHL_LOAD))))
 # define FEAT_LIBCALL
 #endif
@@ -828,7 +828,7 @@
  */
 #if defined(FEAT_NORMAL) \
 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
-		|| defined(WIN3264))
+		|| defined(MSWIN))
 # define STARTUPTIME 1
 #endif
 
@@ -1039,7 +1039,7 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_SGR
 # endif
-# if defined(FEAT_NORMAL) && defined(WIN3264)
+# if defined(FEAT_NORMAL) && defined(MSWIN)
 #  define DOS_MOUSE
 # endif
 # if defined(FEAT_NORMAL) && defined(__QNX__)
@@ -1145,7 +1145,7 @@
  *			when --servername is not passed on the command line.
  */
 #if defined(FEAT_CLIENTSERVER) && !defined(FEAT_AUTOSERVERNAME)
-# ifdef WIN3264
+# ifdef MSWIN
     /* Always enabled on MS-Windows. */
 #  define FEAT_AUTOSERVERNAME
 # else
@@ -1169,7 +1169,7 @@
  */
 #ifdef FEAT_NORMAL
 /* MS-DOS console and Win32 console can change cursor shape */
-# if defined(WIN3264) && !defined(FEAT_GUI_W32)
+# if defined(MSWIN) && !defined(FEAT_GUI_W32)
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
@@ -1340,13 +1340,13 @@
  * +filterpipe
  */
 #if (defined(UNIX) && !defined(USE_SYSTEM)) \
-	    || (defined(WIN3264) && defined(FEAT_GUI_W32))
+	    || (defined(MSWIN) && defined(FEAT_GUI_W32))
 # define FEAT_FILTERPIPE
 #endif
 
 /*
  * +vtp: Win32 virtual console.
  */
-#if !defined(FEAT_GUI) && defined(WIN3264)
+#if !defined(FEAT_GUI) && defined(MSWIN)
 # define FEAT_VTP
 #endif

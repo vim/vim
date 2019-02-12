@@ -1575,7 +1575,7 @@ gui_set_shellsize(
     if (!gui.shell_created)
 	return;
 
-#if defined(WIN3264) || defined(FEAT_GUI_GTK)
+#if defined(MSWIN) || defined(FEAT_GUI_GTK)
     /* If not setting to a user specified size and maximized, calculate the
      * number of characters that fit in the maximized window. */
     if (!mustset && (vim_strchr(p_go, GO_KEEPWINSIZE) != NULL
@@ -2432,7 +2432,7 @@ gui_outstr_nowrap(
 	int	curr_wide = FALSE;  /* use 'guifontwide' */
 	int	prev_wide = FALSE;
 	int	wide_changed;
-# ifdef WIN3264
+# ifdef MSWIN
 	int	sep_comp = FALSE;   /* Don't separate composing chars. */
 # else
 	int	sep_comp = TRUE;    /* Separate composing chars. */
@@ -3561,7 +3561,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		fix_size = TRUE;
 	}
 #endif
-#if defined(FEAT_MENU) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
+#if defined(FEAT_MENU) && !(defined(MSWIN) && !defined(FEAT_TEAROFF))
 	if (using_tearoff != prev_tearoff)
 	{
 	    gui_mch_toggle_tearoffs(using_tearoff);
@@ -4125,7 +4125,7 @@ gui_update_scrollbars(
     /* Update the horizontal scrollbar */
     gui_update_horiz_scrollbar(force);
 
-#ifndef WIN3264
+#ifndef MSWIN
     /* Return straight away if there is neither a left nor right scrollbar.
      * On MS-Windows this is required anyway for scrollwheel messages. */
     if (!gui.which_scrollbars[SBAR_LEFT] && !gui.which_scrollbars[SBAR_RIGHT])

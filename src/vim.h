@@ -127,16 +127,18 @@
 #if defined(FEAT_GUI_W32)
 # define FEAT_GUI_MSWIN
 #endif
-/* Practically everything is common to both Win32 and Win64 */
+/* Practically everything is common to both Win32 and Win64.
+ * Note: If you need to be a 64 bit version, use _WIN64 alone.
+ */
 #if defined(WIN32) || defined(_WIN64)
-# define WIN3264
+# define MSWIN
 #endif
 
 /*
  * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
  * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
  */
-#ifdef WIN3264
+#ifdef MSWIN
 # define VIM_SIZEOF_INT 4
 #endif
 
@@ -273,7 +275,7 @@
 # include "os_amiga.h"
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 # include "os_win32.h"
 #endif
 
@@ -449,7 +451,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 #ifdef _DCC
 # include <sys/stat.h>
 #endif
-#if defined(WIN3264)
+#if defined(MSWIN)
 # include <sys/stat.h>
 #endif
 
@@ -1710,7 +1712,7 @@ void *vim_memset(void *, int, size_t);
 # define write_eintr(fd, buf, count) vim_write((fd), (buf), (count))
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 /* On MS-Windows the third argument isn't size_t.  This matters for Win64,
  * where sizeof(size_t)==8, not 4 */
 # define vim_read(fd, buf, count)   read((fd), (char *)(buf), (unsigned int)(count))
@@ -1749,7 +1751,7 @@ void *vim_memset(void *, int, size_t);
 #define MB_MAXBYTES	21
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
-# ifdef WIN3264
+# ifdef MSWIN
 typedef LARGE_INTEGER proftime_T;
 # else
 typedef struct timeval proftime_T;
@@ -1766,7 +1768,7 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #ifdef PROTO
 typedef long  time_T;
 #else
-# ifdef WIN3264
+# ifdef MSWIN
 typedef __time64_t  time_T;
 # else
 typedef time_t	    time_T;
@@ -2036,7 +2038,7 @@ typedef struct VimClipboard
     GdkAtom     gtk_sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
 # endif
 
-# if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+# if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
     int_u	format;		/* Vim's own special clipboard format */
     int_u	format_raw;	/* Vim's raw text clipboard format */
 # endif
@@ -2126,7 +2128,7 @@ typedef enum {
 
 /* This must come after including proto.h.
  * For VMS this is defined in macros.h. */
-#if !defined(WIN3264) && !defined(VMS)
+#if !defined(MSWIN) && !defined(VMS)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif

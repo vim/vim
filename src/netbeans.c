@@ -1431,7 +1431,7 @@ nb_do_cmd(
 		if (buf_was_empty)
 		{
 		    if (ff_detected == EOL_UNKNOWN)
-#if defined(WIN3264)
+#if defined(MSWIN)
 			ff_detected = EOL_DOS;
 #else
 			ff_detected = EOL_UNIX;

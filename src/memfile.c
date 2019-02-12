@@ -1240,7 +1240,7 @@ mf_do_open(
      * fname cannot be NameBuff, because it must have been allocated.
      */
     mf_set_ffname(mfp);
-#if defined(WIN3264)
+#if defined(MSWIN)
     /*
      * A ":!cd e:xxx" may change the directory without us knowing, use the
      * full pathname always.  Careful: This frees fname!

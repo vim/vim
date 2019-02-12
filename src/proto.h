@@ -38,7 +38,7 @@
 # if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
 # endif
-# ifdef WIN3264
+# ifdef MSWIN
 #  include "os_win32.pro"
 #  include "os_mswin.pro"
 #  include "winclip.pro"

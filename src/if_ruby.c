@@ -331,7 +331,7 @@ static void ruby_vim_init(void);
 # endif
 # define ruby_init			dll_ruby_init
 # define ruby_init_loadpath		dll_ruby_init_loadpath
-# ifdef WIN3264
+# ifdef MSWIN
 #  ifdef RUBY19_OR_LATER
 #   define ruby_sysinit			dll_ruby_sysinit
 #  else
@@ -447,7 +447,7 @@ static VALUE *dll_ruby_errinfo;
 # endif
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
-# ifdef WIN3264
+# ifdef MSWIN
 #  ifdef RUBY19_OR_LATER
 static void (*dll_ruby_sysinit) (int*, char***);
 #  else
@@ -666,7 +666,7 @@ static struct
 # endif
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
-# ifdef WIN3264
+# ifdef MSWIN
 #  ifdef RUBY19_OR_LATER
     {"ruby_sysinit", (RUBY_PROC*)&dll_ruby_sysinit},
 #  else

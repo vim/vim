@@ -123,7 +123,7 @@ static void f_cosh(typval_T *argvars, typval_T *rettv);
 static void f_count(typval_T *argvars, typval_T *rettv);
 static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
-#ifdef WIN3264
+#ifdef MSWIN
 static void f_debugbreak(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
@@ -599,7 +599,7 @@ static struct fst
     {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
     {"cursor",		1, 3, f_cursor},
-#ifdef WIN3264
+#ifdef MSWIN
     {"debugbreak",	1, 1, f_debugbreak},
 #endif
     {"deepcopy",	1, 2, f_deepcopy},
@@ -2884,7 +2884,7 @@ f_cursor(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 0;
 }
 
-#ifdef WIN3264
+#ifdef MSWIN
 /*
  * "debugbreak()" function
  */
@@ -6529,7 +6529,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TERMGUICOLORS
 	"termguicolors",
 #endif
-#if defined(FEAT_TERMINAL) && !defined(WIN3264)
+#if defined(FEAT_TERMINAL) && !defined(MSWIN)
 	"terminal",
 #endif
 #ifdef TERMINFO
@@ -6734,11 +6734,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "netbeans_enabled") == 0)
 	    n = netbeans_active();
 #endif
-#if defined(FEAT_TERMINAL) && defined(WIN3264)
+#if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "terminal") == 0)
 	    n = terminal_enabled();
 #endif
-#if defined(FEAT_TERMINAL) && defined(WIN3264)
+#if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "conpty") == 0)
 	    n = use_conpty();
 #endif
@@ -9312,7 +9312,7 @@ list2proftime(typval_T *arg, proftime_T *tm)
 	return FAIL;
     n1 = list_find_nr(arg->vval.v_list, 0L, &error);
     n2 = list_find_nr(arg->vval.v_list, 1L, &error);
-# ifdef WIN3264
+# ifdef MSWIN
     tm->HighPart = n1;
     tm->LowPart = n2;
 # else
@@ -9357,7 +9357,7 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     {
 	long	n1, n2;
 
-# ifdef WIN3264
+# ifdef MSWIN
 	n1 = res.HighPart;
 	n2 = res.LowPart;
 # else

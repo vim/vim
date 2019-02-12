@@ -65,7 +65,7 @@ typedef struct sb_line_S {
     cellattr_T	sb_fill_attr;	/* for short line */
 } sb_line_T;
 
-#ifdef WIN3264
+#ifdef MSWIN
 # ifndef HPCON
 #  define HPCON VOID*
 # endif
@@ -111,7 +111,7 @@ struct terminal_S {
 
     char_u	*tl_arg0_cmd;	// To format the status bar
 
-#ifdef WIN3264
+#ifdef MSWIN
     void	*tl_winpty_config;
     void	*tl_winpty;
 
@@ -169,7 +169,7 @@ static term_T *first_term = NULL;
 /* Terminal active in terminal_loop(). */
 static term_T *in_terminal_loop = NULL;
 
-#ifdef WIN3264
+#ifdef MSWIN
 static BOOL has_winpty = FALSE;
 static BOOL has_conpty = FALSE;
 #endif
@@ -319,7 +319,7 @@ init_job_options(jobopt_T *opt)
     static void
 setup_job_options(jobopt_T *opt, int rows, int cols)
 {
-#ifndef WIN3264
+#ifndef MSWIN
     /* Win32: Redirecting the job output won't work, thus always connect stdout
      * here. */
     if (!(opt->jo_set & JO_OUT_IO))
@@ -332,7 +332,7 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 	opt->jo_set |= JO_OUT_IO + JO_OUT_BUF + JO_OUT_MODIFIABLE;
     }
 
-#ifndef WIN3264
+#ifndef MSWIN
     /* Win32: Redirecting the job output won't work, thus always connect stderr
      * here. */
     if (!(opt->jo_set & JO_ERR_IO))
@@ -564,7 +564,7 @@ term_start(
     curbuf->b_p_ma = FALSE;
 
     set_term_and_win_size(term);
-#ifdef WIN3264
+#ifdef MSWIN
     mch_memmove(orig_opt.jo_io, opt->jo_io, sizeof(orig_opt.jo_io));
 #endif
     setup_job_options(opt, term->tl_rows, term->tl_cols);
@@ -742,7 +742,7 @@ ex_terminal(exarg_T *eap)
 	    vim_free(buf);
 	    *p = ' ';
 	}
-#ifdef WIN3264
+#ifdef MSWIN
 	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "type", 4) == 0
 								 && ep != NULL)
 	{
@@ -818,7 +818,7 @@ term_write_session(FILE *fd, win_T *wp)
     if (fprintf(fd, "terminal ++curwin ++cols=%d ++rows=%d ",
 		term->tl_cols, term->tl_rows) < 0)
 	return FAIL;
-#ifdef WIN3264
+#ifdef MSWIN
     if (fprintf(fd, "++type=%s ", term->tl_job->jv_tty_type) < 0)
 	return FAIL;
 #endif
@@ -923,7 +923,7 @@ free_unused_terminals()
 	vim_free(term->tl_opencmd);
 	vim_free(term->tl_eof_chars);
 	vim_free(term->tl_arg0_cmd);
-#ifdef WIN3264
+#ifdef MSWIN
 	if (term->tl_out_fd != NULL)
 	    fclose(term->tl_out_fd);
 #endif
@@ -1018,7 +1018,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
     size_t	len = STRLEN(msg);
     term_T	*term = buffer->b_term;
 
-#ifdef WIN3264
+#ifdef MSWIN
     /* Win32: Cannot redirect output of the job, intercept it here and write to
      * the file. */
     if (term->tl_out_fd != NULL)
@@ -1462,7 +1462,7 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
     linenr_T	lnum = buf->b_ml.ml_line_count;
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (!enc_utf8 && enc_codepage > 0)
     {
 	WCHAR   *ret = NULL;
@@ -1859,7 +1859,7 @@ term_vgetc()
 
     State = TERMINAL;
     got_int = FALSE;
-#ifdef WIN3264
+#ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
 #endif
     c = vgetc();
@@ -2000,7 +2000,7 @@ term_paste_register(int prev_c UNUSED)
 	for (item = l->lv_first; item != NULL; item = item->li_next)
 	{
 	    char_u *s = tv_get_string(&item->li_tv);
-#ifdef WIN3264
+#ifdef MSWIN
 	    char_u *tmp = s;
 
 	    if (!enc_utf8 && enc_codepage > 0)
@@ -2020,7 +2020,7 @@ term_paste_register(int prev_c UNUSED)
 #endif
 	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
 						      s, (int)STRLEN(s), NULL);
-#ifdef WIN3264
+#ifdef MSWIN
 	    if (tmp != s)
 		vim_free(s);
 #endif
@@ -2277,7 +2277,7 @@ terminal_loop(int blocking)
 	}
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 	/* On Windows winpty handles CTRL-C, don't send a CTRL_C_EVENT.
 	 * Use CTRL-BREAK to kill the job. */
 	if (ctrl_break_was_pressed)
@@ -2354,7 +2354,7 @@ terminal_loop(int blocking)
 		goto theend;
 	    }
 	}
-# ifdef WIN3264
+# ifdef MSWIN
 	if (!enc_utf8 && has_mbyte && c >= 0x80)
 	{
 	    WCHAR   wc;
@@ -2703,7 +2703,7 @@ handle_settermprop(
 	    // Empty corrupted data of winpty
 	    else if (STRNCMP("  - ", (char_u *)value->string, 4) == 0)
 		term->tl_title = NULL;
-#ifdef WIN3264
+#ifdef MSWIN
 	    else if (!enc_utf8 && enc_codepage > 0)
 	    {
 		WCHAR   *ret = NULL;
@@ -2965,7 +2965,7 @@ term_channel_closed(channel_T *ch)
 
 	    VIM_CLEAR(term->tl_title);
 	    VIM_CLEAR(term->tl_status_text);
-#ifdef WIN3264
+#ifdef MSWIN
 	    if (term->tl_out_fd != NULL)
 	    {
 		fclose(term->tl_out_fd);
@@ -3077,7 +3077,7 @@ term_line2screenline(VTermScreen *screen, VTermPos *pos, int max_col)
 		    ScreenLinesUC[off] = NUL;
 		}
 	    }
-#ifdef WIN3264
+#ifdef MSWIN
 	    else if (has_mbyte && c >= 0x80)
 	    {
 		char_u	mb[MB_MAXBYTES+1];
@@ -3450,7 +3450,7 @@ init_default_colors(term_T *term)
     }
     else
     {
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+#if defined(MSWIN) && !defined(FEAT_GUI_W32)
 	int tmp;
 #endif
 
@@ -3458,7 +3458,7 @@ init_default_colors(term_T *term)
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
-# if defined(WIN3264) && !defined(FEAT_GUI_W32)
+# if defined(MSWIN) && !defined(FEAT_GUI_W32)
 	    tmp = fg->red;
 	    fg->red = fg->blue;
 	    fg->blue = tmp;
@@ -3472,7 +3472,7 @@ init_default_colors(term_T *term)
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
-# if defined(WIN3264) && !defined(FEAT_GUI_W32)
+# if defined(MSWIN) && !defined(FEAT_GUI_W32)
 	    tmp = bg->red;
 	    bg->red = bg->blue;
 	    bg->blue = tmp;
@@ -3815,7 +3815,7 @@ create_vterm(term_T *term, int rows, int cols)
     /* For unix do not use a blinking cursor.  In an xterm this causes the
      * cursor to blink if it's blinking in the xterm.
      * For Windows we respect the system wide setting. */
-#ifdef WIN3264
+#ifdef MSWIN
     if (GetCaretBlinkTime() == INFINITE)
 	value.boolean = 0;
     else
@@ -5464,7 +5464,7 @@ term_send_eof(channel_T *ch)
 					(int)STRLEN(term->tl_eof_chars), NULL);
 		channel_send(ch, PART_IN, (char_u *)"\r", 1, NULL);
 	    }
-# ifdef WIN3264
+# ifdef MSWIN
 	    else
 		/* Default: CTRL-D */
 		channel_send(ch, PART_IN, (char_u *)"\004\r", 2, NULL);
@@ -5480,7 +5480,7 @@ term_getjob(term_T *term)
 }
 #endif
 
-# if defined(WIN3264) || defined(PROTO)
+# if defined(MSWIN) || defined(PROTO)
 
 /**************************************
  * 2. MS-Windows implementation.

@@ -19,7 +19,7 @@
 # include <limits.h>
 #endif
 
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+#if defined(MSWIN) && !defined(FEAT_GUI_W32)
 # include "iscygpty.h"
 #endif
 
@@ -260,7 +260,7 @@ main
     }
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (GARGCOUNT == 1 && params.full_path)
     {
 	/*
@@ -865,7 +865,7 @@ vim_main2(void)
     }
 #endif
 
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+#if defined(MSWIN) && !defined(FEAT_GUI_W32)
     mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
@@ -2436,7 +2436,7 @@ scripterror:
 		mainerr(ME_TOO_MANY_ARGS, (char_u *)argv[0]);
 	    parmp->edit_type = EDIT_FILE;
 
-#ifdef WIN3264
+#ifdef MSWIN
 	    /* Remember if the argument was a full path before changing
 	     * slashes to backslashes. */
 	    if (argv[0][0] != NUL && argv[0][1] == ':' && argv[0][2] == '\\')
@@ -2577,7 +2577,7 @@ check_tty(mparm_T *parmp)
 	    exit(1);
 	}
 #endif
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+#if defined(MSWIN) && !defined(FEAT_GUI_W32)
 	if (is_cygpty_used())
 	{
 # if defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
@@ -3479,7 +3479,7 @@ check_swap_exists_action(void)
 #if defined(STARTUPTIME) || defined(PROTO)
 static struct timeval	prev_timeval;
 
-# ifdef WIN3264
+# ifdef MSWIN
 /*
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */

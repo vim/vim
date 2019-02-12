@@ -19,7 +19,7 @@
  */
 EXTERN long	Rows			/* nr of rows in the screen */
 #ifdef DO_INIT
-# if defined(WIN3264)
+# if defined(MSWIN)
 			    = 25L
 # else
 			    = 24L
@@ -818,7 +818,7 @@ EXTERN int	enc_dbcs INIT(= 0);		/* One of DBCS_xxx values if
 EXTERN int	enc_unicode INIT(= 0);	/* 2: UCS-2 or UTF-16, 4: UCS-4 */
 EXTERN int	enc_utf8 INIT(= FALSE);		/* UTF-8 encoded Unicode */
 EXTERN int	enc_latin1like INIT(= TRUE);	/* 'encoding' is latin1 comp. */
-#if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /* Codepage nr of 'encoding'.  Negative means it's not been set yet, zero
  * means 'encoding' is not a valid codepage. */
 EXTERN int	enc_codepage INIT(= -1);
@@ -826,7 +826,7 @@ EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
 #endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
 #endif
 
@@ -1111,7 +1111,7 @@ EXTERN int  wild_menu_showing INIT(= 0);
 # define WM_SCROLLED	2		/* wildmenu showing with scroll */
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 EXTERN char_u	toupper_tab[256];	/* table for toupper() */
 EXTERN char_u	tolower_tab[256];	/* table for tolower() */
 #endif
@@ -1526,7 +1526,7 @@ EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 EXTERN char e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
 #endif
 EXTERN char e_secure[]	INIT(= N_("E523: Not allowed here"));
-#if defined(AMIGA) || defined(MACOS_X) || defined(WIN3264)  \
+#if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
 #endif
@@ -1647,7 +1647,7 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #endif
 

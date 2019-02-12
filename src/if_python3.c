@@ -112,7 +112,7 @@ typedef PySliceObject PySliceObject_T;
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*

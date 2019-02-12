@@ -533,7 +533,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_PAGEUP,		"\316I"},
 # endif
 
-# if defined(WIN3264) || defined(ALL_BUILTIN_TCAPS)
+# if defined(MSWIN) || defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid for the Win32 Console .  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
@@ -1375,7 +1375,7 @@ termgui_mch_get_rgb(guicolor_T color)
 # define DEFAULT_TERM	(char_u *)"amiga"
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 # define DEFAULT_TERM	(char_u *)"win32"
 #endif
 
@@ -2034,7 +2034,7 @@ set_termname(char_u *term)
 	/* termcap failed to report size */
 	/* set defaults, in case ui_get_shellsize() also fails */
 	width = 80;
-#if defined(WIN3264)
+#if defined(MSWIN)
 	height = 25;	    /* console is often 25 lines */
 #else
 	height = 24;	    /* most terminals are 24 lines */
@@ -2520,7 +2520,7 @@ termcapinit(char_u *name)
 		 && strcmp((char *)mch_getenv((char_u *)"TERM"), "ansi") == 0)
 	term = DEFAULT_TERM;
 #endif
-#ifndef WIN3264
+#ifndef MSWIN
     if (term == NULL)
 	term = mch_getenv((char_u *)"TERM");
 #endif
@@ -4080,7 +4080,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	return;
     }
 
-#if defined(WIN3264) && !defined(FEAT_GUI)
+#if defined(MSWIN) && !defined(FEAT_GUI)
     s = vim_strnsave(string, (int)STRLEN(string) + 1);
 #else
     s = vim_strsave(string);
@@ -4095,7 +4095,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	s[0] = term_7to8bit(string);
     }
 
-#if defined(WIN3264) && !defined(FEAT_GUI)
+#if defined(MSWIN) && !defined(FEAT_GUI)
     if (s[0] == K_NUL)
     {
 	STRMOVE(s + 1, s);
@@ -5277,7 +5277,7 @@ check_termcode(
 #endif
 	    )
 	{
-#  if !defined(WIN3264)
+#  if !defined(MSWIN)
 		/*
 		 * Handle mouse events.
 		 * Recognize the xterm mouse wheel, but not in the GUI, the
@@ -6719,7 +6719,7 @@ translate_mapping(
 }
 #endif
 
-#if (defined(WIN3264) && !defined(FEAT_GUI)) || defined(PROTO)
+#if (defined(MSWIN) && !defined(FEAT_GUI)) || defined(PROTO)
 static char ksme_str[20];
 static char ksmr_str[20];
 static char ksmd_str[20];
@@ -7073,7 +7073,7 @@ gui_get_rgb_color_cmn(int r, int g, int b)
 }
 #endif
 
-#if (defined(WIN3264) && !defined(FEAT_GUI_W32)) || defined(FEAT_TERMINAL) \
+#if (defined(MSWIN) && !defined(FEAT_GUI_W32)) || defined(FEAT_TERMINAL) \
 	|| defined(PROTO)
 static int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF

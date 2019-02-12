@@ -9934,7 +9934,7 @@ var_exists(char_u *var)
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
 
-#ifdef WIN3264
+#ifdef MSWIN
 /*
  * Functions for ":8" filename modifier: get 8.3 version of a filename.
  */
@@ -10169,7 +10169,7 @@ shortpath_for_partial(
 
     return OK;
 }
-#endif /* WIN3264 */
+#endif // MSWIN
 
 /*
  * Adjust a filename, according to a string of modifiers.
@@ -10193,7 +10193,7 @@ modify_fname(
     char_u	dirname[MAXPATHL];
     int		c;
     int		has_fullname = 0;
-#ifdef WIN3264
+#ifdef MSWIN
     char_u	*fname_start = *fnamep;
     int		has_shortname = 0;
 #endif
@@ -10248,7 +10248,7 @@ repeat:
 		return -1;
 	}
 
-#ifdef WIN3264
+#ifdef MSWIN
 # if _WIN32_WINNT >= 0x0500
 	if (vim_strchr(*fnamep, '~') != NULL)
 	{
@@ -10291,7 +10291,7 @@ repeat:
 	*usedlen += 2;
 	if (c == '8')
 	{
-#ifdef WIN3264
+#ifdef MSWIN
 	    has_shortname = 1; /* Postpone this. */
 #endif
 	    continue;
@@ -10384,12 +10384,12 @@ repeat:
     if (src[*usedlen] == ':' && src[*usedlen + 1] == '8')
     {
 	*usedlen += 2;
-#ifdef WIN3264
+#ifdef MSWIN
 	has_shortname = 1;
 #endif
     }
 
-#ifdef WIN3264
+#ifdef MSWIN
     /*
      * Handle ":8" after we have done 'heads' and before we do 'tails'.
      */
@@ -10433,7 +10433,7 @@ repeat:
 	    *fnamelen = l;
 	}
     }
-#endif /* WIN3264 */
+#endif // MSWIN
 
     /* ":t" - tail, just the basename */
     if (src[*usedlen] == ':' && src[*usedlen + 1] == 't')

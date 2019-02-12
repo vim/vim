@@ -1048,7 +1048,7 @@ dbg_breakpoint(char_u *name, linenr_T lnum)
     void
 profile_start(proftime_T *tm)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     QueryPerformanceCounter(tm);
 # else
     gettimeofday(tm, NULL);
@@ -1063,7 +1063,7 @@ profile_end(proftime_T *tm)
 {
     proftime_T now;
 
-# ifdef WIN3264
+# ifdef MSWIN
     QueryPerformanceCounter(&now);
     tm->QuadPart = now.QuadPart - tm->QuadPart;
 # else
@@ -1084,7 +1084,7 @@ profile_end(proftime_T *tm)
     void
 profile_sub(proftime_T *tm, proftime_T *tm2)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     tm->QuadPart -= tm2->QuadPart;
 # else
     tm->tv_usec -= tm2->tv_usec;
@@ -1106,7 +1106,7 @@ profile_msg(proftime_T *tm)
 {
     static char buf[50];
 
-# ifdef WIN3264
+# ifdef MSWIN
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
@@ -1124,7 +1124,7 @@ profile_msg(proftime_T *tm)
     float_T
 profile_float(proftime_T *tm)
 {
-#  ifdef WIN3264
+#  ifdef MSWIN
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
@@ -1145,7 +1145,7 @@ profile_setlimit(long msec, proftime_T *tm)
 	profile_zero(tm);
     else
     {
-# ifdef WIN3264
+# ifdef MSWIN
 	LARGE_INTEGER   fr;
 
 	QueryPerformanceCounter(tm);
@@ -1170,7 +1170,7 @@ profile_passed_limit(proftime_T *tm)
 {
     proftime_T	now;
 
-# ifdef WIN3264
+# ifdef MSWIN
     if (tm->QuadPart == 0)  /* timer was not set */
 	return FALSE;
     QueryPerformanceCounter(&now);
@@ -1190,7 +1190,7 @@ profile_passed_limit(proftime_T *tm)
     void
 profile_zero(proftime_T *tm)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     tm->QuadPart = 0;
 # else
     tm->tv_usec = 0;
@@ -1207,7 +1207,7 @@ static long	last_timer_id = 0;
     long
 proftime_time_left(proftime_T *due, proftime_T *now)
 {
-#  ifdef WIN3264
+#  ifdef MSWIN
     LARGE_INTEGER fr;
 
     if (now->QuadPart > due->QuadPart)
@@ -1593,7 +1593,7 @@ profile_divide(proftime_T *tm, int count, proftime_T *tm2)
 	profile_zero(tm2);
     else
     {
-# ifdef WIN3264
+# ifdef MSWIN
 	tm2->QuadPart = tm->QuadPart / count;
 # else
 	double usec = (tm->tv_sec * 1000000.0 + tm->tv_usec) / count;
@@ -1618,7 +1618,7 @@ static proftime_T prof_wait_time;
     void
 profile_add(proftime_T *tm, proftime_T *tm2)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     tm->QuadPart += tm2->QuadPart;
 # else
     tm->tv_usec += tm2->tv_usec;
@@ -1639,7 +1639,7 @@ profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
 {
     /* Check that the result won't be negative.  Can happen with recursive
      * calls. */
-#ifdef WIN3264
+#ifdef MSWIN
     if (total->QuadPart <= children->QuadPart)
 	return;
 #else
@@ -1679,7 +1679,7 @@ profile_sub_wait(proftime_T *tm, proftime_T *tma)
     int
 profile_equal(proftime_T *tm1, proftime_T *tm2)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     return (tm1->QuadPart == tm2->QuadPart);
 # else
     return (tm1->tv_usec == tm2->tv_usec && tm1->tv_sec == tm2->tv_sec);
@@ -1692,7 +1692,7 @@ profile_equal(proftime_T *tm1, proftime_T *tm2)
     int
 profile_cmp(const proftime_T *tm1, const proftime_T *tm2)
 {
-# ifdef WIN3264
+# ifdef MSWIN
     return (int)(tm2->QuadPart - tm1->QuadPart);
 # else
     if (tm1->tv_sec == tm2->tv_sec)

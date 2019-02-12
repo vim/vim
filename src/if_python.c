@@ -127,7 +127,7 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define HINSTANCE long_u		/* for generating prototypes */
 # endif
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*

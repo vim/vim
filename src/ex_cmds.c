@@ -1527,7 +1527,7 @@ do_shell(
 #ifndef FEAT_GUI_MSWIN
     int		save_nwr;
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		winstart = FALSE;
 #endif
 
@@ -1542,7 +1542,7 @@ do_shell(
 	return;
     }
 
-#ifdef WIN3264
+#ifdef MSWIN
     /*
      * Check if ":!start" is used.
      */
@@ -1557,12 +1557,12 @@ do_shell(
     msg_putchar('\r');			/* put cursor at start of line */
     if (!autocmd_busy)
     {
-#ifdef WIN3264
+#ifdef MSWIN
 	if (!winstart)
 #endif
 	    stoptermcap();
     }
-#ifdef WIN3264
+#ifdef MSWIN
     if (!winstart)
 #endif
 	msg_putchar('\n');		/* may shift screen one line up */
@@ -1618,7 +1618,7 @@ do_shell(
 	 */
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
-# ifdef WIN3264
+# ifdef MSWIN
 		|| (winstart && !need_wait_return)
 # endif
 	   )
@@ -1645,7 +1645,7 @@ do_shell(
 	}
 #endif /* FEAT_GUI_W32 */
 
-#ifdef WIN3264
+#ifdef MSWIN
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
 #endif
 	    starttermcap();	/* start termcap if not done by wait_return() */
@@ -1935,7 +1935,7 @@ write_viminfo(char_u *file, int forceit)
     int		shortname = FALSE;	/* use 8.3 file name */
     stat_T	st_old;		/* mch_stat() of existing viminfo file */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		hidden = FALSE;
 #endif
 
@@ -1999,7 +1999,7 @@ write_viminfo(char_u *file, int forceit)
 	    goto end;
 	}
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Get the file attributes of the existing viminfo file. */
 	hidden = mch_ishidden(fname);
 #endif
@@ -2195,7 +2195,7 @@ write_viminfo(char_u *file, int forceit)
 		++viminfo_errcnt;
 		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
 	    }
-# ifdef WIN3264
+# ifdef MSWIN
 	    /* If the viminfo file was hidden then also hide the new file. */
 	    else if (hidden)
 		mch_hide(fname);
@@ -2231,7 +2231,7 @@ viminfo_filename(char_u *file)
 # ifdef VMS
 	    if (mch_getenv((char_u *)"SYS$LOGIN") == NULL)
 # else
-#  ifdef WIN3264
+#  ifdef MSWIN
 	    /* Use $VIM only if $HOME is the default "C:/". */
 	    if (STRCMP(vim_getenv((char_u *)"HOME", NULL), "C:/") == 0
 		    && mch_getenv((char_u *)"HOME") == NULL)

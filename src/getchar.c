@@ -3107,7 +3107,7 @@ fix_input_buffer(char_u *buf, int len)
 	if (p[0] == NUL || (p[0] == K_SPECIAL
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
-#if defined(WIN3264) && !defined(FEAT_GUI)
+#if defined(MSWIN) && !defined(FEAT_GUI)
 		    /* Win32 console passes modifiers */
 		    && (i < 2 || p[1] != KS_MODIFIER)
 #endif
@@ -5219,7 +5219,7 @@ check_map(
 }
 #endif
 
-#if defined(WIN3264) || defined(MACOS_X)
+#if defined(MSWIN) || defined(MACOS_X)
 
 #define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
 
@@ -5232,7 +5232,7 @@ static struct initmap
     int		mode;
 } initmappings[] =
 {
-#if defined(WIN3264)
+#if defined(MSWIN)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
 	/* paste, copy and cut */
@@ -5291,7 +5291,7 @@ static struct initmap
     void
 init_mappings(void)
 {
-#if defined(WIN3264) || defined(MACOS_X)
+#if defined(MSWIN) || defined(MACOS_X)
     int		i;
 
     for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
@@ -5299,7 +5299,7 @@ init_mappings(void)
 #endif
 }
 
-#if defined(WIN3264) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
+#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
 							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
