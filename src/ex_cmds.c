@@ -3826,11 +3826,8 @@ do_ecmd(
 	if (sfname == NULL)
 	    sfname = ffname;
 #ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
-	if (USE_LONG_FNAME)
-# endif
-	    if (sfname != NULL)
-		fname_case(sfname, 0);   /* set correct case for sfname */
+	if (sfname != NULL)
+	    fname_case(sfname, 0);   /* set correct case for sfname */
 #endif
 
 	if ((flags & ECMD_ADDBUF) && (ffname == NULL || *ffname == NUL))
