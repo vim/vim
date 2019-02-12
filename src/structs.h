@@ -1404,6 +1404,7 @@ typedef struct
     int		uf_calls;	/* nr of active calls */
     int		uf_cleared;	/* func_clear() was already called */
     garray_T	uf_args;	/* arguments */
+    garray_T	uf_def_args;	/* default argument expressions */
     garray_T	uf_lines;	/* function lines */
 # ifdef FEAT_PROFILE
     int		uf_profiling;	/* TRUE when func is being profiled */

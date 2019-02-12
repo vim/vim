@@ -94,3 +94,30 @@ func Test_user_func()
   unlet g:retval g:counter
   enew!
 endfunc
+
+func Log(val, base = 10)
+  return log(a:val) / log(a:base)
+endfunc
+
+func Args(mandatory, optional = v:null, ...)
+  return deepcopy(a:)
+endfunc
+
+func MakeBadFunc()
+  func s:fcn(a,b=1,c)
+  endfunc
+endfunc
+
+func Test_default_arg()
+  call Log(1)
+  call Log(1, exp(1))
+  call assert_fails("call Log(1,2,3)", 'E118')
+  let a = Args(1)
+  let b = Args(1,2)
+  let c = Args(1,2,3)
+  call assert_equal(a['0'], 0)
+  call assert_equal(b['0'], 0)
+  call assert_equal(c['0'], 1)
+  call assert_equal(a.optional, v:null)
+  call assert_fails("call MakeBadFunc()", 'E982')
+endfunc

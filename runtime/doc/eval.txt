@@ -10591,9 +10591,40 @@ change their contents.  Thus you can pass a |List| to a function and have the
 function add an item to it.  If you want to make sure the function cannot
 change a |List| or |Dictionary| use |:lockvar|.
 
+You can provide default values for positional named arguments.  This makes
+them optional for function calls.  When a positional argument is not
+specified at a call, the default expression is used to initialize it.
+This only works for functions declared with |function|, not for lambda
+expressions |expr-lambda|.
+
+Example: >
+  :function Something(mandatory, optional = 10)
+  :endfunction
+  :call Something(10)	" OK
+<
+
+The argument default expressions are evaluated at the time of the function
+call, not definition.  Thus it is possible to use invalid expressions which
+are not immediately checked.  The expressions are are also only evaluated
+when arguments are not specified during a call.
+
+								*E982*
+Optional arguments with default expressions must occur after any mandatory
+arguments.  You can mix optional arguments and "...".
+
+It is possible for later argument defaults to refer to prior arguments,
+but not the other way around.
+
+Example: >
+  :function Okay(mandatory, optional = a:mandatory)
+  :endfunction
+  :function NoGood(mandatory = a:optional, optional = a:mandatory)
+  :endfunction
+<
+
 When not using "...", the number of arguments in a function call must be equal
-to the number of named arguments.  When using "...", the number of arguments
-may be larger.
+to the number of mandatory named arguments.  When using "...", the number of
+arguments may be larger.
 
 It is also possible to define a function without any arguments.  You must
 still supply the () then.
