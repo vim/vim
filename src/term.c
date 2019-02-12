@@ -6985,13 +6985,13 @@ gui_get_color_cmn(char_u *name)
 	    return rgb_table[i].color;
 
     /*
-     * Last attempt. Look in the file "$VIM/rgb.txt".
+     * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
      */
     if (size == 0)
     {
 	int counting;
 
-	/* colornames_table not yet initialized */
+	// colornames_table not yet initialized
 	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
 	if (fname == NULL)
 	    return INVALCOLOR;
@@ -7002,6 +7002,7 @@ gui_get_color_cmn(char_u *name)
 	{
 	    if (p_verbose > 1)
 		verb_msg(_("Cannot open $VIMRUNTIME/rgb.txt"));
+	    size = -1;  // don't try again
 	    return INVALCOLOR;
 	}
 
@@ -7050,6 +7051,11 @@ gui_get_color_cmn(char_u *name)
 		    colornames_table[size].color = (guicolor_T)RGB(r, g, b);
 		}
 		size++;
+
+		// The distributed rgb.txt has less than 1000 entries. Limit to
+		// 10000, just in case the file was messed up.
+		if (size == 10000)
+		    break;
 	    }
 	}
 	fclose(fd);
