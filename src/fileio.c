@@ -6224,13 +6224,7 @@ buf_modname(
      */
     for (ptr = retval + fnamelen; ptr > retval; MB_PTR_BACK(retval, ptr))
     {
-	if (*ext == '.'
-#ifdef USE_LONG_FNAME
-		    && (!USE_LONG_FNAME || shortname)
-#else
-		    && shortname
-#endif
-								)
+	if (*ext == '.' && shortname)
 	    if (*ptr == '.')	/* replace '.' by '_' */
 		*ptr = '_';
 	if (vim_ispathsep(*ptr))
@@ -6249,11 +6243,7 @@ buf_modname(
     /*
      * For 8.3 file names we may have to reduce the length.
      */
-#ifdef USE_LONG_FNAME
-    if (!USE_LONG_FNAME || shortname)
-#else
     if (shortname)
-#endif
     {
 	/*
 	 * If there is no file name, or the file name ends in '/', and the
@@ -6291,7 +6281,7 @@ buf_modname(
 	else if ((int)STRLEN(e) + extlen > 4)
 	    s = e + 4 - extlen;
     }
-#if defined(USE_LONG_FNAME) || defined(WIN3264)
+#ifdef WIN3264
     /*
      * If there is no file name, and the extension starts with '.', put a
      * '_' before the dot, because just ".ext" may be invalid if it's on a
@@ -6310,11 +6300,7 @@ buf_modname(
     /*
      * Prepend the dot.
      */
-    if (prepend_dot && !shortname && *(e = gettail(retval)) != '.'
-#ifdef USE_LONG_FNAME
-	    && USE_LONG_FNAME
-#endif
-				)
+    if (prepend_dot && !shortname && *(e = gettail(retval)) != '.')
     {
 	STRMOVE(e + 1, e);
 	*e = '.';

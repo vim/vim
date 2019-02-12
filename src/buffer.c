@@ -3168,10 +3168,7 @@ setfname(
 	    return FAIL;
 	}
 #ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
-	if (USE_LONG_FNAME)
-# endif
-	    fname_case(sfname, 0);    /* set correct case for short file name */
+	fname_case(sfname, 0);    /* set correct case for short file name */
 #endif
 	if (buf->b_sfname != buf->b_ffname)
 	    vim_free(buf->b_sfname);
@@ -4808,13 +4805,8 @@ fix_fname(char_u  *fname)
     fname = vim_strsave(fname);
 
 # ifdef USE_FNAME_CASE
-#  ifdef USE_LONG_FNAME
-    if (USE_LONG_FNAME)
-#  endif
-    {
-	if (fname != NULL)
-	    fname_case(fname, 0);	/* set correct case for file name */
-    }
+    if (fname != NULL)
+	fname_case(fname, 0);	/* set correct case for file name */
 # endif
 
     return fname;
