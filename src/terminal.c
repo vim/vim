@@ -5489,9 +5489,9 @@ term_getjob(term_T *term)
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
 HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);
 HRESULT (WINAPI *pClosePseudoConsole)(HPCON);
-BOOL (*pInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
-BOOL (*pUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
-void (*pDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
+BOOL (WINAPI *pInitializeProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD, PSIZE_T);
+BOOL (WINAPI *pUpdateProcThreadAttribute)(LPPROC_THREAD_ATTRIBUTE_LIST, DWORD, DWORD_PTR, PVOID, SIZE_T, PVOID, PSIZE_T);
+void (WINAPI *pDeleteProcThreadAttributeList)(LPPROC_THREAD_ATTRIBUTE_LIST);
 
     static int
 dyn_conpty_init(int verbose)
