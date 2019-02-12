@@ -5722,7 +5722,7 @@ conpty_term_and_job_init(
     job->jv_proc_info = proc_info;
     job->jv_job_object = jo;
     job->jv_status = JOB_STARTED;
-    job->jv_tty_type = vim_strsave("conpty");
+    job->jv_tty_type = vim_strsave((char_u *)"conpty");
     ++job->jv_refcount;
     term->tl_job = job;
 
@@ -6056,7 +6056,7 @@ winpty_term_and_job_init(
 	    (short_u *)winpty_conin_name(term->tl_winpty), NULL);
     job->jv_tty_out = utf16_to_enc(
 	    (short_u *)winpty_conout_name(term->tl_winpty), NULL);
-    job->jv_tty_type = vim_strsave("winpty");
+    job->jv_tty_type = vim_strsave((char_u *)"winpty");
     ++job->jv_refcount;
     term->tl_job = job;
 
