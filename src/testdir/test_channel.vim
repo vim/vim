@@ -2062,9 +2062,9 @@ func Test_job_tty_in_out()
   for in_opt in in_opts
     let x = copy(in_opt)
     for out_opt in out_opts
-      call extend(x, out_opt)
+      let x = extend(copy(x), out_opt)
       for err_opt in err_opts
-        call extend(x, err_opt)
+        let x = extend(copy(x), err_opt)
         let opts += [extend({'pty': 1}, x)]
       endfor
     endfor
