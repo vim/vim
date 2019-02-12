@@ -8750,7 +8750,7 @@ setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
     char_u	nbuf[NUMBUFLEN];
     tabpage_T	*tp = NULL;
 
-    if (check_restricted() || check_secure())
+    if (check_secure())
 	return;
 
     if (off == 1)
