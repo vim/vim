@@ -1043,11 +1043,6 @@ extern HWND g_hWnd;	/* This is in os_win32.c. */
     static void
 GetConsoleHwnd(void)
 {
-# define MY_BUFSIZE 1024 // Buffer size for console window titles.
-
-    char pszNewWindowTitle[MY_BUFSIZE]; // Contains fabricated WindowTitle.
-    char pszOldWindowTitle[MY_BUFSIZE]; // Contains original WindowTitle.
-
     /* Skip if it's already set. */
     if (s_hwnd != 0)
 	return;
@@ -1061,17 +1056,7 @@ GetConsoleHwnd(void)
     }
 # endif
 
-    GetConsoleTitle(pszOldWindowTitle, MY_BUFSIZE);
-
-    wsprintf(pszNewWindowTitle, "%s/%d/%d",
-	    pszOldWindowTitle,
-	    GetTickCount(),
-	    GetCurrentProcessId());
-    SetConsoleTitle(pszNewWindowTitle);
-    Sleep(40);
-    s_hwnd = FindWindow(NULL, pszNewWindowTitle);
-
-    SetConsoleTitle(pszOldWindowTitle);
+    s_hwnd = GetConsoleWindow();
 }
 
 /*
