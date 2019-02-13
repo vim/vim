@@ -4445,13 +4445,20 @@ skip_add:
 		    goto skip_add;
 	    }
 
-	    /* When there are backreferences or PIMs the number of states may
-	     * be (a lot) bigger than anticipated. */
+	    // When there are backreferences or PIMs the number of states may
+	    // be (a lot) bigger than anticipated.
 	    if (l->n == l->len)
 	    {
 		int		newlen = l->len * 3 / 2 + 50;
+		size_t		newsize = newlen * sizeof(nfa_thread_T);
 		nfa_thread_T	*newt;
 
+		if ((long)(newsize >> 10) >= p_mmp)
+		{
+		    emsg(_(e_maxmempat));
+		    --depth;
+		    return NULL;
+		}
 		if (subs != &temp_subs)
 		{
 		    /* "subs" may point into the current array, need to make a
@@ -4464,7 +4471,7 @@ skip_add:
 		    subs = &temp_subs;
 		}
 
-		newt = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
+		newt = vim_realloc(l->t, newsize);
 		if (newt == NULL)
 		{
 		    // out of memory
@@ -4785,9 +4792,15 @@ addstate_here(
 	    /* not enough space to move the new states, reallocate the list
 	     * and move the states to the right position */
 	    int		    newlen = l->len * 3 / 2 + 50;
+	    size_t	    newsize = newlen * sizeof(nfa_thread_T);
 	    nfa_thread_T    *newl;
 
-	    newl = (nfa_thread_T *)alloc(newlen * sizeof(nfa_thread_T));
+	    if ((long)(newsize >> 10) >= p_mmp)
+	    {
+		emsg(_(e_maxmempat));
+		return NULL;
+	    }
+	    newl = (nfa_thread_T *)alloc(newsize);
 	    if (newl == NULL)
 		return NULL;
 	    l->len = newlen;
