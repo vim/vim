@@ -4449,7 +4449,8 @@ skip_add:
 	     * be (a lot) bigger than anticipated. */
 	    if (l->n == l->len)
 	    {
-		int newlen = l->len * 3 / 2 + 50;
+		int		newlen = l->len * 3 / 2 + 50;
+		nfa_thread_T	*newt;
 
 		if (subs != &temp_subs)
 		{
@@ -4463,8 +4464,14 @@ skip_add:
 		    subs = &temp_subs;
 		}
 
-		/* TODO: check for vim_realloc() returning NULL. */
-		l->t = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
+		newt = vim_realloc(l->t, newlen * sizeof(nfa_thread_T));
+		if (newt == NULL)
+		{
+		    // out of memory
+		    --depth;
+		    return NULL;
+		}
+		l->t = newt;
 		l->len = newlen;
 	    }
 
@@ -4756,7 +4763,7 @@ addstate_here(
      * addstate(). */
     r = addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
     if (r == NULL)
-	return r;
+	return NULL;
 
     // when "*ip" was at the end of the list, nothing to do
     if (listidx + 1 == tlen)
@@ -4777,12 +4784,13 @@ addstate_here(
 	{
 	    /* not enough space to move the new states, reallocate the list
 	     * and move the states to the right position */
-	    nfa_thread_T *newl;
+	    int		    newlen = l->len * 3 / 2 + 50;
+	    nfa_thread_T    *newl;
 
-	    l->len = l->len * 3 / 2 + 50;
-	    newl = (nfa_thread_T *)alloc(l->len * sizeof(nfa_thread_T));
+	    newl = (nfa_thread_T *)alloc(newlen * sizeof(nfa_thread_T));
 	    if (newl == NULL)
-		return r;
+		return NULL;
+	    l->len = newlen;
 	    mch_memmove(&(newl[0]),
 		    &(l->t[0]),
 		    sizeof(nfa_thread_T) * listidx);
