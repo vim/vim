@@ -3014,7 +3014,10 @@ parse_match(
 	p = tagp->command;
 	if (find_extra(&p) == OK)
 	{
-	    tagp->command_end = p;
+	    if (p > tagp->command && p[-1] == '|')
+		tagp->command_end = p - 1;  // drop trailing bar
+	    else
+		tagp->command_end = p;
 	    p += 2;	/* skip ";\"" */
 	    if (*p++ == TAB)
 		while (ASCII_ISALPHA(*p))
@@ -3784,7 +3787,7 @@ find_extra(char_u **pp)
 {
     char_u	*str = *pp;
 
-    /* Repeat for addresses separated with ';' */
+    // Repeat for addresses separated with ';'
     for (;;)
     {
 	if (VIM_ISDIGIT(*str))
@@ -3798,7 +3801,16 @@ find_extra(char_u **pp)
 		++str;
 	}
 	else
-	    str = NULL;
+	{
+	    // not a line number or search string, look for terminator.
+	    str = (char_u *)strstr((char *)str, "|;\"");
+	    if (str != NULL)
+	    {
+		++str;
+		break;
+	    }
+
+	}
 	if (str == NULL || *str != ';'
 		  || !(VIM_ISDIGIT(str[1]) || str[1] == '/' || str[1] == '?'))
 	    break;
