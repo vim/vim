@@ -8103,7 +8103,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	adjusted to that size, if possible.
 
 						*'termwintype'* *'twt'*
-'termwintype' 'twt'	string  (default "")
+'termwintype' 'twt'	string  (default "winpty")
 			global
 			{not in Vi}
 			{only available when compiled with the |terminal|

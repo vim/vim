@@ -2730,7 +2730,7 @@ static struct vimoption options[] =
     {"termwintype", "twt",  P_STRING|P_ALLOCED|P_VI_DEF,
 #if defined(WIN3264) && defined(FEAT_TERMINAL)
 			    (char_u *)&p_twt, PV_NONE,
-			    {(char_u *)"", (char_u *)NULL}
+			    {(char_u *)"winpty", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
