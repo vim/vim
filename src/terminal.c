@@ -6139,7 +6139,7 @@ term_and_job_init(
 
     if (tty_type == NUL)
     {
-	if (has_conpty && is_conpty_stable())
+	if (has_conpty && (is_conpty_stable() || !has_winpty))
 	    use_conpty = TRUE;
 	else if (has_winpty)
 	    use_winpty = TRUE;
