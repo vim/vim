@@ -1550,6 +1550,8 @@ nfa_regatom(void)
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
+			    int limit = INT_MAX;
+
 			    if (c == 'l')
 			    {
 				/* \%{n}l  \%{n}<l  \%{n}>l  */
@@ -1563,16 +1565,17 @@ nfa_regatom(void)
 				EMIT(cmp == '<' ? NFA_COL_LT :
 				     cmp == '>' ? NFA_COL_GT : NFA_COL);
 			    else
+			    {
 				/* \%{n}v  \%{n}<v  \%{n}>v  */
 				EMIT(cmp == '<' ? NFA_VCOL_LT :
 				     cmp == '>' ? NFA_VCOL_GT : NFA_VCOL);
-#if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
-			    if (n > INT_MAX)
+				limit = INT_MAX / MB_MAXBYTES;
+			    }
+			    if (n >= limit)
 			    {
 				emsg(_("E951: \\% value too large"));
 				return FAIL;
 			    }
-#endif
 			    EMIT((int)n);
 			    break;
 			}
