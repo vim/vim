@@ -187,6 +187,8 @@ static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
 static int vtp_working = 0;
+static int conpty_working = 0;
+static int conpty_stable = 0;
 static void vtp_flag_init();
 
 #ifndef FEAT_GUI_W32
@@ -7638,9 +7640,10 @@ mch_setenv(char *var, char *value, int x)
 
 /*
  * Support for pseudo-console (ConPTY) was added in windows 10
- * version 1809 (October 2018 update).
+ * version 1809 (October 2018 update).  However, that version is unstable.
  */
-#define CONPTY_FIRST_SUPPORT_BUILD MAKE_VER(10, 0, 17763)
+#define CONPTY_FIRST_SUPPORT_BUILD  MAKE_VER(10, 0, 17763)
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
 
     static void
 vtp_flag_init(void)
@@ -7659,10 +7662,10 @@ vtp_flag_init(void)
 	vtp_working = 0;
 #endif
 
-#ifdef FEAT_GUI_W32
     if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
-	vtp_working = 1;
-#endif
+	conpty_working = 1;
+    if (ver >= CONPTY_STABLE_BUILD)
+	conpty_stable = 1;
 
 }
 
@@ -7877,4 +7880,16 @@ is_term_win32(void)
 has_vtp_working(void)
 {
     return vtp_working;
+}
+
+    int
+has_conpty_working(void)
+{
+    return conpty_working;
+}
+
+    int
+is_conpty_stable(void)
+{
+    return conpty_stable;
 }
