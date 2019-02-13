@@ -109,6 +109,7 @@ SRC = \
 	ex_getln.c \
 	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
@@ -169,6 +170,7 @@ OBJ = \
 	ex_getln.o \
 	farsi.o \
 	fileio.o \
+	findfile.o \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
@@ -229,6 +231,7 @@ PRO = \
 	proto/ex_getln.pro \
 	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
@@ -363,6 +366,8 @@ farsi.o:		farsi.c
 proto/farsi.pro:	farsi.c
 fileio.o:		fileio.c
 proto/fileio.pro:	fileio.c
+findfile.o:		findfile.c
+proto/findfile.pro:	findfile.c
 fold.o:			fold.c
 proto/fold.pro:		fold.c
 getchar.o:		getchar.c

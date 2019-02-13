@@ -716,6 +716,7 @@ OBJ = \
 	$(OUTDIR)/ex_getln.o \
 	$(OUTDIR)/farsi.o \
 	$(OUTDIR)/fileio.o \
+	$(OUTDIR)/findfile.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \

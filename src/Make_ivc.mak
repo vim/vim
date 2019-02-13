@@ -230,6 +230,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/ex_getln.obj" \
 	"$(INTDIR)/farsi.obj" \
 	"$(INTDIR)/fileio.obj" \
+	"$(INTDIR)/findfile.obj" \
 	"$(INTDIR)/fold.obj" \
 	"$(INTDIR)/getchar.obj" \
 	"$(INTDIR)/hardcopy.obj" \
@@ -417,6 +418,10 @@ SOURCE=.\farsi.c
 # Begin Source File
 
 SOURCE=.\fileio.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\findfile.c
 # End Source File
 # Begin Source File
 

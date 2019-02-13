@@ -1592,6 +1592,7 @@ BASIC_SRC = \
 	ex_getln.c \
 	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
@@ -1705,6 +1706,7 @@ OBJ_COMMON = \
 	objects/ex_getln.o \
 	objects/farsi.o \
 	objects/fileio.o \
+	objects/findfile.o \
 	objects/fold.o \
 	objects/getchar.o \
 	objects/hardcopy.o \
@@ -1831,6 +1833,7 @@ PRO_AUTO = \
 	ex_getln.pro \
 	farsi.pro \
 	fileio.pro \
+	findfile.pro \
 	fold.pro \
 	getchar.pro \
 	hardcopy.pro \
@@ -2999,6 +3002,9 @@ objects/farsi.o: farsi.c
 objects/fileio.o: fileio.c
 	$(CCC) -o $@ fileio.c
 
+objects/findfile.o: findfile.c
+	$(CCC) -o $@ findfile.c
+
 objects/fold.o: fold.c
 	$(CCC) -o $@ fold.c
 
@@ -3471,6 +3477,11 @@ objects/fileio.o: fileio.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h farsi.h arabic.h
+objects/findfile.o: findfile.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h farsi.h arabic.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h
 objects/fold.o: fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

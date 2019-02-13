@@ -80,6 +80,7 @@ extern int _stricoll(char *a, char *b);
 # include "ex_eval.pro"
 # include "ex_getln.pro"
 # include "fileio.pro"
+# include "findfile.pro"
 # include "fold.pro"
 # include "getchar.pro"
 # ifdef FEAT_HANGULIN

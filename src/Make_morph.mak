@@ -44,6 +44,7 @@ SRC =	arabic.c						\
 	ex_getln.c						\
 	farsi.c							\
 	fileio.c						\
+	findfile.c						\
 	fold.c							\
 	getchar.c						\
 	hardcopy.c						\
