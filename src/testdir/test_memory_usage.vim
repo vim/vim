@@ -1,6 +1,8 @@
 " Tests for memory usage.
 
-if !has('terminal') || has('gui_running')
+if !has('terminal') || has('gui_running') || $ASAN_OPTIONS !=# ''
+  " Skip tests on Travis CI ASAN build because it's difficult to estimate
+  " memory usage.
   finish
 endif
 
