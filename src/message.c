@@ -2570,50 +2570,38 @@ msg_use_printf(void)
 msg_puts_printf(char_u *str, int maxlen)
 {
     char_u	*s = str;
-    char_u	buf[4];
-    char_u	*p;
-#ifdef WIN3264
-# if !defined(FEAT_GUI_MSWIN)
-    char_u	*ccp = NULL;
+    char_u	*buf = NULL;
+    char_u	*p = s;
 
-# endif
+#ifdef WIN3264
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle '\r' and '\n' correctly */
-
-# if !defined(FEAT_GUI_MSWIN)
-    if (enc_codepage >= 0 && (int)GetConsoleCP() != enc_codepage)
-    {
-	int	inlen = (int)STRLEN(str);
-	int	outlen;
-	WCHAR	*widestr = (WCHAR *)enc_to_utf16(str, &inlen);
-
-	if (widestr != NULL)
-	{
-	    WideCharToMultiByte_alloc(GetConsoleCP(), 0, widestr, inlen,
-						 (LPSTR *)&ccp, &outlen, 0, 0);
-	    vim_free(widestr);
-	    s = str = ccp;
-	}
-    }
-# endif
 #endif
     while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
     {
 	if (!(silent_mode && p_verbose == 0))
 	{
 	    /* NL --> CR NL translation (for Unix, not for "--version") */
-	    p = &buf[0];
-	    if (*s == '\n' && !info_message)
-		*p++ = '\r';
-#if defined(USE_CR)
-	    else
+	    if (*s == '\n')
+	    {
+		int n = 0;
+		buf = alloc(s - p + 3);
+		memcpy(buf, p, s - p);
+		n = s - p;
+		if (!info_message)
+		    buf[n++] = '\r';
+#ifdef USE_CR
+		else
 #endif
-		*p++ = *s;
-	    *p = '\0';
-	    if (info_message)	/* informative message, not an error */
-		mch_msg((char *)buf);
-	    else
-		mch_errmsg((char *)buf);
+		    buf[n++] = '\n';
+		buf[n++] = '\0';
+		if (info_message)   /* informative message, not an error */
+		    mch_msg((char *)buf);
+		else
+		    mch_errmsg((char *)buf);
+		vim_free(buf);
+		p = s + 1;
+	    }
 	}
 
 	/* primitive way to compute the current column */
@@ -2635,12 +2623,20 @@ msg_puts_printf(char_u *str, int maxlen)
 	}
 	++s;
     }
+
+    if (*p && !(silent_mode && p_verbose == 0))
+    {
+	if (STRLEN(p) > maxlen)
+	    p[maxlen] = 0;
+	if (info_message)
+	    mch_msg((char *)p);
+	else
+	    mch_errmsg((char *)p);
+    }
+
     msg_didout = TRUE;	    /* assume that line is not empty */
 
 #ifdef WIN3264
-# if !defined(FEAT_GUI_MSWIN)
-    vim_free(ccp);
-# endif
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_RAW);
 #endif
@@ -2941,32 +2937,47 @@ do_more_prompt(int typed_char)
     void
 mch_errmsg(char *str)
 {
+#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+    int	    len = STRLEN(str);
+    DWORD   nwrite = 0;
+
+    if (isatty(2) && enc_codepage >= 0 &&
+	    (int)GetConsoleCP() != enc_codepage)
+    {
+	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
+	WriteConsoleW(GetStdHandle(STD_ERROR_HANDLE), w, len, &nwrite, NULL);
+	vim_free(w);
+    }
+    else
+    {
+	WriteFile(GetStdHandle(STD_ERROR_HANDLE), str, len, &nwrite, NULL);
+    }
+#else
     int		len;
 
-#if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
     /* On Unix use stderr if it's a tty.
      * When not going to start the GUI also use stderr.
      * On Mac, when started from Finder, stderr is the console. */
     if (
-# ifdef UNIX
-#  ifdef MACOS_X
+#  ifdef UNIX
+#   ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
-#  else
+#   else
 	    isatty(2)
+#   endif
+#   ifdef FEAT_GUI
+	    ||
+#   endif
 #  endif
 #  ifdef FEAT_GUI
-	    ||
-#  endif
-# endif
-# ifdef FEAT_GUI
 	    !(gui.in_use || gui.starting)
-# endif
+#  endif
 	    )
     {
 	fprintf(stderr, "%s", str);
 	return;
     }
-#endif
 
     /* avoid a delay for a message that isn't there */
     emsg_on_display = FALSE;
@@ -2981,7 +2992,7 @@ mch_errmsg(char *str)
     {
 	mch_memmove((char_u *)error_ga.ga_data + error_ga.ga_len,
 							  (char_u *)str, len);
-#ifdef UNIX
+# ifdef UNIX
 	/* remove CR characters, they are displayed */
 	{
 	    char_u	*p;
@@ -2995,10 +3006,12 @@ mch_errmsg(char *str)
 		*p = ' ';
 	    }
 	}
-#endif
+# endif
 	--len;		/* don't count the NUL at the end */
 	error_ga.ga_len += len;
     }
+#endif
+#endif
 }
 
 /*
@@ -3009,7 +3022,23 @@ mch_errmsg(char *str)
     void
 mch_msg(char *str)
 {
-#if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+    int	    len = STRLEN(str);
+    DWORD   nwrite = 0;
+
+    if (isatty(2) && enc_codepage >= 0 &&
+	    (int)GetConsoleCP() != enc_codepage)
+    {
+	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
+	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), w, len, &nwrite, NULL);
+	vim_free(w);
+    }
+    else
+    {
+	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), str, len, &nwrite, NULL);
+    }
+#else
+# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
     /* On Unix use stdout if we have a tty.  This allows "vim -h | more" and
      * uses mch_errmsg() when started from the desktop.
      * When not going to start the GUI also use stdout.
@@ -3035,6 +3064,7 @@ mch_msg(char *str)
     }
 # endif
     mch_errmsg(str);
+#endif
 }
 #endif /* USE_MCH_ERRMSG */
 
