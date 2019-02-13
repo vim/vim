@@ -757,7 +757,7 @@ call_user_func(
 
     line_breakcheck();		/* check for CTRL-C hit */
 
-    fc = (funccall_T *)alloc(sizeof(funccall_T));
+    fc = (funccall_T *)alloc_clear(sizeof(funccall_T));
     if (fc == NULL)
 	return;
     fc->caller = current_funccal;
@@ -858,16 +858,15 @@ call_user_func(
 	{
 	    v = &fc->fixvar[fixvar_idx++].var;
 	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	    STRCPY(v->di_key, name);
 	}
 	else
 	{
-	    v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
-							     + STRLEN(name)));
+	    v = dictitem_alloc(name);
 	    if (v == NULL)
 		break;
-	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX | DI_FLAGS_ALLOC;
+	    v->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
-	STRCPY(v->di_key, name);
 
 	/* Note: the values are copied directly to avoid alloc/free.
 	 * "argvars" must have VAR_FIXED for v_lock. */
