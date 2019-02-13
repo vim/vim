@@ -4284,6 +4284,7 @@ state_in_list(
 /*
  * Add "state" and possibly what follows to state list ".".
  * Returns "subs_arg", possibly copied into temp_subs.
+ * Returns NULL when recursiveness is too deep.
  */
     static regsubs_T *
 addstate(
@@ -4310,6 +4311,15 @@ addstate(
 #ifdef ENABLE_LOG
     int			did_print = FALSE;
 #endif
+    static int		depth = 0;
+
+    // This function is called recursively.  When the depth is too much we run
+    // out of stack and crash, limit recursiveness here.
+    if (++depth >= 10000 || subs == NULL)
+    {
+	--depth;
+	return NULL;
+    }
 
     if (off_arg <= -ADDSTATE_HERE_OFFSET)
     {
@@ -4421,6 +4431,7 @@ skip_add:
 			    abs(state->id), l->id, state->c, code,
 			    pim == NULL ? "NULL" : "yes", l->has_pim, found);
 #endif
+			--depth;
 			return subs;
 		    }
 		}
@@ -4595,7 +4606,9 @@ skip_add:
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off_arg);
-	    /* "subs" may have changed, need to set "sub" again */
+	    if (subs == NULL)
+		break;
+	    // "subs" may have changed, need to set "sub" again
 #ifdef FEAT_SYN_HL
 	    if (state->c >= NFA_ZOPEN && state->c <= NFA_ZOPEN9)
 		sub = &subs->synt;
@@ -4619,7 +4632,7 @@ skip_add:
 			? subs->norm.list.multi[0].end_lnum >= 0
 			: subs->norm.list.line[0].end != NULL))
 	    {
-		/* Do not overwrite the position set by \ze. */
+		// Do not overwrite the position set by \ze.
 		subs = addstate(l, state->out, subs, pim, off_arg);
 		break;
 	    }
@@ -4695,6 +4708,8 @@ skip_add:
 	    }
 
 	    subs = addstate(l, state->out, subs, pim, off_arg);
+	    if (subs == NULL)
+		break;
 	    /* "subs" may have changed, need to set "sub" again */
 #ifdef FEAT_SYN_HL
 	    if (state->c >= NFA_ZCLOSE && state->c <= NFA_ZCLOSE9)
@@ -4710,6 +4725,7 @@ skip_add:
 	    sub->in_use = save_in_use;
 	    break;
     }
+    --depth;
     return subs;
 }
 
@@ -4719,7 +4735,7 @@ skip_add:
  * This makes sure the order of states to be tried does not change, which
  * matters for alternatives.
  */
-    static void
+    static regsubs_T *
 addstate_here(
     nfa_list_T		*l,	/* runtime state list */
     nfa_state_T		*state,	/* state to update */
@@ -4730,23 +4746,26 @@ addstate_here(
     int tlen = l->n;
     int count;
     int listidx = *ip;
+    regsubs_T *r;
 
     /* First add the state(s) at the end, so that we know how many there are.
      * Pass the listidx as offset (avoids adding another argument to
      * addstate(). */
-    addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
+    r = addstate(l, state, subs, pim, -listidx - ADDSTATE_HERE_OFFSET);
+    if (r == NULL)
+	return r;
 
-    /* when "*ip" was at the end of the list, nothing to do */
+    // when "*ip" was at the end of the list, nothing to do
     if (listidx + 1 == tlen)
-	return;
+	return r;
 
-    /* re-order to put the new state at the current position */
+    // re-order to put the new state at the current position
     count = l->n - tlen;
     if (count == 0)
-	return; /* no state got added */
+	return r; // no state got added
     if (count == 1)
     {
-	/* overwrite the current state */
+	// overwrite the current state
 	l->t[listidx] = l->t[l->n - 1];
     }
     else if (count > 1)
@@ -4760,7 +4779,7 @@ addstate_here(
 	    l->len = l->len * 3 / 2 + 50;
 	    newl = (nfa_thread_T *)alloc(l->len * sizeof(nfa_thread_T));
 	    if (newl == NULL)
-		return;
+		return r;
 	    mch_memmove(&(newl[0]),
 		    &(l->t[0]),
 		    sizeof(nfa_thread_T) * listidx);
@@ -4787,6 +4806,8 @@ addstate_here(
     }
     --l->n;
     *ip = listidx - 1;
+
+    return r;
 }
 
 /*
@@ -5493,6 +5514,7 @@ nfa_regmatch(
     int		add_count;
     int		add_off = 0;
     int		toplevel = start->c == NFA_MOPEN;
+    regsubs_T	*r;
 #ifdef NFA_REGEXP_DEBUG_LOG
     FILE	*debug;
 #endif
@@ -5567,10 +5589,15 @@ nfa_regmatch(
 	else
 	    m->norm.list.line[0].start = rex.input;
 	m->norm.in_use = 1;
-	addstate(thislist, start->out, m, NULL, 0);
+	r = addstate(thislist, start->out, m, NULL, 0);
     }
     else
-	addstate(thislist, start, m, NULL, 0);
+	r = addstate(thislist, start, m, NULL, 0);
+    if (r == NULL)
+    {
+	nfa_match = NFA_TOO_EXPENSIVE;
+	goto theend;
+    }
 
 #define	ADD_STATE_IF_MATCH(state)			\
     if (result) {					\
@@ -5874,8 +5901,12 @@ nfa_regmatch(
 			/* t->state->out1 is the corresponding END_INVISIBLE
 			 * node; Add its out to the current list (zero-width
 			 * match). */
-			addstate_here(thislist, t->state->out1->out, &t->subs,
-							       &pim, &listidx);
+			if (addstate_here(thislist, t->state->out1->out,
+					     &t->subs, &pim, &listidx) == NULL)
+			{
+			    nfa_match = NFA_TOO_EXPENSIVE;
+			    goto theend;
+			}
 		    }
 		}
 		break;
@@ -6749,12 +6780,18 @@ nfa_regmatch(
 		}
 
 		if (add_here)
-		    addstate_here(thislist, add_state, &t->subs, pim, &listidx);
+		    r = addstate_here(thislist, add_state, &t->subs,
+								pim, &listidx);
 		else
 		{
-		    addstate(nextlist, add_state, &t->subs, pim, add_off);
+		    r = addstate(nextlist, add_state, &t->subs, pim, add_off);
 		    if (add_count > 0)
 			nextlist->t[nextlist->n - 1].count = add_count;
+		}
+		if (r == NULL)
+		{
+		    nfa_match = NFA_TOO_EXPENSIVE;
+		    goto theend;
 		}
 	    }
 
@@ -6831,11 +6868,21 @@ nfa_regmatch(
 					 (colnr_T)(rex.input - rex.line) + clen;
 		    else
 			m->norm.list.line[0].start = rex.input + clen;
-		    addstate(nextlist, start->out, m, NULL, clen);
+		    if (addstate(nextlist, start->out, m, NULL, clen) == NULL)
+		    {
+			nfa_match = NFA_TOO_EXPENSIVE;
+			goto theend;
+		    }
 		}
 	    }
 	    else
-		addstate(nextlist, start, m, NULL, clen);
+	    {
+		if (addstate(nextlist, start, m, NULL, clen) == NULL)
+		{
+		    nfa_match = NFA_TOO_EXPENSIVE;
+		    goto theend;
+		}
+	    }
 	}
 
 #ifdef ENABLE_LOG

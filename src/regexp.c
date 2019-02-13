@@ -3545,14 +3545,14 @@ typedef enum regstate_E
  */
 typedef struct regitem_S
 {
-    regstate_T	rs_state;	/* what we are doing, one of RS_ above */
-    char_u	*rs_scan;	/* current node in program */
+    regstate_T	rs_state;	// what we are doing, one of RS_ above
+    short	rs_no;		// submatch nr or BEHIND/NOBEHIND
+    char_u	*rs_scan;	// current node in program
     union
     {
 	save_se_T  sesave;
 	regsave_T  regsave;
-    } rs_un;			/* room for saving rex.input */
-    short	rs_no;		/* submatch nr or BEHIND/NOBEHIND */
+    } rs_un;			// room for saving rex.input
 } regitem_T;
 
 static regitem_T *regstack_push(regstate_T state, char_u *scan);
