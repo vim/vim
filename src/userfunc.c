@@ -699,7 +699,10 @@ cleanup_function_call(funccall_T *fc)
 	fc->caller = previous_funccal;
 	previous_funccal = fc;
 
-	if (++made_copy == 10000)
+	if (want_garbage_collect)
+	    // If garbage collector is ready, clear count.
+	    made_copy = 0;
+	else if (++made_copy >= (4096 * 1024) / sizeof(*fc))
 	{
 	    // We have made a lot of copies.  This can happen when
 	    // repetitively calling a function that creates a reference to
