@@ -154,8 +154,8 @@ script:
     if [[ -n "${ASAN_OPTIONS}" ]]; then
       while read log; do
         asan_symbolize < "${log}"
+        false # exit 1 if there are ASAN logs
       done < <(find . -type f -name 'asan.*' -size +0)
-      [[ -z "${log}" ]] # exit 1 if there are ASAN logs
     fi
 
 after_success:
