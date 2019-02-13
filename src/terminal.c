@@ -5521,7 +5521,7 @@ dyn_conpty_init(int verbose)
     if (handled)
 	return result;
 
-    if (!has_vtp_working())
+    if (!has_conpty_working())
     {
 	handled = TRUE;
 	result = FAIL;
@@ -6139,7 +6139,7 @@ term_and_job_init(
 
     if (tty_type == NUL)
     {
-	if (has_conpty)
+	if (has_conpty && (is_conpty_stable() || !has_winpty))
 	    use_conpty = TRUE;
 	else if (has_winpty)
 	    use_winpty = TRUE;
