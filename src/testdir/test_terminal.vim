@@ -299,6 +299,44 @@ func Test_terminal_scrollback()
   call term_wait(buf)
   exe buf . 'bwipe'
   set termwinscroll&
+  call delete('Xtext')
+endfunc
+
+func Test_terminal_postponed_scrollback()
+  if !has('unix')
+    " tail -f only works on Unix
+    return
+  endif
+
+  call writefile(range(50), 'Xtext')
+  call writefile([
+	\ 'terminal',
+	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
+	\ 'sleep 100m',
+	\ 'call feedkeys("\<C-W>N", "xt")',
+	\ ], 'XTest_postponed')
+  let buf = RunVimInTerminal('-S XTest_postponed', {})
+  " Check that the Xtext lines are displayed and in Terminal-Normal mode
+  call VerifyScreenDump(buf, 'Test_terminal_01', {})
+
+  silent !echo 'one more line' >>Xtext
+  " Sceen will not change, move cursor to get a different dump
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_terminal_02', {})
+
+  " Back to Terminal-Job mode, text will scroll and show the extra line.
+  call term_sendkeys(buf, "a")
+  call VerifyScreenDump(buf, 'Test_terminal_03', {})
+
+  call term_wait(buf)
+  call term_sendkeys(buf, "\<C-C>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "exit\<CR>")
+  call term_wait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_postponed')
+  call delete('Xtext')
 endfunc
 
 func Test_terminal_size()
@@ -1512,6 +1550,8 @@ func Test_terminal_termwinkey()
   let job = term_getjob(buf)
   call feedkeys("\<C-L>\<C-C>", 'tx')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  set termwinkey&
 endfunc
 
 func Test_terminal_out_err()

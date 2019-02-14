@@ -60,9 +60,10 @@ typedef struct {
 } cellattr_T;
 
 typedef struct sb_line_S {
-    int		sb_cols;	/* can differ per line */
-    cellattr_T	*sb_cells;	/* allocated */
-    cellattr_T	sb_fill_attr;	/* for short line */
+    int		sb_cols;	// can differ per line
+    cellattr_T	*sb_cells;	// allocated
+    cellattr_T	sb_fill_attr;	// for short line
+    char_u	*sb_text;	// for tl_scrollback_postponed
 } sb_line_T;
 
 #ifdef WIN3264
@@ -144,6 +145,8 @@ struct terminal_S {
 
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
+    garray_T	tl_scrollback_postponed;
+
     cellattr_T	tl_default_color;
 
     linenr_T	tl_top_diff_rows;   /* rows of top diff file or zero */
@@ -187,6 +190,8 @@ static void term_free_vterm(term_T *term);
 #ifdef FEAT_GUI
 static void update_system_term(term_T *term);
 #endif
+
+static void handle_postponed_scrollback(term_T *term);
 
 /* The character that we know (or assume) that the terminal expects for the
  * backspace key. */
@@ -419,6 +424,7 @@ term_start(
     term->tl_system = (flags & TERM_START_SYSTEM);
 #endif
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
+    ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
 
     vim_memset(&split_ea, 0, sizeof(split_ea));
     if (opt->jo_curwin)
@@ -852,6 +858,9 @@ free_scrollback(term_T *term)
     for (i = 0; i < term->tl_scrollback.ga_len; ++i)
 	vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i)->sb_cells);
     ga_clear(&term->tl_scrollback);
+    for (i = 0; i < term->tl_scrollback_postponed.ga_len; ++i)
+	vim_free(((sb_line_T *)term->tl_scrollback_postponed.ga_data + i)->sb_cells);
+    ga_clear(&term->tl_scrollback_postponed);
 }
 
 
@@ -1770,10 +1779,17 @@ term_check_timers(int next_due_arg, proftime_T *now)
 }
 #endif
 
+/*
+ * When "normal_mode" is TRUE set the terminal to Terminal-Normal mode,
+ * otherwise end it.
+ */
     static void
 set_terminal_mode(term_T *term, int normal_mode)
 {
+ch_log(NULL, "set_terminal_mode(): %d", normal_mode);
     term->tl_normal_mode = normal_mode;
+    if (!normal_mode)
+	handle_postponed_scrollback(term);
     VIM_CLEAR(term->tl_status_text);
     if (term->tl_buffer == curbuf)
 	maketitle();
@@ -1786,10 +1802,10 @@ set_terminal_mode(term_T *term, int normal_mode)
     static void
 cleanup_vterm(term_T *term)
 {
+    set_terminal_mode(term, FALSE);
     if (term->tl_finish != TL_FINISH_CLOSE)
 	may_move_terminal_to_buffer(term, TRUE);
     term_free_vterm(term);
-    set_terminal_mode(term, FALSE);
 }
 
 /*
@@ -2791,20 +2807,15 @@ handle_resize(int rows, int cols, void *user)
 }
 
 /*
- * Handle a line that is pushed off the top of the screen.
+ * If the number of lines that are stored goes over 'termscrollback' then
+ * delete the first 10%.
+ * "gap" points to tl_scrollback or tl_scrollback_postponed.
+ * "update_buffer" is TRUE when the buffer should be updated.
  */
-    static int
-handle_pushline(int cols, const VTermScreenCell *cells, void *user)
+    static void
+limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
 {
-    term_T	*term = (term_T *)user;
-
-    /* First remove the lines that were appended before, the pushed line goes
-     * above it. */
-    cleanup_scrollback(term);
-
-    /* If the number of lines that are stored goes over 'termscrollback' then
-     * delete the first 10%. */
-    if (term->tl_scrollback.ga_len >= term->tl_buffer->b_p_twsl)
+    if (gap->ga_len >= term->tl_buffer->b_p_twsl)
     {
 	int	todo = term->tl_buffer->b_p_twsl / 10;
 	int	i;
@@ -2812,30 +2823,65 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	curbuf = term->tl_buffer;
 	for (i = 0; i < todo; ++i)
 	{
-	    vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i)->sb_cells);
-	    ml_delete(1, FALSE);
+	    vim_free(((sb_line_T *)gap->ga_data + i)->sb_cells);
+	    if (update_buffer)
+		ml_delete(1, FALSE);
 	}
 	curbuf = curwin->w_buffer;
 
-	term->tl_scrollback.ga_len -= todo;
-	mch_memmove(term->tl_scrollback.ga_data,
-	    (sb_line_T *)term->tl_scrollback.ga_data + todo,
-	    sizeof(sb_line_T) * term->tl_scrollback.ga_len);
-	term->tl_scrollback_scrolled -= todo;
+	gap->ga_len -= todo;
+	mch_memmove(gap->ga_data,
+		    (sb_line_T *)gap->ga_data + todo,
+		    sizeof(sb_line_T) * gap->ga_len);
+	if (update_buffer)
+	    term->tl_scrollback_scrolled -= todo;
+    }
+}
+
+/*
+ * Handle a line that is pushed off the top of the screen.
+ */
+    static int
+handle_pushline(int cols, const VTermScreenCell *cells, void *user)
+{
+    term_T	*term = (term_T *)user;
+    garray_T	*gap;
+    int		update_buffer;
+
+    if (term->tl_normal_mode)
+    {
+	// In Terminal-Normal mode the user interacts with the buffer, thus we
+	// must not change it. Postpone adding the scrollback lines.
+	gap = &term->tl_scrollback_postponed;
+	update_buffer = FALSE;
+ch_log(NULL, "handle_pushline(): add to postponed");
+    }
+    else
+    {
+	// First remove the lines that were appended before, the pushed line
+	// goes above it.
+	cleanup_scrollback(term);
+	gap = &term->tl_scrollback;
+	update_buffer = TRUE;
+ch_log(NULL, "handle_pushline(): add to window");
     }
 
-    if (ga_grow(&term->tl_scrollback, 1) == OK)
+    limit_scrollback(term, gap, update_buffer);
+
+    if (ga_grow(gap, 1) == OK)
     {
 	cellattr_T	*p = NULL;
 	int		len = 0;
 	int		i;
 	int		c;
 	int		col;
+	int		text_len;
+	char_u		*text;
 	sb_line_T	*line;
 	garray_T	ga;
 	cellattr_T	fill_attr = term->tl_default_color;
 
-	/* do not store empty cells at the end */
+	// do not store empty cells at the end
 	for (i = 0; i < cols; ++i)
 	    if (cells[i].chars[0] != 0)
 		len = i + 1;
@@ -2861,23 +2907,84 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	    }
 	}
 	if (ga_grow(&ga, 1) == FAIL)
-	    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+	{
+	    if (update_buffer)
+		text = (char_u *)"";
+	    else
+		text = vim_strsave((char_u *)"");
+	    text_len = 0;
+	}
 	else
 	{
-	    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
-	    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len);
+	    text = ga.ga_data;
+	    text_len = ga.ga_len;
+	    *(text + text_len) = NUL;
 	}
-	ga_clear(&ga);
+	if (update_buffer)
+	    add_scrollback_line_to_buffer(term, text, text_len);
 
-	line = (sb_line_T *)term->tl_scrollback.ga_data
-						  + term->tl_scrollback.ga_len;
+	line = (sb_line_T *)gap->ga_data + gap->ga_len;
 	line->sb_cols = len;
 	line->sb_cells = p;
 	line->sb_fill_attr = fill_attr;
-	++term->tl_scrollback.ga_len;
-	++term->tl_scrollback_scrolled;
+	if (update_buffer)
+	{
+	    line->sb_text = NULL;
+	    ++term->tl_scrollback_scrolled;
+	    ga_clear(&ga);  // free the text
+	}
+	else
+	{
+	    line->sb_text = text;
+	    ga_init(&ga);  // text is kept in tl_scrollback_postponed
+	}
+	++gap->ga_len;
     }
     return 0; /* ignored */
+}
+
+/*
+ * Called when leaving Terminal-Normal mode: deal with any scrollback that was
+ * received and stored in tl_scrollback_postponed.
+ */
+    static void
+handle_postponed_scrollback(term_T *term)
+{
+    int i;
+
+ch_log(NULL, "Moving postponed scrollback to scrollback");
+    // First remove the lines that were appended before, the pushed lines go
+    // above it.
+    cleanup_scrollback(term);
+
+    for (i = 0; i < term->tl_scrollback_postponed.ga_len; ++i)
+    {
+	char_u		*text;
+	sb_line_T	*pp_line;
+	sb_line_T	*line;
+
+	if (ga_grow(&term->tl_scrollback, 1) == FAIL)
+	    break;
+	pp_line = (sb_line_T *)term->tl_scrollback_postponed.ga_data + i;
+
+	text = pp_line->sb_text;
+	if (text == NULL)
+	    text = (char_u *)"";
+	add_scrollback_line_to_buffer(term, text, (int)STRLEN(text));
+	vim_free(pp_line->sb_text);
+
+	line = (sb_line_T *)term->tl_scrollback.ga_data
+						 + term->tl_scrollback.ga_len;
+	line->sb_cols = pp_line->sb_cols;
+	line->sb_cells = pp_line->sb_cells;
+	line->sb_fill_attr = pp_line->sb_fill_attr;
+	line->sb_text = NULL;
+	++term->tl_scrollback_scrolled;
+	++term->tl_scrollback.ga_len;
+    }
+
+    ga_clear(&term->tl_scrollback_postponed);
+    limit_scrollback(term, &term->tl_scrollback, TRUE);
 }
 
 static VTermScreenCallbacks screen_callbacks = {
