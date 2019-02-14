@@ -2938,7 +2938,7 @@ do_more_prompt(int typed_char)
 mch_errmsg(char *str)
 {
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
-    int	    len = STRLEN(str);
+    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
     HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
@@ -3026,7 +3026,7 @@ mch_errmsg(char *str)
 mch_msg(char *str)
 {
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
-    int	    len = STRLEN(str);
+    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
     HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
