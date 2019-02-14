@@ -120,4 +120,8 @@ func Test_default_arg()
   call assert_equal(c['0'], 1)
   call assert_equal(a.optional, v:null)
   call assert_fails("call MakeBadFunc()", 'E982')
+  call assert_fails("fu F(a=1 ,) | endf", 'E475')
+  delfunc Log
+  delfunc Args
+  delfunc MakeBadFunc
 endfunc

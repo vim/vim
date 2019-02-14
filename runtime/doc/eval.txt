@@ -10610,10 +10610,10 @@ when arguments are not specified during a call.
 
 								*E982*
 Optional arguments with default expressions must occur after any mandatory
-arguments.  You can mix optional arguments and "...".
+arguments.  You can use "..." after all optional named arguments.
 
 It is possible for later argument defaults to refer to prior arguments,
-but not the other way around.
+but not the other way around.  They must be prefixed with "a:".
 
 Example: >
   :function Okay(mandatory, optional = a:mandatory)

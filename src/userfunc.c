@@ -153,7 +153,7 @@ get_function_args(
 
 		*p = c;
 	    }
-	    if (*skipwhite(p) == '=')
+	    if (*skipwhite(p) == '=' && default_args != NULL)
 	    {
 		typval_T	rettv;
 		any_default = TRUE;
@@ -162,22 +162,24 @@ get_function_args(
 		expr = p;
 		if (eval1(&p, &rettv, FALSE) != FAIL)
 		{
-		    if (default_args != NULL && ga_grow(default_args, 1) == FAIL)
+		    if (ga_grow(default_args, 1) == FAIL)
 			goto err_ret;
-		    if (default_args != NULL)
+
+		    // trim trailing whitespace
+		    while (p > expr && VIM_ISWHITE(p[-1]))
+			p--;
+		    c = *p;
+		    *p = NUL;
+		    expr = vim_strsave(expr);
+		    if (expr == NULL)
 		    {
-			c = *p;
-			*p = NUL;
-			expr = vim_strsave(expr);
-			if (expr == NULL)
-			{
-			    *p = c;
-			    goto err_ret;
-			}
-			((char_u **)(default_args->ga_data))[default_args->ga_len] = expr;
-			default_args->ga_len++;
 			*p = c;
+			goto err_ret;
 		    }
+		    ((char_u **)(default_args->ga_data))
+					        [default_args->ga_len] = expr;
+		    default_args->ga_len++;
+		    *p = c;
 		}
 		else
 		    mustend = TRUE;
@@ -210,6 +212,8 @@ get_function_args(
 err_ret:
     if (newargs != NULL)
 	ga_clear_strings(newargs);
+    if (default_args != NULL)
+	ga_clear_strings(default_args);
     return FAIL;
 }
 
@@ -1666,6 +1670,12 @@ list_func_head(ufunc_T *fp, int indent)
 	if (j)
 	    msg_puts(", ");
 	msg_puts((char *)FUNCARG(fp, j));
+	if (j >= fp->uf_args.ga_len - fp->uf_def_args.ga_len)
+	{
+	    msg_puts(" = ");
+	    msg_puts(((char_u **)(fp->uf_def_args.ga_data))
+		       [j - fp->uf_args.ga_len + fp->uf_def_args.ga_len]);
+	}
     }
     if (fp->uf_varargs)
     {
