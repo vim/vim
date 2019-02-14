@@ -310,6 +310,7 @@ func Test_terminal_postponed_scrollback()
 
   call writefile(range(50), 'Xtext')
   call writefile([
+	\ 'set shell=/bin/sh',
 	\ 'terminal',
 	\ 'sleep 100m',
 	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
