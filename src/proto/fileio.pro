@@ -7,6 +7,7 @@ void set_file_options(int set_options, exarg_T *eap);
 void set_forced_fenc(exarg_T *eap);
 int check_file_readonly(char_u *fname, int perm);
 int buf_write(buf_T *buf, char_u *fname, char_u *sfname, linenr_T start, linenr_T end, exarg_T *eap, int append, int forceit, int reset_changed, int filtering);
+int vim_fsync(int fd);
 void msg_add_fname(buf_T *buf, char_u *fname);
 void msg_add_lines(int insert_space, long lnum, off_T nchars);
 char_u *shorten_fname1(char_u *full_path);
