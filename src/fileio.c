@@ -4661,7 +4661,7 @@ restore_backup:
 	 * work (could be a pipe).
 	 * If the 'fsync' option is FALSE, don't fsync().  Useful for laptops.
 	 */
-	if (p_fs && fsync(fd) != 0 && !device)
+	if (p_fs && vim_fsync(fd) != 0 && !device)
 	{
 	    errmsg = (char_u *)_(e_fsync);
 	    end = 0;
@@ -5122,6 +5122,25 @@ nofail:
 
     return retval;
 }
+
+#if defined(HAVE_FSYNC) || defined(PROTO)
+/*
+ * Call fsync() with Mac-specific exception.
+ * Return fsync() result: zero for success.
+ */
+    int
+vim_fsync(int fd)
+{
+    int r;
+
+# ifdef MACOS_X
+    r = fcntl(fd, F_FULLFSYNC);
+    if (r != 0 && errno == ENOTTY)
+# endif
+	r = fsync(fd);
+    return r;
+}
+#endif
 
 /*
  * Set the name of the current buffer.  Use when the buffer doesn't have a

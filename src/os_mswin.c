@@ -675,6 +675,7 @@ mch_suspend(void)
 # undef display_errors
 #endif
 
+#ifdef FEAT_GUI
 /*
  * Display the saved error message(s).
  */
@@ -690,13 +691,9 @@ display_errors(void)
 	    if (!isspace(*p))
 	    {
 		(void)gui_mch_dialog(
-#ifdef FEAT_GUI
 				     gui.starting ? VIM_INFO :
-#endif
 					     VIM_ERROR,
-#ifdef FEAT_GUI
 				     gui.starting ? (char_u *)_("Message") :
-#endif
 					     (char_u *)_("Error"),
 				     (char_u *)p, (char_u *)_("&Ok"),
 					1, NULL, FALSE);
@@ -705,6 +702,13 @@ display_errors(void)
 	ga_clear(&error_ga);
     }
 }
+#else
+    void
+display_errors(void)
+{
+    FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
+}
+#endif
 #endif
 
 

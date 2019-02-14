@@ -600,7 +600,7 @@ mf_sync(memfile_T *mfp, int flags)
 	 */
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
-	    if (fsync(mfp->mf_fd))
+	    if (vim_fsync(mfp->mf_fd))
 		status = FAIL;
 	}
 	else
@@ -617,7 +617,7 @@ mf_sync(memfile_T *mfp, int flags)
 #ifdef VMS
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
-	    if (fsync(mfp->mf_fd))
+	    if (vim_fsync(mfp->mf_fd))
 		status = FAIL;
 	}
 #endif
@@ -627,7 +627,7 @@ mf_sync(memfile_T *mfp, int flags)
 #endif
 #ifdef AMIGA
 # if defined(__AROS__) || defined(__amigaos4__)
-	if (fsync(mfp->mf_fd) != 0)
+	if (vim_fsync(mfp->mf_fd) != 0)
 	    status = FAIL;
 # else
 	/*
