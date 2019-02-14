@@ -4816,7 +4816,7 @@ term_swap_diff()
     bot_start = line_count - bot_rows;
     sb_line = (sb_line_T *)term->tl_scrollback.ga_data;
 
-    /* move lines from top to above the bottom part */
+    // move lines from top to above the bottom part
     for (lnum = 1; lnum <= top_rows; ++lnum)
     {
 	p = vim_strsave(ml_get(1));
@@ -4827,7 +4827,7 @@ term_swap_diff()
 	vim_free(p);
     }
 
-    /* move lines from bottom to the top */
+    // move lines from bottom to the top
     for (lnum = 1; lnum <= bot_rows; ++lnum)
     {
 	p = vim_strsave(ml_get(bot_start + lnum));
@@ -4837,6 +4837,22 @@ term_swap_diff()
 	ml_append(lnum - 1, p, 0, FALSE);
 	vim_free(p);
     }
+
+    // move top title to bottom
+    p = vim_strsave(ml_get(bot_rows + 1));
+    if (p == NULL)
+	return OK;
+    ml_append(line_count - top_rows - 1, p, 0, FALSE);
+    ml_delete(bot_rows + 1, FALSE);
+    vim_free(p);
+
+    // move bottom title to top
+    p = vim_strsave(ml_get(line_count - top_rows));
+    if (p == NULL)
+	return OK;
+    ml_delete(line_count - top_rows, FALSE);
+    ml_append(bot_rows, p, 0, FALSE);
+    vim_free(p);
 
     if (top_rows == bot_rows)
     {

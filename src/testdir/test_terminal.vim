@@ -1124,6 +1124,24 @@ func Test_terminal_dumpdiff()
   quit
 endfunc
 
+func Test_terminal_dumpdiff_swap()
+  call assert_equal(1, winnr('$'))
+  call term_dumpdiff('dumps/Test_popup_command_01.dump', 'dumps/Test_popup_command_03.dump')
+  call assert_equal(2, winnr('$'))
+  call assert_equal(62, line('$'))
+  call assert_match('Test_popup_command_01.dump', getline(21))
+  call assert_match('Test_popup_command_03.dump', getline(42))
+  call assert_match('Undo', getline(3))
+  call assert_match('three four five', getline(45))
+
+  normal s
+  call assert_match('Test_popup_command_03.dump', getline(21))
+  call assert_match('Test_popup_command_01.dump', getline(42))
+  call assert_match('three four five', getline(3))
+  call assert_match('Undo', getline(45))
+  quit
+endfunc
+
 func Test_terminal_dumpdiff_options()
   set laststatus=0
   call assert_equal(1, winnr('$'))
