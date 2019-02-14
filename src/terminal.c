@@ -4735,7 +4735,6 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 		    p2 += len2;
 		    /* TODO: handle different width */
 		}
-		vim_free(line1);
 
 		while (col < width)
 		{
@@ -4753,6 +4752,8 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 		    }
 		    ++col;
 		}
+
+		vim_free(line1);
 	    }
 	    if (add_empty_scrollback(term, &term->tl_default_color,
 						 term->tl_top_diff_rows) == OK)
