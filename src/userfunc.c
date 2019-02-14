@@ -205,6 +205,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     garray_T	newlines;
     garray_T	*pnewargs;
     ufunc_T	*fp = NULL;
+    partial_T   *pt = NULL;
     int		varargs;
     int		ret;
     char_u	*start = skipwhite(*arg + 1);
@@ -252,7 +253,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	int	    len, flags = 0;
 	char_u	    *p;
 	char_u	    name[20];
-	partial_T   *pt;
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
@@ -261,10 +261,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    goto errret;
 	pt = (partial_T *)alloc_clear((unsigned)sizeof(partial_T));
 	if (pt == NULL)
-	{
-	    vim_free(fp);
 	    goto errret;
-	}
 
 	ga_init2(&newlines, (int)sizeof(char_u *), 1);
 	if (ga_grow(&newlines, 1) == FAIL)
@@ -318,6 +315,7 @@ errret:
     ga_clear_strings(&newargs);
     ga_clear_strings(&newlines);
     vim_free(fp);
+    vim_free(pt);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
 }
