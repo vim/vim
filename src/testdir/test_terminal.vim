@@ -311,9 +311,9 @@ func Test_terminal_postponed_scrollback()
   call writefile(range(50), 'Xtext')
   call writefile([
 	\ 'terminal',
-	\ 'sleep 100m',
+	\ 'sleep 400m',
 	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
-	\ 'sleep 100m',
+	\ 'sleep 200m',
 	\ 'call feedkeys("\<C-W>N", "xt")',
 	\ ], 'XTest_postponed')
   let buf = RunVimInTerminal('-S XTest_postponed', {})
