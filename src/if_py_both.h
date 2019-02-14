@@ -6923,6 +6923,7 @@ populate_module(PyObject *m)
 
     if (!(py_find_module = PyObject_GetAttrString(cls, "find_module")))
     {
+	Py_DECREF(py_find_spec);
 	Py_DECREF(imp);
 	return -1;
     }
