@@ -35,6 +35,10 @@ func Test_wnext()
   call assert_equal(['2'], readfile('X4'))
   call assert_equal('X3', bufname('%'))
 
+  args X1 X2
+  call assert_fails('wnext .', 'E17:')
+  call assert_fails('wnext! .', 'E502:')
+
   %bwipe!
   call delete('X1')
   call delete('X2')
@@ -82,6 +86,10 @@ func Test_wprevious()
   wprevious! X4
   call assert_equal(['2'], readfile('X4'))
   call assert_equal('X1', bufname('%'))
+
+  args X1 X2
+  call assert_fails('wprevious .', 'E17:')
+  call assert_fails('wprevious! .', 'E502:')
 
   %bwipe!
   call delete('X1')
