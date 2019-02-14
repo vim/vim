@@ -2940,17 +2940,19 @@ mch_errmsg(char *str)
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
     int	    len = STRLEN(str);
     DWORD   nwrite = 0;
+    DWORD   mode = 0;
+    HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
 
-    if (isatty(2) && enc_codepage >= 0 &&
+    if (GetConsoleMode(h, &mode) && enc_codepage >= 0 &&
 	    (int)GetConsoleCP() != enc_codepage)
     {
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
-	WriteConsoleW(GetStdHandle(STD_ERROR_HANDLE), w, len, &nwrite, NULL);
+	WriteConsoleW(h, w, len, &nwrite, NULL);
 	vim_free(w);
     }
     else
     {
-	WriteFile(GetStdHandle(STD_ERROR_HANDLE), str, len, &nwrite, NULL);
+	fprintf(stderr, "%s", str);
     }
 #else
     int		len;
@@ -3025,17 +3027,20 @@ mch_msg(char *str)
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
     int	    len = STRLEN(str);
     DWORD   nwrite = 0;
+    DWORD   mode;
+    HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    if (isatty(2) && enc_codepage >= 0 &&
+
+    if (GetConsoleMode(h, &mode) && enc_codepage >= 0 &&
 	    (int)GetConsoleCP() != enc_codepage)
     {
 	WCHAR	*w = enc_to_utf16((char_u *)str, &len);
-	WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), w, len, &nwrite, NULL);
+	WriteConsoleW(h, w, len, &nwrite, NULL);
 	vim_free(w);
     }
     else
     {
-	WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), str, len, &nwrite, NULL);
+	printf("%s", str);
     }
 #else
 # if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
