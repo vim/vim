@@ -86,9 +86,10 @@ static PyObject *vim_special_path_object;
 
 #if PY_VERSION_HEX >= 0x030700f0
 static PyObject *py_find_spec;
+#else
+static PyObject *py_load_module;
 #endif
 static PyObject *py_find_module;
-static PyObject *py_load_module;
 
 static PyObject *VimError;
 
@@ -538,6 +539,7 @@ PythonIO_Init_io(void)
     return 0;
 }
 
+#if PY_VERSION_HEX < 0x030700f0
 static PyObject *call_load_module(char *name, int len, PyObject *find_module_result);
 
 typedef struct
@@ -596,6 +598,7 @@ static struct PyMethodDef LoaderMethods[] = {
     {"load_module", (PyCFunction)LoaderLoadModule,	METH_VARARGS,	""},
     { NULL,	    NULL,				0,		NULL}
 };
+#endif
 
 /* Check to see whether a Vim error has been reported, or a keyboard
  * interrupt has been detected.
@@ -1222,7 +1225,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
 
     return spec;
 }
-#endif
+#else
     static PyObject *
 call_load_module(char *name, int len, PyObject *find_module_result)
 {
@@ -1366,6 +1369,7 @@ FinderFindModule(PyObject *self, PyObject *args)
 
     return (PyObject *) loader;
 }
+#endif
 
     static PyObject *
 VimPathHook(PyObject *self UNUSED, PyObject *args)
@@ -1399,8 +1403,9 @@ static struct PyMethodDef VimMethods[] = {
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
-#endif
+#else
     {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
+#endif
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
     { NULL,	    NULL,			0,				NULL}
@@ -6632,6 +6637,7 @@ init_structs(void)
     OptionsType.tp_traverse = (traverseproc)OptionsTraverse;
     OptionsType.tp_clear = (inquiry)OptionsClear;
 
+#if PY_VERSION_HEX < 0x030700f0
     vim_memset(&LoaderType, 0, sizeof(LoaderType));
     LoaderType.tp_name = "vim.Loader";
     LoaderType.tp_basicsize = sizeof(LoaderObject);
@@ -6639,6 +6645,7 @@ init_structs(void)
     LoaderType.tp_doc = "vim message object";
     LoaderType.tp_methods = LoaderMethods;
     LoaderType.tp_dealloc = (destructor)LoaderDestructor;
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     vim_memset(&vimmodule, 0, sizeof(vimmodule));
@@ -6670,7 +6677,9 @@ init_types(void)
     PYTYPE_READY(FunctionType);
     PYTYPE_READY(OptionsType);
     PYTYPE_READY(OutputType);
+#if PY_VERSION_HEX < 0x030700f0
     PYTYPE_READY(LoaderType);
+#endif
     return 0;
 }
 
@@ -6794,7 +6803,9 @@ static struct object_constant {
     {"List",       (PyObject *)&ListType},
     {"Function",   (PyObject *)&FunctionType},
     {"Options",    (PyObject *)&OptionsType},
+#if PY_VERSION_HEX < 0x030700f0
     {"_Loader",    (PyObject *)&LoaderType},
+#endif
 };
 
 #define ADD_OBJECT(m, name, obj) \
@@ -6910,10 +6921,17 @@ populate_module(PyObject *m)
 	return -1;
     }
 
+    if (!(py_find_module = PyObject_GetAttrString(cls, "find_module")))
+    {
+	Py_DECREF(imp);
+	return -1;
+    }
+
     Py_DECREF(imp);
 
     ADD_OBJECT(m, "_find_spec", py_find_spec);
-#endif
+    ADD_OBJECT(m, "_find_module", py_find_module);
+#else
     if (!(imp = PyImport_ImportModule("imp")))
 	return -1;
 
@@ -6934,6 +6952,7 @@ populate_module(PyObject *m)
 
     ADD_OBJECT(m, "_find_module", py_find_module);
     ADD_OBJECT(m, "_load_module", py_load_module);
+#endif
 
     return 0;
 }
