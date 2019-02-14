@@ -2626,7 +2626,7 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p && !(silent_mode && p_verbose == 0))
     {
-	if (STRLEN(p) > maxlen)
+	if (maxlen > 0 && STRLEN(p) > maxlen)
 	    p[maxlen] = 0;
 	if (info_message)
 	    mch_msg((char *)p);
