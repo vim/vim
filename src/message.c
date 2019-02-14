@@ -2605,10 +2605,7 @@ msg_puts_printf(char_u *str, int maxlen)
 	    p = &buf[0];
 	    if (*s == '\n' && !info_message)
 		*p++ = '\r';
-#if defined(USE_CR)
-	    else
-#endif
-		*p++ = *s;
+	    *p++ = *s;
 	    *p = '\0';
 	    if (info_message)	/* informative message, not an error */
 		mch_msg((char *)buf);

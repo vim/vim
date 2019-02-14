@@ -90,9 +90,7 @@ static int parse_diff_ed(char_u *line, linenr_T *lnum_orig, long *count_orig, li
 static int parse_diff_unified(char_u *line, linenr_T *lnum_orig, long *count_orig, linenr_T *lnum_new, long *count_new);
 static int xdiff_out(void *priv, mmbuffer_t *mb, int nbuf);
 
-#ifndef USE_CR
-# define tag_fgets vim_fgets
-#endif
+#define tag_fgets vim_fgets
 
 /*
  * Called when deleting or unloading a buffer: No longer make a diff with it.

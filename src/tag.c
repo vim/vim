@@ -1146,13 +1146,8 @@ do_tags(exarg_T *eap UNUSED)
 	msg_puts("\n>");
 }
 
-/* When not using a CR for line separator, use vim_fgets() to read tag lines.
- * For the Mac use tag_fgets().  It can handle any line separator, but is much
- * slower than vim_fgets().
- */
-#ifndef USE_CR
-# define tag_fgets vim_fgets
-#endif
+// Use vim_fgets() to read tag lines.
+#define tag_fgets vim_fgets
 
 #ifdef FEAT_TAG_BINS
 /*
