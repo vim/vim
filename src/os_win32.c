@@ -171,6 +171,9 @@ static int g_fForceExit = FALSE;    /* set when forcefully exiting */
 static void scroll(unsigned cLines);
 static void set_scroll_region(unsigned left, unsigned top,
 			      unsigned right, unsigned bottom);
+static void set_scroll_region_tb(unsigned top, unsigned bottom);
+static void set_scroll_region_lr(unsigned left, unsigned right);
+static void insert_lines(unsigned cLines);
 static void delete_lines(unsigned cLines);
 static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
@@ -5976,9 +5979,30 @@ set_scroll_region(
     g_srScrollRegion.Top =    top;
     g_srScrollRegion.Right =  right;
     g_srScrollRegion.Bottom = bottom;
+}
 
-    if (USE_VTP)
-	vtp_printf("\033[%d;%dr", top + 1, bottom + 1);
+    static void
+set_scroll_region_tb(
+    unsigned top,
+    unsigned bottom)
+{
+    if (top >= bottom || bottom > (unsigned)Rows - 1)
+	return;
+
+    g_srScrollRegion.Top = top;
+    g_srScrollRegion.Bottom = bottom;
+}
+
+    static void
+set_scroll_region_lr(
+    unsigned left,
+    unsigned right)
+{
+    if (left >= right || right > (unsigned)Columns - 1)
+	return;
+
+    g_srScrollRegion.Left = left;
+    g_srScrollRegion.Right = right;
 }
 
 
@@ -5988,33 +6012,31 @@ set_scroll_region(
     static void
 insert_lines(unsigned cLines)
 {
-    SMALL_RECT	    source;
+    SMALL_RECT	    source, clip;
     COORD	    dest;
     CHAR_INFO	    fill;
 
-    dest.X = 0;
+    dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y + cLines;
 
-    source.Left   = 0;
+    source.Left   = g_srScrollRegion.Left;
     source.Top	  = g_coord.Y;
     source.Right  = g_srScrollRegion.Right;
     source.Bottom = g_srScrollRegion.Bottom - cLines;
 
-    if (!USE_VTP)
+    clip.Left   = g_srScrollRegion.Left;
+    clip.Top    = g_coord.Y;
+    clip.Right  = g_srScrollRegion.Right;
+    clip.Bottom = g_srScrollRegion.Bottom;
+
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrCurrent;
+	fill.Attributes = g_attrDefault;
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
-    }
-    else
-    {
 	set_console_color_rgb();
 
-	gotoxy(1, source.Top + 1);
-	vtp_printf("\033[%dT", cLines);
+	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
     }
-
     /* Here we have to deal with a win32 console flake: If the scroll
      * region looks like abc and we scroll c to a and fill with d we get
      * cbd... if we scroll block c one line at a time to a, we get cdd...
@@ -6025,10 +6047,14 @@ insert_lines(unsigned cLines)
     if (source.Bottom < dest.Y)
     {
 	COORD coord;
+	int   i;
 
-	coord.X = 0;
-	coord.Y = source.Bottom;
-	clear_chars(coord, Columns * (dest.Y - source.Bottom));
+	coord.X = source.Left;
+	for (i = clip.Top; i < dest.Y; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
     }
 }
 
@@ -6039,34 +6065,32 @@ insert_lines(unsigned cLines)
     static void
 delete_lines(unsigned cLines)
 {
-    SMALL_RECT	    source;
+    SMALL_RECT	    source, clip;
     COORD	    dest;
     CHAR_INFO	    fill;
     int		    nb;
 
-    dest.X = 0;
+    dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y;
 
-    source.Left   = 0;
+    source.Left   = g_srScrollRegion.Left;
     source.Top	  = g_coord.Y + cLines;
     source.Right  = g_srScrollRegion.Right;
     source.Bottom = g_srScrollRegion.Bottom;
 
-    if (!USE_VTP)
+    clip.Left   = g_srScrollRegion.Left;
+    clip.Top    = g_coord.Y;
+    clip.Right  = g_srScrollRegion.Right;
+    clip.Bottom = g_srScrollRegion.Bottom;
+
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrCurrent;
+	fill.Attributes = g_attrDefault;
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, NULL, dest, &fill);
-    }
-    else
-    {
 	set_console_color_rgb();
 
-	gotoxy(1, source.Top + 1);
-	vtp_printf("\033[%dS", cLines);
+	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
     }
-
     /* Here we have to deal with a win32 console flake: If the scroll
      * region looks like abc and we scroll c to a and fill with d we get
      * cbd... if we scroll block c one line at a time to a, we get cdd...
@@ -6079,10 +6103,14 @@ delete_lines(unsigned cLines)
     if (nb < source.Top)
     {
 	COORD coord;
+	int   i;
 
-	coord.X = 0;
-	coord.Y = nb;
-	clear_chars(coord, Columns * (source.Top - nb));
+	coord.X = source.Left;
+	for (i = nb; i < clip.Bottom; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
     }
 }
 
@@ -6507,6 +6535,14 @@ mch_write(
 		else if (argc == 2 && *p == 'r')
 		{
 		    set_scroll_region(0, arg1 - 1, Columns - 1, arg2 - 1);
+		}
+		else if (argc == 2 && *p == 'R')
+		{
+		    set_scroll_region_tb(arg1, arg2);
+		}
+		else if (argc == 2 && *p == 'V')
+		{
+		    set_scroll_region_lr(arg1, arg2);
 		}
 		else if (argc == 1 && *p == 'A')
 		{

@@ -550,8 +550,10 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_DL,	"\033|M"},	/* delete line */
 #  ifdef TERMINFO
     {(int)KS_CDL,	"\033|%p1%dM"},	/* delete number of lines */
+    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
 #  else
     {(int)KS_CDL,	"\033|%dM"},	/* delete number of lines */
+    {(int)KS_CSV,	"\033|%d;%dV"},
 #  endif
     {(int)KS_CL,	"\033|J"},	/* clear screen */
     {(int)KS_CD,	"\033|j"},	/* clear to end of display */
@@ -6778,9 +6780,13 @@ static struct ks_tbl_s ks_tbl[] =
 #  ifdef TERMINFO
     {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, // set background color
     {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, // set foreground color
+    {(int)KS_CS,  "\033|%p1%d;%p2%dR", "\033|%p1%d;%p2%dR"},
+    {(int)KS_CSV, "\033|%p1%d;%p2%dV", "\033|%p1%d;%p2%dV"},
 #  else
     {(int)KS_CAB, "\033|%db", "\033|4%dm"}, // set background color
     {(int)KS_CAF, "\033|%df", "\033|3%dm"}, // set foreground color
+    {(int)KS_CS,  "\033|%d;%dR", "\033|%d;%dR"},
+    {(int)KS_CSV, "\033|%d;%dV", "\033|%d;%dV"},
 #  endif
     {(int)KS_CCO, "256", "256"},	    // colors
     {(int)KS_NAME}			    // terminator
