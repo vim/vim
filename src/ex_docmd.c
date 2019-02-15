@@ -9853,6 +9853,9 @@ ex_redraw(exarg_T *eap)
     if (need_maketitle)
 	maketitle();
 #endif
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+    redraw_ncwindow();
+#endif
     RedrawingDisabled = r;
     p_lz = p;
 

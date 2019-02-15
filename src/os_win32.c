@@ -7893,3 +7893,29 @@ is_conpty_stable(void)
 {
     return conpty_stable;
 }
+
+#ifndef FEAT_GUI_W32
+
+void redraw_ncwindow(void)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    COORD coord;
+    SMALL_RECT newsize;
+
+    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+    {
+	coord.X = SRWIDTH(csbi.srWindow);
+	coord.Y = SRHEIGHT(csbi.srWindow);
+	SetConsoleScreenBufferSize(g_hConOut, coord);
+
+	newsize.Left = 0;
+	newsize.Top = 0;
+	newsize.Right = coord.X - 1;
+	newsize.Bottom = coord.Y - 1;
+	SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+
+	SetConsoleScreenBufferSize(g_hConOut, coord);
+    }
+}
+
+#endif
