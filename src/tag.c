@@ -1146,14 +1146,6 @@ do_tags(exarg_T *eap UNUSED)
 	msg_puts("\n>");
 }
 
-/* When not using a CR for line separator, use vim_fgets() to read tag lines.
- * For the Mac use tag_fgets().  It can handle any line separator, but is much
- * slower than vim_fgets().
- */
-#ifndef USE_CR
-# define tag_fgets vim_fgets
-#endif
-
 #ifdef FEAT_TAG_BINS
 /*
  * Compare two strings, for length "len", ignoring case the ASCII way.
@@ -1654,7 +1646,7 @@ find_tags(
 		/* Adjust the search file offset to the correct position */
 		search_info.curr_offset_used = search_info.curr_offset;
 		vim_fseek(fp, search_info.curr_offset, SEEK_SET);
-		eof = tag_fgets(lbuf, LSIZE, fp);
+		eof = vim_fgets(lbuf, LSIZE, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
 		    /* The explicit cast is to work around a bug in gcc 3.4.2
@@ -1666,13 +1658,13 @@ find_tags(
 			vim_fseek(fp, search_info.low_offset, SEEK_SET);
 			search_info.curr_offset = search_info.low_offset;
 		    }
-		    eof = tag_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, LSIZE, fp);
 		}
 		/* skip empty and blank lines */
 		while (!eof && vim_isblankline(lbuf))
 		{
 		    search_info.curr_offset = vim_ftell(fp);
-		    eof = tag_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, LSIZE, fp);
 		}
 		if (eof)
 		{
@@ -1698,7 +1690,7 @@ find_tags(
 			eof = cs_fgets(lbuf, LSIZE);
 		    else
 #endif
-			eof = tag_fgets(lbuf, LSIZE, fp);
+			eof = vim_fgets(lbuf, LSIZE, fp);
 		} while (!eof && vim_isblankline(lbuf));
 
 		if (eof)
@@ -1763,7 +1755,7 @@ line_read_in:
 	    {
 		is_etag = 1;		/* in case at the start */
 		state = TS_LINEAR;
-		if (!tag_fgets(ebuf, LSIZE, fp))
+		if (!vim_fgets(ebuf, LSIZE, fp))
 		{
 		    for (p = ebuf; *p && *p != ','; p++)
 			;

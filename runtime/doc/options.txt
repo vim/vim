@@ -3134,9 +3134,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	is read.
 
 					*'fileformat'* *'ff'*
-'fileformat' 'ff'	string (MS-DOS, MS-Windows, OS/2 default: "dos",
-				Unix default: "unix",
-				Macintosh default: "mac")
+'fileformat' 'ff'	string (MS-Windows default: "dos",
+				Unix, macOS default: "unix")
 			local to buffer
 			{not in Vi}
 	This gives the <EOL> of the current buffer, which is used for
@@ -3159,9 +3158,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fileformats'* *'ffs'*
 'fileformats' 'ffs'	string (default:
-				Vim+Vi	MS-DOS, MS-Windows OS/2: "dos,unix",
-				Vim	Unix: "unix,dos",
-				Vim	Mac: "mac,unix,dos",
+				Vim+Vi	MS-Windows: "dos,unix",
+				Vim	Unix, macOS: "unix,dos",
 				Vi	Cygwin: "unix,dos",
 				Vi	others: "")
 			global

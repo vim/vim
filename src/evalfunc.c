@@ -13431,20 +13431,7 @@ get_cmd_output_as_rettv(
     else
     {
 	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
-#ifdef USE_CR
-	/* translate <CR> into <NL> */
-	if (res != NULL)
-	{
-	    char_u	*s;
-
-	    for (s = res; *s; ++s)
-	    {
-		if (*s == CAR)
-		    *s = NL;
-	    }
-	}
-#else
-# ifdef USE_CRNL
+#ifdef USE_CRNL
 	/* translate <CR><NL> into <NL> */
 	if (res != NULL)
 	{
@@ -13459,7 +13446,6 @@ get_cmd_output_as_rettv(
 	    }
 	    *d = NUL;
 	}
-# endif
 #endif
 	rettv->vval.v_string = res;
 	res = NULL;

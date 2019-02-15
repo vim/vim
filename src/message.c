@@ -2590,10 +2590,7 @@ msg_puts_printf(char_u *str, int maxlen)
 		memcpy(buf, p, n);
 		if (!info_message)
 		    buf[n++] = CAR;
-#ifdef USE_CR
-		else
-#endif
-		    buf[n++] = NL;
+		buf[n++] = NL;
 		buf[n++] = NUL;
 		if (info_message)   // informative message, not an error
 		    mch_msg((char *)buf);
