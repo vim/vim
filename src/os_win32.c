@@ -7896,7 +7896,8 @@ is_conpty_stable(void)
 
 #ifndef FEAT_GUI_W32
 
-void redraw_ncwindow(void)
+    void
+resize_console_buf(void)
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     COORD coord;
