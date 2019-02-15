@@ -310,26 +310,24 @@ func Test_terminal_postponed_scrollback()
 
   call writefile(range(50), 'Xtext')
   call writefile([
+	\ 'set shell=/bin/sh noruler',
 	\ 'terminal',
-	\ 'sleep 400m',
-	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
 	\ 'sleep 200m',
+	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
+	\ 'sleep 100m',
 	\ 'call feedkeys("\<C-W>N", "xt")',
 	\ ], 'XTest_postponed')
   let buf = RunVimInTerminal('-S XTest_postponed', {})
   " Check that the Xtext lines are displayed and in Terminal-Normal mode
-  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_01', {})
 
   silent !echo 'one more line' >>Xtext
   " Sceen will not change, move cursor to get a different dump
   call term_sendkeys(buf, "k")
-  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_02', {})
 
   " Back to Terminal-Job mode, text will scroll and show the extra line.
   call term_sendkeys(buf, "a")
-  call term_wait(buf)
   call VerifyScreenDump(buf, 'Test_terminal_03', {})
 
   call term_wait(buf)
