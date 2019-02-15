@@ -862,6 +862,7 @@ call_user_func(
     {
 	int	    addlocal = FALSE;
 	typval_T    def_rettv;
+	int	    isdefault = FALSE;
 
 	ai = i - fp->uf_args.ga_len;
 	if (ai < 0)
@@ -872,7 +873,10 @@ call_user_func(
 		addlocal = TRUE;
 
 	    // evaluate named argument default expression
-	    if (ai + fp->uf_def_args.ga_len >= 0 && i >= argcount)
+	    isdefault = ai + fp->uf_def_args.ga_len >= 0
+		       && (i >= argcount || argvars[i].v_type == VAR_SPECIAL
+				   && argvars[i].vval.v_number == VVAL_NONE);
+	    if (isdefault)
 	    {
 		char_u	    *default_expr = NULL;
 		def_rettv.v_type = VAR_NUMBER;
@@ -908,12 +912,12 @@ call_user_func(
 	}
 	STRCPY(v->di_key, name);
 
-	if (i < argcount)
+	if (isdefault)
+	    v->di_tv = def_rettv;
+	else
 	    /* Note: the values are copied directly to avoid alloc/free.
 	     * "argvars" must have VAR_FIXED for v_lock. */
 	    v->di_tv = argvars[i];
-	else
-	    v->di_tv = def_rettv;
 	v->di_tv.v_lock = VAR_FIXED;
 
 	if (addlocal)

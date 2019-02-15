@@ -103,6 +103,10 @@ func Args(mandatory, optional = v:null, ...)
   return deepcopy(a:)
 endfunc
 
+func Args2(a = 1, b = 2, c = 3)
+  return deepcopy(a:)
+endfunc
+
 func MakeBadFunc()
   func s:fcn(a,b=1,c)
   endfunc
@@ -121,7 +125,10 @@ func Test_default_arg()
   call assert_equal(a.optional, v:null)
   call assert_fails("call MakeBadFunc()", 'E983')
   call assert_fails("fu F(a=1 ,) | endf", 'E475')
+  let d = Args2(7,v:none,9)
+  call assert_equal([d.a, d.b, d.c], [7, 2, 9])
   delfunc Log
   delfunc Args
+  delfunc Args2
   delfunc MakeBadFunc
 endfunc
