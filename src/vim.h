@@ -2095,9 +2095,11 @@ typedef enum {
  * is declared. */
 #if !defined(MSWIN) && !defined(FEAT_GUI_X11) \
 	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC) && !defined(PROTO)
-# define mch_errmsg(str)	fprintf(stderr, "%s", (str))
+# define mch_errmsg(str)	mch_errmsg_len((str), STRLEN((str)))
+# define mch_errmsg_len(str, n)	fwrite((str), 1, (n), stderr)
 # define display_errors()	fflush(stderr)
-# define mch_msg(str)		printf("%s", (str))
+# define mch_msg(str)		mch_msg_len((str), STRLEN((str)))
+# define mch_msg_len(str, n)	fwrite((str), 1, (n), stdout)
 #else
 # define USE_MCH_ERRMSG
 #endif

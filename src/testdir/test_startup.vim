@@ -537,3 +537,8 @@ func Test_zzz_startinsert()
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_issue3969()
+  let out = system(GetVimCommand() . ' --clean -es -X -V1 -c "echon ''hello''" -cq')
+  call assert_match('hello', out)
+endfunc

@@ -22,6 +22,10 @@ static void msg_home_replace_attr(char_u *fname, int attr);
 static void msg_puts_attr_len(char *str, int maxlen, int attr);
 static void msg_puts_display(char_u *str, int maxlen, int attr, int recurse);
 static void msg_scroll_up(void);
+#ifdef USE_MCH_ERRMSG
+static void mch_msg_len(char *, int);
+static void mch_errmsg_len(char *, int);
+#endif
 static void inc_msg_scrolled(void);
 static void store_sb_text(char_u **sb_str, char_u *s, int attr, int *sb_col, int finish);
 static void t_puts(int *t_col, char_u *t_s, char_u *s, int attr);
@@ -2626,12 +2630,20 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
-	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
-	    p[maxlen] = 0;
+	int len = (int)STRLEN(p);
+	if (maxlen > 0 && len > maxlen)
+	    len = maxlen;
 	if (info_message)
-	    mch_msg((char *)p);
+	    mch_msg_len((char *)p, len);
 	else
-	    mch_errmsg((char *)p);
+	    mch_errmsg_len((char *)p, len);
+
+#ifdef FEAT_RIGHTLEFT
+	if (cmdmsg_rl)
+	    msg_col -= len;
+	else
+#endif
+	    msg_col += len;
     }
 
     msg_didout = TRUE;	    // assume that line is not empty
@@ -2922,8 +2934,14 @@ do_more_prompt(int typed_char)
 
 #if defined(USE_MCH_ERRMSG) || defined(PROTO)
 
+#ifdef mch_errmsg_len
+# undef mch_errmsg_len
+#endif
 #ifdef mch_errmsg
 # undef mch_errmsg
+#endif
+#ifdef mch_msg_len
+# undef mch_msg_len
 #endif
 #ifdef mch_msg
 # undef mch_msg
@@ -2934,11 +2952,10 @@ do_more_prompt(int typed_char)
  * yet.  When stderr can't be used, collect error messages until the GUI has
  * started and they can be displayed in a message box.
  */
-    void
-mch_errmsg(char *str)
+    static void
+mch_errmsg_len(char *str, int len)
 {
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
     HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
@@ -2953,11 +2970,9 @@ mch_errmsg(char *str)
     }
     else
     {
-	fprintf(stderr, "%s", str);
+	write(2, str, len);
     }
 #else
-    int		len;
-
 # if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
     /* On Unix use stderr if it's a tty.
      * When not going to start the GUI also use stderr.
@@ -2978,7 +2993,7 @@ mch_errmsg(char *str)
 #  endif
 	    )
     {
-	fprintf(stderr, "%s", str);
+	write(2, str, len);
 	return;
     }
 # endif
@@ -2986,16 +3001,15 @@ mch_errmsg(char *str)
     /* avoid a delay for a message that isn't there */
     emsg_on_display = FALSE;
 
-    len = (int)STRLEN(str) + 1;
     if (error_ga.ga_growsize == 0)
     {
 	error_ga.ga_growsize = 80;
 	error_ga.ga_itemsize = 1;
     }
-    if (ga_grow(&error_ga, len) == OK)
+    if (ga_grow(&error_ga, len + 1) == OK)
     {
 	mch_memmove((char_u *)error_ga.ga_data + error_ga.ga_len,
-							  (char_u *)str, len);
+						  (char_u *)str, len + 1);
 # ifdef UNIX
 	/* remove CR characters, they are displayed */
 	{
@@ -3011,10 +3025,15 @@ mch_errmsg(char *str)
 	    }
 	}
 # endif
-	--len;		/* don't count the NUL at the end */
 	error_ga.ga_len += len;
     }
 #endif
+}
+
+    void
+mch_errmsg(char *str)
+{
+    mch_errmsg_len(str, (int)STRLEN(str));
 }
 
 /*
@@ -3022,11 +3041,10 @@ mch_errmsg(char *str)
  * When there is no tty, collect messages until the GUI has started and they
  * can be displayed in a message box.
  */
-    void
-mch_msg(char *str)
+    static void
+mch_msg_len(char *str, int len)
 {
 #if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
-    int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
     HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -3042,7 +3060,7 @@ mch_msg(char *str)
     }
     else
     {
-	printf("%s", str);
+	write(1, str, len);
     }
 #else
 # if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
@@ -3066,12 +3084,18 @@ mch_msg(char *str)
 #  endif
 	    )
     {
-	printf("%s", str);
+	write(1, str, len);
 	return;
     }
 # endif
-    mch_errmsg(str);
+    mch_errmsg_len(str, len);
 #endif
+}
+
+     void
+mch_msg(char *str)
+{
+    mch_msg_len(str, (int)STRLEN(str));
 }
 #endif /* USE_MCH_ERRMSG */
 
