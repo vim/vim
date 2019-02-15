@@ -413,7 +413,7 @@ Just put the files somewhere in your PATH.  You can set the 'winptydll' option
 to point to the right file, if needed.  If you have both the 32-bit and 64-bit
 version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
-							*ConPTY*
+							*ConPTY* *E982*
 On more recent versions of MS-Windows 10 (beginning with the "October 2018
 Update"), winpty is no longer required. On those versions, |:terminal| will use
 Windows' built-in support for hosting terminal applications, "ConPTY".  When
