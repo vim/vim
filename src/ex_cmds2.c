@@ -1359,7 +1359,6 @@ check_due_timer(void)
 	    did_throw = FALSE;
 	    current_exception = NULL;
 	    save_vimvars(&vvsave);
-ch_log(NULL, "calling timer callback");
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
