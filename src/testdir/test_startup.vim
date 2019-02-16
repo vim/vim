@@ -543,6 +543,6 @@ func Test_issue3969()
     " Can't catch the output of gvim.
     return
   endif
-  let out = system(GetVimCommand() . ' --clean -es -X -V1 -c "echon ''hello''" -cq')
-  call assert_match('hello', out)
+  let out = system(GetVimCommand() . ' -es -X -V1 -c "echon ''hello''" -cq')
+  call assert_equal('hello', out)
 endfunc
