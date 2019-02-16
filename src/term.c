@@ -540,63 +540,65 @@ static struct builtin_term builtin_termcaps[] =
  * are also translated in os_win32.c.
  */
     {(int)KS_NAME,	"win32"},
-    {(int)KS_CE,	"\033|K"},	/* clear to end of line */
-    {(int)KS_AL,	"\033|L"},	/* add new blank line */
+    {(int)KS_CE,	"\033|K"},	// clear to end of line
+    {(int)KS_AL,	"\033|L"},	// add new blank line
 #  ifdef TERMINFO
-    {(int)KS_CAL,	"\033|%p1%dL"},	/* add number of new blank lines */
+    {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
 #  else
-    {(int)KS_CAL,	"\033|%dL"},	/* add number of new blank lines */
+    {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
 #  endif
-    {(int)KS_DL,	"\033|M"},	/* delete line */
+    {(int)KS_DL,	"\033|M"},	// delete line
 #  ifdef TERMINFO
-    {(int)KS_CDL,	"\033|%p1%dM"},	/* delete number of lines */
+    {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
+    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
 #  else
-    {(int)KS_CDL,	"\033|%dM"},	/* delete number of lines */
+    {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
+    {(int)KS_CSV,	"\033|%d;%dV"},
 #  endif
-    {(int)KS_CL,	"\033|J"},	/* clear screen */
-    {(int)KS_CD,	"\033|j"},	/* clear to end of display */
-    {(int)KS_VI,	"\033|v"},	/* cursor invisible */
-    {(int)KS_VE,	"\033|V"},	/* cursor visible */
+    {(int)KS_CL,	"\033|J"},	// clear screen
+    {(int)KS_CD,	"\033|j"},	// clear to end of display
+    {(int)KS_VI,	"\033|v"},	// cursor invisible
+    {(int)KS_VE,	"\033|V"},	// cursor visible
 
-    {(int)KS_ME,	"\033|0m"},	/* normal */
-    {(int)KS_MR,	"\033|112m"},	/* reverse: black on lightgray */
-    {(int)KS_MD,	"\033|15m"},	/* bold: white on black */
+    {(int)KS_ME,	"\033|0m"},	// normal
+    {(int)KS_MR,	"\033|112m"},	// reverse: black on lightgray
+    {(int)KS_MD,	"\033|15m"},	// bold: white on black
 #if 1
-    {(int)KS_SO,	"\033|31m"},	/* standout: white on blue */
-    {(int)KS_SE,	"\033|0m"},	/* standout end */
+    {(int)KS_SO,	"\033|31m"},	// standout: white on blue
+    {(int)KS_SE,	"\033|0m"},	// standout end
 #else
-    {(int)KS_SO,	"\033|F"},	/* standout: high intensity */
-    {(int)KS_SE,	"\033|f"},	/* standout end */
+    {(int)KS_SO,	"\033|F"},	// standout: high intensity
+    {(int)KS_SE,	"\033|f"},	// standout end
 #endif
-    {(int)KS_CZH,	"\033|225m"},	/* italic: blue text on yellow */
-    {(int)KS_CZR,	"\033|0m"},	/* italic end */
-    {(int)KS_US,	"\033|67m"},	/* underscore: cyan text on red */
-    {(int)KS_UE,	"\033|0m"},	/* underscore end */
-    {(int)KS_CCO,	"16"},		/* allow 16 colors */
+    {(int)KS_CZH,	"\033|225m"},	// italic: blue text on yellow
+    {(int)KS_CZR,	"\033|0m"},	// italic end
+    {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
+    {(int)KS_UE,	"\033|0m"},	// underscore end
+    {(int)KS_CCO,	"16"},		// allow 16 colors
 #  ifdef TERMINFO
-    {(int)KS_CAB,	"\033|%p1%db"},	/* set background color */
-    {(int)KS_CAF,	"\033|%p1%df"},	/* set foreground color */
+    {(int)KS_CAB,	"\033|%p1%db"},	// set background color
+    {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
 #  else
-    {(int)KS_CAB,	"\033|%db"},	/* set background color */
-    {(int)KS_CAF,	"\033|%df"},	/* set foreground color */
+    {(int)KS_CAB,	"\033|%db"},	// set background color
+    {(int)KS_CAF,	"\033|%df"},	// set foreground color
 #  endif
 
-    {(int)KS_MS,	"y"},		/* save to move cur in reverse mode */
+    {(int)KS_MS,	"y"},		// save to move cur in reverse mode
     {(int)KS_UT,	"y"},
     {(int)KS_XN,	"y"},
     {(int)KS_LE,	"\b"},
 #  ifdef TERMINFO
-    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"},/* cursor motion */
+    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
 #  else
-    {(int)KS_CM,	"\033|%i%d;%dH"},/* cursor motion */
+    {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
 #  endif
-    {(int)KS_VB,	"\033|B"},	/* visual bell */
-    {(int)KS_TI,	"\033|S"},	/* put terminal in termcap mode */
-    {(int)KS_TE,	"\033|E"},	/* out of termcap mode */
+    {(int)KS_VB,	"\033|B"},	// visual bell
+    {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
+    {(int)KS_TE,	"\033|E"},	// out of termcap mode
 #  ifdef TERMINFO
-    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"},/* scroll region */
+    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
 #  else
-    {(int)KS_CS,	"\033|%i%d;%dr"},/* scroll region */
+    {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
 #  endif
 #  ifdef FEAT_TERMGUICOLORS
     {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
@@ -6778,9 +6780,13 @@ static struct ks_tbl_s ks_tbl[] =
 #  ifdef TERMINFO
     {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, // set background color
     {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, // set foreground color
+    {(int)KS_CS,  "\033|%p1%d;%p2%dR", "\033|%p1%d;%p2%dR"},
+    {(int)KS_CSV, "\033|%p1%d;%p2%dV", "\033|%p1%d;%p2%dV"},
 #  else
     {(int)KS_CAB, "\033|%db", "\033|4%dm"}, // set background color
     {(int)KS_CAF, "\033|%df", "\033|3%dm"}, // set foreground color
+    {(int)KS_CS,  "\033|%d;%dR", "\033|%d;%dR"},
+    {(int)KS_CSV, "\033|%d;%dV", "\033|%d;%dV"},
 #  endif
     {(int)KS_CCO, "256", "256"},	    // colors
     {(int)KS_NAME}			    // terminator
