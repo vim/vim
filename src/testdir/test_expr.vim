@@ -519,4 +519,5 @@ func Test_broken_number()
   call assert_fails('echo 0x1X', 'E15:')
   call assert_fails('echo 011X', 'E15:')
   call assert_equal(2, str2nr('2a'))
+  call assert_fails('inoremap <Char-0b1z> b', 'E474:')
 endfunc
