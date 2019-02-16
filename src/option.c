@@ -4917,9 +4917,7 @@ do_set(
 			    else if (  *arg == '>'
 				    && (varp == (char_u *)&p_dir
 					    || varp == (char_u *)&p_bdir))
-			    {
 				++arg;
-			    }
 
 			    /*
 			     * Copy the new string into allocated memory.
@@ -6060,9 +6058,7 @@ did_set_string_option(
 		|| sandbox != 0
 #endif
 		) && (options[opt_idx].flags & P_SECURE))
-    {
 	errmsg = e_secure;
-    }
 
     // Check for a "normal" directory or file name in some options.  Disallow a
     // path separator (slash and/or backslash), wildcards and characters that
@@ -6072,9 +6068,7 @@ did_set_string_option(
 			    ? "/\\*?[|;&<>\r\n" : "/\\*?[<>\r\n")) != NULL)
 	  || ((options[opt_idx].flags & P_NDNAME)
 		    && vim_strpbrk(*varp, (char_u *)"*?[|;&<>\r\n") != NULL))
-    {
 	errmsg = e_invarg;
-    }
 
     /* 'term' */
     else if (varp == &T_NAME)
@@ -6685,22 +6679,16 @@ did_set_string_option(
 
     /* 'listchars' */
     else if (varp == &p_lcs)
-    {
 	errmsg = set_chars_option(varp);
-    }
 
     /* 'fillchars' */
     else if (varp == &p_fcs)
-    {
 	errmsg = set_chars_option(varp);
-    }
 
 #ifdef FEAT_CMDWIN
     /* 'cedit' */
     else if (varp == &p_cedit)
-    {
 	errmsg = check_cedit();
-    }
 #endif
 
     /* 'verbosefile' */
@@ -6724,9 +6712,7 @@ did_set_string_option(
 		break;
 	    }
 	    if (*s == 'n')	/* name is always last one */
-	    {
 		break;
-	    }
 	    else if (*s == 'r') /* skip until next ',' */
 	    {
 		while (*++s && *s != ',')
@@ -6975,9 +6961,7 @@ did_set_string_option(
     }
     /* 'guitabtooltip' */
     else if (varp == &p_gtt)
-    {
 	redraw_gui_only = TRUE;
-    }
 #endif
 
 #if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))
@@ -7088,14 +7072,10 @@ did_set_string_option(
      * buffer in which 'spell' is set load the wordlists. */
     else if (varp == &(curwin->w_s->b_p_spl)
 	    || varp == &(curwin->w_s->b_p_spf))
-    {
 	errmsg = did_set_spell_option(varp == &(curwin->w_s->b_p_spf));
-    }
     /* When 'spellcapcheck' is set compile the regexp program. */
     else if (varp == &(curwin->w_s->b_p_spc))
-    {
 	errmsg = compile_cap_prog(curwin->w_s);
-    }
     /* 'spellsuggest' */
     else if (varp == &p_sps)
     {
@@ -8047,9 +8027,7 @@ check_stl_option(char_u *s)
 	    continue;
 	}
 	if (vim_strchr(STL_ALL, *s) == NULL)
-	{
 	    return illegal_char(errbuf, *s);
-	}
 	if (*s == '{')
 	{
 	    s++;
@@ -8320,9 +8298,7 @@ set_bool_option(
 
     /* 'compatible' */
     if ((int *)varp == &p_cp)
-    {
 	compatible_set();
-    }
 
 #ifdef FEAT_LANGMAP
     if ((int *)varp == &p_lrm)
@@ -8411,19 +8387,13 @@ set_bool_option(
 #ifdef FEAT_TITLE
     /* when 'endofline' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_eol)
-    {
 	redraw_titles();
-    }
     /* when 'fixeol' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_fixeol)
-    {
 	redraw_titles();
-    }
     /* when 'bomb' is changed, redraw the window title and tab page text */
     else if ((int *)varp == &curbuf->b_p_bomb)
-    {
 	redraw_titles();
-    }
 #endif
 
     /* when 'bin' is set also set some other options */
@@ -8474,9 +8444,7 @@ set_bool_option(
 
     /* when 'paste' is set or reset also change other options */
     else if ((int *)varp == &p_paste)
-    {
 	paste_option_changed();
-    }
 
     /* when 'insertmode' is set from an autocommand need to do work here */
     else if ((int *)varp == &p_im)
@@ -8500,16 +8468,12 @@ set_bool_option(
 
     /* when 'ignorecase' is set or reset and 'hlsearch' is set, redraw */
     else if ((int *)varp == &p_ic && p_hls)
-    {
 	redraw_all_later(SOME_VALID);
-    }
 
 #ifdef FEAT_SEARCH_EXTRA
     /* when 'hlsearch' is set or reset: reset no_hlsearch */
     else if ((int *)varp == &p_hls)
-    {
 	set_no_hlsearch(FALSE);
-    }
 #endif
 
     /* when 'scrollbind' is set: snapshot the current position to avoid a jump
@@ -8543,9 +8507,7 @@ set_bool_option(
 
     /* when 'textmode' is set or reset also change 'fileformat' */
     else if ((int *)varp == &curbuf->b_p_tx)
-    {
 	set_fileformat(curbuf->b_p_tx ? EOL_DOS : EOL_UNIX, opt_flags);
-    }
 
     /* when 'textauto' is set or reset also change 'fileformats' */
     else if ((int *)varp == &p_ta)
@@ -8559,17 +8521,13 @@ set_bool_option(
      */
 #ifdef FEAT_LISP
     else if (varp == (char_u *)&(curbuf->b_p_lisp))
-    {
 	(void)buf_init_chartab(curbuf, FALSE);	    /* ignore errors */
-    }
 #endif
 
 #ifdef FEAT_TITLE
     /* when 'title' changed, may need to change the title; same for 'icon' */
     else if ((int *)varp == &p_title || (int *)varp == &p_icon)
-    {
 	did_set_title();
-    }
 #endif
 
     else if ((int *)varp == &curbuf->b_changed)
@@ -8647,9 +8605,7 @@ set_bool_option(
 #endif
 #ifdef FEAT_BEVAL_TERM
     else if ((int *)varp == &p_bevalterm)
-    {
 	mch_bevalterm_changed();
-    }
 #endif
 
 #ifdef FEAT_AUTOCHDIR
@@ -8975,15 +8931,11 @@ set_num_option(
 
     /* (re)set last window status line */
     else if (pp == &p_ls)
-    {
 	last_status(FALSE);
-    }
 
     /* (re)set tab page line */
     else if (pp == &p_stal)
-    {
 	shell_new_rows();	/* recompute window positions and heights */
-    }
 
 #ifdef FEAT_GUI
     else if (pp == &p_linespace)
@@ -9006,9 +8958,7 @@ set_num_option(
 
     /* 'foldminlines' */
     else if (pp == &curwin->w_p_fml)
-    {
 	foldUpdateAll(curwin);
-    }
 
     /* 'foldnestmax' */
     else if (pp == &curwin->w_p_fdn)

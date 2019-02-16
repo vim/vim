@@ -5478,9 +5478,7 @@ garbage_collect(int testing)
 	free_unref_funccal(copyID, testing);
     }
     else if (p_verbose > 0)
-    {
 	verb_msg(_("Not enough memory to set references, garbage collection aborted!"));
-    }
 
     return did_free;
 }
@@ -5650,9 +5648,7 @@ set_ref_in_item(
 	    /* Didn't see this dict yet. */
 	    dd->dv_copyID = copyID;
 	    if (ht_stack == NULL)
-	    {
 		abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
-	    }
 	    else
 	    {
 		ht_stack_T *newitem = (ht_stack_T*)malloc(sizeof(ht_stack_T));
@@ -5676,9 +5672,7 @@ set_ref_in_item(
 	    /* Didn't see this list yet. */
 	    ll->lv_copyID = copyID;
 	    if (list_stack == NULL)
-	    {
 		abort = set_ref_in_list(ll, copyID, ht_stack);
-	    }
 	    else
 	    {
 		list_stack_T *newitem = (list_stack_T*)malloc(
@@ -5695,9 +5689,7 @@ set_ref_in_item(
 	}
     }
     else if (tv->v_type == VAR_FUNC)
-    {
 	abort = set_ref_in_func(tv->vval.v_string, NULL, copyID);
-    }
     else if (tv->v_type == VAR_PARTIAL)
     {
 	partial_T	*pt = tv->vval.v_partial;
@@ -9283,9 +9275,7 @@ assert_equalfile(typval_T *argvars)
     IObuff[0] = NUL;
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
-    {
 	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_notread, fname1);
-    }
     else
     {
 	fd2 = mch_fopen((char *)fname2, READBIN);

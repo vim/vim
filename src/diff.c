@@ -798,9 +798,7 @@ diff_try_update(
     int		idx_new;
 
     if (dio->dio_internal)
-    {
 	ga_init2(&dio->dio_diff.dout_ga, sizeof(char *), 1000);
-    }
     else
     {
 	// We need three temp file names.
@@ -1112,9 +1110,7 @@ diff_file(diffio_T *dio)
 #endif
     // Use xdiff for generating the diff.
     if (dio->dio_internal)
-    {
 	return diff_file_internal(dio);
-    }
     else
     {
 	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
@@ -1577,9 +1573,7 @@ diff_read(
     } diffstyle = DIFF_NONE;
 
     if (dout->dout_fname == NULL)
-    {
 	diffstyle = DIFF_UNIFIED;
-    }
     else
     {
 	fd = mch_fopen((char *)dout->dout_fname, "r");

@@ -1564,9 +1564,7 @@ register_openwith(
 
 	for (i = 0; ERROR_SUCCESS == lRet
 			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
-	{
 	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "", flag);
-	}
     }
 
     return lRet;
@@ -2511,21 +2509,13 @@ command_line_setup_choices(int argc, char **argv)
 		compat_choice = compat_all_enhancements;
 	}
 	else if (strcmp(argv[i], "-install-popup") == 0)
-	{
 	    init_popup_choice();
-	}
 	else if (strcmp(argv[i], "-install-openwith") == 0)
-	{
 	    init_openwith_choice();
-	}
 	else if (strcmp(argv[i], "-add-start-menu") == 0)
-	{
 	    init_startmenu_choice();
-	}
 	else if (strcmp(argv[i], "-install-icons") == 0)
-	{
 	    init_shortcut_choices();
-	}
 	else if (strcmp(argv[i], "-create-directories") == 0)
 	{
 	    int vimfiles_dir_choice = (int)vimfiles_dir_none;
@@ -2555,9 +2545,7 @@ command_line_setup_choices(int argc, char **argv)
 	    choices[choice_count - 1].arg = vimfiles_dir_choice;
 	}
 	else if (strcmp(argv[i], "-register-OLE") == 0)
-	{
-	    /* This is always done when gvim is found */
-	}
+	    ; /* This is always done when gvim is found */
 	else /* Unknown switch */
 	{
 	    printf("Got unknown argument argv[%d] = %s\n", i, argv[i]);

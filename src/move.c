@@ -1614,9 +1614,7 @@ botline_forw(lineoff_T *lp)
 	    lp->height = 1;
 	else
 #endif
-	{
 	    lp->height = PLINES_NOFILL(lp->lnum);
-	}
     }
 }
 

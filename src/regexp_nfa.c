@@ -2915,14 +2915,10 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	}
 # else
 	for (p2 = postfix; p2 < end; p2++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 	fprintf(df, "\nCurrent position is: ");
 	for (p2 = postfix; p2 <= p; p2 ++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 # endif
 	fprintf(df, "\n--------------------------\n");
 	fclose(df);
@@ -3501,9 +3497,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 #if 0
 	    /* TODO */
 	    if (regflags & RF_ICOMBINE)
-	    {
-		/* use the base character only */
-	    }
+		; /* use the base character only */
 #endif
 	    /* FALLTHROUGH */
 
@@ -6311,9 +6305,7 @@ nfa_regmatch(
 		/* On a composing character skip over it.  Otherwise do
 		 * nothing.  Always matches. */
 		if (enc_utf8 && utf_iscomposing(curc))
-		{
 		    add_off = clen;
-		}
 		else
 		{
 		    add_here = TRUE;

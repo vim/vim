@@ -3683,9 +3683,7 @@ parse_shape_opt(int what)
     {
 #ifdef FEAT_MOUSESHAPE
 	if (what == SHAPE_MOUSE)
-	{
 	    shape_table[SHAPE_IDX_VE].mshape = shape_table[SHAPE_IDX_V].mshape;
-	}
 	else
 #endif
 	{

@@ -1276,9 +1276,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 						!opt->jo_modifiable[PART_OUT];
 
 	    if (!buf->b_p_ma && !channel->ch_part[PART_OUT].ch_nomodifiable)
-	    {
 		emsg(_(e_modifiable));
-	    }
 	    else
 	    {
 		ch_log(channel, "writing out to buffer '%s'",
@@ -1322,9 +1320,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 		channel->ch_part[PART_ERR].ch_nomodifiable =
 						!opt->jo_modifiable[PART_ERR];
 	    if (!buf->b_p_ma && !channel->ch_part[PART_ERR].ch_nomodifiable)
-	    {
 		emsg(_(e_modifiable));
-	    }
 	    else
 	    {
 		ch_log(channel, "writing err to buffer '%s'",
@@ -3470,9 +3466,7 @@ channel_read_block(
 
     /* We have a complete message now. */
     if (mode == MODE_RAW || outlen != NULL)
-    {
 	msg = channel_get_all(channel, part, outlen);
-    }
     else
     {
 	char_u *p;
@@ -5152,9 +5146,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
 	    channel = tv->vval.v_job->jv_channel;
     }
     else if (tv->v_type == VAR_CHANNEL)
-    {
 	channel = tv->vval.v_channel;
-    }
     else
     {
 	semsg(_(e_invarg2), tv_get_string(tv));
@@ -5541,9 +5533,7 @@ job_unref(job_T *job)
 	    /* Do not free the job when it has not ended yet and there is a
 	     * "stoponexit" flag or an exit callback. */
 	    if (!job_need_end_check(job))
-	    {
 		job_free(job);
-	    }
 	    else if (job->jv_channel != NULL)
 	    {
 		/* Do remove the link to the channel, otherwise it hangs
@@ -5797,9 +5787,7 @@ job_start(
 		semsg(_(e_nobufnr), (long)opt.jo_io_buf[PART_IN]);
 	}
 	else if (!(opt.jo_set & JO_IN_NAME))
-	{
 	    emsg(_("E915: in_io buffer requires in_buf or in_name to be set"));
-	}
 	else
 	    buf = buflist_find_by_name(opt.jo_io_name[PART_IN], FALSE);
 	if (buf == NULL)

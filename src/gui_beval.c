@@ -806,9 +806,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	{
 	    /* Be quick for ASCII */
 	    if ((*p & 0x80) == 0 && !IS_NONPRINTABLE(*p))
-	    {
 		*pdest++ = *p++;
-	    }
 	    else
 	    {
 		charlen = utf_ptr2len(p);

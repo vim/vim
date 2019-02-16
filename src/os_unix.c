@@ -1147,9 +1147,7 @@ static RETSIGTYPE sigcont_handler SIGPROTOARG;
 sigcont_handler SIGDEFARG(sigarg)
 {
     if (in_mch_suspend)
-    {
 	sigcont_received = TRUE;
-    }
     else
     {
 	// We didn't suspend ourselves, assume we were stopped by a SIGSTOP
@@ -4812,9 +4810,7 @@ mch_call_shell_fork(
 		    /* Fork a process that will write the lines to the
 		     * external program. */
 		    if ((wpid = fork()) == -1)
-		    {
 			msg_puts(_("\nCannot fork\n"));
-		    }
 		    else if (wpid == 0) /* child */
 		    {
 			linenr_T    lnum = curbuf->b_op_start.lnum;
@@ -6123,9 +6119,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # endif
 # ifdef FEAT_MOUSE_GPM
 	if (gpm_idx >= 0 && (fds[gpm_idx].revents & POLLIN))
-	{
 	    *check_for_gpm = 1;
-	}
 # endif
 # ifdef USE_XSMP
 	if (xsmp_idx >= 0 && (fds[xsmp_idx].revents & (POLLIN | POLLHUP)))
@@ -7209,9 +7203,7 @@ sig_sysmouse SIGDEFARG(sigarg)
 	string[1] = 'M';
 	string[2] = 'S';
 	if (oldbuttons == buttons && buttons != 0)
-	{
 	    button = MOUSE_DRAG;
-	}
 	else
 	{
 	    switch (buttons)

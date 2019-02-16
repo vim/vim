@@ -1123,9 +1123,7 @@ vimSetDlgItemText(HWND hDlg, int nIDDlgItem, char_u *s)
     BOOL    ret;
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
 	wp = enc_to_utf16(s, NULL);
-    }
     if (wp != NULL)
     {
 	ret = SetDlgItemTextW(hDlg, nIDDlgItem, wp);
@@ -1731,9 +1729,7 @@ mch_print_text_out(char_u *p, int len)
     int		wlen = len;
 
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
 	wp = enc_to_utf16(p, &wlen);
-    }
     if (wp != NULL)
     {
 	int ret = FALSE;

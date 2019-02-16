@@ -1663,9 +1663,7 @@ gui_init_tooltip_font(void)
     to.size = sizeof(XFontSet);
 
     if (XtConvertAndStore(vimShell, XtRString, &from, XtRFontSet, &to) == False)
-    {
-	/* Failed. What to do? */
-    }
+	; /* Failed. What to do? */
 }
 #endif
 
@@ -1683,9 +1681,7 @@ gui_init_menu_font(void)
     to.size = sizeof(GuiFontset);
 
     if (XtConvertAndStore(vimShell, XtRString, &from, XtRFontSet, &to) == False)
-    {
-	/* Failed. What to do? */
-    }
+	; /* Failed. What to do? */
 #else
     from.addr = (char *)gui.rsrc_menu_font_name;
     from.size = strlen(from.addr);
@@ -1693,9 +1689,7 @@ gui_init_menu_font(void)
     to.size = sizeof(GuiFont);
 
     if (XtConvertAndStore(vimShell, XtRString, &from, XtRFontStruct, &to) == False)
-    {
-	/* Failed. What to do? */
-    }
+	; /* Failed. What to do? */
 #endif
 }
 #endif
@@ -3015,9 +3009,7 @@ gui_x11_send_event_handler(
 
     if (e->type == PropertyNotify && e->window == commWindow
 	    && e->atom == commProperty &&  e->state == PropertyNewValue)
-    {
 	serverEventProc(gui.dpy, event, 0);
-    }
 }
 #endif
 

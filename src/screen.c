@@ -232,9 +232,7 @@ redraw_all_later(int type)
     win_T	*wp;
 
     FOR_ALL_WINDOWS(wp)
-    {
 	redraw_win_later(wp, type);
-    }
     // This may be needed when switching tabs.
     if (must_redraw < type)
 	must_redraw = type;
@@ -3543,9 +3541,7 @@ win_line(
 #endif
 	     virtual_active() ||
 	     (VIsual_active && wp->w_buffer == curwin->w_buffer)))
-	{
 	    vcol = v;
-	}
 
 	/* Handle a character that's not completely on the screen: Put ptr at
 	 * that character but skip the first few screen characters. */
@@ -10758,9 +10754,7 @@ showruler(int always)
 #endif
 #if defined(FEAT_STL_OPT)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
-    {
 	redraw_custom_statusline(curwin);
-    }
     else
 #endif
 #ifdef FEAT_CMDL_INFO

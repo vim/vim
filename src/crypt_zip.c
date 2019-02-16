@@ -98,9 +98,7 @@ crypt_zip_init(
     zs->keys[1] = 591751049L;
     zs->keys[2] = 878082192L;
     for (p = key; *p != NUL; ++p)
-    {
 	UPDATE_KEYS_ZIP(zs->keys, (int)*p);
-    }
 }
 
 /*

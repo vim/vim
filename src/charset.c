@@ -587,9 +587,7 @@ transchar_nonprint(char_u *buf, int c)
 	buf[2] = NUL;
     }
     else if (enc_utf8 && c >= 0x80)
-    {
 	transchar_hex(buf, c);
-    }
 #ifndef EBCDIC
     else if (c >= ' ' + 0x80 && c <= '~' + 0x80)    /* 0xa0 - 0xfe */
     {

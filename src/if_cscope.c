@@ -276,9 +276,7 @@ ex_cstag(exarg_T *eap)
 	    }
 	}
 	else if (cs_check_for_tags())
-	{
 	    ret = do_tag(eap->arg, DT_JUMP, 0, eap->forceit, FALSE);
-	}
 	break;
     case 1 :
 	if (cs_check_for_tags())
@@ -573,9 +571,7 @@ staterr:
 	i = cs_insert_filelist(fname2, ppath, flags, &statbuf);
     }
     else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode))
-    {
 	i = cs_insert_filelist(fname, ppath, flags, &statbuf);
-    }
     else
     {
 	if (p_csverbose)
@@ -2448,9 +2444,7 @@ cs_resolve_file(int i, char *name)
 	fullname = (char *)concat_fnames(csdir, (char_u *)name, TRUE);
     }
     else
-    {
 	fullname = (char *)vim_strsave((char_u *)name);
-    }
 
     vim_free(csdir);
     return fullname;

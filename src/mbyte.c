@@ -3686,9 +3686,7 @@ mb_strnicmp(char_u *s1, char_u *s2, size_t nn)
     int		n = (int)nn;
 
     if (enc_utf8)
-    {
 	return utf_strnicmp(s1, s2, nn, nn);
-    }
     else
     {
 	for (i = 0; i < n; i += l)
@@ -6583,22 +6581,16 @@ convert_setup_ext(
 #endif
 #ifdef MACOS_CONVERT
     else if ((from_prop & ENC_MACROMAN) && (to_prop & ENC_LATIN1))
-    {
 	vcp->vc_type = CONV_MAC_LATIN1;
-    }
     else if ((from_prop & ENC_MACROMAN) && to_is_utf8)
     {
 	vcp->vc_type = CONV_MAC_UTF8;
 	vcp->vc_factor = 2;	/* up to twice as long */
     }
     else if ((from_prop & ENC_LATIN1) && (to_prop & ENC_MACROMAN))
-    {
 	vcp->vc_type = CONV_LATIN1_MAC;
-    }
     else if (from_is_utf8 && (to_prop & ENC_MACROMAN))
-    {
 	vcp->vc_type = CONV_UTF8_MAC;
-    }
 #endif
 #ifdef USE_ICONV
     else

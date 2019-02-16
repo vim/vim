@@ -517,9 +517,7 @@ mac_utf16_to_utf8(
 	    VIM_CLEAR(result);
     }
     else
-    {
 	result = NULL;
-    }
 
     if (actualLen)
 	*actualLen = result ? utf8_len : 0;

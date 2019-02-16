@@ -268,9 +268,7 @@ lookup_menu_iconfile(char_u *iconfile, char_u *dest)
     expand_env(iconfile, dest, MAXPATHL);
 
     if (mch_isFullName(dest))
-    {
 	return vim_fexists(dest);
-    }
     else
     {
 	static const char   suffixes[][4] = {"png", "xpm", "bmp"};
@@ -571,17 +569,11 @@ translate_mnemonic_tag(char_u *name, int use_mnemonic)
 		*pdest++ = '_';
 	    }
 	    else if (*psrc != '&')
-	    {
 		*pdest++ = *psrc;
-	    }
 	    else if (*(psrc + 1) == '&')
-	    {
 		*pdest++ = *psrc++;
-	    }
 	    else if (use_mnemonic)
-	    {
 		*pdest++ = '_';
-	    }
 	}
 	*pdest = NUL;
     }
@@ -1428,9 +1420,7 @@ create_message_dialog(int type, char_u *title, char_u *message)
 	CONVERT_TO_UTF8_FREE(title);
     }
     else if (type == VIM_GENERIC)
-    {
 	gtk_window_set_title(GTK_WINDOW(dialog), "VIM");
-    }
 
     return dialog;
 }
@@ -2573,9 +2563,7 @@ entry_changed_cb(GtkWidget * entry, GtkWidget * dialog)
     nonempty = (entry_text[0] != '\0');
 
     if (dialog == find_widgets.dialog)
-    {
 	gtk_widget_set_sensitive(find_widgets.find, nonempty);
-    }
 
     if (dialog == repl_widgets.dialog)
     {

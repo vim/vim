@@ -602,9 +602,7 @@ cin_is_cpp_namespace(char_u *s)
 		p = cin_skipcomment(skipwhite(p));
 	    }
 	    else if (*p == '{')
-	    {
 		break;
-	    }
 	    else if (vim_iswordc(*p))
 	    {
 		has_name_start = TRUE;
@@ -620,9 +618,7 @@ cin_is_cpp_namespace(char_u *s)
 		p += 3;
 	    }
 	    else
-	    {
 		return FALSE;
-	    }
 	}
 	return TRUE;
     }
@@ -645,13 +641,9 @@ cin_is_cpp_extern_c(char_u *s)
 	while (*p != NUL)
 	{
 	    if (VIM_ISWHITE(*p))
-	    {
 		p = cin_skipcomment(skipwhite(p));
-	    }
 	    else if (*p == '{')
-	    {
 		break;
-	    }
 	    else if (p[0] == '"' && p[1] == 'C' && p[2] == '"')
 	    {
 		if (has_string_literal)
@@ -668,9 +660,7 @@ cin_is_cpp_extern_c(char_u *s)
 		p += 5;
 	    }
 	    else
-	    {
 		return FALSE;
-	    }
 	}
 	return has_string_literal ? TRUE : FALSE;
     }
@@ -1398,9 +1388,7 @@ cin_is_cpp_baseclass(
 	else
 	{
 	    if (s[0] == '{' || s[0] == '}' || s[0] == ';')
-	    {
 		cpp_base_class = lookfor_ctor_init = class_or_struct = FALSE;
-	    }
 	    else if (s[0] == ')')
 	    {
 		// Constructor-initialization is assumed if we come across
@@ -2416,9 +2404,7 @@ get_c_indent(void)
 	    }
 
 	    if (theline[0] == ')' && curbuf->b_ind_matching_paren)
-	    {
-		// Line up with the start of the matching paren line.
-	    }
+		; // Line up with the start of the matching paren line.
 	    else if ((curbuf->b_ind_unclosed == 0 && is_if_for_while == 0)
 		     || (!curbuf->b_ind_unclosed_noignore
 				    && *look == '(' && ignore_paren_col == 0))
@@ -3870,9 +3856,7 @@ find_match(int lookfor, linenr_T ourscope)
 	    // this must be the if that we want!
 	    // match the indent level of that if.
 	    if (elselevel <= 0 && whilelevel <= 0)
-	    {
 		return OK;
-	    }
 	}
     }
     return FAIL;

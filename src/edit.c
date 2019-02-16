@@ -466,9 +466,7 @@ edit(
     }
 
     if (cmdchar == 'R')
-    {
 	State = REPLACE;
-    }
     else if (cmdchar == 'V' || cmdchar == 'v')
     {
 	State = VREPLACE;
@@ -4523,9 +4521,7 @@ ins_compl_get_exp(pos_T *ini)
 		    TAG_REGEXP | TAG_NAMES | TAG_NOIC | TAG_INS_COMP
 		    | (ctrl_x_mode != CTRL_X_NORMAL ? TAG_VERBOSE : 0),
 		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
-	    {
 		ins_compl_add_matches(num_matches, matches, p_ic);
-	    }
 	    p_ic = save_p_ic;
 	    break;
 
@@ -8702,9 +8698,7 @@ ins_bs(
 	 * cursor.
 	 */
 	if ((State & REPLACE_FLAG) && curwin->w_cursor.lnum <= lnum)
-	{
 	    dec_cursor();
-	}
 	else
 	{
 	    if (!(State & VREPLACE_FLAG)
@@ -9159,9 +9153,8 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	if (end == NULL && vpeekc() == NUL)
 	    break;
 	do
-	{
 	    c = vgetc();
-	} while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
+	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
 	if (c == NUL || got_int)
 	    // When CTRL-C was encountered the typeahead will be flushed and we
 	    // won't get the end sequence.

@@ -1841,9 +1841,7 @@ do_digraph(int c)
     static int	lastchar;	/* last typed character */
 
     if (c == -1)		/* init values */
-    {
 	backspaced = -1;
-    }
     else if (p_dg)
     {
 	if (backspaced >= 0)

@@ -1235,9 +1235,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
-	{
 	    return NULL;
-	}
 	return BufferSlice((BufferObject *)(self), start, stop);
     }
     else
@@ -1267,9 +1265,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
-	{
 	    return -1;
-	}
 	return RBAsSlice((BufferObject *)(self), start, stop, val, 1,
 			  (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 			  NULL);
@@ -1351,9 +1347,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)
-	{
 	    return NULL;
-	}
 	return RangeSlice((RangeObject *)(self), start, stop);
     }
     else
@@ -1378,9 +1372,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)
-	{
 	    return -1;
-	}
 	return RangeAsSlice(self, start, stop, val);
     }
     else

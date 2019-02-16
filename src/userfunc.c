@@ -640,9 +640,7 @@ cleanup_function_call(funccall_T *fc)
 	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
 	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT
 	    && fc->fc_refcount <= 0)
-    {
 	free_funccal(fc, FALSE);
-    }
     else
     {
 	hashitem_T	*hi;

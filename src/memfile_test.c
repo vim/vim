@@ -121,9 +121,7 @@ test_mf_hash(void)
 	item = mf_hash_find(&ht, key);
 
 	if (i % 100 < 70)
-	{
 	    assert(item == NULL);
-	}
 	else
 	{
 	    assert(item != NULL);

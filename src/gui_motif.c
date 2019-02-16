@@ -916,13 +916,9 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 # endif
 	{
 	    if (gui.menu_bg_pixel != INVALCOLOR)
-	    {
 		XtSetArg(arg[0], XmNbackground, gui.menu_bg_pixel); n++;
-	    }
 	    if (gui.menu_fg_pixel != INVALCOLOR)
-	    {
 		XtSetArg(arg[1], XmNforeground, gui.menu_fg_pixel); n++;
-	    }
 	    menu->submenu_id = XmCreatePopupMenu(textArea, "contextMenu",
 								      arg, n);
 	    menu->id = (Widget)0;
@@ -1237,15 +1233,11 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     vim_free(menu->xpm_fname);
     menu->xpm = get_toolbar_pixmap(menu, &menu->xpm_fname);
     if (menu->xpm == NULL)
-    {
 	XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
-    }
     else
     {
 	if (menu->xpm_fname != NULL)
-	{
 	    XtSetArg(args[n], XmNpixmapFile, menu->xpm_fname); n++;
-	}
 	XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
 	XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
     }

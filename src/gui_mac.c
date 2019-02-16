@@ -360,9 +360,7 @@ C2Pascal_save_and_remove_backslash(char_u *Cstring)
 	for (c = Cstring, p = PascalString+1, len = 0; (*c != 0) && (len < 255); c++)
 	{
 	    if ((*c == '\\') && (c[1] != 0))
-	    {
 		c++;
-	    }
 	    *p = *c;
 	    p++;
 	    len++;
@@ -819,9 +817,7 @@ Handle_KAHL_GTTX_AE(
 	    /* Resize handle to linesize+1 to include the linefeed */
 	    SetHandleSize(GetTextData.theText, BufferSize);
 	    if (GetHandleSize(GetTextData.theText) != BufferSize)
-	    {
 		break; /* Simple handling for now */
-	    }
 	    else
 	    {
 		HLock(GetTextData.theText);
@@ -967,9 +963,7 @@ HandleUnusedParms(const AppleEvent *theAEvent)
 
     /* If the descriptor isn't found, then we got the required parameters. */
     if (error == errAEDescNotFound)
-    {
 	error = noErr;
-    }
     else
     {
 #if 0
@@ -1098,13 +1092,9 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (^error) then
     {
 	if (thePosition.lineNum >= 0)
-	{
 	  // Goto this line
-	}
 	else
-	{
 	  // Set the range char wise
-	}
     }
  */
 
@@ -1259,25 +1249,19 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_oapp_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install quit application handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_quit_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install open document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
 		    NewAEEventHandlerUPP(HandleODocAE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install print document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments,
@@ -1331,21 +1315,15 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler('KAHL', 'GTTX',
 		    NewAEEventHandlerUPP(Handle_KAHL_GTTX_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'SRCH',
 		    NewAEEventHandlerUPP(Handle_KAHL_SRCH_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'MOD ',
 		    NewAEEventHandlerUPP(Handle_KAHL_MOD_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 #endif
 
     return error;
@@ -1462,9 +1440,7 @@ GetFontPanelSelection(char_u *outName)
 	    STRCPY(outName + fontNameLen, styleString);
     }
     else
-    {
 	*outName = NUL;
-    }
 }
 
 
@@ -2626,9 +2602,7 @@ gui_mac_handle_contextual_menu(EventRecord *event)
 	gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
     }
     else if (CntxMenuID == kCMShowHelpSelected)
-    {
 	/* Should come up with the help */
-    }
 
 }
 #endif
@@ -3861,9 +3835,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     /*  SelectFont(hdc, gui.currFont); */
 
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 	DrawText((char *)s, 0, len);
@@ -3943,9 +3915,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 
 	/*  SelectFont(hdc, gui.currFont); */
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 
@@ -4624,13 +4594,9 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
     if (gui.which_scrollbars[SBAR_LEFT])
-    {
 	VimBound.left = -gui.scrollbar_width + 1;
-    }
     else
-    {
 	VimBound.left = 0;
-    }
 
     SetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
@@ -4900,9 +4866,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
       }
 #ifdef DEBUG_MAC_MENU
       else
-      {
 	printf("gmdm 2\n");
-      }
 #endif
     }
     else
@@ -5679,9 +5643,8 @@ gui_mch_dialog(
 
     /* Hang until one of the button is hit */
     do
-    {
 	ModalDialog(dialogUPP, &itemHit);
-    } while ((itemHit < 1) || (itemHit > lastButton));
+    while ((itemHit < 1) || (itemHit > lastButton));
 
 #ifdef USE_CARBONKEYHANDLER
     dialog_busy = FALSE;
@@ -5858,9 +5821,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	    gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
 	}
 	else if (CntxMenuID == kCMShowHelpSelected)
-	{
-	    /* Should come up with the help */
-	}
+	    ; /* Should come up with the help */
     }
 
     /* Restore original Port */

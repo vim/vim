@@ -744,9 +744,7 @@ dynamic_mzscheme_end(void)
 guaranteed_byte_string_arg(char *proc, int num, int argc, Scheme_Object **argv)
 {
     if (SCHEME_BYTE_STRINGP(argv[num]))
-    {
 	return argv[num];
-    }
     else if (SCHEME_CHAR_STRINGP(argv[num]))
     {
 	Scheme_Object *tmp = NULL;
@@ -3805,9 +3803,7 @@ sandbox_file_guard(int argc UNUSED, Scheme_Object **argv)
 	    Scheme_Object *item = SCHEME_CAR(requested_access);
 	    if (scheme_eq(item, M_write) || scheme_eq(item, M_read)
 		    || scheme_eq(item, M_execute) || scheme_eq(item, M_delete))
-	    {
 		raise_vim_exn(_("not allowed in the Vim sandbox"));
-	    }
 	    requested_access = SCHEME_CDR(requested_access);
 	}
     }

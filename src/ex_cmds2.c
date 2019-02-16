@@ -299,9 +299,7 @@ do_debug(char_u *cmd)
 			continue;
 		    case CMD_FRAME:
 			if (*p == NUL)
-			{
 			    do_showbacktrace(cmd);
-			}
 			else
 			{
 			    p = skipwhite(p);
@@ -2174,9 +2172,7 @@ dialog_changed(
 	    (void)buf_write_all(buf, FALSE);
     }
     else if (ret == VIM_NO)
-    {
 	unchanged(buf, TRUE);
-    }
     else if (ret == VIM_ALL)
     {
 	/*

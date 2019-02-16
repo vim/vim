@@ -259,9 +259,7 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	    if (first_char != '#' || !preprocs_left())
 #endif
-	{
 	    shift_line(oap->op_type == OP_LSHIFT, p_sr, amount, FALSE);
-	}
 	++curwin->w_cursor.lnum;
     }
 
@@ -634,9 +632,7 @@ block_insert(
 
 	    /* Avoid starting halfway a multi-byte character. */
 	    if (b_insert)
-	    {
 		off = (*mb_head_off)(oldp, oldp + offset + spaces);
-	    }
 	    else
 	    {
 		off = (*mb_off_next)(oldp, oldp + offset);
@@ -3152,9 +3148,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		    if (startcol > endcol || is_oneChar)
 			bd.textlen = 0;
 		    else
-		    {
 			bd.textlen = endcol - startcol + oap->inclusive;
-		    }
 		    bd.textstart = p + startcol;
 		    if (yank_copy_line(&bd, y_idx) == FAIL)
 			goto fail;
@@ -4386,9 +4380,7 @@ skip_comment(
     {
 	if (*comment_flags == COM_END
 		|| *comment_flags == ':')
-	{
 	    break;
-	}
 	++comment_flags;
     }
 
@@ -5846,9 +5838,7 @@ do_addsub(
 	    goto theend;
 	ptr = buf1;
 	if (negative && (!visual || was_positive))
-	{
 	    *ptr++ = '-';
-	}
 	if (pre)
 	{
 	    *ptr++ = '0';
@@ -6073,9 +6063,7 @@ read_viminfo_register(vir_T *virp, int force)
 	y_current->y_size = size;
 	y_current->y_time_set = 0;
 	if (size == 0)
-	{
 	    y_current->y_array = NULL;
-	}
 	else
 	{
 	    /* Move the lines from array[] to y_array[]. */
@@ -6404,15 +6392,11 @@ x11_export_final_selection(void)
 		    str = conv_str;
 		}
 		else
-		{
 		    ok = FALSE;
-		}
 		convert_setup(&vc, NULL, NULL);
 	    }
 	    else
-	    {
 		ok = FALSE;
-	    }
 	}
 
 	/* Do not store the string if conversion failed.  Better to use any

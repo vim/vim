@@ -1122,9 +1122,7 @@ do_bufdel(
     char_u	*p;
 
     if (addr_count == 0)
-    {
 	(void)do_buffer(command, DOBUF_CURRENT, FORWARD, 0, forceit);
-    }
     else
     {
 	if (addr_count == 2)
@@ -1595,9 +1593,7 @@ do_buffer(
     set_curbuf(buf, action);
 
     if (action == DOBUF_SPLIT)
-    {
 	RESET_BINDING(curwin);	/* reset 'scrollbind' and 'cursorbind' */
-    }
 
 #if defined(FEAT_EVAL)
     if (aborting())	    /* autocmds may abort script processing */
@@ -3056,9 +3052,8 @@ buflist_list(exarg_T *eap)
 	/* put "line 999" in column 40 or after the file name */
 	i = 40 - vim_strsize(IObuff);
 	do
-	{
 	    IObuff[len++] = ' ';
-	} while (--i > 0 && len < IOSIZE - 18);
+	while (--i > 0 && len < IOSIZE - 18);
 	vim_snprintf((char *)IObuff + len, (size_t)(IOSIZE - len),
 		_("line %ld"), buf == curbuf ? curwin->w_cursor.lnum
 					       : (long)buflist_findlnum(buf));

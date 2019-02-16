@@ -1083,9 +1083,7 @@ SetValues(Widget current,
     if (NOT_EQUAL(core.sensitive) && !Lab_IsMenupane(current))
     {
 	if (cur->core.sensitive == True)
-	{
 	    draw_unhighlight(eb);
-	}
 	else
 	{
 	    int		    r_x;
