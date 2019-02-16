@@ -539,6 +539,10 @@ func Test_zzz_startinsert()
 endfunc
 
 func Test_issue3969()
+  if has('gui_running')
+    " Can't catch the output of gvim.
+    return
+  endif
   let out = system(GetVimCommand() . ' --clean -es -X -V1 -c "echon ''hello''" -cq')
   call assert_match('hello', out)
 endfunc
