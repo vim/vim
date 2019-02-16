@@ -247,6 +247,8 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	colnr_T col;	// start column
 	long	length;	// in bytes
 
+	props = NULL;
+
 	// Fetch the line to get the ml_line_len field updated.
 	proplen = get_text_props(buf, lnum, &props, TRUE);
 	textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);

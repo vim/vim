@@ -261,7 +261,7 @@ redraw_buf_later(buf_T *buf, int type)
     }
 }
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL) || defined(PROTO)
     void
 redraw_buf_line_later(buf_T *buf, linenr_T lnum)
 {
@@ -832,7 +832,7 @@ update_screen(int type_arg)
     return OK;
 }
 
-#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Prepare for updating one or more windows.
  * Caller must check for "updating_screen" already set to avoid recursiveness.
@@ -921,7 +921,7 @@ conceal_check_cursor_line(void)
 }
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL) || defined(PROTO)
     void
 update_debug_sign(buf_T *buf, linenr_T lnum)
 {
@@ -2547,10 +2547,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
-		STRNCPY(current_ScreenLine, text, len);
+		mch_memmove(current_ScreenLine, text, len);
 	    else
 #endif
-		STRNCPY(current_ScreenLine + col, text, len);
+		mch_memmove(current_ScreenLine + col, text, len);
 	    col += len;
 	}
     }
