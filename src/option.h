@@ -50,21 +50,14 @@
 # define DFLT_FFS_VI	"dos,unix"	/* also autodetect in compatible mode */
 # define DFLT_TEXTAUTO	TRUE
 #else
-# ifdef USE_CR
-#  define DFLT_FF	"mac"
-#  define DFLT_FFS_VIM	"mac,unix,dos"
-#  define DFLT_FFS_VI	"mac,unix,dos"
-#  define DFLT_TEXTAUTO	TRUE
+# define DFLT_FF	"unix"
+# define DFLT_FFS_VIM	"unix,dos"
+# ifdef __CYGWIN__
+#  define DFLT_FFS_VI	"unix,dos"	/* Cygwin always needs file detection */
+#  define DFLT_TEXTAUTO TRUE
 # else
-#  define DFLT_FF	"unix"
-#  define DFLT_FFS_VIM	"unix,dos"
-#  ifdef __CYGWIN__
-#   define DFLT_FFS_VI	"unix,dos"	/* Cygwin always needs file detection */
-#   define DFLT_TEXTAUTO TRUE
-#  else
-#   define DFLT_FFS_VI	""
-#   define DFLT_TEXTAUTO FALSE
-#  endif
+#  define DFLT_FFS_VI	""
+#  define DFLT_TEXTAUTO FALSE
 # endif
 #endif
 

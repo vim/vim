@@ -688,13 +688,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+farsi|
 			feature}
-	When on, the second language is Farsi.  In editing mode CTRL-_ toggles
-	the keyboard map between Farsi and English, when 'allowrevins' set.
-
-	When off, the keyboard map toggles between Hebrew and English.  This
-	is useful to start the Vim in native mode i.e. English (left-to-right
-	mode) and have default second language Farsi or Hebrew (right-to-left
-	mode).  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'ambiwidth'* *'ambw'*
 'ambiwidth' 'ambw'	string (default: "single")
@@ -3134,9 +3129,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	is read.
 
 					*'fileformat'* *'ff'*
-'fileformat' 'ff'	string (MS-DOS, MS-Windows, OS/2 default: "dos",
-				Unix default: "unix",
-				Macintosh default: "mac")
+'fileformat' 'ff'	string (MS-Windows default: "dos",
+				Unix, macOS default: "unix")
 			local to buffer
 			{not in Vi}
 	This gives the <EOL> of the current buffer, which is used for
@@ -3159,9 +3153,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fileformats'* *'ffs'*
 'fileformats' 'ffs'	string (default:
-				Vim+Vi	MS-DOS, MS-Windows OS/2: "dos,unix",
-				Vim	Unix: "unix,dos",
-				Vim	Mac: "mac,unix,dos",
+				Vim+Vi	MS-Windows: "dos,unix",
+				Vim	Unix, macOS: "unix,dos",
 				Vi	Cygwin: "unix,dos",
 				Vi	others: "")
 			global
@@ -3303,9 +3296,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+rightleft|
 			feature}
-	When on, the keyboard is mapped for the Farsi character set.
-	Normally you would set 'allowrevins' and use CTRL-_ in insert mode to
-	toggle this option |i_CTRL-_|.  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'foldclose'* *'fcl'*
 'foldclose' 'fcl'	string (default "")
@@ -8112,12 +8104,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	window.
 
 	Possible values are:
-	    ""		use ConPTY if possible, winpty otherwise
+	    ""		use ConPTY if it is stable, winpty otherwise
 	    "winpty"	use winpty, fail if not supported
 	    "conpty"	use |ConPTY|, fail if not supported
 
-	|ConPTY| support depends on the platform (Windows 10 October 2018
-	edition).  winpty support needs to be installed.  If neither is
+	|ConPTY| support depends on the platform.  Windows 10 October 2018
+	Update is the first version that supports ConPTY, however it is still
+	considered unstable.  ConPTY might become stable in the next release
+	of Windows 10.  winpty support needs to be installed.  If neither is
 	supported then you cannot open a terminal window.
 
 						*'terse'* *'noterse'*

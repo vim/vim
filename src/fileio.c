@@ -4661,7 +4661,7 @@ restore_backup:
 	 * work (could be a pipe).
 	 * If the 'fsync' option is FALSE, don't fsync().  Useful for laptops.
 	 */
-	if (p_fs && fsync(fd) != 0 && !device)
+	if (p_fs && vim_fsync(fd) != 0 && !device)
 	{
 	    errmsg = (char_u *)_(e_fsync);
 	    end = 0;
@@ -5123,6 +5123,25 @@ nofail:
     return retval;
 }
 
+#if defined(HAVE_FSYNC) || defined(PROTO)
+/*
+ * Call fsync() with Mac-specific exception.
+ * Return fsync() result: zero for success.
+ */
+    int
+vim_fsync(int fd)
+{
+    int r;
+
+# ifdef MACOS_X
+    r = fcntl(fd, F_FULLFSYNC);
+    if (r != 0 && errno == ENOTTY)
+# endif
+	r = fsync(fd);
+    return r;
+}
+#endif
+
 /*
  * Set the name of the current buffer.  Use when the buffer doesn't have a
  * name and a ":r" or ":w" command with a file name is used.
@@ -5197,14 +5216,12 @@ msg_add_fileformat(int eol_type)
 	return TRUE;
     }
 #endif
-#ifndef USE_CR
     if (eol_type == EOL_MAC)
     {
 	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[mac]") : _("[mac format]"));
 	return TRUE;
     }
-#endif
-#if defined(USE_CRNL) || defined(USE_CR)
+#ifdef USE_CRNL
     if (eol_type == EOL_UNIX)
     {
 	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[unix]") : _("[unix format]"));
@@ -6340,11 +6357,7 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     char	tbuf[FGETS_SIZE];
 
     buf[size - 2] = NUL;
-#ifdef USE_CR
-    eof = fgets_cr((char *)buf, size, fp);
-#else
     eof = fgets((char *)buf, size, fp);
-#endif
     if (buf[size - 2] != NUL && buf[size - 2] != '\n')
     {
 	buf[size - 1] = NUL;	    /* Truncate the line */
@@ -6353,56 +6366,11 @@ vim_fgets(char_u *buf, int size, FILE *fp)
 	do
 	{
 	    tbuf[FGETS_SIZE - 2] = NUL;
-#ifdef USE_CR
-	    vim_ignoredp = fgets_cr((char *)tbuf, FGETS_SIZE, fp);
-#else
 	    vim_ignoredp = fgets((char *)tbuf, FGETS_SIZE, fp);
-#endif
 	} while (tbuf[FGETS_SIZE - 2] != NUL && tbuf[FGETS_SIZE - 2] != '\n');
     }
     return (eof == NULL);
 }
-
-#if defined(USE_CR) || defined(PROTO)
-/*
- * Like vim_fgets(), but accept any line terminator: CR, CR-LF or LF.
- * Returns TRUE for end-of-file.
- * Only used for the Mac, because it's much slower than vim_fgets().
- */
-    int
-tag_fgets(char_u *buf, int size, FILE *fp)
-{
-    int		i = 0;
-    int		c;
-    int		eof = FALSE;
-
-    for (;;)
-    {
-	c = fgetc(fp);
-	if (c == EOF)
-	{
-	    eof = TRUE;
-	    break;
-	}
-	if (c == '\r')
-	{
-	    /* Always store a NL for end-of-line. */
-	    if (i < size - 1)
-		buf[i++] = '\n';
-	    c = fgetc(fp);
-	    if (c != '\n')	/* Macintosh format: single CR. */
-		ungetc(c, fp);
-	    break;
-	}
-	if (i < size - 1)
-	    buf[i++] = c;
-	if (c == '\n')
-	    break;
-    }
-    buf[i] = NUL;
-    return eof;
-}
-#endif
 
 /*
  * rename() only works if both files are on the same file system, this

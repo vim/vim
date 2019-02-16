@@ -93,7 +93,6 @@ void ex_scriptnames(exarg_T *eap);
 void scriptnames_slash_adjust(void);
 char_u *get_scriptname(scid_T id);
 void free_scriptnames(void);
-char *fgets_cr(char *s, int n, FILE *stream);
 char_u *getsourceline(int c, void *cookie, int indent);
 void script_line_start(void);
 void script_line_exec(void);

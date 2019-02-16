@@ -2155,18 +2155,9 @@ else
 	AC_DEFINE(DISABLE_ARABIC)
 fi
 
-dnl Farsi language support for vim will be included with big features,
-dnl unless ENABLE_FARSI is undefined.
-AC_MSG_CHECKING(--disable-farsi argument)
+dnl Farsi language support has been removed, ignore --disable-farsi
 AC_ARG_ENABLE(farsi,
-	[  --disable-farsi         Do not include Farsi language support.],
-	, [enable_farsi="yes"])
-if test "$enable_farsi" = "yes"; then
-	AC_MSG_RESULT(no)
-else
-	AC_MSG_RESULT(yes)
-	AC_DEFINE(DISABLE_FARSI)
-fi
+	[  --disable-farsi         Deprecated.],,)
 
 AC_MSG_CHECKING(--enable-hangulinput argument)
 AC_ARG_ENABLE(hangulinput,

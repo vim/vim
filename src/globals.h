@@ -1450,9 +1450,7 @@ EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compil
 #ifndef FEAT_RIGHTLEFT
 EXTERN char e_nohebrew[]	INIT(= N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
 #endif
-#ifndef FEAT_FKMAP
-EXTERN char e_nofarsi[]	INIT(= N_("E27: Farsi cannot be used: Not enabled at compile time\n"));
-#endif
+EXTERN char e_nofarsi[]		INIT(= N_("E27: Farsi support has been removed\n"));
 #ifndef FEAT_ARABIC
 EXTERN char e_noarabic[]	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
@@ -1653,13 +1651,6 @@ EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
-#endif
-
-/*
- * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
- */
-#ifdef FEAT_FKMAP
-# include "farsi.h"
 #endif
 
 /*

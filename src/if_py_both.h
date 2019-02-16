@@ -87,9 +87,9 @@ static PyObject *vim_special_path_object;
 #if PY_VERSION_HEX >= 0x030700f0
 static PyObject *py_find_spec;
 #else
-static PyObject *py_find_module;
 static PyObject *py_load_module;
 #endif
+static PyObject *py_find_module;
 
 static PyObject *VimError;
 
@@ -759,7 +759,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
 	ret = PyString_FromString((char *)buf);
     }
-# ifdef FEAT_FLOAT
+#ifdef FEAT_FLOAT
     else if (our_tv->v_type == VAR_FLOAT)
     {
 	char buf[NUMBUFLEN];
@@ -767,7 +767,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	sprintf(buf, "%f", our_tv->vval.v_float);
 	ret = PyString_FromString((char *)buf);
     }
-# endif
+#endif
     else if (our_tv->v_type == VAR_LIST)
     {
 	list_T		*list = our_tv->vval.v_list;
@@ -6093,18 +6093,18 @@ convert_dl(PyObject *obj, typval_T *tv,
 
     sprintf(hexBuf, "%p", (void *)obj);
 
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
     capsule = PyDict_GetItemString(lookup_dict, hexBuf);
-# else
+#else
     capsule = (PyObject *)PyDict_GetItemString(lookup_dict, hexBuf);
-# endif
+#endif
     if (capsule == NULL)
     {
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
 	capsule = PyCapsule_New(tv, NULL, NULL);
-# else
+#else
 	capsule = PyCObject_FromVoidPtr(tv, NULL);
-# endif
+#endif
 	if (PyDict_SetItemString(lookup_dict, hexBuf, capsule))
 	{
 	    Py_DECREF(capsule);
@@ -6130,11 +6130,11 @@ convert_dl(PyObject *obj, typval_T *tv,
     {
 	typval_T	*v;
 
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
 	v = PyCapsule_GetPointer(capsule, NULL);
-# else
+#else
 	v = PyCObject_AsVoidPtr(capsule);
-# endif
+#endif
 	copy_tv(v, tv);
     }
     return 0;
@@ -6919,6 +6919,13 @@ populate_module(PyObject *m)
     {
 	Py_DECREF(imp);
 	return -1;
+    }
+
+    if ((py_find_module = PyObject_GetAttrString(cls, "find_module")))
+    {
+	// find_module() is deprecated, this may stop working in some later
+	// version.
+        ADD_OBJECT(m, "_find_module", py_find_module);
     }
 
     Py_DECREF(imp);

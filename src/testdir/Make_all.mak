@@ -118,7 +118,6 @@ NEW_TESTS = \
 	test_expand_func \
 	test_expr \
 	test_expr_utf8 \
-	test_farsi \
 	test_feedkeys \
 	test_file_perm \
 	test_file_size \
@@ -269,6 +268,7 @@ NEW_TESTS = \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \
+	test_wnext \
 	test_wordcount \
 	test_writefile \
 	test_xxd \
@@ -317,7 +317,6 @@ NEW_TESTS_RES = \
 	test_exists.res \
 	test_exists_autocmd.res \
 	test_exit.res \
-	test_farsi.res \
 	test_file_size.res \
 	test_filechanged.res \
 	test_find_complete.res \
