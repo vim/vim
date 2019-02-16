@@ -2952,10 +2952,6 @@ struct window_S
     dict_T	*w_vars;	/* internal variables, local to window */
 #endif
 
-#if defined(FEAT_RIGHTLEFT) && defined(FEAT_FKMAP)
-    int		w_farsi;	/* for the window dependent Farsi functions */
-#endif
-
     /*
      * The w_prev_pcmark field is used to check whether we really did jump to
      * a new line after setting the w_pcmark.  If not, then we revert to

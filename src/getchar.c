@@ -3361,15 +3361,6 @@ do_map(
 	    rhs = replace_termcodes(rhs, &arg_buf, FALSE, TRUE, special);
     }
 
-#ifdef FEAT_FKMAP
-    /*
-     * When in right-to-left mode and alternate keymap option set,
-     * reverse the character flow in the rhs in Farsi.
-     */
-    if (p_altkeymap && curwin->w_p_rl)
-	lrswap(rhs);
-#endif
-
     /*
      * check arguments and translate function keys
      */

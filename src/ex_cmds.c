@@ -4911,10 +4911,6 @@ do_sub(exarg_T *eap)
 	}
 	else		/* find the end of the regexp */
 	{
-#ifdef FEAT_FKMAP	/* reverse the flow of the Farsi characters */
-	    if (p_altkeymap && curwin->w_p_rl)
-		lrF_sub(cmd);
-#endif
 	    which_pat = RE_LAST;	    /* use last used regexp */
 	    delimiter = *cmd++;		    /* remember delimiter character */
 	    pat = cmd;			    /* remember start of search pat */
@@ -6069,11 +6065,6 @@ ex_global(exarg_T *eap)
 	if (cmd[0] == delim)		    /* end delimiter found */
 	    *cmd++ = NUL;		    /* replace it with a NUL */
     }
-
-#ifdef FEAT_FKMAP	/* when in Farsi mode, reverse the character flow */
-    if (p_altkeymap && curwin->w_p_rl)
-	lrFswap(pat,0);
-#endif
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {

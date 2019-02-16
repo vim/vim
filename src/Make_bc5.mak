@@ -542,7 +542,6 @@ vimobj =  \
 	$(OBJDIR)\ex_docmd.obj \
 	$(OBJDIR)\ex_eval.obj \
 	$(OBJDIR)\ex_getln.obj \
-	$(OBJDIR)\farsi.obj \
 	$(OBJDIR)\fileio.obj \
 	$(OBJDIR)\findfile.obj \
 	$(OBJDIR)\fold.obj \

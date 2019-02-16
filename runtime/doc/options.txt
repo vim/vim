@@ -688,13 +688,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+farsi|
 			feature}
-	When on, the second language is Farsi.  In editing mode CTRL-_ toggles
-	the keyboard map between Farsi and English, when 'allowrevins' set.
-
-	When off, the keyboard map toggles between Hebrew and English.  This
-	is useful to start the Vim in native mode i.e. English (left-to-right
-	mode) and have default second language Farsi or Hebrew (right-to-left
-	mode).  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'ambiwidth'* *'ambw'*
 'ambiwidth' 'ambw'	string (default: "single")
@@ -3301,9 +3296,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+rightleft|
 			feature}
-	When on, the keyboard is mapped for the Farsi character set.
-	Normally you would set 'allowrevins' and use CTRL-_ in insert mode to
-	toggle this option |i_CTRL-_|.  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'foldclose'* *'fcl'*
 'foldclose' 'fcl'	string (default "")
