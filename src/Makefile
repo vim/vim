@@ -703,7 +703,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
 # Uncomment this line to have Vim call abort() when an internal error is
 # detected.  Useful when using a tool to find errors.
-#ABORT_CLFAGS = -DABORT_ON_INTERNAL_ERROR
+#ABORT_CFLAGS = -DABORT_ON_INTERNAL_ERROR
 
 #####################################################
 ###  Specific systems, check if yours is listed!  ### {{{
@@ -1471,7 +1471,7 @@ VTERM_CFLAGS = -Ilibvterm/include
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
 POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
 
-ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CLFAGS) $(POST_DEFS)
+ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
 
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
