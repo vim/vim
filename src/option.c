@@ -5594,7 +5594,9 @@ didset_options2(void)
     (void)check_clipboard_option();
 #endif
 #ifdef FEAT_VARTABS
+    vim_free(curbuf->b_p_vsts_array);
     tabstop_set(curbuf->b_p_vsts, &curbuf->b_p_vsts_array);
+    vim_free(curbuf->b_p_vts_array);
     tabstop_set(curbuf->b_p_vts,  &curbuf->b_p_vts_array);
 #endif
 }
@@ -7572,14 +7574,14 @@ did_set_string_option(
 	    if (errmsg == NULL)
 	    {
 		int *oldarray = curbuf->b_p_vts_array;
+
 		if (tabstop_set(*varp, &(curbuf->b_p_vts_array)))
 		{
-		    if (oldarray)
-			vim_free(oldarray);
+		    vim_free(oldarray);
 #ifdef FEAT_FOLDING
 		    if (foldmethodIsIndent(curwin))
 			foldUpdateAll(curwin);
-#endif /* FEAT_FOLDING */
+#endif
 		}
 		else
 		    errmsg = e_invarg;
@@ -12706,10 +12708,11 @@ check_ff_value(char_u *p)
     return check_opt_strings(p, p_ff_values, FALSE);
 }
 
-#ifdef FEAT_VARTABS
+#if defined(FEAT_VARTABS) || defined(PROTO)
 
 /*
  * Set the integer values corresponding to the string setting of 'vartabstop'.
+ * "array" will be set, caller must free it if needed.
  */
     int
 tabstop_set(char_u *var, int **array)
@@ -12752,6 +12755,8 @@ tabstop_set(char_u *var, int **array)
     }
 
     *array = (int *)alloc((unsigned) ((valcount + 1) * sizeof(int)));
+    if (*array == NULL)
+	return FALSE;
     (*array)[0] = valcount;
 
     t = 1;

@@ -2170,9 +2170,7 @@ free_buf_options(
 	vim_free(buf->b_p_vsts_array);
     buf->b_p_vsts_array = NULL;
     clear_string_option(&buf->b_p_vts);
-    if (buf->b_p_vts_array)
-	vim_free(buf->b_p_vts_array);
-    buf->b_p_vts_array = NULL;
+    VIM_CLEAR(buf->b_p_vts_array);
 #endif
 #ifdef FEAT_KEYMAP
     clear_string_option(&buf->b_p_keymap);

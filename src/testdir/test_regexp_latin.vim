@@ -97,3 +97,26 @@ func Test_out_of_memory()
   " This will be slow...
   call assert_fails('call search("\\v((n||<)+);")', 'E363:')
 endfunc
+
+func Test_get_equi_class()
+  new
+  " Incomplete equivalence class caused invalid memory access
+  s/^/[[=
+  call assert_equal(1, search(getline(1)))
+endfunc
+
+func Test_rex_init()
+  set noincsearch
+  set re=1
+  new
+  setlocal iskeyword=a-z
+  call setline(1, ['abc', 'ABC'])
+  call assert_equal(1, search('[[:keyword:]]'))
+  new
+  setlocal iskeyword=A-Z
+  call setline(1, ['abc', 'ABC'])
+  call assert_equal(2, search('[[:keyword:]]'))
+  bwipe!
+  bwipe!
+  set re=0
+endfunc
