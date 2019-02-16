@@ -1489,6 +1489,8 @@ handle_focus_event(INPUT_RECORD ir)
     ui_focus_change((int)g_fJustGotFocus);
 }
 
+static void ResizeConBuf(HANDLE hConsole, COORD coordScreen);
+
 /*
  * Wait until console input from keyboard or mouse is available,
  * or the time is up.
@@ -1654,11 +1656,17 @@ WaitForChar(long msec, int ignore_input)
 		handle_focus_event(ir);
 	    else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
 	    {
+		COORD dwSize = ir.Event.WindowBufferSizeEvent.dwSize;
 		/* Only call shell_resized() when the size actually change to
 		 * avoid the screen is cleard. */
-		if (ir.Event.WindowBufferSizeEvent.dwSize.X != Columns
-			|| ir.Event.WindowBufferSizeEvent.dwSize.Y != Rows)
+		if (dwSize.X != Columns || dwSize.Y != Rows)
+		{
+		    CONSOLE_SCREEN_BUFFER_INFO csbi;
+		    GetConsoleScreenBufferInfo(g_hConOut, &csbi);
+		    dwSize.Y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+		    ResizeConBuf(g_hConOut, dwSize);
 		    shell_resized();
+		}
 	    }
 #ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
@@ -6297,7 +6305,7 @@ write_chars(
 	     * character was written, otherwise we get stuck. */
 	    if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
 			coord, &cchwritten) == 0
-		    || cchwritten == 0)
+		    || cchwritten == 0 || cchwritten == (DWORD)-1)
 		cchwritten = 1;
 	}
 	else
