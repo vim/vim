@@ -921,7 +921,7 @@ conceal_check_cursor_line(void)
 }
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
     void
 update_debug_sign(buf_T *buf, linenr_T lnum)
 {
@@ -2547,10 +2547,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
-		STRNCPY(current_ScreenLine, text, len);
+		mch_memmove(current_ScreenLine, text, (size_t)len);
 	    else
 #endif
-		STRNCPY(current_ScreenLine + col, text, len);
+		mch_memmove(current_ScreenLine + col, text, (size_t)len);
 	    col += len;
 	}
     }
