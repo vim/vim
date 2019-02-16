@@ -250,7 +250,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	// Fetch the line to get the ml_line_len field updated.
 	proplen = get_text_props(buf, lnum, &props, TRUE);
 	if (proplen == 0)
-	    return;
+	    continue;
 	textlen = buf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
 	if (lnum == start_lnum)

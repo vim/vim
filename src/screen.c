@@ -261,7 +261,7 @@ redraw_buf_later(buf_T *buf, int type)
     }
 }
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
     void
 redraw_buf_line_later(buf_T *buf, linenr_T lnum)
 {
@@ -2547,10 +2547,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
-		mch_memmove(current_ScreenLine, text, (size_t)len);
+		mch_memmove(current_ScreenLine, text, (size_t)len + 1);
 	    else
 #endif
-		mch_memmove(current_ScreenLine + col, text, (size_t)len);
+		mch_memmove(current_ScreenLine + col, text, (size_t)len + 1);
 	    col += len;
 	}
     }
