@@ -186,12 +186,12 @@ static int win32_getattrs(char_u *name);
 static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
-static int vtp_working = 0;
 static int conpty_working = 0;
 static int conpty_stable = 0;
 static void vtp_flag_init();
 
 #ifndef FEAT_GUI_W32
+static int vtp_working = 0;
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -7874,13 +7874,13 @@ is_term_win32(void)
     return T_NAME != NULL && STRCMP(T_NAME, "win32") == 0;
 }
 
-#endif
-
     int
 has_vtp_working(void)
 {
     return vtp_working;
 }
+
+#endif
 
     int
 has_conpty_working(void)
