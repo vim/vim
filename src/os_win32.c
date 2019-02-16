@@ -6339,7 +6339,7 @@ write_chars(
 	     * character was written, otherwise we get stuck. */
 	    if (WriteConsoleOutputCharacter(g_hConOut, (LPCSTR)pchBuf, cbToWrite,
 			coord, &written) == 0
-		    || written == 0)
+		    || written == 0 || written == (DWORD)-1)
 		written = 1;
 	}
 	else
