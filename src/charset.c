@@ -1769,6 +1769,7 @@ vim_isblankline(char_u *lbuf)
  *  'X'	    hex
  *  'x'	    hex
  * If "len" is not NULL, the length of the number in characters is returned.
+ * If "len" is not NULL, the number is strictly checked.
  * If "nptr" is not NULL, the signed result is returned in it.
  * If "unptr" is not NULL, the unsigned result is returned in it.
  * If "what" contains STR2NR_BIN recognize binary numbers
@@ -1776,6 +1777,7 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
  * If maxlen > 0, check at a maximum maxlen chars.
+ * If strict is TRUE, check the number strictly. return *len = 0 if fail.
  */
     void
 vim_str2nr(
@@ -1787,13 +1789,17 @@ vim_str2nr(
     int			what,	    /* what numbers to recognize */
     varnumber_T		*nptr,	    /* return: signed result */
     uvarnumber_T	*unptr,	    /* return: unsigned result */
-    int			maxlen)     /* max length of string to check */
+    int			maxlen,     /* max length of string to check */
+    int			strict)     /* check strictly */
 {
     char_u	    *ptr = start;
     int		    pre = 0;		/* default is decimal */
     int		    negative = FALSE;
     uvarnumber_T    un = 0;
     int		    n;
+
+    if (len != NULL)
+	*len = 0;
 
     if (ptr[0] == '-')
     {
@@ -1856,6 +1862,8 @@ vim_str2nr(
 	    if (n++ == maxlen)
 		break;
 	}
+	if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	    return;
     }
     else if (pre == '0' || what == STR2NR_OCT + STR2NR_FORCE)
     {
@@ -1871,6 +1879,8 @@ vim_str2nr(
 	    if (n++ == maxlen)
 		break;
 	}
+	if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	    return;
     }
     else if (pre != 0 || what == STR2NR_HEX + STR2NR_FORCE)
     {
@@ -1888,6 +1898,8 @@ vim_str2nr(
 	    if (n++ == maxlen)
 		break;
 	}
+	if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	    return;
     }
     else
     {
@@ -1906,6 +1918,8 @@ vim_str2nr(
 	    if (n++ == maxlen)
 		break;
 	}
+	if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	    return;
     }
 
     if (prep != NULL)

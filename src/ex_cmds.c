@@ -557,7 +557,7 @@ ex_sort(exarg_T *eap)
 		    nrs[lnum - eap->line1].st_u.value = -MAXLNUM;
 		else
 		    vim_str2nr(s, NULL, NULL, sort_what,
-			       &nrs[lnum - eap->line1].st_u.value, NULL, 0);
+		       &nrs[lnum - eap->line1].st_u.value, NULL, 0, FALSE);
 	    }
 #ifdef FEAT_FLOAT
 	    else

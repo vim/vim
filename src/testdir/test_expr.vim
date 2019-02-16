@@ -512,3 +512,11 @@ func Test_empty_concatenate()
   call assert_equal('b', 'a'[4:0] . 'b')
   call assert_equal('b', 'b' . 'a'[4:0])
 endfunc
+
+func Test_broken_number()
+  call assert_fails('echo 1X', 'E15:')
+  call assert_fails('echo 0b1X', 'E15:')
+  call assert_fails('echo 0x1X', 'E15:')
+  call assert_fails('echo 011X', 'E15:')
+  call assert_equal(2, str2nr('2a'))
+endfunc

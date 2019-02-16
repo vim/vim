@@ -176,6 +176,10 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("{{}:42}")', "E474:")
   call assert_fails('call json_decode("{[]:42}")', "E474:")
+
+  call assert_fails('call json_decode("\"\\u111Z\"")', 'E474:')
+  call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
+  call assert_equal('a😂b', json_decode('"a\uD83D\uDE02b"'))
 endfunc
 
 let s:jsl5 = '[7,,,]'

@@ -5755,7 +5755,7 @@ do_addsub(
 		0 + (dobin ? STR2NR_BIN : 0)
 		    + (dooct ? STR2NR_OCT : 0)
 		    + (dohex ? STR2NR_HEX : 0),
-		NULL, &n, maxlen);
+		NULL, &n, maxlen, FALSE);
 
 	/* ignore leading '-' for hex and octal and bin numbers */
 	if (pre && negative)
