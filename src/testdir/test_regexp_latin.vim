@@ -97,3 +97,10 @@ func Test_out_of_memory()
   " This will be slow...
   call assert_fails('call search("\\v((n||<)+);")', 'E363:')
 endfunc
+
+func Test_get_equi_class()
+  new
+  " Incomplete equivalence class caused invalid memory access
+  s/^/[[=
+  call assert_equal(1, search(getline(1)))
+endfunc

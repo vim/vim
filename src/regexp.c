@@ -730,7 +730,7 @@ get_equi_class(char_u **pp)
     int		l = 1;
     char_u	*p = *pp;
 
-    if (p[1] == '=')
+    if (p[1] == '=' && p[2] != NUL)
     {
 	if (has_mbyte)
 	    l = (*mb_ptr2len)(p + 2);
