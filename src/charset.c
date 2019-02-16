@@ -1769,7 +1769,6 @@ vim_isblankline(char_u *lbuf)
  *  'X'	    hex
  *  'x'	    hex
  * If "len" is not NULL, the length of the number in characters is returned.
- * If "len" is not NULL, the number is strictly checked.
  * If "nptr" is not NULL, the signed result is returned in it.
  * If "unptr" is not NULL, the unsigned result is returned in it.
  * If "what" contains STR2NR_BIN recognize binary numbers
