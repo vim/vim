@@ -7998,6 +7998,8 @@ vim_regcomp(char_u *expr_arg, int re_flags)
     bt_regengine.expr = expr;
     nfa_regengine.expr = expr;
 #endif
+    // reg_iswordc() uses rex.reg_buf
+    rex.reg_buf = curbuf;
 
     /*
      * First try the NFA engine, unless backtracking was requested.
