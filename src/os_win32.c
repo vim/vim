@@ -6031,7 +6031,10 @@ insert_lines(unsigned cLines)
 
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrDefault;
+	if (!USE_VTP)
+	    fill.Attributes = g_attrCurrent;
+	else
+	    fill.Attributes = g_attrDefault;
 
 	set_console_color_rgb();
 
@@ -6085,7 +6088,10 @@ delete_lines(unsigned cLines)
 
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrDefault;
+	if (!USE_VTP)
+	    fill.Attributes = g_attrCurrent;
+	else
+	    fill.Attributes = g_attrDefault;
 
 	set_console_color_rgb();
 
