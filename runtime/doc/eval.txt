@@ -5538,7 +5538,6 @@ iconv({expr}, {from}, {to})				*iconv()*
 <		Note that Vim uses UTF-8 for all Unicode encodings, conversion
 		from/to UCS-2 is automatically changed to use UTF-8.  You
 		cannot use UCS-2 in a string anyway, because of the NUL bytes.
-		{only available when compiled with the |+multi_byte| feature}
 
 							*indent()*
 indent({lnum})	The result is a Number, which is indent of line {lnum} in the
@@ -6816,8 +6815,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 							*printf-S*
 		S	The text of the String argument is used.  If a
 			precision is specified, no more display cells than the
-			number specified are used.  Without the |+multi_byte|
-			feature works just like 's'.
+			number specified are used.
 
 							*printf-f* *E807*
 		f F	The Float argument is converted into a string of the
@@ -10272,7 +10270,7 @@ mouse_sgr		Compiled with support for sgr mouse.
 mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.
-multi_byte		Compiled with support for 'encoding'
+multi_byte		Compiled with support for 'encoding' (always true)
 multi_byte_encoding	'encoding' is set to a multi-byte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.

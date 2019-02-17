@@ -44,7 +44,7 @@ If the result is "1" you have it.
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
-The terminal feature requires the |+multi_byte|, |+job| and |+channel| features.
+The terminal feature requires the |+job| and |+channel| features.
 
 ==============================================================================
 1. Basic use						*terminal-use*
