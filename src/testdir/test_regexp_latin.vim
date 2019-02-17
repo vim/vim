@@ -122,3 +122,11 @@ func Test_rex_init()
   bwipe!
   set re=0
 endfunc
+
+func Test_range_with_newline()
+  new
+  call setline(1, "a")
+  call assert_equal(0, search("[ -*\\n- ]"))
+  call assert_equal(0, search("[ -*\\t-\\n]"))
+  bwipe!
+endfunc
