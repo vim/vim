@@ -265,18 +265,8 @@
 
 /*
  * +farsi		Farsi (Persian language) Keymap support.
- *			Requires FEAT_RIGHTLEFT.
- *
- * Disabled for EBCDIC as it requires multibyte.
+ *			Removed in patch 8.1.0932
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_FARSI) && !defined(EBCDIC)
-# define FEAT_FKMAP
-#endif
-#ifdef FEAT_FKMAP
-# ifndef FEAT_RIGHTLEFT
-#   define FEAT_RIGHTLEFT
-# endif
-#endif
 
 /*
  * +arabic		Arabic keymap and shaping support.
