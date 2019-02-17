@@ -5401,6 +5401,9 @@ nv_clear(cmdarg_T *cap)
 # endif
 #endif
 	redraw_later(CLEAR);
+#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+	resize_console_buf();
+#endif
     }
 }
 
