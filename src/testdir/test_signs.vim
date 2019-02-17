@@ -274,6 +274,20 @@ func Test_sign_completion()
   call feedkeys(":sign jump 1 group=\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"sign jump 1 group=g1 g2', @:)
 
+  " Error cases
+  call feedkeys(":sign here\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"sign here', @:)
+  call feedkeys(":sign define Sign here=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign define Sign here=\<C-A>", @:)
+  call feedkeys(":sign place 1 here=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign place 1 here=\<C-A>", @:)
+  call feedkeys(":sign jump 1 here=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign jump 1 here=\<C-A>", @:)
+  call feedkeys(":sign here there\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign here there\<C-A>", @:)
+  call feedkeys(":sign here there=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal("\"sign here there=\<C-A>", @:)
+
   sign unplace * group=*
   sign undefine Sign1
   sign undefine Sign2
