@@ -1092,9 +1092,9 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (^error) then
     {
 	if (thePosition.lineNum >= 0)
-	  // Goto this line
+	  ; // Goto this line
 	else
-	  // Set the range char wise
+	  ; // Set the range char wise
     }
  */
 
@@ -2602,7 +2602,7 @@ gui_mac_handle_contextual_menu(EventRecord *event)
 	gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
     }
     else if (CntxMenuID == kCMShowHelpSelected)
-	/* Should come up with the help */
+	; /* Should come up with the help */
 
 }
 #endif

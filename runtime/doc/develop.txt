@@ -322,9 +322,6 @@ General rule: One statement per line.
 
 Wrong:	    if (cond) a = 1;
 
-OK:	    if (cond)
-		a = 1;
-
 Wrong:	    if (cond)
 	    {
 		a = 1;
