@@ -1618,7 +1618,7 @@ do_shell(
 	 */
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
-# ifdef WIN3264
+# ifdef MSWIN
 		|| (winstart && !need_wait_return)
 # endif
 	   )
@@ -1643,7 +1643,7 @@ do_shell(
 # endif
 	    no_wait_return = save_nwr;
 	}
-#endif /* FEAT_GUI_W32 */
+#endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
@@ -1935,7 +1935,7 @@ write_viminfo(char_u *file, int forceit)
     int		shortname = FALSE;	/* use 8.3 file name */
     stat_T	st_old;		/* mch_stat() of existing viminfo file */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		hidden = FALSE;
 #endif
 
@@ -1999,7 +1999,7 @@ write_viminfo(char_u *file, int forceit)
 	    goto end;
 	}
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Get the file attributes of the existing viminfo file. */
 	hidden = mch_ishidden(fname);
 #endif
@@ -2195,7 +2195,7 @@ write_viminfo(char_u *file, int forceit)
 		++viminfo_errcnt;
 		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
 	    }
-# ifdef WIN3264
+# ifdef MSWIN
 	    /* If the viminfo file was hidden then also hide the new file. */
 	    else if (hidden)
 		mch_hide(fname);

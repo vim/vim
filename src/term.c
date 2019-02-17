@@ -533,7 +533,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_PAGEUP,		"\316I"},
 # endif
 
-# if defined(WIN3264) || defined(ALL_BUILTIN_TCAPS)
+# if defined(MSWIN) || defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid for the Win32 Console .  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
@@ -2036,7 +2036,7 @@ set_termname(char_u *term)
 	/* termcap failed to report size */
 	/* set defaults, in case ui_get_shellsize() also fails */
 	width = 80;
-#if defined(WIN3264)
+#if defined(MSWIN)
 	height = 25;	    /* console is often 25 lines */
 #else
 	height = 24;	    /* most terminals are 24 lines */
@@ -4082,7 +4082,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	return;
     }
 
-#if defined(WIN3264) && !defined(FEAT_GUI)
+#if defined(MSWIN) && !defined(FEAT_GUI)
     s = vim_strnsave(string, (int)STRLEN(string) + 1);
 #else
     s = vim_strsave(string);
@@ -4097,7 +4097,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	s[0] = term_7to8bit(string);
     }
 
-#if defined(WIN3264) && !defined(FEAT_GUI)
+#if defined(MSWIN) && !defined(FEAT_GUI)
     if (s[0] == K_NUL)
     {
 	STRMOVE(s + 1, s);
@@ -6721,7 +6721,7 @@ translate_mapping(
 }
 #endif
 
-#if (defined(WIN3264) && !defined(FEAT_GUI)) || defined(PROTO)
+#if (defined(MSWIN) && !defined(FEAT_GUI)) || defined(PROTO)
 static char ksme_str[20];
 static char ksmr_str[20];
 static char ksmd_str[20];
@@ -6917,7 +6917,7 @@ gui_get_color_cmn(char_u *name)
     /* On MS-Windows an RGB macro is available and it produces 0x00bbggrr color
      * values as used by the MS-Windows GDI api.  It should be used only for
      * MS-Windows GDI builds. */
-# if defined(RGB) && defined(WIN32) && !defined(FEAT_GUI)
+# if defined(RGB) && defined(MSWIN) && !defined(FEAT_GUI)
 #  undef RGB
 # endif
 # ifndef RGB
@@ -7085,7 +7085,7 @@ gui_get_rgb_color_cmn(int r, int g, int b)
 }
 #endif
 
-#if (defined(WIN3264) && !defined(FEAT_GUI_W32)) || defined(FEAT_TERMINAL) \
+#if (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)) || defined(FEAT_TERMINAL) \
 	|| defined(PROTO)
 static int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF
@@ -7162,3 +7162,4 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
     }
 }
 #endif
+

@@ -27,7 +27,7 @@
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
-#ifndef WIN32
+#ifndef MSWIN
 # include <netdb.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
@@ -2347,7 +2347,7 @@ ex_nbstart(
 {
 #ifdef FEAT_GUI
 # if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
-		&& !defined(FEAT_GUI_W32)
+		&& !defined(FEAT_GUI_MSWIN)
     if (gui.in_use)
     {
 	emsg(_("E838: netbeans is not supported with this GUI"));
@@ -2567,7 +2567,7 @@ set_ref_in_nb_channel(int copyID)
 }
 #endif
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_W32) || defined(PROTO)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * Tell netbeans that the window was moved or resized.
  */

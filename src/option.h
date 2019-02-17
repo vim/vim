@@ -18,7 +18,7 @@
 #ifdef AMIGA
 # define DFLT_EFM	"%f>%l:%c:%t:%n:%m,%f:%l: %t%*\\D%n: %m,%f %l %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f:%l:%m,%f|%l| %m"
 #else
-# if defined(WIN3264)
+# if defined(MSWIN)
 #  define DFLT_EFM	"%f(%l) \\=: %t%*\\D%n: %m,%*[^\"]\"%f\"%*\\D%l: %m,%f(%l) \\=: %m,%*[^ ] %f %l: %m,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,%f|%l| %m"
 # else
 #  if defined(__QNX__)
@@ -546,10 +546,6 @@ EXTERN long	p_hi;		/* 'history' */
 #ifdef FEAT_RIGHTLEFT
 EXTERN int	p_hkmap;	/* 'hkmap' */
 EXTERN int	p_hkmapp;	/* 'hkmapp' */
-# ifdef FEAT_FKMAP
-EXTERN int	p_fkmap;	/* 'fkmap' */
-EXTERN int	p_altkeymap;	/* 'altkeymap' */
-# endif
 # ifdef FEAT_ARABIC
 EXTERN int	p_arshape;	/* 'arabicshape' */
 # endif
@@ -694,7 +690,7 @@ EXTERN long	p_report;	/* 'report' */
 #if defined(FEAT_QUICKFIX)
 EXTERN long	p_pvh;		/* 'previewheight' */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 EXTERN int	p_rs;		/* 'restorescreen' */
 #endif
 #ifdef FEAT_RIGHTLEFT
@@ -827,7 +823,7 @@ EXTERN char_u	*p_tenc;	/* 'termencoding' */
 #ifdef FEAT_TERMGUICOLORS
 EXTERN int	p_tgc;		/* 'termguicolors' */
 #endif
-#if defined(WIN3264) && defined(FEAT_TERMINAL)
+#if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_twt;		// 'termwintype'
 #endif
 EXTERN int	p_terse;	/* 'terse' */
@@ -848,7 +844,7 @@ EXTERN int	p_ttimeout;	/* 'ttimeout' */
 EXTERN long	p_ttm;		/* 'ttimeoutlen' */
 EXTERN int	p_tbi;		/* 'ttybuiltin' */
 EXTERN int	p_tf;		/* 'ttyfast' */
-#if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
+#if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 EXTERN char_u	*p_toolbar;	/* 'toolbar' */
 EXTERN unsigned toolbar_flags;
 # ifdef IN_OPTION_C
@@ -945,7 +941,7 @@ EXTERN long	p_wh;		/* 'winheight' */
 EXTERN long	p_wmh;		/* 'winminheight' */
 EXTERN long	p_wmw;		/* 'winminwidth' */
 EXTERN long	p_wiw;		/* 'winwidth' */
-#if defined(WIN3264) && defined(FEAT_TERMINAL)
+#if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_winptydll;	/* 'winptydll' */
 #endif
 EXTERN int	p_ws;		/* 'wrapscan' */
