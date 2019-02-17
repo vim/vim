@@ -1468,7 +1468,9 @@ clip_copy_modeless_selection(int both UNUSED)
 	row = col1; col1 = col2; col2 = row;
     }
     else if (row1 == row2 && col1 > col2)
+    {
 	row = col1; col1 = col2; col2 = row;
+    }
     /* correct starting point for being on right halve of double-wide char */
     p = ScreenLines + LineOffset[row1];
     if (enc_dbcs != 0)
