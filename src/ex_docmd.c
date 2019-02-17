@@ -9853,6 +9853,9 @@ ex_redraw(exarg_T *eap)
     if (need_maketitle)
 	maketitle();
 #endif
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+    resize_console_buf();
+#endif
     RedrawingDisabled = r;
     p_lz = p;
 

@@ -1492,6 +1492,8 @@ handle_focus_event(INPUT_RECORD ir)
     ui_focus_change((int)g_fJustGotFocus);
 }
 
+static void ResizeConBuf(HANDLE hConsole, COORD coordScreen);
+
 /*
  * Wait until console input from keyboard or mouse is available,
  * or the time is up.
@@ -1657,11 +1659,18 @@ WaitForChar(long msec, int ignore_input)
 		handle_focus_event(ir);
 	    else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
 	    {
-		/* Only call shell_resized() when the size actually change to
-		 * avoid the screen is cleard. */
-		if (ir.Event.WindowBufferSizeEvent.dwSize.X != Columns
-			|| ir.Event.WindowBufferSizeEvent.dwSize.Y != Rows)
+		COORD dwSize = ir.Event.WindowBufferSizeEvent.dwSize;
+
+		// Only call shell_resized() when the size actually change to
+		// avoid the screen is cleard.
+		if (dwSize.X != Columns || dwSize.Y != Rows)
+		{
+		    CONSOLE_SCREEN_BUFFER_INFO csbi;
+		    GetConsoleScreenBufferInfo(g_hConOut, &csbi);
+		    dwSize.Y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+		    ResizeConBuf(g_hConOut, dwSize);
 		    shell_resized();
+		}
 	    }
 #ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
@@ -6031,7 +6040,10 @@ insert_lines(unsigned cLines)
 
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrDefault;
+	if (!USE_VTP)
+	    fill.Attributes = g_attrCurrent;
+	else
+	    fill.Attributes = g_attrDefault;
 
 	set_console_color_rgb();
 
@@ -6085,7 +6097,10 @@ delete_lines(unsigned cLines)
 
     {
 	fill.Char.AsciiChar = ' ';
-	fill.Attributes = g_attrDefault;
+	if (!USE_VTP)
+	    fill.Attributes = g_attrCurrent;
+	else
+	    fill.Attributes = g_attrDefault;
 
 	set_console_color_rgb();
 
@@ -6321,7 +6336,7 @@ write_chars(
 	     * character was written, otherwise we get stuck. */
 	    if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
 			coord, &cchwritten) == 0
-		    || cchwritten == 0)
+		    || cchwritten == 0 || cchwritten == (DWORD)-1)
 		cchwritten = 1;
 	}
 	else
@@ -6355,7 +6370,7 @@ write_chars(
 	     * character was written, otherwise we get stuck. */
 	    if (WriteConsoleOutputCharacter(g_hConOut, (LPCSTR)pchBuf, cbToWrite,
 			coord, &written) == 0
-		    || written == 0)
+		    || written == 0 || written == (DWORD)-1)
 		written = 1;
 	}
 	else
@@ -7701,7 +7716,7 @@ vtp_flag_init(void)
 
 }
 
-#ifndef FEAT_GUI_MSWIN
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
     static void
 vtp_init(void)
@@ -7925,3 +7940,28 @@ is_conpty_stable(void)
 {
     return conpty_stable;
 }
+
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
+    void
+resize_console_buf(void)
+{
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    COORD coord;
+    SMALL_RECT newsize;
+
+    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+    {
+	coord.X = SRWIDTH(csbi.srWindow);
+	coord.Y = SRHEIGHT(csbi.srWindow);
+	SetConsoleScreenBufferSize(g_hConOut, coord);
+
+	newsize.Left = 0;
+	newsize.Top = 0;
+	newsize.Right = coord.X - 1;
+	newsize.Bottom = coord.Y - 1;
+	SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+
+	SetConsoleScreenBufferSize(g_hConOut, coord);
+    }
+}
+#endif

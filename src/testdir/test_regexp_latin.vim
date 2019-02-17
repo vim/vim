@@ -103,6 +103,8 @@ func Test_get_equi_class()
   " Incomplete equivalence class caused invalid memory access
   s/^/[[=
   call assert_equal(1, search(getline(1)))
+  s/.*/[[.
+  call assert_equal(1, search(getline(1)))
 endfunc
 
 func Test_rex_init()
