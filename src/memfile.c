@@ -621,7 +621,7 @@ mf_sync(memfile_T *mfp, int flags)
 		status = FAIL;
 	}
 #endif
-#ifdef WIN32
+#ifdef MSWIN
 	if (_commit(mfp->mf_fd))
 	    status = FAIL;
 #endif
@@ -1265,7 +1265,7 @@ mf_do_open(
 	 * try to open the file
 	 */
 	flags |= O_EXTRA | O_NOFOLLOW;
-#ifdef WIN32
+#ifdef MSWIN
 	/* Prevent handle inheritance that cause problems with Cscope
 	 * (swap file may not be deleted if cscope connection was open after
 	 * the file) */

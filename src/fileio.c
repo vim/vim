@@ -2559,7 +2559,7 @@ failed:
 	curbuf->b_op_end.lnum = from + linecnt;
 	curbuf->b_op_end.col = 0;
 
-#ifdef WIN32
+#ifdef MSWIN
 	/*
 	 * Work around a weird problem: When a file has two links (only
 	 * possible on NTFS) and we write through one link, then stat() it
@@ -3601,13 +3601,13 @@ buf_write(
      */
     if (!(append && *p_pm == NUL) && !filtering && perm >= 0 && dobackup)
     {
-#if defined(UNIX) || defined(WIN32)
+#if defined(UNIX) || defined(MSWIN)
 	stat_T	    st;
 #endif
 
 	if ((bkc & BKC_YES) || append)	/* "yes" */
 	    backup_copy = TRUE;
-#if defined(UNIX) || defined(WIN32)
+#if defined(UNIX) || defined(MSWIN)
 	else if ((bkc & BKC_AUTO))	/* "auto" */
 	{
 	    int		i;
@@ -3632,7 +3632,7 @@ buf_write(
 		backup_copy = TRUE;
 	    else
 # else
-#  ifdef WIN32
+#  ifdef MSWIN
 	    /* On NTFS file systems hard links are possible. */
 	    if (mch_is_linked(fname))
 		backup_copy = TRUE;
@@ -3715,7 +3715,7 @@ buf_write(
 		    && (lstat_res != 0 || st.st_ino == st_old.st_ino))
 		backup_copy = FALSE;
 # else
-#  if defined(WIN32)
+#  if defined(MSWIN)
 	    /* Symlinks. */
 	    if ((bkc & BKC_BREAKSYMLINK) && mch_is_symbolic_link(fname))
 		backup_copy = FALSE;
@@ -7189,7 +7189,7 @@ delete_recursive(char_u *name)
     /* A symbolic link to a directory itself is deleted, not the directory it
      * points to. */
     if (
-# if defined(UNIX) || defined(WIN32)
+# if defined(UNIX) || defined(MSWIN)
 	 mch_isrealdir(name)
 # else
 	 mch_isdir(name)

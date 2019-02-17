@@ -7460,7 +7460,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 # ifdef UNIX
 		vim_snprintf((char *)buf, NUMBUFLEN,
 			    "process %ld %s", (long)job->jv_pid, status);
-# elif defined(WIN32)
+# elif defined(MSWIN)
 		vim_snprintf((char *)buf, NUMBUFLEN,
 			    "process %ld %s",
 			    (long)job->jv_proc_info.dwProcessId,

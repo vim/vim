@@ -949,7 +949,7 @@ static int ensure_ruby_initialized(void)
 	if (ruby_enabled(TRUE))
 	{
 #endif
-#ifdef _WIN32
+#ifdef MSWIN
 	    /* suggested by Ariya Mizutani */
 	    int argc = 1;
 	    char *argv[] = {"gvim.exe"};

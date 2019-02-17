@@ -222,7 +222,7 @@ static char *(features[]) =
 #else
 	"-digraphs",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_DIRECTX
 	"+directx",
 # else
@@ -481,7 +481,7 @@ static char *(features[]) =
 #else
 	"-num64",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_OLE
 	"+ole",
 # else
@@ -2845,15 +2845,15 @@ list_version(void)
     init_longVersion();
     msg(longVersion);
 #ifdef MSWIN
-# ifdef FEAT_GUI_W32
+# ifdef FEAT_GUI_MSWIN
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit GUI version"));
 #  else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #  endif
-# ifdef FEAT_OLE
+#  ifdef FEAT_OLE
     msg_puts(_(" with OLE support"));
-# endif
+#  endif
 # else
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit console version"));

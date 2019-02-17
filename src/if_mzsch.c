@@ -47,7 +47,7 @@ typedef int HINSTANCE;
  * racket-6.3.  See
  * http://docs.racket-lang.org/inside/im_memoryalloc.html?q=scheme_register_tls_space
  */
-#if MZSCHEME_VERSION_MAJOR >= 500 && defined(WIN32) \
+#if MZSCHEME_VERSION_MAJOR >= 500 && defined(MSWIN) \
 	&& defined(USE_THREAD_LOCAL) \
 	&& (!defined(_WIN64) || MZSCHEME_VERSION_MAJOR >= 603)
 # define HAVE_TLS_SPACE 1
@@ -807,7 +807,7 @@ static long range_end;
 /* MzScheme threads scheduling stuff */
 static int mz_threads_allow = 0;
 
-#if defined(FEAT_GUI_W32)
+#if defined(FEAT_GUI_MSWIN)
 static void CALLBACK timer_proc(HWND, UINT, UINT_PTR, DWORD);
 static UINT timer_id = 0;
 #elif defined(FEAT_GUI_GTK)
@@ -822,7 +822,7 @@ static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
 #endif
 
-#ifndef FEAT_GUI_W32 /* Win32 console and Unix */
+#ifndef FEAT_GUI_MSWIN /* Win32 console and Unix */
     void
 mzvim_check_threads(void)
 {
@@ -847,7 +847,7 @@ static void setup_timer(void);
 static void remove_timer(void);
 
 /* timers are presented in GUI only */
-# if defined(FEAT_GUI_W32)
+# if defined(FEAT_GUI_MSWIN)
     static void CALLBACK
 timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT_PTR idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
@@ -875,7 +875,7 @@ timer_proc(EventLoopTimerRef theTimer UNUSED, void *userData UNUSED)
     static void
 setup_timer(void)
 {
-# if defined(FEAT_GUI_W32)
+# if defined(FEAT_GUI_MSWIN)
     timer_id = SetTimer(NULL, 0, p_mzq, timer_proc);
 # elif defined(FEAT_GUI_GTK)
     timer_id = g_timeout_add((guint)p_mzq, (GSourceFunc)timer_proc, NULL);
@@ -891,7 +891,7 @@ setup_timer(void)
     static void
 remove_timer(void)
 {
-# if defined(FEAT_GUI_W32)
+# if defined(FEAT_GUI_MSWIN)
     KillTimer(NULL, timer_id);
 # elif defined(FEAT_GUI_GTK)
     g_source_remove(timer_id);

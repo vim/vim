@@ -783,7 +783,7 @@ codepage_invalid:
 					  enc_utf8 ? "utf-8" : (char *)p_enc);
 #endif
 
-#ifdef WIN32
+#ifdef MSWIN
     /* When changing 'encoding' while starting up, then convert the command
      * line arguments from the active codepage to 'encoding'. */
     if (starting != 0)
@@ -4393,7 +4393,7 @@ enc_alias_search(char_u *name)
 # include <langinfo.h>
 #endif
 
-#ifndef FEAT_GUI_W32
+#ifndef FEAT_GUI_MSWIN
 /*
  * Get the canonicalized encoding from the specified locale string "locale"
  * or from the environment variables LC_ALL, LC_CTYPE and LANG.

@@ -266,7 +266,7 @@ extern int putenv(const char *string);			/* in misc2.c */
 extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
 #  endif
-#  ifdef FEAT_GUI_W32
+#  ifdef FEAT_GUI_MSWIN
 #   include "gui_w32.pro"
 #  endif
 #  ifdef FEAT_GUI_GTK

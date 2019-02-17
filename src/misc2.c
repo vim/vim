@@ -1427,7 +1427,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
     for (p = string; *p != NUL; MB_PTR_ADV(p))
     {
-# ifdef WIN32
+# ifdef MSWIN
 	if (!p_ssl)
 	{
 	    if (*p == '"')
@@ -1458,7 +1458,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	d = escaped_string;
 
 	/* add opening quote */
-# ifdef WIN32
+# ifdef MSWIN
 	if (!p_ssl)
 	    *d++ = '"';
 	else
@@ -1467,7 +1467,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 
 	for (p = string; *p != NUL; )
 	{
-# ifdef WIN32
+# ifdef MSWIN
 	    if (!p_ssl)
 	    {
 		if (*p == '"')
@@ -1510,7 +1510,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	}
 
 	/* add terminating quote and finish with a NUL */
-# ifdef WIN32
+# ifdef MSWIN
 	if (!p_ssl)
 	    *d++ = '"';
 	else
@@ -4437,7 +4437,7 @@ parse_queued_messages(void)
     for (i = 0; i < MAX_REPEAT_PARSE; ++i)
     {
 	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(WIN32) && defined(FEAT_JOB_CHANNEL)
+# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
 	channel_handle_events(FALSE);
 # endif
 

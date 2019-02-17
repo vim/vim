@@ -11,8 +11,18 @@
 
 #include "protodef.h"
 
-/* use fastcall for Borland, when compiling for Win32 */
-#if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
+/* _WIN32 defined as 1 when the compilation target is 32-bit or 64-bit.
+ * Note: If you want to check whether it is 64 bit or not, use _WIN64 macro.
+ */
+#if defined(WIN32) || defined(_WIN32)
+# define MSWIN
+# ifdef FEAT_GUI
+#  define FEAT_GUI_MSWIN
+# endif
+#endif
+
+// use fastcall for Borland, when compiling for MS-Windows
+#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
 #if defined(FEAT_PERL) || \
     defined(FEAT_PYTHON) || \
     defined(FEAT_PYTHON3) || \
@@ -29,7 +39,7 @@
 # endif
 #endif
 
-#if defined(WIN32) || defined(_WIN64)
+#ifdef MSWIN
 # include "vimio.h"
 #endif
 
@@ -103,7 +113,7 @@
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
     || defined(FEAT_GUI_MAC) \
-    || defined(FEAT_GUI_W32) \
+    || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
 # define FEAT_GUI_ENABLED  /* also defined with NO_X11_INCLUDES */
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
@@ -122,16 +132,6 @@
 #if _MSC_VER >= 1400
 # define _CRT_SECURE_NO_DEPRECATE
 # define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
-#if defined(FEAT_GUI_W32)
-# define FEAT_GUI_MSWIN
-#endif
-/* Practically everything is common to both Win32 and Win64.
- * Note: If you need to be a 64 bit version, use _WIN64 alone.
- */
-#if defined(WIN32) || defined(_WIN64)
-# define MSWIN
 #endif
 
 /*
@@ -455,8 +455,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 # include <sys/stat.h>
 #endif
 
-#if defined(HAVE_ERRNO_H) \
-	|| defined(WIN32) || defined(_WIN64)
+#if defined(HAVE_ERRNO_H) || defined(MSWIN)
 # include <errno.h>
 #endif
 
@@ -508,7 +507,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 #ifndef HAVE_SELECT
 # ifdef HAVE_SYS_POLL_H
 #  include <sys/poll.h>
-# elif defined(WIN32)
+# elif defined(MSWIN)
 #  define HAVE_SELECT
 # else
 #  ifdef HAVE_POLL_H
@@ -2004,7 +2003,7 @@ typedef int sock_T;
 # define SELECT_MODE_WORD	1
 # define SELECT_MODE_LINE	2
 
-# ifdef FEAT_GUI_W32
+# ifdef FEAT_GUI_MSWIN
 #  ifdef FEAT_OLE
 #   define WM_OLE (WM_APP+0)
 #  endif
@@ -2102,7 +2101,7 @@ typedef enum {
 #endif
 
 # if defined(FEAT_EVAL) \
-	&& (!defined(FEAT_GUI_W32) \
+	&& (!defined(FEAT_GUI_MSWIN) \
 	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
 /* Whether IME is supported by im_get_status() defined in mbyte.c.
@@ -2114,7 +2113,7 @@ typedef enum {
 
 #if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
-	|| (defined(FEAT_GUI_W32) \
+	|| (defined(FEAT_GUI_MSWIN) \
 	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	|| defined(FEAT_GUI_MAC)
 /* im_set_active() is available */
@@ -2168,7 +2167,7 @@ typedef enum {
 #endif
 
 /* stop using fastcall for Borland */
-#if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
+#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
  #pragma option -p.
 #endif
 
@@ -2460,7 +2459,7 @@ typedef enum {
 # define MAX_OPEN_CHANNELS 0
 #endif
 
-#if defined(WIN32)
+#if defined(MSWIN)
 # define MAX_NAMED_PIPE_SIZE 65535
 #endif
 
@@ -2578,7 +2577,7 @@ typedef enum {
 # define ELAPSED_FUNC(v) elapsed(&v)
 typedef struct timeval elapsed_T;
 long elapsed(struct timeval *start_tv);
-#elif defined(WIN32)
+#elif defined(MSWIN)
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)

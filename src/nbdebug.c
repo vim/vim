@@ -124,7 +124,7 @@ lookup(
 
 	expand_env((char_u *) file, (char_u *) buf, BUFSIZ);
 	return
-#ifndef FEAT_GUI_W32
+#ifndef FEAT_GUI_MSWIN
 		(access(buf, F_OK) == 0);
 #else
 		(access(buf, 0) == 0);

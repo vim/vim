@@ -378,7 +378,7 @@
 /*
  * +timers		timer_start()
  */
-#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(WIN32) || defined(VMS) )
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS) )
 # define FEAT_TIMERS
 #endif
 
@@ -603,7 +603,7 @@
  * +multi_byte_ime	Win32 IME input method.  Only for far-east Windows, so
  *			IME can be used to input chars.  Not tested much!
  */
-#if defined(FEAT_GUI_W32) && !defined(FEAT_MBYTE_IME)
+#if defined(FEAT_GUI_MSWIN) && !defined(FEAT_MBYTE_IME)
 /* #define FEAT_MBYTE_IME */
 # endif
 
@@ -669,7 +669,7 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_MENU
-# ifdef FEAT_GUI_W32
+# ifdef FEAT_GUI_MSWIN
 #  define FEAT_TEAROFF
 # endif
 #endif
@@ -757,7 +757,7 @@
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_GUI_W32))
+	|| defined(FEAT_GUI_MSWIN))
 /* need a dialog to show error messages when starting from the desktop */
 # define FEAT_GUI_DIALOG
 #endif
@@ -1136,7 +1136,7 @@
  * +clientserver	Remote control via the remote_send() function
  *			and the --remote argument
  */
-#if (defined(WIN32) || defined(FEAT_XCLIPBOARD)) && defined(FEAT_EVAL)
+#if (defined(MSWIN) || defined(FEAT_XCLIPBOARD)) && defined(FEAT_EVAL)
 # define FEAT_CLIENTSERVER
 #endif
 
@@ -1169,10 +1169,10 @@
  */
 #ifdef FEAT_NORMAL
 /* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSWIN) && !defined(FEAT_GUI_W32)
+# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
 #  define MCH_CURSOR_SHAPE
 # endif
-# if defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
@@ -1189,7 +1189,7 @@
 # define CURSOR_SHAPE
 #endif
 
-#if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_W32) || defined(FEAT_GUI_GTK)    \
+#if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)	\
 	|| defined(FEAT_GUI_MAC))
 # define MZSCHEME_GUI_THREADS
@@ -1263,7 +1263,7 @@
 # if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 		&& defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
-	|| (defined(WIN32) && defined(FEAT_GUI))
+	|| (defined(MSWIN) && defined(FEAT_GUI))
 #  define FEAT_SIGN_ICONS
 # endif
 #endif
@@ -1274,13 +1274,13 @@
  *			Only for GUIs where it was implemented.
  */
 #if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)) \
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) \
 	&& (   ((defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)) \
-		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)) \
+		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)) \
 	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))
 # define FEAT_BEVAL_GUI
 # if !defined(FEAT_XFONTSET) && !defined(FEAT_GUI_GTK) \
-	&& !defined(FEAT_GUI_W32)
+	&& !defined(FEAT_GUI_MSWIN)
 #  define FEAT_XFONTSET
 # endif
 #endif
@@ -1293,7 +1293,7 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || defined(VMS) || (defined(WIN32) && !defined(FEAT_GUI_W32)))
+	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)))
 # define FEAT_BEVAL_TERM
 #endif
 
@@ -1340,7 +1340,7 @@
  * +filterpipe
  */
 #if (defined(UNIX) && !defined(USE_SYSTEM)) \
-	    || (defined(MSWIN) && defined(FEAT_GUI_W32))
+	    || (defined(MSWIN) && defined(FEAT_GUI_MSWIN))
 # define FEAT_FILTERPIPE
 #endif
 

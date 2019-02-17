@@ -2573,7 +2573,7 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	*buf = NULL;
     char_u	*p = s;
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle CR and NL correctly */
 #endif
@@ -2633,7 +2633,7 @@ msg_puts_printf(char_u *str, int maxlen)
 
     msg_didout = TRUE;	    // assume that line is not empty
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_RAW);
 #endif
@@ -2934,7 +2934,7 @@ do_more_prompt(int typed_char)
     void
 mch_errmsg(char *str)
 {
-#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
@@ -3022,7 +3022,7 @@ mch_errmsg(char *str)
     void
 mch_msg(char *str)
 {
-#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;

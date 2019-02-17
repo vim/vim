@@ -90,7 +90,7 @@
  * X_2_COL  - Convert X pixel coord into character column.
  * Y_2_ROW  - Convert Y pixel coord into character row.
  */
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # define TEXT_X(col)	((col) * gui.char_width)
 # define TEXT_Y(row)	((row) * gui.char_height + gui.char_ascent)
 # define FILL_X(col)	((col) * gui.char_width)
@@ -406,7 +406,7 @@ typedef struct Gui
 #endif	/* FEAT_GUI_GTK */
 
 #if defined(FEAT_GUI_TABLINE) \
-	&& (defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
+	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 		|| defined(FEAT_GUI_MAC))
     int		tabline_height;
 #endif

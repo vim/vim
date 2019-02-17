@@ -4286,7 +4286,7 @@ source_level(void *cookie)
 
 static char_u *get_one_sourceline(struct source_cookie *sp);
 
-#if (defined(WIN32) && defined(FEAT_CSCOPE)) || defined(HAVE_FD_CLOEXEC)
+#if (defined(MSWIN) && defined(FEAT_CSCOPE)) || defined(HAVE_FD_CLOEXEC)
 # define USE_FOPEN_NOINH
 /*
  * Special function to open a file without handle inheritance.
@@ -4295,7 +4295,7 @@ static char_u *get_one_sourceline(struct source_cookie *sp);
     static FILE *
 fopen_noinh_readbin(char *filename)
 {
-# ifdef WIN32
+# ifdef MSWIN
     int	fd_tmp = mch_open(filename, O_RDONLY | O_BINARY | O_NOINHERIT, 0);
 # else
     int	fd_tmp = mch_open(filename, O_RDONLY, 0);
@@ -5201,7 +5201,7 @@ get_locale_val(int what)
     /* Obtain the locale value from the libraries. */
     loc = (char_u *)setlocale(what, NULL);
 
-# ifdef WIN32
+# ifdef MSWIN
     if (loc != NULL)
     {
 	char_u	*p;
@@ -5230,7 +5230,7 @@ get_locale_val(int what)
 #endif
 
 
-#ifdef WIN32
+#ifdef MSWIN
 /*
  * On MS-Windows locale names are strings like "German_Germany.1252", but
  * gettext expects "de".  Try to translate one into another here for a few
@@ -5307,7 +5307,7 @@ get_mess_lang(void)
 	    p = mch_getenv((char_u *)"LANG");
     }
 # endif
-# ifdef WIN32
+# ifdef MSWIN
     p = gettext_lang(p);
 # endif
     return is_valid_mess_lang(p) ? p : NULL;
@@ -5479,7 +5479,7 @@ ex_language(exarg_T *eap)
 
 		    /* Clear $LANGUAGE because GNU gettext uses it. */
 		    vim_setenv((char_u *)"LANGUAGE", (char_u *)"");
-# ifdef WIN32
+# ifdef MSWIN
 		    /* Apparently MS-Windows printf() may cause a crash when
 		     * we give it 8-bit text while it's expecting text in the
 		     * current locale.  This call avoids that. */
@@ -5489,7 +5489,7 @@ ex_language(exarg_T *eap)
 		if (what != LC_CTYPE)
 		{
 		    char_u	*mname;
-#ifdef WIN32
+#ifdef MSWIN
 		    mname = gettext_lang(name);
 #else
 		    mname = name;
@@ -5516,7 +5516,7 @@ ex_language(exarg_T *eap)
 
 static char_u	**locales = NULL;	/* Array of all available locales */
 
-#  ifndef WIN32
+#  ifndef MSWIN
 static int	did_init_locales = FALSE;
 
 /* Return an array of strings for all available locales + NULL for the
@@ -5567,7 +5567,7 @@ find_locales(void)
     static void
 init_locales(void)
 {
-#  ifndef WIN32
+#  ifndef MSWIN
     if (!did_init_locales)
     {
 	did_init_locales = TRUE;

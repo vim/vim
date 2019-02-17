@@ -1643,7 +1643,7 @@ do_shell(
 # endif
 	    no_wait_return = save_nwr;
 	}
-#endif /* FEAT_GUI_W32 */
+#endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */

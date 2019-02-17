@@ -1623,7 +1623,7 @@ vgetc(void)
 	    }
 	    c = TO_SPECIAL(c2, c);
 
-#if defined(FEAT_GUI_W32) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 	    /* Handle K_TEAROFF here, the caller of vgetc() doesn't need to
 	     * know that a menu was torn off */
 	    if (c == K_TEAROFF)
@@ -1679,7 +1679,7 @@ vgetc(void)
 	    case K_KMULTIPLY:	c = '*'; break;
 	    case K_KENTER:	c = CAR; break;
 	    case K_KPOINT:
-#ifdef WIN32
+#ifdef MSWIN
 				// Can be either '.' or a ',',
 				// depending on the type of keypad.
 				c = MapVirtualKey(VK_DECIMAL, 2); break;

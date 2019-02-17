@@ -160,7 +160,7 @@
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 # define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
-# ifndef WIN32
+# ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
 # define mch_fstat(n, p)	fstat((n), (p))
@@ -269,7 +269,7 @@
 #  include <math.h>
 # endif
 # ifdef USING_FLOAT_STUFF
-#  if defined(WIN32)
+#  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
      static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }

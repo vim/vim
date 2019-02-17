@@ -1296,7 +1296,7 @@ EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 #endif
 
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 /*
  * The value of the --windowid argument.
  * For embedding gvim inside another application.

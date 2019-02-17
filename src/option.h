@@ -848,7 +848,7 @@ EXTERN int	p_ttimeout;	/* 'ttimeout' */
 EXTERN long	p_ttm;		/* 'ttimeoutlen' */
 EXTERN int	p_tbi;		/* 'ttybuiltin' */
 EXTERN int	p_tf;		/* 'ttyfast' */
-#if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
+#if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 EXTERN char_u	*p_toolbar;	/* 'toolbar' */
 EXTERN unsigned toolbar_flags;
 # ifdef IN_OPTION_C

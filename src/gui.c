@@ -749,7 +749,7 @@ gui_init(void)
 						     &general_beval_cb, NULL);
 	}
 #  else
-#   ifdef FEAT_GUI_W32
+#   ifdef FEAT_GUI_MSWIN
 	balloonEval = gui_mch_create_beval_area(NULL, NULL,
 						     &general_beval_cb, NULL);
 #   endif
@@ -2568,7 +2568,7 @@ gui_outstr_nowrap(
 	/* Draw the sign on top of the spaces. */
 	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
 # if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32))
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
     if (multi_sign)
 	netbeans_draw_multisign_indicator(gui.row);
 # endif
@@ -4951,8 +4951,9 @@ ex_gui(exarg_T *eap)
 	ex_next(eap);
 }
 
-#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32) \
-	|| defined(FEAT_GUI_PHOTON)) && defined(FEAT_TOOLBAR)) || defined(PROTO)
+#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON)) \
+	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
 /*
  * This is shared between Athena, Motif and GTK.
  */

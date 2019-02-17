@@ -1543,7 +1543,7 @@ struct jobvar_S
 #ifdef UNIX
     pid_t	jv_pid;
 #endif
-#ifdef WIN32
+#ifdef MSWIN
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
@@ -1670,7 +1670,7 @@ typedef struct {
      * message when the deadline was set.  If it gets longer (something was
      * received) the deadline is reset. */
     size_t	ch_wait_len;
-#ifdef WIN32
+#ifdef MSWIN
     DWORD	ch_deadline;
 #else
     struct timeval ch_deadline;
@@ -1720,7 +1720,7 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
-#ifdef WIN32
+#ifdef MSWIN
     int		ch_named_pipe;	/* using named pipe instead of pty */
 #endif
     char_u	*ch_callback;	/* call when any msg is not handled */
@@ -3225,7 +3225,7 @@ struct VimMenu
 #ifdef FEAT_BEVAL_TIP
     BalloonEval *tip;		    /* tooltip for this menu item */
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
     UINT	id;		    /* Id of menu item */
     HMENU	submenu_id;	    /* If this is submenu, add children here */
     HWND	tearoff_handle;	    /* hWnd of tearoff if created */
