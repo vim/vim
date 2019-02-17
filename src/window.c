@@ -4212,7 +4212,7 @@ win_find_tabpage(win_T *win)
  *   count - nth neighbor window
  * Returns the specified window if the neighbor is not found.
  */
-    static win_T *
+    win_T *
 win_vert_neighbor(tabpage_T *tp, win_T *wp, int up, long count)
 {
     frame_T	*fr;
@@ -4290,7 +4290,7 @@ win_goto_ver(
  *   count - nth neighbor window
  * Returns the specified window if the neighbor is not found.
  */
-    static win_T *
+    win_T *
 win_horz_neighbor(tabpage_T *tp, win_T * wp, int left, long count)
 {
     frame_T	*fr;
@@ -4361,30 +4361,6 @@ win_goto_hor(
     if (win != NULL)
 	win_goto(win);
 }
-
-#if defined(FEAT_EVAL) || defined(PROTO)
-    void
-win_get_neighbors(tabpage_T *tp, win_T *wp, list_T *neighbors)
-{
-    win_T	*win;
-
-    /* North neighbor */
-    win = win_vert_neighbor(tp, wp, TRUE, 1);
-    list_append_number(neighbors, (win != NULL && win != wp) ? win->w_id : 0);
-
-    /* East neighbor */
-    win = win_horz_neighbor(tp, wp, FALSE, 1);
-    list_append_number(neighbors, (win != NULL && win != wp) ? win->w_id : 0);
-
-    /* South neighbor */
-    win = win_vert_neighbor(tp, wp, FALSE, 1);
-    list_append_number(neighbors, (win != NULL && win != wp) ? win->w_id : 0);
-
-    /* West neighbor */
-    win = win_horz_neighbor(tp, wp, TRUE, 1);
-    list_append_number(neighbors, (win != NULL && win != wp) ? win->w_id : 0);
-}
-#endif
 
 /*
  * Make window "wp" the current window.
