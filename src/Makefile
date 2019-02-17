@@ -693,6 +693,17 @@ LINT_OPTIONS = -beprxzF
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
+# Uncomment the next two lines to compile fuzzers. Works with clang 5.0+.
+# Recommend to build fuzzers with sanitizers (see above).
+# More at: https://llvm.org/docs/LibFuzzer.html
+#FUZZER_CFLAGS = -fsanitize=fuzzer-no-link
+#LIB_FUZZING_ENGINE = -fsanitize=fuzzer
+# For older version of clang, uncomment the next two lines instead.
+# More at: https://releases.llvm.org/4.0.0/docs/LibFuzzer.html
+#FUZZER_CFLAGS = -fsanitize-coverage=trace-pc-guard
+#LIB_FUZZING_ENGINE = libFuzzer.a
+FUZZER_LIBS = $(FUZZER_CFLAGS)
+
 # MEMORY LEAK DETECTION
 # Requires installing the ccmalloc library.
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
@@ -1471,7 +1482,7 @@ VTERM_CFLAGS = -Ilibvterm/include
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
 POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(EXTRA_DEFS)
 
-ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
+ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(SANITIZER_CFLAGS) $(FUZZER_CFLAGS) $(LEAK_CFLAGS) $(ABORT_CFLAGS) $(POST_DEFS)
 
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
@@ -1507,6 +1518,7 @@ ALL_LIBS = \
 	   $(RUBY_LIBS) \
 	   $(PROFILE_LIBS) \
 	   $(SANITIZER_LIBS) \
+	   $(FUZZER_LIBS) \
 	   $(LEAK_LIBS)
 
 # abbreviations
@@ -1669,9 +1681,16 @@ UNITTEST_SRC = $(JSON_TEST_SRC) $(KWORD_TEST_SRC) $(MEMFILE_TEST_SRC) $(MESSAGE_
 UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(KWORD_TEST_TARGET) $(MEMFILE_TEST_TARGET) $(MESSAGE_TEST_TARGET)
 RUN_UNITTESTS = run_json_test run_kword_test run_memfile_test run_message_test
 
+# Fuzzer files
+FUZZ_SEARCH_SRC = fuzz_search.c
+FUZZ_SEARCH_TARGET = fuzz_search$(EXEEXT)
+
+FUZZER_SRC = $(FUZZ_SEARCH_SRC)
+FUZZER_TARGETS = $(FUZZ_SEARCH_TARGET)
+
 # All sources, also the ones that are not configured
 ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) \
-	  $(EXTRA_SRC) $(TERM_SRC) $(XDIFF_SRC)
+	  $(EXTRA_SRC) $(TERM_SRC) $(XDIFF_SRC) $(FUZZER_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
@@ -1770,6 +1789,14 @@ OBJ_MAIN = \
 
 OBJ = $(OBJ_COMMON) $(OBJ_MAIN)
 
+OBJ_FUZZER_COMMON = \
+	$(OBJ_COMMON) \
+	objects/charset.o \
+	objects/fuzzer_common.o \
+	objects/json.o \
+	objects/memfile.o \
+	objects/message.o
+
 OBJ_JSON_TEST = \
 	objects/charset.o \
 	objects/memfile.o \
@@ -1802,12 +1829,17 @@ OBJ_MESSAGE_TEST = \
 
 MESSAGE_TEST_OBJ = $(OBJ_COMMON) $(OBJ_MESSAGE_TEST)
 
+OBJ_FUZZ_SEARCH = objects/fuzz_search.o
+
+FUZZ_SEARCH_OBJ = $(OBJ_FUZZER_COMMON) $(OBJ_FUZZ_SEARCH)
+
 ALL_OBJ = $(OBJ_COMMON) \
 	  $(OBJ_MAIN) \
 	  $(OBJ_JSON_TEST) \
 	  $(OBJ_KWORD_TEST) \
 	  $(OBJ_MEMFILE_TEST) \
-	  $(OBJ_MESSAGE_TEST)
+	  $(OBJ_MESSAGE_TEST) \
+	  $(OBJ_FUZZ_SEARCH)
 
 
 PRO_AUTO = \
@@ -1832,6 +1864,7 @@ PRO_AUTO = \
 	fileio.pro \
 	findfile.pro \
 	fold.pro \
+	fuzzer_common.pro \
 	getchar.pro \
 	hardcopy.pro \
 	hashtab.pro \
@@ -2223,6 +2256,15 @@ $(MESSAGE_TEST_TARGET): auto/config.mk objects $(MESSAGE_TEST_OBJ)
 		-o $(MESSAGE_TEST_TARGET) $(MESSAGE_TEST_OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
+
+$(FUZZ_SEARCH_TARGET): $(FUZZ_SEARCH_OBJ)
+	$(CCC) version.c -o objects/version.o
+	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
+		-o $(FUZZ_SEARCH_TARGET) $(FUZZ_SEARCH_OBJ) $(ALL_LIBS) $(LIB_FUZZING_ENGINE)" \
+		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
+		sh $(srcdir)/link.sh
+
+fuzzers: $(FUZZER_TARGETS)
 
 # install targets
 
@@ -3121,6 +3163,12 @@ objects/memfile.o: memfile.c
 
 objects/memfile_test.o: memfile_test.c
 	$(CCC) -o $@ memfile_test.c
+
+objects/fuzzer_common.o: fuzzer_common.c
+	$(CCC) -o $@ fuzzer_common.c
+
+objects/fuzz_search.o: fuzz_search.c
+	$(CCC) -o $@ fuzz_search.c
 
 objects/memline.o: memline.c
 	$(CCC) -o $@ memline.c
