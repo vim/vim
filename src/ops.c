@@ -6577,11 +6577,7 @@ clip_convert_selection(char_u **str, long_u *len, VimClipboard *cbd)
 #ifdef USE_CRNL
 	    p[i++] = '\r';
 #endif
-#ifdef USE_CR
-	    p[i] = '\r';
-#else
 	    p[i] = '\n';
-#endif
 	    lnum++;
 	    j = -1;
 	}

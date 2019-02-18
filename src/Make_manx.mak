@@ -54,8 +54,8 @@ SRC =	arabic.c \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
@@ -115,8 +115,8 @@ OBJ =	obj/arabic.o \
 	obj/ex_docmd.o \
 	obj/ex_eval.o \
 	obj/ex_getln.o \
-	obj/farsi.o \
 	obj/fileio.o \
+	obj/findfile.o \
 	obj/fold.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
@@ -174,8 +174,8 @@ PRO =	proto/arabic.pro \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
@@ -314,11 +314,11 @@ obj/ex_eval.o:	ex_eval.c ex_cmds.h
 obj/ex_getln.o:	ex_getln.c
 	$(CCSYM) $@ ex_getln.c
 
-obj/farsi.o:	farsi.c
-	$(CCSYM) $@ farsi.c
-
 obj/fileio.o:	fileio.c
 	$(CCSYM) $@ fileio.c
+
+obj/findfile.o:	findfile.c
+	$(CCSYM) $@ findfile.c
 
 obj/fold.o:	fold.c
 	$(CCSYM) $@ fold.c

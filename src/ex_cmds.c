@@ -1618,7 +1618,7 @@ do_shell(
 	 */
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
-# ifdef WIN3264
+# ifdef MSWIN
 		|| (winstart && !need_wait_return)
 # endif
 	   )
@@ -1643,7 +1643,7 @@ do_shell(
 # endif
 	    no_wait_return = save_nwr;
 	}
-#endif /* FEAT_GUI_W32 */
+#endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
@@ -1935,7 +1935,7 @@ write_viminfo(char_u *file, int forceit)
     int		shortname = FALSE;	/* use 8.3 file name */
     stat_T	st_old;		/* mch_stat() of existing viminfo file */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		hidden = FALSE;
 #endif
 
@@ -1999,7 +1999,7 @@ write_viminfo(char_u *file, int forceit)
 	    goto end;
 	}
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Get the file attributes of the existing viminfo file. */
 	hidden = mch_ishidden(fname);
 #endif
@@ -2098,7 +2098,7 @@ write_viminfo(char_u *file, int forceit)
 			fp_out = NULL;
 # ifdef EEXIST
 			/* Avoid trying lots of names while the problem is lack
-			 * of premission, only retry if the file already
+			 * of permission, only retry if the file already
 			 * exists. */
 			if (errno != EEXIST)
 			    break;
@@ -2195,7 +2195,7 @@ write_viminfo(char_u *file, int forceit)
 		++viminfo_errcnt;
 		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
 	    }
-# ifdef WIN3264
+# ifdef MSWIN
 	    /* If the viminfo file was hidden then also hide the new file. */
 	    else if (hidden)
 		mch_hide(fname);
@@ -3826,11 +3826,8 @@ do_ecmd(
 	if (sfname == NULL)
 	    sfname = ffname;
 #ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
-	if (USE_LONG_FNAME)
-# endif
-	    if (sfname != NULL)
-		fname_case(sfname, 0);   /* set correct case for sfname */
+	if (sfname != NULL)
+	    fname_case(sfname, 0);   /* set correct case for sfname */
 #endif
 
 	if ((flags & ECMD_ADDBUF) && (ffname == NULL || *ffname == NUL))
@@ -4775,7 +4772,7 @@ check_restricted(void)
 {
     if (restricted)
     {
-	emsg(_("E145: Shell commands not allowed in rvim"));
+	emsg(_("E145: Shell commands and some functionality not allowed in rvim"));
 	return TRUE;
     }
     return FALSE;
@@ -4914,10 +4911,6 @@ do_sub(exarg_T *eap)
 	}
 	else		/* find the end of the regexp */
 	{
-#ifdef FEAT_FKMAP	/* reverse the flow of the Farsi characters */
-	    if (p_altkeymap && curwin->w_p_rl)
-		lrF_sub(cmd);
-#endif
 	    which_pat = RE_LAST;	    /* use last used regexp */
 	    delimiter = *cmd++;		    /* remember delimiter character */
 	    pat = cmd;			    /* remember start of search pat */
@@ -5040,6 +5033,7 @@ do_sub(exarg_T *eap)
 	}
 	subflags.do_error = TRUE;
 	subflags.do_print = FALSE;
+	subflags.do_list = FALSE;
 	subflags.do_count = FALSE;
 	subflags.do_number = FALSE;
 	subflags.do_ic = 0;
@@ -6071,11 +6065,6 @@ ex_global(exarg_T *eap)
 	if (cmd[0] == delim)		    /* end delimiter found */
 	    *cmd++ = NUL;		    /* replace it with a NUL */
     }
-
-#ifdef FEAT_FKMAP	/* when in Farsi mode, reverse the character flow */
-    if (p_altkeymap && curwin->w_p_rl)
-	lrFswap(pat,0);
-#endif
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {

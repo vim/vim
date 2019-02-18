@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-18 21:20+0200\n"
-"PO-Revision-Date: 2018-08-17 00:15+0200\n"
+"PO-Revision-Date: 2019-02-13 00:00+0200\n"
 "Last-Translator: scootergrisen\n"
 "Language-Team: Danish\n"
 "Language: da\n"
@@ -2937,7 +2937,7 @@ msgstr ""
 "\n"
 "Mere info med: \"vim -h\"\n"
 
-msgid "[file ..]  edit specified file(s)"
+msgid "[file ..]       edit specified file(s)"
 msgstr "[fil ..]        rediger angivne fil(er)"
 
 msgid "-               read text from stdin"
@@ -5014,7 +5014,6 @@ msgstr "E389: Kunne ikke finde mønster"
 msgid "Substitute "
 msgstr "Erstatning "
 
-# scootergrisen: find ud af om "Søgemønster" skal være med stort eller lille
 #, c-format
 msgid ""
 "\n"

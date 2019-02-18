@@ -758,8 +758,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
 	    {
-		if (tv_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
-		      || var_check_ro(di1->di_flags, arg_errmsg, TRUE))
+		if (var_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
+			|| var_check_ro(di1->di_flags, arg_errmsg, TRUE))
 		    break;
 		clear_tv(&di1->di_tv);
 		copy_tv(&HI2DI(hi2)->di_tv, &di1->di_tv);

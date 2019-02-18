@@ -19,7 +19,7 @@
  */
 EXTERN long	Rows			/* nr of rows in the screen */
 #ifdef DO_INIT
-# if defined(WIN3264)
+# if defined(MSWIN)
 			    = 25L
 # else
 			    = 24L
@@ -818,7 +818,7 @@ EXTERN int	enc_dbcs INIT(= 0);		/* One of DBCS_xxx values if
 EXTERN int	enc_unicode INIT(= 0);	/* 2: UCS-2 or UTF-16, 4: UCS-4 */
 EXTERN int	enc_utf8 INIT(= FALSE);		/* UTF-8 encoded Unicode */
 EXTERN int	enc_latin1like INIT(= TRUE);	/* 'encoding' is latin1 comp. */
-#if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /* Codepage nr of 'encoding'.  Negative means it's not been set yet, zero
  * means 'encoding' is not a valid codepage. */
 EXTERN int	enc_codepage INIT(= -1);
@@ -826,7 +826,7 @@ EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
 #endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
 #endif
 
@@ -1296,7 +1296,7 @@ EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 #endif
 
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 /*
  * The value of the --windowid argument.
  * For embedding gvim inside another application.
@@ -1450,9 +1450,7 @@ EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compil
 #ifndef FEAT_RIGHTLEFT
 EXTERN char e_nohebrew[]	INIT(= N_("E26: Hebrew cannot be used: Not enabled at compile time\n"));
 #endif
-#ifndef FEAT_FKMAP
-EXTERN char e_nofarsi[]	INIT(= N_("E27: Farsi cannot be used: Not enabled at compile time\n"));
-#endif
+EXTERN char e_nofarsi[]		INIT(= N_("E27: Farsi support has been removed\n"));
 #ifndef FEAT_ARABIC
 EXTERN char e_noarabic[]	INIT(= N_("E800: Arabic cannot be used: Not enabled at compile time\n"));
 #endif
@@ -1647,19 +1645,12 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #endif
 
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
-#endif
-
-/*
- * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
- */
-#ifdef FEAT_FKMAP
-# include "farsi.h"
 #endif
 
 /*
