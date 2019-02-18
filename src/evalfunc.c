@@ -12606,7 +12606,7 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
- * "rand()" function
+ * "srand()" function
  */
     static void
 f_srand(typval_T *argvars, typval_T *rettv)
