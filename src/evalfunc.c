@@ -6158,7 +6158,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #if defined(UNIX) && (defined(__CYGWIN32__) || defined(__CYGWIN__))
 	"win32unix",
 #endif
-#if defined(WIN64) || defined(_WIN64)
+#ifdef _WIN64
 	"win64",
 #endif
 #ifdef EBCDIC
