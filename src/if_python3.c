@@ -1010,12 +1010,12 @@ ex_py3(exarg_T *eap)
 {
     char_u *script;
 
-    if (p_pyx == 0)
-	p_pyx = 3;
-
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
+	if (p_pyx == 0)
+	    p_pyx = 3;
+
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
 		(rangeinitializer) init_range_cmd,
 		(runner) run_cmd,
