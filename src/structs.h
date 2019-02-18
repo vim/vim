@@ -151,6 +151,7 @@ typedef struct taggy
     fmark_T	fmark;		/* cursor position BEFORE ":tag" */
     int		cur_match;	/* match number */
     int		cur_fnum;	/* buffer number used for cur_match */
+    char_u	*user_data;	/* used with tagfunc */
 } taggy_T;
 
 /*

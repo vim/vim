@@ -302,7 +302,7 @@ call append("$", "showfulltag\twhen completing tags in Insert mode show more inf
 call <SID>BinOptionG("sft", &sft)
 call append("$", "tagfunc\ta function to be used to perform tag searches")
 call append("$", "\t(local to buffer)")
-call <SID>OptionL("tagfunc")
+call <SID>OptionL("tfu")
 if has("cscope")
   call append("$", "cscopeprg\tcommand for executing cscope")
   call <SID>OptionG("csprg", &csprg)

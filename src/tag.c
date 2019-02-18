@@ -33,6 +33,8 @@ typedef struct tag_pointers
 #endif
     char_u	*tagkind;	/* "kind:" value */
     char_u	*tagkind_end;	/* end of tagkind */
+    char_u	*user_data;	/* user_data string */
+    char_u	*user_data_end;	/* end of user_data */
 } tagptrs_T;
 
 /*
@@ -79,9 +81,12 @@ static void print_tag_list(int new_tag, int use_tagstack, int num_matches, char_
 #if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
 static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
+static void tagstack_clear_entry(taggy_T *item);
+static void get_tag_details(taggy_T *tag, dict_T *retdict);
 
 static char_u *bottommsg = (char_u *)N_("E555: at bottom of tag stack");
 static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
+static char_u *recurmsg = (char_u *)N_("E986: Cannot modify the tag stack within tagfunc");
 
 static char_u	*tagmatchname = NULL;	/* name of last used tag */
 
@@ -90,10 +95,14 @@ static char_u	*tagmatchname = NULL;	/* name of last used tag */
  * Tag for preview window is remembered separately, to avoid messing up the
  * normal tagstack.
  */
-static taggy_T ptag_entry = {NULL, {{0, 0, 0}, 0}, 0, 0};
+static taggy_T ptag_entry = {NULL, {{0, 0, 0}, 0}, 0, 0, NULL};
 #endif
 
-/* Used instead of NUL to separate tag fields in the growarrays. */
+#ifdef FEAT_COMPL_FUNC
+static int  tfu_call_level = 0;	    // disallow recursive call of tagfunc
+#endif
+
+// Used instead of NUL to separate tag fields in the growarrays.
 #define TAG_SEP 0x02
 
 /*
@@ -156,6 +165,14 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
+#ifdef FEAT_COMPL_FUNC
+    if (tfu_call_level)
+    {
+	emsg(_(recurmsg));
+	return FALSE;
+    }
+#endif
+
 #ifdef EXITFREE
     if (type == DT_FREE)
     {
@@ -193,7 +210,7 @@ do_tag(
 #if defined(FEAT_QUICKFIX)
 	if (g_do_tagpreview != 0)
 	{
-	    vim_free(ptag_entry.tagname);
+	    tagstack_clear_entry(&ptag_entry);
 	    if ((ptag_entry.tagname = vim_strsave(tag)) == NULL)
 		goto end_do_tag;
 	}
@@ -232,7 +249,7 @@ do_tag(
 		}
 		else
 		{
-		    vim_free(ptag_entry.tagname);
+		    tagstack_clear_entry(&ptag_entry);
 		    if ((ptag_entry.tagname = vim_strsave(tag)) == NULL)
 			goto end_do_tag;
 		}
@@ -245,13 +262,13 @@ do_tag(
 		 * stack entries above it.
 		 */
 		while (tagstackidx < tagstacklen)
-		    vim_free(tagstack[--tagstacklen].tagname);
+		    tagstack_clear_entry(&tagstack[--tagstacklen]);
 
 		/* if the tagstack is full: remove oldest entry */
 		if (++tagstacklen > TAGSTACKSIZE)
 		{
 		    tagstacklen = TAGSTACKSIZE;
-		    vim_free(tagstack[0].tagname);
+		    tagstack_clear_entry(&tagstack[0]);
 		    for (i = 1; i < tagstacklen; ++i)
 			tagstack[i - 1] = tagstack[i];
 		    --tagstackidx;
@@ -657,8 +674,19 @@ do_tag(
 	    }
 	    if (use_tagstack)
 	    {
+		tagptrs_T   tagp;
 		tagstack[tagstackidx].cur_match = cur_match;
 		tagstack[tagstackidx].cur_fnum = cur_fnum;
+
+		// store user-provided data originating from tagfunc
+		if (use_tfu && parse_match(matches[cur_match], &tagp) == OK
+			&& tagp.user_data)
+		{
+		    VIM_CLEAR(tagstack[tagstackidx].user_data);
+		    tagstack[tagstackidx].user_data = vim_strnsave(
+			    tagp.user_data, tagp.user_data_end - tagp.user_data);
+		}
+
 		++tagstackidx;
 	    }
 #if defined(FEAT_QUICKFIX)
@@ -1259,24 +1287,26 @@ prepare_pats(pat_T *pats, int has_re)
  *                   used by find_tags().
  *
  * Return OK if at least 1 tag has been successfully found,
- * NOTDONE if function returns v:null, and FAIL otherwise.
+ * NOTDONE if the function returns v:null, and FAIL otherwise.
  */
     static int
 find_tfu_tags(
-    char_u *pat,	// pattern supplied to the user-defined function
-    garray_T *ga,	// the tags will be placed here
-    int *match_count,	// here the number of tags found will be placed
-    int flags)		// used to compose a string containing flags passed
-			// to the function
+    char_u	*pat,		// pattern supplied to the user-defined function
+    garray_T	*ga,		// the tags will be placed here
+    int		*match_count,	// here the number of tags found will be placed
+    int		flags,		// flags from find_tags (TAG_*)
+    char_u	*buf_ffname)	// name of buffer for priority
 {
-    pos_T       pos;
+    pos_T       save_pos;
     list_T      *taglist;
     listitem_T  *item;
     int         ntags = 0;
     int         result = FAIL;
-    typval_T	args[3];
+    typval_T	args[4];
     typval_T	rettv;
     char_u      flagString[3];
+    dict_T	*d;
+    taggy_T	*tag = &curwin->w_tagstack[curwin->w_tagstackidx];
 
     if (*curbuf->b_p_tfu == NUL)
 	return FAIL;
@@ -1285,16 +1315,30 @@ find_tfu_tags(
     args[0].vval.v_string = pat;
     args[1].v_type = VAR_STRING;
     args[1].vval.v_string = flagString;
-    args[2].v_type = VAR_UNKNOWN;
+
+    // create 'info' dict argument
+    if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
+	return FAIL;
+    if (tag->user_data != NULL)
+	dict_add_string(d, "user_data", tag->user_data);
+    if (buf_ffname != NULL)
+	dict_add_string(d, "buf_ffname", buf_ffname);
+
+    ++d->dv_refcount;
+    args[2].v_type = VAR_DICT;
+    args[2].vval.v_dict = d;
+
+    args[3].v_type = VAR_UNKNOWN;
 
     vim_snprintf((char *)flagString, sizeof(flagString),
 		 "%s%s",
 		 g_tag_at_cursor      ? "c": "",
 		 flags & TAG_INS_COMP ? "i": "");
 
-    pos = curwin->w_cursor;
-    result = call_vim_function(curbuf->b_p_tfu, 2, args, &rettv);
-    curwin->w_cursor = pos;	/* restore the cursor position */
+    save_pos = curwin->w_cursor;
+    result = call_vim_function(curbuf->b_p_tfu, 3, args, &rettv);
+    curwin->w_cursor = save_pos;	// restore the cursor position
+    --d->dv_refcount;
 
     if (result == FAIL)
 	return FAIL;
@@ -1319,6 +1363,7 @@ find_tfu_tags(
 	char_u			*dict_key;
 	typval_T		*tv;
 	int			has_extra = 0;
+	int			name_only = flags & TAG_NAMES;
 
 	if (item->li_tv.v_type != VAR_DICT)
 	    continue;
@@ -1340,7 +1385,7 @@ find_tfu_tags(
 	    if (tv->v_type != VAR_STRING || tv->vval.v_string == NULL)
 		continue;
 
-	    len += STRLEN(tv->vval.v_string) + 1; /* Space for "\tVALUE". */
+	    len += STRLEN(tv->vval.v_string) + 1;   // Space for "\tVALUE"
 	    if (!STRCMP(dict_key, "name"))
 	    {
 		res_name = tv->vval.v_string;
@@ -1362,8 +1407,9 @@ find_tfu_tags(
 		res_kind = tv->vval.v_string;
 		continue;
 	    }
-	    len += STRLEN(dict_key) + 1; /* Other elements will be stored as "\tKEY:VALUE".
-					  * Allocate space for the key and the colon. */
+	    // Other elements will be stored as "\tKEY:VALUE"
+	    // Allocate space for the key and the colon
+	    len += STRLEN(dict_key) + 1;
 	}
 
 	if (has_extra)
@@ -1372,12 +1418,19 @@ find_tfu_tags(
 	if (!res_name || !res_fname || !res_cmd)
 	    continue;
 
-	mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
-	if (mfp != NULL)
+	if (name_only)
+	    mfp = vim_strsave(res_name);
+	else
+	    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+
+	if (mfp == NULL)
+	    continue;
+
+	if (!name_only)
 	{
 	    char_u *p = mfp;
-	    *p++ = MT_GL_OTH + 1;   /* mtt */
-	    *p++ = TAG_SEP;	/* no tag file name */
+	    *p++ = MT_GL_OTH + 1;   // mtt
+	    *p++ = TAG_SEP;	    // no tag file name
 #ifdef FEAT_EMACS_TAGS
 	    *p++ = TAG_SEP;
 #endif
@@ -1429,19 +1482,19 @@ find_tfu_tags(
 		    p += STRLEN(p);
 		}
 	    }
+	}
 
-	    /* Add all matches because tagfunc should do filtering. */
-	    if (ga_grow(ga, 1) == OK)
-	    {
-		((char_u **)(ga->ga_data))[ga->ga_len++] = mfp;
-		++ntags;
-		result = OK;
-	    }
-	    else
-	    {
-		vim_free(mfp);
-		break;
-	    }
+	// Add all matches because tagfunc should do filtering.
+	if (ga_grow(ga, 1) == OK)
+	{
+	    ((char_u **)(ga->ga_data))[ga->ga_len++] = mfp;
+	    ++ntags;
+	    result = OK;
+	}
+	else
+	{
+	    vim_free(mfp);
+	    break;
 	}
     }
 
@@ -1477,7 +1530,7 @@ find_tfu_tags(
  * TAG_NOIC	  don't always ignore case
  * TAG_KEEP_LANG  keep language
  * TAG_CSCOPE	  use cscope results for tags
- * TAG_NO_TFU	  do not invoke the 'tagfunc' command
+ * TAG_NO_TFU	  do not call the 'tagfunc' function
  */
     int
 find_tags(
@@ -1597,7 +1650,6 @@ find_tags(
     int		verbose = (flags & TAG_VERBOSE);
 #ifdef FEAT_COMPL_FUNC
     int         use_tfu = ((flags & TAG_NO_TFU) == 0);
-    static int  tfu_call_level = 0;
 #endif
     int		save_p_ic = p_ic;
 
@@ -1698,7 +1750,8 @@ find_tags(
     if (*curbuf->b_p_tfu != NUL && use_tfu && tfu_call_level == 0)
     {
 	++tfu_call_level;
-	retval = find_tfu_tags(pat, &ga_match[0], &match_count, flags);
+	retval = find_tfu_tags(pat, &ga_match[0], &match_count,
+							   flags, buf_ffname);
 	--tfu_call_level;
 	if (retval != NOTDONE)
 	    goto findtag_end;
@@ -2801,8 +2854,7 @@ free_tag_stuff(void)
     tag_freematch();
 
 # if defined(FEAT_QUICKFIX)
-    if (ptag_entry.tagname)
-	VIM_CLEAR(ptag_entry.tagname);
+    tagstack_clear_entry(&ptag_entry);
 # endif
 }
 #endif
@@ -3164,6 +3216,7 @@ parse_match(
 			tagp);
 
     tagp->tagkind = NULL;
+    tagp->user_data = NULL;
     tagp->command_end = NULL;
 
     if (retval == OK)
@@ -3181,17 +3234,15 @@ parse_match(
 		while (ASCII_ISALPHA(*p))
 		{
 		    if (STRNCMP(p, "kind:", 5) == 0)
-		    {
 			tagp->tagkind = p + 5;
+		    else if (STRNCMP(p, "user_data:", 10) == 0)
+			tagp->user_data = p + 10;
+		    if (tagp->tagkind != NULL && tagp->user_data != NULL)
 			break;
-		    }
 		    pc = vim_strchr(p, ':');
 		    pt = vim_strchr(p, '\t');
 		    if (pc == NULL || (pt != NULL && pc > pt))
-		    {
 			tagp->tagkind = p;
-			break;
-		    }
 		    if (pt == NULL)
 			break;
 		    p = pt + 1;
@@ -3203,6 +3254,13 @@ parse_match(
 			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
 		;
 	    tagp->tagkind_end = p;
+	}
+	if (tagp->user_data != NULL)
+	{
+	    for (p = tagp->user_data;
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+		;
+	    tagp->user_data_end = p;
 	}
     }
     return retval;
@@ -3771,6 +3829,16 @@ find_extra(char_u **pp)
     return FAIL;
 }
 
+/*
+ * Free a single entry in a tag stack
+ */
+    static void
+tagstack_clear_entry(taggy_T *item)
+{
+    VIM_CLEAR(item->tagname);
+    VIM_CLEAR(item->user_data);
+}
+
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     int
 expand_tags(
@@ -3977,6 +4045,8 @@ get_tag_details(taggy_T *tag, dict_T *retdict)
     dict_add_string(retdict, "tagname", tag->tagname);
     dict_add_number(retdict, "matchnr", tag->cur_match + 1);
     dict_add_number(retdict, "bufnr", tag->cur_fnum);
+    if (tag->user_data)
+	dict_add_string(retdict, "user_data", tag->user_data);
 
     if ((pos = list_alloc_id(aid_tagstack_from)) == NULL)
 	return;
@@ -4029,7 +4099,7 @@ tagstack_clear(win_T *wp)
 
     // Free the current tag stack
     for (i = 0; i < wp->w_tagstacklen; ++i)
-	vim_free(wp->w_tagstack[i].tagname);
+	tagstack_clear_entry(&wp->w_tagstack[i]);
     wp->w_tagstacklen = 0;
     wp->w_tagstackidx = 0;
 }
@@ -4044,7 +4114,7 @@ tagstack_shift(win_T *wp)
     taggy_T	*tagstack = wp->w_tagstack;
     int		i;
 
-    vim_free(tagstack[0].tagname);
+    tagstack_clear_entry(&tagstack[0]);
     for (i = 1; i < wp->w_tagstacklen; ++i)
 	tagstack[i - 1] = tagstack[i];
     wp->w_tagstacklen--;
@@ -4060,7 +4130,8 @@ tagstack_push_item(
 	int	cur_fnum,
 	int	cur_match,
 	pos_T	mark,
-	int	fnum)
+	int	fnum,
+	char_u  *user_data)
 {
     taggy_T	*tagstack = wp->w_tagstack;
     int		idx = wp->w_tagstacklen;	// top of the stack
@@ -4080,6 +4151,7 @@ tagstack_push_item(
 	tagstack[idx].cur_match = 0;
     tagstack[idx].fmark.mark = mark;
     tagstack[idx].fmark.fnum = fnum;
+    tagstack[idx].user_data = user_data;
 }
 
 /*
@@ -4116,7 +4188,8 @@ tagstack_push_items(win_T *wp, list_T *l)
 	tagstack_push_item(wp, tagname,
 		(int)dict_get_number(itemdict, (char_u *)"bufnr"),
 		(int)dict_get_number(itemdict, (char_u *)"matchnr") - 1,
-		mark, fnum);
+		mark, fnum,
+		dict_get_string(itemdict, (char_u *)"user_data", TRUE));
     }
 }
 
@@ -4143,6 +4216,15 @@ set_tagstack(win_T *wp, dict_T *d, int action)
 {
     dictitem_T	*di;
     list_T	*l;
+
+#ifdef FEAT_COMPL_FUNC
+    // not valid to alter the tag stack entries from inside tagfunc
+    if (tfu_call_level)
+    {
+	emsg(_(recurmsg));
+	return FAIL;
+    }
+#endif
 
     if ((di = dict_find(d, (char_u *)"items", -1)) != NULL)
     {
