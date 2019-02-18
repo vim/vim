@@ -1841,7 +1841,7 @@ append_redir(
     }
     if (p != NULL)
     {
-#ifdef WIN3264
+#ifdef MSWIN
 	*end++ = ' '; /* not really needed? Not with sh, ksh or bash */
 #endif
 	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
