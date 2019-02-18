@@ -397,10 +397,6 @@ static const struct nv_cmd
     {K_TABLINE, nv_tabline,	0,			0},
     {K_TABMENU, nv_tabmenu,	0,			0},
 #endif
-#ifdef FEAT_FKMAP
-    {K_F8,	farsi_f8,	0,			0},
-    {K_F9,	farsi_f9,	0,			0},
-#endif
 #ifdef FEAT_NETBEANS_INTG
     {K_F21,	nv_nbcmd,	NV_NCH_ALW,		0},
 #endif
@@ -987,11 +983,6 @@ getcount:
 		/* adjust Hebrew mapped char */
 		if (p_hkmap && lang && KeyTyped)
 		    *cp = hkmap(*cp);
-# ifdef FEAT_FKMAP
-		/* adjust Farsi mapped char */
-		if (p_fkmap && lang && KeyTyped)
-		    *cp = fkmap(*cp);
-# endif
 #endif
 	    }
 
@@ -5410,6 +5401,9 @@ nv_clear(cmdarg_T *cap)
 # endif
 #endif
 	redraw_later(CLEAR);
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+	resize_console_buf();
+#endif
     }
 }
 

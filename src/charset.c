@@ -98,13 +98,6 @@ buf_init_chartab(
 	while (c <= '~')
 #endif
 	    g_chartab[c++] = 1 + CT_PRINT_CHAR;
-#ifdef FEAT_FKMAP
-	if (p_altkeymap)
-	{
-	    while (c < YE)
-		g_chartab[c++] = 1 + CT_PRINT_CHAR;
-	}
-#endif
 	while (c < 256)
 	{
 	    /* UTF-8: bytes 0xa0 - 0xff are printable (latin1) */
@@ -218,11 +211,7 @@ buf_init_chartab(
 		/* Use the MB_ functions here, because isalpha() doesn't
 		 * work properly when 'encoding' is "latin1" and the locale is
 		 * "C".  */
-		if (!do_isalpha || MB_ISLOWER(c) || MB_ISUPPER(c)
-#ifdef FEAT_FKMAP
-			|| (p_altkeymap && (F_isalpha(c) || F_isdigit(c)))
-#endif
-			    )
+		if (!do_isalpha || MB_ISLOWER(c) || MB_ISUPPER(c))
 		{
 		    if (i == 0)			/* (re)set ID flag */
 		    {
@@ -236,10 +225,6 @@ buf_init_chartab(
 			if ((c < ' '
 #ifndef EBCDIC
 				    || c > '~'
-#endif
-#ifdef FEAT_FKMAP
-				    || (p_altkeymap
-					&& (F_isalpha(c) || F_isdigit(c)))
 #endif
 				// For double-byte we keep the cell width, so
 				// that we can detect it from the first byte.
@@ -539,9 +524,6 @@ transchar(int c)
 		    (c >= 64 && c < 255)
 #else
 		    (c >= ' ' && c <= '~')
-#endif
-#ifdef FEAT_FKMAP
-			|| (p_altkeymap && F_ischar(c))
 #endif
 		)) || (c < 256 && vim_isprintc_strict(c)))
     {

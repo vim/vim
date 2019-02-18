@@ -14,9 +14,6 @@ For an introduction to the most common features, see |usr_45.txt| in the user
 manual.
 For changing the language of messages and menus see |mlang.txt|.
 
-{not available when compiled without the |+multi_byte| feature}
-
-
 1.  Getting started			|mbyte-first|
 2.  Locale				|mbyte-locale|
 3.  Encoding				|mbyte-encoding|
@@ -42,16 +39,6 @@ doesn't work you will have to read the rest.  Don't be surprised if it takes
 quite a bit of work and experimenting to make Vim use all the multi-byte
 features.  Unfortunately, every system has its own way to deal with multibyte
 languages and it is quite complicated.
-
-
-COMPILING
-
-If you already have a compiled Vim program, check if the |+multi_byte| feature
-is included.  The |:version| command can be used for this.
-
-If +multi_byte is not included, you should compile Vim with "normal", "big" or
-"huge" features.  You can further tune what features are included.  See the
-INSTALL files in the source directory.
 
 
 LOCALE

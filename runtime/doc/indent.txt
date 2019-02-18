@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2018 Apr 04
+*indent.txt*    For Vim version 8.1.  Last change: 2019 Jan 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

@@ -310,6 +310,7 @@ let s:flaky_tests = [
       \ 'Test_terminal_env()',
       \ 'Test_terminal_hide_buffer()',
       \ 'Test_terminal_make_change()',
+      \ 'Test_terminal_no_cmd()',
       \ 'Test_terminal_noblock()',
       \ 'Test_terminal_redir_file()',
       \ 'Test_terminal_response_to_control_sequence()',

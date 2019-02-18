@@ -368,6 +368,95 @@ let g:menutrans_spell_change_ARG_to = 'Ændr\ "%s"\ til'
 let g:menutrans_spell_add_ARG_to_word_list = 'Tilføj\ "%s"\ til\ ordliste'
 let g:menutrans_spell_ignore_ARG = 'Ignorer "%s"'
 
+
+
+" Forsøg på at oversætte netrw-menuen
+menut Help<tab><F1>					Hjælp<tab><F1>
+" -Sep1-
+menut Go\ Up\ Directory<tab>-					Gå\ mappe\ op<tab>-
+menut Apply\ Special\ Viewer<tab>x					Anvend\ speciel\ fremviser<tab>x
+
+menut Bookmarks\ and\ History					Bogmærker\ og\ historik<tab>:echo "(disabled)"
+menut Bookmark\ Current\ Directory<tab>mb					Sæt\ bogmærke\ for\ nuværende\ mappe<tab>mb
+menut Goto\ Prev\ Dir\ (History)<tab>u					Gå\ til\ forrige\ mappe\ (historik)<tab>u
+menut Goto\ Next\ Dir\ (History)<tab>U					Gå\ til\ næste\ mappe\ (historik)<tab>U
+menut List<tab>qb					Oplist<tab>qb
+
+menut Browsing\ Control					Gennemgangskontol
+menut Horizontal\ Split<tab>o					Vandret\ opdeling<tab>o
+menut Vertical\ Split<tab>v					Lodret\ opdeling<tab>v
+menut New\ Tab<tab>t					Nyt\ faneblad<tab>t
+menut Preview<tab>p					Forhåndsvis<tab>p
+menut Edit\ File\ Hiding\ List<tab><ctrl-h>               Rediger\ liste\ til\ filskjulning
+menut Edit\ Sorting\ Sequence<tab>S					Rediger\ sorteringssekvens<tab>S
+menut Quick\ Hide/Unhide\ Dot\ Files<tab>gh					Hurtig\ skjul/vis\ punktum-filer<tab>gh
+menut Refresh\ Listing<tab><ctrl-l>							Genopfrisk\ oplistning<tab>\<c-l> ikke sikker det med \ er korrekt
+menut Settings/Options<tab>:NetrwSettings					Indstillinger/valgmuligheder<tab>
+
+menut Delete\ File/Directory<tab>D	Slet\ fil/mappe<tab>D
+
+menut Edit\ File/Dir					Rediger\ fil/mappe
+menut Create\ New\ File<tab>%					Opret\ ny\ fil<tab>%
+menut In\ Current\ Window<tab><cr>					I\ nuværende\ vindue<tab>
+menut Preview\ File/Directory<tab>p					Forhåndsvis\ fil/mappe<tab>p
+menut In\ Previous\ Window<tab>P					I\ forrige\ vindue<tab>P
+menut In\ New\ Window<tab>o					I\ nyt\ vindue<tab>o
+menut In\ New\ Tab<tab>t					I\ nyt\ faneblad<tab>t
+menut In\ New\ Vertical\ Window<tab>v					I\ nyt\ lodret\ vindue<tab>v
+
+menut Explore					Gennemse
+menut Directory\ Name					Mappenavn<tab>:Explore
+menut Filenames\ Matching\ Pattern\ (curdir\ only)<tab>:Explore\ */					test29<tab>:Explore */
+menut Filenames\ Matching\ Pattern\ (+subdirs)<tab>:Explore\ **/					test30<tab>:Explore **/
+menut Files\ Containing\ String\ Pattern\ (curdir\ only)<tab>:Explore\ *//					test31<tab>:Explore *//
+menut Files\ Containing\ String\ Pattern\ (+subdirs)<tab>:Explore\ **//					test32<tab>:Explore **//
+menut Next\ Match<tab>:Nexplore					Næste\ match<tab>:Nexplore<cr>
+menut Prev\ Match<tab>:Pexplore					Forrige\ match<tab>:Pexplore<cr>
+
+menut Make\ Subdirectory<tab>d					Opret\ undermappe<tab>d
+
+menut Marked\ Files					Mærkede\ filer
+menut Mark\ File<tab>mf					Mærk\ fil<tab>mf
+menut Mark\ Files\ by\ Regexp<tab>mr					Mærk\ filer\ efter\ regulært\ udtrk<tab>mr
+menut Hide-Show-List\ Control<tab>a					test38<tab>a
+menut Copy\ To\ Target<tab>mc					Kopiér\ til\ mål<tab>mc
+menut Delete<tab>D					Slet<tab>D
+menut Diff<tab>md					Diff<tab>md
+menut Edit<tab>me					Rediger<tab>me
+menut Exe\ Cmd<tab>mx					test43<tab>mx
+menut Move\ To\ Target<tab>mm					Flyt\ til\ mål<tab>mm
+menut Obtain<tab>O					Indhent<tab>O
+menut Print<tab>mp					Udskriv<tab>mp
+menut Replace<tab>R					Erstat<tab>R
+menut Set\ Target<tab>mt					Sæt\ mål<tab>mt
+menut Tag<tab>mT					test49<tab>mT
+menut Zip/Unzip/Compress/Uncompress<tab>mz					Zip/unzip/komprimér/udpak<tab>mz
+
+menut Obtain\ File<tab>O					Indhent\ fil<tab>O
+
+menut Style					Stile
+menut Listing				Oplisting
+menut thin<tab>i	tynd
+menut long<tab>i	lang
+menut wide<tab>i	bred
+menut tree<tab>i	træ
+menut Normal-Hide-Show					Normal-skjul-vis
+menut Show\ All<tab>a					Vis\ alle<tab>
+menut Normal<tab>a					Normal<tab>
+menut Hidden\ Only<tab>a					Kun\ skulte<tab>
+menut Reverse\ Sorting\ Order<tab>         Omvendt\ sorteringsrækkefølge
+menut Sorting\ Method					Sorteringsmetode
+menut Name<tab>s       Navn
+menut Time<tab>s       Tidspunkt
+menut Size<tab>s       Størrelse
+menut Exten<tab>s      Endelse
+menut Rename\ File/Directory<tab>R	Omdøb\ fil/mappe<tab>R
+menut Set\ Current\ Directory<tab>c	Sæt\ nuværende\ mappe<tab>c
+
+menut History					Historik
+
+menut Targets					Mål
+
 let &cpo = s:keepcpo
 unlet s:keepcpo
 

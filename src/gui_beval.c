@@ -13,7 +13,7 @@
 #if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 /* on Win32 only get_beval_info() is required */
-#if !defined(FEAT_GUI_W32) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
 #ifdef FEAT_GUI_GTK
 # if GTK_CHECK_VERSION(3,0,0)
@@ -197,10 +197,10 @@ gui_mch_currently_showing_beval(void)
     return current_beval;
 }
 #endif
-#endif /* !FEAT_GUI_W32 */
+#endif /* !FEAT_GUI_MSWIN */
 
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL) || defined(PROTO)
-# if !defined(FEAT_GUI_W32) || defined(PROTO)
+# if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
 /*
  * Show a balloon with "mesg".
@@ -214,10 +214,10 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     else
 	undrawBalloon(beval);
 }
-# endif /* !FEAT_GUI_W32 */
+# endif /* !FEAT_GUI_MSWIN */
 #endif /* FEAT_NETBEANS_INTG || PROTO */
 
-#if !defined(FEAT_GUI_W32) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 #if defined(FEAT_BEVAL_TIP) || defined(PROTO)
 /*
  * Hide the given balloon.
@@ -1220,6 +1220,6 @@ createBalloonEvalWindow(BalloonEval *beval)
 }
 
 #endif /* !FEAT_GUI_GTK */
-#endif /* !FEAT_GUI_W32 */
+#endif /* !FEAT_GUI_MSWIN */
 
 #endif /* FEAT_BEVAL_GUI */

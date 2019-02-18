@@ -391,9 +391,6 @@
 /* Define if you don't want to include right-left support. */
 #undef DISABLE_RIGHTLEFT
 
-/* Define if you don't want to include Farsi support. */
-#undef DISABLE_FARSI
-
 /* Define if you don't want to include Arabic support. */
 #undef DISABLE_ARABIC
 
