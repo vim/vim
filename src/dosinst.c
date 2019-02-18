@@ -456,7 +456,7 @@ window_cb(HWND hwnd, LPARAM lparam)
     static int
 run_silent_uninstall(char *uninst_exe)
 {
-    char    vimrt_dir[BUFSIZE];
+    char    vimrt_dir[MAX_PATH];
     char    temp_uninst[BUFSIZE];
     char    temp_dir[MAX_PATH];
     char    buf[BUFSIZE * 2 + 10];
@@ -505,7 +505,7 @@ uninstall_check(int skip_question)
     HKEY	uninstall_key_handle;
     char	*uninstall_key = "software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
     char	subkey_name_buff[BUFSIZE];
-    char	temp_string_buffer[BUFSIZE];
+    char	temp_string_buffer[BUFSIZE-2];
     DWORD	local_bufsize = BUFSIZE;
     FILETIME	temp_pfiletime;
     DWORD	key_index;
@@ -1614,7 +1614,7 @@ install_registry(void)
     const char	*vim_ext_ThreadingModel = "Apartment";
     const char	*vim_ext_name = "Vim Shell Extension";
     const char	*vim_ext_clsid = "{51EEE242-AD87-11d3-9C1E-0090278BBD99}";
-    char	vim_exe_path[BUFSIZE];
+    char	vim_exe_path[MAX_PATH];
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
     char	icon_string[BUFSIZE];
@@ -1869,7 +1869,7 @@ build_link_name(
 	const char *link_name,
 	const char *shell_folder_name)
 {
-    char	shell_folder_path[BUFSIZE];
+    char	shell_folder_path[MAX_PATH];
 
     if (get_shell_folder_path(shell_folder_path, shell_folder_name) == FAIL)
     {
@@ -2278,8 +2278,8 @@ install_vimfilesdir(int idx)
     int i;
     int vimfiles_dir_choice = choices[idx].arg;
     char *p;
-    char vimdir_path[BUFSIZE];
-    char vimfiles_path[BUFSIZE];
+    char vimdir_path[MAX_PATH];
+    char vimfiles_path[MAX_PATH + 9];
     char tmp_dirname[BUFSIZE];
 
     /* switch on the location that the user wants the plugin directories
