@@ -8032,11 +8032,9 @@ nv_g_cmd(cmdarg_T *cap)
 
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		i = mb_string2cells(ptr, STRLEN(ptr));
 	    else
-#endif
 		i = (int)STRLEN(ptr);
 	    if (cap->count0 == 0)
 		coladvance((colnr_T)(i / 2));
