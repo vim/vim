@@ -23,7 +23,7 @@
 //
 IDR_VIM		ICON "vim.ico"
 
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI
 IDR_VIM_ERROR	ICON "vim_error.ico"
 IDR_VIM_ALERT	ICON "vim_alert.ico"
 IDR_VIM_INFO	ICON "vim_info.ico"
@@ -46,7 +46,7 @@ IDR_TOOLBAR1	BITMAP  DISCARDABLE  "tools.bmp"
 #endif
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "gvim.exe.mnf"
-#endif // FEAT_GUI_W32
+#endif // FEAT_GUI
 
 //
 // Type Library

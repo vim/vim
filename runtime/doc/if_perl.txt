@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.1.  Last change: 2017 Nov 24
+*if_perl.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -192,7 +192,7 @@ VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list
 			and inserting line breaks.
 
 							*perl-Blob*
-VIM::Blob({expr})	Return Blob literal string 0zXXXX from scalar value.
+VIM::Blob({expr})	Return |Blob| literal string 0zXXXX from scalar value.
 
 							*perl-SetHeight*
 Window->SetHeight({height})

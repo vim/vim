@@ -99,7 +99,7 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
   1. Move the cursor to the first line below marked --->.
 
   2. To make the first line the same as the second, move the cursor on top
-     of the first character AFTER where the text is to be inserted.
+     of the character BEFORE which the text is to be inserted.
 
   3. Press  i  and type in the necessary additions.
 

@@ -70,7 +70,7 @@
 #if defined(__DATE__) && defined(__TIME__)
 # define HAVE_DATE_TIME
 #endif
-#ifndef FEAT_GUI_W32		/* GUI works different */
+#ifndef FEAT_GUI_MSWIN		/* GUI works different */
 # define BREAKCHECK_SKIP    1	/* call mch_breakcheck() each time, it's fast */
 #endif
 
@@ -78,7 +78,7 @@
 
 #define HAVE_PUTENV		/* at least Bcc 5.2 and MSC have it */
 
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # define NO_CONSOLE		/* don't included console-only code */
 #endif
 

@@ -18,6 +18,9 @@ if __name__ == "__main__":
             print(sys.argv[1], end='')
             sys.stdout.flush()
             sys.exit(0)
+        elif sys.argv[1].startswith("busy"):
+            time.sleep(100)
+            sys.exit(0)
         else:
             print(sys.argv[1])
             sys.stdout.flush()

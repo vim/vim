@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 8.1.  Last change: 2019 Jan 19
+*os_vms.txt*    For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL
@@ -105,7 +105,7 @@ You may want to use GUI with GTK icons, then you have to download and install
 GTK for OpenVMS or at least runtime shareable images - LIBGTK from
 polarhome.com
 Post 7.2 Vim uses GTK2+ while the last GTK on OpenVMS is 1.2.10, therefore
-the GTK build is no longer available. 
+the GTK build is no longer available.
 
 For more advanced questions, please send your problem to Vim on VMS mailing
 list <vim-vms@polarhome.com>
@@ -772,9 +772,9 @@ Version 8.1
 Version 8.0
 - solve the 100% cpu usage issue while waiting for a keystroke
 - correct the VMS warnings and errors around handling the INFINITY (used in json.c)
-- minor VMS port related changes 
-- correct the make_vms.mms file for 8.0 
-- fix [.TESTDIR]make_vms.mms for 8.0 
+- minor VMS port related changes
+- correct the make_vms.mms file for 8.0
+- fix [.TESTDIR]make_vms.mms for 8.0
 
 Version 7.4
 - Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name"

@@ -1095,6 +1095,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termwinkey'	options.txt	/*'termwinkey'*
 'termwinscroll'	options.txt	/*'termwinscroll'*
 'termwinsize'	options.txt	/*'termwinsize'*
+'termwintype'	options.txt	/*'termwintype'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
@@ -1135,6 +1136,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'twk'	options.txt	/*'twk'*
 'tws'	options.txt	/*'tws'*
 'twsl'	options.txt	/*'twsl'*
+'twt'	options.txt	/*'twt'*
 'tx'	options.txt	/*'tx'*
 'uc'	options.txt	/*'uc'*
 'udf'	options.txt	/*'udf'*
@@ -1717,6 +1719,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 05.6	usr_05.txt	/*05.6*
 05.7	usr_05.txt	/*05.7*
 05.8	usr_05.txt	/*05.8*
+05.9	usr_05.txt	/*05.9*
 06.1	usr_06.txt	/*06.1*
 06.2	usr_06.txt	/*06.2*
 06.3	usr_06.txt	/*06.3*
@@ -2518,6 +2521,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lefta	windows.txt	/*:lefta*
 :leftabove	windows.txt	/*:leftabove*
 :let	eval.txt	/*:let*
+:let%=	eval.txt	/*:let%=*
 :let+=	eval.txt	/*:let+=*
 :let-$	eval.txt	/*:let-$*
 :let-&	eval.txt	/*:let-&*
@@ -2528,6 +2532,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :let-register	eval.txt	/*:let-register*
 :let-unpack	eval.txt	/*:let-unpack*
 :let.=	eval.txt	/*:let.=*
+:let/=	eval.txt	/*:let\/=*
+:letstar=	eval.txt	/*:letstar=*
 :lex	quickfix.txt	/*:lex*
 :lexpr	quickfix.txt	/*:lexpr*
 :lf	quickfix.txt	/*:lf*
@@ -3741,6 +3747,7 @@ ColorSchemePre	autocmd.txt	/*ColorSchemePre*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
 CompleteDone	autocmd.txt	/*CompleteDone*
+ConPTY	terminal.txt	/*ConPTY*
 Contents	quickref.txt	/*Contents*
 Cscope	if_cscop.txt	/*Cscope*
 CursorHold	autocmd.txt	/*CursorHold*
@@ -4684,6 +4691,8 @@ E978	eval.txt	/*E978*
 E979	eval.txt	/*E979*
 E98	diff.txt	/*E98*
 E980	eval.txt	/*E980*
+E981	starting.txt	/*E981*
+E982	terminal.txt	/*E982*
 E99	diff.txt	/*E99*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -5012,7 +5021,10 @@ ZZ	editing.txt	/*ZZ*
 [:cntrl:]	pattern.txt	/*[:cntrl:]*
 [:digit:]	pattern.txt	/*[:digit:]*
 [:escape:]	pattern.txt	/*[:escape:]*
+[:fname:]	pattern.txt	/*[:fname:]*
 [:graph:]	pattern.txt	/*[:graph:]*
+[:ident:]	pattern.txt	/*[:ident:]*
+[:keyword:]	pattern.txt	/*[:keyword:]*
 [:lower:]	pattern.txt	/*[:lower:]*
 [:print:]	pattern.txt	/*[:print:]*
 [:punct:]	pattern.txt	/*[:punct:]*
@@ -5847,6 +5859,7 @@ dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
 deepcopy()	eval.txt	/*deepcopy()*
 defaults.vim	starting.txt	/*defaults.vim*
+defaults.vim-explained	usr_05.txt	/*defaults.vim-explained*
 definition-search	tagsrch.txt	/*definition-search*
 definitions	intro.txt	/*definitions*
 delete()	eval.txt	/*delete()*
@@ -6120,7 +6133,6 @@ f	motion.txt	/*f*
 false-variable	eval.txt	/*false-variable*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
-farsi-fonts	farsi.txt	/*farsi-fonts*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
@@ -6346,6 +6358,7 @@ ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
 ft-rrst-plugin	filetype.txt	/*ft-rrst-plugin*
 ft-rrst-syntax	syntax.txt	/*ft-rrst-syntax*
+ft-rst-plugin	filetype.txt	/*ft-rst-plugin*
 ft-rst-syntax	syntax.txt	/*ft-rst-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*
@@ -7313,7 +7326,7 @@ lambda	eval.txt	/*lambda*
 lang-variable	eval.txt	/*lang-variable*
 language-mapping	map.txt	/*language-mapping*
 last-pattern	pattern.txt	/*last-pattern*
-last-position-jump	eval.txt	/*last-position-jump*
+last-position-jump	usr_05.txt	/*last-position-jump*
 last_buffer_nr()	eval.txt	/*last_buffer_nr()*
 latex-syntax	syntax.txt	/*latex-syntax*
 lc_time-variable	eval.txt	/*lc_time-variable*

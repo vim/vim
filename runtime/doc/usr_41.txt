@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jan 12
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jan 29
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -771,7 +771,7 @@ System functions and manipulation of files:
 	systemlist()		get the result of a shell command as a list
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
-	writefile()		write a List of lines into a file
+	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*
 	getftime()		get last modification time of a file
@@ -941,6 +941,7 @@ Testing:				    *test-functions*
 	test_override()		test with Vim internal overrides
 	test_garbagecollect_now()   free memory right now
 	test_ignore_error()	ignore a specific error message
+	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
 	test_null_job()		return a null Job

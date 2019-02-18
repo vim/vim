@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.1.  Last change: 2018 Feb 20
+*usr_05.txt*	For Vim version 8.1.  Last change: 2019 Jan 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -11,12 +11,13 @@ Vim's capabilities.  Or define your own macros.
 
 |05.1|	The vimrc file
 |05.2|	The example vimrc file explained
-|05.3|	Simple mappings
-|05.4|	Adding a package
-|05.5|	Adding a plugin
-|05.6|	Adding a help file
-|05.7|	The option window
-|05.8|	Often used options
+|05.3|	The defaults.vim file explained
+|05.4|	Simple mappings
+|05.5|	Adding a package
+|05.6|	Adding a plugin
+|05.7|	Adding a help file
+|05.8|	The option window
+|05.9|	Often used options
 
      Next chapter: |usr_06.txt|  Using syntax highlighting
  Previous chapter: |usr_04.txt|  Making small changes
@@ -82,6 +83,95 @@ will give you hints about how to set up your own preferences.  Not everything
 will be explained though.  Use the ":help" command to find out more.
 
 >
+	" Get the defaults that most users want.
+	source $VIMRUNTIME/defaults.vim
+>
+This loads the "defaults.vim" file in the $VIMRUNTIME directory.  This sets up
+Vim for how most users like it.  If you are one of the few that don't, then
+comment out this line.  The commands are explained below:
+|defaults.vim-explained|
+
+>
+	if has("vms")
+	  set nobackup
+	else
+	  set backup
+	  if has('persistent_undo')
+	    set undofile
+	  endif
+	endif
+
+This tells Vim to keep a backup copy of a file when overwriting it.  But not
+on the VMS system, since it keeps old versions of files already.  The backup
+file will have the same name as the original file with "~" added.  See |07.4|
+
+This also sets the 'undofile' option, if available.  This will store the
+multi-level undo information in a file.  The result is that when you change a
+file, exit Vim, and then edit the file again, you can undo the changes made
+previously.  It's a very powerful and useful feature, at the cost of storing a
+file.  For more information see |undo-persistence|.
+
+The "if" command is very useful to set options
+only when some condition is met.  More about that in |usr_41.txt|.
+
+>
+	if &t_Co > 2 || has("gui_running")
+	  set hlsearch
+	endif
+
+This switches on the 'hlsearch' option, telling Vim to highlight matches with
+the last used search pattern.
+
+>
+	augroup vimrcEx
+	  au!
+	  autocmd FileType text setlocal textwidth=78
+	augroup END
+
+This makes Vim break text to avoid lines getting longer than 78 characters.
+But only for files that have been detected to be plain text.  There are
+actually two parts here.  "autocmd FileType text" is an autocommand.  This
+defines that when the file type is set to "text" the following command is
+automatically executed.  "setlocal textwidth=78" sets the 'textwidth' option
+to 78, but only locally in one file.
+
+The wrapper with "augroup vimrcEx" and "augroup END" makes it possible to
+delete the autocommand with the "au!" command.  See |:augroup|.
+
+>
+	if has('syntax') && has('eval')
+	  packadd! matchit
+	endif
+
+This loads the "matchit" plugin if the required features are available.
+It makes the |%| command more powerful.  This is explained at
+|matchit-install|.
+
+
+==============================================================================
+*05.3*	The defaults.vim file explained		*defaults.vim-explained*
+
+The |defaults.vim| file is loaded when the user has no vimrc file.  When you
+create a new vimrc file, add this line near the top to keep using it: >
+
+	source $VIMRUNTIME/defaults.vim
+
+Or use the vimrc_example.vim file, as explained above.
+
+The following explains what defaults.vim is doing.
+
+>
+	if exists('skip_defaults_vim')
+	  finish
+	endif
+>
+Loading defaults.vim can be disabled with this command: >
+	let skip_defaults_vim = 1
+This has to be done in the system vimrc file.  See |system-vimrc|.  If you
+have a user vimrc this is not needed, since defaults.vim will not be loaded
+automatically.
+>
+>
 	set nocompatible
 
 As mentioned in the first chapter, these manuals explain Vim working in an
@@ -94,38 +184,19 @@ option off, thus 'nocompatible' takes care of this.
 This specifies where in Insert mode the <BS> is allowed to delete the
 character in front of the cursor.  The three items, separated by commas, tell
 Vim to delete the white space at the start of the line, a line break and the
-character before where Insert mode started.
+character before where Insert mode started.  See 'backspace'.
+
 >
+	set history=200
 
-	set autoindent
-
-This makes Vim use the indent of the previous line for a newly created line.
-Thus there is the same amount of white space before the new line.  For example
-when pressing <Enter> in Insert mode, and when using the "o" command to open a
-new line.
->
-
-	if has("vms")
-	  set nobackup
-	else
-	  set backup
-	endif
-
-This tells Vim to keep a backup copy of a file when overwriting it.  But not
-on the VMS system, since it keeps old versions of files already.  The backup
-file will have the same name as the original file with "~" added.  See |07.4|
->
-
-	set history=50
-
-Keep 50 commands and 50 search patterns in the history.  Use another number if
-you want to remember fewer or more lines.
+Keep 200 commands and 200 search patterns in the history.  Use another number
+if you want to remember fewer or more lines.  See 'history'.
 >
 
 	set ruler
 
 Always display the current cursor position in the lower right corner of the
-Vim window.
+Vim window.  See 'ruler'.
 
 >
 	set showcmd
@@ -144,10 +215,37 @@ the "2fw" command is executed and the displayed "2f" is removed.
 	 ^^^^^^^^^^^		      ^^^^^^^^ ^^^^^^^^^^
 	  'showmode'		     'showcmd'	'ruler'
 
+
+>
+	set wildmenu
+
+Display completion matches in a status line.  That is when you type <Tab> and
+there is more than one match.  See 'wildmenu'.
+
+>
+	set ttimeout
+	set ttimeoutlen=100
+
+This makes typing Esc take effect more quickly.  Normally Vim waits a second
+to see if the Esc is the start of an escape sequence.  If you have a very slow
+remote connection, increase the number.  See 'ttimeout'.
+
+>
+	set display=truncate
+
+Show @@@ in the last line if it is truncated, instead of hiding the whole
+like.  See 'display'.
+
 >
 	set incsearch
 
-Display the match for a search pattern when halfway typing it.
+Display the match for a search pattern when halfway typing it.  See
+'incsearch'.
+
+>
+	set nrformats-=octal
+
+Do not recognize numbers starting with a zero as octal.  See 'nrformats'.
 
 >
 	map Q gq
@@ -158,23 +256,30 @@ it worked before Vim 5.0.  Otherwise the "Q" command starts Ex mode, but you
 will not need it.
 
 >
+	inoremap <C-U> <C-G>u<C-U>
+>
+CTRL-U in insert mode deletes all entered text in the current line.  Use
+CTRL-G u to first break undo, so that you can undo CTRL-U after inserting a
+line break.  Revert with ":iunmap <C-U>".
+
+>
+	if has('mouse')
+	  set mouse=a
+	endif
+
+Enable using the mouse if available.  See 'mouse'.
+
+>
 	vnoremap _g y:exe "grep /" . escape(@", '\\/') . "/ *.c *.h"<CR>
 
 This mapping yanks the visually selected text and searches for it in C files.
-This is a complicated mapping.  You can see that mappings can be used to do
-quite complicated things.  Still, it is just a sequence of commands that are
-executed like you typed them.
+You can see that a mapping can be used to do quite complicated things.  Still,
+it is just a sequence of commands that are executed like you typed them.
 
 >
-	if &t_Co > 2 || has("gui_running")
-	  syntax on
-	  set hlsearch
-	endif
+	syntax on
 
-This switches on syntax highlighting, but only if colors are available.  And
-the 'hlsearch' option tells Vim to highlight matches with the last used search
-pattern.  The "if" command is very useful to set options only when some
-condition is met.  More about that in |usr_41.txt|.
+Enable highlighting files in color.  See |syntax|.
 
 							*vimrc-filetype*  >
 	filetype plugin indent on
@@ -201,21 +306,12 @@ This switches on three very clever mechanisms:
    automatically.  Vim comes with these indent rules for a number of
    filetypes.  See |:filetype-indent-on| and 'indentexpr'.
 
->
-	autocmd FileType text setlocal textwidth=78
 
-This makes Vim break text to avoid lines getting longer than 78 characters.
-But only for files that have been detected to be plain text.  There are
-actually two parts here.  "autocmd FileType text" is an autocommand.  This
-defines that when the file type is set to "text" the following command is
-automatically executed.  "setlocal textwidth=78" sets the 'textwidth' option
-to 78, but only locally in one file.
-
-							*restore-cursor*  >
-	autocmd BufReadPost *
-	    \ if line("'\"") > 1 && line("'\"") <= line("$") |
-	    \   exe "normal! g`\"" |
-	    \ endif
+				*restore-cursor* *last-position-jump*  >
+    autocmd BufReadPost *
+      \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
+      \ |   exe "normal! g`\""
+      \ | endif
 
 Another autocommand.  This time it is used after reading any file.  The
 complicated stuff after it checks if the '" mark is defined, and jumps to it
@@ -224,8 +320,22 @@ from the previous line.  That avoids a line getting very long.
 See |line-continuation|.  This only works in a Vim script file, not when
 typing commands at the command-line.
 
+>
+	command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
+		  \ | wincmd p | diffthis
+
+This adds the ":DiffOrig" command.  Use this in a modified buffer to see the
+differences with the file it was loaded from.  See |diff|.
+
+>
+	set nolangremap
+
+Prevent that the langmap option applies to characters that result from a
+mapping.  If set (default), this may break plugins (but it's backward
+compatible).  See 'langremap'.
+
 ==============================================================================
-*05.3*	Simple mappings
+*05.4*	Simple mappings
 
 A mapping enables you to bind a set of Vim commands to a single key.  Suppose,
 for example, that you need to surround certain words with curly braces.  In
@@ -272,7 +382,7 @@ The ":map" command (with no arguments) lists your current mappings.  At
 least the ones for Normal mode.  More about mappings in section |40.1|.
 
 ==============================================================================
-*05.4*	Adding a package			*add-package* *matchit-install*
+*05.5*	Adding a package			*add-package* *matchit-install*
 
 A package is a set of files that you can add to Vim.  There are two kinds of
 packages: optional and automatically loaded on startup.
@@ -310,7 +420,7 @@ an archive or as a repository.  For an archive you can follow these steps:
 More information about packages can be found here: |packages|.
 
 ==============================================================================
-*05.5*	Adding a plugin					*add-plugin* *plugin*
+*05.6*	Adding a plugin					*add-plugin* *plugin*
 
 Vim's functionality can be extended by adding plugins.  A plugin is nothing
 more than a Vim script file that is loaded automatically when Vim starts.  You
@@ -462,7 +572,7 @@ Further reading:
 |new-filetype|		How to detect a new file type.
 
 ==============================================================================
-*05.6*	Adding a help file				*add-local-help*
+*05.7*	Adding a help file				*add-local-help*
 
 If you are lucky, the plugin you installed also comes with a help file.  We
 will explain how to install the help file, so that you can easily find help
@@ -507,7 +617,7 @@ them through the tag.
 For writing a local help file, see |write-local-help|.
 
 ==============================================================================
-*05.7*	The option window
+*05.8*	The option window
 
 If you are looking for an option that does what you want, you can search in
 the help files here: |options|.  Another way is by using this command: >
@@ -546,7 +656,7 @@ border.  This is what the 'scrolloff' option does, it specifies an offset
 from the window border where scrolling starts.
 
 ==============================================================================
-*05.8*	Often used options
+*05.9*	Often used options
 
 There are an awful lot of options.  Most of them you will hardly ever use.
 Some of the more useful ones will be mentioned here.  Don't forget you can

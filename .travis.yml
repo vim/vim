@@ -10,58 +10,58 @@ compiler:
   - gcc
 
 env:
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-    # ASAN build
-  - BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+  - &tiny-nogui
+    BUILD=yes TEST=test COVERAGE=no FEATURES=tiny "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - &tiny
+    BUILD=yes TEST=test COVERAGE=no FEATURES=tiny CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - &asan # ASAN build
+    BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
     FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-  - BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - &linux-huge
+    BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-  - BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-    # Mac OSX build
-  - BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - &unittests
+    BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+  - &normal
+    BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+  - &small
+    BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+  - &osx-huge # Mac OSX build
+    BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
 
 sudo: false
 
-# instead of a 2*2*7 matrix (2*os + 2*compiler + 7*env),
+# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
 # exclude some builds on mac os x and linux
 # on mac os x "tiny" is always without GUI
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
 matrix:
   exclude:
     - os: osx
-      env: BUILD=yes TEST=test COVERAGE=no FEATURES=tiny  CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      env: *tiny
     - os: osx
-      env: BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+      env: *normal
     - os: osx
-      env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+      env: *unittests
     - os: osx
-      env: BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      env: *small
     - os: osx
-      env: BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+      env: *linux-huge
     - os: osx
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+      env: *asan
     - os: linux
       compiler: clang
-      env: BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-            FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+      env: *asan
     - os: linux
       compiler: clang
-      env: BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+      env: *unittests
     - os: linux
       compiler: clang
-      env: BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      env: *small
     - os: linux
-      env: BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-            "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+      env: *osx-huge
 
 branches:
   except:
@@ -89,35 +89,83 @@ addons:
 
 before_install:
   - rvm reset
-    # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
-    # ("pyenv global system" doesn't seem to work.)
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && which python3 | grep '/opt/python/' > /dev/null; then export PATH=$(echo $PATH | sed -e "s#$(echo $(which python3) | sed -e 's#/python3$##'):##"); fi
-  - if [ "$COVERAGE" = "yes" ]; then pip install --user cpp-coveralls; fi
-    # needed for https support for coveralls
-    # building cffi only works with gcc, not with clang
-  - if [ "$COVERAGE" = "yes" ]; then CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1; fi
-    # Lua is not installed on Travis OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export LUA_PREFIX=/usr/local; fi
-    # Use llvm-cov instead of gcov when compiler is clang.
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$CC" = "clang" ]; then ln -sf $(which llvm-cov) /home/travis/bin/gcov; fi
+  # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
+  # ("pyenv global system" doesn't seem to work.)
+  - |
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "$(which python3)" =~ ^/opt/python/ ]]; then
+      export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
+    fi
+  - |
+    if [[ "${COVERAGE}" = "yes" ]]; then
+      pip install --user cpp-coveralls
+    fi
+  # needed for https support for coveralls
+  # building cffi only works with gcc, not with clang
+  - |
+    if [[ "${COVERAGE}" = "yes" ]]; then
+      CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
+    fi
+  # Lua is not installed on Travis OSX
+  - |
+    if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+      export LUA_PREFIX=/usr/local
+    fi
+  # Use llvm-cov instead of gcov when compiler is clang.
+  - |
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "${CC}" = "clang" ]]; then
+      ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
+    fi
 
-# Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
 before_script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export DISPLAY=:99.0 && sh -e /etc/init.d/xvfb start && sleep 3; fi
+  # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
+  - |
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
+      export DISPLAY=:99.0
+      sh -e /etc/init.d/xvfb start && sleep 3
+    fi
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
-  - if [ "$CHECK_AUTOCONF" = "yes" -a "$CC" = "gcc" ]; then make -C src autoconf; fi
-  - if [ "x$SHADOWOPT" != x ]; then make -C src shadow; fi
-  - (cd ${SRCDIR} && ./configure --with-features=$FEATURES $CONFOPT --enable-fail-if-missing && if [ "$BUILD" = "yes" ]; then make -j$NPROC; fi)
-    # Show Vim version and also if_xx versions.
-  - if [ "$BUILD" = "yes" ]; then ${SRCDIR}/vim --version; ${SRCDIR}/vim --not-a-term -u NONE -S ${SRCDIR}/testdir/if_ver-1.vim -c quit > /dev/null; ${SRCDIR}/vim --not-a-term -u NONE -S ${SRCDIR}/testdir/if_ver-2.vim -c quit > /dev/null; cat if_ver.txt; fi
-  - make $SHADOWOPT $TEST
-  - if [ -n "$ASAN_OPTIONS" ]; then for log in $(find -type f -name 'asan.*' -size +0); do asan_symbolize < "$log"; err=1; done; fi
-  - if [ -n "$err" ]; then exit 1; fi
+  - |
+    if [[ "${CHECK_AUTOCONF}" = "yes" ]] && [[ "${CC}" = "gcc" ]]; then
+      make -C src autoconf
+    fi
+  - |
+    if [[ -n "${SHADOWOPT}" ]]; then
+      make -C src shadow
+    fi
+  - |
+    (
+    cd "${SRCDIR}" \
+      && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
+    ) && if [[ "${BUILD}" = "yes" ]]; then
+      make ${SHADOWOPT} -j${NPROC}
+    fi
+  # Show Vim version and also if_xx versions.
+  - |
+    if [[ "${BUILD}" = "yes" ]]; then
+      "${SRCDIR}"/vim --version
+      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-1.vim -c quit > /dev/null
+      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
+      cat if_ver.txt
+    fi
+  - make ${SHADOWOPT} ${TEST}
+  - |
+    if [[ -n "${ASAN_OPTIONS}" ]]; then
+      while read log; do
+        asan_symbolize < "${log}"
+      done < <(find . -type f -name 'asan.*' -size +0)
+      [[ -z "${log}" ]] # exit 1 if there are ASAN logs
+    fi
 
 after_success:
-  - if [ "$COVERAGE" = "yes" ]; then ~/.local/bin/coveralls -b ${SRCDIR} -x .xs -e ${SRCDIR}/if_perl.c -e ${SRCDIR}/xxd -e ${SRCDIR}/libvterm --encodings utf-8 latin-1 EUC-KR; fi
-  - if [ "$COVERAGE" = "yes" ]; then  cd ${SRCDIR} && bash <(curl -s https://codecov.io/bash) ; fi
+  - |
+    if [[ "${COVERAGE}" = "yes" ]]; then
+      ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
+    fi
+  - |
+    if [[ "${COVERAGE}" = "yes" ]]; then
+      (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
+    fi
 
 # vim:set sts=2 sw=2 tw=0 et:

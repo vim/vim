@@ -2170,9 +2170,7 @@ free_buf_options(
 	vim_free(buf->b_p_vsts_array);
     buf->b_p_vsts_array = NULL;
     clear_string_option(&buf->b_p_vts);
-    if (buf->b_p_vts_array)
-	vim_free(buf->b_p_vts_array);
-    buf->b_p_vts_array = NULL;
+    VIM_CLEAR(buf->b_p_vts_array);
 #endif
 #ifdef FEAT_KEYMAP
     clear_string_option(&buf->b_p_keymap);
@@ -3168,10 +3166,7 @@ setfname(
 	    return FAIL;
 	}
 #ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
-	if (USE_LONG_FNAME)
-# endif
-	    fname_case(sfname, 0);    /* set correct case for short file name */
+	fname_case(sfname, 0);    /* set correct case for short file name */
 #endif
 	if (buf->b_sfname != buf->b_ffname)
 	    vim_free(buf->b_sfname);
@@ -4808,13 +4803,8 @@ fix_fname(char_u  *fname)
     fname = vim_strsave(fname);
 
 # ifdef USE_FNAME_CASE
-#  ifdef USE_LONG_FNAME
-    if (USE_LONG_FNAME)
-#  endif
-    {
-	if (fname != NULL)
-	    fname_case(fname, 0);	/* set correct case for file name */
-    }
+    if (fname != NULL)
+	fname_case(fname, 0);	/* set correct case for file name */
 # endif
 
     return fname;
@@ -4847,7 +4837,7 @@ fname_expand(
 	char_u  *rfname;
 
 	// If the file name is a shortcut file, use the file it links to.
-	rfname = mch_resolve_shortcut(*ffname);
+	rfname = mch_resolve_path(*ffname, FALSE);
 	if (rfname != NULL)
 	{
 	    vim_free(*ffname);
@@ -5753,17 +5743,14 @@ buf_spname(buf_T *buf)
 #if defined(FEAT_QUICKFIX)
     if (bt_quickfix(buf))
     {
-	win_T	    *win;
-	tabpage_T   *tp;
-
 	/*
-	 * For location list window, w_llist_ref points to the location list.
-	 * For quickfix window, w_llist_ref is NULL.
+	 * Differentiate between the quickfix and location list buffers using
+	 * the buffer number stored in the global quickfix stack.
 	 */
-	if (find_win_for_buf(buf, &win, &tp) == OK && win->w_llist_ref != NULL)
-	    return (char_u *)_(msg_loclist);
-	else
+	if (buf->b_fnum == qf_stack_get_bufnr())
 	    return (char_u *)_(msg_qflist);
+	else
+	    return (char_u *)_(msg_loclist);
     }
 #endif
 

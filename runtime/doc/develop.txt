@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.1.  Last change: 2018 May 02
+*develop.txt*   For Vim version 8.1.  Last change: 2019 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,6 +355,24 @@ OK:	    if (cond)
                cmd;
 	    }
 
+When a block has one line the braces can be left out.  When an if/else has
+braces on one block, it usually looks better when the other block also has
+braces:
+OK:	    if (cond)
+	       cmd;
+	    else
+               cmd;
+
+OK:	    if (cond)
+	    {
+	       cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
 Use ANSI (new style) function declarations with the return type on a separate
 indented line.
 
@@ -367,10 +385,10 @@ OK:	/*
 	 */
 	    int
 	function_name(
-	    int		arg1,		/* short comment about arg1 */
-	    int		arg2)		/* short comment about arg2 */
+	    int		arg1,		// short comment about arg1
+	    int		arg2)		// short comment about arg2
 	{
-	    int		local;		/* comment about local */
+	    int		local;		// comment about local
 
 	    local = arg1 * arg2;
 

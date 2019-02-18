@@ -80,7 +80,7 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, typval_T *tv);
 
 #ifdef DYNAMIC_LUA
 
-#ifndef WIN3264
+#ifndef MSWIN
 # include <dlfcn.h>
 # define HANDLE void*
 # define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)

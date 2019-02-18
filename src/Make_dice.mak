@@ -44,8 +44,8 @@ SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
@@ -103,8 +103,8 @@ OBJ =	o/arabic.o \
 	o/ex_docmd.o \
 	o/ex_eval.o \
 	o/ex_getln.o \
-	o/farsi.o \
 	o/fileio.o \
+	o/findfile.o \
 	o/fold.o \
 	o/getchar.o \
 	o/hardcopy.o \
@@ -199,9 +199,9 @@ o/ex_eval.o:	ex_eval.c  $(SYMS) ex_cmds.h
 
 o/ex_getln.o:	ex_getln.c  $(SYMS)
 
-o/farsi.o:	farsi.c  $(SYMS)
-
 o/fileio.o:	fileio.c  $(SYMS)
+
+o/findfile.o:	findfile.c  $(SYMS)
 
 o/fold.o:	fold.c  $(SYMS)
 
