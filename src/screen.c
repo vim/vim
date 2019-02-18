@@ -832,7 +832,7 @@ update_screen(int type_arg)
     return OK;
 }
 
-#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL) || defined(PROTO)
+#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
 /*
  * Prepare for updating one or more windows.
  * Caller must check for "updating_screen" already set to avoid recursiveness.
