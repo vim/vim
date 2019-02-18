@@ -600,7 +600,7 @@ mf_sync(memfile_T *mfp, int flags)
 	 */
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
-	    if (fsync(mfp->mf_fd))
+	    if (vim_fsync(mfp->mf_fd))
 		status = FAIL;
 	}
 	else
@@ -617,17 +617,17 @@ mf_sync(memfile_T *mfp, int flags)
 #ifdef VMS
 	if (STRCMP(p_sws, "fsync") == 0)
 	{
-	    if (fsync(mfp->mf_fd))
+	    if (vim_fsync(mfp->mf_fd))
 		status = FAIL;
 	}
 #endif
-#ifdef WIN32
+#ifdef MSWIN
 	if (_commit(mfp->mf_fd))
 	    status = FAIL;
 #endif
 #ifdef AMIGA
 # if defined(__AROS__) || defined(__amigaos4__)
-	if (fsync(mfp->mf_fd) != 0)
+	if (vim_fsync(mfp->mf_fd) != 0)
 	    status = FAIL;
 # else
 	/*
@@ -1265,7 +1265,7 @@ mf_do_open(
 	 * try to open the file
 	 */
 	flags |= O_EXTRA | O_NOFOLLOW;
-#ifdef WIN32
+#ifdef MSWIN
 	/* Prevent handle inheritance that cause problems with Cscope
 	 * (swap file may not be deleted if cscope connection was open after
 	 * the file) */

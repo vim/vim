@@ -1246,7 +1246,7 @@ do_search(
     }
     if (options & SEARCH_REV)
     {
-#ifdef WIN32
+#ifdef MSWIN
 	/* There is a bug in the Visual C++ 2.2 compiler which means that
 	 * dirc always ends up being '/' */
 	dirc = (dirc == '/')  ?  '?'  :  '/';
@@ -1477,12 +1477,8 @@ do_search(
 	    }
 	}
 
-#ifdef FEAT_FKMAP	/* when in Farsi mode, reverse the character flow */
-	if (p_altkeymap && curwin->w_p_rl)
-	     lrFswap(searchstr,0);
-#endif
-
-	c = searchit(curwin, curbuf, &pos, NULL, dirc == '/' ? FORWARD : BACKWARD,
+	c = searchit(curwin, curbuf, &pos, NULL,
+					      dirc == '/' ? FORWARD : BACKWARD,
 		searchstr, count, spats[0].off.end + (options &
 		       (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
 			+ SEARCH_MSG + SEARCH_START
@@ -2976,10 +2972,6 @@ cls(void)
     int	    c;
 
     c = gchar_cursor();
-#ifdef FEAT_FKMAP	/* when 'akm' (Farsi mode), take care of Farsi blank */
-    if (p_altkeymap && c == F_BLANK)
-	return 0;
-#endif
     if (c == ' ' || c == '\t' || c == NUL)
 	return 0;
     if (enc_dbcs != 0 && c > 0xFF)
@@ -4732,18 +4724,14 @@ current_search(
     VIsual_active = TRUE;
     VIsual_mode = 'v';
 
-    if (VIsual_active)
+    redraw_curbuf_later(INVERTED);	/* update the inversion */
+    if (*p_sel == 'e')
     {
-	redraw_curbuf_later(INVERTED);	/* update the inversion */
-	if (*p_sel == 'e')
-	{
-	    /* Correction for exclusive selection depends on the direction. */
-	    if (forward && LTOREQ_POS(VIsual, curwin->w_cursor))
-		inc_cursor();
-	    else if (!forward && LTOREQ_POS(curwin->w_cursor, VIsual))
-		inc(&VIsual);
-	}
-
+	/* Correction for exclusive selection depends on the direction. */
+	if (forward && LTOREQ_POS(VIsual, curwin->w_cursor))
+	    inc_cursor();
+	else if (!forward && LTOREQ_POS(curwin->w_cursor, VIsual))
+	    inc(&VIsual);
     }
 
 #ifdef FEAT_FOLDING

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Jan 11
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1078,7 +1078,8 @@ that contains the List.  The Dict can have these items:
 			leading text is changed.
 
 If you want to suppress the warning message for an empty result, return
-v:none.  This is useful to implement asynchronous completion with complete().
+|v:none|.  This is useful to implement asynchronous completion with
+|complete()|.
 
 Other items are ignored.
 

@@ -32,7 +32,7 @@
 #if !GTK_CHECK_VERSION(3,0,0)
 # include <gtk/gtksignal.h>
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 # include <gdk/gdkwin32.h>
 #else
 # include <gdk/gdkx.h>

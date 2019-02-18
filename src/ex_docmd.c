@@ -177,7 +177,7 @@ static void	ex_edit(exarg_T *eap);
 # define ex_gui			ex_nogui
 static void	ex_nogui(exarg_T *eap);
 #endif
-#if defined(FEAT_GUI_W32) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 static void	ex_tearoff(exarg_T *eap);
 #else
 # define ex_tearoff		ex_ni
@@ -2007,11 +2007,16 @@ do_one_cmd(
 #ifdef HAVE_SANDBOX
 	if (sandbox != 0 && !(ea.argt & SBOXOK))
 	{
-	    /* Command not allowed in sandbox. */
+	    // Command not allowed in sandbox.
 	    errormsg = _(e_sandbox);
 	    goto doend;
 	}
 #endif
+	if (restricted != 0 && (ea.argt & RESTRICT))
+	{
+	    errormsg = _("E981: Command not allowed in rvim");
+	    goto doend;
+	}
 	if (!curbuf->b_p_ma && (ea.argt & MODIFY))
 	{
 	    /* Command not allowed in non-'modifiable' buffer */
@@ -8861,7 +8866,7 @@ ex_nogui(exarg_T *eap)
 }
 #endif
 
-#if defined(FEAT_GUI_W32) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
     static void
 ex_tearoff(exarg_T *eap)
 {
@@ -9847,6 +9852,9 @@ ex_redraw(exarg_T *eap)
 #ifdef FEAT_TITLE
     if (need_maketitle)
 	maketitle();
+#endif
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+    resize_console_buf();
 #endif
     RedrawingDisabled = r;
     p_lz = p;

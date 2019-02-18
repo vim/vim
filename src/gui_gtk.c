@@ -76,7 +76,7 @@
 #  include <gdk/gdkkeysyms.h>
 # endif
 # include <gdk/gdk.h>
-# ifdef WIN3264
+# ifdef MSWIN
 #  include <gdk/gdkwin32.h>
 # else
 #  include <gdk/gdkx.h>

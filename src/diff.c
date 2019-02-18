@@ -90,10 +90,6 @@ static int parse_diff_ed(char_u *line, linenr_T *lnum_orig, long *count_orig, li
 static int parse_diff_unified(char_u *line, linenr_T *lnum_orig, long *count_orig, linenr_T *lnum_new, long *count_new);
 static int xdiff_out(void *priv, mmbuffer_t *mb, int nbuf);
 
-#ifndef USE_CR
-# define tag_fgets vim_fgets
-#endif
-
 /*
  * Called when deleting or unloading a buffer: No longer make a diff with it.
  */
@@ -996,7 +992,7 @@ check_external_diff(diffio_T *diffio)
 		    for (;;)
 		    {
 			/* There must be a line that contains "1c1". */
-			if (tag_fgets(linebuf, LBUFLEN, fd))
+			if (vim_fgets(linebuf, LBUFLEN, fd))
 			    break;
 			if (STRNCMP(linebuf, "1c1", 3) == 0)
 			    ok = TRUE;
@@ -1604,7 +1600,7 @@ diff_read(
 	}
 	else
 	{
-	    if (tag_fgets(linebuf, LBUFLEN, fd))
+	    if (vim_fgets(linebuf, LBUFLEN, fd))
 		break;		// end of file
 	    line = linebuf;
 	}
@@ -1626,9 +1622,9 @@ diff_read(
 	    else if ((STRNCMP(line, "@@ ", 3) == 0))
 	       diffstyle = DIFF_UNIFIED;
 	    else if ((STRNCMP(line, "--- ", 4) == 0)
-		    && (tag_fgets(linebuf, LBUFLEN, fd) == 0)
+		    && (vim_fgets(linebuf, LBUFLEN, fd) == 0)
 		    && (STRNCMP(line, "+++ ", 4) == 0)
-		    && (tag_fgets(linebuf, LBUFLEN, fd) == 0)
+		    && (vim_fgets(linebuf, LBUFLEN, fd) == 0)
 		    && (STRNCMP(line, "@@ ", 3) == 0))
 		diffstyle = DIFF_UNIFIED;
 	    else

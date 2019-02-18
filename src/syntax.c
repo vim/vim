@@ -8274,7 +8274,7 @@ free_highlight(void)
     void
 restore_cterm_colors(void)
 {
-#if defined(WIN3264) && !defined(FEAT_GUI_W32)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     /* Since t_me has been set, this probably means that the user
      * wants to use this as default colors.  Need to reset default
      * background/foreground colors. */
@@ -9559,7 +9559,7 @@ set_hl_attr(
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 # ifdef FEAT_TERMGUICOLORS
-#  ifdef WIN3264
+#  ifdef MSWIN
 	{
 	    int id;
 	    guicolor_T fg, bg;
@@ -9822,8 +9822,8 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
 }
 #endif
 
-#if (defined(WIN3264) \
-	&& !defined(FEAT_GUI_W32) \
+#if (defined(MSWIN) \
+	&& !defined(FEAT_GUI_MSWIN) \
 	&& defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
     void
 syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Jan 18
+" Last Change:	2019 Feb 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -54,6 +54,9 @@ au BufNewFile,BufRead $VIMRUNTIME/doc/*.txt	setf help
 " Abaqus or Trasys
 au BufNewFile,BufRead *.inp			call dist#ft#Check_inp()
 
+" 8th (Firth-derivative)
+au BufNewFile,BufRead *.8th			setf 8th
+
 " A-A-P recipe
 au BufNewFile,BufRead *.aap			setf aap
 
@@ -97,6 +100,7 @@ au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')
 
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
+au BufNewFile,BufRead */etc/apache2/sites-*/*.com		setf apache
 
 " XA65 MOS6510 cross assembler
 au BufNewFile,BufRead *.a65			setf a65

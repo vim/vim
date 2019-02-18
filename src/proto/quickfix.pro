@@ -1,5 +1,6 @@
 /* quickfix.c */
 int qf_init(win_T *wp, char_u *efile, char_u *errorformat, int newlist, char_u *qf_title, char_u *enc);
+int qf_stack_get_bufnr(void);
 void qf_free_all(win_T *wp);
 void check_quickfix_busy(void);
 void copy_loclist_stack(win_T *from, win_T *to);

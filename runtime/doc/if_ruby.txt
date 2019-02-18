@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.1.  Last change: 2018 Mar 15
+*if_ruby.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -112,7 +112,7 @@ Vim::message({msg})
 
 							*ruby-blob*
 Vim::blob({arg})
-	Return Blob literal string from {arg}.
+	Return |Blob| literal string from {arg}.
 
 							*ruby-set_option*
 Vim::set_option({arg})

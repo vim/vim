@@ -34,7 +34,7 @@
 
 #include <limits.h>
 
-#if defined(_WIN32) && defined(HAVE_FCNTL_H)
+#if defined(MSWIN) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -112,7 +112,7 @@ typedef PySliceObject PySliceObject_T;
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*

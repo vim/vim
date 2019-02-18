@@ -749,7 +749,7 @@ gui_init(void)
 						     &general_beval_cb, NULL);
 	}
 #  else
-#   ifdef FEAT_GUI_W32
+#   ifdef FEAT_GUI_MSWIN
 	balloonEval = gui_mch_create_beval_area(NULL, NULL,
 						     &general_beval_cb, NULL);
 #   endif
@@ -2432,7 +2432,7 @@ gui_outstr_nowrap(
 	int	curr_wide = FALSE;  /* use 'guifontwide' */
 	int	prev_wide = FALSE;
 	int	wide_changed;
-# ifdef WIN3264
+# ifdef MSWIN
 	int	sep_comp = FALSE;   /* Don't separate composing chars. */
 # else
 	int	sep_comp = TRUE;    /* Separate composing chars. */
@@ -2568,7 +2568,7 @@ gui_outstr_nowrap(
 	/* Draw the sign on top of the spaces. */
 	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
 # if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
-	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32))
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
     if (multi_sign)
 	netbeans_draw_multisign_indicator(gui.row);
 # endif
@@ -3561,7 +3561,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		fix_size = TRUE;
 	}
 #endif
-#if defined(FEAT_MENU) && !(defined(WIN3264) && !defined(FEAT_TEAROFF))
+#if defined(FEAT_MENU) && !(defined(MSWIN) && !defined(FEAT_TEAROFF))
 	if (using_tearoff != prev_tearoff)
 	{
 	    gui_mch_toggle_tearoffs(using_tearoff);
@@ -4125,7 +4125,7 @@ gui_update_scrollbars(
     /* Update the horizontal scrollbar */
     gui_update_horiz_scrollbar(force);
 
-#ifndef WIN3264
+#ifndef MSWIN
     /* Return straight away if there is neither a left nor right scrollbar.
      * On MS-Windows this is required anyway for scrollwheel messages. */
     if (!gui.which_scrollbars[SBAR_LEFT] && !gui.which_scrollbars[SBAR_RIGHT])
@@ -4879,9 +4879,10 @@ gui_mouse_correct(void)
 
 /*
  * Find window where the mouse pointer "x" / "y" coordinate is in.
+ * As a side effect update the shape of the mouse pointer.
  */
     static win_T *
-xy2win(int x UNUSED, int y UNUSED)
+xy2win(int x, int y)
 {
     int		row;
     int		col;
@@ -4951,8 +4952,9 @@ ex_gui(exarg_T *eap)
 	ex_next(eap);
 }
 
-#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32) \
-	|| defined(FEAT_GUI_PHOTON)) && defined(FEAT_TOOLBAR)) || defined(PROTO)
+#if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON)) \
+	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
 /*
  * This is shared between Athena, Motif and GTK.
  */

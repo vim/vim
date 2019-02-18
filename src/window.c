@@ -9,7 +9,6 @@
 
 #include "vim.h"
 
-static int path_is_url(char_u *p);
 static void cmd_with_count(char *cmd, char_u *bufp, size_t bufsize, long Prenum);
 static void win_init(win_T *newp, win_T *oldp, int flags);
 static void win_init_some(win_T *newp, win_T *oldp);
@@ -60,9 +59,6 @@ static int frame_check_height(frame_T *topfrp, int height);
 static int frame_check_width(frame_T *topfrp, int width);
 
 static win_T *win_alloc(win_T *after, int hidden);
-
-#define URL_SLASH	1		/* path_is_url() has found "://" */
-#define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
 
 #define NOWIN		(win_T *)-1	/* non-existing window */
 
@@ -3449,12 +3445,6 @@ win_init_empty(win_T *wp)
     wp->w_topfill = 0;
 #endif
     wp->w_botline = 2;
-#ifdef FEAT_FKMAP
-    if (wp->w_p_rl)
-	wp->w_farsi = W_CONV + W_R_L;
-    else
-	wp->w_farsi = W_CONV;
-#endif
 #ifdef FEAT_SYN_HL
     wp->w_s = &wp->w_buffer->b_s;
 #endif
@@ -6098,317 +6088,6 @@ tabline_height(void)
     return 1;
 }
 
-#if defined(FEAT_SEARCHPATH) || defined(PROTO)
-/*
- * Get the file name at the cursor.
- * If Visual mode is active, use the selected text if it's in one line.
- * Returns the name in allocated memory, NULL for failure.
- */
-    char_u *
-grab_file_name(long count, linenr_T *file_lnum)
-{
-    int options = FNAME_MESS|FNAME_EXP|FNAME_REL|FNAME_UNESC;
-
-    if (VIsual_active)
-    {
-	int	len;
-	char_u	*ptr;
-
-	if (get_visual_text(NULL, &ptr, &len) == FAIL)
-	    return NULL;
-	return find_file_name_in_path(ptr, len, options,
-						     count, curbuf->b_ffname);
-    }
-    return file_name_at_cursor(options | FNAME_HYP, count, file_lnum);
-}
-
-/*
- * Return the file name under or after the cursor.
- *
- * The 'path' option is searched if the file name is not absolute.
- * The string returned has been alloc'ed and should be freed by the caller.
- * NULL is returned if the file name or file is not found.
- *
- * options:
- * FNAME_MESS	    give error messages
- * FNAME_EXP	    expand to path
- * FNAME_HYP	    check for hypertext link
- * FNAME_INCL	    apply "includeexpr"
- */
-    char_u *
-file_name_at_cursor(int options, long count, linenr_T *file_lnum)
-{
-    return file_name_in_line(ml_get_curline(),
-		      curwin->w_cursor.col, options, count, curbuf->b_ffname,
-		      file_lnum);
-}
-
-/*
- * Return the name of the file under or after ptr[col].
- * Otherwise like file_name_at_cursor().
- */
-    char_u *
-file_name_in_line(
-    char_u	*line,
-    int		col,
-    int		options,
-    long	count,
-    char_u	*rel_fname,	/* file we are searching relative to */
-    linenr_T	*file_lnum)	/* line number after the file name */
-{
-    char_u	*ptr;
-    int		len;
-    int		in_type = TRUE;
-    int		is_url = FALSE;
-
-    /*
-     * search forward for what could be the start of a file name
-     */
-    ptr = line + col;
-    while (*ptr != NUL && !vim_isfilec(*ptr))
-	MB_PTR_ADV(ptr);
-    if (*ptr == NUL)		/* nothing found */
-    {
-	if (options & FNAME_MESS)
-	    emsg(_("E446: No file name under cursor"));
-	return NULL;
-    }
-
-    /*
-     * Search backward for first char of the file name.
-     * Go one char back to ":" before "//" even when ':' is not in 'isfname'.
-     */
-    while (ptr > line)
-    {
-	if (has_mbyte && (len = (*mb_head_off)(line, ptr - 1)) > 0)
-	    ptr -= len + 1;
-	else if (vim_isfilec(ptr[-1])
-		|| ((options & FNAME_HYP) && path_is_url(ptr - 1)))
-	    --ptr;
-	else
-	    break;
-    }
-
-    /*
-     * Search forward for the last char of the file name.
-     * Also allow "://" when ':' is not in 'isfname'.
-     */
-    len = 0;
-    while (vim_isfilec(ptr[len]) || (ptr[len] == '\\' && ptr[len + 1] == ' ')
-			 || ((options & FNAME_HYP) && path_is_url(ptr + len))
-			 || (is_url && vim_strchr((char_u *)"?&=", ptr[len]) != NULL))
-    {
-	/* After type:// we also include ?, & and = as valid characters, so that
-	 * http://google.com?q=this&that=ok works. */
-	if ((ptr[len] >= 'A' && ptr[len] <= 'Z') || (ptr[len] >= 'a' && ptr[len] <= 'z'))
-	{
-	    if (in_type && path_is_url(ptr + len + 1))
-		is_url = TRUE;
-	}
-	else
-	    in_type = FALSE;
-
-	if (ptr[len] == '\\')
-	    /* Skip over the "\" in "\ ". */
-	    ++len;
-	if (has_mbyte)
-	    len += (*mb_ptr2len)(ptr + len);
-	else
-	    ++len;
-    }
-
-    /*
-     * If there is trailing punctuation, remove it.
-     * But don't remove "..", could be a directory name.
-     */
-    if (len > 2 && vim_strchr((char_u *)".,:;!", ptr[len - 1]) != NULL
-						       && ptr[len - 2] != '.')
-	--len;
-
-    if (file_lnum != NULL)
-    {
-	char_u *p;
-
-	/* Get the number after the file name and a separator character */
-	p = ptr + len;
-	p = skipwhite(p);
-	if (*p != NUL)
-	{
-	    if (!isdigit(*p))
-		++p;		    /* skip the separator */
-	    p = skipwhite(p);
-	    if (isdigit(*p))
-		*file_lnum = (int)getdigits(&p);
-	}
-    }
-
-    return find_file_name_in_path(ptr, len, options, count, rel_fname);
-}
-
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
-    static char_u *
-eval_includeexpr(char_u *ptr, int len)
-{
-    char_u	*res;
-
-    set_vim_var_string(VV_FNAME, ptr, len);
-    res = eval_to_string_safe(curbuf->b_p_inex, NULL,
-		      was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL));
-    set_vim_var_string(VV_FNAME, NULL, 0);
-    return res;
-}
-#endif
-
-/*
- * Return the name of the file ptr[len] in 'path'.
- * Otherwise like file_name_at_cursor().
- */
-    char_u *
-find_file_name_in_path(
-    char_u	*ptr,
-    int		len,
-    int		options,
-    long	count,
-    char_u	*rel_fname)	/* file we are searching relative to */
-{
-    char_u	*file_name;
-    int		c;
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
-    char_u	*tofree = NULL;
-
-    if ((options & FNAME_INCL) && *curbuf->b_p_inex != NUL)
-    {
-	tofree = eval_includeexpr(ptr, len);
-	if (tofree != NULL)
-	{
-	    ptr = tofree;
-	    len = (int)STRLEN(ptr);
-	}
-    }
-# endif
-
-    if (options & FNAME_EXP)
-    {
-	file_name = find_file_in_path(ptr, len, options & ~FNAME_MESS,
-							     TRUE, rel_fname);
-
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
-	/*
-	 * If the file could not be found in a normal way, try applying
-	 * 'includeexpr' (unless done already).
-	 */
-	if (file_name == NULL
-		&& !(options & FNAME_INCL) && *curbuf->b_p_inex != NUL)
-	{
-	    tofree = eval_includeexpr(ptr, len);
-	    if (tofree != NULL)
-	    {
-		ptr = tofree;
-		len = (int)STRLEN(ptr);
-		file_name = find_file_in_path(ptr, len, options & ~FNAME_MESS,
-							     TRUE, rel_fname);
-	    }
-	}
-# endif
-	if (file_name == NULL && (options & FNAME_MESS))
-	{
-	    c = ptr[len];
-	    ptr[len] = NUL;
-	    semsg(_("E447: Can't find file \"%s\" in path"), ptr);
-	    ptr[len] = c;
-	}
-
-	/* Repeat finding the file "count" times.  This matters when it
-	 * appears several times in the path. */
-	while (file_name != NULL && --count > 0)
-	{
-	    vim_free(file_name);
-	    file_name = find_file_in_path(ptr, len, options, FALSE, rel_fname);
-	}
-    }
-    else
-	file_name = vim_strnsave(ptr, len);
-
-# if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
-    vim_free(tofree);
-# endif
-
-    return file_name;
-}
-#endif /* FEAT_SEARCHPATH */
-
-/*
- * Check if the "://" of a URL is at the pointer, return URL_SLASH.
- * Also check for ":\\", which MS Internet Explorer accepts, return
- * URL_BACKSLASH.
- */
-    static int
-path_is_url(char_u *p)
-{
-    if (STRNCMP(p, "://", (size_t)3) == 0)
-	return URL_SLASH;
-    else if (STRNCMP(p, ":\\\\", (size_t)3) == 0)
-	return URL_BACKSLASH;
-    return 0;
-}
-
-/*
- * Check if "fname" starts with "name://".  Return URL_SLASH if it does.
- * Return URL_BACKSLASH for "name:\\".
- * Return zero otherwise.
- */
-    int
-path_with_url(char_u *fname)
-{
-    char_u *p;
-
-    for (p = fname; isalpha(*p); ++p)
-	;
-    return path_is_url(p);
-}
-
-/*
- * Return TRUE if "name" is a full (absolute) path name or URL.
- */
-    int
-vim_isAbsName(char_u *name)
-{
-    return (path_with_url(name) != 0 || mch_isFullName(name));
-}
-
-/*
- * Get absolute file name into buffer "buf[len]".
- *
- * return FAIL for failure, OK otherwise
- */
-    int
-vim_FullName(
-    char_u	*fname,
-    char_u	*buf,
-    int		len,
-    int		force)	    /* force expansion even when already absolute */
-{
-    int		retval = OK;
-    int		url;
-
-    *buf = NUL;
-    if (fname == NULL)
-	return FAIL;
-
-    url = path_with_url(fname);
-    if (!url)
-	retval = mch_FullName(fname, buf, len, force);
-    if (url || retval == FAIL)
-    {
-	/* something failed; use the file name (truncate when too long) */
-	vim_strncpy(buf, fname, len - 1);
-    }
-#if defined(MSWIN)
-    slash_adjust(buf);
-#endif
-    return retval;
-}
-
 /*
  * Return the minimal number of rows that is needed on the screen to display
  * the current number of windows.
@@ -7193,11 +6872,10 @@ win_id2tabwin(typval_T *argvars, list_T *list)
 }
 
     win_T *
-win_id2wp(typval_T *argvars)
+win_id2wp(int id)
 {
     win_T	*wp;
     tabpage_T   *tp;
-    int		id = tv_get_number(&argvars[0]);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_id == id)

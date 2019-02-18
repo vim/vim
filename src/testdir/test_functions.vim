@@ -188,7 +188,7 @@ func Test_strftime()
   call assert_fails('call strftime("%Y", [])', 'E745:')
 endfunc
 
-func Test_resolve()
+func Test_resolve_unix()
   if !has('unix')
     return
   endif
@@ -232,6 +232,103 @@ func Test_resolve()
   call assert_equal('Xlink2', resolve('Xlink1'))
   call assert_equal('./Xlink2', resolve('./Xlink1'))
   call delete('Xlink1')
+endfunc
+
+func s:normalize_fname(fname)
+  let ret = substitute(a:fname, '\', '/', 'g')
+  let ret = substitute(ret, '//', '/', 'g')
+  let ret = tolower(ret)
+endfunc
+
+func Test_resolve_win32()
+  if !has('win32')
+    return
+  endif
+
+  " test for shortcut file
+  if executable('cscript')
+    new Xfile
+    wq
+    call writefile([
+    \ 'Set fs = CreateObject("Scripting.FileSystemObject")',
+    \ 'Set ws = WScript.CreateObject("WScript.Shell")',
+    \ 'Set shortcut = ws.CreateShortcut("Xlink.lnk")',
+    \ 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 
+    \ 'shortcut.Save'
+    \], 'link.vbs')
+    silent !cscript link.vbs
+    call delete('link.vbs')
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xfile')
+
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xlink.lnk')
+  else
+    echomsg 'skipped test for shortcut file'
+  endif
+
+  " remove files
+  call delete('Xlink')
+  call delete('Xdir', 'd')
+  call delete('Xfile')
+
+  " test for symbolic link to a file
+  new Xfile
+  wq
+  silent !mklink Xlink Xfile
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for symbolic link to a file'
+  endif
+  call delete('Xfile')
+
+  " test for junction to a directory
+  call mkdir('Xdir')
+  silent !mklink /J Xlink Xdir
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+
+    call delete('Xdir', 'd')
+
+    " test for junction already removed
+    call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for junction to a directory'
+    call delete('Xdir', 'd')
+  endif
+
+  " test for symbolic link to a directory
+  call mkdir('Xdir')
+  silent !mklink /D Xlink Xdir
+  if !v:shell_error
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+
+    call delete('Xdir', 'd')
+
+    " test for symbolic link already removed
+    call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call delete('Xlink')
+  else
+    echomsg 'skipped test for symbolic link to a directory'
+    call delete('Xdir', 'd')
+  endif
+
+  " test for buffer name
+  new Xfile
+  wq
+  silent !mklink Xlink Xfile
+  if !v:shell_error
+    edit Xlink
+    call assert_equal('Xlink', bufname('%'))
+    call delete('Xlink')
+    bw!
+  else
+    echomsg 'skipped test for buffer name'
+  endif
+  call delete('Xfile')
 endfunc
 
 func Test_simplify()
@@ -1237,7 +1334,8 @@ func Test_platform_name()
   if has('unix') && executable('uname')
     let uname = system('uname')
     call assert_equal(uname =~? 'BeOS', has('beos'))
-    call assert_equal(uname =~? 'BSD\|DragonFly', has('bsd'))
+    " GNU userland on BSD kernels (e.g., GNU/kFreeBSD) don't have BSD defined
+    call assert_equal(uname =~? '\%(GNU/k\w\+\)\@<!BSD\|DragonFly', has('bsd'))
     call assert_equal(uname =~? 'HP-UX', has('hpux'))
     call assert_equal(uname =~? 'Linux', has('linux'))
     call assert_equal(uname =~? 'Darwin', has('mac'))

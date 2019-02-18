@@ -6,7 +6,7 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-#if defined(FEAT_OLE) && defined(FEAT_GUI_W32)
+#if defined(FEAT_OLE) && defined(WIN32) && defined(FEAT_GUI)
 /*
  * OLE server implementation.
  *

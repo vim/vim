@@ -500,17 +500,21 @@ endfunc
 
 " No remove() of write-protected scope-level variable
 func Tfunc1(this_is_a_long_parameter_name)
-  call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E795')
+  call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E742')
 endfunc
 func Test_dict_scope_var_remove()
   call Tfunc1('testval')
 endfunc
 
 " No extend() of write-protected scope-level variable
+func Test_dict_scope_var_extend()
+  call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
+endfunc
+
 func Tfunc2(this_is_a_long_parameter_name)
   call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
 endfunc
-func Test_dict_scope_var_extend()
+func Test_dict_scope_var_extend_overwrite()
   call Tfunc2('testval')
 endfunc
 
@@ -650,4 +654,76 @@ func Test_listdict_extend()
   " Pass the same Dict to extend() with "error"
   call assert_fails("call extend(d, d, 'error')", 'E737:')
   call assert_equal({'a': {'b': 'B'}}, d)
+endfunc
+
+func s:check_scope_dict(x, fixed)
+  func s:gen_cmd(cmd, x)
+    return substitute(a:cmd, '\<x\ze:', a:x, 'g')
+  endfunc
+
+  let cmd = s:gen_cmd('let x:foo = 1', a:x)
+  if a:fixed
+    call assert_fails(cmd, 'E461')
+  else
+    exe cmd
+    exe s:gen_cmd('call assert_equal(1, x:foo)', a:x)
+  endif
+
+  let cmd = s:gen_cmd('let x:["bar"] = 2', a:x)
+  if a:fixed
+    call assert_fails(cmd, 'E461')
+  else
+    exe cmd
+    exe s:gen_cmd('call assert_equal(2, x:bar)', a:x)
+  endif
+
+  let cmd = s:gen_cmd('call extend(x:, {"baz": 3})', a:x)
+  if a:fixed
+    call assert_fails(cmd, 'E742')
+  else
+    exe cmd
+    exe s:gen_cmd('call assert_equal(3, x:baz)', a:x)
+  endif
+
+  if a:fixed
+    if a:x ==# 'a'
+      call assert_fails('unlet a:x', 'E795')
+      call assert_fails('call remove(a:, "x")', 'E742')
+    elseif a:x ==# 'v'
+      call assert_fails('unlet v:count', 'E795')
+      call assert_fails('call remove(v:, "count")', 'E742')
+    endif
+  else
+    exe s:gen_cmd('unlet x:foo', a:x)
+    exe s:gen_cmd('unlet x:bar', a:x)
+    exe s:gen_cmd('call remove(x:, "baz")', a:x)
+  endif
+
+  delfunc s:gen_cmd
+endfunc
+
+func Test_scope_dict()
+  " Test for g:
+  call s:check_scope_dict('g', v:false)
+
+  " Test for s:
+  call s:check_scope_dict('s', v:false)
+
+  " Test for l:
+  call s:check_scope_dict('l', v:false)
+
+  " Test for a:
+  call s:check_scope_dict('a', v:true)
+
+  " Test for b:
+  call s:check_scope_dict('b', v:false)
+
+  " Test for w:
+  call s:check_scope_dict('w', v:false)
+
+  " Test for t:
+  call s:check_scope_dict('t', v:false)
+
+  " Test for v:
+  call s:check_scope_dict('v', v:true)
 endfunc
