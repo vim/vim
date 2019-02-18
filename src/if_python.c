@@ -35,7 +35,7 @@
 # undef _POSIX_THREADS
 #endif
 
-#if defined(_WIN32) && defined(HAVE_FCNTL_H)
+#if defined(MSWIN) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -127,7 +127,7 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define HINSTANCE long_u		/* for generating prototypes */
 # endif
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*

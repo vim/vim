@@ -37,8 +37,6 @@ SRC_ALL =	\
 		src/ex_docmd.c \
 		src/ex_eval.c \
 		src/ex_getln.c \
-		src/farsi.c \
-		src/farsi.h \
 		src/feature.h \
 		src/fileio.c \
 		src/findfile.c \
@@ -169,7 +167,6 @@ SRC_ALL =	\
 		src/proto/ex_docmd.pro \
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
-		src/proto/farsi.pro \
 		src/proto/fileio.pro \
 		src/proto/findfile.pro \
 		src/proto/fold.pro \
@@ -837,8 +834,6 @@ EXTRA =		\
 		$(SRC_EXTRA) \
 		README_extra.txt \
 		src/VisVim/VisVim.dll \
-		farsi/README.txt \
-		farsi/fonts/*/far-* \
 		runtime/vimlogo.xpm \
 		src/tee/Makefile \
 		src/tee/Make_mvc.mak \

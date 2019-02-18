@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.1.  Last change: 2019 Feb 08
+*quickref.txt*  For Vim version 8.1.  Last change: 2019 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -600,7 +600,6 @@ In Insert or Command-line mode:
 Short explanation of each option:		*option-list*
 'aleph'		  'al'	    ASCII code of the letter Aleph (Hebrew)
 'allowrevins'	  'ari'     allow CTRL-_ in Insert and Command-line mode
-'altkeymap'	  'akm'     for default second language (Farsi/Hebrew)
 'ambiwidth'	  'ambw'    what to do with Unicode chars of ambiguous width
 'antialias'	  'anti'    Mac OS X: use smooth, antialiased fonts
 'autochdir'	  'acd'     change directory to the file in the current window
@@ -700,7 +699,6 @@ Short explanation of each option:		*option-list*
 'filetype'	  'ft'	    type of file, used for autocommands
 'fillchars'	  'fcs'     characters to use for displaying special items
 'fixendofline'	  'fixeol'  make sure last line in file has <EOL>
-'fkmap'		  'fk'	    Farsi keyboard mapping
 'foldclose'	  'fcl'     close a fold when the cursor leaves it
 'foldcolumn'	  'fdc'     width of the column used to indicate folds
 'foldenable'	  'fen'     set to display all folds open

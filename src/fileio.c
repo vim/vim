@@ -49,7 +49,7 @@ static int time_differs(long t1, long t2);
 #define FIO_UCS2	0x04	/* convert UCS-2 */
 #define FIO_UCS4	0x08	/* convert UCS-4 */
 #define FIO_UTF16	0x10	/* convert UTF-16 */
-#ifdef WIN3264
+#ifdef MSWIN
 # define FIO_CODEPAGE	0x20	/* convert MS-Windows codepage */
 # define FIO_PUT_CP(x) (((x) & 0xffff) << 16)	/* put codepage in top word */
 # define FIO_GET_CP(x)	(((x)>>16) & 0xffff)	/* get codepage from top word */
@@ -106,7 +106,7 @@ static int need_conversion(char_u *fenc);
 static int get_fio_flags(char_u *ptr);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
 static int make_bom(char_u *buf, char_u *name);
-#ifdef WIN3264
+#ifdef MSWIN
 static int get_win_fio_flags(char_u *ptr);
 #endif
 #ifdef MACOS_CONVERT
@@ -1038,7 +1038,7 @@ retry:
 	else if (enc_utf8 || STRCMP(p_enc, "latin1") == 0)
 	    fio_flags = get_fio_flags(fenc);
 
-#ifdef WIN3264
+#ifdef MSWIN
 	/*
 	 * Conversion from an MS-Windows codepage to UTF-8 or another codepage
 	 * is handled with MultiByteToWideChar().
@@ -1229,7 +1229,7 @@ retry:
 		    size = (size * 2 / 3) & ~3;
 		else if (fio_flags == FIO_UCSBOM)
 		    size = size / ICONV_MULT;	/* worst case */
-#ifdef WIN3264
+#ifdef MSWIN
 		else if (fio_flags & FIO_CODEPAGE)
 		    size = size / ICONV_MULT;	/* also worst case */
 #endif
@@ -1590,7 +1590,7 @@ retry:
 	    }
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 	    if (fio_flags & FIO_CODEPAGE)
 	    {
 		char_u	*src, *dst;
@@ -2559,7 +2559,7 @@ failed:
 	curbuf->b_op_end.lnum = from + linecnt;
 	curbuf->b_op_end.col = 0;
 
-#ifdef WIN32
+#ifdef MSWIN
 	/*
 	 * Work around a weird problem: When a file has two links (only
 	 * possible on NTFS) and we write through one link, then stat() it
@@ -3601,13 +3601,13 @@ buf_write(
      */
     if (!(append && *p_pm == NUL) && !filtering && perm >= 0 && dobackup)
     {
-#if defined(UNIX) || defined(WIN32)
+#if defined(UNIX) || defined(MSWIN)
 	stat_T	    st;
 #endif
 
 	if ((bkc & BKC_YES) || append)	/* "yes" */
 	    backup_copy = TRUE;
-#if defined(UNIX) || defined(WIN32)
+#if defined(UNIX) || defined(MSWIN)
 	else if ((bkc & BKC_AUTO))	/* "auto" */
 	{
 	    int		i;
@@ -3632,7 +3632,7 @@ buf_write(
 		backup_copy = TRUE;
 	    else
 # else
-#  ifdef WIN32
+#  ifdef MSWIN
 	    /* On NTFS file systems hard links are possible. */
 	    if (mch_is_linked(fname))
 		backup_copy = TRUE;
@@ -3715,7 +3715,7 @@ buf_write(
 		    && (lstat_res != 0 || st.st_ino == st_old.st_ino))
 		backup_copy = FALSE;
 # else
-#  if defined(WIN32)
+#  if defined(MSWIN)
 	    /* Symlinks. */
 	    if ((bkc & BKC_BREAKSYMLINK) && mch_is_symbolic_link(fname))
 		backup_copy = FALSE;
@@ -3744,7 +3744,7 @@ buf_write(
 	    stat_T	st_new;
 	    char_u	*dirp;
 	    char_u	*rootname;
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 	    char_u      *p;
 #endif
 #if defined(UNIX)
@@ -3785,7 +3785,7 @@ buf_write(
 		 */
 		(void)copy_option_part(&dirp, copybuf, BUFSIZE, ",");
 
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 		p = copybuf + STRLEN(copybuf);
 		if (after_pathsep(copybuf, p) && p[-1] == p[-2])
 		    // Ends with '//', use full path
@@ -4018,7 +4018,7 @@ buf_write(
 		 */
 		(void)copy_option_part(&dirp, IObuff, IOSIZE, ",");
 
-#if defined(UNIX) || defined(WIN3264)
+#if defined(UNIX) || defined(MSWIN)
 		p = IObuff + STRLEN(IObuff);
 		if (after_pathsep(IObuff, p) && p[-1] == p[-2])
 		    // path ends with '//', use full path
@@ -4177,7 +4177,7 @@ buf_write(
 	}
     }
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (converted && wb_flags == 0 && (wb_flags = get_win_fio_flags(fenc)) != 0)
     {
 	/* Convert UTF-8 -> UCS-2 and UCS-2 -> DBCS.  Worst-case * 4: */
@@ -4416,7 +4416,7 @@ restore_backup:
 		vim_ignored = ftruncate(fd, (off_t)0);
 #endif
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    if (backup != NULL && overwriting && !append)
 	    {
 		if (backup_copy)
@@ -5216,14 +5216,12 @@ msg_add_fileformat(int eol_type)
 	return TRUE;
     }
 #endif
-#ifndef USE_CR
     if (eol_type == EOL_MAC)
     {
 	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[mac]") : _("[mac format]"));
 	return TRUE;
     }
-#endif
-#if defined(USE_CRNL) || defined(USE_CR)
+#ifdef USE_CRNL
     if (eol_type == EOL_UNIX)
     {
 	STRCAT(IObuff, shortmess(SHM_TEXT) ? _("[unix]") : _("[unix format]"));
@@ -5432,7 +5430,7 @@ buf_write_bytes(struct bw_info *ip)
 	    }
 	}
 
-#ifdef WIN3264
+#ifdef MSWIN
 	else if (flags & FIO_CODEPAGE)
 	{
 	    /*
@@ -5871,7 +5869,7 @@ get_fio_flags(char_u *ptr)
     return 0;
 }
 
-#ifdef WIN3264
+#ifdef MSWIN
 /*
  * Check "ptr" for a MS-Windows codepage name and return the FIO_ flags needed
  * for the conversion MS-Windows can do for us.  Also accept "utf-8".
@@ -6043,9 +6041,9 @@ shorten_fname(char_u *full_path, char_u *dir_name)
 	p = full_path + len;
 #if defined(MSWIN)
 	/*
-	 * MSWIN: when a file is in the root directory, dir_name will end in a
-	 * slash, since C: by itself does not define a specific dir. In this
-	 * case p may already be correct. <negri>
+	 * MS-Windows: when a file is in the root directory, dir_name will end
+	 * in a slash, since C: by itself does not define a specific dir. In
+	 * this case p may already be correct. <negri>
 	 */
 	if (!((len > 2) && (*(p - 2) == ':')))
 #endif
@@ -6300,7 +6298,7 @@ buf_modname(
 	else if ((int)STRLEN(e) + extlen > 4)
 	    s = e + 4 - extlen;
     }
-#ifdef WIN3264
+#ifdef MSWIN
     /*
      * If there is no file name, and the extension starts with '.', put a
      * '_' before the dot, because just ".ext" may be invalid if it's on a
@@ -6359,11 +6357,7 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     char	tbuf[FGETS_SIZE];
 
     buf[size - 2] = NUL;
-#ifdef USE_CR
-    eof = fgets_cr((char *)buf, size, fp);
-#else
     eof = fgets((char *)buf, size, fp);
-#endif
     if (buf[size - 2] != NUL && buf[size - 2] != '\n')
     {
 	buf[size - 1] = NUL;	    /* Truncate the line */
@@ -6372,56 +6366,11 @@ vim_fgets(char_u *buf, int size, FILE *fp)
 	do
 	{
 	    tbuf[FGETS_SIZE - 2] = NUL;
-#ifdef USE_CR
-	    vim_ignoredp = fgets_cr((char *)tbuf, FGETS_SIZE, fp);
-#else
 	    vim_ignoredp = fgets((char *)tbuf, FGETS_SIZE, fp);
-#endif
 	} while (tbuf[FGETS_SIZE - 2] != NUL && tbuf[FGETS_SIZE - 2] != '\n');
     }
     return (eof == NULL);
 }
-
-#if defined(USE_CR) || defined(PROTO)
-/*
- * Like vim_fgets(), but accept any line terminator: CR, CR-LF or LF.
- * Returns TRUE for end-of-file.
- * Only used for the Mac, because it's much slower than vim_fgets().
- */
-    int
-tag_fgets(char_u *buf, int size, FILE *fp)
-{
-    int		i = 0;
-    int		c;
-    int		eof = FALSE;
-
-    for (;;)
-    {
-	c = fgetc(fp);
-	if (c == EOF)
-	{
-	    eof = TRUE;
-	    break;
-	}
-	if (c == '\r')
-	{
-	    /* Always store a NL for end-of-line. */
-	    if (i < size - 1)
-		buf[i++] = '\n';
-	    c = fgetc(fp);
-	    if (c != '\n')	/* Macintosh format: single CR. */
-		ungetc(c, fp);
-	    break;
-	}
-	if (i < size - 1)
-	    buf[i++] = c;
-	if (c == '\n')
-	    break;
-    }
-    buf[i] = NUL;
-    return eof;
-}
-#endif
 
 /*
  * rename() only works if both files are on the same file system, this
@@ -6478,7 +6427,7 @@ vim_rename(char_u *from, char_u *to)
 	    use_tmp_file = TRUE;
     }
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     {
 	BY_HANDLE_FILE_INFORMATION info1, info2;
 
@@ -7240,7 +7189,7 @@ delete_recursive(char_u *name)
     /* A symbolic link to a directory itself is deleted, not the directory it
      * points to. */
     if (
-# if defined(UNIX) || defined(WIN32)
+# if defined(UNIX) || defined(MSWIN)
 	 mch_isrealdir(name)
 # else
 	 mch_isdir(name)
@@ -7327,7 +7276,7 @@ vim_tempname(
 {
 #ifdef USE_TMPNAM
     char_u	itmp[L_tmpnam];	/* use tmpnam() */
-#elif defined(WIN3264)
+#elif defined(MSWIN)
     WCHAR	itmp[TEMPNAMELEN];
 #else
     char_u	itmp[TEMPNAMELEN];
@@ -7449,7 +7398,7 @@ vim_tempname(
 
 #else /* TEMPDIRNAMES */
 
-# ifdef WIN3264
+# ifdef MSWIN
     WCHAR	wszTempFile[_MAX_PATH + 1];
     WCHAR	buf4[4];
     char_u	*retval;
@@ -7479,7 +7428,7 @@ vim_tempname(
 		*p = '/';
     return retval;
 
-# else /* WIN3264 */
+# else // MSWIN
 
 #  ifdef USE_TMPNAM
     char_u	*p;
@@ -7517,7 +7466,7 @@ vim_tempname(
 #  endif
 
     return vim_strsave(itmp);
-# endif /* WIN3264 */
+# endif // MSWIN
 #endif /* TEMPDIRNAMES */
 }
 

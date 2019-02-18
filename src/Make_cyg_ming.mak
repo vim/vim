@@ -491,7 +491,7 @@ endif # RUBY
 
 # See feature.h for a list of options.
 # Any other defines can be included here.
-DEF_GUI=-DFEAT_GUI_W32 -DFEAT_CLIPBOARD
+DEF_GUI=-DFEAT_GUI -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
 ifeq ($(ARCH),x86-64)
@@ -714,7 +714,6 @@ OBJ = \
 	$(OUTDIR)/ex_docmd.o \
 	$(OUTDIR)/ex_eval.o \
 	$(OUTDIR)/ex_getln.o \
-	$(OUTDIR)/farsi.o \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/findfile.o \
 	$(OUTDIR)/fold.o \
@@ -1005,7 +1004,7 @@ endif
 	$(MAKE) -C tee clean
 
 ###########################################################################
-INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
+INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 GUI_INCL = gui.h

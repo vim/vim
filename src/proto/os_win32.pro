@@ -75,4 +75,5 @@ int is_term_win32(void);
 int has_vtp_working(void);
 int has_conpty_working(void);
 int is_conpty_stable(void);
+void resize_console_buf(void);
 /* vim: set ft=c : */

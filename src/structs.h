@@ -1073,7 +1073,7 @@ typedef struct
 {
     int		vc_type;	/* zero or one of the CONV_ values */
     int		vc_factor;	/* max. expansion factor */
-# ifdef WIN3264
+# ifdef MSWIN
     int		vc_cpfrom;	/* codepage to convert from (CONV_CODEPAGE) */
     int		vc_cpto;	/* codepage to convert to (CONV_CODEPAGE) */
 # endif
@@ -1101,7 +1101,7 @@ typedef struct
 #define CONV_TO_LATIN1		3
 #define CONV_TO_LATIN9		4
 #define CONV_ICONV		5
-#ifdef WIN3264
+#ifdef MSWIN
 # define CONV_CODEPAGE		10	/* codepage -> codepage */
 #endif
 #ifdef MACOS_X
@@ -1187,7 +1187,7 @@ typedef long_u hash_T;		/* Type for hi_hash */
 
 #ifdef FEAT_NUM64
 /* Use 64-bit Number. */
-# ifdef WIN3264
+# ifdef MSWIN
 #  ifdef PROTO
 typedef long		    varnumber_T;
 typedef unsigned long	    uvarnumber_T;
@@ -1543,7 +1543,7 @@ struct jobvar_S
 #ifdef UNIX
     pid_t	jv_pid;
 #endif
-#ifdef WIN32
+#ifdef MSWIN
     PROCESS_INFORMATION	jv_proc_info;
     HANDLE		jv_job_object;
 #endif
@@ -1554,7 +1554,7 @@ struct jobvar_S
 #ifdef UNIX
     char_u	*jv_termsig;	/* allocated */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     char_u	*jv_tty_type;	// allocated
 #endif
     int		jv_exitval;
@@ -1670,7 +1670,7 @@ typedef struct {
      * message when the deadline was set.  If it gets longer (something was
      * received) the deadline is reset. */
     size_t	ch_wait_len;
-#ifdef WIN32
+#ifdef MSWIN
     DWORD	ch_deadline;
 #else
     struct timeval ch_deadline;
@@ -1720,7 +1720,7 @@ struct channel_S {
 				/* callback for Netbeans when channel is
 				 * closed */
 
-#ifdef WIN32
+#ifdef MSWIN
     int		ch_named_pipe;	/* using named pipe instead of pty */
 #endif
     char_u	*ch_callback;	/* call when any msg is not handled */
@@ -2952,10 +2952,6 @@ struct window_S
     dict_T	*w_vars;	/* internal variables, local to window */
 #endif
 
-#if defined(FEAT_RIGHTLEFT) && defined(FEAT_FKMAP)
-    int		w_farsi;	/* for the window dependent Farsi functions */
-#endif
-
     /*
      * The w_prev_pcmark field is used to check whether we really did jump to
      * a new line after setting the w_pcmark.  If not, then we revert to
@@ -3229,7 +3225,7 @@ struct VimMenu
 #ifdef FEAT_BEVAL_TIP
     BalloonEval *tip;		    /* tooltip for this menu item */
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
     UINT	id;		    /* Id of menu item */
     HMENU	submenu_id;	    /* If this is submenu, add children here */
     HWND	tearoff_handle;	    /* hWnd of tearoff if created */

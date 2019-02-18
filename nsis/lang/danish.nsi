@@ -74,7 +74,7 @@ LangString str_group_plugin         ${LANG_DANISH}     "Opret plugin-mapper"
 LangString str_desc_plugin          ${LANG_DANISH}     "Opret plugin-mapper. Plugin-mapper giver mulighed for at udvide Vim ved at slippe en fil i en mappen."
 
 LangString str_section_plugin_home  ${LANG_DANISH}     "Private"
-LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HOME-mappen."
+LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HOME (hvis du har defineret et) eller Vim-installationsmappe."
 
 LangString str_section_plugin_vim   ${LANG_DANISH}     "Delte"
 LangString str_desc_plugin_vim      ${LANG_DANISH}     "Opret plugin-mapper i Vim-installationsmappe, det bruges af alle på systemet."
@@ -92,9 +92,9 @@ LangString str_unsection_exe        ${LANG_DANISH}     "Fjern Vim-eksekverbare-/
 LangString str_desc_rm_exe          ${LANG_DANISH}     "Fjern alle Vim-eksekverbare- og afviklingsfiler."
 
 LangString str_ungroup_plugin       ${LANG_DANISH}     "Fjern plugin-mapper"
-LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern plugin-mapperne hvis de er tomme."
+LangString str_desc_rm_plugin       ${LANG_DANISH}     "Fjern plugin-mapperne, hvis de er tomme."
 
-LangString str_unsection_plugin_home ${LANG_DANISH}    "Privat"
+LangString str_unsection_plugin_home ${LANG_DANISH}     "Private"
 LangString str_desc_rm_plugin_home  ${LANG_DANISH}     "Fjern plugin-mapperne fra HOME-mappen."
 
 LangString str_unsection_plugin_vim ${LANG_DANISH}     "Delte"
@@ -164,9 +164,9 @@ LangString str_msg_compat_defaults ${LANG_DANISH}     "Vim med nogle forbedringe
 LangString str_msg_compat_all      ${LANG_DANISH}     "Vim med alle forbedringer (indlæs vimrc_example.vim) (standard)"
 
 LangString str_msg_keymap_title   ${LANG_DANISH}     " Tilknytninger "
-LangString str_msg_keymap_desc    ${LANG_DANISH}     "&Gentilknyt nogle få taster (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F osv.)"
+LangString str_msg_keymap_desc    ${LANG_DANISH}     "&Gentilknyt nogle få taster for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F osv.)"
 LangString str_msg_keymap_default ${LANG_DANISH}     "Gentilknyt ikke taster (standard)"
-LangString str_msg_keymap_windows ${LANG_DANISH}     "Gentilknyt nogle få taster til Windows"
+LangString str_msg_keymap_windows ${LANG_DANISH}     "Gentilknyt nogle få taster"
 
 LangString str_msg_mouse_title   ${LANG_DANISH}     " Mus "
 LangString str_msg_mouse_desc    ${LANG_DANISH}     "&Opførsel af højre og venstre knapper"

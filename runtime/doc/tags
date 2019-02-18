@@ -1092,10 +1092,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'termbidi'	options.txt	/*'termbidi'*
 'termencoding'	options.txt	/*'termencoding'*
 'termguicolors'	options.txt	/*'termguicolors'*
-'termmode'	options.txt	/*'termmode'*
 'termwinkey'	options.txt	/*'termwinkey'*
 'termwinscroll'	options.txt	/*'termwinscroll'*
 'termwinsize'	options.txt	/*'termwinsize'*
+'termwintype'	options.txt	/*'termwintype'*
 'terse'	options.txt	/*'terse'*
 'textauto'	options.txt	/*'textauto'*
 'textmode'	options.txt	/*'textmode'*
@@ -1113,7 +1113,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'titlestring'	options.txt	/*'titlestring'*
 'tl'	options.txt	/*'tl'*
 'tm'	options.txt	/*'tm'*
-'tmod'	options.txt	/*'tmod'*
 'to'	options.txt	/*'to'*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
@@ -1137,6 +1136,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'twk'	options.txt	/*'twk'*
 'tws'	options.txt	/*'tws'*
 'twsl'	options.txt	/*'twsl'*
+'twt'	options.txt	/*'twt'*
 'tx'	options.txt	/*'tx'*
 'uc'	options.txt	/*'uc'*
 'udf'	options.txt	/*'udf'*
@@ -2521,6 +2521,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lefta	windows.txt	/*:lefta*
 :leftabove	windows.txt	/*:leftabove*
 :let	eval.txt	/*:let*
+:let%=	eval.txt	/*:let%=*
 :let+=	eval.txt	/*:let+=*
 :let-$	eval.txt	/*:let-$*
 :let-&	eval.txt	/*:let-&*
@@ -2531,6 +2532,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :let-register	eval.txt	/*:let-register*
 :let-unpack	eval.txt	/*:let-unpack*
 :let.=	eval.txt	/*:let.=*
+:let/=	eval.txt	/*:let\/=*
+:letstar=	eval.txt	/*:letstar=*
 :lex	quickfix.txt	/*:lex*
 :lexpr	quickfix.txt	/*:lexpr*
 :lf	quickfix.txt	/*:lf*
@@ -4688,6 +4691,8 @@ E978	eval.txt	/*E978*
 E979	eval.txt	/*E979*
 E98	diff.txt	/*E98*
 E980	eval.txt	/*E980*
+E981	starting.txt	/*E981*
+E982	terminal.txt	/*E982*
 E99	diff.txt	/*E99*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -6128,7 +6133,6 @@ f	motion.txt	/*f*
 false-variable	eval.txt	/*false-variable*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
-farsi-fonts	farsi.txt	/*farsi-fonts*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
@@ -6354,6 +6358,7 @@ ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
 ft-rrst-plugin	filetype.txt	/*ft-rrst-plugin*
 ft-rrst-syntax	syntax.txt	/*ft-rrst-syntax*
+ft-rst-plugin	filetype.txt	/*ft-rst-plugin*
 ft-rst-syntax	syntax.txt	/*ft-rst-syntax*
 ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*

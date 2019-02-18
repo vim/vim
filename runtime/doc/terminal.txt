@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,7 +44,7 @@ If the result is "1" you have it.
 
 {Vi does not have any of these commands}
 {only available when compiled with the |+terminal| feature}
-The terminal feature requires the |+multi_byte|, |+job| and |+channel| features.
+The terminal feature requires the |+job| and |+channel| features.
 
 ==============================================================================
 1. Basic use						*terminal-use*
@@ -413,13 +413,13 @@ Just put the files somewhere in your PATH.  You can set the 'winptydll' option
 to point to the right file, if needed.  If you have both the 32-bit and 64-bit
 version, rename to winpty32.dll and winpty64.dll to match the way Vim was
 build.
-							*ConPTY*
+							*ConPTY* *E982*
 On more recent versions of MS-Windows 10 (beginning with the "October 2018
 Update"), winpty is no longer required. On those versions, |:terminal| will use
 Windows' built-in support for hosting terminal applications, "ConPTY".  When
 ConPTY is in use, there may be rendering artifacts regarding ambiguous-width
-characters. If you encounter any such issues, set 'termwintype' to "winpty"
-(which you then must have instlled).
+characters. If you encounter any such issues, install "winpty".  Until the
+ConPTY problems have been fixed "winpty" will be preferred.
 
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername

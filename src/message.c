@@ -2560,7 +2560,7 @@ t_puts(
 msg_use_printf(void)
 {
     return (!msg_check_screen()
-#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
 	    || !termcap_active
 #endif
 	    || (swapping_screen() && !termcap_active)
@@ -2577,7 +2577,7 @@ msg_puts_printf(char_u *str, int maxlen)
     char_u	*buf = NULL;
     char_u	*p = s;
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_COOK);	/* handle CR and NL correctly */
 #endif
@@ -2594,10 +2594,7 @@ msg_puts_printf(char_u *str, int maxlen)
 		memcpy(buf, p, n);
 		if (!info_message)
 		    buf[n++] = CAR;
-#ifdef USE_CR
-		else
-#endif
-		    buf[n++] = NL;
+		buf[n++] = NL;
 		buf[n++] = NUL;
 		if (info_message)   // informative message, not an error
 		    mch_msg((char *)buf);
@@ -2648,7 +2645,7 @@ msg_puts_printf(char_u *str, int maxlen)
 
     msg_didout = TRUE;	    // assume that line is not empty
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (!(silent_mode && p_verbose == 0))
 	mch_settmode(TMODE_RAW);
 #endif
@@ -2955,7 +2952,7 @@ do_more_prompt(int typed_char)
     static void
 mch_errmsg_len(char *str, int len)
 {
-#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     DWORD   nwrite = 0;
     DWORD   mode = 0;
     HANDLE  h = GetStdHandle(STD_ERROR_HANDLE);
@@ -3044,7 +3041,7 @@ mch_errmsg(char *str)
     static void
 mch_msg_len(char *str, int len)
 {
-#if defined(WIN3264) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     DWORD   nwrite = 0;
     DWORD   mode;
     HANDLE  h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -4035,7 +4032,7 @@ do_browse(
 	    filter = BROWSE_FILTER_DEFAULT;
 	if (flags & BROWSE_DIR)
 	{
-#  if defined(FEAT_GUI_GTK) || defined(WIN3264)
+#  if defined(FEAT_GUI_GTK) || defined(MSWIN)
 	    /* For systems that have a directory dialog. */
 	    fname = gui_mch_browsedir(title, initdir);
 #  else
@@ -4781,7 +4778,7 @@ vim_vsnprintf_typval(
 			else if (length_modifier == 'L')
 			{
 # ifdef FEAT_NUM64
-#  ifdef WIN3264
+#  ifdef MSWIN
 			    f[f_l++] = 'I';
 			    f[f_l++] = '6';
 			    f[f_l++] = '4';

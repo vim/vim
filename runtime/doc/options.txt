@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
+*options.txt*	For Vim version 8.1.  Last change: 2019 Feb 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -688,20 +688,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+farsi|
 			feature}
-	When on, the second language is Farsi.  In editing mode CTRL-_ toggles
-	the keyboard map between Farsi and English, when 'allowrevins' set.
-
-	When off, the keyboard map toggles between Hebrew and English.  This
-	is useful to start the Vim in native mode i.e. English (left-to-right
-	mode) and have default second language Farsi or Hebrew (right-to-left
-	mode).  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'ambiwidth'* *'ambw'*
 'ambiwidth' 'ambw'	string (default: "single")
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	Only effective when 'encoding' is "utf-8" or another Unicode encoding.
 	Tells Vim what to do with characters with East Asian Width Class
 	Ambiguous (such as Euro, Registered Sign, Copyright Sign, Greek
@@ -1282,8 +1275,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'bomb'			boolean	(default off)
 			local to buffer
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	When writing a file and the following conditions are met, a BOM (Byte
 	Order Mark) is prepended to the file:
 	- this option is on
@@ -1445,8 +1436,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'casemap' 'cmp'		string	(default: "internal,keepascii")
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	Specifies details about changing the case of letters.  It may contain
 	these words, separated by a comma:
 	internal	Use internal case mapping functions, the current
@@ -1502,8 +1491,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'charconvert'* *'ccv'* *E202* *E214* *E513*
 'charconvert' 'ccv'	string (default "")
 			global
-			{only available when compiled with the |+multi_byte|
-			and |+eval| features}
+			{only available when compiled with the |+eval| feature}
 			{not in Vi}
 	An expression that is used for character encoding conversion.  It is
 	evaluated when a file that is to be read or has been written has a
@@ -1662,7 +1650,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			You probably want to add this only temporarily,
 			possibly use BufEnter autocommands.
 			Only supported for GTK version 2 and later.
-			Only available with the |+multi_byte| feature.
 
 						*clipboard-exclude*
 	exclude:{pattern}
@@ -2557,8 +2544,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'delcombine' 'deco'	boolean (default off)
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	If editing Unicode and this option is set, backspace and Normal mode
 	"x" delete each combining character on its own.  When it is off (the
 	default) the character along with its combining characters are
@@ -2809,16 +2794,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 'emoji' 'emo'	boolean (default: on)
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	When on all Unicode emoji characters are considered to be full width.
 
 
 					*'encoding'* *'enc'* *E543*
 'encoding' 'enc'	string (default: "latin1" or value from $LANG)
 			global
-			{only available when compiled with the |+multi_byte|
-			feature}
 			{not in Vi}
 	Sets the character encoding used inside Vim.  It applies to text in
 	the buffers, registers, Strings in expressions, text stored in the
@@ -3021,8 +3002,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'fileencoding'* *'fenc'* *E213*
 'fileencoding' 'fenc'	string (default: "")
 			local to buffer
-			{only available when compiled with the |+multi_byte|
-			feature}
 			{not in Vi}
 	Sets the character encoding for the file of this buffer.
 
@@ -3078,8 +3057,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				    "ucs-bom,utf-8,default,latin1" when
 				    'encoding' is set to a Unicode value)
 			global
-			{only available when compiled with the |+multi_byte|
-			feature}
 			{not in Vi}
 	This is a list of character encodings considered when starting to edit
 	an existing file.  When a file is read, Vim tries to use the first
@@ -3134,9 +3111,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	is read.
 
 					*'fileformat'* *'ff'*
-'fileformat' 'ff'	string (MS-DOS, MS-Windows, OS/2 default: "dos",
-				Unix default: "unix",
-				Macintosh default: "mac")
+'fileformat' 'ff'	string (MS-Windows default: "dos",
+				Unix, macOS default: "unix")
 			local to buffer
 			{not in Vi}
 	This gives the <EOL> of the current buffer, which is used for
@@ -3159,9 +3135,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 					*'fileformats'* *'ffs'*
 'fileformats' 'ffs'	string (default:
-				Vim+Vi	MS-DOS, MS-Windows OS/2: "dos,unix",
-				Vim	Unix: "unix,dos",
-				Vim	Mac: "mac,unix,dos",
+				Vim+Vi	MS-Windows: "dos,unix",
+				Vim	Unix, macOS: "unix,dos",
 				Vi	Cygwin: "unix,dos",
 				Vi	others: "")
 			global
@@ -3303,9 +3278,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+rightleft|
 			feature}
-	When on, the keyboard is mapped for the Farsi character set.
-	Normally you would set 'allowrevins' and use CTRL-_ in insert mode to
-	toggle this option |i_CTRL-_|.  See |farsi.txt|.
+	This option was for using Farsi, which has been removed.  See
+	|farsi.txt|.
 
 						*'foldclose'* *'fcl'*
 'foldclose' 'fcl'	string (default "")
@@ -4326,8 +4300,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imactivatefunc' 'imaf'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	This option specifies a function that will be called to
 	activate or deactivate the Input Method.
 	It is not used in the GUI.
@@ -4379,8 +4351,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imcmdline' 'imc'	boolean (default off)
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	When set the Input Method is always on when starting to edit a command
 	line, unless entering a search pattern (see 'imsearch' for that).
 	Setting this option is useful when your input method allows entering
@@ -4391,8 +4361,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imdisable' 'imd'	boolean (default off, on for some systems (SGI))
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	When set the Input Method is never used.  This is useful to disable
 	the IM when it doesn't work properly.
 	Currently this option is on by default for SGI/IRIX machines.  This
@@ -4445,8 +4413,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'imstatusfunc' 'imsf'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	This option specifies a function that is called to obtain the status
 	of Input Method.  It must return a positive number when IME is active.
 	It is not used in the GUI.
@@ -5191,8 +5157,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'makeencoding'* *'menc'*
 'makeencoding' 'menc'	string	(default "")
 			global or local to buffer |global-local|
-			{only available when compiled with the |+multi_byte|
-			feature}
 			{not in Vi}
 	Encoding used for reading the output of external commands.  When empty,
 	encoding is not converted.
@@ -5259,8 +5223,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'maxcombine' 'mco'	number (default 2)
 			global
 			{not in Vi}
-			{only available when compiled with the |+multi_byte|
-			feature}
 	The maximum number of combining characters supported for displaying.
 	Only used when 'encoding' is "utf-8".
 	The default is OK for most languages.  Hebrew may require 4.
@@ -6028,8 +5990,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'printmbcharset' 'pmbcs'  string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+printer|,
-			|+postscript| and |+multi_byte| features}
+			{only available when compiled with the |+printer|
+			and |+postscript| features}
 	The CJK character set to be used for CJK output from |:hardcopy|.
 	See |pmbcs-option|.
 
@@ -6037,8 +5999,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'printmbfont' 'pmbfn'	string (default "")
 			global
 			{not in Vi}
-			{only available when compiled with the |+printer|,
-			|+postscript| and |+multi_byte| features}
+			{only available when compiled with the |+printer|
+			and |+postscript| features}
 	List of font names to be used for CJK output from |:hardcopy|.
 	See |pmbfn-option|.
 
@@ -8005,8 +7967,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'termencoding' 'tenc'	string	(default ""; with GTK+ GUI: "utf-8"; with
 						    Macintosh GUI: "macroman")
 			global
-			{only available when compiled with the |+multi_byte|
-			feature}
 			{not in Vi}
 	Encoding used for the terminal.  This specifies what character
 	encoding the keyboard produces and the display will understand.  For

@@ -38,7 +38,7 @@
 # if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
 # endif
-# ifdef WIN3264
+# ifdef MSWIN
 #  include "os_win32.pro"
 #  include "os_mswin.pro"
 #  include "winclip.pro"
@@ -98,9 +98,6 @@ extern int _stricoll(char *a, char *b);
 # include "memline.pro"
 # ifdef FEAT_MENU
 #  include "menu.pro"
-# endif
-# ifdef FEAT_FKMAP
-#  include "farsi.pro"
 # endif
 # ifdef FEAT_ARABIC
 #  include "arabic.pro"
@@ -269,7 +266,7 @@ extern int putenv(const char *string);			/* in misc2.c */
 extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
 #  endif
-#  ifdef FEAT_GUI_W32
+#  ifdef FEAT_GUI_MSWIN
 #   include "gui_w32.pro"
 #  endif
 #  ifdef FEAT_GUI_GTK
