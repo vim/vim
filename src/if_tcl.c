@@ -160,7 +160,7 @@ static struct ref refsdeleted;	/* dummy object for deleted ref list */
 typedef int HANDLE;
 # endif
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define HANDLE void*
 #  define TCL_PROC void*
@@ -1741,11 +1741,11 @@ tclinit(exarg_T *eap)
 #endif
 
 	Tcl_SetChannelOption(interp, ch1, "-buffering", "line");
-#ifdef WIN3264
+#ifdef MSWIN
 	Tcl_SetChannelOption(interp, ch1, "-translation", "lf");
 #endif
 	Tcl_SetChannelOption(interp, ch2, "-buffering", "line");
-#ifdef WIN3264
+#ifdef MSWIN
 	Tcl_SetChannelOption(interp, ch2, "-translation", "lf");
 #endif
 

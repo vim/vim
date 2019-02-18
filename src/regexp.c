@@ -730,7 +730,7 @@ get_equi_class(char_u **pp)
     int		l = 1;
     char_u	*p = *pp;
 
-    if (p[1] == '=')
+    if (p[1] == '=' && p[2] != NUL)
     {
 	if (has_mbyte)
 	    l = (*mb_ptr2len)(p + 2);
@@ -1111,7 +1111,7 @@ get_coll_element(char_u **pp)
     int		l = 1;
     char_u	*p = *pp;
 
-    if (p[0] != NUL && p[1] == '.')
+    if (p[0] != NUL && p[1] == '.' && p[2] != NUL)
     {
 	if (has_mbyte)
 	    l = (*mb_ptr2len)(p + 2);
@@ -3545,14 +3545,14 @@ typedef enum regstate_E
  */
 typedef struct regitem_S
 {
-    regstate_T	rs_state;	/* what we are doing, one of RS_ above */
-    char_u	*rs_scan;	/* current node in program */
+    regstate_T	rs_state;	// what we are doing, one of RS_ above
+    short	rs_no;		// submatch nr or BEHIND/NOBEHIND
+    char_u	*rs_scan;	// current node in program
     union
     {
 	save_se_T  sesave;
 	regsave_T  regsave;
-    } rs_un;			/* room for saving rex.input */
-    short	rs_no;		/* submatch nr or BEHIND/NOBEHIND */
+    } rs_un;			// room for saving rex.input
 } regitem_T;
 
 static regitem_T *regstack_push(regstate_T state, char_u *scan);
@@ -7998,6 +7998,8 @@ vim_regcomp(char_u *expr_arg, int re_flags)
     bt_regengine.expr = expr;
     nfa_regengine.expr = expr;
 #endif
+    // reg_iswordc() uses rex.reg_buf
+    rex.reg_buf = curbuf;
 
     /*
      * First try the NFA engine, unless backtracking was requested.

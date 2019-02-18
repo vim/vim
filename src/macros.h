@@ -160,11 +160,11 @@
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 # define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
-# ifndef WIN32
+# ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
 # define mch_fstat(n, p)	fstat((n), (p))
-# ifdef MSWIN	/* has its own mch_stat() function */
+# ifdef MSWIN	// has its own mch_stat() function
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
@@ -194,7 +194,7 @@
 #if defined(UNIX) || defined(VMS)  /* open in rw------- mode */
 # define mch_open_rw(n, f)	mch_open((n), (f), (mode_t)0600)
 #else
-# if defined(MSWIN)  /* open read/write */
+# if defined(MSWIN)  // open read/write
 #  define mch_open_rw(n, f)	mch_open((n), (f), S_IREAD | S_IWRITE)
 # else
 #  define mch_open_rw(n, f)	mch_open((n), (f), 0)
@@ -269,7 +269,7 @@
 #  include <math.h>
 # endif
 # ifdef USING_FLOAT_STUFF
-#  if defined(WIN32)
+#  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
      static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }

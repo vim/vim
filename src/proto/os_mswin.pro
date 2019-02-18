@@ -37,7 +37,7 @@ int mch_print_text_out(char_u *p, int len);
 void mch_print_set_font(int iBold, int iItalic, int iUnderline);
 void mch_print_set_bg(long_u bgcol);
 void mch_print_set_fg(long_u fgcol);
-char_u *mch_resolve_shortcut(char_u *fname);
+char_u *mch_resolve_path(char_u *fname, int reparse_point);
 void win32_set_foreground(void);
 void serverInitMessaging(void);
 void serverSetName(char_u *name);

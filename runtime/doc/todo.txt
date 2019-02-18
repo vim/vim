@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 02
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
+Added test, updates, June 23.
+Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
+Remark from Ameretat Reith (2014 Oct 13) with patch on top.
+
 Timer test doesn't work on MS-Windows console, any way to make it work?
 
 'incsearch' with :s: (#3321)
@@ -74,15 +79,15 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
+- When the job in the terminal doesn't use mouse events, let the scroll wheel
+  scroll the scrollback, like a terminal does at the shell prompt. #2490
+  And use modeless selection.  #2962
 - When Vim runs in the terminal and changes the title, the statusline needs to
   be redrawn.
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
   (#3327)
 - Terminal API: Add more functionality? (Ozaki Kiichi 2018 May 13, #2907)
 - GUI: hang until key typed. (#3530)
-- When the job in the terminal doesn't use mouse events, let the scroll wheel
-  scroll the scrollback, like a terminal does at the shell prompt. #2490
-  And use modeless selection.  #2962
 - Allow for specifying the directory, with ++cwd={dir}.
 - With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
   #2977)
@@ -117,17 +122,16 @@ Does not build with MinGW out of the box:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
-
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
-
-Win32 key codes are messy.  Mike Williams tried to fix that, but now old
-mappings no longer work.  Create a new terminal for the better solution?
 
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
+
+Improvement for :terminal winpty/conpty option.  Ozaki Kiichi, #3905
+
+Patch to change WIN32 macro names. (Hirohito Higashi, #3932)
 
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
@@ -142,6 +146,9 @@ Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
+
+Patch to reduce amount of memory used by functions that keep reference.
+(ichizok, #3961)
 
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
@@ -167,16 +174,42 @@ Another request: #3811.
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
+When using 'k' in 'guioptions' gvim may open with a tiny window. (#3808)
+Suggested patch on the issue.
+
 nvo-mode mapping works on Windows, not on Linux. (#3678)
 
 Patch to be able to separately map CTRL-H and BS on Windows.
 (Linwei, 2017 Jul 11, #1833)
 
+Patch to fix encoding of messages on MS-Windows. (Yasuhiro Matsumoto, 2019 Feb
+13, #3914)
+
+Patch to fix encoding conversion in messages. (#3969)
+
+Incsearch test fails when locale is "C". (Dominique Pelle, #3986)
+Also run all tests with C locale?
+
 Patch to improve readability of complicated if(). (ichizok, 2019 Jan 29,
 #3879)
 
+"vat" doesn't work well on XML when the closing > is on another line.
+#3927
+
+Patch to include ARM64 support. (Leendert van Doorn, 2019 Feb 9)
+
+Patch to fix hang when opening file where an intermediate directory is not
+readable on MS-Windows. (link on #3923)
+
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
+
+Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
+New update 2017 Apr 10, #1628
+https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
+Updated by Andy Massimino, 2018 Feb 7:
+https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
+Or should we make it asynchronous?
 
 When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
 case. (Nate Peterson, 2019 Jan 31, #3892)
@@ -187,15 +220,12 @@ character in the file. (Smylers, 2018 Nov 17, #3620)
 Suggested patch by Hirohito Higashi, 2018 Nov 18.
 
 Using CTRL-L to add a character to the search string that contains \v,
-punctiuation is repeated. (Smylers, 2018 Nov 17, #3621)
+punctuation is repeated. (Smylers, 2018 Nov 17, #3621)
 
 Using CTRL-L during search only picks up the base character, not a combining
 character. (Rick, 2018 Dec 11, #3682)
 
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
-
-Patch to convert temp file name. (Yasuhiro Matsumoto, #3520)
-Not ready to include yet.
 
 Problem with two buffers with the same name a/b, if it didn't exist before and
 is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
@@ -211,11 +241,21 @@ Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 Patch to add complete_mode().  Shougo - #3866.  Alternate patch by Hirohito
 Higashi, 2019 Jan 27, included now?
 
+Patch to make winnr() return the window above/below/beside a window.
+(Yegappan Lakshmanan, #3993)
+
 Patch for ConPTY support, new one: #3794 Does this work now?  It should.
 (Nobuhiro Takasaki)
 
 Add function to make use of internal diff, working on two lists and returning
 unified diff (list of lines).
+
+When splitting a window with few text lines, the relative cursor position is
+kept, which means part of the text isn't displayed.  Better show all the text
+when possible. (Dylan Lloyd, #3973)
+
+Tag stack is incorrect after CTRL-T and then :tag. (Andy Massimino, 2019 Feb
+12, #3944)  With Patch for a solution.  Needs a test.
 
 Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
@@ -231,6 +271,15 @@ Patch by Christian, Oct 30.
 
 Patch to clean up CI configs. (Ozaki Kiichi, 2019 Feb 1, #3890)
 
+Patch to filter marks. (Marcin Szamotulski, 2019 Feb 7, #3895)
+
+Patch to add environ(), gets a dict with all environment vars, and getenv(),
+useful for environment vars that are not made of keyword chars.
+(Yasuhiro Matsumoto, #2875)
+
+Patch to add optional arguments with default values.
+(Andy Massimino, #3952)  under development
+
 Memory leaks in test_channel? (or is it because of fork())
 Using uninitialized value in test_crypt.
 Memory leak in test_terminal:
@@ -243,6 +292,7 @@ Memory leak in test_terminal:
 ==23530==    by 0x35C923: term_start (terminal.c:421)
 ==23530==    by 0x2AFF30: mch_call_shell_terminal (os_unix.c:4377)
 ==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
+Memory leak in test_alot with pyeval() (allocating partial)
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
 
@@ -251,6 +301,12 @@ Patch to add match count and current index "3/44" when using "n" command.
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
+
+Patch to specify color for cterm=underline and cterm=undercurl, like "guisp".
+Does #2405 do this?
+
+Patch to add an interrupt() function: sets got_int.  Useful in an autocommand
+such as BufWritePre that checks the file name or contents.
 
 Should make 'listchars' global-local.  Local to window or to buffer?
 Probably window.
@@ -318,6 +374,11 @@ Better name?
 MS-Windows: .lnk file not resolved properly when 'encoding' is set.
 (lkintact, 2018 Sep 22, #3473)
 
+Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+
+Win32 key codes are messy.  Mike Williams tried to fix that, but now old
+mappings no longer work.  Create a new terminal for the better solution?
+
 Script generated by :mksession does not work well if there are windows with
 modified buffers
   change "silent only" into "silent only!"
@@ -349,6 +410,9 @@ Height of quickfix window is not retained with vertical splits. (Lifepillar,
 
 Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
 #2999)
+
+Add more testing of the GTK GUI.
+- gtk_test_widget_click() can be used to simulate a click in a widget.
 
 Tests failing for "make testgui" with GTK:
 - Test_setbufvar_options()
@@ -822,10 +886,6 @@ Implement optional arguments for functions.
     call Foo(12, all = 0)
     call Foo(12, 15, 0)
 
-Change the Farsi code to work with UTF-8.  Possibly combined with the Arabic
-support, or similar.
-Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
-
 Add a command to take a range of lines, filter them and put the output
 somewhere else.  :{range}copy {dest} !cmd
 
@@ -1004,9 +1064,6 @@ Patch for systemlist(), add empty item. (thinca, Sep 30, #1135)
 Add an argument to choose binary or non-binary (like readfile()), when omitted
 use the current behavior.
 Include the test.
-
-Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
-New update 2017 Apr 10, #1628
 
 When 'keywordprg' starts with ":" the argument is still escaped as a shell
 command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
@@ -2079,12 +2136,6 @@ to avoid changing 'eventignore'?
 Patch for displaying 0x200c and 0x200d. (Ali Gholami Rudi, 2009 May 6)
 Probably needs a bit of work.
 
-Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
-Added test, updates, June 23.
-Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
-With modification for Tatweel character: https://dpaste.de/VmFw
-Remark from Ameretat Reith (2014 Oct 13)
-
 List of encoding aliases. (Takao Fujiwara, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
 
@@ -3091,8 +3142,6 @@ Win32 GUI known bugs:
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
     Tutorial: http://win32assembly.online.fr/tut32.html
-8   In eval.c, io.h is included when MSWIN32 is defined.  Shouldn't this be
-    WIN32?  Or can including io.h be moved to vim.h? (Dan Sharp)
 6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
     of ":only" is highlighted like the cursor.  (Lipelis)
 8   When 'encoding' is "utf-8", should use 'guifont' for both normal and wide

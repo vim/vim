@@ -82,8 +82,7 @@ g8			Print the hex values of the bytes used in the
 			value of 'maxcombine' doesn't matter.
 			Example of a character with two composing characters:
 				e0 b8 81 + e0 b8 b9 + e0 b9 89 ~
-			{not in Vi} {only when compiled with the |+multi_byte|
-			feature}
+			{not in Vi}
 
 							*8g8*
 8g8			Find an illegal UTF-8 byte sequence at or after the
@@ -98,8 +97,7 @@ g8			Print the hex values of the bytes used in the
 			Note that when the cursor is on an illegal byte or the
 			cursor is halfway a multi-byte character the command
 			won't move the cursor.
-			{not in Vi} {only when compiled with the |+multi_byte|
-			feature}
+			{not in Vi}
 
 						*:p* *:pr* *:print* *E749*
 :[range]p[rint] [flags]

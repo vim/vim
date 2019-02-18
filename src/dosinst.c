@@ -291,16 +291,17 @@ findoldfile(char **destination)
 {
     char	*bp = *destination;
     size_t	indir_l = strlen(installdir);
-    char	*cp = bp + indir_l;
+    char	*cp;
     char	*tmpname;
     char	*farname;
 
     /*
      * No action needed if exe not found or not in this directory.
      */
-    if (bp == NULL
-	    || strnicmp(bp, installdir, indir_l) != 0
-	    || strchr("/\\", *cp++) == NULL
+    if (bp == NULL || strnicmp(bp, installdir, indir_l) != 0)
+	return;
+    cp = bp + indir_l;
+    if (strchr("/\\", *cp++) == NULL
 	    || strchr(cp, '\\') != NULL
 	    || strchr(cp, '/') != NULL)
 	return;
