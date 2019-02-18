@@ -720,7 +720,7 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
     return ret;
 }
 
-    static int
+    int
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
     char_u	*s;

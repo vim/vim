@@ -9051,7 +9051,7 @@ readdir_checkitem(typval_T *expr, char_u *name)
     if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
 	goto theend;
 
-    retval = get_tv_number_chk(&rettv, &error);
+    retval = tv_get_number_chk(&rettv, &error);
     if (error)
 	retval = -1;
 
@@ -9072,24 +9072,22 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     char_u	*path;
     garray_T	ga;
     int		i;
-#ifdef WIN3264
+#ifdef MSWIN
     char_u		*buf, *p;
     WIN32_FIND_DATA	fb;
     int			ok;
-# ifdef FEAT_MBYTE
     HANDLE		hFind = (HANDLE)0;
     WIN32_FIND_DATAW    wfb;
     WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
-# endif
 #endif
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    path = get_tv_string(&argvars[0]);
+    path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
     ga_init2(&ga, (int)sizeof(char*), 20);
 
-#ifdef WIN3264
+#ifdef MSWIN
     buf = alloc((int)MAXPATHL);
     if (buf == NULL)
 	return;
@@ -9099,7 +9097,6 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	*p = NUL;
     STRCAT(buf, "\\*");
 
-# ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
 	/* The active codepage differs from 'encoding'.  Attempt using the
@@ -9119,22 +9116,19 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     }
 
     if (wn == NULL)
-# endif
 	hFind = FindFirstFile((LPCSTR)buf, &fb);
     ok = (hFind != INVALID_HANDLE_VALUE);
 
     if (!ok)
-	EMSG2(_(e_notopen), path);
+	smsg(_(e_notopen), path);
     else
     {
 	while (ok)
 	{
 	    int	ignore;
-# ifdef FEAT_MBYTE
 	    if (wn != NULL)
 		p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
 	    else
-# endif
 		p = (char_u *)fb.cFileName;
 
 	    ignore = p[0] == '.' &&
@@ -9160,23 +9154,19 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 
-# ifdef FEAT_MBYTE
 	    if (wn != NULL)
 	    {
 		vim_free(p);
 		ok = FindNextFileW(hFind, &wfb);
 	    }
 	    else
-# endif
 		ok = FindNextFile(hFind, &fb);
 	}
 	FindClose(hFind);
     }
 
-# ifdef FEAT_MBYTE
     vim_free(buf);
     vim_free(wn);
-# endif
 #else
     DIR		*dirp;
     struct dirent *dp;
