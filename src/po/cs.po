@@ -1359,7 +1359,7 @@ msgstr "E216: Událost %s neexistuje"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Automatické pøíkazy ---"
@@ -1374,7 +1374,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: vnoøení automatického pøíkazu pøíli¹ hluboká"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s automatické pøíkazy pro \"%s\""
 
 #, c-format
@@ -2121,7 +2121,7 @@ msgstr "-q [chybový soubor]  editovat soubor na místì výskytu první chyby"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"

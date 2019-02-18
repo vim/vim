@@ -7,19 +7,9 @@ if !has('gui_running') && has('unix')
   set term=ansi
 endif
 
-function! s:screenline(lnum) abort
-  let line = []
-  for c in range(1, winwidth(0))
-    call add(line, nr2char(screenchar(a:lnum, c)))
-  endfor
-  return s:trim(join(line, ''))
-endfunction
+source shared.vim
 
-function! s:trim(str) abort
-  return matchstr(a:str,'^\s*\zs.\{-}\ze\s*$')
-endfunction
-
-function! Test_simple_matchadd()
+func Test_simple_matchadd()
   new
 
   1put='# This is a Test'
@@ -30,7 +20,7 @@ function! Test_simple_matchadd()
   call matchadd('Conceal', '\%2l ')
   redraw!
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
@@ -39,9 +29,9 @@ function! Test_simple_matchadd()
   call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   quit!
-endfunction
+endfunc
 
-function! Test_simple_matchadd_and_conceal()
+func Test_simple_matchadd_and_conceal()
   new
   setlocal concealcursor=n conceallevel=1
 
@@ -53,7 +43,7 @@ function! Test_simple_matchadd_and_conceal()
   call matchadd('Conceal', '\%2l ', 10, -1, {'conceal': 'X'})
   redraw!
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -61,9 +51,9 @@ function! Test_simple_matchadd_and_conceal()
   call assert_equal(screenattr(lnum, 1), screenattr(lnum, 16))
 
   quit!
-endfunction
+endfunc
 
-function! Test_matchadd_and_conceallevel_3()
+func Test_matchadd_and_conceallevel_3()
   new
 
   setlocal conceallevel=3
@@ -79,7 +69,7 @@ function! Test_matchadd_and_conceallevel_3()
   call matchadd('Conceal', '\%2l ', 10, -1, {'conceal': 'X'})
   redraw!
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_equal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -92,7 +82,7 @@ function! Test_matchadd_and_conceallevel_3()
 
   call matchadd('ErrorMsg', '\%2l Test', 20, -1, {'conceal': 'X'})
   redraw!
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_equal(screenattr(lnum, 1) , screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2) , screenattr(lnum, 7))
   call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 10))
@@ -102,9 +92,9 @@ function! Test_matchadd_and_conceallevel_3()
 
   syntax off
   quit!
-endfunction
+endfunc
 
-function! Test_default_conceal_char()
+func Test_default_conceal_char()
   new
   setlocal concealcursor=n conceallevel=1
 
@@ -116,7 +106,7 @@ function! Test_default_conceal_char()
   call matchadd('Conceal', '\%2l ', 10, -1, {})
   redraw!
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -129,7 +119,7 @@ function! Test_default_conceal_char()
   set listchars=conceal:+
   redraw!
 
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -138,9 +128,9 @@ function! Test_default_conceal_char()
 
   let &listchars = listchars_save
   quit!
-endfunction
+endfunc
 
-function! Test_syn_and_match_conceal()
+func Test_syn_and_match_conceal()
   new
   setlocal concealcursor=n conceallevel=1
 
@@ -153,7 +143,7 @@ function! Test_syn_and_match_conceal()
   syntax match MyConceal /\%2l / conceal containedin=ALL cchar=*
   redraw!
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -165,7 +155,7 @@ function! Test_syn_and_match_conceal()
   call clearmatches()
   redraw!
 
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -174,9 +164,9 @@ function! Test_syn_and_match_conceal()
 
   syntax off
   quit!
-endfunction
+endfunc
 
-function! Test_clearmatches()
+func Test_clearmatches()
   new
   setlocal concealcursor=n conceallevel=1
 
@@ -191,7 +181,7 @@ function! Test_clearmatches()
   redraw!
 
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_equal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -204,7 +194,7 @@ function! Test_clearmatches()
   call setmatches(a)
   redraw!
 
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1), screenattr(lnum, 2))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 2), screenattr(lnum, 10))
@@ -213,9 +203,9 @@ function! Test_clearmatches()
   call assert_equal({'group': 'Conceal', 'pattern': '\%2l ', 'priority': 10, 'id': a[0].id, 'conceal': 'Z'}, a[0])
 
   quit!
-endfunction
+endfunc
 
-function! Test_using_matchaddpos()
+func Test_using_matchaddpos()
   new
   setlocal concealcursor=n conceallevel=1
   " set filetype and :syntax on to change screenattr()
@@ -232,7 +222,7 @@ function! Test_using_matchaddpos()
   redraw!
 
   let lnum = 2
-  call assert_equal(expect, s:screenline(lnum))
+  call assert_equal(expect, Screenline(lnum))
   call assert_notequal(screenattr(lnum, 1) , screenattr(lnum, 2))
   call assert_notequal(screenattr(lnum, 2) , screenattr(lnum, 7))
   call assert_equal(screenattr(lnum, 1) , screenattr(lnum, 7))
@@ -244,9 +234,9 @@ function! Test_using_matchaddpos()
 
   syntax off
   quit!
-endfunction
+endfunc
 
-function! Test_matchadd_repeat_conceal_with_syntax_off()
+func Test_matchadd_repeat_conceal_with_syntax_off()
   new
 
   " To test targets in the same line string is replaced with conceal char
@@ -254,18 +244,18 @@ function! Test_matchadd_repeat_conceal_with_syntax_off()
   1put ='TARGET_TARGETTARGET'
   call cursor(1, 1)
   redraw
-  call assert_equal('TARGET_TARGETTARGET', s:screenline(2))
+  call assert_equal('TARGET_TARGETTARGET', Screenline(2))
 
   setlocal conceallevel=2
   call matchadd('Conceal', 'TARGET', 10, -1, {'conceal': 't'})
 
   redraw
-  call assert_equal('t_tt', s:screenline(2))
+  call assert_equal('t_tt', Screenline(2))
 
   quit!
-endfunction
+endfunc
 
-function! Test_matchadd_and_syn_conceal()
+func Test_matchadd_and_syn_conceal()
   new
   let cnt='Inductive bool : Type := | true : bool | false : bool.'
   let expect = 'Inductive - : Type := | true : - | false : -.'
@@ -276,14 +266,14 @@ function! Test_matchadd_and_syn_conceal()
   syntax on
   syntax keyword coqKwd bool conceal cchar=-
   redraw!
-  call assert_equal(expect, s:screenline(1))
+  call assert_equal(expect, Screenline(1))
   call assert_notequal(screenattr(1, 10) , screenattr(1, 11))
   call assert_notequal(screenattr(1, 11) , screenattr(1, 12))
   call assert_equal(screenattr(1, 11) , screenattr(1, 32))
   call matchadd('CheckedByCoq', '\%<2l\%>9c\%<16c')
   redraw!
-  call assert_equal(expect, s:screenline(1))
+  call assert_equal(expect, Screenline(1))
   call assert_notequal(screenattr(1, 10) , screenattr(1, 11))
   call assert_notequal(screenattr(1, 11) , screenattr(1, 12))
   call assert_equal(screenattr(1, 11) , screenattr(1, 32))
-endfunction
+endfunc

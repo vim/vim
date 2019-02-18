@@ -22,7 +22,7 @@
 
 /* cproto doesn't create a prototype for main() */
 int _cdecl
-#if defined(FEAT_GUI_W32)
+#if defined(FEAT_GUI_MSWIN)
 VimMain
 #else
     main
@@ -104,7 +104,7 @@ WinMain(
     pSaveInst = SaveInst;
 # endif
     pmain =
-# if defined(FEAT_GUI_W32)
+# if defined(FEAT_GUI_MSWIN)
     //&& defined(__MINGW32__)
 	VimMain
 # else
@@ -130,9 +130,7 @@ errout:
     free(argv);
     if (tofree != NULL)
 	free(tofree);
-#ifdef FEAT_MBYTE
     free_cmd_argsW();
-#endif
 
     return 0;
 }

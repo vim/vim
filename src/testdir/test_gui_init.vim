@@ -17,7 +17,7 @@ func TearDown()
 endfunc
 
 " Ignore the "failed to create input context" error.
-call test_ignore_error('E285')
+call test_ignore_error('E285:')
 
 " Start the GUI now, in the foreground.
 gui -f

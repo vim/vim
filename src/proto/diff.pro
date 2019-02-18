@@ -4,6 +4,7 @@ void diff_buf_adjust(win_T *win);
 void diff_buf_add(buf_T *buf);
 void diff_invalidate(buf_T *buf);
 void diff_mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after);
+int diff_internal(void);
 void ex_diffupdate(exarg_T *eap);
 void ex_diffpatch(exarg_T *eap);
 void ex_diffsplit(exarg_T *eap);

@@ -17,6 +17,12 @@ PUSH "\xC3\x81\xC3\xA9"
   putglyph 0xc1 1 0,0
   putglyph 0xe9 1 0,1
 
+!UTF-8 split writes
+RESET
+PUSH "\xC3"
+PUSH "\x81"
+  putglyph 0xc1 1 0,0
+
 !UTF-8 wide char
 # U+FF10 = 0xEF 0xBC 0x90  name: FULLWIDTH DIGIT ZERO
 RESET

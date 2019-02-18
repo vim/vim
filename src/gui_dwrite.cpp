@@ -38,7 +38,11 @@
 # define _Outptr_
 #endif
 
-#include <dwrite_2.h>
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
+# include <dwrite_2.h>
+#else
+# include <dwrite.h>
+#endif
 
 #include "gui_dwrite.h"
 
@@ -282,9 +286,12 @@ struct DWriteContext {
     ID2D1DCRenderTarget *mRT;
     ID2D1GdiInteropRenderTarget *mGDIRT;
     ID2D1SolidColorBrush *mBrush;
+    ID2D1Bitmap *mBitmap;
 
     IDWriteFactory *mDWriteFactory;
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     IDWriteFactory2 *mDWriteFactory2;
+#endif
 
     IDWriteGdiInterop *mGdiInterop;
     IDWriteRenderingParams *mRenderingParams;
@@ -313,6 +320,8 @@ struct DWriteContext {
 
     void SetFont(HFONT hFont);
 
+    void Rebind();
+
     void BindDC(HDC hdc, const RECT *rect);
 
     HRESULT SetDrawingMode(DrawingMode mode);
@@ -328,6 +337,8 @@ struct DWriteContext {
     void DrawLine(int x1, int y1, int x2, int y2, COLORREF color);
 
     void SetPixel(int x, int y, COLORREF color);
+
+    void Scroll(int x, int y, const RECT *rc);
 
     void Flush();
 
@@ -481,6 +492,7 @@ public:
 	AdjustedGlyphRun adjustedGlyphRun(glyphRun, context->cellWidth,
 		context->offsetX);
 
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
 	if (pDWC_->mDWriteFactory2 != NULL)
 	{
 	    IDWriteColorGlyphRunEnumerator *enumerator = NULL;
@@ -517,6 +529,7 @@ public:
 		return S_OK;
 	    }
 	}
+#endif
 
 	// Draw by IDWriteFactory (without color emoji)
 	pDWC_->mRT->DrawGlyphRun(
@@ -588,8 +601,11 @@ DWriteContext::DWriteContext() :
     mRT(NULL),
     mGDIRT(NULL),
     mBrush(NULL),
+    mBitmap(NULL),
     mDWriteFactory(NULL),
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     mDWriteFactory2(NULL),
+#endif
     mGdiInterop(NULL),
     mRenderingParams(NULL),
     mFontCache(8),
@@ -606,9 +622,6 @@ DWriteContext::DWriteContext() :
     _RPT2(_CRT_WARN, "D2D1CreateFactory: hr=%p p=%p\n", hr, mD2D1Factory);
 
     if (SUCCEEDED(hr))
-	hr = CreateDeviceResources();
-
-    if (SUCCEEDED(hr))
     {
 	hr = DWriteCreateFactory(
 		DWRITE_FACTORY_TYPE_SHARED,
@@ -618,6 +631,7 @@ DWriteContext::DWriteContext() :
 		mDWriteFactory);
     }
 
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     if (SUCCEEDED(hr))
     {
 	DWriteCreateFactory(
@@ -626,6 +640,7 @@ DWriteContext::DWriteContext() :
 		reinterpret_cast<IUnknown**>(&mDWriteFactory2));
 	_RPT1(_CRT_WARN, "IDWriteFactory2: %s\n", SUCCEEDED(hr) ? "available" : "not available");
     }
+#endif
 
     if (SUCCEEDED(hr))
     {
@@ -647,7 +662,10 @@ DWriteContext::~DWriteContext()
     SafeRelease(&mRenderingParams);
     SafeRelease(&mGdiInterop);
     SafeRelease(&mDWriteFactory);
+#ifdef FEAT_DIRECTX_COLOR_EMOJI
     SafeRelease(&mDWriteFactory2);
+#endif
+    SafeRelease(&mBitmap);
     SafeRelease(&mBrush);
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
@@ -690,13 +708,7 @@ DWriteContext::CreateDeviceResources()
     }
 
     if (SUCCEEDED(hr))
-    {
-	if (mHDC != NULL)
-	{
-	    mRT->BindDC(mHDC, &mBindRect);
-	    mRT->SetTransform(D2D1::IdentityMatrix());
-	}
-    }
+	Rebind();
 
     return hr;
 }
@@ -704,6 +716,7 @@ DWriteContext::CreateDeviceResources()
     void
 DWriteContext::DiscardDeviceResources()
 {
+    SafeRelease(&mBitmap);
     SafeRelease(&mBrush);
     SafeRelease(&mGDIRT);
     SafeRelease(&mRT);
@@ -885,13 +898,36 @@ DWriteContext::SetFont(HFONT hFont)
 }
 
     void
+DWriteContext::Rebind()
+{
+    SafeRelease(&mBitmap);
+
+    mRT->BindDC(mHDC, &mBindRect);
+    mRT->SetTransform(D2D1::IdentityMatrix());
+
+    D2D1_BITMAP_PROPERTIES props = {
+	{DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE},
+	96.0f, 96.0f
+    };
+    mRT->CreateBitmap(
+	    D2D1::SizeU(mBindRect.right - mBindRect.left,
+		mBindRect.bottom - mBindRect.top),
+	    props, &mBitmap);
+}
+
+    void
 DWriteContext::BindDC(HDC hdc, const RECT *rect)
 {
-    Flush();
-    mRT->BindDC(hdc, rect);
-    mRT->SetTransform(D2D1::IdentityMatrix());
     mHDC = hdc;
     mBindRect = *rect;
+
+    if (mRT == NULL)
+	CreateDeviceResources();
+    else
+    {
+	Flush();
+	Rebind();
+    }
 }
 
     HRESULT
@@ -995,7 +1031,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
-	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
+	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y) - 0.5f);
     }
 
     SafeRelease(&textLayout);
@@ -1064,6 +1100,49 @@ DWriteContext::SetPixel(int x, int y, COLORREF color)
 		D2D1::Point2F(FLOAT(x+1), FLOAT(y) + 0.5f),
 		SolidBrush(color));
     }
+}
+
+    void
+DWriteContext::Scroll(int x, int y, const RECT *rc)
+{
+    SetDrawingMode(DM_DIRECTX);
+    mRT->Flush();
+
+    D2D1_RECT_U srcRect;
+    D2D1_POINT_2U destPoint;
+    if (x >= 0)
+    {
+	srcRect.left = rc->left;
+	srcRect.right = rc->right - x;
+	destPoint.x = rc->left + x;
+    }
+    else
+    {
+	srcRect.left = rc->left - x;
+	srcRect.right = rc->right;
+	destPoint.x = rc->left;
+    }
+    if (y >= 0)
+    {
+	srcRect.top = rc->top;
+	srcRect.bottom = rc->bottom - y;
+	destPoint.y = rc->top + y;
+    }
+    else
+    {
+	srcRect.top = rc->top - y;
+	srcRect.bottom = rc->bottom;
+	destPoint.y = rc->top;
+    }
+    mBitmap->CopyFromRenderTarget(&destPoint, mRT, &srcRect);
+
+    D2D1_RECT_F destRect = {
+	    FLOAT(destPoint.x), FLOAT(destPoint.y),
+	    FLOAT(destPoint.x + srcRect.right - srcRect.left),
+	    FLOAT(destPoint.y + srcRect.bottom - srcRect.top)
+    };
+    mRT->DrawBitmap(mBitmap, destRect, 1.0F,
+	    D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, destRect);
 }
 
     void
@@ -1223,6 +1302,13 @@ DWriteContext_SetPixel(DWriteContext *ctx, int x, int y, COLORREF color)
 {
     if (ctx != NULL)
 	ctx->SetPixel(x, y, color);
+}
+
+    void
+DWriteContext_Scroll(DWriteContext *ctx, int x, int y, const RECT *rc)
+{
+    if (ctx != NULL)
+	ctx->Scroll(x, y, rc);
 }
 
     void

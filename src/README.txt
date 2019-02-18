@@ -8,8 +8,8 @@ You might also want to read ":help development".
 
 JUMPING AROUND
 
-First of all, use ":make tags" to generate a tags file, so that you can use
-the ":tag" command to jump around the source code.
+First of all, use ":make tags" to generate a tags file, so that you can jump
+around in the source code.
 
 To jump to a function or variable definition, move the cursor on the name and
 use the CTRL-] command.  Use CTRL-T or CTRL-O to jump back.
@@ -17,12 +17,15 @@ use the CTRL-] command.  Use CTRL-T or CTRL-O to jump back.
 To jump to a file, move the cursor on its name and use the "gf" command.
 
 Most code can be found in a file with an obvious name (incomplete list):
+	autocmd.c	autocommands
 	buffer.c	manipulating buffers (loaded files)
 	diff.c		diff mode (vimdiff)
 	eval.c		expression evaluation
 	fileio.c	reading and writing files
+	findfile.c	search for files in 'path'
 	fold.c		folding
 	getchar.c	getting characters and key mapping
+	indent.c	C and Lisp indentation
 	mark.c		marks
 	mbyte.c		multi-byte character handling
 	memfile.c	storing lines for buffers in a swapfile
@@ -35,12 +38,28 @@ Most code can be found in a file with an obvious name (incomplete list):
 	regexp.c	pattern matching
 	screen.c	updating the windows
 	search.c	pattern searching
+	sign.c		signs
 	spell.c		spell checking
 	syntax.c	syntax and other highlighting
 	tag.c		tags
 	term.c		terminal handling, termcap codes
 	undo.c		undo and redo
 	window.c	handling split windows
+
+
+DEBUGGING
+
+If you have a reasonable recent version of gdb, you can use the :Termdebug
+command to debug Vim.  See  ":help :Termdebug".
+
+When something is time critical or stepping through code is a hassle, use the
+channel logging to create a time-stamped log file.  Add lines to the code like
+this:
+	ch_log(NULL, "Value is now %02x", value);
+After compiling and starting Vim, do:
+	:call ch_logfile('debuglog', 'w')
+And edit "debuglog" to see what happens.  The channel functions already have
+ch_log() calls, thus you always see that in the log.
 
 
 IMPORTANT VARIABLES

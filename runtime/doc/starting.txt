@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.0.  Last change: 2017 Nov 18
+*starting.txt*  For Vim version 8.1.  Last change: 2019 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -127,7 +127,8 @@ argument.
 On VMS all option arguments are assumed to be lowercase, unless preceded with
 a slash.  Thus "-R" means recovery and "-/R" readonly.
 
---help							*-h* *--help*
+--help							*-h* *--help* *-?*
+-?
 -h		Give usage (help) message and exit.  {not in Vi}
 		See |info-message| about capturing the text.
 
@@ -247,12 +248,18 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		changes and writing.
 		{not in Vi}
 
-						*-Z* *restricted-mode* *E145*
+					*-Z* *restricted-mode* *E145* *E981*
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
-		":sh", filtering, the system() function, backtick expansion,
-		delete(), rename(), mkdir(), writefile(), libcall(),
-		job_start(), etc.
+		":sh", filtering, the system() function, backtick expansion
+		and libcall().
+		Also disallowed are delete(), rename(), mkdir(), job_start(),
+		etc.
+		Interfaces, such as Python, Ruby and Lua, are also disabled,
+		since they could be used to execute shell commands.  Perl uses
+		the Safe module.
+		Note that the user may still find a loophole to execute a
+		shell command, it has only been made difficult.
 		{not in Vi}
 
 							*-g*
@@ -314,9 +321,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		and exits.)  {not in Vi}
 
 							*-F*
--F		Farsi mode.  Sets the 'fkmap' and 'rightleft' options on.
-		(Only when compiled with |+rightleft| and |+farsi| features,
-		otherwise Vim gives an error message and exits.)  {not in Vi}
+-F		This was used for Farsi mode, which has been removed.
+		See |farsi.txt|.
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
@@ -486,7 +492,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 		When {vimrc} is equal to "DEFAULTS" (all uppercase), this has
 		the same effect as "NONE", but the |defaults.vim| script is
-		loaded, which will also set 'nocompatible'.
+		loaded, which will also set 'nocompatible'.  Also see
+		|--clean|.
 
 		Using the "-u" argument with another argument than DEFAULTS
 		has the side effect that the 'compatible' option will be on by
@@ -510,12 +517,16 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{not in Vi}
 
 							*--clean*
---clean		Equal to "-u DEFAULTS -i NONE":
+--clean		Similar to "-u DEFAULTS -U NONE -i NONE":
 		- initializations from files and environment variables is
 		  skipped
+		- 'runtimepath' and 'packpath' are set to exclude home
+		  directory entries (does not happen with -u DEFAULTS).
 		- the |defaults.vim| script is loaded, which implies
 		  'nocompatible': use Vim defaults
+		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
+
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,
 		which is then stored in the 'key' option.  All writes will
@@ -1010,14 +1021,13 @@ Vi compatible default value ~
 When Vim starts, the 'compatible' option is on.  This will be used when Vim
 starts its initializations.  But as soon as:
 - a user vimrc file is found, or
-- a vimrc file in the current directory, or
+- a vimrc file in the current directory is found, or
 - the "VIMINIT" environment variable is set, or
 - the "-N" command line argument is given, or
 - the "--clean" command line argument is given, or
-  even when no vimrc file exists.
 - the |defaults.vim| script is loaded, or
-- gvimrc file was found,
-then it will be set to 'nocompatible'.
+- a gvimrc file was found,
+then the option will be set to 'nocompatible'.
 
 Note that this does NOT happen when a system-wide vimrc file was found.
 
@@ -1043,7 +1053,7 @@ giving the mapping.
 Defaults without a .vimrc file ~
 							*defaults.vim*
 If Vim is started normally and no user vimrc file is found, the
-$VIMRUTIME/defaults.vim script is loaded.  This will set 'compatible' off,
+$VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
 details.  NOTE: this is done since Vim 8.0, not in Vim 7.4. (it was added in
 patch 7.4.2111 to be exact).
@@ -1592,6 +1602,8 @@ VIMINFO FILE NAME					*viminfo-file-name*
 - The "-i" Vim argument can be used to set another file name, |-i|.  When the
   file name given is "NONE" (all uppercase), no viminfo file is ever read or
   written.  Also not for the commands below!
+- The 'viminfofile' option can be used like the "-i" argument.  In fact, the
+  value form the "-i" argument is stored in the 'viminfofile' option.
 - For the commands below, another file name can be given, overriding the
   default and the name given with 'viminfo' or "-i" (unless it's NONE).
 
@@ -1681,4 +1693,4 @@ most of the information will be restored).
 			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

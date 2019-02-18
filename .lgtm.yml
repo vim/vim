@@ -1,0 +1,4 @@
+# Format of this file: https://lgtm.com/help/lgtm/lgtm.yml-configuration-file
+path_classifiers:
+  documentation:
+    - runtime/tutor/tutor*

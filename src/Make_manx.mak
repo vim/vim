@@ -37,6 +37,7 @@ REN = $(SHELL) -c mv -f
 DEL = $(SHELL) -c rm -f
 
 SRC =	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -53,12 +54,13 @@ SRC =	arabic.c \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -81,6 +83,7 @@ SRC =	arabic.c \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -95,6 +98,7 @@ SRC =	arabic.c \
 INCL = vim.h feature.h keymap.h macros.h ascii.h term.h structs.h os_amiga.h
 
 OBJ =	obj/arabic.o \
+	obj/autocmd.o \
 	obj/blowfish.o \
 	obj/buffer.o \
 	obj/charset.o \
@@ -111,12 +115,13 @@ OBJ =	obj/arabic.o \
 	obj/ex_docmd.o \
 	obj/ex_eval.o \
 	obj/ex_getln.o \
-	obj/farsi.o \
 	obj/fileio.o \
+	obj/findfile.o \
 	obj/fold.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
+	obj/indent.o \
 	obj/json.o \
 	obj/list.o \
 	obj/main.o \
@@ -139,6 +144,7 @@ OBJ =	obj/arabic.o \
 	obj/screen.o \
 	obj/search.o \
 	obj/sha256.o \
+	obj/sign.o \
 	obj/spell.o \
 	obj/spellfile.o \
 	obj/syntax.o \
@@ -151,6 +157,7 @@ OBJ =	obj/arabic.o \
 	$(TERMLIB)
 
 PRO =	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
@@ -167,12 +174,13 @@ PRO =	proto/arabic.pro \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -195,6 +203,7 @@ PRO =	proto/arabic.pro \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
@@ -253,6 +262,9 @@ $(OBJ): $(SYMS)
 obj/arabic.o:	arabic.c
 	$(CCSYM) $@ arabic.c
 
+obj/autocmd.o:	autocmd.c
+	$(CCSYM) $@ autocmd.c
+
 obj/blowfish.o:	blowfish.c
 	$(CCSYM) $@ blowfish.c
 
@@ -302,11 +314,11 @@ obj/ex_eval.o:	ex_eval.c ex_cmds.h
 obj/ex_getln.o:	ex_getln.c
 	$(CCSYM) $@ ex_getln.c
 
-obj/farsi.o:	farsi.c
-	$(CCSYM) $@ farsi.c
-
 obj/fileio.o:	fileio.c
 	$(CCSYM) $@ fileio.c
+
+obj/findfile.o:	findfile.c
+	$(CCSYM) $@ findfile.c
 
 obj/fold.o:	fold.c
 	$(CCSYM) $@ fold.c
@@ -319,6 +331,9 @@ obj/hardcopy.o:	hardcopy.c
 
 obj/hashtab.o:	hashtab.c
 	$(CCSYM) $@ hashtab.c
+
+obj/indent.o:	indent.c
+	$(CCSYM) $@ indent.c
 
 obj/json.o:	json.c
 	$(CCSYM) $@ json.c
@@ -388,6 +403,9 @@ obj/search.o:	search.c
 
 obj/sha256.o:	sha256.c
 	$(CCSYM) $@ sha256.c
+
+obj/sign.o:	sign.c
+	$(CCSYM) $@ sign.c
 
 obj/spell.o:	spell.c
 	$(CCSYM) $@ spell.c

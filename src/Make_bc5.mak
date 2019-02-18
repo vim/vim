@@ -61,10 +61,6 @@
 #		of Ruby will cause a compile error on these systems.
 #   RUBY_VER_LONG  same, but in format with dot. (1.6)
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (no)
-# MBYTE		no or yes: set to yes for multi-byte support (yes)
-#		NOTE: multi-byte support is broken in the Borland libraries,
-#		not everything will work properly!  Esp. handling multi-byte
-#		file names.
 # IME		no or yes: set to yes for multi-byte IME support (yes)
 #   DYNAMIC_IME no or yes: set to yes to load imm32.dll dynamically (yes)
 # GETTEXT	no or yes: set to yes for multi-language support (yes)
@@ -102,11 +98,6 @@ BOR = c:\bc5
 ### GUI: yes for GUI version, no for console version
 !if ("$(GUI)"=="")
 GUI = yes
-!endif
-
-### MBYTE: yes for multibyte support, no to disable it.
-!if ("$(MBYTE)"=="")
-MBYTE = yes
 !endif
 
 ### IME: yes for multibyte support, no to disable it.
@@ -216,7 +207,6 @@ ALIGN = 4
 	("$(RUBY)"=="") && \
 	("$(ICONV)"!="yes") && \
 	("$(IME)"!="yes") && \
-	("$(MBYTE)"!="yes") && \
 	("$(XPM)"=="")
 FASTCALL = yes
 !endif
@@ -397,9 +387,6 @@ DEFINES=$(DEFINES) -DDEBUG -D_DEBUG
 DEFINES = $(DEFINES) -DFEAT_OLE
 !endif
 #
-!if ("$(MBYTE)"=="yes")
-MBDEFINES = $(MBDEFINES) -DFEAT_MBYTE
-!endif
 !if ("$(IME)"=="yes")
 MBDEFINES = $(MBDEFINES) -DFEAT_MBYTE_IME
 !if ("$(DYNAMIC_IME)" == "yes")
@@ -418,7 +405,7 @@ DEFINES = $(DEFINES) -DFEAT_CSCOPE
 !endif
 
 !if ("$(GUI)"=="yes")
-DEFINES = $(DEFINES) -DFEAT_GUI_W32 -DFEAT_CLIPBOARD
+DEFINES = $(DEFINES) -DFEAT_GUI -DFEAT_CLIPBOARD
 !if ("$(DEBUG)"=="yes")
 TARGET = gvimd.exe
 !else
@@ -538,6 +525,7 @@ vimwinmain = \
 
 vimobj =  \
 	$(OBJDIR)\arabic.obj \
+	$(OBJDIR)\autocmd.obj \
 	$(OBJDIR)\blowfish.obj \
 	$(OBJDIR)\buffer.obj \
 	$(OBJDIR)\charset.obj \
@@ -554,12 +542,13 @@ vimobj =  \
 	$(OBJDIR)\ex_docmd.obj \
 	$(OBJDIR)\ex_eval.obj \
 	$(OBJDIR)\ex_getln.obj \
-	$(OBJDIR)\farsi.obj \
 	$(OBJDIR)\fileio.obj \
+	$(OBJDIR)\findfile.obj \
 	$(OBJDIR)\fold.obj \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
+	$(OBJDIR)\indent.obj \
 	$(OBJDIR)\json.obj \
 	$(OBJDIR)\list.obj \
 	$(OBJDIR)\main.obj \
@@ -581,6 +570,7 @@ vimobj =  \
 	$(OBJDIR)\screen.obj \
 	$(OBJDIR)\search.obj \
 	$(OBJDIR)\sha256.obj \
+	$(OBJDIR)\sign.obj \
 	$(OBJDIR)\spell.obj \
 	$(OBJDIR)\spellfile.obj \
 	$(OBJDIR)\syntax.obj \
@@ -685,9 +675,6 @@ MSG = $(MSG) VIMDLL
 !endif
 !if ("$(FASTCALL)"=="yes")
 MSG = $(MSG) FASTCALL
-!endif
-!if ("$(MBYTE)"=="yes")
-MSG = $(MSG) MBYTE
 !endif
 !if ("$(IME)"=="yes")
 MSG = $(MSG) IME
@@ -820,6 +807,8 @@ clean:
 !endif
 !ifdef PERL
 	-@del perl.lib
+	-@del if_perl.c
+	-@del auto\if_perl.c
 !endif
 !ifdef PYTHON
 	-@del python.lib
@@ -948,12 +937,12 @@ $(OBJDIR)\if_ole.obj: if_ole.cpp
 $(OBJDIR)\if_lua.obj: if_lua.c lua.lib
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_lua.c
 
-$(OBJDIR)\if_perl.obj: if_perl.c perl.lib
-	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_perl.c
+$(OBJDIR)\if_perl.obj: auto/if_perl.c perl.lib
+	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc auto/if_perl.c
 
-if_perl.c: if_perl.xs typemap
+auto/if_perl.c: if_perl.xs typemap
 	$(PERL)\bin\perl.exe $(PERL)\lib\ExtUtils\xsubpp -prototypes -typemap \
-	    $(PERL)\lib\ExtUtils\typemap if_perl.xs > $@
+	    $(PERL)\lib\ExtUtils\typemap if_perl.xs -output $@
 
 $(OBJDIR)\if_python.obj: if_python.c if_py_both.h python.lib
 	$(CC) -I$(PYTHON)\include $(CCARG) $(CC1) $(CC2)$@ -pc if_python.c

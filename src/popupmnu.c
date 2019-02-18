@@ -19,6 +19,8 @@ static int pum_size;			/* nr of items in "pum_array" */
 static int pum_selected;		/* index of selected item or -1 */
 static int pum_first = 0;		/* index of top item */
 
+static int call_update_screen = FALSE;
+
 static int pum_height;			/* nr of displayed pum items */
 static int pum_width;			/* width of displayed pum items */
 static int pum_base_width;		/* width of pum items base */
@@ -29,12 +31,19 @@ static int pum_scrollbar;		/* TRUE when scrollbar present */
 static int pum_row;			/* top row of pum */
 static int pum_col;			/* left column of pum */
 
-static int pum_do_redraw = FALSE;	/* do redraw anyway */
+static win_T *pum_window = NULL;
+static int pum_win_row;
+static int pum_win_height;
+static int pum_win_col;
+static int pum_win_wcol;
+static int pum_win_width;
+
+static int pum_do_redraw = FALSE;	// do redraw anyway
+static int pum_skip_redraw = FALSE;	// skip redraw
 
 static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
-#define PUM_DEF_WIDTH  15
 
     static void
 pum_compute_size(void)
@@ -69,7 +78,7 @@ pum_compute_size(void)
 /*
  * Show the popup menu with items "array[size]".
  * "array" must remain valid until pum_undisplay() is called!
- * When possible the leftmost character is aligned with screen column "col".
+ * When possible the leftmost character is aligned with cursor column.
  * The menu appears above the screen line "row" or at "row" + "height" - 1.
  */
     void
@@ -81,9 +90,8 @@ pum_display(
 {
     int		def_width;
     int		max_width;
-    int		row;
     int		context_lines;
-    int		col;
+    int		cursor_col;
     int		above_row;
     int		below_row;
     int		redo_count = 0;
@@ -93,7 +101,7 @@ pum_display(
 
     do
     {
-	def_width = PUM_DEF_WIDTH;
+	def_width = p_pw;
 	above_row = 0;
 	below_row = cmdline_row;
 
@@ -103,7 +111,14 @@ pum_display(
 	validate_cursor_col();
 	pum_array = NULL;
 
-	row = curwin->w_wrow + W_WINROW(curwin);
+	// Remember the essential parts of the window position and size, so we
+	// can decide when to reposition the popup menu.
+	pum_window = curwin;
+	pum_win_row = curwin->w_wrow + W_WINROW(curwin);
+	pum_win_height = curwin->w_height;
+	pum_win_col = curwin->w_wincol;
+	pum_win_wcol = curwin->w_wcol;
+	pum_win_width = curwin->w_width;
 
 #if defined(FEAT_QUICKFIX)
 	FOR_ALL_WINDOWS(pvwin)
@@ -128,12 +143,12 @@ pum_display(
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
 
-	/* Put the pum below "row" if possible.  If there are few lines decide
-	 * on where there is more room. */
-	if (row + 2 >= below_row - pum_height
-			      && row - above_row > (below_row - above_row) / 2)
+	/* Put the pum below "pum_win_row" if possible.  If there are few lines
+	 * decide on where there is more room. */
+	if (pum_win_row + 2 >= below_row - pum_height
+		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
-	    /* pum above "row" */
+	    /* pum above "pum_win_row" */
 
 	    /* Leave two lines of context if possible */
 	    if (curwin->w_wrow - curwin->w_cline_row >= 2)
@@ -141,15 +156,15 @@ pum_display(
 	    else
 		context_lines = curwin->w_wrow - curwin->w_cline_row;
 
-	    if (row >= size + context_lines)
+	    if (pum_win_row >= size + context_lines)
 	    {
-		pum_row = row - size - context_lines;
+		pum_row = pum_win_row - size - context_lines;
 		pum_height = size;
 	    }
 	    else
 	    {
 		pum_row = 0;
-		pum_height = row - context_lines;
+		pum_height = pum_win_row - context_lines;
 	    }
 	    if (p_ph > 0 && pum_height > p_ph)
 	    {
@@ -159,7 +174,7 @@ pum_display(
 	}
 	else
 	{
-	    /* pum below "row" */
+	    /* pum below "pum_win_row" */
 
 	    /* Leave two lines of context if possible */
 	    if (curwin->w_cline_row
@@ -169,7 +184,7 @@ pum_display(
 		context_lines = curwin->w_cline_row
 				    + curwin->w_cline_height - curwin->w_wrow;
 
-	    pum_row = row + context_lines;
+	    pum_row = pum_win_row + context_lines;
 	    if (size > below_row - pum_row)
 		pum_height = below_row - pum_row;
 	    else
@@ -183,11 +198,11 @@ pum_display(
 	    return;
 
 #if defined(FEAT_QUICKFIX)
-	/* If there is a preview window at the above avoid drawing over it. */
+	// If there is a preview window above avoid drawing over it.
 	if (pvwin != NULL && pum_row < above_row && pum_height > above_row)
 	{
-	    pum_row += above_row;
-	    pum_height -= above_row;
+	    pum_row = above_row;
+	    pum_height = pum_win_row - above_row;
 	}
 #endif
 
@@ -199,10 +214,11 @@ pum_display(
 	/* Calculate column */
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
-	    col = curwin->w_wincol + curwin->w_width - curwin->w_wcol - 1;
+	    cursor_col = curwin->w_wincol + curwin->w_width
+							  - curwin->w_wcol - 1;
 	else
 #endif
-	    col = curwin->w_wincol + curwin->w_wcol;
+	    cursor_col = curwin->w_wincol + curwin->w_wcol;
 
 	/* if there are more items than room we need a scrollbar */
 	if (pum_height < size)
@@ -216,16 +232,19 @@ pum_display(
 	if (def_width < max_width)
 	    def_width = max_width;
 
-	if (((col < Columns - PUM_DEF_WIDTH || col < Columns - max_width)
+	if (((cursor_col < Columns - p_pw
+					   || cursor_col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
 		    && !curwin->w_p_rl)
-		|| (curwin->w_p_rl && (col > PUM_DEF_WIDTH || col > max_width)
+	       || (curwin->w_p_rl
+			       && (cursor_col > p_pw || cursor_col > max_width)
 #endif
 	   ))
 	{
-	    /* align pum column with "col" */
-	    pum_col = col;
+	    /* align pum with "cursor_col" */
+	    pum_col = cursor_col;
 
+	    /* start with the maximum space available */
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_width = pum_col - pum_scrollbar + 1;
@@ -234,12 +253,78 @@ pum_display(
 		pum_width = Columns - pum_col - pum_scrollbar;
 
 	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
-						  && pum_width > PUM_DEF_WIDTH)
+						&& pum_width > p_pw)
 	    {
+		/* the width is more than needed for the items, make it
+		 * narrower */
 		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
-		if (pum_width < PUM_DEF_WIDTH)
-		    pum_width = PUM_DEF_WIDTH;
+		if (pum_width < p_pw)
+		    pum_width = p_pw;
 	    }
+	    else if (((cursor_col > p_pw || cursor_col > max_width)
+#ifdef FEAT_RIGHTLEFT
+			&& !curwin->w_p_rl)
+		|| (curwin->w_p_rl && (cursor_col < Columns - p_pw
+			|| cursor_col < Columns - max_width)
+#endif
+		    ))
+	    {
+		/* align pum edge with "cursor_col" */
+#ifdef FEAT_RIGHTLEFT
+		if (curwin->w_p_rl
+			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
+		{
+		    pum_col = cursor_col + max_width + pum_scrollbar + 1;
+		    if (pum_col >= Columns)
+			pum_col = Columns - 1;
+		}
+		else if (!curwin->w_p_rl)
+#endif
+		{
+		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
+							  && max_width <= p_pw)
+		    {
+			/* use full width to end of the screen */
+			pum_col = Columns - max_width - pum_scrollbar;
+			if (pum_col < 0)
+			    pum_col = 0;
+		    }
+		}
+
+#ifdef FEAT_RIGHTLEFT
+		if (curwin->w_p_rl)
+		    pum_width = pum_col - pum_scrollbar + 1;
+		else
+#endif
+		    pum_width = Columns - pum_col - pum_scrollbar;
+
+		if (pum_width < p_pw)
+		{
+		    pum_width = p_pw;
+#ifdef FEAT_RIGHTLEFT
+		    if (curwin->w_p_rl)
+		    {
+			if (pum_width > pum_col)
+			    pum_width = pum_col;
+		    }
+		    else
+#endif
+		    {
+			if (pum_width >= Columns - pum_col)
+			    pum_width = Columns - pum_col - 1;
+		    }
+		}
+		else if (pum_width > max_width + pum_kind_width
+							  + pum_extra_width + 1
+			    && pum_width > p_pw)
+		{
+		    pum_width = max_width + pum_kind_width
+							 + pum_extra_width + 1;
+		    if (pum_width < p_pw)
+			pum_width = p_pw;
+		}
+	    }
+
 	}
 	else if (Columns < def_width)
 	{
@@ -254,8 +339,8 @@ pum_display(
 	}
 	else
 	{
-	    if (max_width > PUM_DEF_WIDTH)
-		max_width = PUM_DEF_WIDTH;	/* truncate */
+	    if (max_width > p_pw)
+		max_width = p_pw;	/* truncate */
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_col = max_width - 1;
@@ -269,6 +354,36 @@ pum_display(
 	 * redo the positioning.  Limit this to two times, when there is not
 	 * much room the window size will keep changing. */
     } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
+}
+
+/*
+ * Set a flag that when pum_redraw() is called it first calls update_screen().
+ * This will avoid clearing and redrawing the popup menu, prevent flicker.
+ */
+    void
+pum_call_update_screen()
+{
+    call_update_screen = TRUE;
+
+    // Update the cursor position to be able to compute the popup menu
+    // position.  The cursor line length may have changed because of the
+    // inserted completion.
+    curwin->w_valid &= ~(VALID_CROW|VALID_CHEIGHT);
+    validate_cursor();
+}
+
+/*
+ * Return TRUE if we are going to redraw the popup menu and the screen position
+ * "row"/"col" is under the popup menu.
+ */
+    int
+pum_under_menu(int row, int col)
+{
+    return pum_skip_redraw
+	    && row >= pum_row
+	    && row < pum_row + pum_height
+	    && col >= pum_col - 1
+	    && col < pum_col + pum_width;
 }
 
 /*
@@ -294,7 +409,15 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    /* Never display more than we have */
+    if (call_update_screen)
+    {
+	call_update_screen = FALSE;
+	pum_skip_redraw = TRUE;  // do not redraw in pum_may_redraw().
+	update_screen(0);
+	pum_skip_redraw = FALSE;
+    }
+
+    // never display more than we have
     if (pum_first > pum_size - pum_height)
 	pum_first = pum_size - pum_height;
 
@@ -352,9 +475,11 @@ pum_redraw(void)
 			char_u	*st;
 			int	saved = *p;
 
-			*p = NUL;
+			if (saved != NUL)
+			    *p = NUL;
 			st = transstr(s);
-			*p = saved;
+			if (saved != NUL)
+			    *p = saved;
 #ifdef FEAT_RIGHTLEFT
 			if (curwin->w_p_rl)
 			{
@@ -705,6 +830,7 @@ pum_set_selected(int n, int repeat)
 			pum_do_redraw = TRUE;
 			update_screen(0);
 			pum_do_redraw = FALSE;
+			call_update_screen = FALSE;
 		    }
 		}
 	    }
@@ -725,7 +851,7 @@ pum_set_selected(int n, int repeat)
 pum_undisplay(void)
 {
     pum_array = NULL;
-    redraw_all_later(SOME_VALID);
+    redraw_all_later(NOT_VALID);
     redraw_tabline = TRUE;
     status_redraw_all();
 }
@@ -751,6 +877,43 @@ pum_visible(void)
 }
 
 /*
+ * Reposition the popup menu to adjust for window layout changes.
+ */
+    void
+pum_may_redraw(void)
+{
+    pumitem_T	*array = pum_array;
+    int		len = pum_size;
+    int		selected = pum_selected;
+
+    if (!pum_visible() || pum_skip_redraw)
+	return;  // nothing to do
+
+    if (pum_window != curwin
+	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
+		&& pum_win_height == curwin->w_height
+		&& pum_win_col == curwin->w_wincol
+		&& pum_win_width == curwin->w_width))
+    {
+	// window position didn't change, redraw in the same position
+	pum_redraw();
+    }
+    else
+    {
+	int wcol = curwin->w_wcol;
+
+	// Window layout changed, recompute the position.
+	// Use the remembered w_wcol value, the cursor may have moved when a
+	// completion was inserted, but we want the menu in the same position.
+	pum_undisplay();
+	curwin->w_wcol = pum_win_wcol;
+	curwin->w_valid |= VALID_WCOL;
+	pum_display(array, len, selected);
+	curwin->w_wcol = wcol;
+    }
+}
+
+/*
  * Return the height of the popup menu, the number of entries visible.
  * Only valid when pum_visible() returns TRUE!
  */
@@ -759,6 +922,46 @@ pum_get_height(void)
 {
     return pum_height;
 }
+
+# if defined(FEAT_BEVAL_TERM) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+    static void
+pum_position_at_mouse(int min_width)
+{
+    if (Rows - mouse_row > pum_size)
+    {
+	/* Enough space below the mouse row. */
+	pum_row = mouse_row + 1;
+	if (pum_height > Rows - pum_row)
+	    pum_height = Rows - pum_row;
+    }
+    else
+    {
+	/* Show above the mouse row, reduce height if it does not fit. */
+	pum_row = mouse_row - pum_size;
+	if (pum_row < 0)
+	{
+	    pum_height += pum_row;
+	    pum_row = 0;
+	}
+    }
+    if (Columns - mouse_col >= pum_base_width
+	    || Columns - mouse_col > min_width)
+	/* Enough space to show at mouse column. */
+	pum_col = mouse_col;
+    else
+	/* Not enough space, right align with window. */
+	pum_col = Columns - (pum_base_width > min_width
+						 ? min_width : pum_base_width);
+
+    pum_width = Columns - pum_col;
+    if (pum_width > pum_base_width + 1)
+	pum_width = pum_base_width + 1;
+
+    // Do not redraw at cursor position.
+    pum_window = NULL;
+}
+
+# endif
 
 # if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 static pumitem_T *balloon_array = NULL;
@@ -915,8 +1118,7 @@ ui_remove_balloon(void)
 	pum_undisplay();
 	while (balloon_arraysize > 0)
 	    vim_free(balloon_array[--balloon_arraysize].pum_text);
-	vim_free(balloon_array);
-	balloon_array = NULL;
+	VIM_CLEAR(balloon_array);
     }
 }
 
@@ -942,7 +1144,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	    return;
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
-	    char_u *text = get_tv_string_chk(&li->li_tv);
+	    char_u *text = tv_get_string_chk(&li->li_tv);
 
 	    balloon_array[idx].pum_text = vim_strsave(
 					   text == NULL ? (char_u *)"" : text);
@@ -959,36 +1161,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	pum_scrollbar = 0;
 	pum_height = balloon_arraysize;
 
-	if (Rows - mouse_row > pum_size)
-	{
-	    /* Enough space below the mouse row. */
-	    pum_row = mouse_row + 1;
-	    if (pum_height > Rows - pum_row)
-		pum_height = Rows - pum_row;
-	}
-	else
-	{
-	    /* Show above the mouse row, reduce height if it does not fit. */
-	    pum_row = mouse_row - pum_size;
-	    if (pum_row < 0)
-	    {
-		pum_height += pum_row;
-		pum_row = 0;
-	    }
-	}
-	if (Columns - mouse_col >= pum_base_width
-		|| Columns - mouse_col > BALLOON_MIN_WIDTH)
-	    /* Enough space to show at mouse column. */
-	    pum_col = mouse_col;
-	else
-	    /* Not enough space, right align with window. */
-	    pum_col = Columns - (pum_base_width > BALLOON_MIN_WIDTH
-					 ? BALLOON_MIN_WIDTH : pum_base_width);
-
-	pum_width = Columns - pum_col;
-	if (pum_width > pum_base_width + 1)
-	    pum_width = pum_base_width + 1;
-
+	pum_position_at_mouse(BALLOON_MIN_WIDTH);
 	pum_selected = -1;
 	pum_first = 0;
 	pum_redraw();
@@ -1005,4 +1178,184 @@ ui_may_remove_balloon(void)
 	ui_remove_balloon();
 }
 # endif
+
+# if defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+/*
+ * Select the pum entry at the mouse position.
+ */
+    static void
+pum_select_mouse_pos(void)
+{
+    int idx = mouse_row - pum_row;
+
+    if (idx < 0 || idx >= pum_size)
+	pum_selected = -1;
+    else if (*pum_array[idx].pum_text != NUL)
+	pum_selected = idx;
+}
+
+/*
+ * Execute the currently selected popup menu item.
+ */
+    static void
+pum_execute_menu(vimmenu_T *menu, int mode)
+{
+    vimmenu_T   *mp;
+    int		idx = 0;
+    exarg_T	ea;
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
+	{
+	    vim_memset(&ea, 0, sizeof(ea));
+	    execute_menu(&ea, mp, -1);
+	    break;
+	}
+}
+
+/*
+ * Open the terminal version of the popup menu and don't return until it is
+ * closed.
+ */
+    void
+pum_show_popupmenu(vimmenu_T *menu)
+{
+    vimmenu_T   *mp;
+    int		idx = 0;
+    pumitem_T	*array;
+#ifdef FEAT_BEVAL_TERM
+    int		save_bevalterm = p_bevalterm;
+#endif
+    int		mode;
+
+    pum_undisplay();
+    pum_size = 0;
+    mode = get_menu_mode_flag();
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	if (menu_is_separator(mp->dname)
+		|| (mp->modes & mp->enabled & mode))
+	    ++pum_size;
+
+    // When there are only Terminal mode menus, using "popup Edit" results in
+    // pum_size being zero.
+    if (pum_size <= 0)
+    {
+	emsg(e_menuothermode);
+	return;
+    }
+
+    array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
+    if (array == NULL)
+	return;
+
+    for (mp = menu->children; mp != NULL; mp = mp->next)
+	if (menu_is_separator(mp->dname))
+	    array[idx++].pum_text = (char_u *)"";
+	else if (mp->modes & mp->enabled & mode)
+	    array[idx++].pum_text = mp->dname;
+
+    pum_array = array;
+    pum_compute_size();
+    pum_scrollbar = 0;
+    pum_height = pum_size;
+    pum_position_at_mouse(20);
+
+    pum_selected = -1;
+    pum_first = 0;
+#  ifdef FEAT_BEVAL_TERM
+    p_bevalterm = TRUE;  /* track mouse movement */
+    mch_setmouse(TRUE);
+#  endif
+
+    for (;;)
+    {
+	int	c;
+
+	pum_redraw();
+	setcursor_mayforce(TRUE);
+	out_flush();
+
+	c = vgetc();
+	if (c == ESC || c == Ctrl_C)
+	    break;
+	else if (c == CAR || c == NL)
+	{
+	    /* enter: select current item, if any, and close */
+	    pum_execute_menu(menu, mode);
+	    break;
+	}
+	else if (c == 'k' || c == K_UP || c == K_MOUSEUP)
+	{
+	    /* cursor up: select previous item */
+	    while (pum_selected > 0)
+	    {
+		--pum_selected;
+		if (*array[pum_selected].pum_text != NUL)
+		    break;
+	    }
+	}
+	else if (c == 'j' || c == K_DOWN || c == K_MOUSEDOWN)
+	{
+	    /* cursor down: select next item */
+	    while (pum_selected < pum_size - 1)
+	    {
+		++pum_selected;
+		if (*array[pum_selected].pum_text != NUL)
+		    break;
+	    }
+	}
+	else if (c == K_RIGHTMOUSE)
+	{
+	    /* Right mouse down: reposition the menu. */
+	    vungetc(c);
+	    break;
+	}
+	else if (c == K_LEFTDRAG || c == K_RIGHTDRAG || c == K_MOUSEMOVE)
+	{
+	    /* mouse moved: select item in the mouse row */
+	    pum_select_mouse_pos();
+	}
+	else if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM || c == K_RIGHTRELEASE)
+	{
+	    /* left mouse click: select clicked item, if any, and close;
+	     * right mouse release: select clicked item, close if any */
+	    pum_select_mouse_pos();
+	    if (pum_selected >= 0)
+	    {
+		pum_execute_menu(menu, mode);
+		break;
+	    }
+	    if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM)
+		break;
+	}
+    }
+
+    vim_free(array);
+    pum_undisplay();
+#  ifdef FEAT_BEVAL_TERM
+    p_bevalterm = save_bevalterm;
+    mch_setmouse(TRUE);
+#  endif
+}
+
+    void
+pum_make_popup(char_u *path_name, int use_mouse_pos)
+{
+    vimmenu_T *menu;
+
+    if (!use_mouse_pos)
+    {
+	/* Hack: set mouse position at the cursor so that the menu pops up
+	 * around there. */
+	mouse_row = curwin->w_winrow + curwin->w_wrow;
+	mouse_col = curwin->w_wincol + curwin->w_wcol;
+    }
+
+    menu = gui_find_menu(path_name);
+    if (menu != NULL)
+	pum_show_popupmenu(menu);
+}
+# endif
+
 #endif

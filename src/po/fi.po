@@ -2016,7 +2016,7 @@ msgstr "E216: Ryhmää tai eventtiä ei ole: %s"
 
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autocommandit ---"
@@ -2035,7 +2035,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: liian monta tasoa autocommandissa"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autocommands kohteelle %s"
 
 #, c-format
@@ -2915,7 +2915,7 @@ msgstr "-q [virhetiedosto]  muokkaa tiedostoa ensimmäisestä virheestä"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -3033,7 +3033,7 @@ msgstr "-f\t\t\tÄlä käytä newcli:tä ikkunan avaamiseen"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <laite>\t\tKäytä <laitetta> IO:hon"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\tkäynnistä arabia-tilassa"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -4711,7 +4711,7 @@ msgstr "E55: Pariton %s)"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( ei ole sallittu tässä"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 jne. ei ole sallittu tässä"
 
 #, c-format
@@ -4822,7 +4822,7 @@ msgstr "E869: (NFA) Tuntematon operaattori '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (NFA regexp) Virhe luettaessa toiston määriä"
 
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
 msgstr "E871: (NFA regexp) Multi ei voi seurata multia"
 
 msgid "E872: (NFA regexp) Too many '('"
@@ -4834,7 +4834,7 @@ msgstr "E879: (NFA regexp) Liikaa merkkejä \\z("
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA regexp) oikea lopetusvirhe"
 
-msgid "E874: (NFA) Could not pop the stack !"
+msgid "E874: (NFA) Could not pop the stack!"
 msgstr "E874: (NFA) Ei voida poistaa pinosta"
 
 msgid ""
@@ -4851,7 +4851,7 @@ msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Ei voitu allokoida muistia polkujen läpikäyntiin"
 
 msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
+"Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
 "Ei voitu avata väliaikaislokitiedosta kirjoittamista varten, joten virheet "
 "näytetään vakiovirhevirrassa. "
@@ -5081,7 +5081,7 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: virhe luettaessa .sug-tiedostoa: %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "Luetaan affiksitiedostoa %s..."
 
 #, c-format
@@ -5218,7 +5218,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s-arvo eroaa toisessa .aff-tiedostossa olevasta"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "Luetaan sanakirjatiedostoa %s"
 
 #, c-format
@@ -5246,7 +5246,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ei-ASCII-merkkien takia ohitettuja sanoja %d kohteessa %s"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "Luetaan sanatiedostoa %s..."
 
 #, c-format
@@ -5303,7 +5303,7 @@ msgid "Total number of words: %d"
 msgstr "Sanoja yhteensä: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "Kirjoitetaan ehdotustiedostoa %s..."
 
 #, c-format
@@ -5324,7 +5324,7 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varoitus: sekä yhdyssanamuodostus että NOBREAK käytössä"
 
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "Kirjoitetaan oikaisulukutiedostoa %s..."
 
 msgid "Done!"

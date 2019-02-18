@@ -1,4 +1,4 @@
-/* Require getopt(3) */
+// Require getopt(3)
 #define _XOPEN_SOURCE
 
 #include <stdio.h>
@@ -22,28 +22,28 @@ static int parser_text(const char bytes[], size_t len, void *user)
 
   int i;
   for(i = 0; i < len; /* none */) {
-    if(b[i] < 0x20)        /* C0 */
+    if(b[i] < 0x20)        // C0
       break;
-    else if(b[i] < 0x80)   /* ASCII */
+    else if(b[i] < 0x80)   // ASCII
       i++;
-    else if(b[i] < 0xa0)   /* C1 */
+    else if(b[i] < 0xa0)   // C1
       break;
-    else if(b[i] < 0xc0)   /* UTF-8 continuation */
+    else if(b[i] < 0xc0)   // UTF-8 continuation
       break;
-    else if(b[i] < 0xe0) { /* UTF-8 2-byte */
-      /* 2-byte UTF-8 */
+    else if(b[i] < 0xe0) { // UTF-8 2-byte
+      // 2-byte UTF-8
       if(len < i+2) break;
       i += 2;
     }
-    else if(b[i] < 0xf0) { /* UTF-8 3-byte */
+    else if(b[i] < 0xf0) { // UTF-8 3-byte
       if(len < i+3) break;
       i += 3;
     }
-    else if(b[i] < 0xf8) { /* UTF-8 4-byte */
+    else if(b[i] < 0xf8) { // UTF-8 4-byte
       if(len < i+4) break;
       i += 4;
     }
-    else                   /* otherwise invalid */
+    else                   // otherwise invalid
       break;
   }
 
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
   file = argv[optind++];
 
   if(!file || streq(file, "-"))
-    fd = 0; /* stdin */
+    fd = 0; // stdin
   else {
     fd = open(file, O_RDONLY);
     if(fd == -1) {
@@ -227,5 +227,6 @@ int main(int argc, char *argv[])
 
   close(fd);
   vterm_free(vt);
+
   return 0;
 }

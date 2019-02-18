@@ -12,12 +12,25 @@ func TearDown()
 endfunc
 
 func Test_packadd()
+  if !exists('s:plugdir')
+    echomsg 'when running this test manually, call SetUp() first'
+    return
+  endif
+
   call mkdir(s:plugdir . '/plugin/also', 'p')
   call mkdir(s:plugdir . '/ftdetect', 'p')
   call mkdir(s:plugdir . '/after', 'p')
   set rtp&
   let rtp = &rtp
   filetype on
+
+  let rtp_entries = split(rtp, ',')
+  for entry in rtp_entries
+    if entry =~? '\<after\>' 
+      let first_after_entry = entry
+      break
+    endif
+  endfor
 
   exe 'split ' . s:plugdir . '/plugin/test.vim'
   call setline(1, 'let g:plugin_works = 42')
@@ -37,12 +50,45 @@ func Test_packadd()
   call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
-  call assert_true(&rtp =~ '/testdir/Xdir/pack/mine/opt/mytest/after$')
+  call assert_match('/testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
+
+  let new_after = match(&rtp, '/testdir/Xdir/pack/mine/opt/mytest/after,')
+  let forwarded = substitute(first_after_entry, '\\', '[/\\\\]', 'g')
+  let old_after = match(&rtp, ',' . forwarded . '\>')
+  call assert_true(new_after > 0, 'rtp is ' . &rtp)
+  call assert_true(old_after > 0, 'match ' . forwarded . ' in ' . &rtp)
+  call assert_true(new_after < old_after, 'rtp is ' . &rtp)
+
+  " NOTE: '/.../opt/myte' forwardly matches with '/.../opt/mytest'
+  call mkdir(fnamemodify(s:plugdir, ':h') . '/myte', 'p')
+  let rtp = &rtp
+  packadd myte
+
+  " Check the path of 'myte' is added
+  call assert_true(len(&rtp) > len(rtp))
+  call assert_match('/testdir/Xdir/pack/mine/opt/myte\($\|,\)', &rtp)
 
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')
   call assert_fails("packadd", 'E471:')
+endfunc
+
+func Test_packadd_start()
+  let plugdir = s:topdir . '/pack/mine/start/other'
+  call mkdir(plugdir . '/plugin', 'p')
+  set rtp&
+  let rtp = &rtp
+  filetype on
+
+  exe 'split ' . plugdir . '/plugin/test.vim'
+  call setline(1, 'let g:plugin_works = 24')
+  wq
+
+  packadd other
+
+  call assert_equal(24, g:plugin_works)
+  call assert_true(len(&rtp) > len(rtp))
+  call assert_match('/testdir/Xdir/pack/mine/start/other\($\|,\)', &rtp)
 endfunc
 
 func Test_packadd_noload()
@@ -59,7 +105,7 @@ func Test_packadd_noload()
   packadd! mytest
 
   call assert_true(len(&rtp) > len(rtp))
-  call assert_true(&rtp =~ 'testdir/Xdir/pack/mine/opt/mytest\($\|,\)')
+  call assert_match('testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
   call assert_equal(0, g:plugin_works)
 
   " check the path is not added twice
@@ -90,7 +136,7 @@ func Test_packadd_symlink_dir()
   packadd mytest
 
   " Must have been inserted in the middle, not at the end
-  call assert_true(&rtp =~ '/pack/mine/opt/mytest,')
+  call assert_match('/pack/mine/opt/mytest,', &rtp)
   call assert_equal(44, g:plugin_works)
 
   " No change when doing it again.
@@ -101,6 +147,43 @@ func Test_packadd_symlink_dir()
   set rtp&
   let rtp = &rtp
   exec "silent !rm" top2_dir
+endfunc
+
+func Test_packadd_symlink_dir2()
+  if !has('unix')
+    return
+  endif
+  let top2_dir = s:topdir . '/Xdir2'
+  let real_dir = s:topdir . '/Xsym/pack'
+  call mkdir(top2_dir, 'p')
+  call mkdir(real_dir, 'p')
+  let &rtp = top2_dir . ',' . top2_dir . '/after'
+  let &packpath = &rtp
+
+  exec "silent !ln -s ../Xsym/pack"  top2_dir . '/pack'
+  let s:plugdir = top2_dir . '/pack/mine/opt/mytest'
+  call mkdir(s:plugdir . '/plugin', 'p')
+
+  exe 'split ' . s:plugdir . '/plugin/test.vim'
+  call setline(1, 'let g:plugin_works = 48')
+  wq
+  let g:plugin_works = 0
+
+  packadd mytest
+
+  " Must have been inserted in the middle, not at the end
+  call assert_match('/Xdir2/pack/mine/opt/mytest,', &rtp)
+  call assert_equal(48, g:plugin_works)
+
+  " No change when doing it again.
+  let rtp_before = &rtp
+  packadd mytest
+  call assert_equal(rtp_before, &rtp)
+
+  set rtp&
+  let rtp = &rtp
+  exec "silent !rm" top2_dir . '/pack'
+  exec "silent !rmdir" top2_dir
 endfunc
 
 " Check command-line completion for 'packadd'
@@ -178,9 +261,9 @@ func Test_helptags()
   helptags ALL
 
   let tags1 = readfile(docdir1 . '/tags') 
-  call assert_true(tags1[0] =~ 'look-here')
+  call assert_match('look-here', tags1[0])
   let tags2 = readfile(docdir2 . '/tags') 
-  call assert_true(tags2[0] =~ 'look-away')
+  call assert_match('look-away', tags2[0])
 endfunc
 
 func Test_colorscheme()

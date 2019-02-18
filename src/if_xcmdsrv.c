@@ -192,10 +192,8 @@ static int	DoRegisterName(Display *dpy, char_u *name);
 static void	DeleteAnyLingerer(Display *dpy, Window w);
 static int	GetRegProp(Display *dpy, char_u **regPropp, long_u *numItemsp, int domsg);
 static int	WaitForPend(void *p);
-static int	WaitForReply(void *p);
 static int	WindowValid(Display *dpy, Window w);
 static void	ServerWait(Display *dpy, Window w, EndCond endCond, void *endData, int localLoop, int seconds);
-static struct ServerReply *ServerReplyFind(Window w, enum ServerReplyOp op);
 static int	AppendPropCarefully(Display *display, Window window, Atom property, char_u *value, int length);
 static int	x_error_check(Display *dpy, XErrorEvent *error_event);
 static int	IsSerialName(char_u *name);
@@ -230,7 +228,7 @@ serverRegisterName(
 	{
 	    if (res < -1 || i >= 1000)
 	    {
-		MSG_ATTR(_("Unable to register a command server name"),
+		msg_attr(_("Unable to register a command server name"),
 							      HL_ATTR(HLF_W));
 		return FAIL;
 	    }
@@ -429,7 +427,7 @@ serverSendToVim(
     if (w == None)
     {
 	if (!silent)
-	    EMSG2(_(e_noserver), name);
+	    semsg(_(e_noserver), name);
 	return -1;
     }
     else if (loosename != NULL)
@@ -442,20 +440,11 @@ serverSendToVim(
      * comm window in the communication window.
      * Length must be computed exactly!
      */
-#ifdef FEAT_MBYTE
     length = STRLEN(name) + STRLEN(p_enc) + STRLEN(cmd) + 14;
-#else
-    length = STRLEN(name) + STRLEN(cmd) + 10;
-#endif
     property = (char_u *)alloc((unsigned)length + 30);
 
-#ifdef FEAT_MBYTE
     sprintf((char *)property, "%c%c%c-n %s%c-E %s%c-s %s",
 		      0, asExpr ? 'c' : 'k', 0, name, 0, p_enc, 0, cmd);
-#else
-    sprintf((char *)property, "%c%c%c-n %s%c-s %s",
-		      0, asExpr ? 'c' : 'k', 0, name, 0, cmd);
-#endif
     if (name == loosename)
 	vim_free(loosename);
     /* Add a back reference to our comm window */
@@ -469,7 +458,7 @@ serverSendToVim(
     vim_free(property);
     if (res < 0)
     {
-	EMSG(_("E248: Failed to send command to the destination program"));
+	emsg(_("E248: Failed to send command to the destination program"));
 	return -1;
     }
 
@@ -734,7 +723,7 @@ serverStrToWin(char_u *str)
 
     sscanf((char *)str, "0x%x", &id);
     if (id == None)
-	EMSG2(_("E573: Invalid server id used: %s"), str);
+	semsg(_("E573: Invalid server id used: %s"), str);
 
     return (Window)id;
 }
@@ -760,20 +749,11 @@ serverSendReply(char_u *name, char_u *str)
     if (!WindowValid(dpy, win))
 	return -1;
 
-#ifdef FEAT_MBYTE
     length = STRLEN(p_enc) + STRLEN(str) + 14;
-#else
-    length = STRLEN(str) + 10;
-#endif
     if ((property = (char_u *)alloc((unsigned)length + 30)) != NULL)
     {
-#ifdef FEAT_MBYTE
 	sprintf((char *)property, "%cn%c-E %s%c-n %s%c-w %x",
 			    0, 0, p_enc, 0, str, 0, (unsigned int)commWindow);
-#else
-	sprintf((char *)property, "%cn%c-n %s%c-w %x",
-			    0, 0, str, 0, (unsigned int)commWindow);
-#endif
 	/* Add length of what "%x" resulted in. */
 	length += STRLEN(property + length);
 	res = AppendPropCarefully(dpy, win, commProperty, property, length + 1);
@@ -1112,7 +1092,7 @@ GetRegProp(
 	    XFree(*regPropp);
 	XDeleteProperty(dpy, RootWindow(dpy, 0), registryProperty);
 	if (domsg)
-	    EMSG(_("E251: VIM instance registry property is badly formed.  Deleted!"));
+	    emsg(_("E251: VIM instance registry property is badly formed.  Deleted!"));
 	return FAIL;
     }
     return OK;
@@ -1123,7 +1103,7 @@ GetRegProp(
  * This procedure is invoked by the various X event loops throughout Vims when
  * a property changes on the communication window.  This procedure reads the
  * property and enqueues command requests and responses. If immediate is true,
- * it runs the event immediatly instead of enqueuing it. Immediate can cause
+ * it runs the event immediately instead of enqueuing it. Immediate can cause
  * unintended behavior and should only be used for code that blocks for a
  * response.
  */
@@ -1336,17 +1316,10 @@ server_parse_message(
 
 			/* Initialize the result property. */
 			ga_init2(&reply, 1, 100);
-#ifdef FEAT_MBYTE
 			(void)ga_grow(&reply, 50 + STRLEN(p_enc));
 			sprintf(reply.ga_data, "%cr%c-E %s%c-s %s%c-r ",
 						   0, 0, p_enc, 0, serial, 0);
 			reply.ga_len = 14 + STRLEN(p_enc) + STRLEN(serial);
-#else
-			(void)ga_grow(&reply, 50);
-			sprintf(reply.ga_data, "%cr%c-s %s%c-r ",
-							     0, 0, serial, 0);
-			reply.ga_len = 10 + STRLEN(serial);
-#endif
 
 			/* Evaluate the expression and return the result. */
 			if (res != NULL)
@@ -1480,14 +1453,12 @@ server_parse_message(
 		ga_concat(&(r->strings), str);
 		ga_append(&(r->strings), NUL);
 	    }
-#ifdef FEAT_AUTOCMD
 	    {
 		char_u	winstr[30];
 
 		sprintf((char *)winstr, "0x%x", (unsigned int)win);
 		apply_autocmds(EVENT_REMOTEREPLY, winstr, str, TRUE, curbuf);
 	    }
-#endif
 	    vim_free(tofree);
 	}
 	else

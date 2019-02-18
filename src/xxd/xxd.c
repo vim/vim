@@ -52,6 +52,7 @@
  * 2011 March  Better error handling by Florian Zumbiehl.
  * 2011 April  Formatting by Bram Moolenaar
  * 08.06.2013  Little-endian hexdump (-e) and offset (-o) by Vadim Vygonets.
+ * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
  *
@@ -90,6 +91,7 @@
 #include <stdlib.h>
 #include <string.h>	/* for strncmp() */
 #include <ctype.h>	/* for isalnum() */
+#include <limits.h>
 #if __MWERKS__ && !defined(BEBOX)
 # include <unix.h>	/* for fdopen() on MAC */
 #endif
@@ -204,7 +206,7 @@ static void xxdline __P((FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
 #define COLS 256	/* change here, if you ever need more columns */
-#define LLEN (12 + (9*COLS-1) + COLS + 2)
+#define LLEN ((2*(int)sizeof(unsigned long)) + 4 + (9*COLS-1) + COLS + 2)
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
@@ -214,6 +216,8 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_CINCLUDE 2
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
+
+#define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((int)c) : c)
 
 static char *pname;
 
@@ -225,6 +229,7 @@ exit_with_usage(void)
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "    -a          toggle autoskip: A single '*' replaces nul-lines. Default off.\n");
   fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i,-r). Default hex.\n");
+  fprintf(stderr, "    -C          capitalize variable names in C include file style (-i).\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
   fprintf(stderr, "    -e          little-endian dump (incompatible with -ps,-i,-r).\n");
@@ -459,13 +464,15 @@ main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
-  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
+  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL, capitalize = 0;
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
-  long length = -1, n = 0, seekoff = 0, displayoff = 0;
+  long length = -1, n = 0, seekoff = 0;
+  unsigned long displayoff = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
+  int addrlen = 9;
 
 #ifdef AMIGA
   /* This program doesn't work when started from the Workbench */
@@ -495,6 +502,7 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-u", 2)) hexx = hexxa + 16;
       else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
       else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
+      else if (!STRNCMP(pp, "-C", 2)) capitalize = 1;
       else if (!STRNCMP(pp, "-r", 2)) revert++;
       else if (!STRNCMP(pp, "-E", 2)) ebcdic++;
       else if (!STRNCMP(pp, "-v", 2))
@@ -504,7 +512,9 @@ main(int argc, char *argv[])
 	}
       else if (!STRNCMP(pp, "-c", 2))
 	{
-	  if (pp[2] && STRNCMP("ols", pp + 2, 3))
+	  if (pp[2] && !STRNCMP("apitalize", pp + 2, 9))
+	    capitalize = 1;
+	  else if (pp[2] && STRNCMP("ols", pp + 2, 3))
 	    cols = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
@@ -517,7 +527,7 @@ main(int argc, char *argv[])
 	}
       else if (!STRNCMP(pp, "-g", 2))
 	{
-	  if (pp[2] && STRNCMP("group", pp + 2, 5))
+	  if (pp[2] && STRNCMP("roup", pp + 2, 4))
 	    octspergrp = (int)strtol(pp + 2, NULL, 0);
 	  else
 	    {
@@ -530,13 +540,25 @@ main(int argc, char *argv[])
 	}
       else if (!STRNCMP(pp, "-o", 2))
 	{
+	  int reloffset = 0;
+	  int negoffset = 0;
 	  if (pp[2] && STRNCMP("ffset", pp + 2, 5))
-	    displayoff = (int)strtol(pp + 2, NULL, 0);
+	    displayoff = strtoul(pp + 2, NULL, 0);
 	  else
 	    {
 	      if (!argv[2])
 		exit_with_usage();
-	      displayoff = (int)strtol(argv[2], NULL, 0);
+
+	      if (argv[2][0] == '+')
+	       reloffset++;
+	     if (argv[2][reloffset] == '-')
+	       negoffset++;
+
+	     if (negoffset)
+	       displayoff = ULONG_MAX - strtoul(argv[2] + reloffset+negoffset, NULL, 0) + 1;
+	     else
+	       displayoff = strtoul(argv[2] + reloffset+negoffset, NULL, 0);
+
 	      argv++;
 	      argc--;
 	    }
@@ -722,7 +744,7 @@ main(int argc, char *argv[])
 	  if (fprintf(fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    die(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+          if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
 	      die(3);
 	  if (fputs("[] = {\n", fpo) == EOF)
 	    die(3);
@@ -750,9 +772,9 @@ main(int argc, char *argv[])
 	  if (fprintf(fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : "") < 0)
 	    die(3);
 	  for (e = 0; (c = argv[1][e]) != 0; e++)
-	    if (putc(isalnum(c) ? c : '_', fpo) == EOF)
+        if (putc(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo) == EOF)
 	      die(3);
-	  if (fprintf(fpo, "_len = %d;\n", p) < 0)
+	  if (fprintf(fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p) < 0)
 	    die(3);
 	}
 
@@ -804,45 +826,45 @@ main(int argc, char *argv[])
     {
       if (p == 0)
 	{
-	  sprintf(l, "%08lx:",
-	    ((unsigned long)(n + seekoff + displayoff)) & 0xffffffff);
-	  for (c = 9; c < LLEN; l[c++] = ' ');
+	  addrlen = sprintf(l, "%08lx:",
+	    ((unsigned long)(n + seekoff + displayoff)));
+	  for (c = addrlen; c < LLEN; l[c++] = ' ');
 	}
       if (hextype == HEX_NORMAL)
 	{
-	  l[c = (10 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  l[c = (addrlen + 1 + (grplen * p) / octspergrp)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
       else if (hextype == HEX_LITTLEENDIAN)
 	{
 	  int x = p ^ (octspergrp-1);
-	  l[c = (10 + (grplen * x) / octspergrp)] = hexx[(e >> 4) & 0xf];
+	  l[c = (addrlen + 1 + (grplen * x) / octspergrp)] = hexx[(e >> 4) & 0xf];
 	  l[++c]				  = hexx[ e       & 0xf];
 	}
       else /* hextype == HEX_BITS */
 	{
 	  int i;
 
-	  c = (10 + (grplen * p) / octspergrp) - 1;
+	  c = (addrlen + 1 + (grplen * p) / octspergrp) - 1;
 	  for (i = 7; i >= 0; i--)
 	    l[++c] = (e & (1 << i)) ? '1' : '0';
 	}
+      if (e)
+	nonzero++;
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      l[12 + (grplen * cols - 1)/octspergrp + p] =
+      l[addrlen + 3 + (grplen * cols - 1)/octspergrp + p] =
 #ifdef __MVS__
 	  (e >= 64)
 #else
 	  (e > 31 && e < 127)
 #endif
 	  ? e : '.';
-      if (e)
-	nonzero++;
       n++;
       if (++p == cols)
 	{
-	  l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+	  l[c = (addrlen + 3 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
 	  xxdline(fpo, l, autoskip ? nonzero : 1);
 	  nonzero = 0;
 	  p = 0;
@@ -852,7 +874,7 @@ main(int argc, char *argv[])
     die(2);
   if (p)
     {
-      l[c = (12 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
+      l[c = (addrlen + 3 + (grplen * cols - 1)/octspergrp + p)] = '\n'; l[++c] = '\0';
       xxdline(fpo, l, 1);
     }
   else if (autoskip)

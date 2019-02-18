@@ -88,12 +88,12 @@ LINK32=link.exe
 CPP_PROJ= /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 # ADD CPP /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c
 
-LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
+LINK32_FLAGS= oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib netapi32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # ADD LINK32  oldnames.lib kernel32.lib user32.lib gdi32.lib version.lib comdlg32.lib comctl32.lib advapi32.lib shell32.lib ole32.lib uuid.lib /nologo /machine:I386 /nodefaultlib
 # SUBTRACT LINK32 /incremental:yes
 
-RSC_PROJ= /l 0x409 /d "FEAT_GUI_W32"
-# ADD RSC /l 0x409 /d "FEAT_GUI_W32"
+RSC_PROJ= /l 0x409 /d "FEAT_GUI"
+# ADD RSC /l 0x409 /d "FEAT_GUI"
 
 !IF  "$(CFG)" == "Vim - Win32 Release gvim OLE"
 
@@ -105,8 +105,8 @@ INTDIR=.\oleRel
 VIM=gvim
 EXTRAS="$(INTDIR)/if_ole.obj" "$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
-# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
+CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
+# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/
 
 RSC_PROJ=$(RSC_PROJ) /I ".\oleRel" /d "NDEBUG" /d "FEAT_OLE" /fo.\oleRel\vim.res
 # ADD RSC            /I ".\oleRel" /d "NDEBUG" /d "FEAT_OLE" /fo.\oleRel\vim.res
@@ -124,8 +124,8 @@ INTDIR=.\oleDbg
 VIM=gvimd
 EXTRAS="$(INTDIR)/if_ole.obj" "$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/
-# ADD CPP            /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/
+CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/
+# ADD CPP            /Zi /Od /D "_DEBUG" /D "FEAT_GUI" /D "DYNAMIC_GETTEXT" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/
 
 RSC_PROJ=$(RSC_PROJ) /I .\oleDbg /d "_DEBUG" /d "FEAT_OLE" /fo.\oleDbg\vim.res
 # ADD RSC            /I .\oleDbg /d "_DEBUG" /d "FEAT_OLE" /fo.\oleDbg\vim.res
@@ -144,8 +144,8 @@ INTDIR=.\gRel
 VIM=gvim
 EXTRAS="$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
-# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /Fd.\gRel/ /Fo.\gRel/
+CPP_PROJ=$(CPP_PROJ) /Zi /O2 /D "NDEBUG" /D "FEAT_GUI" /Fd.\gRel/ /Fo.\gRel/
+# ADD CPP            /Zi /O2 /D "NDEBUG" /D "FEAT_GUI" /Fd.\gRel/ /Fo.\gRel/
 
 RSC_PROJ=$(RSC_PROJ) /d "NDEBUG" /fo.\gRel\vim.res
 # ADD RSC            /d "NDEBUG" /fo.\gRel\vim.res
@@ -163,8 +163,8 @@ INTDIR=.\gDbg
 VIM=gvimd
 EXTRAS="$(INTDIR)/vim.res" "$(INTDIR)/gui.obj" "$(INTDIR)/gui_w32.obj" "$(INTDIR)/gui_beval.obj" "$(INTDIR)/os_w32exe.obj"
 
-CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /Fd.\gDbg/ /Fo.\gDbg/
-# ADD CPP            /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /Fd.\gDbg/ /Fo.\gDbg/
+CPP_PROJ=$(CPP_PROJ) /Zi /Od /D "_DEBUG" /D "FEAT_GUI" /Fd.\gDbg/ /Fo.\gDbg/
+# ADD CPP            /Zi /Od /D "_DEBUG" /D "FEAT_GUI" /Fd.\gDbg/ /Fo.\gDbg/
 
 RSC_PROJ=$(RSC_PROJ) /d "_DEBUG" /fo.\gDbg\vim.res
 # ADD RSC            /d "_DEBUG" /fo.\gDbg\vim.res
@@ -211,6 +211,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 LINK32_OBJS= \
 	$(EXTRAS) \
 	"$(INTDIR)/arabic.obj" \
+	"$(INTDIR)/autocmd.obj" \
 	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
@@ -227,12 +228,13 @@ LINK32_OBJS= \
 	"$(INTDIR)/ex_docmd.obj" \
 	"$(INTDIR)/ex_eval.obj" \
 	"$(INTDIR)/ex_getln.obj" \
-	"$(INTDIR)/farsi.obj" \
 	"$(INTDIR)/fileio.obj" \
+	"$(INTDIR)/findfile.obj" \
 	"$(INTDIR)/fold.obj" \
 	"$(INTDIR)/getchar.obj" \
 	"$(INTDIR)/hardcopy.obj" \
 	"$(INTDIR)/hashtab.obj" \
+	"$(INTDIR)/indent.obj" \
 	"$(INTDIR)/json.obj" \
 	"$(INTDIR)/list.obj" \
 	"$(INTDIR)/main.obj" \
@@ -257,6 +259,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/screen.obj" \
 	"$(INTDIR)/search.obj" \
 	"$(INTDIR)/sha256.obj" \
+	"$(INTDIR)/sign.obj" \
 	"$(INTDIR)/spell.obj" \
 	"$(INTDIR)/spellfile.obj" \
 	"$(INTDIR)/syntax.obj" \
@@ -340,6 +343,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 SOURCE=.\arabic.c
 # End Source File
 # Begin Source File
+#
+SOURCE=.\autocmd.c
+# End Source File
+# Begin Source File
 
 SOURCE=.\blowfish.c
 # End Source File
@@ -405,11 +412,11 @@ SOURCE=.\ex_getln.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\farsi.c
+SOURCE=.\fileio.c
 # End Source File
 # Begin Source File
-
-SOURCE=.\fileio.c
+#
+SOURCE=.\findfile.c
 # End Source File
 # Begin Source File
 
@@ -426,6 +433,10 @@ SOURCE=.\hardcopy.c
 # Begin Source File
 
 SOURCE=.\hashtab.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\indent.c
 # End Source File
 # Begin Source File
 
@@ -497,7 +508,7 @@ SOURCE=.\if_ole.cpp
 # Begin Custom Build
 
 "$(INTDIR)\if_ole.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\if_ole.h"
- cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /Zi /O2 /D "NDEBUG" /D "FEAT_GUI_W32" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/ /I ".\oleRel" .\if_ole.cpp
+ cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /Zi /O2 /D "NDEBUG" /D "FEAT_GUI" /D "FEAT_OLE" /Fd.\oleRel/ /Fo.\oleRel/ /I ".\oleRel" .\if_ole.cpp
  @rem This is the default rule with /I "$(IntDir)" added
 
 # End Custom Build
@@ -508,7 +519,7 @@ SOURCE=.\if_ole.cpp
 # Begin Custom Build
 
 "$(INTDIR)\if_ole.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\if_ole.h"
- cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /Zi /Od /D "_DEBUG" /D "FEAT_GUI_W32" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/ /I ".\oleDbg" .\if_ole.cpp
+ cl.exe /nologo /MT /W3 /GX /I ".\proto" /D "WIN32" /c /Zi /Od /D "_DEBUG" /D "FEAT_GUI" /D "FEAT_OLE" /Fd.\oleDbg/ /Fo.\oleDbg/ /I ".\oleDbg" .\if_ole.cpp
  @rem This is the default rule with /I "$(IntDir)" added
 
 # End Custom Build
@@ -672,6 +683,10 @@ SOURCE=.\search.c
 # Begin Source File
 
 SOURCE=.\sha256.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sign.c
 # End Source File
 # Begin Source File
 

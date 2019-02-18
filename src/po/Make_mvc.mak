@@ -10,83 +10,8 @@
 VIMRUNTIME = ..\..\runtime
 !endif
 
-LANGUAGES = \
-		af \
-		ca \
-		cs \
-		cs.cp1250 \
-		de \
-		en_GB \
-		eo \
-		es \
-		fi \
-		fr \
-		ga \
-		it \
-		ja \
-		ja.euc-jp \
-		ja.sjis \
-		ko \
-		ko.UTF-8 \
-		nb \
-		nl \
-		no \
-		pl \
-		pl.cp1250 \
-		pl.UTF-8 \
-		pt_BR \
-		ru \
-		ru.cp1251 \
-		sk \
-		sk.cp1250 \
-		sv \
-		uk \
-		uk.cp1251 \
-		vi \
-		zh_CN \
-		zh_CN.cp936 \
-		zh_CN.UTF-8 \
-		zh_TW \
-		zh_TW.UTF-8 \
-
-MOFILES = \
-		af.mo \
-		ca.mo \
-		cs.cp1250.mo \
-		cs.mo \
-		de.mo \
-		en_GB.mo \
-		eo.mo \
-		es.mo \
-		fi.mo \
-		fr.mo \
-		ga.mo \
-		it.mo \
-		ja.euc-jp.mo \
-		ja.mo \
-		ja.sjis.mo \
-		ko.mo \
-		ko.UTF-8.mo \
-		nb.mo \
-		nl.mo \
-		no.mo \
-		pl.cp1250.mo \
-		pl.mo \
-		pl.UTF-8.mo \
-		pt_BR.mo \
-		ru.cp1251.mo \
-		ru.mo \
-		sk.cp1250.mo \
-		sk.mo \
-		sv.mo \
-		uk.cp1251.mo \
-		uk.mo \
-		vi.mo \
-		zh_CN.mo \
-		zh_CN.cp936.mo \
-		zh_CN.UTF-8.mo \
-		zh_TW.mo \
-		zh_TW.UTF-8.mo \
+# get LANGUAGES, MOFILES and MOCONVERTED
+!include Make_all.mak
 
 PACKAGE = vim
 
@@ -114,20 +39,20 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 	set OLD_PO_FILE_INPUT=yes
 	$(MSGFMT) -o $@ $<
 
-all: $(MOFILES)
+all: $(MOFILES) $(MOCONVERTED)
 
 files:
-	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h > .\files
+	$(LS) $(LSFLAGS) ..\*.c ..\if_perl.xs ..\GvimExt\gvimext.cpp ..\globals.h ..\if_py_both.h ..\vim.h > .\files
 
 first_time: files
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments --keyword=_ --keyword=N_ --files-from=.\files
+	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
 
 $(LANGUAGES): files
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments --keyword=_ --keyword=N_ --files-from=.\files
+	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old

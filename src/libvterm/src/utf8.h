@@ -24,7 +24,7 @@ INLINE int fill_utf8(long codepoint, char *str)
 {
   int nbytes = utf8_seqlen(codepoint);
 
-  /* This is easier done backwards */
+  // This is easier done backwards
   int b = nbytes;
   while(b > 1) {
     b--;

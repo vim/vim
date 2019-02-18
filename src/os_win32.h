@@ -26,7 +26,6 @@
 
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		/* use argv[0] for $VIM */
-#define SYNC_DUP_CLOSE		/* sync() a file with dup() and close() */
 #define USE_TERM_CONSOLE
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H
@@ -71,7 +70,7 @@
 #if defined(__DATE__) && defined(__TIME__)
 # define HAVE_DATE_TIME
 #endif
-#ifndef FEAT_GUI_W32		/* GUI works different */
+#ifndef FEAT_GUI_MSWIN		/* GUI works different */
 # define BREAKCHECK_SKIP    1	/* call mch_breakcheck() each time, it's fast */
 #endif
 
@@ -79,7 +78,7 @@
 
 #define HAVE_PUTENV		/* at least Bcc 5.2 and MSC have it */
 
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # define NO_CONSOLE		/* don't included console-only code */
 #endif
 
@@ -89,6 +88,7 @@
 
 #define FNAME_ILLEGAL "\"*?><|" /* illegal characters in a file name */
 
+#include <signal.h>
 #include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
@@ -213,14 +213,7 @@ Trace(char *pszFormat, ...);
 #endif
 
 /* Enable common dialogs input unicode from IME if possible. */
-#ifdef FEAT_MBYTE
-# define pDispatchMessage DispatchMessageW
-# define pGetMessage GetMessageW
-# define pIsDialogMessage IsDialogMessageW
-# define pPeekMessage PeekMessageW
-#else
-# define pDispatchMessage DispatchMessage
-# define pGetMessage GetMessage
-# define pIsDialogMessage IsDialogMessage
-# define pPeekMessage PeekMessage
-#endif
+#define pDispatchMessage DispatchMessageW
+#define pGetMessage GetMessageW
+#define pIsDialogMessage IsDialogMessageW
+#define pPeekMessage PeekMessageW

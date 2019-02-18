@@ -6,20 +6,83 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>    2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr> 2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>    2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com> 2008, 2017.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com> 2008, 2018.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim(Français)\n"
+"Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-04 23:32+0200\n"
-"PO-Revision-Date: 2017-10-04 23:44+0200\n"
+"POT-Creation-Date: 2019-02-09 21:16+0100\n"
+"PO-Revision-Date: 2018-02-10 11:40+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
-"Language-Team: \n"
+"Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO_8859-15\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "--Deleted--"
+msgstr "--Effacé--"
+
+#, c-format
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "Autocommandes marquées pour auto-suppression : %s <tampon=%d>"
+
+#, c-format
+msgid "E367: No such group: \"%s\""
+msgstr "E367: Aucun groupe \"%s\""
+
+msgid "E936: Cannot delete the current group"
+msgstr "E936: Impossible de supprimer le groupe courant"
+
+msgid "W19: Deleting augroup that is still in use"
+msgstr "W19: Effacement d'augroup toujours en usage"
+
+#, c-format
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: Caractère non valide après * : %s"
+
+#, c-format
+msgid "E216: No such event: %s"
+msgstr "E216: Aucun événement %s"
+
+#, c-format
+msgid "E216: No such group or event: %s"
+msgstr "E216: Aucun événement ou groupe %s"
+
+msgid ""
+"\n"
+"--- Autocommands ---"
+msgstr ""
+"\n"
+"--- Auto-commandes ---"
+
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <buffer=%d> : numéro de tampon invalide"
+
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr ""
+"E217: Impossible d'exécuter les autocommandes pour TOUS les événements (ALL)"
+
+msgid "No matching autocommands"
+msgstr "Aucune autocommande correspondante"
+
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: autocommandes trop imbriquées"
+
+#, c-format
+msgid "%s Autocommands for \"%s\""
+msgstr "Autocommandes %s pour \"%s\""
+
+#, c-format
+msgid "Executing %s"
+msgstr "Exécution de %s"
+
+#, c-format
+msgid "autocommand %s"
+msgstr "autocommande %s"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: bf_key_init() appelée avec un mot de passe vide"
@@ -72,26 +135,23 @@ msgstr "E516: Aucun tampon n'a été effacé"
 msgid "E517: No buffers were wiped out"
 msgstr "E517: Aucun tampon n'a été détruit"
 
-msgid "1 buffer unloaded"
-msgstr "1 tampon a été déchargé"
+#, c-format
+msgid "%d buffer unloaded"
+msgid_plural "%d buffers unloaded"
+msgstr[0] "%d tampon a été déchargé"
+msgstr[1] "%d tampons ont été déchargés"
 
 #, c-format
-msgid "%d buffers unloaded"
-msgstr "%d tampons ont été déchargés"
-
-msgid "1 buffer deleted"
-msgstr "1 tampon a été effacé"
-
-#, c-format
-msgid "%d buffers deleted"
-msgstr "%d tampons ont été effacés"
-
-msgid "1 buffer wiped out"
-msgstr "1 tampon a été détruit"
+msgid "%d buffer deleted"
+msgid_plural "%d buffers deleted"
+msgstr[0] "%d tampon a été effacé"
+msgstr[1] "%d tampons ont été effacés"
 
 #, c-format
-msgid "%d buffers wiped out"
-msgstr "%d tampons ont été détruits"
+msgid "%d buffer wiped out"
+msgid_plural "%d buffers wiped out"
+msgstr[0] "%d tampon a été détruit"
+msgstr[1] "%d tampons ont été détruits"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Impossible de décharger le dernier tampon"
@@ -112,9 +172,9 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88: Impossible d'aller avant le premier tampon"
 
 #, c-format
-msgid "E89: No write since last change for buffer %ld (add ! to override)"
+msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Le tampon %ld n'a pas été enregistré (ajoutez ! pour passer outre)"
+"E89: Le tampon %d n'a pas été enregistré (ajoutez ! pour passer outre)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: Tâche en cours d'exécution (ajouter ! pour terminer la tâche)"
@@ -134,8 +194,8 @@ msgstr "W14: Alerte : La liste des noms de fichier déborde"
 # AB - Vu le code source, la version française est meilleure que la
 #      version anglaise. Ce message est similaire au message E86.
 #, c-format
-msgid "E92: Buffer %ld not found"
-msgstr "E92: Le tampon %ld n'existe pas"
+msgid "E92: Buffer %d not found"
+msgstr "E92: Le tampon %d n'existe pas"
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 #, c-format
@@ -175,12 +235,10 @@ msgid "[readonly]"
 msgstr "[lecture-seule]"
 
 #, c-format
-msgid "1 line --%d%%--"
-msgstr "1 ligne --%d%%--"
-
-#, c-format
-msgid "%ld lines --%d%%--"
-msgstr "%ld lignes --%d%%--"
+msgid "%ld line --%d%%--"
+msgid_plural "%ld lines --%d%%--"
+msgstr[0] "%ld ligne --%d%%--"
+msgstr[1] "%ld lignes --%d%%--"
 
 # AB - Faut-il remplacer "sur" par "de" ?
 # DB - Mon avis : oui.
@@ -227,23 +285,11 @@ msgstr ""
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Écriture impossible, l'option 'buftype' est activée"
 
+msgid "[Prompt]"
+msgstr "[Invite]"
+
 msgid "[Scratch]"
 msgstr "[Brouillon]"
-
-msgid ""
-"\n"
-"--- Signs ---"
-msgstr ""
-"\n"
-"--- Symboles ---"
-
-#, c-format
-msgid "Signs for %s:"
-msgstr "Symboles dans %s :"
-
-#, c-format
-msgid "    line=%ld  id=%d  name=%s"
-msgstr "    ligne=%ld  id=%d  nom=%s"
 
 msgid "E902: Cannot connect to port"
 msgstr "E902: Impossible de se connecter au port"
@@ -340,8 +386,13 @@ msgid "E737: Key already exists: %s"
 msgstr "E737: La clé existe déjà : %s"
 
 #, c-format
-msgid "E96: Cannot diff more than %ld buffers"
-msgstr "E96: Impossible d'utiliser diff sur plus de %ld tampons"
+msgid "E96: Cannot diff more than %d buffers"
+msgstr "E96: Impossible d'utiliser diff sur plus de %d tampons"
+
+#, c-format
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr ""
+"Pas assez de mémoire pour utiliser l'outil diff interne pour le tampon \"%s\""
 
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Impossible de lire ou écrire des fichiers temporaires"
@@ -349,6 +400,9 @@ msgstr "E810: Impossible de lire ou écrire des fichiers temporaires"
 # AB - La version française est meilleure que la version anglaise.
 msgid "E97: Cannot create diffs"
 msgstr "E97: diff ne fonctionne pas"
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: Problème lors de la création de l'outil diff interne"
 
 msgid "Patch file"
 msgstr "Fichier rustine"
@@ -358,6 +412,9 @@ msgstr "E816: Le fichier intermédiaire produit par patch n'a pu être lu"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Le fichier intermédiaire produit par diff n'a pu être lu"
+
+msgid "E959: Invalid diff format."
+msgstr "E959: Format diff invalide."
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Le tampon courant n'est pas en mode diff"
@@ -387,6 +444,81 @@ msgstr "E787: Le tampon a été modifié inopinément"
 # AB - Je cherche une traduction plus concise pour "escape".
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Un digraphe ne peut contenir le caractère d'échappement"
+
+msgid "Custom"
+msgstr "Personnalisé"
+
+msgid "Latin supplement"
+msgstr "Supplément latin"
+
+msgid "Greek and Coptic"
+msgstr "Grec et copte"
+
+msgid "Cyrillic"
+msgstr "Cyrillique"
+
+msgid "Hebrew"
+msgstr "Hébreu"
+
+msgid "Arabic"
+msgstr "Arabe"
+
+msgid "Latin extended"
+msgstr "Latin étendu"
+
+msgid "Greek extended"
+msgstr "Grec étendu"
+
+msgid "Punctuation"
+msgstr "Ponctuation"
+
+msgid "Super- and subscripts"
+msgstr "Exposants et indices"
+
+msgid "Currency"
+msgstr "Symboles monétaires"
+
+msgid "Other"
+msgstr "Autres"
+
+msgid "Roman numbers"
+msgstr "Nombres romains"
+
+msgid "Arrows"
+msgstr "Flèches"
+
+msgid "Mathematical operators"
+msgstr "Opérateurs mathématiques"
+
+msgid "Technical"
+msgstr "Signes techniques"
+
+msgid "Box drawing"
+msgstr "Filets"
+
+msgid "Block elements"
+msgstr "Pavés"
+
+msgid "Geometric shapes"
+msgstr "Formes géométriques"
+
+msgid "Symbols"
+msgstr "Symboles divers"
+
+msgid "Dingbats"
+msgstr "Symboles iconographiques"
+
+msgid "CJK symbols and punctuation"
+msgstr "Symboles et ponctuation CJC"
+
+msgid "Hiragana"
+msgstr "Hiragana"
+
+msgid "Katakana"
+msgstr "Katakana"
+
+msgid "Bopomofo"
+msgstr "Bopomofo"
 
 # AB - La version française est trop verbeuse.
 msgid "E544: Keymap file not found"
@@ -568,14 +700,17 @@ msgstr "Double ; dans une liste de variables"
 msgid "E738: Can't list variables for %s"
 msgstr "E738: Impossible de lister les variables de %s"
 
-msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: Seul une Liste ou un Dictionnaire peut être indexé"
+msgid "E689: Can only index a List, Dictionary or Blob"
+msgstr "E689: Seul une Liste, un Dictionnaire ou un Blob peut être indexé"
 
 msgid "E708: [:] must come last"
 msgstr "E708: [:] ne peut être spécifié qu'en dernier"
 
-msgid "E709: [:] requires a List value"
-msgstr "E709: [:] nécessite une Liste"
+msgid "E709: [:] requires a List or Blob value"
+msgstr "E709: [:] nécessite une Liste ou un blob"
+
+msgid "E972: Blob value does not have the right number of bytes"
+msgstr "E972: Le Blob n'a pas le bon nombre d'octets"
 
 msgid "E710: List value has more items than target"
 msgstr "E710: La Liste a plus d'éléments que la destination"
@@ -592,7 +727,7 @@ msgstr "E108: Variable inexistante : %s"
 
 #, c-format
 msgid "E940: Cannot lock or unlock variable %s"
-msgstr "E940: Impossible de (dé)verrouiler la variable %s"
+msgstr "E940: Impossible de (dé)verrouiller la variable %s"
 
 msgid "E743: variable nested too deep for (un)lock"
 msgstr "E743: variable trop imbriquée pour la (dé)verrouiller"
@@ -602,23 +737,11 @@ msgstr "E743: variable trop imbriquée pour la (dé)verrouiller"
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Il manque ':' après '?'"
 
-msgid "E691: Can only compare List with List"
-msgstr "E691: Une Liste ne peut être comparée qu'avec une Liste"
-
-msgid "E692: Invalid operation for List"
-msgstr "E692: Opération invalide avec les Liste"
-
-msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Un Dictionnaire ne peut être comparé qu'avec un Dictionnaire"
-
-msgid "E736: Invalid operation for Dictionary"
-msgstr "E736: Opération invalide avec les Dictionnaires"
-
-msgid "E694: Invalid operation for Funcrefs"
-msgstr "E694: Opération invalide avec les Funcrefs"
-
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Impossible d'utiliser '%' avec un Flottant"
+
+msgid "E973: Blob literal should have an even number of hex characters"
+msgstr "E973: Un littéral de Blob doit avoir un nombre pair de caractères hexadécimaux"
 
 msgid "E110: Missing ')'"
 msgstr "E110: ')' manquant"
@@ -675,6 +798,9 @@ msgstr "E910: Utilisation d'une Tâche comme un Nombre"
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Utilisation d'un Canal comme un Nombre"
 
+msgid "E974: Using a Blob as a Number"
+msgstr "E974: Utilisation d'un Blob comme un Nombre"
+
 msgid "E891: Using a Funcref as a Float"
 msgstr "E891: Utilisation d'une Funcref comme un Flottant"
 
@@ -696,6 +822,9 @@ msgstr "E911: Utilisation d'une Tâche comme un Flottant"
 msgid "E914: Using a Channel as a Float"
 msgstr "E914: Utilisation d'un Canal comme un Flottant"
 
+msgid "E975: Using a Blob as a Float"
+msgstr "E975: Utilisation d'un Blob comme un Flottant"
+
 msgid "E729: using Funcref as a String"
 msgstr "E729: Utilisation d'une Funcref comme une Chaîne"
 
@@ -705,8 +834,15 @@ msgstr "E730: Utilisation d'une Liste comme une Chaîne"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Utilisation d'un Dictionnaire comme une Chaîne"
 
+msgid "E976: using Blob as a String"
+msgstr "E976: Utilisation d'un Blob comme une Chaîne"
+
 msgid "E908: using an invalid value as a String"
 msgstr "E908: Utilisation d'une valeur invalide comme une Chaîne"
+
+#, c-format
+msgid "E963: setting %s to value with wrong type"
+msgstr "E963: type incorrect lors de l'affectation de %s"
 
 #, c-format
 msgid "E795: Cannot delete variable %s"
@@ -751,6 +887,27 @@ msgstr ""
 "\n"
 "\tModifié la dernière fois dans "
 
+msgid " line "
+msgstr " ligne "
+
+msgid "E977: Can only compare Blob with Blob"
+msgstr "E977: Un Blob ne peut être comparé qu'avec un Blob"
+
+msgid "E691: Can only compare List with List"
+msgstr "E691: Une Liste ne peut être comparée qu'avec une Liste"
+
+msgid "E692: Invalid operation for List"
+msgstr "E692: Opération invalide avec les Liste"
+
+msgid "E735: Can only compare Dictionary with Dictionary"
+msgstr "E735: Un Dictionnaire ne peut être comparé qu'avec un Dictionnaire"
+
+msgid "E736: Invalid operation for Dictionary"
+msgstr "E736: Opération invalide avec les Dictionnaires"
+
+msgid "E694: Invalid operation for Funcrefs"
+msgstr "E694: Opération invalide avec les Funcrefs"
+
 msgid "map() argument"
 msgstr "argument de map()"
 
@@ -761,6 +918,10 @@ msgstr "argument de filter()"
 msgid "E686: Argument of %s must be a List"
 msgstr "E686: L'argument de %s doit être une Liste"
 
+#, c-format
+msgid "E899: Argument of %s must be a List or Blob"
+msgstr "E899: L'argument de %s doit être une Liste ou un Blob"
+
 msgid "E928: String required"
 msgstr "E928: Chaîne requis"
 
@@ -770,6 +931,12 @@ msgstr "E808: Nombre ou Flottant requis"
 msgid "add() argument"
 msgstr "argument de add()"
 
+# AB - Vu le code source, la version française est meilleure que la
+#      version anglaise. Ce message est similaire au message E102.
+#, c-format
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: Le tampon %s est introuvable"
+
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() n'est utilisable que dans le mode Insertion"
 
@@ -777,6 +944,15 @@ msgstr "E785: complete() n'est utilisable que dans le mode Insertion"
 #      fonction confirm().
 msgid "&Ok"
 msgstr "&Ok"
+
+msgid "E980: lowlevel input not supported"
+msgstr "E980: entrée de bas niveau non supportée"
+
+#, c-format
+msgid "+-%s%3ld line: "
+msgid_plural "+-%s%3ld lines: "
+msgstr[0] "+-%s%3ld ligne : "
+msgstr[1] "+-%s%3ld lignes : "
 
 #, c-format
 msgid "E700: Unknown function: %s"
@@ -813,9 +989,12 @@ msgstr "E916: tâche invalide"
 msgid "E701: Invalid type for len()"
 msgstr "E701: Type invalide avec len()"
 
+msgid "E957: Invalid window number"
+msgstr "E957: numéro de fenêtre invalide"
+
 #, c-format
-msgid "E798: ID is reserved for \":match\": %ld"
-msgstr "E798: ID est réservé pour \":match\": %ld"
+msgid "E798: ID is reserved for \":match\": %d"
+msgstr "E798: ID est réservé pour \":match\": %d"
 
 msgid "E726: Stride is zero"
 msgstr "E726: Le pas est nul"
@@ -860,6 +1039,10 @@ msgstr "E258: La réponse n'a pas pu être envoyée au client"
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Action invalide : « %s »"
 
+#, c-format
+msgid "E962: Invalid action: '%s'"
+msgstr "E962: Action invalide : « %s »"
+
 msgid "sort() argument"
 msgstr "argument de sort()"
 
@@ -886,8 +1069,20 @@ msgid "E921: Invalid callback argument"
 msgstr "E921: Argument de callback invalide"
 
 #, c-format
+msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
+msgstr "<%s>%s%s  %d,  Hexa %02x,  Octal %03o, Digr %s"
+
+#, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Hexa %02x,  Octal %03o"
+
+#, c-format
+msgid "> %d, Hex %04x, Oct %o, Digr %s"
+msgstr "> %d, Hexa %04x, Octal %o, Digr %s"
+
+#, c-format
+msgid "> %d, Hex %08x, Oct %o, Digr %s"
+msgstr "> %d, Hexa %08x, Octal %o, Digr %s"
 
 #, c-format
 msgid "> %d, Hex %04x, Octal %o"
@@ -899,15 +1094,14 @@ msgstr "> %d, Hexa %08x, Octal %o"
 
 # AB - La version anglaise est très mauvaise, ce qui m'oblige a inventer une
 #      version française.
-msgid "E134: Move lines into themselves"
+msgid "E134: Cannot move a range of lines into itself"
 msgstr "E134: La destination est dans la plage d'origine"
 
-msgid "1 line moved"
-msgstr "1 ligne déplacée"
-
 #, c-format
-msgid "%ld lines moved"
-msgstr "%ld lignes déplacées"
+msgid "%ld line moved"
+msgid_plural "%ld lines moved"
+msgstr[0] "%ld ligne déplacée"
+msgstr[1] "%ld lignes déplacées"
 
 #, c-format
 msgid "%ld lines filtered"
@@ -1097,11 +1291,8 @@ msgstr "E143: Une autocommande a effacé le nouveau tampon %s"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: L'argument de :z n'est pas numérique"
 
-# AB - La version française fera peut-être mieux passer l'amère pilule.
-#      La consultation de l'aide donnera l'explication complète à ceux qui
-#      ne comprendraient pas à quoi ce message est dû.
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Les commandes externes sont indisponibles dans rvim"
+msgid "E145: Shell commands and some functionality not allowed in rvim"
+msgstr "E145: Les commandes shell sont indisponibles dans rvim"
 
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr ""
@@ -1115,26 +1306,29 @@ msgstr "remplacer par %s (y/n/a/q/l/^E/^Y)?"
 msgid "(Interrupted) "
 msgstr "(Interrompu) "
 
-msgid "1 match"
-msgstr "1 correspondance"
-
-msgid "1 substitution"
-msgstr "1 substitution"
+#, c-format
+msgid "%ld match on %ld line"
+msgid_plural "%ld matches on %ld line"
+msgstr[0] "%ld correspondance sur %ld ligne"
+msgstr[1] "%ld correspondances sur %ld ligne"
 
 #, c-format
-msgid "%ld matches"
-msgstr "%ld correspondances"
+msgid "%ld substitution on %ld line"
+msgid_plural "%ld substitutions on %ld line"
+msgstr[0] "%ld substitution sur %ld ligne"
+msgstr[1] "%ld substitutions sur %ld ligne"
 
 #, c-format
-msgid "%ld substitutions"
-msgstr "%ld substitutions"
-
-msgid " on 1 line"
-msgstr " sur 1 ligne"
+msgid "%ld match on %ld lines"
+msgid_plural "%ld matches on %ld lines"
+msgstr[0] "%ld correspondance sur %ld lignes"
+msgstr[1] "%ld correspondances sur %ld lignes"
 
 #, c-format
-msgid " on %ld lines"
-msgstr " sur %ld lignes"
+msgid "%ld substitution on %ld lines"
+msgid_plural "%ld substitutions on %ld lines"
+msgstr[0] "%ld substitution sur %ld lignes"
+msgstr[1] "%ld substitutions sur %ld lignes"
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 # AB - Ce message devrait contenir une référence à :vglobal.
@@ -1216,60 +1410,6 @@ msgstr "E154: Marqueur \"%s\" dupliqué dans le fichier %s/%s"
 msgid "E150: Not a directory: %s"
 msgstr "E150: %s n'est pas un répertoire"
 
-# AB - Il faut respecter l'esprit plus que la lettre.
-#, c-format
-msgid "E160: Unknown sign command: %s"
-msgstr "E160: Commande inconnue : :sign %s"
-
-# AB - La version française est meilleure que la version anglaise.
-msgid "E156: Missing sign name"
-msgstr "E156: Il manque le nom du symbole"
-
-msgid "E612: Too many signs defined"
-msgstr "E612: Trop de symboles sont définis"
-
-# AB - Cette traduction ne me satisfait pas.
-# DB - Suggestion.
-#, c-format
-msgid "E239: Invalid sign text: %s"
-msgstr "E239: Le texte du symbole est invalide : %s"
-
-#, c-format
-msgid "E155: Unknown sign: %s"
-msgstr "E155: Symbole inconnu : %s"
-
-# AB - La version française est meilleure que la version anglaise.
-msgid "E159: Missing sign number"
-msgstr "E159: Il manque l'ID du symbole"
-
-# AB - Vu le code source, la version française est meilleure que la
-#      version anglaise. Ce message est similaire au message E102.
-#, c-format
-msgid "E158: Invalid buffer name: %s"
-msgstr "E158: Le tampon %s est introuvable"
-
-msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Impossible de sauter à un tampon sans nom"
-
-# AB - Vu le code source, la version française est meilleure que la
-#      version anglaise.
-#, c-format
-msgid "E157: Invalid sign ID: %ld"
-msgstr "E157: Le symbole %ld est introuvable"
-
-#, c-format
-msgid "E885: Not possible to change sign %s"
-msgstr "E885: Impossible de changer le symbole %s"
-
-msgid " (NOT FOUND)"
-msgstr "  (INTROUVABLE)"
-
-msgid " (not supported)"
-msgstr " (non supporté)"
-
-msgid "[Deleted]"
-msgstr "[Effacé]"
-
 msgid "No old files"
 msgstr "Aucun vieux fichier"
 
@@ -1277,6 +1417,14 @@ msgstr "Aucun vieux fichier"
 # DB - Suggestion.
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Mode débogage activé. Tapez \"cont\" pour continuer."
+
+#, c-format
+msgid "Oldval = \"%s\""
+msgstr "Ancienneval = \"%s\""
+
+#, c-format
+msgid "Newval = \"%s\""
+msgstr "Nouvelleval = \"%s\""
 
 #, c-format
 msgid "line %ld: %s"
@@ -1310,6 +1458,10 @@ msgstr "Aucun point d'arrêt n'est défini"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  ligne %ld"
 
+#, c-format
+msgid "%3d  expr %s"
+msgstr "%3d  expr %s"
+
 msgid "E750: First use \":profile start {fname}\""
 msgstr "E750: Utilisez d'abord \":profile start {nomfichier}\""
 
@@ -1320,7 +1472,7 @@ msgstr "Enregistrer \"%s\" ?"
 
 #, c-format
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "E947: Tâche en cours d'exécution dans le buffer \"%s\""
+msgstr "E947: Tâche en cours d'exécution dans le tampon \"%s\""
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 # AB - Ce message est similaire au message E89.
@@ -1456,6 +1608,9 @@ msgstr "E464: Utilisation ambiguë d'une commande définie par l'utilisateur"
 msgid "E492: Not an editor command"
 msgstr "E492: Commande inconnue"
 
+msgid "E981: Command not allowed in rvim"
+msgstr "E981: commande indisponibles dans rvim"
+
 msgid "E493: Backwards range given"
 msgstr "E493: La plage spécifiée est inversée"
 
@@ -1472,25 +1627,21 @@ msgstr ""
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Désolé, cette commande n'est pas disponible dans cette version"
 
-msgid "E172: Only one file name allowed"
-msgstr "E172: Un seul nom de fichier autorisé"
-
-msgid "1 more file to edit.  Quit anyway?"
-msgstr "Encore 1 fichier à éditer. Quitter tout de même ?"
+#, c-format
+msgid "%d more file to edit.  Quit anyway?"
+msgid_plural "%d more files to edit.  Quit anyway?"
+msgstr[0] "Encore %d fichier à éditer. Quitter tout de même ?"
+msgstr[1] "Encore %d fichiers à éditer. Quitter tout de même ?"
 
 #, c-format
-msgid "%d more files to edit.  Quit anyway?"
-msgstr "Encore %d fichiers à éditer. Quitter tout de même ?"
-
-msgid "E173: 1 more file to edit"
-msgstr "E173: encore 1 fichier à éditer"
+msgid "E173: %d more file to edit"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: encore %d fichier à éditer"
+msgstr[1] "E173: encore %d fichiers à éditer"
 
 #, c-format
-msgid "E173: %ld more files to edit"
-msgstr "E173: encore %ld fichiers à éditer"
-
-msgid "E174: Command already exists: add ! to replace it"
-msgstr "E174: La commande existe déjà : ajoutez ! pour la redéfinir"
+msgid "E174: Command already exists: add ! to replace it: %s"
+msgstr "E174: La commande existe déjà : ajoutez ! pour la redéfinir : %s"
 
 msgid ""
 "\n"
@@ -1567,6 +1718,9 @@ msgstr "E784: Impossible de fermer le dernier onglet"
 
 msgid "Already only one tab page"
 msgstr "Il ne reste déjà plus qu'un seul onglet"
+
+msgid "Edit File in new tab page"
+msgstr "Ouvrir un fichier dans un nouvel onglet"
 
 msgid "Edit File in new window"
 msgstr "Ouvrir un fichier dans une nouvelle fenêtre - Vim"
@@ -1660,6 +1814,9 @@ msgstr "E498: Aucun nom de fichier :source à substituer à \"<sfile>\""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: aucun numéro de ligne à utiliser pour \"<slnum>\""
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: aucun numéro de ligne à utiliser pour \"<sflnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -1875,9 +2032,6 @@ msgstr "Lecture de stdin..."
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: La conversion a rendu le fichier illisible !"
 
-msgid "[fifo/socket]"
-msgstr "[fifo/socket]"
-
 msgid "[fifo]"
 msgstr "[fifo]"
 
@@ -1964,10 +2118,6 @@ msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
 "E510: Impossible de générer la copie de secours (ajoutez ! pour passer outre)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr ""
-"E460: Les ressources partagées seraient perdues (ajoutez ! pour passer outre)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Impossible de générer un fichier temporaire pour y écrire"
 
@@ -1980,8 +2130,8 @@ msgstr "E166: Impossible d'ouvrir le lien pour y écrire"
 msgid "E212: Can't open file for writing"
 msgstr "E212: Impossible d'ouvrir le fichier pour y écrire"
 
-msgid "E667: Fsync failed"
-msgstr "E667: Fsynch a échoué"
+msgid "E949: File changed while writing"
+msgstr "E949: Fichier modifié après écriture"
 
 msgid "E512: Close failed"
 msgstr "E512: Erreur de fermeture de fichier"
@@ -2066,19 +2216,17 @@ msgstr "[unix]"
 msgid "[unix format]"
 msgstr "[format unix]"
 
-msgid "1 line, "
-msgstr "1 ligne, "
+#, c-format
+msgid "%ld line, "
+msgid_plural "%ld lines, "
+msgstr[0] "%ld ligne, "
+msgstr[1] "%ld lignes, "
 
 #, c-format
-msgid "%ld lines, "
-msgstr "%ld lignes, "
-
-msgid "1 character"
-msgstr "1 caractère"
-
-#, c-format
-msgid "%lld characters"
-msgstr "%lld caractères"
+msgid "%lld character"
+msgid_plural "%lld characters"
+msgstr[0] "%lld caractère"
+msgstr[1] "%lld caractères"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -2160,68 +2308,6 @@ msgstr "E462: Impossible de préparer le rechargement de \"%s\""
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Impossible de recharger \"%s\""
 
-msgid "--Deleted--"
-msgstr "--Effacé--"
-
-#, c-format
-msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "Autocommandes marquées pour auto-suppression : %s <tampon=%d>"
-
-#, c-format
-msgid "E367: No such group: \"%s\""
-msgstr "E367: Aucun groupe \"%s\""
-
-msgid "E936: Cannot delete the current group"
-msgstr "E936: Impossible de supprimer le groupe courant"
-
-msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: Effacement d'augroup toujours en usage"
-
-#, c-format
-msgid "E215: Illegal character after *: %s"
-msgstr "E215: Caractère non valide après * : %s"
-
-#, c-format
-msgid "E216: No such event: %s"
-msgstr "E216: Aucun événement %s"
-
-#, c-format
-msgid "E216: No such group or event: %s"
-msgstr "E216: Aucun événement ou groupe %s"
-
-msgid ""
-"\n"
-"--- Auto-Commands ---"
-msgstr ""
-"\n"
-"--- Auto-commandes ---"
-
-#, c-format
-msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <buffer=%d> : numéro de tampon invalide"
-
-msgid "E217: Can't execute autocommands for ALL events"
-msgstr ""
-"E217: Impossible d'exécuter les autocommandes pour TOUS les événements (ALL)"
-
-msgid "No matching autocommands"
-msgstr "Aucune autocommande correspondante"
-
-msgid "E218: autocommand nesting too deep"
-msgstr "E218: autocommandes trop imbriquées"
-
-#, c-format
-msgid "%s Auto commands for \"%s\""
-msgstr "Autocommandes %s pour \"%s\""
-
-#, c-format
-msgid "Executing %s"
-msgstr "Exécution de %s"
-
-#, c-format
-msgid "autocommand %s"
-msgstr "autocommande %s"
-
 msgid "E219: Missing {."
 msgstr "E219: { manquant."
 
@@ -2236,6 +2322,12 @@ msgstr "E350: Impossible de créer un repli avec la 'foldmethod'e actuelle"
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: Impossible de supprimer un repli avec la 'foldmethod'e actuelle"
+
+#, c-format
+msgid "+--%3ld line folded "
+msgid_plural "+--%3ld lines folded "
+msgstr[0] "+--%3ld ligne déplacée "
+msgstr[1] "+--%3ld lignes déplacées "
 
 msgid "E222: Add to read buffer"
 msgstr "E222: Ajout au tampon de lecture"
@@ -2458,11 +2550,11 @@ msgstr "Ann&uler"
 msgid "Open tab..."
 msgstr "Ouvrir dans un onglet..."
 
-msgid "Find string (use '\\\\' to find  a '\\')"
-msgstr "Chercher une chaîne (utilisez '\\\\' pour chercher un '\\')"
+msgid "Find string"
+msgstr "Trouver une chaîne"
 
-msgid "Find & Replace (use '\\\\' to find  a '\\')"
-msgstr "Chercher et remplacer (utilisez '\\\\' pour trouver un '\\')"
+msgid "Find & Replace"
+msgstr "Trouver & remplacer"
 
 # DB - Traduction non indispensable puisque le code indique qu'il s'agit d'un
 #      paramétrage bidon afin de sélectionner un répertoire plutôt qu'un
@@ -2515,20 +2607,20 @@ msgid "Font0: %s"
 msgstr "Font0: %s"
 
 #, c-format
-msgid "Font1: %s"
-msgstr "Font1: %s"
+msgid "Font%d: %s"
+msgstr "Font%d: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0"
-msgstr "La largeur de Font%ld n'est pas le double de celle de Font0"
+msgid "Font%d width is not twice that of font0"
+msgstr "La largeur de Font%d n'est pas le double de celle de Font0"
 
 #, c-format
-msgid "Font0 width: %ld"
-msgstr "Largeur de Font0 : %ld"
+msgid "Font0 width: %d"
+msgstr "Largeur de Font0 : %d"
 
 #, c-format
-msgid "Font1 width: %ld"
-msgstr "Largeur de Font1 : %ld"
+msgid "Font%d width: %d"
+msgstr "Largeur de Font%d : %d"
 
 # DB - todo : Pas certain de mon coup, ici...
 msgid "Invalid font specification"
@@ -2709,8 +2801,8 @@ msgid "Added cscope database %s"
 msgstr "Base de données cscope %s ajoutée"
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
-msgstr "E262: erreur lors de la lecture de la connexion cscope %ld"
+msgid "E262: error reading cscope connection %d"
+msgstr "E262: erreur lors de la lecture de la connexion cscope %d"
 
 msgid "E561: unknown cscope search type"
 msgstr "E561: type de recherche cscope inconnu"
@@ -3132,11 +3224,11 @@ msgstr "-q [fichErr]   ouvrir à l'endroit de la première erreur"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
-"utilisation :"
+"Utilisation :"
 
 msgid " vim [arguments] "
 msgstr " vim [args] "
@@ -3252,7 +3344,7 @@ msgstr "-f\t\tNe pas utiliser newcli pour l'ouverture des fenêtres"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <périph>\tUtiliser <périphérique> pour les E/S"
 
-msgid "-A\t\t\tstart in Arabic mode"
+msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\tDémarrer en mode arabe"
 
 msgid "-H\t\t\tStart in Hebrew mode"
@@ -3370,7 +3462,8 @@ msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUtiliser <viminfo> au lieu du viminfo habituel"
 
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
-msgstr "--clean\t\t'nocompatible', réglages par défaut, aucun greffon ni viminfo"
+msgstr ""
+"--clean\t\t'nocompatible', réglages par défaut, aucun greffon ni viminfo"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h ou --help\t\tAfficher l'aide (ce message) puis quitter"
@@ -3854,8 +3947,8 @@ msgstr ""
 "\n"
 "      processus n° : "
 
-msgid " (still running)"
-msgstr " (en cours d'exécution)"
+msgid " (STILL RUNNING)"
+msgstr " (EN COURS D'EXÉCUTION)"
 
 msgid ""
 "\n"
@@ -3950,6 +4043,9 @@ msgstr ""
 msgid "While opening file \""
 msgstr "Lors de l'ouverture du fichier \""
 
+msgid "      CANNOT BE FOUND"
+msgstr "      INTROUVABLE"
+
 msgid "      NEWER than swap file!\n"
 msgstr "      PLUS RÉCENT que le fichier d'échange !\n"
 
@@ -4033,11 +4129,6 @@ msgstr "E326: Trop de fichiers d'échange trouvés"
 
 msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Une partie du chemin de l'élément de menu n'est pas un sous-menu"
-
-# DB - todo : J'hésite avec
-#      msgstr "E328: Le menu n'existe pas dans ce mode"
-msgid "E328: Menu only exists in another mode"
-msgstr "E328: Le menu n'existe que dans un autre mode"
 
 #, c-format
 msgid "E329: No menu \"%s\""
@@ -4170,19 +4261,17 @@ msgstr "Tapez un nombre et <Entrée> ou cliquez avec la souris (rien annule) :"
 msgid "Type number and <Enter> (empty cancels): "
 msgstr "Tapez un nombre et <Entrée> (rien annule) :"
 
-msgid "1 more line"
-msgstr "1 ligne en plus"
-
-msgid "1 line less"
-msgstr "1 ligne en moins"
+#, c-format
+msgid "%ld more line"
+msgid_plural "%ld more lines"
+msgstr[0] "%ld ligne en plus"
+msgstr[1] "%ld lignes en plus"
 
 #, c-format
-msgid "%ld more lines"
-msgstr "%ld lignes en plus"
-
-#, c-format
-msgid "%ld fewer lines"
-msgstr "%ld lignes en moins"
+msgid "%ld line less"
+msgid_plural "%ld fewer lines"
+msgstr[0] "%ld ligne en moins"
+msgstr[1] "%ld lignes en moins"
 
 msgid " (Interrupted)"
 msgstr " (Interrompu)"
@@ -4273,8 +4362,8 @@ msgstr ""
 "\""
 
 #, c-format
-msgid "E658: NetBeans connection lost for buffer %ld"
-msgstr "E658: Connexion NetBeans perdue pour le tampon %ld"
+msgid "E658: NetBeans connection lost for buffer %d"
+msgstr "E658: Connexion NetBeans perdue pour le tampon %d"
 
 msgid "E838: netbeans is not supported with this GUI"
 msgstr "E838: netbeans n'est pas supporté avec cette interface graphique"
@@ -4320,31 +4409,26 @@ msgstr ""
 "Vim"
 
 #, c-format
-msgid "1 line %sed 1 time"
-msgstr "1 ligne %sée 1 fois"
+msgid "%ld line %sed %d time"
+msgid_plural "%ld line %sed %d times"
+msgstr[0] "%ld lignes %sées %d fois"
+msgstr[1] "%ld lignes %sées %d fois"
 
 #, c-format
-msgid "1 line %sed %d times"
-msgstr "1 ligne %sée %d fois"
-
-#, c-format
-msgid "%ld lines %sed 1 time"
-msgstr "%ld lignes %sées 1 fois"
-
-#, c-format
-msgid "%ld lines %sed %d times"
-msgstr "%ld lignes %sées %d fois"
+msgid "%ld lines %sed %d time"
+msgid_plural "%ld lines %sed %d times"
+msgstr[0] "%ld lignes %sées %d fois"
+msgstr[1] "%ld lignes %sées %d fois"
 
 #, c-format
 msgid "%ld lines to indent... "
 msgstr "%ld lignes à indenter... "
 
-msgid "1 line indented "
-msgstr "1 ligne indentée "
-
 #, c-format
-msgid "%ld lines indented "
-msgstr "%ld lignes indentées "
+msgid "%ld line indented "
+msgid_plural "%ld lines indented "
+msgstr[0] "%ld ligne indentée "
+msgstr[1] "%ld lignes indentées "
 
 msgid "E748: No previously used register"
 msgstr "E748: Aucun registre n'a été précédemment utilisé"
@@ -4353,12 +4437,11 @@ msgstr "E748: Aucun registre n'a été précédemment utilisé"
 msgid "cannot yank; delete anyway"
 msgstr "impossible de réaliser une copie ; effacer tout de même"
 
-msgid "1 line changed"
-msgstr "1 ligne modifiée"
-
 #, c-format
-msgid "%ld lines changed"
-msgstr "%ld lignes modifiées"
+msgid "%ld line changed"
+msgid_plural "%ld lines changed"
+msgstr[0] "%ld ligne modifiée"
+msgstr[1] "%ld lignes modifiées"
 
 #, c-format
 msgid "freeing %ld lines"
@@ -4369,20 +4452,16 @@ msgid " into \"%c"
 msgstr " dans \"%c"
 
 #, c-format
-msgid "block of 1 line yanked%s"
-msgstr "bloc de 1 ligne copié%s"
+msgid "block of %ld line yanked%s"
+msgid_plural "block of %ld lines yanked%s"
+msgstr[0] "bloc de %ld ligne copié%s"
+msgstr[1] "bloc de %ld lignes copié%s"
 
 #, c-format
-msgid "1 line yanked%s"
-msgstr "1 ligne copiée%s"
-
-#, c-format
-msgid "block of %ld lines yanked%s"
-msgstr "bloc de %ld lignes copié%s"
-
-#, c-format
-msgid "%ld lines yanked%s"
-msgstr "%ld lignes copiées%s"
+msgid "%ld line yanked%s"
+msgid_plural "%ld lines yanked%s"
+msgstr[0] "%ld ligne copiée%s"
+msgstr[1] "%ld lignes copiées%s"
 
 #, c-format
 msgid "E353: Nothing in register %s"
@@ -4448,8 +4527,8 @@ msgstr ""
 "sur %lld ; Octet %lld sur %lld"
 
 #, c-format
-msgid "(+%ld for BOM)"
-msgstr "(+%ld pour le BOM)"
+msgid "(+%lld for BOM)"
+msgstr "(+%lld pour le BOM)"
 
 msgid "Thanks for flying Vim"
 msgstr "Merci d'avoir choisi Vim"
@@ -4500,6 +4579,10 @@ msgstr "E835: Conflits avec la valeur de 'fillchars'"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Non modifiable dans l'interface graphique GTK+ 2"
+
+#, c-format
+msgid "E950: Cannot convert between %s and %s"
+msgstr "E950: Impossible de convertir de %s à %s"
 
 msgid "E524: Missing colon"
 msgstr "E524: ':' manquant"
@@ -4562,13 +4645,17 @@ msgid "E542: unbalanced groups"
 msgstr "E542: parenthèses non équilibrées"
 
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "E946: terminal avec tâche en cours d'exécution ne peut pas être modifiable"
+msgstr ""
+"E946: terminal avec tâche en cours d'exécution ne peut pas être modifiable"
 
 msgid "E590: A preview window already exists"
 msgstr "E590: Il existe déjà une fenêtre de prévisualisation"
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr "W17: L'arabe nécessite l'UTF-8, tapez ':set encoding=utf-8'"
+
+msgid "E954: 24-bit colors are not supported on this environment"
+msgstr "E954: Couleurs en 24-bits non-supportées sur cet environnement."
 
 #, c-format
 msgid "E593: Need at least %d lines"
@@ -4857,6 +4944,9 @@ msgstr "Alerte Vim"
 msgid "shell returned %d"
 msgstr "le shell a retourné %d"
 
+msgid "E926: Current location list was changed"
+msgstr "E926: La liste d'emplacements courante a changé"
+
 #, c-format
 msgid "E372: Too many %%%c in format string"
 msgstr "E372: Trop de %%%c dans la chaîne de format"
@@ -4894,9 +4984,6 @@ msgstr "E924: La fenêtre courante doit être fermée"
 
 msgid "E925: Current quickfix was changed"
 msgstr "E925: Le quickfix courant a changé"
-
-msgid "E926: Current location list was changed"
-msgstr "E926: La liste d'emplacements courante a changé"
 
 #, c-format
 msgid "(%d of %d)%s%s: "
@@ -4963,7 +5050,7 @@ msgstr "E55: %s) fermante non ouverte"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( n'est pas autorisé ici"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 et co. ne sont pas autorisés ici"
 
 #, c-format
@@ -4973,6 +5060,9 @@ msgstr "E69: ']' manquant après %s%%["
 #, c-format
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] vide"
+
+msgid "E956: Cannot use pattern recursively"
+msgstr "E956: Impossible d'utiliser le motif récursivement"
 
 msgid "E65: Illegal back reference"
 msgstr "E65: post-référence invalide"
@@ -5060,6 +5150,9 @@ msgstr "E877: (regexp NFA) Classe de caractère invalide : %ld"
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Opérateur inconnu '\\z%c'"
 
+msgid "E951: \\% value too large"
+msgstr "E951: valeur \\% trop grande"
+
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
 msgstr "E867: (NFA) Opérateur inconnu '\\%%%c'"
@@ -5074,8 +5167,8 @@ msgstr "E869: (NFA) Opérateur inconnu '\\@%c'"
 msgid "E870: (NFA regexp) Error reading repetition limits"
 msgstr "E870: (regexp NFA) Erreur à la lecture des limites de répétition"
 
-msgid "E871: (NFA regexp) Can't have a multi follow a multi !"
-msgstr "E871: (regexp NFA) Un multi ne peut pas suivre un multi !"
+msgid "E871: (NFA regexp) Can't have a multi follow a multi"
+msgstr "E871: (regexp NFA) Un multi ne peut pas suivre un multi"
 
 msgid "E872: (NFA regexp) Too many '('"
 msgstr "E872: (regexp NFA) Trop de '('"
@@ -5086,7 +5179,12 @@ msgstr "E879: (regexp NFA) Trop de \\z("
 msgid "E873: (NFA regexp) proper termination error"
 msgstr "E873: (NFA regexp) erreur de terminaison"
 
-msgid "E874: (NFA) Could not pop the stack !"
+msgid "Could not open temporary log file for writing, displaying on stderr... "
+msgstr ""
+"Impossible d'ouvrir le fichier de log temporaire en écriture, affichage sur "
+"stderr... "
+
+msgid "E874: (NFA) Could not pop the stack!"
 msgstr "E874: (NFA) Impossible de dépiler !"
 
 msgid ""
@@ -5102,19 +5200,6 @@ msgstr "E876: (regexp NFA) Pas assez de mémoire pour stocker le NFA"
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr ""
 "E878: (NFA) Impossible d'allouer la mémoire pour parcourir les branches !"
-
-msgid ""
-"Could not open temporary log file for writing, displaying on stderr ... "
-msgstr ""
-"Impossible d'ouvrir le fichier de log temporaire en écriture, affichage sur "
-"stderr ... "
-
-#, c-format
-msgid "(NFA) COULD NOT OPEN %s !"
-msgstr "(NFA) IMPOSSIBLE D'OUVRIR %s !"
-
-msgid "Could not open temporary log file for writing "
-msgstr "Impossible d'ouvrir le fichier de log en écriture"
 
 msgid " VREPLACE"
 msgstr " VREMPLACEMENT"
@@ -5237,6 +5322,73 @@ msgstr ""
 "# Dernier motif de recherche %s :\n"
 "~"
 
+msgid "[Deleted]"
+msgstr "[Effacé]"
+
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- Symboles ---"
+
+#, c-format
+msgid "Signs for %s:"
+msgstr "Symboles dans %s :"
+
+#, c-format
+msgid "  group=%s"
+msgstr "  groupe=%s"
+
+#, c-format
+msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
+msgstr "    ligne=%ld  id=%d%s  nom=%s  priorité=%d"
+
+msgid "E612: Too many signs defined"
+msgstr "E612: Trop de symboles sont définis"
+
+# AB - Cette traduction ne me satisfait pas.
+# DB - Suggestion.
+#, c-format
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: Le texte du symbole est invalide : %s"
+
+#, c-format
+msgid "E155: Unknown sign: %s"
+msgstr "E155: Symbole inconnu : %s"
+
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: Impossible de changer le symbole %s"
+
+# AB - La version française est meilleure que la version anglaise.
+msgid "E159: Missing sign number"
+msgstr "E159: Il manque l'ID du symbole"
+
+# AB - Vu le code source, la version française est meilleure que la
+#      version anglaise.
+#, c-format
+msgid "E157: Invalid sign ID: %d"
+msgstr "E157: Le symbole %d est introuvable"
+
+msgid "E934: Cannot jump to a buffer that does not have a name"
+msgstr "E934: Impossible de sauter à un tampon sans nom"
+
+# AB - Il faut respecter l'esprit plus que la lettre.
+#, c-format
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: Commande inconnue : :sign %s"
+
+# AB - La version française est meilleure que la version anglaise.
+msgid "E156: Missing sign name"
+msgstr "E156: Il manque le nom du symbole"
+
+msgid " (NOT FOUND)"
+msgstr "  (INTROUVABLE)"
+
+msgid " (not supported)"
+msgstr " (non supporté)"
+
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: La vérification orthographique n'est pas activée"
 
@@ -5335,7 +5487,7 @@ msgid "E782: error while reading .sug file: %s"
 msgstr "E782: Erreur lors de la lecture de fichier de suggestions : %s"
 
 #, c-format
-msgid "Reading affix file %s ..."
+msgid "Reading affix file %s..."
 msgstr "Lecture du fichier d'affixes %s..."
 
 #, c-format
@@ -5345,10 +5497,6 @@ msgstr "Échec de conversion du mot dans %s ligne %d : %s"
 #, c-format
 msgid "Conversion in %s not supported: from %s to %s"
 msgstr "La conversion dans %s non supportée : de %s vers %s"
-
-#, c-format
-msgid "Conversion in %s not supported"
-msgstr "La conversion dans %s non supportée"
 
 #, c-format
 msgid "Invalid value for FLAG in %s line %d: %s"
@@ -5475,7 +5623,7 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "La valeur de %s est différente de celle d'un autre fichier .aff"
 
 #, c-format
-msgid "Reading dictionary file %s ..."
+msgid "Reading dictionary file %s..."
 msgstr "Lecture du fichier orthographique %s..."
 
 #, c-format
@@ -5483,8 +5631,8 @@ msgid "E760: No word count in %s"
 msgstr "E760: Nombre de mots non indiqué dans %s"
 
 #, c-format
-msgid "line %6d, word %6d - %s"
-msgstr "ligne %6d, mot %6d - %s"
+msgid "line %6d, word %6ld - %s"
+msgstr "ligne %6d, mot %6ld - %s"
 
 #, c-format
 msgid "Duplicate word in %s line %d: %s"
@@ -5503,7 +5651,7 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "%d mot(s) ignoré(s) avec des caractères non-ASCII dans %s"
 
 #, c-format
-msgid "Reading word file %s ..."
+msgid "Reading word file %s..."
 msgstr "Lecture de la liste de mots %s..."
 
 #, c-format
@@ -5560,7 +5708,7 @@ msgid "Total number of words: %d"
 msgstr "Nombre total de mots : %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
+msgid "Writing suggestion file %s..."
 msgstr "Écriture du fichier de suggestions %s..."
 
 #, c-format
@@ -5570,8 +5718,9 @@ msgstr "Estimation de mémoire consommée : %d octets"
 msgid "E751: Output file name must not have region name"
 msgstr "E751: Le nom du fichier ne doit pas contenir de nom de région"
 
-msgid "E754: Only up to 8 regions supported"
-msgstr "E754: 8 régions au maximum sont supportées"
+#, c-format
+msgid "E754: Only up to %d regions supported"
+msgstr "E754: %d régions au maximum supportées"
 
 #, c-format
 msgid "E755: Invalid region in %s"
@@ -5581,7 +5730,7 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Alerte : la composition et NOBREAK sont tous les deux spécifiés"
 
 #, c-format
-msgid "Writing spell file %s ..."
+msgid "Writing spell file %s..."
 msgstr "Écriture du fichier orthographique %s..."
 
 msgid "Done!"
@@ -5589,8 +5738,8 @@ msgstr "Terminé !"
 
 # DB - todo : perfectible.
 #, c-format
-msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E765: 'spellfile' n'a pas %ld entrées"
+msgid "E765: 'spellfile' does not have %d entries"
+msgstr "E765: 'spellfile' n'a pas %d entrées"
 
 #, c-format
 msgid "Word '%.*s' removed from %s"
@@ -5609,6 +5758,9 @@ msgstr "E783: caractère dupliqué dans l'entrée MAP"
 
 msgid "No Syntax items defined for this buffer"
 msgstr "Aucun élément de syntaxe défini pour ce tampon"
+
+msgid "'redrawtime' exceeded, syntax highlighting disabled"
+msgstr "'redrawtime' écoulé, surbrillance de syntaxe désactivée"
 
 msgid "syntax conceal on"
 msgstr "\"syntax conceal\" activée"
@@ -5639,6 +5791,9 @@ msgstr ""
 
 msgid "syntax iskeyword "
 msgstr "syntaxe iskeyword "
+
+msgid "syntax iskeyword not set"
+msgstr "iskeyword n'est pas activé"
 
 #, c-format
 msgid "E391: No such syntax cluster: %s"
@@ -5966,6 +6121,10 @@ msgstr ""
 msgid "Cannot open $VIMRUNTIME/rgb.txt"
 msgstr "Impossible d'ouvrir $VIMRUNTIME/rgb.txt"
 
+#, c-format
+msgid "Kill job in \"%s\"?"
+msgstr "Terminer la tâche d'exécution dans \"%s\"?"
+
 msgid "Terminal"
 msgstr "Terminal"
 
@@ -5980,6 +6139,45 @@ msgstr "en cours"
 
 msgid "finished"
 msgstr "fini"
+
+msgid "E958: Job already finished"
+msgstr "E958: Tâche déjà finie"
+
+#, c-format
+msgid "E953: File exists: %s"
+msgstr "E953: Le fichier existe déjà : %s"
+
+msgid "E955: Not a terminal buffer"
+msgstr "E955: Ce n'est pas un tampon de terminal"
+
+#, c-format
+msgid "E971: Property type %s does not exist"
+msgstr "E971: Le type de propriété %s n'existe pas"
+
+#, c-format
+msgid "E964: Invalid column number: %ld"
+msgstr "E964: Numéro de colonne invalide : %ld"
+
+#, c-format
+msgid "E966: Invalid line number: %ld"
+msgstr "E966: Numéro de ligne invalide : %ld"
+
+msgid "E965: missing property type name"
+msgstr "E965: nom du type de propriété absent"
+
+msgid "E967: text property info corrupted"
+msgstr "E967: information de propriété de texte corrompu"
+
+msgid "E968: Need at least one of 'id' or 'type'"
+msgstr "E968: Au moins « id » ou « type » sont nécessaires"
+
+#, c-format
+msgid "E969: Property type %s already defined"
+msgstr "E969: Type de propriété %s déjà défini"
+
+#, c-format
+msgid "E970: Unknown highlight group name: '%s'"
+msgstr "E970: Nom de groupe de surbrillance inconnu : « %s »"
 
 msgid "new shell started\n"
 msgstr "nouveau shell démarré\n"
@@ -6120,8 +6318,10 @@ msgid "number changes  when               saved"
 msgstr "numéro modif.   instant            enregistré"
 
 #, c-format
-msgid "%ld seconds ago"
-msgstr "il y a %ld secondes"
+msgid "%ld second ago"
+msgid_plural "%ld seconds ago"
+msgstr[0] "il y a %ld seconde"
+msgstr[1] "il y a %ld secondes"
 
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: undojoin n'est pas autorisé après une annulation"
@@ -6279,6 +6479,10 @@ msgstr "E133: :return en dehors d'une fonction"
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Parenthèses manquantes : %s"
 
+#, c-format
+msgid "%s (%s, compiled %s)"
+msgstr "%s (%s, compilé %s)"
+
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
@@ -6312,24 +6516,17 @@ msgstr ""
 
 msgid ""
 "\n"
-"MacOS X (unix) version"
+"macOS version"
 msgstr ""
 "\n"
-"Version MaxOS X (unix)"
+"Version macOS"
 
 msgid ""
 "\n"
-"MacOS X version"
+"macOS version w/o darwin feat."
 msgstr ""
 "\n"
-"Version MacOS X"
-
-msgid ""
-"\n"
-"MacOS version"
-msgstr ""
-"\n"
-"Version MacOS"
+"Version macOS sans fonctionalités darwin"
 
 msgid ""
 "\n"
@@ -6432,9 +6629,6 @@ msgstr "avec interface graphique Carbon."
 
 msgid "with Cocoa GUI."
 msgstr "avec interface graphique Cocoa."
-
-msgid "with (classic) GUI."
-msgstr "avec interface graphique (classic)."
 
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Fonctionnalités incluses (+) ou non (-) :\n"
@@ -6571,6 +6765,12 @@ msgstr "menu  Aide->Sponsor/Enregistrement pour plus d'info"
 msgid "Already only one window"
 msgstr "Il n'y a déjà plus qu'une fenêtre"
 
+# AB - Vu le code source, la version française est meilleure que la
+#      version anglaise. Ce message est similaire au message E86.
+#, c-format
+msgid "E92: Buffer %ld not found"
+msgstr "E92: Le tampon %ld n'existe pas"
+
 msgid "E441: There is no preview window"
 msgstr "E441: Il n'y a pas de fenêtre de prévisualisation"
 
@@ -6602,23 +6802,23 @@ msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Le fichier \"%s\" est introuvable dans 'path'"
 
 #, c-format
-msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E799: ID invalide : %ld (doit être plus grand ou égal à 1)"
+msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E799: ID invalide : %d (doit être plus grand ou égal à 1)"
 
 #, c-format
-msgid "E801: ID already taken: %ld"
-msgstr "E801: ID déjà pris: %ld"
+msgid "E801: ID already taken: %d"
+msgstr "E801: ID déjà pris: %d"
 
 msgid "List or number required"
 msgstr "Liste ou nombre requis"
 
 #, c-format
-msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E802: ID invalide : %ld (doit être plus grand ou égal à 1)"
+msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E802: ID invalide : %d (doit être plus grand ou égal à 1)"
 
 #, c-format
-msgid "E803: ID not found: %ld"
-msgstr "E803: ID introuvable : %ld"
+msgid "E803: ID not found: %d"
+msgstr "E803: ID introuvable : %d"
 
 #, c-format
 msgid "E370: Could not load library %s"
@@ -6642,6 +6842,9 @@ msgstr "&Comparer avec Vim"
 
 msgid "Edit with &Vim"
 msgstr "Éditer dans &Vim"
+
+msgid "Edit with existing Vim"
+msgstr "Éditer dans le Vim existant"
 
 msgid "Edit with existing Vim - "
 msgstr "Éditer dans le Vim existant - "
@@ -6741,6 +6944,14 @@ msgid "E475: Invalid argument: %s"
 msgstr "E475: Argument invalide : %s"
 
 #, c-format
+msgid "E475: Invalid value for argument %s"
+msgstr "E475: Valeur d'argument invalide : %s"
+
+#, c-format
+msgid "E475: Invalid value for argument %s: %s"
+msgstr "E475: Valeur d'argument invalide %s : %s"
+
+#, c-format
 msgid "E15: Invalid expression: %s"
 msgstr "E15: Expression invalide : %s"
 
@@ -6757,6 +6968,9 @@ msgstr "E17: \"%s\" est un répertoire"
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
 msgstr "E364: L'appel à la bibliothèque a échoué pour \"%s()\""
+
+msgid "E667: Fsync failed"
+msgstr "E667: Fsynch a échoué"
 
 #, c-format
 msgid "E448: Could not load library function %s"
@@ -6914,7 +7128,14 @@ msgstr "E715: Dictionnaire requis"
 
 #, c-format
 msgid "E684: list index out of range: %ld"
-msgstr "E684: index de Liste hors limites : %ld au-delà de la fin"
+msgstr "E684: index de Liste hors limites : %ld"
+
+#, c-format
+msgid "E979: Blob index out of range: %ld"
+msgstr "E979: index de Blob hors limites : %ld"
+
+msgid "E978: Invalid operation for Blob"
+msgstr "E978: Opération invalide avec un Blob"
 
 # DB : Suggestion
 #, c-format
@@ -6928,9 +7149,16 @@ msgstr "E716: La clé %s n'existe pas dans le Dictionnaire"
 msgid "E714: List required"
 msgstr "E714: Liste requise"
 
+msgid "E897: List or Blob required"
+msgstr "E897: Liste ou Blob requis"
+
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: L'argument de %s doit être une Liste ou un Dictionnaire"
+
+#, c-format
+msgid "E896: Argument of %s must be a List, Dictionary or Blob"
+msgstr "E896: L'argument de %s doit être une Liste, Dictionnaire ou un Blob"
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Erreur lors de la lecture du fichier d'erreurs"
@@ -7031,6 +7259,14 @@ msgstr "E850: Nom de registre invalide"
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
 msgstr "E919: Répertoire introuvable dans '%s' : \"%s\""
+
+msgid "E952: Autocommand caused recursive behavior"
+msgstr "E952: Une autocommande a causé une récursivité"
+
+# DB - todo : J'hésite avec
+#      msgstr "E328: Le menu n'existe pas dans ce mode"
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: Le menu n'existe que dans un autre mode"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "La recherche a atteint le HAUT, et continue en BAS"
@@ -7306,3 +7542,47 @@ msgid ""
 msgstr ""
 "Impossible d'initialiser le chemin : sys.math n'est pas une liste\n"
 "Vous devez maintenant ajouter vim.VIM_SPECIAL_PATH à sys.path"
+
+msgid ""
+"Vim macro files (*.vim)\t*.vim\n"
+"All Files (*.*)\t*.*\n"
+msgstr ""
+"Fichiers de macros Vim (*.vim)\t*.vim\n"
+"Tous les fichiers (*.*)\t*.*\n"
+
+msgid "All Files (*.*)\t*.*\n"
+msgstr "Tous les fichiers (*.)\t*.*\n"
+
+msgid ""
+"All Files (*.*)\t*.*\n"
+"C source (*.c, *.h)\t*.c;*.h\n"
+"C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"VB code (*.bas, *.frm)\t*.bas;*.frm\n"
+"Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+msgstr ""
+"Tous les fichiers (*.*)\t*.*\n"
+"Source C (*.c, *.h)\t*.c;*.h\n"
+"Source C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Code VB (*.bas, *.frm)\t*.bas;*.frm\n"
+"Fichiers Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+
+msgid ""
+"Vim macro files (*.vim)\t*.vim\n"
+"All Files (*)\t*\n"
+msgstr ""
+"Fichiers de macros Vim (*.vim)\t*.vim\n"
+"Tous les fichiers (*)\t*\n"
+
+msgid "All Files (*)\t*\n"
+msgstr "Tous les fichiers (*)\t*\n"
+
+msgid ""
+"All Files (*)\t*\n"
+"C source (*.c, *.h)\t*.c;*.h\n"
+"C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+msgstr ""
+"Tous les fichiers (*)\t*\n"
+"Source C (*.c, *.h)\t*.c;*.h\n"
+"Source C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Fichiers Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
