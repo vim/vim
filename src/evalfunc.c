@@ -9174,7 +9174,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 
     dirp = opendir(path);
     if (dirp == NULL)
-	EMSG2(_(e_notopen), path);
+	smsg(_(e_notopen), path);
     else
     {
 	for (;;)
