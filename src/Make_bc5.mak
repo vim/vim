@@ -405,7 +405,7 @@ DEFINES = $(DEFINES) -DFEAT_CSCOPE
 !endif
 
 !if ("$(GUI)"=="yes")
-DEFINES = $(DEFINES) -DFEAT_GUI_W32 -DFEAT_CLIPBOARD
+DEFINES = $(DEFINES) -DFEAT_GUI -DFEAT_CLIPBOARD
 !if ("$(DEBUG)"=="yes")
 TARGET = gvimd.exe
 !else
@@ -542,7 +542,6 @@ vimobj =  \
 	$(OBJDIR)\ex_docmd.obj \
 	$(OBJDIR)\ex_eval.obj \
 	$(OBJDIR)\ex_getln.obj \
-	$(OBJDIR)\farsi.obj \
 	$(OBJDIR)\fileio.obj \
 	$(OBJDIR)\findfile.obj \
 	$(OBJDIR)\fold.obj \

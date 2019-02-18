@@ -3445,12 +3445,6 @@ win_init_empty(win_T *wp)
     wp->w_topfill = 0;
 #endif
     wp->w_botline = 2;
-#ifdef FEAT_FKMAP
-    if (wp->w_p_rl)
-	wp->w_farsi = W_CONV + W_R_L;
-    else
-	wp->w_farsi = W_CONV;
-#endif
 #ifdef FEAT_SYN_HL
     wp->w_s = &wp->w_buffer->b_s;
 #endif

@@ -694,7 +694,7 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 !include Make_all.mak
 !include testdir\Make_all.mak
 
-INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
+INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 
@@ -719,7 +719,6 @@ OBJ = \
 	$(OUTDIR)\ex_docmd.obj \
 	$(OUTDIR)\ex_eval.obj \
 	$(OUTDIR)\ex_getln.obj \
-	$(OUTDIR)\farsi.obj \
 	$(OUTDIR)\fileio.obj \
 	$(OUTDIR)\findfile.obj \
 	$(OUTDIR)\fold.obj \
@@ -792,8 +791,8 @@ OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
 
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
-CFLAGS = $(CFLAGS) -DFEAT_GUI_W32
-RCFLAGS = $(RCFLAGS) -DFEAT_GUI_W32
+CFLAGS = $(CFLAGS) -DFEAT_GUI
+RCFLAGS = $(RCFLAGS) -DFEAT_GUI
 VIM = g$(VIM)
 GUI_INCL = \
 	gui.h
@@ -1404,8 +1403,6 @@ $(OUTDIR)/ex_eval.obj:	$(OUTDIR) ex_eval.c  $(INCL)
 
 $(OUTDIR)/ex_getln.obj:	$(OUTDIR) ex_getln.c  $(INCL)
 
-$(OUTDIR)/farsi.obj:	$(OUTDIR) farsi.c  $(INCL)
-
 $(OUTDIR)/fileio.obj:	$(OUTDIR) fileio.c  $(INCL)
 
 $(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
@@ -1646,7 +1643,6 @@ proto.h: \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
 	proto/findfile.pro \
 	proto/getchar.pro \

@@ -645,7 +645,7 @@ u_savecommon(
 	u_getbot();
     }
 
-#if !defined(UNIX) && !defined(WIN32)
+#if !defined(UNIX) && !defined(MSWIN)
 	/*
 	 * With Amiga we can't handle big undo's, because
 	 * then u_alloc_line would have to allocate a block larger than 32K
@@ -1740,7 +1740,7 @@ write_error:
     if (!write_ok)
 	semsg(_("E829: write error in undo file: %s"), file_name);
 
-#if defined(WIN3264)
+#if defined(MSWIN)
     /* Copy file attributes; for systems where this can only be done after
      * closing the file. */
     if (buf->b_ffname != NULL)

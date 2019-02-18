@@ -97,7 +97,7 @@
 # define WINBYTE BYTE
 #endif
 
-#if (defined(WIN3264) || defined(WIN32UNIX)) && !defined(__MINGW32__)
+#if (defined(MSWIN) || defined(WIN32UNIX)) && !defined(__MINGW32__)
 # include <winnls.h>
 #endif
 
@@ -117,7 +117,7 @@
 # else
 #  include <gdk/gdkkeysyms.h>
 # endif
-# ifdef WIN3264
+# ifdef MSWIN
 #  include <gdk/gdkwin32.h>
 # else
 #  include <gdk/gdkx.h>
@@ -364,7 +364,7 @@ enc_alias_table[] =
     {"cyrillic",	IDX_ISO_5},
     {"arabic",		IDX_ISO_6},
     {"greek",		IDX_ISO_7},
-#ifdef WIN3264
+#ifdef MSWIN
     {"hebrew",		IDX_CP1255},
 #else
     {"hebrew",		IDX_ISO_8},
@@ -412,7 +412,7 @@ enc_alias_table[] =
     {"euccn",		IDX_EUC_CN},
     {"gb2312",		IDX_EUC_CN},
     {"euctw",		IDX_EUC_TW},
-#if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS_X)
+#if defined(MSWIN) || defined(WIN32UNIX) || defined(MACOS_X)
     {"japan",		IDX_CP932},
     {"korea",		IDX_CP949},
     {"prc",		IDX_CP936},
@@ -465,7 +465,7 @@ enc_canon_props(char_u *name)
     i = enc_canon_search(name);
     if (i >= 0)
 	return enc_canon_table[i].prop;
-#ifdef WIN3264
+#ifdef MSWIN
     if (name[0] == 'c' && name[1] == 'p' && VIM_ISDIGIT(name[2]))
     {
 	CPINFO	cpinfo;
@@ -509,7 +509,7 @@ mb_init(void)
     int		idx;
     int		n;
     int		enc_dbcs_new = 0;
-#if defined(USE_ICONV) && !defined(WIN3264) && !defined(WIN32UNIX) \
+#if defined(USE_ICONV) && !defined(MSWIN) && !defined(WIN32UNIX) \
 	&& !defined(MACOS_CONVERT)
 # define LEN_FROM_CONV
     vimconv_T	vimconv;
@@ -527,7 +527,7 @@ mb_init(void)
 	return NULL;
     }
 
-#ifdef WIN3264
+#ifdef MSWIN
     if (p_enc[0] == 'c' && p_enc[1] == 'p' && VIM_ISDIGIT(p_enc[2]))
     {
 	CPINFO	cpinfo;
@@ -566,7 +566,7 @@ codepage_invalid:
     }
     else if (STRNCMP(p_enc, "2byte-", 6) == 0)
     {
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Windows: accept only valid codepage numbers, check below. */
 	if (p_enc[6] != 'c' || p_enc[7] != 'p'
 			      || (enc_dbcs_new = atoi((char *)p_enc + 8)) == 0)
@@ -607,7 +607,7 @@ codepage_invalid:
 
     if (enc_dbcs_new != 0)
     {
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Check if the DBCS code page is OK. */
 	if (!IsValidCodePage(enc_dbcs_new))
 	    goto codepage_invalid;
@@ -618,7 +618,7 @@ codepage_invalid:
     enc_dbcs = enc_dbcs_new;
     has_mbyte = (enc_dbcs != 0 || enc_utf8);
 
-#if defined(WIN3264) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+#if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
     enc_codepage = encname2codepage(p_enc);
     enc_latin9 = (STRCMP(p_enc, "iso-8859-15") == 0);
 #endif
@@ -699,7 +699,7 @@ codepage_invalid:
 	    n = 1;
 	else
 	{
-#if defined(WIN3264) || defined(WIN32UNIX)
+#if defined(MSWIN) || defined(WIN32UNIX)
 	    /* enc_dbcs is set by setting 'fileencoding'.  It becomes a Windows
 	     * CodePage identifier, which we can pass directly in to Windows
 	     * API */
@@ -783,7 +783,7 @@ codepage_invalid:
 					  enc_utf8 ? "utf-8" : (char *)p_enc);
 #endif
 
-#ifdef WIN32
+#ifdef MSWIN
     /* When changing 'encoding' while starting up, then convert the command
      * line arguments from the active codepage to 'encoding'. */
     if (starting != 0)
@@ -909,7 +909,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		unsigned char tb = trail;
 
 		/* convert process code to JIS */
-# if defined(WIN3264) || defined(WIN32UNIX) || defined(MACOS_X)
+# if defined(MSWIN) || defined(WIN32UNIX) || defined(MACOS_X)
 		/* process code is SJIS */
 		if (lb <= 0x9f)
 		    lb = (lb - 0x81) * 2 + 0x21;
@@ -1006,7 +1006,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		if (c1 >= 0xB0 && c1 <= 0xC8)
 		    /* Hangul */
 		    return 20;
-#if defined(WIN3264) || defined(WIN32UNIX)
+#if defined(MSWIN) || defined(WIN32UNIX)
 		else if (c1 <= 0xA0 || c2 <= 0xA0)
 		    /* Extended Hangul Region : MS UHC(Unified Hangul Code) */
 		    /* c1: 0x81-0xA0 with c2: 0x41-0x5A, 0x61-0x7A, 0x81-0xFE
@@ -4393,7 +4393,7 @@ enc_alias_search(char_u *name)
 # include <langinfo.h>
 #endif
 
-#ifndef FEAT_GUI_W32
+#ifndef FEAT_GUI_MSWIN
 /*
  * Get the canonicalized encoding from the specified locale string "locale"
  * or from the environment variables LC_ALL, LC_CTYPE and LANG.
@@ -4460,7 +4460,7 @@ enc_locale_env(char *locale)
     char_u *
 enc_locale(void)
 {
-#ifdef WIN3264
+#ifdef MSWIN
     char	buf[50];
     long	acp = GetACP();
 
@@ -4487,7 +4487,7 @@ enc_locale(void)
 #endif
 }
 
-# if defined(WIN3264) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
+# if defined(MSWIN) || defined(PROTO) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
 /*
  * Convert an encoding name to an MS-Windows codepage.
  * Returns zero if no codepage can be figured out.
@@ -6570,7 +6570,7 @@ convert_setup_ext(
 	/* Internal utf-8 -> latin9 conversion. */
 	vcp->vc_type = CONV_TO_LATIN9;
     }
-#ifdef WIN3264
+#ifdef MSWIN
     /* Win32-specific codepage <-> codepage conversion without iconv. */
     else if ((from_is_utf8 || encname2codepage(from) > 0)
 	    && (to_is_utf8 || encname2codepage(to) > 0))
@@ -6620,7 +6620,7 @@ convert_setup_ext(
     return OK;
 }
 
-#if defined(FEAT_GUI) || defined(AMIGA) || defined(WIN3264) \
+#if defined(FEAT_GUI) || defined(AMIGA) || defined(MSWIN) \
 	|| defined(PROTO)
 /*
  * Do conversion on typed input characters in-place.
@@ -6870,7 +6870,7 @@ string_convert_ext(
 	    retval = iconv_string(vcp, ptr, len, unconvlenp, lenp);
 	    break;
 # endif
-# ifdef WIN3264
+# ifdef MSWIN
 	case CONV_CODEPAGE:		/* codepage -> codepage */
 	{
 	    int		retlen;
