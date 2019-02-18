@@ -15,9 +15,6 @@
 // Note: If you want to check for 64-bit use the _WIN64 macro.
 #if defined(WIN32) || defined(_WIN32)
 # define MSWIN
-# ifdef FEAT_GUI
-#  define FEAT_GUI_MSWIN
-# endif
 #endif
 
 // use fastcall for Borland, when compiling for MS-Windows
