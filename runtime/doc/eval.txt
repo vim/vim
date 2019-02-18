@@ -1298,16 +1298,6 @@ of 'encoding'.
 
 Note that "\000" and "\x00" force the end of the string.
 
-blob-literal							*blob-literal*
-------------
-
-Hexadecimal (starting with 0z or 0Z), Binary (starting with 0b or 0B)
-and Octal (starting with 0).
-
-This literal is taken as binary array. Sequences should be two byte tokens.
-Examples: >
-	:let b = 0zFF00ED015DAF
-
 
 blob-literal				*blob-literal* *E973*
 ------------

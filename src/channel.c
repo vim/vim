@@ -675,7 +675,7 @@ static char *e_cannot_listen = N_("E963: Cannot listen to port");
 
 #ifndef UNIX_PATH_MAX
 # define UNIX_PATH_MAX 108
-# ifdef WIN32
+# ifdef MSWIN
 typedef struct sockaddr_un {
   ADDRESS_FAMILY sun_family;
   char sun_path[UNIX_PATH_MAX];
@@ -999,7 +999,7 @@ channel_listen(
     struct hostent	*host;
     int			is_unix = FALSE;
     struct sockaddr_un	unixaddr;
-#ifdef WIN32
+#ifdef MSWIN
     u_short		port = port_in;
     u_long		val = 1;
 #else
@@ -1009,7 +1009,7 @@ channel_listen(
     channel_T		*channel;
     int			ret;
 
-#ifdef WIN32
+#ifdef MSWIN
     channel_init_winsock();
 #endif
 
@@ -1118,7 +1118,7 @@ channel_listen(
 	return NULL;
     }
 
-#ifdef _WIN32
+#ifdef MSWIN
     val = 0;
     ioctlsocket(sd, FIONBIO, &val);
 #else
@@ -1146,7 +1146,7 @@ channel_listen(
 channel_open_func(typval_T *argvars)
 {
     char_u	*address;
-    char_u	*p;
+    char_u	*p = NULL;
     char	*rest;
     int		port = 0;
     jobopt_T    opt;
@@ -1177,14 +1177,7 @@ channel_open_func(typval_T *argvars)
 	    smsg(_(e_invarg2), address);
 	    return NULL;
 	}
-    }
-    *p++ = NUL;
-    port = strtol((char *)p, &rest, 10);
-    if (*address == NUL || port <= 0 || *rest != NUL)
-    {
-	p[-1] = ':';
-	semsg(_(e_invarg2), address);
-	return NULL;
+	*p++ = NUL;
     }
 
     /* parse options */

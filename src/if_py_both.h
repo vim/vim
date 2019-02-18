@@ -6250,36 +6250,16 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     else if (PyBytes_Check(obj))
     {
 	char_u	*str;
-	Py_ssize_t  len;
 
-	if (PyBytes_AsStringAndSize(obj, (char **) &str, &len) == -1)
+	if (PyBytes_AsStringAndSize(obj, (char **) &str, NULL) == -1)
 	    return -1;
 	if (str == NULL)
 	    return -1;
 
-#if PY_MAJOR_VERSION < 3
 	if (set_string_copy(str, tv) == -1)
 	    return -1;
 
 	tv->v_type = VAR_STRING;
-#else
-	tv->v_type = VAR_BLOB;
-	tv->vval.v_blob = blob_alloc();
-	if (tv->vval.v_blob == NULL)
-	{
-	    PyErr_NoMemory();
-	    return -1;
-	}
-	if (ga_grow(&tv->vval.v_blob->bv_ga, len) == FAIL)
-	{
-	    blob_free(tv->vval.v_blob);
-	    PyErr_NoMemory();
-	    return -1;
-	}
-	tv->vval.v_blob->bv_ga.ga_len = len;
-	mch_memmove(tv->vval.v_blob->bv_ga.ga_data, str, len);
-	++tv->vval.v_blob->bv_refcount;
-#endif
     }
     else if (PyUnicode_Check(obj))
     {
