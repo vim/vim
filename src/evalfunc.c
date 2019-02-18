@@ -12622,10 +12622,7 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	if (error)
 	    return;
 
-	if (x < 0)
-	    list_append_number(rettv->vval.v_list, (varnumber_T)time(NULL));
-	else
-	    list_append_number(rettv->vval.v_list, argvars[0].vval.v_number);
+	list_append_number(rettv->vval.v_list, x);
     }
     list_append_number(rettv->vval.v_list, 362436069);
     list_append_number(rettv->vval.v_list, 521288629);

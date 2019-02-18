@@ -7158,10 +7158,10 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 
 							*rand()*
-rand({expr})
+rand([{expr}])
 		Return random Number generated from {expr}:
 		{expr} is need to initialize by |srand()|.
-		If {max} is not specified, return random Number from internal
+		If {expr} is not specified, return random Number from internal
 		values initialized.
 
 		Examples: >
