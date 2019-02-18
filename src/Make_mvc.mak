@@ -791,8 +791,8 @@ OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
 
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
-CFLAGS = $(CFLAGS) -DFEAT_GUI
-RCFLAGS = $(RCFLAGS) -DFEAT_GUI
+CFLAGS = $(CFLAGS) -DFEAT_GUI_MSWIN
+RCFLAGS = $(RCFLAGS) -DFEAT_GUI_MSWIN
 VIM = g$(VIM)
 GUI_INCL = \
 	gui.h
