@@ -108,8 +108,8 @@ Go to Normal mode with the ":vi" command.
 Can also be done with the "\-e" argument.
 .TP
 view
-Start in read-only mode.  You will be protected from writing the files.  Can
-also be done with the "\-R" argument.
+Start in read-only mode.  You will be protected from writing the files.
+Can also be done with the "\-R" argument.
 .TP
 gvim gview
 The GUI version.
@@ -142,8 +142,7 @@ See ":help search\-pattern" for the available search patterns.
 +{command}
 .TP
 \-c {command}
-{command} will be executed after the
-first file has been read.
+{command} will be executed after the first file has been read.
 {command} is interpreted as an Ex command.
 If the {command} contains spaces it must be enclosed in double quotes (this
 depends on the shell that is used).
@@ -325,7 +324,7 @@ You can still edit the buffer, but will be prevented from accidentally
 overwriting a file.
 If you do want to overwrite a file, add an exclamation mark to the Ex command,
 as in ":w!".
-The \-R option also implies the \-n option (see below).
+The \-R option also implies the \-n option (see above).
 The 'readonly' option can be reset with ":set noro".
 See ":help 'readonly'".
 .TP
@@ -355,8 +354,7 @@ Tells
 .B Vim
 the name of the terminal you are using.
 Only required when the automatic way doesn't work.
-Should be a terminal known
-to
+Should be a terminal known to
 .B Vim
 (builtin) or defined in the termcap or terminfo file.
 .TP

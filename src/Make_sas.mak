@@ -90,6 +90,7 @@ PROPT = DEF=PROTO GPROTO GPPARM MAXIMUMERRORS=999 GENPROTOSTATICS GENPROTOPARAME
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
 	charset.c \
@@ -106,12 +107,13 @@ SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
 	json.c \
 	list.c \
 	main.c \
@@ -134,6 +136,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -147,6 +150,7 @@ SRC = \
 
 OBJ = \
 	arabic.o \
+	autocmd.o \
 	blowfish.o \
 	buffer.o \
 	charset.o \
@@ -163,12 +167,13 @@ OBJ = \
 	ex_docmd.o \
 	ex_eval.o \
 	ex_getln.o \
-	farsi.o \
 	fileio.o \
+	findfile.o \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
 	hashtab.o \
+	indent.o \
 	json.o \
 	list.o \
 	main.o \
@@ -191,6 +196,7 @@ OBJ = \
 	screen.o \
 	search.o \
 	sha256.o \
+	sign.o \
 	spell.o \
 	spellfile.o \
 	syntax.o \
@@ -204,6 +210,7 @@ OBJ = \
 
 PRO = \
 	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
@@ -220,12 +227,13 @@ PRO = \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -248,6 +256,7 @@ PRO = \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
@@ -316,6 +325,8 @@ $(PRO): $(GST) vim.h
 # dependencies
 arabic.o:		arabic.c
 proto/arabic.pro:	arabic.c
+autocmd.o:		autocmd.c
+proto/autocmd.pro:	autocmd.c
 blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c
@@ -348,10 +359,10 @@ ex_eval.o:		ex_eval.c ex_cmds.h
 proto/ex_eval.pro:	ex_eval.c ex_cmds.h
 ex_getln.o:		ex_getln.c
 proto/ex_getln.pro:	ex_getln.c
-farsi.o:		farsi.c
-proto/farsi.pro:	farsi.c
 fileio.o:		fileio.c
 proto/fileio.pro:	fileio.c
+findfile.o:		findfile.c
+proto/findfile.pro:	findfile.c
 fold.o:			fold.c
 proto/fold.pro:		fold.c
 getchar.o:		getchar.c
@@ -360,6 +371,8 @@ hardcopy.o:		hardcopy.c
 proto/hardcopy.pro:	hardcopy.c
 hashtab.o:		hashtab.c
 proto/hashtab.pro:	hashtab.c
+indent.o:		indent.c
+proto/indent.pro:	indent.c
 json.o:			json.c
 proto/json.pro:		json.c
 list.o:			list.c
@@ -404,6 +417,8 @@ search.o:		search.c
 proto/search.pro:	search.c
 sha256.o:		sha256.c
 proto/sha256.pro:	sha256.c
+sign.o:			sign.c
+proto/sign.pro:		sign.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
 spellfile.o:		spellfile.c

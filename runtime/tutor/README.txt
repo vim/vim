@@ -19,4 +19,19 @@ Bob Ware, Colorado School of Mines, Golden, Co 80401, USA
 (303) 273-3987
 bware@mines.colorado.edu bware@slate.mines.colorado.edu bware@mines.bitnet
 
-[This file was modified for Vim by Bram Moolenaar]
+
+Translation
+-----------
+
+The tutor.xx and tutor.xx.utf-8 files are translated files (where xx is the
+langage code).  The encoding of tutor.xx might be latin1 or other traditional
+encoding.  If you don't need a translation with such traditional encoding,
+you just need to prepare the tutor.xx.utf-8 file.
+If you need another encoding, you can also prepare a file named tutor.xx.enc
+(replace enc with the actual encoding name).  You might also need to adjust the
+tutor.vim file.
+The "make" command can be used for creating tutor.xx from tutor.xx.utf-8.
+See the Makefile for detail.  (For some languages, tutor.xx.utf-8 is created
+from tutor.xx for historical reasons.)
+
+[This file was modified for Vim by Bram Moolenaar et al.]

@@ -10,7 +10,7 @@
 :: When that also fails, it uses the English version.
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
-FOR %%d in (. %TMP% %TEMP%) DO IF EXIST %%d\nul SET TUTORCOPY=%%d\$tutor$
+FOR %%d in (. "%TMP%" "%TEMP%") DO IF EXIST %%d\nul SET TUTORCOPY=%%d\$tutor$
 
 SET xx=%1
 
@@ -47,11 +47,11 @@ GOTO end
 
 :use_vim
 :: The script tutor.vim tells Vim which file to copy
-vim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
+call vim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
 IF ERRORLEVEL 1 GOTO no_executable
 
 :: Start vim without any .vimrc, set 'nocompatible'
-vim -u NONE -c "set nocp" %TUTORCOPY%
+call vim -u NONE -c "set nocp" %TUTORCOPY%
 
 GOTO end
 

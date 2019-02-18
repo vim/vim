@@ -55,7 +55,7 @@ main(void)
 	++p;
     }
     while (*p == L' ')
-        ++p;
+	++p;
 
     /*
      * "-s" argument: don't wait for a key hit.

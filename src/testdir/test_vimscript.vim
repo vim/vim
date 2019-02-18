@@ -1,15 +1,15 @@
-" Test various aspects of the Vim language.
+" Test various aspects of the Vim script language.
 " Most of this was formerly in test49.
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
 "-------------------------------------------------------------------------------
 
-com!               XpathINIT  let g:Xpath = ''
+com!		   XpathINIT  let g:Xpath = ''
 com! -nargs=1 -bar Xpath      let g:Xpath = g:Xpath . <args>
 
 " Append a message to the "messages" file
-func! Xout(text)
+func Xout(text)
     split messages
     $put =a:text
     wq
@@ -25,7 +25,7 @@ com! -nargs=1	     Xout     call Xout(<args>)
 " in the variable argument list.  This function is useful if similar tests are
 " to be made for a ":return" from a function call or a ":finish" in a script
 " file.
-function! MakeScript(funcname, ...)
+func MakeScript(funcname, ...)
     let script = tempname()
     execute "redir! >" . script
     execute "function" a:funcname
@@ -50,7 +50,7 @@ function! MakeScript(funcname, ...)
     write
     bwipeout
     return script
-endfunction
+endfunc
 
 " ExecAsScript - Source a temporary script made from a function.	    {{{2
 "
@@ -301,9 +301,9 @@ XpathINIT
 "
 let calls = ""
 com! -nargs=1 CALL
-    	\ if !exists("calls") && !exists("outer") |
-    	\ let g:calls = g:calls . <args> |
-    	\ endif
+	    \ if !exists("calls") && !exists("outer") |
+	    \ let g:calls = g:calls . <args> |
+	    \ endif
 
 let i = 0
 while i < 3
@@ -357,7 +357,7 @@ endif
 if exists("*F1")
     call F1("F1")
     if exists("*G1")
-        call G1("G1")
+       call G1("G1")
     endif
 endif
 
@@ -367,13 +367,13 @@ endif
 if exists("*F2")
     call F2(2, "F2")
     if exists("*G21")
-        call G21("G21")
+       call G21("G21")
     endif
     if exists("*G22")
-        call G22("G22")
+       call G22("G22")
     endif
     if exists("*G23")
-        call G23("G23")
+       call G23("G23")
     endif
 endif
 
@@ -383,13 +383,13 @@ endif
 if exists("*F3")
     call F3(3, "F3")
     if exists("*G31")
-        call G31("G31")
+       call G31("G31")
     endif
     if exists("*G32")
-        call G32("G32")
+       call G32("G32")
     endif
     if exists("*G33")
-        call G33("G33")
+       call G33("G33")
     endif
 endif
 
@@ -640,7 +640,7 @@ function! MSG(enr, emsg)
 	endif
     endif
     return match
-endfunction
+endfunc
 
 if 1 || strlen("\"") | Xpath 'a'
     Xpath 'b'
@@ -1032,11 +1032,11 @@ func Test_type()
     call assert_true(empty(v:none))
 
     func ChangeYourMind()
-      try
-	return v:true
-      finally
-        return 'something else'
-      endtry
+	try
+	    return v:true
+	finally
+	    return 'something else'
+	endtry
     endfunc
 
     call ChangeYourMind()
@@ -1250,70 +1250,70 @@ endfunction
 func Test_script_lines()
     " :append
     try
-        call DefineFunction('T_Append', [
-                    \ 'append',
-                    \ 'py <<EOS',
-                    \ '.',
-                    \ ])
+	call DefineFunction('T_Append', [
+		    \ 'append',
+		    \ 'py <<EOS',
+		    \ '.',
+		    \ ])
     catch
-        call assert_report("Can't define function")
+	call assert_report("Can't define function")
     endtry
     try
-        call DefineFunction('T_Append', [
-                    \ 'append',
-                    \ 'abc',
-                    \ ])
-        call assert_report("Shouldn't be able to define function")
+	call DefineFunction('T_Append', [
+		    \ 'append',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
     catch
-        call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry
 
     " :change
     try
-        call DefineFunction('T_Change', [
-                    \ 'change',
-                    \ 'py <<EOS',
-                    \ '.',
-                    \ ])
+	call DefineFunction('T_Change', [
+		    \ 'change',
+		    \ 'py <<EOS',
+		    \ '.',
+		    \ ])
     catch
-        call assert_report("Can't define function")
+	call assert_report("Can't define function")
     endtry
     try
-        call DefineFunction('T_Change', [
-                    \ 'change',
-                    \ 'abc',
-                    \ ])
-        call assert_report("Shouldn't be able to define function")
+	call DefineFunction('T_Change', [
+		    \ 'change',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
     catch
-        call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry
 
     " :insert
     try
-        call DefineFunction('T_Insert', [
-                    \ 'insert',
-                    \ 'py <<EOS',
-                    \ '.',
-                    \ ])
+	call DefineFunction('T_Insert', [
+		    \ 'insert',
+		    \ 'py <<EOS',
+		    \ '.',
+		    \ ])
     catch
-        call assert_report("Can't define function")
+	call assert_report("Can't define function")
     endtry
     try
-        call DefineFunction('T_Insert', [
-                    \ 'insert',
-                    \ 'abc',
-                    \ ])
-        call assert_report("Shouldn't be able to define function")
+	call DefineFunction('T_Insert', [
+		    \ 'insert',
+		    \ 'abc',
+		    \ ])
+	call assert_report("Shouldn't be able to define function")
     catch
-        call assert_exception('Vim(function):E126: Missing :endfunction')
+	call assert_exception('Vim(function):E126: Missing :endfunction')
     endtry
 endfunc
 
 "-------------------------------------------------------------------------------
 " Test 96:  line continuation						    {{{1
 "
-"           Undefined behavior was detected by ubsan with line continuation
-"           after an empty line.
+"	    Undefined behavior was detected by ubsan with line continuation
+"	    after an empty line.
 "-------------------------------------------------------------------------------
 func Test_script_emty_line_continuation()
 
@@ -1419,6 +1419,104 @@ func Test_user_command_with_bang()
     call assert_equal(1, nieuw)
     unlet nieuw
     delcommand Nieuw
+endfunc
+
+" Test for script-local function
+func <SID>DoLast()
+  call append(line('$'), "last line")
+endfunc
+
+func s:DoNothing()
+  call append(line('$'), "nothing line")
+endfunc
+
+func Test_script_local_func()
+  set nocp viminfo+=nviminfo
+  new
+  nnoremap <buffer> _x	:call <SID>DoNothing()<bar>call <SID>DoLast()<bar>delfunc <SID>DoNothing<bar>delfunc <SID>DoLast<cr>
+
+  normal _x
+  call assert_equal('nothing line', getline(2))
+  call assert_equal('last line', getline(3))
+  enew! | close
+endfunc
+
+func Test_compound_assignment_operators()
+    " Test for number
+    let x = 1
+    let x += 10
+    call assert_equal(11, x)
+    let x -= 5
+    call assert_equal(6, x)
+    let x *= 4
+    call assert_equal(24, x)
+    let x /= 3
+    call assert_equal(8, x)
+    let x %= 3
+    call assert_equal(2, x)
+    let x .= 'n'
+    call assert_equal('2n', x)
+
+    " Test for string
+    let x = 'str'
+    let x .= 'ing'
+    call assert_equal('string', x)
+    let x += 1
+    call assert_equal(1, x)
+    let x -= 1.5
+    call assert_equal(-0.5, x)
+
+    if has('float')
+        " Test for float
+        let x = 0.5
+        let x += 4.5
+        call assert_equal(5.0, x)
+        let x -= 1.5
+        call assert_equal(3.5, x)
+        let x *= 3.0
+        call assert_equal(10.5, x)
+        let x /= 2.5
+        call assert_equal(4.2, x)
+        call assert_fails('let x %= 0.5', 'E734')
+        call assert_fails('let x .= "f"', 'E734')
+    endif
+
+    " Test for environment variable
+    let $FOO = 1
+    call assert_fails('let $FOO += 1', 'E734')
+    call assert_fails('let $FOO -= 1', 'E734')
+    call assert_fails('let $FOO *= 1', 'E734')
+    call assert_fails('let $FOO /= 1', 'E734')
+    call assert_fails('let $FOO %= 1', 'E734')
+    let $FOO .= 's'
+    call assert_equal('1s', $FOO)
+    unlet $FOO
+
+    " Test for option variable (type: number)
+    let &scrolljump = 1
+    let &scrolljump += 5
+    call assert_equal(6, &scrolljump)
+    let &scrolljump -= 2
+    call assert_equal(4, &scrolljump)
+    let &scrolljump *= 3
+    call assert_equal(12, &scrolljump)
+    let &scrolljump /= 2
+    call assert_equal(6, &scrolljump)
+    let &scrolljump %= 5
+    call assert_equal(1, &scrolljump)
+    call assert_fails('let &scrolljump .= "j"', 'E734')
+    set scrolljump&vim
+
+    " Test for register
+    let @/ = 1
+    call assert_fails('let @/ += 1', 'E734')
+    call assert_fails('let @/ -= 1', 'E734')
+    call assert_fails('let @/ *= 1', 'E734')
+    call assert_fails('let @/ /= 1', 'E734')
+    call assert_fails('let @/ %= 1', 'E734')
+    let @/ .= 's'
+    call assert_equal('1s', @/)
+    let @/ = ''
 endfunc
 
 "-------------------------------------------------------------------------------

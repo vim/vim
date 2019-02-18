@@ -88,13 +88,12 @@ enum SpecialKey
     KS_CGP,	/* get window position */
     KS_CWS,	/* set window size in characters */
     KS_CRV,	/* request version string */
+    KS_RFG,	/* request foreground color */
     KS_RBG,	/* request background color */
     KS_CSI,	/* start insert mode (bar cursor) */
     KS_CEI,	/* end insert mode (block cursor) */
     KS_CSR,	/* start replace mode (underline cursor) */
-#ifdef FEAT_WINDOWS
     KS_CSV,	/* scroll region vertical */
-#endif
     KS_OP,	/* original color pair */
     KS_U7,	/* request cursor position */
     KS_8F,	/* set foreground color (RGB) */
@@ -102,10 +101,14 @@ enum SpecialKey
     KS_CBE,	/* enable bracketed paste mode */
     KS_CBD,	/* disable bracketed paste mode */
     KS_CPS,	/* start of bracketed paste */
-    KS_CPE	/* end of bracketed paste */
+    KS_CPE,	/* end of bracketed paste */
+    KS_CST,	/* save window title */
+    KS_CRT,	/* restore window title */
+    KS_SSI,	/* save icon text */
+    KS_SRI	/* restore icon text */
 };
 
-#define KS_LAST	    KS_CPE
+#define KS_LAST	    KS_SRI
 
 /*
  * the terminal capabilities are stored in this array
@@ -187,6 +190,7 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_CEI	(TERM_STR(KS_CEI))	/* end insert mode */
 #define T_CSR	(TERM_STR(KS_CSR))	/* start replace mode */
 #define T_CRV	(TERM_STR(KS_CRV))	/* request version string */
+#define T_RFG	(TERM_STR(KS_RFG))	/* request foreground RGB */
 #define T_RBG	(TERM_STR(KS_RBG))	/* request background RGB */
 #define T_OP	(TERM_STR(KS_OP))	/* original color pair */
 #define T_U7	(TERM_STR(KS_U7))	/* request cursor position */
@@ -196,6 +200,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_BD	(TERM_STR(KS_CBD))	/* disable bracketed paste mode */
 #define T_PS	(TERM_STR(KS_CPS))	/* start of bracketed paste */
 #define T_PE	(TERM_STR(KS_CPE))	/* end of bracketed paste */
+#define T_CST	(TERM_STR(KS_CST))	/* save window title */
+#define T_CRT	(TERM_STR(KS_CRT))	/* restore window title */
+#define T_SSI	(TERM_STR(KS_SSI))	/* save icon text */
+#define T_SRI	(TERM_STR(KS_SRI))	/* restore icon text */
 
 #define TMODE_COOK  0	/* terminal mode for external cmds and Ex mode */
 #define TMODE_SLEEP 1	/* terminal mode for sleeping (cooked but no echo) */

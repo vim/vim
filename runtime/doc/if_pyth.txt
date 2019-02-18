@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.0.  Last change: 2017 Mar 09
+*if_pyth.txt*   For Vim version 8.1.  Last change: 2018 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -60,8 +60,9 @@ Example: >
 	endfunction
 
 To see what version of Python you have: >
-	:python import sys
 	:python print(sys.version)
+
+There is no need to import sys, it's done by default.
 
 Note: Python is very sensitive to the indenting.  Make sure the "class" line
 and "EOF" do not have any indent.
@@ -82,6 +83,18 @@ Examples:
 	:pydo return "%s\t%d" % (line[::-1], len(line))
 	:pydo if line: return "%4d: %s" % (linenr, line)
 <
+One can use `:pydo` in possible conjunction with `:py` to filter a range using
+python. For example: >
+
+	:py3 << EOF
+	needle = vim.eval('@a')
+	replacement = vim.eval('@b')
+
+	def py_vim_string_replace(str):
+		return str.replace(needle, replacement)
+	EOF
+	:'<,'>py3do return py_vim_string_replace(line)
+<
 							*:pyfile* *:pyf*
 :[range]pyf[ile] {file}
 			Execute the Python script in {file}.  The whole
@@ -98,7 +111,6 @@ Python commands cannot be used in the |sandbox|.
 
 To pass arguments you need to set sys.argv[] explicitly.  Example: >
 
-	:python import sys
 	:python sys.argv = ["foo", "bar"]
 	:pyfile myscript.py
 
@@ -168,11 +180,15 @@ vim.eval(str)						*python-eval*
 	- a dictionary if the Vim expression evaluates to a Vim dictionary
 	Dictionaries and lists are recursively expanded.
 	Examples: >
+	    :" value of the 'textwidth' option
 	    :py text_width = vim.eval("&tw")
-	    :py str = vim.eval("12+12")		# NB result is a string! Use
-						# string.atoi() to convert to
-						# a number.
-
+	    :
+	    :" contents of the 'a' register
+	    :py a_reg = vim.eval("@a") 
+	    :
+	    :" Result is a string! Use string.atoi() to convert to a number.
+	    :py str = vim.eval("12+12")
+	    :
 	    :py tagList = vim.eval('taglist("eval_expr")')
 <	The latter will return a python list of python dicts, for instance:
 	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name': ~
@@ -715,6 +731,8 @@ To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()|
 functions to evaluate Python expressions and pass their values to Vim script.
 |pyxeval()| is also available.
 
+The Python value "None" is converted to v:none.
+
 ==============================================================================
 9. Dynamic loading					*python-dynamic*
 
@@ -734,8 +752,8 @@ or 'pythonthreedll' option can be also used to specify the Python DLL.
 
 The name of the DLL should match the Python version Vim was compiled with.
 Currently the name for Python 2 is "python27.dll", that is for Python 2.7.
-That is the default value for 'pythondll'.  For Python 3 it is python35.dll
-(Python 3.5).  To know for sure edit "gvim.exe" and search for
+That is the default value for 'pythondll'.  For Python 3 it is python36.dll
+(Python 3.6).  To know for sure edit "gvim.exe" and search for
 "python\d*.dll\c".
 
 
@@ -807,7 +825,8 @@ Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
 You can test what Python version is available with: >
 	if has('python')
 	  echo 'there is Python 2.x'
-  	elseif has('python3')
+	endif
+  	if has('python3')
 	  echo 'there is Python 3.x'
 	endif
 
@@ -815,6 +834,24 @@ Note however, that when Python 2 and 3 are both available and loaded
 dynamically, these has() calls will try to load them.  If only one can be
 loaded at a time, just checking if Python 2 or 3 are available will prevent
 the other one from being available.
+
+To avoid loading the dynamic library, only check if Vim was compiled with
+python support: >
+	if has('python_compiled')
+	  echo 'compiled with Python 2.x support'
+	  if has('python_dynamic')
+	    echo 'Python 2.x dynamically loaded'
+	  endif
+	endif
+  	if has('python3_compiled')
+	  echo 'compiled with Python 3.x support'
+	  if has('python3_dynamic')
+	    echo 'Python 3.x dynamically loaded'
+	  endif
+	endif
+
+This also tells you whether Python is dynamically loaded, which will fail if
+the runtime library cannot be found.
 
 ==============================================================================
 11. Python X						*python_x* *pythonx*
@@ -903,4 +940,4 @@ If you have more than one version of Python 3, you need to link python3 to the
 one you prefer, before running configure.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

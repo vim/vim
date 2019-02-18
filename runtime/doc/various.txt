@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.0.  Last change: 2017 Feb 24
+*various.txt*   For Vim version 8.1.  Last change: 2019 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -30,6 +30,11 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			includes an item that doesn't cause automatic
 			updating.
 
+						*:redrawt* *:redrawtabline*
+:redrawt[abline]	Redraw the tabline.  Useful to update the tabline when
+			'tabline' includes an item that doesn't trigger
+			automatic updating.
+
 							*N<Del>*
 <Del>			When entering a number: Remove the last digit.
 			Note: if you like to use <BS> for this, add this
@@ -40,23 +45,35 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 
 :as[cii]	or					*ga* *:as* *:ascii*
 ga			Print the ascii value of the character under the
-			cursor in decimal, hexadecimal and octal.  For
-			example, when the cursor is on a 'R':
+			cursor in decimal, hexadecimal and octal.
+			Mnemonic: Get Ascii value.
+
+			For example, when the cursor is on a 'R':
 				<R>  82,  Hex 52,  Octal 122 ~
 			When the character is a non-standard ASCII character,
 			but printable according to the 'isprint' option, the
-			non-printable version is also given.  When the
-			character is larger than 127, the <M-x> form is also
-			printed.  For example:
+			non-printable version is also given.
+			
+			When the character is larger than 127, the <M-x> form
+			is also printed.  For example:
 				<~A>  <M-^A>  129,  Hex 81,  Octal 201 ~
 				<p>  <|~>  <M-~>  254,  Hex fe,  Octal 376 ~
 			(where <p> is a special character)
+
 			The <Nul> character in a file is stored internally as
 			<NL>, but it will be shown as:
 				<^@>  0,  Hex 00,  Octal 000 ~
+
 			If the character has composing characters these are
 			also shown.  The value of 'maxcombine' doesn't matter.
-			Mnemonic: Get Ascii value.  {not in Vi}
+
+			If the character can be inserted as a digraph, also
+			output the two characters that can be used to create
+			the character:
+			    <ö> 246, Hex 00f6, Oct 366, Digr o: ~
+			This shows you can type CTRL-K o : to insert ö.
+
+			{not in Vi}
 
 							*g8*
 g8			Print the hex values of the bytes used in the
@@ -65,8 +82,7 @@ g8			Print the hex values of the bytes used in the
 			value of 'maxcombine' doesn't matter.
 			Example of a character with two composing characters:
 				e0 b8 81 + e0 b8 b9 + e0 b9 89 ~
-			{not in Vi} {only when compiled with the |+multi_byte|
-			feature}
+			{not in Vi}
 
 							*8g8*
 8g8			Find an illegal UTF-8 byte sequence at or after the
@@ -81,8 +97,7 @@ g8			Print the hex values of the bytes used in the
 			Note that when the cursor is on an illegal byte or the
 			cursor is halfway a multi-byte character the command
 			won't move the cursor.
-			{not in Vi} {only when compiled with the |+multi_byte|
-			feature}
+			{not in Vi}
 
 						*:p* *:pr* *:print* *E749*
 :[range]p[rint] [flags]
@@ -294,7 +309,7 @@ g8			Print the hex values of the bytes used in the
 			Here is an overview of the features.
 			The first column shows the smallest version in which
 			they are included:
-			   T	tiny
+			   T	tiny (always)
 			   S	small
 			   N	normal
 			   B	big
@@ -308,10 +323,14 @@ g8			Print the hex values of the bytes used in the
    *+acl*		|ACL| support included
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
-N  *+autocmd*		|:autocmd|, automatic commands
-m  *+balloon_eval*	|balloon-eval| support. Included when compiling with
-			supported GUI (Motif, GTK, GUI) and either
-			Netbeans/Sun Workshop integration or |+eval| feature.
+T  *+autocmd*		|:autocmd|, automatic commands
+H  *+autoservername*	Automatically enable |clientserver|
+m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
+			compiling with supported GUI (Motif, GTK, GUI) and
+			either Netbeans/Sun Workshop integration or |+eval|
+			feature.
+H  *+balloon_eval_term*	|balloon-eval| support in the terminal,
+			'balloonevalterm'
 N  *+browse*		|:browse| command
 N  *+builtin_terms*	some terminals builtin |builtin-terms|
 B  *++builtin_terms*	maximal terminals builtin |builtin-terms|
@@ -322,13 +341,13 @@ N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support
 N  *+cmdline_compl*	command line completion |cmdline-completion|
-N  *+cmdline_hist*	command line history |cmdline-history|
+S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
 N  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 B  *+cscope*		|cscope| support
-m  *+cursorbind*	|'cursorbind'| support
+T  *+cursorbind*	|'cursorbind'| support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
 N  *+dialog_gui*	Support for |:confirm| with GUI dialog.
@@ -336,7 +355,7 @@ N  *+dialog_con*	Support for |:confirm| with console dialog.
 N  *+dialog_con_gui*	Support for |:confirm| with GUI and console dialog.
 N  *+diff*		|vimdiff| and 'diff'
 N  *+digraphs*		|digraphs| *E196*
-m  *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
+   *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
@@ -361,14 +380,14 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 N  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+job*		starting and stopping jobs |job|
-N  *+jumplist*		|jumplist|
+S  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
 N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
 N  *+lispindent*	|'lisp'|
-N  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
+T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 N  *+localmap*		Support for mappings local to a buffer |:map-local|
 m  *+lua*		|Lua| interface
@@ -413,13 +432,13 @@ N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-N  *+scrollbind*	|'scrollbind'|
+T  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 N  *+smartindent*	|'smartindent'|
 N  *+startuptime*	|--startuptime| argument
 N  *+statusline*	Options 'statusline', 'rulerformat' and special
 			formats of 'titlestring' and 'iconstring'
-m  *+sun_workshop*	|workshop|
+m  *+sun_workshop*	|workshop|; no longer supported
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|
@@ -432,20 +451,25 @@ m  *+terminal*		Support for terminal window |terminal|
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 B  *+termguicolors*	24-bit color in xterm-compatible terminals support
 N  *+textobjects*	|text-objects| selection
+N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
 N  *+title*		Setting the window 'title' and 'icon'
 N  *+toolbar*		|gui-toolbar|
 N  *+user_commands*	User-defined commands. |user-commands|
+B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
-N  *+vertsplit*		Vertically split windows |:vsplit|
+   *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
+			since 8.0.1118.
+			in sync with the |+windows| feature
 N  *+virtualedit*	|'virtualedit'|
-S  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
-N  *+visualextra*	extra Visual mode commands |blockwise-operators|
-N  *+vreplace*		|gR| and |gr|
+T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
+T  *+visualextra*	extra Visual mode commands |blockwise-operators|
+T  *+vreplace*		|gR| and |gr|
+   *+vtp*		on MS-Windows console: support for 'termguicolors'
 N  *+wildignore*	|'wildignore'|
 N  *+wildmenu*		|'wildmenu'|
-S  *+windows*		more than one window
+T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
@@ -545,7 +569,18 @@ N  *+X11*		Unix only: can restore window title |X11|
 			The pattern is matched against the relevant part of
 			the output, not necessarily the whole line. Only some
 			commands support filtering, try it out to check if it
-			works.
+			works. Some of the commands that support filtering:
+                          |:#|          - filter whole line
+                          |:command|    - filter by command name
+                          |:files|      - filter by file name
+                          |:highlight|  - filter by highlight group
+                          |:jumps|      - filter by file name
+                          |:let|        - filter by variable name
+                          |:list|       - filter whole line
+                          |:llist|      - filter by file name or module name
+                          |:oldfiles|   - filter by file name
+                          |:clist|      - filter by file name or module name
+                          |:set|        - filter by variable name
 
 			Only normal messages are filtered, error messages are
 			not.
@@ -709,4 +744,4 @@ LessInitFunc in your vimrc, for example: >
 	endfunc
 <
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

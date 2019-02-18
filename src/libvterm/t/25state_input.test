@@ -130,3 +130,14 @@ PASTE START
   output "\e[200~"
 PASTE END
   output "\e[201~"
+
+!Focus reporting disabled
+FOCUS IN
+FOCUS OUT
+
+!Focus reporting enabled
+PUSH "\e[?1004h"
+FOCUS IN
+  output "\e[I"
+FOCUS OUT
+  output "\e[O"

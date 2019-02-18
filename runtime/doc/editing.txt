@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.0.  Last change: 2017 Aug 21
+*editing.txt*   For Vim version 8.1.  Last change: 2018 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -424,6 +424,15 @@ On Unix and a few other systems you can also use backticks for the file name
 argument, for example: >
 	:next `find . -name ver\\*.c -print`
 	:view `ls -t *.patch  \| head -n1`
+Vim will run the command in backticks using the 'shell' and use the standard
+output as argument for the given Vim command (error messages from the shell
+command will be discarded).
+To see what shell command Vim is running, set the 'verbose' option to 4. When
+the shell command returns a non-zero exit code, an error message will be
+displayed and the Vim command will be aborted. To avoid this make the shell
+always return zero like so: >
+       :next `find . -name ver\\*.c -print \|\| true`
+
 The backslashes before the star are required to prevent the shell from
 expanding "ver*.c" prior to execution of the find program.  The backslash
 before the shell pipe symbol "|" prevents Vim from parsing it as command
@@ -650,8 +659,7 @@ list of the current window.
 			There is no check for duplicates, it is possible to
 			add a file to the argument list twice.
 			The currently edited file is not changed.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Note: you can also use this method: >
 				:args ## x
 <			This will add the "x" item and sort the new list.
@@ -665,8 +673,7 @@ list of the current window.
 			when it's deleted from the argument list.
 			Example: >
 				:argdel *.obj
-<			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+<			{not in Vi}
 
 :[range]argd[elete]	Delete the {range} files from the argument list.
 			Example: >
@@ -681,8 +688,7 @@ list of the current window.
 <			Removes all the files from the arglist.
 			When the last number in the range is too high, up to
 			the last argument is deleted.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 
 							*:argu* *:argument*
 :[count]argu[ment] [count] [++opt] [+cmd]
@@ -691,16 +697,14 @@ list of the current window.
 			when changes have been made and Vim does not want to
 			|abandon| the current buffer.
 			Also see |++opt| and |+cmd|.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 
 :[count]argu[ment]! [count] [++opt] [+cmd]
 			Edit file [count] in the argument list, discard any
 			changes to the current buffer.  When [count] is
 			omitted the current entry is used.
 			Also see |++opt| and |+cmd|.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 
 :[count]n[ext] [++opt] [+cmd]			*:n* *:ne* *:next* *E165* *E163*
 			Edit [count] next file.  This fails when changes have
@@ -823,7 +827,6 @@ fourth file in the argument list.  This happens when you do ":e file".
 LOCAL ARGUMENT LIST
 
 {not in Vi}
-{not available when compiled without the |+windows| or |+listcmds| features}
 
 							*:arglocal*
 :argl[ocal]		Make a local copy of the global argument list.
@@ -875,8 +878,7 @@ USING THE ARGUMENT LIST
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each file.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Also see |:windo|, |:tabdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -899,8 +901,8 @@ flag is used for the ":substitute" command to avoid an error for files where
 Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
-						*E502* *E503* *E504* *E505*
-						*E512* *E514* *E667* *E796*
+					*E502* *E503* *E504* *E505*
+					*E512* *E514* *E667* *E796* *E949*
 :w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
@@ -955,6 +957,9 @@ If a file name is given with ":w" it becomes the alternate file.  This can be
 used, for example, when the write fails and you want to try again later with
 ":w #".  This can be switched off by removing the 'A' flag from the
 'cpoptions' option.
+
+Note that the 'fsync' option matters here.  If it's set it may make writes
+slower (but safer).
 
 							*:sav* *:saveas*
 :sav[eas][!] [++opt] {file}
@@ -1199,7 +1204,8 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 :wqa[ll]! [++opt]
 :xa[ll]!	Write all changed buffers, even the ones that are readonly,
 		and exit Vim.  If there are buffers without a file name or
-		which cannot be written for another reason, Vim will not quit.
+		which cannot be written for another reason, or there is a
+		terminal with a running job, Vim will not quit.
 		{not in Vi}
 
 ==============================================================================
@@ -1409,7 +1415,7 @@ cannot be read without the right key.
 The text in the swap file and the undo file is also encrypted.  *E843*
 However, this is done block-by-block and may reduce the time needed to crack a
 password.  You can disable the swap file, but then a crash will cause you to
-lose your work.  The undo file can be disabled without much disadvantage. >
+lose your work.  The undo file can be disabled without too much disadvantage. >
 	:set noundofile
 	:noswapfile edit secrets
 
@@ -1741,4 +1747,4 @@ There are three different types of searching:
    currently work with 'path' items that contain a URL or use the double star
    with depth limiter (/usr/**2) or upward search (;) notations.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

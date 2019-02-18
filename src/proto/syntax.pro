@@ -1,5 +1,6 @@
 /* syntax.c */
-void syntax_start(win_T *wp, linenr_T lnum, proftime_T *syntax_tm);
+void syn_set_timeout(proftime_T *tm);
+void syntax_start(win_T *wp, linenr_T lnum);
 void syn_stack_free_all(synblock_T *block);
 void syn_stack_apply_changes(buf_T *buf);
 void syntax_end_parsing(linenr_T lnum);
@@ -46,12 +47,14 @@ char_u *highlight_has_attr(int id, int flag, int modec);
 char_u *highlight_color(int id, char_u *what, int modec);
 long_u highlight_gui_color_rgb(int id, int fg);
 int syn_name2id(char_u *name);
+int syn_name2attr(char_u *name);
 int highlight_exists(char_u *name);
 char_u *syn_id2name(int id);
 int syn_namen2id(char_u *linep, int len);
 int syn_check_group(char_u *pp, int len);
 int syn_id2attr(int hl_id);
 int syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp);
+void syn_id2cterm_bg(int hl_id, int *fgp, int *bgp);
 int syn_get_final_id(int hl_id);
 void highlight_gui_started(void);
 int highlight_changed(void);

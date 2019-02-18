@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Jul 28
+" Last change:	2019 Jan 26
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -9,7 +9,8 @@
 "  for MS-DOS and Win32:  $VIM\_vimrc
 "	    for OpenVMS:  sys$login:.vimrc
 
-" When started as "evim", evim.vim will already have done these settings.
+" When started as "evim", evim.vim will already have done these settings, bail
+" out.
 if v:progname =~? "evim"
   finish
 endif
@@ -31,28 +32,20 @@ if &t_Co > 2 || has("gui_running")
   set hlsearch
 endif
 
-" Only do this part when compiled with support for autocommands.
-if has("autocmd")
-
-  " Put these in an autocmd group, so that we can delete them easily.
-  augroup vimrcEx
+" Put these in an autocmd group, so that we can delete them easily.
+augroup vimrcEx
   au!
 
   " For all text files set 'textwidth' to 78 characters.
   autocmd FileType text setlocal textwidth=78
-
-  augroup END
-
-else
-
-  set autoindent		" always set autoindenting on
-
-endif " has("autocmd")
+augroup END
 
 " Add optional packages.
 "
 " The matchit plugin makes the % command work better, but it is not backwards
 " compatible.
+" The ! means the package won't be loaded right away but when plugins are
+" loaded during initialization.
 if has('syntax') && has('eval')
-  packadd matchit
+  packadd! matchit
 endif

@@ -31,7 +31,7 @@
 # define STRICT
 #endif
 
-#define INC_OLE2	// WIN32, get ole2 from windows.h
+#define INC_OLE2	// MS-Windows, get ole2 from windows.h
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
 #if defined(_MSC_VER) && _MSC_VER >= 1400

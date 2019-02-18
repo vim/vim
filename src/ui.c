@@ -32,7 +32,7 @@ ui_write(char_u *s, int len)
     {
 	gui_write(s, len);
 	if (p_wd)
-	    gui_wait_for_chars(p_wd);
+	    gui_wait_for_chars(p_wd, typebuf.tb_change_cnt);
 	return;
     }
 #endif
@@ -40,7 +40,7 @@ ui_write(char_u *s, int len)
     /* Don't output anything in silent mode ("ex -s") unless 'verbose' set */
     if (!(silent_mode && p_verbose == 0))
     {
-#if defined(FEAT_MBYTE) && !defined(WIN3264)
+#if !defined(MSWIN)
 	char_u	*tofree = NULL;
 
 	if (output_conv.vc_type != CONV_NONE)
@@ -54,15 +54,15 @@ ui_write(char_u *s, int len)
 
 	mch_write(s, len);
 
-#if defined(FEAT_MBYTE) && !defined(WIN3264)
+# if !defined(MSWIN)
 	if (output_conv.vc_type != CONV_NONE)
 	    vim_free(tofree);
-#endif
+# endif
     }
 #endif
 }
 
-#if defined(UNIX) || defined(VMS) || defined(PROTO) || defined(WIN3264)
+#if defined(UNIX) || defined(VMS) || defined(PROTO) || defined(MSWIN)
 /*
  * When executing an external program, there may be some typed characters that
  * are not consumed by it.  Give them back to ui_inchar() and they are stored
@@ -130,8 +130,7 @@ ui_inchar(
 	if (maxlen >= ta_len - ta_off)
 	{
 	    mch_memmove(buf, ta_str + ta_off, (size_t)ta_len);
-	    vim_free(ta_str);
-	    ta_str = NULL;
+	    VIM_CLEAR(ta_str);
 	    return ta_len;
 	}
 	mch_memmove(buf, ta_str + ta_off, (size_t)maxlen);
@@ -155,8 +154,7 @@ ui_inchar(
 	static int count = 0;
 
 # ifndef NO_CONSOLE
-	retval = mch_inchar(buf, maxlen, (wtime >= 0 && wtime < 10)
-						? 10L : wtime, tb_change_cnt);
+	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
 	if (retval > 0 || typebuf_changed(tb_change_cnt) || wtime >= 0)
 	    goto theend;
 # endif
@@ -180,20 +178,57 @@ ui_inchar(
 	    ctrl_c_interrupts = FALSE;
     }
 
+    /*
+     * Here we call gui_inchar() or mch_inchar(), the GUI or machine-dependent
+     * input function.  The functionality they implement is like this:
+     *
+     * while (not timed out)
+     * {
+     *    handle-resize;
+     *    parse-queued-messages;
+     *    if (waited for 'updatetime')
+     *       trigger-cursorhold;
+     *    ui_wait_for_chars_or_timer()
+     *    if (character available)
+     *      break;
+     * }
+     *
+     * ui_wait_for_chars_or_timer() does:
+     *
+     * while (not timed out)
+     * {
+     *     if (any-timer-triggered)
+     *        invoke-timer-callback;
+     *     wait-for-character();
+     *     if (character available)
+     *        break;
+     * }
+     *
+     * wait-for-character() does:
+     * while (not timed out)
+     * {
+     *     Wait for event;
+     *     if (something on channel)
+     *        read/write channel;
+     *     else if (resized)
+     *        handle_resize();
+     *     else if (system event)
+     *        deal-with-system-event;
+     *     else if (character available)
+     *        break;
+     * }
+     *
+     */
+
 #ifdef FEAT_GUI
     if (gui.in_use)
-    {
-	if (gui_wait_for_chars(wtime) && !typebuf_changed(tb_change_cnt))
-	    retval = read_from_input_buf(buf, (long)maxlen);
-    }
+	retval = gui_inchar(buf, maxlen, wtime, tb_change_cnt);
 #endif
 #ifndef NO_CONSOLE
 # ifdef FEAT_GUI
     else
 # endif
-    {
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
-    }
 #endif
 
     if (wtime == -1 || wtime > 100L)
@@ -212,8 +247,250 @@ theend:
     return retval;
 }
 
+#if defined(UNIX) || defined(FEAT_GUI) || defined(PROTO)
 /*
- * return non-zero if a character is available
+ * Common code for mch_inchar() and gui_inchar(): Wait for a while or
+ * indefinitely until characters are available, dealing with timers and
+ * messages on channels.
+ *
+ * "buf" may be NULL if the available characters are not to be returned, only
+ * check if they are available.
+ *
+ * Return the number of characters that are available.
+ * If "wtime" == 0 do not wait for characters.
+ * If "wtime" == n wait a short time for characters.
+ * If "wtime" == -1 wait forever for characters.
+ */
+    int
+inchar_loop(
+    char_u	*buf,
+    int		maxlen,
+    long	wtime,	    // don't use "time", MIPS cannot handle it
+    int		tb_change_cnt,
+    int		(*wait_func)(long wtime, int *interrupted, int ignore_input),
+    int		(*resize_func)(int check_only))
+{
+    int		len;
+    int		interrupted = FALSE;
+    int		did_call_wait_func = FALSE;
+    int		did_start_blocking = FALSE;
+    long	wait_time;
+    long	elapsed_time = 0;
+#ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    ELAPSED_INIT(start_tv);
+#endif
+
+    /* repeat until we got a character or waited long enough */
+    for (;;)
+    {
+	/* Check if window changed size while we were busy, perhaps the ":set
+	 * columns=99" command was used. */
+	if (resize_func != NULL)
+	    resize_func(FALSE);
+
+#ifdef MESSAGE_QUEUE
+	// Only process messages when waiting.
+	if (wtime != 0)
+	{
+	    parse_queued_messages();
+	    // If input was put directly in typeahead buffer bail out here.
+	    if (typebuf_changed(tb_change_cnt))
+		return 0;
+	}
+#endif
+	if (wtime < 0 && did_start_blocking)
+	    // blocking and already waited for p_ut
+	    wait_time = -1;
+	else
+	{
+	    if (wtime >= 0)
+		wait_time = wtime;
+	    else
+		// going to block after p_ut
+		wait_time = p_ut;
+#ifdef ELAPSED_FUNC
+	    elapsed_time = ELAPSED_FUNC(start_tv);
+#endif
+	    wait_time -= elapsed_time;
+
+	    // If the waiting time is now zero or less, we timed out.  However,
+	    // loop at least once to check for characters and events.  Matters
+	    // when "wtime" is zero.
+	    if (wait_time <= 0 && did_call_wait_func)
+	    {
+		if (wtime >= 0)
+		    // no character available within "wtime"
+		    return 0;
+
+		// No character available within 'updatetime'.
+		did_start_blocking = TRUE;
+		if (trigger_cursorhold() && maxlen >= 3
+					    && !typebuf_changed(tb_change_cnt))
+		{
+		    // Put K_CURSORHOLD in the input buffer or return it.
+		    if (buf == NULL)
+		    {
+			char_u	ibuf[3];
+
+			ibuf[0] = CSI;
+			ibuf[1] = KS_EXTRA;
+			ibuf[2] = (int)KE_CURSORHOLD;
+			add_to_input_buf(ibuf, 3);
+		    }
+		    else
+		    {
+			buf[0] = K_SPECIAL;
+			buf[1] = KS_EXTRA;
+			buf[2] = (int)KE_CURSORHOLD;
+		    }
+		    return 3;
+		}
+
+		// There is no character available within 'updatetime' seconds:
+		// flush all the swap files to disk.  Also done when
+		// interrupted by SIGWINCH.
+		before_blocking();
+		continue;
+	    }
+	}
+
+#ifdef FEAT_JOB_CHANNEL
+	if (wait_time < 0 || wait_time > 100L)
+	{
+	    // Checking if a job ended requires polling.  Do this at least
+	    // every 100 msec.
+	    if (has_pending_job())
+		wait_time = 100L;
+
+	    // If there is readahead then parse_queued_messages() timed out and
+	    // we should call it again soon.
+	    if (channel_any_readahead())
+		wait_time = 10L;
+	}
+#endif
+#ifdef FEAT_BEVAL_GUI
+	if (p_beval && wait_time > 100L)
+	    // The 'balloonexpr' may indirectly invoke a callback while waiting
+	    // for a character, need to check often.
+	    wait_time = 100L;
+#endif
+
+	// Wait for a character to be typed or another event, such as the winch
+	// signal or an event on the monitored file descriptors.
+	did_call_wait_func = TRUE;
+	if (wait_func(wait_time, &interrupted, FALSE))
+	{
+	    // If input was put directly in typeahead buffer bail out here.
+	    if (typebuf_changed(tb_change_cnt))
+		return 0;
+
+	    // We might have something to return now.
+	    if (buf == NULL)
+		// "buf" is NULL, we were just waiting, not actually getting
+		// input.
+		return input_available();
+
+	    len = read_from_input_buf(buf, (long)maxlen);
+	    if (len > 0)
+		return len;
+	    continue;
+	}
+	// Timed out or interrupted with no character available.
+
+#ifndef ELAPSED_FUNC
+	// estimate the elapsed time
+	elapsed_time += wait_time;
+#endif
+
+	if ((resize_func != NULL && resize_func(TRUE))
+#if defined(FEAT_CLIENTSERVER) && defined(UNIX)
+		|| server_waiting()
+#endif
+#ifdef MESSAGE_QUEUE
+		|| interrupted
+#endif
+		|| wait_time > 0
+		|| (wtime < 0 && !did_start_blocking))
+	    // no character available, but something to be done, keep going
+	    continue;
+
+	// no character available or interrupted, return zero
+	break;
+    }
+    return 0;
+}
+#endif
+
+#if defined(FEAT_TIMERS) || defined(PROTO)
+/*
+ * Wait for a timer to fire or "wait_func" to return non-zero.
+ * Returns OK when something was read.
+ * Returns FAIL when it timed out or was interrupted.
+ */
+    int
+ui_wait_for_chars_or_timer(
+    long    wtime,
+    int	    (*wait_func)(long wtime, int *interrupted, int ignore_input),
+    int	    *interrupted,
+    int	    ignore_input)
+{
+    int	    due_time;
+    long    remaining = wtime;
+    int	    tb_change_cnt = typebuf.tb_change_cnt;
+# ifdef FEAT_JOB_CHANNEL
+    int	    brief_wait = FALSE;
+# endif
+
+    // When waiting very briefly don't trigger timers.
+    if (wtime >= 0 && wtime < 10L)
+	return wait_func(wtime, NULL, ignore_input);
+
+    while (wtime < 0 || remaining > 0)
+    {
+	// Trigger timers and then get the time in wtime until the next one is
+	// due.  Wait up to that time.
+	due_time = check_due_timer();
+	if (typebuf.tb_change_cnt != tb_change_cnt)
+	{
+	    /* timer may have used feedkeys() */
+	    return FAIL;
+	}
+	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
+	    due_time = remaining;
+# ifdef FEAT_JOB_CHANNEL
+	if ((due_time < 0 || due_time > 10L)
+#  ifdef FEAT_GUI
+		&& !gui.in_use
+#  endif
+		&& (has_pending_job() || channel_any_readahead()))
+	{
+	    // There is a pending job or channel, should return soon in order
+	    // to handle them ASAP.  Do check for input briefly.
+	    due_time = 10L;
+	    brief_wait = TRUE;
+	}
+# endif
+	if (wait_func(due_time, interrupted, ignore_input))
+	    return OK;
+	if ((interrupted != NULL && *interrupted)
+# ifdef FEAT_JOB_CHANNEL
+		|| brief_wait
+# endif
+		)
+	    // Nothing available, but need to return so that side effects get
+	    // handled, such as handling a message on a channel.
+	    return FAIL;
+	if (wtime > 0)
+	    remaining -= due_time;
+    }
+    return FAIL;
+}
+#endif
+
+/*
+ * Return non-zero if a character is available.
  */
     int
 ui_char_avail(void)
@@ -245,7 +522,7 @@ ui_delay(long msec, int ignoreinput)
 {
 #ifdef FEAT_GUI
     if (gui.in_use && !ignoreinput)
-	gui_wait_for_chars(msec);
+	gui_wait_for_chars(msec, typebuf.tb_change_cnt);
     else
 #endif
 	mch_delay(msec, ignoreinput);
@@ -278,10 +555,10 @@ ui_suspend(void)
 suspend_shell(void)
 {
     if (*p_sh == NUL)
-	EMSG(_(e_shellempty));
+	emsg(_(e_shellempty));
     else
     {
-	MSG_PUTS(_("new shell started\n"));
+	msg_puts(_("new shell started\n"));
 	do_shell(NULL, 0);
     }
 }
@@ -363,9 +640,17 @@ ui_breakcheck(void)
     void
 ui_breakcheck_force(int force)
 {
-    int save_us = updating_screen;
+    static int	recursive = FALSE;
+    int		save_updating_screen = updating_screen;
 
-    /* We do not want gui_resize_shell() to redraw the screen here. */
+    // We could be called recursively if stderr is redirected, calling
+    // fill_input_buf() calls settmode() when stdin isn't a tty.  settmode()
+    // calls vgetorpeek() which calls ui_breakcheck() again.
+    if (recursive)
+	return;
+    recursive = TRUE;
+
+    // We do not want gui_resize_shell() to redraw the screen here.
     ++updating_screen;
 
 #ifdef FEAT_GUI
@@ -375,7 +660,12 @@ ui_breakcheck_force(int force)
 #endif
 	mch_breakcheck(force);
 
-    updating_screen = save_us;
+    if (save_updating_screen)
+	updating_screen = TRUE;
+    else
+	reset_updating_screen(FALSE);
+
+    recursive = FALSE;
 }
 
 /*****************************************************************************
@@ -444,10 +734,8 @@ clip_update_selection(VimClipboard *clip)
 	{
 	    start = VIsual;
 	    end = curwin->w_cursor;
-#ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		end.col += (*mb_ptr2len)(ml_get_cursor()) - 1;
-#endif
 	}
 	else
 	{
@@ -537,11 +825,7 @@ clip_lose_selection(VimClipboard *cbd)
 	    update_curbuf(INVERTED_ALL);
 	    setcursor();
 	    cursor_on();
-	    out_flush();
-# ifdef FEAT_GUI
-	    if (gui.in_use)
-		gui_update_cursor(TRUE, FALSE);
-# endif
+	    out_flush_cursor(TRUE, FALSE);
 	}
     }
 #endif
@@ -676,7 +960,6 @@ clip_isautosel_plus(void)
  * Stuff for general mouse selection, without using Visual mode.
  */
 
-static int clip_compare_pos(int row1, int col1, int row2, int col2);
 static void clip_invert_area(int, int, int, int, int how);
 static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
 static void clip_get_word_boundaries(VimClipboard *, int, int);
@@ -754,9 +1037,7 @@ clip_start_selection(int col, int row, int repeated_click)
 
     row = check_row(row);
     col = check_col(col);
-#ifdef FEAT_MBYTE
     col = mb_fix_col(col, row);
-#endif
 
     cb->start.lnum  = row;
     cb->start.col   = col;
@@ -860,9 +1141,7 @@ clip_process_selection(
 
     row = check_row(row);
     col = check_col(col);
-#ifdef FEAT_MBYTE
     col = mb_fix_col(col, row);
-#endif
 
     if (col == (int)cb->prev.col && row == cb->prev.lnum && !repeated_click)
 	return;
@@ -928,21 +1207,17 @@ clip_process_selection(
 			    cb->origin_start_col, row, (int)Columns);
 		else
 		{
-#ifdef FEAT_MBYTE
 		    if (has_mbyte && mb_lefthalve(row, col))
 			slen = 2;
-#endif
 		    clip_update_modeless_selection(cb, cb->origin_row,
 			    cb->origin_start_col, row, col + slen);
 		}
 	    }
 	    else
 	    {
-#ifdef FEAT_MBYTE
 		if (has_mbyte
 			&& mb_lefthalve(cb->origin_row, cb->origin_start_col))
 		    slen = 2;
-#endif
 		if (col >= (int)cb->word_end_col)
 		    clip_update_modeless_selection(cb, row, cb->word_end_col,
 			    cb->origin_row, cb->origin_start_col + slen);
@@ -1176,9 +1451,7 @@ clip_copy_modeless_selection(int both UNUSED)
     int		line_end_col;
     int		add_newline_flag = FALSE;
     int		len;
-#ifdef FEAT_MBYTE
     char_u	*p;
-#endif
     int		row1 = clip_star.start.lnum;
     int		col1 = clip_star.start.col;
     int		row2 = clip_star.end.lnum;
@@ -1200,23 +1473,19 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
-#ifdef FEAT_MBYTE
     /* correct starting point for being on right halve of double-wide char */
     p = ScreenLines + LineOffset[row1];
     if (enc_dbcs != 0)
 	col1 -= (*mb_head_off)(p, p + col1);
     else if (enc_utf8 && p[col1] == 0)
 	--col1;
-#endif
 
     /* Create a temporary buffer for storing the text */
     len = (row2 - row1 + 1) * Columns + 1;
-#ifdef FEAT_MBYTE
     if (enc_dbcs != 0)
 	len *= 2;	/* max. 2 bytes per display cell */
     else if (enc_utf8)
 	len *= MB_MAXBYTES;
-#endif
     buffer = lalloc((long_u)len, TRUE);
     if (buffer == NULL)	    /* out of memory */
 	return;
@@ -1255,7 +1524,6 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	if (row < screen_Rows && end_col <= screen_Columns)
 	{
-#ifdef FEAT_MBYTE
 	    if (enc_dbcs != 0)
 	    {
 		int	i;
@@ -1306,7 +1574,6 @@ clip_copy_modeless_selection(int both UNUSED)
 		}
 	    }
 	    else
-#endif
 	    {
 		STRNCPY(bufp, ScreenLines + LineOffset[row] + start_col,
 							 end_col - start_col);
@@ -1354,51 +1621,35 @@ clip_get_word_boundaries(VimClipboard *cb, int row, int col)
     int		start_class;
     int		temp_col;
     char_u	*p;
-#ifdef FEAT_MBYTE
     int		mboff;
-#endif
 
     if (row >= screen_Rows || col >= screen_Columns || ScreenLines == NULL)
 	return;
 
     p = ScreenLines + LineOffset[row];
-#ifdef FEAT_MBYTE
     /* Correct for starting in the right halve of a double-wide char */
     if (enc_dbcs != 0)
 	col -= dbcs_screen_head_off(p, p + col);
     else if (enc_utf8 && p[col] == 0)
 	--col;
-#endif
     start_class = CHAR_CLASS(p[col]);
 
     temp_col = col;
     for ( ; temp_col > 0; temp_col--)
-#ifdef FEAT_MBYTE
 	if (enc_dbcs != 0
 		   && (mboff = dbcs_screen_head_off(p, p + temp_col - 1)) > 0)
 	    temp_col -= mboff;
-	else
-#endif
-	if (CHAR_CLASS(p[temp_col - 1]) != start_class
-#ifdef FEAT_MBYTE
-		&& !(enc_utf8 && p[temp_col - 1] == 0)
-#endif
-		)
+	else if (CHAR_CLASS(p[temp_col - 1]) != start_class
+		&& !(enc_utf8 && p[temp_col - 1] == 0))
 	    break;
     cb->word_start_col = temp_col;
 
     temp_col = col;
     for ( ; temp_col < screen_Columns; temp_col++)
-#ifdef FEAT_MBYTE
 	if (enc_dbcs != 0 && dbcs_ptr2cells(p + temp_col) == 2)
 	    ++temp_col;
-	else
-#endif
-	if (CHAR_CLASS(p[temp_col]) != start_class
-#ifdef FEAT_MBYTE
-		&& !(enc_utf8 && p[temp_col] == 0)
-#endif
-		)
+	else if (CHAR_CLASS(p[temp_col]) != start_class
+		&& !(enc_utf8 && p[temp_col] == 0))
 	    break;
     cb->word_end_col = temp_col;
 }
@@ -1522,6 +1773,7 @@ clip_gen_request_selection(VimClipboard *cbd)
 #endif
 }
 
+#if (defined(FEAT_X11) && defined(USE_SYSTEM)) || defined(PROTO)
     int
 clip_gen_owner_exists(VimClipboard *cbd UNUSED)
 {
@@ -1536,6 +1788,7 @@ clip_gen_owner_exists(VimClipboard *cbd UNUSED)
     return TRUE;
 #endif
 }
+#endif
 
 #endif /* FEAT_CLIPBOARD */
 
@@ -1558,10 +1811,9 @@ clip_gen_owner_exists(VimClipboard *cbd UNUSED)
  * descriptions which would otherwise overflow.  The buffer is considered full
  * when only this extra space (or part of it) remains.
  */
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_JOB_CHANNEL) \
-	|| defined(FEAT_CLIENTSERVER)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
    /*
-    * Sun WorkShop and NetBeans stuff debugger commands into the input buffer.
+    * NetBeans stuffs debugger commands into the input buffer.
     * This requires a larger buffer...
     * (Madsen) Go with this for remote input as well ...
     */
@@ -1748,15 +2000,13 @@ read_from_input_buf(char_u *buf, long maxlen)
     void
 fill_input_buf(int exit_on_error UNUSED)
 {
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     int		len;
     int		try;
     static int	did_read_something = FALSE;
-# ifdef FEAT_MBYTE
     static char_u *rest = NULL;	    /* unconverted rest of previous read */
     static int	restlen = 0;
     int		unconverted;
-# endif
 #endif
 
 #ifdef FEAT_GUI
@@ -1772,7 +2022,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	return;
     }
 #endif
-#if defined(UNIX) || defined(VMS) || defined(MACOS_X_UNIX)
+#if defined(UNIX) || defined(VMS) || defined(MACOS_X)
     if (vim_is_input_buf_full())
 	return;
     /*
@@ -1792,7 +2042,6 @@ fill_input_buf(int exit_on_error UNUSED)
     inbufcount = 0;
 # else
 
-#  ifdef FEAT_MBYTE
     if (rest != NULL)
     {
 	/* Use remainder of previous call, starts with an invalid character
@@ -1803,10 +2052,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	    unconverted = restlen;
 	mch_memmove(inbuf + inbufcount, rest, unconverted);
 	if (unconverted == restlen)
-	{
-	    vim_free(rest);
-	    rest = NULL;
-	}
+	    VIM_CLEAR(rest);
 	else
 	{
 	    restlen -= unconverted;
@@ -1816,23 +2062,16 @@ fill_input_buf(int exit_on_error UNUSED)
     }
     else
 	unconverted = 0;
-#  endif
 
     len = 0;	/* to avoid gcc warning */
     for (try = 0; try < 100; ++try)
     {
+	size_t readlen = (size_t)((INBUFLEN - inbufcount)
+			    / input_conv.vc_factor);
 #  ifdef VMS
-	len = vms_read(
+	len = vms_read((char *)inbuf + inbufcount, readlen);
 #  else
-	len = read(read_cmd_fd,
-#  endif
-	    (char *)inbuf + inbufcount, (size_t)((INBUFLEN - inbufcount)
-#  ifdef FEAT_MBYTE
-		/ input_conv.vc_factor
-#  endif
-		));
-#  if 0
-		)	/* avoid syntax highlight error */
+	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
 
 	if (len > 0 || got_int)
@@ -1852,7 +2091,7 @@ fill_input_buf(int exit_on_error UNUSED)
 #ifdef HAVE_DUP
 	    /* Use stderr for stdin, also works for shell commands. */
 	    close(0);
-	    ignored = dup(2);
+	    vim_ignored = dup(2);
 #else
 	    read_cmd_fd = 2;	/* read from stderr instead of stdin */
 #endif
@@ -1874,7 +2113,6 @@ fill_input_buf(int exit_on_error UNUSED)
     }
     else
     {
-# ifdef FEAT_MBYTE
 	/*
 	 * May perform conversion on the input characters.
 	 * Include the unconverted rest of the previous call.
@@ -1890,7 +2128,6 @@ fill_input_buf(int exit_on_error UNUSED)
 				     len + unconverted, INBUFLEN - inbufcount,
 				       rest == NULL ? &rest : NULL, &restlen);
 	}
-# endif
 	while (len-- > 0)
 	{
 	    /*
@@ -1941,7 +2178,7 @@ ui_cursor_shape_forced(int forced)
 # endif
 
 # ifdef FEAT_CONCEAL
-    conceal_check_cursur_line();
+    conceal_check_cursor_line();
 # endif
 }
 
@@ -1952,8 +2189,6 @@ ui_cursor_shape(void)
 }
 #endif
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \
-	|| defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Check bounds for column number
  */
@@ -1979,7 +2214,6 @@ check_row(int row)
 	return (int)screen_Rows - 1;
     return row;
 }
-#endif
 
 /*
  * Stuff for the X clipboard.  Shared between VMS and Unix.
@@ -2004,10 +2238,8 @@ open_app_context(void)
 }
 
 static Atom	vim_atom;	/* Vim's own special selection format */
-#ifdef FEAT_MBYTE
 static Atom	vimenc_atom;	/* Vim's extended selection format */
 static Atom	utf8_atom;
-#endif
 static Atom	compound_text_atom;
 static Atom	text_atom;
 static Atom	targets_atom;
@@ -2017,10 +2249,8 @@ static Atom	timestamp_atom;	/* Used to get a timestamp */
 x11_setup_atoms(Display *dpy)
 {
     vim_atom	       = XInternAtom(dpy, VIM_ATOM_NAME,   False);
-#ifdef FEAT_MBYTE
     vimenc_atom	       = XInternAtom(dpy, VIMENC_ATOM_NAME,False);
     utf8_atom	       = XInternAtom(dpy, "UTF8_STRING",   False);
-#endif
     compound_text_atom = XInternAtom(dpy, "COMPOUND_TEXT", False);
     text_atom	       = XInternAtom(dpy, "TEXT",	   False);
     targets_atom       = XInternAtom(dpy, "TARGETS",	   False);
@@ -2036,8 +2266,6 @@ x11_setup_atoms(Display *dpy)
 static Boolean	clip_x11_convert_selection_cb(Widget w, Atom *sel_atom, Atom *target, Atom *type, XtPointer *value, long_u *length, int *format);
 static void clip_x11_lose_ownership_cb(Widget w, Atom *sel_atom);
 static void clip_x11_notify_cb(Widget w, Atom *sel_atom, Atom *target);
-static void clip_x11_timestamp_cb(Widget w, XtPointer n, XEvent *event, Boolean *cont);
-static void clip_x11_request_selection_cb(Widget w, XtPointer success, Atom *sel_atom, Atom *type, XtPointer value, long_u *length, int *format);
 
 /*
  * Property callback to get a timestamp for XtOwnSelection.
@@ -2110,9 +2338,7 @@ clip_x11_request_selection_cb(
     char_u	*p;
     char	**text_list = NULL;
     VimClipboard	*cbd;
-#ifdef FEAT_MBYTE
     char_u	*tmpbuf = NULL;
-#endif
 
     if (*sel_atom == clip_plus.sel_atom)
 	cbd = &clip_plus;
@@ -2133,7 +2359,6 @@ clip_x11_request_selection_cb(
 	len--;
     }
 
-#ifdef FEAT_MBYTE
     else if (*type == vimenc_atom)
     {
 	char_u		*enc;
@@ -2161,17 +2386,10 @@ clip_x11_request_selection_cb(
 	    convert_setup(&conv, NULL, NULL);
 	}
     }
-#endif
 
     else if (*type == compound_text_atom
-#ifdef FEAT_MBYTE
 	    || *type == utf8_atom
-#endif
-	    || (
-#ifdef FEAT_MBYTE
-		enc_dbcs != 0 &&
-#endif
-		*type == text_atom))
+	    || (enc_dbcs != 0 && *type == text_atom))
     {
 	XTextProperty	text_prop;
 	int		n_text = 0;
@@ -2181,7 +2399,7 @@ clip_x11_request_selection_cb(
 	text_prop.encoding = *type;
 	text_prop.format = *format;
 	text_prop.nitems = len;
-#if defined(FEAT_MBYTE) && defined(X_HAVE_UTF8_STRING)
+#if defined(X_HAVE_UTF8_STRING)
 	if (*type == utf8_atom)
 	    status = Xutf8TextPropertyToTextList(X_DISPLAY, &text_prop,
 							 &text_list, &n_text);
@@ -2201,9 +2419,7 @@ clip_x11_request_selection_cb(
 
     if (text_list != NULL)
 	XFreeStringList(text_list);
-#ifdef FEAT_MBYTE
     vim_free(tmpbuf);
-#endif
     XtFree((char *)value);
     *(int *)success = TRUE;
 }
@@ -2221,28 +2437,17 @@ clip_x11_request_selection(
     time_t	start_time;
     int		timed_out = FALSE;
 
-    for (i =
-#ifdef FEAT_MBYTE
-	    0
-#else
-	    1
-#endif
-	    ; i < 6; i++)
+    for (i = 0; i < 6; i++)
     {
 	switch (i)
 	{
-#ifdef FEAT_MBYTE
 	    case 0:  type = vimenc_atom;	break;
-#endif
 	    case 1:  type = vim_atom;		break;
-#ifdef FEAT_MBYTE
 	    case 2:  type = utf8_atom;		break;
-#endif
 	    case 3:  type = compound_text_atom; break;
 	    case 4:  type = text_atom;		break;
 	    default: type = XA_STRING;
 	}
-#ifdef FEAT_MBYTE
 	if (type == utf8_atom
 # if defined(X_HAVE_UTF8_STRING)
 		&& !enc_utf8
@@ -2251,7 +2456,6 @@ clip_x11_request_selection(
 	    /* Only request utf-8 when 'encoding' is utf8 and
 	     * Xutf8TextPropertyToTextList is available. */
 	    continue;
-#endif
 	success = MAYBE;
 	XtGetSelectionValue(myShell, cbd->sel_atom, type,
 	    clip_x11_request_selection_cb, (XtPointer)&success, CurrentTime);
@@ -2346,14 +2550,10 @@ clip_x11_convert_selection_cb(
 	*value = (XtPointer)array;
 	i = 0;
 	array[i++] = targets_atom;
-#ifdef FEAT_MBYTE
 	array[i++] = vimenc_atom;
-#endif
 	array[i++] = vim_atom;
-#ifdef FEAT_MBYTE
 	if (enc_utf8)
 	    array[i++] = utf8_atom;
-#endif
 	array[i++] = XA_STRING;
 	array[i++] = text_atom;
 	array[i++] = compound_text_atom;
@@ -2367,10 +2567,8 @@ clip_x11_convert_selection_cb(
     }
 
     if (       *target != XA_STRING
-#ifdef FEAT_MBYTE
 	    && *target != vimenc_atom
 	    && (*target != utf8_atom || !enc_utf8)
-#endif
 	    && *target != vim_atom
 	    && *target != text_atom
 	    && *target != compound_text_atom)
@@ -2385,11 +2583,9 @@ clip_x11_convert_selection_cb(
     if (*target == vim_atom)
 	(*length)++;
 
-#ifdef FEAT_MBYTE
     /* Our own format with encoding: motion 'encoding' NUL text */
     if (*target == vimenc_atom)
 	*length += STRLEN(p_enc) + 2;
-#endif
 
     if (save_length < *length || save_length / 2 >= *length)
 	*value = XtRealloc((char *)save_result, (Cardinal)*length + 1);
@@ -2403,11 +2599,7 @@ clip_x11_convert_selection_cb(
     save_result = (char_u *)*value;
     save_length = *length;
 
-    if (*target == XA_STRING
-#ifdef FEAT_MBYTE
-	    || (*target == utf8_atom && enc_utf8)
-#endif
-	    )
+    if (*target == XA_STRING || (*target == utf8_atom && enc_utf8))
     {
 	mch_memmove(save_result, string, (size_t)(*length));
 	*type = *target;
@@ -2435,7 +2627,6 @@ clip_x11_convert_selection_cb(
 	save_result = (char_u *)*value;
 	save_length = *length;
     }
-#ifdef FEAT_MBYTE
     else if (*target == vimenc_atom)
     {
 	int l = STRLEN(p_enc);
@@ -2445,7 +2636,6 @@ clip_x11_convert_selection_cb(
 	mch_memmove(save_result + l + 2, string, (size_t)(*length - l - 2));
 	*type = vimenc_atom;
     }
-#endif
     else
     {
 	save_result[0] = motion_type;
@@ -2516,11 +2706,14 @@ clip_x11_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
+#if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
+	|| defined(PROTO)
     int
 clip_x11_owner_exists(VimClipboard *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
 }
+#endif
 #endif
 
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) \
@@ -2536,7 +2729,6 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
 
     if (nbytes > 0)
     {
-#ifdef FEAT_MBYTE
 	int  done = FALSE;
 
 	/* CUT_BUFFER0 is supposed to be always latin1.  Convert to 'enc' when
@@ -2562,13 +2754,12 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
 	    }
 	}
 	if (!done)  /* use the text without conversion */
-#endif
 	    clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
 	XFree((void *)buffer);
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    verb_msg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
+	    verb_msg(_("Used CUT_BUFFER0 instead of empty selection"));
 	    verbose_leave();
 	}
     }
@@ -2610,8 +2801,9 @@ jump_to_mouse(
     int		which_button)	/* MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE */
 {
     static int	on_status_line = 0;	/* #lines below bottom of window */
-#ifdef FEAT_WINDOWS
     static int	on_sep_line = 0;	/* on separator right of window */
+#ifdef FEAT_MENU
+    static int  in_winbar = FALSE;
 #endif
     static int	prev_row = -1;
     static int	prev_col = -1;
@@ -2650,9 +2842,22 @@ retnomove:
 	 * line, stop Visual mode */
 	if (on_status_line)
 	    return IN_STATUS_LINE;
-#ifdef FEAT_WINDOWS
 	if (on_sep_line)
 	    return IN_SEP_LINE;
+#ifdef FEAT_MENU
+	if (in_winbar)
+	{
+	    /* A quick second click may arrive as a double-click, but we use it
+	     * as a second click in the WinBar. */
+	    if ((mod_mask & MOD_MASK_MULTI_CLICK) && !(flags & MOUSE_RELEASED))
+	    {
+		wp = mouse_find_win(&row, &col);
+		if (wp == NULL)
+		    return IN_UNKNOWN;
+		winbar_click(wp, col);
+	    }
+	    return IN_OTHER_WIN | MOUSE_WINBAR;
+	}
 #endif
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
@@ -2661,7 +2866,7 @@ retnomove:
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 	return IN_BUFFER;
@@ -2691,15 +2896,24 @@ retnomove:
 	if (row < 0 || col < 0)			/* check if it makes sense */
 	    return IN_UNKNOWN;
 
-#ifdef FEAT_WINDOWS
 	/* find the window where the row is in */
 	wp = mouse_find_win(&row, &col);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
-#else
-	wp = firstwin;
-#endif
 	dragwin = NULL;
+
+#ifdef FEAT_MENU
+	if (row == -1)
+	{
+	    /* A click in the window toolbar does not enter another window or
+	     * change Visual highlighting. */
+	    winbar_click(wp, col);
+	    in_winbar = TRUE;
+	    return IN_OTHER_WIN | MOUSE_WINBAR;
+	}
+	in_winbar = FALSE;
+#endif
+
 	/*
 	 * winpos and height may change in win_enter()!
 	 */
@@ -2710,7 +2924,6 @@ retnomove:
 	}
 	else
 	    on_status_line = 0;
-#ifdef FEAT_WINDOWS
 	if (col >= wp->w_width)		/* In separator line */
 	{
 	    on_sep_line = col - wp->w_width + 1;
@@ -2728,20 +2941,16 @@ retnomove:
 	    else
 		on_status_line = 0;
 	}
-#endif
 
 	/* Before jumping to another buffer, or moving the cursor for a left
 	 * click, stop Visual mode. */
 	if (VIsual_active
 		&& (wp->w_buffer != curwin->w_buffer
-		    || (!on_status_line
-#ifdef FEAT_WINDOWS
-			&& !on_sep_line
-#endif
+		    || (!on_status_line && !on_sep_line
 #ifdef FEAT_FOLDING
 			&& (
 # ifdef FEAT_RIGHTLEFT
-			    wp->w_p_rl ? col < W_WIDTH(wp) - wp->w_p_fdc :
+			    wp->w_p_rl ? col < wp->w_width - wp->w_p_fdc :
 # endif
 			    col >= wp->w_p_fdc
 # ifdef FEAT_CMDWIN
@@ -2771,18 +2980,23 @@ retnomove:
 # endif
 	}
 #endif
-#ifdef FEAT_WINDOWS
 	/* Only change window focus when not clicking on or dragging the
 	 * status line.  Do change focus when releasing the mouse button
 	 * (MOUSE_FOCUS was set above if we dragged first). */
 	if (dragwin == NULL || (flags & MOUSE_RELEASED))
 	    win_enter(wp, TRUE);		/* can make wp invalid! */
-# ifdef CHECK_DOUBLE_CLICK
-	/* set topline, to be able to check for double click ourselves */
+
 	if (curwin != old_curwin)
+	{
+#ifdef CHECK_DOUBLE_CLICK
+	    /* set topline, to be able to check for double click ourselves */
 	    set_mouse_topline(curwin);
-# endif
 #endif
+#ifdef FEAT_TERMINAL
+	    /* when entering a terminal window may change state */
+	    term_win_entered();
+#endif
+	}
 	if (on_status_line)			/* In (or below) status line */
 	{
 	    /* Don't use start_arrow() if we're in the same window */
@@ -2791,7 +3005,6 @@ retnomove:
 	    else
 		return IN_STATUS_LINE | CURSOR_MOVED;
 	}
-#ifdef FEAT_WINDOWS
 	if (on_sep_line)			/* In (or below) status line */
 	{
 	    /* Don't use start_arrow() if we're in the same window */
@@ -2800,7 +3013,6 @@ retnomove:
 	    else
 		return IN_SEP_LINE | CURSOR_MOVED;
 	}
-#endif
 
 	curwin->w_cursor.lnum = curwin->w_topline;
 #ifdef FEAT_GUI
@@ -2813,7 +3025,6 @@ retnomove:
     }
     else if (on_status_line && which_button == MOUSE_LEFT)
     {
-#ifdef FEAT_WINDOWS
 	if (dragwin != NULL)
 	{
 	    /* Drag the status line */
@@ -2822,10 +3033,8 @@ retnomove:
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
 	}
-#endif
 	return IN_STATUS_LINE;			/* Cursor didn't move */
     }
-#ifdef FEAT_WINDOWS
     else if (on_sep_line && which_button == MOUSE_LEFT)
     {
 	if (dragwin != NULL)
@@ -2837,6 +3046,12 @@ retnomove:
 	    did_drag |= count;
 	}
 	return IN_SEP_LINE;			/* Cursor didn't move */
+    }
+#ifdef FEAT_MENU
+    else if (in_winbar)
+    {
+	/* After a click on the window toolbar don't start Visual mode. */
+	return IN_OTHER_WIN | MOUSE_WINBAR;
     }
 #endif
     else /* keep_window_focus must be TRUE */
@@ -2850,14 +3065,12 @@ retnomove:
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < W_WINROW(curwin))
+	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
 
 	row -= W_WINROW(curwin);
-#ifdef FEAT_WINDOWS
-	col -= W_WINCOL(curwin);
-#endif
+	col -= curwin->w_wincol;
 
 	/*
 	 * When clicking beyond the end of the window, scroll the screen.
@@ -2957,7 +3170,7 @@ retnomove:
     /* Check for position outside of the fold column. */
     if (
 # ifdef FEAT_RIGHTLEFT
-	    curwin->w_p_rl ? col < W_WIDTH(curwin) - curwin->w_p_fdc :
+	    curwin->w_p_rl ? col < curwin->w_width - curwin->w_p_fdc :
 # endif
 	    col >= curwin->w_p_fdc
 #  ifdef FEAT_CMDWIN
@@ -3032,7 +3245,7 @@ mouse_comp_pos(
 
 #ifdef FEAT_RIGHTLEFT
     if (win->w_p_rl)
-	col = W_WIDTH(win) - 1 - col;
+	col = win->w_width - 1 - col;
 #endif
 
     lnum = win->w_topline;
@@ -3076,7 +3289,7 @@ mouse_comp_pos(
 	off = win_col_off(win) - win_col_off2(win);
 	if (col < off)
 	    col = off;
-	col += row * (W_WIDTH(win) - off);
+	col += row * (win->w_width - off);
 	/* add skip column (for long wrapping line) */
 	col += win->w_skipcol;
     }
@@ -3100,7 +3313,6 @@ mouse_comp_pos(
     return retval;
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * Find the window at screen position "*rowp" and "*colp".  The positions are
  * updated to become relative to the top-left of the window.
@@ -3141,14 +3353,19 @@ mouse_find_win(int *rowp, int *colp UNUSED)
      * exist. */
     FOR_ALL_WINDOWS(wp)
 	if (wp == fp->fr_win)
+	{
+#ifdef FEAT_MENU
+	    *rowp -= wp->w_winbar_height;
+#endif
 	    return wp;
+	}
     return NULL;
 }
-#endif
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(PROTO)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_TERM_POPUP_MENU) \
+	|| defined(PROTO)
 /*
  * Translate window coordinates to buffer position without any side effects
  */
@@ -3162,23 +3379,17 @@ get_fpos_of_mouse(pos_T *mpos)
     if (row < 0 || col < 0)		/* check if it makes sense */
 	return IN_UNKNOWN;
 
-#ifdef FEAT_WINDOWS
     /* find the window where the row is in */
     wp = mouse_find_win(&row, &col);
     if (wp == NULL)
 	return IN_UNKNOWN;
-#else
-    wp = firstwin;
-#endif
     /*
      * winpos and height may change in win_enter()!
      */
     if (row >= wp->w_height)	/* In (or below) status line */
 	return IN_STATUS_LINE;
-#ifdef FEAT_WINDOWS
     if (col >= wp->w_width)	/* In vertical separator line */
 	return IN_SEP_LINE;
-#endif
 
     if (wp != curwin)
 	return IN_UNKNOWN;
@@ -3191,12 +3402,15 @@ get_fpos_of_mouse(pos_T *mpos)
 
     if (mpos->col > 0)
 	--mpos->col;
-#ifdef FEAT_VIRTUALEDIT
     mpos->coladd = 0;
-#endif
     return IN_BUFFER;
 }
+#endif
 
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_BEVAL) \
+	|| defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.
@@ -3221,7 +3435,7 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
 
 #endif /* FEAT_MOUSE */
 
-#if defined(FEAT_GUI) || defined(WIN3264) || defined(PROTO)
+#if defined(FEAT_GUI) || defined(MSWIN) || defined(PROTO)
 /*
  * Called when focus changed.  Used for the GUI or for systems where this can
  * be done in the console (Win32).
@@ -3248,13 +3462,11 @@ ui_focus_change(
 	last_time = time(NULL);
     }
 
-#ifdef FEAT_AUTOCMD
     /*
      * Fire the focus gained/lost autocommand.
      */
     need_redraw |= apply_autocmds(in_focus ? EVENT_FOCUSGAINED
 				: EVENT_FOCUSLOST, NULL, NULL, FALSE, curbuf);
-#endif
 
     if (need_redraw)
     {
@@ -3274,13 +3486,10 @@ ui_focus_change(
 	    setcursor();
 	}
 	cursor_on();	    /* redrawing may have switched it off */
-	out_flush();
+	out_flush_cursor(FALSE, TRUE);
 # ifdef FEAT_GUI
 	if (gui.in_use)
-	{
-	    gui_update_cursor(FALSE, TRUE);
 	    gui_update_scrollbars(FALSE);
-	}
 # endif
     }
 #ifdef FEAT_TITLE
@@ -3291,7 +3500,7 @@ ui_focus_change(
 }
 #endif
 
-#if defined(USE_IM_CONTROL) || defined(PROTO)
+#if defined(HAVE_INPUT_METHOD) || defined(PROTO)
 /*
  * Save current Input Method status to specified place.
  */

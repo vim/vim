@@ -20,9 +20,10 @@
  * 1. Add an entry in the table below.  Keep it sorted on the shortest
  *    version of the command name that works.  If it doesn't start with a
  *    lower case letter, add it at the end.
- * 2. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
- * 3. Add an entry in the index for Ex commands at ":help ex-cmd-index".
- * 4. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
+ * 2. Run "make cmdidxs" to re-generate ex_cmdidxs.h.
+ * 3. Add a "case: CMD_xxx" in the big switch in ex_docmd.c.
+ * 4. Add an entry in the index for Ex commands at ":help ex-cmd-index".
+ * 5. Add documentation in ../doc/xxx.txt.  Add a tag for both the short and
  *    long name of the command.
  */
 
@@ -56,20 +57,21 @@
 				 * curbuf_lock is set */
 #define MODIFY       0x200000L	/* forbidden in non-'modifiable' buffer */
 #define EXFLAGS      0x400000L	/* allow flags after count in argument */
+#define RESTRICT     0x800000L	/* forbidden in restricted mode */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1	(EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1	(FILES | NOSPC)	/* 1 file allowed, defaults to current file */
 
 /* values for cmd_addr_type */
-#define ADDR_LINES		0
-#define ADDR_WINDOWS		1
-#define ADDR_ARGUMENTS		2
-#define ADDR_LOADED_BUFFERS	3
-#define ADDR_BUFFERS		4
-#define ADDR_TABS		5
-#define ADDR_TABS_RELATIVE	6   /* Tab page that only relative */
-#define ADDR_QUICKFIX		7
-#define ADDR_OTHER		99
+#define ADDR_LINES		0   // buffer line numbers
+#define ADDR_WINDOWS		1   // window number
+#define ADDR_ARGUMENTS		2   // argument number
+#define ADDR_LOADED_BUFFERS	3   // buffer number of loaded buffer
+#define ADDR_BUFFERS		4   // buffer number
+#define ADDR_TABS		5   // tab page number
+#define ADDR_TABS_RELATIVE	6   // Tab page that only relative
+#define ADDR_QUICKFIX		7   // quickfix list entry number
+#define ADDR_OTHER		99  // something else
 
 #ifndef DO_DECLARE_EXCMD
 typedef struct exarg exarg_T;
@@ -176,7 +178,7 @@ EX(CMD_bdelete,		"bdelete",	ex_bunload,
 			BANG|RANGE|NOTADR|BUFNAME|COUNT|EXTRA|TRLBAR,
 			ADDR_BUFFERS),
 EX(CMD_behave,		"behave",	ex_behave,
-			NEEDARG|WORD1|TRLBAR|CMDWIN,
+			BANG|NEEDARG|WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_belowright,	"belowright",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM,
@@ -455,7 +457,7 @@ EX(CMD_diffthis,	"diffthis",	ex_diffthis,
 			TRLBAR,
 			ADDR_LINES),
 EX(CMD_digraphs,	"digraphs",	ex_digraphs,
-			EXTRA|TRLBAR|CMDWIN,
+			BANG|EXTRA|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_djump,		"djump",	ex_findpat,
 			BANG|RANGE|DFLALL|WHOLEFOLD|EXTRA,
@@ -584,7 +586,7 @@ EX(CMD_for,		"for",		ex_while,
 			EXTRA|NOTRLCOM|SBOXOK|CMDWIN,
 			ADDR_LINES),
 EX(CMD_function,	"function",	ex_function,
-			EXTRA|BANG|CMDWIN,
+			EXTRA|BANG|SBOXOK|CMDWIN,
 			ADDR_LINES),
 EX(CMD_global,		"global",	ex_global,
 			RANGE|WHOLEFOLD|BANG|EXTRA|DFLALL|SBOXOK|CMDWIN,
@@ -860,13 +862,13 @@ EX(CMD_lunmap,		"lunmap",	ex_unmap,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_lua,		"lua",		ex_lua,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_luado,		"luado",	ex_luado,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_luafile,		"luafile",	ex_luafile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_lvimgrep,	"lvimgrep",	ex_vimgrep,
 			RANGE|NOTADR|BANG|NEEDARG|EXTRA|NOTRLCOM|TRLBAR|XFILE,
@@ -929,10 +931,10 @@ EX(CMD_mode,		"mode",		ex_mode,
 			WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_mzscheme,	"mzscheme",	ex_mzscheme,
-			RANGE|EXTRA|DFLALL|NEEDARG|CMDWIN|SBOXOK,
+			RANGE|EXTRA|DFLALL|NEEDARG|CMDWIN|SBOXOK|RESTRICT,
 			ADDR_LINES),
 EX(CMD_mzfile,		"mzfile",	ex_mzfile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_next,		"next",		ex_next,
 			RANGE|NOTADR|BANG|FILES|EDITCMD|ARGOPT|TRLBAR,
@@ -1115,37 +1117,37 @@ EX(CMD_pwd,		"pwd",		ex_pwd,
 			TRLBAR|CMDWIN,
 			ADDR_LINES),
 EX(CMD_python,		"python",	ex_python,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pydo,		"pydo",		ex_pydo,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pyfile,		"pyfile",	ex_pyfile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_py3,		"py3",		ex_py3,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_py3do,		"py3do",	ex_py3do,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_python3,		"python3",	ex_py3,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_py3file,		"py3file",	ex_py3file,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pyx,		"pyx",		ex_pyx,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pyxdo,		"pyxdo",	ex_pyxdo,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pythonx,		"pythonx",	ex_pyx,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_pyxfile,		"pyxfile",	ex_pyxfile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_quit,		"quit",		ex_quit,
 			BANG|RANGE|COUNT|NOTADR|TRLBAR|CMDWIN,
@@ -1174,6 +1176,9 @@ EX(CMD_redraw,		"redraw",	ex_redraw,
 EX(CMD_redrawstatus,	"redrawstatus",	ex_redrawstatus,
 			BANG|TRLBAR|CMDWIN,
 			ADDR_LINES),
+EX(CMD_redrawtabline,	"redrawtabline", ex_redrawtabline,
+			TRLBAR|CMDWIN,
+			ADDR_LINES),
 EX(CMD_registers,	"registers",	ex_display,
 			EXTRA|NOTRLCOM|TRLBAR|CMDWIN,
 			ADDR_LINES),
@@ -1199,13 +1204,13 @@ EX(CMD_runtime,		"runtime",	ex_runtime,
 			BANG|NEEDARG|FILES|TRLBAR|SBOXOK|CMDWIN,
 			ADDR_LINES),
 EX(CMD_ruby,		"ruby",		ex_ruby,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_rubydo,		"rubydo",	ex_rubydo,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_rubyfile,	"rubyfile",	ex_rubyfile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_rundo,		"rundo",	ex_rundo,
 			NEEDARG|FILE1,
@@ -1259,8 +1264,8 @@ EX(CMD_sbrewind,	"sbrewind",	ex_brewind,
 			EDITCMD|TRLBAR,
 			ADDR_LINES),
 EX(CMD_scriptnames,	"scriptnames",	ex_scriptnames,
-			TRLBAR|CMDWIN,
-			ADDR_LINES),
+			BANG|RANGE|NOTADR|COUNT|TRLBAR|CMDWIN,
+			ADDR_OTHER),
 EX(CMD_scriptencoding,	"scriptencoding", ex_scriptencoding,
 			WORD1|TRLBAR|CMDWIN,
 			ADDR_LINES),
@@ -1472,19 +1477,19 @@ EX(CMD_tabs,		"tabs",		ex_tabs,
 			TRLBAR|CMDWIN,
 			ADDR_TABS),
 EX(CMD_tcl,		"tcl",		ex_tcl,
-			RANGE|EXTRA|NEEDARG|CMDWIN,
+			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_tcldo,		"tcldo",	ex_tcldo,
-			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN,
+			RANGE|DFLALL|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_tclfile,		"tclfile",	ex_tclfile,
-			RANGE|FILE1|NEEDARG|CMDWIN,
+			RANGE|FILE1|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
 EX(CMD_tearoff,		"tearoff",	ex_tearoff,
 			NEEDARG|EXTRA|TRLBAR|NOTRLCOM|CMDWIN,
 			ADDR_LINES),
 EX(CMD_terminal,	"terminal",	ex_terminal,
-			RANGE|BANG|FILES|TRLBAR|CMDWIN,
+			RANGE|BANG|FILES|CMDWIN,
 			ADDR_LINES),
 EX(CMD_tfirst,		"tfirst",	ex_tag,
 			RANGE|NOTADR|BANG|TRLBAR|ZEROR,
@@ -1498,11 +1503,29 @@ EX(CMD_tjump,		"tjump",	ex_tag,
 EX(CMD_tlast,		"tlast",	ex_tag,
 			BANG|TRLBAR,
 			ADDR_LINES),
+EX(CMD_tlmenu,		"tlmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlnoremenu,	"tlnoremenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tlunmenu,	"tlunmenu",	ex_menu,
+			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tmenu,		"tmenu",	ex_menu,
 			RANGE|NOTADR|ZEROR|EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
+EX(CMD_tmap,		"tmap",		ex_map,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tmapclear,	"tmapclear",	ex_mapclear,
+			EXTRA|TRLBAR|CMDWIN,
+			ADDR_LINES),
 EX(CMD_tnext,		"tnext",	ex_tag,
 			RANGE|NOTADR|BANG|TRLBAR|ZEROR,
+			ADDR_LINES),
+EX(CMD_tnoremap,	"tnoremap",	ex_map,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_topleft,		"topleft",	ex_wrongmodifier,
 			NEEDARG|EXTRA|NOTRLCOM,
@@ -1520,6 +1543,9 @@ EX(CMD_tselect,		"tselect",	ex_tag,
 			BANG|TRLBAR|WORD1,
 			ADDR_LINES),
 EX(CMD_tunmenu,		"tunmenu",	ex_menu,
+			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
+			ADDR_LINES),
+EX(CMD_tunmap,		"tunmap",	ex_unmap,
 			EXTRA|TRLBAR|NOTRLCOM|USECTRLV|CMDWIN,
 			ADDR_LINES),
 EX(CMD_undo,		"undo",		ex_undo,
@@ -1645,9 +1671,6 @@ EX(CMD_wq,		"wq",		ex_exit,
 EX(CMD_wqall,		"wqall",	do_wqall,
 			BANG|FILE1|ARGOPT|DFLALL|TRLBAR,
 			ADDR_LINES),
-EX(CMD_wsverb,		"wsverb",	ex_wsverb,
-			EXTRA|NOTADR|NEEDARG,
-			ADDR_LINES),
 EX(CMD_wundo,		"wundo",	ex_wundo,
 			BANG|NEEDARG|FILE1,
 			ADDR_LINES),
@@ -1766,19 +1789,23 @@ struct exarg
     int		regname;	/* register name (NUL if none) */
     int		force_bin;	/* 0, FORCE_BIN or FORCE_NOBIN */
     int		read_edit;	/* ++edit argument */
-    int		force_ff;	/* ++ff= argument (index in cmd[]) */
-#ifdef FEAT_MBYTE
+    int		force_ff;	/* ++ff= argument (first char of argument) */
     int		force_enc;	/* ++enc= argument (index in cmd[]) */
     int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement byte */
-#endif
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
 #endif
-    char_u	*errmsg;	/* returned error message */
+    char	*errmsg;	/* returned error message */
     char_u	*(*getline)(int, void *, int);
     void	*cookie;	/* argument for getline() */
 #ifdef FEAT_EVAL
     struct condstack *cstack;	/* condition stack for ":if" etc. */
+#endif
+    long	verbose_save;	 // saved value of p_verbose
+    int		save_msg_silent; // saved value of msg_silent
+    int		did_esilent;	 // how many times emsg_silent was incremented
+#ifdef HAVE_SANDBOX
+    int		did_sandbox;	// when TRUE did ++sandbox
 #endif
 };
 

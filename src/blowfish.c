@@ -34,7 +34,7 @@ typedef union {
     char_u   uc[8];
 } block8;
 
-#if defined(WIN3264)
+#if defined(MSWIN)
   /* MS-Windows is always little endian */
 #else
 # ifdef HAVE_CONFIG_H
@@ -55,13 +55,6 @@ typedef struct {
     int		cfb_len;	    /* size of cfb_buffer actually used */
 } bf_state_T;
 
-
-static void bf_e_block(bf_state_T *state, UINT32_T *p_xl, UINT32_T *p_xr);
-static void bf_e_cblock(bf_state_T *state, char_u *block);
-static int bf_check_tables(UINT32_T pax[18], UINT32_T sbx[4][256], UINT32_T val);
-static int bf_self_test(void);
-static void bf_key_init(bf_state_T *state, char_u *password, char_u *salt, int salt_len);
-static void bf_cfb_init(bf_state_T *state, char_u *seed, int seed_len);
 
 /* Blowfish code */
 static UINT32_T pax_init[18] = {
@@ -426,7 +419,7 @@ bf_key_init(
     keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
-	IEMSG(_("E831: bf_key_init() called with empty password"));
+	iemsg(_("E831: bf_key_init() called with empty password"));
 	return;
     }
     for (i = 0; i < keylen; i++)
@@ -529,7 +522,7 @@ bf_self_test(void)
      * warning. */
     if (ui != 0xffffffffUL || ui + 1 != 0) {
 	err++;
-	EMSG(_("E820: sizeof(uint32_t) != 4"));
+	emsg(_("E820: sizeof(uint32_t) != 4"));
     }
 
     if (!bf_check_tables(pax_init, sbx_init, 0x6ffa520a))
@@ -550,7 +543,7 @@ bf_self_test(void)
 	if (memcmp(bk.uc, bf_test_data[i].cryptxt, 8) != 0)
 	{
 	    if (err == 0 && memcmp(bk.uc, bf_test_data[i].badcryptxt, 8) == 0)
-		EMSG(_("E817: Blowfish big/little endian use wrong"));
+		emsg(_("E817: Blowfish big/little endian use wrong"));
 	    err++;
 	}
     }
@@ -676,12 +669,12 @@ blowfish_self_test(void)
 {
     if (sha256_self_test() == FAIL)
     {
-	EMSG(_("E818: sha256 test failed"));
+	emsg(_("E818: sha256 test failed"));
 	return FAIL;
     }
     if (bf_self_test() == FAIL)
     {
-	EMSG(_("E819: Blowfish test failed"));
+	emsg(_("E819: Blowfish test failed"));
 	return FAIL;
     }
     return OK;

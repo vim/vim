@@ -1,9 +1,9 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2017 Feb 09
+" Last Change:	2018 Dec 07
 
-" bail out if this isn't wanted (mrsvim.vim uses this).
+" Bail out if this isn't wanted.
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
   finish
 endif
@@ -57,10 +57,11 @@ vmap <S-Insert>		<C-V>
 " Use CTRL-Q to do what CTRL-V used to do
 noremap <C-Q>		<C-V>
 
-" Use CTRL-S for saving, also in Insert mode
+" Use CTRL-S for saving, also in Insert mode (<C-O> doesn't work well when
+" using completions).
 noremap <C-S>		:update<CR>
 vnoremap <C-S>		<C-C>:update<CR>
-inoremap <C-S>		<C-O>:update<CR>
+inoremap <C-S>		<Esc>:update<CR>gi
 
 " For CTRL-V to work autoselect must be off.
 " On Unix we have two selections, autoselect can be used.
@@ -105,14 +106,15 @@ onoremap <C-F4> <C-C><C-W>c
 
 if has("gui")
   " CTRL-F is the search dialog
-  noremap <C-F> :promptfind<CR>
-  inoremap <C-F> <C-\><C-O>:promptfind<CR>
-  cnoremap <C-F> <C-\><C-C>:promptfind<CR>
+  noremap  <expr> <C-F> has("gui_running") ? ":promptfind\<CR>" : "/"
+  inoremap <expr> <C-F> has("gui_running") ? "\<C-\>\<C-O>:promptfind\<CR>" : "\<C-\>\<C-O>/"
+  cnoremap <expr> <C-F> has("gui_running") ? "\<C-\>\<C-C>:promptfind\<CR>" : "\<C-\>\<C-O>/"
 
-  " CTRL-H is the replace dialog
-  noremap <C-H> :promptrepl<CR>
-  inoremap <C-H> <C-\><C-O>:promptrepl<CR>
-  cnoremap <C-H> <C-\><C-C>:promptrepl<CR>
+  " CTRL-H is the replace dialog,
+  " but in console, it might be backspace, so don't map it there
+  nnoremap <expr> <C-H> has("gui_running") ? ":promptrepl\<CR>" : "\<C-H>"
+  inoremap <expr> <C-H> has("gui_running") ? "\<C-\>\<C-O>:promptrepl\<CR>" : "\<C-H>"
+  cnoremap <expr> <C-H> has("gui_running") ? "\<C-\>\<C-C>:promptrepl\<CR>" : "\<C-H>"
 endif
 
 " restore 'cpoptions'

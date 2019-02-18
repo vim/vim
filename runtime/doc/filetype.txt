@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.0.  Last change: 2017 Mar 28
+*filetype.txt*  For Vim version 8.1.  Last change: 2018 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,7 +43,7 @@ Detail: The ":filetype on" command will load one of these files:
 	BufNewFile and BufRead events.  If the file type is not found by the
 	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
 	contents of the file.
-	When the GUI is running or will start soon, the menu.vim script is
+	When the GUI is running or will start soon, the |menu.vim| script is
 	also sourced.  See |'go-M'| about avoiding that.
 
 To add your own file types, see |new-filetype| below.  To search for help on a
@@ -318,6 +318,10 @@ then Vim will load all plugins in these directories and below:
 	/usr/local/share/vim/vim60/plugin/  ~
 
 Note that the last one is the value of $VIMRUNTIME which has been expanded.
+
+Note that when using a plugin manager or |packages| many directories will be
+added to 'runtimepath'.  These plugins each require their own directory, don't
+put them directly in ~/.vim/plugin.
 
 What if it looks like your plugin is not being loaded?  You can find out what
 happens when Vim starts up by using the |-V| argument: >
@@ -602,35 +606,17 @@ MANPAGER				      *manpager.vim*
 The :Man command allows you to turn Vim into a manpager (that syntax highlights
 manpages and follows linked manpages on hitting CTRL-]).
 
-Works on:
+For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
-  - Linux
-  - Mac OS
-  - FreeBSD
-  - Cygwin
-  - Win 10 under Bash
+	export MANPAGER="vim -M +MANPAGER -"
 
-Untested:
+For (t)csh, add to the config file
 
-  - Amiga OS
-  - BeOS
-  - OS/2
+	setenv MANPAGER "vim -M +MANPAGER -"
 
-For bash,zsh,ksh or dash by adding to the config file (.bashrc,.zshrc, ...)
+For fish, add to the config file
 
-	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
-
-For (t)csh by adding to the config file
-
-	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
-
-For fish by adding to the config file
-
-	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
-
-If man sets the $MAN_PN environment variable, like man-db, the most common
-implementation on Linux and Mac OS, then the "env MAN_PN=1 " part above is
-superfluous.
+	set -x MANPAGER "vim -M +MANPAGER -"
 
 PDF							*ft-pdf-plugin*
 
@@ -652,9 +638,38 @@ By default the following options are set, in accordance with PEP8: >
 
 	setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
 
-To disable this behaviour, set the following variable in your vimrc: >
-	
+To disable this behavior, set the following variable in your vimrc: >
+
 	let g:python_recommended_style = 0
+
+
+R MARKDOWN						*ft-rmd-plugin*
+
+By default ftplugin/html.vim is not sourced. If you want it sourced, add to
+your |vimrc|: >
+	let rmd_include_html = 1
+
+The 'formatexpr' option is set dynamically with different values for R code
+and for Markdown code. If you prefer that 'formatexpr' is not set, add to your
+|vimrc|: >
+	let rmd_dynamic_comments = 0
+
+
+R RESTRUCTURED TEXT					*ft-rrst-plugin*
+
+The 'formatexpr' option is set dynamically with different values for R code
+and for ReStructured text. If you prefer that 'formatexpr' is not set, add to
+your |vimrc|: >
+	let rrst_dynamic_comments = 0
+
+
+RESTRUCTUREDTEXT					*ft-rst-plugin*
+
+The following formatting setting are optionally available: >
+	setlocal expandtab shiftwidth=3 softtabstop=3 tabstop=8
+
+To enable this behavior, set the following variable in your vimrc: >
+	let g:rst_style = 1
 
 
 RPM SPEC						*ft-spec-plugin*
@@ -690,4 +705,23 @@ You can change the default by defining the variable g:tex_flavor to the format
 Currently no other formats are recognized.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+VIM							*ft-vim-plugin*
+
+The Vim filetype plugin defines mappings to move to the start and end of
+functions with [[ and ]].  Move around comments with ]" and [".
+
+The mappings can be disabled with: >
+	let g:no_vim_maps = 1
+
+
+ZIMBU							*ft-zimbu-plugin*
+
+The Zimbu filetype plugin defines mappings to move to the start and end of
+functions with [[ and ]].
+
+The mappings can be disabled with: >
+	let g:no_zimbu_maps = 1
+<
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

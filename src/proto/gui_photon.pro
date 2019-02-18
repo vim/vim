@@ -44,7 +44,7 @@ int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long wait, long on, long off);
 void gui_mch_start_blink(void);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_beep(void);
 void gui_mch_flash(int msec);
 void gui_mch_flush(void);

@@ -50,3 +50,5 @@ CROSS_COMPILE = i686-pc-mingw32-
 # Do not change this.
 UNDER_CYGWIN = yes
 include Make_cyg_ming.mak
+
+# vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

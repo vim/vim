@@ -62,6 +62,39 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     if decoded[1] == 'hello!':
                         # simply send back a string
                         response = "got it"
+                    elif decoded[1] == 'malformed1':
+                        cmd = '["ex",":"]wrong!["ex","smi"]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Need to wait for Vim to give up, otherwise it
+                        # sometimes fails on OS X.
+                        time.sleep(0.2)
+                    elif decoded[1] == 'malformed2':
+                        cmd = '"unterminated string'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Need to wait for Vim to give up, otherwise the double
+                        # quote in the "ok" response terminates the string.
+                        time.sleep(0.2)
+                    elif decoded[1] == 'malformed3':
+                        cmd = '["ex","missing ]"'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
+                        # Need to wait for Vim to give up, otherwise the ]
+                        # in the "ok" response terminates the list.
+                        time.sleep(0.2)
+                    elif decoded[1] == 'split':
+                        cmd = '["ex","let '
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        time.sleep(0.01)
+                        cmd = 'g:split = 123"]'
+                        print("sending: {0}".format(cmd))
+                        self.request.sendall(cmd.encode('utf-8'))
+                        response = "ok"
                     elif decoded[1].startswith("echo "):
                         # send back the argument
                         response = decoded[1][5:]
@@ -118,39 +151,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     elif decoded[1] == 'eval-bad':
                         # Send an eval request missing the third argument.
                         cmd = '["expr","xxx"]'
-                        print("sending: {0}".format(cmd))
-                        self.request.sendall(cmd.encode('utf-8'))
-                        response = "ok"
-                    elif decoded[1] == 'malformed1':
-                        cmd = '["ex",":"]wrong!["ex","smi"]'
-                        print("sending: {0}".format(cmd))
-                        self.request.sendall(cmd.encode('utf-8'))
-                        response = "ok"
-                        # Need to wait for Vim to give up, otherwise it
-                        # sometimes fails on OS X.
-                        time.sleep(0.2)
-                    elif decoded[1] == 'malformed2':
-                        cmd = '"unterminated string'
-                        print("sending: {0}".format(cmd))
-                        self.request.sendall(cmd.encode('utf-8'))
-                        response = "ok"
-                        # Need to wait for Vim to give up, otherwise the double
-                        # quote in the "ok" response terminates the string.
-                        time.sleep(0.2)
-                    elif decoded[1] == 'malformed3':
-                        cmd = '["ex","missing ]"'
-                        print("sending: {0}".format(cmd))
-                        self.request.sendall(cmd.encode('utf-8'))
-                        response = "ok"
-                        # Need to wait for Vim to give up, otherwise the ]
-                        # in the "ok" response terminates the list.
-                        time.sleep(0.2)
-                    elif decoded[1] == 'split':
-                        cmd = '["ex","let '
-                        print("sending: {0}".format(cmd))
-                        self.request.sendall(cmd.encode('utf-8'))
-                        time.sleep(0.01)
-                        cmd = 'g:split = 123"]'
                         print("sending: {0}".format(cmd))
                         self.request.sendall(cmd.encode('utf-8'))
                         response = "ok"
