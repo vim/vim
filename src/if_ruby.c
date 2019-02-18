@@ -64,7 +64,7 @@
 #  define RUBY_EXPORT
 # endif
 
-#if !defined(MSWIN)
+#ifndef _WIN32
 # include <dlfcn.h>
 # define HINSTANCE void*
 # define RUBY_PROC void*
