@@ -5586,7 +5586,7 @@ show_pat_in_path(
 	{
 	    sprintf((char *)IObuff, "%3ld: ", count);	/* show match nr */
 	    msg_puts((char *)IObuff);
-	    sprintf((char *)IObuff, "%4ld", *lnum);	/* show line nr */
+	    sprintf((char *)IObuff, "%4d", *lnum);	/* show line nr */
 						/* Highlight line numbers */
 	    msg_puts_attr((char *)IObuff, HL_ATTR(HLF_N));
 	    msg_puts(" ");

@@ -54,7 +54,11 @@ static void special_keys(char_u *args);
 static int getConnInfo(char *file, char **host, char **port, char **password);
 
 static void nb_init_graphics(void);
-static void coloncmd(char *cmd, ...);
+static void coloncmd(char *cmd, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+   __attribute__((format(printf, 1, 2)))
+#endif
+;
 static void nb_set_curbuf(buf_T *buf);
 static void nb_parse_cmd(char_u *);
 static int  nb_do_cmd(int, char_u *, int, int, char_u *);
@@ -2001,7 +2005,7 @@ nb_do_cmd(
 	    }
 	    if (pos)
 	    {
-		coloncmd(":sign place %d line=%ld name=%d buffer=%d",
+		coloncmd(":sign place %d line=%d name=%d buffer=%d",
 			   serNum, pos->lnum, typeNum, buf->bufp->b_fnum);
 		if (typeNum == curPCtype)
 		    coloncmd(":sign jump %d buffer=%d", serNum,

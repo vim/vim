@@ -776,7 +776,7 @@ show_one_mark(
 	msg_putchar('\n');
 	if (!got_int)
 	{
-	    sprintf((char *)IObuff, " %c %6ld %4d ", c, p->lnum, p->col);
+	    sprintf((char *)IObuff, " %c %6d %4d ", c, p->lnum, p->col);
 	    msg_outtrans(IObuff);
 	    if (name == NULL && current)
 	    {
@@ -911,7 +911,7 @@ ex_jumps(exarg_T *eap UNUSED)
 		vim_free(name);
 		break;
 	    }
-	    sprintf((char *)IObuff, "%c %2d %5ld %4d ",
+	    sprintf((char *)IObuff, "%c %2d %5d %4d ",
 		i == curwin->w_jumplistidx ? '>' : ' ',
 		i > curwin->w_jumplistidx ? i - curwin->w_jumplistidx
 					  : curwin->w_jumplistidx - i,
@@ -2150,7 +2150,7 @@ copy_viminfo_marks(
 		{
 		    unsigned u;
 
-		    sscanf((char *)line + 2, "%ld %u", &pos.lnum, &u);
+		    sscanf((char *)line + 2, "%d %u", &pos.lnum, &u);
 		    pos.col = u;
 		    switch (line[1])
 		    {

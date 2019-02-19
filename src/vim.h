@@ -1652,7 +1652,7 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define PERROR(msg)		    do_perror(msg)
 #endif
 
-typedef long	linenr_T;		/* line number type */
+typedef int	linenr_T;		/* line number type */
 typedef int	colnr_T;		/* column number type */
 typedef unsigned short disptick_T;	/* display tick type */
 

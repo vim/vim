@@ -262,7 +262,7 @@ static long char_to_long(char_u *);
 static cryptstate_T *ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading);
 #endif
 #ifdef FEAT_BYTEOFF
-static void ml_updatechunk(buf_T *buf, long line, long len, int updtype);
+static void ml_updatechunk(buf_T *buf, linenr_T line, long len, int updtype);
 #endif
 
 /*
@@ -2484,7 +2484,7 @@ ml_get_buf(
 	    /* Avoid giving this message for a recursive call, may happen when
 	     * the GUI redraws part of the text. */
 	    ++recursive;
-	    siemsg(_("E315: ml_get: invalid lnum: %ld"), lnum);
+	    siemsg(_("E315: ml_get: invalid lnum: %d"), lnum);
 	    --recursive;
 	}
 errorret:
@@ -2523,7 +2523,7 @@ errorret:
 		/* Avoid giving this message for a recursive call, may happen
 		 * when the GUI redraws part of the text. */
 		++recursive;
-		siemsg(_("E316: ml_get: cannot find line %ld"), lnum);
+		siemsg(_("E316: ml_get: cannot find line %d"), lnum);
 		--recursive;
 	    }
 	    goto errorret;
@@ -3764,7 +3764,7 @@ ml_flush_line(buf_T *buf)
 
 	hp = ml_find_line(buf, lnum, ML_FIND);
 	if (hp == NULL)
-	    siemsg(_("E320: Cannot find line %ld"), lnum);
+	    siemsg(_("E320: Cannot find line %d"), lnum);
 	else
 	{
 	    dp = (DATA_BL *)(hp->bh_data);
@@ -4051,7 +4051,7 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	if (idx >= (int)pp->pb_count)	    /* past the end: something wrong! */
 	{
 	    if (lnum > buf->b_ml.ml_line_count)
-		siemsg(_("E322: line number out of range: %ld past the end"),
+		siemsg(_("E322: line number out of range: %d past the end"),
 					      lnum - buf->b_ml.ml_line_count);
 
 	    else

@@ -1129,7 +1129,7 @@ do_tags(exarg_T *eap UNUSED)
 		continue;
 
 	    msg_putchar('\n');
-	    vim_snprintf((char *)IObuff, IOSIZE, "%c%2d %2d %-15s %5ld  ",
+	    vim_snprintf((char *)IObuff, IOSIZE, "%c%2d %2d %-15s %5d  ",
 		i == tagstackidx ? '>' : ' ',
 		i + 1,
 		tagstack[i].cur_match + 1,
