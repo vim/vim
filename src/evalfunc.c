@@ -184,6 +184,7 @@ static void f_getcmdpos(typval_T *argvars, typval_T *rettv);
 static void f_getcmdtype(typval_T *argvars, typval_T *rettv);
 static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getcwd(typval_T *argvars, typval_T *rettv);
+static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getfperm(typval_T *argvars, typval_T *rettv);
 static void f_getfsize(typval_T *argvars, typval_T *rettv);
@@ -354,6 +355,7 @@ static void f_setbufline(typval_T *argvars, typval_T *rettv);
 static void f_setbufvar(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcmdpos(typval_T *argvars, typval_T *rettv);
+static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
 static void f_setloclist(typval_T *argvars, typval_T *rettv);
@@ -663,6 +665,7 @@ static struct fst
 #endif
     {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 2, f_getcwd},
+    {"getenv",		1, 1, f_getenv},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
@@ -845,6 +848,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcharsearch",	1, 1, f_setcharsearch},
     {"setcmdpos",	1, 1, f_setcmdpos},
+    {"setenv",		2, 2, f_setenv},
     {"setfperm",	2, 2, f_setfperm},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 4, f_setloclist},
@@ -5158,6 +5162,26 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     if (rettv->vval.v_string != NULL)
 	slash_adjust(rettv->vval.v_string);
 #endif
+}
+
+/*
+ * "getenv()" function
+ */
+    static void
+f_getenv(typval_T *argvars, typval_T *rettv)
+{
+    int	    mustfree = FALSE;
+    char_u  *p = vim_getenv(tv_get_string(&argvars[0]), &mustfree);
+    if (p == NULL)
+    {
+	rettv->v_type = VAR_SPECIAL;
+	rettv->vval.v_number = VVAL_NULL;
+	return;
+    }
+    if (mustfree)
+	p = vim_strsave(p);
+    rettv->vval.v_string = p;
+    rettv->v_type = VAR_STRING;
 }
 
 /*
@@ -10989,6 +11013,19 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
 
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
+}
+
+/*
+ * "setenv()" function
+ */
+    static void
+f_setenv(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[1].v_type == VAR_SPECIAL &&
+	    argvars[1].vval.v_number == VVAL_NULL)
+	vim_unsetenv(tv_get_string(&argvars[0]));
+    else
+	vim_setenv(tv_get_string(&argvars[0]), tv_get_string(&argvars[1]));
 }
 
 /*
