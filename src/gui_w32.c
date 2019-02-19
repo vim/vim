@@ -3212,7 +3212,7 @@ logfont2name(LOGFONTW lf)
     char	*quality_name;
     char	*font_name;
 
-    font_name = utf16_to_enc(lf.lfFaceName, NULL);
+    font_name = (char *)utf16_to_enc(lf.lfFaceName, NULL);
     if (font_name == NULL)
 	return NULL;
     charset_name = charset_id2name((int)lf.lfCharSet);
