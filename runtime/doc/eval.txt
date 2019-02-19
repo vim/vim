@@ -10608,6 +10608,15 @@ call, not definition.  Thus it is possible to use invalid expressions which
 are not immediately checked.  The expressions are are also only evaluated
 when arguments are not specified during a call.
 
+You can omit an argument and use its default expression using |v:none|.
+Note that this means you cannot pass v:none as an ordinary value when an
+argument has a default expression.
+
+Example: >
+  :function Something(a = 10, b = 20, c = 30)
+  :endfunction
+  :call Something(1, v:none, 3)	    " b = 20
+<
 								*E983*
 Optional arguments with default expressions must occur after any mandatory
 arguments.  You can use "..." after all optional named arguments.
@@ -10621,7 +10630,6 @@ Example: >
   :function NoGood(mandatory = a:optional, optional = a:mandatory)
   :endfunction
 <
-
 When not using "...", the number of arguments in a function call must be equal
 to the number of mandatory named arguments.  When using "...", the number of
 arguments may be larger.
