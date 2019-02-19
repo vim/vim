@@ -321,8 +321,8 @@ main(int argc, char *argv[])
     int		i;
     struct stat st;
     char	icon[BUFSIZE];
-    char	path[BUFSIZE];
-    char	popup_path[BUFSIZE];
+    char	path[MAX_PATH];
+    char	popup_path[MAX_PATH];
 
     /* The nsis uninstaller calls us with a "-nsis" argument. */
     if (argc == 2 && stricmp(argv[1], "-nsis") == 0)

@@ -491,7 +491,7 @@ endif # RUBY
 
 # See feature.h for a list of options.
 # Any other defines can be included here.
-DEF_GUI=-DFEAT_GUI -DFEAT_CLIPBOARD
+DEF_GUI=-DFEAT_GUI_MSWIN -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
 ifeq ($(ARCH),x86-64)

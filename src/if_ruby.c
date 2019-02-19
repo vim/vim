@@ -64,23 +64,9 @@
 #  define RUBY_EXPORT
 # endif
 
-#if !defined(MSWIN)
-# include <dlfcn.h>
-# define HINSTANCE void*
-# define RUBY_PROC void*
-# define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
-# define symbol_from_dll dlsym
-# define close_dll dlclose
-#else
-# define RUBY_PROC FARPROC
-# define load_dll vimLoadLib
-# define symbol_from_dll GetProcAddress
-# define close_dll FreeLibrary
-#endif
+#endif  // ifdef DYNAMIC_RUBY
 
-#endif  /* ifdef DYNAMIC_RUBY */
-
-/* suggested by Ariya Mizutani */
+// suggested by Ariya Mizutani
 #if (_MSC_VER == 1200)
 # undef _WIN32_WINNT
 #endif
@@ -182,6 +168,22 @@
 
 #include "vim.h"
 #include "version.h"
+
+#ifdef DYNAMIC_RUBY
+# if !defined(MSWIN)  // must come after including vim.h, where it is defined
+#  include <dlfcn.h>
+#  define HINSTANCE void*
+#  define RUBY_PROC void*
+#  define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#  define symbol_from_dll dlsym
+#  define close_dll dlclose
+# else
+#  define RUBY_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+# endif
+#endif
 
 #if defined(PROTO) && !defined(FEAT_RUBY)
 /* Define these to be able to generate the function prototypes. */
