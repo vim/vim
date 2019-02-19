@@ -3212,7 +3212,7 @@ f_environ(typval_T *argvars, typval_T *rettv)
     int			i = 0;
     char_u		*namevalue, *name, *value;
 # ifdef MSWIN
-    extern wchar_t	**wenviron;
+    extern wchar_t	**_wenviron;
     wchar_t		*p;
 #else
     extern char		**environ;
@@ -3227,7 +3227,7 @@ f_environ(typval_T *argvars, typval_T *rettv)
     do
     {
 # ifdef MSWIN
-	if ((p = (short_u*)wenviron[i]) == NULL)
+	if ((p = (short_u*)_wenviron[i]) == NULL)
 	    return;
 	namevalue = utf16_to_enc((short_u *)p, NULL);
 	if (namevalue == NULL)
