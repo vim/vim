@@ -9,6 +9,7 @@
 #ifndef VIM__H
 # define VIM__H
 
+#include <limits.h>
 #include "protodef.h"
 
 // _WIN32 is defined as 1 when the compilation target is 32-bit or 64-bit.
@@ -1669,8 +1670,8 @@ typedef unsigned short disptick_T;	/* display tick type */
 # define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
 # define MAXLNUM (0x3fffffffL)		/* maximum (invalid) line number */
 #else
-# define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
-# define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
+# define MAXCOL  INT_MAX		/* maximum column number */
+# define MAXLNUM LONG_MAX		/* maximum (invalid) line number */
 #endif
 
 #define SHOWCMD_COLS 10			/* columns needed by shown command */
