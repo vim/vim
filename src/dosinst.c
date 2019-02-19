@@ -456,7 +456,7 @@ window_cb(HWND hwnd, LPARAM lparam)
     static int
 run_silent_uninstall(char *uninst_exe)
 {
-    char    vimrt_dir[MAX_PATH];
+    char    vimrt_dir[BUFSIZE];
     char    temp_uninst[BUFSIZE];
     char    temp_dir[MAX_PATH];
     char    buf[BUFSIZE * 2 + 10];
@@ -506,7 +506,7 @@ uninstall_check(int skip_question)
     char	*uninstall_key = "software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
     char	subkey_name_buff[BUFSIZE];
     char	temp_string_buffer[BUFSIZE-2];
-    DWORD	local_bufsize = BUFSIZE;
+    DWORD	local_bufsize = sizeof(subkey_name_buff);
     FILETIME	temp_pfiletime;
     DWORD	key_index;
     char	input;
