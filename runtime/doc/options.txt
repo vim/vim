@@ -5497,8 +5497,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The 'mousemodel' option is set by the |:behave| command.
 
 					*'mouseshape'* *'mouses'* *E547*
-'mouseshape' 'mouses'	string	(default "i:beam,r:beam,s:updown,sd:cross,
-					m:no,ml:up-arrow,v:rightup-arrow")
+'mouseshape' 'mouses'	string	(default "i-r:beam,s:updown,sd:udsizing,
+					vs:leftright,vd:lrsizing,m:no,
+					ml:up-arrow,v:rightup-arrow")
 			global
 			{not in Vi}
 			{only available when compiled with the |+mouseshape|
