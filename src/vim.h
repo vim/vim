@@ -54,6 +54,9 @@
     Error: configure did not run properly.  Check auto/config.log.
 # endif
 
+// for INT_MAX, LONG_MAX et al.
+#include <limits.h>
+
 /*
  * Cygwin may have fchdir() in a newer release, but in most versions it
  * doesn't work well and avoiding it keeps the binary backward compatible.
@@ -454,9 +457,6 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 #if defined(HAVE_ERRNO_H) || defined(MSWIN)
 # include <errno.h>
 #endif
-
-/* for INT_MAX et al. */
-#include <limits.h>
 
 /*
  * Allow other (non-unix) systems to configure themselves now
@@ -1666,17 +1666,17 @@ typedef unsigned short disptick_T;	/* display tick type */
  * not a real problem. BTW:  Longer lines are split.
  */
 #ifdef __MVS__
-# define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
-# define MAXLNUM (0x3fffffffL)		/* maximum (invalid) line number */
+# define MAXCOL (0x3fffffffL)		// maximum column number, 30 bits
+# define MAXLNUM (0x3fffffffL)		// maximum (invalid) line number
 #else
-# define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
-# define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
+# define MAXCOL  INT_MAX		// maximum column number
+# define MAXLNUM LONG_MAX		// maximum (invalid) line number
 #endif
 
-#define SHOWCMD_COLS 10			/* columns needed by shown command */
-#define STL_MAX_ITEM 80			/* max nr of %<flag> in statusline */
+#define SHOWCMD_COLS 10			// columns needed by shown command
+#define STL_MAX_ITEM 80			// max nr of %<flag> in statusline
 
-typedef void	    *vim_acl_T;		/* dummy to pass an ACL to a function */
+typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
 #ifndef mch_memmove
 # define mch_memmove(to, from, len) memmove((char*)(to), (char*)(from), (size_t)(len))
