@@ -186,7 +186,7 @@ get_function_args(
 	    }
 	    else if (any_default)
 	    {
-		emsg(_("E982: Non-default argument follows default argument"));
+		emsg(_("E983: Non-default argument follows default argument"));
 		mustend = TRUE;
 	    }
 	    if (*p == ',')

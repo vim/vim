@@ -10608,7 +10608,7 @@ call, not definition.  Thus it is possible to use invalid expressions which
 are not immediately checked.  The expressions are are also only evaluated
 when arguments are not specified during a call.
 
-								*E982*
+								*E983*
 Optional arguments with default expressions must occur after any mandatory
 arguments.  You can use "..." after all optional named arguments.
 
