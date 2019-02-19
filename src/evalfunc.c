@@ -3208,11 +3208,15 @@ f_environ(typval_T *argvars, typval_T *rettv)
 #if defined(AMIGA)
     return;
 #else
-# ifndef __WIN32__
+
+    int			i = 0;
+    char_u		*namevalue, *name, *value;
+# ifdef MSWIN
+    extern wchar_t	**wenviron;
+    wchar_t		*p;
+#else
     extern char		**environ;
 # endif
-    int		i = 0;
-    char_u	*name, *value;
 
     if (rettv_dict_alloc(rettv) != OK)
 	return;
@@ -3222,12 +3226,26 @@ f_environ(typval_T *argvars, typval_T *rettv)
 
     do
     {
-	if ((name = (char_u*)environ[i]) == NULL)
+# ifdef MSWIN
+	if ((p = (short_u*)wenviron[i]) == NULL)
 	    return;
-	if ((value = vim_strchr(name, '=')) == NULL)
+	namevalue = utf16_to_enc((short_u *)p, NULL);
+	if (namevalue == NULL)
 	    return;
-	if ((name = vim_strnsave(name, value - name)) == NULL)
+	if ((value = vim_strchr(namevalue, '=')) == NULL)
 	    return;
+	name = vim_strnsave(namevalue, value - namevalue);
+	vim_free(namevalue);
+	if (name == NULL)
+	    return;
+# else
+	if ((namevalue = (char_u*)environ[i]) == NULL)
+	    return;
+	if ((value = vim_strchr(namevalue, '=')) == NULL)
+	    return;
+	if ((name = vim_strnsave(namevalue, value - namevalue)) == NULL)
+	    return;
+# endif
 	if ((value = vim_strsave(value + 1)) == NULL)
 	{
 	    vim_free(name);
@@ -3236,6 +3254,7 @@ f_environ(typval_T *argvars, typval_T *rettv)
 	dict_add_string(rettv->vval.v_dict, (char*)name, value);
 	i++;
     } while (1);
+
 #endif
 }
 
