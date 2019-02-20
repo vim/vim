@@ -3214,10 +3214,9 @@ f_environ(typval_T *argvars, typval_T *rettv)
 #else
 
     int			i = 0;
-    char_u		*namevalue, *name, *value;
+    char_u		*name, *value;
 # ifdef MSWIN
     extern wchar_t	**_wenviron;
-    wchar_t		*p;
 #else
     extern char		**environ;
 # endif
@@ -3231,46 +3230,25 @@ f_environ(typval_T *argvars, typval_T *rettv)
     do
     {
 # ifdef MSWIN
+	wchar_t		*p;
 	if ((p = (short_u*)_wenviron[i]) == NULL)
 	    return;
-	namevalue = utf16_to_enc((short_u *)p, NULL);
-	if (namevalue == NULL)
-	    return;
-	if ((value = vim_strchr(namevalue, '=')) == NULL)
-	{
-	    vim_free(namevalue);
-	    return;
-	}
-	name = vim_strnsave(namevalue, value - namevalue);
-	if (name == NULL)
-	{
-	    vim_free(namevalue);
-	    return;
-	}
-	if ((value = vim_strsave(value + 1)) == NULL)
-	{
-	    vim_free(namevalue);
-	    vim_free(name);
-	    return;
-	}
-	dict_add_string(rettv->vval.v_dict, (char*)name, value);
-	vim_free(namevalue);
-	vim_free(name);
+	name = utf16_to_enc((short_u *)p, NULL);
 # else
-	if ((namevalue = (char_u*)environ[i]) == NULL)
+	if ((name = (char_u*)environ[i]) == NULL)
 	    return;
-	if ((value = vim_strchr(namevalue, '=')) == NULL)
+	name = vim_strsave(name);
+# endif
+	if (name == NULL)
 	    return;
-	if ((name = vim_strnsave(namevalue, value - namevalue)) == NULL)
-	    return;
-	if ((value = vim_strsave(value + 1)) == NULL)
+	if ((value = vim_strchr(name, '=')) == NULL)
 	{
 	    vim_free(name);
 	    return;
 	}
+	*value++ = NUL;
 	dict_add_string(rettv->vval.v_dict, (char*)name, value);
 	vim_free(name);
-# endif
 	i++;
     } while (1);
 
