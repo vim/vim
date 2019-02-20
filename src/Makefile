@@ -1685,7 +1685,7 @@ RUN_UNITTESTS = run_json_test run_kword_test run_memfile_test run_message_test
 FUZZ_SEARCH_SRC = fuzz_search.c
 FUZZ_SEARCH_TARGET = fuzz_search$(EXEEXT)
 
-FUZZER_SRC = $(FUZZ_SEARCH_SRC)
+FUZZER_SRC = fuzzer_common.c $(FUZZ_SEARCH_SRC)
 FUZZER_TARGETS = $(FUZZ_SEARCH_TARGET)
 
 # All sources, also the ones that are not configured
@@ -2259,10 +2259,8 @@ $(MESSAGE_TEST_TARGET): auto/config.mk objects $(MESSAGE_TEST_OBJ)
 
 $(FUZZ_SEARCH_TARGET): $(FUZZ_SEARCH_OBJ)
 	$(CCC) version.c -o objects/version.o
-	@LINK="$(PURIFY) $(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
-		-o $(FUZZ_SEARCH_TARGET) $(FUZZ_SEARCH_OBJ) $(ALL_LIBS) $(LIB_FUZZING_ENGINE)" \
-		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
-		sh $(srcdir)/link.sh
+	$(SHRPENV) $(CClink) $(ALL_LIB_DIRS) $(LDFLAGS) \
+		-o $(FUZZ_SEARCH_TARGET) $(FUZZ_SEARCH_OBJ) $(ALL_LIBS) $(LIB_FUZZING_ENGINE)
 
 fuzzers: $(FUZZER_TARGETS)
 
@@ -3918,3 +3916,11 @@ objects/xpatience.o: xdiff/xpatience.c xdiff/xinclude.h auto/config.h \
  ex_cmds.h spell.h proto.h globals.h \
  arabic.h xdiff/xtypes.h xdiff/xutils.h \
  xdiff/xprepare.h xdiff/xdiffi.h xdiff/xemit.h
+objects/fuzzer_common.o: fuzzer_common.c main.c vim.h protodef.h auto/config.h \
+  feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
+  option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
+  ex_cmds.h spell.h proto.h globals.h arabic.h
+objects/fuzz_search.o: fuzz_search.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
+ beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h \
+ spell.h proto.h globals.h arabic.h
