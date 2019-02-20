@@ -25,7 +25,7 @@ function Test_setenv()
 endfunc
 
 function Test_external_env()
-  call setenv('FOO', 'こんにちわ')
+  call setenv('FOO', 'HelloWorld')
   if has('win32')
     let result = system('echo %FOO%')
   else
@@ -33,7 +33,7 @@ function Test_external_env()
   endif
   let result = substitute(result, '[ \r\n]', '', 'g')
   let result = iconv(result, 'char', &encoding)
-  call assert_equal(result, 'こんにちわ')
+  call assert_equal('HelloWorld', result)
 
   call setenv('FOO', v:null)
   if has('win32')
