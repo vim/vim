@@ -3237,11 +3237,25 @@ f_environ(typval_T *argvars, typval_T *rettv)
 	if (namevalue == NULL)
 	    return;
 	if ((value = vim_strchr(namevalue, '=')) == NULL)
+	{
+	    vim_free(namevalue);
 	    return;
+	}
 	name = vim_strnsave(namevalue, value - namevalue);
-	vim_free(namevalue);
 	if (name == NULL)
+	{
+	    vim_free(namevalue);
 	    return;
+	}
+	if ((value = vim_strsave(value + 1)) == NULL)
+	{
+	    vim_free(namevalue);
+	    vim_free(name);
+	    return;
+	}
+	dict_add_string(rettv->vval.v_dict, (char*)name, value);
+	vim_free(namevalue);
+	vim_free(name);
 # else
 	if ((namevalue = (char_u*)environ[i]) == NULL)
 	    return;
@@ -3249,13 +3263,14 @@ f_environ(typval_T *argvars, typval_T *rettv)
 	    return;
 	if ((name = vim_strnsave(namevalue, value - namevalue)) == NULL)
 	    return;
-# endif
 	if ((value = vim_strsave(value + 1)) == NULL)
 	{
 	    vim_free(name);
 	    return;
 	}
 	dict_add_string(rettv->vval.v_dict, (char*)name, value);
+	vim_free(name);
+# endif
 	i++;
     } while (1);
 
