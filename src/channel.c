@@ -4352,10 +4352,18 @@ channel_parse_messages(void)
 	    channel = first_channel;
 	    continue;
 	}
-	if (channel->ch_to_be_freed || channel->ch_killing)
+	if (channel->ch_to_be_freed)
 	{
 	    channel_free(channel);
 	    /* channel has been freed, start over */
+	    channel = first_channel;
+	    continue;
+	}
+	if (channel->ch_killing)
+	{
+	    channel_free_contents(channel);
+	    channel->ch_job->jv_channel = NULL;
+	    channel_free(channel);
 	    channel = first_channel;
 	    continue;
 	}
@@ -5487,15 +5495,8 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-    if (job->jv_channel != NULL
-	 && job->jv_channel->ch_anonymous_pipe && !job->jv_channel->ch_killing)
-    {
-	++safe_to_invoke_callback;
-	channel_free_contents(job->jv_channel);
-	job->jv_channel->ch_job = NULL;
-	job->jv_channel = NULL;
-	--safe_to_invoke_callback;
-    }
+    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
+	job->jv_channel->ch_killing = TRUE;
 
     // Do not free the job in case the close callback of the associated channel
     // isn't invoked yet and may get information by job_info().
