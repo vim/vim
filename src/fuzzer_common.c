@@ -100,7 +100,7 @@ fuzzer_load_file(const uint8_t *data, size_t size)
     FILE *fp = fopen(filename, "w");
     if (!fp)
 	abort();
-    if (fwrite(data, size, 1, fp) != 1)
+    if (size != 0 && fwrite(data, size, 1, fp) != 1)
 	abort();
     if (fclose(fp) != 0)
 	abort();

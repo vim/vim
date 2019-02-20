@@ -13,19 +13,14 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     // Input format:
-    // The first line is regex pattern
-    // The rest is the text to search.
-
-    void *p = memchr(data, '\n', size);
-    // At least two lines.
-    if (!p || p == data)
-	return 0;
-    // The second line has at least one character (or \n).
-    if (p == data + size - 1)
-	return 0;
+    // The first line is regex pattern.
+    // The rest is the text to search. Could be empty.
 
     if (!fuzzer_load_file(data, size))
 	abort();
+
+    if (curbuf->b_ml.ml_line_count == 1)
+	do_cmdline_cmd((char_u*)"call setline(2, \"\")");
 
     do_cmdline_cmd((char_u*)"2");
     do_cmdline_cmd((char_u*)"echo search(getline(1), \"W\")");
