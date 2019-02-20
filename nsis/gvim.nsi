@@ -379,6 +379,8 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\pack\dist\opt\matchit\doc\*.*
 	SetOutPath $0\pack\dist\opt\matchit\plugin
 	File ${VIMRT}\pack\dist\opt\matchit\plugin\*.*
+	SetOutPath $0\pack\dist\opt\matchit\autoload
+	File ${VIMRT}\pack\dist\opt\matchit\autoload\*.*
 
 	SetOutPath $0\pack\dist\opt\shellmenu\plugin
 	File ${VIMRT}\pack\dist\opt\shellmenu\plugin\*.*

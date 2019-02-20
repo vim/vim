@@ -11,7 +11,7 @@
 
 #if defined(FEAT_CSCOPE) || defined(PROTO)
 
-#if defined (WIN32)
+#if defined (MSWIN)
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif
@@ -45,7 +45,7 @@ typedef struct csi {
     dev_t	    st_dev;	/* ID of dev containing cscope db */
     ino_t	    st_ino;	/* inode number of cscope db */
 #else
-# if defined(WIN32)
+# if defined(MSWIN)
     DWORD	    pid;	/* PID of the connected cscope process. */
     HANDLE	    hProc;	/* cscope process handle */
     DWORD	    nVolume;	/* Volume serial number, instead of st_dev */

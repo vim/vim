@@ -783,6 +783,17 @@ func Test_diff_screen()
   call WriteDiffFiles(buf, [1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
   call VerifyBoth(buf, 'Test_diff_06', '')
 
+  " Variants on test 6 with different context settings
+  call term_sendkeys(buf, ":set diffopt+=context:2\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.2', {})
+  call term_sendkeys(buf, ":set diffopt-=context:2\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=context:1\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.1', {})
+  call term_sendkeys(buf, ":set diffopt-=context:1\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=context:0\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.0', {})
+  call term_sendkeys(buf, ":set diffopt-=context:0\<cr>")
+
   " Test 7 - 9: Test normal/patience/histogram diff algorithm
   call WriteDiffFiles(buf, ['#include <stdio.h>', '', '// Frobs foo heartily', 'int frobnitz(int foo)', '{',
       \ '    int i;', '    for(i = 0; i < 10; i++)', '    {', '        printf("Your answer is: ");',

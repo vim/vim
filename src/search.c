@@ -1246,7 +1246,7 @@ do_search(
     }
     if (options & SEARCH_REV)
     {
-#ifdef WIN32
+#ifdef MSWIN
 	/* There is a bug in the Visual C++ 2.2 compiler which means that
 	 * dirc always ends up being '/' */
 	dirc = (dirc == '/')  ?  '?'  :  '/';

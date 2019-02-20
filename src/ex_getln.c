@@ -1898,9 +1898,9 @@ getcmdline_int(
 		/* Ignore mouse event or open_cmdwin() result. */
 		goto cmdline_not_changed;
 
-#ifdef FEAT_GUI_W32
-	    /* On Win32 ignore <M-F4>, we get it when closing the window was
-	     * cancelled. */
+#ifdef FEAT_GUI_MSWIN
+	    /* On MS-Windows ignore <M-F4>, we get it when closing the window
+	     * was cancelled. */
 	case K_F4:
 	    if (mod_mask == MOD_MASK_ALT)
 	    {

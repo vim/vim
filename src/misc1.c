@@ -14,7 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#if defined(FEAT_CMDL_COMPL) && defined(WIN3264)
+#if defined(FEAT_CMDL_COMPL) && defined(MSWIN)
 # include <lm.h>
 #endif
 
@@ -3850,7 +3850,7 @@ init_homedir(void)
     var = mch_getenv((char_u *)"HOME");
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
     /*
      * Typically, $HOME is not defined on Windows, unless the user has
      * specifically defined it for Vim's sake.  However, on Windows NT
@@ -4314,7 +4314,7 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
     {
-#if defined(WIN3264)
+#if defined(MSWIN)
 	if (enc_utf8)
 	{
 	    int	    len;
@@ -4358,7 +4358,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    else
 		p = mch_getenv((char_u *)"VIM");
 
-#if defined(WIN3264)
+#if defined(MSWIN)
 	    if (enc_utf8)
 	    {
 		int	len;
@@ -4684,7 +4684,7 @@ init_users(void)
 	    add_user((char_u *)pw->pw_name, TRUE);
 	endpwent();
     }
-# elif defined(WIN3264)
+# elif defined(MSWIN)
     {
 	DWORD		nusers = 0, ntotal = 0, i;
 	PUSER_INFO_0	uinfo;
@@ -4816,7 +4816,7 @@ home_replace(
 #else
     homedir_env_orig = homedir_env = mch_getenv((char_u *)"HOME");
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     if (homedir_env == NULL)
 	homedir_env_orig = homedir_env = mch_getenv((char_u *)"USERPROFILE");
 #endif
@@ -5615,7 +5615,7 @@ static int vim_backtick(char_u *p);
 static int expand_backtick(garray_T *gap, char_u *pat, int flags);
 # endif
 
-# if defined(WIN3264)
+# if defined(MSWIN)
 /*
  * File name expansion code for MS-DOS, Win16 and Win32.  It's here because
  * it's shared between these systems.
@@ -5894,7 +5894,7 @@ mch_expandpath(
 {
     return dos_expandpath(gap, path, 0, flags, FALSE);
 }
-# endif /* WIN3264 */
+# endif // MSWIN
 
 #if (defined(UNIX) && !defined(VMS)) || defined(USE_UNIXFILENAME) \
 	|| defined(PROTO)
@@ -6642,7 +6642,7 @@ get_isolated_shell_name(void)
 {
     char_u *p;
 
-#ifdef WIN3264
+#ifdef MSWIN
     p = gettail(p_sh);
     p = vim_strnsave(p, (int)(skiptowhite(p) - p));
 #else

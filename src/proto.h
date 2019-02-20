@@ -38,7 +38,7 @@
 # if defined(UNIX) || defined(VMS)
 #  include "os_unix.pro"
 # endif
-# ifdef WIN3264
+# ifdef MSWIN
 #  include "os_win32.pro"
 #  include "os_mswin.pro"
 #  include "winclip.pro"
@@ -131,6 +131,28 @@ _RTLENTRYF
 smsg_attr_keep(int, const char *, ...)
 #ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 2, 3)))
+#endif
+    ;
+
+/* These prototypes cannot be produced automatically. */
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+semsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
+
+/* These prototypes cannot be produced automatically. */
+void
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+siemsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
 #endif
     ;
 
@@ -266,7 +288,7 @@ extern int putenv(const char *string);			/* in misc2.c */
 extern char_u *vimpty_getenv(const char_u *string);	/* in misc2.c */
 #   endif
 #  endif
-#  ifdef FEAT_GUI_W32
+#  ifdef FEAT_GUI_MSWIN
 #   include "gui_w32.pro"
 #  endif
 #  ifdef FEAT_GUI_GTK

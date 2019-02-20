@@ -1111,7 +1111,7 @@ get_coll_element(char_u **pp)
     int		l = 1;
     char_u	*p = *pp;
 
-    if (p[0] != NUL && p[1] == '.')
+    if (p[0] != NUL && p[1] == '.' && p[2] != NUL)
     {
 	if (has_mbyte)
 	    l = (*mb_ptr2len)(p + 2);

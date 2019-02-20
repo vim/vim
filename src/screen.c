@@ -7970,7 +7970,7 @@ screen_start_highlight(int attr)
 
     screen_attr = attr;
     if (full_screen
-#ifdef WIN3264
+#ifdef MSWIN
 		    && termcap_active
 #endif
 				       )
@@ -8077,7 +8077,7 @@ screen_stop_highlight(void)
     int	    do_ME = FALSE;	    /* output T_ME code */
 
     if (screen_attr != 0
-#ifdef WIN3264
+#ifdef MSWIN
 			&& termcap_active
 #endif
 					   )

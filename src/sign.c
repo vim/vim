@@ -1767,9 +1767,57 @@ static enum
     EXP_SUBCMD,		// expand :sign sub-commands
     EXP_DEFINE,		// expand :sign define {name} args
     EXP_PLACE,		// expand :sign place {id} args
+    EXP_LIST,		// expand :sign place args
     EXP_UNPLACE,	// expand :sign unplace"
-    EXP_SIGN_NAMES	// expand with name of placed signs
+    EXP_SIGN_NAMES,	// expand with name of placed signs
+    EXP_SIGN_GROUPS	// expand with name of placed sign groups
 } expand_what;
+
+/*
+ * Return the n'th sign name (used for command line completion)
+ */
+    static char_u *
+get_nth_sign_name(int idx)
+{
+    int		current_idx;
+    sign_T	*sp;
+
+    // Complete with name of signs already defined
+    current_idx = 0;
+    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+	if (current_idx++ == idx)
+	    return sp->sn_name;
+    return NULL;
+}
+
+/*
+ * Return the n'th sign group name (used for command line completion)
+ */
+    static char_u *
+get_nth_sign_group_name(int idx)
+{
+    int		current_idx;
+    int		todo;
+    hashitem_T	*hi;
+    signgroup_T	*group;
+
+    // Complete with name of sign groups already defined
+    current_idx = 0;
+    todo = (int)sg_table.ht_used;
+    for (hi = sg_table.ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    if (current_idx++ == idx)
+	    {
+		group = HI2SG(hi);
+		return group->sg_name;
+	    }
+	}
+    }
+    return NULL;
+}
 
 /*
  * Function given to ExpandGeneric() to obtain the sign command
@@ -1778,9 +1826,6 @@ static enum
     char_u *
 get_sign_name(expand_T *xp UNUSED, int idx)
 {
-    sign_T	*sp;
-    int		current_idx;
-
     switch (expand_what)
     {
     case EXP_SUBCMD:
@@ -1802,18 +1847,23 @@ get_sign_name(expand_T *xp UNUSED, int idx)
 	    };
 	    return (char_u *)place_arg[idx];
 	}
+    case EXP_LIST:
+	{
+	    char *list_arg[] =
+	    {
+		"group=", "file=", "buffer=", NULL
+	    };
+	    return (char_u *)list_arg[idx];
+	}
     case EXP_UNPLACE:
 	{
 	    char *unplace_arg[] = { "group=", "file=", "buffer=", NULL };
 	    return (char_u *)unplace_arg[idx];
 	}
     case EXP_SIGN_NAMES:
-	// Complete with name of signs already defined
-	current_idx = 0;
-	for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	    if (current_idx++ == idx)
-		return sp->sn_name;
-	return NULL;
+	return get_nth_sign_name(idx);
+    case EXP_SIGN_GROUPS:
+	return get_nth_sign_group_name(idx);
     default:
 	return NULL;
     }
@@ -1848,28 +1898,6 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
     //		      |
     //		      begin_subcmd_args
     begin_subcmd_args = skipwhite(end_subcmd);
-    p = skiptowhite(begin_subcmd_args);
-    if (*p == NUL)
-    {
-	//
-	// Expand first argument of subcmd when possible.
-	// For ":jump {id}" and ":unplace {id}", we could
-	// possibly expand the ids of all signs already placed.
-	//
-	xp->xp_pattern = begin_subcmd_args;
-	switch (cmd_idx)
-	{
-	    case SIGNCMD_LIST:
-	    case SIGNCMD_UNDEFINE:
-		// :sign list <CTRL-D>
-		// :sign undefine <CTRL-D>
-		expand_what = EXP_SIGN_NAMES;
-		break;
-	    default:
-		xp->xp_context = EXPAND_NOTHING;
-	}
-	return;
-    }
 
     // expand last argument of subcmd
 
@@ -1878,6 +1906,7 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
     //		    p
 
     // Loop until reaching last argument.
+    p = begin_subcmd_args;
     do
     {
 	p = skipwhite(p);
@@ -1900,7 +1929,19 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 		expand_what = EXP_DEFINE;
 		break;
 	    case SIGNCMD_PLACE:
-		expand_what = EXP_PLACE;
+		// List placed signs
+		if (VIM_ISDIGIT(*begin_subcmd_args))
+		    //   :sign place {id} {args}...
+		    expand_what = EXP_PLACE;
+		else
+		    //   :sign place {args}...
+		    expand_what = EXP_LIST;
+		break;
+	    case SIGNCMD_LIST:
+	    case SIGNCMD_UNDEFINE:
+		// :sign list <CTRL-D>
+		// :sign undefine <CTRL-D>
+		expand_what = EXP_SIGN_NAMES;
 		break;
 	    case SIGNCMD_JUMP:
 	    case SIGNCMD_UNPLACE:
@@ -1917,17 +1958,30 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	switch (cmd_idx)
 	{
 	    case SIGNCMD_DEFINE:
-		if (STRNCMP(last, "texthl", p - last) == 0
-			|| STRNCMP(last, "linehl", p - last) == 0)
+		if (STRNCMP(last, "texthl", 6) == 0
+			|| STRNCMP(last, "linehl", 6) == 0)
 		    xp->xp_context = EXPAND_HIGHLIGHT;
-		else if (STRNCMP(last, "icon", p - last) == 0)
+		else if (STRNCMP(last, "icon", 4) == 0)
 		    xp->xp_context = EXPAND_FILES;
 		else
 		    xp->xp_context = EXPAND_NOTHING;
 		break;
 	    case SIGNCMD_PLACE:
-		if (STRNCMP(last, "name", p - last) == 0)
+		if (STRNCMP(last, "name", 4) == 0)
 		    expand_what = EXP_SIGN_NAMES;
+		else if (STRNCMP(last, "group", 5) == 0)
+		    expand_what = EXP_SIGN_GROUPS;
+		else if (STRNCMP(last, "file", 4) == 0)
+		    xp->xp_context = EXPAND_BUFFERS;
+		else
+		    xp->xp_context = EXPAND_NOTHING;
+		break;
+	    case SIGNCMD_UNPLACE:
+	    case SIGNCMD_JUMP:
+		if (STRNCMP(last, "group", 5) == 0)
+		    expand_what = EXP_SIGN_GROUPS;
+		else if (STRNCMP(last, "file", 4) == 0)
+		    xp->xp_context = EXPAND_BUFFERS;
 		else
 		    xp->xp_context = EXPAND_NOTHING;
 		break;
