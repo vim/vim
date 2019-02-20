@@ -32,7 +32,6 @@ function Test_external_env()
     let result = system('echo $FOO')
   endif
   let result = substitute(result, '[ \r\n]', '', 'g')
-  let result = iconv(result, 'char', &encoding)
   call assert_equal('HelloWorld', result)
 
   call setenv('FOO', v:null)
