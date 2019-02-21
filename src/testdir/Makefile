@@ -148,7 +148,7 @@ newtests: newtestssilent
 newtestssilent: $(NEW_TESTS_RES)
 
 
-.vim.res: writevimcmd
+.vim.res:
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_VIMTEST)" >> vimcmd
 	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
