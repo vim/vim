@@ -1211,3 +1211,12 @@ func Test_search_Ctrl_L_combining()
   call assert_equal(bufcontent[1], @/)
   call Incsearch_cleanup()
 endfunc
+
+func Test_large_hex_chars()
+  " This used to cause a crash, the character becomes an NFA state.
+  try
+    /\%Ufffffc23
+  catch
+    call assert_match('E678:', v:exception)
+  endtry
+endfunc

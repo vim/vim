@@ -1475,7 +1475,7 @@ nfa_regatom(void)
 			    default:  nr = -1; break;
 			}
 
-			if (nr < 0)
+			if (nr < 0 || nr > INT_MAX)
 			    EMSG2_RET_FAIL(
 			       _("E678: Invalid character after %s%%[dxouU]"),
 				    reg_magic == MAGIC_ALL);
