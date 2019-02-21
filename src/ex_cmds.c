@@ -569,7 +569,8 @@ ex_sort(exarg_T *eap)
 		{
 		    nrs[lnum - eap->line1].st_u.num.is_number = TRUE;
 		    vim_str2nr(s, NULL, NULL, sort_what,
-			       &nrs[lnum - eap->line1].st_u.num.value, NULL, 0);
+			&nrs[lnum - eap->line1].st_u.num.value,
+			NULL, 0, FALSE);
 		}
 	    }
 #ifdef FEAT_FLOAT
