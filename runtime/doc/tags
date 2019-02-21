@@ -7994,6 +7994,7 @@ omni-sql-completion	ft_sql.txt	/*omni-sql-completion*
 online-help	helphelp.txt	/*online-help*
 opening-window	windows.txt	/*opening-window*
 operator	motion.txt	/*operator*
+operator-pending-index	index.txt	/*operator-pending-index*
 operator-variable	eval.txt	/*operator-variable*
 option-backslash	options.txt	/*option-backslash*
 option-list	quickref.txt	/*option-list*
@@ -9161,6 +9162,7 @@ terminal-diffscreendump	terminal.txt	/*terminal-diffscreendump*
 terminal-dumptest	terminal.txt	/*terminal-dumptest*
 terminal-functions	usr_41.txt	/*terminal-functions*
 terminal-info	term.txt	/*terminal-info*
+terminal-job-index	index.txt	/*terminal-job-index*
 terminal-key-codes	term.txt	/*terminal-key-codes*
 terminal-ms-windows	terminal.txt	/*terminal-ms-windows*
 terminal-options	term.txt	/*terminal-options*
