@@ -307,6 +307,7 @@ let s:flaky_tests = [
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
       \ 'Test_terminal_composing_unicode()',
+      \ 'Test_terminal_does_not_truncate_last_newlines()',
       \ 'Test_terminal_env()',
       \ 'Test_terminal_hide_buffer()',
       \ 'Test_terminal_make_change()',
