@@ -338,11 +338,15 @@ hi def link ocamlCons	    ocamlInfixOp
 
 hi def link ocamlPrefixOp	ocamlOperator
 hi def link ocamlInfixOp	ocamlOperator
-hi def link ocamlInfixOpKeyword	ocamlOperator
 hi def link ocamlExtensionOp	ocamlOperator
 hi def link ocamlIndexingOp	ocamlOperator
 
-hi def link ocamlOperator   Operator
+if exists("ocaml_highlight_operators")
+    hi def link ocamlInfixOpKeyword ocamlOperator
+    hi def link ocamlOperator	    Operator
+else
+    hi def link ocamlInfixOpKeyword Keyword
+endif
 
 hi def link ocamlBoolean	   Boolean
 hi def link ocamlCharacter    Character
