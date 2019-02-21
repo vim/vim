@@ -5135,7 +5135,7 @@ vim_fsync(int fd)
 
 # ifdef MACOS_X
     r = fcntl(fd, F_FULLFSYNC);
-    if (r != 0 && (errno == ENOTTY || errno == ENOTSUP))
+    if (r != 0)
 # endif
 	r = fsync(fd);
     return r;
