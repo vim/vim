@@ -1,6 +1,6 @@
 scriptencoding utf-8
 
-function Test_environ()
+func Test_environ()
   unlet! $TESTENV
   call assert_equal(0, has_key(environ(), 'TESTENV'))
   let $TESTENV = 'foo'
@@ -9,14 +9,14 @@ function Test_environ()
   call assert_equal('こんにちわ', environ()['TESTENV'])
 endfunc
 
-function Test_getenv()
+func Test_getenv()
   unlet! $TESTENV
   call assert_equal(v:null, getenv('TESTENV'))
   let $TESTENV = 'foo'
   call assert_equal('foo', getenv('TESTENV'))
 endfunc
 
-function Test_setenv()
+func Test_setenv()
   unlet! $TESTENV
   call setenv('TEST ENV', 'foo')
   call assert_equal('foo', getenv('TEST ENV'))
@@ -24,7 +24,7 @@ function Test_setenv()
   call assert_equal(v:null, getenv('TEST ENV'))
 endfunc
 
-function Test_external_env()
+func Test_external_env()
   call setenv('FOO', 'HelloWorld')
   if has('win32')
     let result = system('echo %FOO%')
