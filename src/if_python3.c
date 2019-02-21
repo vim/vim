@@ -34,7 +34,7 @@
 
 #include <limits.h>
 
-#if defined(_WIN32) && defined(HAVE_FCNTL_H)
+#if defined(MSWIN) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -112,7 +112,7 @@ typedef PySliceObject PySliceObject_T;
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
@@ -1010,12 +1010,12 @@ ex_py3(exarg_T *eap)
 {
     char_u *script;
 
-    if (p_pyx == 0)
-	p_pyx = 3;
-
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
+	if (p_pyx == 0)
+	    p_pyx = 3;
+
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
 		(rangeinitializer) init_range_cmd,
 		(runner) run_cmd,

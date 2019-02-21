@@ -548,7 +548,7 @@ staterr:
 	    goto add_err;
 
 	while (fname[strlen(fname)-1] == '/'
-#ifdef WIN32
+#ifdef MSWIN
 		|| fname[strlen(fname)-1] == '\\'
 #endif
 		)
@@ -790,7 +790,7 @@ cs_create_connection(int i)
 #endif
     int		len;
     char	*prog, *cmd, *ppath = NULL;
-#ifdef WIN32
+#ifdef MSWIN
     int		fd;
     SECURITY_ATTRIBUTES sa;
     PROCESS_INFORMATION pi;
@@ -844,7 +844,7 @@ err_closing:
 	(void)close(to_cs[1]);
 	(void)close(from_cs[0]);
 #else
-	/* WIN32 */
+	/* MSWIN */
 	/* Create pipes to communicate with cscope */
 	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 	sa.bInheritHandle = TRUE;
@@ -874,7 +874,7 @@ err_closing:
 #ifdef UNIX
 	    return CSCOPE_FAILURE;
 #else
-	    /* WIN32 */
+	    /* MSWIN */
 	    goto err_closing;
 #endif
 	}
@@ -891,7 +891,7 @@ err_closing:
 #ifdef UNIX
 		return CSCOPE_FAILURE;
 #else
-		/* WIN32 */
+		/* MSWIN */
 		goto err_closing;
 #endif
 	    }
@@ -910,7 +910,7 @@ err_closing:
 #ifdef UNIX
 	    return CSCOPE_FAILURE;
 #else
-	    /* WIN32 */
+	    /* MSWIN */
 	    goto err_closing;
 #endif
 	}
@@ -919,7 +919,7 @@ err_closing:
 #if defined(UNIX)
 	(void)sprintf(cmd, "exec %s -dl -f %s", prog, csinfo[i].fname);
 #else
-	/* WIN32 */
+	/* MSWIN */
 	(void)sprintf(cmd, "%s -dl -f %s", prog, csinfo[i].fname);
 #endif
 	if (csinfo[i].ppath != NULL)
@@ -971,7 +971,7 @@ err_closing:
     }
 
 #else
-    /* WIN32 */
+    /* MSWIN */
     /* Create a new process to run cscope and use pipes to talk with it */
     GetStartupInfo(&si);
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
@@ -1330,7 +1330,7 @@ clear_csinfo(int i)
     csinfo[i].pid    = 0;
     csinfo[i].fr_fp  = NULL;
     csinfo[i].to_fp  = NULL;
-#if defined(WIN32)
+#if defined(MSWIN)
     csinfo[i].hProc = NULL;
 #endif
 }
@@ -1940,13 +1940,13 @@ cs_pathcomponents(char *path)
     s = path + strlen(path) - 1;
     for (i = 0; i < p_cspc; ++i)
 	while (s > path && *--s != '/'
-#ifdef WIN32
+#ifdef MSWIN
 		&& *--s != '\\'
 #endif
 		)
 	    ;
     if ((s > path && *s == '/')
-#ifdef WIN32
+#ifdef MSWIN
 	|| (s > path && *s == '\\')
 #endif
 	    )
@@ -2433,7 +2433,7 @@ cs_resolve_file(int i, char *name)
     if (csinfo[i].ppath != NULL
 	    && (strncmp(name, csinfo[i].ppath, strlen(csinfo[i].ppath)) != 0)
 	    && (name[0] != '/')
-#ifdef WIN32
+#ifdef MSWIN
 	    && name[0] != '\\' && name[1] != ':'
 #endif
        )

@@ -245,7 +245,7 @@ static int nfa_classcodes[] = {
 
 static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely");
 static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
-static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %ld");
+static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %d");
 
 // Variables only used in nfa_regcomp() and descendants.
 static int nfa_re_flags; // re_flags passed to nfa_regcomp()
@@ -509,10 +509,13 @@ nfa_get_match_text(nfa_state_T *start)
 realloc_post_list(void)
 {
     int   nstate_max = (int)(post_end - post_start);
-    int   new_max = nstate_max + 1000;
+    int   new_max;
     int   *new_start;
     int	  *old_start;
 
+    // For weird patterns the number of states can be very high. Increasing by
+    // 50% seems a reasonable compromise between memory use and speed.
+    new_max = nstate_max * 3 / 2;
     new_start = (int *)lalloc(new_max * sizeof(int), TRUE);
     if (new_start == NULL)
 	return FAIL;
@@ -1785,7 +1788,8 @@ collection:
 			MB_PTR_ADV(regparse);
 
 			if (*regparse == 'n')
-			    startc = reg_string ? NL : NFA_NEWL;
+			    startc = (reg_string || emit_range
+					|| regparse[1] == '-') ? NL : NFA_NEWL;
 			else
 			    if  (*regparse == 'd'
 				    || *regparse == 'o'

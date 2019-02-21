@@ -27,7 +27,7 @@
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
-#ifndef WIN32
+#ifndef MSWIN
 # include <netdb.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
@@ -934,7 +934,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     {
 	mch_memmove(newtext, oldtext, first);
 	STRMOVE(newtext + first, oldtext + lastbyte + 1);
-	nbdebug(("    NEW LINE %d: %s\n", lnum, newtext));
+	nbdebug(("    NEW LINE %ld: %s\n", lnum, newtext));
 	ml_replace(lnum, newtext, FALSE);
     }
 }
@@ -1166,7 +1166,7 @@ nb_do_cmd(
 		    return FAIL;
 		}
 		first = *pos;
-		nbdebug(("    FIRST POS: line %d, col %d\n",
+		nbdebug(("    FIRST POS: line %ld, col %d\n",
 						      first.lnum, first.col));
 		pos = off2pos(buf->bufp, off+count-1);
 		if (!pos)
@@ -1178,7 +1178,7 @@ nb_do_cmd(
 		    return FAIL;
 		}
 		last = *pos;
-		nbdebug(("    LAST POS: line %d, col %d\n",
+		nbdebug(("    LAST POS: line %ld, col %d\n",
 							last.lnum, last.col));
 		del_from_lnum = first.lnum;
 		del_to_lnum = last.lnum;
@@ -1264,7 +1264,7 @@ nb_do_cmd(
 			}
 		    }
 
-		    nbdebug(("    Deleting lines %d through %d\n",
+		    nbdebug(("    Deleting lines %ld through %ld\n",
 						 del_from_lnum, del_to_lnum));
 		    curwin->w_cursor.lnum = del_from_lnum;
 		    curwin->w_cursor.col = 0;
@@ -1540,7 +1540,7 @@ nb_do_cmd(
 	    {
 		if (!buf->bufp->b_netbeans_file)
 		{
-		    nbdebug(("E658: NetBeans connection lost for buffer %ld\n", buf->bufp->b_fnum));
+		    nbdebug(("E658: NetBeans connection lost for buffer %d\n", buf->bufp->b_fnum));
 		    semsg(_("E658: NetBeans connection lost for buffer %d"),
 							   buf->bufp->b_fnum);
 		}
@@ -2347,7 +2347,7 @@ ex_nbstart(
 {
 #ifdef FEAT_GUI
 # if !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)  \
-		&& !defined(FEAT_GUI_W32)
+		&& !defined(FEAT_GUI_MSWIN)
     if (gui.in_use)
     {
 	emsg(_("E838: netbeans is not supported with this GUI"));
@@ -2567,7 +2567,7 @@ set_ref_in_nb_channel(int copyID)
 }
 #endif
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_W32) || defined(PROTO)
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * Tell netbeans that the window was moved or resized.
  */

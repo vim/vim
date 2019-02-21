@@ -32,7 +32,7 @@
 #endif
 
 #ifndef PROTO
-# if defined(FEAT_TITLE) && !defined(FEAT_GUI_W32)
+# if defined(FEAT_TITLE) && !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
 
@@ -3091,7 +3091,7 @@ get_logfont(
     }
     if (STRCMP(name, "*") == 0)
     {
-#if defined(FEAT_GUI_W32)
+#if defined(FEAT_GUI_MSWIN)
 	CHOOSEFONT	cf;
 	/* if name is "*", bring up std font dialog: */
 	vim_memset(&cf, 0, sizeof(cf));

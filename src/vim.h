@@ -11,8 +11,14 @@
 
 #include "protodef.h"
 
-/* use fastcall for Borland, when compiling for Win32 */
-#if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
+// _WIN32 is defined as 1 when the compilation target is 32-bit or 64-bit.
+// Note: If you want to check for 64-bit use the _WIN64 macro.
+#if defined(WIN32) || defined(_WIN32)
+# define MSWIN
+#endif
+
+// use fastcall for Borland, when compiling for MS-Windows
+#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
 #if defined(FEAT_PERL) || \
     defined(FEAT_PYTHON) || \
     defined(FEAT_PYTHON3) || \
@@ -29,7 +35,7 @@
 # endif
 #endif
 
-#if defined(WIN32) || defined(_WIN64)
+#ifdef MSWIN
 # include "vimio.h"
 #endif
 
@@ -47,6 +53,9 @@
 # if (VIM_SIZEOF_INT == 0)
     Error: configure did not run properly.  Check auto/config.log.
 # endif
+
+// for INT_MAX, LONG_MAX et al.
+#include <limits.h>
 
 /*
  * Cygwin may have fchdir() in a newer release, but in most versions it
@@ -103,7 +112,7 @@
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
     || defined(FEAT_GUI_MAC) \
-    || defined(FEAT_GUI_W32) \
+    || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
 # define FEAT_GUI_ENABLED  /* also defined with NO_X11_INCLUDES */
 # if !defined(FEAT_GUI) && !defined(NO_X11_INCLUDES)
@@ -124,22 +133,11 @@
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-#if defined(FEAT_GUI_W32)
-# define FEAT_GUI_MSWIN
-#endif
-#if defined(WIN32) || defined(_WIN64)
-# define MSWIN
-#endif
-/* Practically everything is common to both Win32 and Win64 */
-#if defined(WIN32) || defined(_WIN64)
-# define WIN3264
-#endif
-
 /*
  * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
  * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
  */
-#ifdef WIN3264
+#ifdef MSWIN
 # define VIM_SIZEOF_INT 4
 #endif
 
@@ -276,7 +274,7 @@
 # include "os_amiga.h"
 #endif
 
-#ifdef WIN3264
+#ifdef MSWIN
 # include "os_win32.h"
 #endif
 
@@ -456,13 +454,9 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 # include <sys/stat.h>
 #endif
 
-#if defined(HAVE_ERRNO_H) \
-	|| defined(WIN32) || defined(_WIN64)
+#if defined(HAVE_ERRNO_H) || defined(MSWIN)
 # include <errno.h>
 #endif
-
-/* for INT_MAX et al. */
-#include <limits.h>
 
 /*
  * Allow other (non-unix) systems to configure themselves now
@@ -509,7 +503,7 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 #ifndef HAVE_SELECT
 # ifdef HAVE_SYS_POLL_H
 #  include <sys/poll.h>
-# elif defined(WIN32)
+# elif defined(MSWIN)
 #  define HAVE_SELECT
 # else
 #  ifdef HAVE_POLL_H
@@ -1672,17 +1666,17 @@ typedef unsigned short disptick_T;	/* display tick type */
  * not a real problem. BTW:  Longer lines are split.
  */
 #ifdef __MVS__
-# define MAXCOL (0x3fffffffL)		/* maximum column number, 30 bits */
-# define MAXLNUM (0x3fffffffL)		/* maximum (invalid) line number */
+# define MAXCOL (0x3fffffffL)		// maximum column number, 30 bits
+# define MAXLNUM (0x3fffffffL)		// maximum (invalid) line number
 #else
-# define MAXCOL (0x7fffffffL)		/* maximum column number, 31 bits */
-# define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */
+# define MAXCOL  INT_MAX		// maximum column number
+# define MAXLNUM LONG_MAX		// maximum (invalid) line number
 #endif
 
-#define SHOWCMD_COLS 10			/* columns needed by shown command */
-#define STL_MAX_ITEM 80			/* max nr of %<flag> in statusline */
+#define SHOWCMD_COLS 10			// columns needed by shown command
+#define STL_MAX_ITEM 80			// max nr of %<flag> in statusline
 
-typedef void	    *vim_acl_T;		/* dummy to pass an ACL to a function */
+typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
 #ifndef mch_memmove
 # define mch_memmove(to, from, len) memmove((char*)(to), (char*)(from), (size_t)(len))
@@ -1752,7 +1746,7 @@ void *vim_memset(void *, int, size_t);
 #define MB_MAXBYTES	21
 
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
-# ifdef WIN3264
+# ifdef MSWIN
 typedef LARGE_INTEGER proftime_T;
 # else
 typedef struct timeval proftime_T;
@@ -1769,7 +1763,7 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #ifdef PROTO
 typedef long  time_T;
 #else
-# ifdef WIN3264
+# ifdef MSWIN
 typedef __time64_t  time_T;
 # else
 typedef time_t	    time_T;
@@ -2005,7 +1999,7 @@ typedef int sock_T;
 # define SELECT_MODE_WORD	1
 # define SELECT_MODE_LINE	2
 
-# ifdef FEAT_GUI_W32
+# ifdef FEAT_GUI_MSWIN
 #  ifdef FEAT_OLE
 #   define WM_OLE (WM_APP+0)
 #  endif
@@ -2103,7 +2097,7 @@ typedef enum {
 #endif
 
 # if defined(FEAT_EVAL) \
-	&& (!defined(FEAT_GUI_W32) \
+	&& (!defined(FEAT_GUI_MSWIN) \
 	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
 /* Whether IME is supported by im_get_status() defined in mbyte.c.
@@ -2115,7 +2109,7 @@ typedef enum {
 
 #if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
-	|| (defined(FEAT_GUI_W32) \
+	|| (defined(FEAT_GUI_MSWIN) \
 	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
 	|| defined(FEAT_GUI_MAC)
 /* im_set_active() is available */
@@ -2129,7 +2123,7 @@ typedef enum {
 
 /* This must come after including proto.h.
  * For VMS this is defined in macros.h. */
-#if !defined(WIN3264) && !defined(VMS)
+#if !defined(MSWIN) && !defined(VMS)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
@@ -2169,7 +2163,7 @@ typedef enum {
 #endif
 
 /* stop using fastcall for Borland */
-#if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
+#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
  #pragma option -p.
 #endif
 
@@ -2461,7 +2455,7 @@ typedef enum {
 # define MAX_OPEN_CHANNELS 0
 #endif
 
-#if defined(WIN32)
+#if defined(MSWIN)
 # define MAX_NAMED_PIPE_SIZE 65535
 #endif
 
@@ -2579,7 +2573,7 @@ typedef enum {
 # define ELAPSED_FUNC(v) elapsed(&v)
 typedef struct timeval elapsed_T;
 long elapsed(struct timeval *start_tv);
-#elif defined(WIN32)
+#elif defined(MSWIN)
 # define ELAPSED_TICKCOUNT
 # define ELAPSED_INIT(v) v = GetTickCount()
 # define ELAPSED_FUNC(v) elapsed(v)

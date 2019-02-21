@@ -388,7 +388,7 @@ char *(icon_link_names[ICON_COUNT]) =
 run_command(char *cmd)
 {
     char	*cmd_path;
-    char	cmd_buf[BUFSIZE];
+    char	cmd_buf[BUFSIZE * 2 + 35];
     char	*p;
 
     /* On WinNT, 'start' is a shell built-in for cmd.exe rather than an
@@ -498,7 +498,7 @@ remove_tail(char *path)
 }
 
 
-char	installdir[BUFSIZE];	/* top of the installation dir, where the
+char	installdir[MAX_PATH-9];	/* top of the installation dir, where the
 				   install.exe is located, E.g.:
 				   "c:\vim\vim60" */
 int	runtimeidx;		/* index in installdir[] where "vim60" starts */

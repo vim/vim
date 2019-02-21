@@ -323,8 +323,6 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 				set encoding=utf-8
 				scriptencoding utf-8
 <
-			When compiled without the |+multi_byte| feature this
-			command is ignored.
 			{not in Vi}
 
 						*:scr* *:scriptnames*

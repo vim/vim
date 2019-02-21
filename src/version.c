@@ -222,7 +222,7 @@ static char *(features[]) =
 #else
 	"-digraphs",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_DIRECTX
 	"+directx",
 # else
@@ -481,7 +481,7 @@ static char *(features[]) =
 #else
 	"-num64",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_OLE
 	"+ole",
 # else
@@ -700,7 +700,7 @@ static char *(features[]) =
 	"-viminfo",
 #endif
 	"+vreplace",
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_VTP
 	"+vtp",
 # else
@@ -740,7 +740,7 @@ static char *(features[]) =
 #else
 	"-xim",
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_XPM_W32
 	"+xpm_w32",
 # else
@@ -779,6 +779,62 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    960,
+/**/
+    959,
+/**/
+    958,
+/**/
+    957,
+/**/
+    956,
+/**/
+    955,
+/**/
+    954,
+/**/
+    953,
+/**/
+    952,
+/**/
+    951,
+/**/
+    950,
+/**/
+    949,
+/**/
+    948,
+/**/
+    947,
+/**/
+    946,
+/**/
+    945,
+/**/
+    944,
+/**/
+    943,
+/**/
+    942,
+/**/
+    941,
+/**/
+    940,
+/**/
+    939,
+/**/
+    938,
+/**/
+    937,
+/**/
+    936,
+/**/
+    935,
+/**/
+    934,
+/**/
+    933,
 /**/
     932,
 /**/
@@ -2836,16 +2892,16 @@ list_version(void)
      */
     init_longVersion();
     msg(longVersion);
-#ifdef WIN3264
-# ifdef FEAT_GUI_W32
+#ifdef MSWIN
+# ifdef FEAT_GUI_MSWIN
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit GUI version"));
 #  else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #  endif
-# ifdef FEAT_OLE
+#  ifdef FEAT_OLE
     msg_puts(_(" with OLE support"));
-# endif
+#  endif
 # else
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit console version"));
