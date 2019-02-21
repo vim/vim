@@ -2854,6 +2854,11 @@ changed(void)
 	changed_int();
     }
     ++CHANGEDTICK(curbuf);
+
+#ifdef FEAT_SEARCH_EXTRA
+    // If a pattern is highlighted, the position may now be invalid.
+    highlight_match = FALSE;
+#endif
 }
 
 /*
