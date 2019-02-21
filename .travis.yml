@@ -136,7 +136,8 @@ script:
     if [[ -n "${SHADOWOPT}" ]]; then
       make -C src shadow
     fi
-  - (cd "${SRCDIR}" && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing)
+  # "./configure" changes its working directory into "$SRCDIR".
+  - ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
   - echo -en "travis_fold:end:configure\r"
   - echo "Building Vim" && echo -en "travis_fold:start:build\r"
   - |
