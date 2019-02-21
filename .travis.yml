@@ -126,6 +126,7 @@ before_script:
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - echo "Configuring Vim" && echo -en "travis_fold:start:configure\r"
   - |
     if [[ "${CHECK_AUTOCONF}" = "yes" ]] && [[ "${CC}" = "gcc" ]]; then
       make -C src autoconf
@@ -134,13 +135,15 @@ script:
     if [[ -n "${SHADOWOPT}" ]]; then
       make -C src shadow
     fi
+  - (cd "${SRCDIR}" && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing)
+  - echo -en "travis_fold:end:configure\r"
+  - echo "Building Vim" && echo -en "travis_fold:start:build\r"
   - |
-    (
-    cd "${SRCDIR}" \
-      && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
-    ) && if [[ "${BUILD}" = "yes" ]]; then
+    if [[ "${BUILD}" = "yes" ]]; then
       make ${SHADOWOPT} -j${NPROC}
     fi
+  - echo -en "travis_fold:end:build\r"
+  - echo "Testing Vim" && echo -en "travis_fold:start:test\r"
   # Show Vim version and also if_xx versions.
   - |
     if [[ "${BUILD}" = "yes" ]]; then
@@ -150,6 +153,7 @@ script:
       cat if_ver.txt
     fi
   - make ${SHADOWOPT} ${TEST}
+  - echo -en "travis_fold:end:test\r"
   - |
     if [[ -n "${ASAN_OPTIONS}" ]]; then
       while read log; do
