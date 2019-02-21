@@ -126,6 +126,7 @@ before_script:
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - set -o errexit
   - echo "Configuring Vim" && echo -en "travis_fold:start:configure\r"
   - |
     if [[ "${CHECK_AUTOCONF}" = "yes" ]] && [[ "${CC}" = "gcc" ]]; then
@@ -143,6 +144,7 @@ script:
       make ${SHADOWOPT} -j${NPROC}
     fi
   - echo -en "travis_fold:end:build\r"
+  - set +o errexit
   - echo "Testing Vim" && echo -en "travis_fold:start:test\r"
   # Show Vim version and also if_xx versions.
   - |
