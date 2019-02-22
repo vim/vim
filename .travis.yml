@@ -152,7 +152,7 @@ after_success:
   - |
     # Codecov.
     if [[ "${COVERAGE}" = "yes" ]]; then
-      bash <(curl -s https://codecov.io/bash) -X gcov
+      bash <(curl -s https://codecov.io/bash)
     fi
 
 # vim:set sts=2 sw=2 tw=0 et:
