@@ -166,6 +166,21 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_s|		CTRL-X s	spelling suggestions
 {not available when compiled without the |+insert_expand| feature}
 
+commands in completion mode (see |popupmenu-keys|)
+
+|complete_CTRL-E| CTRL-E	stop completion and go back to original text
+		<Tab>		stop completion and insert <Tab>
+		CTRL-L		insert one character from the current match
+		<CR>		insert currently selected match
+		<BS>		delete one character and redo search
+		CTRL-H		same as <BS>
+|complete_CTRL-Y| CTRL-Y	accept selected match and stop completion
+		<Space>		stop completion and insert <Space>
+		<Up>		select the previous match
+		<Down>		select the next match
+		<PageUp>	select a match several entries back
+		<PageDown>	select a match several entries forward
+
 ==============================================================================
 2. Normal mode						*normal-index*
 
