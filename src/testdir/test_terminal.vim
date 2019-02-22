@@ -1571,6 +1571,8 @@ endfunc
 func Test_terminal_termwinkey()
   call assert_equal(1, winnr('$'))
   let thiswin = win_getid()
+  tabnew
+  tabnext
 
   let buf = Run_shell_in_terminal({})
   let termwin = bufwinid(buf)
@@ -1578,12 +1580,22 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-L>w", 'tx')
   call assert_equal(thiswin, win_getid())
   call feedkeys("\<C-W>w", 'tx')
+  call assert_equal(termwin, win_getid())
+
+  let tnr = tabpagenr()
+  call feedkeys("\<C-L>gt", "xt")
+  call assert_notequal(tnr, tabpagenr())
+  tabnext
+  call assert_equal(tnr, tabpagenr())
+  call assert_equal(termwin, win_getid())
 
   let job = term_getjob(buf)
   call feedkeys("\<C-L>\<C-C>", 'tx')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
 
   set termwinkey&
+  tabnext
+  tabclose
 endfunc
 
 func Test_terminal_out_err()
