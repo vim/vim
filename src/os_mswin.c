@@ -1752,6 +1752,7 @@ resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
     DWORD	    size;
+    WCHAR	    *p;
     char_u	    *rfname = NULL;
     FILE_NAME_INFO_ *nameinfo = NULL;
     WCHAR	    buff[MAX_PATH], *volnames = NULL;
@@ -1776,33 +1777,19 @@ resolve_reparse_point(char_u *fname)
 	    return NULL;
     }
 
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    p = enc_to_utf16(fname, NULL);
+    if (p == NULL)
+	goto fail;
+
+    if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
     {
-	WCHAR	*p;
-
-	p = enc_to_utf16(fname, NULL);
-	if (p == NULL)
-	    goto fail;
-
-	if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
-	{
-	    vim_free(p);
-	    goto fail;
-	}
-
-	h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
-		FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	vim_free(p);
+	goto fail;
     }
-    else
-    {
-	if ((GetFileAttributes((char*) fname) &
-		    FILE_ATTRIBUTE_REPARSE_POINT) == 0)
-	    goto fail;
 
-	h = CreateFile((char*) fname, 0, 0, NULL, OPEN_EXISTING,
-		FILE_FLAG_BACKUP_SEMANTICS, NULL);
-    }
+    h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
+	    FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    vim_free(p);
 
     if (h == INVALID_HANDLE_VALUE)
 	goto fail;
