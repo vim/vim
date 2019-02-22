@@ -2547,10 +2547,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
-		STRNCPY(current_ScreenLine, text, len);
+		mch_memmove(current_ScreenLine, text, len);
 	    else
 #endif
-		STRNCPY(current_ScreenLine + col, text, len);
+		mch_memmove(current_ScreenLine + col, text, len);
 	    col += len;
 	}
     }
@@ -3396,7 +3396,7 @@ win_line(
 	{
 	    if (lnum == curwin->w_cursor.lnum)
 		getvcol(curwin, &(curwin->w_cursor),
-						 (colnr_T *)&fromcol, NULL, NULL);
+					      (colnr_T *)&fromcol, NULL, NULL);
 	    else
 		fromcol = 0;
 	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
