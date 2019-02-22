@@ -87,10 +87,7 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    if (Prenum == 0)
-	Prenum1 = 1;
-    else
-	Prenum1 = Prenum;
+    Prenum1 = Prenum == 0 ? 1 : Prenum;
 
 #ifdef FEAT_CMDWIN
 # define CHECK_CMDWIN \
@@ -586,6 +583,10 @@ wingotofile:
 #endif
 		    case 't':	    // CTRL-W gt: go to next tab page
 			goto_tabpage((int)Prenum);
+			break;
+
+		    case 'T':	    // CTRL-W gT: go to previous tab page
+			goto_tabpage(-(int)Prenum1);
 			break;
 
 		    default:

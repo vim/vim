@@ -81,6 +81,7 @@ Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N*
 			evaluating an expression.
 	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
 	CTRL-W gt	go to next tabpage, same as `gt`
+	CTRL-W gT	go to previous tabpage, same as `gT`
 
 See option 'termwinkey' for specifying another key instead of CTRL-W that
 will work like CTRL-W.  However, typing 'termwinkey' twice sends 'termwinkey'

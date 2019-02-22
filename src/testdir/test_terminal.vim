@@ -1569,10 +1569,14 @@ func Test_terminal_termwinsize_mininmum()
 endfunc
 
 func Test_terminal_termwinkey()
-  call assert_equal(1, winnr('$'))
-  let thiswin = win_getid()
-  tabnew
+  " make three tabpages, terminal in the middle
+  0tabnew
   tabnext
+  tabnew
+  tabprev
+  call assert_equal(1, winnr('$'))
+  call assert_equal(2, tabpagenr())
+  let thiswin = win_getid()
 
   let buf = Run_shell_in_terminal({})
   let termwin = bufwinid(buf)
@@ -1582,11 +1586,16 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-W>w", 'tx')
   call assert_equal(termwin, win_getid())
 
-  let tnr = tabpagenr()
   call feedkeys("\<C-L>gt", "xt")
-  call assert_notequal(tnr, tabpagenr())
+  call assert_equal(3, tabpagenr())
+  tabprev
+  call assert_equal(2, tabpagenr())
+  call assert_equal(termwin, win_getid())
+
+  call feedkeys("\<C-L>gT", "xt")
+  call assert_equal(1, tabpagenr())
   tabnext
-  call assert_equal(tnr, tabpagenr())
+  call assert_equal(2, tabpagenr())
   call assert_equal(termwin, win_getid())
 
   let job = term_getjob(buf)
@@ -1595,6 +1604,8 @@ func Test_terminal_termwinkey()
 
   set termwinkey&
   tabnext
+  tabclose
+  tabprev
   tabclose
 endfunc
 
