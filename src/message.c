@@ -2627,12 +2627,19 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
+	int c = -1;
+
 	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	{
+	    c = p[maxlen];
 	    p[maxlen] = 0;
+	}
 	if (info_message)
 	    mch_msg((char *)p);
 	else
 	    mch_errmsg((char *)p);
+	if (c != -1)
+	    p[maxlen] = c;
     }
 
     msg_didout = TRUE;	    // assume that line is not empty
