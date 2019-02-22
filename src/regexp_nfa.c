@@ -7252,12 +7252,7 @@ nfa_regcomp(char_u *expr, int re_flags)
      * (and count its size). */
     postfix = re2post();
     if (postfix == NULL)
-    {
-	/* TODO: only give this error for debugging? */
-	if (post_ptr >= post_end)
-	    siemsg("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
 	goto fail;	    /* Cascaded (syntax?) error */
-    }
 
     /*
      * In order to build the NFA, we parse the input regexp twice:

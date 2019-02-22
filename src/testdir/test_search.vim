@@ -1220,3 +1220,8 @@ func Test_large_hex_chars()
     call assert_match('E678:', v:exception)
   endtry
 endfunc
+
+func Test_one_error_msg()
+  " This  was also giving an internal error
+  call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
+endfunc
