@@ -306,6 +306,9 @@ func Test_Vim_evaluate()
   call assert_equal('foo',      RubyEval('Vim::evaluate("\"foo\"")'))
   call assert_equal('String',   RubyEval('Vim::evaluate("\"foo\"").class'))
 
+  call assert_equal('["\x01\xAB"]', RubyEval('Vim::evaluate("0z01ab").unpack("M")'))
+  call assert_equal('String',       RubyEval('Vim::evaluate("0z01ab").class'))
+
   call assert_equal('[1, 2]',   RubyEval('Vim::evaluate("[1, 2]")'))
   call assert_equal('Array',    RubyEval('Vim::evaluate("[1, 2]").class'))
 
@@ -322,6 +325,13 @@ func Test_Vim_evaluate()
   call assert_equal('TrueClass', RubyEval('Vim::evaluate("v:true").class'))
   call assert_equal('false',     RubyEval('Vim::evaluate("v:false")'))
   call assert_equal('FalseClass',RubyEval('Vim::evaluate("v:false").class'))
+endfunc
+
+func Test_Vim_blob()
+  call assert_equal('0z',         RubyEval('Vim::blob("")'))
+  call assert_equal('0z31326162', RubyEval('Vim::blob("12ab")'))
+  call assert_equal('0z00010203', RubyEval('Vim::blob("\x00\x01\x02\x03")'))
+  call assert_equal('0z8081FEFF', RubyEval('Vim::blob("\x80\x81\xfe\xff")'))
 endfunc
 
 func Test_Vim_evaluate_list()
