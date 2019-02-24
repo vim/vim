@@ -89,16 +89,9 @@ func Test_terminal_paste_register()
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
 
-  call feedkeys("echo \<C-W>\"\"\<CR>", 'xt')
-  call WaitForAssert({-> assert_match("echo text to paste$", getline(1))})
-  call WaitForAssert({-> assert_equal('text to paste',       getline(2))})
-
-
-  " Wait for the shell to display a prompt
-  call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
-
-  call feedkeys("\<C-W>\"=37 + 5\<CR>", 'xt')
-  call WaitForAssert({-> assert_match('42$', getline(3))})
+  call feedkeys("echo \<C-W>\"\" \<C-W>\"=37 + 5\<CR>\<CR>", 'xt')
+  call WaitForAssert({-> assert_match("echo text to paste 42$", getline(1))})
+  call WaitForAssert({-> assert_equal('text to paste 42',       getline(2))})
 
   exe buf . 'bwipe!'
   unlet g:job
