@@ -82,6 +82,21 @@ func Test_terminal_make_change()
   unlet g:job
 endfunc
 
+func Test_terminal_paste_register()
+  let @" = "text to paste"
+
+  let buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  call feedkeys("echo \<C-W>\"\" \<C-W>\"=37 + 5\<CR>\<CR>", 'xt')
+  call WaitForAssert({-> assert_match("echo text to paste 42$", getline(1))})
+  call WaitForAssert({-> assert_equal('text to paste 42',       getline(2))})
+
+  exe buf . 'bwipe!'
+  unlet g:job
+endfunc
+
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
   call assert_fails(buf . 'bwipe', 'E517')
