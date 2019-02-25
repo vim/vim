@@ -832,7 +832,7 @@ update_screen(int type_arg)
     return OK;
 }
 
-#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_GUI)
 /*
  * Prepare for updating one or more windows.
  * Caller must check for "updating_screen" already set to avoid recursiveness.
