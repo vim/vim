@@ -775,6 +775,34 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #define EXPAND_MAPCLEAR		47
 #define EXPAND_ARGLIST		48
 
+# ifdef FEAT_INS_EXPAND
+/*
+ * definitions used for CTRL-X submode
+ */
+# define CTRL_X_WANT_IDENT	0x100
+
+# define CTRL_X_NORMAL		0  /* CTRL-N CTRL-P completion, default */
+# define CTRL_X_NOT_DEFINED_YET	1
+# define CTRL_X_SCROLL		2
+# define CTRL_X_WHOLE_LINE	3
+# define CTRL_X_FILES		4
+# define CTRL_X_TAGS		(5 + CTRL_X_WANT_IDENT)
+# define CTRL_X_PATH_PATTERNS	(6 + CTRL_X_WANT_IDENT)
+# define CTRL_X_PATH_DEFINES	(7 + CTRL_X_WANT_IDENT)
+# define CTRL_X_FINISHED		8
+# define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
+# define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
+# define CTRL_X_CMDLINE		11
+# define CTRL_X_FUNCTION		12
+# define CTRL_X_OMNI		13
+# define CTRL_X_SPELL		14
+# define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
+# define CTRL_X_EVAL		16	/* for builtin function complete() */
+
+# define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
+# define CTRL_X_MODE_LINE_OR_EVAL(m) ((m) == CTRL_X_WHOLE_LINE || (m) == CTRL_X_EVAL)
+# endif
+
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
 #define EXMODE_VIM		2

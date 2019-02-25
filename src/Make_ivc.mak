@@ -235,6 +235,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/hardcopy.obj" \
 	"$(INTDIR)/hashtab.obj" \
 	"$(INTDIR)/indent.obj" \
+	"$(INTDIR)/inscomplete.obj" \
 	"$(INTDIR)/json.obj" \
 	"$(INTDIR)/list.obj" \
 	"$(INTDIR)/main.obj" \
@@ -437,6 +438,10 @@ SOURCE=.\hashtab.c
 # Begin Source File
 #
 SOURCE=.\indent.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\inscomplete.c
 # End Source File
 # Begin Source File
 

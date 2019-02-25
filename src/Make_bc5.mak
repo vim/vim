@@ -534,6 +534,7 @@ vimobj =  \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
 	$(OBJDIR)\indent.obj \
+	$(OBJDIR)\inscomplete.obj \
 	$(OBJDIR)\json.obj \
 	$(OBJDIR)\list.obj \
 	$(OBJDIR)\main.obj \

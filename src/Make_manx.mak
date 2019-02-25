@@ -61,6 +61,7 @@ SRC =	arabic.c \
 	hardcopy.c \
 	hashtab.c \
 	indent.c \
+	inscomplete.c \
 	json.c \
 	list.c \
 	main.c \
@@ -122,6 +123,7 @@ OBJ =	obj/arabic.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
 	obj/indent.o \
+	obj/inscomplete.o \
 	obj/json.o \
 	obj/list.o \
 	obj/main.o \
@@ -181,6 +183,7 @@ PRO =	proto/arabic.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/indent.pro \
+	proto/inscomplete.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -334,6 +337,9 @@ obj/hashtab.o:	hashtab.c
 
 obj/indent.o:	indent.c
 	$(CCSYM) $@ indent.c
+
+obj/inscomplete.o:	inscomplete.c
+	$(CCSYM) $@ inscomplete.c
 
 obj/json.o:	json.c
 	$(CCSYM) $@ json.c

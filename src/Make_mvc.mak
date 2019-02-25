@@ -725,6 +725,7 @@ OBJ = \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\indent.obj \
+	$(OUTDIR)\inscomplete.obj \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
@@ -1416,6 +1417,8 @@ $(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
 
 $(OUTDIR)/indent.obj:	$(OUTDIR) indent.c  $(INCL)
 
+$(OUTDIR)/inscomplete.obj:	$(OUTDIR) inscomplete.c  $(INCL)
+
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_beval.obj:	$(OUTDIR) gui_beval.c $(INCL) $(GUI_INCL)
@@ -1648,6 +1651,7 @@ proto.h: \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/indent.pro \
+	proto/inscomplete.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \

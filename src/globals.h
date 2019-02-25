@@ -135,7 +135,47 @@ EXTERN int	compl_cont_status INIT(= 0);
 				 * word-wise expansion, not set for ^X^L */
 # define CONT_LOCAL	32	/* for ctrl_x_mode 0, ^X^P/^X^N do a local
 				 * expansion, (eg use complete=.) */
+
+/*
+ * All the current matches are stored in a list.
+ * "compl_shown_match" is different from compl_curr_match during
+ * ins_compl_get_exp().
+ */
+EXTERN compl_T	*compl_shown_match INIT( = NULL);
+
+/* After using a cursor key <Enter> selects a match in the popup menu,
+ * otherwise it inserts a line break. */
+EXTERN int	compl_enter_selects INIT(= FALSE);
+
+/* put longest common string in compl_leader */
+EXTERN int	compl_get_longest INIT(= FALSE);
+
+/* Selected one of the matches.  When
+   FALSE the match was edited or using the longest common string. */
+EXTERN int	compl_used_match;
+
+/* When the first completion is done "compl_started" is set.  When it's
+ * FALSE the word to be completed must be located. */
+EXTERN int	compl_started INIT(= FALSE);
+
+/* Which Ctrl-X mode are we in? */
+EXTERN int	ctrl_x_mode INIT(= CTRL_X_NORMAL);
+
+/* Set when doing something for completion that may call edit() recursively,
+ * which is not allowed. */
+EXTERN int	compl_busy INIT(= FALSE);
+
+/* column where the text starts that is being completed */
+EXTERN colnr_T	compl_col INIT( = 0);
 #endif
+
+#ifdef FEAT_CINDENT
+EXTERN int	can_cindent;		/* may do cindenting on this line */
+#endif
+
+/* call u_save() before inserting a
+   char.  Set when edit() is called.  after that arrow_used is used. */
+EXTERN int	ins_need_undo;
 
 /*
  * Functions for putting characters in the command line,
