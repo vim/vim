@@ -586,7 +586,6 @@ static char *null_libintl_ngettext(const char *, const char *, unsigned long n);
 static char *null_libintl_textdomain(const char *);
 static char *null_libintl_bindtextdomain(const char *, const char *);
 static char *null_libintl_bind_textdomain_codeset(const char *, const char *);
-static int null_libintl_putenv(const char *);
 static int null_libintl_wputenv(const wchar_t *);
 
 static HINSTANCE hLibintlDLL = NULL;
@@ -598,7 +597,6 @@ char *(*dyn_libintl_bindtextdomain)(const char *, const char *)
 						= null_libintl_bindtextdomain;
 char *(*dyn_libintl_bind_textdomain_codeset)(const char *, const char *)
 				       = null_libintl_bind_textdomain_codeset;
-int (*dyn_libintl_putenv)(const char *) = null_libintl_putenv;
 int (*dyn_libintl_wputenv)(const wchar_t *) = null_libintl_wputenv;
 
     int
@@ -666,15 +664,10 @@ dyn_libintl_init(void)
 	dyn_libintl_bind_textdomain_codeset =
 					 null_libintl_bind_textdomain_codeset;
 
-    /* _putenv() function for the libintl.dll is optional. */
+    /* _wputenv() function for the libintl.dll is optional. */
     hmsvcrt = find_imported_module_by_funcname(hLibintlDLL, "getenv");
     if (hmsvcrt != NULL)
-    {
-	dyn_libintl_putenv = (void *)GetProcAddress(hmsvcrt, "_putenv");
 	dyn_libintl_wputenv = (void *)GetProcAddress(hmsvcrt, "_wputenv");
-    }
-    if (dyn_libintl_putenv == NULL || dyn_libintl_putenv == _putenv)
-	dyn_libintl_putenv = null_libintl_putenv;
     if (dyn_libintl_wputenv == NULL || dyn_libintl_wputenv == _wputenv)
 	dyn_libintl_wputenv = null_libintl_wputenv;
 
@@ -692,7 +685,6 @@ dyn_libintl_end(void)
     dyn_libintl_textdomain	= null_libintl_textdomain;
     dyn_libintl_bindtextdomain	= null_libintl_bindtextdomain;
     dyn_libintl_bind_textdomain_codeset = null_libintl_bind_textdomain_codeset;
-    dyn_libintl_putenv		= null_libintl_putenv;
     dyn_libintl_wputenv		= null_libintl_wputenv;
 }
 
@@ -731,12 +723,6 @@ null_libintl_bind_textdomain_codeset(
 null_libintl_textdomain(const char *domainname UNUSED)
 {
     return NULL;
-}
-
-    static int
-null_libintl_putenv(const char *envstring UNUSED)
-{
-    return 0;
 }
 
     static int

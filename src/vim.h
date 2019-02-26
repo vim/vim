@@ -536,7 +536,7 @@ extern char *(*dyn_libintl_ngettext)(const char *msgid, const char *msgid_plural
 extern char *(*dyn_libintl_bindtextdomain)(const char *domainname, const char *dirname);
 extern char *(*dyn_libintl_bind_textdomain_codeset)(const char *domainname, const char *codeset);
 extern char *(*dyn_libintl_textdomain)(const char *domainname);
-extern int (*dyn_libintl_putenv)(const char *envstring);
+extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #endif
 
 
@@ -559,7 +559,6 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 #   define HAVE_BIND_TEXTDOMAIN_CODESET 1
 #  endif
 #  define textdomain(domain) (*dyn_libintl_textdomain)(domain)
-#  define libintl_putenv(envstring) (*dyn_libintl_putenv)(envstring)
 #  define libintl_wputenv(envstring) (*dyn_libintl_wputenv)(envstring)
 # else
 #  include <libintl.h>
