@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 8.1.  Last change: 2018 Dec 26
+*pattern.txt*   For Vim version 8.1.  Last change: 2019 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1135,7 +1135,7 @@ x	A single character, with no special meaning, matches itself
 	  The "Func" column shows what library function is used.  The
 	  implementation depends on the system.  Otherwise:
 	  (1) Uses islower() for ASCII and Vim builtin rules for other
-	  characters when built with the |+multi_byte| feature.
+	  characters.
 	  (2) Uses Vim builtin rules
 	  (3) As with (1) but using isupper()
 							*/[[=* *[==]*
@@ -1211,7 +1211,7 @@ x	A single character, with no special meaning, matches itself
 \%u20AC	Matches the character specified with up to four hexadecimal
 	characters.
 \%U1234abcd	Matches the character specified with up to eight hexadecimal
-	characters.
+	characters, up to 0x7fffffff
 
 ==============================================================================
 7. Ignoring case in a pattern					*/ignorecase*

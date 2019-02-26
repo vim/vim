@@ -86,7 +86,7 @@ extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockI
 #  include <gdk/gdkkeysyms.h>
 # endif
 # include <gdk/gdk.h>
-# ifdef WIN3264
+# ifdef MSWIN
 #  include <gdk/gdkwin32.h>
 # else
 #  include <gdk/gdkx.h>

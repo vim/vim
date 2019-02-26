@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.1.  Last change: 2019 Jan 11
+*visual.txt*    For Vim version 8.1.  Last change: 2019 Feb 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,6 +118,8 @@ gn			Search forward for the last used search pattern, like
 			E.g., "dgn" deletes the text of the next match.
 			If Visual mode is active, extends the selection
 			until the end of the next match.
+			Note: Unlinke `n` the search direction does not depend
+			on the previous search command.
 
 								*gN* *v_gN*
 gN			Like |gn| but searches backward, like with `N`.

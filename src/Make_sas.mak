@@ -107,8 +107,8 @@ SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
@@ -167,8 +167,8 @@ OBJ = \
 	ex_docmd.o \
 	ex_eval.o \
 	ex_getln.o \
-	farsi.o \
 	fileio.o \
+	findfile.o \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
@@ -227,8 +227,8 @@ PRO = \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
@@ -359,10 +359,10 @@ ex_eval.o:		ex_eval.c ex_cmds.h
 proto/ex_eval.pro:	ex_eval.c ex_cmds.h
 ex_getln.o:		ex_getln.c
 proto/ex_getln.pro:	ex_getln.c
-farsi.o:		farsi.c
-proto/farsi.pro:	farsi.c
 fileio.o:		fileio.c
 proto/fileio.pro:	fileio.c
+findfile.o:		findfile.c
+proto/findfile.pro:	findfile.c
 fold.o:			fold.c
 proto/fold.pro:		fold.c
 getchar.o:		getchar.c

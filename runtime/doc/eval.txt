@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Feb 03
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2893,9 +2893,9 @@ assert_false({actual} [, {msg}])				*assert_false()*
 		"Expected False but got {actual}" is produced.
 
 assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
-		This asserts number values.  When {actual}  is lower than
-		{lower} or higher than {upper} an error message is added to
-		|v:errors|.  Also see |assert-return|.
+		This asserts number and |Float| values.  When {actual}  is lower
+		than {lower} or higher than {upper} an error message is added
+		to |v:errors|.  Also see |assert-return|.
 		When {msg} is omitted an error in the form
 		"Expected range {lower} - {upper}, but got {actual}" is
 		produced.
@@ -5151,7 +5151,7 @@ gettabinfo([{arg}])					*gettabinfo()*
 			tabnr		tab page number.
 			variables	a reference to the dictionary with
 					tabpage-local variables
-			windows		List of |window-ID|s in the tag page.
+			windows		List of |window-ID|s in the tab page.
 
 gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 		Get the value of a tab-local variable {varname} in tab page
@@ -5538,7 +5538,6 @@ iconv({expr}, {from}, {to})				*iconv()*
 <		Note that Vim uses UTF-8 for all Unicode encodings, conversion
 		from/to UCS-2 is automatically changed to use UTF-8.  You
 		cannot use UCS-2 in a string anyway, because of the NUL bytes.
-		{only available when compiled with the |+multi_byte| feature}
 
 							*indent()*
 indent({lnum})	The result is a Number, which is indent of line {lnum} in the
@@ -6816,8 +6815,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 							*printf-S*
 		S	The text of the String argument is used.  If a
 			precision is specified, no more display cells than the
-			number specified are used.  Without the |+multi_byte|
-			feature works just like 's'.
+			number specified are used.
 
 							*printf-f* *E807*
 		f F	The Float argument is converted into a string of the
@@ -7385,6 +7383,9 @@ repeat({expr}, {count})					*repeat()*
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
 		returns the path the shortcut points to in a simplified form.
+		When {filename} is a symbolic link or junction point, return
+		the full path to the target. If the target of junction is
+		removed, return {filename}.
 		On Unix, repeat resolving symbolic links in all path
 		components of {filename} and return the simplified result.
 		To cope with link cycles, resolving of symbolic links is
@@ -8608,10 +8609,10 @@ strcharpart({src}, {start} [, {len}])			*strcharpart()*
 
 strdisplaywidth({expr} [, {col}])			*strdisplaywidth()*
 		The result is a Number, which is the number of display cells
-		String {expr} occupies on the screen when it starts at {col}.
-		When {col} is omitted zero is used.  Otherwise it is the
-		screen column where to start.  This matters for Tab
-		characters.
+		String {expr} occupies on the screen when it starts at {col}
+		(first column is zero).  When {col} is omitted zero is used.
+		Otherwise it is the screen column where to start.  This
+		matters for Tab characters.
 		The option settings of the current window are used.  This
 		matters for anything that's displayed differently, such as
 		'tabstop' and 'display'.
@@ -10269,7 +10270,7 @@ mouse_sgr		Compiled with support for sgr mouse.
 mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.
-multi_byte		Compiled with support for 'encoding'
+multi_byte		Compiled with support for 'encoding' (always true)
 multi_byte_encoding	'encoding' is set to a multi-byte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
@@ -10833,9 +10834,13 @@ This does NOT work: >
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-					*:let+=* *:let-=* *:let.=* *E734*
+                                            *:let+=* *:let-=* *:letstar=*
+                                            *:let/=* *:let%=* *:let.=* *E734*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
+:let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
+:let {var} /= {expr1}	Like ":let {var} = {var} / {expr1}".
+:let {var} %= {expr1}	Like ":let {var} = {var} % {expr1}".
 :let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
 			These fail if {var} was not set yet and when the type
 			of {var} and {expr1} don't fit the operator.

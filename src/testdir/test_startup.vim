@@ -537,3 +537,13 @@ func Test_zzz_startinsert()
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_issue_3969()
+  if has('gui_running')
+    " Can't catch the output of gvim.
+    return
+  endif
+  " Check that message is not truncated.
+  let out = system(GetVimCommand() . ' -es -X -V1 -c "echon ''hello''" -cq')
+  call assert_equal('hello', out)
+endfunc

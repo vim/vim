@@ -296,16 +296,20 @@ static int	sort_abort;	/* flag to indicate if sorting has been interrupted */
 /* Struct to store info to be sorted. */
 typedef struct
 {
-    linenr_T	lnum;			/* line number */
+    linenr_T	lnum;			// line number
     union {
 	struct
 	{
-	    varnumber_T	start_col_nr;		/* starting column number */
-	    varnumber_T	end_col_nr;		/* ending column number */
+	    varnumber_T	start_col_nr;	// starting column number
+	    varnumber_T	end_col_nr;	// ending column number
 	} line;
-	varnumber_T	value;		/* value if sorting by integer */
+	struct
+	{
+	    varnumber_T	value;		// value if sorting by integer
+	    int is_number;		// TRUE when line contains a number
+	} num;
 #ifdef FEAT_FLOAT
-	float_T value_flt;	/* value if sorting by float */
+	float_T value_flt;		// value if sorting by float
 #endif
     } st_u;
 } sorti_T;
@@ -335,11 +339,14 @@ sort_compare(const void *s1, const void *s2)
     if (got_int)
 	sort_abort = TRUE;
 
-    /* When sorting numbers "start_col_nr" is the number, not the column
-     * number. */
     if (sort_nr)
-	result = l1.st_u.value == l2.st_u.value ? 0
-				 : l1.st_u.value > l2.st_u.value ? 1 : -1;
+    {
+	if (l1.st_u.num.is_number != l2.st_u.num.is_number)
+	    result = l1.st_u.num.is_number - l2.st_u.num.is_number;
+	else
+	    result = l1.st_u.num.value == l2.st_u.num.value ? 0
+			     : l1.st_u.num.value > l2.st_u.num.value ? 1 : -1;
+    }
 #ifdef FEAT_FLOAT
     else if (sort_flt)
 	result = l1.st_u.value_flt == l2.st_u.value_flt ? 0
@@ -553,11 +560,17 @@ ex_sort(exarg_T *eap)
 		if (s > p && s[-1] == '-')
 		    --s;  /* include preceding negative sign */
 		if (*s == NUL)
-		    /* empty line should sort before any number */
-		    nrs[lnum - eap->line1].st_u.value = -MAXLNUM;
+		{
+		    /* line without number should sort before any number */
+		    nrs[lnum - eap->line1].st_u.num.is_number = FALSE;
+		    nrs[lnum - eap->line1].st_u.num.value = 0;
+		}
 		else
+		{
+		    nrs[lnum - eap->line1].st_u.num.is_number = TRUE;
 		    vim_str2nr(s, NULL, NULL, sort_what,
-			       &nrs[lnum - eap->line1].st_u.value, NULL, 0);
+			       &nrs[lnum - eap->line1].st_u.num.value, NULL, 0);
+		}
 	    }
 #ifdef FEAT_FLOAT
 	    else
@@ -1618,7 +1631,7 @@ do_shell(
 	 */
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
-# ifdef WIN3264
+# ifdef MSWIN
 		|| (winstart && !need_wait_return)
 # endif
 	   )
@@ -1643,7 +1656,7 @@ do_shell(
 # endif
 	    no_wait_return = save_nwr;
 	}
-#endif /* FEAT_GUI_W32 */
+#endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
 	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
@@ -1935,7 +1948,7 @@ write_viminfo(char_u *file, int forceit)
     int		shortname = FALSE;	/* use 8.3 file name */
     stat_T	st_old;		/* mch_stat() of existing viminfo file */
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
     int		hidden = FALSE;
 #endif
 
@@ -1999,7 +2012,7 @@ write_viminfo(char_u *file, int forceit)
 	    goto end;
 	}
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 	/* Get the file attributes of the existing viminfo file. */
 	hidden = mch_ishidden(fname);
 #endif
@@ -2098,7 +2111,7 @@ write_viminfo(char_u *file, int forceit)
 			fp_out = NULL;
 # ifdef EEXIST
 			/* Avoid trying lots of names while the problem is lack
-			 * of premission, only retry if the file already
+			 * of permission, only retry if the file already
 			 * exists. */
 			if (errno != EEXIST)
 			    break;
@@ -2195,7 +2208,7 @@ write_viminfo(char_u *file, int forceit)
 		++viminfo_errcnt;
 		semsg(_("E886: Can't rename viminfo file to %s!"), fname);
 	    }
-# ifdef WIN3264
+# ifdef MSWIN
 	    /* If the viminfo file was hidden then also hide the new file. */
 	    else if (hidden)
 		mch_hide(fname);
@@ -3826,11 +3839,8 @@ do_ecmd(
 	if (sfname == NULL)
 	    sfname = ffname;
 #ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
-	if (USE_LONG_FNAME)
-# endif
-	    if (sfname != NULL)
-		fname_case(sfname, 0);   /* set correct case for sfname */
+	if (sfname != NULL)
+	    fname_case(sfname, 0);   /* set correct case for sfname */
 #endif
 
 	if ((flags & ECMD_ADDBUF) && (ffname == NULL || *ffname == NUL))
@@ -4914,10 +4924,6 @@ do_sub(exarg_T *eap)
 	}
 	else		/* find the end of the regexp */
 	{
-#ifdef FEAT_FKMAP	/* reverse the flow of the Farsi characters */
-	    if (p_altkeymap && curwin->w_p_rl)
-		lrF_sub(cmd);
-#endif
 	    which_pat = RE_LAST;	    /* use last used regexp */
 	    delimiter = *cmd++;		    /* remember delimiter character */
 	    pat = cmd;			    /* remember start of search pat */
@@ -5040,6 +5046,7 @@ do_sub(exarg_T *eap)
 	}
 	subflags.do_error = TRUE;
 	subflags.do_print = FALSE;
+	subflags.do_list = FALSE;
 	subflags.do_count = FALSE;
 	subflags.do_number = FALSE;
 	subflags.do_ic = 0;
@@ -6071,11 +6078,6 @@ ex_global(exarg_T *eap)
 	if (cmd[0] == delim)		    /* end delimiter found */
 	    *cmd++ = NUL;		    /* replace it with a NUL */
     }
-
-#ifdef FEAT_FKMAP	/* when in Farsi mode, reverse the character flow */
-    if (p_altkeymap && curwin->w_p_rl)
-	lrFswap(pat,0);
-#endif
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {

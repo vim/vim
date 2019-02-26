@@ -832,7 +832,7 @@ update_screen(int type_arg)
     return OK;
 }
 
-#if defined(FEAT_SIGNS) || defined(FEAT_GUI) || defined(FEAT_CONCEAL)
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_GUI)
 /*
  * Prepare for updating one or more windows.
  * Caller must check for "updating_screen" already set to avoid recursiveness.
@@ -2547,10 +2547,10 @@ text_to_screenline(win_T *wp, char_u *text, int col)
 	{
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
-		STRNCPY(current_ScreenLine, text, len);
+		mch_memmove(current_ScreenLine, text, len);
 	    else
 #endif
-		STRNCPY(current_ScreenLine + col, text, len);
+		mch_memmove(current_ScreenLine + col, text, len);
 	    col += len;
 	}
     }
@@ -3396,7 +3396,7 @@ win_line(
 	{
 	    if (lnum == curwin->w_cursor.lnum)
 		getvcol(curwin, &(curwin->w_cursor),
-						 (colnr_T *)&fromcol, NULL, NULL);
+					      (colnr_T *)&fromcol, NULL, NULL);
 	    else
 		fromcol = 0;
 	    if (lnum == curwin->w_cursor.lnum + search_match_lines)
@@ -7974,7 +7974,7 @@ screen_start_highlight(int attr)
 
     screen_attr = attr;
     if (full_screen
-#ifdef WIN3264
+#ifdef MSWIN
 		    && termcap_active
 #endif
 				       )
@@ -8081,7 +8081,7 @@ screen_stop_highlight(void)
     int	    do_ME = FALSE;	    /* output T_ME code */
 
     if (screen_attr != 0
-#ifdef WIN3264
+#ifdef MSWIN
 			&& termcap_active
 #endif
 					   )
@@ -10247,10 +10247,6 @@ showmode(void)
 #ifdef FEAT_RIGHTLEFT
 		if (p_hkmap)
 		    msg_puts_attr(_(" Hebrew"), attr);
-# ifdef FEAT_FKMAP
-		if (p_fkmap)
-		    msg_puts_attr(farsi_text_5, attr);
-# endif
 #endif
 #ifdef FEAT_KEYMAP
 		if (State & LANGMAP)

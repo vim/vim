@@ -205,6 +205,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     garray_T	newlines;
     garray_T	*pnewargs;
     ufunc_T	*fp = NULL;
+    partial_T   *pt = NULL;
     int		varargs;
     int		ret;
     char_u	*start = skipwhite(*arg + 1);
@@ -252,7 +253,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	int	    len, flags = 0;
 	char_u	    *p;
 	char_u	    name[20];
-	partial_T   *pt;
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
@@ -261,10 +261,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    goto errret;
 	pt = (partial_T *)alloc_clear((unsigned)sizeof(partial_T));
 	if (pt == NULL)
-	{
-	    vim_free(fp);
 	    goto errret;
-	}
 
 	ga_init2(&newlines, (int)sizeof(char_u *), 1);
 	if (ga_grow(&newlines, 1) == FAIL)
@@ -318,6 +315,7 @@ errret:
     ga_clear_strings(&newargs);
     ga_clear_strings(&newlines);
     vim_free(fp);
+    vim_free(pt);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
 }
@@ -772,7 +770,7 @@ call_user_func(
 	v = &fc->fixvar[fixvar_idx++].var;
 	name = v->di_key;
 	STRCPY(name, "self");
-	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
+	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	hash_add(&fc->l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;
 	v->di_tv.v_lock = 0;
@@ -788,6 +786,7 @@ call_user_func(
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
     add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount - fp->uf_args.ga_len));
+    fc->l_avars.dv_lock = VAR_FIXED;
     /* Use "name" to avoid a warning from some compiler that checks the
      * destination size. */
     v = &fc->fixvar[fixvar_idx++].var;
@@ -2393,11 +2392,11 @@ ex_function(exarg_T *eap)
 	if (fudi.fd_di == NULL)
 	{
 	    /* Can't add a function to a locked dictionary */
-	    if (tv_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
+	    if (var_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
 		goto erret;
 	}
 	    /* Can't change an existing function if it is locked */
-	else if (tv_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
+	else if (var_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
 	    goto erret;
 
 	/* Give the function a sequential number.  Can only be used with a

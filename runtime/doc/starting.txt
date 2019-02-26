@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.1.  Last change: 2018 May 05
+*starting.txt*  For Vim version 8.1.  Last change: 2019 Feb 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -321,9 +321,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		and exits.)  {not in Vi}
 
 							*-F*
--F		Farsi mode.  Sets the 'fkmap' and 'rightleft' options on.
-		(Only when compiled with |+rightleft| and |+farsi| features,
-		otherwise Vim gives an error message and exits.)  {not in Vi}
+-F		This was used for Farsi mode, which has been removed.
+		See |farsi.txt|.
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.

@@ -59,7 +59,7 @@ char *searchpath(char *name);
 /* ---------------------------------------- */
 
 
-#define BUFSIZE 512		/* long enough to hold a file name path */
+#define BUFSIZE (MAX_PATH*2)		/* long enough to hold a file name path */
 #define NUL 0
 
 #define FAIL 0
@@ -93,15 +93,15 @@ int	interactive;		/* non-zero when running interactively */
     static void *
 alloc(int len)
 {
-    char *s;
+    void *p;
 
-    s = malloc(len);
-    if (s == NULL)
+    p = malloc(len);
+    if (p == NULL)
     {
 	printf("ERROR: out of memory\n");
 	exit(1);
     }
-    return (void *)s;
+    return p;
 }
 
 /*
@@ -388,7 +388,7 @@ char *(icon_link_names[ICON_COUNT]) =
 run_command(char *cmd)
 {
     char	*cmd_path;
-    char	cmd_buf[BUFSIZE];
+    char	cmd_buf[BUFSIZE * 2 + 35];
     char	*p;
 
     /* On WinNT, 'start' is a shell built-in for cmd.exe rather than an
@@ -498,7 +498,7 @@ remove_tail(char *path)
 }
 
 
-char	installdir[BUFSIZE];	/* top of the installation dir, where the
+char	installdir[MAX_PATH-9];	/* top of the installation dir, where the
 				   install.exe is located, E.g.:
 				   "c:\vim\vim60" */
 int	runtimeidx;		/* index in installdir[] where "vim60" starts */
@@ -512,7 +512,7 @@ char	*sysdrive;		/* system drive or "c:\" */
 do_inits(char **argv)
 {
     /* Find out the full path of our executable. */
-    if (my_fullpath(installdir, argv[0], BUFSIZE) == NULL)
+    if (my_fullpath(installdir, argv[0], sizeof(installdir)) == NULL)
     {
 	printf("ERROR: Cannot get name of executable\n");
 	myexit(1);

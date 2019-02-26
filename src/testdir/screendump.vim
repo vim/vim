@@ -111,7 +111,9 @@ func VerifyScreenDump(buf, filename, options, ...)
     sleep 10m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
-    if readfile(reference) == readfile(testfile)
+    let testdump = readfile(testfile)
+    let refdump = readfile(reference)
+    if refdump == testdump
       call delete(testfile)
       break
     endif
@@ -121,6 +123,17 @@ func VerifyScreenDump(buf, filename, options, ...)
       if a:0 == 1
         let msg = a:1 . ': ' . msg
       endif
+      if len(testdump) != len(refdump)
+	let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
+      endif
+      for i in range(len(refdump))
+	if i >= len(testdump)
+	  break
+	endif
+	if testdump[i] != refdump[i]
+	  let msg = msg . '; difference in line ' . (i + 1) . ': "' . testdump[i] . '"'
+	endif
+      endfor
       call assert_report(msg)
       return 1
     endif

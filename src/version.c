@@ -222,7 +222,7 @@ static char *(features[]) =
 #else
 	"-digraphs",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_DIRECTX
 	"+directx",
 # else
@@ -255,11 +255,7 @@ static char *(features[]) =
 #else
 	"-extra_search",
 #endif
-#ifdef FEAT_FKMAP
-	"+farsi",
-#else
 	"-farsi",
-#endif
 #ifdef FEAT_SEARCHPATH
 	"+file_in_path",
 #else
@@ -485,7 +481,7 @@ static char *(features[]) =
 #else
 	"-num64",
 #endif
-#ifdef FEAT_GUI_W32
+#ifdef FEAT_GUI_MSWIN
 # ifdef FEAT_OLE
 	"+ole",
 # else
@@ -704,7 +700,7 @@ static char *(features[]) =
 	"-viminfo",
 #endif
 	"+vreplace",
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_VTP
 	"+vtp",
 # else
@@ -744,7 +740,7 @@ static char *(features[]) =
 #else
 	"-xim",
 #endif
-#ifdef WIN3264
+#ifdef MSWIN
 # ifdef FEAT_XPM_W32
 	"+xpm_w32",
 # else
@@ -783,6 +779,200 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    982,
+/**/
+    981,
+/**/
+    980,
+/**/
+    979,
+/**/
+    978,
+/**/
+    977,
+/**/
+    976,
+/**/
+    975,
+/**/
+    974,
+/**/
+    973,
+/**/
+    972,
+/**/
+    971,
+/**/
+    970,
+/**/
+    969,
+/**/
+    968,
+/**/
+    967,
+/**/
+    966,
+/**/
+    965,
+/**/
+    964,
+/**/
+    963,
+/**/
+    962,
+/**/
+    961,
+/**/
+    960,
+/**/
+    959,
+/**/
+    958,
+/**/
+    957,
+/**/
+    956,
+/**/
+    955,
+/**/
+    954,
+/**/
+    953,
+/**/
+    952,
+/**/
+    951,
+/**/
+    950,
+/**/
+    949,
+/**/
+    948,
+/**/
+    947,
+/**/
+    946,
+/**/
+    945,
+/**/
+    944,
+/**/
+    943,
+/**/
+    942,
+/**/
+    941,
+/**/
+    940,
+/**/
+    939,
+/**/
+    938,
+/**/
+    937,
+/**/
+    936,
+/**/
+    935,
+/**/
+    934,
+/**/
+    933,
+/**/
+    932,
+/**/
+    931,
+/**/
+    930,
+/**/
+    929,
+/**/
+    928,
+/**/
+    927,
+/**/
+    926,
+/**/
+    925,
+/**/
+    924,
+/**/
+    923,
+/**/
+    922,
+/**/
+    921,
+/**/
+    920,
+/**/
+    919,
+/**/
+    918,
+/**/
+    917,
+/**/
+    916,
+/**/
+    915,
+/**/
+    914,
+/**/
+    913,
+/**/
+    912,
+/**/
+    911,
+/**/
+    910,
+/**/
+    909,
+/**/
+    908,
+/**/
+    907,
+/**/
+    906,
+/**/
+    905,
+/**/
+    904,
+/**/
+    903,
+/**/
+    902,
+/**/
+    901,
+/**/
+    900,
+/**/
+    899,
+/**/
+    898,
+/**/
+    897,
+/**/
+    896,
+/**/
+    895,
+/**/
+    894,
+/**/
+    893,
+/**/
+    892,
+/**/
+    891,
+/**/
+    890,
+/**/
+    889,
+/**/
+    888,
+/**/
+    887,
+/**/
+    886,
 /**/
     885,
 /**/
@@ -2746,16 +2936,16 @@ list_version(void)
      */
     init_longVersion();
     msg(longVersion);
-#ifdef WIN3264
-# ifdef FEAT_GUI_W32
+#ifdef MSWIN
+# ifdef FEAT_GUI_MSWIN
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit GUI version"));
 #  else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
 #  endif
-# ifdef FEAT_OLE
+#  ifdef FEAT_OLE
     msg_puts(_(" with OLE support"));
-# endif
+#  endif
 # else
 #  ifdef _WIN64
     msg_puts(_("\nMS-Windows 64-bit console version"));

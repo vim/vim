@@ -22,8 +22,10 @@ Most code can be found in a file with an obvious name (incomplete list):
 	diff.c		diff mode (vimdiff)
 	eval.c		expression evaluation
 	fileio.c	reading and writing files
+	findfile.c	search for files in 'path'
 	fold.c		folding
 	getchar.c	getting characters and key mapping
+	indent.c	C and Lisp indentation
 	mark.c		marks
 	mbyte.c		multi-byte character handling
 	memfile.c	storing lines for buffers in a swapfile
