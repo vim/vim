@@ -6155,7 +6155,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef MSWIN
 	"win32",
 #endif
-#if defined(UNIX) && (defined(__CYGWIN32__) || defined(__CYGWIN__))
+#if defined(UNIX) && defined(__CYGWIN__)
 	"win32unix",
 #endif
 #ifdef _WIN64
