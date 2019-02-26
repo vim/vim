@@ -3775,6 +3775,14 @@ quote_meta(char_u *dest, char_u *src, int len)
     return m;
 }
 
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_insexpand_stuff(void)
+{
+    VIM_CLEAR(compl_orig_text);
+}
+# endif
+
 # ifdef FEAT_SPELL
 /*
  * Called when starting CTRL_X_SPELL mode: Move backwards to a previous badly

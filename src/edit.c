@@ -3402,9 +3402,6 @@ set_last_insert(int c)
 free_last_insert(void)
 {
     VIM_CLEAR(last_insert);
-# ifdef FEAT_INS_EXPAND
-    VIM_CLEAR(compl_orig_text);
-# endif
 }
 #endif
 
