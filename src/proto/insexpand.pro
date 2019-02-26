@@ -1,4 +1,4 @@
-/* inscomplete.c */
+/* insexpand.c */
 void ins_ctrl_x(void);
 int ctrl_x_mode_not_default(void);
 int ctrl_x_mode_not_defined_yet(void);

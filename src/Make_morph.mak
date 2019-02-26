@@ -49,7 +49,7 @@ SRC =	arabic.c						\
 	hardcopy.c						\
 	hashtab.c						\
 	indent.c						\
-	inscomplete.c						\
+	insexpand.c						\
 	json.c							\
 	list.c							\
 	main.c							\

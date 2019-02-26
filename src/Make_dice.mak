@@ -51,7 +51,7 @@ SRC = \
 	hardcopy.c \
 	hashtab.c \
 	indent.c \
-	inscomplete.c \
+	insexpand.c \
 	json.c \
 	list.c \
 	main.c \
@@ -111,7 +111,7 @@ OBJ =	o/arabic.o \
 	o/hardcopy.o \
 	o/hashtab.o \
 	o/indent.o \
-	o/inscomplete.o \
+	o/insexpand.o \
 	o/json.o \
 	o/list.o \
 	o/main.o \
@@ -215,7 +215,7 @@ o/hashtab.o: hashtab.c	$(SYMS)
 
 o/indent.o:	indent.c  $(SYMS)
 
-o/inscomplete.o:	inscomplete.c  $(SYMS)
+o/insexpand.o:	insexpand.c  $(SYMS)
 
 o/json.o:	json.c  $(SYMS)
 

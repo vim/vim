@@ -8,7 +8,7 @@
  */
 
 /*
- * inscomplete.c: functions for Insert completion
+ * insexpand.c: functions for Insert completion
  */
 
 #include "vim.h"
