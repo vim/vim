@@ -4840,7 +4840,6 @@ win_line(
 			    extra_attr = HL_ATTR(HLF_8);
 			    saved_attr2 = char_attr; /* save current attr */
 			}
-			mb_c = c;
 		    }
 		}
 
