@@ -168,7 +168,7 @@ dnl Check for RHEL/Fedora, because they needs -fPIC in LDFLAGS.
 dnl Configuring can fail without it, because linker wants -fPIC
 dnl when it is linking test samples from AC_TRY_LINK directives
 AC_MSG_CHECKING([for RHEL/Fedora])
-RH_OS=`cat /etc/os-release | grep -e 'Fedora\|Red Hat'`
+RH_OS=`cat /etc/os-release 2>/dev/null | grep -e 'Fedora\|Red Hat'`
 if test ! -z "$RH_OS"; then
   LDFLAGS="$LDFLAGS -fPIC"
   AC_MSG_RESULT(yes)
