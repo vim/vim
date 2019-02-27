@@ -4820,6 +4820,7 @@ win_line(
 			      || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f)))
 				&& lcs_nbsp)
 		    {
+			c = lcs_nbsp;
 			mb_c = c;
 			if (enc_utf8 && utf_char2len(c) > 1)
 			{
@@ -4827,18 +4828,20 @@ win_line(
 			    u8cc[0] = 0;
 			    c = 0xc0;
 			}
+			else
+			    mb_utf8 = FALSE;
 		    }
 		    else if (c == ' ' && lcs_space && ptr - line <= trailcol)
 		    {
-			c = (c == ' ') ? lcs_space : lcs_nbsp;
+			c = lcs_space;
 			if (mb_utf8 == FALSE && area_attr == 0 && search_attr == 0)
 			{
 			    n_attr = 1;
 			    extra_attr = HL_ATTR(HLF_8);
 			    saved_attr2 = char_attr; /* save current attr */
 			}
+			mb_c = c;
 		    }
-
 		}
 
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
