@@ -1,5 +1,7 @@
 " Tests for 'listchars' display with 'list' and :list
 
+scriptencoding utf-8
+
 source view_util.vim
 
 func Test_listchars()
@@ -113,3 +115,23 @@ func Test_listchars()
   enew!
   set listchars& ff&
 endfunc
+
+func Test_listchars_halfwidth()
+  enew!
+  set ff=unix
+  set list
+
+  set listchars+=space:_
+  call append(0, [
+	      \ ' ゛	゜'
+ 	      \ ])
+  let expected = [
+	      \ '_゛^I゜$',
+	      \ ]
+  redraw!
+  call cursor(1, 1)
+  let got = ScreenLines(1, virtcol('$'))
+  bw!
+  set listchars& ff&
+  call assert_equal(expected, got)
+endfunction
