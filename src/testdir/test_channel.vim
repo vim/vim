@@ -1764,10 +1764,6 @@ func Test_raw_passes_nul()
   bwipe!
 endfunc
 
-func MyLineCountCb(ch, msg)
-  let g:linecount += 1
-endfunc
-
 func Test_read_nonl_line()
   if !has('job')
     return
@@ -1775,8 +1771,28 @@ func Test_read_nonl_line()
 
   let g:linecount = 0
   let arg = 'import sys;sys.stdout.write("1\n2\n3")'
-  call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
+  call job_start([s:python, '-c', arg], {'callback': {-> execute('let g:linecount += 1')}})
   call WaitForAssert({-> assert_equal(3, g:linecount)})
+  unlet g:linecount
+endfunc
+
+func Test_read_nonl_in_close_cb()
+  if !has('job')
+    return
+  endif
+
+  func s:close_cb(ch)
+    while ch_status(a:ch) == 'buffered'
+      let g:out .= ch_read(a:ch)
+    endwhile
+  endfunc
+
+  let g:out = ''
+  let arg = 'import sys;sys.stdout.write("1\n2\n3")'
+  call job_start([s:python, '-c', arg], {'close_cb': function('s:close_cb')})
+  call WaitForAssert({-> assert_equal('123', g:out)})
+  unlet g:out
+  delfunc s:close_cb
 endfunc
 
 func Test_read_from_terminated_job()
@@ -1786,8 +1802,9 @@ func Test_read_from_terminated_job()
 
   let g:linecount = 0
   let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
-  call job_start([s:python, '-c', arg], {'callback': 'MyLineCountCb'})
+  call job_start([s:python, '-c', arg], {'callback': {-> execute('let g:linecount += 1')}})
   call WaitForAssert({-> assert_equal(1, g:linecount)})
+  unlet g:linecount
 endfunc
 
 func Test_job_start_windows()
