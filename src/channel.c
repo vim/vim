@@ -1797,6 +1797,7 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
 
     mch_memmove(buf, buf + len, node->rq_buflen - len);
     node->rq_buflen -= len;
+    node->rq_buffer[node->rq_buflen] = NUL;
 }
 
 /*
@@ -1819,7 +1820,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	return FAIL;
 
     last_node = node->rq_next;
-    len = node->rq_buflen + last_node->rq_buflen + 1;
+    len = node->rq_buflen + last_node->rq_buflen;
     if (want_nl)
 	while (last_node->rq_next != NULL
 		&& channel_first_nl(last_node) == NULL)
@@ -1828,7 +1829,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	    len += last_node->rq_buflen;
 	}
 
-    p = newbuf = alloc(len);
+    p = newbuf = alloc(len + 1);
     if (newbuf == NULL)
 	return FAIL;	    /* out of memory */
     mch_memmove(p, node->rq_buffer, node->rq_buflen);
@@ -1842,6 +1843,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	p += n->rq_buflen;
 	vim_free(n->rq_buffer);
     }
+    *p = NUL;
     node->rq_buflen = (long_u)(p - newbuf);
 
     /* dispose of the collapsed nodes and their buffers */
