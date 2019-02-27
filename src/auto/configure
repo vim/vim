@@ -4554,6 +4554,15 @@ $as_echo "yes" >&6; };;
 $as_echo "no" >&6; };;
 esac
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for RHEL/Fedora" >&5
+$as_echo_n "checking for RHEL/Fedora... " >&6; }
+RH_OS=`cat /etc/os-release | grep -e 'Fedora\|Red Hat'`
+if test ! -z "$RH_OS"; then
+  LDFLAGS="$LDFLAGS -fPIC"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Darwin (Mac OS X)" >&5
 $as_echo_n "checking for Darwin (Mac OS X)... " >&6; }
 if test "`(uname) 2>/dev/null`" = Darwin; then

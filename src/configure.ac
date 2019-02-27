@@ -164,6 +164,16 @@ case `uname` in
     *)		QNX=no; AC_MSG_RESULT(no);;
 esac
 
+dnl Check for RHEL/Fedora, because they needs -fPIC in LDFLAGS.
+dnl Configuring can fail without it, because linker wants -fPIC
+dnl when it is linking test samples from AC_TRY_LINK directives
+AC_MSG_CHECKING([for RHEL/Fedora])
+RH_OS=`cat /etc/os-release | grep -e 'Fedora\|Red Hat'`
+if test ! -z "$RH_OS"; then
+  LDFLAGS="$LDFLAGS -fPIC"
+  AC_MSG_RESULT(yes)
+fi
+
 dnl Check for Darwin and MacOS X
 dnl We do a check for MacOS X in the very beginning because there
 dnl are a lot of other things we need to change besides GUI stuff
