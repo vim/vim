@@ -5135,7 +5135,7 @@ vim_fsync(int fd)
 
 # ifdef MACOS_X
     r = fcntl(fd, F_FULLFSYNC);
-    if (r != 0 && errno == ENOTTY)
+    if (r != 0)  // F_FULLFSYNC not working or not supported
 # endif
 	r = fsync(fd);
     return r;

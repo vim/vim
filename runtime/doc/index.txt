@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.1.  Last change: 2019 Jan 17
+*index.txt*     For Vim version 8.1.  Last change: 2019 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,9 +17,11 @@ to look for deleting something, use: "/delete".
    2.3. Square bracket commands		|[|
    2.4. Commands starting with 'g'	|g|
    2.5. Commands starting with 'z'	|z|
+   2.6. Operator-pending mode		|operator-pending-index|
 3. Visual mode				|visual-index|
 4. Command-line editing			|ex-edit-index|
-5. EX commands				|ex-cmd-index|
+5. Terminal-Job mode			|terminal-job-index|
+6. EX commands				|ex-cmd-index|
 
 For an overview of options see help.txt |option-list|.
 For an overview of built-in functions see |functions|.
@@ -165,6 +167,20 @@ commands in CTRL-X submode				*i_CTRL-X_index*
 |i_CTRL-X_CTRL-]|	CTRL-X CTRL-]	complete tags
 |i_CTRL-X_s|		CTRL-X s	spelling suggestions
 {not available when compiled without the |+insert_expand| feature}
+
+commands in completion mode (see |popupmenu-keys|)
+
+|complete_CTRL-E| CTRL-E	stop completion and go back to original text
+|complete_CTRL-Y| CTRL-Y	accept selected match and stop completion
+		CTRL-L		insert one character from the current match
+		<CR>		insert currently selected match
+		<BS>		delete one character and redo search
+		CTRL-H		same as <BS>
+		<Up>		select the previous match
+		<Down>		select the next match
+		<PageUp>	select a match several entries back
+		<PageDown>	select a match several entries forward
+		other		stop completion and insert the typed character
 
 ==============================================================================
 2. Normal mode						*normal-index*
@@ -855,6 +871,17 @@ tag		char	      note action in Normal mode	~
 |z<Right>|	z<Right>	   same as "zl"
 
 ==============================================================================
+2.6 Operator-pending mode			*operator-pending-index*
+
+These can be used after an operator, but before a {motion} has been entered.
+
+tag		char		action in Insert mode	~
+-----------------------------------------------------------------------
+|o_v|		v		force operator to work characterwise
+|o_V|		V		force operator to work linewise
+|o_CTRL-V|	CTRL-V		force operator to work blockwise
+
+==============================================================================
 3. Visual mode						*visual-index*
 
 Most commands in Visual mode are the same as in Normal mode.  The ones listed
@@ -1066,10 +1093,28 @@ tag		command	      action in Command-line editing mode	~
 |c_<Insert>|	<Insert>	toggle insert/overstrike mode
 |c_<LeftMouse>|	<LeftMouse>	cursor at mouse click
 
+==============================================================================
+5. Terminal-Job mode				*terminal-job-index*
+
+Most Normal mode commands except for window commands (|CTRL-W|) do not work in
+a terminal window. Switch to Terminal-Normal mode to use them.
+This assumes 'termwinkey' is not set.
+
+tag		char		action in Insert mode	~
+-----------------------------------------------------------------------
+|t_CTRL-\_CTRL-N| CTRL-\ CTRL-N	switch to Terminal-Normal mode
+|CTRL-W_N|	CTRL-W N	switch to Terminal-Normal mode
+|CTRL-W_:|	CTRL-W :	enter an Ex command
+|CTRL-W_.|	CTRL-W .	type CTRL-W in the terminal
+		CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
+|CTRL-W_quote|	CTRL-W " {0-9a-z"%#*:=}
+				paste register in the terminal
+|t_CTRL-W_CTRL-C| CTRL-W CTRL-C	forcefully ends the job
+
 You found it, Arthur!				*holy-grail* *:smile*
 
 ==============================================================================
-5. EX commands					*ex-cmd-index* *:index*
+6. EX commands					*ex-cmd-index* *:index*
 
 This is a brief but complete listing of all the ":" commands, without
 mentioning any arguments.  The optional part of the command name is inside [].

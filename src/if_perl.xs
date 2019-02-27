@@ -1570,7 +1570,7 @@ Blob(SV* sv)
     newsv = newSVpv("0z", 2);
     for (i = 0; i < len; i++)
     {
-	sprintf(buf, "%02X", s[i]);
+	sprintf(buf, "%02X", (unsigned char)(s[i]));
 	sv_catpvn(newsv, buf, 2);
     }
     RETVAL = newsv;

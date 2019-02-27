@@ -50,7 +50,9 @@ source setup.vim
 set nocp viminfo+=nviminfo
 
 " Use utf-8 by default, instead of whatever the system default happens to be.
-" Individual tests can overrule this at the top of the file.
+" Individual tests can overrule this at the top of the file and use
+" g:orig_encoding if needed.
+let g:orig_encoding = &encoding
 set encoding=utf-8
 
 " REDIR_TEST_TO_NULL has a very permissive SwapExists autocommand which is for
@@ -307,6 +309,7 @@ let s:flaky_tests = [
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
       \ 'Test_terminal_composing_unicode()',
+      \ 'Test_terminal_does_not_truncate_last_newlines()',
       \ 'Test_terminal_env()',
       \ 'Test_terminal_hide_buffer()',
       \ 'Test_terminal_make_change()',

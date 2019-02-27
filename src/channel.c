@@ -191,7 +191,7 @@ ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
 
 static int did_log_msg = TRUE;
 
-#ifndef PROTO  /* prototype is in vim.h */
+#ifndef PROTO  // prototype is in proto.h
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {
@@ -4348,20 +4348,25 @@ channel_parse_messages(void)
 	{
 	    channel->ch_to_be_closed = (1U << PART_COUNT);
 	    channel_close_now(channel);
-	    /* channel may have been freed, start over */
+	    // channel may have been freed, start over
 	    channel = first_channel;
 	    continue;
 	}
 	if (channel->ch_to_be_freed || channel->ch_killing)
 	{
+	    if (channel->ch_killing)
+	    {
+		channel_free_contents(channel);
+		channel->ch_job->jv_channel = NULL;
+	    }
 	    channel_free(channel);
-	    /* channel has been freed, start over */
+	    // channel has been freed, start over
 	    channel = first_channel;
 	    continue;
 	}
 	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
 	{
-	    /* channel is no longer useful, free it */
+	    // channel is no longer useful, free it
 	    channel_free(channel);
 	    channel = first_channel;
 	    part = PART_SOCK;
@@ -5487,15 +5492,8 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-    if (job->jv_channel != NULL
-	 && job->jv_channel->ch_anonymous_pipe && !job->jv_channel->ch_killing)
-    {
-	++safe_to_invoke_callback;
-	channel_free_contents(job->jv_channel);
-	job->jv_channel->ch_job = NULL;
-	job->jv_channel = NULL;
-	--safe_to_invoke_callback;
-    }
+    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
+	job->jv_channel->ch_killing = TRUE;
 
     // Do not free the job in case the close callback of the associated channel
     // isn't invoked yet and may get information by job_info().

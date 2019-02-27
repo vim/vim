@@ -134,6 +134,28 @@ smsg_attr_keep(int, const char *, ...)
 #endif
     ;
 
+/* These prototypes cannot be produced automatically. */
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+semsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
+
+/* These prototypes cannot be produced automatically. */
+void
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+siemsg(const char *, ...)
+#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+    __attribute__((format(printf, 1, 0)))
+#endif
+    ;
+
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF

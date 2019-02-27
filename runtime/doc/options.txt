@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Feb 16
+*options.txt*	For Vim version 8.1.  Last change: 2019 Feb 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2620,6 +2620,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		context:{n}	Use a context of {n} lines between a change
 				and a fold that contains unchanged lines.
 				When omitted a context of six lines is used.
+				When using zero the context is actually one,
+				since folds require a line in between, also
+				for a deleted line.
 				See |fold-diff|.
 
 		iblank		Ignore changes where lines are all blank.  Adds
@@ -5497,8 +5500,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The 'mousemodel' option is set by the |:behave| command.
 
 					*'mouseshape'* *'mouses'* *E547*
-'mouseshape' 'mouses'	string	(default "i:beam,r:beam,s:updown,sd:cross,
-					m:no,ml:up-arrow,v:rightup-arrow")
+'mouseshape' 'mouses'	string	(default "i-r:beam,s:updown,sd:udsizing,
+					vs:leftright,vd:lrsizing,m:no,
+					ml:up-arrow,v:rightup-arrow")
 			global
 			{not in Vi}
 			{only available when compiled with the |+mouseshape|

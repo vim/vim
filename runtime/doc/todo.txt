@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 17
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Check https://github.com/macvim-dev/macvim/issues/861. 
+>
 Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
 Added test, updates, June 23.
 Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
@@ -131,7 +133,7 @@ Include part of #3242?
 
 Improvement for :terminal winpty/conpty option.  Ozaki Kiichi, #3905
 
-Patch to change WIN32 macro names. (Hirohito Higashi, #3932)
+Patch to avoid compiler warnings. (Yasuhiro Matsumoto, #3979)
 
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
@@ -145,10 +147,15 @@ Should do current file first and not split it up when more results are found.
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
+Patch to fix that dosinstall still has buffer overflow problems. (Yasuhiro
+Matsumoto, #4002)
+
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
 Patch to reduce amount of memory used by functions that keep reference.
 (ichizok, #3961)
+
+Patch to use wide font functions. (Ken Takata, 2019 Feb 18, #4000)
 
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
@@ -159,6 +166,9 @@ C syntax: {} inside () causes following {} to be highlighted as error.
 
 Support setting the character displayed below the last line?  Neovim uses
 "eob:X" in 'fillchars'.
+
+Check: __attribute__((format(printf, on semsg() and siemsg().  Where was this
+added?
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -171,13 +181,33 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 Another request: #3811.
 
+Height of quickfix window is not retained with vertical splits. (Lifepillar,
+2018 Aug 24, #2998)
+Patch on the issue by Hongbo Liu, 2019 Feb 19 #4013
+
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
+
+Still a E315 error when using terminal. (Masato Nishihata, #3959)
 
 When using 'k' in 'guioptions' gvim may open with a tiny window. (#3808)
 Suggested patch on the issue.
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
+
+Patch to fix modify_fname() does not work well with some 'encoding's.
+(Ken Takata, #4007)
+
+Patch to make vim_getenv() work with wide API. (Ken Takata, #4008)
+
+Patch to add equal field to complete items. (#3887)
+
+When using exclusive selection and vi" that fails, cursor moves to the left.
+Cursor should not move. (#4024)
+
+Patch to fix that executable() may fail on very long filename in MS-Windows.
+(Ken Takata, 2016 Feb 1, update 2018 Oct 7, update 2019 Feb 19)
+Now in pull request #4015.
 
 Patch to be able to separately map CTRL-H and BS on Windows.
 (Linwei, 2017 Jul 11, #1833)
@@ -186,6 +216,8 @@ Patch to fix encoding of messages on MS-Windows. (Yasuhiro Matsumoto, 2019 Feb
 13, #3914)
 
 Patch to fix encoding conversion in messages. (#3969)
+Check that this is fixed: (ichizok)
+vim --clean -X -V1 -es -c 'echo "hello"' -c quit
 
 Incsearch test fails when locale is "C". (Dominique Pelle, #3986)
 Also run all tests with C locale?
@@ -210,10 +242,13 @@ https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
 Updated by Andy Massimino, 2018 Feb 7:
 https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
 Or should we make it asynchronous?
+Patch by Andy Massimino: #4010 - needs a bit more work
 
 When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
 case. (Nate Peterson, 2019 Jan 31, #3892)
 For "silent! q" it should not prompt and just fail.
+
+Patch to add readdir(). (Yasuhiro Matsumoto, #2439)
 
 Using CTRL-L to add a character to the search string doesn't work for the last
 character in the file. (Smylers, 2018 Nov 17, #3620)
@@ -276,6 +311,8 @@ Patch to filter marks. (Marcin Szamotulski, 2019 Feb 7, #3895)
 Patch to add environ(), gets a dict with all environment vars, and getenv(),
 useful for environment vars that are not made of keyword chars.
 (Yasuhiro Matsumoto, #2875)
+
+Add buffer argument to undotree(). (#4001)
 
 Patch to add optional arguments with default values.
 (Andy Massimino, #3952)  under development
@@ -405,9 +442,6 @@ Lemonboy can reproduce (2017 Jun 5)
 Also reproduced by Benjamin Doherty, 2018 Oct 4.
 Simpler way: Ken Takata, Oct 6.
 
-Height of quickfix window is not retained with vertical splits. (Lifepillar,
-2018 Aug 24, #2998)
-
 Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
 #2999)
 
@@ -422,9 +456,6 @@ When using CTRL-W CR in the quickfix window, the jumplist in the opened window
 is cleared, to avoid going back to the list of errors buffer (would have two
 windows with it).  Can we just remove the jump list entries for the quickfix
 buffer?
-
-Patch to fix that executable() may fail on very long filename in MS-Windows.
-(Ken Takata, 2016 Feb 1, update 2018 Oct 7)
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -1004,6 +1035,10 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
     Although user could use "xterm -e 'cmd arg'".
 
 Regexp problems:
+- NFA engine can be slow for some patterns.  Dominique found out that most
+  time is spent in addstate_here() copying the threads.  Instead of copying,
+  let each thread point to the next one (by offset, the list is reallocated).
+  (Dominique Pelle, 2019 Feb 18)
 - When search pattern has the base character both with and without combining
   character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
 - [:space:] only matches ASCII spaces.  Add [:white:] for all space-like

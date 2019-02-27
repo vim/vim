@@ -130,3 +130,14 @@ func Test_range_with_newline()
   call assert_equal(0, search("[ -*\\t-\\n]"))
   bwipe!
 endfunc
+
+func Test_pattern_compile_speed()
+  if !exists('+spellcapcheck') || !has('reltime')
+    return
+  endif
+  let start = reltime()
+  " this used to be very slow, not it should be about a second
+  set spc=\\v(((((Nxxxxxxx&&xxxx){179})+)+)+){179}
+  call assert_inrange(0.01, 10.0, reltimefloat(reltime(start)))
+  set spc=
+endfunc

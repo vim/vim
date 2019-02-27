@@ -730,6 +730,7 @@ emsg(char *s)
     return TRUE;		/* no error messages at the moment */
 }
 
+#ifndef PROTO  // manual proto with __attribute__
 /*
  * Print an error message with format string and variable arguments.
  * Note: caller must not pass 'IObuff' as 1st argument.
@@ -749,6 +750,7 @@ semsg(const char *s, ...)
     }
     return TRUE;		/* no error messages at the moment */
 }
+#endif
 
 /*
  * Same as emsg(...), but abort on error when ABORT_ON_INTERNAL_ERROR is
@@ -765,6 +767,7 @@ iemsg(char *s)
 #endif
 }
 
+#ifndef PROTO  // manual proto with __attribute__
 /*
  * Same as semsg(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
  * defined. It is used for internal errors only, so that they can be
@@ -783,10 +786,11 @@ siemsg(const char *s, ...)
 	va_end(ap);
 	emsg_core(IObuff);
     }
-#ifdef ABORT_ON_INTERNAL_ERROR
+# ifdef ABORT_ON_INTERNAL_ERROR
     abort();
-#endif
+# endif
 }
+#endif
 
 /*
  * Give an "Internal error" message.
@@ -2623,12 +2627,19 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
+	int c = -1;
+
 	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	{
+	    c = p[maxlen];
 	    p[maxlen] = 0;
+	}
 	if (info_message)
 	    mch_msg((char *)p);
 	else
 	    mch_errmsg((char *)p);
+	if (c != -1)
+	    p[maxlen] = c;
     }
 
     msg_didout = TRUE;	    // assume that line is not empty

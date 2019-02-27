@@ -2094,8 +2094,8 @@ executable_exists(char *name, char_u **path, int use_path)
     return TRUE;
 }
 
-#if ((defined(__MINGW32__) || defined (__CYGWIN32__)) && \
-       __MSVCRT_VERSION__ >= 0x800) || (defined(_MSC_VER) && _MSC_VER >= 1400)
+#if (defined(__MINGW32__) && __MSVCRT_VERSION__ >= 0x800) || \
+	(defined(_MSC_VER) && _MSC_VER >= 1400)
 /*
  * Bad parameter handler.
  *

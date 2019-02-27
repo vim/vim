@@ -2277,7 +2277,7 @@ diffopt_changed(void)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
-    diff_context = diff_context_new;
+    diff_context = diff_context_new == 0 ? 1 : diff_context_new;
     diff_foldcolumn = diff_foldcolumn_new;
     diff_algorithm = diff_algorithm_new;
 

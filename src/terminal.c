@@ -3265,7 +3265,6 @@ update_system_term(term_T *term)
 
     term->tl_dirty_row_start = MAX_ROW;
     term->tl_dirty_row_end = 0;
-    update_cursor(term, TRUE);
 }
 #endif
 

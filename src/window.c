@@ -67,7 +67,7 @@ static win_T *win_alloc(win_T *after, int hidden);
 static char *m_onlyone = N_("Already only one window");
 
 /*
- * all CTRL-W window commands are handled here, called from normal_cmd().
+ * All CTRL-W window commands are handled here, called from normal_cmd().
  */
     void
 do_window(
@@ -87,10 +87,7 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    if (Prenum == 0)
-	Prenum1 = 1;
-    else
-	Prenum1 = Prenum;
+    Prenum1 = Prenum == 0 ? 1 : Prenum;
 
 #ifdef FEAT_CMDWIN
 # define CHECK_CMDWIN \
@@ -584,6 +581,14 @@ wingotofile:
 			nchar = xchar;
 			goto wingotofile;
 #endif
+		    case 't':	    // CTRL-W gt: go to next tab page
+			goto_tabpage((int)Prenum);
+			break;
+
+		    case 'T':	    // CTRL-W gT: go to previous tab page
+			goto_tabpage(-(int)Prenum1);
+			break;
+
 		    default:
 			beep_flush();
 			break;

@@ -1605,7 +1605,7 @@ x_IOerror_check(Display *dpy UNUSED)
 {
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(lc_jump_env, 1);
-#  if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+#  if defined(VMS) || defined(__CYGWIN__)
     return 0;  /* avoid the compiler complains about missing return value */
 #  endif
 }
@@ -1627,7 +1627,7 @@ x_IOerror_handler(Display *dpy UNUSED)
 
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(x_jump_env, 1);
-# if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+# if defined(VMS) || defined(__CYGWIN__)
     return 0;  /* avoid the compiler complains about missing return value */
 # endif
 }
@@ -6713,7 +6713,7 @@ mch_expand_wildcards(
     }
     vim_free(tempname);
 
-# if defined(__CYGWIN__) || defined(__CYGWIN32__)
+# ifdef __CYGWIN__
     /* Translate <CR><NL> into <NL>.  Caution, buffer may contain NUL. */
     p = buffer;
     for (i = 0; i < (int)len; ++i)

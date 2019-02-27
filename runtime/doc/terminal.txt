@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 16
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -80,6 +80,8 @@ Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N*
 			Also works with the = register to insert the result of
 			evaluating an expression.
 	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
+	CTRL-W gt	go to next tabpage, same as `gt`
+	CTRL-W gT	go to previous tabpage, same as `gT`
 
 See option 'termwinkey' for specifying another key instead of CTRL-W that
 will work like CTRL-W.  However, typing 'termwinkey' twice sends 'termwinkey'
