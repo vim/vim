@@ -1,7 +1,5 @@
 " Tests for 'listchars' display with 'list' and :list
 
-scriptencoding utf-8
-
 source view_util.vim
 
 func Test_listchars()
@@ -118,20 +116,23 @@ endfunc
 
 func Test_listchars_composing()
   enew!
+  let oldencoding=&encoding
+  set encoding=utf-8
   set ff=unix
   set list
 
-  set listchars+=space:_
+  set listchars=eol:$,space:_
   call append(0, [
-	      \ " \u3099	\u309A"
- 	      \ ])
+        \ "  \u3099	 \u309A"
+        \ ])
   let expected = [
-	      \ "_\u3099^I\u309A$",
-	      \ ]
+        \ "_ \u3099^I \u309A$"
+        \ ]
   redraw!
   call cursor(1, 1)
   let got = ScreenLines(1, virtcol('$'))
   bw!
-  set listchars& ff&
   call assert_equal(expected, got)
+  let &encoding=oldencoding
+  set listchars& ff&
 endfunction
