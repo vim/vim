@@ -2228,7 +2228,7 @@ regatom(int *flagp)
 				  default:  i = -1; break;
 			      }
 
-			      if (i < 0)
+			      if (i < 0 || i > INT_MAX)
 				  EMSG2_RET_NULL(
 					_("E678: Invalid character after %s%%[dxouU]"),
 					reg_magic == MAGIC_ALL);
@@ -3293,7 +3293,7 @@ coll_get_char(void)
 	case 'u': nr = gethexchrs(4); break;
 	case 'U': nr = gethexchrs(8); break;
     }
-    if (nr < 0)
+    if (nr < 0 || nr > INT_MAX)
     {
 	/* If getting the number fails be backwards compatible: the character
 	 * is a backslash. */
