@@ -8557,7 +8557,10 @@ sqrt({expr})						*sqrt()*
 
 str2blob({expr})					*str2blob()*
 		Convert String {expr} to a Blob.  Return all bytes contains
-		the string.
+		the string. >
+	str2blob("a\xA0b")	0z61A062
+
+<		Note: Bytes is encoded with your 'encoding' option. >
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
