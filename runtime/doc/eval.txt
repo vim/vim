@@ -3023,8 +3023,10 @@ blob2str({blob} [, {sep})				*blob2str()*
 		Convert Blob {expr} to string.
 		{sep} is use to be a separator for NUL character.
 		NUL character is removed from result string when {sep} is
-		omitted.
-
+		omitted. >
+	blob2str(0z610062006300)	"abc"
+	blob2str(0z610062006300, '_')	"a_b_c_"
+<
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
