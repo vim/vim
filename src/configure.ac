@@ -1925,6 +1925,10 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[[0,2]]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
+	rubycflags=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['CFLAGS']]"`
+	if test "X$rubycflags" != "X"; then
+	  CFLAGS="$rubycflags $CFLAGS"
+	fi
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LIBS']]"`
 	if test "X$rubylibs" != "X"; then
 	  RUBY_LIBS="$rubylibs"
