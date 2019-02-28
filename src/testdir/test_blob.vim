@@ -325,13 +325,14 @@ func Test_str2blob()
   call assert_equal(0z612F622F.63E4B896.E7958C, str2blob('a/b/c世界'))
   call assert_equal(0z, str2blob(''))
   call assert_equal(0z30, str2blob(0))
+  call assert_equal(0z61006200.63, str2blob('a/b/c', '/'))
+  call assert_equal(0z, str2blob('', '/'))
 endfunc
 
 func Test_blob2str()
   call assert_equal('a/b/c世界', blob2str(0z612F622F.63E4B896.E7958C))
   call assert_equal('', blob2str(0z))
   call assert_fails('call blob2str(0)', 'E474:')
-  abc
   call assert_equal('abc', blob2str(0z6100620063))
   call assert_equal('abc', blob2str(0z610062006300))
   call assert_equal('a_b_c_', blob2str(0z610062006300, '_'))

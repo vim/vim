@@ -886,7 +886,7 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, f_sqrt},
 #endif
-    {"str2blob",	1, 1, f_str2blob},
+    {"str2blob",	1, 2, f_str2blob},
 #ifdef FEAT_FLOAT
     {"str2float",	1, 1, f_str2float},
 #endif
@@ -12576,21 +12576,47 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     static void
 f_str2blob(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*p = tv_get_string(&argvars[0]);
+    char_u	*str = tv_get_string(&argvars[0]);
+    char_u	*sep = NULL;
     blob_T	*b;
 
     b = blob_alloc();
     if (b == NULL)
 	return;
 
-    b->bv_ga.ga_len = STRLEN(p);
-    if (ga_grow(&b->bv_ga, b->bv_ga.ga_len) == FAIL)
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	sep = tv_get_string(&argvars[1]);
+
+    if (sep == NULL)
     {
-	vim_free(b);
-	return;
+	b->bv_ga.ga_len = STRLEN(str);
+	if (ga_grow(&b->bv_ga, b->bv_ga.ga_len) == FAIL)
+	{
+	    vim_free(b);
+	    return;
+	}
+	mch_memmove((char_u *)b->bv_ga.ga_data, str, b->bv_ga.ga_len);
+    }
+    else
+    {
+	char_u	    *p, *tmp;
+	int	    len = STRLEN(sep);
+
+	b->bv_ga.ga_len = 0;
+	while (TRUE)
+	{
+	    tmp = (char_u*)strstr((char*)str, (char*)sep);
+	    if (tmp == NULL) {
+		ga_concat(&b->bv_ga, str);
+		break;
+	    }
+	    for (p = str; p < tmp; ++p)
+		ga_append(&b->bv_ga, *p);
+	    ga_append(&b->bv_ga, NUL);
+	    str = tmp + len;
+	}
     }
 
-    mch_memmove((char_u *)b->bv_ga.ga_data, p, b->bv_ga.ga_len);
     ++b->bv_refcount;
 
     rettv->v_type = VAR_BLOB;
