@@ -1,5 +1,7 @@
 " Tests for the Blob types
 
+scriptencoding utf-8
+
 func TearDown()
   " Run garbage collection after every test
   call test_garbagecollect_now()
@@ -317,4 +319,16 @@ endfunc
 
 func Test_blob_sort()
   call assert_fails('call sort([1.0, 0z11], "f")', 'E975:')
+endfunc
+
+func Test_str2blob()
+  call assert_equal(0z612F622F.63E4B896.E7958C, str2blob('a/b/c世界'))
+  call assert_equal(0z, str2blob(''))
+  call assert_equal(0z30, str2blob(0))
+endfunc
+
+func Test_blob2str()
+  call assert_equal('a/b/c世界', blob2str(0z612F622F.63E4B896.E7958C))
+  call assert_equal('', blob2str(0z))
+  call assert_fails('call blob2str(0)', 'E474:')
 endfunc

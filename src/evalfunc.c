@@ -67,6 +67,7 @@ static void f_balloon_show(typval_T *argvars, typval_T *rettv);
 static void f_balloon_split(typval_T *argvars, typval_T *rettv);
 # endif
 #endif
+static void f_blob2str(typval_T *argvars, typval_T *rettv);
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
 static void f_bufexists(typval_T *argvars, typval_T *rettv);
@@ -390,6 +391,9 @@ static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_sqrt(typval_T *argvars, typval_T *rettv);
+#endif
+static void f_str2blob(typval_T *argvars, typval_T *rettv);
+#ifdef FEAT_FLOAT
 static void f_str2float(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
@@ -541,6 +545,7 @@ static struct fst
     {"balloon_split",	1, 1, f_balloon_split},
 # endif
 #endif
+    {"blob2str",	1, 2, f_blob2str},
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
     {"bufexists",	1, 1, f_bufexists},
@@ -880,6 +885,9 @@ static struct fst
     {"split",		1, 3, f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, f_sqrt},
+#endif
+    {"str2blob",	1, 1, f_str2blob},
+#ifdef FEAT_FLOAT
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
@@ -1771,6 +1779,42 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 }
 # endif
 #endif
+
+/*
+ * "blob2str(blob, [sep])" function
+ */
+    static void
+f_blob2str(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    int		i;
+    char_u	*sep = NULL, c, str[2];
+    blob_T	*b;
+    garray_T	ga_text;
+
+    if (argvars[0].v_type != VAR_BLOB)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	sep = tv_get_string(&argvars[1]);
+
+    b = argvars[0].vval.v_blob;
+    str[1] = NUL;
+    ga_init2(&ga_text, 1, 90);
+    for (i = 0; i < blob_len(b); ++i)
+    {
+	c = blob_get(b, i);
+	if (c == NUL && sep != NULL)
+	    ga_concat(&ga_text, sep);
+	str[0] = c;
+	ga_concat(&ga_text, str);
+    }
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = ga_text.ga_data;
+}
 
 /*
  * "browse(save, title, initdir, default)" function
@@ -12524,7 +12568,36 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     else
 	rettv->vval.v_float = 0.0;
 }
+#endif
 
+/*
+ * "str2blob()" function
+ */
+    static void
+f_str2blob(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p = tv_get_string(&argvars[0]);
+    blob_T	*b;
+
+    b = blob_alloc();
+    if (b == NULL)
+	return;
+
+    b->bv_ga.ga_len = STRLEN(p);
+    if (ga_grow(&b->bv_ga, b->bv_ga.ga_len) == FAIL)
+    {
+	vim_free(b);
+	return;
+    }
+
+    mch_memmove((char_u *)b->bv_ga.ga_data, p, b->bv_ga.ga_len);
+    ++b->bv_refcount;
+
+    rettv->v_type = VAR_BLOB;
+    rettv->vval.v_blob = b;
+}
+
+#ifdef FEAT_FLOAT
 /*
  * "str2float()" function
  */
@@ -12581,7 +12654,6 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = -n;
     else
 	rettv->vval.v_number = n;
-
 }
 
 #ifdef HAVE_STRFTIME

@@ -2216,6 +2216,7 @@ atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
+blob2str({blob})		String	convert Blob to String
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2589,6 +2590,7 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
+str2blob({str} [, sep])		Blob	convert String to Blob
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
@@ -3016,6 +3018,12 @@ balloon_split({msg})					*balloon_split()*
 		Returns a |List| with the split lines.
 		{only available when compiled with the |+balloon_eval_term|
 		feature}
+
+blob2str({blob} [, {sep})				*blob2str()*
+		Convert Blob {expr} to string.
+		{sep} is use to be a separator for NUL character.
+		NUL character is removed from result string when {sep} is
+		omitted.
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -8545,6 +8553,9 @@ sqrt({expr})						*sqrt()*
 		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
 
+str2blob({expr})					*str2blob()*
+		Convert String {expr} to a Blob.  Return all bytes contains
+		the string.
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
