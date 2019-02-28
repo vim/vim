@@ -3607,6 +3607,51 @@ f_extend(typval_T *argvars, typval_T *rettv)
 	    copy_tv(&argvars[0], rettv);
 	}
     }
+    else if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_BLOB)
+    {
+	list_T		*l1;
+	blob_T		*b;
+	listitem_T	*item;
+	long		before;
+	typval_T	tv;
+	int		idx, error = FALSE;
+
+	l1 = argvars[0].vval.v_list;
+	b = argvars[1].vval.v_blob;
+	if (l1 != NULL && !var_check_lock(l1->lv_lock, arg_errmsg, TRUE)
+		&& b != NULL)
+	{
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		before = (long)tv_get_number_chk(&argvars[2], &error);
+		if (error)
+		    return;		/* type error; errmsg already given */
+
+		if (before == l1->lv_len)
+		    item = NULL;
+		else
+		{
+		    item = list_find(l1, before);
+		    if (item == NULL)
+		    {
+			semsg(_(e_listidx), before);
+			return;
+		    }
+		}
+	    }
+	    else
+		item = NULL;
+
+	    for (idx = 0; idx < blob_len(b); ++idx)
+	    {
+		tv.v_type = VAR_NUMBER;
+		tv.vval.v_number = blob_get(b, idx);
+		list_insert_tv(l1, &tv, item);
+	    }
+
+	    copy_tv(&argvars[0], rettv);
+	}
+    }
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
     {
 	dict_T	*d1, *d2;

@@ -318,3 +318,7 @@ endfunc
 func Test_blob_sort()
   call assert_fails('call sort([1.0, 0z11], "f")', 'E975:')
 endfunc
+
+func Test_blob_extend()
+  call assert_equal([222, 173, 190, 239], extend([], 0zDEADBEEF))
+endfunc

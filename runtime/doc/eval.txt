@@ -4093,6 +4093,8 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		two lists into a new list use the + operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
 <
+		Especially, {expr2} allow to be Blob if the {expr1} is List.
+
 		If they are |Dictionaries|:
 		Add all entries from {expr2} to {expr1}.
 		If a key exists in both {expr1} and {expr2} then {expr3} is
