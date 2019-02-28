@@ -2668,30 +2668,20 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    }
 	    buf = node->rq_buffer;
 
-	    if (nl == NULL)
-	    {
-		/* Flush remaining message that is missing a NL. */
-		char_u	*new_buf;
-
-		new_buf = vim_realloc(buf, node->rq_buflen + 1);
-		if (new_buf == NULL)
-		    /* This might fail over and over again, should the message
-		     * be dropped? */
-		    return FALSE;
-		buf = new_buf;
-		node->rq_buffer = buf;
-		nl = buf + node->rq_buflen++;
-		*nl = NUL;
-	    }
-
 	    /* Convert NUL to NL, the internal representation. */
-	    for (p = buf; p < nl && p < buf + node->rq_buflen; ++p)
+	    for (p = buf; (nl == NULL || p < nl)
+					    && p < buf + node->rq_buflen; ++p)
 		if (*p == NUL)
 		    *p = NL;
 
-	    if (nl + 1 == buf + node->rq_buflen)
+	    if (nl == NULL)
 	    {
 		/* get the whole buffer, drop the NL */
+		msg = channel_get(channel, part, NULL);
+	    }
+	    else if (nl + 1 == buf + node->rq_buflen)
+	    {
+		/* get the whole buffer */
 		msg = channel_get(channel, part, NULL);
 		*nl = NUL;
 	    }
