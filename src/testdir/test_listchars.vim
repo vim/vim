@@ -116,17 +116,17 @@ func Test_listchars()
   set listchars& ff&
 endfunc
 
-func Test_listchars_halfwidth()
+func Test_listchars_composing()
   enew!
   set ff=unix
   set list
 
   set listchars+=space:_
   call append(0, [
-	      \ ' ゛	゜'
+	      \ " \u3099	\u309A"
  	      \ ])
   let expected = [
-	      \ '_゛^I゜$',
+	      \ "_\u3099^I\u309A$",
 	      \ ]
   redraw!
   call cursor(1, 1)
