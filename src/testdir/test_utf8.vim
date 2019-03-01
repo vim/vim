@@ -62,6 +62,28 @@ func Test_getvcol()
   call assert_equal(2, virtcol("']"))
 endfunc
 
+func Test_list2str_str2list_utf8()
+  " One Unicode codepoint
+  let s = "\u3042\u3044"
+  let l = [0x3042, 0x3044]
+  call assert_equal(l, str2list(s, 1))
+  call assert_equal(s, list2str(l, 1))
+  if &enc ==# 'utf-8'
+    call assert_equal(str2list(s), str2list(s, 1))
+    call assert_equal(list2str(l), list2str(l, 1))
+  endif
+
+  " With composing characters
+  let s = "\u304b\u3099\u3044"
+  let l = [0x304b, 0x3099, 0x3044]
+  call assert_equal(l, str2list(s, 1))
+  call assert_equal(s, list2str(l, 1))
+  if &enc ==# 'utf-8'
+    call assert_equal(str2list(s), str2list(s, 1))
+    call assert_equal(list2str(l), list2str(l, 1))
+  endif
+endfunc
+
 func Test_screenchar_utf8()
   new
 
