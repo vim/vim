@@ -3981,6 +3981,28 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 }
 
 /*
+ * Set options for a quickfix/location list buffer and window. Called to set
+ * options for the buffer in a quickfix or location list window.
+ */
+    static void
+qf_set_cwindow_opts(void)
+{
+    // switch off 'swapfile'
+    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
+	    OPT_LOCAL);
+    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    RESET_BINDING(curwin);
+#ifdef FEAT_DIFF
+    curwin->w_p_diff = FALSE;
+#endif
+#ifdef FEAT_FOLDING
+    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+	    OPT_LOCAL);
+#endif
+}
+
+/*
  * Open a new quickfix or location list window, load the quickfix buffer and
  * set the appropriate options for the window.
  * Returns FAIL if the window could not be opened.
@@ -4036,23 +4058,10 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
 	qi->qf_bufnr = curbuf->b_fnum;
     }
 
-    // Mark the quickfix buffer as a temporary scratch buffer
+    // Set the options for the quickfix buffer/window.
     // Do this even if the quickfix buffer was already present, as an autocmd
-    // might have deleted (:bdelete) this buffer.
-
-    // switch off 'swapfile'
-    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
-	    OPT_LOCAL);
-    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
-    RESET_BINDING(curwin);
-#ifdef FEAT_DIFF
-    curwin->w_p_diff = FALSE;
-#endif
-#ifdef FEAT_FOLDING
-    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
-	    OPT_LOCAL);
-#endif
+    // might have previously deleted (:bdelete) the quickfix buffer.
+    qf_set_cwindow_opts();
 
     // Only set the height when still in the same tab page and there is no
     // window to the side.
