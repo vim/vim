@@ -1785,8 +1785,8 @@ ex_let_one(
 			    case '+': n = numval + n; break;
 			    case '-': n = numval - n; break;
 			    case '*': n = numval * n; break;
-			    case '/': n = num_divide(numval, n); break;
-			    case '%': n = num_modulus(numval, n); break;
+			    case '/': n = (long)num_divide(numval, n); break;
+			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
 		    else if (opt_type == 0 && stringval != NULL) // string
