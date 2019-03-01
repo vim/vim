@@ -1,5 +1,5 @@
 " Tests for Unicode manipulations
- 
+
 
 " Visual block Insert adjusts for multi-byte char
 func Test_visual_block_insert()
@@ -59,4 +59,40 @@ func Test_getvcol()
   call assert_equal(4, col("']"))
   call assert_equal(2, virtcol("'["))
   call assert_equal(2, virtcol("']"))
+endfunc
+
+func Test_list2str_str2list_utf8()
+  " One Unicode codepoint
+  let s = "\u3042"
+  let l = [0x3042]
+  call assert_equal(l, str2list(s, 1))
+  call assert_equal(s, list2str(l, 1))
+
+  " With composing characters
+  let s = "\u304b\u3099"
+  let l = [0x304b, 0x3099]
+  call assert_equal(l, str2list(s, 1))
+  call assert_equal(s, list2str(l, 1))
+endfunc
+
+func Test_screenchar_utf8()
+  new
+
+  " 1-cell, with composing characters 
+  call setline(1, ["ABC\u0308"])
+  redraw
+  call assert_equal([0x0041], screenchar(1, 1, 1))
+  call assert_equal([0x0042], screenchar(1, 2, 1))
+  call assert_equal([0x0043, 0x0308], screenchar(1, 3, 1))
+
+  " 2-cells, with composing characters 
+  call setline(1, ["\u3042\u3044\u3046\u3099"])
+  redraw
+  call assert_equal([0x3042], screenchar(1, 1, 1))
+  call assert_equal([0], screenchar(1, 2, 1))
+  call assert_equal([0x3044], screenchar(1, 3, 1))
+  call assert_equal([0], screenchar(1, 4, 1))
+  call assert_equal([0x3046, 0x3099], screenchar(1, 5, 1))
+
+  bwipe!
 endfunc

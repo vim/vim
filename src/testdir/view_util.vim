@@ -5,9 +5,9 @@ if exists('*ScreenLines')
   finish
 endif
 
-" ScreenLines(lnum, width) or
-" ScreenLines([start, end], width)
-function! ScreenLines(lnum, width) abort
+" ScreenLines(lnum, width [, utf8]) or
+" ScreenLines([start, end], width [, utf8])
+function! ScreenLines(lnum, width, ...) abort
   redraw!
   if type(a:lnum) == v:t_list
     let start = a:lnum[0]
@@ -16,9 +16,10 @@ function! ScreenLines(lnum, width) abort
     let start = a:lnum
     let end = a:lnum
   endif
+  let utf8 = get(a:000, 0, 0)
   let lines = []
   for l in range(start, end)
-    let lines += [join(map(range(1, a:width), 'nr2char(screenchar(l, v:val))'), '')]
+    let lines += [join(map(range(1, a:width), 'list2str(screenchar(l, v:val, utf8), utf8)'), '')]
   endfor
   return lines
 endfunction
