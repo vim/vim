@@ -329,8 +329,6 @@
  */
 #define VIM_CLEAR(p) \
     do { \
-	if ((p) != NULL) { \
-	    vim_free(p); \
-	    (p) = NULL; \
-	} \
+	vim_free(p); \
+	(p) = NULL; \
     } while (0)

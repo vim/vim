@@ -5402,7 +5402,7 @@ op_addsub(
     linenr_T		amount = Prenum1;
 
    // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
-   // buffer is not completly updated yet. Postpone updating folds until before
+   // buffer is not completely updated yet. Postpone updating folds until before
    // the call to changed_lines().
 #ifdef FEAT_FOLDING
    disable_fold_update++;

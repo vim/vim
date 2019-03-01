@@ -1738,7 +1738,7 @@ clip_gen_set_selection(VimClipboard *cbd)
     if (!clip_did_set_selection)
     {
 	/* Updating postponed, so that accessing the system clipboard won't
-	 * hang Vim when accessing it many times (e.g. on a :g comand). */
+	 * hang Vim when accessing it many times (e.g. on a :g command). */
 	if ((cbd == &clip_plus && (clip_unnamed_saved & CLIP_UNNAMED_PLUS))
 		|| (cbd == &clip_star && (clip_unnamed_saved & CLIP_UNNAMED)))
 	{
