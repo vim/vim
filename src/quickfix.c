@@ -3981,8 +3981,7 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 }
 
 /*
- * Set options for a quickfix/location list buffer and window. Called to set
- * options for the buffer in a quickfix or location list window.
+ * Set options for the buffer in the quickfix or location list window.
  */
     static void
 qf_set_cwindow_opts(void)
@@ -4058,10 +4057,11 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
 	qi->qf_bufnr = curbuf->b_fnum;
     }
 
-    // Set the options for the quickfix buffer/window.
+    // Set the options for the quickfix buffer/window (if not already done)
     // Do this even if the quickfix buffer was already present, as an autocmd
     // might have previously deleted (:bdelete) the quickfix buffer.
-    qf_set_cwindow_opts();
+    if (curbuf->b_p_bt[0] != 'q')
+	qf_set_cwindow_opts();
 
     // Only set the height when still in the same tab page and there is no
     // window to the side.
