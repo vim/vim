@@ -2522,7 +2522,8 @@ resolve({filename})		String	get filename a shortcut points to
 reverse({list})			List	reverse {list} in-place
 round({expr})			Float	round off {expr}
 screenattr({row}, {col})	Number	attribute at screen position
-screenchar({row}, {col})	Number	character at screen position
+screenchar({row}, {col} [, {list}])
+				Number or List  character at screen position
 screencol()			Number	current cursor column
 screenrow()			Number	current cursor row
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])
@@ -7423,15 +7424,19 @@ screenattr({row}, {col})					*screenattr()*
 		arbitrary number that can only be used to compare to the
 		attribute at other positions.
 
-screenchar({row}, {col})					*screenchar()*
+screenchar({row}, {col} [, {list}])				*screenchar()*
 		The result is a Number, which is the character at position
-		[row, col] on the screen.  This works for every possible
+		[{row}, {col}] on the screen.  This works for every possible
 		screen position, also status lines, window separators and the
 		command line.  The top left position is row one, column one
 		The character excludes composing characters.  For double-byte
 		encodings it may only be the first byte.
+		When {list} is present and |TRUE|, return the result as a List.
+		In addition, and with 'encoding' is "utf-8", the result can
+		include number values of combining characters.
 		This is mainly to be used for testing.
-		Returns -1 when row or col is out of range.
+		If {row} or {col} is out of range, return -1 or an empty list
+		when {list} is set to 1 .
 
 screencol()							*screencol()*
 		The result is a Number, which is the current screen column of
