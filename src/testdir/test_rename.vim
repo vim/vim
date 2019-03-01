@@ -60,7 +60,7 @@ endfunc
 
 func Test_rename_copy()
   " Check that when original file can't be deleted, rename()
-  " still succeeds but copies the file, and preserve its permissions.
+  " still succeeds but copies the file.
   call mkdir('Xdir')
   call writefile(['foo'], 'Xdir/Xfile')
   call setfperm('Xdir', 'r-xr-xr-x')
@@ -86,7 +86,7 @@ func Test_rename_fails()
   call assert_notequal(0, rename('Xdoesnotexist', 'Xfile2'))
   call assert_equal('', glob('Xfile2'))
 
-  " When rename files, the destination file should not be deleted.
+  " When rename() fails, the destination file should not be deleted.
   call assert_notequal(0, rename('Xdoesnotexist', 'Xfile'))
   call assert_equal(['foo'], readfile('Xfile'))
 
