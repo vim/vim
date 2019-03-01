@@ -2216,7 +2216,7 @@ atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
-blob2str({blob} [, {sep}])	String	convert Blob to String
+blob2str({blob} [, {nul}])	String	convert Blob to String
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -3019,11 +3019,10 @@ balloon_split({msg})					*balloon_split()*
 		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
-blob2str({blob} [, {sep})				*blob2str()*
+blob2str({blob} [, {nul})				*blob2str()*
 		Convert Blob {expr} to string.
-		{sep} is used to be a separator for NUL character.
-		NUL character is removed from result string when {sep} is
-		omitted. >
+		If {nul} is given, NUL character is replaced to {nul}.  If
+		omitted, NUL character is removed. >
 	blob2str(0z610062006300)	"abc"
 	blob2str(0z610062006300, '_')	"a_b_c_"
 <
@@ -8555,12 +8554,13 @@ sqrt({expr})						*sqrt()*
 		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
 
-str2blob({expr} [, {sep}])				*str2blob()*
+str2blob({expr} [, {nul}])				*str2blob()*
 		Convert String {expr} to a Blob.  Return all bytes contains
 		the string. >
 	str2blob("a\xA0b")	0z61A062
 <
-		If {sep} is given, all of {sep} in {expr} is replaced to NUL. >
+		If {nul} is given, all of String {nul} in {expr} are replaced
+		to NUL.  >
 	str2blob("a/b/c", "/")	0z61006200.63
 
 <		Note: Bytes is encoded with your 'encoding' option. >
