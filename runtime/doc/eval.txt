@@ -2590,7 +2590,7 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
-str2blob({str} [, {nul}])	Blob	convert String to Blob
+str2blob({expr} [, {nul}])	Blob	convert String to Blob
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
@@ -3020,7 +3020,7 @@ balloon_split({msg})					*balloon_split()*
 		feature}
 
 blob2str({blob} [, {nul})				*blob2str()*
-		Convert Blob {expr} to string.
+		Convert Blob {blob} to string.
 		If {nul} is given, NUL character is replaced to {nul}.  If
 		omitted, NUL character is removed. >
 	blob2str(0z610062006300)	"abc"
