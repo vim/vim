@@ -4032,22 +4032,27 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
 	// Create a new quickfix buffer
 	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
 
-	// switch off 'swapfile'
-	set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-	set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
-		OPT_LOCAL);
-	set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
-	RESET_BINDING(curwin);
-#ifdef FEAT_DIFF
-	curwin->w_p_diff = FALSE;
-#endif
-#ifdef FEAT_FOLDING
-	set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
-		OPT_LOCAL);
-#endif
 	// save the number of the new buffer
 	qi->qf_bufnr = curbuf->b_fnum;
     }
+
+    // Mark the quickfix buffer as a temporary scratch buffer
+    // Do this even if the quickfix buffer was already present, as an autocmd
+    // might have deleted (:bdelete) this buffer.
+
+    // switch off 'swapfile'
+    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
+	    OPT_LOCAL);
+    set_option_value((char_u *)"bh", 0L, (char_u *)"hide", OPT_LOCAL);
+    RESET_BINDING(curwin);
+#ifdef FEAT_DIFF
+    curwin->w_p_diff = FALSE;
+#endif
+#ifdef FEAT_FOLDING
+    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+	    OPT_LOCAL);
+#endif
 
     // Only set the height when still in the same tab page and there is no
     // window to the side.
