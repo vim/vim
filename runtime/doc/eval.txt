@@ -3026,6 +3026,10 @@ blob2str({blob} [, {nul})				*blob2str()*
 	blob2str(0z610062006300)	"abc"
 	blob2str(0z610062006300, '_')	"a_b_c_"
 <
+		As NUL character cannot be encoded in Vim strings, {nul} can
+		be used to indicate a character to use when converting byte 00
+		in the blob.
+
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
