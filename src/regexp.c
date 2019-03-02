@@ -6457,7 +6457,7 @@ regdump(char_u *pattern, bt_regprog_T *r)
 	}
 	else if (op == RE_LNUM || op == RE_COL || op == RE_VCOL)
 	{
-	    /* one int plus comperator */
+	    /* one int plus comparator */
 	    fprintf(f, " count %ld", OPERAND_MIN(s));
 	    s += 5;
 	}

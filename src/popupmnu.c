@@ -405,7 +405,7 @@ pum_redraw(void)
     char_u	*p = NULL;
     int		totwidth, width, w;
     int		thumb_pos = 0;
-    int		thumb_heigth = 1;
+    int		thumb_height = 1;
     int		round;
     int		n;
 
@@ -423,10 +423,10 @@ pum_redraw(void)
 
     if (pum_scrollbar)
     {
-	thumb_heigth = pum_height * pum_height / pum_size;
-	if (thumb_heigth == 0)
-	    thumb_heigth = 1;
-	thumb_pos = (pum_first * (pum_height - thumb_heigth)
+	thumb_height = pum_height * pum_height / pum_size;
+	if (thumb_height == 0)
+	    thumb_height = 1;
+	thumb_pos = (pum_first * (pum_height - thumb_height)
 			    + (pum_size - pum_height) / 2)
 						    / (pum_size - pum_height);
     }
@@ -600,12 +600,12 @@ pum_redraw(void)
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		screen_putchar(' ', row, pum_col - pum_width,
-			i >= thumb_pos && i < thumb_pos + thumb_heigth
+			i >= thumb_pos && i < thumb_pos + thumb_height
 						  ? attr_thumb : attr_scroll);
 	    else
 #endif
 		screen_putchar(' ', row, pum_col + pum_width,
-			i >= thumb_pos && i < thumb_pos + thumb_heigth
+			i >= thumb_pos && i < thumb_pos + thumb_height
 						  ? attr_thumb : attr_scroll);
 	}
 

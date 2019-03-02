@@ -2451,7 +2451,7 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 
 	if (utf8)
-	    rettv->vval.v_number = (*utf_ptr2char)(tv_get_string(&argvars[0]));
+	    rettv->vval.v_number = utf_ptr2char(tv_get_string(&argvars[0]));
 	else
 	    rettv->vval.v_number = (*mb_ptr2char)(tv_get_string(&argvars[0]));
     }
@@ -8701,7 +8701,7 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 	if (utf8)
-	    buf[(*utf_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
+	    buf[utf_char2bytes((int)tv_get_number(&argvars[0]), buf)] = NUL;
 	else
 	    buf[(*mb_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
     }
@@ -11647,7 +11647,7 @@ f_sign_jump(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;
@@ -11699,7 +11699,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;

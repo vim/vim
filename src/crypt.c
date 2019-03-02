@@ -42,7 +42,7 @@ typedef struct {
     /* Optional function pointer for a self-test. */
     int (* self_test_fn)();
 
-    /* Function pointer for initializing encryption/decription. */
+    // Function pointer for initializing encryption/description.
     void (* init_fn)(cryptstate_T *state, char_u *key,
 		      char_u *salt, int salt_len, char_u *seed, int seed_len);
 
