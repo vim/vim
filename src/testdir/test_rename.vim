@@ -19,6 +19,21 @@ func Test_rename_file_to_file()
   call delete('Xrename2')
 endfunc
 
+func Test_rename_file_ignore_case()
+  " With 'fileignorecase', renaming file will go through a temp file
+  " when the source and destination file only differ by case.
+  set fileignorecase
+  call writefile(['foo'], 'Xrename')
+
+  call assert_equal(0, rename('Xrename', 'XRENAME'))
+
+  call assert_equal('', glob('Xrename'))
+  call assert_equal(['foo'], readfile('XRENAME'))
+
+  set fileignorecase&
+  call delete('XRENAME')
+endfunc
+
 func Test_rename_same_file()
   call writefile(['foo'], 'Xrename')
 
