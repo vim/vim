@@ -27,7 +27,6 @@ func Test_rename_file_ignore_case()
 
   call assert_equal(0, rename('Xrename', 'XRENAME'))
 
-  call assert_equal('', glob('Xrename'))
   call assert_equal(['foo'], readfile('XRENAME'))
 
   set fileignorecase&
