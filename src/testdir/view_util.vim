@@ -19,7 +19,7 @@ function! ScreenLines(lnum, width, ...) abort
   let utf8 = get(a:000, 0, 0)
   let lines = []
   for l in range(start, end)
-    let lines += [join(map(range(1, a:width), 'list2str(screenchar(l, v:val, utf8), utf8)'), '')]
+    let lines += [join(map(range(1, a:width), 'list2str(screenchar(l, v:val, 1), utf8)'), '')]
   endfor
   return lines
 endfunction
