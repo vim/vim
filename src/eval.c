@@ -253,6 +253,39 @@ static char_u *find_option_end(char_u **arg, int *opt_flags);
 /* for VIM_VERSION_ defines */
 #include "version.h"
 
+/*
+ * Return "n1" divided by "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_divide(varnumber_T n1, varnumber_T n2)
+{
+    varnumber_T	result;
+
+    if (n2 == 0)	// give an error message?
+    {
+	if (n1 == 0)
+	    result = VARNUM_MIN; // similar to NaN
+	else if (n1 < 0)
+	    result = -VARNUM_MAX;
+	else
+	    result = VARNUM_MAX;
+    }
+    else
+	result = n1 / n2;
+
+    return result;
+}
+
+/*
+ * Return "n1" modulus "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_modulus(varnumber_T n1, varnumber_T n2)
+{
+    // Give an error when n2 is 0?
+    return (n2 == 0) ? 0 : (n1 % n2);
+}
+
 
 #if defined(EBCDIC) || defined(PROTO)
 /*
@@ -1758,8 +1791,8 @@ ex_let_one(
 			    case '+': n = numval + n; break;
 			    case '-': n = numval - n; break;
 			    case '*': n = numval * n; break;
-			    case '/': n = numval / n; break;
-			    case '%': n = numval % n; break;
+			    case '/': n = (long)num_divide(numval, n); break;
+			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
 		    else if (opt_type == 0 && stringval != NULL) // string
@@ -2538,8 +2571,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			    case '+': n += tv_get_number(tv2); break;
 			    case '-': n -= tv_get_number(tv2); break;
 			    case '*': n *= tv_get_number(tv2); break;
-			    case '/': n /= tv_get_number(tv2); break;
-			    case '%': n %= tv_get_number(tv2); break;
+			    case '/': n = num_divide(n, tv_get_number(tv2)); break;
+			    case '%': n = num_modulus(n, tv_get_number(tv2)); break;
 			}
 			clear_tv(tv1);
 			tv1->v_type = VAR_NUMBER;
@@ -4113,26 +4146,10 @@ eval6(
 		if (op == '*')
 		    n1 = n1 * n2;
 		else if (op == '/')
-		{
-		    if (n2 == 0)	/* give an error message? */
-		    {
-			if (n1 == 0)
-			    n1 = VARNUM_MIN; /* similar to NaN */
-			else if (n1 < 0)
-			    n1 = -VARNUM_MAX;
-			else
-			    n1 = VARNUM_MAX;
-		    }
-		    else
-			n1 = n1 / n2;
-		}
+		    n1 = num_divide(n1, n2);
 		else
-		{
-		    if (n2 == 0)	/* give an error message? */
-			n1 = 0;
-		    else
-			n1 = n1 % n2;
-		}
+		    n1 = num_modulus(n1, n2);
+
 		rettv->v_type = VAR_NUMBER;
 		rettv->vval.v_number = n1;
 	    }
