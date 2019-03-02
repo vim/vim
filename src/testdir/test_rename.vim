@@ -34,67 +34,71 @@ func Test_rename_same_file()
 endfunc
 
 func Test_rename_dir_to_dir()
-  call mkdir('Xdir1')
-  call writefile(['foo'], 'Xdir1/Xfile')
+  call mkdir('Xrenamedir1')
+  call writefile(['foo'], 'Xrenamedir1/Xrenamefile')
 
-  call assert_equal(0, rename('Xdir1', 'Xdir2'))
+  call assert_equal(0, rename('Xrenamedir1', 'Xrenamedir2'))
 
-  call assert_equal('', glob('Xdir1'))
-  call assert_equal(['foo'], readfile('Xdir2/Xfile'))
+  call assert_equal('', glob('Xrenamedir1'))
+  call assert_equal(['foo'], readfile('Xrenamedir2/Xrenamefile'))
 
-  call delete('Xdir2/Xfile')
-  call delete('Xdir2', 'd')
+  call delete('Xrenamedir2/Xrenamefile')
+  call delete('Xrenamedir2', 'd')
 endfunc
 
 func Test_rename_same_dir()
-  call mkdir('Xdir')
-  call writefile(['foo'], 'Xdir/Xfile')
+  call mkdir('Xrenamedir')
+  call writefile(['foo'], 'Xrenamedir/Xrenamefile')
 
-  call assert_equal(0, rename('Xdir', 'Xdir'))
+  call assert_equal(0, rename('Xrenamedir', 'Xrenamedir'))
 
-  call assert_equal(['foo'], readfile('Xdir/Xfile'))
+  call assert_equal(['foo'], readfile('Xrenamedir/Xrenamefile'))
 
-  call delete('Xdir/Xfile')
-  call delete('Xdir', 'd')
+  call delete('Xrenamedir/Xrenamefile')
+  call delete('Xrenamedir', 'd')
 endfunc
 
 func Test_rename_copy()
   " Check that when original file can't be deleted, rename()
   " still succeeds but copies the file.
-  call mkdir('Xdir')
-  call writefile(['foo'], 'Xdir/Xfile')
-  call setfperm('Xdir', 'r-xr-xr-x')
+  call mkdir('Xrenamedir')
+  call writefile(['foo'], 'Xrenamedir/Xrenamefile')
+  call setfperm('Xrenamedir', 'r-xr-xr-x')
 
-  call assert_equal(0, rename('Xdir/Xfile', 'Xfile'))
+  call assert_equal(0, rename('Xrenamedir/Xrenamefile', 'Xrenamefile'))
 
-  call assert_equal(['foo'], readfile('Xdir/Xfile'))
-  call assert_equal(['foo'], readfile('Xfile'))
+  if !has('win32')
+    " On Windows, the source file is removed despite
+    " its directory being made not writable.
+    call assert_equal(['foo'], readfile('Xrenamedir/Xrenamefile'))
+  endif
+  call assert_equal(['foo'], readfile('Xrenamefile'))
 
-  call setfperm('Xdir', 'rwxrwxrwx')
-  call delete('Xdir/Xfile')
-  call delete('Xdir', 'd')
-  call delete('Xfile')
+  call setfperm('Xrenamedir', 'rwxrwxrwx')
+  call delete('Xrenamedir/Xrenamefile')
+  call delete('Xrenamedir', 'd')
+  call delete('Xrenamefile')
 endfunc
 
 func Test_rename_fails()
-  call writefile(['foo'], 'Xfile')
+  call writefile(['foo'], 'Xrenamefile')
 
   " Can't rename into a non-existing directory.
-  call assert_notequal(0, rename('Xfile', 'Xdoesnotexist/Xfile'))
+  call assert_notequal(0, rename('Xrenamefile', 'Xdoesnotexist/Xrenamefile'))
 
   " Can't rename a non-existing file.
-  call assert_notequal(0, rename('Xdoesnotexist', 'Xfile2'))
-  call assert_equal('', glob('Xfile2'))
+  call assert_notequal(0, rename('Xdoesnotexist', 'Xrenamefile2'))
+  call assert_equal('', glob('Xrenamefile2'))
 
   " When rename() fails, the destination file should not be deleted.
-  call assert_notequal(0, rename('Xdoesnotexist', 'Xfile'))
-  call assert_equal(['foo'], readfile('Xfile'))
+  call assert_notequal(0, rename('Xdoesnotexist', 'Xrenamefile'))
+  call assert_equal(['foo'], readfile('Xrenamefile'))
 
   " Can't rename to en empty file name.
-  call assert_notequal(0, rename('Xfile', ''))
+  call assert_notequal(0, rename('Xrenamefile', ''))
 
-  call assert_fails('call rename("Xfile", [])', 'E730')
-  call assert_fails('call rename(0z, "Xfile")', 'E976')
+  call assert_fails('call rename("Xrenamefile", [])', 'E730')
+  call assert_fails('call rename(0z, "Xrenamefile")', 'E976')
 
-  call delete('Xfile')
+  call delete('Xrenamefile')
 endfunc
