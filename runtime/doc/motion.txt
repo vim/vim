@@ -320,7 +320,7 @@ _  <underscore>		[count] - 1 lines downward, on the first non-blank
 G			Goto line [count], default last line, on the first
 			non-blank character |linewise|.  If 'startofline' not
 			set, keep the same column.
-			G is a one of |jump-motions|.
+			G is one of the |jump-motions|.
 
 							*<C-End>*
 <C-End>			Goto line [count], default last line, on the last
