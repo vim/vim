@@ -63,14 +63,14 @@ endfunc
 
 func Test_list2str_str2list_utf8()
   " One Unicode codepoint
-  let s = "\u3042"
-  let l = [0x3042]
+  let s = "\u3042\u3044"
+  let l = [0x3042, 0x3044]
   call assert_equal(l, str2list(s, 1))
   call assert_equal(s, list2str(l, 1))
 
   " With composing characters
-  let s = "\u304b\u3099"
-  let l = [0x304b, 0x3099]
+  let s = "\u304b\u3099\u3044"
+  let l = [0x304b, 0x3099, 0x3044]
   call assert_equal(l, str2list(s, 1))
   call assert_equal(s, list2str(l, 1))
 endfunc
