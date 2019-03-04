@@ -1137,6 +1137,15 @@ func Test_reg_executing_and_recording()
   call feedkeys("q\"\"=s:save_reg_stat()\<CR>pq", 'xt')
   call assert_equal('":', s:reg_stat)
 
+  " :normal command saves and restores reg_executing
+  let @q = ":call TestFunc()\<CR>:call s:save_reg_stat()\<CR>"
+  func TestFunc() abort
+    normal! ia
+  endfunc
+  call feedkeys("@q", 'xt')
+  call assert_equal(':q', s:reg_stat)
+  delfunc TestFunc
+
   bwipe!
   delfunc s:save_reg_stat
   unlet s:reg_stat

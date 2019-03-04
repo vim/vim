@@ -296,16 +296,20 @@ static int	sort_abort;	/* flag to indicate if sorting has been interrupted */
 /* Struct to store info to be sorted. */
 typedef struct
 {
-    linenr_T	lnum;			/* line number */
+    linenr_T	lnum;			// line number
     union {
 	struct
 	{
-	    varnumber_T	start_col_nr;		/* starting column number */
-	    varnumber_T	end_col_nr;		/* ending column number */
+	    varnumber_T	start_col_nr;	// starting column number
+	    varnumber_T	end_col_nr;	// ending column number
 	} line;
-	varnumber_T	value;		/* value if sorting by integer */
+	struct
+	{
+	    varnumber_T	value;		// value if sorting by integer
+	    int is_number;		// TRUE when line contains a number
+	} num;
 #ifdef FEAT_FLOAT
-	float_T value_flt;	/* value if sorting by float */
+	float_T value_flt;		// value if sorting by float
 #endif
     } st_u;
 } sorti_T;
@@ -335,11 +339,14 @@ sort_compare(const void *s1, const void *s2)
     if (got_int)
 	sort_abort = TRUE;
 
-    /* When sorting numbers "start_col_nr" is the number, not the column
-     * number. */
     if (sort_nr)
-	result = l1.st_u.value == l2.st_u.value ? 0
-				 : l1.st_u.value > l2.st_u.value ? 1 : -1;
+    {
+	if (l1.st_u.num.is_number != l2.st_u.num.is_number)
+	    result = l1.st_u.num.is_number - l2.st_u.num.is_number;
+	else
+	    result = l1.st_u.num.value == l2.st_u.num.value ? 0
+			     : l1.st_u.num.value > l2.st_u.num.value ? 1 : -1;
+    }
 #ifdef FEAT_FLOAT
     else if (sort_flt)
 	result = l1.st_u.value_flt == l2.st_u.value_flt ? 0
@@ -553,11 +560,17 @@ ex_sort(exarg_T *eap)
 		if (s > p && s[-1] == '-')
 		    --s;  /* include preceding negative sign */
 		if (*s == NUL)
-		    /* empty line should sort before any number */
-		    nrs[lnum - eap->line1].st_u.value = -MAXLNUM;
+		{
+		    /* line without number should sort before any number */
+		    nrs[lnum - eap->line1].st_u.num.is_number = FALSE;
+		    nrs[lnum - eap->line1].st_u.num.value = 0;
+		}
 		else
+		{
+		    nrs[lnum - eap->line1].st_u.num.is_number = TRUE;
 		    vim_str2nr(s, NULL, NULL, sort_what,
-			       &nrs[lnum - eap->line1].st_u.value, NULL, 0);
+			       &nrs[lnum - eap->line1].st_u.num.value, NULL, 0);
+		}
 	    }
 #ifdef FEAT_FLOAT
 	    else

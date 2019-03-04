@@ -71,7 +71,7 @@
 # define _CRT_SECURE_NO_DEPRECATE
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
-#if !defined(CYGWIN) && (defined(CYGWIN32) || defined(__CYGWIN__) || defined(__CYGWIN32__))
+#if !defined(CYGWIN) && defined(__CYGWIN__)
 # define CYGWIN
 #endif
 

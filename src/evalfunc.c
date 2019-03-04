@@ -2451,7 +2451,7 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 
 	if (utf8)
-	    rettv->vval.v_number = (*utf_ptr2char)(tv_get_string(&argvars[0]));
+	    rettv->vval.v_number = utf_ptr2char(tv_get_string(&argvars[0]));
 	else
 	    rettv->vval.v_number = (*mb_ptr2char)(tv_get_string(&argvars[0]));
     }
@@ -5752,6 +5752,8 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "winid", wp->w_id);
     dict_add_number(dict, "height", wp->w_height);
     dict_add_number(dict, "winrow", wp->w_winrow + 1);
+    dict_add_number(dict, "topline", wp->w_topline);
+    dict_add_number(dict, "botline", wp->w_botline - 1);
 #ifdef FEAT_MENU
     dict_add_number(dict, "winbar", wp->w_winbar_height);
 #endif
@@ -6141,7 +6143,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef MSWIN
 	"win32",
 #endif
-#if defined(UNIX) && (defined(__CYGWIN32__) || defined(__CYGWIN__))
+#if defined(UNIX) && defined(__CYGWIN__)
 	"win32unix",
 #endif
 #ifdef _WIN64
@@ -8687,7 +8689,7 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 	if (utf8)
-	    buf[(*utf_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
+	    buf[utf_char2bytes((int)tv_get_number(&argvars[0]), buf)] = NUL;
 	else
 	    buf[(*mb_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
     }
@@ -11633,7 +11635,7 @@ f_sign_jump(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;
@@ -11685,7 +11687,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;

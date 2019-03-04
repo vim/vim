@@ -17,6 +17,7 @@
  * Text properties have a type, which can be used to specify highlighting.
  *
  * TODO:
+ * - When using 'cursorline' attributes should be merged. (#3912)
  * - Adjust text property column and length when text is inserted/deleted.
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
@@ -27,7 +28,10 @@
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
- * - add mechanism to keep track of changed lines.
+ * - Add mechanism to keep track of changed lines, so that plugin can update
+ *   text properties in these.
+ * - Perhaps have a window-local option to disable highlighting from text
+ *   properties?
  */
 
 #include "vim.h"
@@ -158,7 +162,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	*newtext;
     int		proplen;
     size_t	textlen;
-    char_u	*props;
+    char_u	*props = NULL;
     char_u	*newprops;
     textprop_T	tmp_prop;
     int		i;

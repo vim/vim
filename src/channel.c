@@ -191,7 +191,7 @@ ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
 
 static int did_log_msg = TRUE;
 
-#ifndef PROTO  /* prototype is in vim.h */
+#ifndef PROTO  // prototype is in proto.h
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {
@@ -1793,6 +1793,7 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
 
     mch_memmove(buf, buf + len, node->rq_buflen - len);
     node->rq_buflen -= len;
+    node->rq_buffer[node->rq_buflen] = NUL;
 }
 
 /*
@@ -1815,7 +1816,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	return FAIL;
 
     last_node = node->rq_next;
-    len = node->rq_buflen + last_node->rq_buflen + 1;
+    len = node->rq_buflen + last_node->rq_buflen;
     if (want_nl)
 	while (last_node->rq_next != NULL
 		&& channel_first_nl(last_node) == NULL)
@@ -1824,7 +1825,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	    len += last_node->rq_buflen;
 	}
 
-    p = newbuf = alloc(len);
+    p = newbuf = alloc(len + 1);
     if (newbuf == NULL)
 	return FAIL;	    /* out of memory */
     mch_memmove(p, node->rq_buffer, node->rq_buflen);
@@ -1838,6 +1839,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	p += n->rq_buflen;
 	vim_free(n->rq_buffer);
     }
+    *p = NUL;
     node->rq_buflen = (long_u)(p - newbuf);
 
     /* dispose of the collapsed nodes and their buffers */
@@ -2662,30 +2664,20 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    }
 	    buf = node->rq_buffer;
 
-	    if (nl == NULL)
-	    {
-		/* Flush remaining message that is missing a NL. */
-		char_u	*new_buf;
-
-		new_buf = vim_realloc(buf, node->rq_buflen + 1);
-		if (new_buf == NULL)
-		    /* This might fail over and over again, should the message
-		     * be dropped? */
-		    return FALSE;
-		buf = new_buf;
-		node->rq_buffer = buf;
-		nl = buf + node->rq_buflen++;
-		*nl = NUL;
-	    }
-
-	    /* Convert NUL to NL, the internal representation. */
-	    for (p = buf; p < nl && p < buf + node->rq_buflen; ++p)
+	    // Convert NUL to NL, the internal representation.
+	    for (p = buf; (nl == NULL || p < nl)
+					    && p < buf + node->rq_buflen; ++p)
 		if (*p == NUL)
 		    *p = NL;
 
-	    if (nl + 1 == buf + node->rq_buflen)
+	    if (nl == NULL)
 	    {
-		/* get the whole buffer, drop the NL */
+		// get the whole buffer, drop the NL
+		msg = channel_get(channel, part, NULL);
+	    }
+	    else if (nl + 1 == buf + node->rq_buflen)
+	    {
+		// get the whole buffer
 		msg = channel_get(channel, part, NULL);
 		*nl = NUL;
 	    }
@@ -4342,20 +4334,25 @@ channel_parse_messages(void)
 	{
 	    channel->ch_to_be_closed = (1U << PART_COUNT);
 	    channel_close_now(channel);
-	    /* channel may have been freed, start over */
+	    // channel may have been freed, start over
 	    channel = first_channel;
 	    continue;
 	}
 	if (channel->ch_to_be_freed || channel->ch_killing)
 	{
+	    if (channel->ch_killing)
+	    {
+		channel_free_contents(channel);
+		channel->ch_job->jv_channel = NULL;
+	    }
 	    channel_free(channel);
-	    /* channel has been freed, start over */
+	    // channel has been freed, start over
 	    channel = first_channel;
 	    continue;
 	}
 	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
 	{
-	    /* channel is no longer useful, free it */
+	    // channel is no longer useful, free it
 	    channel_free(channel);
 	    channel = first_channel;
 	    part = PART_SOCK;
@@ -5479,15 +5476,8 @@ job_cleanup(job_T *job)
 	channel_need_redraw = TRUE;
     }
 
-    if (job->jv_channel != NULL
-	 && job->jv_channel->ch_anonymous_pipe && !job->jv_channel->ch_killing)
-    {
-	++safe_to_invoke_callback;
-	channel_free_contents(job->jv_channel);
-	job->jv_channel->ch_job = NULL;
-	job->jv_channel = NULL;
-	--safe_to_invoke_callback;
-    }
+    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
+	job->jv_channel->ch_killing = TRUE;
 
     // Do not free the job in case the close callback of the associated channel
     // isn't invoked yet and may get information by job_info().

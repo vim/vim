@@ -253,6 +253,39 @@ static char_u *find_option_end(char_u **arg, int *opt_flags);
 /* for VIM_VERSION_ defines */
 #include "version.h"
 
+/*
+ * Return "n1" divided by "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_divide(varnumber_T n1, varnumber_T n2)
+{
+    varnumber_T	result;
+
+    if (n2 == 0)	// give an error message?
+    {
+	if (n1 == 0)
+	    result = VARNUM_MIN; // similar to NaN
+	else if (n1 < 0)
+	    result = -VARNUM_MAX;
+	else
+	    result = VARNUM_MAX;
+    }
+    else
+	result = n1 / n2;
+
+    return result;
+}
+
+/*
+ * Return "n1" modulus "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_modulus(varnumber_T n1, varnumber_T n2)
+{
+    // Give an error when n2 is 0?
+    return (n2 == 0) ? 0 : (n1 % n2);
+}
+
 
 #if defined(EBCDIC) || defined(PROTO)
 /*
@@ -1758,8 +1791,8 @@ ex_let_one(
 			    case '+': n = numval + n; break;
 			    case '-': n = numval - n; break;
 			    case '*': n = numval * n; break;
-			    case '/': n = numval / n; break;
-			    case '%': n = numval % n; break;
+			    case '/': n = (long)num_divide(numval, n); break;
+			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
 		    else if (opt_type == 0 && stringval != NULL) // string
@@ -2538,8 +2571,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			    case '+': n += tv_get_number(tv2); break;
 			    case '-': n -= tv_get_number(tv2); break;
 			    case '*': n *= tv_get_number(tv2); break;
-			    case '/': n /= tv_get_number(tv2); break;
-			    case '%': n %= tv_get_number(tv2); break;
+			    case '/': n = num_divide(n, tv_get_number(tv2)); break;
+			    case '%': n = num_modulus(n, tv_get_number(tv2)); break;
 			}
 			clear_tv(tv1);
 			tv1->v_type = VAR_NUMBER;
@@ -4113,26 +4146,10 @@ eval6(
 		if (op == '*')
 		    n1 = n1 * n2;
 		else if (op == '/')
-		{
-		    if (n2 == 0)	/* give an error message? */
-		    {
-			if (n1 == 0)
-			    n1 = VARNUM_MIN; /* similar to NaN */
-			else if (n1 < 0)
-			    n1 = -VARNUM_MAX;
-			else
-			    n1 = VARNUM_MAX;
-		    }
-		    else
-			n1 = n1 / n2;
-		}
+		    n1 = num_divide(n1, n2);
 		else
-		{
-		    if (n2 == 0)	/* give an error message? */
-			n1 = 0;
-		    else
-			n1 = n1 % n2;
-		}
+		    n1 = num_modulus(n1, n2);
+
 		rettv->v_type = VAR_NUMBER;
 		rettv->vval.v_number = n1;
 	    }
@@ -9355,32 +9372,65 @@ assert_inrange(typval_T *argvars)
 {
     garray_T	ga;
     int		error = FALSE;
-    varnumber_T	lower = tv_get_number_chk(&argvars[0], &error);
-    varnumber_T	upper = tv_get_number_chk(&argvars[1], &error);
-    varnumber_T	actual = tv_get_number_chk(&argvars[2], &error);
     char_u	*tofree;
     char	msg[200];
     char_u	numbuf[NUMBUFLEN];
 
-    if (error)
-	return 0;
-    if (actual < lower || actual > upper)
+#ifdef FEAT_FLOAT
+    if (argvars[0].v_type == VAR_FLOAT
+	    || argvars[1].v_type == VAR_FLOAT
+	    || argvars[2].v_type == VAR_FLOAT)
     {
-	prepare_assert_error(&ga);
-	if (argvars[3].v_type != VAR_UNKNOWN)
+	float_T flower = tv_get_float(&argvars[0]);
+	float_T fupper = tv_get_float(&argvars[1]);
+	float_T factual = tv_get_float(&argvars[2]);
+
+	if (factual < flower || factual > fupper)
 	{
-	    ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
-	    vim_free(tofree);
+	    prepare_assert_error(&ga);
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+	    {
+		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
+		vim_free(tofree);
+	    }
+	    else
+	    {
+		vim_snprintf(msg, 200, "Expected range %g - %g, but got %g",
+						      flower, fupper, factual);
+		ga_concat(&ga, (char_u *)msg);
+	    }
+	    assert_error(&ga);
+	    ga_clear(&ga);
+	    return 1;
 	}
-	else
+    }
+    else
+#endif
+    {
+	varnumber_T	lower = tv_get_number_chk(&argvars[0], &error);
+	varnumber_T	upper = tv_get_number_chk(&argvars[1], &error);
+	varnumber_T	actual = tv_get_number_chk(&argvars[2], &error);
+
+	if (error)
+	    return 0;
+	if (actual < lower || actual > upper)
 	{
-	    vim_snprintf(msg, 200, "Expected range %ld - %ld, but got %ld",
+	    prepare_assert_error(&ga);
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+	    {
+		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
+		vim_free(tofree);
+	    }
+	    else
+	    {
+		vim_snprintf(msg, 200, "Expected range %ld - %ld, but got %ld",
 				       (long)lower, (long)upper, (long)actual);
-	    ga_concat(&ga, (char_u *)msg);
+		ga_concat(&ga, (char_u *)msg);
+	    }
+	    assert_error(&ga);
+	    ga_clear(&ga);
+	    return 1;
 	}
-	assert_error(&ga);
-	ga_clear(&ga);
-	return 1;
     }
     return 0;
 }
@@ -9812,14 +9862,8 @@ typval_compare(
     {
 	float_T f1, f2;
 
-	if (typ1->v_type == VAR_FLOAT)
-	    f1 = typ1->vval.v_float;
-	else
-	    f1 = tv_get_number(typ1);
-	if (typ2->v_type == VAR_FLOAT)
-	    f2 = typ2->vval.v_float;
-	else
-	    f2 = tv_get_number(typ2);
+	f1 = tv_get_float(typ1);
+	f2 = tv_get_float(typ2);
 	n1 = FALSE;
 	switch (type)
 	{

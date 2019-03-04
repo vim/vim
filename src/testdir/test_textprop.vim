@@ -518,7 +518,8 @@ endfunc
 
 " screenshot test with textprop highlighting
 funct Test_textprop_screenshots()
-  if !CanRunVimInTerminal() || &encoding != 'utf-8'
+  " The Vim running in the terminal needs to use utf-8.
+  if !CanRunVimInTerminal() || g:orig_encoding != 'utf-8'
     return
   endif
   call writefile([

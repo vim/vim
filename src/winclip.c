@@ -22,7 +22,6 @@
  * posix environment.
  */
 #ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
-# define MSWIN
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include "winclip.pro"
@@ -299,9 +298,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     VimClipType_t	metadata = { -1, -1, -1, -1 };
     HGLOBAL		hMem = NULL;
     char_u		*str = NULL;
-#if defined(MSWIN)
     char_u		*to_free = NULL;
-#endif
     HGLOBAL		rawh = NULL;
     int			str_size = 0;
     int			maxlen;
@@ -361,7 +358,6 @@ clip_mch_request_selection(VimClipboard *cbd)
     }
     if (str == NULL)
     {
-#if defined(MSWIN)
 	/* Try to get the clipboard in Unicode if it's not an empty string. */
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT) && metadata.ucslen != 0)
 	{
@@ -391,10 +387,8 @@ clip_mch_request_selection(VimClipboard *cbd)
 		GlobalUnlock(hMemW);
 	    }
 	}
-	else
-#endif
-	    /* Get the clipboard in the Active codepage. */
-	    if (IsClipboardFormatAvailable(CF_TEXT))
+	/* Get the clipboard in the Active codepage. */
+	else if (IsClipboardFormatAvailable(CF_TEXT))
 	{
 	    if ((hMem = GetClipboardData(CF_TEXT)) != NULL)
 	    {
@@ -417,7 +411,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 			    break;
 		}
 
-#if defined(MSWIN)
 		/* The text is in the active codepage.  Convert to
 		 * 'encoding', going through UTF-16. */
 		acp_to_enc(str, str_size, &to_free, &maxlen);
@@ -426,7 +419,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 		    str_size = maxlen;
 		    str = to_free;
 		}
-#endif
 	    }
 	}
     }
@@ -454,9 +446,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     if (rawh != NULL)
 	GlobalUnlock(rawh);
     CloseClipboard();
-#if defined(MSWIN)
     vim_free(to_free);
-#endif
 }
 
 /*
@@ -471,9 +461,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     HGLOBAL		hMemRaw = NULL;
     HGLOBAL		hMem = NULL;
     HGLOBAL		hMemVim = NULL;
-# if defined(MSWIN)
     HGLOBAL		hMemW = NULL;
-# endif
 
     /* If the '*' register isn't already filled in, fill it in now */
     cbd->owned = TRUE;
@@ -508,7 +496,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.rawlen = 0;
     }
 
-# if defined(MSWIN)
     {
 	WCHAR		*out;
 	int		len = metadata.txtlen;
@@ -550,7 +537,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.ucslen = len;
 	}
     }
-# endif
 
     /* Allocate memory for the text, add one NUL byte to terminate the string.
      */
@@ -590,13 +576,11 @@ clip_mch_set_selection(VimClipboard *cbd)
 	{
 	    SetClipboardData(cbd->format, hMemVim);
 	    hMemVim = 0;
-# if defined(MSWIN)
 	    if (hMemW != NULL)
 	    {
 		if (SetClipboardData(CF_UNICODETEXT, hMemW) != NULL)
 		    hMemW = NULL;
 	    }
-# endif
 	    /* Always use CF_TEXT.  On Win98 Notepad won't obtain the
 	     * CF_UNICODETEXT text, only CF_TEXT. */
 	    SetClipboardData(CF_TEXT, hMem);
@@ -611,10 +595,8 @@ clip_mch_set_selection(VimClipboard *cbd)
 	GlobalFree(hMemRaw);
     if (hMem)
 	GlobalFree(hMem);
-# if defined(MSWIN)
     if (hMemW)
 	GlobalFree(hMemW);
-# endif
     if (hMemVim)
 	GlobalFree(hMemVim);
 }
@@ -746,7 +728,6 @@ utf16_to_enc(short_u *str, int *lenp)
     return enc_str;
 }
 
-#if defined(MSWIN) || defined(PROTO)
 /*
  * Convert from the active codepage to 'encoding'.
  * Input is "str[str_size]".
@@ -796,4 +777,3 @@ enc_to_acp(
 	vim_free(widestr);
     }
 }
-#endif
