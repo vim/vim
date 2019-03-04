@@ -2216,7 +2216,8 @@ atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
-blob2str({blob} [, {nul}])	String	convert Blob to String
+blob_encode({list})		Blob	convert String list to Blob
+blob_decode({blob})		List	convert Blob to String list
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -2590,7 +2591,6 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
-str2blob({expr} [, {nul}])	Blob	convert String to Blob
 str2float({expr})		Float	convert String to Float
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
@@ -3019,16 +3019,22 @@ balloon_split({msg})					*balloon_split()*
 		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
-blob2str({blob} [, {nul})				*blob2str()*
-		Convert Blob {blob} to string.
-		If {nul} is given, NUL character is replaced to {nul}.  If
-		omitted, NUL character is removed. >
-	blob2str(0z610062006300)	"abc"
-	blob2str(0z610062006300, '_')	"a_b_c_"
-<
-		As NUL character cannot be encoded in Vim strings, {nul} can
-		be used to indicate a character to use when converting byte 00
-		in the blob.
+blob_decode({blob})					*blob_decode()*
+		Convert |Blob| {blob} to |List|, each item of the |List|
+		separated with NUL character in the {blob}. >
+	blob_decode(0z616263)		['abc']
+	blob_decode(0z61006263)		['a', 'bc']
+	blob_decode(0z0000616263)	['', '', 'a', 'bc']
+
+blob_encode({list})					*blob_encode()*
+		Convert |List| to a |Blob|.  Each list item is separated with
+		a NUL.  Each list item must be a String or Number. >
+	blob_encode(['ab', 'c'])	0z61620063
+	blob_encode(['ab', '', 'c'])	0z61620000.63
+	blob_encode([''])		0z
+	blob_encode(['', '']))		0z00
+
+<		Note: Bytes is encoded with your 'encoding' option. >
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -8557,17 +8563,6 @@ sqrt({expr})						*sqrt()*
 <			nan
 		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
-
-str2blob({expr} [, {nul}])				*str2blob()*
-		Convert String {expr} to a Blob.  Return all bytes contains
-		the string. >
-	str2blob("a\xA0b")	0z61A062
-<
-		If {nul} is given, all of String {nul} in {expr} are replaced
-		to NUL.  >
-	str2blob("a/b/c", "/")	0z61006200.63
-
-<		Note: Bytes is encoded with your 'encoding' option. >
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same

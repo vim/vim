@@ -67,7 +67,8 @@ static void f_balloon_show(typval_T *argvars, typval_T *rettv);
 static void f_balloon_split(typval_T *argvars, typval_T *rettv);
 # endif
 #endif
-static void f_blob2str(typval_T *argvars, typval_T *rettv);
+static void f_blob_encode(typval_T *argvars, typval_T *rettv);
+static void f_blob_decode(typval_T *argvars, typval_T *rettv);
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
 static void f_bufexists(typval_T *argvars, typval_T *rettv);
@@ -391,9 +392,6 @@ static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_sqrt(typval_T *argvars, typval_T *rettv);
-#endif
-static void f_str2blob(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
 static void f_str2float(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
@@ -545,7 +543,8 @@ static struct fst
     {"balloon_split",	1, 1, f_balloon_split},
 # endif
 #endif
-    {"blob2str",	1, 2, f_blob2str},
+    {"blob_decode",	1, 1, f_blob_decode},
+    {"blob_encode",	1, 1, f_blob_encode},
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
     {"bufexists",	1, 1, f_bufexists},
@@ -885,9 +884,6 @@ static struct fst
     {"split",		1, 3, f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, f_sqrt},
-#endif
-    {"str2blob",	1, 2, f_str2blob},
-#ifdef FEAT_FLOAT
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
@@ -1781,15 +1777,16 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 #endif
 
 /*
- * "blob2str(blob, [sep])" function
+ * "blob_decode(blob)" function
  */
     static void
-f_blob2str(typval_T *argvars UNUSED, typval_T *rettv)
+f_blob_decode(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    int		i;
-    char_u	*sep = NULL, c, str[2];
+    listitem_T  *li;
     blob_T	*b;
-    garray_T	ga_text;
+    char_u	*ptr, *tmp;
+    int		len;
+    int		failed = FALSE;
 
     if (argvars[0].v_type != VAR_BLOB)
     {
@@ -1797,23 +1794,87 @@ f_blob2str(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     }
 
-    if (argvars[1].v_type != VAR_UNKNOWN)
-	sep = tv_get_string(&argvars[1]);
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
 
     b = argvars[0].vval.v_blob;
-    str[1] = NUL;
-    ga_init2(&ga_text, 1, 90);
-    for (i = 0; i < blob_len(b); ++i)
+    ptr = (char_u*) b->bv_ga.ga_data;
+    len = b->bv_ga.ga_len;
+
+    while ((tmp = memchr(ptr, 0, len)) != NULL)
     {
-	c = blob_get(b, i);
-	if (c == NUL && sep != NULL)
-	    ga_concat(&ga_text, sep);
-	str[0] = c;
-	ga_concat(&ga_text, str);
+	if ((li = listitem_alloc()) == NULL)
+	{
+	    failed = TRUE;
+	    break;
+	}
+	li->li_tv.v_type = VAR_STRING;
+	li->li_tv.v_lock = 0;
+	li->li_tv.vval.v_string = vim_strnsave(ptr, tmp - ptr);
+	list_append(rettv->vval.v_list, li);
+	len -= (tmp - ptr + 1);
+	ptr = tmp + 1;
     }
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = ga_text.ga_data;
+    if (failed == FALSE)
+    {
+	if ((li = listitem_alloc()) == NULL)
+	    failed = TRUE;
+	else
+	{
+	    li->li_tv.v_type = VAR_STRING;
+	    li->li_tv.v_lock = 0;
+	    li->li_tv.vval.v_string = vim_strnsave(ptr, len);
+	    list_append(rettv->vval.v_list, li);
+	}
+    }
+
+    if (failed)
+    {
+	list_free(rettv->vval.v_list);
+	/* readfile doc says an empty list is returned on error */
+	rettv->vval.v_list = list_alloc();
+    }
+}
+
+/*
+ * "blob_encode(list)" function
+ */
+    static void
+f_blob_encode(typval_T *argvars, typval_T *rettv)
+{
+    listitem_T	*li;
+    list_T	*list = NULL;
+    blob_T	*b;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(e_invarg);
+	return;
+    }
+    list = argvars[0].vval.v_list;
+    if (list == NULL)
+	return;
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+	if (tv_get_string_chk(&li->li_tv) == NULL)
+	    return;
+
+    b = blob_alloc();
+    if (b == NULL)
+	return;
+
+    for (li = list->lv_first; li != NULL; li = li->li_next)
+    {
+	if (li != list->lv_first)
+	    ga_append(&b->bv_ga, NUL);
+
+	ga_concat(&b->bv_ga, tv_get_string(&li->li_tv));
+    }
+
+    ++b->bv_refcount;
+
+    rettv->v_type = VAR_BLOB;
+    rettv->vval.v_blob = b;
 }
 
 /*
@@ -12568,62 +12629,7 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     else
 	rettv->vval.v_float = 0.0;
 }
-#endif
 
-/*
- * "str2blob()" function
- */
-    static void
-f_str2blob(typval_T *argvars, typval_T *rettv)
-{
-    char_u	*str = tv_get_string(&argvars[0]);
-    char_u	*sep = NULL;
-    blob_T	*b;
-
-    b = blob_alloc();
-    if (b == NULL)
-	return;
-
-    if (argvars[1].v_type != VAR_UNKNOWN)
-	sep = tv_get_string(&argvars[1]);
-
-    if (sep == NULL)
-    {
-	b->bv_ga.ga_len = STRLEN(str);
-	if (ga_grow(&b->bv_ga, b->bv_ga.ga_len) == FAIL)
-	{
-	    vim_free(b);
-	    return;
-	}
-	mch_memmove((char_u *)b->bv_ga.ga_data, str, b->bv_ga.ga_len);
-    }
-    else
-    {
-	char_u	    *p, *tmp;
-	int	    len = STRLEN(sep);
-
-	b->bv_ga.ga_len = 0;
-	while (TRUE)
-	{
-	    tmp = (char_u*)strstr((char*)str, (char*)sep);
-	    if (tmp == NULL) {
-		ga_concat(&b->bv_ga, str);
-		break;
-	    }
-	    for (p = str; p < tmp; ++p)
-		ga_append(&b->bv_ga, *p);
-	    ga_append(&b->bv_ga, NUL);
-	    str = tmp + len;
-	}
-    }
-
-    ++b->bv_refcount;
-
-    rettv->v_type = VAR_BLOB;
-    rettv->vval.v_blob = b;
-}
-
-#ifdef FEAT_FLOAT
 /*
  * "str2float()" function
  */
