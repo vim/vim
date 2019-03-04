@@ -10260,6 +10260,7 @@ save_current_state(save_state_T *sst)
     sst->save_insertmode = p_im;
     sst->save_finish_op = finish_op;
     sst->save_opcount = opcount;
+    sst->save_reg_executing = reg_executing;
 
     msg_scroll = FALSE;	    /* no msg scrolling in Normal mode */
     restart_edit = 0;	    /* don't go to Insert mode */
@@ -10285,6 +10286,7 @@ restore_current_state(save_state_T *sst)
     p_im = sst->save_insertmode;
     finish_op = sst->save_finish_op;
     opcount = sst->save_opcount;
+    reg_executing = sst->save_reg_executing;
     msg_didout |= sst->save_msg_didout;	/* don't reset msg_didout now */
 
     /* Restore the state (needed when called from a function executed for
