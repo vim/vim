@@ -3024,7 +3024,7 @@ blob_decode({blob})					*blob_decode()*
 		separated with NUL character in the {blob}. >
 	blob_decode(0z616263)		['abc']
 	blob_decode(0z61006263)		['a', 'bc']
-	blob_decode(0z0000616263)	['', '', 'a', 'bc']
+	blob_decode(0z0000616263)	['', '', 'abc']
 
 blob_encode({list})					*blob_encode()*
 		Convert |List| to a |Blob|.  Each list item is separated with
