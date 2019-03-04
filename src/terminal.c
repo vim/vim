@@ -581,7 +581,9 @@ term_start(
 #if defined(FEAT_SESSION)
     /* Remember the command for the session file. */
     if (opt->jo_term_norestore || argv != NULL)
+    {
 	term->tl_command = vim_strsave((char_u *)"NONE");
+    }
     else if (argvar->v_type == VAR_STRING)
     {
 	char_u	*cmd = argvar->vval.v_string;
@@ -4164,7 +4166,9 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 			&& same_color(&cell.bg, &prev_cell.bg);
 	    if (same_chars && cell.width == prev_cell.width && same_attr
 							     && !is_cursor_pos)
+	    {
 		++repeat;
+	    }
 	    else
 	    {
 		if (repeat > 0)
@@ -4200,7 +4204,9 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 			fputs("+", fd);
 
 		    if (same_attr)
+		    {
 			fputs("&", fd);
+		    }
 		    else
 		    {
 			fprintf(fd, "%d", vtermAttr2hl(cell.attrs));
@@ -4349,7 +4355,9 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 						    ga_text.ga_len - prev_len);
 
 	    if (c == '@' || c == '|' || c == '>' || c == '\n')
-		; /* use all attributes from previous cell */
+	    {
+		/* use all attributes from previous cell */
+	    }
 	    else if (c == '+' || c == '*')
 	    {
 		int is_bg;
@@ -5687,7 +5695,9 @@ conpty_term_and_job_init(
     ga_init2(&ga_env, (int)sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
+    {
 	cmd = argvar->vval.v_string;
+    }
     else if (argvar->v_type == VAR_LIST)
     {
 	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)
@@ -6034,7 +6044,9 @@ winpty_term_and_job_init(
     ga_init2(&ga_env, (int)sizeof(char*), 20);
 
     if (argvar->v_type == VAR_STRING)
+    {
 	cmd = argvar->vval.v_string;
+    }
     else if (argvar->v_type == VAR_LIST)
     {
 	if (win32_build_cmd(argvar->vval.v_list, &ga_cmd) == FAIL)

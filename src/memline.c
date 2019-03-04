@@ -2122,9 +2122,13 @@ swapfile_info(char_u *fname)
 	if (read_eintr(fd, &b0, sizeof(b0)) == sizeof(b0))
 	{
 	    if (STRNCMP(b0.b0_version, "VIM 3.0", 7) == 0)
+	    {
 		msg_puts(_("         [from Vim version 3.0]"));
+	    }
 	    else if (ml_check_b0_id(&b0) == FAIL)
+	    {
 		msg_puts(_("         [does not look like a Vim swap file]"));
+	    }
 	    else
 	    {
 		msg_puts(_("         file name: "));
@@ -4369,7 +4373,9 @@ attention_message(
     msg_outtrans(buf->b_fname);
     msg_puts("\"\n");
     if (mch_stat((char *)buf->b_fname, &st) == -1)
+    {
 	msg_puts(_("      CANNOT BE FOUND"));
+    }
     else
     {
 	msg_puts(_("             dated: "));
@@ -5467,7 +5473,9 @@ ml_updatechunk(
 	else if (curix == 0 || (curchnk->mlcs_numlines > 10
 		    && (curchnk->mlcs_numlines + curchnk[-1].mlcs_numlines)
 		       > MLCS_MINL))
+	{
 	    return;
+	}
 
 	/* Collapse chunks */
 	curchnk[-1].mlcs_numlines += curchnk->mlcs_numlines;

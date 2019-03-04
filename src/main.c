@@ -1959,7 +1959,9 @@ command_line_scan(mparm_T *parmp)
 #endif
 #ifdef FEAT_GUI_GTK
 		else if (STRNICMP(argv[0] + argv_idx, "echo-wid", 8) == 0)
-		    ; /* already processed, skip */
+		{
+		    /* already processed, skip */
+		}
 #endif
 		else
 		{

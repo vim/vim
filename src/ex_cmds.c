@@ -3555,7 +3555,9 @@ do_wqall(exarg_T *eap)
 	    else if (check_readonly(&eap->forceit, buf)
 		    || check_overwrite(eap, buf, buf->b_fname, buf->b_ffname,
 							       FALSE) == FAIL)
+	    {
 		++error;
+	    }
 	    else
 	    {
 		bufref_T bufref;
@@ -3953,7 +3955,9 @@ do_ecmd(
 	if (buf == NULL)
 	    goto theend;
 	if (buf->b_ml.ml_mfp == NULL)		/* no memfile yet */
+	{
 	    oldbuf = FALSE;
+	}
 	else					/* existing memfile */
 	{
 	    oldbuf = TRUE;
@@ -4108,7 +4112,9 @@ do_ecmd(
 
     buf = curbuf;
     if ((flags & ECMD_SET_HELP) || keep_help_flag)
+    {
 	prepare_help_buffer();
+    }
     else
     {
 	/* Don't make a buffer listed if it's a help buffer.  Useful when

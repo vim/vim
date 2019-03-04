@@ -1233,7 +1233,9 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     vim_free(menu->xpm_fname);
     menu->xpm = get_toolbar_pixmap(menu, &menu->xpm_fname);
     if (menu->xpm == NULL)
+    {
 	XtSetArg(args[n], XmNlabelType, XmSTRING); n++;
+    }
     else
     {
 	if (menu->xpm_fname != NULL)

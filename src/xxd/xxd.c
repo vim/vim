@@ -725,7 +725,9 @@ main(int argc, char *argv[])
 	    if (getc(fp) == EOF)
 	    {
 	      if (ferror(fp))
+		{
 		  die(2);
+		}
 	      else
 		{
 		  fprintf(stderr, "%s: sorry cannot seek.\n", pname);

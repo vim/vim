@@ -532,7 +532,9 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 			add_to_input_buf(buf, dst_made);
 		    }
 		    else
+		    {
 			add_to_input_buf(string, len);
+		    }
 
 		    return Pt_CONSUME;
 		}
@@ -567,7 +569,9 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 		    }
 		}
 		else
+		{
 		    return Pt_CONTINUE;
+		}
 	    }
 	    else
 		modifiers &= ~MOD_MASK_SHIFT;
@@ -588,7 +592,9 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    string[ len++ ] = K_THIRD(ch);
 	}
 	else
+	{
 	    string[ len++ ] = ch;
+	}
 
 	if (len == 1 && ((ch == Ctrl_C && ctrl_c_interrupts)
 							  || ch == intr_char))
@@ -2584,7 +2590,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int index)
     else
 #endif
 	if (menu_is_separator(menu->name))
+	{
 	    menu->id = PtCreateWidget(PtSeparator, parent->submenu_id, n, args);
+	}
     else
     {
 	accel_key = vim_strchr(menu->name, '&');

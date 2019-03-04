@@ -1059,7 +1059,9 @@ nb_do_cmd(
 		retval = FAIL;
 	    }
 	    else
+	    {
 		len = get_buf_size(buf->bufp);
+	    }
 	    nb_reply_nr(cmdno, len);
 /* =====================================================================*/
 	}
@@ -1257,7 +1259,9 @@ nb_do_cmd(
 			    buf_delsign(buf->bufp, 0, id, NULL);
 			}
 			else
+			{
 			    nbdebug(("    No sign on line %d\n", i));
+			}
 		    }
 
 		    nbdebug(("    Deleting lines %ld through %ld\n",
@@ -1487,7 +1491,9 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "insertDone"))
 	{
 	    if (buf == NULL || buf->bufp == NULL)
+	    {
 		nbdebug(("    invalid buffer identifier in insertDone\n"));
+	    }
 	    else
 	    {
 		buf->bufp->b_start_eol = *args == 'T';
@@ -1817,7 +1823,9 @@ nb_do_cmd(
 #endif
 	    }
 	    else
+	    {
 		nbdebug(("    BAD POSITION in setDot: %s\n", s));
+	    }
 
 	    /* gui_update_cursor(TRUE, FALSE); */
 	    /* update_curbuf(NOT_VALID); */
@@ -2084,7 +2092,9 @@ nb_do_cmd(
 		    for (lnum = first.lnum; lnum <= last.lnum; lnum++)
 		    {
 			if (un)
-			    ; /* never used */
+			{
+			    /* never used */
+			}
 			else
 			{
 			    if (buf_findsigntype_id(buf->bufp, lnum,
@@ -2152,7 +2162,9 @@ nb_do_cmd(
 		}
 	    }
 	    else
+	    {
 		nbdebug(("    Buffer has no changes!\n"));
+	    }
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "netbeansBuffer"))
@@ -2172,15 +2184,23 @@ nb_do_cmd(
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "specialKeys"))
+	{
 	    special_keys(args);
 /* =====================================================================*/
+	}
 	else if (streq((char *)cmd, "actionMenuItem"))
-	    ; /* not used yet */
+	{
+	    /* not used yet */
 /* =====================================================================*/
+	}
 	else if (streq((char *)cmd, "version"))
-	    ; /* not used yet */
+	{
+	    /* not used yet */
+	}
 	else
+	{
 	    nbdebug(("Unrecognised command: %s\n", cmd));
+	}
 	/*
 	 * Unrecognized command is ignored.
 	 */

@@ -118,7 +118,9 @@ gui_mch_set_rendering_options(char_u *s)
 		return FAIL;
 	}
 	else if (STRCMP(name, "scrlines") == 0)
-	    ; /* Deprecated.  Simply ignore it. */
+	{
+	    /* Deprecated.  Simply ignore it. */
+	}
 	else
 	    return FAIL;
     }
@@ -1176,7 +1178,9 @@ _OnFindRepl(void)
 	(void)SetFocus(s_hwnd);
     }
     else if (s_findrep_struct.Flags & FR_REPLACEALL)
+    {
 	flags = FRD_REPLACEALL;
+    }
 
     if (flags != 0)
     {
@@ -2382,7 +2386,9 @@ CenterWindow(
     moninfo.cbSize = sizeof(MONITORINFO);
     mon = MonitorFromWindow(hwndChild, MONITOR_DEFAULTTOPRIMARY);
     if (mon != NULL && GetMonitorInfo(mon, &moninfo))
+    {
 	rScreen = moninfo.rcWork;
+    }
     else
     {
 	hdc = GetDC(hwndChild);
@@ -6288,7 +6294,9 @@ gui_mch_draw_string(
 		unicodebuf[wlen++] = ((c - 0x10000) & 0x3ff) + 0xDC00;
 	    }
 	    else
+	    {
 		unicodebuf[wlen++] = c;
+	    }
 
 	    if (utf_iscomposing(c))
 		cw = 0;
@@ -6738,7 +6746,9 @@ rebuild_tearoff(vimmenu_T *menu)
 	y = (trect.top -  rct.bottom  + roct.bottom);
     }
     else
+    {
 	x = y = 0xffffL;
+    }
     DestroyWindow(thwnd);
     if (menu->children != NULL)
     {

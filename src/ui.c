@@ -1389,7 +1389,9 @@ clip_invert_area(
 
     /* If all on the same line, do it the easy way */
     if (row1 == row2)
+    {
 	clip_invert_rectangle(row1, col1, 1, col2 - col1, invert);
+    }
     else
     {
 	/* Handle a piece of the first line */

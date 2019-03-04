@@ -1462,7 +1462,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			curwin->w_curswant = redo_VIsual_vcol;
 		}
 		else
+		{
 		    curwin->w_curswant = MAXCOL;
+		}
 		coladvance(curwin->w_curswant);
 	    }
 	    cap->count0 = redo_VIsual_count;
@@ -2082,7 +2084,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    }
 	}
 	else
+	{
 	    curwin->w_cursor = old_cursor;
+	}
 	oap->block_mode = FALSE;
 	clearop(oap);
 	motion_force = NUL;
@@ -2646,7 +2650,9 @@ do_mouse(
 				|| (LT_POS(VIsual, curwin->w_cursor)
 				    && (LT_POS(m_pos, VIsual)
 				      || LT_POS(curwin->w_cursor, m_pos))))
+			{
 			    jump_flags = MOUSE_MAY_STOP_VIS;
+			}
 			else if (VIsual_mode == Ctrl_V)
 			{
 			    getvcols(curwin, &curwin->w_cursor, &VIsual,
@@ -3993,7 +3999,9 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
 	    {
 #ifdef FEAT_DIFF
 		if (old_curwin->w_p_diff && curwin->w_p_diff)
+		{
 		    diff_set_topline(old_curwin, curwin);
+		}
 		else
 #endif
 		{
@@ -4162,7 +4170,9 @@ is_ident(char_u *line, int offset)
 		instring = 0;
 	}
 	else if ((line[i] == '"' || line[i] == '\'') && !incomment)
+	{
 	    instring = line[i];
+	}
 	else
 	{
 	    if (incomment)
@@ -4171,9 +4181,13 @@ is_ident(char_u *line, int offset)
 		    incomment = FALSE;
 	    }
 	    else if (prev == '/' && line[i] == '*')
+	    {
 		incomment = TRUE;
+	    }
 	    else if (prev == '/' && line[i] == '/')
+	    {
 		return FALSE;
+	    }
 	}
 
 	prev = line[i];
@@ -4530,7 +4544,9 @@ nv_mousescroll(cmdarg_T *cap)
 	else
 # endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	{
 	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
+	}
 	else
 	{
 	    cap->count1 = 3;
@@ -9292,7 +9308,9 @@ nv_put(cmdarg_T *cap)
     }
 #ifdef FEAT_JOB_CHANNEL
     else if (bt_prompt(curbuf) && !prompt_curpos_editable())
+    {
 	clearopbeep(cap->oap);
+    }
 #endif
     else
     {

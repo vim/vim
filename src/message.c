@@ -2166,7 +2166,9 @@ msg_puts_display(
 		msg_row = Rows - 1;
 	}
 	else if (*s == '\r')	    /* go to column 0 */
+	{
 	    msg_col = 0;
+	}
 	else if (*s == '\b')	    /* go to previous char */
 	{
 	    if (msg_col)
@@ -2958,7 +2960,9 @@ mch_errmsg(char *str)
 	vim_free(w);
     }
     else
+    {
 	fprintf(stderr, "%s", str);
+    }
 #else
     int		len;
 
@@ -3045,7 +3049,9 @@ mch_msg(char *str)
 	vim_free(w);
     }
     else
+    {
 	printf("%s", str);
+    }
 #else
 # if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
     /* On Unix use stdout if we have a tty.  This allows "vim -h | more" and
@@ -3140,7 +3146,9 @@ repeat_message(void)
     }
 #endif
     else if (State == EXTERNCMD)
+    {
 	windgoto(msg_row, msg_col); /* put cursor back */
+    }
     else if (State == HITRETURN || State == SETWSIZE)
     {
 	if (msg_row == Rows - 1)

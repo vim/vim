@@ -747,7 +747,9 @@ deleteFold(
 	    ++level;
 	}
 	if (found_ga == NULL)
+	{
 	    ++lnum;
+	}
 	else
 	{
 	    lnum = found_fp->fd_top + found_fp->fd_len + found_off;
@@ -2063,7 +2065,9 @@ foldtext_cleanup(char_u *str)
 	    STRMOVE(s, s + len);
 	}
 	else
+	{
 	    MB_PTR_ADV(s);
+	}
     }
 }
 
@@ -2504,7 +2508,9 @@ foldUpdateIEMSRecurse(
 			 * starts at another line, update nested folds to keep
 			 * their position, compensating for the new fd_top. */
 			if (fp->fd_top == firstlnum)
-			    ; /* have found a fold beginning where we want */
+			{
+			    /* have found a fold beginning where we want */
+			}
 			else if (fp->fd_top >= startlnum)
 			{
 			    if (fp->fd_top > firstlnum)

@@ -4259,9 +4259,13 @@ regmatch(
 	/* Check for character class with NL added. */
 	if (!rex.reg_line_lbr && WITH_NL(op) && REG_MULTI
 			     && *rex.input == NUL && rex.lnum <= rex.reg_maxline)
+	{
 	    reg_nextline();
+	}
 	else if (rex.reg_line_lbr && WITH_NL(op) && *rex.input == '\n')
+	{
 	    ADVANCE_REGINPUT();
+	}
 	else
 	{
 	  if (WITH_NL(op))
@@ -4960,7 +4964,9 @@ regmatch(
 			rex.input += len;
 		}
 		else
-		    ; /* Backref was not set: Match an empty string. */
+		{
+		    /* Backref was not set: Match an empty string. */
+		}
 	    }
 	    break;
 #endif
@@ -5736,7 +5742,9 @@ regrepeat(
 	while (count < maxcount)
 	{
 	    if (vim_isIDc(PTR2CHAR(scan)) && (testval || !VIM_ISDIGIT(*scan)))
+	    {
 		MB_PTR_ADV(scan);
+	    }
 	    else if (*scan == NUL)
 	    {
 		if (!REG_MULTI || !WITH_NL(OP(p)) || rex.lnum > rex.reg_maxline
@@ -5765,7 +5773,9 @@ regrepeat(
 	{
 	    if (vim_iswordp_buf(scan, rex.reg_buf)
 					  && (testval || !VIM_ISDIGIT(*scan)))
+	    {
 		MB_PTR_ADV(scan);
+	    }
 	    else if (*scan == NUL)
 	    {
 		if (!REG_MULTI || !WITH_NL(OP(p)) || rex.lnum > rex.reg_maxline
@@ -5793,7 +5803,9 @@ regrepeat(
 	while (count < maxcount)
 	{
 	    if (vim_isfilec(PTR2CHAR(scan)) && (testval || !VIM_ISDIGIT(*scan)))
+	    {
 		MB_PTR_ADV(scan);
+	    }
 	    else if (*scan == NUL)
 	    {
 		if (!REG_MULTI || !WITH_NL(OP(p)) || rex.lnum > rex.reg_maxline
@@ -5832,7 +5844,9 @@ regrepeat(
 	    }
 	    else if (vim_isprintc(PTR2CHAR(scan)) == 1
 					  && (testval || !VIM_ISDIGIT(*scan)))
+	    {
 		MB_PTR_ADV(scan);
+	    }
 	    else if (rex.reg_line_lbr && *scan == '\n' && WITH_NL(OP(p)))
 		++scan;
 	    else
@@ -7490,7 +7504,9 @@ vim_regsub_both(
 		no = 0;
 	    }
 	    else if ('0' <= *src && *src <= '9')
+	    {
 		no = *src++ - '0';
+	    }
 	    else if (vim_strchr((char_u *)"uUlLeE", *src))
 	    {
 		switch (*src++)

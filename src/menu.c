@@ -2274,13 +2274,19 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 		&& !current_sctx.sc_sid
 #endif
 		)
+	{
 	    idx = MENU_INDEX_INSERT;
+	}
 #ifdef FEAT_TERMINAL
 	else if (term_use_loop())
+	{
 	    idx = MENU_INDEX_TERMINAL;
+	}
 #endif
 	else if (VIsual_active)
+	{
 	    idx = MENU_INDEX_VISUAL;
+	}
 	else if (eap != NULL && eap->addr_count)
 	{
 	    pos_T	tpos;

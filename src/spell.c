@@ -2837,7 +2837,9 @@ bytes2offset(char_u **pp)
 
     c = *p++;
     if ((c & 0x80) == 0x00)		/* 1 byte */
+    {
 	nr = c - 1;
+    }
     else if ((c & 0xc0) == 0x80)	/* 2 bytes */
     {
 	nr = (c & 0x3f) - 1;
@@ -7581,7 +7583,9 @@ soundalike_score(
 		|| (badsound[1] != NUL
 		    && goodsound[1] != NUL
 		    && badsound[2] == goodsound[2]))
-	    ; /* handle like a substitute */
+	{
+	    /* handle like a substitute */
+	}
 	else
 	{
 	    score = 2 * SCORE_DEL / 3;

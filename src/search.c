@@ -1957,7 +1957,9 @@ findmatchlimit(
 	 * under the cursor.
 	 */
 	if (initc == '#')
+	{
 	    hash_dir = dir;
+	}
 	else
 	{
 	    /*
@@ -4798,7 +4800,9 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
     regmatch.startpos[0].col = -1;
     /* move to match */
     if (move)
+    {
 	CLEAR_POS(&pos);
+    }
     else
     {
 	pos = *cur;

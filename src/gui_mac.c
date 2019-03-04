@@ -817,7 +817,9 @@ Handle_KAHL_GTTX_AE(
 	    /* Resize handle to linesize+1 to include the linefeed */
 	    SetHandleSize(GetTextData.theText, BufferSize);
 	    if (GetHandleSize(GetTextData.theText) != BufferSize)
+	    {
 		break; /* Simple handling for now */
+	    }
 	    else
 	    {
 		HLock(GetTextData.theText);
@@ -963,7 +965,9 @@ HandleUnusedParms(const AppleEvent *theAEvent)
 
     /* If the descriptor isn't found, then we got the required parameters. */
     if (error == errAEDescNotFound)
+    {
 	error = noErr;
+    }
     else
     {
 #if 0
@@ -1092,9 +1096,13 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (^error) then
     {
 	if (thePosition.lineNum >= 0)
-	  ; // Goto this line
+	{
+	  // Goto this line
+	}
 	else
-	  ; // Set the range char wise
+	{
+	  // Set the range char wise
+	}
     }
  */
 
@@ -1438,7 +1446,9 @@ GetFontPanelSelection(char_u *outName)
 	    STRCPY(outName + fontNameLen, styleString);
     }
     else
+    {
 	*outName = NUL;
+    }
 }
 
 
@@ -2600,7 +2610,9 @@ gui_mac_handle_contextual_menu(EventRecord *event)
 	gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
     }
     else if (CntxMenuID == kCMShowHelpSelected)
-	; /* Should come up with the help */
+    {
+	/* Should come up with the help */
+    }
 
 }
 #endif
@@ -4864,7 +4876,9 @@ gui_mch_destroy_menu(vimmenu_T *menu)
       }
 #ifdef DEBUG_MAC_MENU
       else
+      {
 	printf("gmdm 2\n");
+      }
 #endif
     }
     else
@@ -5819,7 +5833,9 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	    gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
 	}
 	else if (CntxMenuID == kCMShowHelpSelected)
-	    ; /* Should come up with the help */
+	{
+	    /* Should come up with the help */
+	}
     }
 
     /* Restore original Port */

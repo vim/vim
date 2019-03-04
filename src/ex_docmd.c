@@ -6347,7 +6347,9 @@ ex_command(exarg_T *eap)
      */
     p = skipwhite(end);
     if (!has_attr && ends_excmd(*p))
+    {
 	uc_list(name, end - name);
+    }
     else if (!ASCII_ISUPPER(*name))
     {
 	emsg(_("E183: User defined commands must start with an uppercase letter"));
@@ -6524,7 +6526,9 @@ uc_split_args(char_u *arg, size_t *lenp)
 	    *q++ = '"';
 	}
 	else
+	{
 	    MB_COPY_CHAR(p, q);
+	}
     }
     *q++ = '"';
     *q = 0;
@@ -7325,7 +7329,9 @@ ex_quit(exarg_T *eap)
 				       | CCGD_EXCMD))
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit, TRUE)))
+    {
 	not_exiting();
+    }
     else
     {
 	/* quit last window
@@ -8927,7 +8933,9 @@ ex_syncbind(exarg_T *eap UNUSED)
 	    topline = 1;
     }
     else
+    {
 	topline = 1;
+    }
 
 
     /*
@@ -9589,7 +9597,9 @@ ex_at(exarg_T *eap)
     /* Put the register in the typeahead buffer with the "silent" flag. */
     if (do_execreg(c, TRUE, vim_strchr(p_cpo, CPO_EXECBUF) != NULL, TRUE)
 								      == FAIL)
+    {
 	beep_flush();
+    }
     else
     {
 	int	save_efr = exec_from_reg;

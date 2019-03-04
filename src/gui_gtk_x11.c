@@ -1809,7 +1809,9 @@ process_motion_notify(int x, int y, GdkModifierType state)
 	    delay = 5;
 	}
 	else
+	{
 	    delay = (130 * (127 - offshoot)) / 127 + 5;
+	}
 
 	/* shoot again */
 	if (!motion_repeat_timer)
@@ -3712,7 +3714,9 @@ gui_mch_init(void)
 	plug = gtk_plug_new_for_display(gdk_display_get_default(),
 					gtk_socket_id);
 	if (plug != NULL && gtk_plug_get_socket_window(GTK_PLUG(plug)) != NULL)
+	{
 	    gui.mainwin = plug;
+	}
 	else
 	{
 	    g_warning("Connection to GTK+ socket (ID %u) failed",
@@ -4318,7 +4322,9 @@ gui_mch_open(void)
      * support; allowing the WM to restore window placement.
      */
     if (role_argument != NULL)
+    {
 	gtk_window_set_role(GTK_WINDOW(gui.mainwin), role_argument);
+    }
     else
     {
 	char *role;
@@ -5934,7 +5940,9 @@ not_ascii:
 					    MAX(0, width - cluster_width) / 2;
 		}
 		else /* i == 0 "cannot happen" */
+		{
 		    glyph->geometry.width = 0;
+		}
 	    }
 
 	    /*** Aaaaand action! ***/

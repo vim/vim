@@ -3452,9 +3452,13 @@ f_exists(typval_T *argvars, typval_T *rettv)
 	    n = FALSE;			/* trailing garbage */
     }
     else if (*p == '*')			/* internal or user defined function */
+    {
 	n = function_exists(p + 1, FALSE);
+    }
     else if (*p == ':')
+    {
 	n = cmd_exists(p + 1);
+    }
     else if (*p == '#')
     {
 	if (p[1] == '#')
@@ -3463,7 +3467,9 @@ f_exists(typval_T *argvars, typval_T *rettv)
 	    n = au_exists(p + 1);
     }
     else				/* internal variable */
+    {
 	n = var_exists(p);
+    }
 
     rettv->vval.v_number = n;
 }
@@ -5403,7 +5409,9 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		}
 	    }
 	    else
+	    {
 		dict_add_string(dict, "pattern", cur->pattern);
+	    }
 	    dict_add_string(dict, "group", syn_id2name(cur->hlg_id));
 	    dict_add_number(dict, "priority", (long)cur->priority);
 	    dict_add_number(dict, "id", (long)cur->id);

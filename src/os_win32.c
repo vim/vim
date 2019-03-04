@@ -1384,9 +1384,13 @@ decode_mouse_event(
 		    || s_old_topfill != curwin->w_topfill
 #endif
 		    || (int)(dwCurrentTime - s_dwLastClickTime) > p_mouset)
+	    {
 		s_cClicks = 1;
+	    }
 	    else if (++s_cClicks > 4)
+	    {
 		s_cClicks = 1;
+	    }
 
 	    s_dwLastClickTime = dwCurrentTime;
 	}
@@ -4992,7 +4996,9 @@ mch_call_shell(
 	settmode(TMODE_COOK);	/* set to normal mode */
 
     if (cmd == NULL)
+    {
 	x = mch_system((char *)p_sh, options);
+    }
     else
     {
 	/* we use "command" or "cmd" to start the shell; slow but easy */
@@ -6437,7 +6443,9 @@ mch_write(
 		gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Bottom + 1);
 	    }
 	    else
+	    {
 		gotoxy(g_srScrollRegion.Left + 1, g_coord.Y + 2);
+	    }
 #ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fputs("\\n\n", fdDump);
@@ -6523,29 +6531,51 @@ mch_write(
 			vtp_sgr_bulks(argc, args);
 		}
 		else if (argc == 2 && *p == 'H')
+		{
 		    gotoxy(arg2, arg1);
+		}
 		else if (argc == 2 && *p == 'r')
+		{
 		    set_scroll_region(0, arg1 - 1, Columns - 1, arg2 - 1);
+		}
 		else if (argc == 2 && *p == 'R')
+		{
 		    set_scroll_region_tb(arg1, arg2);
+		}
 		else if (argc == 2 && *p == 'V')
+		{
 		    set_scroll_region_lr(arg1, arg2);
+		}
 		else if (argc == 1 && *p == 'A')
+		{
 		    gotoxy(g_coord.X + 1,
 			   max(g_srScrollRegion.Top, g_coord.Y - arg1) + 1);
+		}
 		else if (argc == 1 && *p == 'b')
+		{
 		    textbackground((WORD) arg1);
+		}
 		else if (argc == 1 && *p == 'C')
+		{
 		    gotoxy(min(g_srScrollRegion.Right, g_coord.X + arg1) + 1,
 			   g_coord.Y + 1);
+		}
 		else if (argc == 1 && *p == 'f')
+		{
 		    textcolor((WORD) arg1);
+		}
 		else if (argc == 1 && *p == 'H')
+		{
 		    gotoxy(1, arg1);
+		}
 		else if (argc == 1 && *p == 'L')
+		{
 		    insert_lines(arg1);
+		}
 		else if (argc == 1 && *p == 'M')
+		{
 		    delete_lines(arg1);
+		}
 
 		len -= (int)(p - s);
 		s = p + 1;

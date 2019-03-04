@@ -1364,7 +1364,8 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     {
 	long n = PyLong_AsLong(idx);
 	return RangeAsItem(self, n, val);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 

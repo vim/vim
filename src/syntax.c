@@ -4200,9 +4200,13 @@ put_id_list(char_u *name, short *list, int attr)
 		msg_puts("ALL");
 	}
 	else if (*p >= SYNID_TOP && *p < SYNID_CONTAINED)
+	{
 	    msg_puts("TOP");
+	}
 	else if (*p >= SYNID_CONTAINED && *p < SYNID_CLUSTER)
+	{
 	    msg_puts("CONTAINED");
+	}
 	else if (*p >= SYNID_CLUSTER)
 	{
 	    short scl_id = *p - SYNID_CLUSTER;
@@ -7739,7 +7743,9 @@ do_highlight(
 #ifdef FEAT_GUI
 	    if (HL_TABLE()[idx].sg_font_name != NULL
 			     && STRCMP(HL_TABLE()[idx].sg_font_name, arg) == 0)
-		; /* Font name didn't change, ignore. */
+	    {
+		/* Font name didn't change, ignore. */
+	    }
 	    else if (!gui.shell_created)
 	    {
 		/* GUI not started yet, always accept the name. */
@@ -9506,7 +9512,9 @@ set_hl_attr(
 	    && sgp->sg_fontset == NOFONTSET
 # endif
 	    )
+    {
 	sgp->sg_gui_attr = sgp->sg_gui;
+    }
     else
     {
 	at_en.ae_attr = sgp->sg_gui;

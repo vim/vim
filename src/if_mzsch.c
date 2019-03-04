@@ -744,7 +744,9 @@ dynamic_mzscheme_end(void)
 guaranteed_byte_string_arg(char *proc, int num, int argc, Scheme_Object **argv)
 {
     if (SCHEME_BYTE_STRINGP(argv[num]))
+    {
 	return argv[num];
+    }
     else if (SCHEME_CHAR_STRINGP(argv[num]))
     {
 	Scheme_Object *tmp = NULL;

@@ -690,7 +690,9 @@ hangul_automata3(char_u *buf, int_u *c)
 	    return AUTOMATA_CORRECT;
 	}
 	else if (sp == 0)
+	{
 	    return AUTOMATA_SPECIAL;
+	}
 	else
 	{
 	    hangul_input_clear();
@@ -1625,7 +1627,9 @@ hangul_composing_buffer_get(int *p_len)
 
 	tmpbuf = hangul_string_convert(composing_hangul_buffer, &len);
 	if (tmpbuf != NULL)
+	{
 	    *p_len = len;
+	}
 	else
 	{
 	    tmpbuf = vim_strnsave(composing_hangul_buffer, 2);

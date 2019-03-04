@@ -466,7 +466,9 @@ edit(
     }
 
     if (cmdchar == 'R')
+    {
 	State = REPLACE;
+    }
     else if (cmdchar == 'V' || cmdchar == 'v')
     {
 	State = VREPLACE;
@@ -8698,7 +8700,9 @@ ins_bs(
 	 * cursor.
 	 */
 	if ((State & REPLACE_FLAG) && curwin->w_cursor.lnum <= lnum)
+	{
 	    dec_cursor();
+	}
 	else
 	{
 	    if (!(State & VREPLACE_FLAG)

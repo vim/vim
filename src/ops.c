@@ -632,7 +632,9 @@ block_insert(
 
 	    /* Avoid starting halfway a multi-byte character. */
 	    if (b_insert)
+	    {
 		off = (*mb_head_off)(oldp, oldp + offset + spaces);
+	    }
 	    else
 	    {
 		off = (*mb_off_next)(oldp, oldp + offset);
@@ -6063,7 +6065,9 @@ read_viminfo_register(vir_T *virp, int force)
 	y_current->y_size = size;
 	y_current->y_time_set = 0;
 	if (size == 0)
+	{
 	    y_current->y_array = NULL;
+	}
 	else
 	{
 	    /* Move the lines from array[] to y_array[]. */
@@ -6392,11 +6396,15 @@ x11_export_final_selection(void)
 		    str = conv_str;
 		}
 		else
+		{
 		    ok = FALSE;
+		}
 		convert_setup(&vc, NULL, NULL);
 	    }
 	    else
+	    {
 		ok = FALSE;
+	    }
 	}
 
 	/* Do not store the string if conversion failed.  Better to use any

@@ -418,7 +418,9 @@ getmark_buf_fnum(
 	}
     }
     else if (ASCII_ISLOWER(c))		/* normal named mark */
+    {
 	posp = &(buf->b_namedm[c - 'a']);
+    }
     else if (ASCII_ISUPPER(c) || VIM_ISDIGIT(c))	/* named file mark */
     {
 	if (VIM_ISDIGIT(c))

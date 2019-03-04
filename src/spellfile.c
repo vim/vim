@@ -2351,9 +2351,13 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    }
 	    else if (is_aff_rule(items, itemcnt, "MIDWORD", 2)
 							   && midword == NULL)
+	    {
 		midword = getroom_save(spin, items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "TRY", 2))
-		; /* ignored, we look in the tree for what chars may appear */
+	    {
+		/* ignored, we look in the tree for what chars may appear */
+	    }
 	    /* TODO: remove "RAR" later */
 	    else if ((is_aff_rule(items, itemcnt, "RAR", 2)
 			|| is_aff_rule(items, itemcnt, "RARE", 2))
@@ -2495,13 +2499,21 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 						       fname, lnum, items[1]);
 	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDDUP", 1))
+	    {
 		compoptions |= COMP_CHECKDUP;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDREP", 1))
+	    {
 		compoptions |= COMP_CHECKREP;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDCASE", 1))
+	    {
 		compoptions |= COMP_CHECKCASE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDTRIPLE", 1))
+	    {
 		compoptions |= COMP_CHECKTRIPLE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDPATTERN", 2))
 	    {
 		if (atoi((char *)items[1]) == 0)
@@ -2529,19 +2541,33 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    }
 	    else if (is_aff_rule(items, itemcnt, "SYLLABLE", 2)
 							  && syllable == NULL)
+	    {
 		syllable = getroom_save(spin, items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "NOBREAK", 1))
+	    {
 		spin->si_nobreak = TRUE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "NOSPLITSUGS", 1))
+	    {
 		spin->si_nosplitsugs = TRUE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "NOCOMPOUNDSUGS", 1))
+	    {
 		spin->si_nocompoundsugs = TRUE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "NOSUGFILE", 1))
+	    {
 		spin->si_nosugfile = TRUE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "PFXPOSTPONE", 1))
+	    {
 		aff->af_pfxpostpone = TRUE;
+	    }
 	    else if (is_aff_rule(items, itemcnt, "IGNOREEXTRA", 1))
+	    {
 		aff->af_ignoreextra = TRUE;
+	    }
 	    else if ((STRCMP(items[0], "PFX") == 0
 					      || STRCMP(items[0], "SFX") == 0)
 		    && aff_todo == 0
@@ -2826,11 +2852,17 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 		}
 	    }
 	    else if (is_aff_rule(items, itemcnt, "FOL", 2) && fol == NULL)
+	    {
 		fol = vim_strsave(items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "LOW", 2) && low == NULL)
+	    {
 		low = vim_strsave(items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "UPP", 2) && upp == NULL)
+	    {
 		upp = vim_strsave(items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "REP", 2)
 		     || is_aff_rule(items, itemcnt, "REPSAL", 2))
 	    {
@@ -2918,10 +2950,14 @@ spell_read_aff(spellinfo_T *spin, char_u *fname)
 	    }
 	    else if (is_aff_rule(items, itemcnt, "SOFOFROM", 2)
 							  && sofofrom == NULL)
+	    {
 		sofofrom = getroom_save(spin, items[1]);
+	    }
 	    else if (is_aff_rule(items, itemcnt, "SOFOTO", 2)
 							    && sofoto == NULL)
+	    {
 		sofoto = getroom_save(spin, items[1]);
+	    }
 	    else if (STRCMP(items[0], "COMMON") == 0)
 	    {
 		int	i;

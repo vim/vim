@@ -93,7 +93,9 @@ gui_start(void)
 	    && !job_any_running()
 # endif
 	    )
+    {
 	gui_do_fork();
+    }
     else
 #endif
     {
@@ -241,7 +243,9 @@ gui_do_fork(void)
 		return;
 	    }
 	    else if (status == GUI_CHILD_IO_ERROR)
+	    {
 		pipe_error = TRUE;
+	    }
 	    /* else GUI_CHILD_OK: parent exit */
 	}
 
@@ -1877,16 +1881,22 @@ gui_write(
 		    gui_delete_lines(gui.scroll_region_top, 1);
 	    }
 	    else if (s[0] == '\r')	/* CR */
+	    {
 		gui.col = 0;
+	    }
 	    else if (s[0] == '\b')	/* Backspace */
 	    {
 		if (gui.col)
 		    --gui.col;
 	    }
 	    else if (s[0] == Ctrl_L)	/* cursor-right */
+	    {
 		++gui.col;
+	    }
 	    else if (s[0] == Ctrl_G)	/* Beep */
+	    {
 		gui_mch_beep();
+	    }
 	    /* Other Ctrl character: shouldn't happen! */
 
 	    --len;	/* Skip this char */
@@ -5270,7 +5280,9 @@ gui_do_findrepl(
 	    searchflags += SEARCH_START;
 	i = msg_scroll;
 	if (down)
+	{
 	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL, NULL);
+	}
 	else
 	{
 	    /* We need to escape '?' if and only if we are searching in the up

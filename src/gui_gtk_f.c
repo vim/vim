@@ -744,7 +744,9 @@ gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
 			 G_CALLBACK(&gtk_form_child_unmap), child);
     }
     else if (!gtk_widget_get_realized(child->widget))
+    {
 	gtk_widget_set_parent_window(child->widget, form->bin_window);
+    }
 }
 
     static void

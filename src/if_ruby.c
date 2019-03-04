@@ -1041,7 +1041,9 @@ static void error_print(int state)
 	eclass = CLASS_OF(error);
 	einfo = rb_obj_as_string(error);
 	if (eclass == rb_eRuntimeError && RSTRING_LEN(einfo) == 0)
+	{
 	    emsg(_("E272: unhandled exception"));
+	}
 	else
 	{
 	    VALUE epath;
@@ -1088,7 +1090,9 @@ static VALUE vim_message(VALUE self UNUSED, VALUE str)
 	msg(buff);
     }
     else
+    {
 	msg("");
+    }
     return Qnil;
 }
 
@@ -1116,10 +1120,14 @@ static VALUE vim_to_ruby(typval_T *tv)
 					  ? "" : (char *)(tv->vval.v_string));
     }
     else if (tv->v_type == VAR_NUMBER)
+    {
 	result = INT2NUM(tv->vval.v_number);
+    }
 # ifdef FEAT_FLOAT
     else if (tv->v_type == VAR_FLOAT)
+    {
 	result = rb_float_new(tv->vval.v_float);
+    }
 # endif
     else if (tv->v_type == VAR_LIST)
     {
@@ -1216,7 +1224,9 @@ static size_t buffer_dsize(const void *buf UNUSED)
 static VALUE buffer_new(buf_T *buf)
 {
     if (buf->b_ruby_ref)
+    {
 	return (VALUE) buf->b_ruby_ref;
+    }
     else
     {
 #ifdef USE_TYPEDDATA
@@ -1361,7 +1371,9 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 	update_curbuf(NOT_VALID);
     }
     else
+    {
 	rb_raise(rb_eIndexError, "line number %ld out of range", (long)n);
+    }
     return str;
 }
 
@@ -1403,7 +1415,9 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 	update_curbuf(NOT_VALID);
     }
     else
+    {
 	rb_raise(rb_eIndexError, "line number %ld out of range", n);
+    }
     return Qnil;
 }
 
@@ -1415,7 +1429,9 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     aco_save_T	aco;
 
     if (line == NULL)
+    {
 	rb_raise(rb_eIndexError, "NULL line");
+    }
     else if (n >= 0 && n <= buf->b_ml.ml_line_count)
     {
 	/* set curwin/curbuf for "buf" and save some things */
@@ -1439,7 +1455,9 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 	update_curbuf(NOT_VALID);
     }
     else
+    {
 	rb_raise(rb_eIndexError, "line number %ld out of range", n);
+    }
     return str;
 }
 
@@ -1464,7 +1482,9 @@ static size_t window_dsize(const void *win UNUSED)
 static VALUE window_new(win_T *win)
 {
     if (win->w_ruby_ref)
+    {
 	return (VALUE) win->w_ruby_ref;
+    }
     else
     {
 #ifdef USE_TYPEDDATA
