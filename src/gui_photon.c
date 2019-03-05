@@ -2590,9 +2590,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int index)
     else
 #endif
 	if (menu_is_separator(menu->name))
-	{
-	    menu->id = PtCreateWidget(PtSeparator, parent->submenu_id, n, args);
-	}
+    {
+	menu->id = PtCreateWidget(PtSeparator, parent->submenu_id, n, args);
+    }
     else
     {
 	accel_key = vim_strchr(menu->name, '&');
