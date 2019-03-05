@@ -4811,7 +4811,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
     int			error = FALSE;
-    int			save_reg_executing = reg_executing;
 
 #ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
@@ -4846,7 +4845,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     }
     --no_mapping;
     --allow_keys;
-    reg_executing = save_reg_executing;
 
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
