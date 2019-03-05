@@ -4613,7 +4613,9 @@ regmatch(
 		else
 		{
 		    if (opnd[1] == NUL && !(enc_utf8 && rex.reg_ic))
+		    {
 			len = 1;	/* matched a single byte above */
+		    }
 		    else
 		    {
 			/* Need to match first byte again for multi-byte. */

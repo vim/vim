@@ -7858,7 +7858,9 @@ ex_exit(exarg_T *eap)
 		&& do_write(eap) == FAIL)
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit, FALSE)))
+    {
 	not_exiting();
+    }
     else
     {
 	if (only_one_window())	    /* quit last window, exit Vim */
