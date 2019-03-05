@@ -1122,7 +1122,9 @@ do_bufdel(
     char_u	*p;
 
     if (addr_count == 0)
+    {
 	(void)do_buffer(command, DOBUF_CURRENT, FORWARD, 0, forceit);
+    }
     else
     {
 	if (addr_count == 2)

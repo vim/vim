@@ -5149,7 +5149,9 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
 	    channel = tv->vval.v_job->jv_channel;
     }
     else if (tv->v_type == VAR_CHANNEL)
+    {
 	channel = tv->vval.v_channel;
+    }
     else
     {
 	semsg(_(e_invarg2), tv_get_string(tv));
