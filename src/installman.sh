@@ -6,7 +6,7 @@
 # 2  target directory			   e.g., "/usr/local/man/it/man1"
 # 3  language addition			   e.g., "" or "-it"
 # 4  vim location as used in manual pages  e.g., "/usr/local/share/vim"
-# 5  runtime dir for menu.vim et al.	   e.g., "/usr/local/share/vim/vim70"
+# 5  runtime dir for menu.vim et al.	   e.g., "/usr/local/share/vim/vim81"
 # 6  runtime dir for global vimrc file	   e.g., "/usr/local/share/vim"
 # 7  source dir for help files		   e.g., "../runtime/doc"
 # 8  mode bits for manpages		   e.g., "644"

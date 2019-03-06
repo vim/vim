@@ -849,7 +849,7 @@ install_bat_choice(int idx)
 	     * for MSDOS and NT.
 	     * The order of preference is:
 	     * 1. $VIMRUNTIME/vim.exe	    (user preference)
-	     * 2. $VIM/vim70/vim.exe	    (hard coded version)
+	     * 2. $VIM/vim81/vim.exe	    (hard coded version)
 	     * 3. installdir/vim.exe	    (hard coded install directory)
 	     */
 	    fprintf(fd, "set VIM_EXE_DIR=%s\n", installdir);

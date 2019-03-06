@@ -2635,7 +2635,7 @@ Windows installer: licence text should not use indent, causes bad word wrap.
 Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
 makes his own wrapper).  Add a magic string with the version number to the
 .bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim7.3*
+          # uninstall key: vim8.1*
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
