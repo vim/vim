@@ -7844,7 +7844,7 @@ set_console_color_rgb(void)
 	return;
 
     id = syn_name2id((char_u *)"Normal");
-    if (id > 0)
+    if (id > 0 && p_tgc)
 	syn_id2colors(id, &fg, &bg);
     if (fg == INVALCOLOR)
     {
