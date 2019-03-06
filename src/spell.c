@@ -8473,7 +8473,8 @@ spell_dump_compl(
 	    arridx[0] = 0;
 	    curi[0] = 1;
 	    while (depth >= 0 && !got_int
-				       && (pat == NULL || !compl_interrupted))
+				       && (pat == NULL
+					   || !ins_compl_interrupted()))
 	    {
 		if (curi[depth] > byts[arridx[depth]])
 		{

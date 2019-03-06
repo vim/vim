@@ -1,5 +1,6 @@
 /* edit.c */
 int edit(int cmdchar, int startln, long count);
+int ins_need_undo_get(void);
 void ins_redraw(int ready);
 void edit_putchar(int c, int highlight);
 char_u *prompt_text(void);
@@ -35,5 +36,6 @@ void ins_horscroll(void);
 int ins_eol(int c);
 int ins_copychar(linenr_T lnum);
 colnr_T get_nolist_virtcol(void);
+int can_cindent_get(void);
 int ins_apply_autocmds(event_T event);
 /* vim: set ft=c : */

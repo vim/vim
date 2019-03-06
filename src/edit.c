@@ -18,6 +18,13 @@
 #define BACKSPACE_WORD_NOT_SPACE    3
 #define BACKSPACE_LINE		    4
 
+#ifdef FEAT_INS_EXPAND
+/* Set when doing something for completion that may call edit() recursively,
+ * which is not allowed. */
+static int	compl_busy = FALSE;
+#endif /* FEAT_INS_EXPAND */
+
+
 static void ins_ctrl_v(void);
 #ifdef FEAT_JOB_CHANNEL
 static void init_prompt(int cmdchar_todo);
@@ -93,6 +100,10 @@ static int	last_insert_skip; /* nr of chars in front of previous insert */
 static int	new_insert_skip;  /* nr of chars in front of current insert */
 static int	did_restart_edit;	/* "restart_edit" when calling edit() */
 
+#ifdef FEAT_CINDENT
+static int	can_cindent;		/* may do cindenting on this line */
+#endif
+
 static int	old_indent = 0;		/* for ^^D command in insert mode */
 
 #ifdef FEAT_RIGHTLEFT
@@ -101,6 +112,10 @@ static int	revins_chars;		/* how much to skip after edit */
 static int	revins_legal;		/* was the last char 'legal'? */
 static int	revins_scol;		/* start column of revins session */
 #endif
+
+static int	ins_need_undo;		/* call u_save() before inserting a
+					   char.  Set when edit() is called.
+					   after that arrow_used is used. */
 
 static int	did_add_space = FALSE;	/* auto_format() added an extra space
 					   under the cursor */
@@ -152,6 +167,9 @@ edit(
 #ifdef FEAT_JOB_CHANNEL
     int		cmdchar_todo = cmdchar;
 #endif
+#ifdef FEAT_INS_EXPAND
+    compl_T	*shown_match;
+#endif
 
     /* Remember whether editing was restarted after CTRL-O. */
     did_restart_edit = restart_edit;
@@ -181,7 +199,7 @@ edit(
 
 #ifdef FEAT_INS_EXPAND
     /* Don't allow recursive insert mode when busy with completion. */
-    if (compl_started || compl_busy || pum_visible())
+    if (ins_compl_active() || compl_busy || pum_visible())
     {
 	emsg(_(e_secure));
 	return FALSE;
@@ -622,28 +640,29 @@ edit(
 	 * and the cursor is still in the completed word.  Only when there is
 	 * a match, skip this when no matches were found.
 	 */
-	if (compl_started
+	shown_match = compl_shown_match_get();
+	if (ins_compl_active()
 		&& pum_wanted()
-		&& curwin->w_cursor.col >= compl_col
-		&& (compl_shown_match == NULL
-		    || compl_shown_match != compl_shown_match->cp_next))
+		&& curwin->w_cursor.col >= ins_compl_col()
+		&& (shown_match == NULL
+		    || shown_match != shown_match->cp_next))
 	{
 	    /* BS: Delete one character from "compl_leader". */
 	    if ((c == K_BS || c == Ctrl_H)
-			&& curwin->w_cursor.col > compl_col
+			&& curwin->w_cursor.col > ins_compl_col()
 			&& (c = ins_compl_bs()) == NUL)
 		continue;
 
 	    /* When no match was selected or it was edited. */
-	    if (!compl_used_match)
+	    if (!ins_compl_used_match())
 	    {
 		/* CTRL-L: Add one character from the current match to
 		 * "compl_leader".  Except when at the original match and
 		 * there is nothing to add, CTRL-L works like CTRL-P then. */
 		if (c == Ctrl_L
-			&& (!CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode)
-			    || (int)STRLEN(compl_shown_match->cp_str)
-					  > curwin->w_cursor.col - compl_col))
+			&& (!CTRL_X_MODE_LINE_OR_EVAL(ctrl_x_mode_get())
+			    || (int)STRLEN(shown_match->cp_str)
+				  > curwin->w_cursor.col - ins_compl_col()))
 		{
 		    ins_compl_addfrommatch();
 		    continue;
@@ -671,8 +690,9 @@ edit(
 		}
 
 		/* Pressing CTRL-Y selects the current match.  When
-		 * compl_enter_selects is set the Enter key does the same. */
-		if ((c == Ctrl_Y || (compl_enter_selects
+		 * ins_compl_enter_selects() is set the Enter key does the
+		 * same. */
+		if ((c == Ctrl_Y || (ins_compl_enter_selects()
 				    && (c == CAR || c == K_KENTER || c == NL)))
 			&& stop_arrow() == OK)
 		{
@@ -684,7 +704,7 @@ edit(
 
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
-	compl_get_longest = FALSE;
+	ins_compl_init_get_longest();
 	if (ins_compl_prep(c))
 	    continue;
 #endif
@@ -727,7 +747,7 @@ edit(
 #endif
 
 #ifdef FEAT_INS_EXPAND
-	if ((c == Ctrl_V || c == Ctrl_Q) && ctrl_x_mode == CTRL_X_CMDLINE)
+	if ((c == Ctrl_V || c == Ctrl_Q) && ctrl_x_mode_get() == CTRL_X_CMDLINE)
 	    goto docomplete;
 #endif
 	if (c == Ctrl_V || c == Ctrl_Q)
@@ -740,7 +760,7 @@ edit(
 #ifdef FEAT_CINDENT
 	if (cindent_on()
 # ifdef FEAT_INS_EXPAND
-		&& ctrl_x_mode == 0
+		&& ctrl_x_mode_get() == 0
 # endif
 	   )
 	{
@@ -861,7 +881,7 @@ doESCkey:
 
 	case Ctrl_O:	/* execute one command */
 #ifdef FEAT_COMPL_FUNC
-	    if (ctrl_x_mode == CTRL_X_OMNI)
+	    if (ctrl_x_mode_get() == CTRL_X_OMNI)
 		goto docomplete;
 #endif
 	    if (echeck_abbr(Ctrl_O + ABBR_OFF))
@@ -937,14 +957,14 @@ doESCkey:
 
 	case Ctrl_D:	/* Make indent one shiftwidth smaller. */
 #if defined(FEAT_INS_EXPAND) && defined(FEAT_FIND_ID)
-	    if (ctrl_x_mode == CTRL_X_PATH_DEFINES)
+	    if (ctrl_x_mode_get() == CTRL_X_PATH_DEFINES)
 		goto docomplete;
 #endif
 	    /* FALLTHROUGH */
 
 	case Ctrl_T:	/* Make indent one shiftwidth greater. */
 # ifdef FEAT_INS_EXPAND
-	    if (c == Ctrl_T && ctrl_x_mode == CTRL_X_THESAURUS)
+	    if (c == Ctrl_T && ctrl_x_mode_get() == CTRL_X_THESAURUS)
 	    {
 		if (has_compl_option(FALSE))
 		    goto docomplete;
@@ -988,7 +1008,7 @@ doESCkey:
 	case Ctrl_U:	/* delete all inserted text in current line */
 # ifdef FEAT_COMPL_FUNC
 	    /* CTRL-X CTRL-U completes with 'completefunc'. */
-	    if (ctrl_x_mode == CTRL_X_FUNCTION)
+	    if (ctrl_x_mode_get() == CTRL_X_FUNCTION)
 		goto docomplete;
 # endif
 	    did_backspace = ins_bs(c, BACKSPACE_LINE, &inserted_space);
@@ -1170,7 +1190,7 @@ doESCkey:
 
 	case TAB:	/* TAB or Complete patterns along path */
 #if defined(FEAT_INS_EXPAND) && defined(FEAT_FIND_ID)
-	    if (ctrl_x_mode == CTRL_X_PATH_PATTERNS)
+	    if (ctrl_x_mode_get() == CTRL_X_PATH_PATTERNS)
 		goto docomplete;
 #endif
 	    inserted_space = FALSE;
@@ -1224,7 +1244,7 @@ doESCkey:
 #if defined(FEAT_DIGRAPHS) || defined(FEAT_INS_EXPAND)
 	case Ctrl_K:	    /* digraph or keyword completion */
 # ifdef FEAT_INS_EXPAND
-	    if (ctrl_x_mode == CTRL_X_DICTIONARY)
+	    if (ctrl_x_mode_get() == CTRL_X_DICTIONARY)
 	    {
 		if (has_compl_option(TRUE))
 		    goto docomplete;
@@ -1245,25 +1265,25 @@ doESCkey:
 	    break;
 
 	case Ctrl_RSB:	/* Tag name completion after ^X */
-	    if (ctrl_x_mode != CTRL_X_TAGS)
+	    if (ctrl_x_mode_get() != CTRL_X_TAGS)
 		goto normalchar;
 	    goto docomplete;
 
 	case Ctrl_F:	/* File name completion after ^X */
-	    if (ctrl_x_mode != CTRL_X_FILES)
+	    if (ctrl_x_mode_get() != CTRL_X_FILES)
 		goto normalchar;
 	    goto docomplete;
 
 	case 's':	/* Spelling completion after ^X */
 	case Ctrl_S:
-	    if (ctrl_x_mode != CTRL_X_SPELL)
+	    if (ctrl_x_mode_get() != CTRL_X_SPELL)
 		goto normalchar;
 	    goto docomplete;
 #endif
 
 	case Ctrl_L:	/* Whole line completion after ^X */
 #ifdef FEAT_INS_EXPAND
-	    if (ctrl_x_mode != CTRL_X_WHOLE_LINE)
+	    if (ctrl_x_mode_get() != CTRL_X_WHOLE_LINE)
 #endif
 	    {
 		/* CTRL-L with 'insertmode' set: Leave Insert mode */
@@ -1283,8 +1303,8 @@ doESCkey:
 	    /* if 'complete' is empty then plain ^P is no longer special,
 	     * but it is under other ^X modes */
 	    if (*curbuf->b_p_cpt == NUL
-		    && (ctrl_x_mode == CTRL_X_NORMAL
-			|| ctrl_x_mode == CTRL_X_WHOLE_LINE)
+		    && (ctrl_x_mode_get() == CTRL_X_NORMAL
+			|| ctrl_x_mode_get() == CTRL_X_WHOLE_LINE)
 		    && !(compl_cont_status & CONT_LOCAL))
 		goto normalchar;
 
@@ -1396,7 +1416,7 @@ normalchar:
 	if (c != K_CURSORHOLD
 #ifdef FEAT_COMPL_FUNC
 		/* but not in CTRL-X mode, a script can't restore the state */
-		&& ctrl_x_mode == CTRL_X_NORMAL
+		&& ctrl_x_mode_get() == CTRL_X_NORMAL
 #endif
 	       )
 	    did_cursorhold = FALSE;
@@ -1408,7 +1428,7 @@ normalchar:
 #ifdef FEAT_CINDENT
 	if (can_cindent && cindent_on()
 # ifdef FEAT_INS_EXPAND
-		&& ctrl_x_mode == CTRL_X_NORMAL
+		&& ctrl_x_mode_get() == CTRL_X_NORMAL
 # endif
 	   )
 	{
@@ -1427,6 +1447,12 @@ force_cindent:
 
     }	/* for (;;) */
     /* NOTREACHED */
+}
+
+    int
+ins_need_undo_get(void)
+{
+    return ins_need_undo;
 }
 
 /*
@@ -6233,7 +6259,7 @@ ins_ctrl_ey(int tc)
     int	    c = tc;
 
 #ifdef FEAT_INS_EXPAND
-    if (ctrl_x_mode == CTRL_X_SCROLL)
+    if (ctrl_x_mode_get() == CTRL_X_SCROLL)
     {
 	if (c == Ctrl_Y)
 	    scrolldown_clamp();
@@ -6426,6 +6452,14 @@ do_insert_char_pre(int c)
     State = save_State;
 
     return res;
+}
+#endif
+
+#if defined(FEAT_CINDENT) || defined(PROTO)
+    int
+can_cindent_get(void)
+{
+    return can_cindent;
 }
 #endif
 

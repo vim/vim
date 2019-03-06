@@ -1,11 +1,13 @@
 /* insexpand.c */
 void ins_ctrl_x(void);
+int ctrl_x_mode_get(void);
 int ctrl_x_mode_not_default(void);
 int ctrl_x_mode_not_defined_yet(void);
 int has_compl_option(int dict_opt);
 int vim_is_ctrl_x_key(int c);
 int ins_compl_accept_char(int c);
 int ins_compl_add_infercase(char_u *str, int len, int icase, char_u *fname, int dir, int flags);
+compl_T *compl_shown_match_get(void);
 void completeopt_was_set(void);
 void set_completion(colnr_T startcol, list_T *list);
 int  pum_wanted(void);
@@ -14,6 +16,11 @@ char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 void ins_compl_clear(void);
 int ins_compl_active(void);
+int ins_compl_used_match(void);
+void ins_compl_init_get_longest(void);
+int ins_compl_interrupted(void);
+int ins_compl_enter_selects(void);
+colnr_T ins_compl_col(void);
 int  ins_compl_bs(void);
 void ins_compl_addleader(int c);
 void ins_compl_addfrommatch(void);

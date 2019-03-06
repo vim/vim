@@ -47,24 +47,49 @@ static char e_compldel[] = N_("E840: Completion function deleted text");
  * All the current matches are stored in a list.
  * "compl_first_match" points to the start of the list.
  * "compl_curr_match" points to the currently selected entry.
+ * "compl_shown_match" is different from compl_curr_match during
+ * ins_compl_get_exp().
  */
 static compl_T    *compl_first_match = NULL;
 static compl_T    *compl_curr_match = NULL;
+static compl_T    *compl_shown_match = NULL;
 static compl_T    *compl_old_match = NULL;
+
+// After using a cursor key <Enter> selects a match in the popup menu,
+// otherwise it inserts a line break.
+static int	  compl_enter_selects = FALSE;
 
 // When "compl_leader" is not NULL only matches that start with this string
 // are used.
 static char_u	  *compl_leader = NULL;
+
+static int	  compl_get_longest = FALSE;	// put longest common string
+						// in compl_leader
 
 static int	  compl_no_insert = FALSE;	// FALSE: select & insert
 						// TRUE: noinsert
 static int	  compl_no_select = FALSE;	// FALSE: select & insert
 						// TRUE: noselect
 
-static int	  compl_was_interrupted = FALSE;  // didn't finish finding
-						  // completions.
+// Selected one of the matches.  When FALSE the match was edited or using the
+// longest common string.
+static int	  compl_used_match;
+
+// didn't finish finding completions.
+static int	  compl_was_interrupted = FALSE;
+
+// Set when character typed while looking for matches and it means we should
+// stop looking for matches.
+static int	  compl_interrupted = FALSE;
 
 static int	  compl_restarting = FALSE;	// don't insert match
+
+// When the first completion is done "compl_started" is set.  When it's
+// FALSE the word to be completed must be located.
+static int	  compl_started = FALSE;
+
+// Which Ctrl-X mode are we in?
+static int	  ctrl_x_mode = CTRL_X_NORMAL;
 
 static int	  compl_matches = 0;
 static char_u	  *compl_pattern = NULL;
@@ -72,6 +97,8 @@ static int	  compl_direction = FORWARD;
 static int	  compl_shows_dir = FORWARD;
 static int	  compl_pending = 0;	    // > 1 for postponed CTRL-N
 static pos_T	  compl_startpos;
+static colnr_T	  compl_col = 0;	    // column where the text starts
+					    // that is being completed
 static char_u	  *compl_orig_text = NULL;  // text as it was before
 					    // completion started
 static int	  compl_cont_mode = 0;
@@ -131,6 +158,15 @@ ins_ctrl_x(void)
 	edit_submode_pre = NULL;
 	showmode();
     }
+}
+
+/*
+ * Return the current CTRL-X mode
+ */
+    int
+ctrl_x_mode_get(void)
+{
+    return ctrl_x_mode;
 }
 
 /*
@@ -680,6 +716,15 @@ ins_compl_make_cyclic(void)
 	compl_first_match->cp_prev = match;
     }
     return count;
+}
+
+/*
+ * Return the currently shown match.
+ */
+    compl_T *
+compl_shown_match_get(void)
+{
+    return compl_shown_match;
 }
 
 /*
@@ -1429,6 +1474,53 @@ ins_compl_mode(void)
 }
 
 /*
+ * Selected one of the matches.  When FALSE the match was edited or using the
+ * longest common string.
+ */
+    int
+ins_compl_used_match(void)
+{
+    return compl_used_match;
+}
+
+/*
+ * Initialize get longest common string.
+ */
+    void
+ins_compl_init_get_longest(void)
+{
+    compl_get_longest = FALSE;
+}
+
+/*
+ * Returns TRUE when insert completion is interrupted.
+ */
+    int
+ins_compl_interrupted(void)
+{
+    return compl_interrupted;
+}
+
+/*
+ * Returns TRUE if the <Enter> key selects a match in the completion popup
+ * menu.
+ */
+    int
+ins_compl_enter_selects(void)
+{
+    return compl_enter_selects;
+}
+
+/*
+ * Return the column where the text starts that is being completed
+ */
+    colnr_T
+ins_compl_col(void)
+{
+    return compl_col;
+}
+
+/*
  * Delete one character before the cursor and show the subset of the matches
  * that match the word that is now before the cursor.
  * Returns the character to be used, NUL if the work is done and another char
@@ -1858,7 +1950,7 @@ ins_compl_prep(int c)
 	    }
 
 #ifdef FEAT_CINDENT
-	    want_cindent = (can_cindent && cindent_on());
+	    want_cindent = (can_cindent_get() && cindent_on());
 #endif
 	    // When completing whole lines: fix indent for 'cindent'.
 	    // Otherwise, break line if it's too long.
@@ -1881,7 +1973,7 @@ ins_compl_prep(int c)
 		if (prev_col > 0)
 		    dec_cursor();
 		// only format when something was inserted
-		if (!arrow_used && !ins_need_undo && c != Ctrl_E)
+		if (!arrow_used && !ins_need_undo_get() && c != Ctrl_E)
 		    insertchar(NUL, 0, -1);
 		if (prev_col > 0
 			     && ml_get_curline()[curwin->w_cursor.col] != NUL)
