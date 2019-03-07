@@ -1918,7 +1918,11 @@ line_read_in:
 	    }
 
 parse_line:
-	    if (vim_strchr(lbuf, NL) == NULL)
+	    if (vim_strchr(lbuf, NL) == NULL
+#ifdef FEAT_CSCOPE
+					     && !use_cscope
+#endif
+					     )
 	    {
 		/* Truncated line, ignore it.  Has been reported for
 		 * Mozilla JS with extremely long names. */
