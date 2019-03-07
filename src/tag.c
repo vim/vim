@@ -1918,6 +1918,28 @@ line_read_in:
 	    }
 
 parse_line:
+	    if (vim_strchr(lbuf, NL) == NULL)
+	    {
+		/* Truncated line, ignore it.  Has been reported for
+		 * Mozilla JS with extremely long names. */
+		if (p_verbose >= 5)
+		{
+		    verbose_enter();
+		    msg(_("Ignoring long line in tags file"));
+		    verbose_leave();
+		}
+#ifdef FEAT_TAG_BINS
+		if (state != TS_LINEAR)
+		{
+		    /* Avoid getting stuck. */
+		    linear = TRUE;
+		    state = TS_LINEAR;
+		    vim_fseek(fp, search_info.low_offset, SEEK_SET);
+		}
+#endif
+		continue;
+	    }
+
 	    /*
 	     * Figure out where the different strings are in this line.
 	     * For "normal" tags: Do a quick check if the tag matches.
@@ -1939,28 +1961,6 @@ parse_line:
 		if (tagp.tagname_end == NULL)
 #endif
 		{
-		    if (vim_strchr(lbuf, NL) == NULL)
-		    {
-			/* Truncated line, ignore it.  Has been reported for
-			 * Mozilla JS with extremely long names. */
-			if (p_verbose >= 5)
-			{
-			    verbose_enter();
-			    msg(_("Ignoring long line in tags file"));
-			    verbose_leave();
-			}
-#ifdef FEAT_TAG_BINS
-			if (state != TS_LINEAR)
-			{
-			    /* Avoid getting stuck. */
-			    linear = TRUE;
-			    state = TS_LINEAR;
-			    vim_fseek(fp, search_info.low_offset, SEEK_SET);
-			}
-#endif
-			continue;
-		    }
-
 		    /* Corrupted tag line. */
 		    line_error = TRUE;
 		    break;
