@@ -42,7 +42,6 @@ func Test_display_registers()
     call assert_match('^\n--- Registers ---\n'
           \ .         '""   a\n'
           \ .         '"0   ba\n'
-          \ .         '"1   b\n'
           \ .         '"a   b\n'
           \ .         '.*'
           \ .         '"-   a\n'
@@ -61,5 +60,14 @@ func Test_display_registers()
     call assert_match('^\n--- Registers ---\n'
           \ .         '":   ls', a)
 
+	exe 'norm! dd' 
+	exe 'norm! "add' 
+    let a = execute('registers 1')
+    call assert_match('^\n--- Registers ---\n'
+          \ .         '"1   8r', a)
+
+    let a = execute('registers a')
+    call assert_match('^\n--- Registers ---\n'
+          \ .         '"a   foo', a)
     bwipe!
 endfunc
