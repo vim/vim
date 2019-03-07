@@ -741,7 +741,7 @@ func Test_relative_cursor_second_line_after_resize()
   only!
   bwipe!
   let &so = so_save
-endif
+endfunc
 
 " Tests for the winnr() function
 func Test_winnr()
