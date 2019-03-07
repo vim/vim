@@ -5474,9 +5474,23 @@ getpos_both(
 							      (varnumber_T)0);
 	if (getcurpos)
 	{
+	    int	    save_set_curswant = curwin->w_set_curswant;
+	    colnr_T save_curswant = curwin->w_curswant;
+	    colnr_T save_virtcol = curwin->w_virtcol;
+
 	    update_curswant();
 	    list_append_number(l, curwin->w_curswant == MAXCOL ?
 		    (varnumber_T)MAXCOL : (varnumber_T)curwin->w_curswant + 1);
+
+	    // Do not change "curswant", as it is unexpected that a get
+	    // function has a side effect.
+	    if (save_set_curswant)
+	    {
+		curwin->w_set_curswant = save_set_curswant;
+		curwin->w_curswant = save_curswant;
+		curwin->w_virtcol = save_virtcol;
+		curwin->w_valid &= ~VALID_VIRTCOL;
+	    }
 	}
     }
     else
