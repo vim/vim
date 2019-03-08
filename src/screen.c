@@ -3707,11 +3707,13 @@ win_line(
     /* Cursor line highlighting for 'cursorline' in the current window.  Not
      * when Visual mode is active, because it's not clear what is selected
      * then. */
-    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-					 && !(wp == curwin && VIsual_active))
+    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
     {
-	line_attr = HL_ATTR(HLF_CUL);
-	area_highlighting = TRUE;
+	if (!(wp == curwin && VIsual_active))
+	{
+	    line_attr = HL_ATTR(HLF_CUL);
+	    area_highlighting = TRUE;
+	}
 	wp->w_last_cursorline = wp->w_cursor.lnum;
     }
 #endif
