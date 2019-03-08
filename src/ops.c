@@ -1747,7 +1747,6 @@ op_delete(oparg_T *oap)
     struct block_def	bd;
     linenr_T		old_lcount = curbuf->b_ml.ml_line_count;
     int			did_yank = FALSE;
-    int			orig_regname = oap->regname;
 
     if (curbuf->b_ml.ml_flags & ML_EMPTY)	    /* nothing to do */
 	return OK;
@@ -1833,12 +1832,13 @@ op_delete(oparg_T *oap)
 
 	/*
 	 * Put deleted text into register 1 and shift number registers if the
-	 * delete contains a line break, or when a regname has been specified.
+	 * delete contains a line break, or when using a specific operator (Vi
+	 * compatible)
 	 * Use the register name from before adjust_clip_reg() may have
 	 * changed it.
 	 */
-	if (orig_regname != 0 || oap->motion_type == MLINE
-				   || oap->line_count > 1 || oap->use_reg_one)
+	if (oap->motion_type == MLINE || oap->line_count > 1
+							   || oap->use_reg_one)
 	{
 	    shift_delete_registers();
 	    if (op_yank(oap, TRUE, FALSE) == OK)
