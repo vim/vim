@@ -4,6 +4,11 @@ if !has('lua')
   finish
 endif
 
+func TearDown()
+  " Run garbage collection after each test to exercise luaV_setref().
+  call test_garbagecollect_now()
+endfunc
+
 " Check that switching to another buffer does not trigger ml_get error.
 func Test_command_new_no_ml_get_error()
   new
