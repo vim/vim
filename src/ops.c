@@ -1245,10 +1245,15 @@ do_execreg(
 	    emsg(_(e_nolastcmd));
 	    return FAIL;
 	}
-	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
-	/* Escape all control characters with a CTRL-V */
+	// don't keep the cmdline containing @:
+	VIM_CLEAR(new_last_cmdline);
+	// Escape all control characters with a CTRL-V
 	p = vim_strsave_escaped_ext(last_cmdline,
-		(char_u *)"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", Ctrl_V, FALSE);
+		    (char_u *)"\001\002\003\004\005\006\007"
+			  "\010\011\012\013\014\015\016\017"
+			  "\020\021\022\023\024\025\026\027"
+			  "\030\031\032\033\034\035\036\037",
+		    Ctrl_V, FALSE);
 	if (p != NULL)
 	{
 	    /* When in Visual mode "'<,'>" will be prepended to the command.
