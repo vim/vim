@@ -146,3 +146,17 @@ func Test_register_one()
 
   bwipe!
 endfunc
+
+" Check that replaying a typed sequence does not use an Esc and following
+" characters as an escape sequence.
+func Test_recording_esc_sequence()
+  new
+  let save_F2 = &t_F2
+  let t_F2 = "\<Esc>OQ"
+  call feedkeys("qqiTest\<Esc>", "xt")
+  call feedkeys("OQuirk\<Esc>q", "xt")
+  call feedkeys("Go\<Esc>@q", "xt")
+  call assert_equal(['Quirk', 'Test', 'Quirk', 'Test'], getline(1, 4))
+  bwipe!
+  let t_F2 = save_F2
+endfunc

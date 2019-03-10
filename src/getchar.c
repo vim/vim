@@ -2913,6 +2913,17 @@ vgetorpeek(int advance)
     if (gui.in_use && shape_changed)
 	gui_update_cursor(TRUE, FALSE);
 #endif
+    if (timedout && c == ESC)
+    {
+	char_u nop_buf[3];
+
+	// When recording there will be no timeout.  Add a <Nop> after the ESC
+	// to avoid that it forms a key code with following characters.
+	nop_buf[0] = K_SPECIAL;
+	nop_buf[1] = KS_EXTRA;
+	nop_buf[2] = KE_NOP;
+	gotchars(nop_buf, 3);
+    }
 
     --vgetc_busy;
 
