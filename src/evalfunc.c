@@ -113,7 +113,7 @@ static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_complete(typval_T *argvars, typval_T *rettv);
 static void f_complete_add(typval_T *argvars, typval_T *rettv);
 static void f_complete_check(typval_T *argvars, typval_T *rettv);
-static void f_complete_mode(typval_T *argvars, typval_T *rettv);
+static void f_complete_info(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
@@ -590,7 +590,7 @@ static struct fst
     {"complete",	2, 2, f_complete},
     {"complete_add",	1, 1, f_complete_add},
     {"complete_check",	0, 0, f_complete_check},
-    {"complete_mode",	0, 0, f_complete_mode},
+    {"complete_info",	0, 0, f_complete_info},
 #endif
     {"confirm",		1, 4, f_confirm},
     {"copy",		1, 1, f_copy},
@@ -2596,12 +2596,16 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * "complete_mode()" function
+ * "complete_info()" function
  */
-static void f_complete_mode(typval_T *argvars UNUSED, typval_T *rettv)
+static void f_complete_info(typval_T *argvars UNUSED, typval_T *rettv)
 {
-  rettv->vval.v_string = vim_strsave(ins_compl_mode());
-  rettv->v_type = VAR_STRING;
+    if (rettv_dict_alloc(rettv) != FAIL)
+    {
+	dict_T *dict = rettv->vval.v_dict;
+
+	dict_add_string(dict, "mode", ins_compl_mode());
+    }
 }
 #endif
 

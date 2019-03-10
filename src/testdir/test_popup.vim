@@ -896,9 +896,9 @@ func Test_menu_only_exists_in_terminal()
   endtry
 endfunc
 
-func Test_popup_complete_mode()
+func Test_popup_complete_info()
   new
-  inoremap <buffer><f5> <c-r>=complete_mode()<cr>
+  inoremap <buffer><f5> <c-r>=complete_info().mode<cr>
   call writefile([
         \ 'dummy	dummy.txt	1',
         \], 'Xdummy.txt')

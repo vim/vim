@@ -2267,7 +2267,7 @@ col({expr})			Number	column nr of cursor or mark
 complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
-complete_mode()			String	get current completion mode
+complete_info()			String	get current completion information
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy({expr})			any	make a shallow copy of {expr}
@@ -3537,10 +3537,18 @@ complete_check()				*complete_check()*
 		Only to be used by the function specified with the
 		'completefunc' option.
 
-							*complete_mode()*
-complete_mode()
-		Return a string that indicates the current completion mode.
+							*complete_info()*
+complete_info()
+		Return a string that indicates the current completion
+		information.
 		Note: It does not check whether popup menu is visible.
+
+		It returns a dictionary with the following entries:
+
+			mode		completion mode.
+
+
+		The available completion modes are following:
 
 		   ""		Not in completion mode
 		   "keyword"	Keyword completion |i_CTRL-X_CTRL-N|
