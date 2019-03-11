@@ -26,7 +26,7 @@ _anchors:
 
   linux: &linux
     os: linux
-    dist: trusty
+    dist: xenial
     addons:
       apt:
         sources:
@@ -48,6 +48,9 @@ _anchors:
           - cscope
           - libgtk2.0-dev
           - desktop-file-utils
+          - libtool-bin
+    services:
+      - xvfb
     before_install:
       - rvm reset
       # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
@@ -62,13 +65,6 @@ _anchors:
           ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
         fi
     before_script:
-      # Start virtual framebuffer to be able to test the GUI. For dists newer
-      # than trusty, the "services: xvfb" setting should be used instead
-      - |
-        if [[ ${TRAVIS_DIST} = trusty ]]; then
-          export DISPLAY=:99.0
-          sh -e /etc/init.d/xvfb start && sleep 3
-        fi
       - sudo bash ci/load-snd-dummy.sh || true
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
