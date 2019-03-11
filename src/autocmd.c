@@ -52,6 +52,7 @@ typedef struct AutoCmd
 {
     char_u	    *cmd;		// The command to be executed (NULL
 					// when command has been removed).
+    int		    once;		// "One shot": removed after execution
     char	    nested;		// If autocommands nest here.
     char	    last;		// last command in list
 #ifdef FEAT_EVAL
@@ -256,7 +257,7 @@ static int au_need_clean = FALSE;   /* need to delete marked patterns */
 
 static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
-static int do_autocmd_event(event_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group);
+static int do_autocmd_event(event_T event, char_u *pat, int once, int nested, char_u *cmd, int forceit, int group);
 static int apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap);
 static void auto_next_pat(AutoPatCmd *apc, int stop_at_last);
 static int au_find_group(char_u *name);
@@ -358,6 +359,14 @@ au_remove_cmds(AutoPat *ap)
 
     for (ac = ap->cmds; ac != NULL; ac = ac->next)
 	VIM_CLEAR(ac->cmd);
+    au_need_clean = TRUE;
+}
+
+// Delete one command from an autocmd pattern.
+static void au_del_cmd(AutoCmd *ac)
+{
+    VIM_CLEAR(ac->cmd);
+    ac->cmd = NULL;
     au_need_clean = TRUE;
 }
 
@@ -817,7 +826,9 @@ do_autocmd(char_u *arg_in, int forceit)
     event_T	event;
     int		need_free = FALSE;
     int		nested = FALSE;
+    int		once = FALSE;
     int		group;
+    int		i;
 
     if (*arg == '|')
     {
@@ -876,15 +887,22 @@ do_autocmd(char_u *arg_in, int forceit)
 		pat = envpat;
 	}
 
-	/*
-	 * Check for "nested" flag.
-	 */
 	cmd = skipwhite(cmd);
-	if (*cmd != NUL && STRNCMP(cmd, "nested", 6) == 0
-							&& VIM_ISWHITE(cmd[6]))
-	{
-	    nested = TRUE;
-	    cmd = skipwhite(cmd + 6);
+	for (i = 0; i < 2; i++) {
+	  if (*cmd != NUL) {
+	    // Check for "once" flag.
+	    if (!once && STRNCMP(cmd, "once", 4) == 0 && VIM_ISWHITE(cmd[4])) {
+	      once = TRUE;
+	      cmd = skipwhite(cmd + 5);
+	    }
+	    // Check for "nested" flag.
+	    if (!nested
+		&& ((STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
+		    )) {
+	      nested = TRUE;
+	      cmd = skipwhite(cmd + 6);
+	    }
+	  }
 	}
 
 	/*
@@ -917,14 +935,14 @@ do_autocmd(char_u *arg_in, int forceit)
 	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	    if (do_autocmd_event(event, pat,
-					 nested, cmd, forceit, group) == FAIL)
+				 once, nested, cmd, forceit, group) == FAIL)
 		break;
     }
     else
     {
 	while (*arg && *arg != '|' && !VIM_ISWHITE(*arg))
 	    if (do_autocmd_event(event_name2nr(arg, &arg), pat,
-					nested,	cmd, forceit, group) == FAIL)
+				 once, nested,	cmd, forceit, group) == FAIL)
 		break;
     }
 
@@ -975,6 +993,7 @@ au_get_grouparg(char_u **argp)
 do_autocmd_event(
     event_T	event,
     char_u	*pat,
+    int		once,
     int		nested,
     char_u	*cmd,
     int		forceit,
@@ -1214,6 +1233,7 @@ do_autocmd_event(
 	    }
 	    ac->next = NULL;
 	    *prev_ac = ac;
+	    ac->once = once;
 	    ac->nested = nested;
 	}
     }
@@ -2321,6 +2341,10 @@ getnextac(int c UNUSED, void *cookie, int indent UNUSED)
 	verbose_leave_scroll();
     }
     retval = vim_strsave(ac->cmd);
+    // Remove one-shot ("once") autocmd in anticipation of its execution.
+    if (ac->once) {
+	au_del_cmd(ac);
+    }
     autocmd_nested = ac->nested;
 #ifdef FEAT_EVAL
     current_sctx = ac->script_ctx;
