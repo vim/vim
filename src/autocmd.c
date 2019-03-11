@@ -890,17 +890,18 @@ do_autocmd(char_u *arg_in, int forceit)
 	cmd = skipwhite(cmd);
 	for (i = 0; i < 2; i++) {
 	  if (*cmd != NUL) {
-	    // Check for "once" flag.
-	    if (!once && STRNCMP(cmd, "once", 4) == 0 && VIM_ISWHITE(cmd[4])) {
+	    // Check for "-once" flag.
+	    if (!once && STRNCMP(cmd, "-once", 5) == 0 && VIM_ISWHITE(cmd[5])) {
 	      once = TRUE;
 	      cmd = skipwhite(cmd + 5);
 	    }
-	    // Check for "nested" flag.
+	    // Check for "-nested" flag.
 	    if (!nested
-		&& ((STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
-		    )) {
+		&& ((STRNCMP(cmd, "-nested", 7) == 0 && VIM_ISWHITE(cmd[7]))
+		    // Deprecated form (without "-").
+		    || (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6])))) {
 	      nested = TRUE;
-	      cmd = skipwhite(cmd + 6);
+	      cmd = skipwhite(cmd + ('-' == cmd[0] ? 7 : 6));
 	    }
 	  }
 	}
