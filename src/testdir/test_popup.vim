@@ -896,4 +896,47 @@ func Test_menu_only_exists_in_terminal()
   endtry
 endfunc
 
+func Test_popup_complete_info()
+  new
+  inoremap <buffer><F5> <C-R>=complete_info().mode<CR>
+  func s:complTestEval() abort
+    call complete(1, ['aa', 'ab'])
+    return ''
+  endfunc
+  inoremap <buffer><F6> <C-R>=s:complTestEval()<CR>
+  call writefile([
+        \ 'dummy	dummy.txt	1',
+        \], 'Xdummy.txt')
+  setlocal tags=Xdummy.txt
+  setlocal dictionary=Xdummy.txt
+  setlocal thesaurus=Xdummy.txt
+  setlocal omnifunc=syntaxcomplete#Complete
+  setlocal completefunc=syntaxcomplete#Complete
+  setlocal spell
+  for [keys, mode_name] in [
+        \ ["", ''],
+        \ ["\<C-X>", 'ctrl_x'],
+        \ ["\<C-X>\<C-N>", 'keyword'],
+        \ ["\<C-X>\<C-P>", 'keyword'],
+        \ ["\<C-X>\<C-L>", 'whole_line'],
+        \ ["\<C-X>\<C-F>", 'files'],
+        \ ["\<C-X>\<C-]>", 'tags'],
+        \ ["\<C-X>\<C-D>", 'path_defines'],
+        \ ["\<C-X>\<C-I>", 'path_patterns'],
+        \ ["\<C-X>\<C-K>", 'dictionary'],
+        \ ["\<C-X>\<C-T>", 'thesaurus'],
+        \ ["\<C-X>\<C-V>", 'cmdline'],
+        \ ["\<C-X>\<C-U>", 'function'],
+        \ ["\<C-X>\<C-O>", 'omni'],
+        \ ["\<C-X>s", 'spell'],
+        \ ["\<F6>", 'eval'],
+        \]
+    call feedkeys("i" . keys . "\<f5>\<ESC>", 'tx')
+    call assert_equal(mode_name, getline('.'))
+    %d
+  endfor
+  call delete('Xdummy.txt')
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
