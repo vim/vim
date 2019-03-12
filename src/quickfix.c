@@ -1806,7 +1806,7 @@ qf_cmdtitle(char_u *cmd)
  * Return a pointer to the current list in the specified quickfix stack
  */
     static qf_list_T *
-qf_stack_curlist(qf_info_T *qi)
+qf_get_curlist(qf_info_T *qi)
 {
     return &qi->qf_lists[qi->qf_curlist];
 }
@@ -1839,7 +1839,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     }
     else
 	qi->qf_curlist = qi->qf_listcount++;
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     vim_memset(qfl, 0, (size_t)(sizeof(qf_list_T)));
     qf_store_title(qfl, qf_title);
     qfl->qfl_type = qi->qfl_type;
@@ -3031,7 +3031,7 @@ qf_jump_edit_buffer(
 	int		prev_winid,
 	int		*opened_window)
 {
-    qf_list_T	*qfl = qf_stack_curlist(qi);
+    qf_list_T	*qfl = qf_get_curlist(qi);
     qfltype_T	qfl_type = qfl->qfl_type;
     int		retval = OK;
     int		old_qf_curlist = qi->qf_curlist;
@@ -3155,7 +3155,7 @@ qf_jump_print_msg(
     if (!msg_scrolled)
 	update_topline_redraw();
     sprintf((char *)IObuff, _("(%d of %d)%s%s: "), qf_index,
-	    qf_stack_curlist(qi)->qf_count,
+	    qf_get_curlist(qi)->qf_count,
 	    qf_ptr->qf_cleared ? _(" (line deleted)") : "",
 	    (char *)qf_types(qf_ptr->qf_type, qf_ptr->qf_nr));
     // Add the message, skipping leading whitespace and newlines.
@@ -3320,7 +3320,7 @@ qf_jump_newwin(qf_info_T	*qi,
 
     incr_quickfix_busy();
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
 
     qf_ptr = qfl->qf_ptr;
     old_qf_ptr = qf_ptr;
@@ -3521,7 +3521,7 @@ qf_list(exarg_T *eap)
 	emsg(_(e_trailing));
 	return;
     }
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     if (plus)
     {
 	i = qfl->qf_index;
@@ -3909,7 +3909,7 @@ ex_cwindow(exarg_T *eap)
 	    return;
     }
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
 
     // Look for an existing quickfix window.
     win = qf_find_win(qi);
@@ -4129,7 +4129,7 @@ ex_copen(exarg_T *eap)
 	    return;
 	}
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     qf_set_title_var(qfl);
     // Save the current index here, as updating the quickfix buffer may free
     // the quickfix list
@@ -4204,7 +4204,7 @@ qf_current_entry(win_T *wp)
 	// In the location list window, use the referenced location list
 	qi = wp->w_llist_ref;
 
-    return qf_stack_curlist(qi)->qf_index;
+    return qf_get_curlist(qi)->qf_index;
 }
 
 /*
@@ -4217,7 +4217,7 @@ qf_win_pos_update(
     int		old_qf_index)	// previous qf_index or zero
 {
     win_T	*win;
-    int		qf_index = qf_stack_curlist(qi)->qf_index;
+    int		qf_index = qf_get_curlist(qi)->qf_index;
 
     // Put the cursor on the current error in the quickfix window, so that
     // it's viewable.
@@ -4315,7 +4315,7 @@ qf_update_win_titlevar(qf_info_T *qi)
     {
 	curwin_save = curwin;
 	curwin = win;
-	qf_set_title_var(qf_stack_curlist(qi));
+	qf_set_title_var(qf_get_curlist(qi));
 	curwin = curwin_save;
     }
 }
@@ -4342,7 +4342,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 
 	qf_update_win_titlevar(qi);
 
-	qf_fill_buffer(qf_stack_curlist(qi), buf, old_last);
+	qf_fill_buffer(qf_get_curlist(qi), buf, old_last);
 	++CHANGEDTICK(buf);
 
 	if (old_last == NULL)
@@ -4559,7 +4559,7 @@ qf_restore_list(qf_info_T *qi, int_u save_qfid)
 {
     int curlist;
 
-    if (qf_stack_curlist(qi)->qf_id != save_qfid)
+    if (qf_get_curlist(qi)->qf_id != save_qfid)
     {
 	curlist = qf_id2nr(qi, save_qfid);
 	if (curlist < 0)
@@ -4777,11 +4777,11 @@ ex_make(exarg_T *eap)
 	    goto cleanup;
     }
     if (res >= 0)
-	qf_list_changed(qf_stack_curlist(qi));
+	qf_list_changed(qf_get_curlist(qi));
 
     // Remember the current quickfix list identifier, so that we can
     // check for autocommands changing the current quickfix list.
-    save_qfid = qf_stack_curlist(qi)->qf_id;
+    save_qfid = qf_get_curlist(qi)->qf_id;
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
@@ -4816,7 +4816,7 @@ qf_get_size(exarg_T *eap)
 	    return 0;
     }
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     for (i = 0, qfp = qfl->qf_start; i < qfl->qf_count && qfp != NULL;
 	    ++i, qfp = qfp->qf_next)
     {
@@ -4853,7 +4853,7 @@ qf_get_cur_idx(exarg_T *eap)
 	    return 0;
     }
 
-    return qf_stack_curlist(qi)->qf_index;
+    return qf_get_curlist(qi)->qf_index;
 }
 
 /*
@@ -4877,7 +4877,7 @@ qf_get_cur_valid_idx(exarg_T *eap)
 	    return 1;
     }
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     qfp = qfl->qf_start;
 
     // check if the list has valid errors
@@ -4993,7 +4993,7 @@ ex_cc(exarg_T *eap)
     // For cfdo and lfdo commands, jump to the nth valid file entry.
     if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo
 	    || eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
-	errornr = qf_get_nth_valid_entry(qf_stack_curlist(qi),
+	errornr = qf_get_nth_valid_entry(qf_get_curlist(qi),
 		eap->addr_count > 0 ? (int)eap->line1 : 1,
 		eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo);
 
@@ -5122,8 +5122,8 @@ ex_cfile(exarg_T *eap)
 	}
     }
     if (res >= 0)
-	qf_list_changed(qf_stack_curlist(qi));
-    save_qfid = qf_stack_curlist(qi)->qf_id;
+	qf_list_changed(qf_get_curlist(qi));
+    save_qfid = qf_get_curlist(qi)->qf_id;
     if (au_name != NULL)
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name, NULL, FALSE, curbuf);
 
@@ -5487,7 +5487,7 @@ ex_vimgrep(exarg_T *eap)
 
     // Remember the current quickfix list identifier, so that we can check for
     // autocommands changing the current quickfix list.
-    save_qfid = qf_stack_curlist(qi)->qf_id;
+    save_qfid = qf_get_curlist(qi)->qf_id;
 
     seconds = (time_t)0;
     for (fi = 0; fi < fcount && !got_int && tomatch > 0; ++fi)
@@ -5523,7 +5523,7 @@ ex_vimgrep(exarg_T *eap)
 	    decr_quickfix_busy();
 	    goto theend;
 	}
-	save_qfid = qf_stack_curlist(qi)->qf_id;
+	save_qfid = qf_get_curlist(qi)->qf_id;
 
 	if (buf == NULL)
 	{
@@ -5603,7 +5603,7 @@ ex_vimgrep(exarg_T *eap)
 
     FreeWild(fcount, fnames);
 
-    qfl = qf_stack_curlist(qi);
+    qfl = qf_get_curlist(qi);
     qfl->qf_nonevalid = FALSE;
     qfl->qf_ptr = qfl->qf_start;
     qfl->qf_index = 1;
@@ -6610,7 +6610,7 @@ qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
 
     // If the current list is modified and it is displayed in the quickfix
     // window, then Update it.
-    if (qf_stack_curlist(qi)->qf_id == qfl->qf_id)
+    if (qf_get_curlist(qi)->qf_id == qfl->qf_id)
 	qf_win_pos_update(qi, old_qfidx);
 
     return OK;
@@ -6676,7 +6676,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
     {
 	// If the quickfix/location list window is open, then clear it
 	if (qi->qf_curlist < qi->qf_listcount)
-	    qf_free(qf_stack_curlist(qi));
+	    qf_free(qf_get_curlist(qi));
 	qf_update_buffer(qi, NULL);
     }
 
@@ -6750,7 +6750,7 @@ set_errorlist(
     {
 	retval = qf_add_entries(qi, qi->qf_curlist, list, title, action);
 	if (retval == OK)
-	    qf_list_changed(qf_stack_curlist(qi));
+	    qf_list_changed(qf_get_curlist(qi));
     }
 
     decr_quickfix_busy();
@@ -6905,11 +6905,11 @@ ex_cbuffer(exarg_T *eap)
 		return;
 	    }
 	    if (res >= 0)
-		qf_list_changed(qf_stack_curlist(qi));
+		qf_list_changed(qf_get_curlist(qi));
 
 	    // Remember the current quickfix list identifier, so that we can
 	    // check for autocommands changing the current quickfix list.
-	    save_qfid = qf_stack_curlist(qi)->qf_id;
+	    save_qfid = qf_get_curlist(qi)->qf_id;
 	    if (au_name != NULL)
 	    {
 		buf_T *curbuf_old = curbuf;
@@ -6996,11 +6996,11 @@ ex_cexpr(exarg_T *eap)
 		goto cleanup;
 	    }
 	    if (res >= 0)
-		qf_list_changed(qf_stack_curlist(qi));
+		qf_list_changed(qf_get_curlist(qi));
 
 	    // Remember the current quickfix list identifier, so that we can
 	    // check for autocommands changing the current quickfix list.
-	    save_qfid = qf_stack_curlist(qi)->qf_id;
+	    save_qfid = qf_get_curlist(qi)->qf_id;
 	    if (au_name != NULL)
 		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 						curbuf->b_fname, TRUE, curbuf);
@@ -7264,7 +7264,7 @@ ex_helpgrep(exarg_T *eap)
 
 	vim_regfree(regmatch.regprog);
 
-	qfl = qf_stack_curlist(qi);
+	qfl = qf_get_curlist(qi);
 	qfl->qf_nonevalid = FALSE;
 	qfl->qf_ptr = qfl->qf_start;
 	qfl->qf_index = 1;
