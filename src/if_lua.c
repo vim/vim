@@ -443,7 +443,7 @@ lua_enabled(int verbose)
 
 #if LUA_VERSION_NUM > 501
     static int
-luaL_typeerror (lua_State *L, int narg, const char *tname)
+luaL_typeerror(lua_State *L, int narg, const char *tname)
 {
     const char *msg = lua_pushfstring(L, "%s expected, got %s",
 	    tname, luaL_typename(L, narg));
@@ -693,7 +693,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 
 #define luaV_newtype(typ,tname,luatyp,luatname) \
 	static luatyp * \
-    luaV_new##tname (lua_State *L, typ *obj) \
+    luaV_new##tname(lua_State *L, typ *obj) \
     { \
 	luatyp *o = (luatyp *) lua_newuserdata(L, sizeof(luatyp)); \
 	*o = obj; \
@@ -725,7 +725,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 
 #define luaV_type_tostring(tname,luatname) \
 	static int \
-    luaV_##tname##_tostring (lua_State *L) \
+    luaV_##tname##_tostring(lua_State *L) \
     { \
 	lua_pushfstring(L, "%s: %p", luatname, lua_touserdata(L, 1)); \
 	return 1; \
@@ -734,7 +734,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 /* =======   List type   ======= */
 
     static luaV_List *
-luaV_newlist (lua_State *L, list_T *lis)
+luaV_newlist(lua_State *L, list_T *lis)
 {
     luaV_List *l = (luaV_List *) lua_newuserdata(L, sizeof(luaV_List));
     *l = lis;
@@ -749,7 +749,7 @@ luaV_pushtype(list_T, list, luaV_List)
 luaV_type_tostring(list, LUAVIM_LIST)
 
     static int
-luaV_list_len (lua_State *L)
+luaV_list_len(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     lua_pushinteger(L, (l == NULL) ? 0 : (int) l->lv_len);
@@ -757,7 +757,7 @@ luaV_list_len (lua_State *L)
 }
 
     static int
-luaV_list_iter (lua_State *L)
+luaV_list_iter(lua_State *L)
 {
     listitem_T *li = (listitem_T *) lua_touserdata(L, lua_upvalueindex(2));
     if (li == NULL) return 0;
@@ -768,7 +768,7 @@ luaV_list_iter (lua_State *L)
 }
 
     static int
-luaV_list_call (lua_State *L)
+luaV_list_call(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     lua_pushvalue(L, lua_upvalueindex(1)); /* pass cache table along */
@@ -778,7 +778,7 @@ luaV_list_call (lua_State *L)
 }
 
     static int
-luaV_list_index (lua_State *L)
+luaV_list_index(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     if (lua_isnumber(L, 2)) /* list item? */
@@ -807,7 +807,7 @@ luaV_list_index (lua_State *L)
 }
 
     static int
-luaV_list_newindex (lua_State *L)
+luaV_list_newindex(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     long n = (long) luaL_checkinteger(L, 2);
@@ -834,7 +834,7 @@ luaV_list_newindex (lua_State *L)
 }
 
     static int
-luaV_list_add (lua_State *L)
+luaV_list_add(lua_State *L)
 {
     luaV_List *lis = luaV_checkudata(L, 1, LUAVIM_LIST);
     list_T *l = (list_T *) luaV_checkcache(L, (void *) *lis);
@@ -851,7 +851,7 @@ luaV_list_add (lua_State *L)
 }
 
     static int
-luaV_list_insert (lua_State *L)
+luaV_list_insert(lua_State *L)
 {
     luaV_List *lis = luaV_checkudata(L, 1, LUAVIM_LIST);
     list_T *l = (list_T *) luaV_checkcache(L, (void *) *lis);
@@ -890,7 +890,7 @@ static const luaL_Reg luaV_List_mt[] = {
 /* =======   Dict type   ======= */
 
     static luaV_Dict *
-luaV_newdict (lua_State *L, dict_T *dic)
+luaV_newdict(lua_State *L, dict_T *dic)
 {
     luaV_Dict *d = (luaV_Dict *) lua_newuserdata(L, sizeof(luaV_Dict));
     *d = dic;
@@ -905,7 +905,7 @@ luaV_pushtype(dict_T, dict, luaV_Dict)
 luaV_type_tostring(dict, LUAVIM_DICT)
 
     static int
-luaV_dict_len (lua_State *L)
+luaV_dict_len(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     lua_pushinteger(L, (d == NULL) ? 0 : (int) d->dv_hashtab.ht_used);
@@ -913,7 +913,7 @@ luaV_dict_len (lua_State *L)
 }
 
     static int
-luaV_dict_iter (lua_State *L UNUSED)
+luaV_dict_iter(lua_State *L UNUSED)
 {
 #ifdef FEAT_EVAL
     hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(2));
@@ -935,7 +935,7 @@ luaV_dict_iter (lua_State *L UNUSED)
 }
 
     static int
-luaV_dict_call (lua_State *L)
+luaV_dict_call(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     hashtab_T *ht = &d->dv_hashtab;
@@ -1368,7 +1368,7 @@ luaV_window_index(lua_State *L)
 }
 
     static int
-luaV_window_newindex (lua_State *L)
+luaV_window_newindex(lua_State *L)
 {
     win_T *w = (win_T *) luaV_checkvalid(L, luaV_Window, 1);
     const char *s = luaL_checkstring(L, 2);
@@ -1768,7 +1768,7 @@ luaV_free(lua_State *L)
 }
 
     static int
-luaV_luaeval (lua_State *L)
+luaV_luaeval(lua_State *L)
 {
     luaL_Buffer b;
     size_t l;
@@ -1797,7 +1797,7 @@ luaV_luaeval (lua_State *L)
 }
 
     static int
-luaV_setref (lua_State *L)
+luaV_setref(lua_State *L)
 {
     int		copyID = lua_tointeger(L, 1);
     int		abort = FALSE;
@@ -2053,7 +2053,7 @@ luaV_freetype(buf_T, buffer)
 luaV_freetype(win_T, window)
 
     void
-do_luaeval (char_u *str, typval_T *arg, typval_T *rettv)
+do_luaeval(char_u *str, typval_T *arg, typval_T *rettv)
 {
     lua_init();
     luaV_getfield(L, LUAVIM_LUAEVAL);
@@ -2064,7 +2064,7 @@ do_luaeval (char_u *str, typval_T *arg, typval_T *rettv)
 }
 
     int
-set_ref_in_lua (int copyID)
+set_ref_in_lua(int copyID)
 {
     int aborted = 0;
 
