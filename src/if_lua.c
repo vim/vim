@@ -29,8 +29,7 @@ typedef win_T *luaV_Window;
 typedef dict_T *luaV_Dict;
 typedef list_T *luaV_List;
 typedef struct {
-    typval_T	tv;	// funcref
-    typval_T	args;
+    char_u	*name;	// funcref
     dict_T	*self;	// selfdict
 } luaV_Funcref;
 typedef void (*msgfunc_T)(char_u *);
@@ -69,7 +68,7 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 
 static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
-static luaV_Funcref *luaV_pushfuncref(lua_State *L, typval_T *tv);
+static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -540,7 +539,7 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 		lua_pushnil(L);
 	    break;
 	case VAR_FUNC:
-	    luaV_pushfuncref(L, tv);
+	    luaV_pushfuncref(L, tv->vval.v_string);
 	    break;
 	default:
 	    lua_pushnil(L);
@@ -610,7 +609,9 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		if (lua_rawequal(L, -1, -4))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
-		    copy_tv(&f->tv, tv);
+		    func_ref(f->name);
+		    tv->v_type = VAR_FUNC;
+		    tv->vval.v_string = vim_strsave(f->name);
 		    lua_pop(L, 4); /* MTs */
 		    break;
 		}
@@ -1033,15 +1034,13 @@ static const luaL_Reg luaV_Dict_mt[] = {
     static luaV_Funcref *
 luaV_newfuncref(lua_State *L, char_u *name)
 {
-    luaV_Funcref *f = (luaV_Funcref *)lua_newuserdata(L, sizeof(luaV_Funcref));
+    luaV_Funcref *f = (luaV_Funcref *) lua_newuserdata(L, sizeof(luaV_Funcref));
 
     if (name != NULL)
     {
-	func_ref(name); /* as in copy_tv */
-	f->tv.vval.v_string = vim_strsave(name);
+	func_ref(name);
+	f->name = vim_strsave(name);
     }
-    f->tv.v_type = VAR_FUNC;
-    f->args.v_type = VAR_LIST;
     f->self = NULL;
     luaV_getfield(L, LUAVIM_FUNCREF);
     lua_setmetatable(L, -2);
@@ -1049,12 +1048,9 @@ luaV_newfuncref(lua_State *L, char_u *name)
 }
 
     static luaV_Funcref *
-luaV_pushfuncref(lua_State *L, typval_T *tv)
+luaV_pushfuncref(lua_State *L, char_u *name)
 {
-    luaV_Funcref *f = luaV_newfuncref(L, NULL);
-    copy_tv(tv, &f->tv);
-    clear_tv(tv);
-    return f;
+    return luaV_newfuncref(L, name);
 }
 
 
@@ -1065,9 +1061,10 @@ luaV_funcref_gc(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
 
-    func_unref(f->tv.vval.v_string);
-    vim_free(f->tv.vval.v_string);
-    dict_unref(f->self);
+    func_unref(f->name);
+    vim_free(f->name);
+    // NOTE: Don't call "dict_unref(f->self)", because the dict of "f->self"
+    // will be (or has been already) freed by Vim's garbage collection.
     return 0;
 }
 
@@ -1077,7 +1074,7 @@ luaV_funcref_len(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
 
-    lua_pushstring(L, (const char *) f->tv.vval.v_string);
+    lua_pushstring(L, (const char *) f->name);
     return 1;
 }
 
@@ -1085,27 +1082,28 @@ luaV_funcref_len(lua_State *L)
 luaV_funcref_call(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
-    int i, n = lua_gettop(L) - 1; /* #args */
-    int status;
-    typval_T v, rettv;
+    int i, n = lua_gettop(L) - 1; // #args
+    int status = FAIL;
+    typval_T args;
+    typval_T rettv;
 
-    f->args.vval.v_list = list_alloc();
-    rettv.v_type = VAR_UNKNOWN; /* as in clear_tv */
-    if (f->args.vval.v_list == NULL)
-	status = FAIL;
-    else
+    args.v_type = VAR_LIST;
+    args.vval.v_list = list_alloc();
+    rettv.v_type = VAR_UNKNOWN; // as in clear_tv
+    if (args.vval.v_list != NULL)
     {
+	typval_T v;
+
 	for (i = 0; i < n; i++)
 	{
 	    luaV_checktypval(L, i + 2, &v, "calling funcref");
-	    list_append_tv(f->args.vval.v_list, &v);
+	    list_append_tv(args.vval.v_list, &v);
 	    clear_tv(&v);
 	}
-	status = func_call(f->tv.vval.v_string, &f->args,
-							NULL, f->self, &rettv);
+	status = func_call(f->name, &args, NULL, f->self, &rettv);
 	if (status == OK)
 	    luaV_pushtypval(L, &rettv);
-	clear_tv(&f->args);
+	clear_tv(&args);
 	clear_tv(&rettv);
     }
     if (status != OK)
