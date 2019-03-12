@@ -1797,30 +1797,45 @@ luaV_luaeval(lua_State *L)
     static int
 luaV_setref(lua_State *L)
 {
-    int		copyID = lua_tointeger(L, 1);
-    int		abort = FALSE;
-    typval_T	tv;
+    int copyID = lua_tointeger(L, 1);
+    int abort = FALSE;
 
     luaV_getfield(L, LUAVIM_LIST);
     luaV_getfield(L, LUAVIM_DICT);
+    luaV_getfield(L, LUAVIM_FUNCREF);
     lua_pushnil(L);
-    /* traverse cache table */
+    // traverse cache table
     while (!abort && lua_next(L, lua_upvalueindex(1)) != 0)
     {
 	lua_getmetatable(L, -1);
-	if (lua_rawequal(L, -1, 2)) /* list? */
+	if (lua_rawequal(L, -1, 2)) // list?
 	{
-	    tv.v_type = VAR_LIST;
-	    tv.vval.v_list = (list_T *) lua_touserdata(L, 4); /* key */
-	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+	    list_T *l = (list_T *) lua_touserdata(L, 5); // key
+	    if (l->lv_copyID != copyID)
+	    {
+		l->lv_copyID = copyID;
+		abort = set_ref_in_list(l, copyID, NULL);
+	    }
 	}
-	else if (lua_rawequal(L, -1, 3)) /* dict? */
+	else if (lua_rawequal(L, -1, 3)) // dict?
 	{
-	    tv.v_type = VAR_DICT;
-	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
-	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+	    dict_T *d = (dict_T *) lua_touserdata(L, 5); // key
+	    if (d->dv_copyID != copyID)
+	    {
+		d->dv_copyID = copyID;
+		abort = set_ref_in_ht(&d->dv_hashtab, copyID, NULL);
+	    }
 	}
-	lua_pop(L, 2); /* metatable and value */
+	else if (lua_rawequal(L, -1, 4)) // funcref?
+	{
+	    luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 5); // key
+	    if (f->self != NULL && f->self->dv_copyID != copyID)
+	    {
+		f->self->dv_copyID = copyID;
+		abort = set_ref_in_ht(&f->self->dv_hashtab, copyID, NULL);
+	    }
+	}
+	lua_pop(L, 2); // metatable and value
     }
     lua_pushinteger(L, abort);
     return 1;
