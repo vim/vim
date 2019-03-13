@@ -1542,6 +1542,7 @@ do_shell(
 #endif
 #ifdef MSWIN
     int		winstart = FALSE;
+    int		keep_termcap = FALSE;
 #endif
 
     /*
@@ -1561,6 +1562,12 @@ do_shell(
      */
     if (cmd != NULL)
 	winstart = (STRNICMP(cmd, "start ", 6) == 0);
+    keep_termcap = winstart;
+
+# if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
+    if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL)
+	keep_termcap = TRUE;
+# endif
 #endif
 
     /*
@@ -1571,7 +1578,7 @@ do_shell(
     if (!autocmd_busy)
     {
 #ifdef MSWIN
-	if (!winstart)
+	if (!keep_termcap)
 #endif
 	    stoptermcap();
     }
@@ -1586,12 +1593,12 @@ do_shell(
 	    if (bufIsChangedNotTerm(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
-		if (!winstart)
+		if (!keep_termcap)
 		    starttermcap();	/* don't want a message box here */
 #endif
 		msg_puts(_("[No write since last change]\n"));
 #ifdef FEAT_GUI_MSWIN
-		if (!winstart)
+		if (!keep_termcap)
 		    stoptermcap();
 #endif
 		break;
@@ -1632,7 +1639,7 @@ do_shell(
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
 # ifdef MSWIN
-		|| (winstart && !need_wait_return)
+		|| (keep_termcap && !need_wait_return)
 # endif
 	   )
 	{
@@ -1659,7 +1666,7 @@ do_shell(
 #endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
-	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
+	if (!keep_termcap) /* if keep_termcap==TRUE, never stopped termcap! */
 #endif
 	    starttermcap();	/* start termcap if not done by wait_return() */
 
