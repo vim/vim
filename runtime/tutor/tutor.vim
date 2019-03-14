@@ -22,6 +22,12 @@ else
     let s:lang = v:lang
   elseif $LC_ALL =~ '\a\a'
     let s:lang = $LC_ALL
+  elseif $LC_MESSAGES =~ '\a\a' || $LC_MESSAGES ==# "C"
+    " LC_MESSAGES=C can be used to explicitly ask for English messages while keeping LANG
+    " non-English, so don't consider that invalid.
+    if $LC_MESSAGES =~ '\a\a'
+      let s:lang = $LC_MESSAGES
+    endif
   elseif $LANG =~ '\a\a'
     let s:lang = $LANG
   endif
