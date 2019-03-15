@@ -5077,7 +5077,7 @@ getqflist([{what}])					*getqflist()*
 				the last quickfix list
 			qfbufnr number of the buffer displayed in the quickfix
 				window. Returns 0 if the quickfix buffer is
-				not present.
+				not present. See |quickfix-buffer|.
 			size	number of entries in the quickfix list
 			title	get the list title |quickfix-title|
 			winid	get the quickfix |window-ID|

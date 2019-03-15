@@ -2394,6 +2394,12 @@ win_close(win_T *win, int free_buf)
 	reset_synblock(win);
 #endif
 
+#ifdef FEAT_QUICKFIX
+    // When the quickfix/location list window is closed, unlist the buffer
+    if (win->w_buffer != NULL && bt_quickfix(win->w_buffer))
+	win->w_buffer->b_p_bl = FALSE;
+#endif
+
     /*
      * Close the link to the buffer.
      */

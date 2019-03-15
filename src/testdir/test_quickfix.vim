@@ -3935,7 +3935,7 @@ func Xqfbuf_test(cchar)
     close
     " When the location list window is closed, the buffer name should not
     " change to 'Quickfix List'
-    call assert_match(qfbnum . '  h-  "\[Location List]"', execute('ls'))
+    call assert_match(qfbnum . 'u h-  "\[Location List]"', execute('ls!'))
     call assert_true(bufloaded(qfbnum))
 
     " After deleting a location list buffer using ":bdelete", opening the
