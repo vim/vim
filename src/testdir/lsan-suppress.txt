@@ -1,3 +1,5 @@
-# Suppress leaks from X libraries on Ubuntu trusty.
+# Suppress leaks from X libraries on Ubuntu xenial.
 leak:libX11.so.6
 leak:libXt.so.6
+# Suppress leaks from libpython (maybe python's bug).
+leak:libpython*.so.*
