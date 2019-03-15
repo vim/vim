@@ -1662,7 +1662,7 @@ LineToString(const char *str)
 }
 
     void
-do_py3eval (char_u *str, typval_T *rettv)
+do_py3eval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
 	    (rangeinitializer) init_range_eval,
@@ -1676,7 +1676,7 @@ do_py3eval (char_u *str, typval_T *rettv)
 }
 
     int
-set_ref_in_python3 (int copyID)
+set_ref_in_python3(int copyID)
 {
     return set_ref_in_py(copyID);
 }

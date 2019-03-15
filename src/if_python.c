@@ -1555,7 +1555,7 @@ FunctionGetattr(PyObject *self, char *name)
 }
 
     void
-do_pyeval (char_u *str, typval_T *rettv)
+do_pyeval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
 	    (rangeinitializer) init_range_eval,
@@ -1580,7 +1580,7 @@ Py_GetProgramName(void)
 #endif /* Python 1.4 */
 
     int
-set_ref_in_python (int copyID)
+set_ref_in_python(int copyID)
 {
     return set_ref_in_py(copyID);
 }
