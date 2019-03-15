@@ -6024,6 +6024,8 @@ insert_lines(unsigned cLines)
     COORD	    dest;
     CHAR_INFO	    fill;
 
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
+
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y + cLines;
 
@@ -6080,6 +6082,8 @@ delete_lines(unsigned cLines)
     COORD	    dest;
     CHAR_INFO	    fill;
     int		    nb;
+
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
 
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y;
