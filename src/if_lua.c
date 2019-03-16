@@ -844,10 +844,7 @@ luaV_list_add (lua_State *L)
     lua_settop(L, 2);
     luaV_checktypval(L, 2, &v, "adding list item");
     if (list_append_tv(l, &v) == FAIL)
-    {
-	clear_tv(&v);
 	luaL_error(L, "failed to add item to list");
-    }
     clear_tv(&v);
     lua_settop(L, 1);
     return 1;
@@ -872,10 +869,7 @@ luaV_list_insert (lua_State *L)
     lua_settop(L, 2);
     luaV_checktypval(L, 2, &v, "inserting list item");
     if (list_insert_tv(l, &v, li) == FAIL)
-    {
-	clear_tv(&v);
 	luaL_error(L, "failed to add item to list");
-    }
     clear_tv(&v);
     lua_settop(L, 1);
     return 1;
@@ -981,6 +975,7 @@ luaV_dict_newindex(lua_State *L)
     char_u *key = (char_u *) luaL_checkstring(L, 2);
     dictitem_T *di;
     typval_T v;
+
     if (d->dv_lock)
 	luaL_error(L, "dict is locked");
     if (key == NULL)
@@ -1104,6 +1099,7 @@ luaV_funcref_call(lua_State *L)
 	{
 	    luaV_checktypval(L, i + 2, &v, "calling funcref");
 	    list_append_tv(f->args.vval.v_list, &v);
+	    clear_tv(&v);
 	}
 	status = func_call(f->tv.vval.v_string, &f->args,
 							NULL, f->self, &rettv);
@@ -1571,6 +1567,7 @@ luaV_list(lua_State *L)
 		{
 		    luaV_checktypval(L, -1, &v, "vim.list");
 		    list_append_tv(l, &v);
+		    clear_tv(&v);
 		}
 		lua_pop(L, 1); /* value */
 	    } while (notnil);
