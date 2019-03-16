@@ -3551,7 +3551,8 @@ complete_info([{what}])
 				"abbr", "menu", "kind", "info" and "user_data".
 				See |complete-items|.
 		   selected	Selected item index.  First index is zero.
-				Set -1 if not selected.
+				Index is -1 if no item is selected (showing
+				typed text only)
 		   inserted	Inserted string. [NOT IMPLEMENT YET]
 
 							*complete_info_mode*
@@ -3577,6 +3578,14 @@ complete_info([{what}])
 		only the items listed in {what} are returned.
 		Unsupported keys in {what} are ignored.
 
+		Examples: >
+			" Get all items
+			call complete_info()
+			" Get only 'mode'
+			call complete_info({'mode': ''})
+			" Get only 'mode' and 'pum_visible'
+			call complete_info({'mode': '', 'pum_visible': ''})
+<
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 		Confirm() offers the user a dialog, from which a choice can be

@@ -896,7 +896,7 @@ func Test_menu_only_exists_in_terminal()
   endtry
 endfunc
 
-func Test_popup_complete_info()
+func Test_popup_complete_info_01()
   new
   inoremap <buffer><F5> <C-R>=complete_info().mode<CR>
   func s:complTestEval() abort
@@ -931,12 +931,39 @@ func Test_popup_complete_info()
         \ ["\<C-X>s", 'spell'],
         \ ["\<F6>", 'eval'],
         \]
-    call feedkeys("i" . keys . "\<f5>\<ESC>", 'tx')
+    call feedkeys("i" . keys . "\<F5>\<Esc>", 'tx')
     call assert_equal(mode_name, getline('.'))
     %d
   endfor
   call delete('Xdummy.txt')
   bwipe!
 endfunc
+
+"func UserDefinedComplete(findstart, base)
+"  if a:findstart
+"    return 0
+"  else
+"    return [
+"          \   { 'word': 'Jan', 'menu': 'January' },
+"          \   { 'word': 'Feb', 'menu': 'February' },
+"          \   { 'word': 'Mar', 'menu': 'March' },
+"          \   { 'word': 'Apr', 'menu': 'April' },
+"          \   { 'word': 'May', 'menu': 'May' },
+"          \ ]
+"  endif
+"endfunc
+"
+"func GetCompleteInfo()
+"  let g:compl_info = complete_info()
+"  return ''
+"endfunc
+"
+"func Test_popup_complete_info_02()
+"  new
+"  inoremap <buffer><F5> <C-R>=GetCompleteInfo()<CR>
+"  setlocal completefunc=UserDefinedComplete
+"
+"  bwipe!
+"endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -3555,9 +3555,9 @@ get_complete_info(dict_T *what, dict_T *retdict)
 	li = list_alloc();
 	if (li == NULL)
 	    return;
-	if (compl_first_match != NULL)
+	ret = dict_add_list(retdict, "items", li);
+	if (ret == OK && compl_first_match != NULL)
 	{
-	    ret = dict_add_list(retdict, "items", li);
 	    match = compl_first_match;
 	    do
 	    {
