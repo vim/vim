@@ -394,6 +394,8 @@ au_cleanup(void)
 	{
 	    // loop over all commands for this pattern
 	    prev_ac = &(ap->cmds);
+	    int has_cmd = FALSE;
+
 	    for (ac = *prev_ac; ac != NULL; ac = *prev_ac)
 	    {
 		// remove the command if the pattern is to be deleted or when
@@ -404,8 +406,16 @@ au_cleanup(void)
 		    vim_free(ac->cmd);
 		    vim_free(ac);
 		}
-		else
+		else {
+		    has_cmd = TRUE;
 		    prev_ac = &(ac->next);
+		}
+	    }
+
+	    if (ap->pat != NULL && !has_cmd) {
+		// Pattern was not marked for deletion, but all of its
+		// commands were.  So mark the pattern for deletion.
+		au_remove_pat(ap);
 	    }
 
 	    // remove the pattern if it has been marked for deletion
