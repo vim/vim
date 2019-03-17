@@ -5907,7 +5907,8 @@ enum {
     QF_GETLIST_SIZE	= 0x80,
     QF_GETLIST_TICK	= 0x100,
     QF_GETLIST_FILEWINID	= 0x200,
-    QF_GETLIST_ALL	= 0x3FF,
+    QF_GETLIST_QFBUFNR	= 0x400,
+    QF_GETLIST_ALL	= 0x7FF,
 };
 
 /*
@@ -5977,6 +5978,17 @@ qf_winid(qf_info_T *qi)
 }
 
 /*
+ * Returns the number of the buffer displayed in the quickfix/location list
+ * window. If there is no buffer associated with the list, then returns 0.
+ */
+    static int
+qf_getprop_qfbufnr(qf_info_T *qi, dict_T *retdict)
+{
+    return dict_add_number(retdict, "qfbufnr",
+					(qi == NULL) ? 0 : qi->qf_bufnr);
+}
+
+/*
  * Convert the keys in 'what' to quickfix list property flags.
  */
     static int
@@ -6021,6 +6033,9 @@ qf_getprop_keys2flags(dict_T *what, int loclist)
 
     if (loclist && dict_find(what, (char_u *)"filewinid", -1) != NULL)
 	flags |= QF_GETLIST_FILEWINID;
+
+    if (dict_find(what, (char_u *)"qfbufnr", -1) != NULL)
+	flags |= QF_GETLIST_QFBUFNR;
 
     return flags;
 }
@@ -6114,6 +6129,8 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
 	status = dict_add_number(retdict, "changedtick", 0);
     if ((status == OK) && locstack && (flags & QF_GETLIST_FILEWINID))
 	status = dict_add_number(retdict, "filewinid", 0);
+    if ((status == OK) && (flags & QF_GETLIST_QFBUFNR))
+	status = qf_getprop_qfbufnr(qi, retdict);
 
     return status;
 }
@@ -6259,6 +6276,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	status = dict_add_number(retdict, "changedtick", qfl->qf_changedtick);
     if ((status == OK) && (wp != NULL) && (flags & QF_GETLIST_FILEWINID))
 	status = qf_getprop_filewinid(wp, qi, retdict);
+    if ((status == OK) && (flags & QF_GETLIST_QFBUFNR))
+	status = qf_getprop_qfbufnr(qi, retdict);
 
     return status;
 }
