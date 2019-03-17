@@ -2138,6 +2138,7 @@ get_lval(
 			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 		{
 		    semsg(_(e_illvar), name);
+		    clear_tv(&var1);
 		    return NULL;
 		}
 
