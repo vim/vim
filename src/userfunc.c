@@ -39,12 +39,12 @@ static hashtab_T	func_hashtab;
 /* Used by get_func_tv() */
 static garray_T funcargs = GA_EMPTY;
 
-/* pointer to funccal for currently active function */
-funccall_T *current_funccal = NULL;
+// pointer to funccal for currently active function
+static funccall_T *current_funccal = NULL;
 
-/* Pointer to list of previously used funccal, still around because some
- * item in it is still being used. */
-funccall_T *previous_funccal = NULL;
+// Pointer to list of previously used funccal, still around because some
+// item in it is still being used.
+static funccall_T *previous_funccal = NULL;
 
 static char *e_funcexts = N_("E122: Function %s already exists, add ! to replace it");
 static char *e_funcdict = N_("E717: Dictionary entry already exists");
@@ -586,43 +586,51 @@ add_nr_var(
 }
 
 /*
- * Free "fc" and what it contains.
+ * Free "fc".
  */
-   static void
-free_funccal(
-    funccall_T	*fc,
-    int		free_val)  /* a: vars were allocated */
+    static void
+free_funccal(funccall_T *fc)
 {
-    listitem_T	*li;
-    int		i;
+    int	i;
 
     for (i = 0; i < fc->fc_funcs.ga_len; ++i)
     {
-	ufunc_T	    *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
+	ufunc_T *fp = ((ufunc_T **)(fc->fc_funcs.ga_data))[i];
 
-	/* When garbage collecting a funccall_T may be freed before the
-	 * function that references it, clear its uf_scoped field.
-	 * The function may have been redefined and point to another
-	 * funccall_T, don't clear it then. */
+	// When garbage collecting a funccall_T may be freed before the
+	// function that references it, clear its uf_scoped field.
+	// The function may have been redefined and point to another
+	// funccall_T, don't clear it then.
 	if (fp != NULL && fp->uf_scoped == fc)
 	    fp->uf_scoped = NULL;
     }
     ga_clear(&fc->fc_funcs);
 
-    /* The a: variables typevals may not have been allocated, only free the
-     * allocated variables. */
-    vars_clear_ext(&fc->l_avars.dv_hashtab, free_val);
-
-    /* free all l: variables */
-    vars_clear(&fc->l_vars.dv_hashtab);
-
-    /* Free the a:000 variables if they were allocated. */
-    if (free_val)
-	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
-	    clear_tv(&li->li_tv);
-
     func_ptr_unref(fc->func);
     vim_free(fc);
+}
+
+/*
+ * Free "fc" and what it contains.
+ * Can be called only when "fc" is kept beyond the period of it called,
+ * i.e. after cleanup_function_call(fc).
+ */
+   static void
+free_funccal_contents(funccall_T *fc)
+{
+    listitem_T	*li;
+
+    // Free all l: variables.
+    vars_clear(&fc->l_vars.dv_hashtab);
+
+    // Free all a: variables.
+    vars_clear(&fc->l_avars.dv_hashtab);
+
+    // Free the a:000 variables.
+    for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+	clear_tv(&li->li_tv);
+
+    free_funccal(fc);
 }
 
 /*
@@ -632,51 +640,75 @@ free_funccal(
     static void
 cleanup_function_call(funccall_T *fc)
 {
+    int	may_free_fc = fc->fc_refcount <= 0;
+    int	free_fc = TRUE;
+
     current_funccal = fc->caller;
 
-    /* If the a:000 list and the l: and a: dicts are not referenced and there
-     * is no closure using it, we can free the funccall_T and what's in it. */
-    if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
-	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
-	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT
-	    && fc->fc_refcount <= 0)
-    {
-	free_funccal(fc, FALSE);
-    }
+    // Free all l: variables if not referred.
+    if (may_free_fc && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT)
+	vars_clear(&fc->l_vars.dv_hashtab);
+    else
+	free_fc = FALSE;
+
+    // If the a:000 list and the l: and a: dicts are not referenced and
+    // there is no closure using it, we can free the funccall_T and what's
+    // in it.
+    if (may_free_fc && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)
+	vars_clear_ext(&fc->l_avars.dv_hashtab, FALSE);
     else
     {
-	hashitem_T	*hi;
-	listitem_T	*li;
-	int		todo;
-	dictitem_T	*v;
-	static int	made_copy = 0;
+	int	    todo;
+	hashitem_T  *hi;
+	dictitem_T  *di;
 
-	/* "fc" is still in use.  This can happen when returning "a:000",
-	 * assigning "l:" to a global variable or defining a closure.
-	 * Link "fc" in the list for garbage collection later. */
-	fc->caller = previous_funccal;
-	previous_funccal = fc;
+	free_fc = FALSE;
 
-	/* Make a copy of the a: variables, since we didn't do that above. */
+	// Make a copy of the a: variables, since we didn't do that above.
 	todo = (int)fc->l_avars.dv_hashtab.ht_used;
 	for (hi = fc->l_avars.dv_hashtab.ht_array; todo > 0; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		--todo;
-		v = HI2DI(hi);
-		copy_tv(&v->di_tv, &v->di_tv);
+		di = HI2DI(hi);
+		copy_tv(&di->di_tv, &di->di_tv);
 	    }
 	}
+    }
 
-	/* Make a copy of the a:000 items, since we didn't do that above. */
+    if (may_free_fc && fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT)
+	fc->l_varlist.lv_first = NULL;
+    else
+    {
+	listitem_T *li;
+
+	free_fc = FALSE;
+
+	// Make a copy of the a:000 items, since we didn't do that above.
 	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
 	    copy_tv(&li->li_tv, &li->li_tv);
+    }
 
-	if (++made_copy == 10000)
+    if (free_fc)
+	free_funccal(fc);
+    else
+    {
+	static int made_copy = 0;
+
+	// "fc" is still in use.  This can happen when returning "a:000",
+	// assigning "l:" to a global variable or defining a closure.
+	// Link "fc" in the list for garbage collection later.
+	fc->caller = previous_funccal;
+	previous_funccal = fc;
+
+	if (want_garbage_collect)
+	    // If garbage collector is ready, clear count.
+	    made_copy = 0;
+	else if (++made_copy >= (int)((4096 * 1024) / sizeof(*fc)))
 	{
-	    // We have made a lot of copies.  This can happen when
-	    // repetitively calling a function that creates a reference to
+	    // We have made a lot of copies, worth 4 Mbyte.  This can happen
+	    // when repetitively calling a function that creates a reference to
 	    // itself somehow.  Call the garbage collector soon to avoid using
 	    // too much memory.
 	    made_copy = 0;
@@ -731,7 +763,7 @@ call_user_func(
 
     line_breakcheck();		/* check for CTRL-C hit */
 
-    fc = (funccall_T *)alloc(sizeof(funccall_T));
+    fc = (funccall_T *)alloc_clear(sizeof(funccall_T));
     if (fc == NULL)
 	return;
     fc->caller = current_funccal;
@@ -832,16 +864,15 @@ call_user_func(
 	{
 	    v = &fc->fixvar[fixvar_idx++].var;
 	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	    STRCPY(v->di_key, name);
 	}
 	else
 	{
-	    v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
-							     + STRLEN(name)));
+	    v = dictitem_alloc(name);
 	    if (v == NULL)
 		break;
-	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX | DI_FLAGS_ALLOC;
+	    v->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
-	STRCPY(v->di_key, name);
 
 	/* Note: the values are copied directly to avoid alloc/free.
 	 * "argvars" must have VAR_FIXED for v_lock. */
@@ -860,9 +891,11 @@ call_user_func(
 
 	if (ai >= 0 && ai < MAX_FUNC_ARGS)
 	{
-	    list_append(&fc->l_varlist, &fc->l_listitems[ai]);
-	    fc->l_listitems[ai].li_tv = argvars[i];
-	    fc->l_listitems[ai].li_tv.v_lock = VAR_FIXED;
+	    listitem_T *li = &fc->l_listitems[ai];
+
+	    li->li_tv = argvars[i];
+	    li->li_tv.v_lock = VAR_FIXED;
+	    list_append(&fc->l_varlist, li);
 	}
     }
 
@@ -1088,7 +1121,7 @@ funccal_unref(funccall_T *fc, ufunc_T *fp, int force)
 	    if (fc == *pfc)
 	    {
 		*pfc = fc->caller;
-		free_funccal(fc, TRUE);
+		free_funccal_contents(fc);
 		return;
 	    }
 	}
@@ -3646,7 +3679,7 @@ free_unref_funccal(int copyID, int testing)
 	{
 	    fc = *pfc;
 	    *pfc = fc->caller;
-	    free_funccal(fc, TRUE);
+	    free_funccal_contents(fc);
 	    did_free = TRUE;
 	    did_free_funccal = TRUE;
 	}

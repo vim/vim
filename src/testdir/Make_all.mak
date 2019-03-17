@@ -63,8 +63,8 @@ SCRIPTS_GUI =
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
 NEW_TESTS = \
-	test_arglist \
 	test_arabic \
+	test_arglist \
 	test_assert \
 	test_assign \
 	test_autochdir \
@@ -108,11 +108,11 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
-	test_exit \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \
 	test_exists_autocmd \
+	test_exit \
 	test_expand \
 	test_expand_dllpath \
 	test_expand_func \
@@ -179,6 +179,7 @@ NEW_TESTS = \
 	test_match \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
+	test_memory_usage \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -355,6 +356,7 @@ NEW_TESTS_RES = \
 	test_maparg.res \
 	test_marks.res \
 	test_matchadd_conceal.res \
+	test_memory_usage.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \
