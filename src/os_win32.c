@@ -6024,6 +6024,8 @@ insert_lines(unsigned cLines)
     COORD	    dest;
     CHAR_INFO	    fill;
 
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
+
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y + cLines;
 
@@ -6037,17 +6039,16 @@ insert_lines(unsigned cLines)
     clip.Right  = g_srScrollRegion.Right;
     clip.Bottom = g_srScrollRegion.Bottom;
 
-    {
-	fill.Char.AsciiChar = ' ';
-	if (!USE_VTP)
-	    fill.Attributes = g_attrCurrent;
-	else
-	    fill.Attributes = g_attrDefault;
+    fill.Char.AsciiChar = ' ';
+    if (!USE_VTP)
+	fill.Attributes = g_attrCurrent;
+    else
+	fill.Attributes = g_attrDefault;
 
-	set_console_color_rgb();
+    set_console_color_rgb();
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
-    }
+    ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
+
     // Here we have to deal with a win32 console flake: If the scroll
     // region looks like abc and we scroll c to a and fill with d we get
     // cbd... if we scroll block c one line at a time to a, we get cdd...
@@ -6081,6 +6082,8 @@ delete_lines(unsigned cLines)
     CHAR_INFO	    fill;
     int		    nb;
 
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
+
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y;
 
@@ -6094,17 +6097,16 @@ delete_lines(unsigned cLines)
     clip.Right  = g_srScrollRegion.Right;
     clip.Bottom = g_srScrollRegion.Bottom;
 
-    {
-	fill.Char.AsciiChar = ' ';
-	if (!USE_VTP)
-	    fill.Attributes = g_attrCurrent;
-	else
-	    fill.Attributes = g_attrDefault;
+    fill.Char.AsciiChar = ' ';
+    if (!USE_VTP)
+	fill.Attributes = g_attrCurrent;
+    else
+	fill.Attributes = g_attrDefault;
 
-	set_console_color_rgb();
+    set_console_color_rgb();
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
-    }
+    ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
+
     // Here we have to deal with a win32 console flake; See insert_lines()
     // above.
 
