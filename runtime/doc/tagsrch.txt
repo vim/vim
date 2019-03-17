@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Feb 13
+*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -578,7 +578,7 @@ only supported by new versions of ctags (such as Exuberant ctags).
 		the bar) and ;" is used to have Vi ignore the rest of the
 		line.  Example:
 			APP	file.c	call cursor(3, 4)|;"	v
-			
+
 {field} ..	A list of optional fields.  Each field has the form:
 
 			<Tab>{fieldname}:{value}

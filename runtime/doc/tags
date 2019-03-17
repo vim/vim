@@ -3645,7 +3645,6 @@ CTRL-V-alternative	gui_w32.txt	/*CTRL-V-alternative*
 CTRL-W	index.txt	/*CTRL-W*
 CTRL-W_+	windows.txt	/*CTRL-W_+*
 CTRL-W_-	windows.txt	/*CTRL-W_-*
-CTRL-W_.	terminal.txt	/*CTRL-W_.*
 CTRL-W_:	windows.txt	/*CTRL-W_:*
 CTRL-W_<	windows.txt	/*CTRL-W_<*
 CTRL-W_<BS>	windows.txt	/*CTRL-W_<BS>*
@@ -3685,7 +3684,6 @@ CTRL-W_H	windows.txt	/*CTRL-W_H*
 CTRL-W_J	windows.txt	/*CTRL-W_J*
 CTRL-W_K	windows.txt	/*CTRL-W_K*
 CTRL-W_L	windows.txt	/*CTRL-W_L*
-CTRL-W_N	terminal.txt	/*CTRL-W_N*
 CTRL-W_P	windows.txt	/*CTRL-W_P*
 CTRL-W_R	windows.txt	/*CTRL-W_R*
 CTRL-W_S	windows.txt	/*CTRL-W_S*
@@ -3700,9 +3698,11 @@ CTRL-W_c	windows.txt	/*CTRL-W_c*
 CTRL-W_d	tagsrch.txt	/*CTRL-W_d*
 CTRL-W_f	windows.txt	/*CTRL-W_f*
 CTRL-W_gF	windows.txt	/*CTRL-W_gF*
+CTRL-W_gT	windows.txt	/*CTRL-W_gT*
 CTRL-W_g]	windows.txt	/*CTRL-W_g]*
 CTRL-W_g_CTRL-]	windows.txt	/*CTRL-W_g_CTRL-]*
 CTRL-W_gf	windows.txt	/*CTRL-W_gf*
+CTRL-W_gt	windows.txt	/*CTRL-W_gt*
 CTRL-W_g}	windows.txt	/*CTRL-W_g}*
 CTRL-W_h	windows.txt	/*CTRL-W_h*
 CTRL-W_i	tagsrch.txt	/*CTRL-W_i*
@@ -3713,7 +3713,6 @@ CTRL-W_n	windows.txt	/*CTRL-W_n*
 CTRL-W_o	windows.txt	/*CTRL-W_o*
 CTRL-W_p	windows.txt	/*CTRL-W_p*
 CTRL-W_q	windows.txt	/*CTRL-W_q*
-CTRL-W_quote	terminal.txt	/*CTRL-W_quote*
 CTRL-W_r	windows.txt	/*CTRL-W_r*
 CTRL-W_s	windows.txt	/*CTRL-W_s*
 CTRL-W_t	windows.txt	/*CTRL-W_t*
@@ -8251,6 +8250,7 @@ quake.vim	syntax.txt	/*quake.vim*
 quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
 quickfix-ID	quickfix.txt	/*quickfix-ID*
+quickfix-buffer	quickfix.txt	/*quickfix-buffer*
 quickfix-changedtick	quickfix.txt	/*quickfix-changedtick*
 quickfix-context	quickfix.txt	/*quickfix-context*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
@@ -8826,7 +8826,14 @@ t_AL	term.txt	/*t_AL*
 t_BD	term.txt	/*t_BD*
 t_BE	term.txt	/*t_BE*
 t_CS	term.txt	/*t_CS*
+t_CTRL-W_.	terminal.txt	/*t_CTRL-W_.*
+t_CTRL-W_:	terminal.txt	/*t_CTRL-W_:*
 t_CTRL-W_CTRL-C	terminal.txt	/*t_CTRL-W_CTRL-C*
+t_CTRL-W_CTRL-W	terminal.txt	/*t_CTRL-W_CTRL-W*
+t_CTRL-W_N	terminal.txt	/*t_CTRL-W_N*
+t_CTRL-W_gT	terminal.txt	/*t_CTRL-W_gT*
+t_CTRL-W_gt	terminal.txt	/*t_CTRL-W_gt*
+t_CTRL-W_quote	terminal.txt	/*t_CTRL-W_quote*
 t_CTRL-\_CTRL-N	terminal.txt	/*t_CTRL-\\_CTRL-N*
 t_CV	term.txt	/*t_CV*
 t_Ce	term.txt	/*t_Ce*

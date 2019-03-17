@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.1.  Last change: 2019 Feb 22
+*index.txt*     For Vim version 8.1.  Last change: 2019 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -544,10 +544,8 @@ tag		command		   action in Normal mode	~
 |CTRL-W_CTRL-]|	CTRL-W CTRL-]	   same as "CTRL-W ]"
 |CTRL-W_CTRL-^|	CTRL-W CTRL-^	   same as "CTRL-W ^"
 |CTRL-W_CTRL-_|	CTRL-W CTRL-_	   same as "CTRL-W _"
-|CTRL-W_quote|	CTRL-W "	   terminal window: paste register
 |CTRL-W_+|	CTRL-W +	   increase current window height N lines
 |CTRL-W_-|	CTRL-W -	   decrease current window height N lines
-|CTRL-W_.|	CTRL-W .	   terminal window: type CTRL-W
 |CTRL-W_:|	CTRL-W :	   same as |:|, edit a command line
 |CTRL-W_<|	CTRL-W <	   decrease current window width N columns
 |CTRL-W_=|	CTRL-W =	   make all windows the same height & width
@@ -556,7 +554,6 @@ tag		command		   action in Normal mode	~
 |CTRL-W_J|	CTRL-W J	   move current window to the very bottom
 |CTRL-W_K|	CTRL-W K	   move current window to the very top
 |CTRL-W_L|	CTRL-W L	   move current window to the far right
-|CTRL-W_N|	CTRL-W N	   terminal window: go to Terminal Normal mode
 |CTRL-W_P|	CTRL-W P	   go to preview window
 |CTRL-W_R|	CTRL-W R	   rotate windows upwards N times
 |CTRL-W_S|	CTRL-W S	   same as "CTRL-W s"
@@ -586,6 +583,8 @@ tag		command		   action in Normal mode	~
 |CTRL-W_gF|	CTRL-W g F	   edit file name under the cursor in a new
 				   tab page and jump to the line number
 				   following the file name.
+|CTRL-W_gt|	CTRL-W g t	   same as `gt`: go to next tab page
+|CTRL-W_gT|	CTRL-W g T	   same as `gT`: go to previous tab page
 |CTRL-W_h|	CTRL-W h	   go to Nth left window (stop at first window)
 |CTRL-W_i|	CTRL-W i	   split window and jump to declaration of
 				   identifier under the cursor
@@ -875,7 +874,7 @@ tag		char	      note action in Normal mode	~
 
 These can be used after an operator, but before a {motion} has been entered.
 
-tag		char		action in Insert mode	~
+tag		char		action in Operator-pending mode	~
 -----------------------------------------------------------------------
 |o_v|		v		force operator to work characterwise
 |o_V|		V		force operator to work linewise
@@ -1003,7 +1002,7 @@ Normal characters are inserted at the current cursor position.
 "Completion" below refers to context-sensitive completion.  It will complete
 file names, tags, commands etc. as appropriate.
 
-tag		command	      action in Command-line editing mode	~
+tag		command		action in Command-line editing mode	~
 ------------------------------------------------------------------------------
 		CTRL-@		not used
 |c_CTRL-A|	CTRL-A		do completion on the pattern in front of the
@@ -1100,16 +1099,19 @@ Most Normal mode commands except for window commands (|CTRL-W|) do not work in
 a terminal window. Switch to Terminal-Normal mode to use them.
 This assumes 'termwinkey' is not set.
 
-tag		char		action in Insert mode	~
+tag		char		action in Terminal-Job mode	~
 -----------------------------------------------------------------------
 |t_CTRL-\_CTRL-N| CTRL-\ CTRL-N	switch to Terminal-Normal mode
-|CTRL-W_N|	CTRL-W N	switch to Terminal-Normal mode
-|CTRL-W_:|	CTRL-W :	enter an Ex command
-|CTRL-W_.|	CTRL-W .	type CTRL-W in the terminal
+|t_CTRL-W_N|	CTRL-W N	switch to Terminal-Normal mode
+|t_CTRL-W_:|	CTRL-W :	enter an Ex command
+|t_CTRL-W_.|	CTRL-W .	type CTRL-W in the terminal
 		CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
-|CTRL-W_quote|	CTRL-W " {0-9a-z"%#*:=}
+|t_CTRL-W_quote|	CTRL-W " {0-9a-z"%#*:=}
 				paste register in the terminal
 |t_CTRL-W_CTRL-C| CTRL-W CTRL-C	forcefully ends the job
+|t_CTRL-W_CTRL-W| CTRL-W CTRL-W   move focus to the next window
+|t_CTRL-W_gt|	CTRL-W gt	go to next tabpage, same as `gt`
+|t_CTRL-W_gT|	CTRL-W gT	go to previous tabpage, same as `gT`
 
 You found it, Arthur!				*holy-grail* *:smile*
 
@@ -1120,7 +1122,7 @@ This is a brief but complete listing of all the ":" commands, without
 mentioning any arguments.  The optional part of the command name is inside [].
 The commands are sorted on the non-optional part of their name.
 
-tag	      command	      action ~
+tag		command		action ~
 ------------------------------------------------------------------------------
 |:!|		:!		filter lines or execute an external command
 |:!!|		:!!		repeat last ":!" command

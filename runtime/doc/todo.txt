@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Feb 22
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,14 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Check https://github.com/macvim-dev/macvim/issues/861. 
->
-Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
+Patch to add Farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
 Added test, updates, June 23.
 Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
 Remark from Ameretat Reith (2014 Oct 13) with patch on top.
+Updated patch from Ameretat Reith, 2019 Mar 1.
 
 Timer test doesn't work on MS-Windows console, any way to make it work?
+
+Drop FEAT_TAG_ANYWHITE ?  It should not be a compile time option.
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -113,6 +114,13 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Support for popup widows:
+- Use text properties to define highlighting.
+- Proposal on issue #4063
+
+Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
+(#4087)
+
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
@@ -120,6 +128,14 @@ Nov 17)  Asked about this, Dec 22. Christian will have a look.
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
+
+Patch for 'listchars' when there is a composing character on a space.
+How about when there is a double-width composing character on a space?
+(Yasuhiro Matsumoto, #4046)
+Test doesn't fail without patch?
+
+Patch to add ruby cflags. (#4050, fixes #1081)
+Needs modification.
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -130,10 +146,6 @@ Errors found with random data:
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
-
-Improvement for :terminal winpty/conpty option.  Ozaki Kiichi, #3905
-
-Patch to avoid compiler warnings. (Yasuhiro Matsumoto, #3979)
 
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
@@ -147,19 +159,39 @@ Should do current file first and not split it up when more results are found.
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
-Patch to fix that dosinstall still has buffer overflow problems. (Yasuhiro
-Matsumoto, #4002)
-
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
-Patch to reduce amount of memory used by functions that keep reference.
-(ichizok, #3961)
+Bug: script written with "-W scriptout" contains Key codes, while the script
+read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
+be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
+
+Patch to move insert-expand code to insexpand.c. (Yegappan Lakshmanan, #4044)
+
+Patch for larger icons in installer. (#978)  Still not good.
+
+Patch on issue #3964 to let sign column stop at the last buffer line.
+(Christian Brabandt, 2019 Feb 24)
 
 Patch to use wide font functions. (Ken Takata, 2019 Feb 18, #4000)
+
+Patch on #4073, Andy Massimino.  Is this a real problem?
+
+Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
+Mar 5)
+
+Patch to add blob2str() and str2blob(). (Yasuhiro Matsumoto, #4049)
+Make docs clearer. Is it symmetric?
 
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
 similar to check_due_timer().  Also see #3809.
+
+Using "5gj" starting inside a closed fold does not work on screen lines but on
+text lines. (Julius Hulsmann, #4095)
+
+Add "-once" to ":autocmd". Also add "-nested" as an alias for "nested".
+(Justin M. Keyes, #4100)  Syntax of -once may be strange.  ++once and ++nested
+is better?
 
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
@@ -169,6 +201,8 @@ Support setting the character displayed below the last line?  Neovim uses
 
 Check: __attribute__((format(printf, on semsg() and siemsg().  Where was this
 added?
+
+Patch to remove some unneeded {}. (Hirohito Higashi, #3982)
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -180,6 +214,8 @@ Should also be possible to add highlighting, like in the status line?
 balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 Another request: #3811.
+
+Patch for autoconf to add -fPIC for Fedora. (#4047)
 
 Height of quickfix window is not retained with vertical splits. (Lifepillar,
 2018 Aug 24, #2998)
@@ -200,10 +236,16 @@ Patch to fix modify_fname() does not work well with some 'encoding's.
 
 Patch to make vim_getenv() work with wide API. (Ken Takata, #4008)
 
+How to make (async) complete function depending on completion type?
+Patch on #4083 to do this with an autocommand.  Probably want something else,
+like 'ominfunc'.
+
 Patch to add equal field to complete items. (#3887)
 
 When using exclusive selection and vi" that fails, cursor moves to the left.
 Cursor should not move. (#4024)
+
+Patch to fix handling long line in tags file.  #4051, #4084 (Andy Massimino)
 
 Patch to fix that executable() may fail on very long filename in MS-Windows.
 (Ken Takata, 2016 Feb 1, update 2018 Oct 7, update 2019 Feb 19)
@@ -273,8 +315,7 @@ Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
 
-Patch to add complete_mode().  Shougo - #3866.  Alternate patch by Hirohito
-Higashi, 2019 Jan 27, included now?
+Patch to add complete_info  Shougo - #3866.  Ready to include.
 
 Patch to make winnr() return the window above/below/beside a window.
 (Yegappan Lakshmanan, #3993)
@@ -290,7 +331,7 @@ kept, which means part of the text isn't displayed.  Better show all the text
 when possible. (Dylan Lloyd, #3973)
 
 Tag stack is incorrect after CTRL-T and then :tag. (Andy Massimino, 2019 Feb
-12, #3944)  With Patch for a solution.  Needs a test.
+12, #3944)  With Patch for a solution (Feb 23).  Needs a test.
 
 Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
@@ -442,20 +483,12 @@ Lemonboy can reproduce (2017 Jun 5)
 Also reproduced by Benjamin Doherty, 2018 Oct 4.
 Simpler way: Ken Takata, Oct 6.
 
-Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
-#2999)
-
 Add more testing of the GTK GUI.
 - gtk_test_widget_click() can be used to simulate a click in a widget.
 
 Tests failing for "make testgui" with GTK:
 - Test_setbufvar_options()
 - Test_exit_callback_interval()
-
-When using CTRL-W CR in the quickfix window, the jumplist in the opened window
-is cleared, to avoid going back to the list of errors buffer (would have two
-windows with it).  Can we just remove the jump list entries for the quickfix
-buffer?
 
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
@@ -511,9 +544,6 @@ missing: --nofork, -A , -b, -h, etc.
 
 ":au * * command" should not be allowed, only use * for event when listing or
 deleting autocmds, not when adding them.
-
-Quickfix window height is not kept with a vertical split. (Lifepillar, 2018
-Jun 10, #2998)
 
 Alternative manpager.vim. (Enno, 2018 Jan 5, #2529)
 
@@ -866,9 +896,6 @@ When session file has name in argument list but the buffer was deleted, the
 buffer is not deleted when using the session file. (#1393)
 Should add the buffer in hidden state.
 
-When an item in the quickfix list has a file name that does not exist, behave
-like the item was not a match for :cnext.
-
 Wrong diff highlighting with three files. (2016 Oct 20, #1186)
 Also get E749 on exit.
 Another example in #1309
@@ -973,10 +1000,6 @@ Apr 23, #1653)
 
 Window resizing with 'winfixheight': With a vertical split the height changes
 anyway. (Tommy allen, 2017 Feb 21, #1502)
-
-When adding an item to a new quickfix list make ":cnext" jump to that item.
-Make a difference being at the first item and not having used :cnext at all.
-(Afanasiy Fet, 2017 Jan 3)
 
 Invalid behavior with NULL list. (Nikolai Pavlov, #768)
 E.g. deepcopy(test_null_list())
@@ -1167,9 +1190,6 @@ Have a way to get the call stack, in a function and from an exception.
 
 Second problem in #966: ins_compl_add_tv() uses get_dict_string() multiple
 times, overwrites the one buffer. (Nikolay Pavlov, 2016 Aug 5)
-
-This does not work: :set cscopequickfix=a-
-(Linewi, 2015 Jul 12, #914)
 
 Possibly wrong value for seq_cur. (Florent Fayolle, 2016 May 15, #806)
 
@@ -2571,8 +2591,6 @@ Autoconf problem: when checking for iconv library we may add -L/usr/local/lib,
 but when compiling further tests -liconv is added without the -L argument,
 that may fail (e.g., sizeof(int)). (Blaine, 2007 Aug 21)
 
-When opening quickfix window, disable spell checking?
-
 Problem with ".add" files when using two languages and restarting Vim. (Raul
 Coronado, 2008 Oct 30)
 
@@ -2635,7 +2653,7 @@ Windows installer: licence text should not use indent, causes bad word wrap.
 Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
 makes his own wrapper).  Add a magic string with the version number to the
 .bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim7.3*
+          # uninstall key: vim8.1*
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -2916,9 +2934,6 @@ Small problem displaying diff filler line when opening windows with a script.
 Is it allowed that 'backupext' is empty?  Problems when backup is in same dir
 as original file?  If it's OK don't compare with 'patchmode'. (Thierry Closen)
 
-Patch for supporting count before CR in quickfix window. (AOYAMA Shotaro, 2007
-Jan 1)
-
 Patch for adding ":lscscope". (Navdeep Parhar, 2007 Apr 26; update 2008 Apr
 23)
 
@@ -3071,8 +3086,6 @@ Awaiting updated patches:
 			+ 1", but that's ugly.
 7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
     better.  Now also works for Ruby (2001 Nov 10)
--   Patch from Herculano de Lima Einloft Neto for better formatting of the
-    quickfix window (2004 dec 2)
 7   When 'rightleft' is set, the search pattern should be displayed right
     to left as well?  See patch of Dec 26. (Nadim Shaikli)
 8   Option to lock all used memory so that it doesn't get swapped to disk
@@ -3090,6 +3103,35 @@ Awaiting updated patches:
     and GTK by degreneir (nov 10 and nov 18).
 -   Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
 
+Quickfix/Location List:
+-   Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
+    #2999)
+-   When using CTRL-W CR in the quickfix window, the jumplist in the opened
+    window is cleared, to avoid going back to the list of errors buffer (would
+    have two windows with it).  Can we just remove the jump list entries for
+    the quickfix buffer?
+-   Quickfix window height is not kept with a vertical split. (Lifepillar,
+    2018 Jun 10, #2998)
+-   When an item in the quickfix list has a file name that does not exist,
+    behave like the item was not a match for :cnext.
+-   When adding an item to a new quickfix list make ":cnext" jump to that
+    item.  Make a difference being at the first item and not having used
+    :cnext at all.  (Afanasiy Fet, 2017 Jan 3)
+-   This does not work: :set cscopequickfix=a-
+    (Linewi, 2015 Jul 12, #914)
+-   When opening quickfix window, disable spell checking?
+-   Patch for supporting count before CR in quickfix window. (AOYAMA Shotaro,
+    2007 Jan 1)
+-   Patch from Herculano de Lima Einloft Neto for better formatting of the
+    quickfix window (2004 dec 2)
+-   Amiga: When using quickfix with the Manx compiler we only get the first 25
+    errors.  How do we get the rest?
+8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
+    option to specify the encoding of the errorfile and convert it.  Also for
+    ":grep" and ":helpgrep".
+    More generic solution: support a filter (e.g., by calling a function).
+7   Add a command that goes back to the position from before jumping to the
+    first quickfix location.  ":cbefore"?
 
 Vi incompatibility:
 -   Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
@@ -3732,8 +3774,6 @@ Problems that will (probably) not be solved:
 -   In zsh, "gvim&" changes the terminal settings.  This is a zsh problem.
     (Jennings)
 -   Problem with HPterm under X: old contents of window is lost (Cosentino).
--   Amiga: When using quickfix with the Manx compiler we only get the first 25
-    errors.  How do we get the rest?
 -   Amiga: The ":cq" command does not always abort the Manx compiler.  Why?
 -   Linux: A file with protection r--rw-rw- is seen readonly for others.  The
     access() function in GNU libc is probably wrong.
@@ -4066,10 +4106,6 @@ Multi-byte characters:
 8   Add an item in 'fileencodings' to check the first line of an XML file for
     the encoding.  <?xml version="1.0" encoding="UTF-8"?>  Or "charset=UTF-8"?
     For HTML look for "charset=utf-8".
-8   The quickfix file is read without conversion, thus in 'encoding'.  Add an
-    option to specify the encoding of the errorfile and convert it.  Also for
-    ":grep" and ":helpgrep".
-    More generic solution: support a filter (e.g., by calling a function).
 8   When a file was converted from 'fileencoding' to 'encoding', a tag search
     should also do this on the search pattern. (Andrzej M. Ostruszka)
 8   When filtering changes the encoding 'fileencoding' may not work.  E.g.,
@@ -5877,8 +5913,6 @@ Various improvements:
     from the 'makeprg'?
 -   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
     Govindachar)
-7   Add a command that goes back to the position from before jumping to the
-    first quickfix location.  ":cbefore"?
 7   Allow a window not to have a statusline.  Makes it possible to use a
     window as a buffer-tab selection.
 8   Allow non-active windows to have a different statusline. (Yakov Lerner)

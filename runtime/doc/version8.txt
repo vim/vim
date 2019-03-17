@@ -2378,7 +2378,7 @@ Solution:   Use the msgfmt command found by configure. (Danek Duvall)
 Files:	    src/config.mk.in, src/po/Makefile
 
 Patch 7.4.323
-Problem:    Substitute() with zero width pattern breaks multi-byte character.
+Problem:    substitute() with zero width pattern breaks multi-byte character.
 Solution:   Take multi-byte character size into account. (Yukihiro Nakadaira)
 Files:	    src/eval.c src/testdir/test69.in, src/testdir/test69.ok
 
@@ -20311,7 +20311,7 @@ Solution:   Use R for a running job and F for a finished job.
 Files:      src/buffer.c
 
 Patch 8.0.0936
-Problem:    Mode() returns wrong value for a terminal window.
+Problem:    mode() returns wrong value for a terminal window.
 Solution:   Return 't' when typed keys go to a job.
 Files:      src/evalfunc.c, src/testdir/test_terminal.vim
 
@@ -20697,7 +20697,7 @@ Solution:   Add type cast. (Mike Williams)
 Files:      src/channel.c
 
 Patch 8.0.1004
-Problem:    Matchstrpos() without a match returns too many items.
+Problem:    matchstrpos() without a match returns too many items.
 Solution:   Also remove the second item when the position is beyond the end of
             the string. (Hirohito Higashi)  Use an enum for the type.
 Files:      src/evalfunc.c, src/testdir/test_match.vim
@@ -22544,7 +22544,7 @@ Files:      src/ex_getln.c, src/proto/search.pro, src/search.c,
             src/testdir/test_search.vim
 
 Patch 8.0.1305
-Problem:    Writefile() never calls fsync().
+Problem:    writefile() never calls fsync().
 Solution:   Follow the 'fsync' option with override to enable or disable.
 Files:      src/fileio.c, src/evalfunc.c, runtime/doc/eval.txt, src/globals.h,
             src/testdir/test_writefile.vim
@@ -22732,7 +22732,7 @@ Solution:   Take the winbar into account when computing the new window
 Files:      src/vim.h, src/window.c
 
 Patch 8.0.1335
-Problem:    Writefile() using fsync() may give an error for a device.
+Problem:    writefile() using fsync() may give an error for a device.
             (Yasuhiro Matsumoto)
 Solution:   Ignore fsync() failing. (closes #2373)
 Files:      src/evalfunc.c
@@ -23618,7 +23618,7 @@ Files:      src/edit.c, src/testdir/test_ins_complete.vim,
             src/testdir/test_popup.vim, src/testdir/test_edit.vim
 
 Patch 8.0.1483
-Problem:    Searchpair() might return an invalid value on timeout.
+Problem:    searchpair() might return an invalid value on timeout.
 Solution:   When the second search times out, do not accept a match from the
             first search. (Daniel Hahler, closes #2552)
 Files:      src/search.c
@@ -23722,7 +23722,7 @@ Files:      runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/Makefile,
             src/testdir/Make_all.mak, src/testdir/test_jumplist.vim
 
 Patch 8.0.1498 (after 8.0.1497)
-Problem:    Getjumplist() returns duplicate entries. (lacygoill)
+Problem:    getjumplist() returns duplicate entries. (lacygoill)
 Solution:   Call cleanup_jumplist(). (Yegappan Lakshmanan)
 Files:      src/evalfunc.c, src/mark.c, src/proto/mark.pro,
             src/testdir/test_jumplist.vim
@@ -23842,7 +23842,7 @@ Solution:   Restore emsg_silent before executing :try. (closes #2531)
 Files:      src/ex_docmd.c, src/testdir/test_eval_stuff.vim
 
 Patch 8.0.1519
-Problem:    Getchangelist() does not use argument as bufname().
+Problem:    getchangelist() does not use argument as bufname().
 Solution:   Use get_buf_tv(). (Yegappan Lakshmanan, closes #2641)
 Files:      src/evalfunc.c, src/testdir/test_changelist.vim
 
