@@ -3533,20 +3533,50 @@ ins_compl_active(void)
  * Get complete information
  */
     void
-get_complete_info(dict_T *what, dict_T *retdict)
+get_complete_info(list_T *what, dict_T *retdict)
 {
     int		ret = OK;
+    listitem_T	*item;
+    enum {
+	WHAT_MODE        = 0x01,
+	WHAT_PUM_VISIBLE = 0x02,
+	WHAT_ITEMS       = 0x04,
+	WHAT_SELECTED    = 0x08,
+	WHAT_INSERTED    = 0x10,
 
-    if (ret == OK && (what == NULL
-		|| dict_find(what, (char_u *)"mode", -1) != NULL))
+	WHAT_ALL_SPECIFY = 0xff
+    } what_flag;
+
+    if (what == NULL)
+	what_flag = WHAT_ALL_SPECIFY;
+    else
+    {
+	char_u	    *keys;
+
+	what_flag = 0;
+	for (item = what->lv_first; item != NULL; item = item->li_next)
+	{
+	    keys = tv_get_string(&item->li_tv);
+	    if (STRCMP(keys, "mode") == 0)
+		what_flag |= WHAT_MODE;
+	    else if (STRCMP(keys, "pum_visible") == 0)
+		what_flag |= WHAT_PUM_VISIBLE;
+	    else if (STRCMP(keys, "items") == 0)
+		what_flag |= WHAT_ITEMS;
+	    else if (STRCMP(keys, "selected") == 0)
+		what_flag |= WHAT_SELECTED;
+	    else if (STRCMP(keys, "inserted") == 0)
+		what_flag |= WHAT_INSERTED;
+	}
+    }
+
+    if (ret == OK && (what_flag & WHAT_MODE))
 	ret = dict_add_string(retdict, "mode", ins_compl_mode());
 
-    if (ret == OK && (what == NULL
-		|| dict_find(what, (char_u *)"pum_visible", -1) != NULL))
+    if (ret == OK && (what_flag & WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
 
-    if (ret == OK && (what == NULL
-		|| dict_find(what, (char_u *)"items", -1) != NULL))
+    if (ret == OK && (what_flag & WHAT_ITEMS))
     {
 	list_T	    *li;
 	dict_T	    *di;
@@ -3583,13 +3613,11 @@ get_complete_info(dict_T *what, dict_T *retdict)
 	}
     }
 
-    if (ret == OK && (what == NULL
-		|| dict_find(what, (char_u *)"selected", -1) != NULL))
+    if (ret == OK && (what_flag & WHAT_SELECTED))
 	ret = dict_add_number(retdict, "selected", (compl_curr_match != NULL) ?
 			compl_curr_match->cp_number - 1 : -1);
 
-//    if (ret == OK && (what == NULL
-//		|| dict_find(what, (char_u *)"inserted", -1) != NULL))
+//    if (ret == OK && (what_flag & WHAT_INSERTED))
 }
 
 /*

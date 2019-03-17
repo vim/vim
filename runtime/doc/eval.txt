@@ -3574,17 +3574,17 @@ complete_info([{what}])
 		   "eval"	|complete()| completion
 		   "unknown"	Other internal modes
 
-		If the optional {what} dictionary argument is supplied, then
+		If the optional {what} list argument is supplied, then
 		only the items listed in {what} are returned.
-		Unsupported keys in {what} are ignored.
+		Unsupported items in {what} are ignored.
 
 		Examples: >
 			" Get all items
 			call complete_info()
 			" Get only 'mode'
-			call complete_info({'mode': ''})
+			call complete_info(['mode'])
 			" Get only 'mode' and 'pum_visible'
-			call complete_info({'mode': '', 'pum_visible': ''})
+			call complete_info(['mode', 'pum_visible'])
 <
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])

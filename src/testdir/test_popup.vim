@@ -939,31 +939,62 @@ func Test_popup_complete_info_01()
   bwipe!
 endfunc
 
-"func UserDefinedComplete(findstart, base)
-"  if a:findstart
-"    return 0
-"  else
-"    return [
-"          \   { 'word': 'Jan', 'menu': 'January' },
-"          \   { 'word': 'Feb', 'menu': 'February' },
-"          \   { 'word': 'Mar', 'menu': 'March' },
-"          \   { 'word': 'Apr', 'menu': 'April' },
-"          \   { 'word': 'May', 'menu': 'May' },
-"          \ ]
-"  endif
-"endfunc
-"
-"func GetCompleteInfo()
-"  let g:compl_info = complete_info()
-"  return ''
-"endfunc
-"
-"func Test_popup_complete_info_02()
-"  new
-"  inoremap <buffer><F5> <C-R>=GetCompleteInfo()<CR>
-"  setlocal completefunc=UserDefinedComplete
-"
-"  bwipe!
-"endfunc
+func UserDefinedComplete(findstart, base)
+  if a:findstart
+    return 0
+  else
+    return [
+          \   { 'word': 'Jan', 'menu': 'January' },
+          \   { 'word': 'Feb', 'menu': 'February' },
+          \   { 'word': 'Mar', 'menu': 'March' },
+          \   { 'word': 'Apr', 'menu': 'April' },
+          \   { 'word': 'May', 'menu': 'May' },
+          \ ]
+  endif
+endfunc
+
+func GetCompleteInfo()
+  if empty(g:compl_what)
+    let g:compl_info = complete_info()
+  else
+    let g:compl_info = complete_info(g:compl_what)
+  endif
+  return ''
+endfunc
+
+func Test_popup_complete_info_02()
+  new
+  inoremap <buffer><F5> <C-R>=GetCompleteInfo()<CR>
+  setlocal completefunc=UserDefinedComplete
+
+  let d = {
+    \   'mode': 'function',
+    \   'pum_visible': 1,
+    \   'items': [
+    \     {'word': 'Jan', 'menu': 'January', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Feb', 'menu': 'February', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Mar', 'menu': 'March', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'Apr', 'menu': 'April', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
+    \     {'word': 'May', 'menu': 'May', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}
+    \   ],
+    \   'selected': 0,
+    \ }
+
+  let g:compl_what = []
+  call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
+  call assert_equal(d, g:compl_info)
+
+  let g:compl_what = ['mode', 'pum_visible', 'selected']
+  call remove(d, 'items')
+  call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
+  call assert_equal(d, g:compl_info)
+
+  let g:compl_what = ['mode']
+  call remove(d, 'selected')
+  call remove(d, 'pum_visible')
+  call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
+  call assert_equal(d, g:compl_info)
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

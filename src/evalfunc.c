@@ -2606,10 +2606,10 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_UNKNOWN)
 	get_complete_info(NULL, rettv->vval.v_dict);
-    else if (argvars[0].v_type == VAR_DICT)
-	get_complete_info(argvars[0].vval.v_dict, rettv->vval.v_dict);
+    else if (argvars[0].v_type == VAR_LIST)
+	get_complete_info(argvars[0].vval.v_list, rettv->vval.v_dict);
     else
-	emsg(_(e_dictreq));
+	emsg(_(e_listreq));
 }
 #endif
 

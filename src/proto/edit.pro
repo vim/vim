@@ -18,7 +18,7 @@ void ins_compl_show_pum(void);
 char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 int ins_compl_active(void);
-void get_complete_info(dict_T *what, dict_T *retdict);
+void get_complete_info(list_T *what, dict_T *retdict);
 int ins_compl_add_tv(typval_T *tv, int dir);
 void ins_compl_check_keys(int frequency, int in_compl_func);
 int get_literal(void);
