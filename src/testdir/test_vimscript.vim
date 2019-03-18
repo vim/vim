@@ -1556,6 +1556,62 @@ func Test_compound_assignment_operators()
     let @/ = ''
 endfunc
 
+func Test_refcount()
+    " Immediate values
+    call assert_equal(-1, test_refcount(1))
+    call assert_equal(-1, test_refcount('s'))
+    if has('float')
+        call assert_equal(-1, test_refcount(0.1))
+    endif
+    call assert_equal(0, test_refcount([]))
+    call assert_equal(0, test_refcount({}))
+    call assert_equal(0, test_refcount(0zff))
+    call assert_equal(0, test_refcount({-> line('.')}))
+
+    " No refcount types
+    let x = 1
+    call assert_equal(-1, test_refcount(x))
+    let x = 's'
+    call assert_equal(-1, test_refcount(x))
+    if has('float')
+        let x = 0.1
+        call assert_equal(-1, test_refcount(x))
+    endif
+
+    " Check refcount
+    let x = []
+    call assert_equal(1, test_refcount(x))
+    let x = {}
+    call assert_equal(1, test_refcount(x))
+    let x = 0zff
+    call assert_equal(1, test_refcount(x))
+    let X = {-> line('.')}
+    call assert_equal(1, test_refcount(X))
+    let Y = X
+    call assert_equal(2, test_refcount(X))
+
+    " function() does not increase refcount.
+    func Func()
+        call assert_equal(2, test_refcount(function('Func')))
+    endfunc
+    let X = function('Func')
+    let Y = X
+    call assert_equal(1, test_refcount(X))
+    call Func()
+    delfunc Func
+
+    " funcref() increases refcount.
+    func Func()
+        " funcref() returns an immediate value.
+        call assert_equal(0, test_refcount(funcref('Func')))
+    endfunc
+    let X = funcref('Func')
+    let Y = X
+    call assert_equal(2, test_refcount(X))
+    call Func()
+    delfunc Func
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
