@@ -1555,30 +1555,16 @@ FunctionGetattr(PyObject *self, char *name)
 }
 
     void
-do_pyeval (char_u *str, typval_T *rettv)
+do_pyeval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
 	    (rangeinitializer) init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
-    switch (rettv->v_type)
+    if (rettv->v_type == VAR_UNKNOWN)
     {
-	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
-	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
-	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
-	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
-	case VAR_UNKNOWN:
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = 0;
-	    break;
-	case VAR_NUMBER:
-	case VAR_STRING:
-	case VAR_FLOAT:
-	case VAR_SPECIAL:
-	case VAR_JOB:
-	case VAR_CHANNEL:
-	case VAR_BLOB:
-	    break;
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = 0;
     }
 }
 
@@ -1594,7 +1580,7 @@ Py_GetProgramName(void)
 #endif /* Python 1.4 */
 
     int
-set_ref_in_python (int copyID)
+set_ref_in_python(int copyID)
 {
     return set_ref_in_py(copyID);
 }
