@@ -799,10 +799,11 @@ static struct PyModuleDef vimmodule;
  */
 #include "if_py_both.h"
 
+// NOTE: Must always be used at the start of a block, since it declares "name".
 #define GET_ATTR_STRING(name, nameobj) \
     char	*name = ""; \
     if (PyUnicode_Check(nameobj)) \
-	name = _PyUnicode_AsString(nameobj)
+	name = (char *)_PyUnicode_AsString(nameobj)
 
 #define PY3OBJ_DELETED(obj) (obj->ob_base.ob_refcnt<=0)
 
