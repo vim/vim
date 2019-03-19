@@ -1797,6 +1797,7 @@ channel_consume(channel_T *channel, ch_part_T part, int len)
 
     mch_memmove(buf, buf + len, node->rq_buflen - len);
     node->rq_buflen -= len;
+    node->rq_buffer[node->rq_buflen] = NUL;
 }
 
 /*
@@ -1819,7 +1820,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	return FAIL;
 
     last_node = node->rq_next;
-    len = node->rq_buflen + last_node->rq_buflen + 1;
+    len = node->rq_buflen + last_node->rq_buflen;
     if (want_nl)
 	while (last_node->rq_next != NULL
 		&& channel_first_nl(last_node) == NULL)
@@ -1828,7 +1829,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	    len += last_node->rq_buflen;
 	}
 
-    p = newbuf = alloc(len);
+    p = newbuf = alloc(len + 1);
     if (newbuf == NULL)
 	return FAIL;	    /* out of memory */
     mch_memmove(p, node->rq_buffer, node->rq_buflen);
@@ -1842,6 +1843,7 @@ channel_collapse(channel_T *channel, ch_part_T part, int want_nl)
 	p += n->rq_buflen;
 	vim_free(n->rq_buffer);
     }
+    *p = NUL;
     node->rq_buflen = (long_u)(p - newbuf);
 
     /* dispose of the collapsed nodes and their buffers */
@@ -2666,30 +2668,20 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    }
 	    buf = node->rq_buffer;
 
-	    if (nl == NULL)
-	    {
-		/* Flush remaining message that is missing a NL. */
-		char_u	*new_buf;
-
-		new_buf = vim_realloc(buf, node->rq_buflen + 1);
-		if (new_buf == NULL)
-		    /* This might fail over and over again, should the message
-		     * be dropped? */
-		    return FALSE;
-		buf = new_buf;
-		node->rq_buffer = buf;
-		nl = buf + node->rq_buflen++;
-		*nl = NUL;
-	    }
-
-	    /* Convert NUL to NL, the internal representation. */
-	    for (p = buf; p < nl && p < buf + node->rq_buflen; ++p)
+	    // Convert NUL to NL, the internal representation.
+	    for (p = buf; (nl == NULL || p < nl)
+					    && p < buf + node->rq_buflen; ++p)
 		if (*p == NUL)
 		    *p = NL;
 
-	    if (nl + 1 == buf + node->rq_buflen)
+	    if (nl == NULL)
 	    {
-		/* get the whole buffer, drop the NL */
+		// get the whole buffer, drop the NL
+		msg = channel_get(channel, part, NULL);
+	    }
+	    else if (nl + 1 == buf + node->rq_buflen)
+	    {
+		// get the whole buffer
 		msg = channel_get(channel, part, NULL);
 		*nl = NUL;
 	    }

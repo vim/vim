@@ -1542,6 +1542,7 @@ do_shell(
 #endif
 #ifdef MSWIN
     int		winstart = FALSE;
+    int		keep_termcap = FALSE;
 #endif
 
     /*
@@ -1557,48 +1558,54 @@ do_shell(
 
 #ifdef MSWIN
     /*
-     * Check if ":!start" is used.
+     * Check if ":!start" is used.  This implies not stopping termcap mode.
      */
     if (cmd != NULL)
-	winstart = (STRNICMP(cmd, "start ", 6) == 0);
+	keep_termcap = winstart = (STRNICMP(cmd, "start ", 6) == 0);
+
+# if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
+    // Don't stop termcap mode when using a terminal window for the shell.
+    if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL)
+	keep_termcap = TRUE;
+# endif
 #endif
 
     /*
      * For autocommands we want to get the output on the current screen, to
      * avoid having to type return below.
      */
-    msg_putchar('\r');			/* put cursor at start of line */
+    msg_putchar('\r');			// put cursor at start of line
     if (!autocmd_busy)
     {
 #ifdef MSWIN
-	if (!winstart)
+	if (!keep_termcap)
 #endif
 	    stoptermcap();
     }
 #ifdef MSWIN
     if (!winstart)
 #endif
-	msg_putchar('\n');		/* may shift screen one line up */
+	msg_putchar('\n');		// may shift screen one line up
 
-    /* warning message before calling the shell */
+    // warning message before calling the shell
     if (p_warn && !autocmd_busy && msg_silent == 0)
 	FOR_ALL_BUFFERS(buf)
 	    if (bufIsChangedNotTerm(buf))
 	    {
 #ifdef FEAT_GUI_MSWIN
-		if (!winstart)
-		    starttermcap();	/* don't want a message box here */
+		if (!keep_termcap)
+		    starttermcap();	// don't want a message box here
 #endif
 		msg_puts(_("[No write since last change]\n"));
 #ifdef FEAT_GUI_MSWIN
-		if (!winstart)
+		if (!keep_termcap)
 		    stoptermcap();
 #endif
 		break;
 	    }
 
-    /* This windgoto is required for when the '\n' resulted in a "delete line
-     * 1" command to the terminal. */
+    // This windgoto is required for when the '\n' resulted in a "delete line
+    // 1" command to the terminal.
     if (!swapping_screen())
 	windgoto(msg_row, msg_col);
     cursor_on();
@@ -1632,7 +1639,7 @@ do_shell(
 #ifndef FEAT_GUI_MSWIN
 	if (cmd == NULL
 # ifdef MSWIN
-		|| (winstart && !need_wait_return)
+		|| (keep_termcap && !need_wait_return)
 # endif
 	   )
 	{
@@ -1659,9 +1666,9 @@ do_shell(
 #endif /* FEAT_GUI_MSWIN */
 
 #ifdef MSWIN
-	if (!winstart) /* if winstart==TRUE, never stopped termcap! */
+	if (!keep_termcap)	// if keep_termcap is TRUE didn't stop termcap
 #endif
-	    starttermcap();	/* start termcap if not done by wait_return() */
+	    starttermcap();	// start termcap if not done by wait_return()
 
 	/*
 	 * In an Amiga window redrawing is caused by asking the window size.

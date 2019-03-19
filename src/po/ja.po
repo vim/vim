@@ -3,7 +3,7 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# Copyright (C) 2001-2018 MURAOKA Taro <koron.kaoriya@gmail.com>,
+# Copyright (C) 2001-2019 MURAOKA Taro <koron.kaoriya@gmail.com>,
 # 			  vim-jp <http://vim-jp.org/>
 #
 # THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-13 19:44+0900\n"
-"PO-Revision-Date: 2018-11-16 09:41+0900\n"
+"POT-Creation-Date: 2019-02-18 19:15+0900\n"
+"PO-Revision-Date: 2019-03-12 08:23+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -23,6 +23,67 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "--Deleted--"
+msgstr "--削除済--"
+
+#, c-format
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "autocommand: %s <バッファ=%d> が自動的に削除されます"
+
+#, c-format
+msgid "E367: No such group: \"%s\""
+msgstr "E367: そのグループはありません: \"%s\""
+
+msgid "E936: Cannot delete the current group"
+msgstr "E936: 現在のグループは削除できません"
+
+msgid "W19: Deleting augroup that is still in use"
+msgstr "W19: 使用中の augroup を消そうとしています"
+
+#, c-format
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: * の後に不正な文字がありました: %s"
+
+#, c-format
+msgid "E216: No such event: %s"
+msgstr "E216: そのようなイベントはありません: %s"
+
+#, c-format
+msgid "E216: No such group or event: %s"
+msgstr "E216: そのようなグループもしくはイベントはありません: %s"
+
+msgid ""
+"\n"
+"--- Autocommands ---"
+msgstr ""
+"\n"
+"--- Autocommands ---"
+
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <バッファ=%d>: 無効なバッファ番号です "
+
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr "E217: 全てのイベントに対してのautocommandは実行できません"
+
+msgid "No matching autocommands"
+msgstr "該当するautocommandは存在しません"
+
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: autocommandの入れ子が深過ぎます"
+
+#, c-format
+msgid "%s Autocommands for \"%s\""
+msgstr "%s Autocommands for \"%s\""
+
+#, c-format
+msgid "Executing %s"
+msgstr "%s を実行しています"
+
+#, c-format
+msgid "autocommand %s"
+msgstr "autocommand %s"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: bf_key_init() が空パスワードで呼び出されました"
@@ -100,8 +161,8 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88: 最初のバッファより前へは移動できません"
 
 #, c-format
-msgid "E89: No write since last change for buffer %ld (add ! to override)"
-msgstr "E89: バッファ %ld の変更は保存されていません (! で変更を破棄)"
+msgid "E89: No write since last change for buffer %d (add ! to override)"
+msgstr "E89: バッファ %d の変更は保存されていません (! で変更を破棄)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: ジョブはまだ実行中です (! を追加でジョブを終了)"
@@ -119,8 +180,8 @@ msgid "W14: Warning: List of file names overflow"
 msgstr "W14: 警告: ファイル名のリストが長過ぎます"
 
 #, c-format
-msgid "E92: Buffer %ld not found"
-msgstr "E92: バッファ %ld が見つかりません"
+msgid "E92: Buffer %d not found"
+msgstr "E92: バッファ %d が見つかりません"
 
 #, c-format
 msgid "E93: More than one match for %s"
@@ -200,21 +261,6 @@ msgstr "[プロンプト]"
 
 msgid "[Scratch]"
 msgstr "[下書き]"
-
-msgid ""
-"\n"
-"--- Signs ---"
-msgstr ""
-"\n"
-"--- サイン ---"
-
-#, c-format
-msgid "Signs for %s:"
-msgstr "%s のサイン:"
-
-#, c-format
-msgid "    line=%ld  id=%d  name=%s"
-msgstr "    行=%ld  識別子=%d  名前=%s"
 
 msgid "E902: Cannot connect to port"
 msgstr "E902: ポートに接続できません"
@@ -309,8 +355,8 @@ msgid "E737: Key already exists: %s"
 msgstr "E737: キーは既に存在します: %s"
 
 #, c-format
-msgid "E96: Cannot diff more than %ld buffers"
-msgstr "E96: %ld 以上のバッファはdiffできません"
+msgid "E96: Cannot diff more than %d buffers"
+msgstr "E96: %d 以上のバッファはdiffできません"
 
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
@@ -359,10 +405,85 @@ msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: バッファ \"%s\" は差分モードではありません"
 
 msgid "E787: Buffer changed unexpectedly"
-msgstr "E787: 予期せずバッファが変更変更されました"
+msgstr "E787: 予期せずバッファが変更されました"
 
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: 合字にEscapeは使用できません"
+
+msgid "Custom"
+msgstr "カスタム"
+
+msgid "Latin supplement"
+msgstr "ラテン補助"
+
+msgid "Greek and Coptic"
+msgstr "ギリシャとコプト"
+
+msgid "Cyrillic"
+msgstr "キリル"
+
+msgid "Hebrew"
+msgstr "ヘブライ"
+
+msgid "Arabic"
+msgstr "アラビア"
+
+msgid "Latin extended"
+msgstr "ラテン拡張"
+
+msgid "Greek extended"
+msgstr "ギリシャ拡張"
+
+msgid "Punctuation"
+msgstr "句読点"
+
+msgid "Super- and subscripts"
+msgstr "上付き・下付き"
+
+msgid "Currency"
+msgstr "通貨記号"
+
+msgid "Other"
+msgstr "その他"
+
+msgid "Roman numbers"
+msgstr "ローマ数字"
+
+msgid "Arrows"
+msgstr "矢印"
+
+msgid "Mathematical operators"
+msgstr "数学記号"
+
+msgid "Technical"
+msgstr "技術用記号"
+
+msgid "Box drawing"
+msgstr "罫線素片"
+
+msgid "Block elements"
+msgstr "ブロック要素"
+
+msgid "Geometric shapes"
+msgstr "幾何学模様"
+
+msgid "Symbols"
+msgstr "記号"
+
+msgid "Dingbats"
+msgstr "装飾記号"
+
+msgid "CJK symbols and punctuation"
+msgstr "CJK記号及び句読点"
+
+msgid "Hiragana"
+msgstr "平仮名"
+
+msgid "Katakana"
+msgstr "片仮名"
+
+msgid "Bopomofo"
+msgstr "注音字母"
 
 msgid "E544: Keymap file not found"
 msgstr "E544: キーマップファイルが見つかりません"
@@ -510,14 +631,17 @@ msgstr "リスト型の値に2つ以上の ; が検出されました"
 msgid "E738: Can't list variables for %s"
 msgstr "E738: %s の値を一覧表示できません"
 
-msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: リスト型と辞書型以外はインデックス指定できません"
+msgid "E689: Can only index a List, Dictionary or Blob"
+msgstr "E689: リスト型、辞書型、Blob型以外はインデックス指定できません"
 
 msgid "E708: [:] must come last"
 msgstr "E708: [:] は最後でなければいけません"
 
-msgid "E709: [:] requires a List value"
-msgstr "E709: [:] にはリスト型の値が必要です"
+msgid "E709: [:] requires a List or Blob value"
+msgstr "E709: [:] にはリスト型かBlob型の値が必要です"
+
+msgid "E972: Blob value does not have the right number of bytes"
+msgstr "E972: Blob型の値のバイト数が正しくありません"
 
 msgid "E710: List value has more items than target"
 msgstr "E710: リスト型変数にターゲットよりも多い要素があります"
@@ -544,6 +668,9 @@ msgstr "E109: '?' の後に ':' がありません"
 
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: '%' を浮動小数点数と組み合わせては使えません"
+
+msgid "E973: Blob literal should have an even number of hex characters"
+msgstr "E973: Blobリテラルは偶数個の16進数文字でなければなりません"
 
 msgid "E110: Missing ')'"
 msgstr "E110: ')' が見つかりません"
@@ -595,6 +722,9 @@ msgstr "E910: ジョブを数値として扱っています"
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: チャネルを数値として扱っています"
 
+msgid "E974: Using a Blob as a Number"
+msgstr "E974: Blob型を数値として扱っています"
+
 msgid "E891: Using a Funcref as a Float"
 msgstr "E891: 関数参照型を浮動小数点数として扱っています"
 
@@ -616,6 +746,9 @@ msgstr "E911: ジョブを浮動小数点数として扱っています"
 msgid "E914: Using a Channel as a Float"
 msgstr "E914: チャネルを浮動小数点数として扱っています"
 
+msgid "E975: Using a Blob as a Float"
+msgstr "E975: Blob型を浮動小数点数として扱っています"
+
 msgid "E729: using Funcref as a String"
 msgstr "E729: 関数参照型を文字列として扱っています"
 
@@ -625,8 +758,15 @@ msgstr "E730: リスト型を文字列として扱っています"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: 辞書型を文字列として扱っています"
 
+msgid "E976: using Blob as a String"
+msgstr "E976: Blob型を文字列として扱っています"
+
 msgid "E908: using an invalid value as a String"
 msgstr "E908: 無効な値を文字列として扱っています"
+
+#, c-format
+msgid "E963: setting %s to value with wrong type"
+msgstr "E963: %s を間違った型の値で設定しています"
 
 #, c-format
 msgid "E795: Cannot delete variable %s"
@@ -671,6 +811,9 @@ msgstr ""
 msgid " line "
 msgstr " 行 "
 
+msgid "E977: Can only compare Blob with Blob"
+msgstr "E977: Blob型はBlob型としか比較できません"
+
 msgid "E691: Can only compare List with List"
 msgstr "E691: リスト型はリスト型としか比較できません"
 
@@ -696,6 +839,10 @@ msgstr "filter() の引数"
 msgid "E686: Argument of %s must be a List"
 msgstr "E686: %s の引数はリスト型でなければなりません"
 
+#, c-format
+msgid "E899: Argument of %s must be a List or Blob"
+msgstr "E899: %s の引数はリスト型またはBlob型でなければなりません"
+
 msgid "E928: String required"
 msgstr "E928: 文字列が必要です"
 
@@ -705,11 +852,18 @@ msgstr "E808: 数値か浮動小数点数が必要です"
 msgid "add() argument"
 msgstr "add() の引数"
 
+#, c-format
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: 無効なバッファ名です: %s"
+
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() は挿入モードでしか利用できません"
 
 msgid "&Ok"
 msgstr "&Ok"
+
+msgid "E980: lowlevel input not supported"
+msgstr "E980: 低レベル入力はサポートされていません"
 
 #, c-format
 msgid "+-%s%3ld line: "
@@ -752,8 +906,8 @@ msgid "E957: Invalid window number"
 msgstr "E957: 無効なウィンドウ番号です"
 
 #, c-format
-msgid "E798: ID is reserved for \":match\": %ld"
-msgstr "E798: ID は \":match\" のために予約されています: %ld"
+msgid "E798: ID is reserved for \":match\": %d"
+msgstr "E798: ID は \":match\" のために予約されています: %d"
 
 msgid "E726: Stride is zero"
 msgstr "E726: ストライド(前進量)が 0 です"
@@ -795,11 +949,11 @@ msgstr "E258: クライアントへ送ることができません"
 
 #, c-format
 msgid "E927: Invalid action: '%s'"
-msgstr "E927: 無効な操作です: %s"
+msgstr "E927: 無効な操作です: '%s'"
 
 #, c-format
 msgid "E962: Invalid action: '%s'"
-msgstr "E962: 無効な操作です: %s"
+msgstr "E962: 無効な操作です: '%s'"
 
 msgid "sort() argument"
 msgstr "sort() の引数"
@@ -818,7 +972,7 @@ msgstr "(無効)"
 
 #, c-format
 msgid "E935: invalid submatch number: %d"
-msgstr "E935: 無効なサブマッチ番号: %d"
+msgstr "E935: 無効なサブマッチ番号です: %d"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: 一時ファイル書込中にエラーが発生しました"
@@ -995,8 +1149,8 @@ msgstr "E143: autocommandが予期せず新しいバッファ %s を削除しま
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: 数ではない引数が :z に渡されました"
 
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: rvimではシェルコマンドを使えません"
+msgid "E145: Shell commands and some functionality not allowed in rvim"
+msgstr "E145: rvimではシェルコマンドと一部の機能を使えません"
 
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: 正規表現は文字で区切ることができません"
@@ -1090,52 +1244,6 @@ msgstr "E154: タグ \"%s\" がファイル %s/%s に重複しています"
 #, c-format
 msgid "E150: Not a directory: %s"
 msgstr "E150: ディレクトリではありません: %s"
-
-#, c-format
-msgid "E160: Unknown sign command: %s"
-msgstr "E160: 未知のsignコマンドです: %s"
-
-msgid "E156: Missing sign name"
-msgstr "E156: sign名がありません"
-
-msgid "E612: Too many signs defined"
-msgstr "E612: signの定義が多数見つかりました"
-
-#, c-format
-msgid "E239: Invalid sign text: %s"
-msgstr "E239: 無効なsignのテキストです: %s"
-
-#, c-format
-msgid "E155: Unknown sign: %s"
-msgstr "E155: 未知のsignです: %s"
-
-msgid "E159: Missing sign number"
-msgstr "E159: signの番号がありません"
-
-#, c-format
-msgid "E158: Invalid buffer name: %s"
-msgstr "E158: 無効なバッファ名です: %s"
-
-msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: 名前の無いバッファへはジャンプできません"
-
-#, c-format
-msgid "E157: Invalid sign ID: %ld"
-msgstr "E157: 無効なsign識別子です: %ld"
-
-#, c-format
-msgid "E885: Not possible to change sign %s"
-msgstr "E885: 変更できない sign です: %s"
-
-# Added at 27-Jan-2004.
-msgid " (NOT FOUND)"
-msgstr " (見つかりません)"
-
-msgid " (not supported)"
-msgstr " (非サポート)"
-
-msgid "[Deleted]"
-msgstr "[削除済]"
 
 msgid "No old files"
 msgstr "古いファイルはありません"
@@ -1325,6 +1433,9 @@ msgstr "E464: ユーザー定義コマンドのあいまいな使用です"
 msgid "E492: Not an editor command"
 msgstr "E492: エディタのコマンドではありません"
 
+msgid "E981: Command not allowed in rvim"
+msgstr "E981: rvimではこのコマンドを使えません"
+
 msgid "E493: Backwards range given"
 msgstr "E493: 逆さまの範囲が指定されました"
 
@@ -1348,12 +1459,13 @@ msgid_plural "%d more files to edit.  Quit anyway?"
 msgstr[0] "編集すべきファイルがあと %d 個ありますが、終了しますか?"
 
 #, c-format
-msgid "E173: %ld more file to edit"
-msgid_plural "E173: %ld more files to edit"
-msgstr[0] "E173: 編集すべきファイルがあと %ld 個あります"
+msgid "E173: %d more file to edit"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: 編集すべきファイルがあと %d 個あります"
 
-msgid "E174: Command already exists: add ! to replace it"
-msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください"
+#, c-format
+msgid "E174: Command already exists: add ! to replace it: %s"
+msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください: %s"
 
 msgid ""
 "\n"
@@ -1684,9 +1796,6 @@ msgstr "入力行"
 msgid "Debug Line"
 msgstr "デバッグ行"
 
-msgid "E198: cmd_pchar beyond the command length"
-msgstr "E198: cmd_pchar がコマンド長を超えました"
-
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: アクティブなウィンドウかバッファが削除されました"
 
@@ -1994,72 +2103,45 @@ msgstr "E462: \"%s\" をリロードする準備ができませんでした"
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" はリロードできませんでした"
 
-msgid "--Deleted--"
-msgstr "--削除済--"
-
-#, c-format
-msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "autocommand: %s <バッファ=%d> が自動的に削除されます"
-
-#, c-format
-msgid "E367: No such group: \"%s\""
-msgstr "E367: そのグループはありません: \"%s\""
-
-msgid "E936: Cannot delete the current group"
-msgstr "E936: 現在のグループは削除できません"
-
-msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: 使用中の augroup を消そうとしています"
-
-#, c-format
-msgid "E215: Illegal character after *: %s"
-msgstr "E215: * の後に不正な文字がありました: %s"
-
-#, c-format
-msgid "E216: No such event: %s"
-msgstr "E216: そのようなイベントはありません: %s"
-
-#, c-format
-msgid "E216: No such group or event: %s"
-msgstr "E216: そのようなグループもしくはイベントはありません: %s"
-
-msgid ""
-"\n"
-"--- Autocommands ---"
-msgstr ""
-"\n"
-"--- Autocommands ---"
-
-#, c-format
-msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <バッファ=%d>: 無効なバッファ番号です "
-
-msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E217: 全てのイベントに対してのautocommandは実行できません"
-
-msgid "No matching autocommands"
-msgstr "該当するautocommandは存在しません"
-
-msgid "E218: autocommand nesting too deep"
-msgstr "E218: autocommandの入れ子が深過ぎます"
-
-#, c-format
-msgid "%s Autocommands for \"%s\""
-msgstr "%s Autocommands for \"%s\""
-
-#, c-format
-msgid "Executing %s"
-msgstr "%s を実行しています"
-
-#, c-format
-msgid "autocommand %s"
-msgstr "autocommand %s"
-
 msgid "E219: Missing {."
 msgstr "E219: { がありません."
 
 msgid "E220: Missing }."
 msgstr "E220: } がありません."
+
+msgid "E854: path too long for completion"
+msgstr "E854: パスが長過ぎて補完できません"
+
+#, c-format
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: 無効なパスです: '**[数値]' はpathの最後か '%s' が続いてないといけませ"
+"ん."
+
+#, c-format
+msgid "E344: Can't find directory \"%s\" in cdpath"
+msgstr "E344: cdpathには \"%s\" というディレクトリがありません"
+
+#, c-format
+msgid "E345: Can't find file \"%s\" in path"
+msgstr "E345: pathには \"%s\" というファイルがありません"
+
+#, c-format
+msgid "E346: No more directory \"%s\" found in cdpath"
+msgstr "E346: cdpathにはこれ以上 \"%s\" というディレクトリがありません"
+
+#, c-format
+msgid "E347: No more file \"%s\" found in path"
+msgstr "E347: パスにはこれ以上 \"%s\" というファイルがありません"
+
+msgid "E446: No file name under cursor"
+msgstr "E446: カーソルの下にファイル名がありません"
+
+#, c-format
+msgid "E447: Can't find file \"%s\" in path"
+msgstr "E447: pathには \"%s\" というファイルがありません"
 
 msgid "E490: No fold found"
 msgstr "E490: 折畳みがありません"
@@ -2336,20 +2418,20 @@ msgid "Font0: %s"
 msgstr "フォント0: %s"
 
 #, c-format
-msgid "Font1: %s"
-msgstr "フォント1: %s"
+msgid "Font%d: %s"
+msgstr "フォント%d: %s"
 
 #, c-format
-msgid "Font%ld width is not twice that of font0"
-msgstr "フォント%ld の幅がフォント0の2倍ではありません"
+msgid "Font%d width is not twice that of font0"
+msgstr "フォント%d の幅がフォント0の2倍ではありません"
 
 #, c-format
-msgid "Font0 width: %ld"
-msgstr "フォント0の幅: %ld"
+msgid "Font0 width: %d"
+msgstr "フォント0の幅: %d"
 
 #, c-format
-msgid "Font1 width: %ld"
-msgstr "フォント1の幅: %ld"
+msgid "Font%d width: %d"
+msgstr "フォント%dの幅: %d"
 
 msgid "Invalid font specification"
 msgstr "無効なフォント指定です"
@@ -2525,8 +2607,8 @@ msgid "Added cscope database %s"
 msgstr "cscopeデータベース %s を追加"
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
-msgstr "E262: cscopeの接続 %ld を読込み中のエラーです"
+msgid "E262: error reading cscope connection %d"
+msgstr "E262: cscopeの接続 %d を読込み中のエラーです"
 
 msgid "E561: unknown cscope search type"
 msgstr "E561: 未知のcscope検索型です"
@@ -3063,9 +3145,6 @@ msgstr "-A\t\t\tアラビア語モードで起動する"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tヘブライ語モードで起動する"
-
-msgid "-F\t\t\tStart in Farsi mode"
-msgstr "-F\t\t\tペルシア語モードで起動する"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\t端末を <terminal> に設定する"
@@ -3819,9 +3898,6 @@ msgstr "E326: スワップファイルが多数見つかりました"
 msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: メニューアイテムのパスの部分がサブメニューではありません"
 
-msgid "E328: Menu only exists in another mode"
-msgstr "E328: メニューは他のモードにだけあります"
-
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: \"%s\" というメニューはありません"
@@ -4015,41 +4091,14 @@ msgstr "E548: 数値が必要です"
 msgid "E549: Illegal percentage"
 msgstr "E549: 不正なパーセンテージです"
 
-msgid "E854: path too long for completion"
-msgstr "E854: パスが長過ぎて補完できません"
-
-#, c-format
-msgid ""
-"E343: Invalid path: '**[number]' must be at the end of the path or be "
-"followed by '%s'."
-msgstr ""
-"E343: 無効なパスです: '**[数値]' はpathの最後か '%s' が続いてないといけませ"
-"ん."
-
-#, c-format
-msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: cdpathには \"%s\" というディレクトリがありません"
-
-#, c-format
-msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: pathには \"%s\" というファイルがありません"
-
-#, c-format
-msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346: cdpathにはこれ以上 \"%s\" というディレクトリがありません"
-
-#, c-format
-msgid "E347: No more file \"%s\" found in path"
-msgstr "E347: パスにはこれ以上 \"%s\" というファイルがありません"
-
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
 "E668: NetBeansの接続情報ファイルのアクセスモードに問題があります: \"%s\""
 
 #, c-format
-msgid "E658: NetBeans connection lost for buffer %ld"
-msgstr "E658: バッファ %ld の NetBeans 接続が失われました"
+msgid "E658: NetBeans connection lost for buffer %d"
+msgstr "E658: バッファ %d の NetBeans 接続が失われました"
 
 msgid "E838: netbeans is not supported with this GUI"
 msgstr "E838: NetBeansはこのGUIには対応していません"
@@ -4809,8 +4858,8 @@ msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA 正規表現) 位置が誤っています: %c"
 
 #, c-format
-msgid "E877: (NFA regexp) Invalid character class: %ld"
-msgstr "E877: (NFA 正規表現) 無効な文字クラス: %ld"
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (NFA 正規表現) 無効な文字クラスです: %d"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
@@ -4942,7 +4991,7 @@ msgid "not found "
 msgstr "見つかりません "
 
 msgid "in path ---\n"
-msgstr "パスに ----\n"
+msgstr "パスに ---\n"
 
 msgid "  (Already listed)"
 msgstr "  (既に列挙)"
@@ -4985,6 +5034,67 @@ msgstr ""
 "\n"
 "# 最後の %s検索パターン:\n"
 "~"
+
+msgid "[Deleted]"
+msgstr "[削除済]"
+
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- サイン ---"
+
+#, c-format
+msgid "Signs for %s:"
+msgstr "%s のサイン:"
+
+#, c-format
+msgid "  group=%s"
+msgstr "  グループ=%s"
+
+#, c-format
+msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
+msgstr "    行=%ld  識別子=%d%s  名前=%s  優先度=%d"
+
+msgid "E612: Too many signs defined"
+msgstr "E612: signの定義が多過ぎます"
+
+#, c-format
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: 無効なsignのテキストです: %s"
+
+#, c-format
+msgid "E155: Unknown sign: %s"
+msgstr "E155: 未知のsignです: %s"
+
+#, c-format
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: 変更できない sign です: %s"
+
+msgid "E159: Missing sign number"
+msgstr "E159: signの番号がありません"
+
+#, c-format
+msgid "E157: Invalid sign ID: %d"
+msgstr "E157: 無効なsign識別子です: %d"
+
+msgid "E934: Cannot jump to a buffer that does not have a name"
+msgstr "E934: 名前の無いバッファへはジャンプできません"
+
+#, c-format
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: 未知のsignコマンドです: %s"
+
+msgid "E156: Missing sign name"
+msgstr "E156: sign名がありません"
+
+# Added at 27-Jan-2004.
+msgid " (NOT FOUND)"
+msgstr " (見つかりません)"
+
+msgid " (not supported)"
+msgstr " (非サポート)"
 
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: スペルチェックは無効化されています"
@@ -5096,10 +5206,6 @@ msgstr "%s (%d 行目) の単語を変換できませんでした: %s"
 #, c-format
 msgid "Conversion in %s not supported: from %s to %s"
 msgstr "%s 内の次の変換はサポートされていません: %s から %s へ"
-
-#, c-format
-msgid "Conversion in %s not supported"
-msgstr "%s 内の変換はサポートされていません"
 
 #, c-format
 msgid "Invalid value for FLAG in %s line %d: %s"
@@ -5319,8 +5425,8 @@ msgid "E751: Output file name must not have region name"
 msgstr "E751: 出力ファイル名には範囲名を含められません"
 
 #, c-format
-msgid "E754: Only up to %ld regions supported"
-msgstr "E754: 範囲は %ld 個までしかサポートされていません"
+msgid "E754: Only up to %d regions supported"
+msgstr "E754: 範囲は %d 個までしかサポートされていません"
 
 #, c-format
 msgid "E755: Invalid region in %s"
@@ -5337,8 +5443,8 @@ msgid "Done!"
 msgstr "実行しました!"
 
 #, c-format
-msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E765: 'spellfile' には %ld 個のエントリはありません"
+msgid "E765: 'spellfile' does not have %d entries"
+msgstr "E765: 'spellfile' には %d 個のエントリはありません"
 
 #, c-format
 msgid "Word '%.*s' removed from %s"
@@ -5522,7 +5628,7 @@ msgstr "E409: 未知のグループ名: %s"
 
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
-msgstr "E410: 無効な :syntax のサブコマンド: %s"
+msgstr "E410: 無効な :syntax のサブコマンドです: %s"
 
 msgid ""
 "  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
@@ -5739,6 +5845,38 @@ msgstr "E953: ファイルは既に存在します: %s"
 
 msgid "E955: Not a terminal buffer"
 msgstr "E955: 端末バッファではありません"
+
+msgid "E982: ConPTY is not available"
+msgstr "E982: ConPTY が無効です"
+
+#, c-format
+msgid "E971: Property type %s does not exist"
+msgstr "E971: プロパティタイプ %s がありません"
+
+#, c-format
+msgid "E964: Invalid column number: %ld"
+msgstr "E964: 無効な列番号です: %ld"
+
+#, c-format
+msgid "E966: Invalid line number: %ld"
+msgstr "E966: 無効な行番号です: %ld"
+
+msgid "E965: missing property type name"
+msgstr "E965: プロパティタイプ名がありません"
+
+msgid "E967: text property info corrupted"
+msgstr "E967: テキストプロパティ情報が壊れています"
+
+msgid "E968: Need at least one of 'id' or 'type'"
+msgstr "E968: 最低 1 個の 'id' または 'type' が必要です"
+
+#, c-format
+msgid "E969: Property type %s already defined"
+msgstr "E969: プロパティタイプ %s は既に定義されています"
+
+#, c-format
+msgid "E970: Unknown highlight group name: '%s'"
+msgstr "E970: 未知のハイライトグループ名: '%s'"
 
 msgid "new shell started\n"
 msgstr "新しいシェルを起動します\n"
@@ -6293,6 +6431,10 @@ msgstr "詳細はメニューの ヘルプ->スポンサー/登録 を参照し�
 msgid "Already only one window"
 msgstr "既にウィンドウは1つしかありません"
 
+#, c-format
+msgid "E92: Buffer %ld not found"
+msgstr "E92: バッファ %ld が見つかりません"
+
 msgid "E441: There is no preview window"
 msgstr "E441: プレビューウィンドウがありません"
 
@@ -6314,31 +6456,24 @@ msgstr "E814: autocmdウィンドウしか残らないため、ウィンドウ�
 msgid "E445: Other window contains changes"
 msgstr "E445: 他のウィンドウには変更があります"
 
-msgid "E446: No file name under cursor"
-msgstr "E446: カーソルの下にファイル名がありません"
+#, c-format
+msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E799: 無効な ID: %d (1 以上でなければなりません)"
 
 #, c-format
-msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: pathには \"%s\" というファイルがありません"
-
-#, c-format
-msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E799: 無効な ID: %ld (1 以上でなければなりません)"
-
-#, c-format
-msgid "E801: ID already taken: %ld"
-msgstr "E801: ID はすでに利用中です: %ld"
+msgid "E801: ID already taken: %d"
+msgstr "E801: ID はすでに利用中です: %d"
 
 msgid "List or number required"
 msgstr "リストか数値が必要です"
 
 #, c-format
-msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E802: 無効な ID: %ld (1 以上でなければなりません)"
+msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E802: 無効な ID: %d (1 以上でなければなりません)"
 
 #, c-format
-msgid "E803: ID not found: %ld"
-msgstr "E803: ID はありません: %ld"
+msgid "E803: ID not found: %d"
+msgstr "E803: ID はありません: %d"
 
 #, c-format
 msgid "E370: Could not load library %s"
@@ -6518,8 +6653,8 @@ msgstr "E25: GUIは使用不可能です: コンパイル時に無効にされ�
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
 msgstr "E26: ヘブライ語は使用不可能です: コンパイル時に無効にされています\n"
 
-msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
-msgstr "E27: ペルシア語は使用不可能です: コンパイル時に無効にされています\n"
+msgid "E27: Farsi support has been removed\n"
+msgstr "E27: ペルシア語サポートは削除されました\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr "E800: アラビア語は使用不可能です: コンパイル時に無効にされています\n"
@@ -6644,6 +6779,13 @@ msgid "E684: list index out of range: %ld"
 msgstr "E684: リストのインデックスが範囲外です: %ld"
 
 #, c-format
+msgid "E979: Blob index out of range: %ld"
+msgstr "E979: Blobのインデックスが範囲外です: %ld"
+
+msgid "E978: Invalid operation for Blob"
+msgstr "E978: Blob型には無効な操作です"
+
+#, c-format
 msgid "E118: Too many arguments for function: %s"
 msgstr "E118: 関数の引数が多過ぎます: %s"
 
@@ -6654,9 +6796,16 @@ msgstr "E716: 辞書型にキーが存在しません: %s"
 msgid "E714: List required"
 msgstr "E714: リスト型が必要です"
 
+msgid "E897: List or Blob required"
+msgstr "E897: リスト型またはBlob型が必要です"
+
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: %s の引数はリスト型または辞書型でなければなりません"
+
+#, c-format
+msgid "E896: Argument of %s must be a List, Dictionary or Blob"
+msgstr "E896: %s の引数はリスト型、辞書型またはBlob型でなければなりません"
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: エラーファイルの読込中にエラーが発生しました"
@@ -6759,6 +6908,9 @@ msgstr "E919: ディレクトリが '%s' の中にありません: \"%s\""
 
 msgid "E952: Autocommand caused recursive behavior"
 msgstr "E952: Autocommandが再帰を引き起こしました"
+
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: メニューは他のモードにだけあります"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "上まで検索したので下に戻ります"

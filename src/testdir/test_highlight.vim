@@ -552,3 +552,23 @@ func Test_cursorline_after_yank()
   call StopVimInTerminal(buf)
   call delete('Xtest_cursorline_yank')
 endfunc
+
+func Test_cursorline_with_visualmode()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'set cul',
+	\ 'call setline(1, repeat(["abc"], 50))',
+	\ ], 'Xtest_cursorline_with_visualmode')
+  let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
+  call term_wait(buf)
+  call term_sendkeys(buf, "V\<C-f>kkkjk")
+
+  call VerifyScreenDump(buf, 'Test_cursorline_with_visualmode_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_cursorline_with_visualmode')
+endfunc

@@ -7015,7 +7015,7 @@ gui_mch_drawsign(int row, int col, int typenr)
 		 (double)(MIN(height, SIGN_HEIGHT))) < 1.15)
 	    {
 		/* Change the aspect ratio by at most 15% to fill the
-		 * available space completly. */
+		 * available space completely. */
 		height = (double)SIGN_HEIGHT * SIGN_ASPECT / aspect;
 		height = MIN(height, SIGN_HEIGHT);
 	    }

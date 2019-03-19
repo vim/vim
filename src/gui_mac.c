@@ -1342,10 +1342,6 @@ InstallAEHandlers(void)
     }
     error = AEInstallEventHandler('KAHL', 'MOD ',
 		    NewAEEventHandlerUPP(Handle_KAHL_MOD_AE), 0, false);
-    if (error)
-    {
-	return error;
-    }
 #endif
 
     return error;

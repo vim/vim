@@ -1245,10 +1245,15 @@ do_execreg(
 	    emsg(_(e_nolastcmd));
 	    return FAIL;
 	}
-	VIM_CLEAR(new_last_cmdline); /* don't keep the cmdline containing @: */
-	/* Escape all control characters with a CTRL-V */
+	// don't keep the cmdline containing @:
+	VIM_CLEAR(new_last_cmdline);
+	// Escape all control characters with a CTRL-V
 	p = vim_strsave_escaped_ext(last_cmdline,
-		(char_u *)"\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", Ctrl_V, FALSE);
+		    (char_u *)"\001\002\003\004\005\006\007"
+			  "\010\011\012\013\014\015\016\017"
+			  "\020\021\022\023\024\025\026\027"
+			  "\030\031\032\033\034\035\036\037",
+		    Ctrl_V, FALSE);
 	if (p != NULL)
 	{
 	    /* When in Visual mode "'<,'>" will be prepended to the command.
@@ -1747,7 +1752,6 @@ op_delete(oparg_T *oap)
     struct block_def	bd;
     linenr_T		old_lcount = curbuf->b_ml.ml_line_count;
     int			did_yank = FALSE;
-    int			orig_regname = oap->regname;
 
     if (curbuf->b_ml.ml_flags & ML_EMPTY)	    /* nothing to do */
 	return OK;
@@ -1833,12 +1837,13 @@ op_delete(oparg_T *oap)
 
 	/*
 	 * Put deleted text into register 1 and shift number registers if the
-	 * delete contains a line break, or when a regname has been specified.
+	 * delete contains a line break, or when using a specific operator (Vi
+	 * compatible)
 	 * Use the register name from before adjust_clip_reg() may have
 	 * changed it.
 	 */
-	if (orig_regname != 0 || oap->motion_type == MLINE
-				   || oap->line_count > 1 || oap->use_reg_one)
+	if (oap->motion_type == MLINE || oap->line_count > 1
+							   || oap->use_reg_one)
 	{
 	    shift_delete_registers();
 	    if (op_yank(oap, TRUE, FALSE) == OK)
@@ -5402,7 +5407,7 @@ op_addsub(
     linenr_T		amount = Prenum1;
 
    // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
-   // buffer is not completly updated yet. Postpone updating folds until before
+   // buffer is not completely updated yet. Postpone updating folds until before
    // the call to changed_lines().
 #ifdef FEAT_FOLDING
    disable_fold_update++;

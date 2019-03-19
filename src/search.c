@@ -567,7 +567,9 @@ set_last_search_pat(
 	    saved_spats[idx].pat = NULL;
 	else
 	    saved_spats[idx].pat = vim_strsave(spats[idx].pat);
+# ifdef FEAT_SEARCH_EXTRA
 	saved_spats_last_idx = last_idx;
+# endif
     }
 # ifdef FEAT_SEARCH_EXTRA
     /* If 'hlsearch' set and search pat changed: need redraw. */

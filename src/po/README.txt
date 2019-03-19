@@ -30,7 +30,7 @@ on MS-Windows.  Download the gettext packages, for example from:
 
 You might have to do the commands manually.  Example:
 
-   cd c:\vim\vim71
+   cd c:\vim\vim81
    mkdir runtime\lang\ja\LC_MESSAGES
    msgfmt -o runtime\lang\ja\LC_MESSAGES\vim.mo src\po\ja.po
 

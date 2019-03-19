@@ -822,7 +822,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 
     if (SUCCEEDED(hr))
 	hr = pTextFormat->SetParagraphAlignment(
-		DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+		DWRITE_PARAGRAPH_ALIGNMENT_FAR);
 
     if (SUCCEEDED(hr))
 	hr = pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);

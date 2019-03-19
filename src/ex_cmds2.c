@@ -2380,7 +2380,7 @@ check_changed_any(
 
 		goto_tabpage_win(tp, wp);
 
-		/* Paranoia: did autocms wipe out the buffer with changes? */
+		// Paranoia: did autocmd wipe out the buffer with changes?
 		if (!bufref_valid(&bufref))
 		    goto theend;
 		goto buf_found;

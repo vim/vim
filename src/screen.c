@@ -3704,14 +3704,16 @@ win_line(
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* Cursor line highlighting for 'cursorline' in the current window.  Not
-     * when Visual mode is active, because it's not clear what is selected
-     * then. */
-    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-					 && !(wp == curwin && VIsual_active))
+    // Cursor line highlighting for 'cursorline' in the current window.
+    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
     {
-	line_attr = HL_ATTR(HLF_CUL);
-	area_highlighting = TRUE;
+	// Do not show the cursor line when Visual mode is active, because it's
+	// not clear what is selected then.  Do update w_last_cursorline.
+	if (!(wp == curwin && VIsual_active))
+	{
+	    line_attr = HL_ATTR(HLF_CUL);
+	    area_highlighting = TRUE;
+	}
 	wp->w_last_cursorline = wp->w_cursor.lnum;
     }
 #endif

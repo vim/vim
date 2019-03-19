@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 22
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -66,22 +66,23 @@ When the keyboard focus is in the terminal window, typed keys will be sent to
 the job.  This uses a pty when possible.  You can click outside of the
 terminal window to move keyboard focus elsewhere.
 
+						*t_CTRL-W_CTRL-W* *t_CTRL-W_:*
 CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
 	CTRL-W CTRL-W	move focus to the next window
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
-Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
+Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N* 
 	CTRL-W .	send a CTRL-W to the job in the terminal
 	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
 	CTRL-\ CTRL-N   go to Terminal-Normal mode, see |Terminal-mode|
-	CTRL-W " {reg}  paste register {reg}		*CTRL-W_quote*
+	CTRL-W " {reg}  paste register {reg}		*t_CTRL-W_quote*
 			Also works with the = register to insert the result of
 			evaluating an expression.
 	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
-	CTRL-W gt	go to next tabpage, same as `gt`
-	CTRL-W gT	go to previous tabpage, same as `gT`
+	CTRL-W gt	go to next tabpage, same as `gt`	*t_CTRL-W_gt*
+	CTRL-W gT	go to previous tabpage, same as `gT`	*t_CTRL-W_gT*
 
 See option 'termwinkey' for specifying another key instead of CTRL-W that
 will work like CTRL-W.  However, typing 'termwinkey' twice sends 'termwinkey'
@@ -92,8 +93,8 @@ to the job.  For example:
 	'termwinkey' .	       send 'termwinkey' to the job in the terminal
 	'termwinkey' CTRL-\    send a CTRL-\ to the job in the terminal
 	'termwinkey' N	       go to terminal Normal mode, see below
-	'termwinkey' CTRL-N    same as CTRL-W N
-	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
+	'termwinkey' CTRL-N    same as CTRL-W N |t_CTRL-W_N|
+	'termwinkey' CTRL-C    same as CTRL-W CTRL-C |t_CTRL-W_CTRL-C|
 							*t_CTRL-\_CTRL-N*
 The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
