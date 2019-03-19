@@ -29,8 +29,7 @@ typedef win_T *luaV_Window;
 typedef dict_T *luaV_Dict;
 typedef list_T *luaV_List;
 typedef struct {
-    typval_T	tv;	// funcref
-    typval_T	args;
+    char_u	*name;	// funcref
     dict_T	*self;	// selfdict
 } luaV_Funcref;
 typedef void (*msgfunc_T)(char_u *);
@@ -69,7 +68,7 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 
 static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
-static luaV_Funcref *luaV_pushfuncref(lua_State *L, typval_T *tv);
+static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -443,7 +442,7 @@ lua_enabled(int verbose)
 
 #if LUA_VERSION_NUM > 501
     static int
-luaL_typeerror (lua_State *L, int narg, const char *tname)
+luaL_typeerror(lua_State *L, int narg, const char *tname)
 {
     const char *msg = lua_pushfstring(L, "%s expected, got %s",
 	    tname, luaL_typename(L, narg));
@@ -540,7 +539,7 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 		lua_pushnil(L);
 	    break;
 	case VAR_FUNC:
-	    luaV_pushfuncref(L, tv);
+	    luaV_pushfuncref(L, tv->vval.v_string);
 	    break;
 	default:
 	    lua_pushnil(L);
@@ -610,7 +609,9 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		if (lua_rawequal(L, -1, -4))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
-		    copy_tv(&f->tv, tv);
+		    func_ref(f->name);
+		    tv->v_type = VAR_FUNC;
+		    tv->vval.v_string = vim_strsave(f->name);
 		    lua_pop(L, 4); /* MTs */
 		    break;
 		}
@@ -693,7 +694,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 
 #define luaV_newtype(typ,tname,luatyp,luatname) \
 	static luatyp * \
-    luaV_new##tname (lua_State *L, typ *obj) \
+    luaV_new##tname(lua_State *L, typ *obj) \
     { \
 	luatyp *o = (luatyp *) lua_newuserdata(L, sizeof(luatyp)); \
 	*o = obj; \
@@ -725,7 +726,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 
 #define luaV_type_tostring(tname,luatname) \
 	static int \
-    luaV_##tname##_tostring (lua_State *L) \
+    luaV_##tname##_tostring(lua_State *L) \
     { \
 	lua_pushfstring(L, "%s: %p", luatname, lua_touserdata(L, 1)); \
 	return 1; \
@@ -734,7 +735,7 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
 /* =======   List type   ======= */
 
     static luaV_List *
-luaV_newlist (lua_State *L, list_T *lis)
+luaV_newlist(lua_State *L, list_T *lis)
 {
     luaV_List *l = (luaV_List *) lua_newuserdata(L, sizeof(luaV_List));
     *l = lis;
@@ -749,7 +750,7 @@ luaV_pushtype(list_T, list, luaV_List)
 luaV_type_tostring(list, LUAVIM_LIST)
 
     static int
-luaV_list_len (lua_State *L)
+luaV_list_len(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     lua_pushinteger(L, (l == NULL) ? 0 : (int) l->lv_len);
@@ -757,7 +758,7 @@ luaV_list_len (lua_State *L)
 }
 
     static int
-luaV_list_iter (lua_State *L)
+luaV_list_iter(lua_State *L)
 {
     listitem_T *li = (listitem_T *) lua_touserdata(L, lua_upvalueindex(2));
     if (li == NULL) return 0;
@@ -768,7 +769,7 @@ luaV_list_iter (lua_State *L)
 }
 
     static int
-luaV_list_call (lua_State *L)
+luaV_list_call(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     lua_pushvalue(L, lua_upvalueindex(1)); /* pass cache table along */
@@ -778,7 +779,7 @@ luaV_list_call (lua_State *L)
 }
 
     static int
-luaV_list_index (lua_State *L)
+luaV_list_index(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     if (lua_isnumber(L, 2)) /* list item? */
@@ -807,7 +808,7 @@ luaV_list_index (lua_State *L)
 }
 
     static int
-luaV_list_newindex (lua_State *L)
+luaV_list_newindex(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     long n = (long) luaL_checkinteger(L, 2);
@@ -834,7 +835,7 @@ luaV_list_newindex (lua_State *L)
 }
 
     static int
-luaV_list_add (lua_State *L)
+luaV_list_add(lua_State *L)
 {
     luaV_List *lis = luaV_checkudata(L, 1, LUAVIM_LIST);
     list_T *l = (list_T *) luaV_checkcache(L, (void *) *lis);
@@ -851,7 +852,7 @@ luaV_list_add (lua_State *L)
 }
 
     static int
-luaV_list_insert (lua_State *L)
+luaV_list_insert(lua_State *L)
 {
     luaV_List *lis = luaV_checkudata(L, 1, LUAVIM_LIST);
     list_T *l = (list_T *) luaV_checkcache(L, (void *) *lis);
@@ -890,7 +891,7 @@ static const luaL_Reg luaV_List_mt[] = {
 /* =======   Dict type   ======= */
 
     static luaV_Dict *
-luaV_newdict (lua_State *L, dict_T *dic)
+luaV_newdict(lua_State *L, dict_T *dic)
 {
     luaV_Dict *d = (luaV_Dict *) lua_newuserdata(L, sizeof(luaV_Dict));
     *d = dic;
@@ -905,7 +906,7 @@ luaV_pushtype(dict_T, dict, luaV_Dict)
 luaV_type_tostring(dict, LUAVIM_DICT)
 
     static int
-luaV_dict_len (lua_State *L)
+luaV_dict_len(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     lua_pushinteger(L, (d == NULL) ? 0 : (int) d->dv_hashtab.ht_used);
@@ -913,7 +914,7 @@ luaV_dict_len (lua_State *L)
 }
 
     static int
-luaV_dict_iter (lua_State *L UNUSED)
+luaV_dict_iter(lua_State *L UNUSED)
 {
 #ifdef FEAT_EVAL
     hashitem_T *hi = (hashitem_T *) lua_touserdata(L, lua_upvalueindex(2));
@@ -935,7 +936,7 @@ luaV_dict_iter (lua_State *L UNUSED)
 }
 
     static int
-luaV_dict_call (lua_State *L)
+luaV_dict_call(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     hashtab_T *ht = &d->dv_hashtab;
@@ -1037,11 +1038,9 @@ luaV_newfuncref(lua_State *L, char_u *name)
 
     if (name != NULL)
     {
-	func_ref(name); /* as in copy_tv */
-	f->tv.vval.v_string = vim_strsave(name);
+	func_ref(name);
+	f->name = vim_strsave(name);
     }
-    f->tv.v_type = VAR_FUNC;
-    f->args.v_type = VAR_LIST;
     f->self = NULL;
     luaV_getfield(L, LUAVIM_FUNCREF);
     lua_setmetatable(L, -2);
@@ -1049,12 +1048,9 @@ luaV_newfuncref(lua_State *L, char_u *name)
 }
 
     static luaV_Funcref *
-luaV_pushfuncref(lua_State *L, typval_T *tv)
+luaV_pushfuncref(lua_State *L, char_u *name)
 {
-    luaV_Funcref *f = luaV_newfuncref(L, NULL);
-    copy_tv(tv, &f->tv);
-    clear_tv(tv);
-    return f;
+    return luaV_newfuncref(L, name);
 }
 
 
@@ -1065,9 +1061,10 @@ luaV_funcref_gc(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
 
-    func_unref(f->tv.vval.v_string);
-    vim_free(f->tv.vval.v_string);
-    dict_unref(f->self);
+    func_unref(f->name);
+    vim_free(f->name);
+    // NOTE: Don't call "dict_unref(f->self)", because the dict of "f->self"
+    // will be (or has been already) freed by Vim's garbage collection.
     return 0;
 }
 
@@ -1077,7 +1074,7 @@ luaV_funcref_len(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
 
-    lua_pushstring(L, (const char *) f->tv.vval.v_string);
+    lua_pushstring(L, (const char *) f->name);
     return 1;
 }
 
@@ -1085,27 +1082,28 @@ luaV_funcref_len(lua_State *L)
 luaV_funcref_call(lua_State *L)
 {
     luaV_Funcref *f = (luaV_Funcref *) lua_touserdata(L, 1);
-    int i, n = lua_gettop(L) - 1; /* #args */
-    int status;
-    typval_T v, rettv;
+    int i, n = lua_gettop(L) - 1; // #args
+    int status = FAIL;
+    typval_T args;
+    typval_T rettv;
 
-    f->args.vval.v_list = list_alloc();
-    rettv.v_type = VAR_UNKNOWN; /* as in clear_tv */
-    if (f->args.vval.v_list == NULL)
-	status = FAIL;
-    else
+    args.v_type = VAR_LIST;
+    args.vval.v_list = list_alloc();
+    rettv.v_type = VAR_UNKNOWN; // as in clear_tv
+    if (args.vval.v_list != NULL)
     {
+	typval_T v;
+
 	for (i = 0; i < n; i++)
 	{
 	    luaV_checktypval(L, i + 2, &v, "calling funcref");
-	    list_append_tv(f->args.vval.v_list, &v);
+	    list_append_tv(args.vval.v_list, &v);
 	    clear_tv(&v);
 	}
-	status = func_call(f->tv.vval.v_string, &f->args,
-							NULL, f->self, &rettv);
+	status = func_call(f->name, &args, NULL, f->self, &rettv);
 	if (status == OK)
 	    luaV_pushtypval(L, &rettv);
-	clear_tv(&f->args);
+	clear_tv(&args);
 	clear_tv(&rettv);
     }
     if (status != OK)
@@ -1368,7 +1366,7 @@ luaV_window_index(lua_State *L)
 }
 
     static int
-luaV_window_newindex (lua_State *L)
+luaV_window_newindex(lua_State *L)
 {
     win_T *w = (win_T *) luaV_checkvalid(L, luaV_Window, 1);
     const char *s = luaL_checkstring(L, 2);
@@ -1768,7 +1766,7 @@ luaV_free(lua_State *L)
 }
 
     static int
-luaV_luaeval (lua_State *L)
+luaV_luaeval(lua_State *L)
 {
     luaL_Buffer b;
     size_t l;
@@ -1797,32 +1795,50 @@ luaV_luaeval (lua_State *L)
 }
 
     static int
-luaV_setref (lua_State *L)
+luaV_setref(lua_State *L)
 {
-    int		copyID = lua_tointeger(L, 1);
-    int		abort = FALSE;
-    typval_T	tv;
+    int copyID = lua_tointeger(L, 1);
+    int abort = FALSE;
 
     luaV_getfield(L, LUAVIM_LIST);
     luaV_getfield(L, LUAVIM_DICT);
+    luaV_getfield(L, LUAVIM_FUNCREF);
     lua_pushnil(L);
-    /* traverse cache table */
+    // traverse cache table
     while (!abort && lua_next(L, lua_upvalueindex(1)) != 0)
     {
 	lua_getmetatable(L, -1);
-	if (lua_rawequal(L, -1, 2)) /* list? */
+	if (lua_rawequal(L, -1, 2)) // list?
 	{
-	    tv.v_type = VAR_LIST;
-	    tv.vval.v_list = (list_T *) lua_touserdata(L, 4); /* key */
-	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+	    list_T *l = (list_T *)lua_touserdata(L, 5); // key
+
+	    if (l->lv_copyID != copyID)
+	    {
+		l->lv_copyID = copyID;
+		abort = set_ref_in_list(l, copyID, NULL);
+	    }
 	}
-	else if (lua_rawequal(L, -1, 3)) /* dict? */
+	else if (lua_rawequal(L, -1, 3)) // dict?
 	{
-	    tv.v_type = VAR_DICT;
-	    tv.vval.v_dict = (dict_T *) lua_touserdata(L, 4); /* key */
-	    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
+	    dict_T *d = (dict_T *)lua_touserdata(L, 5); // key
+
+	    if (d->dv_copyID != copyID)
+	    {
+		d->dv_copyID = copyID;
+		abort = set_ref_in_ht(&d->dv_hashtab, copyID, NULL);
+	    }
 	}
-	lua_pop(L, 2); /* metatable and value */
+	else if (lua_rawequal(L, -1, 4)) // funcref?
+	{
+	    luaV_Funcref *f = (luaV_Funcref *)lua_touserdata(L, 5); // key
+
+	    if (f->self != NULL && f->self->dv_copyID != copyID)
+	    {
+		f->self->dv_copyID = copyID;
+		abort = set_ref_in_ht(&f->self->dv_hashtab, copyID, NULL);
+	    }
+	}
+	lua_pop(L, 2); // metatable and value
     }
     lua_pushinteger(L, abort);
     return 1;
@@ -2053,7 +2069,7 @@ luaV_freetype(buf_T, buffer)
 luaV_freetype(win_T, window)
 
     void
-do_luaeval (char_u *str, typval_T *arg, typval_T *rettv)
+do_luaeval(char_u *str, typval_T *arg, typval_T *rettv)
 {
     lua_init();
     luaV_getfield(L, LUAVIM_LUAEVAL);
@@ -2064,7 +2080,7 @@ do_luaeval (char_u *str, typval_T *arg, typval_T *rettv)
 }
 
     int
-set_ref_in_lua (int copyID)
+set_ref_in_lua(int copyID)
 {
     int aborted = 0;
 
