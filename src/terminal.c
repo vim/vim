@@ -2952,7 +2952,10 @@ handle_postponed_scrollback(term_T *term)
 {
     int i;
 
-ch_log(NULL, "Moving postponed scrollback to scrollback");
+    if (term->tl_scrollback_postponed.ga_len == 0)
+	return;
+    ch_log(NULL, "Moving postponed scrollback to scrollback");
+
     // First remove the lines that were appended before, the pushed lines go
     // above it.
     cleanup_scrollback(term);
