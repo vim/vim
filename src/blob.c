@@ -232,6 +232,8 @@ string2blob(char_u *str)
     blob_T  *blob = blob_alloc();
     char_u  *s = str;
 
+    if (blob == NULL)
+	return NULL;
     if (s[0] != '0' || (s[1] != 'z' && s[1] != 'Z'))
 	goto failed;
     s += 2;
