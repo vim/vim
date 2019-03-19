@@ -449,6 +449,7 @@ func Test_funcref()
   lua d.len = vim.funcref"Mylen" -- assign d as 'self'
   lua res = (d.len() == vim.funcref"len"(vim.eval"l")) and "OK" or "FAIL"
   call assert_equal("OK", luaeval('res'))
+  call assert_equal(function('Mylen', {'data': l, 'len': function('Mylen')}), mydict.len)
 
   lua i1, i2, msg, d, res = nil
 endfunc
