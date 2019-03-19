@@ -2208,6 +2208,7 @@ get_lval(
 	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
+	    break;
 	}
 	else
 	{
@@ -9219,7 +9220,9 @@ last_set_msg(sctx_T script_ctx)
     }
 }
 
-/* reset v:option_new, v:option_old and v:option_type */
+/*
+ * Reset v:option_new, v:option_old and v:option_type.
+ */
     void
 reset_v_option_vars(void)
 {
