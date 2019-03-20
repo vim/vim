@@ -137,7 +137,9 @@ func Test_memory_func_capture_lvars()
     let last = s:monitor_memory_usage(vim.pid).last
   endfor
 
-  call assert_inrange(before, after.max + (after.last - before), last)
+  " The usage may be a bit less than the last value 
+  let lower = before * 8 / 10
+  call assert_inrange(lower, after.max + (after.last - before), last)
 
   call vim.stop()
   call delete(testfile)
