@@ -1487,6 +1487,15 @@ qf_list_empty(qf_list_T *qfl)
 }
 
 /*
+ * Return a pointer to a list in the specified quickfix stack
+ */
+    static qf_list_T *
+qf_get_list(qf_info_T *qi, int idx)
+{
+    return &qi->qf_lists[idx];
+}
+
+/*
  * Allocate the fields used for parsing lines and populating a quickfix list.
  */
     static int
@@ -1625,11 +1634,11 @@ qf_init_ext(
     {
 	// Adding to existing list, use last entry.
 	adding = TRUE;
-	if (!qf_list_empty(&qi->qf_lists[qf_idx]))
+	if (!qf_list_empty(qf_get_list(qi, qf_idx)))
 	    old_last = qi->qf_lists[qf_idx].qf_last;
     }
 
-    qfl = &qi->qf_lists[qf_idx];
+    qfl = qf_get_list(qi, qf_idx);
 
     // Use the local value of 'errorformat' if it's set.
     if (errorformat == p_efm && tv == NULL && *buf->b_p_efm != NUL)
@@ -1801,7 +1810,7 @@ qf_cmdtitle(char_u *cmd)
     static qf_list_T *
 qf_get_curlist(qf_info_T *qi)
 {
-    return &qi->qf_lists[qi->qf_curlist];
+    return qf_get_list(qi, qi->qf_curlist);
 }
 
 /*
@@ -1917,7 +1926,7 @@ ll_free_all(qf_info_T **pqi)
 	wipe_qf_buffer(qi);
 
 	for (i = 0; i < qi->qf_listcount; ++i)
-	    qf_free(&qi->qf_lists[i]);
+	    qf_free(qf_get_list(qi, i));
 	vim_free(qi);
     }
 }
@@ -1940,7 +1949,7 @@ qf_free_all(win_T *wp)
     else
 	// quickfix list
 	for (i = 0; i < qi->qf_listcount; ++i)
-	    qf_free(&qi->qf_lists[i]);
+	    qf_free(qf_get_list(qi, i));
 }
 
 /*
@@ -2250,8 +2259,8 @@ copy_loclist_stack(win_T *from, win_T *to)
     {
 	to->w_llist->qf_curlist = idx;
 
-	if (copy_loclist(&qi->qf_lists[idx],
-			&to->w_llist->qf_lists[idx]) == FAIL)
+	if (copy_loclist(qf_get_list(qi, idx),
+			qf_get_list(to->w_llist, idx)) == FAIL)
 	{
 	    qf_free_all(to);
 	    return;
@@ -3779,9 +3788,12 @@ qf_mark_adjust(
     }
 
     for (idx = 0; idx < qi->qf_listcount; ++idx)
-	if (!qf_list_empty(&qi->qf_lists[idx]))
-	    for (i = 0, qfp = qi->qf_lists[idx].qf_start;
-			i < qi->qf_lists[idx].qf_count && qfp != NULL;
+    {
+	qf_list_T	*qfl = qf_get_list(qi, idx);
+
+	if (!qf_list_empty(qfl))
+	    for (i = 0, qfp = qfl->qf_start;
+			i < qfl->qf_count && qfp != NULL;
 			++i, qfp = qfp->qf_next)
 		if (qfp->qf_fnum == curbuf->b_fnum)
 		{
@@ -3796,6 +3808,7 @@ qf_mark_adjust(
 		    else if (amount_after && qfp->qf_lnum > line2)
 			qfp->qf_lnum += amount_after;
 		}
+    }
 
     if (!found_one)
 	curbuf->b_has_qf_entry &= ~buf_has_flag;
@@ -6203,10 +6216,10 @@ qf_getprop_ctx(qf_list_T *qfl, dict_T *retdict)
  * Return the current quickfix list index as 'idx' in retdict
  */
     static int
-qf_getprop_idx(qf_info_T *qi, int qf_idx, dict_T *retdict)
+qf_getprop_idx(qf_list_T *qfl, dict_T *retdict)
 {
-    int curidx = qi->qf_lists[qf_idx].qf_index;
-    if (qf_list_empty(&qi->qf_lists[qf_idx]))
+    int curidx = qfl->qf_index;
+    if (qf_list_empty(qfl))
 	// For empty lists, current index is set to 0
 	curidx = 0;
     return dict_add_number(retdict, "idx", curidx);
@@ -6242,7 +6255,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if (qf_stack_empty(qi) || qf_idx == INVALID_QFIDX)
 	return qf_getprop_defaults(qi, flags, wp != NULL, retdict);
 
-    qfl = &qi->qf_lists[qf_idx];
+    qfl = qf_get_list(qi, qf_idx);
 
     if (flags & QF_GETLIST_TITLE)
 	status = qf_getprop_title(qfl, retdict);
@@ -6257,7 +6270,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
     if ((status == OK) && (flags & QF_GETLIST_ID))
 	status = dict_add_number(retdict, "id", qfl->qf_id);
     if ((status == OK) && (flags & QF_GETLIST_IDX))
-	status = qf_getprop_idx(qi, qf_idx, retdict);
+	status = qf_getprop_idx(qfl, retdict);
     if ((status == OK) && (flags & QF_GETLIST_SIZE))
 	status = dict_add_number(retdict, "size", qfl->qf_count);
     if ((status == OK) && (flags & QF_GETLIST_TICK))
@@ -6277,8 +6290,7 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
  */
     static int
 qf_add_entry_from_dict(
-	qf_info_T	*qi,
-	int		qf_idx,
+	qf_list_T	*qfl,
 	dict_T		*d,
 	int		first_entry,
 	int		*valid_entry)
@@ -6325,7 +6337,7 @@ qf_add_entry_from_dict(
     if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
 	valid = (int)dict_get_number(d, (char_u *)"valid");
 
-    status =  qf_add_entry(&qi->qf_lists[qf_idx],
+    status =  qf_add_entry(qfl,
 			NULL,		// dir
 			filename,
 			module,
@@ -6363,7 +6375,7 @@ qf_add_entries(
 	char_u		*title,
 	int		action)
 {
-    qf_list_T	*qfl = &qi->qf_lists[qf_idx];
+    qf_list_T	*qfl = qf_get_list(qi, qf_idx);
     listitem_T	*li;
     dict_T	*d;
     qfline_T	*old_last = NULL;
@@ -6375,7 +6387,7 @@ qf_add_entries(
 	// make place for a new list
 	qf_new_list(qi, title);
 	qf_idx = qi->qf_curlist;
-	qfl = &qi->qf_lists[qf_idx];
+	qfl = qf_get_list(qi, qf_idx);
     }
     else if (action == 'a' && !qf_list_empty(qfl))
 	// Adding to existing list, use last entry.
@@ -6395,7 +6407,7 @@ qf_add_entries(
 	if (d == NULL)
 	    continue;
 
-	retval = qf_add_entry_from_dict(qi, qf_idx, d, li == list->lv_first,
+	retval = qf_add_entry_from_dict(qfl, d, li == list->lv_first,
 								&valid_entry);
 	if (retval == FAIL)
 	    break;
@@ -6491,7 +6503,7 @@ qf_setprop_get_qfidx(
     static int
 qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
 {
-    qf_list_T	*qfl = &qi->qf_lists[qf_idx];
+    qf_list_T	*qfl = qf_get_list(qi, qf_idx);
 
     if (di->di_tv.v_type != VAR_STRING)
 	return FAIL;
@@ -6650,7 +6662,7 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
 	qf_idx = qi->qf_curlist;
     }
 
-    qfl = &qi->qf_lists[qf_idx];
+    qfl = qf_get_list(qi, qf_idx);
     if ((di = dict_find(what, (char_u *)"title", -1)) != NULL)
 	retval = qf_setprop_title(qi, qf_idx, what, di);
     if ((di = dict_find(what, (char_u *)"items", -1)) != NULL)
