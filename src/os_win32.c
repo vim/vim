@@ -4866,7 +4866,10 @@ mch_call_shell_terminal(
     argvar[1].v_type = VAR_UNKNOWN;
     buf = term_start(argvar, NULL, &opt, TERM_START_SYSTEM);
     if (buf == NULL)
+    {
+	vim_free(newcmd);
 	return 255;
+    }
 
     job = term_getjob(buf->b_term);
     ++job->jv_refcount;
