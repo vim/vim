@@ -5838,6 +5838,7 @@ unload_dummy_buffer(buf_T *buf, char_u *dirname_start)
 get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 {
     qf_info_T	*qi = qi_arg;
+    qf_list_T	*qfl;
     dict_T	*dict;
     char_u	buf[2];
     qfline_T	*qfp;
@@ -5858,11 +5859,15 @@ get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
     if (qf_idx == INVALID_QFIDX)
 	qf_idx = qi->qf_curlist;
 
-    if (qf_idx >= qi->qf_listcount || qf_list_empty(&qi->qf_lists[qf_idx]))
+    if (qf_idx >= qi->qf_listcount)
 	return FAIL;
 
-    qfp = qi->qf_lists[qf_idx].qf_start;
-    for (i = 1; !got_int && i <= qi->qf_lists[qf_idx].qf_count; ++i)
+    qfl = qf_get_list(qi, qf_idx);
+    if (qf_list_empty(qfl))
+	return FAIL;
+
+    qfp = qfl->qf_start;
+    for (i = 1; !got_int && i <= qfl->qf_count; ++i)
     {
 	// Handle entries with a non-existing buffer number.
 	bufnum = qfp->qf_fnum;
