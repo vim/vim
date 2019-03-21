@@ -629,7 +629,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			mch_memmove(newptr, buf->b_ml.ml_line_ptr,
 							buf->b_ml.ml_line_len);
 			buf->b_ml.ml_line_ptr = newptr;
-			curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+
+			cur_prop = buf->b_ml.ml_line_ptr + len
+							+ idx * sizeof(textprop_T);
 		    }
 
 		    taillen = buf->b_ml.ml_line_len - len
