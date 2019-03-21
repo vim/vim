@@ -2904,7 +2904,7 @@ qf_goto_win_with_ll_file(win_T *use_win, int qf_fnum, qf_info_T *ll_ref)
 
     // If the location list for the window is not set, then set it
     // to the location list from the location window
-    if (win->w_llist == NULL)
+    if (win->w_llist == NULL && ll_ref != NULL)
 	win_set_loclist(win, ll_ref);
 }
 
