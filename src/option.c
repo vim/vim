@@ -4405,7 +4405,6 @@ do_set(
 	    key = 0;
 	    if (*arg == '<')
 	    {
-		nextchar = 0;
 		opt_idx = -1;
 		/* look out for <t_>;> */
 		if (arg[1] == 't' && arg[2] == '_' && arg[3] && arg[4])
@@ -7945,7 +7944,7 @@ set_chars_option(char_u **varp)
 			&& p[len] == ':'
 			&& p[len + 1] != NUL)
 		{
-		    c1 = c2 = c3 = 0;
+		    c2 = c3 = 0;
 		    s = p + len + 1;
 		    c1 = mb_ptr2char_adv(&s);
 		    if (mb_char2cells(c1) > 1)
@@ -9379,6 +9378,7 @@ set_num_option(
     if (!starting && errmsg == NULL && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
     {
 	char_u buf_old[11], buf_new[11], buf_type[7];
+
 	vim_snprintf((char *)buf_old, 10, "%ld", old_value);
 	vim_snprintf((char *)buf_new, 10, "%ld", value);
 	vim_snprintf((char *)buf_type, 7, "%s", (opt_flags & OPT_LOCAL) ? "local" : "global");

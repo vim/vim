@@ -1055,7 +1055,6 @@ win_lbr_chartabsize(
 	    if (col2 >= colmax)		/* doesn't fit */
 	    {
 		size = colmax - col + col_adj;
-		tab_corr = FALSE;
 		break;
 	    }
 	}
@@ -1108,7 +1107,8 @@ win_lbr_chartabsize(
 		{
 		    /* calculate effective window width */
 		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
-		    int prev_width = col ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
+		    int prev_width = col
+				 ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
 		    if (width == 0)
 			width = (colnr_T)wp->w_width;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
@@ -1963,7 +1963,7 @@ hexhex2nr(char_u *p)
 
 /*
  * Return TRUE if "str" starts with a backslash that should be removed.
- * For MS-DOS, WIN32 and OS/2 this is only done when the character after the
+ * For MS-DOS, MSWIN and OS/2 this is only done when the character after the
  * backslash is not a normal file name character.
  * '$' is a valid file name character, we don't remove the backslash before
  * it.  This means it is not possible to use an environment variable after a

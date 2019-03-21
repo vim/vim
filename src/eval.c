@@ -8544,7 +8544,7 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg = did_emsg;
+    int		save_did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -8552,7 +8552,6 @@ ex_execute(exarg_T *eap)
 	++emsg_skip;
     while (*arg != NUL && *arg != '|' && *arg != '\n')
     {
-	p = arg;
 	ret = eval1_emsg(&arg, &rettv, !eap->skip);
 	if (ret == FAIL)
 	    break;

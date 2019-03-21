@@ -578,9 +578,6 @@ arabic_shape(
     /* half-shape current and previous character */
     shape_c = half_shape(prev_c);
 
-    /* Save away current character */
-    curr_c = c;
-
     curr_laa = A_firstc_laa(c, *c1p);
     prev_laa = A_firstc_laa(prev_c, prev_c1);
 

@@ -6147,9 +6147,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	}
 # endif
 #ifdef FEAT_JOB_CHANNEL
-	/* also call when ret == 0, we may be polling a keep-open channel */
+	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
-	    ret = channel_poll_check(ret, &fds);
+	    channel_poll_check(ret, &fds);
 #endif
 
 #else /* HAVE_SELECT */
