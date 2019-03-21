@@ -205,6 +205,7 @@ static int ensure_ruby_initialized(void);
 static void error_print(int);
 static void ruby_io_init(void);
 static void ruby_vim_init(void);
+static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 
 #if defined(RUBY19_OR_LATER) || defined(RUBY_INIT_STACK)
 # if defined(__ia64) && !defined(ruby_init_stack)
@@ -259,6 +260,7 @@ static void ruby_vim_init(void);
 # endif
 # define rb_global_variable		dll_rb_global_variable
 # define rb_hash_aset			dll_rb_hash_aset
+# define rb_hash_foreach		dll_rb_hash_foreach
 # define rb_hash_new			dll_rb_hash_new
 # define rb_inspect			dll_rb_inspect
 # define rb_int2inum			dll_rb_int2inum
@@ -275,6 +277,7 @@ static void ruby_vim_init(void);
 #  endif
 #  define rb_num2uint			dll_rb_num2uint
 # endif
+# define rb_num2dbl			dll_rb_num2dbl
 # define rb_lastline_get			dll_rb_lastline_get
 # define rb_lastline_set			dll_rb_lastline_set
 # define rb_protect			dll_rb_protect
@@ -409,6 +412,7 @@ static VALUE (*dll_rb_funcall2) (VALUE, ID, int, const VALUE*);
 # endif
 static void (*dll_rb_global_variable) (VALUE*);
 static VALUE (*dll_rb_hash_aset) (VALUE, VALUE, VALUE);
+static VALUE (*dll_rb_hash_foreach) (VALUE, int (*)(VALUE, VALUE, VALUE), VALUE);
 static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
@@ -418,6 +422,7 @@ static long (*dll_rb_fix2int) (VALUE);
 static long (*dll_rb_num2int) (VALUE);
 static unsigned long (*dll_rb_num2uint) (VALUE);
 # endif
+static double (*dll_rb_num2dbl) (VALUE);
 static VALUE (*dll_rb_lastline_get) (void);
 static void (*dll_rb_lastline_set) (VALUE);
 static VALUE (*dll_rb_protect) (VALUE (*)(VALUE), VALUE, int*);
@@ -640,6 +645,7 @@ static struct
 # endif
     {"rb_global_variable", (RUBY_PROC*)&dll_rb_global_variable},
     {"rb_hash_aset", (RUBY_PROC*)&dll_rb_hash_aset},
+    {"rb_hash_foreach", (RUBY_PROC*)&dll_rb_hash_foreach},
     {"rb_hash_new", (RUBY_PROC*)&dll_rb_hash_new},
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
@@ -649,6 +655,7 @@ static struct
     {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
     {"rb_num2uint", (RUBY_PROC*)&dll_rb_num2uint},
 # endif
+    {"rb_num2dbl", (RUBY_PROC*)&dll_rb_num2dbl},
     {"rb_lastline_get", (RUBY_PROC*)&dll_rb_lastline_get},
     {"rb_lastline_set", (RUBY_PROC*)&dll_rb_lastline_set},
     {"rb_protect", (RUBY_PROC*)&dll_rb_protect},
@@ -1799,4 +1806,134 @@ vim_ruby_init(void *stack_start)
 {
     /* should get machine stack start address early in main function */
     ruby_stack_start = stack_start;
+}
+
+    static int
+convert_hash2dict(VALUE key, VALUE val, VALUE arg)
+{
+    dict_T *d = (dict_T *)arg;
+    dictitem_T *di;
+
+    di = dictitem_alloc((char_u *)RSTRING_PTR(RSTRING(rb_obj_as_string(key))));
+    if (di == NULL || ruby_convert_to_vim_value(val, &di->di_tv) != OK
+						     || dict_add(d, di) != OK)
+    {
+	d->dv_hashtab.ht_error = TRUE;
+	return ST_STOP;
+    }
+    return ST_CONTINUE;
+}
+
+    static int
+ruby_convert_to_vim_value(VALUE val, typval_T *rettv)
+{
+    switch (TYPE(val))
+    {
+	case T_NIL:
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_NULL;
+	    break;
+	case T_TRUE:
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_TRUE;
+	    break;
+	case T_FALSE:
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_FALSE;
+	    break;
+	case T_BIGNUM:
+	case T_FIXNUM:
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = (varnumber_T)NUM2LONG(val);
+	    break;
+#ifdef FEAT_FLOAT
+	case T_FLOAT:
+	    rettv->v_type = VAR_FLOAT;
+	    rettv->vval.v_float = (float_T)NUM2DBL(val);
+	    break;
+#endif
+	default:
+	    val = rb_obj_as_string(val);
+	    // FALLTHROUGH
+	case T_STRING:
+	    {
+		VALUE str = (VALUE)RSTRING(val);
+
+		rettv->v_type = VAR_STRING;
+		rettv->vval.v_string = vim_strnsave((char_u *)RSTRING_PTR(str),
+							 (int)RSTRING_LEN(str));
+	    }
+	    break;
+	case T_ARRAY:
+	    {
+		list_T *l;
+		long i;
+		typval_T v;
+
+		l = list_alloc();
+		if (l == NULL)
+		    return FAIL;
+
+		for (i = 0; i < RARRAY_LEN(val); ++i)
+		{
+		    if (ruby_convert_to_vim_value((VALUE)RARRAY_PTR(val)[i],
+									&v) != OK)
+		    {
+			list_unref(l);
+			return FAIL;
+		    }
+		    list_append_tv(l, &v);
+		    clear_tv(&v);
+		}
+
+		rettv->v_type = VAR_LIST;
+		rettv->vval.v_list = l;
+		++l->lv_refcount;
+	    }
+	    break;
+	case T_HASH:
+	    {
+		dict_T *d;
+
+		d = dict_alloc();
+		if (d == NULL)
+		    return FAIL;
+
+		rb_hash_foreach(val, convert_hash2dict, (VALUE)d);
+		if (d->dv_hashtab.ht_error)
+		{
+		    dict_unref(d);
+		    return FAIL;
+		}
+
+		rettv->v_type = VAR_DICT;
+		rettv->vval.v_dict = d;
+		++d->dv_refcount;
+	    }
+	    break;
+    }
+    return OK;
+}
+
+    void
+do_rubyeval(char_u *str, typval_T *rettv)
+{
+    int retval = FAIL;
+
+    if (ensure_ruby_initialized())
+    {
+	int state;
+	VALUE obj;
+
+	obj = rb_eval_string_protect((const char *)str, &state);
+	if (state)
+	    error_print(state);
+	else
+	    retval = ruby_convert_to_vim_value(obj, rettv);
+    }
+    if (retval == FAIL)
+    {
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = 0;
+    }
 }
