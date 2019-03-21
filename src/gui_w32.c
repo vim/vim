@@ -6337,7 +6337,8 @@ gui_mch_draw_string(
 	{
 	    /* Add one to "cells" for italics. */
 	    DWriteContext_DrawText(s_dwc, unicodebuf, wlen,
-		    TEXT_X(col), TEXT_Y(row), FILL_X(cells + 1), FILL_Y(1),
+		    TEXT_X(col), TEXT_Y(row),
+		    FILL_X(cells + 1), FILL_Y(1) - p_linespace,
 		    gui.char_width, gui.currFgColor,
 		    foptions, pcliprect, unicodepdy);
 	}
