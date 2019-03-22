@@ -12,7 +12,6 @@ SRC_ALL =	\
 		src/README.txt \
 		src/alloc.h \
 		src/arabic.c \
-		src/arabic.h \
 		src/ascii.h \
 		src/autocmd.c \
 		src/beval.c \

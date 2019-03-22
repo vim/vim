@@ -210,6 +210,7 @@
 #define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
 
 #ifdef FEAT_ARABIC
+# define ARABIC_CHAR(ch)            (((ch) & 0xFF00) == 0x0600)
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_composinglike((p1), (p2))
 #else
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_iscomposing(utf_ptr2char(p2))
