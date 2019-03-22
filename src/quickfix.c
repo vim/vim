@@ -1629,16 +1629,16 @@ qf_init_ext(
 	// make place for a new list
 	qf_new_list(qi, qf_title);
 	qf_idx = qi->qf_curlist;
+	qfl = qf_get_list(qi, qf_idx);
     }
     else
     {
 	// Adding to existing list, use last entry.
 	adding = TRUE;
-	if (!qf_list_empty(qf_get_list(qi, qf_idx)))
-	    old_last = qi->qf_lists[qf_idx].qf_last;
+	qfl = qf_get_list(qi, qf_idx);
+	if (!qf_list_empty(qfl))
+	    old_last = qfl->qf_last;
     }
-
-    qfl = qf_get_list(qi, qf_idx);
 
     // Use the local value of 'errorformat' if it's set.
     if (errorformat == p_efm && tv == NULL && *buf->b_p_efm != NUL)
@@ -3921,7 +3921,7 @@ ex_cwindow(exarg_T *eap)
     // it if we have errors; otherwise, leave it closed.
     if (qf_stack_empty(qi)
 	    || qfl->qf_nonevalid
-	    || qf_list_empty(qf_get_curlist(qi)))
+	    || qf_list_empty(qfl))
     {
 	if (win != NULL)
 	    ex_cclose(eap);
@@ -5286,7 +5286,7 @@ vgr_qflist_valid(
  */
     static int
 vgr_match_buflines(
-	qf_info_T   *qi,
+	qf_list_T   *qfl,
 	char_u	    *fname,
 	buf_T	    *buf,
 	regmmatch_T *regmatch,
@@ -5307,7 +5307,7 @@ vgr_match_buflines(
 	    // Pass the buffer number so that it gets used even for a
 	    // dummy buffer, unless duplicate_name is set, then the
 	    // buffer will be wiped out below.
-	    if (qf_add_entry(qf_get_curlist(qi),
+	    if (qf_add_entry(qfl,
 			NULL,       // dir
 			fname,
 			NULL,
@@ -5535,7 +5535,8 @@ ex_vimgrep(exarg_T *eap)
 	{
 	    // Try for a match in all lines of the buffer.
 	    // For ":1vimgrep" look for first match only.
-	    found_match = vgr_match_buflines(qi, fname, buf, &regmatch,
+	    found_match = vgr_match_buflines(qf_get_curlist(qi),
+		    fname, buf, &regmatch,
 		    &tomatch, duplicate_name, flags);
 
 	    if (using_dummy)
@@ -7082,7 +7083,7 @@ hgr_get_ll(int *new_ll)
  */
     static void
 hgr_search_file(
-	qf_info_T *qi,
+	qf_list_T *qfl,
 	char_u *fname,
 	vimconv_T *p_vc,
 	regmatch_T *p_regmatch)
@@ -7117,7 +7118,7 @@ hgr_search_file(
 	    while (l > 0 && line[l - 1] <= ' ')
 		line[--l] = NUL;
 
-	    if (qf_add_entry(qf_get_curlist(qi),
+	    if (qf_add_entry(qfl,
 			NULL,	// dir
 			fname,
 			NULL,
@@ -7153,7 +7154,7 @@ hgr_search_file(
  */
     static void
 hgr_search_files_in_dir(
-	qf_info_T *qi,
+	qf_list_T *qfl,
 	char_u *dirname,
 	regmatch_T *p_regmatch,
 	vimconv_T *p_vc
@@ -7186,7 +7187,7 @@ hgr_search_files_in_dir(
 		continue;
 #endif
 
-	    hgr_search_file(qi, fnames[fi], p_vc, p_regmatch);
+	    hgr_search_file(qfl, fnames[fi], p_vc, p_regmatch);
 	}
 	FreeWild(fcount, fnames);
     }
@@ -7199,7 +7200,7 @@ hgr_search_files_in_dir(
  * specified language are found.
  */
     static void
-hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *lang)
+hgr_search_in_rtp(qf_list_T *qfl, regmatch_T *p_regmatch, char_u *lang)
 {
     char_u	*p;
 
@@ -7217,7 +7218,7 @@ hgr_search_in_rtp(qf_info_T *qi, regmatch_T *p_regmatch, char_u *lang)
     {
 	copy_option_part(&p, NameBuff, MAXPATHL, ",");
 
-	hgr_search_files_in_dir(qi, NameBuff, p_regmatch, &vc
+	hgr_search_files_in_dir(qfl, NameBuff, p_regmatch, &vc
 #ifdef FEAT_MULTI_LANG
 		, lang
 #endif
@@ -7281,12 +7282,12 @@ ex_helpgrep(exarg_T *eap)
 
 	// create a new quickfix list
 	qf_new_list(qi, qf_cmdtitle(*eap->cmdlinep));
+	qfl = qf_get_curlist(qi);
 
-	hgr_search_in_rtp(qi, &regmatch, lang);
+	hgr_search_in_rtp(qfl, &regmatch, lang);
 
 	vim_regfree(regmatch.regprog);
 
-	qfl = qf_get_curlist(qi);
 	qfl->qf_nonevalid = FALSE;
 	qfl->qf_ptr = qfl->qf_start;
 	qfl->qf_index = 1;
