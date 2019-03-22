@@ -5291,6 +5291,9 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	    return;
 	if (list_append_dict(l, d) == FAIL)
 	    return;
+	dict_add_number(d, "jumpnr",
+		(long)(i > wp->w_jumplistidx ? i - wp->w_jumplistidx
+						: wp->w_jumplistidx - i));
 	dict_add_number(d, "lnum", (long)wp->w_jumplist[i].fmark.mark.lnum);
 	dict_add_number(d, "col", (long)wp->w_jumplist[i].fmark.mark.col);
 	dict_add_number(d, "coladd", (long)wp->w_jumplist[i].fmark.mark.coladd);

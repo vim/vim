@@ -29,9 +29,10 @@ func Test_getjumplist()
   normal gg
 
   let expected = [[
-	      \ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 3]
+	\ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 3},
+	\ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 2},
+	\ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 1}],
+	\ 3]
   call assert_equal(expected, getjumplist())
   " jumplist doesn't change in between calls
   call assert_equal(expected, getjumplist())
@@ -40,17 +41,21 @@ func Test_getjumplist()
   5
   exe "normal \<C-O>"
   call assert_equal(2, getjumplist(1)[1])
+  call assert_equal(0, getjumplist(1)[0][2].jumpnr)
   exe "normal 2\<C-O>"
   call assert_equal(0, getjumplist(1, 1)[1])
+  call assert_equal(0, getjumplist(1)[0][0].jumpnr)
   exe "normal 3\<C-I>"
   call assert_equal(3, getjumplist()[1])
+  call assert_equal(0, getjumplist(1)[0][3].jumpnr)
   exe "normal \<C-O>"
   normal 20%
   let expected = [[
-	      \ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 5, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 4]
+	\ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 4},
+	\ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 3},
+	\ {'lnum': 5, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 2},
+	\ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0, 'jumpnr' : 1}],
+	\ 4]
   call assert_equal(expected, getjumplist())
   " jumplist doesn't change in between calls
   call assert_equal(expected, getjumplist())

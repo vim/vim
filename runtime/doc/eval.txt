@@ -4925,6 +4925,10 @@ getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 			col		column number
 			coladd		column offset for 'virtualedit'
 			filename	filename if available
+			jumpnr		count passed to the |CTRL-O| and
+					|CTRL-I| commands to jump to a
+					particular entry in the jump list. Set
+					to 0 for the current entry.
 			lnum		line number
 
 							*getline()*
