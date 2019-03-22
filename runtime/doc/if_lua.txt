@@ -14,7 +14,7 @@ The Lua Interface to Vim				*lua* *Lua*
 6. Funcref userdata		|lua-funcref|
 7. Buffer userdata		|lua-buffer|
 8. Window userdata		|lua-window|
-9. The luaeval function		|lua-luaeval|
+9. luaeval() Vim function	|lua-luaeval|
 10. Dynamic loading		|lua-dynamic|
 
 {Vi does not have any of these commands}
@@ -413,7 +413,7 @@ Examples:
 <
 
 ==============================================================================
-9. The luaeval function					*lua-luaeval* *lua-eval*
+9. luaeval() Vim function				*lua-luaeval* *lua-eval*
 
 The (dual) equivalent of "vim.eval" for passing Lua values to Vim is
 "luaeval". "luaeval" takes an expression string and an optional argument and
