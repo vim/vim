@@ -6414,7 +6414,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_MOUSE_PTERM
 	"mouse_pterm",
 # endif
-# ifdef FEAT_MOUSE_SGR
+# ifdef FEAT_MOUSE_XTERM
 	"mouse_sgr",
 # endif
 # ifdef FEAT_SYSMOUSE

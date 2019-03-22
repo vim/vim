@@ -426,7 +426,7 @@ static char *(features[]) =
 #endif
 
 #if defined(UNIX) || defined(VMS)
-# ifdef FEAT_MOUSE_SGR
+# ifdef FEAT_MOUSE_XTERM
 	"+mouse_sgr",
 # else
 	"-mouse_sgr",
@@ -779,6 +779,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1034,
 /**/
     1033,
 /**/
