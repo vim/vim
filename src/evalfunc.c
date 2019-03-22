@@ -9954,7 +9954,7 @@ remote_common(typval_T *argvars, typval_T *rettv, int expr)
 	    sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
 	    v.di_tv.v_type = VAR_STRING;
 	    v.di_tv.vval.v_string = vim_strsave(str);
-	    set_var(idvar, &v.di_tv, FALSE);
+	    set_var(idvar, &v.di_tv, FALSE, FALSE);
 	    vim_free(v.di_tv.vval.v_string);
 	}
     }
@@ -10049,7 +10049,7 @@ f_remote_peek(typval_T *argvars UNUSED, typval_T *rettv)
 	v.di_tv.vval.v_string = vim_strsave(s);
 	retvar = tv_get_string_chk(&argvars[1]);
 	if (retvar != NULL)
-	    set_var(retvar, &v.di_tv, FALSE);
+	    set_var(retvar, &v.di_tv, FALSE, FALSE);
 	vim_free(v.di_tv.vval.v_string);
     }
 #else
@@ -11412,7 +11412,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 		curbuf = buf;
 		STRCPY(bufvarname, "b:");
 		STRCPY(bufvarname + 2, varname);
-		set_var(bufvarname, varp, TRUE);
+		set_var(bufvarname, varp, TRUE, FALSE);
 		vim_free(bufvarname);
 		curbuf = save_curbuf;
 	    }
@@ -11933,7 +11933,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
 	{
 	    STRCPY(tabvarname, "t:");
 	    STRCPY(tabvarname + 2, varname);
-	    set_var(tabvarname, varp, TRUE);
+	    set_var(tabvarname, varp, TRUE, FALSE);
 	    vim_free(tabvarname);
 	}
 
