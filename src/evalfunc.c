@@ -788,7 +788,7 @@ static struct fst
     {"prop_add",	3, 3, f_prop_add},
     {"prop_clear",	1, 3, f_prop_clear},
     {"prop_list",	1, 2, f_prop_list},
-    {"prop_remove",	2, 3, f_prop_remove},
+    {"prop_remove",	1, 3, f_prop_remove},
     {"prop_type_add",	2, 2, f_prop_type_add},
     {"prop_type_change", 2, 2, f_prop_type_change},
     {"prop_type_delete", 1, 2, f_prop_type_delete},
