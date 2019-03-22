@@ -6533,9 +6533,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TAG_OLDSTATIC
 	"tag_old_static",
 #endif
-#ifdef FEAT_TAG_ANYWHITE
-	"tag_any_white",
-#endif
 #ifdef FEAT_TCL
 # ifndef DYNAMIC_TCL
 	"tcl",

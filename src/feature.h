@@ -313,12 +313,6 @@
 #endif
 
 /*
- * +tag_any_white	Allow any white space to separate the fields in a tags
- *			file.  When not defined, only a TAB is allowed.
- */
-/* #define FEAT_TAG_ANYWHITE */
-
-/*
  * +cscope		Unix only: Cscope support.
  */
 #if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)

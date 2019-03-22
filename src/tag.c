@@ -1931,13 +1931,8 @@ parse_line:
 	    {
 		vim_memset(&tagp, 0, sizeof(tagp));
 		tagp.tagname = lbuf;
-#ifdef FEAT_TAG_ANYWHITE
-		tagp.tagname_end = skiptowhite(lbuf);
-		if (*tagp.tagname_end == NUL)
-#else
 		tagp.tagname_end = vim_strchr(lbuf, TAB);
 		if (tagp.tagname_end == NULL)
-#endif
 		{
 		    if (vim_strchr(lbuf, NL) == NULL)
 		    {
@@ -1976,20 +1971,11 @@ parse_line:
 		    if (*p == ':')
 		    {
 			if (tagp.fname == NULL)
-# ifdef FEAT_TAG_ANYWHITE
-			    tagp.fname = skipwhite(tagp.tagname_end);
-# else
 			    tagp.fname = tagp.tagname_end + 1;
-# endif
-			if (	   fnamencmp(lbuf, tagp.fname, p - lbuf) == 0
-# ifdef FEAT_TAG_ANYWHITE
-				&& VIM_ISWHITE(tagp.fname[p - lbuf])
-# else
-				&& tagp.fname[p - lbuf] == TAB
-# endif
-				    )
+			if (fnamencmp(lbuf, tagp.fname, p - lbuf) == 0
+						&& tagp.fname[p - lbuf] == TAB)
 			{
-			    /* found one */
+			    // found one
 			    tagp.tagname = p + 1;
 			    break;
 			}
@@ -2112,20 +2098,10 @@ parse_line:
 #ifdef FEAT_TAG_OLDSTATIC
 		if (tagp.fname == NULL)
 #endif
-#ifdef FEAT_TAG_ANYWHITE
-		    tagp.fname = skipwhite(tagp.tagname_end);
-#else
 		    tagp.fname = tagp.tagname_end + 1;
-#endif
-#ifdef FEAT_TAG_ANYWHITE
-		tagp.fname_end = skiptowhite(tagp.fname);
-		tagp.command = skipwhite(tagp.fname_end);
-		if (*tagp.command == NUL)
-#else
 		tagp.fname_end = vim_strchr(tagp.fname, TAB);
 		tagp.command = tagp.fname_end + 1;
 		if (tagp.fname_end == NULL)
-#endif
 		    i = FAIL;
 		else
 		    i = OK;
@@ -2843,41 +2819,25 @@ etag_fail:
     else	/* not an Emacs tag */
     {
 #endif
-	/* Isolate the tagname, from lbuf up to the first white */
+	// Isolate the tagname, from lbuf up to the first white
 	tagp->tagname = lbuf;
-#ifdef FEAT_TAG_ANYWHITE
-	p = skiptowhite(lbuf);
-#else
 	p = vim_strchr(lbuf, TAB);
 	if (p == NULL)
 	    return FAIL;
-#endif
 	tagp->tagname_end = p;
 
-	/* Isolate file name, from first to second white space */
-#ifdef FEAT_TAG_ANYWHITE
-	p = skipwhite(p);
-#else
+	// Isolate file name, from first to second white space
 	if (*p != NUL)
 	    ++p;
-#endif
 	tagp->fname = p;
-#ifdef FEAT_TAG_ANYWHITE
-	p = skiptowhite(p);
-#else
 	p = vim_strchr(p, TAB);
 	if (p == NULL)
 	    return FAIL;
-#endif
 	tagp->fname_end = p;
 
-	/* find start of search command, after second white space */
-#ifdef FEAT_TAG_ANYWHITE
-	p = skipwhite(p);
-#else
+	// find start of search command, after second white space
 	if (*p != NUL)
 	    ++p;
-#endif
 	if (*p == NUL)
 	    return FAIL;
 	tagp->command = p;
