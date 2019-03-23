@@ -28,6 +28,7 @@ typedef buf_T *luaV_Buffer;
 typedef win_T *luaV_Window;
 typedef dict_T *luaV_Dict;
 typedef list_T *luaV_List;
+typedef blob_T *luaV_Blob;
 typedef struct {
     char_u	*name;	// funcref
     dict_T	*self;	// selfdict
@@ -36,6 +37,7 @@ typedef void (*msgfunc_T)(char_u *);
 
 static const char LUAVIM_DICT[] = "dict";
 static const char LUAVIM_LIST[] = "list";
+static const char LUAVIM_BLOB[] = "blob";
 static const char LUAVIM_FUNCREF[] = "funcref";
 static const char LUAVIM_BUFFER[] = "buffer";
 static const char LUAVIM_WINDOW[] = "window";
@@ -68,6 +70,7 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 
 static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
+static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 
 #if LUA_VERSION_NUM <= 501
@@ -541,6 +544,9 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_FUNC:
 	    luaV_pushfuncref(L, tv->vval.v_string);
 	    break;
+	case VAR_BLOB:
+	    luaV_pushblob(L, tv->vval.v_blob);
+	    break;
 	default:
 	    lua_pushnil(L);
     }
@@ -582,43 +588,53 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	{
 	    void *p = lua_touserdata(L, pos);
 
-	    if (lua_getmetatable(L, pos)) /* has metatable? */
+	    if (lua_getmetatable(L, pos)) // has metatable?
 	    {
-		/* check list */
+		// check list
 		luaV_getfield(L, LUAVIM_LIST);
 		if (lua_rawequal(L, -1, -2))
 		{
 		    tv->v_type = VAR_LIST;
 		    tv->vval.v_list = *((luaV_List *) p);
 		    ++tv->vval.v_list->lv_refcount;
-		    lua_pop(L, 2); /* MTs */
+		    lua_pop(L, 2); // MTs
 		    break;
 		}
-		/* check dict */
+		// check dict
 		luaV_getfield(L, LUAVIM_DICT);
 		if (lua_rawequal(L, -1, -3))
 		{
 		    tv->v_type = VAR_DICT;
 		    tv->vval.v_dict = *((luaV_Dict *) p);
 		    ++tv->vval.v_dict->dv_refcount;
-		    lua_pop(L, 3); /* MTs */
+		    lua_pop(L, 3); // MTs
 		    break;
 		}
-		/* check funcref */
-		luaV_getfield(L, LUAVIM_FUNCREF);
+		// check blob
+		luaV_getfield(L, LUAVIM_BLOB);
 		if (lua_rawequal(L, -1, -4))
+		{
+		    tv->v_type = VAR_BLOB;
+		    tv->vval.v_blob = *((luaV_Blob *) p);
+		    ++tv->vval.v_blob->bv_refcount;
+		    lua_pop(L, 4); // MTs
+		    break;
+		}
+		// check funcref
+		luaV_getfield(L, LUAVIM_FUNCREF);
+		if (lua_rawequal(L, -1, -5))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
 		    func_ref(f->name);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(f->name);
-		    lua_pop(L, 4); /* MTs */
+		    lua_pop(L, 5); // MTs
 		    break;
 		}
-		lua_pop(L, 4); /* MTs */
+		lua_pop(L, 4); // MTs
 	    }
 	}
-	/* FALLTHROUGH */
+	// FALLTHROUGH
 	default:
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = 0;
@@ -753,7 +769,7 @@ luaV_type_tostring(list, LUAVIM_LIST)
 luaV_list_len(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
-    lua_pushinteger(L, (l == NULL) ? 0 : (int) l->lv_len);
+    lua_pushinteger(L, (int) list_len(l));
     return 1;
 }
 
@@ -909,7 +925,7 @@ luaV_type_tostring(dict, LUAVIM_DICT)
 luaV_dict_len(lua_State *L)
 {
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
-    lua_pushinteger(L, (d == NULL) ? 0 : (int) d->dv_hashtab.ht_used);
+    lua_pushinteger(L, (int) dict_len(d));
     return 1;
 }
 
@@ -1025,6 +1041,124 @@ static const luaL_Reg luaV_Dict_mt[] = {
     {"__call", luaV_dict_call},
     {"__index", luaV_dict_index},
     {"__newindex", luaV_dict_newindex},
+    {NULL, NULL}
+};
+
+
+/* =======   Blob type   ======= */
+
+    static luaV_Blob *
+luaV_newblob(lua_State *L, blob_T *blo)
+{
+    luaV_Blob *b = (luaV_Blob *) lua_newuserdata(L, sizeof(luaV_Blob));
+    *b = blo;
+    blo->bv_refcount++; /* reference in Lua */
+    luaV_setudata(L, blo); /* cache[blo] = udata */
+    luaV_getfield(L, LUAVIM_BLOB);
+    lua_setmetatable(L, -2);
+    return b;
+}
+
+luaV_pushtype(blob_T, blob, luaV_Blob)
+luaV_type_tostring(blob, LUAVIM_BLOB)
+
+    static int
+luaV_blob_gc(lua_State *L)
+{
+    blob_T *b = luaV_unbox(L, luaV_Blob, 1);
+    blob_unref(b);
+    return 0;
+}
+
+    static int
+luaV_blob_len(lua_State *L)
+{
+    blob_T *b = luaV_unbox(L, luaV_Blob, 1);
+    lua_pushinteger(L, (int) blob_len(b));
+    return 1;
+}
+
+    static int
+luaV_blob_index(lua_State *L)
+{
+    blob_T *b = luaV_unbox(L, luaV_Blob, 1);
+    if (lua_isnumber(L, 2))
+    {
+	int idx = luaL_checkinteger(L, 2);
+	if (idx < blob_len(b))
+	    lua_pushnumber(L, (lua_Number) blob_get(b, idx));
+	else
+	    lua_pushnil(L);
+    }
+    else if (lua_isstring(L, 2))
+    {
+	const char *s = lua_tostring(L, 2);
+	if (strncmp(s, "add", 3) == 0)
+	{
+	    lua_getmetatable(L, 1);
+	    lua_getfield(L, -1, s);
+	}
+	else
+	    lua_pushnil(L);
+    }
+    else
+	lua_pushnil(L);
+    return 1;
+}
+
+    static int
+luaV_blob_newindex(lua_State *L)
+{
+    blob_T *b = luaV_unbox(L, luaV_Blob, 1);
+    if (b->bv_lock)
+	luaL_error(L, "blob is locked");
+    if (lua_isnumber(L, 2))
+    {
+	long len = blob_len(b);
+	int idx = luaL_checkinteger(L, 2);
+	int val = luaL_checkinteger(L, 3);
+	if (idx < len || (idx == len && ga_grow(&b->bv_ga, 1) == OK))
+	{
+	    blob_set(b, idx, (char_u) val);
+	    if (idx == len)
+		++b->bv_ga.ga_len;
+	}
+	else
+	    luaL_error(L, "index out of range");
+    }
+    return 0;
+}
+
+    static int
+luaV_blob_add(lua_State *L)
+{
+    luaV_Blob *blo = luaV_checkudata(L, 1, LUAVIM_BLOB);
+    blob_T *b = (blob_T *) luaV_checkcache(L, (void *) *blo);
+    if (b->bv_lock)
+	luaL_error(L, "blob is locked");
+    lua_settop(L, 2);
+    if (!lua_isstring(L, 2))
+	luaL_error(L, "string expected, got %s", luaL_typename(L, 2));
+    else
+    {
+	size_t i, l = 0;
+	const char *s = lua_tolstring(L, 2, &l);
+
+	ga_grow(&b->bv_ga, l);
+	for (i = 0; i < l; ++i)
+	    ga_append(&b->bv_ga, s[i]);
+    }
+    lua_settop(L, 1);
+    return 1;
+}
+
+static const luaL_Reg luaV_Blob_mt[] = {
+    {"__tostring", luaV_blob_tostring},
+    {"__gc", luaV_blob_gc},
+    {"__len", luaV_blob_len},
+    {"__index", luaV_blob_index},
+    {"__newindex", luaV_blob_newindex},
+    {"add", luaV_blob_add},
     {NULL, NULL}
 };
 
@@ -1624,6 +1758,33 @@ luaV_dict(lua_State *L)
 }
 
     static int
+luaV_blob(lua_State *L)
+{
+    blob_T *b;
+    int initarg = !lua_isnoneornil(L, 1);
+
+    if (initarg && !lua_isstring(L, 1))
+	luaL_error(L, "string expected, got %s", luaL_typename(L, 1));
+    b = blob_alloc();
+    if (b == NULL)
+	lua_pushnil(L);
+    else
+    {
+	luaV_newblob(L, b);
+	if (initarg)
+	{
+	    size_t i, l = 0;
+	    const char *s = lua_tolstring(L, 1, &l);
+
+	    ga_grow(&b->bv_ga, l);
+	    for (i = 0; i < l; ++i)
+		ga_append(&b->bv_ga, s[i]);
+	}
+    }
+    return 1;
+}
+
+    static int
 luaV_funcref(lua_State *L)
 {
     const char *name = luaL_checkstring(L, 1);
@@ -1717,6 +1878,12 @@ luaV_type(lua_State *L)
 		lua_pushstring(L, "dict");
 		return 1;
 	    }
+	    luaV_getfield(L, LUAVIM_BLOB);
+	    if (lua_rawequal(L, -1, 2))
+	    {
+		lua_pushstring(L, "blob");
+		return 1;
+	    }
 	    luaV_getfield(L, LUAVIM_FUNCREF);
 	    if (lua_rawequal(L, -1, 2))
 	    {
@@ -1748,6 +1915,7 @@ static const luaL_Reg luaV_module[] = {
     {"line", luaV_line},
     {"list", luaV_list},
     {"dict", luaV_dict},
+    {"blob", luaV_blob},
     {"funcref", luaV_funcref},
     {"buffer", luaV_buffer},
     {"window", luaV_window},
@@ -1883,6 +2051,9 @@ luaopen_vim(lua_State *L)
     luaV_newmetatable(L, LUAVIM_DICT);
     lua_pushvalue(L, 1);
     luaV_openlib(L, luaV_Dict_mt, 1);
+    luaV_newmetatable(L, LUAVIM_BLOB);
+    lua_pushvalue(L, 1);
+    luaV_openlib(L, luaV_Blob_mt, 1);
     luaV_newmetatable(L, LUAVIM_FUNCREF);
     lua_pushvalue(L, 1);
     luaV_openlib(L, luaV_Funcref_mt, 1);
