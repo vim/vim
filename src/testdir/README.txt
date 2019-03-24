@@ -39,11 +39,9 @@ What you can use (see test_assert.vim for an example):
   change the source code to add an ID to the allocation.  Add a new one to
   alloc_id_T.
 
-- Use test_override() to make Vim behave differently, e.g.  if char_avail()
-  must return FALSE for a while.  E.g. to trigger the CursorMovedI autocommand
-  event.
-
-- See test_cursor_func.vim for an example.
+- Use test_override() to make Vim behave differently, e.g. if char_avail() must
+  return FALSE for a while.  E.g. to trigger the CursorMovedI autocommand
+  event.  See test_cursor_func.vim for an example.
 
 - If the bug that is being tested isn't fixed yet, you can throw an exception
   with "Skipped" so that it's clear this still needs work.  E.g.: throw
