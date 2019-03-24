@@ -224,6 +224,7 @@ NEW_TESTS = \
 	test_searchpos \
 	test_set \
 	test_sha256 \
+	test_shortpathname \
 	test_signals \
 	test_signs \
 	test_smartindent \
@@ -258,6 +259,7 @@ NEW_TESTS = \
 	test_true_false \
 	test_undo \
 	test_unlet \
+	test_user_func \
 	test_usercommands \
 	test_utf8 \
 	test_utf8_comparisons \
