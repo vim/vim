@@ -61,7 +61,7 @@ TO ADD AN OLD STYLE TEST:
 1) Create test_<subject>.in and test_<subject>.ok files.
 2) Add test_<subject>.out to SCRIPTS_ALL in Make_all.mak in alphabetical order.
 3) Use make test_<subject>.out to run a single test in src/testdir/.
-   Use make test_<subject>  to run a single test in src/.
+   Use make test_<subject> to run a single test in src/.
 4) Also add an entry in src/Makefile.
 
 Keep in mind that the files are used as if everything was typed:
