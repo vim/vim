@@ -54,6 +54,7 @@ source test_searchpos.vim
 source test_set.vim
 source test_sort.vim
 source test_sha256.vim
+source test_signals.vim
 source test_statusline.vim
 source test_suspend.vim
 source test_syn_attr.vim
