@@ -2538,6 +2538,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The default value is for C programs.  For C++ this value would be
 	useful, to include const type declarations: >
 		^\(#\s*define\|[a-z]*\s*const\s*[a-z]*\)
+	Use "\ze" if the defined name comes before the match that identifies a
+	definition. For example, to match a method "method_name" in Javascript
+	defined by
+	        method_name : function() {...
+	this value of 'define' would be useful:
+	        ^\s*\ze\i+\s*[:]\s*(*function\s*(
 <	When using the ":set" command, you need to double the backslashes!
 
 			*'delcombine'* *'deco'* *'nodelcombine'* *'nodeco'*
