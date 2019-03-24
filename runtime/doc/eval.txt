@@ -7439,7 +7439,7 @@ rubyeval({expr})					*rubyeval()*
 		are copied though).
 		Arrays are represented as Vim |List| type.
 		Hashes are represented as Vim |Dictionary| type.
-		Othet objects are represented as strings resulted from their
+		Other objects are represented as strings resulted from their
 		"Object#to_s" method.
 		{only available when compiled with the |+ruby| feature}
 
