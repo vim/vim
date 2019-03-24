@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2018 Apr 18
+*channel.txt*      For Vim version 8.1.  Last change: 2019 Mar 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -308,9 +308,10 @@ higher.
 
 Command "redraw" ~
 
-The other commands do not update the screen, so that you can send a sequence
-of commands without the cursor moving around.  You must end with the "redraw"
-command to show any changed text and show the cursor where it belongs.
+The other commands do not explicitly update the screen, so that you can send a
+sequence of commands without the cursor moving around.  A redraw can happen as
+a side effect of some commands.  You must end with the "redraw" command to
+show any changed text and show the cursor where it belongs.
 
 The argument is normally an empty string:
 	["redraw", ""] ~

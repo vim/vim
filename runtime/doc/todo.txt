@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Mar 14
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,16 +37,6 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Patch to add Farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
-Added test, updates, June 23.
-Updated for 7.4: http://litcave.rudi.ir/farsi_vim.diff
-Remark from Ameretat Reith (2014 Oct 13) with patch on top.
-Updated patch from Ameretat Reith, 2019 Mar 1.
-
-Timer test doesn't work on MS-Windows console, any way to make it work?
-
-Drop FEAT_TAG_ANYWHITE ?  It should not be a compile time option.
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -121,6 +111,8 @@ Support for popup widows:
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+Patch to add complete_info()  Shougo - #3866.  Ready to include.  Now #4106
+
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
@@ -136,6 +128,8 @@ Test doesn't fail without patch?
 
 Patch to add ruby cflags. (#4050, fixes #1081)
 Needs modification.
+
+Patch to add src/README.md.  (WenxuanHuang, #4141)  Replace README.txt?
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -224,6 +218,9 @@ Patch on the issue by Hongbo Liu, 2019 Feb 19 #4013
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
+Drop FEAT_TAG_OLDSTATIC?  Anybody using this format should be able to get a
+newer version of ctags.
+
 Still a E315 error when using terminal. (Masato Nishihata, #3959)
 
 When using 'k' in 'guioptions' gvim may open with a tiny window. (#3808)
@@ -231,8 +228,14 @@ Suggested patch on the issue.
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
 
+Patch to have tutor check $LC_MESSAGES. (#4112)
+
 Patch to fix modify_fname() does not work well with some 'encoding's.
 (Ken Takata, #4007)
+
+Patch to add more info to OptionSet.  Should mention what triggered the change
+":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
+#4118
 
 Patch to make vim_getenv() work with wide API. (Ken Takata, #4008)
 
@@ -314,8 +317,6 @@ using CTRL-E. (Yee Cheng Chin, #3721)
 Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
-
-Patch to add complete_info  Shougo - #3866.  Ready to include.
 
 Patch to make winnr() return the window above/below/beside a window.
 (Yegappan Lakshmanan, #3993)

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 02
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10337,8 +10337,6 @@ tag_binary		Compiled with binary searching in tags files
 			|tag-binary-search|.
 tag_old_static		Compiled with support for old static tags
 			|tag-old-static|.
-tag_any_white		Compiled with support for any white characters in tags
-			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
 terminal		Compiled with |terminal| support.
