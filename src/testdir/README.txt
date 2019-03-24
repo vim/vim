@@ -36,8 +36,8 @@ What you can use (see test_assert.vim for an example):
 
 - Use test_alloc_fail() to have memory allocation fail.  This makes it possible
   to check memory allocation failures are handled gracefully.  You need to
-  change the source code to add an ID to the allocation.  Update LAST_ID_USED
-  above alloc_id() to the highest ID used.
+  change the source code to add an ID to the allocation.  Add a new one to
+  alloc_id_T.
 
 - Use test_override() to make Vim behave differently, e.g.  if char_avail()
   must return FALSE for a while.  E.g. to trigger the CursorMovedI autocommand
