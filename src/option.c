@@ -5151,13 +5151,12 @@ do_set(
 			    // effects in secure mode.  Also when the value was
 			    // set with the P_INSECURE flag and is not
 			    // completely replaced.
-			    if (secure
+			    if ((opt_flags & OPT_MODELINE)
 #ifdef HAVE_SANDBOX
-				    || sandbox != 0
+				  || sandbox != 0
 #endif
-				    || (opt_flags & OPT_MODELINE)
-				    || (!value_is_replaced && (*p & P_INSECURE)))
-				++secure;
+				  || (!value_is_replaced && (*p & P_INSECURE)))
+				secure = 1;
 
 			    // Handle side effects, and set the global value
 			    // for ":set" on local options. Note: when setting
