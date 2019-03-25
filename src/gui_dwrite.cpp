@@ -930,6 +930,8 @@ DWriteContext::BindDC(HDC hdc, const RECT *rect)
     }
 }
 
+extern "C" void redraw_later_clear(void);
+
     HRESULT
 DWriteContext::SetDrawingMode(DrawingMode mode)
 {
@@ -952,6 +954,7 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 		    hr = S_OK;
 		    DiscardDeviceResources();
 		    CreateDeviceResources();
+		    redraw_later_clear();
 		}
 		mDrawing = false;
 	    }
