@@ -55,14 +55,12 @@ WinMain(
     /* Ron: added full path name so that the $VIM variable will get set to our
      * startup path (so the .vimrc file can be found w/o a VIM env. var.) */
     GetModuleFileName(NULL, prog, 255);
-#endif
 
-#ifdef DYNAMIC_GETTEXT
+# ifdef DYNAMIC_GETTEXT
     /* Initialize gettext library */
     dyn_libintl_init();
-#endif
+# endif
 
-#ifdef VIMDLL
     // LoadLibrary - get name of dll to load in here:
     p = strrchr(prog, '\\');
     if (p != NULL)
