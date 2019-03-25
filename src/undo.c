@@ -3541,6 +3541,7 @@ anyBufIsChanged(void)
     FOR_ALL_BUFFERS(buf)
 	if (bufIsChanged(buf))
 	    return TRUE;
+    return FALSE;
 }
 
 /*
