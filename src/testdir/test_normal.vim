@@ -2546,11 +2546,16 @@ func Test_nv_hat_count()
 endfunc
 
 func Test_message_when_using_ctrl_c()
+  " Make sure no buffers are changed.
+  %bwipe!
+
   exe "normal \<C-C>"
   call assert_match("Type  :qa  and press <Enter> to exit Vim", Screenline(&lines))
+
   new
   cal setline(1, 'hi!')
   exe "normal \<C-C>"
   call assert_match("Type  :qa!  and press <Enter> to abandon all changes and exit Vim", Screenline(&lines))
+
   bwipe!
 endfunc
