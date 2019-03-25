@@ -619,7 +619,7 @@ au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 " Git
 au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
 au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig 	setf gitconfig
-au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/* 	setf gitconfig
+au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/* 	call s:StarSetf('gitconfig')
 au BufNewFile,BufRead */.config/git/config			setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
