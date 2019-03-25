@@ -42,29 +42,20 @@ static void (_cdecl *pSaveInst)(HINSTANCE);
 WinMain(
     HINSTANCE	hInstance UNUSED,
     HINSTANCE	hPrevInst UNUSED,
-    LPSTR	lpszCmdLine,
+    LPSTR	lpszCmdLine UNUSED,
     int		nCmdShow UNUSED)
 {
     int		argc = 0;
-    char	**argv;
-    char	*tofree;
-    char	prog[256];
+    char	**argv = NULL;
 #ifdef VIMDLL
+    char	prog[256];
     char	*p;
     HANDLE	hLib;
-#endif
 
     /* Ron: added full path name so that the $VIM variable will get set to our
      * startup path (so the .vimrc file can be found w/o a VIM env. var.) */
     GetModuleFileName(NULL, prog, 255);
-
-    argc = get_cmd_args(prog, (char *)lpszCmdLine, &argv, &tofree);
-    if (argc == 0)
-    {
-	MessageBox(0, "Could not allocate memory for command line.",
-							      "VIM Error", 0);
-	return 0;
-    }
+#endif
 
 #ifdef DYNAMIC_GETTEXT
     /* Initialize gettext library */
@@ -127,9 +118,6 @@ WinMain(
     FreeLibrary(hLib);
 errout:
 #endif
-    free(argv);
-    if (tofree != NULL)
-	free(tofree);
     free_cmd_argsW();
 
     return 0;
