@@ -21,7 +21,7 @@ endif
 " {{{ FILE / SKRÁ
 menutrans &File				                        Skrá
 menutrans &Open\.\.\.<Tab>:e		                Opna\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\  Splitt\ opna\.\.\.<Tab>:sp
+menutrans Sp&lit-Open\.\.\.<Tab>:sp	                Splitt\ opna\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	            Opna\ flipa\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		                    Ný\ Skrá<Tab>:enew
 menutrans &Close<Tab>:close		                    Loka<Tab>:close
@@ -57,9 +57,9 @@ menutrans Settings\ &Window				            Stillingar\ Glugga
 menutrans &Global\ Settings				            Víðværar\ Stillingar
 menutrans Startup\ &Settings				        Ræsistillingar
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Munsturauðkenning\ á\/af<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		    Hunsa\ há-lágstafi\ á\/af<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		        Sýna\ Pörun á\/af<Tab>:set\ sm!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	    Munsturauðkenning\ á\/af<Tab>:set\ hls!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		        Hunsa\ há-lágstafi\ á\/af<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Sýna\ Pörun á\/af<Tab>:set\ sm!
 
 menutrans &Context\ lines				            Samhengislínur
 
@@ -72,7 +72,7 @@ menutrans Always					                Alltaf
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Innskotshamur\ á\/af<Tab>:set\ im!
 menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Vi\ Samhæfanleiki á\/af<Tab>:set\ cp!
 
-menutrans Search\ &Path\.\.\.				        Leita\ í Slóð\.\.\.
+menutrans Search\ &Path\.\.\.				        Leita\ í\ Slóð\.\.\.
 menutrans Ta&g\ Files\.\.\.				            Merkja\ Skrár\.\.\.
 
 menutrans Toggle\ &Toolbar				            Tólaborð\ á\/af
@@ -85,13 +85,13 @@ menutrans F&ile\ Settings				            Skráar-Stilingar
 
 " Boolean options
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!		Línunúmering\ á\/af<Tab>:set\ nu!
-menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Afstæð\ Línunúmering\ á\/af<Tab>:set\ rnu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Afstæð\ Línunúmering\ á\/af<Tab>:set\ rnu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!			Listahamur\ á\/af<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!			Línuhlaup\ á\/af<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!		Línuhlaup\ á\ orði\ á\/af<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!			    Tab-víkkun\ á\/af<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!			Sjálfvirkur\ Inndráttur\ á\/af<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!			C-Inndráttur\ á\/af<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Línuhlaup\ á\/af<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	Línuhlaup\ á\ orði\ á\/af<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Tab-víkkun\ á\/af<Tab>:set\ et!
+menutrans Toggle\ &Auto Indenting<Tab>:set\ ai!			Sjálfvirkur\ Inndráttur\ á\/af<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	C-Inndráttur\ á\/af<Tab>:set\ cin!
 
 " other options
 menutrans &Shiftwidth					            Shiftbreidd
@@ -117,7 +117,6 @@ if has("spell")
     menutrans Set\ language\ to\ "en_gb"		    Stilla\ Orðabók\ á "en_gb"
     menutrans Set\ language\ to\ "en_nz"		    Stilla\ Orðabók\ á "en_nz"
     menutrans Set\ language\ to\ "en_us"		    Stilla\ Orðabók\ á "en_us"
-    menutrans Set\ language\ to\ "is"			    Stilla\ Orðabók\ á "is"
     menutrans &Find\ More\ Languages			    Finna\ fleiri\ Orðabækur
 endif
 if has("folding")
@@ -143,7 +142,7 @@ if has("folding")
   menutrans &Delete\ Fold<Tab>zd			        Eyða\ Földun<Tab>zd
   menutrans Delete\ &All\ Folds<Tab>zD		        Eyða\ Öllum\ Földunum<Tab>zD
   " moving around in folds
-  menutrans Fold\ column\ &width			        Breidd\ Földunar
+  menutrans Fold\ Col&umn\ Width.\			        Breidd\ Földunar
 endif  " has folding
 
 if has("diff")
@@ -154,7 +153,7 @@ if has("diff")
 endif
 
 menutrans &Tools					                Tól
-menutrans &Jump\ to\ this\ tag<Tab>g^]	    		Stökkva\ í \Merki<Tab>g^]
+menutrans &Jump\ to\ this\ tag<Tab>g^]	    		Stökkva\ í\ Merki<Tab>g^]
 menutrans Jump\ &back<Tab>^T			        	Stökkva\ til\ baka<Tab>^T
 menutrans Build\ &Tags\ File			        	Búa\ til\ Merkjaskrá
 menutrans &Make<Tab>:make				            Smíða<Tab>:make
@@ -232,6 +231,7 @@ menutrans &How-to\ links	                        Hjálparhlekkir
 menutrans &GUI			                            Myndrænt\ Viðmót
 menutrans &Credits		                            Höfundar
 menutrans Co&pying		                            Afritun
+menutrans &Sponsor/Register                         Styrkja/Skráning
 menutrans O&rphans		                            Góðgerðarstarf
 menutrans &Find\.\.\.		                        Leit\.\.\.	" conflicts with Edit.Find
 menutrans &Version		                            Útgáfa
