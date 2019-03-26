@@ -357,9 +357,22 @@ func Test_Vim_message()
 endfunc
 
 func Test_print()
-  ruby print "Hello World!"
-  let messages = split(execute('message'), "\n")
-  call assert_equal('Hello World!', messages[-1])
+  func RubyPrint(expr)
+    return trim(execute('ruby print ' . a:expr))
+  endfunc
+
+  call assert_equal('123', RubyPrint('123'))
+  call assert_equal('1.23', RubyPrint('1.23'))
+  call assert_equal('Hello World!', RubyPrint('"Hello World!"'))
+  call assert_equal('[1, 2]', RubyPrint('[1, 2]'))
+  call assert_equal('{"k1"=>"v1", "k2"=>"v2"}', RubyPrint('({"k1" => "v1", "k2" => "v2"})'))
+  call assert_equal('true', RubyPrint('true'))
+  call assert_equal('false', RubyPrint('false'))
+  call assert_equal('', RubyPrint('nil'))
+  call assert_match('Vim', RubyPrint('Vim'))
+  call assert_match('Module', RubyPrint('Vim.class'))
+
+  delfunc RubyPrint
 endfunc
 
 func Test_p()
