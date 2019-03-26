@@ -142,7 +142,7 @@ if has("folding")
   menutrans &Delete\ Fold<Tab>zd			        Eyða\ Földun<Tab>zd
   menutrans Delete\ &All\ Folds<Tab>zD		        Eyða\ Öllum\ Földunum<Tab>zD
   " moving around in folds
-  menutrans Fold\ Col&umn\ Width.\			        Breidd\ Földunar
+  menutrans Fold\ Col&umn\ Width			        Breidd\ Földunar
 endif  " has folding
 
 if has("diff")
