@@ -236,11 +236,11 @@ static void ins_mousescroll(int dir);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static void ins_tabline(int c);
 #endif
-static void ins_left(int end_change);
+static void ins_left(void);
 static void ins_home(int c);
 static void ins_end(int c);
 static void ins_s_left(void);
-static void ins_right(int end_change);
+static void ins_right(void);
 static void ins_s_right(void);
 static void ins_up(int startcol);
 static void ins_pageup(void);
@@ -290,10 +290,10 @@ static int	ins_need_undo;		/* call u_save() before inserting a
 					   char.  Set when edit() is called.
 					   after that arrow_used is used. */
 
-static int	did_add_space = FALSE;	/* auto_format() added an extra space
-					   under the cursor */
-static int	dont_sync_undo = FALSE;	/* CTRL-G U prevents syncing undo for
-					   the next left/right cursor */
+static int	did_add_space = FALSE;	// auto_format() added an extra space
+					// under the cursor
+static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
+					// the next left/right cursor key
 
 /*
  * edit(): Start inserting text.
@@ -1284,7 +1284,7 @@ doESCkey:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_left();
 	    else
-		ins_left(dont_sync_undo == FALSE);
+		ins_left();
 	    break;
 
 	case K_S_LEFT:	/* <S-Left> */
@@ -1296,7 +1296,7 @@ doESCkey:
 	    if (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL))
 		ins_s_right();
 	    else
-		ins_right(dont_sync_undo == FALSE);
+		ins_right();
 	    break;
 
 	case K_S_RIGHT:	/* <S-Right> */
@@ -9291,10 +9291,10 @@ ins_horscroll(void)
 #endif
 
     static void
-ins_left(
-    int	    end_change) /* end undoable change */
+ins_left(void)
 {
     pos_T	tpos;
+    int		end_change = dont_sync_undo == FALSE; // end undoable change
 
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_HOR) && KeyTyped)
@@ -9378,8 +9378,9 @@ ins_end(int c)
 }
 
     static void
-ins_s_left(void)
+ins_s_left()
 {
+    int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_HOR) && KeyTyped)
 	foldOpenCursor();
@@ -9387,18 +9388,22 @@ ins_s_left(void)
     undisplay_dollar();
     if (curwin->w_cursor.lnum > 1 || curwin->w_cursor.col > 0)
     {
-	start_arrow(&curwin->w_cursor);
+	start_arrow_with_change(&curwin->w_cursor, end_change);
+	if (!end_change)
+	    AppendCharToRedobuff(K_S_LEFT);
 	(void)bck_word(1L, FALSE, FALSE);
 	curwin->w_set_curswant = TRUE;
     }
     else
 	vim_beep(BO_CRSR);
+    dont_sync_undo = FALSE;
 }
 
     static void
-ins_right(
-    int	    end_change) /* end undoable change */
+ins_right(void)
 {
+    int end_change = dont_sync_undo == FALSE; // end undoable change
+
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_HOR) && KeyTyped)
 	foldOpenCursor();
@@ -9442,8 +9447,9 @@ ins_right(
 }
 
     static void
-ins_s_right(void)
+ins_s_right()
 {
+    int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_HOR) && KeyTyped)
 	foldOpenCursor();
@@ -9452,12 +9458,15 @@ ins_s_right(void)
     if (curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count
 	    || gchar_cursor() != NUL)
     {
-	start_arrow(&curwin->w_cursor);
+	start_arrow_with_change(&curwin->w_cursor, end_change);
+	if (!end_change)
+	    AppendCharToRedobuff(K_S_RIGHT);
 	(void)fwd_word(1L, FALSE, 0);
 	curwin->w_set_curswant = TRUE;
     }
     else
 	vim_beep(BO_CRSR);
+    dont_sync_undo = FALSE;
 }
 
     static void
