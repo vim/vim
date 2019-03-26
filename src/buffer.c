@@ -5498,7 +5498,7 @@ chk_modeline(
 		current_sctx.sc_lnum = 0;
 #endif
 		// Make sure no risky things are executed as a side effect.
-		++secure;
+		secure = 1;
 
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 

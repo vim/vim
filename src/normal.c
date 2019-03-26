@@ -214,7 +214,7 @@ static const struct nv_cmd
     {NL,	nv_down,	0,			FALSE},
     {Ctrl_K,	nv_error,	0,			0},
     {Ctrl_L,	nv_clear,	0,			0},
-    {Ctrl_M,	nv_down,	0,			TRUE},
+    {CAR,	nv_down,	0,			TRUE},
     {Ctrl_N,	nv_down,	NV_STS,			FALSE},
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
@@ -4263,7 +4263,6 @@ find_decl(
     CLEAR_POS(&found_pos);
     for (;;)
     {
-	valid = FALSE;
 	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
 		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
@@ -8887,7 +8886,12 @@ nv_esc(cmdarg_T *cap)
 #endif
 		&& !VIsual_active
 		&& no_reason)
-	    msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	{
+	    if (anyBufIsChanged())
+		msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    else
+		msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	}
 
 	/* Don't reset "restart_edit" when 'insertmode' is set, it won't be
 	 * set again below when halfway a mapping. */

@@ -428,6 +428,7 @@ static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
 static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
+static void f_test_refcount(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 static void f_test_null_blob(typval_T *argvars, typval_T *rettv);
@@ -788,7 +789,7 @@ static struct fst
     {"prop_add",	3, 3, f_prop_add},
     {"prop_clear",	1, 3, f_prop_clear},
     {"prop_list",	1, 2, f_prop_list},
-    {"prop_remove",	2, 3, f_prop_remove},
+    {"prop_remove",	1, 3, f_prop_remove},
     {"prop_type_add",	2, 2, f_prop_type_add},
     {"prop_type_change", 2, 2, f_prop_type_change},
     {"prop_type_delete", 1, 2, f_prop_type_delete},
@@ -952,7 +953,7 @@ static struct fst
     {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
-    {"test_null_blob", 0, 0, f_test_null_blob},
+    {"test_null_blob",	0, 0, f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
 #endif
@@ -964,7 +965,8 @@ static struct fst
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
     {"test_option_not_set", 1, 1, f_test_option_not_set},
-    {"test_override",    2, 2, f_test_override},
+    {"test_override",	2, 2, f_test_override},
+    {"test_refcount",	1, 1, f_test_refcount},
 #ifdef FEAT_GUI
     {"test_scrollbar",	3, 3, f_test_scrollbar},
 #endif
@@ -6414,7 +6416,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_MOUSE_PTERM
 	"mouse_pterm",
 # endif
-# ifdef FEAT_MOUSE_SGR
+# ifdef FEAT_MOUSE_XTERM
 	"mouse_sgr",
 # endif
 # ifdef FEAT_SYSMOUSE
@@ -6532,9 +6534,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_TAG_OLDSTATIC
 	"tag_old_static",
-#endif
-#ifdef FEAT_TAG_ANYWHITE
-	"tag_any_white",
 #endif
 #ifdef FEAT_TCL
 # ifndef DYNAMIC_TCL
@@ -13847,6 +13846,67 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	else
 	    semsg(_(e_invarg2), name);
     }
+}
+
+/*
+ * "test_refcount({expr})" function
+ */
+    static void
+f_test_refcount(typval_T *argvars, typval_T *rettv)
+{
+    int retval = -1;
+
+    switch (argvars[0].v_type)
+    {
+	case VAR_UNKNOWN:
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+	case VAR_SPECIAL:
+	case VAR_STRING:
+	    break;
+	case VAR_JOB:
+#ifdef FEAT_JOB_CHANNEL
+	    if (argvars[0].vval.v_job != NULL)
+		retval = argvars[0].vval.v_job->jv_refcount - 1;
+#endif
+	    break;
+	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
+	    if (argvars[0].vval.v_channel != NULL)
+		retval = argvars[0].vval.v_channel->ch_refcount - 1;
+#endif
+	    break;
+	case VAR_FUNC:
+	    if (argvars[0].vval.v_string != NULL)
+	    {
+		ufunc_T *fp;
+
+		fp = find_func(argvars[0].vval.v_string);
+		if (fp != NULL)
+		    retval = fp->uf_refcount;
+	    }
+	    break;
+	case VAR_PARTIAL:
+	    if (argvars[0].vval.v_partial != NULL)
+		retval = argvars[0].vval.v_partial->pt_refcount - 1;
+	    break;
+	case VAR_BLOB:
+	    if (argvars[0].vval.v_blob != NULL)
+		retval = argvars[0].vval.v_blob->bv_refcount - 1;
+	    break;
+	case VAR_LIST:
+	    if (argvars[0].vval.v_list != NULL)
+		retval = argvars[0].vval.v_list->lv_refcount - 1;
+	    break;
+	case VAR_DICT:
+	    if (argvars[0].vval.v_dict != NULL)
+		retval = argvars[0].vval.v_dict->dv_refcount - 1;
+	    break;
+    }
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = retval;
+
 }
 
 /*

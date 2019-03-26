@@ -3531,6 +3531,20 @@ bufIsChanged(buf_T *buf)
 }
 
 /*
+ * Return TRUE if any buffer has changes.  Also buffers that are not written.
+ */
+    int
+anyBufIsChanged(void)
+{
+    buf_T *buf;
+
+    FOR_ALL_BUFFERS(buf)
+	if (bufIsChanged(buf))
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Like bufIsChanged() but ignoring a terminal window.
  */
     int

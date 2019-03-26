@@ -2785,7 +2785,7 @@ reginsert_nr(int op, long val, char_u *opnd)
     *place++ = op;
     *place++ = NUL;
     *place++ = NUL;
-    place = re_put_long(place, (long_u)val);
+    re_put_long(place, (long_u)val);
 }
 
 /*
@@ -7784,9 +7784,10 @@ reg_submatch(int no)
 	    if (lnum < 0 || rsm.sm_mmatch->endpos[no].lnum < 0)
 		return NULL;
 
-	    s = reg_getline_submatch(lnum) + rsm.sm_mmatch->startpos[no].col;
-	    if (s == NULL)  /* anti-crash check, cannot happen? */
+	    s = reg_getline_submatch(lnum);
+	    if (s == NULL)  // anti-crash check, cannot happen?
 		break;
+	    s += rsm.sm_mmatch->startpos[no].col;
 	    if (rsm.sm_mmatch->endpos[no].lnum == lnum)
 	    {
 		/* Within one line: take form start to end col. */

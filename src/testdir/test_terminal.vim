@@ -1772,6 +1772,29 @@ func Test_terminal_hidden()
   bwipe!
 endfunc
 
+func Test_terminal_switch_mode()
+  term
+  let bnr = bufnr('$')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>N", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("A", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>N", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("I", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>Nv", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("I", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>Nv", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("A", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  bwipe!
+endfunc
+
 func Test_terminal_hidden_and_close()
   if !has('unix')
     return

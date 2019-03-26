@@ -166,28 +166,64 @@ func Test_prop_add_remove_buf()
   new
   let bufnr = bufnr('')
   call AddPropTypes()
-  call setline(1, 'one two three')
+  for lnum in range(1, 4)
+    call setline(lnum, 'one two three')
+  endfor
   wincmd w
-  call prop_add(1, 1, {'length': 3, 'id': 11, 'type': 'one', 'bufnr': bufnr})
-  call prop_add(1, 5, {'length': 3, 'id': 12, 'type': 'two', 'bufnr': bufnr})
-  call prop_add(1, 11, {'length': 3, 'id': 13, 'type': 'three', 'bufnr': bufnr})
-  
+  for lnum in range(1, 4)
+    call prop_add(lnum, 1, {'length': 3, 'id': 11, 'type': 'one', 'bufnr': bufnr})
+    call prop_add(lnum, 5, {'length': 3, 'id': 12, 'type': 'two', 'bufnr': bufnr})
+    call prop_add(lnum, 11, {'length': 3, 'id': 13, 'type': 'three', 'bufnr': bufnr})
+  endfor
+
   let props = [
 	\ {'col': 1, 'length': 3, 'id': 11, 'type': 'one', 'start': 1, 'end': 1},
 	\ {'col': 5, 'length': 3, 'id': 12, 'type': 'two', 'start': 1, 'end': 1},
 	\ {'col': 11, 'length': 3, 'id': 13, 'type': 'three', 'start': 1, 'end': 1},
 	\]
   call assert_equal(props, prop_list(1, {'bufnr': bufnr}))
- 
+
   " remove by id
-  call prop_remove({'id': 12, 'bufnr': bufnr}, 1)
+  let before_props = deepcopy(props)
   unlet props[1]
+
+  call prop_remove({'id': 12, 'bufnr': bufnr}, 1)
   call assert_equal(props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(2, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(3, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(4, {'bufnr': bufnr}))
+
+  call prop_remove({'id': 12, 'bufnr': bufnr}, 3, 4)
+  call assert_equal(props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(2, {'bufnr': bufnr}))
+  call assert_equal(props, prop_list(3, {'bufnr': bufnr}))
+  call assert_equal(props, prop_list(4, {'bufnr': bufnr}))
+
+  call prop_remove({'id': 12, 'bufnr': bufnr})
+  for lnum in range(1, 4)
+    call assert_equal(props, prop_list(lnum, {'bufnr': bufnr}))
+  endfor
 
   " remove by type
-  call prop_remove({'type': 'one', 'bufnr': bufnr}, 1)
+  let before_props = deepcopy(props)
   unlet props[0]
+
+  call prop_remove({'type': 'one', 'bufnr': bufnr}, 1)
   call assert_equal(props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(2, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(3, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(4, {'bufnr': bufnr}))
+
+  call prop_remove({'type': 'one', 'bufnr': bufnr}, 3, 4)
+  call assert_equal(props, prop_list(1, {'bufnr': bufnr}))
+  call assert_equal(before_props, prop_list(2, {'bufnr': bufnr}))
+  call assert_equal(props, prop_list(3, {'bufnr': bufnr}))
+  call assert_equal(props, prop_list(4, {'bufnr': bufnr}))
+
+  call prop_remove({'type': 'one', 'bufnr': bufnr})
+  for lnum in range(1, 4)
+    call assert_equal(props, prop_list(lnum, {'bufnr': bufnr}))
+  endfor
 
   call DeletePropTypes()
   wincmd w

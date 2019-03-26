@@ -7401,6 +7401,7 @@ love	intro.txt	/*love*
 lowercase	change.txt	/*lowercase*
 lpc.vim	syntax.txt	/*lpc.vim*
 lua	if_lua.txt	/*lua*
+lua-blob	if_lua.txt	/*lua-blob*
 lua-buffer	if_lua.txt	/*lua-buffer*
 lua-commands	if_lua.txt	/*lua-commands*
 lua-dict	if_lua.txt	/*lua-dict*
@@ -9023,7 +9024,6 @@ tabpagenr()	eval.txt	/*tabpagenr()*
 tabpagewinnr()	eval.txt	/*tabpagewinnr()*
 tag	tagsrch.txt	/*tag*
 tag-!	tagsrch.txt	/*tag-!*
-tag-any-white	tagsrch.txt	/*tag-any-white*
 tag-binary-search	tagsrch.txt	/*tag-binary-search*
 tag-blocks	motion.txt	/*tag-blocks*
 tag-commands	tagsrch.txt	/*tag-commands*
@@ -9203,6 +9203,7 @@ test_null_partial()	eval.txt	/*test_null_partial()*
 test_null_string()	eval.txt	/*test_null_string()*
 test_option_not_set()	eval.txt	/*test_option_not_set()*
 test_override()	eval.txt	/*test_override()*
+test_refcount()	eval.txt	/*test_refcount()*
 test_scrollbar()	eval.txt	/*test_scrollbar()*
 test_settime()	eval.txt	/*test_settime()*
 testing	eval.txt	/*testing*

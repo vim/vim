@@ -3596,7 +3596,6 @@ mch_setmouse(int on)
     }
 # endif
 
-# ifdef FEAT_MOUSE_SGR
     if (ttym_flags == TTYM_SGR)
     {
 	/* SGR mode supports columns above 223 */
@@ -3606,7 +3605,6 @@ mch_setmouse(int on)
 		   : IF_EB("\033[?1006l", ESC_STR "[?1006l")));
 	mouse_ison = on;
     }
-# endif
 
 # ifdef FEAT_BEVAL_TERM
     if (bevalterm_ison != (p_bevalterm && on))
@@ -3864,11 +3862,10 @@ check_mouse_termcode(void)
     else
 	del_mouse_termcode(KS_URXVT_MOUSE);
 # endif
-# ifdef FEAT_MOUSE_SGR
     if (use_xterm_mouse() == 4
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
     {
 	set_mouse_termcode(KS_SGR_MOUSE, (char_u *)(term_is_8bit(T_NAME)
@@ -3890,7 +3887,6 @@ check_mouse_termcode(void)
 	del_mouse_termcode(KS_SGR_MOUSE);
 	del_mouse_termcode(KS_SGR_MOUSE_RELEASE);
     }
-# endif
 }
 #endif
 
@@ -6147,9 +6143,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	}
 # endif
 #ifdef FEAT_JOB_CHANNEL
-	/* also call when ret == 0, we may be polling a keep-open channel */
+	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
-	    ret = channel_poll_check(ret, &fds);
+	    channel_poll_check(ret, &fds);
 #endif
 
 #else /* HAVE_SELECT */

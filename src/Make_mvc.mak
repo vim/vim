@@ -693,7 +693,7 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 !include Make_all.mak
 !include testdir\Make_all.mak
 
-INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h feature.h globals.h \
+INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 

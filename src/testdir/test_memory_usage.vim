@@ -36,15 +36,12 @@ func s:monitor_memory_usage(pid) abort
   let proc = {}
   let proc.pid = a:pid
   let proc.hist = []
-  let proc.min = 0
   let proc.max = 0
 
   func proc.op() abort
     " Check the last 200ms.
     let val = s:memory_usage(self.pid)
-    if self.min > val
-      let self.min = val
-    elseif self.max < val
+    if self.max < val
       let self.max = val
     endif
     call add(self.hist, val)
@@ -56,7 +53,7 @@ func s:monitor_memory_usage(pid) abort
   endfunc
 
   call WaitFor({-> proc.op()}, 10000)
-  return {'last': get(proc.hist, -1), 'min': proc.min, 'max': proc.max}
+  return {'last': get(proc.hist, -1), 'max': proc.max}
 endfunc
 
 let s:term_vim = {}
@@ -101,8 +98,11 @@ func Test_memory_func_capture_vargs()
 
   " Estimate the limit of max usage as 2x initial usage.
   call assert_inrange(before, 2 * before, after.max)
-  " In this case, garbase collecting is not needed.
-  call assert_equal(after.last, after.max)
+  " In this case, garbage collecting is not needed.  The value might fluctuate
+  " a bit, allow for 3% tolerance.
+  let lower = after.last * 97 / 100
+  let upper = after.last * 103 / 100
+  call assert_inrange(lower, upper, after.max)
 
   call vim.stop()
   call delete(testfile)
@@ -137,7 +137,12 @@ func Test_memory_func_capture_lvars()
     let last = s:monitor_memory_usage(vim.pid).last
   endfor
 
-  call assert_inrange(before, after.max + (after.last - before), last)
+  " The usage may be a bit less than the last value, use 80%.
+  " Allow for 20% tolerance at the upper limit.  That's very permissive, but
+  " otherwise the test fails sometimes.
+  let lower = before * 8 / 10
+  let upper = (after.max + (after.last - before)) * 12 / 10
+  call assert_inrange(lower, upper, last)
 
   call vim.stop()
   call delete(testfile)

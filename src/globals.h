@@ -1652,10 +1652,3 @@ EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
 #endif
-
-/*
- * Optional Arabic support. Include it here, so EXTERN and INIT are defined.
- */
-#ifdef FEAT_ARABIC
-# include "arabic.h"
-#endif

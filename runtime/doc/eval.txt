@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 02
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2672,6 +2672,7 @@ test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
 test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
+test_refcount({expr})		Number	get the reference count of {expr}
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
 test_settime({expr})		none	set current time for testing
@@ -9589,6 +9590,11 @@ test_override({name}, {val})				*test_override()*
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
 
+test_refcount({expr})					*test_refcount()*
+		Return the reference count of {expr}.  When {expr} is of a
+		type that does not have a reference count, returns -1.  Only
+		to be used for testing.
+
 test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
 		Pretend using scrollbar {which} to move it to position
 		{value}.  {which} can be:
@@ -10331,8 +10337,6 @@ tag_binary		Compiled with binary searching in tags files
 			|tag-binary-search|.
 tag_old_static		Compiled with support for old static tags
 			|tag-old-static|.
-tag_any_white		Compiled with support for any white characters in tags
-			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
 terminal		Compiled with |terminal| support.
