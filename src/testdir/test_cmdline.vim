@@ -48,6 +48,7 @@ func Test_complete_wildmenu()
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
+  %bwipe
   call delete('Xdir1/Xdir2/Xtestfile4')
   call delete('Xdir1/Xdir2/Xtestfile3')
   call delete('Xdir1/Xtestfile2')
