@@ -34,7 +34,7 @@ func Test_complete_wildmenu()
   call feedkeys(":e Xdir1/Xtest\<S-Tab>\<S-Tab>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
-  " Left/right to move to prefix/next file.
+  " <Left>/<Right> to move to previous/next file.
   call feedkeys(":e Xdir1/\<Tab>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
   call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<CR>", 'tx')
@@ -42,7 +42,7 @@ func Test_complete_wildmenu()
   call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<Left>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
-  " Up/down to go up/down directories.
+  " <Up>/<Down> to go up/down directories.
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<CR>", 'tx')
   call assert_equal('testfile3', getline(1))
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
