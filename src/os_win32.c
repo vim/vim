@@ -6796,7 +6796,6 @@ mch_total_mem(int special UNUSED)
 {
     MEMORYSTATUSEX  ms;
 
-    PlatformId();
     /* Need to use GlobalMemoryStatusEx() when there is more memory than
      * what fits in 32 bits. But it's not always available. */
     ms.dwLength = sizeof(MEMORYSTATUSEX);
@@ -6982,8 +6981,6 @@ mch_rename(
     char *
 default_shell(void)
 {
-    PlatformId();
-
     return "cmd.exe";
 }
 
@@ -7327,7 +7324,6 @@ copy_infostreams(char_u *from, char_u *to)
 mch_copy_file_attribute(char_u *from, char_u *to)
 {
     /* File streams only work on Windows NT and later. */
-    PlatformId();
     copy_infostreams(from, to);
     return 0;
 }
@@ -7357,8 +7353,6 @@ myresetstkoflw(void)
     SYSTEM_INFO si;
     DWORD	nPageSize;
     DWORD	dummy;
-
-    PlatformId();
 
     /* We need to know the system page size. */
     GetSystemInfo(&si);
