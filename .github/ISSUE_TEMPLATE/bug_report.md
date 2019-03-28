@@ -3,7 +3,6 @@ name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: ''
-assignees: ''
 
 ---
 
@@ -26,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - Version [e.g. 8.1.1234] (Or paste the result of `vim --version`.)
  - OS: [e.g. Ubuntu 18.04, Windows 10 1809, macOS 10.14]
- - Terminal: [e.g. GNOME Terminal, mintty, iTerm2, tmux, GNU screen] (If you use a CUI version.)
+ - Terminal: [e.g. GNOME Terminal, mintty, iTerm2, tmux, GNU screen] (Use NONE if you use the GUI.)
 
 **Additional context**
 Add any other context about the problem here.
