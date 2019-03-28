@@ -707,6 +707,21 @@ func Test_scrollbars()
   bwipe!
 endfunc
 
+func Test_menu()
+  " Check Help menu exists
+  let help_menu = execute('menu Help')
+  call assert_match('Overview', help_menu)
+
+  " Check Help menu works
+  emenu Help.Overview
+  call assert_equal('help', &buftype)
+  close
+
+  " Check deleting menu doesn't cause trouble.
+  aunmenu Help
+  call assert_fails('menu Help', 'E329:')
+endfunc
+
 func Test_set_guipty()
   let guipty_saved = &guipty
 
