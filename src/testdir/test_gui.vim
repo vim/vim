@@ -720,6 +720,21 @@ func Test_set_guipty()
   let &guipty = guipty_saved
 endfunc
 
+func Test_encoding_conversion()
+  " GTK supports conversion between 'encoding' and "utf-8"
+  if has('gui_gtk')
+    let encoding_saved = &encoding
+    set encoding=latin1
+
+    " would be nice if we could take a screenshot
+    intro
+    " sets the window title
+    edit SomeFile
+
+    let &encoding = encoding_saved
+  endif
+endfunc
+
 func Test_shell_command()
   new
   r !echo hello
