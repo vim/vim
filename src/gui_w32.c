@@ -2280,9 +2280,6 @@ gui_mch_draw_menubar(void)
 
 #ifndef PROTO
 void
-#ifdef VIMDLL
-_export
-#endif
 _cdecl
 SaveInst(HINSTANCE hInst)
 {
