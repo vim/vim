@@ -15,7 +15,9 @@
 
 #ifdef FEAT_INS_EXPAND
 /*
- * definitions used for CTRL-X submode
+ * Definitions used for CTRL-X submode.
+ * Note: If you change CTRL-X submode, you must also maintain ctrl_x_msgs[] and
+ * ctrl_x_mode_names[].
  */
 # define CTRL_X_WANT_IDENT	0x100
 
@@ -40,18 +42,18 @@
 # define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 # define CTRL_X_MODE_LINE_OR_EVAL(m) ((m) == CTRL_X_WHOLE_LINE || (m) == CTRL_X_EVAL)
 
-/* Message for CTRL-X mode, index is ctrl_x_mode. */
+// Message for CTRL-X mode, index is ctrl_x_mode.
 static char *ctrl_x_msgs[] =
 {
-    N_(" Keyword completion (^N^P)"), /* CTRL_X_NORMAL, ^P/^N compl. */
+    N_(" Keyword completion (^N^P)"), // CTRL_X_NORMAL, ^P/^N compl.
     N_(" ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"),
-    NULL, /* CTRL_X_SCROLL: depends on state */
+    NULL, // CTRL_X_SCROLL: depends on state
     N_(" Whole line completion (^L^N^P)"),
     N_(" File name completion (^F^N^P)"),
     N_(" Tag completion (^]^N^P)"),
     N_(" Path pattern completion (^N^P)"),
     N_(" Definition completion (^D^N^P)"),
-    NULL, /* CTRL_X_FINISHED */
+    NULL, // CTRL_X_FINISHED
     N_(" Dictionary completion (^K^N^P)"),
     N_(" Thesaurus completion (^T^N^P)"),
     N_(" Command-line completion (^V^N^P)"),
@@ -59,8 +61,29 @@ static char *ctrl_x_msgs[] =
     N_(" Omni completion (^O^N^P)"),
     N_(" Spelling suggestion (s^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
-    NULL,   /* CTRL_X_EVAL doesn't use msg. */
+    NULL,   // CTRL_X_EVAL doesn't use msg.
 };
+
+static char *ctrl_x_mode_names[] = {
+	"keyword",
+	"ctrl_x",
+	"unknown",	    // CTRL_X_SCROLL
+	"whole_line",
+	"files",
+	"tags",
+	"path_patterns",
+	"path_defines",
+	"unknown",	    // CTRL_X_FINISHED
+	"dictionary",
+	"thesaurus",
+	"cmdline",
+	"function",
+	"omni",
+	"spell",
+	NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+	"eval"
+    };
+
 
 static char e_hitend[] = N_("Hit end of paragraph");
 # ifdef FEAT_COMPL_FUNC
@@ -163,6 +186,7 @@ static void ins_compl_files(int count, char_u **files, int thesaurus, int flags,
 static char_u *find_line_end(char_u *ptr);
 static void ins_compl_free(void);
 static void ins_compl_clear(void);
+static char_u *ins_compl_mode(void);
 static int  ins_compl_bs(void);
 static int  ins_compl_need_restart(void);
 static void ins_compl_new_leader(void);
@@ -3523,6 +3547,108 @@ ins_compl_clear(void)
 ins_compl_active(void)
 {
     return compl_started;
+}
+
+
+/*
+ * Get complete information
+ */
+    void
+get_complete_info(list_T *what_list, dict_T *retdict)
+{
+    int		ret = OK;
+    listitem_T	*item;
+#define CI_WHAT_MODE		0x01
+#define CI_WHAT_PUM_VISIBLE	0x02
+#define CI_WHAT_ITEMS		0x04
+#define CI_WHAT_SELECTED	0x08
+#define CI_WHAT_INSERTED	0x10
+#define CI_WHAT_ALL		0xff
+    int		what_flag;
+
+    if (what_list == NULL)
+	what_flag = CI_WHAT_ALL;
+    else
+    {
+	what_flag = 0;
+	for (item = what_list->lv_first; item != NULL; item = item->li_next)
+	{
+	    char_u *what = tv_get_string(&item->li_tv);
+
+	    if (STRCMP(what, "mode") == 0)
+		what_flag |= CI_WHAT_MODE;
+	    else if (STRCMP(what, "pum_visible") == 0)
+		what_flag |= CI_WHAT_PUM_VISIBLE;
+	    else if (STRCMP(what, "items") == 0)
+		what_flag |= CI_WHAT_ITEMS;
+	    else if (STRCMP(what, "selected") == 0)
+		what_flag |= CI_WHAT_SELECTED;
+	    else if (STRCMP(what, "inserted") == 0)
+		what_flag |= CI_WHAT_INSERTED;
+	}
+    }
+
+    if (ret == OK && (what_flag & CI_WHAT_MODE))
+	ret = dict_add_string(retdict, "mode", ins_compl_mode());
+
+    if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
+	ret = dict_add_number(retdict, "pum_visible", pum_visible());
+
+    if (ret == OK && (what_flag & CI_WHAT_ITEMS))
+    {
+	list_T	    *li;
+	dict_T	    *di;
+	compl_T     *match;
+
+	li = list_alloc();
+	if (li == NULL)
+	    return;
+	ret = dict_add_list(retdict, "items", li);
+	if (ret == OK && compl_first_match != NULL)
+	{
+	    match = compl_first_match;
+	    do
+	    {
+		if (!(match->cp_flags & ORIGINAL_TEXT))
+		{
+		    di = dict_alloc();
+		    if (di == NULL)
+			return;
+		    ret = list_append_dict(li, di);
+		    if (ret != OK)
+			return;
+		    dict_add_string(di, "word", match->cp_str);
+		    dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
+		    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
+		    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
+		    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+		    dict_add_string(di, "user_data",
+					    match->cp_text[CPT_USER_DATA]);
+		}
+		match = match->cp_next;
+	    }
+	    while (match != NULL && match != compl_first_match);
+	}
+    }
+
+    if (ret == OK && (what_flag & CI_WHAT_SELECTED))
+	ret = dict_add_number(retdict, "selected", (compl_curr_match != NULL) ?
+			compl_curr_match->cp_number - 1 : -1);
+
+    // TODO
+    // if (ret == OK && (what_flag & CI_WHAT_INSERTED))
+}
+
+/*
+ * Return Insert completion mode name string
+ */
+    static char_u *
+ins_compl_mode(void)
+{
+    if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET || compl_started)
+	return (char_u *)ctrl_x_mode_names[ctrl_x_mode & ~CTRL_X_WANT_IDENT];
+
+    return (char_u *)"";
 }
 
 /*
