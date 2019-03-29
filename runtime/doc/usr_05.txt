@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.1.  Last change: 2019 Jan 26
+*usr_05.txt*	For Vim version 8.1.  Last change: 2019 Feb 27
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -85,7 +85,7 @@ will be explained though.  Use the ":help" command to find out more.
 >
 	" Get the defaults that most users want.
 	source $VIMRUNTIME/defaults.vim
->
+
 This loads the "defaults.vim" file in the $VIMRUNTIME directory.  This sets up
 Vim for how most users like it.  If you are one of the few that don't, then
 comment out this line.  The commands are explained below:
@@ -164,13 +164,13 @@ The following explains what defaults.vim is doing.
 	if exists('skip_defaults_vim')
 	  finish
 	endif
->
+
 Loading defaults.vim can be disabled with this command: >
 	let skip_defaults_vim = 1
 This has to be done in the system vimrc file.  See |system-vimrc|.  If you
 have a user vimrc this is not needed, since defaults.vim will not be loaded
 automatically.
->
+
 >
 	set nocompatible
 
@@ -191,8 +191,8 @@ character before where Insert mode started.  See 'backspace'.
 
 Keep 200 commands and 200 search patterns in the history.  Use another number
 if you want to remember fewer or more lines.  See 'history'.
->
 
+>
 	set ruler
 
 Always display the current cursor position in the lower right corner of the
@@ -257,7 +257,7 @@ will not need it.
 
 >
 	inoremap <C-U> <C-G>u<C-U>
->
+
 CTRL-U in insert mode deletes all entered text in the current line.  Use
 CTRL-G u to first break undo, so that you can undo CTRL-U after inserting a
 line break.  Revert with ":iunmap <C-U>".
@@ -325,7 +325,7 @@ typing commands at the command-line.
 		  \ | wincmd p | diffthis
 
 This adds the ":DiffOrig" command.  Use this in a modified buffer to see the
-differences with the file it was loaded from.  See |diff|.
+differences with the file it was loaded from.  See |diff| and |:DiffOrig|.
 
 >
 	set nolangremap

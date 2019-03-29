@@ -2646,7 +2646,7 @@ mch_init(void)
     if (cterm_normal_bg_color == 0)
 	cterm_normal_bg_color = ((g_attrCurrent >> 4) & 0xf) + 1;
 
-    // Fg and Bg color index nunmber at startup
+    // Fg and Bg color index number at startup
     g_color_index_fg = g_attrDefault & 0xf;
     g_color_index_bg = (g_attrDefault >> 4) & 0xf;
 
@@ -4210,8 +4210,7 @@ vim_create_process(
 	    (LPSTARTUPINFOW)si,	/* Startup information */
 	    pi);			/* Process information */
 	vim_free(wcmd);
-	if (wcwd != NULL)
-	    vim_free(wcwd);
+	vim_free(wcwd);
 	return ret;
     }
 fallback:
@@ -4867,7 +4866,10 @@ mch_call_shell_terminal(
     argvar[1].v_type = VAR_UNKNOWN;
     buf = term_start(argvar, NULL, &opt, TERM_START_SYSTEM);
     if (buf == NULL)
+    {
+	vim_free(newcmd);
 	return 255;
+    }
 
     job = term_getjob(buf->b_term);
     ++job->jv_refcount;
@@ -5312,8 +5314,8 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 			*((WCHAR*)gap->ga_data + gap->ga_len++) = wval[n];
 		    *((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
 		}
-		if (wkey != NULL) vim_free(wkey);
-		if (wval != NULL) vim_free(wval);
+		vim_free(wkey);
+		vim_free(wval);
 	    }
 	}
     }
@@ -6025,6 +6027,8 @@ insert_lines(unsigned cLines)
     COORD	    dest;
     CHAR_INFO	    fill;
 
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
+
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y + cLines;
 
@@ -6038,17 +6042,16 @@ insert_lines(unsigned cLines)
     clip.Right  = g_srScrollRegion.Right;
     clip.Bottom = g_srScrollRegion.Bottom;
 
-    {
-	fill.Char.AsciiChar = ' ';
-	if (!USE_VTP)
-	    fill.Attributes = g_attrCurrent;
-	else
-	    fill.Attributes = g_attrDefault;
+    fill.Char.AsciiChar = ' ';
+    if (!USE_VTP)
+	fill.Attributes = g_attrCurrent;
+    else
+	fill.Attributes = g_attrDefault;
 
-	set_console_color_rgb();
+    set_console_color_rgb();
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
-    }
+    ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
+
     // Here we have to deal with a win32 console flake: If the scroll
     // region looks like abc and we scroll c to a and fill with d we get
     // cbd... if we scroll block c one line at a time to a, we get cdd...
@@ -6082,6 +6085,8 @@ delete_lines(unsigned cLines)
     CHAR_INFO	    fill;
     int		    nb;
 
+    gotoxy(g_srScrollRegion.Left + 1, g_srScrollRegion.Top + 1);
+
     dest.X = g_srScrollRegion.Left;
     dest.Y = g_coord.Y;
 
@@ -6095,17 +6100,16 @@ delete_lines(unsigned cLines)
     clip.Right  = g_srScrollRegion.Right;
     clip.Bottom = g_srScrollRegion.Bottom;
 
-    {
-	fill.Char.AsciiChar = ' ';
-	if (!USE_VTP)
-	    fill.Attributes = g_attrCurrent;
-	else
-	    fill.Attributes = g_attrDefault;
+    fill.Char.AsciiChar = ' ';
+    if (!USE_VTP)
+	fill.Attributes = g_attrCurrent;
+    else
+	fill.Attributes = g_attrDefault;
 
-	set_console_color_rgb();
+    set_console_color_rgb();
 
-	ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
-    }
+    ScrollConsoleScreenBuffer(g_hConOut, &source, &clip, dest, &fill);
+
     // Here we have to deal with a win32 console flake; See insert_lines()
     // above.
 
@@ -6792,7 +6796,6 @@ mch_total_mem(int special UNUSED)
 {
     MEMORYSTATUSEX  ms;
 
-    PlatformId();
     /* Need to use GlobalMemoryStatusEx() when there is more memory than
      * what fits in 32 bits. But it's not always available. */
     ms.dwLength = sizeof(MEMORYSTATUSEX);
@@ -6978,8 +6981,6 @@ mch_rename(
     char *
 default_shell(void)
 {
-    PlatformId();
-
     return "cmd.exe";
 }
 
@@ -7323,7 +7324,6 @@ copy_infostreams(char_u *from, char_u *to)
 mch_copy_file_attribute(char_u *from, char_u *to)
 {
     /* File streams only work on Windows NT and later. */
-    PlatformId();
     copy_infostreams(from, to);
     return 0;
 }
@@ -7353,8 +7353,6 @@ myresetstkoflw(void)
     SYSTEM_INFO si;
     DWORD	nPageSize;
     DWORD	dummy;
-
-    PlatformId();
 
     /* We need to know the system page size. */
     GetSystemInfo(&si);
@@ -7845,7 +7843,7 @@ set_console_color_rgb(void)
 	return;
 
     id = syn_name2id((char_u *)"Normal");
-    if (id > 0)
+    if (id > 0 && p_tgc)
 	syn_id2colors(id, &fg, &bg);
     if (fg == INVALCOLOR)
     {

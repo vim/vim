@@ -1577,108 +1577,109 @@ vgetc(void)
     }
     else
     {
-      mod_mask = 0x0;
-      last_recorded_len = 0;
-      for (;;)			/* this is done twice if there are modifiers */
-      {
-	int did_inc = FALSE;
+	mod_mask = 0x0;
+	last_recorded_len = 0;
+	for (;;)		// this is done twice if there are modifiers
+	{
+	    int did_inc = FALSE;
 
-	if (mod_mask
+	    if (mod_mask
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-	    || im_is_preediting()
+		    || im_is_preediting()
 #endif
-		)
-	{
-	    /* no mapping after modifier has been read */
-	    ++no_mapping;
-	    ++allow_keys;
-	    did_inc = TRUE;	/* mod_mask may change value */
-	}
-	c = vgetorpeek(TRUE);
-	if (did_inc)
-	{
-	    --no_mapping;
-	    --allow_keys;
-	}
-
-	/* Get two extra bytes for special keys */
-	if (c == K_SPECIAL
-#ifdef FEAT_GUI
-		|| c == CSI
-#endif
-	   )
-	{
-	    int	    save_allow_keys = allow_keys;
-
-	    ++no_mapping;
-	    allow_keys = 0;		/* make sure BS is not found */
-	    c2 = vgetorpeek(TRUE);	/* no mapping for these chars */
-	    c = vgetorpeek(TRUE);
-	    --no_mapping;
-	    allow_keys = save_allow_keys;
-	    if (c2 == KS_MODIFIER)
+		    )
 	    {
-		mod_mask = c;
-		continue;
+		// no mapping after modifier has been read
+		++no_mapping;
+		++allow_keys;
+		did_inc = TRUE;	// mod_mask may change value
 	    }
-	    c = TO_SPECIAL(c2, c);
+	    c = vgetorpeek(TRUE);
+	    if (did_inc)
+	    {
+		--no_mapping;
+		--allow_keys;
+	    }
+
+	    // Get two extra bytes for special keys
+	    if (c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+	       )
+	    {
+		int	    save_allow_keys = allow_keys;
+
+		++no_mapping;
+		allow_keys = 0;		// make sure BS is not found
+		c2 = vgetorpeek(TRUE);	// no mapping for these chars
+		c = vgetorpeek(TRUE);
+		--no_mapping;
+		allow_keys = save_allow_keys;
+		if (c2 == KS_MODIFIER)
+		{
+		    mod_mask = c;
+		    continue;
+		}
+		c = TO_SPECIAL(c2, c);
 
 #if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
-	    /* Handle K_TEAROFF here, the caller of vgetc() doesn't need to
-	     * know that a menu was torn off */
-	    if (c == K_TEAROFF)
-	    {
-		char_u	name[200];
-		int	i;
-
-		/* get menu path, it ends with a <CR> */
-		for (i = 0; (c = vgetorpeek(TRUE)) != '\r'; )
+		// Handle K_TEAROFF here, the caller of vgetc() doesn't need to
+		// know that a menu was torn off
+		if (c == K_TEAROFF)
 		{
-		    name[i] = c;
-		    if (i < 199)
-			++i;
+		    char_u	name[200];
+		    int		i;
+
+		    // get menu path, it ends with a <CR>
+		    for (i = 0; (c = vgetorpeek(TRUE)) != '\r'; )
+		    {
+			name[i] = c;
+			if (i < 199)
+			    ++i;
+		    }
+		    name[i] = NUL;
+		    gui_make_tearoff(name);
+		    continue;
 		}
-		name[i] = NUL;
-		gui_make_tearoff(name);
-		continue;
-	    }
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_GUI_GTK) && defined(FEAT_MENU)
-	    /* GTK: <F10> normally selects the menu, but it's passed until
-	     * here to allow mapping it.  Intercept and invoke the GTK
-	     * behavior if it's not mapped. */
-	    if (c == K_F10 && gui.menubar != NULL)
-	    {
-		gtk_menu_shell_select_first(GTK_MENU_SHELL(gui.menubar), FALSE);
-		continue;
-	    }
+		// GTK: <F10> normally selects the menu, but it's passed until
+		// here to allow mapping it.  Intercept and invoke the GTK
+		// behavior if it's not mapped.
+		if (c == K_F10 && gui.menubar != NULL)
+		{
+		    gtk_menu_shell_select_first(
+					   GTK_MENU_SHELL(gui.menubar), FALSE);
+		    continue;
+		}
 #endif
 #ifdef FEAT_GUI
-	    /* Handle focus event here, so that the caller doesn't need to
-	     * know about it.  Return K_IGNORE so that we loop once (needed if
-	     * 'lazyredraw' is set). */
-	    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
-	    {
-		ui_focus_change(c == K_FOCUSGAINED);
-		c = K_IGNORE;
-	    }
+		// Handle focus event here, so that the caller doesn't need to
+		// know about it.  Return K_IGNORE so that we loop once (needed
+		// if 'lazyredraw' is set).
+		if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		{
+		    ui_focus_change(c == K_FOCUSGAINED);
+		    c = K_IGNORE;
+		}
 
-	    /* Translate K_CSI to CSI.  The special key is only used to avoid
-	     * it being recognized as the start of a special key. */
-	    if (c == K_CSI)
-		c = CSI;
+		// Translate K_CSI to CSI.  The special key is only used to
+		// avoid it being recognized as the start of a special key.
+		if (c == K_CSI)
+		    c = CSI;
 #endif
-	}
-	/* a keypad or special function key was not mapped, use it like
-	 * its ASCII equivalent */
-	switch (c)
-	{
-	    case K_KPLUS:	c = '+'; break;
-	    case K_KMINUS:	c = '-'; break;
-	    case K_KDIVIDE:	c = '/'; break;
-	    case K_KMULTIPLY:	c = '*'; break;
-	    case K_KENTER:	c = CAR; break;
-	    case K_KPOINT:
+	    }
+	    // a keypad or special function key was not mapped, use it like
+	    // its ASCII equivalent
+	    switch (c)
+	    {
+		case K_KPLUS:	c = '+'; break;
+		case K_KMINUS:	c = '-'; break;
+		case K_KDIVIDE:	c = '/'; break;
+		case K_KMULTIPLY: c = '*'; break;
+		case K_KENTER:	c = CAR; break;
+		case K_KPOINT:
 #ifdef MSWIN
 				// Can be either '.' or a ',',
 				// depending on the type of keypad.
@@ -1686,19 +1687,19 @@ vgetc(void)
 #else
 				c = '.'; break;
 #endif
-	    case K_K0:		c = '0'; break;
-	    case K_K1:		c = '1'; break;
-	    case K_K2:		c = '2'; break;
-	    case K_K3:		c = '3'; break;
-	    case K_K4:		c = '4'; break;
-	    case K_K5:		c = '5'; break;
-	    case K_K6:		c = '6'; break;
-	    case K_K7:		c = '7'; break;
-	    case K_K8:		c = '8'; break;
-	    case K_K9:		c = '9'; break;
+		case K_K0:	c = '0'; break;
+		case K_K1:	c = '1'; break;
+		case K_K2:	c = '2'; break;
+		case K_K3:	c = '3'; break;
+		case K_K4:	c = '4'; break;
+		case K_K5:	c = '5'; break;
+		case K_K6:	c = '6'; break;
+		case K_K7:	c = '7'; break;
+		case K_K8:	c = '8'; break;
+		case K_K9:	c = '9'; break;
 
-	    case K_XHOME:
-	    case K_ZHOME:	if (mod_mask == MOD_MASK_SHIFT)
+		case K_XHOME:
+		case K_ZHOME:	if (mod_mask == MOD_MASK_SHIFT)
 				{
 				    c = K_S_HOME;
 				    mod_mask = 0;
@@ -1711,8 +1712,8 @@ vgetc(void)
 				else
 				    c = K_HOME;
 				break;
-	    case K_XEND:
-	    case K_ZEND:	if (mod_mask == MOD_MASK_SHIFT)
+		case K_XEND:
+		case K_ZEND:	if (mod_mask == MOD_MASK_SHIFT)
 				{
 				    c = K_S_END;
 				    mod_mask = 0;
@@ -1726,45 +1727,45 @@ vgetc(void)
 				    c = K_END;
 				break;
 
-	    case K_XUP:		c = K_UP; break;
-	    case K_XDOWN:	c = K_DOWN; break;
-	    case K_XLEFT:	c = K_LEFT; break;
-	    case K_XRIGHT:	c = K_RIGHT; break;
-	}
-
-	/* For a multi-byte character get all the bytes and return the
-	 * converted character.
-	 * Note: This will loop until enough bytes are received!
-	 */
-	if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
-	{
-	    ++no_mapping;
-	    buf[0] = c;
-	    for (i = 1; i < n; ++i)
-	    {
-		buf[i] = vgetorpeek(TRUE);
-		if (buf[i] == K_SPECIAL
-#ifdef FEAT_GUI
-			|| buf[i] == CSI
-#endif
-			)
-		{
-		    /* Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER sequence,
-		     * which represents a K_SPECIAL (0x80),
-		     * or a CSI - KS_EXTRA - KE_CSI sequence, which represents
-		     * a CSI (0x9B),
-		     * of a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI too. */
-		    c = vgetorpeek(TRUE);
-		    if (vgetorpeek(TRUE) == (int)KE_CSI && c == KS_EXTRA)
-			buf[i] = CSI;
-		}
+		case K_XUP:	c = K_UP; break;
+		case K_XDOWN:	c = K_DOWN; break;
+		case K_XLEFT:	c = K_LEFT; break;
+		case K_XRIGHT:	c = K_RIGHT; break;
 	    }
-	    --no_mapping;
-	    c = (*mb_ptr2char)(buf);
-	}
 
-	break;
-      }
+	    // For a multi-byte character get all the bytes and return the
+	    // converted character.
+	    // Note: This will loop until enough bytes are received!
+	    if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
+	    {
+		++no_mapping;
+		buf[0] = c;
+		for (i = 1; i < n; ++i)
+		{
+		    buf[i] = vgetorpeek(TRUE);
+		    if (buf[i] == K_SPECIAL
+#ifdef FEAT_GUI
+			    || buf[i] == CSI
+#endif
+			    )
+		    {
+			// Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER
+			// sequence, which represents a K_SPECIAL (0x80),
+			// or a CSI - KS_EXTRA - KE_CSI sequence, which
+			// represents a CSI (0x9B),
+			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
+			// too.
+			c = vgetorpeek(TRUE);
+			if (vgetorpeek(TRUE) == (int)KE_CSI && c == KS_EXTRA)
+			    buf[i] = CSI;
+		    }
+		}
+		--no_mapping;
+		c = (*mb_ptr2char)(buf);
+	    }
+
+	    break;
+	}
     }
 
 #ifdef FEAT_EVAL
@@ -2912,6 +2913,17 @@ vgetorpeek(int advance)
     if (gui.in_use && shape_changed)
 	gui_update_cursor(TRUE, FALSE);
 #endif
+    if (timedout && c == ESC)
+    {
+	char_u nop_buf[3];
+
+	// When recording there will be no timeout.  Add a <Nop> after the ESC
+	// to avoid that it forms a key code with following characters.
+	nop_buf[0] = K_SPECIAL;
+	nop_buf[1] = KS_EXTRA;
+	nop_buf[2] = KE_NOP;
+	gotchars(nop_buf, 3);
+    }
 
     --vgetc_busy;
 

@@ -1786,7 +1786,6 @@ term_check_timers(int next_due_arg, proftime_T *now)
     static void
 set_terminal_mode(term_T *term, int normal_mode)
 {
-ch_log(NULL, "set_terminal_mode(): %d", normal_mode);
     term->tl_normal_mode = normal_mode;
     if (!normal_mode)
 	handle_postponed_scrollback(term);
@@ -2854,7 +2853,6 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	// must not change it. Postpone adding the scrollback lines.
 	gap = &term->tl_scrollback_postponed;
 	update_buffer = FALSE;
-ch_log(NULL, "handle_pushline(): add to postponed");
     }
     else
     {
@@ -2863,7 +2861,6 @@ ch_log(NULL, "handle_pushline(): add to postponed");
 	cleanup_scrollback(term);
 	gap = &term->tl_scrollback;
 	update_buffer = TRUE;
-ch_log(NULL, "handle_pushline(): add to window");
     }
 
     limit_scrollback(term, gap, update_buffer);
@@ -2952,7 +2949,10 @@ handle_postponed_scrollback(term_T *term)
 {
     int i;
 
-ch_log(NULL, "Moving postponed scrollback to scrollback");
+    if (term->tl_scrollback_postponed.ga_len == 0)
+	return;
+    ch_log(NULL, "Moving postponed scrollback to scrollback");
+
     // First remove the lines that were appended before, the pushed lines go
     // above it.
     cleanup_scrollback(term);

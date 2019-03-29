@@ -846,7 +846,7 @@ NOTE: 1つの検索コマンドだけ大文字小文字の区別をやめたいならば、フレーズに \c
   6. ":set xxx" とタイプするとオプション "xxx" が設定される。
 	'ic' 'ignorecase'	検索時に大文字小文字の区別しない
 	'is' 'incsearch'	検索フレーズに部分マッチしている部分を表示する
-	'hls' 'hlsearch'	マッチするすべを強調表示する
+	'hls' 'hlsearch'	マッチするすべてを強調表示する
      長い方、短い方、どちらのオプション名でも使用できます。
 
   7. オプションを無効にするには "no" を付与します:  :set noic
@@ -969,8 +969,9 @@ NOTE: 補完は多くのコマンドで動作します。そして CTRL-D と <TAB> 押してみてくだ
 
   Modified for Vim by Bram Moolenaar.
 
-  日本語訳  松本 泰弘  <mattn.jp@gmail.com>
-  監修      村岡 太郎  <koron.kaoriya@gmail.com>
+  日本語訳  松本 泰弘    <mattn.jp@gmail.com>
+            vim-jpチーム <https://github.com/vim-jp/lang-ja>
+  監修      村岡 太郎    <koron.kaoriya@gmail.com>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  vi:set ts=8 sts=4 sw=4 tw=78:

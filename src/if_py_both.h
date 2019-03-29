@@ -4392,7 +4392,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == curbuf)
+	    if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+		// Using an existing window for the buffer, adjust the cursor
+		// position.
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
 	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
@@ -4642,7 +4645,10 @@ SetBufferLineList(
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curbuf)
+	if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+	    // Using an existing window for the buffer, adjust the cursor
+	    // position.
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */

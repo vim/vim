@@ -1,5 +1,7 @@
 " Test for various Normal mode commands
 
+source shared.vim
+
 func Setup_NewWindow()
   10new
   call setline(1, range(1,100))
@@ -2541,4 +2543,19 @@ func Test_nv_hat_count()
   call assert_equal('Xbar', fnamemodify(bufname('%'), ':t'))
 
   %bwipeout!
+endfunc
+
+func Test_message_when_using_ctrl_c()
+  " Make sure no buffers are changed.
+  %bwipe!
+
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa  and press <Enter> to exit Vim", Screenline(&lines))
+
+  new
+  cal setline(1, 'hi!')
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa!  and press <Enter> to abandon all changes and exit Vim", Screenline(&lines))
+
+  bwipe!
 endfunc

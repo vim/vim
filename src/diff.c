@@ -866,7 +866,11 @@ theend:
     int
 diff_internal(void)
 {
-    return (diff_flags & DIFF_INTERNAL) != 0 && *p_dex == NUL;
+    return (diff_flags & DIFF_INTERNAL) != 0
+#ifdef FEAT_EVAL
+	&& *p_dex == NUL
+#endif
+	;
 }
 
 /*

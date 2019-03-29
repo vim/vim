@@ -193,8 +193,8 @@
 #define SHM_WRI		'w'		/* "[w]" instead of "written" */
 #define SHM_A		"rmfixlnw"	/* represented by 'a' flag */
 #define SHM_WRITE	'W'		/* don't use "written" at all */
-#define SHM_TRUNC	't'		/* trunctate file messages */
-#define SHM_TRUNCALL	'T'		/* trunctate all messages */
+#define SHM_TRUNC	't'		/* truncate file messages */
+#define SHM_TRUNCALL	'T'		/* truncate all messages */
 #define SHM_OVER	'o'		/* overwrite file messages */
 #define SHM_OVERALL	'O'		/* overwrite more messages */
 #define SHM_SEARCH	's'		/* no search hit bottom messages */

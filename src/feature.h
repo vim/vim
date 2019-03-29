@@ -313,12 +313,6 @@
 #endif
 
 /*
- * +tag_any_white	Allow any white space to separate the fields in a tags
- *			file.  When not defined, only a TAB is allowed.
- */
-/* #define FEAT_TAG_ANYWHITE */
-
-/*
  * +cscope		Unix only: Cscope support.
  */
 #if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
@@ -1026,9 +1020,6 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_URXVT
 # endif
-# ifdef FEAT_BIG
-#  define FEAT_MOUSE_SGR
-# endif
 # if defined(FEAT_NORMAL) && defined(MSWIN)
 #  define DOS_MOUSE
 # endif
@@ -1057,11 +1048,6 @@
 # define FEAT_MOUSE_XTERM
 #endif
 
-/* sgr is a small variation of mouse_xterm, and shares its code */
-#if defined(FEAT_MOUSE_SGR) && !defined(FEAT_MOUSE_XTERM)
-# define FEAT_MOUSE_XTERM
-#endif
-
 /* Define FEAT_MOUSE when any of the above is defined or FEAT_GUI. */
 #if !defined(FEAT_MOUSE_TTY) \
 	&& (defined(FEAT_MOUSE_XTERM) \
@@ -1072,8 +1058,7 @@
 	    || defined(FEAT_MOUSE_JSB) \
 	    || defined(FEAT_MOUSE_PTERM) \
 	    || defined(FEAT_SYSMOUSE) \
-	    || defined(FEAT_MOUSE_URXVT) \
-	    || defined(FEAT_MOUSE_SGR))
+	    || defined(FEAT_MOUSE_URXVT))
 # define FEAT_MOUSE_TTY		/* include non-GUI mouse support */
 #endif
 #if !defined(FEAT_MOUSE) && (defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI))

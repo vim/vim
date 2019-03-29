@@ -113,6 +113,7 @@ static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_complete(typval_T *argvars, typval_T *rettv);
 static void f_complete_add(typval_T *argvars, typval_T *rettv);
 static void f_complete_check(typval_T *argvars, typval_T *rettv);
+static void f_complete_info(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
@@ -338,10 +339,15 @@ static void f_reverse(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_round(typval_T *argvars, typval_T *rettv);
 #endif
+#ifdef FEAT_RUBY
+static void f_rubyeval(typval_T *argvars, typval_T *rettv);
+#endif
 static void f_screenattr(typval_T *argvars, typval_T *rettv);
 static void f_screenchar(typval_T *argvars, typval_T *rettv);
+static void f_screenchars(typval_T *argvars, typval_T *rettv);
 static void f_screencol(typval_T *argvars, typval_T *rettv);
 static void f_screenrow(typval_T *argvars, typval_T *rettv);
+static void f_screenstring(typval_T *argvars, typval_T *rettv);
 static void f_search(typval_T *argvars, typval_T *rettv);
 static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
@@ -428,6 +434,7 @@ static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
 static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
+static void f_test_refcount(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 static void f_test_null_blob(typval_T *argvars, typval_T *rettv);
@@ -589,6 +596,7 @@ static struct fst
     {"complete",	2, 2, f_complete},
     {"complete_add",	1, 1, f_complete_add},
     {"complete_check",	0, 0, f_complete_check},
+    {"complete_info",	0, 1, f_complete_info},
 #endif
     {"confirm",		1, 4, f_confirm},
     {"copy",		1, 1, f_copy},
@@ -788,7 +796,7 @@ static struct fst
     {"prop_add",	3, 3, f_prop_add},
     {"prop_clear",	1, 3, f_prop_clear},
     {"prop_list",	1, 2, f_prop_list},
-    {"prop_remove",	2, 3, f_prop_remove},
+    {"prop_remove",	1, 3, f_prop_remove},
     {"prop_type_add",	2, 2, f_prop_type_add},
     {"prop_type_change", 2, 2, f_prop_type_change},
     {"prop_type_delete", 1, 2, f_prop_type_delete},
@@ -828,10 +836,15 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"round",		1, 1, f_round},
 #endif
+#ifdef FEAT_RUBY
+    {"rubyeval",	1, 1, f_rubyeval},
+#endif
     {"screenattr",	2, 2, f_screenattr},
     {"screenchar",	2, 2, f_screenchar},
+    {"screenchars",	2, 2, f_screenchars},
     {"screencol",	0, 0, f_screencol},
     {"screenrow",	0, 0, f_screenrow},
+    {"screenstring",	2, 2, f_screenstring},
     {"search",		1, 4, f_search},
     {"searchdecl",	1, 3, f_searchdecl},
     {"searchpair",	3, 7, f_searchpair},
@@ -952,7 +965,7 @@ static struct fst
     {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
-    {"test_null_blob", 0, 0, f_test_null_blob},
+    {"test_null_blob",	0, 0, f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, f_test_null_channel},
 #endif
@@ -964,7 +977,8 @@ static struct fst
     {"test_null_partial", 0, 0, f_test_null_partial},
     {"test_null_string", 0, 0, f_test_null_string},
     {"test_option_not_set", 1, 1, f_test_option_not_set},
-    {"test_override",    2, 2, f_test_override},
+    {"test_override",	2, 2, f_test_override},
+    {"test_refcount",	1, 1, f_test_refcount},
 #ifdef FEAT_GUI
     {"test_scrollbar",	3, 3, f_test_scrollbar},
 #endif
@@ -2451,7 +2465,7 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 
 	if (utf8)
-	    rettv->vval.v_number = (*utf_ptr2char)(tv_get_string(&argvars[0]));
+	    rettv->vval.v_number = utf_ptr2char(tv_get_string(&argvars[0]));
 	else
 	    rettv->vval.v_number = (*mb_ptr2char)(tv_get_string(&argvars[0]));
     }
@@ -2591,6 +2605,29 @@ f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
     ins_compl_check_keys(0, TRUE);
     rettv->vval.v_number = compl_interrupted;
     RedrawingDisabled = saved;
+}
+
+/*
+ * "complete_info()" function
+ */
+    static void
+f_complete_info(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*what_list = NULL;
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[0].v_type != VAR_LIST)
+	{
+	    emsg(_(e_listreq));
+	    return;
+	}
+	what_list = argvars[0].vval.v_list;
+    }
+    get_complete_info(what_list, rettv->vval.v_dict);
 }
 #endif
 
@@ -4811,6 +4848,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
     int			error = FALSE;
+    int			save_reg_executing = reg_executing;
 
 #ifdef MESSAGE_QUEUE
     // vpeekc() used to check for messages, but that caused problems, invoking
@@ -4845,6 +4883,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
     }
     --no_mapping;
     --allow_keys;
+    reg_executing = save_reg_executing;
 
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
@@ -5472,9 +5511,23 @@ getpos_both(
 							      (varnumber_T)0);
 	if (getcurpos)
 	{
+	    int	    save_set_curswant = curwin->w_set_curswant;
+	    colnr_T save_curswant = curwin->w_curswant;
+	    colnr_T save_virtcol = curwin->w_virtcol;
+
 	    update_curswant();
 	    list_append_number(l, curwin->w_curswant == MAXCOL ?
 		    (varnumber_T)MAXCOL : (varnumber_T)curwin->w_curswant + 1);
+
+	    // Do not change "curswant", as it is unexpected that a get
+	    // function has a side effect.
+	    if (save_set_curswant)
+	    {
+		curwin->w_set_curswant = save_set_curswant;
+		curwin->w_curswant = save_curswant;
+		curwin->w_virtcol = save_virtcol;
+		curwin->w_valid &= ~VALID_VIRTCOL;
+	    }
 	}
     }
     else
@@ -5762,6 +5815,8 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict_add_number(dict, "winid", wp->w_id);
     dict_add_number(dict, "height", wp->w_height);
     dict_add_number(dict, "winrow", wp->w_winrow + 1);
+    dict_add_number(dict, "topline", wp->w_topline);
+    dict_add_number(dict, "botline", wp->w_botline - 1);
 #ifdef FEAT_MENU
     dict_add_number(dict, "winbar", wp->w_winbar_height);
 #endif
@@ -6396,7 +6451,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 # ifdef FEAT_MOUSE_PTERM
 	"mouse_pterm",
 # endif
-# ifdef FEAT_MOUSE_SGR
+# ifdef FEAT_MOUSE_XTERM
 	"mouse_sgr",
 # endif
 # ifdef FEAT_SYSMOUSE
@@ -6514,9 +6569,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_TAG_OLDSTATIC
 	"tag_old_static",
-#endif
-#ifdef FEAT_TAG_ANYWHITE
-	"tag_any_white",
 #endif
 #ifdef FEAT_TCL
 # ifndef DYNAMIC_TCL
@@ -8701,7 +8753,7 @@ f_nr2char(typval_T *argvars, typval_T *rettv)
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 	if (utf8)
-	    buf[(*utf_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
+	    buf[utf_char2bytes((int)tv_get_number(&argvars[0]), buf)] = NUL;
 	else
 	    buf[(*mb_char2bytes)((int)tv_get_number(&argvars[0]), buf)] = NUL;
     }
@@ -10334,6 +10386,21 @@ f_round(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
+#ifdef FEAT_RUBY
+/*
+ * "rubyeval()" function
+ */
+    static void
+f_rubyeval(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = tv_get_string_buf(&argvars[0], buf);
+    do_rubyeval(str, rettv);
+}
+#endif
+
 /*
  * "screenattr()" function
  */
@@ -10367,8 +10434,7 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
-    if (row < 0 || row >= screen_Rows
-	    || col < 0 || col >= screen_Columns)
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
 	c = -1;
     else
     {
@@ -10379,6 +10445,39 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
 	    c = ScreenLines[off];
     }
     rettv->vval.v_number = c;
+}
+
+/*
+ * "screenchars()" function
+ */
+    static void
+f_screenchars(typval_T *argvars, typval_T *rettv)
+{
+    int		row;
+    int		col;
+    int		off;
+    int		c;
+    int		i;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
+    col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
+	return;
+
+    off = LineOffset[row] + col;
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
+	c = ScreenLinesUC[off];
+    else
+	c = ScreenLines[off];
+    list_append_number(rettv->vval.v_list, (varnumber_T)c);
+
+    if (enc_utf8)
+
+	for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
+	    list_append_number(rettv->vval.v_list,
+				       (varnumber_T)ScreenLinesC[i][off]);
 }
 
 /*
@@ -10399,6 +10498,43 @@ f_screencol(typval_T *argvars UNUSED, typval_T *rettv)
 f_screenrow(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = screen_screenrow() + 1;
+}
+
+/*
+ * "screenstring()" function
+ */
+    static void
+f_screenstring(typval_T *argvars, typval_T *rettv)
+{
+    int		row;
+    int		col;
+    int		off;
+    int		c;
+    int		i;
+    char_u	buf[MB_MAXBYTES + 1];
+    int		buflen = 0;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+    row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
+    col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
+	return;
+
+    off = LineOffset[row] + col;
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
+	c = ScreenLinesUC[off];
+    else
+	c = ScreenLines[off];
+    buflen += mb_char2bytes(c, buf);
+
+    if (enc_utf8)
+	for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
+	    buflen += mb_char2bytes(ScreenLinesC[i][off], buf + buflen);
+
+    buf[buflen] = NUL;
+    rettv->vval.v_string = vim_strsave(buf);
 }
 
 /*
@@ -11647,7 +11783,7 @@ f_sign_jump(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;
@@ -11699,7 +11835,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    // Sign identifer
+    // Sign identifier
     sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
     if (notanum)
 	return;
@@ -13829,6 +13965,67 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	else
 	    semsg(_(e_invarg2), name);
     }
+}
+
+/*
+ * "test_refcount({expr})" function
+ */
+    static void
+f_test_refcount(typval_T *argvars, typval_T *rettv)
+{
+    int retval = -1;
+
+    switch (argvars[0].v_type)
+    {
+	case VAR_UNKNOWN:
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+	case VAR_SPECIAL:
+	case VAR_STRING:
+	    break;
+	case VAR_JOB:
+#ifdef FEAT_JOB_CHANNEL
+	    if (argvars[0].vval.v_job != NULL)
+		retval = argvars[0].vval.v_job->jv_refcount - 1;
+#endif
+	    break;
+	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
+	    if (argvars[0].vval.v_channel != NULL)
+		retval = argvars[0].vval.v_channel->ch_refcount - 1;
+#endif
+	    break;
+	case VAR_FUNC:
+	    if (argvars[0].vval.v_string != NULL)
+	    {
+		ufunc_T *fp;
+
+		fp = find_func(argvars[0].vval.v_string);
+		if (fp != NULL)
+		    retval = fp->uf_refcount;
+	    }
+	    break;
+	case VAR_PARTIAL:
+	    if (argvars[0].vval.v_partial != NULL)
+		retval = argvars[0].vval.v_partial->pt_refcount - 1;
+	    break;
+	case VAR_BLOB:
+	    if (argvars[0].vval.v_blob != NULL)
+		retval = argvars[0].vval.v_blob->bv_refcount - 1;
+	    break;
+	case VAR_LIST:
+	    if (argvars[0].vval.v_list != NULL)
+		retval = argvars[0].vval.v_list->lv_refcount - 1;
+	    break;
+	case VAR_DICT:
+	    if (argvars[0].vval.v_dict != NULL)
+		retval = argvars[0].vval.v_dict->dv_refcount - 1;
+	    break;
+    }
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = retval;
+
 }
 
 /*

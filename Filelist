@@ -9,10 +9,9 @@ SRC_ALL =	\
 		appveyor.yml \
 		ci/appveyor.bat \
 		src/Make_all.mak \
-		src/README.txt \
+		src/README.md \
 		src/alloc.h \
 		src/arabic.c \
-		src/arabic.h \
 		src/ascii.h \
 		src/autocmd.c \
 		src/beval.c \

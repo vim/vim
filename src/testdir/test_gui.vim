@@ -707,6 +707,21 @@ func Test_scrollbars()
   bwipe!
 endfunc
 
+func Test_menu()
+  " Check Help menu exists
+  let help_menu = execute('menu Help')
+  call assert_match('Overview', help_menu)
+
+  " Check Help menu works
+  emenu Help.Overview
+  call assert_equal('help', &buftype)
+  close
+
+  " Check deleting menu doesn't cause trouble.
+  aunmenu Help
+  call assert_fails('menu Help', 'E329:')
+endfunc
+
 func Test_set_guipty()
   let guipty_saved = &guipty
 
@@ -718,6 +733,21 @@ func Test_set_guipty()
   call assert_equal(0, &guipty)
 
   let &guipty = guipty_saved
+endfunc
+
+func Test_encoding_conversion()
+  " GTK supports conversion between 'encoding' and "utf-8"
+  if has('gui_gtk')
+    let encoding_saved = &encoding
+    set encoding=latin1
+
+    " would be nice if we could take a screenshot
+    intro
+    " sets the window title
+    edit SomeFile
+
+    let &encoding = encoding_saved
+  endif
 endfunc
 
 func Test_shell_command()

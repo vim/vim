@@ -2228,7 +2228,7 @@ regatom(int *flagp)
 				  default:  i = -1; break;
 			      }
 
-			      if (i < 0)
+			      if (i < 0 || i > INT_MAX)
 				  EMSG2_RET_NULL(
 					_("E678: Invalid character after %s%%[dxouU]"),
 					reg_magic == MAGIC_ALL);
@@ -2785,7 +2785,7 @@ reginsert_nr(int op, long val, char_u *opnd)
     *place++ = op;
     *place++ = NUL;
     *place++ = NUL;
-    place = re_put_long(place, (long_u)val);
+    re_put_long(place, (long_u)val);
 }
 
 /*
@@ -3293,7 +3293,7 @@ coll_get_char(void)
 	case 'u': nr = gethexchrs(4); break;
 	case 'U': nr = gethexchrs(8); break;
     }
-    if (nr < 0)
+    if (nr < 0 || nr > INT_MAX)
     {
 	/* If getting the number fails be backwards compatible: the character
 	 * is a backslash. */
@@ -6457,7 +6457,7 @@ regdump(char_u *pattern, bt_regprog_T *r)
 	}
 	else if (op == RE_LNUM || op == RE_COL || op == RE_VCOL)
 	{
-	    /* one int plus comperator */
+	    /* one int plus comparator */
 	    fprintf(f, " count %ld", OPERAND_MIN(s));
 	    s += 5;
 	}
@@ -7784,9 +7784,10 @@ reg_submatch(int no)
 	    if (lnum < 0 || rsm.sm_mmatch->endpos[no].lnum < 0)
 		return NULL;
 
-	    s = reg_getline_submatch(lnum) + rsm.sm_mmatch->startpos[no].col;
-	    if (s == NULL)  /* anti-crash check, cannot happen? */
+	    s = reg_getline_submatch(lnum);
+	    if (s == NULL)  // anti-crash check, cannot happen?
 		break;
+	    s += rsm.sm_mmatch->startpos[no].col;
 	    if (rsm.sm_mmatch->endpos[no].lnum == lnum)
 	    {
 		/* Within one line: take form start to end col. */

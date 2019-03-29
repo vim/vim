@@ -2322,10 +2322,7 @@ failed:
 	vim_free(fenc);
 #ifdef USE_ICONV
     if (iconv_fd != (iconv_t)-1)
-    {
 	iconv_close(iconv_fd);
-	iconv_fd = (iconv_t)-1;
-    }
 #endif
 
     if (!read_buffer && !read_stdin)

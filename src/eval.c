@@ -253,6 +253,39 @@ static char_u *find_option_end(char_u **arg, int *opt_flags);
 /* for VIM_VERSION_ defines */
 #include "version.h"
 
+/*
+ * Return "n1" divided by "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_divide(varnumber_T n1, varnumber_T n2)
+{
+    varnumber_T	result;
+
+    if (n2 == 0)	// give an error message?
+    {
+	if (n1 == 0)
+	    result = VARNUM_MIN; // similar to NaN
+	else if (n1 < 0)
+	    result = -VARNUM_MAX;
+	else
+	    result = VARNUM_MAX;
+    }
+    else
+	result = n1 / n2;
+
+    return result;
+}
+
+/*
+ * Return "n1" modulus "n2", taking care of dividing by zero.
+ */
+	static varnumber_T
+num_modulus(varnumber_T n1, varnumber_T n2)
+{
+    // Give an error when n2 is 0?
+    return (n2 == 0) ? 0 : (n1 % n2);
+}
+
 
 #if defined(EBCDIC) || defined(PROTO)
 /*
@@ -1758,8 +1791,8 @@ ex_let_one(
 			    case '+': n = numval + n; break;
 			    case '-': n = numval - n; break;
 			    case '*': n = numval * n; break;
-			    case '/': n = numval / n; break;
-			    case '%': n = numval % n; break;
+			    case '/': n = (long)num_divide(numval, n); break;
+			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
 		    else if (opt_type == 0 && stringval != NULL) // string
@@ -2105,6 +2138,7 @@ get_lval(
 			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 		{
 		    semsg(_(e_illvar), name);
+		    clear_tv(&var1);
 		    return NULL;
 		}
 
@@ -2174,6 +2208,7 @@ get_lval(
 	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
+	    break;
 	}
 	else
 	{
@@ -2538,8 +2573,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			    case '+': n += tv_get_number(tv2); break;
 			    case '-': n -= tv_get_number(tv2); break;
 			    case '*': n *= tv_get_number(tv2); break;
-			    case '/': n /= tv_get_number(tv2); break;
-			    case '%': n %= tv_get_number(tv2); break;
+			    case '/': n = num_divide(n, tv_get_number(tv2)); break;
+			    case '%': n = num_modulus(n, tv_get_number(tv2)); break;
 			}
 			clear_tv(tv1);
 			tv1->v_type = VAR_NUMBER;
@@ -4113,26 +4148,10 @@ eval6(
 		if (op == '*')
 		    n1 = n1 * n2;
 		else if (op == '/')
-		{
-		    if (n2 == 0)	/* give an error message? */
-		    {
-			if (n1 == 0)
-			    n1 = VARNUM_MIN; /* similar to NaN */
-			else if (n1 < 0)
-			    n1 = -VARNUM_MAX;
-			else
-			    n1 = VARNUM_MAX;
-		    }
-		    else
-			n1 = n1 / n2;
-		}
+		    n1 = num_divide(n1, n2);
 		else
-		{
-		    if (n2 == 0)	/* give an error message? */
-			n1 = 0;
-		    else
-			n1 = n1 % n2;
-		}
+		    n1 = num_modulus(n1, n2);
+
 		rettv->v_type = VAR_NUMBER;
 		rettv->vval.v_number = n1;
 	    }
@@ -8525,7 +8544,7 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg = did_emsg;
+    int		save_did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -8533,7 +8552,6 @@ ex_execute(exarg_T *eap)
 	++emsg_skip;
     while (*arg != NUL && *arg != '|' && *arg != '\n')
     {
-	p = arg;
 	ret = eval1_emsg(&arg, &rettv, !eap->skip);
 	if (ret == FAIL)
 	    break;
@@ -9201,7 +9219,9 @@ last_set_msg(sctx_T script_ctx)
     }
 }
 
-/* reset v:option_new, v:option_old and v:option_type */
+/*
+ * Reset v:option_new, v:option_old and v:option_type.
+ */
     void
 reset_v_option_vars(void)
 {

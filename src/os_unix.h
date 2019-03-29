@@ -33,7 +33,7 @@
 # include <stdlib.h>
 #endif
 
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+#ifdef __CYGWIN__
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO
 

@@ -2163,11 +2163,9 @@ free_buf_options(
     clear_string_option(&buf->b_p_isk);
 #ifdef FEAT_VARTABS
     clear_string_option(&buf->b_p_vsts);
-    if (buf->b_p_vsts_nopaste)
-	vim_free(buf->b_p_vsts_nopaste);
+    vim_free(buf->b_p_vsts_nopaste);
     buf->b_p_vsts_nopaste = NULL;
-    if (buf->b_p_vsts_array)
-	vim_free(buf->b_p_vsts_array);
+    vim_free(buf->b_p_vsts_array);
     buf->b_p_vsts_array = NULL;
     clear_string_option(&buf->b_p_vts);
     VIM_CLEAR(buf->b_p_vts_array);
@@ -5500,7 +5498,7 @@ chk_modeline(
 		current_sctx.sc_lnum = 0;
 #endif
 		// Make sure no risky things are executed as a side effect.
-		++secure;
+		secure = 1;
 
 		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 

@@ -426,7 +426,7 @@ EXTERN int	mouse_dragging INIT(= 0);	/* extending Visual area with
 # if defined(FEAT_MOUSE_DEC)
 /*
  * When the DEC mouse has been pressed but not yet released we enable
- * automatic querys for the mouse position.
+ * automatic queries for the mouse position.
  */
 EXTERN int	WantQueryMouse INIT(= FALSE);
 # endif
@@ -1651,11 +1651,4 @@ EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
-#endif
-
-/*
- * Optional Arabic support. Include it here, so EXTERN and INIT are defined.
- */
-#ifdef FEAT_ARABIC
-# include "arabic.h"
 #endif

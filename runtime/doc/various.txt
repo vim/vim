@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Jan 17
+*various.txt*   For Vim version 8.1.  Last change: 2019 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -443,7 +443,7 @@ N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
 T  *+tag_binary*	binary searching in tags file |tag-binary-search|
 N  *+tag_old_static*	old method for static tags |tag-old-static|
-m  *+tag_any_white*	any white space allowed in tags file |tag-any-white|
+m  *+tag_any_white*	Removed; was to allow any white space in tags files
 m  *+tcl*		Tcl interface |tcl|
 m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
 m  *+terminal*		Support for terminal window |terminal|
