@@ -1,14 +1,16 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an enhancement for Vim
 title: ''
 labels: enhancement
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-(If it is related to runtime files, please discuss with the maintainer.)
+_Instructions: Replace the template text and remove irrelevant text (including this line)_
+
+**Is your feature request related something that is currently hard to do? Please describe.**
+A clear and concise description of what is hard to do. Ex. It is difficult to [...] when [...]
+(If it is related to runtime files, please check their header for where to discuss enhancements.)
 
 **Describe the solution you'd like**
 A clear and concise description of what you want to happen.
