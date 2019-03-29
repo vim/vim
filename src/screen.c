@@ -3896,7 +3896,19 @@ win_line(
 				*p_extra = '-';
 #ifdef FEAT_RIGHTLEFT
 			if (wp->w_p_rl)		    /* reverse line numbers */
-			    rl_mirror(extra);
+			{
+			    char_u	*p1, *p2;
+			    int		t;
+
+			    // like rl_mirror(), but keep the space at the end
+			    p2 = skiptowhite(extra) - 1;
+			    for (p1 = extra; p1 < p2; ++p1, --p2)
+			    {
+				t = *p1;
+				*p1 = *p2;
+				*p2 = t;
+			    }
+			}
 #endif
 			p_extra = extra;
 			c_extra = NUL;
