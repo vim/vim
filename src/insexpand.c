@@ -37,6 +37,26 @@ static char *ctrl_x_msgs[] =
     NULL,   // CTRL_X_EVAL doesn't use msg.
 };
 
+static char *ctrl_x_mode_names[] = {
+	"keyword",
+	"ctrl_x",
+	"unknown",	    // CTRL_X_SCROLL
+	"whole_line",
+	"files",
+	"tags",
+	"path_patterns",
+	"path_defines",
+	"unknown",	    // CTRL_X_FINISHED
+	"dictionary",
+	"thesaurus",
+	"cmdline",
+	"function",
+	"omni",
+	"spell",
+	NULL,		    // CTRL_X_LOCAL_MSG only used in "ctrl_x_msgs"
+	"eval"
+};
+
 static char e_hitend[] = N_("Hit end of paragraph");
 # ifdef FEAT_COMPL_FUNC
 static char e_complwin[] = N_("E839: Completion function changed window");
@@ -113,6 +133,7 @@ static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
 static char_u *find_line_end(char_u *ptr);
 static void ins_compl_free(void);
+static char_u *ins_compl_mode(void);
 static int  ins_compl_need_restart(void);
 static void ins_compl_new_leader(void);
 static int  ins_compl_len(void);
@@ -2093,11 +2114,11 @@ ins_compl_fixRedoBufForLeader(char_u *ptr_arg)
     static buf_T *
 ins_compl_next_buf(buf_T *buf, int flag)
 {
-    static win_T *wp;
+    static win_T *wp = NULL;
 
     if (flag == 'w')		// just windows
     {
-	if (buf == curbuf)	// first call for this flag/expansion
+	if (buf == curbuf || wp == NULL)  // first call for this flag/expansion
 	    wp = curwin;
 	while ((wp = (wp->w_next != NULL ? wp->w_next : firstwin)) != curwin
 		&& wp->w_buffer->b_scanned)
