@@ -344,8 +344,10 @@ static void f_rubyeval(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_screenattr(typval_T *argvars, typval_T *rettv);
 static void f_screenchar(typval_T *argvars, typval_T *rettv);
+static void f_screenchars(typval_T *argvars, typval_T *rettv);
 static void f_screencol(typval_T *argvars, typval_T *rettv);
 static void f_screenrow(typval_T *argvars, typval_T *rettv);
+static void f_screenstring(typval_T *argvars, typval_T *rettv);
 static void f_search(typval_T *argvars, typval_T *rettv);
 static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
@@ -839,8 +841,10 @@ static struct fst
 #endif
     {"screenattr",	2, 2, f_screenattr},
     {"screenchar",	2, 2, f_screenchar},
+    {"screenchars",	2, 2, f_screenchars},
     {"screencol",	0, 0, f_screencol},
     {"screenrow",	0, 0, f_screenrow},
+    {"screenstring",	2, 2, f_screenstring},
     {"search",		1, 4, f_search},
     {"searchdecl",	1, 3, f_searchdecl},
     {"searchpair",	3, 7, f_searchpair},
@@ -10430,8 +10434,7 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
 
     row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
     col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
-    if (row < 0 || row >= screen_Rows
-	    || col < 0 || col >= screen_Columns)
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
 	c = -1;
     else
     {
@@ -10442,6 +10445,39 @@ f_screenchar(typval_T *argvars, typval_T *rettv)
 	    c = ScreenLines[off];
     }
     rettv->vval.v_number = c;
+}
+
+/*
+ * "screenchars()" function
+ */
+    static void
+f_screenchars(typval_T *argvars, typval_T *rettv)
+{
+    int		row;
+    int		col;
+    int		off;
+    int		c;
+    int		i;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
+    col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
+	return;
+
+    off = LineOffset[row] + col;
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
+	c = ScreenLinesUC[off];
+    else
+	c = ScreenLines[off];
+    list_append_number(rettv->vval.v_list, (varnumber_T)c);
+
+    if (enc_utf8)
+
+	for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
+	    list_append_number(rettv->vval.v_list,
+				       (varnumber_T)ScreenLinesC[i][off]);
 }
 
 /*
@@ -10462,6 +10498,43 @@ f_screencol(typval_T *argvars UNUSED, typval_T *rettv)
 f_screenrow(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = screen_screenrow() + 1;
+}
+
+/*
+ * "screenstring()" function
+ */
+    static void
+f_screenstring(typval_T *argvars, typval_T *rettv)
+{
+    int		row;
+    int		col;
+    int		off;
+    int		c;
+    int		i;
+    char_u	buf[MB_MAXBYTES + 1];
+    int		buflen = 0;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+    row = (int)tv_get_number_chk(&argvars[0], NULL) - 1;
+    col = (int)tv_get_number_chk(&argvars[1], NULL) - 1;
+    if (row < 0 || row >= screen_Rows || col < 0 || col >= screen_Columns)
+	return;
+
+    off = LineOffset[row] + col;
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
+	c = ScreenLinesUC[off];
+    else
+	c = ScreenLines[off];
+    buflen += mb_char2bytes(c, buf);
+
+    if (enc_utf8)
+	for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
+	    buflen += mb_char2bytes(ScreenLinesC[i][off], buf + buflen);
+
+    buf[buflen] = NUL;
+    rettv->vval.v_string = vim_strsave(buf);
 }
 
 /*
