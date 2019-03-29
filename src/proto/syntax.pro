@@ -53,6 +53,8 @@ char_u *syn_id2name(int id);
 int syn_namen2id(char_u *linep, int len);
 int syn_check_group(char_u *pp, int len);
 int syn_id2attr(int hl_id);
+guicolor_T maybe_colormanip(guicolor_T sgp);
+int maybe_colormanip_index(int color);
 int syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp);
 void syn_id2cterm_bg(int hl_id, int *fgp, int *bgp);
 int syn_get_final_id(int hl_id);

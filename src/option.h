@@ -645,6 +645,7 @@ EXTERN char_u	*p_mzschemedll;	/* 'mzschemedll' */
 EXTERN char_u	*p_mzschemegcdll; /* 'mzschemegcdll' */
 # endif
 #endif
+EXTERN long	p_ns;		/* 'nightshift' */
 #if defined(MSWIN)
 EXTERN int	p_odev;		/* 'opendevice' */
 #endif

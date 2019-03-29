@@ -5620,6 +5620,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vim default value when 'compatible'
 	is reset.
 
+						    *'nightshift'* *'ns'*
+'nightshift' 'ns'	number  (default 0)
+			global
+			{not in Vi}
+	Set the color to night mode.  It cuts blue light and changes to a
+	relaxing color tone.  The numbers are specified in Kelvin, and around
+	6500 are primary colors. 6000-4500 is the practical range.  It is off
+	by 0.  No effect in 8 or 16 color mode.  256 colors, 24 bit color mode
+	only.
+
 							*'nrformats'* *'nf'*
 'nrformats' 'nf'	string	(default "bin,octal,hex",
 					   set to "bin,hex" in |defaults.vim|)

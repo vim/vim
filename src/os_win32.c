@@ -7850,7 +7850,8 @@ set_console_color_rgb(void)
 	ctermfg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	fg = ctermfg != -1 ? ctermtoxterm(ctermfg) : default_console_color_fg;
+	fg = ctermfg != -1 ? ctermtoxterm(ctermfg)
+				  : maybe_colormanip(default_console_color_fg);
 	cterm_normal_fg_gui_color = fg;
     }
     if (bg == INVALCOLOR)
@@ -7858,7 +7859,8 @@ set_console_color_rgb(void)
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	bg = ctermbg != -1 ? ctermtoxterm(ctermbg) : default_console_color_bg;
+	bg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+			          : maybe_colormanip(default_console_color_bg);
 	cterm_normal_bg_gui_color = bg;
     }
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);

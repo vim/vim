@@ -8693,13 +8693,14 @@ color_name2handle(char_u *name)
 	if (gui.in_use)
 #endif
 #ifdef FEAT_GUI
-	    return gui.norm_pixel;
+	    return maybe_colormanip(gui.norm_pixel);
 #endif
 #ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_fg_gui_color != INVALCOLOR)
-	    return cterm_normal_fg_gui_color;
+	    return maybe_colormanip(cterm_normal_fg_gui_color);
 	/* Guess that the foreground is black or white. */
-	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
+	return maybe_colormanip(GUI_GET_COLOR(
+			        (char_u *)(*p_bg == 'l' ? "black" : "white")));
 #endif
     }
     if (STRICMP(name, "bg") == 0 || STRICMP(name, "background") == 0)
@@ -8708,17 +8709,18 @@ color_name2handle(char_u *name)
 	if (gui.in_use)
 #endif
 #ifdef FEAT_GUI
-	    return gui.back_pixel;
+	    return maybe_colormanip(gui.back_pixel);
 #endif
 #ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_bg_gui_color != INVALCOLOR)
-	    return cterm_normal_bg_gui_color;
+	    return maybe_colormanip(cterm_normal_bg_gui_color);
 	/* Guess that the background is white or black. */
-	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
+	return maybe_colormanip(GUI_GET_COLOR(
+				(char_u *)(*p_bg == 'l' ? "white" : "black")));
 #endif
     }
 
-    return GUI_GET_COLOR(name);
+    return maybe_colormanip(GUI_GET_COLOR(name));
 }
 #endif
 
@@ -9518,9 +9520,9 @@ set_hl_attr(
     else
     {
 	at_en.ae_attr = sgp->sg_gui;
-	at_en.ae_u.gui.fg_color = sgp->sg_gui_fg;
-	at_en.ae_u.gui.bg_color = sgp->sg_gui_bg;
-	at_en.ae_u.gui.sp_color = sgp->sg_gui_sp;
+	at_en.ae_u.gui.fg_color = maybe_colormanip(sgp->sg_gui_fg);
+	at_en.ae_u.gui.bg_color = maybe_colormanip(sgp->sg_gui_bg);
+	at_en.ae_u.gui.sp_color = maybe_colormanip(sgp->sg_gui_sp);
 	at_en.ae_u.gui.font = sgp->sg_font;
 # ifdef FEAT_XFONTSET
 	at_en.ae_u.gui.fontset = sgp->sg_fontset;
@@ -9556,8 +9558,10 @@ set_hl_attr(
     else
     {
 	at_en.ae_attr = sgp->sg_cterm;
-	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
-	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
+	at_en.ae_u.cterm.fg_color =
+				  maybe_colormanip_index(sgp->sg_cterm_fg);
+	at_en.ae_u.cterm.bg_color =
+				  maybe_colormanip_index(sgp->sg_cterm_bg);
 # ifdef FEAT_TERMGUICOLORS
 #  ifdef MSWIN
 	{
@@ -9804,6 +9808,71 @@ syn_id2attr(int hl_id)
 }
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+# ifndef min_
+#  define min_(a, b) ((a) < (b) ? (a) : (b))
+# endif
+# ifndef max_
+#  define max_(a, b) ((a) > (b) ? (a) : (b))
+# endif
+/*
+ * Add color temperature.
+ */
+    guicolor_T
+maybe_colormanip(guicolor_T sgp)
+{
+    long k = p_ns;
+    long r, g, b, lr, lg, lb;
+
+    if (p_ns && sgp != INVALCOLOR)
+    {
+#ifdef FEAT_GUI_MSWIN
+	r = GetRValue(sgp);
+	g = GetGValue(sgp);
+	b = GetBValue(sgp);
+#else
+	r = (sgp >> 16) & 255;
+	g = (sgp >> 8) & 255;
+	b = sgp & 255;
+#endif
+
+	k = min_(max_(k, 1000), 40000) / 100;
+
+	lr = (k <= 66) ? 255 : min_(max_(329.69 * pow(k - 60, -0.13), 0), 255);
+	lg = (k <= 66) ? min_(max_(99.47 * log(k) - 161.11, 0), 255)
+			     : min_(max_(288.12 * pow(k - 60, -0.07), 0), 255);
+	lb = (k >= 66) ? 255 : (k <= 19) ? 0
+			   : min_(max_(138.51 * log(k - 10) - 305.04, 0), 255);
+
+	r = ((r * lr) / 256) & 255;
+	g = ((g * lg) / 256) & 255;
+	b = ((b * lb) / 256) & 255;
+
+	sgp = ((r << 16) | (g << 8) | b);
+#ifdef FEAT_GUI_MSWIN
+	sgp = (GetRValue(sgp) << 16) | (GetGValue(sgp) << 8) | GetBValue(sgp);
+#endif
+    }
+
+    return sgp;
+}
+
+/*
+ * Change to monochrome.
+ */
+    int
+maybe_colormanip_index(int color)
+{
+    char_u r, g, b, idx;
+
+    if (p_ns && color != 0)
+    {
+	cterm_color2rgb(color - 1, &r, &g, &b, &idx);
+	/* NTSC 24 gradations index  plus one */
+	return (((2 * r + 4 * g + b) / 7) * 24) / 256 + 232 + 1;
+    }
+    return color;
+}
+
 /*
  * Get the GUI colors and attributes for a group ID.
  * NOTE: the colors will be INVALCOLOR when not set, the color otherwise.
@@ -9816,8 +9885,8 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
     hl_id = syn_get_final_id(hl_id);
     sgp = &HL_TABLE()[hl_id - 1];	    /* index is ID minus one */
 
-    *fgp = sgp->sg_gui_fg;
-    *bgp = sgp->sg_gui_bg;
+    *fgp = maybe_colormanip(sgp->sg_gui_fg);
+    *bgp = maybe_colormanip(sgp->sg_gui_bg);
     return sgp->sg_gui;
 }
 #endif
@@ -9832,8 +9901,8 @@ syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 
     hl_id = syn_get_final_id(hl_id);
     sgp = &HL_TABLE()[hl_id - 1];	    /* index is ID minus one */
-    *fgp = sgp->sg_cterm_fg - 1;
-    *bgp = sgp->sg_cterm_bg - 1;
+    *fgp = maybe_colormanip_index(sgp->sg_cterm_fg) - 1;
+    *bgp = maybe_colormanip_index(sgp->sg_cterm_bg) - 1;
 }
 #endif
 

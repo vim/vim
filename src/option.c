@@ -1967,6 +1967,9 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)100L, (char_u *)100L} SCTX_INIT},
+    {"nightshift",  "ns",   P_NUM|P_VI_DEF,
+			    (char_u *)&p_ns, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"novice",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
@@ -9226,6 +9229,13 @@ set_num_option(
 		check_colorcolumn(wp);
 	}
 #endif
+    }
+
+    /* 'nightshift' */
+    else if (pp == &p_ns)
+    {
+	highlight_gui_started();
+	init_highlight(TRUE, FALSE);
     }
 
     /*
