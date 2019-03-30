@@ -2677,10 +2677,10 @@ winframe_remove(
 	    {
 		if (frp != NULL)
 		{
-		    if (frp->fr_win != NULL && !frp->fr_win->w_p_wfh)
+		    if (!frame_fixed_height(frp))
 		    {
 			frp2 = frp;
-			wp = frp->fr_win;
+			wp = frame2win(frp2);
 			break;
 		    }
 		    frp = frp->fr_prev;
@@ -2714,10 +2714,10 @@ winframe_remove(
 	    {
 		if (frp != NULL)
 		{
-		    if (frp->fr_win != NULL && !frp->fr_win->w_p_wfw)
+		    if (!frame_fixed_width(frp))
 		    {
 			frp2 = frp;
-			wp = frp->fr_win;
+			wp = frame2win(frp2);
 			break;
 		    }
 		    frp = frp->fr_prev;
