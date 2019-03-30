@@ -997,7 +997,7 @@ func Test_popup_complete_info_02()
   bwipe!
 endfunc
 
-func Test_MenuPopupChanged()
+func Test_CompleteChanged()
   new
   call setline(1, ['foo', 'bar', 'foobar', ''])
   set complete=. completeopt=noinsert,noselect,menuone
@@ -1008,7 +1008,7 @@ func Test_MenuPopupChanged()
   endfunction
   augroup AAAAA_Group
     au!
-    autocmd MenuPopupChanged * :call OnPumChange()
+    autocmd CompleteChanged * :call OnPumChange()
   augroup END
   call cursor(4, 1)
 

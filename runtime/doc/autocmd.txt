@@ -360,7 +360,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
-|MenuPopupChanged|	after popup menu changed, not fired on popup menu hide
+|CompleteChanged|	after popup menu changed, not fired on popup menu hide
 |CompleteDone|		after Insert mode completion is done
 
 |User|			to be used in combination with ":doautocmd"
@@ -573,7 +573,21 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
+CompleteChanged 					*CompleteChanged*
+				After each time popup menu changed, not fired
+				on popup menu hide, use |CompleteDone| for popup
+				menu hide.
 
+				Sets these |v:event| keys:
+				    completed_item
+				    height
+				    width
+				    row
+				    col
+				    size
+				    scrollbar
+
+				It is not allowed to change the text |textlock|.
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -848,21 +862,6 @@ MenuPopup			Just before showing the popup menu (under the
 					i	Insert
 					c	Command line
 					tl	Terminal
-MenuPopupChanged 					*MenuPopupChanged*
-				After each time popup menu changed, not fired
-				on popup menu hide, use |CompleteDone| for popup
-				menu hide.
-
-				Sets these |v:event| keys:
-				    completed_item
-				    height
-				    width
-				    row
-				    col
-				    size
-				    scrollbar
-
-				It is not allowed to change the text |textlock|.
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
@@ -888,7 +887,6 @@ OptionSet			After setting an option.  The pattern is
 
 				When using |:set| in the autocommand the event
 				is not triggered again.
-
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,

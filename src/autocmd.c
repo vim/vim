@@ -111,6 +111,7 @@ static struct event_name
     {"CmdUndefined",	EVENT_CMDUNDEFINED},
     {"ColorScheme",	EVENT_COLORSCHEME},
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
+    {"CompleteChanged",	EVENT_COMPLETECHANGED},
     {"CompleteDone",	EVENT_COMPLETEDONE},
     {"CursorHold",	EVENT_CURSORHOLD},
     {"CursorHoldI",	EVENT_CURSORHOLDI},
@@ -148,7 +149,6 @@ static struct event_name
     {"InsertLeave",	EVENT_INSERTLEAVE},
     {"InsertCharPre",	EVENT_INSERTCHARPRE},
     {"MenuPopup",	EVENT_MENUPOPUP},
-    {"MenuPopupChanged",EVENT_MENUPOPUPCHANGED},
     {"OptionSet",	EVENT_OPTIONSET},
     {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
@@ -1752,12 +1752,12 @@ has_textyankpost(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Return TRUE when there is a MenuPopupChanged autocommand defined.
+ * Return TRUE when there is a CompleteChanged autocommand defined.
  */
     int
-has_menupopupchanged(void)
+has_completechanged(void)
 {
-    return (first_autopat[(int)EVENT_MENUPOPUPCHANGED] != NULL);
+    return (first_autopat[(int)EVENT_COMPLETECHANGED] != NULL);
 }
 #endif
 

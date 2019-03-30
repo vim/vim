@@ -1129,7 +1129,7 @@ ins_compl_show_pum(void)
 	pum_display(compl_match_array, compl_match_arraysize, cur);
 	curwin->w_cursor.col = col;
 
-	if (!has_menupopupchanged() || recursive)
+	if (!has_completechanged() || recursive)
 	    return;
 	v_event = get_vim_var_dict(VV_EVENT);
 	if (cur < 0)
@@ -1144,7 +1144,7 @@ ins_compl_show_pum(void)
 
  	recursive = TRUE;
 	textlock++;
-	apply_autocmds(EVENT_MENUPOPUPCHANGED, NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
 	textlock--;
 	recursive = FALSE;
 
