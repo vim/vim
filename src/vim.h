@@ -1307,6 +1307,7 @@ enum auto_event
     EVENT_INSERTENTER,		// when entering Insert mode
     EVENT_INSERTLEAVE,		// when leaving Insert mode
     EVENT_MENUPOPUP,		// just before popup menu is displayed
+    EVENT_MENUPOPUPCHANGED,	// after popup menu changed
     EVENT_OPTIONSET,		// option was set
     EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
     EVENT_QUICKFIXCMDPRE,	// before :make, :grep etc.

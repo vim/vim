@@ -148,6 +148,7 @@ static struct event_name
     {"InsertLeave",	EVENT_INSERTLEAVE},
     {"InsertCharPre",	EVENT_INSERTCHARPRE},
     {"MenuPopup",	EVENT_MENUPOPUP},
+    {"MenuPopupChanged",EVENT_MENUPOPUPCHANGED},
     {"OptionSet",	EVENT_OPTIONSET},
     {"QuickFixCmdPost",	EVENT_QUICKFIXCMDPOST},
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
@@ -1746,6 +1747,17 @@ has_funcundefined(void)
 has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE when there is a MenuPopupChanged autocommand defined.
+ */
+    int
+has_menupopupchanged(void)
+{
+    return (first_autopat[(int)EVENT_MENUPOPUPCHANGED] != NULL);
 }
 #endif
 
