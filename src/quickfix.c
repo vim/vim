@@ -195,7 +195,7 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
  */
 #define GET_LOC_LIST(wp) (IS_LL_WINDOW(wp) ? wp->w_llist_ref : wp->w_llist)
 
-// Macro to loop through all items in a quickfix list
+// Macro to loop through all the items in a quickfix list
 // Quickfix item index starts from 1, so i below starts at 1
 #define FOR_ALL_QFL_ITEMS(qfl, qfp, i) \
 		    for (i = 1, qfp = qfl->qf_start; \
