@@ -4133,8 +4133,12 @@ win_line(
 				shl->endcol = tmp_col;
 			    shl->attr_cur = shl->attr;
 #ifdef FEAT_CONCEAL
-			    if (cur != NULL && syn_name2id((char_u *)"Conceal")
-							       == cur->hlg_id)
+			    // Match with the "Conceal" group results in hiding
+			    // the match.
+			    if (cur != NULL
+				    && shl != &search_hl
+				    && syn_name2id((char_u *)"Conceal")
+								== cur->hlg_id)
 			    {
 				has_match_conc =
 					     v == (long)shl->startcol ? 2 : 1;
@@ -5175,8 +5179,8 @@ win_line(
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-							conceal_cursor_line(wp) )
-		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
+						       conceal_cursor_line(wp))
+		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
