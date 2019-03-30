@@ -130,7 +130,7 @@ func Test_listchars_composing()
         \ ]
   redraw!
   call cursor(1, 1)
-  let got = ScreenLinesUtf8(1, virtcol('$'))
+  let got = ScreenLines(1, virtcol('$'))
   bw!
   call assert_equal(expected, got)
   let &encoding=oldencoding
