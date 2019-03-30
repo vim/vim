@@ -504,13 +504,16 @@ do_tag(
 		tagmatchname = vim_strsave(name);
 	    }
 
-	    if (type == DT_TAG || type == DT_SELECT || type == DT_JUMP
+	    if (type == DT_SELECT || type == DT_JUMP
 #if defined(FEAT_QUICKFIX)
 		|| type == DT_LTAG
 #endif
 		)
 		cur_match = MAXCOL - 1;
-	    max_num_matches = cur_match + 1;
+	    if (type == DT_TAG)
+		max_num_matches = MAXCOL;
+	    else
+		max_num_matches = cur_match + 1;
 
 	    /* when the argument starts with '/', use it as a regexp */
 	    if (!no_regexp && *name == '/')
@@ -583,7 +586,7 @@ do_tag(
 	    }
 	    else
 #endif
-	    if (type == DT_TAG)
+	    if (type == DT_TAG && *tag != NUL)
 		/*
 		 * If a count is supplied to the ":tag <name>" command, then
 		 * jump to count'th matching tag.
@@ -1591,7 +1594,7 @@ find_tags(
 #ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
 		ins_compl_check_keys(30, FALSE);
-	    if (got_int || compl_interrupted)
+	    if (got_int || ins_compl_interrupted())
 #else
 	    if (got_int)
 #endif

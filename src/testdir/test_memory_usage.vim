@@ -97,9 +97,11 @@ func Test_memory_func_capture_vargs()
   let after = s:monitor_memory_usage(vim.pid)
 
   " Estimate the limit of max usage as 2x initial usage.
-  call assert_inrange(before, 2 * before, after.max)
-  " In this case, garbage collecting is not needed.  The value might fluctuate
-  " a bit, allow for 3% tolerance.
+  " The lower limit can fluctuate a bit, use 98%.
+  call assert_inrange(before * 98 / 100, 2 * before, after.max)
+
+  " In this case, garbage collecting is not needed.
+  " The value might fluctuate a bit, allow for 3% tolerance.
   let lower = after.last * 97 / 100
   let upper = after.last * 103 / 100
   call assert_inrange(lower, upper, after.max)

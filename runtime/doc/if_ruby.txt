@@ -11,7 +11,8 @@ The Ruby Interface to Vim				*ruby* *Ruby*
 3. Vim::Buffer objects		|ruby-buffer|
 4. Vim::Window objects		|ruby-window|
 5. Global variables		|ruby-globals|
-6. Dynamic loading		|ruby-dynamic|
+6. rubyeval() Vim function	|ruby-rubyeval|
+7. Dynamic loading		|ruby-dynamic|
 
 {Vi does not have any of these commands}
 			*E266* *E267* *E268* *E269* *E270* *E271* *E272* *E273*
@@ -198,7 +199,16 @@ $curwin		The current window object.
 $curbuf		The current buffer object.
 
 ==============================================================================
-6. Dynamic loading					*ruby-dynamic*
+6. rubyeval() Vim function				*ruby-rubyeval*
+
+To facilitate bi-directional interface, you can use |rubyeval()| function to
+evaluate Ruby expressions and pass their values to Vim script.
+
+The Ruby value "true", "false" and "nil" are converted to v:true, v:false and
+v:null, respectively.
+
+==============================================================================
+7. Dynamic loading					*ruby-dynamic*
 
 On MS-Windows and Unix the Ruby library can be loaded dynamically.  The
 |:version| output then includes |+ruby/dyn|.

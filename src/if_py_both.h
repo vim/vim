@@ -1210,7 +1210,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
     if (!(paths = Vim_GetPaths(self)))
 	return NULL;
 
-    spec = PyObject_CallFunction(py_find_spec, "sNN", fullname, paths, target);
+    spec = PyObject_CallFunction(py_find_spec, "sOO", fullname, paths, target);
 
     Py_DECREF(paths);
 

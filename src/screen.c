@@ -123,7 +123,7 @@ static schar_T	*current_ScreenLine;
 
 static void win_update(win_T *wp);
 static void win_redr_status(win_T *wp, int ignore_pum);
-static void win_draw_end(win_T *wp, int c1, int c2, int row, int endrow, hlf_T hl);
+static void win_draw_end(win_T *wp, int c1, int c2, int draw_margin, int row, int endrow, hlf_T hl);
 #ifdef FEAT_FOLDING
 static void fold_line(win_T *wp, long fold_count, foldinfo_T *foldinfo, linenr_T lnum, int row);
 static void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
@@ -232,9 +232,7 @@ redraw_all_later(int type)
     win_T	*wp;
 
     FOR_ALL_WINDOWS(wp)
-    {
 	redraw_win_later(wp, type);
-    }
     // This may be needed when switching tabs.
     if (must_redraw < type)
 	must_redraw = type;
@@ -2217,7 +2215,7 @@ win_update(win_T *wp)
 	}
 	else
 	{
-	    win_draw_end(wp, '@', ' ', srow, wp->w_height, HLF_AT);
+	    win_draw_end(wp, '@', ' ', TRUE, srow, wp->w_height, HLF_AT);
 	    wp->w_botline = lnum;
 	}
     }
@@ -2231,16 +2229,14 @@ win_update(win_T *wp)
 	    j = diff_check_fill(wp, wp->w_botline);
 	    if (j > 0 && !wp->w_botfill)
 	    {
-		/*
-		 * Display filler lines at the end of the file
-		 */
+		// Display filler lines at the end of the file.
 		if (char2cells(fill_diff) > 1)
 		    i = '-';
 		else
 		    i = fill_diff;
 		if (row + j > wp->w_height)
 		    j = wp->w_height - row;
-		win_draw_end(wp, i, i, row, row + (int)j, HLF_DED);
+		win_draw_end(wp, i, i, TRUE, row, row + (int)j, HLF_DED);
 		row += j;
 	    }
 #endif
@@ -2248,9 +2244,9 @@ win_update(win_T *wp)
 	else if (dollar_vcol == -1)
 	    wp->w_botline = lnum;
 
-	/* make sure the rest of the screen is blank */
-	/* put '~'s on rows that aren't part of the file. */
-	win_draw_end(wp, '~', ' ', row, wp->w_height, HLF_EOB);
+	// Make sure the rest of the screen is blank
+	// put '~'s on rows that aren't part of the file.
+	win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
@@ -2305,113 +2301,97 @@ win_update(win_T *wp)
 }
 
 /*
- * Clear the rest of the window and mark the unused lines with "c1".  use "c2"
- * as the filler character.
+ * Call screen_fill() with the columns adjusted for 'rightleft' if needed.
+ * Return the new offset.
+ */
+    static int
+screen_fill_end(
+	win_T *wp,
+	int	c1,
+	int	c2,
+	int	off,
+	int	width,
+	int	row,
+	int	endrow,
+	int	attr)
+{
+    int	    nn = off + width;
+
+    if (nn > wp->w_width)
+	nn = wp->w_width;
+#ifdef FEAT_RIGHTLEFT
+    if (wp->w_p_rl)
+    {
+	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
+		W_ENDCOL(wp) - nn, (int)W_ENDCOL(wp) - off,
+		c1, c2, attr);
+    }
+    else
+#endif
+	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
+		wp->w_wincol + off, (int)wp->w_wincol + nn,
+		c1, c2, attr);
+    return nn;
+}
+
+/*
+ * Clear lines near the end the window and mark the unused lines with "c1".
+ * use "c2" as the filler character.
+ * When "draw_margin" is TRUE then draw the sign, fold and number columns.
  */
     static void
 win_draw_end(
     win_T	*wp,
     int		c1,
     int		c2,
+    int		draw_margin,
     int		row,
     int		endrow,
     hlf_T	hl)
 {
-#if defined(FEAT_FOLDING) || defined(FEAT_SIGNS) || defined(FEAT_CMDWIN)
     int		n = 0;
-# define FDC_OFF n
-#else
-# define FDC_OFF 0
-#endif
+
+    if (draw_margin)
+    {
 #ifdef FEAT_FOLDING
-    int		fdc = compute_foldcolumn(wp, 0);
+	int	fdc = compute_foldcolumn(wp, 0);
+
+	if (fdc > 0)
+	    // draw the fold column
+	    n = screen_fill_end(wp, ' ', ' ', n, fdc,
+					     row, endrow, HL_ATTR(HLF_FC));
 #endif
+#ifdef FEAT_SIGNS
+	if (signcolumn_on(wp))
+	    // draw the sign column
+	    n = screen_fill_end(wp, ' ', ' ', n, 2,
+					     row, endrow, HL_ATTR(HLF_SC));
+#endif
+	if ((wp->w_p_nu || wp->w_p_rnu)
+				  && vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
+	    // draw the number column
+	    n = screen_fill_end(wp, ' ', ' ', n, number_width(wp) + 1,
+					     row, endrow, HL_ATTR(HLF_N));
+    }
 
 #ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
     {
-	/* No check for cmdline window: should never be right-left. */
-# ifdef FEAT_FOLDING
-	n = fdc;
-
-	if (n > 0)
-	{
-	    /* draw the fold column at the right */
-	    if (n > wp->w_width)
-		n = wp->w_width;
-	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_ENDCOL(wp) - n, (int)W_ENDCOL(wp),
-		    ' ', ' ', HL_ATTR(HLF_FC));
-	}
-# endif
-# ifdef FEAT_SIGNS
-	if (signcolumn_on(wp))
-	{
-	    int nn = n + 2;
-
-	    /* draw the sign column left of the fold column */
-	    if (nn > wp->w_width)
-		nn = wp->w_width;
-	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    W_ENDCOL(wp) - nn, (int)W_ENDCOL(wp) - n,
-		    ' ', ' ', HL_ATTR(HLF_SC));
-	    n = nn;
-	}
-# endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol, W_ENDCOL(wp) - 1 - FDC_OFF,
+		wp->w_wincol, W_ENDCOL(wp) - 1 - n,
 		c2, c2, HL_ATTR(hl));
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		W_ENDCOL(wp) - 1 - FDC_OFF, W_ENDCOL(wp) - FDC_OFF,
+		W_ENDCOL(wp) - 1 - n, W_ENDCOL(wp) - n,
 		c1, c2, HL_ATTR(hl));
     }
     else
 #endif
     {
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0 && wp == curwin)
-	{
-	    /* draw the cmdline character in the leftmost column */
-	    n = 1;
-	    if (n > wp->w_width)
-		n = wp->w_width;
-	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    wp->w_wincol, (int)wp->w_wincol + n,
-		    cmdwin_type, ' ', HL_ATTR(HLF_AT));
-	}
-#endif
-#ifdef FEAT_FOLDING
-	if (fdc > 0)
-	{
-	    int	    nn = n + fdc;
-
-	    /* draw the fold column at the left */
-	    if (nn > wp->w_width)
-		nn = wp->w_width;
-	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    wp->w_wincol + n, (int)wp->w_wincol + nn,
-		    ' ', ' ', HL_ATTR(HLF_FC));
-	    n = nn;
-	}
-#endif
-#ifdef FEAT_SIGNS
-	if (signcolumn_on(wp))
-	{
-	    int	    nn = n + 2;
-
-	    /* draw the sign column after the fold column */
-	    if (nn > wp->w_width)
-		nn = wp->w_width;
-	    screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		    wp->w_wincol + n, (int)wp->w_wincol + nn,
-		    ' ', ' ', HL_ATTR(HLF_SC));
-	    n = nn;
-	}
-#endif
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
-		wp->w_wincol + FDC_OFF, (int)W_ENDCOL(wp),
+		wp->w_wincol + n, (int)W_ENDCOL(wp),
 		c1, c2, HL_ATTR(hl));
     }
+
     set_empty_rows(wp, row);
 }
 
@@ -3543,9 +3523,7 @@ win_line(
 #endif
 	     virtual_active() ||
 	     (VIsual_active && wp->w_buffer == curwin->w_buffer)))
-	{
 	    vcol = v;
-	}
 
 	/* Handle a character that's not completely on the screen: Put ptr at
 	 * that character but skip the first few screen characters. */
@@ -3914,7 +3892,19 @@ win_line(
 				*p_extra = '-';
 #ifdef FEAT_RIGHTLEFT
 			if (wp->w_p_rl)		    /* reverse line numbers */
-			    rl_mirror(extra);
+			{
+			    char_u	*p1, *p2;
+			    int		t;
+
+			    // like rl_mirror(), but keep the space at the end
+			    p2 = skiptowhite(extra) - 1;
+			    for (p1 = extra; p1 < p2; ++p1, --p2)
+			    {
+				t = *p1;
+				*p1 = *p2;
+				*p2 = t;
+			    }
+			}
 #endif
 			p_extra = extra;
 			c_extra = NUL;
@@ -4139,8 +4129,12 @@ win_line(
 				shl->endcol = tmp_col;
 			    shl->attr_cur = shl->attr;
 #ifdef FEAT_CONCEAL
-			    if (cur != NULL && syn_name2id((char_u *)"Conceal")
-							       == cur->hlg_id)
+			    // Match with the "Conceal" group results in hiding
+			    // the match.
+			    if (cur != NULL
+				    && shl != &search_hl
+				    && syn_name2id((char_u *)"Conceal")
+								== cur->hlg_id)
 			    {
 				has_match_conc =
 					     v == (long)shl->startcol ? 2 : 1;
@@ -4814,30 +4808,34 @@ win_line(
 		}
 #endif
 
-		/* 'list': change char 160 to lcs_nbsp and space to lcs_space.
-		 */
-		if (wp->w_p_list
-			&& (((c == 160
-			      || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f)))
-				&& lcs_nbsp)
-			|| (c == ' ' && lcs_space && ptr - line <= trailcol)))
+		// 'list': change char 160 to lcs_nbsp and space to lcs_space.
+		if (wp->w_p_list)
 		{
-		    c = (c == ' ') ? lcs_space : lcs_nbsp;
-		    if (area_attr == 0 && search_attr == 0)
+		    if ((c == 160
+			      || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f)))
+			    && lcs_nbsp)
 		    {
-			n_attr = 1;
-			extra_attr = HL_ATTR(HLF_8);
-			saved_attr2 = char_attr; /* save current attr */
+			c = lcs_nbsp;
+			mb_c = c;
+			if (enc_utf8 && utf_char2len(c) > 1)
+			{
+			    mb_utf8 = TRUE;
+			    u8cc[0] = 0;
+			    c = 0xc0;
+			}
+			else
+			    mb_utf8 = FALSE;
 		    }
-		    mb_c = c;
-		    if (enc_utf8 && utf_char2len(c) > 1)
+		    else if (c == ' ' && lcs_space && ptr - line <= trailcol)
 		    {
-			mb_utf8 = TRUE;
-			u8cc[0] = 0;
-			c = 0xc0;
+			c = lcs_space;
+			if (mb_utf8 == FALSE && area_attr == 0 && search_attr == 0)
+			{
+			    n_attr = 1;
+			    extra_attr = HL_ATTR(HLF_8);
+			    saved_attr2 = char_attr; // save current attr
+			}
 		    }
-		    else
-			mb_utf8 = FALSE;
 		}
 
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
@@ -5177,8 +5175,8 @@ win_line(
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-							conceal_cursor_line(wp) )
-		&& ( (syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
+						       conceal_cursor_line(wp))
+		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
@@ -5885,7 +5883,7 @@ win_line(
 #endif
 		    )
 	    {
-		win_draw_end(wp, '@', ' ', row, wp->w_height, HLF_AT);
+		win_draw_end(wp, '@', ' ', TRUE, row, wp->w_height, HLF_AT);
 		draw_vsep_win(wp, row);
 		row = endrow;
 	    }
@@ -10759,9 +10757,7 @@ showruler(int always)
 #endif
 #if defined(FEAT_STL_OPT)
     if ((*p_stl != NUL || *curwin->w_p_stl != NUL) && curwin->w_status_height)
-    {
 	redraw_custom_statusline(curwin);
-    }
     else
 #endif
 #ifdef FEAT_CMDL_INFO

@@ -5479,7 +5479,7 @@ exit_matched:
 #ifdef FEAT_INS_EXPAND
 	if (action == ACTION_EXPAND)
 	    ins_compl_check_keys(30, FALSE);
-	if (got_int || compl_interrupted)
+	if (got_int || ins_compl_interrupted())
 #else
 	if (got_int)
 #endif
@@ -5550,7 +5550,7 @@ exit_matched:
 						)
     {
 #ifdef FEAT_INS_EXPAND
-	if (got_int || compl_interrupted)
+	if (got_int || ins_compl_interrupted())
 #else
 	if (got_int)
 #endif

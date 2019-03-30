@@ -1509,9 +1509,7 @@ nb_do_cmd(
 	    long savedChars = atol((char *)args);
 
 	    if (buf == NULL || buf->bufp == NULL)
-	    {
 		nbdebug(("    invalid buffer identifier in saveDone\n"));
-	    }
 	    else
 		print_save_msg(buf, savedChars);
 /* =====================================================================*/
@@ -1990,9 +1988,7 @@ nb_do_cmd(
 	    args = (char_u *)cp;
 # ifdef NBDEBUG
 	    if (vim_ignored != -1)
-	    {
 		nbdebug(("    partial line annotation -- Not Yet Implemented!\n"));
-	    }
 # endif
 	    if (serNum >= GUARDEDOFFSET)
 	    {

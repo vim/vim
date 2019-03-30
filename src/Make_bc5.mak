@@ -72,7 +72,6 @@
 #		3 for 386, 4 for 486, 5 for pentium, 6 for pentium pro.
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cc3250.dll is required to run Vim.
-# VIMDLL	no or yes: create vim32.dll, and stub (g)vim.exe (no)
 # ALIGN		1, 2 or 4: Alignment to use (4 for Win32)
 # FASTCALL	no or yes: set to yes to use register-based function protocol (yes)
 # OPTIMIZE	SPACE, SPEED, or MAXSPEED: type of optimization (MAXSPEED)
@@ -186,9 +185,6 @@ HEADERS = -H -H=vim.csm -Hc
 !if ("$(USEDLL)"=="")
 USEDLL = no
 !endif
-
-### VIMDLL: yes for a DLL version of VIM (NOT RECOMMENDED), no otherwise
-#VIMDLL = yes
 
 ### ALIGN: alignment you desire: (1,2 or 4: s/b 4 for Win32)
 !if ("$(ALIGN)"=="")
@@ -411,12 +407,7 @@ TARGET = gvimd.exe
 !else
 TARGET = gvim.exe
 !endif
-!if ("$(VIMDLL)"=="yes")
-EXETYPE=-WD
-DEFINES = $(DEFINES) -DVIMDLL
-!else
 EXETYPE=-W
-!endif
 STARTUPOBJ = c0w32.obj
 LINK2 = -aa
 RESFILE = vim.res
@@ -424,7 +415,6 @@ RESFILE = vim.res
 !undef NETBEANS
 !undef CHANNEL
 !undef XPM
-!undef VIMDLL
 !if ("$(DEBUG)"=="yes")
 TARGET = vimd.exe
 !else
@@ -515,13 +505,8 @@ CCARG = +$(OBJDIR)\bcc.cfg
 
 vimmain = \
 	$(OBJDIR)\os_w32exe.obj
-!if ("$(VIMDLL)"=="yes")
-vimwinmain = \
-	$(OBJDIR)\os_w32dll.obj
-!else
 vimwinmain = \
 	$(OBJDIR)\os_w32exe.obj
-!endif
 
 vimobj =  \
 	$(OBJDIR)\arabic.obj \
@@ -549,6 +534,7 @@ vimobj =  \
 	$(OBJDIR)\hardcopy.obj \
 	$(OBJDIR)\hashtab.obj \
 	$(OBJDIR)\indent.obj \
+	$(OBJDIR)\insexpand.obj \
 	$(OBJDIR)\json.obj \
 	$(OBJDIR)\list.obj \
 	$(OBJDIR)\main.obj \
@@ -638,17 +624,6 @@ vimobj = $(vimobj) \
     $(OBJDIR)\xpm_w32.obj
 !endif
 
-!if ("$(VIMDLL)"=="yes")
-vimdllobj = $(vimobj)
-!if ("$(DEBUG)"=="yes")
-DLLTARGET = vim32d.dll
-!else
-DLLTARGET = vim32.dll
-!endif
-!else
-DLLTARGET = joebob
-!endif
-
 !if ("$(GUI)"=="yes")
 vimobj = $(vimobj) \
 	$(vimwinmain) \
@@ -669,9 +644,6 @@ MSG = $(MSG) OLE
 !endif
 !if ("$(USEDLL)"=="yes")
 MSG = $(MSG) USEDLL
-!endif
-!if ("$(VIMDLL)"=="yes")
-MSG = $(MSG) VIMDLL
 !endif
 !if ("$(FASTCALL)"=="yes")
 MSG = $(MSG) FASTCALL
@@ -747,9 +719,6 @@ MSG = $(MSG) Align=$(ALIGNARG)
 
 !message $(MSG)
 
-!if ("$(VIMDLL)"=="yes")
-TARGETS = $(DLLTARGET)
-!endif
 TARGETS = $(TARGETS) $(TARGET)
 
 # Targets:
@@ -832,60 +801,12 @@ clean:
 	$(MAKE) /f Make_bc5.mak BOR="$(BOR)" clean
 	cd ..
 
-$(DLLTARGET): $(OBJDIR) $(vimdllobj)
-  $(LINK) @&&|
-	$(LFLAGSDLL) +
-	c0d32.obj +
-	$(vimdllobj)
-	$<,$*
-!if ("$(CODEGUARD)"=="yes")
-	cg32.lib+
-!endif
-# $(OSTYPE)==WIN32 causes os_mswin.c compilation. FEAT_SHORTCUT in it needs OLE
-	ole2w32.lib +
-	import32.lib+
-!ifdef LUA
-	$(LUA_LIB_FLAG)lua.lib+
-!endif
-!ifdef PERL
-	$(PERL_LIB_FLAG)perl.lib+
-!endif
-!ifdef PYTHON
-	$(PYTHON_LIB_FLAG)python.lib+
-!endif
-!ifdef PYTHON3
-	$(PYTHON3_LIB_FLAG)python3.lib+
-!endif
-!ifdef RUBY
-	$(RUBY_LIB_FLAG)ruby.lib+
-!endif
-!ifdef TCL
-	$(TCL_LIB_FLAG)tcl.lib+
-!endif
-!ifdef XPM
-	xpm.lib+
-!endif
-!if ("$(USEDLL)"=="yes")
-	cw32i.lib
-!else
-	cw32.lib
-!endif
-	vim.def
-|
 
-!if ("$(VIMDLL)"=="yes")
-$(TARGET): $(OBJDIR) $(DLLTARGET) $(vimmain) $(OBJDIR)\$(RESFILE)
-!else
 $(TARGET): $(OBJDIR) $(vimobj) $(OBJDIR)\$(RESFILE)
-!endif
   $(LINK) @&&|
 	$(LFLAGS) +
 	$(STARTUPOBJ) +
-!if ("$(VIMDLL)"=="yes")
-	$(vimmain)
-!else
 	$(vimobj)
-!endif
 	$<,$*
 !if ("$(CODEGUARD)"=="yes")
 	cg32.lib+

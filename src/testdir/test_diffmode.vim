@@ -757,7 +757,7 @@ func Test_diff_screen()
   " Test 1: Add a line in beginning of file 2
   call WriteDiffFiles(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   let buf = RunVimInTerminal('-d Xfile1 Xfile2', {})
-  " Set autoread mode, ,so that Vim won't complain once we re-write the test
+  " Set autoread mode, so that Vim won't complain once we re-write the test
   " files
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
@@ -915,10 +915,15 @@ func Test_diff_of_diff()
 	\ 'vnew',
 	\ 'call setline(1, ["aa","bb","cc"])',
 	\ 'windo diffthis',
+	\ '1wincmd w',
+	\ 'setlocal number',
 	\ ], 'Xtest_diff_diff')
   let buf = RunVimInTerminal('-S Xtest_diff_diff', {})
 
   call VerifyScreenDump(buf, 'Test_diff_of_diff_01', {})
+
+  call term_sendkeys(buf, ":set rightleft\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_of_diff_02', {})
 
   " clean up
   call StopVimInTerminal(buf)

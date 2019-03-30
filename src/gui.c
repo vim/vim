@@ -3508,9 +3508,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		else
 		{
 		    FOR_ALL_WINDOWS(wp)
-		    {
 			gui_do_scrollbar(wp, i, gui.which_scrollbars[i]);
-		    }
 		}
 		if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
 		{
@@ -3830,9 +3828,7 @@ gui_remove_scrollbars(void)
 	else
 	{
 	    FOR_ALL_WINDOWS(wp)
-	    {
 		gui_do_scrollbar(wp, i, FALSE);
-	    }
 	}
 	curtab->tp_prev_which_scrollbars[i] = -1;
     }

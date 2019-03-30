@@ -1359,9 +1359,7 @@ ml_recover(void)
 	    && ((mch_stat((char *)mfp->mf_fname, &swp_stat) != -1
 		    && org_stat.st_mtime > swp_stat.st_mtime)
 		|| org_stat.st_mtime != mtime))
-    {
 	emsg(_("E308: Warning: Original file may have been changed"));
-    }
     out_flush();
 
     /* Get the 'fileformat' and 'fileencoding' from block zero. */
@@ -5307,9 +5305,7 @@ ml_updatechunk(
 	     curix < buf->b_ml.ml_usedchunks - 1
 	     && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines;
 	     curix++)
-	{
 	    curline += buf->b_ml.ml_chunksize[curix].mlcs_numlines;
-	}
     }
     else if (curix < buf->b_ml.ml_usedchunks - 1
 	      && line >= curline + buf->b_ml.ml_chunksize[curix].mlcs_numlines)

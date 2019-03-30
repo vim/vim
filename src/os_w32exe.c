@@ -10,7 +10,7 @@
 /*
  * Windows GUI: main program (EXE) entry point:
  *
- * Ron Aaron <ronaharon@yahoo.com> wrote this and  the DLL support code.
+ * Ron Aaron <ronaharon@yahoo.com> wrote this and the DLL support code.
  */
 #include "vim.h"
 
@@ -32,9 +32,7 @@ static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO
 #ifdef FEAT_GUI
-#ifndef VIMDLL
 void _cdecl SaveInst(HINSTANCE hInst);
-#endif
 static void (_cdecl *pSaveInst)(HINSTANCE);
 #endif
 
@@ -42,76 +40,22 @@ static void (_cdecl *pSaveInst)(HINSTANCE);
 WinMain(
     HINSTANCE	hInstance UNUSED,
     HINSTANCE	hPrevInst UNUSED,
-    LPSTR	lpszCmdLine,
+    LPSTR	lpszCmdLine UNUSED,
     int		nCmdShow UNUSED)
 {
     int		argc = 0;
-    char	**argv;
-    char	*tofree;
-    char	prog[256];
-#ifdef VIMDLL
-    char	*p;
-    HANDLE	hLib;
-#endif
-
-    /* Ron: added full path name so that the $VIM variable will get set to our
-     * startup path (so the .vimrc file can be found w/o a VIM env. var.) */
-    GetModuleFileName(NULL, prog, 255);
-
-    argc = get_cmd_args(prog, (char *)lpszCmdLine, &argv, &tofree);
-    if (argc == 0)
-    {
-	MessageBox(0, "Could not allocate memory for command line.",
-							      "VIM Error", 0);
-	return 0;
-    }
-
-#ifdef DYNAMIC_GETTEXT
-    /* Initialize gettext library */
-    dyn_libintl_init();
-#endif
-
-#ifdef VIMDLL
-    // LoadLibrary - get name of dll to load in here:
-    p = strrchr(prog, '\\');
-    if (p != NULL)
-    {
-# ifdef DEBUG
-	strcpy(p+1, "vim32d.dll");
-# else
-	strcpy(p+1, "vim32.dll");
-# endif
-    }
-    hLib = LoadLibrary(prog);
-    if (hLib == NULL)
-    {
-	MessageBox(0, _("Could not load vim32.dll!"), _("VIM Error"), 0);
-	goto errout;
-    }
-    // fix up the function pointers
-# ifdef FEAT_GUI
-    pSaveInst = GetProcAddress(hLib, (LPCSTR)2);
-# endif
-    pmain = GetProcAddress(hLib, (LPCSTR)1);
-    if (pmain == NULL)
-    {
-	MessageBox(0, _("Could not fix up function pointers to the DLL!"),
-							    _("VIM Error"),0);
-	goto errout;
-    }
-#else
-# ifdef FEAT_GUI
+    char	**argv = NULL;
+#ifdef FEAT_GUI
     pSaveInst = SaveInst;
-# endif
+#endif
     pmain =
-# if defined(FEAT_GUI_MSWIN)
+#if defined(FEAT_GUI_MSWIN)
     //&& defined(__MINGW32__)
 	VimMain
-# else
+#else
 	main
-# endif
-	;
 #endif
+	;
 #ifdef FEAT_GUI
     pSaveInst(
 #ifdef __MINGW32__
@@ -123,13 +67,6 @@ WinMain(
 #endif
     pmain(argc, argv);
 
-#ifdef VIMDLL
-    FreeLibrary(hLib);
-errout:
-#endif
-    free(argv);
-    if (tofree != NULL)
-	free(tofree);
     free_cmd_argsW();
 
     return 0;

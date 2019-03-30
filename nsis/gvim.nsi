@@ -354,42 +354,10 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\indent\*.*
 
 	SetOutPath $0\macros
-	File ${VIMRT}\macros\*.*
-	SetOutPath $0\macros\hanoi
-	File ${VIMRT}\macros\hanoi\*.*
-	SetOutPath $0\macros\life
-	File ${VIMRT}\macros\life\*.*
-	SetOutPath $0\macros\maze
-	File ${VIMRT}\macros\maze\*.*
-	SetOutPath $0\macros\urm
-	File ${VIMRT}\macros\urm\*.*
+	File /r ${VIMRT}\macros\*.*
 
-	SetOutPath $0\pack\dist\opt\dvorak\dvorak
-	File ${VIMRT}\pack\dist\opt\dvorak\dvorak\*.*
-	SetOutPath $0\pack\dist\opt\dvorak\plugin
-	File ${VIMRT}\pack\dist\opt\dvorak\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\editexisting\plugin
-	File ${VIMRT}\pack\dist\opt\editexisting\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\justify\plugin
-	File ${VIMRT}\pack\dist\opt\justify\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\matchit\doc
-	File ${VIMRT}\pack\dist\opt\matchit\doc\*.*
-	SetOutPath $0\pack\dist\opt\matchit\plugin
-	File ${VIMRT}\pack\dist\opt\matchit\plugin\*.*
-	SetOutPath $0\pack\dist\opt\matchit\autoload
-	File ${VIMRT}\pack\dist\opt\matchit\autoload\*.*
-
-	SetOutPath $0\pack\dist\opt\shellmenu\plugin
-	File ${VIMRT}\pack\dist\opt\shellmenu\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\swapmouse\plugin
-	File ${VIMRT}\pack\dist\opt\swapmouse\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\termdebug\plugin
-	File ${VIMRT}\pack\dist\opt\termdebug\plugin\*.*
+	SetOutPath $0\pack
+	File /r ${VIMRT}\pack\*.*
 
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*

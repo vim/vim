@@ -9,7 +9,7 @@ SRC_ALL =	\
 		appveyor.yml \
 		ci/appveyor.bat \
 		src/Make_all.mak \
-		src/README.txt \
+		src/README.md \
 		src/alloc.h \
 		src/arabic.c \
 		src/ascii.h \
@@ -48,6 +48,7 @@ SRC_ALL =	\
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/indent.c \
+		src/insexpand.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -175,6 +176,7 @@ SRC_ALL =	\
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
 		src/proto/indent.pro \
+		src/proto/insexpand.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \

@@ -1790,8 +1790,7 @@ collection:
 			if (*regparse == 'n')
 			    startc = (reg_string || emit_range
 					|| regparse[1] == '-') ? NL : NFA_NEWL;
-			else
-			    if  (*regparse == 'd'
+			else if (*regparse == 'd'
 				    || *regparse == 'o'
 				    || *regparse == 'x'
 				    || *regparse == 'u'
@@ -2919,14 +2918,10 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	}
 # else
 	for (p2 = postfix; p2 < end; p2++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 	fprintf(df, "\nCurrent position is: ");
 	for (p2 = postfix; p2 <= p; p2 ++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 # endif
 	fprintf(df, "\n--------------------------\n");
 	fclose(df);

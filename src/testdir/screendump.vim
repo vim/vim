@@ -103,7 +103,13 @@ endfunc
 " Returns non-zero when verification fails.
 func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
-  let testfile = a:filename . '.dump.failed'
+  let testfile = 'failed/' . a:filename . '.dump'
+
+  let did_mkdir = 0
+  if !isdirectory('failed')
+    let did_mkdir = 1
+    call mkdir('failed')
+  endif
 
   let i = 0
   while 1
@@ -115,6 +121,9 @@ func VerifyScreenDump(buf, filename, options, ...)
     let refdump = readfile(reference)
     if refdump == testdump
       call delete(testfile)
+      if did_mkdir
+	call delete('failed', 'd')
+      endif
       break
     endif
     if i == 100

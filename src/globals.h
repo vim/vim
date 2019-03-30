@@ -119,10 +119,6 @@ EXTERN colnr_T	dollar_vcol INIT(= -1);
  * by the match.) */
 EXTERN int	compl_length INIT(= 0);
 
-/* Set when character typed while looking for matches and it means we should
- * stop looking for matches. */
-EXTERN int	compl_interrupted INIT(= FALSE);
-
 /* List of flags for method of completion. */
 EXTERN int	compl_cont_status INIT(= 0);
 # define CONT_ADDING	1	/* "normal" or "adding" expansion */

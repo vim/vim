@@ -1191,36 +1191,36 @@ typedef long_u hash_T;		/* Type for hi_hash */
 #  ifdef PROTO
 typedef long		    varnumber_T;
 typedef unsigned long	    uvarnumber_T;
-#define VARNUM_MIN	    LONG_MIN
-#define VARNUM_MAX	    LONG_MAX
-#define UVARNUM_MAX	    ULONG_MAX
+#   define VARNUM_MIN	    LONG_MIN
+#   define VARNUM_MAX	    LONG_MAX
+#   define UVARNUM_MAX	    ULONG_MAX
 #  else
 typedef __int64		    varnumber_T;
 typedef unsigned __int64    uvarnumber_T;
-#define VARNUM_MIN	    _I64_MIN
-#define VARNUM_MAX	    _I64_MAX
-#define UVARNUM_MAX	    _UI64_MAX
+#   define VARNUM_MIN	    _I64_MIN
+#   define VARNUM_MAX	    _I64_MAX
+#   define UVARNUM_MAX	    _UI64_MAX
 #  endif
 # elif defined(HAVE_STDINT_H)
 typedef int64_t		    varnumber_T;
 typedef uint64_t	    uvarnumber_T;
-#define VARNUM_MIN	    INT64_MIN
-#define VARNUM_MAX	    INT64_MAX
-#define UVARNUM_MAX	    UINT64_MAX
+#  define VARNUM_MIN	    INT64_MIN
+#  define VARNUM_MAX	    INT64_MAX
+#  define UVARNUM_MAX	    UINT64_MAX
 # else
 typedef long		    varnumber_T;
 typedef unsigned long	    uvarnumber_T;
-#define VARNUM_MIN	    LONG_MIN
-#define VARNUM_MAX	    LONG_MAX
-#define UVARNUM_MAX	    ULONG_MAX
+#  define VARNUM_MIN	    LONG_MIN
+#  define VARNUM_MAX	    LONG_MAX
+#  define UVARNUM_MAX	    ULONG_MAX
 # endif
 #else
 /* Use 32-bit Number. */
 typedef int		    varnumber_T;
 typedef unsigned int	    uvarnumber_T;
-#define VARNUM_MIN	    INT_MIN
-#define VARNUM_MAX	    INT_MAX
-#define UVARNUM_MAX	    UINT_MAX
+# define VARNUM_MIN	    INT_MIN
+# define VARNUM_MAX	    INT_MAX
+# define UVARNUM_MAX	    UINT_MAX
 #endif
 
 typedef double	float_T;
@@ -3339,16 +3339,6 @@ typedef struct
     int		tn_hf_idx;
     void	*tn_search_ctx;
 } tagname_T;
-
-/*
- * Array indexes used for cptext argument of ins_compl_add().
- */
-#define CPT_ABBR	0	/* "abbr" */
-#define CPT_MENU	1	/* "menu" */
-#define CPT_KIND	2	/* "kind" */
-#define CPT_INFO	3	/* "info" */
-#define CPT_USER_DATA	4	/* "user data" */
-#define CPT_COUNT	5	/* Number of entries */
 
 typedef struct {
   UINT32_T total[2];

@@ -723,6 +723,8 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	diff_filler()		get the number of filler lines above a line
 	screenattr()		get attribute at a screen line/row
 	screenchar()		get character code at a screen line/row
+	screenchars()		get character codes at a screen line/row
+	screenstring()		get string of characters at a screen line/row
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
@@ -834,6 +836,7 @@ Insert mode completion:				*completion-functions*
 	complete()		set found matches
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
+	complete_info()		get current completion information
 	pumvisible()		check if the popup menu is displayed
 
 Folding:					*folding-functions*

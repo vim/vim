@@ -445,9 +445,8 @@ spell_check(
     if (spell_iswordp(mi.mi_fend, wp))
     {
 	do
-	{
 	    MB_PTR_ADV(mi.mi_fend);
-	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
+	while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
 	{
@@ -1463,9 +1462,8 @@ fold_more(matchinf_T *mip)
 
     p = mip->mi_fend;
     do
-    {
 	MB_PTR_ADV(mip->mi_fend);
-    } while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_win));
+    while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_win));
 
     /* Include the non-word character so that we can check for the word end. */
     if (*mip->mi_fend != NUL)
@@ -8473,7 +8471,7 @@ spell_dump_compl(
 	    arridx[0] = 0;
 	    curi[0] = 1;
 	    while (depth >= 0 && !got_int
-				       && (pat == NULL || !compl_interrupted))
+				  && (pat == NULL || !ins_compl_interrupted()))
 	    {
 		if (curi[depth] > byts[arridx[depth]])
 		{
