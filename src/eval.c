@@ -10321,19 +10321,25 @@ repeat:
 # if _WIN32_WINNT >= 0x0500
 	if (vim_strchr(*fnamep, '~') != NULL)
 	{
-	    /* Expand 8.3 filename to full path.  Needed to make sure the same
-	     * file does not have two different names.
-	     * Note: problem does not occur if _WIN32_WINNT < 0x0500. */
-	    p = alloc(_MAX_PATH + 1);
-	    if (p != NULL)
+	    // Expand 8.3 filename to full path.  Needed to make sure the same
+	    // file does not have two different names.
+	    // Note: problem does not occur if _WIN32_WINNT < 0x0500.
+	    WCHAR *wfname = enc_to_utf16(*fnamep, NULL);
+	    WCHAR buf[_MAX_PATH];
+
+	    if (wfname != NULL)
 	    {
-		if (GetLongPathName((LPSTR)*fnamep, (LPSTR)p, _MAX_PATH))
+		if (GetLongPathNameW(wfname, buf, _MAX_PATH))
 		{
-		    vim_free(*bufp);
-		    *bufp = *fnamep = p;
+		    char_u *p = utf16_to_enc(buf, NULL);
+
+		    if (p != NULL)
+		    {
+			vim_free(*bufp);    // free any allocated file name
+			*bufp = *fnamep = p;
+		    }
 		}
-		else
-		    vim_free(p);
+		vim_free(wfname);
 	    }
 	}
 # endif
