@@ -120,7 +120,7 @@ static int	ins_need_undo;		/* call u_save() before inserting a
 static int	did_add_space = FALSE;	// auto_format() added an extra space
 					// under the cursor
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
-					// the next left/right cursor
+					// the next left/right cursor key
 
 /*
  * edit(): Start inserting text.
