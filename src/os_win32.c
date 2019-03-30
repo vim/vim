@@ -3299,14 +3299,17 @@ mch_writable(char_u *name)
     int
 mch_can_exe(char_u *name, char_u **path, int use_path)
 {
-    char_u	buf[_MAX_PATH];
+    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
+    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+    // UTF-8.
+    char_u	buf[_MAX_PATH * 3];
     int		len = (int)STRLEN(name);
     char_u	*p, *saved;
 
-    if (len >= _MAX_PATH)	/* safety check */
+    if (len >= sizeof(buf))	// safety check
 	return FALSE;
 
-    /* Ty using the name directly when a Unix-shell like 'shell'. */
+    // Try using the name directly when a Unix-shell like 'shell'.
     if (strstr((char *)gettail(p_sh), "sh") != NULL)
 	if (executable_exists((char *)name, path, use_path))
 	    return TRUE;
@@ -3339,7 +3342,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     }
     vim_free(saved);
 
-    vim_strncpy(buf, name, _MAX_PATH - 1);
+    vim_strncpy(buf, name, sizeof(buf) - 1);
     p = mch_getenv("PATHEXT");
     if (p == NULL)
 	p = (char_u *)".com;.exe;.bat;.cmd";
@@ -3354,7 +3357,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 		++p;
 	}
 	else
-	    copy_option_part(&p, buf + len, _MAX_PATH - len, ";");
+	    copy_option_part(&p, buf + len, sizeof(buf) - len, ";");
 	if (executable_exists((char *)buf, path, use_path))
 	    return TRUE;
     }
