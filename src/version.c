@@ -605,11 +605,7 @@ static char *(features[]) =
 #else
 	"-tag_binary",
 #endif
-#ifdef FEAT_TAG_OLDSTATIC
-	"+tag_old_static",
-#else
 	"-tag_old_static",
-#endif
 	"-tag_any_white",
 #ifdef FEAT_TCL
 # ifdef DYNAMIC_TCL
@@ -775,6 +771,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1093,
 /**/
     1092,
 /**/

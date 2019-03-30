@@ -305,12 +305,9 @@
 #endif
 
 /*
- * +tag_old_static	Old style static tags: "file:tag  file  ..".  Slows
- *			down tag searching a bit.
+ * +tag_old_static	Old style static tags: "file:tag  file  ..".
+ *			Support was removed in 8.1.1093.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_TAG_OLDSTATIC
-#endif
 
 /*
  * +cscope		Unix only: Cscope support.
