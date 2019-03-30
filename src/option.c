@@ -9234,7 +9234,9 @@ set_num_option(
     /* 'nightshift' */
     else if (pp == &p_ns)
     {
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 	highlight_gui_started();
+#endif
 	init_highlight(TRUE, FALSE);
     }
 

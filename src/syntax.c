@@ -9857,23 +9857,6 @@ maybe_colormanip(guicolor_T sgp)
 }
 
 /*
- * Change to monochrome.
- */
-    int
-maybe_colormanip_index(int color)
-{
-    char_u r, g, b, idx;
-
-    if (p_ns && color != 0)
-    {
-	cterm_color2rgb(color - 1, &r, &g, &b, &idx);
-	/* NTSC 24 gradations index  plus one */
-	return (((2 * r + 4 * g + b) / 7) * 24) / 256 + 232 + 1;
-    }
-    return color;
-}
-
-/*
  * Get the GUI colors and attributes for a group ID.
  * NOTE: the colors will be INVALCOLOR when not set, the color otherwise.
  */
@@ -9890,6 +9873,26 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
     return sgp->sg_gui;
 }
 #endif
+
+/*
+ * Change to monochrome.
+ */
+    int
+maybe_colormanip_index(int color)
+{
+#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN) \
+	&& defined(FEAT_TERMGUICOLORS)
+    char_u r, g, b, idx;
+
+    if (p_ns && color != 0)
+    {
+	cterm_color2rgb(color - 1, &r, &g, &b, &idx);
+	/* NTSC 24 gradations index  plus one */
+	return (((2 * r + 4 * g + b) / 7) * 24) / 256 + 232 + 1;
+    }
+#endif
+    return color;
+}
 
 #if (defined(MSWIN) \
 	&& !defined(FEAT_GUI_MSWIN) \
