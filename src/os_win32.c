@@ -882,6 +882,7 @@ static const struct
     { VK_NEXT,	TRUE,	'Q',	'\322',	'v',	    '\323', }, // PgDn
     { VK_INSERT,TRUE,	'R',	'\324',	'\325',	    '\326', },
     { VK_DELETE,TRUE,	'S',	'\327',	'\330',	    '\331', },
+    { VK_BACK,	TRUE,	'x',	'y',	'z',	    '{', }, // Backspace
 
     { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, // PrtScrn
 
@@ -911,8 +912,7 @@ static const struct
     { VK_NUMPAD7,TRUE,  '\366',	'\367',	'\370',	    '\371', },
     { VK_NUMPAD8,TRUE,  '\372',	'\373',	'\374',	    '\375', },
     // Sorry, out of number space! <negri>
-    { VK_NUMPAD9,TRUE,  '\376',	'\377',	'\377',	    '\367', },
-
+    { VK_NUMPAD9,TRUE,  '\376',	'\377',	'|',	    '}', },
 };
 
 

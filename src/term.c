@@ -663,6 +663,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_K7,		"\316\366"},
     {K_K8,		"\316\372"},
     {K_K9,		"\316\376"},
+    {K_BS,		"\316x"},
 # endif
 
 # if defined(VMS) || defined(ALL_BUILTIN_TCAPS)
