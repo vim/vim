@@ -777,7 +777,9 @@ extern int (*dyn_libintl_putenv)(const char *envstring);
 
 # ifdef FEAT_INS_EXPAND
 /*
- * definitions used for CTRL-X submode
+ * Definitions used for CTRL-X submode.
+ * Note: If you change CTRL-X submode, you must also maintain ctrl_x_msgs[] and
+ * ctrl_x_mode_names[].
  */
 # define CTRL_X_WANT_IDENT	0x100
 
