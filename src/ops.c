@@ -259,9 +259,7 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	    if (first_char != '#' || !preprocs_left())
 #endif
-	{
 	    shift_line(oap->op_type == OP_LSHIFT, p_sr, amount, FALSE);
-	}
 	++curwin->w_cursor.lnum;
     }
 
@@ -3157,9 +3155,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		    if (startcol > endcol || is_oneChar)
 			bd.textlen = 0;
 		    else
-		    {
 			bd.textlen = endcol - startcol + oap->inclusive;
-		    }
 		    bd.textstart = p + startcol;
 		    if (yank_copy_line(&bd, y_idx) == FAIL)
 			goto fail;
@@ -4391,9 +4387,7 @@ skip_comment(
     {
 	if (*comment_flags == COM_END
 		|| *comment_flags == ':')
-	{
 	    break;
-	}
 	++comment_flags;
     }
 
@@ -5851,9 +5845,7 @@ do_addsub(
 	    goto theend;
 	ptr = buf1;
 	if (negative && (!visual || was_positive))
-	{
 	    *ptr++ = '-';
-	}
 	if (pre)
 	{
 	    *ptr++ = '0';

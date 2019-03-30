@@ -3015,9 +3015,7 @@ gui_x11_send_event_handler(
 
     if (e->type == PropertyNotify && e->window == commWindow
 	    && e->atom == commProperty &&  e->state == PropertyNewValue)
-    {
 	serverEventProc(gui.dpy, event, 0);
-    }
 }
 #endif
 

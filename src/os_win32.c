@@ -2224,14 +2224,10 @@ ClearConsoleBuffer(WORD wAttribute)
     coord.Y = 0;
     if (!FillConsoleOutputCharacter(g_hConOut, ' ', NumCells,
 	    coord, &dummy))
-    {
 	return FALSE;
-    }
     if (!FillConsoleOutputAttribute(g_hConOut, wAttribute, NumCells,
 	    coord, &dummy))
-    {
 	return FALSE;
-    }
 
     return TRUE;
 }
@@ -2467,9 +2463,7 @@ RestoreConsoleBuffer(
 			cb->BufferSize,		/* dimensions of our buffer */
 			BufferCoord,		/* offset in our buffer */
 			&WriteRegion))		/* region to restore */
-	    {
 		return FALSE;
-	    }
 	}
     }
 

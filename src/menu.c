@@ -1701,9 +1701,7 @@ popup_mode_name(char_u *name, int idx)
     {
 	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
 	for (i = 0; i < mode_chars_len; ++i)
-	{
 	    p[5 + i] = menu_mode_chars[idx][i];
-	}
     }
     return p;
 }
@@ -1889,9 +1887,7 @@ get_menu_mode(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_use_loop())
-    {
 	return MENU_INDEX_TERMINAL;
-    }
 #endif
     if (VIsual_active)
     {

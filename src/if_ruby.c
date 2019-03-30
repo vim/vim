@@ -846,9 +846,7 @@ vim_str2rb_enc_str(const char *s)
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);
 	if (enc)
-	{
 	    return rb_enc_str_new(s, (long)strlen(s), enc);
-	}
     }
 #endif
     return rb_str_new2(s);
@@ -1171,9 +1169,7 @@ vim_to_ruby(typval_T *tv)
 	if (list != NULL)
 	{
 	    for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
-	    {
 		rb_ary_push(result, vim_to_ruby(&curr->li_tv));
-	    }
 	}
     }
     else if (tv->v_type == VAR_DICT)
@@ -1227,9 +1223,7 @@ vim_evaluate(VALUE self UNUSED, VALUE str)
 
     tv = eval_expr((char_u *)StringValuePtr(str), NULL);
     if (tv == NULL)
-    {
 	return Qnil;
-    }
     result = vim_to_ruby(tv);
 
     free_tv(tv);

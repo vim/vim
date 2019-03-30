@@ -5363,9 +5363,8 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	if (end == NULL && vpeekc() == NUL)
 	    break;
 	do
-	{
 	    c = vgetc();
-	} while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
+	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
 	if (c == NUL || got_int)
 	    // When CTRL-C was encountered the typeahead will be flushed and we
 	    // won't get the end sequence.

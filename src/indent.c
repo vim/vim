@@ -3870,9 +3870,7 @@ find_match(int lookfor, linenr_T ourscope)
 	    // this must be the if that we want!
 	    // match the indent level of that if.
 	    if (elselevel <= 0 && whilelevel <= 0)
-	    {
 		return OK;
-	    }
 	}
     }
     return FAIL;

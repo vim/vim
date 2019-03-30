@@ -3805,9 +3805,7 @@ sandbox_file_guard(int argc UNUSED, Scheme_Object **argv)
 	    Scheme_Object *item = SCHEME_CAR(requested_access);
 	    if (scheme_eq(item, M_write) || scheme_eq(item, M_read)
 		    || scheme_eq(item, M_execute) || scheme_eq(item, M_delete))
-	    {
 		raise_vim_exn(_("not allowed in the Vim sandbox"));
-	    }
 	    requested_access = SCHEME_CDR(requested_access);
 	}
     }

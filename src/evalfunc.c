@@ -3568,9 +3568,7 @@ f_expand(typval_T *argvars, typval_T *rettv)
 	    && argvars[2].v_type != VAR_UNKNOWN
 	    && tv_get_number_chk(&argvars[2], &error)
 	    && !error)
-    {
 	rettv_list_set(rettv, NULL);
-    }
 
     s = tv_get_string(&argvars[0]);
     if (*s == '%' || *s == '#' || *s == '<')
@@ -6081,9 +6079,7 @@ f_glob(typval_T *argvars, typval_T *rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
 	    if (tv_get_number_chk(&argvars[2], &error))
-	    {
 		rettv_list_set(rettv, NULL);
-	    }
 	    if (argvars[3].v_type != VAR_UNKNOWN
 				    && tv_get_number_chk(&argvars[3], &error))
 		options |= WILD_ALLLINKS;
@@ -6137,9 +6133,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
 	    if (tv_get_number_chk(&argvars[3], &error))
-	    {
 		rettv_list_set(rettv, NULL);
-	    }
 	    if (argvars[4].v_type != VAR_UNKNOWN
 				    && tv_get_number_chk(&argvars[4], &error))
 		flags |= WILD_ALLLINKS;

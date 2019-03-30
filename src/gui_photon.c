@@ -451,9 +451,7 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 
     /* We're a good lil photon program, aren't we? yes we are, yeess wee arrr */
     if (key->key_flags & Pk_KF_Compose)
-    {
 	return Pt_CONTINUE;
-    }
 
     if ((key->key_flags & Pk_KF_Cap_Valid) &&
 	    PkIsKeyDown(key->key_flags))
@@ -1011,9 +1009,7 @@ gui_ph_pg_remove_buffer(char *name)
 	    for (i = 0; i < num_panels; i++)
 	    {
 		if (STRCMP(panel_titles[ i ], name) != 0)
-		{
 		    *s++ = panel_titles[ i ];
-		}
 	    }
 	    num_panels--;
 
@@ -1334,9 +1330,7 @@ gui_mch_update(void)
 
     PtAppAddWorkProc(NULL, exit_gui_mch_update, &working);
     while ((working == TRUE) && !vim_is_input_buf_full())
-    {
 	PtProcessEvent();
-    }
 }
 
     int
@@ -2408,9 +2402,7 @@ gui_ph_toolbar_find_icon(vimmenu_T *menu)
 
     if (menu->iconidx >= 0 &&
 	    (menu->iconidx < ARRAY_LENGTH(gui_ph_toolbar_images)))
-    {
 	return gui_ph_toolbar_images[menu->iconidx];
-    }
 
     return NULL;
 }

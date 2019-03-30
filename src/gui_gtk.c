@@ -2573,9 +2573,7 @@ entry_changed_cb(GtkWidget * entry, GtkWidget * dialog)
     nonempty = (entry_text[0] != '\0');
 
     if (dialog == find_widgets.dialog)
-    {
 	gtk_widget_set_sensitive(find_widgets.find, nonempty);
-    }
 
     if (dialog == repl_widgets.dialog)
     {

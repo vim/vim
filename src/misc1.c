@@ -1949,9 +1949,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	    string = vim_strchr(part_buf, ':');
 	    if (string == NULL)	/* If everything is fine, this cannot actually
 				 * happen. */
-	    {
 		continue;
-	    }
 	    *string++ = NUL;	/* Isolate flags from string. */
 	    com_leader = string;
 
@@ -4093,9 +4091,7 @@ expand_env_esc(
 			    || (*src == '%' && *tail != '%')
 #endif
 			    ))
-		    {
 			*var++ = *tail++;
-		    }
 		}
 
 #if defined(MSWIN) || defined(UNIX)

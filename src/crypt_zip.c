@@ -68,12 +68,12 @@ make_crc_tab(void)
 /*
  * Update the encryption keys with the next byte of plain text.
  */
-#define UPDATE_KEYS_ZIP(keys, c) { \
+#define UPDATE_KEYS_ZIP(keys, c) do { \
     keys[0] = CRC32(keys[0], (c)); \
     keys[1] += keys[0] & 0xff; \
     keys[1] = keys[1] * 134775813L + 1; \
     keys[2] = CRC32(keys[2], (int)(keys[1] >> 24)); \
-}
+} while (0)
 
 /*
  * Initialize for encryption/decryption.
@@ -98,9 +98,7 @@ crypt_zip_init(
     zs->keys[1] = 591751049L;
     zs->keys[2] = 878082192L;
     for (p = key; *p != NUL; ++p)
-    {
 	UPDATE_KEYS_ZIP(zs->keys, (int)*p);
-    }
 }
 
 /*

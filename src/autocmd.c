@@ -517,9 +517,7 @@ au_del_group(char_u *name)
 	}
 	vim_free(AUGROUP_NAME(i));
 	if (in_use)
-	{
 	    AUGROUP_NAME(i) = get_deleted_augroup();
-	}
 	else
 	    AUGROUP_NAME(i) = NULL;
     }

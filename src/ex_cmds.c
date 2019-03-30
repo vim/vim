@@ -3361,9 +3361,7 @@ do_write(exarg_T *eap)
 	/* Change directories when the 'acd' option is set and the file name
 	 * got changed or set. */
 	if (eap->cmdidx == CMD_saveas || name_was_missing)
-	{
 	    DO_AUTOCHDIR;
-	}
     }
 
 theend:

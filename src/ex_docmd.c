@@ -8407,9 +8407,7 @@ ex_splitview(exarg_T *eap)
 		|| cmdmod.browse
 # endif
 	   )
-	{
 	    RESET_BINDING(curwin);
-	}
 	else
 	    do_check_scrollbind(FALSE);
 	do_exedit(eap, old_curwin);

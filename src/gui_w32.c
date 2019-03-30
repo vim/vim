@@ -1155,9 +1155,7 @@ _OnFindRepl(void)
     /* If the OS is Windows NT, and 'encoding' differs from active codepage:
      * convert text from wide string. */
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
 	findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
-    }
 
     if (s_findrep_struct.Flags & FR_DIALOGTERM)
 	/* Give main window the focus back. */
@@ -2633,9 +2631,7 @@ gui_mch_update_tabline(void)
 	    }
 	}
 	if (wstr == NULL)
-	{
 	    TabCtrl_SetItem(s_tabhwnd, nr, &tie);
-	}
     }
 
     /* Remove any old labels. */
@@ -4289,9 +4285,7 @@ gui_mswin_get_menu_height(
     }
 
     if (fix_window && menu_height != old_menu_height)
-    {
 	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
-    }
     old_menu_height = menu_height;
 
     return menu_height;
@@ -4861,9 +4855,7 @@ _WndProc(
     default:
 #ifdef MSWIN_FIND_REPLACE
 	if (uMsg == s_findrep_msg && s_findrep_msg != 0)
-	{
 	    _OnFindRepl();
-	}
 #endif
 	return MyWindowProc(hwnd, uMsg, wParam, lParam);
     }
