@@ -195,9 +195,11 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
  */
 #define GET_LOC_LIST(wp) (IS_LL_WINDOW(wp) ? wp->w_llist_ref : wp->w_llist)
 
+// Macro to loop through all items in a quickfix list
+// Quickfix item index starts from 1, so i below starts at 1
 #define FOR_ALL_QFL_ITEMS(qfl, qfp, i) \
-		    for (i = 0, qfp = qfl->qf_start; \
-			    !got_int && i < qfl->qf_count && qfp != NULL; \
+		    for (i = 1, qfp = qfl->qf_start; \
+			    !got_int && i <= qfl->qf_count && qfp != NULL; \
 			    ++i, qfp = qfp->qf_next)
 
 /*
@@ -1585,6 +1587,47 @@ qf_cleanup_state(qfstate_T *pstate)
 }
 
 /*
+ * Process the next line from a file/buffer/list/string and add it
+ * to the quickfix list 'qfl'.
+ */
+    static int
+qf_init_process_nextline(
+	qf_list_T	*qfl,
+	efm_T		*fmt_first,
+	qfstate_T	*state,
+	qffields_T	*fields)
+{
+    int		    status;
+
+    // Get the next line from a file/buffer/list/string
+    status = qf_get_nextline(state);
+    if (status != QF_OK)
+	return status;
+
+    status = qf_parse_line(qfl, state->linebuf, state->linelen,
+	    fmt_first, fields);
+    if (status != QF_OK)
+	return status;
+
+    return qf_add_entry(qfl,
+		qfl->qf_directory,
+		(*fields->namebuf || qfl->qf_directory != NULL)
+		? fields->namebuf
+		: ((qfl->qf_currfile != NULL && fields->valid)
+		    ? qfl->qf_currfile : (char_u *)NULL),
+		fields->module,
+		0,
+		fields->errmsg,
+		fields->lnum,
+		fields->col,
+		fields->use_viscol,
+		fields->pattern,
+		fields->enr,
+		fields->type,
+		fields->valid);
+}
+
+/*
  * Read the errorfile "efile" into memory, line by line, building the error
  * list.
  * Alternative: when "efile" is NULL read errors from buffer "buf".
@@ -1676,39 +1719,14 @@ qf_init_ext(
     // Try to recognize one of the error formats in each line.
     while (!got_int)
     {
-	// Get the next line from a file/buffer/list/string
-	status = qf_get_nextline(&state);
+	status = qf_init_process_nextline(qfl, fmt_first, &state, &fields);
 	if (status == QF_NOMEM)		// memory alloc failure
 	    goto qf_init_end;
 	if (status == QF_END_OF_INPUT)	// end of input
 	    break;
-
-	status = qf_parse_line(qfl, state.linebuf, state.linelen,
-							fmt_first, &fields);
 	if (status == QF_FAIL)
 	    goto error2;
-	if (status == QF_NOMEM)
-	    goto qf_init_end;
-	if (status == QF_IGNORE_LINE)
-	    continue;
 
-	if (qf_add_entry(qfl,
-			qfl->qf_directory,
-			(*fields.namebuf || qfl->qf_directory != NULL)
-			    ? fields.namebuf
-			    : ((qfl->qf_currfile != NULL && fields.valid)
-				? qfl->qf_currfile : (char_u *)NULL),
-			fields.module,
-			0,
-			fields.errmsg,
-			fields.lnum,
-			fields.col,
-			fields.use_viscol,
-			fields.pattern,
-			fields.enr,
-			fields.type,
-			fields.valid) == FAIL)
-	    goto error2;
 	line_breakcheck();
     }
     if (state.fd == NULL || !ferror(state.fd))
@@ -2551,7 +2569,7 @@ is_qf_entry_present(qf_list_T *qfl, qfline_T *qf_ptr)
 	if (qfp == qf_ptr)
 	    break;
 
-    if (i == qfl->qf_count) // Entry is not found
+    if (i > qfl->qf_count) // Entry is not found
 	return FALSE;
 
     return TRUE;
@@ -3554,21 +3572,11 @@ qf_list(exarg_T *eap)
 
     if (qfl->qf_nonevalid)
 	all = TRUE;
-    qfp = qfl->qf_start;
-    for (i = 1; !got_int && i <= qfl->qf_count; )
+    FOR_ALL_QFL_ITEMS(qfl, qfp, i)
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
-	{
-	    if (got_int)
-		break;
-
 	    qf_list_entry(qfp, i, i == qfl->qf_index);
-	}
 
-	qfp = qfp->qf_next;
-	if (qfp == NULL)
-	    break;
-	++i;
 	ui_breakcheck();
     }
 }
@@ -4915,7 +4923,7 @@ qf_get_cur_valid_idx(exarg_T *eap)
     static int
 qf_get_nth_valid_entry(qf_list_T *qfl, int n, int fdo)
 {
-    qfline_T	*qfp = qfl->qf_start;
+    qfline_T	*qfp;
     int		i, eidx;
     int		prev_fnum = 0;
 
@@ -4923,8 +4931,8 @@ qf_get_nth_valid_entry(qf_list_T *qfl, int n, int fdo)
     if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
 	return 1;
 
-    for (i = 1, eidx = 0; i <= qfl->qf_count && qfp != NULL;
-	    i++, qfp = qfp->qf_next)
+    eidx = 0;
+    FOR_ALL_QFL_ITEMS(qfl, qfp, i)
     {
 	if (qfp->qf_valid)
 	{
@@ -6744,14 +6752,18 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
 	// If the location list window is open, then create a new empty
 	// location list
 	qf_info_T *new_ll = qf_alloc_stack(QFLT_LOCATION);
-	new_ll->qf_bufnr = qfwin->w_buffer->b_fnum;
 
-	// first free the list reference in the location list window
-	ll_free_all(&qfwin->w_llist_ref);
+	if (new_ll != NULL)
+	{
+	    new_ll->qf_bufnr = qfwin->w_buffer->b_fnum;
 
-	qfwin->w_llist_ref = new_ll;
-	if (wp != qfwin)
-	    win_set_loclist(wp, new_ll);
+	    // first free the list reference in the location list window
+	    ll_free_all(&qfwin->w_llist_ref);
+
+	    qfwin->w_llist_ref = new_ll;
+	    if (wp != qfwin)
+		win_set_loclist(wp, new_ll);
+	}
     }
 }
 
