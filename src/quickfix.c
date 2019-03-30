@@ -2031,7 +2031,7 @@ check_quickfix_busy(void)
 
 /*
  * Add an entry to the end of the list of errors.
- * Returns OK or FAIL.
+ * Returns QF_OK or QF_FAIL.
  */
     static int
 qf_add_entry(
@@ -2053,7 +2053,7 @@ qf_add_entry(
     qfline_T	**lastp;	// pointer to qf_last or NULL
 
     if ((qfp = (qfline_T *)alloc((unsigned)sizeof(qfline_T))) == NULL)
-	return FAIL;
+	return QF_FAIL;
     if (bufnum != 0)
     {
 	buf_T *buf = buflist_findnr(bufnum);
@@ -2068,7 +2068,7 @@ qf_add_entry(
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
     {
 	vim_free(qfp);
-	return FAIL;
+	return QF_FAIL;
     }
     qfp->qf_lnum = lnum;
     qfp->qf_col = col;
@@ -2079,7 +2079,7 @@ qf_add_entry(
     {
 	vim_free(qfp->qf_text);
 	vim_free(qfp);
-	return FAIL;
+	return QF_FAIL;
     }
     if (module == NULL || *module == NUL)
 	qfp->qf_module = NULL;
@@ -2088,7 +2088,7 @@ qf_add_entry(
 	vim_free(qfp->qf_text);
 	vim_free(qfp->qf_pattern);
 	vim_free(qfp);
-	return FAIL;
+	return QF_FAIL;
     }
     qfp->qf_nr = nr;
     if (type != 1 && !vim_isprintc(type)) // only printable chars allowed
@@ -2119,7 +2119,7 @@ qf_add_entry(
 	qfl->qf_ptr = qfp;
     }
 
-    return OK;
+    return QF_OK;
 }
 
 /*
@@ -2185,7 +2185,7 @@ copy_loclist_entries(qf_list_T *from_qfl, qf_list_T *to_qfl)
 		    from_qfp->qf_pattern,
 		    from_qfp->qf_nr,
 		    0,
-		    from_qfp->qf_valid) == FAIL)
+		    from_qfp->qf_valid) == QF_FAIL)
 	    return FAIL;
 
 	// qf_add_entry() will not set the qf_num field, as the
@@ -5338,7 +5338,7 @@ vgr_match_buflines(
 			0,	    // nr
 			0,	    // type
 			TRUE	    // valid
-			) == FAIL)
+			) == QF_FAIL)
 	    {
 		got_int = TRUE;
 		break;
@@ -6442,7 +6442,7 @@ qf_add_entries(
 
 	retval = qf_add_entry_from_dict(qfl, d, li == list->lv_first,
 								&valid_entry);
-	if (retval == FAIL)
+	if (retval == QF_FAIL)
 	    break;
     }
 
@@ -7215,7 +7215,7 @@ hgr_search_file(
 			0,	// nr
 			1,	// type
 			TRUE	// valid
-			) == FAIL)
+			) == QF_FAIL)
 	    {
 		got_int = TRUE;
 		if (line != IObuff)
