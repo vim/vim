@@ -1599,6 +1599,7 @@ BASIC_SRC = \
 	if_cscope.c \
 	if_xcmdsrv.c \
 	indent.c \
+	insexpand.c \
 	json.c \
 	list.c \
 	main.c \
@@ -1713,6 +1714,7 @@ OBJ_COMMON = \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
+	objects/insexpand.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -1844,6 +1846,7 @@ PRO_AUTO = \
 	if_ruby.pro \
 	if_xcmdsrv.pro \
 	indent.pro \
+	insexpand.pro \
 	json.pro \
 	list.pro \
 	main.pro \
@@ -3098,6 +3101,9 @@ objects/if_tcl.o: if_tcl.c
 objects/indent.o: indent.c
 	$(CCC) -o $@ indent.c
 
+objects/insexpand.o: insexpand.c
+	$(CCC) -o $@ insexpand.c
+
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
 
@@ -3498,6 +3504,10 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c vim.h protodef.h auto/config.h feature.h \
  proto.h globals.h version.h
 objects/indent.o: indent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/insexpand.o: insexpand.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
