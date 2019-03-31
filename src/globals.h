@@ -822,10 +822,6 @@ EXTERN int	enc_latin9 INIT(= FALSE);	/* 'encoding' is latin9 */
 #endif
 EXTERN int	has_mbyte INIT(= 0);		/* any multi-byte encoding */
 
-#if defined(MSWIN)
-EXTERN int	wide_WindowProc INIT(= FALSE);	/* use wide WindowProc() */
-#endif
-
 /*
  * To speed up BYTELEN() we fill a table with the byte lengths whenever
  * enc_utf8 or enc_dbcs changes.

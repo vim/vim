@@ -390,7 +390,7 @@ directx_binddc(void)
 }
 #endif
 
-/* use of WindowProc depends on wide_WindowProc */
+/* use of WindowProc depends on Global IME */
 #define MyWindowProc vim_WindowProc
 
 extern int current_font_height;	    /* this is in os_mswin.c */
@@ -1273,9 +1273,7 @@ vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 #ifdef GLOBAL_IME
     return global_ime_DefWindowProc(hwnd, message, wParam, lParam);
 #else
-    if (wide_WindowProc)
-	return DefWindowProcW(hwnd, message, wParam, lParam);
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    return DefWindowProcW(hwnd, message, wParam, lParam);
 #endif
 }
 
@@ -4063,7 +4061,6 @@ static UINT	s_menu_id = 100;
 #define USE_SYSMENU_FONT
 
 #define VIM_NAME	"vim"
-#define VIM_CLASS	"Vim"
 #define VIM_CLASSW	L"Vim"
 
 /* Initial size for the dialog template.  For gui_mch_dialog() it's fixed,
@@ -4937,9 +4934,6 @@ gui_mch_prepare(int *argc, char **argv)
     int
 gui_mch_init(void)
 {
-    const char szVimWndClass[] = VIM_CLASS;
-    const char szTextAreaClass[] = "VimTextArea";
-    WNDCLASS wndclass;
     const WCHAR szVimWndClassW[] = VIM_CLASSW;
     const WCHAR szTextAreaClassW[] = L"VimTextArea";
     WNDCLASSW wndclassw;
@@ -4989,31 +4983,7 @@ gui_mch_init(void)
 #endif
 		    RegisterClassW(&wndclassw)) == 0)
 	    return FAIL;
-	else
-	    wide_WindowProc = TRUE;
     }
-
-    if (!wide_WindowProc)
-	if (GetClassInfo(s_hinst, szVimWndClass, &wndclass) == 0)
-	{
-	    wndclass.style = CS_DBLCLKS;
-	    wndclass.lpfnWndProc = _WndProc;
-	    wndclass.cbClsExtra = 0;
-	    wndclass.cbWndExtra = 0;
-	    wndclass.hInstance = s_hinst;
-	    wndclass.hIcon = LoadIcon(wndclass.hInstance, "IDR_VIM");
-	    wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	    wndclass.hbrBackground = s_brush;
-	    wndclass.lpszMenuName = NULL;
-	    wndclass.lpszClassName = szVimWndClass;
-
-	    if ((
-#ifdef GLOBAL_IME
-			atom =
-#endif
-			RegisterClass(&wndclass)) == 0)
-		return FAIL;
-	}
 
     if (vim_parent_hwnd != NULL)
     {
@@ -5024,9 +4994,9 @@ gui_mch_init(void)
 	    /* Open inside the specified parent window.
 	     * TODO: last argument should point to a CLIENTCREATESTRUCT
 	     * structure. */
-	    s_hwnd = CreateWindowEx(
+	    s_hwnd = CreateWindowExW(
 		WS_EX_MDICHILD,
-		szVimWndClass, "Vim MSWindows GUI",
+		szVimWndClassW, L"Vim MSWindows GUI",
 		WS_OVERLAPPEDWINDOW | WS_CHILD
 				 | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 0xC000,
 		gui_win_x == -1 ? CW_USEDEFAULT : gui_win_x,
@@ -5057,8 +5027,8 @@ gui_mch_init(void)
 
 	/* Create a window.  If win_socket_id is not zero without border and
 	 * titlebar, it will be reparented below. */
-	s_hwnd = CreateWindow(
-		szVimWndClass, "Vim MSWindows GUI",
+	s_hwnd = CreateWindowW(
+		szVimWndClassW, L"Vim MSWindows GUI",
 		(win_socket_id == 0 ? WS_OVERLAPPEDWINDOW : WS_POPUP)
 					  | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		gui_win_x == -1 ? CW_USEDEFAULT : gui_win_x,
@@ -5085,59 +5055,31 @@ gui_mch_init(void)
 #endif
 
     /* Create the text area window */
-    if (wide_WindowProc)
+    if (GetClassInfoW(s_hinst, szTextAreaClassW, &wndclassw) == 0)
     {
-	if (GetClassInfoW(s_hinst, szTextAreaClassW, &wndclassw) == 0)
-	{
-	    wndclassw.style = CS_OWNDC;
-	    wndclassw.lpfnWndProc = _TextAreaWndProc;
-	    wndclassw.cbClsExtra = 0;
-	    wndclassw.cbWndExtra = 0;
-	    wndclassw.hInstance = s_hinst;
-	    wndclassw.hIcon = NULL;
-	    wndclassw.hCursor = LoadCursor(NULL, IDC_ARROW);
-	    wndclassw.hbrBackground = NULL;
-	    wndclassw.lpszMenuName = NULL;
-	    wndclassw.lpszClassName = szTextAreaClassW;
+	wndclassw.style = CS_OWNDC;
+	wndclassw.lpfnWndProc = _TextAreaWndProc;
+	wndclassw.cbClsExtra = 0;
+	wndclassw.cbWndExtra = 0;
+	wndclassw.hInstance = s_hinst;
+	wndclassw.hIcon = NULL;
+	wndclassw.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndclassw.hbrBackground = NULL;
+	wndclassw.lpszMenuName = NULL;
+	wndclassw.lpszClassName = szTextAreaClassW;
 
-	    if (RegisterClassW(&wndclassw) == 0)
-		return FAIL;
-	}
-
-	s_textArea = CreateWindowExW(
-	    0,
-	    szTextAreaClassW, L"Vim text area",
-	    WS_CHILD | WS_VISIBLE, 0, 0,
-	    100,				// Any value will do for now
-	    100,				// Any value will do for now
-	    s_hwnd, NULL,
-	    s_hinst, NULL);
-    }
-    else if (GetClassInfo(s_hinst, szTextAreaClass, &wndclass) == 0)
-    {
-	wndclass.style = CS_OWNDC;
-	wndclass.lpfnWndProc = _TextAreaWndProc;
-	wndclass.cbClsExtra = 0;
-	wndclass.cbWndExtra = 0;
-	wndclass.hInstance = s_hinst;
-	wndclass.hIcon = NULL;
-	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hbrBackground = NULL;
-	wndclass.lpszMenuName = NULL;
-	wndclass.lpszClassName = szTextAreaClass;
-
-	if (RegisterClass(&wndclass) == 0)
+	if (RegisterClassW(&wndclassw) == 0)
 	    return FAIL;
-
-	s_textArea = CreateWindowEx(
-	    0,
-	    szTextAreaClass, "Vim text area",
-	    WS_CHILD | WS_VISIBLE, 0, 0,
-	    100,				// Any value will do for now
-	    100,				// Any value will do for now
-	    s_hwnd, NULL,
-	    s_hinst, NULL);
     }
+
+    s_textArea = CreateWindowExW(
+	0,
+	szTextAreaClassW, L"Vim text area",
+	WS_CHILD | WS_VISIBLE, 0, 0,
+	100,				// Any value will do for now
+	100,				// Any value will do for now
+	s_hwnd, NULL,
+	s_hinst, NULL);
 
     if (s_textArea == NULL)
 	return FAIL;
