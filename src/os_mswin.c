@@ -105,7 +105,7 @@ typedef int LRESULT;
 typedef int MOUSE_EVENT_RECORD;
 typedef int NEWTEXTMETRICW;
 typedef int PACL;
-typedef int PRINTDLG;
+typedef int PRINTDLGW;
 typedef int PSECURITY_DESCRIPTOR;
 typedef int PSID;
 typedef int SECURITY_INFORMATION;
@@ -1016,7 +1016,7 @@ mch_set_winpos(int x, int y)
  */
 
 static HFONT		prt_font_handles[2][2][2];
-static PRINTDLG		prt_dlg;
+static PRINTDLGW	prt_dlg;
 static const int	boldface[2] = {FW_REGULAR, FW_BOLD};
 static TEXTMETRIC	prt_tm;
 static int		prt_line_height;
@@ -1165,7 +1165,7 @@ PrintHookProc(
 {
     HWND	hwndOwner;
     RECT	rc, rcDlg, rcOwner;
-    PRINTDLG	*pPD;
+    PRINTDLGW	*pPD;
 
     if (uiMsg == WM_INITDIALOG)
     {
@@ -1197,7 +1197,7 @@ PrintHookProc(
 		SWP_NOSIZE);
 
 	/*  tackle the printdlg copiesctrl problem */
-	pPD = (PRINTDLG *)lParam;
+	pPD = (PRINTDLGW *)lParam;
 	pPD->nCopies = (WORD)pPD->lCustData;
 	SetDlgItemInt( hDlg, edt3, pPD->nCopies, FALSE );
 	/*  Bring the window to top */
@@ -1340,13 +1340,13 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     int			pifBold;
     int			pifUnderline;
 
-    DEVMODE		*mem;
+    DEVMODEW		*mem;
     DEVNAMES		*devname;
     int			i;
 
     bUserAbort = &(psettings->user_abort);
-    vim_memset(&prt_dlg, 0, sizeof(PRINTDLG));
-    prt_dlg.lStructSize = sizeof(PRINTDLG);
+    vim_memset(&prt_dlg, 0, sizeof(PRINTDLGW));
+    prt_dlg.lStructSize = sizeof(PRINTDLGW);
 #ifndef FEAT_GUI
     GetConsoleHwnd();	    /* get value of s_hwnd */
 #endif
@@ -1387,11 +1387,11 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	else
 	{
 	    prt_dlg.Flags |= PD_RETURNDEFAULT;
-	    if (PrintDlg(&prt_dlg) == 0)
+	    if (PrintDlgW(&prt_dlg) == 0)
 		goto init_fail_dlg;
 	}
     }
-    else if (PrintDlg(&prt_dlg) == 0)
+    else if (PrintDlgW(&prt_dlg) == 0)
 	goto init_fail_dlg;
     else
     {
@@ -1427,7 +1427,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      * passed back correctly. It must be retrieved from the
      * hDevMode struct.
      */
-    mem = (DEVMODE *)GlobalLock(prt_dlg.hDevMode);
+    mem = (DEVMODEW *)GlobalLock(prt_dlg.hDevMode);
     if (mem != NULL)
     {
 	if (mem->dmCopies != 1)
@@ -1442,34 +1442,20 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     devname = (DEVNAMES *)GlobalLock(prt_dlg.hDevNames);
     if (devname != 0)
     {
-	char_u	*printer_name = (char_u *)devname + devname->wDeviceOffset;
-	char_u	*port_name = (char_u *)devname +devname->wOutputOffset;
+	WCHAR	*wprinter_name = (WCHAR *)devname + devname->wDeviceOffset;
+	WCHAR	*wport_name = (WCHAR *)devname + devname->wOutputOffset;
 	char_u	*text = (char_u *)_("to %s on %s");
-	char_u  *printer_name_orig = printer_name;
-	char_u	*port_name_orig = port_name;
+	char_u  *printer_name = utf16_to_enc(wprinter_name, NULL);
+	char_u	*port_name = utf16_to_enc(wport_name, NULL);
 
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	{
-	    char_u  *to_free = NULL;
-	    int     maxlen;
-
-	    acp_to_enc(printer_name, (int)STRLEN(printer_name), &to_free,
-								    &maxlen);
-	    if (to_free != NULL)
-		printer_name = to_free;
-	    acp_to_enc(port_name, (int)STRLEN(port_name), &to_free, &maxlen);
-	    if (to_free != NULL)
-		port_name = to_free;
-	}
-	prt_name = alloc((unsigned)(STRLEN(printer_name) + STRLEN(port_name)
-							     + STRLEN(text)));
+	if (printer_name != NULL && port_name != NULL)
+	    prt_name = alloc((unsigned)(STRLEN(printer_name)
+					+ STRLEN(port_name) + STRLEN(text)));
 	if (prt_name != NULL)
 	    wsprintf((char *)prt_name, (const char *)text,
 		    printer_name, port_name);
-	if (printer_name != printer_name_orig)
-	    vim_free(printer_name);
-	if (port_name != port_name_orig)
-	    vim_free(port_name);
+	vim_free(printer_name);
+	vim_free(port_name);
     }
     GlobalUnlock(prt_dlg.hDevNames);
 
