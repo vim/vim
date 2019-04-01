@@ -2544,6 +2544,7 @@ termcapinit(char_u *name)
 	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
 static char_u		out_buf[OUT_SIZE + 1];
 static int		out_pos = 0;	/* number of chars in out_buf */
+#define MAX_SEQUENCES	80
 
 /*
  * out_flush(): flush the output buffer
@@ -2660,7 +2661,8 @@ out_char_nf(unsigned c)
     void
 out_str_nf(char_u *s)
 {
-    if (out_pos > OUT_SIZE - 20)  /* avoid terminal strings being split up */
+    /* avoid terminal strings being split up */
+    if (out_pos > OUT_SIZE - MAX_SEQUENCES)
 	out_flush();
     while (*s)
 	out_char_nf(*s++);
@@ -2694,7 +2696,7 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_SEQUENCES)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	for (p = s; *s; ++s)
@@ -2762,7 +2764,7 @@ out_str(char_u *s)
 	}
 #endif
 	/* avoid terminal strings being split up */
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_SEQUENCES)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
@@ -6733,16 +6735,12 @@ update_tcap(int attr)
 }
 
 # ifdef FEAT_TERMGUICOLORS
-#  define KSSIZE 20
 struct ks_tbl_s
 {
     int  code;		// value of KS_
     char *vtp;		// code in vtp mode
     char *vtp2;		// code in vtp2 mode
-    char buf[KSSIZE];   // save buffer in non-vtp mode
-    char vbuf[KSSIZE];  // save buffer in vtp mode
-    char v2buf[KSSIZE]; // save buffer in vtp2 mode
-    char arr[KSSIZE];   // real buffer
+    char *org;		// code in non-vtp mode
 };
 
 static struct ks_tbl_s ks_tbl[] =
@@ -6811,14 +6809,7 @@ swap_tcap(void)
 	{
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
-	    {
-		STRNCPY(ks->buf, bt->bt_string, KSSIZE);
-		STRNCPY(ks->vbuf, ks->vtp, KSSIZE);
-		STRNCPY(ks->v2buf, ks->vtp2, KSSIZE);
-
-		STRNCPY(ks->arr, bt->bt_string, KSSIZE);
-		bt->bt_string = &ks->arr[0];
-	    }
+		ks->org = bt->bt_string;
 	}
 	init_done = TRUE;
 	curr_mode = CMODEINDEX;
@@ -6831,25 +6822,6 @@ swap_tcap(void)
     else
 	mode = CMODEINDEX;
 
-    for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
-    {
-	bt = find_first_tcap(DEFAULT_TERM, ks->code);
-	if (bt != NULL)
-	{
-	    switch (curr_mode)
-	    {
-	    case CMODEINDEX:
-		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
-		break;
-	    case CMODE24:
-		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
-		break;
-	    default:
-		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
-	    }
-	}
-    }
-
     if (mode != curr_mode)
     {
 	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
@@ -6860,13 +6832,13 @@ swap_tcap(void)
 		switch (mode)
 		{
 		case CMODEINDEX:
-		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
+		    bt->bt_string = ks->org;
 		    break;
 		case CMODE24:
-		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
+		    bt->bt_string = ks->vtp;
 		    break;
 		default:
-		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
+		    bt->bt_string = ks->vtp2;
 		}
 	    }
 	}

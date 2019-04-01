@@ -638,7 +638,17 @@ term_start(
 	    && STRCMP(argvar->vval.v_string, "NONE") == 0)
 	res = create_pty_only(term, opt);
     else
+    {
+#if defined(MSWIN) && !defined(FEAT_GUI)
+	in_terminal_startup = TRUE;
+	control_console_color_rgb();
+#endif
 	res = term_and_job_init(term, argvar, argv, opt, &orig_opt);
+#if defined(MSWIN) && !defined(FEAT_GUI)
+	in_terminal_startup = FALSE;
+	control_console_color_rgb();
+#endif
+    }
 
     newbuf = curbuf;
     if (res == OK)

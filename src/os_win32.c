@@ -6295,12 +6295,7 @@ mch_write(
 		    ++p;
 		    args[argc] = getdigits(&p);
 		    argc += (argc < 15) ? 1 : 0;
-		    if (p > s + len)
-			break;
 		} while (*p == ';');
-
-		if (p > s + len)
-		    break;
 
 		arg1 = args[0];
 		arg2 = args[1];
@@ -7608,7 +7603,7 @@ set_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
-    int id;
+    int id, idTerm;
     guicolor_T fg = INVALCOLOR;
     guicolor_T bg = INVALCOLOR;
     int ctermfg;
@@ -7618,6 +7613,15 @@ set_console_color_rgb(void)
 	return;
 
     id = syn_name2id((char_u *)"Normal");
+#ifdef FEAT_TERMINAL
+    /* The "Terminal" highlight group overrules the defaults. */
+    if (in_terminal_startup)
+    {
+	idTerm = syn_name2id((char_u *)"Terminal");
+	if (idTerm > 0)
+	    id = idTerm;
+    }
+#endif
     if (id > 0 && p_tgc)
 	syn_id2colors(id, &fg, &bg);
     if (fg == INVALCOLOR)
@@ -7636,6 +7640,14 @@ set_console_color_rgb(void)
 	bg = ctermbg != -1 ? ctermtoxterm(ctermbg) : default_console_color_bg;
 	cterm_normal_bg_gui_color = bg;
     }
+
+#ifdef FEAT_TERMINAL
+    // Index color is not used.
+    cterm_normal_fg_gui_color = fg;
+    cterm_normal_bg_gui_color = bg;
+    return;
+#endif
+
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
