@@ -114,6 +114,33 @@ func Test_listchars()
   set listchars& ff&
 endfunc
 
+" Test that unicode listchars characters get properly inserted
+func Test_listchars_unicode()
+  enew!
+  let oldencoding=&encoding
+  set encoding=utf-8
+  set ff=unix
+
+  set listchars=eol:⇔,space:␣,nbsp:≠,tab:←↔→
+  set list
+
+  let nbsp = nr2char(0xa0)
+  call append(0, [
+        \ "a\tb c".nbsp."d"
+        \ ])
+  let expected = [
+        \ 'a←↔↔↔↔↔→b␣c≠d⇔'
+        \ ]
+  redraw!
+  call cursor(1, 1)
+  call assert_equal(expected, ScreenLines(1, virtcol('$')))
+  let &encoding=oldencoding
+  enew!
+  set listchars& ff&
+endfunction
+
+" Tests that characters with a leading 0x20 composing character won't get
+" treated as a space.
 func Test_listchars_composing()
   enew!
   let oldencoding=&encoding
@@ -130,9 +157,8 @@ func Test_listchars_composing()
         \ ]
   redraw!
   call cursor(1, 1)
-  let got = ScreenLines(1, virtcol('$'))
-  bw!
-  call assert_equal(expected, got)
+  call assert_equal(expected, ScreenLines(1, virtcol('$')))
   let &encoding=oldencoding
+  enew!
   set listchars& ff&
 endfunction
