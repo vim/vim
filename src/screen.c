@@ -4809,33 +4809,28 @@ win_line(
 #endif
 
 		// 'list': change char 160 to lcs_nbsp and space to lcs_space.
-		if (wp->w_p_list)
-		{
-		    if ((c == 160
+		if (wp->w_p_list
+			&& (((c == 160
 			      || (mb_utf8 && (mb_c == 160 || mb_c == 0x202f)))
-			    && lcs_nbsp)
+				&& lcs_nbsp)
+			|| (c == ' ' && mb_l == 1 && lcs_space && ptr - line <= trailcol)))
+		{
+		    c = (c == ' ') ? lcs_space : lcs_nbsp;
+		    if (area_attr == 0 && search_attr == 0)
 		    {
-			c = lcs_nbsp;
-			mb_c = c;
-			if (enc_utf8 && utf_char2len(c) > 1)
-			{
-			    mb_utf8 = TRUE;
-			    u8cc[0] = 0;
-			    c = 0xc0;
-			}
-			else
-			    mb_utf8 = FALSE;
+			n_attr = 1;
+			extra_attr = HL_ATTR(HLF_8);
+			saved_attr2 = char_attr; /* save current attr */
 		    }
-		    else if (c == ' ' && lcs_space && ptr - line <= trailcol)
+		    mb_c = c;
+		    if (enc_utf8 && utf_char2len(c) > 1)
 		    {
-			c = lcs_space;
-			if (mb_utf8 == FALSE && area_attr == 0 && search_attr == 0)
-			{
-			    n_attr = 1;
-			    extra_attr = HL_ATTR(HLF_8);
-			    saved_attr2 = char_attr; // save current attr
-			}
+			mb_utf8 = TRUE;
+			u8cc[0] = 0;
+			c = 0xc0;
 		    }
+		    else
+			mb_utf8 = FALSE;
 		}
 
 		if (trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
