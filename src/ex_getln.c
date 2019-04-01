@@ -27,6 +27,7 @@ struct cmdline_info
     char_u	*cmdbuff;	/* pointer to command line buffer */
     int		cmdbufflen;	/* length of cmdbuff */
     int		cmdlen;		/* number of chars in command line */
+    int		cmdprevlen;	/* preceding number of chars in command line */
     int		cmdpos;		/* current cursor position */
     int		cmdspos;	/* cursor column on screen */
     int		cmdfirstc;	/* ':', '/', '?', '=', '>' or NUL */
@@ -35,6 +36,9 @@ struct cmdline_info
     int		cmdattr;	/* attributes for prompt */
     int		overstrike;	/* Typing mode on the command line.  Shared by
 				   getcmdline() and put_on_cmdline(). */
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    int		hidden;		/* hide chars in command line. */
+#endif
     expand_T	*xpc;		/* struct being used for expansion, xp_pattern
 				   may point into cmdbuff */
     int		xp_context;	/* type of expansion */
@@ -909,6 +913,9 @@ getcmdline_int(
 #endif
 
     ccline.overstrike = FALSE;		    /* always start in insert mode */
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    ccline.hidden = cmdline_star > 0;
+#endif
 
 #ifdef FEAT_SEARCH_EXTRA
     init_incsearch_state(&is_state);
@@ -1052,6 +1059,8 @@ getcmdline_int(
 				   cause the command not to be executed. */
 
 	cursorcmd();		/* set the cursor on the right spot */
+
+	ccline.cmdprevlen = ccline.cmdlen;
 
 	/* Get a character.  Ignore K_IGNORE and K_NOP, they should not do
 	 * anything, such as stop completion. */
@@ -2324,6 +2333,16 @@ getcmdline_int(
 		bracketed_paste(PASTE_CMDLINE, FALSE, NULL);
 		goto cmdline_changed;
 
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+	case Ctrl_X:
+		if (cmdline_star > 0)
+		{
+		    ccline.hidden = !ccline.hidden;
+		    goto cmdline_changed;
+		}
+		// FALLTHROUGH
+#endif
+
 	default:
 #ifdef UNIX
 		if (c == intr_char)
@@ -2615,7 +2634,8 @@ allbuf_locked(void)
 cmdline_charsize(int idx)
 {
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    if (cmdline_star > 0)	    /* showing '*', always 1 position */
+    if (ccline.hidden)
+	// showing '*', always 1 position
 	return 1;
 #endif
     return ptr2cells(ccline.cmdbuff + idx);
@@ -2651,7 +2671,7 @@ set_cmdspos_cursor(void)
     }
     else
 	m = MAXCOL;
-    for (i = 0; i < ccline.cmdlen && i < ccline.cmdpos; ++i)
+    for (i = 0; i < ccline.cmdlen && i < ccline.cmdpos; )
     {
 	c = cmdline_charsize(i);
 	/* Count ">" for double-wide multi-byte char that doesn't fit. */
@@ -2664,8 +2684,7 @@ set_cmdspos_cursor(void)
 	    ccline.cmdspos -= c;
 	    break;
 	}
-	if (has_mbyte)
-	    i += (*mb_ptr2len)(ccline.cmdbuff + i) - 1;
+	i += MB_PTR2LEN(ccline.cmdbuff + i);
     }
 }
 
@@ -3190,23 +3209,31 @@ free_arshape_buf(void)
 draw_cmdline(int start, int len)
 {
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    int		i;
+    if (ccline.hidden)
+    {
+	int append = ccline.cmdlen > ccline.cmdprevlen;
+	int c;
+	int i;
 
-    if (cmdline_star > 0)
-	for (i = 0; i < len; ++i)
+	for (i = 0; i < len; i += c)
 	{
+	    c = MB_PTR2LEN(ccline.cmdbuff + start + i);
+	    if (append && i + c >= len)
+		break;
 	    msg_putchar('*');
-	    if (has_mbyte)
-		i += (*mb_ptr2len)(ccline.cmdbuff + start + i) - 1;
 	}
-    else
+	if (!append)
+	    return;
+	start += i;
+	len -= i;
+    }
 #endif
 #ifdef FEAT_ARABIC
-	if (p_arshape && !p_tbidi && cmdline_has_arabic(start, len))
+    if (p_arshape && !p_tbidi && cmdline_has_arabic(start, len))
     {
 	static int	buflen = 0;
 	char_u		*p;
-	int		j;
+	int		i;
 	int		newlen = 0;
 	int		mb_l;
 	int		pc, pc1 = 0;
@@ -3238,11 +3265,11 @@ draw_cmdline(int start, int len)
 	    newlen = 1;
 	}
 
-	for (j = start; j < start + len; j += mb_l)
+	for (i = start; i < start + len; i += mb_l)
 	{
-	    p = ccline.cmdbuff + j;
-	    u8c = utfc_ptr2char_len(p, u8cc, start + len - j);
-	    mb_l = utfc_ptr2len_len(p, start + len - j);
+	    p = ccline.cmdbuff + i;
+	    u8c = utfc_ptr2char_len(p, u8cc, start + len - i);
+	    mb_l = utfc_ptr2len_len(p, start + len - i);
 	    if (ARABIC_CHAR(u8c))
 	    {
 		/* Do Arabic shaping. */
@@ -3252,7 +3279,7 @@ draw_cmdline(int start, int len)
 		    pc = prev_c;
 		    pc1 = prev_c1;
 		    prev_c1 = u8cc[0];
-		    if (j + mb_l >= start + len)
+		    if (i + mb_l >= start + len)
 			nc = NUL;
 		    else
 			nc = utf_ptr2char(p + mb_l);
@@ -3260,14 +3287,14 @@ draw_cmdline(int start, int len)
 		else
 		{
 		    /* displaying from left to right */
-		    if (j + mb_l >= start + len)
+		    if (i + mb_l >= start + len)
 			pc = NUL;
 		    else
 		    {
 			int	pcc[MAX_MCO];
 
 			pc = utfc_ptr2char_len(p + mb_l, pcc,
-						      start + len - j - mb_l);
+						      start + len - i - mb_l);
 			pc1 = pcc[0];
 		    }
 		    nc = prev_c;
@@ -3466,7 +3493,7 @@ put_on_cmdline(char_u *str, int len, int redraw)
 	}
 	else
 	    m = MAXCOL;
-	for (i = 0; i < len; ++i)
+	for (i = 0; i < len; )
 	{
 	    c = cmdline_charsize(ccline.cmdpos);
 	    /* count ">" for a double-wide char that doesn't fit. */
@@ -3478,15 +3505,11 @@ put_on_cmdline(char_u *str, int len, int redraw)
 	    if (ccline.cmdspos + c < m)
 		ccline.cmdspos += c;
 
-	    if (has_mbyte)
-	    {
-		c = (*mb_ptr2len)(ccline.cmdbuff + ccline.cmdpos) - 1;
-		if (c > len - i - 1)
-		    c = len - i - 1;
-		ccline.cmdpos += c;
-		i += c;
-	    }
-	    ++ccline.cmdpos;
+	    c = MB_PTR2LEN(ccline.cmdbuff + ccline.cmdpos);
+	    if (c > len - i)
+		c = len - i;
+	    ccline.cmdpos += c;
+	    i += c;
 	}
     }
     if (redraw)
