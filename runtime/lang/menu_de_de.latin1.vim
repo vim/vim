@@ -1,8 +1,9 @@
 " Menu Translations:	German / Deutsch
-" Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
-" Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
-"			Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sat, 11 Mar 2006 22:40:00 CEST
+" Maintainer:		Jón Arnar Briem <jonbriem@gmail.com>
+" Originally By:    Georg Dahn <gorgyd@yahoo.co.uk>
+"                   Marcin Dalecki <dalecki@cs.net.pl>
+"			        Johannes Zellner <johannes@zellner.org>
+" Last Change:	Mon, 1 April 2019
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.
