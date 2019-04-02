@@ -29,5 +29,5 @@ let &l:include = '^\s*include'
 
 " For matchit.vim, suggested by Albert Netymk.
 if exists("loaded_matchit")
-  let b:match_words = '\<if\(n\)\=\(eq\|def\)\>:\<else\>:\<endif\>,\<define\>:\<endef\>'
+  let b:match_words = '^ *ifn\=\(eq\|def\)\>:^ *else\(\s\+ifn\=\(eq\|def\)\)\=\>:^ *endif\>,\<define\>:\<endef\>,^!\s*if\(n\=def\)\=\>:^!\s*else\(if\(n\=def\)\=\)\=\>:^!\s*endif\>'
 endif
