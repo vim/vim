@@ -5784,12 +5784,7 @@ dos_expandpath(
     STRCPY(s, "*.*");
     wn = enc_to_utf16(buf, NULL);
     if (wn != NULL)
-    {
 	hFind = FindFirstFileW(wn, &wfb);
-	if (hFind == INVALID_HANDLE_VALUE
-			  && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-	    VIM_CLEAR(wn);
-    }
     ok = (hFind != INVALID_HANDLE_VALUE);
 
     while (ok)
