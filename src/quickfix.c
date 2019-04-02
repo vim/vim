@@ -2162,7 +2162,9 @@ ll_get_or_alloc_list(win_T *wp)
 
 /*
  * Get the quickfix/location list stack to use for the specified Ex command.
- * For a location list command, returns NULL if the list is not found.
+ * For a location list command, returns the stack for the current window.  If
+ * the location list is not found, then returns NULL and prints an error
+ * message if 'print_emsg' is TRUE.
  */
     static qf_info_T *
 qf_cmd_get_stack(exarg_T *eap, int print_emsg)
@@ -2185,9 +2187,10 @@ qf_cmd_get_stack(exarg_T *eap, int print_emsg)
 
 /*
  * Get the quickfix/location list stack to use for the specified Ex command.
- * For a location list command, if the location list is not present, then
- * allocates a new one.  Returns NULL if the allocation fails.  For a location
- * list command, sets 'pwinp' to curwin.
+ * For a location list command, returns the stack for the current window.
+ * If the location list is not present, then allocates a new one.
+ * Returns NULL if the allocation fails.  For a location list command, sets
+ * 'pwinp' to curwin.
  */
     static qf_info_T *
 qf_cmd_get_or_alloc_stack(exarg_T *eap, win_T **pwinp)
