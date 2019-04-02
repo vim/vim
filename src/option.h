@@ -570,6 +570,9 @@ EXTERN char_u	*p_imsf;	/* 'imstatusfunc' */
 EXTERN int	p_imcmdline;	/* 'imcmdline' */
 EXTERN int	p_imdisable;	/* 'imdisable' */
 EXTERN int	p_is;		/* 'incsearch' */
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+EXTERN char_u	*p_iscopt;	/* 'inputsecretopt' */
+#endif
 EXTERN int	p_im;		/* 'insertmode' */
 EXTERN char_u	*p_isf;		/* 'isfname' */
 EXTERN char_u	*p_isi;		/* 'isident' */

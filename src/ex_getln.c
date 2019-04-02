@@ -63,6 +63,12 @@ static int	extra_char = NUL;  /* extra character to display when redrawing
 				    * the command line */
 static int	extra_char_shift;
 
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+// Options for inputsecret().
+static int	inputsecret_show_last;	// TRUE: show last appended character
+static int	inputsecret_reveal;	// TRUE: can toggle hide/reveal
+#endif
+
 #ifdef FEAT_CMDHIST
 typedef struct hist_entry
 {
@@ -2335,7 +2341,7 @@ getcmdline_int(
 
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	case Ctrl_X:
-		if (cmdline_star > 0)
+		if (cmdline_star > 0 && inputsecret_reveal)
 		{
 		    ccline.hidden = !ccline.hidden;
 		    goto cmdline_changed;
@@ -3211,9 +3217,11 @@ draw_cmdline(int start, int len)
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
     if (ccline.hidden)
     {
-	int append = ccline.cmdlen > ccline.cmdprevlen;
+	int append;
 	int c;
 	int i;
+
+	append = ccline.cmdlen > ccline.cmdprevlen && inputsecret_show_last;
 
 	for (i = 0; i < len; i += c)
 	{
@@ -3827,6 +3835,19 @@ gotocmdline(int clr)
 	msg_clr_eos();	    /* will reset clear_cmdline */
     windgoto(cmdline_row, 0);
 }
+
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    void
+inputsecretopt_was_set()
+{
+    inputsecret_show_last = FALSE;
+    inputsecret_reveal = FALSE;
+    if (strstr((char *)p_iscopt, "showlast") != NULL)
+	inputsecret_show_last = TRUE;
+    if (strstr((char *)p_iscopt, "reveal") != NULL)
+	inputsecret_reveal = TRUE;
+}
+#endif
 
 /*
  * Check the word in front of the cursor for an abbreviation.

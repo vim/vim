@@ -1584,6 +1584,15 @@ static struct vimoption options[] =
     {"infercase",   "inf",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_inf, PV_INF,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"inputsecretopt", "iscopt", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+			    (char_u *)&p_iscopt, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"insertmode",  "im",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_im, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
@@ -3229,6 +3238,9 @@ static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
+#endif
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+static char *(p_iscopt_values[]) = {"showlast", "reveal", NULL};
 #endif
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
@@ -6834,6 +6846,17 @@ did_set_string_option(
     }
 #endif
 
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    /* 'inputsecretopt' */
+    else if (varp == &p_iscopt)
+    {
+	if (check_opt_strings(*varp, p_iscopt_values, TRUE) != OK)
+	    errmsg = e_invarg;
+	else
+	    inputsecretopt_was_set();
+    }
+#endif
+
     /* 'matchpairs' */
     else if (gvarp == &p_mps)
     {
@@ -7467,7 +7490,6 @@ did_set_string_option(
 	    curwin->w_nrwidth_line_count = 0;
     }
 #endif
-
 
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
     /* 'toolbar' */
