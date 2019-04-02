@@ -1107,6 +1107,10 @@ call append("$", "cedit\tkey used to open the command-line window")
 call <SID>OptionG("cedit", &cedit)
 call append("$", "cmdwinheight\theight of the command-line window")
 call <SID>OptionG("cwh", &cwh)
+if has('cryptv') || has('eval')
+  call append("$", "inputsecretopt\toptions for inputsecret()")
+  call <SID>OptionG("iscopt", &iscopt)
+endif
 
 
 call <SID>Header("executing external commands")
