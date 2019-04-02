@@ -5670,11 +5670,10 @@ dos_expandpath(
     int		matches;
     int		len;
     int		starstar = FALSE;
-    static int	stardepth = 0;	    /* depth for "**" expansion */
-    WIN32_FIND_DATA	fb;
-    HANDLE		hFind = (HANDLE)0;
+    static int	stardepth = 0;	    // depth for "**" expansion
+    HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
-    WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
+    WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
 
@@ -5783,33 +5782,16 @@ dos_expandpath(
 
     /* Scan all files in the directory with "dir/ *.*" */
     STRCPY(s, "*.*");
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	/* The active codepage differs from 'encoding'.  Attempt using the
-	 * wide function.  If it fails because it is not implemented fall back
-	 * to the non-wide version (for Windows 98) */
-	wn = enc_to_utf16(buf, NULL);
-	if (wn != NULL)
-	{
-	    hFind = FindFirstFileW(wn, &wfb);
-	    if (hFind == INVALID_HANDLE_VALUE
-			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-		VIM_CLEAR(wn);
-	}
-    }
-
-    if (wn == NULL)
-	hFind = FindFirstFile((LPCSTR)buf, &fb);
+    wn = enc_to_utf16(buf, NULL);
+    if (wn != NULL)
+	hFind = FindFirstFileW(wn, &wfb);
     ok = (hFind != INVALID_HANDLE_VALUE);
 
     while (ok)
     {
-	if (wn != NULL)
-	    p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
-	else
-	    p = (char_u *)fb.cFileName;
-	/* Ignore entries starting with a dot, unless when asked for.  Accept
-	 * all entries found with "matchname". */
+	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+	// Ignore entries starting with a dot, unless when asked for.  Accept
+	// all entries found with "matchname".
 	if ((p[0] != '.' || starts_with_dot
 			 || ((flags & EW_DODOT)
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
@@ -5851,13 +5833,8 @@ dos_expandpath(
 	    }
 	}
 
-	if (wn != NULL)
-	{
-	    vim_free(p);
-	    ok = FindNextFileW(hFind, &wfb);
-	}
-	else
-	    ok = FindNextFile(hFind, &fb);
+	vim_free(p);
+	ok = FindNextFileW(hFind, &wfb);
 
 	/* If no more matches and no match was used, try expanding the name
 	 * itself.  Finds the long name of a short filename. */
@@ -5865,15 +5842,12 @@ dos_expandpath(
 	{
 	    STRCPY(s, matchname);
 	    FindClose(hFind);
+	    vim_free(wn);
+	    wn = enc_to_utf16(buf, NULL);
 	    if (wn != NULL)
-	    {
-		vim_free(wn);
-		wn = enc_to_utf16(buf, NULL);
-		if (wn != NULL)
-		    hFind = FindFirstFileW(wn, &wfb);
-	    }
-	    if (wn == NULL)
-		hFind = FindFirstFile((LPCSTR)buf, &fb);
+		hFind = FindFirstFileW(wn, &wfb);
+	    else
+		hFind =	INVALID_HANDLE_VALUE;
 	    ok = (hFind != INVALID_HANDLE_VALUE);
 	    VIM_CLEAR(matchname);
 	}
