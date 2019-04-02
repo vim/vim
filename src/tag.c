@@ -1943,14 +1943,16 @@ line_read_in:
 	    }
 
 parse_line:
-	    if (vim_strchr(lbuf, NL) == NULL
+	    // When the line is too long the NUL will not be in the
+	    // last-but-one byte (see vim_fgets()).
+	    // Has been reported for Mozilla JS with extremely long names.
+	    // In that case we can't parse it and we ignore the line.
+	    if (lbuf[LSIZE - 2] != NUL
 #ifdef FEAT_CSCOPE
 					     && !use_cscope
 #endif
 					     )
 	    {
-		// Truncated line, ignore it.  Has been reported for
-		// Mozilla JS with extremely long names.
 		if (p_verbose >= 5)
 		{
 		    verbose_enter();

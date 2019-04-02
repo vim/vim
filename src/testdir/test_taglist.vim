@@ -98,3 +98,16 @@ func Test_tagfiles()
   call delete('Xtags2')
   bd
 endfunc
+
+" For historical reasons we support a tags file where the last line is missing
+" the newline.
+func Test_tagsfile_without_trailing_newline()
+  call writefile(["Foo\tfoo\t1"], 'Xtags', 'b')
+  set tags=Xtags
+
+  let tl = taglist('.*')
+  call assert_equal(1, len(tl))
+  call assert_equal('Foo', tl[0].name)
+
+  call delete('Xtags')
+endfunc
