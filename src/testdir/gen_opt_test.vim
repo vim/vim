@@ -102,6 +102,7 @@ let test_values = {
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [['', 'S-space'], ['xxx']],
+      \ 'inputsecretopt': [['', 'showlast', 'showlast,reveal'], ['xxx', 'showlast,,reveal,']],
       \ 'isfname': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'isident': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'iskeyword': [['', '@', '@,48-52'], ['xxx', '@48']],
