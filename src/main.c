@@ -96,7 +96,7 @@ static char_u *start_dir = NULL;	/* current working dir on startup */
 static int has_dash_c_arg = FALSE;
 
     int
-# ifdef FEAT_GUI_MSWIN
+# ifdef MSWIN
 #  ifdef __BORLANDC__
 _cdecl
 #  endif

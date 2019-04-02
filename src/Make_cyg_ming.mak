@@ -691,7 +691,7 @@ CFLAGS += -s
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
-GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o $(OUTDIR)/os_w32exe.o
+GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
@@ -737,9 +737,9 @@ OBJ = \
 	$(OUTDIR)/normal.o \
 	$(OUTDIR)/ops.o \
 	$(OUTDIR)/option.o \
-	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/os_mswin.o \
-	$(OUTDIR)/winclip.o \
+	$(OUTDIR)/os_w32exe.o \
+	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/quickfix.o \
@@ -759,6 +759,7 @@ OBJ = \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
 	$(OUTDIR)/vimrc.o \
+	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
 
 ifdef PERL
@@ -864,6 +865,8 @@ XDIFF_DEPS = \
 ifdef MZSCHEME
 MZSCHEME_SUFFIX = Z
 endif
+
+LFLAGS += -municode
 
 ifeq ($(GUI),yes)
 TARGET := gvim$(DEBUG_SUFFIX).exe
