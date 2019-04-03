@@ -2544,7 +2544,13 @@ termcapinit(char_u *name)
 	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
 static char_u		out_buf[OUT_SIZE + 1];
 static int		out_pos = 0;	/* number of chars in out_buf */
-#define MAX_SEQUENCES	80
+
+/*
+ * Since the maximum number of SGR parameters shown as a normal value range is
+ * 16, the buffer needs 4 * 16 + a few free spaces. Make it handle correctly
+ * as long as it is shown to be normal on Windows.
+ */
+#define MAX_ESC_SEQ_LEN	80
 
 /*
  * out_flush(): flush the output buffer
@@ -2662,7 +2668,7 @@ out_char_nf(unsigned c)
 out_str_nf(char_u *s)
 {
     /* avoid terminal strings being split up */
-    if (out_pos > OUT_SIZE - MAX_SEQUENCES)
+    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
     while (*s)
 	out_char_nf(*s++);
@@ -2696,7 +2702,7 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos > OUT_SIZE - MAX_SEQUENCES)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	for (p = s; *s; ++s)
@@ -2764,7 +2770,7 @@ out_str(char_u *s)
 	}
 #endif
 	/* avoid terminal strings being split up */
-	if (out_pos > OUT_SIZE - MAX_SEQUENCES)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
@@ -6735,14 +6741,24 @@ update_tcap(int attr)
 }
 
 # ifdef FEAT_TERMGUICOLORS
+#  define KSSIZE 20
 struct ks_tbl_s
 {
     int  code;		// value of KS_
     char *vtp;		// code in vtp mode
     char *vtp2;		// code in vtp2 mode
-    char *org;		// code in non-vtp mode
+    char buf[KSSIZE];   // save buffer in non-vtp mode
+    char vbuf[KSSIZE];  // save buffer in vtp mode
+    char v2buf[KSSIZE]; // save buffer in vtp2 mode
+    char arr[KSSIZE];   // real buffer
 };
 
+/*
+ * Extending these strings can cause the screen to glitch as the sequence can
+ * not fit into the buffer, due to the size of the screen. This extneded the
+ * limit length, but if the problem occurs again, please consider
+ * MAX_ESC_SEQ_LEN.
+ */
 static struct ks_tbl_s ks_tbl[] =
 {
     {(int)KS_ME,  "\033|0m",  "\033|0m"},   // normal
@@ -6809,7 +6825,14 @@ swap_tcap(void)
 	{
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
-		ks->org = bt->bt_string;
+	    {
+		STRNCPY(ks->buf, bt->bt_string, KSSIZE);
+		STRNCPY(ks->vbuf, ks->vtp, KSSIZE);
+		STRNCPY(ks->v2buf, ks->vtp2, KSSIZE);
+
+		STRNCPY(ks->arr, bt->bt_string, KSSIZE);
+		bt->bt_string = &ks->arr[0];
+	    }
 	}
 	init_done = TRUE;
 	curr_mode = CMODEINDEX;
@@ -6822,6 +6845,25 @@ swap_tcap(void)
     else
 	mode = CMODEINDEX;
 
+    for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
+    {
+	bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	if (bt != NULL)
+	{
+	    switch (curr_mode)
+	    {
+	    case CMODEINDEX:
+		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
+		break;
+	    case CMODE24:
+		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
+		break;
+	    default:
+		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
+	    }
+	}
+    }
+
     if (mode != curr_mode)
     {
 	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
@@ -6832,13 +6874,13 @@ swap_tcap(void)
 		switch (mode)
 		{
 		case CMODEINDEX:
-		    bt->bt_string = ks->org;
+		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
 		    break;
 		case CMODE24:
-		    bt->bt_string = ks->vtp;
+		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
 		    break;
 		default:
-		    bt->bt_string = ks->vtp2;
+		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
 		}
 	    }
 	}

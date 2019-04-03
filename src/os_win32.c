@@ -6295,7 +6295,12 @@ mch_write(
 		    ++p;
 		    args[argc] = getdigits(&p);
 		    argc += (argc < 15) ? 1 : 0;
+		    if (p > s + len)
+			break;
 		} while (*p == ';');
+
+		if (p > s + len)
+		    break;
 
 		arg1 = args[0];
 		arg2 = args[1];
