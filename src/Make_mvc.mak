@@ -742,7 +742,7 @@ OBJ = \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
 	$(OUTDIR)\os_mswin.obj \
-	$(OUTDIR)\winclip.obj \
+	$(OUTDIR)\os_w32exe.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
@@ -761,6 +761,7 @@ OBJ = \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
 	$(OUTDIR)\vim.res
 
@@ -799,8 +800,7 @@ GUI_INCL = \
 GUI_OBJ = \
 	$(OUTDIR)\gui.obj \
 	$(OUTDIR)\gui_beval.obj \
-	$(OUTDIR)\gui_w32.obj \
-	$(OUTDIR)\os_w32exe.obj
+	$(OUTDIR)\gui_w32.obj
 GUI_LIB = \
 	gdi32.lib version.lib $(IME_LIB) \
 	winspool.lib comctl32.lib advapi32.lib shell32.lib netapi32.lib \

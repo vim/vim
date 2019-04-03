@@ -28,20 +28,22 @@ void _cdecl SaveInst(HINSTANCE hInst);
 #endif
 
 #ifndef PROTO
+# ifdef FEAT_GUI
     int WINAPI
-WinMain(
+wWinMain(
     HINSTANCE	hInstance,
     HINSTANCE	hPrevInst UNUSED,
-    LPSTR	lpszCmdLine UNUSED,
+    LPWSTR	lpszCmdLine UNUSED,
     int		nCmdShow UNUSED)
+# else
+    int
+wmain(int argc UNUSED, wchar_t **argv UNUSED)
+# endif
 {
-    int		argc = 0;
-    char	**argv = NULL;
-
 # ifdef FEAT_GUI
     SaveInst(hInstance);
 # endif
-    VimMain(argc, argv);
+    VimMain(0, NULL);
 
     return 0;
 }
