@@ -139,8 +139,8 @@ func Test_listchars_unicode()
   set listchars& ff&
 endfunction
 
-" Tests that characters with a leading 0x20 composing character won't get
-" treated as a space.
+" Tests that space characters following composing character won't get replaced
+" by listchars.
 func Test_listchars_composing()
   enew!
   let oldencoding=&encoding
@@ -148,12 +148,15 @@ func Test_listchars_composing()
   set ff=unix
   set list
 
-  set listchars=eol:$,space:_
+  set listchars=eol:$,space:_,nbsp:=
+  
+  let nbsp1 = nr2char(0xa0)
+  let nbsp2 = nr2char(0x202f)
   call append(0, [
-        \ "  \u3099	 \u309A"
+        \ "  \u3099\t \u309A".nbsp1.nbsp1."\u0302".nbsp2.nbsp2."\u0302",
         \ ])
   let expected = [
-        \ "_ \u3099^I \u309A$"
+        \ "_ \u3099^I \u309A=".nbsp1."\u0302=".nbsp2."\u0302$"
         \ ]
   redraw!
   call cursor(1, 1)
