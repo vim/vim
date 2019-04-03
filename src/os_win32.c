@@ -7863,6 +7863,12 @@ set_console_color_rgb(void)
 				  : maybe_colormanip(default_console_color_bg);
 	cterm_normal_bg_gui_color = bg;
     }
+
+#ifdef FEAT_TERMINAL
+    if (bt_terminal(curwin->w_buffer))
+	return;
+#endif
+
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
