@@ -2538,12 +2538,18 @@ termcapinit(char_u *name)
 }
 
 /*
- * the number of calls to ui_write is reduced by using the buffer "out_buf"
+ * The number of calls to ui_write is reduced by using "out_buf".
  */
 #define OUT_SIZE	2047
-	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
+
+// add one to allow mch_write() in os_win32.c to append a NUL
 static char_u		out_buf[OUT_SIZE + 1];
-static int		out_pos = 0;	/* number of chars in out_buf */
+
+static int		out_pos = 0;	// number of chars in out_buf
+
+// Since the maximum number of SGR parameters shown as a normal value range is
+// 16, the escape sequence length can be 4 * 16 + lead + tail.
+#define MAX_ESC_SEQ_LEN	80
 
 /*
  * out_flush(): flush the output buffer
@@ -2660,12 +2666,14 @@ out_char_nf(unsigned c)
     void
 out_str_nf(char_u *s)
 {
-    if (out_pos > OUT_SIZE - 20)  /* avoid terminal strings being split up */
+    // avoid terminal strings being split up
+    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
+
     while (*s)
 	out_char_nf(*s++);
 
-    /* For testing we write one string at a time. */
+    // For testing we write one string at a time.
     if (p_wd)
 	out_flush();
 }
@@ -2694,7 +2702,7 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	for (p = s; *s; ++s)
@@ -2762,7 +2770,7 @@ out_str(char_u *s)
 	}
 #endif
 	/* avoid terminal strings being split up */
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
