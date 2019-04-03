@@ -536,5 +536,10 @@ func Test_writedelay()
   call assert_inrange(30 * 0.01, 999.0, elapsed)
 
   bwipe!
-  delfunc ChangeText
+endfunc
+
+func Test_visualbell()
+  set visualbell
+  call assert_beeps('normal 0h')
+  set novisualbell
 endfunc
