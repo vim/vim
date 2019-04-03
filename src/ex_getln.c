@@ -27,7 +27,6 @@ struct cmdline_info
     char_u	*cmdbuff;	/* pointer to command line buffer */
     int		cmdbufflen;	/* length of cmdbuff */
     int		cmdlen;		/* number of chars in command line */
-    int		cmdprevlen;	/* preceding number of chars in command line */
     int		cmdpos;		/* current cursor position */
     int		cmdspos;	/* cursor column on screen */
     int		cmdfirstc;	/* ':', '/', '?', '=', '>' or NUL */
@@ -37,7 +36,9 @@ struct cmdline_info
     int		overstrike;	/* Typing mode on the command line.  Shared by
 				   getcmdline() and put_on_cmdline(). */
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    int		hidden;		/* hide chars in command line. */
+    int		cmdprevlen;	/* preceding number of chars in command line */
+    int		cmdprevpos;	/* preceding cursor position */
+    int		hidden;		/* hide chars in command line */
 #endif
     expand_T	*xpc;		/* struct being used for expansion, xp_pattern
 				   may point into cmdbuff */
@@ -919,7 +920,9 @@ getcmdline_int(
 #endif
 
     ccline.overstrike = FALSE;		    /* always start in insert mode */
+
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    ccline.cmdprevlen = ccline.cmdprevpos = 0;
     ccline.hidden = cmdline_star > 0;
 #endif
 
@@ -1066,7 +1069,9 @@ getcmdline_int(
 
 	cursorcmd();		/* set the cursor on the right spot */
 
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	ccline.cmdprevlen = ccline.cmdlen;
+#endif
 
 	/* Get a character.  Ignore K_IGNORE and K_NOP, they should not do
 	 * anything, such as stop completion. */
@@ -2411,7 +2416,7 @@ getcmdline_int(
  */
 cmdline_not_changed:
 #ifdef FEAT_SEARCH_EXTRA
-	if (!is_state.incsearch_postponed)
+	if (!is_state.incsearch_postponed && !ccline.hidden)
 	    continue;
 #endif
 
@@ -2640,7 +2645,7 @@ allbuf_locked(void)
 cmdline_charsize(int idx)
 {
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    if (ccline.hidden)
+    if (ccline.hidden && idx < ccline.cmdprevpos)
 	// showing '*', always 1 position
 	return 1;
 #endif
@@ -3217,23 +3222,21 @@ draw_cmdline(int start, int len)
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
     if (ccline.hidden)
     {
-	int append;
 	int c;
-	int i;
+	int show_lastchar = inputsecret_show_last
+					&& ccline.cmdlen >  ccline.cmdprevlen
+					&& ccline.cmdpos >= ccline.cmdprevpos;
 
-	append = ccline.cmdlen > ccline.cmdprevlen && inputsecret_show_last;
-
-	for (i = 0; i < len; i += c)
+	for (; len > 0; start += c, len -= c)
 	{
-	    c = MB_PTR2LEN(ccline.cmdbuff + start + i);
-	    if (append && i + c >= len)
+	    c = MB_PTR2LEN(ccline.cmdbuff + start);
+	    if (show_lastchar && c >= len)
 		break;
 	    msg_putchar('*');
 	}
-	if (!append)
+	ccline.cmdprevpos = start;
+	if (len <= 0)
 	    return;
-	start += i;
-	len -= i;
     }
 #endif
 #ifdef FEAT_ARABIC
