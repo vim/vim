@@ -1,5 +1,5 @@
 /* os_mswin.c */
-void mch_exit(int r);
+void mch_exit_g(int r);
 void mch_early_init(void);
 int mch_input_isatty(void);
 void mch_settitle(char_u *title, char_u *icon);

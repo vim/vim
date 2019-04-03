@@ -200,7 +200,7 @@ int _stricoll(char *a, char *b)
  * Careful: mch_exit() may be called before mch_init()!
  */
     void
-mch_exit(int r)
+mch_exit_g(int r)
 {
     exiting = TRUE;
 
@@ -552,7 +552,7 @@ vim_stat(const char *name, stat_T *stp)
     return n;
 }
 
-#if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
     void
 mch_settmode(int tmode UNUSED)
 {
@@ -598,7 +598,7 @@ mch_suspend(void)
 # undef display_errors
 #endif
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(VIMDLL)
 /*
  * Display the saved error message(s).
  */
@@ -607,23 +607,32 @@ display_errors(void)
 {
     char *p;
 
-    if (error_ga.ga_data != NULL)
+# ifdef VIMDLL
+    if (gui.in_use)
+# endif
     {
-	/* avoid putting up a message box with blanks only */
-	for (p = (char *)error_ga.ga_data; *p; ++p)
-	    if (!isspace(*p))
-	    {
-		(void)gui_mch_dialog(
+	if (error_ga.ga_data != NULL)
+	{
+	    /* avoid putting up a message box with blanks only */
+	    for (p = (char *)error_ga.ga_data; *p; ++p)
+		if (!isspace(*p))
+		{
+		    (void)gui_mch_dialog(
 				     gui.starting ? VIM_INFO :
 					     VIM_ERROR,
 				     gui.starting ? (char_u *)_("Message") :
 					     (char_u *)_("Error"),
 				     (char_u *)p, (char_u *)_("&Ok"),
 					1, NULL, FALSE);
-		break;
-	    }
-	ga_clear(&error_ga);
+		    break;
+		}
+	    ga_clear(&error_ga);
+	}
     }
+# ifdef VIMDLL
+    else
+	FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
+# endif
 }
 #else
     void
@@ -715,7 +724,7 @@ mch_chdir(char *path)
 }
 
 
-#ifdef FEAT_GUI_MSWIN
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
 /*
  * return non-zero if a character is available
  */

@@ -6802,11 +6802,14 @@ did_set_string_option(
 	{
 	    out_str(T_ME);
 	    redraw_later(CLEAR);
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 	    /* Since t_me has been set, this probably means that the user
 	     * wants to use this as default colors.  Need to reset default
 	     * background/foreground colors. */
-	    mch_set_normal_colors();
+# ifdef VIMDLL
+	    if (!gui.in_use)
+# endif
+		mch_set_normal_colors();
 #endif
 	}
 	if (varp == &T_BE && termcap_active)

@@ -2238,11 +2238,20 @@ gui_mch_draw_menubar(void)
 #endif /*FEAT_MENU*/
 
 #ifndef PROTO
+# ifdef VIMDLL
+__declspec(dllexport)
+# endif
 void
 _cdecl
 SaveInst(HINSTANCE hInst)
 {
     s_hinst = hInst;
+# ifdef VIMDLL
+    if (hInst != NULL)
+	gui.starting = TRUE;
+    else
+	gui.starting = FALSE;
+# endif
 }
 #endif
 
