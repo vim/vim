@@ -9238,6 +9238,9 @@ set_num_option(
 	highlight_gui_started();
 #endif
 	init_highlight(TRUE, FALSE);
+#if defined(MSWIN) && !defined(FEAT_GUI) && defined(FEAT_TERMGUICOLORS)
+	control_console_color_rgb();
+#endif
     }
 
     /*

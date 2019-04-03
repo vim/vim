@@ -2551,10 +2551,8 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
     {
 	guicolor_T fg, bg;
 
-	fg = maybe_colormanip(gui_mch_get_rgb_color(cellfg.red, cellfg.green,
-								 cellfg.blue));
-	bg = maybe_colormanip(gui_mch_get_rgb_color(cellbg.red, cellbg.green,
-								 cellbg.blue));
+	fg = gui_mch_get_rgb_color(cellfg.red, cellfg.green, cellfg.blue);
+	bg = gui_mch_get_rgb_color(cellbg.red, cellbg.green, cellbg.blue);
 	return get_gui_attr_idx(attr, fg, bg);
     }
     else
@@ -2564,10 +2562,8 @@ cell2attr(VTermScreenCellAttrs cellattrs, VTermColor cellfg, VTermColor cellbg)
     {
 	guicolor_T fg, bg;
 
-	fg = maybe_colormanip(gui_get_rgb_color_cmn(cellfg.red, cellfg.green,
-								 cellfg.blue));
-	bg = maybe_colormanip(gui_get_rgb_color_cmn(cellbg.red, cellbg.green,
-								 cellbg.blue));
+	fg = gui_get_rgb_color_cmn(cellfg.red, cellfg.green, cellfg.blue);
+	bg = gui_get_rgb_color_cmn(cellbg.red, cellbg.green, cellbg.blue);
 
 	return get_tgc_attr_idx(attr, fg, bg);
     }
@@ -3567,8 +3563,7 @@ init_default_colors(term_T *term)
 	/* In an MS-Windows console we know the normal colors. */
 	if (cterm_normal_fg_color > 0)
 	{
-	    cterm_color2vterm(
-		        maybe_colormanip_index(cterm_normal_fg_color) - 1, fg);
+	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
 # if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
 	    tmp = fg->red;
 	    fg->red = fg->blue;
@@ -3582,8 +3577,7 @@ init_default_colors(term_T *term)
 
 	if (cterm_normal_bg_color > 0)
 	{
-	    cterm_color2vterm(
-			maybe_colormanip_index(cterm_normal_bg_color) - 1, bg);
+	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
 # if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
 	    tmp = bg->red;
 	    bg->red = bg->blue;

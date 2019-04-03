@@ -7949,7 +7949,12 @@ do_highlight(
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
-		    HL_TABLE()[idx].sg_gui_fg = i;
+#  if defined(FEAT_TERMINAL)
+		    if (is_terminal_group)
+			HL_TABLE()[idx].sg_gui_fg = i;
+		    else
+#  endif
+			HL_TABLE()[idx].sg_gui_fg = maybe_colormanip(i);
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
 		    {
@@ -8000,7 +8005,12 @@ do_highlight(
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
-		    HL_TABLE()[idx].sg_gui_bg = i;
+#  if defined(FEAT_TERMINAL)
+		    if (is_terminal_group)
+			HL_TABLE()[idx].sg_gui_bg = i;
+		    else
+#  endif
+			HL_TABLE()[idx].sg_gui_bg = maybe_colormanip(i);
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
 		    {
@@ -8050,7 +8060,12 @@ do_highlight(
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
 		{
-		    HL_TABLE()[idx].sg_gui_sp = i;
+#  if defined(FEAT_TERMINAL)
+		    if (is_terminal_group)
+			HL_TABLE()[idx].sg_gui_sp = i;
+		    else
+#  endif
+			HL_TABLE()[idx].sg_gui_sp = maybe_colormanip(i);
 # endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
 		    {
@@ -8431,8 +8446,15 @@ set_normal_colors(void)
 	    {
 		/* if the GUI color is INVALCOLOR then we use the default cterm
 		 * color */
+#  if defined(MSWIN)
 		cterm_normal_fg_gui_color = HL_TABLE()[idx].sg_gui_fg;
 		cterm_normal_bg_gui_color = HL_TABLE()[idx].sg_gui_bg;
+#  else
+		cterm_normal_fg_gui_color =
+				   maybe_colormanip(HL_TABLE()[idx].sg_gui_fg);
+		cterm_normal_bg_gui_color =
+				   maybe_colormanip(HL_TABLE()[idx].sg_gui_bg);
+#  endif
 		must_redraw = CLEAR;
 	    }
 	}
@@ -8693,14 +8715,13 @@ color_name2handle(char_u *name)
 	if (gui.in_use)
 #endif
 #ifdef FEAT_GUI
-	    return maybe_colormanip(gui.norm_pixel);
+	    return gui.norm_pixel;
 #endif
 #ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_fg_gui_color != INVALCOLOR)
-	    return maybe_colormanip(cterm_normal_fg_gui_color);
+	    return cterm_normal_fg_gui_color;
 	/* Guess that the foreground is black or white. */
-	return maybe_colormanip(GUI_GET_COLOR(
-			        (char_u *)(*p_bg == 'l' ? "black" : "white")));
+	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "black" : "white"));
 #endif
     }
     if (STRICMP(name, "bg") == 0 || STRICMP(name, "background") == 0)
@@ -8709,18 +8730,17 @@ color_name2handle(char_u *name)
 	if (gui.in_use)
 #endif
 #ifdef FEAT_GUI
-	    return maybe_colormanip(gui.back_pixel);
+	    return gui.back_pixel;
 #endif
 #ifdef FEAT_TERMGUICOLORS
 	if (cterm_normal_bg_gui_color != INVALCOLOR)
-	    return maybe_colormanip(cterm_normal_bg_gui_color);
+	    return cterm_normal_bg_gui_color;
 	/* Guess that the background is white or black. */
-	return maybe_colormanip(GUI_GET_COLOR(
-				(char_u *)(*p_bg == 'l' ? "white" : "black")));
+	return GUI_GET_COLOR((char_u *)(*p_bg == 'l' ? "white" : "black"));
 #endif
     }
 
-    return maybe_colormanip(GUI_GET_COLOR(name));
+	return GUI_GET_COLOR(name);
 }
 #endif
 
@@ -9401,7 +9421,7 @@ highlight_color(
 	if (n < 0)
 	    return NULL;
 	sprintf((char *)name, "%d", n);
-	return name;
+        return name;
     }
     /* term doesn't have color */
     return NULL;
@@ -9520,9 +9540,9 @@ set_hl_attr(
     else
     {
 	at_en.ae_attr = sgp->sg_gui;
-	at_en.ae_u.gui.fg_color = maybe_colormanip(sgp->sg_gui_fg);
-	at_en.ae_u.gui.bg_color = maybe_colormanip(sgp->sg_gui_bg);
-	at_en.ae_u.gui.sp_color = maybe_colormanip(sgp->sg_gui_sp);
+	at_en.ae_u.gui.fg_color = sgp->sg_gui_fg;
+	at_en.ae_u.gui.bg_color = sgp->sg_gui_bg;
+	at_en.ae_u.gui.sp_color = sgp->sg_gui_sp;
 	at_en.ae_u.gui.font = sgp->sg_font;
 # ifdef FEAT_XFONTSET
 	at_en.ae_u.gui.fontset = sgp->sg_fontset;
@@ -9558,10 +9578,8 @@ set_hl_attr(
     else
     {
 	at_en.ae_attr = sgp->sg_cterm;
-	at_en.ae_u.cterm.fg_color =
-				  maybe_colormanip_index(sgp->sg_cterm_fg);
-	at_en.ae_u.cterm.bg_color =
-				  maybe_colormanip_index(sgp->sg_cterm_bg);
+	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
+	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 # ifdef FEAT_TERMGUICOLORS
 #  ifdef MSWIN
 	{
@@ -9868,31 +9886,11 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
     hl_id = syn_get_final_id(hl_id);
     sgp = &HL_TABLE()[hl_id - 1];	    /* index is ID minus one */
 
-    *fgp = maybe_colormanip(sgp->sg_gui_fg);
-    *bgp = maybe_colormanip(sgp->sg_gui_bg);
+    *fgp = sgp->sg_gui_fg;
+    *bgp = sgp->sg_gui_bg;
     return sgp->sg_gui;
 }
 #endif
-
-/*
- * Change to monochrome.
- */
-    int
-maybe_colormanip_index(int color)
-{
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN) \
-	&& defined(FEAT_TERMGUICOLORS)
-    char_u r, g, b, idx;
-
-    if (p_ns && color != 0)
-    {
-	cterm_color2rgb(color - 1, &r, &g, &b, &idx);
-	/* NTSC 24 gradations index  plus one */
-	return (((2 * r + 4 * g + b) / 7) * 24) / 256 + 232 + 1;
-    }
-#endif
-    return color;
-}
 
 #if (defined(MSWIN) \
 	&& !defined(FEAT_GUI_MSWIN) \
@@ -9904,8 +9902,8 @@ syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 
     hl_id = syn_get_final_id(hl_id);
     sgp = &HL_TABLE()[hl_id - 1];	    /* index is ID minus one */
-    *fgp = maybe_colormanip_index(sgp->sg_cterm_fg) - 1;
-    *bgp = maybe_colormanip_index(sgp->sg_cterm_bg) - 1;
+    *fgp = sgp->sg_cterm_fg - 1;
+    *bgp = sgp->sg_cterm_bg - 1;
 }
 #endif
 
@@ -9980,12 +9978,32 @@ gui_do_one_color(
     {
 	HL_TABLE()[idx].sg_gui_fg =
 			    color_name2handle(HL_TABLE()[idx].sg_gui_fg_name);
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
+	if (
+#  ifdef FEAT_GUI
+	    gui.in_use &&
+#  endif
+	    HL_TABLE()[idx].sg_name != NULL
+	      && STRICMP(HL_TABLE()[idx].sg_name, "Terminal") != 0)
+	    HL_TABLE()[idx].sg_gui_fg =
+				   maybe_colormanip(HL_TABLE()[idx].sg_gui_fg);
+# endif
 	didit = TRUE;
     }
     if (HL_TABLE()[idx].sg_gui_bg_name != NULL)
     {
 	HL_TABLE()[idx].sg_gui_bg =
 			    color_name2handle(HL_TABLE()[idx].sg_gui_bg_name);
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
+	if (
+#  ifdef FEAT_GUI
+	    gui.in_use &&
+#  endif
+	    HL_TABLE()[idx].sg_name != NULL
+	      && STRICMP(HL_TABLE()[idx].sg_name, "Terminal") != 0)
+	    HL_TABLE()[idx].sg_gui_bg =
+				   maybe_colormanip(HL_TABLE()[idx].sg_gui_bg);
+# endif
 	didit = TRUE;
     }
 # ifdef FEAT_GUI
@@ -9993,6 +10011,16 @@ gui_do_one_color(
     {
 	HL_TABLE()[idx].sg_gui_sp =
 			    color_name2handle(HL_TABLE()[idx].sg_gui_sp_name);
+# if defined(FEAT_GUI) || defined(FEAT_EVAL)
+	if (
+#  ifdef FEAT_GUI
+	    gui.in_use &&
+#  endif
+	    HL_TABLE()[idx].sg_name != NULL
+	      && STRICMP(HL_TABLE()[idx].sg_name, "Terminal") != 0)
+	    HL_TABLE()[idx].sg_gui_sp =
+				   maybe_colormanip(HL_TABLE()[idx].sg_gui_sp);
+# endif
 	didit = TRUE;
     }
 # endif

@@ -5627,8 +5627,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Set the color to night mode.  It cuts blue light and changes to a
 	relaxing color tone.  The numbers are specified in Kelvin, and around
 	6500 are primary colors. 6000-4500 is the practical range.  It is off
-	by 0.  No effect in 8 or 16 color mode.  256 colors, 24 bit color mode
-	only.
+	by 0.  The correct effect can only be obtained with 24bit color mode.
 
 							*'nrformats'* *'nf'*
 'nrformats' 'nf'	string	(default "bin,octal,hex",

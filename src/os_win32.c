@@ -7860,7 +7860,7 @@ set_console_color_rgb(void)
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
 	bg = ctermbg != -1 ? ctermtoxterm(ctermbg)
-			          : maybe_colormanip(default_console_color_bg);
+				  : maybe_colormanip(default_console_color_bg);
 	cterm_normal_bg_gui_color = bg;
     }
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
