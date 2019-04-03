@@ -2645,7 +2645,8 @@ allbuf_locked(void)
 cmdline_charsize(int idx)
 {
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    if (ccline.hidden && idx < ccline.cmdprevpos)
+    if (ccline.hidden && !(inputsecret_show_last
+	    && ccline.cmdlen > ccline.cmdprevlen && idx == ccline.cmdprevpos))
 	// showing '*', always 1 position
 	return 1;
 #endif
@@ -3212,33 +3213,9 @@ free_arshape_buf(void)
 # endif
 #endif
 
-/*
- * Draw part of the cmdline at the current cursor position.  But draw stars
- * when cmdline_star is TRUE.
- */
     static void
-draw_cmdline(int start, int len)
+draw_cmdline_plain(int start, int len)
 {
-#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    if (ccline.hidden)
-    {
-	int c;
-	int show_lastchar = inputsecret_show_last
-					&& ccline.cmdlen >  ccline.cmdprevlen
-					&& ccline.cmdpos >= ccline.cmdprevpos;
-
-	for (; len > 0; start += c, len -= c)
-	{
-	    c = MB_PTR2LEN(ccline.cmdbuff + start);
-	    if (show_lastchar && c >= len)
-		break;
-	    msg_putchar('*');
-	}
-	ccline.cmdprevpos = start;
-	if (len <= 0)
-	    return;
-    }
-#endif
 #ifdef FEAT_ARABIC
     if (p_arshape && !p_tbidi && cmdline_has_arabic(start, len))
     {
@@ -3336,6 +3313,42 @@ draw_cmdline(int start, int len)
     else
 #endif
 	msg_outtrans_len(ccline.cmdbuff + start, len);
+}
+
+/*
+ * Draw part of the cmdline at the current cursor position.  But draw stars
+ * when cmdline_star is TRUE.
+ */
+    static void
+draw_cmdline(int start, int len)
+{
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    if (ccline.hidden)
+    {
+	int show_lastchar = inputsecret_show_last
+					 && ccline.cmdlen > ccline.cmdprevlen;
+	int lastchar_pos = 0;
+	int i;
+
+	if (show_lastchar)
+	{
+	    if (start == ccline.cmdpos)
+		ccline.cmdprevpos = ccline.cmdpos;
+	    lastchar_pos = ccline.cmdprevpos;
+	}
+
+	for (i = 0; len > 0; start += i, len -= i)
+	{
+	    i = MB_PTR2LEN(ccline.cmdbuff + start);
+	    if (show_lastchar && start == lastchar_pos)
+		draw_cmdline_plain(start, i);
+	    else
+		msg_putchar('*');
+	}
+    }
+    else
+#endif
+	draw_cmdline_plain(start, len);
 }
 
 /*
