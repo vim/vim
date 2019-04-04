@@ -5607,19 +5607,25 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	close(fd_err[1]);
     if (channel != NULL)
     {
-	int in_fd = use_file_for_in || use_null_for_in
-			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1];
-	int out_fd = use_file_for_out || use_null_for_out
-		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0];
-	/* When using pty_master_fd only set it for stdout, do not duplicate it
-	 * for stderr, it only needs to be read once. */
-	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
-		      ? INVALID_FD
-		      : fd_err[0] >= 0
-		         ? fd_err[0]
-		         : (out_fd == pty_master_fd
-				 ? INVALID_FD
-				 : pty_master_fd);
+	int in_fd = INVALID_FD;
+	int out_fd = INVALID_FD;
+	int err_fd = INVALID_FD;
+
+	if (!(use_file_for_in || use_null_for_in))
+	    in_fd = fd_in[1] >= 0 ? fd_in[1] : pty_master_fd;
+
+	if (!(use_file_for_out || use_null_for_out))
+	    out_fd = fd_out[0] >= 0 ? fd_out[0] : pty_master_fd;
+
+	// When using pty_master_fd only set it for stdout, do not duplicate
+	// it for stderr, it only needs to be read once.
+	if (!(use_out_for_err || use_file_for_err || use_null_for_err))
+	{
+	    if (fd_err[0] >= 0)
+		err_fd = fd_err[0];
+	    else if (out_fd != pty_master_fd)
+		err_fd = pty_master_fd;
+	}
 
 	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
