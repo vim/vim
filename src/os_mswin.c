@@ -127,7 +127,7 @@ typedef void VOID;
 FILE* fdDump = NULL;
 #endif
 
-#ifndef FEAT_GUI_MSWIN
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 extern char g_szOrigTitle[];
 #endif
 
@@ -260,8 +260,12 @@ mch_early_init(void)
 mch_input_isatty(void)
 {
 #ifdef FEAT_GUI_MSWIN
-    return OK;	    /* GUI always has a tty */
-#else
+# ifdef VIMDLL
+    if (gui.in_use)
+# endif
+	return TRUE;	    /* GUI always has a tty */
+#endif
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     if (isatty(read_cmd_fd))
 	return TRUE;
     return FALSE;
@@ -278,8 +282,15 @@ mch_settitle(
     char_u *icon)
 {
 # ifdef FEAT_GUI_MSWIN
-    gui_mch_settitle(title, icon);
-# else
+#  ifdef VIMDLL
+    if (gui.in_use)
+#  endif
+    {
+	gui_mch_settitle(title, icon);
+	return;
+    }
+# endif
+# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     if (title != NULL)
     {
 	WCHAR	*wp = enc_to_utf16(title, NULL);
@@ -305,8 +316,11 @@ mch_settitle(
     void
 mch_restore_title(int which UNUSED)
 {
-#ifndef FEAT_GUI_MSWIN
-    SetConsoleTitle(g_szOrigTitle);
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	SetConsoleTitle(g_szOrigTitle);
 #endif
 }
 

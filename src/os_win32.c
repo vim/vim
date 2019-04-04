@@ -6394,13 +6394,16 @@ mch_remove(char_u *name)
     void
 mch_breakcheck(int force)
 {
-#ifndef FEAT_GUI_MSWIN	    /* never used */
-    if (g_fCtrlCPressed || g_fCBrkPressed)
-    {
-	ctrl_break_was_pressed = g_fCBrkPressed;
-	g_fCtrlCPressed = g_fCBrkPressed = FALSE;
-	got_int = TRUE;
-    }
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	if (g_fCtrlCPressed || g_fCBrkPressed)
+	{
+	    ctrl_break_was_pressed = g_fCBrkPressed;
+	    g_fCtrlCPressed = g_fCBrkPressed = FALSE;
+	    got_int = TRUE;
+	}
 #endif
 }
 
