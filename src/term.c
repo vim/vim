@@ -4090,7 +4090,12 @@ add_termcode(char_u *name, char_u *string, int flags)
 #if defined(MSWIN) && !defined(FEAT_GUI)
     s = vim_strnsave(string, (int)STRLEN(string) + 1);
 #else
-    s = vim_strsave(string);
+# ifdef VIMDLL
+    if (!gui.in_use)
+	s = vim_strnsave(string, (int)STRLEN(string) + 1);
+    else
+# endif
+	s = vim_strsave(string);
 #endif
     if (s == NULL)
 	return;
@@ -4102,11 +4107,18 @@ add_termcode(char_u *name, char_u *string, int flags)
 	s[0] = term_7to8bit(string);
     }
 
-#if defined(MSWIN) && !defined(FEAT_GUI)
-    if (s[0] == K_NUL)
+#ifdef MSWIN
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
     {
-	STRMOVE(s + 1, s);
-	s[1] = 3;
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+	if (s[0] == K_NUL)
+	{
+	    STRMOVE(s + 1, s);
+	    s[1] = 3;
+	}
+# endif
     }
 #endif
 
@@ -6898,6 +6910,19 @@ hex_digit(int c)
     return 0x1ffffff;
 }
 
+# ifdef VIMDLL
+    static guicolor_T
+gui_adjust_rgb(guicolor_T c)
+{
+    if (gui.in_use)
+	return c;
+    else
+	return ((c & 0xff) << 16) | (c & 0x00ff00) | ((c >> 16) & 0xff);
+}
+# else
+#  define gui_adjust_rgb(c) (c)
+# endif
+
     guicolor_T
 gui_get_color_cmn(char_u *name)
 {
@@ -6969,13 +6994,13 @@ gui_get_color_cmn(char_u *name)
 		    ((hex_digit(name[5]) << 4) + hex_digit(name[6])));
 	if (color > 0xffffff)
 	    return INVALCOLOR;
-	return color;
+	return gui_adjust_rgb(color);
     }
 
     /* Check if the name is one of the colors we know */
     for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
 	if (STRICMP(name, rgb_table[i].color_name) == 0)
-	    return rgb_table[i].color;
+	    return gui_adjust_rgb(rgb_table[i].color);
 
     /*
      * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
@@ -7056,7 +7081,7 @@ gui_get_color_cmn(char_u *name)
 
     for (i = 0; i < size; i++)
 	if (STRICMP(name, colornames_table[i].color_name) == 0)
-	    return colornames_table[i].color;
+	    return gui_adjust_rgb(colornames_table[i].color);
 
     return INVALCOLOR;
 }
@@ -7068,7 +7093,7 @@ gui_get_rgb_color_cmn(int r, int g, int b)
 
     if (color > 0xffffff)
 	return INVALCOLOR;
-    return color;
+    return gui_adjust_rgb(color);
 }
 #endif
 

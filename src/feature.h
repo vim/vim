@@ -1319,6 +1319,6 @@
 /*
  * +vtp: Win32 virtual console.
  */
-#if !defined(FEAT_GUI) && defined(MSWIN)
+#if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
 #endif

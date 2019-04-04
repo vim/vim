@@ -3182,10 +3182,18 @@ list_version(void)
     msg(longVersion);
 #ifdef MSWIN
 # ifdef FEAT_GUI_MSWIN
-#  ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#  ifdef VIMDLL
+#   ifdef _WIN64
+    msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#   else
+    msg_puts(_("\nMS-Windows 32-bit GUI/console version"));
+#   endif
 #  else
+#   ifdef _WIN64
+    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#   else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
+#   endif
 #  endif
 #  ifdef FEAT_OLE
     msg_puts(_(" with OLE support"));
