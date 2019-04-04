@@ -13,7 +13,7 @@ set cpo&vim
 
 let b:undo_ftplugin = "setl com< cms< et< fo<"
 
-setlocal comments=:# commentstring=#\ %s expandtab
+setlocal comments=:# commentstring=#\ %s
 setlocal formatoptions-=t formatoptions+=croql
 
 let &cpo = s:cpo_save
