@@ -786,10 +786,10 @@ Expression syntax summary, from least to most significant:
 	expr2 ? expr1 : expr1	if-then-else
 
 |expr2|	expr3
-	expr3 || expr3 ..	logical OR
+	expr3 || expr3 ...	logical OR
 
 |expr3|	expr4
-	expr4 && expr4 ..	logical AND
+	expr4 && expr4 ...	logical AND
 
 |expr4|	expr5
 	expr5 == expr5		equal
@@ -811,14 +811,15 @@ Expression syntax summary, from least to most significant:
 				instance
 
 |expr5|	expr6
-	expr6 +	 expr6 ..	number addition, list or blob concatenation
-	expr6 -	 expr6 ..	number subtraction
-	expr6 .	 expr6 ..	string concatenation
+	expr6 +	 expr6 ...	number addition, list or blob concatenation
+	expr6 -	 expr6 ...	number subtraction
+	expr6 .	 expr6 ...	string concatenation
+	expr6 .. expr6 ...	string concatenation
 
 |expr6|	expr7
-	expr7 *	 expr7 ..	number multiplication
-	expr7 /	 expr7 ..	number division
-	expr7 %	 expr7 ..	number modulo
+	expr7 *	 expr7 ...	number multiplication
+	expr7 /	 expr7 ...	number division
+	expr7 %	 expr7 ...	number modulo
 
 |expr7|	expr8
 	! expr7			logical NOT
@@ -847,7 +848,7 @@ Expression syntax summary, from least to most significant:
 	{args -> expr1}		lambda expression
 
 
-".." indicates that the operations in this level can be concatenated.
+"..." indicates that the operations in this level can be concatenated.
 Example: >
 	&nu || &list && &shell == "csh"
 
@@ -1026,12 +1027,16 @@ can be matched like an ordinary character.  Examples:
 
 expr5 and expr6						*expr5* *expr6*
 ---------------
-expr6 + expr6  Number addition, |List| or |Blob| concatenation	*expr-+*
-expr6 - expr6  Number subtraction				*expr--*
-expr6 . expr6  String concatenation				*expr-.*
+expr6 + expr6   Number addition, |List| or |Blob| concatenation	*expr-+*
+expr6 - expr6   Number subtraction				*expr--*
+expr6 . expr6   String concatenation				*expr-.*
+expr6 .. expr6  String concatenation				*expr-..*
 
 For |Lists| only "+" is possible and then both expr6 must be a list.  The
 result is a new list with the two lists Concatenated.
+
+For String concatenation ".." is preferred, since "." is ambiguous, it is also
+used for |Dict| member access and floating point numbers.
 
 expr7 * expr7  Number multiplication				*expr-star*
 expr7 / expr7  Number division					*expr-/*
@@ -5800,7 +5805,7 @@ islocked({expr})					*islocked()* *E786*
 isnan({expr})						*isnan()*
 		Return |TRUE| if {expr} is a float with value NaN. >
 			echo isnan(0.0 / 0.0)
-<			1 ~
+<			1
 
 		{only available when compiled with the |+float| feature}
 

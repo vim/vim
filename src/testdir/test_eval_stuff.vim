@@ -94,3 +94,32 @@ func Test_let_errmsg()
   call assert_fails('let v:errmsg = []', 'E730:')
   let v:errmsg = ''
 endfunc
+
+func Test_string_concatenation()
+  call assert_equal('ab', 'a'.'b')
+  call assert_equal('ab', 'a' .'b')
+  call assert_equal('ab', 'a'. 'b')
+  call assert_equal('ab', 'a' . 'b')
+
+  call assert_equal('ab', 'a'..'b')
+  call assert_equal('ab', 'a' ..'b')
+  call assert_equal('ab', 'a'.. 'b')
+  call assert_equal('ab', 'a' .. 'b')
+
+  let a = 'a'
+  let b = 'b'
+  let a .= b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a.=b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a ..= b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a..=b
+  call assert_equal('ab', a)
+endfunc
