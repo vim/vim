@@ -3166,6 +3166,7 @@ process_env(
 	current_sctx.sc_sid = SID_ENV;
 	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
+	current_sctx.sc_version = 1;
 #endif
 	do_cmdline_cmd(initstr);
 	sourcing_name = save_sourcing_name;

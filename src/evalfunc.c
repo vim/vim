@@ -6631,10 +6631,12 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_VARTABS
 	"vartabs",
 #endif
+	"vertsplit",
 #ifdef FEAT_VIMINFO
 	"viminfo",
 #endif
-	"vertsplit",
+	"vimscript-1",
+	"vimscript-2",
 	"virtualedit",
 	"visual",
 	"visualextra",

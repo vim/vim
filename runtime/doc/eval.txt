@@ -27,10 +27,11 @@ done, the features in this document are not available.  See |+eval| and
 7.  Commands			|expression-commands|
 8.  Exception handling		|exception-handling|
 9.  Examples			|eval-examples|
-10. No +eval feature		|no-eval-feature|
-11. The sandbox			|eval-sandbox|
-12. Textlock			|textlock|
-13. Testing			|testing|
+10. Vim script version		|vimscript-version|
+11. No +eval feature		|no-eval-feature|
+12. The sandbox			|eval-sandbox|
+13. Textlock			|textlock|
+14. Testing			|testing|
 
 {Vi does not have any of these commands}
 
@@ -1037,6 +1038,7 @@ result is a new list with the two lists Concatenated.
 
 For String concatenation ".." is preferred, since "." is ambiguous, it is also
 used for |Dict| member access and floating point numbers.
+When |vimscript-version| is 2 or higher, using "." is not allowed.
 
 expr7 * expr7  Number multiplication				*expr-star*
 expr7 / expr7  Number division					*expr-/*
@@ -10476,6 +10478,8 @@ vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
 viminfo			Compiled with viminfo support.
+vimscript-1		Compiled Vim script version 1 support
+vimscript-2		Compiled Vim script version 2 support
 virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always
@@ -10966,16 +10970,19 @@ This does NOT work: >
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-                                            *:let+=* *:let-=* *:letstar=*
-                                            *:let/=* *:let%=* *:let.=* *E734*
+			*:let+=* *:let-=* *:letstar=*
+			*:let/=* *:let%=* *:let.=* *:let..=* *E734* *E985*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
 :let {var} /= {expr1}	Like ":let {var} = {var} / {expr1}".
 :let {var} %= {expr1}	Like ":let {var} = {var} % {expr1}".
 :let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
+:let {var} ..= {expr1}	Like ":let {var} = {var} .. {expr1}".
 			These fail if {var} was not set yet and when the type
 			of {var} and {expr1} don't fit the operator.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 
 :let ${env-name} = {expr1}			*:let-environment* *:let-$*
@@ -12609,7 +12616,34 @@ code can be used: >
     unlet scriptnames_output
 
 ==============================================================================
-10. No +eval feature				*no-eval-feature*
+10. Vim script versions		*vimscript-version* *vimscript-versions*
+
+Over time many features have been added to Vim script.  This includes Ex
+commands, functions, variable types, etc.  Each individual feature can be
+checked with the |has()| and |exists()| functions.
+
+Sometimes old syntax of functionality gets in the way of making Vim better.
+When support is taken away this will break older Vim scripts.  To make this
+explicit the |:scriptversion| command can be used.  When a Vim script is not
+compatible with older versions of Vim this will give an explicit error,
+instead of failing in mysterious ways. >
+
+ :scriptversion 1
+<	This is the original Vim script, same as not using a |:scriptversion|
+	command.  Can be used to go back to old syntax for a range of lines.
+	Test for support with: >
+		has('vimscript-1')
+
+ :scriptversion 2
+< 	String concatenation with "." is not supported, use ".." instead.
+	This avoids the ambiguity using "." for Dict member access and
+	floating point numbers.  Now ".5" means the number 0.5.
+	Test for support with: >
+		has('vimscript-2')
+
+
+==============================================================================
+11. No +eval feature				*no-eval-feature*
 
 When the |+eval| feature was disabled at compile time, none of the expression
 evaluation commands are available.  To prevent this from causing Vim scripts
@@ -12640,7 +12674,7 @@ When the |+eval| feature is available the command is skipped because of the
 silently ignored, and the command is executed.
 
 ==============================================================================
-11. The sandbox					*eval-sandbox* *sandbox* *E48*
+12. The sandbox					*eval-sandbox* *sandbox* *E48*
 
 The 'foldexpr', 'formatexpr', 'includeexpr', 'indentexpr', 'statusline' and
 'foldtext' options may be evaluated in a sandbox.  This means that you are
@@ -12679,7 +12713,7 @@ Note that when in the sandbox and saving an option value and restoring it, the
 option will still be marked as it was set in the sandbox.
 
 ==============================================================================
-12. Textlock							*textlock*
+13. Textlock							*textlock*
 
 In a few situations it is not allowed to change the text in the buffer, jump
 to another window and some other things that might confuse or break what Vim
@@ -12695,7 +12729,7 @@ This is not allowed when the textlock is active:
 	- etc.
 
 ==============================================================================
-13. Testing							*testing*
+14. Testing							*testing*
 
 Vim can be tested after building it, usually with "make test".
 The tests are located in the directory "src/testdir".
