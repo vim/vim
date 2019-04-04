@@ -5115,6 +5115,7 @@ ex_scriptencoding(exarg_T *eap)
     void
 ex_scriptversion(exarg_T *eap UNUSED)
 {
+#ifdef FEAT_EVAL
     int		nr;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -5130,6 +5131,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
 	current_sctx.sc_version = nr;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
