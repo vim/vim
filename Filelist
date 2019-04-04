@@ -450,7 +450,6 @@ SRC_DOS =	\
 		src/iscygpty.h \
 		src/iid_ole.c \
 		src/os_dos.h \
-		src/os_w32dll.c \
 		src/os_w32exe.c \
 		src/os_win32.c \
 		src/os_mswin.c \
