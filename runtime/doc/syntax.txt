@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1962,7 +1962,7 @@ The g:lisp_rainbow option provides 10 levels of individual colorization for
 the parentheses and backquoted parentheses.  Because of the quantity of
 colorization levels, unlike non-rainbow highlighting, the rainbow mode
 specifies its highlighting using ctermfg and guifg, thereby bypassing the
-usual colorscheme control using standard highlighting groups.  The actual
+usual color scheme control using standard highlighting groups.  The actual
 highlighting used depends on the dark/bright setting  (see |'bg'|).
 
 
@@ -4694,9 +4694,9 @@ in their own color.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 
-			To customize a colorscheme use another name, e.g.
+			To customize a color scheme use another name, e.g.
 			"~/.vim/colors/mine.vim", and use `:runtime` to load
-			the original colorscheme: >
+			the original color scheme: >
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 
@@ -4704,7 +4704,7 @@ in their own color.
 			|ColorSchemePre| autocommand event is triggered.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
-			For info about writing a colorscheme file: >
+			For info about writing a color scheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
 
 :hi[ghlight]		List all the current highlight groups that have
@@ -4901,7 +4901,7 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	explicitly.  This causes the highlight groups that depend on
 	'background' to change!  This means you should set the colors for
 	Normal first, before setting other colors.
-	When a colorscheme is being used, changing 'background' causes it to
+	When a color scheme is being used, changing 'background' causes it to
 	be reloaded, which may reset all colors (including Normal).  First
 	delete the "g:colors_name" variable when you don't want this.
 

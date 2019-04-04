@@ -237,6 +237,7 @@ static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_isdirectory(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+static void f_isinf(typval_T *argvars, typval_T *rettv);
 static void f_isnan(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_items(typval_T *argvars, typval_T *rettv);
@@ -721,6 +722,9 @@ static struct fst
     {"insert",		2, 3, f_insert},
     {"invert",		1, 1, f_invert},
     {"isdirectory",	1, 1, f_isdirectory},
+#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+    {"isinf",		1, 1, f_isinf},
+#endif
     {"islocked",	1, 1, f_islocked},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
     {"isnan",		1, 1, f_isnan},
@@ -6582,9 +6586,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TAG_BINS
 	"tag_binary",
 #endif
-#ifdef FEAT_TAG_OLDSTATIC
-	"tag_old_static",
-#endif
 #ifdef FEAT_TCL
 # ifndef DYNAMIC_TCL
 	"tcl",
@@ -7442,6 +7443,16 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 }
 
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+/*
+ * "isinf()" function
+ */
+    static void
+f_isinf(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type == VAR_FLOAT && isinf(argvars[0].vval.v_float))
+	rettv->vval.v_number = argvars[0].vval.v_float > 0.0 ? 1 : -1;
+}
+
 /*
  * "isnan()" function
  */
