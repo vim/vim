@@ -240,6 +240,8 @@ PLATFORM = $(TARGET_CPU)
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
+!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
 !   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
 !    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
 !   endif
@@ -442,6 +444,8 @@ DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 # on the architecture.
 !if "$(CPU)" == "AMD64"
 XPM = xpm\x64
+!elseif "$(CPU)" == "ARM64"
+XPM = xpm\arm64
 !elseif "$(CPU)" == "i386"
 XPM = xpm\x86
 !else
