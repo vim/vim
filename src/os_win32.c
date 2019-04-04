@@ -4437,7 +4437,7 @@ mch_system_piped(char *cmd, int options)
 }
 
     static int
-mch_system(char *cmd, int options)
+mch_system_g(char *cmd, int options)
 {
     /* if we can pipe and the shelltemp option is off */
     if (!p_stmp)
@@ -4445,10 +4445,11 @@ mch_system(char *cmd, int options)
     else
 	return mch_system_classic(cmd, options);
 }
-#else
+#endif
 
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     static int
-mch_system(char *cmd, int options)
+mch_system_c(char *cmd, int options)
 {
     int		ret;
     WCHAR	*wcmd;
@@ -4463,6 +4464,21 @@ mch_system(char *cmd, int options)
 }
 
 #endif
+
+    static int
+mch_system(char *cmd, int options)
+{
+#ifdef VIMDLL
+    if (gui.in_use)
+	return mch_system_g(cmd, options);
+    else
+	return mch_system_c(cmd, options);
+#elif defined(FEAT_GUI_MSWIN)
+    return mch_system_g(cmd, options);
+#else
+    return mch_system_c(cmd, options);
+#endif
+}
 
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
 /*
@@ -4747,7 +4763,10 @@ mch_call_shell(
 	    {
 		x = -1;
 #ifdef FEAT_GUI_MSWIN
-		emsg(_("E371: Command not found"));
+# ifdef VIMDLL
+		if (gui.in_use)
+# endif
+		    emsg(_("E371: Command not found"));
 #endif
 	    }
 
@@ -4767,7 +4786,7 @@ mch_call_shell(
 	{
 	    cmdlen = (
 #ifdef FEAT_GUI_MSWIN
-		(!p_stmp ? 0 : STRLEN(vimrun_path)) +
+		(gui.in_use ? (!p_stmp ? 0 : STRLEN(vimrun_path)) : 0) +
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
 
@@ -4775,7 +4794,11 @@ mch_call_shell(
 	    if (newcmd != NULL)
 	    {
 #if defined(FEAT_GUI_MSWIN)
-		if (need_vimrun_warning)
+		if (
+# ifdef VIMDLL
+		    gui.in_use &&
+# endif
+		    need_vimrun_warning)
 		{
 		    char *msg = _("VIMRUN.EXE not found in your $PATH.\n"
 			"External commands will not pause after completion.\n"
@@ -4790,7 +4813,11 @@ mch_call_shell(
 		    vim_free(wtitle);
 		    need_vimrun_warning = FALSE;
 		}
-		if (!s_dont_use_vimrun && p_stmp)
+		if (
+# ifdef VIMDLL
+		    gui.in_use &&
+# endif
+		    !s_dont_use_vimrun && p_stmp)
 		    /* Use vimrun to execute the command.  It opens a console
 		     * window, which can be closed without killing Vim. */
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
@@ -4814,7 +4841,8 @@ mch_call_shell(
     /* Print the return value, unless "vimrun" was used. */
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
 #if defined(FEAT_GUI_MSWIN)
-		&& ((options & SHELL_DOOUT) || s_dont_use_vimrun || !p_stmp)
+	    && (gui.in_use ?
+		((options & SHELL_DOOUT) || s_dont_use_vimrun || !p_stmp) : 1)
 #endif
 	    )
     {
