@@ -976,7 +976,7 @@ Trace(
 
 #endif //_DEBUG
 
-#if !defined(FEAT_GUI) || defined(PROTO)
+#if !defined(FEAT_GUI) || defined(VIMDLL) || defined(PROTO)
 # ifdef FEAT_TITLE
 extern HWND g_hWnd;	/* This is in os_win32.c. */
 # endif

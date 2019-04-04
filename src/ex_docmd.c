@@ -9370,7 +9370,10 @@ ex_winpos(exarg_T *eap)
     if (*arg == NUL)
     {
 # if defined(FEAT_GUI) || defined(MSWIN)
-#  ifdef FEAT_GUI
+#  ifdef VIMDLL
+	if (gui.in_use ? gui_mch_get_winpos(&x, &y) != FAIL :
+		mch_get_winpos(&x, &y) != FAIL)
+#  elif defined(FEAT_GUI)
 	if (gui.in_use && gui_mch_get_winpos(&x, &y) != FAIL)
 #  else
 	if (mch_get_winpos(&x, &y) != FAIL)
@@ -9394,7 +9397,12 @@ ex_winpos(exarg_T *eap)
 	    emsg(_("E466: :winpos requires two number arguments"));
 	    return;
 	}
-# ifdef FEAT_GUI
+# ifdef VIMDLL
+	if (gui.in_use)
+	    gui_mch_set_winpos(x, y);
+	else
+	    mch_set_winpos(x, y);
+# elif defined(FEAT_GUI)
 	if (gui.in_use)
 	    gui_mch_set_winpos(x, y);
 	else if (gui.starting)
