@@ -1142,8 +1142,11 @@ PrintDlgProc(
 		VIM_CLEAR(prt_name);
 	    }
 	    EnableMenuItem(GetSystemMenu(hDlg, FALSE), SC_CLOSE, MF_GRAYED);
-#ifndef FEAT_GUI
-	    BringWindowToTop(s_hwnd);
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	    if (!gui.in_use)
+# endif
+		BringWindowToTop(s_hwnd);
 #endif
 	    return TRUE;
 
@@ -1176,7 +1179,7 @@ AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
     return !*bUserAbort;
 }
 
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
 
     static UINT_PTR CALLBACK
 PrintHookProc(
@@ -1370,8 +1373,11 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     bUserAbort = &(psettings->user_abort);
     vim_memset(&prt_dlg, 0, sizeof(PRINTDLGW));
     prt_dlg.lStructSize = sizeof(PRINTDLGW);
-#ifndef FEAT_GUI
-    GetConsoleHwnd();	    /* get value of s_hwnd */
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	GetConsoleHwnd();	    /* get value of s_hwnd */
 #endif
     prt_dlg.hwndOwner = s_hwnd;
     prt_dlg.Flags = PD_NOPAGENUMS | PD_NOSELECTION | PD_RETURNDC;
@@ -1380,12 +1386,17 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	prt_dlg.hDevMode = stored_dm;
 	prt_dlg.hDevNames = stored_devn;
 	prt_dlg.lCustData = stored_nCopies; // work around bug in print dialog
-#ifndef FEAT_GUI
-	/*
-	 * Use hook to prevent console window being sent to back
-	 */
-	prt_dlg.lpfnPrintHook = PrintHookProc;
-	prt_dlg.Flags |= PD_ENABLEPRINTHOOK;
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	{
+	    /*
+	     * Use hook to prevent console window being sent to back
+	     */
+	    prt_dlg.lpfnPrintHook = PrintHookProc;
+	    prt_dlg.Flags |= PD_ENABLEPRINTHOOK;
+	}
 #endif
 	prt_dlg.Flags |= stored_nFlags;
     }
@@ -1395,8 +1406,12 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      * never show dialog if we are running over telnet
      */
     if (forceit
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	    || (!gui.in_use && !term_console)
+# else
 	    || !term_console
+# endif
 #endif
 	    )
     {
@@ -1589,7 +1604,10 @@ mch_print_begin(prt_settings_T *psettings)
 
 #ifdef FEAT_GUI
     /* Give focus back to main window (when using MDI). */
-    SetFocus(s_hwnd);
+# ifdef VIMDLL
+    if (gui.in_use)
+# endif
+	SetFocus(s_hwnd);
 #endif
 
     return (ret > 0);
@@ -1955,8 +1973,11 @@ mch_resolve_path(char_u *fname, int reparse_point)
     void
 win32_set_foreground(void)
 {
-# ifndef FEAT_GUI
-    GetConsoleHwnd();	    /* get value of s_hwnd */
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
+    if (!gui.in_use)
+#  endif
+	GetConsoleHwnd();	    /* get value of s_hwnd */
 # endif
     if (s_hwnd != 0)
 	SetForegroundWindow(s_hwnd);
@@ -2099,8 +2120,11 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 # ifdef FEAT_GUI
 	    /* Wake up the main GUI loop. */
-	    if (s_hwnd != 0)
-		PostMessage(s_hwnd, WM_NULL, 0, 0);
+#  ifdef VIMDLL
+	    if (gui.in_use)
+#  endif
+		if (s_hwnd != 0)
+		    PostMessage(s_hwnd, WM_NULL, 0, 0);
 # endif
 	    return 1;
 
@@ -2166,8 +2190,11 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 	/* When the message window is activated (brought to the foreground),
 	 * this actually applies to the text window. */
-#ifndef FEAT_GUI
-	GetConsoleHwnd();	    /* get value of s_hwnd */
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	    GetConsoleHwnd();	    /* get value of s_hwnd */
 #endif
 	if (s_hwnd != 0)
 	{
