@@ -1141,7 +1141,7 @@
  */
 #ifdef FEAT_NORMAL
 /* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
@@ -1265,7 +1265,7 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)))
+	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))))
 # define FEAT_BEVAL_TERM
 #endif
 
