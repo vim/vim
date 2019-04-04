@@ -21,9 +21,9 @@ maillist is also fine.
 
 Please use the GitHub issues only for actual issues. If you are not 100% sure
 that your problem is a Vim issue, please first discuss this on the Vim user
-maillist.  Try reproducing the problem without any plugins or settings:
+maillist.  Try reproducing the problem without any of your plugins or settings:
 
-    vim -N -u NONE
+    vim --clean
 
 If you report an issue, please describe exactly how to reproduce it.
 For example, don't say "insert some text" but say what you did exactly:

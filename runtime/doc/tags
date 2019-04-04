@@ -5677,6 +5677,8 @@ complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
+complete_info()	eval.txt	/*complete_info()*
+complete_info_mode	eval.txt	/*complete_info_mode*
 completed_item-variable	eval.txt	/*completed_item-variable*
 completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*
@@ -8386,6 +8388,7 @@ ruby-dynamic	if_ruby.txt	/*ruby-dynamic*
 ruby-evaluate	if_ruby.txt	/*ruby-evaluate*
 ruby-globals	if_ruby.txt	/*ruby-globals*
 ruby-message	if_ruby.txt	/*ruby-message*
+ruby-rubyeval	if_ruby.txt	/*ruby-rubyeval*
 ruby-set_option	if_ruby.txt	/*ruby-set_option*
 ruby-vim	if_ruby.txt	/*ruby-vim*
 ruby-window	if_ruby.txt	/*ruby-window*
@@ -8397,6 +8400,7 @@ ruby_no_expensive	syntax.txt	/*ruby_no_expensive*
 ruby_operators	syntax.txt	/*ruby_operators*
 ruby_space_errors	syntax.txt	/*ruby_space_errors*
 ruby_spellcheck_strings	syntax.txt	/*ruby_spellcheck_strings*
+rubyeval()	eval.txt	/*rubyeval()*
 russian	russian.txt	/*russian*
 russian-intro	russian.txt	/*russian-intro*
 russian-issues	russian.txt	/*russian-issues*
@@ -8445,8 +8449,10 @@ scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
 screenattr()	eval.txt	/*screenattr()*
 screenchar()	eval.txt	/*screenchar()*
+screenchars()	eval.txt	/*screenchars()*
 screencol()	eval.txt	/*screencol()*
 screenrow()	eval.txt	/*screenrow()*
+screenstring()	eval.txt	/*screenstring()*
 script	usr_41.txt	/*script*
 script-here	if_perl.txt	/*script-here*
 script-local	map.txt	/*script-local*

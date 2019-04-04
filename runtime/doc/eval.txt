@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 30
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3556,7 +3556,7 @@ complete_info([{what}])
 		completion.  See |ins-completion|.
 		The items are:
 		   mode		Current completion mode name string.
-				See |completion_info_mode| for the values.
+				See |complete_info_mode| for the values.
 		   pum_visible	|TRUE| if popup menu is visible.
 				See |pumvisible()|.
 		   items	List of completion matches.  Each item is a
@@ -10433,7 +10433,7 @@ syntax_items		There are active syntax highlighting items for the
 system			Compiled to use system() instead of fork()/exec().
 tag_binary		Compiled with binary searching in tags files
 			|tag-binary-search|.
-tag_old_static		Compiled with support for old static tags
+tag_old_static		Support for old static tags was removed, see
 			|tag-old-static|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
