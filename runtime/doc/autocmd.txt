@@ -690,10 +690,11 @@ DiffUpdated			After diffs have been updated.  Depending on
 				change or when doing |:diffupdate|.
 							*DirChanged*
 DirChanged			The working directory has changed in response
-				to the |:cd| or |:lcd| commands, or as a
-				result of the 'autochdir' option.
+				to the |:cd| or |:tcd| or |:lcd| commands, or
+				as a result of the 'autochdir' option.
 				The pattern can be:
 					"window" to trigger on `:lcd`
+					"tabpage" to trigger on `:tcd`
 					"global" to trigger on `:cd`
 					"auto"   to trigger on 'autochdir'.
 					"drop"	 to trigger on editing a file

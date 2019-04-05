@@ -5479,7 +5479,8 @@ has_key({dict}, {key})					*has_key()*
 
 haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		The result is a Number, which is 1 when the window has set a
-		local path via |:lcd|, and 0 otherwise.
+		local path via |:lcd|, is 2 when the tab page has set a local
+		path via |:tcd| and 0 otherwise.
 
 		Without arguments use the current window.
 		With {winnr} use this window in the current tab page.

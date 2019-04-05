@@ -5131,6 +5131,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 f_getcwd(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp = NULL;
+    tabpage_T	*tp = NULL;
     char_u	*cwd;
     int		global = FALSE;
 
@@ -5138,13 +5139,32 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number == -1)
-	global = TRUE;
+    {
+	if (argvars[1].v_type == VAR_UNKNOWN)
+	    global = TRUE;
+	else
+	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+    }
     else
+    {
+	if (argvars[0].v_type != VAR_UNKNOWN &&
+		argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    long n = (long)tv_get_number(&argvars[1]);
+	    if (n >= 0)
+		tp = find_tabpage(n);
+	}
+	else
+	    tp = curtab;
+
 	wp = find_tabwin(&argvars[0], &argvars[1]);
+    }
 
     if (wp != NULL && wp->w_localdir != NULL)
 	rettv->vval.v_string = vim_strsave(wp->w_localdir);
-    else if (wp != NULL || global)
+    else if (tp != NULL && tp->tp_localdir != NULL)
+	rettv->vval.v_string = vim_strsave(tp->tp_localdir);
+    else if (wp != NULL || tp != NULL || global)
     {
 	if (globaldir != NULL)
 	    rettv->vval.v_string = vim_strsave(globaldir);
@@ -6824,10 +6844,30 @@ f_has_key(typval_T *argvars, typval_T *rettv)
     static void
 f_haslocaldir(typval_T *argvars, typval_T *rettv)
 {
+    tabpage_T	*tp = NULL;
     win_T	*wp = NULL;
 
-    wp = find_tabwin(&argvars[0], &argvars[1]);
-    rettv->vval.v_number = (wp != NULL && wp->w_localdir != NULL);
+    rettv->vval.v_number = 0;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	wp = curwin;
+	tp = curtab;
+    }
+    else if (argvars[1].v_type != VAR_UNKNOWN)
+	tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+
+    if (argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number != -1)
+    {
+	wp = find_tabwin(&argvars[0], &argvars[1]);
+	if (wp == NULL)
+	    return;
+    }
+
+    // Check for window-local and tab-local directories
+    if ((wp != NULL && wp->w_localdir != NULL) ||
+	    (tp != NULL && tp->tp_localdir != NULL))
+	rettv->vval.v_number = 1;
 }
 
 /*

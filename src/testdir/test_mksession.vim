@@ -210,6 +210,23 @@ func Test_mksession_lcd_multiple_tabs()
   call delete('Xtest_mks.out')
 endfunc
 
+func Test_mksession_tcd_multiple_tabs()
+  tabnew
+  tabnew
+  tcd .
+  tabfirst
+  tcd .
+  mksession! Xtest_mks.out
+  tabonly
+  source Xtest_mks.out
+  call assert_true(haslocaldir())
+  tabnext 2
+  call assert_true(!haslocaldir())
+  tabnext 3
+  call assert_true(haslocaldir())
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mksession_blank_tabs()
   tabnew
   tabnew

@@ -110,3 +110,100 @@ function Test_GetCwd_lcd_shellslash()
     call assert_equal(cwd[-1:], '\')
   endif
 endfunc
+
+" Test for :tcd
+function Test_Tab_Local_Cwd()
+  enew | only | tabonly
+  " Create three tabpages with three windows each
+  edit a
+  botright new b
+  botright new c
+  tabnew m
+  botright new n
+  botright new o
+  tabnew x
+  botright new y
+  botright new z
+
+  " Setup different directories for the tab pages and windows
+  tabrewind
+  1wincmd w
+  lcd Xdir1
+  tabnext
+  tcd Xdir1
+  2wincmd w
+  lcd ../Xdir2
+  tabnext
+  tcd Xdir2
+  3wincmd w
+  lcd ../Xdir3
+
+  " Check the directories of various windows
+  call assert_equal("a Xdir1 1", GetCwdInfo(1, 1))
+  call assert_equal("b Xtopdir 0", GetCwdInfo(2, 1))
+  call assert_equal("c Xtopdir 0", GetCwdInfo(3, 1))
+  call assert_equal("m Xdir1 1", GetCwdInfo(1, 2))
+  call assert_equal("n Xdir2 1", GetCwdInfo(2, 2))
+  call assert_equal("o Xdir1 1", GetCwdInfo(3, 2))
+  call assert_equal("x Xdir2 1", GetCwdInfo(1, 3))
+  call assert_equal("y Xdir2 1", GetCwdInfo(2, 3))
+  call assert_equal("z Xdir3 1", GetCwdInfo(3, 3))
+
+  " Check the tabpage directories
+  call assert_equal('Xtopdir', fnamemodify(getcwd(-1, 1), ':t'))
+  call assert_equal('Xdir1', fnamemodify(getcwd(-1, 2), ':t'))
+  call assert_equal('Xdir2', fnamemodify(getcwd(-1, 3), ':t'))
+
+  " Jump to different windows in the tab pages and check the current directory
+  tabrewind | 1wincmd w
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  2wincmd w
+  call assert_equal('Xtopdir', fnamemodify(getcwd(), ':t'))
+  tabnext | 1wincmd w
+  call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  2wincmd w
+  call assert_equal('Xdir2', fnamemodify(getcwd(), ':t'))
+  tabnext | 1wincmd w
+  call assert_equal('Xdir2', fnamemodify(getcwd(), ':t'))
+  3wincmd w
+  call assert_equal('Xdir3', fnamemodify(getcwd(), ':t'))
+
+  " A new tab page should inherit the directory of the current tab page
+  tabrewind | 1wincmd w
+  tabnew g
+  call assert_equal("g Xdir1 1", GetCwdInfo(0, 0))
+  tabclose | tabrewind
+  2wincmd w
+  tabnew h
+  call assert_equal("h Xtopdir 0", GetCwdInfo(0, 0))
+  tabclose
+  tabnext 2 | 1wincmd w
+  tabnew j
+  call assert_equal("j Xdir1 1", GetCwdInfo(0, 0))
+  tabclose
+
+  " Change the global directory for the first tab page
+  tabrewind | 1wincmd w
+  cd ../Xdir1
+  call assert_equal("a Xdir1 0", GetCwdInfo(1, 1))
+  call assert_equal("b Xdir1 0", GetCwdInfo(2, 1))
+  call assert_equal("m Xdir1 1", GetCwdInfo(1, 2))
+  call assert_equal("n Xdir2 1", GetCwdInfo(2, 2))
+
+  " Change the global directory for the second tab page
+  tabnext | 1wincmd w
+  cd ../Xdir3
+  call assert_equal("m Xdir3 0", GetCwdInfo(1, 2))
+  call assert_equal("n Xdir2 1", GetCwdInfo(2, 2))
+  call assert_equal("o Xdir3 0", GetCwdInfo(3, 2))
+
+  " Change the tab-local directory for the third tab page
+  tabnext | 1wincmd w
+  cd ../Xdir1
+  call assert_equal("x Xdir1 0", GetCwdInfo(1, 3))
+  call assert_equal("y Xdir1 0", GetCwdInfo(2, 3))
+  call assert_equal("z Xdir3 1", GetCwdInfo(3, 3))
+
+  enew | only | tabonly
+  new
+endfunc

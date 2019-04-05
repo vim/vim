@@ -3692,6 +3692,8 @@ set_one_cmd_context(
 	    break;
 	case CMD_cd:
 	case CMD_chdir:
+	case CMD_tcd:
+	case CMD_tchdir:
 	case CMD_lcd:
 	case CMD_lchdir:
 	    if (xp->xp_context == EXPAND_FILES)
@@ -7435,13 +7437,17 @@ free_cd_dir(void)
 
 /*
  * Deal with the side effects of changing the current directory.
- * When "local" is TRUE then this was after an ":lcd" command.
+ * When "tablocal" is TRUE then this was after an ":tcd" command.
+ * When "winlocal" is TRUE then this was after an ":lcd" command.
  */
     void
-post_chdir(int local)
+post_chdir(int tablocal, int winlocal)
 {
+    if (!winlocal)
+	// Clear tab local directory for both :cd and :tcd
+	VIM_CLEAR(curtab->tp_localdir);
     VIM_CLEAR(curwin->w_localdir);
-    if (local)
+    if (winlocal || tablocal)
     {
 	/* If still in global directory, need to remember current
 	 * directory as global directory. */
@@ -7449,7 +7455,12 @@ post_chdir(int local)
 	    globaldir = vim_strsave(prev_dir);
 	/* Remember this local directory for the window. */
 	if (mch_dirname(NameBuff, MAXPATHL) == OK)
-	    curwin->w_localdir = vim_strsave(NameBuff);
+	{
+	    if (tablocal)
+		curtab->tp_localdir = vim_strsave(NameBuff);
+	    else
+		curwin->w_localdir = vim_strsave(NameBuff);
+	}
     }
     else
     {
@@ -7463,7 +7474,7 @@ post_chdir(int local)
 
 
 /*
- * ":cd", ":lcd", ":chdir" and ":lchdir".
+ * ":cd", ":tcd", ":lcd", ":chdir" ":tchdir" and ":lchdir".
  */
     void
 ex_cd(exarg_T *eap)
@@ -7532,19 +7543,29 @@ ex_cd(exarg_T *eap)
 	    emsg(_(e_failed));
 	else
 	{
-	    int is_local_chdir = eap->cmdidx == CMD_lcd
+	    char_u  *acmd_fname;
+	    int is_winlocal_chdir = eap->cmdidx == CMD_lcd
 						  || eap->cmdidx == CMD_lchdir;
+	    int is_tablocal_chdir = eap->cmdidx == CMD_tcd
+						  || eap->cmdidx == CMD_tchdir;
 
-	    post_chdir(is_local_chdir);
+	    post_chdir(is_tablocal_chdir, is_winlocal_chdir);
 
 	    /* Echo the new current directory if the command was typed. */
 	    if (KeyTyped || p_verbose >= 5)
 		ex_pwd(eap);
 
 	    if (dir_differs)
-		apply_autocmds(EVENT_DIRCHANGED,
-		      is_local_chdir ? (char_u *)"window" : (char_u *)"global",
+	    {
+		if (is_winlocal_chdir)
+		    acmd_fname = (char_u *)"window";
+		else if (is_tablocal_chdir)
+		    acmd_fname = (char_u *)"tabpage";
+		else
+		    acmd_fname = (char_u *)"global";
+		apply_autocmds(EVENT_DIRCHANGED, acmd_fname,
 		      new_dir, FALSE, curbuf);
+	    }
 	}
 	vim_free(tofree);
     }
@@ -9729,12 +9750,13 @@ makeopens(
     }
     for (tabnr = 1; ; ++tabnr)
     {
+	tabpage_T *tp = NULL;
 	int	need_tabnext = FALSE;
 	int	cnr = 1;
 
 	if ((ssop_flags & SSOP_TABPAGES))
 	{
-	    tabpage_T *tp = find_tabpage(tabnr);
+	    tp = find_tabpage(tabnr);
 
 	    if (tp == NULL)
 		break;		/* done all tab pages */
@@ -9866,6 +9888,16 @@ makeopens(
 	 */
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    return FAIL;
+
+	// Restore the tab-local working direcotry if specified
+	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
+	{
+	    if (fputs("tcd", fd) < 0
+		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
+		    || put_eol(fd) == FAIL)
+		return FAIL;
+	    did_lcd = TRUE;
+	}
 
 	/* Don't continue in another tab page when doing only the current one
 	 * or when at the last tab page. */
