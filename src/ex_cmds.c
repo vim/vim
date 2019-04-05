@@ -1537,7 +1537,7 @@ do_shell(
     int		flags)	/* may be SHELL_DOOUT when output is redirected */
 {
     buf_T	*buf;
-#ifndef FEAT_GUI_MSWIN
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     int		save_nwr;
 #endif
 #ifdef MSWIN
@@ -1636,32 +1636,37 @@ do_shell(
 	 * Otherwise there is probably text on the screen that the user wants
 	 * to read before redrawing, so call wait_return().
 	 */
-#ifndef FEAT_GUI_MSWIN
-	if (cmd == NULL
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	{
+	    if (cmd == NULL
 # ifdef MSWIN
-		|| (keep_termcap && !need_wait_return)
+		    || (keep_termcap && !need_wait_return)
 # endif
-	   )
-	{
-	    if (msg_silent == 0)
-		redraw_later_clear();
-	    need_wait_return = FALSE;
-	}
-	else
-	{
-	    /*
-	     * If we switch screens when starttermcap() is called, we really
-	     * want to wait for "hit return to continue".
-	     */
-	    save_nwr = no_wait_return;
-	    if (swapping_screen())
-		no_wait_return = FALSE;
+	       )
+	    {
+		if (msg_silent == 0)
+		    redraw_later_clear();
+		need_wait_return = FALSE;
+	    }
+	    else
+	    {
+		/*
+		 * If we switch screens when starttermcap() is called, we
+		 * really want to wait for "hit return to continue".
+		 */
+		save_nwr = no_wait_return;
+		if (swapping_screen())
+		    no_wait_return = FALSE;
 # ifdef AMIGA
-	    wait_return(term_console ? -1 : msg_silent == 0);	/* see below */
+		wait_return(term_console ? -1 : msg_silent == 0); // see below
 # else
-	    wait_return(msg_silent == 0);
+		wait_return(msg_silent == 0);
 # endif
-	    no_wait_return = save_nwr;
+		no_wait_return = save_nwr;
+	    }
 	}
 #endif /* FEAT_GUI_MSWIN */
 
