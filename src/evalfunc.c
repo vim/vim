@@ -5171,6 +5171,8 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 	    tp = curtab;
 
 	wp = find_tabwin(&argvars[0], &argvars[1]);
+	if (wp == NULL && argvars[0].v_type != VAR_UNKNOWN)
+	    return;		// specified window doesn't exist
     }
 
     if (wp != NULL && wp->w_localdir != NULL)
