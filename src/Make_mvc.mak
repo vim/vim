@@ -819,6 +819,8 @@ RCFLAGS = $(RCFLAGS) -DFEAT_GUI_MSWIN
 ! if "$(VIMDLL)" == "yes"
 SUBSYSTEM_CON = console
 GVIM = g$(VIM)
+CUI_INCL = iscygpty.h
+CUI_OBJ = $(OUTDIR)\iscygpty.obj
 ! else
 VIM = g$(VIM)
 ! endif

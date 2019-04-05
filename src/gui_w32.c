@@ -6643,8 +6643,11 @@ gui_mch_dialog(
 
 #ifndef NO_CONSOLE
     /* Don't output anything in silent mode ("ex -s") */
-    if (silent_mode)
-	return dfltbutton;   /* return default option */
+# ifdef VIMDLL
+    if (!(gui.in_use || gui.starting))
+# endif
+	if (silent_mode)
+	    return dfltbutton;   /* return default option */
 #endif
 
     if (s_hwnd == NULL)

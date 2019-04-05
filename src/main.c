@@ -19,7 +19,7 @@
 # include <limits.h>
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 # include "iscygpty.h"
 #endif
 
@@ -854,8 +854,11 @@ vim_main2(void)
     }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-    mch_set_winsize_now();	    /* Allow winsize changes from now on */
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
 #if defined(FEAT_GUI)
@@ -2561,8 +2564,12 @@ check_tty(mparm_T *parmp)
 	    exit(1);
 	}
 #endif
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	if (is_cygpty_used())
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+	if (
+# ifdef VIMDLL
+	    !gui.starting &&
+# endif
+	    is_cygpty_used())
 	{
 # if defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
 	&& defined(FEAT_GETTEXT)

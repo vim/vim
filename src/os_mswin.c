@@ -612,7 +612,7 @@ mch_suspend(void)
 # undef display_errors
 #endif
 
-#if defined(FEAT_GUI) || defined(VIMDLL)
+#ifdef FEAT_GUI
 /*
  * Display the saved error message(s).
  */
@@ -622,7 +622,7 @@ display_errors(void)
     char *p;
 
 # ifdef VIMDLL
-    if (gui.in_use)
+    if (gui.in_use || gui.starting)
 # endif
     {
 	if (error_ga.ga_data != NULL)
