@@ -2398,6 +2398,7 @@ has({feature})			Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
 				Number	|TRUE| if the window executed |:lcd|
+					or |:tcd|
 hasmapto({what} [, {mode} [, {abbr}]])
 				Number	|TRUE| if mapping to {what} exists
 histadd({history}, {item})	String	add an item to a history

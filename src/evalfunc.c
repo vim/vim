@@ -5126,6 +5126,19 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 
 /*
  * "getcwd()" function
+ *
+ * Return the current working directory of a window in a tab page.
+ * First optional argument 'winnr' is the window number or -1 and the second
+ * optional argument 'tabnr' is the tab page number.
+ *
+ * If no arguments are supplied, then return the directory of the current
+ * window.
+ * If only 'winnr' is specified and is not -1 then return the directory of the
+ * specified window.
+ * If both 'winnr and 'tabnr' are specified and 'winnr' is -1 then return the
+ * directory of the specified tab page.  Otherwise return the directory of the
+ * specified window in the specified tab page.
+ * If the window or the tab page doesn't exist then return NULL.
  */
     static void
 f_getcwd(typval_T *argvars, typval_T *rettv)
