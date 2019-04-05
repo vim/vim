@@ -9892,7 +9892,7 @@ makeopens(
 	// Restore the tab-local working direcotry if specified
 	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
 	{
-	    if (fputs("tcd", fd) < 0
+	    if (fputs("tcd ", fd) < 0
 		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
 		    || put_eol(fd) == FAIL)
 		return FAIL;
