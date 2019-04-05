@@ -189,7 +189,9 @@ DIRECTX = $(GUI)
 # Select one of eight object code directories, depends on GUI, OLE, DEBUG and
 # interfaces.
 # If you change something else, do "make clean" first!
-!if "$(GUI)" == "yes"
+!if "$(VIMDLL)" == "yes"
+OBJDIR = .\ObjD
+!elseif "$(GUI)" == "yes"
 OBJDIR = .\ObjG
 !else
 OBJDIR = .\ObjC
