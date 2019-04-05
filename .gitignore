@@ -33,6 +33,8 @@ src/auto/pathdef.c
 *.suo
 *.res
 *.RES
+vim*.dll
+vim*.lib
 src/if_perl.c
 src/pathdef.c
 src/Obj*/pathdef.c
