@@ -101,16 +101,18 @@ struct compl_S
 {
     compl_T	*cp_next;
     compl_T	*cp_prev;
-    char_u	*cp_str;	/* matched text */
-    char	cp_icase;	/* TRUE or FALSE: ignore case */
-    char_u	*(cp_text[CPT_COUNT]);	/* text for the menu */
-    char_u	*cp_fname;	/* file containing the match, allocated when
-				 * cp_flags has FREE_FNAME */
-    int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
-    int		cp_number;	/* sequence number */
+    char_u	*cp_str;	// matched text
+    char	cp_icase;	// TRUE or FALSE: ignore case
+    char	cp_equal;       // TRUE or FALSE: ins_compl_equal always ok
+    char_u	*(cp_text[CPT_COUNT]);	// text for the menu
+    char_u	*cp_fname;	// file containing the match, allocated when
+				// cp_flags has FREE_FNAME
+    int		cp_flags;	// ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME
+    int		cp_number;	// sequence number
 };
 
-# define ORIGINAL_TEXT	(1)   /* the original text when the expansion begun */
+// flags for ins_compl_add()
+# define ORIGINAL_TEXT	(1)   // the original text when the expansion begun
 # define FREE_FNAME	(2)
 
 static char e_hitend[] = N_("Hit end of paragraph");
@@ -183,7 +185,7 @@ static expand_T	  compl_xp;
 static int	  compl_opt_refresh_always = FALSE;
 static int	  compl_opt_suppress_empty = FALSE;
 
-static int ins_compl_add(char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup);
+static int ins_compl_add(char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup, int equal);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -413,13 +415,14 @@ ins_compl_accept_char(int c)
  */
     int
 ins_compl_add_infercase(
-    char_u	*str,
+    char_u	*str_arg,
     int		len,
     int		icase,
     char_u	*fname,
     int		dir,
     int		flags)
 {
+    char_u	*str = str_arg;
     char_u	*p;
     int		i, c;
     int		actual_len;		// Take multi-byte characters
@@ -550,10 +553,11 @@ ins_compl_add_infercase(
 	    vim_free(wca);
 	}
 
-	return ins_compl_add(IObuff, len, icase, fname, NULL, dir,
-								flags, FALSE);
+	str = IObuff;
     }
-    return ins_compl_add(str, len, icase, fname, NULL, dir, flags, FALSE);
+
+    return ins_compl_add(str, len, icase, fname, NULL, dir,
+							  flags, FALSE, FALSE);
 }
 
 /*
@@ -571,7 +575,8 @@ ins_compl_add(
     char_u	**cptext,   // extra text for popup menu or NULL
     int		cdir,
     int		flags,
-    int		adup)	    // accept duplicate match
+    int		adup,	    // accept duplicate match
+    int		equal)      // match is always accepted by ins_compl_equal
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -613,6 +618,7 @@ ins_compl_add(
 	return FAIL;
     }
     match->cp_icase = icase;
+    match->cp_equal = equal;
 
     // match-fname is:
     // - compl_curr_match->cp_fname if it is a string equal to fname.
@@ -676,6 +682,8 @@ ins_compl_add(
     static int
 ins_compl_equal(compl_T *match, char_u *str, int len)
 {
+    if (match->cp_equal)
+	return TRUE;
     if (match->cp_icase)
 	return STRNICMP(match->cp_str, str, (size_t)len) == 0;
     return STRNCMP(match->cp_str, str, (size_t)len) == 0;
@@ -776,7 +784,7 @@ ins_compl_add_matches(
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, icase,
-					    NULL, NULL, dir, 0, FALSE)) == OK)
+				      NULL, NULL, dir, 0, FALSE, FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -868,7 +876,7 @@ set_completion(colnr_T startcol, list_T *list)
     // compl_pattern doesn't need to be set
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
+		   -1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE, FALSE) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -2365,6 +2373,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     int		icase = FALSE;
     int		adup = FALSE;
     int		aempty = FALSE;
+    int		aequal = FALSE;
     char_u	*(cptext[CPT_COUNT]);
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -2386,6 +2395,8 @@ ins_compl_add_tv(typval_T *tv, int dir)
 	    adup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
 	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
 	    aempty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
+	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL)
+	    aequal = dict_get_number(tv->vval.v_dict, (char_u *)"equal");
     }
     else
     {
@@ -2394,7 +2405,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     }
     if (word == NULL || (!aempty && *word == NUL))
 	return FAIL;
-    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, adup);
+    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, adup, aequal);
 }
 #endif
 
@@ -3694,7 +3705,7 @@ ins_complete(int c, int enable_pum)
 	vim_free(compl_orig_text);
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
+		   -1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE, FALSE) != OK)
 	{
 	    VIM_CLEAR(compl_pattern);
 	    VIM_CLEAR(compl_orig_text);
