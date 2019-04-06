@@ -157,20 +157,39 @@ function Test_Tab_Local_Cwd()
   call assert_equal('Xtopdir', fnamemodify(getcwd(-1, 1), ':t'))
   call assert_equal('Xdir1', fnamemodify(getcwd(-1, 2), ':t'))
   call assert_equal('Xdir2', fnamemodify(getcwd(-1, 3), ':t'))
+  call assert_equal('', fnamemodify(getcwd(-1, 4), ':t'))
 
   " Jump to different windows in the tab pages and check the current directory
   tabrewind | 1wincmd w
   call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir1', fnamemodify(getcwd(0), ':t'))
+  call assert_true(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
   2wincmd w
   call assert_equal('Xtopdir', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xtopdir', fnamemodify(getcwd(0), ':t'))
+  call assert_false(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
   tabnext | 1wincmd w
   call assert_equal('Xdir1', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir1', fnamemodify(getcwd(0), ':t'))
+  call assert_true(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
   2wincmd w
   call assert_equal('Xdir2', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir2', fnamemodify(getcwd(0), ':t'))
+  call assert_true(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
   tabnext | 1wincmd w
   call assert_equal('Xdir2', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir2', fnamemodify(getcwd(0), ':t'))
+  call assert_true(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
   3wincmd w
   call assert_equal('Xdir3', fnamemodify(getcwd(), ':t'))
+  call assert_equal('Xdir3', fnamemodify(getcwd(0), ':t'))
+  call assert_true(haslocaldir(0))
+  call assert_equal(g:topdir, getcwd(-1))
 
   " A new tab page should inherit the directory of the current tab page
   tabrewind | 1wincmd w

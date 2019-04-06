@@ -5133,8 +5133,9 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
  *
  * If no arguments are supplied, then return the directory of the current
  * window.
- * If only 'winnr' is specified and is not -1 then return the directory of the
- * specified window.
+ * If only 'winnr' is specified and is not -1 or 0 then return the directory of
+ * the specified window.
+ * If 'winnr' is 0 then return the directory of the current window.
  * If both 'winnr and 'tabnr' are specified and 'winnr' is -1 then return the
  * directory of the specified tab page.  Otherwise return the directory of the
  * specified window in the specified tab page.
@@ -5151,28 +5152,33 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    if (argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number == -1)
+    if (argvars[0].v_type == VAR_UNKNOWN)
     {
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	    global = TRUE;
-	else
-	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+	// Default to the current window in the current tab page
+	wp = curwin;
+	tp = curtab;
     }
     else
     {
-	if (argvars[0].v_type != VAR_UNKNOWN &&
-		argvars[1].v_type != VAR_UNKNOWN)
+	if (argvars[0].v_type != VAR_NUMBER)
+	    return;
+
+	if (argvars[1].v_type == VAR_UNKNOWN)
 	{
-	    long n = (long)tv_get_number(&argvars[1]);
-	    if (n >= 0)
-		tp = find_tabpage(n);
+	    if (argvars[0].vval.v_number == -1)
+		global = TRUE;
+	    else
+		tp = curtab;
 	}
 	else
-	    tp = curtab;
+	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
 
-	wp = find_tabwin(&argvars[0], &argvars[1]);
-	if (wp == NULL && argvars[0].v_type != VAR_UNKNOWN)
-	    return;		// specified window doesn't exist
+	if (argvars[0].vval.v_number != -1)
+	{
+	    wp = find_tabwin(&argvars[0], &argvars[1]);
+	    if (wp == NULL)
+		return;		// specified window doesn't exist
+	}
     }
 
     if (wp != NULL && wp->w_localdir != NULL)
@@ -6869,13 +6875,20 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
 	wp = curwin;
 	tp = curtab;
     }
-    else if (argvars[1].v_type != VAR_UNKNOWN)
-	tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
-
-    if (argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number != -1)
+    else
     {
-	wp = find_tabwin(&argvars[0], &argvars[1]);
-	if (wp == NULL)
+	if (argvars[0].v_type != VAR_NUMBER)
+	    return;
+
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+	else
+	    tp = curtab;
+
+	if (argvars[0].vval.v_number != -1)
+	    wp = find_tabwin(&argvars[0], &argvars[1]);
+
+	if (tp == NULL || wp == NULL)
 	    return;
     }
 
