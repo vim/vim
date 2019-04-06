@@ -262,6 +262,7 @@ static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
 static void f_lispindent(typval_T *argvars, typval_T *rettv);
+static void f_list2str(typval_T *argvars, typval_T *rettv);
 static void f_localtime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_log(typval_T *argvars, typval_T *rettv);
@@ -401,6 +402,7 @@ static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_sqrt(typval_T *argvars, typval_T *rettv);
 static void f_str2float(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_str2list(typval_T *argvars, typval_T *rettv);
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
 static void f_strchars(typval_T *argvars, typval_T *rettv);
 #ifdef HAVE_STRFTIME
@@ -752,6 +754,7 @@ static struct fst
     {"line",		1, 1, f_line},
     {"line2byte",	1, 1, f_line2byte},
     {"lispindent",	1, 1, f_lispindent},
+    {"list2str",	1, 2, f_list2str},
     {"localtime",	0, 0, f_localtime},
 #ifdef FEAT_FLOAT
     {"log",		1, 1, f_log},
@@ -902,6 +905,7 @@ static struct fst
     {"sqrt",		1, 1, f_sqrt},
     {"str2float",	1, 1, f_str2float},
 #endif
+    {"str2list",	1, 2, f_str2list},
     {"str2nr",		1, 2, f_str2nr},
     {"strcharpart",	2, 3, f_strcharpart},
     {"strchars",	1, 2, f_strchars},
@@ -7850,6 +7854,61 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
+ * "list2str()" function
+ */
+    static void
+f_list2str(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li;
+    garray_T	ga;
+    int		utf8 = FALSE;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    l = argvars[0].vval.v_list;
+    if (l == NULL)
+	return;  // empty list results in empty string
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
+
+    ga_init2(&ga, 1, 80);
+    if (has_mbyte || utf8)
+    {
+	char_u	buf[MB_MAXBYTES + 1];
+	int	(*char2bytes)(int, char_u *);
+
+	if (utf8 || enc_utf8)
+	    char2bytes = utf_char2bytes;
+	else
+	    char2bytes = mb_char2bytes;
+
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	{
+	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
+	    ga_concat(&ga, buf);
+	}
+	ga_append(&ga, NUL);
+    }
+    else if (ga_grow(&ga, list_len(l) + 1) == OK)
+    {
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	    ga_append(&ga, tv_get_number(&li->li_tv));
+	ga_append(&ga, NUL);
+    }
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = ga.ga_data;
+}
+
+/*
  * "localtime()" function
  */
     static void
@@ -12899,6 +12958,47 @@ f_str2float(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_FLOAT;
 }
 #endif
+
+/*
+ * "str2list()" function
+ */
+    static void
+f_str2list(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p;
+    int		utf8 = FALSE;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
+
+    p = tv_get_string(&argvars[0]);
+
+    if (has_mbyte || utf8)
+    {
+	int (*ptr2len)(char_u *);
+	int (*ptr2char)(char_u *);
+
+	if (utf8 || enc_utf8)
+	{
+	    ptr2len = utf_ptr2len;
+	    ptr2char = utf_ptr2char;
+	}
+	else
+	{
+	    ptr2len = mb_ptr2len;
+	    ptr2char = mb_ptr2char;
+	}
+
+	for ( ; *p != NUL; p += (*ptr2len)(p))
+	    list_append_number(rettv->vval.v_list, (*ptr2char)(p));
+    }
+    else
+	for ( ; *p != NUL; ++p)
+	    list_append_number(rettv->vval.v_list, *p);
+}
 
 /*
  * "str2nr()" function
