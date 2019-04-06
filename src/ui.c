@@ -628,8 +628,9 @@ ui_new_shellsize(void)
 }
 
 #if (defined(FEAT_EVAL) \
-    && (defined(FEAT_GUI) \
-	    || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)))) \
+	    && (defined(FEAT_GUI) \
+		|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)))) \
+	|| defined(FEAT_TERMINAL) \
 	|| defined(PROTO)
 /*
  * Get the window position in pixels, if possible.
