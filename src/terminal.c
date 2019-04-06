@@ -3868,7 +3868,9 @@ parse_csi(
 
     // When getting the window position is not possible or it fails it results
     // in zero/zero.
-#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
+#if defined(FEAT_GUI) \
+	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
+	|| defined(MSWIN)
     (void)ui_get_winpos(&x, &y, (varnumber_T)100);
 #endif
 

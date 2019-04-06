@@ -5985,7 +5985,9 @@ f_getwinpos(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
-#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
+#if defined(FEAT_GUI) \
+	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
+	|| defined(MSWIN)
     {
 	varnumber_T timeout = 100;
 
@@ -6007,7 +6009,10 @@ f_getwinpos(typval_T *argvars UNUSED, typval_T *rettv)
 f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = -1;
-#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
+#if defined(FEAT_GUI) \
+	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
+	|| defined(MSWIN)
+
     {
 	int	    x, y;
 
@@ -6024,7 +6029,9 @@ f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 f_getwinposy(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = -1;
-#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
+#if defined(FEAT_GUI) \
+	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
+	|| defined(MSWIN)
     {
 	int	    x, y;
 
