@@ -1887,3 +1887,36 @@ func Test_terminal_statusline()
   au! BufLeave
   set statusline=
 endfunc
+
+func Test_terminal_getwinpos()
+  " split, go to the bottom-right window
+  split
+  wincmd j
+  set splitright
+
+  call writefile([
+	\ 'echo getwinpos()',
+	\ ], 'XTest_getwinpos')
+  let buf = RunVimInTerminal('-S XTest_getwinpos', {'cols': 60})
+  call term_wait(buf)
+
+  " Find the output of getwinpos() in the bottom line.
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_match('\[\d\+, \d\+\]', term_getline(buf, rows))})
+  let line = term_getline(buf, rows)
+  let xpos = str2nr(substitute(line, '\[\(\d\+\), \d\+\]', '\1', ''))
+  let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
+
+  " Position must be bigger than the getwinpos() result of Vim itself.
+  let [xroot, yroot] = getwinpos()
+  call assert_inrange(xroot + 2, xroot + 1000, xpos)
+  call assert_inrange(yroot + 2, yroot + 1000, ypos)
+
+  call term_wait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_getwinpos')
+  exe buf . 'bwipe!'
+  set splitright&
+  only!
+endfunc

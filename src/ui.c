@@ -627,6 +627,27 @@ ui_new_shellsize(void)
     }
 }
 
+#if (defined(FEAT_EVAL) \
+    && (defined(FEAT_GUI) \
+	    || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)))) \
+	|| defined(PROTO)
+/*
+ * Get the window position in pixels, if possible.
+ * Return FAIL when not possible.
+ */
+    int
+ui_get_winpos(int *x, int *y, varnumber_T timeout)
+{
+# ifdef FEAT_GUI
+    if (gui.in_use)
+	return gui_mch_get_winpos(x, y);
+# endif
+# if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)
+    return term_get_winpos(x, y, timeout);
+# endif
+}
+#endif
+
     void
 ui_breakcheck(void)
 {

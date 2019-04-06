@@ -905,6 +905,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   int leader_byte = 0;
   int intermed_byte = 0;
   VTermPos oldpos = state->pos;
+  int handled = 1;
 
   /* Some temporaries for later code */
   int count, val;
@@ -1416,6 +1417,10 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
       case 8: /* CSI 8 ; rows ; cols t  set size */
 	if (argcount == 3)
 	  on_resize(CSI_ARG(args[1]), CSI_ARG(args[2]), state);
+	break;
+      default:
+	handled = 0;
+	break;
     }
     break;
 
@@ -1450,6 +1455,11 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     break;
 
   default:
+    handled = 0;
+    break;
+  }
+
+  if (!handled) {
     if(state->fallbacks && state->fallbacks->csi)
       if((*state->fallbacks->csi)(leader, args, argcount, intermed, command, state->fbdata))
         return 1;

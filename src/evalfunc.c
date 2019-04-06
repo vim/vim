@@ -5985,20 +5985,14 @@ f_getwinpos(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
-#ifdef FEAT_GUI
-    if (gui.in_use)
-	(void)gui_mch_get_winpos(&x, &y);
-# if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)
-    else
-# endif
-#endif
-#if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)
+#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
     {
 	varnumber_T timeout = 100;
 
 	if (argvars[0].v_type != VAR_UNKNOWN)
 	    timeout = tv_get_number(&argvars[0]);
-	term_get_winpos(&x, &y, timeout);
+
+	(void)ui_get_winpos(&x, &y, timeout);
     }
 #endif
     list_append_number(rettv->vval.v_list, (varnumber_T)x);
@@ -6013,21 +6007,11 @@ f_getwinpos(typval_T *argvars UNUSED, typval_T *rettv)
 f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = -1;
-#ifdef FEAT_GUI
-    if (gui.in_use)
+#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
     {
 	int	    x, y;
 
-	if (gui_mch_get_winpos(&x, &y) == OK)
-	    rettv->vval.v_number = x;
-	return;
-    }
-#endif
-#if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)
-    {
-	int	    x, y;
-
-	if (term_get_winpos(&x, &y, (varnumber_T)100) == OK)
+	if (ui_get_winpos(&x, &y, 100) == OK)
 	    rettv->vval.v_number = x;
     }
 #endif
@@ -6040,21 +6024,11 @@ f_getwinposx(typval_T *argvars UNUSED, typval_T *rettv)
 f_getwinposy(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = -1;
-#ifdef FEAT_GUI
-    if (gui.in_use)
+#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
     {
 	int	    x, y;
 
-	if (gui_mch_get_winpos(&x, &y) == OK)
-	    rettv->vval.v_number = y;
-	return;
-    }
-#endif
-#if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)
-    {
-	int	    x, y;
-
-	if (term_get_winpos(&x, &y, (varnumber_T)100) == OK)
+	if (ui_get_winpos(&x, &y, 100) == OK)
 	    rettv->vval.v_number = y;
     }
 #endif
