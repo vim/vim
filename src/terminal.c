@@ -3866,8 +3866,11 @@ parse_csi(
     if (command != 't' || argcount != 1 || args[0] != 13)
 	return 0; // not handled
 
-    // When getting the window position fails it results in zero/zero.
+    // When getting the window position is not possible or it fails it results
+    // in zero/zero.
+#if defined(FEAT_GUI) || (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE))
     (void)ui_get_winpos(&x, &y, (varnumber_T)100);
+#endif
 
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == term->tl_buffer)

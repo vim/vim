@@ -1889,6 +1889,11 @@ func Test_terminal_statusline()
 endfunc
 
 func Test_terminal_getwinpos()
+  " does not work in the MS-Windows console
+  if has('win32') && !has('gui')
+    return
+  endif
+
   " split, go to the bottom-right window
   split
   wincmd j

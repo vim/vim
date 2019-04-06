@@ -2843,7 +2843,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-#  if (defined(FEAT_EVAL) && defined(HAVE_TGETENT)) || defined(PROTO)
+# if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -4858,7 +4858,7 @@ check_termcode(
 
 		/*
 		 * Check for a window position response from the terminal:
-		 *       {lead}3;{x}:{y}t
+		 *       {lead}3;{x};{y}t
 		 */
 		else if (did_request_winpos
 			    && ((len >= 4 && tp[0] == ESC && tp[1] == '[')
@@ -4925,11 +4925,11 @@ check_termcode(
 			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && tp[j + 11] == '/' && tp[j + 16] == '/')
 			{
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 			    int rval = hexhex2nr(tp + j + 7);
 			    int gval = hexhex2nr(tp + j + 12);
 			    int bval = hexhex2nr(tp + j + 17);
-#endif
+# endif
 			    if (is_bg)
 			    {
 				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
@@ -4937,11 +4937,11 @@ check_termcode(
 
 				LOG_TR(("Received RBG response: %s", tp));
 				rbg_status = STATUS_GOT;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 				bg_r = rval;
 				bg_g = gval;
 				bg_b = bval;
-#endif
+# endif
 				if (!option_was_set((char_u *)"bg")
 						  && STRCMP(p_bg, newval) != 0)
 				{
@@ -4952,7 +4952,7 @@ check_termcode(
 				    redraw_asap(CLEAR);
 				}
 			    }
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 			    else
 			    {
 				LOG_TR(("Received RFG response: %s", tp));
@@ -4961,7 +4961,7 @@ check_termcode(
 				fg_g = gval;
 				fg_b = bval;
 			    }
-#endif
+# endif
 			}
 
 			/* got finished code: consume it */
