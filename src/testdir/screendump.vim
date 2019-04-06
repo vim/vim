@@ -118,7 +118,12 @@ func VerifyScreenDump(buf, filename, options, ...)
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
     let testdump = readfile(testfile)
-    let refdump = readfile(reference)
+    if filereadable(reference)
+      let refdump = readfile(reference)
+    else
+      " Must be a new screendump, always fail
+      let refdump = []
+    endif
     if refdump == testdump
       call delete(testfile)
       if did_mkdir
@@ -127,13 +132,17 @@ func VerifyScreenDump(buf, filename, options, ...)
       break
     endif
     if i == 100
-      " Leave the test file around for inspection.
-      let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
-      if a:0 == 1
-        let msg = a:1 . ': ' . msg
-      endif
-      if len(testdump) != len(refdump)
-	let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
+      " Leave the failed dump around for inspection.
+      if filereadable(reference)
+	let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
+	if a:0 == 1
+	  let msg = a:1 . ': ' . msg
+	endif
+	if len(testdump) != len(refdump)
+	  let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
+	endif
+      else
+	let msg = 'See new dump file: call term_dumpload("' . testfile . '")'
       endif
       for i in range(len(refdump))
 	if i >= len(testdump)
