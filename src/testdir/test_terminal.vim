@@ -1889,6 +1889,10 @@ func Test_terminal_statusline()
 endfunc
 
 func Test_terminal_getwinpos()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
   " split, go to the bottom-right window
   split
   wincmd j
@@ -1907,17 +1911,10 @@ func Test_terminal_getwinpos()
   let xpos = str2nr(substitute(line, '\[\(\d\+\), \d\+\]', '\1', ''))
   let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
 
-  " getwinpos() in the MS-Windows console returns the screen position of the
-  " emulated console.
-  if has('win32')
-    call assert_inrange(0, 4000, xpos)
-    call assert_inrange(0, 2000, ypos)
-  else
-    " Position must be bigger than the getwinpos() result of Vim itself.
-    let [xroot, yroot] = getwinpos()
-    call assert_inrange(xroot + 2, xroot + 1000, xpos)
-    call assert_inrange(yroot + 2, yroot + 1000, ypos)
-  endif
+  " Position must be bigger than the getwinpos() result of Vim itself.
+  let [xroot, yroot] = getwinpos()
+  call assert_inrange(xroot + 2, xroot + 1000, xpos)
+  call assert_inrange(yroot + 2, yroot + 1000, ypos)
 
   call term_wait(buf)
   call term_sendkeys(buf, ":q\<CR>")
