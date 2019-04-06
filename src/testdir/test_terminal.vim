@@ -1889,8 +1889,9 @@ func Test_terminal_statusline()
 endfunc
 
 func Test_terminal_getwinpos()
-  " does not work in the MS-Windows console
-  if has('win32') && !has('gui')
+  " getwinpos() does not work in the MS-Windows console, and the GUI runs the
+  " console version in the terminal window.
+  if has('win32')
     return
   endif
 
