@@ -9196,7 +9196,6 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     int		i;
 #ifdef MSWIN
     char_u		*buf, *p;
-    WIN32_FIND_DATA	fb;
     int			ok;
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
