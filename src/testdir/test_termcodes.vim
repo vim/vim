@@ -45,3 +45,69 @@ func Test_xterm_mouse_click()
   bwipe!
 endfunc
 
+func Test_xterm_mouse_wheel()
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set mouse=a
+  set term=xterm
+  call setline(1, range(1, 100))
+
+  " Test Xterm mouse wheel.
+  set ttymouse=xterm
+  let button = 0x41 " wheel down.
+  let row = 1 + 32  " cursor position for mouse wheel is not relevant.
+  let col = 1 + 32
+
+  call assert_equal(1, line('w0'))
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call feedkeys("\<Esc>[M" .. list2str([button, col, row]), 'Lx!')
+  call assert_equal(4, line('w0'))
+  call assert_equal([0, 4, 1, 0], getpos('.'))
+  call feedkeys("\<Esc>[M" .. list2str([button, col, row]), 'Lx!')
+  call assert_equal(7, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+
+  let button = 0x40  " wheel up.
+
+  call feedkeys("\<Esc>[M" .. list2str([button, col, row]), 'Lx!')
+  call assert_equal(4, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+  call feedkeys("\<Esc>[M" .. list2str([button, col, row]), 'Lx!')
+  call assert_equal(1, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+
+  " Test SGR mouse wheel.
+  set ttymouse=sgr
+  go
+  let button = 0x41 " wheel down.
+  let row = 1       " cursor position for mouse wheel is not relevant.
+  let col = 1
+
+  call assert_equal(1, line('w0'))
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+  call assert_equal(4, line('w0'))
+  call assert_equal([0, 4, 1, 0], getpos('.'))
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+  call assert_equal(7, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+
+  let button = 0x40  " wheel up.
+
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+  call assert_equal(4, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+  call assert_equal(1, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+  call assert_equal(1, line('w0'))
+  call assert_equal([0, 7, 1, 0], getpos('.'))
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  bwipe!
+endfunc
