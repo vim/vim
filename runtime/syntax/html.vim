@@ -3,8 +3,8 @@
 " Maintainer:           Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 " Previous Maintainer:  Claudio Fleiner <claudio@fleiner.com>
 " Repository:           https://notabug.org/jorgesumle/vim-html-syntax
-" Last Change:          2018 May 31
-" Included patch from Jay Sitter to add WAI-ARIA htmlArg keywords
+" Last Change:          2018 Apr 7
+" Included patch from Jorge Maldonado Ventura to fix rendering
 "
 
 " Please check :help html.vim for some comments and a description of the options
