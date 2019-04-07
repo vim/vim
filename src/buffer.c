@@ -1853,7 +1853,9 @@ curbuf_reusable(void)
 	&& curbuf->b_ffname == NULL
 	&& curbuf->b_nwindows <= 1
 	&& (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY())
+#if defined(FEAT_QUICKFIX)
 	&& !bt_quickfix(curbuf)
+#endif
 	&& !curbufIsChanged());
 }
 
