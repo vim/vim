@@ -215,32 +215,38 @@ func Test_mksession_tcd_multiple_tabs()
   let save_cwd = getcwd()
   call mkdir('Xtopdir')
   cd Xtopdir
-  call mkdir('Xdir1')
-  call mkdir('Xdir2')
-  call mkdir('Xdir3')
-  call mkdir('Xdir4')
-  call mkdir('Xdir5')
+  call mkdir('Xtabdir1')
+  call mkdir('Xtabdir2')
+  call mkdir('Xtabdir3')
+  call mkdir('Xwindir1')
+  call mkdir('Xwindir2')
+  call mkdir('Xwindir3')
+  tcd Xtabdir1
   botright new
-  lcd Xdir1
+  wincmd t
+  lcd ../xwindir1
   tabnew
-  tcd ../Xdir2
+  tcd ../Xtabdir2
   botright new
-  lcd ../Xdir3
+  lcd ../Xwindir2
   tabnew
-  tcd ../Xdir4
+  tcd ../Xtabdir3
   botright new
-  lcd ../Xdir5
+  lcd ../Xwindir3
   tabfirst
   1wincmd w
   mksession! Xtest_mks.out
   only | tabonly
   source Xtest_mks.out
-  call assert_equal('Xtopdir', fnamemodify(getcwd(1, 1), ':t'))
-  call assert_equal('Xdir1', fnamemodify(getcwd(2, 1), ':t'))
-  call assert_equal('Xdir2', fnamemodify(getcwd(1, 2), ':t'))
-  call assert_equal('Xdir3', fnamemodify(getcwd(2, 2), ':t'))
-  call assert_equal('Xdir4', fnamemodify(getcwd(1, 3), ':t'))
-  call assert_equal('Xdir5', fnamemodify(getcwd(2, 3), ':t'))
+  call assert_equal('Xtabdir1', fnamemodify(getcwd(-1, 1), ':t'))
+  call assert_equal('Xwindir1', fnamemodify(getcwd(1, 1), ':t'))
+  call assert_equal('Xtabdir1', fnamemodify(getcwd(2, 1), ':t'))
+  call assert_equal('Xtabdir2', fnamemodify(getcwd(-1, 2), ':t'))
+  call assert_equal('Xtabdir2', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('Xwindir2', fnamemodify(getcwd(2, 2), ':t'))
+  call assert_equal('Xtabdir3', fnamemodify(getcwd(-1, 3), ':t'))
+  call assert_equal('Xtabdir3', fnamemodify(getcwd(1, 3), ':t'))
+  call assert_equal('Xwindir3', fnamemodify(getcwd(2, 3), ':t'))
   only | tabonly
   exe 'cd ' . save_cwd
   call delete("Xtopdir", "rf")

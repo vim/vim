@@ -9856,6 +9856,8 @@ makeopens(
 	    return FAIL;
 
 	// Restore the tab-local working directory if specified
+	// Do this before the windows, so that the window-local directory can
+	// override the tab-local directory.
 	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
 	{
 	    if (fputs("tcd ", fd) < 0
