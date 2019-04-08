@@ -3575,16 +3575,14 @@ init_default_colors(term_T *term)
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
-# ifdef MSWIN
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  ifdef VIMDLL
 	    if (!gui.in_use)
 #  endif
 	    {
-#  if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
-#  endif
 	    }
 # endif
 	}
@@ -3596,16 +3594,14 @@ init_default_colors(term_T *term)
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
-# ifdef MSWIN
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  ifdef VIMDLL
 	    if (!gui.in_use)
 #  endif
 	    {
-#  if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		tmp = fg->red;
 		fg->red = fg->blue;
 		fg->blue = tmp;
-#  endif
 	    }
 # endif
 	}

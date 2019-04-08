@@ -4107,18 +4107,16 @@ add_termcode(char_u *name, char_u *string, int flags)
 	s[0] = term_7to8bit(string);
     }
 
-#ifdef MSWIN
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 # ifdef VIMDLL
     if (!gui.in_use)
 # endif
     {
-# if !defined(FEAT_GUI) || defined(VIMDLL)
 	if (s[0] == K_NUL)
 	{
 	    STRMOVE(s + 1, s);
 	    s[1] = 3;
 	}
-# endif
     }
 #endif
 
