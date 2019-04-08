@@ -2257,6 +2257,8 @@ struct file_buffer
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
     char_u	*b_p_ofu;	/* 'omnifunc' */
+#endif
+#ifdef FEAT_EVAL
     char_u	*b_p_tfu;	/* 'tagfunc' */
 #endif
     int		b_p_eol;	/* 'endofline' */

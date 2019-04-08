@@ -1068,7 +1068,7 @@ enum
 #endif
     , BV_SW
     , BV_SWF
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
     , BV_TFU
 #endif
     , BV_TAGS

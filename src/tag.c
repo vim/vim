@@ -86,7 +86,9 @@ static void get_tag_details(taggy_T *tag, dict_T *retdict);
 
 static char_u *bottommsg = (char_u *)N_("E555: at bottom of tag stack");
 static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
+#ifdef FEAT_EVAL
 static char_u *recurmsg = (char_u *)N_("E986: Cannot modify the tag stack within tagfunc");
+#endif
 
 static char_u	*tagmatchname = NULL;	/* name of last used tag */
 
@@ -98,7 +100,7 @@ static char_u	*tagmatchname = NULL;	/* name of last used tag */
 static taggy_T ptag_entry = {NULL, {{0, 0, 0}, 0}, 0, 0, NULL};
 #endif
 
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
 static int  tfu_call_level = 0;	    // disallow recursive call of tagfunc
 #endif
 
@@ -165,7 +167,7 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
     if (tfu_call_level)
     {
 	emsg(_(recurmsg));
@@ -1281,7 +1283,7 @@ prepare_pats(pat_T *pats, int has_re)
 	pats->regmatch.regprog = NULL;
 }
 
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
 /*
  * find_tfu_tags() - call the user-defined function to generate a list of tags
  *                   used by find_tags().
@@ -1648,7 +1650,7 @@ find_tags(
     int		use_cscope = (flags & TAG_CSCOPE);
 #endif
     int		verbose = (flags & TAG_VERBOSE);
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
     int         use_tfu = ((flags & TAG_NO_TFU) == 0);
 #endif
     int		save_p_ic = p_ic;
@@ -1746,7 +1748,7 @@ find_tags(
     vim_memset(&search_info, 0, (size_t)1);
 #endif
 
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
     if (*curbuf->b_p_tfu != NUL && use_tfu && tfu_call_level == 0)
     {
 	++tfu_call_level;
@@ -4217,7 +4219,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
     dictitem_T	*di;
     list_T	*l;
 
-#ifdef FEAT_COMPL_FUNC
+#ifdef FEAT_EVAL
     // not valid to alter the tag stack entries from inside tagfunc
     if (tfu_call_level)
     {

@@ -2211,7 +2211,6 @@ free_buf_options(
 #ifdef FEAT_COMPL_FUNC
     clear_string_option(&buf->b_p_cfu);
     clear_string_option(&buf->b_p_ofu);
-    clear_string_option(&buf->b_p_tfu);
 #endif
 #ifdef FEAT_QUICKFIX
     clear_string_option(&buf->b_p_gp);
@@ -2222,6 +2221,9 @@ free_buf_options(
     clear_string_option(&buf->b_p_path);
     clear_string_option(&buf->b_p_tags);
     clear_string_option(&buf->b_p_tc);
+#ifdef FEAT_EVAL
+    clear_string_option(&buf->b_p_tfu);
+#endif
 #ifdef FEAT_INS_EXPAND
     clear_string_option(&buf->b_p_dict);
     clear_string_option(&buf->b_p_tsr);
