@@ -9855,6 +9855,16 @@ makeopens(
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    return FAIL;
 
+	// Restore the tab-local working directory if specified
+	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
+	{
+	    if (fputs("tcd ", fd) < 0
+		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
+		    || put_eol(fd) == FAIL)
+		return FAIL;
+	    did_lcd = TRUE;
+	}
+
 	/*
 	 * Restore the view of the window (options, file, cursor, etc.).
 	 */
@@ -9888,16 +9898,6 @@ makeopens(
 	 */
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    return FAIL;
-
-	// Restore the tab-local working direcotry if specified
-	if (tp != NULL && tp->tp_localdir != NULL && ssop_flags & SSOP_CURDIR)
-	{
-	    if (fputs("tcd ", fd) < 0
-		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
-		    || put_eol(fd) == FAIL)
-		return FAIL;
-	    did_lcd = TRUE;
-	}
 
 	/* Don't continue in another tab page when doing only the current one
 	 * or when at the last tab page. */
