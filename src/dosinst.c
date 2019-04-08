@@ -1677,7 +1677,9 @@ install_registry(void)
 
     printf("Creating an uninstall entry\n");
     sprintf(display_name, "Vim " VIM_VERSION_SHORT
-#ifdef _WIN64
+#ifdef _M_ARM64
+	    " (arm64)"
+#elif _M_X64
 	    " (x64)"
 #endif
 	    );

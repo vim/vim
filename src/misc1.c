@@ -5790,6 +5790,9 @@ dos_expandpath(
     while (ok)
     {
 	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+	if (p == NULL)
+	    break;  // out of memory
+
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
 	if ((p[0] != '.' || starts_with_dot

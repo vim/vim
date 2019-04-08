@@ -753,7 +753,7 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
     return ret;
 }
 
-    static int
+    int
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
     char_u	*s;
@@ -966,7 +966,7 @@ eval_to_number(char_u *expr)
  * Save the current typeval in "save_tv".
  * When not used yet add the variable to the v: hashtable.
  */
-    static void
+    void
 prepare_vimvar(int idx, typval_T *save_tv)
 {
     *save_tv = vimvars[idx].vv_tv;
@@ -978,7 +978,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
  * Restore v: variable "idx" to typeval "save_tv".
  * When no longer defined, remove the variable from the v: hashtable.
  */
-    static void
+    void
 restore_vimvar(int idx, typval_T *save_tv)
 {
     hashitem_T	*hi;
@@ -1234,6 +1234,7 @@ eval_foldexpr(char_u *arg, int *cp)
  * ":let var /= expr"		assignment command.
  * ":let var %= expr"		assignment command.
  * ":let var .= expr"		assignment command.
+ * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
  */
     void
@@ -1248,6 +1249,7 @@ ex_let(exarg_T *eap)
     char_u	op[2];
     char_u	*argend;
     int		first = TRUE;
+    int		concat;
 
     argend = skip_var_list(arg, &var_count, &semicolon);
     if (argend == NULL)
@@ -1255,14 +1257,19 @@ ex_let(exarg_T *eap)
     if (argend > arg && argend[-1] == '.')  // for var.='str'
 	--argend;
     expr = skipwhite(argend);
-    if (*expr != '=' && !(vim_strchr((char_u *)"+-*/%.", *expr) != NULL
-			  && expr[1] == '='))
+    concat = expr[0] == '.'
+	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
+		|| (expr[1] == '.' && expr[2] == '='));
+    if (*expr != '=' && !((vim_strchr((char_u *)"+-*/%", *expr) != NULL
+						 && expr[1] == '=') || concat))
     {
 	/*
 	 * ":let" without "=": list variables
 	 */
 	if (*arg == '[')
 	    emsg(_(e_invarg));
+	else if (expr[0] == '.')
+	    emsg(_("E985: .= is not supported with script version 2"));
 	else if (!ends_excmd(*arg))
 	    /* ":let var1 var2" */
 	    arg = list_arg_vars(eap, arg, &first);
@@ -1286,7 +1293,11 @@ ex_let(exarg_T *eap)
 	if (*expr != '=')
 	{
 	    if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
+	    {
 		op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		if (expr[0] == '.' && expr[1] == '.') // ..=
+		    ++expr;
+	    }
 	    expr = skipwhite(expr + 2);
 	}
 	else
@@ -3812,7 +3823,8 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
  * Handle fourth level expression:
  *	+	number addition
  *	-	number subtraction
- *	.	string concatenation
+ *	.	string concatenation (if script version is 1)
+ *	..	string concatenation
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to the next non-white after the recognized expression.
@@ -3832,6 +3844,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
     char_u	*s1, *s2;
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
     char_u	*p;
+    int		concat;
 
     /*
      * Get the first variable.
@@ -3844,8 +3857,11 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
      */
     for (;;)
     {
+	// "." is only string concatenation when scriptversion is 1
 	op = **arg;
-	if (op != '+' && op != '-' && op != '.')
+	concat = op == '.'
+			&& (*(*arg + 1) == '.' || current_sctx.sc_version < 2);
+	if (op != '+' && op != '-' && !concat)
 	    break;
 
 	if ((op != '+' || (rettv->v_type != VAR_LIST
@@ -3872,6 +3888,8 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	/*
 	 * Get the second variable.
 	 */
+	if (op == '.' && *(*arg + 1) == '.')  // .. string concatenation
+	    ++*arg;
 	*arg = skipwhite(*arg + 1);
 	if (eval6(arg, &var2, evaluate, op == '.') == FAIL)
 	{
@@ -4216,6 +4234,17 @@ eval7(
 	*arg = skipwhite(*arg + 1);
     end_leader = *arg;
 
+    if (**arg == '.' && (!isdigit(*(*arg + 1))
+#ifdef FEAT_FLOAT
+	    || current_sctx.sc_version < 2
+#endif
+	    ))
+    {
+	semsg(_(e_invexpr2), *arg);
+	++*arg;
+	return FAIL;
+    }
+
     switch (**arg)
     {
     /*
@@ -4231,16 +4260,23 @@ eval7(
     case '7':
     case '8':
     case '9':
+    case '.':
 	{
 #ifdef FEAT_FLOAT
-		char_u *p = skipdigits(*arg + 1);
+		char_u *p;
 		int    get_float = FALSE;
 
 		/* We accept a float when the format matches
 		 * "[0-9]\+\.[0-9]\+\([eE][+-]\?[0-9]\+\)\?".  This is very
 		 * strict to avoid backwards compatibility problems.
+		 * With script version 2 and later the leading digit can be
+		 * omitted.
 		 * Don't look for a float after the "." operator, so that
 		 * ":let vers = 1.2.3" doesn't fail. */
+		if (**arg == '.')
+		    p = *arg;
+		else
+		    p = skipdigits(*arg + 1);
 		if (!want_string && p[0] == '.' && vim_isdigit(p[1]))
 		{
 		    get_float = TRUE;

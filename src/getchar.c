@@ -2030,6 +2030,8 @@ vgetorpeek(int advance)
 	     */
 	    for (;;)
 	    {
+		long	    wait_time;
+
 		/*
 		 * ui_breakcheck() is slow, don't use it too often when
 		 * inside a mapping.  But call it each time for typed
@@ -2828,18 +2830,25 @@ vgetorpeek(int advance)
 		    // that has a <Nop> RHS.
 		    timedout = FALSE;
 
+		if (advance)
+		{
+		    if (typebuf.tb_len == 0
+			    || !(p_timeout
+				 || (p_ttimeout && keylen == KEYLEN_PART_KEY)))
+			// blocking wait
+			wait_time = -1L;
+		    else if (keylen == KEYLEN_PART_KEY && p_ttm >= 0)
+			wait_time = p_ttm;
+		    else
+			wait_time = p_tm;
+		}
+		else
+		    wait_time = 0;
+
 		wait_tb_len = typebuf.tb_len;
 		c = inchar(typebuf.tb_buf + typebuf.tb_off + typebuf.tb_len,
 			typebuf.tb_buflen - typebuf.tb_off - typebuf.tb_len - 1,
-			!advance
-			    ? 0
-			    : ((typebuf.tb_len == 0
-				    || !(p_timeout || (p_ttimeout
-					       && keylen == KEYLEN_PART_KEY)))
-				    ? -1L
-				    : ((keylen == KEYLEN_PART_KEY && p_ttm >= 0)
-					    ? p_ttm
-					    : p_tm)));
+			wait_time);
 
 #ifdef FEAT_CMDL_INFO
 		if (i != 0)

@@ -1853,6 +1853,9 @@ curbuf_reusable(void)
 	&& curbuf->b_ffname == NULL
 	&& curbuf->b_nwindows <= 1
 	&& (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY())
+#if defined(FEAT_QUICKFIX)
+	&& !bt_quickfix(curbuf)
+#endif
 	&& !curbufIsChanged());
 }
 
@@ -5493,6 +5496,7 @@ chk_modeline(
 		current_sctx.sc_sid = SID_MODELINE;
 		current_sctx.sc_seq = 0;
 		current_sctx.sc_lnum = 0;
+		current_sctx.sc_version = 1;
 #endif
 		// Make sure no risky things are executed as a side effect.
 		secure = 1;

@@ -320,7 +320,7 @@ EXTERN int	want_garbage_collect INIT(= FALSE);
 EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 // Script CTX being sourced or was sourced to define the current function.
-EXTERN sctx_T	current_sctx INIT(= {0 COMMA 0 COMMA 0});
+EXTERN sctx_T	current_sctx INIT(= {0 COMMA 0 COMMA 0 COMMA 0});
 #endif
 
 EXTERN int	did_source_packages INIT(= FALSE);
@@ -1401,6 +1401,7 @@ EXTERN char e_interr[]	INIT(= N_("Interrupted"));
 EXTERN char e_invaddr[]	INIT(= N_("E14: Invalid address"));
 EXTERN char e_invarg[]	INIT(= N_("E474: Invalid argument"));
 EXTERN char e_invarg2[]	INIT(= N_("E475: Invalid argument: %s"));
+EXTERN char e_duparg2[]	INIT(= N_("E983: Duplicate argument: %s"));
 EXTERN char e_invargval[]	INIT(= N_("E475: Invalid value for argument %s"));
 EXTERN char e_invargNval[]	INIT(= N_("E475: Invalid value for argument %s: %s"));
 #ifdef FEAT_EVAL
