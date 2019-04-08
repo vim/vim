@@ -2437,8 +2437,9 @@ color2index(VTermColor *color, int fg, int *boldp)
 	if (t_colors >= 16)
 	{
 # ifdef VIMDLL
-	    // Swap red and blue.
-	    if (color->ansi_index > 0 && color->ansi_index <= 16)
+	    // Swap red and blue on 16-color mode.
+	    if (t_colors == 16
+		    && color->ansi_index > 0 && color->ansi_index <= 16)
 	    {
 		unsigned int i = color->ansi_index - 1;
 		i = (i & 8) | ((i & 1) << 2) | (i & 2) | ((i & 4) >> 2);
