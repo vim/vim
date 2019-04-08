@@ -419,7 +419,7 @@ CHANNEL = $(GUI)
 !endif
 !endif
 
-# GUI sepcific features.
+# GUI specific features.
 !if "$(GUI)" == "yes"
 # Only allow NETBEANS for a GUI build and CHANNEL.
 !if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
@@ -468,7 +468,7 @@ XPM = no
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
 !if $(MSVC_MAJOR) >= 14
-# VC14 cannot use a library built by VC12 or eariler, because VC14 uses
+# VC14 cannot use a library built by VC12 or earlier, because VC14 uses
 # Universal CRT.
 XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
 !else
@@ -573,7 +573,7 @@ CPUARG =
 # VC<11 generates fp87 code by default
 !  if $(MSVC_MAJOR) < 11
 CPUARG =
-# VC>=11 needs explicit insturctions to generate fp87 code
+# VC>=11 needs explicit instructions to generate fp87 code
 !  else
 CPUARG = /arch:IA32
 !  endif
