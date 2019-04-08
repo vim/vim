@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1044,7 +1044,7 @@ expr7 * expr7  Number multiplication				*expr-star*
 expr7 / expr7  Number division					*expr-/*
 expr7 % expr7  Number modulo					*expr-%*
 
-For all, except ".", Strings are converted to Numbers.
+For all, except "." and "..", Strings are converted to Numbers.
 For bitwise operators see |and()|, |or()| and |xor()|.
 
 Note the difference between "+" and ".":
@@ -2508,9 +2508,7 @@ py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readdir({directory} [, {expr}])
-				List	file names on {dir} with evalating
-					{expr}
+readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
 reg_executing()			String	get the executing register name
@@ -5398,6 +5396,9 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 
 		If the expansion fails, the result is an empty String or List.
 
+		You can also use |readdir()| if you need to do complicated
+		things, such as limiting the number of matches.
+
 		A name for a non-existing file is not included.  A symbolic
 		link is only included if it points to an existing file.
 		However, when the {alllinks} argument is present and it is
@@ -7279,6 +7280,8 @@ range({expr} [, {max} [, {stride}]])				*range()*
 							*readdir()*
 readdir({directory} [, {expr}])
 		Return a list with file and directory names in {directory}.
+		You can also use |glob()| if you don't need to do complicated
+		things, such as limiting the number of matches.
 
 		When {expr} is omitted all entries are included.
 		When {expr} is given, it is evaluated to check what to do:
@@ -7344,7 +7347,7 @@ reg_executing()						*reg_executing()*
 
 reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
-		Returns an empty string string when not recording.  See |q|.
+		Returns an empty string when not recording.  See |q|.
 
 reltime([{start} [, {end}]])				*reltime()*
 		Return an item that represents a time value.  The format of

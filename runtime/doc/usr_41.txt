@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Mar 29
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -775,6 +775,7 @@ System functions and manipulation of files:
 	systemlist()		get the result of a shell command as a list
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
+	readdir()		get a List of file names in a directory
 	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*

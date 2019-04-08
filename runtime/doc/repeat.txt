@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2019 Apr 04
+*repeat.txt*    For Vim version 8.1.  Last change: 2019 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -327,8 +327,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 :scriptv[ersion] {version}		*:scriptv* *:scriptversion*
 								*E999* *E984*
-			Specify the version of Vim for the lines that follow.
-			Does not apply to sourced scripts.
+			Specify the version of Vim for the lines that follow
+			in the same file.  Only applies at the toplevel of
+			sourced scripts, not inside functions.
 
 			If {version} is higher than what the current Vim
 			version supports E999 will be given.  You either need
