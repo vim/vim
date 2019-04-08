@@ -13982,6 +13982,8 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
     twin = (tp == curtab) ? curwin : tp->tp_curwin;
     if (argvar->v_type != VAR_UNKNOWN)
     {
+	int	invalid_arg = FALSE;
+
 	arg = tv_get_string_chk(argvar);
 	if (arg == NULL)
 	    nr = 0;		/* type error; errmsg already given */
@@ -13994,6 +13996,32 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 		nr = 0;
 	}
 	else
+	{
+	    long	count;
+	    char_u	*endp;
+
+	    // Extract the window count (if specified). e.g. winnr('3j')
+	    count = strtol((char *)arg, (char **)&endp, 10);
+	    if (count <= 0)
+		count = 1;	// if count is not specified, default to 1
+	    if (endp != NULL && *endp != '\0')
+	    {
+		if (STRCMP(endp, "j") == 0)
+		    twin = win_vert_neighbor(tp, twin, FALSE, count);
+		else if (STRCMP(endp, "k") == 0)
+		    twin = win_vert_neighbor(tp, twin, TRUE, count);
+		else if (STRCMP(endp, "h") == 0)
+		    twin = win_horz_neighbor(tp, twin, TRUE, count);
+		else if (STRCMP(endp, "l") == 0)
+		    twin = win_horz_neighbor(tp, twin, FALSE, count);
+		else
+		    invalid_arg = TRUE;
+	    }
+	    else
+		invalid_arg = TRUE;
+	}
+
+	if (invalid_arg)
 	{
 	    semsg(_(e_invexpr2), arg);
 	    nr = 0;
