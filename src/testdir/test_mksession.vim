@@ -224,7 +224,7 @@ func Test_mksession_tcd_multiple_tabs()
   tcd Xtabdir1
   botright new
   wincmd t
-  lcd ../xwindir1
+  lcd ../Xwindir1
   tabnew
   tcd ../Xtabdir2
   botright new
