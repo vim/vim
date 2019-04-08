@@ -367,6 +367,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
+|CompleteChanged|	after Insert mode completion menu changed
 |CompleteDone|		after Insert mode completion is done
 
 |User|			to be used in combination with ":doautocmd"
@@ -579,7 +580,22 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
+CompleteChanged 					*CompleteChanged*
+				After each time the Insert mode completion
+				menu changed.  Not fired on popup menu hide,
+				use |CompleteDone| for that.  Never triggered
+				recursively.
 
+				Sets these |v:event| keys:
+				    completed_item
+				    height		nr of items visible
+				    width		screen cells
+				    row			top screen row
+				    col			leftmost screen column
+				    size		total nr of items
+				    scrollbar		TRUE if visible
+
+				It is not allowed to change the text |textlock|.
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning

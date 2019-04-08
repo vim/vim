@@ -14,6 +14,7 @@ void dictitem_free(dictitem_T *item);
 dict_T *dict_copy(dict_T *orig, int deep, int copyID);
 int dict_add(dict_T *d, dictitem_T *item);
 int dict_add_number(dict_T *d, char *key, varnumber_T nr);
+int dict_add_special(dict_T *d, char *key, varnumber_T nr);
 int dict_add_string(dict_T *d, char *key, char_u *str);
 int dict_add_string_len(dict_T *d, char *key, char_u *str, int len);
 int dict_add_list(dict_T *d, char *key, list_T *list);

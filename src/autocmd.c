@@ -112,6 +112,7 @@ static struct event_name
     {"CmdUndefined",	EVENT_CMDUNDEFINED},
     {"ColorScheme",	EVENT_COLORSCHEME},
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
+    {"CompleteChanged",	EVENT_COMPLETECHANGED},
     {"CompleteDone",	EVENT_COMPLETEDONE},
     {"CursorHold",	EVENT_CURSORHOLD},
     {"CursorHoldI",	EVENT_CURSORHOLDI},
@@ -1791,6 +1792,17 @@ has_funcundefined(void)
 has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE when there is a CompleteChanged autocommand defined.
+ */
+    int
+has_completechanged(void)
+{
+    return (first_autopat[(int)EVENT_COMPLETECHANGED] != NULL);
 }
 #endif
 

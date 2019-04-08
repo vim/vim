@@ -342,18 +342,18 @@ dict_add(dict_T *d, dictitem_T *item)
 }
 
 /*
- * Add a number entry to dictionary "d".
+ * Add a number or special entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
-    int
-dict_add_number(dict_T *d, char *key, varnumber_T nr)
+    static int
+dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
 {
     dictitem_T	*item;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
-    item->di_tv.v_type = VAR_NUMBER;
+    item->di_tv.v_type = special ? VAR_SPECIAL : VAR_NUMBER;
     item->di_tv.vval.v_number = nr;
     if (dict_add(d, item) == FAIL)
     {
@@ -361,6 +361,26 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Add a number entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_number(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, FALSE);
+}
+
+/*
+ * Add a special entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_special(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, TRUE);
 }
 
 /*

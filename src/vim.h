@@ -1270,6 +1270,7 @@ enum auto_event
     EVENT_CMDWINLEAVE,		// before leaving the cmdline window
     EVENT_COLORSCHEME,		// after loading a colorscheme
     EVENT_COLORSCHEMEPRE,	// before loading a colorscheme
+    EVENT_COMPLETECHANGED,	// after completion popup menu changed
     EVENT_COMPLETEDONE,		// after finishing insert complete
     EVENT_CURSORHOLD,		// cursor in same position for a while
     EVENT_CURSORHOLDI,		// idem, in Insert mode

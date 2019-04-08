@@ -203,6 +203,7 @@ static void ins_compl_fixRedoBufForLeader(char_u *ptr_arg);
 static void ins_compl_add_list(list_T *list);
 static void ins_compl_add_dict(dict_T *dict);
 # endif
+static dict_T *ins_compl_dict_alloc(compl_T *match);
 static int  ins_compl_key2dir(int c);
 static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
@@ -994,6 +995,37 @@ pum_enough_matches(void)
     return (i >= 2);
 }
 
+    static void
+trigger_complete_changed_event(int cur)
+{
+    dict_T	    *v_event;
+    dict_T	    *item;
+    static int	    recursive = FALSE;
+
+    if (recursive)
+	return;
+
+    v_event = get_vim_var_dict(VV_EVENT);
+    if (cur < 0)
+	item = dict_alloc();
+    else
+	item = ins_compl_dict_alloc(compl_curr_match);
+    if (item == NULL)
+	return;
+    dict_add_dict(v_event, "completed_item", item);
+    pum_set_event_info(v_event);
+    dict_set_items_ro(v_event);
+
+    recursive = TRUE;
+    textlock++;
+    apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
+    textlock--;
+    recursive = FALSE;
+
+    dict_free_contents(v_event);
+    hash_init(&v_event->dv_hashtab);
+}
+
 /*
  * Show the popup menu for the list of matches.
  * Also adjusts "compl_shown_match" to an entry that is actually displayed.
@@ -1136,6 +1168,9 @@ ins_compl_show_pum(void)
 	curwin->w_cursor.col = compl_col;
 	pum_display(compl_match_array, compl_match_arraysize, cur);
 	curwin->w_cursor.col = col;
+
+	if (has_completechanged())
+	    trigger_complete_changed_event(cur);
     }
 }
 
@@ -2899,23 +2934,31 @@ ins_compl_insert(int in_compl_func)
 	compl_used_match = FALSE;
     else
 	compl_used_match = TRUE;
-
-    // Set completed item.
-    // { word, abbr, menu, kind, info }
-    dict = dict_alloc_lock(VAR_FIXED);
-    if (dict != NULL)
-    {
-	dict_add_string(dict, "word", compl_shown_match->cp_str);
-	dict_add_string(dict, "abbr", compl_shown_match->cp_text[CPT_ABBR]);
-	dict_add_string(dict, "menu", compl_shown_match->cp_text[CPT_MENU]);
-	dict_add_string(dict, "kind", compl_shown_match->cp_text[CPT_KIND]);
-	dict_add_string(dict, "info", compl_shown_match->cp_text[CPT_INFO]);
-	dict_add_string(dict, "user_data",
-				 compl_shown_match->cp_text[CPT_USER_DATA]);
-    }
+    dict = ins_compl_dict_alloc(compl_shown_match);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict);
     if (!in_compl_func)
 	compl_curr_match = compl_shown_match;
+}
+
+/*
+ * Allocate Dict for the completed item.
+ * { word, abbr, menu, kind, info }
+ */
+    static dict_T *
+ins_compl_dict_alloc(compl_T *match)
+{
+    dict_T *dict = dict_alloc_lock(VAR_FIXED);
+
+    if (dict != NULL)
+    {
+	dict_add_string(dict, "word", match->cp_str);
+	dict_add_string(dict, "abbr", match->cp_text[CPT_ABBR]);
+	dict_add_string(dict, "menu", match->cp_text[CPT_MENU]);
+	dict_add_string(dict, "kind", match->cp_text[CPT_KIND]);
+	dict_add_string(dict, "info", match->cp_text[CPT_INFO]);
+	dict_add_string(dict, "user_data", match->cp_text[CPT_USER_DATA]);
+    }
+    return dict;
 }
 
 /*
