@@ -111,3 +111,61 @@ func Test_xterm_mouse_wheel()
   let &ttymouse = save_ttymouse
   bwipe!
 endfunc
+
+func Test_xterm_mouse_drag_window_separator()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set mouse=a
+  set term=xterm
+  set ttymouse=sgr
+
+  " Split horizontally and test dragging the horizontal window separator.
+  split
+  let rowseparator = winheight(0) + 1
+
+  let button = 0  " left down.
+  let row = rowseparator
+  let col = 1
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+
+  let drag = 32
+  let row -= 1
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", drag, col, row), 'Lx!')
+  call assert_equal(rowseparator - 1, winheight(0) + 1)
+  let row += 1
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", drag, col, row), 'Lx!')
+  call assert_equal(rowseparator, winheight(0) + 1)
+
+  let release = 3
+  call feedkeys(printf("\<Esc>[<%d;%d;%dm", release, col, row), 'Lx!')
+  call assert_equal(rowseparator, winheight(0) + 1)
+
+  bwipe!
+
+  " Split vertically and test dragging the vertical window separator.
+  vsplit
+  let colseparator = winwidth(0) + 1
+
+  let button = 0
+  let row = 1
+  let col = colseparator
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", button, col, row), 'Lx!')
+
+  let drag = 32
+  let col -= 1
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", drag, col, row), 'Lx!')
+  call assert_equal(colseparator - 1, winwidth(0) + 1)
+  let col += 1
+  call feedkeys(printf("\<Esc>[<%d;%d;%dM", drag, col, row), 'Lx!')
+  call assert_equal(colseparator, winwidth(0) + 1)
+
+  let release = 3
+  call feedkeys(printf("\<Esc>[<%d;%d;%dm", release, col, row), 'Lx!')
+  call assert_equal(colseparator, winwidth(0) + 1)
+
+  bwipe!
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+endfunc
