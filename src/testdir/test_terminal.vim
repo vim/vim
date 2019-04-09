@@ -1912,9 +1912,15 @@ func Test_terminal_getwinpos()
   let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
 
   " Position must be bigger than the getwinpos() result of Vim itself.
+  " The calcuation in the console assumes a 10 x 7 character cell.
+  " In the GUI it can be more, let's assume a 20 x 14 cell.
+  " And then add 100 / 200 tolerance.
   let [xroot, yroot] = getwinpos()
-  call assert_inrange(xroot + 2, xroot + 1000, xpos)
-  call assert_inrange(yroot + 2, yroot + 1000, ypos)
+  let [winrow, wincol] = win_screenpos('.')
+  let xoff = wincol * (has('gui_running') ? 14 : 7) + 100
+  let yoff = winrow * (has('gui_running') ? 20 : 10) + 200
+  call assert_inrange(xroot + 2, xroot + xoff, xpos)
+  call assert_inrange(yroot + 2, yroot + yoff, ypos)
 
   call term_wait(buf)
   call term_sendkeys(buf, ":q\<CR>")
