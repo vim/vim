@@ -2435,18 +2435,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 	/* First 16 colors and default: use the ANSI index, because these
 	 * colors can be redefined. */
 	if (t_colors >= 16)
-	{
-# ifdef VIMDLL
-	    // Swap red and blue.
-	    if (color->ansi_index > 0 && color->ansi_index <= 16)
-	    {
-		unsigned int i = color->ansi_index - 1;
-		i = (i & 8) | ((i & 1) << 2) | (i & 2) | ((i & 4) >> 2);
-		return i + 1;
-	    }
-# endif
 	    return color->ansi_index;
-	}
 	switch (color->ansi_index)
 	{
 	    case  0: return 0;
