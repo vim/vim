@@ -2434,7 +2434,7 @@ color2index(VTermColor *color, int fg, int *boldp)
     {
 	/* First 16 colors and default: use the ANSI index, because these
 	 * colors can be redefined. */
-	if (t_colors >= 16)
+	if (t_colors != 16)
 	    return color->ansi_index;
 	switch (color->ansi_index)
 	{
