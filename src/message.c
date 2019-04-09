@@ -2973,7 +2973,9 @@ mch_errmsg_c(char *str)
     void
 mch_errmsg(char *str)
 {
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
     int		len;
+#endif
 
 #if (defined(UNIX) || defined(FEAT_GUI)) && (!defined(ALWAYS_USE_GUI) || !defined(VIMDLL))
     /* On Unix use stderr if it's a tty.
