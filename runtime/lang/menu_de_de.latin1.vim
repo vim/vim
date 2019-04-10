@@ -1,8 +1,9 @@
 " Menu Translations:	German / Deutsch
-" Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
-" Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
-"			Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sat, 11 Mar 2006 22:40:00 CEST
+" Maintainer:		Jón Arnar Briem <jonbriem@gmail.com>
+" Originally By:    Georg Dahn <gorgyd@yahoo.co.uk>
+"                   Marcin Dalecki <dalecki@cs.net.pl>
+"			        Johannes Zellner <johannes@zellner.org>
+" Last Change:	Mon, 1 April 2019
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.
@@ -60,8 +61,8 @@ menutrans &Global\ Settings				&Globale\ Einstellungen
 menutrans Startup\ &Settings				&Starteinstellungen
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Hervorhebungen\ ein-\ und\ ausschalten<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Großschreibung\ &ignorieren\ oder\ benutzen<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Anzeige\ des\ passenden\ &Symbols\ ein-\ und\ ausschalten<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Großschreibung\ &ignorieren\ oder\ benutzen<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Anzeige\ des\ passenden\ &Symbols\ ein-\ und\ ausschalten<Tab>:set\ sm!
 
 menutrans &Context\ lines				&Zusammenhang
 
@@ -87,13 +88,13 @@ menutrans F&ile\ Settings				&Datei-Einstellungen
 
 " Boolean options
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!		Anzeige\ der\ Zeilen&nummer\ ein-\ und\ ausschalten<Tab>:set\ nu!
-menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Anzeige\ der\ relati&ven\ Zeilennummer\ ein-\ und\ ausschalten<Tab>:set\ rnu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Anzeige\ der\ relati&ven\ Zeilennummer\ ein-\ und\ ausschalten<Tab>:set\ rnu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!			&List-Modus\ ein-\ und\ ausschalten<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!			&Zeilenumbruch\ ein-\ und\ ausschalten<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!		Umbruch\ an\ &Wortgrenzen\ ein-\ und\ ausschalten<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!			&Erweiterung\ von\ Tabulatoren\ ein-\ und\ ausschalten<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!			&Automatische\ Einrückung\ ein-\ und\ ausschalten<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!			&C-Einrückung\ ein-\ und\ ausschalten<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!			&Zeilenumbruch\ ein-\ und\ ausschalten<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Umbruch\ an\ &Wortgrenzen\ ein-\ und\ ausschalten<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			&Erweiterung\ von\ Tabulatoren\ ein-\ und\ ausschalten<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!			&Automatische\ Einrückung\ ein-\ und\ ausschalten<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!			&C-Einrückung\ ein-\ und\ ausschalten<Tab>:set\ cin!
 
 " other options
 menutrans &Shiftwidth					&Schiebeweite
@@ -146,7 +147,7 @@ if has("folding")
   menutrans &Delete\ Fold<Tab>zd			Faltung\ löschen<Tab>zd
   menutrans Delete\ &All\ Folds<Tab>zD			Alle\ Faltungen\ löschen<Tab>zD
   " moving around in folds
-  menutrans Fold\ column\ &width			&Breite\ der\ Faltungsspalte
+  menutrans Fold\ col&umn\ width			&Breite\ der\ Faltungsspalte
 endif  " has folding
 
 if has("diff")
@@ -236,6 +237,7 @@ menutrans &How-to\ links	How-to\ &Index
 menutrans &GUI			&Graphische\ Oberfläche
 menutrans &Credits		&Autoren
 menutrans Co&pying		&Urheberrecht
+menutrans &Sponsor/Register		Sponsern/&Registrieren
 menutrans O&rphans		&Waisen
 menutrans &Find\.\.\.		&Suchen\.\.\.	" conflicts with Edit.Find
 menutrans &Version		&Version

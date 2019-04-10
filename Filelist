@@ -450,7 +450,6 @@ SRC_DOS =	\
 		src/iscygpty.h \
 		src/iid_ole.c \
 		src/os_dos.h \
-		src/os_w32dll.c \
 		src/os_w32exe.c \
 		src/os_win32.c \
 		src/os_mswin.c \
@@ -509,13 +508,14 @@ SRC_DOS_BIN =	\
 		src/vim.tlb \
 		src/xpm/COPYRIGHT \
 		src/xpm/README.txt \
+		src/xpm/arm64/lib-vc14/libXpm.lib \
 		src/xpm/include/*.h \
+		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x64/lib/libXpm.a \
 		src/xpm/x64/lib/libXpm.lib \
-		src/xpm/x64/lib-vc14/libXpm.lib \
+		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
-		src/xpm/x86/lib-vc14/libXpm.lib \
 		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)

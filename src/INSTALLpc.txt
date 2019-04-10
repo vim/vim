@@ -174,6 +174,15 @@ The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
 
 
+Cross compile support for Windows on ARM64
+------------------------------------------
+
+This depends on VS2017 with the optional ARM64 compiler and SDK
+installed. Use "vcvarsall.bat x64_arm64" as the build environment.
+
+The ARM64 support was provided by Leendert van Doorn.
+
+
 OLDER VERSIONS
 
 The minimal supported version is Windows XP. Building with older compilers

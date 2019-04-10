@@ -146,3 +146,8 @@ func Test_let_varg_fail()
   call assert_fails('call s:set_varg8(1)', 'E742:')
   call s:set_varg9([0])
 endfunction
+
+func Test_let_utf8_environment()
+  let $a = 'ĀĒĪŌŪあいうえお'
+  call assert_equal('ĀĒĪŌŪあいうえお', $a)
+endfunc

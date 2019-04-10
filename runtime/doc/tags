@@ -2531,6 +2531,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :let-option	eval.txt	/*:let-option*
 :let-register	eval.txt	/*:let-register*
 :let-unpack	eval.txt	/*:let-unpack*
+:let..=	eval.txt	/*:let..=*
 :let.=	eval.txt	/*:let.=*
 :let/=	eval.txt	/*:let\/=*
 :letstar=	eval.txt	/*:letstar=*
@@ -2936,6 +2937,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :scripte	repeat.txt	/*:scripte*
 :scriptencoding	repeat.txt	/*:scriptencoding*
 :scriptnames	repeat.txt	/*:scriptnames*
+:scriptv	repeat.txt	/*:scriptv*
+:scriptversion	repeat.txt	/*:scriptversion*
 :scs	if_cscop.txt	/*:scs*
 :scscope	if_cscop.txt	/*:scscope*
 :se	options.txt	/*:se*
@@ -4692,7 +4695,11 @@ E98	diff.txt	/*E98*
 E980	eval.txt	/*E980*
 E981	starting.txt	/*E981*
 E982	terminal.txt	/*E982*
+E983	message.txt	/*E983*
+E984	repeat.txt	/*E984*
+E985	eval.txt	/*E985*
 E99	diff.txt	/*E99*
+E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
 Elvis	intro.txt	/*Elvis*
@@ -5242,6 +5249,7 @@ autocmd-groups	autocmd.txt	/*autocmd-groups*
 autocmd-intro	autocmd.txt	/*autocmd-intro*
 autocmd-list	autocmd.txt	/*autocmd-list*
 autocmd-nested	autocmd.txt	/*autocmd-nested*
+autocmd-once	autocmd.txt	/*autocmd-once*
 autocmd-osfiletypes	filetype.txt	/*autocmd-osfiletypes*
 autocmd-patterns	autocmd.txt	/*autocmd-patterns*
 autocmd-remove	autocmd.txt	/*autocmd-remove*
@@ -5677,6 +5685,8 @@ complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
+complete_info()	eval.txt	/*complete_info()*
+complete_info_mode	eval.txt	/*complete_info_mode*
 completed_item-variable	eval.txt	/*completed_item-variable*
 completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*
@@ -6069,6 +6079,7 @@ expr-'	eval.txt	/*expr-'*
 expr-+	eval.txt	/*expr-+*
 expr--	eval.txt	/*expr--*
 expr-.	eval.txt	/*expr-.*
+expr-..	eval.txt	/*expr-..*
 expr-/	eval.txt	/*expr-\/*
 expr-<	eval.txt	/*expr-<*
 expr-<#	eval.txt	/*expr-<#*
@@ -7238,6 +7249,7 @@ ip	motion.txt	/*ip*
 iquote	motion.txt	/*iquote*
 is	motion.txt	/*is*
 isdirectory()	eval.txt	/*isdirectory()*
+isinf()	eval.txt	/*isinf()*
 islocked()	eval.txt	/*islocked()*
 isnan()	eval.txt	/*isnan()*
 it	motion.txt	/*it*
@@ -7365,6 +7377,7 @@ list-identity	eval.txt	/*list-identity*
 list-index	eval.txt	/*list-index*
 list-modification	eval.txt	/*list-modification*
 list-repeat	windows.txt	/*list-repeat*
+list2str()	eval.txt	/*list2str()*
 lite.vim	syntax.txt	/*lite.vim*
 literal-string	eval.txt	/*literal-string*
 lnum-variable	eval.txt	/*lnum-variable*
@@ -8314,6 +8327,7 @@ read-in-close-cb	channel.txt	/*read-in-close-cb*
 read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
 read-stdin	version5.txt	/*read-stdin*
+readdir()	eval.txt	/*readdir()*
 readfile()	eval.txt	/*readfile()*
 readline.vim	syntax.txt	/*readline.vim*
 recording	repeat.txt	/*recording*
@@ -8386,6 +8400,7 @@ ruby-dynamic	if_ruby.txt	/*ruby-dynamic*
 ruby-evaluate	if_ruby.txt	/*ruby-evaluate*
 ruby-globals	if_ruby.txt	/*ruby-globals*
 ruby-message	if_ruby.txt	/*ruby-message*
+ruby-rubyeval	if_ruby.txt	/*ruby-rubyeval*
 ruby-set_option	if_ruby.txt	/*ruby-set_option*
 ruby-vim	if_ruby.txt	/*ruby-vim*
 ruby-window	if_ruby.txt	/*ruby-window*
@@ -8397,6 +8412,7 @@ ruby_no_expensive	syntax.txt	/*ruby_no_expensive*
 ruby_operators	syntax.txt	/*ruby_operators*
 ruby_space_errors	syntax.txt	/*ruby_space_errors*
 ruby_spellcheck_strings	syntax.txt	/*ruby_spellcheck_strings*
+rubyeval()	eval.txt	/*rubyeval()*
 russian	russian.txt	/*russian*
 russian-intro	russian.txt	/*russian-intro*
 russian-issues	russian.txt	/*russian-issues*
@@ -8445,8 +8461,10 @@ scheme.vim	syntax.txt	/*scheme.vim*
 scp	pi_netrw.txt	/*scp*
 screenattr()	eval.txt	/*screenattr()*
 screenchar()	eval.txt	/*screenchar()*
+screenchars()	eval.txt	/*screenchars()*
 screencol()	eval.txt	/*screencol()*
 screenrow()	eval.txt	/*screenrow()*
+screenstring()	eval.txt	/*screenstring()*
 script	usr_41.txt	/*script*
 script-here	if_perl.txt	/*script-here*
 script-local	map.txt	/*script-local*
@@ -8728,6 +8746,7 @@ static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
 str2float()	eval.txt	/*str2float()*
+str2list()	eval.txt	/*str2list()*
 str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
 strcharpart()	eval.txt	/*strcharpart()*
@@ -9673,6 +9692,8 @@ vimrc-filetype	usr_05.txt	/*vimrc-filetype*
 vimrc-intro	usr_05.txt	/*vimrc-intro*
 vimrc-option-example	starting.txt	/*vimrc-option-example*
 vimrc_example.vim	usr_05.txt	/*vimrc_example.vim*
+vimscript-version	eval.txt	/*vimscript-version*
+vimscript-versions	eval.txt	/*vimscript-versions*
 vimtutor	usr_01.txt	/*vimtutor*
 virtcol()	eval.txt	/*virtcol()*
 visual-block	visual.txt	/*visual-block*

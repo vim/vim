@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jan 29
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -577,8 +577,10 @@ used for.  You can find an alphabetical list here: |functions|.  Use CTRL-] on
 the function name to jump to detailed help on it.
 
 String manipulation:					*string-functions*
-	nr2char()		get a character by its ASCII value
-	char2nr()		get ASCII value of a character
+	nr2char()		get a character by its number value
+	list2str()		get a character string from a list of numbers
+	char2nr()		get number value of a character
+	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
 	printf()		format a string according to % items
@@ -773,6 +775,7 @@ System functions and manipulation of files:
 	systemlist()		get the result of a shell command as a list
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
+	readdir()		get a List of file names in a directory
 	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*

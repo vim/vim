@@ -276,6 +276,38 @@ func Test_noinsert_complete()
   iunmap <F5>
 endfunc
 
+func Test_complete_no_filter()
+  func! s:complTest1() abort
+    call complete(1, [{'word': 'foobar'}])
+    return ''
+  endfunc
+  func! s:complTest2() abort
+    call complete(1, [{'word': 'foobar', 'equal': 1}])
+    return ''
+  endfunc
+
+  let completeopt = &completeopt
+
+  " without equal=1
+  new
+  set completeopt=menuone,noinsert,menu
+  inoremap <F5>  <C-R>=s:complTest1()<CR>
+  call feedkeys("i\<F5>z\<CR>\<CR>\<ESC>.", 'tx')
+  call assert_equal('z', getline(1))
+  bwipe!
+
+  " with equal=1
+  new
+  set completeopt=menuone,noinsert,menu
+  inoremap <F5>  <C-R>=s:complTest2()<CR>
+  call feedkeys("i\<F5>z\<CR>\<CR>\<ESC>.", 'tx')
+  call assert_equal('foobar', getline(1))
+  bwipe!
+
+  let &completeopt = completeopt
+  iunmap <F5>
+endfunc
+
 func Test_compl_vim_cmds_after_register_expr()
   func! s:test_func()
     return 'autocmd '
@@ -995,6 +1027,40 @@ func Test_popup_complete_info_02()
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
   bwipe!
+endfunc
+
+func Test_CompleteChanged()
+  new
+  call setline(1, ['foo', 'bar', 'foobar', ''])
+  set complete=. completeopt=noinsert,noselect,menuone
+  function! OnPumChange()
+    let g:event = copy(v:event)
+    let g:item = get(v:event, 'completed_item', {})
+    let g:word = get(g:item, 'word', v:null)
+  endfunction
+  augroup AAAAA_Group
+    au!
+    autocmd CompleteChanged * :call OnPumChange()
+  augroup END
+  call cursor(4, 1)
+
+  call feedkeys("Sf\<C-N>", 'tx')
+  call assert_equal({'completed_item': {}, 'width': 15,
+        \ 'height': 2, 'size': 2,
+        \ 'col': 0, 'row': 4, 'scrollbar': v:false}, g:event)
+  call feedkeys("a\<C-N>\<C-N>\<C-E>", 'tx')
+  call assert_equal('foo', g:word)
+  call feedkeys("a\<C-N>\<C-N>\<C-N>\<C-E>", 'tx')
+  call assert_equal('foobar', g:word)
+  call feedkeys("a\<C-N>\<C-N>\<C-N>\<C-N>\<C-E>", 'tx')
+  call assert_equal(v:null, g:word)
+  call feedkeys("a\<C-N>\<C-N>\<C-N>\<C-N>\<C-P>", 'tx')
+  call assert_equal('foobar', g:word)
+
+  autocmd! AAAAA_Group
+  set complete& completeopt&
+  delfunc! OnPumchange
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

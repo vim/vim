@@ -3842,14 +3842,73 @@ parse_osc(const char *command, size_t cmdlen, void *user)
     return 1;
 }
 
+/*
+ * Called by libvterm when it cannot recognize a CSI sequence.
+ * We recognize the window position report.
+ */
+    static int
+parse_csi(
+	const char  *leader UNUSED,
+	const long  args[],
+	int	    argcount,
+	const char  *intermed UNUSED,
+	char	    command,
+	void	    *user)
+{
+    term_T	*term = (term_T *)user;
+    char	buf[100];
+    int		len;
+    int		x = 0;
+    int		y = 0;
+    win_T	*wp;
+
+    // We recognize only CSI 13 t
+    if (command != 't' || argcount != 1 || args[0] != 13)
+	return 0; // not handled
+
+    // When getting the window position is not possible or it fails it results
+    // in zero/zero.
+#if defined(FEAT_GUI) \
+	|| (defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)) \
+	|| defined(MSWIN)
+    (void)ui_get_winpos(&x, &y, (varnumber_T)100);
+#endif
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == term->tl_buffer)
+	    break;
+    if (wp != NULL)
+    {
+#ifdef FEAT_GUI
+	if (gui.in_use)
+	{
+	    x += wp->w_wincol * gui.char_width;
+	    y += W_WINROW(wp) * gui.char_height;
+	}
+	else
+#endif
+	{
+	    // We roughly estimate the position of the terminal window inside
+	    // the Vim window by assuing a 10 x 7 character cell.
+	    x += wp->w_wincol * 7;
+	    y += W_WINROW(wp) * 10;
+	}
+    }
+
+    len = vim_snprintf(buf, 100, "\x1b[3;%d;%dt", x, y);
+    channel_send(term->tl_job->jv_channel, get_tty_part(term),
+						     (char_u *)buf, len, NULL);
+    return 1;
+}
+
 static VTermParserCallbacks parser_fallbacks = {
-  NULL,		/* text */
-  NULL,		/* control */
-  NULL,		/* escape */
-  NULL,		/* csi */
-  parse_osc,	/* osc */
-  NULL,		/* dcs */
-  NULL		/* resize */
+  NULL,		// text
+  NULL,		// control
+  NULL,		// escape
+  parse_csi,	// csi
+  parse_osc,	// osc
+  NULL,		// dcs
+  NULL		// resize
 };
 
 /*

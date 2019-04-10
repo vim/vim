@@ -2321,7 +2321,7 @@ check_changed_any(
 	    else
 #endif
 	    /* Try auto-writing the buffer.  If this fails but the buffer no
-	    * longer exists it's not changed, that's OK. */
+	     * longer exists it's not changed, that's OK. */
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
 				 | CCGD_MULTWIN
 				 | CCGD_ALLBUF) && bufref_valid(&bufref))
@@ -4501,12 +4501,14 @@ do_source(
      * Also starts profiling timer for nested script. */
     save_funccal(&funccalp_entry);
 
+    save_current_sctx = current_sctx;
+    current_sctx.sc_lnum = 0;
+    current_sctx.sc_version = 1;
+
     // Check if this script was sourced before to finds its SID.
     // If it's new, generate a new SID.
     // Always use a new sequence number.
-    save_current_sctx = current_sctx;
     current_sctx.sc_seq = ++last_current_SID_seq;
-    current_sctx.sc_lnum = 0;
 # ifdef UNIX
     stat_ok = (mch_stat((char *)fname_exp, &st) >= 0);
 # endif
@@ -5077,10 +5079,9 @@ script_line_end(void)
 
 /*
  * ":scriptencoding": Set encoding conversion for a sourced script.
- * Without the multi-byte feature it's simply ignored.
  */
     void
-ex_scriptencoding(exarg_T *eap UNUSED)
+ex_scriptencoding(exarg_T *eap)
 {
     struct source_cookie	*sp;
     char_u			*name;
@@ -5106,6 +5107,31 @@ ex_scriptencoding(exarg_T *eap UNUSED)
 
     if (name != eap->arg)
 	vim_free(name);
+}
+
+/*
+ * ":scriptversion": Set Vim script version for a sourced script.
+ */
+    void
+ex_scriptversion(exarg_T *eap UNUSED)
+{
+#ifdef FEAT_EVAL
+    int		nr;
+
+    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_("E984: :scriptversion used outside of a sourced file"));
+	return;
+    }
+
+    nr = getdigits(&eap->arg);
+    if (nr == 0 || *eap->arg != NUL)
+	emsg(_(e_invarg));
+    else if (nr > 2)
+	semsg(_("E999: scriptversion not supported: %d"), nr);
+    else
+	current_sctx.sc_version = nr;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

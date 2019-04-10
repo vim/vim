@@ -98,6 +98,7 @@ void script_line_start(void);
 void script_line_exec(void);
 void script_line_end(void);
 void ex_scriptencoding(exarg_T *eap);
+void ex_scriptversion(exarg_T *eap);
 void ex_finish(exarg_T *eap);
 void do_finish(exarg_T *eap, int reanimate);
 int source_finished(char_u *(*fgetline)(int, void *, int), void *cookie);
