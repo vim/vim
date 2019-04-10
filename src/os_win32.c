@@ -2103,7 +2103,7 @@ bad_param_handler(const wchar_t *expression,
 # define SET_INVALID_PARAM_HANDLER
 #endif
 
-#if defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+#ifdef FEAT_GUI_MSWIN
 
 /*
  * GUI version of mch_init().
@@ -2176,7 +2176,7 @@ mch_init_g(void)
 }
 
 
-#endif
+#endif /* FEAT_GUI_MSWIN */
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
