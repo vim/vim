@@ -5171,7 +5171,13 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 		tp = curtab;
 	}
 	else
-	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+	{
+	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
+	    if (n == 0)
+		tp = curtab;
+	    else if (n > 0)
+		tp = find_tabpage(n);
+	}
 
 	if (argvars[0].vval.v_number != -1)
 	{
@@ -6881,7 +6887,13 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
 	    return;
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
-	    tp = find_tabpage((int)tv_get_number_chk(&argvars[1], NULL));
+	{
+	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
+	    if (n == 0)
+		tp = curtab;
+	    else if (n > 0)
+		tp = find_tabpage(n);
+	}
 	else
 	    tp = curtab;
 
@@ -6893,9 +6905,10 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
     }
 
     // Check for window-local and tab-local directories
-    if ((wp != NULL && wp->w_localdir != NULL) ||
-	    (tp != NULL && tp->tp_localdir != NULL))
+    if (wp != NULL && wp->w_localdir != NULL)
 	rettv->vval.v_number = 1;
+    else if (tp != NULL && tp->tp_localdir != NULL)
+	rettv->vval.v_number = 2;
 }
 
 /*
