@@ -3433,8 +3433,13 @@ usage(void)
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));
 #endif
 #ifdef FEAT_GUI_MSWIN
-    main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
-    main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+# ifdef VIMDLL
+    if (gui.starting)
+# endif
+    {
+	main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
+	main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+    }
 #endif
 
 #ifdef FEAT_GUI_GNOME
