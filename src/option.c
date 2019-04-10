@@ -6040,6 +6040,20 @@ valid_spellang(char_u *val)
 }
 
 /*
+ * Return TRUE if "val" is a valid 'spellfile' value.
+ */
+    static int
+valid_spellfile(char_u *val)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!vim_isfilec(*s) && *s != ',')
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Handle string options that need some action to perform when changed.
  * Returns NULL for success, or an error message for an error.
  */
@@ -7101,10 +7115,13 @@ did_set_string_option(
     else if (varp == &(curwin->w_s->b_p_spl)
 	    || varp == &(curwin->w_s->b_p_spf))
     {
-	if (!valid_spellang(*varp))
+	int	is_spellfile = varp == &(curwin->w_s->b_p_spf);
+
+	if ((is_spellfile && !valid_spellfile(*varp))
+	    || (!is_spellfile && !valid_spellang(*varp)))
 	    errmsg = e_invarg;
 	else
-	    errmsg = did_set_spell_option(varp == &(curwin->w_s->b_p_spf));
+	    errmsg = did_set_spell_option(is_spellfile);
     }
     /* When 'spellcapcheck' is set compile the regexp program. */
     else if (varp == &(curwin->w_s->b_p_spc))
