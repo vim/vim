@@ -822,7 +822,7 @@ static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
 #endif
 
-#ifndef FEAT_GUI_MSWIN /* Win32 console and Unix */
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) /* Win32 console and Unix */
     void
 mzvim_check_threads(void)
 {
