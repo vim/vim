@@ -37,6 +37,8 @@ void tabpage_move(int nr);
 void win_goto(win_T *wp);
 win_T *win_find_nr(int winnr);
 tabpage_T *win_find_tabpage(win_T *win);
+win_T *win_vert_neighbor(tabpage_T *tp, win_T *wp, int up, long count);
+win_T *win_horz_neighbor(tabpage_T *tp, win_T * wp, int left, long count);
 void win_enter(win_T *wp, int undo_sync);
 win_T *buf_jump_open_win(buf_T *buf);
 win_T *buf_jump_open_tab(buf_T *buf);

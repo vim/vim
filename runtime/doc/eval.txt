@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Mar 30
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -27,10 +27,11 @@ done, the features in this document are not available.  See |+eval| and
 7.  Commands			|expression-commands|
 8.  Exception handling		|exception-handling|
 9.  Examples			|eval-examples|
-10. No +eval feature		|no-eval-feature|
-11. The sandbox			|eval-sandbox|
-12. Textlock			|textlock|
-13. Testing			|testing|
+10. Vim script version		|vimscript-version|
+11. No +eval feature		|no-eval-feature|
+12. The sandbox			|eval-sandbox|
+13. Textlock			|textlock|
+14. Testing			|testing|
 
 {Vi does not have any of these commands}
 
@@ -786,10 +787,10 @@ Expression syntax summary, from least to most significant:
 	expr2 ? expr1 : expr1	if-then-else
 
 |expr2|	expr3
-	expr3 || expr3 ..	logical OR
+	expr3 || expr3 ...	logical OR
 
 |expr3|	expr4
-	expr4 && expr4 ..	logical AND
+	expr4 && expr4 ...	logical AND
 
 |expr4|	expr5
 	expr5 == expr5		equal
@@ -811,14 +812,15 @@ Expression syntax summary, from least to most significant:
 				instance
 
 |expr5|	expr6
-	expr6 +	 expr6 ..	number addition, list or blob concatenation
-	expr6 -	 expr6 ..	number subtraction
-	expr6 .	 expr6 ..	string concatenation
+	expr6 +	 expr6 ...	number addition, list or blob concatenation
+	expr6 -	 expr6 ...	number subtraction
+	expr6 .	 expr6 ...	string concatenation
+	expr6 .. expr6 ...	string concatenation
 
 |expr6|	expr7
-	expr7 *	 expr7 ..	number multiplication
-	expr7 /	 expr7 ..	number division
-	expr7 %	 expr7 ..	number modulo
+	expr7 *	 expr7 ...	number multiplication
+	expr7 /	 expr7 ...	number division
+	expr7 %	 expr7 ...	number modulo
 
 |expr7|	expr8
 	! expr7			logical NOT
@@ -847,7 +849,7 @@ Expression syntax summary, from least to most significant:
 	{args -> expr1}		lambda expression
 
 
-".." indicates that the operations in this level can be concatenated.
+"..." indicates that the operations in this level can be concatenated.
 Example: >
 	&nu || &list && &shell == "csh"
 
@@ -1026,18 +1028,23 @@ can be matched like an ordinary character.  Examples:
 
 expr5 and expr6						*expr5* *expr6*
 ---------------
-expr6 + expr6  Number addition, |List| or |Blob| concatenation	*expr-+*
-expr6 - expr6  Number subtraction				*expr--*
-expr6 . expr6  String concatenation				*expr-.*
+expr6 + expr6   Number addition, |List| or |Blob| concatenation	*expr-+*
+expr6 - expr6   Number subtraction				*expr--*
+expr6 . expr6   String concatenation				*expr-.*
+expr6 .. expr6  String concatenation				*expr-..*
 
 For |Lists| only "+" is possible and then both expr6 must be a list.  The
 result is a new list with the two lists Concatenated.
+
+For String concatenation ".." is preferred, since "." is ambiguous, it is also
+used for |Dict| member access and floating point numbers.
+When |vimscript-version| is 2 or higher, using "." is not allowed.
 
 expr7 * expr7  Number multiplication				*expr-star*
 expr7 / expr7  Number division					*expr-/*
 expr7 % expr7  Number modulo					*expr-%*
 
-For all, except ".", Strings are converted to Numbers.
+For all, except "." and "..", Strings are converted to Numbers.
 For bitwise operators see |and()|, |or()| and |xor()|.
 
 Note the difference between "+" and ".":
@@ -2411,6 +2418,8 @@ inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
 invert({expr})			Number	bitwise invert
 isdirectory({directory})	Number	|TRUE| if {directory} is a directory
+isinf({expr})			Number	determine if {expr} is infinity value
+					(positive or negative)
 islocked({expr})		Number	|TRUE| if {expr} is locked
 isnan({expr})			Number	|TRUE| if {expr} is NaN
 items({dict})			List	key-value pairs in {dict}
@@ -2433,6 +2442,7 @@ libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
 line({expr})			Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
+list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
@@ -2498,6 +2508,7 @@ py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
+readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
 reg_executing()			String	get the executing register name
@@ -2597,6 +2608,8 @@ split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
 str2float({expr})		Float	convert String to Float
+str2list({expr} [, {utf8}])	List	convert each character of {expr} to
+					ASCII/UTF8 value
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
@@ -3556,7 +3569,7 @@ complete_info([{what}])
 		completion.  See |ins-completion|.
 		The items are:
 		   mode		Current completion mode name string.
-				See |completion_info_mode| for the values.
+				See |complete_info_mode| for the values.
 		   pum_visible	|TRUE| if popup menu is visible.
 				See |pumvisible()|.
 		   items	List of completion matches.  Each item is a
@@ -5383,6 +5396,9 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 
 		If the expansion fails, the result is an empty String or List.
 
+		You can also use |readdir()| if you need to do complicated
+		things, such as limiting the number of matches.
+
 		A name for a non-existing file is not included.  A symbolic
 		link is only included if it points to an existing file.
 		However, when the {alllinks} argument is present and it is
@@ -5772,6 +5788,16 @@ isdirectory({directory})				*isdirectory()*
 		exist, or isn't a directory, the result is |FALSE|.  {directory}
 		is any expression, which is used as a String.
 
+isinf({expr})						*isinf()*
+		Return 1 if {expr} is a positive infinity, or -1 a negative
+		infinity, otherwise 0. >
+			:echo isinf(1.0 / 0.0)
+<			1 >
+			:echo isinf(-1.0 / 0.0)
+<			-1
+
+		{only available when compiled with the |+float| feature}
+
 islocked({expr})					*islocked()* *E786*
 		The result is a Number, which is |TRUE| when {expr} is the
 		name of a locked variable.
@@ -5788,7 +5814,7 @@ islocked({expr})					*islocked()* *E786*
 isnan({expr})						*isnan()*
 		Return |TRUE| if {expr} is a float with value NaN. >
 			echo isnan(0.0 / 0.0)
-<			1 ~
+<			1
 
 		{only available when compiled with the |+float| feature}
 
@@ -6171,6 +6197,20 @@ lispindent({lnum})					*lispindent()*
 		When {lnum} is invalid or Vim was not compiled the
 		|+lispindent| feature, -1 is returned.
 
+list2str({list} [, {utf8}])				*list2str()*
+		Convert each number in {list} to a character string can
+		concatenate them all.  Examples: >
+			list2str([32])		returns " "
+			list2str([65, 66, 67])	returns "ABC"
+<		The same can be done (slowly) with: >
+			join(map(list, {nr, val -> nr2char(val)}), '')
+<		|str2list()| does the opposite.
+
+		When {utf8} is omitted or zero, the current 'encoding' is used.
+		With {utf8} is 1, always return utf-8 characters.
+		With utf-8 composing characters work as expected: >
+			list2str([97, 769])	returns "á"
+<
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
 		1970.  See also |strftime()| and |getftime()|.
@@ -7237,6 +7277,35 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(0)		" []
 			range(2, 0)		" error!
 <
+							*readdir()*
+readdir({directory} [, {expr}])
+		Return a list with file and directory names in {directory}.
+		You can also use |glob()| if you don't need to do complicated
+		things, such as limiting the number of matches.
+
+		When {expr} is omitted all entries are included.
+		When {expr} is given, it is evaluated to check what to do:
+			If {expr} results in -1 then no further entries will
+			be handled.
+			If {expr} results in 0 then this entry will not be
+			added to the list.
+			If {expr} results in 1 then this entry will be added
+			to the list.
+		Each time {expr} is evaluated |v:val| is set to the entry name.
+		When {expr} is a function the name is passed as the argument.
+		For example, to get a list of files ending in ".txt": >
+		  readdir(dirname, {n -> n =~ '.txt$'})
+<		To skip hidden and backup files: >
+		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
+
+<		If you want to get a directory tree: >
+                  function! s:tree(dir)
+                      return {a:dir : map(readdir(a:dir),
+		      \ {_, x -> isdirectory(x) ?
+		      \          {x : s:tree(a:dir . '/' . x)} : x})}
+                  endfunction
+                  echo s:tree(".")
+<
 							*readfile()*
 readfile({fname} [, {type} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
@@ -7278,7 +7347,7 @@ reg_executing()						*reg_executing()*
 
 reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
-		Returns an empty string string when not recording.  See |q|.
+		Returns an empty string when not recording.  See |q|.
 
 reltime([{start} [, {end}]])				*reltime()*
 		Return an item that represents a time value.  The format of
@@ -8673,6 +8742,18 @@ str2float({expr})					*str2float()*
 			let f = str2float(substitute(text, ',', '', 'g'))
 <		{only available when compiled with the |+float| feature}
 
+str2list({expr} [, {utf8}])				*str2list()*
+		Return a list containing the number values which represent
+		each character in String {expr}.  Examples: >
+			str2list(" ")		returns [32]
+			str2list("ABC")		returns [65, 66, 67]
+<		|list2str()| does the opposite.
+
+		When {utf8} is omitted or zero, the current 'encoding' is used.
+		With {utf8} set to 1, always treat the String as utf-8
+		characters.  With utf-8 composing characters are handled
+		properly: >
+			str2list("á")		returns [97, 769]
 
 str2nr({expr} [, {base}])				*str2nr()*
 		Convert string {expr} to a number.
@@ -10117,17 +10198,30 @@ winline()	The result is a Number, which is the screen line of the cursor
 							*winnr()*
 winnr([{arg}])	The result is a Number, which is the number of the current
 		window.  The top window has number 1.
-		When the optional argument is "$", the number of the
-		last window is returned (the window count). >
-			let window_count = winnr('$')
-<		When the optional argument is "#", the number of the last
-		accessed window is returned (where |CTRL-W_p| goes to).
-		If there is no previous window or it is in another tab page 0
-		is returned.
+
+		The optional argument {arg} supports the following values:
+			$	the number of the last window (the window
+				count).
+			#	the number of the last accessed window (where
+				|CTRL-W_p| goes to).  If there is no previous
+				window or it is in another tab page 0 is
+				returned.
+			{N}j	the number of the Nth window below the
+				current window (where |CTRL-W_j| goes to).
+			{N}k	the number of the Nth window above the current
+				window (where |CTRL-W_k| goes to).
+			{N}h	the number of the Nth window left of the
+				current window (where |CTRL-W_h| goes to).
+			{N}l	the number of the Nth window right of the
+				current window (where |CTRL-W_l| goes to).
 		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
 		Also see |tabpagewinnr()| and |win_getid()|.
-
+		Examples: >
+			let window_count = winnr('$')
+			let prev_window = winnr('#')
+			let wnum = winnr('3k')
+<
 							*winrestcmd()*
 winrestcmd()	Returns a sequence of |:resize| commands that should restore
 		the current window sizes.  Only works properly when no windows
@@ -10433,7 +10527,7 @@ syntax_items		There are active syntax highlighting items for the
 system			Compiled to use system() instead of fork()/exec().
 tag_binary		Compiled with binary searching in tags files
 			|tag-binary-search|.
-tag_old_static		Compiled with support for old static tags
+tag_old_static		Support for old static tags was removed, see
 			|tag-old-static|.
 tcl			Compiled with Tcl interface.
 termguicolors		Compiled with true color in terminal support.
@@ -10459,6 +10553,8 @@ vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
 viminfo			Compiled with viminfo support.
+vimscript-1		Compiled Vim script version 1 support
+vimscript-2		Compiled Vim script version 2 support
 virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always
@@ -10949,16 +11045,19 @@ This does NOT work: >
 			When the selected range of items is partly past the
 			end of the list, items will be added.
 
-                                            *:let+=* *:let-=* *:letstar=*
-                                            *:let/=* *:let%=* *:let.=* *E734*
+			*:let+=* *:let-=* *:letstar=*
+			*:let/=* *:let%=* *:let.=* *:let..=* *E734* *E985*
 :let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
 :let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
 :let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
 :let {var} /= {expr1}	Like ":let {var} = {var} / {expr1}".
 :let {var} %= {expr1}	Like ":let {var} = {var} % {expr1}".
 :let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
+:let {var} ..= {expr1}	Like ":let {var} = {var} .. {expr1}".
 			These fail if {var} was not set yet and when the type
 			of {var} and {expr1} don't fit the operator.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
 
 
 :let ${env-name} = {expr1}			*:let-environment* *:let-$*
@@ -12592,7 +12691,34 @@ code can be used: >
     unlet scriptnames_output
 
 ==============================================================================
-10. No +eval feature				*no-eval-feature*
+10. Vim script versions		*vimscript-version* *vimscript-versions*
+
+Over time many features have been added to Vim script.  This includes Ex
+commands, functions, variable types, etc.  Each individual feature can be
+checked with the |has()| and |exists()| functions.
+
+Sometimes old syntax of functionality gets in the way of making Vim better.
+When support is taken away this will break older Vim scripts.  To make this
+explicit the |:scriptversion| command can be used.  When a Vim script is not
+compatible with older versions of Vim this will give an explicit error,
+instead of failing in mysterious ways. >
+
+ :scriptversion 1
+<	This is the original Vim script, same as not using a |:scriptversion|
+	command.  Can be used to go back to old syntax for a range of lines.
+	Test for support with: >
+		has('vimscript-1')
+
+ :scriptversion 2
+< 	String concatenation with "." is not supported, use ".." instead.
+	This avoids the ambiguity using "." for Dict member access and
+	floating point numbers.  Now ".5" means the number 0.5.
+	Test for support with: >
+		has('vimscript-2')
+
+
+==============================================================================
+11. No +eval feature				*no-eval-feature*
 
 When the |+eval| feature was disabled at compile time, none of the expression
 evaluation commands are available.  To prevent this from causing Vim scripts
@@ -12623,7 +12749,7 @@ When the |+eval| feature is available the command is skipped because of the
 silently ignored, and the command is executed.
 
 ==============================================================================
-11. The sandbox					*eval-sandbox* *sandbox* *E48*
+12. The sandbox					*eval-sandbox* *sandbox* *E48*
 
 The 'foldexpr', 'formatexpr', 'includeexpr', 'indentexpr', 'statusline' and
 'foldtext' options may be evaluated in a sandbox.  This means that you are
@@ -12662,7 +12788,7 @@ Note that when in the sandbox and saving an option value and restoring it, the
 option will still be marked as it was set in the sandbox.
 
 ==============================================================================
-12. Textlock							*textlock*
+13. Textlock							*textlock*
 
 In a few situations it is not allowed to change the text in the buffer, jump
 to another window and some other things that might confuse or break what Vim
@@ -12678,7 +12804,7 @@ This is not allowed when the textlock is active:
 	- etc.
 
 ==============================================================================
-13. Testing							*testing*
+14. Testing							*testing*
 
 Vim can be tested after building it, usually with "make test".
 The tests are located in the directory "src/testdir".

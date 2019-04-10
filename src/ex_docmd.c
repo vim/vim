@@ -10487,12 +10487,15 @@ exec_normal_cmd(char_u *cmd, int remap, int silent)
 exec_normal(int was_typed, int use_vpeekc, int may_use_terminal_loop UNUSED)
 {
     oparg_T	oa;
+    int		c;
 
+    // When calling vpeekc() from feedkeys() it will return Ctrl_C when there
+    // is nothing to get, so also check for Ctrl_C.
     clear_oparg(&oa);
     finish_op = FALSE;
     while ((!stuff_empty()
 		|| ((was_typed || !typebuf_typed()) && typebuf.tb_len > 0)
-		|| (use_vpeekc && vpeekc() != NUL))
+		|| (use_vpeekc && (c = vpeekc()) != NUL && c != Ctrl_C))
 	    && !got_int)
     {
 	update_topline_cursor();

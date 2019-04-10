@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Mar 23
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -108,28 +108,18 @@ Support for popup widows:
 - Use text properties to define highlighting.
 - Proposal on issue #4063
 
+Notifications for text changes, could be used for LSP.
+- New event, similar to TextChanged, but guaranteed to provide sequential
+  information of all text changes.
+  Possibly build on undo info (but undo itself is also a change).
+  How to deal with ":%s/this/that" ?
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
-
-Patch to add complete_info()  Shougo - #3866.  Ready to include.  Now #4106
-
-Problem with Visual yank when 'linebreak' and 'showbreak' are set.
-Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
-Nov 17)  Asked about this, Dec 22. Christian will have a look.
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
-
-Patch for 'listchars' when there is a composing character on a space.
-How about when there is a double-width composing character on a space?
-(Yasuhiro Matsumoto, #4046)
-Test doesn't fail without patch?
-
-Patch to add ruby cflags. (#4050, fixes #1081)
-Needs modification.
-
-Patch to add src/README.md.  (WenxuanHuang, #4141)  Replace README.txt?
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -159,33 +149,12 @@ Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
-Patch to move insert-expand code to insexpand.c. (Yegappan Lakshmanan, #4044)
-
-Patch for larger icons in installer. (#978)  Still not good.
-
-Patch on issue #3964 to let sign column stop at the last buffer line.
-(Christian Brabandt, 2019 Feb 24)
-
-Patch to use wide font functions. (Ken Takata, 2019 Feb 18, #4000)
-
-Patch on #4073, Andy Massimino.  Is this a real problem?
-
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
-
-Patch to add blob2str() and str2blob(). (Yasuhiro Matsumoto, #4049)
-Make docs clearer. Is it symmetric?
 
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
 similar to check_due_timer().  Also see #3809.
-
-Using "5gj" starting inside a closed fold does not work on screen lines but on
-text lines. (Julius Hulsmann, #4095)
-
-Add "-once" to ":autocmd". Also add "-nested" as an alias for "nested".
-(Justin M. Keyes, #4100)  Syntax of -once may be strange.  ++once and ++nested
-is better?
 
 C syntax: {} inside () causes following {} to be highlighted as error.
 (Michalis Giannakidis, 2006 Jun 1)
@@ -196,7 +165,8 @@ Support setting the character displayed below the last line?  Neovim uses
 Check: __attribute__((format(printf, on semsg() and siemsg().  Where was this
 added?
 
-Patch to remove some unneeded {}. (Hirohito Higashi, #3982)
+This modeline throws unexpected errors: (#4165)
+    vim: syn=nosyntax
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -209,77 +179,65 @@ balloonexpr() on MS-Windows GUI doesn't handle accented chars? (nivaemail,
 2018 Sep 14)
 Another request: #3811.
 
-Patch for autoconf to add -fPIC for Fedora. (#4047)
-
-Height of quickfix window is not retained with vertical splits. (Lifepillar,
-2018 Aug 24, #2998)
-Patch on the issue by Hongbo Liu, 2019 Feb 19 #4013
-
 More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
-Drop FEAT_TAG_OLDSTATIC?  Anybody using this format should be able to get a
-newer version of ctags.
-
 Still a E315 error when using terminal. (Masato Nishihata, #3959)
 
-When using 'k' in 'guioptions' gvim may open with a tiny window. (#3808)
-Suggested patch on the issue.
+Running test_gui and test_gui_init with Motif sometimes kills the window
+manager.  Problem with Motif? Now test_gui crashes in submenu_change().
+Athena is OK.
+Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
 
-Patch to have tutor check $LC_MESSAGES. (#4112)
+No test for NULL after allocating memory: #4174
+    src/crypt.c  line 256;
+    src/crypt_zip.c line  93;
+    src/gui_gtk_f.c  line 132;
+    src/gui_gtk_x11 line  1578;
+    src/libvterm/src/state.c line 332;
+    src/libvterm/src/state.c line 255;
+    src/libvterm/src/state.c line 1618;
+    src/libvterm/src/state.c line 1643
+    src/libvterm/src/termscreen.c line 83;
+    src/ops.c  line 6185;
+    src/option.c  line 12980;
+    src/popupmnu.c line 1090;
 
-Patch to fix modify_fname() does not work well with some 'encoding's.
-(Ken Takata, #4007)
-
-Patch to add more info to OptionSet.  Should mention what triggered the change
-":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
-#4118
-
-Patch to make vim_getenv() work with wide API. (Ken Takata, #4008)
-
-How to make (async) complete function depending on completion type?
-Patch on #4083 to do this with an autocommand.  Probably want something else,
-like 'ominfunc'.
-
-Patch to add equal field to complete items. (#3887)
+Missing tests for:
+- add_termcap_entry()
 
 When using exclusive selection and vi" that fails, cursor moves to the left.
 Cursor should not move. (#4024)
 
-Patch to fix handling long line in tags file.  #4051, #4084 (Andy Massimino)
-
-Patch to fix that executable() may fail on very long filename in MS-Windows.
-(Ken Takata, 2016 Feb 1, update 2018 Oct 7, update 2019 Feb 19)
-Now in pull request #4015.
-
-Patch to be able to separately map CTRL-H and BS on Windows.
-(Linwei, 2017 Jul 11, #1833)
-
-Patch to fix encoding of messages on MS-Windows. (Yasuhiro Matsumoto, 2019 Feb
-13, #3914)
-
-Patch to fix encoding conversion in messages. (#3969)
-Check that this is fixed: (ichizok)
-vim --clean -X -V1 -es -c 'echo "hello"' -c quit
-
 Incsearch test fails when locale is "C". (Dominique Pelle, #3986)
 Also run all tests with C locale?
-
-Patch to improve readability of complicated if(). (ichizok, 2019 Jan 29,
-#3879)
 
 "vat" doesn't work well on XML when the closing > is on another line.
 #3927
 
-Patch to include ARM64 support. (Leendert van Doorn, 2019 Feb 9)
-
-Patch to fix hang when opening file where an intermediate directory is not
-readable on MS-Windows. (link on #3923)
-
 Pasting foo} causes Vim to behave weird. (John Little, 2018 Jun 17)
 Related to bracketed paste.  I cannot reproduce it.
+
+When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
+case. (Nate Peterson, 2019 Jan 31, #3892)
+For "silent! q" it should not prompt and just fail.
+
+Patch to add CompleteChanged event: triggered when the complete popup menu
+changes. #4176
+
+Patch to add tab-local directories. (Yegappan, #4212)
+Wait a bit for comments.
+
+Problem with Visual yank when 'linebreak' and 'showbreak' are set.
+Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
+Nov 17)  Asked about this, Dec 22. Christian will have a look.
+
+Patch to add ruby cflags. (#4050, fixes #1081)
+Needs modification.
+
+Patch for larger icons in installer. (#978)  Still not good.
 
 Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
 New update 2017 Apr 10, #1628
@@ -287,13 +245,28 @@ https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
 Updated by Andy Massimino, 2018 Feb 7:
 https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
 Or should we make it asynchronous?
-Patch by Andy Massimino: #4010 - needs a bit more work
+Patch by Andy Massimino: #4010 - needs more work, tests are missing, docs need
+updating, should probably return a string with extra info instad of dict
+entries.
 
-When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
-case. (Nate Peterson, 2019 Jan 31, #3892)
-For "silent! q" it should not prompt and just fail.
+Patch to fix that using "5gj" starting inside a closed fold does not work on
+screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
 
-Patch to add readdir(). (Yasuhiro Matsumoto, #2439)
+Some xterm responses are not properly handled: (Markus Gömmel, 2019 Apr 1)
+    DCS 0 $ r Pt ST    should be ignored.
+    DCS 0 + r/Pt/  ST  already ignored?
+
+Patch to add blob_encode() and blob_decode(). (Yasuhiro Matsumoto, #4049)
+What do we need these for?
+
+Patch to add more info to OptionSet.  Should mention what triggered the change
+":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
+#4118.  Proposed implementation: 2019 Mar 27.  Tests fail, help update
+missing.
+
+How to make (async) complete function depending on completion type?
+Patch on #4083 to do this with an autocommand.  Probably want something else,
+like 'omnifunc'.
 
 Using CTRL-L to add a character to the search string doesn't work for the last
 character in the file. (Smylers, 2018 Nov 17, #3620)
@@ -330,9 +303,6 @@ unified diff (list of lines).
 When splitting a window with few text lines, the relative cursor position is
 kept, which means part of the text isn't displayed.  Better show all the text
 when possible. (Dylan Lloyd, #3973)
-
-Tag stack is incorrect after CTRL-T and then :tag. (Andy Massimino, 2019 Feb
-12, #3944)  With Patch for a solution (Feb 23).  Needs a test.
 
 Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
@@ -386,6 +356,10 @@ Does #2405 do this?
 
 Patch to add an interrupt() function: sets got_int.  Useful in an autocommand
 such as BufWritePre that checks the file name or contents.
+
+More patches to check:
+- #3797  add test for #3789
+- #4098  improve Travis config
 
 Should make 'listchars' global-local.  Local to window or to buffer?
 Probably window.
@@ -840,9 +814,6 @@ Use gvimext.dll from the nightly build? (Issue #249)
 
 Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
 8, #1690)
-
-Running test_gui and test_gui_init with Motif sometimes kills the window
-manager.  Problem with Motif?
 
 Bogus characters inserted when triggering indent while changing text.
 (Vitor Antunes, 2016 Nov 22, #1269)
@@ -2230,8 +2201,6 @@ for GTK, how about others? (Ron Aaron, 2010 Apr 10)
 
 Patch for GTK buttons X1Mouse and X2Mouse. (Christian J. Robinson, 2010 Aug 9)
 
-Motif: Build on Ubuntu can't enter any text in dialog text fields.
-
 ":tab split fname" doesn't set the alternate file in the original window,
 because win_valid() always returns FALSE.  Below win_new_tabpage() in
 ex_docmd.c.
@@ -3104,6 +3073,10 @@ Awaiting updated patches:
     and GTK by degreneir (nov 10 and nov 18).
 -   Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
 
+Better 'rightleft' or BIDI support:
+- Minimal Vi with bidi support: https://github.com/aligrudi/neatvi
+  By Ali Gholami Rudi, also worked on arabic.c
+
 Quickfix/Location List:
 -   Window size is wrong when using quickfix window. (Lifepillar, 2018 Aug 24,
     #2999)
@@ -3949,8 +3922,6 @@ Tab pages:
 8   Add local options for each tab page?  E.g., 'diffopt' could differ between
     tab pages.
 7   Add local highlighting for each tab page?
-7   Add local directory for tab pages?  How would this interfere with
-    window-local directories?
 
 
 Spell checking:

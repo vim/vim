@@ -96,7 +96,7 @@ static char_u *start_dir = NULL;	/* current working dir on startup */
 static int has_dash_c_arg = FALSE;
 
     int
-# ifdef FEAT_GUI_MSWIN
+# ifdef MSWIN
 #  ifdef __BORLANDC__
 _cdecl
 #  endif
@@ -3166,6 +3166,7 @@ process_env(
 	current_sctx.sc_sid = SID_ENV;
 	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
+	current_sctx.sc_version = 1;
 #endif
 	do_cmdline_cmd(initstr);
 	sourcing_name = save_sourcing_name;

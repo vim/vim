@@ -678,11 +678,20 @@ gui_init(void)
     /* All components of the GUI have been created now */
     gui.shell_created = TRUE;
 
-#ifndef FEAT_GUI_GTK
+#ifdef FEAT_GUI_MSWIN
     // Set the shell size, adjusted for the screen size.  For GTK this only
     // works after the shell has been opened, thus it is further down.
-    // For MS-Windows pass FALSE for "mustset" to make --windowid work.
+    // If the window is already maximized (e.g. when --windowid is passed in),
+    // we want to use the system-provided dimensions by passing FALSE to
+    // mustset. Otherwise, we want to initialize with the default rows/columns.
+    if (gui_mch_maximized())
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    else
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+#else
+# ifndef FEAT_GUI_GTK
     gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+# endif
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -721,7 +730,10 @@ gui_init(void)
 # endif
 
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+	if (gui_mch_maximized())
+	    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	else
+	    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
@@ -906,7 +918,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
     }
 
     return ret;

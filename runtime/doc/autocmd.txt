@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Mar 13
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,7 +52,7 @@ effects.  Be careful not to destroy your text.
 2. Defining autocommands				*autocmd-define*
 
 							*:au* *:autocmd*
-:au[tocmd] [group] {event} {pat} [nested] {cmd}
+:au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
 			Add {cmd} to the list of commands that Vim will
 			execute automatically on {event} for a file matching
 			{pat} |autocmd-patterns|.
@@ -60,7 +60,13 @@ effects.  Be careful not to destroy your text.
 			:autocmd and won't start a comment.
 			Vim always adds the {cmd} after existing autocommands,
 			so that the autocommands execute in the order in which
-			they were given.  See |autocmd-nested| for [nested].
+			they were given.
+			See |autocmd-nested| for [++nested].  "nested"
+			(without the ++) can also be used, for backwards
+			compatibility.
+							*autocmd-once*
+			If [++once] is supplied the command is executed once,
+			then removed ("one shot").
 
 The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
 See |autocmd-buflocal|.
@@ -128,10 +134,11 @@ prompt.  When one command outputs two messages this can happen anyway.
 ==============================================================================
 3. Removing autocommands				*autocmd-remove*
 
-:au[tocmd]! [group] {event} {pat} [nested] {cmd}
+:au[tocmd]! [group] {event} {pat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
-			{pat}, and add the command {cmd}.  See
-			|autocmd-nested| for [nested].
+			{pat}, and add the command {cmd}.
+			See |autocmd-once| for [++once].
+			See |autocmd-nested| for [++nested].
 
 :au[tocmd]! [group] {event} {pat}
 			Remove all autocommands associated with {event} and
@@ -360,6 +367,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
+|CompleteChanged|	after Insert mode completion menu changed
 |CompleteDone|		after Insert mode completion is done
 
 |User|			to be used in combination with ":doautocmd"
@@ -572,7 +580,22 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
+CompleteChanged 					*CompleteChanged*
+				After each time the Insert mode completion
+				menu changed.  Not fired on popup menu hide,
+				use |CompleteDone| for that.  Never triggered
+				recursively.
 
+				Sets these |v:event| keys:
+				    completed_item
+				    height		nr of items visible
+				    width		screen cells
+				    row			top screen row
+				    col			leftmost screen column
+				    size		total nr of items
+				    scrollbar		TRUE if visible
+
+				It is not allowed to change the text |textlock|.
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -1473,7 +1496,7 @@ By default, autocommands do not nest.  For example, if you use ":e" or ":w" in
 an autocommand, Vim does not execute the BufRead and BufWrite autocommands for
 those commands.  If you do want this, use the "nested" flag for those commands
 in which you want nesting.  For example: >
-  :autocmd FileChangedShell *.c nested e!
+  :autocmd FileChangedShell *.c ++nested e!
 The nesting is limited to 10 levels to get out of recursive loops.
 
 It's possible to use the ":au" command in an autocommand.  This can be a

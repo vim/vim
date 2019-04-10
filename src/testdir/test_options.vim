@@ -518,3 +518,30 @@ func Test_local_scrolloff()
   set so&
   set siso&
 endfunc
+
+func Test_writedelay()
+  if !has('reltime')
+    return
+  endif
+  new
+  call setline(1, 'empty')
+  redraw
+  set writedelay=10
+  let start = reltime()
+  call setline(1, repeat('x', 70))
+  redraw
+  let elapsed = reltimefloat(reltime(start))
+  set writedelay=0
+  " With 'writedelay' set should take at least 30 * 10 msec
+  call assert_inrange(30 * 0.01, 999.0, elapsed)
+
+  bwipe!
+endfunc
+
+func Test_visualbell()
+  set belloff=
+  set visualbell
+  call assert_beeps('normal 0h')
+  set novisualbell
+  set belloff=all
+endfunc

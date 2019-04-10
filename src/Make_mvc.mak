@@ -240,6 +240,8 @@ PLATFORM = $(TARGET_CPU)
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
+!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
 !   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
 !    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
 !   endif
@@ -442,6 +444,8 @@ DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 # on the architecture.
 !if "$(CPU)" == "AMD64"
 XPM = xpm\x64
+!elseif "$(CPU)" == "ARM64"
+XPM = xpm\arm64
 !elseif "$(CPU)" == "i386"
 XPM = xpm\x86
 !else
@@ -742,7 +746,7 @@ OBJ = \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
 	$(OUTDIR)\os_mswin.obj \
-	$(OUTDIR)\winclip.obj \
+	$(OUTDIR)\os_w32exe.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
@@ -761,6 +765,7 @@ OBJ = \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
 	$(OUTDIR)\vim.res
 
@@ -799,8 +804,7 @@ GUI_INCL = \
 GUI_OBJ = \
 	$(OUTDIR)\gui.obj \
 	$(OUTDIR)\gui_beval.obj \
-	$(OUTDIR)\gui_w32.obj \
-	$(OUTDIR)\os_w32exe.obj
+	$(OUTDIR)\gui_w32.obj
 GUI_LIB = \
 	gdi32.lib version.lib $(IME_LIB) \
 	winspool.lib comctl32.lib advapi32.lib shell32.lib netapi32.lib \

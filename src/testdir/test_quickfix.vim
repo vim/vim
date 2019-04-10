@@ -163,6 +163,12 @@ endfunc
 func XageTests(cchar)
   call s:setup_commands(a:cchar)
 
+  if a:cchar == 'l'
+    " No location list for the current window
+    call assert_fails('lolder', 'E776:')
+    call assert_fails('lnewer', 'E776:')
+  endif
+
   let list = [{'bufnr': bufnr('%'), 'lnum': 1}]
   call g:Xsetlist(list)
 
@@ -4005,4 +4011,18 @@ func Test_winonly_autocmd()
   autocmd! WinEnter
   new | only
   call delete('Xtest1')
+endfunc
+
+" Test to make sure that an empty quickfix buffer is not reused for loading
+" a normal buffer.
+func Test_empty_qfbuf()
+  enew | only
+  call writefile(["Test"], 'Xfile1')
+  call setqflist([], 'f')
+  copen | only
+  let qfbuf = bufnr('')
+  edit Xfile1
+  call assert_notequal(qfbuf, bufnr(''))
+  enew
+  call delete('Xfile1')
 endfunc

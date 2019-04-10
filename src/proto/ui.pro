@@ -11,6 +11,7 @@ void suspend_shell(void);
 int ui_get_shellsize(void);
 void ui_set_shellsize(int mustset);
 void ui_new_shellsize(void);
+int ui_get_winpos(int *x, int *y, varnumber_T timeout);
 void ui_breakcheck(void);
 void ui_breakcheck_force(int force);
 void clip_init(int can_use);

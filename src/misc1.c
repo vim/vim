@@ -4301,41 +4301,46 @@ expand_env_esc(
     char_u *
 vim_getenv(char_u *name, int *mustfree)
 {
-    char_u	*p;
+    char_u	*p = NULL;
     char_u	*pend;
     int		vimruntime;
+#ifdef MSWIN
+    WCHAR	*wn, *wp;
 
-#if defined(MSWIN)
-    /* use "C:/" when $HOME is not set */
+    // use "C:/" when $HOME is not set
     if (STRCMP(name, "HOME") == 0)
 	return homedir;
-#endif
 
+    // Use Wide function
+    wn = enc_to_utf16(name, NULL);
+    if (wn == NULL)
+	return NULL;
+
+    wp = _wgetenv(wn);
+    vim_free(wn);
+
+    if (wp != NULL && *wp == NUL)   // empty is the same as not set
+	wp = NULL;
+
+    if (wp != NULL)
+    {
+	p = utf16_to_enc(wp, NULL);
+	if (p == NULL)
+	    return NULL;
+
+	*mustfree = TRUE;
+	return p;
+    }
+#else
     p = mch_getenv(name);
-    if (p != NULL && *p == NUL)	    /* empty is the same as not set */
+    if (p != NULL && *p == NUL)	    // empty is the same as not set
 	p = NULL;
 
     if (p != NULL)
-    {
-#if defined(MSWIN)
-	if (enc_utf8)
-	{
-	    int	    len;
-	    char_u  *pp = NULL;
-
-	    /* Convert from active codepage to UTF-8.  Other conversions are
-	     * not done, because they would fail for non-ASCII characters. */
-	    acp_to_enc(p, (int)STRLEN(p), &pp, &len);
-	    if (pp != NULL)
-	    {
-		p = pp;
-		*mustfree = TRUE;
-	    }
-	}
-#endif
 	return p;
-    }
+#endif
 
+    // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
 	return NULL;
@@ -4350,8 +4355,25 @@ vim_getenv(char_u *name, int *mustfree)
 #endif
        )
     {
+#ifdef MSWIN
+	// Use Wide function
+	wp = _wgetenv(L"VIM");
+	if (wp != NULL && *wp == NUL)	    // empty is the same as not set
+	    wp = NULL;
+	if (wp != NULL)
+	{
+	    char_u *q = utf16_to_enc(wp, NULL);
+	    if (q != NULL)
+	    {
+		p = vim_version_dir(q);
+		*mustfree = TRUE;
+		if (p == NULL)
+		    p = q;
+	    }
+	}
+#else
 	p = mch_getenv((char_u *)"VIM");
-	if (p != NULL && *p == NUL)	    /* empty is the same as not set */
+	if (p != NULL && *p == NUL)	    // empty is the same as not set
 	    p = NULL;
 	if (p != NULL)
 	{
@@ -4360,27 +4382,8 @@ vim_getenv(char_u *name, int *mustfree)
 		*mustfree = TRUE;
 	    else
 		p = mch_getenv((char_u *)"VIM");
-
-#if defined(MSWIN)
-	    if (enc_utf8)
-	    {
-		int	len;
-		char_u  *pp = NULL;
-
-		/* Convert from active codepage to UTF-8.  Other conversions
-		 * are not done, because they would fail for non-ASCII
-		 * characters. */
-		acp_to_enc(p, (int)STRLEN(p), &pp, &len);
-		if (pp != NULL)
-		{
-		    if (*mustfree)
-			vim_free(p);
-		    p = pp;
-		    *mustfree = TRUE;
-		}
-	    }
-#endif
 	}
+#endif
     }
 
     /*
@@ -5667,11 +5670,10 @@ dos_expandpath(
     int		matches;
     int		len;
     int		starstar = FALSE;
-    static int	stardepth = 0;	    /* depth for "**" expansion */
-    WIN32_FIND_DATA	fb;
-    HANDLE		hFind = (HANDLE)0;
+    static int	stardepth = 0;	    // depth for "**" expansion
+    HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
-    WCHAR		*wn = NULL;	/* UCS-2 name, NULL when not used. */
+    WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
 
@@ -5780,33 +5782,19 @@ dos_expandpath(
 
     /* Scan all files in the directory with "dir/ *.*" */
     STRCPY(s, "*.*");
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-    {
-	/* The active codepage differs from 'encoding'.  Attempt using the
-	 * wide function.  If it fails because it is not implemented fall back
-	 * to the non-wide version (for Windows 98) */
-	wn = enc_to_utf16(buf, NULL);
-	if (wn != NULL)
-	{
-	    hFind = FindFirstFileW(wn, &wfb);
-	    if (hFind == INVALID_HANDLE_VALUE
-			      && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
-		VIM_CLEAR(wn);
-	}
-    }
-
-    if (wn == NULL)
-	hFind = FindFirstFile((LPCSTR)buf, &fb);
+    wn = enc_to_utf16(buf, NULL);
+    if (wn != NULL)
+	hFind = FindFirstFileW(wn, &wfb);
     ok = (hFind != INVALID_HANDLE_VALUE);
 
     while (ok)
     {
-	if (wn != NULL)
-	    p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
-	else
-	    p = (char_u *)fb.cFileName;
-	/* Ignore entries starting with a dot, unless when asked for.  Accept
-	 * all entries found with "matchname". */
+	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+	if (p == NULL)
+	    break;  // out of memory
+
+	// Ignore entries starting with a dot, unless when asked for.  Accept
+	// all entries found with "matchname".
 	if ((p[0] != '.' || starts_with_dot
 			 || ((flags & EW_DODOT)
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
@@ -5848,13 +5836,8 @@ dos_expandpath(
 	    }
 	}
 
-	if (wn != NULL)
-	{
-	    vim_free(p);
-	    ok = FindNextFileW(hFind, &wfb);
-	}
-	else
-	    ok = FindNextFile(hFind, &fb);
+	vim_free(p);
+	ok = FindNextFileW(hFind, &wfb);
 
 	/* If no more matches and no match was used, try expanding the name
 	 * itself.  Finds the long name of a short filename. */
@@ -5862,15 +5845,12 @@ dos_expandpath(
 	{
 	    STRCPY(s, matchname);
 	    FindClose(hFind);
+	    vim_free(wn);
+	    wn = enc_to_utf16(buf, NULL);
 	    if (wn != NULL)
-	    {
-		vim_free(wn);
-		wn = enc_to_utf16(buf, NULL);
-		if (wn != NULL)
-		    hFind = FindFirstFileW(wn, &wfb);
-	    }
-	    if (wn == NULL)
-		hFind = FindFirstFile((LPCSTR)buf, &fb);
+		hFind = FindFirstFileW(wn, &wfb);
+	    else
+		hFind =	INVALID_HANDLE_VALUE;
 	    ok = (hFind != INVALID_HANDLE_VALUE);
 	    VIM_CLEAR(matchname);
 	}

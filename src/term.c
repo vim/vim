@@ -663,6 +663,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_K7,		"\316\366"},
     {K_K8,		"\316\372"},
     {K_K9,		"\316\376"},
+    {K_BS,		"\316x"},
 # endif
 
 # if defined(VMS) || defined(ALL_BUILTIN_TCAPS)
@@ -2537,12 +2538,18 @@ termcapinit(char_u *name)
 }
 
 /*
- * the number of calls to ui_write is reduced by using the buffer "out_buf"
+ * The number of calls to ui_write is reduced by using "out_buf".
  */
 #define OUT_SIZE	2047
-	    /* Add one to allow mch_write() in os_win32.c to append a NUL */
+
+// add one to allow mch_write() in os_win32.c to append a NUL
 static char_u		out_buf[OUT_SIZE + 1];
-static int		out_pos = 0;	/* number of chars in out_buf */
+
+static int		out_pos = 0;	// number of chars in out_buf
+
+// Since the maximum number of SGR parameters shown as a normal value range is
+// 16, the escape sequence length can be 4 * 16 + lead + tail.
+#define MAX_ESC_SEQ_LEN	80
 
 /*
  * out_flush(): flush the output buffer
@@ -2659,12 +2666,14 @@ out_char_nf(unsigned c)
     void
 out_str_nf(char_u *s)
 {
-    if (out_pos > OUT_SIZE - 20)  /* avoid terminal strings being split up */
+    // avoid terminal strings being split up
+    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
+
     while (*s)
 	out_char_nf(*s++);
 
-    /* For testing we write one string at a time. */
+    // For testing we write one string at a time.
     if (p_wd)
 	out_flush();
 }
@@ -2693,7 +2702,7 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	for (p = s; *s; ++s)
@@ -2761,7 +2770,7 @@ out_str(char_u *s)
 	}
 #endif
 	/* avoid terminal strings being split up */
-	if (out_pos > OUT_SIZE - 20)
+	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
@@ -2834,7 +2843,7 @@ static int winpos_x = -1;
 static int winpos_y = -1;
 static int did_request_winpos = 0;
 
-#  if (defined(FEAT_EVAL) && defined(HAVE_TGETENT)) || defined(PROTO)
+# if defined(FEAT_EVAL) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Try getting the Vim window position from the terminal.
  * Returns OK or FAIL.
@@ -4849,7 +4858,7 @@ check_termcode(
 
 		/*
 		 * Check for a window position response from the terminal:
-		 *       {lead}3;{x}:{y}t
+		 *       {lead}3;{x};{y}t
 		 */
 		else if (did_request_winpos
 			    && ((len >= 4 && tp[0] == ESC && tp[1] == '[')
@@ -4916,11 +4925,11 @@ check_termcode(
 			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && tp[j + 11] == '/' && tp[j + 16] == '/')
 			{
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 			    int rval = hexhex2nr(tp + j + 7);
 			    int gval = hexhex2nr(tp + j + 12);
 			    int bval = hexhex2nr(tp + j + 17);
-#endif
+# endif
 			    if (is_bg)
 			    {
 				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
@@ -4928,11 +4937,11 @@ check_termcode(
 
 				LOG_TR(("Received RBG response: %s", tp));
 				rbg_status = STATUS_GOT;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 				bg_r = rval;
 				bg_g = gval;
 				bg_b = bval;
-#endif
+# endif
 				if (!option_was_set((char_u *)"bg")
 						  && STRCMP(p_bg, newval) != 0)
 				{
@@ -4943,7 +4952,7 @@ check_termcode(
 				    redraw_asap(CLEAR);
 				}
 			    }
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 			    else
 			    {
 				LOG_TR(("Received RFG response: %s", tp));
@@ -4952,7 +4961,7 @@ check_termcode(
 				fg_g = gval;
 				fg_b = bval;
 			    }
-#endif
+# endif
 			}
 
 			/* got finished code: consume it */

@@ -5272,7 +5272,7 @@ search_line:
 #ifdef FEAT_INS_EXPAND
 	    if (action == ACTION_EXPAND)
 	    {
-		int	reuse = 0;
+		int	cont_s_ipos = FALSE;
 		int	add_r;
 		char_u	*aux;
 
@@ -5333,7 +5333,7 @@ search_line:
 			    p = aux + IOSIZE - i - 1;
 			STRNCPY(IObuff + i, aux, p - aux);
 			i += (int)(p - aux);
-			reuse |= CONT_S_IPOS;
+			cont_s_ipos = TRUE;
 		    }
 		    IObuff[i] = NUL;
 		    aux = IObuff;
@@ -5344,7 +5344,7 @@ search_line:
 
 		add_r = ins_compl_add_infercase(aux, i, p_ic,
 			curr_fname == curbuf->b_fname ? NULL : curr_fname,
-			dir, reuse);
+			dir, cont_s_ipos);
 		if (add_r == OK)
 		    /* if dir was BACKWARD then honor it just once */
 		    dir = FORWARD;
