@@ -3584,7 +3584,7 @@ mch_settmode(int tmode)
 #endif
 	cmodeout &= ~(
 #ifdef FEAT_TERMGUICOLORS
-	    /* Do not turn off the ENABLE_PROCESSRD_OUTPUT flag when using
+	    /* Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
 	     * VTP. */
 	    ((vtp_working) ? 0 : ENABLE_PROCESSED_OUTPUT) |
 #else
@@ -5790,7 +5790,7 @@ gotoxy(
 
 /*
  * Set the current text attribute = (foreground | background)
- * See ../doc/os_win32.txt for the numbers.
+ * See ../runtime/doc/os_win32.txt for the numbers.
  */
     static void
 textattr(WORD wAttr)
@@ -6419,7 +6419,7 @@ mch_total_mem(int special UNUSED)
     MEMORYSTATUSEX  ms;
 
     /* Need to use GlobalMemoryStatusEx() when there is more memory than
-     * what fits in 32 bits. But it's not always available. */
+     * what fits in 32 bits. */
     ms.dwLength = sizeof(MEMORYSTATUSEX);
     GlobalMemoryStatusEx(&ms);
     if (ms.ullAvailVirtual < ms.ullTotalPhys)
