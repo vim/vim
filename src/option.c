@@ -6006,18 +6006,37 @@ set_string_option(
 }
 
 /*
+ * Return TRUE if "val" is a valid name: only consists of alphanumeric ASCII
+ * characters or characters in "allowed".
+ */
+    static int
+valid_name(char_u *val, char *allowed)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!ASCII_ISALNUM(*s) && vim_strchr((char_u *)allowed, *s) == NULL)
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Return TRUE if "val" is a valid 'filetype' name.
  * Also used for 'syntax' and 'keymap'.
  */
     static int
 valid_filetype(char_u *val)
 {
-    char_u *s;
+    return valid_name(val, ".-_");
+}
 
-    for (s = val; *s != NUL; ++s)
-	if (!ASCII_ISALNUM(*s) && vim_strchr((char_u *)".-_", *s) == NULL)
-	    return FALSE;
-    return TRUE;
+/*
+ * Return TRUE if "val" is a valid 'spellang' value.
+ */
+    int
+valid_spellang(char_u *val)
+{
+    return valid_name(val, ".-_,");
 }
 
 /*
@@ -7082,7 +7101,10 @@ did_set_string_option(
     else if (varp == &(curwin->w_s->b_p_spl)
 	    || varp == &(curwin->w_s->b_p_spf))
     {
-	errmsg = did_set_spell_option(varp == &(curwin->w_s->b_p_spf));
+	if (!valid_spellang(*varp))
+	    errmsg = e_invarg;
+	else
+	    errmsg = did_set_spell_option(varp == &(curwin->w_s->b_p_spf));
     }
     /* When 'spellcapcheck' is set compile the regexp program. */
     else if (varp == &(curwin->w_s->b_p_spc))
@@ -7737,7 +7759,8 @@ did_set_string_option(
 		    break;
 	    if (p > q)
 	    {
-		vim_snprintf((char *)fname, 200, "spell/%.*s.vim", (int)(p - q), q);
+		vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
+							      (int)(p - q), q);
 		source_runtime(fname, DIP_ALL);
 	    }
 	}
