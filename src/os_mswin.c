@@ -612,13 +612,13 @@ mch_suspend(void)
 # undef display_errors
 #endif
 
-#ifdef FEAT_GUI
 /*
  * Display the saved error message(s).
  */
     void
 display_errors(void)
 {
+#ifdef FEAT_GUI
     char *p;
 
 # ifdef VIMDLL
@@ -642,19 +642,13 @@ display_errors(void)
 		}
 	    ga_clear(&error_ga);
 	}
+	return;
     }
-# ifdef VIMDLL
-    else
-	FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
-# endif
-}
-#else
-    void
-display_errors(void)
-{
-    FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
-}
 #endif
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+    FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
+#endif
+}
 #endif
 
 
