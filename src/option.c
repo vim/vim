@@ -6030,6 +6030,7 @@ valid_filetype(char_u *val)
     return valid_name(val, ".-_");
 }
 
+#if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return TRUE if "val" is a valid 'spellang' value.
  */
@@ -6052,6 +6053,7 @@ valid_spellfile(char_u *val)
 	    return FALSE;
     return TRUE;
 }
+#endif
 
 /*
  * Handle string options that need some action to perform when changed.
