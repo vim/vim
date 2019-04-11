@@ -165,6 +165,7 @@ $(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_p
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
 %.desktop: %.desktop.in $(POFILES)
+	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template $< -o $@
 	cp -f $@ ../../runtime/$@
 
