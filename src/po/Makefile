@@ -25,9 +25,6 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 .SUFFIXES: .po .mo .pot .ck
 .PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES)
 
-LINGUAS:
-	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
-
 .po.mo:
 	$(MSGFMTCMD) -o $@ $<
 
@@ -35,7 +32,7 @@ LINGUAS:
 	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	touch $@
 
-all: $(MOFILES) $(MOCONVERTED) gvim.desktop vim.desktop
+all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
 
 check: $(CHECKFILES)
 
@@ -167,7 +164,7 @@ $(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_p
 		po/gvim.desktop.in po/vim.desktop.in
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
-%.desktop: %.desktop.in $(PACKAGE).pot LINGUAS
+%.desktop: %.desktop.in $(POFILES)
 	$(MSGFMT) --desktop -d . --template $< -o $@
 	cp -f $@ ../../runtime/$@
 

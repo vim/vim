@@ -169,6 +169,7 @@ OS_EXTRA_OBJ	= @OS_EXTRA_OBJ@
 MAKEMO		= @MAKEMO@
 
 MSGFMT		= @MSGFMT@
+MSGFMT_DESKTOP	= @MSGFMT_DESKTOP@
 
 # Make sure that "make first" will run "make all" once configure has done its
 # work.  This is needed when using the Makefile in the top directory.
