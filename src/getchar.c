@@ -3117,6 +3117,7 @@ fix_input_buffer(char_u *buf, int len)
 	    p += 2;
 	    i -= 2;
 	}
+# ifndef MSWIN
 	/* When the GUI is not used CSI needs to be escaped. */
 	else if (!gui.in_use && p[0] == CSI)
 	{
@@ -3126,6 +3127,7 @@ fix_input_buffer(char_u *buf, int len)
 	    *p = (int)KE_CSI;
 	    len += 2;
 	}
+# endif
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
