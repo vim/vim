@@ -1459,6 +1459,11 @@ mch_update_cursor(void)
     int		idx;
     int		thickness;
 
+# ifdef VIMDLL
+    if (!gui.in_use)
+	return;
+# endif
+
     /*
      * How the cursor is drawn depends on the current mode.
      */
