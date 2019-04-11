@@ -4611,7 +4611,11 @@ mch_call_shell(
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
     /* TODO: make the terminal window work with input or output redirected. */
-    if (vim_strchr(p_go, GO_TERMINAL) != NULL
+    if (
+# ifdef VIMDLL
+	gui.in_use &&
+# endif
+	vim_strchr(p_go, GO_TERMINAL) != NULL
 	 && (options & (SHELL_FILTER|SHELL_DOOUT|SHELL_WRITE|SHELL_READ)) == 0)
     {
 	/* Use a terminal window to run the command in. */
