@@ -115,6 +115,13 @@ before_install:
     if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "${CC}" = "clang" ]]; then
       ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
     fi
+  # Need msgfmt 0.19.8 to be able to generate .desktop files
+  - |
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
+      sudo add-apt-repository ppa:ricotz/toolchain -y &&
+      sudo apt-get update -q &&
+      sudo apt-get install gettext=0.19.8.1-1ubuntu2~14.04~ricotz1 -y
+    fi
 
 before_script:
   # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
