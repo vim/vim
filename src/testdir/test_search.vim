@@ -1248,3 +1248,20 @@ func Test_one_error_msg()
   " This  was also giving an internal error
   call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
 endfunc
+
+func Test_incsearch_add_char_under_cursor()
+  if !exists('+incsearch')
+    return
+  endif
+  set incsearch
+  new
+  call setline(1, ['find match', 'anything'])
+  1
+  call test_override('char_avail', 1)
+  call feedkeys("fc/m\<C-L>\<C-L>\<C-L>\<C-L>\<C-L>\<CR>", 'tx')
+  call assert_equal('match', @/)
+  call test_override('char_avail', 0)
+
+  set incsearch&
+  bwipe!
+endfunc
