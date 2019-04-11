@@ -2246,12 +2246,6 @@ _cdecl
 SaveInst(HINSTANCE hInst)
 {
     s_hinst = hInst;
-# ifdef VIMDLL
-    if (hInst != NULL)
-	gui.starting = TRUE;
-    else
-	gui.starting = FALSE;
-# endif
 }
 #endif
 

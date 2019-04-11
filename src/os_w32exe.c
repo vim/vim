@@ -49,7 +49,7 @@ wmain(int argc UNUSED, wchar_t **argv UNUSED)
 # ifdef FEAT_GUI
     SaveInst(hInstance);
 # elif defined(VIMDLL)
-    SaveInst(NULL);
+    SaveInst(GetModuleHandle(NULL));
 # endif
     VimMain(0, NULL);
 
