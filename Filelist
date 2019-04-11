@@ -937,6 +937,8 @@ LANG_SRC = \
 		src/po/Make_cyg.mak \
 		src/po/Make_ming.mak \
 		src/po/Make_mvc.mak \
+		src/po/vim.desktop.in \
+		src/po/gvim.desktop.in \
 		src/po/sjiscorr.c \
 		src/po/*.po \
 

@@ -25,6 +25,9 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 .SUFFIXES: .po .mo .pot .ck
 .PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES)
 
+LINGUAS:
+	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+
 .po.mo:
 	$(MSGFMTCMD) -o $@ $<
 
@@ -32,7 +35,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	touch $@
 
-all: $(MOFILES) $(MOCONVERTED)
+all: $(MOFILES) $(MOCONVERTED) gvim.desktop vim.desktop
 
 check: $(CHECKFILES)
 
@@ -157,11 +160,16 @@ distclean: clean
 checkclean:
 	rm -f *.ck
 
-$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h
+$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h gvim.desktop.in vim.desktop.in
 	cd ..; $(XGETTEXT) --default-domain=$(PACKAGE) \
 		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
-		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h
+		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h \
+		po/gvim.desktop.in po/vim.desktop.in
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
+
+%.desktop: %.desktop.in $(PACKAGE).pot LINGUAS
+	$(MSGFMT) --desktop -d . --template $< -o $@
+	cp -f $@ ../../runtime/$@
 
 update-po: $(LANGUAGES)
 
