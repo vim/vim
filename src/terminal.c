@@ -3899,7 +3899,7 @@ parse_csi(
 #endif
 	{
 	    // We roughly estimate the position of the terminal window inside
-	    // the Vim window by assuing a 10 x 7 character cell.
+	    // the Vim window by assuming a 10 x 7 character cell.
 	    x += wp->w_wincol * 7;
 	    y += W_WINROW(wp) * 10;
 	}
