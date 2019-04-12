@@ -1460,7 +1460,7 @@ mch_update_cursor(void)
     int		thickness;
 
 # ifdef VIMDLL
-    if (!gui.in_use)
+    if (gui.in_use)
 	return;
 # endif
 
