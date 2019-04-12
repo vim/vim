@@ -2159,8 +2159,9 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 
 # Run the libvterm tests.
 # This currently doesn't work on Mac, only run on Linux for now.
+# disable clang, since it does not work with --coverage on xenial
 test_libvterm:
-	@if test `uname` = "Linux"; then \
+	@if test `uname` = "Linux" -a "$CC" = 'gcc'; then \
 		cd libvterm; $(MAKE) -f Makefile test \
 			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
