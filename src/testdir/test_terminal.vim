@@ -1484,6 +1484,57 @@ func Test_terminal_ansicolors_func()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_all_ansi_colors()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  " Use all the ANSI colors.
+  call writefile([
+	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP")',
+	\ 'hi Tblack ctermfg=Black ctermbg=Lightgrey',
+	\ 'hi Tdarkred ctermfg=Darkred ctermbg=Red',
+	\ 'hi Tdarkgreen ctermfg=Darkgreen ctermbg=Green',
+	\ 'hi Tbrown ctermfg=Brown ctermbg=Yello',
+	\ 'hi Tdarkblue ctermfg=Darkblue ctermbg=Blue',
+	\ 'hi Tdarkmagenta ctermfg=Darkmagenta ctermbg=Magenta',
+	\ 'hi Tdarkcyan ctermfg=Darkcyan ctermbg=Cyan',
+	\ 'hi Tlightgrey ctermfg=Lightgrey ctermbg=Black',
+	\ 'hi Tdarkgrey ctermfg=Darkgrey ctermbg=White',
+	\ 'hi Tred ctermfg=Red ctermbg=Darkred',
+	\ 'hi Tgreen ctermfg=Green ctermbg=Darkgreen',
+	\ 'hi Tyellow ctermfg=Yellow ctermbg=Brown',
+	\ 'hi Tblue ctermfg=Blue ctermbg=Darkblue',
+	\ 'hi Tmagenta ctermfg=Magenta ctermbg=Darkmagenta',
+	\ 'hi Tcyan ctermfg=Cyan ctermbg=Darkcyan',
+	\ 'hi Twhite ctermfg=White ctermbg=Darkgrey',
+	\ '',
+	\ 'call  matchadd("Tblack", "A")',
+	\ 'call  matchadd("Tdarkred", "B")',
+	\ 'call  matchadd("Tdarkgreen", "C")',
+	\ 'call  matchadd("Tbrown", "D")',
+	\ 'call  matchadd("Tdarkblue", "E")',
+	\ 'call  matchadd("Tdarkmagenta", "F")',
+	\ 'call  matchadd("Tdarkcyan", "G")',
+	\ 'call  matchadd("Tlightgrey", "H")',
+	\ 'call  matchadd("Tdarkgrey", "I")',
+	\ 'call  matchadd("Tred", "J")',
+	\ 'call  matchadd("Tgreen", "K")',
+	\ 'call  matchadd("Tyellow", "L")',
+	\ 'call  matchadd("Tblue", "M")',
+	\ 'call  matchadd("Tmagenta", "N")',
+	\ 'call  matchadd("Tcyan", "O")',
+	\ 'call  matchadd("Twhite", "P")',
+	\ 'redraw',
+	\ ], 'Xcolorscript')
+  let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_terminal_all_ansi_colors', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('Xcolorscript')
+endfunc
+
 func Test_terminal_termwinsize_option_fixed()
   if !CanRunVimInTerminal()
     return
