@@ -431,7 +431,7 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
-#ifdef ALWAYS_USE_GUI
+#if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
     result = OK;
 #else
 # ifdef FEAT_GUI_GTK
@@ -442,8 +442,6 @@ gui_init_check(void)
      * Use a simpler check if the GUI window can probably be opened.
      */
     result = gui.dofork ? gui_mch_early_init_check(TRUE) : gui_mch_init_check();
-# elif defined(VIMDLL)
-    result = gui.starting ? OK : FAIL;
 # else
     result = gui_mch_init_check();
 # endif
