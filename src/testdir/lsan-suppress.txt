@@ -1,3 +1,8 @@
-# Suppress leaks from X libraries on Ubuntu trusty.
+# Suppress leaks from X libraries on Ubuntu xenial.
+leak:libperl.so
+leak:libpython2.7.so
+leak:libruby-2.3.so
 leak:libX11.so.6
 leak:libXt.so.6
+leak:libfontconfig.so.1
+leak:libc.so.6
