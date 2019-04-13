@@ -1904,13 +1904,14 @@ func Test_term_gettitle()
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
   if has('autoservername')
-    call WaitForAssert({-> assert_equal('[No Name] - VIM1', term_gettitle(term)) })
+    call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d\+$', term_gettitle(term)) })
   else
     call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM$', term_gettitle(term)) })
   endif
-
-  call term_sendkeys(term, ":e Xfoo\r")
-  call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
 
   call term_sendkeys(term, ":set titlestring=foo\r")
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
