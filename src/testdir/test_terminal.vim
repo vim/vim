@@ -1495,7 +1495,7 @@ func Test_terminal_all_ansi_colors()
 	\ 'hi Tblack ctermfg=Black ctermbg=Lightgrey',
 	\ 'hi Tdarkred ctermfg=Darkred ctermbg=Red',
 	\ 'hi Tdarkgreen ctermfg=Darkgreen ctermbg=Green',
-	\ 'hi Tbrown ctermfg=Brown ctermbg=Yello',
+	\ 'hi Tbrown ctermfg=Brown ctermbg=Yellow',
 	\ 'hi Tdarkblue ctermfg=Darkblue ctermbg=Blue',
 	\ 'hi Tdarkmagenta ctermfg=Darkmagenta ctermbg=Magenta',
 	\ 'hi Tdarkcyan ctermfg=Darkcyan ctermbg=Cyan',

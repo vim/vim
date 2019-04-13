@@ -55,8 +55,16 @@ func RunVimInTerminal(arguments, options)
   let cmd = GetVimCommandClean()
 
   " Add -v to have gvim run in the terminal (if possible)
+  " The GCOV_ environment variables cause the Vim running in the terminal to
+  " write the coverage information in the "nested" directory, to avoid two Vim
+  " instances try to write to the same coverage info file.
   let cmd .= ' -v ' . a:arguments
-  let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
+  let buf = term_start(cmd, {
+	\ 'curwin': 1,
+	\ 'term_rows': rows,
+	\ 'term_cols': cols,
+	\ 'env': {'GCOV_PREFIX': 'nested', 'GCOV_PREFIX_STRIP': 99},
+	\ })
   if &termwinsize == ''
     " in the GUI we may end up with a different size, try to set it.
     if term_getsize(buf) != [rows, cols]
