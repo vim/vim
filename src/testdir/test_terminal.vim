@@ -337,7 +337,7 @@ func Test_terminal_postponed_scrollback()
   call VerifyScreenDump(buf, 'Test_terminal_01', {})
 
   silent !echo 'one more line' >>Xtext
-  " Sceen will not change, move cursor to get a different dump
+  " Screen will not change, move cursor to get a different dump
   call term_sendkeys(buf, "k")
   call VerifyScreenDump(buf, 'Test_terminal_02', {})
 
@@ -1596,7 +1596,7 @@ func Test_terminal_termwinsize_option_zero()
   set termwinsize=
 endfunc
 
-func Test_terminal_termwinsize_mininmum()
+func Test_terminal_termwinsize_minimum()
   set termwinsize=10*50
   vsplit
   let buf = Run_shell_in_terminal({})
@@ -1903,7 +1903,11 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
-  call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+  if has('autoservername')
+    call WaitForAssert({-> assert_equal('[No Name] - VIM1', term_gettitle(term)) })
+  else
+    call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+  endif
 
   call term_sendkeys(term, ":e Xfoo\r")
   call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
@@ -1963,7 +1967,7 @@ func Test_terminal_getwinpos()
   let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
 
   " Position must be bigger than the getwinpos() result of Vim itself.
-  " The calcuation in the console assumes a 10 x 7 character cell.
+  " The calculation in the console assumes a 10 x 7 character cell.
   " In the GUI it can be more, let's assume a 20 x 14 cell.
   " And then add 100 / 200 tolerance.
   let [xroot, yroot] = getwinpos()
