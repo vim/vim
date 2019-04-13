@@ -170,9 +170,6 @@ after_success:
   - |
     if [[ "${COVERAGE}" = "yes" ]]; then
       (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
-      # Also do this for nested executions, codecov will merge the results.
-      mv "${SRCDIR}"/testdir/nested/* "${SRCDIR}"/objects
-      (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
     fi
 
 # vim:set sts=2 sw=2 tw=0 et:
