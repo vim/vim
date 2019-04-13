@@ -4926,6 +4926,8 @@ getcwd([{winnr} [, {tabnr}]])
 		Examples: >
 			" Get the working directory of the current window
 			:echo getcwd()
+			:echo getcwd(0)
+			:echo getcwd(0, 0)
 			" Get the working directory of window 3 in tabpage 2
 			:echo getcwd(3, 2)
 			" Get the global working directory
@@ -5503,7 +5505,27 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		{winnr} can be the window number or the |window-ID|.
 		If {winnr} is -1 it is ignored and only the tabpage is used.
 		Return 0 if the arguments are invalid.
+		Examples: >
+			if haslocaldir() == 1
+			  " window local directory case
+			elseif haslocaldir() == 2
+			  " tab-local directory case
+			else
+			  " global directory case
+			endif
 
+			" current window
+			:echo haslocaldir()
+			:echo haslocaldir(0)
+			:echo haslocaldir(0, 0)
+			" window n in current tab page
+			:echo haslocaldir(n)
+			:echo haslocaldir(n, 0)
+			" window n in tab page m
+			:echo haslocaldir(n, m)
+			" tab page m
+			:echo haslocaldir(-1, m)
+<
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
 		contains {what} in somewhere in the rhs (what it is mapped to)

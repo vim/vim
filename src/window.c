@@ -3843,6 +3843,9 @@ find_tabpage(int n)
     tabpage_T	*tp;
     int		i = 1;
 
+    if (n == 0)
+	return curtab;
+
     for (tp = first_tabpage; tp != NULL && i != n; tp = tp->tp_next)
 	++i;
     return tp;

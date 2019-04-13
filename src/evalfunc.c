@@ -5173,15 +5173,17 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
-	    if (n == 0)
-		tp = curtab;
-	    else if (n > 0)
+	    if (n >= 0)
+	    {
 		tp = find_tabpage(n);
+		if (tp == NULL)
+		    return;
+	    }
 	}
 
 	if (argvars[0].vval.v_number != -1)
 	{
-	    wp = find_tabwin(&argvars[0], &argvars[1]);
+	    wp = find_win_by_nr(&argvars[0], tp);
 	    if (wp == NULL)
 		return;		// specified window doesn't exist
 	}
@@ -6889,19 +6891,21 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
 	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
-	    if (n == 0)
-		tp = curtab;
-	    else if (n > 0)
+	    if (n >= 0)
 		tp = find_tabpage(n);
 	}
 	else
 	    tp = curtab;
 
-	if (argvars[0].vval.v_number != -1)
-	    wp = find_tabwin(&argvars[0], &argvars[1]);
-
-	if (tp == NULL || wp == NULL)
+	if (tp == NULL)
 	    return;
+
+	if (argvars[0].vval.v_number != -1)
+	{
+	    wp = find_win_by_nr(&argvars[0], tp);
+	    if (wp == NULL)
+		return;
+	}
     }
 
     // Check for window-local and tab-local directories
