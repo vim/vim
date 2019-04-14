@@ -289,3 +289,99 @@ func Test_xterm_mouse_click_X_to_close_tab()
   let &term = save_term
   let &ttymouse = save_ttymouse
 endfunc
+
+func Test_xterm_mouse_drag_to_move_tab()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set mouse=a term=xterm
+  let row = 1
+
+  for ttymouse_val in ['xterm', 'sgr']
+    exe 'set ttymouse=' . ttymouse_val
+    e Xtab1
+    tabnew Xtab2
+
+    let a = split(execute(':tabs'), "\n")
+    call assert_equal(['Tab page 1',
+        \              '    Xtab1',
+        \              'Tab page 2',
+        \              '>   Xtab2'], a)
+    redraw
+
+    " Click in tab2 and drag it to tab1.
+    " Check getcharmod() to verify that click is not
+    " interpreted as a spurious double-click.
+    call MouseLeftClick(row, 10)
+    call assert_equal(0, getcharmod())
+    for col in [9, 8, 7, 6]
+      call MouseLeftDrag(row, col)
+    endfor
+    call MouseLeftRelease(row, col)
+    let a = split(execute(':tabs'), "\n")
+    call assert_equal(['Tab page 1',
+        \              '>   Xtab2',
+        \              'Tab page 2',
+        \              '    Xtab1'], a)
+
+    if ttymouse_val !=# 'sgr'
+      " We need to sleep, or else MouseLeftClick() in next loop
+      " iteration will be interpreted as a spurious double-click.
+      sleep 500m
+    endif
+    %bwipe!
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+endfunc
+
+func Test_xterm_mouse_double_click_to_create_tab()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set mouse=a term=xterm
+  let row = 1
+  let col = 10
+
+  for ttymouse_val in ['xterm', 'sgr']
+    exe 'set ttymouse=' . ttymouse_val
+    e Xtab1
+    tabnew Xtab2
+
+    let a = split(execute(':tabs'), "\n")
+    call assert_equal(['Tab page 1',
+        \              '    Xtab1',
+        \              'Tab page 2',
+        \              '>   Xtab2'], a)
+
+    redraw
+    call MouseLeftClick(row, col)
+    " Check getcharmod() to verify that first click is not
+    " interpreted as a spurious double-click.
+    call assert_equal(0, getcharmod())
+    call MouseLeftRelease(row, col)
+    call MouseLeftClick(row, col)
+    call assert_equal(32, getcharmod()) " double-click
+    call MouseLeftRelease(row, col)
+    let a = split(execute(':tabs'), "\n")
+    call assert_equal(['Tab page 1',
+        \              '    Xtab1',
+        \              'Tab page 2',
+        \              '>   [No Name]',
+        \              'Tab page 3',
+        \              '    Xtab2'], a)
+
+    if ttymouse_val !=# 'sgr'
+      " We need to sleep, or else MouseLeftClick() in next loop
+      " iteration will be interpreted as a spurious double-click.
+      sleep 500m
+    endif
+    %bwipe!
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+endfunc
