@@ -5152,9 +5152,9 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    if (argvars[1].v_type == VAR_UNKNOWN
-	    && argvars[0].v_type == VAR_NUMBER
-	    && argvars[0].vval.v_number == -1)
+    if (argvars[0].v_type == VAR_NUMBER
+	    && argvars[0].vval.v_number == -1
+	    && argvars[1].v_type == VAR_UNKNOWN)
 	global = TRUE;
     else
 	wp = find_tabwin(&argvars[0], &argvars[1], &tp);
