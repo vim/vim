@@ -205,10 +205,16 @@ func Test_statusline()
   call assert_match('^<sline\s*$', s:get_statusline())
 
   " %<: Where to truncate.
-  exe 'set statusline=a%<b' . repeat('c', 4000) . 'd'
-  call assert_match('^a<c*d$', s:get_statusline())
-  exe 'set statusline=a' . repeat('b', 4000) . '%<c'
-  call assert_match('^ab*>$', s:get_statusline())
+  " First check with when %< should not truncate with many columns
+  exe 'set statusline=a%<b' . repeat('c', &columns - 3) . 'd'
+  call assert_match('^abc\+d$', s:get_statusline())
+  exe 'set statusline=a' . repeat('b', &columns - 2) . '%<c'
+  call assert_match('^ab\+c$', s:get_statusline())
+  " Then check when %< should truncate when there with too few columns.
+  exe 'set statusline=a%<b' . repeat('c', &columns - 2) . 'd'
+  call assert_match('^a<c\+d$', s:get_statusline())
+  exe 'set statusline=a' . repeat('b', &columns - 1) . '%<c'
+  call assert_match('^ab\+>$', s:get_statusline())
 
   "%{: Evaluate expression between '%{' and '}' and substitute result.
   syntax on
