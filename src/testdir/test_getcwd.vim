@@ -99,8 +99,15 @@ function Test_GetCwd()
   call assert_equal(g:topdir, getcwd(-1))
   " Non existing windows and tab pages
   call assert_equal('', getcwd(100))
+  call assert_equal(0, haslocaldir(100))
   call assert_equal('', getcwd(10, 1))
+  call assert_equal(0, haslocaldir(10, 1))
   call assert_equal('', getcwd(1, 5))
+  call assert_equal(0, haslocaldir(1, 5))
+  call assert_fails('call getcwd([])', 'E745:')
+  call assert_fails('call getcwd(1, [])', 'E745:')
+  call assert_fails('call haslocaldir([])', 'E745:')
+  call assert_fails('call haslocaldir(1, [])', 'E745:')
 endfunc
 
 function Test_GetCwd_lcd_shellslash()

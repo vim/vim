@@ -1529,7 +1529,7 @@ f_arglistid(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
 
     rettv->vval.v_number = -1;
-    wp = find_tabwin(&argvars[0], &argvars[1]);
+    wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp != NULL)
 	rettv->vval.v_number = wp->w_alist->id;
 }
@@ -5152,42 +5152,12 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    if (argvars[0].v_type == VAR_UNKNOWN)
-    {
-	// Default to the current window in the current tab page
-	wp = curwin;
-	tp = curtab;
-    }
+    if (argvars[1].v_type == VAR_UNKNOWN
+	    && argvars[0].v_type == VAR_NUMBER
+	    && argvars[0].vval.v_number == -1)
+	global = TRUE;
     else
-    {
-	if (argvars[0].v_type != VAR_NUMBER)
-	    return;
-
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	{
-	    if (argvars[0].vval.v_number == -1)
-		global = TRUE;
-	    else
-		tp = curtab;
-	}
-	else
-	{
-	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
-	    if (n >= 0)
-	    {
-		tp = find_tabpage(n);
-		if (tp == NULL)
-		    return;
-	    }
-	}
-
-	if (argvars[0].vval.v_number != -1)
-	{
-	    wp = find_win_by_nr(&argvars[0], tp);
-	    if (wp == NULL)
-		return;		// specified window doesn't exist
-	}
-    }
+	wp = find_tabwin(&argvars[0], &argvars[1], &tp);
 
     if (wp != NULL && wp->w_localdir != NULL)
 	rettv->vval.v_string = vim_strsave(wp->w_localdir);
@@ -5382,7 +5352,7 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	return;
 
 #ifdef FEAT_JUMPLIST
-    wp = find_tabwin(&argvars[0], &argvars[1]);
+    wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp == NULL)
 	return;
 
@@ -6876,43 +6846,15 @@ f_haslocaldir(typval_T *argvars, typval_T *rettv)
     tabpage_T	*tp = NULL;
     win_T	*wp = NULL;
 
-    rettv->vval.v_number = 0;
-
-    if (argvars[0].v_type == VAR_UNKNOWN)
-    {
-	wp = curwin;
-	tp = curtab;
-    }
-    else
-    {
-	if (argvars[0].v_type != VAR_NUMBER)
-	    return;
-
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    long n = (long)tv_get_number_chk(&argvars[1], NULL);
-	    if (n >= 0)
-		tp = find_tabpage(n);
-	}
-	else
-	    tp = curtab;
-
-	if (tp == NULL)
-	    return;
-
-	if (argvars[0].vval.v_number != -1)
-	{
-	    wp = find_win_by_nr(&argvars[0], tp);
-	    if (wp == NULL)
-		return;
-	}
-    }
+    wp = find_tabwin(&argvars[0], &argvars[1], &tp);
 
     // Check for window-local and tab-local directories
     if (wp != NULL && wp->w_localdir != NULL)
 	rettv->vval.v_number = 1;
     else if (tp != NULL && tp->tp_localdir != NULL)
 	rettv->vval.v_number = 2;
+    else
+	rettv->vval.v_number = 0;
 }
 
 /*
