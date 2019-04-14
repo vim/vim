@@ -6006,19 +6006,54 @@ set_string_option(
 }
 
 /*
+ * Return TRUE if "val" is a valid name: only consists of alphanumeric ASCII
+ * characters or characters in "allowed".
+ */
+    static int
+valid_name(char_u *val, char *allowed)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!ASCII_ISALNUM(*s) && vim_strchr((char_u *)allowed, *s) == NULL)
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Return TRUE if "val" is a valid 'filetype' name.
  * Also used for 'syntax' and 'keymap'.
  */
     static int
 valid_filetype(char_u *val)
 {
+    return valid_name(val, ".-_");
+}
+
+#if defined(FEAT_SPELL) || defined(PROTO)
+/*
+ * Return TRUE if "val" is a valid 'spellang' value.
+ */
+    int
+valid_spellang(char_u *val)
+{
+    return valid_name(val, ".-_,");
+}
+
+/*
+ * Return TRUE if "val" is a valid 'spellfile' value.
+ */
+    static int
+valid_spellfile(char_u *val)
+{
     char_u *s;
 
     for (s = val; *s != NUL; ++s)
-	if (!ASCII_ISALNUM(*s) && vim_strchr((char_u *)".-_", *s) == NULL)
+	if (!vim_isfilec(*s) && *s != ',')
 	    return FALSE;
     return TRUE;
 }
+#endif
 
 /*
  * Handle string options that need some action to perform when changed.
@@ -7082,7 +7117,13 @@ did_set_string_option(
     else if (varp == &(curwin->w_s->b_p_spl)
 	    || varp == &(curwin->w_s->b_p_spf))
     {
-	errmsg = did_set_spell_option(varp == &(curwin->w_s->b_p_spf));
+	int	is_spellfile = varp == &(curwin->w_s->b_p_spf);
+
+	if ((is_spellfile && !valid_spellfile(*varp))
+	    || (!is_spellfile && !valid_spellang(*varp)))
+	    errmsg = e_invarg;
+	else
+	    errmsg = did_set_spell_option(is_spellfile);
     }
     /* When 'spellcapcheck' is set compile the regexp program. */
     else if (varp == &(curwin->w_s->b_p_spc))
@@ -7737,7 +7778,8 @@ did_set_string_option(
 		    break;
 	    if (p > q)
 	    {
-		vim_snprintf((char *)fname, 200, "spell/%.*s.vim", (int)(p - q), q);
+		vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
+							      (int)(p - q), q);
 		source_runtime(fname, DIP_ALL);
 	    }
 	}

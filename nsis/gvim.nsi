@@ -1096,7 +1096,9 @@ Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	Call un.GetParent
 	Pop $0
 
-	Delete $0\_vimrc
+	${IfNot} ${Silent}
+	  Delete $0\_vimrc
+	${Endif}
 	RMDir $0
 SectionEnd
 

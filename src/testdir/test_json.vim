@@ -289,3 +289,10 @@ func Test_js_decode()
 
   call assert_equal(s:varl5, js_decode(s:jsl5))
 endfunc
+
+func Test_json_encode_long()
+  " The growarray uses a grow size of 4000, check that a result that is exactly
+  " 4000 bytes long is not missing the final NUL.
+  let json = json_encode([repeat('a', 3996)])
+  call assert_equal(4000, len(json))
+endfunc

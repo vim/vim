@@ -21,6 +21,7 @@ int get_term_opt_idx(char_u **p);
 int set_term_option_alloced(char_u **p);
 int was_set_insecurely(char_u *opt, int opt_flags);
 void set_string_option_direct(char_u *name, int opt_idx, char_u *val, int opt_flags, int set_sid);
+int valid_spellang(char_u *val);
 char *check_colorcolumn(win_T *wp);
 char *check_stl_option(char_u *s);
 void set_term_option_sctx_idx(char *name, int opt_idx);

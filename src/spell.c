@@ -2308,10 +2308,13 @@ did_set_spelllang(win_T *wp)
     /* Loop over comma separated language names. */
     for (splp = spl_copy; *splp != NUL; )
     {
-	/* Get one language name. */
+	// Get one language name.
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 	region = NULL;
 	len = (int)STRLEN(lang);
+
+	if (!valid_spellang(lang))
+	    continue;
 
 	if (STRCMP(lang, "cjk") == 0)
 	{

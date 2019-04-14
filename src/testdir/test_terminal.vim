@@ -337,7 +337,7 @@ func Test_terminal_postponed_scrollback()
   call VerifyScreenDump(buf, 'Test_terminal_01', {})
 
   silent !echo 'one more line' >>Xtext
-  " Sceen will not change, move cursor to get a different dump
+  " Screen will not change, move cursor to get a different dump
   call term_sendkeys(buf, "k")
   call VerifyScreenDump(buf, 'Test_terminal_02', {})
 
@@ -1484,6 +1484,57 @@ func Test_terminal_ansicolors_func()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_all_ansi_colors()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  " Use all the ANSI colors.
+  call writefile([
+	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP")',
+	\ 'hi Tblack ctermfg=0 ctermbg=8',
+	\ 'hi Tdarkred ctermfg=1 ctermbg=9',
+	\ 'hi Tdarkgreen ctermfg=2 ctermbg=10',
+	\ 'hi Tbrown ctermfg=3 ctermbg=11',
+	\ 'hi Tdarkblue ctermfg=4 ctermbg=12',
+	\ 'hi Tdarkmagenta ctermfg=5 ctermbg=13',
+	\ 'hi Tdarkcyan ctermfg=6 ctermbg=14',
+	\ 'hi Tlightgrey ctermfg=7 ctermbg=15',
+	\ 'hi Tdarkgrey ctermfg=8 ctermbg=0',
+	\ 'hi Tred ctermfg=9 ctermbg=1',
+	\ 'hi Tgreen ctermfg=10 ctermbg=2',
+	\ 'hi Tyellow ctermfg=11 ctermbg=3',
+	\ 'hi Tblue ctermfg=12 ctermbg=4',
+	\ 'hi Tmagenta ctermfg=13 ctermbg=5',
+	\ 'hi Tcyan ctermfg=14 ctermbg=6',
+	\ 'hi Twhite ctermfg=15 ctermbg=7',
+	\ '',
+	\ 'call  matchadd("Tblack", "A")',
+	\ 'call  matchadd("Tdarkred", "B")',
+	\ 'call  matchadd("Tdarkgreen", "C")',
+	\ 'call  matchadd("Tbrown", "D")',
+	\ 'call  matchadd("Tdarkblue", "E")',
+	\ 'call  matchadd("Tdarkmagenta", "F")',
+	\ 'call  matchadd("Tdarkcyan", "G")',
+	\ 'call  matchadd("Tlightgrey", "H")',
+	\ 'call  matchadd("Tdarkgrey", "I")',
+	\ 'call  matchadd("Tred", "J")',
+	\ 'call  matchadd("Tgreen", "K")',
+	\ 'call  matchadd("Tyellow", "L")',
+	\ 'call  matchadd("Tblue", "M")',
+	\ 'call  matchadd("Tmagenta", "N")',
+	\ 'call  matchadd("Tcyan", "O")',
+	\ 'call  matchadd("Twhite", "P")',
+	\ 'redraw',
+	\ ], 'Xcolorscript')
+  let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_terminal_all_ansi_colors', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('Xcolorscript')
+endfunc
+
 func Test_terminal_termwinsize_option_fixed()
   if !CanRunVimInTerminal()
     return
@@ -1545,7 +1596,7 @@ func Test_terminal_termwinsize_option_zero()
   set termwinsize=
 endfunc
 
-func Test_terminal_termwinsize_mininmum()
+func Test_terminal_termwinsize_minimum()
   set termwinsize=10*50
   vsplit
   let buf = Run_shell_in_terminal({})
@@ -1852,10 +1903,15 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
-  call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
-
-  call term_sendkeys(term, ":e Xfoo\r")
-  call WaitForAssert({-> assert_match('Xfoo (.*[/\\]testdir) - VIM', term_gettitle(term)) })
+  if has('autoservername')
+    call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d\+$', term_gettitle(term)) })
+  else
+    call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM$', term_gettitle(term)) })
+  endif
 
   call term_sendkeys(term, ":set titlestring=foo\r")
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
@@ -1912,7 +1968,7 @@ func Test_terminal_getwinpos()
   let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
 
   " Position must be bigger than the getwinpos() result of Vim itself.
-  " The calcuation in the console assumes a 10 x 7 character cell.
+  " The calculation in the console assumes a 10 x 7 character cell.
   " In the GUI it can be more, let's assume a 20 x 14 cell.
   " And then add 100 / 200 tolerance.
   let [xroot, yroot] = getwinpos()
