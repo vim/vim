@@ -421,7 +421,7 @@ func Test_xterm_mouse_click_in_fold_columns()
         \           map(range(1, 7), 'foldclosed(v:val)'))
   norm! zR
 
-  " Click in "|" of inner filer in foldcolumn should close it.
+  " Click in "|" of inner fold in foldcolumn should close it.
   redraw
   let row = 5
   let col = 2
