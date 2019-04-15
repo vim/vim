@@ -371,7 +371,7 @@ main
     /* This message comes before term inits, but after setting "silent_mode"
      * when the input is not a tty. */
     if (GARGCOUNT > 1 && !silent_mode)
-	printf(_("%d files to edit\n"), GARGCOUNT);
+	fprintf(stderr, _("%d files to edit\n"), GARGCOUNT);
 
     if (params.want_full_screen && !silent_mode)
     {
