@@ -28,7 +28,6 @@ SCRIPTS_ALL = \
 	test94.out \
 	test95.out \
 	test99.out \
-	test108.out \
 	test_eval.out
 
 
@@ -97,6 +96,7 @@ NEW_TESTS = \
 	test_cscope \
 	test_cursor_func \
 	test_curswant \
+	test_debugger \
 	test_delete \
 	test_diffmode \
 	test_digraph \
@@ -312,6 +312,7 @@ NEW_TESTS_RES = \
 	test_crypt.res \
 	test_cscope.res \
 	test_curswant.res \
+	test_debugger.res \
 	test_diffmode.res \
 	test_digraph.res \
 	test_display.res \
