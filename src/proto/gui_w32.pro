@@ -62,6 +62,7 @@ char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, cha
 char_u *gui_mch_browsedir(char_u *title, char_u *initdir);
 int get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree);
 void gui_mch_set_parent(char *title);
+void gui_mch_do_spawn(char_u *arg);
 void gui_mch_prepare(int *argc, char **argv);
 int gui_mch_init(void);
 void gui_mch_set_shellsize(int width, int height, int min_width, int min_height, int base_width, int base_height, int direction);

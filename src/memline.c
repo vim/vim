@@ -4798,7 +4798,7 @@ findswapname(
 			// the messages displayed in the Vim window when
 			// loading a session from the .gvimrc file.
 			if (gui.starting && !gui.in_use)
-			    gui_start();
+			    gui_start(NULL);
 #endif
 			// Show info about the existing swap file.
 			attention_message(buf, fname);

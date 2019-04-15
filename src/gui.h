@@ -237,6 +237,10 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 # endif
 #endif
 
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+# define GUI_MAY_SPAWN
+#endif
+
 typedef struct Gui
 {
     int		in_focus;	    /* Vim has input focus */
@@ -245,6 +249,9 @@ typedef struct Gui
     int		shell_created;	    /* Has the shell been created yet? */
     int		dying;		    /* Is vim dying? Then output to terminal */
     int		dofork;		    /* Use fork() when GUI is starting */
+#ifdef GUI_MAY_SPAWN
+    int		dospawn;	    /* Use spawn() when GUI is starting */
+#endif
     int		dragged_sb;	    /* Which scrollbar being dragged, if any? */
     win_T	*dragged_wp;	    /* Which WIN's sb being dragged, if any? */
     int		pointer_hidden;	    /* Is the mouse pointer hidden? */

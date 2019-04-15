@@ -546,7 +546,7 @@ vim_main2(void)
 	    putchar('\n');
 #endif
 
-	gui_start();		/* will set full_screen to TRUE */
+	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
 
 	/* When running "evim" or "gvim -y" we need the menus, exit if we
@@ -1768,7 +1768,15 @@ parse_command_name(mparm_T *parmp)
 #ifdef FEAT_GUI
 	++initstr;
 #endif
+#ifdef GUI_MAY_SPAWN
+	gui.dospawn = FALSE;
+#endif
     }
+#ifdef GUI_MAY_SPAWN
+    else
+	gui.dospawn = TRUE;
+#endif
+
 
     if (STRNICMP(initstr, "view", 4) == 0)
     {

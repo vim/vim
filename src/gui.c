@@ -65,7 +65,7 @@ static int disable_flush = 0;	/* If > 0, gui_mch_flush() is disabled. */
  * recursive call.
  */
     void
-gui_start(void)
+gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
     static int	recursive = 0;
@@ -95,6 +95,18 @@ gui_start(void)
 	    )
     {
 	gui_do_fork();
+    }
+    else
+#endif
+#ifdef GUI_MAY_SPAWN
+    if (gui.dospawn && gui.dofork && !vim_strchr(p_go, GO_FORG)
+	    && !anyBufIsChanged()
+# ifdef FEAT_JOB_CHANNEL
+	    && !job_any_running()
+# endif
+	    )
+    {
+	gui_mch_do_spawn(arg);
     }
     else
 #endif
@@ -4951,7 +4963,10 @@ ex_gui(exarg_T *eap)
 	/* Clear the command.  Needed for when forking+exiting, to avoid part
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
-	gui_start();
+	if (!ends_excmd(*eap->arg))
+	    gui_start(eap->arg);
+	else
+	    gui_start(NULL);
 #ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
 #endif

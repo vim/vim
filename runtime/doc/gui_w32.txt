@@ -31,6 +31,23 @@ The GUI will always run in the Windows subsystem.  Mostly shells automatically
 return with a command prompt after starting gvim.  If not, you should use the
 "start" command: >
 	start gvim [options] file ..
+<							*Exxx*
+The console version with the `-g` option may also start the GUI by executing
+gvim.exe: >
+	vim -g [options] file ..
+
+To make this work, gvim.exe must exist in the same directory as the vim.exe,
+and this feature must be enabled at the compile time.
+
+You may also start up the GUI from within the console version by using one of
+these commands:
+	:gui [-f|-b] [files...]				*:gui-w32*
+	:gvim [-f|-b] [files...]			*:gvim-w32*
+The "-f" option runs Vim in the foreground.
+The "-b" option runs Vim in the background (this is the default).  Note that
+this doesn't inherit the opened files and other status (unlike X11 version).
+This just creates a new GUI process.  If there is a modified file, Vim
+automatically falls back to the foreground mode.
 
 Note: All fonts (bold, italic) must be of the same size!!!  If you don't do
 this, text will disappear or mess up the display.  Vim does not check the font

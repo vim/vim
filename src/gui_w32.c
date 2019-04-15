@@ -4836,6 +4836,81 @@ ole_error(char *arg)
 }
 #endif
 
+#if defined(GUI_MAY_SPAWN) || defined(PROTO)
+    static void
+gvim_error(void)
+{
+    mch_errmsg(_("Exxx: GUI cannot be used. Cannot execute gvim.exe."));
+    mch_errmsg("\n");
+    mch_exit(2);
+}
+
+    void
+gui_mch_do_spawn(char_u *arg)
+{
+    WCHAR		name[MAX_PATH];
+    LPWSTR		cmd, newcmd, p, warg;
+    STARTUPINFOW	si = {sizeof(si)};
+    PROCESS_INFORMATION pi;
+
+    // TODO: If not 'starting', do mksession and load the session from it.
+
+    if (!GetModuleFileNameW(s_hinst, name, MAX_PATH))
+	gvim_error();
+    p = wcsrchr(name, L'\\');
+    if (p == NULL)
+	gvim_error();
+    wcscpy(p + 1, L"gvim.exe");	    // Replace the executable name.
+
+    p = GetCommandLineW();
+    // Skip 1st argument.
+    while (*p && *p != L' ' && *p != L'\t')
+    {
+	if (*p == L'"')
+	{
+	    while (*p && *p != L'"')
+		++p;
+	    if (*p)
+		++p;
+	}
+	else
+	    ++p;
+    }
+    cmd = p;
+
+    // Check additional arguments to the `:gui` command.
+    if (arg != NULL)
+    {
+	warg = enc_to_utf16(arg, NULL);
+	if (warg == NULL)
+	    gvim_error();
+    }
+    else
+	warg = L"";
+
+    // Set up the new command line.
+    newcmd = p = (LPWSTR)alloc(((int)wcslen(name) + (int)wcslen(cmd)
+		+ (int)wcslen(warg) + 4)
+	    * sizeof(WCHAR));
+    if (p == NULL)
+	gvim_error();
+    *p++ = '"';
+    wcscpy(p, name);
+    wcscat(p, L"\"");
+    wcscat(p, cmd);
+    wcscat(p, L" ");
+    wcscat(p, warg);
+
+    // Spawn a new GUI process.
+    if (!CreateProcessW(NULL, newcmd, NULL, NULL, TRUE, 0,
+		NULL, NULL, &si, &pi))
+	gvim_error();
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    mch_exit(0);
+}
+#endif
+
 /*
  * Parse the GUI related command-line arguments.  Any arguments used are
  * deleted from argv, and *argc is decremented accordingly.  This is called
