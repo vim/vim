@@ -237,7 +237,7 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 # endif
 #endif
 
-#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+#ifdef VIMDLL
 # define GUI_MAY_SPAWN
 #endif
 

@@ -4848,12 +4848,11 @@ gvim_error(void)
     void
 gui_mch_do_spawn(char_u *arg)
 {
+    char_u		*session = NULL;
     WCHAR		name[MAX_PATH];
-    LPWSTR		cmd, newcmd, p, warg;
+    LPWSTR		cmd = NULL, newcmd, p, warg;
     STARTUPINFOW	si = {sizeof(si)};
     PROCESS_INFORMATION pi;
-
-    // TODO: If not 'starting', do mksession and load the session from it.
 
     if (!GetModuleFileNameW(s_hinst, name, MAX_PATH))
 	gvim_error();
@@ -4862,28 +4861,59 @@ gui_mch_do_spawn(char_u *arg)
 	gvim_error();
     wcscpy(p + 1, L"gvim.exe");	    // Replace the executable name.
 
-    p = GetCommandLineW();
-    // Skip 1st argument.
-    while (*p && *p != L' ' && *p != L'\t')
+    if (starting)
     {
-	if (*p == L'"')
+	// Pass the command line to the new process.
+	p = GetCommandLineW();
+	// Skip 1st argument.
+	while (*p && *p != L' ' && *p != L'\t')
 	{
-	    while (*p && *p != L'"')
-		++p;
-	    if (*p)
+	    if (*p == L'"')
+	    {
+		while (*p && *p != L'"')
+		    ++p;
+		if (*p)
+		    ++p;
+	    }
+	    else
 		++p;
 	}
-	else
-	    ++p;
+	cmd = p;
     }
-    cmd = p;
+    else
+    {
+	// Create a session file and pass it to the new process.
+	LPWSTR wsession;
+
+	session = vim_tempname('s', FALSE);
+	if (session == NULL)
+	    gvim_error();
+	if (!write_session_file(session))
+	    gvim_error();
+	wsession = enc_to_utf16(session, NULL);
+	if (wsession == NULL)
+	    goto error;
+	cmd = (LPWSTR)alloc((5 + (int)wcslen(wsession) * 2 + 22 + 1)
+		* sizeof(WCHAR));
+	if (cmd == NULL)
+	{
+	    vim_free(wsession);
+	    goto error;
+	}
+	wcscpy(cmd, L" -S \"");
+	wcscat(cmd, wsession);
+	wcscat(cmd, L"\" -c \"call delete('");
+	wcscat(cmd, wsession);
+	wcscat(cmd, L"')\"");
+	vim_free(wsession);
+    }
 
     // Check additional arguments to the `:gui` command.
     if (arg != NULL)
     {
 	warg = enc_to_utf16(arg, NULL);
 	if (warg == NULL)
-	    gvim_error();
+	    goto error;
     }
     else
 	warg = L"";
@@ -4893,7 +4923,7 @@ gui_mch_do_spawn(char_u *arg)
 		+ (int)wcslen(warg) + 4)
 	    * sizeof(WCHAR));
     if (p == NULL)
-	gvim_error();
+	goto error;
     *p++ = '"';
     wcscpy(p, name);
     wcscat(p, L"\"");
@@ -4904,10 +4934,15 @@ gui_mch_do_spawn(char_u *arg)
     // Spawn a new GUI process.
     if (!CreateProcessW(NULL, newcmd, NULL, NULL, TRUE, 0,
 		NULL, NULL, &si, &pi))
-	gvim_error();
+	goto error;
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
     mch_exit(0);
+
+error:
+    if (session)
+	mch_remove(session);
+    gvim_error();
 }
 #endif
 
