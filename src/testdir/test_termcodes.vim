@@ -385,3 +385,54 @@ func Test_xterm_mouse_double_click_to_create_tab()
   let &ttymouse = save_ttymouse
   set mousetime&
 endfunc
+
+func Test_xterm_mouse_click_in_fold_columns()
+  new
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  let save_foldcolumn = &foldcolumn
+  set mouse=a term=xterm foldcolumn=3
+
+  " Create 2 nested folds.
+  call setline(1, range(1, 7))
+  2,6fold
+  norm! zR
+  4,5fold
+  call assert_equal([-1, -1, -1, 4, 4, -1, -1],
+        \           map(range(1, 7), 'foldclosed(v:val)'))
+
+  " Click in "+" of inner fold in foldcolumn should open it.
+  redraw
+  let row = 4
+  let col = 2
+  call MouseLeftClick(row, col)
+  call MouseLeftRelease(row, col)
+  call assert_equal([-1, -1, -1, -1, -1, -1, -1],
+        \           map(range(1, 7), 'foldclosed(v:val)'))
+
+  " Click in "-" of outer fold in foldcolumn should close it.
+  redraw
+  let row = 2
+  let col = 1
+  call MouseLeftClick(row, col)
+  call MouseLeftRelease(row, col)
+  call assert_equal([-1, 2, 2, 2, 2, 2, -1],
+        \           map(range(1, 7), 'foldclosed(v:val)'))
+  norm! zR
+
+  " Click in "|" of inner filer in foldcolumn should close it.
+  redraw
+  let row = 5
+  let col = 2
+  call MouseLeftClick(row, col)
+  call MouseLeftRelease(row, col)
+  call assert_equal([-1, -1, -1, 4, 4, -1, -1],
+        \           map(range(1, 7), 'foldclosed(v:val)'))
+
+  let &foldcolumn = save_foldcolumn
+  let &ttymouse = save_ttymouse
+  let &term = save_term
+  let &mouse = save_mouse
+  bwipe!
+endfunc
