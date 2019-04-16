@@ -1699,6 +1699,9 @@ au BufNewFile,BufReadPost *.tsscl		setf tsscl
 " TWIG files
 au BufNewFile,BufReadPost *.twig		setf twig
 
+" Typescript
+au BufNewFile,BufReadPost *.ts			setf typescript
+
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil
 
