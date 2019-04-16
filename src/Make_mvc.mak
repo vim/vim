@@ -1261,15 +1261,20 @@ LINKARGS1 = $(LINKARGS1) /HIGHENTROPYVA:NO
 !endif
 
 !if "$(VIMDLL)" == "yes"
-all:	$(GVIM).exe \
-	$(VIM).exe \
-	$(VIMDLLBASE).dll \
+MAIN_TARGET = $(GVIM).exe $(VIM).exe $(VIMDLLBASE).dll
+!else
+MAIN_TARGET = $(VIM).exe
+!endif
+
+all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
 	uninstal.exe \
 	xxd/xxd.exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
+
+!if "$(VIMDLL)" == "yes"
 
 $(VIMDLLBASE).dll: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
@@ -1288,14 +1293,8 @@ $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
+
 !else
-all:	$(VIM).exe \
-	vimrun.exe \
-	install.exe \
-	uninstal.exe \
-	xxd/xxd.exe \
-	tee/tee.exe \
-	GvimExt/gvimext.dll
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
@@ -1307,6 +1306,7 @@ $(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE
 		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
+
 !endif
 
 $(VIM): $(VIM).exe
