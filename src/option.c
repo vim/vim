@@ -8823,7 +8823,11 @@ set_bool_option(
     {
 # ifdef FEAT_VTP
 	/* Do not turn on 'tgc' when 24-bit colors are not supported. */
-	if (!has_vtp_working())
+	if (
+#  ifdef VIMDLL
+	    !gui.in_use && !gui.starting &&
+#  endif
+	    !has_vtp_working())
 	{
 	    p_tgc = 0;
 	    return N_("E954: 24-bit colors are not supported on this environment");
