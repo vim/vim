@@ -4726,5 +4726,4 @@ write_session_file(char_u *filename)
 
     return !failed;
 }
-
 #endif
