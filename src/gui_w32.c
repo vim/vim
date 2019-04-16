@@ -4861,7 +4861,9 @@ gui_mch_do_spawn(char_u *arg)
 	gvim_error();
     wcscpy(p + 1, L"gvim.exe");	    // Replace the executable name.
 
+# ifdef FEAT_SESSION
     if (starting)
+# endif
     {
 	// Pass the command line to the new process.
 	p = GetCommandLineW();
@@ -4880,6 +4882,7 @@ gui_mch_do_spawn(char_u *arg)
 	}
 	cmd = p;
     }
+# ifdef FEAT_SESSION
     else
     {
 	// Create a session file and pass it to the new process.
@@ -4907,6 +4910,7 @@ gui_mch_do_spawn(char_u *arg)
 	wcscat(cmd, L"')\"");
 	vim_free(wsession);
     }
+# endif
 
     // Check additional arguments to the `:gui` command.
     if (arg != NULL)
