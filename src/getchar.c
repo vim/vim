@@ -5286,7 +5286,7 @@ static struct initmap
 	/* paste, copy and cut */
 	{(char_u *)"<D-v> \"*P", NORMAL},
 	{(char_u *)"<D-v> \"-d\"*P", VIS_SEL},
-	{(char_u *)"<D-v> <C-R>*", INSERT+CMDLINE},
+	{(char_u *)"<D-v> <C-R><C-O>*", INSERT+CMDLINE},
 	{(char_u *)"<D-c> \"*y", VIS_SEL},
 	{(char_u *)"<D-x> \"*d", VIS_SEL},
 	{(char_u *)"<Backspace> \"-d", VIS_SEL},
