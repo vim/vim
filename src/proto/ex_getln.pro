@@ -54,7 +54,5 @@ int read_viminfo_history(vir_T *virp, int writing);
 void handle_viminfo_history(garray_T *values, int writing);
 void finish_viminfo_history(vir_T *virp);
 void write_viminfo_history(FILE *fp, int merge);
-void cmd_pchar(int c, int offset);
-int cmd_gchar(int offset);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 /* vim: set ft=c : */

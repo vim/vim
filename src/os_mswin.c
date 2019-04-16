@@ -1733,7 +1733,7 @@ typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
 	DWORD	nFileSystemNameSize);
 static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
 
-    char_u *
+    static char_u *
 resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
