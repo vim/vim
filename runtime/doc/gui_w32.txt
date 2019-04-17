@@ -32,10 +32,9 @@ return with a command prompt after starting gvim.  If not, you should use the
 "start" command: >
 	start gvim [options] file ..
 <							*Exxx*
-The console version with the `-g` option may also start the GUI by executing
+The console version with the |-g| option may also start the GUI by executing
 gvim.exe: >
 	vim -g [options] file ..
-
 To make this work, gvim.exe must exist in the same directory as the vim.exe,
 and this feature must be enabled at the compile time.
 
