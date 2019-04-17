@@ -12713,6 +12713,10 @@ instead of failing in mysterious ways. >
 < 	String concatenation with "." is not supported, use ".." instead.
 	This avoids the ambiguity using "." for Dict member access and
 	floating point numbers.  Now ".5" means the number 0.5.
+
+	All |vim-variable|s must be prefixed by "v:".  E.g. "version" doesn't
+	work as |v:version| anymore.  It can be used as a normal variable.
+
 	Test for support with: >
 		has('vimscript-2')
 

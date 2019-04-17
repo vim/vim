@@ -133,6 +133,10 @@ func Test_string_concat_scriptversion2()
   call assert_fails('let a .= b', 'E985:')
   call assert_fails('let vers = 1.2.3', 'E15:')
 
+  call assert_fails('echo version', 'E121:')
+  let version = 1
+  call assert_equal(1, version)
+
   if has('float')
     let f = .5
     call assert_equal(0.5, f)
@@ -148,6 +152,10 @@ func Test_string_concat_scriptversion1()
   let a .= b
   let vers = 1.2.3
   call assert_equal('123', vers)
+
+  echo version
+  call assert_fails('let version = 1', 'E46:')
+  call assert_equal(v:version, version)
 
   if has('float')
     call assert_fails('let f = .5', 'E15:')
