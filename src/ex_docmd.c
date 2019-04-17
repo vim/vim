@@ -9397,12 +9397,7 @@ ex_winpos(exarg_T *eap)
 	    emsg(_("E466: :winpos requires two number arguments"));
 	    return;
 	}
-# ifdef VIMDLL
-	if (gui.in_use)
-	    gui_mch_set_winpos(x, y);
-	else
-	    mch_set_winpos(x, y);
-# elif defined(FEAT_GUI)
+# ifdef FEAT_GUI
 	if (gui.in_use)
 	    gui_mch_set_winpos(x, y);
 	else if (gui.starting)
@@ -9411,13 +9406,12 @@ ex_winpos(exarg_T *eap)
 	    gui_win_x = x;
 	    gui_win_y = y;
 	}
-#  ifdef HAVE_TGETENT
+#  if defined(HAVE_TGETENT) || defined(VIMDLL)
 	else
 #  endif
-# else
-#  ifdef MSWIN
+# endif
+# if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 	    mch_set_winpos(x, y);
-#  endif
 # endif
 # ifdef HAVE_TGETENT
 	if (*T_CWP)
