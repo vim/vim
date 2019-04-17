@@ -1692,12 +1692,12 @@ ml_recover(void)
 	else
 	    msg(_("Recovery completed. Buffer contents equals file contents."));
 
-	choice = do_dialog(VIM_QUESTION,
+	choice = vim_dialog_yesno(VIM_QUESTION,
 		NULL,
 		(char_u *)_("Delete the swap file now?"),
-		(char_u *)_("&Yes\n&No"), 1, NULL, FALSE);
+		1);
 
-	if (choice == 1)
+	if (choice == VIM_YES)
 	{
 		mch_remove(fname_used);
 	}
