@@ -1681,7 +1681,9 @@ ml_recover(void)
     }
     else
     {
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	int choice;
+#endif
 
 	if (curbuf->b_changed)
 	{
@@ -1692,6 +1694,7 @@ ml_recover(void)
 	else
 	    msg(_("Recovery completed. Buffer contents equals file contents."));
 
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	choice = vim_dialog_yesno(VIM_QUESTION,
 		NULL,
 		(char_u *)_("Delete the swap file now?"),
@@ -1701,6 +1704,7 @@ ml_recover(void)
 	{
 		mch_remove(fname_used);
 	}
+#endif
 
 	cmdline_row = msg_row;
     }
