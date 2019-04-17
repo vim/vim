@@ -5663,6 +5663,19 @@ term_getjob(term_T *term)
 /**************************************
  * 2. MS-Windows implementation.
  */
+#ifdef PROTO
+typedef int COORD;
+typedef int DWORD;
+typedef int HANDLE;
+typedef int *DWORD_PTR;
+typedef int HPCON;
+typedef int HRESULT;
+typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
+typedef int PSIZE_T;
+typedef int PVOID;
+typedef int SIZE_T;
+typedef int WINAPI;
+#endif
 
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
 HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);

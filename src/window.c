@@ -4302,7 +4302,7 @@ win_goto_ver(
  * Returns the specified window if the neighbor is not found.
  */
     win_T *
-win_horz_neighbor(tabpage_T *tp, win_T * wp, int left, long count)
+win_horz_neighbor(tabpage_T *tp, win_T *wp, int left, long count)
 {
     frame_T	*fr;
     frame_T	*nfr;
