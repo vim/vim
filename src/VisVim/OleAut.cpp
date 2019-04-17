@@ -71,7 +71,7 @@ void COleAutomationControl::DeleteObject ()
 }
 
 // Creates an instance of the Automation object and
-// obtains it's IDispatch interface.
+// obtains its IDispatch interface.
 //
 // Parameters:
 // ProgId	  ProgID of Automation object
