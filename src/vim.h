@@ -253,6 +253,13 @@
 # define UNUSED
 #endif
 
+/* Blacklist functions that cause false-positive when compiled with ASAN enabled */
+#if defined(__clang__) || defined (__GNUC__)
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#else
+# define ATTRIBUTE_NO_SANITIZE_ADDRESS
+#endif
+
 /* Used to check for "sun", "__sun" is used by newer compilers. */
 #if defined(__sun)
 # define SUN_SYSTEM

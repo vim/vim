@@ -1906,6 +1906,7 @@ ex_let_one(
  * When an evaluation error occurs "lp->ll_name" is NULL;
  * Returns NULL for a parsing error.  Still need to free items in "lp"!
  */
+ATTRIBUTE_NO_SANITIZE_ADDRESS
     char_u *
 get_lval(
     char_u	*name,
