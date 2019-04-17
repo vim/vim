@@ -1681,6 +1681,8 @@ ml_recover(void)
     }
     else
     {
+	int choice;
+
 	if (curbuf->b_changed)
 	{
 	    msg(_("Recovery completed. You should check if everything is OK."));
@@ -1689,7 +1691,17 @@ ml_recover(void)
 	}
 	else
 	    msg(_("Recovery completed. Buffer contents equals file contents."));
-	msg_puts(_("\nYou may want to delete the .swp file now.\n\n"));
+
+	choice = do_dialog(VIM_QUESTION,
+		NULL,
+		(char_u *)_("Delete the swap file now?"),
+		(char_u *)_("&Yes\n&No"), 1, NULL, FALSE);
+
+	if (choice == 1)
+	{
+		mch_remove(fname_used);
+	}
+
 	cmdline_row = msg_row;
     }
 #ifdef FEAT_CRYPT
