@@ -40,6 +40,8 @@ func Test_Debugger()
 	      \ 'func Bazz(var)',
 	      \ '  let var1 = 3 + a:var',
 	      \ '  let var3 = "another var"',
+	      \ '  let var3 = "value2"',
+	      \ '  let var3 = "value3"',
 	      \ '  return var1',
 	      \ 'endfunc'], 'Xtest.vim')
 
@@ -98,6 +100,10 @@ func Test_Debugger()
   call RunDbgCmd(buf, 'step')
   call RunDbgCmd(buf, 'step')
   call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'step', [
+	      \ 'function Foo[2]..Bar',
+	      \ 'line 3: End of function'])
   call RunDbgCmd(buf, 'up')
 
   " Undefined var2
@@ -122,7 +128,7 @@ func Test_Debugger()
 
   " next command cannot go up, we are on top
   call RunDbgCmd(buf, 'up', ['frame at highest level: 1'])
-  call RunDbgCmd(buf, 'b', [
+  call RunDbgCmd(buf, 'where', [
 	      \ '->1 function Foo[2]',
 	      \ '  0 Bar',
 	      \ 'line 3: End of function'])
@@ -158,6 +164,67 @@ func Test_Debugger()
 
   " final result 19
   call RunDbgCmd(buf, 'cont', ['19'])
+
+  " breakpoints tests
+
+  " Start a debug session, so that reading the last line from the terminal
+  " works properly.
+  call RunDbgCmd(buf, ':debug echo Foo()')
+
+  " No breakpoints
+  call RunDbgCmd(buf, 'breakl', ['No breakpoints defined'])
+
+  " Place some breakpoints
+  call RunDbgCmd(buf, 'breaka func Bar')
+  call RunDbgCmd(buf, 'breaklis', ['  1  func Bar  line 1'])
+  call RunDbgCmd(buf, 'breakadd func 3 Bazz')
+  call RunDbgCmd(buf, 'breaklist', ['  1  func Bar  line 1',
+	      \ '  2  func Bazz  line 3'])
+
+  " Check whether the breakpoints are hit
+  call RunDbgCmd(buf, 'cont', [
+	      \ 'Breakpoint in "Bar" line 1',
+	      \ 'function Foo[2]..Bar',
+	      \ 'line 1: let var1 = 2 + a:var'])
+  call RunDbgCmd(buf, 'cont', [
+	      \ 'Breakpoint in "Bazz" line 3',
+	      \ 'function Foo[2]..Bar[2]..Bazz',
+	      \ 'line 3: let var3 = "value2"'])
+
+  " Delete the breakpoints
+  call RunDbgCmd(buf, 'breakd 1')
+  call RunDbgCmd(buf, 'breakli', ['  2  func Bazz  line 3'])
+  call RunDbgCmd(buf, 'breakdel func 3 Bazz')
+  call RunDbgCmd(buf, 'breakl', ['No breakpoints defined'])
+
+  call RunDbgCmd(buf, 'cont')
+
+  " Make sure the breakpoints are removed
+  call RunDbgCmd(buf, ':echo Foo()', ['19'])
+
+  " Delete a non-existing breakpoint
+  call RunDbgCmd(buf, ':breakdel 2', ['E161: Breakpoint not found: 2'])
+
+  " Expression breakpoint
+  call RunDbgCmd(buf, ':breakadd func 2 Bazz')
+  call RunDbgCmd(buf, ':echo Bazz(1)')
+  call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'breaka expr var3')
+  call RunDbgCmd(buf, 'breakl', ['  4  expr var3'])
+  call RunDbgCmd(buf, 'cont', ['Breakpoint in "Bazz" line 4',
+	      \ 'Oldval = "''another var''"',
+	      \ 'Newval = "''value2''"',
+	      \ 'function Bazz',
+	      \ 'line 4: let var3 = "value3"'])
+
+  call RunDbgCmd(buf, 'breakdel *')
+  call RunDbgCmd(buf, 'breakl', ['No breakpoints defined'])
+
+  " finish the current function
+  call RunDbgCmd(buf, 'finish', [
+	      \ 'function Bazz',
+	      \ 'line 5: End of function'])
+  call RunDbgCmd(buf, 'cont')
 
   call StopVimInTerminal(buf)
 
