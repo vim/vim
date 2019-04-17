@@ -7,7 +7,7 @@ endif
 
 " Helper function to emit a terminal escape code.
 func TerminalEscapeCode(code_xterm, code_sgr, row, col, m)
-  if &ttymouse ==# 'xterm'
+  if &ttymouse ==# 'xterm2'
     " need to use byte encoding here.
     let str = list2str([a:code_xterm, a:col + 0x20, a:row + 0x20])
     if has('iconv')
@@ -50,7 +50,7 @@ func Test_xterm_mouse_click()
   set mouse=a term=xterm
   call setline(1, ['line 1', 'line 2', 'line 3 is a bit longer'])
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
     go
@@ -76,7 +76,7 @@ func Test_xterm_mouse_wheel()
   set mouse=a term=xterm
   call setline(1, range(1, 100))
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
     go
@@ -112,7 +112,7 @@ func Test_xterm_mouse_drag_window_separator()
   let save_ttymouse = &ttymouse
   set mouse=a term=xterm
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
 
@@ -122,8 +122,8 @@ func Test_xterm_mouse_drag_window_separator()
     let row = rowseparator
     let col = 1
 
-    " When 'ttymouse' is 'xterm', row/col bigger than 223 are not supported.
-    if ttymouse_val !=# 'xterm' || row <= 223
+    " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
+    if ttymouse_val !=# 'xterm2' || row <= 223
       call MouseLeftClick(row, col)
       let row -= 1
       call MouseLeftDrag(row, col)
@@ -142,8 +142,8 @@ func Test_xterm_mouse_drag_window_separator()
     let row = 1
     let col = colseparator
 
-    " When 'ttymouse' is 'xterm', row/col bigger than 223 are not supported.
-    if ttymouse_val !=# 'xterm' || col <= 223
+    " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
+    if ttymouse_val !=# 'xterm2' || col <= 223
       call MouseLeftClick(row, col)
       let col -= 1
       call MouseLeftDrag(row, col)
@@ -169,7 +169,7 @@ func Test_xterm_mouse_drag_statusline()
   let save_laststatus = &laststatus
   set mouse=a term=xterm laststatus=2
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
 
@@ -178,8 +178,8 @@ func Test_xterm_mouse_drag_statusline()
     let row = rowstatusline
     let col = 1
 
-    if ttymouse_val ==# 'xterm' && row > 223
-      " When 'ttymouse' is 'xterm', row/col bigger than 223 are not supported.
+    if ttymouse_val ==# 'xterm2' && row > 223
+      " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
       continue
     endif
 
@@ -210,7 +210,7 @@ func Test_xterm_mouse_click_tab()
   set mouse=a term=xterm
   let row = 1
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
     e Xfoo
@@ -258,9 +258,9 @@ func Test_xterm_mouse_click_X_to_close_tab()
   let row = 1
   let col = &columns
 
-  for ttymouse_val in ['xterm', 'sgr']
-    if ttymouse_val ==# 'xterm' && col > 223
-      " When 'ttymouse' is 'xterm', row/col bigger than 223 are not supported.
+  for ttymouse_val in ['xterm2', 'sgr']
+    if ttymouse_val ==# 'xterm2' && col > 223
+      " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
       continue
     endif
     let msg = 'ttymouse=' .. ttymouse_val
@@ -304,7 +304,7 @@ func Test_xterm_mouse_drag_to_move_tab()
   set mouse=a term=xterm mousetime=1
   let row = 1
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
     e Xtab1
@@ -353,7 +353,7 @@ func Test_xterm_mouse_double_click_to_create_tab()
   let row = 1
   let col = 10
 
-  for ttymouse_val in ['xterm', 'sgr']
+  for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' . ttymouse_val
     e Xtab1
@@ -402,7 +402,7 @@ func Test_xterm_mouse_click_in_fold_columns()
   let save_term = &term
   let save_ttymouse = &ttymouse
   let save_foldcolumn = &foldcolumn
-  set mouse=a term=xterm foldcolumn=3
+  set mouse=a term=xterm foldcolumn=3 ttymouse=xterm2
 
   " Create 2 nested folds.
   call setline(1, range(1, 7))
