@@ -2753,7 +2753,7 @@ mch_init(void)
 mch_exit(int r)
 {
 #ifdef VIMDLL
-    if (gui.starting)
+    if (gui.starting || gui.in_use)
 	mch_exit_g(r);
     else
 	mch_exit_c(r);
