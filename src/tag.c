@@ -87,7 +87,8 @@ static void get_tag_details(taggy_T *tag, dict_T *retdict);
 static char_u *bottommsg = (char_u *)N_("E555: at bottom of tag stack");
 static char_u *topmsg = (char_u *)N_("E556: at top of tag stack");
 #ifdef FEAT_EVAL
-static char_u *recurmsg = (char_u *)N_("E986: Cannot modify the tag stack within tagfunc");
+static char_u *recurmsg = (char_u *)N_("E986: cannot modify the tag stack within tagfunc");
+static char_u *tfuinvmsg = (char_u *)N_("E987: invalid return value from tagfunc");
 #endif
 
 static char_u	*tagmatchname = NULL;	/* name of last used tag */
@@ -1352,6 +1353,7 @@ find_tfu_tags(
     if (rettv.v_type != VAR_LIST || !rettv.vval.v_list)
     {
 	clear_tv(&rettv);
+	emsg(_(tfuinvmsg));
 	return FAIL;
     }
     taglist = rettv.vval.v_list;
@@ -1368,7 +1370,10 @@ find_tfu_tags(
 	int			name_only = flags & TAG_NAMES;
 
 	if (item->li_tv.v_type != VAR_DICT)
-	    continue;
+	{
+	    emsg(_(tfuinvmsg));
+	    break;
+	}
 
 #ifdef FEAT_EMACS_TAGS
 	len = 3;
@@ -1415,10 +1420,13 @@ find_tfu_tags(
 	}
 
 	if (has_extra)
-	    len += 2; /* need space for ;" */
+	    len += 2;	// need space for ;"
 
 	if (!res_name || !res_fname || !res_cmd)
-	    continue;
+	{
+	    emsg(_(tfuinvmsg));
+	    break;
+	}
 
 	if (name_only)
 	    mfp = vim_strsave(res_name);

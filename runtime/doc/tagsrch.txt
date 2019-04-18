@@ -911,7 +911,10 @@ The following fields are optional:
 	user_data	String of custom data stored in the tag stack which
 			can be used to disambiguate tags between operations.
 
-The following is a hypothetical example of a function used for 'tagfunc'. It
+If the function returns |v:null| instead of a List, a standard tag lookup will
+be performed instead.
+
+The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the
 inverse order of file names.
 >
