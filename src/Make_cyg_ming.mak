@@ -36,13 +36,18 @@ FEATURES=HUGE
 DEBUG=no
 
 # set to yes to create a mapfile
-# MAP=yes
+#MAP=yes
 
 # set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 
 # set to yes to make gvim, no for vim
 GUI=yes
+
+# set to yes to enable the DLL support (EXPERIMENTAL).
+# Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
+# "GUI" should be also set to "yes".
+#VIMDLL=yes
 
 # set to no if you do not want to use DirectWrite (DirectX)
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
@@ -738,7 +743,6 @@ OBJ = \
 	$(OUTDIR)/ops.o \
 	$(OUTDIR)/option.o \
 	$(OUTDIR)/os_mswin.o \
-	$(OUTDIR)/os_w32exe.o \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
@@ -758,9 +762,16 @@ OBJ = \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
-	$(OUTDIR)/vimrc.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
+
+ifeq ($(VIMDLL),yes)
+OBJ += $(OUTDIR)/os_w32dll.o
+EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimrc.o
+EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimrc.o
+else
+OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
+endif
 
 ifdef PERL
 OBJ += $(OUTDIR)/if_perl.o
@@ -868,16 +879,33 @@ endif
 
 LFLAGS += -municode
 
-ifeq ($(GUI),yes)
+ifeq ($(VIMDLL),yes)
+VIMEXE := vim$(DEBUG_SUFFIX).exe
+GVIMEXE := gvim$(DEBUG_SUFFIX).exe
+ ifeq ($(ARCH),x86-64)
+VIMDLLBASE := vim64$(DEBUG_SUFFIX)
+ else
+VIMDLLBASE := vim32$(DEBUG_SUFFIX)
+ endif
+TARGET = $(VIMDLLBASE).dll
+LFLAGS += -shared
+EXELFLAGS += -municode
+DEFINES += $(DEF_GUI) -DVIMDLL
+OBJ += $(GUIOBJ) $(CUIOBJ)
+OUTDIR = dobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(GVIMEXE) $(VIMEXE) $(VIMDLLBASE).dll
+else ifeq ($(GUI),yes)
 TARGET := gvim$(DEBUG_SUFFIX).exe
 DEFINES += $(DEF_GUI)
 OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(TARGET)
 else
 OBJ += $(CUIOBJ)
 TARGET := vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(TARGET)
 endif
 
 ifdef GETTEXT
@@ -953,7 +981,7 @@ ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
-all: $(TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
+all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -964,8 +992,19 @@ install.exe: dosinst.c
 uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
+ifeq ($(VIMDLL),yes)
+$(TARGET): $(OUTDIR) $(OBJ)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+
+$(GVIMEXE): $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
+	$(CC) -L. $(EXELFLAGS) -mwindows -o $@ $(EXEOBJG) -l$(VIMDLLBASE)
+
+$(VIMEXE): $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
+	$(CC) -L. $(EXELFLAGS) -o $@ $(EXEOBJC) -l$(VIMDLLBASE)
+else
 $(TARGET): $(OUTDIR) $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+endif
 
 upx: exes
 	upx gvim.exe
@@ -994,7 +1033,7 @@ clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-rmdir $(OUTDIR)
-	-$(DEL) $(TARGET) vimrun.exe install.exe uninstal.exe
+	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstal.exe
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
@@ -1079,6 +1118,12 @@ $(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+
+$(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
+	$(CC) -c $(CFLAGS) -UFEAT_GUI_W32 os_w32exe.c -o $(OUTDIR)/os_w32exec.o
+
+$(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
+	$(CC) -c $(CFLAGS) os_w32exe.c -o $(OUTDIR)/os_w32exeg.o
 
 $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
 	$(CC) -c $(CFLAGS) os_win32.c -o $(OUTDIR)/os_win32.o
