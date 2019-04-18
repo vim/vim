@@ -5254,7 +5254,7 @@ struct initmap
 
 # ifdef FEAT_GUI_MSWIN
 /* Use the Windows (CUA) keybindings. (GUI) */
-static struct initmap ginitmappings[] =
+static struct initmap initmappings[] =
 {
 	/* paste, copy and cut */
 	{(char_u *)"<S-Insert> \"*P", NORMAL},
@@ -5270,7 +5270,7 @@ static struct initmap ginitmappings[] =
 
 # if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 /* Use the Windows (CUA) keybindings. (Console) */
-static struct initmap initmappings[] =
+static struct initmap cinitmappings[] =
 {
 	{(char_u *)"\316w <C-Home>", NORMAL+VIS_SEL},
 	{(char_u *)"\316w <C-Home>", INSERT+CMDLINE},
@@ -5323,18 +5323,17 @@ init_mappings(void)
 #if defined(MSWIN) || defined(MACOS_X)
     int		i;
 
-# ifdef FEAT_GUI_MSWIN
+# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 #  ifdef VIMDLL
-    if (gui.starting)
+    if (!gui.starting)
 #  endif
     {
 	for (i = 0;
-		i < (int)(sizeof(ginitmappings) / sizeof(struct initmap)); ++i)
-	    add_map(ginitmappings[i].arg, ginitmappings[i].mode);
-	return;
+		i < (int)(sizeof(cinitmappings) / sizeof(struct initmap)); ++i)
+	    add_map(cinitmappings[i].arg, cinitmappings[i].mode);
     }
 # endif
-# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# if defined(FEAT_GUI_MSWIN) || defined(MACOS_X)
     for (i = 0; i < (int)(sizeof(initmappings) / sizeof(struct initmap)); ++i)
 	add_map(initmappings[i].arg, initmappings[i].mode);
 # endif
