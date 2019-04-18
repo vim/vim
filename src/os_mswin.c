@@ -1960,19 +1960,14 @@ mch_resolve_path(char_u *fname, int reparse_point)
 }
 #endif
 
-#if (defined(FEAT_EVAL) && !defined(FEAT_GUI)) || defined(PROTO)
+#if (defined(FEAT_EVAL) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 /*
  * Bring ourselves to the foreground.  Does work if the OS doesn't allow it.
  */
     void
 win32_set_foreground(void)
 {
-# if !defined(FEAT_GUI) || defined(VIMDLL)
-#  ifdef VIMDLL
-    if (!gui.in_use)
-#  endif
-	GetConsoleHwnd();	    /* get value of s_hwnd */
-# endif
+    GetConsoleHwnd();	    /* get value of s_hwnd */
     if (s_hwnd != 0)
 	SetForegroundWindow(s_hwnd);
 }
