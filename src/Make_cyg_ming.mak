@@ -1120,7 +1120,7 @@ $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
 $(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
-	$(CC) -c $(CFLAGS) -UFEAT_GUI_W32 os_w32exe.c -o $(OUTDIR)/os_w32exec.o
+	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN os_w32exe.c -o $(OUTDIR)/os_w32exec.o
 
 $(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
 	$(CC) -c $(CFLAGS) os_w32exe.c -o $(OUTDIR)/os_w32exeg.o
