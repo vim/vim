@@ -4672,7 +4672,7 @@ write_session_file(char_u *filename)
     escaped_filename = vim_strsave_escaped(filename, escape_chars);
     if (escaped_filename == NULL)
 	return FALSE;
-    mksession_cmdline = alloc(10 + (int)STRLEN(escaped_filename) + 1);
+    mksession_cmdline = (char *)alloc(10 + (int)STRLEN(escaped_filename) + 1);
     if (mksession_cmdline == NULL)
     {
 	vim_free(escaped_filename);
