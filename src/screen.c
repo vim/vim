@@ -8639,6 +8639,18 @@ check_for_delay(int check_msg_scroll)
 }
 
 /*
+ * Init TabPageIdxs[] to zero: Clicking outside of tabs has no effect.
+ */
+    static void
+clear_TabPageIdxs(void)
+{
+    int		scol;
+
+    for (scol = 0; scol < Columns; ++scol)
+	TabPageIdxs[scol] = 0;
+}
+
+/*
  * screen_valid -  allocate screen buffers if size changed
  *   If "doclear" is TRUE: clear screen if it has been resized.
  *	Returns TRUE if there is a valid screen to write to.
@@ -8899,7 +8911,6 @@ give_up:
     must_redraw = CLEAR;	/* need to clear the screen later */
     if (doclear)
 	screenclear2();
-
 #ifdef FEAT_GUI
     else if (gui.in_use
 	    && !gui.starting
@@ -8919,6 +8930,7 @@ give_up:
 	    msg_col = Columns - 1;	/* put cursor at last column */
     }
 #endif
+    clear_TabPageIdxs();
 
     entered = FALSE;
     --RedrawingDisabled;
@@ -10435,10 +10447,7 @@ draw_tabline(void)
 	return;
 
 #if defined(FEAT_STL_OPT)
-
-    /* Init TabPageIdxs[] to zero: Clicking outside of tabs has no effect. */
-    for (scol = 0; scol < Columns; ++scol)
-	TabPageIdxs[scol] = 0;
+    clear_TabPageIdxs();
 
     /* Use the 'tabline' option if it's set. */
     if (*p_tal != NUL)

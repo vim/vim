@@ -51,6 +51,7 @@ json_encode(typval_T *val, int options)
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
     json_encode_gap(&ga, val, options);
+    ga_append(&ga, NUL);
     return ga.ga_data;
 }
 
@@ -82,6 +83,7 @@ json_encode_nr_expr(int nr, typval_T *val, int options)
     if (json_encode_gap(&ga, &listtv, options) == OK && (options & JSON_NL))
 	ga_append(&ga, '\n');
     list_unref(listtv.vval.v_list);
+    ga_append(&ga, NUL);
     return ga.ga_data;
 }
 #endif

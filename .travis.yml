@@ -69,10 +69,14 @@ branches:
 
 addons:
   apt:
+    sources:
+      # Need msgfmt 0.19.8 to be able to generate .desktop files
+      - sourceline: 'ppa:ricotz/toolchain'
     packages:
       - autoconf
       - clang
       - lcov
+      - gettext
       - libperl-dev
       - python-dev
       - python3-dev

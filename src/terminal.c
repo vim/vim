@@ -2432,10 +2432,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 
     if (color->ansi_index != VTERM_ANSI_INDEX_NONE)
     {
-	/* First 16 colors and default: use the ANSI index, because these
-	 * colors can be redefined, we use the RGB values. */
-	if (t_colors > 256)
-	    return color->ansi_index;
+	// The first 16 colors and default: use the ANSI index.
 	switch (color->ansi_index)
 	{
 	    case  0: return 0;
@@ -5676,6 +5673,19 @@ term_getjob(term_T *term)
 /**************************************
  * 2. MS-Windows implementation.
  */
+#ifdef PROTO
+typedef int COORD;
+typedef int DWORD;
+typedef int HANDLE;
+typedef int *DWORD_PTR;
+typedef int HPCON;
+typedef int HRESULT;
+typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
+typedef int PSIZE_T;
+typedef int PVOID;
+typedef int SIZE_T;
+typedef int WINAPI;
+#endif
 
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
 HRESULT (WINAPI *pResizePseudoConsole)(HPCON, COORD);

@@ -56,7 +56,11 @@ func RunVimInTerminal(arguments, options)
 
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
-  let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
+  let buf = term_start(cmd, {
+	\ 'curwin': 1,
+	\ 'term_rows': rows,
+	\ 'term_cols': cols,
+	\ })
   if &termwinsize == ''
     " in the GUI we may end up with a different size, try to set it.
     if term_getsize(buf) != [rows, cols]
@@ -104,6 +108,10 @@ endfunc
 func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
   let testfile = 'failed/' . a:filename . '.dump'
+
+  " Redraw to execut the code that updates the screen.  Otherwise we get the
+  " text and attributes only from the internal buffer.
+  redraw
 
   let did_mkdir = 0
   if !isdirectory('failed')

@@ -4298,6 +4298,15 @@ if test "$enable_nls" = "yes"; then
 		[++_nl_msg_cat_cntr;],
 		AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_NL_MSG_CAT_CNTR),
 		AC_MSG_RESULT([no]))
+      AC_MSG_CHECKING([if msgfmt supports --desktop])
+      MSGFMT_DESKTOP=
+      if "$MSGFMT" --help | grep -e '--desktop' >/dev/null; then
+	AC_MSG_RESULT([yes])
+	MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+      else
+	AC_MSG_RESULT([no])
+      fi
+      AC_SUBST(MSGFMT_DESKTOP)
     fi
   else
     AC_MSG_RESULT([no "po/Makefile" - disabled]);

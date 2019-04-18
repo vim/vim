@@ -58,7 +58,7 @@ SUBSYSTEM = console
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 !endif
 
-!if "$(CPU)" == "ARM64"
+!if "$(CPU)" == "AMD64" || "$(CPU)" == "ARM64"
 OFFSET = 0x11C000000
 !else
 OFFSET = 0x1C000000
