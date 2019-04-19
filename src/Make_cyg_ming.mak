@@ -692,7 +692,7 @@ else  # SPEED
 CFLAGS += -O2
 endif
 endif
-CFLAGS += -s
+LFLAGS += -s
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
@@ -890,6 +890,9 @@ VIMDLLBASE := vim32$(DEBUG_SUFFIX)
 TARGET = $(VIMDLLBASE).dll
 LFLAGS += -shared
 EXELFLAGS += -municode
+ ifneq ($(DEBUG),yes)
+EXELFLAGS += -s
+ endif
 DEFINES += $(DEF_GUI) -DVIMDLL
 OBJ += $(GUIOBJ) $(CUIOBJ)
 OUTDIR = dobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
