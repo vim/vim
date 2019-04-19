@@ -4891,6 +4891,7 @@ gui_mch_do_spawn(char_u *arg)
 	session = vim_tempname('s', FALSE);
 	if (session == NULL)
 	    gvim_error();
+	do_cmdline_cmd((char_u *)"set background=light");
 	if (!write_session_file(session))
 	    gvim_error();
 	wsession = enc_to_utf16(session, NULL);
