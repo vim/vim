@@ -1268,6 +1268,10 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 " Quixote (Python-based web framework)
 au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl,*.pyi  setf python
 
+" Pipenv Pipfiles
+au BufNewFile,BufRead Pipfile.lock	setf json
+au BufNewFile,BufRead Pipfile	setf config
+
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
 
