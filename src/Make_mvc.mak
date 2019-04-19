@@ -1595,7 +1595,7 @@ $(OUTDIR)/winclip.obj:	$(OUTDIR) winclip.c  $(INCL)
 
 $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) $(MZSCHEME_INCL)
 
-$(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c  $(INCL)
+$(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
 
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
