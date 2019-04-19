@@ -1769,12 +1769,12 @@ parse_command_name(mparm_T *parmp)
 	++initstr;
 #endif
 #ifdef GUI_MAY_SPAWN
-	gui.dospawn = FALSE;
+	gui.dospawn = FALSE;	// No need to spawn a new process.
 #endif
     }
 #ifdef GUI_MAY_SPAWN
     else
-	gui.dospawn = TRUE;
+	gui.dospawn = TRUE;	// Not "gvim". Need to spawn gvim.exe.
 #endif
 
 
