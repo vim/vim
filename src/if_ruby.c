@@ -118,8 +118,11 @@
 #ifdef RUBY19_OR_LATER
 # include <ruby/encoding.h>
 #endif
+#ifndef RUBY19_OR_LATER
+# include <st.h>  // for ST_STOP and ST_CONTINUE
+#endif
 
-#undef off_t	/* ruby defines off_t as _int64, Mingw uses long */
+#undef off_t	// ruby defines off_t as _int64, Mingw uses long
 #undef EXTERN
 #undef _
 

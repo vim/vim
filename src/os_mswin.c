@@ -98,8 +98,10 @@ typedef int LPARAM;
 typedef int LPBOOL;
 typedef int LPCSTR;
 typedef int LPCWSTR;
+typedef int LPDWORD;
 typedef int LPSTR;
 typedef int LPTSTR;
+typedef int LPVOID;
 typedef int LPWSTR;
 typedef int LRESULT;
 typedef int MOUSE_EVENT_RECORD;
@@ -1733,7 +1735,7 @@ typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
 	DWORD	nFileSystemNameSize);
 static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
 
-    char_u *
+    static char_u *
 resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;

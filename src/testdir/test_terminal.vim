@@ -1892,6 +1892,63 @@ func Test_terminal_no_job()
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
 endfunc
 
+func Test_term_getcursor()
+  if !has('unix')
+    return
+  endif
+  let buf = Run_shell_in_terminal({})
+
+  " Wait for the shell to display a prompt.
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Hide the cursor.
+  call term_sendkeys(buf, "echo -e '\\033[?25l'\r")
+  call WaitForAssert({-> assert_equal(0, term_getcursor(buf)[2].visible)})
+
+  " Show the cursor.
+  call term_sendkeys(buf, "echo -e '\\033[?25h'\r")
+  call WaitForAssert({-> assert_equal(1, term_getcursor(buf)[2].visible)})
+
+  " Change color of cursor.
+  call WaitForAssert({-> assert_equal('', term_getcursor(buf)[2].color)})
+  call term_sendkeys(buf, "echo -e '\\033]12;blue\\007'\r")
+  call WaitForAssert({-> assert_equal('blue', term_getcursor(buf)[2].color)})
+  call term_sendkeys(buf, "echo -e '\\033]12;green\\007'\r")
+  call WaitForAssert({-> assert_equal('green', term_getcursor(buf)[2].color)})
+
+  " Make cursor a blinking block.
+  call term_sendkeys(buf, "echo -e '\\033[1 q'\r")
+  call WaitForAssert({-> assert_equal([1, 1],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady block.
+  call term_sendkeys(buf, "echo -e '\\033[2 q'\r")
+  call WaitForAssert({-> assert_equal([0, 1],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a blinking underline.
+  call term_sendkeys(buf, "echo -e '\\033[3 q'\r")
+  call WaitForAssert({-> assert_equal([1, 2],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady underline.
+  call term_sendkeys(buf, "echo -e '\\033[4 q'\r")
+  call WaitForAssert({-> assert_equal([0, 2],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a blinking vertical bar.
+  call term_sendkeys(buf, "echo -e '\\033[5 q'\r")
+  call WaitForAssert({-> assert_equal([1, 3],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady vertical bar.
+  call term_sendkeys(buf, "echo -e '\\033[6 q'\r")
+  call WaitForAssert({-> assert_equal([0, 3],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  call Stop_shell_in_terminal(buf)
+endfunc
+
 func Test_term_gettitle()
   " term_gettitle() returns an empty string for a non-terminal buffer
   " and for a non-existing buffer.
