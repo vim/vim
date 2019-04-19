@@ -2788,7 +2788,7 @@ static const LOGFONTW s_lfDefault =
  * with an explicit size has been set. This defaults the size to this value
  * (-12 equates to roughly 9pt).
  */
-int current_font_height = -12;		/* also used in gui_w48.c */
+int current_font_height = -12;		/* also used in gui_w32.c */
 
 /* Convert a string representing a point size into pixels. The string should
  * be a positive decimal number, with an optional decimal point (eg, "12", or
