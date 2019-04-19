@@ -4921,6 +4921,10 @@ getcwd([{winnr} [, {tabnr}]])
 		With {winnr} and {tabnr} return the local current directory of
 		the window in the specified tab page. If {winnr} is -1 return
 		the working directory of the tabpage.
+		If {winnr} is zero use the current window, if {tabnr} is zero
+		use the current tabpage.
+		Without any arguments, return the working directory of the
+		current window.
 		Return an empty string if the arguments are invalid.
 
 		Examples: >
