@@ -3306,9 +3306,7 @@ set_init_1(int clean_arg)
     if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
 #if defined(MSWIN)
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
-# ifdef MSWIN
 	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
-# endif
 #endif
 	    )
 	set_string_default_esc("sh", p, TRUE);
@@ -3658,10 +3656,14 @@ set_init_1(int clean_arg)
 	    }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI)
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 	    /* Win32 console: When GetACP() returns a different value from
 	     * GetConsoleCP() set 'termencoding'. */
-	    if (GetACP() != GetConsoleCP())
+	    if (
+# ifdef VIMDLL
+	       (!gui.in_use && !gui.starting) &&
+# endif
+	        GetACP() != GetConsoleCP())
 	    {
 		char	buf[50];
 

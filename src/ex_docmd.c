@@ -9855,8 +9855,11 @@ ex_redraw(exarg_T *eap)
     if (need_maketitle)
 	maketitle();
 #endif
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-    resize_console_buf();
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	resize_console_buf();
 #endif
     RedrawingDisabled = r;
     p_lz = p;

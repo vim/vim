@@ -714,7 +714,8 @@
  * there is no terminal version, and on Windows we can't figure out how to
  * fork one off with :gui.
  */
-#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
+#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) \
+	    || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
 # define ALWAYS_USE_GUI
 #endif
 
@@ -1140,7 +1141,7 @@
  * mouse shape		Adjust the shape of the mouse pointer to the mode.
  */
 #ifdef FEAT_NORMAL
-/* MS-DOS console and Win32 console can change cursor shape */
+/* Win32 console can change cursor shape */
 # if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  define MCH_CURSOR_SHAPE
 # endif
@@ -1265,7 +1266,8 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))))
+	(defined(UNIX) || defined(VMS) || \
+	 (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))))
 # define FEAT_BEVAL_TERM
 #endif
 
