@@ -6845,7 +6845,7 @@ did_set_string_option(
 	     * wants to use this as default colors.  Need to reset default
 	     * background/foreground colors. */
 # ifdef VIMDLL
-	    if (!gui.in_use)
+	    if (!gui.in_use && !gui.starting)
 # endif
 		mch_set_normal_colors();
 #endif
