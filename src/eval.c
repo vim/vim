@@ -7672,8 +7672,8 @@ find_var_ht(char_u *name, char_u **varname)
 	    return NULL;
 	*varname = name;
 
-	// "version" is "v:version" in all scopes if scriptversion is 1.
-	if (current_sctx.sc_version < 2)
+	// "version" is "v:version" in all scopes if scriptversion < 3.
+	if (current_sctx.sc_version < 3)
 	{
 	    hi = hash_find(&compat_hashtab, name);
 	    if (!HASHITEM_EMPTY(hi))

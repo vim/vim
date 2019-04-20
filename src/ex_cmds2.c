@@ -5127,7 +5127,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
 	emsg(_(e_invarg));
-    else if (nr > 2)
+    else if (nr > 3)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
 	current_sctx.sc_version = nr;
