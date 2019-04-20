@@ -508,7 +508,8 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 		*error = ERROR_SCRIPT;
 	    else
 	    {
-		sprintf((char *)fname_buf + 3, "%ld_", (long)current_sctx.sc_sid);
+		sprintf((char *)fname_buf + 3, "%ld_",
+						    (long)current_sctx.sc_sid);
 		i = (int)STRLEN(fname_buf);
 	    }
 	}

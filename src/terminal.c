@@ -5671,9 +5671,9 @@ typedef int *DWORD_PTR;
 typedef int HPCON;
 typedef int HRESULT;
 typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
+typedef int SIZE_T;
 typedef int PSIZE_T;
 typedef int PVOID;
-typedef int SIZE_T;
 typedef int WINAPI;
 #endif
 

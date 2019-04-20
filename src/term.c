@@ -21,8 +21,8 @@
  * (char **). This define removes that prototype. We include our own prototype
  * below.
  */
-
 #define tgetstr tgetstr_defined_wrong
+
 #include "vim.h"
 
 #ifdef HAVE_TGETENT
