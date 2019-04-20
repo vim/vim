@@ -2,10 +2,13 @@
 # Edit the src/po/gvim.desktop.in file instead.
 [Desktop Entry]
 # Translators: This is the Application Name used in the GVim desktop file
+Name[de]=GVim
 Name=GVim
 # Translators: This is the Generic Application Name used in the Vim desktop file
+GenericName[de]=Texteditor
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
+Comment[de]=Textdateien bearbeiten
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file!
@@ -89,8 +92,10 @@ Exec=gvim -f %F
 Terminal=false
 Type=Application
 # Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
+Keywords[de]=Text;Editor;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
+Icon[de]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=true

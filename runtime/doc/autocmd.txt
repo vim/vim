@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 04
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -587,7 +587,7 @@ CompleteChanged 					*CompleteChanged*
 				recursively.
 
 				Sets these |v:event| keys:
-				    completed_item
+				    completed_item	See |complete-items|.
 				    height		nr of items visible
 				    width		screen cells
 				    row			top screen row
@@ -895,7 +895,6 @@ OptionSet			After setting an option.  The pattern is
 
 				When using |:set| in the autocommand the event
 				is not triggered again.
-
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,

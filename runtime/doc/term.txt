@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.1.  Last change: 2019 Jan 19
+*term.txt*      For Vim version 8.1.  Last change: 2019 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -539,7 +539,7 @@ there should be a tick at allow-window-ops.
 Note about colors: The 't_Co' option tells Vim the number of colors available.
 When it is non-zero, the 't_AB' and 't_AF' options are used to set the color.
 If one of these is not available, 't_Sb' and 't_Sf' are used.  't_me' is used
-to reset to the default colors.
+to reset to the default colors.  Also see 'termguicolors'.
 
 				*termcap-cursor-shape* *termcap-cursor-color*
 When Vim enters Insert mode the 't_SI' escape sequence is sent.  When Vim
