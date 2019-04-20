@@ -7672,10 +7672,14 @@ find_var_ht(char_u *name, char_u **varname)
 	    return NULL;
 	*varname = name;
 
-	/* "version" is "v:version" in all scopes */
-	hi = hash_find(&compat_hashtab, name);
-	if (!HASHITEM_EMPTY(hi))
-	    return &compat_hashtab;
+	// "version" is "v:version" in all scopes if scriptversion < 3.
+	// Same for a few other variables marked with VV_COMPAT.
+	if (current_sctx.sc_version < 3)
+	{
+	    hi = hash_find(&compat_hashtab, name);
+	    if (!HASHITEM_EMPTY(hi))
+		return &compat_hashtab;
+	}
 
 	ht = get_funccal_local_ht();
 	if (ht == NULL)

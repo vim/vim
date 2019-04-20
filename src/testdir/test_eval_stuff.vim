@@ -154,6 +154,22 @@ func Test_string_concat_scriptversion1()
   endif
 endfunc
 
+scriptversion 3
+func Test_vvar_scriptversion3()
+  call assert_fails('echo version', 'E121:')
+  call assert_false(exists('version'))
+  let version = 1
+  call assert_equal(1, version)
+endfunc
+
+scriptversion 2
+func Test_vvar_scriptversion2()
+  call assert_true(exists('version'))
+  echo version
+  call assert_fails('let version = 1', 'E46:')
+  call assert_equal(v:version, version)
+endfunc
+
 func Test_scriptversion()
   call writefile(['scriptversion 9'], 'Xversionscript')
   call assert_fails('source Xversionscript', 'E999:')

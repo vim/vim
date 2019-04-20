@@ -1688,7 +1688,8 @@ v:count		The count given for the last Normal mode command.  Can be used
 		When there are two counts, as in "3d2w", they are multiplied,
 		just like what happens in the command, "d6w" for the example.
 		Also used for evaluating the 'formatexpr' option.
-		"count" also works, for backwards compatibility.
+		"count" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 					*v:count1* *count1-variable*
 v:count1	Just like "v:count", but defaults to one when no count is
@@ -1720,7 +1721,8 @@ v:errmsg	Last given error message.  It's allowed to set this variable.
 	:silent! next
 	:if v:errmsg != ""
 	:  ... handle error
-<		"errmsg" also works, for backwards compatibility.
+<		"errmsg" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 				*v:errors* *errors-variable* *assert-return*
 v:errors	Errors found by assert functions, such as |assert_true()|.
@@ -2023,7 +2025,8 @@ v:shell_error	Result of the last shell command.  When non-zero, the last
 	:if v:shell_error
 	:  echo 'could not rename "foo" to "bar"!'
 	:endif
-<		"shell_error" also works, for backwards compatibility.
+<		"shell_error" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
@@ -2123,7 +2126,8 @@ v:testing	Must be set before using `test_garbagecollect_now()`.
 v:this_session	Full filename of the last loaded or saved session file.  See
 		|:mksession|.  It is allowed to set this variable.  When no
 		session file has been saved, this variable is empty.
-		"this_session" also works, for backwards compatibility.
+		"this_session" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher
 
 					*v:throwpoint* *throwpoint-variable*
 v:throwpoint	The point where the exception most recently caught and not
@@ -2154,7 +2158,7 @@ v:val		Value of the current item of a |List| or |Dictionary|.  Only
 v:version	Version number of Vim: Major version number times 100 plus
 		minor version number.  Version 5.0 is 500.  Version 5.1 (5.01)
 		is 501.  Read-only.  "version" also works, for backwards
-		compatibility.
+		compatibility, unless |scriptversion| is 3 or higher.
 		Use |has()| to check if a certain patch was included, e.g.: >
 			if has("patch-7.4.123")
 <		Note that patch numbers are specific to the version, thus both
