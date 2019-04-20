@@ -308,6 +308,25 @@ func Test_Debugger()
   call RunDbgCmd(buf, 'cont', ['line 4: let var4 = 40'])
   call RunDbgCmd(buf, 'cont')
 
+  " Test for :next
+  call RunDbgCmd(buf, ':debug echo Bar(1)')
+  call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'next')
+  call RunDbgCmd(buf, '', [
+	      \ 'function Bar',
+	      \ 'line 3: return var2'])
+  call RunDbgCmd(buf, 'c')
+
+  " Test for :interrupt
+  call RunDbgCmd(buf, ':debug echo Bazz(1)')
+  call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'step')
+  call RunDbgCmd(buf, 'interrupt', [
+	      \ 'Exception thrown: Vim:Interrupt',
+	      \ 'function Bazz',
+	      \ 'line 5: catch'])
+  call RunDbgCmd(buf, 'c')
+
   call StopVimInTerminal(buf)
 
   call delete('Xtest.vim')
