@@ -90,12 +90,13 @@ EXTERN int	mod_mask INIT(= 0x0);		/* current key modifiers */
  */
 EXTERN int	cmdline_row;
 
-EXTERN int	redraw_cmdline INIT(= FALSE);	/* cmdline must be redrawn */
-EXTERN int	clear_cmdline INIT(= FALSE);	/* cmdline must be cleared */
-EXTERN int	mode_displayed INIT(= FALSE);	/* mode is being displayed */
-EXTERN int	no_win_do_lines_ins INIT(= FALSE); /* don't insert lines */
+EXTERN int	redraw_cmdline INIT(= FALSE);	// cmdline must be redrawn
+EXTERN int	redraw_mode INIT(= FALSE);	// mode must be redrawn
+EXTERN int	clear_cmdline INIT(= FALSE);	// cmdline must be cleared
+EXTERN int	mode_displayed INIT(= FALSE);	// mode is being displayed
+EXTERN int	no_win_do_lines_ins INIT(= FALSE); // don't insert lines
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
+EXTERN int	cmdline_star INIT(= FALSE);	// cmdline is crypted
 #endif
 
 EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
