@@ -308,61 +308,6 @@ func Test_Debugger()
   call RunDbgCmd(buf, 'cont', ['line 4: let var4 = 40'])
   call RunDbgCmd(buf, 'cont')
 
-  " Test for :next
-  call RunDbgCmd(buf, ':debug echo Bar(1)')
-  call RunDbgCmd(buf, 'step')
-  call RunDbgCmd(buf, 'next')
-  call RunDbgCmd(buf, '', [
-	      \ 'function Bar',
-	      \ 'line 3: return var2'])
-  call RunDbgCmd(buf, 'c')
-
-  " Test for :interrupt
-  call RunDbgCmd(buf, ':debug echo Bazz(1)')
-  call RunDbgCmd(buf, 'step')
-  call RunDbgCmd(buf, 'step')
-  call RunDbgCmd(buf, 'interrupt', [
-	      \ 'Exception thrown: Vim:Interrupt',
-	      \ 'function Bazz',
-	      \ 'line 5: catch'])
-  call RunDbgCmd(buf, 'c')
-
-  " Test for :quit
-  call RunDbgCmd(buf, ':debug echo Foo()')
-  call RunDbgCmd(buf, 'breakdel *')
-  call RunDbgCmd(buf, 'breakadd func 3 Foo')
-  call RunDbgCmd(buf, 'breakadd func 3 Bazz')
-  call RunDbgCmd(buf, 'cont', [
-	      \ 'Breakpoint in "Bazz" line 3',
-	      \ 'function Foo[2]..Bar[2]..Bazz',
-	      \ 'line 3: let var3 = "another var"'])
-  call RunDbgCmd(buf, 'quit', [
-	      \ 'Breakpoint in "Foo" line 3',
-	      \ 'function Foo',
-	      \ 'line 3: return var2'])
-  call RunDbgCmd(buf, 'breakdel *')
-  call RunDbgCmd(buf, 'quit')
-  call RunDbgCmd(buf, 'enew! | only!')
-
-  call StopVimInTerminal(buf)
-
-  " Tests for :breakadd file and :breakadd here
-  " Breakpoints should be set before sourcing the file
-
-  call writefile([
-	      \ 'let var1 = 10',
-	      \ 'let var2 = 20',
-	      \ 'let var3 = 30',
-	      \ 'let var4 = 40'], 'Xtest.vim')
-
-  " Start Vim in a terminal
-  let buf = RunVimInTerminal('Xtest.vim', {})
-  call RunDbgCmd(buf, ':breakadd file 2 Xtest.vim')
-  call RunDbgCmd(buf, ':4 | breakadd here')
-  call RunDbgCmd(buf, ':source Xtest.vim', ['line 2: let var2 = 20'])
-  call RunDbgCmd(buf, 'cont', ['line 4: let var4 = 40'])
-  call RunDbgCmd(buf, 'cont')
-
   call StopVimInTerminal(buf)
 
   call delete('Xtest.vim')
