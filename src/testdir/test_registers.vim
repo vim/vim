@@ -163,5 +163,7 @@ func Test_recording_esc_sequence()
   bwipe!
   if exists('save_F2')
     let t_F2 = save_F2
+  else
+    set t_F2=
   endif
 endfunc
