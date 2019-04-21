@@ -2777,6 +2777,7 @@ edit_buffers(
     int		i;
     int		advance = TRUE;
     win_T	*win;
+    char_u	*p_shm_save = NULL;
 
     /*
      * Don't execute Win/Buf Enter/Leave autocommands here
@@ -2812,6 +2813,17 @@ edit_buffers(
 		if (curtab->tp_next == NULL)	/* just checking */
 		    break;
 		goto_tabpage(0);
+		// Temporarily reset 'shm' option to not print fileinfo when
+		// loading the other buffers. This would overwrite the already
+		// existing fileinfo for the first tab.
+		if (i == 1)
+		{
+		    char buf[100];
+
+		    p_shm_save = vim_strsave(p_shm);
+		    vim_snprintf(buf, 100, "F%s", p_shm);
+		    set_option_value((char_u *)"shm", 0L, (char_u *)buf, 0);
+		}
 	    }
 	    else
 	    {
@@ -2859,6 +2871,12 @@ edit_buffers(
 	    (void)vgetc();	/* only break the file loading, not the rest */
 	    break;
 	}
+    }
+
+    if (p_shm_save != NULL)
+    {
+	set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+	vim_free(p_shm_save);
     }
 
     if (parmp->window_layout == WIN_TABS)
