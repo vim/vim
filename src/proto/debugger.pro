@@ -9,6 +9,6 @@ void ex_debuggreedy(exarg_T *eap);
 void ex_breakdel(exarg_T *eap);
 void ex_breaklist(exarg_T *eap);
 linenr_T dbg_find_breakpoint(int file, char_u *fname, linenr_T after);
-linenr_T debuggy_find(int file, char_u *fname, linenr_T after, garray_T *gap, int *fp);
+int has_profiling(int file, char_u *fname, int *fp);
 void dbg_breakpoint(char_u *name, linenr_T lnum);
 /* vim: set ft=c : */

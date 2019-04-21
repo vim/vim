@@ -66,31 +66,6 @@ typedef struct sn_prl_S
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-
-#if defined(FEAT_PROFILE) || defined(PROTO)
-/* Profiling uses file and func names similar to breakpoints. */
-static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
-
-    garray_T *
-prof_get_ga(void)
-{
-    return &prof_ga;
-}
-
-/*
- * Return TRUE if profiling is on for a function or sourced file.
- */
-    int
-has_profiling(
-    int		file,	    /* TRUE for a file, FALSE for a function */
-    char_u	*fname,	    /* file or function name */
-    int		*fp)	    /* return: forceit */
-{
-    return (debuggy_find(file, fname, (linenr_T)0, &prof_ga, fp)
-							      != (linenr_T)0);
-}
-#endif
-
 # if defined(FEAT_PROFILE) || defined(FEAT_RELTIME) || defined(PROTO)
 /*
  * Store the current time in "tm".

@@ -1,6 +1,4 @@
 /* ex_cmds2.c */
-garray_T *prof_get_ga(void);
-int has_profiling(int file, char_u *fname, int *fp);
 void profile_start(proftime_T *tm);
 void profile_end(proftime_T *tm);
 void profile_sub(proftime_T *tm, proftime_T *tm2);

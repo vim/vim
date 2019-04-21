@@ -489,14 +489,38 @@ dbg_check_skipped(exarg_T *eap)
     return FALSE;
 }
 
+/*
+ * The list of breakpoints: dbg_breakp.
+ * This is a grow-array of structs.
+ */
+struct debuggy
+{
+    int		dbg_nr;		/* breakpoint number */
+    int		dbg_type;	/* DBG_FUNC, DBG_FILE or DBG_EXPR */
+    char_u	*dbg_name;	/* function, expression or file name */
+    regprog_T	*dbg_prog;	/* regexp program */
+    linenr_T	dbg_lnum;	/* line number in function or file */
+    int		dbg_forceit;	/* ! used */
+#ifdef FEAT_EVAL
+    typval_T    *dbg_val;       /* last result of watchexpression */
+#endif
+    int		dbg_level;      /* stored nested level for expr */
+};
+
 static garray_T dbg_breakp = {0, 0, sizeof(struct debuggy), 4, NULL};
 #define BREAKP(idx)		(((struct debuggy *)dbg_breakp.ga_data)[idx])
 #define DEBUGGY(gap, idx)	(((struct debuggy *)gap->ga_data)[idx])
 static int last_breakp = 0;	/* nr of last defined breakpoint */
 
+#ifdef FEAT_PROFILE
+/* Profiling uses file and func names similar to breakpoints. */
+static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
+#endif
 #define DBG_FUNC	1
 #define DBG_FILE	2
 #define DBG_EXPR	3
+
+static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *gap, int *fp);
 
 /*
  * Parse the arguments of ":profile", ":breakadd" or ":breakdel" and put them
@@ -525,7 +549,7 @@ dbg_parsearg(
 	bp->dbg_type = DBG_FILE;
     else if (
 #ifdef FEAT_PROFILE
-	    gap != prof_get_ga() &&
+	    gap != &prof_ga &&
 #endif
 	    STRNCMP(p, "here", 4) == 0)
     {
@@ -539,7 +563,7 @@ dbg_parsearg(
     }
     else if (
 #ifdef FEAT_PROFILE
-	    gap != prof_get_ga() &&
+	    gap != &prof_ga &&
 #endif
 	    STRNCMP(p, "expr", 4) == 0)
 	bp->dbg_type = DBG_EXPR;
@@ -555,7 +579,7 @@ dbg_parsearg(
 	bp->dbg_lnum = curwin->w_cursor.lnum;
     else if (
 #ifdef FEAT_PROFILE
-	    gap != prof_get_ga() &&
+	    gap != &prof_ga &&
 #endif
 	    VIM_ISDIGIT(*p))
     {
@@ -623,7 +647,7 @@ ex_breakadd(exarg_T *eap)
     gap = &dbg_breakp;
 #ifdef FEAT_PROFILE
     if (eap->cmdidx == CMD_profile)
-	gap = prof_get_ga();
+	gap = &prof_ga;
 #endif
 
     if (dbg_parsearg(eap->arg, gap) == OK)
@@ -694,7 +718,7 @@ ex_breakdel(exarg_T *eap)
     if (eap->cmdidx == CMD_profdel)
     {
 #ifdef FEAT_PROFILE
-	gap = prof_get_ga();
+	gap = &prof_ga;
 #else
 	ex_ni(eap);
 	return;
@@ -813,10 +837,25 @@ dbg_find_breakpoint(
     return debuggy_find(file, fname, after, &dbg_breakp, NULL);
 }
 
+#if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Return TRUE if profiling is on for a function or sourced file.
+ */
+    int
+has_profiling(
+    int		file,	    /* TRUE for a file, FALSE for a function */
+    char_u	*fname,	    /* file or function name */
+    int		*fp)	    /* return: forceit */
+{
+    return (debuggy_find(file, fname, (linenr_T)0, &prof_ga, fp)
+							      != (linenr_T)0);
+}
+#endif
+
 /*
  * Common code for dbg_find_breakpoint() and has_profiling().
  */
-    linenr_T
+    static linenr_T
 debuggy_find(
     int		file,	    /* TRUE for a file, FALSE for a function */
     char_u	*fname,	    /* file or function name */
@@ -855,7 +894,7 @@ debuggy_find(
 	if (((bp->dbg_type == DBG_FILE) == file &&
 		bp->dbg_type != DBG_EXPR && (
 #ifdef FEAT_PROFILE
-		gap == prof_get_ga() ||
+		gap == &prof_ga ||
 #endif
 		(bp->dbg_lnum > after && (lnum == 0 || bp->dbg_lnum < lnum)))))
 	{
