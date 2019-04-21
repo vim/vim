@@ -588,7 +588,7 @@ CClink = $(CC)
 # When using -g with some older versions of Linux you might get a
 # statically linked executable.
 # When not defined, configure will try to use -O2 -g for gcc and -O for cc.
-CFLAGS = -g -O0 -Wall -Wextra -pedantic
+#CFLAGS = -g
 #CFLAGS = -O
 
 # Optimization limits - depends on the compiler.  Automatic check in configure
@@ -689,7 +689,7 @@ LINT_OPTIONS = -beprxzF
 # address sanitizer or with the undefined sanitizer.  Works with gcc and
 # clang.  May make Vim twice as slow.  Errors reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
-SANITIZER_CFLAGS = -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
+#SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
