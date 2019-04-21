@@ -687,7 +687,7 @@ SOURCE=.\regexp.c
 SOURCE=.\screen.c
 # End Source File
 # Begin Source File
-#
+
 SOURCE=.\search.c
 # End Source File
 # Begin Source File
