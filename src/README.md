@@ -25,6 +25,7 @@ File name | Description
 --------- | -----------
 autocmd.c	| autocommands
 buffer.c	| manipulating buffers (loaded files)
+debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
 eval.c		| expression evaluation
 fileio.c	| reading and writing files
