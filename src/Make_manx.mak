@@ -43,6 +43,7 @@ SRC =	arabic.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -105,6 +106,7 @@ OBJ =	obj/arabic.o \
 	obj/charset.o \
 	obj/crypt.o \
 	obj/crypt_zip.o \
+	obj/debugger.o \
 	obj/dict.o \
 	obj/diff.o \
 	obj/digraph.o \
@@ -165,6 +167,7 @@ PRO =	proto/arabic.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -282,6 +285,9 @@ obj/crypt.o:	crypt.c
 
 obj/crypt_zip.o: crypt_zip.c
 	$(CCSYM) $@ crypt_zip.c
+
+obj/debugger.o:	debugger.c
+	$(CCSYM) $@ debugger.c
 
 obj/dict.o:	dict.c
 	$(CCSYM) $@ dict.c

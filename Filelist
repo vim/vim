@@ -23,6 +23,7 @@ SRC_ALL =	\
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
@@ -156,6 +157,7 @@ SRC_ALL =	\
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/debugger.pro \
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \

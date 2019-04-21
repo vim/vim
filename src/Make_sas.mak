@@ -96,6 +96,7 @@ SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -157,6 +158,7 @@ OBJ = \
 	charset.o \
 	crypt.o \
 	crypt_zip.o \
+	debugger.o \
 	dict.o \
 	diff.o \
 	digraph.o \
@@ -218,6 +220,7 @@ PRO = \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -340,6 +343,8 @@ crypt.o:		crypt.c
 proto/crypt.pro:	crypt.c
 crypt_zip.o:		crypt_zip.c
 proto/crypt_zip.pro:	crypt_zip.c
+debugger.o:		debugger.c
+proto/debugger.pro:	debugger.c
 dict.o:			dict.c
 proto/dict.pro:		dict.c
 diff.o:			diff.c

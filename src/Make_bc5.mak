@@ -516,6 +516,7 @@ vimobj =  \
 	$(OBJDIR)\charset.obj \
 	$(OBJDIR)\crypt.obj \
 	$(OBJDIR)\crypt_zip.obj \
+	$(OBJDIR)\debugger.obj \
 	$(OBJDIR)\dict.obj \
 	$(OBJDIR)\diff.obj \
 	$(OBJDIR)\digraph.obj \
