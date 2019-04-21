@@ -745,6 +745,7 @@ OBJ = \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \
+	$(OUTDIR)/debugger.o \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/sign.o \

@@ -135,6 +135,7 @@ SRC = \
 	quickfix.c \
 	regexp.c \
 	screen.c \
+	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -196,6 +197,7 @@ OBJ = \
 	quickfix.o \
 	regexp.o \
 	screen.o \
+	debugger.o \
 	search.o \
 	sha256.o \
 	sign.o \
@@ -257,6 +259,7 @@ PRO = \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
+	proto/debugger.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
@@ -418,6 +421,8 @@ regexp.o:		regexp.c
 proto/regexp.pro:	regexp.c
 screen.o:		screen.c
 proto/screen.pro:	screen.c
+debugger.o:		debugger.c
+proto/debugger.pro:	debugger.c
 search.o:		search.c
 proto/search.pro:	search.c
 sha256.o:		sha256.c

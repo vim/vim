@@ -554,6 +554,7 @@ vimobj =  \
 	$(OBJDIR)\quickfix.obj \
 	$(OBJDIR)\regexp.obj \
 	$(OBJDIR)\screen.obj \
+	$(OBJDIR)\debugger.obj \
 	$(OBJDIR)\search.obj \
 	$(OBJDIR)\sha256.obj \
 	$(OBJDIR)\sign.obj \

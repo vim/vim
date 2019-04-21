@@ -753,6 +753,7 @@ OBJ = \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
+	$(OUTDIR)\debugger.obj \
 	$(OUTDIR)\search.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\sign.obj \
@@ -1525,6 +1526,8 @@ $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
 
 $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
+$(OUTDIR)/debugger.obj:	$(OUTDIR) debugger.c  $(INCL)
+
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
 
 $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
@@ -1678,6 +1681,7 @@ proto.h: \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
+	proto/debugger.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/sign.pro \

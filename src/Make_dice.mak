@@ -72,6 +72,7 @@ SRC = \
 	quickfix.c \
 	regexp.c \
 	screen.c \
+	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -132,6 +133,7 @@ OBJ =	o/arabic.o \
 	o/quickfix.o \
 	o/regexp.o \
 	o/screen.o \
+	o/debugger.o \
 	o/search.o \
 	o/sha256.o \
 	o/sign.o \
@@ -261,6 +263,8 @@ o/quickfix.o:	quickfix.c  $(SYMS)
 o/regexp.o:	regexp.c  $(SYMS) regexp.h
 
 o/screen.o:	screen.c  $(SYMS)
+
+o/debugger.o:	debugger.c  $(SYMS)
 
 o/search.o:	search.c  $(SYMS) regexp.h
 

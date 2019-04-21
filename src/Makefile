@@ -588,7 +588,7 @@ CClink = $(CC)
 # When using -g with some older versions of Linux you might get a
 # statically linked executable.
 # When not defined, configure will try to use -O2 -g for gcc and -O for cc.
-#CFLAGS = -g
+CFLAGS = -g -O0 -Wall -Wextra -pedantic
 #CFLAGS = -O
 
 # Optimization limits - depends on the compiler.  Automatic check in configure
@@ -689,7 +689,7 @@ LINT_OPTIONS = -beprxzF
 # address sanitizer or with the undefined sanitizer.  Works with gcc and
 # clang.  May make Vim twice as slow.  Errors reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
-#SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
+SANITIZER_CFLAGS = -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
@@ -1622,6 +1622,7 @@ BASIC_SRC = \
 	quickfix.c \
 	regexp.c \
 	screen.c \
+	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -1733,6 +1734,7 @@ OBJ_COMMON = \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/screen.o \
+	objects/debugger.o \
 	objects/search.o \
 	objects/sha256.o \
 	objects/sign.o \
@@ -1869,6 +1871,7 @@ PRO_AUTO = \
 	quickfix.pro \
 	regexp.pro \
 	screen.pro \
+	debugger.pro \
 	search.pro \
 	sha256.pro \
 	sign.pro \
@@ -3200,6 +3203,9 @@ objects/regexp.o: regexp.c regexp_nfa.c
 objects/screen.o: screen.c
 	$(CCC) -o $@ screen.c
 
+objects/debugger.o: debugger.c
+	$(CCC) -o $@ debugger.c
+
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
 
@@ -3598,6 +3604,9 @@ objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/debugger.o: debugger.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+  os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h structs.h \
+  regexp.h gui.h alloc.h ex_cmds.h spell.h proto.h globals.h
 objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -258,6 +258,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/quickfix.obj" \
 	"$(INTDIR)/regexp.obj" \
 	"$(INTDIR)/screen.obj" \
+	"$(INTDIR)/debugger.obj" \
 	"$(INTDIR)/search.obj" \
 	"$(INTDIR)/sha256.obj" \
 	"$(INTDIR)/sign.obj" \
@@ -680,6 +681,10 @@ SOURCE=.\regexp.c
 # Begin Source File
 
 SOURCE=.\screen.c
+# End Source File
+# Begin Source File
+#
+SOURCE=.\debugger.c
 # End Source File
 # Begin Source File
 

@@ -82,6 +82,7 @@ SRC =	arabic.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
+	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -144,6 +145,7 @@ OBJ =	obj/arabic.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \
+	obj/debugger.o \
 	obj/search.o \
 	obj/sha256.o \
 	obj/sign.o \
@@ -204,6 +206,7 @@ PRO =	proto/arabic.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
+	proto/debugger.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
@@ -403,6 +406,9 @@ obj/regexp.o:	regexp.c
 
 obj/screen.o:	screen.c
 	$(CCSYM) $@ screen.c
+
+obj/debugger.o:	debugger.c
+	$(CCSYM) $@ debugger.c
 
 obj/search.o:	search.c
 	$(CCSYM) $@ search.c

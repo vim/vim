@@ -1901,6 +1901,24 @@ typedef struct list_stack_S
 typedef struct qf_info_S qf_info_T;
 #endif
 
+/*
+ * The list of breakpoints or profile information.
+ * This is a grow-array of structs.
+ */
+struct debuggy
+{
+    int		dbg_nr;		/* breakpoint number */
+    int		dbg_type;	/* DBG_FUNC, DBG_FILE or DBG_EXPR */
+    char_u	*dbg_name;	/* function, expression or file name */
+    regprog_T	*dbg_prog;	/* regexp program */
+    linenr_T	dbg_lnum;	/* line number in function or file */
+    int		dbg_forceit;	/* ! used */
+#ifdef FEAT_EVAL
+    typval_T    *dbg_val;       /* last result of watchexpression */
+#endif
+    int		dbg_level;      /* stored nested level for expr */
+};
+
 #ifdef FEAT_PROFILE
 /*
  * Used for :syntime: timing of executing a syntax pattern.

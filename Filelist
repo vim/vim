@@ -81,6 +81,7 @@ SRC_ALL =	\
 		src/regexp_nfa.c \
 		src/regexp.h \
 		src/screen.c \
+		src/debugger.c \
 		src/search.c \
 		src/sha256.c \
 		src/sign.c \
@@ -197,6 +198,7 @@ SRC_ALL =	\
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
+		src/proto/debugger.pro \
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \
