@@ -43,6 +43,7 @@ SRC =	arabic.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -82,7 +83,6 @@ SRC =	arabic.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
-	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -106,6 +106,7 @@ OBJ =	obj/arabic.o \
 	obj/charset.o \
 	obj/crypt.o \
 	obj/crypt_zip.o \
+	obj/debugger.o \
 	obj/dict.o \
 	obj/diff.o \
 	obj/digraph.o \
@@ -145,7 +146,6 @@ OBJ =	obj/arabic.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \
-	obj/debugger.o \
 	obj/search.o \
 	obj/sha256.o \
 	obj/sign.o \
@@ -167,6 +167,7 @@ PRO =	proto/arabic.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -206,7 +207,6 @@ PRO =	proto/arabic.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
-	proto/debugger.pro \
 	proto/search.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
@@ -285,6 +285,9 @@ obj/crypt.o:	crypt.c
 
 obj/crypt_zip.o: crypt_zip.c
 	$(CCSYM) $@ crypt_zip.c
+
+obj/debugger.o:	debugger.c
+	$(CCSYM) $@ debugger.c
 
 obj/dict.o:	dict.c
 	$(CCSYM) $@ dict.c
@@ -406,9 +409,6 @@ obj/regexp.o:	regexp.c
 
 obj/screen.o:	screen.c
 	$(CCSYM) $@ screen.c
-
-obj/debugger.o:	debugger.c
-	$(CCSYM) $@ debugger.c
 
 obj/search.o:	search.c
 	$(CCSYM) $@ search.c

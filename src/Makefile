@@ -1579,6 +1579,7 @@ BASIC_SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -1622,7 +1623,6 @@ BASIC_SRC = \
 	quickfix.c \
 	regexp.c \
 	screen.c \
-	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -1694,6 +1694,7 @@ OBJ_COMMON = \
 	objects/blowfish.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
+	objects/debugger.o \
 	objects/dict.o \
 	objects/diff.o \
 	objects/digraph.o \
@@ -1734,7 +1735,6 @@ OBJ_COMMON = \
 	objects/quickfix.o \
 	objects/regexp.o \
 	objects/screen.o \
-	objects/debugger.o \
 	objects/search.o \
 	objects/sha256.o \
 	objects/sign.o \
@@ -1822,6 +1822,7 @@ PRO_AUTO = \
 	charset.pro \
 	crypt.pro \
 	crypt_zip.pro \
+	debugger.pro \
 	dict.pro \
 	diff.pro \
 	digraph.pro \
@@ -1871,7 +1872,6 @@ PRO_AUTO = \
 	quickfix.pro \
 	regexp.pro \
 	screen.pro \
-	debugger.pro \
 	search.pro \
 	sha256.pro \
 	sign.pro \
@@ -2966,6 +2966,9 @@ objects/crypt.o: crypt.c
 objects/crypt_zip.o: crypt_zip.c
 	$(CCC) -o $@ crypt_zip.c
 
+objects/debugger.o: debugger.c
+	$(CCC) -o $@ debugger.c
+
 objects/dict.o: dict.c
 	$(CCC) -o $@ dict.c
 
@@ -3203,9 +3206,6 @@ objects/regexp.o: regexp.c regexp_nfa.c
 objects/screen.o: screen.c
 	$(CCC) -o $@ screen.c
 
-objects/debugger.o: debugger.c
-	$(CCC) -o $@ debugger.c
-
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
 
@@ -3431,6 +3431,9 @@ objects/crypt_zip.o: crypt_zip.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/debugger.o: debugger.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+  os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h structs.h \
+  regexp.h gui.h alloc.h ex_cmds.h spell.h proto.h globals.h
 objects/dict.o: dict.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3604,9 +3607,6 @@ objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
-objects/debugger.o: debugger.c vim.h protodef.h auto/config.h feature.h os_unix.h \
-  os_mac.h ascii.h keymap.h term.h macros.h option.h beval.h structs.h \
-  regexp.h gui.h alloc.h ex_cmds.h spell.h proto.h globals.h
 objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

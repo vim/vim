@@ -31,6 +31,7 @@ SRC =	arabic.c						\
 	charset.c						\
 	crypt.c							\
 	crypt_zip.c						\
+	debugger.c						\
 	dict.c							\
 	diff.c							\
 	digraph.c						\
@@ -70,7 +71,6 @@ SRC =	arabic.c						\
 	quickfix.c						\
 	regexp.c						\
 	screen.c						\
-	debugger.c						\
 	search.c						\
 	sha256.c						\
 	sign.c							\

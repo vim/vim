@@ -23,6 +23,7 @@ SRC_ALL =	\
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
@@ -81,7 +82,6 @@ SRC_ALL =	\
 		src/regexp_nfa.c \
 		src/regexp.h \
 		src/screen.c \
-		src/debugger.c \
 		src/search.c \
 		src/sha256.c \
 		src/sign.c \
@@ -157,6 +157,7 @@ SRC_ALL =	\
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/debugger.pro \
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
@@ -198,7 +199,6 @@ SRC_ALL =	\
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
-		src/proto/debugger.pro \
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \

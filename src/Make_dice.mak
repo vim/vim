@@ -33,6 +33,7 @@ SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -72,7 +73,6 @@ SRC = \
 	quickfix.c \
 	regexp.c \
 	screen.c \
-	debugger.c \
 	search.c \
 	sha256.c \
 	sign.c \
@@ -94,6 +94,7 @@ OBJ =	o/arabic.o \
 	o/charset.o \
 	o/crypt.o \
 	o/crypt_zip.o \
+	o/debugger.o \
 	o/dict.o \
 	o/diff.o \
 	o/digraph.o \
@@ -133,7 +134,6 @@ OBJ =	o/arabic.o \
 	o/quickfix.o \
 	o/regexp.o \
 	o/screen.o \
-	o/debugger.o \
 	o/search.o \
 	o/sha256.o \
 	o/sign.o \
@@ -180,6 +180,8 @@ o/charset.o:	charset.c  $(SYMS)
 o/crypt.o:	crypt.c  $(SYMS)
 
 o/crypt_zip.o:	crypt_zip.c  $(SYMS)
+
+o/debugger.o:	debugger.c  $(SYMS)
 
 o/dict.o:	dict.c	$(SYMS)
 
@@ -263,8 +265,6 @@ o/quickfix.o:	quickfix.c  $(SYMS)
 o/regexp.o:	regexp.c  $(SYMS) regexp.h
 
 o/screen.o:	screen.c  $(SYMS)
-
-o/debugger.o:	debugger.c  $(SYMS)
 
 o/search.o:	search.c  $(SYMS) regexp.h
 
