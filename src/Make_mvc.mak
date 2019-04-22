@@ -1415,21 +1415,15 @@ $(NEW_TESTS):
 ###########################################################################
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
-# Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
-.c{$(OUTDIR)/}.obj:
-!ELSE
 .c{$(OUTDIR)/}.obj::
-!ENDIF
+	$(CC) $(CFLAGS_OUTDIR) $<
+
+# Create a default rule for xdiff.
+{xdiff/}.c{$(OUTDIR)/}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
-# Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
-.cpp{$(OUTDIR)/}.obj:
-!ELSE
 .cpp{$(OUTDIR)/}.obj::
-!ENDIF
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
@@ -1455,22 +1449,16 @@ $(OUTDIR)/dict.obj:	$(OUTDIR) dict.c  $(INCL)
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
 
 $(OUTDIR)/xdiffi.obj:	$(OUTDIR) xdiff/xdiffi.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xdiffi.c 
 
 $(OUTDIR)/xemit.obj:	$(OUTDIR) xdiff/xemit.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xemit.c 
 
 $(OUTDIR)/xprepare.obj:	$(OUTDIR) xdiff/xprepare.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xprepare.c 
 
 $(OUTDIR)/xutils.obj:	$(OUTDIR) xdiff/xutils.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xutils.c 
 
 $(OUTDIR)/xhistogram.obj:	$(OUTDIR) xdiff/xhistogram.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xhistogram.c 
 
 $(OUTDIR)/xpatience.obj:	$(OUTDIR) xdiff/xpatience.c  $(XDIFF_DEPS)
-	$(CC) $(CFLAGS_OUTDIR) xdiff/xpatience.c 
 
 $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
 
@@ -1668,32 +1656,27 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DWCWIDTH_FUNCTION=utf_uint2cells \
 	-D_CRT_SECURE_NO_WARNINGS
 
+# Create a default rule for libvterm.
+{libvterm/src/}.c{$(OUTDIR)/}.obj::
+	$(CCCTERM) -Fo$(OUTDIR)/ $<
+
 $(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
 
 $(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/keyboard.c
 
 $(OUTDIR)/mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/mouse.c
 
 $(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/parser.c
 
 $(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/pen.c
 
 $(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/termscreen.c
 
 $(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/state.c
 
 $(OUTDIR)/unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/unicode.c
 
 $(OUTDIR)/vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/vterm.c
 
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
