@@ -5130,7 +5130,7 @@ dozet:
 		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
 					    (nchar == 'G' || nchar == 'W')
 						       ? 0 : (int)cap->count1,
-					    undo);
+					    undo, 0);
 		}
 		break;
 

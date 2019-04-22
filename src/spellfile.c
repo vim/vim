@@ -6125,15 +6125,17 @@ spell_message(spellinfo_T *spin, char_u *str)
 
 /*
  * ":[count]spellgood  {word}"
- * ":[count]spellwrong  {word}"
+ * ":[count]spellwrong {word}"
  * ":[count]spellundo  {word}"
+ * ":[count]spellrare  {word}"
  */
     void
 ex_spell(exarg_T *eap)
 {
     spell_add_word(eap->arg, (int)STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
 				   eap->forceit ? 0 : (int)eap->line2,
-				   eap->cmdidx == CMD_spellundo);
+				   eap->cmdidx == CMD_spellundo,
+				   eap->cmdidx == CMD_spellrare);
 }
 
 /*
@@ -6146,7 +6148,8 @@ spell_add_word(
     int		bad,
     int		idx,	    /* "zG" and "zW": zero, otherwise index in
 			       'spellfile' */
-    int		undo)	    /* TRUE for "zug", "zuG", "zuw" and "zuW" */
+    int		undo,	    /* TRUE for "zug", "zuG", "zuw" and "zuW" */
+    int		rare)	    /* TRUE for ":spellrare" */
 {
     FILE	*fd = NULL;
     buf_T	*buf = NULL;
@@ -6282,6 +6285,8 @@ spell_add_word(
 	{
 	    if (bad)
 		fprintf(fd, "%.*s/!\n", len, word);
+	    else if (rare)
+		fprintf(fd, "%.*s/?\n", len, word);
 	    else
 		fprintf(fd, "%.*s\n", len, word);
 	    fclose(fd);
