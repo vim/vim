@@ -2465,11 +2465,6 @@ static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
 #ifdef FEAT_TITLE
-#ifdef __BORLANDC__
-typedef HWND (__stdcall *GETCONSOLEWINDOWPROC)(VOID);
-#else
-typedef HWND (WINAPI *GETCONSOLEWINDOWPROC)(VOID);
-#endif
 char g_szOrigTitle[256] = { 0 };
 HWND g_hWnd = NULL;	/* also used in os_mswin.c */
 static HICON g_hOrigIconSmall = NULL;
