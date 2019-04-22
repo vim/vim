@@ -4905,7 +4905,7 @@ gui_mch_do_spawn(char_u *arg)
 	wsession = enc_to_utf16(session, NULL);
 	if (wsession == NULL)
 	    goto error;
-	cmd = (LPWSTR)alloc((5 + (int)wcslen(wsession) * 2 + 22 + 1)
+	cmd = (LPWSTR)alloc(((int)wcslen(wsession) * 2 + 27 + 1)
 		* sizeof(WCHAR));
 	if (cmd == NULL)
 	{
@@ -4913,11 +4913,8 @@ gui_mch_do_spawn(char_u *arg)
 	    goto error;
 	}
 	tofree1 = cmd;
-	wcscpy(cmd, L" -S \"");
-	wcscat(cmd, wsession);
-	wcscat(cmd, L"\" -c \"call delete('");
-	wcscat(cmd, wsession);
-	wcscat(cmd, L"')\"");
+	wsprintfW(cmd, L" -S \"%s\" -c \"call delete('%s')\"",
+		wsession, wsession);
 	vim_free(wsession);
     }
 # endif
