@@ -610,9 +610,9 @@ mch_suspend(void)
 
 #if defined(USE_MCH_ERRMSG) || defined(PROTO)
 
-#ifdef display_errors
-# undef display_errors
-#endif
+# ifdef display_errors
+#  undef display_errors
+# endif
 
 /*
  * Display the saved error message(s).
@@ -620,12 +620,12 @@ mch_suspend(void)
     void
 display_errors(void)
 {
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     char *p;
 
-# ifdef VIMDLL
+#  ifdef VIMDLL
     if (gui.in_use || gui.starting)
-# endif
+#  endif
     {
 	if (error_ga.ga_data != NULL)
 	{
@@ -646,10 +646,10 @@ display_errors(void)
 	}
 	return;
     }
-#endif
-#if !defined(FEAT_GUI) || defined(VIMDLL)
+# endif
+# if !defined(FEAT_GUI) || defined(VIMDLL)
     FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
-#endif
+# endif
 }
 #endif
 
