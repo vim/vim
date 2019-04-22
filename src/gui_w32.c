@@ -4849,6 +4849,7 @@ gvim_error(void)
     void
 gui_mch_do_spawn(char_u *arg)
 {
+    int			ret;
     char_u		*session = NULL;
     WCHAR		name[MAX_PATH];
     LPWSTR		cmd, newcmd = NULL, p, warg;
@@ -4893,8 +4894,12 @@ gui_mch_do_spawn(char_u *arg)
 	session = vim_tempname('s', FALSE);
 	if (session == NULL)
 	    goto error;
+	do_cmdline_cmd((char_u *)"let savebg=&background");
 	do_cmdline_cmd((char_u *)"set background=light");
-	if (!write_session_file(session))
+	ret = write_session_file(session);
+	do_cmdline_cmd((char_u *)"let &background=savebg");
+	do_cmdline_cmd((char_u *)"unlet savebg");
+	if (!ret)
 	    goto error;
 	wsession = enc_to_utf16(session, NULL);
 	if (wsession == NULL)
