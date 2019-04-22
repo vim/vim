@@ -1073,54 +1073,54 @@ $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
-	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $@
 
 $(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui.c -o $(OUTDIR)/gui.o
+	$(CC) -c $(CFLAGS) gui.c -o $@
 
 $(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) beval.c -o $(OUTDIR)/beval.o
+	$(CC) -c $(CFLAGS) beval.c -o $@
 
 $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui_beval.c -o $(OUTDIR)/gui_beval.o
+	$(CC) -c $(CFLAGS) gui_beval.c -o $@
 
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
+	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
-	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
+	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
-	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+	$(CC) -c $(CFLAGS) if_mzsch.c -o $@
 
 mzscheme_base.c:
 	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL) if_ole.h
-	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) if_ole.cpp -o $@
 
 auto/if_perl.c:		if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs -output $@
 
 $(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
-	$(CC) -c $(CFLAGS) auto/if_perl.c -o $(OUTDIR)/if_perl.o
+	$(CC) -c $(CFLAGS) auto/if_perl.c -o $@
 
 
 $(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
-	$(CC) $(CFLAGS) -U_WIN32 -c -o $(OUTDIR)/if_ruby.o if_ruby.c
+	$(CC) $(CFLAGS) -U_WIN32 -c -o $@ if_ruby.c
 endif
 
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
 $(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
-	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
+	$(CC) -c $(CFLAGS) main.c -o $@
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
-	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+	$(CC) -c $(CFLAGS) netbeans.c -o $@
 
 $(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
 	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN os_w32exe.c -o $@
@@ -1129,16 +1129,13 @@ $(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
 	$(CC) -c $(CFLAGS) os_w32exe.c -o $@
 
 $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
-	$(CC) -c $(CFLAGS) os_win32.c -o $(OUTDIR)/os_win32.o
+	$(CC) -c $(CFLAGS) os_win32.c -o $@
 
 $(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
-	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
+	$(CC) -c $(CFLAGS) regexp.c -o $@
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
-	$(CC) -c $(CFLAGS) terminal.c -o $(OUTDIR)/terminal.o
-
-$(OUTDIR)/textprop.o:	textprop.c $(INCL)
-	$(CC) -c $(CFLAGS) textprop.c -o $(OUTDIR)/textprop.o
+	$(CC) -c $(CFLAGS) terminal.c -o $@
 
 
 CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
@@ -1146,50 +1143,13 @@ CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-$(OUTDIR)/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/encoding.c -o $@
+$(OUTDIR)/%.o : libvterm/src/%.c $(TERM_DEPS)
+	$(CCCTERM) $< -o $@
 
-$(OUTDIR)/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/keyboard.c -o $@
 
-$(OUTDIR)/mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/mouse.c -o $@
+$(OUTDIR)/%.o : xdiff/%.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/parser.o: libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/parser.c -o $@
-
-$(OUTDIR)/pen.o: libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/pen.c -o $@
-
-$(OUTDIR)/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/termscreen.c -o $@
-
-$(OUTDIR)/state.o: libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/state.c -o $@
-
-$(OUTDIR)/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/unicode.c -o $@
-
-$(OUTDIR)/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/vterm.c -o $@
-
-$(OUTDIR)/xdiffi.o: xdiff/xdiffi.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xdiffi.c -o $(OUTDIR)/xdiffi.o
-
-$(OUTDIR)/xemit.o: xdiff/xemit.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xemit.c -o $(OUTDIR)/xemit.o
-
-$(OUTDIR)/xprepare.o: xdiff/xprepare.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xprepare.c -o $(OUTDIR)/xprepare.o
-
-$(OUTDIR)/xutils.o: xdiff/xutils.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xutils.c -o $(OUTDIR)/xutils.o
-
-$(OUTDIR)/xhistogram.o: xdiff/xhistogram.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xhistogram.c -o $(OUTDIR)/xhistogram.o
-
-$(OUTDIR)/xpatience.o: xdiff/xpatience.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xpatience.c -o $(OUTDIR)/xpatience.o
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))
