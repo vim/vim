@@ -4890,15 +4890,16 @@ gui_mch_do_spawn(char_u *arg)
     {
 	// Create a session file and pass it to the new process.
 	LPWSTR wsession;
+	char_u *savebg;
 
 	session = vim_tempname('s', FALSE);
 	if (session == NULL)
 	    goto error;
-	do_cmdline_cmd((char_u *)"let savebg=&background");
-	do_cmdline_cmd((char_u *)"set background=light");
+	savebg = p_bg;
+	p_bg = vim_strsave((char_u *)"light");	// Set 'bg' to "light".
 	ret = write_session_file(session);
-	do_cmdline_cmd((char_u *)"let &background=savebg");
-	do_cmdline_cmd((char_u *)"unlet savebg");
+	vim_free(p_bg);
+	p_bg = savebg;
 	if (!ret)
 	    goto error;
 	wsession = enc_to_utf16(session, NULL);
