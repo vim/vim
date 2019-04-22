@@ -4849,7 +4849,7 @@ gvim_error(void)
     void
 gui_mch_do_spawn(char_u *arg)
 {
-    int			ret;
+    int			ret, len;
     char_u		*session = NULL;
     WCHAR		name[MAX_PATH];
     LPWSTR		cmd, newcmd = NULL, p, warg;
@@ -4905,15 +4905,15 @@ gui_mch_do_spawn(char_u *arg)
 	wsession = enc_to_utf16(session, NULL);
 	if (wsession == NULL)
 	    goto error;
-	cmd = (LPWSTR)alloc(((int)wcslen(wsession) * 2 + 27 + 1)
-		* sizeof(WCHAR));
+	len = ((int)wcslen(wsession) * 2 + 27 + 1) * sizeof(WCHAR);
+	cmd = (LPWSTR)alloc(len);
 	if (cmd == NULL)
 	{
 	    vim_free(wsession);
 	    goto error;
 	}
 	tofree1 = cmd;
-	wsprintfW(cmd, L" -S \"%s\" -c \"call delete('%s')\"",
+	_snwprintf(cmd, len, L" -S \"%s\" -c \"call delete('%s')\"",
 		wsession, wsession);
 	vim_free(wsession);
     }
@@ -4931,17 +4931,12 @@ gui_mch_do_spawn(char_u *arg)
 	warg = L"";
 
     // Set up the new command line.
-    newcmd = p = (LPWSTR)alloc(((int)wcslen(name) + (int)wcslen(cmd)
-		+ (int)wcslen(warg) + 4)
-	    * sizeof(WCHAR));
-    if (p == NULL)
+    len = ((int)wcslen(name) + (int)wcslen(cmd) + (int)wcslen(warg) + 4)
+	    * sizeof(WCHAR);
+    newcmd = (LPWSTR)alloc(len);
+    if (newcmd == NULL)
 	goto error;
-    *p++ = '"';
-    wcscpy(p, name);
-    wcscat(p, L"\"");
-    wcscat(p, cmd);
-    wcscat(p, L" ");
-    wcscat(p, warg);
+    _snwprintf(newcmd, len, L"\"%s\"%s %s", name, cmd, warg);
 
     // Spawn a new GUI process.
     if (!CreateProcessW(NULL, newcmd, NULL, NULL, TRUE, 0,
