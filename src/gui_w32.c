@@ -4842,7 +4842,8 @@ gvim_error(void)
 {
     mch_errmsg(_("Exxx: GUI cannot be used. Cannot execute gvim.exe."));
     mch_errmsg("\n");
-    mch_exit(2);
+    if (starting)
+	mch_exit(2);
 }
 
     void
@@ -4850,15 +4851,16 @@ gui_mch_do_spawn(char_u *arg)
 {
     char_u		*session = NULL;
     WCHAR		name[MAX_PATH];
-    LPWSTR		cmd = NULL, newcmd, p, warg;
+    LPWSTR		cmd, newcmd = NULL, p, warg;
+    LPWSTR		tofree1 = NULL, tofree2 = NULL;
     STARTUPINFOW	si = {sizeof(si)};
     PROCESS_INFORMATION pi;
 
     if (!GetModuleFileNameW(s_hinst, name, MAX_PATH))
-	gvim_error();
+	goto error;
     p = wcsrchr(name, L'\\');
     if (p == NULL)
-	gvim_error();
+	goto error;
     wcscpy(p + 1, L"gvim.exe");	    // Replace the executable name.
 
 # ifdef FEAT_SESSION
@@ -4890,10 +4892,10 @@ gui_mch_do_spawn(char_u *arg)
 
 	session = vim_tempname('s', FALSE);
 	if (session == NULL)
-	    gvim_error();
+	    goto error;
 	do_cmdline_cmd((char_u *)"set background=light");
 	if (!write_session_file(session))
-	    gvim_error();
+	    goto error;
 	wsession = enc_to_utf16(session, NULL);
 	if (wsession == NULL)
 	    goto error;
@@ -4904,6 +4906,7 @@ gui_mch_do_spawn(char_u *arg)
 	    vim_free(wsession);
 	    goto error;
 	}
+	tofree1 = cmd;
 	wcscpy(cmd, L" -S \"");
 	wcscat(cmd, wsession);
 	wcscat(cmd, L"\" -c \"call delete('");
@@ -4919,6 +4922,7 @@ gui_mch_do_spawn(char_u *arg)
 	warg = enc_to_utf16(arg, NULL);
 	if (warg == NULL)
 	    goto error;
+	tofree2 = warg;
     }
     else
 	warg = L"";
@@ -4947,6 +4951,10 @@ gui_mch_do_spawn(char_u *arg)
 error:
     if (session)
 	mch_remove(session);
+    vim_free(session);
+    vim_free(newcmd);
+    vim_free(tofree1);
+    vim_free(tofree2);
     gvim_error();
 }
 #endif
