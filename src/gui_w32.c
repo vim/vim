@@ -4905,8 +4905,8 @@ gui_mch_do_spawn(char_u *arg)
 	wsession = enc_to_utf16(session, NULL);
 	if (wsession == NULL)
 	    goto error;
-	len = ((int)wcslen(wsession) * 2 + 27 + 1) * sizeof(WCHAR);
-	cmd = (LPWSTR)alloc(len);
+	len = (int)wcslen(wsession) * 2 + 27 + 1;
+	cmd = (LPWSTR)alloc(len * (int)sizeof(WCHAR));
 	if (cmd == NULL)
 	{
 	    vim_free(wsession);
@@ -4931,9 +4931,8 @@ gui_mch_do_spawn(char_u *arg)
 	warg = L"";
 
     // Set up the new command line.
-    len = ((int)wcslen(name) + (int)wcslen(cmd) + (int)wcslen(warg) + 4)
-	    * sizeof(WCHAR);
-    newcmd = (LPWSTR)alloc(len);
+    len = (int)wcslen(name) + (int)wcslen(cmd) + (int)wcslen(warg) + 4;
+    newcmd = (LPWSTR)alloc(len * (int)sizeof(WCHAR));
     if (newcmd == NULL)
 	goto error;
     _snwprintf(newcmd, len, L"\"%s\"%s %s", name, cmd, warg);
