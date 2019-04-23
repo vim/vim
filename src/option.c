@@ -6852,8 +6852,6 @@ did_set_string_option(
     {
 	if (check_opt_strings(*varp, p_iscopt_values, TRUE) != OK)
 	    errmsg = e_invarg;
-	else
-	    inputsecretopt_was_set();
     }
 #endif
 

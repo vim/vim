@@ -22,7 +22,6 @@ void redrawcmdline_ex(int do_compute_cmdrow);
 void redrawcmd(void);
 void compute_cmdrow(void);
 void gotocmdline(int clr);
-void inputsecretopt_was_set();
 char_u *ExpandOne(expand_T *xp, char_u *str, char_u *orig, int options, int mode);
 void ExpandInit(expand_T *xp);
 void ExpandCleanup(expand_T *xp);

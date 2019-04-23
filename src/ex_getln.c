@@ -139,6 +139,18 @@ static int	open_cmdwin(void);
 static int	sort_func_compare(const void *s1, const void *s2);
 #endif
 
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+    static void
+inputsecretopt_was_set()
+{
+    inputsecret_show_last = FALSE;
+    inputsecret_reveal = FALSE;
+    if (strstr((char *)p_iscopt, "showlast") != NULL)
+	inputsecret_show_last = TRUE;
+    if (strstr((char *)p_iscopt, "reveal") != NULL)
+	inputsecret_reveal = TRUE;
+}
+#endif
 
     static void
 trigger_cmd_autocmd(int typechar, int evt)
@@ -924,6 +936,8 @@ getcmdline_int(
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
     ccline.cmdprevlen = ccline.cmdprevpos = 0;
     ccline.hidden = cmdline_star > 0;
+
+    inputsecretopt_was_set();
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
@@ -1114,7 +1128,7 @@ getcmdline_int(
 		|| c == intr_char
 #endif
 				)
-#if defined(FEAT_EVAL) || defined(FEAT_CRYPT)
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 		&& firstc != '@'
 #endif
 #ifdef FEAT_EVAL
@@ -3851,19 +3865,6 @@ gotocmdline(int clr)
 	msg_clr_eos();	    /* will reset clear_cmdline */
     windgoto(cmdline_row, 0);
 }
-
-#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-    void
-inputsecretopt_was_set()
-{
-    inputsecret_show_last = FALSE;
-    inputsecret_reveal = FALSE;
-    if (strstr((char *)p_iscopt, "showlast") != NULL)
-	inputsecret_show_last = TRUE;
-    if (strstr((char *)p_iscopt, "reveal") != NULL)
-	inputsecret_reveal = TRUE;
-}
-#endif
 
 /*
  * Check the word in front of the cursor for an abbreviation.
