@@ -14,15 +14,15 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-static int debug_greedy = FALSE;	/* batch mode debugging: don't save
-					   and restore typeahead. */
+static int debug_greedy = FALSE;	// batch mode debugging: don't save
+					// and restore typeahead.
 static void do_setdebugtracelevel(char_u *arg);
 static void do_checkbacktracelevel(void);
 static void do_showbacktrace(char_u *cmd);
 
-static char_u *debug_oldval = NULL;	/* old and newval for debug expressions */
+static char_u *debug_oldval = NULL;	// old and newval for debug expressions
 static char_u *debug_newval = NULL;
-static int     debug_expr   = 0;        /* use debug_expr */
+static int     debug_expr   = 0;        // use debug_expr
 
     int
 has_watchexpr(void)
@@ -65,27 +65,27 @@ do_debug(char_u *cmd)
 #define CMD_DOWN	10
 
 #ifdef ALWAYS_USE_GUI
-    /* Can't do this when there is no terminal for input/output. */
+    // Can't do this when there is no terminal for input/output.
     if (!gui.in_use)
     {
-	/* Break as soon as possible. */
+	// Break as soon as possible.
 	debug_break_level = 9999;
 	return;
     }
 #endif
 
-    /* Make sure we are in raw mode and start termcap mode.  Might have side
-     * effects... */
+    // Make sure we are in raw mode and start termcap mode.  Might have side
+    // effects...
     settmode(TMODE_RAW);
     starttermcap();
 
-    ++RedrawingDisabled;	/* don't redisplay the window */
-    ++no_wait_return;		/* don't wait for return */
-    did_emsg = FALSE;		/* don't use error from debugged stuff */
-    cmd_silent = FALSE;		/* display commands */
-    msg_silent = FALSE;		/* display messages */
-    emsg_silent = FALSE;	/* display error messages */
-    redir_off = TRUE;		/* don't redirect debug commands */
+    ++RedrawingDisabled;	// don't redisplay the window
+    ++no_wait_return;		// don't wait for return
+    did_emsg = FALSE;		// don't use error from debugged stuff
+    cmd_silent = FALSE;		// display commands
+    msg_silent = FALSE;		// display messages
+    emsg_silent = FALSE;	// display error messages
+    redir_off = TRUE;		// don't redirect debug commands
 
     State = NORMAL;
     debug_mode = TRUE;
@@ -110,19 +110,18 @@ do_debug(char_u *cmd)
 	smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
     else
 	smsg(_("cmd: %s"), cmd);
-    /*
-     * Repeat getting a command and executing it.
-     */
+
+    // Repeat getting a command and executing it.
     for (;;)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
 
-	/* Save the current typeahead buffer and replace it with an empty one.
-	 * This makes sure we get input from the user here and don't interfere
-	 * with the commands being executed.  Reset "ex_normal_busy" to avoid
-	 * the side effects of using ":normal". Save the stuff buffer and make
-	 * it empty. Set ignore_script to avoid reading from script input. */
+	// Save the current typeahead buffer and replace it with an empty one.
+	// This makes sure we get input from the user here and don't interfere
+	// with the commands being executed.  Reset "ex_normal_busy" to avoid
+	// the side effects of using ":normal". Save the stuff buffer and make
+	// it empty. Set ignore_script to avoid reading from script input.
 	save_ex_normal_busy = ex_normal_busy;
 	ex_normal_busy = 0;
 	if (!debug_greedy)
@@ -147,9 +146,9 @@ do_debug(char_u *cmd)
 	msg_starthere();
 	if (cmdline != NULL)
 	{
-	    /* If this is a debug command, set "last_cmd".
-	     * If not, reset "last_cmd".
-	     * For a blank line use previous command. */
+	    // If this is a debug command, set "last_cmd".
+	    // If not, reset "last_cmd".
+	    // For a blank line use previous command.
 	    p = skipwhite(cmdline);
 	    if (*p != NUL)
 	    {
@@ -202,7 +201,7 @@ do_debug(char_u *cmd)
 		}
 		if (last_cmd != 0)
 		{
-		    /* Check that the tail matches. */
+		    // Check that the tail matches.
 		    ++p;
 		    while (*p != NUL && *p == *tail)
 		    {
@@ -216,8 +215,8 @@ do_debug(char_u *cmd)
 
 	    if (last_cmd != 0)
 	    {
-		/* Execute debug command: decided where to break next and
-		 * return. */
+		// Execute debug command: decided where to break next and
+		// return.
 		switch (last_cmd)
 		{
 		    case CMD_CONT:
@@ -239,7 +238,7 @@ do_debug(char_u *cmd)
 		    case CMD_INTERRUPT:
 			got_int = TRUE;
 			debug_break_level = 9999;
-			/* Do not repeat ">interrupt" cmd, continue stepping. */
+			// Do not repeat ">interrupt" cmd, continue stepping.
 			last_cmd = CMD_STEP;
 			break;
 		    case CMD_BACKTRACE:
@@ -265,12 +264,12 @@ do_debug(char_u *cmd)
 			do_checkbacktracelevel();
 			continue;
 		}
-		/* Going out reset backtrace_level */
+		// Going out reset backtrace_level
 		debug_backtrace_level = 0;
 		break;
 	    }
 
-	    /* don't debug this command */
+	    // don't debug this command
 	    n = debug_break_level;
 	    debug_break_level = -1;
 	    (void)do_cmdline(cmdline, getexline, NULL,
@@ -295,8 +294,8 @@ do_debug(char_u *cmd)
     emsg_silent = save_emsg_silent;
     redir_off = save_redir_off;
 
-    /* Only print the message again when typing a command before coming back
-     * here. */
+    // Only print the message again when typing a command before coming back
+    // here.
     debug_did_msg = TRUE;
 }
 
@@ -428,7 +427,7 @@ dbg_check_breakpoint(exarg_T *eap)
     {
 	if (!eap->skip)
 	{
-	    /* replace K_SNR with "<SNR>" */
+	    // replace K_SNR with "<SNR>"
 	    if (debug_breakpoint_name[0] == K_SPECIAL
 		    && debug_breakpoint_name[1] == KS_EXTRA
 		    && debug_breakpoint_name[2] == (int)KE_SNR)
@@ -472,14 +471,12 @@ dbg_check_skipped(exarg_T *eap)
 
     if (debug_skipped)
     {
-	/*
-	 * Save the value of got_int and reset it.  We don't want a previous
-	 * interruption cause flushing the input buffer.
-	 */
+	// Save the value of got_int and reset it.  We don't want a previous
+	// interruption cause flushing the input buffer.
 	prev_got_int = got_int;
 	got_int = FALSE;
 	debug_breakpoint_name = debug_skipped_name;
-	/* eap->skip is TRUE */
+	// eap->skip is TRUE
 	eap->skip = FALSE;
 	(void)dbg_check_breakpoint(eap);
 	eap->skip = TRUE;
@@ -495,25 +492,25 @@ dbg_check_skipped(exarg_T *eap)
  */
 struct debuggy
 {
-    int		dbg_nr;		/* breakpoint number */
-    int		dbg_type;	/* DBG_FUNC, DBG_FILE or DBG_EXPR */
-    char_u	*dbg_name;	/* function, expression or file name */
-    regprog_T	*dbg_prog;	/* regexp program */
-    linenr_T	dbg_lnum;	/* line number in function or file */
-    int		dbg_forceit;	/* ! used */
+    int		dbg_nr;		// breakpoint number
+    int		dbg_type;	// DBG_FUNC, DBG_FILE or DBG_EXPR
+    char_u	*dbg_name;	// function, expression or file name
+    regprog_T	*dbg_prog;	// regexp program
+    linenr_T	dbg_lnum;	// line number in function or file
+    int		dbg_forceit;	// ! used
 #ifdef FEAT_EVAL
-    typval_T    *dbg_val;       /* last result of watchexpression */
+    typval_T    *dbg_val;       // last result of watchexpression
 #endif
-    int		dbg_level;      /* stored nested level for expr */
+    int		dbg_level;      // stored nested level for expr
 };
 
 static garray_T dbg_breakp = {0, 0, sizeof(struct debuggy), 4, NULL};
 #define BREAKP(idx)		(((struct debuggy *)dbg_breakp.ga_data)[idx])
 #define DEBUGGY(gap, idx)	(((struct debuggy *)gap->ga_data)[idx])
-static int last_breakp = 0;	/* nr of last defined breakpoint */
+static int last_breakp = 0;	// nr of last defined breakpoint
 
 #ifdef FEAT_PROFILE
-/* Profiling uses file and func names similar to breakpoints. */
+// Profiling uses file and func names similar to breakpoints.
 static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
 #endif
 #define DBG_FUNC	1
@@ -531,7 +528,7 @@ static linenr_T debuggy_find(int file,char_u *fname, linenr_T after, garray_T *g
     static int
 dbg_parsearg(
     char_u	*arg,
-    garray_T	*gap)	    /* either &dbg_breakp or &prof_ga */
+    garray_T	*gap)	    // either &dbg_breakp or &prof_ga
 {
     char_u	*p = arg;
     char_u	*q;
@@ -542,7 +539,7 @@ dbg_parsearg(
 	return FAIL;
     bp = &DEBUGGY(gap, gap->ga_len);
 
-    /* Find "func" or "file". */
+    // Find "func" or "file".
     if (STRNCMP(p, "func", 4) == 0)
 	bp->dbg_type = DBG_FUNC;
     else if (STRNCMP(p, "file", 4) == 0)
@@ -574,7 +571,7 @@ dbg_parsearg(
     }
     p = skipwhite(p + 4);
 
-    /* Find optional line number. */
+    // Find optional line number.
     if (here)
 	bp->dbg_lnum = curwin->w_cursor.lnum;
     else if (
@@ -589,7 +586,7 @@ dbg_parsearg(
     else
 	bp->dbg_lnum = 0;
 
-    /* Find the function or file name.  Don't accept a function name with (). */
+    // Find the function or file name.  Don't accept a function name with ().
     if ((!here && *p == NUL)
 	    || (here && *p != NUL)
 	    || (bp->dbg_type == DBG_FUNC && strstr((char *)p, "()") != NULL))
@@ -610,9 +607,9 @@ dbg_parsearg(
     }
     else
     {
-	/* Expand the file name in the same way as do_source().  This means
-	 * doing it twice, so that $DIR/file gets expanded when $DIR is
-	 * "~/dir". */
+	// Expand the file name in the same way as do_source().  This means
+	// doing it twice, so that $DIR/file gets expanded when $DIR is
+	// "~/dir".
 	q = expand_env_save(p);
 	if (q == NULL)
 	    return FAIL;
@@ -667,7 +664,7 @@ ex_breakadd(exarg_T *eap)
 		vim_free(bp->dbg_name);
 	    else
 	    {
-		if (bp->dbg_lnum == 0)	/* default line number is 1 */
+		if (bp->dbg_lnum == 0)	// default line number is 1
 		    bp->dbg_lnum = 1;
 #ifdef FEAT_PROFILE
 		if (eap->cmdidx != CMD_profile)
@@ -681,7 +678,7 @@ ex_breakadd(exarg_T *eap)
 	}
 	else
 	{
-	    /* DBG_EXPR */
+	    // DBG_EXPR
 	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
 	    ++debug_tick;
 	}
@@ -727,7 +724,7 @@ ex_breakdel(exarg_T *eap)
 
     if (vim_isdigit(*eap->arg))
     {
-	/* ":breakdel {nr}" */
+	// ":breakdel {nr}"
 	nr = atol((char *)eap->arg);
 	for (i = 0; i < gap->ga_len; ++i)
 	    if (DEBUGGY(gap, i).dbg_nr == nr)
@@ -743,7 +740,7 @@ ex_breakdel(exarg_T *eap)
     }
     else
     {
-	/* ":breakdel {func|file|expr} [lnum] {name}" */
+	// ":breakdel {func|file|expr} [lnum] {name}"
 	if (dbg_parsearg(eap->arg, gap) == FAIL)
 	    return;
 	bp = &DEBUGGY(gap, gap->ga_len);
@@ -789,7 +786,7 @@ ex_breakdel(exarg_T *eap)
 		break;
 	}
 
-	/* If all breakpoints were removed clear the array. */
+	// If all breakpoints were removed clear the array.
 	if (gap->ga_len == 0)
 	    ga_clear(gap);
     }
@@ -830,9 +827,9 @@ ex_breaklist(exarg_T *eap UNUSED)
  */
     linenr_T
 dbg_find_breakpoint(
-    int		file,	    /* TRUE for a file, FALSE for a function */
-    char_u	*fname,	    /* file or function name */
-    linenr_T	after)	    /* after this line number */
+    int		file,	    // TRUE for a file, FALSE for a function
+    char_u	*fname,	    // file or function name
+    linenr_T	after)	    // after this line number
 {
     return debuggy_find(file, fname, after, &dbg_breakp, NULL);
 }
@@ -843,9 +840,9 @@ dbg_find_breakpoint(
  */
     int
 has_profiling(
-    int		file,	    /* TRUE for a file, FALSE for a function */
-    char_u	*fname,	    /* file or function name */
-    int		*fp)	    /* return: forceit */
+    int		file,	    // TRUE for a file, FALSE for a function
+    char_u	*fname,	    // file or function name
+    int		*fp)	    // return: forceit
 {
     return (debuggy_find(file, fname, (linenr_T)0, &prof_ga, fp)
 							      != (linenr_T)0);
@@ -857,11 +854,11 @@ has_profiling(
  */
     static linenr_T
 debuggy_find(
-    int		file,	    /* TRUE for a file, FALSE for a function */
-    char_u	*fname,	    /* file or function name */
-    linenr_T	after,	    /* after this line number */
-    garray_T	*gap,	    /* either &dbg_breakp or &prof_ga */
-    int		*fp)	    /* if not NULL: return forceit */
+    int		file,	    // TRUE for a file, FALSE for a function
+    char_u	*fname,	    // file or function name
+    linenr_T	after,	    // after this line number
+    garray_T	*gap,	    // either &dbg_breakp or &prof_ga
+    int		*fp)	    // if not NULL: return forceit
 {
     struct debuggy *bp;
     int		i;
@@ -869,11 +866,11 @@ debuggy_find(
     char_u	*name = fname;
     int		prev_got_int;
 
-    /* Return quickly when there are no breakpoints. */
+    // Return quickly when there are no breakpoints.
     if (gap->ga_len == 0)
 	return (linenr_T)0;
 
-    /* Replace K_SNR in function name with "<SNR>". */
+    // Replace K_SNR in function name with "<SNR>".
     if (!file && fname[0] == K_SPECIAL)
     {
 	name = alloc((unsigned)STRLEN(fname) + 3);
@@ -888,8 +885,8 @@ debuggy_find(
 
     for (i = 0; i < gap->ga_len; ++i)
     {
-	/* Skip entries that are not useful or are for a line that is beyond
-	 * an already found breakpoint. */
+	// Skip entries that are not useful or are for a line that is beyond
+	// an already found breakpoint.
 	bp = &DEBUGGY(gap, i);
 	if (((bp->dbg_type == DBG_FILE) == file &&
 		bp->dbg_type != DBG_EXPR && (
@@ -898,11 +895,9 @@ debuggy_find(
 #endif
 		(bp->dbg_lnum > after && (lnum == 0 || bp->dbg_lnum < lnum)))))
 	{
-	    /*
-	     * Save the value of got_int and reset it.  We don't want a
-	     * previous interruption cancel matching, only hitting CTRL-C
-	     * while matching should abort it.
-	     */
+	    // Save the value of got_int and reset it.  We don't want a
+	    // previous interruption cancel matching, only hitting CTRL-C
+	    // while matching should abort it.
 	    prev_got_int = got_int;
 	    got_int = FALSE;
 	    if (vim_regexec_prog(&bp->dbg_prog, FALSE, name, (colnr_T)0))
@@ -942,8 +937,8 @@ debuggy_find(
 
 			line = TRUE;
 			debug_oldval = typval_tostring(bp->dbg_val);
-			/* Need to evaluate again, typval_compare() overwrites
-			 * "tv". */
+			// Need to evaluate again, typval_compare() overwrites
+			// "tv".
 			v = eval_expr(bp->dbg_name, NULL);
 			debug_newval = typval_tostring(v);
 			free_tv(bp->dbg_val);
@@ -983,7 +978,7 @@ debuggy_find(
     void
 dbg_breakpoint(char_u *name, linenr_T lnum)
 {
-    /* We need to check if this line is actually executed in do_one_cmd() */
+    // We need to check if this line is actually executed in do_one_cmd()
     debug_breakpoint_name = name;
     debug_breakpoint_lnum = lnum;
 }
