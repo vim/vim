@@ -69,6 +69,9 @@ gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
     static int	recursive = 0;
+#ifdef GUI_MAY_SPAWN
+    char	*msg = NULL;
+#endif
 
     old_term = vim_strsave(T_NAME);
 
@@ -106,7 +109,7 @@ gui_start(char_u *arg UNUSED)
 # endif
 	    )
     {
-	gui_mch_do_spawn(arg);
+	msg = gui_mch_do_spawn(arg);
     }
     else
 #endif
@@ -136,6 +139,10 @@ gui_start(char_u *arg UNUSED)
 	settmode(TMODE_RAW);		/* restart RAW mode */
 #ifdef FEAT_TITLE
 	set_title_defaults();		/* set 'title' and 'icon' again */
+#endif
+#ifdef GUI_MAY_SPAWN
+	if (msg)
+	    emsg(msg);
 #endif
     }
 

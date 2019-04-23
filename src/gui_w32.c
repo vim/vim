@@ -4837,16 +4837,21 @@ ole_error(char *arg)
 #endif
 
 #if defined(GUI_MAY_SPAWN) || defined(PROTO)
-    static void
+    static char *
 gvim_error(void)
 {
-    mch_errmsg(_("Exxx: GUI cannot be used. Cannot execute gvim.exe."));
-    mch_errmsg("\n");
+    char *msg = _("Exxx: GUI cannot be used. Cannot execute gvim.exe.");
+
     if (starting)
+    {
+	mch_errmsg(msg);
+	mch_errmsg("\n");
 	mch_exit(2);
+    }
+    return msg;
 }
 
-    void
+    char *
 gui_mch_do_spawn(char_u *arg)
 {
     int			ret, len;
@@ -4957,7 +4962,7 @@ error:
     vim_free(newcmd);
     vim_free(tofree1);
     vim_free(tofree2);
-    gvim_error();
+    return gvim_error();
 }
 #endif
 
