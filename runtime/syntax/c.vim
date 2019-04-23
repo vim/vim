@@ -297,6 +297,14 @@ if !exists("c_no_c11")
   syn keyword	cType		atomic_int_least8_t atomic_uint_least8_t
   syn keyword	cType		atomic_int_least16_t atomic_uint_least16_t
   syn keyword	cType		atomic_int_least32_t atomic_uint_least32_t
+  syn keyword	cType		atomic_int_least64_t atomic_uint_least64_t
+  syn keyword	cType		atomic_int_fast8_t atomic_uint_fast8_t
+  syn keyword	cType		atomic_int_fast16_t atomic_uint_fast16_t
+  syn keyword	cType		atomic_int_fast32_t atomic_uint_fast32_t
+  syn keyword	cType		atomic_int_fast64_t atomic_uint_fast64_t
+  syn keyword	cType		atomic_intptr_t atomic_uintptr_t
+  syn keyword	cType		atomic_size_t atomic_ptrdiff_t
+  syn keyword	cType		atomic_intmax_t atomic_uintmax_t
 endif
 
 if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
