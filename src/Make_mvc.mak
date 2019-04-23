@@ -1588,7 +1588,7 @@ $(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 
 $(OUTDIR)/os_w32exec.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
-	$(CC) $(CFLAGS) /UFEAT_GUI_MSWIN /Fo$@ os_w32exe.c
+	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 	$(CC) $(CFLAGS) /Fo$@ os_w32exe.c
