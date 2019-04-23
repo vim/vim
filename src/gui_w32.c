@@ -4862,7 +4862,12 @@ gui_mch_do_spawn(char_u *arg)
     p = wcsrchr(name, L'\\');
     if (p == NULL)
 	goto error;
-    wcscpy(p + 1, L"gvim.exe");	    // Replace the executable name.
+    // Replace the executable name from vim(d).exe to gvim(d).exe.
+# ifdef DEBUG
+    wcscpy(p + 1, L"gvimd.exe");
+# else
+    wcscpy(p + 1, L"gvim.exe");
+# endif
 
 # ifdef FEAT_SESSION
     if (starting)
