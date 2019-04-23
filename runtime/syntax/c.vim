@@ -289,6 +289,14 @@ if !exists("c_no_c11")
   syn keyword	cOperator	_Static_assert static_assert
   syn keyword	cStorageClass	_Thread_local thread_local
   syn keyword   cType		char16_t char32_t
+  " C11 atomics
+  syn keyword	cType		atomic_bool atomic_char atomic_schar atomic_uchar
+  syn keyword	Ctype		atomic_short atomic_ushort atomic_int atomic_uint
+  syn keyword	cType		atomic_long atomic_ulong atomic_llong atomic_ullong
+  syn keyword	cType		atomic_char16_t atomic_char32_t atomic_wchar_t
+  syn keyword	cType		atomic_int_least8_t atomic_uint_least8_t
+  syn keyword	cType		atomic_int_least16_t atomic_uint_least16_t
+  syn keyword	cType		atomic_int_least32_t atomic_uint_least32_t
 endif
 
 if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
