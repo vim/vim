@@ -4022,7 +4022,7 @@ showmap(
 	msg_putchar(' ');
 
     /* Display the LHS.  Get length of what we write. */
-    len = msg_outtrans_special(mp->m_keys, TRUE);
+    len = msg_outtrans_special(mp->m_keys, TRUE, 0);
     do
     {
 	msg_putchar(' ');		/* padd with blanks */
@@ -4053,7 +4053,7 @@ showmap(
 	if (s != NULL)
 	{
 	    vim_unescape_csi(s);
-	    msg_outtrans_special(s, FALSE);
+	    msg_outtrans_special(s, FALSE, 0);
 	    vim_free(s);
 	}
     }

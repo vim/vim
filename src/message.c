@@ -1594,7 +1594,8 @@ msg_make(char_u *arg)
     int
 msg_outtrans_special(
     char_u	*strstart,
-    int		from)	/* TRUE for lhs of a mapping */
+    int		from,	// TRUE for lhs of a mapping
+    int		maxlen) // screen columns, 0 for unlimeted
 {
     char_u	*str = strstart;
     int		retval = 0;
@@ -1614,6 +1615,8 @@ msg_outtrans_special(
 	else
 	    text = (char *)str2special(&str, from);
 	len = vim_strsize((char_u *)text);
+	if (maxlen > 0 && retval + len >= maxlen)
+	    break;
 	/* Highlight special keys */
 	msg_puts_attr(text, len > 1
 		&& (*mb_ptr2len)((char_u *)text) <= 1 ? attr : 0);

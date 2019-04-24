@@ -6000,6 +6000,7 @@ uc_list(char_u *name, size_t name_len)
     int		found = FALSE;
     ucmd_T	*cmd;
     int		len;
+    int		over;
     long	a;
     garray_T	*gap;
 
@@ -6019,17 +6020,36 @@ uc_list(char_u *name, size_t name_len)
 
 	    /* Put out the title first time */
 	    if (!found)
-		msg_puts_title(_("\n    Name        Args       Address   Complete  Definition"));
+		msg_puts_title(_("\n    Name              Args Address Complete   Definition"));
 	    found = TRUE;
 	    msg_putchar('\n');
 	    if (got_int)
 		break;
 
-	    /* Special cases */
-	    msg_putchar(a & BANG ? '!' : ' ');
-	    msg_putchar(a & REGSTR ? '"' : ' ');
-	    msg_putchar(gap != &ucmds ? 'b' : ' ');
-	    msg_putchar(' ');
+	    // Special cases
+	    len = 4;
+	    if (a & BANG)
+	    {
+		msg_putchar('!');
+		--len;
+	    }
+	    if (a & REGSTR)
+	    {
+		msg_putchar('"');
+		--len;
+	    }
+	    if (gap != &ucmds)
+	    {
+		msg_putchar('b');
+		--len;
+	    }
+	    if (a & TRLBAR)
+	    {
+		msg_putchar('|');
+		--len;
+	    }
+	    while (len-- > 0)
+		msg_putchar(' ');
 
 	    msg_outtrans_attr(cmd->uc_name, HL_ATTR(HLF_D));
 	    len = (int)STRLEN(cmd->uc_name) + 4;
@@ -6037,30 +6057,33 @@ uc_list(char_u *name, size_t name_len)
 	    do {
 		msg_putchar(' ');
 		++len;
-	    } while (len < 16);
+	    } while (len < 22);
 
+	    // "over" is how much longer the name is than the column width for
+	    // the name, we'll try to align what comes after.
+	    over = len - 22;
 	    len = 0;
 
-	    /* Arguments */
+	    // Arguments
 	    switch ((int)(a & (EXTRA|NOSPC|NEEDARG)))
 	    {
-	    case 0:			IObuff[len++] = '0'; break;
-	    case (EXTRA):		IObuff[len++] = '*'; break;
-	    case (EXTRA|NOSPC):		IObuff[len++] = '?'; break;
-	    case (EXTRA|NEEDARG):	IObuff[len++] = '+'; break;
-	    case (EXTRA|NOSPC|NEEDARG): IObuff[len++] = '1'; break;
+		case 0:			    IObuff[len++] = '0'; break;
+		case (EXTRA):		    IObuff[len++] = '*'; break;
+		case (EXTRA|NOSPC):	    IObuff[len++] = '?'; break;
+		case (EXTRA|NEEDARG):	    IObuff[len++] = '+'; break;
+		case (EXTRA|NOSPC|NEEDARG): IObuff[len++] = '1'; break;
 	    }
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 5);
+	    } while (len < 5 - over);
 
-	    /* Range */
+	    // Address / Range
 	    if (a & (RANGE|COUNT))
 	    {
 		if (a & COUNT)
 		{
-		    /* -count=N */
+		    // -count=N
 		    sprintf((char *)IObuff + len, "%ldc", cmd->uc_def);
 		    len += (int)STRLEN(IObuff + len);
 		}
@@ -6068,7 +6091,7 @@ uc_list(char_u *name, size_t name_len)
 		    IObuff[len++] = '%';
 		else if (cmd->uc_def >= 0)
 		{
-		    /* -range=N */
+		    // -range=N
 		    sprintf((char *)IObuff + len, "%ld", cmd->uc_def);
 		    len += (int)STRLEN(IObuff + len);
 		}
@@ -6078,9 +6101,9 @@ uc_list(char_u *name, size_t name_len)
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 11);
+	    } while (len < 9 - over);
 
-	    /* Address Type */
+	    // Address Type
 	    for (j = 0; addr_type_complete[j].expand != -1; ++j)
 		if (addr_type_complete[j].expand != ADDR_LINES
 			&& addr_type_complete[j].expand == cmd->uc_addr_type)
@@ -6092,9 +6115,9 @@ uc_list(char_u *name, size_t name_len)
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 21);
+	    } while (len < 13 - over);
 
-	    /* Completion */
+	    // Completion
 	    for (j = 0; command_complete[j].expand != 0; ++j)
 		if (command_complete[j].expand == cmd->uc_compl)
 		{
@@ -6105,12 +6128,13 @@ uc_list(char_u *name, size_t name_len)
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 35);
+	    } while (len < 24 - over);
 
 	    IObuff[len] = '\0';
 	    msg_outtrans(IObuff);
 
-	    msg_outtrans_special(cmd->uc_rep, FALSE);
+	    msg_outtrans_special(cmd->uc_rep, FALSE,
+					     name_len == 0 ? Columns - 46 : 0);
 #ifdef FEAT_EVAL
 	    if (p_verbose > 0)
 		last_set_msg(cmd->uc_script_ctx);
@@ -6344,9 +6368,8 @@ ex_command(exarg_T *eap)
     end = p;
     name_len = (int)(end - name);
 
-    /* If there is nothing after the name, and no attributes were specified,
-     * we are listing commands
-     */
+    // If there is nothing after the name, and no attributes were specified,
+    // we are listing commands
     p = skipwhite(end);
     if (!has_attr && ends_excmd(*p))
     {
