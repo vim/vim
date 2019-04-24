@@ -4854,11 +4854,13 @@ gvim_error(void)
     char *
 gui_mch_do_spawn(char_u *arg)
 {
-    int			ret, len;
+    int			len;
+# if defined(FEAT_SESSION) && defined(EXPERIMENTAL_GUI_CMD)
     char_u		*session = NULL;
+    LPWSTR		tofree1 = NULL;
+# endif
     WCHAR		name[MAX_PATH];
-    LPWSTR		cmd, newcmd = NULL, p, warg;
-    LPWSTR		tofree1 = NULL, tofree2 = NULL;
+    LPWSTR		cmd, newcmd = NULL, p, warg, tofree2 = NULL;
     STARTUPINFOW	si = {sizeof(si)};
     PROCESS_INFORMATION pi;
 
@@ -4874,7 +4876,7 @@ gui_mch_do_spawn(char_u *arg)
     wcscpy(p + 1, L"gvim.exe");
 # endif
 
-# ifdef FEAT_SESSION
+# if defined(FEAT_SESSION) && defined(EXPERIMENTAL_GUI_CMD)
     if (starting)
 # endif
     {
@@ -4895,12 +4897,13 @@ gui_mch_do_spawn(char_u *arg)
 	}
 	cmd = p;
     }
-# ifdef FEAT_SESSION
+# if defined(FEAT_SESSION) && defined(EXPERIMENTAL_GUI_CMD)
     else
     {
 	// Create a session file and pass it to the new process.
-	LPWSTR wsession;
-	char_u *savebg;
+	LPWSTR	wsession;
+	char_u	*savebg;
+	int	ret;
 
 	session = vim_tempname('s', FALSE);
 	if (session == NULL)
@@ -4956,11 +4959,13 @@ gui_mch_do_spawn(char_u *arg)
     mch_exit(0);
 
 error:
+# if defined(FEAT_SESSION) && defined(EXPERIMENTAL_GUI_CMD)
     if (session)
 	mch_remove(session);
     vim_free(session);
-    vim_free(newcmd);
     vim_free(tofree1);
+# endif
+    vim_free(newcmd);
     vim_free(tofree2);
     return gvim_error();
 }

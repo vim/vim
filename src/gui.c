@@ -102,7 +102,11 @@ gui_start(char_u *arg UNUSED)
     else
 #endif
 #ifdef GUI_MAY_SPAWN
-    if (gui.dospawn && gui.dofork && !vim_strchr(p_go, GO_FORG)
+    if (gui.dospawn
+# ifdef EXPERIMENTAL_GUI_CMD
+	    && gui.dofork
+# endif
+	    && !vim_strchr(p_go, GO_FORG)
 	    && !anyBufIsChanged()
 # ifdef FEAT_JOB_CHANNEL
 	    && !job_any_running()
@@ -140,7 +144,7 @@ gui_start(char_u *arg UNUSED)
 #ifdef FEAT_TITLE
 	set_title_defaults();		/* set 'title' and 'icon' again */
 #endif
-#ifdef GUI_MAY_SPAWN
+#if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
 	if (msg)
 	    emsg(msg);
 #endif
@@ -4967,15 +4971,22 @@ ex_gui(exarg_T *eap)
     }
     if (!gui.in_use)
     {
+#if defined(VIMDLL) && !defined(EXPERIMENTAL_GUI_CMD)
+	emsg(_(e_nogvim));
+	return;
+#else
 	/* Clear the command.  Needed for when forking+exiting, to avoid part
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
+# ifdef GUI_MAY_SPAWN
 	if (!ends_excmd(*eap->arg))
 	    gui_start(eap->arg);
 	else
+# endif
 	    gui_start(NULL);
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
+# endif
 #endif
     }
     if (!ends_excmd(*eap->arg))

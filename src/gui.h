@@ -238,7 +238,13 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #endif
 
 #ifdef VIMDLL
+// Use spawn when GUI is starting.
 # define GUI_MAY_SPAWN
+
+// Uncomment the next definition if you want to use the `:gui` command on
+// Windows.  It uses `:mksession` to inherit the session from vim.exe to
+// gvim.exe.  So, it doesn't work perfectly. (EXPERIMENTAL)
+//# define EXPERIMENTAL_GUI_CMD
 #endif
 
 typedef struct Gui
