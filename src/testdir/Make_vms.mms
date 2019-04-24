@@ -122,10 +122,6 @@ SCRIPT_MZSCH = test70.out
 SCRIPT_ODS5 = test102.out
 .ENDIF
 
-.IFDEF HAVE_GZIP
-SCRIPT_GZIP = test11.out
-.ENDIF
-
 .IFDEF HAVE_GDIFF
 SCRIPT_GDIFF = test47.out
 .ENDIF
@@ -154,7 +150,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
+all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) \
     $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
