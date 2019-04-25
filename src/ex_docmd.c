@@ -5915,17 +5915,18 @@ static struct
 {
     int	    expand;
     char    *name;
+    char    *shortname;
 } addr_type_complete[] =
 {
-    {ADDR_ARGUMENTS, "arguments"},
-    {ADDR_LINES, "lines"},
-    {ADDR_LOADED_BUFFERS, "loaded_buffers"},
-    {ADDR_TABS, "tabs"},
-    {ADDR_BUFFERS, "buffers"},
-    {ADDR_WINDOWS, "windows"},
-    {ADDR_QUICKFIX, "quickfix"},
-    {ADDR_OTHER, "other"},
-    {-1, NULL}
+    {ADDR_ARGUMENTS, "arguments", "arg"},
+    {ADDR_LINES, "lines", "line"},
+    {ADDR_LOADED_BUFFERS, "loaded_buffers", "load"},
+    {ADDR_TABS, "tabs", "tab"},
+    {ADDR_BUFFERS, "buffers", "buf"},
+    {ADDR_WINDOWS, "windows", "win"},
+    {ADDR_QUICKFIX, "quickfix", "qf"},
+    {ADDR_OTHER, "other", "?"},
+    {-1, NULL, NULL}
 };
 #endif
 
@@ -6020,7 +6021,7 @@ uc_list(char_u *name, size_t name_len)
 
 	    /* Put out the title first time */
 	    if (!found)
-		msg_puts_title(_("\n    Name              Args Address Complete   Definition"));
+		msg_puts_title(_("\n    Name              Args Address Complete    Definition"));
 	    found = TRUE;
 	    msg_putchar('\n');
 	    if (got_int)
@@ -6101,14 +6102,14 @@ uc_list(char_u *name, size_t name_len)
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 9 - over);
+	    } while (len < 8 - over);
 
 	    // Address Type
 	    for (j = 0; addr_type_complete[j].expand != -1; ++j)
 		if (addr_type_complete[j].expand != ADDR_LINES
 			&& addr_type_complete[j].expand == cmd->uc_addr_type)
 		{
-		    STRCPY(IObuff + len, addr_type_complete[j].name);
+		    STRCPY(IObuff + len, addr_type_complete[j].shortname);
 		    len += (int)STRLEN(IObuff + len);
 		    break;
 		}
@@ -6128,13 +6129,13 @@ uc_list(char_u *name, size_t name_len)
 
 	    do {
 		IObuff[len++] = ' ';
-	    } while (len < 24 - over);
+	    } while (len < 25 - over);
 
 	    IObuff[len] = '\0';
 	    msg_outtrans(IObuff);
 
 	    msg_outtrans_special(cmd->uc_rep, FALSE,
-					     name_len == 0 ? Columns - 46 : 0);
+					     name_len == 0 ? Columns - 47 : 0);
 #ifdef FEAT_EVAL
 	    if (p_verbose > 0)
 		last_set_msg(cmd->uc_script_ctx);
