@@ -792,8 +792,8 @@ OBJ = \
 
 !if "$(VIMDLL)" == "yes"
 OBJ = $(OBJ) $(OUTDIR)\os_w32dll.obj $(OUTDIR)\vimd.res
-EXEOBJC = $(OUTDIR)\os_w32exec.obj $(OUTDIR)\vim.res
-EXEOBJG = $(OUTDIR)\os_w32exeg.obj $(OUTDIR)\vim.res
+EXEOBJC = $(OUTDIR)\os_w32exec.obj $(OUTDIR)\vimc.res
+EXEOBJG = $(OUTDIR)\os_w32exeg.obj $(OUTDIR)\vimg.res
 CFLAGS = $(CFLAGS) -DVIMDLL
 !else
 OBJ = $(OBJ) $(OUTDIR)\os_w32exe.obj $(OUTDIR)\vim.res
@@ -1638,6 +1638,14 @@ $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
+
+$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+				vim.ico
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
+
+$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+				vim.ico
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DFEAT_GUI_MSWIN vim.rc
 
 $(OUTDIR)/vimd.res:	$(OUTDIR) vim.rc version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
