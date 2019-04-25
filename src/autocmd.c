@@ -2126,6 +2126,7 @@ apply_autocmds_group(
 	check_lnums(TRUE);	// make sure cursor and topline are valid
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
+	reset_lnums();
 #ifdef FEAT_EVAL
 	if (eap != NULL)
 	{

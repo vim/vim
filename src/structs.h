@@ -2715,6 +2715,16 @@ struct matchitem
 #endif
 };
 
+// Structure to store last cursor position
+// For now, only stores topline and the cursor position
+typedef struct
+{
+    int		w_topline_save;	// backuped topline value
+    int		w_topline_init;	// reset topline value
+    pos_T	w_cursor_save;	// backuped cursor position
+    pos_T	w_cursor_init;	// reset cursor position
+} winpos_T;
+
 #ifdef FEAT_MENU
 typedef struct {
     int		wb_startcol;
@@ -2803,6 +2813,8 @@ struct window_S
     int		w_wincol;	    /* Leftmost column of window in screen. */
     int		w_width;	    /* Width of window, excluding separation. */
     int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
+    winpos_T	w_save_cursor;	    /* Backup of cursor pos and topline */
+
 
     /*
      * === start of cached values ====
