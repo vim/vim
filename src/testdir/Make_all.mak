@@ -33,7 +33,6 @@ SCRIPTS_ALL = \
 
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 = \
-	test11.out \
 	test52.out \
 	test86.out \
 	test87.out
