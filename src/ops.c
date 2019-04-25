@@ -6175,6 +6175,11 @@ handle_viminfo_register(garray_T *values, int force)
     {
 	y_ptr->y_array =
 		   (char_u **)alloc((unsigned)(linecount * sizeof(char_u *)));
+    if (y_ptr->y_array == NULL)
+    {
+        y_ptr->y_size = 0; /* ensure object state is consistent */
+        return;
+    }
 	for (i = 0; i < linecount; i++)
 	{
 	    if (vp[i + 6].bv_allocated)

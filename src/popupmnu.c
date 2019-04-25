@@ -1104,6 +1104,13 @@ split_message(char_u *mesg, pumitem_T **array)
 
 	    /* put indent at the start */
 	    p = alloc(thislen + item->indent * 2 + 1);
+        if (p == NULL)
+        {
+	        for(line = 0; line <= height - 1; ++line)
+	        vim_free((*array)[line].pum_text);
+	        vim_free(*array);
+	        goto failed;
+        }
 	    for (ind = 0; ind < item->indent * 2; ++ind)
 		p[ind] = ' ';
 

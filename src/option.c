@@ -13015,6 +13015,8 @@ tabstop_copy(int *oldts)
 	return 0;
 
     newts = (int *) alloc((unsigned) ((oldts[0] + 1) * sizeof(int)));
+    if (newts == NULL)
+    return newts;
     for (t = 0; t <= oldts[0]; ++t)
 	newts[t] = oldts[t];
 
