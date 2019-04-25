@@ -1526,6 +1526,7 @@ func Test_autocmd_bufreadpre()
   close
   close
   call delete('XAutocmdBufReadPre.txt')
+  set cpo-=g
 endfunc
 
 " FileChangedShell tested in test_filechanged.vim
