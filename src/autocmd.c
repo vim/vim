@@ -2123,9 +2123,16 @@ apply_autocmds_group(
 	for (ap = patcmd.curpat; ap->next != NULL; ap = ap->next)
 	    ap->last = FALSE;
 	ap->last = TRUE;
-	check_lnums(TRUE);	// make sure cursor and topline are valid
+
+	// make sure cursor and topline are valid
+	check_lnums(TRUE);
+
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
+
+	// restore cursor and topline, unless they were changed
+	reset_lnums();
+
 #ifdef FEAT_EVAL
 	if (eap != NULL)
 	{

@@ -6196,10 +6196,39 @@ check_lnums(int do_curwin)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if ((do_curwin || wp != curwin) && wp->w_buffer == curbuf)
 	{
+	    // save the original cursor position and topline
+	    wp->w_save_cursor.w_cursor_save = wp->w_cursor;
+	    wp->w_save_cursor.w_topline_save = wp->w_topline;
+
 	    if (wp->w_cursor.lnum > curbuf->b_ml.ml_line_count)
 		wp->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 	    if (wp->w_topline > curbuf->b_ml.ml_line_count)
 		wp->w_topline = curbuf->b_ml.ml_line_count;
+
+	    // save the corrected cursor position and topline
+	    wp->w_save_cursor.w_cursor_corr = wp->w_cursor;
+	    wp->w_save_cursor.w_topline_corr = wp->w_topline;
+	}
+}
+
+/*
+ * Reset cursor and topline to its stored values from check_lnums().
+ * check_lnums() must have been called first!
+ */
+    void
+reset_lnums()
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == curbuf)
+	{
+	    // Restore the value if the autocommand didn't change it.
+	    if (EQUAL_POS(wp->w_save_cursor.w_cursor_corr, wp->w_cursor))
+		wp->w_cursor = wp->w_save_cursor.w_cursor_save;
+	    if (wp->w_save_cursor.w_topline_corr == wp->w_topline)
+		wp->w_topline = wp->w_save_cursor.w_topline_save;
 	}
 }
 
