@@ -26,10 +26,7 @@
 __declspec(dllimport)
 #endif
 int _cdecl VimMain(int argc, char **argv);
-#if defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
-__declspec(dllimport)
-# endif
+#ifndef VIMDLL
 void _cdecl SaveInst(HINSTANCE hInst);
 #endif
 
@@ -46,10 +43,12 @@ wWinMain(
 wmain(int argc UNUSED, wchar_t **argv UNUSED)
 # endif
 {
-# ifdef FEAT_GUI
+# ifndef VIMDLL
+#  ifdef FEAT_GUI
     SaveInst(hInstance);
-# elif defined(VIMDLL)
+#  else
     SaveInst(GetModuleHandleW(NULL));
+#  endif
 # endif
     VimMain(0, NULL);
 

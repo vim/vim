@@ -195,6 +195,17 @@ int _stricoll(char *a, char *b)
 #endif
 
 
+#ifndef PROTO
+/*
+ * Save the instance handle of the exe/dll.
+ */
+    void
+SaveInst(HINSTANCE hInst)
+{
+    g_hinst = hInst;
+}
+#endif
+
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * GUI version of mch_exit().
@@ -1580,7 +1591,7 @@ mch_print_begin(prt_settings_T *psettings)
     char		szBuffer[300];
     WCHAR		*wp;
 
-    hDlgPrint = CreateDialog(GetModuleHandle(NULL), TEXT("PrintDlgBox"),
+    hDlgPrint = CreateDialog(g_hinst, TEXT("PrintDlgBox"),
 					     prt_dlg.hwndOwner, PrintDlgProc);
     SetAbortProc(prt_dlg.hDC, AbortProc);
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
@@ -2205,7 +2216,6 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 serverInitMessaging(void)
 {
     WNDCLASS wndclass;
-    HINSTANCE s_hinst;
 
     /* Clean up on exit */
     atexit(CleanUpMessaging);
@@ -2213,12 +2223,11 @@ serverInitMessaging(void)
     /* Register a window class - we only really care
      * about the window procedure
      */
-    s_hinst = (HINSTANCE)GetModuleHandle(0);
     wndclass.style = 0;
     wndclass.lpfnWndProc = Messaging_WndProc;
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    wndclass.hInstance = s_hinst;
+    wndclass.hInstance = g_hinst;
     wndclass.hIcon = NULL;
     wndclass.hCursor = NULL;
     wndclass.hbrBackground = NULL;
@@ -2233,7 +2242,7 @@ serverInitMessaging(void)
 			 WS_POPUPWINDOW | WS_CAPTION,
 			 CW_USEDEFAULT, CW_USEDEFAULT,
 			 100, 100, NULL, NULL,
-			 s_hinst, NULL);
+			 g_hinst, NULL);
 }
 
 /* Used by serverSendToVim() to find an alternate server name. */

@@ -1640,6 +1640,7 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 
 #ifdef MSWIN
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
+EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
 
 #ifdef FEAT_TEXT_PROP
