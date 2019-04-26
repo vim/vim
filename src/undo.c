@@ -2271,7 +2271,7 @@ undo_time(
     u_header_T	    *uhp = NULL;
     u_header_T	    *last;
     int		    mark;
-    int		    nomark;
+    int		    nomark = 0;  // shut up compiler
     int		    round;
     int		    dosec = sec;
     int		    dofile = file;
