@@ -549,8 +549,8 @@ update_screen(int type_arg)
 #endif
 #ifdef FEAT_GUI
     int		did_undraw = FALSE;
-    int		gui_cursor_col;
-    int		gui_cursor_row;
+    int		gui_cursor_col = 0;
+    int		gui_cursor_row = 0;
 #endif
     int		no_update = FALSE;
 

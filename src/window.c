@@ -3981,7 +3981,7 @@ enter_tabpage(
     void
 goto_tabpage(int n)
 {
-    tabpage_T	*tp;
+    tabpage_T	*tp = NULL;  // shut up compiler
     tabpage_T	*ttp;
     int		i;
 

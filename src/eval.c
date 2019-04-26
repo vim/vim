@@ -4051,7 +4051,7 @@ eval6(
     varnumber_T	n1, n2;
 #ifdef FEAT_FLOAT
     int		use_float = FALSE;
-    float_T	f1 = 0, f2;
+    float_T	f1 = 0, f2 = 0;
 #endif
     int		error = FALSE;
 
