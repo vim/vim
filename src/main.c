@@ -2201,7 +2201,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'v':		/* "-v"  Vi-mode (as if called "vi") */
 		exmode_active = 0;
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) && !defined(VIMDLL)
 		gui.starting = FALSE;	/* don't start GUI */
 #endif
 		break;
