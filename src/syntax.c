@@ -10014,7 +10014,7 @@ highlight_changed(void)
     char_u	*end;
     int		id;
 #ifdef USER_HIGHLIGHT
-    char_u      userhl[10];
+    char_u      userhl[30];  // use 30 to avoid compiler warning
 # ifdef FEAT_STL_OPT
     int		id_S = -1;
     int		id_SNC = 0;

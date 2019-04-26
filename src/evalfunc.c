@@ -5460,7 +5460,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    for (i = 0; i < MAXPOSMATCH; ++i)
 	    {
 		llpos_T	*llpos;
-		char	buf[6];
+		char	buf[30];  // use 30 to avoid compiler warning
 		list_T	*l;
 
 		llpos = &cur->pos.pos[i];
@@ -11502,7 +11502,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	while (li != NULL)
 	{
 	    int		i = 0;
-	    char_u	buf[5];
+	    char	buf[30];  // use 30 to avoid compiler warning
 	    dictitem_T  *di;
 	    char_u	*group;
 	    int		priority;
