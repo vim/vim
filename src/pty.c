@@ -136,6 +136,12 @@
 # define O_NOCTTY 0
 #endif
 
+#if defined(HAVE_SVR4_PTYS) || defined(HAVE_POSIX_OPENPT)
+char *ptsname(int);
+int unlockpt(int);
+int grantpt(int);
+#endif
+
     static void
 initmaster(int f UNUSED)
 {
@@ -185,9 +191,6 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname(int));
-    int		unlockpt(int);
-    int		grantpt(int);
     RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
@@ -315,9 +318,6 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname(int));
-    int		unlockpt(int);
-    int		grantpt(int);
     RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];
