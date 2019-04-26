@@ -10148,7 +10148,7 @@ highlight_changed(void)
 # endif
     for (i = 0; i < 9; i++)
     {
-	sprintf((char *)userhl, "User%d", i + 1);
+	sprintf((char *)userhl, "User%hu", i + 1);
 	id = syn_name2id(userhl);
 	if (id == 0)
 	{

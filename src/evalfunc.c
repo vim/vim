@@ -5475,7 +5475,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		    list_append_number(l, (varnumber_T)llpos->col);
 		    list_append_number(l, (varnumber_T)llpos->len);
 		}
-		sprintf(buf, "pos%d", i + 1);
+		sprintf(buf, "pos%hu", i + 1);
 		dict_add_list(dict, buf, l);
 	    }
 	}
@@ -11522,7 +11522,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		/* match from matchaddpos() */
 		for (i = 1; i < 9; i++)
 		{
-		    sprintf((char *)buf, (char *)"pos%d", i);
+		    sprintf((char *)buf, (char *)"pos%hu", i);
 		    if ((di = dict_find(d, (char_u *)buf, -1)) != NULL)
 		    {
 			if (di->di_tv.v_type != VAR_LIST)
