@@ -1065,12 +1065,7 @@ $(OUTDIR)/if_python3.o:	if_python3.c if_py_both.h $(INCL)
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/vimrc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
-			tools.bmp tearoff.bmp vim.ico vim_error.ico \
-			vim_alert.ico vim_info.ico vim_quest.ico
-	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
-	    --input-format=rc --output-format=coff -i vim.rc -o $@
-
+ifeq ($(VIMDLL),yes)
 $(OUTDIR)/vimrcc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -UFEAT_GUI_MSWIN \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
@@ -1084,6 +1079,13 @@ $(OUTDIR)/vimrcd.o:	vim.rc version.h gui_w32_rc.h \
 			vim_alert.ico vim_info.ico vim_quest.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -DRCDLL -DVIMDLLBASE=\\\"$(VIMDLLBASE)\\\" \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
+else
+$(OUTDIR)/vimrc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+			tools.bmp tearoff.bmp vim.ico vim_error.ico \
+			vim_alert.ico vim_info.ico vim_quest.ico
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
+	    --input-format=rc --output-format=coff -i vim.rc -o $@
+endif
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
