@@ -827,6 +827,7 @@ OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
 CFLAGS = $(CFLAGS) -DFEAT_GUI_MSWIN
+RCFLAGS = $(RCFLAGS) -DFEAT_GUI_MSWIN
 ! if "$(VIMDLL)" == "yes"
 SUBSYSTEM_CON = console
 GVIM = g$(VIM)
@@ -835,7 +836,6 @@ CUI_OBJ = $(OUTDIR)\iscygpty.obj
 RCFLAGS = $(RCFLAGS) -DVIMDLL
 ! else
 VIM = g$(VIM)
-RCFLAGS = $(RCFLAGS) -DFEAT_GUI_MSWIN
 ! endif
 GUI_INCL = \
 	gui.h
@@ -1637,16 +1637,16 @@ $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 !if "$(VIMDLL)" == "yes"
 $(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
 				vim.ico
-	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS:-DFEAT_GUI_MSWIN=) vim.rc
 
 $(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
 				vim.ico
-	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DFEAT_GUI_MSWIN vim.rc
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
 
 $(OUTDIR)/vimd.res:	$(OUTDIR) vim.rc version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
-	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DFEAT_GUI_MSWIN -DRCDLL -DVIMDLLBASE=\"$(VIMDLLBASE)\" vim.rc
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DRCDLL -DVIMDLLBASE=\"$(VIMDLLBASE)\" vim.rc
 !else
 $(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
 				tools.bmp tearoff.bmp vim.ico vim_error.ico \
