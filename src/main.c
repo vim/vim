@@ -177,6 +177,11 @@ main
 #endif
     common_init(&params);
 
+#ifdef VIMDLL
+    // Check if the current executable file is for the GUI subsystem.
+    gui.starting = mch_is_gui_executable();
+#endif
+
 #ifdef FEAT_CLIENTSERVER
     /*
      * Do the client-server stuff, unless "--servername ''" was used.

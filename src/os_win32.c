@@ -497,6 +497,28 @@ vimLoadLib(char *name)
     return dll;
 }
 
+#if defined(VIMDLL) || defined(PROTO)
+/*
+ * Check if the current executable file is for the GUI subsystem.
+ */
+    int
+mch_is_gui_executable(void)
+{
+    PBYTE		pImage = (PBYTE)GetModuleHandle(NULL);
+    PIMAGE_DOS_HEADER	pDOS = (PIMAGE_DOS_HEADER)pImage;
+    PIMAGE_NT_HEADERS	pPE;
+
+    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
+	return FALSE;
+    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
+    if (pPE->Signature != IMAGE_NT_SIGNATURE)
+	return FALSE;
+    if (pPE->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_GUI)
+	return TRUE;
+    return FALSE;
+}
+#endif
+
 #if defined(DYNAMIC_ICONV) || defined(DYNAMIC_GETTEXT) || defined(PROTO)
 /*
  * Get related information about 'funcname' which is imported by 'hInst'.
