@@ -82,10 +82,10 @@ The current mode is stored in `State`.  The values it can have are `NORMAL`,
 The current window is `curwin`.  The current buffer is `curbuf`.  These point
 to structures with the cursor position in the window, option values, the file
 name, etc.  These are defined in
-[`structs.h`](https://github.com/vim/vim/blob/master/src/globals.h).
+[`structs.h`](https://github.com/vim/vim/blob/master/src/structs.h).
 
 All the global variables are declared in
-[`globals.h`](https://github.com/vim/vim/blob/master/src/structs.h).
+[`globals.h`](https://github.com/vim/vim/blob/master/src/globals.h).
 
 
 ## The main loop ##
