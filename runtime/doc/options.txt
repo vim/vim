@@ -3791,7 +3791,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- takes these options in the font name:
 		hXX - height is XX (points, can be floating-point)
 		wXX - width is XX (points, can be floating-point)
-		b   - bold
+	        WXX - weight is XX (see Note on Weights below)
+		b   - bold. This is equivalent to setting the weight to
+                      700.
 		i   - italic
 		u   - underline
 		s   - strikeout
@@ -3811,7 +3813,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- Examples: >
 	    :set guifont=courier_new:h12:w5:b:cRUSSIAN
 	    :set guifont=Andale_Mono:h7.5:w4.5
+	
 <	See also |font-sizes|.
+
+	Note on Weights: Fonts often come with a variety of weights. "Normal"
+	weights in Windows have a value of 400 and, left unspecified, this 
+	is the value that will be used when attempting to find fonts. Windows
+	will often match fonts based on their weight with higher priority
+        than the font name which means a Book or Medium variant of a font
+        might be used despite specifying a Light or ExtraLight variant. If
+        you are experiencing heavier weight substitution, then explicitly
+        setting a lower weight value may mitigate against this unwanted
+	substitution.
 
 					*'guifontset'* *'gfs'*
 					*E250* *E252* *E234* *E597* *E598*
