@@ -3127,7 +3127,8 @@ logfont2name(LOGFONTW lf)
     quality_name = quality_id2name((int)lf.lfQuality);
 
     res = (char *)alloc((unsigned)(strlen(font_name) + 20
-		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)));
+		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)
+		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2)));
     if (res != NULL)
     {
 	p = res;
