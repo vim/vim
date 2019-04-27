@@ -1656,11 +1656,11 @@ static int on_resize(int rows, int cols, void *user)
   }
 
   if(rows != state->rows) {
+    int row;
     VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
     if (newlineinfo == NULL)
       return 0;
 
-    int row;
     for(row = 0; row < state->rows && row < rows; row++) {
       newlineinfo[row] = state->lineinfo[row];
     }
