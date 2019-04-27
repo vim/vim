@@ -2761,7 +2761,7 @@ str_to_int(WCHAR *str, WCHAR **end)
 	if (!VIM_ISDIGIT(*str))
 	    break;
 	ret *= 10;
-	ret += *str - '0';
+	ret += *str - L'0';
 	++str;
     }
     *end = str;
