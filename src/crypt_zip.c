@@ -78,7 +78,7 @@ make_crc_tab(void)
 /*
  * Initialize for encryption/decryption.
  */
-    void
+    int
 crypt_zip_init(
     cryptstate_T    *state,
     char_u	    *key,
@@ -91,6 +91,8 @@ crypt_zip_init(
     zip_state_T	*zs;
 
     zs = (zip_state_T *)alloc(sizeof(zip_state_T));
+    if (zs == NULL)
+	return FAIL;
     state->method_state = zs;
 
     make_crc_tab();
@@ -99,6 +101,8 @@ crypt_zip_init(
     zs->keys[2] = 878082192L;
     for (p = key; *p != NUL; ++p)
 	UPDATE_KEYS_ZIP(zs->keys, (int)*p);
+
+    return OK;
 }
 
 /*

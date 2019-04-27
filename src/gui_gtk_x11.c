@@ -1576,12 +1576,15 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	if (string != NULL)
 	{
 	    tmpbuf = alloc(length + 2);
-	    tmpbuf[0] = 0xff;
-	    tmpbuf[1] = 0xfe;
-	    mch_memmove(tmpbuf + 2, string, (size_t)length);
-	    vim_free(string);
-	    string = tmpbuf;
-	    length += 2;
+	    if (tmpbuf != NULL)
+	    {
+		tmpbuf[0] = 0xff;
+		tmpbuf[1] = 0xfe;
+		mch_memmove(tmpbuf + 2, string, (size_t)length);
+		vim_free(string);
+		string = tmpbuf;
+		length += 2;
+	    }
 
 #if !GTK_CHECK_VERSION(3,0,0)
 	    /* Looks redundant even for GTK2 because these values are
@@ -1606,10 +1609,10 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	    tmpbuf[0] = motion_type;
 	    STRCPY(tmpbuf + 1, p_enc);
 	    mch_memmove(tmpbuf + l + 2, string, (size_t)length);
+	    length += l + 2;
+	    vim_free(string);
+	    string = tmpbuf;
 	}
-	length += l + 2;
-	vim_free(string);
-	string = tmpbuf;
 	type = vimenc_atom;
     }
 

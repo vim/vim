@@ -127,6 +127,8 @@ get_beval_info(
 #ifdef FEAT_VARTABS
 		vim_free(beval->vts);
 		beval->vts = tabstop_copy(wp->w_buffer->b_p_vts_array);
+		if (wp->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
+		    return FAIL;
 #endif
 		beval->ts = wp->w_buffer->b_p_ts;
 		return OK;
