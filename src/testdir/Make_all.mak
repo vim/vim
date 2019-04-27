@@ -14,7 +14,6 @@ SCRIPTS_FIRST = \
 # Tests that run on all systems.
 SCRIPTS_ALL = \
 	test3.out \
-	test14.out \
 	test29.out \
 	test37.out \
 	test39.out \
