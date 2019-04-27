@@ -336,3 +336,6 @@
 	    (p) = NULL; \
 	} \
     } while (0)
+
+/* Wether a command index indicates a user command. */
+#define IS_USER_CMDIDX(idx) ((int)(idx) < 0)

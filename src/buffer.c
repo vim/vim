@@ -925,11 +925,9 @@ free_buffer_stuff(
 	CHANGEDTICK(buf) = tick;
     }
 #endif
-#ifdef FEAT_USR_CMDS
-    uc_clear(&buf->b_ucmds);		/* clear local user commands */
-#endif
+    uc_clear(&buf->b_ucmds);		// clear local user commands
 #ifdef FEAT_SIGNS
-    buf_delete_signs(buf, (char_u *)"*");	// delete any signs */
+    buf_delete_signs(buf, (char_u *)"*");	// delete any signs
 #endif
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);

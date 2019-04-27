@@ -1635,6 +1635,7 @@ BASIC_SRC = \
 	textprop.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	version.c \
 	window.c \
@@ -1747,6 +1748,7 @@ OBJ_COMMON = \
 	objects/textprop.o \
 	objects/ui.o \
 	objects/undo.o \
+	objects/usercmd.o \
 	objects/userfunc.o \
 	objects/version.o \
 	objects/window.o \
@@ -1885,6 +1887,7 @@ PRO_AUTO = \
 	textprop.pro \
 	ui.pro \
 	undo.pro \
+	usercmd.pro \
 	userfunc.pro \
 	version.pro \
 	window.pro \
@@ -3242,6 +3245,9 @@ objects/ui.o: ui.c
 objects/undo.o: undo.c
 	$(CCC) -o $@ undo.c
 
+objects/usercmd.o: usercmd.c
+	$(CCC) -o $@ usercmd.c
+
 objects/userfunc.o: userfunc.c
 	$(CCC) -o $@ userfunc.c
 
@@ -3654,6 +3660,10 @@ objects/ui.o: ui.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/undo.o: undo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/usercmd.o: usercmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

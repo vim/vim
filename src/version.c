@@ -672,11 +672,7 @@ static char *(features[]) =
 #else
 	"-toolbar",
 #endif
-#ifdef FEAT_USR_CMDS
 	"+user_commands",
-#else
-	"-user_commands",
-#endif
 #ifdef FEAT_VARTABS
 	"+vartabs",
 #else
@@ -771,6 +767,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1210,
 /**/
     1209,
 /**/

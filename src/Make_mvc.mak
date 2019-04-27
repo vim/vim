@@ -765,6 +765,7 @@ OBJ = \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
+	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
 	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
@@ -1550,6 +1551,8 @@ $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
 
 $(OUTDIR)/undo.obj:	$(OUTDIR) undo.c  $(INCL)
 
+$(OUTDIR)/usercmd.obj:	$(OUTDIR) usercmd.c  $(INCL)
+
 $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
@@ -1693,6 +1696,7 @@ proto.h: \
 	proto/textprop.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro \
 	$(NETBEANS_PRO) \

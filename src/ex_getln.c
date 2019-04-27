@@ -111,7 +111,7 @@ static int	ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
 # ifdef FEAT_CMDHIST
 static char_u	*get_history_arg(expand_T *xp, int idx);
 # endif
-# if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 static int	ExpandUserDefined(expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file);
 static int	ExpandUserList(expand_T *xp, int *num_file, char_u ***file);
 # endif
@@ -939,7 +939,7 @@ getcmdline_int(
     {
 	xpc.xp_context = ccline.xp_context;
 	xpc.xp_pattern = ccline.cmdbuff;
-# if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_CMDL_COMPL)
 	xpc.xp_arg = ccline.xp_arg;
 # endif
     }
@@ -4210,7 +4210,7 @@ ExpandInit(expand_T *xp)
 #endif
     xp->xp_numfiles = -1;
     xp->xp_files = NULL;
-#if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     xp->xp_arg = NULL;
 #endif
     xp->xp_line = NULL;
@@ -4879,7 +4879,7 @@ set_cmd_context(
     {
 	xp->xp_context = ccline.xp_context;
 	xp->xp_pattern = ccline.cmdbuff;
-# if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_CMDL_COMPL)
 	xp->xp_arg = ccline.xp_arg;
 # endif
     }
@@ -5130,7 +5130,7 @@ ExpandFromContext(
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
 	return ExpandRTDir(pat, 0, num_file, file, directories);
     }
-# if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, num_file, file);
 # endif
@@ -5149,7 +5149,7 @@ ExpandFromContext(
 	ret = ExpandSettings(xp, &regmatch, num_file, file);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(&regmatch, num_file, file);
-# if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
     else if (xp->xp_context == EXPAND_USER_DEFINED)
 	ret = ExpandUserDefined(xp, &regmatch, num_file, file);
 # endif
@@ -5170,13 +5170,11 @@ ExpandFromContext(
 #ifdef FEAT_CMDHIST
 	    {EXPAND_HISTORY, get_history_arg, TRUE, TRUE},
 #endif
-#ifdef FEAT_USR_CMDS
 	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE, TRUE},
 	    {EXPAND_USER_ADDR_TYPE, get_user_cmd_addr_type, FALSE, TRUE},
 	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE, TRUE},
 	    {EXPAND_USER_NARGS, get_user_cmd_nargs, FALSE, TRUE},
 	    {EXPAND_USER_COMPLETE, get_user_cmd_complete, FALSE, TRUE},
-#endif
 #ifdef FEAT_EVAL
 	    {EXPAND_USER_VARS, get_user_var_name, FALSE, TRUE},
 	    {EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
@@ -5473,7 +5471,7 @@ expand_shellcmd(
 }
 
 
-# if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
  * return the result (either a string or a List).

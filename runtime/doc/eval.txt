@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 21
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10550,7 +10550,7 @@ ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
 unix			Unix version of Vim. *+unix*
 unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
-user_commands		User-defined commands.
+user_commands		User-defined commands. (always true)
 vcon			Win32: Virtual console support is working, can use
 			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.

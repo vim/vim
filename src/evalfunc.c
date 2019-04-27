@@ -6611,10 +6611,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
 	"unnamedplus",
 #endif
-#ifdef FEAT_USR_CMDS
 	"user-commands",    /* was accidentally included in 5.4 */
 	"user_commands",
-#endif
 #ifdef FEAT_VARTABS
 	"vartabs",
 #endif

@@ -146,6 +146,7 @@ SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
@@ -208,6 +209,7 @@ OBJ = \
 	term.o \
 	ui.o \
 	undo.o \
+	usercmd.o \
 	userfunc.o \
 	window.o \
 	$(TERMLIB)
@@ -271,6 +273,7 @@ PRO = \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro
 
@@ -445,6 +448,8 @@ ui.o:			ui.c
 proto/ui.pro:		ui.c
 undo.o:			undo.c
 proto/undo.pro:		undo.c
+usercmd.o:		usercmd.c
+proto/usercmd.pro:	usercmd.c
 userfunc.o:		userfunc.c
 proto/userfunc.pro:	userfunc.c
 window.o:		window.c

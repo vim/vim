@@ -269,6 +269,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/term.obj" \
 	"$(INTDIR)/ui.obj" \
 	"$(INTDIR)/undo.obj" \
+	"$(INTDIR)/usercmd.obj" \
 	"$(INTDIR)/userfunc.obj" \
 	"$(INTDIR)/version.obj" \
 	"$(INTDIR)/window.obj"
@@ -725,6 +726,10 @@ SOURCE=.\ui.c
 # Begin Source File
 
 SOURCE=.\undo.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\usercmd.c
 # End Source File
 # Begin Source File
 
