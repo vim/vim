@@ -1629,12 +1629,12 @@ static int on_resize(int rows, int cols, void *user)
   VTermPos delta = { 0, 0 };
 
   if(cols != state->cols) {
+    int col;
     unsigned char *newtabstops = vterm_allocator_malloc(state->vt, (cols + 7) / 8);
     if (newtabstops == NULL)
       return 0;
 
     /* TODO: This can all be done much more efficiently bytewise */
-    int col;
     for(col = 0; col < state->cols && col < cols; col++) {
       unsigned char mask = 1 << (col & 7);
       if(state->tabstops[col >> 3] & mask)
