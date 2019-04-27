@@ -2574,6 +2574,9 @@ struct tabpage_S
     int		    tp_prev_which_scrollbars[3];
 				    /* previous value of which_scrollbars */
 #endif
+
+    char_u	    *tp_localdir;	// absolute path of local directory or
+					// NULL
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);

@@ -3625,6 +3625,8 @@ free_tabpage(tabpage_T *tp)
     unref_var_dict(tp->tp_vars);
 #endif
 
+    vim_free(tp->tp_localdir);
+
 #ifdef FEAT_PYTHON
     python_tabpage_free(tp);
 #endif
@@ -3662,6 +3664,8 @@ win_new_tabpage(int after)
     }
     curtab = newtp;
 
+    newtp->tp_localdir = (tp->tp_localdir == NULL)
+				    ? NULL : vim_strsave(tp->tp_localdir);
     /* Create a new empty window. */
     if (win_alloc_firstwin(tp->tp_curwin) == OK)
     {
@@ -3838,6 +3842,9 @@ find_tabpage(int n)
 {
     tabpage_T	*tp;
     int		i = 1;
+
+    if (n == 0)
+	return curtab;
 
     for (tp = first_tabpage; tp != NULL && i != n; tp = tp->tp_next)
 	++i;
@@ -4451,11 +4458,13 @@ win_enter_ext(
 	curwin->w_cursor.coladd = 0;
     changed_line_abv_curs();	/* assume cursor position needs updating */
 
-    if (curwin->w_localdir != NULL)
+    if (curwin->w_localdir != NULL || curtab->tp_localdir != NULL)
     {
-	/* Window has a local directory: Save current directory as global
-	 * directory (unless that was done already) and change to the local
-	 * directory. */
+	char_u	*dirname;
+
+	// Window or tab has a local directory: Save current directory as
+	// global directory (unless that was done already) and change to the
+	// local directory.
 	if (globaldir == NULL)
 	{
 	    char_u	cwd[MAXPATHL];
@@ -4463,7 +4472,12 @@ win_enter_ext(
 	    if (mch_dirname(cwd, MAXPATHL) == OK)
 		globaldir = vim_strsave(cwd);
 	}
-	if (mch_chdir((char *)curwin->w_localdir) == 0)
+	if (curwin->w_localdir != NULL)
+	    dirname = curwin->w_localdir;
+	else
+	    dirname = curtab->tp_localdir;
+
+	if (mch_chdir((char *)dirname) == 0)
 	    shorten_fnames(TRUE);
     }
     else if (globaldir != NULL)

@@ -1529,7 +1529,7 @@ f_arglistid(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
 
     rettv->vval.v_number = -1;
-    wp = find_tabwin(&argvars[0], &argvars[1]);
+    wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp != NULL)
 	rettv->vval.v_number = wp->w_alist->id;
 }
@@ -5126,25 +5126,44 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 
 /*
  * "getcwd()" function
+ *
+ * Return the current working directory of a window in a tab page.
+ * First optional argument 'winnr' is the window number or -1 and the second
+ * optional argument 'tabnr' is the tab page number.
+ *
+ * If no arguments are supplied, then return the directory of the current
+ * window.
+ * If only 'winnr' is specified and is not -1 or 0 then return the directory of
+ * the specified window.
+ * If 'winnr' is 0 then return the directory of the current window.
+ * If both 'winnr and 'tabnr' are specified and 'winnr' is -1 then return the
+ * directory of the specified tab page.  Otherwise return the directory of the
+ * specified window in the specified tab page.
+ * If the window or the tab page doesn't exist then return NULL.
  */
     static void
 f_getcwd(typval_T *argvars, typval_T *rettv)
 {
     win_T	*wp = NULL;
+    tabpage_T	*tp = NULL;
     char_u	*cwd;
     int		global = FALSE;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
-    if (argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number == -1)
+    if (argvars[0].v_type == VAR_NUMBER
+	    && argvars[0].vval.v_number == -1
+	    && argvars[1].v_type == VAR_UNKNOWN)
 	global = TRUE;
     else
-	wp = find_tabwin(&argvars[0], &argvars[1]);
+	wp = find_tabwin(&argvars[0], &argvars[1], &tp);
 
     if (wp != NULL && wp->w_localdir != NULL)
 	rettv->vval.v_string = vim_strsave(wp->w_localdir);
-    else if (wp != NULL || global)
+    else if (tp != NULL && tp->tp_localdir != NULL)
+	rettv->vval.v_string = vim_strsave(tp->tp_localdir);
+    else if (wp != NULL || tp != NULL || global)
     {
 	if (globaldir != NULL)
 	    rettv->vval.v_string = vim_strsave(globaldir);
@@ -5333,7 +5352,7 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
 	return;
 
 #ifdef FEAT_JUMPLIST
-    wp = find_tabwin(&argvars[0], &argvars[1]);
+    wp = find_tabwin(&argvars[0], &argvars[1], NULL);
     if (wp == NULL)
 	return;
 
@@ -6824,10 +6843,18 @@ f_has_key(typval_T *argvars, typval_T *rettv)
     static void
 f_haslocaldir(typval_T *argvars, typval_T *rettv)
 {
+    tabpage_T	*tp = NULL;
     win_T	*wp = NULL;
 
-    wp = find_tabwin(&argvars[0], &argvars[1]);
-    rettv->vval.v_number = (wp != NULL && wp->w_localdir != NULL);
+    wp = find_tabwin(&argvars[0], &argvars[1], &tp);
+
+    // Check for window-local and tab-local directories
+    if (wp != NULL && wp->w_localdir != NULL)
+	rettv->vval.v_number = 1;
+    else if (tp != NULL && tp->tp_localdir != NULL)
+	rettv->vval.v_number = 2;
+    else
+	rettv->vval.v_number = 0;
 }
 
 /*

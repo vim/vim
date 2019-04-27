@@ -8704,11 +8704,13 @@ find_win_by_nr_or_id(typval_T *vp)
 
 /*
  * Find window specified by "wvp" in tabpage "tvp".
+ * Returns the tab page in 'ptp'
  */
     win_T *
 find_tabwin(
-    typval_T	*wvp,	/* VAR_UNKNOWN for current window */
-    typval_T	*tvp)	/* VAR_UNKNOWN for current tab page */
+    typval_T	*wvp,	// VAR_UNKNOWN for current window
+    typval_T	*tvp,	// VAR_UNKNOWN for current tab page
+    tabpage_T	**ptp)
 {
     win_T	*wp = NULL;
     tabpage_T	*tp = NULL;
@@ -8726,10 +8728,22 @@ find_tabwin(
 	    tp = curtab;
 
 	if (tp != NULL)
+	{
 	    wp = find_win_by_nr(wvp, tp);
+	    if (wp == NULL && wvp->v_type == VAR_NUMBER
+						&& wvp->vval.v_number != -1)
+		// A window with the specified number is not found
+		tp = NULL;
+	}
     }
     else
+    {
 	wp = curwin;
+	tp = curtab;
+    }
+
+    if (ptp != NULL)
+	*ptp = tp;
 
     return wp;
 }
