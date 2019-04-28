@@ -141,6 +141,7 @@
 char *ptsname(int);
 int unlockpt(int);
 int grantpt(int);
+int posix_openpt(int flags);
 #endif
 
     static void
