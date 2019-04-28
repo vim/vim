@@ -244,6 +244,7 @@ NEW_TESTS = \
 	test_tabline \
 	test_tabpage \
 	test_tagcase \
+	test_tagfunc \
 	test_tagjump \
 	test_taglist \
 	test_tcl \

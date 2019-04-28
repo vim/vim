@@ -1067,9 +1067,13 @@ EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */
 EXTERN int	postponed_split_flags INIT(= 0);  /* args for win_split() */
 EXTERN int	postponed_split_tab INIT(= 0);  /* cmdmod.tab */
 #ifdef FEAT_QUICKFIX
-EXTERN int	g_do_tagpreview INIT(= 0);  /* for tag preview commands:
-					       height of preview window */
+EXTERN int	g_do_tagpreview INIT(= 0);  // for tag preview commands:
+					    // height of preview window
 #endif
+EXTERN int	g_tag_at_cursor INIT(= FALSE); // whether the tag command comes
+					    // from the command line (0) or was
+					    // invoked as a normal command (1)
+
 EXTERN int	replace_offset INIT(= 0);   /* offset for replace_push() */
 
 EXTERN char_u	*escape_chars INIT(= (char_u *)" \t\\\"|");

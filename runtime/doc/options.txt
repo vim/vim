@@ -7458,6 +7458,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
+							*'tagfunc'* *'tfu'*
+'tagfunc' 'tfu'		string	(default: empty)
+			local to buffer
+			{not available when compiled without the |+eval|
+			feature}
+	This option specifies a function to be used to perform tag searches.
+	The function gets the tag pattern and should return a List of matching
+	tags.  See |tag-function| for an explanation of how to write the
+	function and an example.
+
 						*'taglength'* *'tl'*
 'taglength' 'tl'	number	(default 0)
 			global
