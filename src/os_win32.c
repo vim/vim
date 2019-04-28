@@ -2903,6 +2903,23 @@ mch_get_pid(void)
     return (long)GetCurrentProcessId();
 }
 
+/*
+ * return TRUE if process "pid" is still running
+ */
+    int
+mch_process_running(pid_t pid)
+{
+    HANDLE  hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, 0, (DWORD)pid);
+    DWORD   status = 0;
+    int	    ret = FALSE;
+
+    if (hProcess == NULL)
+	return FALSE;  // might not have access
+    if (GetExitCodeProcess(hProcess, &status) )
+	ret = status == STILL_ACTIVE;
+    CloseHandle(hProcess);
+    return ret;
+}
 
 /*
  * Get name of current directory into buffer 'buf' of length 'len' bytes.

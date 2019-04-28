@@ -966,7 +966,6 @@ EXTERN int	emsg_silent INIT(= 0);	/* don't print error messages */
 EXTERN int	emsg_noredir INIT(= 0);	/* don't redirect error messages */
 EXTERN int	cmd_silent INIT(= FALSE); /* don't echo the command line */
 
-# define HAS_SWAP_EXISTS_ACTION
 EXTERN int	swap_exists_action INIT(= SEA_NONE);
 					/* For dialog when swap file already
 					 * exists. */
@@ -1644,6 +1643,9 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
 #ifdef MSWIN
+# ifdef PROTO
+typedef int HINSTANCE;
+# endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif

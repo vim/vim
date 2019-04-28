@@ -2159,9 +2159,8 @@ swapfile_info(char_u *fname)
 		{
 		    msg_puts(_("\n        process ID: "));
 		    msg_outnum(char_to_long(b0.b0_pid));
-#if defined(UNIX)
-		    /* EMX kill() not working correctly, it seems */
-		    if (kill((pid_t)char_to_long(b0.b0_pid), 0) == 0)
+#if defined(UNIX) || defined(MSWIN)
+		    if (mch_process_running((pid_t)char_to_long(b0.b0_pid)))
 		    {
 			msg_puts(_(" (STILL RUNNING)"));
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -2191,6 +2190,57 @@ swapfile_info(char_u *fname)
     msg_putchar('\n');
 
     return x;
+}
+
+/*
+ * Return TRUE if the swap file looks OK and there are no changes, thus it can
+ * be safely deleted.
+ */
+    static time_t
+swapfile_unchanged(char_u *fname)
+{
+    stat_T	    st;
+    int		    fd;
+    struct block0   b0;
+    int		    ret = TRUE;
+#ifdef UNIX
+    long	    pid;
+#endif
+
+    // must be able to stat the swap file
+    if (mch_stat((char *)fname, &st) == -1)
+	return FALSE;
+
+    // must be able to read the first block
+    fd = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0);
+    if (fd < 0)
+	return FALSE;
+    if (read_eintr(fd, &b0, sizeof(b0)) != sizeof(b0))
+    {
+	close(fd);
+	return FALSE;
+    }
+
+    // the ID and magic number must be correct
+    if (ml_check_b0_id(&b0) == FAIL|| b0_magic_wrong(&b0))
+	ret = FALSE;
+
+    // must be unchanged
+    if (b0.b0_dirty)
+	ret = FALSE;
+
+#if defined(UNIX) || defined(MSWIN)
+    // process must known and not be running
+    pid = char_to_long(b0.b0_pid);
+    if (pid == 0L || mch_process_running((pid_t)pid))
+	ret = FALSE;
+#endif
+
+    // TODO: Should we check if the swap file was created on the current
+    // system?  And the current user?
+
+    close(fd);
+    return ret;
 }
 
     static int
@@ -4757,9 +4807,8 @@ findswapname(
 		if (differ == FALSE && !(curbuf->b_flags & BF_RECOVERED)
 			&& vim_strchr(p_shm, SHM_ATTENTION) == NULL)
 		{
-#if defined(HAS_SWAP_EXISTS_ACTION)
 		    int		choice = 0;
-#endif
+		    stat_T	st;
 #ifdef CREATE_DUMMY_FILE
 		    int		did_use_dummy = FALSE;
 
@@ -4779,13 +4828,25 @@ findswapname(
 #if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
 		    process_still_running = FALSE;
 #endif
+		    // It's safe to delete the swap file if all these are true:
+		    // - the edited file exists
+		    // - the swap file has no changes and looks OK
+		    if (mch_stat((char *)buf->b_fname, &st) == 0
+						  && swapfile_unchanged(fname))
+		    {
+			choice = 4;
+			if (p_verbose > 0)
+			    verb_msg(_("Found a swap file that is not useful, deleting it"));
+		    }
+
 #if defined(FEAT_EVAL)
 		    /*
 		     * If there is an SwapExists autocommand and we can handle
 		     * the response, trigger it.  It may return 0 to ask the
 		     * user anyway.
 		     */
-		    if (swap_exists_action != SEA_NONE
+		    if (choice == 0
+			    && swap_exists_action != SEA_NONE
 			    && has_autocmd(EVENT_SWAPEXISTS, buf_fname, buf))
 			choice = do_swapexists(buf, fname);
 
@@ -4850,7 +4911,6 @@ findswapname(
 		    }
 #endif
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
 		    if (choice > 0)
 		    {
 			switch (choice)
@@ -4880,7 +4940,6 @@ findswapname(
 			    break;
 		    }
 		    else
-#endif
 		    {
 			msg_puts("\n");
 			if (msg_silent == 0)

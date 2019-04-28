@@ -972,43 +972,38 @@ goto_buffer(
     int		dir,
     int		count)
 {
-#if defined(HAS_SWAP_EXISTS_ACTION)
     bufref_T	old_curbuf;
 
     set_bufref(&old_curbuf, curbuf);
 
     swap_exists_action = SEA_DIALOG;
-#endif
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
-#if defined(HAS_SWAP_EXISTS_ACTION)
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	cleanup_T   cs;
 
 	/* Reset the error/interrupt/exception state here so that
 	 * aborting() returns FALSE when closing a window. */
 	enter_cleanup(&cs);
-# endif
+#endif
 
 	/* Quitting means closing the split window, nothing else. */
 	win_close(curwin, TRUE);
 	swap_exists_action = SEA_NONE;
 	swap_exists_did_quit = TRUE;
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
 	 * new aborting error, interrupt, or uncaught exception. */
 	leave_cleanup(&cs);
-# endif
+#endif
     }
     else
 	handle_swap_exists(&old_curbuf);
-#endif
 }
 
-#if defined(HAS_SWAP_EXISTS_ACTION) || defined(PROTO)
 /*
  * Handle the situation of swap_exists_action being set.
  * It is allowed for "old_curbuf" to be NULL or invalid.
@@ -1016,21 +1011,21 @@ goto_buffer(
     void
 handle_swap_exists(bufref_T *old_curbuf)
 {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     cleanup_T	cs;
-# endif
-# ifdef FEAT_SYN_HL
+#endif
+#ifdef FEAT_SYN_HL
     long	old_tw = curbuf->b_p_tw;
-# endif
+#endif
     buf_T	*buf;
 
     if (swap_exists_action == SEA_QUIT)
     {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* Reset the error/interrupt/exception state here so that
 	 * aborting() returns FALSE when closing a buffer. */
 	enter_cleanup(&cs);
-# endif
+#endif
 
 	/* User selected Quit at ATTENTION prompt.  Go back to previous
 	 * buffer.  If that buffer is gone or the same as the current one,
@@ -1053,26 +1048,26 @@ handle_swap_exists(bufref_T *old_curbuf)
 	    // restore msg_silent, so that the command line will be shown
 	    msg_silent = old_msg_silent;
 
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
 	    if (old_tw != curbuf->b_p_tw)
 		check_colorcolumn(curwin);
-# endif
+#endif
 	}
 	/* If "old_curbuf" is NULL we are in big trouble here... */
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
 	 * new aborting error, interrupt, or uncaught exception. */
 	leave_cleanup(&cs);
-# endif
+#endif
     }
     else if (swap_exists_action == SEA_RECOVER)
     {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* Reset the error/interrupt/exception state here so that
 	 * aborting() returns FALSE when closing a buffer. */
 	enter_cleanup(&cs);
-# endif
+#endif
 
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
@@ -1081,15 +1076,14 @@ handle_swap_exists(bufref_T *old_curbuf)
 	cmdline_row = msg_row;
 	do_modelines(0);
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
 	 * new aborting error, interrupt, or uncaught exception. */
 	leave_cleanup(&cs);
-# endif
+#endif
     }
     swap_exists_action = SEA_NONE;
 }
-#endif
 
 /*
  * do_bufdel() - delete or unload buffer(s)
@@ -5259,28 +5253,23 @@ ex_buffer_all(exarg_T *eap)
 		continue;
 
 	    /* Open the buffer in this window. */
-#if defined(HAS_SWAP_EXISTS_ACTION)
 	    swap_exists_action = SEA_DIALOG;
-#endif
 	    set_curbuf(buf, DOBUF_GOTO);
 	    if (!bufref_valid(&bufref))
 	    {
 		/* autocommands deleted the buffer!!! */
-#if defined(HAS_SWAP_EXISTS_ACTION)
 		swap_exists_action = SEA_NONE;
-#endif
 		break;
 	    }
-#if defined(HAS_SWAP_EXISTS_ACTION)
 	    if (swap_exists_action == SEA_QUIT)
 	    {
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 		cleanup_T   cs;
 
 		/* Reset the error/interrupt/exception state here so that
 		 * aborting() returns FALSE when closing a window. */
 		enter_cleanup(&cs);
-# endif
+#endif
 
 		/* User selected Quit at ATTENTION prompt; close this window. */
 		win_close(curwin, TRUE);
@@ -5288,16 +5277,15 @@ ex_buffer_all(exarg_T *eap)
 		swap_exists_action = SEA_NONE;
 		swap_exists_did_quit = TRUE;
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 		/* Restore the error/interrupt/exception state if not
 		 * discarded by a new aborting error, interrupt, or uncaught
 		 * exception. */
 		leave_cleanup(&cs);
-# endif
+#endif
 	    }
 	    else
 		handle_swap_exists(NULL);
-#endif
 	}
 
 	ui_breakcheck();
