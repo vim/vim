@@ -643,7 +643,7 @@ ui_get_winpos(int *x, int *y, varnumber_T timeout)
     if (gui.in_use)
 	return gui_mch_get_winpos(x, y);
 # endif
-# if defined(MSWIN) && !defined(FEAT_GUI)
+# if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
     return mch_get_winpos(x, y);
 # else
 #  if defined(HAVE_TGETENT) && defined(FEAT_TERMRESPONSE)

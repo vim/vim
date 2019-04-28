@@ -19,7 +19,7 @@
 # include <limits.h>
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 # include "iscygpty.h"
 #endif
 
@@ -95,6 +95,9 @@ static char_u *start_dir = NULL;	/* current working dir on startup */
 
 static int has_dash_c_arg = FALSE;
 
+# ifdef VIMDLL
+__declspec(dllexport)
+# endif
     int
 # ifdef MSWIN
 #  ifdef __BORLANDC__
@@ -173,6 +176,11 @@ main
 	}
 #endif
     common_init(&params);
+
+#ifdef VIMDLL
+    // Check if the current executable file is for the GUI subsystem.
+    gui.starting = mch_is_gui_executable();
+#endif
 
 #ifdef FEAT_CLIENTSERVER
     /*
@@ -292,7 +300,8 @@ main
      * For GTK we can't be sure, but when started from the desktop it doesn't
      * make sense to try using a terminal.
      */
-#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	|| defined(VIMDLL)
     if (gui.starting
 # ifdef FEAT_GUI_GTK
 	    && !isatty(2)
@@ -542,7 +551,7 @@ vim_main2(void)
 	    putchar('\n');
 #endif
 
-	gui_start();		/* will set full_screen to TRUE */
+	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
 
 	/* When running "evim" or "gvim -y" we need the menus, exit if we
@@ -851,8 +860,11 @@ vim_main2(void)
     }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-    mch_set_winsize_now();	    /* Allow winsize changes from now on */
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
 #if defined(FEAT_GUI)
@@ -1761,7 +1773,15 @@ parse_command_name(mparm_T *parmp)
 #ifdef FEAT_GUI
 	++initstr;
 #endif
+#ifdef GUI_MAY_SPAWN
+	gui.dospawn = FALSE;	// No need to spawn a new process.
+#endif
     }
+#ifdef GUI_MAY_SPAWN
+    else
+	gui.dospawn = TRUE;	// Not "gvim". Need to spawn gvim.exe.
+#endif
+
 
     if (STRNICMP(initstr, "view", 4) == 0)
     {
@@ -2181,7 +2201,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'v':		/* "-v"  Vi-mode (as if called "vi") */
 		exmode_active = 0;
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) && !defined(VIMDLL)
 		gui.starting = FALSE;	/* don't start GUI */
 #endif
 		break;
@@ -2558,8 +2578,12 @@ check_tty(mparm_T *parmp)
 	    exit(1);
 	}
 #endif
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	if (is_cygpty_used())
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+	if (
+# ifdef VIMDLL
+	    !gui.starting &&
+# endif
+	    is_cygpty_used())
 	{
 # if defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
 	&& defined(FEAT_GETTEXT)
@@ -3440,8 +3464,13 @@ usage(void)
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));
 #endif
 #ifdef FEAT_GUI_MSWIN
-    main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
-    main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+# ifdef VIMDLL
+    if (gui.starting)
+# endif
+    {
+	main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
+	main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+    }
 #endif
 
 #ifdef FEAT_GUI_GNOME

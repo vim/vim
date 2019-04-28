@@ -3553,7 +3553,7 @@ init_default_colors(term_T *term)
     }
     else
     {
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 	int tmp;
 #endif
 
@@ -3561,10 +3561,15 @@ init_default_colors(term_T *term)
 	if (cterm_normal_fg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_fg_color - 1, fg);
-# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	    tmp = fg->red;
-	    fg->red = fg->blue;
-	    fg->blue = tmp;
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+#  ifdef VIMDLL
+	    if (!gui.in_use)
+#  endif
+	    {
+		tmp = fg->red;
+		fg->red = fg->blue;
+		fg->blue = tmp;
+	    }
 # endif
 	}
 # ifdef FEAT_TERMRESPONSE
@@ -3575,10 +3580,15 @@ init_default_colors(term_T *term)
 	if (cterm_normal_bg_color > 0)
 	{
 	    cterm_color2vterm(cterm_normal_bg_color - 1, bg);
-# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	    tmp = bg->red;
-	    bg->red = bg->blue;
-	    bg->blue = tmp;
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+#  ifdef VIMDLL
+	    if (!gui.in_use)
+#  endif
+	    {
+		tmp = fg->red;
+		fg->red = fg->blue;
+		fg->blue = tmp;
+	    }
 # endif
 	}
 # ifdef FEAT_TERMRESPONSE
@@ -3887,7 +3897,7 @@ parse_csi(
 #endif
 	{
 	    // We roughly estimate the position of the terminal window inside
-	    // the Vim window by assuing a 10 x 7 character cell.
+	    // the Vim window by assuming a 10 x 7 character cell.
 	    x += wp->w_wincol * 7;
 	    y += W_WINROW(wp) * 10;
 	}

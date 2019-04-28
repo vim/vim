@@ -78,7 +78,7 @@
 
 #define HAVE_PUTENV		/* at least Bcc 5.2 and MSC have it */
 
-#ifdef FEAT_GUI_MSWIN
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
 # define NO_CONSOLE		/* don't included console-only code */
 #endif
 

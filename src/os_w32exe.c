@@ -22,8 +22,11 @@
 #endif
 
 // cproto doesn't create a prototype for VimMain()
+#ifdef VIMDLL
+__declspec(dllimport)
+#endif
 int _cdecl VimMain(int argc, char **argv);
-#ifdef FEAT_GUI
+#ifndef VIMDLL
 void _cdecl SaveInst(HINSTANCE hInst);
 #endif
 
@@ -40,8 +43,12 @@ wWinMain(
 wmain(int argc UNUSED, wchar_t **argv UNUSED)
 # endif
 {
-# ifdef FEAT_GUI
+# ifndef VIMDLL
+#  ifdef FEAT_GUI
     SaveInst(hInstance);
+#  else
+    SaveInst(GetModuleHandleW(NULL));
+#  endif
 # endif
     VimMain(0, NULL);
 

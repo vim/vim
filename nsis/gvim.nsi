@@ -322,6 +322,9 @@ Section "$(str_section_exe)" id_section_exe
 
 	SetOutPath $0
 	File /oname=gvim.exe ${VIMSRC}\gvim_ole.exe
+!if /FileExists "${VIMSRC}\vim${BIT}.dll"
+	File ${VIMSRC}\vim${BIT}.dll
+!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
 	File ${VIMSRC}\vimrun.exe

@@ -1442,7 +1442,7 @@ EXTERN char e_nesting[]	INIT(= N_("E22: Scripts nested too deep"));
 EXTERN char e_noalt[]		INIT(= N_("E23: No alternate file"));
 EXTERN char e_noabbr[]	INIT(= N_("E24: No such abbreviation"));
 EXTERN char e_nobang[]	INIT(= N_("E477: No ! allowed"));
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
 EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
 #endif
 #ifndef FEAT_RIGHTLEFT
@@ -1645,6 +1645,7 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 
 #ifdef MSWIN
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
+EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
 
 #ifdef FEAT_TEXT_PROP

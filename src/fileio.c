@@ -792,7 +792,10 @@ readfile(
 	    if (!is_not_a_term())
 	    {
 #ifndef ALWAYS_USE_GUI
-		mch_msg(_("Vim: Reading from stdin...\n"));
+# ifdef VIMDLL
+		if (!gui.in_use)
+# endif
+		    mch_msg(_("Vim: Reading from stdin...\n"));
 #endif
 #ifdef FEAT_GUI
 		/* Also write a message in the GUI window, if there is one. */

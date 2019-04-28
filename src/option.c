@@ -3321,9 +3321,7 @@ set_init_1(int clean_arg)
     if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
 #if defined(MSWIN)
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
-# ifdef MSWIN
 	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
-# endif
 #endif
 	    )
 	set_string_default_esc("sh", p, TRUE);
@@ -3673,10 +3671,14 @@ set_init_1(int clean_arg)
 	    }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI)
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 	    /* Win32 console: When GetACP() returns a different value from
 	     * GetConsoleCP() set 'termencoding'. */
-	    if (GetACP() != GetConsoleCP())
+	    if (
+# ifdef VIMDLL
+	       (!gui.in_use && !gui.starting) &&
+# endif
+	        GetACP() != GetConsoleCP())
 	    {
 		char	buf[50];
 
@@ -6856,11 +6858,14 @@ did_set_string_option(
 	{
 	    out_str(T_ME);
 	    redraw_later(CLEAR);
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 	    /* Since t_me has been set, this probably means that the user
 	     * wants to use this as default colors.  Need to reset default
 	     * background/foreground colors. */
-	    mch_set_normal_colors();
+# ifdef VIMDLL
+	    if (!gui.in_use && !gui.starting)
+# endif
+		mch_set_normal_colors();
 #endif
 	}
 	if (varp == &T_BE && termcap_active)
@@ -8838,7 +8843,11 @@ set_bool_option(
     {
 # ifdef FEAT_VTP
 	/* Do not turn on 'tgc' when 24-bit colors are not supported. */
-	if (!has_vtp_working())
+	if (
+#  ifdef VIMDLL
+	    !gui.in_use && !gui.starting &&
+#  endif
+	    !has_vtp_working())
 	{
 	    p_tgc = 0;
 	    return N_("E954: 24-bit colors are not supported on this environment");

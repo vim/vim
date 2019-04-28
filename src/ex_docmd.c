@@ -7756,7 +7756,10 @@ ex_winpos(exarg_T *eap)
     if (*arg == NUL)
     {
 # if defined(FEAT_GUI) || defined(MSWIN)
-#  ifdef FEAT_GUI
+#  ifdef VIMDLL
+	if (gui.in_use ? gui_mch_get_winpos(&x, &y) != FAIL :
+		mch_get_winpos(&x, &y) != FAIL)
+#  elif defined(FEAT_GUI)
 	if (gui.in_use && gui_mch_get_winpos(&x, &y) != FAIL)
 #  else
 	if (mch_get_winpos(&x, &y) != FAIL)
@@ -7789,13 +7792,12 @@ ex_winpos(exarg_T *eap)
 	    gui_win_x = x;
 	    gui_win_y = y;
 	}
-#  ifdef HAVE_TGETENT
+#  if defined(HAVE_TGETENT) || defined(VIMDLL)
 	else
 #  endif
-# else
-#  ifdef MSWIN
+# endif
+# if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 	    mch_set_winpos(x, y);
-#  endif
 # endif
 # ifdef HAVE_TGETENT
 	if (*T_CWP)
@@ -8239,8 +8241,11 @@ ex_redraw(exarg_T *eap)
     if (need_maketitle)
 	maketitle();
 #endif
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-    resize_console_buf();
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	resize_console_buf();
 #endif
     RedrawingDisabled = r;
     p_lz = p;

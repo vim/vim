@@ -4201,11 +4201,13 @@ f_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_GUI
     if (gui.in_use)
+    {
 	gui_mch_set_foreground();
-#else
-# ifdef MSWIN
+	return;
+    }
+#endif
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
     win32_set_foreground();
-# endif
 #endif
 }
 
