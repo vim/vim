@@ -10,7 +10,6 @@ Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file.
 GenericName[da]=Teksteditor
-GenericName[de]=Texteditor
 GenericName[pl]=Edytor tekstu
 GenericName[is]=Ritvinnsluforrit
 Comment[af]=Redigeer tekslêers
@@ -25,7 +24,6 @@ Comment[ca]=Edita fitxers de text
 Comment[cs]=Úprava textových souborů
 Comment[cy]=Golygu ffeiliau testun
 Comment[da]=Rediger tekstfiler
-Comment[de]=Textdateien bearbeiten
 Comment[el]=Επεξεργασία αρχείων κειμένου
 Comment[en_CA]=Edit text files
 Comment[en_GB]=Edit text files
