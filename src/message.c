@@ -101,8 +101,6 @@ msg(char *s)
     return msg_attr_keep(s, 0, FALSE);
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_X11) || defined(USE_XSMP) \
-    || defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Like msg() but keep it silent when 'verbosefile' is set.
  */
@@ -117,7 +115,6 @@ verb_msg(char *s)
 
     return n;
 }
-#endif
 
     int
 msg_attr(char *s, int attr)
