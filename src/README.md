@@ -28,6 +28,7 @@ buffer.c	| manipulating buffers (loaded files)
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
 eval.c		| expression evaluation
+evalfunc.c	| built-in functions
 fileio.c	| reading and writing files
 findfile.c	| search for files in 'path'
 fold.c		| folding
@@ -40,7 +41,7 @@ memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory
 menu.c		| menus
 message.c	| (error) messages
-ops.c		  | handling operators ("d", "y", "p")
+ops.c		| handling operators ("d", "y", "p")
 option.c	| options
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
@@ -49,9 +50,11 @@ search.c	| pattern searching
 sign.c		| signs
 spell.c		| spell checking
 syntax.c	|  syntax and other highlighting
-tag.c		  | tags
+tag.c		| tags
 term.c		| terminal handling, termcap codes
 undo.c		| undo and redo
+usercmd.c	| user defined commands
+userfunc.c	| user defined functions
 window.c	| handling split windows
 
 

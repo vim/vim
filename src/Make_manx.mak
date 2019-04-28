@@ -93,6 +93,7 @@ SRC =	arabic.c \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
@@ -156,6 +157,7 @@ OBJ =	obj/arabic.o \
 	obj/term.o \
 	obj/ui.o \
 	obj/undo.o \
+	obj/usercmd.o \
 	obj/userfunc.o \
 	obj/window.o \
 	$(TERMLIB)
@@ -218,6 +220,7 @@ PRO =	proto/arabic.pro \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro
 
@@ -442,6 +445,9 @@ obj/ui.o:	ui.c
 
 obj/undo.o:	undo.c
 	$(CCSYM) $@ undo.c
+
+obj/usercmd.o:	usercmd.c
+	$(CCSYM) $@ usercmd.c
 
 obj/userfunc.o:	userfunc.c
 	$(CCSYM) $@ userfunc.c

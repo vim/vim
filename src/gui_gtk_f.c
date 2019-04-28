@@ -130,6 +130,8 @@ gtk_form_put(GtkForm	*form,
 
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     child = g_new(GtkFormChild, 1);
+    if (child == NULL)
+	return;
 
     child->widget = child_widget;
     child->window = NULL;

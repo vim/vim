@@ -1082,10 +1082,8 @@ free_all_mem(void)
     ui_remove_balloon();
 # endif
 
-# if defined(FEAT_USR_CMDS)
-    /* Clear user commands (before deleting buffers). */
+    // Clear user commands (before deleting buffers).
     ex_comclear(NULL);
-# endif
 
 # ifdef FEAT_MENU
     /* Clear menus. */
@@ -1130,7 +1128,9 @@ free_all_mem(void)
     free_search_patterns();
     free_old_sub();
     free_last_insert();
+# if defined(FEAT_INS_EXPAND)
     free_insexpand_stuff();
+# endif
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();

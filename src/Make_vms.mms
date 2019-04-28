@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2019 Mar 22
+# Last change:  2019 Apr 26
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -315,8 +315,8 @@ SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c charset.c \
 	menu.c mbyte.c memfile.c memline.c message.c misc1.c misc2.c move.c \
 	normal.c ops.c option.c popupmnu.c quickfix.c regexp.c search.c \
 	sha256.c sign.c spell.c spellfile.c syntax.c tag.c term.c termlib.c \
-	textprop.c ui.c undo.c userfunc.c version.c screen.c window.c \
-	os_unix.c os_vms.c pathdef.c \
+	textprop.c ui.c undo.c usercmd.c userfunc.c version.c screen.c \
+	window.c os_unix.c os_vms.c pathdef.c \
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) \
  	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
@@ -330,7 +330,7 @@ OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj \
 	move.obj mbyte.obj normal.obj ops.obj option.obj popupmnu.obj \
 	quickfix.obj regexp.obj search.obj sha256.obj sign.obj spell.obj \
 	spellfile.obj syntax.obj tag.obj term.obj termlib.obj textprop.obj \
-	ui.obj undo.obj userfunc.obj screen.obj version.obj \
+	ui.obj undo.obj usercmd.obj userfunc.obj screen.obj version.obj \
 	window.obj os_unix.obj os_vms.obj pathdef.obj if_mzsch.obj \
 	$(GUI_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(TCL_OBJ) \
  	$(RUBY_OBJ) $(HANGULIN_OBJ) $(MZSCH_OBJ) $(XDIFF_OBJ)
@@ -744,10 +744,16 @@ undo.obj : undo.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
 
+usercmd.obj : usercmd.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h \
+ regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+
 userfunc.obj : userfunc.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+
 version.obj : version.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \

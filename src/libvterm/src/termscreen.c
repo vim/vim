@@ -83,6 +83,8 @@ static ScreenCell *realloc_buffer(VTermScreen *screen, ScreenCell *buffer, int n
   ScreenCell *new_buffer = vterm_allocator_malloc(screen->vt, sizeof(ScreenCell) * new_rows * new_cols);
   int row, col;
 
+  if (new_buffer == NULL)
+    return NULL;
   for(row = 0; row < new_rows; row++) {
     for(col = 0; col < new_cols; col++) {
       ScreenCell *new_cell = new_buffer + row*new_cols + col;

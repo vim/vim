@@ -81,6 +81,7 @@ SRC =	arabic.c						\
 	term.c							\
 	ui.c							\
 	undo.c							\
+	usercmd.c						\
 	userfunc.c						\
 	version.c						\
 	window.c						\

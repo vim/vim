@@ -636,7 +636,7 @@ crypt_blowfish_decode(
     }
 }
 
-    void
+    int
 crypt_blowfish_init(
     cryptstate_T	*state,
     char_u*		key,
@@ -647,6 +647,8 @@ crypt_blowfish_init(
 {
     bf_state_T	*bfs = (bf_state_T *)alloc_clear(sizeof(bf_state_T));
 
+    if (bfs == NULL)
+	return FAIL;
     state->method_state = bfs;
 
     /* "blowfish" uses a 64 byte buffer, causing it to repeat 8 byte groups 8
@@ -654,10 +656,12 @@ crypt_blowfish_init(
     bfs->cfb_len = state->method_nr == CRYPT_M_BF ? BF_MAX_CFB_LEN : BF_BLOCK;
 
     if (blowfish_self_test() == FAIL)
-	return;
+	return FAIL;
 
     bf_key_init(bfs, key, salt, salt_len);
     bf_cfb_init(bfs, seed, seed_len);
+
+    return OK;
 }
 
 /*

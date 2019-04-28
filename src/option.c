@@ -13011,13 +13011,12 @@ tabstop_copy(int *oldts)
     int		*newts;
     int		t;
 
-    if (oldts == 0)
-	return 0;
-
-    newts = (int *) alloc((unsigned) ((oldts[0] + 1) * sizeof(int)));
-    for (t = 0; t <= oldts[0]; ++t)
-	newts[t] = oldts[t];
-
+    if (oldts == NULL)
+	return NULL;
+    newts = (int *)alloc((unsigned)((oldts[0] + 1) * sizeof(int)));
+    if (newts != NULL)
+	for (t = 0; t <= oldts[0]; ++t)
+	    newts[t] = oldts[t];
     return newts;
 }
 #endif

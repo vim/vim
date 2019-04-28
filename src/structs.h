@@ -549,7 +549,7 @@ typedef struct expand
     int		xp_context;		/* type of expansion */
     char_u	*xp_pattern;		/* start of item to expand */
     int		xp_pattern_len;		/* bytes in xp_pattern before cursor */
-#if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     char_u	*xp_arg;		/* completion function */
     sctx_T	xp_script_ctx;		/* SCTX for completion function */
 #endif
@@ -2143,10 +2143,8 @@ struct file_buffer
     /* First abbreviation local to a buffer. */
     mapblock_T	*b_first_abbr;
 #endif
-#ifdef FEAT_USR_CMDS
-    /* User commands local to the buffer. */
+    // User commands local to the buffer.
     garray_T	b_ucmds;
-#endif
     /*
      * start and end of an operator, also used for '[ and ']
      */
@@ -2576,6 +2574,9 @@ struct tabpage_S
     int		    tp_prev_which_scrollbars[3];
 				    /* previous value of which_scrollbars */
 #endif
+
+    char_u	    *tp_localdir;	// absolute path of local directory or
+					// NULL
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);

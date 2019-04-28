@@ -379,10 +379,8 @@
 
 /*
  * +user_commands	Allow the user to define his own commands.
+ *			Now always enabled.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_USR_CMDS
-#endif
 
 /*
  * +printer		":hardcopy" command

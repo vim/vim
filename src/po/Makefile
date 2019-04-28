@@ -151,6 +151,7 @@ prefixcheck:
 
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
+	rm -f LINGUAS vim.desktop gvim.desktop
 
 distclean: clean
 

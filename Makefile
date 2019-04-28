@@ -43,13 +43,18 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 	@if test "$@" = "test"; then \
 		$(MAKE) indenttest; \
 	fi
+	@# When the target is "clean" also clean for the indent tests.
+	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
+		cd runtime/indent && \
+			$(MAKE) clean; \
+	fi
 
 # Executable used for running the indent tests.
 VIM_FOR_INDENTTEST = ../../src/vim
 
 indenttest:
 	cd runtime/indent && \
-		$(MAKE) clean VIM="$(VIM_FOR_INDENTTEST)" && \
+		$(MAKE) clean && \
 		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
 		
 
