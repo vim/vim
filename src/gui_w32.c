@@ -3119,6 +3119,7 @@ logfont2name(LOGFONTW lf)
     char	*charset_name;
     char	*quality_name;
     char	*font_name;
+    int		points;
 
     font_name = (char *)utf16_to_enc(lf.lfFaceName, NULL);
     if (font_name == NULL)
@@ -3126,15 +3127,19 @@ logfont2name(LOGFONTW lf)
     charset_name = charset_id2name((int)lf.lfCharSet);
     quality_name = quality_id2name((int)lf.lfQuality);
 
-    res = (char *)alloc((unsigned)(strlen(font_name) + 20
+    res = (char *)alloc((unsigned)(strlen(font_name) + 30
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)
 		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2)));
     if (res != NULL)
     {
 	p = res;
-	/* make a normal font string out of the lf thing:*/
-	sprintf((char *)p, "%s:h%d", font_name, pixels_to_points(
-			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE));
+	// make a normal font string out of the lf thing:
+	points = pixels_to_points(
+			 lf.lfHeight < 0 ? -lf.lfHeight : lf.lfHeight, TRUE);
+	if (lf.lfWeight == FW_NORMAL || lf.lfWeight == FW_BOLD)
+	    sprintf((char *)p, "%s:h%d", font_name, points);
+	else
+	    sprintf((char *)p, "%s:h%d:W%d", font_name, points, lf.lfWeight);
 	while (*p)
 	{
 	    if (*p == ' ')
@@ -3143,7 +3148,7 @@ logfont2name(LOGFONTW lf)
 	}
 	if (lf.lfItalic)
 	    STRCAT(p, ":i");
-	if (lf.lfWeight >= FW_BOLD)
+	if (lf.lfWeight == FW_BOLD)
 	    STRCAT(p, ":b");
 	if (lf.lfUnderline)
 	    STRCAT(p, ":u");

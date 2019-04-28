@@ -2992,6 +2992,9 @@ get_logfont(
 	    case L'w':
 		lf->lfWidth = points_to_pixels(p, &p, FALSE, (long_i)printer_dc);
 		break;
+	    case L'W':
+		lf->lfWeight = wcstol(p, &p, 10);
+		break;
 	    case L'b':
 		lf->lfWeight = FW_BOLD;
 		break;
