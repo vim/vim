@@ -5,6 +5,8 @@ if has('gui_running') || !has('unix')
   finish
 endif
 
+source shared.vim
+
 " Helper function to emit a terminal escape code.
 func TerminalEscapeCode(code_xterm, code_sgr, row, col, m)
   if &ttymouse ==# 'xterm2'
@@ -77,6 +79,10 @@ func Test_xterm_mouse_left_click()
 endfunc
 
 func Test_xterm_mouse_middle_click()
+  if !WorkingClipboard()
+    throw 'Skipped: No working clipboard'
+  endif
+
   new
   let save_mouse = &mouse
   let save_term = &term

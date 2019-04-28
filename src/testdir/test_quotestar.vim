@@ -1,6 +1,7 @@
 " *-register (quotestar) tests
 
-if !has('clipboard')
+source shared.vim
+if !WorkingClipboard()
   finish
 endif
 
