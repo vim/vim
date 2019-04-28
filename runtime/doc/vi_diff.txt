@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2016 Aug 16
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,8 +19,9 @@ is missing something or because Posix is beside the mark).
 3. Limits				|limits|
 4. The most interesting additions	|vim-additions|
 5. Other vim features			|other-features|
-6. Command-line arguments		|cmdline-arguments|
-7. POSIX compliance			|posix-compliance|
+6. Supported Vi features		|vi-features|
+7. Command-line arguments		|cmdline-arguments|
+8. POSIX compliance			|posix-compliance|
 
 ==============================================================================
 1. Simulated command					*simulated-command*
@@ -787,7 +788,80 @@ message, since that may cause a mapping to be aborted.
 The AUX: device of the Amiga is supported.
 
 ==============================================================================
-6. Command-line arguments				*cmdline-arguments*
+6. Supported Vi features				*vi-features*
+
+Vim supports nearly all Vi commands and mostly in the same way.  That is when
+the 'compatible' option is set and 'cpoptions' contains all flags.  What the
+effect is of resetting 'compatible' and removing flags from 'cpoptions' can be
+found at the help for the specific command.
+
+Below is listed what features are present in Vi.  Anything else has been added
+by Vim.
+
+The following Ex commands are supported by Vi: ~
+
+TODO
+
+`:set`		but not `:set inv{option}`, `:set option&`, `:set all&`,
+		`:set option+=value`,
+		`:set option^=value`
+		`:set option-=value`
+		`:set option<`
+
+
+The following Normal mode commands are supported by Vi: ~
+
+TODO
+
+
+The following options are supported by Vi: ~
+
+'autoindent'	  'ai'	    take indent for new line from previous line
+'autowrite'	  'aw'	    automatically write file if changed
+'directory'	  'dir'     list of directory names for the swap file
+'edcompatible'	  'ed'	    toggle flags of ":substitute" command
+'errorbells'	  'eb'	    ring the bell for error messages
+'ignorecase'	  'ic'	    ignore case in search patterns
+'lines'			    number of lines in the display
+'lisp'			    automatic indenting for Lisp
+'list'			    show <Tab> and <EOL>
+'magic'			    changes special characters in search patterns
+'modeline'	  'ml'	    recognize 'modelines' at start or end of file
+				{called modelines in some Vi versions}
+'number'	  'nu'	    print the line number in front of each line
+'paragraphs'	  'para'    nroff macros that separate paragraphs
+'prompt'	  'prompt'  enable prompt in Ex mode
+'readonly'	  'ro'	    disallow writing the buffer {Vim sets 'readonly'
+				when editing a file with `:view`}
+'remap'			    allow mappings to work recursively
+'report'		    threshold for reporting nr. of lines changed
+'scroll'	  'scr'     lines to scroll with CTRL-U and CTRL-D
+'sections'	  'sect'    nroff macros that separate sections
+'shell'		  'sh'	    name of shell to use for external commands
+'shiftwidth'	  'sw'	    number of spaces to use for (auto)indent step
+'showmatch'	  'sm'	    briefly jump to matching bracket if insert one
+'showmode'	  'smd'     message on status line to show current mode
+'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
+'taglength'	  'tl'	    number of significant characters for a tag
+'tags'		  'tag'     list of file names used by the tag command
+'tagstack'	  'tgst'    push tags onto the tag stack {not in all versions
+				of Vi}
+'term'			    name of the terminal
+'terse'			    shorten some messages
+'timeout'	  'to'	    time out on mappings and key codes
+'ttytype'	  'tty'     alias for 'term'
+'verbose'	  'vbs'     give informative messages {only in some Vi
+				versions as a boolean option}
+'warn'			    warn for shell command when buffer was changed
+'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
+'wrapmargin'	  'wm'	    chars from the right where wrapping starts
+'wrapscan'	  'ws'	    searches wrap around the end of the file
+'writeany'	  'wa'	    write to file with no need for "!" override
+
+Also see |missing-options|.
+
+==============================================================================
+7. Command-line arguments				*cmdline-arguments*
 
 Different versions of Vi have different command-line arguments.  This can be
 confusing.  To help you, this section gives an overview of the differences.
@@ -967,7 +1041,7 @@ Only Vim is able to accept options in between and after the file names.
 @{cmdfile}	Vile: use {cmdfile} as startup file.
 
 ==============================================================================
-7. POSIX compliance				*posix* *posix-compliance*
+8. POSIX compliance				*posix* *posix-compliance*
 
 In 2005 the POSIX test suite was run to check the compatibility of Vim.  Most
 of the test was executed properly.  There are the few things where Vim
