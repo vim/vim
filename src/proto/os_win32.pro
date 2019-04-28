@@ -19,7 +19,7 @@ void fname_case(char_u *name, int len);
 int mch_get_user_name(char_u *s, int len);
 void mch_get_host_name(char_u *s, int len);
 long mch_get_pid(void);
-int mch_process_running(pid_t pid);
+int mch_process_running(long pid);
 int mch_dirname(char_u *buf, int len);
 long mch_getperm(char_u *name);
 int mch_setperm(char_u *name, long perm);

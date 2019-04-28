@@ -2397,7 +2397,7 @@ mch_get_pid(void)
  * return TRUE if process "pid" is still running
  */
     int
-mch_process_running(pid_t pid)
+mch_process_running(long pid)
 {
     // EMX kill() not working correctly, it seems
     return kill(pid, 0) == 0;

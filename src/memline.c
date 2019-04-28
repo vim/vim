@@ -2027,7 +2027,9 @@ make_percent_swname(char_u *dir, char_u *name)
 }
 #endif
 
-#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#if (defined(UNIX) || defined(VMS) || defined(MSWIN)) \
+	&& (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+# define HAVE_PROCESS_STILL_RUNNING
 static int process_still_running;
 #endif
 
@@ -2160,10 +2162,10 @@ swapfile_info(char_u *fname)
 		    msg_puts(_("\n        process ID: "));
 		    msg_outnum(char_to_long(b0.b0_pid));
 #if defined(UNIX) || defined(MSWIN)
-		    if (mch_process_running((pid_t)char_to_long(b0.b0_pid)))
+		    if (mch_process_running(char_to_long(b0.b0_pid)))
 		    {
 			msg_puts(_(" (STILL RUNNING)"));
-# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+# ifdef HAVE_PROCESS_STILL_RUNNING
 			process_still_running = TRUE;
 # endif
 		    }
@@ -2203,7 +2205,7 @@ swapfile_unchanged(char_u *fname)
     int		    fd;
     struct block0   b0;
     int		    ret = TRUE;
-#ifdef UNIX
+#if defined(UNIX) || defined(MSWIN)
     long	    pid;
 #endif
 
@@ -2232,7 +2234,7 @@ swapfile_unchanged(char_u *fname)
 #if defined(UNIX) || defined(MSWIN)
     // process must known and not be running
     pid = char_to_long(b0.b0_pid);
-    if (pid == 0L || mch_process_running((pid_t)pid))
+    if (pid == 0L || mch_process_running(pid))
 	ret = FALSE;
 #endif
 
@@ -4825,7 +4827,7 @@ findswapname(
 		    }
 #endif
 
-#if (defined(UNIX) || defined(VMS)) && (defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG))
+#ifdef HAVE_PROCESS_STILL_RUNNING
 		    process_still_running = FALSE;
 #endif
 		    // It's safe to delete the swap file if all these are true:
@@ -4893,13 +4895,13 @@ findswapname(
 				    name == NULL
 					?  (char_u *)_("Swap file already exists!")
 					: name,
-# if defined(UNIX) || defined(VMS)
+# ifdef HAVE_PROCESS_STILL_RUNNING
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
 # endif
 					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"), 1, NULL, FALSE);
 
-# if defined(UNIX) || defined(VMS)
+# ifdef HAVE_PROCESS_STILL_RUNNING
 			if (process_still_running && choice >= 4)
 			    choice++;	/* Skip missing "Delete it" button */
 # endif

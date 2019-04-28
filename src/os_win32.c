@@ -2907,7 +2907,7 @@ mch_get_pid(void)
  * return TRUE if process "pid" is still running
  */
     int
-mch_process_running(pid_t pid)
+mch_process_running(long pid)
 {
     HANDLE  hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, 0, (DWORD)pid);
     DWORD   status = 0;
