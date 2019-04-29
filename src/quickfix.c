@@ -5114,12 +5114,6 @@ ex_cbelow(exarg_T *eap)
     int		buf_has_flag;
     int		errornr = 0;
 
-    // Check whether the count is invalid
-    if (eap->addr_count > 0 && eap->line2 <= 0)
-    {
-	return;
-    }
-
     // Check whether the current buffer has any quickfix entries
     if (eap->cmdidx == CMD_cabove || eap->cmdidx == CMD_cbelow)
 	buf_has_flag = BUF_HAS_QF_ENTRY;
