@@ -125,8 +125,10 @@ processing a quickfix or location list command, it will be aborted.
 
 							*:cabo* *:cabove*
 :cabo[ve] [nr]		Go to the [nr] error above the current line in the
-			current buffer. If there are no errors, then an error
-			message is displayed.
+			current buffer.  If [nr] is omitted, then 1 is used.
+			If there are no errors, then an error message is
+			displayed.  Assumes that the entries in a quickfix
+			list are sorted by their line number.
 
 							*:lab* *:labove*
 :lab[ove] [nr]		Same as ":cabove", except the location list for the
@@ -134,8 +136,10 @@ processing a quickfix or location list command, it will be aborted.
 
 							*:cbe* *:cbelow*
 :cbe[low] [nr]		Go to the [nr] error below the current line in the
-			current buffer. If there are no errors, then an error
-			message is displayed.
+			current buffer.  If [nr] is omitted, then 1 is used.
+			If there are no errors, then an error message is
+			displayed.  Assumes that the entries in a quickfix
+			list are sorted by their line number.
 
 							*:lbe* *:lbelow*
 :lbe[low] [nr]		Same as ":cbelow", except the location list for the

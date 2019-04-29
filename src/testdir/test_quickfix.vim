@@ -4073,6 +4073,7 @@ func Xtest_below(cchar)
   " First error in this file
   Xabove 99
   call assert_equal(['X2', 5], [bufname(''), line('.')])
+  call assert_fails('Xabove', 'E553:')
   normal gg
   Xbelow 2
   call assert_equal(['X2', 10], [bufname(''), line('.')])
