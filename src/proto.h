@@ -68,6 +68,7 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
+# include "debugger.pro"
 # include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
@@ -226,6 +227,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "ui.pro"
 # include "undo.pro"
+# include "usercmd.pro"
 # include "userfunc.pro"
 # include "version.pro"
 # include "window.pro"

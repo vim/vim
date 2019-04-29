@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.1.  Last change: 2017 Oct 27
+*gui_w32.txt*   For Vim version 8.1.  Last change: 2019 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31,6 +31,17 @@ The GUI will always run in the Windows subsystem.  Mostly shells automatically
 return with a command prompt after starting gvim.  If not, you should use the
 "start" command: >
 	start gvim [options] file ..
+<							*E988*
+The console version with the |-g| option may also start the GUI by executing
+gvim.exe: >
+	vim -g [options] file ..
+To make this work, gvim.exe must exist in the same directory as the vim.exe,
+and this feature must be enabled at compile time.
+
+One may also use `:gui` from the console version.  However, this is an
+experimental feature and this feature must be enabled at compile time.
+It uses a session file to recreate the current state of the console Vim in the
+GUI Vim.
 
 Note: All fonts (bold, italic) must be of the same size!!!  If you don't do
 this, text will disappear or mess up the display.  Vim does not check the font

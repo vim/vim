@@ -35,7 +35,7 @@ int msg_outtrans_len(char_u *str, int len);
 char_u *msg_outtrans_one(char_u *p, int attr);
 int msg_outtrans_len_attr(char_u *msgstr, int len, int attr);
 void msg_make(char_u *arg);
-int msg_outtrans_special(char_u *strstart, int from);
+int msg_outtrans_special(char_u *strstart, int from, int maxlen);
 char_u *str2special_save(char_u *str, int is_lhs);
 char_u *str2special(char_u **sp, int from);
 void str2specialbuf(char_u *sp, char_u *buf, int len);

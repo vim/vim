@@ -1,6 +1,7 @@
 " Tests for startup.
 
 source shared.vim
+source screendump.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -546,4 +547,16 @@ func Test_issue_3969()
   " Check that message is not truncated.
   let out = system(GetVimCommand() . ' -es -X -V1 -c "echon ''hello''" -cq')
   call assert_equal('hello', out)
+endfunc
+
+func Test_start_with_tabs()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  let buf = RunVimInTerminal('-p a b c', {})
+  call VerifyScreenDump(buf, 'Test_start_with_tabs', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc

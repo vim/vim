@@ -217,6 +217,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/charset.obj" \
 	"$(INTDIR)/crypt.obj" \
 	"$(INTDIR)/crypt_zip.obj" \
+	"$(INTDIR)/debugger.obj" \
 	"$(INTDIR)/dict.obj" \
 	"$(INTDIR)/diff.obj" \
 	"$(INTDIR)/digraph.obj" \
@@ -268,6 +269,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/term.obj" \
 	"$(INTDIR)/ui.obj" \
 	"$(INTDIR)/undo.obj" \
+	"$(INTDIR)/usercmd.obj" \
 	"$(INTDIR)/userfunc.obj" \
 	"$(INTDIR)/version.obj" \
 	"$(INTDIR)/window.obj"
@@ -366,6 +368,10 @@ SOURCE=.\crypt.c
 # Begin Source File
 
 SOURCE=.\crypt_zip.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\debugger.c
 # End Source File
 # Begin Source File
 
@@ -720,6 +726,10 @@ SOURCE=.\ui.c
 # Begin Source File
 
 SOURCE=.\undo.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\usercmd.c
 # End Source File
 # Begin Source File
 

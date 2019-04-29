@@ -1906,7 +1906,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
 
     if (prepend)
     {
-	/* preend node to the head of the queue */
+	// prepend node to the head of the queue
 	node->rq_next = head->rq_next;
 	node->rq_prev = NULL;
 	if (head->rq_next == NULL)
@@ -1917,7 +1917,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
     }
     else
     {
-	/* append node to the tail of the queue */
+	// append node to the tail of the queue
 	node->rq_next = NULL;
 	node->rq_prev = head->rq_prev;
 	if (head->rq_prev == NULL)
@@ -5319,7 +5319,7 @@ job_still_useful(job_T *job)
     return job_need_end_check(job) || job_channel_still_useful(job);
 }
 
-#if defined(GUI_MAY_FORK) || defined(PROTO)
+#if defined(GUI_MAY_FORK) || defined(GUI_MAY_SPAWN) || defined(PROTO)
 /*
  * Return TRUE when there is any running job that we care about.
  */

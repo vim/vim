@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 04
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -587,7 +587,7 @@ CompleteChanged 					*CompleteChanged*
 				recursively.
 
 				Sets these |v:event| keys:
-				    completed_item
+				    completed_item	See |complete-items|.
 				    height		nr of items visible
 				    width		screen cells
 				    row			top screen row
@@ -690,13 +690,14 @@ DiffUpdated			After diffs have been updated.  Depending on
 				change or when doing |:diffupdate|.
 							*DirChanged*
 DirChanged			The working directory has changed in response
-				to the |:cd| or |:lcd| commands, or as a
-				result of the 'autochdir' option.
+				to the |:cd| or |:tcd| or |:lcd| commands, or
+				as a result of the 'autochdir' option.
 				The pattern can be:
-					"window" to trigger on `:lcd`
-					"global" to trigger on `:cd`
-					"auto"   to trigger on 'autochdir'.
-					"drop"	 to trigger on editing a file
+					"window"  to trigger on `:lcd`
+					"tabpage" to trigger on `:tcd`
+					"global"  to trigger on `:cd`
+					"auto"    to trigger on 'autochdir'.
+					"drop"	  to trigger on editing a file
 				<afile> is set to the new directory name.
 							*ExitPre*
 ExitPre				When using `:quit`, `:wq` in a way it makes
@@ -895,7 +896,6 @@ OptionSet			After setting an option.  The pattern is
 
 				When using |:set| in the autocommand the event
 				is not triggered again.
-
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,

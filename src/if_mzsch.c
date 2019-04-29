@@ -822,7 +822,7 @@ static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
 #endif
 
-#ifndef FEAT_GUI_MSWIN /* Win32 console and Unix */
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) /* Win32 console and Unix */
     void
 mzvim_check_threads(void)
 {
@@ -1775,9 +1775,11 @@ get_option(void *data, int argc, Scheme_Object **argv)
     case -2:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("hidden option"));
+	/*NOTREACHED*/
     case -3:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("unknown option"));
+	/*NOTREACHED*/
     }
     /* unreachable */
     return scheme_void;

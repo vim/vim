@@ -21,8 +21,8 @@
  * (char **). This define removes that prototype. We include our own prototype
  * below.
  */
-
 #define tgetstr tgetstr_defined_wrong
+
 #include "vim.h"
 
 #ifdef HAVE_TGETENT
@@ -3496,19 +3496,23 @@ settmode(int tmode)
 #endif
 #ifdef FEAT_MOUSE_TTY
 	    if (tmode != TMODE_RAW)
-		mch_setmouse(FALSE);	/* switch mouse off */
+		mch_setmouse(FALSE);	// switch mouse off
 #endif
-	    if (tmode != TMODE_RAW)
-		out_str(T_BD);		/* disable bracketed paste mode */
+	    if (termcap_active)
+	    {
+		if (tmode != TMODE_RAW)
+		    out_str(T_BD);	// disable bracketed paste mode
+		else
+		    out_str(T_BE);	// enable bracketed paste mode (should
+					// be before mch_settmode().
+	    }
 	    out_flush();
-	    mch_settmode(tmode);	/* machine specific function */
+	    mch_settmode(tmode);	// machine specific function
 	    cur_tmode = tmode;
 #ifdef FEAT_MOUSE
 	    if (tmode == TMODE_RAW)
-		setmouse();		/* may switch mouse on */
+		setmouse();		// may switch mouse on
 #endif
-	    if (tmode == TMODE_RAW)
-		out_str(T_BE);		/* enable bracketed paste mode */
 	    out_flush();
 	}
 #ifdef FEAT_TERMRESPONSE
@@ -4090,7 +4094,12 @@ add_termcode(char_u *name, char_u *string, int flags)
 #if defined(MSWIN) && !defined(FEAT_GUI)
     s = vim_strnsave(string, (int)STRLEN(string) + 1);
 #else
-    s = vim_strsave(string);
+# ifdef VIMDLL
+    if (!gui.in_use)
+	s = vim_strnsave(string, (int)STRLEN(string) + 1);
+    else
+# endif
+	s = vim_strsave(string);
 #endif
     if (s == NULL)
 	return;
@@ -4102,11 +4111,16 @@ add_termcode(char_u *name, char_u *string, int flags)
 	s[0] = term_7to8bit(string);
     }
 
-#if defined(MSWIN) && !defined(FEAT_GUI)
-    if (s[0] == K_NUL)
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
     {
-	STRMOVE(s + 1, s);
-	s[1] = 3;
+	if (s[0] == K_NUL)
+	{
+	    STRMOVE(s + 1, s);
+	    s[1] = 3;
+	}
     }
 #endif
 
@@ -6708,7 +6722,7 @@ translate_mapping(
 }
 #endif
 
-#if (defined(MSWIN) && !defined(FEAT_GUI)) || defined(PROTO)
+#if (defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 static char ksme_str[20];
 static char ksmr_str[20];
 static char ksmd_str[20];
@@ -6898,6 +6912,19 @@ hex_digit(int c)
     return 0x1ffffff;
 }
 
+# ifdef VIMDLL
+    static guicolor_T
+gui_adjust_rgb(guicolor_T c)
+{
+    if (gui.in_use)
+	return c;
+    else
+	return ((c & 0xff) << 16) | (c & 0x00ff00) | ((c >> 16) & 0xff);
+}
+# else
+#  define gui_adjust_rgb(c) (c)
+# endif
+
     guicolor_T
 gui_get_color_cmn(char_u *name)
 {
@@ -6969,13 +6996,13 @@ gui_get_color_cmn(char_u *name)
 		    ((hex_digit(name[5]) << 4) + hex_digit(name[6])));
 	if (color > 0xffffff)
 	    return INVALCOLOR;
-	return color;
+	return gui_adjust_rgb(color);
     }
 
     /* Check if the name is one of the colors we know */
     for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
 	if (STRICMP(name, rgb_table[i].color_name) == 0)
-	    return rgb_table[i].color;
+	    return gui_adjust_rgb(rgb_table[i].color);
 
     /*
      * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
@@ -7056,7 +7083,7 @@ gui_get_color_cmn(char_u *name)
 
     for (i = 0; i < size; i++)
 	if (STRICMP(name, colornames_table[i].color_name) == 0)
-	    return colornames_table[i].color;
+	    return gui_adjust_rgb(colornames_table[i].color);
 
     return INVALCOLOR;
 }
@@ -7068,11 +7095,11 @@ gui_get_rgb_color_cmn(int r, int g, int b)
 
     if (color > 0xffffff)
 	return INVALCOLOR;
-    return color;
+    return gui_adjust_rgb(color);
 }
 #endif
 
-#if (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)) || defined(FEAT_TERMINAL) \
+#if (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))) || defined(FEAT_TERMINAL) \
 	|| defined(PROTO)
 static int cube_value[] = {
     0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF

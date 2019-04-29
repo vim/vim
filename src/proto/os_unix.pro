@@ -27,6 +27,7 @@ int mch_get_user_name(char_u *s, int len);
 int mch_get_uname(uid_t uid, char_u *s, int len);
 void mch_get_host_name(char_u *s, int len);
 long mch_get_pid(void);
+int mch_process_running(long pid);
 int mch_dirname(char_u *buf, int len);
 int mch_FullName(char_u *fname, char_u *buf, int len, int force);
 int mch_isFullName(char_u *fname);

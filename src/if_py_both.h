@@ -1032,7 +1032,7 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     Py_DECREF(newwd);
     Py_XDECREF(todecref);
 
-    post_chdir(FALSE);
+    post_chdir(FALSE, FALSE);
 
     if (VimTryEnd())
     {

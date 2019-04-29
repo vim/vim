@@ -5394,8 +5394,11 @@ nv_clear(cmdarg_T *cap)
 # endif
 #endif
 	redraw_later(CLEAR);
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	resize_console_buf();
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	    resize_console_buf();
 #endif
     }
 }
@@ -5724,7 +5727,11 @@ nv_ident(cmdarg_T *cap)
 	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else
+    {
+	g_tag_at_cursor = TRUE;
 	do_cmdline_cmd(buf);
+	g_tag_at_cursor = FALSE;
+    }
 
     vim_free(buf);
 }

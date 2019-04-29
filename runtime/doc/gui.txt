@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.1.  Last change: 2019 Jan 06
+*gui.txt*       For Vim version 8.1.  Last change: 2019 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11,8 +11,9 @@ Vim's Graphical User Interface				*gui* *GUI*
 3. Mouse Control		|gui-mouse|
 4. Making GUI Selections	|gui-selections|
 5. Menus			|menus|
-6. Extras			|gui-extras|
-7. Shell Commands		|gui-shell|
+6. Font				|gui-font|
+7. Extras			|gui-extras|
+8. Shell Commands		|gui-shell|
 
 Other GUI documentation:
 |gui_x11.txt|	For specific items of the X11 GUI.
@@ -1037,7 +1038,139 @@ make a selection.
 Note that a menu that starts with ']' will not be displayed.
 
 ==============================================================================
-6. Extras						*gui-extras*
+6. Font
+
+This section describes font related options.
+
+GUIFONT							*gui-font*
+
+'guifont' is the option that tells Vim what font to use.  In its simplest form
+the value is just one font name.  It can also be a list of font names
+separated with commas.  The first valid font is used.  When no valid font can
+be found you will get an error message. 
+
+On systems where 'guifontset' is supported (X11) and 'guifontset' is not
+empty, then 'guifont' is not used.  See |xfontset|.
+
+Note: As to the GTK GUIs, no error is given against any invalid names, and the
+first element of the list is always picked up and made use of.  This is
+because, instead of identifying a given name with a font, the GTK GUIs use it
+to construct a pattern and try to look up a font which best matches the
+pattern among available fonts, and this way, the matching never fails.  An
+invalid name doesn't matter because a number of font properties other than
+name will do to get the matching done.
+
+Spaces after a comma are ignored.  To include a comma in a font name precede
+it with a backslash.  Setting an option requires an extra backslash before a
+space and a backslash.  See also |option-backslash|.  For example: >
+    :set guifont=Screen15,\ 7x13,font\\,with\\,commas
+will make Vim try to use the font "Screen15" first, and if it fails it will
+try to use "7x13" and then "font,with,commas" instead.
+
+If none of the fonts can be loaded, Vim will keep the current setting.  If an
+empty font list is given, Vim will try using other resource settings (for X,
+it will use the Vim.font resource), and finally it will try some builtin
+default which should always be there ("7x13" in the case of X).  The font
+names given should be "normal" fonts.  Vim will try to find the related bold
+and italic fonts.
+
+For Win32, GTK, Motif, Mac OS and Photon: >
+    :set guifont=*
+will bring up a font requester, where you can pick the font you want.
+
+The font name depends on the GUI used.  See |setting-guifont| for a way to set
+'guifont' for various systems.
+
+For the GTK+ 2 and 3 GUIs, the font name looks like this: >
+    :set guifont=Andale\ Mono\ 11
+That's all.  XLFDs are not used.  For Chinese this is reported to work well: >
+    if has("gui_gtk2")
+      set guifont=Bitstream\ Vera\ Sans\ Mono\ 12,Fixed\ 12
+      set guifontwide=Microsoft\ Yahei\ 12,WenQuanYi\ Zen\ Hei\ 12
+    endif
+<
+(Replace gui_gtk2 with gui_gtk3 for the GTK+ 3 GUI)
+
+For Mac OSX you can use something like this: >
+    :set guifont=Monaco:h10
+Also see 'macatsui', it can help fix display problems.
+							*E236*
+Note that the fonts must be mono-spaced (all characters have the same width).
+An exception is GTK: all fonts are accepted, but mono-spaced fonts look best.
+
+To preview a font on X11, you might be able to use the "xfontsel" program.
+The "xlsfonts" program gives a list of all available fonts.
+
+For the Win32 GUI					*E244* *E245*
+- Takes these options in the font name (use a ':' to separate the options):
+	hXX - height is XX (points, can be floating-point)
+	wXX - width is XX (points, can be floating-point)
+	WXX - weight is XX (see Note on Weights below)
+	b   - bold. This is equivalent to setting the weight to 700.
+	i   - italic
+	u   - underline
+	s   - strikeout
+	cXX - character set XX.  Valid charsets are: ANSI, ARABIC, BALTIC,
+	      CHINESEBIG5, DEFAULT, EASTEUROPE, GB2312, GREEK, HANGEUL,
+	      HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS, SYMBOL, THAI,
+	      TURKISH, VIETNAMESE ANSI and BALTIC.  Normally you would use
+	      "cDEFAULT".
+	qXX - quality XX.  Valid quality names are: PROOF, DRAFT, ANTIALIASED,
+	      NONANTIALIASED, CLEARTYPE, DEFAULT.  Normally you would use
+	      "qDEFAULT".
+	      Some quality values are not supported in legacy OSs.
+- A '_' can be used in the place of a space, so you don't need to use
+  backslashes to escape the spaces.
+Examples: >
+    :set guifont=courier_new:h12:w5:b:cRUSSIAN
+    :set guifont=Andale_Mono:h7.5:w4.5
+
+See also |font-sizes|.
+
+Note on Weights: Fonts often come with a variety of weights. "Normal" weights
+in Windows have a value of 400 and, left unspecified, this is the value that
+will be used when attempting to find fonts. Windows will often match fonts
+based on their weight with higher priority than the font name which means a
+Book or Medium variant of a font might be used despite specifying a Light or
+ExtraLight variant. If you are experiencing heavier weight substitution, then
+explicitly setting a lower weight value may mitigate against this unwanted
+substitution.
+
+
+GUIFONTWIDE						*gui-fontwide*
+
+When not empty, 'guifontwide' specifies a comma-separated list of fonts to be
+used for double-width characters.  The first font that can be loaded is
+used.
+
+Note: The size of these fonts must be exactly twice as wide as the one
+specified with 'guifont' and the same height.  If there is a mismatch then
+the text will not be drawn correctly.
+
+All GUI versions but GTK+:
+
+'guifontwide' is only used when 'encoding' is set to "utf-8" and
+'guifontset' is empty or invalid.
+When 'guifont' is set and a valid font is found in it and
+'guifontwide' is empty Vim will attempt to find a matching
+double-width font and set 'guifontwide' to it.
+
+GTK+ GUI only:  		    	*guifontwide_gtk*
+
+If set and valid, 'guifontwide' is always used for double width
+characters, even if 'encoding' is not set to "utf-8".
+Vim does not attempt to find an appropriate value for 'guifontwide'
+automatically.  If 'guifontwide' is empty Pango/Xft will choose the
+font for characters not available in 'guifont'.  Thus you do not need
+to set 'guifontwide' at all unless you want to override the choice
+made by Pango/Xft.
+
+Windows +multibyte only:		*guifontwide_win_mbyte*
+
+If set and valid, 'guifontwide' is used for IME instead of 'guifont'.
+
+==============================================================================
+7. Extras						*gui-extras*
 
 This section describes other features which are related to the GUI.
 
@@ -1081,7 +1214,7 @@ A recommended Japanese font is MS Mincho.  You can find info here:
 http://www.lexikan.com/mincho.htm
 
 ==============================================================================
-7. Shell Commands					*gui-shell*
+8. Shell Commands					*gui-shell*
 
 For the X11 GUI the external commands are executed inside the gvim window.
 See |gui-pty|.

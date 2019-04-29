@@ -101,8 +101,6 @@ msg(char *s)
     return msg_attr_keep(s, 0, FALSE);
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_X11) || defined(USE_XSMP) \
-    || defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Like msg() but keep it silent when 'verbosefile' is set.
  */
@@ -117,7 +115,6 @@ verb_msg(char *s)
 
     return n;
 }
-#endif
 
     int
 msg_attr(char *s, int attr)
@@ -1594,7 +1591,8 @@ msg_make(char_u *arg)
     int
 msg_outtrans_special(
     char_u	*strstart,
-    int		from)	/* TRUE for lhs of a mapping */
+    int		from,	// TRUE for lhs of a mapping
+    int		maxlen) // screen columns, 0 for unlimeted
 {
     char_u	*str = strstart;
     int		retval = 0;
@@ -1614,6 +1612,8 @@ msg_outtrans_special(
 	else
 	    text = (char *)str2special(&str, from);
 	len = vim_strsize((char_u *)text);
+	if (maxlen > 0 && retval + len >= maxlen)
+	    break;
 	/* Highlight special keys */
 	msg_puts_attr(text, len > 1
 		&& (*mb_ptr2len)((char_u *)text) <= 1 ? attr : 0);
@@ -2560,8 +2560,12 @@ t_puts(
 msg_use_printf(void)
 {
     return (!msg_check_screen()
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+	    || (!gui.in_use && !termcap_active)
+# else
 	    || !termcap_active
+# endif
 #endif
 	    || (swapping_screen() && !termcap_active)
 	       );
@@ -2937,15 +2941,10 @@ do_more_prompt(int typed_char)
 # undef mch_msg
 #endif
 
-/*
- * Give an error message.  To be used when the screen hasn't been initialized
- * yet.  When stderr can't be used, collect error messages until the GUI has
- * started and they can be displayed in a message box.
- */
-    void
-mch_errmsg(char *str)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+    static void
+mch_errmsg_c(char *str)
 {
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
@@ -2963,34 +2962,57 @@ mch_errmsg(char *str)
     {
 	fprintf(stderr, "%s", str);
     }
-#else
-    int		len;
+}
+#endif
 
-# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+/*
+ * Give an error message.  To be used when the screen hasn't been initialized
+ * yet.  When stderr can't be used, collect error messages until the GUI has
+ * started and they can be displayed in a message box.
+ */
+    void
+mch_errmsg(char *str)
+{
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
+    int		len;
+#endif
+
+#if (defined(UNIX) || defined(FEAT_GUI)) && (!defined(ALWAYS_USE_GUI) || !defined(VIMDLL))
     /* On Unix use stderr if it's a tty.
      * When not going to start the GUI also use stderr.
      * On Mac, when started from Finder, stderr is the console. */
     if (
-#  ifdef UNIX
-#   ifdef MACOS_X
+# ifdef UNIX
+#  ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
-#   else
+#  else
 	    isatty(2)
-#   endif
-#   ifdef FEAT_GUI
-	    ||
-#   endif
 #  endif
 #  ifdef FEAT_GUI
-	    !(gui.in_use || gui.starting)
+	    ||
 #  endif
+# endif
+# ifdef FEAT_GUI
+	    !(gui.in_use || gui.starting)
+# endif
 	    )
     {
 	fprintf(stderr, "%s", str);
 	return;
     }
-# endif
+#endif
 
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!(gui.in_use || gui.starting))
+# endif
+    {
+	mch_errmsg_c(str);
+	return;
+    }
+#endif
+
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
     /* avoid a delay for a message that isn't there */
     emsg_on_display = FALSE;
 
@@ -3025,15 +3047,10 @@ mch_errmsg(char *str)
 #endif
 }
 
-/*
- * Give a message.  To be used when the screen hasn't been initialized yet.
- * When there is no tty, collect messages until the GUI has started and they
- * can be displayed in a message box.
- */
-    void
-mch_msg(char *str)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+    static void
+mch_msg_c(char *str)
 {
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
@@ -3052,32 +3069,53 @@ mch_msg(char *str)
     {
 	printf("%s", str);
     }
-#else
-# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+}
+#endif
+
+/*
+ * Give a message.  To be used when the screen hasn't been initialized yet.
+ * When there is no tty, collect messages until the GUI has started and they
+ * can be displayed in a message box.
+ */
+    void
+mch_msg(char *str)
+{
+#if (defined(UNIX) || defined(FEAT_GUI)) && (!defined(ALWAYS_USE_GUI) || !defined(VIMDLL))
     /* On Unix use stdout if we have a tty.  This allows "vim -h | more" and
      * uses mch_errmsg() when started from the desktop.
      * When not going to start the GUI also use stdout.
      * On Mac, when started from Finder, stderr is the console. */
     if (
-#  ifdef UNIX
-#   ifdef MACOS_X
+# ifdef UNIX
+#  ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
-#   else
+#  else
 	    isatty(2)
-#    endif
-#   ifdef FEAT_GUI
-	    ||
 #   endif
-#  endif
 #  ifdef FEAT_GUI
-	    !(gui.in_use || gui.starting)
+	    ||
 #  endif
+# endif
+# ifdef FEAT_GUI
+	    !(gui.in_use || gui.starting)
+# endif
 	    )
     {
 	printf("%s", str);
 	return;
     }
+#endif
+
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!(gui.in_use || gui.starting))
 # endif
+    {
+	mch_msg_c(str);
+	return;
+    }
+#endif
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
     mch_errmsg(str);
 #endif
 }

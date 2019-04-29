@@ -1082,10 +1082,8 @@ free_all_mem(void)
     ui_remove_balloon();
 # endif
 
-# if defined(FEAT_USR_CMDS)
-    /* Clear user commands (before deleting buffers). */
+    // Clear user commands (before deleting buffers).
     ex_comclear(NULL);
-# endif
 
 # ifdef FEAT_MENU
     /* Clear menus. */
@@ -1130,7 +1128,9 @@ free_all_mem(void)
     free_search_patterns();
     free_old_sub();
     free_last_insert();
+# if defined(FEAT_INS_EXPAND)
     free_insexpand_stuff();
+# endif
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
@@ -4649,4 +4649,81 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     return OK;
 }
 # endif
+#endif
+
+#if defined(FEAT_SESSION) || defined(PROTO)
+/*
+ * Generate a script that can be used to restore the current editing session.
+ * Save the value of v:this_session before running :mksession in order to make
+ * automagic session save fully transparent.  Return TRUE on success.
+ */
+    int
+write_session_file(char_u *filename)
+{
+    char_u	    *escaped_filename;
+    char	    *mksession_cmdline;
+    unsigned int    save_ssop_flags;
+    int		    failed;
+
+    /*
+     * Build an ex command line to create a script that restores the current
+     * session if executed.  Escape the filename to avoid nasty surprises.
+     */
+    escaped_filename = vim_strsave_escaped(filename, escape_chars);
+    if (escaped_filename == NULL)
+	return FALSE;
+    mksession_cmdline = (char *)alloc(10 + (int)STRLEN(escaped_filename) + 1);
+    if (mksession_cmdline == NULL)
+    {
+	vim_free(escaped_filename);
+	return FALSE;
+    }
+    strcpy(mksession_cmdline, "mksession ");
+    STRCAT(mksession_cmdline, escaped_filename);
+    vim_free(escaped_filename);
+
+    /*
+     * Use a reasonable hardcoded set of 'sessionoptions' flags to avoid
+     * unpredictable effects when the session is saved automatically.  Also,
+     * we definitely need SSOP_GLOBALS to be able to restore v:this_session.
+     * Don't use SSOP_BUFFERS to prevent the buffer list from becoming
+     * enormously large if the GNOME session feature is used regularly.
+     */
+    save_ssop_flags = ssop_flags;
+    ssop_flags = (SSOP_BLANK|SSOP_CURDIR|SSOP_FOLDS|SSOP_GLOBALS
+		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE|SSOP_TABPAGES);
+
+    do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
+    failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
+    do_cmdline_cmd((char_u *)"let v:this_session = Save_VV_this_session");
+    do_unlet((char_u *)"Save_VV_this_session", TRUE);
+
+    ssop_flags = save_ssop_flags;
+    vim_free(mksession_cmdline);
+
+    /*
+     * Reopen the file and append a command to restore v:this_session,
+     * as if this save never happened.	This is to avoid conflicts with
+     * the user's own sessions.  FIXME: It's probably less hackish to add
+     * a "stealth" flag to 'sessionoptions' -- gotta ask Bram.
+     */
+    if (!failed)
+    {
+	FILE *fd;
+
+	fd = open_exfile(filename, TRUE, APPENDBIN);
+
+	failed = (fd == NULL
+	       || put_line(fd, "let v:this_session = Save_VV_this_session") == FAIL
+	       || put_line(fd, "unlet Save_VV_this_session") == FAIL);
+
+	if (fd != NULL && fclose(fd) != 0)
+	    failed = TRUE;
+
+	if (failed)
+	    mch_remove(filename);
+    }
+
+    return !failed;
+}
 #endif

@@ -1479,6 +1479,12 @@ EX(CMD_tabrewind,	"tabrewind",	ex_tabnext,
 EX(CMD_tabs,		"tabs",		ex_tabs,
 			TRLBAR|CMDWIN,
 			ADDR_TABS),
+EX(CMD_tcd,		"tcd",		ex_cd,
+			BANG|FILE1|TRLBAR|CMDWIN,
+			ADDR_OTHER),
+EX(CMD_tchdir,		"tchdir",	ex_cd,
+			BANG|FILE1|TRLBAR|CMDWIN,
+			ADDR_OTHER),
 EX(CMD_tcl,		"tcl",		ex_tcl,
 			RANGE|EXTRA|NEEDARG|CMDWIN|RESTRICT,
 			ADDR_LINES),
@@ -1753,13 +1759,9 @@ EX(CMD_tilde,		"~",		do_sub,
 			ADDR_LINES),
 
 #ifndef DO_DECLARE_EXCMD
-#ifdef FEAT_USR_CMDS
     CMD_SIZE,		/* MUST be after all real commands! */
     CMD_USER = -1,	/* User-defined command */
     CMD_USER_BUF = -2	/* User-defined command local to buffer */
-#else
-    CMD_SIZE	/* MUST be the last one! */
-#endif
 #endif
 };
 
@@ -1795,9 +1797,7 @@ struct exarg
     int		force_ff;	/* ++ff= argument (first char of argument) */
     int		force_enc;	/* ++enc= argument (index in cmd[]) */
     int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement byte */
-#ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
-#endif
     char	*errmsg;	/* returned error message */
     char_u	*(*getline)(int, void *, int);
     void	*cookie;	/* argument for getline() */

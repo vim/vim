@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-28 19:23+0100\n"
+"POT-Creation-Date: 2019-04-11 16:08+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -498,106 +498,6 @@ msgstr "E105: :loadkeymap außerhalb einer eingelesenen Datei."
 msgid "E791: Empty keymap entry"
 msgstr "E791: Leerer keymap Eintrag"
 
-msgid " Keyword completion (^N^P)"
-msgstr " Stichwort Vervollständigung (^N^P)"
-
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " ^X Modus (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-
-msgid " Whole line completion (^L^N^P)"
-msgstr " Zeilen-Vervollständigung (^L^N^P)"
-
-msgid " File name completion (^F^N^P)"
-msgstr " Dateinamen-Vervollständigung (^F^N^P)"
-
-msgid " Tag completion (^]^N^P)"
-msgstr " Tag-Vervollständigung  (^]^N^P)"
-
-msgid " Path pattern completion (^N^P)"
-msgstr " Pfad-Vervollständigung (^N^P)"
-
-msgid " Definition completion (^D^N^P)"
-msgstr " Definitions-Vervollständigung (^D^N^P)"
-
-msgid " Dictionary completion (^K^N^P)"
-msgstr " Dictionary-Vervollständigung (^K^N^P) "
-
-msgid " Thesaurus completion (^T^N^P)"
-msgstr " Thesaurus-Vervollständigung (^T^N^P)"
-
-msgid " Command-line completion (^V^N^P)"
-msgstr " Kommandozeilen-Vervollständigung (^V^N^P)"
-
-msgid " User defined completion (^U^N^P)"
-msgstr " Benutzerdefinierte Vervollständigung (^U^N^P)"
-
-msgid " Omni completion (^O^N^P)"
-msgstr " Omni-Vervollständigung (^O^N^P)"
-
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Vorschlag der Rechtschreibprüfung (s^N^P)"
-
-msgid " Keyword Local completion (^N^P)"
-msgstr " Lokale Stichwort-Vervollständigung(^N^P)"
-
-msgid "Hit end of paragraph"
-msgstr "Absatzende erreicht"
-
-msgid "E839: Completion function changed window"
-msgstr "E839: Vervollständigungsfunktion änderte Fenster."
-
-msgid "E840: Completion function deleted text"
-msgstr "E840: Vervollständigungsfunktion hat Text gelöscht."
-
-msgid "'dictionary' option is empty"
-msgstr "Die Option 'dictionary' ist leer."
-
-msgid "'thesaurus' option is empty"
-msgstr "Die Option 'thesaurus' ist leer."
-
-#, c-format
-msgid "Scanning dictionary: %s"
-msgstr "Durchsuchen des Wörterbuchs: %s"
-
-msgid " (insert) Scroll (^E/^Y)"
-msgstr " (Einfügen) Scrollen (^E/^Y)"
-
-msgid " (replace) Scroll (^E/^Y)"
-msgstr " (Ersetzen) Scrollen (^E/^Y)"
-
-#, c-format
-msgid "Scanning: %s"
-msgstr "Durchsuche: %s"
-
-msgid "Scanning tags."
-msgstr "Durchsuche Tags"
-
-msgid "match in file"
-msgstr "Treffer in Datei"
-
-msgid " Adding"
-msgstr " Füge hinzu"
-
-msgid "-- Searching..."
-msgstr "-- Suche..."
-
-msgid "Back at original"
-msgstr "Zurück am Ursprung"
-
-msgid "Word from other line"
-msgstr "Wort aus anderer Zeile"
-
-msgid "The only match"
-msgstr "Einziger Treffer"
-
-#, c-format
-msgid "match %d of %d"
-msgstr "Treffer %d von %d"
-
-#, c-format
-msgid "match %d"
-msgstr "Treffer %d"
-
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Unerwartete Zeichen in :let"
 
@@ -621,6 +521,9 @@ msgstr "E461: Unzulässiger Variablenname: %s"
 
 msgid "E806: using Float as a String"
 msgstr "E806: Float als String benutzt."
+
+msgid "E985: .= is not supported with script version 2"
+msgstr "E985: .= wird mit Scriptversion 2 nicht mehr unterstützt."
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Weniger Ziele als Einträge in der Liste."
@@ -852,6 +755,9 @@ msgstr "E899: Argument von %s muss eine Liste oder ein Blob sein."
 msgid "E928: String required"
 msgstr "E928: String wird benötigt."
 
+msgid "E957: Invalid window number"
+msgstr "E957: Ungültige Fensternummer"
+
 msgid "E808: Number or Float required"
 msgstr "E808: Zahl oder Float benötigt."
 
@@ -910,9 +816,6 @@ msgstr "E916: kein gültiger Job"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Unzulässiger Typ für len()"
-
-msgid "E957: Invalid window number"
-msgstr "E957: Ungültige Fensternummer"
 
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
@@ -1160,8 +1063,8 @@ msgstr "E143: Autokommandos löschten unerwartet neuen Puffer %s"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: Nicht-numerisches Argument für :z"
 
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Shell-Befehle sind in rvim nicht erlaubt."
+msgid "E145: Shell commands and some functionality not allowed in rvim"
+msgstr "E145: Shell-Befehle und andere Funktionalitäten sind in rvim nicht erlaubt."
 
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr ""
@@ -1416,6 +1319,13 @@ msgstr "W15: Achtung: Falscher Zeilentrenner, vielleicht fehlt ein ^M"
 msgid "E167: :scriptencoding used outside of a sourced file"
 msgstr "E167: :scriptencoding außerhalb einer eingelesenen Datei"
 
+msgid "E984: :scriptversion used outside of a sourced file"
+msgstr "E984: :scriptversion außerhalb einer eingelesenen Datei"
+
+#, c-format
+msgid "E999: scriptversion not supported: %d"
+msgstr "E999: scriptversion nicht unterstützt: %d"
+
 msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: :finish außerhalb einer eingelesenen Datei"
 
@@ -1452,6 +1362,9 @@ msgstr "E464: Mehrdeutige Verwendung eines benutzerdefinierten Befehls"
 
 msgid "E492: Not an editor command"
 msgstr "E492: Kein Editorbefehl"
+
+msgid "E981: Command not allowed in rvim"
+msgstr "E981: Befehl in rvim nicht erlaubt."
 
 msgid "E493: Backwards range given"
 msgstr "E493: Bereichsgrenzen rückwärts"
@@ -1823,9 +1736,6 @@ msgstr "Eingabe-Zeile"
 msgid "Debug Line"
 msgstr "Debug-Zeile"
 
-msgid "E198: cmd_pchar beyond the command length"
-msgstr "E198: cmd_pchar über die Länge des Befehls hinaus"
-
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: Aktives Fenster oder Puffer gelöscht"
 
@@ -2152,6 +2062,41 @@ msgstr "E219: Es fehlt ein {."
 
 msgid "E220: Missing }."
 msgstr "E220: Es fehlt ein }."
+
+msgid "E854: path too long for completion"
+msgstr "E854: Pfad für Vervollständigung zu lang."
+
+#, c-format
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: Ungültiger Pfad: '**[Nummer]' muss am Ende des Pfads sein, oder von "
+"'%s' gefolgt werden. Siehe \":help path\"."
+
+#, c-format
+msgid "E344: Can't find directory \"%s\" in cdpath"
+msgstr "E344: Kann Verzeichnis \"%s\" nicht im 'cdpath' finden"
+
+#, c-format
+msgid "E345: Can't find file \"%s\" in path"
+msgstr "E345: Kann Datei \"%s\" nicht im Pfad finden"
+
+#, c-format
+msgid "E346: No more directory \"%s\" found in cdpath"
+msgstr "E346: Kein weiteres Verzeichnis \"%s\" im 'cdpath' gefunden"
+
+#, c-format
+msgid "E347: No more file \"%s\" found in path"
+msgstr "E347: Keine weitere Datei \"%s\" im Pfad gefunden"
+
+# Cursor: Schreibmarke Positionsmarke
+msgid "E446: No file name under cursor"
+msgstr "E446: Kein Dateiname unter dem Cursor"
+
+#, c-format
+msgid "E447: Can't find file \"%s\" in path"
+msgstr "E447: Kann Datei \"%s\" nicht im Pfad finden"
 
 msgid "E490: No fold found"
 msgstr "E490: Keine Faltung gefunden"
@@ -2951,6 +2896,106 @@ msgstr "E573: Ungültige Server ID verwendet: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Registry-Eigenschaft der VIM Instanz ist fehlerhaft. Gelöscht!"
 
+msgid " Keyword completion (^N^P)"
+msgstr " Stichwort Vervollständigung (^N^P)"
+
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " ^X Modus (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+
+msgid " Whole line completion (^L^N^P)"
+msgstr " Zeilen-Vervollständigung (^L^N^P)"
+
+msgid " File name completion (^F^N^P)"
+msgstr " Dateinamen-Vervollständigung (^F^N^P)"
+
+msgid " Tag completion (^]^N^P)"
+msgstr " Tag-Vervollständigung  (^]^N^P)"
+
+msgid " Path pattern completion (^N^P)"
+msgstr " Pfad-Vervollständigung (^N^P)"
+
+msgid " Definition completion (^D^N^P)"
+msgstr " Definitions-Vervollständigung (^D^N^P)"
+
+msgid " Dictionary completion (^K^N^P)"
+msgstr " Dictionary-Vervollständigung (^K^N^P) "
+
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " Thesaurus-Vervollständigung (^T^N^P)"
+
+msgid " Command-line completion (^V^N^P)"
+msgstr " Kommandozeilen-Vervollständigung (^V^N^P)"
+
+msgid " User defined completion (^U^N^P)"
+msgstr " Benutzerdefinierte Vervollständigung (^U^N^P)"
+
+msgid " Omni completion (^O^N^P)"
+msgstr " Omni-Vervollständigung (^O^N^P)"
+
+msgid " Spelling suggestion (s^N^P)"
+msgstr " Vorschlag der Rechtschreibprüfung (s^N^P)"
+
+msgid " Keyword Local completion (^N^P)"
+msgstr " Lokale Stichwort-Vervollständigung(^N^P)"
+
+msgid "Hit end of paragraph"
+msgstr "Absatzende erreicht"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: Vervollständigungsfunktion änderte Fenster."
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: Vervollständigungsfunktion hat Text gelöscht."
+
+msgid "'dictionary' option is empty"
+msgstr "Die Option 'dictionary' ist leer."
+
+msgid "'thesaurus' option is empty"
+msgstr "Die Option 'thesaurus' ist leer."
+
+#, c-format
+msgid "Scanning dictionary: %s"
+msgstr "Durchsuchen des Wörterbuchs: %s"
+
+msgid " (insert) Scroll (^E/^Y)"
+msgstr " (Einfügen) Scrollen (^E/^Y)"
+
+msgid " (replace) Scroll (^E/^Y)"
+msgstr " (Ersetzen) Scrollen (^E/^Y)"
+
+#, c-format
+msgid "Scanning: %s"
+msgstr "Durchsuche: %s"
+
+msgid "Scanning tags."
+msgstr "Durchsuche Tags"
+
+msgid "match in file"
+msgstr "Treffer in Datei"
+
+msgid " Adding"
+msgstr " Füge hinzu"
+
+msgid "-- Searching..."
+msgstr "-- Suche..."
+
+msgid "Back at original"
+msgstr "Zurück am Ursprung"
+
+msgid "Word from other line"
+msgstr "Wort aus anderer Zeile"
+
+msgid "The only match"
+msgstr "Einziger Treffer"
+
+#, c-format
+msgid "match %d of %d"
+msgstr "Treffer %d von %d"
+
+#, c-format
+msgid "match %d"
+msgstr "Treffer %d"
+
 #, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
 msgstr "E938: Doppelter Schlüssel im JSON: \"%s\""
@@ -3170,9 +3215,6 @@ msgstr "-A\t\t\tStart im Arabischen Modus"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tStart im Hebräischen Modus"
-
-msgid "-F\t\t\tStart in Farsi mode"
-msgstr "-F\t\t\tStart im Farsi Modus"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\tSetze Terminaltyp auf <terminal>"
@@ -4165,33 +4207,6 @@ msgstr "E548: Ziffer erwartet"
 msgid "E549: Illegal percentage"
 msgstr "E549: Unzulässige Prozentangabe"
 
-msgid "E854: path too long for completion"
-msgstr "E854: Pfad für Vervollständigung zu lang."
-
-#, c-format
-msgid ""
-"E343: Invalid path: '**[number]' must be at the end of the path or be "
-"followed by '%s'."
-msgstr ""
-"E343: Ungültiger Pfad: '**[Nummer]' muss am Ende des Pfads sein, oder von "
-"'%s' gefolgt werden. Siehe \":help path\"."
-
-#, c-format
-msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: Kann Verzeichnis \"%s\" nicht im 'cdpath' finden"
-
-#, c-format
-msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: Kann Datei \"%s\" nicht im Pfad finden"
-
-#, c-format
-msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346: Kein weiteres Verzeichnis \"%s\" im 'cdpath' gefunden"
-
-#, c-format
-msgid "E347: No more file \"%s\" found in path"
-msgstr "E347: Keine weitere Datei \"%s\" im Pfad gefunden"
-
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
@@ -4246,6 +4261,9 @@ msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
 "Tippe:  :qa!  und drücke <Enter> um alle Änderungen zu verwerfen und Vim zu "
 "beenden"
+
+msgid "Type  :qa  and press <Enter> to exit Vim"
+msgstr "Tippe:  :qa  und drücke <Enter> um Vim zu beenden"
 
 #, c-format
 msgid "%ld line %sed %d time"
@@ -4734,15 +4752,6 @@ msgstr "XSMP SmcOpenConnection fehlgeschlagen: %s"
 msgid "At line"
 msgstr "In Zeile"
 
-msgid "Could not load vim32.dll!"
-msgstr "Konnte vim32.dll nicht laden!"
-
-msgid "VIM Error"
-msgstr "VIM Fehler"
-
-msgid "Could not fix up function pointers to the DLL!"
-msgstr "Konnte Funktions-Zeiger in der DLL nicht korrigieren!"
-
 #, c-format
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: Fing Ereignis %s ein\n"
@@ -4973,9 +4982,8 @@ msgstr "E865: (NFA) Regexp Ende verfrüht aufgetreten"
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA regexp) Deplatziert %c"
 
-#, c-format
-msgid "E877: (NFA regexp) Invalid character class: %ld"
-msgstr "E877: (NFA regexp) Ungültige Zeichenklasse: %ld"
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (NFA regexp) Ungültige Zeichenklasse: %d"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
@@ -5833,12 +5841,6 @@ msgstr "E425: Kann nicht vor den ersten passenden Tag hinausgehen"
 msgid "E426: tag not found: %s"
 msgstr "E426: Konnte Tag \"%s\" nicht finden"
 
-msgid "  # pri kind tag"
-msgstr "   # Prio Art Tag"
-
-msgid "file\n"
-msgstr "Datei\n"
-
 msgid "E427: There is only one matching tag"
 msgstr "E427: Es gibt nur einen passenden Tag"
 
@@ -5862,6 +5864,12 @@ msgstr "  Verwendung eines Tags mit abgewandelter Groß-/Klein-Schreibung"
 #, c-format
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Die Datei \"%s\" existiert nicht"
+
+msgid "  # pri kind tag"
+msgstr "   # Prio Art Tag"
+
+msgid "file\n"
+msgstr "Datei\n"
 
 msgid ""
 "\n"
@@ -5967,6 +5975,9 @@ msgstr "E953: Datei existiert bereits: %s"
 
 msgid "E955: Not a terminal buffer"
 msgstr "E955: Kein Terminal Puffer"
+
+msgid "E982: ConPTY is not available"
+msgstr "E982: ConPTY ist nicht verfügbar"
 
 #, c-format
 msgid "E971: Property type %s does not exist"
@@ -6588,14 +6599,6 @@ msgstr ""
 msgid "E445: Other window contains changes"
 msgstr "E445: Anderes Fenster enthält Änderungen"
 
-# Cursor: Schreibmarke Positionsmarke
-msgid "E446: No file name under cursor"
-msgstr "E446: Kein Dateiname unter dem Cursor"
-
-#, c-format
-msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: Kann Datei \"%s\" nicht im Pfad finden"
-
 #, c-format
 msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
 msgstr "E799: Ungültige ID: %d (muss größer gleich 1 sein)"
@@ -6736,6 +6739,10 @@ msgid "E475: Invalid argument: %s"
 msgstr "E475: Ungültiges Argument: %s"
 
 #, c-format
+msgid "E983: Duplicate argument: %s"
+msgstr "E983: Doppeltes Argument: %s"
+
+#, c-format
 msgid "E475: Invalid value for argument %s"
 msgstr "E475: Ungültiger Wert für Argument: %s"
 
@@ -6799,10 +6806,8 @@ msgstr ""
 "E26: Hebräisch kann nicht benutzt werden: wurde zum Zeitpunkt des "
 "Übersetzens nicht eingeschaltet.\n"
 
-msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
-msgstr ""
-"E27: Farsi kann nicht benutzt werden: wurde zum Zeitpunkt des Übersetzens "
-"nicht eingeschaltet.\n"
+msgid "E27: Farsi support has been removed\n"
+msgstr "E27: Farsi Unterstützung wurde entfernt\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr ""
@@ -7379,3 +7384,23 @@ msgstr ""
 "C Quellcode (*.c, *.h)\t*.c;*.h\n"
 "C++ Quellcode (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim Dateien (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+
+msgid "GVim"
+msgstr "GVim"
+
+msgid "Text Editor"
+msgstr "Texteditor"
+
+msgid "Edit text files"
+msgstr "Textdateien bearbeiten"
+
+msgid "Text;editor;"
+msgstr "Text;Editor;"
+
+msgid "gvim"
+msgstr "gvim"
+
+msgid "Vim"
+msgstr "Vim"
+
+

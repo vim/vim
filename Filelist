@@ -23,6 +23,7 @@ SRC_ALL =	\
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
@@ -97,6 +98,7 @@ SRC_ALL =	\
 		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
+		src/usercmd.c \
 		src/userfunc.c \
 		src/version.c \
 		src/version.h \
@@ -156,6 +158,7 @@ SRC_ALL =	\
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/debugger.pro \
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
@@ -210,6 +213,7 @@ SRC_ALL =	\
 		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
+		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
 		src/proto/winclip.pro \
@@ -450,6 +454,7 @@ SRC_DOS =	\
 		src/iscygpty.h \
 		src/iid_ole.c \
 		src/os_dos.h \
+		src/os_w32dll.c \
 		src/os_w32exe.c \
 		src/os_win32.c \
 		src/os_mswin.c \

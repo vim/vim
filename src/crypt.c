@@ -42,8 +42,8 @@ typedef struct {
     /* Optional function pointer for a self-test. */
     int (* self_test_fn)();
 
-    // Function pointer for initializing encryption/description.
-    void (* init_fn)(cryptstate_T *state, char_u *key,
+    // Function pointer for initializing encryption/decryption.
+    int (* init_fn)(cryptstate_T *state, char_u *key,
 		      char_u *salt, int salt_len, char_u *seed, int seed_len);
 
     /* Function pointers for encoding/decoding from one buffer into another.
@@ -243,6 +243,7 @@ crypt_self_test(void)
 
 /*
  * Allocate a crypt state and initialize it.
+ * Return NULL for failure.
  */
     cryptstate_T *
 crypt_create(
@@ -255,8 +256,16 @@ crypt_create(
 {
     cryptstate_T *state = (cryptstate_T *)alloc((int)sizeof(cryptstate_T));
 
+    if (state == NULL)
+	return state;
+
     state->method_nr = method_nr;
-    cryptmethods[method_nr].init_fn(state, key, salt, salt_len, seed, seed_len);
+    if (cryptmethods[method_nr].init_fn(
+			   state, key, salt, salt_len, seed, seed_len) == FAIL)
+    {
+        vim_free(state);
+        return NULL;
+    }
     return state;
 }
 

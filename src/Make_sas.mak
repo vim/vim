@@ -96,6 +96,7 @@ SRC = \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -145,6 +146,7 @@ SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
@@ -157,6 +159,7 @@ OBJ = \
 	charset.o \
 	crypt.o \
 	crypt_zip.o \
+	debugger.o \
 	dict.o \
 	diff.o \
 	digraph.o \
@@ -206,6 +209,7 @@ OBJ = \
 	term.o \
 	ui.o \
 	undo.o \
+	usercmd.o \
 	userfunc.o \
 	window.o \
 	$(TERMLIB)
@@ -218,6 +222,7 @@ PRO = \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -268,6 +273,7 @@ PRO = \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro
 
@@ -340,6 +346,8 @@ crypt.o:		crypt.c
 proto/crypt.pro:	crypt.c
 crypt_zip.o:		crypt_zip.c
 proto/crypt_zip.pro:	crypt_zip.c
+debugger.o:		debugger.c
+proto/debugger.pro:	debugger.c
 dict.o:			dict.c
 proto/dict.pro:		dict.c
 diff.o:			diff.c
@@ -440,6 +448,8 @@ ui.o:			ui.c
 proto/ui.pro:		ui.c
 undo.o:			undo.c
 proto/undo.pro:		undo.c
+usercmd.o:		usercmd.c
+proto/usercmd.pro:	usercmd.c
 userfunc.o:		userfunc.c
 proto/userfunc.pro:	userfunc.c
 window.o:		window.c

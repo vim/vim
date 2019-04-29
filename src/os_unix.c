@@ -2393,6 +2393,16 @@ mch_get_pid(void)
     return (long)getpid();
 }
 
+/*
+ * return TRUE if process "pid" is still running
+ */
+    int
+mch_process_running(long pid)
+{
+    // EMX kill() not working correctly, it seems
+    return kill(pid, 0) == 0;
+}
+
 #if !defined(HAVE_STRERROR) && defined(USE_GETCWD)
     static char *
 strerror(int err)

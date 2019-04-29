@@ -126,6 +126,7 @@ endfunc
 
 scriptversion 2
 func Test_string_concat_scriptversion2()
+  call assert_true(has('vimscript-2'))
   let a = 'a'
   let b = 'b'
 
@@ -141,6 +142,7 @@ endfunc
 
 scriptversion 1
 func Test_string_concat_scriptversion1()
+  call assert_true(has('vimscript-1'))
   let a = 'a'
   let b = 'b'
 
@@ -152,6 +154,23 @@ func Test_string_concat_scriptversion1()
   if has('float')
     call assert_fails('let f = .5', 'E15:')
   endif
+endfunc
+
+scriptversion 3
+func Test_vvar_scriptversion3()
+  call assert_true(has('vimscript-3'))
+  call assert_fails('echo version', 'E121:')
+  call assert_false(exists('version'))
+  let version = 1
+  call assert_equal(1, version)
+endfunc
+
+scriptversion 2
+func Test_vvar_scriptversion2()
+  call assert_true(exists('version'))
+  echo version
+  call assert_fails('let version = 1', 'E46:')
+  call assert_equal(v:version, version)
 endfunc
 
 func Test_scriptversion()

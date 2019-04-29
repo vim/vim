@@ -620,6 +620,21 @@ windows maintains a table of which groups of characters are required for a
 locale.  You have to specify all the fonts that a locale requires in the
 'guifontset' option.
 
+Setting the 'guifontset' option also means that all font names will be handled
+as a fontset name.  Also the ones used for the "font" argument of the
+|:highlight| command.
+
+Note the difference between 'guifont' and 'guifontset': In 'guifont'
+the comma-separated names are alternative names, one of which will be
+used.  In 'guifontset' the whole string is one fontset name,
+including the commas.  It is not possible to specify alternative
+fontset names.
+This example works on many X11 systems: >
+	:set guifontset=-*-*-medium-r-normal--16-*-*-*-c-*-*-*
+<
+The fonts must match with the current locale.  If fonts for the character sets
+that the current locale uses are not included, setting 'guifontset' will fail.
+
 NOTE: The fontset always uses the current locale, even though 'encoding' may
 be set to use a different charset.  In that situation you might want to use
 'guifont' and 'guifontwide' instead of 'guifontset'.

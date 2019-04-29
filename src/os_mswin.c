@@ -129,7 +129,7 @@ typedef void VOID;
 FILE* fdDump = NULL;
 #endif
 
-#ifndef FEAT_GUI_MSWIN
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 extern char g_szOrigTitle[];
 #endif
 
@@ -195,6 +195,17 @@ int _stricoll(char *a, char *b)
 #endif
 
 
+#ifndef PROTO
+/*
+ * Save the instance handle of the exe/dll.
+ */
+    void
+SaveInst(HINSTANCE hInst)
+{
+    g_hinst = hInst;
+}
+#endif
+
 #if defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * GUI version of mch_exit().
@@ -202,7 +213,7 @@ int _stricoll(char *a, char *b)
  * Careful: mch_exit() may be called before mch_init()!
  */
     void
-mch_exit(int r)
+mch_exit_g(int r)
 {
     exiting = TRUE;
 
@@ -262,8 +273,12 @@ mch_early_init(void)
 mch_input_isatty(void)
 {
 #ifdef FEAT_GUI_MSWIN
-    return OK;	    /* GUI always has a tty */
-#else
+# ifdef VIMDLL
+    if (gui.in_use)
+# endif
+	return TRUE;	    /* GUI always has a tty */
+#endif
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     if (isatty(read_cmd_fd))
 	return TRUE;
     return FALSE;
@@ -280,8 +295,15 @@ mch_settitle(
     char_u *icon)
 {
 # ifdef FEAT_GUI_MSWIN
-    gui_mch_settitle(title, icon);
-# else
+#  ifdef VIMDLL
+    if (gui.in_use)
+#  endif
+    {
+	gui_mch_settitle(title, icon);
+	return;
+    }
+# endif
+# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     if (title != NULL)
     {
 	WCHAR	*wp = enc_to_utf16(title, NULL);
@@ -307,8 +329,11 @@ mch_settitle(
     void
 mch_restore_title(int which UNUSED)
 {
-#ifndef FEAT_GUI_MSWIN
-    SetConsoleTitle(g_szOrigTitle);
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	SetConsoleTitle(g_szOrigTitle);
 #endif
 }
 
@@ -554,7 +579,7 @@ vim_stat(const char *name, stat_T *stp)
     return n;
 }
 
-#if defined(FEAT_GUI_MSWIN) || defined(PROTO)
+#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
     void
 mch_settmode(int tmode UNUSED)
 {
@@ -596,44 +621,47 @@ mch_suspend(void)
 
 #if defined(USE_MCH_ERRMSG) || defined(PROTO)
 
-#ifdef display_errors
-# undef display_errors
-#endif
+# ifdef display_errors
+#  undef display_errors
+# endif
 
-#ifdef FEAT_GUI
 /*
  * Display the saved error message(s).
  */
     void
 display_errors(void)
 {
+# ifdef FEAT_GUI
     char *p;
 
-    if (error_ga.ga_data != NULL)
+#  ifdef VIMDLL
+    if (gui.in_use || gui.starting)
+#  endif
     {
-	/* avoid putting up a message box with blanks only */
-	for (p = (char *)error_ga.ga_data; *p; ++p)
-	    if (!isspace(*p))
-	    {
-		(void)gui_mch_dialog(
+	if (error_ga.ga_data != NULL)
+	{
+	    /* avoid putting up a message box with blanks only */
+	    for (p = (char *)error_ga.ga_data; *p; ++p)
+		if (!isspace(*p))
+		{
+		    (void)gui_mch_dialog(
 				     gui.starting ? VIM_INFO :
 					     VIM_ERROR,
 				     gui.starting ? (char_u *)_("Message") :
 					     (char_u *)_("Error"),
 				     (char_u *)p, (char_u *)_("&Ok"),
 					1, NULL, FALSE);
-		break;
-	    }
-	ga_clear(&error_ga);
+		    break;
+		}
+	    ga_clear(&error_ga);
+	}
+	return;
     }
-}
-#else
-    void
-display_errors(void)
-{
+# endif
+# if !defined(FEAT_GUI) || defined(VIMDLL)
     FlushFileBuffers(GetStdHandle(STD_ERROR_HANDLE));
+# endif
 }
-#endif
 #endif
 
 
@@ -717,7 +745,7 @@ mch_chdir(char *path)
 }
 
 
-#ifdef FEAT_GUI_MSWIN
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
 /*
  * return non-zero if a character is available
  */
@@ -955,7 +983,7 @@ Trace(
 
 #endif //_DEBUG
 
-#if !defined(FEAT_GUI) || defined(PROTO)
+#if !defined(FEAT_GUI) || defined(VIMDLL) || defined(PROTO)
 # ifdef FEAT_TITLE
 extern HWND g_hWnd;	/* This is in os_win32.c. */
 # endif
@@ -1121,8 +1149,11 @@ PrintDlgProc(
 		VIM_CLEAR(prt_name);
 	    }
 	    EnableMenuItem(GetSystemMenu(hDlg, FALSE), SC_CLOSE, MF_GRAYED);
-#ifndef FEAT_GUI
-	    BringWindowToTop(s_hwnd);
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	    if (!gui.in_use)
+# endif
+		BringWindowToTop(s_hwnd);
 #endif
 	    return TRUE;
 
@@ -1155,7 +1186,7 @@ AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
     return !*bUserAbort;
 }
 
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
 
     static UINT_PTR CALLBACK
 PrintHookProc(
@@ -1349,8 +1380,11 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     bUserAbort = &(psettings->user_abort);
     vim_memset(&prt_dlg, 0, sizeof(PRINTDLGW));
     prt_dlg.lStructSize = sizeof(PRINTDLGW);
-#ifndef FEAT_GUI
-    GetConsoleHwnd();	    /* get value of s_hwnd */
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	GetConsoleHwnd();	    /* get value of s_hwnd */
 #endif
     prt_dlg.hwndOwner = s_hwnd;
     prt_dlg.Flags = PD_NOPAGENUMS | PD_NOSELECTION | PD_RETURNDC;
@@ -1359,12 +1393,17 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	prt_dlg.hDevMode = stored_dm;
 	prt_dlg.hDevNames = stored_devn;
 	prt_dlg.lCustData = stored_nCopies; // work around bug in print dialog
-#ifndef FEAT_GUI
-	/*
-	 * Use hook to prevent console window being sent to back
-	 */
-	prt_dlg.lpfnPrintHook = PrintHookProc;
-	prt_dlg.Flags |= PD_ENABLEPRINTHOOK;
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	{
+	    /*
+	     * Use hook to prevent console window being sent to back
+	     */
+	    prt_dlg.lpfnPrintHook = PrintHookProc;
+	    prt_dlg.Flags |= PD_ENABLEPRINTHOOK;
+	}
 #endif
 	prt_dlg.Flags |= stored_nFlags;
     }
@@ -1374,8 +1413,12 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      * never show dialog if we are running over telnet
      */
     if (forceit
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	    || (!gui.in_use && !term_console)
+# else
 	    || !term_console
+# endif
 #endif
 	    )
     {
@@ -1548,7 +1591,7 @@ mch_print_begin(prt_settings_T *psettings)
     char		szBuffer[300];
     WCHAR		*wp;
 
-    hDlgPrint = CreateDialog(GetModuleHandle(NULL), TEXT("PrintDlgBox"),
+    hDlgPrint = CreateDialog(g_hinst, TEXT("PrintDlgBox"),
 					     prt_dlg.hwndOwner, PrintDlgProc);
     SetAbortProc(prt_dlg.hDC, AbortProc);
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
@@ -1568,7 +1611,10 @@ mch_print_begin(prt_settings_T *psettings)
 
 #ifdef FEAT_GUI
     /* Give focus back to main window (when using MDI). */
-    SetFocus(s_hwnd);
+# ifdef VIMDLL
+    if (gui.in_use)
+# endif
+	SetFocus(s_hwnd);
 #endif
 
     return (ret > 0);
@@ -1927,16 +1973,14 @@ mch_resolve_path(char_u *fname, int reparse_point)
 }
 #endif
 
-#if (defined(FEAT_EVAL) && !defined(FEAT_GUI)) || defined(PROTO)
+#if (defined(FEAT_EVAL) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 /*
  * Bring ourselves to the foreground.  Does work if the OS doesn't allow it.
  */
     void
 win32_set_foreground(void)
 {
-# ifndef FEAT_GUI
     GetConsoleHwnd();	    /* get value of s_hwnd */
-# endif
     if (s_hwnd != 0)
 	SetForegroundWindow(s_hwnd);
 }
@@ -2078,8 +2122,11 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 # ifdef FEAT_GUI
 	    /* Wake up the main GUI loop. */
-	    if (s_hwnd != 0)
-		PostMessage(s_hwnd, WM_NULL, 0, 0);
+#  ifdef VIMDLL
+	    if (gui.in_use)
+#  endif
+		if (s_hwnd != 0)
+		    PostMessage(s_hwnd, WM_NULL, 0, 0);
 # endif
 	    return 1;
 
@@ -2145,8 +2192,11 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 	/* When the message window is activated (brought to the foreground),
 	 * this actually applies to the text window. */
-#ifndef FEAT_GUI
-	GetConsoleHwnd();	    /* get value of s_hwnd */
+#if !defined(FEAT_GUI) || defined(VIMDLL)
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	    GetConsoleHwnd();	    /* get value of s_hwnd */
 #endif
 	if (s_hwnd != 0)
 	{
@@ -2166,7 +2216,6 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 serverInitMessaging(void)
 {
     WNDCLASS wndclass;
-    HINSTANCE s_hinst;
 
     /* Clean up on exit */
     atexit(CleanUpMessaging);
@@ -2174,12 +2223,11 @@ serverInitMessaging(void)
     /* Register a window class - we only really care
      * about the window procedure
      */
-    s_hinst = (HINSTANCE)GetModuleHandle(0);
     wndclass.style = 0;
     wndclass.lpfnWndProc = Messaging_WndProc;
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
-    wndclass.hInstance = s_hinst;
+    wndclass.hInstance = g_hinst;
     wndclass.hIcon = NULL;
     wndclass.hCursor = NULL;
     wndclass.hbrBackground = NULL;
@@ -2194,7 +2242,7 @@ serverInitMessaging(void)
 			 WS_POPUPWINDOW | WS_CAPTION,
 			 CW_USEDEFAULT, CW_USEDEFAULT,
 			 100, 100, NULL, NULL,
-			 s_hinst, NULL);
+			 g_hinst, NULL);
 }
 
 /* Used by serverSendToVim() to find an alternate server name. */
@@ -2744,12 +2792,11 @@ static const LOGFONTW s_lfDefault =
     L"Fixedsys"	/* see _ReadVimIni */
 };
 
-/* Initialise the "current height" to -12 (same as s_lfDefault) just
- * in case the user specifies a font in "guifont" with no size before a font
- * with an explicit size has been set. This defaults the size to this value
- * (-12 equates to roughly 9pt).
- */
-int current_font_height = -12;		/* also used in gui_w48.c */
+// Initialise the "current height" to -12 (same as s_lfDefault) just
+// in case the user specifies a font in "guifont" with no size before a font
+// with an explicit size has been set. This defaults the size to this value
+// (-12 equates to roughly 9pt).
+int current_font_height = -12;		// also used in gui_w32.c
 
 /* Convert a string representing a point size into pixels. The string should
  * be a positive decimal number, with an optional decimal point (eg, "12", or
@@ -2991,6 +3038,9 @@ get_logfont(
 		break;
 	    case L'w':
 		lf->lfWidth = points_to_pixels(p, &p, FALSE, (long_i)printer_dc);
+		break;
+	    case L'W':
+		lf->lfWeight = wcstol(p, &p, 10);
 		break;
 	    case L'b':
 		lf->lfWeight = FW_BOLD;

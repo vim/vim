@@ -18,6 +18,8 @@ int dict_add_special(dict_T *d, char *key, varnumber_T nr);
 int dict_add_string(dict_T *d, char *key, char_u *str);
 int dict_add_string_len(dict_T *d, char *key, char_u *str, int len);
 int dict_add_list(dict_T *d, char *key, list_T *list);
+void dict_iterate_start(typval_T *var, dict_iterator_T *iter);
+char_u *dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result);
 int dict_add_dict(dict_T *d, char *key, dict_T *dict);
 long dict_len(dict_T *d);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);

@@ -167,6 +167,9 @@
 #endif
 #define PV_SW		OPT_BUF(BV_SW)
 #define PV_SWF		OPT_BUF(BV_SWF)
+#ifdef FEAT_EVAL
+# define PV_TFU		OPT_BUF(BV_TFU)
+#endif
 #define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
 #define PV_TC		OPT_BOTH(OPT_BUF(BV_TC))
 #define PV_TS		OPT_BUF(BV_TS)
@@ -302,6 +305,9 @@ static char_u	*p_cpt;
 #ifdef FEAT_COMPL_FUNC
 static char_u	*p_cfu;
 static char_u	*p_ofu;
+#endif
+#ifdef FEAT_EVAL
+static char_u	*p_tfu;
 #endif
 static int	p_eol;
 static int	p_fixeol;
@@ -2642,6 +2648,15 @@ static struct vimoption options[] =
     {"tagcase",	    "tc",   P_STRING|P_VIM,
 			    (char_u *)&p_tc, PV_TC,
 			    {(char_u *)"followic", (char_u *)"followic"} SCTX_INIT},
+    {"tagfunc",    "tfu",   P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
+#ifdef FEAT_EVAL
+			    (char_u *)&p_tfu, PV_TFU,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"taglength",   "tl",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_tl, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
@@ -3306,9 +3321,7 @@ set_init_1(int clean_arg)
     if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
 #if defined(MSWIN)
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
-# ifdef MSWIN
 	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
-# endif
 #endif
 	    )
 	set_string_default_esc("sh", p, TRUE);
@@ -3658,10 +3671,14 @@ set_init_1(int clean_arg)
 	    }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI)
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
 	    /* Win32 console: When GetACP() returns a different value from
 	     * GetConsoleCP() set 'termencoding'. */
-	    if (GetACP() != GetConsoleCP())
+	    if (
+# ifdef VIMDLL
+	       (!gui.in_use && !gui.starting) &&
+# endif
+	        GetACP() != GetConsoleCP())
 	    {
 		char	buf[50];
 
@@ -5689,6 +5706,9 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cfu);
     check_string_option(&buf->b_p_ofu);
 #endif
+#ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_tfu);
+#endif
 #ifdef FEAT_KEYMAP
     check_string_option(&buf->b_p_keymap);
 #endif
@@ -6838,11 +6858,14 @@ did_set_string_option(
 	{
 	    out_str(T_ME);
 	    redraw_later(CLEAR);
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 	    /* Since t_me has been set, this probably means that the user
 	     * wants to use this as default colors.  Need to reset default
 	     * background/foreground colors. */
-	    mch_set_normal_colors();
+# ifdef VIMDLL
+	    if (!gui.in_use && !gui.starting)
+# endif
+		mch_set_normal_colors();
 #endif
 	}
 	if (varp == &T_BE && termcap_active)
@@ -8820,7 +8843,11 @@ set_bool_option(
     {
 # ifdef FEAT_VTP
 	/* Do not turn on 'tgc' when 24-bit colors are not supported. */
-	if (!has_vtp_working())
+	if (
+#  ifdef VIMDLL
+	    !gui.in_use && !gui.starting &&
+#  endif
+	    !has_vtp_working())
 	{
 	    p_tgc = 0;
 	    return N_("E954: 24-bit colors are not supported on this environment");
@@ -10944,6 +10971,9 @@ get_varp(struct vimoption *p)
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
 	case PV_OFU:	return (char_u *)&(curbuf->b_p_ofu);
 #endif
+#ifdef FEAT_EVAL
+	case PV_TFU:	return (char_u *)&(curbuf->b_p_tfu);
+#endif
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_FIXEOL:	return (char_u *)&(curbuf->b_p_fixeol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
@@ -11331,6 +11361,9 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);
 	    buf->b_p_ofu = vim_strsave(p_ofu);
+#endif
+#ifdef FEAT_EVAL
+	    buf->b_p_tfu = vim_strsave(p_tfu);
 #endif
 	    buf->b_p_sts = p_sts;
 	    buf->b_p_sts_nopaste = p_sts_nopaste;
@@ -13011,13 +13044,12 @@ tabstop_copy(int *oldts)
     int		*newts;
     int		t;
 
-    if (oldts == 0)
-	return 0;
-
-    newts = (int *) alloc((unsigned) ((oldts[0] + 1) * sizeof(int)));
-    for (t = 0; t <= oldts[0]; ++t)
-	newts[t] = oldts[t];
-
+    if (oldts == NULL)
+	return NULL;
+    newts = (int *)alloc((unsigned)((oldts[0] + 1) * sizeof(int)));
+    if (newts != NULL)
+	for (t = 0; t <= oldts[0]; ++t)
+	    newts[t] = oldts[t];
     return newts;
 }
 #endif

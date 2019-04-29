@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1688,7 +1688,8 @@ v:count		The count given for the last Normal mode command.  Can be used
 		When there are two counts, as in "3d2w", they are multiplied,
 		just like what happens in the command, "d6w" for the example.
 		Also used for evaluating the 'formatexpr' option.
-		"count" also works, for backwards compatibility.
+		"count" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 					*v:count1* *count1-variable*
 v:count1	Just like "v:count", but defaults to one when no count is
@@ -1720,7 +1721,8 @@ v:errmsg	Last given error message.  It's allowed to set this variable.
 	:silent! next
 	:if v:errmsg != ""
 	:  ... handle error
-<		"errmsg" also works, for backwards compatibility.
+<		"errmsg" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 				*v:errors* *errors-variable* *assert-return*
 v:errors	Errors found by assert functions, such as |assert_true()|.
@@ -2023,7 +2025,8 @@ v:shell_error	Result of the last shell command.  When non-zero, the last
 	:if v:shell_error
 	:  echo 'could not rename "foo" to "bar"!'
 	:endif
-<		"shell_error" also works, for backwards compatibility.
+<		"shell_error" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher.
 
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
@@ -2123,7 +2126,8 @@ v:testing	Must be set before using `test_garbagecollect_now()`.
 v:this_session	Full filename of the last loaded or saved session file.  See
 		|:mksession|.  It is allowed to set this variable.  When no
 		session file has been saved, this variable is empty.
-		"this_session" also works, for backwards compatibility.
+		"this_session" also works, for backwards compatibility, unless
+		|scriptversion| is 3 or higher
 
 					*v:throwpoint* *throwpoint-variable*
 v:throwpoint	The point where the exception most recently caught and not
@@ -2154,7 +2158,7 @@ v:val		Value of the current item of a |List| or |Dictionary|.  Only
 v:version	Version number of Vim: Major version number times 100 plus
 		minor version number.  Version 5.0 is 500.  Version 5.1 (5.01)
 		is 501.  Read-only.  "version" also works, for backwards
-		compatibility.
+		compatibility, unless |scriptversion| is 3 or higher.
 		Use |has()| to check if a certain patch was included, e.g.: >
 			if has("patch-7.4.123")
 <		Note that patch numbers are specific to the version, thus both
@@ -2394,6 +2398,7 @@ has({feature})			Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
 				Number	|TRUE| if the window executed |:lcd|
+					or |:tcd|
 hasmapto({what} [, {mode} [, {abbr}]])
 				Number	|TRUE| if mapping to {what} exists
 histadd({history}, {item})	String	add an item to a history
@@ -2675,7 +2680,7 @@ term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
-term_start({cmd}, {options})	Number	open a terminal window and run a job
+term_start({cmd} [, {options}])	Number	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
@@ -4914,9 +4919,28 @@ getcwd([{winnr} [, {tabnr}]])
 		directory.  See also |haslocaldir()|.
 
 		With {winnr} and {tabnr} return the local current directory of
-		the window in the specified tab page.
+		the window in the specified tab page. If {winnr} is -1 return
+		the working directory of the tabpage.
+		If {winnr} is zero use the current window, if {tabnr} is zero
+		use the current tabpage.
+		Without any arguments, return the working directory of the
+		current window.
 		Return an empty string if the arguments are invalid.
 
+		Examples: >
+			" Get the working directory of the current window
+			:echo getcwd()
+			:echo getcwd(0)
+			:echo getcwd(0, 0)
+			" Get the working directory of window 3 in tabpage 2
+			:echo getcwd(3, 2)
+			" Get the global working directory
+			:echo getcwd(-1)
+			" Get the working directory of tabpage 3
+			:echo getcwd(-1, 3)
+			" Get the working directory of current tabpage
+			:echo getcwd(-1, 0)
+<
 getfsize({fname})					*getfsize()*
 		The result is a Number, which is the size in bytes of the
 		given file {fname}.
@@ -5474,16 +5498,39 @@ has_key({dict}, {key})					*has_key()*
 		an entry with key {key}.  Zero otherwise.
 
 haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
-		The result is a Number, which is 1 when the window has set a
-		local path via |:lcd|, and 0 otherwise.
+		The result is a Number:
+		    1   when the window has set a local directory via |:lcd|
+		    2   when the tab-page has set a local directory via |:tcd|
+		    0   otherwise.
 
 		Without arguments use the current window.
 		With {winnr} use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
 		{winnr} can be the window number or the |window-ID|.
+		If {winnr} is -1 it is ignored and only the tabpage is used.
 		Return 0 if the arguments are invalid.
+		Examples: >
+			if haslocaldir() == 1
+			  " window local directory case
+			elseif haslocaldir() == 2
+			  " tab-local directory case
+			else
+			  " global directory case
+			endif
 
+			" current window
+			:echo haslocaldir()
+			:echo haslocaldir(0)
+			:echo haslocaldir(0, 0)
+			" window n in current tab page
+			:echo haslocaldir(n)
+			:echo haslocaldir(n, 0)
+			" window n in tab page m
+			:echo haslocaldir(n, m)
+			" tab page m
+			:echo haslocaldir(-1, m)
+<
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
 		contains {what} in somewhere in the rhs (what it is mapped to)
@@ -9436,6 +9483,7 @@ term_getcursor({buf})					*term_getcursor()*
 				is not blinking.
 		   "shape"	1 for a block cursor, 2 for underline and 3
 				for a vertical bar.
+		   "color"	color of the cursor, e.g. "green"
 
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
@@ -9606,7 +9654,7 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		exist or is not a terminal window, an error is given.
 		{only available when compiled with the |+terminal| feature}
 
-term_start({cmd}, {options})				*term_start()*
+term_start({cmd} [, {options}])			*term_start()*
 		Open a terminal window and run {cmd} in it.
 
 		{cmd} can be a string or a List, like with |job_start()|. The
@@ -10545,7 +10593,7 @@ ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
 unix			Unix version of Vim. *+unix*
 unnamedplus		Compiled with support for "unnamedplus" in 'clipboard'
-user_commands		User-defined commands.
+user_commands		User-defined commands. (always true)
 vcon			Win32: Virtual console support is working, can use
 			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.
@@ -10555,6 +10603,7 @@ vim_starting		True while initial source'ing takes place. |startup|
 viminfo			Compiled with viminfo support.
 vimscript-1		Compiled Vim script version 1 support
 vimscript-2		Compiled Vim script version 2 support
+vimscript-3		Compiled Vim script version 3 support
 virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always
@@ -12692,7 +12741,7 @@ code can be used: >
 
 ==============================================================================
 10. Vim script versions		*vimscript-version* *vimscript-versions*
-
+							*scriptversion*
 Over time many features have been added to Vim script.  This includes Ex
 commands, functions, variable types, etc.  Each individual feature can be
 checked with the |has()| and |exists()| functions.
@@ -12713,9 +12762,14 @@ instead of failing in mysterious ways. >
 < 	String concatenation with "." is not supported, use ".." instead.
 	This avoids the ambiguity using "." for Dict member access and
 	floating point numbers.  Now ".5" means the number 0.5.
-	Test for support with: >
-		has('vimscript-2')
+>
+ :scriptversion 3
+<	All |vim-variable|s must be prefixed by "v:".  E.g. "version" doesn't
+	work as |v:version| anymore, it can be used as a normal variable.
+	Same for some obvious names as "count" and others.
 
+	Test for support with: >
+		has('vimscript-3')
 
 ==============================================================================
 11. No +eval feature				*no-eval-feature*

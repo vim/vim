@@ -253,6 +253,8 @@ static int on_text(const char bytes[], size_t len, void *user)
   // We'll have at most len codepoints, plus one from a previous incomplete
   // sequence.
   codepoints = vterm_allocator_malloc(state->vt, (len + 1) * sizeof(uint32_t));
+  if (codepoints == NULL)
+    return 0;
 
   encoding =
     state->gsingle_set     ? &state->encoding[state->gsingle_set] :
@@ -330,6 +332,8 @@ static int on_text(const char bytes[], size_t len, void *user)
         break;
 
     chars = vterm_allocator_malloc(state->vt, (glyph_ends - glyph_starts + 1) * sizeof(uint32_t));
+    if (chars == NULL)
+      break;
 
     for( ; i < glyph_ends; i++) {
       int this_width;
@@ -1625,10 +1629,12 @@ static int on_resize(int rows, int cols, void *user)
   VTermPos delta = { 0, 0 };
 
   if(cols != state->cols) {
+    int col;
     unsigned char *newtabstops = vterm_allocator_malloc(state->vt, (cols + 7) / 8);
+    if (newtabstops == NULL)
+      return 0;
 
     /* TODO: This can all be done much more efficiently bytewise */
-    int col;
     for(col = 0; col < state->cols && col < cols; col++) {
       unsigned char mask = 1 << (col & 7);
       if(state->tabstops[col >> 3] & mask)
@@ -1650,9 +1656,11 @@ static int on_resize(int rows, int cols, void *user)
   }
 
   if(rows != state->rows) {
-    VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
-
     int row;
+    VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
+    if (newlineinfo == NULL)
+      return 0;
+
     for(row = 0; row < state->rows && row < rows; row++) {
       newlineinfo[row] = state->lineinfo[row];
     }

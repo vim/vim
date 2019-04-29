@@ -147,10 +147,11 @@ typedef struct xfilemark
  */
 typedef struct taggy
 {
-    char_u	*tagname;	/* tag name */
-    fmark_T	fmark;		/* cursor position BEFORE ":tag" */
-    int		cur_match;	/* match number */
-    int		cur_fnum;	/* buffer number used for cur_match */
+    char_u	*tagname;	// tag name
+    fmark_T	fmark;		// cursor position BEFORE ":tag"
+    int		cur_match;	// match number
+    int		cur_fnum;	// buffer number used for cur_match
+    char_u	*user_data;	// used with tagfunc
 } taggy_T;
 
 /*
@@ -549,7 +550,7 @@ typedef struct expand
     int		xp_context;		/* type of expansion */
     char_u	*xp_pattern;		/* start of item to expand */
     int		xp_pattern_len;		/* bytes in xp_pattern before cursor */
-#if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     char_u	*xp_arg;		/* completion function */
     sctx_T	xp_script_ctx;		/* SCTX for completion function */
 #endif
@@ -1885,6 +1886,16 @@ typedef struct list_stack_S
     struct list_stack_S	*prev;
 } list_stack_T;
 
+/*
+ * Structure used for iterating over dictionary items.
+ * Initialize with dict_iterate_start().
+ */
+typedef struct
+{
+    long_u	dit_todo;
+    hashitem_T	*dit_hi;
+} dict_iterator_T;
+
 /* values for b_syn_spell: what to do with toplevel text */
 #define SYNSPL_DEFAULT	0	/* spell check if @Spell not defined */
 #define SYNSPL_TOP	1	/* spell check toplevel text */
@@ -2143,10 +2154,8 @@ struct file_buffer
     /* First abbreviation local to a buffer. */
     mapblock_T	*b_first_abbr;
 #endif
-#ifdef FEAT_USR_CMDS
-    /* User commands local to the buffer. */
+    // User commands local to the buffer.
     garray_T	b_ucmds;
-#endif
     /*
      * start and end of an operator, also used for '[ and ']
      */
@@ -2246,6 +2255,9 @@ struct file_buffer
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
     char_u	*b_p_ofu;	/* 'omnifunc' */
+#endif
+#ifdef FEAT_EVAL
+    char_u	*b_p_tfu;	/* 'tagfunc' */
 #endif
     int		b_p_eol;	/* 'endofline' */
     int		b_p_fixeol;	/* 'fixendofline' */
@@ -2576,6 +2588,9 @@ struct tabpage_S
     int		    tp_prev_which_scrollbars[3];
 				    /* previous value of which_scrollbars */
 #endif
+
+    char_u	    *tp_localdir;	// absolute path of local directory or
+					// NULL
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);
@@ -2715,6 +2730,16 @@ struct matchitem
 #endif
 };
 
+// Structure to store last cursor position and topline.  Used by check_lnums()
+// and reset_lnums().
+typedef struct
+{
+    int		w_topline_save;	// original topline value
+    int		w_topline_corr;	// corrected topline value
+    pos_T	w_cursor_save;	// original cursor position
+    pos_T	w_cursor_corr;	// corrected cursor position
+} pos_save_T;
+
 #ifdef FEAT_MENU
 typedef struct {
     int		wb_startcol;
@@ -2803,6 +2828,8 @@ struct window_S
     int		w_wincol;	    /* Leftmost column of window in screen. */
     int		w_width;	    /* Width of window, excluding separation. */
     int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
+    pos_save_T	w_save_cursor;	    /* backup of cursor pos and topline */
+
 
     /*
      * === start of cached values ====

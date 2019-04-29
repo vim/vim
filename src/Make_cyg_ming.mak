@@ -36,13 +36,18 @@ FEATURES=HUGE
 DEBUG=no
 
 # set to yes to create a mapfile
-# MAP=yes
+#MAP=yes
 
 # set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 
 # set to yes to make gvim, no for vim
 GUI=yes
+
+# set to yes to enable the DLL support (EXPERIMENTAL).
+# Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
+# "GUI" should be also set to "yes".
+#VIMDLL=yes
 
 # set to no if you do not want to use DirectWrite (DirectX)
 # MinGW-w64 is needed, and ARCH should be set to i686 or x86-64.
@@ -687,7 +692,7 @@ else  # SPEED
 CFLAGS += -O2
 endif
 endif
-CFLAGS += -s
+LFLAGS += -s
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
@@ -703,6 +708,7 @@ OBJ = \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
+	$(OUTDIR)/debugger.o \
 	$(OUTDIR)/dict.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
@@ -738,7 +744,6 @@ OBJ = \
 	$(OUTDIR)/ops.o \
 	$(OUTDIR)/option.o \
 	$(OUTDIR)/os_mswin.o \
-	$(OUTDIR)/os_w32exe.o \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
@@ -756,11 +761,19 @@ OBJ = \
 	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
+	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
-	$(OUTDIR)/vimrc.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
+
+ifeq ($(VIMDLL),yes)
+OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimrcd.o
+EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimrcc.o
+EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimrcg.o
+else
+OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
+endif
 
 ifdef PERL
 OBJ += $(OUTDIR)/if_perl.o
@@ -868,16 +881,36 @@ endif
 
 LFLAGS += -municode
 
-ifeq ($(GUI),yes)
+ifeq ($(VIMDLL),yes)
+VIMEXE := vim$(DEBUG_SUFFIX).exe
+GVIMEXE := gvim$(DEBUG_SUFFIX).exe
+ ifeq ($(ARCH),x86-64)
+VIMDLLBASE := vim64$(DEBUG_SUFFIX)
+ else
+VIMDLLBASE := vim32$(DEBUG_SUFFIX)
+ endif
+TARGET = $(VIMDLLBASE).dll
+LFLAGS += -shared
+EXELFLAGS += -municode
+ ifneq ($(DEBUG),yes)
+EXELFLAGS += -s
+ endif
+DEFINES += $(DEF_GUI) -DVIMDLL
+OBJ += $(GUIOBJ) $(CUIOBJ)
+OUTDIR = dobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(GVIMEXE) $(VIMEXE) $(VIMDLLBASE).dll
+else ifeq ($(GUI),yes)
 TARGET := gvim$(DEBUG_SUFFIX).exe
 DEFINES += $(DEF_GUI)
 OBJ += $(GUIOBJ)
 LFLAGS += -mwindows
 OUTDIR = gobj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(TARGET)
 else
 OBJ += $(CUIOBJ)
 TARGET := vim$(DEBUG_SUFFIX).exe
 OUTDIR = obj$(DEBUG_SUFFIX)$(MZSCHEME_SUFFIX)$(ARCH)
+MAIN_TARGET = $(TARGET)
 endif
 
 ifdef GETTEXT
@@ -953,7 +986,7 @@ ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
-all: $(TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
+all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -964,8 +997,19 @@ install.exe: dosinst.c
 uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
+ifeq ($(VIMDLL),yes)
+$(TARGET): $(OUTDIR) $(OBJ)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+
+$(GVIMEXE): $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
+	$(CC) -L. $(EXELFLAGS) -mwindows -o $@ $(EXEOBJG) -l$(VIMDLLBASE)
+
+$(VIMEXE): $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
+	$(CC) -L. $(EXELFLAGS) -o $@ $(EXEOBJC) -l$(VIMDLLBASE)
+else
 $(TARGET): $(OUTDIR) $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+endif
 
 upx: exes
 	upx gvim.exe
@@ -994,7 +1038,7 @@ clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-rmdir $(OUTDIR)
-	-$(DEL) $(TARGET) vimrun.exe install.exe uninstal.exe
+	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstal.exe
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
@@ -1023,74 +1067,95 @@ $(OUTDIR)/if_python3.o:	if_python3.c if_py_both.h $(INCL)
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/vimrc.o:	vim.rc version.h gui_w32_rc.h
+ifeq ($(VIMDLL),yes)
+$(OUTDIR)/vimrcc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -UFEAT_GUI_MSWIN \
+	    --input-format=rc --output-format=coff -i vim.rc -o $@
+
+$(OUTDIR)/vimrcg.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
+
+$(OUTDIR)/vimrcd.o:	vim.rc version.h gui_w32_rc.h \
+			tools.bmp tearoff.bmp vim.ico vim_error.ico \
+			vim_alert.ico vim_info.ico vim_quest.ico
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -DRCDLL -DVIMDLLBASE=\\\"$(VIMDLLBASE)\\\" \
+	    --input-format=rc --output-format=coff -i vim.rc -o $@
+else
+$(OUTDIR)/vimrc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+			tools.bmp tearoff.bmp vim.ico vim_error.ico \
+			vim_alert.ico vim_info.ico vim_quest.ico
+	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
+	    --input-format=rc --output-format=coff -i vim.rc -o $@
+endif
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
-	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $(OUTDIR)/gui_dwrite.o
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $@
 
 $(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui.c -o $(OUTDIR)/gui.o
+	$(CC) -c $(CFLAGS) gui.c -o $@
 
 $(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) beval.c -o $(OUTDIR)/beval.o
+	$(CC) -c $(CFLAGS) beval.c -o $@
 
 $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui_beval.c -o $(OUTDIR)/gui_beval.o
+	$(CC) -c $(CFLAGS) gui_beval.c -o $@
 
 $(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL)
-	$(CC) -c $(CFLAGS) gui_w32.c -o $(OUTDIR)/gui_w32.o
+	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
-	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
+	$(CC) -c $(CFLAGS) if_cscope.c -o $@
 
 $(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) $(MZSCHEME_INCL) $(MZ_EXTRA_DEP)
-	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+	$(CC) -c $(CFLAGS) if_mzsch.c -o $@
 
 mzscheme_base.c:
 	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 # Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL) if_ole.h
-	$(CC) $(CFLAGS) $(CXXFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) if_ole.cpp -o $@
 
 auto/if_perl.c:		if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap \
 	     $(PERLTYPEMAP) if_perl.xs -output $@
 
 $(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
-	$(CC) -c $(CFLAGS) auto/if_perl.c -o $(OUTDIR)/if_perl.o
+	$(CC) -c $(CFLAGS) auto/if_perl.c -o $@
 
 
 $(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
 ifeq (16, $(RUBY))
-	$(CC) $(CFLAGS) -U_WIN32 -c -o $(OUTDIR)/if_ruby.o if_ruby.c
+	$(CC) $(CFLAGS) -U_WIN32 -c -o $@ if_ruby.c
 endif
 
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
 $(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
-	$(CC) -c $(CFLAGS) main.c -o $(OUTDIR)/main.o
+	$(CC) -c $(CFLAGS) main.c -o $@
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
-	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+	$(CC) -c $(CFLAGS) netbeans.c -o $@
+
+$(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
+	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN os_w32exe.c -o $@
+
+$(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
+	$(CC) -c $(CFLAGS) os_w32exe.c -o $@
 
 $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
-	$(CC) -c $(CFLAGS) os_win32.c -o $(OUTDIR)/os_win32.o
+	$(CC) -c $(CFLAGS) os_win32.c -o $@
 
 $(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
-	$(CC) -c $(CFLAGS) regexp.c -o $(OUTDIR)/regexp.o
+	$(CC) -c $(CFLAGS) regexp.c -o $@
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
-	$(CC) -c $(CFLAGS) terminal.c -o $(OUTDIR)/terminal.o
-
-$(OUTDIR)/textprop.o:	textprop.c $(INCL)
-	$(CC) -c $(CFLAGS) textprop.c -o $(OUTDIR)/textprop.o
+	$(CC) -c $(CFLAGS) terminal.c -o $@
 
 
 CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
@@ -1098,50 +1163,13 @@ CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-$(OUTDIR)/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/encoding.c -o $@
+$(OUTDIR)/%.o : libvterm/src/%.c $(TERM_DEPS)
+	$(CCCTERM) $< -o $@
 
-$(OUTDIR)/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/keyboard.c -o $@
 
-$(OUTDIR)/mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/mouse.c -o $@
+$(OUTDIR)/%.o : xdiff/%.c $(XDIFF_DEPS)
+	$(CC) -c $(CFLAGS) $< -o $@
 
-$(OUTDIR)/parser.o: libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/parser.c -o $@
-
-$(OUTDIR)/pen.o: libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/pen.c -o $@
-
-$(OUTDIR)/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/termscreen.c -o $@
-
-$(OUTDIR)/state.o: libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/state.c -o $@
-
-$(OUTDIR)/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/unicode.c -o $@
-
-$(OUTDIR)/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) libvterm/src/vterm.c -o $@
-
-$(OUTDIR)/xdiffi.o: xdiff/xdiffi.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xdiffi.c -o $(OUTDIR)/xdiffi.o
-
-$(OUTDIR)/xemit.o: xdiff/xemit.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xemit.c -o $(OUTDIR)/xemit.o
-
-$(OUTDIR)/xprepare.o: xdiff/xprepare.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xprepare.c -o $(OUTDIR)/xprepare.o
-
-$(OUTDIR)/xutils.o: xdiff/xutils.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xutils.c -o $(OUTDIR)/xutils.o
-
-$(OUTDIR)/xhistogram.o: xdiff/xhistogram.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xhistogram.c -o $(OUTDIR)/xhistogram.o
-
-$(OUTDIR)/xpatience.o: xdiff/xpatience.c $(XDIFF_DEPS)
-	$(CC) -c $(CFLAGS) xdiff/xpatience.c -o $(OUTDIR)/xpatience.o
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))

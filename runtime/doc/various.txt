@@ -456,7 +456,8 @@ N  *+textprop*		|text-properties|
 N  *+timers*		the |timer_start()| function
 N  *+title*		Setting the window 'title' and 'icon'
 N  *+toolbar*		|gui-toolbar|
-N  *+user_commands*	User-defined commands. |user-commands|
+T  *+user_commands*	User-defined commands. |user-commands|
+			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
    *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
@@ -570,17 +571,19 @@ N  *+X11*		Unix only: can restore window title |X11|
 			the output, not necessarily the whole line. Only some
 			commands support filtering, try it out to check if it
 			works. Some of the commands that support filtering:
-                          |:#|          - filter whole line
-                          |:command|    - filter by command name
-                          |:files|      - filter by file name
-                          |:highlight|  - filter by highlight group
-                          |:jumps|      - filter by file name
-                          |:let|        - filter by variable name
-                          |:list|       - filter whole line
-                          |:llist|      - filter by file name or module name
-                          |:oldfiles|   - filter by file name
-                          |:clist|      - filter by file name or module name
-                          |:set|        - filter by variable name
+			   |:#|          - filter whole line
+			   |:clist|      - filter by file name or module name
+			   |:command|    - filter by command name
+			   |:files|      - filter by file name
+			   |:highlight|  - filter by highlight group
+			   |:jumps|      - filter by file name
+			   |:let|        - filter by variable name
+			   |:list|       - filter whole line
+			   |:llist|      - filter by file name or module name
+			   |:marks|      - filter by text in the current file,
+					   or file name for other files
+			   |:oldfiles|   - filter by file name
+			   |:set|        - filter by variable name
 
 			Only normal messages are filtered, error messages are
 			not.

@@ -1304,9 +1304,10 @@ use has("browsefilter"): >
 ==============================================================================
 7. The current directory				*current-directory*
 
-You may use the |:cd| and |:lcd| commands to change to another directory, so
-you will not have to type that directory name in front of the file names.  It
-also makes a difference for executing external commands, e.g. ":!ls".
+You can use the |:cd|, |:tcd| and |:lcd| commands to change to another
+directory, so you will not have to type that directory name in front of the
+file names.  It also makes a difference for executing external commands, e.g.
+":!ls".
 
 Changing directory fails when the current buffer is modified, the '.' flag is
 present in 'cpoptions' and "!" is not used in the command.
@@ -1334,6 +1335,17 @@ present in 'cpoptions' and "!" is not used in the command.
 							*:chd* *:chdir*
 :chd[ir][!] [path]	Same as |:cd|.
 
+							*:tcd*
+:tcd[!] {path}		Like |:cd|, but only set the directory for the current
+			tab.  The current window will also use this directory.
+			The current directory is not changed for windows in
+			other tabs and for windows in the current tab that
+			have their own window-local directory.
+			{not in Vi}
+
+							*:tch* *:tchdir*
+:tch[dir][!]		Same as |:tcd|. {not in Vi}
+
 							*:lc* *:lcd*
 :lc[d][!] {path}	Like |:cd|, but only set the current directory when
 			the cursor is in the current window.  The current
@@ -1348,17 +1360,26 @@ present in 'cpoptions' and "!" is not used in the command.
 :pw[d]			Print the current directory name.  {Vi: no pwd}
 			Also see |getcwd()|.
 
-So long as no |:lcd| command has been used, all windows share the same current
-directory.  Using a command to jump to another window doesn't change anything
-for the current directory.
+So long as no |:lcd| or |:tcd| command has been used, all windows share the
+same current directory.  Using a command to jump to another window doesn't
+change anything for the current directory.
+
 When a |:lcd| command has been used for a window, the specified directory
 becomes the current directory for that window.  Windows where the |:lcd|
-command has not been used stick to the global current directory.  When jumping
-to another window the current directory will become the last specified local
-current directory.  If none was specified, the global current directory is
-used.
-When a |:cd| command is used, the current window will lose his local current
-directory and will use the global current directory from now on.
+command has not been used stick to the global or tab-local current directory.
+When jumping to another window the current directory will become the last
+specified local current directory.  If none was specified, the global or
+tab-local current directory is used.
+
+When a |:tcd| command has been used for a tab page, the specified directory
+becomes the current directory for the current tab page and the current window.
+The current directory of other tab pages is not affected.  When jumping to
+another tab page, the current directory will become the last specified local
+directory for that tab page. If the current tab has no local current directory
+the global current directory is used.
+
+When a |:cd| command is used, the current window and tab page will lose the
+local current directory and will use the global current directory from now on.
 
 After using |:cd| the full path name will be used for reading and writing
 files.  On some networked file systems this may cause problems.  The result of

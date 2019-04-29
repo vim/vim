@@ -12,7 +12,6 @@ include Make_all.mak
 # These tests don't work (yet):
 # test2		"\\tmp" doesn't work
 # test10	'errorformat' is different
-# test11	"cat" doesn't work properly
 # test52	only for Win32
 # test86, 87	no Python interface
 

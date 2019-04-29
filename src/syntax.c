@@ -8280,6 +8280,13 @@ restore_cterm_colors(void)
      * background/foreground colors. */
     mch_set_normal_colors();
 #else
+# ifdef VIMDLL
+    if (!gui.in_use)
+    {
+	mch_set_normal_colors();
+	return;
+    }
+# endif
     cterm_normal_fg_color = 0;
     cterm_normal_fg_bold = 0;
     cterm_normal_bg_color = 0;
@@ -9823,7 +9830,7 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
 #endif
 
 #if (defined(MSWIN) \
-	&& !defined(FEAT_GUI_MSWIN) \
+	&& (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL)) \
 	&& defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
     void
 syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
@@ -10014,7 +10021,7 @@ highlight_changed(void)
     char_u	*end;
     int		id;
 #ifdef USER_HIGHLIGHT
-    char_u      userhl[10];
+    char_u      userhl[30];  // use 30 to avoid compiler warning
 # ifdef FEAT_STL_OPT
     int		id_S = -1;
     int		id_SNC = 0;

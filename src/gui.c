@@ -65,10 +65,13 @@ static int disable_flush = 0;	/* If > 0, gui_mch_flush() is disabled. */
  * recursive call.
  */
     void
-gui_start(void)
+gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
     static int	recursive = 0;
+#ifdef GUI_MAY_SPAWN
+    char	*msg = NULL;
+#endif
 
     old_term = vim_strsave(T_NAME);
 
@@ -98,6 +101,22 @@ gui_start(void)
     }
     else
 #endif
+#ifdef GUI_MAY_SPAWN
+    if (gui.dospawn
+# ifdef EXPERIMENTAL_GUI_CMD
+	    && gui.dofork
+# endif
+	    && !vim_strchr(p_go, GO_FORG)
+	    && !anyBufIsChanged()
+# ifdef FEAT_JOB_CHANNEL
+	    && !job_any_running()
+# endif
+	    )
+    {
+	msg = gui_mch_do_spawn(arg);
+    }
+    else
+#endif
     {
 #ifdef FEAT_GUI_GTK
 	/* If there is 'f' in 'guioptions' and specify -g argument,
@@ -124,6 +143,10 @@ gui_start(void)
 	settmode(TMODE_RAW);		/* restart RAW mode */
 #ifdef FEAT_TITLE
 	set_title_defaults();		/* set 'title' and 'icon' again */
+#endif
+#if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
+	if (msg)
+	    emsg(msg);
 #endif
     }
 
@@ -431,7 +454,7 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
-#ifdef ALWAYS_USE_GUI
+#if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
     result = OK;
 #else
 # ifdef FEAT_GUI_GTK
@@ -4948,12 +4971,22 @@ ex_gui(exarg_T *eap)
     }
     if (!gui.in_use)
     {
+#if defined(VIMDLL) && !defined(EXPERIMENTAL_GUI_CMD)
+	emsg(_(e_nogvim));
+	return;
+#else
 	/* Clear the command.  Needed for when forking+exiting, to avoid part
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
-	gui_start();
-#ifdef FEAT_JOB_CHANNEL
+# ifdef GUI_MAY_SPAWN
+	if (!ends_excmd(*eap->arg))
+	    gui_start(eap->arg);
+	else
+# endif
+	    gui_start(NULL);
+# ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
+# endif
 #endif
     }
     if (!ends_excmd(*eap->arg))

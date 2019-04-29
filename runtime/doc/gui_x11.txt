@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.1.  Last change: 2018 May 06
+*gui_x11.txt*   For Vim version 8.1.  Last change: 2019 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -48,7 +48,7 @@ that waits for gvim to exit), start gvim with "gvim -f", "vim -gf" or use
 ":gui -f".  Don't use "vim -fg", because "-fg" specifies the foreground
 color.
 
-When using "gvim -f" and then ":gui", Vim will run in the foreground.  The
+When using "vim -f" and then ":gui", Vim will run in the foreground.  The
 "-f" argument will be remembered.  To force running Vim in the background use
 ":gui -b".
 

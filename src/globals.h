@@ -90,12 +90,13 @@ EXTERN int	mod_mask INIT(= 0x0);		/* current key modifiers */
  */
 EXTERN int	cmdline_row;
 
-EXTERN int	redraw_cmdline INIT(= FALSE);	/* cmdline must be redrawn */
-EXTERN int	clear_cmdline INIT(= FALSE);	/* cmdline must be cleared */
-EXTERN int	mode_displayed INIT(= FALSE);	/* mode is being displayed */
-EXTERN int	no_win_do_lines_ins INIT(= FALSE); /* don't insert lines */
+EXTERN int	redraw_cmdline INIT(= FALSE);	// cmdline must be redrawn
+EXTERN int	redraw_mode INIT(= FALSE);	// mode must be redrawn
+EXTERN int	clear_cmdline INIT(= FALSE);	// cmdline must be cleared
+EXTERN int	mode_displayed INIT(= FALSE);	// mode is being displayed
+EXTERN int	no_win_do_lines_ins INIT(= FALSE); // don't insert lines
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-EXTERN int	cmdline_star INIT(= FALSE);	/* cmdline is crypted */
+EXTERN int	cmdline_star INIT(= FALSE);	// cmdline is crypted
 #endif
 
 EXTERN int	exec_from_reg INIT(= FALSE);	/* executing register */
@@ -965,7 +966,6 @@ EXTERN int	emsg_silent INIT(= 0);	/* don't print error messages */
 EXTERN int	emsg_noredir INIT(= 0);	/* don't redirect error messages */
 EXTERN int	cmd_silent INIT(= FALSE); /* don't echo the command line */
 
-# define HAS_SWAP_EXISTS_ACTION
 EXTERN int	swap_exists_action INIT(= SEA_NONE);
 					/* For dialog when swap file already
 					 * exists. */
@@ -1066,9 +1066,13 @@ EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */
 EXTERN int	postponed_split_flags INIT(= 0);  /* args for win_split() */
 EXTERN int	postponed_split_tab INIT(= 0);  /* cmdmod.tab */
 #ifdef FEAT_QUICKFIX
-EXTERN int	g_do_tagpreview INIT(= 0);  /* for tag preview commands:
-					       height of preview window */
+EXTERN int	g_do_tagpreview INIT(= 0);  // for tag preview commands:
+					    // height of preview window
 #endif
+EXTERN int	g_tag_at_cursor INIT(= FALSE); // whether the tag command comes
+					    // from the command line (0) or was
+					    // invoked as a normal command (1)
+
 EXTERN int	replace_offset INIT(= 0);   /* offset for replace_push() */
 
 EXTERN char_u	*escape_chars INIT(= (char_u *)" \t\\\"|");
@@ -1437,7 +1441,7 @@ EXTERN char e_nesting[]	INIT(= N_("E22: Scripts nested too deep"));
 EXTERN char e_noalt[]		INIT(= N_("E23: No alternate file"));
 EXTERN char e_noabbr[]	INIT(= N_("E24: No such abbreviation"));
 EXTERN char e_nobang[]	INIT(= N_("E477: No ! allowed"));
-#ifndef FEAT_GUI
+#if !defined(FEAT_GUI) || defined(VIMDLL)
 EXTERN char e_nogvim[]	INIT(= N_("E25: GUI cannot be used: Not enabled at compile time"));
 #endif
 #ifndef FEAT_RIGHTLEFT
@@ -1639,7 +1643,11 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 #endif
 
 #ifdef MSWIN
+# ifdef PROTO
+typedef int HINSTANCE;
+# endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
+EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
 
 #ifdef FEAT_TEXT_PROP

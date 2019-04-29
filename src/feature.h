@@ -379,10 +379,8 @@
 
 /*
  * +user_commands	Allow the user to define his own commands.
+ *			Now always enabled.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_USR_CMDS
-#endif
 
 /*
  * +printer		":hardcopy" command
@@ -714,7 +712,8 @@
  * there is no terminal version, and on Windows we can't figure out how to
  * fork one off with :gui.
  */
-#if defined(FEAT_GUI_MSWIN) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
+#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) \
+	    || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
 # define ALWAYS_USE_GUI
 #endif
 
@@ -1140,8 +1139,8 @@
  * mouse shape		Adjust the shape of the mouse pointer to the mode.
  */
 #ifdef FEAT_NORMAL
-/* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+// Win32 console can change cursor shape
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
@@ -1265,7 +1264,8 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)))
+	(defined(UNIX) || defined(VMS) || \
+	 (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))))
 # define FEAT_BEVAL_TERM
 #endif
 
@@ -1319,6 +1319,6 @@
 /*
  * +vtp: Win32 virtual console.
  */
-#if !defined(FEAT_GUI) && defined(MSWIN)
+#if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
 #endif

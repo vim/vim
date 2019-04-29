@@ -684,15 +684,13 @@ readfile(
 #endif
     }
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
-    /* If "Quit" selected at ATTENTION dialog, don't load the file */
+    // If "Quit" selected at ATTENTION dialog, don't load the file
     if (swap_exists_action == SEA_QUIT)
     {
 	if (!read_buffer && !read_stdin)
 	    close(fd);
 	return FAIL;
     }
-#endif
 
     ++no_wait_return;	    /* don't wait for return yet */
 
@@ -792,7 +790,10 @@ readfile(
 	    if (!is_not_a_term())
 	    {
 #ifndef ALWAYS_USE_GUI
-		mch_msg(_("Vim: Reading from stdin...\n"));
+# ifdef VIMDLL
+		if (!gui.in_use)
+# endif
+		    mch_msg(_("Vim: Reading from stdin...\n"));
 #endif
 #ifdef FEAT_GUI
 		/* Also write a message in the GUI window, if there is one. */

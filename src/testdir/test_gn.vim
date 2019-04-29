@@ -2,7 +2,7 @@
 
 func Test_gn_command()
   noautocmd new
-  " replace a single char by itsself quoted:
+  " replace a single char by itself quoted:
   call setline('.', 'abc x def x ghi x jkl')
   let @/ = 'x'
   exe "norm! cgn'x'\<esc>.."

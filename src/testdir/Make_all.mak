@@ -14,7 +14,6 @@ SCRIPTS_FIRST = \
 # Tests that run on all systems.
 SCRIPTS_ALL = \
 	test3.out \
-	test14.out \
 	test29.out \
 	test37.out \
 	test39.out \
@@ -33,7 +32,6 @@ SCRIPTS_ALL = \
 
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 = \
-	test11.out \
 	test52.out \
 	test86.out \
 	test87.out
@@ -246,6 +244,7 @@ NEW_TESTS = \
 	test_tabline \
 	test_tabpage \
 	test_tagcase \
+	test_tagfunc \
 	test_tagjump \
 	test_taglist \
 	test_tcl \

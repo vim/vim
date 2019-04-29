@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Apr 07
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -191,7 +191,10 @@ Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
 
-No test for NULL after allocating memory: #4174
+Patch to make Command-V use CTRL-R_CTRL-O* on Mac, like on Windows.
+(Ken Takata, #4266)
+
+No test for NULL after allocating memory: #4174 (martinkunevtoptal does this?)
     src/crypt.c  line 256;
     src/crypt_zip.c line  93;
     src/gui_gtk_f.c  line 132;
@@ -224,59 +227,16 @@ When 'confirm' is set a "silent q" doesn't show the prompt.  It should in this
 case. (Nate Peterson, 2019 Jan 31, #3892)
 For "silent! q" it should not prompt and just fail.
 
-Patch to add CompleteChanged event: triggered when the complete popup menu
-changes. #4176
-
-Patch to add tab-local directories. (Yegappan, #4212)
-Wait a bit for comments.
-
-Problem with Visual yank when 'linebreak' and 'showbreak' are set.
-Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
-Nov 17)  Asked about this, Dec 22. Christian will have a look.
-
-Patch to add ruby cflags. (#4050, fixes #1081)
-Needs modification.
-
-Patch for larger icons in installer. (#978)  Still not good.
-
-Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
-New update 2017 Apr 10, #1628
-https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
-Updated by Andy Massimino, 2018 Feb 7:
-https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
-Or should we make it asynchronous?
-Patch by Andy Massimino: #4010 - needs more work, tests are missing, docs need
-updating, should probably return a string with extra info instad of dict
-entries.
-
-Patch to fix that using "5gj" starting inside a closed fold does not work on
-screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
+Add <aevent>, which expands to the currently triggered autocommand event name.
+(Daniel Hahler, #4232)  Or add it to v:event (easier to use but slightly more
+expensive).
 
 Some xterm responses are not properly handled: (Markus Gömmel, 2019 Apr 1)
     DCS 0 $ r Pt ST    should be ignored.
     DCS 0 + r/Pt/  ST  already ignored?
 
-Patch to add blob_encode() and blob_decode(). (Yasuhiro Matsumoto, #4049)
-What do we need these for?
-
-Patch to add more info to OptionSet.  Should mention what triggered the change
-":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
-#4118.  Proposed implementation: 2019 Mar 27.  Tests fail, help update
-missing.
-
-How to make (async) complete function depending on completion type?
-Patch on #4083 to do this with an autocommand.  Probably want something else,
-like 'omnifunc'.
-
-Using CTRL-L to add a character to the search string doesn't work for the last
-character in the file. (Smylers, 2018 Nov 17, #3620)
-Suggested patch by Hirohito Higashi, 2018 Nov 18.
-
 Using CTRL-L to add a character to the search string that contains \v,
 punctuation is repeated. (Smylers, 2018 Nov 17, #3621)
-
-Using CTRL-L during search only picks up the base character, not a combining
-character. (Rick, 2018 Dec 11, #3682)
 
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
 
@@ -291,18 +251,15 @@ Invalid memory access with old regexp engine. (Dominique Pelle, 2018 Sep 3,
 #3405)  Introduced by 8.0.1517, which was fixing another memory access error.
 (Sep 8)
 
-Patch to make winnr() return the window above/below/beside a window.
-(Yegappan Lakshmanan, #3993)
-
-Patch for ConPTY support, new one: #3794 Does this work now?  It should.
-(Nobuhiro Takasaki)
-
 Add function to make use of internal diff, working on two lists and returning
 unified diff (list of lines).
 
 When splitting a window with few text lines, the relative cursor position is
 kept, which means part of the text isn't displayed.  Better show all the text
 when possible. (Dylan Lloyd, #3973)
+
+Patch to not recognize "version" as "v:version", "count" as "v:count".
+Ken Takata, #4274.
 
 Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
@@ -328,6 +285,35 @@ Add buffer argument to undotree(). (#4001)
 
 Patch to add optional arguments with default values.
 (Andy Massimino, #3952)  under development
+
+Patch to add tab-local directories. (Yegappan, #4212)
+Good now?
+
+Patch to add more info to OptionSet.  Should mention what triggered the change
+":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
+#4118.  Proposed implementation: 2019 Mar 27.  Tests fail, help update
+missing. Updated 2019 Apr 9
+
+Problem with Visual yank when 'linebreak' and 'showbreak' are set.
+Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
+Nov 17)  Asked about this, Dec 22. Christian will have a look.
+
+Patch to add ruby cflags. (#4050, fixes #1081)
+Needs modification.
+
+Patch for larger icons in installer. (#978)  Still not good.
+
+Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
+New update 2017 Apr 10, #1628
+https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
+Updated by Andy Massimino, 2018 Feb 7:
+https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
+Or should we make it asynchronous?
+Patch by Andy Massimino: #4010 - needs a bit more work: produce errors when
+something is wrong.
+
+Patch to fix that using "5gj" starting inside a closed fold does not work on
+screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
 
 Memory leaks in test_channel? (or is it because of fork())
 Using uninitialized value in test_crypt.
@@ -358,7 +344,6 @@ Patch to add an interrupt() function: sets got_int.  Useful in an autocommand
 such as BufWritePre that checks the file name or contents.
 
 More patches to check:
-- #3797  add test for #3789
 - #4098  improve Travis config
 
 Should make 'listchars' global-local.  Local to window or to buffer?

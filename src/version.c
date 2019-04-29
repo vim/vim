@@ -672,11 +672,7 @@ static char *(features[]) =
 #else
 	"-toolbar",
 #endif
-#ifdef FEAT_USR_CMDS
 	"+user_commands",
-#else
-	"-user_commands",
-#endif
 #ifdef FEAT_VARTABS
 	"+vartabs",
 #else
@@ -771,6 +767,104 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1234,
+/**/
+    1233,
+/**/
+    1232,
+/**/
+    1231,
+/**/
+    1230,
+/**/
+    1229,
+/**/
+    1228,
+/**/
+    1227,
+/**/
+    1226,
+/**/
+    1225,
+/**/
+    1224,
+/**/
+    1223,
+/**/
+    1222,
+/**/
+    1221,
+/**/
+    1220,
+/**/
+    1219,
+/**/
+    1218,
+/**/
+    1217,
+/**/
+    1216,
+/**/
+    1215,
+/**/
+    1214,
+/**/
+    1213,
+/**/
+    1212,
+/**/
+    1211,
+/**/
+    1210,
+/**/
+    1209,
+/**/
+    1208,
+/**/
+    1207,
+/**/
+    1206,
+/**/
+    1205,
+/**/
+    1204,
+/**/
+    1203,
+/**/
+    1202,
+/**/
+    1201,
+/**/
+    1200,
+/**/
+    1199,
+/**/
+    1198,
+/**/
+    1197,
+/**/
+    1196,
+/**/
+    1195,
+/**/
+    1194,
+/**/
+    1193,
+/**/
+    1192,
+/**/
+    1191,
+/**/
+    1190,
+/**/
+    1189,
+/**/
+    1188,
+/**/
+    1187,
+/**/
+    1186,
 /**/
     1185,
 /**/
@@ -3336,10 +3430,18 @@ list_version(void)
     msg(longVersion);
 #ifdef MSWIN
 # ifdef FEAT_GUI_MSWIN
-#  ifdef _WIN64
-    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#  ifdef VIMDLL
+#   ifdef _WIN64
+    msg_puts(_("\nMS-Windows 64-bit GUI/console version"));
+#   else
+    msg_puts(_("\nMS-Windows 32-bit GUI/console version"));
+#   endif
 #  else
+#   ifdef _WIN64
+    msg_puts(_("\nMS-Windows 64-bit GUI version"));
+#   else
     msg_puts(_("\nMS-Windows 32-bit GUI version"));
+#   endif
 #  endif
 #  ifdef FEAT_OLE
     msg_puts(_(" with OLE support"));

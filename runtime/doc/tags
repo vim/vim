@@ -3748,6 +3748,7 @@ ColorScheme	autocmd.txt	/*ColorScheme*
 ColorSchemePre	autocmd.txt	/*ColorSchemePre*
 Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
+CompleteChanged	autocmd.txt	/*CompleteChanged*
 CompleteDone	autocmd.txt	/*CompleteDone*
 ConPTY	terminal.txt	/*ConPTY*
 Contents	quickref.txt	/*Contents*
@@ -8471,6 +8472,7 @@ script-local	map.txt	/*script-local*
 script-variable	eval.txt	/*script-variable*
 scriptnames-dictionary	eval.txt	/*scriptnames-dictionary*
 scriptout-changed	version4.txt	/*scriptout-changed*
+scriptversion	eval.txt	/*scriptversion*
 scroll-binding	scroll.txt	/*scroll-binding*
 scroll-cursor	scroll.txt	/*scroll-cursor*
 scroll-down	scroll.txt	/*scroll-down*

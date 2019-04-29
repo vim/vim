@@ -1120,10 +1120,10 @@ call_func_retnr(
     return retval;
 }
 
-#if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) \
+#if defined(FEAT_CMDL_COMPL) \
 	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
 
-# if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
+# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Call Vim script function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
@@ -4051,7 +4051,7 @@ eval6(
     varnumber_T	n1, n2;
 #ifdef FEAT_FLOAT
     int		use_float = FALSE;
-    float_T	f1 = 0, f2;
+    float_T	f1 = 0, f2 = 0;
 #endif
     int		error = FALSE;
 
@@ -7672,10 +7672,14 @@ find_var_ht(char_u *name, char_u **varname)
 	    return NULL;
 	*varname = name;
 
-	/* "version" is "v:version" in all scopes */
-	hi = hash_find(&compat_hashtab, name);
-	if (!HASHITEM_EMPTY(hi))
-	    return &compat_hashtab;
+	// "version" is "v:version" in all scopes if scriptversion < 3.
+	// Same for a few other variables marked with VV_COMPAT.
+	if (current_sctx.sc_version < 3)
+	{
+	    hi = hash_find(&compat_hashtab, name);
+	    if (!HASHITEM_EMPTY(hi))
+		return &compat_hashtab;
+	}
 
 	ht = get_funccal_local_ht();
 	if (ht == NULL)
@@ -8700,11 +8704,13 @@ find_win_by_nr_or_id(typval_T *vp)
 
 /*
  * Find window specified by "wvp" in tabpage "tvp".
+ * Returns the tab page in 'ptp'
  */
     win_T *
 find_tabwin(
-    typval_T	*wvp,	/* VAR_UNKNOWN for current window */
-    typval_T	*tvp)	/* VAR_UNKNOWN for current tab page */
+    typval_T	*wvp,	// VAR_UNKNOWN for current window
+    typval_T	*tvp,	// VAR_UNKNOWN for current tab page
+    tabpage_T	**ptp)
 {
     win_T	*wp = NULL;
     tabpage_T	*tp = NULL;
@@ -8722,10 +8728,22 @@ find_tabwin(
 	    tp = curtab;
 
 	if (tp != NULL)
+	{
 	    wp = find_win_by_nr(wvp, tp);
+	    if (wp == NULL && wvp->v_type == VAR_NUMBER
+						&& wvp->vval.v_number != -1)
+		// A window with the specified number is not found
+		tp = NULL;
+	}
     }
     else
+    {
 	wp = curwin;
+	tp = curtab;
+    }
+
+    if (ptp != NULL)
+	*ptp = tp;
 
     return wp;
 }
