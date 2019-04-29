@@ -1604,7 +1604,11 @@ vgetc(void)
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
 #ifdef FEAT_GUI
+# ifdef VIMDLL
+		    || (gui.in_use && c == CSI)
+# else
 		    || c == CSI
+# endif
 #endif
 	       )
 	    {
@@ -1659,19 +1663,25 @@ vgetc(void)
 		}
 #endif
 #ifdef FEAT_GUI
-		// Handle focus event here, so that the caller doesn't need to
-		// know about it.  Return K_IGNORE so that we loop once (needed
-		// if 'lazyredraw' is set).
-		if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+# ifdef VIMDLL
+		if (gui.in_use)
+# endif
 		{
-		    ui_focus_change(c == K_FOCUSGAINED);
-		    c = K_IGNORE;
-		}
+		    // Handle focus event here, so that the caller doesn't
+		    // need to know about it.  Return K_IGNORE so that we loop
+		    // once (needed if 'lazyredraw' is set).
+		    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		    {
+			ui_focus_change(c == K_FOCUSGAINED);
+			c = K_IGNORE;
+		    }
 
-		// Translate K_CSI to CSI.  The special key is only used to
-		// avoid it being recognized as the start of a special key.
-		if (c == K_CSI)
-		    c = CSI;
+		    // Translate K_CSI to CSI.  The special key is only used
+		    // to avoid it being recognized as the start of a special
+		    // key.
+		    if (c == K_CSI)
+			c = CSI;
+		}
 #endif
 	    }
 	    // a keypad or special function key was not mapped, use it like
@@ -1749,7 +1759,11 @@ vgetc(void)
 		    buf[i] = vgetorpeek(TRUE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
+# ifdef VIMDLL
+			    || (gui.in_use && buf[i] == CSI)
+# else
 			    || buf[i] == CSI
+# endif
 #endif
 			    )
 		    {
