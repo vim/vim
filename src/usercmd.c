@@ -131,7 +131,7 @@ find_ucmd(
     char_u	*p,	// end of the command (possibly including count)
     int		*full,	// set to TRUE for a full match
     expand_T	*xp,	// used for completion, NULL otherwise
-    int		*compl UNUSED)	// completion flags or NULL
+    int		*complp UNUSED)	// completion flags or NULL
 {
     int		len = (int)(p - eap->cmd);
     int		j, k, matchlen = 0;
@@ -188,8 +188,8 @@ find_ucmd(
 		    eap->addr_type = uc->uc_addr_type;
 
 # ifdef FEAT_CMDL_COMPL
-		    if (compl != NULL)
-			*compl = uc->uc_compl;
+		    if (complp != NULL)
+			*complp = uc->uc_compl;
 #  ifdef FEAT_EVAL
 		    if (xp != NULL)
 		    {
@@ -692,7 +692,7 @@ uc_scan_attr(
     long	*argt,
     long	*def,
     int		*flags,
-    int		*compl,
+    int		*complp,
     char_u	**compl_arg,
     int		*addr_type_arg)
 {
@@ -810,7 +810,7 @@ invalid_count:
 		return FAIL;
 	    }
 
-	    if (parse_compl_arg(val, (int)vallen, compl, argt, compl_arg)
+	    if (parse_compl_arg(val, (int)vallen, complp, argt, compl_arg)
 								      == FAIL)
 		return FAIL;
 	}
