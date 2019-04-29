@@ -1391,7 +1391,7 @@ find_tagfunc_tags(
 	    if (tv->v_type != VAR_STRING || tv->vval.v_string == NULL)
 		continue;
 
-	    len += STRLEN(tv->vval.v_string) + 1;   // Space for "\tVALUE"
+	    len += (int)STRLEN(tv->vval.v_string) + 1;   // Space for "\tVALUE"
 	    if (!STRCMP(dict_key, "name"))
 	    {
 		res_name = tv->vval.v_string;
@@ -1415,7 +1415,7 @@ find_tagfunc_tags(
 	    }
 	    // Other elements will be stored as "\tKEY:VALUE"
 	    // Allocate space for the key and the colon
-	    len += STRLEN(dict_key) + 1;
+	    len += (int)STRLEN(dict_key) + 1;
 	}
 
 	if (has_extra)
