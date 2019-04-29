@@ -23,6 +23,7 @@ int qf_get_cur_idx(exarg_T *eap);
 int qf_get_cur_valid_idx(exarg_T *eap);
 void ex_cc(exarg_T *eap);
 void ex_cnext(exarg_T *eap);
+void ex_cbelow(exarg_T *eap);
 void ex_cfile(exarg_T *eap);
 void ex_vimgrep(exarg_T *eap);
 int get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list);

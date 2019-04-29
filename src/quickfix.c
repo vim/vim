@@ -177,6 +177,7 @@ static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *re
 static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static qf_info_T *ll_get_or_alloc_list(win_T *);
+static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
 
 // Quickfix window check helper macro
 #define IS_QF_WINDOW(wp) (bt_quickfix(wp->w_buffer) && wp->w_llist_ref == NULL)
@@ -2700,7 +2701,6 @@ get_nth_valid_entry(
     int			qf_idx = qfl->qf_index;
     qfline_T		*prev_qf_ptr;
     int			prev_index;
-    static char_u	*e_no_more_items = (char_u *)N_("E553: No more items");
     char_u		*err = e_no_more_items;
 
     while (errornr--)
@@ -5041,6 +5041,119 @@ ex_cnext(exarg_T *eap)
     }
 
     qf_jump(qi, dir, errornr, eap->forceit);
+}
+
+/*
+ * Find n'th entry adjacent to the current line in the specified direction.
+ * Returns the error number in the current list and 0 if an entry is not found.
+ */
+    static int
+qf_find_nth_adj_entry(qf_list_T *qfl, int bnum, linenr_T lnum, int n, int dir)
+{
+    qfline_T	*qfp;
+    int		i;
+    qfline_T	*adj_entry = NULL;
+    int		errornr = 0;
+
+    // Go through all the entries in this file and locate an entry
+    // closest to the current line.
+    FOR_ALL_QFL_ITEMS(qfl, qfp, i)
+    {
+	if (qfp->qf_valid && qfp->qf_fnum == bnum && qfp->qf_lnum != 0)
+	{
+	    if ((dir == FORWARD && qfp->qf_lnum > lnum
+			&& (adj_entry == NULL
+			    || adj_entry->qf_lnum > qfp->qf_lnum))
+		    || (dir == BACKWARD && qfp->qf_lnum < lnum
+			&& (adj_entry == NULL ||
+			    adj_entry->qf_lnum < qfp->qf_lnum)))
+	    {
+		adj_entry = qfp;
+		errornr = i;
+	    }
+	}
+    }
+
+    // Go to the n'th entry in the current buffer
+    if (adj_entry != NULL && n > 0)
+    {
+	while (--n > 0)
+	{
+	    if (dir == FORWARD)
+	    {
+		if (adj_entry->qf_next == NULL ||
+					adj_entry->qf_next->qf_fnum != bnum)
+		    break;
+		adj_entry = adj_entry->qf_next;
+		errornr++;
+	    }
+	    else
+	    {
+		if (adj_entry->qf_prev == NULL ||
+					adj_entry->qf_prev->qf_fnum != bnum)
+		    break;
+		adj_entry = adj_entry->qf_prev;
+		errornr--;
+	    }
+	}
+    }
+
+    return errornr;
+}
+
+/*
+ * Jump to a quickfix entry in the current file nearest to the current line.
+ * ":cabove", ":cbelow", ":labove" and ":lbelow" commands
+ */
+    void
+ex_cbelow(exarg_T *eap)
+{
+    qf_info_T	*qi;
+    qf_list_T	*qfl;
+    int		dir;
+    int		buf_has_flag;
+    int		errornr = 0;
+
+    // Check whether the count is invalid
+    if (eap->addr_count > 0 && eap->line2 <= 0)
+    {
+	return;
+    }
+
+    // Check whether the current buffer has any quickfix entries
+    if (eap->cmdidx == CMD_cabove || eap->cmdidx == CMD_cbelow)
+	buf_has_flag = BUF_HAS_QF_ENTRY;
+    else
+	buf_has_flag = BUF_HAS_LL_ENTRY;
+    if (!(curbuf->b_has_qf_entry & buf_has_flag))
+    {
+	emsg(_(e_quickfix));
+	return;
+    }
+
+    if ((qi = qf_cmd_get_stack(eap, TRUE)) == NULL)
+	return;
+
+    qfl = qf_get_curlist(qi);
+    // check if the list has valid errors
+    if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
+    {
+	emsg(_(e_quickfix));
+	return;
+    }
+
+    if (eap->cmdidx == CMD_cbelow || eap->cmdidx == CMD_lbelow)
+	dir = FORWARD;
+    else
+	dir = BACKWARD;
+
+    errornr = qf_find_nth_adj_entry(qfl, curbuf->b_fnum, curwin->w_cursor.lnum,
+	    eap->addr_count > 0 ? eap->line2 : 0, dir);
+
+    if (errornr > 0)
+	qf_jump(qi, 0, errornr, FALSE);
+    else
+	emsg(_(e_no_more_items));
 }
 
 /*
