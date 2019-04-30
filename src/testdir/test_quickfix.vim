@@ -4092,6 +4092,29 @@ func Xtest_below(cchar)
     close
   endif
 
+  " Test for lines with multiple quickfix entries
+  Xexpr ["X1:5:L5", "X2:5:1:L5_1", "X2:5:2:L5_2", "X2:5:3:L5_3",
+	      \ "X2:10:1:L10_1", "X2:10:2:L10_2", "X2:10:3:L10_3",
+	      \ "X2:15:1:L15_1", "X2:15:2:L15_2", "X2:15:3:L15_3", "X3:3:L3"]
+  edit +1 X2
+  Xbelow 2
+  call assert_equal(['X2', 10, 1], [bufname(''), line('.'), col('.')])
+  normal gg
+  Xbelow 99
+  call assert_equal(['X2', 15, 1], [bufname(''), line('.'), col('.')])
+  normal G
+  Xabove 2
+  call assert_equal(['X2', 10, 1], [bufname(''), line('.'), col('.')])
+  normal G
+  Xabove 99
+  call assert_equal(['X2', 5, 1], [bufname(''), line('.'), col('.')])
+  normal 10G
+  Xabove
+  call assert_equal(['X2', 5, 1], [bufname(''), line('.'), col('.')])
+  normal 10G
+  Xbelow
+  call assert_equal(['X2', 15, 1], [bufname(''), line('.'), col('.')])
+
   call delete('X1')
   call delete('X2')
   call delete('X3')
