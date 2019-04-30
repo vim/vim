@@ -2556,9 +2556,14 @@ install-icons:
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim16x16.png $(ICON16PATH)/gvim.png; \
 	fi
 	if test -d $(DESKTOPPATH) -a -w $(DESKTOPPATH); then \
-	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop \
-		$(SCRIPTSOURCE)/gvim.desktop \
-		$(DESKTOPPATH); \
+	   if test -f po/vim.desktop -a -f po/gvim.desktop; then \
+		$(INSTALL_DATA) po/vim.desktop po/gvim.desktop \
+			$(DESKTOPPATH); \
+	   else \
+		$(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop \
+			$(SCRIPTSOURCE)/gvim.desktop \
+			$(DESKTOPPATH); \
+	   fi; \
 	   if test -z "$(DESTDIR)" -a -x "$(UPDATE_DESKTOP_DATABASE)"; then \
 	      $(UPDATE_DESKTOP_DATABASE) -q $(DESKTOPPATH); \
 	   fi \
