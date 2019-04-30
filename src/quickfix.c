@@ -5044,8 +5044,29 @@ ex_cnext(exarg_T *eap)
 }
 
 /*
- * Find the first entry on the same line as 'entry'. Updates 'errornr' with the
- * error number for the first entry.
+ * Find the first entry in the quickfix list 'qfl' from buffer 'bnr'.
+ * The index of the entry is stored in 'errornr'.
+ * Returns NULL if an entry is not found.
+ */
+    static qfline_T *
+qf_find_first_entry_in_buf(qf_list_T *qfl, int bnr, int *errornr)
+{
+    qfline_T	*qfp = NULL;
+    int		idx = 0;
+
+    // Find the first entry in this file
+    FOR_ALL_QFL_ITEMS(qfl, qfp, idx)
+	if (qfp->qf_fnum == bnr)
+	    break;
+
+    *errornr = idx;
+    return qfp;
+}
+
+/*
+ * Find the first quickfix entry on the same line as 'entry'. Updates 'errornr'
+ * with the error number for the first entry. Assumes the entries are sorted in
+ * the quickfix list by line number.
  */
     static qfline_T *
 qf_find_first_entry_on_line(qfline_T *entry, int *errornr)
@@ -5063,8 +5084,9 @@ qf_find_first_entry_on_line(qfline_T *entry, int *errornr)
 }
 
 /*
- * Find the last entry on the same line as 'entry'. Updates 'errornr' with the
- * error number for the last entry.
+ * Find the last quickfix entry on the same line as 'entry'. Updates 'errornr'
+ * with the error number for the last entry. Assumes the entries are sorted in
+ * the quickfix list by line number.
  */
     static qfline_T *
 qf_find_last_entry_on_line(qfline_T *entry, int *errornr)
@@ -5082,75 +5104,98 @@ qf_find_last_entry_on_line(qfline_T *entry, int *errornr)
 }
 
 /*
- * Find a quickfix entry in 'qfl' closest to line 'lnum' in buffer 'bnum' in
+ * Find the first quickfix entry below line 'lnum' in buffer 'bnr'.
+ * 'qfp' points to the very first entry in the buffer and 'errornr' is the
+ * index of the very first entry in the quickfix list.
+ * Returns NULL if an entry is not found after 'lnum'.
+ */
+    static qfline_T *
+qf_find_entry_on_next_line(
+	int		bnr,
+	linenr_T	lnum,
+	qfline_T	*qfp,
+	int		*errornr)
+{
+    if (qfp->qf_lnum > lnum)
+	// First entry is after line 'lnum'
+	return qfp;
+
+    // Find the entry just before or at the line 'lnum'
+    while (qfp->qf_next != NULL
+	    && qfp->qf_next->qf_fnum == bnr
+	    && qfp->qf_next->qf_lnum <= lnum)
+    {
+	qfp = qfp->qf_next;
+	++*errornr;
+    }
+
+    if (qfp->qf_next == NULL || qfp->qf_next->qf_fnum != bnr)
+	// No entries found after 'lnum'
+	return NULL;
+
+    // Use the entry just after line 'lnum'
+    qfp = qfp->qf_next;
+    ++*errornr;
+
+    return qfp;
+}
+
+/*
+ * Find the first quickfix entry before line 'lnum' in buffer 'bnr'.
+ * 'qfp' points to the very first entry in the buffer and 'errornr' is the
+ * index of the very first entry in the quickfix list.
+ * Returns NULL if an entry is not found before 'lnum'.
+ */
+    static qfline_T *
+qf_find_entry_on_prev_line(
+	int		bnr,
+	linenr_T	lnum,
+	qfline_T	*qfp,
+	int		*errornr)
+{
+    // Find the entry just before the line 'lnum'
+    while (qfp->qf_next != NULL
+	    && qfp->qf_next->qf_fnum == bnr
+	    && qfp->qf_next->qf_lnum < lnum)
+    {
+	qfp = qfp->qf_next;
+	++*errornr;
+    }
+
+    if (qfp->qf_lnum >= lnum)	// entry is after 'lnum'
+	return NULL;
+
+    // If multiple entries are on the same line, then use the first entry
+    qfp = qf_find_first_entry_on_line(qfp, errornr);
+
+    return qfp;
+}
+
+/*
+ * Find a quickfix entry in 'qfl' closest to line 'lnum' in buffer 'bnr' in
  * the direction 'dir'.
  */
     static qfline_T *
 qf_find_closest_entry(
 	qf_list_T	*qfl,
-	int		bnum,
+	int		bnr,
 	linenr_T	lnum,
 	int		dir,
 	int		*errornr)
 {
     qfline_T	*qfp;
-    int		i;
 
     *errornr = 0;
 
     // Find the first entry in this file
-    FOR_ALL_QFL_ITEMS(qfl, qfp, i)
-	if (qfp->qf_fnum == bnum)
-	    break;
-
+    qfp = qf_find_first_entry_in_buf(qfl, bnr, errornr);
     if (qfp == NULL)
 	return NULL;		// no entry in this file
 
     if (dir == FORWARD)
-    {
-	if (qfp->qf_lnum > lnum)
-	{
-	    // First entry is after line 'lnum'
-	    *errornr = i;
-	    return qfp;
-	}
-
-	// Find the entry just before or at the line 'lnum'
-	while (qfp->qf_next != NULL
-		&& qfp->qf_next->qf_fnum == bnum
-		&& qfp->qf_next->qf_lnum <= lnum)
-	{
-	    qfp = qfp->qf_next;
-	    i++;
-	}
-
-	if (qfp->qf_next == NULL || qfp->qf_next->qf_fnum != bnum)
-	    // No entries found after 'lnum'
-	    return NULL;
-
-	// Use the entry just after line 'lnum'
-	qfp = qfp->qf_next;
-	*errornr = i + 1;
-    }
+	qfp = qf_find_entry_on_next_line(bnr, lnum, qfp, errornr);
     else
-    {
-	// Find the entry just before the line 'lnum'
-	while (qfp->qf_next != NULL
-		&& qfp->qf_next->qf_fnum == bnum
-		&& qfp->qf_next->qf_lnum < lnum)
-	{
-	    qfp = qfp->qf_next;
-	    i++;
-	}
-
-	if (qfp->qf_lnum >= lnum)	// entry is after 'lnum'
-	    return NULL;
-
-	*errornr = i;
-
-	// If multiple entries are on the same line, then use the first entry
-	qfp = qf_find_first_entry_on_line(qfp, errornr);
-    }
+	qfp = qf_find_entry_on_prev_line(bnr, lnum, qfp, errornr);
 
     return qfp;
 }
@@ -5211,18 +5256,18 @@ qf_get_nth_above_entry(qfline_T *entry, int *errornr, int n)
 }
 
 /*
- * Find the n'th quickfix entry adjacent to line 'lnum' in buffer 'bnum' in the
+ * Find the n'th quickfix entry adjacent to line 'lnum' in buffer 'bnr' in the
  * specified direction.
  * Returns the error number in the quickfix list or 0 if an entry is not found.
  */
     static int
-qf_find_nth_adj_entry(qf_list_T *qfl, int bnum, linenr_T lnum, int n, int dir)
+qf_find_nth_adj_entry(qf_list_T *qfl, int bnr, linenr_T lnum, int n, int dir)
 {
     qfline_T	*adj_entry;
     int		errornr;
 
     // Find an entry closest to the specified line
-    adj_entry = qf_find_closest_entry(qfl, bnum, lnum, dir, &errornr);
+    adj_entry = qf_find_closest_entry(qfl, bnr, lnum, dir, &errornr);
     if (adj_entry == NULL)
 	return 0;
 
