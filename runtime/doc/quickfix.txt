@@ -124,33 +124,33 @@ processing a quickfix or location list command, it will be aborted.
 			quickfix list.
 
 							*:cabo* *:cabove*
-:cabo[ve] [nr]		Go to the [nr] error above the current line in the
-			current buffer.  If [nr] is omitted, then 1 is used.
-			If there are no errors, then an error message is
-			displayed.  Assumes that the entries in a quickfix
-			list are sorted by their line number. If there are
-			multiple errors on the same line, then only the first
-			entry is used.  If [nr] exceeds the number of entries
-			above the current line, then the first error in the
-			file is selected.
+:[count]cabo[ve]	Go to the [count] error above the current line in the
+			current buffer.  If [count] is omitted, then 1 is
+			used.  If there are no errors, then an error message
+			is displayed.  Assumes that the entries in a quickfix
+			list are sorted by their buffer number and line
+			number. If there are multiple errors on the same line,
+			then only the first entry is used.  If [count] exceeds
+			the number of entries above the current line, then the
+			first error in the file is selected.
 
 							*:lab* *:labove*
-:lab[ove] [nr]		Same as ":cabove", except the location list for the
+:[count]lab[ove]	Same as ":cabove", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cbe* *:cbelow*
-:cbe[low] [nr]		Go to the [nr] error below the current line in the
-			current buffer.  If [nr] is omitted, then 1 is used.
-			If there are no errors, then an error message is
-			displayed.  Assumes that the entries in a quickfix
-			list are sorted by their line number.  If there are
-			multiple errors on the same line, then only the first
-			entry is used.  If [nr] exceeds the number of entries
-			below the current line, then the last error in the
-			file is selected.
+:[count]cbe[low]	Go to the [count] error below the current line in the
+			current buffer.  If [count] is omitted, then 1 is
+			used.  If there are no errors, then an error message
+			is displayed.  Assumes that the entries in a quickfix
+			list are sorted by their buffer number and line
+			number.  If there are multiple errors on the same
+			line, then only the first entry is used.  If [count]
+			exceeds the number of entries below the current line,
+			then the last error in the file is selected.
 
 							*:lbe* *:lbelow*
-:lbe[low] [nr]		Same as ":cbelow", except the location list for the
+:[count]lbe[low]	Same as ":cbelow", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cnf* *:cnfile*

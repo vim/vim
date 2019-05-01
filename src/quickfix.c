@@ -5306,6 +5306,12 @@ ex_cbelow(exarg_T *eap)
     int		buf_has_flag;
     int		errornr = 0;
 
+    if (eap->addr_count > 0 && (int)eap->line2 <= 0)
+    {
+	emsg(_(e_invrange));
+	return;
+    }
+
     // Check whether the current buffer has any quickfix entries
     if (eap->cmdidx == CMD_cabove || eap->cmdidx == CMD_cbelow)
 	buf_has_flag = BUF_HAS_QF_ENTRY;

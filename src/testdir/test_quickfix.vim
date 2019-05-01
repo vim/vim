@@ -37,8 +37,8 @@ func s:setup_commands(cchar)
     command! -nargs=* Xgrepadd <mods> grepadd <args>
     command! -nargs=* Xhelpgrep helpgrep <args>
     command! -nargs=0 -count Xcc <count>cc
-    command! -count=1 -nargs=0 Xbelow <mods>cbelow <count>
-    command! -count=1 -nargs=0 Xabove <mods>cabove <count>
+    command! -count=1 -nargs=0 Xbelow <mods><count>cbelow
+    command! -count=1 -nargs=0 Xabove <mods><count>cabove
     let g:Xgetlist = function('getqflist')
     let g:Xsetlist = function('setqflist')
     call setqflist([], 'f')
@@ -72,8 +72,8 @@ func s:setup_commands(cchar)
     command! -nargs=* Xgrepadd <mods> lgrepadd <args>
     command! -nargs=* Xhelpgrep lhelpgrep <args>
     command! -nargs=0 -count Xcc <count>ll
-    command! -count=1 -nargs=0 Xbelow <mods>lbelow <count>
-    command! -count=1 -nargs=0 Xabove <mods>labove <count>
+    command! -count=1 -nargs=0 Xbelow <mods><count>lbelow
+    command! -count=1 -nargs=0 Xabove <mods><count>labove
     let g:Xgetlist = function('getloclist', [0])
     let g:Xsetlist = function('setloclist', [0])
     call setloclist(0, [], 'f')
@@ -4114,6 +4114,15 @@ func Xtest_below(cchar)
   normal 10G
   Xbelow
   call assert_equal(['X2', 15, 1], [bufname(''), line('.'), col('.')])
+
+  " Invalid range
+  if a:cchar == 'c'
+    call assert_fails('-2cbelow', 'E16:')
+    call assert_fails('0cabove', 'E16:')
+  else
+    call assert_fails('-2lbelow', 'E16:')
+    call assert_fails('0labove', 'E16:')
+  endif
 
   call delete('X1')
   call delete('X2')
