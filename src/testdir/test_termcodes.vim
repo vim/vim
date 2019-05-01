@@ -32,11 +32,25 @@ func MouseMiddleClick(row, col)
   call TerminalEscapeCode(0x21, 1, a:row, a:col, 'M')
 endfunc
 
+func MouseCtrlLeftClick(row, col)
+  let ctrl = 0x10
+  call TerminalEscapeCode(0x20 + ctrl, 0 + ctrl, a:row, a:col, 'M')
+endfunc
+
+func MouseCtrlRightClick(row, col)
+  let ctrl = 0x10
+  call TerminalEscapeCode(0x22 + ctrl, 2 + ctrl, a:row, a:col, 'M')
+endfunc
+
 func MouseLeftRelease(row, col)
   call TerminalEscapeCode(0x23, 3, a:row, a:col, 'm')
 endfunc
 
 func MouseMiddleRelease(row, col)
+  call TerminalEscapeCode(0x23, 3, a:row, a:col, 'm')
+endfunc
+
+func MouseRightRelease(row, col)
   call TerminalEscapeCode(0x23, 3, a:row, a:col, 'm')
 endfunc
 
@@ -62,7 +76,7 @@ func Test_xterm_mouse_left_click()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     go
     call assert_equal([0, 1, 1, 0], getpos('.'), msg)
     let row = 2
@@ -76,6 +90,39 @@ func Test_xterm_mouse_left_click()
   let &term = save_term
   let &ttymouse = save_ttymouse
   bwipe!
+endfunc
+
+" Test that <C-LeftMouse> jumps to help tag and <C-RightMouse> jumps back.
+func Test_xterm_mouse_ctrl_click()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set mouse=a term=xterm
+
+  for ttymouse_val in ['xterm2', 'sgr']
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+    help
+    /usr_02.txt
+    norm! zt
+    let row = 1
+    let col = 1
+    call MouseCtrlLeftClick(row, col)
+    call MouseLeftRelease(row, col)
+    call assert_match('usr_02.txt$', bufname('%'), msg)
+    call assert_equal('*usr_02.txt*', expand('<cWORD>'))
+
+    call MouseCtrlRightClick(row, col)
+    call MouseLeftRelease(row, col)
+    call assert_match('help.txt$', bufname('%'), msg)
+    call assert_equal('|usr_02.txt|', expand('<cWORD>'))
+
+    helpclose
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
 endfunc
 
 func Test_xterm_mouse_middle_click()
@@ -93,7 +140,7 @@ func Test_xterm_mouse_middle_click()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     call setline(1, ['123456789', '123456789'])
 
     " Middle-click in the middle of the line pastes text where clicked.
@@ -134,7 +181,7 @@ func Test_xterm_mouse_wheel()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     go
     call assert_equal(1, line('w0'), msg)
     call assert_equal([0, 1, 1, 0], getpos('.'), msg)
@@ -170,7 +217,7 @@ func Test_xterm_mouse_drag_window_separator()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
 
     " Split horizontally and test dragging the horizontal window separator.
     split
@@ -227,7 +274,7 @@ func Test_xterm_mouse_drag_statusline()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
 
     call assert_equal(1, &cmdheight, msg)
     let rowstatusline = winheight(0) + 1
@@ -268,7 +315,7 @@ func Test_xterm_mouse_click_tab()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     e Xfoo
     tabnew Xbar
 
@@ -320,7 +367,7 @@ func Test_xterm_mouse_click_X_to_close_tab()
       continue
     endif
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
     tabnew Xtab2
     tabnew Xtab3
@@ -362,7 +409,7 @@ func Test_xterm_mouse_drag_to_move_tab()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
     tabnew Xtab2
 
@@ -411,7 +458,7 @@ func Test_xterm_mouse_double_click_to_create_tab()
 
   for ttymouse_val in ['xterm2', 'sgr']
     let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' . ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
     tabnew Xtab2
 
