@@ -1495,6 +1495,16 @@ qf_list_empty(qf_list_T *qfl)
 }
 
 /*
+ * Returns TRUE if the specified quickfix/location list is not empty and
+ * has valid entries.
+ */
+    static int
+qf_list_has_valid_entries(qf_list_T *qfl)
+{
+    return !qf_list_empty(qfl) && !qfl->qf_nonevalid;
+}
+
+/*
  * Return a pointer to a list in the specified quickfix stack
  */
     static qf_list_T *
@@ -4885,7 +4895,7 @@ qf_get_cur_valid_idx(exarg_T *eap)
     qfp = qfl->qf_start;
 
     // check if the list has valid errors
-    if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
+    if (!qf_list_has_valid_entries(qfl))
 	return 1;
 
     for (i = 1; i <= qfl->qf_index && qfp!= NULL; i++, qfp = qfp->qf_next)
@@ -4923,7 +4933,7 @@ qf_get_nth_valid_entry(qf_list_T *qfl, int n, int fdo)
     int		prev_fnum = 0;
 
     // check if the list has valid errors
-    if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
+    if (!qf_list_has_valid_entries(qfl))
 	return 1;
 
     eidx = 0;
@@ -5312,7 +5322,7 @@ ex_cbelow(exarg_T *eap)
 
     qfl = qf_get_curlist(qi);
     // check if the list has valid errors
-    if (qfl->qf_count <= 0 || qfl->qf_nonevalid)
+    if (!qf_list_has_valid_entries(qfl))
     {
 	emsg(_(e_quickfix));
 	return;
