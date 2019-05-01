@@ -1987,7 +1987,7 @@ autoconf:
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim -u NONE -i NONE -X -S create_cmdidxs.vim
+	vim --clean -X -u create_cmdidxs.vim
 
 
 # The normal command to compile a .c file to its .o file.

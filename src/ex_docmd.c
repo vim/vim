@@ -73,7 +73,7 @@ static int	getargopt(exarg_T *eap);
 # define ex_cexpr		ex_ni
 #endif
 
-static linenr_T get_address(exarg_T *, char_u **, int addr_type, int skip, int silent, int to_other_file, int address_count);
+static linenr_T get_address(exarg_T *, char_u **, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
@@ -1577,6 +1577,10 @@ compute_buffer_local_count(int addr_type, int lnum, int offset)
     return buf->b_fnum;
 }
 
+/*
+ * Return the window number of "win".
+ * When "win" is NULL return the number of windows.
+ */
     static int
 current_win_nr(win_T *win)
 {
@@ -1951,7 +1955,7 @@ do_one_cmd(
 	ea.forceit = FALSE;
 
 /*
- * 6. Parse arguments.
+ * 6. Parse arguments.  Then check for errors.
  */
     if (!IS_USER_CMDIDX(ea.cmdidx))
 	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
@@ -2016,7 +2020,7 @@ do_one_cmd(
      * Don't complain about the range if it is not used
      * (could happen if line_count is accidentally set to 0).
      */
-    if (!ea.skip && !ni)
+    if (!ea.skip && !ni && (ea.argt & RANGE))
     {
 	/*
 	 * If the range is backwards, ask for confirmation and, if given, swap
@@ -2044,7 +2048,8 @@ do_one_cmd(
 	    goto doend;
     }
 
-    if ((ea.argt & NOTADR) && ea.addr_count == 0) /* default is 1, not cursor */
+    if ((ea.addr_type == ADDR_OTHER) && ea.addr_count == 0)
+	// default is 1, not cursor
 	ea.line2 = 1;
 
     correct_range(&ea);
@@ -2191,6 +2196,7 @@ do_one_cmd(
 	switch (ea.addr_type)
 	{
 	    case ADDR_LINES:
+	    case ADDR_OTHER:
 		ea.line2 = curbuf->b_ml.ml_line_count;
 		break;
 	    case ADDR_LOADED_BUFFERS:
@@ -2229,6 +2235,9 @@ do_one_cmd(
 		    ea.line2 = 1;
 		break;
 #endif
+	    case ADDR_NONE:
+		iemsg(_("INTERNAL: Cannot use DFLALL with ADDR_NONE"));
+		break;
 	}
     }
 
@@ -2278,7 +2287,7 @@ do_one_cmd(
 	    errormsg = _(e_zerocount);
 	    goto doend;
 	}
-	if (ea.argt & NOTADR)	/* e.g. :buffer 2, :sleep 3 */
+	if (ea.addr_type != ADDR_LINES)	// e.g. :buffer 2, :sleep 3
 	{
 	    ea.line2 = n;
 	    if (ea.addr_count == 0)
@@ -2292,8 +2301,7 @@ do_one_cmd(
 	    /*
 	     * Be vi compatible: no error message for out of range.
 	     */
-	    if (ea.addr_type == ADDR_LINES
-		    && ea.line2 > curbuf->b_ml.ml_line_count)
+	    if (ea.line2 > curbuf->b_ml.ml_line_count)
 		ea.line2 = curbuf->b_ml.ml_line_count;
 	}
     }
@@ -2876,6 +2884,7 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 	switch (eap->addr_type)
 	{
 	    case ADDR_LINES:
+	    case ADDR_OTHER:
 		// default is current line number
 		eap->line2 = curwin->w_cursor.lnum;
 		break;
@@ -2902,6 +2911,9 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 		eap->line2 = qf_get_cur_valid_idx(eap);
 		break;
 #endif
+	    case ADDR_NONE:
+		// Will give an error later if a range is found.
+		break;
 	}
 	eap->cmd = skipwhite(eap->cmd);
 	lnum = get_address(eap, &eap->cmd, eap->addr_type, eap->skip, silent,
@@ -2916,6 +2928,7 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 		switch (eap->addr_type)
 		{
 		    case ADDR_LINES:
+		    case ADDR_OTHER:
 			eap->line1 = 1;
 			eap->line2 = curbuf->b_ml.ml_line_count;
 			break;
@@ -2955,7 +2968,6 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 			}
 			break;
 		    case ADDR_TABS_RELATIVE:
-		    case ADDR_OTHER:
 			*errormsg = _(e_invrange);
 			return FAIL;
 		    case ADDR_ARGUMENTS:
@@ -2975,6 +2987,9 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 			    eap->line2 = 1;
 			break;
 #endif
+		    case ADDR_NONE:
+			// Will give an error later if a range is found.
+			break;
 		}
 		++eap->addr_count;
 	    }
@@ -4207,12 +4222,13 @@ skip_range(
 get_address(
     exarg_T	*eap UNUSED,
     char_u	**ptr,
-    int		addr_type,	// flag: one of ADDR_LINES, ...
+    cmd_addr_T	addr_type_arg,
     int		skip,		// only skip the address, don't use it
     int		silent,		// no errors or side effects
     int		to_other_file,  // flag: may jump to other file
     int		address_count UNUSED) // 1 for first address, >1 after comma
 {
+    cmd_addr_T	addr_type = addr_type_arg;
     int		c;
     int		i;
     long	n;
@@ -4233,6 +4249,7 @@ get_address(
 		switch (addr_type)
 		{
 		    case ADDR_LINES:
+		    case ADDR_OTHER:
 			lnum = curwin->w_cursor.lnum;
 			break;
 		    case ADDR_WINDOWS:
@@ -4249,6 +4266,7 @@ get_address(
 			lnum = CURRENT_TAB_NR;
 			break;
 		    case ADDR_TABS_RELATIVE:
+		    case ADDR_NONE:
 			emsg(_(e_invrange));
 			cmd = NULL;
 			goto error;
@@ -4266,6 +4284,7 @@ get_address(
 		switch (addr_type)
 		{
 		    case ADDR_LINES:
+		    case ADDR_OTHER:
 			lnum = curbuf->b_ml.ml_line_count;
 			break;
 		    case ADDR_WINDOWS:
@@ -4291,6 +4310,7 @@ get_address(
 			lnum = LAST_TAB_NR;
 			break;
 		    case ADDR_TABS_RELATIVE:
+		    case ADDR_NONE:
 			emsg(_(e_invrange));
 			cmd = NULL;
 			goto error;
@@ -4460,7 +4480,8 @@ get_address(
 		switch (addr_type)
 		{
 		    case ADDR_LINES:
-			/* "+1" is same as ".+1" */
+		    case ADDR_OTHER:
+			// "+1" is same as ".+1"
 			lnum = curwin->w_cursor.lnum;
 			break;
 		    case ADDR_WINDOWS:
@@ -4484,6 +4505,8 @@ get_address(
 			lnum = qf_get_cur_valid_idx(eap);
 			break;
 #endif
+		    case ADDR_NONE:
+			break;
 		}
 	    }
 
@@ -4586,11 +4609,10 @@ invalid_range(exarg_T *eap)
 
     if (eap->argt & RANGE)
     {
-	switch(eap->addr_type)
+	switch (eap->addr_type)
 	{
 	    case ADDR_LINES:
-		if (!(eap->argt & NOTADR)
-			&& eap->line2 > curbuf->b_ml.ml_line_count
+		if (eap->line2 > curbuf->b_ml.ml_line_count
 #ifdef FEAT_DIFF
 			    + (eap->cmdidx == CMD_diffget)
 #endif
@@ -4636,7 +4658,8 @@ invalid_range(exarg_T *eap)
 		    return _(e_invrange);
 		break;
 	    case ADDR_TABS_RELATIVE:
-		/* Do nothing */
+	    case ADDR_OTHER:
+		// Any range is OK.
 		break;
 #ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
@@ -4644,6 +4667,9 @@ invalid_range(exarg_T *eap)
 		    return _(e_invrange);
 		break;
 #endif
+	    case ADDR_NONE:
+		// Will give an error elsewhere.
+		break;
 	}
     }
     return NULL;
