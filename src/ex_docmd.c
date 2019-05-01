@@ -2228,13 +2228,13 @@ do_one_cmd(
 		else
 		    ea.line2 = ARGCOUNT;
 		break;
-#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 		ea.line2 = qf_get_size(&ea);
 		if (ea.line2 == 0)
 		    ea.line2 = 1;
-		break;
 #endif
+		break;
 	    case ADDR_NONE:
 		iemsg(_("INTERNAL: Cannot use DFLALL with ADDR_NONE"));
 		break;
@@ -2906,11 +2906,11 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 	    case ADDR_TABS_RELATIVE:
 		eap->line2 = 1;
 		break;
-#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 		eap->line2 = qf_get_cur_valid_idx(eap);
-		break;
 #endif
+		break;
 	    case ADDR_NONE:
 		// Will give an error later if a range is found.
 		break;
@@ -2979,14 +2979,14 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 			    eap->line2 = ARGCOUNT;
 			}
 			break;
-#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 			eap->line1 = 1;
 			eap->line2 = qf_get_size(eap);
 			if (eap->line2 == 0)
 			    eap->line2 = 1;
-			break;
 #endif
+			break;
 		    case ADDR_NONE:
 			// Will give an error later if a range is found.
 			break;
@@ -4271,11 +4271,11 @@ get_address(
 			cmd = NULL;
 			goto error;
 			break;
-#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 			lnum = qf_get_cur_valid_idx(eap);
-			break;
 #endif
+			break;
 		}
 		break;
 
@@ -4315,13 +4315,13 @@ get_address(
 			cmd = NULL;
 			goto error;
 			break;
-#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 			lnum = qf_get_size(eap);
 			if (lnum == 0)
 			    lnum = 1;
-			break;
 #endif
+			break;
 		}
 		break;
 
@@ -4500,11 +4500,11 @@ get_address(
 		    case ADDR_TABS_RELATIVE:
 			lnum = 1;
 			break;
-#ifdef FEAT_QUICKFIX
 		    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 			lnum = qf_get_cur_valid_idx(eap);
-			break;
 #endif
+			break;
 		    case ADDR_NONE:
 			break;
 		}
@@ -4661,12 +4661,12 @@ invalid_range(exarg_T *eap)
 	    case ADDR_OTHER:
 		// Any range is OK.
 		break;
-#ifdef FEAT_QUICKFIX
 	    case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
 		if (eap->line2 != 1 && eap->line2 > qf_get_size(eap))
 		    return _(e_invrange);
-		break;
 #endif
+		break;
 	    case ADDR_NONE:
 		// Will give an error elsewhere.
 		break;
