@@ -3955,6 +3955,8 @@ enter_tabpage(
      * the frames for that.  When the Vim window was resized need to update
      * frame sizes too.  Use the stored value of p_ch, so that it can be
      * different for each tab page. */
+    if (p_ch != curtab->tp_ch_used)
+	clear_cmdline = TRUE;
     p_ch = curtab->tp_ch_used;
     if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
