@@ -4551,10 +4551,11 @@ check_termcode(
 			    continue;	/* no match */
 			else
 			{
-			    /* Skip over the digits, the final char must
-			     * follow. */
+			    // Skip over the digits, the final char must
+			    // follow. URXVT can use a negative value, thus
+			    // also accept '-'.
 			    for (j = slen - 2; j < len && (isdigit(tp[j])
-							 || tp[j] == ';'); ++j)
+				       || tp[j] == '-' || tp[j] == ';'); ++j)
 				;
 			    ++j;
 			    if (len < j)	/* got a partial sequence */
