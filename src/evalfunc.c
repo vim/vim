@@ -14302,12 +14302,15 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	}
 	else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
 	    nfa_fail_for_testing = val;
+	else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
+	    no_query_mouse_for_testing = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
 	    disable_redraw_for_testing = FALSE;
 	    ignore_redraw_flag_for_testing = FALSE;
 	    nfa_fail_for_testing = FALSE;
+	    no_query_mouse_for_testing = FALSE;
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;

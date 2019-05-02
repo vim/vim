@@ -5940,7 +5940,8 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
     if (WantQueryMouse)
     {
 	WantQueryMouse = FALSE;
-	mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
+	if (!no_query_mouse_for_testing)
+	    mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
     }
 #endif
 
