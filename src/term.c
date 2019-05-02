@@ -4554,6 +4554,7 @@ check_termcode(
 			    /* Skip over the digits, the final char must
 			     * follow. */
 			    for (j = slen - 2; j < len && (isdigit(tp[j])
+							 || tp[j] == '-'
 							 || tp[j] == ';'); ++j)
 				;
 			    ++j;
