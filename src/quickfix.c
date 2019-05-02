@@ -4016,7 +4016,8 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 	    if (sz != win->w_width)
 		win_setwidth(sz);
 	}
-	else if (sz != win->w_height)
+	else if (sz != win->w_height
+			 && win->w_height + win->w_status_height < cmdline_row)
 	    win_setheight(sz);
     }
 
