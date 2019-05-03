@@ -5510,8 +5510,10 @@ nfa_did_time_out()
  *
  * When "nfa_endp" is not NULL it is a required end-of-match position.
  *
- * Return TRUE if there is a match, FALSE otherwise.
+ * Return TRUE if there is a match, FALSE if there is no match,
+ * NFA_TOO_EXPENSIVE if we end up with too many states.
  * When there is a match "submatch" contains the positions.
+ *
  * Note: Caller must ensure that: start != NULL.
  */
     static int
@@ -5521,7 +5523,7 @@ nfa_regmatch(
     regsubs_T		*submatch,
     regsubs_T		*m)
 {
-    int		result;
+    int		result = FALSE;
     size_t	size = 0;
     int		flag = 0;
     int		go_to_nextline = FALSE;
