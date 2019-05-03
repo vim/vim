@@ -3138,11 +3138,12 @@ fix_input_buffer(char_u *buf, int len)
 		    /* timeout may generate K_CURSORHOLD */
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
 #if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
-# ifdef VIMDLL
-		    && !gui.in_use
-# endif
 		    /* Win32 console passes modifiers */
-		    && (i < 2 || p[1] != KS_MODIFIER)
+		    && (
+# ifdef VIMDLL
+			gui.in_use ? 1 :
+# endif
+			(i < 2 || p[1] != KS_MODIFIER))
 #endif
 		    ))
 	{
