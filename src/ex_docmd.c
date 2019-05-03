@@ -56,6 +56,7 @@ static int	getargopt(exarg_T *eap);
 # define ex_cbuffer		ex_ni
 # define ex_cc			ex_ni
 # define ex_cnext		ex_ni
+# define ex_cbelow		ex_ni
 # define ex_cfile		ex_ni
 # define qf_list		ex_ni
 # define qf_age			ex_ni
