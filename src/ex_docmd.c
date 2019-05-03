@@ -4530,6 +4530,8 @@ get_address(
 		    || addr_type == ADDR_BUFFERS)
 		lnum = compute_buffer_local_count(
 				    addr_type, lnum, (i == '-') ? -1 * n : n);
+	    else if (addr_type == ADDR_NONE)
+		lnum = (i == '-') ? -n : n;
 	    else
 	    {
 #ifdef FEAT_FOLDING

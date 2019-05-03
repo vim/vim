@@ -5306,7 +5306,7 @@ ex_cbelow(exarg_T *eap)
     int		buf_has_flag;
     int		errornr = 0;
 
-    if (eap->addr_count > 0 && (int)eap->line2 <= 0)
+    if (eap->addr_count > 0 && eap->line2 <= 0)
     {
 	emsg(_(e_invrange));
 	return;
