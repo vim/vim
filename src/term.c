@@ -6649,7 +6649,6 @@ translate_mapping(char_u *str)
     int		modifiers;
     int		cpo_bslash;
     int		cpo_special;
-    int		cpo_keycode;
 
     ga_init(&ga);
     ga.ga_itemsize = 1;
@@ -6657,7 +6656,6 @@ translate_mapping(char_u *str)
 
     cpo_bslash = (vim_strchr(p_cpo, CPO_BSLASH) != NULL);
     cpo_special = (vim_strchr(p_cpo, CPO_SPECI) != NULL);
-    cpo_keycode = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
 
     for (; *str; ++str)
     {
@@ -6670,22 +6668,6 @@ translate_mapping(char_u *str)
 		str++;
 		modifiers = *++str;
 		c = *++str;
-	    }
-	    if (cpo_special && cpo_keycode && c == K_SPECIAL && !modifiers)
-	    {
-		int	i;
-
-		/* try to find special key in termcodes */
-		for (i = 0; i < tc_len; ++i)
-		    if (termcodes[i].name[0] == str[1]
-					    && termcodes[i].name[1] == str[2])
-			break;
-		if (i < tc_len)
-		{
-		    ga_concat(&ga, termcodes[i].code);
-		    str += 2;
-		    continue; /* for (str) */
-		}
 	    }
 	    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
 	    {
