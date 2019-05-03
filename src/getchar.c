@@ -3141,7 +3141,7 @@ fix_input_buffer(char_u *buf, int len)
 		    /* Win32 console passes modifiers */
 		    && (
 # ifdef VIMDLL
-			gui.in_use ? 1 :
+			gui.in_use ||
 # endif
 			(i < 2 || p[1] != KS_MODIFIER))
 #endif
