@@ -4263,7 +4263,7 @@ set_context_in_map_cmd(
 }
 
 /*
- * Find all mapping/abbreviation names that match regexp 'prog'.
+ * Find all mapping/abbreviation names that match regexp "regmatch"'.
  * For command line expansion of ":[un]map" and ":[un]abbrev" in all modes.
  * Return OK if matches found, FAIL otherwise.
  */
@@ -4343,7 +4343,7 @@ ExpandMappings(
 	    {
 		if (mp->m_mode & expand_mapmodes)
 		{
-		    p = translate_mapping(mp->m_keys, TRUE);
+		    p = translate_mapping(mp->m_keys);
 		    if (p != NULL && vim_regexec(regmatch, p, (colnr_T)0))
 		    {
 			if (round == 1)
