@@ -20,6 +20,13 @@ else
   let s:ttymouse_dec = []
 endif
 
+" netterm only supports left click
+if has('mouse_netterm')
+  let s:ttymouse_netterm = ['netterm']
+else
+  let s:ttymouse_netterm = []
+endif
+
 " Helper function to emit a terminal escape code.
 func TerminalEscapeCode(code, row, col, m)
   if &ttymouse ==# 'xterm2'
@@ -43,9 +50,15 @@ func DecEscapeCode(code, down, row, col)
     call feedkeys(printf("\<Esc>[%d;%d;%d;%d&w", a:code, a:down, a:row, a:col), 'Lx!')
 endfunc
 
+func NettermEscapeCode(row, col)
+    call feedkeys(printf("\<Esc>}%d,%d\r", a:row, a:col), 'Lx!')
+endfunc
+
 func MouseLeftClick(row, col)
   if &ttymouse ==# 'dec'
     call DecEscapeCode(2, 4, a:row, a:col)
+  elseif &ttymouse ==# 'netterm'
+    call NettermEscapeCode(a:row, a:col)
   else
     call TerminalEscapeCode(0, a:row, a:col, 'M')
   endif
@@ -72,6 +85,8 @@ endfunc
 func MouseLeftRelease(row, col)
   if &ttymouse ==# 'dec'
     call DecEscapeCode(3, 0, a:row, a:col)
+  elseif &ttymouse ==# 'netterm'
+    " send nothing
   else
     call TerminalEscapeCode(3, a:row, a:col, 'm')
   endif
@@ -114,7 +129,7 @@ func Test_term_mouse_left_click()
   set mouse=a term=xterm
   call setline(1, ['line 1', 'line 2', 'line 3 is a bit longer'])
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     go
@@ -363,7 +378,7 @@ func Test_term_mouse_click_tab()
   set mouse=a term=xterm
   let row = 1
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     e Xfoo
@@ -413,7 +428,7 @@ func Test_term_mouse_click_X_to_close_tab()
   let row = 1
   let col = &columns
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
     if ttymouse_val ==# 'xterm2' && col > 223
       " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
       continue
