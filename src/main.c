@@ -375,9 +375,9 @@ main
 	setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
 
-    /* This message comes before term inits, but after setting "silent_mode"
-     * when the input is not a tty. */
-    if (GARGCOUNT > 1 && !silent_mode)
+    // This message comes before term inits, but after setting "silent_mode"
+    // when the input is not a tty. Omit the message with --not-a-term.
+    if (GARGCOUNT > 1 && !silent_mode && !is_not_a_term())
 	printf(_("%d files to edit\n"), GARGCOUNT);
 
     if (params.want_full_screen && !silent_mode)
