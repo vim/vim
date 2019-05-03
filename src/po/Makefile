@@ -165,9 +165,13 @@ $(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_p
 		po/gvim.desktop.in po/vim.desktop.in
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
-%.desktop: %.desktop.in $(POFILES)
+vim.desktop: vim.desktop.in $(POFILES)
 	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
-	$(MSGFMT) --desktop -d . --template $< -o $@
+	$(MSGFMT) --desktop -d . --template vim.desktop.in -o vim.desktop
+
+gvim.desktop: gvim.desktop.in $(POFILES)
+	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o gvim.desktop
 
 update-po: $(LANGUAGES)
 
