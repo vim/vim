@@ -152,6 +152,17 @@ use <Esc> to abandon the search.
 All matches for the last used search pattern will be highlighted if you set
 the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command.
 
+When 'shortmess' does not include the "S" flag, Vim will automatically show an
+index, on which the cursor is. This can look like this: >
+
+  [1/5]		Cursor is on first of 5 matches.
+  [1/>99]	Cursor is on first of more than 99 matches.
+  [>99/>99]	Cursor is after 99 match of more than 99 matches.
+  [?/??]	Unknown how many matches exists, generating the
+		statistics was aborted because of search timeout.
+
+Note: the count does not take offset into account.
+
 When no match is found you get the error: *E486* Pattern not found
 Note that for the |:global| command this behaves like a normal message, for Vi
 compatibility.  For the |:s| command the "e" flag can be used to avoid the
@@ -292,6 +303,14 @@ Note that if you type with ten fingers, the characters are easy to remember:
 the "#" is under your left hand middle finger (search to the left and up) and
 the "*" is under your right hand middle finger (search to the right and down).
 (this depends on your keyboard layout though).
+
+								*E956*
+In very rare cases a regular expression is used recursively.  This can happen
+when executing a pattern takes a long time and when checking for messages on
+channels a callback is invoked that also uses a pattern or an autocommand is
+triggered.  In most cases this should be fine, but if a pattern is in use when
+it's used again it fails.  Usually this means there is something wrong with
+the pattern.
 
 								*E956*
 In very rare cases a regular expression is used recursively.  This can happen

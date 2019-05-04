@@ -1789,7 +1789,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'scrolloff'	+ 0		no scroll offset
 	'shelltemp'	- {unchanged}	{set vim default only on resetting 'cp'}
 	'shiftround'	+ off		indent not rounded to shiftwidth
-	'shortmess'	& ""		no shortening of messages
+	'shortmess'	& "S"		no shortening of messages
 	'showcmd'	& off		command characters not shown
 	'showmode'	& off		current mode not shown
 	'sidescrolloff'	+ 0		cursor moves to edge of screen in scroll
@@ -6563,8 +6563,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	function to get the effective shiftwidth value.
 
 						*'shortmess'* *'shm'*
-'shortmess' 'shm'	string	(Vim default "filnxtToO", Vi default: "",
-							POSIX default: "A")
+'shortmess' 'shm'	string	(Vim default "filnxtToOS", Vi default: "S",
+							POSIX default: "AS")
 			global
 	This option helps to avoid all the |hit-enter| prompts caused by file
 	messages, for example  with CTRL-G, and to avoid some other messages.
@@ -6604,6 +6604,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  q	use "recording" instead of "recording @a"
 	  F	don't give the file info when editing a file, like `:silent`
 		was used for the command
+	  S     do not show search count message when searching, e.g.
+	        "[1/5]"
 
 	This gives you the opportunity to avoid that a change between buffers
 	requires you to hit <Enter>, but still gives as useful a message as

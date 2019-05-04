@@ -26,6 +26,7 @@ static void show_pat_in_path(char_u *, int,
 #ifdef FEAT_VIMINFO
 static void wvsp_one(FILE *fp, int idx, char *s, int sc);
 #endif
+static void search_stat(int dirc, pos_T *pos, char_u  *msgbuf);
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1216,6 +1217,8 @@ do_search(
     char_u	    *dircp;
     char_u	    *strcopy = NULL;
     char_u	    *ps;
+    char_u	    *msgbuf = NULL;
+    size_t	    len;
 
     /*
      * A line offset is not remembered, this is vi compatible.
@@ -1374,28 +1377,51 @@ do_search(
 	if ((options & SEARCH_ECHO) && messaging()
 					    && !cmd_silent && msg_silent == 0)
 	{
-	    char_u	*msgbuf;
 	    char_u	*trunc;
+
+	    // Compute msg_row early.
+	    msg_start();
 
 	    if (*searchstr == NUL)
 		p = spats[0].pat;
 	    else
 		p = searchstr;
-	    msgbuf = alloc((unsigned)(STRLEN(p) + 40));
+
+	    if (!shortmess(SHM_SEARCHCOUNT))
+	    {
+		// Reserve enough space for the search pattern + offset +
+		// search stat.
+		if (msg_scrolled != 0)
+		    // Use all the columns.
+		    len = (int)(Rows - msg_row) * Columns - 1;
+		else
+		    // Use up to 'showcmd' column.
+		    len = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
+		if (len < STRLEN(p) + 40 + 11)
+		    len = STRLEN(p) + 40 + 11;
+	    }
+	    else
+		// Reserve enough space for the search pattern + offset.
+		len = STRLEN(p) + 40;
+
+	    msgbuf = alloc((int)len);
 	    if (msgbuf != NULL)
 	    {
+		vim_memset(msgbuf, ' ', len);
 		msgbuf[0] = dirc;
+		msgbuf[len - 1] = NUL;
+
 		if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
 		{
-		    /* Use a space to draw the composing char on. */
+		    // Use a space to draw the composing char on.
 		    msgbuf[1] = ' ';
-		    STRCPY(msgbuf + 2, p);
+		    STRNCPY(msgbuf + 2, p, STRLEN(p));
 		}
 		else
-		    STRCPY(msgbuf + 1, p);
+		    STRNCPY(msgbuf + 1, p, STRLEN(p));
 		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
 		{
-		    p = msgbuf + STRLEN(msgbuf);
+		    p = msgbuf + STRLEN(p) + 1;
 		    *p++ = dirc;
 		    if (spats[0].off.end)
 			*p++ = 'e';
@@ -1404,45 +1430,50 @@ do_search(
 		    if (spats[0].off.off > 0 || spats[0].off.line)
 			*p++ = '+';
 		    if (spats[0].off.off != 0 || spats[0].off.line)
-			sprintf((char *)p, "%ld", spats[0].off.off);
-		    else
-			*p = NUL;
+		    {
+			int l = 0;
+			l = sprintf((char *)p, "%ld", spats[0].off.off);
+			p[l] = ' '; // remove NUL from sprintf
+		    }
 		}
 
-		msg_start();
 		trunc = msg_strtrunc(msgbuf, FALSE);
+		if (trunc != NULL)
+		{
+		    vim_free(msgbuf);
+		    msgbuf = trunc;
+		}
 
 #ifdef FEAT_RIGHTLEFT
-		/* The search pattern could be shown on the right in rightleft
-		 * mode, but the 'ruler' and 'showcmd' area use it too, thus
-		 * it would be blanked out again very soon.  Show it on the
-		 * left, but do reverse the text. */
+		// The search pattern could be shown on the right in rightleft
+		// mode, but the 'ruler' and 'showcmd' area use it too, thus
+		// it would be blanked out again very soon.  Show it on the
+		// left, but do reverse the text.
 		if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 		{
 		    char_u *r;
 
-		    r = reverse_text(trunc != NULL ? trunc : msgbuf);
+		    r = reverse_text(msgbuf);
 		    if (r != NULL)
 		    {
-			vim_free(trunc);
-			trunc = r;
+			vim_free(msgbuf);
+			msgbuf = r;
+			// move reversed text to beginning of buffer
+			while (*r != NUL && *r == ' ')
+			    r++;
+			mch_memmove(msgbuf, r, msgbuf + STRLEN(msgbuf) - r);
+			// overwrite old text
+			vim_memset(r, ' ', msgbuf + STRLEN(msgbuf) - r);
 		    }
 		}
 #endif
-		if (trunc != NULL)
-		{
-		    msg_outtrans(trunc);
-		    vim_free(trunc);
-		}
-		else
-		    msg_outtrans(msgbuf);
+		msg_outtrans(msgbuf);
 		msg_clr_eos();
 		msg_check();
-		vim_free(msgbuf);
 
 		gotocmdline(FALSE);
 		out_flush();
-		msg_nowait = TRUE;	    /* don't wait for this message */
+		msg_nowait = TRUE;	    // don't wait for this message
 	    }
 	}
 
@@ -1488,7 +1519,13 @@ do_search(
 		RE_LAST, (linenr_T)0, tm, timed_out);
 
 	if (dircp != NULL)
-	    *dircp = dirc;	/* restore second '/' or '?' for normal_cmd() */
+	    *dircp = dirc;	// restore second '/' or '?' for normal_cmd()
+
+	if (!shortmess(SHM_SEARCH)
+		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
+			    || (dirc == '?' && LT_POS(curwin->w_cursor, pos))))
+	    ui_delay(500L, FALSE);  // leave some time for top_bot_msg
+
 	if (c == FAIL)
 	{
 	    retval = 0;
@@ -1537,6 +1574,15 @@ do_search(
 	    }
 	}
 
+	// Show [1/15] if 'S' is not in 'shortmess'.
+	if ((options & SEARCH_ECHO)
+		&& messaging()
+		&& !(cmd_silent + msg_silent)
+		&& c != FAIL
+		&& !shortmess(SHM_SEARCHCOUNT)
+		&& msgbuf != NULL)
+	    search_stat(dirc, &pos, msgbuf);
+
 	/*
 	 * The search command can be followed by a ';' to do another search.
 	 * For example: "/pat/;/foo/+3;?bar"
@@ -1567,6 +1613,7 @@ end_do_search:
     if ((options & SEARCH_KEEP) || cmdmod.keeppatterns)
 	spats[0].off = old_off;
     vim_free(strcopy);
+    vim_free(msgbuf);
 
     return retval;
 }
@@ -4856,6 +4903,124 @@ linewhite(linenr_T lnum)
     return (*p == NUL);
 }
 #endif
+
+/*
+ * Add the search count "[3/19]" to "msgbuf".
+ */
+    static void
+search_stat(
+    int	    dirc,
+    pos_T   *pos,
+    char_u  *msgbuf)
+{
+    int		    save_ws = p_ws;
+    int		    wraparound = FALSE;
+    pos_T	    p = (*pos);
+    static  pos_T   lastpos = {0, 0, 0};
+    static int	    cur = 0;
+    static int	    cnt = 0;
+    static int	    chgtick = 0;
+    static char_u   *lastpat = NULL;
+    static buf_T    *lbuf = NULL;
+#ifdef FEAT_RELTIME
+    proftime_T  start;
+#endif
+#define OUT_OF_TIME 999
+
+    wraparound = ((dirc == '?' && LT_POS(lastpos, p))
+	       || (dirc == '/' && LT_POS(p, lastpos)));
+
+    // If anything relevant changed the count has to be recomputed.
+    // MB_STRNICMP ignores case, but we should not ignore case.
+    // Unfortunately, there is no MB_STRNICMP function.
+    if (!(chgtick == CHANGEDTICK(curbuf)
+	&& MB_STRNICMP(lastpat, spats[last_idx].pat, STRLEN(lastpat)) == 0
+	&& STRLEN(lastpat) == STRLEN(spats[last_idx].pat)
+	&& EQUAL_POS(lastpos, curwin->w_cursor)
+	&& lbuf == curbuf) || wraparound || cur < 0 || cur > 99)
+    {
+	cur = 0;
+	cnt = 0;
+	CLEAR_POS(&lastpos);
+	lbuf = curbuf;
+    }
+
+    if (EQUAL_POS(lastpos, curwin->w_cursor) && !wraparound
+					&& (dirc == '/' ? cur < cnt : cur > 0))
+	cur += dirc == '/' ? 1 : -1;
+    else
+    {
+	p_ws = FALSE;
+#ifdef FEAT_RELTIME
+	profile_setlimit(20L, &start);
+#endif
+	while (!got_int && searchit(curwin, curbuf, &lastpos, NULL,
+				   FORWARD, NULL, 1, SEARCH_PEEK + SEARCH_KEEP,
+				     RE_LAST, (linenr_T)0, NULL, NULL) != FAIL)
+	{
+#ifdef FEAT_RELTIME
+	    // Stop after passing the time limit.
+	    if (profile_passed_limit(&start))
+	    {
+		cnt = OUT_OF_TIME;
+		cur = OUT_OF_TIME;
+		break;
+	    }
+#endif
+	    cnt++;
+	    if (LTOREQ_POS(lastpos, p))
+		cur++;
+	    fast_breakcheck();
+	    if (cnt > 99)
+		break;
+	}
+	if (got_int)
+	    cur = -1; // abort
+    }
+    if (cur > 0)
+    {
+#define STAT_BUF_LEN 10
+	char	t[STAT_BUF_LEN] = "";
+
+#ifdef FEAT_RIGHTLEFT
+	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
+	{
+	    if (cur == OUT_OF_TIME)
+		vim_snprintf(t, STAT_BUF_LEN, "[?/??]");
+	    else if (cnt > 99 && cur > 99)
+		vim_snprintf(t, STAT_BUF_LEN, "[>99/>99]");
+	    else if (cnt > 99)
+		vim_snprintf(t, STAT_BUF_LEN, "[>99/%d]", cur);
+	    else
+		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cnt, cur);
+	}
+	else
+#endif
+	{
+	    if (cur == OUT_OF_TIME)
+		vim_snprintf(t, STAT_BUF_LEN, "[?/??]");
+	    else if (cnt > 99 && cur > 99)
+		vim_snprintf(t, STAT_BUF_LEN, "[>99/>99]");
+	    else if (cnt > 99)
+		vim_snprintf(t, STAT_BUF_LEN, "[%d/>99]", cur);
+	    else
+		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cur, cnt);
+	}
+	STRNCPY(msgbuf + STRLEN(msgbuf) - STRLEN(t), t, STRLEN(t));
+	if (dirc == '?' && cur == 100)
+	    cur = -1;
+
+	vim_free(lastpat);
+	lastpat = vim_strsave(spats[last_idx].pat);
+	chgtick = CHANGEDTICK(curbuf);
+	lbuf    = curbuf;
+	lastpos = p;
+
+	// keep the message even after redraw
+	give_warning(msgbuf, FALSE);
+    }
+    p_ws = save_ws;
+}
 
 #if defined(FEAT_FIND_ID) || defined(PROTO)
 /*
