@@ -2488,7 +2488,7 @@ winbar_click(win_T *wp, int col)
 
 	if (col >= item->wb_startcol && col <= item->wb_endcol)
 	{
-	    win_T *save_curwin = NULL;
+	    win_T   *save_curwin = NULL;
 	    pos_T   save_visual = VIsual;
 	    int	    save_visual_active = VIsual_active;
 	    int	    save_visual_select = VIsual_select;
@@ -2506,9 +2506,10 @@ winbar_click(win_T *wp, int col)
 		check_cursor();
 	    }
 
+	    // Note: the command might close the current window.
 	    execute_menu(NULL, item->wb_menu, -1);
 
-	    if (save_curwin != NULL)
+	    if (save_curwin != NULL && win_valid(save_curwin))
 	    {
 		curwin = save_curwin;
 		curbuf = curwin->w_buffer;
@@ -2518,6 +2519,8 @@ winbar_click(win_T *wp, int col)
 		VIsual_reselect = save_visual_reselect;
 		VIsual_mode = save_visual_mode;
 	    }
+	    if (!win_valid(wp))
+		break;
 	}
     }
 }
