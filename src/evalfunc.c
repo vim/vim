@@ -456,6 +456,7 @@ static void f_test_null_string(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_GUI
 static void f_test_scrollbar(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_test_setmouse(typval_T *argvars, typval_T *rettv);
 static void f_test_settime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_tan(typval_T *argvars, typval_T *rettv);
@@ -993,6 +994,7 @@ static struct fst
 #ifdef FEAT_GUI
     {"test_scrollbar",	3, 3, f_test_scrollbar},
 #endif
+    {"test_setmouse",	2, 2, f_test_setmouse},
     {"test_settime",	1, 1, f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, f_timer_info},
@@ -14492,6 +14494,13 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 # endif
 }
 #endif
+
+    static void
+f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    mouse_row = (time_t)tv_get_number(&argvars[0]) - 1;
+    mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
+}
 
     static void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)

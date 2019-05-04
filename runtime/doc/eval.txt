@@ -2700,6 +2700,7 @@ test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
+test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
@@ -9840,6 +9841,13 @@ test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
 		otherwise it's like clicking in the scrollbar.
 		Only works when the {which} scrollbar actually exists,
 		obviously only when using the GUI.
+
+test_setmouse({row}, {col})				*test_setmouse()*
+		Set the mouse position to be used for the next mouse action.
+		{row} and {col} are one based.
+		For example: >
+			call test_setmouse(4, 20)
+			call feedkeys("\<LeftMouse>", "xt")
 
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
