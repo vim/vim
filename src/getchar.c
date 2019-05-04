@@ -3095,7 +3095,7 @@ inchar(
 
 /*
  * Fix typed characters for use by vgetc() and check_termcode().
- * buf[] must have room to triple the number of bytes!
+ * "buf[]" must have room to triple the number of bytes!
  * Returns the new length.
  */
     int
@@ -3135,14 +3135,15 @@ fix_input_buffer(char_u *buf, int len)
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
-		    /* timeout may generate K_CURSORHOLD */
+		    // timeout may generate K_CURSORHOLD
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
 #if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+		    // Win32 console passes modifiers
+		    && (
 # ifdef VIMDLL
-		    && !gui.in_use
+			gui.in_use ||
 # endif
-		    /* Win32 console passes modifiers */
-		    && (i < 2 || p[1] != KS_MODIFIER)
+			(i < 2 || p[1] != KS_MODIFIER))
 #endif
 		    ))
 	{
@@ -3154,7 +3155,7 @@ fix_input_buffer(char_u *buf, int len)
 	    len += 2;
 	}
     }
-    *p = NUL;		/* add trailing NUL */
+    *p = NUL;		// add trailing NUL
     return len;
 }
 
