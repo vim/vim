@@ -7022,7 +7022,7 @@ mch_rename(const char *src, const char *dest)
 }
 #endif /* !HAVE_RENAME */
 
-#ifdef FEAT_MOUSE_GPM
+#if defined(FEAT_MOUSE_GPM) || defined(PROTO)
 /*
  * Initializes connection with gpm (if it isn't already opened)
  * Return 1 if succeeded (or connection already opened), 0 if failed
@@ -7059,12 +7059,21 @@ gpm_open(void)
 }
 
 /*
+ * Returns TRUE if the GPM mouse is enabled.
+ */
+    int
+gpm_enabled(void)
+{
+    return gpm_flag && gpm_fd >= 0;
+}
+
+/*
  * Closes connection to gpm
  */
     static void
 gpm_close(void)
 {
-    if (gpm_flag && gpm_fd >= 0) /* if Open */
+    if (gpm_enabled())
 	Gpm_Close();
 }
 

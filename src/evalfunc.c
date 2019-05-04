@@ -6810,6 +6810,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "netbeans_enabled") == 0)
 	    n = netbeans_active();
 #endif
+#ifdef FEAT_MOUSE_GPM
+	else if (STRICMP(name, "mouse_gpm_enabled") == 0)
+	    n = gpm_enabled();
+#endif
 #if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "terminal") == 0)
 	    n = terminal_enabled();
