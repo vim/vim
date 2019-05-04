@@ -19,6 +19,7 @@ linenr_T qf_current_entry(win_T *wp);
 int grep_internal(cmdidx_T cmdidx);
 void ex_make(exarg_T *eap);
 int qf_get_size(exarg_T *eap);
+int qf_get_valid_size(exarg_T *eap);
 int qf_get_cur_idx(exarg_T *eap);
 int qf_get_cur_valid_idx(exarg_T *eap);
 void ex_cc(exarg_T *eap);

@@ -9595,14 +9595,27 @@ assert_beeps(typval_T *argvars)
     return ret;
 }
 
+    static void
+assert_append_cmd_or_arg(garray_T *gap, typval_T *argvars, char_u *cmd)
+{
+    char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
+
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
+    {
+	ga_concat(gap, echo_string(&argvars[2], &tofree, numbuf, 0));
+	vim_free(tofree);
+    }
+    else
+	ga_concat(gap, cmd);
+}
+
     int
 assert_fails(typval_T *argvars)
 {
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
-    char_u	numbuf[NUMBUFLEN];
-    char_u	*tofree;
 
     called_emsg = FALSE;
     suppress_errthrow = TRUE;
@@ -9612,14 +9625,7 @@ assert_fails(typval_T *argvars)
     {
 	prepare_assert_error(&ga);
 	ga_concat(&ga, (char_u *)"command did not fail: ");
-	if (argvars[1].v_type != VAR_UNKNOWN
-					   && argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
-	    vim_free(tofree);
-	}
-	else
-	    ga_concat(&ga, cmd);
+	assert_append_cmd_or_arg(&ga, argvars, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
 	ret = 1;
@@ -9635,6 +9641,8 @@ assert_fails(typval_T *argvars)
 	    prepare_assert_error(&ga);
 	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
 				     &vimvars[VV_ERRMSG].vv_tv, ASSERT_OTHER);
+	    ga_concat(&ga, (char_u *)": ");
+	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	ret = 1;
