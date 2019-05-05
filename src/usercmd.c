@@ -20,7 +20,7 @@ typedef struct ucmd
     char_u	*uc_rep;	// The command's replacement string
     long	uc_def;		// The default value for a range/count
     int		uc_compl;	// completion type
-    int		uc_addr_type;	// The command's address type
+    cmd_addr_T	uc_addr_type;	// The command's address type
 # ifdef FEAT_EVAL
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
 #  ifdef FEAT_CMDL_COMPL
@@ -101,9 +101,9 @@ static struct
  */
 static struct
 {
-    int	    expand;
-    char    *name;
-    char    *shortname;
+    cmd_addr_T	expand;
+    char	*name;
+    char	*shortname;
 } addr_type_complete[] =
 {
     {ADDR_ARGUMENTS, "arguments", "arg"},
@@ -114,7 +114,7 @@ static struct
     {ADDR_WINDOWS, "windows", "win"},
     {ADDR_QUICKFIX, "quickfix", "qf"},
     {ADDR_OTHER, "other", "?"},
-    {-1, NULL, NULL}
+    {ADDR_NONE, NULL, NULL}
 };
 
 #define UC_BUFFER	1	// -buffer: local to current buffer
@@ -131,7 +131,7 @@ find_ucmd(
     char_u	*p,	// end of the command (possibly including count)
     int		*full,	// set to TRUE for a full match
     expand_T	*xp,	// used for completion, NULL otherwise
-    int		*compl UNUSED)	// completion flags or NULL
+    int		*complp UNUSED)	// completion flags or NULL
 {
     int		len = (int)(p - eap->cmd);
     int		j, k, matchlen = 0;
@@ -188,8 +188,8 @@ find_ucmd(
 		    eap->addr_type = uc->uc_addr_type;
 
 # ifdef FEAT_CMDL_COMPL
-		    if (compl != NULL)
-			*compl = uc->uc_compl;
+		    if (complp != NULL)
+			*complp = uc->uc_compl;
 #  ifdef FEAT_EVAL
 		    if (xp != NULL)
 		    {
@@ -495,7 +495,7 @@ uc_list(char_u *name, size_t name_len)
 	    } while (len < 8 - over);
 
 	    // Address Type
-	    for (j = 0; addr_type_complete[j].expand != -1; ++j)
+	    for (j = 0; addr_type_complete[j].expand != ADDR_NONE; ++j)
 		if (addr_type_complete[j].expand != ADDR_LINES
 			&& addr_type_complete[j].expand == cmd->uc_addr_type)
 		{
@@ -566,12 +566,11 @@ uc_fun_cmd(void)
 parse_addr_type_arg(
     char_u	*value,
     int		vallen,
-    long	*argt,
-    int		*addr_type_arg)
+    cmd_addr_T	*addr_type_arg)
 {
     int	    i, a, b;
 
-    for (i = 0; addr_type_complete[i].expand != -1; ++i)
+    for (i = 0; addr_type_complete[i].expand != ADDR_NONE; ++i)
     {
 	a = (int)STRLEN(addr_type_complete[i].name) == vallen;
 	b = STRNCMP(value, addr_type_complete[i].name, vallen) == 0;
@@ -582,7 +581,7 @@ parse_addr_type_arg(
 	}
     }
 
-    if (addr_type_complete[i].expand == -1)
+    if (addr_type_complete[i].expand == ADDR_NONE)
     {
 	char_u	*err = value;
 
@@ -592,9 +591,6 @@ parse_addr_type_arg(
 	semsg(_("E180: Invalid address type value: %s"), err);
 	return FAIL;
     }
-
-    if (*addr_type_arg != ADDR_LINES)
-	*argt |= NOTADR;
 
     return OK;
 }
@@ -692,9 +688,9 @@ uc_scan_attr(
     long	*argt,
     long	*def,
     int		*flags,
-    int		*compl,
+    int		*complp,
     char_u	**compl_arg,
-    int		*addr_type_arg)
+    cmd_addr_T	*addr_type_arg)
 {
     char_u	*p;
 
@@ -773,7 +769,7 @@ two_count:
 		}
 
 		*def = getdigits(&p);
-		*argt |= (ZEROR | NOTADR);
+		*argt |= ZEROR;
 
 		if (p != val + vallen || vallen == 0)
 		{
@@ -782,10 +778,16 @@ invalid_count:
 		    return FAIL;
 		}
 	    }
+	    // default for -range is using buffer lines
+	    if (*addr_type_arg == ADDR_NONE)
+		*addr_type_arg = ADDR_LINES;
 	}
 	else if (STRNICMP(attr, "count", attrlen) == 0)
 	{
-	    *argt |= (COUNT | ZEROR | RANGE | NOTADR);
+	    *argt |= (COUNT | ZEROR | RANGE);
+	    // default for -count is using any number
+	    if (*addr_type_arg == ADDR_NONE)
+		*addr_type_arg = ADDR_OTHER;
 
 	    if (val != NULL)
 	    {
@@ -810,7 +812,7 @@ invalid_count:
 		return FAIL;
 	    }
 
-	    if (parse_compl_arg(val, (int)vallen, compl, argt, compl_arg)
+	    if (parse_compl_arg(val, (int)vallen, complp, argt, compl_arg)
 								      == FAIL)
 		return FAIL;
 	}
@@ -822,11 +824,10 @@ invalid_count:
 		emsg(_("E179: argument required for -addr"));
 		return FAIL;
 	    }
-	    if (parse_addr_type_arg(val, (int)vallen, argt, addr_type_arg)
-								      == FAIL)
+	    if (parse_addr_type_arg(val, (int)vallen, addr_type_arg) == FAIL)
 		return FAIL;
-	    if (addr_type_arg != ADDR_LINES)
-		*argt |= (ZEROR | NOTADR) ;
+	    if (*addr_type_arg != ADDR_LINES)
+		*argt |= ZEROR;
 	}
 	else
 	{
@@ -854,7 +855,7 @@ uc_add_command(
     int		flags,
     int		compl,
     char_u	*compl_arg UNUSED,
-    int		addr_type,
+    cmd_addr_T	addr_type,
     int		force)
 {
     ucmd_T	*cmd = NULL;
@@ -974,17 +975,17 @@ fail:
     void
 ex_command(exarg_T *eap)
 {
-    char_u  *name;
-    char_u  *end;
-    char_u  *p;
-    long    argt = 0;
-    long    def = -1;
-    int	    flags = 0;
-    int	    compl = EXPAND_NOTHING;
-    char_u  *compl_arg = NULL;
-    int	    addr_type_arg = ADDR_LINES;
-    int	    has_attr = (eap->arg[0] == '-');
-    int	    name_len;
+    char_u	*name;
+    char_u	*end;
+    char_u	*p;
+    long	argt = 0;
+    long	def = -1;
+    int		flags = 0;
+    int		compl = EXPAND_NOTHING;
+    char_u	*compl_arg = NULL;
+    cmd_addr_T	addr_type_arg = ADDR_NONE;
+    int		has_attr = (eap->arg[0] == '-');
+    int		name_len;
 
     p = eap->arg;
 
@@ -1044,7 +1045,8 @@ ex_command(exarg_T *eap)
 ex_comclear(exarg_T *eap UNUSED)
 {
     uc_clear(&ucmds);
-    uc_clear(&curbuf->b_ucmds);
+    if (curbuf != NULL)
+	uc_clear(&curbuf->b_ucmds);
 }
 
 /*

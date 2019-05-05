@@ -1987,7 +1987,7 @@ autoconf:
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim -u NONE -i NONE -X -S create_cmdidxs.vim
+	vim --clean -X -u create_cmdidxs.vim
 
 
 # The normal command to compile a .c file to its .o file.
@@ -2556,9 +2556,14 @@ install-icons:
 	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim16x16.png $(ICON16PATH)/gvim.png; \
 	fi
 	if test -d $(DESKTOPPATH) -a -w $(DESKTOPPATH); then \
-	   $(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop \
-		$(SCRIPTSOURCE)/gvim.desktop \
-		$(DESKTOPPATH); \
+	   if test -f po/vim.desktop -a -f po/gvim.desktop; then \
+		$(INSTALL_DATA) po/vim.desktop po/gvim.desktop \
+			$(DESKTOPPATH); \
+	   else \
+		$(INSTALL_DATA) $(SCRIPTSOURCE)/vim.desktop \
+			$(SCRIPTSOURCE)/gvim.desktop \
+			$(DESKTOPPATH); \
+	   fi; \
 	   if test -z "$(DESTDIR)" -a -x "$(UPDATE_DESKTOP_DATABASE)"; then \
 	      $(UPDATE_DESKTOP_DATABASE) -q $(DESKTOPPATH); \
 	   fi \
@@ -2784,7 +2789,7 @@ shadow:	runtime pixmaps
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
-	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/*.in ../../po/Makefile .
+	cd $(SHADOWDIR)/po; ln -s ../../po/*.po ../../po/*.mak ../../po/*.vim ../../po/*.in ../../po/Makefile ../../po/*.c .
 	cd $(SHADOWDIR); rm -f auto/link.sed
 	cp Makefile configure $(SHADOWDIR)
 	rm -f $(SHADOWDIR)/auto/config.mk $(SHADOWDIR)/config.mk.dist

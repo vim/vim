@@ -2132,7 +2132,7 @@ ex_listdo(exarg_T *eap)
 	else if (eap->cmdidx == CMD_cdo || eap->cmdidx == CMD_ldo
 		|| eap->cmdidx == CMD_cfdo || eap->cmdidx == CMD_lfdo)
 	{
-	    qf_size = qf_get_size(eap);
+	    qf_size = qf_get_valid_size(eap);
 	    if (qf_size <= 0 || eap->line1 > qf_size)
 		buf = NULL;
 	    else

@@ -1604,7 +1604,7 @@ vgetc(void)
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
 #ifdef FEAT_GUI
-		    || c == CSI
+		    || (gui.in_use && c == CSI)
 #endif
 	       )
 	    {
@@ -1659,19 +1659,23 @@ vgetc(void)
 		}
 #endif
 #ifdef FEAT_GUI
-		// Handle focus event here, so that the caller doesn't need to
-		// know about it.  Return K_IGNORE so that we loop once (needed
-		// if 'lazyredraw' is set).
-		if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		if (gui.in_use)
 		{
-		    ui_focus_change(c == K_FOCUSGAINED);
-		    c = K_IGNORE;
-		}
+		    // Handle focus event here, so that the caller doesn't
+		    // need to know about it.  Return K_IGNORE so that we loop
+		    // once (needed if 'lazyredraw' is set).
+		    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		    {
+			ui_focus_change(c == K_FOCUSGAINED);
+			c = K_IGNORE;
+		    }
 
-		// Translate K_CSI to CSI.  The special key is only used to
-		// avoid it being recognized as the start of a special key.
-		if (c == K_CSI)
-		    c = CSI;
+		    // Translate K_CSI to CSI.  The special key is only used
+		    // to avoid it being recognized as the start of a special
+		    // key.
+		    if (c == K_CSI)
+			c = CSI;
+		}
 #endif
 	    }
 	    // a keypad or special function key was not mapped, use it like
@@ -1749,7 +1753,7 @@ vgetc(void)
 		    buf[i] = vgetorpeek(TRUE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
-			    || buf[i] == CSI
+			    || (gui.in_use && buf[i] == CSI)
 #endif
 			    )
 		    {
@@ -3091,7 +3095,7 @@ inchar(
 
 /*
  * Fix typed characters for use by vgetc() and check_termcode().
- * buf[] must have room to triple the number of bytes!
+ * "buf[]" must have room to triple the number of bytes!
  * Returns the new length.
  */
     int
@@ -3131,14 +3135,15 @@ fix_input_buffer(char_u *buf, int len)
 	else
 #endif
 	if (p[0] == NUL || (p[0] == K_SPECIAL
-		    /* timeout may generate K_CURSORHOLD */
+		    // timeout may generate K_CURSORHOLD
 		    && (i < 2 || p[1] != KS_EXTRA || p[2] != (int)KE_CURSORHOLD)
 #if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+		    // Win32 console passes modifiers
+		    && (
 # ifdef VIMDLL
-		    && !gui.in_use
+			gui.in_use ||
 # endif
-		    /* Win32 console passes modifiers */
-		    && (i < 2 || p[1] != KS_MODIFIER)
+			(i < 2 || p[1] != KS_MODIFIER))
 #endif
 		    ))
 	{
@@ -3150,7 +3155,7 @@ fix_input_buffer(char_u *buf, int len)
 	    len += 2;
 	}
     }
-    *p = NUL;		/* add trailing NUL */
+    *p = NUL;		// add trailing NUL
     return len;
 }
 
@@ -4259,7 +4264,7 @@ set_context_in_map_cmd(
 }
 
 /*
- * Find all mapping/abbreviation names that match regexp 'prog'.
+ * Find all mapping/abbreviation names that match regexp "regmatch"'.
  * For command line expansion of ":[un]map" and ":[un]abbrev" in all modes.
  * Return OK if matches found, FAIL otherwise.
  */
@@ -4339,7 +4344,7 @@ ExpandMappings(
 	    {
 		if (mp->m_mode & expand_mapmodes)
 		{
-		    p = translate_mapping(mp->m_keys, TRUE);
+		    p = translate_mapping(mp->m_keys);
 		    if (p != NULL && vim_regexec(regmatch, p, (colnr_T)0))
 		    {
 			if (round == 1)

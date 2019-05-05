@@ -2205,14 +2205,19 @@ mch_settitle(char_u *title, char_u *icon)
     void
 mch_restore_title(int which)
 {
+    int	do_push_pop = did_set_title || did_set_icon;
+
     /* only restore the title or icon when it has been set */
     mch_settitle(((which & SAVE_RESTORE_TITLE) && did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
 	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
 
-    // pop and push from/to the stack
-    term_pop_title(which);
-    term_push_title(which);
+    if (do_push_pop)
+    {
+	// pop and push from/to the stack
+	term_pop_title(which);
+	term_push_title(which);
+    }
 }
 
 #endif /* FEAT_TITLE */
@@ -3789,7 +3794,10 @@ check_mouse_termcode(void)
 	    && !gui.in_use
 #  endif
 	    )
-	set_mouse_termcode(KS_MOUSE, (char_u *)IF_EB("\033MG", ESC_STR "MG"));
+	set_mouse_termcode(KS_GPM_MOUSE,
+				      (char_u *)IF_EB("\033MG", ESC_STR "MG"));
+    else
+	del_mouse_termcode(KS_GPM_MOUSE);
 # endif
 
 # ifdef FEAT_SYSMOUSE
@@ -5940,7 +5948,8 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
     if (WantQueryMouse)
     {
 	WantQueryMouse = FALSE;
-	mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
+	if (!no_query_mouse_for_testing)
+	    mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
     }
 #endif
 
@@ -7013,7 +7022,7 @@ mch_rename(const char *src, const char *dest)
 }
 #endif /* !HAVE_RENAME */
 
-#ifdef FEAT_MOUSE_GPM
+#if defined(FEAT_MOUSE_GPM) || defined(PROTO)
 /*
  * Initializes connection with gpm (if it isn't already opened)
  * Return 1 if succeeded (or connection already opened), 0 if failed
@@ -7050,16 +7059,26 @@ gpm_open(void)
 }
 
 /*
+ * Returns TRUE if the GPM mouse is enabled.
+ */
+    int
+gpm_enabled(void)
+{
+    return gpm_flag && gpm_fd >= 0;
+}
+
+/*
  * Closes connection to gpm
  */
     static void
 gpm_close(void)
 {
-    if (gpm_flag && gpm_fd >= 0) /* if Open */
+    if (gpm_enabled())
 	Gpm_Close();
 }
 
-/* Reads gpm event and adds special keys to input buf. Returns length of
+/*
+ * Reads gpm event and adds special keys to input buf. Returns length of
  * generated key sequence.
  * This function is styled after gui_send_mouse_event().
  */

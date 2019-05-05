@@ -3129,7 +3129,7 @@ logfont2name(LOGFONTW lf)
 	if (lf.lfWeight == FW_NORMAL || lf.lfWeight == FW_BOLD)
 	    sprintf((char *)p, "%s:h%d", font_name, points);
 	else
-	    sprintf((char *)p, "%s:h%d:W%d", font_name, points, lf.lfWeight);
+	    sprintf((char *)p, "%s:h%d:W%ld", font_name, points, lf.lfWeight);
 	while (*p)
 	{
 	    if (*p == ' ')

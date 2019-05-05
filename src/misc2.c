@@ -1068,7 +1068,7 @@ free_all_mem(void)
 
     /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
     p_ea = FALSE;
-    if (first_tabpage->tp_next != NULL)
+    if (first_tabpage != NULL && first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (!ONE_WINDOW)
 	do_cmdline_cmd((char_u *)"only!");
@@ -1085,29 +1085,33 @@ free_all_mem(void)
     // Clear user commands (before deleting buffers).
     ex_comclear(NULL);
 
+    // When exiting from mainerr_arg_missing curbuf has not been initialized,
+    // and not much else.
+    if (curbuf != NULL)
+    {
 # ifdef FEAT_MENU
-    /* Clear menus. */
-    do_cmdline_cmd((char_u *)"aunmenu *");
+	// Clear menus.
+	do_cmdline_cmd((char_u *)"aunmenu *");
 #  ifdef FEAT_MULTI_LANG
-    do_cmdline_cmd((char_u *)"menutranslate clear");
+	do_cmdline_cmd((char_u *)"menutranslate clear");
 #  endif
 # endif
-
-    /* Clear mappings, abbreviations, breakpoints. */
-    do_cmdline_cmd((char_u *)"lmapclear");
-    do_cmdline_cmd((char_u *)"xmapclear");
-    do_cmdline_cmd((char_u *)"mapclear");
-    do_cmdline_cmd((char_u *)"mapclear!");
-    do_cmdline_cmd((char_u *)"abclear");
+	// Clear mappings, abbreviations, breakpoints.
+	do_cmdline_cmd((char_u *)"lmapclear");
+	do_cmdline_cmd((char_u *)"xmapclear");
+	do_cmdline_cmd((char_u *)"mapclear");
+	do_cmdline_cmd((char_u *)"mapclear!");
+	do_cmdline_cmd((char_u *)"abclear");
 # if defined(FEAT_EVAL)
-    do_cmdline_cmd((char_u *)"breakdel *");
+	do_cmdline_cmd((char_u *)"breakdel *");
 # endif
 # if defined(FEAT_PROFILE)
-    do_cmdline_cmd((char_u *)"profdel *");
+	do_cmdline_cmd((char_u *)"profdel *");
 # endif
 # if defined(FEAT_KEYMAP)
-    do_cmdline_cmd((char_u *)"set keymap=");
+	do_cmdline_cmd((char_u *)"set keymap=");
 #endif
+    }
 
 # ifdef FEAT_TITLE
     free_titles();
@@ -1142,7 +1146,8 @@ free_all_mem(void)
     set_expr_line(NULL);
 # endif
 # ifdef FEAT_DIFF
-    diff_clear(curtab);
+    if (curtab != NULL)
+	diff_clear(curtab);
 # endif
     clear_sb_text(TRUE);	      /* free any scrollback text */
 
@@ -1172,17 +1177,18 @@ free_all_mem(void)
 	tabpage_T   *tab;
 
 	qf_free_all(NULL);
-	/* Free all location lists */
+	// Free all location lists
 	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
 #endif
 
-    /* Close all script inputs. */
+    // Close all script inputs.
     close_all_scripts();
 
-    /* Destroy all windows.  Must come before freeing buffers. */
-    win_free_all();
+    if (curwin != NULL)
+	// Destroy all windows.  Must come before freeing buffers.
+	win_free_all();
 
     /* Free all option values.  Must come after closing windows. */
     free_all_options();
@@ -1223,8 +1229,11 @@ free_all_mem(void)
 
     reset_last_sourcing();
 
-    free_tabpage(first_tabpage);
-    first_tabpage = NULL;
+    if (first_tabpage != NULL)
+    {
+	free_tabpage(first_tabpage);
+	first_tabpage = NULL;
+    }
 
 # ifdef UNIX
     /* Machine-specific free. */

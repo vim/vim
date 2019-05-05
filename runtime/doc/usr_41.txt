@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Apr 06
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 May 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -955,6 +955,7 @@ Testing:				    *test-functions*
 	test_null_partial()	return a null Partial function
 	test_null_string()	return a null String
 	test_settime()		set the time Vim uses internally
+	test_setmouse()		set the mouse position
 	test_feedinput()	add key sequence to input buffer
 	test_option_not_set()	reset flag indicating option was set
 	test_scrollbar()	simulate scrollbar movement in the GUI

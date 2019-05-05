@@ -192,8 +192,7 @@ GUI = yes
 DIRECTX = $(GUI)
 !endif
 
-# Select one of eight object code directories, depends on GUI, OLE, DEBUG and
-# interfaces.
+# Select a code directory, depends on GUI, OLE, DEBUG, interfaces and etc.
 # If you change something else, do "make clean" first!
 !if "$(VIMDLL)" == "yes"
 OBJDIR = .\ObjD
@@ -202,7 +201,7 @@ OBJDIR = .\ObjG
 !else
 OBJDIR = .\ObjC
 !endif
-!if "$(DIRECTX)" == "yes"
+!if "$(DIRECTX)" == "yes" && "$(GUI)" == "yes"
 OBJDIR = $(OBJDIR)X
 !endif
 !if "$(OLE)" == "yes"
@@ -228,6 +227,9 @@ OBJDIR = $(OBJDIR)R
 !endif
 !ifdef MZSCHEME
 OBJDIR = $(OBJDIR)Z
+!endif
+!ifdef USE_MSVCRT
+OBJDIR = $(OBJDIR)V
 !endif
 !if "$(DEBUG)" == "yes"
 OBJDIR = $(OBJDIR)d

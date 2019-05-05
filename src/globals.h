@@ -1613,11 +1613,12 @@ EXTERN int  alloc_fail_countdown INIT(= -1);
 /* set by alloc_fail(), number of times alloc() returns NULL */
 EXTERN int  alloc_fail_repeat INIT(= 0);
 
-/* flags set by test_override() */
+// flags set by test_override()
 EXTERN int  disable_char_avail_for_testing INIT(= FALSE);
 EXTERN int  disable_redraw_for_testing INIT(= FALSE);
 EXTERN int  ignore_redraw_flag_for_testing INIT(= FALSE);
 EXTERN int  nfa_fail_for_testing INIT(= FALSE);
+EXTERN int  no_query_mouse_for_testing INIT(= FALSE);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif

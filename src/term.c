@@ -4396,9 +4396,6 @@ check_termcode(
 # endif
 #endif
     int		cpo_koffset;
-#ifdef FEAT_MOUSE_GPM
-    extern int	gpm_flag; /* gpm library variable */
-#endif
 
     cpo_koffset = (vim_strchr(p_cpo, CPO_KOFFSET) != NULL);
 
@@ -4551,10 +4548,11 @@ check_termcode(
 			    continue;	/* no match */
 			else
 			{
-			    /* Skip over the digits, the final char must
-			     * follow. */
+			    // Skip over the digits, the final char must
+			    // follow. URXVT can use a negative value, thus
+			    // also accept '-'.
 			    for (j = slen - 2; j < len && (isdigit(tp[j])
-							 || tp[j] == ';'); ++j)
+				       || tp[j] == '-' || tp[j] == ';'); ++j)
 				;
 			    ++j;
 			    if (len < j)	/* got a partial sequence */
@@ -5121,6 +5119,9 @@ check_termcode(
 	 * If it is a mouse click, get the coordinates.
 	 */
 	if (key_name[0] == KS_MOUSE
+# ifdef FEAT_MOUSE_GPM
+		|| key_name[0] == KS_GPM_MOUSE
+# endif
 # ifdef FEAT_MOUSE_JSB
 		|| key_name[0] == KS_JSBTERM_MOUSE
 # endif
@@ -5143,7 +5144,11 @@ check_termcode(
 
 # if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
 	    || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
-	    if (key_name[0] == (int)KS_MOUSE)
+	    if (key_name[0] == KS_MOUSE
+#  ifdef FEAT_MOUSE_GPM
+		    || key_name[0] == KS_GPM_MOUSE
+#  endif
+	       )
 	    {
 		/*
 		 * For xterm we get "<t_mouse>scr", where
@@ -5273,9 +5278,12 @@ check_termcode(
 		modifiers = 0;
 	    }
 
-	if (key_name[0] == (int)KS_MOUSE
+	if (key_name[0] == KS_MOUSE
+#  ifdef FEAT_MOUSE_GPM
+	    || key_name[0] == KS_GPM_MOUSE
+#  endif
 #  ifdef FEAT_MOUSE_URXVT
-	    || key_name[0] == (int)KS_URXVT_MOUSE
+	    || key_name[0] == KS_URXVT_MOUSE
 #  endif
 	    || key_name[0] == KS_SGR_MOUSE
 	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
@@ -5292,7 +5300,7 @@ check_termcode(
 			&& !gui.in_use
 #   endif
 #   ifdef FEAT_MOUSE_GPM
-			&& gpm_flag == 0
+			&& key_name[0] != KS_GPM_MOUSE
 #   endif
 			)
 		{
@@ -5341,7 +5349,7 @@ check_termcode(
 	    }
 # endif /* !UNIX || FEAT_MOUSE_XTERM */
 # ifdef FEAT_MOUSE_NET
-	    if (key_name[0] == (int)KS_NETTERM_MOUSE)
+	    if (key_name[0] == KS_NETTERM_MOUSE)
 	    {
 		int mc, mr;
 
@@ -5364,7 +5372,7 @@ check_termcode(
 	    }
 # endif	/* FEAT_MOUSE_NET */
 # ifdef FEAT_MOUSE_JSB
-	    if (key_name[0] == (int)KS_JSBTERM_MOUSE)
+	    if (key_name[0] == KS_JSBTERM_MOUSE)
 	    {
 		int mult, val, iter, button, status;
 
@@ -5488,7 +5496,7 @@ check_termcode(
 	    }
 # endif /* FEAT_MOUSE_JSB */
 # ifdef FEAT_MOUSE_DEC
-	    if (key_name[0] == (int)KS_DEC_MOUSE)
+	    if (key_name[0] == KS_DEC_MOUSE)
 	    {
 	       /* The DEC Locator Input Model
 		* Netterm delivers the code sequence:
@@ -5623,7 +5631,7 @@ check_termcode(
 	    }
 # endif /* FEAT_MOUSE_DEC */
 # ifdef FEAT_MOUSE_PTERM
-	    if (key_name[0] == (int)KS_PTERM_MOUSE)
+	    if (key_name[0] == KS_PTERM_MOUSE)
 	    {
 		int button, num_clicks, action;
 
@@ -5704,14 +5712,14 @@ check_termcode(
 	    {
 # ifdef CHECK_DOUBLE_CLICK
 #  ifdef FEAT_MOUSE_GPM
-#   ifdef FEAT_GUI
 		/*
-		 * Only for Unix, when GUI or gpm is not active, we handle
-		 * multi-clicks here.
+		 * Only for Unix, when GUI not active, we handle
+		 * multi-clicks here, but not for GPM mouse events.
 		 */
-		if (gpm_flag == 0 && !gui.in_use)
+#   ifdef FEAT_GUI
+		if (key_name[0] != KS_GPM_MOUSE && !gui.in_use)
 #   else
-		if (gpm_flag == 0)
+		if (key_name[0] != KS_GPM_MOUSE)
 #   endif
 #  else
 #   ifdef FEAT_GUI
@@ -5799,7 +5807,7 @@ check_termcode(
 
 	    /* Work out our pseudo mouse event. Note that MOUSE_RELEASE gets
 	     * added, then it's not mouse up/down. */
-	    key_name[0] = (int)KS_EXTRA;
+	    key_name[0] = KS_EXTRA;
 	    if (wheel_code != 0
 			      && (wheel_code & MOUSE_RELEASE) != MOUSE_RELEASE)
 	    {
@@ -6628,29 +6636,26 @@ check_for_codes_from_term(void)
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Translate an internal mapping/abbreviation representation into the
- * corresponding external one recognized by :map/:abbrev commands;
- * respects the current B/k/< settings of 'cpoption'.
+ * corresponding external one recognized by :map/:abbrev commands.
+ * Respects the current B/k/< settings of 'cpoption'.
  *
  * This function is called when expanding mappings/abbreviations on the
- * command-line, and for building the "Ambiguous mapping..." error message.
+ * command-line.
  *
- * It uses a growarray to build the translation string since the
- * latter can be wider than the original description. The caller has to
- * free the string afterwards.
+ * It uses a growarray to build the translation string since the latter can be
+ * wider than the original description. The caller has to free the string
+ * afterwards.
  *
  * Returns NULL when there is a problem.
  */
     char_u *
-translate_mapping(
-    char_u	*str,
-    int		expmap)  /* TRUE when expanding mappings on command-line */
+translate_mapping(char_u *str)
 {
     garray_T	ga;
     int		c;
     int		modifiers;
     int		cpo_bslash;
     int		cpo_special;
-    int		cpo_keycode;
 
     ga_init(&ga);
     ga.ga_itemsize = 1;
@@ -6658,7 +6663,6 @@ translate_mapping(
 
     cpo_bslash = (vim_strchr(p_cpo, CPO_BSLASH) != NULL);
     cpo_special = (vim_strchr(p_cpo, CPO_SPECI) != NULL);
-    cpo_keycode = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
 
     for (; *str; ++str)
     {
@@ -6672,25 +6676,9 @@ translate_mapping(
 		modifiers = *++str;
 		c = *++str;
 	    }
-	    if (cpo_special && cpo_keycode && c == K_SPECIAL && !modifiers)
-	    {
-		int	i;
-
-		/* try to find special key in termcodes */
-		for (i = 0; i < tc_len; ++i)
-		    if (termcodes[i].name[0] == str[1]
-					    && termcodes[i].name[1] == str[2])
-			break;
-		if (i < tc_len)
-		{
-		    ga_concat(&ga, termcodes[i].code);
-		    str += 2;
-		    continue; /* for (str) */
-		}
-	    }
 	    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
 	    {
-		if (expmap && cpo_special)
+		if (cpo_special)
 		{
 		    ga_clear(&ga);
 		    return NULL;
@@ -6702,7 +6690,7 @@ translate_mapping(
 	    }
 	    if (IS_SPECIAL(c) || modifiers)	/* special key */
 	    {
-		if (expmap && cpo_special)
+		if (cpo_special)
 		{
 		    ga_clear(&ga);
 		    return NULL;
