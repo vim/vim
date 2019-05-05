@@ -385,6 +385,47 @@ func Test_A_F_H_arg()
   call delete('Xtestout')
 endfunc
 
+func Test_invalid_args()
+  let out = split(system(GetVimCommand() . ' --does-not-exist'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',                 out[0])
+  call assert_equal('Unknown option argument: "--does-not-exist"', out[1])
+  call assert_equal('More info with: "vim -h"',                    out[2])
+
+  let out = split(system(GetVimCommand() . ' - xxx'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',    out[0])
+  call assert_equal('Too many edit arguments: "xxx"', out[1])
+  call assert_equal('More info with: "vim -h"',       out[2])
+
+  let out = split(system(GetVimCommand() . ' -t'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',  out[0])
+  call assert_equal('Argument missing after: "-t"', out[1])
+  call assert_equal('More info with: "vim -h"',     out[2])
+
+  let out = split(system(GetVimCommand() . ' -ix'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',          out[0])
+  call assert_equal('Garbage after option argument: "-ix"', out[1])
+  call assert_equal('More info with: "vim -h"',             out[2])
+
+  let out = split(system(GetVimCommand() . ' -cq -cq -cq -cq -cq -cq -cq -cq -cq -cq -cq'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',                                    out[0])
+  call assert_equal('Too many "+command", "-c command" or "--cmd command" arguments', out[1])
+  call assert_equal('More info with: "vim -h"',                                       out[2])
+
+  " FIXME: commented out as this causes vim-8.1.1282 to crash!
+  "if has('gui_gtk')
+  "  let out = split(system(GetVimCommand() . ' --socketid x'), "\n")
+  "  call assert_equal(1, v:shell_error)
+  "  call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
+  "  call assert_equal('Invalid argument for: "--socketid"', out[1])
+  "  call assert_equal('More info with: "vim -h"',           out[2])
+  "endif
+endfunc
+
 func Test_file_args()
   let after = [
 	\ 'call writefile(argv(), "Xtestout")',
