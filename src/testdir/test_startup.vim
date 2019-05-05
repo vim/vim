@@ -386,6 +386,11 @@ func Test_A_F_H_arg()
 endfunc
 
 func Test_invalid_args()
+  if !has('unix') || has('gui_running')
+    " can't get output of Vim.
+    return
+  endif
+
   let out = split(system(GetVimCommand() . ' --does-not-exist'), "\n")
   call assert_equal(1, v:shell_error)
   call assert_match('^VIM - Vi IMproved .* (.*)$',                 out[0])
