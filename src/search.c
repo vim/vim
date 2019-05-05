@@ -1415,10 +1415,10 @@ do_search(
 		{
 		    // Use a space to draw the composing char on.
 		    msgbuf[1] = ' ';
-		    STRNCPY(msgbuf + 2, p, STRLEN(p));
+		    mch_memmove(msgbuf + 2, p, STRLEN(p));
 		}
 		else
-		    STRNCPY(msgbuf + 1, p, STRLEN(p));
+		    mch_memmove(msgbuf + 1, p, STRLEN(p));
 		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
 		{
 		    p = msgbuf + STRLEN(p) + 1;
@@ -5006,7 +5006,7 @@ search_stat(
 	    else
 		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cur, cnt);
 	}
-	STRNCPY(msgbuf + STRLEN(msgbuf) - STRLEN(t), t, STRLEN(t));
+	mch_memmove(msgbuf + STRLEN(msgbuf) - STRLEN(t), t, STRLEN(t));
 	if (dirc == '?' && cur == 100)
 	    cur = -1;
 
