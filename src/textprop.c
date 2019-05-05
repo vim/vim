@@ -733,6 +733,15 @@ prop_type_set(typval_T *argvars, int add)
 	    prop->pt_hl_id = hl_id;
 	}
 
+	di = dict_find(dict, (char_u *)"combine", -1);
+	if (di != NULL)
+	{
+	    if (tv_get_number(&di->di_tv))
+		prop->pt_flags |= PT_FLAG_COMBINE;
+	    else
+		prop->pt_flags &= ~PT_FLAG_COMBINE;
+	}
+
 	di = dict_find(dict, (char_u *)"priority", -1);
 	if (di != NULL)
 	    prop->pt_priority = tv_get_number(&di->di_tv);
@@ -845,6 +854,8 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (prop->pt_hl_id > 0)
 		dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
 	    dict_add_number(d, "priority", prop->pt_priority);
+	    dict_add_number(d, "combine",
+				   (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
 	    dict_add_number(d, "start_incl",
 			    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
 	    dict_add_number(d, "end_incl",
