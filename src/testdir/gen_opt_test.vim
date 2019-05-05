@@ -125,6 +125,7 @@ let test_values = {
       \ 'sessionoptions': [['', 'blank', 'help,options,slash'], ['xxx']],
       \ 'signcolumn': [['', 'auto', 'no'], ['xxx', 'no,yes']],
       \ 'spellfile': [['', 'file.en.add'], ['xxx', '/tmp/file']],
+      \ 'spelllang': [['', 'xxx', 'sr@latin'], ['not&lang', "that\\\rthere"]],
       \ 'spellsuggest': [['', 'best', 'double,33'], ['xxx']],
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],

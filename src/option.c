@@ -6057,7 +6057,7 @@ valid_filetype(char_u *val)
     int
 valid_spellang(char_u *val)
 {
-    return valid_name(val, ".-_,");
+    return valid_name(val, ".-_,@");
 }
 
 /*
