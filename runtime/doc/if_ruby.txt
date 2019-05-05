@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
+*if_ruby.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -14,10 +14,9 @@ The Ruby Interface to Vim				*ruby* *Ruby*
 6. rubyeval() Vim function	|ruby-rubyeval|
 7. Dynamic loading		|ruby-dynamic|
 
-{Vi does not have any of these commands}
 			*E266* *E267* *E268* *E269* *E270* *E271* *E272* *E273*
 
-The Ruby interface only works when Vim was compiled with the |+ruby| feature.
+{only available when Vim was compiled with the |+ruby| feature}
 
 The home page for ruby is http://www.ruby-lang.org/.  You can find links for
 downloading Ruby there.

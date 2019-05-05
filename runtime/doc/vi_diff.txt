@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Apr 28
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,9 +6,8 @@
 
 Differences between Vim and Vi				*vi-differences*
 
-Throughout the help files differences between Vim and Vi/Ex are given in
-curly braces, like "{not in Vi}".  This file only lists what has not been
-mentioned in other files and gives an overview.
+This file lists the differences between Vim and Vi/Ex and gives an overview of
+what is in Vim that is not in Vi.
 
 Vim is mostly POSIX 1003.2-1 compliant.  The only command known to be missing
 is ":open".  There are probably a lot of small differences (either because Vim
@@ -180,6 +179,10 @@ Multiple windows and buffers.				|windows.txt|
 	line with tab labels can be used to quickly switch between these pages.
 	|tab-page|
 
+Terminal window.					|:terminal|
+	Vim can create a window in which a terminal emulator runs.  This can
+	be used to execute an arbitrary command, a shell or a debugger.
+
 Syntax highlighting.					|:syntax|
 	Vim can highlight keywords, patterns and other things.  This is
 	defined by a number of |:syntax| commands, and can be made to
@@ -193,6 +196,11 @@ Syntax highlighting.					|:syntax|
 	Other items that can be highlighted are matches with the search string
 	|'hlsearch'|, matching parens |matchparen| and the cursor line and
 	column |'cursorline'| |'cursorcolumn'|.
+
+Text properties						|textprop.txt|
+	Vim supports highlighting text by a plugin.  Property types can be
+	specificed with |prop_type_add()| and properties can be placed with
+	|prop_add()|.
 
 Spell checking.						|spell|
 	When the 'spell' option is set Vim will highlight spelling mistakes.
@@ -262,6 +270,8 @@ Visual mode.						|Visual-mode|
 		~	swap case
 		u	make lowercase
 		U	make uppercase
+	{Vi has no Visual mode, the name "visual" is used for Normal mode, to
+	distinguish it from Ex mode}
 
 Block operators.					|visual-block|
 	With Visual mode a rectangular block of text can be selected.  Start
@@ -521,6 +531,10 @@ With the CTRL-] command, the cursor may be in the middle of the identifier.
 
 The used tags are remembered.  Commands that can be used with the tag stack
 are CTRL-T, ":pop" and ":tag".  ":tags" lists the tag stack.
+
+Vi uses 'wrapscan' when searching for a tag.  When jumping to a tag Vi starts
+searching in line 2 of another file.  It does not find a tag in line 1 of
+another file when 'wrapscan' is not set.
 
 The 'tags' option can be set to a list of tag file names.  Thus multiple
 tag files can be used.  For file names that start with "./", the "./" is
@@ -795,23 +809,231 @@ the 'compatible' option is set and 'cpoptions' contains all flags.  What the
 effect is of resetting 'compatible' and removing flags from 'cpoptions' can be
 found at the help for the specific command.
 
-Below is listed what features are present in Vi.  Anything else has been added
-by Vim.
+The help files used to mark features that are in Vim but not in Vi with {not
+in Vi}.  However, since these remarks cluttered the help files we now do it
+the other way around: Below is listed what Vi already supported.  Anything
+else has been added by Vim.
+
 
 The following Ex commands are supported by Vi: ~
 
-TODO
-
-`:set`		but not `:set inv{option}`, `:set option&`, `:set all&`,
-		`:set option+=value`,
-		`:set option^=value`
-		`:set option-=value`
-		`:set option<`
+`:abbreviate`	enter abbreviation
+`:append`	append text
+`:args`		print the argument list
+`:cd`		change directory; Vi: no "cd -"
+`:change`	replace a line or series of lines
+`:chdir`	change directory
+`:copy`		copy lines
+`:delete`	delete lines
+`:edit`		edit a file
+`:exit`		same as ":xit"
+`:file`		show or set the current file name; Vi: without the column number
+`:global`	execute commands for matching lines
+`:insert`	insert text
+`:join`		join lines; Vi: not :join!
+`:k`		set a mark
+`:list`		print lines
+`:map` 		show or enter a mapping
+`:mark`		set a mark
+`:move`		move lines
+`:Next`		go to previous file in the argument list; no count or ++opt
+`:next`		go to next file in the argument list; no count or ++opt
+`:number`	print lines with line number
+`:open`		start open mode (not implemented in Vim)
+`:pop`		jump to older entry in tag stack (only in some versions)
+`:preserve`	write all text to swap file
+`:print`	print lines
+`:put`		insert contents of register in the text
+`:quit`		quit Vi
+`:read`		read file into the text
+`:recover`	recover a file from a swap file
+`:rewind` 	go to the first file in the argument list; no ++opt
+`:set`		set option; but not `:set inv{option}`, `:set option&`,
+		`:set all&`, `:set option+=value`, `:set option^=value`
+		`:set option-=value` `:set option<`
+`:shell`	escape to a shell
+`:source`	read Vim or Ex commands from a file
+`:stop`		suspend the editor or escape to a shell
+`:substitute`	find and replace text; Vi: no '&', 'i', 's', 'r' or 'I' flag,
+		confirm prompt only supports 'y' and 'n', no highlighting
+`:suspend`	same as ":stop"
+`:t`		same as ":copy"
+`:tag`		jump to tag
+`:unabbreviate`	remove abbreviation
+`:undo`		undo last change {Vi: only one level}
+`:unmap`	remove mapping
+`:vglobal`	execute commands for not matching lines
+`:version`	print version number and other info
+`:visual`	same as ":edit", but turns off "Ex" mode
+`:wq`		write to a file and quit Vi
+`:write`	write to a file
+`:xit`		write if buffer changed and quit Vi
+`:yank`		yank lines into a register
+`:z`		print some lines {not in all versions of Vi}
+`:!` 		filter lines or execute an external command
+`:"`		comment
+`:#`		same as ":number"
+`:*`		execute contents of a register
+`:&`		repeat last ":substitute"
+`:<`		shift lines one 'shiftwidth' left
+`:=`		print the cursor line number
+`:>`		shift lines one 'shiftwidth' right
+`:@`		execute contents of a register; but not `:@`; `:@@` only in
+		some versions
 
 
 The following Normal mode commands are supported by Vi: ~
 
-TODO
+|CTRL-B|	scroll N screens Backwards
+|CTRL-C|	interrupt current (search) command
+|CTRL-D|	scroll Down N lines (default: half a screen); Vim scrolls
+		'scroll' screen lines, Vi scrolls file lines; makes a
+		difference when lines wrap
+|CTRL-E|	scroll N lines upwards (N lines Extra)
+|CTRL-F|	scroll N screens Forward
+|CTRL-G|	display current file name and position
+|<BS>|		same as "h"
+|CTRL-H|	same as "h"
+|<NL>|		same as "j"
+|CTRL-J|	same as "j"
+|CTRL-L|	redraw screen
+|<CR>|		cursor to the first CHAR N lines lower
+|CTRL-M|	same as <CR>
+|CTRL-N|	same as "j"
+|CTRL-P|	same as "k"
+|CTRL-R|	in some Vi versions: same as CTRL-L
+|CTRL-T|	jump to N older Tag in tag list
+|CTRL-U|	N lines Upwards (default: half a screen)
+|CTRL-Y|	scroll N lines downwards
+|CTRL-Z|	suspend program (or start new shell)
+|CTRL-]|	:ta to ident under cursor
+|CTRL-^|	edit alternate file; Vi: no count
+|<Space>|	same as "l"
+|!|		filter Nmove text through the {filter} command
+|!!|		filter N lines through the {filter} command
+"		use register {a-zA-Z0-9.%#:-"} for next delete, yank or put
+		(uppercase to append) ({.%#:} only work with put)
+|$|		cursor to the end of Nth next line
+|%|		find the next (curly/square) bracket on this line and go to
+		its match, or go to matching comment bracket, or go to
+		matching preprocessor directive (Vi: no count supported)
+|&|		repeat last :s
+|'|		jump to mark (Vi: only lowercase marks)
+|(|		cursor N sentences backward
+|)|		cursor N sentences forward
+|+|		same as <CR>
+|,|		repeat latest f, t, F or T in opposite direction N times
+|-|		cursor to the first CHAR N lines higher
+|.|		repeat last change with count replaced with N
+|/|		search forward for the Nth occurrence of {pattern}
+|0|		cursor to the first char of the line
+|:|		start entering an Ex command
+|;|		repeat latest f, t, F or T N times
+|<|		shift Nmove lines one 'shiftwidth' leftwards
+|<<|		shift N lines one 'shiftwidth' leftwards
+|=|		filter Nmove lines through "indent"
+|==|		filter N lines through "indent"
+|>|		shift Nmove lines one 'shiftwidth' rightwards
+|>>|		shift N lines one 'shiftwidth' rightwards
+|?|		search backward for the Nth previous occurrence of {pattern}
+|@|		execute the contents of register {a-z} N times
+|@@|		repeat the previous @{a-z} N times
+|A|		append text after the end of the line N times
+|B|		cursor N WORDS backward
+|C|		change from the cursor position to the end of the line
+|D|		delete the characters under the cursor until the end of the
+		line and N-1 more lines [into register x]; synonym for "d$"
+|E|		cursor forward to the end of WORD N
+|F|		cursor to the Nth occurrence of {char} to the left
+|G|		cursor to line N, default last line
+|H|		cursor to line N from top of screen
+|I|		insert text before the first CHAR on the line N times
+|J|		Join N lines; default is 2
+|L|		cursor to line N from bottom of screen
+|M|		cursor to middle line of screen
+|N|		repeat the latest '/' or '?' N times in opposite direction
+|O|		begin a new line above the cursor and insert text, repeat N
+		times
+|P|		put the text [from register x] before the cursor N times
+|Q|		switch to "Ex" mode
+|R|		enter replace mode: overtype existing characters, repeat the
+		entered text N-1 times
+|S|		delete N lines [into register x] and start insert; synonym for
+		"cc".
+|T|		cursor till after Nth occurrence of {char} to the left
+|U|		undo all latest changes on one line
+|W|		cursor N WORDS forward
+|X|		delete N characters before the cursor [into register x]
+|Y|		yank N lines [into register x]; synonym for "yy"
+|ZZ|		store current file if modified, and exit
+|[[|		cursor N sections backward
+|]]|		cursor N sections forward
+|^|		cursor to the first CHAR of the line
+|_|		cursor to the first CHAR N - 1 lines lower
+|`|		cursor to the mark {a-zA-Z0-9}
+|a|		append text after the cursor N times
+|b|		cursor N words backward
+|c|		delete Nmove text [into register x] and start insert
+|cc|		delete N lines [into register x] and start insert
+|d|		delete Nmove text [into register x]
+|dd|		delete N lines [into register x]
+|e|		cursor forward to the end of word N
+|f|		cursor to Nth occurrence of {char} to the right
+|h|		cursor N chars to the left
+|i|		insert text before the cursor N times
+|j|		cursor N lines downward
+|k|		cursor N lines upward
+|l|		cursor N chars to the right
+|m|		set mark {A-Za-z} at cursor position
+|n|		repeat the latest '/' or '?' N times
+|o|		begin a new line below the cursor and insert text
+|p|		put the text [from register x] after the cursor N times
+|r|		replace N chars with {char}
+|s|		(substitute) delete N characters [into register x] and start
+		insert
+|t|		cursor till before Nth occurrence of {char} to the right
+|u|		undo changes {Vi: only one level}
+|w|		cursor N words forward
+|x|		delete N characters under and after the cursor [into register
+		x]
+|y|		yank Nmove text [into register x]
+|yy|		yank N lines [into register x]
+|z<CR>|		current line to the top
+|z-|		current line to the bottom
+|z+|		cursor on line N
+|z^|		cursor on line N
+|{|		cursor N paragraphs backward
+|		cursor to column N
+|}|		cursor N paragraphs forward
+|~|		switch case of N characters under the cursor; Vim: depends on
+		'tildeop'
+|<Del>|		same as "x"
+
+
+The following commands are supported in Insert mode by Vi: ~
+
+CTRL-@		insert previously inserted text and stop insert
+CTRL-C		quit insert mode, without checking for abbreviation, unless
+		'insertmode' set.
+CTRL-D		delete one shiftwidth of indent in the current line
+<BS>		delete character before the cursor
+CTRL-H		same as <BS>
+<Tab>		insert a <Tab> character
+CTRL-I		same as <Tab>
+<NL>		same as <CR>
+CTRL-J		same as <CR>
+<CR>		begin new line
+CTRL-M		same as <CR>
+CTRL-T		insert one shiftwidth of indent in current line
+CTRL-V {char}	insert next non-digit literally
+CTRL-W		delete word before the cursor
+CTRL-Z		when 'insertmode' set: suspend Vim
+<Esc>		end insert mode (unless 'insertmode' set)
+CTRL-[		same as <Esc>
+0 CTRL-D	delete all indent in the current line
+^ CTRL-D	delete all indent in the current line, restore it in the next
+		line
+<Del>		delete character under the cursor
 
 
 The following options are supported by Vi: ~
@@ -849,11 +1071,14 @@ The following options are supported by Vi: ~
 'term'			    name of the terminal
 'terse'			    shorten some messages
 'timeout'	  'to'	    time out on mappings and key codes
+'timeoutlen'	  'tm'	    time for 'timeout' {only in some Vi versions}
 'ttytype'	  'tty'     alias for 'term'
 'verbose'	  'vbs'     give informative messages {only in some Vi
 				versions as a boolean option}
 'warn'			    warn for shell command when buffer was changed
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
+			    {Vi also uses the option to specify the number of
+			    displayed lines}
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts
 'wrapscan'	  'ws'	    searches wrap around the end of the file
 'writeany'	  'wa'	    write to file with no need for "!" override
@@ -968,7 +1193,8 @@ Only Vim is able to accept options in between and after the file names.
 -i		Elvis: Start each window in Insert mode.
 -i {viminfo}	Vim: Use {viminfo} for viminfo file.
 
--L		Vim: Same as "-r" (also in some versions of Vi).
+-L		Vim: Same as "-r" {only in some versions of Vi: "List
+		recoverable edit sessions"}.
 
 -l		Nvi, Vi, Vim: Set 'lisp' and 'showmatch' options.
 

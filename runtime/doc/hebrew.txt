@@ -1,4 +1,4 @@
-*hebrew.txt*    For Vim version 8.1.  Last change: 2007 Jun 14
+*hebrew.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 	   VIM REFERENCE MANUAL    by Ron Aaron (and Avner Lottem)
@@ -10,10 +10,7 @@ The supporting 'rightleft' functionality was originally created by Avner
 Lottem. <alottem at gmail dot com>  Ron Aaron <ron at ronware dot org> is
 currently helping support these features.
 
-{Vi does not have any of these commands}
-
-All this is only available when the |+rightleft| feature was enabled at
-compile time.
+{only available when the |+rightleft| feature was enabled at compile time}
 
 
 Introduction

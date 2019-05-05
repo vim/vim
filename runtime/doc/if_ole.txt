@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 8.1.  Last change: 2008 Aug 16
+*if_ole.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -12,10 +12,8 @@ The OLE Interface to Vim				*ole-interface*
 4. Registration			|ole-registration|
 5. MS Visual Studio integration	|MSVisualStudio|
 
-{Vi does not have any of these commands}
-
-OLE is only available when compiled with the |+ole| feature.  See
-src/if_ole.INSTALL.
+{only available when compiled with the |+ole| feature.  See
+src/if_ole.INSTALL}
 An alternative is using the client-server communication |clientserver|.
 
 ==============================================================================

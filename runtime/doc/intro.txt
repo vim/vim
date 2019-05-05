@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 Jan 07
+*intro.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,9 +34,7 @@ It can be accessed from within Vim with the <Help> or <F1> key and with the
 is not located in the default place.  You can jump to subjects like with tags:
 Use CTRL-] to jump to a subject under the cursor, use CTRL-T to jump back.
 
-Throughout this manual the differences between Vi and Vim are mentioned in
-curly braces, like this: {Vi does not have on-line help}.  See |vi_diff.txt|
-for a summary of the differences between Vim and Vi.
+The differences between Vi and Vim are mentioned in |vi_diff.txt|.
 
 This manual refers to Vim on various machines.  There may be small differences
 between different computers and terminals.  Besides the remarks given in this
@@ -703,7 +701,6 @@ gQ			Switch to "Ex" mode like with "Q", but really behave
 			like typing ":" commands after another.  All command
 			line editing, completion etc. is available.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
-			{not in Vi}
 
 ==============================================================================
 7. The window contents					*window-contents*

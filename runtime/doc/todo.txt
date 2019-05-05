@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Apr 20
+*todo.txt*      For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -145,6 +145,9 @@ Williams, 2018 Oct 30)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
+The quoting of the [command] argument of :terminal is not clearly documented.
+Give a few examples. (#4288)
+
 Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
@@ -165,8 +168,26 @@ Support setting the character displayed below the last line?  Neovim uses
 Check: __attribute__((format(printf, on semsg() and siemsg().  Where was this
 added?
 
+Add test for urxvt mouse codes.  Also test that mouse coordinates can be
+negative. (see #4326)
+
+'cmdheight' has a tab-local value, but it cannot be obtained with
+`:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
+tab page. (Ingo Karkat, #4324)
+:call settabwinvar(1, 1, '&cmdheight', 2) also doesn't work well.
+
+Add a chdir() function, which will set the window-local, tab-local or global
+directory, first one that is currently used.  Returns the current directory,
+so that this works:
+    let save_dir = chdir('somewhere')
+    ...
+    call chdir(save_dir)
+
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
+
+":doau SomeEvent" gives "No matching autocommands".  This message doesn't give
+a hint about how to fix it. (#4300)
 
 Make balloon_show() work outside of 'balloonexpr'?  Users expect it to work:
 #2948. (related to #1512?)
@@ -184,29 +205,15 @@ https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
 Still a E315 error when using terminal. (Masato Nishihata, #3959)
 
+Use dict_iterate_start() / dict_iterate_next() instead of relying on the
+internals of the dict structure.
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 nvo-mode mapping works on Windows, not on Linux. (#3678)
-
-Patch to make Command-V use CTRL-R_CTRL-O* on Mac, like on Windows.
-(Ken Takata, #4266)
-
-No test for NULL after allocating memory: #4174 (martinkunevtoptal does this?)
-    src/crypt.c  line 256;
-    src/crypt_zip.c line  93;
-    src/gui_gtk_f.c  line 132;
-    src/gui_gtk_x11 line  1578;
-    src/libvterm/src/state.c line 332;
-    src/libvterm/src/state.c line 255;
-    src/libvterm/src/state.c line 1618;
-    src/libvterm/src/state.c line 1643
-    src/libvterm/src/termscreen.c line 83;
-    src/ops.c  line 6185;
-    src/option.c  line 12980;
-    src/popupmnu.c line 1090;
 
 Missing tests for:
 - add_termcap_entry()
@@ -240,6 +247,9 @@ punctuation is repeated. (Smylers, 2018 Nov 17, #3621)
 
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
 
+Using single wide base character with double wide composing character gives
+drawing errors.  Fill up the base character?  (Dominique, #4328)
+
 Problem with two buffers with the same name a/b, if it didn't exist before and
 is created outside of Vim. (dskloetg, 2018 Jul 16, #3219)
 
@@ -258,24 +268,8 @@ When splitting a window with few text lines, the relative cursor position is
 kept, which means part of the text isn't displayed.  Better show all the text
 when possible. (Dylan Lloyd, #3973)
 
-Patch to not recognize "version" as "v:version", "count" as "v:count".
-Ken Takata, #4274.
-
-Patch to implement 'diffref' option. (#3535)
-  Easier to use a 'diffmaster' option, is the extra complexity needed?
-
-Patch to fix that bracketed paste remains after Vim exits. (2018 Oct 30, #3579)
-
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
-
-cursorline highlighting not removed after yanking in Visual mode.
-(Matéo Zanibelli, 2018 Oct 30, #3578)
-Patch by Christian, Oct 30.
-
-Patch to clean up CI configs. (Ozaki Kiichi, 2019 Feb 1, #3890)
-
-Patch to filter marks. (Marcin Szamotulski, 2019 Feb 7, #3895)
 
 Patch to add environ(), gets a dict with all environment vars, and getenv(),
 useful for environment vars that are not made of keyword chars.
@@ -283,37 +277,31 @@ useful for environment vars that are not made of keyword chars.
 
 Add buffer argument to undotree(). (#4001)
 
-Patch to add optional arguments with default values.
-(Andy Massimino, #3952)  under development
+Patch to restore X11 connection. (#844)
 
-Patch to add tab-local directories. (Yegappan, #4212)
-Good now?
+Patch to add optional arguments with default values.
+(Andy Massimino, #3952)  Needs to be reviewed.
 
 Patch to add more info to OptionSet.  Should mention what triggered the change
 ":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
-#4118.  Proposed implementation: 2019 Mar 27.  Tests fail, help update
-missing. Updated 2019 Apr 9
+#4118.  Proposed implementation: 2019 Mar 27.
+Updated 2019 Apr 9: ASAN fails.
 
 Problem with Visual yank when 'linebreak' and 'showbreak' are set.
 Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
 Nov 17)  Asked about this, Dec 22. Christian will have a look.
 
-Patch to add ruby cflags. (#4050, fixes #1081)
-Needs modification.
-
 Patch for larger icons in installer. (#978)  Still not good.
 
-Patch to add tagfunc().  Cleaned up by Christian Brabandt, 2013 Jun 22.
-New update 2017 Apr 10, #1628
-https://github.com/chrisbra/vim-mq-patches/blob/master/tagfunc
-Updated by Andy Massimino, 2018 Feb 7:
-https://github.com/andymass/vim/commit/4e3aa0a5dab96d2799567622f3f537e357aa479e 
-Or should we make it asynchronous?
-Patch by Andy Massimino: #4010 - needs a bit more work: produce errors when
-something is wrong.
+Patch to add commands to jump to quickfix entry above/below the cursor.
+(Yegappan Lakshmanan, #4316)  Also do :cbefore and :cafter.
 
 Patch to fix that using "5gj" starting inside a closed fold does not work on
 screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
+
+Patch to implement 'diffref' option. (#3535)
+  Easier to use a 'diffmaster' option, is the extra complexity needed?
+  Not ready to include.
 
 Memory leaks in test_channel? (or is it because of fork())
 Using uninitialized value in test_crypt.
@@ -330,9 +318,6 @@ Memory leak in test_terminal:
 Memory leak in test_alot with pyeval() (allocating partial)
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
-
-Patch to add match count and current index "3/44" when using "n" command.
-(Christian Brabandt, on issue #453).  Only when search string was typed?
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
@@ -454,6 +439,11 @@ Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 Patch to be able to disable default digraphs (incomplete) (Eric Pruitt, 2018
 Nov 22).
+
+Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
+
+Patch to add digraph() function. (Christian Brabandt, 2013 Aug 22, update Aug
+24)
 
 Try out background make plugin: 
   https://github.com/AndrewVos/vim-make-background
@@ -711,10 +701,6 @@ The ++ options for the :edit command are also useful on the Vim command line.
 
 When recovering a file, put the swap file name in b:recovered_swapfile.  Then
 a command can delete it.
-
-When a swap file exists, is not for a running process, is from the same
-machine and recovering results in the same text, we could silently delete it.
-#1237
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
@@ -1019,6 +1005,8 @@ Regexp problems:
   time is spent in addstate_here() copying the threads.  Instead of copying,
   let each thread point to the next one (by offset, the list is reallocated).
   (Dominique Pelle, 2019 Feb 18)
+- Old engine: using 'incsearch' /\Zabc does not highlight the "c" if it has a
+  composing character.  New engine is OK. (Tony Mechelynck, 2019 May 5)
 - When search pattern has the base character both with and without combining
   character, search fails.  E.g. "รรีบ" in "การรีบรักใคร". (agguser, #2312)
 - [:space:] only matches ASCII spaces.  Add [:white:] for all space-like
@@ -1747,11 +1735,6 @@ New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
 When running Vim in silent ex mode, an existing swapfile causes Vim to wait
 for a user action without a prompt. (Maarten Billemont, 2012 Feb 3)
 Do give the prompt? Quit with an error?
-
-Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
-
-Patch to add digraph() function. (Christian Brabandt, 2013 Aug 22, update Aug
-24)
 
 Patch for input method status. (Hirohito Higashi, 2012 Apr 18)
 
@@ -4010,7 +3993,8 @@ Folding:
     secondary: zB zS zT zZ, z=)
 8   Vertical folds: looks like vertically split windows, but the cursor moves
     through the vertical separator, separator moves when scrolling.
-8   Add "z/" and "z?" for searching in not folded text only.
+8   Add "z/" and "z?" for searching in not folded text only.  Or use a regexp
+    item, so that it can be used in any pattern.
 8   When a closed fold is displayed open because of 'foldminlines', the
     behavior of commands is still like the fold is closed.  How to make the
     user aware of this?
@@ -6001,7 +5985,7 @@ Various improvements:
 			used, remove the <CR> at the end of lines in [range].
 			A CTRL-Z at the end of the file is removed.  If
 			[range] is omitted, or it is the whole file, and all
-			lines end in <CR> 'textmode' is set.  {not in Vi}
+			lines end in <CR> 'textmode' is set.
 -   Should integrate addstar() and file_pat_to_reg_pat().
 -   When working over a serial line with 7 bit characters, remove meta
     characters from 'isprint'.

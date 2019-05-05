@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.1.  Last change: 2019 Jan 04
+*undo.txt*      For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,7 +25,7 @@ u			Undo [count] changes.  {Vi: only one level}
 :u[ndo]			Undo one change.  {Vi: only one level}
 								*E830*
 :u[ndo] {N}		Jump to after change number {N}.  See |undo-branches|
-			for the meaning of {N}.  {not in Vi}
+			for the meaning of {N}.
 
 							*CTRL-R*
 CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
@@ -95,7 +95,6 @@ change but joins in with the previous change use this command:
 			Warning: Use with care, it may prevent the user from
 			properly undoing changes.  Don't use this after undo
 			or redo.
-			{not in Vi}
 
 This is most useful when you need to prompt the user halfway through a change.
 For example in a function that calls |getchar()|.  Do make sure that there was
@@ -151,7 +150,7 @@ This is explained in the user manual: |usr_32.txt|.
 
 							*g-*
 g-			Go to older text state.  With a count repeat that many
-			times.  {not in Vi}
+			times.
 							*:ea* *:earlier*
 :earlier {count}	Go to older text state {count} times.
 :earlier {N}s		Go to older text state about {N} seconds before.
@@ -170,7 +169,7 @@ g-			Go to older text state.  With a count repeat that many
 
 							*g+*
 g+			Go to newer text state.  With a count repeat that many
-			times.  {not in Vi}
+			times.
 							*:lat* *:later*
 :later {count}		Go to newer text state {count} times.
 :later {N}s		Go to newer text state about {N} seconds later.
@@ -280,10 +279,8 @@ respectively:
 		the existing file and then creating a new file with the same
 		name. So it is not possible to overwrite an existing undofile
 		in a write-protected directory.
-		{not in Vi}
 
 :rundo {file}	Read undo history from {file}.
-		{not in Vi}
 
 You can use these in autocommands to explicitly specify the name of the
 history file.  E.g.: >
@@ -374,10 +371,10 @@ information you can use these commands: >
 	:unlet old_undolevels
 
 Marks for the buffer ('a to 'z) are also saved and restored, together with the
-text.  {Vi does this a little bit different}
+text.
 
 When all changes have been undone, the buffer is not considered to be changed.
-It is then possible to exit Vim with ":q" instead of ":q!" {not in Vi}.  Note
+It is then possible to exit Vim with ":q" instead of ":q!".  Note
 that this is relative to the last write of the file.  Typing "u" after ":w"
 actually changes the buffer, compared to what was written, so the buffer is
 considered changed then.

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.1.  Last change: 2019 Feb 27
+*diff.txt*      For Vim version 8.1.  Last change: 2019 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,8 +15,6 @@ The basics are explained in section |08.7| of the user manual.
 3. Jumping to diffs		|jumpto-diffs|
 4. Copying diffs		|copy-diffs|
 5. Diff options			|diff-options|
-
-{not in Vi}
 
 ==============================================================================
 1. Starting diff mode					*start-vimdiff*

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.1.  Last change: 2018 Jan 30
+*if_pyth.txt*   For Vim version 8.1.  Last change: 2019 May 04
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -18,8 +18,6 @@ The Python Interface to Vim				*python* *Python*
 10. Python 3					|python3|
 11. Python X					|python_x|
 12. Building with Python support		|python-building|
-
-{Vi does not have any of these commands}
 
 The Python 2.x interface is available only when Vim was compiled with the
 |+python| feature.
@@ -76,7 +74,6 @@ and "EOF" do not have any indent.
 			None. If a string is returned, it becomes the text of
 			the line in the current turn. The default for [range]
 			is the whole file: "1,$".
-			{not in Vi}
 
 Examples:
 >
@@ -98,7 +95,7 @@ python. For example: >
 							*:pyfile* *:pyf*
 :[range]pyf[ile] {file}
 			Execute the Python script in {file}.  The whole
-			argument is used as a single file name.  {not in Vi}
+			argument is used as a single file name.
 
 Both of these commands do essentially the same thing - they execute a piece of
 Python code, with the "current range" |python-range| set to the given line

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.1.  Last change: 2019 Apr 25
+*map.txt*       For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,7 +76,7 @@ modes.
 			Map the key sequence {lhs} to {rhs} for the modes
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
-			used to redefine a command.  {not in Vi}
+			used to redefine a command.
 
 
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
@@ -110,7 +110,7 @@ modes.
 :cmapc[lear]			|mapmode-c|		*:cmapc*  *:cmapclear*
 :tmapc[lear]			|mapmode-t|		*:tmapc*  *:tmapclear*
 			Remove ALL mappings for the modes where the map
-			command applies.  {not in Vi}
+			command applies.
 			Use the <buffer> argument to remove buffer-local
 			mappings |:map-<buffer>|
 			Warning: This also removes the default mappings.
@@ -143,7 +143,6 @@ modes.
 :tma[p] {lhs}			|mapmode-t|		*:tmap_l*
 			List the key mappings for the key sequences starting
 			with {lhs} in the modes where the map command applies.
-			{not in Vi}
 
 These commands are used to map a key or key sequence to a string of
 characters.  You can use this to put command sequences under function keys,
@@ -160,7 +159,6 @@ decide if "aa" or "aaa" should be mapped.  This means that after typing "aa"
 that mapping won't get expanded yet, Vim is waiting for another character.
 If you type a space, then "foo" will get inserted, plus the space.  If you
 type "a", then "bar" will get inserted.
-{Vi does not allow ambiguous mappings}
 
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
@@ -1016,45 +1014,40 @@ See |:verbose-cmd| for more information.
 
 						*:norea* *:noreabbrev*
 :norea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but no remapping for this {rhs} {not
-			in Vi}
+			Same as ":ab", but no remapping for this {rhs}.
 
 						*:ca* *:cabbrev*
 :ca[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Command-line mode only.  {not
-			in Vi}
+			Same as ":ab", but for Command-line mode only.
 
 						*:cuna* *:cunabbrev*
-:cuna[bbrev] {lhs}	same as ":una", but for Command-line mode only.  {not
-			in Vi}
+:cuna[bbrev] {lhs}	Same as ":una", but for Command-line mode only.
 
 						*:cnorea* *:cnoreabbrev*
 :cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Command-line mode only and no
-			remapping for this {rhs} {not in Vi}
+			remapping for this {rhs}
 
 						*:ia* *:iabbrev*
 :ia[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Insert mode only.  {not in Vi}
+			Same as ":ab", but for Insert mode only.
 
 						*:iuna* *:iunabbrev*
-:iuna[bbrev] {lhs}	same as ":una", but for insert mode only.  {not in
-			Vi}
+:iuna[bbrev] {lhs}	Same as ":una", but for insert mode only.
 
 						*:inorea* *:inoreabbrev*
 :inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Insert mode only and no
-			remapping for this {rhs} {not in Vi}
+			Same as ":ab", but for Insert mode only and no
+			remapping for this {rhs}.
 
 							*:abc* *:abclear*
-:abc[lear] [<buffer>]	Remove all abbreviations.  {not in Vi}
+:abc[lear] [<buffer>]	Remove all abbreviations.
 
 							*:iabc* *:iabclear*
-:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.  {not in Vi}
+:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.
 
 							*:cabc* *:cabclear*
-:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.  {not
-			in Vi}
+:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.
 
 							*using_CTRL-V*
 It is possible to use special characters in the rhs of an abbreviation.
@@ -1147,8 +1140,7 @@ to find out what they are defined to.
 The |:scriptnames| command can be used to see which scripts have been sourced
 and what their <SNR> number is.
 
-This is all {not in Vi} and {not available when compiled without the |+eval|
-feature}.
+This is all {not available when compiled without the |+eval| feature}.
 
 ==============================================================================
 4. User-defined commands				*user-commands*
@@ -1391,7 +1383,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-		    Specifying -count (without a default) acts like -count=0
+	-count	    acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1402,14 +1394,16 @@ by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
 Possible values are (second column is the short name used in listing):
-    -addr=lines		  	Range of lines (this is the default)
+    -addr=lines		  	Range of lines (this is the default for -range)
     -addr=arguments	  arg	Range for arguments
     -addr=buffers	  buf	Range for buffers (also not loaded buffers)
     -addr=loaded_buffers  load	Range for loaded buffers
     -addr=windows	  win	Range for windows
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
-    -addr=other		  ?	other kind of range
+    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+				as with "lines" (this is the default for
+				-count)
 
 
 Special cases ~

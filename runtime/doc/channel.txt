@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2019 Mar 21
+*channel.txt*      For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -24,7 +24,6 @@ The Netbeans interface also uses a channel. |netbeans|
 11. Controlling a job			|job-control|
 12. Using a prompt buffer		|prompt-buffer|
 
-{Vi does not have any of these features}
 {only when compiled with the |+channel| feature for channel stuff}
 	You can check this with: `has('channel')`
 {only when compiled with the |+job| feature for job stuff}

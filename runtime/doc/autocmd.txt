@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Apr 27
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,7 +20,6 @@ For a basic explanation, see section |40.3| in the user manual.
 10. Using autocommands		|autocmd-use|
 11. Disabling autocommands	|autocmd-disable|
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Introduction						*autocmd-intro*

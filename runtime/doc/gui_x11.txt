@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.1.  Last change: 2019 Apr 12
+*gui_x11.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Vim's Graphical User Interface				*gui-x11* *GUI-X11*
 Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Starting the X11 GUI					*gui-x11-start* *E665*

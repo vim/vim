@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.1.  Last change: 2019 Apr 04
+*message.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -830,10 +830,10 @@ Type					effect ~
      G					down all the way, until the hit-enter
 					prompt
 
-     <BS> or k or <Up>			one line back (*)
-     u					up a page (half a screen) (*)
-     b or <PageUp>			back a screen (*)
-     g					back to the start (*)
+     <BS> or k or <Up>			one line back
+     u					up a page (half a screen)
+     b or <PageUp>			back a screen
+     g					back to the start
 
      q, <Esc> or CTRL-C			stop the listing
      :					stop the listing and enter a
@@ -842,13 +842,11 @@ Type					effect ~
 					the clipboard ("* and "+ registers)
     {menu-entry}			what the menu is defined to in
 					Cmdline-mode.
-    <LeftMouse> (**)			next page
+    <LeftMouse>				next page (*)
 
 Any other key causes the meaning of the keys to be displayed.
 
-(*)  backwards scrolling is {not in Vi}.  Only scrolls back to where messages
-     started to scroll.
-(**) Clicking the left mouse button only works:
+(*) Clicking the left mouse button only works:
      - For the GUI: in the last line of the screen.
      - When 'r' is included in 'mouse' (but then selecting text won't work).
 

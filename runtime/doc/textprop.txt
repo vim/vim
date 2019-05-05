@@ -20,7 +20,6 @@ What is not working yet:
 3. When text changes		|text-prop-changes|
 
 
-{Vi does not have text properties}
 {not able to use text properties when the |+textprop| feature was
 disabled at compile time}
 

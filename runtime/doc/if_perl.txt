@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
+*if_perl.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -11,9 +11,7 @@ Perl and Vim				*perl* *Perl*
 3. Using the Perl interface		|perl-using|
 4. Dynamic loading			|perl-dynamic|
 
-{Vi does not have any of these commands}
-
-The Perl interface only works when Vim was compiled with the |+perl| feature.
+{only available when Vim was compiled with the |+perl| feature}
 
 ==============================================================================
 1. Editing Perl files					*perl-editing*

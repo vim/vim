@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Apr 28
+*options.txt*	For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6163,9 +6163,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set to half the number of lines in the window when the window size
 	changes.  If you give a count to the CTRL-U or CTRL-D command it will
 	be used as the new value for 'scroll'.  Reset to half the window
-	height with ":set scroll=0".   {Vi is a bit different: 'scroll' gives
-	the number of screen lines instead of file lines, makes a difference
-	when lines wrap}
+	height with ":set scroll=0".
 
 			*'scrollbind'* *'scb'* *'noscrollbind'* *'noscb'*
 'scrollbind' 'scb'	boolean  (default off)
@@ -7787,7 +7785,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'timeoutlen'* *'tm'*
 'timeoutlen' 'tm'	number	(default 1000)
 			global
-			{not in all versions of Vi}
+
 						*'ttimeoutlen'* *'ttm'*
 'ttimeoutlen' 'ttm'	number	(default -1, set to 100 in |defaults.vim|)
 			global
@@ -7990,9 +7988,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			work.  See below for how Vim detects this
 			automatically.
 							*netterm-mouse*
-	   netterm	NetTerm mouse handling.  The mouse generates
+	   netterm	NetTerm mouse handling.  A left mouse click generates
 			"<Esc>}r,c<CR>", where "r,c" are two decimal numbers
-			for the row and column.
+			for the row and column.  No other mouse events are
+			supported.
 							*dec-mouse*
 	   dec		DEC terminal mouse handling.  The mouse generates a
 			rather complex sequence, starting with "<Esc>[".
@@ -8653,7 +8652,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in a much smarter way, taking care of wrapping lines.
 	When resizing the Vim window, the value is smaller than 1 or more than
 	or equal to 'lines' it will be set to 'lines' minus 1.
-	{Vi also uses the option to specify the number of displayed lines}
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)

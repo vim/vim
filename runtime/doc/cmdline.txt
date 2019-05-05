@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2018 May 14
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -66,7 +66,6 @@ Notes:
 - All searches are put in the search history, including the ones that come
   from commands like "*" and "#".  But for a mapping, only the last search is
   remembered (to avoid that long mappings trash the history).
-{Vi: no history}
 {not available when compiled without the |+cmdline_hist| feature}
 
 There is an automatic completion of names on the command-line; see
@@ -124,12 +123,12 @@ CTRL-U		Remove all characters between the cursor position and
 			:cnoremap <C-U> <C-E><C-U>
 <
 						*c_<Insert>* *c_Insert*
-<Insert>	Toggle between insert and overstrike.  {not in Vi}
+<Insert>	Toggle between insert and overstrike.
 
 {char1} <BS> {char2}	or				*c_digraph*
 CTRL-K {char1} {char2}					*c_CTRL-K*
 		enter digraph (see |digraphs|).  When {char1} is a special
-		key, the code for that key is inserted in <> form.  {not in Vi}
+		key, the code for that key is inserted in <> form.
 
 CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
 		Insert the contents of a numbered or named register.  Between
@@ -165,7 +164,7 @@ CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
 				too.
 				When the result is a Float it's automatically
 				converted to a String.
-		See |registers| about registers.  {not in Vi}
+		See |registers| about registers.
 		Implementation detail: When using the |expression| register
 		and invoking setcmdpos(), this sets the position before
 		inserting the resulting string.  Use CTRL-R CTRL-R to set the
@@ -188,7 +187,6 @@ CTRL-R CTRL-L				*c_CTRL-R_CTRL-L* *c_<C-R>_<C-L>*
 		currently displayed match is used.  With CTRL-W the part of
 		the word that was already typed is not inserted again.
 
-		{not in Vi}
 		CTRL-F and CTRL-P: {only when |+file_in_path| feature is
 		included}
 
@@ -313,11 +311,9 @@ CTRL-^		Toggle the use of language |:lmap| mappings and/or Input
 		off, since you are expected to type a command.  After
 		switching it on with CTRL-^, the new state is not used again
 		for the next command or Search pattern.
-		{not in Vi}
 
 						*c_CTRL-]*
-CTRL-]		Trigger abbreviation, without inserting a character.  {not in
-		Vi}
+CTRL-]		Trigger abbreviation, without inserting a character.
 
 For Emacs-style editing on the command-line see |emacs-keys|.
 
@@ -332,7 +328,6 @@ terminals)
 
 							*:his* *:history*
 :his[tory]	Print the history of last entered commands.
-		{not in Vi}
 		{not available when compiled without the |+cmdline_hist|
 		feature}
 
@@ -344,7 +339,6 @@ terminals)
 		i[nput]	 or @		input line history
 		d[ebug]	 or >		debug command history
 		a[ll]			all of the above
-		{not in Vi}
 
 		If the numbers {first} and/or {last} are given, the respective
 		range of entries from a history is listed.  These numbers can
