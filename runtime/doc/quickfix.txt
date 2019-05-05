@@ -139,8 +139,8 @@ processing a quickfix or location list command, it will be aborted.
 :[count]lab[ove]	Same as ":cabove", except the location list for the
 			current window is used instead of the quickfix list.
 
-							*:cbe* *:cbelow*
-:[count]cbe[low]	Go to the [count] error below the current line in the
+							*:cbel* *:cbelow*
+:[count]cbel[ow]	Go to the [count] error below the current line in the
 			current buffer.  If [count] is omitted, then 1 is
 			used.  If there are no errors, then an error message
 			is displayed.  Assumes that the entries in a quickfix
@@ -154,8 +154,8 @@ processing a quickfix or location list command, it will be aborted.
 :[count]lbel[ow]	Same as ":cbelow", except the location list for the
 			current window is used instead of the quickfix list.
 
-							*:cbe* *:cbefore*
-:[count]cbe[fore]	Go to the [count] error before the current cursor
+							*:cbef* *:cbefore*
+:[count]cbef[ore]	Go to the [count] error before the current cursor
 			position in the current buffer.  If [count] is
 			omitted, then 1 is used.  If there are no errors, then
 			an error message is displayed.  Assumes that the
