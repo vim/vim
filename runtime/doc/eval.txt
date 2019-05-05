@@ -7218,6 +7218,9 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 				properties the one with the highest priority
 				will be used; negative values can be used, the
 				default priority is zero
+		   combine	when TRUE combine the highlight with any
+				syntax highlight; when omitted of FALSE syntax
+				highlight will not be used
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property
 		   end_incl	when TRUE inserts at the end position will be

@@ -3059,6 +3059,7 @@ win_line(
     int		text_props_active = 0;
     proptype_T  *text_prop_type = NULL;
     int		text_prop_attr = 0;
+    int		text_prop_combine = FALSE;
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	/* this buffer has spell checking */
@@ -4261,6 +4262,7 @@ win_line(
 		    text_prop_idxs[text_props_active++] = text_prop_next++;
 
 		text_prop_attr = 0;
+		text_prop_combine = FALSE;
 		if (text_props_active > 0)
 		{
 		    // Sort the properties on priority and/or starting last.
@@ -4273,17 +4275,17 @@ win_line(
 		    for (pi = 0; pi < text_props_active; ++pi)
 		    {
 			int	    tpi = text_prop_idxs[pi];
-			proptype_T  *pt = text_prop_type_by_id(wp->w_buffer, text_props[tpi].tp_type);
+			proptype_T  *pt = text_prop_type_by_id(
+					wp->w_buffer, text_props[tpi].tp_type);
 
 			if (pt != NULL)
 			{
 			    int pt_attr = syn_id2attr(pt->pt_hl_id);
 
 			    text_prop_type = pt;
-			    if (text_prop_attr == 0)
-				text_prop_attr = pt_attr;
-			    else
-				text_prop_attr = hl_combine_attr(text_prop_attr, pt_attr);
+			    text_prop_attr =
+				      hl_combine_attr(text_prop_attr, pt_attr);
+			    text_prop_combine = pt->pt_flags & PT_FLAG_COMBINE;
 			}
 		    }
 		}
@@ -4314,7 +4316,13 @@ win_line(
 		attr_pri = FALSE;
 #ifdef FEAT_TEXT_PROP
 		if (text_prop_type != NULL)
-		    char_attr = text_prop_attr;
+		{
+		    if (text_prop_combine)
+			char_attr = hl_combine_attr(
+						  syntax_attr, text_prop_attr);
+		    else
+			char_attr = text_prop_attr;
+		}
 		else
 #endif
 #ifdef FEAT_SYN_HL
@@ -4664,14 +4672,18 @@ win_line(
 		    ptr = line + v;
 
 # ifdef FEAT_TEXT_PROP
-		    // Text properties overrule syntax highlighting.
-		    if (text_prop_attr == 0)
-#endif
+		    // Text properties overrule syntax highlighting or combine.
+		    if (text_prop_attr == 0 || text_prop_combine)
+# endif
 		    {
+			int comb_attr = syntax_attr;
+# ifdef FEAT_TEXT_PROP
+			comb_attr = hl_combine_attr(text_prop_attr, comb_attr);
+# endif
 			if (!attr_pri)
-			    char_attr = syntax_attr;
+			    char_attr = comb_attr;
 			else
-			    char_attr = hl_combine_attr(syntax_attr, char_attr);
+			    char_attr = hl_combine_attr(comb_attr, char_attr);
 		    }
 # ifdef FEAT_CONCEAL
 		    /* no concealing past the end of the line, it interferes
