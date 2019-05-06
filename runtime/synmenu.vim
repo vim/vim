@@ -250,6 +250,7 @@ an 50.50.200 &Syntax.HIJK.Hg\ commit :cal SetSyn("hgcommit")<CR>
 an 50.50.210 &Syntax.HIJK.HTML.HTML :cal SetSyn("html")<CR>
 an 50.50.220 &Syntax.HIJK.HTML.HTML\ with\ M4 :cal SetSyn("htmlm4")<CR>
 an 50.50.230 &Syntax.HIJK.HTML.HTML\ with\ Ruby\ (eRuby) :cal SetSyn("eruby")<CR>
+an 50.50.240 &Syntax.HIJK.HTML.Cheetah\ HTML\ template :cal SetSyn("htmlcheetah")<CR>
 an 50.50.250 &Syntax.HIJK.HTML.Django\ HTML\ template :cal SetSyn("htmldjango")<CR>
 an 50.50.260 &Syntax.HIJK.HTML.HTML/OS :cal SetSyn("htmlos")<CR>
 an 50.50.270 &Syntax.HIJK.HTML.XHTML :cal SetSyn("xhtml")<CR>
