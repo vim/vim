@@ -391,20 +391,16 @@ func Test_invalid_args()
     return
   endif
 
-  let out = split(system(GetVimCommand() .. ' --does-not-exist'), "\n")
-  call assert_equal(1, v:shell_error)
-  call assert_match('^VIM - Vi IMproved .* (.*)$',                 out[0])
-  call assert_equal('Unknown option argument: "--does-not-exist"', out[1])
-  call assert_equal('More info with: "vim -h"',                    out[2])
-
-  let out = split(system(GetVimCommand() .. ' - xxx'), "\n")
-  call assert_equal(1, v:shell_error)
-  call assert_match('^VIM - Vi IMproved .* (.*)$',    out[0])
-  call assert_equal('Too many edit arguments: "xxx"', out[1])
-  call assert_equal('More info with: "vim -h"',       out[2])
+  for opt in ['-Y', '--does-not-exist']
+    let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+    call assert_equal('Unknown option argument: "' .. opt .. '"', out[1])
+    call assert_equal('More info with: "vim -h"',                 out[2])
+  endfor
 
   for opt in ['-c', '-i', '-s', '-t', '-T', '-u', '-U', '-w', '-W', '--cmd', '--startuptime']
-    let out = split(system(GetVimCommand() .. ' '  .. opt ), "\n")
+    let out = split(system(GetVimCommand() .. ' '  .. opt), "\n")
     call assert_equal(1, v:shell_error)
     call assert_match('^VIM - Vi IMproved .* (.*)$',             out[0])
     call assert_equal('Argument missing after: "' .. opt .. '"', out[1])
@@ -412,13 +408,14 @@ func Test_invalid_args()
   endfor
 
   if has('clientserver')
-    "FIXME: need to add --servername but it makes vim-8.1.1282 to crash!
+    " FIXME: need to add --servername to this list
+    " but it causes vim-8.1.1282 to crash!
     for opt in ['--remote', '--remote-send', '--remote-silent', '--remote-expr',
           \     '--remote-tab', '--remote-tab-wait',
           \     '--remote-tab-wait-silent', '--remote-tab-silent',
           \     '--remote-wait', '--remote-wait-silent',
           \    ]
-      let out = split(system(GetVimCommand() .. ' '  .. opt ), "\n")
+      let out = split(system(GetVimCommand() .. ' '  .. opt), "\n")
       call assert_equal(1, v:shell_error)
       call assert_match('^VIM - Vi IMproved .* (.*)$',             out[0])
       call assert_equal('Argument missing after: "' .. opt .. '"', out[1])
@@ -426,7 +423,7 @@ func Test_invalid_args()
     endfor
   endif
 
-  "FIXME: commented out as this causes vim-8.1.1282 to crash!
+  " FIXME: commented out as this causes vim-8.1.1282 to crash!
   "if has('clipboard')
   "  let out = split(system(GetVimCommand() .. ' --display'), "\n")
   "  call assert_equal(1, v:shell_error)
@@ -434,26 +431,47 @@ func Test_invalid_args()
   "  call assert_equal('Argument missing after: "--display"', out[1])
   "  call assert_equal('More info with: "vim -h"',            out[2])
   "endif
-  "
+
   let out = split(system(GetVimCommand() .. ' -ix'), "\n")
   call assert_equal(1, v:shell_error)
   call assert_match('^VIM - Vi IMproved .* (.*)$',          out[0])
   call assert_equal('Garbage after option argument: "-ix"', out[1])
   call assert_equal('More info with: "vim -h"',             out[2])
 
-  let out = split(system(GetVimCommand() .. ' -cq -cq -cq -cq -cq -cq -cq -cq -cq -cq -cq'), "\n")
+  let out = split(system(GetVimCommand() .. ' - xxx'), "\n")
   call assert_equal(1, v:shell_error)
-  call assert_match('^VIM - Vi IMproved .* (.*)$',                                    out[0])
-  call assert_equal('Too many "+command", "-c command" or "--cmd command" arguments', out[1])
-  call assert_equal('More info with: "vim -h"',                                       out[2])
+  call assert_match('^VIM - Vi IMproved .* (.*)$',    out[0])
+  call assert_equal('Too many edit arguments: "xxx"', out[1])
+  call assert_equal('More info with: "vim -h"',       out[2])
+
+  " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
+  for opt in ['-t', '-q']
+    let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+    call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
+    call assert_equal('More info with: "vim -h"',                 out[2])
+  endfor
+
+  for opt in [' -cq', ' --cmd q', ' +', ' -S foo']
+    let out = split(system(GetVimCommand() .. repeat(opt, 11)), "\n")
+    call assert_equal(1, v:shell_error)
+    " FIXME: The error message given by Vim is not ideal in case of repeated
+    " -S foo since it does not mention -S.
+    call assert_match('^VIM - Vi IMproved .* (.*)$',                                    out[0])
+    call assert_equal('Too many "+command", "-c command" or "--cmd command" arguments', out[1])
+    call assert_equal('More info with: "vim -h"',                                       out[2])
+  endfor
 
   " FIXME: commented out as this causes vim-8.1.1282 to crash!
   "if has('gui_gtk')
-  "  let out = split(system(GetVimCommand() .. ' --socketid x'), "\n")
-  "  call assert_equal(1, v:shell_error)
-  "  call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
-  "  call assert_equal('Invalid argument for: "--socketid"', out[1])
-  "  call assert_equal('More info with: "vim -h"',           out[2])
+  "  for opt in ['--socketid x', '--socketid 0xg']
+  "    let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
+  "    call assert_equal(1, v:shell_error)
+  "    call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
+  "    call assert_equal('Invalid argument for: "--socketid"', out[1])
+  "    call assert_equal('More info with: "vim -h"',           out[2])
+  "  endfor
   "endif
 endfunc
 
