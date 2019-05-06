@@ -713,9 +713,6 @@ au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
 " HTML with M4
 au BufNewFile,BufRead *.html.m4			setf htmlm4
 
-" HTML Cheetah template
-au BufNewFile,BufRead *.tmpl			setf htmlcheetah
-
 " Host config
 au BufNewFile,BufRead */etc/host.conf		setf hostconf
 
