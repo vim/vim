@@ -44,7 +44,6 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test17.out \
 	test30.out \
 	test59.out \
 	test72.out \
@@ -82,6 +81,7 @@ NEW_TESTS = \
 	test_channel \
 	test_charsearch \
 	test_charsearch_utf8 \
+	test_checkpath \
 	test_cindent \
 	test_clientserver \
 	test_close_count \
@@ -302,6 +302,7 @@ NEW_TESTS_RES = \
 	test_changelist.res \
 	test_channel.res \
 	test_charsearch.res \
+	test_checkpath.res \
 	test_cindent.res \
 	test_clientserver.res \
 	test_close_count.res \
