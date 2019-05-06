@@ -76,12 +76,18 @@ function GetVerilogIndent()
     let vverb = 0
   endif
 
+  " Start of multiple-line comment
+  if last_line =~ '^\s*/\*' && last_line !~ '/\*.\{-}\*/'
+    let ind = ind + offset_comment1
+    if vverb
+      echo vverb_str "Indent after the start of multiple-line comment."
+    endif
   " Indent accoding to last line
   " End of multiple-line comment
-  if last_line =~ '\*/\s*$' && last_line !~ '/\*.\{-}\*/'
+  elseif last_line =~ '\*/\s*$' && last_line !~ '/\*.\{-}\*/'
     let ind = ind - offset_comment1
     if vverb
-      echo vverb_str "De-indent after a multiple-line comment."
+      echo vverb_str "De-indent after the end of multiple-line comment."
     endif
 
   " Indent after if/else/for/case/always/initial/specify/fork blocks
@@ -148,7 +154,8 @@ function GetVerilogIndent()
     "   Ident the first open line
     elseif  last_line =~ vlog_openstat . '\s*' . vlog_comment . '*$' &&
       \ last_line !~ '\(//\|/\*\).*' . vlog_openstat . '\s*$' &&
-      \ last_line2 !~ vlog_openstat . '\s*' . vlog_comment . '*$'
+      \ last_line2 !~ vlog_openstat . '\s*' . vlog_comment . '*$' &&
+      \ last_line2 !~ '^\s*/\*'
       let ind = ind + offset
       if vverb | echo vverb_str "Indent after an open statement." | endif
 
