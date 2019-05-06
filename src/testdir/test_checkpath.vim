@@ -1,6 +1,6 @@
 " Tests for the :checkpath command
 
-" check for 'include' without \zs or \ze
+" Test for 'include' without \zs or \ze
 func Test_checkpath1()
   call mkdir("Xdir1/dir2", "p")
   call writefile(['#include    "bar.a"'], 'Xdir1/dir2/foo.a')
@@ -21,6 +21,7 @@ func Test_checkpath1()
 	      \ '    Xdir1/dir2/baz.a -->',
 	      \ '      "foo.a"  (Already listed)'], res)
 
+  enew
   call delete("./Xbase.a")
   call delete("Xdir1", "rf")
   set path&
@@ -30,7 +31,7 @@ func DotsToSlashes()
   return substitute(v:fname, '\.', '/', 'g') . '.b'
 endfunc
 
-" check for 'include' with \zs and \ze
+" Test for 'include' with \zs and \ze
 func Test_checkpath2()
   call mkdir("Xdir1/dir2", "p")
   call writefile(['%inc    /bar/'], 'Xdir1/dir2/foo.b')
@@ -54,6 +55,7 @@ func Test_checkpath2()
 	      \ '    Xdir1/dir2/baz.b -->',
 	      \ '      foo  (Already listed)'], res)
 
+  enew
   call delete("./Xbase.b")
   call delete("Xdir1", "rf")
   set path&
@@ -68,7 +70,7 @@ func StripNewlineChar()
   return v:fname
 endfunc
 
-" check for 'include' with \zs and no \ze
+" Test for 'include' with \zs and no \ze
 func Test_checkpath3()
   call mkdir("Xdir1/dir2", "p")
   call writefile(['%inc    bar.c'], 'Xdir1/dir2/foo.c')
@@ -93,6 +95,7 @@ func Test_checkpath3()
 	      \ '    Xdir1/dir2/baz.c -->',
 	      \ '      foo.c  (Already listed)'], res)
 
+  enew
   call delete("./Xbase.c")
   call delete("Xdir1", "rf")
   set path&
