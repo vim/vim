@@ -270,7 +270,6 @@ SynMenu HIJK.Hg\ commit:hgcommit
 SynMenu HIJK.HTML.HTML:html
 SynMenu HIJK.HTML.HTML\ with\ M4:htmlm4
 SynMenu HIJK.HTML.HTML\ with\ Ruby\ (eRuby):eruby
-SynMenu HIJK.HTML.Cheetah\ HTML\ template:htmlcheetah
 SynMenu HIJK.HTML.Django\ HTML\ template:htmldjango
 SynMenu HIJK.HTML.HTML/OS:htmlos
 SynMenu HIJK.HTML.XHTML:xhtml
