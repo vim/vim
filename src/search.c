@@ -26,7 +26,7 @@ static void show_pat_in_path(char_u *, int,
 #ifdef FEAT_VIMINFO
 static void wvsp_one(FILE *fp, int idx, char *s, int sc);
 #endif
-static void search_stat(int dirc, pos_T *pos, char_u  *msgbuf);
+static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u  *msgbuf);
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1294,6 +1294,8 @@ do_search(
      */
     for (;;)
     {
+	int	show_top_bot_msg = FALSE;
+
 	searchstr = pat;
 	dircp = NULL;
 					    /* use previous pattern */
@@ -1524,7 +1526,7 @@ do_search(
 	if (!shortmess(SHM_SEARCH)
 		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
 			    || (dirc == '?' && LT_POS(curwin->w_cursor, pos))))
-	    ui_delay(500L, FALSE);  // leave some time for top_bot_msg
+	    show_top_bot_msg = TRUE;
 
 	if (c == FAIL)
 	{
@@ -1581,7 +1583,7 @@ do_search(
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
-	    search_stat(dirc, &pos, msgbuf);
+	    search_stat(dirc, &pos, show_top_bot_msg, msgbuf);
 
 	/*
 	 * The search command can be followed by a ';' to do another search.
@@ -4911,6 +4913,7 @@ linewhite(linenr_T lnum)
 search_stat(
     int	    dirc,
     pos_T   *pos,
+    int	    show_top_bot_msg,
     char_u  *msgbuf)
 {
     int		    save_ws = p_ws;
@@ -4979,8 +4982,9 @@ search_stat(
     }
     if (cur > 0)
     {
-#define STAT_BUF_LEN 10
+#define STAT_BUF_LEN 12
 	char	t[STAT_BUF_LEN] = "";
+	int	len;
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
@@ -5006,7 +5010,15 @@ search_stat(
 	    else
 		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cur, cnt);
 	}
-	mch_memmove(msgbuf + STRLEN(msgbuf) - STRLEN(t), t, STRLEN(t));
+
+	len = STRLEN(t);
+	if (show_top_bot_msg && len + 3 < STAT_BUF_LEN)
+	{
+	    STRCPY(t + len, " W");
+	    len += 2;
+	}
+
+	mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
 	if (dirc == '?' && cur == 100)
 	    cur = -1;
 
