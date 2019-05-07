@@ -1,3 +1,5 @@
+syntax: glob
+
 # Unixen: object and executable files.
 *.o
 src/vim
