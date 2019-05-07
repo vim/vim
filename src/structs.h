@@ -3555,3 +3555,10 @@ typedef struct {
     varnumber_T vv_count;
     varnumber_T vv_count1;
 } vimvars_save_T;
+
+// Scope for changing directory
+typedef enum {
+    CDSCOPE_GLOBAL,	// :cd
+    CDSCOPE_TABPAGE,	// :tcd
+    CDSCOPE_WINDOW	// :lcd
+} cdscope_T;

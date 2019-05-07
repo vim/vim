@@ -2273,6 +2273,7 @@ ch_status({handle} [, {options}])
 				String	status of channel {handle}
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
+chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
 col({expr})			Number	column nr of cursor or mark
@@ -3469,6 +3470,27 @@ char2nr({expr} [, {utf8}])					*char2nr()*
 		    let list = map(split(str, '\zs'), {_, val -> char2nr(val)})
 <		Result: [65, 66, 67]
 
+chdir({dir})						*chdir()*
+		Change the current working directory to {dir}.  The scope of
+		the directory change depends on the directory of the current
+		window:
+			- If the current window has a window-local directory
+			  (|:lcd|), then changes the window local directory.
+			- Otherwise, if the current tabpage has a local
+			  directory (|:tcd|) then changes the tabpage local
+			  directory.
+			- Otherwise, changes the global directory.
+		If successful, returns the previous working directory.  Pass
+		this to another chdir() to restore the directory.
+		On failure, returns an empty string.
+
+		Example: >
+			let save_dir = chdir(newdir)
+			if save_dir
+			   " ... do some work
+			   call chdir(save_dir)
+			endif
+<
 cindent({lnum})						*cindent()*
 		Get the amount of indent for line {lnum} according the C
 		indenting rules, as with 'cindent'.

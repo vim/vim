@@ -769,6 +769,7 @@ System functions and manipulation of files:
 	haslocaldir()		check if current window used |:lcd| or |:tcd|
 	tempname()		get the name of a temporary file
 	mkdir()			create a new directory
+	chdir()			change current working directory
 	delete()		delete a file
 	rename()		rename a file
 	system()		get the result of a shell command as a string
