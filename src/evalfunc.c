@@ -2153,7 +2153,10 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type != VAR_STRING)
+    {
+	emsg(_(e_invarg));
 	return;
+    }
 
     // Return the current directory
     cwd = alloc(MAXPATHL);
