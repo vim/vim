@@ -423,8 +423,6 @@ SRC_DOS =	\
 		src/Make_bc5.mak \
 		src/Make_cyg.mak \
 		src/Make_cyg_ming.mak \
-		src/Make_ivc.mak \
-		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
 		tools/rename.bat \
