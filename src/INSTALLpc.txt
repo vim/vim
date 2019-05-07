@@ -81,20 +81,10 @@ nmake -f Make_mvc.mak PERL=C:\Perl PYTHON=C:\Python etc.
 				Perl, Python, etc.
 
 Make_mvc.mak allows a Vim to be built with various different features and
-debug support.  Debugging with MS Devstudio is provided by Make_dvc.mak.
-For a description of the use of Make_dvc.mak, look in Make_mvc.mak.
+debug support.
 
 For compiling Gvim with IME support on far-east Windows, add IME=yes
 to the parameters you pass to Make_mvc.mak.
-
-To build Vim from within the Visual Studio IDE, open the Make_ivc.mak project.
-(Note: Make_ivc.mak is not as rich as Make_mvc.mak, which allows for
-far more configuration.) Make_ivc.mak can also be built with nmake.
-
-nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim"
-				GUI	  Microsoft Visual C++ 4.x or later
-nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim OLE"
-				OLE	  Microsoft Visual C++ 4.x or later
 
 See the specific files for comments and options.
 

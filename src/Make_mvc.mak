@@ -143,37 +143,6 @@
 #
 # Example: To build the non-debug, GUI version with Perl interface:
 #	nmake -f Make_mvc.mak GUI=yes PERL=C:\Perl
-#
-# DEBUG with Make_mvc.mak and Make_dvc.mak:
-#	This makefile gives a fineness of control which is not supported in
-#	Visual C++ configuration files.  Therefore, debugging requires a bit of
-#	extra work.
-#	Make_dvc.mak is a Visual C++ project to access that support.  It may be
-#	badly out of date for the Visual C++ you are using...
-#	To use Make_dvc.mak:
-#	1) Build Vim with Make_mvc.mak.
-#	     Use a "DEBUG=yes" argument to build Vim with debug support.
-#	     E.g. the following builds gvimd.exe:
-#		nmake -f Make_mvc.mak debug=yes gui=yes
-#	2) Use MS Devstudio and set it up to allow that file to be debugged:
-#	    i) Pass Make_dvc.mak to the IDE.
-#		 Use the "open workspace" menu entry to load Make_dvc.mak.
-#		 Alternatively, from the command line:
-#			msdev /nologo Make_dvc.mak
-#		Note: Make_dvc.mak is in VC4.0 format. Later VC versions see
-#		this and offer to convert it to their own format. Accept that.
-#		It creates a file called Make_dvc.dsw which can then be used
-#		for further operations.  E.g.
-#		    msdev /nologo Make_dvc.dsw
-#	    ii) Set the built executable for debugging:
-#		a) Alt+F7/Debug takes you to the Debug dialog.
-#		b) Fill "Executable for debug session". e.g. gvimd.exe
-#		c) Fill "Program arguments". e.g. -R dosinst.c
-#		d) Complete the dialog
-#	3) You can now debug the executable you built with Make_mvc.mak
-#
-#	Note: Make_dvc.mak builds vimrun.exe, because it must build something
-#	to be a valid makefile..
 
 ### See feature.h for a list of optionals.
 # If you want to build some optional features without modifying the source,
