@@ -4958,8 +4958,8 @@ search_stat(
 	profile_setlimit(20L, &start);
 #endif
 	while (!got_int && searchit(curwin, curbuf, &lastpos, NULL,
-				   FORWARD, NULL, 1, SEARCH_PEEK + SEARCH_KEEP,
-				     RE_LAST, (linenr_T)0, NULL, NULL) != FAIL)
+					FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST,
+					      (linenr_T)0, NULL, NULL) != FAIL)
 	{
 #ifdef FEAT_RELTIME
 	    // Stop after passing the time limit.
