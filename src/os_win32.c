@@ -4827,11 +4827,14 @@ mch_call_shell(
 	}
 	else
 	{
-	    cmdlen = (
+	    cmdlen =
 #ifdef FEAT_GUI_MSWIN
-		(gui.in_use ? (!p_stmp ? 0 : STRLEN(vimrun_path)) : 0) +
+		(gui.in_use ?
+		    (!s_dont_use_vimrun && p_stmp ?
+			STRLEN(vimrun_path) : STRLEN(p_sh) + STRLEN(p_shcf))
+		    : 0) +
 #endif
-		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
+		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
 
 	    newcmd = lalloc(cmdlen, TRUE);
 	    if (newcmd != NULL)
@@ -4869,9 +4872,19 @@ mch_call_shell(
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
 		else
+# ifdef VIMDLL
+		if (gui.in_use)
+# endif
+		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
+					   p_sh, p_shcf, p_sh, p_shcf, cmd);
+# ifdef VIMDLL
+		else
+# endif
 #endif
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
+#endif
 		x = mch_system((char *)newcmd, options);
 		vim_free(newcmd);
 	    }
