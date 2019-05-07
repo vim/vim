@@ -1,4 +1,4 @@
-" Test for :cd
+" Test for :cd and chdir()
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
@@ -64,4 +64,45 @@ func Test_cd_with_cpo_chdir()
   call delete('Xfoo')
   set cpo&
   bw!
+endfunc
+
+" Test for chdir()
+func Test_chdir_func()
+  let topdir = getcwd()
+  call mkdir('Xdir/y/z', 'p')
+
+  " Create a few tabpages and windows with different directories
+  new
+  cd Xdir
+  tabnew
+  tcd y
+  below new
+  below new
+  lcd z
+
+  tabfirst
+  call chdir('..')
+  call assert_equal('y', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
+  tabnext | wincmd t
+  call chdir('..')
+  call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('Xdir', fnamemodify(getcwd(2, 2), ':t'))
+  call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
+  3wincmd w
+  call chdir('..')
+  call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('Xdir', fnamemodify(getcwd(2, 2), ':t'))
+  call assert_equal('y', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
+
+  " Error case
+  call assert_fails("call chdir('dir-abcd')", 'E472:')
+  silent! let d = chdir("dir_abcd")
+  call assert_equal("", d)
+
+  only | tabonly
+  exe 'cd ' . topdir
+  call delete('Xdir', 'rf')
 endfunc

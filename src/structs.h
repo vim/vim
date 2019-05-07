@@ -3555,3 +3555,11 @@ typedef struct {
     varnumber_T vv_count;
     varnumber_T vv_count1;
 } vimvars_save_T;
+
+// Change directory scope
+//   win-local cd, tabpage-local cd or global cd
+typedef enum {
+    CDSCOPE_GLOBAL,
+    CDSCOPE_TABPAGE,
+    CDSCOPE_WINDOW
+} cdscope_T;

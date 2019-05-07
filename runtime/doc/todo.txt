@@ -176,13 +176,6 @@ negative. (see #4326)
 tab page. (Ingo Karkat, #4324)
 :call settabwinvar(1, 1, '&cmdheight', 2) also doesn't work well.
 
-Add a chdir() function, which will set the window-local, tab-local or global
-directory, first one that is currently used.  Returns the current directory,
-so that this works:
-    let save_dir = chdir('somewhere')
-    ...
-    call chdir(save_dir)
-
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
 
