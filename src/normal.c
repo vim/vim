@@ -2326,10 +2326,10 @@ do_mouse(
 
     if (c == K_MOUSEMOVE)
     {
-	/* Mouse moved without a button pressed. */
+	// Mouse moved without a button pressed.
 #ifdef FEAT_BEVAL_TERM
 	ui_may_remove_balloon();
-	if (p_bevalterm && !VIsual_active)
+	if (p_bevalterm)
 	{
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;
