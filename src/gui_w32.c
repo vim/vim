@@ -4827,6 +4827,10 @@ ole_error(char *arg)
 {
     char buf[IOSIZE];
 
+# ifdef VIMDLL
+    gui.in_use = mch_is_gui_executable();
+# endif
+
     /* Can't use emsg() here, we have not finished initialisation yet. */
     vim_snprintf(buf, IOSIZE,
 	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
