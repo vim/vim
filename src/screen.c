@@ -5596,6 +5596,7 @@ win_line(
 
 	/* line continues beyond line end */
 	if (lcs_ext
+		&& wp->w_p_list
 		&& !wp->w_p_wrap
 #ifdef FEAT_DIFF
 		&& filler_todo <= 0
