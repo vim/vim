@@ -178,6 +178,8 @@ main
 #ifdef VIMDLL
     // Check if the current executable file is for the GUI subsystem.
     gui.starting = mch_is_gui_executable();
+#elif defined(FEAT_GUI_MSWIN)
+    gui.starting = TRUE;
 #endif
 
 #ifdef FEAT_CLIENTSERVER
@@ -3240,6 +3242,14 @@ mainerr(
 {
 #if defined(UNIX) || defined(VMS)
     reset_signals();		/* kill us with CTRL-C here, if you like */
+#endif
+
+    // If this is a Windows GUI executable, show an error dialog box.
+#ifdef VIMDLL
+    gui.in_use = mch_is_gui_executable();
+#endif
+#ifdef FEAT_GUI_MSWIN
+    gui.starting = FALSE;   // Needed to show as error.
 #endif
 
     init_longVersion();
