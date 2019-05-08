@@ -229,6 +229,9 @@ profile_zero(proftime_T *tm)
 static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
+/*
+ * Return time left until "due".  Negative if past "due".
+ */
     long
 proftime_time_left(proftime_T *due, proftime_T *now)
 {
@@ -445,7 +448,11 @@ check_due_timer(void)
 		balloonEvalForTerm = TRUE;
 	    }
 	    if (balloonEval != NULL)
+	    {
 		general_beval_cb(balloonEval, 0);
+		setcursor();
+		out_flush();
+	    }
 	}
 	else if (next_due == -1 || next_due > this_due)
 	    next_due = this_due;

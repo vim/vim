@@ -2496,6 +2496,7 @@ static struct key_name_entry
 #endif
     {K_PLUG,		(char_u *)"Plug"},
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
+    {K_IGNORE,		(char_u *)"Ignore"},
     {0,			NULL}
     /* NOTE: When adding a long name update MAX_KEY_NAME_LEN. */
 };
