@@ -408,12 +408,11 @@ func Test_invalid_args()
   endfor
 
   if has('clientserver')
-    " FIXME: need to add --servername to this list
-    " but it causes vim-8.1.1282 to crash!
     for opt in ['--remote', '--remote-send', '--remote-silent', '--remote-expr',
           \     '--remote-tab', '--remote-tab-wait',
           \     '--remote-tab-wait-silent', '--remote-tab-silent',
           \     '--remote-wait', '--remote-wait-silent',
+          \     '--servername',
           \    ]
       let out = split(system(GetVimCommand() .. ' '  .. opt), "\n")
       call assert_equal(1, v:shell_error)
@@ -423,14 +422,13 @@ func Test_invalid_args()
     endfor
   endif
 
-  " FIXME: commented out as this causes vim-8.1.1282 to crash!
-  "if has('clipboard')
-  "  let out = split(system(GetVimCommand() .. ' --display'), "\n")
-  "  call assert_equal(1, v:shell_error)
-  "  call assert_match('^VIM - Vi IMproved .* (.*)$',         out[0])
-  "  call assert_equal('Argument missing after: "--display"', out[1])
-  "  call assert_equal('More info with: "vim -h"',            out[2])
-  "endif
+  if has('clipboard')
+    let out = split(system(GetVimCommand() .. ' --display'), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',         out[0])
+    call assert_equal('Argument missing after: "--display"', out[1])
+    call assert_equal('More info with: "vim -h"',            out[2])
+  endif
 
   let out = split(system(GetVimCommand() .. ' -ix'), "\n")
   call assert_equal(1, v:shell_error)
@@ -463,16 +461,15 @@ func Test_invalid_args()
     call assert_equal('More info with: "vim -h"',                                       out[2])
   endfor
 
-  " FIXME: commented out as this causes vim-8.1.1282 to crash!
-  "if has('gui_gtk')
-  "  for opt in ['--socketid x', '--socketid 0xg']
-  "    let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
-  "    call assert_equal(1, v:shell_error)
-  "    call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
-  "    call assert_equal('Invalid argument for: "--socketid"', out[1])
-  "    call assert_equal('More info with: "vim -h"',           out[2])
-  "  endfor
-  "endif
+  if has('gui_gtk')
+    for opt in ['--socketid x', '--socketid 0xg']
+      let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
+      call assert_equal('Invalid argument for: "--socketid"', out[1])
+      call assert_equal('More info with: "vim -h"',           out[2])
+    endfor
+  endif
 endfunc
 
 func Test_file_args()
