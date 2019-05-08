@@ -5594,8 +5594,10 @@ win_line(
 	    break;
 	}
 
-	/* line continues beyond line end */
-	if (lcs_ext
+	// Show "extends" character from 'listchars' if beyond the line end and
+	// 'list' is set.
+	if (lcs_ext != NUL
+		&& wp->w_p_list
 		&& !wp->w_p_wrap
 #ifdef FEAT_DIFF
 		&& filler_todo <= 0
