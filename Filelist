@@ -421,7 +421,6 @@ SRC_DOS =	\
 		src/GvimExt/uninst.bat \
 		README_srcdos.txt \
 		src/INSTALLpc.txt \
-		src/Make_bc5.mak \
 		src/Make_cyg.mak \
 		src/Make_cyg_ming.mak \
 		src/Make_ming.mak \
@@ -474,7 +473,6 @@ SRC_DOS =	\
 		src/xpm_w32.c \
 		src/xpm_w32.h \
 		src/tee/Make_mvc.mak \
-		src/xxd/Make_bc5.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \

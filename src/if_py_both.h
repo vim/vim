@@ -13,11 +13,6 @@
  * Common code for if_python.c and if_python3.c.
  */
 
-#ifdef __BORLANDC__
-/* Disable Warning W8060: Possibly incorrect assignment in function ... */
-# pragma warn -8060
-#endif
-
 static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
 
 #if PY_VERSION_HEX < 0x02050000

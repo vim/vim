@@ -278,7 +278,6 @@ wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
-try		Borland C++ doesn't like it to be used as a variable.
 
 clear		Mac curses.h
 echo		Mac curses.h

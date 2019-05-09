@@ -5348,9 +5348,6 @@ syn_cmd_region(
  * A simple syntax group ID comparison function suitable for use in qsort()
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 syn_compare_stub(const void *v1, const void *v2)
 {
     const short	*s1 = v1;
@@ -6703,9 +6700,6 @@ typedef struct
 } time_entry_T;
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 syn_compare_syntime(const void *v1, const void *v2)
 {
     const time_entry_T	*s1 = v1;

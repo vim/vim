@@ -43,14 +43,6 @@ gvim.lib
 runtime/doc/uganda.nsis.txt
 nsis/icons/*
 
-# Borland C++
-bcc.cfg
-*.ilc
-*.ild
-*.ilf
-*.ils
-*.tds
-
 # NetBeans
 nbproject/*
 

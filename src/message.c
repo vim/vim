@@ -357,9 +357,6 @@ trunc_string(
 int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg(const char *s, ...)
 {
     va_list arglist;
@@ -371,9 +368,6 @@ smsg(const char *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr(int attr, const char *s, ...)
 {
     va_list arglist;
@@ -385,9 +379,6 @@ smsg_attr(int attr, const char *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr_keep(int attr, const char *s, ...)
 {
     va_list arglist;
@@ -3091,7 +3082,7 @@ mch_msg(char *str)
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
 #  else
 	    isatty(2)
-#   endif
+#  endif
 #  ifdef FEAT_GUI
 	    ||
 #  endif

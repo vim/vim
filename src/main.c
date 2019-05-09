@@ -98,9 +98,6 @@ __declspec(dllexport)
 # endif
     int
 # ifdef MSWIN
-#  ifdef __BORLANDC__
-_cdecl
-#  endif
 VimMain
 # else
 main
