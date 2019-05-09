@@ -75,7 +75,7 @@ typedef struct BalloonEvalStruct
 #ifdef FEAT_VARTABS
     int			*vts;		// vartabstop setting for this buffer
 #endif
-    char_u		*msg;
+    char_u		*msg;		// allocated: current text
 #ifdef FEAT_GUI_MSWIN
     void		*tofree;
 #endif

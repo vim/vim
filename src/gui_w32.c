@@ -8506,6 +8506,15 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 {
     POINT   pt;
 
+    vim_free(beval->msg);
+    beval->msg = mesg == NULL ? NULL : vim_strsave(mesg);
+    if (beval->msg == NULL)
+    {
+	delete_tooltip(beval);
+	beval->showState = ShS_NEUTRAL;
+	return;
+    }
+
     // TRACE0("gui_mch_post_balloon {{{");
     if (beval->showState == ShS_SHOWING)
 	return;

@@ -1154,7 +1154,10 @@ ui_post_balloon(char_u *mesg, list_T *list)
     ui_remove_balloon();
 
     if (mesg == NULL && list == NULL)
+    {
+	pum_undisplay();
 	return;
+    }
     if (list != NULL)
     {
 	listitem_T  *li;

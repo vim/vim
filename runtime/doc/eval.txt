@@ -2226,6 +2226,7 @@ assert_true({actual} [, {msg}])	Number	assert {actual} is true
 asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
+balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
@@ -3007,15 +3008,20 @@ atan2({expr1}, {expr2})					*atan2()*
 <			2.356194
 		{only available when compiled with the |+float| feature}
 
+balloon_gettext()					*balloon_gettext()*
+		Return the current text in the balloon.  Only for the string,
+		not used for the List.
+
 balloon_show({expr})					*balloon_show()*
 		Show {expr} inside the balloon.  For the GUI {expr} is used as
 		a string.  For a terminal {expr} can be a list, which contains
 		the lines of the balloon.  If {expr} is not a list it will be
 		split with |balloon_split()|.
+		If {expr} is an empty string any existing balloon is removed.
 
 		Example: >
 			func GetBalloonContent()
-			   " initiate getting the content
+			   " ... initiate getting the content
 			   return ''
 			endfunc
 			set balloonexpr=GetBalloonContent()
@@ -4229,6 +4235,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		and "\..." notation |expr-quote|. For example,
 		feedkeys("\<CR>") simulates pressing of the <Enter> key. But
 		feedkeys('\<CR>') pushes 5 characters.
+		A special code that might be useful is <Ignore>, it exits the
+		wait for a character without doing anything.  *<Ignore>*
 
 		{mode} is a String, which can contain these character flags:
 		'm'	Remap keys. This is default.  If {mode} is absent,
