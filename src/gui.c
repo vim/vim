@@ -69,7 +69,7 @@ gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
     static int	recursive = 0;
-#ifdef GUI_MAY_SPAWN
+#if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
     char	*msg = NULL;
 #endif
 
@@ -113,7 +113,10 @@ gui_start(char_u *arg UNUSED)
 # endif
 	    )
     {
-	msg = gui_mch_do_spawn(arg);
+# ifdef EXPERIMENTAL_GUI_CMD
+	msg =
+# endif
+	    gui_mch_do_spawn(arg);
     }
     else
 #endif
