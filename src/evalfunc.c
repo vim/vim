@@ -137,6 +137,7 @@ static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_diff_filler(typval_T *argvars, typval_T *rettv);
 static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
+static void f_environ(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
@@ -187,6 +188,7 @@ static void f_getcmdpos(typval_T *argvars, typval_T *rettv);
 static void f_getcmdtype(typval_T *argvars, typval_T *rettv);
 static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getcwd(typval_T *argvars, typval_T *rettv);
+static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getfperm(typval_T *argvars, typval_T *rettv);
 static void f_getfsize(typval_T *argvars, typval_T *rettv);
@@ -365,6 +367,7 @@ static void f_setbufline(typval_T *argvars, typval_T *rettv);
 static void f_setbufvar(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcmdpos(typval_T *argvars, typval_T *rettv);
+static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
 static void f_setloclist(typval_T *argvars, typval_T *rettv);
@@ -629,6 +632,7 @@ static struct fst
     {"diff_filler",	1, 1, f_diff_filler},
     {"diff_hlID",	2, 2, f_diff_hlID},
     {"empty",		1, 1, f_empty},
+    {"environ",		0, 0, f_environ},
     {"escape",		2, 2, f_escape},
     {"eval",		1, 1, f_eval},
     {"eventhandler",	0, 0, f_eventhandler},
@@ -681,6 +685,7 @@ static struct fst
 #endif
     {"getcurpos",	0, 0, f_getcurpos},
     {"getcwd",		0, 2, f_getcwd},
+    {"getenv",		1, 1, f_getenv},
     {"getfontname",	0, 1, f_getfontname},
     {"getfperm",	1, 1, f_getfperm},
     {"getfsize",	1, 1, f_getfsize},
@@ -873,6 +878,7 @@ static struct fst
     {"setbufvar",	3, 3, f_setbufvar},
     {"setcharsearch",	1, 1, f_setcharsearch},
     {"setcmdpos",	1, 1, f_setcmdpos},
+    {"setenv",		2, 2, f_setenv},
     {"setfperm",	2, 2, f_setfperm},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 4, f_setloclist},
@@ -3340,6 +3346,59 @@ f_empty(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "environ()" function
+ */
+    static void
+f_environ(typval_T *argvars UNUSED, typval_T *rettv)
+{
+#if !defined(AMIGA)
+    int			i = 0;
+    char_u		*entry, *value;
+# ifdef MSWIN
+    extern wchar_t	**_wenviron;
+# else
+    extern char		**environ;
+# endif
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+
+# ifdef MSWIN
+    if (*_wenviron == NULL)
+	return;
+# else
+    if (*environ == NULL)
+	return;
+# endif
+
+    for (i = 0; ; ++i)
+    {
+# ifdef MSWIN
+	short_u		*p;
+
+	if ((p = (short_u *)_wenviron[i]) == NULL)
+	    return;
+	entry = utf16_to_enc(p, NULL);
+# else
+	if ((entry = (char_u *)environ[i]) == NULL)
+	    return;
+	entry = vim_strsave(entry);
+# endif
+	if (entry == NULL) // out of memory
+	    return;
+	if ((value = vim_strchr(entry, '=')) == NULL)
+	{
+	    vim_free(entry);
+	    continue;
+	}
+	*value++ = NUL;
+	dict_add_string(rettv->vval.v_dict, (char *)entry, value);
+	vim_free(entry);
+    }
+#endif
+}
+
+/*
  * "escape({string}, {chars})" function
  */
     static void
@@ -5258,6 +5317,27 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
     if (rettv->vval.v_string != NULL)
 	slash_adjust(rettv->vval.v_string);
 #endif
+}
+
+/*
+ * "getenv()" function
+ */
+    static void
+f_getenv(typval_T *argvars, typval_T *rettv)
+{
+    int	    mustfree = FALSE;
+    char_u  *p = vim_getenv(tv_get_string(&argvars[0]), &mustfree);
+
+    if (p == NULL)
+    {
+	rettv->v_type = VAR_SPECIAL;
+	rettv->vval.v_number = VVAL_NULL;
+	return;
+    }
+    if (!mustfree)
+	p = vim_strsave(p);
+    rettv->vval.v_string = p;
+    rettv->v_type = VAR_STRING;
 }
 
 /*
@@ -11422,6 +11502,23 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
 
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
+}
+
+/*
+ * "setenv()" function
+ */
+    static void
+f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u   namebuf[NUMBUFLEN];
+    char_u   valbuf[NUMBUFLEN];
+    char_u  *name = tv_get_string_buf(&argvars[0], namebuf);
+
+    if (argvars[1].v_type == VAR_SPECIAL
+				      && argvars[1].vval.v_number == VVAL_NULL)
+	vim_unsetenv(name);
+    else
+	vim_setenv(name, tv_get_string_buf(&argvars[1], valbuf));
 }
 
 /*

@@ -104,6 +104,7 @@ NEW_TESTS = \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
+	test_environ \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
@@ -320,6 +321,7 @@ NEW_TESTS_RES = \
 	test_digraph.res \
 	test_display.res \
 	test_edit.res \
+	test_environ.res \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \
