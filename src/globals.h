@@ -1279,9 +1279,14 @@ EXTERN linenr_T printer_page_num;
 #endif
 
 #ifdef FEAT_XCLIPBOARD
-EXTERN char	*xterm_display INIT(= NULL);	/* xterm display name; points
-						   into argv[] */
-EXTERN Display	*xterm_dpy INIT(= NULL);	/* xterm display pointer */
+// xterm display name
+EXTERN char	*xterm_display INIT(= NULL);
+
+// whether xterm_display was allocated, when FALSE it points into argv[]
+EXTERN int	xterm_display_allocated INIT(= FALSE);
+
+// xterm display pointer
+EXTERN Display	*xterm_dpy INIT(= NULL);
 #endif
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11)
 EXTERN XtAppContext app_context INIT(= (XtAppContext)NULL);

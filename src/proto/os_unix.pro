@@ -13,6 +13,7 @@ void reset_signals(void);
 int vim_handle_signal(int sig);
 int mch_check_win(int argc, char **argv);
 int mch_input_isatty(void);
+void ex_xrestore(exarg_T *eap);
 int mch_can_restore_title(void);
 int mch_can_restore_icon(void);
 void mch_settitle(char_u *title, char_u *icon);

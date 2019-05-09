@@ -394,6 +394,9 @@ static void	ex_folddo(exarg_T *eap);
 #ifndef FEAT_TERMINAL
 # define ex_terminal		ex_ni
 #endif
+#if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
+# define ex_xrestore		ex_ni
+#endif
 
 /*
  * Declare cmdnames[].

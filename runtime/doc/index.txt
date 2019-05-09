@@ -1714,6 +1714,7 @@ tag		command		action ~
 |:xmapclear|	:xmapc[lear]	remove all mappings for Visual mode
 |:xmap|		:xm[ap]		like ":map" but for Visual mode
 |:xmenu|	:xme[nu]	add menu for Visual mode
+|:xrestore|	:xr[estore]	restores the X server connection
 |:xnoremap|	:xn[oremap]	like ":noremap" but for Visual mode
 |:xnoremenu|	:xnoreme[nu]	like ":noremenu" but for Visual mode
 |:xunmap|	:xu[nmap]	like ":unmap" but for Visual mode

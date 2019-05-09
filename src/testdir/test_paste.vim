@@ -110,3 +110,29 @@ func Test_paste_visual_mode()
 
   bwipe!
 endfunc
+
+func CheckCopyPaste()
+  call setline(1, ['copy this', ''])
+  normal 1G0"*y$
+  normal j"*p
+  call assert_equal('copy this', getline(2))
+endfunc
+
+func Test_xrestore()
+  if !has('xterm_clipboard')
+    return
+  endif
+call ch_logfile('logfile', 'w')
+  let display = $DISPLAY
+  new
+  call CheckCopyPaste()
+
+  xrestore
+  call CheckCopyPaste()
+
+  exe "xrestore " .. display
+  call CheckCopyPaste()
+
+call ch_logfile('', '')
+  bwipe!
+endfunc
