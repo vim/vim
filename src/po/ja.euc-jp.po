@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-18 19:15+0900\n"
-"PO-Revision-Date: 2019-03-12 08:23+0900\n"
+"POT-Creation-Date: 2019-05-05 11:27+0900\n"
+"PO-Revision-Date: 2019-05-05 13:00+0900\n"
 "Last-Translator: MURAOKA Taro <koron.kaoriya@gmail.com>\n"
 "Language-Team: Japanese <https://github.com/vim-jp/lang-ja>\n"
 "Language: ja\n"
@@ -331,6 +331,51 @@ msgstr "キーが一致しません"
 msgid "[crypted]"
 msgstr "[暗号化]"
 
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "デバッグモードに入ります. 続けるには \"cont\" と入力してください."
+
+#, c-format
+msgid "Oldval = \"%s\""
+msgstr "古い値 = \"%s\""
+
+#, c-format
+msgid "Newval = \"%s\""
+msgstr "新しい値 = \"%s\""
+
+#, c-format
+msgid "line %ld: %s"
+msgstr "行 %ld: %s"
+
+#, c-format
+msgid "cmd: %s"
+msgstr "コマンド: %s"
+
+msgid "frame is zero"
+msgstr "フレームが 0 です"
+
+#, c-format
+msgid "frame at highest level: %d"
+msgstr "最高レベルのフレーム: %d"
+
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "ブレークポイント \"%s%s\" 行 %ld"
+
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: ブレークポイントが見つかりません: %s"
+
+msgid "No breakpoints defined"
+msgstr "ブレークポイントが定義されていません"
+
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  行 %ld"
+
+#, c-format
+msgid "%3d  expr %s"
+msgstr "%3d  expr %s"
+
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
 msgstr "E720: 辞書型にコロンがありません: %s"
@@ -494,106 +539,6 @@ msgstr "E105: :source で取込むファイル以外では :loadkeymap を使えません"
 msgid "E791: Empty keymap entry"
 msgstr "E791: 空のキーマップエントリ"
 
-msgid " Keyword completion (^N^P)"
-msgstr " キーワード補完 (^N^P)"
-
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-
-msgid " Whole line completion (^L^N^P)"
-msgstr " 行(全体)補完 (^L^N^P)"
-
-msgid " File name completion (^F^N^P)"
-msgstr " ファイル名補完 (^F^N^P)"
-
-msgid " Tag completion (^]^N^P)"
-msgstr " タグ補完 (^]^N^P)"
-
-msgid " Path pattern completion (^N^P)"
-msgstr " パスパターン補完 (^N^P)"
-
-msgid " Definition completion (^D^N^P)"
-msgstr " 定義補完 (^D^N^P)"
-
-msgid " Dictionary completion (^K^N^P)"
-msgstr " 辞書補完 (^K^N^P)"
-
-msgid " Thesaurus completion (^T^N^P)"
-msgstr " シソーラス補完 (^T^N^P)"
-
-msgid " Command-line completion (^V^N^P)"
-msgstr " コマンドライン補完 (^V^N^P)"
-
-msgid " User defined completion (^U^N^P)"
-msgstr " ユーザー定義補完 (^U^N^P)"
-
-msgid " Omni completion (^O^N^P)"
-msgstr " オムニ補完 (^O^N^P)"
-
-msgid " Spelling suggestion (s^N^P)"
-msgstr " 綴り修正候補 (s^N^P)"
-
-msgid " Keyword Local completion (^N^P)"
-msgstr " 局所キーワード補完 (^N^P)"
-
-msgid "Hit end of paragraph"
-msgstr "段落の最後にヒット"
-
-msgid "E839: Completion function changed window"
-msgstr "E839: 補間関数がウィンドウを変更しました"
-
-msgid "E840: Completion function deleted text"
-msgstr "E840: 補完関数がテキストを削除しました"
-
-msgid "'dictionary' option is empty"
-msgstr "'dictionary' オプションが空です"
-
-msgid "'thesaurus' option is empty"
-msgstr "'thesaurus' オプションが空です"
-
-#, c-format
-msgid "Scanning dictionary: %s"
-msgstr "辞書をスキャン中: %s"
-
-msgid " (insert) Scroll (^E/^Y)"
-msgstr " (挿入) スクロール(^E/^Y)"
-
-msgid " (replace) Scroll (^E/^Y)"
-msgstr " (置換) スクロール (^E/^Y)"
-
-#, c-format
-msgid "Scanning: %s"
-msgstr "スキャン中: %s"
-
-msgid "Scanning tags."
-msgstr "タグをスキャン中."
-
-msgid "match in file"
-msgstr "ファイル内のマッチ"
-
-msgid " Adding"
-msgstr " 追加中"
-
-msgid "-- Searching..."
-msgstr "-- 検索中..."
-
-msgid "Back at original"
-msgstr "始めに戻る"
-
-msgid "Word from other line"
-msgstr "他の行の単語"
-
-msgid "The only match"
-msgstr "唯一の該当"
-
-#, c-format
-msgid "match %d of %d"
-msgstr "%d 番目の該当 (全該当 %d 個中)"
-
-#, c-format
-msgid "match %d"
-msgstr "%d 番目の該当"
-
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: 予期せぬ文字が :let にありました"
 
@@ -617,6 +562,9 @@ msgstr "E461: 不正な変数名です: %s"
 
 msgid "E806: using Float as a String"
 msgstr "E806: 浮動小数点数を文字列として扱っています"
+
+msgid "E985: .= is not supported with script version 2"
+msgstr "E985: .= はスクリプトバージョン 2 では対応していません"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: ターゲットがリスト型内の要素よりも少ないです"
@@ -846,6 +794,9 @@ msgstr "E899: %s の引数はリスト型またはBlob型でなければなりません"
 msgid "E928: String required"
 msgstr "E928: 文字列が必要です"
 
+msgid "E957: Invalid window number"
+msgstr "E957: 無効なウィンドウ番号です"
+
 msgid "E808: Number or Float required"
 msgstr "E808: 数値か浮動小数点数が必要です"
 
@@ -901,9 +852,6 @@ msgstr "E916: 有効なジョブではありません"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: len() には無効な型です"
-
-msgid "E957: Invalid window number"
-msgstr "E957: 無効なウィンドウ番号です"
 
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
@@ -1248,51 +1196,6 @@ msgstr "E150: ディレクトリではありません: %s"
 msgid "No old files"
 msgstr "古いファイルはありません"
 
-msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "デバッグモードに入ります. 続けるには \"cont\" と入力してください."
-
-#, c-format
-msgid "Oldval = \"%s\""
-msgstr "古い値 = \"%s\""
-
-#, c-format
-msgid "Newval = \"%s\""
-msgstr "新しい値 = \"%s\""
-
-#, c-format
-msgid "line %ld: %s"
-msgstr "行 %ld: %s"
-
-#, c-format
-msgid "cmd: %s"
-msgstr "コマンド: %s"
-
-msgid "frame is zero"
-msgstr "フレームが 0 です"
-
-#, c-format
-msgid "frame at highest level: %d"
-msgstr "最高レベルのフレーム: %d"
-
-#, c-format
-msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "ブレークポイント \"%s%s\" 行 %ld"
-
-#, c-format
-msgid "E161: Breakpoint not found: %s"
-msgstr "E161: ブレークポイントが見つかりません: %s"
-
-msgid "No breakpoints defined"
-msgstr "ブレークポイントが定義されていません"
-
-#, c-format
-msgid "%3d  %s %s  line %ld"
-msgstr "%3d  %s %s  行 %ld"
-
-#, c-format
-msgid "%3d  expr %s"
-msgstr "%3d  expr %s"
-
 msgid "E750: First use \":profile start {fname}\""
 msgstr "E750: 初めに \":profile start {fname}\" を実行してください"
 
@@ -1396,6 +1299,13 @@ msgstr "W15: 警告: 行区切が不正です. ^M がないのでしょう"
 msgid "E167: :scriptencoding used outside of a sourced file"
 msgstr "E167: :scriptencoding が取込スクリプト以外で使用されました"
 
+msgid "E984: :scriptversion used outside of a sourced file"
+msgstr "E984: :scriptversion が取込スクリプト以外で使用されました"
+
+#, c-format
+msgid "E999: scriptversion not supported: %d"
+msgstr "E999: scriptversion はサポートされていません: %d"
+
 msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: :finish が取込スクリプト以外で使用されました"
 
@@ -1445,6 +1355,12 @@ msgstr "逆さまの範囲が指定されました、入替えますか?"
 msgid "E494: Use w or w>>"
 msgstr "E494: w もしくは w>> を使用してください"
 
+msgid ""
+"INTERNAL: Cannot use DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
+msgstr ""
+"内部エラー: DFLALL を ADDR_NONE, ADDR_UNSIGNED や ADDR_QUICKFIX とともに使う"
+"ことはできません"
+
 msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
 msgstr ""
 "E943: コマンドテーブルを更新する必要があります、'make cmdidxs' を実行してくだ"
@@ -1462,69 +1378,6 @@ msgstr[0] "編集すべきファイルがあと %d 個ありますが、終了しますか?"
 msgid "E173: %d more file to edit"
 msgid_plural "E173: %d more files to edit"
 msgstr[0] "E173: 編集すべきファイルがあと %d 個あります"
-
-#, c-format
-msgid "E174: Command already exists: add ! to replace it: %s"
-msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください: %s"
-
-msgid ""
-"\n"
-"    Name        Args       Address   Complete  Definition"
-msgstr ""
-"\n"
-"    名前        引数       アドレス  補完      定義"
-
-msgid "No user-defined commands found"
-msgstr "ユーザー定義コマンドが見つかりませんでした"
-
-msgid "E175: No attribute specified"
-msgstr "E175: 属性は定義されていません"
-
-msgid "E176: Invalid number of arguments"
-msgstr "E176: 引数の数が無効です"
-
-msgid "E177: Count cannot be specified twice"
-msgstr "E177: カウントを2重指定することはできません"
-
-msgid "E178: Invalid default value for count"
-msgstr "E178: カウントの省略値が無効です"
-
-msgid "E179: argument required for -complete"
-msgstr "E179: -complete には引数が必要です"
-
-msgid "E179: argument required for -addr"
-msgstr "E179: -addr には引数が必要です"
-
-#, c-format
-msgid "E181: Invalid attribute: %s"
-msgstr "E181: 無効な属性です: %s"
-
-msgid "E182: Invalid command name"
-msgstr "E182: 無効なコマンド名です"
-
-msgid "E183: User defined commands must start with an uppercase letter"
-msgstr "E183: ユーザー定義コマンドは英大文字で始まらなければなりません"
-
-msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E841: 予約名なので、ユーザー定義コマンドに利用できません"
-
-#, c-format
-msgid "E184: No such user-defined command: %s"
-msgstr "E184: そのユーザー定義コマンドはありません: %s"
-
-#, c-format
-msgid "E180: Invalid address type value: %s"
-msgstr "E180: 無効なアドレスタイプ値です: %s"
-
-#, c-format
-msgid "E180: Invalid complete value: %s"
-msgstr "E180: 無効な補完指定です: %s"
-
-msgid "E468: Completion argument only allowed for custom completion"
-msgstr "E468: 補完引数はカスタム補完でしか使用できません"
-
-msgid "E467: Custom completion requires a function argument"
-msgstr "E467: カスタム補完には引数として関数が必要です"
 
 msgid "unknown"
 msgstr "不明"
@@ -1908,20 +1761,21 @@ msgid "is read-only (add ! to override)"
 msgstr "は読込専用です (強制書込には ! を追加)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E506: バックアップファイルを保存できません (! を追加で強制保存)"
+msgstr "E506: バックアップファイルを保存できません (! を追加で強制書込)"
 
 msgid "E507: Close error for backup file (add ! to override)"
 msgstr ""
-"E507: バックアップファイルを閉じる際にエラーが発生しました (! を追加で強制)"
+"E507: バックアップファイルを閉じる際にエラーが発生しました (! を追加で強制書"
+"込)"
 
 msgid "E508: Can't read file for backup (add ! to override)"
-msgstr "E508: バックアップ用ファイルを読込めません (! を追加で強制読込)"
+msgstr "E508: バックアップ用ファイルを読込めません (! を追加で強制書込)"
 
 msgid "E509: Cannot create backup file (add ! to override)"
-msgstr "E509: バックアップファイルを作れません (! を追加で強制作成)"
+msgstr "E509: バックアップファイルを作れません (! を追加で強制書込)"
 
 msgid "E510: Can't make backup file (add ! to override)"
-msgstr "E510: バックアップファイルを作れません (! を追加で強制作成)"
+msgstr "E510: バックアップファイルを作れません (! を追加で強制書込)"
 
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: 保存用一時ファイルが見つかりません"
@@ -2390,6 +2244,9 @@ msgstr "E671: タイトルが \"%s\" のウィンドウは見つかりません"
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: 引数はサポートされません: \"-%s\"; OLE版を使用してください."
+
+msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
+msgstr "E988: GUIは使用不可能です。gvim.exeを起動できません。"
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: MDIアプリの中ではウィンドウを開けません"
@@ -2930,6 +2787,106 @@ msgstr "E573: 無効なサーバーIDが使われました: %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: VIM 実体の登録プロパティが不正です. 消去しました!"
+
+msgid " Keyword completion (^N^P)"
+msgstr " キーワード補完 (^N^P)"
+
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+
+msgid " Whole line completion (^L^N^P)"
+msgstr " 行(全体)補完 (^L^N^P)"
+
+msgid " File name completion (^F^N^P)"
+msgstr " ファイル名補完 (^F^N^P)"
+
+msgid " Tag completion (^]^N^P)"
+msgstr " タグ補完 (^]^N^P)"
+
+msgid " Path pattern completion (^N^P)"
+msgstr " パスパターン補完 (^N^P)"
+
+msgid " Definition completion (^D^N^P)"
+msgstr " 定義補完 (^D^N^P)"
+
+msgid " Dictionary completion (^K^N^P)"
+msgstr " 辞書補完 (^K^N^P)"
+
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " シソーラス補完 (^T^N^P)"
+
+msgid " Command-line completion (^V^N^P)"
+msgstr " コマンドライン補完 (^V^N^P)"
+
+msgid " User defined completion (^U^N^P)"
+msgstr " ユーザー定義補完 (^U^N^P)"
+
+msgid " Omni completion (^O^N^P)"
+msgstr " オムニ補完 (^O^N^P)"
+
+msgid " Spelling suggestion (s^N^P)"
+msgstr " 綴り修正候補 (s^N^P)"
+
+msgid " Keyword Local completion (^N^P)"
+msgstr " 局所キーワード補完 (^N^P)"
+
+msgid "Hit end of paragraph"
+msgstr "段落の最後にヒット"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: 補完関数がウィンドウを変更しました"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: 補完関数がテキストを削除しました"
+
+msgid "'dictionary' option is empty"
+msgstr "'dictionary' オプションが空です"
+
+msgid "'thesaurus' option is empty"
+msgstr "'thesaurus' オプションが空です"
+
+#, c-format
+msgid "Scanning dictionary: %s"
+msgstr "辞書をスキャン中: %s"
+
+msgid " (insert) Scroll (^E/^Y)"
+msgstr " (挿入) スクロール(^E/^Y)"
+
+msgid " (replace) Scroll (^E/^Y)"
+msgstr " (置換) スクロール (^E/^Y)"
+
+#, c-format
+msgid "Scanning: %s"
+msgstr "スキャン中: %s"
+
+msgid "Scanning tags."
+msgstr "タグをスキャン中."
+
+msgid "match in file"
+msgstr "ファイル内のマッチ"
+
+msgid " Adding"
+msgstr " 追加中"
+
+msgid "-- Searching..."
+msgstr "-- 検索中..."
+
+msgid "Back at original"
+msgstr "始めに戻る"
+
+msgid "Word from other line"
+msgstr "他の行の単語"
+
+msgid "The only match"
+msgstr "唯一の該当"
+
+#, c-format
+msgid "match %d of %d"
+msgstr "%d 番目の該当 (全該当 %d 個中)"
+
+#, c-format
+msgid "match %d"
+msgstr "%d 番目の該当"
 
 #, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
@@ -3852,6 +3809,9 @@ msgstr ""
 "\"\n"
 "    を消せばこのメッセージを回避できます.\n"
 
+msgid "Found a swap file that is not useful, deleting it"
+msgstr "不要なスワップファイルが見つかりました。削除します"
+
 msgid "Swap file \""
 msgstr "スワップファイル \""
 
@@ -4141,6 +4101,9 @@ msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
 "すべての変更を破棄し、Vimを終了するには  :qa!  と入力し <Enter> を押してくだ"
 "さい"
+
+msgid "Type  :qa  and press <Enter> to exit Vim"
+msgstr "Vimを終了するには  :qa  と入力し <Enter> を押してください"
 
 #, c-format
 msgid "%ld line %sed %d time"
@@ -4618,15 +4581,6 @@ msgstr "XSMP SmcOpenConnectionが失敗しました: %s"
 msgid "At line"
 msgstr "行"
 
-msgid "Could not load vim32.dll!"
-msgstr "vim32.dll をロードできませんでした"
-
-msgid "VIM Error"
-msgstr "VIMエラー"
-
-msgid "Could not fix up function pointers to the DLL!"
-msgstr "DLLから関数ポインタを取得できませんでした"
-
 #, c-format
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: イベント %s を検知\n"
@@ -4659,6 +4613,9 @@ msgstr "Vimの警告"
 msgid "shell returned %d"
 msgstr "シェルがコード %d で終了しました"
 
+msgid "E553: No more items"
+msgstr "E553: 要素がもうありません"
+
 msgid "E926: Current location list was changed"
 msgstr "E926: 現在のロケーションリストが変更されました"
 
@@ -4690,9 +4647,6 @@ msgstr "E378: 'errorformat' にパターンが指定されていません"
 
 msgid "E379: Missing or empty directory name"
 msgstr "E379: ディレクトリ名が無いか空です"
-
-msgid "E553: No more items"
-msgstr "E553: 要素がもうありません"
 
 msgid "E924: Current window was closed"
 msgstr "E924: 現在のウィンドウが閉じられました"
@@ -5705,18 +5659,18 @@ msgstr "E555: タグスタックの末尾です"
 msgid "E556: at top of tag stack"
 msgstr "E556: タグスタックの先頭です"
 
+msgid "E986: cannot modify the tag stack within tagfunc"
+msgstr "E986: tagfunc内のタグスタックを変更できません"
+
+msgid "E987: invalid return value from tagfunc"
+msgstr "E987: tagfuncからの戻り値が無効です"
+
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: 最初の該当タグを越えて戻ることはできません"
 
 #, c-format
 msgid "E426: tag not found: %s"
 msgstr "E426: タグが見つかりません: %s"
-
-msgid "  # pri kind tag"
-msgstr "  # pri kind tag"
-
-msgid "file\n"
-msgstr "ファイル\n"
 
 msgid "E427: There is only one matching tag"
 msgstr "E427: 該当タグが1つだけしかありません"
@@ -5741,6 +5695,12 @@ msgstr "  タグを異なるcaseで使用します!"
 #, c-format
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: ファイル \"%s\" がありません"
+
+msgid "  # pri kind tag"
+msgstr "  # pri kind tag"
+
+msgid "file\n"
+msgstr "ファイル\n"
 
 msgid ""
 "\n"
@@ -5816,6 +5776,10 @@ msgstr ""
 
 msgid "Cannot open $VIMRUNTIME/rgb.txt"
 msgstr "$VIMRUNTIME/rgb.txtを開けません"
+
+#, c-format
+msgid "E181: Invalid attribute: %s"
+msgstr "E181: 無効な属性です: %s"
 
 #, c-format
 msgid "Kill job in \"%s\"?"
@@ -6023,6 +5987,65 @@ msgstr "E439: アンドゥリストが壊れています"
 msgid "E440: undo line missing"
 msgstr "E440: アンドゥ行がありません"
 
+msgid ""
+"\n"
+"    Name              Args Address Complete    Definition"
+msgstr ""
+"\n"
+"    名前              引数 アドレス 補完       定義"
+
+msgid "No user-defined commands found"
+msgstr "ユーザー定義コマンドが見つかりませんでした"
+
+#, c-format
+msgid "E180: Invalid address type value: %s"
+msgstr "E180: 無効なアドレスタイプ値です: %s"
+
+#, c-format
+msgid "E180: Invalid complete value: %s"
+msgstr "E180: 無効な補完指定です: %s"
+
+msgid "E468: Completion argument only allowed for custom completion"
+msgstr "E468: 補完引数はカスタム補完でしか使用できません"
+
+msgid "E467: Custom completion requires a function argument"
+msgstr "E467: カスタム補完には引数として関数が必要です"
+
+msgid "E175: No attribute specified"
+msgstr "E175: 属性は定義されていません"
+
+msgid "E176: Invalid number of arguments"
+msgstr "E176: 引数の数が無効です"
+
+msgid "E177: Count cannot be specified twice"
+msgstr "E177: カウントを2重指定することはできません"
+
+msgid "E178: Invalid default value for count"
+msgstr "E178: カウントの省略値が無効です"
+
+msgid "E179: argument required for -complete"
+msgstr "E179: -complete には引数が必要です"
+
+msgid "E179: argument required for -addr"
+msgstr "E179: -addr には引数が必要です"
+
+#, c-format
+msgid "E174: Command already exists: add ! to replace it: %s"
+msgstr "E174: コマンドが既にあります: 再定義するには ! を追加してください: %s"
+
+msgid "E182: Invalid command name"
+msgstr "E182: 無効なコマンド名です"
+
+msgid "E183: User defined commands must start with an uppercase letter"
+msgstr "E183: ユーザー定義コマンドは英大文字で始まらなければなりません"
+
+msgid "E841: Reserved name, cannot be used for user defined command"
+msgstr "E841: 予約名なので、ユーザー定義コマンドに利用できません"
+
+#, c-format
+msgid "E184: No such user-defined command: %s"
+msgstr "E184: そのユーザー定義コマンドはありません: %s"
+
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
 msgstr "E122: 関数 %s は定義済です、再定義するには ! を追加してください"
@@ -6154,6 +6177,20 @@ msgstr "E107: カッコ '(' がありません: %s"
 #, c-format
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, compiled %s)"
+
+msgid ""
+"\n"
+"MS-Windows 64-bit GUI/console version"
+msgstr ""
+"\n"
+"MS-Windows 64 ビット GUI/コンソール 版"
+
+msgid ""
+"\n"
+"MS-Windows 32-bit GUI/console version"
+msgstr ""
+"\n"
+"MS-Windows 32 ビット GUI/コンソール 版"
 
 msgid ""
 "\n"
@@ -6592,6 +6629,10 @@ msgstr "E474: 無効な引数です"
 #, c-format
 msgid "E475: Invalid argument: %s"
 msgstr "E475: 無効な引数です: %s"
+
+#, c-format
+msgid "E983: Duplicate argument: %s"
+msgstr "E983: 引数が重複しています: %s"
 
 #, c-format
 msgid "E475: Invalid value for argument %s"
@@ -7218,3 +7259,21 @@ msgstr ""
 "Cソース (*.c, *.h)\t*.c;*.h\n"
 "C++ソース (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vimファイル (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+
+#~ msgid "GVim"
+#~ msgstr ""
+
+msgid "Text Editor"
+msgstr "テキストエディタ"
+
+msgid "Edit text files"
+msgstr "テキストファイルを編集します"
+
+msgid "Text;editor;"
+msgstr "テキスト;エディタ;"
+
+#~ msgid "gvim"
+#~ msgstr ""
+
+#~ msgid "Vim"
+#~ msgstr ""

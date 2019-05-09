@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*editing.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -51,7 +51,7 @@ for editing (e.g., with ":e filename") or writing (e.g., with ":w filename"),
 the file name is added to the list.  You can use the buffer list to remember
 which files you edited and to quickly switch from one file to another (e.g.,
 to copy text) with the |CTRL-^| command.  First type the number of the file
-and then hit CTRL-^.  {Vi: only one alternate file name is remembered}
+and then hit CTRL-^.
 
 
 CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
@@ -197,7 +197,6 @@ If you want to keep the changed buffer without saving it, switch on the
 			buffer and 'autowriteall' isn't set or the file can't
 			be written.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 							*:edit!* *discard*
 :e[dit]! [++opt] [+cmd]
@@ -205,7 +204,6 @@ If you want to keep the changed buffer without saving it, switch on the
 			the current buffer.  This is useful if you want to
 			start all over again.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 							*:edit_f*
 :e[dit] [++opt] [+cmd] {file}
@@ -214,14 +212,12 @@ If you want to keep the changed buffer without saving it, switch on the
 			buffer, unless 'hidden' is set or 'autowriteall' is
 			set and the file can be written.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 							*:edit!_f*
 :e[dit]! [++opt] [+cmd] {file}
 			Edit {file} always.  Discard any changes to the
 			current buffer.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 :e[dit] [++opt] [+cmd] #[count]
 			Edit the [count]th buffer (as shown by |:files|).
@@ -229,7 +225,6 @@ If you want to keep the changed buffer without saving it, switch on the
 			#" doesn't work if the alternate buffer doesn't have a
 			file name, while CTRL-^ still works then.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 							*:ene* *:enew*
 :ene[w]			Edit a new, unnamed buffer.  This fails when changes
@@ -607,14 +602,12 @@ list of the current window.
 			the first one.  This fails when changes have been made
 			and Vim does not want to |abandon| the current buffer.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 :ar[gs]! [++opt] [+cmd] {arglist}			*:args_f!*
 			Define {arglist} as the new argument list and edit
 			the first one.  Discard any changes to the current
 			buffer.
 			Also see |++opt| and |+cmd|.
-			{Vi: no ++opt}
 
 :[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
 			Add {name}s to the argument list and edit it.
@@ -693,13 +686,11 @@ list of the current window.
 :[count]n[ext] [++opt] [+cmd]			*:n* *:ne* *:next* *E165* *E163*
 			Edit [count] next file.  This fails when changes have
 			been made and Vim does not want to |abandon| the
-			current buffer.  Also see |++opt| and |+cmd|.  {Vi: no
-			count or ++opt}.
+			current buffer.  Also see |++opt| and |+cmd|.
 
 :[count]n[ext]! [++opt] [+cmd]
 			Edit [count] next file, discard any changes to the
-			buffer.  Also see |++opt| and |+cmd|.  {Vi: no count
-			or ++opt}.
+			buffer.  Also see |++opt| and |+cmd|.
 
 :n[ext] [++opt] [+cmd] {arglist}			*:next_f*
 			Same as |:args_f|.
@@ -716,18 +707,17 @@ list of the current window.
 :[count]N[ext]! [count] [++opt] [+cmd]
 			Edit [count] previous file in argument list.  Discard
 			any changes to the buffer.  Also see |++opt| and
-			|+cmd|.  {Vi: no count or ++opt}.
+			|+cmd|.
 
 :[count]prev[ious] [count] [++opt] [+cmd]		*:prev* *:previous*
-			Same as :Next.  Also see |++opt| and |+cmd|.  {Vi:
-			only in some versions}
+			Same as :Next.  Also see |++opt| and |+cmd|.
 
 							*:rew* *:rewind*
 :rew[ind] [++opt] [+cmd]
 			Start editing the first file in the argument list.
 			This fails when changes have been made and Vim does
 			not want to |abandon| the current buffer.
-			Also see |++opt| and |+cmd|. {Vi: no ++opt}
+			Also see |++opt| and |+cmd|.
 
 :rew[ind]! [++opt] [+cmd]
 			Start editing the first file in the argument list.
@@ -1335,7 +1325,7 @@ present in 'cpoptions' and "!" is not used in the command.
 :lch[dir][!]		Same as |:lcd|.
 
 							*:pw* *:pwd* *E187*
-:pw[d]			Print the current directory name.  {Vi: no pwd}
+:pw[d]			Print the current directory name.
 			Also see |getcwd()|.
 
 So long as no |:lcd| or |:tcd| command has been used, all windows share the

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -27,7 +27,6 @@ Basic command line editing is explained in chapter 20 of the user manual
 Normally characters are inserted in front of the cursor position.  You can
 move around in the command-line with the left and right cursor keys.  With the
 <Insert> key, you can toggle between inserting and overstriking characters.
-{Vi: can only alter the last character in the line}
 
 Note that if your keyboard does not have working cursor keys or any of the
 other special keys, you can use ":cnoremap" to define another key for them.

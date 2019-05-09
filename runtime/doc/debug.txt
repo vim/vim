@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 8.1.  Last change: 2017 Jul 15
+*debug.txt*     For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

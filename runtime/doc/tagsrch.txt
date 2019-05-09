@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -56,7 +56,6 @@ CTRL-]			Jump to the definition of the keyword under the
 			to the [count] one.  When no [count] is given the
 			first one is jumped to. See |tag-matchlist| for
 			jumping to other matching tags.
-			{Vi: identifier after the cursor}
 
 							*v_CTRL-]*
 {Visual}CTRL-]		Same as ":tag {name}", where {name} is the text that
@@ -421,7 +420,6 @@ In a future version changing the buffer will be impossible.  All this for
 security reasons: Somebody might hide a nasty command in the tags file, which
 would otherwise go unnoticed.  Example: >
 	:$d|/tag-function-name/
-{this security prevention is not present in Vi}
 
 In Vi the ":tag" command sets the last search pattern when the tag is searched
 for.  In Vim this is not done, the previous search pattern is still remembered,

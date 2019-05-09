@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*insert.txt*    For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,8 +59,8 @@ CTRL-C		Quit insert mode, go back to Normal mode.  Do not check for
 		event.
 
 						*i_CTRL-@*
-CTRL-@		Insert previously inserted text and stop insert.  {Vi: only
-		when typed as first char, only up to 128 chars}
+CTRL-@		Insert previously inserted text and stop insert.
+
 						*i_CTRL-A*
 CTRL-A		Insert previously inserted text.
 
@@ -68,7 +68,7 @@ CTRL-A		Insert previously inserted text.
 <BS> or CTRL-H	Delete the character before the cursor (see |i_backspacing|
 		about joining lines).
 		See |:fixdel| if your <BS> key does not do what you want.
-		{Vi: does not delete autoindents}
+
 						*i_<Del>* *i_DEL*
 <Del>		Delete the character under the cursor.  If the cursor is at
 		the end of the line, and the 'backspace' option includes
@@ -174,19 +174,18 @@ CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
 						*i_CTRL-T*
 CTRL-T		Insert one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
-		vi compatible).  {Vi: only when in indent}
+		vi compatible).
 						*i_CTRL-D*
 CTRL-D		Delete one shiftwidth of indent at the start of the current
 		line.  The indent is always rounded to a 'shiftwidth' (this is
-		vi compatible).  {Vi: CTRL-D works only when used after
-		autoindent}
+		vi compatible).
 						*i_0_CTRL-D*
-0 CTRL-D	Delete all indent in the current line.  {Vi: CTRL-D works
-		only when used after autoindent}
+0 CTRL-D	Delete all indent in the current line.
+
 						*i_^_CTRL-D*
 ^ CTRL-D	Delete all indent in the current line.  The indent is
 		restored in the next line.  This is useful when inserting a
-		label.  {Vi: CTRL-D works only when used after autoindent}
+		label.
 
 						*i_CTRL-V*
 CTRL-V		Insert next non-digit literally.  For special keys, the
@@ -194,7 +193,7 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		decimal, octal or hexadecimal value of a character
 		|i_CTRL-V_digit|.
 		The characters typed right after CTRL-V are not considered for
-		mapping.  {Vi: no decimal byte entry}
+		mapping.
 		Note: When CTRL-V is mapped (e.g., to paste text) you can
 		often use CTRL-Q instead |i_CTRL-Q|.
 
@@ -273,7 +272,6 @@ For backwards compatibility the values "0", "1" and "2" are also allowed, see
 If the 'backspace' option does contain "eol" and the cursor is in column 1
 when one of the three keys is used, the current line is joined with the
 previous line.  This effectively deletes the <EOL> in front of the cursor.
-{Vi: does not cross lines, does not delete past start position of insert}
 
 						*i_CTRL-V_digit*
 With CTRL-V the decimal, octal or hexadecimal value of a character can be
@@ -1815,15 +1813,13 @@ gi			Insert text in the same position as where Insert mode
 
 							*o*
 o			Begin a new line below the cursor and insert text,
-			repeat [count] times.  {Vi: blank [count] screen
-			lines}
+			repeat [count] times.
 			When the '#' flag is in 'cpoptions' the count is
 			ignored.
 
 							*O*
 O			Begin a new line above the cursor and insert text,
-			repeat [count] times.  {Vi: blank [count] screen
-			lines}
+			repeat [count] times.
 			When the '#' flag is in 'cpoptions' the count is
 			ignored.
 

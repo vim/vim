@@ -2151,8 +2151,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :catch	eval.txt	/*:catch*
 :cb	quickfix.txt	/*:cb*
 :cbe	quickfix.txt	/*:cbe*
-:cbe	quickfix.txt	/*:cbe*
 :cbefore	quickfix.txt	/*:cbefore*
+:cbel	quickfix.txt	/*:cbel*
 :cbelow	quickfix.txt	/*:cbelow*
 :cbo	quickfix.txt	/*:cbo*
 :cbottom	quickfix.txt	/*:cbottom*
@@ -2518,7 +2518,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lat	undo.txt	/*:lat*
 :later	undo.txt	/*:later*
 :lb	quickfix.txt	/*:lb*
-:lbef	quickfix.txt	/*:lbef*
+:lbe	quickfix.txt	/*:lbe*
 :lbefore	quickfix.txt	/*:lbefore*
 :lbel	quickfix.txt	/*:lbel*
 :lbelow	quickfix.txt	/*:lbelow*
@@ -3367,6 +3367,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :xnoremap	map.txt	/*:xnoremap*
 :xnoreme	gui.txt	/*:xnoreme*
 :xnoremenu	gui.txt	/*:xnoremenu*
+:xr	various.txt	/*:xr*
+:xrestore	various.txt	/*:xrestore*
 :xu	map.txt	/*:xu*
 :xunmap	map.txt	/*:xunmap*
 :xunme	gui.txt	/*:xunme*
@@ -3441,6 +3443,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <F9>	term.txt	/*<F9>*
 <Help>	helphelp.txt	/*<Help>*
 <Home>	motion.txt	/*<Home>*
+<Ignore>	eval.txt	/*<Ignore>*
 <Insert>	insert.txt	/*<Insert>*
 <Leader>	map.txt	/*<Leader>*
 <Left>	motion.txt	/*<Left>*
@@ -5316,6 +5319,7 @@ backup-changed	version4.txt	/*backup-changed*
 backup-extension	version4.txt	/*backup-extension*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
+balloon_gettext()	eval.txt	/*balloon_gettext()*
 balloon_show()	eval.txt	/*balloon_show()*
 balloon_split()	eval.txt	/*balloon_split()*
 bar	motion.txt	/*bar*
@@ -5590,6 +5594,7 @@ charconvert_to-variable	eval.txt	/*charconvert_to-variable*
 charity	uganda.txt	/*charity*
 charset	mbyte.txt	/*charset*
 charset-conversion	mbyte.txt	/*charset-conversion*
+chdir()	eval.txt	/*chdir()*
 chill.vim	syntax.txt	/*chill.vim*
 chmod	eval.txt	/*chmod*
 cindent()	eval.txt	/*cindent()*
@@ -6017,6 +6022,7 @@ encryption	editing.txt	/*encryption*
 end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
+environ()	eval.txt	/*environ()*
 erlang.vim	syntax.txt	/*erlang.vim*
 err_buf	channel.txt	/*err_buf*
 err_cb	channel.txt	/*err_cb*
@@ -6756,6 +6762,7 @@ getcmdwintype()	eval.txt	/*getcmdwintype()*
 getcompletion()	eval.txt	/*getcompletion()*
 getcurpos()	eval.txt	/*getcurpos()*
 getcwd()	eval.txt	/*getcwd()*
+getenv()	eval.txt	/*getenv()*
 getfontname()	eval.txt	/*getfontname()*
 getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
@@ -8544,6 +8551,7 @@ setbufline()	eval.txt	/*setbufline()*
 setbufvar()	eval.txt	/*setbufvar()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
+setenv()	eval.txt	/*setenv()*
 setfperm()	eval.txt	/*setfperm()*
 setline()	eval.txt	/*setline()*
 setloclist()	eval.txt	/*setloclist()*
@@ -9282,6 +9290,7 @@ text-prop-functions	textprop.txt	/*text-prop-functions*
 text-prop-intro	textprop.txt	/*text-prop-intro*
 text-properties	textprop.txt	/*text-properties*
 textlock	eval.txt	/*textlock*
+textprop	textprop.txt	/*textprop*
 textprop.txt	textprop.txt	/*textprop.txt*
 tf.vim	syntax.txt	/*tf.vim*
 this_session-variable	eval.txt	/*this_session-variable*

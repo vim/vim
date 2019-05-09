@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*change.txt*    For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,8 +268,6 @@ r{char}			Replace the character under the cursor with {char}.
 			If {char} is a <CR> or <NL>, a line break replaces the
 			character.  To replace with a real <CR>, use CTRL-V
 			<CR>.  CTRL-V <NL> replaces with a <Nul>.
-			{Vi: CTRL-V <CR> still replaces with a line break,
-			cannot replace something with a <CR>}
 
 			If {char} is CTRL-E or CTRL-Y the character from the
 			line below or above is used, just like with |i_CTRL-E|
@@ -310,11 +308,9 @@ The following commands change the case of letters.  The currently active
 							*~*
 ~			'notildeop' option: Switch case of the character
 			under the cursor and move the cursor to the right.
-			If a [count] is given, do that many characters. {Vi:
-			no count}
+			If a [count] is given, do that many characters.
 
-~{motion}		'tildeop' option: switch case of {motion} text. {Vi:
-			tilde cannot be used as an operator}
+~{motion}		'tildeop' option: switch case of {motion} text.
 
 							*g~*
 g~{motion}		Switch case of {motion} text.
@@ -1054,11 +1050,11 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 							*p* *put* *E353*
 ["x]p			Put the text [from register x] after the cursor
-			[count] times.  {Vi: no count}
+			[count] times.
 
 							*P*
 ["x]P			Put the text [from register x] before the cursor
-			[count] times.  {Vi: no count}
+			[count] times.
 
 							*<MiddleMouse>*
 ["x]<MiddleMouse>	Put the text from a register before the cursor [count]

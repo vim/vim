@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 May 05
+*options.txt*	For Vim version 8.1.  Last change: 2019 May 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -795,9 +795,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a different way.
 	The 'autoindent' option is reset when the 'paste' option is set and
 	restored when 'paste' is reset.
-	{small difference from Vi: After the indent is deleted when typing
-	<Esc> or <CR>, the cursor position when moving up or down is after the
-	deleted indent; Vi puts the cursor somewhere in the deleted indent}.
 
 				 *'autoread'* *'ar'* *'noautoread'* *'noar'*
 'autoread' 'ar'		boolean	(default off)
@@ -1121,7 +1118,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+balloon_eval|
 			feature}
 	Expression for text to show in evaluation balloon.  It is only used
-	when 'ballooneval' is on.  These variables can be used:
+	when 'ballooneval' or 'balloonevalterm' is on.  These variables can be
+	used:
 
 	v:beval_bufnr	number of the buffer in which balloon is going to show
 	v:beval_winnr	number of the window
@@ -1132,7 +1130,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The evaluation of the expression must not have side effects!
 	Example: >
-    function! MyBalloonExpr()
+    function MyBalloonExpr()
 	return 'Cursor is at line ' . v:beval_lnum .
 		\', column ' . v:beval_col .
 		\ ' of file ' .  bufname(v:beval_bufnr) .
@@ -2677,7 +2675,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	uses another default.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-	{Vi: directory to put temp file in, defaults to "/tmp"}
 
 					*'display'* *'dy'*
 'display' 'dy'		string	(default "", set to "truncate" in
@@ -4707,7 +4704,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"=" operator to use this same indentation algorithm rather than
 	calling an external program if 'equalprg' is empty.
 	This option is not used when 'paste' is set.
-	{Vi: Does it a little bit differently}
 
 						*'lispwords'* *'lw'*
 'lispwords' 'lw'	string	(default is very long)
@@ -6585,7 +6581,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  O	message for reading a file overwrites any previous message.
 		Also for quickfix message (e.g., ":cn").
 	  s	don't give "search hit BOTTOM, continuing at TOP" or "search
-		hit TOP, continuing at BOTTOM" messages
+		hit TOP, continuing at BOTTOM" messages; when using the search
+		count do not show "W" after the count message (see S below)
 	  t	truncate file message at the start if it is too long to fit
 		on the command-line, "<" will appear in the left most column.
 		Ignored in Ex mode.
@@ -7443,7 +7440,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	must be included in the tags file.
 	This option doesn't affect commands that find all matching tags (e.g.,
 	command-line completion and ":help").
-	{Vi: always uses binary search in some versions}
 
 							*'tagcase'* *'tc'*
 'tagcase' 'tc'		string	(default "followic")
@@ -7507,7 +7503,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The use of |:set+=| and |:set-=| is preferred when adding or removing
 	file names from the list.  This avoids problems when a future version
 	uses another default.
-	{Vi: default is "tags /usr/lib/tags"}
 
 				*'tagstack'* *'tgst'* *'notagstack'* *'notgst'*
 'tagstack' 'tgst'	boolean	(default on)
@@ -8783,8 +8778,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'textwidth' is non-zero, this option is not used.
 	This option is set to 0 when 'paste' is set and restored when 'paste'
 	is reset.
-	See also 'formatoptions' and |ins-textwidth|.  {Vi: works differently
-	and less usefully}
+	See also 'formatoptions' and |ins-textwidth|.
 
 				   *'wrapscan'* *'ws'* *'nowrapscan'* *'nows'*
 'wrapscan' 'ws'		boolean	(default on)			*E384* *E385*

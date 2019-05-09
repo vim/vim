@@ -1,10 +1,10 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 May 05
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 May 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Displaying text with properties attached.		*text-properties*
+Displaying text with properties attached.	*textprop* *text-properties*
 
 THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
 
@@ -132,10 +132,10 @@ When using replace mode, the text properties stay on the same character
 positions, even though the characters themselves change.
 
 
-When text property columns are not updated ~
+Text property columns are not updated: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,
-  Tcl or Python.
+  Tcl or Python.  Vim does not know what text got inserted or deleted.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

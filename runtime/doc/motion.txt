@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*motion.txt*    For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -409,9 +409,7 @@ WORD before the fold.
 
 Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
 on a non-blank.  This is because "cw" is interpreted as change-word, and a
-word does not include the following white space.  {Vi: "cw" when on a blank
-followed by other blanks changes only the first blank; this is probably a
-bug, because "dw" deletes all the blanks}
+word does not include the following white space.
 
 Another special case: When using the "w" motion in combination with an
 operator and the last word moved over is at the end of a line, the end of
@@ -831,12 +829,12 @@ deletes the lines from the cursor position to mark 't'.  Hint: Use mark 't' for
 Top, 'b' for Bottom, etc..  Lowercase marks are restored when using undo and
 redo.
 
-Uppercase marks 'A to 'Z include the file name.  {Vi: no uppercase marks} You
-can use them to jump from file to file.  You can only use an uppercase mark
-with an operator if the mark is in the current file.  The line number of the
-mark remains correct, even if you insert/delete lines or edit another file for
-a moment.  When the 'viminfo' option is not empty, uppercase marks are kept in
-the .viminfo file.  See |viminfo-file-marks|.
+Uppercase marks 'A to 'Z include the file name.  You can use them to jump from
+file to file.  You can only use an uppercase mark with an operator if the mark
+is in the current file.  The line number of the mark remains correct, even if
+you insert/delete lines or edit another file for a moment.  When the 'viminfo'
+option is not empty, uppercase marks are kept in the .viminfo file.  See
+|viminfo-file-marks|.
 
 Numbered marks '0 to '9 are quite different.  They can not be set directly.
 They are only present when using a viminfo file |viminfo-file|.  Basically '0

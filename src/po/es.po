@@ -357,7 +357,7 @@ msgstr " Completar con método Omni (^O^N^P)"
 msgid " Spelling suggestion (s^N^P)"
 msgstr " Sugerencia de ortografía (s^N^P)"
 
-# Scroll has it's own msgs, in it's place there is the msg for local
+# Scroll has its own msgs, in its place there is the msg for local
 # * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 #: edit.c:57
 msgid " Keyword Local completion (^N^P)"

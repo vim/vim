@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -293,6 +293,12 @@ Command-line editing and history.			|cmdline-editing|
 	forward/backward one character.  The shifted right/left cursor keys
 	can be used to move forward/backward one word.  CTRL-B/CTRL-E can be
 	used to go to the begin/end of the command-line.
+	{Vi: can only alter the last character in the line}
+	{Vi: when hitting <Esc> the command-line is executed.  This is
+	unexpected for most people; therefore it was changed in Vim.  But when
+	the <Esc> is part of a mapping, the command-line is executed.  If you
+	want the Vi behaviour also when typing <Esc>, use ":cmap ^V<Esc>
+	^V^M"}
 							|cmdline-history|
 	The command-lines are remembered.  The up/down cursor keys can be used
 	to recall previous command-lines.  The 'history' option can be set to
@@ -540,6 +546,8 @@ The 'tags' option can be set to a list of tag file names.  Thus multiple
 tag files can be used.  For file names that start with "./", the "./" is
 replaced with the path of the current file.  This makes it possible to use a
 tags file in the same directory as the file being edited.
+{Vi: always uses binary search in some versions}
+{Vi does not have the security prevention for commands in tag files}
 
 Previously used file names are remembered in the alternate file name list.
 CTRL-^ accepts a count, which is an index in this list.
@@ -577,6 +585,8 @@ one space after a period (Vi inserts two spaces).
 
 "cw" can be used to change white space formed by several characters (Vi is
 confusing: "cw" only changes one space, while "dw" deletes all white space).
+{Vi: "cw" when on a blank followed by other blanks changes only the first
+blank; this is probably a bug, because "dw" deletes all the blanks}
 
 "o" and "O" accept a count for repeating the insert (Vi clears a part of
 display).
@@ -645,7 +655,7 @@ of the window.
 Uppercase marks can be used to jump between files.  The ":marks" command lists
 all currently set marks.  The commands "']" and "`]" jump to the end of the
 previous operator or end of the text inserted with the put command.  "'[" and
-"`[" do jump to the start.
+"`[" do jump to the start. {Vi: no uppercase marks}
 
 The 'shelltype' option can be set to reflect the type of shell used on the
 Amiga.
@@ -790,14 +800,16 @@ filesystem under Unix.  See |'shortname'|.
 Error messages are shown at least one second (Vi overwrites error messages).
 
 If Vim gives the |hit-enter| prompt, you can hit any key.  Characters other
-than <CR>, <NL> and <Space> are interpreted as the (start of) a command.  (Vi
-only accepts a command starting with ':').
+than <CR>, <NL> and <Space> are interpreted as the (start of) a command.
+{Vi: only ":" commands are interpreted}
 
 The contents of the numbered and unnamed registers is remembered when
 changing files.
 
 The "No lines in buffer" message is a normal message instead of an error
 message, since that may cause a mapping to be aborted.
+{Vi: error messages may be overwritten with other messages before you have a
+chance to read them}
 
 The AUX: device of the Amiga is supported.
 
@@ -826,28 +838,30 @@ The following Ex commands are supported by Vi: ~
 `:copy`		copy lines
 `:delete`	delete lines
 `:edit`		edit a file
-`:exit`		same as ":xit"
+`:exit`		same as `:xit`
 `:file`		show or set the current file name; Vi: without the column number
 `:global`	execute commands for matching lines
 `:insert`	insert text
 `:join`		join lines; Vi: not :join!
 `:k`		set a mark
 `:list`		print lines
-`:map` 		show or enter a mapping
+`:map`		show or enter a mapping
 `:mark`		set a mark
 `:move`		move lines
-`:Next`		go to previous file in the argument list; no count or ++opt
-`:next`		go to next file in the argument list; no count or ++opt
+`:Next`		go to previous file in the argument list {Vi: no count}
+`:next`		go to next file in the argument list {Vi: no count}
 `:number`	print lines with line number
 `:open`		start open mode (not implemented in Vim)
 `:pop`		jump to older entry in tag stack (only in some versions)
-`:preserve`	write all text to swap file
+`:preserve`	write all text to swap file {Vi: might also exit}
+`:previous`	same as `:Next` {Vi: only in some versions}
 `:print`	print lines
 `:put`		insert contents of register in the text
 `:quit`		quit Vi
 `:read`		read file into the text
-`:recover`	recover a file from a swap file
-`:rewind` 	go to the first file in the argument list; no ++opt
+`:recover`	recover a file from a swap file {Vi: recovers in another way
+		and sends mail if there is something to recover}
+`:rewind`	go to the first file in the argument list; no ++opt
 `:set`		set option; but not `:set inv{option}`, `:set option&`,
 		`:set all&`, `:set option+=value`, `:set option^=value`
 		`:set option-=value` `:set option<`
@@ -870,7 +884,7 @@ The following Ex commands are supported by Vi: ~
 `:xit`		write if buffer changed and quit Vi
 `:yank`		yank lines into a register
 `:z`		print some lines {not in all versions of Vi}
-`:!` 		filter lines or execute an external command
+`:!`		filter lines or execute an external command
 `:"`		comment
 `:#`		same as ":number"
 `:*`		execute contents of a register
@@ -880,6 +894,9 @@ The following Ex commands are supported by Vi: ~
 `:>`		shift lines one 'shiftwidth' right
 `:@`		execute contents of a register; but not `:@`; `:@@` only in
 		some versions
+
+Common for these commands is that Vi doesn't support the ++opt argument on
+`:edit` and other commands that open a file.
 
 
 The following Normal mode commands are supported by Vi: ~
@@ -906,8 +923,8 @@ The following Normal mode commands are supported by Vi: ~
 |CTRL-U|	N lines Upwards (default: half a screen)
 |CTRL-Y|	scroll N lines downwards
 |CTRL-Z|	suspend program (or start new shell)
-|CTRL-]|	:ta to ident under cursor
-|CTRL-^|	edit alternate file; Vi: no count
+|CTRL-]|	:ta to ident under cursor {Vi: identifier after the cursor}
+|CTRL-^|	edit alternate file {Vi: no count}
 |<Space>|	same as "l"
 |!|		filter Nmove text through the {filter} command
 |!!|		filter N lines through the {filter} command
@@ -937,6 +954,7 @@ The following Normal mode commands are supported by Vi: ~
 |>>|		shift N lines one 'shiftwidth' rightwards
 |?|		search backward for the Nth previous occurrence of {pattern}
 |@|		execute the contents of register {a-z} N times
+		{Vi: only named registers}
 |@@|		repeat the previous @{a-z} N times
 |A|		append text after the end of the line N times
 |B|		cursor N WORDS backward
@@ -953,8 +971,9 @@ The following Normal mode commands are supported by Vi: ~
 |M|		cursor to middle line of screen
 |N|		repeat the latest '/' or '?' N times in opposite direction
 |O|		begin a new line above the cursor and insert text, repeat N
-		times
+		times {Vi: blank [count] screen lines}
 |P|		put the text [from register x] before the cursor N times
+		{Vi: no count}
 |Q|		switch to "Ex" mode
 |R|		enter replace mode: overtype existing characters, repeat the
 		entered text N-1 times
@@ -962,6 +981,7 @@ The following Normal mode commands are supported by Vi: ~
 		"cc".
 |T|		cursor till after Nth occurrence of {char} to the left
 |U|		undo all latest changes on one line
+		{Vi: while not moved off of the last modified line}
 |W|		cursor N WORDS forward
 |X|		delete N characters before the cursor [into register x]
 |Y|		yank N lines [into register x]; synonym for "yy"
@@ -987,8 +1007,11 @@ The following Normal mode commands are supported by Vi: ~
 |m|		set mark {A-Za-z} at cursor position
 |n|		repeat the latest '/' or '?' N times
 |o|		begin a new line below the cursor and insert text
+		{Vi: blank [count] screen lines}
 |p|		put the text [from register x] after the cursor N times
-|r|		replace N chars with {char}
+		{Vi: no count}
+|r|		replace N chars with {char} {Vi: CTRL-V <CR> still replaces
+		with a line break, cannot replace something with a <CR>}
 |s|		(substitute) delete N characters [into register x] and start
 		insert
 |t|		cursor till before Nth occurrence of {char} to the right
@@ -1006,17 +1029,21 @@ The following Normal mode commands are supported by Vi: ~
 |		cursor to column N
 |}|		cursor N paragraphs forward
 |~|		switch case of N characters under the cursor; Vim: depends on
-		'tildeop'
+		'tildeop' {Vi: no count, no 'tildeop'}
 |<Del>|		same as "x"
 
 
 The following commands are supported in Insert mode by Vi: ~
 
 CTRL-@		insert previously inserted text and stop insert
+		{Vi: only when typed as first char, only up to 128 chars}
 CTRL-C		quit insert mode, without checking for abbreviation, unless
 		'insertmode' set.
 CTRL-D		delete one shiftwidth of indent in the current line
-<BS>		delete character before the cursor
+		{Vi: CTRL-D works only when used after autoindent}
+<BS>		delete character before the cursor {Vi: does not delete
+		autoindents, does not cross lines, does not delete past start
+		position of insert}
 CTRL-H		same as <BS>
 <Tab>		insert a <Tab> character
 CTRL-I		same as <Tab>
@@ -1024,8 +1051,9 @@ CTRL-I		same as <Tab>
 CTRL-J		same as <CR>
 <CR>		begin new line
 CTRL-M		same as <CR>
-CTRL-T		insert one shiftwidth of indent in current line
-CTRL-V {char}	insert next non-digit literally
+CTRL-T		insert one shiftwidth of indent in current line {Vi: only when
+		in indent}
+CTRL-V {char}	insert next non-digit literally {Vi: no decimal byte entry}
 CTRL-W		delete word before the cursor
 CTRL-Z		when 'insertmode' set: suspend Vim
 <Esc>		end insert mode (unless 'insertmode' set)
@@ -1039,13 +1067,21 @@ CTRL-[		same as <Esc>
 The following options are supported by Vi: ~
 
 'autoindent'	  'ai'	    take indent for new line from previous line
+			    {Vi does this slightly differently: After the
+			    indent is deleted when typing <Esc> or <CR>, the
+			    cursor position when moving up or down is after
+			    the deleted indent; Vi puts the cursor somewhere
+			    in the deleted indent}.
 'autowrite'	  'aw'	    automatically write file if changed
 'directory'	  'dir'     list of directory names for the swap file
+			    {Vi: directory to put temp file in, defaults to
+			    "/tmp"}
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
 'errorbells'	  'eb'	    ring the bell for error messages
 'ignorecase'	  'ic'	    ignore case in search patterns
 'lines'			    number of lines in the display
-'lisp'			    automatic indenting for Lisp
+'lisp'			    automatic indenting for Lisp {Vi: Does it a little
+			    bit differently}
 'list'			    show <Tab> and <EOL>
 'magic'			    changes special characters in search patterns
 'modeline'	  'ml'	    recognize 'modelines' at start or end of file
@@ -1066,6 +1102,7 @@ The following options are supported by Vi: ~
 'tabstop'	  'ts'	    number of spaces that <Tab> in file uses
 'taglength'	  'tl'	    number of significant characters for a tag
 'tags'		  'tag'     list of file names used by the tag command
+			    {Vi: default is "tags /usr/lib/tags"}
 'tagstack'	  'tgst'    push tags onto the tag stack {not in all versions
 				of Vi}
 'term'			    name of the terminal
@@ -1080,6 +1117,7 @@ The following options are supported by Vi: ~
 			    {Vi also uses the option to specify the number of
 			    displayed lines}
 'wrapmargin'	  'wm'	    chars from the right where wrapping starts
+			    {Vi: works differently and less usefully}
 'wrapscan'	  'ws'	    searches wrap around the end of the file
 'writeany'	  'wa'	    write to file with no need for "!" override
 

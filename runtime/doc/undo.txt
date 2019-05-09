@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.1.  Last change: 2019 May 05
+*undo.txt*      For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,26 +19,24 @@ The basics are explained in section |02.5| of the user manual.
 1. Undo and redo commands				*undo-commands*
 
 <Undo>		or					*undo* *<Undo>* *u*
-u			Undo [count] changes.  {Vi: only one level}
+u			Undo [count] changes.
 
 							*:u* *:un* *:undo*
-:u[ndo]			Undo one change.  {Vi: only one level}
+:u[ndo]			Undo one change.
 								*E830*
 :u[ndo] {N}		Jump to after change number {N}.  See |undo-branches|
 			for the meaning of {N}.
 
 							*CTRL-R*
-CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
-			screen}
+CTRL-R			Redo [count] changes which were undone.
 
 							*:red* *:redo* *redo*
-:red[o]			Redo one change which was undone.  {Vi: no redo}
+:red[o]			Redo one change which was undone.
 
 							*U*
 U			Undo all latest changes on one line, the line where
 			the latest change was made. |U| itself also counts as
 			a change, and thus |U| undoes a previous |U|.
-			{Vi: while not moved off of the last modified line}
 
 The last changes are remembered.  You can use the undo and redo commands above
 to revert the text to how it was before each change.  You can also apply the

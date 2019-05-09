@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*message.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -798,7 +798,6 @@ and the screen is about to be redrawn:
    like pressing <Space>.  This makes it impossible to select text though.
 -> For the GUI clicking the left mouse button in the last line works like
    pressing <Space>.
-{Vi: only ":" commands are interpreted}
 
 If you accidentally hit <Enter> or <Space> and you want to see the displayed
 text then use |g<|.  This only works when 'more' is set.

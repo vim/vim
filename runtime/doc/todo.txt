@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 May 05
+*todo.txt*      For Vim version 8.1.  Last change: 2019 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -155,6 +155,9 @@ be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
 
+Add a way to create an empty, hidden buffer.  Like doing ":new|hide".
+":let buf = bufcreate('name')
+
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
 similar to check_due_timer().  Also see #3809.
@@ -175,13 +178,6 @@ negative. (see #4326)
 `:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
 tab page. (Ingo Karkat, #4324)
 :call settabwinvar(1, 1, '&cmdheight', 2) also doesn't work well.
-
-Add a chdir() function, which will set the window-local, tab-local or global
-directory, first one that is currently used.  Returns the current directory,
-so that this works:
-    let save_dir = chdir('somewhere')
-    ...
-    call chdir(save_dir)
 
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
@@ -271,13 +267,10 @@ when possible. (Dylan Lloyd, #3973)
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
 
-Patch to add environ(), gets a dict with all environment vars, and getenv(),
-useful for environment vars that are not made of keyword chars.
-(Yasuhiro Matsumoto, #2875)
-
 Add buffer argument to undotree(). (#4001)
 
-Patch to restore X11 connection. (#844)
+Patch to fix that Normal is not defined when not compiled with GUI.
+(Christian Brabandt, 2019 May 7, on issue #4072)
 
 Patch to add optional arguments with default values.
 (Andy Massimino, #3952)  Needs to be reviewed.

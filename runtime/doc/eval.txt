@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 May 05
+*eval.txt*	For Vim version 8.1.  Last change: 2019 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7271,7 +7271,7 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 				will be used; negative values can be used, the
 				default priority is zero
 		   combine	when TRUE combine the highlight with any
-				syntax highlight; when omitted of FALSE syntax
+				syntax highlight; when omitted or FALSE syntax
 				highlight will not be used
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property
