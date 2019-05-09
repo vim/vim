@@ -75,6 +75,7 @@ get_function_args(
     char_u	endchar,
     garray_T	*newargs,
     int		*varargs,
+    garray_T	*default_args,
     int		skip)
 {
     int		mustend = FALSE;
@@ -82,9 +83,13 @@ get_function_args(
     char_u	*p = arg;
     int		c;
     int		i;
+    int		any_default = FALSE;
+    char_u	*expr;
 
     if (newargs != NULL)
 	ga_init2(newargs, (int)sizeof(char_u *), 3);
+    if (default_args != NULL)
+	ga_init2(default_args, (int)sizeof(char_u *), 3);
 
     if (varargs != NULL)
 	*varargs = FALSE;
@@ -140,6 +145,43 @@ get_function_args(
 
 		*p = c;
 	    }
+	    if (*skipwhite(p) == '=' && default_args != NULL)
+	    {
+		typval_T	rettv;
+
+		any_default = TRUE;
+		p = skipwhite(p) + 1;
+		p = skipwhite(p);
+		expr = p;
+		if (eval1(&p, &rettv, FALSE) != FAIL)
+		{
+		    if (ga_grow(default_args, 1) == FAIL)
+			goto err_ret;
+
+		    // trim trailing whitespace
+		    while (p > expr && VIM_ISWHITE(p[-1]))
+			p--;
+		    c = *p;
+		    *p = NUL;
+		    expr = vim_strsave(expr);
+		    if (expr == NULL)
+		    {
+			*p = c;
+			goto err_ret;
+		    }
+		    ((char_u **)(default_args->ga_data))
+						 [default_args->ga_len] = expr;
+		    default_args->ga_len++;
+		    *p = c;
+		}
+		else
+		    mustend = TRUE;
+	    }
+	    else if (any_default)
+	    {
+		emsg(_("E989: Non-default argument follows default argument"));
+		mustend = TRUE;
+	    }
 	    if (*p == ',')
 		++p;
 	    else
@@ -163,6 +205,8 @@ get_function_args(
 err_ret:
     if (newargs != NULL)
 	ga_clear_strings(newargs);
+    if (default_args != NULL)
+	ga_clear_strings(default_args);
     return FAIL;
 }
 
@@ -210,7 +254,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     ga_init(&newlines);
 
     /* First, check if this is a lambda expression. "->" must exist. */
-    ret = get_function_args(&start, '-', NULL, NULL, TRUE);
+    ret = get_function_args(&start, '-', NULL, NULL, NULL, TRUE);
     if (ret == FAIL || *start != '>')
 	return NOTDONE;
 
@@ -220,7 +264,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     else
 	pnewargs = NULL;
     *arg = skipwhite(*arg + 1);
-    ret = get_function_args(arg, '-', pnewargs, &varargs, FALSE);
+    ret = get_function_args(arg, '-', pnewargs, &varargs, NULL, FALSE);
     if (ret == FAIL || **arg != '>')
 	goto errret;
 
@@ -272,6 +316,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	STRCPY(fp->uf_name, name);
 	hash_add(&func_hashtab, UF2HIKEY(fp));
 	fp->uf_args = newargs;
+	ga_init(&fp->uf_def_args);
 	fp->uf_lines = newlines;
 	if (current_funccal != NULL && eval_lavars)
 	{
@@ -729,6 +774,7 @@ call_user_func(
     int		using_sandbox = FALSE;
     funccall_T	*fc;
     int		save_did_emsg;
+    int		default_arg_err = FALSE;
     static int	depth = 0;
     dictitem_T	*v;
     int		fixvar_idx = 0;	/* index in fixvar[] */
@@ -805,12 +851,13 @@ call_user_func(
 
     /*
      * Init a: variables.
-     * Set a:0 to "argcount".
+     * Set a:0 to "argcount" less number of named arguments, if >= 0.
      * Set a:000 to a list with room for the "..." arguments.
      */
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
     add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
-				(varnumber_T)(argcount - fp->uf_args.ga_len));
+				(varnumber_T)(argcount >= fp->uf_args.ga_len
+				    ? argcount - fp->uf_args.ga_len : 0));
     fc->l_avars.dv_lock = VAR_FIXED;
     /* Use "name" to avoid a warning from some compiler that checks the
      * destination size. */
@@ -835,9 +882,11 @@ call_user_func(
 						      (varnumber_T)firstline);
     add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
 						       (varnumber_T)lastline);
-    for (i = 0; i < argcount; ++i)
+    for (i = 0; i < argcount || i < fp->uf_args.ga_len; ++i)
     {
 	int	    addlocal = FALSE;
+	typval_T    def_rettv;
+	int	    isdefault = FALSE;
 
 	ai = i - fp->uf_args.ga_len;
 	if (ai < 0)
@@ -846,6 +895,25 @@ call_user_func(
 	    name = FUNCARG(fp, i);
 	    if (islambda)
 		addlocal = TRUE;
+
+	    // evaluate named argument default expression
+	    isdefault = ai + fp->uf_def_args.ga_len >= 0
+		       && (i >= argcount || (argvars[i].v_type == VAR_SPECIAL
+				   && argvars[i].vval.v_number == VVAL_NONE));
+	    if (isdefault)
+	    {
+		char_u	    *default_expr = NULL;
+		def_rettv.v_type = VAR_NUMBER;
+		def_rettv.vval.v_number = -1;
+
+		default_expr = ((char_u **)(fp->uf_def_args.ga_data))
+						 [ai + fp->uf_def_args.ga_len];
+		if (eval1(&default_expr, &def_rettv, TRUE) == FAIL)
+		{
+		    default_arg_err = 1;
+		    break;
+		}
+	    }
 	}
 	else
 	{
@@ -867,9 +935,12 @@ call_user_func(
 	    v->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
 
-	/* Note: the values are copied directly to avoid alloc/free.
-	 * "argvars" must have VAR_FIXED for v_lock. */
-	v->di_tv = argvars[i];
+	if (isdefault)
+	    v->di_tv = def_rettv;
+	else
+	    // Note: the values are copied directly to avoid alloc/free.
+	    // "argvars" must have VAR_FIXED for v_lock.
+	    v->di_tv = argvars[i];
 	v->di_tv.v_lock = VAR_FIXED;
 
 	if (addlocal)
@@ -988,8 +1059,11 @@ call_user_func(
     save_did_emsg = did_emsg;
     did_emsg = FALSE;
 
-    /* call do_cmdline() to execute the lines */
-    do_cmdline(NULL, get_func_line, (void *)fc,
+    if (default_arg_err && (fp->uf_flags & FC_ABORT))
+	did_emsg = TRUE;
+    else
+	// call do_cmdline() to execute the lines
+	do_cmdline(NULL, get_func_line, (void *)fc,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
     --RedrawingDisabled;
@@ -1145,6 +1219,7 @@ func_remove(ufunc_T *fp)
 func_clear_items(ufunc_T *fp)
 {
     ga_clear_strings(&(fp->uf_args));
+    ga_clear_strings(&(fp->uf_def_args));
     ga_clear_strings(&(fp->uf_lines));
 #ifdef FEAT_PROFILE
     vim_free(fp->uf_tml_count);
@@ -1498,7 +1573,7 @@ call_func(
 
 		if (fp->uf_flags & FC_RANGE)
 		    *doesrange = TRUE;
-		if (argcount < fp->uf_args.ga_len)
+		if (argcount < fp->uf_args.ga_len - fp->uf_def_args.ga_len)
 		    error = ERROR_TOOFEW;
 		else if (!fp->uf_varargs && argcount > fp->uf_args.ga_len)
 		    error = ERROR_TOOMANY;
@@ -1624,6 +1699,12 @@ list_func_head(ufunc_T *fp, int indent)
 	if (j)
 	    msg_puts(", ");
 	msg_puts((char *)FUNCARG(fp, j));
+	if (j >= fp->uf_args.ga_len - fp->uf_def_args.ga_len)
+	{
+	    msg_puts(" = ");
+	    msg_puts(((char **)(fp->uf_def_args.ga_data))
+		       [j - fp->uf_args.ga_len + fp->uf_def_args.ga_len]);
+	}
     }
     if (fp->uf_varargs)
     {
@@ -1889,6 +1970,7 @@ ex_function(exarg_T *eap)
     char_u	*arg;
     char_u	*line_arg = NULL;
     garray_T	newargs;
+    garray_T	default_args;
     garray_T	newlines;
     int		varargs = FALSE;
     int		flags = 0;
@@ -2103,7 +2185,8 @@ ex_function(exarg_T *eap)
 	    emsg(_("E862: Cannot use g: here"));
     }
 
-    if (get_function_args(&p, ')', &newargs, &varargs, eap->skip) == FAIL)
+    if (get_function_args(&p, ')', &newargs, &varargs,
+					    &default_args, eap->skip) == FAIL)
 	goto errret_2;
 
     /* find extra arguments "range", "dict", "abort" and "closure" */
@@ -2511,6 +2594,7 @@ ex_function(exarg_T *eap)
 	fp->uf_refcount = 1;
     }
     fp->uf_args = newargs;
+    fp->uf_def_args = default_args;
     fp->uf_lines = newlines;
     if ((flags & FC_CLOSURE) != 0)
     {
@@ -2535,6 +2619,7 @@ ex_function(exarg_T *eap)
 
 erret:
     ga_clear_strings(&newargs);
+    ga_clear_strings(&default_args);
 errret_2:
     ga_clear_strings(&newlines);
 ret_free:
