@@ -5809,6 +5809,7 @@ vgr_jump_to_match(
     {
 	exarg_T ea;
 
+	vim_memset(&ea, 0, sizeof(ea));
 	ea.arg = target_dir;
 	ea.cmdidx = CMD_lcd;
 	ex_cd(&ea);
@@ -6109,6 +6110,7 @@ restore_start_dir(char_u *dirname_start)
 	    // appropriate ex command and executing it.
 	    exarg_T ea;
 
+	    vim_memset(&ea, 0, sizeof(ea));
 	    ea.arg = dirname_start;
 	    ea.cmdidx = (curwin->w_localdir == NULL) ? CMD_cd : CMD_lcd;
 	    ex_cd(&ea);

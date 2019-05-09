@@ -1190,9 +1190,9 @@ dialog_changed(
     else
 	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
 
-    /* Init ea pseudo-structure, this is needed for the check_overwrite()
-     * function. */
-    ea.append = ea.forceit = FALSE;
+    // Init ea pseudo-structure, this is needed for the check_overwrite()
+    // function.
+    vim_memset(&ea, 0, sizeof(ea));
 
     if (ret == VIM_YES)
     {

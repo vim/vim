@@ -2308,6 +2308,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "Executing normal command '%s'", (char *)arg);
+	vim_memset(&ea, 0, sizeof(ea));
 	ea.arg = arg;
 	ea.addr_count = 0;
 	ea.forceit = TRUE; /* no mapping */
@@ -2318,6 +2319,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "redraw");
+	vim_memset(&ea, 0, sizeof(ea));
 	ea.forceit = *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
