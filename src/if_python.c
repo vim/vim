@@ -35,7 +35,7 @@
 # undef _POSIX_THREADS
 #endif
 
-#if defined(_WIN32) && defined(HAVE_FCNTL_H)
+#if defined(MSWIN) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -73,9 +73,11 @@
 #undef main /* Defined in python.h - aargh */
 #undef HAVE_FCNTL_H /* Clash with os_win32.h */
 
+// Perhaps leave this out for Python 2.6, which supports bytes?
 #define PyBytes_FromString      PyString_FromString
 #define PyBytes_Check		PyString_Check
 #define PyBytes_AsStringAndSize PyString_AsStringAndSize
+#define PyBytes_FromStringAndSize   PyString_FromStringAndSize
 
 #if !defined(FEAT_PYTHON) && defined(PROTO)
 /* Use this to be able to generate prototypes without python being used. */
@@ -120,12 +122,12 @@ struct PyMethodDef { Py_ssize_t a; };
 # define PY_CAN_RECURSE
 #endif
 
-# if defined(DYNAMIC_PYTHON) || defined(PROTO)
-#  ifndef DYNAMIC_PYTHON
-#   define HINSTANCE long_u		/* for generating prototypes */
-#  endif
+#if defined(DYNAMIC_PYTHON) || defined(PROTO)
+# ifndef DYNAMIC_PYTHON
+#  define HINSTANCE long_u		/* for generating prototypes */
+# endif
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
@@ -489,15 +491,15 @@ static struct
     PYTHON_PROC *ptr;
 } python_funcname_table[] =
 {
-#ifndef PY_SSIZE_T_CLEAN
+# ifndef PY_SSIZE_T_CLEAN
     {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
-#else
+# else
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&dll_Py_BuildValue},
-#endif
+# endif
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
     {"PyDict_SetItemString", (PYTHON_PROC*)&dll_PyDict_SetItemString},
@@ -678,17 +680,17 @@ python_runtime_link_init(char *libname, int verbose)
     PYTHON_PROC *ucs_as_encoded_string =
 				   (PYTHON_PROC*)&py_PyUnicode_AsEncodedString;
 
-#if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
+# if !(defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)) && defined(UNIX) && defined(FEAT_PYTHON3)
     /* Can't have Python and Python3 loaded at the same time.
      * It cause a crash, because RTLD_GLOBAL is needed for
      * standard C extension libraries of one or both python versions. */
     if (python3_loaded())
     {
 	if (verbose)
-	    EMSG(_("E836: This Vim cannot execute :python after using :py3"));
+	    emsg(_("E836: This Vim cannot execute :python after using :py3"));
 	return FAIL;
     }
-#endif
+# endif
 
     if (hinstPython)
 	return OK;
@@ -696,7 +698,7 @@ python_runtime_link_init(char *libname, int verbose)
     if (!hinstPython)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -708,7 +710,7 @@ python_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPython);
 	    hinstPython = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), python_funcname_table[i].name);
+		semsg(_(e_loadfunc), python_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -725,7 +727,7 @@ python_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPython);
 	hinstPython = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -928,7 +930,7 @@ Python_Init(void)
 #ifdef DYNAMIC_PYTHON
 	if (!python_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
@@ -960,7 +962,7 @@ Python_Init(void)
 	site = PyImport_ImportModule("site");
 	if (site == NULL)
 	{
-	    EMSG(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+	    emsg(_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
 	    goto fail;
 	}
 	Py_DECREF(site);
@@ -1035,7 +1037,7 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
 #ifndef PY_CAN_RECURSE
     if (recursive)
     {
-	EMSG(_("E659: Cannot invoke Python recursively"));
+	emsg(_("E659: Cannot invoke Python recursively"));
 	return;
     }
     ++recursive;
@@ -1107,12 +1109,12 @@ ex_python(exarg_T *eap)
 {
     char_u *script;
 
-    if (p_pyx == 0)
-	p_pyx = 2;
-
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
+	if (p_pyx == 0)
+	    p_pyx = 2;
+
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
 		(rangeinitializer) init_range_cmd,
 		(runner) run_cmd,
@@ -1553,29 +1555,16 @@ FunctionGetattr(PyObject *self, char *name)
 }
 
     void
-do_pyeval (char_u *str, typval_T *rettv)
+do_pyeval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
 	    (rangeinitializer) init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
-    switch (rettv->v_type)
+    if (rettv->v_type == VAR_UNKNOWN)
     {
-	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
-	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
-	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
-	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
-	case VAR_UNKNOWN:
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = 0;
-	    break;
-	case VAR_NUMBER:
-	case VAR_STRING:
-	case VAR_FLOAT:
-	case VAR_SPECIAL:
-	case VAR_JOB:
-	case VAR_CHANNEL:
-	    break;
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = 0;
     }
 }
 
@@ -1591,7 +1580,7 @@ Py_GetProgramName(void)
 #endif /* Python 1.4 */
 
     int
-set_ref_in_python (int copyID)
+set_ref_in_python(int copyID)
 {
     return set_ref_in_py(copyID);
 }

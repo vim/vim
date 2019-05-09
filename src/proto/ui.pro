@@ -2,6 +2,7 @@
 void ui_write(char_u *s, int len);
 void ui_inchar_undo(char_u *s, int len);
 int ui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
+int inchar_loop(char_u *buf, int maxlen, long wtime, int tb_change_cnt, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int (*resize_func)(int check_only));
 int ui_wait_for_chars_or_timer(long wtime, int (*wait_func)(long wtime, int *interrupted, int ignore_input), int *interrupted, int ignore_input);
 int ui_char_avail(void);
 void ui_delay(long msec, int ignoreinput);
@@ -10,6 +11,7 @@ void suspend_shell(void);
 int ui_get_shellsize(void);
 void ui_set_shellsize(int mustset);
 void ui_new_shellsize(void);
+int ui_get_winpos(int *x, int *y, varnumber_T timeout);
 void ui_breakcheck(void);
 void ui_breakcheck_force(int force);
 void clip_init(int can_use);

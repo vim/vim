@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 8.1.  Last change: 2017 Mar 18
+*fold.txt*      For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,7 +14,6 @@ You can find an introduction on folding in chapter 28 of the user manual.
 3. Fold options		|fold-options|
 4. Behavior of folds	|fold-behavior|
 
-{Vi has no Folding}
 {not available when compiled without the |+folding| feature}
 
 ==============================================================================

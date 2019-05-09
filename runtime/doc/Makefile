@@ -102,6 +102,7 @@ DOCS = \
 	tagsrch.txt \
 	term.txt \
 	terminal.txt \
+	textprop.txt \
 	tips.txt \
 	todo.txt \
 	uganda.txt \
@@ -238,6 +239,7 @@ HTMLS = \
 	tagsrch.html \
 	term.html \
 	terminal.html \
+	textprop.html \
 	tips.html \
 	todo.html \
 	uganda.html \

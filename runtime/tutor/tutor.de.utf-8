@@ -905,7 +905,7 @@ Anmerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze \c
 
   1. Stelle sicher, dass Vim nicht im Vi-Kompatibilitätsmodus ist:  :set nocp
 
-  2. Siehe nach, welche Dateien im Verzeichnis existieren:  :!ls  oder  :dir
+  2. Siehe nach, welche Dateien im Verzeichnis existieren:  :!ls  oder  :!dir
 
   3. Tippe den Beginn eines Kommandos:  :e
 

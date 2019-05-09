@@ -38,17 +38,9 @@
 
 /* Type used for indexes in the word tree need to be at least 4 bytes.  If int
  * is 8 bytes we could use something smaller, but what? */
-#if VIM_SIZEOF_INT > 3
 typedef int idx_T;
-#else
-typedef long idx_T;
-#endif
 
-#ifdef FEAT_MBYTE
 typedef int salfirst_T;
-#else
-typedef short salfirst_T;
-#endif
 
 /*
  * Structure used to store words and other info for one language, loaded from
@@ -132,12 +124,8 @@ struct slang_S
 				   load */
 
     int		sl_has_map;	/* TRUE if there is a MAP line */
-#ifdef FEAT_MBYTE
     hashtab_T	sl_map_hash;	/* MAP for multi-byte chars */
     int		sl_map_array[256]; /* MAP for first 256 chars */
-#else
-    char_u	sl_map_array[256]; /* MAP for first 256 chars */
-#endif
     hashtab_T	sl_sounddone;	/* table with soundfolded words that have
 				   handled, see add_sound_suggest() */
 };
@@ -213,11 +201,9 @@ typedef struct salitem_S
     char_u	*sm_oneof;	/* letters from () or NULL */
     char_u	*sm_rules;	/* rules like ^, $, priority */
     char_u	*sm_to;		/* replacement. */
-#ifdef FEAT_MBYTE
     int		*sm_lead_w;	/* wide character copy of "sm_lead" */
     int		*sm_oneof_w;	/* wide character copy of "sm_oneof" */
     int		*sm_to_w;	/* wide character copy of "sm_to" */
-#endif
 } salitem_T;
 
 /* Values for SP_*ERROR are negative, positive values are used by
@@ -260,41 +246,34 @@ typedef struct spelltab_S
  * differ from what the .spl file uses.
  * These must not be called with negative number!
  */
-#ifndef FEAT_MBYTE
-/* Non-multi-byte implementation. */
-# define SPELL_TOFOLD(c) ((c) < 256 ? (int)spelltab.st_fold[c] : (c))
-# define SPELL_TOUPPER(c) ((c) < 256 ? (int)spelltab.st_upper[c] : (c))
-# define SPELL_ISUPPER(c) ((c) < 256 ? spelltab.st_isu[c] : FALSE)
-#else
-# if defined(HAVE_WCHAR_H)
-#  include <wchar.h>	    /* for towupper() and towlower() */
-# endif
+#if defined(HAVE_WCHAR_H)
+# include <wchar.h>	    /* for towupper() and towlower() */
+#endif
 /* Multi-byte implementation.  For Unicode we can call utf_*(), but don't do
  * that for ASCII, because we don't want to use 'casemap' here.  Otherwise use
  * the "w" library function for characters above 255 if available. */
-# ifdef HAVE_TOWLOWER
-#  define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
+#ifdef HAVE_TOWLOWER
+# define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
 	    : (c) < 256 ? (int)spelltab.st_fold[c] : (int)towlower(c))
-# else
-#  define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
+#else
+# define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
 	    : (c) < 256 ? (int)spelltab.st_fold[c] : (c))
-# endif
+#endif
 
-# ifdef HAVE_TOWUPPER
-#  define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
+#ifdef HAVE_TOWUPPER
+# define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
 	    : (c) < 256 ? (int)spelltab.st_upper[c] : (int)towupper(c))
-# else
-#  define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
+#else
+# define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
 	    : (c) < 256 ? (int)spelltab.st_upper[c] : (c))
-# endif
+#endif
 
-# ifdef HAVE_ISWUPPER
-#  define SPELL_ISUPPER(c) (enc_utf8 && (c) >= 128 ? utf_isupper(c) \
+#ifdef HAVE_ISWUPPER
+# define SPELL_ISUPPER(c) (enc_utf8 && (c) >= 128 ? utf_isupper(c) \
 	    : (c) < 256 ? spelltab.st_isu[c] : iswupper(c))
-# else
-#  define SPELL_ISUPPER(c) (enc_utf8 && (c) >= 128 ? utf_isupper(c) \
+#else
+# define SPELL_ISUPPER(c) (enc_utf8 && (c) >= 128 ? utf_isupper(c) \
 	    : (c) < 256 ? spelltab.st_isu[c] : (FALSE))
-# endif
 #endif
 
 #ifdef FEAT_SPELL

@@ -25,11 +25,13 @@ RM =		rm
 	${CC} ${CFLAGS} $< -o $@
 
 SRC =	arabic.c						\
+	autocmd.c						\
 	blowfish.c						\
 	buffer.c						\
 	charset.c						\
 	crypt.c							\
 	crypt_zip.c						\
+	debugger.c						\
 	dict.c							\
 	diff.c							\
 	digraph.c						\
@@ -41,12 +43,14 @@ SRC =	arabic.c						\
 	ex_docmd.c						\
 	ex_eval.c						\
 	ex_getln.c						\
-	farsi.c							\
 	fileio.c						\
+	findfile.c						\
 	fold.c							\
 	getchar.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	indent.c						\
+	insexpand.c						\
 	json.c							\
 	list.c							\
 	main.c							\
@@ -69,6 +73,7 @@ SRC =	arabic.c						\
 	screen.c						\
 	search.c						\
 	sha256.c						\
+	sign.c							\
 	spell.c							\
 	spellfile.c						\
 	syntax.c						\
@@ -76,6 +81,7 @@ SRC =	arabic.c						\
 	term.c							\
 	ui.c							\
 	undo.c							\
+	usercmd.c						\
 	userfunc.c						\
 	version.c						\
 	window.c						\

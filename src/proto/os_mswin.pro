@@ -1,5 +1,5 @@
 /* os_mswin.c */
-void mch_exit(int r);
+void mch_exit_g(int r);
 void mch_early_init(void);
 int mch_input_isatty(void);
 void mch_settitle(char_u *title, char_u *icon);
@@ -37,7 +37,7 @@ int mch_print_text_out(char_u *p, int len);
 void mch_print_set_font(int iBold, int iItalic, int iUnderline);
 void mch_print_set_bg(long_u bgcol);
 void mch_print_set_fg(long_u fgcol);
-char_u *mch_resolve_shortcut(char_u *fname);
+char_u *mch_resolve_path(char_u *fname, int reparse_point);
 void win32_set_foreground(void);
 void serverInitMessaging(void);
 void serverSetName(char_u *name);
@@ -49,6 +49,6 @@ char_u *serverGetReply(HWND server, int *expr_res, int remove, int wait, int tim
 void serverProcessPendingMessages(void);
 char *charset_id2name(int id);
 char *quality_id2name(DWORD id);
-int get_logfont(LOGFONT *lf, char_u *name, HDC printer_dc, int verbose);
+int get_logfont(LOGFONTW *lf, char_u *name, HDC printer_dc, int verbose);
 void channel_init_winsock(void);
 /* vim: set ft=c : */

@@ -34,7 +34,7 @@
 
 #include <limits.h>
 
-#if defined(_WIN32) && defined(HAVE_FCNTL_H)
+#if defined(MSWIN) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -112,7 +112,7 @@ typedef PySliceObject PySliceObject_T;
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
-# ifndef WIN3264
+# ifndef MSWIN
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
@@ -232,6 +232,8 @@ typedef PySliceObject PySliceObject_T;
 # endif
 # undef PyBytes_FromString
 # define PyBytes_FromString py3_PyBytes_FromString
+# undef PyBytes_FromStringAndSize
+# define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -394,6 +396,7 @@ static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char*
 static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
+static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
@@ -559,6 +562,7 @@ static struct
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
+    {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
@@ -630,7 +634,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (python_loaded())
     {
 	if (verbose)
-	    EMSG(_("E837: This Vim cannot execute :py3 after using :python"));
+	    emsg(_("E837: This Vim cannot execute :py3 after using :python"));
 	return FAIL;
     }
 # endif
@@ -642,7 +646,7 @@ py3_runtime_link_init(char *libname, int verbose)
     if (!hinstPy3)
     {
 	if (verbose)
-	    EMSG2(_(e_loadlib), libname);
+	    semsg(_(e_loadlib), libname);
 	return FAIL;
     }
 
@@ -654,7 +658,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	    close_dll(hinstPy3);
 	    hinstPy3 = 0;
 	    if (verbose)
-		EMSG2(_(e_loadfunc), py3_funcname_table[i].name);
+		semsg(_(e_loadfunc), py3_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -689,7 +693,7 @@ py3_runtime_link_init(char *libname, int verbose)
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
 	if (verbose)
-	    EMSG2(_(e_loadfunc), "PyUnicode_UCSX_*");
+	    semsg(_(e_loadfunc), "PyUnicode_UCSX_*");
 	return FAIL;
     }
 
@@ -709,8 +713,6 @@ python3_enabled(int verbose)
 /* Load the standard Python exceptions - don't import the symbols from the
  * DLL, as this can cause errors (importing data symbols is not reliable).
  */
-static void get_py3_exceptions(void);
-
     static void
 get_py3_exceptions(void)
 {
@@ -788,8 +790,6 @@ static PyObject *ListGetattro(PyObject *, PyObject *);
 static int ListSetattro(PyObject *, PyObject *, PyObject *);
 static PyObject *FunctionGetattro(PyObject *, PyObject *);
 
-static PyObject *VimPathHook(PyObject *, PyObject *);
-
 static struct PyModuleDef vimmodule;
 
 #define PY_CAN_RECURSE
@@ -799,10 +799,11 @@ static struct PyModuleDef vimmodule;
  */
 #include "if_py_both.h"
 
+// NOTE: Must always be used at the start of a block, since it declares "name".
 #define GET_ATTR_STRING(name, nameobj) \
     char	*name = ""; \
     if (PyUnicode_Check(nameobj)) \
-	name = _PyUnicode_AsString(nameobj)
+	name = (char *)_PyUnicode_AsString(nameobj)
 
 #define PY3OBJ_DELETED(obj) (obj->ob_base.ob_refcnt<=0)
 
@@ -864,7 +865,7 @@ Python3_Init(void)
 #ifdef DYNAMIC_PYTHON3
 	if (!python3_enabled(TRUE))
 	{
-	    EMSG(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
+	    emsg(_("E263: Sorry, this command is disabled, the Python library could not be loaded."));
 	    goto fail;
 	}
 #endif
@@ -1010,12 +1011,12 @@ ex_py3(exarg_T *eap)
 {
     char_u *script;
 
-    if (p_pyx == 0)
-	p_pyx = 3;
-
     script = script_get(eap, eap->arg);
     if (!eap->skip)
     {
+	if (p_pyx == 0)
+	    p_pyx = 3;
+
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
 		(rangeinitializer) init_range_cmd,
 		(runner) run_cmd,
@@ -1235,9 +1236,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
-	{
 	    return NULL;
-	}
 	return BufferSlice((BufferObject *)(self), start, stop);
     }
     else
@@ -1267,9 +1266,7 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 	      (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 	      &start, &stop,
 	      &step, &slicelen) < 0)
-	{
 	    return -1;
-	}
 	return RBAsSlice((BufferObject *)(self), start, stop, val, 1,
 			  (PyInt)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 			  NULL);
@@ -1351,9 +1348,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)
-	{
 	    return NULL;
-	}
 	return RangeSlice((RangeObject *)(self), start, stop);
     }
     else
@@ -1370,7 +1365,8 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
     {
 	long n = PyLong_AsLong(idx);
 	return RangeAsItem(self, n, val);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1378,9 +1374,7 @@ RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
 		((RangeObject *)(self))->end-((RangeObject *)(self))->start+1,
 		&start, &stop,
 		&step, &slicelen) < 0)
-	{
 	    return -1;
-	}
 	return RangeAsSlice(self, start, stop, val);
     }
     else
@@ -1662,34 +1656,21 @@ LineToString(const char *str)
 }
 
     void
-do_py3eval (char_u *str, typval_T *rettv)
+do_py3eval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
 	    (rangeinitializer) init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
-    switch(rettv->v_type)
+    if (rettv->v_type == VAR_UNKNOWN)
     {
-	case VAR_DICT: ++rettv->vval.v_dict->dv_refcount; break;
-	case VAR_LIST: ++rettv->vval.v_list->lv_refcount; break;
-	case VAR_FUNC: func_ref(rettv->vval.v_string);    break;
-	case VAR_PARTIAL: ++rettv->vval.v_partial->pt_refcount; break;
-	case VAR_UNKNOWN:
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = 0;
-	    break;
-	case VAR_NUMBER:
-	case VAR_STRING:
-	case VAR_FLOAT:
-	case VAR_SPECIAL:
-	case VAR_JOB:
-	case VAR_CHANNEL:
-	    break;
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = 0;
     }
 }
 
     int
-set_ref_in_python3 (int copyID)
+set_ref_in_python3(int copyID)
 {
     return set_ref_in_py(copyID);
 }

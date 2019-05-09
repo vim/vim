@@ -26,6 +26,7 @@ source shared.vim
 " Options is a dictionary, these items are recognized:
 " "rows" - height of the terminal window (max. 20)
 " "cols" - width of the terminal window (max. 78)
+" "statusoff" - number of lines the status is offset from default
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -51,13 +52,22 @@ func RunVimInTerminal(arguments, options)
   " Make the window 20 lines high and 75 columns, unless told otherwise.
   let rows = get(a:options, 'rows', 20)
   let cols = get(a:options, 'cols', 75)
+  let statusoff = get(a:options, 'statusoff', 1)
 
   let cmd = GetVimCommandClean()
 
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
-  let buf = term_start(cmd, {'curwin': 1, 'term_rows': rows, 'term_cols': cols})
+  let buf = term_start(cmd, {
+	\ 'curwin': 1,
+	\ 'term_rows': rows,
+	\ 'term_cols': cols,
+	\ })
   if &termwinsize == ''
+    " in the GUI we may end up with a different size, try to set it.
+    if term_getsize(buf) != [rows, cols]
+      call term_setsize(buf, rows, cols)
+    endif
     call assert_equal([rows, cols], term_getsize(buf))
   else
     let rows = term_getsize(buf)[0]
@@ -69,7 +79,7 @@ func RunVimInTerminal(arguments, options)
   " using valgrind).
   " If it fails then show the terminal contents for debugging.
   try
-    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - 1)) >= cols - 1})
+    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - statusoff)) >= cols - 1})
   catch /timed out after/
     let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
     call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
@@ -93,25 +103,69 @@ endfunc
 " Verify that Vim running in terminal buffer "buf" matches the screen dump.
 " "options" is passed to term_dumpwrite().
 " The file name used is "dumps/{filename}.dump".
+" Optionally an extra argument can be passed which is prepended to the error
+" message.  Use this when using the same dump file with different options.
 " Will wait for up to a second for the screen dump to match.
-func VerifyScreenDump(buf, filename, options)
+" Returns non-zero when verification fails.
+func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
-  let testfile = a:filename . '.dump.failed'
+  let testfile = 'failed/' . a:filename . '.dump'
+
+  " Redraw to execut the code that updates the screen.  Otherwise we get the
+  " text and attributes only from the internal buffer.
+  redraw
+
+  let did_mkdir = 0
+  if !isdirectory('failed')
+    let did_mkdir = 1
+    call mkdir('failed')
+  endif
 
   let i = 0
   while 1
+    " leave some time for updating the original window
+    sleep 10m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
-    if readfile(reference) == readfile(testfile)
+    let testdump = readfile(testfile)
+    if filereadable(reference)
+      let refdump = readfile(reference)
+    else
+      " Must be a new screendump, always fail
+      let refdump = []
+    endif
+    if refdump == testdump
       call delete(testfile)
+      if did_mkdir
+	call delete('failed', 'd')
+      endif
       break
     endif
     if i == 100
-      " Leave the test file around for inspection.
-      call assert_report('See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")')
-      break
+      " Leave the failed dump around for inspection.
+      if filereadable(reference)
+	let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
+	if a:0 == 1
+	  let msg = a:1 . ': ' . msg
+	endif
+	if len(testdump) != len(refdump)
+	  let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
+	endif
+      else
+	let msg = 'See new dump file: call term_dumpload("' . testfile . '")'
+      endif
+      for i in range(len(refdump))
+	if i >= len(testdump)
+	  break
+	endif
+	if testdump[i] != refdump[i]
+	  let msg = msg . '; difference in line ' . (i + 1) . ': "' . testdump[i] . '"'
+	endif
+      endfor
+      call assert_report(msg)
+      return 1
     endif
-    sleep 10m
     let i += 1
   endwhile
+  return 0
 endfunc

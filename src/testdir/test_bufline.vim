@@ -18,7 +18,7 @@ func Test_setbufline_getbufline()
   let b = bufnr('%')
   wincmd w
   call assert_equal(1, setbufline(b, 5, ['x']))
-  call assert_equal(1, setbufline(1234, 1, ['x']))
+  call assert_equal(1, setbufline(bufnr('$') + 1, 1, ['x']))
   call assert_equal(0, setbufline(b, 4, ['d', 'e']))
   call assert_equal(['c'], getbufline(b, 3))
   call assert_equal(['d'], getbufline(b, 4))
@@ -89,6 +89,33 @@ func Test_appendbufline()
   call assert_equal(['e'], getbufline(b, 5))
   call assert_equal([], getbufline(b, 6))
   exe "bwipe! " . b
+endfunc
+
+func Test_appendbufline_no_E315()
+  let after = [
+    \ 'set stl=%f ls=2',
+    \ 'new',
+    \ 'let buf = bufnr("%")',
+    \ 'quit',
+    \ 'vsp',
+    \ 'exec "buffer" buf',
+    \ 'wincmd w',
+    \ 'call appendbufline(buf, 0, "abc")',
+    \ 'redraw',
+    \ 'while getbufline(buf, 1)[0] =~ "^\\s*$"',
+    \ '  sleep 10m',
+    \ 'endwhile',
+    \ 'au VimLeavePre * call writefile([v:errmsg], "Xerror")',
+    \ 'au VimLeavePre * call writefile(["done"], "Xdone")',
+    \ 'qall!',
+    \ ]
+  if !RunVim([], after, '--clean')
+    return
+  endif
+  call assert_notmatch("^E315:", readfile("Xerror")[0])
+  call assert_equal("done", readfile("Xdone")[0])
+  call delete("Xerror")
+  call delete("Xdone")
 endfunc
 
 func Test_deletebufline()

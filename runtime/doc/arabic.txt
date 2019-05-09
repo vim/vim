@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 8.1.  Last change: 2010 Nov 13
+*arabic.txt*	For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli
@@ -6,7 +6,6 @@
 
 Arabic Language support (options & mappings) for Vim		*Arabic*
 
-{Vi does not have any of these commands}
 
 								*E800*
 In order to use right-to-left and Arabic mapping support, it is

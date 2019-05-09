@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2018 Apr 11
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 May 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -577,8 +577,10 @@ used for.  You can find an alphabetical list here: |functions|.  Use CTRL-] on
 the function name to jump to detailed help on it.
 
 String manipulation:					*string-functions*
-	nr2char()		get a character by its ASCII value
-	char2nr()		get ASCII value of a character
+	nr2char()		get a character by its number value
+	list2str()		get a character string from a list of numbers
+	char2nr()		get number value of a character
+	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
 	printf()		format a string according to % items
@@ -612,6 +614,7 @@ String manipulation:					*string-functions*
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 	execute()		execute an Ex command and get the output
+	trim()			trim characters from a string
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
@@ -722,6 +725,8 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	diff_filler()		get the number of filler lines above a line
 	screenattr()		get attribute at a screen line/row
 	screenchar()		get character code at a screen line/row
+	screenchars()		get character codes at a screen line/row
+	screenstring()		get string of characters at a screen line/row
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
@@ -761,16 +766,18 @@ System functions and manipulation of files:
 	isdirectory()		check if a directory exists
 	getfsize()		get the size of a file
 	getcwd()		get the current working directory
-	haslocaldir()		check if current window used |:lcd|
+	haslocaldir()		check if current window used |:lcd| or |:tcd|
 	tempname()		get the name of a temporary file
 	mkdir()			create a new directory
+	chdir()			change current working directory
 	delete()		delete a file
 	rename()		rename a file
 	system()		get the result of a shell command as a string
 	systemlist()		get the result of a shell command as a list
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
-	writefile()		write a List of lines into a file
+	readdir()		get a List of file names in a directory
+	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*
 	getftime()		get last modification time of a file
@@ -799,6 +806,9 @@ Buffers, windows and the argument list:
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
 	getbufline()		get a list of lines from the specified buffer
+	setbufline()		replace a line in the specified buffer
+	appendbufline()		append a list of lines in the specified buffer
+	deletebufline()		delete lines from a specified buffer
 	win_findbuf()		find windows containing a buffer
 	win_getid()		get window ID of a window
 	win_gotoid()		go to window with ID
@@ -809,6 +819,8 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapinfo()		information about a swap file
+	swapname()		get the swap file path of a buffer
 
 Command line:					*command-line-functions*
 	getcmdline()		get the current command line
@@ -828,6 +840,7 @@ Insert mode completion:				*completion-functions*
 	complete()		set found matches
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
+	complete_info()		get current completion information
 	pumvisible()		check if the popup menu is displayed
 
 Folding:					*folding-functions*
@@ -906,6 +919,7 @@ Window size and position:			*window-size-functions*
 	winheight()		get height of a specific window
 	winwidth()		get width of a specific window
 	win_screenpos()		get screen position of a window
+	winlayout()		get layout of windows in a tab page
 	winrestcmd()		return command to restore window sizes
 	winsaveview()		get view of current window
 	winrestview()		restore saved view of current window
@@ -918,6 +932,7 @@ Mappings:				    *mapping-functions*
 
 Testing:				    *test-functions*
 	assert_equal()		assert that two expressions values are equal
+	assert_equalfile()	assert that two file contents are equal
 	assert_notequal()	assert that two expressions values are not equal
 	assert_inrange()	assert that an expression is inside a range
 	assert_match()		assert that a pattern matches the value
@@ -933,6 +948,7 @@ Testing:				    *test-functions*
 	test_override()		test with Vim internal overrides
 	test_garbagecollect_now()   free memory right now
 	test_ignore_error()	ignore a specific error message
+	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
 	test_null_job()		return a null Job
@@ -940,6 +956,10 @@ Testing:				    *test-functions*
 	test_null_partial()	return a null Partial function
 	test_null_string()	return a null String
 	test_settime()		set the time Vim uses internally
+	test_setmouse()		set the mouse position
+	test_feedinput()	add key sequence to input buffer
+	test_option_not_set()	reset flag indicating option was set
+	test_scrollbar()	simulate scrollbar movement in the GUI
 
 Inter-process communication:		    *channel-functions*
 	ch_canread()		check if there is something to read
@@ -947,6 +967,7 @@ Inter-process communication:		    *channel-functions*
 	ch_close()		close a channel
 	ch_close_in()		close the in part of a channel
 	ch_read()		read a message from a channel
+	ch_readblob()		read a Blob from a channel
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel
@@ -972,6 +993,15 @@ Jobs:		    			        *job-functions*
 	job_info()		get information about a job
 	job_setoptions()	set options for a job
 
+Signs:						*sign-functions*
+	sign_define()		define or update a sign
+	sign_getdefined()	get a list of defined signs
+	sign_getplaced()	get a list of placed signs
+	sign_jump()		jump to a sign
+	sign_place()		place a sign
+	sign_undefine()		undefine a sign
+	sign_unplace()		unplace a sign
+
 Terminal window:				*terminal-functions*
 	term_start()		open a terminal window and run a job
 	term_list()		get the list of terminal buffers
@@ -990,6 +1020,12 @@ Terminal window:				*terminal-functions*
 	term_gettty()		get the tty name of a terminal
 	term_setansicolors()	set 16 ANSI colors, used for GUI
 	term_getansicolors()	get 16 ANSI colors, used for GUI
+	term_dumpdiff()		display difference between two screen dumps
+	term_dumpload()		load a terminal screen dump in a window
+	term_dumpwrite()	dump contents of a terminal screen to a file
+	term_setkill()		set signal to stop job in a terminal
+	term_setrestore()	set command to restore a terminal
+	term_setsize()		set the size of a terminal
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
@@ -997,6 +1033,17 @@ Timers:						*timer-functions*
 	timer_stop()		stop a timer
 	timer_stopall()		stop all timers
 	timer_info()		get information about timers
+
+Tags:						*tag-functions*
+	taglist()		get list of matching tags
+	tagfiles()		get a list of tags files
+	gettagstack()		get the tag stack of a window
+	settagstack()		modify the tag stack of a window
+
+Prompt Buffer:					*promptbuffer-functions*
+	prompt_setcallback()	set prompt callback for a buffer
+	prompt_setinterrupt()	set interrupt callback for a buffer
+	prompt_setprompt()	set the prompt text for a buffer
 
 Various:					*various-functions*
 	mode()			get current editing mode
@@ -1025,15 +1072,13 @@ Various:					*various-functions*
 
 	wordcount()		get byte/word/char count of buffer
 
-	taglist()		get list of matching tags
-	tagfiles()		get a list of tags files
-
 	luaeval()		evaluate Lua expression
 	mzeval()		evaluate |MzScheme| expression
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	pyxeval()		evaluate |python_x| expression
+	debugbreak()		interrupt a program being debugged
 
 ==============================================================================
 *41.7*	Defining a function

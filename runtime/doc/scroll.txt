@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 8.1.  Last change: 2018 Apr 26
+*scroll.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,9 +45,6 @@ CTRL-D			Scroll window Downwards in the buffer.  The number of
 			difference).  When the cursor is on the last line of
 			the buffer nothing happens and a beep is produced.
 			See also 'startofline' option.
-			{difference from vi: Vim scrolls 'scroll' screen
-			lines, instead of file lines; makes a difference when
-			lines wrap}
 
 <S-Down>	or				*<S-Down>* *<kPageDown>*
 <PageDown>	or				*<PageDown>* *CTRL-F*
@@ -120,7 +117,7 @@ z<CR>			Redraw, line [count] at top of window (default
 
 							*zt*
 zt			Like "z<CR>", but leave the cursor in the same
-			column.  {not in Vi}
+			column.
 
 							*zN<CR>*
 z{height}<CR>		Redraw, make window {height} lines tall.  This is
@@ -136,7 +133,7 @@ z.			Redraw, line [count] at center of window (default
 							*zz*
 zz			Like "z.", but leave the cursor in the same column.
 			Careful: If caps-lock is on, this command becomes
-			"ZZ": write buffer and exit!  {not in Vi}
+			"ZZ": write buffer and exit!
 
 							*z-*
 z-			Redraw, line [count] at bottom of window (default
@@ -145,7 +142,6 @@ z-			Redraw, line [count] at bottom of window (default
 
 							*zb*
 zb			Like "z-", but leave the cursor in the same column.
-			{not in Vi}
 
 ==============================================================================
 4. Scrolling horizontally				*scroll-horizontal*
@@ -158,26 +154,22 @@ not used.
 z<Right>    or						*zl* *z<Right>*
 zl			Move the view on the text [count] characters to the
 			right, thus scroll the text [count] characters to the
-			left.  This only works when 'wrap' is off.  {not in
-			Vi}
+			left.  This only works when 'wrap' is off.
 
 z<Left>      or						*zh* *z<Left>*
 zh			Move the view on the text [count] characters to the
 			left, thus scroll the text [count] characters to the
-			right.  This only works when 'wrap' is off.  {not in
-			Vi}
+			right.  This only works when 'wrap' is off.
 
 							*zL*
 zL			Move the view on the text half a screenwidth to the
 			right, thus scroll the text half a screenwidth to the
-			left.  This only works when 'wrap' is off.  {not in
-			Vi}
+			left.  This only works when 'wrap' is off.
 
 							*zH*
 zH			Move the view on the text half a screenwidth to the
 			left, thus scroll the text half a screenwidth to the
-			right.  This only works when 'wrap' is off.  {not in
-			Vi}
+			right.  This only works when 'wrap' is off.
 
 For the following two commands the cursor is not moved in the text, only the
 text scrolls on the screen.
@@ -185,12 +177,12 @@ text scrolls on the screen.
 							*zs*
 zs			Scroll the text horizontally to position the cursor
 			at the start (left side) of the screen.  This only
-			works when 'wrap' is off.  {not in Vi}
+			works when 'wrap' is off.
 
 							*ze*
 ze			Scroll the text horizontally to position the cursor
 			at the end (right side) of the screen.  This only
-			works when 'wrap' is off.  {not in Vi}
+			works when 'wrap' is off.
 
 ==============================================================================
 5. Scrolling synchronously				*scroll-binding*

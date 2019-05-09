@@ -19,11 +19,7 @@ static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception
 typedef int Py_ssize_t;  /* Python 2.4 and earlier don't have this type. */
 #endif
 
-#ifdef FEAT_MBYTE
-# define ENC_OPT ((char *)p_enc)
-#else
-# define ENC_OPT "latin1"
-#endif
+#define ENC_OPT ((char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"
 
 static const char *vim_special_path = "_vim_path_";
@@ -86,9 +82,9 @@ static PyObject *vim_special_path_object;
 #if PY_VERSION_HEX >= 0x030700f0
 static PyObject *py_find_spec;
 #else
-static PyObject *py_find_module;
 static PyObject *py_load_module;
 #endif
+static PyObject *py_find_module;
 
 static PyObject *VimError;
 
@@ -531,7 +527,7 @@ PythonIO_Init_io(void)
 
     if (PyErr_Occurred())
     {
-	EMSG(_("E264: Python: Error initialising I/O objects"));
+	emsg(_("E264: Python: Error initialising I/O objects"));
 	return -1;
     }
 
@@ -629,7 +625,7 @@ VimTryEnd(void)
     else if (msg_list != NULL && *msg_list != NULL)
     {
 	int	should_free;
-	char_u	*msg;
+	char	*msg;
 
 	msg = get_exception_string(*msg_list, ET_ERROR, NULL, &should_free);
 
@@ -639,7 +635,7 @@ VimTryEnd(void)
 	    return -1;
 	}
 
-	PyErr_SetVim((char *) msg);
+	PyErr_SetVim(msg);
 
 	free_global_msglist();
 
@@ -758,7 +754,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
 	ret = PyString_FromString((char *)buf);
     }
-# ifdef FEAT_FLOAT
+#ifdef FEAT_FLOAT
     else if (our_tv->v_type == VAR_FLOAT)
     {
 	char buf[NUMBUFLEN];
@@ -766,7 +762,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	sprintf(buf, "%f", our_tv->vval.v_float);
 	ret = PyString_FromString((char *)buf);
     }
-# endif
+#endif
     else if (our_tv->v_type == VAR_LIST)
     {
 	list_T		*list = our_tv->vval.v_list;
@@ -862,6 +858,10 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	}
 	return ret;
     }
+    else if (our_tv->v_type == VAR_BLOB)
+	ret = PyBytes_FromStringAndSize(
+		(char*) our_tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) our_tv->vval.v_blob->bv_ga.ga_len);
     else
     {
 	Py_INCREF(Py_None);
@@ -976,11 +976,7 @@ VimStrwidth(PyObject *self UNUSED, PyObject *string)
     if (!(str = StringToChars(string, &todecref)))
 	return NULL;
 
-#ifdef FEAT_MBYTE
     len = mb_string2cells(str, (int)STRLEN(str));
-#else
-    len = STRLEN(str);
-#endif
 
     Py_XDECREF(todecref);
 
@@ -1031,7 +1027,7 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     Py_DECREF(newwd);
     Py_XDECREF(todecref);
 
-    post_chdir(FALSE);
+    post_chdir(CDSCOPE_GLOBAL);
 
     if (VimTryEnd())
     {
@@ -1209,7 +1205,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
     if (!(paths = Vim_GetPaths(self)))
 	return NULL;
 
-    spec = PyObject_CallFunction(py_find_spec, "sNN", fullname, paths, target);
+    spec = PyObject_CallFunction(py_find_spec, "sOO", fullname, paths, target);
 
     Py_DECREF(paths);
 
@@ -2917,8 +2913,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 {
     FunctionObject	*self;
 
-    self = (FunctionObject *) subtype->tp_alloc(subtype, 0);
-
+    self = (FunctionObject *)subtype->tp_alloc(subtype, 0);
     if (self == NULL)
 	return NULL;
 
@@ -2933,14 +2928,35 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	self->name = vim_strsave(name);
     }
     else
-	if ((self->name = get_expanded_name(name,
-				    vim_strchr(name, AUTOLOAD_CHAR) == NULL))
-		== NULL)
+    {
+	char_u *p;
+
+	if ((p = get_expanded_name(name,
+			    vim_strchr(name, AUTOLOAD_CHAR) == NULL)) == NULL)
 	{
 	    PyErr_FORMAT(PyExc_ValueError,
 		    N_("function %s does not exist"), name);
 	    return NULL;
 	}
+
+	if (p[0] == K_SPECIAL && p[1] == KS_EXTRA && p[2] == (int)KE_SNR)
+	{
+	    char_u *np;
+	    size_t len = STRLEN(p) + 1;
+
+	    if ((np = alloc((int)len + 2)) == NULL)
+	    {
+		vim_free(p);
+		return NULL;
+	    }
+	    mch_memmove(np, "<SNR>", 5);
+	    mch_memmove(np + 5, p + 3, len - 3);
+	    vim_free(p);
+	    self->name = np;
+	}
+	else
+	    self->name = p;
+    }
 
     func_ref(self->name);
     self->argc = argc;
@@ -3454,13 +3470,13 @@ OptionsIter(OptionsObject *self)
     static int
 set_option_value_err(char_u *key, int numval, char_u *stringval, int opt_flags)
 {
-    char_u	*errmsg;
+    char	*errmsg;
 
     if ((errmsg = set_option_value(key, numval, stringval, opt_flags)))
     {
 	if (VimTryEnd())
 	    return FAIL;
-	PyErr_SetVim((char *)errmsg);
+	PyErr_SetVim(errmsg);
 	return FAIL;
     }
     return OK;
@@ -4012,9 +4028,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 	self->win->w_cursor.lnum = lnum;
 	self->win->w_cursor.col = col;
 	self->win->w_set_curswant = TRUE;
-#ifdef FEAT_VIRTUALEDIT
 	self->win->w_cursor.coladd = 0;
-#endif
 	/* When column is out of range silently correct it. */
 	check_cursor_col_win(self->win);
 
@@ -4373,7 +4387,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == curbuf)
+	    if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+		// Using an existing window for the buffer, adjust the cursor
+		// position.
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
 	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
@@ -4623,7 +4640,10 @@ SetBufferLineList(
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curbuf)
+	if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+	    // Using an existing window for the buffer, adjust the cursor
+	    // position.
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */
@@ -5635,7 +5655,7 @@ run_cmd(const char *cmd, void *arg UNUSED
     }
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
-	EMSG2(_(e_py_systemexit), "python");
+	semsg(_(e_py_systemexit), "python");
 	PyErr_Clear();
     }
     else
@@ -5662,7 +5682,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (u_save((linenr_T)RangeStart - 1, (linenr_T)RangeEnd + 1) != OK)
     {
-	EMSG(_("cannot save undo information"));
+	emsg(_("cannot save undo information"));
 	return;
     }
 
@@ -5680,7 +5700,7 @@ run_do(const char *cmd, void *arg UNUSED
     else if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
     {
 	PyMem_Free(code);
-	EMSG2(_(e_py_systemexit), "python");
+	semsg(_(e_py_systemexit), "python");
 	PyErr_Clear();
 	return;
     }
@@ -5691,7 +5711,7 @@ run_do(const char *cmd, void *arg UNUSED
 
     if (status)
     {
-	EMSG(_("failed to run the code"));
+	emsg(_("failed to run the code"));
 	return;
     }
 
@@ -5781,20 +5801,20 @@ run_eval(const char *cmd, typval_T *rettv
     {
 	if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit))
 	{
-	    EMSG2(_(e_py_systemexit), "python");
+	    semsg(_(e_py_systemexit), "python");
 	    PyErr_Clear();
 	}
 	else
 	{
 	    if (PyErr_Occurred() && !msg_silent)
 		PyErr_PrintEx(0);
-	    EMSG(_("E858: Eval did not return a valid python object"));
+	    emsg(_("E858: Eval did not return a valid python object"));
 	}
     }
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    EMSG(_("E859: Failed to convert returned python object to vim value"));
+	    emsg(_("E859: Failed to convert returned python object to vim value"));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6074,18 +6094,18 @@ convert_dl(PyObject *obj, typval_T *tv,
 
     sprintf(hexBuf, "%p", (void *)obj);
 
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
     capsule = PyDict_GetItemString(lookup_dict, hexBuf);
-# else
+#else
     capsule = (PyObject *)PyDict_GetItemString(lookup_dict, hexBuf);
-# endif
+#endif
     if (capsule == NULL)
     {
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
 	capsule = PyCapsule_New(tv, NULL, NULL);
-# else
+#else
 	capsule = PyCObject_FromVoidPtr(tv, NULL);
-# endif
+#endif
 	if (PyDict_SetItemString(lookup_dict, hexBuf, capsule))
 	{
 	    Py_DECREF(capsule);
@@ -6111,11 +6131,11 @@ convert_dl(PyObject *obj, typval_T *tv,
     {
 	typval_T	*v;
 
-# ifdef PY_USE_CAPSULE
+#ifdef PY_USE_CAPSULE
 	v = PyCapsule_GetPointer(capsule, NULL);
-# else
+#else
 	v = PyCObject_AsVoidPtr(capsule);
-# endif
+#endif
 	copy_tv(v, tv);
     }
     return 0;
@@ -6369,6 +6389,10 @@ ConvertToPyObject(typval_T *tv)
 				tv->vval.v_partial->pt_argc, argv,
 				tv->vval.v_partial->pt_dict,
 				tv->vval.v_partial->pt_auto);
+	case VAR_BLOB:
+	    return PyBytes_FromStringAndSize(
+		(char*) tv->vval.v_blob->bv_ga.ga_data,
+		(Py_ssize_t) tv->vval.v_blob->bv_ga.ga_len);
 	case VAR_UNKNOWN:
 	case VAR_CHANNEL:
 	case VAR_JOB:
@@ -6694,7 +6718,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	EMSG(_("Failed to set path hook: sys.path_hooks is not a list\n"
+	emsg(_("Failed to set path hook: sys.path_hooks is not a list\n"
 	       "You should now do the following:\n"
 	       "- append vim.path_hook to sys.path_hooks\n"
 	       "- append vim.VIM_SPECIAL_PATH to sys.path\n"));
@@ -6724,7 +6748,7 @@ init_sys_path(void)
     else
     {
 	VimTryStart();
-	EMSG(_("Failed to set path: sys.path is not a list\n"
+	emsg(_("Failed to set path: sys.path is not a list\n"
 	       "You should now append vim.VIM_SPECIAL_PATH to sys.path"));
 	VimTryEnd(); /* Discard the error */
     }
@@ -6896,6 +6920,13 @@ populate_module(PyObject *m)
     {
 	Py_DECREF(imp);
 	return -1;
+    }
+
+    if ((py_find_module = PyObject_GetAttrString(cls, "find_module")))
+    {
+	// find_module() is deprecated, this may stop working in some later
+	// version.
+        ADD_OBJECT(m, "_find_module", py_find_module);
     }
 
     Py_DECREF(imp);

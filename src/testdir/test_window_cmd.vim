@@ -103,15 +103,71 @@ func Test_window_vertical_split()
   bw
 endfunc
 
+" Test the ":wincmd ^" and "<C-W>^" commands.
 func Test_window_split_edit_alternate()
-  e Xa
-  e Xb
 
+  " Test for failure when the alternate buffer/file no longer exists.
+  edit Xfoo | %bw
+  call assert_fails(':wincmd ^', 'E23')
+
+  " Test for the expected behavior when we have two named buffers.
+  edit Xfoo | edit Xbar
   wincmd ^
-  call assert_equal('Xa', bufname(winbufnr(1)))
-  call assert_equal('Xb', bufname(winbufnr(2)))
+  call assert_equal('Xfoo', bufname(winbufnr(1)))
+  call assert_equal('Xbar', bufname(winbufnr(2)))
+  only
 
-  bw Xa Xb
+  " Test for the expected behavior when the alternate buffer is not named.
+  enew | let l:nr1 = bufnr('%')
+  edit Xfoo | let l:nr2 = bufnr('%')
+  wincmd ^
+  call assert_equal(l:nr1, winbufnr(1))
+  call assert_equal(l:nr2, winbufnr(2))
+  only
+
+  " FIXME: this currently fails on AppVeyor, but passes locally
+  if !has('win32')
+    " Test the Normal mode command.
+    call feedkeys("\<C-W>\<C-^>", 'tx')
+    call assert_equal(l:nr2, winbufnr(1))
+    call assert_equal(l:nr1, winbufnr(2))
+  endif
+
+  %bw!
+endfunc
+
+" Test the ":[count]wincmd ^" and "[count]<C-W>^" commands.
+func Test_window_split_edit_bufnr()
+
+  %bwipeout
+  let l:nr = bufnr('%') + 1
+  call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92')
+  call assert_fails(':' . l:nr . 'wincmd ^', 'E16')
+  call assert_fails(':0wincmd ^', 'E16')
+
+  edit Xfoo | edit Xbar | edit Xbaz
+  let l:foo_nr = bufnr('Xfoo')
+  let l:bar_nr = bufnr('Xbar')
+  let l:baz_nr = bufnr('Xbaz')
+
+  " FIXME: this currently fails on AppVeyor, but passes locally
+  if !has('win32')
+    call feedkeys(l:foo_nr . "\<C-W>\<C-^>", 'tx')
+    call assert_equal('Xfoo', bufname(winbufnr(1)))
+    call assert_equal('Xbaz', bufname(winbufnr(2)))
+    only
+
+    call feedkeys(l:bar_nr . "\<C-W>\<C-^>", 'tx')
+    call assert_equal('Xbar', bufname(winbufnr(1)))
+    call assert_equal('Xfoo', bufname(winbufnr(2)))
+    only
+
+    execute l:baz_nr . 'wincmd ^'
+    call assert_equal('Xbaz', bufname(winbufnr(1)))
+    call assert_equal('Xbar', bufname(winbufnr(2)))
+  endif
+
+  %bw!
 endfunc
 
 func Test_window_preview()
@@ -322,7 +378,7 @@ func Test_equalalways_on_close()
   set equalalways
   vsplit
   windo split
-  split 
+  split
   wincmd J
   " now we have a frame top-left with two windows, a frame top-right with two
   " windows and a frame at the bottom, full-width.
@@ -520,6 +576,216 @@ func Test_winrestcmd()
   call assert_equal(2, winheight(0))
   call assert_equal(3, winwidth(0))
   only
+endfunc
+
+func Fun_RenewFile()
+  sleep 2
+  silent execute '!echo "1" > tmp.txt'
+  sp
+  wincmd p
+  edit! tmp.txt
+endfunc
+
+func Test_window_prevwin()
+  " Can we make this work on MS-Windows?
+  if !has('unix')
+    return
+  endif
+
+  set hidden autoread
+  call writefile(['2'], 'tmp.txt')
+  new tmp.txt
+  q
+  " Need to wait a bit for the timestamp to be older.
+  call Fun_RenewFile()
+  call assert_equal(2, winnr())
+  wincmd p
+  call assert_equal(1, winnr())
+  wincmd p
+  q
+  call Fun_RenewFile()
+  call assert_equal(2, winnr())
+  wincmd p
+  call assert_equal(1, winnr())
+  wincmd p
+  " reset
+  q
+  call delete('tmp.txt')
+  set hidden&vim autoread&vim
+  delfunc Fun_RenewFile
+endfunc
+
+func Test_relative_cursor_position_in_one_line_window()
+  new
+  only
+  call setline(1, range(1, 10000))
+  normal 50%
+  let lnum = getcurpos()[1]
+  split
+  split
+  " make third window take as many lines as possible, other windows will
+  " become one line
+  3wincmd w
+  for i in range(1, &lines - 6)
+    wincmd +
+    redraw!
+  endfor
+
+  " first and second window should show cursor line
+  let wininfo = getwininfo()
+  call assert_equal(lnum, wininfo[0].topline)
+  call assert_equal(lnum, wininfo[1].topline)
+
+  only!
+  bwipe!
+endfunc
+
+func Test_relative_cursor_position_after_move_and_resize()
+  let so_save = &so
+  set so=0
+  enew
+  call setline(1, range(1, 10000))
+  normal 50%
+  split
+  1wincmd w
+  " Move cursor to first line in window
+  normal H
+  redraw!
+  " Reduce window height to two lines
+  let height = winheight(0)
+  while winheight(0) > 2
+    wincmd -
+    redraw!
+  endwhile
+  " move cursor to second/last line in window
+  normal j
+  " restore previous height
+  while winheight(0) < height
+    wincmd +
+    redraw!
+  endwhile
+  " make window two lines again
+  while winheight(0) > 2
+    wincmd -
+    redraw!
+  endwhile
+
+  " cursor should be at bottom line
+  let info = getwininfo(win_getid())[0]
+  call assert_equal(info.topline + 1, getcurpos()[1])
+
+  only!
+  bwipe!
+  let &so = so_save
+endfunc
+
+func Test_relative_cursor_position_after_resize()
+  let so_save = &so
+  set so=0
+  enew
+  call setline(1, range(1, 10000))
+  normal 50%
+  split
+  1wincmd w
+  let winid1 = win_getid()
+  let info = getwininfo(winid1)[0]
+  " Move cursor to second line in window
+  exe "normal " . (info.topline + 1) . "G"
+  redraw!
+  let lnum = getcurpos()[1]
+
+  " Make the window only two lines high, cursor should end up in top line
+  2wincmd w
+  exe (info.height - 2) . "wincmd +"
+  redraw!
+  let info = getwininfo(winid1)[0]
+  call assert_equal(lnum, info.topline)
+
+  only!
+  bwipe!
+  let &so = so_save
+endfunc
+
+func Test_relative_cursor_second_line_after_resize()
+  let so_save = &so
+  set so=0
+  enew
+  call setline(1, range(1, 10000))
+  normal 50%
+  split
+  1wincmd w
+  let winid1 = win_getid()
+  let info = getwininfo(winid1)[0]
+
+  " Make the window only two lines high
+  2wincmd _
+
+  " Move cursor to second line in window
+  normal H
+  normal j
+
+  " Make window size bigger, then back to 2 lines
+  for i in range(1, 10)
+    wincmd +
+    redraw!
+  endfor
+  for i in range(1, 10)
+    wincmd -
+    redraw!
+  endfor
+
+  " cursor should end up in bottom line
+  let info = getwininfo(winid1)[0]
+  call assert_equal(info.topline + 1, getcurpos()[1])
+
+  only!
+  bwipe!
+  let &so = so_save
+endfunc
+
+" Tests for the winnr() function
+func Test_winnr()
+  only | tabonly
+  call assert_equal(1, winnr('j'))
+  call assert_equal(1, winnr('k'))
+  call assert_equal(1, winnr('h'))
+  call assert_equal(1, winnr('l'))
+
+  " create a set of horizontally and vertically split windows
+  leftabove new | wincmd p
+  leftabove new | wincmd p
+  rightbelow new | wincmd p
+  rightbelow new | wincmd p
+  leftabove vnew | wincmd p
+  leftabove vnew | wincmd p
+  rightbelow vnew | wincmd p
+  rightbelow vnew | wincmd p
+
+  call assert_equal(8, winnr('j'))
+  call assert_equal(2, winnr('k'))
+  call assert_equal(4, winnr('h'))
+  call assert_equal(6, winnr('l'))
+  call assert_equal(9, winnr('2j'))
+  call assert_equal(1, winnr('2k'))
+  call assert_equal(3, winnr('2h'))
+  call assert_equal(7, winnr('2l'))
+
+  " Error cases
+  call assert_fails("echo winnr('0.2k')", 'E15:')
+  call assert_equal(2, winnr('-2k'))
+  call assert_fails("echo winnr('-2xj')", 'E15:')
+  call assert_fails("echo winnr('j2j')", 'E15:')
+  call assert_fails("echo winnr('ll')", 'E15:')
+  call assert_fails("echo winnr('5')", 'E15:')
+  call assert_equal(4, winnr('0h'))
+
+  tabnew
+  call assert_equal(8, tabpagewinnr(1, 'j'))
+  call assert_equal(2, tabpagewinnr(1, 'k'))
+  call assert_equal(4, tabpagewinnr(1, 'h'))
+  call assert_equal(6, tabpagewinnr(1, 'l'))
+
+  only | tabonly
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

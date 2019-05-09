@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2018 Mar 04
+*repeat.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -163,12 +163,11 @@ q			Stops recording.  (Implementation note: The 'q' that
 
 							*:@:*
 :[addr]@:		Repeat last command-line.  First set cursor at line
-			[addr] (default is current line).  {not in Vi}
+			[addr] (default is current line).
 
 :[addr]@							*:@@*
 :[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
-			line [addr] (default is current line).  {Vi: only in
-			some versions}
+			line [addr] (default is current line).
 
 ==============================================================================
 4. Using Vim scripts					*using-scripts*
@@ -187,7 +186,6 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			|:bufdo|, in a loop or when another command follows
 			the display won't be updated while executing the
 			commands.
-			{not in Vi}
 
 							*:ru* *:runtime*
 :ru[ntime][!] [where] {file} ..
@@ -230,7 +228,6 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			when no file could be found.
 			When 'verbose' is two or higher, there is a message
 			about each searched file.
-			{not in Vi}
 
 							*:pa* *:packadd* *E919*
 :pa[ckadd][!] {name}	Search for an optional plugin directory in 'packpath'
@@ -323,16 +320,31 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 				set encoding=utf-8
 				scriptencoding utf-8
 <
-			When compiled without the |+multi_byte| feature this
-			command is ignored.
-			{not in Vi}
+
+:scriptv[ersion] {version}		*:scriptv* *:scriptversion*
+								*E999* *E984*
+			Specify the version of Vim for the lines that follow
+			in the same file.  Only applies at the toplevel of
+			sourced scripts, not inside functions.
+
+			If {version} is higher than what the current Vim
+			version supports E999 will be given.  You either need
+			to rewrite the script to make it work with an older
+			Vim version, or update Vim to a newer version.  See
+			|vimscript-version| for what changed between versions.
 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were
 			first sourced.  The number is used for the script ID
 			|<SID>|.
-			{not in Vi} {not available when compiled without the
-			|+eval| feature}
+			{not available when compiled without the |+eval|
+			feature}
+
+:scr[iptnames][!] {scriptId}			*:script*
+			Edit script {scriptId}.  Although ":scriptnames name"
+			works, using ":script name" is recommended.
+			When the current buffer can't be |abandon|ed and the !
+			is not present, the command fails.
 
 						*:fini* *:finish* *E168*
 :fini[sh]		Stop sourcing a script.  Can only be used in a Vim
@@ -342,7 +354,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			following the ":finally" up to the matching |:endtry|
 			are executed first.  This process applies to all
 			nested ":try"s in the script.  The outermost ":endtry"
-			then stops sourcing the script.  {not in Vi}
+			then stops sourcing the script.
 
 All commands and command sequences can be repeated by putting them in a named
 register and then executing it.  There are two ways to get the commands in the
@@ -465,6 +477,16 @@ flag when defining the function, it is not relevant when executing it. >
    .
    :endfunction
    :set cpo-=C
+<
+					*line-continuation-comment*
+To add a comment in between the lines start with '"\ '.  Notice the space
+after the backslash.  Example: >
+	let array = [
+		"\ first entry comment
+		\ 'first',
+		"\ second entry comment
+		\ 'second',
+		\ ]
 
 Rationale:
 	Most programs work with a trailing backslash to indicate line
@@ -472,6 +494,14 @@ Rationale:
 	For example for this Vi mapping: >
 		:map xx  asdf\
 <	Therefore the unusual leading backslash is used.
+
+	Starting a comment in a continuation line results in all following
+	continuation lines to be part of the comment.  Since it was like this
+	for a long time, when making it possible to add a comment halfway a
+	sequence of continuation lines, it was not possible to use \", since
+	that was a valid continuation line.  Using '"\ ' comes closest, even
+	though it may look a bit weird.  Requiring the space after the
+	backslash is to make it very unlikely this is a normal comment line.
 
 ==============================================================================
 5. Using Vim packages					*packages*
@@ -664,7 +694,6 @@ sourced file or user function and set breakpoints.
 NOTE: The debugging mode is far from perfect.  Debugging will have side
 effects on how Vim works.  You cannot use it to debug everything.  For
 example, the display is messed up by the debugging messages.
-{Vi does not have a debug mode}
 
 An alternative to debug mode is setting the 'verbose' option.  With a bigger
 number it will give more verbose messages about what Vim is doing.
@@ -898,7 +927,6 @@ OBSCURE
 Profiling means that Vim measures the time that is spent on executing
 functions and/or scripts.  The |+profile| feature is required for this.
 It is only included when Vim was compiled with "huge" features.
-{Vi does not have profiling}
 
 You can also use the |reltime()| function to measure time.  This only requires
 the |+reltime| feature, which is present more often.

@@ -1,7 +1,4 @@
 " Tests for using Ctrl-A/Ctrl-X using DBCS.
-if !has('multi_byte')
-  finish
-endif
 set encoding=cp932
 scriptencoding cp932
 

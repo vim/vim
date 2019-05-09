@@ -345,9 +345,15 @@ AC_ARG_WITH(view-name, [  --with-view-name=NAME   what to call the View executab
 AC_SUBST(VIEWNAME)
 
 AC_MSG_CHECKING(--with-global-runtime argument)
-AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath'],
-	AC_MSG_RESULT($withval); AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$withval"),
+AC_ARG_WITH(global-runtime, [  --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories],
+	RUNTIME_GLOBAL="$withval"; AC_MSG_RESULT($withval),
 	AC_MSG_RESULT(no))
+
+if test "X$RUNTIME_GLOBAL" != "X"; then
+  RUNTIME_GLOBAL_AFTER=$(printf -- "$RUNTIME_GLOBAL\\n" | $AWK -F, 'BEGIN { comma=0 } { for (i = NF; i > 0; i--) { if (comma) { printf ",%s/after", $i } else { printf "%s/after", $i; comma=1 } } } END { printf "\n" }')
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL, "$RUNTIME_GLOBAL")
+  AC_DEFINE_UNQUOTED(RUNTIME_GLOBAL_AFTER, "$RUNTIME_GLOBAL_AFTER")
+fi
 
 AC_MSG_CHECKING(--with-modified-by argument)
 AC_ARG_WITH(modified-by, [  --with-modified-by=NAME       name of who modified a release version],
@@ -1990,22 +1996,6 @@ if test "$enable_cscope" = "yes"; then
   AC_DEFINE(FEAT_CSCOPE)
 fi
 
-AC_MSG_CHECKING(--enable-workshop argument)
-AC_ARG_ENABLE(workshop,
-	[  --enable-workshop       Include Sun Visual Workshop support.], ,
-	[enable_workshop="no"])
-AC_MSG_RESULT($enable_workshop)
-if test "$enable_workshop" = "yes"; then
-  AC_DEFINE(FEAT_SUN_WORKSHOP)
-  WORKSHOP_SRC="workshop.c integration.c"
-  AC_SUBST(WORKSHOP_SRC)
-  WORKSHOP_OBJ="objects/workshop.o objects/integration.o"
-  AC_SUBST(WORKSHOP_OBJ)
-  if test "${enable_gui-xxx}" = xxx; then
-    enable_gui=motif
-  fi
-fi
-
 AC_MSG_CHECKING(--disable-netbeans argument)
 AC_ARG_ENABLE(netbeans,
 	[  --disable-netbeans      Disable NetBeans integration support.],
@@ -2114,9 +2104,9 @@ else
 fi
 if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   AC_DEFINE(FEAT_TERMINAL)
-  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/screen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
   AC_SUBST(TERM_SRC)
-  TERM_OBJ="objects/term_encoding.o objects/term_keyboard.o objects/term_mouse.o objects/term_parser.o objects/term_pen.o objects/term_screen.o objects/term_state.o objects/term_unicode.o objects/term_vterm.o"
+  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/mouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
   AC_SUBST(TERM_OBJ)
 fi
 
@@ -2132,11 +2122,42 @@ fi
 AC_MSG_CHECKING(--enable-multibyte argument)
 AC_ARG_ENABLE(multibyte,
 	[  --enable-multibyte      Include multibyte editing support.], ,
-	[enable_multibyte="no"])
+	[enable_multibyte="yes"])
 AC_MSG_RESULT($enable_multibyte)
-if test "$enable_multibyte" = "yes"; then
-  AC_DEFINE(FEAT_MBYTE)
+if test "$enable_multibyte" != "yes"; then
+  AC_MSG_ERROR([The multi-byte feature can no longer be disabled. If you have
+		a problem with this, discuss on the Vim mailing list.])
 fi
+
+dnl Right-to-Left language support for Vim will be included with big features,
+dnl unless ENABLE_RIGHTLEFT is undefined.
+AC_MSG_CHECKING(--disable-rightleft argument)
+AC_ARG_ENABLE(rightleft,
+	[  --disable-rightleft     Do not include Right-to-Left language support.],
+	, [enable_rightleft="yes"])
+if test "$enable_rightleft" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_RIGHTLEFT)
+fi
+
+dnl Arabic language support for Vim will be included with big features,
+dnl unless ENABLE_ARABIC is undefined.
+AC_MSG_CHECKING(--disable-arabic argument)
+AC_ARG_ENABLE(arabic,
+	[  --disable-arabic        Do not include Arabic language support.],
+	, [enable_arabic="yes"])
+if test "$enable_arabic" = "yes"; then
+	AC_MSG_RESULT(no)
+else
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(DISABLE_ARABIC)
+fi
+
+dnl Farsi language support has been removed, ignore --disable-farsi
+AC_ARG_ENABLE(farsi,
+	[  --disable-farsi         Deprecated.],,)
 
 AC_MSG_CHECKING(--enable-hangulinput argument)
 AC_ARG_ENABLE(hangulinput,
@@ -2321,8 +2342,8 @@ if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
 		SKIP_PHOTON=YES ;;
-    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
-    auto)	AC_MSG_RESULT(auto - automatic GUI support) ;;
+    yes|""|auto) AC_MSG_RESULT(automatic GUI support)
+    		gui_auto=yes ;;
     photon)	AC_MSG_RESULT(Photon GUI support) ;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
 		SKIP_PHOTON=YES ;;
@@ -2333,7 +2354,8 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
 		SKIP_CARBON=YES ;;
-    yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
+    yes|"")	AC_MSG_RESULT(yes - automatic GUI support)
+    		gui_auto=yes ;;
     auto)	AC_MSG_RESULT(auto - Carbon GUI is outdated - disable GUI support)
 		SKIP_CARBON=YES ;;
     carbon)	AC_MSG_RESULT(Carbon GUI support) ;;
@@ -2346,6 +2368,7 @@ else
   case "$enable_gui_canon" in
     no|none)	AC_MSG_RESULT(no GUI support) ;;
     yes|""|auto)	AC_MSG_RESULT(yes/auto - automatic GUI support)
+		gui_auto=yes
 		SKIP_GTK2=
 		SKIP_GNOME=
 		SKIP_MOTIF=
@@ -2593,6 +2616,9 @@ return 1;
       GTK_CFLAGS=""
       GTK_LIBS=""
       ifelse([$3], , :, [$3])
+      if test "$fail_if_missing" = "yes" -a "X$gui_auto" != "Xyes"; then
+	AC_MSG_ERROR([could not configure GTK])
+      fi
     }
     fi
   }
@@ -3230,7 +3256,7 @@ AC_CHECK_HEADERS(stdint.h stdlib.h string.h \
 	unistd.h stropts.h errno.h sys/resource.h \
 	sys/systeminfo.h locale.h sys/stream.h termios.h \
 	libc.h sys/statfs.h poll.h sys/poll.h pwd.h \
-	utime.h sys/param.h libintl.h libgen.h \
+	utime.h sys/param.h sys/ptms.h libintl.h libgen.h \
 	util/debug.h util/msg18n.h frame.h sys/acl.h \
 	sys/access.h sys/sysinfo.h wchar.h wctype.h)
 
@@ -3720,7 +3746,8 @@ AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen ftruncate unsetenv)
+	usleep utime utimes mblen ftruncate unsetenv posix_openpt)
+AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_FSEEKO
 
 dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when
@@ -4271,6 +4298,15 @@ if test "$enable_nls" = "yes"; then
 		[++_nl_msg_cat_cntr;],
 		AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_NL_MSG_CAT_CNTR),
 		AC_MSG_RESULT([no]))
+      AC_MSG_CHECKING([if msgfmt supports --desktop])
+      MSGFMT_DESKTOP=
+      if "$MSGFMT" --help | grep -e '--desktop' >/dev/null; then
+	AC_MSG_RESULT([yes])
+	MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+      else
+	AC_MSG_RESULT([no])
+      fi
+      AC_SUBST(MSGFMT_DESKTOP)
     fi
   else
     AC_MSG_RESULT([no "po/Makefile" - disabled]);
@@ -4365,27 +4401,11 @@ if test "$MACOS_X" = "yes"; then
       dnl Since no FEAT_CLIPBOARD, no longer need for os_macosx.m.
       OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
-      if test "$enable_multibyte" = "yes"; then
-        AC_MSG_RESULT([yes, we need CoreServices])
-        LIBS="$LIBS -framework CoreServices"
-      else
-        dnl Since no FEAT_MBYTE, no longer need for os_mac_conv.c.
-        AC_MSG_RESULT([no])
-        OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_mac_conv.c++'`
-        OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_mac_conv.o++'`
-        CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's+-DMACOS_X_DARWIN++'`
-      fi
+      AC_MSG_RESULT([yes, we need CoreServices])
+      LIBS="$LIBS -framework CoreServices"
     else
       AC_MSG_RESULT([yes, we need AppKit])
       LIBS="$LIBS -framework AppKit"
-      if test "$features" = "small" -a "$enable_multibyte" = "no"; then
-        dnl Since FEAT_CLIPBOARD is to be defined in vim.h for FEAT_SMALL, define
-        dnl FEAT_MBYTE in order not to compromise the interoperability of the
-        dnl clipboard.
-        AC_MSG_NOTICE([+multi_byte will be set in favor of +clipboard])
-        enable_multibyte=yes
-        AC_DEFINE(FEAT_MBYTE)
-      fi
     fi
   else
     AC_MSG_RESULT([no])

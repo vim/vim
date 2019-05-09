@@ -1,6 +1,6 @@
 " Tests for digraphs
 
-if !has("digraphs") || !has("multi_byte")
+if !has("digraphs")
   finish
 endif
 
@@ -466,9 +466,6 @@ func Test_show_digraph()
 endfunc
 
 func Test_show_digraph_cp1251()
-  if !has('multi_byte')
-    return
-  endif
   new
   set encoding=cp1251
   call Put_Dig("='")

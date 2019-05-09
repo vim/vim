@@ -13,7 +13,7 @@
 #if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
 /* on Win32 only get_beval_info() is required */
-#if !defined(FEAT_GUI_W32) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
 #ifdef FEAT_GUI_GTK
 # if GTK_CHECK_VERSION(3,0,0)
@@ -60,11 +60,7 @@ static gint target_event_cb(GtkWidget *, GdkEvent *, gpointer);
 static gint mainwin_event_cb(GtkWidget *, GdkEvent *, gpointer);
 static void pointer_event(BalloonEval *, int, int, unsigned);
 static void key_event(BalloonEval *, unsigned, int);
-# if GTK_CHECK_VERSION(3,0,0)
 static gboolean timeout_cb(gpointer);
-# else
-static gint timeout_cb(gpointer);
-# endif
 # if GTK_CHECK_VERSION(3,0,0)
 static gboolean balloon_draw_event_cb (GtkWidget *, cairo_t *, gpointer);
 # else
@@ -107,7 +103,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	IEMSG(_("E232: Cannot create BalloonEval with both message and callback"));
+	iemsg(_("E232: Cannot create BalloonEval with both message and callback"));
 	return NULL;
     }
 
@@ -201,11 +197,10 @@ gui_mch_currently_showing_beval(void)
     return current_beval;
 }
 #endif
-#endif /* !FEAT_GUI_W32 */
+#endif /* !FEAT_GUI_MSWIN */
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
-    || defined(FEAT_EVAL) || defined(PROTO)
-# if !defined(FEAT_GUI_W32) || defined(PROTO)
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL) || defined(PROTO)
+# if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
 /*
  * Show a balloon with "mesg".
@@ -219,10 +214,10 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     else
 	undrawBalloon(beval);
 }
-# endif /* !FEAT_GUI_W32 */
-#endif /* FEAT_SUN_WORKSHOP || FEAT_NETBEANS_INTG || PROTO */
+# endif /* !FEAT_GUI_MSWIN */
+#endif /* FEAT_NETBEANS_INTG || PROTO */
 
-#if !defined(FEAT_GUI_W32) || defined(PROTO)
+#if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 #if defined(FEAT_BEVAL_TIP) || defined(PROTO)
 /*
  * Hide the given balloon.
@@ -244,16 +239,9 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
      * This allows us to catch events independently of the signal handlers
      * in gui_gtk_x11.c.
      */
-# if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(target), "event",
 		     G_CALLBACK(target_event_cb),
 		     beval);
-# else
-    /* Should use GTK_OBJECT() here, but that causes a lint warning... */
-    gtk_signal_connect((GtkObject*)(target), "event",
-		       GTK_SIGNAL_FUNC(target_event_cb),
-		       beval);
-# endif
     /*
      * Nasty:  Key press events go to the main window thus the drawing area
      * will never see them.  This means we have to connect to the main window
@@ -262,45 +250,25 @@ addEventHandler(GtkWidget *target, BalloonEval *beval)
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(target, gui.mainwin))
     {
-# if GTK_CHECK_VERSION(3,0,0)
 	g_signal_connect(G_OBJECT(gui.mainwin), "event",
 			 G_CALLBACK(mainwin_event_cb),
 			 beval);
-# else
-	gtk_signal_connect((GtkObject*)(gui.mainwin), "event",
-			   GTK_SIGNAL_FUNC(mainwin_event_cb),
-			   beval);
-# endif
     }
 }
 
     static void
 removeEventHandler(BalloonEval *beval)
 {
-    /* LINTED: avoid warning: dubious operation on enum */
-# if GTK_CHECK_VERSION(3,0,0)
     g_signal_handlers_disconnect_by_func(G_OBJECT(beval->target),
 					 FUNC2GENERIC(target_event_cb),
 					 beval);
-# else
-    gtk_signal_disconnect_by_func((GtkObject*)(beval->target),
-				  GTK_SIGNAL_FUNC(target_event_cb),
-				  beval);
-# endif
 
     if (gtk_socket_id == 0 && gui.mainwin != NULL
 	    && gtk_widget_is_ancestor(beval->target, gui.mainwin))
     {
-	/* LINTED: avoid warning: dubious operation on enum */
-# if GTK_CHECK_VERSION(3,0,0)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(gui.mainwin),
 					     FUNC2GENERIC(mainwin_event_cb),
 					     beval);
-# else
-	gtk_signal_disconnect_by_func((GtkObject*)(gui.mainwin),
-				      GTK_SIGNAL_FUNC(mainwin_event_cb),
-				      beval);
-# endif
     }
 }
 
@@ -433,13 +401,8 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	    }
 	    else
 	    {
-# if GTK_CHECK_VERSION(3,0,0)
 		beval->timerID = g_timeout_add((guint)p_bdlay,
 					       &timeout_cb, beval);
-# else
-		beval->timerID = gtk_timeout_add((guint32)p_bdlay,
-						 &timeout_cb, beval);
-# endif
 	    }
 	}
     }
@@ -476,11 +439,7 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
 	cancelBalloon(beval);
 }
 
-# if GTK_CHECK_VERSION(3,0,0)
     static gboolean
-# else
-    static gint
-# endif
 timeout_cb(gpointer data)
 {
     BalloonEval *beval = (BalloonEval *)data;
@@ -958,7 +917,7 @@ drawBalloon(BalloonEval *beval)
 	screen = gtk_widget_get_screen(beval->target);
 	gtk_window_set_screen(GTK_WINDOW(beval->balloonShell), screen);
 # endif
-	gui_gtk_get_screen_geom_of_win(beval->balloonShell,
+	gui_gtk_get_screen_geom_of_win(beval->target,
 				    &screen_x, &screen_y, &screen_w, &screen_h);
 # if !GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_ensure_style(beval->balloonShell);
@@ -991,11 +950,7 @@ drawBalloon(BalloonEval *beval)
 # endif
 
 	/* Compute position of the balloon area */
-# if GTK_CHECK_VERSION(3,0,0)
 	gdk_window_get_origin(gtk_widget_get_window(beval->target), &x, &y);
-# else
-	gdk_window_get_origin(beval->target->window, &x, &y);
-# endif
 	x += beval->x;
 	y += beval->y;
 
@@ -1043,11 +998,7 @@ cancelBalloon(BalloonEval *beval)
 
     if (beval->timerID != 0)
     {
-# if GTK_CHECK_VERSION(3,0,0)
 	g_source_remove(beval->timerID);
-# else
-	gtk_timeout_remove(beval->timerID);
-# endif
 	beval->timerID = 0;
     }
     beval->showState = ShS_NEUTRAL;
@@ -1059,17 +1010,9 @@ createBalloonEvalWindow(BalloonEval *beval)
     beval->balloonShell = gtk_window_new(GTK_WINDOW_POPUP);
 
     gtk_widget_set_app_paintable(beval->balloonShell, TRUE);
-# if GTK_CHECK_VERSION(3,0,0)
     gtk_window_set_resizable(GTK_WINDOW(beval->balloonShell), FALSE);
-# else
-    gtk_window_set_policy(GTK_WINDOW(beval->balloonShell), FALSE, FALSE, TRUE);
-# endif
     gtk_widget_set_name(beval->balloonShell, "gtk-tooltips");
-# if GTK_CHECK_VERSION(3,0,0)
     gtk_container_set_border_width(GTK_CONTAINER(beval->balloonShell), 4);
-# else
-    gtk_container_border_width(GTK_CONTAINER(beval->balloonShell), 4);
-# endif
 
 # if GTK_CHECK_VERSION(3,0,0)
     g_signal_connect(G_OBJECT(beval->balloonShell), "draw",
@@ -1277,6 +1220,6 @@ createBalloonEvalWindow(BalloonEval *beval)
 }
 
 #endif /* !FEAT_GUI_GTK */
-#endif /* !FEAT_GUI_W32 */
+#endif /* !FEAT_GUI_MSWIN */
 
 #endif /* FEAT_BEVAL_GUI */

@@ -95,9 +95,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 	}
 
 	if ((clip_text != NULL) && (clip_length > 0))
-	{
 	    clip_yank_selection(type, clip_text, clip_length, cbd);
-	}
 
 	PhClipboardPasteFinish(cbdata);
     }

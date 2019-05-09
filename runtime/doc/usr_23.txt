@@ -208,15 +208,17 @@ encryption key, just like the "-x" argument did: >
 
 LIMITS ON ENCRYPTION
 
-The encryption algorithm used by Vim is weak.  It is good enough to keep out
-the casual prowler, but not good enough to keep out a cryptology expert with
-lots of time on his hands.  Also you should be aware that the swap file is not
-encrypted; so while you are editing, people with superuser privileges can read
-the unencrypted text from this file.
-   One way to avoid letting people read your swap file is to avoid using one.
-If the -n argument is supplied on the command line, no swap file is used
-(instead, Vim puts everything in memory).  For example, to edit the encrypted
-file "file.txt" without a swap file use the following command: >
+The encryption algorithm used by Vim is not very strong.  It is good enough to
+keep out the casual prowler, but not good enough to keep out a cryptology
+expert with lots of time on his hands.  The text in the swap file and the undo
+file is also encrypted.  However, this is done block-by-block and may reduce
+the time needed to crack a password.  You can disable the swap file, but then
+a crash will cause you to lose your work, since Vim keeps all the text in
+memory only.  The undo file can be disabled with the only disadvantage that
+you can't undo after unloading the buffer.
+   To avoid using a swap file, supply the -n argument on the command line.
+For example, to edit the encrypted file "file.txt" without a swap file use the
+following command: >
 
 	vim -x -n file.txt
 

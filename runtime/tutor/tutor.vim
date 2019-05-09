@@ -1,7 +1,7 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer: Bram Moolenaar
-" Last Change:	2018 Apr 11
+" Last Change:	2019 Mar 30
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -22,6 +22,12 @@ else
     let s:lang = v:lang
   elseif $LC_ALL =~ '\a\a'
     let s:lang = $LC_ALL
+  elseif $LC_MESSAGES =~ '\a\a' || $LC_MESSAGES ==# "C"
+    " LC_MESSAGES=C can be used to explicitly ask for English messages while
+    " keeping LANG non-English; don't set s:lang then.
+    if $LC_MESSAGES =~ '\a\a'
+      let s:lang = $LC_MESSAGES
+    endif
   elseif $LANG =~ '\a\a'
     let s:lang = $LANG
   endif

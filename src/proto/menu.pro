@@ -19,7 +19,7 @@ void gui_create_initial_menus(vimmenu_T *menu);
 void gui_update_menus(int modes);
 int gui_is_menu_shortcut(int key);
 void gui_mch_toggle_tearoffs(int enable);
-void execute_menu(exarg_T *eap, vimmenu_T *menu);
+void execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx);
 void ex_emenu(exarg_T *eap);
 void winbar_click(win_T *wp, int col);
 vimmenu_T *gui_find_menu(char_u *path_name);

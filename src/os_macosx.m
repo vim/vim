@@ -63,7 +63,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
-#ifdef AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 	    NSPasteboardTypeString, nil];
 #else
@@ -99,7 +99,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     {
 	/* Use NSPasteboardTypeString.  The motion type is detected automatically.
 	 */
-#ifdef AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	NSMutableString *mstring =
 		[[pb stringForType:NSPasteboardTypeString] mutableCopy];
 #else
@@ -130,18 +130,14 @@ clip_mch_request_selection(VimClipboard *cbd)
     char_u *str = (char_u*)[string UTF8String];
     int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	str = string_convert(&input_conv, str, &len);
-#endif
 
     if (str)
 	clip_yank_selection(motion_type, str, len, cbd);
 
-#ifdef FEAT_MBYTE
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(str);
-#endif
 
 releasepool:
     [pool release];
@@ -169,7 +165,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 
     /* TODO: Avoid overflow. */
     int len = (int)llen;
-#ifdef FEAT_MBYTE
     if (output_conv.vc_type != CONV_NONE)
     {
 	char_u *conv_str = string_convert(&output_conv, str, &len);
@@ -179,7 +174,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    str = conv_str;
 	}
     }
-#endif
 
     if (len > 0)
     {
@@ -188,7 +182,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 
 	/* See clip_mch_request_selection() for info on pasteboard types. */
 	NSPasteboard *pb = [NSPasteboard generalPasteboard];
-#ifdef AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
 		NSPasteboardTypeString, nil];
 #else
@@ -201,7 +195,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	NSArray *plist = [NSArray arrayWithObjects:motion, string, nil];
 	[pb setPropertyList:plist forType:VimPboardType];
 
-#ifdef AVAILABLE_MAC_OS_X_VERSION_10_6_AND_LATER
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 	[pb setString:string forType:NSPasteboardTypeString];
 #else
 	[pb setString:string forType:NSStringPboardType];

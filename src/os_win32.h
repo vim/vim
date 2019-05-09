@@ -26,7 +26,6 @@
 
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		/* use argv[0] for $VIM */
-#define SYNC_DUP_CLOSE		/* sync() a file with dup() and close() */
 #define USE_TERM_CONSOLE
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H
@@ -69,7 +68,7 @@
 #if defined(__DATE__) && defined(__TIME__)
 # define HAVE_DATE_TIME
 #endif
-#ifndef FEAT_GUI_W32		/* GUI works different */
+#ifndef FEAT_GUI_MSWIN		/* GUI works different */
 # define BREAKCHECK_SKIP    1	/* call mch_breakcheck() each time, it's fast */
 #endif
 
@@ -77,7 +76,7 @@
 
 #define HAVE_PUTENV		/* at least Bcc 5.2 and MSC have it */
 
-#ifdef FEAT_GUI_W32
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
 # define NO_CONSOLE		/* don't included console-only code */
 #endif
 
@@ -208,14 +207,7 @@ Trace(char *pszFormat, ...);
 #define vim_mkdir(x, y) mch_mkdir(x)
 
 /* Enable common dialogs input unicode from IME if possible. */
-#ifdef FEAT_MBYTE
-# define pDispatchMessage DispatchMessageW
-# define pGetMessage GetMessageW
-# define pIsDialogMessage IsDialogMessageW
-# define pPeekMessage PeekMessageW
-#else
-# define pDispatchMessage DispatchMessage
-# define pGetMessage GetMessage
-# define pIsDialogMessage IsDialogMessage
-# define pPeekMessage PeekMessage
-#endif
+#define pDispatchMessage DispatchMessageW
+#define pGetMessage GetMessageW
+#define pIsDialogMessage IsDialogMessageW
+#define pPeekMessage PeekMessageW

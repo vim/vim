@@ -1,6 +1,6 @@
 " Vim script used in test_eval.in.  Needed for script-local function.
 
-func! s:Testje()
+func s:Testje()
   return "foo"
 endfunc
 let Bar = function('s:Testje')

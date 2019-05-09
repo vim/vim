@@ -32,7 +32,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	touch $@
 
-all: $(MOFILES) $(MOCONVERTED)
+all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
 
 check: $(CHECKFILES)
 
@@ -151,17 +151,29 @@ prefixcheck:
 
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
+	rm -f LINGUAS vim.desktop gvim.desktop
 
 distclean: clean
 
 checkclean:
 	rm -f *.ck
 
-$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h
+$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h gvim.desktop.in vim.desktop.in
 	cd ..; $(XGETTEXT) --default-domain=$(PACKAGE) \
 		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
-		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h
+		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h \
+		po/gvim.desktop.in po/vim.desktop.in
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
+
+vim.desktop: vim.desktop.in $(POFILES)
+	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	$(MSGFMT) --desktop -d . --template vim.desktop.in -o vim.desktop
+	rm -f LINGUAS
+
+gvim.desktop: gvim.desktop.in $(POFILES)
+	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o gvim.desktop
+	rm -f LINGUAS
 
 update-po: $(LANGUAGES)
 

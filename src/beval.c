@@ -125,9 +125,10 @@ get_beval_info(
 		*textp = lbuf;
 		*colp = col;
 #ifdef FEAT_VARTABS
-		if (beval->vts)
-		    vim_free(beval->vts);
+		vim_free(beval->vts);
 		beval->vts = tabstop_copy(wp->w_buffer->b_p_vts_array);
+		if (wp->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
+		    return FAIL;
 #endif
 		beval->ts = wp->w_buffer->b_p_ts;
 		return OK;
@@ -273,10 +274,6 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 #ifdef FEAT_NETBEANS_INTG
     if (bevalServers & BEVAL_NETBEANS)
 	netbeans_beval_cb(beval, state);
-#endif
-#ifdef FEAT_SUN_WORKSHOP
-    if (bevalServers & BEVAL_WORKSHOP)
-	workshop_beval_cb(beval, state);
 #endif
 
     recursive = FALSE;

@@ -26,14 +26,12 @@
 #	GUI interface: GUI=yes (default is no)
 #
 #	GUI with DirectWrite (DirectX): DIRECTX=yes
-#	  (default is yes if GUI=yes, requires GUI=yes and MBYTE=yes)
+#	  (default is yes if GUI=yes, requires GUI=yes)
 #
 #	Color emoji support: COLOR_EMOJI=yes
 #	  (default is yes if DIRECTX=yes, requires WinSDK 8.1 or later.)
 #
 #	OLE interface: OLE=yes (usually with GUI=yes)
-#
-#	Multibyte support: MBYTE=yes (default is yes for NORMAL, BIG, HUGE)
 #
 #	IME support: IME=yes	(requires GUI=yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
@@ -41,6 +39,12 @@
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
 #       Terminal support: TERMINAL=yes (default is yes)
+#
+#	DLL support (EXPERIMENTAL): VIMDLL=yes (default is no)
+#	  Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
+#	  The shared codes between the GUI and the console are built into
+#	  the DLL.  This reduces the total file size and memory usage.
+#	  Also supports `vim -g` and the `:gui` command.
 #
 #	Lua interface:
 #	  LUA=[Path to Lua directory]
@@ -139,37 +143,6 @@
 #
 # Example: To build the non-debug, GUI version with Perl interface:
 #	nmake -f Make_mvc.mak GUI=yes PERL=C:\Perl
-#
-# DEBUG with Make_mvc.mak and Make_dvc.mak:
-#	This makefile gives a fineness of control which is not supported in
-#	Visual C++ configuration files.  Therefore, debugging requires a bit of
-#	extra work.
-#	Make_dvc.mak is a Visual C++ project to access that support.  It may be
-#	badly out of date for the Visual C++ you are using...
-#	To use Make_dvc.mak:
-#	1) Build Vim with Make_mvc.mak.
-#	     Use a "DEBUG=yes" argument to build Vim with debug support.
-#	     E.g. the following builds gvimd.exe:
-#		nmake -f Make_mvc.mak debug=yes gui=yes
-#	2) Use MS Devstudio and set it up to allow that file to be debugged:
-#	    i) Pass Make_dvc.mak to the IDE.
-#		 Use the "open workspace" menu entry to load Make_dvc.mak.
-#		 Alternatively, from the command line:
-#			msdev /nologo Make_dvc.mak
-#		Note: Make_dvc.mak is in VC4.0 format. Later VC versions see
-#		this and offer to convert it to their own format. Accept that.
-#		It creates a file called Make_dvc.dsw which can then be used
-#		for further operations.  E.g.
-#		    msdev /nologo Make_dvc.dsw
-#	    ii) Set the built executable for debugging:
-#		a) Alt+F7/Debug takes you to the Debug dialog.
-#		b) Fill "Executable for debug session". e.g. gvimd.exe
-#		c) Fill "Program arguments". e.g. -R dosinst.c
-#		d) Complete the dialog
-#	3) You can now debug the executable you built with Make_mvc.mak
-#
-#	Note: Make_dvc.mak builds vimrun.exe, because it must build something
-#	to be a valid makefile..
 
 ### See feature.h for a list of optionals.
 # If you want to build some optional features without modifying the source,
@@ -180,19 +153,24 @@
 
 TARGETOS = WINNT
 
+!if "$(VIMDLL)" == "yes"
+GUI = yes
+!endif
+
 !ifndef DIRECTX
 DIRECTX = $(GUI)
 !endif
 
-# Select one of eight object code directories, depends on GUI, OLE, DEBUG and
-# interfaces.
+# Select a code directory, depends on GUI, OLE, DEBUG, interfaces and etc.
 # If you change something else, do "make clean" first!
-!if "$(GUI)" == "yes"
+!if "$(VIMDLL)" == "yes"
+OBJDIR = .\ObjD
+!elseif "$(GUI)" == "yes"
 OBJDIR = .\ObjG
 !else
 OBJDIR = .\ObjC
 !endif
-!if "$(DIRECTX)" == "yes"
+!if "$(DIRECTX)" == "yes" && "$(GUI)" == "yes"
 OBJDIR = $(OBJDIR)X
 !endif
 !if "$(OLE)" == "yes"
@@ -219,6 +197,9 @@ OBJDIR = $(OBJDIR)R
 !ifdef MZSCHEME
 OBJDIR = $(OBJDIR)Z
 !endif
+!ifdef USE_MSVCRT
+OBJDIR = $(OBJDIR)V
+!endif
 !if "$(DEBUG)" == "yes"
 OBJDIR = $(OBJDIR)d
 !endif
@@ -242,6 +223,8 @@ PLATFORM = $(TARGET_CPU)
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
+!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
 !   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
 !    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
 !   endif
@@ -380,15 +363,15 @@ TERMINAL = no
 !if "$(TERMINAL)" == "yes"
 TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
-	$(OBJDIR)/term_encoding.obj \
-	$(OBJDIR)/term_keyboard.obj \
-	$(OBJDIR)/term_mouse.obj \
-	$(OBJDIR)/term_parser.obj \
-	$(OBJDIR)/term_pen.obj \
-	$(OBJDIR)/term_screen.obj \
-	$(OBJDIR)/term_state.obj \
-	$(OBJDIR)/term_unicode.obj \
-	$(OBJDIR)/term_vterm.obj
+	$(OBJDIR)/encoding.obj \
+	$(OBJDIR)/keyboard.obj \
+	$(OBJDIR)/mouse.obj \
+	$(OBJDIR)/parser.obj \
+	$(OBJDIR)/pen.obj \
+	$(OBJDIR)/termscreen.obj \
+	$(OBJDIR)/state.obj \
+	$(OBJDIR)/unicode.obj \
+	$(OBJDIR)/vterm.obj
 TERM_DEFS = -DFEAT_TERMINAL
 TERM_DEPS = \
 	libvterm/include/vterm.h \
@@ -410,7 +393,7 @@ CHANNEL = $(GUI)
 !endif
 !endif
 
-# GUI sepcific features.
+# GUI specific features.
 !if "$(GUI)" == "yes"
 # Only allow NETBEANS for a GUI build and CHANNEL.
 !if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
@@ -444,6 +427,8 @@ DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
 # on the architecture.
 !if "$(CPU)" == "AMD64"
 XPM = xpm\x64
+!elseif "$(CPU)" == "ARM64"
+XPM = xpm\arm64
 !elseif "$(CPU)" == "i386"
 XPM = xpm\x86
 !else
@@ -459,7 +444,7 @@ XPM = no
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
 !if $(MSVC_MAJOR) >= 14
-# VC14 cannot use a library built by VC12 or eariler, because VC14 uses
+# VC14 cannot use a library built by VC12 or earlier, because VC14 uses
 # Universal CRT.
 XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
 !else
@@ -564,7 +549,7 @@ CPUARG =
 # VC<11 generates fp87 code by default
 !  if $(MSVC_MAJOR) < 11
 CPUARG =
-# VC>=11 needs explicit insturctions to generate fp87 code
+# VC>=11 needs explicit instructions to generate fp87 code
 !  else
 CPUARG = /arch:IA32
 !  endif
@@ -610,6 +595,17 @@ CPUARG = /arch:AVX2
 # Pass CPUARG to GvimExt, to avoid using version-dependent defaults
 MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) CPUARG="$(CPUARG)"
 
+!if "$(VIMDLL)" == "yes"
+VIMDLLBASE = vim
+! if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
+VIMDLLBASE = $(VIMDLLBASE)32
+! else
+VIMDLLBASE = $(VIMDLLBASE)64
+! endif
+! if "$(DEBUG)" == "yes"
+VIMDLLBASE = $(VIMDLLBASE)d
+! endif
+!endif
 
 LIBC =
 DEBUGINFO = /Zi
@@ -628,6 +624,16 @@ CFLAGS = $(CFLAGS) /MP
 !endif
 !endif
 
+# VC10 or later has stdint.h.
+!if $(MSVC_MAJOR) >= 10
+CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
+!endif
+
+# Static code analysis generally available starting with VS2012 (VC11) or
+# Windows SDK 7.1 (VC10)
+!if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
+CFLAGS=$(CFLAGS) /analyze
+!endif
 
 !ifdef NODEBUG
 VIM = vim
@@ -649,17 +655,6 @@ OPTFLAG = $(OPTFLAG) /GL
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
 !if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
 CFLAGS=$(CFLAGS) $(WP64CHECK)
-!endif
-
-# VC10 or later has stdint.h.
-!if $(MSVC_MAJOR) >= 10
-CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
-!endif
-
-# Static code analysis generally available starting with VS2012 (VC11) or
-# Windows SDK 7.1 (VC10)
-!if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
-CFLAGS=$(CFLAGS) /analyze
 !endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
@@ -694,19 +689,23 @@ CFLAGS = $(CFLAGS) /Zl /MTd
 !endif # DEBUG
 
 !include Make_all.mak
+!include testdir\Make_all.mak
 
-INCL =	vim.h alloc.h arabic.h ascii.h ex_cmds.h farsi.h feature.h globals.h \
+INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 
 OBJ = \
 	$(OUTDIR)\arabic.obj \
+	$(OUTDIR)\autocmd.obj \
 	$(OUTDIR)\beval.obj \
+	$(OUTDIR)\blob.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
+	$(OUTDIR)\debugger.obj \
 	$(OUTDIR)\dict.obj \
 	$(OUTDIR)\diff.obj \
 	$(OUTDIR)\digraph.obj \
@@ -718,12 +717,14 @@ OBJ = \
 	$(OUTDIR)\ex_docmd.obj \
 	$(OUTDIR)\ex_eval.obj \
 	$(OUTDIR)\ex_getln.obj \
-	$(OUTDIR)\farsi.obj \
 	$(OUTDIR)\fileio.obj \
+	$(OUTDIR)\findfile.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
+	$(OUTDIR)\indent.obj \
+	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
@@ -740,7 +741,6 @@ OBJ = \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
 	$(OUTDIR)\os_mswin.obj \
-	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
@@ -749,16 +749,28 @@ OBJ = \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
 	$(OUTDIR)\sha256.obj \
+	$(OUTDIR)\sign.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
+	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
+	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
-	$(OUTDIR)\vim.res
+
+!if "$(VIMDLL)" == "yes"
+OBJ = $(OBJ) $(OUTDIR)\os_w32dll.obj $(OUTDIR)\vimd.res
+EXEOBJC = $(OUTDIR)\os_w32exec.obj $(OUTDIR)\vimc.res
+EXEOBJG = $(OUTDIR)\os_w32exeg.obj $(OUTDIR)\vimg.res
+CFLAGS = $(CFLAGS) -DVIMDLL
+!else
+OBJ = $(OBJ) $(OUTDIR)\os_w32exe.obj $(OUTDIR)\vim.res
+!endif
 
 !if "$(OLE)" == "yes"
 CFLAGS = $(CFLAGS) -DFEAT_OLE
@@ -783,25 +795,27 @@ IME_LIB = imm32.lib
 !if "$(GIME)" == "yes"
 CFLAGS = $(CFLAGS) -DGLOBAL_IME
 OBJ = $(OBJ) $(OUTDIR)\dimm_i.obj $(OUTDIR)\glbl_ime.obj
-MBYTE = yes
-!endif
-
-!if "$(MBYTE)" == "yes"
-CFLAGS = $(CFLAGS) -DFEAT_MBYTE
 !endif
 
 !if "$(GUI)" == "yes"
 SUBSYSTEM = windows
-CFLAGS = $(CFLAGS) -DFEAT_GUI_W32
-RCFLAGS = $(RCFLAGS) -DFEAT_GUI_W32
+CFLAGS = $(CFLAGS) -DFEAT_GUI_MSWIN
+RCFLAGS = $(RCFLAGS) -DFEAT_GUI_MSWIN
+! if "$(VIMDLL)" == "yes"
+SUBSYSTEM_CON = console
+GVIM = g$(VIM)
+CUI_INCL = iscygpty.h
+CUI_OBJ = $(OUTDIR)\iscygpty.obj
+RCFLAGS = $(RCFLAGS) -DVIMDLL
+! else
 VIM = g$(VIM)
+! endif
 GUI_INCL = \
 	gui.h
 GUI_OBJ = \
 	$(OUTDIR)\gui.obj \
 	$(OUTDIR)\gui_beval.obj \
-	$(OUTDIR)\gui_w32.obj \
-	$(OUTDIR)\os_w32exe.obj
+	$(OUTDIR)\gui_w32.obj
 GUI_LIB = \
 	gdi32.lib version.lib $(IME_LIB) \
 	winspool.lib comctl32.lib advapi32.lib shell32.lib netapi32.lib \
@@ -813,9 +827,30 @@ CUI_OBJ = $(OUTDIR)\iscygpty.obj
 !endif
 SUBSYSTEM_TOOLS = console
 
+XDIFF_OBJ = $(OBJDIR)/xdiffi.obj \
+	$(OBJDIR)/xemit.obj \
+	$(OBJDIR)/xprepare.obj \
+	$(OBJDIR)/xutils.obj \
+	$(OBJDIR)/xhistogram.obj \
+	$(OBJDIR)/xpatience.obj
+
+XDIFF_DEPS = \
+	xdiff/xdiff.h \
+	xdiff/xdiffi.h \
+	xdiff/xemit.h \
+	xdiff/xinclude.h \
+	xdiff/xmacros.h \
+	xdiff/xprepare.h \
+	xdiff/xtypes.h \
+	xdiff/xutils.h
+
+
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 SUBSYSTEM_TOOLS = $(SUBSYSTEM_TOOLS),$(SUBSYSTEM_VER)
+! if "$(VIMDLL)" != "yes"
+SUBSYSTEM_CON = $(SUBSYSTEM_CON),$(SUBSYSTEM_VER)
+! endif
 # Pass SUBSYSTEM_VER to GvimExt and other tools
 MAKEFLAGS_GVIMEXT = $(MAKEFLAGS_GVIMEXT) SUBSYSTEM_VER=$(SUBSYSTEM_VER)
 MAKEFLAGS_TOOLS = $(MAKEFLAGS_TOOLS) SUBSYSTEM_VER=$(SUBSYSTEM_VER)
@@ -1118,7 +1153,7 @@ RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
 !if $(RUBY_VER) >= 19
-RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
+RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
 !else
 RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
 !endif
@@ -1151,7 +1186,11 @@ CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 # debug more conveniently (able to look at variables which are in registers)
 #
 CFLAGS = $(CFLAGS) /Fd$(OUTDIR)/ $(DEBUGINFO)
+!if "$(VIMDLL)" == "yes"
+LINK_PDB = /PDB:$(VIMDLLBASE).pdb -debug
+!else
 LINK_PDB = /PDB:$(VIM).pdb -debug
+!endif
 
 #
 # End extra feature include
@@ -1163,7 +1202,7 @@ CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
 
 # Add /opt:ref to remove unreferenced functions and data even when /DEBUG is
 # added.
-conflags = /nologo /subsystem:$(SUBSYSTEM) /opt:ref
+conflags = /nologo /opt:ref
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
@@ -1196,7 +1235,13 @@ LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 LINKARGS1 = $(LINKARGS1) /HIGHENTROPYVA:NO
 !endif
 
-all:	$(VIM).exe \
+!if "$(VIMDLL)" == "yes"
+MAIN_TARGET = $(GVIM).exe $(VIM).exe $(VIMDLLBASE).dll
+!else
+MAIN_TARGET = $(VIM).exe
+!endif
+
+all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
 	uninstal.exe \
@@ -1204,16 +1249,40 @@ all:	$(VIM).exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
 
-$(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+!if "$(VIMDLL)" == "yes"
+
+$(VIMDLLBASE).dll: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
 		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
+	$(link) $(LINKARGS1) /dll -out:$(VIMDLLBASE).dll $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
+		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
+		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
+		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
+
+$(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
+	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
+	if exist $(GVIM).exe.manifest mt.exe -nologo -manifest $(GVIM).exe.manifest -updateresource:$(GVIM).exe;1
+
+$(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
+	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
+	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
+
+!else
+
+$(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
+		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
+		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
+		version.c version.h
+	$(CC) $(CFLAGS_OUTDIR) version.c
+	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
 		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
 		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
+
+!endif
 
 $(VIM): $(VIM).exe
 
@@ -1251,7 +1320,7 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 
 tags: notags
-	$(CTAGS) *.c *.cpp *.h if_perl.xs
+	$(CTAGS) $(TAGS_FILES)
 
 notags:
 	- if exist tags del tags
@@ -1264,10 +1333,20 @@ clean:
 	- if exist $(VIM).pdb del $(VIM).pdb
 	- if exist $(VIM).map del $(VIM).map
 	- if exist $(VIM).ncb del $(VIM).ncb
+!if "$(VIMDLL)" == "yes"
+	- if exist $(GVIM).exe del $(GVIM).exe
+	- if exist $(GVIM).map del $(GVIM).map
+	- if exist $(VIMDLLBASE).dll del $(VIMDLLBASE).dll
+	- if exist $(VIMDLLBASE).lib del $(VIMDLLBASE).lib
+	- if exist $(VIMDLLBASE).exp del $(VIMDLLBASE).exp
+	- if exist $(VIMDLLBASE).pdb del $(VIMDLLBASE).pdb
+	- if exist $(VIMDLLBASE).map del $(VIMDLLBASE).map
+!endif
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
 	- if exist uninstal.exe del uninstal.exe
 	- if exist if_perl.c del if_perl.c
+	- if exist auto\if_perl.c del auto\if_perl.c
 	- if exist dimm.h del dimm.h
 	- if exist dimm_i.c del dimm_i.c
 	- if exist dimm.tlb del dimm.tlb
@@ -1304,31 +1383,30 @@ $(NEW_TESTS):
 	$(MAKE) /NOLOGO -f Make_dos.mak nolog
 	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
 	$(MAKE) /NOLOGO -f Make_dos.mak report
+	type messages
 	cd ..
 
 ###########################################################################
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
-# Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
-.c{$(OUTDIR)/}.obj:
-!ELSE
 .c{$(OUTDIR)/}.obj::
-!ENDIF
+	$(CC) $(CFLAGS_OUTDIR) $<
+
+# Create a default rule for xdiff.
+{xdiff/}.c{$(OUTDIR)/}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
-# Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
-.cpp{$(OUTDIR)/}.obj:
-!ELSE
 .cpp{$(OUTDIR)/}.obj::
-!ENDIF
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
+$(OUTDIR)/autocmd.obj:	$(OUTDIR) autocmd.c  $(INCL)
+
 $(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
+
+$(OUTDIR)/blob.obj:	$(OUTDIR) blob.c  $(INCL)
 
 $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
@@ -1340,9 +1418,23 @@ $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
 $(OUTDIR)/crypt_zip.obj: $(OUTDIR) crypt_zip.c  $(INCL)
 
+$(OUTDIR)/debugger.obj:	$(OUTDIR) debugger.c  $(INCL)
+
 $(OUTDIR)/dict.obj:	$(OUTDIR) dict.c  $(INCL)
 
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
+
+$(OUTDIR)/xdiffi.obj:	$(OUTDIR) xdiff/xdiffi.c  $(XDIFF_DEPS)
+
+$(OUTDIR)/xemit.obj:	$(OUTDIR) xdiff/xemit.c  $(XDIFF_DEPS)
+
+$(OUTDIR)/xprepare.obj:	$(OUTDIR) xdiff/xprepare.c  $(XDIFF_DEPS)
+
+$(OUTDIR)/xutils.obj:	$(OUTDIR) xdiff/xutils.c  $(XDIFF_DEPS)
+
+$(OUTDIR)/xhistogram.obj:	$(OUTDIR) xdiff/xhistogram.c  $(XDIFF_DEPS)
+
+$(OUTDIR)/xpatience.obj:	$(OUTDIR) xdiff/xpatience.c  $(XDIFF_DEPS)
 
 $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
 
@@ -1362,9 +1454,9 @@ $(OUTDIR)/ex_eval.obj:	$(OUTDIR) ex_eval.c  $(INCL)
 
 $(OUTDIR)/ex_getln.obj:	$(OUTDIR) ex_getln.c  $(INCL)
 
-$(OUTDIR)/farsi.obj:	$(OUTDIR) farsi.c  $(INCL)
-
 $(OUTDIR)/fileio.obj:	$(OUTDIR) fileio.c  $(INCL)
+
+$(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
 
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
@@ -1373,6 +1465,10 @@ $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
 
 $(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
+
+$(OUTDIR)/indent.obj:	$(OUTDIR) indent.c  $(INCL)
+
+$(OUTDIR)/insexpand.obj:	$(OUTDIR) insexpand.c  $(INCL)
 
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
@@ -1387,12 +1483,12 @@ $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL) if_cscope.h
 $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
-if_perl.c : if_perl.xs typemap
+auto/if_perl.c : if_perl.xs typemap
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
-		-typemap typemap if_perl.xs -output if_perl.c
+		-typemap typemap if_perl.xs -output $@
 
-$(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
-	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perl.c
+$(OUTDIR)/if_perl.obj: $(OUTDIR) auto/if_perl.c  $(INCL)
+	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) auto/if_perl.c
 
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PERL_INC) if_perlsfio.c
@@ -1463,7 +1559,15 @@ $(OUTDIR)/winclip.obj:	$(OUTDIR) winclip.c  $(INCL)
 
 $(OUTDIR)/os_win32.obj:	$(OUTDIR) os_win32.c  $(INCL) $(MZSCHEME_INCL)
 
+$(OUTDIR)/os_w32dll.obj:	$(OUTDIR) os_w32dll.c
+
 $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
+
+$(OUTDIR)/os_w32exec.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
+	$(CC) $(CFLAGS:-DFEAT_GUI_MSWIN=) /Fo$@ os_w32exe.c
+
+$(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
+	$(CC) $(CFLAGS) /Fo$@ os_w32exe.c
 
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
@@ -1480,6 +1584,8 @@ $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
 
 $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
+$(OUTDIR)/sign.obj:	$(OUTDIR) sign.c  $(INCL)
+
 $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 
 $(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
@@ -1490,9 +1596,13 @@ $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 
+$(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
+
 $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
 
 $(OUTDIR)/undo.obj:	$(OUTDIR) undo.c  $(INCL)
+
+$(OUTDIR)/usercmd.obj:	$(OUTDIR) usercmd.c  $(INCL)
 
 $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
@@ -1501,10 +1611,25 @@ $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS_OUTDIR) $(XPM_INC) xpm_w32.c
 
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h tools.bmp \
-				tearoff.bmp vim.ico vim_error.ico \
+!if "$(VIMDLL)" == "yes"
+$(OUTDIR)/vimc.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+				vim.ico
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS:-DFEAT_GUI_MSWIN=) vim.rc
+
+$(OUTDIR)/vimg.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+				vim.ico
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
+
+$(OUTDIR)/vimd.res:	$(OUTDIR) vim.rc version.h gui_w32_rc.h \
+				tools.bmp tearoff.bmp vim.ico vim_error.ico \
 				vim_alert.ico vim_info.ico vim_quest.ico
-	$(RC) /nologo /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) -DRCDLL -DVIMDLLBASE=\"$(VIMDLLBASE)\" vim.rc
+!else
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+				tools.bmp tearoff.bmp vim.ico vim_error.ico \
+				vim_alert.ico vim_info.ico vim_quest.ico
+	$(RC) /nologo /l 0x409 /Fo$@ $(RCFLAGS) vim.rc
+!endif
 
 iid_ole.c if_ole.h vim.tlb: if_ole.idl
 	midl /nologo /error none /proxy nul /iid iid_ole.c /tlb vim.tlb \
@@ -1524,32 +1649,27 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DWCWIDTH_FUNCTION=utf_uint2cells \
 	-D_CRT_SECURE_NO_WARNINGS
 
-$(OUTDIR)/term_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/encoding.c
+# Create a default rule for libvterm.
+{libvterm/src/}.c{$(OUTDIR)/}.obj::
+	$(CCCTERM) -Fo$(OUTDIR)/ $<
 
-$(OUTDIR)/term_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/keyboard.c
+$(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
 
-$(OUTDIR)/term_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/mouse.c
+$(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
 
-$(OUTDIR)/term_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/parser.c
+$(OUTDIR)/mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
 
-$(OUTDIR)/term_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/pen.c
+$(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
 
-$(OUTDIR)/term_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/screen.c
+$(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
 
-$(OUTDIR)/term_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/state.c
+$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
 
-$(OUTDIR)/term_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/unicode.c
+$(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
 
-$(OUTDIR)/term_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) -Fo$@ libvterm/src/vterm.c
+$(OUTDIR)/unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
+
+$(OUTDIR)/vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
 
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
@@ -1578,11 +1698,14 @@ auto:
 # End Custom Build
 proto.h: \
 	proto/arabic.pro \
+	proto/autocmd.pro \
+	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -1594,11 +1717,13 @@ proto.h: \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
+	proto/insexpand.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -1623,13 +1748,16 @@ proto.h: \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
+	proto/textprop.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro \
 	$(NETBEANS_PRO) \

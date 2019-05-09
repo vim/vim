@@ -49,7 +49,8 @@ endfunc
 " Read the port number from the Xportnr file.
 func GetPort()
   let l = []
-  for i in range(200)
+  " with 200 it sometimes failed
+  for i in range(400)
     try
       let l = readfile("Xportnr")
     catch
@@ -274,6 +275,10 @@ func GetVimCommandClean()
   let cmd = GetVimCommand()
   let cmd = substitute(cmd, '-u NONE', '--clean', '')
   let cmd = substitute(cmd, '--not-a-term', '', '')
+
+  " Optionally run Vim under valgrind
+  " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
+
   return cmd
 endfunc
 
@@ -339,4 +344,14 @@ func Stop_shell_in_terminal(buf)
   call term_sendkeys(a:buf, "exit\r")
   let job = term_getjob(a:buf)
   call WaitFor({-> job_status(job) == "dead"})
+endfunc
+
+" Gets the text of a terminal line, using term_scrape()
+func Get_terminal_text(bufnr, row)
+  let list = term_scrape(a:bufnr, a:row)
+  let text = ''
+  for item in list
+    let text .= item.chars
+  endfor
+  return text
 endfunc

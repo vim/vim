@@ -25,6 +25,7 @@ void u_clearline(void);
 void u_undoline(void);
 void u_blockfree(buf_T *buf);
 int bufIsChanged(buf_T *buf);
+int anyBufIsChanged(void);
 int bufIsChangedNotTerm(buf_T *buf);
 int curbufIsChanged(void);
 void u_eval_tree(u_header_T *first_uhp, list_T *list);

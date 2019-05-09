@@ -250,12 +250,30 @@ func Test_peek_and_get_char()
   call timer_stop(intr)
 endfunc
 
+func Test_getchar_zero()
+  if has('win32') && !has('gui_running')
+    " Console: no low-level input
+    return
+  endif
+
+  " Measure the elapsed time to avoid a hang when it fails.
+  let start = reltime()
+  let id = timer_start(20, {-> feedkeys('x', 'L')})
+  let c = 0
+  while c == 0 && reltimefloat(reltime(start)) < 0.2
+    let c = getchar(0)
+    sleep 10m
+  endwhile
+  call assert_equal('x', nr2char(c))
+  call timer_stop(id)
+endfunc
+
 func Test_ex_mode()
   " Function with an empty line.
   func Foo(...)
 
   endfunc
-  let timer =  timer_start(40, function('g:Foo'), {'repeat':-1})
+  let timer = timer_start(40, function('g:Foo'), {'repeat':-1})
   " This used to throw error E749.
   exe "normal Qsleep 100m\rvi\r"
   call timer_stop(timer)

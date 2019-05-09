@@ -1,5 +1,5 @@
 /* gui.c */
-void gui_start(void);
+void gui_start(char_u *arg);
 void gui_prepare(int *argc, char **argv);
 int gui_init_check(void);
 void gui_init(void);

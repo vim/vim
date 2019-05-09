@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2018 Apr 24
+*windows.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26,7 +26,6 @@ The basics are explained in chapter 7 and 8 of the user manual |usr_07.txt|
 11. Using hidden buffers			|buffer-hidden|
 12. Special kinds of buffers			|special-buffers|
 
-{Vi does not have any of these commands}
 {not able to use multiple windows when the |+windows| feature was disabled at
 compile time}
 {not able to use vertically split windows when the |+vertsplit| feature was
@@ -81,6 +80,10 @@ will not change within a Vim session. The |win_getid()| and |win_id2tabwin()|
 functions can be used to convert between the window/tab number and the
 identifier.  There is also the window number, which may change whenever
 windows are opened or closed, see |winnr()|.
+The window number is only valid in one specific tab.  The window ID is valid
+across tabs.  For most functions that take a window ID or a window number, the
+window number only applies to the current tab, while the window ID can refer
+to a window in any tab.
 
 Each buffer has a unique number and the number will not change within a Vim
 session.  The |bufnr()| and |bufname()| functions can be used to convert
@@ -218,9 +221,11 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		|:find|.  Doesn't split if {file} is not found.
 
 CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
-CTRL-W ^	Does ":split #", split window in two and edit alternate file.
-		When a count is given, it becomes ":split #N", split window
-		and edit buffer N.
+CTRL-W ^	Split the current window in two and edit the alternate file.
+		When a count N is given, split the current window and edit
+		buffer N.  Similar to ":sp #" and ":sp #N", but it allows the
+		other buffer to be unnamed.  This command matches the behavior
+		of |CTRL-^|, except that it splits a window first.
 
 						*CTRL-W_:*
 CTRL-W :	Does the same as typing |:| - enter a command line.  Useful in a
@@ -731,7 +736,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			the current window.
 			{cmd} can contain '|' to concatenate several commands.
 			{cmd} must not open or close windows or reorder them.
-			{not in Vi}
+
 			Also see |:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -759,7 +764,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
-			{not in Vi}
+
 			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -836,6 +841,12 @@ CTRL-W gF						*CTRL-W_gF*
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
+CTRL-W gt						*CTRL-W_gt*
+		Go to next tab page, same as `gt`.
+
+CTRL-W gT						*CTRL-W_gT*
+		Go to previous tab page, same as `gT`.
+
 Also see |CTRL-W_CTRL-I|: open window for an included file that includes
 the keyword under the cursor.
 
@@ -879,7 +890,7 @@ CTRL-W CTRL-Z					*CTRL-W_CTRL-Z* *:pc* *:pclose*
 							*:pp* *:ppop*
 :[count]pp[op][!]
 		Does ":[count]pop[!]" in the preview window.  See |:pop| and
-		|:ptag|.  {not in Vi}
+		|:ptag|.
 
 CTRL-W }						*CTRL-W_}*
 		Use identifier under cursor as a tag and perform a :ptag on

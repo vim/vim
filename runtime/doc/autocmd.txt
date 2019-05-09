@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2018 May 03
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -20,7 +20,6 @@ For a basic explanation, see section |40.3| in the user manual.
 10. Using autocommands		|autocmd-use|
 11. Disabling autocommands	|autocmd-disable|
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Introduction						*autocmd-intro*
@@ -52,7 +51,7 @@ effects.  Be careful not to destroy your text.
 2. Defining autocommands				*autocmd-define*
 
 							*:au* *:autocmd*
-:au[tocmd] [group] {event} {pat} [nested] {cmd}
+:au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
 			Add {cmd} to the list of commands that Vim will
 			execute automatically on {event} for a file matching
 			{pat} |autocmd-patterns|.
@@ -60,7 +59,13 @@ effects.  Be careful not to destroy your text.
 			:autocmd and won't start a comment.
 			Vim always adds the {cmd} after existing autocommands,
 			so that the autocommands execute in the order in which
-			they were given.  See |autocmd-nested| for [nested].
+			they were given.
+			See |autocmd-nested| for [++nested].  "nested"
+			(without the ++) can also be used, for backwards
+			compatibility.
+							*autocmd-once*
+			If [++once] is supplied the command is executed once,
+			then removed ("one shot").
 
 The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
 See |autocmd-buflocal|.
@@ -128,10 +133,11 @@ prompt.  When one command outputs two messages this can happen anyway.
 ==============================================================================
 3. Removing autocommands				*autocmd-remove*
 
-:au[tocmd]! [group] {event} {pat} [nested] {cmd}
+:au[tocmd]! [group] {event} {pat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
-			{pat}, and add the command {cmd}.  See
-			|autocmd-nested| for [nested].
+			{pat}, and add the command {cmd}.
+			See |autocmd-once| for [++once].
+			See |autocmd-nested| for [++nested].
 
 :au[tocmd]! [group] {event} {pat}
 			Remove all autocommands associated with {event} and
@@ -301,6 +307,7 @@ Name			triggered by ~
 |FileChangedShellPost|	After handling a file changed since editing started
 |FileChangedRO|		before making the first change to a read-only file
 
+|DiffUpdated|		after diffs have been updated
 |DirChanged|		after the working directory has changed
 
 |ShellCmdPost|		after executing a shell command
@@ -310,6 +317,7 @@ Name			triggered by ~
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
 |SourcePre|		before sourcing a Vim script
+|SourcePost|		after sourcing a Vim script
 |SourceCmd|		before sourcing a Vim script |Cmd-event|
 
 |VimResized|		after the Vim window size changed
@@ -358,6 +366,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |MenuPopup|		just before showing the popup menu
+|CompleteChanged|	after Insert mode completion menu changed
 |CompleteDone|		after Insert mode completion is done
 
 |User|			to be used in combination with ":doautocmd"
@@ -570,7 +579,22 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
+CompleteChanged 					*CompleteChanged*
+				After each time the Insert mode completion
+				menu changed.  Not fired on popup menu hide,
+				use |CompleteDone| for that.  Never triggered
+				recursively.
 
+				Sets these |v:event| keys:
+				    completed_item	See |complete-items|.
+				    height		nr of items visible
+				    width		screen cells
+				    row			top screen row
+				    col			leftmost screen column
+				    size		total nr of items
+				    scrollbar		TRUE if visible
+
+				It is not allowed to change the text |textlock|.
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -619,6 +643,8 @@ CursorMoved			After the cursor was moved in Normal or Visual
 				Not triggered when there is typeahead or when
 				an operator is pending.
 				For an example see |match-parens|.
+				Note: This can not be skipped with
+				`:noautocmd`.
 				Careful: This is triggered very often, don't
 				do anything that the user does not expect or
 				that is slow.
@@ -656,15 +682,21 @@ FileChangedRO			Before making the first change to a read-only
 							*E881*
 				If the number of lines changes saving for undo
 				may fail and the change will be aborted.
+							*DiffUpdated*
+DiffUpdated			After diffs have been updated.  Depending on
+				what kind of diff is being used (internal or
+				external) this can be triggered on every
+				change or when doing |:diffupdate|.
 							*DirChanged*
 DirChanged			The working directory has changed in response
-				to the |:cd| or |:lcd| commands, or as a
-				result of the 'autochdir' option.
+				to the |:cd| or |:tcd| or |:lcd| commands, or
+				as a result of the 'autochdir' option.
 				The pattern can be:
-					"window" to trigger on `:lcd`
-					"global" to trigger on `:cd`
-					"auto"   to trigger on 'autochdir'.
-					"drop"	 to trigger on editing a file
+					"window"  to trigger on `:lcd`
+					"tabpage" to trigger on `:tcd`
+					"global"  to trigger on `:cd`
+					"auto"    to trigger on 'autochdir'.
+					"drop"	  to trigger on editing a file
 				<afile> is set to the new directory name.
 							*ExitPre*
 ExitPre				When using `:quit`, `:wq` in a way it makes
@@ -753,13 +785,14 @@ FilterReadPre			Before reading a file from a filter command.
 				Not triggered when 'shelltemp' is off.
 							*FilterWritePost*
 FilterWritePost			After writing a file for a filter command or
-				making a diff.
+				making a diff with an external diff (see
+				DiffUpdated for internal diff).
 				Vim checks the pattern against the name of
 				the current buffer as with FilterWritePre.
 				Not triggered when 'shelltemp' is off.
 							*FilterWritePre*
 FilterWritePre			Before writing a file for a filter command or
-				making a diff.
+				making a diff with an external diff.
 				Vim checks the pattern against the name of
 				the current buffer, not the name of the
 				temporary file that is the output of the
@@ -829,13 +862,14 @@ MenuPopup			Just before showing the popup menu (under the
 				right mouse button).  Useful for adjusting the
 				menu for what is under the cursor or mouse
 				pointer.
-				The pattern is matched against a single
-				character representing the mode:
+				The pattern is matched against one or two
+				characters representing the mode:
 					n	Normal
 					v	Visual
 					o	Operator-pending
 					i	Insert
 					c	Command line
+					tl	Terminal
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
@@ -859,6 +893,8 @@ OptionSet			After setting an option.  The pattern is
 				plugin. You can always use `:noa` to prevent
 				triggering this autocommand.
 
+				When using |:set| in the autocommand the event
+				is not triggered again.
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
@@ -914,6 +950,12 @@ ShellFilterPost			After executing a shell command with
 							*SourcePre*
 SourcePre			Before sourcing a Vim script. |:source|
 				<afile> is the name of the file being sourced.
+							*SourcePost*
+SourcePost			After sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+				Not triggered when sourcing was interrupted.
+				Also triggered after a SourceCmd autocommand
+				was triggered.
 							*SourceCmd*
 SourceCmd			When sourcing a Vim script. |:source|
 				<afile> is the name of the file being sourced.
@@ -1000,10 +1042,14 @@ TermResponse			After the response to |t_RV| is received from
 				anything else that takes time is involved.
 							*TextChanged*
 TextChanged			After a change was made to the text in the
-				current buffer in Normal mode.  That is when
-				|b:changedtick| has changed.
+				current buffer in Normal mode.  That is after
+				|b:changedtick| has changed (also when that
+				happened before the TextChanged autocommand
+				was defined).
 				Not triggered when there is typeahead or when
 				an operator is pending.
+				Note: This can not be skipped with
+				`:noautocmd`.
 				Careful: This is triggered very often, don't
 				do anything that the user does not expect or
 				that is slow.
@@ -1445,11 +1491,11 @@ If you want the buffer to be unmodified after changing it, reset the
 instead of ":q!".
 
 							*autocmd-nested* *E218*
-By default, autocommands do not nest.  If you use ":e" or ":w" in an
-autocommand, Vim does not execute the BufRead and BufWrite autocommands for
+By default, autocommands do not nest.  For example, if you use ":e" or ":w" in
+an autocommand, Vim does not execute the BufRead and BufWrite autocommands for
 those commands.  If you do want this, use the "nested" flag for those commands
 in which you want nesting.  For example: >
-  :autocmd FileChangedShell *.c nested e!
+  :autocmd FileChangedShell *.c ++nested e!
 The nesting is limited to 10 levels to get out of recursive loops.
 
 It's possible to use the ":au" command in an autocommand.  This can be a
@@ -1591,6 +1637,9 @@ following command.  Example: >
 
 This will write the file without triggering the autocommands defined by the
 gzip plugin.
+
+Note that some autocommands are not triggered right away, but only later.
+This specifically applies to |CursorMoved| and |TextChanged|.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

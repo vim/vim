@@ -38,7 +38,7 @@ SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
 SCRIPTS_BENCH = bench_re_freeze.out
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS): $(SCRIPTS_FIRST)
+$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 .SUFFIXES: .in .out .res .vim
 
@@ -84,6 +84,15 @@ clean:
 	-@if exist messages $(DEL) messages
 	-@if exist opt_test.vim $(DEL) opt_test.vim
 
+test1.out: test1.in
+	-@if exist wrongtermsize  $(DEL) wrongtermsize
+	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in test1.in
+	-@if exist wrongtermsize  ( \
+	    echo Vim window too small- must be 80x25 or larger && exit 1 \
+	    )
+	-@if exist test.out $(DEL) test.out
+	-@if exist viminfo  $(DEL) viminfo
+
 .in.out:
 	-@if exist $*.ok $(CP) $*.ok test.ok
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $*.in
@@ -110,7 +119,7 @@ bench_re_freeze.out: bench_re_freeze.vim
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 
-newtests: $(NEW_TESTS)
+newtests: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
@@ -126,6 +135,8 @@ test_gui_init.res: test_gui_init.vim
 	@echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
+
+test_options.res test_alot.res: opt_test.vim
 
 opt_test.vim: ../option.c gen_opt_test.vim
 	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../option.c

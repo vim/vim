@@ -39,8 +39,11 @@ func Test_terminal_basic()
     call assert_match('^/dev/', job_info(g:job).tty_out)
     call assert_match('^/dev/', term_gettty(''))
   else
-    call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
-    call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    " ConPTY works on anonymous pipe.
+    if !has('conpty')
+      call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
+      call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+    endif
   endif
   call assert_equal('t', mode())
   call assert_equal('yes', b:done)
@@ -76,6 +79,21 @@ func Test_terminal_make_change()
   undo
 
   exe buf . 'bwipe'
+  unlet g:job
+endfunc
+
+func Test_terminal_paste_register()
+  let @" = "text to paste"
+
+  let buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  call feedkeys("echo \<C-W>\"\" \<C-W>\"=37 + 5\<CR>\<CR>", 'xt')
+  call WaitForAssert({-> assert_match("echo text to paste 42$", getline(1))})
+  call WaitForAssert({-> assert_equal('text to paste 42',       getline(2))})
+
+  exe buf . 'bwipe!'
   unlet g:job
 endfunc
 
@@ -122,14 +140,19 @@ func Test_terminal_hide_buffer()
   unlet g:job
 endfunc
 
-func! s:Nasty_exit_cb(job, st)
+func s:Nasty_exit_cb(job, st)
   exe g:buf . 'bwipe!'
   let g:buf = 0
 endfunc
 
 func Get_cat_123_cmd()
   if has('win32')
-    return 'cmd /c "cls && color 2 && echo 123"'
+    if !has('conpty')
+      return 'cmd /c "cls && color 2 && echo 123"'
+    else
+      " When clearing twice, extra sequence is not output.
+      return 'cmd /c "cls && cls && color 2 && echo 123"'
+    endif
   else
     call writefile(["\<Esc>[32m123"], 'Xtext')
     return "cat Xtext"
@@ -143,8 +166,8 @@ func Test_terminal_nasty_cb()
 
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
   call WaitForAssert({-> assert_equal(0, g:buf)})
-  unlet g:buf
   unlet g:job
+  unlet g:buf
   call delete('Xtext')
 endfunc
 
@@ -159,10 +182,16 @@ func Check_123(buf)
   call assert_equal('2', l[1].chars)
   call assert_equal('3', l[2].chars)
   call assert_equal('#00e000', l[0].fg)
-  if &background == 'light'
-    call assert_equal('#ffffff', l[0].bg)
+  if has('win32')
+    " On Windows 'background' always defaults to dark, even though the terminal
+    " may use a light background.  Therefore accept both white and black.
+    call assert_match('#ffffff\|#000000', l[0].bg)
   else
-    call assert_equal('#000000', l[0].bg)
+    if &background == 'light'
+      call assert_equal('#ffffff', l[0].bg)
+    else
+      call assert_equal('#000000', l[0].bg)
+    endif
   endif
 
   let l = term_getline(a:buf, -1)
@@ -203,9 +232,6 @@ func Test_terminal_scrape_123()
 endfunc
 
 func Test_terminal_scrape_multibyte()
-  if !has('multi_byte')
-    return
-  endif
   call writefile(["léttまrs"], 'Xtext')
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
@@ -288,6 +314,58 @@ func Test_terminal_scrollback()
   call term_wait(buf)
   exe buf . 'bwipe'
   set termwinscroll&
+  call delete('Xtext')
+endfunc
+
+func Test_terminal_postponed_scrollback()
+  if !has('unix')
+    " tail -f only works on Unix
+    return
+  endif
+
+  call writefile(range(50), 'Xtext')
+  call writefile([
+	\ 'set shell=/bin/sh noruler',
+	\ 'terminal',
+	\ 'sleep 200m',
+	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
+	\ 'sleep 100m',
+	\ 'call feedkeys("\<C-W>N", "xt")',
+	\ ], 'XTest_postponed')
+  let buf = RunVimInTerminal('-S XTest_postponed', {})
+  " Check that the Xtext lines are displayed and in Terminal-Normal mode
+  call VerifyScreenDump(buf, 'Test_terminal_01', {})
+
+  silent !echo 'one more line' >>Xtext
+  " Screen will not change, move cursor to get a different dump
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_terminal_02', {})
+
+  " Back to Terminal-Job mode, text will scroll and show the extra line.
+  call term_sendkeys(buf, "a")
+  call VerifyScreenDump(buf, 'Test_terminal_03', {})
+
+  call term_wait(buf)
+  call term_sendkeys(buf, "\<C-C>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "exit\<CR>")
+  call term_wait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_postponed')
+  call delete('Xtext')
+endfunc
+
+" Run diff on two dumps with different size.
+func Test_terminal_dumpdiff_size()
+  call assert_equal(1, winnr('$'))
+  call term_dumpdiff('dumps/Test_incsearch_search_01.dump', 'dumps/Test_popup_command_01.dump')
+  call assert_equal(2, winnr('$'))
+  call assert_match('Test_incsearch_search_01.dump', getline(10))
+  call assert_match('      +++++$', getline(11))
+  call assert_match('Test_popup_command_01.dump', getline(31))
+  call assert_equal(repeat('+', 75), getline(30))
+  quit
 endfunc
 
 func Test_terminal_size()
@@ -478,6 +556,31 @@ func Test_terminal_cwd()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_terminal_cwd_failure()
+  " Case 1: Provided directory is not actually a directory.  Attempt to make
+  " the file executable as well.
+  call writefile([], 'Xfile')
+  call setfperm('Xfile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xfile'})", 'E475:')
+  call delete('Xfile')
+
+  " Case 2: Directory does not exist.
+  call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
+
+  " Case 3: Directory exists but is not accessible.
+  " Skip this for root, it will be accessible anyway.
+  if $USER != 'root'
+    call mkdir('XdirNoAccess', '', '0600')
+    " return early if the directory permissions could not be set properly
+    if getfperm('XdirNoAccess')[2] == 'x'
+      call delete('XdirNoAccess', 'rf')
+      return
+    endif
+    call assert_fails("call term_start(&shell, {'cwd': 'XdirNoAccess'})", 'E475:')
+    call delete('XdirNoAccess', 'rf')
+  endif
+endfunc
+
 func Test_terminal_servername()
   if !has('clientserver')
     return
@@ -531,10 +634,13 @@ endfunction
 
 func Test_terminal_noblock()
   let buf = term_start(&shell)
-  if has('mac')
+  if has('bsd') || has('mac') || has('sun')
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
+  " NPFS is used in Windows, nonblocking mode does not work properly.
+  elseif has('win32')
+    let len = 1
   else
     let len = 5000
   endif
@@ -612,19 +718,17 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_no_cmd()
-  " Todo: make this work in the GUI
-  if !has('gui_running')
-    return
-  endif
   let buf = term_start('NONE', {})
   call assert_notequal(0, buf)
 
   let pty = job_info(term_getjob(buf))['tty_out']
   call assert_notequal('', pty)
-  if has('win32')
-    silent exe '!start cmd /c "echo look here > ' . pty . '"'
-  else
+  if has('gui_running') && !has('win32')
+    " In the GUI job_start() doesn't work, it does not read from the pty.
     call system('echo "look here" > ' . pty)
+  else
+    " Otherwise using a job works on all systems.
+    call job_start([&shell, &shellcmdflag, 'echo "look here" > ' . pty])
   endif
   call WaitForAssert({-> assert_match('look here', term_getline(buf, 1))})
 
@@ -667,8 +771,11 @@ func Test_terminal_redir_file()
   let cmd = Get_cat_123_cmd()
   let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
   call term_wait(buf)
-  call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
-  call assert_match('123', readfile('Xfile')[0])
+  " ConPTY may precede escape sequence. There are things that are not so.
+  if !has('conpty')
+    call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
+    call assert_match('123', readfile('Xfile')[0])
+  endif
   let g:job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
   call delete('Xfile')
@@ -1030,6 +1137,24 @@ func Test_terminal_dumpdiff()
   quit
 endfunc
 
+func Test_terminal_dumpdiff_swap()
+  call assert_equal(1, winnr('$'))
+  call term_dumpdiff('dumps/Test_popup_command_01.dump', 'dumps/Test_popup_command_03.dump')
+  call assert_equal(2, winnr('$'))
+  call assert_equal(62, line('$'))
+  call assert_match('Test_popup_command_01.dump', getline(21))
+  call assert_match('Test_popup_command_03.dump', getline(42))
+  call assert_match('Undo', getline(3))
+  call assert_match('three four five', getline(45))
+
+  normal s
+  call assert_match('Test_popup_command_03.dump', getline(21))
+  call assert_match('Test_popup_command_01.dump', getline(42))
+  call assert_match('three four five', getline(3))
+  call assert_match('Undo', getline(45))
+  quit
+endfunc
+
 func Test_terminal_dumpdiff_options()
   set laststatus=0
   call assert_equal(1, winnr('$'))
@@ -1359,6 +1484,57 @@ func Test_terminal_ansicolors_func()
   exe buf . 'bwipe'
 endfunc
 
+func Test_terminal_all_ansi_colors()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  " Use all the ANSI colors.
+  call writefile([
+	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP")',
+	\ 'hi Tblack ctermfg=0 ctermbg=8',
+	\ 'hi Tdarkred ctermfg=1 ctermbg=9',
+	\ 'hi Tdarkgreen ctermfg=2 ctermbg=10',
+	\ 'hi Tbrown ctermfg=3 ctermbg=11',
+	\ 'hi Tdarkblue ctermfg=4 ctermbg=12',
+	\ 'hi Tdarkmagenta ctermfg=5 ctermbg=13',
+	\ 'hi Tdarkcyan ctermfg=6 ctermbg=14',
+	\ 'hi Tlightgrey ctermfg=7 ctermbg=15',
+	\ 'hi Tdarkgrey ctermfg=8 ctermbg=0',
+	\ 'hi Tred ctermfg=9 ctermbg=1',
+	\ 'hi Tgreen ctermfg=10 ctermbg=2',
+	\ 'hi Tyellow ctermfg=11 ctermbg=3',
+	\ 'hi Tblue ctermfg=12 ctermbg=4',
+	\ 'hi Tmagenta ctermfg=13 ctermbg=5',
+	\ 'hi Tcyan ctermfg=14 ctermbg=6',
+	\ 'hi Twhite ctermfg=15 ctermbg=7',
+	\ '',
+	\ 'call  matchadd("Tblack", "A")',
+	\ 'call  matchadd("Tdarkred", "B")',
+	\ 'call  matchadd("Tdarkgreen", "C")',
+	\ 'call  matchadd("Tbrown", "D")',
+	\ 'call  matchadd("Tdarkblue", "E")',
+	\ 'call  matchadd("Tdarkmagenta", "F")',
+	\ 'call  matchadd("Tdarkcyan", "G")',
+	\ 'call  matchadd("Tlightgrey", "H")',
+	\ 'call  matchadd("Tdarkgrey", "I")',
+	\ 'call  matchadd("Tred", "J")',
+	\ 'call  matchadd("Tgreen", "K")',
+	\ 'call  matchadd("Tyellow", "L")',
+	\ 'call  matchadd("Tblue", "M")',
+	\ 'call  matchadd("Tmagenta", "N")',
+	\ 'call  matchadd("Tcyan", "O")',
+	\ 'call  matchadd("Twhite", "P")',
+	\ 'redraw',
+	\ ], 'Xcolorscript')
+  let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_terminal_all_ansi_colors', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('Xcolorscript')
+endfunc
+
 func Test_terminal_termwinsize_option_fixed()
   if !CanRunVimInTerminal()
     return
@@ -1420,7 +1596,7 @@ func Test_terminal_termwinsize_option_zero()
   set termwinsize=
 endfunc
 
-func Test_terminal_termwinsize_mininmum()
+func Test_terminal_termwinsize_minimum()
   set termwinsize=10*50
   vsplit
   let buf = Run_shell_in_terminal({})
@@ -1459,7 +1635,13 @@ func Test_terminal_termwinsize_mininmum()
 endfunc
 
 func Test_terminal_termwinkey()
+  " make three tabpages, terminal in the middle
+  0tabnew
+  tabnext
+  tabnew
+  tabprev
   call assert_equal(1, winnr('$'))
+  call assert_equal(2, tabpagenr())
   let thiswin = win_getid()
 
   let buf = Run_shell_in_terminal({})
@@ -1468,10 +1650,29 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-L>w", 'tx')
   call assert_equal(thiswin, win_getid())
   call feedkeys("\<C-W>w", 'tx')
+  call assert_equal(termwin, win_getid())
+
+  call feedkeys("\<C-L>gt", "xt")
+  call assert_equal(3, tabpagenr())
+  tabprev
+  call assert_equal(2, tabpagenr())
+  call assert_equal(termwin, win_getid())
+
+  call feedkeys("\<C-L>gT", "xt")
+  call assert_equal(1, tabpagenr())
+  tabnext
+  call assert_equal(2, tabpagenr())
+  call assert_equal(termwin, win_getid())
 
   let job = term_getjob(buf)
   call feedkeys("\<C-L>\<C-C>", 'tx')
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  set termwinkey&
+  tabnext
+  tabclose
+  tabprev
+  tabclose
 endfunc
 
 func Test_terminal_out_err()
@@ -1622,6 +1823,29 @@ func Test_terminal_hidden()
   bwipe!
 endfunc
 
+func Test_terminal_switch_mode()
+  term
+  let bnr = bufnr('$')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>N", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("A", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>N", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("I", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>Nv", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("I", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  call feedkeys("\<C-W>Nv", 'xt')
+  call WaitForAssert({-> assert_equal('running,normal', term_getstatus(bnr))})
+  call feedkeys("A", 'xt')
+  call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
+  bwipe!
+endfunc
+
 func Test_terminal_hidden_and_close()
   if !has('unix')
     return
@@ -1632,4 +1856,190 @@ func Test_terminal_hidden_and_close()
   call assert_equal('terminal', getbufvar(bnr, '&buftype'))
   call WaitForAssert({-> assert_false(bufexists(bnr))})
   call assert_equal(1, winnr('$'))
+endfunc
+
+func Test_terminal_does_not_truncate_last_newlines()
+  " This test does not pass through ConPTY.
+  if has('conpty')
+    return
+  endif
+  let contents = [
+  \   [ 'One', '', 'X' ],
+  \   [ 'Two', '', '' ],
+  \   [ 'Three' ] + repeat([''], 30)
+  \ ]
+
+  for c in contents
+    call writefile(c, 'Xfile')
+    if has('win32')
+      term cmd /c type Xfile
+    else
+      term cat Xfile
+    endif
+    let bnr = bufnr('$')
+    call assert_equal('terminal', getbufvar(bnr, '&buftype'))
+    call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
+    sleep 100m
+    call assert_equal(c, getline(1, line('$')))
+    quit
+  endfor
+
+  call delete('Xfile')
+endfunc
+
+func Test_terminal_no_job()
+  let term = term_start('false', {'term_finish': 'close'})
+  call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
+endfunc
+
+func Test_term_getcursor()
+  if !has('unix')
+    return
+  endif
+  let buf = Run_shell_in_terminal({})
+
+  " Wait for the shell to display a prompt.
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " Hide the cursor.
+  call term_sendkeys(buf, "echo -e '\\033[?25l'\r")
+  call WaitForAssert({-> assert_equal(0, term_getcursor(buf)[2].visible)})
+
+  " Show the cursor.
+  call term_sendkeys(buf, "echo -e '\\033[?25h'\r")
+  call WaitForAssert({-> assert_equal(1, term_getcursor(buf)[2].visible)})
+
+  " Change color of cursor.
+  call WaitForAssert({-> assert_equal('', term_getcursor(buf)[2].color)})
+  call term_sendkeys(buf, "echo -e '\\033]12;blue\\007'\r")
+  call WaitForAssert({-> assert_equal('blue', term_getcursor(buf)[2].color)})
+  call term_sendkeys(buf, "echo -e '\\033]12;green\\007'\r")
+  call WaitForAssert({-> assert_equal('green', term_getcursor(buf)[2].color)})
+
+  " Make cursor a blinking block.
+  call term_sendkeys(buf, "echo -e '\\033[1 q'\r")
+  call WaitForAssert({-> assert_equal([1, 1],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady block.
+  call term_sendkeys(buf, "echo -e '\\033[2 q'\r")
+  call WaitForAssert({-> assert_equal([0, 1],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a blinking underline.
+  call term_sendkeys(buf, "echo -e '\\033[3 q'\r")
+  call WaitForAssert({-> assert_equal([1, 2],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady underline.
+  call term_sendkeys(buf, "echo -e '\\033[4 q'\r")
+  call WaitForAssert({-> assert_equal([0, 2],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a blinking vertical bar.
+  call term_sendkeys(buf, "echo -e '\\033[5 q'\r")
+  call WaitForAssert({-> assert_equal([1, 3],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  " Make cursor a steady vertical bar.
+  call term_sendkeys(buf, "echo -e '\\033[6 q'\r")
+  call WaitForAssert({-> assert_equal([0, 3],
+  \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
+
+  call Stop_shell_in_terminal(buf)
+endfunc
+
+func Test_term_gettitle()
+  " term_gettitle() returns an empty string for a non-terminal buffer
+  " and for a non-existing buffer.
+  call assert_equal('', term_gettitle(bufnr('%')))
+  call assert_equal('', term_gettitle(bufnr('$') + 1))
+
+  if !has('title') || &title == 0 || empty(&t_ts)
+    throw "Skipped: can't get/set title"
+  endif
+
+  let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
+  if has('autoservername')
+    call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM\d\+$', term_gettitle(term)) })
+  else
+    call WaitForAssert({-> assert_equal('[No Name] - VIM', term_gettitle(term)) })
+    call term_sendkeys(term, ":e Xfoo\r")
+    call WaitForAssert({-> assert_match('^Xfoo (.*[/\\]testdir) - VIM$', term_gettitle(term)) })
+  endif
+
+  call term_sendkeys(term, ":set titlestring=foo\r")
+  call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
+
+  exe term . 'bwipe!'
+endfunc
+
+" When drawing the statusline the cursor position may not have been updated
+" yet.
+" 1. create a terminal, make it show 2 lines
+" 2. 0.5 sec later: leave terminal window, execute "i"
+" 3. 0.5 sec later: clear terminal window, now it's 1 line
+" 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
+" 4. 0.5 sec later: should be done, clean up
+func Test_terminal_statusline()
+  if !has('unix')
+    return
+  endif
+  set statusline=x
+  terminal
+  let tbuf = bufnr('')
+  call term_sendkeys(tbuf, "clear; echo a; echo b; sleep 1; clear\n")
+  call timer_start(500, { tid -> feedkeys("\<C-w>j", 'tx') })
+  call timer_start(1500, { tid -> feedkeys("\<C-l>", 'tx') })
+  au BufLeave * if &buftype == 'terminal' | silent! normal i | endif
+
+  sleep 2
+  exe tbuf . 'bwipe!'
+  au! BufLeave
+  set statusline=
+endfunc
+
+func Test_terminal_getwinpos()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  " split, go to the bottom-right window
+  split
+  wincmd j
+  set splitright
+
+  call writefile([
+	\ 'echo getwinpos()',
+	\ ], 'XTest_getwinpos')
+  let buf = RunVimInTerminal('-S XTest_getwinpos', {'cols': 60})
+  call term_wait(buf)
+
+  " Find the output of getwinpos() in the bottom line.
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_match('\[\d\+, \d\+\]', term_getline(buf, rows))})
+  let line = term_getline(buf, rows)
+  let xpos = str2nr(substitute(line, '\[\(\d\+\), \d\+\]', '\1', ''))
+  let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
+
+  " Position must be bigger than the getwinpos() result of Vim itself.
+  " The calculation in the console assumes a 10 x 7 character cell.
+  " In the GUI it can be more, let's assume a 20 x 14 cell.
+  " And then add 100 / 200 tolerance.
+  let [xroot, yroot] = getwinpos()
+  let [winrow, wincol] = win_screenpos('.')
+  let xoff = wincol * (has('gui_running') ? 14 : 7) + 100
+  let yoff = winrow * (has('gui_running') ? 20 : 10) + 200
+  call assert_inrange(xroot + 2, xroot + xoff, xpos)
+  call assert_inrange(yroot + 2, yroot + yoff, ypos)
+
+  call term_wait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_getwinpos')
+  exe buf . 'bwipe!'
+  set splitright&
+  only!
 endfunc

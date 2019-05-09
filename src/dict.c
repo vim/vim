@@ -47,6 +47,19 @@ dict_alloc(void)
     return d;
 }
 
+/*
+ * dict_alloc() with an ID for alloc_fail().
+ */
+    dict_T *
+dict_alloc_id(alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return NULL;
+#endif
+    return (dict_alloc());
+}
+
     dict_T *
 dict_alloc_lock(int lock)
 {
@@ -329,18 +342,18 @@ dict_add(dict_T *d, dictitem_T *item)
 }
 
 /*
- * Add a number entry to dictionary "d".
+ * Add a number or special entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
-    int
-dict_add_number(dict_T *d, char *key, varnumber_T nr)
+    static int
+dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
 {
     dictitem_T	*item;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
-    item->di_tv.v_type = VAR_NUMBER;
+    item->di_tv.v_type = special ? VAR_SPECIAL : VAR_NUMBER;
     item->di_tv.vval.v_number = nr;
     if (dict_add(d, item) == FAIL)
     {
@@ -351,19 +364,59 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
 }
 
 /*
+ * Add a number entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_number(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, FALSE);
+}
+
+/*
+ * Add a special entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_special(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, TRUE);
+}
+
+/*
  * Add a string entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
     int
 dict_add_string(dict_T *d, char *key, char_u *str)
 {
+    return dict_add_string_len(d, key, str, -1);
+}
+
+/*
+ * Add a string entry to dictionary "d".
+ * "str" will be copied to allocated memory.
+ * When "len" is -1 use the whole string, otherwise only this many bytes.
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_string_len(dict_T *d, char *key, char_u *str, int len)
+{
     dictitem_T	*item;
+    char_u	*val = NULL;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
     item->di_tv.v_type = VAR_STRING;
-    item->di_tv.vval.v_string = str != NULL ? vim_strsave(str) : NULL;
+    if (str != NULL)
+    {
+	if (len == -1)
+	    val = vim_strsave(str);
+	else
+	    val = vim_strnsave(str, len);
+    }
+    item->di_tv.vval.v_string = val;
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
@@ -393,6 +446,55 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Initializes "iter" for iterating over dictionary items with
+ * dict_iterate_next().
+ * If "var" is not a Dict or an empty Dict then there will be nothing to
+ * iterate over, no error is given.
+ * NOTE: The dictionary must not change until iterating is finished!
+ */
+    void
+dict_iterate_start(typval_T *var, dict_iterator_T *iter)
+{
+    if (var->v_type != VAR_DICT || var->vval.v_dict == NULL)
+	iter->dit_todo = 0;
+    else
+    {
+	dict_T	*d = var->vval.v_dict;
+
+	iter->dit_todo = d->dv_hashtab.ht_used;
+	iter->dit_hi = d->dv_hashtab.ht_array;
+    }
+}
+
+/*
+ * Iterate over the items referred to by "iter".  It should be initialized with
+ * dict_iterate_start().
+ * Returns a pointer to the key.
+ * "*tv_result" is set to point to the value for that key.
+ * If there are no more items, NULL is returned.
+ */
+    char_u *
+dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result)
+{
+    dictitem_T	*di;
+    char_u      *result;
+
+    if (iter->dit_todo == 0)
+	return NULL;
+
+    while (HASHITEM_EMPTY(iter->dit_hi))
+	++iter->dit_hi;
+
+    di = HI2DI(iter->dit_hi);
+    result = di->di_key;
+    *tv_result = &di->di_tv;
+
+    --iter->dit_todo;
+    ++iter->dit_hi;
+    return result;
 }
 
 /*
@@ -474,7 +576,7 @@ dict_find(dict_T *d, char_u *key, int len)
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *
-get_dict_string(dict_T *d, char_u *key, int save)
+dict_get_string(dict_T *d, char_u *key, int save)
 {
     dictitem_T	*di;
     char_u	*s;
@@ -482,7 +584,7 @@ get_dict_string(dict_T *d, char_u *key, int save)
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return NULL;
-    s = get_tv_string(&di->di_tv);
+    s = tv_get_string(&di->di_tv);
     if (save && s != NULL)
 	s = vim_strsave(s);
     return s;
@@ -493,14 +595,14 @@ get_dict_string(dict_T *d, char_u *key, int save)
  * Returns 0 if the entry doesn't exist.
  */
     varnumber_T
-get_dict_number(dict_T *d, char_u *key)
+dict_get_number(dict_T *d, char_u *key)
 {
     dictitem_T	*di;
 
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return 0;
-    return get_tv_number(&di->di_tv);
+    return tv_get_number(&di->di_tv);
 }
 
 /*
@@ -570,7 +672,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
+dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;
@@ -611,16 +713,16 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    goto failret;
 	if (**arg != ':')
 	{
-	    EMSG2(_("E720: Missing colon in Dictionary: %s"), *arg);
+	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
 	if (evaluate)
 	{
-	    key = get_tv_string_buf_chk(&tvkey, buf);
+	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {
-		/* "key" is NULL when get_tv_string_buf_chk() gave an errmsg */
+		/* "key" is NULL when tv_get_string_buf_chk() gave an errmsg */
 		clear_tv(&tvkey);
 		goto failret;
 	    }
@@ -638,7 +740,7 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		EMSG2(_("E721: Duplicate key in Dictionary: \"%s\""), key);
+		semsg(_("E721: Duplicate key in Dictionary: \"%s\""), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -658,7 +760,7 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    EMSG2(_("E722: Missing comma in Dictionary: %s"), *arg);
+	    semsg(_("E722: Missing comma in Dictionary: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -666,7 +768,7 @@ get_dict_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (**arg != '}')
     {
-	EMSG2(_("E723: Missing end of Dictionary '}': %s"), *arg);
+	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
 	if (evaluate)
 	    dict_free(d);
@@ -720,13 +822,13 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    }
 	    else if (*action == 'e')
 	    {
-		EMSG2(_("E737: Key already exists: %s"), hi2->hi_key);
+		semsg(_("E737: Key already exists: %s"), hi2->hi_key);
 		break;
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
 	    {
-		if (tv_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
-		      || var_check_ro(di1->di_flags, arg_errmsg, TRUE))
+		if (var_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
+			|| var_check_ro(di1->di_flags, arg_errmsg, TRUE))
 		    break;
 		clear_tv(&di1->di_tv);
 		copy_tv(&HI2DI(hi2)->di_tv, &di1->di_tv);
@@ -802,7 +904,7 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
     if (argvars[0].v_type != VAR_DICT)
     {
-	EMSG(_(e_dictreq));
+	emsg(_(e_dictreq));
 	return;
     }
     if ((d = argvars[0].vval.v_dict) == NULL)

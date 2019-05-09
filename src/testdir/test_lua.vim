@@ -4,6 +4,11 @@ if !has('lua')
   finish
 endif
 
+func TearDown()
+  " Run garbage collection after each test to exercise luaV_setref().
+  call test_garbagecollect_now()
+endfunc
+
 " Check that switching to another buffer does not trigger ml_get error.
 func Test_command_new_no_ml_get_error()
   new
@@ -44,6 +49,11 @@ func Test_eval()
   lua v = vim.eval("{'a':'b'}")
   call assert_equal('dict', luaeval('vim.type(v)'))
   call assert_equal({'a':'b'}, luaeval('v'))
+
+  " lua.eval with a blob
+  lua v = vim.eval("0z00112233.deadbeef")
+  call assert_equal('blob', luaeval('vim.type(v)'))
+  call assert_equal(0z00112233.deadbeef, luaeval('v'))
 
   call assert_fails('lua v = vim.eval(nil)',
         \ "[string \"vim chunk\"]:1: bad argument #1 to 'eval' (string expected, got nil)")
@@ -298,17 +308,18 @@ func Test_list()
   lua l:add('abc')
   lua l:add(true)
   lua l:add(false)
+  lua l:add(nil)
   lua l:add(vim.eval("[1, 2, 3]"))
   lua l:add(vim.eval("{'a':1, 'b':2, 'c':3}"))
-  call assert_equal([123.0, 'abc', v:true, v:false, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
-  call assert_equal(6.0, luaeval('#l'))
+  call assert_equal([123.0, 'abc', v:true, v:false, v:null, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(7.0, luaeval('#l'))
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
   lua l[0] = 124
-  lua l[4] = nil
+  lua l[5] = nil
   lua l:insert('first')
   lua l:insert('xx', 3)
-  call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
 
   lockvar 1 l
   call assert_fails('lua l:add("x")', '[string "vim chunk"]:1: list is locked')
@@ -422,6 +433,30 @@ func Test_dict_iter()
   lua str, d = nil
 endfunc
 
+func Test_blob()
+  call assert_equal(0z, luaeval('vim.blob("")'))
+  call assert_equal(0z31326162, luaeval('vim.blob("12ab")'))
+  call assert_equal(0z00010203, luaeval('vim.blob("\x00\x01\x02\x03")'))
+  call assert_equal(0z8081FEFF, luaeval('vim.blob("\x80\x81\xfe\xff")'))
+
+  lua b = vim.blob("\x00\x00\x00\x00")
+  call assert_equal(0z00000000, luaeval('b'))
+  call assert_equal(4.0, luaeval('#b'))
+  lua b[0], b[1], b[2], b[3] = 1, 32, 256, 0xff
+  call assert_equal(0z012000ff, luaeval('b'))
+  lua b[4] = string.byte("z", 1)
+  call assert_equal(0z012000ff.7a, luaeval('b'))
+  call assert_equal(5.0, luaeval('#b'))
+  call assert_fails('lua b[#b+1] = 0x80', '[string "vim chunk"]:1: index out of range')
+  lua b:add("12ab")
+  call assert_equal(0z012000ff.7a313261.62, luaeval('b'))
+  call assert_equal(9.0, luaeval('#b'))
+  call assert_fails('lua b:add(nil)', '[string "vim chunk"]:1: string expected, got nil')
+  call assert_fails('lua b:add(true)', '[string "vim chunk"]:1: string expected, got boolean')
+  call assert_fails('lua b:add({})', '[string "vim chunk"]:1: string expected, got table')
+  lua b = nil
+endfunc
+
 func Test_funcref()
   function I(x)
     return a:x
@@ -443,6 +478,7 @@ func Test_funcref()
   lua d.len = vim.funcref"Mylen" -- assign d as 'self'
   lua res = (d.len() == vim.funcref"len"(vim.eval"l")) and "OK" or "FAIL"
   call assert_equal("OK", luaeval('res'))
+  call assert_equal(function('Mylen', {'data': l, 'len': function('Mylen')}), mydict.len)
 
   lua i1, i2, msg, d, res = nil
 endfunc

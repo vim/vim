@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2018 May 17
+" Last Change:	2019 Jan 27
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -160,6 +160,9 @@ vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
+if exists(':tlmenu')
+  tlnoremenu	 &Edit.&Paste<Tab>"+gP		<C-W>"+
+endif
 exe 'vnoremenu <script> &Edit.&Paste<Tab>"+gP	' . paste#paste_cmd['v']
 exe 'inoremenu <script> &Edit.&Paste<Tab>"+gP	' . paste#paste_cmd['i']
 nnoremenu 20.370 &Edit.Put\ &Before<Tab>[p	[p
@@ -356,6 +359,8 @@ func! s:SetupColorSchemes() abort
   let s:did_setup_color_schemes = 1
 
   let n = globpath(&runtimepath, "colors/*.vim", 1, 1)
+  let n += globpath(&runtimepath, "pack/*/start/*/colors/*.vim", 1, 1)
+  let n += globpath(&runtimepath, "pack/*/opt/*/colors/*.vim", 1, 1)
 
   " Ignore case for VMS and windows, sort on name
   let names = sort(map(n, 'substitute(v:val, "\\c.*[/\\\\:\\]]\\([^/\\\\:]*\\)\\.vim", "\\1", "")'), 1)
@@ -851,17 +856,15 @@ an 70.300 &Window.&New<Tab>^Wn			<C-W>n
 an 70.310 &Window.S&plit<Tab>^Ws		<C-W>s
 an 70.320 &Window.Sp&lit\ To\ #<Tab>^W^^	<C-W><C-^>
 an 70.330 &Window.Split\ &Vertically<Tab>^Wv	<C-W>v
-if has("vertsplit")
-  an <silent> 70.332 &Window.Split\ File\ E&xplorer	:call MenuExplOpen()<CR>
-  if !exists("*MenuExplOpen")
-    fun MenuExplOpen()
-      if @% == ""
-	20vsp .
-      else
-	exe "20vsp " . s:FnameEscape(expand("%:p:h"))
-      endif
-    endfun
-  endif
+an <silent> 70.332 &Window.Split\ File\ E&xplorer	:call MenuExplOpen()<CR>
+if !exists("*MenuExplOpen")
+  fun MenuExplOpen()
+    if @% == ""
+      20vsp .
+    else
+      exe "20vsp " . s:FnameEscape(expand("%:p:h"))
+    endif
+  endfun
 endif
 an 70.335 &Window.-SEP1-				<Nop>
 an 70.340 &Window.&Close<Tab>^Wc			:confirm close<CR>

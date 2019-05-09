@@ -42,10 +42,15 @@ func Test_colorscheme()
 
   colorscheme torte
   redraw!
-  sleep 200m
   call assert_equal('dark', &background)
   call assert_equal(1, g:before_colors)
   call assert_equal(2, g:after_colors)
+  call assert_equal("\ntorte", execute('colorscheme'))
+
+  let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
+  call assert_match("\nSearch         xxx term=reverse ctermfg=0 ctermbg=12 gui=bold guifg=Black guibg=Red", a)
+
+  call assert_fails('colorscheme does_not_exist', 'E185:')
 
   exec 'colorscheme' colorscheme_saved
   augroup TestColors
@@ -667,6 +672,56 @@ func Test_set_guioptions()
   let &guioptions = guioptions_saved
 endfunc
 
+func Test_scrollbars()
+  new
+  " buffer with 200 lines
+  call setline(1, repeat(['one', 'two'], 100))
+  set guioptions+=rlb
+
+  " scroll to move line 11 at top, moves the cursor there
+  call test_scrollbar('left', 10, 0)
+  redraw
+  call assert_equal(1, winline())
+  call assert_equal(11, line('.'))
+
+  " scroll to move line 1 at top, cursor stays in line 11
+  call test_scrollbar('right', 0, 0)
+  redraw
+  call assert_equal(11, winline())
+  call assert_equal(11, line('.'))
+
+  set nowrap
+  call setline(11, repeat('x', 150))
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(1, col('.'))
+
+  " scroll to character 11, cursor is moved
+  call test_scrollbar('hor', 10, 0)
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(11, col('.'))
+
+  set guioptions&
+  set wrap&
+  bwipe!
+endfunc
+
+func Test_menu()
+  " Check Help menu exists
+  let help_menu = execute('menu Help')
+  call assert_match('Overview', help_menu)
+
+  " Check Help menu works
+  emenu Help.Overview
+  call assert_equal('help', &buftype)
+  close
+
+  " Check deleting menu doesn't cause trouble.
+  aunmenu Help
+  call assert_fails('menu Help', 'E329:')
+endfunc
+
 func Test_set_guipty()
   let guipty_saved = &guipty
 
@@ -678,6 +733,21 @@ func Test_set_guipty()
   call assert_equal(0, &guipty)
 
   let &guipty = guipty_saved
+endfunc
+
+func Test_encoding_conversion()
+  " GTK supports conversion between 'encoding' and "utf-8"
+  if has('gui_gtk')
+    let encoding_saved = &encoding
+    set encoding=latin1
+
+    " would be nice if we could take a screenshot
+    intro
+    " sets the window title
+    edit SomeFile
+
+    let &encoding = encoding_saved
+  endif
 endfunc
 
 func Test_shell_command()

@@ -1,7 +1,7 @@
 " Tests for bracketed paste and other forms of pasting.
 
-" Bracketed paste only works with "xterm".  Not in GUI.
-if has('gui_running')
+" Bracketed paste only works with "xterm".  Not in GUI or Windows console.
+if has('gui_running') || has('win32')
   finish
 endif
 set term=xterm

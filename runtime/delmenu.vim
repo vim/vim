@@ -5,6 +5,7 @@
 " Last Change:	2001 May 27
 
 aunmenu *
+tlunmenu *
 
 silent! unlet did_install_default_menus
 silent! unlet did_install_syntax_menu

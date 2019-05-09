@@ -652,7 +652,7 @@ RIMARKO: Se vi volus eliri el Vim kaj restartigi ĝin denove per  vim TESTO,
          la dosiero estus precize same kiel kopio de la instruilo kiam vi
          konservis ĝin.
 
-  5. Nun forviŝu la dosieron tajpante (MS-DOS):     :!del TESTO
+  5. Nun forviŝu la dosieron tajpante (WINDOWS):    :!del TESTO
                                    aŭ (UNIKSO):     :!rm TESTO
 
 
@@ -713,7 +713,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
   1.  :!komando  plenumas eksteran komandon.
 
       Iuj utilaj ekzemploj estas:
-        (MS-DOS)           (UNIKSO)
+        (WINDOWS)          (UNIKSO)
          :!dir              :!ls            - listigas dosierujon
          :!del DOSIERNOMO   :!rm DOSIERNOMO - forviŝas la dosieron DOSIERNOMO
 
@@ -914,7 +914,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu serĉa komando, uzu  \c
 
   1. Ekredaktu la dosieron "vimrc".  Tio dependas de via sistemo:
       :e ~/.vimrc          por Unikso
-      :e $VIM/_vimrc       por MS-Vindozo
+      :e $VIM/_vimrc       por Windows
 
   2. Nun legu la enhavon de la ekzempla "vimrc"
       :r $VIMRUNTIME/vimrc_example.vim
@@ -941,7 +941,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu serĉa komando, uzu  \c
 
   4. Premu  CTRL-D  kaj Vim montros liston de komandoj, kiuj komencas per "e".
 
-  5. Premu <TAB>  kaj Vim kompletigos la nomon de la komando al ":edit".
+  5. Premu d<TAB>  kaj Vim kompletigos la nomon de la komando al ":edit".
 
   6. Nun aldonu spaceton kaj la komencon de ekzistanta nomo:  :edit DOSI
 
@@ -986,6 +986,6 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   Esperantigita fare de Dominique Pellé, 2008-04-01
   Retpoŝto: dominique.pelle@gmail.com
-  Lasta ŝanĝo: 2016-07-02
+  Lasta ŝanĝo: 2018-12-02
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
