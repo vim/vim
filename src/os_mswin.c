@@ -354,25 +354,22 @@ mch_FullName(
     int		force UNUSED)
 {
     int		nResult = FAIL;
+    WCHAR	*wname;
+    WCHAR	wbuf[MAX_PATH];
+    char_u	*cname = NULL;
 
+    wname = enc_to_utf16(fname, NULL);
+    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH) != NULL)
     {
-	WCHAR	*wname;
-	WCHAR	wbuf[MAX_PATH];
-	char_u	*cname = NULL;
-
-	wname = enc_to_utf16(fname, NULL);
-	if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH) != NULL)
+	cname = utf16_to_enc((short_u *)wbuf, NULL);
+	if (cname != NULL)
 	{
-	    cname = utf16_to_enc((short_u *)wbuf, NULL);
-	    if (cname != NULL)
-	    {
-		vim_strncpy(buf, cname, len - 1);
-		nResult = OK;
-	    }
+	    vim_strncpy(buf, cname, len - 1);
+	    nResult = OK;
 	}
-	vim_free(wname);
-	vim_free(cname);
     }
+    vim_free(wname);
+    vim_free(cname);
 
 #ifdef USE_FNAME_CASE
     fname_case(buf, len);

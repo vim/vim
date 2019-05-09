@@ -2945,9 +2945,6 @@ static textprop_T	*current_text_props = NULL;
 static buf_T		*current_buf = NULL;
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 text_prop_compare(const void *s1, const void *s2)
 {
     int  idx1, idx2;

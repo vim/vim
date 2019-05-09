@@ -125,8 +125,7 @@ static int	open_cmdwin(void);
 #endif
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-static int
-sort_func_compare(const void *s1, const void *s2);
+static int	sort_func_compare(const void *s1, const void *s2);
 #endif
 
 

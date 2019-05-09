@@ -5626,14 +5626,11 @@ static int expand_backtick(garray_T *gap, char_u *pat, int flags);
  * File name expansion code for MS-DOS, Win16 and Win32.  It's here because
  * it's shared between these systems.
  */
-# if defined(PROTO)
-#  define _cdecl
-# endif
 
 /*
  * comparison function for qsort in dos_expandpath()
  */
-    static int _cdecl
+    static int
 pstrcmp(const void *a, const void *b)
 {
     return (pathcmp(*(char **)a, *(char **)b, -1));

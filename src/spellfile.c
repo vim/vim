@@ -4802,8 +4802,7 @@ node_equal(wordnode_T *n1, wordnode_T *n2)
     return p1 == NULL && p2 == NULL;
 }
 
-static int
-rep_compare(const void *s1, const void *s2);
+static int rep_compare(const void *s1, const void *s2);
 
 /*
  * Function given to qsort() to sort the REP items on "from" string.

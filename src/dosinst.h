@@ -47,7 +47,7 @@ char *searchpath(char *name);
 #if defined(UNIX_LINT)
 # define vim_mkdir(x, y) mkdir((char *)(x), y)
 #else
-#  define vim_mkdir(x, y) _mkdir((char *)(x))
+# define vim_mkdir(x, y) _mkdir((char *)(x))
 #endif
 
 #define sleep(n) Sleep((n) * 1000)

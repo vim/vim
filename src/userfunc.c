@@ -55,10 +55,8 @@ static char *e_nofunc = N_("E130: Unknown function: %s");
 static void func_do_profile(ufunc_T *fp);
 static void prof_sort_list(FILE *fd, ufunc_T **sorttab, int st_len, char *title, int prefer_self);
 static void prof_func_line(FILE *fd, int count, proftime_T *total, proftime_T *self, int prefer_self);
-static int
-	prof_total_cmp(const void *s1, const void *s2);
-static int
-	prof_self_cmp(const void *s1, const void *s2);
+static int prof_total_cmp(const void *s1, const void *s2);
+static int prof_self_cmp(const void *s1, const void *s2);
 #endif
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 

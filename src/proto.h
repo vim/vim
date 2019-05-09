@@ -180,7 +180,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "search.pro"
 # ifdef FEAT_SIGNS
-# include "sign.pro"
+#  include "sign.pro"
 # endif
 # include "spell.pro"
 # include "spellfile.pro"

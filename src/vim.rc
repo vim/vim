@@ -12,7 +12,7 @@
 #include <winver.h>
 #include "version.h"
 #include "gui_w32_rc.h"
-# include <winresrc.h>
+#include <winresrc.h>
 
 //
 // Icons

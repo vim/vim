@@ -12376,10 +12376,8 @@ f_sinh(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
-static int
-	item_compare(const void *s1, const void *s2);
-static int
-	item_compare2(const void *s1, const void *s2);
+static int item_compare(const void *s1, const void *s2);
+static int item_compare2(const void *s1, const void *s2);
 
 /* struct used in the array that's given to qsort() */
 typedef struct

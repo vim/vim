@@ -3082,7 +3082,7 @@ mch_msg(char *str)
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
 #  else
 	    isatty(2)
-#   endif
+#  endif
 #  ifdef FEAT_GUI
 	    ||
 #  endif

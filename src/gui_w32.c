@@ -3796,9 +3796,6 @@ _OnScroll(
  * Add a lot of missing defines.
  * They are not always missing, we need the #ifndef's.
  */
-# ifndef _cdecl
-#  define _cdecl
-# endif
 # ifndef IsMinimized
 #  define     IsMinimized(hwnd)		IsIconic(hwnd)
 # endif
@@ -5518,7 +5515,7 @@ gui_mch_set_sp_color(guicolor_T color)
  * First static functions (no prototypes generated).
  */
 # ifdef _MSC_VER
-#  include <ime.h>   /* Apparently not needed for Cygwin or MingW. */
+#  include <ime.h>   /* Apparently not needed for Cygwin or MinGW. */
 # endif
 # include <imm.h>
 
@@ -6269,7 +6266,6 @@ gui_mch_draw_string(
     void
 gui_mch_flush(void)
 {
-
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
 	DWriteContext_Flush(s_dwc);
