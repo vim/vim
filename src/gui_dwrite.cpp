@@ -949,7 +949,7 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 	    if (mDrawing)
 	    {
 		hr = mRT->EndDraw();
-		if (hr == D2DERR_RECREATE_TARGET)
+		if (hr == (HRESULT)D2DERR_RECREATE_TARGET)
 		{
 		    hr = S_OK;
 		    DiscardDeviceResources();

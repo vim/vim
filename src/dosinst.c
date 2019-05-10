@@ -10,7 +10,7 @@
 /*
  * dosinst.c: Install program for Vim on MS-DOS and MS-Windows
  *
- * Compile with Make_mvc.mak, Make_bc3.mak, Make_bc5.mak or Make_djg.mak.
+ * Compile with Make_mvc.mak, Make_cyg.mak or Make_ming.mak.
  */
 
 /*

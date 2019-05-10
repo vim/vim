@@ -2078,6 +2078,41 @@ get_b0_dict(char_u *fname, dict_T *d)
 #endif
 
 /*
+ * Replacement for ctime(), which is not safe to use.
+ * Requires strftime(), otherwise returns "(unknown)".
+ * If "thetime" is invalid returns "(invalid)".  Never returns NULL.
+ * When "add_newline" is TRUE add a newline like ctime() does.
+ * Uses a static buffer.
+ */
+    char *
+get_ctime(time_t thetime, int add_newline)
+{
+    static char buf[50];
+#ifdef HAVE_STRFTIME
+# ifdef HAVE_LOCALTIME_R
+    struct tm	tmval;
+# endif
+    struct tm	*curtime;
+
+# ifdef HAVE_LOCALTIME_R
+    curtime = localtime_r(&thetime, &tmval);
+# else
+    curtime = localtime(&thetime);
+# endif
+    /* MSVC returns NULL for an invalid value of seconds. */
+    if (curtime == NULL)
+	STRCPY(buf, _("(Invalid)"));
+    else
+	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
+#else
+    STRCPY(buf, "(unknown)");
+#endif
+    if (add_newline)
+	STRCAT(buf, "\n");
+    return buf;
+}
+
+/*
  * Give information about an existing swap file.
  * Returns timestamp (0 when unknown).
  */
@@ -2087,17 +2122,15 @@ swapfile_info(char_u *fname)
     stat_T	    st;
     int		    fd;
     struct block0   b0;
-    time_t	    x = (time_t)0;
-    char	    *p;
 #ifdef UNIX
     char_u	    uname[B0_UNAME_SIZE];
 #endif
 
-    /* print the swap file date */
+    // print the swap file date
     if (mch_stat((char *)fname, &st) != -1)
     {
 #ifdef UNIX
-	/* print name of owner of the file */
+	// print name of owner of the file
 	if (mch_get_uname(st.st_uid, uname, B0_UNAME_SIZE) == OK)
 	{
 	    msg_puts(_("          owned by: "));
@@ -2107,13 +2140,10 @@ swapfile_info(char_u *fname)
 	else
 #endif
 	    msg_puts(_("             dated: "));
-	x = st.st_mtime;		    /* Manx C can't do &st.st_mtime */
-	p = ctime(&x);			    /* includes '\n' */
-	if (p == NULL)
-	    msg_puts("(invalid)\n");
-	else
-	    msg_puts(p);
+	msg_puts(get_ctime(st.st_mtime, TRUE));
     }
+    else
+	st.st_mtime = 0;
 
     /*
      * print the original file name
@@ -2191,7 +2221,7 @@ swapfile_info(char_u *fname)
 	msg_puts(_("         [cannot be opened]"));
     msg_putchar('\n');
 
-    return x;
+    return st.st_mtime;
 }
 
 /*
@@ -4412,15 +4442,14 @@ attention_message(
     char_u  *fname)	/* swap file name */
 {
     stat_T	st;
-    time_t	x, sx;
-    char	*p;
+    time_t	swap_mtime;
 
     ++no_wait_return;
     (void)emsg(_("E325: ATTENTION"));
     msg_puts(_("\nFound a swap file by the name \""));
     msg_home_replace(fname);
     msg_puts("\"\n");
-    sx = swapfile_info(fname);
+    swap_mtime = swapfile_info(fname);
     msg_puts(_("While opening file \""));
     msg_outtrans(buf->b_fname);
     msg_puts("\"\n");
@@ -4431,13 +4460,8 @@ attention_message(
     else
     {
 	msg_puts(_("             dated: "));
-	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
-	p = ctime(&x);			    /* includes '\n' */
-	if (p == NULL)
-	    msg_puts("(invalid)\n");
-	else
-	    msg_puts(p);
-	if (sx != 0 && x > sx)
+	msg_puts(get_ctime(st.st_mtime, TRUE));
+	if (swap_mtime != 0 && st.st_mtime > swap_mtime)
 	    msg_puts(_("      NEWER than swap file!\n"));
     }
     /* Some of these messages are long to allow translation to

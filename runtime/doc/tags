@@ -1075,6 +1075,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
 'tagcase'	options.txt	/*'tagcase'*
+'tagfunc'	options.txt	/*'tagfunc'*
 'taglength'	options.txt	/*'taglength'*
 'tagrelative'	options.txt	/*'tagrelative'*
 'tags'	options.txt	/*'tags'*
@@ -1101,6 +1102,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'textmode'	options.txt	/*'textmode'*
 'textwidth'	options.txt	/*'textwidth'*
 'tf'	options.txt	/*'tf'*
+'tfu'	options.txt	/*'tfu'*
 'tgc'	options.txt	/*'tgc'*
 'tgst'	options.txt	/*'tgst'*
 'thesaurus'	options.txt	/*'thesaurus'*
@@ -2133,17 +2135,25 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cabbrev	map.txt	/*:cabbrev*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
+:cabo	quickfix.txt	/*:cabo*
+:cabove	quickfix.txt	/*:cabove*
 :cad	quickfix.txt	/*:cad*
 :caddbuffer	quickfix.txt	/*:caddbuffer*
 :cadde	quickfix.txt	/*:cadde*
 :caddexpr	quickfix.txt	/*:caddexpr*
 :caddf	quickfix.txt	/*:caddf*
 :caddfile	quickfix.txt	/*:caddfile*
+:caf	quickfix.txt	/*:caf*
+:cafter	quickfix.txt	/*:cafter*
 :cal	eval.txt	/*:cal*
 :call	eval.txt	/*:call*
 :cat	eval.txt	/*:cat*
 :catch	eval.txt	/*:catch*
 :cb	quickfix.txt	/*:cb*
+:cbe	quickfix.txt	/*:cbe*
+:cbefore	quickfix.txt	/*:cbefore*
+:cbel	quickfix.txt	/*:cbel*
+:cbelow	quickfix.txt	/*:cbelow*
 :cbo	quickfix.txt	/*:cbo*
 :cbottom	quickfix.txt	/*:cbottom*
 :cbuffer	quickfix.txt	/*:cbuffer*
@@ -2491,12 +2501,16 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lNf	quickfix.txt	/*:lNf*
 :lNfile	quickfix.txt	/*:lNfile*
 :la	editing.txt	/*:la*
+:lab	quickfix.txt	/*:lab*
+:labove	quickfix.txt	/*:labove*
 :lad	quickfix.txt	/*:lad*
 :laddb	quickfix.txt	/*:laddb*
 :laddbuffer	quickfix.txt	/*:laddbuffer*
 :laddexpr	quickfix.txt	/*:laddexpr*
 :laddf	quickfix.txt	/*:laddf*
 :laddfile	quickfix.txt	/*:laddfile*
+:laf	quickfix.txt	/*:laf*
+:lafter	quickfix.txt	/*:lafter*
 :lan	mlang.txt	/*:lan*
 :lang	mlang.txt	/*:lang*
 :language	mlang.txt	/*:language*
@@ -2504,6 +2518,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lat	undo.txt	/*:lat*
 :later	undo.txt	/*:later*
 :lb	quickfix.txt	/*:lb*
+:lbe	quickfix.txt	/*:lbe*
+:lbefore	quickfix.txt	/*:lbefore*
+:lbel	quickfix.txt	/*:lbel*
+:lbelow	quickfix.txt	/*:lbelow*
 :lbo	quickfix.txt	/*:lbo*
 :lbottom	quickfix.txt	/*:lbottom*
 :lbuffer	quickfix.txt	/*:lbuffer*
@@ -3185,6 +3203,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tag	tagsrch.txt	/*:tag*
 :tags	tagsrch.txt	/*:tags*
 :tc	if_tcl.txt	/*:tc*
+:tcd	editing.txt	/*:tcd*
+:tch	editing.txt	/*:tch*
+:tchdir	editing.txt	/*:tchdir*
 :tcl	if_tcl.txt	/*:tcl*
 :tcld	if_tcl.txt	/*:tcld*
 :tcldo	if_tcl.txt	/*:tcldo*
@@ -3346,6 +3367,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :xnoremap	map.txt	/*:xnoremap*
 :xnoreme	gui.txt	/*:xnoreme*
 :xnoremenu	gui.txt	/*:xnoremenu*
+:xr	various.txt	/*:xr*
+:xrestore	various.txt	/*:xrestore*
 :xu	map.txt	/*:xu*
 :xunmap	map.txt	/*:xunmap*
 :xunme	gui.txt	/*:xunme*
@@ -3420,6 +3443,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <F9>	term.txt	/*<F9>*
 <Help>	helphelp.txt	/*<Help>*
 <Home>	motion.txt	/*<Home>*
+<Ignore>	eval.txt	/*<Ignore>*
 <Insert>	insert.txt	/*<Insert>*
 <Leader>	map.txt	/*<Leader>*
 <Left>	motion.txt	/*<Left>*
@@ -3918,7 +3942,7 @@ E232	message.txt	/*E232*
 E233	gui.txt	/*E233*
 E234	options.txt	/*E234*
 E235	options.txt	/*E235*
-E236	options.txt	/*E236*
+E236	gui.txt	/*E236*
 E237	print.txt	/*E237*
 E238	print.txt	/*E238*
 E239	sign.txt	/*E239*
@@ -3926,8 +3950,8 @@ E24	message.txt	/*E24*
 E240	remote.txt	/*E240*
 E241	eval.txt	/*E241*
 E243	if_ole.txt	/*E243*
-E244	options.txt	/*E244*
-E245	options.txt	/*E245*
+E244	gui.txt	/*E244*
+E245	gui.txt	/*E245*
 E246	autocmd.txt	/*E246*
 E247	remote.txt	/*E247*
 E248	remote.txt	/*E248*
@@ -4699,6 +4723,9 @@ E982	terminal.txt	/*E982*
 E983	message.txt	/*E983*
 E984	repeat.txt	/*E984*
 E985	eval.txt	/*E985*
+E986	tagsrch.txt	/*E986*
+E987	tagsrch.txt	/*E987*
+E988	gui_w32.txt	/*E988*
 E99	diff.txt	/*E99*
 E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
@@ -5292,6 +5319,7 @@ backup-changed	version4.txt	/*backup-changed*
 backup-extension	version4.txt	/*backup-extension*
 backup-table	editing.txt	/*backup-table*
 balloon-eval	debugger.txt	/*balloon-eval*
+balloon_gettext()	eval.txt	/*balloon_gettext()*
 balloon_show()	eval.txt	/*balloon_show()*
 balloon_split()	eval.txt	/*balloon_split()*
 bar	motion.txt	/*bar*
@@ -5566,6 +5594,7 @@ charconvert_to-variable	eval.txt	/*charconvert_to-variable*
 charity	uganda.txt	/*charity*
 charset	mbyte.txt	/*charset*
 charset-conversion	mbyte.txt	/*charset-conversion*
+chdir()	eval.txt	/*chdir()*
 chill.vim	syntax.txt	/*chill.vim*
 chmod	eval.txt	/*chmod*
 cindent()	eval.txt	/*cindent()*
@@ -5993,6 +6022,7 @@ encryption	editing.txt	/*encryption*
 end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
+environ()	eval.txt	/*environ()*
 erlang.vim	syntax.txt	/*erlang.vim*
 err_buf	channel.txt	/*err_buf*
 err_cb	channel.txt	/*err_cb*
@@ -6732,6 +6762,7 @@ getcmdwintype()	eval.txt	/*getcmdwintype()*
 getcompletion()	eval.txt	/*getcompletion()*
 getcurpos()	eval.txt	/*getcurpos()*
 getcwd()	eval.txt	/*getcwd()*
+getenv()	eval.txt	/*getenv()*
 getfontname()	eval.txt	/*getfontname()*
 getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
@@ -6824,6 +6855,8 @@ gui-IME	gui.txt	/*gui-IME*
 gui-clipboard	gui_w32.txt	/*gui-clipboard*
 gui-colors	syntax.txt	/*gui-colors*
 gui-extras	gui.txt	/*gui-extras*
+gui-font	gui.txt	/*gui-font*
+gui-fontwide	gui.txt	/*gui-fontwide*
 gui-footer	debugger.txt	/*gui-footer*
 gui-fork	gui_x11.txt	/*gui-fork*
 gui-functions	usr_41.txt	/*gui-functions*
@@ -6875,8 +6908,8 @@ gui-x11-various	gui_x11.txt	/*gui-x11-various*
 gui.txt	gui.txt	/*gui.txt*
 gui_w32.txt	gui_w32.txt	/*gui_w32.txt*
 gui_x11.txt	gui_x11.txt	/*gui_x11.txt*
-guifontwide_gtk	options.txt	/*guifontwide_gtk*
-guifontwide_win_mbyte	options.txt	/*guifontwide_win_mbyte*
+guifontwide_gtk	gui.txt	/*guifontwide_gtk*
+guifontwide_win_mbyte	gui.txt	/*guifontwide_win_mbyte*
 guu	change.txt	/*guu*
 gv	visual.txt	/*gv*
 gview	starting.txt	/*gview*
@@ -8518,6 +8551,7 @@ setbufline()	eval.txt	/*setbufline()*
 setbufvar()	eval.txt	/*setbufvar()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
+setenv()	eval.txt	/*setenv()*
 setfperm()	eval.txt	/*setfperm()*
 setline()	eval.txt	/*setline()*
 setloclist()	eval.txt	/*setloclist()*
@@ -9049,6 +9083,7 @@ tag-binary-search	tagsrch.txt	/*tag-binary-search*
 tag-blocks	motion.txt	/*tag-blocks*
 tag-commands	tagsrch.txt	/*tag-commands*
 tag-details	tagsrch.txt	/*tag-details*
+tag-function	tagsrch.txt	/*tag-function*
 tag-functions	usr_41.txt	/*tag-functions*
 tag-highlight	syntax.txt	/*tag-highlight*
 tag-matchlist	tagsrch.txt	/*tag-matchlist*
@@ -9226,6 +9261,7 @@ test_option_not_set()	eval.txt	/*test_option_not_set()*
 test_override()	eval.txt	/*test_override()*
 test_refcount()	eval.txt	/*test_refcount()*
 test_scrollbar()	eval.txt	/*test_scrollbar()*
+test_setmouse()	eval.txt	/*test_setmouse()*
 test_settime()	eval.txt	/*test_settime()*
 testing	eval.txt	/*testing*
 testing-variable	eval.txt	/*testing-variable*
@@ -9254,6 +9290,7 @@ text-prop-functions	textprop.txt	/*text-prop-functions*
 text-prop-intro	textprop.txt	/*text-prop-intro*
 text-properties	textprop.txt	/*text-properties*
 textlock	eval.txt	/*textlock*
+textprop	textprop.txt	/*textprop*
 textprop.txt	textprop.txt	/*textprop.txt*
 tf.vim	syntax.txt	/*tf.vim*
 this_session-variable	eval.txt	/*this_session-variable*
@@ -9624,6 +9661,7 @@ version8.1	version8.txt	/*version8.1*
 version8.txt	version8.txt	/*version8.txt*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
+vi-features	vi_diff.txt	/*vi-features*
 vi:	options.txt	/*vi:*
 vi_diff.txt	vi_diff.txt	/*vi_diff.txt*
 vib	motion.txt	/*vib*

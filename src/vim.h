@@ -17,24 +17,6 @@
 # define MSWIN
 #endif
 
-// use fastcall for Borland, when compiling for MS-Windows
-#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
-#if defined(FEAT_PERL) || \
-    defined(FEAT_PYTHON) || \
-    defined(FEAT_PYTHON3) || \
-    defined(FEAT_RUBY) || \
-    defined(FEAT_TCL) || \
-    defined(FEAT_MZSCHEME) || \
-    defined(DYNAMIC_GETTEXT) || \
-    defined(DYNAMIC_ICONV) || \
-    defined(DYNAMIC_IME) || \
-    defined(XPM)
-  #pragma option -pc
-# else
-  #pragma option -pr
-# endif
-#endif
-
 #ifdef MSWIN
 # include "vimio.h"
 #endif
@@ -2163,11 +2145,6 @@ typedef enum {
 # define BROWSE_DIR 2	    /* flag for do_browse() */
 #endif
 
-/* stop using fastcall for Borland */
-#if defined(__BORLANDC__) && defined(MSWIN) && !defined(DEBUG)
- #pragma option -p.
-#endif
-
 #ifdef _MSC_VER
 /* Avoid useless warning "conversion from X to Y of greater size". */
  #pragma warning(disable : 4312)
@@ -2344,9 +2321,6 @@ typedef enum {
 # undef FF
 # undef OP_DELETE
 # undef OP_JOIN
-# ifdef __BORLANDC__
-#  define NOPROTO 1
-# endif
   /* remove MAX and MIN, included by glib.h, redefined by sys/param.h */
 # ifdef MAX
 #  undef MAX
@@ -2374,10 +2348,6 @@ typedef enum {
 #  undef bool
 # endif
 
-# ifdef __BORLANDC__
-  /* Borland has the structure stati64 but not _stati64 */
-#  define _stati64 stati64
-# endif
 #endif
 
 /* values for vim_handle_signal() that are not a signal */

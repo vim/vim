@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.1.  Last change: 2018 Apr 18
+*filetype.txt*  For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12,7 +12,6 @@ Filetypes						*filetype* *file-type*
 
 Also see |autocmd.txt|.
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Filetypes					*filetypes* *file-types*

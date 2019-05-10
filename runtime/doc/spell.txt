@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.1.  Last change: 2019 Jan 19
+*spell.txt*	For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,10 +11,7 @@ Spell checking						*spell*
 3. Generating a spell file	|spell-mkspell|
 4. Spell file format		|spell-file-format|
 
-{Vi does not have any of these commands}
-
-Spell checking is not available when the |+syntax| feature has been disabled
-at compile time.
+{not available when the |+syntax| feature has been disabled at compile time}
 
 Note: There also is a vimspell plugin.  If you have it you can do ":help
 vimspell" to find about it.  But you will probably want to get rid of the

@@ -146,11 +146,6 @@ typedef int LPSECURITY_ATTRIBUTES;
 # define __stdcall /* empty */
 #endif
 
-#if defined(__BORLANDC__)
-/* Strangely Borland uses a non-standard name. */
-# define wcsicmp(a, b) wcscmpi((a), (b))
-#endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 /* Win32 Console handles for input and output */
 static HANDLE g_hConIn  = INVALID_HANDLE_VALUE;
@@ -941,9 +936,6 @@ static const struct
 
 /* The return code indicates key code size. */
     static int
-#ifdef __BORLANDC__
-    __stdcall
-#endif
 win32_kbd_patch_key(
     KEY_EVENT_RECORD *pker)
 {
@@ -4827,11 +4819,14 @@ mch_call_shell(
 	}
 	else
 	{
-	    cmdlen = (
+	    cmdlen =
 #ifdef FEAT_GUI_MSWIN
-		(gui.in_use ? (!p_stmp ? 0 : STRLEN(vimrun_path)) : 0) +
+		(gui.in_use ?
+		    (!s_dont_use_vimrun && p_stmp ?
+			STRLEN(vimrun_path) : STRLEN(p_sh) + STRLEN(p_shcf))
+		    : 0) +
 #endif
-		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
+		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
 
 	    newcmd = lalloc(cmdlen, TRUE);
 	    if (newcmd != NULL)
@@ -4869,9 +4864,19 @@ mch_call_shell(
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
 		else
+# ifdef VIMDLL
+		if (gui.in_use)
+# endif
+		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
+					   p_sh, p_shcf, p_sh, p_shcf, cmd);
+# ifdef VIMDLL
+		else
+# endif
 #endif
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
+#endif
 		x = mch_system((char *)newcmd, options);
 		vim_free(newcmd);
 	    }
@@ -6682,8 +6687,6 @@ getout:
     int
 mch_open(const char *name, int flags, int mode)
 {
-    /* _wopen() does not work with Borland C 5.5: creates a read-only file. */
-#ifndef __BORLANDC__
     WCHAR	*wn;
     int		f;
 
@@ -6694,16 +6697,6 @@ mch_open(const char *name, int flags, int mode)
     f = _wopen(wn, flags, mode);
     vim_free(wn);
     return f;
-#else
-    /* open() can open a file which name is longer than _MAX_PATH bytes
-     * and shorter than _MAX_PATH characters successfully, but sometimes it
-     * causes unexpected error in another part. We make it an error explicitly
-     * here. */
-    if (strlen(name) >= _MAX_PATH)
-	return -1;
-
-    return open(name, flags, mode);
-#endif
 }
 
 /*

@@ -2496,6 +2496,7 @@ static struct key_name_entry
 #endif
     {K_PLUG,		(char_u *)"Plug"},
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
+    {K_IGNORE,		(char_u *)"Ignore"},
     {0,			NULL}
     /* NOTE: When adding a long name update MAX_KEY_NAME_LEN. */
 };
@@ -3911,16 +3912,9 @@ qsort(
 /*
  * Sort an array of strings.
  */
-static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-sort_compare(const void *s1, const void *s2);
+static int sort_compare(const void *s1, const void *s2);
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_compare(const void *s1, const void *s2)
 {
     return STRCMP(*(char **)s1, *(char **)s2);

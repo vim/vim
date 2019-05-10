@@ -3736,12 +3736,13 @@ main()
 
 if test "x$vim_cv_getcwd_broken" = "xyes" ; then
   AC_DEFINE(BAD_GETCWD)
+  AC_CHECK_FUNCS(getwd)
 fi
 
 dnl Check for functions in one big call, to reduce the size of configure.
 dnl Can only be used for functions that do not require any include.
 AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
-	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
+	getpwent getpwnam getpwuid getrlimit gettimeofday localtime_r lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \

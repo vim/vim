@@ -172,26 +172,6 @@ int _chdrive(int drive)
     return !SetCurrentDirectory(temp);
 }
 # endif
-#else
-# ifdef __BORLANDC__
-/* being a more ANSI compliant compiler, BorlandC doesn't define _stricoll:
- * but it does in BC 5.02! */
-#  if __BORLANDC__ < 0x502
-int _stricoll(char *a, char *b)
-{
-#   if 1
-    // this is fast but not correct:
-    return stricmp(a, b);
-#   else
-    // the ANSI-ish correct way is to use strxfrm():
-    char a_buff[512], b_buff[512];  // file names, so this is enough on Win32
-    strxfrm(a_buff, a, 512);
-    strxfrm(b_buff, b, 512);
-    return strcoll(a_buff, b_buff);
-#   endif
-}
-#  endif
-# endif
 #endif
 
 
@@ -374,30 +354,22 @@ mch_FullName(
     int		force UNUSED)
 {
     int		nResult = FAIL;
+    WCHAR	*wname;
+    WCHAR	wbuf[MAX_PATH];
+    char_u	*cname = NULL;
 
-#ifdef __BORLANDC__
-    if (*fname == NUL) /* Borland behaves badly here - make it consistent */
-	nResult = mch_dirname(buf, len);
-    else
-#endif
+    wname = enc_to_utf16(fname, NULL);
+    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH) != NULL)
     {
-	WCHAR	*wname;
-	WCHAR	wbuf[MAX_PATH];
-	char_u	*cname = NULL;
-
-	wname = enc_to_utf16(fname, NULL);
-	if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH) != NULL)
+	cname = utf16_to_enc((short_u *)wbuf, NULL);
+	if (cname != NULL)
 	{
-	    cname = utf16_to_enc((short_u *)wbuf, NULL);
-	    if (cname != NULL)
-	    {
-		vim_strncpy(buf, cname, len - 1);
-		nResult = OK;
-	    }
+	    vim_strncpy(buf, cname, len - 1);
+	    nResult = OK;
 	}
-	vim_free(wname);
-	vim_free(cname);
     }
+    vim_free(wname);
+    vim_free(cname);
 
 #ifdef USE_FNAME_CASE
     fname_case(buf, len);
@@ -2044,9 +2016,6 @@ serverSendEnc(HWND target)
  * Clean up on exit. This destroys the hidden message window.
  */
     static void
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
 CleanUpMessaging(void)
 {
     if (message_window != 0)

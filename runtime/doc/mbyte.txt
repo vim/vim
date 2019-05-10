@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.1.  Last change: 2018 Jan 21
+*mbyte.txt*     For Vim version 8.1.  Last change: 2019 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.

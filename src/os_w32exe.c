@@ -15,19 +15,13 @@
  */
 #include "vim.h"
 
-#ifdef __MINGW32__
-# ifndef _cdecl
-#  define _cdecl
-# endif
-#endif
-
 // cproto doesn't create a prototype for VimMain()
 #ifdef VIMDLL
 __declspec(dllimport)
 #endif
-int _cdecl VimMain(int argc, char **argv);
+int VimMain(int argc, char **argv);
 #ifndef VIMDLL
-void _cdecl SaveInst(HINSTANCE hInst);
+void SaveInst(HINSTANCE hInst);
 #endif
 
 #ifndef PROTO

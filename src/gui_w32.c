@@ -1303,9 +1303,6 @@ gui_mch_def_colors(void)
     int
 gui_mch_open(void)
 {
-#ifndef SW_SHOWDEFAULT
-# define SW_SHOWDEFAULT 10	/* Borland 5.0 doesn't have it */
-#endif
     /* Actually open the window, if not already visible
      * (may be done already in gui_mch_set_shellsize) */
     if (!IsWindowVisible(s_hwnd))
@@ -1455,10 +1452,16 @@ GetFontSize(GuiFont font)
     HWND    hwnd = GetDesktopWindow();
     HDC	    hdc = GetWindowDC(hwnd);
     HFONT   hfntOld = SelectFont(hdc, (HFONT)font);
+    SIZE    size;
     TEXTMETRIC tm;
 
     GetTextMetrics(hdc, &tm);
-    gui.char_width = tm.tmAveCharWidth + tm.tmOverhang;
+    // GetTextMetrics() may not return the right value in tmAveCharWidth
+    // for some fonts.  Do our own average computation.
+    GetTextExtentPoint(hdc,
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+	    52, &size);
+    gui.char_width = (size.cx / 26 + 1) / 2 + tm.tmOverhang;
 
     gui.char_height = tm.tmHeight + p_linespace;
 
@@ -3793,9 +3796,6 @@ _OnScroll(
  * Add a lot of missing defines.
  * They are not always missing, we need the #ifndef's.
  */
-# ifndef _cdecl
-#  define _cdecl
-# endif
 # ifndef IsMinimized
 #  define     IsMinimized(hwnd)		IsIconic(hwnd)
 # endif
@@ -4821,6 +4821,10 @@ ole_error(char *arg)
 {
     char buf[IOSIZE];
 
+# ifdef VIMDLL
+    gui.in_use = mch_is_gui_executable();
+# endif
+
     /* Can't use emsg() here, we have not finished initialisation yet. */
     vim_snprintf(buf, IOSIZE,
 	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
@@ -5511,7 +5515,7 @@ gui_mch_set_sp_color(guicolor_T color)
  * First static functions (no prototypes generated).
  */
 # ifdef _MSC_VER
-#  include <ime.h>   /* Apparently not needed for Cygwin, MingW or Borland. */
+#  include <ime.h>   /* Apparently not needed for Cygwin or MinGW. */
 # endif
 # include <imm.h>
 
@@ -6262,15 +6266,6 @@ gui_mch_draw_string(
     void
 gui_mch_flush(void)
 {
-#   if defined(__BORLANDC__)
-    /*
-     * The GdiFlush declaration (in Borland C 5.01 <wingdi.h>) is not a
-     * prototype declaration.
-     * The compiler complains if __stdcall is not used in both declarations.
-     */
-    BOOL  __stdcall GdiFlush(void);
-#   endif
-
 #if defined(FEAT_DIRECTX)
     if (IS_ENABLE_DIRECTX())
 	DWriteContext_Flush(s_dwc);
@@ -8495,6 +8490,15 @@ gui_mch_enable_beval_area(BalloonEval *beval)
 gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 {
     POINT   pt;
+
+    vim_free(beval->msg);
+    beval->msg = mesg == NULL ? NULL : vim_strsave(mesg);
+    if (beval->msg == NULL)
+    {
+	delete_tooltip(beval);
+	beval->showState = ShS_NEUTRAL;
+	return;
+    }
 
     // TRACE0("gui_mch_post_balloon {{{");
     if (beval->showState == ShS_SHOWING)

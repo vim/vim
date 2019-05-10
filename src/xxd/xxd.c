@@ -81,7 +81,7 @@
 #else
 # include <fcntl.h>
 #endif
-#if defined(WIN32) || defined(__BORLANDC__) || defined(CYGWIN)
+#if defined(WIN32) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
 #else
 # ifdef UNIX
@@ -94,12 +94,6 @@
 #include <limits.h>
 #if __MWERKS__ && !defined(BEBOX)
 # include <unix.h>	/* for fdopen() on MAC */
-#endif
-
-#if defined(__BORLANDC__) && __BORLANDC__ <= 0x0410 && !defined(fileno)
-/* Missing define and prototype grabbed from the BC 4.0 <stdio.h> */
-# define fileno(f)       ((f)->fd)
-FILE   _FAR *_Cdecl _FARFUNC fdopen(int __handle, char _FAR *__type);
 #endif
 
 
@@ -190,7 +184,7 @@ char osver[] = "";
 #endif
 
 #ifndef __P
-# if defined(__STDC__) || defined(WIN32) || defined(__BORLANDC__)
+# if defined(__STDC__) || defined(WIN32)
 #  define __P(a) a
 # else
 #  define __P(a) ()

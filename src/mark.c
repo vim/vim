@@ -1950,9 +1950,6 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
  * Compare functions for qsort() below, that compares b_last_used.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;

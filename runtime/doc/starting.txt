@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.1.  Last change: 2019 Feb 16
+*starting.txt*  For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,7 +84,6 @@ filename	One or more file names.  The first one will be the current
 		and the first error is displayed.  See |quickfix|.
 		If [errorfile] is not given, the 'errorfile' option is used
 		for the file name.  See 'errorfile' for the default value.
-		{not in Vi}
 
 (nothing)	Without one of the four items above, Vim will start editing a
 		new buffer.  It's empty and doesn't have a file name.
@@ -129,17 +128,17 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 --help							*-h* *--help* *-?*
 -?
--h		Give usage (help) message and exit.  {not in Vi}
+-h		Give usage (help) message and exit.
 		See |info-message| about capturing the text.
 
 							*--version*
 --version	Print version information and exit.  Same output as for
-		|:version| command.  {not in Vi}
+		|:version| command.
 		See |info-message| about capturing the text.
 
 							*--noplugin*
 --noplugin	Skip loading plugins.  Resets the 'loadplugins' option.
-		{not in Vi}
+
 		Note that the |-u| argument may also disable loading plugins:
 			argument   load: vimrc files  plugins  defaults.vim ~
 			(nothing)	     yes	yes	  yes
@@ -190,13 +189,11 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Note: You can use up to 10 "+" or "-c" arguments in a Vim
 		command.  They are executed in the order given.  A "-S"
 		argument counts as a "-c" argument as well.
-		{Vi only allows one command}
 
 --cmd {command}						*--cmd*
 		{command} will be executed before processing any vimrc file.
 		Otherwise it acts like -c {command}.  You can use up to 10 of
 		these commands, independently from "-c" commands.
-		{not in Vi}
 
 							*-S*
 -S {file}	The {file} will be sourced after the first file has been read.
@@ -205,7 +202,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 <		It can be mixed with "-c" arguments and repeated like "-c".
 		The limit of 10 "-c" arguments applies here as well.
 		{file} cannot start with a "-".
-		{not in Vi}
+
+		Do not use this for running a script to do some work and exit
+		Vim, you won't see error messages.  Use |-u| instead.
 
 -S		Works like "-S Session.vim".  Only when used as the last
 		argument or when another "-" option follows.
@@ -217,8 +216,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		|crash-recovery|.
 
 							*-L*
--L		Same as -r.  {only in some versions of Vi: "List recoverable
-		edit sessions"}
+-L		Same as -r.
 
 							*-R*
 -R		Readonly mode.  The 'readonly' option will be set for all the
@@ -238,7 +236,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -m		Modifications not allowed to be written.  The 'write' option
 		will be reset, so that writing files is disabled.  However,
 		the 'write' option can be set to enable writing again.
-		{not in Vi}
 
 							*-M*
 -M		Modifications not allowed.  The 'modifiable' option will be
@@ -246,7 +243,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		will be reset, so that writing files is disabled.  However,
 		the 'modifiable' and 'write' options can be set to enable
 		changes and writing.
-		{not in Vi}
 
 					*-Z* *restricted-mode* *E145* *E981*
 -Z		Restricted mode.  All commands that make use of an external
@@ -260,11 +256,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		the Safe module.
 		Note that the user may still find a loophole to execute a
 		shell command, it has only been made difficult.
-		{not in Vi}
 
 							*-g*
 -g		Start Vim in GUI mode.  See |gui|. For the opposite see |-v|.
-		{not in Vi}
 
 							*-v*
 -v		Start Ex in Vi mode.  Only makes a difference when the
@@ -278,7 +272,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-E*
 -E		Start Vim in improved Ex mode |gQ|.  Only makes a difference
 		when the executable is not called "exim".
-		{not in Vi}
 
 							*-s-ex*
 -s		Silent or batch mode.  Only when Vim was started as "ex" or
@@ -302,6 +295,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		"-u" argument).
 		Example: >
 			vim -e -s  < thefilter  thefile
+<		For the opposite, to see errors from the script, execute the
+		file with the |-u| flag: >
+			vim -u thefilter thefile
 <
 							*-b*
 -b		Binary mode.  File I/O will only recognize <NL> to separate
@@ -309,7 +305,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		option is set to 0.  'modeline' is reset.  The 'binary' option
 		is set.  This is done after reading the vimrc/exrc files but
 		before reading any file in the arglist.  See also
-		|edit-binary|.  {not in Vi}
+		|edit-binary|.
 
 							*-l*
 -l		Lisp mode.  Sets the 'lisp' and 'showmatch' options on.
@@ -318,7 +314,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -A		Arabic mode.  Sets the 'arabic' option on.  (Only when
 		compiled with the |+arabic| features (which include
 		|+rightleft|), otherwise Vim gives an error message
-		and exits.)  {not in Vi}
+		and exits.)
 
 							*-F*
 -F		This was used for Farsi mode, which has been removed.
@@ -327,13 +323,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
 		(Only when compiled with the |+rightleft| feature, otherwise
-		Vim gives an error message and exits.)  {not in Vi}
+		Vim gives an error message and exits.)
 
 							*-V* *verbose*
 -V[N]		Verbose.  Sets the 'verbose' option to [N] (default: 10).
 		Messages will be given for each file that is ":source"d and
 		for reading or writing a viminfo file.  Can be used to find
-		out what is happening upon startup and exit.  {not in Vi}
+		out what is happening upon startup and exit.
 		Example: >
 			vim -V8 foobar
 
@@ -348,7 +344,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -D		Debugging.  Go to debugging mode when executing the first
 		command from a script. |debug-mode|
 		{not available when compiled without the |+eval| feature}
-		{not in Vi}
 
 							*-C*
 -C		Compatible mode.  Sets the 'compatible' option.  You can use
@@ -360,13 +355,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 <		Several plugins won't work with 'compatible' set.  You may
 		want to set it after startup this way: >
 			vim "+set cp" filename
-<		Also see |compatible-default|.  {not in Vi}
+<		Also see |compatible-default|.
 
 							*-N*
 -N		Not compatible mode.  Resets the 'compatible' option.  You can
 		use this to get 'nocompatible', when there is no .vimrc file
 		or when using "-u NONE".
-		Also see |compatible-default|.  {not in Vi}
+		Also see |compatible-default|.
 
 							*-y* *easy*
 -y		Easy mode.  Implied for |evim| and |eview|.  Starts with
@@ -374,7 +369,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		This sources the script $VIMRUNTIME/evim.vim.  Mappings are
 		set up to work like most click-and-type editors, see
 		|evim-keys|.  The GUI is started when available.
-		{not in Vi}
 
 							*-n*
 -n		No swap file will be used.  Recovery after a crash will be
@@ -394,7 +388,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		'updatecount' to very big numbers, and type ":preserve" when
 		you want to save your work.  This way you keep the possibility
 		for crash recovery.
-		{not in Vi}
 
 							*-o*
 -o[N]		Open N windows, split horizontally.  If [N] is not given,
@@ -402,13 +395,11 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		there is not enough room, only the first few files get a
 		window.  If there are more windows than arguments, the last
 		few windows will be editing an empty file.
-		{not in Vi}
 
 							*-O*
 -O[N]		Open N windows, split vertically.  Otherwise it's like -o.
 		If both the -o and the -O option are given, the last one on
 		the command line determines how the windows will be split.
-		{not in Vi}
 
 							*-p*
 -p[N]		Open N tab pages.  If [N] is not given, one tab page is opened
@@ -416,20 +407,19 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		'tabpagemax' pages (default 10).  If there are more tab pages
 		than arguments, the last few tab pages will be editing an
 		empty file.  Also see |tabpage|.
-		{not in Vi}
 
 							*-T*
 -T {terminal}	Set the terminal type to "terminal".  This influences the
 		codes that Vim will send to your terminal.  This is normally
 		not needed, because Vim will be able to find out what type
-		of terminal you are using.  (See |terminal-info|.)  {not in Vi}
+		of terminal you are using.  (See |terminal-info|.)
 
 							*--not-a-term*
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen.
 		Also avoids the "Reading from stdin..." message.
-		{not in Vi}
+		Also avoids the "N files to edit" message.
 
 							*--ttyfail*
 --ttyfail	When the stdin or stdout is not a terminal (tty) then exit
@@ -437,8 +427,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-d*
 -d		Start in diff mode, like |vimdiff|.
-		{not in Vi} {not available when compiled without the |+diff|
-		feature}
+		{not available when compiled without the |+diff| feature}
 
 -d {device}	Only on the Amiga and when not compiled with the |+diff|
 		feature.  Works like "-dev".
@@ -448,7 +437,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Normally you would use this to set the window position and
 		size: "-d con:x/y/width/height", e.g.,
 		"-d con:30/10/600/150".  But you can also use it to start
-		editing on another device, e.g., AUX:.  {not in Vi}
+		editing on another device, e.g., AUX:.
 							*-f*
 -f		GUI: Do not disconnect from the program that started Vim.
 		'f' stands for "foreground".  If omitted, the GUI forks a new
@@ -467,7 +456,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		MS-Windows: This option is not supported.  However, when
 		running Vim with an installed vim.bat or gvim.bat file it
 		works.
-		{not in Vi}
 
 
 							*--nofork*
@@ -499,7 +487,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		has the side effect that the 'compatible' option will be on by
 		default.  This can have unexpected effects.  See
 		|'compatible'|.
-		{not in Vi}
 
 							*-U* *E230*
 -U {gvimrc}	The file {gvimrc} is read for initializations when the GUI
@@ -507,14 +494,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		is equal to "NONE", no file is read for GUI initializations at
 		all.  |gui-init|
 		Exception: Reading the system-wide menu file is always done.
-		{not in Vi}
 
 							*-i*
 -i {viminfo}	The file "viminfo" is used instead of the default viminfo
 		file.  If the name "NONE" is used (all uppercase), no viminfo
 		file is read or written, even if 'viminfo' is set or when
 		":rv" or ":wv" are used.  See also |viminfo-file|.
-		{not in Vi}
 
 							*--clean*
 --clean		Similar to "-u DEFAULTS -U NONE -i NONE":
@@ -551,7 +536,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		When the connection is desired later anyway (e.g., for
 		client-server messages), call the |serverlist()| function.
 		This does not enable the XSMP handler though.
-		{not in Vi}
 
 							*-s*
 -s {scriptin}	The script file "scriptin" is read.  The characters in the
@@ -560,7 +544,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		of the file is reached before the editor exits, further
 		characters are read from the keyboard.  Only works when not
 		started in Ex mode, see |-s-ex|.  See also |complex-repeat|.
-		{not in Vi}
 
 							*-w_nr*
 -w {number}
@@ -573,62 +556,59 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		":source!".  When the "scriptout" file already exists, new
 		characters are appended.  See also |complex-repeat|.
 		{scriptout} cannot start with a digit.
-		{not in Vi}
 
 							*-W*
 -W {scriptout}	Like -w, but do not append, overwrite an existing file.
-		{not in Vi}
 
 --remote [+{cmd}] {file} ...
 		Open the {file} in another Vim that functions as a server.
 		Any non-file arguments must come before this.
-		See |--remote|. {not in Vi}
+		See |--remote|.
 
 --remote-silent [+{cmd}] {file} ...
 		Like --remote, but don't complain if there is no server.
-		See |--remote-silent|. {not in Vi}
+		See |--remote-silent|.
 
 --remote-wait [+{cmd}] {file} ...
 		Like --remote, but wait for the server to finish editing the
 		file(s).
-		See |--remote-wait|. {not in Vi}
+		See |--remote-wait|.
 
 --remote-wait-silent [+{cmd}] {file} ...
 		Like --remote-wait, but don't complain if there is no server.
-		See |--remote-wait-silent|. {not in Vi}
+		See |--remote-wait-silent|.
 
 --servername {name}
 		Specify the name of the Vim server to send to or to become.
-		See |--servername|. {not in Vi}
+		See |--servername|.
 
 --remote-send {keys}
 		Send {keys} to a Vim server and exit.
-		See |--remote-send|. {not in Vi}
+		See |--remote-send|.
 
 --remote-expr {expr}
 		Evaluate {expr} in another Vim that functions as a server.
 		The result is printed on stdout.
-		See |--remote-expr|. {not in Vi}
+		See |--remote-expr|.
 
 --serverlist	Output a list of Vim server names and exit.  See
-		|--serverlist|. {not in Vi}
+		|--serverlist|.
 
 --socketid {id}						*--socketid*
 		GTK+ GUI Vim only.  Make gvim try to use GtkPlug mechanism, so
 		that it runs inside another window.  See |gui-gtk-socketid|
-		for details. {not in Vi}
+		for details.
 
 --windowid {id}						*--windowid*
 		Win32 GUI Vim only.  Make gvim try to use the window {id} as a
 		parent, so that it runs inside that window.  See
-		|gui-w32-windowid| for details. {not in Vi}
+		|gui-w32-windowid| for details.
 
 --echo-wid						*--echo-wid*
 		GTK+ GUI Vim only.  Make gvim echo the Window ID on stdout,
 		which can be used to run gvim in a kpart widget.  The format
 		of the output is: >
 			WID: 12345\n
-<		{not in Vi}
 
 --role {role}						*--role*
 		GTK+ 2 GUI only.  Set the role of the main window to {role}.
@@ -636,7 +616,6 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		identify a window, in order to restore window placement and
 		such.  The --role argument is passed automatically when
 		restoring the session on login.  See |gui-gnome-session|
-		{not in Vi}
 
 -P {parent-title}				*-P* *MDI* *E671* *E672*
 		Win32 only: Specify the title of the parent application.  When
@@ -1267,16 +1246,16 @@ vimrc file.
 							*:mk* *:mkexrc*
 :mk[exrc] [file]	Write current key mappings and changed options to
 			[file] (default ".exrc" in the current directory),
-			unless it already exists.  {not in Vi}
+			unless it already exists.
 
 :mk[exrc]! [file]	Always write current key mappings and changed
 			options to [file] (default ".exrc" in the current
-			directory).  {not in Vi}
+			directory).
 
 							*:mkv* *:mkvimrc*
 :mkv[imrc][!] [file]	Like ":mkexrc", but the default is ".vimrc" in the
 			current directory.  The ":version" command is also
-			written to the file.  {not in Vi}
+			written to the file.
 
 These commands will write ":map" and ":set" commands to a file, in such a way
 that when these commands are executed, the current key mappings and options
@@ -1342,8 +1321,7 @@ You can quickly start editing with a previously saved View or Session with the
 |-S| argument: >
 	vim -S Session.vim
 <
-All this is {not in Vi} and {not available when compiled without the
-|+mksession| feature}.
+All this is {not available when compiled without the |+mksession| feature}.
 
 							*:mks* *:mksession*
 :mks[ession][!] [file]	Write a Vim script that restores the current editing
@@ -1658,7 +1636,7 @@ most of the information will be restored).
 :rv[iminfo][!] [file]	Read from viminfo file [file] (default: see above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
-			will be overwritten   {not in Vi}
+			will be overwritten
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
@@ -1671,7 +1649,6 @@ most of the information will be restored).
 			check that no old temp files were left behind (e.g.
 			~/.viminf*) and that you can write in the directory of
 			the .viminfo file.
-			{not in Vi}
 
 						*:ol* *:oldfiles*
 :ol[dfiles]		List the files that have marks stored in the viminfo
@@ -1681,8 +1658,7 @@ most of the information will be restored).
 			The output can be filtered with |:filter|, e.g.: >
 				filter /\.vim/ oldfiles
 <			The filtering happens on the file name.
-			{not in Vi, only when compiled with the |+eval|
-			feature}
+			{only when compiled with the |+eval| feature}
 
 :bro[wse] ol[dfiles][!]
 			List file names as with |:oldfiles|, and then prompt

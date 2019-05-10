@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Apr 28
+*options.txt*	For Vim version 8.1.  Last change: 2019 May 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -795,9 +795,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a different way.
 	The 'autoindent' option is reset when the 'paste' option is set and
 	restored when 'paste' is reset.
-	{small difference from Vi: After the indent is deleted when typing
-	<Esc> or <CR>, the cursor position when moving up or down is after the
-	deleted indent; Vi puts the cursor somewhere in the deleted indent}.
 
 				 *'autoread'* *'ar'* *'noautoread'* *'noar'*
 'autoread' 'ar'		boolean	(default off)
@@ -1121,7 +1118,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+balloon_eval|
 			feature}
 	Expression for text to show in evaluation balloon.  It is only used
-	when 'ballooneval' is on.  These variables can be used:
+	when 'ballooneval' or 'balloonevalterm' is on.  These variables can be
+	used:
 
 	v:beval_bufnr	number of the buffer in which balloon is going to show
 	v:beval_winnr	number of the window
@@ -1132,7 +1130,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The evaluation of the expression must not have side effects!
 	Example: >
-    function! MyBalloonExpr()
+    function MyBalloonExpr()
 	return 'Cursor is at line ' . v:beval_lnum .
 		\', column ' . v:beval_col .
 		\ ' of file ' .  bufname(v:beval_bufnr) .
@@ -2677,7 +2675,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	uses another default.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
-	{Vi: directory to put temp file in, defaults to "/tmp"}
 
 					*'display'* *'dy'*
 'display' 'dy'		string	(default "", set to "truncate" in
@@ -4707,7 +4704,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"=" operator to use this same indentation algorithm rather than
 	calling an external program if 'equalprg' is empty.
 	This option is not used when 'paste' is set.
-	{Vi: Does it a little bit differently}
 
 						*'lispwords'* *'lw'*
 'lispwords' 'lw'	string	(default is very long)
@@ -6163,9 +6159,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set to half the number of lines in the window when the window size
 	changes.  If you give a count to the CTRL-U or CTRL-D command it will
 	be used as the new value for 'scroll'.  Reset to half the window
-	height with ":set scroll=0".   {Vi is a bit different: 'scroll' gives
-	the number of screen lines instead of file lines, makes a difference
-	when lines wrap}
+	height with ":set scroll=0".
 
 			*'scrollbind'* *'scb'* *'noscrollbind'* *'noscb'*
 'scrollbind' 'scb'	boolean  (default off)
@@ -6587,7 +6581,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  O	message for reading a file overwrites any previous message.
 		Also for quickfix message (e.g., ":cn").
 	  s	don't give "search hit BOTTOM, continuing at TOP" or "search
-		hit TOP, continuing at BOTTOM" messages
+		hit TOP, continuing at BOTTOM" messages; when using the search
+		count do not show "W" after the count message (see S below)
 	  t	truncate file message at the start if it is too long to fit
 		on the command-line, "<" will appear in the left most column.
 		Ignored in Ex mode.
@@ -7445,7 +7440,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	must be included in the tags file.
 	This option doesn't affect commands that find all matching tags (e.g.,
 	command-line completion and ":help").
-	{Vi: always uses binary search in some versions}
 
 							*'tagcase'* *'tc'*
 'tagcase' 'tc'		string	(default "followic")
@@ -7509,7 +7503,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The use of |:set+=| and |:set-=| is preferred when adding or removing
 	file names from the list.  This avoids problems when a future version
 	uses another default.
-	{Vi: default is "tags /usr/lib/tags"}
 
 				*'tagstack'* *'tgst'* *'notagstack'* *'notgst'*
 'tagstack' 'tgst'	boolean	(default on)
@@ -7787,7 +7780,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'timeoutlen'* *'tm'*
 'timeoutlen' 'tm'	number	(default 1000)
 			global
-			{not in all versions of Vi}
+
 						*'ttimeoutlen'* *'ttm'*
 'ttimeoutlen' 'ttm'	number	(default -1, set to 100 in |defaults.vim|)
 			global
@@ -7990,9 +7983,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			work.  See below for how Vim detects this
 			automatically.
 							*netterm-mouse*
-	   netterm	NetTerm mouse handling.  The mouse generates
+	   netterm	NetTerm mouse handling.  A left mouse click generates
 			"<Esc>}r,c<CR>", where "r,c" are two decimal numbers
-			for the row and column.
+			for the row and column.  No other mouse events are
+			supported.
 							*dec-mouse*
 	   dec		DEC terminal mouse handling.  The mouse generates a
 			rather complex sequence, starting with "<Esc>[".
@@ -8653,7 +8647,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in a much smarter way, taking care of wrapping lines.
 	When resizing the Vim window, the value is smaller than 1 or more than
 	or equal to 'lines' it will be set to 'lines' minus 1.
-	{Vi also uses the option to specify the number of displayed lines}
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)
@@ -8785,8 +8778,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'textwidth' is non-zero, this option is not used.
 	This option is set to 0 when 'paste' is set and restored when 'paste'
 	is reset.
-	See also 'formatoptions' and |ins-textwidth|.  {Vi: works differently
-	and less usefully}
+	See also 'formatoptions' and |ins-textwidth|.
 
 				   *'wrapscan'* *'ws'* *'nowrapscan'* *'nows'*
 'wrapscan' 'ws'		boolean	(default on)			*E384* *E385*

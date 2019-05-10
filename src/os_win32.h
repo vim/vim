@@ -53,12 +53,10 @@
 
 #define FEAT_SHORTCUT		/* resolve shortcuts */
 
-#if (!defined(__BORLANDC__) || __BORLANDC__ >= 0x550) \
-	&& (!defined(_MSC_VER) || _MSC_VER > 1020)
+#if (!defined(_MSC_VER) || _MSC_VER > 1020)
 /*
  * Access Control List (actually security info).
- * Borland has the acl stuff only in version 5.5 and later.
- * MSVC in 5.0, not in 4.2, don't know about 4.3.
+ * MSVC has acl stuff only in 5.0, not in 4.2, don't know about 4.3.
  */
 # define HAVE_ACL
 #endif
@@ -142,8 +140,8 @@
 # define IO_REPARSE_TAG_SYMLINK		0xA000000C
 #endif
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
-    /* Support for __try / __except.  All versions of MSVC and Borland C are
+#if defined(_MSC_VER)
+    /* Support for __try / __except.  All versions of MSVC are
      * expected to have this.  Any other compilers that support it? */
 # define HAVE_TRY_EXCEPT 1
 # include <malloc.h>		/* for _resetstkoflw() */
@@ -206,11 +204,7 @@ Trace(char *pszFormat, ...);
 # define HAVE_SETENV
 #endif
 #define mch_getenv(x) (char_u *)getenv((char *)(x))
-#ifdef __BORLANDC__
-# define vim_mkdir(x, y) mkdir(x)
-#else
-# define vim_mkdir(x, y) mch_mkdir(x)
-#endif
+#define vim_mkdir(x, y) mch_mkdir(x)
 
 /* Enable common dialogs input unicode from IME if possible. */
 #define pDispatchMessage DispatchMessageW

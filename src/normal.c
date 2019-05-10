@@ -27,11 +27,7 @@ static int	restart_VIsual_select = 0;
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
-static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
-		nv_compare(const void *s1, const void *s2);
+static int	nv_compare(const void *s1, const void *s2);
 static void	op_colon(oparg_T *oap);
 static void	op_function(oparg_T *oap);
 #if defined(FEAT_MOUSE)
@@ -422,9 +418,6 @@ static int nv_max_linear;
  * through the index in nv_cmd_idx[].
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 nv_compare(const void *s1, const void *s2)
 {
     int		c1, c2;
@@ -2326,10 +2319,10 @@ do_mouse(
 
     if (c == K_MOUSEMOVE)
     {
-	/* Mouse moved without a button pressed. */
+	// Mouse moved without a button pressed.
 #ifdef FEAT_BEVAL_TERM
 	ui_may_remove_balloon();
-	if (p_bevalterm && !VIsual_active)
+	if (p_bevalterm)
 	{
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;

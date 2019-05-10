@@ -25,21 +25,20 @@ Contents:
 2. Using MSYS2 with MinGW
 3. Using MinGW
 4. Cygwin
-5. Borland
-6. Cross compiling for Win32 from a Linux machine
-7. Building with Python support
-8. Building with Python3 support
-9. Building with Racket or MzScheme support
-10. Building with Lua support
-11. Building with Perl support
-12. Building with Ruby support
-13. Building with Tcl support
-14. Building with Terminal support
-15. Building with DirectX (DirectWrite) support
-16. Windows 3.1
-17. MS-DOS
+5. Cross compiling for Win32 from a Linux machine
+6. Building with Python support
+7. Building with Python3 support
+8. Building with Racket or MzScheme support
+9. Building with Lua support
+10. Building with Perl support
+11. Building with Ruby support
+12. Building with Tcl support
+13. Building with Terminal support
+14. Building with DirectX (DirectWrite) support
+15. Windows 3.1
+16. MS-DOS
 
-18. Installing after building from sources
+17. Installing after building from sources
 
 
 The currently recommended way (that means it has been verified to work) is
@@ -81,20 +80,10 @@ nmake -f Make_mvc.mak PERL=C:\Perl PYTHON=C:\Python etc.
 				Perl, Python, etc.
 
 Make_mvc.mak allows a Vim to be built with various different features and
-debug support.  Debugging with MS Devstudio is provided by Make_dvc.mak.
-For a description of the use of Make_dvc.mak, look in Make_mvc.mak.
+debug support.
 
 For compiling Gvim with IME support on far-east Windows, add IME=yes
 to the parameters you pass to Make_mvc.mak.
-
-To build Vim from within the Visual Studio IDE, open the Make_ivc.mak project.
-(Note: Make_ivc.mak is not as rich as Make_mvc.mak, which allows for
-far more configuration.) Make_ivc.mak can also be built with nmake.
-
-nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim"
-				GUI	  Microsoft Visual C++ 4.x or later
-nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim OLE"
-				OLE	  Microsoft Visual C++ 4.x or later
 
 See the specific files for comments and options.
 
@@ -461,14 +450,7 @@ running on Unix), while with Make_cyg.mak you get a Windows application (like
 with the other makefiles).
 
 
-5. Borland
-===========
-
-Use Make_bc5.mak with Borland C++ 5.x. See
-    http://users.skynet.be/antoine.mechelynck/vim/compile.htm
-
-
-6. Cross compiling for Win32 from a Linux machine
+5. Cross compiling for Win32 from a Linux machine
 =================================================
 
 [Update of 1) needs to be verified]
@@ -488,7 +470,7 @@ your Linux (or other unix) box.  To do this, you need to follow a few steps:
 Now you have created the Windows binary from your Linux box!  Have fun...
 
 
-7. Building with Python support
+6. Building with Python support
 ===============================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
@@ -549,7 +531,7 @@ Now just do:
 You will end up with a Python-enabled, Win32 version. Enjoy!
 
 
-8. Building with Python3 support
+7. Building with Python3 support
 ================================
 
 For building with MSVC 2008 the "Windows Installer" from www.python.org
@@ -586,7 +568,7 @@ When using msys2 and link with Python3 bundled with msys2 (as one line):
 libstdc++-6.dll.)
 
 
-9. Building with Racket or MzScheme support
+8. Building with Racket or MzScheme support
 ========================================
 
 1) Building with Racket support (newest)
@@ -676,7 +658,7 @@ After a successful build, these dlls can be freely removed, leaving them in
 
 
 
-10. Building with Lua support
+9. Building with Lua support
 ============================
 
 Vim with Lua support can be built with either MSVC or MinGW (or maybe Cygwin).
@@ -731,7 +713,7 @@ Or when using Cygwin (as one line) (untested):
         LUA=/cygdrive/c/projects/lua53 DYNAMIC_LUA=yes LUA_VER=53
 
 
-11. Building with Perl support
+10. Building with Perl support
 ==============================
 
 Vim with Perl support can be built with either MSVC or MinGW (or Cygwin).
@@ -757,7 +739,7 @@ Or when using MinGW (as one line):
         PERL=C:/Perl DYNAMIC_PERL=yes PERL_VER=522
 
 
-12. Building with Ruby support
+11. Building with Ruby support
 ==============================
 
 Vim with Ruby support can be built with either MSVC or MinGW (or Cygwin).
@@ -865,7 +847,7 @@ Ruby 2.1 or later.  (Default is 0x600.)
 
 
 
-13. Building with Tcl support
+12. Building with Tcl support
 =============================
 
 Vim with Tcl support can be built with either MSVC or MinGW (or Cygwin).
@@ -904,7 +886,7 @@ Or when using MinGW (as one line):
         TCL=C:/Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
-14. Building with Terminal support
+13. Building with Terminal support
 ==================================
 
 Vim with Terminal support can be built with either MSVC, MinGW or Cygwin.
@@ -920,7 +902,7 @@ Or when using MinGW:
     mingw32-make -f Make_ming.mak TERMINAL=yes
 
 
-15. Building with DirectX (DirectWrite) support
+14. Building with DirectX (DirectWrite) support
 ===============================================
 
 Vim with DirectX (DirectWrite) support can be built with either MSVC or MinGW.
@@ -954,20 +936,20 @@ Just set DIRECTX to yes:
     mingw32-make -f Make_ming.mak DIRECTX=yes
 
 
-16. Windows 3.1x
+15. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-17. MS-DOS
+16. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.  Only very old Vim versions
 work on MS-DOS because of the limited amount of memory available.
 
 
-18. Installing after building from sources
+17. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka, updated by Ken Takata]

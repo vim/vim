@@ -47,11 +47,7 @@ char *searchpath(char *name);
 #if defined(UNIX_LINT)
 # define vim_mkdir(x, y) mkdir((char *)(x), y)
 #else
-# ifndef __BORLANDC__
-#  define vim_mkdir(x, y) _mkdir((char *)(x))
-# else
-#  define vim_mkdir(x, y) mkdir((char *)(x))
-# endif
+# define vim_mkdir(x, y) _mkdir((char *)(x))
 #endif
 
 #define sleep(n) Sleep((n) * 1000)
@@ -150,10 +146,6 @@ is_64bit_os(void)
 #endif
 }
 
-#ifdef __BORLANDC__
-/* Borland defines its own searchpath() in dir.h */
-# include <dir.h>
-#else
     static char *
 searchpath(char *name)
 {
@@ -173,7 +165,6 @@ searchpath(char *name)
     }
     return NULL;
 }
-#endif
 
 /*
  * Call searchpath() and save the result in allocated memory, or return NULL.
@@ -463,12 +454,6 @@ mch_chdir(char *path)
 /*
  * Expand the executable name into a full path name.
  */
-#if defined(__BORLANDC__)
-
-/* Only Borland C++ has this. */
-# define my_fullpath(b, n, l) _fullpath(b, n, l)
-
-#else
     static char *
 my_fullpath(char *buf, char *fname, int len)
 {
@@ -478,7 +463,6 @@ my_fullpath(char *buf, char *fname, int len)
 
     return (len_read > 0 && len_read < (DWORD)len) ? buf : NULL;
 }
-#endif
 
 /*
  * Remove the tail from a file or directory name.

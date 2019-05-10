@@ -26,7 +26,7 @@ static void show_pat_in_path(char_u *, int,
 #ifdef FEAT_VIMINFO
 static void wvsp_one(FILE *fp, int idx, char *s, int sc);
 #endif
-static void search_stat(int dirc, pos_T *pos, char_u  *msgbuf);
+static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u  *msgbuf);
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1219,6 +1219,7 @@ do_search(
     char_u	    *ps;
     char_u	    *msgbuf = NULL;
     size_t	    len;
+#define SEARCH_STAT_BUF_LEN 12
 
     /*
      * A line offset is not remembered, this is vi compatible.
@@ -1294,6 +1295,8 @@ do_search(
      */
     for (;;)
     {
+	int	show_top_bot_msg = FALSE;
+
 	searchstr = pat;
 	dircp = NULL;
 					    /* use previous pattern */
@@ -1397,8 +1400,8 @@ do_search(
 		else
 		    // Use up to 'showcmd' column.
 		    len = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
-		if (len < STRLEN(p) + 40 + 11)
-		    len = STRLEN(p) + 40 + 11;
+		if (len < STRLEN(p) + 40 + SEARCH_STAT_BUF_LEN + 1)
+		    len = STRLEN(p) + 40 + SEARCH_STAT_BUF_LEN + 1;
 	    }
 	    else
 		// Reserve enough space for the search pattern + offset.
@@ -1415,10 +1418,10 @@ do_search(
 		{
 		    // Use a space to draw the composing char on.
 		    msgbuf[1] = ' ';
-		    STRNCPY(msgbuf + 2, p, STRLEN(p));
+		    mch_memmove(msgbuf + 2, p, STRLEN(p));
 		}
 		else
-		    STRNCPY(msgbuf + 1, p, STRLEN(p));
+		    mch_memmove(msgbuf + 1, p, STRLEN(p));
 		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
 		{
 		    p = msgbuf + STRLEN(p) + 1;
@@ -1524,7 +1527,7 @@ do_search(
 	if (!shortmess(SHM_SEARCH)
 		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
 			    || (dirc == '?' && LT_POS(curwin->w_cursor, pos))))
-	    ui_delay(500L, FALSE);  // leave some time for top_bot_msg
+	    show_top_bot_msg = TRUE;
 
 	if (c == FAIL)
 	{
@@ -1581,7 +1584,7 @@ do_search(
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
-	    search_stat(dirc, &pos, msgbuf);
+	    search_stat(dirc, &pos, show_top_bot_msg, msgbuf);
 
 	/*
 	 * The search command can be followed by a ';' to do another search.
@@ -4911,6 +4914,7 @@ linewhite(linenr_T lnum)
 search_stat(
     int	    dirc,
     pos_T   *pos,
+    int	    show_top_bot_msg,
     char_u  *msgbuf)
 {
     int		    save_ws = p_ws;
@@ -4955,8 +4959,8 @@ search_stat(
 	profile_setlimit(20L, &start);
 #endif
 	while (!got_int && searchit(curwin, curbuf, &lastpos, NULL,
-				   FORWARD, NULL, 1, SEARCH_PEEK + SEARCH_KEEP,
-				     RE_LAST, (linenr_T)0, NULL, NULL) != FAIL)
+					FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST,
+					      (linenr_T)0, NULL, NULL) != FAIL)
 	{
 #ifdef FEAT_RELTIME
 	    // Stop after passing the time limit.
@@ -4979,34 +4983,42 @@ search_stat(
     }
     if (cur > 0)
     {
-#define STAT_BUF_LEN 10
-	char	t[STAT_BUF_LEN] = "";
+	char	t[SEARCH_STAT_BUF_LEN] = "";
+	int	len;
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 	{
 	    if (cur == OUT_OF_TIME)
-		vim_snprintf(t, STAT_BUF_LEN, "[?/??]");
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
 	    else if (cnt > 99 && cur > 99)
-		vim_snprintf(t, STAT_BUF_LEN, "[>99/>99]");
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>99/>99]");
 	    else if (cnt > 99)
-		vim_snprintf(t, STAT_BUF_LEN, "[>99/%d]", cur);
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>99/%d]", cur);
 	    else
-		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cnt, cur);
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", cnt, cur);
 	}
 	else
 #endif
 	{
 	    if (cur == OUT_OF_TIME)
-		vim_snprintf(t, STAT_BUF_LEN, "[?/??]");
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
 	    else if (cnt > 99 && cur > 99)
-		vim_snprintf(t, STAT_BUF_LEN, "[>99/>99]");
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>99/>99]");
 	    else if (cnt > 99)
-		vim_snprintf(t, STAT_BUF_LEN, "[%d/>99]", cur);
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/>99]", cur);
 	    else
-		vim_snprintf(t, STAT_BUF_LEN, "[%d/%d]", cur, cnt);
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", cur, cnt);
 	}
-	STRNCPY(msgbuf + STRLEN(msgbuf) - STRLEN(t), t, STRLEN(t));
+
+	len = STRLEN(t);
+	if (show_top_bot_msg && len + 3 < SEARCH_STAT_BUF_LEN)
+	{
+	    STRCPY(t + len, " W");
+	    len += 2;
+	}
+
+	mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
 	if (dirc == '?' && cur == 100)
 	    cur = -1;
 

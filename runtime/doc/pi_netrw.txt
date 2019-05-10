@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.1.  Last change: 2017 Nov 03
+*pi_netrw.txt*  For Vim version 8.1.  Last change: 2019 May 05
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -113,8 +113,6 @@ Copyright: Copyright (C) 2017 Charles E Campbell    *netrw-copyright*
 12. History...............................................|netrw-history|
 13. Todo..................................................|netrw-todo|
 14. Credits...............................................|netrw-credits|
-
-{Vi does not have any of this}
 
 ==============================================================================
 2. Starting With Netrw					*netrw-start* {{{1

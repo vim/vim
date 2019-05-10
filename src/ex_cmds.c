@@ -29,11 +29,7 @@ static int read_viminfo_up_to_marks(vir_T *virp, int forceit, int writing);
 
 static int check_readonly(int *forceit, buf_T *buf);
 static void delbuf_msg(char_u *name);
-static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
-	help_compare(const void *s1, const void *s2);
+static int help_compare(const void *s1, const void *s2);
 static void prepare_help_buffer(void);
 
 /*
@@ -314,16 +310,9 @@ typedef struct
     } st_u;
 } sorti_T;
 
-static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-sort_compare(const void *s1, const void *s2);
+static int sort_compare(const void *s1, const void *s2);
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_compare(const void *s1, const void *s2)
 {
     sorti_T	l1 = *(sorti_T *)s1;
@@ -6580,9 +6569,6 @@ help_heuristic(
  * that has been put after the tagname by find_tags().
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 help_compare(const void *s1, const void *s2)
 {
     char    *p1;

@@ -44,7 +44,6 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test17.out \
 	test30.out \
 	test59.out \
 	test72.out \
@@ -69,6 +68,7 @@ NEW_TESTS = \
 	test_autoload \
 	test_backspace_opt \
 	test_backup \
+	test_balloon \
 	test_behave \
 	test_blob \
 	test_blockedit \
@@ -82,6 +82,7 @@ NEW_TESTS = \
 	test_channel \
 	test_charsearch \
 	test_charsearch_utf8 \
+	test_checkpath \
 	test_cindent \
 	test_clientserver \
 	test_close_count \
@@ -103,6 +104,7 @@ NEW_TESTS = \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
+	test_environ \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
@@ -294,6 +296,7 @@ NEW_TESTS_RES = \
 	test_autocmd.res \
 	test_autoload.res \
 	test_backspace_opt.res \
+	test_balloon.res \
 	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
@@ -302,6 +305,7 @@ NEW_TESTS_RES = \
 	test_changelist.res \
 	test_channel.res \
 	test_charsearch.res \
+	test_checkpath.res \
 	test_cindent.res \
 	test_clientserver.res \
 	test_close_count.res \
@@ -317,6 +321,7 @@ NEW_TESTS_RES = \
 	test_digraph.res \
 	test_display.res \
 	test_edit.res \
+	test_environ.res \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \

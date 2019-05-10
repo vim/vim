@@ -1659,6 +1659,25 @@ may_restore_clipboard(void)
 	get_x11_title(FALSE);
     }
 }
+
+    void
+ex_xrestore(exarg_T *eap)
+{
+    if (eap->arg != NULL && STRLEN(eap->arg) > 0)
+    {
+        if (xterm_display_allocated)
+            vim_free(xterm_display);
+        xterm_display = (char *)vim_strsave(eap->arg);
+        xterm_display_allocated = TRUE;
+    }
+    smsg(_("restoring display %s"), xterm_display == NULL
+			      ? (char *)mch_getenv("DISPLAY") : xterm_display);
+
+    clear_xterm_clip();
+    x11_window = 0;
+    xterm_dpy_retry_count = 5;  // Try reconnecting five times
+    may_restore_clipboard();
+}
 #endif
 
 /*
@@ -1761,6 +1780,10 @@ get_x11_windis(void)
 	x11_window = (Window)atol(winid);
 
 #ifdef FEAT_XCLIPBOARD
+    if (xterm_dpy == x11_display)
+	// x11_display may have been set to xterm_dpy elsewhere
+	x11_display_from = XD_XTERM;
+
     if (xterm_dpy != NULL && x11_window != 0)
     {
 	/* We may have checked it already, but Gnome terminal can move us to
@@ -7661,7 +7684,7 @@ do_xterm_trace(void)
     return TRUE;
 }
 
-# if defined(FEAT_GUI) || defined(PROTO)
+# if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD) || defined(PROTO)
 /*
  * Destroy the display, window and app_context.  Required for GTK.
  */

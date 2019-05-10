@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 8.1.  Last change: 2015 Oct 16
+*if_lua.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -17,17 +17,14 @@ The Lua Interface to Vim				*lua* *Lua*
 9. luaeval() Vim function	|lua-luaeval|
 10. Dynamic loading		|lua-dynamic|
 
-{Vi does not have any of these commands}
-
-The Lua interface is available only when Vim was compiled with the
-|+lua| feature.
+{only available when Vim was compiled with the |+lua| feature}
 
 ==============================================================================
 1. Commands						*lua-commands*
 
 							*:lua*
 :[range]lua {chunk}
-			Execute Lua chunk {chunk}.    {not in Vi}
+			Execute Lua chunk {chunk}.
 
 Examples:
 >
@@ -38,7 +35,7 @@ Examples:
 :[range]lua << {endmarker}
 {script}
 {endmarker}
-			Execute Lua script {script}.  {not in Vi}
+			Execute Lua script {script}.
 			Note: This command doesn't work when the Lua
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
@@ -75,7 +72,6 @@ If you use LuaJIT you can also use this: >
 			If the value returned by the function is a string it
 			becomes the text of the line in the current turn. The
 			default for [range] is the whole file: "1,$".
-							{not in Vi}
 
 Examples:
 >
@@ -89,7 +85,7 @@ Examples:
 
 							*:luafile*
 :[range]luafile {file}
-			Execute Lua script in {file}. {not in Vi}
+			Execute Lua script in {file}.
 			The whole argument is used as a single file name.
 
 Examples:

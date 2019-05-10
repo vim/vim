@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Apr 19
+" Last Change:	2019 May 06
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -713,8 +713,8 @@ au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
 " HTML with M4
 au BufNewFile,BufRead *.html.m4			setf htmlm4
 
-" HTML Cheetah template
-au BufNewFile,BufRead *.tmpl			setf htmlcheetah
+" Some template.  Used to be HTML Cheetah.
+au BufNewFile,BufRead *.tmpl			setf template
 
 " Host config
 au BufNewFile,BufRead */etc/host.conf		setf hostconf

@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.1.  Last change: 2010 Jul 20
+*print.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,6 @@ Printing						*printing*
 7. PostScript Utilities			|postscript-print-util|
 8. Formfeed Characters			|printing-formfeed|
 
-{Vi has None of this}
 {only available when compiled with the |+printer| feature}
 
 ==============================================================================

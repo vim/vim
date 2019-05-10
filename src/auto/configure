@@ -12650,10 +12650,21 @@ $as_echo "$vim_cv_getcwd_broken" >&6; }
 if test "x$vim_cv_getcwd_broken" = "xyes" ; then
   $as_echo "#define BAD_GETCWD 1" >>confdefs.h
 
+  for ac_func in getwd
+do :
+  ac_fn_c_check_func "$LINENO" "getwd" "ac_cv_func_getwd"
+if test "x$ac_cv_func_getwd" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_GETWD 1
+_ACEOF
+
+fi
+done
+
 fi
 
 for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
-	getpwent getpwnam getpwuid getrlimit gettimeofday getwd lstat \
+	getpwent getpwnam getpwuid getrlimit gettimeofday localtime_r lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \

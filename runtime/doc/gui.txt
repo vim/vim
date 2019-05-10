@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.1.  Last change: 2019 Apr 28
+*gui.txt*       For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Other GUI documentation:
 |gui_x11.txt|	For specific items of the X11 GUI.
 |gui_w32.txt|	For specific items of the Win32 GUI.
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Starting the GUI				*gui-start* *E229* *E233*

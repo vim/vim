@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 8.1.  Last change: 2016 Jan 01
+*if_tcl.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -16,9 +16,8 @@ The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
 8. Examples				|tcl-examples|
 9. Dynamic loading			|tcl-dynamic|
 
-{Vi does not have any of these commands} *E280*
-
-The Tcl interface only works when Vim was compiled with the |+tcl| feature.
+*E280*
+{only available when Vim was compiled with the |+tcl| feature}
 
 WARNING: There are probably still some bugs.  Please send bug reports,
 comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
@@ -66,12 +65,11 @@ To see what version of Tcl you have: >
 			possible to add or delete lines using this command.
 			If {cmd} returns an error, the command is interrupted.
 			The default for [range] is the whole file: "1,$".
-			See |tcl-var-line| and |tcl-var-lnum|.  {not in Vi}
+			See |tcl-var-line| and |tcl-var-lnum|.
 
 							*:tclfile* *:tclf*
 :tclf[ile] {file}	Execute the Tcl script in {file}.  This is the same as
 			":tcl source {file}", but allows file name completion.
-			{not in Vi}
 
 
 Note that Tcl objects (like variables) persist from one command to the next,

@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.1.  Last change: 2019 Jan 17
+*sign.txt*      For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -10,7 +10,6 @@ Sign Support Features				*sign-support*
 1. Introduction				|sign-intro|
 2. Commands				|sign-commands|
 
-{Vi does not have any of these features}
 {only available when compiled with the |+signs| feature}
 
 ==============================================================================

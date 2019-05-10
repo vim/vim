@@ -13,6 +13,7 @@ void ml_recover(void);
 int recover_names(char_u *fname, int list, int nr, char_u **fname_out);
 char_u *make_percent_swname(char_u *dir, char_u *name);
 void get_b0_dict(char_u *fname, dict_T *d);
+char *get_ctime(time_t thetime, int add_newline);
 void ml_sync_all(int check_file, int check_char);
 void ml_preserve(buf_T *buf, int message);
 char_u *ml_get(linenr_T lnum);

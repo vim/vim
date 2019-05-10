@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.1.  Last change: 2019 Apr 28
+*gui_w32.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
 |os_win32.txt| 	For Win32 specific items.
 
-{Vi does not have a Windows GUI}
 
 ==============================================================================
 1. Starting the GUI					*gui-w32-start*
@@ -414,7 +413,7 @@ be opened as normal.  See |drag-n-drop|.
 
 							*:simalt* *:sim*
 :sim[alt] {key}		simulate pressing {key} while holding Alt pressed.
-			{not in Vi} {only for Win32 versions}
+			{only for Win32 versions}
 			Note: ":si" means ":s" with the "i" flag.
 
 Normally, Vim takes control of all Alt-<Key> combinations, to increase the
