@@ -242,7 +242,7 @@ OBJDIR = $(OBJDIR)$(CPU)
 !if "$(DEBUG)" != "yes"
 NODEBUG = 1
 !else
-!undef NODEBUG
+! undef NODEBUG
 MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
@@ -251,9 +251,9 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 # if SDK_INCLUDE_DIR is set or USE_WIN32MAK is set to "yes".
 
 !ifdef SDK_INCLUDE_DIR
-!include $(SDK_INCLUDE_DIR)\Win32.mak
+! include $(SDK_INCLUDE_DIR)\Win32.mak
 !elseif "$(USE_WIN32MAK)"=="yes"
-!include <Win32.mak>
+! include <Win32.mak>
 !else
 link = link
 !endif
@@ -261,14 +261,14 @@ link = link
 
 # Check VC version.
 !if [echo MSVCVER=_MSC_VER> msvcver.c && $(CC) /EP msvcver.c > msvcver.~ 2> nul]
-!message *** ERROR
-!message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
-!message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
-!error Make aborted.
+! message *** ERROR
+! message Cannot run Visual C to determine its version. Make sure cl.exe is in your PATH.
+! message This can usually be done by running "vcvarsall.bat", located in the bin directory where Visual Studio was installed.
+! error Make aborted.
 !else
-!include msvcver.~
-!if [del msvcver.c msvcver.~]
-!endif
+! include msvcver.~
+! if [del msvcver.c msvcver.~]
+! endif
 !endif
 
 !if $(MSVCVER) < 1900
@@ -302,9 +302,9 @@ MSVCRT_VER = ($(MSVCVER) / 10 - 50)
 
 # Calculate MSVCRT_VER
 !if [(set /a MSVCRT_VER="$(MSVCRT_VER)" > nul) && set MSVCRT_VER > msvcrtver.~] == 0
-!include msvcrtver.~
-!if [del msvcrtver.~]
-!endif
+! include msvcrtver.~
+! if [del msvcrtver.~]
+! endif
 !endif
 
 # Base name of the msvcrXX.dll
@@ -353,11 +353,11 @@ CSCOPE_DEFS  = -DFEAT_CSCOPE
 !endif
 
 !ifndef TERMINAL
-!if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)"=="HUGE"
 TERMINAL = yes
-!else
+! else
 TERMINAL = no
-!endif
+! endif
 !endif
 
 !if "$(TERMINAL)" == "yes"
@@ -386,73 +386,73 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
-!if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)"=="HUGE"
 CHANNEL = yes
-!else
+! else
 CHANNEL = $(GUI)
-!endif
+! endif
 !endif
 
 # GUI specific features.
 !if "$(GUI)" == "yes"
 # Only allow NETBEANS for a GUI build and CHANNEL.
-!if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
+! if "$(NETBEANS)" == "yes" && "$(CHANNEL)" == "yes"
 # NETBEANS - Include support for Netbeans integration
 NETBEANS_PRO	= proto/netbeans.pro
 NETBEANS_OBJ	= $(OBJDIR)/netbeans.obj
 NETBEANS_DEFS	= -DFEAT_NETBEANS_INTG
 
-!if "$(NBDEBUG)" == "yes"
+!  if "$(NBDEBUG)" == "yes"
 NBDEBUG_DEFS	= -DNBDEBUG
 NBDEBUG_INCL	= nbdebug.h
 NBDEBUG_SRC	= nbdebug.c
-!endif
+!  endif
 NETBEANS_LIB	= WSock32.lib
-!endif
+! endif
 
 # DirectWrite (DirectX)
-!if "$(DIRECTX)" == "yes"
+! if "$(DIRECTX)" == "yes"
 DIRECTX_DEFS	= -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
-!if "$(COLOR_EMOJI)" != "no"
+!  if "$(COLOR_EMOJI)" != "no"
 DIRECTX_DEFS	= $(DIRECTX_DEFS) -DFEAT_DIRECTX_COLOR_EMOJI
-!endif
+!  endif
 DIRECTX_INCL	= gui_dwrite.h
 DIRECTX_OBJ	= $(OUTDIR)\gui_dwrite.obj
-!endif
+! endif
 
 # Only allow XPM for a GUI build.
-!ifndef XPM
-!ifndef USE_MSVCRT
+! ifndef XPM
+!  ifndef USE_MSVCRT
 # Both XPM and USE_MSVCRT are not set, use the included xpm files, depending
 # on the architecture.
-!if "$(CPU)" == "AMD64"
+!   if "$(CPU)" == "AMD64"
 XPM = xpm\x64
-!elseif "$(CPU)" == "ARM64"
+!   elseif "$(CPU)" == "ARM64"
 XPM = xpm\arm64
-!elseif "$(CPU)" == "i386"
+!   elseif "$(CPU)" == "i386"
 XPM = xpm\x86
-!else
+!   else
 XPM = no
-!endif
-!else # USE_MSVCRT
+!   endif
+!  else # USE_MSVCRT
 XPM = no
-!endif # USE_MSVCRT
-!endif # XPM
-!if "$(XPM)" != "no"
+!  endif # USE_MSVCRT
+! endif # XPM
+! if "$(XPM)" != "no"
 # XPM - Include support for XPM signs
 # See the xpm directory for more information.
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
-!if $(MSVC_MAJOR) >= 14
+!  if $(MSVC_MAJOR) >= 14
 # VC14 cannot use a library built by VC12 or earlier, because VC14 uses
 # Universal CRT.
 XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
-!else
+!  else
 XPM_LIB   = $(XPM)\lib\libXpm.lib
-!endif
+!  endif
 XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
-!endif
-!endif
+! endif
+!endif # GUI
 
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/channel.pro
@@ -618,10 +618,8 @@ NODEFAULTLIB = /nodefaultlib
 !endif
 
 # Use multiprocess build on MSVC 10
-!if "$(USE_MP)"=="yes"
-!if $(MSVC_MAJOR) >= 10
+!if ("$(USE_MP)" == "yes") && ($(MSVC_MAJOR) >= 10)
 CFLAGS = $(CFLAGS) /MP
-!endif
 !endif
 
 # VC10 or later has stdint.h.
@@ -632,30 +630,30 @@ CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
 # Static code analysis generally available starting with VS2012 (VC11) or
 # Windows SDK 7.1 (VC10)
 !if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
-CFLAGS=$(CFLAGS) /analyze
+CFLAGS = $(CFLAGS) /analyze
 !endif
 
 !ifdef NODEBUG
 VIM = vim
-!if "$(OPTIMIZE)" == "SPACE"
+! if "$(OPTIMIZE)" == "SPACE"
 OPTFLAG = /O1
-!elseif "$(OPTIMIZE)" == "SPEED"
+! elseif "$(OPTIMIZE)" == "SPEED"
 OPTFLAG = /O2
-!else # MAXSPEED
+! else # MAXSPEED
 OPTFLAG = /Ox
-!endif
+! endif
 
-!if $(MSVC_MAJOR) >= 8
+! if $(MSVC_MAJOR) >= 8
 # Use link time code generation if not worried about size
-!if "$(OPTIMIZE)" != "SPACE"
+!  if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
-!endif
-!endif
+!  endif
+! endif
 
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
-!if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
-CFLAGS=$(CFLAGS) $(WP64CHECK)
-!endif
+! if ($(MSVC_MAJOR) == 7) || ($(MSVC_MAJOR) == 8)
+CFLAGS = $(CFLAGS) $(WP64CHECK)
+! endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
@@ -782,14 +780,14 @@ OLE_LIB = oleaut32.lib
 
 !if "$(IME)" == "yes"
 CFLAGS = $(CFLAGS) -DFEAT_MBYTE_IME
-!ifndef DYNAMIC_IME
+! ifndef DYNAMIC_IME
 DYNAMIC_IME = yes
-!endif
-!if "$(DYNAMIC_IME)" == "yes"
+! endif
+! if "$(DYNAMIC_IME)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_IME
-!else
+! else
 IME_LIB = imm32.lib
-!endif
+! endif
 !endif
 
 !if "$(GIME)" == "yes"
@@ -880,153 +878,153 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_GETTEXT
 
 # TCL interface
 !ifdef TCL
-!ifndef TCL_VER
+! ifndef TCL_VER
 TCL_VER = 86
 TCL_VER_LONG = 8.6
-!endif
-!message Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
-!if "$(DYNAMIC_TCL)" == "yes"
-!message Tcl DLL will be loaded dynamically
-!ifndef TCL_DLL
+! endif
+! message Tcl requested (version $(TCL_VER)) - root dir is "$(TCL)"
+! if "$(DYNAMIC_TCL)" == "yes"
+!  message Tcl DLL will be loaded dynamically
+!  ifndef TCL_DLL
 TCL_DLL = tcl$(TCL_VER).dll
-!endif
+!  endif
 CFLAGS  = $(CFLAGS) -DFEAT_TCL -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" \
 		-DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
 TCL_LIB = "$(TCL)\lib\tclstub$(TCL_VER).lib"
-!else
+! else
 CFLAGS  = $(CFLAGS) -DFEAT_TCL
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
 TCL_LIB = $(TCL)\lib\tcl$(TCL_VER)vc.lib
-!endif
+! endif
 !endif
 
 # Lua interface
 !ifdef LUA
-!ifndef LUA_VER
+! ifndef LUA_VER
 LUA_VER = 53
-!endif
-!message Lua requested (version $(LUA_VER)) - root dir is "$(LUA)"
-!if "$(DYNAMIC_LUA)" == "yes"
-!message Lua DLL will be loaded dynamically
-!endif
+! endif
+! message Lua requested (version $(LUA_VER)) - root dir is "$(LUA)"
+! if "$(DYNAMIC_LUA)" == "yes"
+!  message Lua DLL will be loaded dynamically
+!  endif
 CFLAGS = $(CFLAGS) -DFEAT_LUA
 LUA_OBJ = $(OUTDIR)\if_lua.obj
 LUA_INC = /I "$(LUA)\include" /I "$(LUA)"
-!if "$(DYNAMIC_LUA)" == "yes"
+! if "$(DYNAMIC_LUA)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_LUA \
 		-DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
 LUA_LIB = /nodefaultlib:lua$(LUA_VER).lib
-!else
+! else
 LUA_LIB = "$(LUA)\lib\lua$(LUA_VER).lib"
-!endif
+! endif
 !endif
 
 !ifdef PYTHON
-!ifdef PYTHON3
+! ifdef PYTHON3
 DYNAMIC_PYTHON=yes
 DYNAMIC_PYTHON3=yes
-!endif
+! endif
 !endif
 
 # PYTHON interface
 !ifdef PYTHON
-!ifndef PYTHON_VER
+! ifndef PYTHON_VER
 PYTHON_VER = 27
-!endif
-!message Python requested (version $(PYTHON_VER)) - root dir is "$(PYTHON)"
-!if "$(DYNAMIC_PYTHON)" == "yes"
-!message Python DLL will be loaded dynamically
-!endif
+! endif
+! message Python requested (version $(PYTHON_VER)) - root dir is "$(PYTHON)"
+! if "$(DYNAMIC_PYTHON)" == "yes"
+!  message Python DLL will be loaded dynamically
+! endif
 CFLAGS = $(CFLAGS) -DFEAT_PYTHON
 PYTHON_OBJ = $(OUTDIR)\if_python.obj
 PYTHON_INC = /I "$(PYTHON)\Include" /I "$(PYTHON)\PC"
-!if "$(DYNAMIC_PYTHON)" == "yes"
+! if "$(DYNAMIC_PYTHON)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
 		-DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
-!else
+! else
 PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
-!endif
+! endif
 !endif
 
 # PYTHON3 interface
 !ifdef PYTHON3
-!ifndef PYTHON3_VER
+! ifndef PYTHON3_VER
 PYTHON3_VER = 36
-!endif
-!message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
-!if "$(DYNAMIC_PYTHON3)" == "yes"
-!message Python3 DLL will be loaded dynamically
-!endif
+! endif
+! message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
+! if "$(DYNAMIC_PYTHON3)" == "yes"
+!  message Python3 DLL will be loaded dynamically
+! endif
 CFLAGS = $(CFLAGS) -DFEAT_PYTHON3
 PYTHON3_OBJ = $(OUTDIR)\if_python3.obj
 PYTHON3_INC = /I "$(PYTHON3)\Include" /I "$(PYTHON3)\PC"
-!if "$(DYNAMIC_PYTHON3)" == "yes"
+! if "$(DYNAMIC_PYTHON3)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
 		-DDYNAMIC_PYTHON3_DLL=\"python$(PYTHON3_VER).dll\"
 PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
-!else
+! else
 PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
-!endif
+! endif
 !endif
 
 # MzScheme interface
 !ifdef MZSCHEME
-!message MzScheme requested - root dir is "$(MZSCHEME)"
-!ifndef MZSCHEME_VER
+! message MzScheme requested - root dir is "$(MZSCHEME)"
+! ifndef MZSCHEME_VER
 MZSCHEME_VER = 3m_a0solc
-!endif
-!ifndef MZSCHEME_COLLECTS
+! endif
+! ifndef MZSCHEME_COLLECTS
 MZSCHEME_COLLECTS=$(MZSCHEME)\collects
-!endif
+! endif
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I "$(MZSCHEME)\include"
-!if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
+! if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib")
 MZSCHEME_MAIN_LIB=mzsch
-!else
+! else
 MZSCHEME_MAIN_LIB=racket
-!endif
-!if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
+! endif
+! if (EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll") \
      && !EXIST("$(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll")) \
     || (EXIST("$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib") \
         && !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib"))
-!message Building with Precise GC
+!  message Building with Precise GC
 MZSCHEME_PRECISE_GC = yes
 CFLAGS = $(CFLAGS) -DMZ_PRECISE_GC
-!endif
-!if "$(DYNAMIC_MZSCHEME)" == "yes"
-!message MzScheme DLLs will be loaded dynamically
+! endif
+! if "$(DYNAMIC_MZSCHEME)" == "yes"
+!  message MzScheme DLLs will be loaded dynamically
 CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME
-!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+!  if "$(MZSCHEME_PRECISE_GC)" == "yes"
 # Precise GC does not use separate dll
 CFLAGS = $(CFLAGS) \
 	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
 	 -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
-!else
+!  else
 CFLAGS = $(CFLAGS) \
 	 -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" \
 	 -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
-!endif
-!else
-!if "$(MZSCHEME_DEBUG)" == "yes"
+!  endif
+! else
+!  if "$(MZSCHEME_DEBUG)" == "yes"
 CFLAGS = $(CFLAGS) -DMZSCHEME_FORCE_GC
-!endif
-!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+!  endif
+!  if "$(MZSCHEME_PRECISE_GC)" == "yes"
 # Precise GC does not use separate dll
-!if EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def")
+!   if EXIST("$(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).def")
 # create .lib from .def
 MZSCHEME_LIB = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
 MZSCHEME_EXTRA_DEP = lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib
-!else
+!   else
 MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
-!endif
-!else
+!   endif
+!  else
 MZSCHEME_LIB = "$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib" \
 		"$(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib"
-!endif
-!endif
+!  endif
+! endif
 MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
 # increase stack size
 MZSCHEME_LIB = $(MZSCHEME_LIB) /STACK:8388608
@@ -1035,62 +1033,62 @@ MZSCHEME_INCL = if_mzsch.h
 
 # Perl interface
 !ifdef PERL
-!ifndef PERL_VER
+! ifndef PERL_VER
 PERL_VER = 524
-!endif
-!message Perl requested (version $(PERL_VER)) - root dir is "$(PERL)"
-!if "$(DYNAMIC_PERL)" == "yes"
-!if $(PERL_VER) >= 56
-!message Perl DLL will be loaded dynamically
-!else
-!message Dynamic loading is not supported for Perl versions earlier than 5.6.0
-!message Reverting to static loading...
-!undef DYNAMIC_PERL
-!endif
-!endif
+! endif
+! message Perl requested (version $(PERL_VER)) - root dir is "$(PERL)"
+! if "$(DYNAMIC_PERL)" == "yes"
+!  if $(PERL_VER) >= 56
+!   message Perl DLL will be loaded dynamically
+!  else
+!   message Dynamic loading is not supported for Perl versions earlier than 5.6.0
+!   message Reverting to static loading...
+!   undef DYNAMIC_PERL
+!  endif
+! endif
 
 # Is Perl installed in architecture-specific directories?
-!if exist($(PERL)\Bin\MSWin32-x86)
+! if exist($(PERL)\Bin\MSWin32-x86)
 PERL_ARCH = \MSWin32-x86
-!endif
+! endif
 
 PERL_INCDIR = $(PERL)\Lib$(PERL_ARCH)\Core
 
 # Version-dependent stuff
-!if $(PERL_VER) == 55
+! if $(PERL_VER) == 55
 PERL_LIB = $(PERL_INCDIR)\perl.lib
-!else
+! else
 PERL_DLL = perl$(PERL_VER).dll
-!if exist($(PERL_INCDIR)\perl$(PERL_VER).lib)
+!  if exist($(PERL_INCDIR)\perl$(PERL_VER).lib)
 PERL_LIB = $(PERL_INCDIR)\perl$(PERL_VER).lib
-!else
+!  else
 # For ActivePerl 5.18 and later
 PERL_LIB = $(PERL_INCDIR)\libperl$(PERL_VER).a
-!endif
-!endif
+!  endif
+! endif
 
 CFLAGS = $(CFLAGS) -DFEAT_PERL -DPERL_IMPLICIT_CONTEXT -DPERL_IMPLICIT_SYS
 
 # Do we want to load Perl dynamically?
-!if "$(DYNAMIC_PERL)" == "yes"
+! if "$(DYNAMIC_PERL)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"$(PERL_DLL)\"
-!undef PERL_LIB
-!endif
+!  undef PERL_LIB
+! endif
 
 PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
-!if $(MSVC_MAJOR) <= 11
+! if $(MSVC_MAJOR) <= 11
 # ActivePerl 5.20+ requires stdbool.h but VC2012 or earlier doesn't have it.
 # Use a stub stdbool.h.
 PERL_INC = $(PERL_INC) /I if_perl_msvc
-!endif
+! endif
 PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
-!if exist($(XSUBPP))
+! if exist($(XSUBPP))
 XSUBPP = $(PERL_EXE) $(XSUBPP)
-!else
+! else
 XSUBPP = xsubpp
-!endif
+! endif
 XSUBPP_TYPEMAP = $(PERL)\lib\ExtUtils\typemap
 
 !endif
@@ -1100,71 +1098,71 @@ XSUBPP_TYPEMAP = $(PERL)\lib\ExtUtils\typemap
 #
 !ifdef RUBY
 #  Set default value
-!ifndef RUBY_VER
+! ifndef RUBY_VER
 RUBY_VER = 22
-!endif
-!ifndef RUBY_VER_LONG
+! endif
+! ifndef RUBY_VER_LONG
 RUBY_VER_LONG = 2.2.0
-!endif
-!ifndef RUBY_API_VER_LONG
+! endif
+! ifndef RUBY_API_VER_LONG
 RUBY_API_VER_LONG = $(RUBY_VER_LONG)
-!endif
-!ifndef RUBY_API_VER
+! endif
+! ifndef RUBY_API_VER
 RUBY_API_VER = $(RUBY_API_VER_LONG:.=)
-!endif
+! endif
 
-!if $(RUBY_VER) >= 18
+! if $(RUBY_VER) >= 18
 
-!ifndef RUBY_PLATFORM
-!if "$(CPU)" == "i386"
+!  ifndef RUBY_PLATFORM
+!   if "$(CPU)" == "i386"
 RUBY_PLATFORM = i386-mswin32
-!else # CPU
+!   else # CPU
 RUBY_PLATFORM = x64-mswin64
-!endif # CPU
-!if $(MSVCRT_VER) >= 70 && $(RUBY_VER) > 19
+!   endif # CPU
+!   if $(MSVCRT_VER) >= 70 && $(RUBY_VER) > 19
 RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
-!endif # MSVCRT_VER
-!endif # RUBY_PLATFORM
+!   endif # MSVCRT_VER
+!  endif # RUBY_PLATFORM
 
-!ifndef RUBY_INSTALL_NAME
-!ifndef RUBY_MSVCRT_NAME
+!  ifndef RUBY_INSTALL_NAME
+!   ifndef RUBY_MSVCRT_NAME
 # Base name of msvcrXX.dll which is used by ruby's dll.
 RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
-!endif # RUBY_MSVCRT_NAME
-!if "$(CPU)" == "i386"
+!   endif # RUBY_MSVCRT_NAME
+!   if "$(CPU)" == "i386"
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-!else # CPU
+!   else # CPU
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-!endif # CPU
-!endif # RUBY_INSTALL_NAME
+!   endif # CPU
+!  endif # RUBY_INSTALL_NAME
 
-!else # $(RUBY_VER) >= 18
+! else # $(RUBY_VER) >= 18
 
-!ifndef RUBY_PLATFORM
+!  ifndef RUBY_PLATFORM
 RUBY_PLATFORM = i586-mswin32
-!endif
-!ifndef RUBY_INSTALL_NAME
+!  endif
+!  ifndef RUBY_INSTALL_NAME
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
-!endif
+!  endif
 
-!endif # $(RUBY_VER) >= 18
+! endif # $(RUBY_VER) >= 18
 
-!message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
+! message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
-!if $(RUBY_VER) >= 19
+! if $(RUBY_VER) >= 19
 RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-!else
+! else
 RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-!endif
+! endif
 RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
-!if "$(DYNAMIC_RUBY)" == "yes"
-!message Ruby DLL will be loaded dynamically
+! if "$(DYNAMIC_RUBY)" == "yes"
+!  message Ruby DLL will be loaded dynamically
 CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY -DDYNAMIC_RUBY_VER=$(RUBY_VER) \
 		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\" 
-!undef RUBY_LIB
-!endif
+!  undef RUBY_LIB
+! endif
 !endif # RUBY
 
 #
@@ -1221,11 +1219,11 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib 
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
-!if $(MSVC_MAJOR) >= 8
-!if "$(OPTIMIZE)" != "SPACE"
+! if $(MSVC_MAJOR) >= 8
+!  if "$(OPTIMIZE)" != "SPACE"
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
-!endif
-!endif
+!  endif
+! endif
 !endif
 
 !if $(MSVC_MAJOR) >= 11 && "$(CPU)" == "AMD64" && "$(GUI)" == "yes"
