@@ -13213,6 +13213,9 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 f_strftime(typval_T *argvars, typval_T *rettv)
 {
     char_u	result_buf[256];
+# ifdef HAVE_LOCALTIME_R
+    struct tm	tmval;
+# endif
     struct tm	*curtime;
     time_t	seconds;
     char_u	*p;
@@ -13224,7 +13227,11 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	seconds = time(NULL);
     else
 	seconds = (time_t)tv_get_number(&argvars[1]);
+# ifdef HAVE_LOCALTIME_R
+    curtime = localtime_r(&seconds, &tmval);
+# else
     curtime = localtime(&seconds);
+# endif
     /* MSVC returns NULL for an invalid value of seconds. */
     if (curtime == NULL)
 	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
