@@ -151,6 +151,134 @@ changed_internal(void)
 #endif
 }
 
+#ifdef FEAT_EVAL
+static list_T *recorded_changes = NULL;
+static long next_listener_id = 0;
+
+/*
+ * Record a change for listeners added with listener_add().
+ */
+    static void
+may_record_change(
+    linenr_T	lnum,
+    colnr_T	col,
+    linenr_T	lnume,
+    long	xtra)
+{
+    dict_T	*dict;
+
+    if (curbuf->b_listener == NULL)
+	return;
+    if (recorded_changes == NULL)
+    {
+	recorded_changes = list_alloc();
+	if (recorded_changes == NULL)  // out of memory
+	    return;
+	++recorded_changes->lv_refcount;
+	recorded_changes->lv_lock = VAR_FIXED;
+    }
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return;
+    dict_add_number(dict, "lnum", (varnumber_T)lnum);
+    dict_add_number(dict, "end", (varnumber_T)lnume);
+    dict_add_number(dict, "added", (varnumber_T)xtra);
+    dict_add_number(dict, "col", (varnumber_T)col);
+
+    list_append_dict(recorded_changes, dict);
+}
+
+/*
+ * listener_add() function
+ */
+    void
+f_listener_add(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*callback;
+    partial_T	*partial;
+    listener_T	*lnr;
+
+    callback = get_callback(&argvars[0], &partial);
+    if (callback == NULL)
+	return;
+
+    lnr = (listener_T *)alloc_clear((sizeof(listener_T)));
+    if (lnr == NULL)
+    {
+	free_callback(callback, partial);
+	return;
+    }
+    lnr->lr_next = curbuf->b_listener;
+    curbuf->b_listener = lnr;
+
+    if (partial == NULL)
+	lnr->lr_callback = vim_strsave(callback);
+    else
+	lnr->lr_callback = callback;  // pointer into the partial
+    lnr->lr_partial = partial;
+
+    lnr->lr_id = ++next_listener_id;
+    rettv->vval.v_number = lnr->lr_id;
+}
+
+/*
+ * listener_remove() function
+ */
+    void
+f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    listener_T	*lnr;
+    listener_T	*next;
+    listener_T	*prev = NULL;
+    int		id = tv_get_number(argvars);
+    buf_T	*buf = curbuf;
+
+    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
+    {
+	next = lnr->lr_next;
+	if (lnr->lr_id == id)
+	{
+	    if (prev != NULL)
+		prev->lr_next = lnr->lr_next;
+	    else
+		buf->b_listener = lnr->lr_next;
+	    free_callback(lnr->lr_callback, lnr->lr_partial);
+	    vim_free(lnr);
+	}
+	prev = lnr;
+    }
+}
+
+/*
+ * Called when a sequence of changes is done: invoke listeners added with
+ * listener_add().
+ */
+    void
+invoke_listeners(void)
+{
+    listener_T	*lnr;
+    typval_T	rettv;
+    int		dummy;
+    typval_T	argv[2];
+
+    if (recorded_changes == NULL)  // nothing changed
+	return;
+    argv[0].v_type = VAR_LIST;
+    argv[0].vval.v_list = recorded_changes;
+
+    for (lnr = curbuf->b_listener; lnr != NULL; lnr = lnr->lr_next)
+    {
+	call_func(lnr->lr_callback, -1, &rettv,
+		   1, argv, NULL, 0L, 0L, &dummy, TRUE, lnr->lr_partial, NULL);
+	clear_tv(&rettv);
+    }
+
+    list_unref(recorded_changes);
+    recorded_changes = NULL;
+}
+#endif
+
 /*
  * Common code for when a change was made.
  * See changed_lines() for the arguments.
@@ -175,6 +303,9 @@ changed_common(
     // mark the buffer as modified
     changed();
 
+#ifdef FEAT_EVAL
+    may_record_change(lnum, col, lnume, xtra);
+#endif
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff && diff_internal())
 	curtab->tp_diff_update = TRUE;

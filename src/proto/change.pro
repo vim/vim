@@ -2,6 +2,9 @@
 void change_warning(int col);
 void changed(void);
 void changed_internal(void);
+void f_listener_add(typval_T *argvars, typval_T *rettv);
+void f_listener_remove(typval_T *argvars, typval_T *rettv);
+void invoke_listeners(void);
 void changed_bytes(linenr_T lnum, colnr_T col);
 void inserted_bytes(linenr_T lnum, colnr_T col, int added);
 void appended_lines(linenr_T lnum, long count);

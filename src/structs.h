@@ -1873,6 +1873,19 @@ typedef struct
 #endif
 } jobopt_T;
 
+#ifdef FEAT_EVAL
+/*
+ * Structure used for listeners added with listener_add().
+ */
+typedef struct listener_S listener_T;
+struct listener_S
+{
+    listener_T	*lr_next;
+    int		lr_id;
+    char_u	*lr_callback;
+    partial_T	*lr_partial;
+};
+#endif
 
 /* structure used for explicit stack while garbage collecting hash tables */
 typedef struct ht_stack_S
@@ -2424,6 +2437,8 @@ struct file_buffer
 #ifdef FEAT_EVAL
     dictitem_T	b_bufvar;	/* variable for "b:" Dictionary */
     dict_T	*b_vars;	/* internal variables, local to buffer */
+
+    listener_T	*b_listener;
 #endif
 #ifdef FEAT_TEXT_PROP
     int		b_has_textprop;	// TRUE when text props were added
