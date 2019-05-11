@@ -744,11 +744,12 @@ func Test_relative_cursor_second_line_after_resize()
 endfunc
 
 func Test_split_noscroll()
+  let so_save = &so
   new
   only
 
-  " Make sure windows can hold 20 lines after split.
-  for i in range(1, 41)
+  " Make sure windows can hold all content after split.
+  for i in range(1, 50)
     wincmd +
     redraw!
   endfor
@@ -767,6 +768,15 @@ func Test_split_noscroll()
 
   call assert_equal(1, info1.topline)
   call assert_equal(1, info2.topline)
+
+  " Restore original state.
+  for i in range(1, 50)
+    wincmd -
+    redraw!
+  endfor
+  only!
+  bwipe!
+  let &so = so_save
 endfunc
 
 " Tests for the winnr() function
