@@ -1637,7 +1637,7 @@ ml_recover(void)
 	 * empty.  Don't set the modified flag then. */
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
-	    changed_int();
+	    changed_internal();
 	    ++CHANGEDTICK(curbuf);
 	}
     }
@@ -1651,7 +1651,7 @@ ml_recover(void)
 	    vim_free(p);
 	    if (i != 0)
 	    {
-		changed_int();
+		changed_internal();
 		++CHANGEDTICK(curbuf);
 		break;
 	    }
