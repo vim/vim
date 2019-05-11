@@ -743,6 +743,32 @@ func Test_relative_cursor_second_line_after_resize()
   let &so = so_save
 endfunc
 
+func Test_split_noscroll()
+  new
+  only
+
+  " Make sure windows can hold 20 lines after split.
+  for i in range(1, 41)
+    wincmd +
+    redraw!
+  endfor
+
+  call setline (1, range(1, 20))
+  normal 100%
+  split
+
+  1wincmd w
+  let winid1 = win_getid()
+  let info1 = getwininfo(winid1)[0]
+
+  2wincmd w
+  let winid2 = win_getid()
+  let info2 = getwininfo(winid2)[0]
+
+  call assert_equal(1, info1.topline)
+  call assert_equal(1, info2.topline)
+endfunc
+
 " Tests for the winnr() function
 func Test_winnr()
   only | tabonly
