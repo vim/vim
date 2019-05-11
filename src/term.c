@@ -2108,8 +2108,9 @@ set_termname(char_u *term)
 #  define HMT_JSBTERM	8
 #  define HMT_PTERM	16
 #  define HMT_URXVT	32
-#  define HMT_SGR	64
-#  define HMT_SGR_REL	128
+#  define HMT_GPM	64
+#  define HMT_SGR	128
+#  define HMT_SGR_REL	256
 static int has_mouse_termcode = 0;
 # endif
 
@@ -2148,6 +2149,11 @@ set_mouse_termcode(
 #   ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode |= HMT_URXVT;
+    else
+#   endif
+#   ifdef FEAT_MOUSE_GPM
+    if (n == KS_GPM_MOUSE)
+	has_mouse_termcode |= HMT_GPM;
     else
 #   endif
     if (n == KS_SGR_MOUSE)
@@ -2195,6 +2201,11 @@ del_mouse_termcode(
 #   ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode &= ~HMT_URXVT;
+    else
+#   endif
+#   ifdef FEAT_MOUSE_GPM
+    if (n == KS_GPM_MOUSE)
+	has_mouse_termcode &= ~HMT_GPM;
     else
 #   endif
     if (n == KS_SGR_MOUSE)
