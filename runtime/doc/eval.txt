@@ -2457,6 +2457,9 @@ line({expr})			Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
+listener_add({callback} [, {buf}])
+				Number	add a callback to listen to changes
+listener_remove({id})		none	remove a listener callback
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
@@ -6311,6 +6314,53 @@ list2str({list} [, {utf8}])				*list2str()*
 		With utf-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
+listener_add({callback} [, {buf}])			*listener_add()*
+		Add a callback function that will be invoked when changes have
+		been made to buffer {buf}.
+		{buf} refers to a buffer name or number. For the accepted
+		values, see |bufname()|.  When {buf} is omitted the current
+		buffer is used.
+		Returns a unique ID that can be passed to |listener_remove()|.
+
+		The {callback} is invoked with a list of items that indicate a
+		change.  Each list item is a dictionary with these entries:
+		    lnum	the first line number of the change
+		    end		the first line below the change
+		    added	number of lines added; negative if lines were
+				deleted
+		    col		first column in "lnum" that was affected by
+				the change; one if unknown or the whole line
+				was affected; this is a byte index, first
+				character has a value of one.
+		When lines are inserted the values are:
+		    lnum	line below which the new line is added
+		    end		equal to "lnum"
+		    added	number of lines inserted
+		    col		one
+		When lines are deleted the values are:
+		    lnum	the first deleted line
+		    end		the line below the first deleted line, before
+				the deletion was done
+		    added	negative, number of lines deleted
+		    col		one
+		When lines are changed:
+		    lnum	the first changed line
+		    end		the line below the last changed line
+		    added	zero
+		    col		first column with a change or one
+
+		The {callback} is invoked just before the screen is updated.
+		To trigger this in a script use the `:redraw` command.
+
+		The {callback} is not invoked when the buffer is first loaded.
+		Use the |BufReadPost| autocmd event to handle the initial text
+		of a buffer.
+		The {callback} is also not invoked when the buffer is
+		unloaded, use the |BufUnload| autocmd event for that.
+
+listener_remove({id})					*listener_remove()*
+		Remove a listener previously added with listener_add().
+
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
 		1970.  See also |strftime()| and |getftime()|.

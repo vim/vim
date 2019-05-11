@@ -2009,12 +2009,11 @@ tv_get_buf(typval_T *tv, int curtab_only)
     return buf;
 }
 
-#ifdef FEAT_SIGNS
 /*
  * Get the buffer from "arg" and give an error and return NULL if it is not
  * valid.
  */
-    static buf_T *
+    buf_T *
 get_buf_arg(typval_T *arg)
 {
     buf_T *buf;
@@ -2026,7 +2025,6 @@ get_buf_arg(typval_T *arg)
 	semsg(_("E158: Invalid buffer name: %s"), tv_get_string(arg));
     return buf;
 }
-#endif
 
 /*
  * "bufname(expr)" function

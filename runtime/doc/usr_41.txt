@@ -812,6 +812,8 @@ Buffers, windows and the argument list:
 	setbufline()		replace a line in the specified buffer
 	appendbufline()		append a list of lines in the specified buffer
 	deletebufline()		delete lines from a specified buffer
+	listener_add()		add a callback to listen to changes
+	listener_remove()	remove a listener callback
 	win_findbuf()		find windows containing a buffer
 	win_getid()		get window ID of a window
 	win_gotoid()		go to window with ID

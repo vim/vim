@@ -184,7 +184,7 @@ may_record_change(
     dict_add_number(dict, "lnum", (varnumber_T)lnum);
     dict_add_number(dict, "end", (varnumber_T)lnume);
     dict_add_number(dict, "added", (varnumber_T)xtra);
-    dict_add_number(dict, "col", (varnumber_T)col);
+    dict_add_number(dict, "col", (varnumber_T)col + 1);
 
     list_append_dict(recorded_changes, dict);
 }
@@ -198,10 +198,18 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     char_u	*callback;
     partial_T	*partial;
     listener_T	*lnr;
+    buf_T	*buf = curbuf;
 
     callback = get_callback(&argvars[0], &partial);
     if (callback == NULL)
 	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	buf = get_buf_arg(&argvars[1]);
+	if (buf == NULL)
+	    return;
+    }
 
     lnr = (listener_T *)alloc_clear((sizeof(listener_T)));
     if (lnr == NULL)
@@ -209,8 +217,8 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	free_callback(callback, partial);
 	return;
     }
-    lnr->lr_next = curbuf->b_listener;
-    curbuf->b_listener = lnr;
+    lnr->lr_next = buf->b_listener;
+    buf->b_listener = lnr;
 
     if (partial == NULL)
 	lnr->lr_callback = vim_strsave(callback);
@@ -232,22 +240,23 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
     listener_T	*next;
     listener_T	*prev = NULL;
     int		id = tv_get_number(argvars);
-    buf_T	*buf = curbuf;
+    buf_T	*buf;
 
-    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
-    {
-	next = lnr->lr_next;
-	if (lnr->lr_id == id)
+    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
 	{
-	    if (prev != NULL)
-		prev->lr_next = lnr->lr_next;
-	    else
-		buf->b_listener = lnr->lr_next;
-	    free_callback(lnr->lr_callback, lnr->lr_partial);
-	    vim_free(lnr);
+	    next = lnr->lr_next;
+	    if (lnr->lr_id == id)
+	    {
+		if (prev != NULL)
+		    prev->lr_next = lnr->lr_next;
+		else
+		    buf->b_listener = lnr->lr_next;
+		free_callback(lnr->lr_callback, lnr->lr_partial);
+		vim_free(lnr);
+	    }
+	    prev = lnr;
 	}
-	prev = lnr;
-    }
 }
 
 /*

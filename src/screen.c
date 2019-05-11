@@ -564,6 +564,11 @@ update_screen(int type_arg)
 	type = 0;
     }
 
+#ifdef FEAT_EVAL
+    // Before updating the screen, notify any listeners of changed text.
+    invoke_listeners();
+#endif
+
     if (must_redraw)
     {
 	if (type < must_redraw)	    /* use maximal type */

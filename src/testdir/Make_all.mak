@@ -168,6 +168,7 @@ NEW_TESTS = \
 	test_lispwords \
 	test_listchars \
 	test_listdict \
+	test_listener \
 	test_listlbr \
 	test_listlbr_utf8 \
 	test_lua \
@@ -359,6 +360,7 @@ NEW_TESTS_RES = \
 	test_lineending.res \
 	test_listchars.res \
 	test_listdict.res \
+	test_listener.res \
 	test_listlbr.res \
 	test_lua.res \
 	test_makeencoding.res \
