@@ -432,16 +432,16 @@ emsg_funcname(char *ermsg, char_u *name)
  */
     int
 get_func_tv(
-    char_u	*name,		/* name of the function */
-    int		len,		/* length of "name" */
+    char_u	*name,		// name of the function
+    int		len,		// length of "name" or -1 to use strlen()
     typval_T	*rettv,
-    char_u	**arg,		/* argument, pointing to the '(' */
-    linenr_T	firstline,	/* first line of range */
-    linenr_T	lastline,	/* last line of range */
-    int		*doesrange,	/* return: function handled range */
+    char_u	**arg,		// argument, pointing to the '('
+    linenr_T	firstline,	// first line of range
+    linenr_T	lastline,	// last line of range
+    int		*doesrange,	// return: function handled range
     int		evaluate,
-    partial_T	*partial,	/* for extra arguments */
-    dict_T	*selfdict)	/* Dictionary for "self" */
+    partial_T	*partial,	// for extra arguments
+    dict_T	*selfdict)	// Dictionary for "self"
 {
     char_u	*argp;
     int		ret = OK;
@@ -1435,7 +1435,7 @@ func_call(
     }
 
     if (item == NULL)
-	r = call_func(name, (int)STRLEN(name), rettv, argc, argv, NULL,
+	r = call_func(name, -1, rettv, argc, argv, NULL,
 				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 					     &dummy, TRUE, partial, selfdict);
 
@@ -1458,20 +1458,20 @@ func_call(
  */
     int
 call_func(
-    char_u	*funcname,	/* name of the function */
-    int		len,		/* length of "name" */
-    typval_T	*rettv,		/* return value goes here */
-    int		argcount_in,	/* number of "argvars" */
-    typval_T	*argvars_in,	/* vars for arguments, must have "argcount"
-				   PLUS ONE elements! */
+    char_u	*funcname,	// name of the function
+    int		len,		// length of "name" or -1 to use strlen()
+    typval_T	*rettv,		// return value goes here
+    int		argcount_in,	// number of "argvars"
+    typval_T	*argvars_in,	// vars for arguments, must have "argcount"
+				// PLUS ONE elements!
     int		(* argv_func)(int, typval_T *, int),
-				/* function to fill in argvars */
-    linenr_T	firstline,	/* first line of range */
-    linenr_T	lastline,	/* last line of range */
-    int		*doesrange,	/* return: function handled range */
+				// function to fill in argvars
+    linenr_T	firstline,	// first line of range
+    linenr_T	lastline,	// last line of range
+    int		*doesrange,	// return: function handled range
     int		evaluate,
-    partial_T	*partial,	/* optional, can be NULL */
-    dict_T	*selfdict_in)	/* Dictionary for "self" */
+    partial_T	*partial,	// optional, can be NULL
+    dict_T	*selfdict_in)	// Dictionary for "self"
 {
     int		ret = FAIL;
     int		error = ERROR_NONE;
@@ -1487,9 +1487,9 @@ call_func(
     typval_T	argv[MAX_FUNC_ARGS + 1]; /* used when "partial" is not NULL */
     int		argv_clear = 0;
 
-    /* Make a copy of the name, if it comes from a funcref variable it could
-     * be changed or deleted in the called function. */
-    name = vim_strnsave(funcname, len);
+    // Make a copy of the name, if it comes from a funcref variable it could
+    // be changed or deleted in the called function.
+    name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
     if (name == NULL)
 	return ret;
 
@@ -3285,7 +3285,7 @@ ex_call(exarg_T *eap)
 	    curwin->w_cursor.coladd = 0;
 	}
 	arg = startarg;
-	if (get_func_tv(name, (int)STRLEN(name), &rettv, &arg,
+	if (get_func_tv(name, -1, &rettv, &arg,
 		    eap->line1, eap->line2, &doesrange,
 				   !eap->skip, partial, fudi.fd_dict) == FAIL)
 	{

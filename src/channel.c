@@ -1650,7 +1650,7 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
 
-    call_func(callback, (int)STRLEN(callback), &rettv, 2, argv, NULL,
+    call_func(callback, -1, &rettv, 2, argv, NULL,
 					  0L, 0L, &dummy, TRUE, partial, NULL);
     clear_tv(&rettv);
     channel_need_redraw = TRUE;
@@ -2989,7 +2989,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 						(char *)channel->ch_close_cb);
 	      argv[0].v_type = VAR_CHANNEL;
 	      argv[0].vval.v_channel = channel;
-	      call_func(channel->ch_close_cb, (int)STRLEN(channel->ch_close_cb),
+	      call_func(channel->ch_close_cb, -1,
 			   &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE,
 			   channel->ch_close_partial, NULL);
 	      clear_tv(&rettv);
@@ -5478,7 +5478,7 @@ job_cleanup(job_T *job)
 	argv[0].vval.v_job = job;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = job->jv_exitval;
-	call_func(job->jv_exit_cb, (int)STRLEN(job->jv_exit_cb),
+	call_func(job->jv_exit_cb, -1,
 	    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
 	    job->jv_exit_partial, NULL);
 	clear_tv(&rettv);
@@ -6069,8 +6069,7 @@ invoke_prompt_callback(void)
     argv[0].vval.v_string = vim_strsave(text);
     argv[1].v_type = VAR_UNKNOWN;
 
-    call_func(curbuf->b_prompt_callback,
-	      (int)STRLEN(curbuf->b_prompt_callback),
+    call_func(curbuf->b_prompt_callback, -1,
 	      &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE,
 	      curbuf->b_prompt_partial, NULL);
     clear_tv(&argv[0]);
@@ -6093,8 +6092,7 @@ invoke_prompt_interrupt(void)
     argv[0].v_type = VAR_UNKNOWN;
 
     got_int = FALSE; // don't skip executing commands
-    call_func(curbuf->b_prompt_interrupt,
-	      (int)STRLEN(curbuf->b_prompt_interrupt),
+    call_func(curbuf->b_prompt_interrupt, -1,
 	      &rettv, 0, argv, NULL, 0L, 0L, &dummy, TRUE,
 	      curbuf->b_prompt_int_partial, NULL);
     clear_tv(&rettv);

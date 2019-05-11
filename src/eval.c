@@ -765,7 +765,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = expr->vval.v_string;
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+	if (call_func(s, -1, rettv, argc, argv, NULL,
 				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
 	    return FAIL;
     }
@@ -776,7 +776,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = partial_name(partial);
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, (int)STRLEN(s), rettv, argc, argv, NULL,
+	if (call_func(s, -1, rettv, argc, argv, NULL,
 				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
 	    return FAIL;
     }
@@ -1088,7 +1088,7 @@ call_vim_function(
     int		ret;
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    ret = call_func(func, (int)STRLEN(func), rettv, argc, argv, NULL,
+    ret = call_func(func, -1, rettv, argc, argv, NULL,
 		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 		    &doesrange, TRUE, NULL, NULL);
     if (ret == FAIL)
@@ -7109,7 +7109,7 @@ handle_subscript(
 	    }
 	    else
 		s = (char_u *)"";
-	    ret = get_func_tv(s, (int)STRLEN(s), rettv, arg,
+	    ret = get_func_tv(s, -1, rettv, arg,
 			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 			&len, evaluate, pt, selfdict);
 

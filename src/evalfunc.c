@@ -767,6 +767,8 @@ static struct fst
     {"line2byte",	1, 1, f_line2byte},
     {"lispindent",	1, 1, f_lispindent},
     {"list2str",	1, 2, f_list2str},
+    {"listener_add",	1, 2, f_listener_add},
+    {"listener_remove",	1, 1, f_listener_remove},
     {"localtime",	0, 0, f_localtime},
 #ifdef FEAT_FLOAT
     {"log",		1, 1, f_log},
@@ -9746,9 +9748,9 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
     if (failed)
     {
+	// an empty list is returned on error
 	list_free(rettv->vval.v_list);
-	/* readfile doc says an empty list is returned on error */
-	rettv->vval.v_list = list_alloc();
+	rettv_list_alloc(rettv);
     }
 
     vim_free(prev);
@@ -12644,8 +12646,7 @@ item_compare2(const void *s1, const void *s2)
     copy_tv(&si2->item->li_tv, &argv[1]);
 
     rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    res = call_func(func_name, (int)STRLEN(func_name),
-				 &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
+    res = call_func(func_name, -1, &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
 				 partial, sortinfo->item_compare_selfdict);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
