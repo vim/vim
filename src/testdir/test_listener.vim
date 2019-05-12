@@ -21,6 +21,15 @@ func Test_listening()
   redraw
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
 
+  " Undo is also a change
+  set undolevels&  " start new undo block
+  call append(2, 'two two')
+  undo
+  redraw
+  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
+	\ {'lnum': 3, 'end': 4, 'col': 1, 'added': -1}, ], s:list)
+  1
+
   " Two listeners, both get called.
   let id2 = listener_add({l -> s:AnotherStoreList(l)})
   let s:list = []
