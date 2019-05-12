@@ -1,0 +1,274 @@
+*popup.txt*  For Vim version 8.1.  Last change: 2019 May 12
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+Displaying text with properties attached.	*popup* *popup-window*
+
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+
+1. Introduction			|popup-intro|
+2. Functions			|popup-functions|
+3. Examples			|popup-examples|
+
+
+{not able to use text properties when the |+textprop| feature was
+disabled at compile time}
+
+==============================================================================
+1. Introduction						*popup-intro*
+
+We are talking about popup windows here, text that goes on top of the buffer
+text and is under control of a plugin.  Other popup functionality:
+- popup menu, see |popup-menu|
+- balloon, see |balloon-eval|
+
+TODO
+
+==============================================================================
+2. Functions						*popup-functions*
+
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+
+Proposal and discussion on issue #4063: https://github.com/vim/vim/issues/4063
+
+[to be moved to eval.txt later]
+
+popup_show({lines}, {options})				*popup_show()*
+		Open a popup window showing {lines}, which is a list of lines,
+		where each line has text and text properties.
+
+		{options} is a dictionary with many possible entries.
+
+		Returns a unique ID to be used with |popup_close()|.
+
+		See |popup_show-usage| for details.
+
+
+popup_dialog({lines}, {options})			*popup_dialog()*
+		Just like |popup_show()| but with different default options:
+			pos		"center"
+			zindex		200
+			border		[]
+
+
+popup_notification({text}, {options})			 *popup_notification()*
+		Show the string {text} for 3 seconds at the top of the Vim
+		window.  This works like: >
+			call popup_show([{'text': {text}}], {
+				\ 'line': 1,
+				\ 'col': 10,
+				\ 'time': 3000,
+				\ 'zindex': 200,
+				\ 'highlight': 'WarningMsg',
+				\ 'border: [],
+				\ })
+<		Use {options} to change the properties.
+
+popup_atcursor({text}, {options})			 *popup_atcursor()*
+		Show the string {text} above the cursor, and close it when the
+		cursor moves.  This works like: >
+			call popup_show([{'text': {text}}], {
+				\ 'line': 'cursor-1',
+				\ 'col': 'cursor',
+				\ 'zindex': 50,
+				\ 'moved': 'WORD',
+				\ })
+<		Use {options} to change the properties.
+
+
+popup_menu({lines}, {options})			 *popup_atcursor()*
+		Show the {lines} near the cursor, handle selecting one of the
+		items with cursorkeys, and close it an item is selected with
+		Space or Enter.  This works like: >
+			call popup_show({lines}, {
+				\ 'pos': 'center',
+				\ 'zindex': 200,
+				\ 'wrap': 0,
+				\ 'border': [],
+				\ 'filter': 'popup_filter_menu',
+				\ })
+<		Use {options} to change the properties.  Should at least set
+		"callback" to a function that handles the selected item.
+
+
+popup_move({id}, {options})					*popup_move()*
+		Move popup {id} to the position speficied with {options}.
+		{options} may contain the items from |popup_show()| that
+		specify the popup position: "line", "col", "pos", "maxheight",
+		"minheight", "maxwidth" and "minwidth".
+
+
+popup_filter_menu({id}, {key})				*popup_filter_menu()*
+		Filter that can be used for a popup. It handles the cursor
+		keys to move the selected index in the popup. Space and Enter
+		can be used to select an item.  Invokes the "callback" of the
+		popup menu with the index of the selected line as the second
+		argument.
+
+
+popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
+		Filter that can be used for a popup. It handles only the keys
+		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
+		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
+		as the second argument.  Pressing Esc and CTRL-C works like
+		pressing 'n'.
+
+
+popup_setlines({id}, {lnum}, {lines})			*popup_setlines()*
+		In popup {id} set line {lnum} and following to {lines}.
+
+		{lnum} is one-based and must be either an existing line or
+		just one below the last line, in which case the line gets
+		appended.
+
+		{lines} has the same format as one item in {lines} of
+		|popup_show()|.  Existing lines are replaced. When {lines}
+		extends below the last line of the popup lines are appended.
+
+popup_getlines({id})					*popup_getlines()*
+		Return the {lines} for popup {id}.
+
+
+popup_setoptions({id}, {options})			*popup_setoptions()*
+		Override options in popup {id} with entries in {options}.
+
+
+popup_getoptions({id})					*popup_getoptions()*
+		Return the {options} for popup {id}.
+
+
+popup_close({id})					*popup_close()*
+		Close popup {id}.
+
+
+POPUP_SHOW() ARGUMENTS					*popup_show-usage*
+
+The first argument of |popup_show()| is a list of text lines.  Each item in
+the list is a dictionary with these entries:
+	text		The text to display.
+	props		A list of text properties.  Optional.
+			Each entry is a dictionary, like the third argument of
+			|prop_add()|, but specifying the column in the
+			dictionary with a "col" entry, see below:
+			|popup-props|.
+
+The second argument of |popup_show()| is a dictionary with options:
+	line		screen line where to position the popup; can use
+			"cursor", "cursor+1" or "cursor-1" to use the line of
+			the cursor and add or subtract a number of lines;
+			default is "cursor-1".
+	col		screen column where to position the popup; can use
+			"cursor" to use the column of the cursor, "cursor+99"
+			and "cursor-99" to add or subtract a number of
+			columns; default is "cursor"
+	pos		"topleft", "topright", "botleft" or "botright":
+			defines what corner of the popup "line" and "col" are
+			used for.  Default is "botleft".  Alternatively
+			"center" can be used to position the popup somewhere
+			near the cursor.
+	maxheight	maximum height
+	minheight	minimum height
+	maxwidth	maximum width
+	minwidth	minimum width
+	title		text to be displayed above the first item in the
+			popup, on top of any border
+	wrap		TRUE to make the lines wrap (default TRUE)
+	highlight	highlight group name to use for the text, defines the
+			background and foreground color
+	border		list with numbers, defining the border thickness
+			above/right/below/left of the popup; an empty list
+			uses a border of 1 all around
+	borderhighlight	highlight group name to use for the border
+	borderchars	list with characters, defining the character to use
+			for the top/right/bottom/left border; optionally
+			followed by the character to use for the
+			topright/botright/botleft/topleft corner; an empty
+			list can be used to show a double line all around
+	zindex		priority for the popup, default 50
+	time		time in milliseconds after which the popup will close;
+			when omitted |popup_close()| must be used.
+	moved		"cell": close the popup if the cursor moved at least
+			one screen cell; "word" allows for moving within
+			|<cword>|, "WORD" allows for moving within |<cWORD>|,
+			a list with two numbers specifies the start and end
+			column
+	filter		a callback that can filter typed characters, see 
+			|popup-filter|
+	callback	a callback to be used when the popup closes, e.g. when
+			using |popup_filter_menu()|, see |popup-callback|.
+
+Depending on the "zindex" the popup goes under or above other popups.  The
+completion menu (|popup-menu|) has zindex 100.  For messages that occur for a
+short time the suggestion is to use zindex 1000.
+
+By default text wraps, which causes a line in {lines} to occupy more than one
+screen line.  When "wrap" is FALSE then the text outside of the popup or
+outside of the Vim window will not be displayed, thus truncated.
+
+
+POPUP TEXT PROPERTIES					*popup-props*
+
+These are similar to the third argument of |prop_add()|, but not exactly the
+same, since they only apply to one line.
+	col		starting column, counted in bytes, use one for the
+			first column.
+	length		length of text in bytes; can be zero
+	end_col		column just after the text; not used when "length" is
+			present; when {col} and "end_col" are equal, this is a
+			zero-width text property
+	id		user defined ID for the property; when omitted zero is
+			used
+	type		name of the text property type, as added with
+			|prop_type_add()|
+	transparent	do not show these characters, show the text under it;
+			if there is an border character to the right or below
+			it will be made transparent as well
+
+
+POPUP FILTER						*popup-filter*
+
+A callback that gets any typed keys while a popup is displayed.  It can return
+TRUE to indicate the key has been handled and is to be discarded, or FALSE to
+let Vim handle the key as usual in the current state.
+
+The filter function is called with two arguments: the ID of the popup and the
+key.
+
+Some common key actions:
+	Esc		close the popup
+	cursor keys	select another entry
+	Tab		accept current suggestion
+
+Vim provides standard filters |popup_filter_menu()| and
+|popup_filter_yesno()|.
+
+
+POPUP CALLBACK						*popup-callback*
+
+A callback that is invoked when the popup closes.  Used by
+|popup_filter_menu()|.  Invoked with two arguments: the ID of the popup and
+the result, which would usually be an index in the popup lines, or whatever
+the filter wants to pass.
+
+==============================================================================
+3. Examples						*popup-examples*
+
+TODO
+
+Prompt the user to press y/Y or n/N: >
+
+	func MyDialogHandler(id, result)
+	   if a:result
+	      " ... 'y' or 'Y' was pressed
+	   endif
+	endfunc
+
+	call popup_show([{'text': 'Continue? y/n'}], {
+		\ 'filter': 'popup_filter_yesno',
+		\ 'callback': 'MyDialogHandler',
+		\ })
+<
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

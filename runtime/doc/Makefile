@@ -83,6 +83,7 @@ DOCS = \
 	pi_tar.txt \
 	pi_vimball.txt \
 	pi_zip.txt \
+	popup.txt \
 	print.txt \
 	quickfix.txt \
 	quickref.txt \
@@ -220,6 +221,7 @@ HTMLS = \
 	pi_tar.html \
 	pi_vimball.html \
 	pi_zip.html \
+	popup.html \
 	print.html \
 	quickfix.html \
 	quickref.html \
