@@ -320,11 +320,10 @@ func Test_ins_completepath()
     return
   endif
   
-  edit test_ins_complete.vim
-
   call mkdir('Xdir')
 
   let orig_shellslash = &shellslash
+  set cpt&
 
   new
   
