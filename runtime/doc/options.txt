@@ -1866,6 +1866,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+						*'completepath'* *'cop'*
+'completepath' 'cop'	string	(default: "")
+			local to buffer
+			{not in Vi}  {only for MS-Windows}
+	When set 'shellslash', CTRL-X CTRL-F expand path/filename with forward
+	slash separator. But when set 'noshellslash', backslash is used on
+	Windows. When "slash" is set for this option, a forward slash is used
+	for path completion in insert mode. This is useful when editing HTML
+	tag, or Makefile with 'noshellslash' on Windows.
+	When "backslash" is set to this option, backslash is used. This is
+	useful when editing batch file with 'shellslash' on Windows.
+	If empty string is set, same character is used for 'shellslash'.
+	And when global value is set, this behavior is enabled on command line
+	completion.
+
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu,preview")
 			global

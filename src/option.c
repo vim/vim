@@ -88,6 +88,7 @@
 # define PV_DICT	OPT_BOTH(OPT_BUF(BV_DICT))
 # define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
 #endif
+#define PV_COP		OPT_BUF(BV_COP)
 #ifdef FEAT_COMPL_FUNC
 # define PV_CFU		OPT_BUF(BV_CFU)
 #endif
@@ -885,6 +886,15 @@ static struct vimoption options[] =
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_cot, PV_NONE,
 			    {(char_u *)"menu,preview", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"completepath",   "cop",  P_STRING|P_VI_DEF|P_VIM,
+#if defined(FEAT_INS_EXPAND) && defined(BACKSLASH_IN_FILENAME)
+			    (char_u *)&p_cop, PV_COP,
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -3220,6 +3230,7 @@ static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
+static char *(p_cop_values[]) = {"slash", "backslash", NULL};
 #endif
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
@@ -10880,7 +10891,6 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_MENC:	return *curbuf->b_p_menc != NUL
 				    ? (char_u *)&(curbuf->b_p_menc) : p->var;
-
 #ifdef FEAT_ARABIC
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
 #endif
@@ -10966,6 +10976,9 @@ get_varp(struct vimoption *p)
 #endif
 #ifdef FEAT_INS_EXPAND
 	case PV_CPT:	return (char_u *)&(curbuf->b_p_cpt);
+# ifdef BACKSLASH_IN_FILENAME
+	case PV_COP:	return (char_u *)&(curbuf->b_p_cop);
+# endif
 #endif
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
@@ -11357,6 +11370,9 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_swf = cmdmod.noswapfile ? FALSE : p_swf;
 #ifdef FEAT_INS_EXPAND
 	    buf->b_p_cpt = vim_strsave(p_cpt);
+# ifdef BACKSLASH_IN_FILENAME
+	    buf->b_p_cop = vim_strsave(p_cop);
+# endif
 #endif
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);

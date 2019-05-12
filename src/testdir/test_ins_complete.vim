@@ -313,3 +313,51 @@ func Test_compl_feedkeys()
   bwipe!
   set completeopt&
 endfunc
+
+" Test for insert path completion with completepath option
+func Test_ins_completepath()
+  if !has('win32')
+    return
+  endif
+  
+  edit test_ins_complete.vim
+
+  call mkdir('Xdir')
+
+  let orig_shellslash = &shellslash
+
+  new
+  
+  set noshellslash
+
+  set completepath=
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completepath=backslash
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completepath=slash
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir/', getline('.'))
+
+  set shellslash
+
+  set completepath=
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir/', getline('.'))
+
+  set completepath=backslash
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completepath=slash
+  exe "normal o\<C-N>\<Esc>IX\<Esc>A\<C-X>\<C-F>\<C-N>"
+  call assert_equal('Xdir/', getline('.'))
+  %bw!
+  call delete('Xdir', 'rf')
+
+  let &shellslash = orig_shellslash
+endfunc
+
