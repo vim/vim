@@ -749,12 +749,12 @@ func Test_split_noscroll()
   only
 
   " Make sure windows can hold all content after split.
-  for i in range(1, 50)
+  for i in range(1, 20)
     wincmd +
     redraw!
   endfor
 
-  call setline (1, range(1, 20))
+  call setline (1, range(1, 8))
   normal 100%
   split
 
@@ -770,7 +770,7 @@ func Test_split_noscroll()
   call assert_equal(1, info2.topline)
 
   " Restore original state.
-  for i in range(1, 50)
+  for i in range(1, 20)
     wincmd -
     redraw!
   endfor
