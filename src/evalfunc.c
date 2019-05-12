@@ -14675,7 +14675,6 @@ f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
     time_for_testing = (time_t)tv_get_number(&argvars[0]);
 }
 
-#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_TIMERS) || defined(PROTO)
 /*
  * Get a callback from "arg".  It can be a Funcref or a function name.
  * When "arg" is zero return an empty string.
@@ -14716,7 +14715,6 @@ free_callback(char_u *callback, partial_T *partial)
 	vim_free(callback);
     }
 }
-#endif
 
 #ifdef FEAT_TIMERS
 /*
