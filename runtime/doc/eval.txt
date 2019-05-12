@@ -6323,7 +6323,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		Returns a unique ID that can be passed to |listener_remove()|.
 
 		The {callback} is invoked with a list of items that indicate a
-		change.  Each list item is a dictionary with these entries:
+		change.  The list cannot be changed.  Each list item is a
+		dictionary with these entries:
 		    lnum	the first line number of the change
 		    end		the first line below the change
 		    added	number of lines added; negative if lines were
@@ -6349,7 +6350,21 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		    added	zero
 		    col		first column with a change or one
 
-		The {callback} is invoked just before the screen is updated.
+		The entries are in the order the changes was made, thus the
+		most recent change is at the end.  One has to go through the
+		list from end to start to compute the line numbers in the
+		current state of the text.
+
+		When using the same function for multiple buffers, you can
+		pass the buffer to that function using a |Partial|.
+		Example: >
+		    func Listener(bufnr, changes)
+		      " ...
+		    endfunc
+		    let bufnr = ...
+		    call listener_add(function('Listener', [bufnr]), bufnr)
+
+<		The {callback} is invoked just before the screen is updated.
 		To trigger this in a script use the `:redraw` command.
 
 		The {callback} is not invoked when the buffer is first loaded.
@@ -10984,10 +10999,10 @@ expressions |expr-lambda|.
 
 Example: >
   function Something(key, value = 10)
-     echo a:key .. ": " .. value
+     echo a:key .. ": " .. a:value
   endfunction
   call Something('empty')	"empty: 10"
-  call Something('key, 20)	"key: 20"
+  call Something('key', 20)	"key: 20"
 
 The argument default expressions are evaluated at the time of the function
 call, not definition.  Thus it is possible to use an expression which is
