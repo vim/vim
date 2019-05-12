@@ -330,29 +330,29 @@ func Test_ins_completepath()
   set noshellslash
 
   set completepath=
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir\', getline('.'))
 
   set completepath=backslash
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir\', getline('.'))
 
   set completepath=slash
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir/', getline('.'))
 
   set shellslash
 
   set completepath=
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir/', getline('.'))
 
   set completepath=backslash
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir\', getline('.'))
 
   set completepath=slash
-  exe "normal oXd\<C-X>\<C-F>\<C-N>"
+  exe "normal oXd\<C-X>\<C-F>"
   call assert_equal('Xdir/', getline('.'))
   %bw!
   call delete('Xdir', 'rf')
