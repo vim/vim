@@ -3976,7 +3976,9 @@ create_vterm(term_T *term, int rows, int cols)
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
 
-    if (t_colors >= 16)
+    if (t_colors < 16)
+	// Less than 16 colors: assume that bold means using a bright color for
+	// the foreground color.
 	vterm_state_set_bold_highbright(vterm_obtain_state(vterm), 1);
 
     /* Required to initialize most things. */

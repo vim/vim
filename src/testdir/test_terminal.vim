@@ -1491,7 +1491,7 @@ func Test_terminal_all_ansi_colors()
 
   " Use all the ANSI colors.
   call writefile([
-	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP")',
+	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP XXYYZZ")',
 	\ 'hi Tblack ctermfg=0 ctermbg=8',
 	\ 'hi Tdarkred ctermfg=1 ctermbg=9',
 	\ 'hi Tdarkgreen ctermfg=2 ctermbg=10',
@@ -1508,6 +1508,9 @@ func Test_terminal_all_ansi_colors()
 	\ 'hi Tmagenta ctermfg=13 ctermbg=5',
 	\ 'hi Tcyan ctermfg=14 ctermbg=6',
 	\ 'hi Twhite ctermfg=15 ctermbg=7',
+	\ 'hi TdarkredBold ctermfg=1 cterm=bold',
+	\ 'hi TgreenBold ctermfg=10 cterm=bold',
+	\ 'hi TmagentaBold ctermfg=13 cterm=bold ctermbg=5',
 	\ '',
 	\ 'call  matchadd("Tblack", "A")',
 	\ 'call  matchadd("Tdarkred", "B")',
@@ -1525,6 +1528,9 @@ func Test_terminal_all_ansi_colors()
 	\ 'call  matchadd("Tmagenta", "N")',
 	\ 'call  matchadd("Tcyan", "O")',
 	\ 'call  matchadd("Twhite", "P")',
+	\ 'call  matchadd("TdarkredBold", "X")',
+	\ 'call  matchadd("TgreenBold", "Y")',
+	\ 'call  matchadd("TmagentaBold", "Z")',
 	\ 'redraw',
 	\ ], 'Xcolorscript')
   let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
