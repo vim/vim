@@ -9014,6 +9014,7 @@ set_num_option(
 {
     char	*errmsg = NULL;
     long	old_value = *(long *)varp;
+    long	old_global_value = 0;	/* only used when setting a local and global option */
     long	old_Rows = Rows;	/* remember old Rows */
     long	old_Columns = Columns;	/* remember old Columns */
     long	*pp = (long *)varp;
@@ -9025,6 +9026,12 @@ set_num_option(
 #endif
 		) && (options[opt_idx].flags & P_SECURE))
 	return e_secure;
+
+    /* Save the global value before changing anything. This is needed as for
+     * a global-only option setting the "local value" infact sets the global
+     * value (since there is only one value). */
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+	old_global_value = *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
 
     *pp = value;
 #ifdef FEAT_EVAL
@@ -9533,14 +9540,35 @@ set_num_option(
     // Don't do this while starting up, failure or recursively.
     if (!starting && errmsg == NULL && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
     {
-	char_u buf_old[11], buf_new[11], buf_type[7];
-
+	char_u buf_old[11], buf_old_global[11], buf_new[11], buf_type[7];
 	vim_snprintf((char *)buf_old, 10, "%ld", old_value);
+	vim_snprintf((char *)buf_old_global, 10, "%ld", old_global_value);
 	vim_snprintf((char *)buf_new, 10, "%ld", value);
 	vim_snprintf((char *)buf_type, 7, "%s", (opt_flags & OPT_LOCAL) ? "local" : "global");
 	set_vim_var_string(VV_OPTION_NEW, buf_new, -1);
 	set_vim_var_string(VV_OPTION_OLD, buf_old, -1);
 	set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
+	if (opt_flags & OPT_LOCAL)
+	{
+	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
+	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+	}
+	if (opt_flags & OPT_GLOBAL)
+	{
+	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
+	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old, -1);
+	}
+	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+	{
+	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
+	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old_global, -1);
+	}
+	if (opt_flags & OPT_MODELINE)
+	{
+	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
+	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+	}
 	apply_autocmds(EVENT_OPTIONSET, (char_u *) options[opt_idx].fullname, NULL, FALSE, NULL);
 	reset_v_option_vars();
     }
