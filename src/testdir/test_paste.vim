@@ -1,10 +1,12 @@
-" Tests for bracketed paste.
+" Tests for bracketed paste and other forms of pasting.
 
-" Bracketed paste only works with "xterm".  Not in GUI.
-if has('gui_running')
+" Bracketed paste only works with "xterm".  Not in GUI or Windows console.
+if has('gui_running') || has('win32')
   finish
 endif
 set term=xterm
+
+source shared.vim
 
 func Test_paste_normal_mode()
   new
@@ -66,6 +68,17 @@ func Test_paste_insert_mode()
   bwipe!
 endfunc
 
+func Test_paste_clipboard()
+  if !WorkingClipboard()
+    return
+  endif
+  let @+ = "nasty\<Esc>:!ls\<CR>command"
+  new
+  exe "normal i\<C-R>+\<Esc>"
+  call assert_equal("nasty\<Esc>:!ls\<CR>command", getline(1))
+  bwipe!
+endfunc
+
 func Test_paste_cmdline()
   call feedkeys(":a\<Esc>[200~foo\<CR>bar\<Esc>[201~b\<Home>\"\<CR>", 'xt')
   call assert_equal("\"afoo\<CR>barb", getreg(':'))
@@ -95,5 +108,31 @@ func Test_paste_visual_mode()
   call assert_equal('some letters more', getline(1))
   call assert_equal("words\nand", getreg('1'))
 
+  bwipe!
+endfunc
+
+func CheckCopyPaste()
+  call setline(1, ['copy this', ''])
+  normal 1G0"*y$
+  normal j"*p
+  call assert_equal('copy this', getline(2))
+endfunc
+
+func Test_xrestore()
+  if !has('xterm_clipboard')
+    return
+  endif
+call ch_logfile('logfile', 'w')
+  let display = $DISPLAY
+  new
+  call CheckCopyPaste()
+
+  xrestore
+  call CheckCopyPaste()
+
+  exe "xrestore " .. display
+  call CheckCopyPaste()
+
+call ch_logfile('', '')
   bwipe!
 endfunc

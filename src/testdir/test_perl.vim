@@ -4,6 +4,9 @@ if !has('perl')
   finish
 end
 
+" FIXME: RunTest don't see any error when Perl abort...
+perl $SIG{__WARN__} = sub { die "Unexpected warnings from perl: @_" };
+
 func Test_change_buffer()
   call setline(line('$'), ['1 line 1'])
   perl VIM::DoCommand("normal /^1\n")
@@ -24,6 +27,13 @@ EOF
   normal j
   .perldo s|\n|/|g
   call assert_equal('abc/def/', getline('$'))
+endfunc
+
+funct Test_VIM_Blob()
+  call assert_equal('0z',         perleval('VIM::Blob("")'))
+  call assert_equal('0z31326162', perleval('VIM::Blob("12ab")'))
+  call assert_equal('0z00010203', perleval('VIM::Blob("\x00\x01\x02\x03")'))
+  call assert_equal('0z8081FEFF', perleval('VIM::Blob("\x80\x81\xfe\xff")'))
 endfunc
 
 func Test_buffer_Delete()
@@ -219,20 +229,65 @@ EOF
   call assert_equal(['&VIM::Msg', 'STDOUT', 'STDERR'], split(l:out, "\n"))
 endfunc
 
-func Test_SvREFCNT()
+" Run first to get a clean namespace
+func Test_000_SvREFCNT()
+  for i in range(8)
+    exec 'new X'.i
+  endfor
   new t
   perl <<--perl
+#line 5 "Test_000_SvREFCNT()"
   my ($b, $w);
-  $b = $curbuf for 0 .. 10;
-  $w = $curwin for 0 .. 10;
+
+  my $num = 0;
+  for ( 0 .. 100 ) {
+      if ( ++$num >= 8 ) { $num = 0 }
+      VIM::DoCommand("buffer X$num");
+      $b = $curbuf;
+  }
+
+  VIM::DoCommand("buffer t");
+
+  $b = $curbuf      for 0 .. 100;
+  $w = $curwin      for 0 .. 100;
+  () = VIM::Buffers for 0 .. 100;
+  () = VIM::Windows for 0 .. 100;
+
   VIM::DoCommand('bw! t');
   if (exists &Internals::SvREFCNT) {
       my $cb = Internals::SvREFCNT($$b);
       my $cw = Internals::SvREFCNT($$w);
-      VIM::Eval("assert_equal(2, $cb)");
-      VIM::Eval("assert_equal(2, $cw)");
+      VIM::Eval("assert_equal(2, $cb, 'T1')");
+      VIM::Eval("assert_equal(2, $cw, 'T2')");
+      my $strongref;
+      foreach ( VIM::Buffers, VIM::Windows ) {
+	  VIM::DoCommand("%bw!");
+	  my $c = Internals::SvREFCNT($_);
+	  VIM::Eval("assert_equal(2, $c, 'T3')");
+	  $c = Internals::SvREFCNT($$_);
+	  next if $c == 2 && !$strongref++;
+	  VIM::Eval("assert_equal(1, $c, 'T4')");
+      }
+      $cb = Internals::SvREFCNT($$curbuf);
+      $cw = Internals::SvREFCNT($$curwin);
+      VIM::Eval("assert_equal(3, $cb, 'T5')");
+      VIM::Eval("assert_equal(3, $cw, 'T6')");
   }
   VIM::Eval("assert_false($$b)");
   VIM::Eval("assert_false($$w)");
 --perl
+  %bw!
+endfunc
+
+func Test_set_cursor()
+  " Check that setting the cursor position works.
+  new
+  call setline(1, ['first line', 'second line'])
+  normal gg
+  perldo $curwin->Cursor(1, 5)
+  call assert_equal([1, 6], [line('.'), col('.')])
+
+  " Check that movement after setting cursor position keeps current column.
+  normal j
+  call assert_equal([2, 6], [line('.'), col('.')])
 endfunc

@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.0.  Last change: 2017 Nov 30
+*mbyte.txt*     For Vim version 8.1.  Last change: 2019 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -13,9 +13,6 @@ and Korean.  Unicode is also covered here.
 For an introduction to the most common features, see |usr_45.txt| in the user
 manual.
 For changing the language of messages and menus see |mlang.txt|.
-
-{not available when compiled without the |+multi_byte| feature}
-
 
 1.  Getting started			|mbyte-first|
 2.  Locale				|mbyte-locale|
@@ -42,16 +39,6 @@ doesn't work you will have to read the rest.  Don't be surprised if it takes
 quite a bit of work and experimenting to make Vim use all the multi-byte
 features.  Unfortunately, every system has its own way to deal with multibyte
 languages and it is quite complicated.
-
-
-COMPILING
-
-If you already have a compiled Vim program, check if the |+multi_byte| feature
-is included.  The |:version| command can be used for this.
-
-If +multi_byte is not included, you should compile Vim with "normal", "big" or
-"huge" features.  You can further tune what features are included.  See the
-INSTALL files in the source directory.
 
 
 LOCALE
@@ -632,6 +619,21 @@ Which fonts are required in a fontset depends on the current locale.  X
 windows maintains a table of which groups of characters are required for a
 locale.  You have to specify all the fonts that a locale requires in the
 'guifontset' option.
+
+Setting the 'guifontset' option also means that all font names will be handled
+as a fontset name.  Also the ones used for the "font" argument of the
+|:highlight| command.
+
+Note the difference between 'guifont' and 'guifontset': In 'guifont'
+the comma-separated names are alternative names, one of which will be
+used.  In 'guifontset' the whole string is one fontset name,
+including the commas.  It is not possible to specify alternative
+fontset names.
+This example works on many X11 systems: >
+	:set guifontset=-*-*-medium-r-normal--16-*-*-*-c-*-*-*
+<
+The fonts must match with the current locale.  If fonts for the character sets
+that the current locale uses are not included, setting 'guifontset' will fail.
 
 NOTE: The fontset always uses the current locale, even though 'encoding' may
 be set to use a different charset.  In that situation you might want to use
@@ -1258,7 +1260,7 @@ Combining forms:
 10.  Input with imactivatefunc()				*mbyte-func*
 
 Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
-activate/deativate the input method from Vim in any way, also with an external
+activate/deactivate the input method from Vim in any way, also with an external
 command. For example, fcitx provide fcitx-remote command: >
 
 	set iminsert=2
@@ -1467,4 +1469,4 @@ Contributions specifically for the multi-byte features by:
 	Taro Muraoka  <koron@tka.att.ne.jp>
 	Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

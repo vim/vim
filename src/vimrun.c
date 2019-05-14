@@ -23,11 +23,6 @@
 #endif
 #include <windows.h>
 
-#ifdef __BORLANDC__
-# define _kbhit kbhit
-# define _getch getch
-#endif
-
     int
 main(void)
 {
@@ -55,7 +50,7 @@ main(void)
 	++p;
     }
     while (*p == L' ')
-        ++p;
+	++p;
 
     /*
      * "-s" argument: don't wait for a key hit.

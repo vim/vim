@@ -1,5 +1,5 @@
 /* gui.c */
-void gui_start(void);
+void gui_start(char_u *arg);
 void gui_prepare(int *argc, char **argv);
 int gui_init_check(void);
 void gui_init(void);
@@ -25,6 +25,9 @@ void gui_update_cursor_later(void);
 void gui_write(char_u *s, int len);
 void gui_dont_update_cursor(int undraw);
 void gui_can_update_cursor(void);
+void gui_disable_flush(void);
+void gui_enable_flush(void);
+void gui_may_flush(void);
 int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 void gui_undraw_cursor(void);
 void gui_redraw(int x, int y, int w, int h);

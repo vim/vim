@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.0.  Last change: 2017 Oct 26
+*spell.txt*	For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,10 +11,7 @@ Spell checking						*spell*
 3. Generating a spell file	|spell-mkspell|
 4. Spell file format		|spell-file-format|
 
-{Vi does not have any of these commands}
-
-Spell checking is not available when the |+syntax| feature has been disabled
-at compile time.
+{not available when the |+syntax| feature has been disabled at compile time}
 
 Note: There also is a vimspell plugin.  If you have it you can do ":help
 vimspell" to find about it.  But you will probably want to get rid of the
@@ -312,25 +309,25 @@ Exceptions:
   spell file is used.
 
 For example, with these values:
-	'runtimepath' is "~/.vim,/usr/share/vim70,~/.vim/after"
+	'runtimepath' is "~/.vim,/usr/share/vim81,~/.vim/after"
 	'encoding'    is "iso-8859-2"
 	'spelllang'   is "pl"
 
 Vim will look for:
 1. ~/.vim/spell/pl.iso-8859-2.spl
-2. /usr/share/vim70/spell/pl.iso-8859-2.spl
+2. /usr/share/vim81/spell/pl.iso-8859-2.spl
 3. ~/.vim/spell/pl.iso-8859-2.add.spl
-4. /usr/share/vim70/spell/pl.iso-8859-2.add.spl
+4. /usr/share/vim81/spell/pl.iso-8859-2.add.spl
 5. ~/.vim/after/spell/pl.iso-8859-2.add.spl
 
 This assumes 1. is not found and 2. is found.
 
 If 'encoding' is "latin1" Vim will look for:
 1. ~/.vim/spell/pl.latin1.spl
-2. /usr/share/vim70/spell/pl.latin1.spl
+2. /usr/share/vim81/spell/pl.latin1.spl
 3. ~/.vim/after/spell/pl.latin1.spl
 4. ~/.vim/spell/pl.ascii.spl
-5. /usr/share/vim70/spell/pl.ascii.spl
+5. /usr/share/vim81/spell/pl.ascii.spl
 6. ~/.vim/after/spell/pl.ascii.spl
 
 This assumes none of them are found (Polish doesn't make sense when leaving
@@ -577,7 +574,7 @@ When the Myspell files are updated you can merge the differences:
 	vimdiff xx_YY.orig.dic xx_YY.new.dic
 3. Take over the changes you like in xx_YY.dic.
    You may also need to change xx_YY.aff.
-4. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.new.aff.
+4. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.orig.aff.
 
 
 SPELL FILE VERSIONS					*E770* *E771* *E772*
@@ -907,9 +904,9 @@ when using "cp1250" on Unix.
 						*spell-LOW* *spell-UPP*
 Three lines in the affix file are needed.  Simplistic example:
 
-	FOL  ·ÎÒ ~
-	LOW  ·ÎÒ ~
-	UPP  ¡À— ~
+	FOL  √°√´√± ~
+	LOW  √°√´√± ~
+	UPP  √Å√ã√ë ~
 
 All three lines must have exactly the same number of characters.
 
@@ -924,9 +921,9 @@ The "UPP" line specifies the characters with upper-case.  That is, a character
 is upper-case where it's different from the character at the same position in
 "FOL".
 
-An exception is made for the German sharp s ﬂ.  The upper-case version is
+An exception is made for the German sharp s √ü.  The upper-case version is
 "SS".  In the FOL/LOW/UPP lines it should be included, so that it's recognized
-as a word character, but use the ﬂ character in all three.
+as a word character, but use the √ü character in all three.
 
 ASCII characters should be omitted, Vim always handles these in the same way.
 When the encoding is UTF-8 no word characters need to be specified.
@@ -1397,7 +1394,7 @@ suggestions would spend most time trying all kind of weird compound words.
 							*spell-SYLLABLE*
 The SYLLABLE item defines characters or character sequences that are used to
 count the number of syllables in a word.  Example:
-	SYLLABLE a·eÈiÌoÛˆıu˙¸˚y/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui ~
+	SYLLABLE a√°e√©i√≠o√≥√∂√µu√∫√º√ªy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui ~
 
 Before the first slash is the set of characters that are counted for one
 syllable, also when repeated and mixed, until the next character that is not
@@ -1478,8 +1475,8 @@ alike.  This is mostly used for a letter with different accents.  This is used
 to prefer suggestions with these letters substituted.  Example:
 
 	MAP 2 ~
-	MAP eÈÎÍË ~
-	MAP u¸˘˙˚ ~
+	MAP e√©√´√™√® ~
+	MAP u√º√π√∫√ª ~
 
 The first line specifies the number of MAP lines following.  Vim ignores the
 number, but the line must be there.
@@ -1582,6 +1579,10 @@ CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 		Forbid three identical characters when compounding.  Not
 		supported.
 
+CHECKSHARPS  (Hunspell))			*spell-CHECKSHARPS*
+		SS letter pair in uppercased (German) words may be upper case
+		sharp s (√ü). Not supported.
+
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
 
@@ -1595,12 +1596,21 @@ COMPOUNDFIRST	(Hunspell)				*spell-COMPOUNDFIRST*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
+		Words signed with COMPOUNDBEGIN may be first elements in
+		compound words.
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+
+COMPOUNDLAST	(Hunspell)				*spell-COMPOUNDLAST*
+		Words signed with COMPOUNDLAST may be last elements in
+		compound words.
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
-		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+		Probably the same as COMPOUNDLAST
 
 COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
+		Words signed with COMPOUNDMIDDLE may be middle elements in
+		compound words.
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDRULES	(Hunspell)				*spell-COMPOUNDRULES*
@@ -1646,4 +1656,4 @@ WORDCHARS	(Hunspell)				*spell-WORDCHARS*
 		is no need to separate words before checking them (using a
 		trie instead of a hashtable).
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

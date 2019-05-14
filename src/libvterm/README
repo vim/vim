@@ -10,3 +10,21 @@ Modifications:
 - Add a .gitignore file.
 - Convert from C99 to C90.
 - Other changes to support embedding in Vim.
+
+
+To merge in changes from Github, do this:
+- Commit any pending changes.
+- Setup the merge tool:
+    git config merge.tool vimdiff
+    git config merge.conflictstyle diff3
+    git config mergetool.prompt false
+- Run the merge tool:
+    git mergetool
+  This will open a four-way diff between:
+     LOCAL  - your current version
+     BASE   - version as it was at your last sync
+     REMOTE - version at head on Github
+     MERGED - best-effort merge of LOCAL and REMOTE
+  Now find places where automatic merge didn't work, they are marked with
+  <<<<<<<<, ======= and >>>>>>>
+  Fix those places in MERGED, remove the markers, and save the file :wqall.

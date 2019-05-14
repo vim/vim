@@ -66,10 +66,10 @@ tutor.hr.cp1250: tutor.hr.utf-8
 	iconv -f UTF-8 -t cp1250 tutor.hr.utf-8 > tutor.hr.cp1250
 
 tutor.ja.sjis: tutor.ja.utf-8
-	nkf -WXs tutor.ja.utf-8 > tutor.ja.sjis
+	iconv -f UTF-8 -t cp932 tutor.ja.utf-8 > tutor.ja.sjis
 
 tutor.ja.euc: tutor.ja.utf-8
-	nkf -WXe tutor.ja.utf-8 > tutor.ja.euc
+	iconv -f UTF-8 -t EUC-JP tutor.ja.utf-8 > tutor.ja.euc
 
 tutor.ko.euc: tutor.ko.utf-8
 	iconv -f UTF-8 -t EUC-KR tutor.ko.utf-8 > tutor.ko.euc

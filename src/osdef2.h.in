@@ -8,7 +8,11 @@ extern int	free(char *);
 extern char	*malloc(unsigned int);
 extern char	*realloc(char *, int);
 extern char	*getenv(char *);
+#ifndef __TANDEM
 extern int	setenv(char *, char *, int);
+#else
+extern int	setenv(const char *, const char *, int);
+#endif
 extern int	putenv(const char *);
 
 #ifndef __TANDEM

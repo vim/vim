@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.0.  Last change: 2017 Sep 23
+*map.txt*       For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,7 +76,7 @@ modes.
 			Map the key sequence {lhs} to {rhs} for the modes
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
-			used to redefine a command.  {not in Vi}
+			used to redefine a command.
 
 
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
@@ -110,7 +110,7 @@ modes.
 :cmapc[lear]			|mapmode-c|		*:cmapc*  *:cmapclear*
 :tmapc[lear]			|mapmode-t|		*:tmapc*  *:tmapclear*
 			Remove ALL mappings for the modes where the map
-			command applies.  {not in Vi}
+			command applies.
 			Use the <buffer> argument to remove buffer-local
 			mappings |:map-<buffer>|
 			Warning: This also removes the default mappings.
@@ -143,7 +143,6 @@ modes.
 :tma[p] {lhs}			|mapmode-t|		*:tmap_l*
 			List the key mappings for the key sequences starting
 			with {lhs} in the modes where the map command applies.
-			{not in Vi}
 
 These commands are used to map a key or key sequence to a string of
 characters.  You can use this to put command sequences under function keys,
@@ -160,7 +159,6 @@ decide if "aa" or "aaa" should be mapped.  This means that after typing "aa"
 that mapping won't get expanded yet, Vim is waiting for another character.
 If you type a space, then "foo" will get inserted, plus the space.  If you
 type "a", then "bar" will get inserted.
-{Vi does not allow ambiguous mappings}
 
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
@@ -371,8 +369,9 @@ job running in the terminal.  See |terminal-typing|.
 
 							*omap-info*
 Operator-pending mappings can be used to define a movement command that can be
-used with any operator.  Simple example: ":omap { w" makes "y{" work like "yw"
-and "d{" like "dw".
+used with any operator.  Simple example: >
+	:omap { w
+makes "y{" work like "yw" and "d{" like "dw".
 
 To ignore the starting cursor position and select different text, you can have
 the omap start Visual mode to select the text to be operated upon.  Example
@@ -383,9 +382,11 @@ Normal mode commands find the first '(' character and select the first word
 before it.  That usually is the function name.
 
 To enter a mapping for Normal and Visual mode, but not Operator-pending mode,
-first define it for all three modes, then unmap it for Operator-pending mode:
+first define it for all three modes, then unmap it for
+Operator-pending mode: >
 	:map    xx something-difficult
 	:ounmap xx
+
 Likewise for a mapping for Visual and Operator-pending mode or Normal and
 Operator-pending mode.
 
@@ -542,9 +543,9 @@ scenario: >
 	:imap <M-C> foo
 	:set encoding=utf-8
 The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
-byte.  If you type the character แ (0xe1 <M-a>) in UTF-8 encoding this is the
+byte.  If you type the character รก (0xe1 <M-a>) in UTF-8 encoding this is the
 two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
-otherwise it would be impossible to type the แ character.
+otherwise it would be impossible to type the รก character.
 
 					*<Leader>* *mapleader*
 To define a mapping which uses the "mapleader" variable, the special string
@@ -917,7 +918,9 @@ an additional rule:
 full-id	  In front of the match is a non-keyword character, or this is where
 	  the line or insertion starts.  Exception: When the abbreviation is
 	  only one character, it is not recognized if there is a non-keyword
-	  character in front of it, other than a space or a tab.
+	  character in front of it, other than a space or a tab. However, for
+	  the command line "'<,'>" (or any other marks) is ignored, as if the
+	  command line starts after it.
 
 end-id	  In front of the match is a keyword character, or a space or a tab,
 	  or this is where the line or insertion starts.
@@ -1011,45 +1014,40 @@ See |:verbose-cmd| for more information.
 
 						*:norea* *:noreabbrev*
 :norea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but no remapping for this {rhs} {not
-			in Vi}
+			Same as ":ab", but no remapping for this {rhs}.
 
 						*:ca* *:cabbrev*
 :ca[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Command-line mode only.  {not
-			in Vi}
+			Same as ":ab", but for Command-line mode only.
 
 						*:cuna* *:cunabbrev*
-:cuna[bbrev] {lhs}	same as ":una", but for Command-line mode only.  {not
-			in Vi}
+:cuna[bbrev] {lhs}	Same as ":una", but for Command-line mode only.
 
 						*:cnorea* *:cnoreabbrev*
 :cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
 			same as ":ab", but for Command-line mode only and no
-			remapping for this {rhs} {not in Vi}
+			remapping for this {rhs}
 
 						*:ia* *:iabbrev*
 :ia[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Insert mode only.  {not in Vi}
+			Same as ":ab", but for Insert mode only.
 
 						*:iuna* *:iunabbrev*
-:iuna[bbrev] {lhs}	same as ":una", but for insert mode only.  {not in
-			Vi}
+:iuna[bbrev] {lhs}	Same as ":una", but for insert mode only.
 
 						*:inorea* *:inoreabbrev*
 :inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
-			same as ":ab", but for Insert mode only and no
-			remapping for this {rhs} {not in Vi}
+			Same as ":ab", but for Insert mode only and no
+			remapping for this {rhs}.
 
 							*:abc* *:abclear*
-:abc[lear] [<buffer>]	Remove all abbreviations.  {not in Vi}
+:abc[lear] [<buffer>]	Remove all abbreviations.
 
 							*:iabc* *:iabclear*
-:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.  {not in Vi}
+:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.
 
 							*:cabc* *:cabclear*
-:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.  {not
-			in Vi}
+:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.
 
 							*using_CTRL-V*
 It is possible to use special characters in the rhs of an abbreviation.
@@ -1142,8 +1140,7 @@ to find out what they are defined to.
 The |:scriptnames| command can be used to see which scripts have been sourced
 and what their <SNR> number is.
 
-This is all {not in Vi} and {not available when compiled without the |+eval|
-feature}.
+This is all {not available when compiled without the |+eval| feature}.
 
 ==============================================================================
 4. User-defined commands				*user-commands*
@@ -1188,9 +1185,10 @@ scripts.
 
 :com[mand]						*:com* *:command*
 			List all user-defined commands.  When listing commands,
-			the characters in the first two columns are
+			the characters in the first columns are:
 			    !	Command has the -bang attribute
 			    "	Command has the -register attribute
+			    |   Command has the -bar attribute
 			    b	Command is local to current buffer
 			(see below for details on attributes)
 			The list can be filtered on command name with
@@ -1218,6 +1216,10 @@ See |:verbose-cmd| for more information.
 			attributes (see below) are {attr}.  If the command
 			already exists, an error is reported, unless a ! is
 			specified, in which case the command is redefined.
+			There is one exception: When sourcing a script again,
+			a command that was previously defined in that script
+			will be silently replaced.
+
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
@@ -1225,7 +1227,8 @@ See |:verbose-cmd| for more information.
 :comc[lear]						*:comc* *:comclear*
 			Delete all user-defined commands.
 
-Command attributes
+
+Command attributes ~
 
 User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
@@ -1236,14 +1239,15 @@ There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
 attributes are described below, by category.
 
-Argument handling				*E175* *E176* *:command-nargs*
 
+Argument handling ~
+						*E175* *E176* *:command-nargs*
 By default, a user defined command will take no arguments (and an error is
 reported if any are supplied).  However, it is possible to specify that the
 command can take arguments, using the -nargs attribute.  Valid cases are:
 
 	-nargs=0    No arguments are allowed (the default)
-	-nargs=1    Exactly one argument is required, it includes spaces 
+	-nargs=1    Exactly one argument is required, it includes spaces
 	-nargs=*    Any number of arguments are allowed (0, 1, or many),
 		    separated by white space
 	-nargs=?    0 or 1 arguments are allowed
@@ -1266,12 +1270,15 @@ defined, not where it is invoked!  Example:
 Executing script2.vim will result in "None" being echoed.  Not what you
 intended!  Calling a function may be an alternative.
 
-Completion behavior				*:command-completion* *E179*
-					*E180* *E181* *:command-complete*
+
+Completion behavior ~
+				*:command-completion* *E179* *E180* *E181*
+				*:command-complete*
 By default, the arguments of user defined commands do not undergo completion.
 However, by specifying one or the other of the following attributes, argument
 completion can be enabled:
 
+	-complete=arglist	file names in argument list
 	-complete=augroup	autocmd groups
 	-complete=buffer	buffer names
 	-complete=behave	:behave suboptions
@@ -1311,9 +1318,9 @@ completion can be enabled:
 Note: That some completion methods might expand environment variables.
 
 
-Custom completion			*:command-completion-custom*
-					*:command-completion-customlist*
-					*E467* *E468*
+Custom completion ~
+				*:command-completion-custom*
+				*:command-completion-customlist* *E467* *E468*
 It is possible to define customized completion schemes via the "custom,{func}"
 or the "customlist,{func}" completion argument.  The {func} part should be a
 function with the following signature: >
@@ -1358,8 +1365,8 @@ the 'path' option: >
 This example does not work for file names with spaces!
 
 
-Range handling				*E177* *E178* *:command-range*
-							*:command-count*
+Range handling ~
+				*E177* *E178* *:command-range* *:command-count*
 By default, user-defined commands do not accept a line number range.  However,
 it is possible to specify that the command does take a range (the -range
 attribute), or that it takes an arbitrary count value, either in the line
@@ -1376,7 +1383,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-		    Specifying -count (without a default) acts like -count=0
+	-count	    acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1386,15 +1393,21 @@ It is possible that the special characters in the range like ., $ or % which
 by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
-Possible values are:
-	-addr=lines		Range of lines (this is the default)
-	-addr=arguments		Range for arguments
-	-addr=buffers		Range for buffers (also not loaded buffers)
-	-addr=loaded_buffers	Range for loaded buffers
-	-addr=windows		Range for windows
-	-addr=tabs		Range for tab pages
+Possible values are (second column is the short name used in listing):
+    -addr=lines		  	Range of lines (this is the default for -range)
+    -addr=arguments	  arg	Range for arguments
+    -addr=buffers	  buf	Range for buffers (also not loaded buffers)
+    -addr=loaded_buffers  load	Range for loaded buffers
+    -addr=windows	  win	Range for windows
+    -addr=tabs		  tab	Range for tab pages
+    -addr=quickfix	  qf	Range for quickfix entries
+    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+				as with "lines" (this is the default for
+				-count)
 
-Special cases				*:command-bang* *:command-bar*
+
+Special cases ~
+					*:command-bang* *:command-bar*
 					*:command-register* *:command-buffer*
 There are some special cases as well:
 
@@ -1412,7 +1425,8 @@ replacement text separately.
 Note that these arguments can be abbreviated, but that is a deprecated
 feature.  Use the full name for new scripts.
 
-Replacement text
+
+Replacement text ~
 
 The replacement text for a user defined command is scanned for special escape
 sequences, using <...> notation.  Escape sequences are replaced with values
@@ -1549,4 +1563,4 @@ local to the script and use mappings local to the script.  When the user
 invokes the user command, it will run in the context of the script it was
 defined in.  This matters if |<SID>| is used in a command.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

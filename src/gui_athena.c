@@ -52,8 +52,6 @@ static XtIntervalId timer = 0;	    /* 0 = expired, otherwise active */
 static vimmenu_T *a_cur_menu = NULL;
 static Cardinal	athena_calculate_ins_pos(Widget);
 
-static Pixmap gui_athena_create_pullright_pixmap(Widget);
-static void gui_athena_menu_timeout(XtPointer, XtIntervalId *);
 static void gui_athena_popup_callback(Widget, XtPointer, XtPointer);
 static void gui_athena_delayed_arm_action(Widget, XEvent *, String *,
 						 Cardinal *);
@@ -70,8 +68,6 @@ static void gui_mch_reset_focus(void);
 static Widget toolBar = (Widget)0;
 #endif
 
-static void gui_athena_scroll_cb_jump(Widget, XtPointer, XtPointer);
-static void gui_athena_scroll_cb_scroll(Widget, XtPointer, XtPointer);
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_MENU)
 static void gui_athena_menu_colors(Widget id);
 #endif
@@ -445,7 +441,6 @@ gui_x11_destroy_widgets(void)
 # endif
 
 static void createXpmImages(char_u *path, char **xpm, Pixmap *sen);
-static void get_toolbar_pixmap(vimmenu_T *menu, Pixmap *sen);
 
 /*
  * Allocated a pixmap for toolbar menu "menu".
@@ -646,7 +641,6 @@ static Widget	submenu_widget(Widget);
 static Boolean	has_submenu(Widget);
 static void gui_mch_submenu_change(vimmenu_T *mp, int colors);
 static void gui_athena_menu_font(Widget id);
-static Boolean	gui_athena_menu_has_submenus(Widget, Widget);
 
     void
 gui_mch_enable_menu(int flag)
@@ -906,7 +900,7 @@ gui_athena_menu_font(Widget id)
 	{
 	    XtUnmanageChild(id);
 	    XtVaSetValues(id, XtNfontSet, gui.menu_fontset, NULL);
-	    /* We should force the widget to recalculate it's
+	    /* We should force the widget to recalculate its
 	     * geometry now. */
 	    XtManageChild(id);
 	}
@@ -935,7 +929,7 @@ gui_athena_menu_font(Widget id)
 	if (has_submenu(id))
 	    XtVaSetValues(id, XtNrightBitmap, pullerBitmap, NULL);
 
-	/* Force the widget to recalculate it's geometry now. */
+	/* Force the widget to recalculate its geometry now. */
 	if (managed)
 	    XtManageChild(id);
     }
@@ -995,7 +989,7 @@ gui_mch_new_menu_font(void)
 	}
     }
     /* Now, to simulate the window being resized.  Only, this
-     * will resize the window to it's current state.
+     * will resize the window to its current state.
      *
      * There has to be a better way, but I do not see one at this time.
      * (David Harrison)
@@ -1077,7 +1071,7 @@ gui_mch_submenu_change(
 		}
 
 # ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change it's colors */
+		/* If we have a tooltip, then we need to change its colors */
 		if (mp->tip != NULL)
 		{
 		    Arg args[2];
@@ -1095,7 +1089,7 @@ gui_mch_submenu_change(
 	    {
 		gui_athena_menu_font(mp->id);
 #ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change it's font */
+		/* If we have a tooltip, then we need to change its font */
 		/* Assume XtNinternational == True (in createBalloonEvalWindow)
 		 */
 		if (mp->tip != NULL)
@@ -1558,7 +1552,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	 * This is a hack to stop the Athena simpleMenuWidget from getting a
 	 * BadValue error when a menu's last child is destroyed. We check to
 	 * see if this is the last child and if so, don't delete it. The parent
-	 * will be deleted soon anyway, and it will delete it's children like
+	 * will be deleted soon anyway, and it will delete its children like
 	 * all good widgets do.
 	 */
 	/* NOTE: The cause of the BadValue X Protocol Error is because when the
@@ -2040,10 +2034,6 @@ gui_mch_browse(
 
 static int	dialogStatus;
 static Atom	dialogatom;
-
-static void keyhit_callback(Widget w, XtPointer client_data, XEvent *event, Boolean *cont);
-static void butproc(Widget w, XtPointer client_data, XtPointer call_data);
-static void dialog_wm_handler(Widget w, XtPointer client_data, XEvent *event, Boolean *dum);
 
 /*
  * Callback function for the textfield.  When CR is hit this works like

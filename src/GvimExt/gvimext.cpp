@@ -16,14 +16,7 @@
 
 #include "gvimext.h"
 
-#ifdef __BORLANDC__
-# include <dir.h>
-# ifndef _strnicmp
-#  define _strnicmp(a, b, c) strnicmp((a), (b), (c))
-# endif
-#else
 static char *searchpath(char *name);
-#endif
 
 // Always get an error while putting the following stuff to the
 // gvimext.h file as class protected variables, give up and
@@ -708,11 +701,26 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	m_edit_existing_off = 1;
     }
 
+    HMENU hSubMenu = NULL;
+    if (m_cntOfHWnd > 1)
+    {
+	hSubMenu = CreatePopupMenu();
+	mii.fMask |= MIIM_SUBMENU;
+	mii.wID = idCmd;
+	mii.dwTypeData = _("Edit with existing Vim");
+	mii.cch = lstrlen(mii.dwTypeData);
+	mii.hSubMenu = hSubMenu;
+	InsertMenuItem(hMenu, indexMenu++, TRUE, &mii);
+	mii.fMask = mii.fMask & ~MIIM_SUBMENU;
+	mii.hSubMenu = NULL;
+    }
     // Now display all the vim instances
     for (int i = 0; i < m_cntOfHWnd; i++)
     {
 	char title[BUFSIZE];
 	char temp[BUFSIZE];
+	int index;
+	HMENU hmenu;
 
 	// Obtain window title, continue if can not
 	if (GetWindowText(m_hWnd[i], title, BUFSIZE - 1) == 0)
@@ -726,15 +734,30 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 	    *pos = 0;
 	}
 	// Now concatenate
-	strncpy(temp, _("Edit with existing Vim - "), BUFSIZE - 1);
-	temp[BUFSIZE - 1] = '\0';
+	if (m_cntOfHWnd > 1)
+	    temp[0] = '\0';
+	else
+	{
+	    strncpy(temp, _("Edit with existing Vim - "), BUFSIZE - 1);
+	    temp[BUFSIZE - 1] = '\0';
+	}
 	strncat(temp, title, BUFSIZE - 1 - strlen(temp));
 	temp[BUFSIZE - 1] = '\0';
 
 	mii.wID = idCmd++;
 	mii.dwTypeData = temp;
 	mii.cch = lstrlen(mii.dwTypeData);
-	InsertMenuItem(hMenu, indexMenu++, TRUE, &mii);
+	if (m_cntOfHWnd > 1)
+	{
+	    hmenu = hSubMenu;
+	    index = i;
+	}
+	else
+	{
+	    hmenu = hMenu;
+	    index = indexMenu++;
+	}
+	InsertMenuItem(hmenu, index, TRUE, &mii);
     }
     // InsertMenu(hMenu, indexMenu++, MF_SEPARATOR|MF_BYPOSITION, 0, NULL);
 
@@ -887,7 +910,6 @@ BOOL CShellExt::LoadMenuIcon()
 	return TRUE;
 }
 
-#ifndef __BORLANDC__
     static char *
 searchpath(char *name)
 {
@@ -907,7 +929,6 @@ searchpath(char *name)
     }
     return (char *)"";
 }
-#endif
 
 STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
 				   LPCSTR  /* pszWorkingDir */,
@@ -994,6 +1015,8 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 
     cmdlen = BUFSIZE;
     cmdStrW  = (wchar_t *) malloc(cmdlen * sizeof(wchar_t));
+    if (cmdStrW == NULL)
+	return E_FAIL;
     getGvimInvocationW(cmdStrW);
 
     if (useDiff)
@@ -1009,7 +1032,13 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	if (len > cmdlen)
 	{
 	    cmdlen = len + BUFSIZE;
-	    cmdStrW = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    wchar_t *cmdStrW_new = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
+	    if (cmdStrW_new == NULL)
+	    {
+		free(cmdStrW);
+		return E_FAIL;
+	    }
+	    cmdStrW = cmdStrW_new;
 	}
 	wcscat(cmdStrW, L" \"");
 	wcscat(cmdStrW, m_szFileUserClickedOn);
@@ -1046,7 +1075,6 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
     }
-
     free(cmdStrW);
 
     return NOERROR;

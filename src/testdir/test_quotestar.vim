@@ -1,6 +1,7 @@
 " *-register (quotestar) tests
 
-if !has('clipboard')
+source shared.vim
+if !WorkingClipboard()
   finish
 endif
 
@@ -54,41 +55,39 @@ func Do_test_quotestar_for_x11()
   " Make sure a previous server has exited
   try
     call remote_send(name, ":qa!\<CR>")
-    call WaitFor('serverlist() !~ "' . name . '"')
   catch /E241:/
   endtry
-  call assert_notmatch(name, serverlist())
+  call WaitForAssert({-> assert_notmatch(name, serverlist())})
 
   let cmd .= ' --servername ' . name
   let job = job_start(cmd, {'stoponexit': 'kill', 'out_io': 'null'})
-  call WaitFor({-> job_status(job) == "run"})
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
 
   " Takes a short while for the server to be active.
-  call WaitFor('serverlist() =~ "' . name . '"')
-  call assert_match(name, serverlist())
+  call WaitForAssert({-> assert_match(name, serverlist())})
 
   " Wait for the server to be up and answering requests.  One second is not
   " always sufficient.
-  call WaitFor('remote_expr("' . name . '", "v:version", "", 2) != ""')
+  call WaitForAssert({-> assert_notequal('', remote_expr(name, "v:version", "", 2))})
 
-  " Clear the *-register of this vim instance.
-  let @* = ''
-
-  " Try to change the *-register of the server.
+  " Clear the *-register of this vim instance and wait for it to be picked up
+  " by the server.
+  let @* = 'no'
   call remote_foreground(name)
+  call WaitForAssert({-> assert_equal("no", remote_expr(name, "@*", "", 1))})
+
+  " Set the * register on the server.
   call remote_send(name, ":let @* = 'yes'\<CR>")
-  call WaitFor('remote_expr("' . name . '", "@*", "", 1) == "yes"')
-  call assert_equal('yes', remote_expr(name, "@*", "", 2))
+  call WaitForAssert({-> assert_equal("yes", remote_expr(name, "@*", "", 1))})
 
   " Check that the *-register of this vim instance is changed as expected.
-  call WaitFor('@* == "yes"')
-  call assert_equal('yes', @*)
+  call WaitForAssert({-> assert_equal("yes", @*)})
 
   " Handle the large selection over 262040 byte.
   let length = 262044
   let sample = 'a' . repeat('b', length - 2) . 'c'
   let @* = sample
-  call WaitFor('remote_expr("' . name . '", "len(@*) >= ' . length . '", "", 1)', 3000)
+  call WaitFor('remote_expr("' . name . '", "len(@*) >= ' . length . '", "", 1)')
   let res = remote_expr(name, "@*", "", 2)
   call assert_equal(length, len(res))
   " Check length to prevent a large amount of output at assertion failure.
@@ -99,7 +98,7 @@ func Do_test_quotestar_for_x11()
   if has('unix') && has('gui') && !has('gui_running')
     let @* = ''
 
-    " Running in a terminal and the GUI is avaiable: Tell the server to open
+    " Running in a terminal and the GUI is available: Tell the server to open
     " the GUI and check that the remote command still works.
     " Need to wait for the GUI to start up, otherwise the send hangs in trying
     " to send to the terminal window.
@@ -110,18 +109,17 @@ func Do_test_quotestar_for_x11()
       call remote_send(name, ":gui -f\<CR>")
     endif
     " Wait for the server in the GUI to be up and answering requests.
-    call WaitFor('remote_expr("' . name . '", "has(\"gui_running\")", "", 1) =~ "1"')
+    call WaitForAssert({-> assert_match("1", remote_expr(name, "has('gui_running')", "", 1))})
 
     call remote_send(name, ":let @* = 'maybe'\<CR>")
-    call WaitFor('remote_expr("' . name . '", "@*", "", 1) == "maybe"')
-    call assert_equal('maybe', remote_expr(name, "@*", "", 2))
+    call WaitForAssert({-> assert_equal("maybe", remote_expr(name, "@*", "", 2))})
 
     call assert_equal('maybe', @*)
   endif
 
   call remote_send(name, ":qa!\<CR>")
   try
-    call WaitFor({-> job_status(job) == "dead"})
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
   finally
     if job_status(job) != 'dead'
       call assert_report('Server did not exit')

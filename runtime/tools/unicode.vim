@@ -383,7 +383,7 @@ let s:ambitable = []
 call BuildWidthTable('A', 'ambiguous')
 
 " Edit the emoji text file.  Requires the netrw plugin.
-edit http://unicode.org/Public/emoji/5.0/emoji-data.txt
+edit https://www.unicode.org/Public/emoji/11.0/emoji-data.txt
 "edit http://www.unicode.org/Public/emoji/latest/emoji-data.txt
 
 " Build the emoji table. Ver. 1.0 - 6.0

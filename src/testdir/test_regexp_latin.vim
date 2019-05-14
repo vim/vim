@@ -72,3 +72,72 @@ func Test_backref()
   call assert_fails('call search("\\%#=2\\(e\\1\\)")', 'E65:')
   bwipe!
 endfunc
+
+func Test_multi_failure()
+  set re=1
+  call assert_fails('/a**', 'E61:')
+  call assert_fails('/a*\+', 'E62:')
+  call assert_fails('/a\{a}', 'E554:')
+  set re=2
+  call assert_fails('/a**', 'E871:')
+  call assert_fails('/a*\+', 'E871:')
+  call assert_fails('/a\{a}', 'E870:')
+  set re=0
+endfunc
+
+func Test_recursive_addstate()
+  " This will call addstate() recursively until it runs into the limit.
+  let lnum = search('\v((){328}){389}')
+  call assert_equal(0, lnum)
+endfunc
+
+func Test_out_of_memory()
+  new
+  s/^/,n
+  " This will be slow...
+  call assert_fails('call search("\\v((n||<)+);")', 'E363:')
+endfunc
+
+func Test_get_equi_class()
+  new
+  " Incomplete equivalence class caused invalid memory access
+  s/^/[[=
+  call assert_equal(1, search(getline(1)))
+  s/.*/[[.
+  call assert_equal(1, search(getline(1)))
+endfunc
+
+func Test_rex_init()
+  set noincsearch
+  set re=1
+  new
+  setlocal iskeyword=a-z
+  call setline(1, ['abc', 'ABC'])
+  call assert_equal(1, search('[[:keyword:]]'))
+  new
+  setlocal iskeyword=A-Z
+  call setline(1, ['abc', 'ABC'])
+  call assert_equal(2, search('[[:keyword:]]'))
+  bwipe!
+  bwipe!
+  set re=0
+endfunc
+
+func Test_range_with_newline()
+  new
+  call setline(1, "a")
+  call assert_equal(0, search("[ -*\\n- ]"))
+  call assert_equal(0, search("[ -*\\t-\\n]"))
+  bwipe!
+endfunc
+
+func Test_pattern_compile_speed()
+  if !exists('+spellcapcheck') || !has('reltime')
+    return
+  endif
+  let start = reltime()
+  " this used to be very slow, not it should be about a second
+  set spc=\\v(((((Nxxxxxxx&&xxxx){179})+)+)+){179}
+  call assert_inrange(0.01, 10.0, reltimefloat(reltime(start)))
+  set spc=
+endfunc

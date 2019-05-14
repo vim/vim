@@ -34,14 +34,16 @@ typedef struct {
     char    *magic;	/* magic bytes stored in file header */
     int	    salt_len;	/* length of salt, or 0 when not using salt */
     int	    seed_len;	/* length of seed, or 0 when not using salt */
+#ifdef CRYPT_NOT_INPLACE
     int	    works_inplace; /* encryption/decryption can be done in-place */
+#endif
     int	    whole_undofile; /* whole undo file is encrypted */
 
     /* Optional function pointer for a self-test. */
     int (* self_test_fn)();
 
-    /* Function pointer for initializing encryption/decription. */
-    void (* init_fn)(cryptstate_T *state, char_u *key,
+    // Function pointer for initializing encryption/decryption.
+    int (* init_fn)(cryptstate_T *state, char_u *key,
 		      char_u *salt, int salt_len, char_u *seed, int seed_len);
 
     /* Function pointers for encoding/decoding from one buffer into another.
@@ -80,7 +82,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~01!",
 	0,
 	0,
+#ifdef CRYPT_NOT_INPLACE
 	TRUE,
+#endif
 	FALSE,
 	NULL,
 	crypt_zip_init,
@@ -95,7 +99,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~02!",
 	8,
 	8,
+#ifdef CRYPT_NOT_INPLACE
 	TRUE,
+#endif
 	FALSE,
 	blowfish_self_test,
 	crypt_blowfish_init,
@@ -110,7 +116,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~03!",
 	8,
 	8,
+#ifdef CRYPT_NOT_INPLACE
 	TRUE,
+#endif
 	TRUE,
 	blowfish_self_test,
 	crypt_blowfish_init,
@@ -118,6 +126,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	NULL, NULL,
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
+
+    /* NOTE: when adding a new method, use some random bytes for the magic key,
+     * to avoid that a text file is recognized as encrypted. */
 };
 
 #define CRYPT_MAGIC_LEN	12	/* cannot change */
@@ -159,11 +170,12 @@ crypt_method_nr_from_magic(char *ptr, int len)
 
     i = (int)STRLEN(crypt_magic_head);
     if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
-	EMSG(_("E821: File is encrypted with unknown method"));
+	emsg(_("E821: File is encrypted with unknown method"));
 
     return -1;
 }
 
+#ifdef CRYPT_NOT_INPLACE
 /*
  * Return TRUE if the crypt method for "method_nr" can be done in-place.
  */
@@ -172,6 +184,7 @@ crypt_works_inplace(cryptstate_T *state)
 {
     return cryptmethods[state->method_nr].works_inplace;
 }
+#endif
 
 /*
  * Get the crypt method for buffer "buf" as a number.
@@ -230,6 +243,7 @@ crypt_self_test(void)
 
 /*
  * Allocate a crypt state and initialize it.
+ * Return NULL for failure.
  */
     cryptstate_T *
 crypt_create(
@@ -242,8 +256,16 @@ crypt_create(
 {
     cryptstate_T *state = (cryptstate_T *)alloc((int)sizeof(cryptstate_T));
 
+    if (state == NULL)
+	return state;
+
     state->method_nr = method_nr;
-    cryptmethods[method_nr].init_fn(state, key, salt, salt_len, seed, seed_len);
+    if (cryptmethods[method_nr].init_fn(
+			   state, key, salt, salt_len, seed, seed_len) == FAIL)
+    {
+        vim_free(state);
+        return NULL;
+    }
     return state;
 }
 
@@ -349,10 +371,7 @@ crypt_create_for_writing(
 
     state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
     if (state == NULL)
-    {
-	vim_free(*header);
-	*header = NULL;
-    }
+	VIM_CLEAR(*header);
     return state;
 }
 
@@ -366,6 +385,7 @@ crypt_free_state(cryptstate_T *state)
     vim_free(state);
 }
 
+#ifdef CRYPT_NOT_INPLACE
 /*
  * Encode "from[len]" and store the result in a newly allocated buffer, which
  * is stored in "newptr".
@@ -422,6 +442,7 @@ crypt_decode_alloc(
     method->decode_fn(state, ptr, len, *newptr);
     return len;
 }
+#endif
 
 /*
  * Encrypting "from[len]" into "to[len]".
@@ -436,6 +457,7 @@ crypt_encode(
     cryptmethods[state->method_nr].encode_fn(state, from, len, to);
 }
 
+#if 0  // unused
 /*
  * decrypting "from[len]" into "to[len]".
  */
@@ -448,6 +470,7 @@ crypt_decode(
 {
     cryptmethods[state->method_nr].decode_fn(state, from, len, to);
 }
+#endif
 
 /*
  * Simple inplace encryption, modifies "buf[len]" in place.
@@ -499,7 +522,7 @@ crypt_check_method(int method)
     if (method < CRYPT_M_BF2)
     {
 	msg_scroll = TRUE;
-	MSG(_("Warning: Using a weak encryption method; see :help 'cm'"));
+	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
     }
 }
 
@@ -541,7 +564,7 @@ crypt_get_key(
 	{
 	    if (p2 != NULL && STRCMP(p1, p2) != 0)
 	    {
-		MSG(_("Keys don't match!"));
+		msg(_("Keys don't match!"));
 		crypt_free_key(p1);
 		crypt_free_key(p2);
 		p2 = NULL;

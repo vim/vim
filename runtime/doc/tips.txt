@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 8.0.  Last change: 2009 Nov 07
+*tips.txt*      For Vim version 8.1.  Last change: 2009 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -408,14 +408,13 @@ when they are not in the same location as the compressed "doc" directory.  See
 ==============================================================================
 Executing shell commands in a window			*shell-window*
 
-There have been questions for the possibility to execute a shell in a window
-inside Vim.  The answer: you can't!  Including this would add a lot of code to
-Vim, which is a good reason not to do this.  After all, Vim is an editor, it
-is not supposed to do non-editing tasks.  However, to get something like this,
-you might try splitting your terminal screen or display window with the
+See |terminal|.
+
+Another solution is splitting your terminal screen or display window with the
 "splitvt" program.  You can probably find it on some ftp server.  The person
 that knows more about this is Sam Lantinga <slouken@cs.ucdavis.edu>.
-An alternative is the "window" command, found on BSD Unix systems, which
+
+Another alternative is the "window" command, found on BSD Unix systems, which
 supports multiple overlapped windows.  Or the "screen" program, found at
 www.uni-erlangen.de, which supports a stack of windows.
 
@@ -531,4 +530,4 @@ A slightly more advanced version is used in the |matchparen| plugin.
 	autocmd InsertEnter * match none
 <
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

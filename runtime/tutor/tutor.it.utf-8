@@ -14,7 +14,7 @@
      I comandi nelle lezioni modificano questo testo. Fai una copia di questo
      file per esercitarti (se hai usato "vimtutor", stai già usando una copia).
 
-     E' importante non scordare che questa guida vuole insegnare tramite
+     È importante non scordare che questa guida vuole insegnare tramite
      l'uso. Questo vuol dire che devi eseguire i comandi per impararli
      davvero. Se leggi il testo e basta, dimenticherai presto i comandi!
 
@@ -406,7 +406,7 @@ NOTA:  Se batti solo il movimento mentre sei in Modalità Normale, senza
 --->  Ammattendo quetta lince, qualcuno ho predato alcuni tosti sballiati!
 --->  Immettendo questa linea, qualcuno ha premuto alcuni tasti sbagliati!
 
-  5. Ora passa alla Lezione 3.2.
+  5. Ora passa alla Lezione 3.3.
 
 NOTA: Ricordati che dovresti imparare con la pratica, non solo leggendo.
 
@@ -612,7 +612,7 @@ NOTA: Questo è molto utile nel "debug" di un programma con parentesi errate!
      visualizza una lista della tua directory, proprio come se fossi in una
      "shell". Usa   :!dir  se  ls  non funziona.   [Unix: ls  MS-DOS: dir]
 
-NOTA:  E' possibile in questo modo eseguire un comando a piacere, specificando
+NOTA:  È possibile in questo modo eseguire un comando a piacere, specificando
        anche dei parametri per i comandi stessi.
 
 NOTA:  Tutti i comandi  :  devono essere terminati premendo <INVIO>
@@ -956,7 +956,7 @@ NOTA:  Il completamento è disponibile per molti comandi.  Prova a battere
   Quest'altro libro è più su Vi che su Vim, ma è pure consigliato:
 	Learning the Vi Editor - di Linda Lamb e Arnold Robbins
 	Editore: O'Reilly & Associates Inc.
-  E' un buon libro per imparare quasi tutto ciò che puoi voler fare con Vi.
+  È un buon libro per imparare quasi tutto ciò che puoi voler fare con Vi.
   Ne esiste una traduzione italiana, basata su una vecchia edizione.
 
   Questa guida è stata scritta da Michael C. Pierce e Robert K. Ware,

@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.0.  Last change: 2010 Jul 20
+*print.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,6 @@ Printing						*printing*
 7. PostScript Utilities			|postscript-print-util|
 8. Formfeed Characters			|printing-formfeed|
 
-{Vi has None of this}
 {only available when compiled with the |+printer| feature}
 
 ==============================================================================
@@ -46,6 +45,8 @@ Note: If you have problems printing with |:hardcopy|, an alternative is to use
 			'printexpr' through |v:cmdarg|.  Otherwise [arguments]
 			is ignored.  'printoptions' can be used to specify
 			paper size, duplex, etc.
+			Note: If you want PDF, there are tools such as
+			"ps2pdf" that can convert the PostScript to PDF.
 
 :[range]ha[rdcopy][!] >{filename}
 			As above, but write the resulting PostScript in file
@@ -109,10 +110,9 @@ not recognized by Vim will just be converted to lower case and underscores
 replaced with '-' signs.
 
 If 'printencoding' is empty or Vim cannot find the file then it will use
-'encoding' (if Vim is compiled with |+multi_byte| and it is set an 8-bit
-encoding) to find the print character encoding file.  If Vim is unable to find
-a character encoding file then it will use the "latin1" print character
-encoding file.
+'encoding' (if it is set an 8-bit encoding) to find the print character
+encoding file.  If Vim is unable to find a character encoding file then it
+will use the "latin1" print character encoding file.
 
 When 'encoding' is set to a multi-byte encoding, Vim will try to convert
 characters to the printing encoding for printing (if 'printencoding' is empty
@@ -253,9 +253,9 @@ possible.  The following tables show the valid combinations:
   Japanese	JIS_C_1978	   x	   x
 		JIS_X_1983	   x	   x
 		JIS_X_1990	   x		  x	  x
-		MSWINDOWS	   x
-		KANJITALK6	   x
-		KANJITALK7	   x
+		MSWINDOWS		   x
+		KANJITALK6		   x
+		KANJITALK7		   x
 
 				euc-kr	 cp949	ucs-2	utf-8 ~
   Korean	KS_X_1992	   x
@@ -752,4 +752,4 @@ to adjust the number of lines before a formfeed character to prevent
 accidental blank pages.
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

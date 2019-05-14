@@ -16,7 +16,7 @@ func TearDown()
 endfunc
 
 " Test for resetting "secure" flag after GUI has started.
-" Must be run first.
+" Must be run first, since it starts the GUI on Unix.
 func Test_1_set_secure()
   set exrc secure
   gui -f
@@ -33,13 +33,30 @@ endfunc
 
 func Test_colorscheme()
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
+  let g:color_count = 0
+  augroup TestColors
+    au!
+    au ColorScheme * let g:color_count += 1| let g:after_colors = g:color_count
+    au ColorSchemePre * let g:color_count += 1 |let g:before_colors = g:color_count
+  augroup END
 
   colorscheme torte
   redraw!
-  sleep 200m
   call assert_equal('dark', &background)
+  call assert_equal(1, g:before_colors)
+  call assert_equal(2, g:after_colors)
+  call assert_equal("\ntorte", execute('colorscheme'))
+
+  let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
+  call assert_match("\nSearch         xxx term=reverse ctermfg=0 ctermbg=12 gui=bold guifg=Black guibg=Red", a)
+
+  call assert_fails('colorscheme does_not_exist', 'E185:')
 
   exec 'colorscheme' colorscheme_saved
+  augroup TestColors
+    au!
+  augroup END
+  unlet g:color_count g:after_colors g:before_colors
   redraw!
 endfunc
 
@@ -98,6 +115,7 @@ func Test_getwinpos()
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
   call assert_true(getwinposy() >= 0)
+  call assert_equal([getwinposx(), getwinposy()], getwinpos())
 endfunc
 
 func Test_quoteplus()
@@ -126,7 +144,7 @@ func Test_quoteplus()
 
     " Set the quoteplus register to test_call, and another gvim will launched.
     " Then, it first tries to paste the content of its own quotedplus register
-    " onto it.  Second, it tries to substitute test_responce for the pasted
+    " onto it.  Second, it tries to substitute test_response for the pasted
     " sentence.  If the sentence is identical to test_call, the substitution
     " should succeed.  Third, it tries to yank the result of the substitution
     " to its own quoteplus register, and last it quits.  When system()
@@ -237,7 +255,7 @@ func Test_set_balloonexpr()
   setl ballooneval
   call assert_equal('MyBalloonExpr()', &balloonexpr)
   " TODO Read non-empty text, place the pointer at a character of a word,
-  " and check if the content of the balloon is the smae as what is expected.
+  " and check if the content of the balloon is the same as what is expected.
   " Also, check if textlock works as expected.
   setl balloonexpr&
   call assert_equal('', &balloonexpr)
@@ -255,7 +273,7 @@ func Test_set_balloonexpr()
     setl ballooneval
     call assert_equal('MyBalloonFuncForMultilineUsingNL()', &balloonexpr)
     " TODO Read non-empty text, place the pointer at a character of a word,
-    " and check if the content of the balloon is the smae as what is
+    " and check if the content of the balloon is the same as what is
     " expected.  Also, check if textlock works as expected.
     setl balloonexpr&
     delfunc MyBalloonFuncForMultilineUsingNL
@@ -270,7 +288,7 @@ func Test_set_balloonexpr()
     setl ballooneval
     call assert_equal('MyBalloonFuncForMultilineUsingList()', &balloonexpr)
     " TODO Read non-empty text, place the pointer at a character of a word,
-    " and check if the content of the balloon is the smae as what is
+    " and check if the content of the balloon is the same as what is
     " expected.  Also, check if textlock works as expected.
     setl balloonexpr&
     delfunc MyBalloonFuncForMultilineUsingList
@@ -654,6 +672,56 @@ func Test_set_guioptions()
   let &guioptions = guioptions_saved
 endfunc
 
+func Test_scrollbars()
+  new
+  " buffer with 200 lines
+  call setline(1, repeat(['one', 'two'], 100))
+  set guioptions+=rlb
+
+  " scroll to move line 11 at top, moves the cursor there
+  call test_scrollbar('left', 10, 0)
+  redraw
+  call assert_equal(1, winline())
+  call assert_equal(11, line('.'))
+
+  " scroll to move line 1 at top, cursor stays in line 11
+  call test_scrollbar('right', 0, 0)
+  redraw
+  call assert_equal(11, winline())
+  call assert_equal(11, line('.'))
+
+  set nowrap
+  call setline(11, repeat('x', 150))
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(1, col('.'))
+
+  " scroll to character 11, cursor is moved
+  call test_scrollbar('hor', 10, 0)
+  redraw
+  call assert_equal(1, wincol())
+  call assert_equal(11, col('.'))
+
+  set guioptions&
+  set wrap&
+  bwipe!
+endfunc
+
+func Test_menu()
+  " Check Help menu exists
+  let help_menu = execute('menu Help')
+  call assert_match('Overview', help_menu)
+
+  " Check Help menu works
+  emenu Help.Overview
+  call assert_equal('help', &buftype)
+  close
+
+  " Check deleting menu doesn't cause trouble.
+  aunmenu Help
+  call assert_fails('menu Help', 'E329:')
+endfunc
+
 func Test_set_guipty()
   let guipty_saved = &guipty
 
@@ -665,6 +733,21 @@ func Test_set_guipty()
   call assert_equal(0, &guipty)
 
   let &guipty = guipty_saved
+endfunc
+
+func Test_encoding_conversion()
+  " GTK supports conversion between 'encoding' and "utf-8"
+  if has('gui_gtk')
+    let encoding_saved = &encoding
+    set encoding=latin1
+
+    " would be nice if we could take a screenshot
+    intro
+    " sets the window title
+    edit SomeFile
+
+    let &encoding = encoding_saved
+  endif
 endfunc
 
 func Test_shell_command()
@@ -693,4 +776,34 @@ func Test_windowid_variable()
   else
     call assert_equal(0, v:windowid)
   endif
+endfunc
+
+" Test "vim -g" and also the GUIEnter autocommand.
+func Test_gui_dash_g()
+  let cmd = GetVimCommand('Xscriptgui')
+  call writefile([""], "Xtestgui")
+  call writefile([
+	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
+	\ 'au GUIEnter * qall',
+	\ ], 'Xscriptgui')
+  call system(cmd . ' -g')
+  call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
+
+  call delete('Xscriptgui')
+  call delete('Xtestgui')
+endfunc
+
+" Test "vim -7" and also the GUIEnter autocommand.
+func Test_gui_dash_y()
+  let cmd = GetVimCommand('Xscriptgui')
+  call writefile([""], "Xtestgui")
+  call writefile([
+	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
+	\ 'au GUIEnter * qall',
+	\ ], 'Xscriptgui')
+  call system(cmd . ' -y')
+  call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
+
+  call delete('Xscriptgui')
+  call delete('Xtestgui')
 endfunc

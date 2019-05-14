@@ -57,7 +57,7 @@ void gui_x11_menu_cb(Widget w, XtPointer client_data, XtPointer call_data);
 int gui_mch_is_blinking(void);
 int gui_mch_is_blink_off(void);
 void gui_mch_set_blinking(long waittime, long on, long off);
-void gui_mch_stop_blink(void);
+void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 guicolor_T gui_mch_get_rgb(guicolor_T pixel);
 void gui_x11_callbacks(Widget textArea, Widget vimForm);

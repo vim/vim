@@ -74,17 +74,15 @@ VIMPROG = <->vim.exe
 .SUFFIXES : .out .in
 
 SCRIPT = test1.out test3.out \
-       test14.out test15.out \
        test29.out \
-       test30.out test36.out test37.out test39.out \
+       test30.out test37.out test39.out \
        test42.out test44.out test48.out test49.out \
        test64.out test69.out \
        test72.out test77a.out test88.out \
-       test94.out test95.out test99.out test108.out \
+       test94.out test95.out test99.out \
        test_eval.out
 
 # Known problems:
-# test17: ?
 #
 # test30: bug, most probably - a problem around mac format
 #
@@ -93,7 +91,6 @@ SCRIPT = test1.out test3.out \
 #
 # test72: bug - Vim hangs at :rename (while rename works well otherwise)
 # test78: bug - Vim dies at :recover Xtest 
-# test85: no Lua interface
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
 # test102: Just ODS-5 supports space and special chars in the filename.
 # On ODS-2 tests fail. 
@@ -104,11 +101,11 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test17.out test27.out test49.out
+SCRIPT_UNIX = test10.out test27.out test49.out
 .ENDIF
 
 .IFDEF WANT_WIN
-SCRIPT_WIN = test50.out test52.out
+SCRIPT_WIN = test52.out
 .ENDIF
 
 .IFDEF WANT_SPELL
@@ -119,20 +116,12 @@ SCRIPT_SPELL = test59.out
 SCRIPT_MZSCH = test70.out 
 .ENDIF
 
-.IFDEF HAVE_ODS5                                                                                                                                   
-SCRIPT_ODS5 = test102.out                                                                                                   
-.ENDIF  
-
-.IFDEF HAVE_GZIP
-SCRIPT_GZIP = test11.out
+.IFDEF HAVE_ODS5
+SCRIPT_ODS5 = test102.out
 .ENDIF
 
 .IFDEF HAVE_GDIFF
 SCRIPT_GDIFF = test47.out
-.ENDIF
-
-.IFDEF HAVE_LUA
-SCRIPT_LUA = test85.out
 .ENDIF
 
 .IFDEF HAVE_PYTHON
@@ -159,7 +148,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) $(SCRIPT_GZIP) \
+all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) \
     $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
@@ -213,6 +202,5 @@ clean :
 	-@ if "''F$SEARCH("small.vim")'"    .NES. "" then delete/noconfirm/nolog small.vim.*
 	-@ if "''F$SEARCH("mbyte.vim")'"    .NES. "" then delete/noconfirm/nolog mbyte.vim.*
 	-@ if "''F$SEARCH("mzscheme.vim")'" .NES. "" then delete/noconfirm/nolog mzscheme.vim.*
-	-@ if "''F$SEARCH("lua.vim")'"      .NES. "" then delete/noconfirm/nolog lua.vim.*
 	-@ if "''F$SEARCH("viminfo.*")'"    .NES. "" then delete/noconfirm/nolog viminfo.*.*
 

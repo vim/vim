@@ -1,4 +1,4 @@
-*quotes.txt*    For Vim version 8.0.  Last change: 2010 Nov 03
+*quotes.txt*    For Vim version 8.1.  Last change: 2018 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,7 +18,7 @@ Coming with a very GUI mindset from Windows, I always thought of people using
 Vi as some kind of outer space alien in human clothes.  Once I tried I really
 got addicted by its power and now I found myself typing Vim keypresses in the
 oddest places! That's why I would like to see Vim embedded in every
-application which deals with text editing.  (José Fonseca)
+application which deals with text editing.  (JosÃ© Fonseca)
 
 I was a 12-year emacs user who switched to Vim about a year ago after finally
 giving up on the multiple incompatible versions, flaky contributed packages,
@@ -272,4 +272,4 @@ In summary:
 	    |____/ |_|	\___/|_|   |_|	 (_|_)	    (Tony Nugent, Australia) `
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

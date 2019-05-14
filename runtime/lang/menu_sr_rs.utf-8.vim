@@ -1,6 +1,7 @@
 " Menu Translations: Serbian
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
 " Last Change:	Fri, 30 May 2003 10:17:39 Eastern Daylight Time
+" Adapted for VIM 8 by: Иван Пешић on 2017-12-28 12:05+0400
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -21,6 +22,7 @@ menutrans &Find		      &Нађи
 menutrans &Credits	      &Заслуге
 menutrans Co&pying	      П&реузимање
 menutrans O&rphans	      &Сирочићи
+menutrans &Sponsor/Register   Спонзор/&Региструјте\ се
 menutrans &Version	      &Верзија
 menutrans &About	      &О\ програму
 
@@ -28,6 +30,7 @@ menutrans &About	      &О\ програму
 menutrans &File			    &Датотека
 menutrans &Open\.\.\.<Tab>:e	    &Отвори\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Подели-отвори\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Отвори\ картицу\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew	    &Нова<Tab>:enew
 menutrans &Close<Tab>:close	    &Затвори<Tab>:close
 menutrans &Save<Tab>:w		    &Сачувај<Tab>:w
@@ -54,24 +57,27 @@ menutrans &Select\ all<Tab>ggVG  Изабери\ св&е<Tab>ggVG
 menutrans &Find\.\.\.		 &Нађи\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\. Нађи\ и\ &замени\.\.\.
 menutrans Settings\ &Window	 П&розор\ подешавања
+menutrans Startup\ &Settings	 По&дешавања\ при\ покретању		
 menutrans &Global\ Settings	 Оп&шта\ подешавања
 menutrans F&ile\ Settings	 Подешавања\ за\ да&тотеке
 menutrans &Shiftwidth		 &Померај
 menutrans Soft\ &Tabstop	 &Мека\ табулација
 menutrans Te&xt\ Width\.\.\.	 &Ширина\ текста\.\.\.
 menutrans &File\ Format\.\.\.	 &Врста\ датотеке\.\.\.
-menutrans C&olor\ Scheme	 Бо&је
-menutrans &Keymap		 Прес&ликавање\ тастатуре
+menutrans Show\ C&olor\ Schemes\ in\ Menu	Прикажи\ шеме\ бо&ја\ у\ менију
+menutrans C&olor\ Scheme	\Шеме\ бо&ја
+menutrans Show\ &Keymaps\ in\ Menu	Прикажи\ прес&ликавања\ тастатуре\ у\ менију
+menutrans &Keymap	Прес&ликавања\ тастатуре
 menutrans Select\ Fo&nt\.\.\.	 Избор\ &фонта\.\.\.
 
 " Edit/Global Settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! Нагласи\ &образце\ (да/не)<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic! Занемари\ \величину\ &слова\ (да/не)<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm! Провери\ пратећу\ &заграду\ (да/не)<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic! Занемари\ величину\ &слова\ (да/не)<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Провери\ пратећу\ &заграду\ (да/не)<Tab>:set\ sm!
 menutrans &Context\ lines  Видљиви\ &редови
 menutrans &Virtual\ Edit   Виртуелно\ &уређивање
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!   Режим\ у&носа\ (да/не)<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!     '&Vi'\ сагласно\ (да/не)<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!     '&Vi'\ сагласно\ (да/не)<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\. Путања\ &претраге\.\.\.
 menutrans Ta&g\ Files\.\.\.   &Датотеке\ ознака\.\.\.
 menutrans Toggle\ &Toolbar    Линија\ са\ &алаткама\ (да/не)
@@ -87,28 +93,30 @@ menutrans Block\ and\ Insert  Блок\ и\ унос
 menutrans Always	      Увек
 
 " Edit/File Settings
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!   Редни\ &бројеви\ (да/не)<Tab>:set\ nu!
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!   Прикажи\ &нумерацију\ линија\ (да/не)<Tab>:set\ nu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!   Прикажи\ Релати&вну\ нумерацију\ линија\ (да/не)<Tab>:set\ rnu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!	   Режим\ &листе\ (да/не)<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!	   Обавијање\ &редова\ (да/не)<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!   Преломи\ &на\ реч\ (да/не)<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!	   Размаци\ уместо\ &табулације\ (да/не)<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!	Ауто-&увлачење\ (да/не)<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!	   &Це-увлачење\ (да/не)<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!	   Обавијање\ &редова\ (да/не)<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!   Преломи\ &на\ реч\ (да/не)<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!	   Размаци\ уместо\ &табулације\ (да/не)<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!	Ауто-&увлачење\ (да/не)<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	   &C-увлачење\ (да/не)<Tab>:set\ cin!
 
 " Edit/Keymap
-menutrans None Ниједан
+menutrans None Без\ пресликавања
 
 " Tools menu
 menutrans &Tools	&Алатке
 menutrans &Jump\ to\ this\ tag<Tab>g^] Скочи\ на\ &ову\ ознаку<Tab>g^]
 menutrans Jump\ &back<Tab>^T	 Скочи\ &натраг<Tab>^T
 menutrans Build\ &Tags\ File	 Изгради\ &датотеку\ ознака
+menutrans &Spelling	 Пра&вопис
 menutrans &Folding	      &Подвијање
 menutrans Create\ &Fold<Tab>zf		  С&твори\ подвијутак<Tab>zf
 menutrans &Delete\ Fold<Tab>zd		  О&бриши\ подвијутак<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD	  Обриши\ све\ по&двијутке<Tab>zD
 menutrans Fold\ column\ &width		  Ширина\ &реда\ подвијутка
-menutrans &Diff		      &Упоређивање
+"menutrans &Diff		      &Упоређивање
 menutrans &Make<Tab>:make     'mak&е'<Tab>:make
 menutrans &List\ Errors<Tab>:cl     Списак\ &грешака<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!  Сп&исак\ порука<Tab>:cl!
@@ -117,9 +125,25 @@ menutrans &Previous\ Error<Tab>:cp  Пре&тходна\ грешка<Tab>:cp
 menutrans &Older\ List<Tab>:cold    Стари\ списа&к<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew    Но&ви\ списак<Tab>:cnew
 menutrans Error\ &Window	    Прозор\ са\ г&решкама
-menutrans &Set\ Compiler	    И&забери\ преводиоца
+menutrans Se&t\ Compiler	    И&забери\ преводиоца
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	   Претвори\ у\ &ХЕКС<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r    Вр&ати\ у\ првобитан\ облик<Tab>:%!xxd\ -r
+menutrans Show\ Compiler\ Se&ttings\ in\ Menu	Прикажи\ поде&шавања\ преводиоца\ у\ менију
+
+" Tools/Spelling
+menutrans &Spell\ Check\ On	&Укључи\ проверу\ правописа
+menutrans Spell\ Check\ &Off	&Искључи\ проверу\ правописа
+menutrans To\ &Next\ Error<Tab>]s	Иди\ на\ &следећу\ грешку<Tab>]s
+menutrans To\ &Previous\ Error<Tab>[s	Иди\ на\ &претходну\ грешку<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=	Предложи\ исп&равке<Tab>z=
+menutrans &Repeat\ Correction<Tab>:spellrepall	П&онови\ исправку<Tab>:spellrepall
+menutrans Set\ Language\ to\ "en"	Постави\ језик\ на\ "en"
+menutrans Set\ Language\ to\ "en_au" 	Постави\ језик\ на\ "en_au"
+menutrans Set\ Language\ to\ "en_ca" 	Постави\ језик\ на\ "en_ca"
+menutrans Set\ Language\ to\ "en_gb" 	Постави\ језик\ на\ "en_gb"
+menutrans Set\ Language\ to\ "en_nz" 	Постави\ језик\ на\ "en_nz"
+menutrans Set\ Language\ to\ "en_us" 	Постави\ језик\ на\ "en_us"
+menutrans &Find\ More\ Languages	Пронађи\ још\ језика 
 
 " Tools/Folding
 menutrans &Enable/Disable\ folds<Tab>zi   &Омогући/прекини\ подвијање<Tab>zi
@@ -130,6 +154,7 @@ menutrans &Close\ all\ folds<Tab>zM    Затвори\ с&ве\ подвијут
 menutrans O&pen\ more\ folds<Tab>zr    Отвори\ виш&е\ подвијутака<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR     О&твори\ све\ подвијутке<Tab>zR
 menutrans Fold\ Met&hod		       &Начин\ подвијања
+menutrans Fold\ Col&umn\ Width	Ширина\ колоне\ испред\ подвијутака
 
 " Tools/Folding/Fold Method
 menutrans M&anual	&Ручно
@@ -141,8 +166,8 @@ menutrans Ma&rker	&Ознака
 
 " Tools/Diff
 menutrans &Update	&Ажурирај
-menutrans &Get\ Block	&Прихвати\ измену
-menutrans &Put\ Block	Пре&баци\ измену
+menutrans &Get\ Block	&Прихвати\ блок\ изменa
+menutrans &Put\ Block	Пре&баци\ блок\ измена
 
 " Tools/Error Window
 menutrans &Update<Tab>:cwin   &Ажурирај<Tab>:cwin
@@ -190,8 +215,10 @@ menutrans Cu&t		      &Исеци
 menutrans &Copy		      &Копирај
 menutrans &Paste	      &Убаци
 menutrans &Delete	      И&збриши
-menutrans Select\ Blockwise   Бирај\ &правоугаоно
+menutrans Select\ Blockwise   Бирај\ б&локовски
 menutrans Select\ &Word       Изабери\ &реч
+menutrans Select\ &Sentence       Изабери\ р&еченицу
+menutrans Select\ Pa&ragraph       Изабери\ &параграф
 menutrans Select\ &Line       Изабери\ р&ед
 menutrans Select\ &Block      Изабери\ &блок
 menutrans Select\ &All	      Изабери\ &све
@@ -237,9 +264,9 @@ endif
 
 " Syntax menu
 menutrans &Syntax &Синтакса
-menutrans &Show\ filetypes\ in\ menu  Избор\ 'filetype'\ из\ &менија
-menutrans Set\ '&syntax'\ only   Поде&си\ 'syntax'\ само
-menutrans Set\ '&filetype'\ too  Подеси\ 'filetype'\ &такође
+menutrans &Show\ File\ Types\ in\ Menu  Прикажи\ типове\ датотека\ у\ &менију
+menutrans Set\ '&syntax'\ only   Поде&си\ само\ 'syntax' 
+menutrans Set\ '&filetype'\ too  Подеси\ &такође\ и\ 'filetype'
 menutrans &Off       &Искључено
 menutrans &Manual    &Ручно
 menutrans A&utomatic    &Аутоматски
@@ -257,7 +284,9 @@ let g:menutrans_tags_dialog = "Унесите имена датотека са �
 
 let g:menutrans_textwidth_dialog = "Унесите нову ширину текста (0 спречава прелом)"
 
-let g:menutrans_fileformat_dialog = "Изаберите врсту датотеке"
+let g:menutrans_fileformat_dialog = "Изаберите формат записа датотеке"
+
+let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Откажи"
 
 let menutrans_no_file = "[Нема датотеке]"
 

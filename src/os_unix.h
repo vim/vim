@@ -33,7 +33,7 @@
 # include <stdlib.h>
 #endif
 
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+#ifdef __CYGWIN__
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO
 
@@ -366,11 +366,19 @@ typedef struct dsc$descriptor   DESC;
 
 #ifdef VMS
 # define DFLT_RUNTIMEPATH      "sys$login:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,sys$login:vimfiles/after"
+# define CLEAN_RUNTIMEPATH      "$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 #else
 # ifdef RUNTIME_GLOBAL
-#  define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
+#  ifdef RUNTIME_GLOBAL_AFTER
+#   define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ",~/.vim/after"
+#   define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER
+#  else
+#   define DFLT_RUNTIMEPATH	"~/.vim," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,~/.vim/after"
+#   define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after"
+#  endif
 # else
 #  define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
+#  define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 # endif
 #endif
 
@@ -453,25 +461,6 @@ int mch_rename(const char *src, const char *dest);
 #  endif
 #  define mch_setenv(name, val, x) setenv(name, val, x)
 # endif
-#endif
-
-#if !defined(S_ISDIR) && defined(S_IFDIR)
-# define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
-#endif
-#if !defined(S_ISREG) && defined(S_IFREG)
-# define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
-#if !defined(S_ISBLK) && defined(S_IFBLK)
-# define	S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
-#endif
-#if !defined(S_ISSOCK) && defined(S_IFSOCK)
-# define	S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
-#endif
-#if !defined(S_ISFIFO) && defined(S_IFIFO)
-# define	S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
-#endif
-#if !defined(S_ISCHR) && defined(S_IFCHR)
-# define	S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
 #endif
 
 /* Note: Some systems need both string.h and strings.h (Savage).  However,

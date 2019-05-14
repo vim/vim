@@ -443,7 +443,7 @@ vim.current.window:Window:True
 vim.current.tabpage:TabPage:True
 current:__dir__,buffer,line,range,tabpage,window
 buffer:__dir__,append,mark,name,number,options,range,valid,vars
-window:__dir__,buffer,col,cursor,height,number,options,row,tabpage,valid,vars
+window:__dir__,buffer,col,cursor,height,number,options,row,tabpage,valid,vars,width
 tabpage:__dir__,number,valid,vars,window,windows
 range:__dir__,append,end,start
 dictionary:__dir__,get,has_key,items,keys,locked,pop,popitem,scope,update,values
@@ -701,7 +701,7 @@ vim.foreach_rtp(FailingCall()):(<class 'NotImplementedError'>, NotImplementedErr
 vim.foreach_rtp(int, 2):(<class 'TypeError'>, TypeError('foreach_rtp() takes exactly one argument (2 given)',))
 > import
 import xxx_no_such_module_xxx:(<class 'ImportError'>, ImportError('No module named xxx_no_such_module_xxx',))
-import failing_import:(<class 'ImportError'>, ImportError('No module named failing_import',))
+import failing_import:(<class 'ImportError'>, ImportError())
 import failing:(<class 'NotImplementedError'>, NotImplementedError())
 > Options
 >> OptionsItem

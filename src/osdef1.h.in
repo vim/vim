@@ -65,8 +65,10 @@ extern void	memmove(char *, char *, int);
 #  endif
 # endif
 #endif
-/* used inside of FD_ZERO macro: */
+#ifndef __BIONIC__  // Android's libc #defines bzero to memset.
+// used inside of FD_ZERO macro
 extern void	bzero(void *, size_t);
+#endif
 #ifdef HAVE_SETSID
 extern pid_t	setsid(void);
 #endif

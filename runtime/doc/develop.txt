@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.0.  Last change: 2017 Jul 31
+*develop.txt*   For Vim version 8.1.  Last change: 2019 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -18,7 +18,8 @@ See the file README.txt in the "src" directory for an overview of the source
 code.
 
 Vim is open source software.  Everybody is encouraged to contribute to help
-improving Vim.  For sending patches a context diff "diff -c" is preferred.
+improving Vim.  For sending patches a unified diff "diff -u" is preferred.
+You can create a pull request on github, but it's not required.
 Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
 
 ==============================================================================
@@ -182,12 +183,43 @@ The basic steps to make changes to the code:
    include the diff. Or create a pull request on github.
 
 
-C COMPILER						*style-compiler*
+C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
 
 The minimal C compiler version supported is C89, also known as ANSI C.
-Later standards don't add much and C89 is the widest supported.
+Later standards, such as C99, are not widely supported, or at least not 100%
+supported.  Therefore we use only some of the C99 features and disallow some
+(at least for now).
 
-One restriction that this implies: no // comments, only /* comments */.
+Please don't make changes everywhere to use the C99 features, it causes merge
+problems for existing patches.  Only use them for new and changed code.
+
+Comments ~
+
+Traditionally Vim uses /* comments */.  We intend to keep it that way,
+especially for file and function headers.  For new code or lines of code that
+change, it is allowed to use // comments.  Especially when it comes after
+code:
+	int some_var;  // single line comment useful here
+
+Enums ~
+
+The last item in an enum may have a trailing comma.  C89 didn't allow this.
+
+Types ~
+
+"long long" is allowed and can be expected to be 64 bits.  Use %lld in printf
+formats.  Also "long long unsigned" with %llu.
+
+Not to be used ~
+
+These C99 features are not to be used, because not enough compilers support
+them:
+- Declaration after Statements (MSVC 2012 does not support it).  All
+  declarations need to be at the start of the block.
+- Variable length arrays (even in C11 this is an optional feature).
+- _Bool and _Complex types.
+- "inline" (it's hardly ever needed, let the optimizer do its work)
+- flexible array members: Not supported by HP-UX C compiler (John Marriott)
 
 
 USE OF COMMON FUNCTIONS					*style-functions*
@@ -246,7 +278,6 @@ wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
-try		Borland C++ doesn't like it to be used as a variable.
 
 clear		Mac curses.h
 echo		Mac curses.h
@@ -323,6 +354,24 @@ OK:	    if (cond)
                cmd;
 	    }
 
+When a block has one line the braces can be left out.  When an if/else has
+braces on one block, it usually looks better when the other block also has
+braces:
+OK:	    if (cond)
+	       cmd;
+	    else
+               cmd;
+
+OK:	    if (cond)
+	    {
+	       cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
 Use ANSI (new style) function declarations with the return type on a separate
 indented line.
 
@@ -335,10 +384,10 @@ OK:	/*
 	 */
 	    int
 	function_name(
-	    int		arg1,		/* short comment about arg1 */
-	    int		arg2)		/* short comment about arg2 */
+	    int		arg1,		// short comment about arg1
+	    int		arg2)		// short comment about arg2
 	{
-	    int		local;		/* comment about local */
+	    int		local;		// comment about local
 
 	    local = arg1 * arg2;
 
@@ -531,4 +580,4 @@ long	    32 or 64 bit signed, can hold a pointer
 Note that some compilers cannot handle long lines or strings.  The C89
 standard specifies a limit of 509 characters.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

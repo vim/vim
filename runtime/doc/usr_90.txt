@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 8.0.  Last change: 2008 Sep 10
+*usr_90.txt*	For Vim version 8.1.  Last change: 2008 Sep 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -281,9 +281,8 @@ unpacked them.
 In case you are not satisfied with the features included in the supplied
 binaries, you could try compiling Vim yourself.  Get the source archive from
 the same location as where the binaries are.  You need a compiler for which a
-makefile exists.  Microsoft Visual C works, but is expensive.  The Free
-Borland command-line compiler 5.5 can be used, as well as the free MingW and
-Cygwin compilers.  Check the file src/INSTALLpc.txt for hints.
+makefile exists.  Microsoft Visual C works, but is expensive.  The free MinGW
+and Cygwin compilers can be used.  Check the file src/INSTALLpc.txt for hints.
 
 ==============================================================================
 *90.3*	Upgrading
@@ -495,4 +494,4 @@ files that you created.  You might want to keep that.
 
 Table of contents: |usr_toc.txt|
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

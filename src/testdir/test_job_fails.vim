@@ -8,9 +8,9 @@ func Test_job_start_fails()
   if has('job')
     let job = job_start('axdfxsdf')
     if has('unix')
-      call WaitFor({-> job_status(job) == "dead"})
+      call WaitForAssert({-> assert_equal("dead", job_status(job))})
     else
-      call WaitFor({-> job_status(job) == "fail"})
+      call WaitForAssert({-> assert_equal("fail", job_status(job))})
     endif
   endif
 endfunc

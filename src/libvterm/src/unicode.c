@@ -1,11 +1,10 @@
 #include "vterm_internal.h"
 
-/* ### The following from http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
- * With modifications:
- *   made functions static
- *   moved 'combining' table to file scope, so other functions can see it
- * ###################################################################
- */
+// ### The following from http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
+// With modifications:
+//   made functions static
+//   moved 'combining' table to file scope, so other functions can see it
+// ###################################################################
 
 /*
  * This is an implementation of wcwidth() and wcswidth() (defined in
@@ -336,9 +335,8 @@ vterm_is_combining(uint32_t codepoint)
 }
 #endif
 
-
-/* ################################
- * ### The rest added by Paul Evans */
+// ################################
+// ### The rest added by Paul Evans
 
 INTERNAL int vterm_unicode_width(uint32_t codepoint)
 {

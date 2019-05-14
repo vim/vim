@@ -6,30 +6,20 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-#if defined(FEAT_OLE) && defined(FEAT_GUI_W32)
+#if defined(FEAT_OLE) && defined(FEAT_GUI_MSWIN)
 /*
  * OLE server implementation.
  *
  * See os_mswin.c for the client side.
  */
-
-/*
- * We have some trouble with order of includes here.  For Borland it needs to
- * be different from MSVC...
- */
-#ifndef __BORLANDC__
 extern "C" {
 # include "vim.h"
 }
-#endif
 
 #include <windows.h>
 #include <oleauto.h>
 
 extern "C" {
-#ifdef __BORLANDC__
-# include "vim.h"
-#endif
 extern HWND s_hwnd;
 extern HWND vim_parent_hwnd;
 }
@@ -759,7 +749,7 @@ extern "C" void InitOLE(int *pbDoRestart)
     hr = RegisterActiveObject(
 	app,
 	MYCLSID,
-	NULL,
+	0,
 	&app_id);
 
     if (FAILED(hr))

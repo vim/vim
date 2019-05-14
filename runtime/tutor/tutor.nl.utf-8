@@ -100,7 +100,7 @@
   1. Ga met de cursor naar de eerste regel verderop met --->.
 
   2. Maak de eerste regel gelijk aan de tweede. Zet daarvoor de cursor op
-     de plaats waar tekst moet worden ingevoegd.
+     het karakter waarvoor tekst moet worden ingevoegd.
 
   3. Tik  i  en daarna de nodige aanvullingen.
 

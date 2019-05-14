@@ -24,19 +24,13 @@
  */
 
 /* Need a type that should be 32 bits. 64 also works but wastes space. */
-# if VIM_SIZEOF_INT >= 4
 typedef unsigned int u32_T;	/* int is at least 32 bits */
-# else
-typedef unsigned long u32_T;	/* long should be 32 bits or more */
-# endif
 
 /* The state of encryption, referenced by cryptstate_T. */
 typedef struct {
     u32_T keys[3];
 } zip_state_T;
 
-
-static void make_crc_tab(void);
 
 static u32_T crc_32_table[256];
 
@@ -74,17 +68,17 @@ make_crc_tab(void)
 /*
  * Update the encryption keys with the next byte of plain text.
  */
-#define UPDATE_KEYS_ZIP(keys, c) { \
+#define UPDATE_KEYS_ZIP(keys, c) do { \
     keys[0] = CRC32(keys[0], (c)); \
     keys[1] += keys[0] & 0xff; \
     keys[1] = keys[1] * 134775813L + 1; \
     keys[2] = CRC32(keys[2], (int)(keys[1] >> 24)); \
-}
+} while (0)
 
 /*
  * Initialize for encryption/decryption.
  */
-    void
+    int
 crypt_zip_init(
     cryptstate_T    *state,
     char_u	    *key,
@@ -97,6 +91,8 @@ crypt_zip_init(
     zip_state_T	*zs;
 
     zs = (zip_state_T *)alloc(sizeof(zip_state_T));
+    if (zs == NULL)
+	return FAIL;
     state->method_state = zs;
 
     make_crc_tab();
@@ -104,9 +100,9 @@ crypt_zip_init(
     zs->keys[1] = 591751049L;
     zs->keys[2] = 878082192L;
     for (p = key; *p != NUL; ++p)
-    {
 	UPDATE_KEYS_ZIP(zs->keys, (int)*p);
-    }
+
+    return OK;
 }
 
 /*

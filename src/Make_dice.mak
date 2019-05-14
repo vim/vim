@@ -27,11 +27,14 @@ LD = dcc
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
+	change.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -43,12 +46,14 @@ SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
+	insexpand.c \
 	json.c \
 	list.c \
 	main.c \
@@ -71,6 +76,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -78,16 +84,20 @@ SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
 
 OBJ =	o/arabic.o \
+	o/autocmd.o \
 	o/blowfish.o \
 	o/buffer.o \
+	o/change.o \
 	o/charset.o \
 	o/crypt.o \
 	o/crypt_zip.o \
+	o/debugger.o \
 	o/dict.o \
 	o/diff.o \
 	o/digraph.o \
@@ -99,12 +109,14 @@ OBJ =	o/arabic.o \
 	o/ex_docmd.o \
 	o/ex_eval.o \
 	o/ex_getln.o \
-	o/farsi.o \
 	o/fileio.o \
+	o/findfile.o \
 	o/fold.o \
 	o/getchar.o \
 	o/hardcopy.o \
 	o/hashtab.o \
+	o/indent.o \
+	o/insexpand.o \
 	o/json.o \
 	o/list.o \
 	o/main.o \
@@ -127,6 +139,7 @@ OBJ =	o/arabic.o \
 	o/screen.o \
 	o/search.o \
 	o/sha256.o \
+	o/sign.o \
 	o/spell.o \
 	o/spellfile.o \
 	o/syntax.o \
@@ -134,6 +147,7 @@ OBJ =	o/arabic.o \
 	o/term.o \
 	o/ui.o \
 	o/undo.o \
+	o/usercmd.o \
 	o/userfunc.o \
 	o/window.o \
 	$(TERMLIB)
@@ -159,15 +173,21 @@ $(SYMS)  : vim.h globals.h keymap.h macros.h ascii.h term.h os_amiga.h structs.h
 
 o/arabic.o:	arabic.c  $(SYMS)
 
+o/autocmd.o:	autocmd.c  $(SYMS)
+
 o/blowfish.o:	blowfish.c  $(SYMS)
 
 o/buffer.o:	buffer.c  $(SYMS)
+
+o/change.o:	change.c  $(SYMS)
 
 o/charset.o:	charset.c  $(SYMS)
 
 o/crypt.o:	crypt.c  $(SYMS)
 
 o/crypt_zip.o:	crypt_zip.c  $(SYMS)
+
+o/debugger.o:	debugger.c  $(SYMS)
 
 o/dict.o:	dict.c	$(SYMS)
 
@@ -191,9 +211,9 @@ o/ex_eval.o:	ex_eval.c  $(SYMS) ex_cmds.h
 
 o/ex_getln.o:	ex_getln.c  $(SYMS)
 
-o/farsi.o:	farsi.c  $(SYMS)
-
 o/fileio.o:	fileio.c  $(SYMS)
+
+o/findfile.o:	findfile.c  $(SYMS)
 
 o/fold.o:	fold.c  $(SYMS)
 
@@ -202,6 +222,10 @@ o/getchar.o: getchar.c	$(SYMS)
 o/hardcopy.o: hardcopy.c	$(SYMS)
 
 o/hashtab.o: hashtab.c	$(SYMS)
+
+o/indent.o:	indent.c  $(SYMS)
+
+o/insexpand.o:	insexpand.c  $(SYMS)
 
 o/json.o:	json.c  $(SYMS)
 
@@ -252,6 +276,8 @@ o/search.o:	search.c  $(SYMS) regexp.h
 
 o/sha256.o:	sha256.c  $(SYMS)
 
+o/sign.o:	sign.c  $(SYMS)
+
 o/spell.o:	spell.c  $(SYMS) spell.h
 
 o/spellfile.o:	spellfile.c  $(SYMS) spell.h
@@ -267,6 +293,8 @@ o/termlib.o:	termlib.c $(SYMS)
 o/ui.o: 	ui.c	$(SYMS)
 
 o/undo.o: 	undo.c	$(SYMS)
+
+o/usercmd.o: 	usercmd.c  $(SYMS)
 
 o/userfunc.o: 	userfunc.c  $(SYMS)
 

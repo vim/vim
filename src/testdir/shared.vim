@@ -49,7 +49,8 @@ endfunc
 " Read the port number from the Xportnr file.
 func GetPort()
   let l = []
-  for i in range(200)
+  " with 200 it sometimes failed
+  for i in range(400)
     try
       let l = readfile("Xportnr")
     catch
@@ -113,38 +114,81 @@ func s:kill_server(cmd)
   endif
 endfunc
 
-" Wait for up to a second for "expr" to become true.  "expr" can be a
+" Wait for up to five seconds for "expr" to become true.  "expr" can be a
 " stringified expression to evaluate, or a funcref without arguments.
+" Using a lambda works best.  Example:
+"	call WaitFor({-> status == "ok"})
 "
-" Return time slept in milliseconds.  With the +reltime feature this can be
-" more than the actual waiting time.  Without +reltime it can also be less.
+" A second argument can be used to specify a different timeout in msec.
+"
+" When successful the time slept is returned.
+" When running into the timeout an exception is thrown, thus the function does
+" not return.
 func WaitFor(expr, ...)
-  let timeout = get(a:000, 0, 1000)
+  let timeout = get(a:000, 0, 5000)
+  let slept = s:WaitForCommon(a:expr, v:null, timeout)
+  if slept < 0
+    throw 'WaitFor() timed out after ' . timeout . ' msec'
+  endif
+  return slept
+endfunc
+
+" Wait for up to five seconds for "assert" to return zero.  "assert" must be a
+" (lambda) function containing one assert function.  Example:
+"	call WaitForAssert({-> assert_equal("dead", job_status(job)})
+"
+" A second argument can be used to specify a different timeout in msec.
+"
+" Return zero for success, one for failure (like the assert function).
+func WaitForAssert(assert, ...)
+  let timeout = get(a:000, 0, 5000)
+  if s:WaitForCommon(v:null, a:assert, timeout) < 0
+    return 1
+  endif
+  return 0
+endfunc
+
+" Common implementation of WaitFor() and WaitForAssert().
+" Either "expr" or "assert" is not v:null
+" Return the waiting time for success, -1 for failure.
+func s:WaitForCommon(expr, assert, timeout)
   " using reltime() is more accurate, but not always available
+  let slept = 0
   if has('reltime')
     let start = reltime()
-  else
-    let slept = 0
   endif
-  if type(a:expr) == v:t_func
-    let Test = a:expr
-  else
-    let Test = {-> eval(a:expr) }
-  endif
-  for i in range(timeout / 10)
-    if Test()
-      if has('reltime')
-	return float2nr(reltimefloat(reltime(start)) * 1000)
-      endif
+
+  while 1
+    if type(a:expr) == v:t_func
+      let success = a:expr()
+    elseif type(a:assert) == v:t_func
+      let success = a:assert() == 0
+    else
+      let success = eval(a:expr)
+    endif
+    if success
       return slept
     endif
-    if !has('reltime')
+
+    if slept >= a:timeout
+      break
+    endif
+    if type(a:assert) == v:t_func
+      " Remove the error added by the assert function.
+      call remove(v:errors, -1)
+    endif
+
+    sleep 10m
+    if has('reltime')
+      let slept = float2nr(reltimefloat(reltime(start)) * 1000)
+    else
       let slept += 10
     endif
-    sleep 10m
-  endfor
-  throw 'WaitFor() timed out after ' . timeout . ' msec'
+  endwhile
+
+  return -1  " timed out
 endfunc
+
 
 " Wait for up to a given milliseconds.
 " With the +timers feature this waits for key-input by getchar(), Resume()
@@ -178,17 +222,22 @@ endfunc
 " The Makefile writes it as the first line in the "vimcmd" file.
 func GetVimProg()
   if !filereadable('vimcmd')
-    return ''
+    " Assume the script was sourced instead of running "make".
+    return '../vim'
   endif
   return readfile('vimcmd')[0]
 endfunc
 
+let g:valgrind_cnt = 1
+
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
-" Returns an empty string on error.
 func GetVimCommand(...)
   if !filereadable('vimcmd')
-    return ''
+    echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
+    let lines = ['../vim']
+  else
+    let lines = readfile('vimcmd')
   endif
   if a:0 == 0
     let name = 'NONE'
@@ -198,15 +247,38 @@ func GetVimCommand(...)
   " For Unix Makefile writes the command to use in the second line of the
   " "vimcmd" file, including environment options.
   " Other Makefiles just write the executable in the first line, so fall back
-  " to that if there is no second line.
-  let lines = readfile('vimcmd')
-  let cmd = get(lines, 1, lines[0])
+  " to that if there is no second line or it is empty.
+  if len(lines) > 1 && lines[1] != ''
+    let cmd = lines[1]
+  else
+    let cmd = lines[0]
+  endif
+
   let cmd = substitute(cmd, '-u \f\+', '-u ' . name, '')
   if cmd !~ '-u '. name
     let cmd = cmd . ' -u ' . name
   endif
   let cmd .= ' --not-a-term'
   let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
+
+  " If using valgrind, make sure every run uses a different log file.
+  if cmd =~ 'valgrind.*--log-file='
+    let cmd = substitute(cmd, '--log-file=\(^\s*\)', '--log-file=\1.' . g:valgrind_cnt, '')
+    let g:valgrind_cnt += 1
+  endif
+
+  return cmd
+endfunc
+
+" Get the command to run Vim, with --clean.
+func GetVimCommandClean()
+  let cmd = GetVimCommand()
+  let cmd = substitute(cmd, '-u NONE', '--clean', '')
+  let cmd = substitute(cmd, '--not-a-term', '', '')
+
+  " Optionally run Vim under valgrind
+  " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
+
   return cmd
 endfunc
 
@@ -221,9 +293,6 @@ endfunc
 
 func RunVimPiped(before, after, arguments, pipecmd)
   let cmd = GetVimCommand()
-  if cmd == ''
-    return 0
-  endif
   let args = ''
   if len(a:before) > 0
     call writefile(a:before, 'Xbefore.vim')
@@ -247,4 +316,42 @@ endfunc
 
 func CanRunGui()
   return has('gui') && ($DISPLAY != "" || has('gui_running'))
+endfunc
+
+func WorkingClipboard()
+  if !has('clipboard')
+    return 0
+  endif
+  if has('x11')
+    return $DISPLAY != ""
+  endif
+  return 1
+endfunc
+
+" Get line "lnum" as displayed on the screen.
+" Trailing white space is trimmed.
+func! Screenline(lnum)
+  let chars = []
+  for c in range(1, winwidth(0))
+    call add(chars, nr2char(screenchar(a:lnum, c)))
+  endfor
+  let line = join(chars, '')
+  return matchstr(line, '^.\{-}\ze\s*$')
+endfunc
+
+" Stops the shell running in terminal "buf".
+func Stop_shell_in_terminal(buf)
+  call term_sendkeys(a:buf, "exit\r")
+  let job = term_getjob(a:buf)
+  call WaitFor({-> job_status(job) == "dead"})
+endfunc
+
+" Gets the text of a terminal line, using term_scrape()
+func Get_terminal_text(bufnr, row)
+  let list = term_scrape(a:bufnr, a:row)
+  let text = ''
+  for item in list
+    let text .= item.chars
+  endfor
+  return text
 endfunc

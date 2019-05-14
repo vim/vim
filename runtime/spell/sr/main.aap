@@ -1,0 +1,142 @@
+# Aap recipe for Serbian Vim spell files.
+
+# Use a freshly compiled Vim if it exists.
+@if os.path.exists('../../../src/vim'):
+    VIM = ../../../src/vim
+@else:
+    :progsearch VIM vim
+
+SPELLDIR = ..
+FILES    = sr_RS.aff sr_RS.dic
+           'sr_RS@latin.aff' 'sr_RS@latin.dic'
+
+all: $SPELLDIR/sr.utf-8.spl $SPELLDIR/'sr@latin.utf-8.spl' ../README_sr.txt
+
+# Original files will be in the subfolder hunspell-sr after unpacking:
+#    sr.dic    original cyrillic dictionary
+#    sr.aff     original cyrillic affix file
+#    sr-Latn.dic     original latin dictionary file
+#    sr-Latn.aff    original latin affix file
+# Just before using the dictionary files, the right ones are copied to
+#    sr_RS.aff
+#    sr_RS.dic
+#    and
+#    sr_RS@latin.aff
+#    sr_RS@latin.dic
+
+$SPELLDIR/sr.utf-8.spl : $FILES
+        :sys env LANG=sr_RS.UTF-8
+		$VIM -u NONE -e -c "set enc=utf-8" -c "mkspell! $SPELLDIR/sr sr_RS" -c q
+
+$SPELLDIR/"sr@latin.utf-8.spl" : $FILES
+        :sys env LANG=sr_RS@latin.UTF-8
+		$VIM -u NONE -e -c "set enc=utf-8" -c "mkspell! $SPELLDIR/sr@latin sr_RS@latin" -c q
+
+../README_sr.txt : hunspell-sr/README_sr.txt README_sr_RS.txt
+        :cat README_sr_RS.txt >!$target
+        :print >>$target
+        :print ============================================================== >>$target
+        :print Следи оригинална README датотека: >>$target
+        :print >>$target
+        :cat hunspell-sr/README_sr.txt >>$target
+
+#
+# Used to fetch the files.
+#
+ZIPFILE = http://devbase.net/dict-sr/hunspell-sr-20130715.zip
+
+:attr {fetch = $ZIPFILE} sr_RS.zip
+
+# The files don't depend on the .zip file so that we can delete it.
+# Only download the zip file if the targets don't exist.
+sr_RS.aff sr_RS.dic: {buildcheck=}
+        :assertpkg unzip patch
+        :fetch sr_RS.zip
+        :sys $UNZIP sr_RS.zip
+        :delete sr_RS.zip
+        @if not os.path.exists('sr_RS.orig.aff'):
+            :copy hunspell-sr/sr.aff sr_RS.orig.aff
+        @if not os.path.exists('sr_RS.orig.dic'):
+            :copy hunspell-sr/sr.dic sr_RS.orig.dic
+        @if os.path.exists('sr_RS.diff'):
+            :sys patch <sr_RS.diff
+        :copy sr_RS.orig.aff sr_RS.aff
+        :copy sr_RS.orig.dic sr_RS.dic
+
+        # Remove the 3 misspelled words and update the word count
+#        :sys $VIM -u NONE -e -c "set enc=utf-8"
+#                    -c "e sr_RS.orig.dic"
+#                    -c "%g/ажуриранје/d"
+#                    -c "%g/вишнја/d"
+#                    -c "%g/вишнјевац/d"
+#                    -c "%s/263909/263906/e"
+#                    -c "w! sr_RS.dic"
+#                    -c q
+
+sr_RS@latin.aff sr_RS@latin.dic: {buildcheck=}
+        :assertpkg unzip patch
+        :fetch sr_RS.zip
+        :sys $UNZIP sr_RS.zip
+        :delete sr_RS.zip
+        @if not os.path.exists('sr_RS@latin.orig.aff'):
+            :copy hunspell-sr/sr-Latn.aff 'sr_RS@latin.orig.aff'
+        @if not os.path.exists('sr_RS@latin.orig.dic'):
+            :copy hunspell-sr/sr-Latn.dic 'sr_RS@latin.orig.dic'
+        @if os.path.exists('sr_RS@latin.diff'):
+            :sys patch <'sr_RS@latin.diff'
+        :copy 'sr_RS@latin.orig.aff' 'sr_RS@latin.aff'
+        :copy 'sr_RS@latin.orig.dic' 'sr_RS@latin.dic'
+
+
+        # Remove the 3 duplicated words and update the word count
+#        :sys $VIM -u NONE -e -c "set enc=utf-8"
+#                    -c "e sr_RS@latin.orig.dic"
+#                    -c "%g/\v(ažuriranje)(\_.*\1)@=/d"
+#                    -c "%g/\v(višnja)(\_.*\1)@=/d"
+#                    -c "%g/\v(višnjevac)(\_.*\1)@=/d"
+#                    -c "%s/263909/263906/e"
+#                    -c "w! sr_RS@latin.dic"
+#                    -c q
+
+# Generate diff files, so that others can get the files and apply
+# the diffs to get the Vim versions.
+diff:
+        :assertpkg diff
+        :sys {force} diff -a -C 1 sr_RS.orig.aff sr_RS.aff >sr_RS.diff
+        :sys {force} diff -a -C 1 sr_RS.orig.dic sr_RS.dic >>sr_RS.diff
+        :sys {force} diff -a -C 1 'sr_RS@latin.orig.aff' 'sr_RS@latin.aff' >'sr_RS@latin.diff'
+        :sys {force} diff -a -C 1 'sr_RS@latin.orig.dic' 'sr_RS@latin.dic' >>'sr_RS@latin.diff'
+
+# Delete all the unpacked and generated files, including the "orig" files.
+clean:
+        :delete {force} sr_RS.zip sr_RS.dic
+                        sr_RS.orig.aff sr_RS.orig.dic
+                        sr_RS.aff
+                        'sr_RS@latin.dic' 'sr_RS@latin.aff'
+                        'sr_RS@latin.orig.aff' 'sr_RS@latin.orig.dic'
+        :sys rm -f -r hunspell-sr/
+
+# Check for updated OpenOffice spell files.  When there are changes the
+# ".new.aff" and ".new.dic" files are left behind for manual inspection.
+#
+#check:
+#        :assertpkg unzip diff
+#        :fetch fr_FR.zip
+#        :mkdir tmp
+#        :cd tmp
+#        @try:
+#            @import stat
+#            :sys $UNZIP ../fr_FR.zip
+#            :sys {force} diff ../fr_FR.orig.aff fr_FR.aff >d
+#            @if os.stat('d')[stat.ST_SIZE] > 0:
+#                :copy fr_FR.aff ../fr_FR.new.aff
+#            :sys {force} diff ../fr_FR.orig.dic fr_FR.dic >d
+#            @if os.stat('d')[stat.ST_SIZE] > 0:
+#                :copy fr_FR.dic ../fr_FR.new.dic
+#        @finally:
+#            :cd ..
+#            :delete {r}{f}{q} tmp
+#            :delete fr_FR.zip
+
+
+vim: set sts=4 sw=4 : 

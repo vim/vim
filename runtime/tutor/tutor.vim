@@ -1,12 +1,12 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer: Bram Moolenaar
-" Last Change:	2016 Jul 16
+" Last Change:	2019 Mar 30
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
 " If the translation does not exist, or no extension is given,
-" it defaults to the english version.
+" it defaults to the English version.
 
 " It is invoked by the vimtutor shell script.
 
@@ -22,6 +22,12 @@ else
     let s:lang = v:lang
   elseif $LC_ALL =~ '\a\a'
     let s:lang = $LC_ALL
+  elseif $LC_MESSAGES =~ '\a\a' || $LC_MESSAGES ==# "C"
+    " LC_MESSAGES=C can be used to explicitly ask for English messages while
+    " keeping LANG non-English; don't set s:lang then.
+    if $LC_MESSAGES =~ '\a\a'
+      let s:lang = $LC_MESSAGES
+    endif
   elseif $LANG =~ '\a\a'
     let s:lang = $LANG
   endif
@@ -59,7 +65,7 @@ if s:ext =~? '\.en'
   let s:ext = ""
 endif
 
-" The japanese tutor is available in two encodings, guess which one to use
+" The Japanese tutor is available in three encodings, guess which one to use
 " The "sjis" one is actually "cp932", it doesn't matter for this text.
 if s:ext =~? '\.ja'
   if &enc =~ "euc"
@@ -69,7 +75,7 @@ if s:ext =~? '\.ja'
   endif
 endif
 
-" The korean tutor is available in two encodings, guess which one to use
+" The Korean tutor is available in two encodings, guess which one to use
 if s:ext =~? '\.ko'
   if &enc != "utf-8"
     let s:ext = ".ko.euc"
@@ -169,15 +175,6 @@ if s:ext =~? '\.hr'
   endif
 endif
 
-" Esperanto is only available in utf-8
-if s:ext =~? '\.eo'
-  let s:ext = ".eo.utf-8"
-endif
-" Vietnamese is only available in utf-8
-if s:ext =~? '\.vi'
-  let s:ext = ".vi.utf-8"
-endif
-
 " If 'encoding' is utf-8 s:ext must end in utf-8.
 if &enc == 'utf-8' && s:ext !~ '\.utf-8'
   let s:ext .= '.utf-8'
@@ -190,6 +187,9 @@ let s:tutorxx = $VIMRUNTIME . s:tutorfile . s:ext
 " 3. Finding the file:
 if filereadable(s:tutorxx)
   let $TUTOR = s:tutorxx
+elseif s:ext !~ '\.utf-8' && filereadable(s:tutorxx . ".utf-8")
+  " Fallback to utf-8 if available.
+  let $TUTOR = s:tutorxx . ".utf-8"
 else
   let $TUTOR = $VIMRUNTIME . s:tutorfile
   echo "The file " . s:tutorxx . " does not exist.\n"

@@ -1,9 +1,10 @@
 /* ex_getln.c */
+void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
 int text_locked(void);
 void text_locked_msg(void);
-char_u *get_text_locked_msg(void);
+char *get_text_locked_msg(void);
 int curbuf_locked(void);
 int allbuf_locked(void);
 char_u *getexline(int c, void *cookie, int indent);
@@ -15,8 +16,6 @@ void free_cmdline_buf(void);
 void putcmdline(int c, int shift);
 void unputcmdline(void);
 int put_on_cmdline(char_u *str, int len, int redraw);
-char_u *save_cmdline_alloc(void);
-void restore_cmdline_alloc(char_u *p);
 void cmdline_paste_str(char_u *s, int literally);
 void redrawcmdline(void);
 void redrawcmdline_ex(int do_compute_cmdrow);
@@ -55,7 +54,5 @@ int read_viminfo_history(vir_T *virp, int writing);
 void handle_viminfo_history(garray_T *values, int writing);
 void finish_viminfo_history(vir_T *virp);
 void write_viminfo_history(FILE *fp, int merge);
-void cmd_pchar(int c, int offset);
-int cmd_gchar(int offset);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 /* vim: set ft=c : */

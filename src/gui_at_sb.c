@@ -485,7 +485,7 @@ CreateGC(Widget w)
 
 	if (XGetGeometry (XtDisplay(w), sbw->scrollbar.thumb, &root, &x, &y,
 		&width, &height, &bw, &depth) == 0)
-	    EMSG(_("Scrollbar Widget: Could not get geometry of thumb pixmap."));
+	    emsg(_("Scrollbar Widget: Could not get geometry of thumb pixmap."));
     }
 
     gcValues.foreground = sbw->scrollbar.foreground;
@@ -645,7 +645,11 @@ Redisplay(Widget w, XEvent *event, Region region)
     static Boolean
 CompareEvents(XEvent *oldEvent, XEvent *newEvent)
 {
-#define Check(field) if (newEvent->field != oldEvent->field) return False;
+#define Check(field) \
+    do { \
+	if (newEvent->field != oldEvent->field) \
+	    return False; \
+    } while (0)
 
     Check(xany.display);
     Check(xany.type);

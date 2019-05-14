@@ -101,10 +101,14 @@ enum SpecialKey
     KS_CBE,	/* enable bracketed paste mode */
     KS_CBD,	/* disable bracketed paste mode */
     KS_CPS,	/* start of bracketed paste */
-    KS_CPE	/* end of bracketed paste */
+    KS_CPE,	/* end of bracketed paste */
+    KS_CST,	/* save window title */
+    KS_CRT,	/* restore window title */
+    KS_SSI,	/* save icon text */
+    KS_SRI	/* restore icon text */
 };
 
-#define KS_LAST	    KS_CPE
+#define KS_LAST	    KS_SRI
 
 /*
  * the terminal capabilities are stored in this array
@@ -196,6 +200,10 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_BD	(TERM_STR(KS_CBD))	/* disable bracketed paste mode */
 #define T_PS	(TERM_STR(KS_CPS))	/* start of bracketed paste */
 #define T_PE	(TERM_STR(KS_CPE))	/* end of bracketed paste */
+#define T_CST	(TERM_STR(KS_CST))	/* save window title */
+#define T_CRT	(TERM_STR(KS_CRT))	/* restore window title */
+#define T_SSI	(TERM_STR(KS_SSI))	/* save icon text */
+#define T_SRI	(TERM_STR(KS_SRI))	/* restore icon text */
 
 #define TMODE_COOK  0	/* terminal mode for external cmds and Ex mode */
 #define TMODE_SLEEP 1	/* terminal mode for sleeping (cooked but no echo) */

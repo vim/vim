@@ -1792,7 +1792,7 @@ msgstr "E216: Ingen sådan grupp eller händelse: %s"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Autokommandon ---"
@@ -1811,7 +1811,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: autokommando nästlad för djupt"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s Autokommandon för \"%s\""
 
 #, c-format
@@ -2784,7 +2784,7 @@ msgstr "-q [felfil]    redigera fil med första fel"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"
@@ -2897,8 +2897,8 @@ msgstr "-f\t\t\tAnvända inte newcli för att öppna fönster"
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <enhet>\t\tAnvänd <enhet> för I/O"
 
-msgid "-A\t\t\tstart in Arabic mode"
-msgstr "-A\t\t\tstarta i arabiskt läge"
+msgid "-A\t\t\tStart in Arabic mode"
+msgstr "-A\t\t\tStarta i arabiskt läge"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tStarta i hebreiskt läge"
@@ -4548,7 +4548,7 @@ msgstr "E65: Otillåten bakåtreferens"
 msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z{ inte tillåtet här"
 
-msgid "E67: \\z1 et al. not allowed here"
+msgid "E67: \\z1 - \\z9 not allowed here"
 msgstr "E67: \\z1 m.fl. inte tillåtet här"
 
 msgid "E68: Invalid character after \\z"
@@ -4753,8 +4753,8 @@ msgid "Warning: region %s not supported"
 msgstr "Varning: region %s stöds inte"
 
 #, c-format
-msgid "Reading affix file %s ..."
-msgstr "Läser affix-fil %s ..."
+msgid "Reading affix file %s..."
+msgstr "Läser affix-fil %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -4883,8 +4883,8 @@ msgid "%s value differs from what is used in another .aff file"
 msgstr "%s värde skiljer sig från vad som används i en annan .aff-fil."
 
 #, c-format
-msgid "Reading dictionary file %s ..."
-msgstr "Läser ordboksfil %s ..."
+msgid "Reading dictionary file %s..."
+msgstr "Läser ordboksfil %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -4911,8 +4911,8 @@ msgid "Ignored %d word(s) with non-ASCII characters in %s"
 msgstr "Ignorerade %d ord med icke-ASCII tecken i %s"
 
 #, c-format
-msgid "Reading word file %s ..."
-msgstr "Läser ordfil %s ..."
+msgid "Reading word file %s..."
+msgstr "Läser ordfil %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4969,8 +4969,8 @@ msgid "Total number of words: %d"
 msgstr "Totalt antal ord: %d"
 
 #, c-format
-msgid "Writing suggestion file %s ..."
-msgstr "Skriver förslagsfil %s ..."
+msgid "Writing suggestion file %s..."
+msgstr "Skriver förslagsfil %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
@@ -4990,8 +4990,8 @@ msgid "Warning: both compounding and NOBREAK specified"
 msgstr "Varning: både sammansättning och NOBREAK specifierad"
 
 #, c-format
-msgid "Writing spell file %s ..."
-msgstr "Skriver stavningsfil %s ..."
+msgid "Writing spell file %s..."
+msgstr "Skriver stavningsfil %s..."
 
 msgid "Done!"
 msgstr "Klar!"

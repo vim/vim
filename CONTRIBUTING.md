@@ -21,9 +21,9 @@ maillist is also fine.
 
 Please use the GitHub issues only for actual issues. If you are not 100% sure
 that your problem is a Vim issue, please first discuss this on the Vim user
-maillist.  Try reproducing the problem without any plugins or settings:
+maillist.  Try reproducing the problem without any of your plugins or settings:
 
-    vim -N -u NONE
+    vim --clean
 
 If you report an issue, please describe exactly how to reproduce it.
 For example, don't say "insert some text" but say what you did exactly:
@@ -51,4 +51,25 @@ Look in the header of the file for the name and email address.
 The maintainer will take care of issues and send updates to Bram for 
 distribution with Vim.
 
-If the maintainer does not react, contact the vim-dev maillist.
+If the maintainer does not respond, contact the vim-dev maillist.
+
+
+# Translations
+
+Translating messages and runtime files is very much appreciated!  These things
+can be translated:
+*   Messages in Vim, see [src/po/README.txt][1]
+    Also used for the desktop icons.
+*   Menus, see [runtime/lang/README.txt][2]
+*   Vim tutor, see [runtime/tutor/README.txt][3]
+*   Manual pages, see [runtime/doc/\*.1][4] for examples
+*   Installer, see [nsis/lang/\*.nsi][5] for examples
+
+The help files can be translated and made available separately.
+See https://www.vim.org/translations.php for examples.
+
+[1]: https://github.com/vim/vim/blob/master/src/po/README.txt
+[2]: https://github.com/vim/vim/blob/master/runtime/lang/README.txt
+[3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
+[4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
+[5]: https://github.com/vim/vim/blob/master/nsis/lang/english.nsi

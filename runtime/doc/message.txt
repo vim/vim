@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.0.  Last change: 2017 Oct 14
+*message.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,7 +76,7 @@ See `:messages` above.
 LIST OF MESSAGES
 			*E222* *E228* *E232* *E256* *E293* *E298* *E304* *E317*
 			*E318* *E356* *E438* *E439* *E440* *E316* *E320* *E322*
-			*E323* *E341* *E473* *E570* *E685*  >
+			*E323* *E341* *E473* *E570* *E685* *E950*  >
   Add to read buffer
   makemap: Illegal mode
   Cannot create BalloonEval with both message and callback
@@ -97,6 +97,7 @@ LIST OF MESSAGES
   Internal error
   Internal error: {function}
   fatal error in cs_manage_matches
+  Invalid count for del_bytes(): {N}
 
 This is an internal error.  If you can reproduce it, please send in a bug
 report. |bugs|
@@ -556,14 +557,6 @@ This message is only given when Vim detects a problem when searching for a
 tag.  Sometimes this message is not given, even though the tags file is not
 properly sorted.
 
-							*E460*  >
-  The resource fork would be lost (add ! to override)
-
-On the Macintosh (classic), when writing a file, Vim attempts to preserve all
-info about a file, including its resource fork.  If this is not possible you
-get this error message.  Append "!" to the command name to write anyway (and
-lose the info).
-
 							*E424*  >
   Too many different highlighting attributes in use
 
@@ -710,11 +703,13 @@ Or use ":set nocp".
 This happens when an Ex command with mandatory argument(s) was executed, but
 no argument has been specified.
 
-							*E474* *E475*  >
+							*E474* *E475* *E983*  >
   Invalid argument
   Invalid argument: {arg}
+  Duplicate argument: {arg}
 
-An Ex command has been executed, but an invalid argument has been specified.
+An Ex command or function has been executed, but an invalid argument has been
+specified.
 
 							*E488*  >
   Trailing characters
@@ -803,7 +798,6 @@ and the screen is about to be redrawn:
    like pressing <Space>.  This makes it impossible to select text though.
 -> For the GUI clicking the left mouse button in the last line works like
    pressing <Space>.
-{Vi: only ":" commands are interpreted}
 
 If you accidentally hit <Enter> or <Space> and you want to see the displayed
 text then use |g<|.  This only works when 'more' is set.
@@ -835,10 +829,10 @@ Type					effect ~
      G					down all the way, until the hit-enter
 					prompt
 
-     <BS> or k or <Up>			one line back (*)
-     u					up a page (half a screen) (*)
-     b or <PageUp>			back a screen (*)
-     g					back to the start (*)
+     <BS> or k or <Up>			one line back
+     u					up a page (half a screen)
+     b or <PageUp>			back a screen
+     g					back to the start
 
      q, <Esc> or CTRL-C			stop the listing
      :					stop the listing and enter a
@@ -847,13 +841,11 @@ Type					effect ~
 					the clipboard ("* and "+ registers)
     {menu-entry}			what the menu is defined to in
 					Cmdline-mode.
-    <LeftMouse> (**)			next page
+    <LeftMouse>				next page (*)
 
 Any other key causes the meaning of the keys to be displayed.
 
-(*)  backwards scrolling is {not in Vi}.  Only scrolls back to where messages
-     started to scroll.
-(**) Clicking the left mouse button only works:
+(*) Clicking the left mouse button only works:
      - For the GUI: in the last line of the screen.
      - When 'r' is included in 'mouse' (but then selecting text won't work).
 
@@ -865,4 +857,4 @@ The |g<| command can be used to see the last page of previous command output.
 This is especially useful if you accidentally typed <Space> at the hit-enter
 prompt.
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -27,13 +27,9 @@
 #define EXTRA_MARKS 10					/* marks 0-9 */
 static xfmark_T namedfm[NMARKS + EXTRA_MARKS];		/* marks with file nr */
 
-static void fname2fnum(xfmark_T *fm);
 static void fmarks_check_one(xfmark_T *fm, char_u *name, buf_T *buf);
 static char_u *mark_line(pos_T *mp, int lead_len);
 static void show_one_mark(int, char_u *, pos_T *, char_u *, int current);
-#ifdef FEAT_JUMPLIST
-static void cleanup_jumplist(void);
-#endif
 #ifdef FEAT_VIMINFO
 static void write_one_filemark(FILE *fp, xfmark_T *fm, int c1, int c2);
 #endif
@@ -127,8 +123,7 @@ setmark_pos(int c, pos_T *pos, int fnum)
 	    i = c - 'A';
 	namedfm[i].fmark.mark = *pos;
 	namedfm[i].fmark.fnum = fnum;
-	vim_free(namedfm[i].fname);
-	namedfm[i].fname = NULL;
+	VIM_CLEAR(namedfm[i].fname);
 #ifdef FEAT_VIMINFO
 	namedfm[i].time_set = vim_time();
 #endif
@@ -226,7 +221,7 @@ movemark(int count)
     pos_T	*pos;
     xfmark_T	*jmp;
 
-    cleanup_jumplist();
+    cleanup_jumplist(curwin, TRUE);
 
     if (curwin->w_jumplistlen == 0)	    /* nothing to jump to */
 	return (pos_T *)NULL;
@@ -419,9 +414,7 @@ getmark_buf_fnum(
 		pos_copy.col = 0;
 	    else
 		pos_copy.col = MAXCOL;
-#ifdef FEAT_VIRTUALEDIT
 	    pos_copy.coladd = 0;
-#endif
 	}
     }
     else if (ASCII_ISLOWER(c))		/* normal named mark */
@@ -520,7 +513,7 @@ getnextmark(
  * This is used for marks obtained from the .viminfo file.  It's postponed
  * until the mark is used to avoid a long startup delay.
  */
-    static void
+    void
 fname2fnum(xfmark_T *fm)
 {
     char_u	*p;
@@ -598,8 +591,7 @@ fmarks_check_one(xfmark_T *fm, char_u *name, buf_T *buf)
 	    && fnamecmp(name, fm->fname) == 0)
     {
 	fm->fmark.fnum = buf->b_fnum;
-	vim_free(fm->fname);
-	fm->fname = NULL;
+	VIM_CLEAR(fm->fname);
     }
 }
 
@@ -612,7 +604,7 @@ check_mark(pos_T *pos)
 {
     if (pos == NULL)
     {
-	EMSG(_(e_umark));
+	emsg(_(e_umark));
 	return FAIL;
     }
     if (pos->lnum <= 0)
@@ -620,12 +612,12 @@ check_mark(pos_T *pos)
 	/* lnum is negative if mark is in another file can can't get that
 	 * file, error message already give then. */
 	if (pos->lnum == 0)
-	    EMSG(_(e_marknotset));
+	    emsg(_(e_marknotset));
 	return FAIL;
     }
     if (pos->lnum > curbuf->b_ml.ml_line_count)
     {
-	EMSG(_(e_markinval));
+	emsg(_(e_markinval));
 	return FAIL;
     }
     return OK;
@@ -657,9 +649,7 @@ clrallmarks(buf_T *buf)
     buf->b_op_end.lnum = 0;
     buf->b_last_cursor.lnum = 1;	/* '" mark cleared */
     buf->b_last_cursor.col = 0;
-#ifdef FEAT_VIRTUALEDIT
     buf->b_last_cursor.coladd = 0;
-#endif
     buf->b_last_insert.lnum = 0;	/* '^ mark cleared */
     buf->b_last_change.lnum = 0;	/* '. mark cleared */
 #ifdef FEAT_JUMPLIST
@@ -692,10 +682,11 @@ mark_line(pos_T *mp, int lead_len)
 
     if (mp->lnum == 0 || mp->lnum > curbuf->b_ml.ml_line_count)
 	return vim_strsave((char_u *)"-invalid-");
-    s = vim_strnsave(skipwhite(ml_get(mp->lnum)), (int)Columns);
+    // Allow for up to 5 bytes per character.
+    s = vim_strnsave(skipwhite(ml_get(mp->lnum)), (int)Columns * 5);
     if (s == NULL)
 	return NULL;
-    /* Truncate the line to fit it in the window */
+    // Truncate the line to fit it in the window.
     len = 0;
     for (p = s; *p != NUL; MB_PTR_ADV(p))
     {
@@ -753,11 +744,12 @@ show_one_mark(
     int		c,
     char_u	*arg,
     pos_T	*p,
-    char_u	*name,
+    char_u	*name_arg,
     int		current)	/* in current file */
 {
     static int	did_title = FALSE;
     int		mustfree = FALSE;
+    char_u	*name = name_arg;
 
     if (c == -1)			    /* finish up */
     {
@@ -766,40 +758,43 @@ show_one_mark(
 	else
 	{
 	    if (arg == NULL)
-		MSG(_("No marks set"));
+		msg(_("No marks set"));
 	    else
-		EMSG2(_("E283: No marks matching \"%s\""), arg);
+		semsg(_("E283: No marks matching \"%s\""), arg);
 	}
     }
-    /* don't output anything if 'q' typed at --more-- prompt */
+    // don't output anything if 'q' typed at --more-- prompt
     else if (!got_int
 	    && (arg == NULL || vim_strchr(arg, c) != NULL)
 	    && p->lnum != 0)
     {
-	if (!did_title)
+	if (name == NULL && current)
 	{
-	    /* Highlight title */
-	    MSG_PUTS_TITLE(_("\nmark line  col file/text"));
-	    did_title = TRUE;
+	    name = mark_line(p, 15);
+	    mustfree = TRUE;
 	}
-	msg_putchar('\n');
-	if (!got_int)
+	if (!message_filtered(name))
 	{
-	    sprintf((char *)IObuff, " %c %6ld %4d ", c, p->lnum, p->col);
-	    msg_outtrans(IObuff);
-	    if (name == NULL && current)
+	    if (!did_title)
 	    {
-		name = mark_line(p, 15);
-		mustfree = TRUE;
+		// Highlight title
+		msg_puts_title(_("\nmark line  col file/text"));
+		did_title = TRUE;
 	    }
-	    if (name != NULL)
+	    msg_putchar('\n');
+	    if (!got_int)
 	    {
-		msg_outtrans_attr(name, current ? HL_ATTR(HLF_D) : 0);
-		if (mustfree)
-		    vim_free(name);
+		sprintf((char *)IObuff, " %c %6ld %4d ", c, p->lnum, p->col);
+		msg_outtrans(IObuff);
+		if (name != NULL)
+		{
+		    msg_outtrans_attr(name, current ? HL_ATTR(HLF_D) : 0);
+		}
 	    }
+	    out_flush();		    // show one line at a time
 	}
-	out_flush();		    /* show one line at a time */
+	if (mustfree)
+	    vim_free(name);
     }
 }
 
@@ -820,9 +815,9 @@ ex_delmarks(exarg_T *eap)
 	/* clear all marks */
 	clrallmarks(curbuf);
     else if (eap->forceit)
-	EMSG(_(e_invarg));
+	emsg(_(e_invarg));
     else if (*eap->arg == NUL)
-	EMSG(_(e_argreq));
+	emsg(_(e_argreq));
     else
     {
 	/* clear specified marks only */
@@ -842,7 +837,7 @@ ex_delmarks(exarg_T *eap)
 				    : ASCII_ISUPPER(p[2])))
 			    || to < from)
 		    {
-			EMSG2(_(e_invarg2), p);
+			semsg(_(e_invarg2), p);
 			return;
 		    }
 		    p += 2;
@@ -862,8 +857,7 @@ ex_delmarks(exarg_T *eap)
 			else
 			    n = i - 'A';
 			namedfm[n].fmark.mark.lnum = 0;
-			vim_free(namedfm[n].fname);
-			namedfm[n].fname = NULL;
+			VIM_CLEAR(namedfm[n].fname);
 #ifdef FEAT_VIMINFO
 			namedfm[n].time_set = 0;
 #endif
@@ -881,7 +875,7 @@ ex_delmarks(exarg_T *eap)
 		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
 		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
 		    case ' ': break;
-		    default:  EMSG2(_(e_invarg2), p);
+		    default:  semsg(_(e_invarg2), p);
 			      return;
 		}
 	}
@@ -898,18 +892,22 @@ ex_jumps(exarg_T *eap UNUSED)
     int		i;
     char_u	*name;
 
-    cleanup_jumplist();
+    cleanup_jumplist(curwin, TRUE);
+
     /* Highlight title */
-    MSG_PUTS_TITLE(_("\n jump line  col file/text"));
+    msg_puts_title(_("\n jump line  col file/text"));
     for (i = 0; i < curwin->w_jumplistlen && !got_int; ++i)
     {
 	if (curwin->w_jumplist[i].fmark.mark.lnum != 0)
 	{
-	    if (curwin->w_jumplist[i].fmark.fnum == 0)
-		fname2fnum(&curwin->w_jumplist[i]);
 	    name = fm_getname(&curwin->w_jumplist[i].fmark, 16);
-	    if (name == NULL)	    /* file name not available */
+
+	    // apply :filter /pat/ or file name not available
+	    if (name == NULL || message_filtered(name))
+	    {
+		vim_free(name);
 		continue;
+	    }
 
 	    msg_putchar('\n');
 	    if (got_int)
@@ -933,7 +931,7 @@ ex_jumps(exarg_T *eap UNUSED)
 	out_flush();
     }
     if (curwin->w_jumplistidx == curwin->w_jumplistlen)
-	MSG_PUTS("\n>");
+	msg_puts("\n>");
 }
 
     void
@@ -954,7 +952,7 @@ ex_changes(exarg_T *eap UNUSED)
     char_u	*name;
 
     /* Highlight title */
-    MSG_PUTS_TITLE(_("\nchange line  col text"));
+    msg_puts_title(_("\nchange line  col text"));
 
     for (i = 0; i < curbuf->b_changelistlen && !got_int; ++i)
     {
@@ -980,7 +978,7 @@ ex_changes(exarg_T *eap UNUSED)
 	out_flush();
     }
     if (curwin->w_changelistidx == curbuf->b_changelistlen)
-	MSG_PUTS("\n>");
+	msg_puts("\n>");
 }
 #endif
 
@@ -1057,7 +1055,7 @@ mark_adjust_internal(
     linenr_T	*lp;
     win_T	*win;
     tabpage_T	*tab;
-    static pos_T initpos = INIT_POS_T(1, 0, 0);
+    static pos_T initpos = {1, 0, 0};
 
     if (line2 < line1 && amount_after == 0L)	    /* nothing to do */
 	return;
@@ -1216,6 +1214,8 @@ mark_adjust_internal(
 	    posp->lnum += lnum_amount; \
 	    if (col_amount < 0 && posp->col <= (colnr_T)-col_amount) \
 		posp->col = 0; \
+	    else if (posp->col < spaces_removed) \
+		posp->col = col_amount + spaces_removed; \
 	    else \
 		posp->col += col_amount; \
 	} \
@@ -1225,13 +1225,16 @@ mark_adjust_internal(
  * Adjust marks in line "lnum" at column "mincol" and further: add
  * "lnum_amount" to the line number and add "col_amount" to the column
  * position.
+ * "spaces_removed" is the number of spaces that were removed, matters when the
+ * cursor is inside them.
  */
     void
 mark_col_adjust(
     linenr_T	lnum,
     colnr_T	mincol,
     long	lnum_amount,
-    long	col_amount)
+    long	col_amount,
+    int		spaces_removed)
 {
     int		i;
     int		fnum = curbuf->b_fnum;
@@ -1308,34 +1311,49 @@ mark_col_adjust(
 #ifdef FEAT_JUMPLIST
 /*
  * When deleting lines, this may create duplicate marks in the
- * jumplist. They will be removed here for the current window.
+ * jumplist. They will be removed here for the specified window.
+ * When "loadfiles" is TRUE first ensure entries have the "fnum" field set
+ * (this may be a bit slow).
  */
-    static void
-cleanup_jumplist(void)
+    void
+cleanup_jumplist(win_T *wp, int loadfiles)
 {
     int	    i;
     int	    from, to;
 
-    to = 0;
-    for (from = 0; from < curwin->w_jumplistlen; ++from)
+    if (loadfiles)
     {
-	if (curwin->w_jumplistidx == from)
-	    curwin->w_jumplistidx = to;
-	for (i = from + 1; i < curwin->w_jumplistlen; ++i)
-	    if (curwin->w_jumplist[i].fmark.fnum
-					== curwin->w_jumplist[from].fmark.fnum
-		    && curwin->w_jumplist[from].fmark.fnum != 0
-		    && curwin->w_jumplist[i].fmark.mark.lnum
-				  == curwin->w_jumplist[from].fmark.mark.lnum)
-		break;
-	if (i >= curwin->w_jumplistlen)	    /* no duplicate */
-	    curwin->w_jumplist[to++] = curwin->w_jumplist[from];
-	else
-	    vim_free(curwin->w_jumplist[from].fname);
+	/* If specified, load all the files from the jump list. This is
+	 * needed to properly clean up duplicate entries, but will take some
+	 * time. */
+	for (i = 0; i < wp->w_jumplistlen; ++i)
+	{
+	    if ((wp->w_jumplist[i].fmark.fnum == 0) &&
+		    (wp->w_jumplist[i].fmark.mark.lnum != 0))
+		fname2fnum(&wp->w_jumplist[i]);
+	}
     }
-    if (curwin->w_jumplistidx == curwin->w_jumplistlen)
-	curwin->w_jumplistidx = to;
-    curwin->w_jumplistlen = to;
+
+    to = 0;
+    for (from = 0; from < wp->w_jumplistlen; ++from)
+    {
+	if (wp->w_jumplistidx == from)
+	    wp->w_jumplistidx = to;
+	for (i = from + 1; i < wp->w_jumplistlen; ++i)
+	    if (wp->w_jumplist[i].fmark.fnum
+					== wp->w_jumplist[from].fmark.fnum
+		    && wp->w_jumplist[from].fmark.fnum != 0
+		    && wp->w_jumplist[i].fmark.mark.lnum
+				  == wp->w_jumplist[from].fmark.mark.lnum)
+		break;
+	if (i >= wp->w_jumplistlen)	    /* no duplicate */
+	    wp->w_jumplist[to++] = wp->w_jumplist[from];
+	else
+	    vim_free(wp->w_jumplist[from].fname);
+    }
+    if (wp->w_jumplistidx == wp->w_jumplistlen)
+	wp->w_jumplistidx = to;
+    wp->w_jumplistlen = to;
 }
 
 /*
@@ -1436,9 +1454,7 @@ read_viminfo_filemark(vir_T *virp, int force)
 	    fm->fmark.mark.lnum = getdigits(&str);
 	    str = skipwhite(str);
 	    fm->fmark.mark.col = getdigits(&str);
-#ifdef FEAT_VIRTUALEDIT
 	    fm->fmark.mark.coladd = 0;
-#endif
 	    fm->fmark.fnum = 0;
 	    str = skipwhite(str);
 	    vim_free(fm->fname);
@@ -1480,16 +1496,14 @@ finish_viminfo_marks(void)
     {
 	for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
 	    vim_free(vi_namedfm[i].fname);
-	vim_free(vi_namedfm);
-	vi_namedfm = NULL;
+	VIM_CLEAR(vi_namedfm);
     }
 #ifdef FEAT_JUMPLIST
     if (vi_jumplist != NULL)
     {
 	for (i = 0; i < vi_jumplist_len; ++i)
 	    vim_free(vi_jumplist[i].fname);
-	vim_free(vi_jumplist);
-	vi_jumplist = NULL;
+	VIM_CLEAR(vi_jumplist);
     }
 #endif
 }
@@ -1628,9 +1642,7 @@ handle_viminfo_mark(garray_T *values, int force)
 	{
 	    fm->fmark.mark.lnum = lnum;
 	    fm->fmark.mark.col = col;
-#ifdef FEAT_VIRTUALEDIT
 	    fm->fmark.mark.coladd = 0;
-#endif
 	    fm->fmark.fnum = 0;
 	    vim_free(fm->fname);
 	    if (vp[4].bv_allocated)
@@ -1746,7 +1758,7 @@ write_viminfo_filemarks(FILE *fp)
     /* Write the jumplist with -' */
     fputs(_("\n# Jumplist (newest first):\n"), fp);
     setpcmark();	/* add current cursor position */
-    cleanup_jumplist();
+    cleanup_jumplist(curwin, FALSE);
     vi_idx = 0;
     idx = curwin->w_jumplistlen - 1;
     for (i = 0; i < JUMPLISTSIZE; ++i)
@@ -1938,9 +1950,6 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
  * Compare functions for qsort() below, that compares b_last_used.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;
@@ -2133,9 +2142,7 @@ copy_viminfo_marks(
 	}
 	vim_free(str);
 
-#ifdef FEAT_VIRTUALEDIT
 	pos.coladd = 0;
-#endif
 	while (!(eof = viminfo_readline(virp)) && line[0] == TAB)
 	{
 	    if (load_marks)

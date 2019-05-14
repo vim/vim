@@ -39,3 +39,11 @@ func Test_with_tilde()
   call delete('Xdir ~ dir', 'd')
   call assert_false(isdirectory('Xdir ~ dir'))
 endfunc
+
+func Test_expand_tilde_filename()
+  split ~
+  call assert_equal('~', expand('%')) 
+  call assert_notequal(expand('%:p'), expand('~/'))
+  call assert_match('\~', expand('%:p')) 
+  bwipe!
+endfunc

@@ -30,7 +30,7 @@ on MS-Windows.  Download the gettext packages, for example from:
 
 You might have to do the commands manually.  Example:
 
-   cd c:\vim\vim71
+   cd c:\vim\vim81
    mkdir runtime\lang\ja\LC_MESSAGES
    msgfmt -o runtime\lang\ja\LC_MESSAGES\vim.mo src\po\ja.po
 
@@ -49,8 +49,14 @@ We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
 - Edit Makefile to add xx to LANGUAGES and xx.mo to MOFILES.
-- Copy the header of an existing file, e.g., de.po, to xx.po.  Do not copy any
-  of the translated messages, delete everything after the "msgstr".
+- If you haven't done so already, run ./configure in the top vim directory
+  (i.e. go up two directories) and then come back here afterwards.
+- Execute these commands:
+  % make vim.pot
+  % msginit -l xx
+  % rm vim.pot
+  The first command will generate a vim.pot file which is used by msginit to
+  generate a correct xx.po file.  After that vim.pot is not needed.
 - The remaining work is like updating, see the next section.
 
 

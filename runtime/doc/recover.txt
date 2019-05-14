@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 8.0.  Last change: 2014 Mar 27
+*recover.txt*   For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -27,6 +27,9 @@ you started from plus the swap file you can mostly recover your work.
 You can see the name of the current swap file being used with the command:
 
 	:sw[apname]					*:sw* *:swapname*
+
+Or you can use the |swapname()| function, which also allows for seeing the
+swap file name of other buffers.
 
 The name of the swap file is normally the same as the file you are editing,
 with the extension ".swp".
@@ -128,7 +131,6 @@ command:
 			flag is present in 'cpoptions' the swap file will not
 			be deleted for this buffer when Vim exits and the
 			buffer is still loaded |cpo-&|.
-			{Vi: might also exit}
 
 A Vim swap file can be recognized by the first six characters: "b0VIM ".
 After that comes the version number, e.g., "3.0".
@@ -193,7 +195,6 @@ recovered file.  Or use |:DiffOrig|.
 Once you are sure the recovery is ok delete the swap file.  Otherwise, you
 will continue to get warning messages that the ".swp" file already exists.
 
-{Vi: recovers in another way and sends mail if there is something to recover}
 
 
 ENCRYPTION AND THE SWAP FILE				*:recover-crypt*
@@ -234,4 +235,4 @@ Note that after recovery the key of the swap file will be used for the text
 file.  Thus if you write the text file, you need to use that new key.
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

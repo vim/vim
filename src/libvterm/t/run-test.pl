@@ -16,7 +16,7 @@ my ( $hin, $hout, $hpid );
 {
    local $ENV{LD_LIBRARY_PATH} = ".libs";
    my @command = "t/.libs/harness";
-   unshift @command, "valgrind", "--quiet", "--error-exitcode=126" if $VALGRIND;
+   unshift @command, "valgrind", "--tool=memcheck", "--leak-check=yes", "--num-callers=25", "--log-file=valgrind.out", "--error-exitcode=126" if $VALGRIND;
 
    $hpid = open2 $hout, $hin, @command or die "Cannot open2 harness - $!";
 }

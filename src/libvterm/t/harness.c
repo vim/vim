@@ -233,6 +233,9 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
   case VTERM_VALUETYPE_COLOR:
     printf("settermprop %d rgb(%d,%d,%d)\n", prop, val->color.red, val->color.green, val->color.blue);
     return 1;
+
+  case VTERM_N_VALUETYPES:
+    return 0;
   }
 
   return 0;
@@ -316,6 +319,9 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
   case VTERM_ATTR_BACKGROUND:
     state_pen.background = val->color;
     break;
+
+  case VTERM_N_ATTRS:
+    return 0;
   }
 
   return 1;
@@ -647,6 +653,16 @@ int main(int argc, char **argv)
         vterm_keyboard_start_paste(vt);
       else if(streq(linep, "END"))
         vterm_keyboard_end_paste(vt);
+      else
+        goto abort_line;
+    }
+
+    else if(strstartswith(line, "FOCUS ")) {
+      char *linep = line + 6;
+      if(streq(linep, "IN"))
+        vterm_state_focus_in(state);
+      else if(streq(linep, "OUT"))
+        vterm_state_focus_out(state);
       else
         goto abort_line;
     }

@@ -70,5 +70,5 @@ fi
 # The script tutor.vim tells Vim which file to copy
 $VIM -f -u NONE -c 'so $VIMRUNTIME/tutor/tutor.vim'
 
-# Start vim without any .vimrc, set 'nocompatible'
-$VIM -f -u NONE -c "set nocp" $TUTORCOPY
+# Start vim without any .vimrc, set 'nocompatible' and 'showcmd'
+$VIM -f -u NONE -c "set nocp showcmd" $TUTORCOPY

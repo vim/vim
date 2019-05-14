@@ -9,7 +9,7 @@
 #include "vterm.h"
 
 #define DEFINE_INLINES
-#include "../src/utf8.h" /* fill_utf8 */
+#include "../src/utf8.h" // fill_utf8
 
 #define streq(a,b) (!strcmp(a,b))
 
@@ -21,7 +21,7 @@ static int rows;
 
 static enum {
   FORMAT_PLAIN,
-  FORMAT_SGR
+  FORMAT_SGR,
 } format = FORMAT_PLAIN;
 
 static int col2index(VTermColor target)
@@ -44,8 +44,8 @@ static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevce
       break;
     case FORMAT_SGR:
       {
-        /* If all 7 attributes change, that means 7 SGRs max */
-        /* Each colour could consume up to 3 */
+        // If all 7 attributes change, that means 7 SGRs max
+        // Each colour could consume up to 3
         int sgr[7 + 2*3]; int sgri = 0;
 
         if(!prevcell->attrs.bold && cell->attrs.bold)
@@ -95,8 +95,8 @@ static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevce
             sgr[sgri++] = 90 + (index - 8);
           else {
             sgr[sgri++] = 38;
-            sgr[sgri++] = 5 | (1<<31);
-            sgr[sgri++] = index | (1<<31);
+            sgr[sgri++] = 5 | CSI_ARG_FLAG_MORE;
+            sgr[sgri++] = index | CSI_ARG_FLAG_MORE;
           }
         }
 
@@ -112,8 +112,8 @@ static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevce
             sgr[sgri++] = 100 + (index - 8);
           else {
             sgr[sgri++] = 48;
-            sgr[sgri++] = 5 | (1<<31);
-            sgr[sgri++] = index | (1<<31);
+            sgr[sgri++] = 5 | CSI_ARG_FLAG_MORE;
+            sgr[sgri++] = index | CSI_ARG_FLAG_MORE;
           }
         }
 
@@ -125,9 +125,9 @@ static void dump_cell(const VTermScreenCell *cell, const VTermScreenCell *prevce
 	  int i;
 	  for(i = 0; i < sgri; i++)
 	    printf(!i               ? "%d" :
-		sgr[i] & (1<<31) ? ":%d" :
+		CSI_ARG_HAS_MORE(sgr[i]) ? ":%d" :
 		";%d",
-		sgr[i] & ~(1<<31));
+		CSI_ARG(sgr[i]));
 	}
         printf("m");
       }
@@ -283,5 +283,6 @@ int main(int argc, char *argv[])
   close(fd);
 
   vterm_free(vt);
+
   return 0;
 }

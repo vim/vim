@@ -114,6 +114,9 @@
 #define KS_SGR_MOUSE		237
 #define KS_SGR_MOUSE_RELEASE	236
 
+/* Used for the GPM mouse. */
+#define KS_GPM_MOUSE		235
+
 /*
  * Filler used after KS_SPECIAL and others
  */
@@ -270,6 +273,7 @@ enum key_extra
     , KE_FOCUSGAINED = 98	/* focus gained */
     , KE_FOCUSLOST = 99		/* focus lost */
     , KE_MOUSEMOVE = 100	/* mouse moved with no button down */
+    , KE_CANCEL = 101		/* return from vgetc() */
 };
 
 /*
@@ -455,6 +459,7 @@ enum key_extra
 
 #define K_IGNORE	TERMCAP2KEY(KS_EXTRA, KE_IGNORE)
 #define K_NOP		TERMCAP2KEY(KS_EXTRA, KE_NOP)
+#define K_CANCEL	TERMCAP2KEY(KS_EXTRA, KE_CANCEL)
 
 #define K_MOUSEDOWN	TERMCAP2KEY(KS_EXTRA, KE_MOUSEDOWN)
 #define K_MOUSEUP	TERMCAP2KEY(KS_EXTRA, KE_MOUSEUP)

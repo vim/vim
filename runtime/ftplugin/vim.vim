@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2017 Dec 05
+" Last Change:	2018 Aug 07
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -14,8 +14,28 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< isk< com< tw< commentstring<"
-	\ . "| unlet! b:match_ignorecase b:match_words b:match_skip"
+if !exists('*VimFtpluginUndo')
+  func VimFtpluginUndo()
+    setl fo< isk< com< tw< commentstring<
+    if exists('b:did_add_maps')
+      silent! nunmap <buffer> [[
+      silent! vunmap <buffer> [[
+      silent! nunmap <buffer> ]]
+      silent! vunmap <buffer> ]]
+      silent! nunmap <buffer> []
+      silent! vunmap <buffer> []
+      silent! nunmap <buffer> ][
+      silent! vunmap <buffer> ][
+      silent! nunmap <buffer> ]"
+      silent! vunmap <buffer> ]"
+      silent! nunmap <buffer> ["
+      silent! vunmap <buffer> ["
+    endif
+    unlet! b:match_ignorecase b:match_words b:match_skip b:did_add_maps
+  endfunc
+endif
+
+let b:undo_ftplugin = "call VimFtpluginUndo()"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
@@ -40,15 +60,17 @@ endif
 setlocal commentstring=\"%s
 
 if !exists("no_plugin_maps") && !exists("no_vim_maps")
+  let b:did_add_maps = 1
+
   " Move around functions.
   nnoremap <silent><buffer> [[ m':call search('^\s*fu\%[nction]\>', "bW")<CR>
   vnoremap <silent><buffer> [[ m':<C-U>exe "normal! gv"<Bar>call search('^\s*fu\%[nction]\>', "bW")<CR>
   nnoremap <silent><buffer> ]] m':call search('^\s*fu\%[nction]\>', "W")<CR>
   vnoremap <silent><buffer> ]] m':<C-U>exe "normal! gv"<Bar>call search('^\s*fu\%[nction]\>', "W")<CR>
-  nnoremap <silent><buffer> [] m':call search('^\s*endf*\%[unction]\>', "bW")<CR>
-  vnoremap <silent><buffer> [] m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf*\%[unction]\>', "bW")<CR>
-  nnoremap <silent><buffer> ][ m':call search('^\s*endf*\%[unction]\>', "W")<CR>
-  vnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf*\%[unction]\>', "W")<CR>
+  nnoremap <silent><buffer> [] m':call search('^\s*endf\%[unction]\>', "bW")<CR>
+  vnoremap <silent><buffer> [] m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf\%[unction]\>', "bW")<CR>
+  nnoremap <silent><buffer> ][ m':call search('^\s*endf\%[unction]\>', "W")<CR>
+  vnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf\%[unction]\>', "W")<CR>
 
   " Move around comments
   nnoremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
@@ -65,8 +87,7 @@ if exists("loaded_matchit")
  	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
 	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
-	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' .
-	\ '(:)'
+	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,'
   " Ignore syntax region commands and settings, any 'en*' would clobber
   " if-endif.
   " - set spl=de,en

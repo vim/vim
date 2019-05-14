@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 8.0.  Last change: 2017 Mar 14
+*usr_02.txt*	For Vim version 8.1.  Last change: 2017 Mar 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -698,4 +698,4 @@ Summary: 					*help-summary*  >
 
 Next chapter: |usr_03.txt|  Moving around
 
-Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

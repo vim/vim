@@ -90,11 +90,14 @@ PROPT = DEF=PROTO GPROTO GPPARM MAXIMUMERRORS=999 GENPROTOSTATICS GENPROTOPARAME
 
 SRC = \
 	arabic.c \
+	autocmd.c \
 	blowfish.c \
 	buffer.c \
+	change.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -106,12 +109,14 @@ SRC = \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
-	farsi.c \
 	fileio.c \
+	findfile.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	indent.c \
+	insexpand.c \
 	json.c \
 	list.c \
 	main.c \
@@ -134,6 +139,7 @@ SRC = \
 	screen.c \
 	search.c \
 	sha256.c \
+	sign.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -141,17 +147,21 @@ SRC = \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
 
 OBJ = \
 	arabic.o \
+	autocmd.o \
 	blowfish.o \
 	buffer.o \
+	change.o \
 	charset.o \
 	crypt.o \
 	crypt_zip.o \
+	debugger.o \
 	dict.o \
 	diff.o \
 	digraph.o \
@@ -163,12 +173,14 @@ OBJ = \
 	ex_docmd.o \
 	ex_eval.o \
 	ex_getln.o \
-	farsi.o \
 	fileio.o \
+	findfile.o \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
 	hashtab.o \
+	indent.o \
+	insexpand.o \
 	json.o \
 	list.o \
 	main.o \
@@ -191,6 +203,7 @@ OBJ = \
 	screen.o \
 	search.o \
 	sha256.o \
+	sign.o \
 	spell.o \
 	spellfile.o \
 	syntax.o \
@@ -198,17 +211,21 @@ OBJ = \
 	term.o \
 	ui.o \
 	undo.o \
+	usercmd.o \
 	userfunc.o \
 	window.o \
 	$(TERMLIB)
 
 PRO = \
 	proto/arabic.pro \
+	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
+	proto/change.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -220,12 +237,14 @@ PRO = \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
-	proto/farsi.pro \
 	proto/fileio.pro \
+	proto/findfile.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/indent.pro \
+	proto/insexpand.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -248,6 +267,7 @@ PRO = \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/sha256.pro \
+	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
 	proto/syntax.pro \
@@ -256,6 +276,7 @@ PRO = \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro
 
@@ -316,16 +337,22 @@ $(PRO): $(GST) vim.h
 # dependencies
 arabic.o:		arabic.c
 proto/arabic.pro:	arabic.c
+autocmd.o:		autocmd.c
+proto/autocmd.pro:	autocmd.c
 blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c
 proto/buffer.pro:	buffer.c
+change.o:		change.c
+proto/change.pro:	change.c
 charset.o:		charset.c
 proto/charset.pro:	charset.c
 crypt.o:		crypt.c
 proto/crypt.pro:	crypt.c
 crypt_zip.o:		crypt_zip.c
 proto/crypt_zip.pro:	crypt_zip.c
+debugger.o:		debugger.c
+proto/debugger.pro:	debugger.c
 dict.o:			dict.c
 proto/dict.pro:		dict.c
 diff.o:			diff.c
@@ -348,10 +375,10 @@ ex_eval.o:		ex_eval.c ex_cmds.h
 proto/ex_eval.pro:	ex_eval.c ex_cmds.h
 ex_getln.o:		ex_getln.c
 proto/ex_getln.pro:	ex_getln.c
-farsi.o:		farsi.c
-proto/farsi.pro:	farsi.c
 fileio.o:		fileio.c
 proto/fileio.pro:	fileio.c
+findfile.o:		findfile.c
+proto/findfile.pro:	findfile.c
 fold.o:			fold.c
 proto/fold.pro:		fold.c
 getchar.o:		getchar.c
@@ -360,6 +387,10 @@ hardcopy.o:		hardcopy.c
 proto/hardcopy.pro:	hardcopy.c
 hashtab.o:		hashtab.c
 proto/hashtab.pro:	hashtab.c
+indent.o:		indent.c
+proto/indent.pro:	indent.c
+insexpand.o:		insexpand.c
+proto/insexpand.pro:	insexpand.c
 json.o:			json.c
 proto/json.pro:		json.c
 list.o:			list.c
@@ -404,6 +435,8 @@ search.o:		search.c
 proto/search.pro:	search.c
 sha256.o:		sha256.c
 proto/sha256.pro:	sha256.c
+sign.o:			sign.c
+proto/sign.pro:		sign.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
 spellfile.o:		spellfile.c
@@ -420,6 +453,8 @@ ui.o:			ui.c
 proto/ui.pro:		ui.c
 undo.o:			undo.c
 proto/undo.pro:		undo.c
+usercmd.o:		usercmd.c
+proto/usercmd.pro:	usercmd.c
 userfunc.o:		userfunc.c
 proto/userfunc.pro:	userfunc.c
 window.o:		window.c

@@ -3,10 +3,11 @@
 # shtags: create a tags file for perl scripts
 #
 # Author:	Stephen Riehm
-# Last Changed:	96/11/27 19:46:06
+# Updated by: David Woodfall <dave@dawoodfall.net>
+# Last Changed:	2018/04/02
 #
-# "@(#) shtags 1.1 by S. Riehm"
-#
+
+use Getopt::Std;
 
 # obvious... :-)
 sub usage
@@ -30,7 +31,7 @@ sub version
     #
     # Version information
     #
-    @id = split( ', ', 'scripts/bin/shtags, /usr/local/, LOCAL_SCRIPTS, 1.1, 96/11/27, 19:46:06' );
+    @id = split( ', ', 'scripts/bin/shtags, /usr/local/, LOCAL_SCRIPTS, 1.2, 18/04/02, 07:37' );
     $id[0] =~ s,.*/,,;
     print <<_EOVERS;
 $id[0]:		$id[3]
@@ -45,12 +46,11 @@ _EOVERS
 # initialisations
 #
 ($program = $0) =~ s,.*/,,;
-require 'getopts.pl';
 
 #
 # parse command line
 #
-&Getopts( "t:s:vVwx" ) || &usage();
+getopts( "t:s:vVwx" ) || &usage();
 $tags_file = $opt_t || 'tags';
 $explicit = $opt_x;
 $variable_tags = $opt_v;

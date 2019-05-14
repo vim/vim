@@ -5,6 +5,7 @@ if !has("syntax")
 endif
 
 source view_util.vim
+source screendump.vim
 
 func GetSyntaxItem(pat)
   let c = ''
@@ -33,7 +34,7 @@ func Test_syn_iskeyword()
 	\ 'CREATE TABLE FOOBAR(',
 	\ '    DLTD_BY VARCHAR2(100)',
 	\ ');',
-  	\ ''])
+	\ ''])
 
   syntax on
   set ft=sql
@@ -116,6 +117,15 @@ func Test_syntime()
   call assert_equal("\nNo Syntax items defined for this buffer", a)
 
   bd
+endfunc
+
+func Test_syntime_completion()
+  if !has('profile')
+    return
+  endif
+
+  call feedkeys(":syntime \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"syntime clear off on report', @:)
 endfunc
 
 func Test_syntax_list()
@@ -425,6 +435,8 @@ func Test_bg_detection()
   set bg=dark
   hi Normal ctermbg=12
   call assert_equal('dark', &bg)
+
+  hi Normal ctermbg=NONE
 endfunc
 
 func Test_syntax_hangs()
@@ -497,7 +509,7 @@ func Test_conceal()
   bw!
 endfunc
 
-fun Test_synstack_synIDtrans()
+func Test_synstack_synIDtrans()
   new
   setfiletype c
   syntax on
@@ -507,7 +519,7 @@ fun Test_synstack_synIDtrans()
 
   norm f/
   call assert_equal(['cComment', 'cCommentStart'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
-  call assert_equal(['Comment', 'Comment'],        map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
+  call assert_equal(['Comment', 'Comment'],	   map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
 
   norm fA
   call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
@@ -519,4 +531,55 @@ fun Test_synstack_synIDtrans()
 
   syn clear
   bw!
+endfunc
+
+" Check highlighting for a small piece of C code with a screen dump.
+func Test_syntax_c()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+	\ '/* comment line at the top */',
+	\ '  int',
+	\ 'main(int argc, char **argv)// another comment',
+	\ '{',
+	\ '#if 0',
+	\ '   int   not_used;',
+	\ '#else',
+	\ '   int   used;',
+	\ '#endif',
+	\ '   printf("Just an example piece of C code\n");',
+	\ '   return 0x0ff;',
+	\ '}',
+	\ '   static void',
+	\ 'myFunction(const double count, struct nothing, long there) {',
+	\ '  // 123: nothing to read here',
+	\ '  for (int i = 0; i < count; ++i) {',
+	\ '    break;',
+	\ '  }',
+	\ '}',
+	\ ], 'Xtest.c')
+ 
+  " This makes the default for 'background' use "dark", check that the
+  " response to t_RB corrects it to "light".
+  let $COLORFGBG = '15;0'
+
+  let buf = RunVimInTerminal('Xtest.c', {})
+  call VerifyScreenDump(buf, 'Test_syntax_c_01', {})
+  call StopVimInTerminal(buf)
+
+  let $COLORFGBG = ''
+  call delete('Xtest.c')
+endfun
+
+" Using \z() in a region with NFA failing should not crash.
+func Test_syn_wrong_z_one()
+  new
+  call setline(1, ['just some text', 'with foo and bar to match with'])
+  syn region FooBar start="foo\z(.*\)bar" end="\z1"
+  call test_override("nfa_fail", 1)
+  redraw!
+  redraw!
+  call test_override("ALL", 0)
+  bwipe!
 endfunc

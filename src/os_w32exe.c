@@ -10,129 +10,41 @@
 /*
  * Windows GUI: main program (EXE) entry point:
  *
- * Ron Aaron <ronaharon@yahoo.com> wrote this and  the DLL support code.
+ * Ron Aaron <ronaharon@yahoo.com> wrote this and the (now deleted) DLL support
+ * code.
  */
 #include "vim.h"
 
-#ifdef __MINGW32__
-# ifndef _cdecl
-#  define _cdecl
-# endif
+// cproto doesn't create a prototype for VimMain()
+#ifdef VIMDLL
+__declspec(dllimport)
 #endif
-
-/* cproto doesn't create a prototype for main() */
-int _cdecl
-#if defined(FEAT_GUI_W32)
-VimMain
-#else
-    main
+int VimMain(int argc, char **argv);
+#ifndef VIMDLL
+void SaveInst(HINSTANCE hInst);
 #endif
-	(int argc, char **argv);
-static int (_cdecl *pmain)(int, char **);
 
 #ifndef PROTO
-#ifdef FEAT_GUI
-#ifndef VIMDLL
-void _cdecl SaveInst(HINSTANCE hInst);
-#endif
-static void (_cdecl *pSaveInst)(HINSTANCE);
-#endif
-
+# ifdef FEAT_GUI
     int WINAPI
-WinMain(
-    HINSTANCE	hInstance UNUSED,
+wWinMain(
+    HINSTANCE	hInstance,
     HINSTANCE	hPrevInst UNUSED,
-    LPSTR	lpszCmdLine,
+    LPWSTR	lpszCmdLine UNUSED,
     int		nCmdShow UNUSED)
+# else
+    int
+wmain(int argc UNUSED, wchar_t **argv UNUSED)
+# endif
 {
-    int		argc = 0;
-    char	**argv;
-    char	*tofree;
-    char	prog[256];
-#ifdef VIMDLL
-    char	*p;
-    HANDLE	hLib;
-#endif
-
-    /* Ron: added full path name so that the $VIM variable will get set to our
-     * startup path (so the .vimrc file can be found w/o a VIM env. var.) */
-    GetModuleFileName(NULL, prog, 255);
-
-    argc = get_cmd_args(prog, (char *)lpszCmdLine, &argv, &tofree);
-    if (argc == 0)
-    {
-	MessageBox(0, "Could not allocate memory for command line.",
-							      "VIM Error", 0);
-	return 0;
-    }
-
-#ifdef DYNAMIC_GETTEXT
-    /* Initialize gettext library */
-    dyn_libintl_init();
-#endif
-
-#ifdef VIMDLL
-    // LoadLibrary - get name of dll to load in here:
-    p = strrchr(prog, '\\');
-    if (p != NULL)
-    {
-# ifdef DEBUG
-	strcpy(p+1, "vim32d.dll");
-# else
-	strcpy(p+1, "vim32.dll");
+# ifndef VIMDLL
+#  ifdef FEAT_GUI
+    SaveInst(hInstance);
+#  else
+    SaveInst(GetModuleHandleW(NULL));
+#  endif
 # endif
-    }
-    hLib = LoadLibrary(prog);
-    if (hLib == NULL)
-    {
-	MessageBox(0, _("Could not load vim32.dll!"), _("VIM Error"), 0);
-	goto errout;
-    }
-    // fix up the function pointers
-# ifdef FEAT_GUI
-    pSaveInst = GetProcAddress(hLib, (LPCSTR)2);
-# endif
-    pmain = GetProcAddress(hLib, (LPCSTR)1);
-    if (pmain == NULL)
-    {
-	MessageBox(0, _("Could not fix up function pointers to the DLL!"),
-							    _("VIM Error"),0);
-	goto errout;
-    }
-#else
-# ifdef FEAT_GUI
-    pSaveInst = SaveInst;
-# endif
-    pmain =
-# if defined(FEAT_GUI_W32)
-    //&& defined(__MINGW32__)
-	VimMain
-# else
-	main
-# endif
-	;
-#endif
-#ifdef FEAT_GUI
-    pSaveInst(
-#ifdef __MINGW32__
-	    GetModuleHandle(NULL)
-#else
-	    hInstance
-#endif
-	    );
-#endif
-    pmain(argc, argv);
-
-#ifdef VIMDLL
-    FreeLibrary(hLib);
-errout:
-#endif
-    free(argv);
-    if (tofree != NULL)
-	free(tofree);
-#ifdef FEAT_MBYTE
-    free_cmd_argsW();
-#endif
+    VimMain(0, NULL);
 
     return 0;
 }

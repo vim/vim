@@ -86,6 +86,19 @@ list_alloc(void)
 }
 
 /*
+ * list_alloc() with an ID for alloc_fail().
+ */
+    list_T *
+list_alloc_id(alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return NULL;
+#endif
+    return (list_alloc());
+}
+
+/*
  * Allocate an empty list for a return value, with reference count set.
  * Returns OK or FAIL.
  */
@@ -101,6 +114,20 @@ rettv_list_alloc(typval_T *rettv)
     rettv_list_set(rettv, l);
     return OK;
 }
+
+/*
+ * Same as rettv_list_alloc() but uses an allocation id for testing.
+ */
+    int
+rettv_list_alloc_id(typval_T *rettv, alloc_id_T id UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+	return FAIL;
+#endif
+    return rettv_list_alloc(rettv);
+}
+
 
 /*
  * Set a list as the return value
@@ -376,7 +403,7 @@ list_find_nr(
 	    *errorp = TRUE;
 	return -1L;
     }
-    return (long)get_tv_number_chk(&li->li_tv, errorp);
+    return (long)tv_get_number_chk(&li->li_tv, errorp);
 }
 
 /*
@@ -390,10 +417,10 @@ list_find_str(list_T *l, long idx)
     li = list_find(l, idx - 1);
     if (li == NULL)
     {
-	EMSGN(_(e_listidx), idx);
+	semsg(_(e_listidx), idx);
 	return NULL;
     }
-    return get_tv_string(&li->li_tv);
+    return tv_get_string(&li->li_tv);
 }
 
 /*
@@ -471,6 +498,25 @@ list_append_dict(list_T *list, dict_T *dict)
     li->li_tv.vval.v_dict = dict;
     list_append(list, li);
     ++dict->dv_refcount;
+    return OK;
+}
+
+/*
+ * Append list2 to list1.
+ * Return FAIL when out of memory.
+ */
+    int
+list_append_list(list_T *list1, list_T *list2)
+{
+    listitem_T	*li = listitem_alloc();
+
+    if (li == NULL)
+	return FAIL;
+    li->li_tv.v_type = VAR_LIST;
+    li->li_tv.v_lock = 0;
+    li->li_tv.vval.v_list = list2;
+    list_append(list1, li);
+    ++list2->lv_refcount;
     return OK;
 }
 
@@ -868,7 +914,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    EMSG2(_("E696: Missing comma in List: %s"), *arg);
+	    semsg(_("E696: Missing comma in List: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -876,7 +922,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (**arg != ']')
     {
-	EMSG2(_("E697: Missing end of List ']': %s"), *arg);
+	semsg(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);
@@ -903,7 +949,7 @@ write_list(FILE *fd, list_T *list, int binary)
 
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
-	for (s = get_tv_string(&li->li_tv); *s != NUL; ++s)
+	for (s = tv_get_string(&li->li_tv); *s != NUL; ++s)
 	{
 	    if (*s == '\n')
 		c = putc(NUL, fd);
@@ -923,7 +969,7 @@ write_list(FILE *fd, list_T *list, int binary)
 	    }
 	if (ret == FAIL)
 	{
-	    EMSG(_(e_write));
+	    emsg(_(e_write));
 	    break;
 	}
     }

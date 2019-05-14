@@ -1,4 +1,4 @@
-*howto.txt*	For Vim version 8.0.  Last change: 2006 Apr 02
+*howto.txt*	For Vim version 8.1.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -93,4 +93,4 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 |2html.vim|		convert a colored file to HTML
 |less|			use Vim like less or more with syntax highlighting
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

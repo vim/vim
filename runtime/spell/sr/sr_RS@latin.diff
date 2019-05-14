@@ -1,0 +1,66 @@
+*** sr_RS@latin.orig.aff	Fri Feb 23 20:08:28 2018
+--- sr_RS@latin.aff	Fri Feb 23 18:18:48 2018
+***************
+*** 1,10 ****
+! SET UTF-8
+  
+! LANG sr-Latn
+! TRY aioenrtsvumklpjdgzbščchćnjljžfđdžAIOENRTSVUMKLPJDGZBŠČCHĆNJLJŽFĐDŽ
+! KEY qwertyuiopšđž|asdfghjklčć|zxcvbnm|žšđ|ćšč|žčđ|đćž|zy|qawsedrftgyhuj|jikolpč|azsxdcfvgbh|hnjmk
+! 
+! MAP 4
+! MAP cć
+! MAP cč
+  MAP zž
+--- 1,5 ----
+! SET utf-8
+  
+! MAP 3
+! MAP cćč
+  MAP zž
+***************
+*** 12,20 ****
+  
+! REP 1
+! REP dj đ
+  
+! ICONV ﬁ fi
+! ICONV ﬂ fl
+! ICONV ﬆ st
+! ICONV ĳ ij
+! ICONV œ oe
+--- 7,14 ----
+  
+! MIDWORD -’
+  
+! REP 4
+! REP dj đ
+! REP ﬂ fl
+! REP ﬀ ff
+! REP ﬁ fi
+*** sr_RS@latin.orig.dic	Fri Feb 23 20:08:28 2018
+--- sr_RS@latin.dic	Fri Feb 23 20:08:53 2018
+***************
+*** 1,2 ****
+! 263909
+  a
+--- 1,2 ----
+! 263906
+  a
+***************
+*** 882,884 ****
+  ažuriranih
+- ažuriranje
+  ažurirano
+--- 882,883 ----
+***************
+*** 22177,22184 ****
+  višku
+- višnja
+- višnjevac
+  Višnu
+  višnja
+  višnjama
+  višnjare
+  višnje
+--- 22176,22181 ----

@@ -32,14 +32,31 @@ first:
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.
-all install uninstall tools config configure reconfig proto depend lint tags types test scripttests unittests testclean clean distclean:
+all install uninstall tools config configure reconfig proto depend lint tags types test scripttests test_libvterm unittests testclean clean distclean:
 	@if test ! -f src/auto/config.mk; then \
 		cp src/config.mk.dist src/auto/config.mk; \
 	fi
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
+	@# When the target is "test" also run the indent tests.
+	@if test "$@" = "test"; then \
+		$(MAKE) indenttest; \
+	fi
+	@# When the target is "clean" also clean for the indent tests.
+	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
+		cd runtime/indent && \
+			$(MAKE) clean; \
+	fi
 
+# Executable used for running the indent tests.
+VIM_FOR_INDENTTEST = ../../src/vim
+
+indenttest:
+	cd runtime/indent && \
+		$(MAKE) clean && \
+		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
+		
 
 #########################################################################
 # 2. Creating the various distribution files.
@@ -68,7 +85,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 8
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
@@ -131,7 +148,7 @@ MINOR = 0
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim80 and puts all files in there.
+#   This creates the directory vim/vim81 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -193,6 +210,7 @@ MINOR = 0
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
+#   > unzip icons.zip
 #   > makensis gvim.nsi  (takes a few minutes).
 #      ignore warning for libwinpthread-1.dll
 # - Copy gvim##.exe to the dist directory.
@@ -456,11 +474,12 @@ dosrt_files: dist prepare no_title.vim
 	-rm $(IN_README_DIR)
 	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
 	rmdir dist/vim/$(VIMRTDIR)/runtime
-# Add the message translations.  Trick: skip ja.mo and use ja.sjis.mo instead.
-# Same for cs.mo / cs.cp1250.mo, pl.mo / pl.cp1250.mo, sk.mo / sk.cp1250.mo,
-# zh_CN.mo / zh_CN.cp936.mo, uk.mo / uk.cp1251.mo and ru.mo / ru.cp1251.mo.
+# Add the message translations.  Trick: skip ja.mo/ja.euc-jp.mo and use
+# ja.sjis.mo instead.  Same for cs.mo / cs.cp1250.mo, pl.mo / pl.cp1250.mo,
+# sk.mo / sk.cp1250.mo, zh_CN.mo / zh_CN.cp936.mo, uk.mo / uk.cp1251.mo and
+# ru.mo / ru.cp1251.mo.
 	for i in $(LANG_DOS); do \
-	      if test "$$i" != "src/po/ja.mo" -a "$$i" != "src/po/pl.mo" -a "$$i" != "src/po/cs.mo" -a "$$i" != "src/po/sk.mo" -a "$$i" != "src/po/zh_CN.mo" -a "$$i" != "src/po/ru.mo" -a "$$i" != "src/po/uk.mo"; then \
+	      if test "$$i" != "src/po/ja.mo" -a "$$i" != "src/po/ja.euc-jp.mo" -a "$$i" != "src/po/pl.mo" -a "$$i" != "src/po/cs.mo" -a "$$i" != "src/po/sk.mo" -a "$$i" != "src/po/zh_CN.mo" -a "$$i" != "src/po/ru.mo" -a "$$i" != "src/po/uk.mo"; then \
 		n=`echo $$i | sed -e "s+src/po/\([-a-zA-Z0-9_]*\(.UTF-8\)*\)\(.sjis\)*\(.cp1250\)*\(.cp1251\)*\(.cp936\)*.mo+\1+"`; \
 		mkdir dist/vim/$(VIMRTDIR)/lang/$$n; \
 		mkdir dist/vim/$(VIMRTDIR)/lang/$$n/LC_MESSAGES; \

@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.0.  Last change: 2016 Feb 27
+*version5.txt*  For Vim version 8.1.  Last change: 2016 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -221,8 +221,8 @@ The most obvious side effect of this change is that when you source a vimrc
 file twice, the autocommands in it will be defined twice.  To avoid this, do
 one of these:
 
-- Remove any autocommands that might potentially defined twice before
-  defining them.  Example: >
+- Remove any autocommands that might already be defined before defining
+  them.  Example: >
 	:au! * *.ext
 	:au BufEnter *.ext ...
 
@@ -2347,7 +2347,7 @@ Added							*added-5.2*
 Support for mapping numeric keypad +,-,*,/ keys. (Negri)
 When not mapped, they produce the normal character.
 
-Win32 GUI: When directory dropped on Gvim, cd there and edit new buffer.
+Win32 GUI: When directory dropped on gVim, cd there and edit new buffer.
 (Negri)
 
 Win32 GUI: Made CTRL-Break work as interrupt, so that CTRL-C can be
@@ -7615,7 +7615,7 @@ VMS doesn't always have lstat(), added an #ifdef around it.
 
 Added a few corrections for the Macintosh. (Axel Kielhorn)
 
-Win32: Gvimext could not edit more than a few files at once, the length of the
+Win32: GvimExt could not edit more than a few files at once, the length of the
 argument was fixed.
 
 
@@ -7810,4 +7810,4 @@ Solution:   Allocate the buffer for the shell command.
 Files:	    src/ex_docmd.c
 
 
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -9,7 +9,7 @@ source view_util.vim
 
 " Needs to come first until the bug in getchar() is
 " fixed: https://groups.google.com/d/msg/vim_dev/fXL9yme4H4c/bOR-U6_bAQAJ
-func! Test_edit_00b()
+func Test_edit_00b()
   new
   call setline(1, ['abc '])
   inoreabbr <buffer> h here some more
@@ -21,7 +21,7 @@ func! Test_edit_00b()
   bw!
 endfunc
 
-func! Test_edit_01()
+func Test_edit_01()
   " set for Travis CI?
   "  set nocp noesckeys
   new
@@ -37,12 +37,10 @@ func! Test_edit_01()
   call assert_equal([''], getline(1,'$'))
   %d
   " 4) delete a multibyte character
-  if has("multi_byte")
-    call setline(1, "\u0401")
-    call feedkeys("i\<del>\<esc>", 'tnix')
-    call assert_equal([''], getline(1,'$'))
-    %d
-  endif
+  call setline(1, "\u0401")
+  call feedkeys("i\<del>\<esc>", 'tnix')
+  call assert_equal([''], getline(1,'$'))
+  %d
   " 5.1) delete linebreak with 'bs' option containing eol
   let _bs=&bs
   set bs=eol
@@ -61,7 +59,7 @@ func! Test_edit_01()
   bw!
 endfunc
 
-func! Test_edit_02()
+func Test_edit_02()
   " Change cursor position in InsertCharPre command
   new
   call setline(1, 'abc')
@@ -101,7 +99,7 @@ func! Test_edit_02()
   bw!
 endfunc
 
-func! Test_edit_03()
+func Test_edit_03()
   " Change cursor after <c-o> command to end of line
   new
   call setline(1, 'abc')
@@ -120,7 +118,7 @@ func! Test_edit_03()
   bw!
 endfunc
 
-func! Test_edit_04()
+func Test_edit_04()
   " test for :stopinsert
   new
   call setline(1, 'abc')
@@ -132,7 +130,7 @@ func! Test_edit_04()
   bw!
 endfunc
 
-func! Test_edit_05()
+func Test_edit_05()
   " test for folds being opened
   new
   call setline(1, ['abcX', 'abcX', 'zzzZ'])
@@ -154,7 +152,7 @@ func! Test_edit_05()
   bw!
 endfunc
 
-func! Test_edit_06()
+func Test_edit_06()
   " Test in diff mode
   if !has("diff") || !executable("diff")
     return
@@ -176,7 +174,7 @@ func! Test_edit_06()
   bw!
 endfunc
 
-func! Test_edit_07()
+func Test_edit_07()
   " 1) Test with completion <c-l> when popupmenu is visible
   new
   call setline(1, 'J')
@@ -213,7 +211,7 @@ func! Test_edit_07()
   bw!
 endfunc
 
-func! Test_edit_08()
+func Test_edit_08()
   " reset insertmode from i_ctrl-r_=
   let g:bufnr = bufnr('%')
   new
@@ -227,7 +225,7 @@ func! Test_edit_08()
   unlet g:bufnr
 endfunc
 
-func! Test_edit_09()
+func Test_edit_09()
   " test i_CTRL-\ combinations
   new
   call setline(1, ['abc', 'def', 'ghi'])
@@ -257,7 +255,7 @@ func! Test_edit_09()
   bw!
 endfunc
 
-func! Test_edit_10()
+func Test_edit_10()
   " Test for starting selectmode
   new
   set selectmode=key keymodel=startsel
@@ -269,7 +267,7 @@ func! Test_edit_10()
   bw!
 endfunc
 
-func! Test_edit_11()
+func Test_edit_11()
   " Test that indenting kicks in
   new
   set cindent
@@ -313,7 +311,7 @@ func! Test_edit_11()
   bw!
 endfunc
 
-func! Test_edit_11_indentexpr()
+func Test_edit_11_indentexpr()
   " Test that indenting kicks in
   new
   " Use indentexpr instead of cindenting
@@ -340,7 +338,7 @@ func! Test_edit_11_indentexpr()
   bw!
 endfunc
 
-func! Test_edit_12()
+func Test_edit_12()
   " Test changing indent in replace mode
   new
   call setline(1, ["\tabc", "\tdef"])
@@ -392,7 +390,7 @@ func! Test_edit_12()
   bw!
 endfunc
 
-func! Test_edit_13()
+func Test_edit_13()
   " Test smartindenting
   if exists("+smartindent")
     new
@@ -401,11 +399,22 @@ func! Test_edit_13()
     call feedkeys("A {\<cr>more\<cr>}\<esc>", 'tnix')
     call assert_equal(["\tabc {", "\t\tmore", "\t}"], getline(1, '$'))
     set smartindent& autoindent&
-    bw!
+    bwipe!
   endif
+
+  " Test autoindent removing indent of blank line.
+  new
+  call setline(1, '    foo bar baz')
+  set autoindent
+  exe "normal 0eea\<CR>\<CR>\<Esc>"
+  call assert_equal("    foo bar", getline(1))
+  call assert_equal("", getline(2))
+  call assert_equal("    baz", getline(3))
+  set autoindent&
+  bwipe!
 endfunc
 
-func! Test_edit_CR()
+func Test_edit_CR()
   " Test for <CR> in insert mode
   " basically only in quickfix mode ist tested, the rest
   " has been taken care of by other tests
@@ -438,9 +447,9 @@ func! Test_edit_CR()
   call delete('Xqflist.txt')
 endfunc
 
-func! Test_edit_CTRL_()
+func Test_edit_CTRL_()
   " disabled for Windows builds, why?
-  if !has("multi_byte") || !has("rightleft") || has("win32")
+  if !has("rightleft") || has("win32")
     return
   endif
   let _encoding=&encoding
@@ -469,7 +478,7 @@ func! Test_edit_CTRL_()
 endfunc
 
 " needs to come first, to have the @. register empty
-func! Test_edit_00a_CTRL_A()
+func Test_edit_00a_CTRL_A()
   " Test pressing CTRL-A
   new
   call setline(1, repeat([''], 5))
@@ -489,7 +498,7 @@ func! Test_edit_00a_CTRL_A()
   bw!
 endfunc
 
-func! Test_edit_CTRL_EY()
+func Test_edit_CTRL_EY()
   " Ctrl-E/ Ctrl-Y in insert mode completion to scroll
   10new
   call setline(1, range(1, 100))
@@ -505,7 +514,7 @@ func! Test_edit_CTRL_EY()
   bw!
 endfunc
 
-func! Test_edit_CTRL_G()
+func Test_edit_CTRL_G()
   new
   call setline(1, ['foobar', 'foobar', 'foobar'])
   call cursor(2, 4)
@@ -523,11 +532,11 @@ func! Test_edit_CTRL_G()
   bw!
 endfunc
 
-func! Test_edit_CTRL_I()
+func Test_edit_CTRL_I()
   " Tab in completion mode
   let path=expand("%:p:h")
   new
-  call setline(1, [path."/", ''])
+  call setline(1, [path. "/", ''])
   call feedkeys("Arunt\<c-x>\<c-f>\<tab>\<cr>\<esc>", 'tnix')
   call assert_match('runtest\.vim', getline(1))
   %d
@@ -547,7 +556,7 @@ func! Test_edit_CTRL_I()
   bw!
 endfunc
 
-func! Test_edit_CTRL_K()
+func Test_edit_CTRL_K()
   " Test pressing CTRL-K (basically only dictionary completion and digraphs
   " the rest is already covered
   call writefile(['A', 'AA', 'AAA', 'AAAA'], 'Xdictionary.txt')
@@ -608,19 +617,18 @@ func! Test_edit_CTRL_K()
   endtry
   call delete('Xdictionary.txt')
 
-  if has("multi_byte")
-    call test_override("char_avail", 1)
-    set showcmd
-    %d
-    call feedkeys("A\<c-k>a:\<esc>", 'tnix')
-    call assert_equal(['ä'], getline(1, '$'))
-    call test_override("char_avail", 0)
-    set noshowcmd
-  endif
+  call test_override("char_avail", 1)
+  set showcmd
+  %d
+  call feedkeys("A\<c-k>a:\<esc>", 'tnix')
+  call assert_equal(['ä'], getline(1, '$'))
+  call test_override("char_avail", 0)
+  set noshowcmd
+
   bw!
 endfunc
 
-func! Test_edit_CTRL_L()
+func Test_edit_CTRL_L()
   " Test Ctrl-X Ctrl-L (line completion)
   new
   set complete=.
@@ -631,11 +639,11 @@ func! Test_edit_CTRL_L()
   call feedkeys("cct\<c-x>\<c-l>\<c-n>\<esc>", 'tnix')
   call assert_equal(['one', 'two', 'three', 't', '', '', ''], getline(1, '$'))
   call feedkeys("cct\<c-x>\<c-l>\<c-n>\<c-n>\<esc>", 'tnix')
-  call assert_equal(['one', 'two', 'three', 't', '', '', ''], getline(1, '$'))
-  call feedkeys("cct\<c-x>\<c-l>\<c-n>\<c-n>\<c-n>\<esc>", 'tnix')
   call assert_equal(['one', 'two', 'three', 'two', '', '', ''], getline(1, '$'))
-  call feedkeys("cct\<c-x>\<c-l>\<c-n>\<c-n>\<c-n>\<c-n>\<esc>", 'tnix')
+  call feedkeys("cct\<c-x>\<c-l>\<c-n>\<c-n>\<c-n>\<esc>", 'tnix')
   call assert_equal(['one', 'two', 'three', 'three', '', '', ''], getline(1, '$'))
+  call feedkeys("cct\<c-x>\<c-l>\<c-n>\<c-n>\<c-n>\<c-n>\<esc>", 'tnix')
+  call assert_equal(['one', 'two', 'three', 't', '', '', ''], getline(1, '$'))
   call feedkeys("cct\<c-x>\<c-l>\<c-p>\<esc>", 'tnix')
   call assert_equal(['one', 'two', 'three', 'two', '', '', ''], getline(1, '$'))
   call feedkeys("cct\<c-x>\<c-l>\<c-p>\<c-p>\<esc>", 'tnix')
@@ -676,7 +684,7 @@ func! Test_edit_CTRL_L()
   bw!
 endfunc
 
-func! Test_edit_CTRL_N()
+func Test_edit_CTRL_N()
   " Check keyword completion
   new
   set complete=.
@@ -697,7 +705,7 @@ func! Test_edit_CTRL_N()
   bw!
 endfunc
 
-func! Test_edit_CTRL_O()
+func Test_edit_CTRL_O()
   " Check for CTRL-O in insert mode
   new
   inoreabbr <buffer> h here some more
@@ -722,7 +730,7 @@ func! Test_edit_CTRL_O()
   bw!
 endfunc
 
-func! Test_edit_CTRL_R()
+func Test_edit_CTRL_R()
   " Insert Register
   new
   call test_override("ALL", 1)
@@ -737,7 +745,7 @@ func! Test_edit_CTRL_R()
   bw!
 endfunc
 
-func! Test_edit_CTRL_S()
+func Test_edit_CTRL_S()
   " Test pressing CTRL-S (basically only spellfile completion)
   " the rest is already covered
   new
@@ -781,7 +789,7 @@ func! Test_edit_CTRL_S()
   bw!
 endfunc
 
-func! Test_edit_CTRL_T()
+func Test_edit_CTRL_T()
   " Check for CTRL-T and CTRL-X CTRL-T in insert mode
   " 1) increase indent
   new
@@ -858,7 +866,7 @@ func! Test_edit_CTRL_T()
   bw!
 endfunc
 
-func! Test_edit_CTRL_U()
+func Test_edit_CTRL_U()
   " Test 'completefunc'
   new
   " -1, -2 and -3 are special return values
@@ -917,7 +925,7 @@ func! Test_edit_CTRL_U()
   bw!
 endfunc
 
-func! Test_edit_CTRL_Z()
+func Test_edit_CTRL_Z()
   " Ctrl-Z when insertmode is not set inserts it literally
   new
   call setline(1, 'abc')
@@ -927,7 +935,7 @@ func! Test_edit_CTRL_Z()
   " TODO: How to Test Ctrl-Z in insert mode, e.g. suspend?
 endfunc
 
-func! Test_edit_DROP()
+func Test_edit_DROP()
   if !has("dnd")
     return
   endif
@@ -943,7 +951,7 @@ func! Test_edit_DROP()
   bw!
 endfunc
 
-func! Test_edit_CTRL_V()
+func Test_edit_CTRL_V()
   if has("ebcdic")
     return
   endif
@@ -971,7 +979,7 @@ func! Test_edit_CTRL_V()
   bw!
 endfunc
 
-func! Test_edit_F1()
+func Test_edit_F1()
   " Pressing <f1>
   new
   call feedkeys(":set im\<cr>\<f1>\<c-l>", 'tnix')
@@ -981,7 +989,7 @@ func! Test_edit_F1()
   bw
 endfunc
 
-func! Test_edit_F21()
+func Test_edit_F21()
   " Pressing <f21>
   " sends a netbeans command
   if has("netbeans_intg")
@@ -992,7 +1000,7 @@ func! Test_edit_F21()
   endif
 endfunc
 
-func! Test_edit_HOME_END()
+func Test_edit_HOME_END()
   " Test Home/End Keys
   new
   set foldopen+=hor
@@ -1007,7 +1015,7 @@ func! Test_edit_HOME_END()
   bw!
 endfunc
 
-func! Test_edit_INS()
+func Test_edit_INS()
   " Test for Pressing <Insert>
   new
   call setline(1, ['abc', 'def'])
@@ -1021,7 +1029,7 @@ func! Test_edit_INS()
   bw!
 endfunc
 
-func! Test_edit_LEFT_RIGHT()
+func Test_edit_LEFT_RIGHT()
   " Left, Shift-Left, Right, Shift-Right
   new
   call setline(1, ['abc def ghi', 'ABC DEF GHI', 'ZZZ YYY XXX'])
@@ -1068,7 +1076,7 @@ func! Test_edit_LEFT_RIGHT()
   bw!
 endfunc
 
-func! Test_edit_MOUSE()
+func Test_edit_MOUSE()
   " This is a simple test, since we not really using the mouse here
   if !has("mouse")
     return
@@ -1123,7 +1131,7 @@ func! Test_edit_MOUSE()
   bw!
 endfunc
 
-func! Test_edit_PAGEUP_PAGEDOWN()
+func Test_edit_PAGEUP_PAGEDOWN()
   10new
   call setline(1, repeat(['abc def ghi'], 30))
   call cursor(1, 1)
@@ -1222,7 +1230,7 @@ func! Test_edit_PAGEUP_PAGEDOWN()
   bw!
 endfunc
 
-func! Test_edit_forbidden()
+func Test_edit_forbidden()
   new
   " 1) edit in the sandbox is not allowed
   call setline(1, 'a')
@@ -1282,7 +1290,7 @@ func! Test_edit_forbidden()
   bw!
 endfunc
 
-func! Test_edit_rightleft()
+func Test_edit_rightleft()
   " Cursor in rightleft mode moves differently
   if !exists("+rightleft")
     return
@@ -1357,7 +1365,6 @@ func Test_edit_complete_very_long_name()
   let save_columns = &columns
   " Need at least about 1100 columns to reproduce the problem.
   set columns=2000
-  call assert_equal(2000, &columns)
   set noswapfile
 
   let longfilename = longdirname . '/' . repeat('a', 255)
@@ -1376,6 +1383,14 @@ func Test_edit_complete_very_long_name()
   set swapfile&
 endfunc
 
+func Test_edit_backtick()
+  next a\`b c
+  call assert_equal('a`b', expand('%'))
+  next
+  call assert_equal('c', expand('%'))
+  call assert_equal('a\`b c', expand('##'))
+endfunc
+
 func Test_edit_quit()
   edit foo.txt
   split
@@ -1388,3 +1403,63 @@ func Test_edit_quit()
   only
 endfunc
 
+func Test_edit_alt()
+  " Keeping the cursor line didn't happen when the first line has indent.
+  new
+  call setline(1, ['  one', 'two', 'three'])
+  w XAltFile
+  $
+  call assert_equal(3, line('.'))
+  e Xother
+  e #
+  call assert_equal(3, line('.'))
+
+  bwipe XAltFile
+  call delete('XAltFile')
+endfunc
+
+func Test_leave_insert_autocmd()
+  new
+  au InsertLeave * let g:did_au = 1
+  let g:did_au = 0
+  call feedkeys("afoo\<Esc>", 'tx')
+  call assert_equal(1, g:did_au)
+  call assert_equal('foo', getline(1))
+
+  let g:did_au = 0
+  call feedkeys("Sbar\<C-C>", 'tx')
+  call assert_equal(0, g:did_au)
+  call assert_equal('bar', getline(1))
+
+  inoremap x xx<Esc>
+  let g:did_au = 0
+  call feedkeys("Saax", 'tx')
+  call assert_equal(1, g:did_au)
+  call assert_equal('aaxx', getline(1))
+
+  inoremap x xx<C-C>
+  let g:did_au = 0
+  call feedkeys("Sbbx", 'tx')
+  call assert_equal(0, g:did_au)
+  call assert_equal('bbxx', getline(1))
+
+  bwipe!
+  au! InsertLeave
+  iunmap x
+endfunc
+
+" Test for inserting characters using CTRL-V followed by a number.
+func Test_edit_special_chars()
+  new
+
+  if has("ebcdic")
+    let t = "o\<C-V>193\<C-V>xc2\<C-V>o303 \<C-V>90a\<C-V>xfg\<C-V>o578\<Esc>"
+  else
+    let t = "o\<C-V>65\<C-V>x42\<C-V>o103 \<C-V>33a\<C-V>xfg\<C-V>o78\<Esc>"
+  endif
+
+  exe "normal " . t
+  call assert_equal("ABC !a\<C-O>g\<C-G>8", getline(2))
+
+  close!
+endfunc

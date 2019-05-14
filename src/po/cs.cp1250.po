@@ -218,7 +218,7 @@ msgstr " Doplòování klíèových slov (^N/^P)"
 msgid " ^X mode (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
 msgstr " ^X režim (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
 
-#. Scroll has it's own msgs, in it's place there is the msg for local
+#. Scroll has its own msgs, in its place there is the msg for local
 #. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 msgid " Keyword Local completion (^N/^P)"
 msgstr " Lokální doplòování klíèových slov (^N/^P)"
@@ -1359,7 +1359,7 @@ msgstr "E216: Událost %s neexistuje"
 #. Highlight title
 msgid ""
 "\n"
-"--- Auto-Commands ---"
+"--- Autocommands ---"
 msgstr ""
 "\n"
 "--- Automatické pøíkazy ---"
@@ -1374,7 +1374,7 @@ msgid "E218: autocommand nesting too deep"
 msgstr "E218: vnoøení automatického pøíkazu pøíliš hluboká"
 
 #, c-format
-msgid "%s Auto commands for \"%s\""
+msgid "%s Autocommands for \"%s\""
 msgstr "%s automatické pøíkazy pro \"%s\""
 
 #, c-format
@@ -2121,7 +2121,7 @@ msgstr "-q [chybový soubor]  editovat soubor na místì výskytu první chyby"
 msgid ""
 "\n"
 "\n"
-"usage:"
+"Usage:"
 msgstr ""
 "\n"
 "\n"

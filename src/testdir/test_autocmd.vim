@@ -1,6 +1,8 @@
 " Tests for autocommands
 
-func! s:cleanup_buffers() abort
+source shared.vim
+
+func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
     if bufloaded(bnr) && bufnr('%') != bnr
       execute 'bd! ' . bnr
@@ -16,6 +18,7 @@ func Test_vim_did_enter()
 endfunc
 
 if has('timers')
+
   func ExitInsertMode(id)
     call feedkeys("\<Esc>")
   endfunc
@@ -30,6 +33,28 @@ if has('timers')
     call timer_start(100, 'ExitInsertMode')
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
+    unlet g:triggered
+    au! CursorHoldI
+    set updatetime&
+  endfunc
+
+  func Test_cursorhold_insert_with_timer_interrupt()
+    if !has('job')
+      return
+    endif
+    " Need to move the cursor.
+    call feedkeys("ggG", "xt")
+
+    " Confirm the timer invoked in exit_cb of the job doesn't disturb
+    " CursorHoldI event.
+    let g:triggered = 0
+    au CursorHoldI * let g:triggered += 1
+    set updatetime=500
+    call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
+          \ {'exit_cb': {-> timer_start(1000, 'ExitInsertMode')}})
+    call feedkeys('a', 'x!')
+    call assert_equal(1, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
@@ -42,10 +67,34 @@ if has('timers')
     " CursorHoldI does not trigger after CTRL-X
     call feedkeys("a\<C-X>", 'x!')
     call assert_equal(0, g:triggered)
+    unlet g:triggered
     au! CursorHoldI
     set updatetime&
   endfunc
-endif
+
+  func Test_OptionSet_modeline()
+    call test_override('starting', 1)
+    au! OptionSet
+    augroup set_tabstop
+      au OptionSet tabstop call timer_start(1, {-> execute("echo 'Handler called'", "")})
+    augroup END
+    call writefile(['vim: set ts=7 sw=5 :', 'something'], 'XoptionsetModeline')
+    set modeline
+    let v:errmsg = ''
+    call assert_fails('split XoptionsetModeline', 'E12:')
+    call assert_equal(7, &ts)
+    call assert_equal('', v:errmsg)
+
+    augroup set_tabstop
+      au!
+    augroup END
+    bwipe!
+    set ts&
+    call delete('XoptionsetModeline')
+    call test_override('starting', 0)
+  endfunc
+
+endif "has('timers')
 
 func Test_bufunload()
   augroup test_bufunload_group
@@ -117,7 +166,9 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  call assert_fails('edit bb.txt', 'E937:')
+  " Todo: check for E937 generated first
+  " call assert_fails('edit bb.txt', 'E937:')
+  call assert_fails('edit bb.txt', 'E517:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -314,7 +365,7 @@ func Test_three_windows()
   e Xtestje2
   sp Xtestje1
   call assert_fails('e', 'E937:')
-  call assert_equal('Xtestje2', expand('%'))
+  call assert_equal('Xtestje1', expand('%'))
 
   " Test changing buffers in a BufWipeout autocommand.  If this goes wrong
   " there are ml_line errors and/or a Crash.
@@ -336,7 +387,6 @@ func Test_three_windows()
 
   au!
   enew
-  bwipe! Xtestje1
   call delete('Xtestje1')
   call delete('Xtestje2')
   call delete('Xtestje3')
@@ -449,7 +499,7 @@ func s:AutoCommandOptionSet(match)
 endfunc
 
 func Test_OptionSet()
-  if !has("eval") || !has("autocmd") || !exists("+autochdir")
+  if !has("eval") || !exists("+autochdir")
     return
   endif
 
@@ -584,7 +634,7 @@ func Test_OptionSet()
   " Cleanup
   au! OptionSet
   for opt in ['nu', 'ai', 'acd', 'ar', 'bs', 'backup', 'cul', 'cp']
-    exe printf(":set %s&vi", opt)
+    exe printf(":set %s&vim", opt)
   endfor
   call test_override('starting', 0)
   delfunc! AutoCommandOptionSet
@@ -592,7 +642,7 @@ endfunc
 
 func Test_OptionSet_diffmode()
   call test_override('starting', 1)
-  " 18: Changing an option when enetering diff mode
+  " 18: Changing an option when entering diff mode
   new
   au OptionSet diff :let &l:cul=v:option_new
 
@@ -812,6 +862,18 @@ func Test_QuitPre()
 endfunc
 
 func Test_Cmdline()
+  au! CmdlineChanged : let g:text = getcmdline()
+  let g:text = 0
+  call feedkeys(":echom 'hello'\<CR>", 'xt')
+  call assert_equal("echom 'hello'", g:text)
+  au! CmdlineChanged
+
+  au! CmdlineChanged : let g:entered = expand('<afile>')
+  let g:entered = 0
+  call feedkeys(":echom 'hello'\<CR>", 'xt')
+  call assert_equal(':', g:entered)
+  au! CmdlineChanged
+
   au! CmdlineEnter : let g:entered = expand('<afile>')
   au! CmdlineLeave : let g:left = expand('<afile>')
   let g:entered = 0
@@ -822,6 +884,8 @@ func Test_Cmdline()
   au! CmdlineEnter
   au! CmdlineLeave
 
+  let save_shellslash = &shellslash
+  set noshellslash
   au! CmdlineEnter / let g:entered = expand('<afile>')
   au! CmdlineLeave / let g:left = expand('<afile>')
   let g:entered = 0
@@ -834,6 +898,7 @@ func Test_Cmdline()
   bwipe!
   au! CmdlineEnter
   au! CmdlineLeave
+  let &shellslash = save_shellslash
 endfunc
 
 " Test for BufWritePre autocommand that deletes or unloads the buffer.
@@ -1167,7 +1232,9 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  call assert_fails('next x', 'E93')
+  " Get E93 first?
+  " call assert_fails('next x', 'E93:')
+  call assert_fails('next x', 'E517:')
   bwipe
   au!
 endfunc
@@ -1177,4 +1244,513 @@ func Test_nocatch_wipe_dummy_buffer()
   au * x bwipe
   call assert_fails('lv½ /x', 'E480')
   au!
+endfunc
+
+function s:Before_test_dirchanged()
+  augroup test_dirchanged
+    autocmd!
+  augroup END
+  let s:li = []
+  let s:dir_this = getcwd()
+  let s:dir_foo = s:dir_this . '/foo'
+  call mkdir(s:dir_foo)
+  let s:dir_bar = s:dir_this . '/bar'
+  call mkdir(s:dir_bar)
+endfunc
+
+function s:After_test_dirchanged()
+  exe 'cd' s:dir_this
+  call delete(s:dir_foo, 'd')
+  call delete(s:dir_bar, 'd')
+  augroup test_dirchanged
+    autocmd!
+  augroup END
+endfunc
+
+function Test_dirchanged_global()
+  call s:Before_test_dirchanged()
+  autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
+  autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
+  exe 'cd' s:dir_foo
+  call assert_equal(["cd:", s:dir_foo], s:li)
+  exe 'cd' s:dir_foo
+  call assert_equal(["cd:", s:dir_foo], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["cd:", s:dir_foo], s:li)
+  call s:After_test_dirchanged()
+endfunc
+
+function Test_dirchanged_local()
+  call s:Before_test_dirchanged()
+  autocmd test_dirchanged DirChanged window call add(s:li, "lcd:")
+  autocmd test_dirchanged DirChanged window call add(s:li, expand("<afile>"))
+  exe 'cd' s:dir_foo
+  call assert_equal([], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["lcd:", s:dir_bar], s:li)
+  exe 'lcd' s:dir_bar
+  call assert_equal(["lcd:", s:dir_bar], s:li)
+  call s:After_test_dirchanged()
+endfunc
+
+function Test_dirchanged_auto()
+  if !exists('+autochdir')
+    return
+  endif
+  call s:Before_test_dirchanged()
+  call test_autochdir()
+  autocmd test_dirchanged DirChanged auto call add(s:li, "auto:")
+  autocmd test_dirchanged DirChanged auto call add(s:li, expand("<afile>"))
+  set acd
+  exe 'cd ..'
+  call assert_equal([], s:li)
+  exe 'edit ' . s:dir_foo . '/Xfile'
+  call assert_equal(s:dir_foo, getcwd())
+  call assert_equal(["auto:", s:dir_foo], s:li)
+  set noacd
+  bwipe!
+  call s:After_test_dirchanged()
+endfunc
+
+" Test TextChangedI and TextChangedP
+func Test_ChangedP()
+  new
+  call setline(1, ['foo', 'bar', 'foobar'])
+  call test_override("char_avail", 1)
+  set complete=. completeopt=menuone
+
+  func! TextChangedAutocmd(char)
+    let g:autocmd .= a:char
+  endfunc
+
+  au! TextChanged <buffer> :call TextChangedAutocmd('N')
+  au! TextChangedI <buffer> :call TextChangedAutocmd('I')
+  au! TextChangedP <buffer> :call TextChangedAutocmd('P')
+
+  call cursor(3, 1)
+  let g:autocmd = ''
+  call feedkeys("o\<esc>", 'tnix')
+  call assert_equal('I', g:autocmd)
+
+  let g:autocmd = ''
+  call feedkeys("Sf", 'tnix')
+  call assert_equal('II', g:autocmd)
+
+  let g:autocmd = ''
+  call feedkeys("Sf\<C-N>", 'tnix')
+  call assert_equal('IIP', g:autocmd)
+
+  let g:autocmd = ''
+  call feedkeys("Sf\<C-N>\<C-N>", 'tnix')
+  call assert_equal('IIPP', g:autocmd)
+
+  let g:autocmd = ''
+  call feedkeys("Sf\<C-N>\<C-N>\<C-N>", 'tnix')
+  call assert_equal('IIPPP', g:autocmd)
+
+  let g:autocmd = ''
+  call feedkeys("Sf\<C-N>\<C-N>\<C-N>\<C-N>", 'tnix')
+  call assert_equal('IIPPPP', g:autocmd)
+
+  call assert_equal(['foo', 'bar', 'foobar', 'foo'], getline(1, '$'))
+  " TODO: how should it handle completeopt=noinsert,noselect?
+
+  " CleanUp
+  call test_override("char_avail", 0)
+  au! TextChanged
+  au! TextChangedI
+  au! TextChangedP
+  delfu TextChangedAutocmd
+  unlet! g:autocmd
+  set complete&vim completeopt&vim
+
+  bw!
+endfunc
+
+let g:setline_handled = v:false
+func SetLineOne()
+  if !g:setline_handled
+    call setline(1, "(x)")
+    let g:setline_handled = v:true
+  endif
+endfunc
+
+func Test_TextChangedI_with_setline()
+  new
+  call test_override('char_avail', 1)
+  autocmd TextChangedI <buffer> call SetLineOne()
+  call feedkeys("i(\<CR>\<Esc>", 'tx')
+  call assert_equal('(', getline(1))
+  call assert_equal('x)', getline(2))
+  undo
+  call assert_equal('', getline(1))
+  call assert_equal('', getline(2))
+
+  call test_override('starting', 0)
+  bwipe!
+endfunc
+
+func Test_Changed_FirstTime()
+  if !has('terminal') || has('gui_running')
+    return
+  endif
+  " Prepare file for TextChanged event.
+  call writefile([''], 'Xchanged.txt')
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
+  call assert_equal('running', term_getstatus(buf))
+  " Wait for the ruler (in the status line) to be shown.
+  " In ConPTY, there is additional character which is drawn up to the width of
+  " the screen.
+  if has('conpty')
+    call WaitForAssert({-> assert_match('\<All.*$', term_getline(buf, 3))})
+  else
+    call WaitForAssert({-> assert_match('\<All$', term_getline(buf, 3))})
+  endif
+  " It's only adding autocmd, so that no event occurs.
+  call term_sendkeys(buf, ":au! TextChanged <buffer> call writefile(['No'], 'Xchanged.txt')\<cr>")
+  call term_sendkeys(buf, "\<C-\\>\<C-N>:qa!\<cr>")
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+  call assert_equal([''], readfile('Xchanged.txt'))
+
+  " clean up
+  call delete('Xchanged.txt')
+  bwipe!
+endfunc
+
+func Test_autocmd_nested()
+  let g:did_nested = 0
+  augroup Testing
+    au WinNew * edit somefile
+    au BufNew * let g:did_nested = 1
+  augroup END
+  split
+  call assert_equal(0, g:did_nested)
+  close
+  bwipe! somefile
+
+  " old nested argument still works
+  augroup Testing
+    au!
+    au WinNew * nested edit somefile
+    au BufNew * let g:did_nested = 1
+  augroup END
+  split
+  call assert_equal(1, g:did_nested)
+  close
+  bwipe! somefile
+
+  " New ++nested argument works
+  augroup Testing
+    au!
+    au WinNew * ++nested edit somefile
+    au BufNew * let g:did_nested = 1
+  augroup END
+  split
+  call assert_equal(1, g:did_nested)
+  close
+  bwipe! somefile
+
+  augroup Testing
+    au!
+  augroup END
+
+  call assert_fails('au WinNew * ++nested ++nested echo bad', 'E983:')
+  call assert_fails('au WinNew * nested nested echo bad', 'E983:')
+endfunc
+
+func Test_autocmd_once()
+  " Without ++once WinNew triggers twice
+  let g:did_split = 0
+  augroup Testing
+    au WinNew * let g:did_split += 1
+  augroup END
+  split
+  split
+  call assert_equal(2, g:did_split)
+  call assert_true(exists('#WinNew'))
+  close
+  close
+
+  " With ++once WinNew triggers once
+  let g:did_split = 0
+  augroup Testing
+    au!
+    au WinNew * ++once let g:did_split += 1
+  augroup END
+  split
+  split
+  call assert_equal(1, g:did_split)
+  call assert_false(exists('#WinNew'))
+  close
+  close
+
+  call assert_fails('au WinNew * ++once ++once echo bad', 'E983:')
+endfunc
+
+func Test_autocmd_bufreadpre()
+  new
+  let b:bufreadpre = 1
+  call append(0, range(100))
+  w! XAutocmdBufReadPre.txt
+  autocmd BufReadPre <buffer> :let b:bufreadpre += 1
+  norm! 50gg
+  sp
+  norm! 100gg
+  wincmd p
+  let g:wsv1 = winsaveview()
+  wincmd p
+  let g:wsv2 = winsaveview()
+  " triggers BufReadPre, should not move the cursor in either window
+  " The topline may change one line in a large window.
+  edit
+  call assert_inrange(g:wsv2.topline - 1, g:wsv2.topline + 1, winsaveview().topline)
+  call assert_equal(g:wsv2.lnum, winsaveview().lnum)
+  call assert_equal(2, b:bufreadpre)
+  wincmd p
+  call assert_equal(g:wsv1.topline, winsaveview().topline)
+  call assert_equal(g:wsv1.lnum, winsaveview().lnum)
+  call assert_equal(2, b:bufreadpre)
+  " Now set the cursor position in an BufReadPre autocommand
+  " (even though the position will be invalid, this should make Vim reset the
+  " cursor position in the other window.
+  wincmd p
+  set cpo+=g
+  " won't do anything, but try to set the cursor on an invalid lnum
+  autocmd BufReadPre <buffer> :norm! 70gg
+  " triggers BufReadPre, should not move the cursor in either window
+  e
+  call assert_equal(1, winsaveview().topline)
+  call assert_equal(1, winsaveview().lnum)
+  call assert_equal(3, b:bufreadpre)
+  wincmd p
+  call assert_equal(g:wsv1.topline, winsaveview().topline)
+  call assert_equal(g:wsv1.lnum, winsaveview().lnum)
+  call assert_equal(3, b:bufreadpre)
+  close
+  close
+  call delete('XAutocmdBufReadPre.txt')
+  set cpo-=g
+endfunc
+
+" FileChangedShell tested in test_filechanged.vim
+
+" Tests for the following autocommands:
+" - FileWritePre	writing a compressed file
+" - FileReadPost	reading a compressed file
+" - BufNewFile		reading a file template
+" - BufReadPre		decompressing the file to be read
+" - FilterReadPre	substituting characters in the temp file
+" - FilterReadPost	substituting characters after filtering
+" - FileReadPre		set options for decompression
+" - FileReadPost	decompress the file
+func Test_ReadWrite_Autocmds()
+  " Run this test only on Unix-like systems and if gzip is available
+  if !has('unix') || !executable("gzip")
+    return
+  endif
+
+  " Make $GZIP empty, "-v" would cause trouble.
+  let $GZIP = ""
+
+  " Use a FileChangedShell autocommand to avoid a prompt for 'Xtestfile.gz'
+  " being modified outside of Vim (noticed on Solaris).
+  au FileChangedShell * echo 'caught FileChangedShell'
+
+  " Test for the FileReadPost, FileWritePre and FileWritePost autocmds
+  augroup Test1
+    au!
+    au FileWritePre    *.gz   '[,']!gzip
+    au FileWritePost   *.gz   undo
+    au FileReadPost    *.gz   '[,']!gzip -d
+  augroup END
+
+  new
+  set bin
+  call append(0, [
+	      \ 'line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ])
+  1,9write! Xtestfile.gz
+  enew! | close
+
+  new
+  " Read and decompress the testfile
+  0read Xtestfile.gz
+  call assert_equal([
+	      \ 'line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ], getline(1, 9))
+  enew! | close
+
+  augroup Test1
+    au!
+  augroup END
+
+  " Test for the FileAppendPre and FileAppendPost autocmds
+  augroup Test2
+    au!
+    au BufNewFile      *.c    read Xtest.c
+    au FileAppendPre   *.out  '[,']s/new/NEW/
+    au FileAppendPost  *.out  !cat Xtest.c >> test.out
+  augroup END
+
+  call writefile(['/*', ' * Here is a new .c file', ' */'], 'Xtest.c')
+  new foo.c			" should load Xtest.c
+  call assert_equal(['/*', ' * Here is a new .c file', ' */'], getline(2, 4))
+  w! >> test.out		" append it to the output file
+
+  let contents = readfile('test.out')
+  call assert_equal(' * Here is a NEW .c file', contents[2])
+  call assert_equal(' * Here is a new .c file', contents[5])
+
+  call delete('test.out')
+  enew! | close
+  augroup Test2
+    au!
+  augroup END
+
+  " Test for the BufReadPre and BufReadPost autocmds
+  augroup Test3
+    au!
+    " setup autocommands to decompress before reading and re-compress
+    " afterwards
+    au BufReadPre  *.gz  exe '!gzip -d ' . shellescape(expand("<afile>"))
+    au BufReadPre  *.gz  call rename(expand("<afile>:r"), expand("<afile>"))
+    au BufReadPost *.gz  call rename(expand("<afile>"), expand("<afile>:r"))
+    au BufReadPost *.gz  exe '!gzip ' . shellescape(expand("<afile>:r"))
+  augroup END
+
+  e! Xtestfile.gz		" Edit compressed file
+  call assert_equal([
+	      \ 'line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ], getline(1, 9))
+
+  w! >> test.out		" Append it to the output file
+
+  augroup Test3
+    au!
+  augroup END
+
+  " Test for the FilterReadPre and FilterReadPost autocmds.
+  set shelltemp			" need temp files here
+  augroup Test4
+    au!
+    au FilterReadPre   *.out  call rename(expand("<afile>"), expand("<afile>") . ".t")
+    au FilterReadPre   *.out  exe 'silent !sed s/e/E/ ' . shellescape(expand("<afile>")) . ".t >" . shellescape(expand("<afile>"))
+    au FilterReadPre   *.out  exe 'silent !rm ' . shellescape(expand("<afile>")) . '.t'
+    au FilterReadPost  *.out  '[,']s/x/X/g
+  augroup END
+
+  e! test.out			" Edit the output file
+  1,$!cat
+  call assert_equal([
+	      \ 'linE 2	AbcdefghijklmnopqrstuvwXyz',
+	      \ 'linE 3	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+	      \ 'linE 4	AbcdefghijklmnopqrstuvwXyz',
+	      \ 'linE 5	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+	      \ 'linE 6	AbcdefghijklmnopqrstuvwXyz',
+	      \ 'linE 7	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+	      \ 'linE 8	AbcdefghijklmnopqrstuvwXyz',
+	      \ 'linE 9	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+	      \ 'linE 10 AbcdefghijklmnopqrstuvwXyz'
+	      \ ], getline(1, 9))
+  call assert_equal([
+	      \ 'line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ], readfile('test.out'))
+
+  augroup Test4
+    au!
+  augroup END
+  set shelltemp&vim
+
+  " Test for the FileReadPre and FileReadPost autocmds.
+  augroup Test5
+    au!
+    au FileReadPre *.gz exe 'silent !gzip -d ' . shellescape(expand("<afile>"))
+    au FileReadPre *.gz call rename(expand("<afile>:r"), expand("<afile>"))
+    au FileReadPost *.gz '[,']s/l/L/
+  augroup END
+
+  new
+  0r Xtestfile.gz		" Read compressed file
+  call assert_equal([
+	      \ 'Line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'Line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'Line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'Line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'Line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'Line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'Line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'Line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'Line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ], getline(1, 9))
+  call assert_equal([
+	      \ 'line 2	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 3	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 4	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 5	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 6	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 7	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 8	Abcdefghijklmnopqrstuvwxyz',
+	      \ 'line 9	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+	      \ 'line 10 Abcdefghijklmnopqrstuvwxyz'
+	      \ ], readfile('Xtestfile.gz'))
+
+  augroup Test5
+    au!
+  augroup END
+
+  au! FileChangedShell
+  call delete('Xtestfile.gz')
+  call delete('Xtest.c')
+  call delete('test.out')
+endfunc
+
+func Test_throw_in_BufWritePre()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  call assert_false(filereadable('Xthefile'))
+  augroup throwing
+    au BufWritePre X* throw 'do not write'
+  augroup END
+  try
+    w Xthefile
+  catch
+    let caught = 1
+  endtry
+  call assert_equal(1, caught)
+  call assert_false(filereadable('Xthefile'))
+
+  bwipe!
+  au! throwing
 endfunc

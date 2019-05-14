@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.0.  Last change: 2017 Sep 04
+*intro.txt*     For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,9 +34,7 @@ It can be accessed from within Vim with the <Help> or <F1> key and with the
 is not located in the default place.  You can jump to subjects like with tags:
 Use CTRL-] to jump to a subject under the cursor, use CTRL-T to jump back.
 
-Throughout this manual the differences between Vi and Vim are mentioned in
-curly braces, like this: {Vi does not have on-line help}.  See |vi_diff.txt|
-for a summary of the differences between Vim and Vi.
+The differences between Vi and Vim are mentioned in |vi_diff.txt|.
 
 This manual refers to Vim on various machines.  There may be small differences
 between different computers and terminals.  Besides the remarks given in this
@@ -52,29 +50,11 @@ an introduction to the use of Vi or Vim, it gets a bit complicated here and
 there.  For beginners, there is a hands-on |tutor|.  To learn using Vim, read
 the user manual |usr_toc.txt|.
 
-							*book*
-There are many books on Vi that contain a section for beginners.  There are
-two books I can recommend:
-
-	"Vim - Vi Improved" by Steve Oualline
-
-This is the very first book completely dedicated to Vim.  It is very good for
-beginners.  The most often used commands are explained with pictures and
-examples.  The less often used commands are also explained, the more advanced
-features are summarized.  There is a comprehensive index and a quick
-reference.  Parts of this book have been included in the user manual
-|frombook|.
-Published by New Riders Publishing.  ISBN: 0735710015
-For more information try one of these:
-	http://iccf-holland.org/click5.html
-	http://www.vim.org/iccf/click5.html
-
-	"Learning the Vi editor" by Linda Lamb and Arnold Robbins
-
-This is a book about Vi that includes a chapter on Vim (in the sixth edition).
-The first steps in Vi are explained very well.  The commands that Vim adds are
-only briefly mentioned.  There is also a German translation.
-Published by O'Reilly.  ISBN: 1-56592-426-6.
+							*book* *books*
+Most books on Vi and Vim contain a section for beginners.  Others are spending
+more words on specific functionality.  You can find an overview of Vim books
+here:
+	http://iccf-holland.org/vim_books.html
 
 ==============================================================================
 2. Vim on the internet					*internet*
@@ -84,9 +64,9 @@ The Vim pages contain the most recent information about Vim.  They also
 contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
-	Vim home page:	  http://www.vim.org/
-	Vim FAQ:	  http://vimdoc.sf.net/
-	Downloading:	  ftp://ftp.vim.org/pub/vim/MIRRORS
+	Vim home page:	  https://www.vim.org/
+	Vim FAQ:	  https://vimhelp.appspot.com/vim_faq.txt.html
+	Downloading:	  https://www.vim.org/download.php
 
 
 Usenet News group where Vim is discussed:		*news* *usenet*
@@ -114,10 +94,12 @@ There are several mailing lists for Vim:
 See http://www.vim.org/maillist.php for the latest information.
 
 NOTE:
+- Anyone can see the archive, e.g. on Google groups.  Search this if you have
+  questions.
 - You can only send messages to these lists if you have subscribed!
+- The first message is moderated, thus it may take a few hours to show up.
 - You need to send the messages from the same location as where you subscribed
   from (to avoid spam mail).
-- Maximum message size is 40000 characters.
 
 						*subscribe-maillist*
 If you want to join, send a message to
@@ -138,7 +120,7 @@ There are two ways to report bugs, both work:
    see the message.  If you don't want that, e.g. because it is a security
    issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
    (that's Bram).
-2. Open issue on GitHub: https://github.com/vim/vim/issues
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
    The text will be forwarded to the vim-dev maillist.
 
 Please be brief; all the time that is spent on answering mail is subtracted
@@ -150,7 +132,10 @@ Preferably start Vim with: >
 Where reproduce.vim is a script that reproduces the problem.  Try different
 machines, if relevant (is this an MS-Windows specific bug perhaps?).
 
-Send me patches if you can!
+Send me patches if you can!  If you create a pull request on
+https://github.com/vim/vim then the automated checks will run and report any
+obvious problems.  But you can also send the patch by email (use an attachment
+to avoid white space changes).
 
 It will help to include information about the version of Vim you are using and
 your setup.  You can get the information with this command: >
@@ -189,7 +174,7 @@ introduce Y2K problems, but those are not really part of Vim itself.
 ==============================================================================
 3. Credits				*credits* *author* *Bram* *Moolenaar*
 
-Most of Vim was written by Bram Moolenaar <Bram@vim.org>.
+Most of Vim was created by Bram Moolenaar <Bram@vim.org>.
 
 Parts of the documentation come from several Vi manuals, written by:
 	W.N. Joy
@@ -268,6 +253,7 @@ Vim would never have become what it is now, without the help of these people!
 	Ken Takata		fixes and features
 	Kazunobu Kuriyama	GTK 3
 	Christian Brabandt	many fixes, features, user support, etc.
+	Yegappan Lakshmanan	many quickfix features
 
 I wish to thank all the people that sent me bug reports and suggestions.  The
 list is too long to mention them all here.  Vim would not be the same without
@@ -280,9 +266,9 @@ In this documentation there are several references to other versions of Vi:
 Vi	"the original".  Without further remarks this is the version
 	of Vi that appeared in Sun OS 4.x.  ":version" returns
 	"Version 3.7, 6/7/85".  Sometimes other versions are referred
-	to.  Only runs under Unix.  Source code only available with a
-	license.  More information on Vi can be found through:
-		http://vi-editor.org	[doesn't currently work...]
+	to.  Only runs under Unix.  Source code is now available under a
+	BSD-style license.  More information on Vi can be found through:
+		http://ex-vi.sourceforge.net/
 							*Posix*
 Posix	From the IEEE standard 1003.2, Part 2: Shell and utilities.
 	Generally known as "Posix".  This is a textual description of
@@ -297,9 +283,14 @@ Nvi	The "New" Vi.  The version of Vi that comes with BSD 4.4 and FreeBSD.
 	Source code is freely available.
 							*Elvis*
 Elvis	Another Vi clone, made by Steve Kirkendall.  Very compact but isn't
-	as flexible as Vim.
-	The version used is 2.1.  It is still being developed.  Source code is
-	freely available.
+	as flexible as Vim.  Development has stalled, Elvis has left the
+	building!  Source code is freely available.
+							*Neovim*
+Neovim	A Vim clone.  Forked the Vim source in 2014 and went a different way.
+	Very much bound to github and has many more dependencies, making
+	development more complex and limiting portability.  Code has been
+	refactored, resulting in patches not being exchangeable with Vim.
+	Supports a remote GUI and integration with scripting languages.
 
 ==============================================================================
 4. Notation						*notation*
@@ -595,9 +586,9 @@ Virtual Replace mode	Virtual Replace mode is similar to Replace mode, but
 			If the 'showmode' option is on "-- VREPLACE --" is
 			shown at the bottom of the window.
 
-Insert Normal mode	Entered when CTRL-O given in Insert mode.  This is
-			like Normal mode, but after executing one command Vim
-			returns to Insert mode.
+Insert Normal mode	Entered when CTRL-O is typed in Insert mode (see
+			|i_CTRL-O|).  This is like Normal mode, but after
+			executing one command Vim returns to Insert mode.
 			If the 'showmode' option is on "-- (insert) --" is
 			shown at the bottom of the window.
 
@@ -655,11 +646,7 @@ Ex		 :vi	  --	  --	 --	    --	      --
      the command.
    In the last case <Esc> may be the character defined with the 'wildchar'
    option, in which case it will start command-line completion.  You can
-   ignore that and type <Esc> again.  {Vi: when hitting <Esc> the command-line
-   is executed.  This is unexpected for most people; therefore it was changed
-   in Vim.  But when the <Esc> is part of a mapping, the command-line is
-   executed.  If you want the Vi behaviour also when typing <Esc>, use ":cmap
-   ^V<Esc> ^V^M"}
+   ignore that and type <Esc> again.
 *4 Go from Normal to Select mode by:
    - use the mouse to select text while 'selectmode' contains "mouse"
    - use a non-printable command to move the cursor while keeping the Shift
@@ -710,7 +697,6 @@ gQ			Switch to "Ex" mode like with "Q", but really behave
 			like typing ":" commands after another.  All command
 			line editing, completion etc. is available.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
-			{not in Vi}
 
 ==============================================================================
 7. The window contents					*window-contents*
@@ -723,7 +709,6 @@ exceptions:
   character.
 - When inserting text in one window, other windows on the same text are not
   updated until the insert is finished.
-{Vi: The screen is not always updated on slow terminals}
 
 Lines longer than the window width will wrap, unless the 'wrap' option is off
 (see below).  The 'linebreak' option can be set to wrap at a blank character.
@@ -769,7 +754,6 @@ If there is a single line that is too long to fit in the window, this is a
 special situation.  Vim will show only part of the line, around where the
 cursor is.  There are no special characters shown, so that you can edit all
 parts of this line.
-{Vi: gives an "internal error" on lines that do not fit in the window}
 
 The '@' occasion in the 'highlight' option can be used to set special
 highlighting for the '@' and '~' characters.  This makes it possible to
@@ -784,7 +768,7 @@ that is not shown, the screen is scrolled horizontally.  The advantage of
 this method is that columns are shown as they are and lines that cannot fit
 on the screen can be edited.  The disadvantage is that you cannot see all the
 characters of a line at once.  The 'sidescroll' option can be set to the
-minimal number of columns to scroll.  {Vi: has no 'wrap' option}
+minimal number of columns to scroll.
 
 All normal ASCII characters are displayed directly on the screen.  The <Tab>
 is replaced with the number of spaces that it represents.  Other non-printing
@@ -816,16 +800,14 @@ command characters		'showcmd'	on	    off
 cursor position			'ruler'		off	    off
 
 The current mode is "-- INSERT --" or "-- REPLACE --", see |'showmode'|.  The
-command characters are those that you typed but were not used yet.  {Vi: does
-not show the characters you typed or the cursor position}
+command characters are those that you typed but were not used yet.
 
 If you have a slow terminal you can switch off the status messages to speed
 up editing:
 	:set nosc noru nosm
 
 If there is an error, an error message will be shown for at least one second
-(in reverse video).  {Vi: error messages may be overwritten with other
-messages before you have a chance to read them}
+(in reverse video).
 
 Some commands show how many lines were affected.  Above which threshold this
 happens can be controlled with the 'report' option (default 2).
@@ -838,7 +820,7 @@ Make it at least 40 characters wide to be able to read most messages on the
 last line.
 
 On most Unix systems, resizing the window is recognized and handled correctly
-by Vim.  {Vi: not ok}
+by Vim.
 
 ==============================================================================
 8. Definitions						*definitions*
@@ -906,4 +888,4 @@ buffer lines	logical lines	window lines	screen lines ~
 				6. ~ 
 
 ==============================================================================
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:

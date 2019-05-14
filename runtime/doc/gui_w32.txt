@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.0.  Last change: 2017 Oct 27
+*gui_w32.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
 |os_win32.txt| 	For Win32 specific items.
 
-{Vi does not have a Windows GUI}
 
 ==============================================================================
 1. Starting the GUI					*gui-w32-start*
@@ -31,6 +30,17 @@ The GUI will always run in the Windows subsystem.  Mostly shells automatically
 return with a command prompt after starting gvim.  If not, you should use the
 "start" command: >
 	start gvim [options] file ..
+<							*E988*
+The console version with the |-g| option may also start the GUI by executing
+gvim.exe: >
+	vim -g [options] file ..
+To make this work, gvim.exe must exist in the same directory as the vim.exe,
+and this feature must be enabled at compile time.
+
+One may also use `:gui` from the console version.  However, this is an
+experimental feature and this feature must be enabled at compile time.
+It uses a session file to recreate the current state of the console Vim in the
+GUI Vim.
 
 Note: All fonts (bold, italic) must be of the same size!!!  If you don't do
 this, text will disappear or mess up the display.  Vim does not check the font
@@ -403,7 +413,7 @@ be opened as normal.  See |drag-n-drop|.
 
 							*:simalt* *:sim*
 :sim[alt] {key}		simulate pressing {key} while holding Alt pressed.
-			{not in Vi} {only for Win32 versions}
+			{only for Win32 versions}
 			Note: ":si" means ":s" with the "i" flag.
 
 Normally, Vim takes control of all Alt-<Key> combinations, to increase the
@@ -442,7 +452,7 @@ with the Intellimouse driver 2.2 and when "Universal Scrolling" is turned on.
 
 XPM support						*w32-xpm-support*
 
-Gvim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
+GVim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
 See the Make_mvc.mak file for instructions, search for XPM.
 
 To try out if XPM support works do this: >
@@ -451,4 +461,4 @@ To try out if XPM support works do this: >
 	:exe 'sign place 1 line=1 name=vimxpm file=' . expand('%:p')
 <
 
- vim:tw=78:sw=4:ts=8:ft=help:norl:
+ vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

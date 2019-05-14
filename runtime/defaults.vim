@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2017 Jun 13
+" Last change:	2019 Feb 18
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -90,8 +90,8 @@ if &t_Co > 2 || has("gui_running")
   let c_comment_strings=1
 endif
 
-" Only do this part when compiled with support for autocommands.
-if has("autocmd")
+" Only do this part when Vim was compiled with the +eval feature.
+if 1
 
   " Enable file type detection.
   " Use the default filetype settings, so that mail gets 'tw' set to 72,
@@ -116,7 +116,7 @@ if has("autocmd")
 
   augroup END
 
-endif " has("autocmd")
+endif
 
 " Convenient command to see the difference between the current buffer and the
 " file it was loaded from, thus the changes you made.

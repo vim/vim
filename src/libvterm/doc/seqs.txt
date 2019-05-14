@@ -151,6 +151,7 @@ between states.
       DECSM 1000       = Mouse click/release tracking
       DECSM 1002       = Mouse click/release/drag tracking
       DECSM 1003       = Mouse all movements tracking
+      DECSM 1004       = Focus in/out reporting
       DECSM 1005       = Mouse protocol extended (UTF-8) - not recommended
       DECSM 1006       = Mouse protocol SGR
       DECSM 1015       = Mouse protocol rxvt

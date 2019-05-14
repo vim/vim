@@ -1,6 +1,7 @@
 " Tests for ":highlight" and highlighting.
 
 source view_util.vim
+source screendump.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -38,15 +39,15 @@ func Test_highlight()
   call assert_fails("hi Crash term='asdf", "E475:")
 endfunc
 
-function! HighlightArgs(name)
+func HighlightArgs(name)
   return 'hi ' . substitute(split(execute('hi ' . a:name), '\n')[0], '\<xxx\>', '', '')
-endfunction
+endfunc
 
-function! IsColorable()
+func IsColorable()
   return has('gui_running') || str2nr(&t_Co) >= 8
-endfunction
+endfunc
 
-function! HiCursorLine()
+func HiCursorLine()
   let hiCursorLine = HighlightArgs('CursorLine')
   if has('gui_running')
     let guibg = matchstr(hiCursorLine, 'guibg=\w\+')
@@ -57,9 +58,9 @@ function! HiCursorLine()
     let hi_bg = 'hi CursorLine cterm=NONE ctermbg=Gray'
   endif
   return [hiCursorLine, hi_ul, hi_bg]
-endfunction
+endfunc
 
-function! Check_lcs_eol_attrs(attrs, row, col)
+func Check_lcs_eol_attrs(attrs, row, col)
   let save_lcs = &lcs
   set list
 
@@ -67,7 +68,7 @@ function! Check_lcs_eol_attrs(attrs, row, col)
 
   set nolist
   let &lcs = save_lcs
-endfunction
+endfunc
 
 func Test_highlight_eol_with_cursorline()
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
@@ -129,10 +130,6 @@ func Test_highlight_eol_with_cursorline()
 endfunc
 
 func Test_highlight_eol_with_cursorline_vertsplit()
-  if !has('vertsplit')
-    return
-  endif
-
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 5)
@@ -513,4 +510,75 @@ func Test_highlight_eol_on_diff()
 
   bwipe!
   diffoff
+endfunc
+
+func Test_termguicolors()
+  if !exists('+termguicolors')
+    return
+  endif
+  if has('vtp') && !has('vcon')
+    " Win32: 'guicolors' doesn't work without virtual console.
+    call assert_fails('set termguicolors', 'E954:')
+    return
+  endif
+
+  " Basic test that setting 'termguicolors' works with one color.
+  set termguicolors
+  redraw
+  set t_Co=1
+  redraw
+  set t_Co=0
+  redraw
+endfunc
+
+func Test_cursorline_after_yank()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'set cul rnu',
+	\ 'call setline(1, ["","1","2","3",""])',
+	\ ], 'Xtest_cursorline_yank')
+  let buf = RunVimInTerminal('-S Xtest_cursorline_yank', {'rows': 8})
+  call term_wait(buf)
+  call term_sendkeys(buf, "Gy3k")
+  call term_wait(buf)
+  call term_sendkeys(buf, "jj")
+
+  call VerifyScreenDump(buf, 'Test_cursorline_yank_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_cursorline_yank')
+endfunc
+
+func Test_cursorline_with_visualmode()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'set cul',
+	\ 'call setline(1, repeat(["abc"], 50))',
+	\ ], 'Xtest_cursorline_with_visualmode')
+  let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
+  call term_wait(buf)
+  call term_sendkeys(buf, "V\<C-f>kkkjk")
+
+  call VerifyScreenDump(buf, 'Test_cursorline_with_visualmode_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_cursorline_with_visualmode')
+endfunc
+
+" This test must come before the Test_cursorline test, as it appears this
+" defines the Normal highlighting group anyway.
+func Test_1_highlight_Normalgroup_exists()
+  " MS-Windows GUI sets the font
+  if !has('win32') || !has('gui_running')
+    let hlNormal = HighlightArgs('Normal')
+    call assert_match('hi Normal\s*clear', hlNormal)
+  endif
 endfunc

@@ -1,4 +1,4 @@
 " Menu Translations:	Japanese
 
-" eucjp is the same as euc-jp.  Source the other one from here.
+" ja is the same as ja_jp.  Source the other one from here.
 source <sfile>:p:h/menu_ja_jp.utf-8.vim
