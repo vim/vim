@@ -77,10 +77,10 @@ else
     syn match	javaScriptParens	   "[()]"
 endif
 
-syn sync fromstart
-syn sync maxlines=100
-
 if main_syntax == "javascript"
+  syn sync fromstart
+  syn sync maxlines=100
+
   syn sync ccomment javaScriptComment
 endif
 
