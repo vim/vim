@@ -873,12 +873,36 @@ MenuPopup			Just before showing the popup menu (under the
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
-				The |v:option_old| variable indicates the
-				old option value, |v:option_new| variable
-				indicates the newly set value, the
-				|v:option_type| variable indicates whether
-				it's global or local scoped and |<amatch>|
+				The |v:option_type| variable indicates whether
+				it's global or local scoped, the
+				|v:option_command| indicates what type of
+				set/let command was used (see table below),
+				|v:option_new| variable indicates the newly
+				set value, |v:option_oldlocal| is the old
+				local value, |v:option_oldglobal| is the old
+				global value, the |v:option_old| variable
+				indicates the old option value, and |<amatch>|
 				indicates what option has been set.
+
+				|v:option_oldlocal| is only set when |:set|
+				or |:setlocal| or a |modeline| was used to set
+				the option. Similarly |v:option_oldglobal| is
+				only set when |:set| or |:setglobal| was used.
+
+				Note that when setting a |global-local| string
+				options with |:set|, then |v:option_old| is
+				the old global value. However, for all other
+				kinds of options (local string options,
+				global-local number options, ...) it is the
+				old local value.
+
+				|v:option_command| reflects the command used
+				to set the option:
+				value           option was set via   ~
+				"setlocal"      |:setlocal| or ":let l:xxx"
+				"setglobal"     |:setglobal| or ":let g:xxx"
+				"set"           |:set| or |:let|
+				"modeline"      |modeline|
 
 				Is not triggered on startup and for the 'key'
 				option for obvious reasons.

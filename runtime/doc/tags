@@ -9545,8 +9545,11 @@ v:none	eval.txt	/*v:none*
 v:null	eval.txt	/*v:null*
 v:oldfiles	eval.txt	/*v:oldfiles*
 v:operator	eval.txt	/*v:operator*
+v:option_command	eval.txt	/*v:option_command*
 v:option_new	eval.txt	/*v:option_new*
 v:option_old	eval.txt	/*v:option_old*
+v:option_oldlocal	eval.txt	/*v:option_oldlocal*
+v:option_oldglobal	eval.txt	/*v:option_oldglobal*
 v:option_type	eval.txt	/*v:option_type*
 v:prevcount	eval.txt	/*v:prevcount*
 v:profiling	eval.txt	/*v:profiling*
