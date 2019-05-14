@@ -768,6 +768,7 @@ static struct fst
     {"lispindent",	1, 1, f_lispindent},
     {"list2str",	1, 2, f_list2str},
     {"listener_add",	1, 2, f_listener_add},
+    {"listener_flush",	0, 1, f_listener_flush},
     {"listener_remove",	1, 1, f_listener_remove},
     {"localtime",	0, 0, f_localtime},
 #ifdef FEAT_FLOAT

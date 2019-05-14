@@ -565,8 +565,13 @@ update_screen(int type_arg)
     }
 
 #ifdef FEAT_EVAL
-    // Before updating the screen, notify any listeners of changed text.
-    invoke_listeners();
+    {
+	buf_T *buf;
+
+	// Before updating the screen, notify any listeners of changed text.
+	FOR_ALL_BUFFERS(buf)
+	    invoke_listeners(buf);
+    }
 #endif
 
     if (must_redraw)

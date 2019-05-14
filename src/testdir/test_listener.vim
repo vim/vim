@@ -16,9 +16,10 @@ endfunc
 func Test_listening()
   new
   call setline(1, ['one', 'two'])
-  let id = listener_add({l -> s:StoreList(l)})
+  let s:list = []
+  let id = listener_add({b, s, e, a, l -> s:StoreList(l)})
   call setline(1, 'one one')
-  redraw
+  call listener_flush()
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
 
   " Undo is also a change
@@ -26,12 +27,14 @@ func Test_listening()
   call append(2, 'two two')
   undo
   redraw
-  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
-	\ {'lnum': 3, 'end': 4, 'col': 1, 'added': -1}, ], s:list)
+  " the two changes get merged
+  call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
   1
 
-  " Two listeners, both get called.
-  let id2 = listener_add({l -> s:AnotherStoreList(l)})
+  " Two listeners, both get called.  Also check column.
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  let id2 = listener_add({b, s, e, a, l -> s:AnotherStoreList(l)})
   let s:list = []
   let s:list2 = []
   exe "normal $asome\<Esc>"
@@ -39,7 +42,10 @@ func Test_listening()
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 8, 'added': 0}], s:list)
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 8, 'added': 0}], s:list2)
 
+  " removing listener works
   call listener_remove(id2)
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
   let s:list = []
   let s:list2 = []
   call setline(3, 'three')
@@ -47,12 +53,42 @@ func Test_listening()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1}], s:list)
   call assert_equal([], s:list2)
 
+  " a change above a previous change without a line number change is reported
+  " together
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  call append(2, 'two two')
+  call setline(1, 'something')
+  call listener_flush()
+  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
+	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+
+  " an insert just above a previous change that was the last one gets merged
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  call setline(2, 'something')
+  call append(1, 'two two')
+  call listener_flush()
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 1}], s:list)
+
+  " an insert above a previous change causes a flush
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  call setline(2, 'something')
+  call append(0, 'two two')
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
+  call listener_flush()
+  call assert_equal([{'lnum': 1, 'end': 1, 'col': 1, 'added': 1}], s:list)
+
   " the "o" command first adds an empty line and then changes it
+  %del
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
   let s:list = []
   exe "normal Gofour\<Esc>"
   redraw
-  call assert_equal([{'lnum': 4, 'end': 4, 'col': 1, 'added': 1},
-	\ {'lnum': 4, 'end': 5, 'col': 1, 'added': 0}], s:list)
+  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
+	\ {'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
 
   " Remove last listener
   let s:list = []
@@ -62,7 +98,7 @@ func Test_listening()
   call assert_equal([], s:list)
 
   " Trying to change the list fails
-  let id = listener_add({l -> s:EvilStoreList(l)})
+  let id = listener_add({b, s, e, a, l -> s:EvilStoreList(l)})
   let s:list3 = []
   call setline(1, 'asdfasdf')
   redraw
@@ -72,9 +108,64 @@ func Test_listening()
   bwipe!
 endfunc
 
-func s:StoreBufList(buf, l)
+func s:StoreListArgs(buf, start, end, added, list)
+  let s:buf = a:buf
+  let s:start = a:start
+  let s:end = a:end
+  let s:added = a:added
+  let s:list = a:list
+endfunc
+
+func Test_listener_args()
+  new
+  call setline(1, ['one', 'two'])
+  let s:list = []
+  let id = listener_add('s:StoreListArgs')
+
+  " just one change
+  call setline(1, 'one one')
+  call listener_flush()
+  call assert_equal(bufnr(''), s:buf)
+  call assert_equal(1, s:start)
+  call assert_equal(2, s:end)
+  call assert_equal(0, s:added)
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+
+  " two disconnected changes
+  call setline(1, ['one', 'two', 'three', 'four'])
+  call listener_flush()
+  call setline(1, 'one one')
+  call setline(3, 'three three')
+  call listener_flush()
+  call assert_equal(bufnr(''), s:buf)
+  call assert_equal(1, s:start)
+  call assert_equal(4, s:end)
+  call assert_equal(0, s:added)
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0},
+	\ {'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
+
+  " add and remove lines
+  call setline(1, ['one', 'two', 'three', 'four', 'five', 'six'])
+  call listener_flush()
+  call append(2, 'two two')
+  4del
+  call append(5, 'five five')
+  call listener_flush()
+  call assert_equal(bufnr(''), s:buf)
+  call assert_equal(3, s:start)
+  call assert_equal(6, s:end)
+  call assert_equal(1, s:added)
+  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
+	\ {'lnum': 4, 'end': 5, 'col': 1, 'added': -1},
+	\ {'lnum': 6, 'end': 6, 'col': 1, 'added': 1}], s:list)
+
+  call listener_remove(id)
+  bwipe!
+endfunc
+
+func s:StoreBufList(buf, start, end, added, list)
   let s:bufnr = a:buf
-  let s:list = a:l
+  let s:list = a:list
 endfunc
 
 func Test_listening_other_buf()
@@ -82,7 +173,7 @@ func Test_listening_other_buf()
   call setline(1, ['one', 'two'])
   let bufnr = bufnr('')
   normal ww
-  let id = listener_add(function('s:StoreBufList', [bufnr]), bufnr)
+  let id = listener_add(function('s:StoreBufList'), bufnr)
   let s:list = []
   call setbufline(bufnr, 1, 'hello')
   redraw

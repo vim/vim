@@ -2459,6 +2459,7 @@ lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
 listener_add({callback} [, {buf}])
 				Number	add a callback to listen to changes
+listener_flush([{buf}])		none	invoke listener callbacks
 listener_remove({id})		none	remove a listener callback
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
@@ -6322,8 +6323,21 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		buffer is used.
 		Returns a unique ID that can be passed to |listener_remove()|.
 
-		The {callback} is invoked with a list of items that indicate a
-		change.  The list cannot be changed.  Each list item is a
+		The {callback} is invoked with four arguments:
+		    a:bufnr	the buffer that was changed
+		    a:start	first changed line number
+		    a:end	first line number below the change
+		    a:added	total number of lines added, negative if lines
+				were deleted
+		    a:changes	a List of items with details about the changes
+
+		Example: >
+	    func Listener(bufnr, start, end, added, changes)
+	      echo 'lines ' .. a:start .. ' until ' .. a:end .. ' changed'
+	    endfunc
+	    call listener_add('Listener', bufnr)
+
+<		The List cannot be changed.  Each item in a:changes is a
 		dictionary with these entries:
 		    lnum	the first line number of the change
 		    end		the first line below the change
@@ -6337,41 +6351,46 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		    lnum	line below which the new line is added
 		    end		equal to "lnum"
 		    added	number of lines inserted
-		    col		one
+		    col		1
 		When lines are deleted the values are:
 		    lnum	the first deleted line
 		    end		the line below the first deleted line, before
 				the deletion was done
 		    added	negative, number of lines deleted
-		    col		one
+		    col		1
 		When lines are changed:
 		    lnum	the first changed line
 		    end		the line below the last changed line
-		    added	zero
-		    col		first column with a change or one
+		    added	0
+		    col		first column with a change or 1
 
-		The entries are in the order the changes was made, thus the
-		most recent change is at the end.  One has to go through the
-		list from end to start to compute the line numbers in the
-		current state of the text.
+		The entries are in the order the changes were made, thus the
+		most recent change is at the end.  The line numbers are valid
+		when the callback is invoked, but later changes may make them
+		invalid, thus keeping a copy for later might not work.
 
-		When using the same function for multiple buffers, you can
-		pass the buffer to that function using a |Partial|.
-		Example: >
-		    func Listener(bufnr, changes)
-		      " ...
-		    endfunc
-		    let bufnr = ...
-		    call listener_add(function('Listener', [bufnr]), bufnr)
+		The {callback} is invoked just before the screen is updated,
+		when |listener_flush()| is called or when a change is being
+		made that changes the line count in a way it causes a line
+		number in the list of changes to become invalid.
 
-<		The {callback} is invoked just before the screen is updated.
-		To trigger this in a script use the `:redraw` command.
+		The {callback} is invoked with the text locked, see
+		|textlock|.  If you do need to make changes to the buffer, use
+		a timer to do this later |timer_start()|.
 
 		The {callback} is not invoked when the buffer is first loaded.
 		Use the |BufReadPost| autocmd event to handle the initial text
 		of a buffer.
 		The {callback} is also not invoked when the buffer is
 		unloaded, use the |BufUnload| autocmd event for that.
+
+listener_flush([{buf}])					*listener_flush()*
+		Invoke listener callbacks for buffer {buf}.  If there are no
+		pending changes then no callbacks are invoked.
+
+		{buf} refers to a buffer name or number. For the accepted
+		values, see |bufname()|.  When {buf} is omitted the current
+		buffer is used.
 
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().

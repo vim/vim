@@ -169,6 +169,46 @@ may_record_change(
 
     if (curbuf->b_listener == NULL)
 	return;
+
+    // If the new change is going to change the line numbers in already listed
+    // changes, then flush.
+    if (recorded_changes != NULL && xtra != 0)
+    {
+	listitem_T *li;
+	linenr_T    nr;
+
+	for (li = recorded_changes->lv_first; li != NULL; li = li->li_next)
+	{
+	    nr = (linenr_T)dict_get_number(
+				      li->li_tv.vval.v_dict, (char_u *)"lnum");
+	    if (nr >= lnum || nr > lnume)
+	    {
+		if (li->li_next == NULL && lnum == nr
+			&& col + 1 == (colnr_T)dict_get_number(
+				      li->li_tv.vval.v_dict, (char_u *)"col"))
+		{
+		    dictitem_T	*di;
+
+		    // Same start point and nothing is following, entries can
+		    // be merged.
+		    di = dict_find(li->li_tv.vval.v_dict, (char_u *)"end", -1);
+		    nr = tv_get_number(&di->di_tv);
+		    if (lnume > nr)
+			di->di_tv.vval.v_number = lnume;
+		    di = dict_find(li->li_tv.vval.v_dict,
+							(char_u *)"added", -1);
+		    di->di_tv.vval.v_number += xtra;
+		    return;
+		}
+
+		// the current change is going to make the line number in the
+		// older change invalid, flush now
+		invoke_listeners(curbuf);
+		break;
+	    }
+	}
+    }
+
     if (recorded_changes == NULL)
     {
 	recorded_changes = list_alloc();
@@ -231,6 +271,23 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * listener_flush() function
+ */
+    void
+f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = curbuf;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	buf = get_buf_arg(&argvars[0]);
+	if (buf == NULL)
+	    return;
+    }
+    invoke_listeners(buf);
+}
+
+/*
  * listener_remove() function
  */
     void
@@ -264,25 +321,56 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
  * listener_add().
  */
     void
-invoke_listeners(void)
+invoke_listeners(buf_T *buf)
 {
     listener_T	*lnr;
     typval_T	rettv;
     int		dummy;
-    typval_T	argv[2];
+    typval_T	argv[6];
+    listitem_T	*li;
+    linenr_T	start = MAXLNUM;
+    linenr_T	end = 0;
+    linenr_T	added = 0;
 
-    if (recorded_changes == NULL)  // nothing changed
+    if (recorded_changes == NULL  // nothing changed
+	    || buf->b_listener == NULL)  // no listeners
 	return;
-    argv[0].v_type = VAR_LIST;
-    argv[0].vval.v_list = recorded_changes;
 
-    for (lnr = curbuf->b_listener; lnr != NULL; lnr = lnr->lr_next)
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = buf->b_fnum; // a:bufnr
+
+
+    for (li = recorded_changes->lv_first; li != NULL; li = li->li_next)
+    {
+	varnumber_T lnum;
+
+	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"lnum");
+	if (start > lnum)
+	    start = lnum;
+	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"end");
+	if (lnum > end)
+	    end = lnum;
+	added = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
+    }
+    argv[1].v_type = VAR_NUMBER;
+    argv[1].vval.v_number = start;
+    argv[2].v_type = VAR_NUMBER;
+    argv[2].vval.v_number = end;
+    argv[3].v_type = VAR_NUMBER;
+    argv[3].vval.v_number = added;
+
+    argv[4].v_type = VAR_LIST;
+    argv[4].vval.v_list = recorded_changes;
+    ++textlock;
+
+    for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
 	call_func(lnr->lr_callback, -1, &rettv,
-		   1, argv, NULL, 0L, 0L, &dummy, TRUE, lnr->lr_partial, NULL);
+		   5, argv, NULL, 0L, 0L, &dummy, TRUE, lnr->lr_partial, NULL);
 	clear_tv(&rettv);
     }
 
+    --textlock;
     list_unref(recorded_changes);
     recorded_changes = NULL;
 }
