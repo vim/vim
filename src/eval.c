@@ -171,6 +171,9 @@ static struct vimvar
     {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
     {VV_NAME("option_new",	 VAR_STRING), VV_RO},
     {VV_NAME("option_old",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
     {VV_NAME("option_type",	 VAR_STRING), VV_RO},
     {VV_NAME("errors",		 VAR_LIST), 0},
     {VV_NAME("false",		 VAR_SPECIAL), VV_RO},
@@ -197,9 +200,6 @@ static struct vimvar
     {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
     {VV_NAME("event",		 VAR_DICT), VV_RO},
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
-    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
-    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
-    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
