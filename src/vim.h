@@ -1961,7 +1961,10 @@ typedef int sock_T;
 #define VV_TERMBLINKRESP 86
 #define VV_EVENT	87
 #define VV_VERSIONLONG	88
-#define VV_LEN		89	// number of v: vars
+#define VV_OPTION_OLDLOCAL 89
+#define VV_OPTION_OLDGLOBAL 90
+#define VV_OPTION_COMMAND 91
+#define VV_LEN		92	// number of v: vars
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L

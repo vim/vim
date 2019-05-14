@@ -197,6 +197,9 @@ static struct vimvar
     {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
     {VV_NAME("event",		 VAR_DICT), VV_RO},
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
@@ -9415,14 +9418,18 @@ last_set_msg(sctx_T script_ctx)
 }
 
 /*
- * Reset v:option_new, v:option_old and v:option_type.
+ * reset v:option_new, v:option_old, v:option_oldlocal, v:option_oldglobal,
+ * v:option_type, and v:option_command.
  */
     void
 reset_v_option_vars(void)
 {
     set_vim_var_string(VV_OPTION_NEW,  NULL, -1);
     set_vim_var_string(VV_OPTION_OLD,  NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDLOCAL, NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDGLOBAL, NULL, -1);
     set_vim_var_string(VV_OPTION_TYPE, NULL, -1);
+    set_vim_var_string(VV_OPTION_COMMAND, NULL, -1);
 }
 
 /*
