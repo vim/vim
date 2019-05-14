@@ -39,17 +39,47 @@ endfunc
 "   and with 'joinspaces' set or not
 "   and with 'cpoptions' flag 'j' set or not
 func Test_join_spaces_marks()
-  let text = ['asdfasdf.', 'asdf', 'asdfasdf. ', 'asdf', 'asdfasdf.  ',
-	      \ 'asdf', 'asdfasdf.	', 'asdf', 'asdfasdf. 	', 'asdf',
-	      \ 'asdfasdf.	 ', 'asdf', 'asdfasdf.		', 'asdf',
-	      \ 'asdfasdf', 'asdf', 'asdfasdf ', 'asdf', 'asdfasdf  ',
-	      \ 'asdf', 'asdfasdf	', 'asdf', 'asdfasdf	 ', 'asdf',
-	      \ 'asdfasdf 	', 'asdf', 'asdfasdf		', 'asdf',
-	      \ 'zx cvn.', 'as dfg?', 'hjkl iop!', 'ert', 'zx cvn.',
-	      \ 'as dfg?', 'hjkl iop!', 'ert']
-
   new
-  call append(0, text)
+  " Text used for the test
+  insert
+asdfasdf.
+asdf
+asdfasdf. 
+asdf
+asdfasdf.  
+asdf
+asdfasdf.	
+asdf
+asdfasdf. 	
+asdf
+asdfasdf.	 
+asdf
+asdfasdf.		
+asdf
+asdfasdf
+asdf
+asdfasdf 
+asdf
+asdfasdf  
+asdf
+asdfasdf	
+asdf
+asdfasdf	 
+asdf
+asdfasdf 	
+asdf
+asdfasdf		
+asdf
+zx cvn.
+as dfg?
+hjkl iop!
+ert
+zx cvn.
+as dfg?
+hjkl iop!
+ert
+.
+  let text = getline(1, '$')
   normal gg
 
   set nojoinspaces
@@ -68,22 +98,30 @@ func Test_join_spaces_marks()
   normal `xyl$p
   normal `yy2l$p
 
-  call assert_equal(['asdfasdf. asdf',
-	      \ 'asdfasdf. asdf',
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.	asdf',
-	      \ 'asdfasdf. 	asdf',
-	      \ 'asdfasdf.	 asdf',
-	      \ 'asdfasdf.		asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf  asdf',
-	      \ 'asdfasdf	asdf',
-	      \ 'asdfasdf	 asdf',
-	      \ 'asdfasdf 	asdf',
-	      \ 'asdfasdf		asdf',
-	      \ 'zx cvn. as dfg? hjkl iop! ert ernop',
-	      \ 'zx cvn. as dfg? hjkl iop! ert ernop', ''], getline(1, '$'))
+  normal G
+  let last_line = line('$')
+
+  " Expected output
+  append
+asdfasdf. asdf
+asdfasdf. asdf
+asdfasdf.  asdf
+asdfasdf.	asdf
+asdfasdf. 	asdf
+asdfasdf.	 asdf
+asdfasdf.		asdf
+asdfasdf asdf
+asdfasdf asdf
+asdfasdf  asdf
+asdfasdf	asdf
+asdfasdf	 asdf
+asdfasdf 	asdf
+asdfasdf		asdf
+zx cvn. as dfg? hjkl iop! ert ernop
+zx cvn. as dfg? hjkl iop! ert ernop
+.
+
+  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
 
   enew!
   call append(0, text)
@@ -105,23 +143,31 @@ func Test_join_spaces_marks()
   normal `xyl$p
   normal `yy2l$p
 
-  call assert_equal([
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.	asdf',
-	      \ 'asdfasdf. 	asdf',
-	      \ 'asdfasdf.	 asdf',
-	      \ 'asdfasdf.		asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf  asdf',
-	      \ 'asdfasdf	asdf',
-	      \ 'asdfasdf	 asdf',
-	      \ 'asdfasdf 	asdf',
-	      \ 'asdfasdf		asdf',
-	      \ 'zx cvn.  as dfg?  hjkl iop!  ert  enop',
-	      \ 'zx cvn.  as dfg? hjkl iop! ert ernop', ''], getline(1, '$'))
+  normal G
+  let last_line = line('$')
+
+  " Expected output
+  append
+asdfasdf.  asdf
+asdfasdf.  asdf
+asdfasdf.  asdf
+asdfasdf.	asdf
+asdfasdf. 	asdf
+asdfasdf.	 asdf
+asdfasdf.		asdf
+asdfasdf asdf
+asdfasdf asdf
+asdfasdf  asdf
+asdfasdf	asdf
+asdfasdf	 asdf
+asdfasdf 	asdf
+asdfasdf		asdf
+zx cvn.  as dfg?  hjkl iop!  ert  enop
+zx cvn.  as dfg? hjkl iop! ert ernop
+
+.
+
+  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
 
   enew!
   call append(0, text)
@@ -134,22 +180,29 @@ func Test_join_spaces_marks()
   normal JjJjJjJjJjJjJjJjJjJjJjJjJjJ
   normal j4Jy3l$pjdG
 
-  call assert_equal([
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.  asdf',
-	      \ 'asdfasdf.	asdf',
-	      \ 'asdfasdf. 	asdf',
-	      \ 'asdfasdf.	 asdf',
-	      \ 'asdfasdf.		asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf asdf',
-	      \ 'asdfasdf  asdf',
-	      \ 'asdfasdf	asdf',
-	      \ 'asdfasdf	 asdf',
-	      \ 'asdfasdf 	asdf',
-	      \ 'asdfasdf		asdf',
-	      \ 'zx cvn.  as dfg? hjkl iop! ert  a'], getline(1, '$'))
+  normal G
+  let last_line = line('$')
+
+  " Expected output
+  append
+asdfasdf.  asdf
+asdfasdf.  asdf
+asdfasdf.  asdf
+asdfasdf.	asdf
+asdfasdf. 	asdf
+asdfasdf.	 asdf
+asdfasdf.		asdf
+asdfasdf asdf
+asdfasdf asdf
+asdfasdf  asdf
+asdfasdf	asdf
+asdfasdf	 asdf
+asdfasdf 	asdf
+asdfasdf		asdf
+zx cvn.  as dfg? hjkl iop! ert  a
+.
+
+  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
 
   set nocompatible
   set cpoptions&vim
@@ -161,37 +214,40 @@ endfunc
 func Test_join_lines_with_comments()
   new
 
-  call append(0, [
-	      \ '{',
-	      \ '',
-	      \ '/*',
-	      \ '* Make sure the previous comment leader is not removed.',
-	      \ '*/',
-	      \ '',
-	      \ '/*',
-	      \ '* Make sure the previous comment leader is not removed.',
-	      \ '*/',
-	      \ '',
-	      \ '// Should the next comment leader be left alone?',
-	      \ '// Yes.',
-	      \ '',
-	      \ '// Should the next comment leader be left alone?',
-	      \ '// Yes.',
-	      \ '',
-	      \ '/* Here the comment leader should be left intact. */',
-	      \ '// And so should this one.',
-	      \ '',
-	      \ '/* Here the comment leader should be left intact. */',
-	      \ '// And so should this one.',
-	      \ '',
-	      \ 'if (condition) // Remove the next comment leader!',
-	      \ '// OK, I will.',
-	      \ 'action();',
-	      \ '',
-	      \ 'if (condition) // Remove the next comment leader!',
-	      \ '// OK, I will.',
-	      \ 'action();',
-	      \ '}', ])
+  " Text used by the test
+  insert
+{
+
+/*
+* Make sure the previous comment leader is not removed.
+*/
+
+/*
+* Make sure the previous comment leader is not removed.
+*/
+
+// Should the next comment leader be left alone?
+// Yes.
+
+// Should the next comment leader be left alone?
+// Yes.
+
+/* Here the comment leader should be left intact. */
+// And so should this one.
+
+/* Here the comment leader should be left intact. */
+// And so should this one.
+
+if (condition) // Remove the next comment leader!
+// OK, I will.
+action();
+
+if (condition) // Remove the next comment leader!
+// OK, I will.
+action();
+}
+.
+
   call cursor(2, 1)
   set comments=s1:/*,mb:*,ex:*/,://
   set nojoinspaces fo=j
@@ -206,19 +262,26 @@ func Test_join_lines_with_comments()
   .,+2join
   exe "normal jj3J\<CR>"
 
-  call assert_equal([
-	      \ '{',
-	      \ '/* Make sure the previous comment leader is not removed. */',
-	      \ '/* Make sure the previous comment leader is not removed. */',
-	      \ '// Should the next comment leader be left alone? Yes.',
-	      \ '// Should the next comment leader be left alone? Yes.',
-	      \ '/* Here the comment leader should be left intact. */ // And so should this one.',
-	      \ '/* Here the comment leader should be left intact. */ // And so should this one.',
-	      \ 'if (condition) // Remove the next comment leader! OK, I will.',
-	      \ 'action();',
-	      \ 'if (condition) // Remove the next comment leader! OK, I will.',
-	      \ 'action();',
-	      \ '}', ''], getline(1, '$'))
+  normal G
+  let last_line = line('$')
+
+  " Expected output
+  append
+{
+/* Make sure the previous comment leader is not removed. */
+/* Make sure the previous comment leader is not removed. */
+// Should the next comment leader be left alone? Yes.
+// Should the next comment leader be left alone? Yes.
+/* Here the comment leader should be left intact. */ // And so should this one.
+/* Here the comment leader should be left intact. */ // And so should this one.
+if (condition) // Remove the next comment leader! OK, I will.
+action();
+if (condition) // Remove the next comment leader! OK, I will.
+action();
+}
+.
+
+  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
 
   set comments&vim
   set joinspaces&vim
@@ -327,7 +390,7 @@ int i = 7 /* foo *// 3
   exe "normal oSome code!\<CR>// Make sure backspacing does not remove this comment leader.\<Esc>0i\<C-H>\<Esc>"
 
   normal G
-  let end_line = line('$')
+  let last_line = line('$')
 
   " Expected output
   append
@@ -355,6 +418,6 @@ Some code!// Make sure backspacing does not remove this comment leader.
 }
 .
 
-  call assert_equal(getline(end_line + 1, '$'), getline(1, end_line))
+  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
   close!
 endfunc
