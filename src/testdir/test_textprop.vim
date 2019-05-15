@@ -151,6 +151,7 @@ endfunc
 
 func SetupOneLine()
   call setline(1, 'xonex xtwoxx')
+  normal gg0
   call AddPropTypes()
   call prop_add(1, 2, {'length': 3, 'id': 11, 'type': 'one'})
   call prop_add(1, 8, {'length': 3, 'id': 12, 'type': 'two'})
@@ -268,6 +269,66 @@ func Test_prop_replace()
   call assert_equal(expected, prop_list(1))
 
   call DeletePropTypes()
+  bwipe!
+  set bs&
+endfunc
+
+func Test_prop_open_line()
+  new
+
+  " open new line, props stay in top line
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  exe "normal o\<Esc>"
+  call assert_equal('xonex xtwoxx', getline(1))
+  call assert_equal('', getline(2))
+  call assert_equal(expected, prop_list(1))
+  call DeletePropTypes()
+
+  " move all props to next line
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  exe "normal 0i\<CR>\<Esc>"
+  call assert_equal('', getline(1))
+  call assert_equal('xonex xtwoxx', getline(2))
+  call assert_equal(expected, prop_list(2))
+  call DeletePropTypes()
+
+  " split just before prop, move all props to next line
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  exe "normal 0li\<CR>\<Esc>"
+  call assert_equal('x', getline(1))
+  call assert_equal('onex xtwoxx', getline(2))
+  let expected[0].col -= 1
+  let expected[1].col -= 1
+  call assert_equal(expected, prop_list(2))
+  call DeletePropTypes()
+
+  " split inside prop, split first prop
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  exe "normal 0lli\<CR>\<Esc>"
+  call assert_equal('xo', getline(1))
+  call assert_equal('nex xtwoxx', getline(2))
+  let exp_first = [deepcopy(expected[0])]
+  let exp_first[0].length = 1
+  call assert_equal(exp_first, prop_list(1))
+  let expected[0].col = 1
+  let expected[0].length = 2
+  let expected[1].col -= 2
+  call assert_equal(expected, prop_list(2))
+  call DeletePropTypes()
+
+  " split just after first prop, empty prop and second prop move to next line
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  exe "normal 0fea\<CR>\<Esc>"
+  call assert_equal('xone', getline(1))
+  call assert_equal('x xtwoxx', getline(2))
+  let exp_first = expected[0:0]
+  call assert_equal(exp_first, prop_list(1))
+  let expected[0].col = 1
+  let expected[0].length = 0
+  let expected[1].col -= 4
+  call assert_equal(expected, prop_list(2))
+  call DeletePropTypes()
+
   bwipe!
   set bs&
 endfunc

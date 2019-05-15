@@ -8,18 +8,15 @@
  */
 
 /*
- * Text properties implementation.
- *
- * Text properties are attached to the text.  They move with the text when
- * text is inserted/deleted.
- *
- * Text properties have a user specified ID number, which can be unique.
- * Text properties have a type, which can be used to specify highlighting.
+ * Text properties implementation.  See ":help text-properties".
  *
  * TODO:
  * - When using 'cursorline' attributes should be merged. (#3912)
  * - Adjust text property column and length when text is inserted/deleted.
+ *   -> splitting a line can create a zero-length property.  Don't highlight it
+ *      and extend it when inserting text.
  *   -> a :substitute with a multi-line match
+ *   -> join two lines, also with BS in Insert mode
  *   -> search for changed_bytes() from misc1.c
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
@@ -28,8 +25,6 @@
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
- * - Add mechanism to keep track of changed lines, so that plugin can update
- *   text properties in these.
  * - Perhaps have a window-local option to disable highlighting from text
  *   properties?
  */
@@ -1033,12 +1028,17 @@ adjust_prop_columns(
 
 /*
  * Adjust text properties for a line that was split in two.
- * "lnum" is the newly inserted line.  The text properties are now on the line
- * below it.  "kept" is the number of bytes kept in the first line, while
+ * "lnum_props" is the line that has the properties from before the split.
+ * "lnum_top" is the top line.
+ * "kept" is the number of bytes kept in the first line, while
  * "deleted" is the number of bytes deleted.
  */
     void
-adjust_props_for_split(linenr_T lnum, int kept, int deleted)
+adjust_props_for_split(
+	linenr_T lnum_props,
+	linenr_T lnum_top,
+	int kept,
+	int deleted)
 {
     char_u	*props;
     int		count;
@@ -1049,11 +1049,12 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 
     if (!curbuf->b_has_textprop)
 	return;
-    count = get_text_props(curbuf, lnum + 1, &props, FALSE);
+
+    // Get the text properties from "lnum_props".
+    count = get_text_props(curbuf, lnum_props, &props, FALSE);
     ga_init2(&prevprop, sizeof(textprop_T), 10);
     ga_init2(&nextprop, sizeof(textprop_T), 10);
 
-    // Get the text properties, which are at "lnum + 1".
     // Keep the relevant ones in the first line, reducing the length if needed.
     // Copy the ones that include the split to the second line.
     // Move the ones after the split to the second line.
@@ -1089,10 +1090,11 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 	}
     }
 
-    set_text_props(lnum, prevprop.ga_data, prevprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top, prevprop.ga_data,
+					 prevprop.ga_len * sizeof(textprop_T));
     ga_clear(&prevprop);
-
-    set_text_props(lnum + 1, nextprop.ga_data, nextprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top + 1, nextprop.ga_data,
+					 nextprop.ga_len * sizeof(textprop_T));
     ga_clear(&nextprop);
 }
 

@@ -641,12 +641,12 @@ changed_bytes(linenr_T lnum, colnr_T col)
     void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
-    changed_bytes(lnum, col);
-
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && added != 0)
 	adjust_prop_columns(lnum, col, added);
 #endif
+
+    changed_bytes(lnum, col);
 }
 
 /*
@@ -2133,6 +2133,12 @@ open_line(
 	    )
 	    mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 	did_append = TRUE;
+#ifdef FEAT_TEXT_PROP
+	if ((State & INSERT) && !(State & VREPLACE_FLAG))
+	    // properties after the split move to the next line
+	    adjust_props_for_split(curwin->w_cursor.lnum, curwin->w_cursor.lnum,
+						  curwin->w_cursor.col + 1, 0);
+#endif
     }
     else
     {

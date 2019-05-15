@@ -5728,7 +5728,7 @@ do_sub(exarg_T *eap)
 				last_line = lnum + 1;
 			    }
 #ifdef FEAT_TEXT_PROP
-			    adjust_props_for_split(lnum, plen, 1);
+			    adjust_props_for_split(lnum + 1, lnum, plen, 1);
 #endif
 			    // all line numbers increase
 			    ++sub_firstlnum;
