@@ -47,6 +47,3 @@ func Test_expand_tilde_filename()
   call assert_match('\~', expand('%:p')) 
   bwipe!
 endfunc
-
-" リスト表示、多分以下のような感じ
-" echo expand('%', v:false, v:true)
