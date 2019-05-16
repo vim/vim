@@ -2790,6 +2790,12 @@ ml_append_int(
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
 
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+#endif
+
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && lnum > 0)
 	// Add text properties that continue from the previous line.
@@ -3526,6 +3532,11 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
 	return FAIL;
 
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(buf, lnum, lnum + 1, -1);
+#endif
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked--;
 

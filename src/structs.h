@@ -2439,6 +2439,7 @@ struct file_buffer
     dict_T	*b_vars;	/* internal variables, local to buffer */
 
     listener_T	*b_listener;
+    list_T	*b_recorded_changes;
 #endif
 #ifdef FEAT_TEXT_PROP
     int		b_has_textprop;	// TRUE when text props were added

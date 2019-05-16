@@ -1,6 +1,8 @@
 " tests for listener_add() and listener_remove()
 
-func s:StoreList(l)
+func s:StoreList(s, l)
+  let s:start = a:s
+  let s:text = getline(a:s)
   let s:list = a:l
 endfunc
 
@@ -17,7 +19,7 @@ func Test_listening()
   new
   call setline(1, ['one', 'two'])
   let s:list = []
-  let id = listener_add({b, s, e, a, l -> s:StoreList(l)})
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, l)})
   call setline(1, 'one one')
   call listener_flush()
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
@@ -66,8 +68,10 @@ func Test_listening()
   " an insert just above a previous change that was the last one gets merged
   call setline(1, ['one one', 'two'])
   call listener_flush()
+  let s:list = []
   call setline(2, 'something')
   call append(1, 'two two')
+  call assert_equal([], s:list)
   call listener_flush()
   call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 1}], s:list)
 
@@ -77,8 +81,32 @@ func Test_listening()
   call setline(2, 'something')
   call append(0, 'two two')
   call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
+  call assert_equal('something', s:text)
   call listener_flush()
   call assert_equal([{'lnum': 1, 'end': 1, 'col': 1, 'added': 1}], s:list)
+  call assert_equal('two two', s:text)
+
+  " a delete at a previous change that was the last one gets merged
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  let s:list = []
+  call setline(2, 'something')
+  2del
+  call assert_equal([], s:list)
+  call listener_flush()
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': -1}], s:list)
+
+  " a delete above a previous change causes a flush
+  call setline(1, ['one one', 'two'])
+  call listener_flush()
+  call setline(2, 'another')
+  1del
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
+  call assert_equal(2, s:start)
+  call assert_equal('another', s:text)
+  call listener_flush()
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': -1}], s:list)
+  call assert_equal('another', s:text)
 
   " the "o" command first adds an empty line and then changes it
   %del
