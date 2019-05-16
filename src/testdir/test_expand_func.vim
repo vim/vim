@@ -66,7 +66,10 @@ func Test_expand_sflnum()
 endfunc
 
 func Test_expand()
-  call assert_equal('1', expand('<slnum>'))
-  call assert_equal(['2'], expand('<slnum>', v:false, v:true))
+  new
+  call assert_equal("",  expand('%:S'))
+  call assert_equal('3', expand('<slnum>'))
+  call assert_equal(['4'], expand('<slnum>', v:false, v:true))
   " Don't add any line above this, otherwise <slnum> will change.
+  quit
 endfunc
