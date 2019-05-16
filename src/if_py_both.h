@@ -406,13 +406,18 @@ write_output(OutputObject *self, PyObject *string)
     Py_ssize_t	len = 0;
     char	*str = NULL;
     int		error = self->error;
+    int		save_emsg_severe = 0;
 
     if (!PyArg_Parse(string, "et#", ENC_OPT, &str, &len))
 	return -1;
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
+    save_emsg_severe = emsg_severe;
+    if (error)
+	emsg_severe = TRUE;
     writer((writefn)(error ? emsg : msg), (char_u *)str, len);
+    emsg_severe = save_emsg_severe;
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
     PyMem_Free(str);
