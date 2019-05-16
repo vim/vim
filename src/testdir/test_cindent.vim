@@ -102,4 +102,14 @@ func Test_cindent_expr()
   bw!
 endfunc
 
+func Test_cindent_func()
+  new
+  setlocal cindent
+  call setline(1, ['int main(void)', '{', 'return 0;', '}'])
+  call assert_equal(cindent(0), -1)
+  call assert_equal(cindent(3), &sw)
+  call assert_equal(cindent(line('$')+1), -1)
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
