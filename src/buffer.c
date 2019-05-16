@@ -1742,9 +1742,12 @@ enter_buffer(buf_T *buf)
     }
     else
     {
-	if (!msg_silent)
-	    need_fileinfo = TRUE;	/* display file info after redraw */
-	(void)buf_check_timestamp(curbuf, FALSE); /* check if file changed */
+	if (!msg_silent && !shortmess(SHM_FILEINFO))
+	    need_fileinfo = TRUE;	// display file info after redraw
+
+	// check if file changed
+	(void)buf_check_timestamp(curbuf, FALSE);
+
 	curwin->w_topline = 1;
 #ifdef FEAT_DIFF
 	curwin->w_topfill = 0;

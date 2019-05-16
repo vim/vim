@@ -442,6 +442,7 @@ static void f_tempname(typval_T *argvars, typval_T *rettv);
 static void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 static void f_test_autochdir(typval_T *argvars, typval_T *rettv);
 static void f_test_feedinput(typval_T *argvars, typval_T *rettv);
+static void f_test_getvalue(typval_T *argvars, typval_T *rettv);
 static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_refcount(typval_T *argvars, typval_T *rettv);
@@ -991,6 +992,7 @@ static struct fst
     {"test_autochdir",	0, 0, f_test_autochdir},
     {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
+    {"test_getvalue",	1, 1, f_test_getvalue},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
     {"test_null_blob",	0, 0, f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
@@ -14410,6 +14412,25 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 	add_to_input_buf_csi(val, (int)STRLEN(val));
     }
 #endif
+}
+
+/*
+ * "test_getvalue({name})" function
+ */
+    static void
+f_test_getvalue(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_STRING)
+	emsg(_(e_invarg));
+    else
+    {
+	char_u *name = tv_get_string(&argvars[0]);
+
+	if (STRCMP(name, (char_u *)"need_fileinfo") == 0)
+	    rettv->vval.v_number = need_fileinfo;
+	else
+	    semsg(_(e_invarg2), name);
+    }
 }
 
 /*

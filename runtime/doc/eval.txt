@@ -2701,6 +2701,7 @@ test_alloc_fail({id}, {countdown}, {repeat})
 test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
+test_getvalue({string})		any	get value of an internal variable
 test_ignore_error({expr})	none	ignore a specific error
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
@@ -9893,6 +9894,11 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		only be called directly to avoid any structure to exist
 		internally, and |v:testing| must have been set before calling
 		any function.
+
+test_getvalue({name})					*test_getvalue()*
+		Get the value of an internal variable.  These values for
+		{name} are supported:
+			need_fileinfo
 
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given
