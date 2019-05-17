@@ -645,7 +645,7 @@ funct Test_textprop_screenshots()
 	\ "call prop_add(3, 15, {'length': 2, 'type': 'both'})",
 	\ "call prop_add(4, 12, {'length': 10, 'type': 'background'})",
 	\ "call prop_add(4, 17, {'length': 5, 'type': 'error'})",
-	\ "set number",
+	\ "set number cursorline",
 	\ "hi clear SpellBad",
 	\ "set spell",
 	\ "syn match Comment '//.*'",

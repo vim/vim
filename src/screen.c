@@ -4306,11 +4306,15 @@ win_line(
 		char_attr = hl_combine_attr(line_attr, area_attr);
 	    else if (search_attr != 0)
 		char_attr = hl_combine_attr(line_attr, search_attr);
-		/* Use line_attr when not in the Visual or 'incsearch' area
-		 * (area_attr may be 0 when "noinvcur" is set). */
+# ifdef FEAT_TEXT_PROP
+	    else if (text_prop_type != NULL)
+		char_attr = hl_combine_attr(line_attr, text_prop_attr);
+# endif
 	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)
 				|| vcol < fromcol || vcol_prev < fromcol_prev
 				|| vcol >= tocol))
+		// Use line_attr when not in the Visual or 'incsearch' area
+		// (area_attr may be 0 when "noinvcur" is set).
 		char_attr = line_attr;
 #else
 	    if (area_attr != 0)

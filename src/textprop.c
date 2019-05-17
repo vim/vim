@@ -11,10 +11,7 @@
  * Text properties implementation.  See ":help text-properties".
  *
  * TODO:
- * - When using 'cursorline' attributes should be merged. (#3912)
  * - Adjust text property column and length when text is inserted/deleted.
- *   -> splitting a line can create a zero-length property.  Don't highlight it
- *      and extend it when inserting text.
  *   -> a :substitute with a multi-line match
  *   -> join two lines, also with BS in Insert mode
  *   -> search for changed_bytes() from misc1.c
