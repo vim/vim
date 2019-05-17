@@ -4635,7 +4635,7 @@ do_join(
     {
 	/* Set the '] mark. */
 	curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
-	curwin->w_buffer->b_op_end.col  = (colnr_T)STRLEN(newp);
+	curwin->w_buffer->b_op_end.col  = (colnr_T)sumsize;
     }
 
     /* Only report the change in the first line here, del_lines() will report
