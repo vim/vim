@@ -624,6 +624,10 @@ funct Test_textprop_screenshots()
 	\	.. "'Numbér 123 änd thœn 4¾7.',"
 	\	.. "'--aa--bb--cc--dd--',"
 	\	.. "'// comment with error in it',"
+	\	.. "'first line',"
+	\	.. "'  second line  ',"
+	\	.. "'third line',"
+	\	.. "'   fourth line',"
 	\	.. "])",
 	\ "hi NumberProp ctermfg=blue",
 	\ "hi LongProp ctermbg=yellow",
@@ -645,6 +649,10 @@ funct Test_textprop_screenshots()
 	\ "call prop_add(3, 15, {'length': 2, 'type': 'both'})",
 	\ "call prop_add(4, 12, {'length': 10, 'type': 'background'})",
 	\ "call prop_add(4, 17, {'length': 5, 'type': 'error'})",
+	\ "call prop_add(5, 7, {'length': 4, 'type': 'long'})",
+	\ "call prop_add(6, 1, {'length': 8, 'type': 'long'})",
+	\ "call prop_add(8, 1, {'length': 1, 'type': 'long'})",
+	\ "call prop_add(8, 11, {'length': 4, 'type': 'long'})",
 	\ "set number cursorline",
 	\ "hi clear SpellBad",
 	\ "set spell",
@@ -652,8 +660,11 @@ funct Test_textprop_screenshots()
 	\ "hi Comment ctermfg=green",
 	\ "normal 3G0llix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>lllix\<Esc>",
 	\ "normal 3G0lli\<BS>\<Esc>",
+	\ "normal 6G0i\<BS>\<Esc>",
+	\ "normal 3J",
+	\ "normal 3G",
 	\], 'XtestProp')
-  let buf = RunVimInTerminal('-S XtestProp', {'rows': 7})
+  let buf = RunVimInTerminal('-S XtestProp', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_textprop_01', {})
 
   " clean up

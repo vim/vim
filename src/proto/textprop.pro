@@ -15,4 +15,6 @@ void clear_global_prop_types(void);
 void clear_buf_prop_types(buf_T *buf);
 void adjust_prop_columns(linenr_T lnum, colnr_T col, int bytes_added);
 void adjust_props_for_split(linenr_T lnum_props, linenr_T lnum_top, int kept, int deleted);
+void adjust_props_for_join(linenr_T lnum, textprop_T **prop_line, int *prop_length, long col, int removed);
+void join_prop_lines(linenr_T lnum, char_u *newp, textprop_T **prop_lines, int *prop_lengths, int count);
 /* vim: set ft=c : */

@@ -13,8 +13,8 @@
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
  *   -> a :substitute with a multi-line match
- *   -> join two lines, also with BS in Insert mode
  *   -> search for changed_bytes() from misc1.c
+ *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -1095,6 +1095,111 @@ adjust_props_for_split(
     set_text_props(lnum_top + 1, nextprop.ga_data,
 					 nextprop.ga_len * sizeof(textprop_T));
     ga_clear(&nextprop);
+}
+
+/*
+ * Line "lnum" has been joined and will end up at column "col" in the new line.
+ * "removed" bytes have been removed from the start of the line, properties
+ * there are to be discarded.
+ * Move the adjusted text properties to an allocated string, store it in
+ * "prop_line" and adjust the columns.
+ */
+    void
+adjust_props_for_join(
+	linenr_T    lnum,
+	textprop_T  **prop_line,
+	int	    *prop_length,
+	long	    col,
+	int	    removed)
+{
+    int		proplen;
+    char_u	*props;
+    int		ri;
+    int		wi = 0;
+
+    proplen = get_text_props(curbuf, lnum, &props, FALSE);
+    if (proplen > 0)
+    {
+	*prop_line = (textprop_T *)alloc(proplen * (int)sizeof(textprop_T));
+	if (*prop_line != NULL)
+	{
+	    for (ri = 0; ri < proplen; ++ri)
+	    {
+		textprop_T *cp = *prop_line + wi;
+
+		mch_memmove(cp, props + ri * sizeof(textprop_T),
+							   sizeof(textprop_T));
+		if (cp->tp_col + cp->tp_len > removed)
+		{
+		    if (cp->tp_col > removed)
+			cp->tp_col += col;
+		    else
+		    {
+			// property was partly deleted, make it shorter
+			cp->tp_len -= removed - cp->tp_col;
+			cp->tp_col = col;
+		    }
+		    ++wi;
+		}
+	    }
+	}
+	*prop_length = wi;
+    }
+}
+
+/*
+ * After joining lines: concatenate the text and the properties of all joined
+ * lines into one line and replace the line.
+ */
+    void
+join_prop_lines(
+	linenr_T    lnum,
+	char_u	    *newp,
+	textprop_T  **prop_lines,
+	int	    *prop_lengths,
+	int	    count)
+{
+    size_t	proplen = 0;
+    size_t	oldproplen;
+    char_u	*props;
+    int		i;
+    int		len;
+    char_u	*line;
+    size_t	l;
+
+    for (i = 0; i < count - 1; ++i)
+	proplen += prop_lengths[i];
+    if (proplen == 0)
+    {
+	ml_replace(lnum, newp, FALSE);
+	return;
+    }
+
+    // get existing properties of the joined line
+    oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
+
+    len = (int)STRLEN(newp) + 1;
+    line = alloc(len + (oldproplen + proplen) * (int)sizeof(textprop_T));
+    if (line == NULL)
+	return;
+    mch_memmove(line, newp, len);
+    l = oldproplen * sizeof(textprop_T);
+    mch_memmove(line + len, props, l);
+    len += l;
+
+    for (i = 0; i < count - 1; ++i)
+	if (prop_lines[i] != NULL)
+	{
+	    l = prop_lengths[i] * sizeof(textprop_T);
+	    mch_memmove(line + len, prop_lines[i], l);
+	    len += l;
+	    vim_free(prop_lines[i]);
+	}
+
+    ml_replace_len(lnum, line, len, TRUE, FALSE);
+    vim_free(newp);
+    vim_free(prop_lines);
+    vim_free(prop_lengths);
 }
 
 #endif // FEAT_TEXT_PROP
