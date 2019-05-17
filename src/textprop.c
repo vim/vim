@@ -1075,7 +1075,9 @@ adjust_props_for_split(
 	    ++prevprop.ga_len;
 	}
 
-	if (prop.tp_col + prop.tp_len >= skipped && ga_grow(&nextprop, 1) == OK)
+	// Only add the property to the next line if the length is bigger than
+	// zero.
+	if (prop.tp_col + prop.tp_len > skipped && ga_grow(&nextprop, 1) == OK)
 	{
 	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 	    *p = prop;

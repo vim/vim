@@ -316,16 +316,15 @@ func Test_prop_open_line()
   call assert_equal(expected, prop_list(2))
   call DeletePropTypes()
 
-  " split just after first prop, empty prop and second prop move to next line
+  " split just after first prop, second prop move to next line
   let expected = SetupOneLine() " 'xonex xtwoxx'
   exe "normal 0fea\<CR>\<Esc>"
   call assert_equal('xone', getline(1))
   call assert_equal('x xtwoxx', getline(2))
   let exp_first = expected[0:0]
   call assert_equal(exp_first, prop_list(1))
-  let expected[0].col = 1
-  let expected[0].length = 0
-  let expected[1].col -= 4
+  let expected = expected[1:1]
+  let expected[0].col -= 4
   call assert_equal(expected, prop_list(2))
   call DeletePropTypes()
 
