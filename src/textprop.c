@@ -957,7 +957,7 @@ clear_buf_prop_types(buf_T *buf)
  * shift by "bytes_added" (can be negative).
  * Note that "col" is zero-based, while tp_col is one-based.
  * Only for the current buffer.
- * Called is expected to check b_has_textprop and "bytes_added" being non-zero.
+ * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
  */
     void
 adjust_prop_columns(
@@ -994,15 +994,28 @@ adjust_prop_columns(
 								      ? 2 : 1))
 		: (tmp_prop.tp_col > col + 1))
 	{
-	    tmp_prop.tp_col += bytes_added;
+	    if (tmp_prop.tp_col + bytes_added < col + 1)
+	    {
+		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
+		tmp_prop.tp_col = col + 1;
+	    }
+	    else
+		tmp_prop.tp_col += bytes_added;
 	    dirty = TRUE;
+	    if (tmp_prop.tp_len <= 0)
+		continue;  // drop this text property
 	}
 	else if (tmp_prop.tp_len > 0
 		&& tmp_prop.tp_col + tmp_prop.tp_len > col
 		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
 								      ? 0 : 1))
 	{
-	    tmp_prop.tp_len += bytes_added;
+	    int after = col - bytes_added
+				     - (tmp_prop.tp_col - 1 + tmp_prop.tp_len);
+	    if (after > 0)
+		tmp_prop.tp_len += bytes_added + after;
+	    else
+		tmp_prop.tp_len += bytes_added;
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
