@@ -168,18 +168,26 @@ END
 END
   call assert_equal([], var3)
 
-  let var3 =<<END
+  let var3 =<<END 
 vim
 
 end
+  END
 END
-  call assert_equal(['vim', '', 'end'], var3)
+END 
+  call assert_equal(['vim', '', 'end', '  END', 'END'], var3)
 
-  let var1 =<<END
+	let var1 =<< trim END
 	Line1
-Line2
-    Line3	
-		
+	  Line2
+		Line3
+	 END
 	END
-  call assert_equal(['Line1', 'Line2', 'Line3', ''], var1)
+  call assert_equal(['Line1', '  Line2', "\tLine3", ' END'], var1)
+
+  let var1 =<< trim
+    Line1
+  .
+  let var2 = 1
+  call assert_equal(['  Line1'], var1)
 endfunc
