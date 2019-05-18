@@ -11417,7 +11417,7 @@ This does NOT work: >
 			|List| item.
 
 						*:let=<<* *:let-heredoc*
-:let {var-name} =<< {marker}
+:let {var-name} =<<[-] {marker}
 text...
 text...
 {marker}
@@ -11427,6 +11427,9 @@ text...
 			should end only with the {marker} string without any
 			other character.  Any space characters in the lines of
 			text is preserved.
+			If '-' is specified before {marker}, then all the
+			leading tab characters are stripped from the input
+			lines and the line containing {marker}.
 			If {var-name} didn't exist yet, it is created.
 			Example:
 

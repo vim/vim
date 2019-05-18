@@ -1238,9 +1238,16 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     char_u	*theline;
     char	*end_pattern = NULL;
     list_T	*l;
+    int		trim_tabs = FALSE;
 
     if (eap->getline == NULL)
 	return NULL;
+
+    if (*cmd == '-')
+    {
+	trim_tabs = TRUE;
+	cmd++;
+    }
 
     end_pattern = (char *)skipwhite(cmd);
     if (*end_pattern == NUL)
@@ -1255,14 +1262,22 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 
     for (;;)
     {
+	int	i = 0;
+
 	theline = eap->getline(NUL, eap->cookie, 0);
-	if (theline == NULL || STRCMP(end_pattern, theline) == 0)
+	if (theline != NULL && trim_tabs)
+	{
+	    while (theline[i] != NUL && theline[i] == '\t')
+		i++;
+	}
+
+	if (theline == NULL || STRCMP(end_pattern, theline + i) == 0)
 	{
 	    vim_free(theline);
 	    break;
 	}
 
-	if (list_append_string(l, theline, -1) == FAIL)
+	if (list_append_string(l, theline + i, -1) == FAIL)
 	    break;
 	vim_free(theline);
     }

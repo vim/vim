@@ -170,7 +170,16 @@ END
 
   let var3 =<<END
 vim
+
 end
 END
-  call assert_equal(['vim', 'end'], var3)
+  call assert_equal(['vim', '', 'end'], var3)
+
+  let var1 =<<END
+	Line1
+Line2
+    Line3	
+		
+	END
+  call assert_equal(['Line1', 'Line2', 'Line3', ''], var1)
 endfunc
