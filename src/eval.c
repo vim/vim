@@ -1225,32 +1225,61 @@ eval_foldexpr(char_u *arg, int *cp)
 #endif
 
 /*
- * Used for getting a here document. The here document is either a simple
- * command string argument, or a list of lines:
- *	cmd << endmarker
- *	  {lines}
- *	endmarker
+ * Get a list of lines from a HERE document. The here document is a list of
+ * lines surrounded by a marker.
+ *	cmd << {marker}
+ *	  {line1}
+ *	  {line2}
+ *	  ....
+ *	{marker}
+ *
+ * The {marker} is a string. If the optional 'trim' word is supplied before the
+ * marker, then the leading indentation before the lines (matching the
+ * indentation in the 'cmd' line) is stripped.
  * Returns a List with {lines} or NULL.
  */
     static list_T *
 heredoc_get(exarg_T *eap, char_u *cmd)
 {
     char_u	*theline;
-    char	*end_pattern = NULL;
+    char	*marker = NULL;
+    char	dot[] = ".";
     list_T	*l;
-    int		trim_tabs = FALSE;
+    int		trim_indent = FALSE;
+    int		indent_sz = 0;
 
     if (eap->getline == NULL)
 	return NULL;
 
-    if (*cmd == '-')
+    // Check for the optional 'trim' word before the marker
+    cmd = skipwhite(cmd);
+    if (STRNCMP(cmd, "trim", 4) == 0
+				&& (cmd[4] == '\0' || VIM_ISWHITE(cmd[4])))
     {
-	trim_tabs = TRUE;
-	cmd++;
+	char_u	*p;
+
+	cmd += 4;
+
+	// Trim the indentation from all the lines in the here document
+	// The amount of indentation trimmed is the same as the indentation of
+	// the :let command line.
+	trim_indent = TRUE;
+	p = *eap->cmdlinep;
+	while (VIM_ISWHITE(*p))
+	{
+	    p++;
+	    indent_sz++;
+	}
     }
 
-    end_pattern = (char *)skipwhite(cmd);
-    if (*end_pattern == NUL)
+    // The marker is the text till the end of the line
+    // Default marker is "."
+    if (*cmd != NUL)
+	marker = (char *)skipwhite(cmd);
+    else
+	marker = dot;
+
+    if (*marker == NUL)
     {
 	semsg(_(e_invexpr2), eap->arg);
 	return NULL;
@@ -1265,13 +1294,14 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 	int	i = 0;
 
 	theline = eap->getline(NUL, eap->cookie, 0);
-	if (theline != NULL && trim_tabs)
+	if (theline != NULL && trim_indent)
 	{
-	    while (theline[i] != NUL && theline[i] == '\t')
-		i++;
+	    // trim the indent matching the first line
+	    if (STRNCMP(theline, *eap->cmdlinep, indent_sz) == 0)
+		i = indent_sz;
 	}
 
-	if (theline == NULL || STRCMP(end_pattern, theline + i) == 0)
+	if (theline == NULL || STRCMP(marker, theline + i) == 0)
 	{
 	    vim_free(theline);
 	    break;
@@ -1352,6 +1382,7 @@ ex_let(exarg_T *eap)
     {
 	list_T	*l;
 
+	// HERE document
 	l = heredoc_get(eap, expr + 3);
 	if (l != NULL)
 	{

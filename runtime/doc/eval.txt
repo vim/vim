@@ -11417,7 +11417,7 @@ This does NOT work: >
 			|List| item.
 
 						*:let=<<* *:let-heredoc*
-:let {var-name} =<<[-] {marker}
+:let {var-name} =<< [trim] {marker}
 text...
 text...
 {marker}
@@ -11427,18 +11427,25 @@ text...
 			should end only with the {marker} string without any
 			other character.  Any space characters in the lines of
 			text is preserved.
-			If '-' is specified before {marker}, then all the
-			leading tab characters are stripped from the input
-			lines and the line containing {marker}.
+			If 'trim' is specified before {marker}, then all the
+			leading indentation matching the leading indentation
+			before 'let' is stripped from the input lines and the
+			line containing {marker}.
+			If {marker} is not supplied, then "." is used as the
+			default marker.
 			If {var-name} didn't exist yet, it is created.
-			Example:
-
+			Example(s): >
 				let var1 =<< END
 				Sample text 1
 				    Sample text 2
 				Sample text 3
 				END
 
+				let data =<< trim DATA
+				    1 2 3 4
+				    5 6 7 8
+				DATA
+<
 								*E121*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized
