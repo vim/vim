@@ -91,7 +91,7 @@ py3eval("None") = v:none
 0.0
 "\0":	Vim(let):E859:
 {"\0": 1}:	Vim(let):E859:
-undefined_name:	Vim(let):Trace
+undefined_name:	Vim(let):NameE
 vim:	Vim(let):E859:
 [1]
 [1, 10, 11, 10, 11, 10, 11, 10, 11, 10, 11, 10, 1]
