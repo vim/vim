@@ -231,6 +231,7 @@ exit_with_usage(void)
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
+  fprintf(stderr, "    -L          print bits in little-endian order (low order first). Implies -b.\n");
   fprintf(stderr, "    -o off      add <off> to the displayed file position.\n");
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
@@ -460,6 +461,7 @@ main(int argc, char *argv[])
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
   int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL, capitalize = 0;
   int ebcdic = 0;
+  int loworder = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
   long length = -1, n = 0, seekoff = 0;
@@ -599,6 +601,11 @@ main(int argc, char *argv[])
 	      argc--;
 	    }
 	}
+      else if (!STRNCMP(pp, "-L", 2))
+        {
+          hextype = HEX_BITS;
+          loworder = 1;
+        }
       else if (!strcmp(pp, "--"))	/* end of options */
 	{
 	  argv++;
@@ -838,10 +845,17 @@ main(int argc, char *argv[])
       else /* hextype == HEX_BITS */
 	{
 	  int i;
-
 	  c = (addrlen + 1 + (grplen * p) / octspergrp) - 1;
-	  for (i = 7; i >= 0; i--)
-	    l[++c] = (e & (1 << i)) ? '1' : '0';
+          if (loworder)
+            {
+              for (i = 0; i <= 7; i++)
+                l[++c] = (e & (1 << i)) ? '1' : '0';
+            }
+          else
+            {
+              for (i = 7; i >= 0; i--)
+                l[++c] = (e & (1 << i)) ? '1' : '0';
+            }
 	}
       if (e)
 	nonzero++;
