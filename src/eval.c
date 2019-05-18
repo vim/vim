@@ -1279,12 +1279,6 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     else
 	marker = dot;
 
-    if (*marker == NUL)
-    {
-	semsg(_(e_invexpr2), eap->arg);
-	return NULL;
-    }
-
     l = list_alloc();
     if (l == NULL)
 	return NULL;
@@ -1377,8 +1371,7 @@ ex_let(exarg_T *eap)
 	}
 	eap->nextcmd = check_nextcmd(arg);
     }
-    else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<'
-							&& expr[3] != NUL)
+    else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
 	list_T	*l;
 

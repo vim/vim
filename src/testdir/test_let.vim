@@ -162,7 +162,10 @@ END
 
   call assert_equal(["Some sample text", "\tText with indent", "  !@#$%^&*()-+_={}|[]\\~`:\";'<>?,./"], var1)
 
-  call assert_fails('let var2 =<<', 'E15:')
+  let var2 =<<
+Editor
+.
+  call assert_equal(['Editor'], var2)
 
   let var3 =<<END
 END
