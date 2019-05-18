@@ -49,8 +49,10 @@ gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 benchmark: $(SCRIPTS_BENCH)
 
 report:
+	$(RUN_VIMTEST) $(NO_INITS) -S result.vim messages $(REDIR_TEST_TO_NULL)
 	@echo
 	@echo 'Test results:'
+	@/bin/sh -c 'cat test_result.log'
 	@/bin/sh -c "if test -f test.log; \
 		then cat test.log; echo TEST FAILURE; exit 1; \
 		else echo ALL DONE; \
@@ -77,7 +79,7 @@ RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.res *.rej *.orig opt_test.vim test.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
+	-rm -rf *.out *.failed *.res *.rej *.orig opt_test.vim test*.log messages $(RM_ON_RUN) $(RM_ON_START) valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
