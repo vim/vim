@@ -1874,7 +1874,7 @@ recover_names(
 	    }
 	}
 
-	    /* check for out-of-memory */
+	// check for out-of-memory
 	for (i = 0; i < num_names; ++i)
 	{
 	    if (names[i] == NULL)
@@ -2101,7 +2101,7 @@ get_ctime(time_t thetime, int add_newline)
 # endif
     /* MSVC returns NULL for an invalid value of seconds. */
     if (curtime == NULL)
-	STRCPY(buf, _("(Invalid)"));
+	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
 	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
 #else
@@ -3374,7 +3374,8 @@ ml_replace_len(
 	    if (newline != NULL)
 	    {
 		mch_memmove(newline, line, len);
-		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr + oldtextlen, textproplen);
+		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr
+						    + oldtextlen, textproplen);
 		vim_free(line);
 		line = newline;
 		len += (colnr_T)textproplen;

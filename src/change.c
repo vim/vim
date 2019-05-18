@@ -193,12 +193,16 @@ check_recorded_changes(
 			// can be merged.
 			di = dict_find(li->li_tv.vval.v_dict,
 							  (char_u *)"end", -1);
-			nr = tv_get_number(&di->di_tv);
-			if (lnume > nr)
-			    di->di_tv.vval.v_number = lnume;
+			if (di != NULL)
+			{
+			    nr = tv_get_number(&di->di_tv);
+			    if (lnume > nr)
+				di->di_tv.vval.v_number = lnume;
+			}
 			di = dict_find(li->li_tv.vval.v_dict,
 							(char_u *)"added", -1);
-			di->di_tv.vval.v_number += xtra;
+			if (di != NULL)
+			    di->di_tv.vval.v_number += xtra;
 			return TRUE;
 		    }
 		}
