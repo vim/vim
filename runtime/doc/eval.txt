@@ -11416,6 +11416,26 @@ This does NOT work: >
 			Like above, but append/add/subtract the value for each
 			|List| item.
 
+						*:let=<<* *:let-heredoc*
+:let {var-name} =<< {marker}
+text...
+text...
+{marker}
+			Set internal variable {var-name} to a List containing
+			the lines of text bounded by the string {marker}. Any
+			spaces before {marker} is ignored.  The last line
+			should end only with the {marker} string without any
+			other character.  Any space characters in the lines of
+			text is preserved.
+			If {var-name} didn't exist yet, it is created.
+			Example:
+
+				let var1 =<< END
+				Sample text 1
+				    Sample text 2
+				Sample text 3
+				END
+
 								*E121*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized

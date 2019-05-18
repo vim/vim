@@ -151,3 +151,26 @@ func Test_let_utf8_environment()
   let $a = 'ĀĒĪŌŪあいうえお'
   call assert_equal('ĀĒĪŌŪあいうえお', $a)
 endfunc
+
+" Test for the setting a variable using the heredoc syntax
+func Test_let_heredoc()
+  let var1 =<< END
+Some sample text
+	Text with indent
+  !@#$%^&*()-+_={}|[]\~`:";'<>?,./
+END
+
+  call assert_equal(["Some sample text", "\tText with indent", "  !@#$%^&*()-+_={}|[]\\~`:\";'<>?,./"], var1)
+
+  call assert_fails('let var2 =<<', 'E15:')
+
+  let var3 =<<END
+END
+  call assert_equal([], var3)
+
+  let var3 =<<END
+vim
+end
+END
+  call assert_equal(['vim', 'end'], var3)
+endfunc

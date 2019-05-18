@@ -1225,6 +1225,52 @@ eval_foldexpr(char_u *arg, int *cp)
 #endif
 
 /*
+ * Used for getting a here document. The here document is either a simple
+ * command string argument, or a list of lines:
+ *	cmd << endmarker
+ *	  {lines}
+ *	endmarker
+ * Returns a List with {lines} or NULL.
+ */
+    static list_T *
+heredoc_get(exarg_T *eap, char_u *cmd)
+{
+    char_u	*theline;
+    char	*end_pattern = NULL;
+    list_T	*l;
+
+    if (eap->getline == NULL)
+	return NULL;
+
+    end_pattern = (char *)skipwhite(cmd);
+    if (*end_pattern == NUL)
+    {
+	semsg(_(e_invexpr2), eap->arg);
+	return NULL;
+    }
+
+    l = list_alloc();
+    if (l == NULL)
+	return NULL;
+
+    for (;;)
+    {
+	theline = eap->getline(NUL, eap->cookie, 0);
+	if (theline == NULL || STRCMP(end_pattern, theline) == 0)
+	{
+	    vim_free(theline);
+	    break;
+	}
+
+	if (list_append_string(l, theline, -1) == FAIL)
+	    break;
+	vim_free(theline);
+    }
+
+    return l;
+}
+
+/*
  * ":let"			list all variable values
  * ":let var1 var2"		list variable values
  * ":let var = expr"		assignment command.
@@ -1285,6 +1331,22 @@ ex_let(exarg_T *eap)
 	    list_vim_vars(&first);
 	}
 	eap->nextcmd = check_nextcmd(arg);
+    }
+    else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<'
+							&& expr[3] != NUL)
+    {
+	list_T	*l;
+
+	l = heredoc_get(eap, expr + 3);
+	if (l != NULL)
+	{
+	    rettv_list_set(&rettv, l);
+	    op[0] = '=';
+	    op[1] = NUL;
+	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
+									  op);
+	    clear_tv(&rettv);
+	}
     }
     else
     {
