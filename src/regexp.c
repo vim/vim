@@ -7423,7 +7423,7 @@ vim_regsub_both(
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
-		    call_func(s, (int)STRLEN(s), &rettv,
+		    call_func(s, -1, &rettv,
 				    1, argv, fill_submatch_list,
 					 0L, 0L, &dummy, TRUE, NULL, NULL);
 		}
@@ -7432,7 +7432,7 @@ vim_regsub_both(
 		    partial_T   *partial = expr->vval.v_partial;
 
 		    s = partial_name(partial);
-		    call_func(s, (int)STRLEN(s), &rettv,
+		    call_func(s, -1, &rettv,
 				    1, argv, fill_submatch_list,
 				      0L, 0L, &dummy, TRUE, partial, NULL);
 		}

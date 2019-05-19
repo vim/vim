@@ -5555,28 +5555,25 @@ do_sub(exarg_T *eap)
 #ifdef FEAT_EVAL
 		if (subflags.do_count)
 		{
-		    /* prevent accidentally changing the buffer by a function */
-		    save_ma = curbuf->b_p_ma;
+		    // prevent accidentally changing the buffer by a function
 		    curbuf->b_p_ma = FALSE;
 		    sandbox++;
 		}
-		/* Save flags for recursion.  They can change for e.g.
-		 * :s/^/\=execute("s#^##gn") */
+		// Save flags for recursion.  They can change for e.g.
+		// :s/^/\=execute("s#^##gn")
 		subflags_save = subflags;
+		save_ma = curbuf->b_p_ma;
 #endif
-		/* get length of substitution part */
+		// get length of substitution part
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 				    sub, sub_firstline, FALSE, p_magic, TRUE);
 #ifdef FEAT_EVAL
 		// If getting the substitute string caused an error, don't do
 		// the replacement.
-		if (aborting())
-		    goto skip;
-
 		// Don't keep flags set by a recursive call.
 		subflags = subflags_save;
-		if (subflags.do_count)
+		if (aborting() || subflags.do_count)
 		{
 		    curbuf->b_p_ma = save_ma;
 		    if (sandbox > 0)
@@ -5728,7 +5725,7 @@ do_sub(exarg_T *eap)
 				last_line = lnum + 1;
 			    }
 #ifdef FEAT_TEXT_PROP
-			    adjust_props_for_split(lnum, plen, 1);
+			    adjust_props_for_split(lnum + 1, lnum, plen, 1);
 #endif
 			    // all line numbers increase
 			    ++sub_firstlnum;

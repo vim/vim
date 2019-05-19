@@ -163,17 +163,17 @@ INTLLIB=gnu_gettext
 # Command definitions (depends on cross-compiling and shell)
 ifeq ($(CROSS),yes)
 # cross-compiler prefix:
-ifndef CROSS_COMPILE
+ ifndef CROSS_COMPILE
 CROSS_COMPILE = i586-pc-mingw32msvc-
-endif
+ endif
 DEL = rm
 MKDIR = mkdir -p
 DIRSLASH = /
 else
 # normal (Windows) compilation:
-ifndef CROSS_COMPILE
+ ifndef CROSS_COMPILE
 CROSS_COMPILE =
-endif
+ endif
 
 # About the "sh.exe" condition, as explained by Ken Takata:
 #
@@ -193,15 +193,15 @@ endif
 # $SHELL is set with the unix-style path (e.g. "/bin/bash").
 # In this case, unix-like commands can be used.
 #
-ifneq (sh.exe, $(SHELL))
+ ifneq (sh.exe, $(SHELL))
 DEL = rm
 MKDIR = mkdir -p
 DIRSLASH = /
-else
+ else
 DEL = del
 MKDIR = mkdir
 DIRSLASH = \\
-endif
+ endif
 endif
 CC := $(CROSS_COMPILE)gcc
 CXX := $(CROSS_COMPILE)g++
@@ -223,31 +223,31 @@ endif
 #	  DYNAMIC_PERL=yes (to load the Perl DLL dynamically)
 #	  PERL_VER=[Perl version, eg 56, 58, 510] (default is 524)
 ifdef PERL
-ifndef PERL_VER
+ ifndef PERL_VER
 PERL_VER=524
-endif
-ifndef DYNAMIC_PERL
+ endif
+ ifndef DYNAMIC_PERL
 DYNAMIC_PERL=yes
-endif
+ endif
 # on Linux, for cross-compile, it's here:
 #PERLLIB=/home/ron/ActivePerl/lib
 # on NT, it's here:
 PERLEXE=$(PERL)/bin/perl
 PERLLIB=$(PERL)/lib
 PERLLIBS=$(PERLLIB)/Core
-ifeq ($(UNDER_CYGWIN),yes)
+ ifeq ($(UNDER_CYGWIN),yes)
 PERLTYPEMAP:=$(shell cygpath -m $(PERLLIB)/ExtUtils/typemap)
 XSUBPPTRY:=$(shell cygpath -m $(PERLLIB)/ExtUtils/xsubpp)
-else
+ else
 PERLTYPEMAP=$(PERLLIB)/ExtUtils/typemap
 XSUBPPTRY=$(PERLLIB)/ExtUtils/xsubpp
-endif
+ endif
 XSUBPP_EXISTS=$(shell $(PERLEXE) -e "print 1 unless -e '$(XSUBPPTRY)'")
-ifeq "$(XSUBPP_EXISTS)" ""
+ ifeq "$(XSUBPP_EXISTS)" ""
 XSUBPP=$(PERLEXE) $(XSUBPPTRY)
-else
+ else
 XSUBPP=xsubpp
-endif
+ endif
 endif
 
 #	Lua interface:
@@ -257,18 +257,18 @@ endif
 #	  DYNAMIC_LUA=yes (to load the Lua DLL dynamically)
 #	  LUA_VER=[Lua version, eg 51, 52] (default is 53)
 ifdef LUA
-ifndef DYNAMIC_LUA
+ ifndef DYNAMIC_LUA
 DYNAMIC_LUA=yes
-endif
+ endif
 
-ifndef LUA_VER
+ ifndef LUA_VER
 LUA_VER=53
-endif
+ endif
 
-ifeq (no,$(DYNAMIC_LUA))
+ ifeq (no,$(DYNAMIC_LUA))
 LUA_LIBDIR = $(LUA)/lib
 LUA_LIB = -L$(LUA_LIBDIR) -llua
-endif
+ endif
 
 endif
 
@@ -280,53 +280,53 @@ endif
 #	  	C:\Program Files (x86)\Racket\lib\libracket3m_XXXXXX.dll
 #	  MZSCHEME_DEBUG=no
 ifdef MZSCHEME
-ifndef DYNAMIC_MZSCHEME
+ ifndef DYNAMIC_MZSCHEME
 DYNAMIC_MZSCHEME=yes
-endif
+ endif
 
-ifndef MZSCHEME_VER
+ ifndef MZSCHEME_VER
 MZSCHEME_VER=3m_a0solc
-endif
+ endif
 
 # for version 4.x we need to generate byte-code for Scheme base
-ifndef MZSCHEME_GENERATE_BASE
+ ifndef MZSCHEME_GENERATE_BASE
 MZSCHEME_GENERATE_BASE=no
-endif
+ endif
 
-ifneq ($(wildcard $(MZSCHEME)/lib/msvc/libmzsch$(MZSCHEME_VER).lib),)
+ ifneq ($(wildcard $(MZSCHEME)/lib/msvc/libmzsch$(MZSCHEME_VER).lib),)
 MZSCHEME_MAIN_LIB=mzsch
-else
+ else
 MZSCHEME_MAIN_LIB=racket
-endif
+ endif
 
-ifndef MZSCHEME_PRECISE_GC
+ ifndef MZSCHEME_PRECISE_GC
 MZSCHEME_PRECISE_GC=no
-ifneq ($(wildcard $(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll),)
-ifeq ($(wildcard $(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll),)
+  ifneq ($(wildcard $(MZSCHEME)\lib\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll),)
+   ifeq ($(wildcard $(MZSCHEME)\lib\libmzgc$(MZSCHEME_VER).dll),)
 MZSCHEME_PRECISE_GC=yes
-endif
-else
-ifneq ($(wildcard $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib),)
-ifeq ($(wildcard $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib),)
+   endif
+  else
+   ifneq ($(wildcard $(MZSCHEME)\lib\msvc\lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).lib),)
+    ifeq ($(wildcard $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib),)
 MZSCHEME_PRECISE_GC=yes
-endif
-endif
-endif
-endif
+    endif
+   endif
+  endif
+ endif
 
-ifeq (no,$(DYNAMIC_MZSCHEME))
-ifeq (yes,$(MZSCHEME_PRECISE_GC))
+ ifeq (no,$(DYNAMIC_MZSCHEME))
+  ifeq (yes,$(MZSCHEME_PRECISE_GC))
 MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER)
-else
+  else
 MZSCHEME_LIB=-l$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
-endif
+  endif
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
-ifndef MZSCHEME_DLLS
+  ifndef MZSCHEME_DLLS
 MZSCHEME_DLLS=$(MZSCHEME)
-endif
+  endif
 MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)\lib
-endif
+ endif
 
 endif
 
@@ -335,32 +335,32 @@ endif
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
 #	  PYTHON_VER=[Python version, eg 22, 23, ..., 27] (default is 27)
 ifdef PYTHON
-ifndef DYNAMIC_PYTHON
+ ifndef DYNAMIC_PYTHON
 DYNAMIC_PYTHON=yes
-endif
+ endif
 
-ifndef PYTHON_VER
+ ifndef PYTHON_VER
 PYTHON_VER=27
-endif
-ifndef DYNAMIC_PYTHON_DLL
+ endif
+ ifndef DYNAMIC_PYTHON_DLL
 DYNAMIC_PYTHON_DLL=python$(PYTHON_VER).dll
-endif
-ifdef PYTHON_HOME
+ endif
+ ifdef PYTHON_HOME
 PYTHON_HOME_DEF=-DPYTHON_HOME=\"$(PYTHON_HOME)\"
-endif
+ endif
 
-ifeq (no,$(DYNAMIC_PYTHON))
+ ifeq (no,$(DYNAMIC_PYTHON))
 PYTHONLIB=-L$(PYTHON)/libs -lpython$(PYTHON_VER)
-endif
+ endif
 # my include files are in 'win32inc' on Linux, and 'include' in the standard
 # NT distro (ActiveState)
-ifndef PYTHONINC
-ifeq ($(CROSS),no)
+ ifndef PYTHONINC
+  ifeq ($(CROSS),no)
 PYTHONINC=-I $(PYTHON)/include
-else
+  else
 PYTHONINC=-I $(PYTHON)/win32inc
-endif
-endif
+  endif
+ endif
 endif
 
 #	Python3 interface:
@@ -368,31 +368,31 @@ endif
 #	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
 #	  PYTHON3_VER=[Python3 version, eg 31, 32] (default is 36)
 ifdef PYTHON3
-ifndef DYNAMIC_PYTHON3
+ ifndef DYNAMIC_PYTHON3
 DYNAMIC_PYTHON3=yes
-endif
+ endif
 
-ifndef PYTHON3_VER
+ ifndef PYTHON3_VER
 PYTHON3_VER=36
-endif
-ifndef DYNAMIC_PYTHON3_DLL
+ endif
+ ifndef DYNAMIC_PYTHON3_DLL
 DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
-endif
-ifdef PYTHON3_HOME
+ endif
+ ifdef PYTHON3_HOME
 PYTHON3_HOME_DEF=-DPYTHON3_HOME=L\"$(PYTHON3_HOME)\"
-endif
+ endif
 
-ifeq (no,$(DYNAMIC_PYTHON3))
+ ifeq (no,$(DYNAMIC_PYTHON3))
 PYTHON3LIB=-L$(PYTHON3)/libs -lpython$(PYTHON3_VER)
-endif
+ endif
 
-ifndef PYTHON3INC
-ifeq ($(CROSS),no)
+ ifndef PYTHON3INC
+  ifeq ($(CROSS),no)
 PYTHON3INC=-I $(PYTHON3)/include
-else
+  else
 PYTHON3INC=-I $(PYTHON3)/win32inc
-endif
-endif
+  endif
+ endif
 endif
 
 #	TCL interface:
@@ -403,18 +403,18 @@ endif
 #	    You must set TCL_VER_LONG when you set TCL_VER.
 #	  TCL_DLL=[TCL dll name, eg tcl86.dll] (default is tcl86.dll)
 ifdef TCL
-ifndef DYNAMIC_TCL
+ ifndef DYNAMIC_TCL
 DYNAMIC_TCL=yes
-endif
-ifndef TCL_VER
+ endif
+ ifndef TCL_VER
 TCL_VER = 86
-endif
-ifndef TCL_VER_LONG
+ endif
+ ifndef TCL_VER_LONG
 TCL_VER_LONG = 8.6
-endif
-ifndef TCL_DLL
+ endif
+ ifndef TCL_DLL
 TCL_DLL = tcl$(TCL_VER).dll
-endif
+ endif
 TCLINC += -I$(TCL)/include
 endif
 
@@ -430,67 +430,63 @@ endif
 #	      RUBY_VER=19
 #	      RUBY_API_VER_LONG=1.9.1 (not 1.9.3, because the API version is 1.9.1.)
 ifdef RUBY
-ifndef DYNAMIC_RUBY
+ ifndef DYNAMIC_RUBY
 DYNAMIC_RUBY=yes
-endif
+ endif
 #  Set default value
-ifndef RUBY_VER
+ ifndef RUBY_VER
 RUBY_VER = 22
-endif
-ifndef RUBY_VER_LONG
+ endif
+ ifndef RUBY_VER_LONG
 RUBY_VER_LONG = 2.2.0
-endif
-ifndef RUBY_API_VER_LONG
+ endif
+ ifndef RUBY_API_VER_LONG
 RUBY_API_VER_LONG = $(RUBY_VER_LONG)
-endif
-ifndef RUBY_API_VER
+ endif
+ ifndef RUBY_API_VER
 RUBY_API_VER = $(subst .,,$(RUBY_API_VER_LONG))
-endif
+ endif
 
-ifndef RUBY_PLATFORM
-ifeq ($(RUBY_VER), 16)
+ ifndef RUBY_PLATFORM
+  ifeq ($(RUBY_VER), 16)
 RUBY_PLATFORM = i586-mswin32
-else
-ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/i386-mingw32),)
+  else ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/i386-mingw32),)
 RUBY_PLATFORM = i386-mingw32
-else
-ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw32),)
+  else ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw32),)
 RUBY_PLATFORM = x64-mingw32
-else
+  else
 RUBY_PLATFORM = i386-mswin32
-endif
-endif
-endif
-endif
+  endif
+ endif
 
-ifndef RUBY_INSTALL_NAME
-ifeq ($(RUBY_VER), 16)
+ ifndef RUBY_INSTALL_NAME
+  ifeq ($(RUBY_VER), 16)
 RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
-else
-ifndef RUBY_MSVCRT_NAME
+  else
+   ifndef RUBY_MSVCRT_NAME
 # Base name of msvcrXX.dll which is used by ruby's dll.
 RUBY_MSVCRT_NAME = msvcrt
-endif
-ifeq ($(ARCH),x86-64)
+   endif
+   ifeq ($(ARCH),x86-64)
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-else
+   else
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-endif
-endif
-endif
+   endif
+  endif
+ endif
 
-ifeq (19, $(word 1,$(sort 19 $(RUBY_VER))))
+ ifeq (19, $(word 1,$(sort 19 $(RUBY_VER))))
 RUBY_19_OR_LATER = 1
-endif
+ endif
 
-ifdef RUBY_19_OR_LATER
+ ifdef RUBY_19_OR_LATER
 RUBYINC = -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG) -I $(RUBY)/include/ruby-$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
-else
+ else
 RUBYINC = -I $(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/$(RUBY_PLATFORM)
-endif
-ifeq (no, $(DYNAMIC_RUBY))
+ endif
+ ifeq (no, $(DYNAMIC_RUBY))
 RUBYLIB = -L$(RUBY)/lib -l$(RUBY_INSTALL_NAME)
-endif
+ endif
 
 endif # RUBY
 
@@ -515,89 +511,87 @@ ifdef GETTEXT
 DEFINES += -DHAVE_GETTEXT -DHAVE_LOCALE_H
 GETTEXTINCLUDE = $(GETTEXT)/include
 GETTEXTLIB = $(INTLPATH)
-ifeq (yes, $(GETTEXT))
+ ifeq (yes, $(GETTEXT))
 DEFINES += -DDYNAMIC_GETTEXT
-else
-ifdef DYNAMIC_GETTEXT
+ else ifdef DYNAMIC_GETTEXT
 DEFINES += -D$(DYNAMIC_GETTEXT)
-ifdef GETTEXT_DYNAMIC
+  ifdef GETTEXT_DYNAMIC
 DEFINES += -DGETTEXT_DYNAMIC -DGETTEXT_DLL=\"$(GETTEXT_DYNAMIC)\"
-endif
-endif
-endif
+  endif
+ endif
 endif
 
 ifdef PERL
 CFLAGS += -I$(PERLLIBS) -DFEAT_PERL -DPERL_IMPLICIT_CONTEXT -DPERL_IMPLICIT_SYS
-ifeq (yes, $(DYNAMIC_PERL))
+ ifeq (yes, $(DYNAMIC_PERL))
 CFLAGS += -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"perl$(PERL_VER).dll\"
 EXTRA_LIBS += -L$(PERLLIBS) -lperl$(PERL_VER)
-endif
+ endif
 endif
 
 ifdef LUA
 LUA_INCDIR = $(LUA)/include
 CFLAGS += -I$(LUA_INCDIR) -I$(LUA) -DFEAT_LUA
-ifeq (yes, $(DYNAMIC_LUA))
+ ifeq (yes, $(DYNAMIC_LUA))
 CFLAGS += -DDYNAMIC_LUA -DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
-endif
+ endif
 endif
 
 ifdef MZSCHEME
-ifndef MZSCHEME_COLLECTS
+ ifndef MZSCHEME_COLLECTS
 MZSCHEME_COLLECTS=$(MZSCHEME)/collects
-ifeq (yes, $(UNDER_CYGWIN))
+  ifeq (yes, $(UNDER_CYGWIN))
 MZSCHEME_COLLECTS:=$(shell cygpath -m $(MZSCHEME_COLLECTS) | sed -e 's/ /\\ /g')
-endif
-endif
+  endif
+ endif
 CFLAGS += -I$(MZSCHEME)/include -DFEAT_MZSCHEME -DMZSCHEME_COLLECTS=\"$(MZSCHEME_COLLECTS)\"
-ifeq (yes, $(DYNAMIC_MZSCHEME))
-ifeq (yes, $(MZSCHEME_PRECISE_GC))
+ ifeq (yes, $(DYNAMIC_MZSCHEME))
+  ifeq (yes, $(MZSCHEME_PRECISE_GC))
 # Precise GC does not use separate dll
 CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\"
-else
+  else
 CFLAGS += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"lib$(MZSCHEME_MAIN_LIB)$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
-endif
-endif
-ifeq (yes, "$(MZSCHEME_DEBUG)")
+  endif
+ endif
+ ifeq (yes, "$(MZSCHEME_DEBUG)")
 CFLAGS += -DMZSCHEME_FORCE_GC
-endif
+ endif
 endif
 
 ifdef RUBY
 CFLAGS += -DFEAT_RUBY $(RUBYINC)
-ifeq (yes, $(DYNAMIC_RUBY))
+ ifeq (yes, $(DYNAMIC_RUBY))
 CFLAGS += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 CFLAGS += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
-endif
-ifeq (no, $(DYNAMIC_RUBY))
+ endif
+ ifeq (no, $(DYNAMIC_RUBY))
 CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
-endif
-ifneq ($(findstring w64-mingw32,$(CC)),)
+ endif
+ ifneq ($(findstring w64-mingw32,$(CC)),)
 # A workaround for MinGW-w64
 CFLAGS += -DHAVE_STRUCT_TIMESPEC -DHAVE_STRUCT_TIMEZONE
-endif
+ endif
 endif
 
 ifdef PYTHON
 CFLAGS += -DFEAT_PYTHON
-ifeq (yes, $(DYNAMIC_PYTHON))
+ ifeq (yes, $(DYNAMIC_PYTHON))
 CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"$(DYNAMIC_PYTHON_DLL)\"
-endif
+ endif
 endif
 
 ifdef PYTHON3
 CFLAGS += -DFEAT_PYTHON3
-ifeq (yes, $(DYNAMIC_PYTHON3))
+ ifeq (yes, $(DYNAMIC_PYTHON3))
 CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-endif
+ endif
 endif
 
 ifdef TCL
 CFLAGS += -DFEAT_TCL $(TCLINC)
-ifeq (yes, $(DYNAMIC_TCL))
+ ifeq (yes, $(DYNAMIC_TCL))
 CFLAGS += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"$(TCL_DLL)\" -DDYNAMIC_TCL_VER=\"$(TCL_VER_LONG)\"
-endif
+ endif
 endif
 
 ifeq ($(POSTSCRIPT),yes)
@@ -614,15 +608,15 @@ endif
 
 ifeq ($(NETBEANS),yes)
 # Only allow NETBEANS for a GUI build.
-ifeq (yes, $(GUI))
+ ifeq (yes, $(GUI))
 DEFINES += -DFEAT_NETBEANS_INTG
 
-ifeq ($(NBDEBUG), yes)
+  ifeq ($(NBDEBUG), yes)
 DEFINES += -DNBDEBUG
 NBDEBUG_INCL = nbdebug.h
 NBDEBUG_SRC = nbdebug.c
-endif
-endif
+  endif
+ endif
 endif
 
 ifeq ($(CHANNEL),yes)
@@ -642,39 +636,39 @@ endif
 # DirectWrite (DirectX)
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
-ifeq (yes, $(GUI))
+ ifeq (yes, $(GUI))
 DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
-ifneq ($(COLOR_EMOJI),no)
+  ifneq ($(COLOR_EMOJI),no)
 DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
-endif
-endif
+  endif
+ endif
 endif
 
 # Only allow XPM for a GUI build.
 ifeq (yes, $(GUI))
 
-ifndef XPM
-ifeq ($(ARCH),i386)
+ ifndef XPM
+  ifeq ($(ARCH),i386)
 XPM = xpm/x86
-endif
-ifeq ($(ARCH),i486)
+  endif
+  ifeq ($(ARCH),i486)
 XPM = xpm/x86
-endif
-ifeq ($(ARCH),i586)
+  endif
+  ifeq ($(ARCH),i586)
 XPM = xpm/x86
-endif
-ifeq ($(ARCH),i686)
+  endif
+  ifeq ($(ARCH),i686)
 XPM = xpm/x86
-endif
-ifeq ($(ARCH),x86-64)
+  endif
+  ifeq ($(ARCH),x86-64)
 XPM = xpm/x64
-endif
-endif
-ifdef XPM
-ifneq ($(XPM),no)
+  endif
+ endif
+ ifdef XPM
+  ifneq ($(XPM),no)
 CFLAGS += -DFEAT_XPM_W32 -I $(XPM)/include -I $(XPM)/../include
-endif
-endif
+  endif
+ endif
 
 endif
 
@@ -682,16 +676,14 @@ ifeq ($(DEBUG),yes)
 CFLAGS += -g -fstack-check
 DEBUG_SUFFIX=d
 else
-ifeq ($(OPTIMIZE), SIZE)
+ ifeq ($(OPTIMIZE), SIZE)
 CFLAGS += -Os
-else
-ifeq ($(OPTIMIZE), MAXSPEED)
+ else ifeq ($(OPTIMIZE), MAXSPEED)
 CFLAGS += -O3
 CFLAGS += -fomit-frame-pointer -freg-struct-return
-else  # SPEED
+ else  # SPEED
 CFLAGS += -O2
-endif
-endif
+ endif
 LFLAGS += -s
 endif
 
@@ -705,6 +697,7 @@ OBJ = \
 	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
+	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
@@ -784,13 +777,13 @@ endif
 ifdef MZSCHEME
 OBJ += $(OUTDIR)/if_mzsch.o
 MZSCHEME_INCL = if_mzsch.h
-ifeq (yes,$(MZSCHEME_GENERATE_BASE))
+ ifeq (yes,$(MZSCHEME_GENERATE_BASE))
 CFLAGS += -DINCLUDE_MZSCHEME_BASE
 MZ_EXTRA_DEP += mzscheme_base.c
-endif
-ifeq (yes,$(MZSCHEME_PRECISE_GC))
+ endif
+ ifeq (yes,$(MZSCHEME_PRECISE_GC))
 CFLAGS += -DMZ_PRECISE_GC
-endif
+ endif
 endif
 ifdef PYTHON
 OBJ += $(OUTDIR)/if_python.o
@@ -809,17 +802,15 @@ OBJ += $(OUTDIR)/if_cscope.o
 endif
 
 ifeq ($(NETBEANS),yes)
-ifneq ($(CHANNEL),yes)
+ ifneq ($(CHANNEL),yes)
 # Cannot use Netbeans without CHANNEL
 NETBEANS=no
-else
-ifneq (yes, $(GUI))
+ else ifneq (yes, $(GUI))
 # Cannot use Netbeans without GUI.
 NETBEANS=no
-else
+ else
 OBJ += $(OUTDIR)/netbeans.o
-endif
-endif
+ endif
 endif
 
 ifeq ($(CHANNEL),yes)
@@ -829,19 +820,19 @@ endif
 
 ifeq ($(DIRECTX),yes)
 # Only allow DIRECTX for a GUI build.
-ifeq (yes, $(GUI))
+ ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/gui_dwrite.o
 LIB += -ld2d1 -ldwrite
 USE_STDCPLUS = yes
-endif
+ endif
 endif
 ifneq ($(XPM),no)
 # Only allow XPM for a GUI build.
-ifeq (yes, $(GUI))
+ ifeq (yes, $(GUI))
 OBJ += $(OUTDIR)/xpm_w32.o
 # You'll need libXpm.a from http://gnuwin32.sf.net
 LIB += -L$(XPM)/lib -lXpm
-endif
+ endif
 endif
 
 ifeq ($(TERMINAL),yes)
@@ -914,32 +905,32 @@ MAIN_TARGET = $(TARGET)
 endif
 
 ifdef GETTEXT
-ifneq (yes, $(GETTEXT))
+ ifneq (yes, $(GETTEXT))
 CFLAGS += -I$(GETTEXTINCLUDE)
-ifndef STATIC_GETTEXT
+  ifndef STATIC_GETTEXT
 LIB += -L$(GETTEXTLIB) -l$(INTLLIB)
-ifeq (USE_SAFE_GETTEXT_DLL, $(DYNAMIC_GETTEXT))
+   ifeq (USE_SAFE_GETTEXT_DLL, $(DYNAMIC_GETTEXT))
 OBJ+=$(SAFE_GETTEXT_DLL_OBJ)
-endif
-else
+   endif
+  else
 LIB += -L$(GETTEXTLIB) -lintl
-endif
-endif
+  endif
+ endif
 endif
 
 ifdef PERL
-ifeq (no, $(DYNAMIC_PERL))
+ ifeq (no, $(DYNAMIC_PERL))
 LIB += -L$(PERLLIBS) -lperl$(PERL_VER)
-endif
+ endif
 endif
 
 ifdef TCL
 LIB += -L$(TCL)/lib
-ifeq (yes, $(DYNAMIC_TCL))
+ ifeq (yes, $(DYNAMIC_TCL))
 LIB += -ltclstub$(TCL_VER)
-else
+ else
 LIB += -ltcl$(TCL_VER)
-endif
+ endif
 endif
 
 ifeq (yes, $(OLE))
@@ -950,35 +941,35 @@ endif
 
 ifeq (yes, $(IME))
 DEFINES += -DFEAT_MBYTE_IME
-ifeq (yes, $(DYNAMIC_IME))
+ ifeq (yes, $(DYNAMIC_IME))
 DEFINES += -DDYNAMIC_IME
-else
+ else
 LIB += -limm32
-endif
+ endif
 endif
 
 ifdef ICONV
-ifneq (yes, $(ICONV))
+ ifneq (yes, $(ICONV))
 LIB += -L$(ICONV)
 CFLAGS += -I$(ICONV)
-endif
+ endif
 DEFINES+=-DDYNAMIC_ICONV
 endif
 
 ifeq (yes, $(USE_STDCPLUS))
 LINK = $(CXX)
-ifeq (yes, $(STATIC_STDCPLUS))
+ ifeq (yes, $(STATIC_STDCPLUS))
 #LIB += -static-libstdc++ -static-libgcc
 LIB += -Wl,-Bstatic -lstdc++ -lgcc -Wl,-Bdynamic
-endif
+ endif
 else
 LINK = $(CC)
 endif
 
 ifeq (yes, $(STATIC_WINPTHREAD))
-ifeq (yes, $(HAS_GCC_EH))
+ ifeq (yes, $(HAS_GCC_EH))
 LIB += -lgcc_eh
-endif
+ endif
 LIB += -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic
 endif
 

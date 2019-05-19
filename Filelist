@@ -20,6 +20,7 @@ SRC_ALL =	\
 		src/blob.c \
 		src/blowfish.c \
 		src/buffer.c \
+		src/change.c \
 		src/channel.c \
 		src/charset.c \
 		src/crypt.c \
@@ -155,6 +156,7 @@ SRC_ALL =	\
 		src/proto/blob.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
+		src/proto/change.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/crypt.pro \

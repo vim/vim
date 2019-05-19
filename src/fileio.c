@@ -4985,10 +4985,10 @@ restore_backup:
 	}
     }
 
-    /*
-     * Remove the backup unless 'backup' option is set
-     */
-    if (!p_bk && backup != NULL && mch_remove(backup) != 0)
+    // Remove the backup unless 'backup' option is set or there was a
+    // conversion error.
+    if (!p_bk && backup != NULL && !write_info.bw_conv_error
+	    && mch_remove(backup) != 0)
 	emsg(_("E207: Can't delete backup file"));
 
     goto nofail;

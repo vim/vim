@@ -173,6 +173,16 @@ Page custom SetCustom ValidateCustom
     !include "lang\tradchinese.nsi"
 !endif
 
+##########################################################
+# Version resources
+
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Vim Developers"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "Vi Improved - A Text Editor"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VER_MAJOR}.${VER_MINOR}.0.0"
+VIProductVersion "${VER_MAJOR}.${VER_MINOR}.0.0"
 
 # Global variables
 Var vim_dialog

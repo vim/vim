@@ -130,6 +130,8 @@ before_script:
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
+  - set -o errexit
+  - echo -e "\\033[33;1mConfiguring Vim\\033[0m" && echo -en "travis_fold:start:configure\\r\\033[0K"
   - |
     if [[ "${CHECK_AUTOCONF}" = "yes" ]] && [[ "${CC}" = "gcc" ]]; then
       make -C src autoconf
@@ -138,13 +140,17 @@ script:
     if [[ -n "${SHADOWOPT}" ]]; then
       make -C src shadow
     fi
+  # "./configure" changes its working directory into "$SRCDIR".
+  - ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
+  - echo -en "travis_fold:end:configure\\r\\033[0K"
+  - echo -e "\\033[33;1mBuilding Vim\\033[0m" && echo -en "travis_fold:start:build\\r\\033[0K"
   - |
-    (
-    cd "${SRCDIR}" \
-      && ./configure --with-features=${FEATURES} ${CONFOPT} --enable-fail-if-missing
-    ) && if [[ "${BUILD}" = "yes" ]]; then
+    if [[ "${BUILD}" = "yes" ]]; then
       make ${SHADOWOPT} -j${NPROC}
     fi
+  - echo -en "travis_fold:end:build\\r\\033[0K"
+  - set +o errexit
+  - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   # Show Vim version and also if_xx versions.
   - |
     if [[ "${BUILD}" = "yes" ]]; then
@@ -154,12 +160,13 @@ script:
       cat if_ver.txt
     fi
   - make ${SHADOWOPT} ${TEST}
+  - echo -en "travis_fold:end:test\\r\\033[0K"
   - |
     if [[ -n "${ASAN_OPTIONS}" ]]; then
       while read log; do
         asan_symbolize < "${log}"
+        false # exit 1 if there are ASAN logs
       done < <(find . -type f -name 'asan.*' -size +0)
-      [[ -z "${log}" ]] # exit 1 if there are ASAN logs
     fi
 
 after_success:

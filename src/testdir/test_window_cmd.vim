@@ -743,6 +743,42 @@ func Test_relative_cursor_second_line_after_resize()
   let &so = so_save
 endfunc
 
+func Test_split_noscroll()
+  let so_save = &so
+  enew
+  call setline(1, range(1, 8))
+  normal 100%
+  split
+
+  1wincmd w
+  let winid1 = win_getid()
+  let info1 = getwininfo(winid1)[0]
+
+  2wincmd w
+  let winid2 = win_getid()
+  let info2 = getwininfo(winid2)[0]
+
+  call assert_equal(1, info1.topline)
+  call assert_equal(1, info2.topline)
+
+  " window that fits all lines by itself, but not when split: closing other
+  " window should restore fraction.
+  only!
+  call setline(1, range(1, &lines - 10))
+  exe &lines / 4
+  let winid1 = win_getid()
+  let info1 = getwininfo(winid1)[0]
+  call assert_equal(1, info1.topline)
+  new
+  redraw
+  close
+  let info1 = getwininfo(winid1)[0]
+  call assert_equal(1, info1.topline)
+
+  bwipe!
+  let &so = so_save
+endfunc
+
 " Tests for the winnr() function
 func Test_winnr()
   only | tabonly

@@ -14,7 +14,6 @@ SCRIPTS_FIRST = \
 # Tests that run on all systems.
 SCRIPTS_ALL = \
 	test3.out \
-	test29.out \
 	test37.out \
 	test39.out \
 	test42.out \
@@ -168,6 +167,7 @@ NEW_TESTS = \
 	test_lispwords \
 	test_listchars \
 	test_listdict \
+	test_listener \
 	test_listlbr \
 	test_listlbr_utf8 \
 	test_lua \
@@ -359,6 +359,7 @@ NEW_TESTS_RES = \
 	test_lineending.res \
 	test_listchars.res \
 	test_listdict.res \
+	test_listener.res \
 	test_listlbr.res \
 	test_lua.res \
 	test_makeencoding.res \

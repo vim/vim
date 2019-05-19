@@ -1211,7 +1211,8 @@ do_execreg(
     int		retval = OK;
     int		remap;
 
-    if (regname == '@')			/* repeat previous one */
+    // repeat previous one
+    if (regname == '@')
     {
 	if (execreg_lastc == NUL)
 	{
@@ -1220,7 +1221,7 @@ do_execreg(
 	}
 	regname = execreg_lastc;
     }
-					/* check for valid regname */
+    // check for valid regname
     if (regname == '%' || regname == '#' || !valid_yank_reg(regname, FALSE))
     {
 	emsg_invreg(regname);
@@ -1232,11 +1233,13 @@ do_execreg(
     regname = may_get_selection(regname);
 #endif
 
-    if (regname == '_')			/* black hole: don't stuff anything */
+    // black hole: don't stuff anything
+    if (regname == '_')
 	return OK;
 
 #ifdef FEAT_CMDHIST
-    if (regname == ':')			/* use last command line */
+    // use last command line
+    if (regname == ':')
     {
 	if (last_cmdline == NULL)
 	{
@@ -1913,10 +1916,9 @@ op_delete(oparg_T *oap)
 		curwin->w_cursor.coladd = 0;
 	    }
 
-	    /* n == number of chars deleted
-	     * If we delete a TAB, it may be replaced by several characters.
-	     * Thus the number of characters may increase!
-	     */
+	    // "n" == number of chars deleted
+	    // If we delete a TAB, it may be replaced by several characters.
+	    // Thus the number of characters may increase!
 	    n = bd.textlen - bd.startspaces - bd.endspaces;
 	    oldp = ml_get(lnum);
 	    newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
@@ -1932,6 +1934,11 @@ op_delete(oparg_T *oap)
 	    STRMOVE(newp + bd.textcol + bd.startspaces + bd.endspaces, oldp);
 	    /* replace the line */
 	    ml_replace(lnum, newp, FALSE);
+
+#ifdef FEAT_TEXT_PROP
+	    if (curbuf->b_has_textprop && n != 0)
+		adjust_prop_columns(lnum, bd.textcol, -n);
+#endif
 	}
 
 	check_cursor_col();
@@ -4438,7 +4445,10 @@ do_join(
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
 #endif
-
+#ifdef FEAT_TEXT_PROP
+    textprop_T	**prop_lines = NULL;
+    int		*prop_lengths = NULL;
+#endif
 
     if (save_undo && u_save((linenr_T)(curwin->w_cursor.lnum - 1),
 			    (linenr_T)(curwin->w_cursor.lnum + count)) == FAIL)
@@ -4463,8 +4473,9 @@ do_join(
 #endif
 
     /*
-     * Don't move anything, just compute the final line length
+     * Don't move anything yet, just compute the final line length
      * and setup the array of space strings lengths
+     * This loops forward over the joined lines.
      */
     for (t = 0; t < count; ++t)
     {
@@ -4556,8 +4567,24 @@ do_join(
     cend = newp + sumsize;
     *cend = 0;
 
+#ifdef FEAT_TEXT_PROP
+    // We need to move properties of the lines that are going to be deleted to
+    // the new long one.
+    if (curbuf->b_has_textprop && !text_prop_frozen)
+    {
+	// Allocate an array to copy the text properties of joined lines into.
+	// And another array to store the number of properties in each line.
+	prop_lines = (textprop_T **)alloc_clear(
+				      (int)(count - 1) * sizeof(textprop_T *));
+	prop_lengths = (int *)alloc_clear((int)(count - 1) * sizeof(int));
+	if (prop_lengths == NULL)
+	    VIM_CLEAR(prop_lines);
+    }
+#endif
+
     /*
      * Move affected lines to the new long one.
+     * This loops backwards over the joined lines, including the original line.
      *
      * Move marks from each deleted line to the joined line, adjusting the
      * column.  This is not Vi compatible, but Vi deletes the marks, thus that
@@ -4583,8 +4610,15 @@ do_join(
 			 (long)(cend - newp - spaces_removed), spaces_removed);
 	if (t == 0)
 	    break;
+#ifdef FEAT_TEXT_PROP
+	if (prop_lines != NULL)
+	    adjust_props_for_join(curwin->w_cursor.lnum + t,
+				      prop_lines + t - 1, prop_lengths + t - 1,
+			 (long)(cend - newp - spaces_removed), spaces_removed);
+#endif
+
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
-#if defined(FEAT_COMMENTS) || defined(PROTO)
+#if defined(FEAT_COMMENTS)
 	if (remove_comments)
 	    curr += comments[t - 1];
 #endif
@@ -4592,20 +4626,26 @@ do_join(
 	    curr = skipwhite(curr);
 	currsize = (int)STRLEN(curr);
     }
-    ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+
+#ifdef FEAT_TEXT_PROP
+    if (prop_lines != NULL)
+	join_prop_lines(curwin->w_cursor.lnum, newp,
+					      prop_lines, prop_lengths, count);
+    else
+#endif
+	ml_replace(curwin->w_cursor.lnum, newp, FALSE);
 
     if (setmark)
     {
 	/* Set the '] mark. */
 	curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
-	curwin->w_buffer->b_op_end.col  = (colnr_T)STRLEN(newp);
+	curwin->w_buffer->b_op_end.col  = (colnr_T)sumsize;
     }
 
     /* Only report the change in the first line here, del_lines() will report
      * the deleted line. */
     changed_lines(curwin->w_cursor.lnum, currsize,
 					       curwin->w_cursor.lnum + 1, 0L);
-
     /*
      * Delete following lines. To do this we move the cursor there
      * briefly, and then move it back. After del_lines() the cursor may

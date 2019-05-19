@@ -1576,6 +1576,7 @@ BASIC_SRC = \
 	blob.c \
 	blowfish.c \
 	buffer.c \
+	change.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
@@ -1691,6 +1692,7 @@ OBJ_COMMON = \
 	objects/autocmd.o \
 	objects/beval.o \
 	objects/buffer.o \
+	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
 	objects/crypt.o \
@@ -1821,6 +1823,7 @@ PRO_AUTO = \
 	autocmd.pro \
 	blowfish.pro \
 	buffer.pro \
+	change.pro \
 	charset.pro \
 	crypt.pro \
 	crypt_zip.pro \
@@ -2176,7 +2179,7 @@ test_libvterm:
 test1 \
 	test_eval \
 	test3 \
-	test29 test30 test37 test39 \
+	test30 test37 test39 \
 	test42 test44 test48 test49 \
 	test52 test59 \
 	test64 test69 \
@@ -2965,6 +2968,9 @@ objects/blowfish.o: blowfish.c
 objects/buffer.o: buffer.c
 	$(CCC) -o $@ buffer.c
 
+objects/change.o: change.c
+	$(CCC) -o $@ change.c
+
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
 
@@ -3427,6 +3433,10 @@ objects/blowfish.o: blowfish.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/buffer.o: buffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h version.h
+objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h

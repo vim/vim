@@ -45,9 +45,3 @@ func Test_fnamemodify()
   let $HOME = save_home
   let &shell = save_shell
 endfunc
-
-func Test_expand()
-  new
-  call assert_equal("",  expand('%:S'))
-  quit
-endfunc

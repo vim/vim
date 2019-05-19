@@ -700,6 +700,7 @@ OBJ = \
 	$(OUTDIR)\blob.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
+	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
@@ -1410,6 +1411,8 @@ $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 
+$(OUTDIR)/change.obj:	$(OUTDIR) change.c  $(INCL)
+
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
 $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
@@ -1700,6 +1703,7 @@ proto.h: \
 	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
+	proto/change.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \

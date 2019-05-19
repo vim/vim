@@ -3779,7 +3779,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    if (call_func(func, (int)STRLEN(func), &rettv,
+    if (call_func(func, -1, &rettv,
 		2, argvars, /* argv_func */ NULL,
 		/* firstline */ 1, /* lastline */ 1,
 		&doesrange, /* evaluate */ TRUE,
@@ -3976,7 +3976,9 @@ create_vterm(term_T *term, int rows, int cols)
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
 
-    if (t_colors >= 16)
+    if (t_colors < 16)
+	// Less than 16 colors: assume that bold means using a bright color for
+	// the foreground color.
 	vterm_state_set_bold_highbright(vterm_obtain_state(vterm), 1);
 
     /* Required to initialize most things. */

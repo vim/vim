@@ -1637,7 +1637,7 @@ ml_recover(void)
 	 * empty.  Don't set the modified flag then. */
 	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
 	{
-	    changed_int();
+	    changed_internal();
 	    ++CHANGEDTICK(curbuf);
 	}
     }
@@ -1651,7 +1651,7 @@ ml_recover(void)
 	    vim_free(p);
 	    if (i != 0)
 	    {
-		changed_int();
+		changed_internal();
 		++CHANGEDTICK(curbuf);
 		break;
 	    }
@@ -1874,7 +1874,7 @@ recover_names(
 	    }
 	}
 
-	    /* check for out-of-memory */
+	// check for out-of-memory
 	for (i = 0; i < num_names; ++i)
 	{
 	    if (names[i] == NULL)
@@ -2101,7 +2101,7 @@ get_ctime(time_t thetime, int add_newline)
 # endif
     /* MSVC returns NULL for an invalid value of seconds. */
     if (curtime == NULL)
-	STRCPY(buf, _("(Invalid)"));
+	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
 	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
 #else
@@ -2790,6 +2790,12 @@ ml_append_int(
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
 
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+#endif
+
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && lnum > 0)
 	// Add text properties that continue from the previous line.
@@ -3368,7 +3374,8 @@ ml_replace_len(
 	    if (newline != NULL)
 	    {
 		mch_memmove(newline, line, len);
-		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr + oldtextlen, textproplen);
+		mch_memmove(newline + len, curbuf->b_ml.ml_line_ptr
+						    + oldtextlen, textproplen);
 		vim_free(line);
 		line = newline;
 		len += (colnr_T)textproplen;
@@ -3526,6 +3533,11 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
 	return FAIL;
 
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(buf, lnum, lnum + 1, -1);
+#endif
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked--;
 

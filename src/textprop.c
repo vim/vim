@@ -8,19 +8,13 @@
  */
 
 /*
- * Text properties implementation.
- *
- * Text properties are attached to the text.  They move with the text when
- * text is inserted/deleted.
- *
- * Text properties have a user specified ID number, which can be unique.
- * Text properties have a type, which can be used to specify highlighting.
+ * Text properties implementation.  See ":help text-properties".
  *
  * TODO:
- * - When using 'cursorline' attributes should be merged. (#3912)
  * - Adjust text property column and length when text is inserted/deleted.
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
+ *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -28,8 +22,6 @@
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
- * - Add mechanism to keep track of changed lines, so that plugin can update
- *   text properties in these.
  * - Perhaps have a window-local option to disable highlighting from text
  *   properties?
  */
@@ -965,7 +957,7 @@ clear_buf_prop_types(buf_T *buf)
  * shift by "bytes_added" (can be negative).
  * Note that "col" is zero-based, while tp_col is one-based.
  * Only for the current buffer.
- * Called is expected to check b_has_textprop and "bytes_added" being non-zero.
+ * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
  */
     void
 adjust_prop_columns(
@@ -1002,15 +994,28 @@ adjust_prop_columns(
 								      ? 2 : 1))
 		: (tmp_prop.tp_col > col + 1))
 	{
-	    tmp_prop.tp_col += bytes_added;
+	    if (tmp_prop.tp_col + bytes_added < col + 1)
+	    {
+		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
+		tmp_prop.tp_col = col + 1;
+	    }
+	    else
+		tmp_prop.tp_col += bytes_added;
 	    dirty = TRUE;
+	    if (tmp_prop.tp_len <= 0)
+		continue;  // drop this text property
 	}
 	else if (tmp_prop.tp_len > 0
 		&& tmp_prop.tp_col + tmp_prop.tp_len > col
 		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
 								      ? 0 : 1))
 	{
-	    tmp_prop.tp_len += bytes_added;
+	    int after = col - bytes_added
+				     - (tmp_prop.tp_col - 1 + tmp_prop.tp_len);
+	    if (after > 0)
+		tmp_prop.tp_len += bytes_added + after;
+	    else
+		tmp_prop.tp_len += bytes_added;
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
@@ -1033,12 +1038,17 @@ adjust_prop_columns(
 
 /*
  * Adjust text properties for a line that was split in two.
- * "lnum" is the newly inserted line.  The text properties are now on the line
- * below it.  "kept" is the number of bytes kept in the first line, while
+ * "lnum_props" is the line that has the properties from before the split.
+ * "lnum_top" is the top line.
+ * "kept" is the number of bytes kept in the first line, while
  * "deleted" is the number of bytes deleted.
  */
     void
-adjust_props_for_split(linenr_T lnum, int kept, int deleted)
+adjust_props_for_split(
+	linenr_T lnum_props,
+	linenr_T lnum_top,
+	int kept,
+	int deleted)
 {
     char_u	*props;
     int		count;
@@ -1049,11 +1059,12 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 
     if (!curbuf->b_has_textprop)
 	return;
-    count = get_text_props(curbuf, lnum + 1, &props, FALSE);
+
+    // Get the text properties from "lnum_props".
+    count = get_text_props(curbuf, lnum_props, &props, FALSE);
     ga_init2(&prevprop, sizeof(textprop_T), 10);
     ga_init2(&nextprop, sizeof(textprop_T), 10);
 
-    // Get the text properties, which are at "lnum + 1".
     // Keep the relevant ones in the first line, reducing the length if needed.
     // Copy the ones that include the split to the second line.
     // Move the ones after the split to the second line.
@@ -1074,7 +1085,9 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 	    ++prevprop.ga_len;
 	}
 
-	if (prop.tp_col + prop.tp_len >= skipped && ga_grow(&nextprop, 1) == OK)
+	// Only add the property to the next line if the length is bigger than
+	// zero.
+	if (prop.tp_col + prop.tp_len > skipped && ga_grow(&nextprop, 1) == OK)
 	{
 	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 	    *p = prop;
@@ -1089,11 +1102,117 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 	}
     }
 
-    set_text_props(lnum, prevprop.ga_data, prevprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top, prevprop.ga_data,
+					 prevprop.ga_len * sizeof(textprop_T));
     ga_clear(&prevprop);
-
-    set_text_props(lnum + 1, nextprop.ga_data, nextprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top + 1, nextprop.ga_data,
+					 nextprop.ga_len * sizeof(textprop_T));
     ga_clear(&nextprop);
+}
+
+/*
+ * Line "lnum" has been joined and will end up at column "col" in the new line.
+ * "removed" bytes have been removed from the start of the line, properties
+ * there are to be discarded.
+ * Move the adjusted text properties to an allocated string, store it in
+ * "prop_line" and adjust the columns.
+ */
+    void
+adjust_props_for_join(
+	linenr_T    lnum,
+	textprop_T  **prop_line,
+	int	    *prop_length,
+	long	    col,
+	int	    removed)
+{
+    int		proplen;
+    char_u	*props;
+    int		ri;
+    int		wi = 0;
+
+    proplen = get_text_props(curbuf, lnum, &props, FALSE);
+    if (proplen > 0)
+    {
+	*prop_line = (textprop_T *)alloc(proplen * (int)sizeof(textprop_T));
+	if (*prop_line != NULL)
+	{
+	    for (ri = 0; ri < proplen; ++ri)
+	    {
+		textprop_T *cp = *prop_line + wi;
+
+		mch_memmove(cp, props + ri * sizeof(textprop_T),
+							   sizeof(textprop_T));
+		if (cp->tp_col + cp->tp_len > removed)
+		{
+		    if (cp->tp_col > removed)
+			cp->tp_col += col;
+		    else
+		    {
+			// property was partly deleted, make it shorter
+			cp->tp_len -= removed - cp->tp_col;
+			cp->tp_col = col;
+		    }
+		    ++wi;
+		}
+	    }
+	}
+	*prop_length = wi;
+    }
+}
+
+/*
+ * After joining lines: concatenate the text and the properties of all joined
+ * lines into one line and replace the line.
+ */
+    void
+join_prop_lines(
+	linenr_T    lnum,
+	char_u	    *newp,
+	textprop_T  **prop_lines,
+	int	    *prop_lengths,
+	int	    count)
+{
+    size_t	proplen = 0;
+    size_t	oldproplen;
+    char_u	*props;
+    int		i;
+    int		len;
+    char_u	*line;
+    size_t	l;
+
+    for (i = 0; i < count - 1; ++i)
+	proplen += prop_lengths[i];
+    if (proplen == 0)
+    {
+	ml_replace(lnum, newp, FALSE);
+	return;
+    }
+
+    // get existing properties of the joined line
+    oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
+
+    len = (int)STRLEN(newp) + 1;
+    line = alloc(len + (oldproplen + proplen) * (int)sizeof(textprop_T));
+    if (line == NULL)
+	return;
+    mch_memmove(line, newp, len);
+    l = oldproplen * sizeof(textprop_T);
+    mch_memmove(line + len, props, l);
+    len += l;
+
+    for (i = 0; i < count - 1; ++i)
+	if (prop_lines[i] != NULL)
+	{
+	    l = prop_lengths[i] * sizeof(textprop_T);
+	    mch_memmove(line + len, prop_lines[i], l);
+	    len += l;
+	    vim_free(prop_lines[i]);
+	}
+
+    ml_replace_len(lnum, line, len, TRUE, FALSE);
+    vim_free(newp);
+    vim_free(prop_lines);
+    vim_free(prop_lengths);
 }
 
 #endif // FEAT_TEXT_PROP

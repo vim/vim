@@ -412,6 +412,8 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
+    if (error)
+	emsg_severe = TRUE;
     writer((writefn)(error ? emsg : msg), (char_u *)str, len);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS

@@ -63,6 +63,7 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "autocmd.pro"
 # include "buffer.pro"
+# include "change.pro"
 # include "charset.pro"
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"

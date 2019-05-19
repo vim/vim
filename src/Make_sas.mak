@@ -93,6 +93,7 @@ SRC = \
 	autocmd.c \
 	blowfish.c \
 	buffer.c \
+	change.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
@@ -156,6 +157,7 @@ OBJ = \
 	autocmd.o \
 	blowfish.o \
 	buffer.o \
+	change.o \
 	charset.o \
 	crypt.o \
 	crypt_zip.o \
@@ -219,6 +221,7 @@ PRO = \
 	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
+	proto/change.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
@@ -340,6 +343,8 @@ blowfish.o:		blowfish.c
 proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c
 proto/buffer.pro:	buffer.c
+change.o:		change.c
+proto/change.pro:	change.c
 charset.o:		charset.c
 proto/charset.pro:	charset.c
 crypt.o:		crypt.c

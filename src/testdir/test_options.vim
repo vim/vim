@@ -470,13 +470,19 @@ func Test_shortmess_F2()
   call assert_match('file2', execute('bn', ''))
   set shortmess+=F
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   set hidden
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   set nohidden
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   call assert_true(empty(execute('bn', '')))
+  call assert_false(test_getvalue('need_fileinfo'))
   set shortmess&
   call assert_match('file1', execute('bn', ''))
   call assert_match('file2', execute('bn', ''))
