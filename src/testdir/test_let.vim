@@ -152,6 +152,28 @@ func Test_let_utf8_environment()
   call assert_equal('ĀĒĪŌŪあいうえお', $a)
 endfunc
 
+func Test_let_heredoc_fails()
+  call assert_fails('let v =<< marker', 'E991:')
+
+  let text =<< trim END
+  func WrongSyntax()
+    let v =<< that there
+  endfunc
+  END
+  call writefile(text, 'XheredocFail')
+  call assert_fails('source XheredocFail', 'E126:')
+  call delete('XheredocFail')
+
+  let text =<< trim END
+  func MissingEnd()
+    let v =<< END
+  endfunc
+  END
+  call writefile(text, 'XheredocWrong')
+  call assert_fails('source XheredocWrong', 'E126:')
+  call delete('XheredocWrong')
+endfunc
+
 " Test for the setting a variable using the heredoc syntax
 func Test_let_heredoc()
   let var1 =<< END
@@ -193,15 +215,45 @@ END
   .
   call assert_equal(['  Line1'], var1)
 
-  call assert_fails('let v =<< marker', 'E991:')
-  call assert_fails('call WrongSyntax()', 'E488:')
-  call assert_fails('call MissingEnd()', 'E990:')
+  " ignore "endfunc"
+  let var1 =<< END
+something
 endfunc
+END
+  call assert_equal(['something', 'endfunc'], var1)
 
-func WrongSyntax()
-  let fail =<< that there
-endfunc
+  " ignore "endfunc" with trim
+  let var1 =<< trim END
+  something
+  endfunc
+  END
+  call assert_equal(['something', 'endfunc'], var1)
 
-func MissingEnd()
-  let fail =<< END
+  " ignore "python << xx"
+  let var1 =<<END
+something
+python << xx
+END
+  call assert_equal(['something', 'python << xx'], var1)
+
+  " ignore "python << xx" with trim
+  let var1 =<< trim END
+  something
+  python << xx
+  END
+  call assert_equal(['something', 'python << xx'], var1)
+
+  " ignore "append"
+  let var1 =<<
+something
+app
+.
+  call assert_equal(['something', 'app'], var1)
+
+  " ignore "append" with trim
+  let var1 =<< trim
+  something
+  app
+  .
+  call assert_equal(['something', 'app'], var1)
 endfunc
