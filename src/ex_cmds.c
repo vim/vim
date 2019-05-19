@@ -5187,6 +5187,9 @@ do_sub(exarg_T *eap)
 	    int		do_again;	/* do it again after joining lines */
 	    int		skip_match = FALSE;
 	    linenr_T	sub_firstlnum;	/* nr of first sub line */
+#ifdef FEAT_TEXT_PROP
+	    int		save_for_undo = TRUE;
+#endif
 
 	    /*
 	     * The new text is build up step by step, to avoid too much
@@ -5603,9 +5606,14 @@ do_sub(exarg_T *eap)
 		    p1 = sub_firstline;
 #ifdef FEAT_TEXT_PROP
 		    if (curbuf->b_has_textprop)
-			adjust_prop_columns(lnum, regmatch.startpos[0].col,
+		    {
+			// When text properties are changed, need to save for
+			// undo first, unless done already.
+			if (adjust_prop_columns(lnum, regmatch.startpos[0].col,
 			      sublen - 1 - (regmatch.endpos[0].col
-						  - regmatch.startpos[0].col));
+				   - regmatch.startpos[0].col), save_for_undo))
+			    save_for_undo = FALSE;
+		    }
 #endif
 		}
 		else

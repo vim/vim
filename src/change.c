@@ -684,7 +684,7 @@ inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && added != 0)
-	adjust_prop_columns(lnum, col, added);
+	adjust_prop_columns(lnum, col, added, FALSE);
 #endif
 
     changed_bytes(lnum, col);

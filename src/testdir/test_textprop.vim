@@ -608,6 +608,19 @@ func Test_prop_undo()
   let expected[0].length = 2
   call assert_equal(expected, prop_list(1))
 
+  " substitute a word, then undo
+  call setline(1, 'the number 123 is highlighted.')
+  call prop_add(1, 12, {'length': 3, 'type': 'comment'})
+  let expected = [{'col': 12, 'length': 3, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+  set ul&
+  1s/number/foo
+  let expected[0].col = 9
+  call assert_equal(expected, prop_list(1))
+  undo
+  let expected[0].col = 12
+  call assert_equal(expected, prop_list(1))
+
   bwipe!
   call prop_type_delete('comment')
 endfunc

@@ -957,13 +957,17 @@ clear_buf_prop_types(buf_T *buf)
  * shift by "bytes_added" (can be negative).
  * Note that "col" is zero-based, while tp_col is one-based.
  * Only for the current buffer.
+ * When "save_for_undo" is TRUE then call u_savesub() before making changes to
+ * the line.
  * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
+ * Returns TRUE when props were changed.
  */
-    void
+    int
 adjust_prop_columns(
 	linenr_T    lnum,
 	colnr_T	    col,
-	int	    bytes_added)
+	int	    bytes_added,
+	int	    save_for_undo)
 {
     int		proplen;
     char_u	*props;
@@ -974,11 +978,11 @@ adjust_prop_columns(
     size_t	textlen;
 
     if (text_prop_frozen > 0)
-	return;
+	return FALSE;
 
     proplen = get_text_props(curbuf, lnum, &props, TRUE);
     if (proplen == 0)
-	return;
+	return FALSE;
     textlen = curbuf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
     wi = 0; // write index
@@ -1001,6 +1005,9 @@ adjust_prop_columns(
 	    }
 	    else
 		tmp_prop.tp_col += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if (save_for_undo && !dirty)
+		u_savesub(lnum);
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
@@ -1016,6 +1023,9 @@ adjust_prop_columns(
 		tmp_prop.tp_len += bytes_added + after;
 	    else
 		tmp_prop.tp_len += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if (save_for_undo && !dirty)
+		u_savesub(lnum);
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
@@ -1034,6 +1044,7 @@ adjust_prop_columns(
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	curbuf->b_ml.ml_line_len = newlen;
     }
+    return dirty;
 }
 
 /*

@@ -1937,7 +1937,7 @@ op_delete(oparg_T *oap)
 
 #ifdef FEAT_TEXT_PROP
 	    if (curbuf->b_has_textprop && n != 0)
-		adjust_prop_columns(lnum, bd.textcol, -n);
+		adjust_prop_columns(lnum, bd.textcol, -n, FALSE);
 #endif
 	}
 

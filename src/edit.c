@@ -4104,7 +4104,7 @@ replace_do_bs(int limit_col)
 
 	    --text_prop_frozen;
 	    adjust_prop_columns(curwin->w_cursor.lnum, curwin->w_cursor.col,
-						  (int)(len_now - len_before));
+					   (int)(len_now - len_before), FALSE);
 	}
 #endif
     }
