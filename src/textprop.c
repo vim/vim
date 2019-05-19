@@ -957,8 +957,9 @@ clear_buf_prop_types(buf_T *buf)
  * shift by "bytes_added" (can be negative).
  * Note that "col" is zero-based, while tp_col is one-based.
  * Only for the current buffer.
- * When "save_for_undo" is TRUE then call u_savesub() before making changes to
- * the line.
+ * "flags" can have:
+ * APC_SAVE_FOR_UNDO:	Call u_savesub() before making changes to the line.
+ * APC_SUBSTITUTE:	Text is replaced, not inserted.
  * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
  * Returns TRUE when props were changed.
  */
@@ -967,7 +968,7 @@ adjust_prop_columns(
 	linenr_T    lnum,
 	colnr_T	    col,
 	int	    bytes_added,
-	int	    save_for_undo)
+	int	    flags)
 {
     int		proplen;
     char_u	*props;
@@ -988,15 +989,30 @@ adjust_prop_columns(
     wi = 0; // write index
     for (ri = 0; ri < proplen; ++ri)
     {
+	int start_incl;
+
 	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
 							   sizeof(textprop_T));
 	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
+	start_incl = (flags & APC_SUBSTITUTE) ||
+		       (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
 
 	if (bytes_added > 0
-		? (tmp_prop.tp_col >= col
-		       + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL)
-								      ? 2 : 1))
-		: (tmp_prop.tp_col > col + 1))
+		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
+	{
+	    if (tmp_prop.tp_col < col + (start_incl ? 2 : 1))
+	    {
+		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
+		tmp_prop.tp_col = col + 1;
+	    }
+	    else
+		tmp_prop.tp_col += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		u_savesub(lnum);
+	    dirty = TRUE;
+	}
+	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
 	{
 	    if (tmp_prop.tp_col + bytes_added < col + 1)
 	    {
@@ -1006,7 +1022,7 @@ adjust_prop_columns(
 	    else
 		tmp_prop.tp_col += bytes_added;
 	    // Save for undo if requested and not done yet.
-	    if (save_for_undo && !dirty)
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
@@ -1024,7 +1040,7 @@ adjust_prop_columns(
 	    else
 		tmp_prop.tp_len += bytes_added;
 	    // Save for undo if requested and not done yet.
-	    if (save_for_undo && !dirty)
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)

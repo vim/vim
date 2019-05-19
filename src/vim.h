@@ -2571,4 +2571,8 @@ long elapsed(DWORD start_tick);
 #define SAVE_RESTORE_ICON	2
 #define SAVE_RESTORE_BOTH	(SAVE_RESTORE_TITLE | SAVE_RESTORE_ICON)
 
+// Flags for adjust_prop_columns()
+#define APC_SAVE_FOR_UNDO	1   // call u_savesub() before making changes
+#define APC_SUBSTITUTE		2   // text is replaced, not inserted
+
 #endif /* VIM__H */

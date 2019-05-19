@@ -620,6 +620,25 @@ func Test_prop_undo()
   undo
   let expected[0].col = 12
   call assert_equal(expected, prop_list(1))
+  call prop_clear(1)
+
+  " substitute with backslash
+  call setline(1, 'the number 123 is highlighted.')
+  call prop_add(1, 12, {'length': 3, 'type': 'comment'})
+  let expected = [{'col': 12, 'length': 3, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+  1s/the/\The
+  call assert_equal(expected, prop_list(1))
+  1s/^/\\
+  let expected[0].col += 1
+  call assert_equal(expected, prop_list(1))
+  1s/^/\~
+  let expected[0].col += 1
+  call assert_equal(expected, prop_list(1))
+  1s/123/12\\3
+  let expected[0].length += 1
+  call assert_equal(expected, prop_list(1))
+  call prop_clear(1)
 
   bwipe!
   call prop_type_delete('comment')

@@ -5189,7 +5189,7 @@ do_sub(exarg_T *eap)
 	    int		skip_match = FALSE;
 	    linenr_T	sub_firstlnum;	/* nr of first sub line */
 #ifdef FEAT_TEXT_PROP
-	    int		save_for_undo = TRUE;
+	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 #endif
 
 	    /*
@@ -5612,8 +5612,9 @@ do_sub(exarg_T *eap)
 			// undo first, unless done already.
 			if (adjust_prop_columns(lnum, regmatch.startpos[0].col,
 			      sublen - 1 - (regmatch.endpos[0].col
-				   - regmatch.startpos[0].col), save_for_undo))
-			    save_for_undo = FALSE;
+						   - regmatch.startpos[0].col),
+								    apc_flags))
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
 		    }
 #endif
 		}
@@ -5715,7 +5716,20 @@ do_sub(exarg_T *eap)
 		for (p1 = new_end; *p1; ++p1)
 		{
 		    if (p1[0] == '\\' && p1[1] != NUL)  /* remove backslash */
+		    {
 			STRMOVE(p1, p1 + 1);
+#ifdef FEAT_TEXT_PROP
+			if (curbuf->b_has_textprop)
+			{
+			    // When text properties are changed, need to save
+			    // for undo first, unless done already.
+			    if (adjust_prop_columns(lnum,
+					(colnr_T)(p1 - new_start), -1,
+					apc_flags))
+				apc_flags &= ~APC_SAVE_FOR_UNDO;
+			}
+#endif
+		    }
 		    else if (*p1 == CAR)
 		    {
 			if (u_inssub(lnum) == OK)   // prepare for undo
