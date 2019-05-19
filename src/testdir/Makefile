@@ -54,7 +54,7 @@ report:
 	@echo 'Test results:'
 	@/bin/sh -c 'cat test_result.log'
 	@/bin/sh -c "if test -f test.log; \
-		then cat test.log; echo TEST FAILURE; exit 1; \
+		then echo TEST FAILURE; exit 1; \
 		else echo ALL DONE; \
 		fi"
 
