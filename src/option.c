@@ -4762,10 +4762,10 @@ do_set(
 			    /* Allow negative (for 'undolevels'), octal and
 			     * hex numbers. */
 			    vim_str2nr(arg, NULL, &i, STR2NR_ALL,
-							     &value, NULL, 0);
-			    if (arg[i] != NUL && !VIM_ISWHITE(arg[i]))
+						     &value, NULL, 0, TRUE);
+			    if (i == 0 || (arg[i] != NUL && !VIM_ISWHITE(arg[i])))
 			    {
-				errmsg = e_invarg;
+				errmsg = N_("E521: Number required after =");
 				goto skip;
 			    }
 			}

@@ -2832,7 +2832,12 @@ find_special_key(
 	    bp += 3;	/* skip t_xx, xx may be '-' or '>' */
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
-	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0);
+	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
+	    if (l == 0)
+	    {
+		emsg(_(e_invarg));
+		return 0;
+	    }
 	    bp += l + 5;
 	    break;
 	}
@@ -2864,7 +2869,12 @@ find_special_key(
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, NULL, STR2NR_ALL, NULL, &n, 0);
+		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL, &n, 0, TRUE);
+		if (l == 0)
+		{
+		    emsg(_(e_invarg));
+		    return 0;
+		}
 		key = (int)n;
 	    }
 	    else

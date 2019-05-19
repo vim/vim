@@ -4453,7 +4453,13 @@ eval7(
 		else
 		{
 		    // decimal, hex or octal number
-		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0);
+		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0, TRUE);
+		    if (len == 0)
+		    {
+			semsg(_(e_invexpr2), *arg);
+			ret = FAIL;
+			break;
+		    }
 		    *arg += len;
 		    if (evaluate)
 		    {
@@ -7460,7 +7466,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-						    STR2NR_ALL, &n, NULL, 0);
+					    STR2NR_ALL, &n, NULL, 0, FALSE);
 	    return n;
 	case VAR_LIST:
 	    emsg(_("E745: Using a List as a Number"));
