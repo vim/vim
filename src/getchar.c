@@ -1453,9 +1453,9 @@ openscript(
 	oldcurscript = curscript;
 	do
 	{
-	    update_topline_cursor();	/* update cursor position and topline */
-	    normal_cmd(&oa, FALSE);	/* execute one command */
-	    vpeekc();			/* check for end of file */
+	    update_topline_cursor();	// update cursor position and topline
+	    normal_cmd(&oa, FALSE);	// execute one command
+	    vpeekc();			// check for end of file
 	}
 	while (scriptin[oldcurscript] != NULL);
 
@@ -1753,7 +1753,11 @@ vgetc(void)
 		    buf[i] = vgetorpeek(TRUE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
-			    || (gui.in_use && buf[i] == CSI)
+			    || (
+# ifdef VIMDLL
+				gui.in_use &&
+# endif
+				buf[i] == CSI)
 #endif
 			    )
 		    {
