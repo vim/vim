@@ -15128,7 +15128,7 @@ f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
 	}
 	else
 	{
-	    char_u *ffname = FullName_save(fname, FALSE);
+	    char_u *ffname = FullName_save(fname, TRUE);
 
 	    if (ffname != NULL)
 		rettv->vval.v_string = u_get_undo_file_name(ffname, FALSE);
