@@ -1222,6 +1222,14 @@ FinderFindSpec(PyObject *self, PyObject *args)
 
     return spec;
 }
+
+    static PyObject *
+FinderFindModule(PyObject* self UNUSED, PyObject* args UNUSED)
+{
+    // Apparently returning None works.
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 #else
     static PyObject *
 call_load_module(char *name, int len, PyObject *find_module_result)
@@ -1400,9 +1408,8 @@ static struct PyMethodDef VimMethods[] = {
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
-#else
-    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
 #endif
+    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
     { NULL,	    NULL,			0,				NULL}
