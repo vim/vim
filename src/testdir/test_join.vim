@@ -99,7 +99,7 @@ ert
   normal `yy2l$p
 
   " Expected output
-  let expected =<< trim END
+  let expected =<< trim [DATA]
   asdfasdf. asdf
   asdfasdf. asdf
   asdfasdf.  asdf
@@ -116,7 +116,7 @@ ert
   asdfasdf		asdf
   zx cvn. as dfg? hjkl iop! ert ernop
   zx cvn. as dfg? hjkl iop! ert ernop
-  END
+  [DATA]
 
   call assert_equal(expected, getline(1, '$'))
 
@@ -141,7 +141,7 @@ ert
   normal `yy2l$p
 
   " Expected output
-  let expected =<< trim END
+  let expected =<< trim [DATA]
   asdfasdf.  asdf
   asdfasdf.  asdf
   asdfasdf.  asdf
@@ -159,7 +159,7 @@ ert
   zx cvn.  as dfg?  hjkl iop!  ert  enop
   zx cvn.  as dfg? hjkl iop! ert ernop
 
-  END
+  [DATA]
 
   call assert_equal(expected, getline(1, '$'))
 
@@ -175,7 +175,7 @@ ert
   normal j4Jy3l$pjdG
 
   " Expected output
-  let expected =<< trim END
+  let expected =<< trim [DATA]
   asdfasdf.  asdf
   asdfasdf.  asdf
   asdfasdf.  asdf
@@ -191,7 +191,7 @@ ert
   asdfasdf 	asdf
   asdfasdf		asdf
   zx cvn.  as dfg? hjkl iop! ert  a
-  END
+  [DATA]
 
   call assert_equal(expected, getline(1, '$'))
 
@@ -254,7 +254,7 @@ action();
   exe "normal jj3J\<CR>"
 
   " Expected output
-  let expected =<< trim END
+  let expected =<< trim [CODE]
 {
 /* Make sure the previous comment leader is not removed. */
 /* Make sure the previous comment leader is not removed. */
@@ -267,7 +267,7 @@ action();
 if (condition) // Remove the next comment leader! OK, I will.
 action();
 }
-  END
+  [CODE]
 
   call assert_equal(expected, getline(1, '$'))
 
@@ -378,7 +378,7 @@ int i = 7 /* foo *// 3
   exe "normal oSome code!\<CR>// Make sure backspacing does not remove this comment leader.\<Esc>0i\<C-H>\<Esc>"
 
   " Expected output
-  let expected =<< END
+  let expected =<< [CODE]
 {
 /* Make sure the previous comment leader is not removed.  */
 /* Make sure the previous comment leader is not removed.  */
@@ -401,7 +401,7 @@ int i = 7 /* foo *// 3 // comment
 
 Some code!// Make sure backspacing does not remove this comment leader.
 }
-END
+[CODE]
 
   call assert_equal(expected, getline(1, '$'))
   close!
