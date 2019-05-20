@@ -98,30 +98,27 @@ ert
   normal `xyl$p
   normal `yy2l$p
 
-  normal G
-  let last_line = line('$')
-
   " Expected output
-  append
-asdfasdf. asdf
-asdfasdf. asdf
-asdfasdf.  asdf
-asdfasdf.	asdf
-asdfasdf. 	asdf
-asdfasdf.	 asdf
-asdfasdf.		asdf
-asdfasdf asdf
-asdfasdf asdf
-asdfasdf  asdf
-asdfasdf	asdf
-asdfasdf	 asdf
-asdfasdf 	asdf
-asdfasdf		asdf
-zx cvn. as dfg? hjkl iop! ert ernop
-zx cvn. as dfg? hjkl iop! ert ernop
-.
+  let expected =<< trim [DATA]
+  asdfasdf. asdf
+  asdfasdf. asdf
+  asdfasdf.  asdf
+  asdfasdf.	asdf
+  asdfasdf. 	asdf
+  asdfasdf.	 asdf
+  asdfasdf.		asdf
+  asdfasdf asdf
+  asdfasdf asdf
+  asdfasdf  asdf
+  asdfasdf	asdf
+  asdfasdf	 asdf
+  asdfasdf 	asdf
+  asdfasdf		asdf
+  zx cvn. as dfg? hjkl iop! ert ernop
+  zx cvn. as dfg? hjkl iop! ert ernop
+  [DATA]
 
-  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
+  call assert_equal(expected, getline(1, '$'))
 
   enew!
   call append(0, text)
@@ -143,31 +140,28 @@ zx cvn. as dfg? hjkl iop! ert ernop
   normal `xyl$p
   normal `yy2l$p
 
-  normal G
-  let last_line = line('$')
-
   " Expected output
-  append
-asdfasdf.  asdf
-asdfasdf.  asdf
-asdfasdf.  asdf
-asdfasdf.	asdf
-asdfasdf. 	asdf
-asdfasdf.	 asdf
-asdfasdf.		asdf
-asdfasdf asdf
-asdfasdf asdf
-asdfasdf  asdf
-asdfasdf	asdf
-asdfasdf	 asdf
-asdfasdf 	asdf
-asdfasdf		asdf
-zx cvn.  as dfg?  hjkl iop!  ert  enop
-zx cvn.  as dfg? hjkl iop! ert ernop
+  let expected =<< trim [DATA]
+  asdfasdf.  asdf
+  asdfasdf.  asdf
+  asdfasdf.  asdf
+  asdfasdf.	asdf
+  asdfasdf. 	asdf
+  asdfasdf.	 asdf
+  asdfasdf.		asdf
+  asdfasdf asdf
+  asdfasdf asdf
+  asdfasdf  asdf
+  asdfasdf	asdf
+  asdfasdf	 asdf
+  asdfasdf 	asdf
+  asdfasdf		asdf
+  zx cvn.  as dfg?  hjkl iop!  ert  enop
+  zx cvn.  as dfg? hjkl iop! ert ernop
 
-.
+  [DATA]
 
-  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
+  call assert_equal(expected, getline(1, '$'))
 
   enew!
   call append(0, text)
@@ -180,29 +174,26 @@ zx cvn.  as dfg? hjkl iop! ert ernop
   normal JjJjJjJjJjJjJjJjJjJjJjJjJjJ
   normal j4Jy3l$pjdG
 
-  normal G
-  let last_line = line('$')
-
   " Expected output
-  append
-asdfasdf.  asdf
-asdfasdf.  asdf
-asdfasdf.  asdf
-asdfasdf.	asdf
-asdfasdf. 	asdf
-asdfasdf.	 asdf
-asdfasdf.		asdf
-asdfasdf asdf
-asdfasdf asdf
-asdfasdf  asdf
-asdfasdf	asdf
-asdfasdf	 asdf
-asdfasdf 	asdf
-asdfasdf		asdf
-zx cvn.  as dfg? hjkl iop! ert  a
-.
+  let expected =<< trim [DATA]
+  asdfasdf.  asdf
+  asdfasdf.  asdf
+  asdfasdf.  asdf
+  asdfasdf.	asdf
+  asdfasdf. 	asdf
+  asdfasdf.	 asdf
+  asdfasdf.		asdf
+  asdfasdf asdf
+  asdfasdf asdf
+  asdfasdf  asdf
+  asdfasdf	asdf
+  asdfasdf	 asdf
+  asdfasdf 	asdf
+  asdfasdf		asdf
+  zx cvn.  as dfg? hjkl iop! ert  a
+  [DATA]
 
-  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
+  call assert_equal(expected, getline(1, '$'))
 
   set nocompatible
   set cpoptions&vim
@@ -262,11 +253,8 @@ action();
   .,+2join
   exe "normal jj3J\<CR>"
 
-  normal G
-  let last_line = line('$')
-
   " Expected output
-  append
+  let expected =<< trim [CODE]
 {
 /* Make sure the previous comment leader is not removed. */
 /* Make sure the previous comment leader is not removed. */
@@ -279,9 +267,9 @@ action();
 if (condition) // Remove the next comment leader! OK, I will.
 action();
 }
-.
+  [CODE]
 
-  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
+  call assert_equal(expected, getline(1, '$'))
 
   set comments&vim
   set joinspaces&vim
@@ -389,11 +377,8 @@ int i = 7 /* foo *// 3
   exe "normal j6J\<CR>"
   exe "normal oSome code!\<CR>// Make sure backspacing does not remove this comment leader.\<Esc>0i\<C-H>\<Esc>"
 
-  normal G
-  let last_line = line('$')
-
   " Expected output
-  append
+  let expected =<< [CODE]
 {
 /* Make sure the previous comment leader is not removed.  */
 /* Make sure the previous comment leader is not removed.  */
@@ -416,8 +401,8 @@ int i = 7 /* foo *// 3 // comment
 
 Some code!// Make sure backspacing does not remove this comment leader.
 }
-.
+[CODE]
 
-  call assert_equal(getline(last_line + 1, '$'), getline(1, last_line))
+  call assert_equal(expected, getline(1, '$'))
   close!
 endfunc

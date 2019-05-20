@@ -11,21 +11,23 @@ if !CanRunVimInTerminal()
 endif
 
 func Test_conceal_two_windows()
-  call writefile([
-	\ 'let lines = ["one one one one one", "two |hidden| here", "three |hidden| three"]',
-	\ 'call setline(1, lines)',
-	\ 'syntax match test /|hidden|/ conceal',
-	\ 'set conceallevel=2',
-	\ 'set concealcursor=',
-	\ 'exe "normal /here\r"',
-	\ 'new',
-	\ 'call setline(1, lines)',
-	\ 'call setline(4, "Second window")',
-	\ 'syntax match test /|hidden|/ conceal',
-	\ 'set conceallevel=2',
-	\ 'set concealcursor=nc',
-	\ 'exe "normal /here\r"',
-	\ ], 'XTest_conceal')
+  let code =<< trim [CODE]
+    let lines = ["one one one one one", "two |hidden| here", "three |hidden| three"]
+    call setline(1, lines)
+    syntax match test /|hidden|/ conceal
+    set conceallevel=2
+    set concealcursor=
+    exe "normal /here\r"
+    new
+    call setline(1, lines)
+    call setline(4, "Second window")
+    syntax match test /|hidden|/ conceal
+    set conceallevel=2
+    set concealcursor=nc
+    exe "normal /here\r"
+  [CODE]
+
+  call writefile(code, 'XTest_conceal')
   " Check that cursor line is concealed
   let buf = RunVimInTerminal('-S XTest_conceal', {})
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_01', {})
@@ -113,14 +115,16 @@ endfunc
 func Test_conceal_with_cursorline()
   " Opens a help window, where 'conceal' is set, switches to the other window
   " where 'cursorline' needs to be updated when the cursor moves.
-  call writefile([
-	\ 'set cursorline',
-	\ 'normal othis is a test',
-	\ 'new',
-	\ 'call setline(1, ["one", "two", "three", "four", "five"])',
-	\ 'set ft=help',
-	\ 'normal M',
-	\ ], 'XTest_conceal_cul')
+  let code =<< trim [CODE]
+    set cursorline
+    normal othis is a test
+    new
+    call setline(1, ["one", "two", "three", "four", "five"])
+    set ft=help
+    normal M
+  [CODE]
+
+  call writefile(code, 'XTest_conceal_cul')
   let buf = RunVimInTerminal('-S XTest_conceal_cul', {})
   call VerifyScreenDump(buf, 'Test_conceal_cul_01', {})
 
