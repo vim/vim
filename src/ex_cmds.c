@@ -5557,6 +5557,7 @@ do_sub(exarg_T *eap)
 		 * 3. substitute the string.
 		 */
 #ifdef FEAT_EVAL
+		save_ma = curbuf->b_p_ma;
 		if (subflags.do_count)
 		{
 		    // prevent accidentally changing the buffer by a function
@@ -5566,7 +5567,6 @@ do_sub(exarg_T *eap)
 		// Save flags for recursion.  They can change for e.g.
 		// :s/^/\=execute("s#^##gn")
 		subflags_save = subflags;
-		save_ma = curbuf->b_p_ma;
 #endif
 		// get length of substitution part
 		sublen = vim_regsub_multi(&regmatch,
