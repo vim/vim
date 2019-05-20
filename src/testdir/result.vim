@@ -21,19 +21,26 @@ if 1 " eval feature
         \ "-------------------------------"]
 
   try
+    " This uses the :s command to just fetch and process the output of the
+    " tests, it doesn't acutally replay anything
     %s/^Executed\s\+\zs\d\+\ze\s\+tests/\=Count(submatch(0),'executed')/egn
     %s/^SKIPPED \zs.*/\=Count(submatch(0), 'skipped')/egn
     %s/^\(\d\+\)\s\+FAILED:/\=Count(submatch(1), 'failed')/egn
 
-    call extend(output, ["Executed: ". printf("%5d", g:executed). " Tests"])
-    call extend(output, [" Skipped: ". printf("%5d", g:skipped).  " Tests"])
-    call extend(output, ["  Failed: ". printf("%5d", g:failed).   " Tests", ""])
-    call extend(output, [" Skipped:"])
+    call extend(output, [
+          \ printf("Executed: %5d Tests", g:executed),
+          \ printf(" Skipped: %5d Tests", g:skipped),
+          \ printf("  Failed: %5d Tests", g:failed),
+          \ "",
+          \ " Skipped: "]) 
     call extend(output, skipped_output)
     if filereadable('test.log')
+      " outputs and indents the failed test result
       call extend(output, ["", "Failures: "])
       let failed_output = filter(readfile('test.log'), { v,k -> !empty(k)})
-      call extend(output, map(failed_output, { v,k -> "\t".k}) + [""])
+      call extend(output, map(failed_output, { v,k -> "\t".k}))
+      " Add a final newline
+      call extend(output, [""])
     endif
 
   catch  " Catch-all
