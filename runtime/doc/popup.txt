@@ -1,10 +1,10 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 May 12
+*popup.txt*  For Vim version 8.1.  Last change: 2019 May 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Displaying text with properties attached.	*popup* *popup-window*
+Displaying text in floating window.			*popup* *popup-window*
 
 THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
 
@@ -13,18 +13,67 @@ THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 3. Examples			|popup-examples|
 
 
-{not able to use text properties when the |+textprop| feature was
-disabled at compile time}
+{not available if the |+eval| feature was disabled at compile time}
+{not able to use text properties if the |+textprop| feature was disabled at
+compile time}
 
 ==============================================================================
 1. Introduction						*popup-intro*
 
-We are talking about popup windows here, text that goes on top of the buffer
-text and is under control of a plugin.  Other popup functionality:
+We are talking about popup windows here, text that goes on top of the regular
+windows and is under control of a plugin.  You cannot edit the text in the
+popup window like with regular windows.
+
+A popup window can be used for such things as:
+- briefly show a message without changing the command line
+- prompt the user with a dialog
+- display information while typing
+- give extra information for auto-completion
+
+The text in the popup window can be colored with |text-properties|.  It is
+also possible to use syntax highlighting.
+
+A popup window has a window-ID like other windows, but behaves differently.
+The size can be up to the whole Vim window and it overlaps other windows.
+It contains a buffer, and that buffer is always associated with the popup
+window.  The window cannot be used in Normal, Visual or Insert mode, it does
+not get keyboard focus.  You can use functions like `setbufline()` to change
+the text in the buffer.  There are more differences from how this window and
+buffer behave compared to regular windows and buffers, see |popup-buffer|.
+
+If this is not what you are looking for, check out other popup functionality:
 - popup menu, see |popup-menu|
 - balloon, see |balloon-eval|
 
-TODO
+
+TODO:
+
+Example how to use syntax highlighting of a code snippet.
+
+Scrolling: When the screen scrolls up for output of an Ex command, what
+happens with popups?
+1. Stay where they are.  Problem: listed text may go behind and can't be read.
+2. Scroll with the page.  What if they get updated?  Either postpone, or take
+   the scroll offset into account.
+Probably 2. is the best choice.
+
+Positioning relative to the popup-menu to avoid overlapping with it; add a
+function to get the position and size of the popup-menu.
+
+
+IMPLEMENTATION:
+- Put code in popupwin.c
+- Use win_update() for displaying
+- At first redraw all windows NOT_VALID when the popup moves or hides.
+- At first always display the popup windows at the end of update_screen(),
+  lowest zindex first.
+- Later make it more efficient and avoid flicker
+- Use a separate list of windows, one for each tab and one global.  Also put
+  "aucmd_win" in there.
+- add optional {buf} command to execute().  Only works for a buffer that is
+  visible in a window in the current tab or in a popup window.
+  E.g. for execute('syntax enable', 'silent', bufnr)
+
 
 ==============================================================================
 2. Functions						*popup-functions*
@@ -33,56 +82,66 @@ THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
 Proposal and discussion on issue #4063: https://github.com/vim/vim/issues/4063
 
-[to be moved to eval.txt later]
+[functions to be moved to eval.txt later, keep list of functions here]
 
-popup_show({lines}, {options})				*popup_show()*
-		Open a popup window showing {lines}, which is a list of lines,
-		where each line has text and text properties.
-
+popup_create({text}, {options})				*popup_create()*
+		Open a popup window showing {text}, which is either:
+		- a string
+		- a list of strings
+		- a list of text lines with text properties
 		{options} is a dictionary with many possible entries.
+		See |popup_create-usage| for details.
 
-		Returns a unique ID to be used with |popup_close()|.
+		Returns a window-ID, which can be used with other popup
+		functions.  Use `winbufnr()` to get the number of the buffer
+		in the window: >
+			let winid = popup_create('hello', {})
+			let bufnr = winbufnr(winid)
+			call setbufline(bufnr, 2, 'second line')
 
-		See |popup_show-usage| for details.
 
-
-popup_dialog({lines}, {options})			*popup_dialog()*
-		Just like |popup_show()| but with different default options:
-			pos		"center"
-			zindex		200
-			border		[]
+popup_dialog({text}, {options})				*popup_dialog()*
+		Just like |popup_create()| but with these default options: >
+			call popup_create({text}, {
+				\ 'pos': 'center',
+				\ 'zindex': 200,
+				\ 'border': [],
+				\})
+<		Use {options} to change the properties.
 
 
 popup_notification({text}, {options})			 *popup_notification()*
-		Show the string {text} for 3 seconds at the top of the Vim
-		window.  This works like: >
-			call popup_show([{'text': {text}}], {
+		Show the {text} for 3 seconds at the top of the Vim window.
+		This works like: >
+			call popup_create({text}, {
 				\ 'line': 1,
 				\ 'col': 10,
 				\ 'time': 3000,
+				\ 'tab': -1,
 				\ 'zindex': 200,
 				\ 'highlight': 'WarningMsg',
 				\ 'border: [],
 				\ })
 <		Use {options} to change the properties.
 
+
 popup_atcursor({text}, {options})			 *popup_atcursor()*
-		Show the string {text} above the cursor, and close it when the
-		cursor moves.  This works like: >
-			call popup_show([{'text': {text}}], {
+		Show the {text} above the cursor, and close it when the cursor
+		moves.  This works like: >
+			call popup_create({text}, {
 				\ 'line': 'cursor-1',
 				\ 'col': 'cursor',
-				\ 'zindex': 50,
 				\ 'moved': 'WORD',
 				\ })
 <		Use {options} to change the properties.
 
 
-popup_menu({lines}, {options})			 *popup_atcursor()*
-		Show the {lines} near the cursor, handle selecting one of the
+popup_menu({text}, {options})				 *popup_menu()*
+		Show the {text} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
-		Space or Enter.  This works like: >
-			call popup_show({lines}, {
+		Space or Enter. {text} should have multiple lines to make this
+		useful.  This works like: >
+			call popup_create({text}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'wrap': 0,
@@ -93,9 +152,17 @@ popup_menu({lines}, {options})			 *popup_atcursor()*
 		"callback" to a function that handles the selected item.
 
 
+popup_show({id})						*popup_show()*
+		If {id} is a hidden popup, show it now.
+
+popup_hide({id})						*popup_hide()*
+		If {id} is a displayed popup, hide it now. If the popup has a
+		filter it will not be invoked for so long as the popup is
+		hidden.
+
 popup_move({id}, {options})					*popup_move()*
 		Move popup {id} to the position speficied with {options}.
-		{options} may contain the items from |popup_show()| that
+		{options} may contain the items from |popup_create()| that
 		specify the popup position: "line", "col", "pos", "maxheight",
 		"minheight", "maxwidth" and "minwidth".
 
@@ -116,21 +183,6 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		pressing 'n'.
 
 
-popup_setlines({id}, {lnum}, {lines})			*popup_setlines()*
-		In popup {id} set line {lnum} and following to {lines}.
-
-		{lnum} is one-based and must be either an existing line or
-		just one below the last line, in which case the line gets
-		appended.
-
-		{lines} has the same format as one item in {lines} of
-		|popup_show()|.  Existing lines are replaced. When {lines}
-		extends below the last line of the popup lines are appended.
-
-popup_getlines({id})					*popup_getlines()*
-		Return the {lines} for popup {id}.
-
-
 popup_setoptions({id}, {options})			*popup_setoptions()*
 		Override options in popup {id} with entries in {options}.
 
@@ -142,19 +194,46 @@ popup_getoptions({id})					*popup_getoptions()*
 popup_close({id})					*popup_close()*
 		Close popup {id}.
 
+							*:popupclear* *:popupc*
+:popupc[lear]	Emergency solution to a misbehaving plugin: close all popup
+		windows.
 
-POPUP_SHOW() ARGUMENTS					*popup_show-usage*
 
-The first argument of |popup_show()| is a list of text lines.  Each item in
-the list is a dictionary with these entries:
-	text		The text to display.
+POPUP BUFFER AND WINDOW					*popup-buffer*
+
+A new buffer is created to hold the text and text properties of the popup
+window.  The buffer is always associated with the popup window and
+manipulation is restricted:
+- the buffer has no name
+- 'buftype' is "popup" 
+- 'swapfile' is off
+- 'bufhidden' is "hide"
+- 'buflisted' is off
+TODO: more
+
+The window does have a cursor position, but the cursor is not displayed.
+
+Options can be set on the window with `setwinvar()`, e.g.: >
+	call setwinvar(winid, '&wrap', 0)
+And options can be set on the buffer with `setbufvar()`, e.g.: >
+	call setbufvar(winbufnr(winid), '&filetype', 'java')
+
+
+POPUP_CREATE() ARGUMENTS				*popup_create-usage*
+
+The first argument of |popup_create()| specifies the text to be displayed, and
+optionally text properties.  It is in one of three forms:
+- a string
+- a list of strings
+- a list of dictionaries, where each dictionary has these entries:
+	text		String with the text to display.
 	props		A list of text properties.  Optional.
 			Each entry is a dictionary, like the third argument of
 			|prop_add()|, but specifying the column in the
 			dictionary with a "col" entry, see below:
 			|popup-props|.
 
-The second argument of |popup_show()| is a dictionary with options:
+The second argument of |popup_create()| is a dictionary with options:
 	line		screen line where to position the popup; can use
 			"cursor", "cursor+1" or "cursor-1" to use the line of
 			the cursor and add or subtract a number of lines;
@@ -168,10 +247,20 @@ The second argument of |popup_show()| is a dictionary with options:
 			used for.  Default is "botleft".  Alternatively
 			"center" can be used to position the popup somewhere
 			near the cursor.
+	flip		when TRUE (the default) and the position is relative
+			to the cursor, flip to below or above the cursor to
+			avoid overlap with the |popupmenu-completion| or
+			another popup with a higher "zindex"
 	maxheight	maximum height
 	minheight	minimum height
 	maxwidth	maximum width
 	minwidth	minimum width
+	hidden		when TRUE the popup exists but is not displayed; use
+			`popup_show()` to unhide it.
+	tab		when -1: display the popup on all tabs; when 0 (the
+			default): display the popup on the current tab;
+			otherwise the number of the tab page the popup is
+			displayed on; when invalid the current tab is used
 	title		text to be displayed above the first item in the
 			popup, on top of any border
 	wrap		TRUE to make the lines wrap (default TRUE)
@@ -229,9 +318,11 @@ same, since they only apply to one line.
 
 POPUP FILTER						*popup-filter*
 
-A callback that gets any typed keys while a popup is displayed.  It can return
-TRUE to indicate the key has been handled and is to be discarded, or FALSE to
-let Vim handle the key as usual in the current state.
+A callback that gets any typed keys while a popup is displayed.  The filter is
+not invoked for as long as the popup is hidden.
+
+The filter can return TRUE to indicate the key has been handled and is to be
+discarded, or FALSE to let Vim handle the key as usual in the current state.
 
 The filter function is called with two arguments: the ID of the popup and the
 key.
@@ -240,6 +331,10 @@ Some common key actions:
 	Esc		close the popup
 	cursor keys	select another entry
 	Tab		accept current suggestion
+
+A mouse click arrives as <LeftMouse>.  The coordinates are in
+v:mouse_popup_col and v:mouse_popup_row.  The top-left screen cell of the
+popup is col 1, row 1 (not counting the border).
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.
@@ -265,7 +360,7 @@ Prompt the user to press y/Y or n/N: >
 	   endif
 	endfunc
 
-	call popup_show([{'text': 'Continue? y/n'}], {
+	call popup_create(['Continue? y/n'], {
 		\ 'filter': 'popup_filter_yesno',
 		\ 'callback': 'MyDialogHandler',
 		\ })
