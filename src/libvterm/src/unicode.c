@@ -344,6 +344,17 @@ vterm_is_combining(uint32_t codepoint)
 }
 #endif
 
+#ifdef GET_SPECIAL_PTY_TYPE_FUNCTION
+int GET_SPECIAL_PTY_TYPE_FUNCTION(void);
+#else
+# define GET_SPECIAL_PTY_TYPE_FUNCTION vterm_get_special_pty_type_placeholder
+	static int
+vterm_get_special_pty_type_placeholder(void)
+{
+  return 0;
+}
+#endif
+
 // ################################
 // ### The rest added by Paul Evans
 
@@ -355,4 +366,9 @@ INTERNAL int vterm_unicode_width(uint32_t codepoint)
 INTERNAL int vterm_unicode_is_combining(uint32_t codepoint)
 {
   return IS_COMBINING_FUNCTION(codepoint);
+}
+
+INTERNAL int vterm_get_special_pty_type(void)
+{
+  return GET_SPECIAL_PTY_TYPE_FUNCTION();
 }

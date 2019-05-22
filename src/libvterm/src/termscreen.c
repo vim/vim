@@ -772,7 +772,7 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   cell->fg = intcell->pen.fg;
   cell->bg = intcell->pen.bg;
 
-  if(get_special_pty_type() == 2) {
+  if(vterm_get_special_pty_type() == 2) {
     /* Get correct cell width from cell information contained in line buffer */
     if(pos.col < (screen->cols - 1) &&
        getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1) {

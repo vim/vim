@@ -1648,6 +1648,7 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DVSNPRINTF=vim_vsnprintf \
 	-DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	-DWCWIDTH_FUNCTION=utf_uint2cells \
+	-DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type \
 	-D_CRT_SECURE_NO_WARNINGS
 
 # Create a default rule for libvterm.

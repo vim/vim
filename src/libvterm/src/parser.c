@@ -127,7 +127,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
   size_t pos = 0;
   const char *string_start = NULL;  /* init to avoid gcc warning */
 
-  vt->state->in_backspace = 0;	    /* Count down with BS key and activate when
+  vt->in_backspace = 0;		    /* Count down with BS key and activate when
 				       it reaches 1 */
 
   switch(vt->parser.state) {
@@ -175,12 +175,12 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       // fallthrough
     }
     else if(c < 0x20) { // other C0
-      if(get_special_pty_type() == 2) {
+      if(vterm_get_special_pty_type() == 2) {
         if(c == 0x08) // BS
           // Set the trick for BS output after a sequence, to delay backspace
           // activation
           if(pos + 2 < len && bytes[pos + 1] == 0x20 && bytes[pos + 2] == 0x08)
-            vt->state->in_backspace = 2; // Trigger when count down to 1
+            vt->in_backspace = 2; // Trigger when count down to 1
       }
       if(vt->parser.state >= STRING)
         more_string(vt, string_start, bytes + pos - string_start);
