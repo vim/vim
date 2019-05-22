@@ -109,4 +109,5 @@ int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
 int build_argv_from_string(char_u *cmd, char ***argv, int *argc);
 int build_argv_from_list(list_T *l, char ***argv, int *argc);
 int write_session_file(char_u *filename);
+int get_special_pty_type(void);
 /* vim: set ft=c : */

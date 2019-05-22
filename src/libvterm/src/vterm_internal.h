@@ -152,6 +152,8 @@ struct VTermState
       unsigned int cursor_shape:2;
     } mode;
   } saved;
+
+  int in_backspace;
 };
 
 typedef enum {
@@ -259,5 +261,8 @@ VTermEncoding *vterm_lookup_encoding(VTermEncodingType type, char designation);
 
 int vterm_unicode_width(uint32_t codepoint);
 int vterm_unicode_is_combining(uint32_t codepoint);
+int vterm_unicode_is_ambiguous(uint32_t codepoint);
+
+int get_special_pty_type(void);
 
 #endif
