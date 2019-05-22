@@ -1407,6 +1407,12 @@ openscript(
 	emsg(_(e_nesting));
 	return;
     }
+
+    // Disallow sourcing a file in the sandbox, the commands would be executed
+    // later, possibly outside of the sandbox.
+    if (check_secure())
+	return;
+
 #ifdef FEAT_EVAL
     if (ignore_script)
 	/* Not reading from script, also don't open one.  Warning message? */
