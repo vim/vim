@@ -1219,6 +1219,7 @@ do_search(
     char_u	    *ps;
     char_u	    *msgbuf = NULL;
     size_t	    len;
+    int		    has_offset = FALSE;
 #define SEARCH_STAT_BUF_LEN 12
 
     /*
@@ -1542,7 +1543,6 @@ do_search(
 	/*
 	 * Add character and/or line offset
 	 */
-	int has_offset = FALSE;
 	if (!(options & SEARCH_NOOF) || (pat != NULL && *pat == ';'))
 	{
 	    pos_T const org_pos = pos;
