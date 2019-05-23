@@ -5170,7 +5170,8 @@ find_pattern_in_path(
 			i = old_files;
 		    if (i == max_path_depth)
 			break;
-		    if (fullpathcmp(new_fname, files[i].name, TRUE) & FPC_SAME)
+		    if (fullpathcmp(new_fname, files[i].name, TRUE, TRUE)
+								    & FPC_SAME)
 		    {
 			if (type != CHECK_PATH &&
 				action == ACTION_SHOW_ALL && files[i].matched)

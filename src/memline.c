@@ -1887,7 +1887,7 @@ recover_names(
 	if (num_names == 0)
 	    num_files = 0;
 	else if (expand_wildcards(num_names, names, &num_files, &files,
-					EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
+			    EW_NOTENV|EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
 	    num_files = 0;
 
 	/*
@@ -1930,7 +1930,7 @@ recover_names(
 			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL)
 	{
 	    for (i = 0; i < num_files; ++i)
-		if (fullpathcmp(p, files[i], TRUE) & FPC_SAME)
+		if (fullpathcmp(p, files[i], TRUE, FALSE) & FPC_SAME)
 		{
 		    /* Remove the name from files[i].  Move further entries
 		     * down.  When the array becomes empty free it here, since

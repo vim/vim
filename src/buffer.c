@@ -4943,7 +4943,7 @@ do_arg_all(
 		    if (i < alist->al_ga.ga_len
 			    && (AARGLIST(alist)[i].ae_fnum == buf->b_fnum
 				|| fullpathcmp(alist_name(&AARGLIST(alist)[i]),
-					      buf->b_ffname, TRUE) & FPC_SAME))
+					buf->b_ffname, TRUE, TRUE) & FPC_SAME))
 		    {
 			int weight = 1;
 

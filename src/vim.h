@@ -801,6 +801,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 				 * if executable is in $PATH */
 #define EW_DODOT	0x4000	/* also files starting with a dot */
 #define EW_EMPTYOK	0x8000	/* no matches is not an error */
+#define EW_NOTENV	0x10000	// do not expand environment variables
 
 /* Flags for find_file_*() functions. */
 #define FINDFILE_FILE	0	/* only files */

@@ -1403,7 +1403,7 @@ cs_insert_filelist(
 #else
 	    /* compare pathnames first */
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
-			(char_u *)fname, FALSE) & FPC_SAME)
+			(char_u *)fname, FALSE, TRUE) & FPC_SAME)
 		/* test index file attributes too */
 		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
