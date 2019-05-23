@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 May 08
+*options.txt*	For Vim version 8.1.  Last change: 2019 May 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -578,14 +578,17 @@ backslash in front of the ':' will be removed.  Example:
    /* vi:set dir=c\:\tmp: */ ~
 This sets the 'dir' option to "c:\tmp".  Only a single backslash before the
 ':' is removed.  Thus to include "\:" you have to specify "\\:".
-
+							*E992*
 No other commands than "set" are supported, for security reasons (somebody
 might create a Trojan horse text file with modelines).  And not all options
-can be set.  For some options a flag is set, so that when it's used the
-|sandbox| is effective.  Still, there is always a small risk that a modeline
-causes trouble.  E.g., when some joker sets 'textwidth' to 5 all your lines
-are wrapped unexpectedly.  So disable modelines before editing untrusted text.
-The mail ftplugin does this, for example.
+can be set.  For some options a flag is set, so that when the value is used
+the |sandbox| is effective.  Some options can only be set from the modeline
+when 'modelineexpr' is set (the default is off).
+
+Still, there is always a small risk that a modeline causes trouble.  E.g.,
+when some joker sets 'textwidth' to 5 all your lines are wrapped unexpectedly.
+So disable modelines before editing untrusted text.  The mail ftplugin does
+this, for example.
 
 Hint: If you would like to do something else than setting an option, you could
 define an autocommand that checks the file for a specific string.  For
@@ -1149,6 +1152,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'balloonexpr' |textlock|.
@@ -3226,7 +3230,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
 	This option can't be set from a |modeline| when the 'diff' option is
-	on.
+	on or the 'modelineexpr' option is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldexpr' |textlock|.
@@ -3359,6 +3363,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldtext' |textlock|.
@@ -3396,6 +3401,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.  That stops the option from working,
 	since changing the buffer text is not allowed.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 	NOTE: This option is set to "" when 'compatible' is set.
 
 					*'formatlistpat'* *'flp'*
@@ -3452,6 +3458,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Also see 'swapsync' for controlling fsync() on swap files.
 	'fsync' also applies to |writefile()|, unless a flag is used to
 	overrule it.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 				   *'gdefault'* *'gd'* *'nogdefault'* *'nogd'*
 'gdefault' 'gd'		boolean	(default off)
@@ -3619,7 +3627,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guiheadroom'* *'ghr'*
 'guiheadroom' 'ghr'	number	(default 50)
 			global
-- 			{only for GTK and X11 GUI}
+			{only for GTK and X11 GUI}
 	The number of pixels subtracted from the screen height when fitting
 	the GUI window on the screen.  Set this before the GUI is started,
 	e.g., in your |gvimrc| file.  When zero, the whole screen height will
@@ -3777,6 +3785,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'guitabtooltip' is used for the tooltip, see below.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
@@ -4027,6 +4036,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When this option contains printf-style '%' items, they will be
 	expanded according to the rules used for 'statusline'.  See
 	'titlestring' for example settings.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 	{not available when compiled without the |+statusline| feature}
 
 			*'ignorecase'* *'ic'* *'noignorecase'* *'noic'*
@@ -4044,6 +4054,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option specifies a function that will be called to
 	activate or deactivate the Input Method.
 	It is not used in the GUI.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 	Example: >
 		function ImActivateFunc(active)
@@ -4160,6 +4172,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set imstatusfunc=ImStatusFunc
 <
 	NOTE: This function is invoked very often.  Keep it fast.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 						*'imstyle'* *'imst'*
 'imstyle' 'imst'	number (default 1)
@@ -4176,6 +4190,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|single-repeat|, etc.  Therefore over-the-spot style becomes the
 	default now.  This should work fine for most people, however if you
 	have any problem with it, try using on-the-spot style.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 						*'include'* *'inc'*
 'include' 'inc'		string	(default "^\s*#\s*include")
@@ -4210,6 +4226,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'includeexpr' |textlock|.
@@ -4297,6 +4314,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'indentexpr' |textlock|.
@@ -4893,6 +4911,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+						*'makespellmem'* *'msm'*
+'makespellmem' 'msm'		string	(default "460000,2000,500")
+			global
+	Values relevant only when compressing a spell file, see |spell|.
+	This option cannot be set from a |modeline| or in the |sandbox|.
+
 						*'matchpairs'* *'mps'*
 'matchpairs' 'mps'	string	(default "(:),{:},[:]")
 			local to buffer
@@ -4915,7 +4939,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'matchtime'* *'mat'*
 'matchtime' 'mat'	number	(default 5)
 			global
-			{in Nvi}
 	Tenths of a second to show the matching paren, when 'showmatch' is
 	set.  Note that this is not in milliseconds, like other options that
 	set a time.  This is to be compatible with Nvi.
@@ -5049,6 +5072,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 'modeline' 'ml'		boolean	(Vim default: on (off for root),
 				 Vi default: off)
 			local to buffer
+	If 'modeline' is on 'modelines' gives the number of lines that is
+	checked for set commands.  If 'modeline' is off or 'modelines' is zero
+	no lines are checked.  See |modeline|.
+
+			   *'modelineexpr'* *'mle'* *'nomodelineexpr'* *'nomle'*
+'modelineexpr' 'mle'	boolean (default: off)
+			global
+	When on allow some options that are an expression to be set in the
+	modeline.  Check the option for whether it is affected by
+	'modelineexpr'.  Also see |modeline|.
+
 						*'modelines'* *'mls'*
 'modelines' 'mls'	number	(default 5)
 			global
@@ -5059,9 +5093,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set and to the Vim default value when 'compatible' is reset.
 
 				*'modifiable'* *'ma'* *'nomodifiable'* *'noma'*
+				*E21*
 'modifiable' 'ma'	boolean	(default on)
 			local to buffer
-			*E21*
 	When off the buffer contents cannot be changed.  The 'fileformat' and
 	'fileencoding' options also can't be changed.
 	Can be reset on startup with the |-M| command line argument.
@@ -6058,6 +6092,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When this option is not empty, it determines the content of the ruler
 	string, as displayed for the 'ruler' option.
 	The format of this option is like that of 'statusline'.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
+
 	The default ruler width is 17 characters.  To make the ruler 15
 	characters wide, put "%15(" at the start and "%)" at the end.
 	Example: >
@@ -6598,7 +6634,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		"Pattern not found", "Back at original", etc.
 	  q	use "recording" instead of "recording @a"
 	  F	don't give the file info when editing a file, like `:silent`
-		was used for the command
+		was used for the command; note that this also affects messages
+		from autocommands
 	  S     do not show search count message when searching, e.g.
 	        "[1/5]"
 
@@ -7165,6 +7202,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The 'statusline' option will be evaluated in the |sandbox| if set from
 	a modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'statusline' |textlock|.
@@ -7345,6 +7383,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When changing something that is used in 'tabline' that does not
 	trigger it to be updated, use |:redrawtabline|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	Keep in mind that only one of the tab pages is the current one, others
 	are invisible and you can't jump to their windows.
@@ -7873,8 +7912,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-empty 't_ts' option).
 	When Vim was compiled with HAVE_X11 defined, the original title will
 	be restored if possible, see |X11|.
+
 	When this option contains printf-style '%' items, they will be
 	expanded according to the rules used for 'statusline'.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
+
 	Example: >
     :auto BufEnter * let &titlestring = hostname() . "/" . expand("%:p")
     :set title titlestring=%<%F%=%l/%L-%P titlelen=70
@@ -8060,6 +8102,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	undo file that exists is used.  When it cannot be read an error is
 	given, no further entry is used.
 	See |undo-persistence|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 				*'undofile'* *'noundofile'* *'udf'* *'noudf'*
 'undofile' 'udf'	boolean	(default off)
@@ -8369,6 +8413,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When equal to "NONE" no viminfo file will be read or written.
 	This option can be set with the |-i| command line flag.  The |--clean|
 	command line flag sets it to "NONE".
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
