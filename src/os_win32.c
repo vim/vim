@@ -2762,7 +2762,7 @@ mch_init(void)
 mch_exit(int r)
 {
 #ifdef VIMDLL
-    if (gui.starting || gui.in_use)
+    if (gui.in_use || gui.starting)
 	mch_exit_g(r);
     else
 	mch_exit_c(r);
@@ -4500,7 +4500,7 @@ mch_system_c(char *cmd, int options)
 mch_system(char *cmd, int options)
 {
 #ifdef VIMDLL
-    if (gui.in_use)
+    if (gui.in_use || gui.starting)
 	return mch_system_g(cmd, options);
     else
 	return mch_system_c(cmd, options);
@@ -4821,7 +4821,7 @@ mch_call_shell(
 	{
 	    cmdlen =
 #ifdef FEAT_GUI_MSWIN
-		(gui.in_use ?
+		((gui.in_use || gui.starting) ?
 		    (!s_dont_use_vimrun && p_stmp ?
 			STRLEN(vimrun_path) : STRLEN(p_sh) + STRLEN(p_shcf))
 		    : 0) +
@@ -4834,7 +4834,7 @@ mch_call_shell(
 #if defined(FEAT_GUI_MSWIN)
 		if (
 # ifdef VIMDLL
-		    gui.in_use &&
+		    (gui.in_use || gui.starting) &&
 # endif
 		    need_vimrun_warning)
 		{
@@ -4853,7 +4853,7 @@ mch_call_shell(
 		}
 		if (
 # ifdef VIMDLL
-		    gui.in_use &&
+		    (gui.in_use || gui.starting) &&
 # endif
 		    !s_dont_use_vimrun && p_stmp)
 		    /* Use vimrun to execute the command.  It opens a console
@@ -4865,7 +4865,7 @@ mch_call_shell(
 			    p_sh, p_shcf, cmd);
 		else
 # ifdef VIMDLL
-		if (gui.in_use)
+		if (gui.in_use || gui.starting)
 # endif
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
 					   p_sh, p_shcf, p_sh, p_shcf, cmd);
@@ -4889,7 +4889,7 @@ mch_call_shell(
     /* Print the return value, unless "vimrun" was used. */
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
 #if defined(FEAT_GUI_MSWIN)
-	    && (gui.in_use ?
+	    && ((gui.in_use || gui.starting) ?
 		((options & SHELL_DOOUT) || s_dont_use_vimrun || !p_stmp) : 1)
 #endif
 	    )
