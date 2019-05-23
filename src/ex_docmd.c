@@ -6725,7 +6725,7 @@ ex_recover(exarg_T *eap)
 
 	    && (*eap->arg == NUL
 			     || setfname(curbuf, eap->arg, NULL, TRUE) == OK))
-	ml_recover();
+	ml_recover(TRUE);
     recoverymode = FALSE;
 }
 

@@ -1734,7 +1734,7 @@ spell_reload_one(
 
     for (slang = first_lang; slang != NULL; slang = slang->sl_next)
     {
-	if (fullpathcmp(fname, slang->sl_fname, FALSE) == FPC_SAME)
+	if (fullpathcmp(fname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	{
 	    slang_clear(slang);
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
@@ -5440,7 +5440,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
      * It might have been done already by spell_reload_one().
      */
     for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	if (fullpathcmp(wfname, slang->sl_fname, FALSE) == FPC_SAME)
+	if (fullpathcmp(wfname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	    break;
     if (slang == NULL)
     {

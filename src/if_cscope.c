@@ -1401,10 +1401,10 @@ cs_insert_filelist(
 #if defined(UNIX)
 	    && csinfo[j].st_dev == sb->st_dev && csinfo[j].st_ino == sb->st_ino
 #else
-	    /* compare pathnames first */
+	    // compare pathnames first
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
-			(char_u *)fname, FALSE) & FPC_SAME)
-		/* test index file attributes too */
+			(char_u *)fname, FALSE, TRUE) & FPC_SAME)
+		// test index file attributes too
 		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
 		    && csinfo[j].nIndexLow == bhfi.nFileIndexLow))

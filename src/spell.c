@@ -2343,7 +2343,7 @@ did_set_spelllang(win_T *wp)
 
 	    /* Check if we loaded this language before. */
 	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-		if (fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME)
+		if (fullpathcmp(lang, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 		    break;
 	}
 	else
@@ -2395,7 +2395,8 @@ did_set_spelllang(win_T *wp)
 	 * Loop over the languages, there can be several files for "lang".
 	 */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME
+	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE, TRUE)
+								    == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
 	    {
 		region_mask = REGION_ALL;
@@ -2463,7 +2464,8 @@ did_set_spelllang(win_T *wp)
 	    for (c = 0; c < ga.ga_len; ++c)
 	    {
 		p = LANGP_ENTRY(ga, c)->lp_slang->sl_fname;
-		if (p != NULL && fullpathcmp(spf_name, p, FALSE) == FPC_SAME)
+		if (p != NULL && fullpathcmp(spf_name, p, FALSE, TRUE)
+								== FPC_SAME)
 		    break;
 	    }
 	    if (c < ga.ga_len)
@@ -2472,7 +2474,8 @@ did_set_spelllang(win_T *wp)
 
 	/* Check if it was loaded already. */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE) == FPC_SAME)
+	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE, TRUE)
+								== FPC_SAME)
 		break;
 	if (slang == NULL)
 	{

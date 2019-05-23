@@ -1084,9 +1084,11 @@ add_b0_fenc(
 
 /*
  * Try to recover curbuf from the .swp file.
+ * If "checkext" is TRUE, check the extension and detect whether it is
+ * a swap file.
  */
     void
-ml_recover(void)
+ml_recover(int checkext)
 {
     buf_T	*buf = NULL;
     memfile_T	*mfp = NULL;
@@ -1136,7 +1138,7 @@ ml_recover(void)
     if (fname == NULL)		    /* When there is no file name */
 	fname = (char_u *)"";
     len = (int)STRLEN(fname);
-    if (len >= 4 &&
+    if (checkext && len >= 4 &&
 #if defined(VMS)
 	    STRNICMP(fname + len - 4, "_s", 2)
 #else
@@ -1887,7 +1889,7 @@ recover_names(
 	if (num_names == 0)
 	    num_files = 0;
 	else if (expand_wildcards(num_names, names, &num_files, &files,
-					EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
+			    EW_NOTENV|EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
 	    num_files = 0;
 
 	/*
@@ -1930,11 +1932,13 @@ recover_names(
 			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL)
 	{
 	    for (i = 0; i < num_files; ++i)
-		if (fullpathcmp(p, files[i], TRUE) & FPC_SAME)
+		// Do not expand wildcards, on windows would try to expand
+		// "%tmp%" in "%tmp%file".
+		if (fullpathcmp(p, files[i], TRUE, FALSE) & FPC_SAME)
 		{
-		    /* Remove the name from files[i].  Move further entries
-		     * down.  When the array becomes empty free it here, since
-		     * FreeWild() won't be called below. */
+		    // Remove the name from files[i].  Move further entries
+		    // down.  When the array becomes empty free it here, since
+		    // FreeWild() won't be called below.
 		    vim_free(files[i]);
 		    if (--num_files == 0)
 			vim_free(files);

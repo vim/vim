@@ -45,7 +45,7 @@ char_u *get_users(expand_T *xp, int idx);
 int match_user(char_u *name);
 void home_replace(buf_T *buf, char_u *src, char_u *dst, int dstlen, int one);
 char_u *home_replace_save(buf_T *buf, char_u *src);
-int fullpathcmp(char_u *s1, char_u *s2, int checkname);
+int fullpathcmp(char_u *s1, char_u *s2, int checkname, int expandenv);
 char_u *gettail(char_u *fname);
 char_u *gettail_sep(char_u *fname);
 char_u *getnextcomp(char_u *fname);

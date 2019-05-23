@@ -1071,7 +1071,7 @@ handle_swap_exists(bufref_T *old_curbuf)
 
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
-	ml_recover();
+	ml_recover(FALSE);
 	msg_puts("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
 	do_modelines(0);
@@ -4943,7 +4943,7 @@ do_arg_all(
 		    if (i < alist->al_ga.ga_len
 			    && (AARGLIST(alist)[i].ae_fnum == buf->b_fnum
 				|| fullpathcmp(alist_name(&AARGLIST(alist)[i]),
-					      buf->b_ffname, TRUE) & FPC_SAME))
+					buf->b_ffname, TRUE, TRUE) & FPC_SAME))
 		    {
 			int weight = 1;
 

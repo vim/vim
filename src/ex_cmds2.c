@@ -1715,7 +1715,7 @@ editing_arg_idx(win_T *win)
 		    && (win->w_buffer->b_ffname == NULL
 			 || !(fullpathcmp(
 				 alist_name(&WARGLIST(win)[win->w_arg_idx]),
-				win->w_buffer->b_ffname, TRUE) & FPC_SAME))));
+			  win->w_buffer->b_ffname, TRUE, TRUE) & FPC_SAME))));
 }
 
 /*
@@ -1737,7 +1737,7 @@ check_arg_idx(win_T *win)
 		&& (win->w_buffer->b_fnum == GARGLIST[GARGCOUNT - 1].ae_fnum
 		    || (win->w_buffer->b_ffname != NULL
 			&& (fullpathcmp(alist_name(&GARGLIST[GARGCOUNT - 1]),
-				win->w_buffer->b_ffname, TRUE) & FPC_SAME))))
+			  win->w_buffer->b_ffname, TRUE, TRUE) & FPC_SAME))))
 	    arg_had_last = TRUE;
     }
     else
