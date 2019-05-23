@@ -3893,7 +3893,8 @@ build_stl_str_hl(
     char_u	base;
     char_u	opt;
 #define TMPLEN 70
-    char_u	tmp[TMPLEN];
+    char_u	buf_tmp[TMPLEN];
+    char_u	win_tmp[TMPLEN];
     char_u	*usefmt = fmt;
     struct stl_hlrec *sp;
     int		save_must_redraw = must_redraw;
@@ -3906,9 +3907,17 @@ build_stl_str_hl(
      */
     if (fmt[0] == '%' && fmt[1] == '!')
     {
+	typval_T	tv;
+
+	tv.v_type = VAR_NUMBER;
+	tv.vval.v_number = wp->w_id;
+	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
+
 	usefmt = eval_to_string_safe(fmt + 2, NULL, use_sandbox);
 	if (usefmt == NULL)
 	    usefmt = fmt;
+
+	do_unlet((char_u *)"g:statusline_winid", TRUE);
     }
 #endif
 
@@ -4225,8 +4234,11 @@ build_stl_str_hl(
 	    p = t;
 
 #ifdef FEAT_EVAL
-	    vim_snprintf((char *)tmp, sizeof(tmp), "%d", curbuf->b_fnum);
-	    set_internal_string_var((char_u *)"g:actual_curbuf", tmp);
+	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
+							 "%d", curbuf->b_fnum);
+	    set_internal_string_var((char_u *)"g:actual_curbuf", buf_tmp);
+	    vim_snprintf((char *)win_tmp, sizeof(win_tmp), "%d", curwin->w_id);
+	    set_internal_string_var((char_u *)"g:actual_curwin", win_tmp);
 
 	    save_curbuf = curbuf;
 	    save_curwin = curwin;
@@ -4238,6 +4250,7 @@ build_stl_str_hl(
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
+	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
 	    if (str != NULL && *str != 0)
 	    {
@@ -4290,21 +4303,21 @@ build_stl_str_hl(
 	    break;
 
 	case STL_ALTPERCENT:
-	    str = tmp;
+	    str = buf_tmp;
 	    get_rel_pos(wp, str, TMPLEN);
 	    break;
 
 	case STL_ARGLISTSTAT:
 	    fillable = FALSE;
-	    tmp[0] = 0;
-	    if (append_arg_number(wp, tmp, (int)sizeof(tmp), FALSE))
-		str = tmp;
+	    buf_tmp[0] = 0;
+	    if (append_arg_number(wp, buf_tmp, (int)sizeof(buf_tmp), FALSE))
+		str = buf_tmp;
 	    break;
 
 	case STL_KEYMAP:
 	    fillable = FALSE;
-	    if (get_keymap_str(wp, (char_u *)"<%s>", tmp, TMPLEN))
-		str = tmp;
+	    if (get_keymap_str(wp, (char_u *)"<%s>", buf_tmp, TMPLEN))
+		str = buf_tmp;
 	    break;
 	case STL_PAGENUM:
 #if defined(FEAT_PRINTER) || defined(FEAT_GUI_TABLINE)
@@ -4360,9 +4373,9 @@ build_stl_str_hl(
 	    if (*wp->w_buffer->b_p_ft != NUL
 		    && STRLEN(wp->w_buffer->b_p_ft) < TMPLEN - 3)
 	    {
-		vim_snprintf((char *)tmp, sizeof(tmp), "[%s]",
+		vim_snprintf((char *)buf_tmp, sizeof(buf_tmp), "[%s]",
 							wp->w_buffer->b_p_ft);
-		str = tmp;
+		str = buf_tmp;
 	    }
 	    break;
 
@@ -4371,11 +4384,11 @@ build_stl_str_hl(
 	    if (*wp->w_buffer->b_p_ft != NUL
 		    && STRLEN(wp->w_buffer->b_p_ft) < TMPLEN - 2)
 	    {
-		vim_snprintf((char *)tmp, sizeof(tmp), ",%s",
+		vim_snprintf((char *)buf_tmp, sizeof(buf_tmp), ",%s",
 							wp->w_buffer->b_p_ft);
-		for (t = tmp; *t != 0; t++)
+		for (t = buf_tmp; *t != 0; t++)
 		    *t = TOUPPER_LOC(*t);
-		str = tmp;
+		str = buf_tmp;
 	    }
 	    break;
 
