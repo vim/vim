@@ -25,7 +25,7 @@ LangString ^UninstallCaption ${LANG_SIMPCHINESE} \
 #    "安装路径 (必须以 vim 结尾)"
 
 LangString str_show_readme          ${LANG_SIMPCHINESE} \
-    "安装完成后显示 README 文件"
+    "显示 README 文件"
 
 # Install types:
 LangString str_type_typical         ${LANG_SIMPCHINESE} \
@@ -45,12 +45,12 @@ LangString str_type_full            ${LANG_SIMPCHINESE} \
 LangString str_section_old_ver      ${LANG_SIMPCHINESE} \
     "卸载旧版本"
 LangString str_desc_old_ver         ${LANG_SIMPCHINESE} \
-    "卸载系统上旧版本的 Vim。"
+    "卸载旧版本的 Vim。"
 
 LangString str_section_exe          ${LANG_SIMPCHINESE} \
     "安装 Vim 图形界面"
 LangString str_desc_exe             ${LANG_SIMPCHINESE} \
-    "安装 Vim 图形界面及脚本。此为必选项。"
+    "安装 Vim 图形界面及脚本。"
 
 LangString str_section_console      ${LANG_SIMPCHINESE} \
     "安装 Vim 命令行程序"
@@ -75,7 +75,7 @@ LangString str_desc_desktop         ${LANG_SIMPCHINESE} \
 LangString str_section_start_menu   ${LANG_SIMPCHINESE} \
     "「开始」菜单程序组"
 LangString str_desc_start_menu      ${LANG_SIMPCHINESE} \
-    "在开始菜单中添加 Vim 组（适用于 Windows 95 及以上版本）"
+    "在开始菜单中添加 Vim 程序组（适用于 Windows 95 及以上版本）"
 
 #LangString str_section_quick_launch ${LANG_SIMPCHINESE} \
 #    "在快速启动启动栏中"
@@ -83,9 +83,9 @@ LangString str_desc_start_menu      ${LANG_SIMPCHINESE} \
 #    "在快速启动栏中添加 Vim 图标。"
 
 LangString str_section_edit_with    ${LANG_SIMPCHINESE} \
-    "添加右键菜单"
+    "添加到快捷菜单"
 LangString str_desc_edit_with       ${LANG_SIMPCHINESE} \
-    "将“用 Vim 编辑”添加到系统右键菜单中。"
+    "将“用 Vim 编辑”添加到快捷菜单中。"
 
 #LangString str_section_edit_with32  ${LANG_SIMPCHINESE} \
 #    "32 位版本"
@@ -121,9 +121,9 @@ LangString str_desc_plugin_vim      ${LANG_SIMPCHINESE} \
      该目录下的扩展插件。"
 
 LangString str_section_vis_vim      ${LANG_SIMPCHINESE} \
-    "安装 VisVim 插件"
+    "VisVim 插件"
 LangString str_desc_vis_vim         ${LANG_SIMPCHINESE} \
-    "安装用于与 Visual Studio 进行集成的 VisVim 插件。"
+    "安装与 Visual Studio 集成的 VisVim 插件。"
 
 LangString str_section_nls          ${LANG_SIMPCHINESE} \
     "安装多语言支持"
@@ -156,9 +156,9 @@ LangString str_desc_rm_plugin_vim   ${LANG_SIMPCHINESE} \
     "从 Vim 安装目录下移除插件目录。"
 
 LangString str_unsection_rootdir    ${LANG_SIMPCHINESE} \
-    "Remove the Vim root directory"
+    "移除 Vim 主目录"
 LangString str_desc_rm_rootdir      ${LANG_SIMPCHINESE} \
-    "Remove the Vim root directory. It contains your Vim configuration files!"
+    "移除 Vim 的主目录，这将包含您的配置文件！"
 
 
 ##############################################################################
@@ -231,7 +231,7 @@ LangString str_msg_registering   ${LANG_SIMPCHINESE} \
     "正在注册文件..."
 
 LangString str_msg_unregistering ${LANG_SIMPCHINESE} \
-    "正在反注册文件..."
+    "正在移除注册文件..."
 
 
 ##############################################################################
