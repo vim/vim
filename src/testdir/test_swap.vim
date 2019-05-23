@@ -220,3 +220,47 @@ func Test_swapfile_delete()
   augroup END
   augroup! test_swapfile_delete
 endfunc
+
+func Test_swap_recover()
+  autocmd! SwapExists
+  augroup test_swap_recover
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'r'
+  augroup END
+
+
+  call mkdir('Xswap')
+  let $Xswap = 'foo'  " Check for issue #4369.
+  set dir=Xswap//
+  " Create a valid swapfile by editing a file.
+  split Xswap/text
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Close the file and recreate the swap file.
+  quit
+  call writefile(swapfile_bytes, swapfile_name)
+  " Edit the file again. This triggers recovery.
+  try
+    split Xswap/text
+  catch
+    " E308 should be caught, not E305.
+    call assert_exception('E308:')  " Original file may have been changed
+  endtry
+  " The file should be recovered.
+  call assert_equal(['one', 'two', 'three'], getline(1, 3))
+  quit!
+
+  call delete('Xswap/text')
+  call delete(swapfile_name)
+  call delete('Xswap', 'd')
+  unlet $Xswap
+  set dir&
+  augroup test_swap_recover
+    autocmd!
+  augroup END
+  augroup! test_swap_recover
+endfunc
