@@ -1084,9 +1084,11 @@ add_b0_fenc(
 
 /*
  * Try to recover curbuf from the .swp file.
+ * If "checkext" is TRUE, check the extension and detect whether it is
+ * a swap file.
  */
     void
-ml_recover(void)
+ml_recover(int checkext)
 {
     buf_T	*buf = NULL;
     memfile_T	*mfp = NULL;
@@ -1136,7 +1138,7 @@ ml_recover(void)
     if (fname == NULL)		    /* When there is no file name */
 	fname = (char_u *)"";
     len = (int)STRLEN(fname);
-    if (len >= 4 &&
+    if (checkext && len >= 4 &&
 #if defined(VMS)
 	    STRNICMP(fname + len - 4, "_s", 2)
 #else

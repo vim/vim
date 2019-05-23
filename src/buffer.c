@@ -1071,7 +1071,7 @@ handle_swap_exists(bufref_T *old_curbuf)
 
 	/* User selected Recover at ATTENTION prompt. */
 	msg_scroll = TRUE;
-	ml_recover();
+	ml_recover(FALSE);
 	msg_puts("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
 	do_modelines(0);
