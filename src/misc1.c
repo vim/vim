@@ -2711,7 +2711,7 @@ fullpathcmp(
     if (expandenv)
 	expand_env(s1, exp1, MAXPATHL);
     else
-	vim_strncpy(exp1, s1, MAXPATHL);
+	vim_strncpy(exp1, s1, MAXPATHL - 1);
     r1 = mch_stat((char *)exp1, &st1);
     r2 = mch_stat((char *)s2, &st2);
     if (r1 != 0 && r2 != 0)
@@ -2749,7 +2749,7 @@ fullpathcmp(
 	if (expandenv)
 	    expand_env(s1, exp1, MAXPATHL);
 	else
-	    vim_strncpy(exp1, s1, MAXPATHL);
+	    vim_strncpy(exp1, s1, MAXPATHL - 1);
 	r1 = vim_FullName(exp1, full1, MAXPATHL, FALSE);
 	r2 = vim_FullName(s2, full2, MAXPATHL, FALSE);
 
