@@ -7198,7 +7198,7 @@ readdir_core(
     if (buf == NULL)
 	return FAIL;
     STRNCPY(buf, path, MAXPATHL-5);
-    p = buf + strlen(buf);
+    p = buf + STRLEN(buf);
     MB_PTR_BACK(buf, p);
     if (*p == '\\' || *p == '/')
 	*p = NUL;
