@@ -752,3 +752,11 @@ func Test_textprop_screenshot_visual()
   " Same, but delete four columns
   call RunTestVisualBlock(4, '02')
 endfunc
+
+" Adding a text property to a new buffer should not fail
+func Test_textprop_empty_buffer()
+  call prop_type_add('comment', {'highlight': 'Search'})
+  new
+  call prop_add(1, 1, {'type': 'comment'})
+  close
+endfunc
