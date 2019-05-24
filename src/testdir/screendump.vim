@@ -55,14 +55,18 @@ func RunVimInTerminal(arguments, options)
   let statusoff = get(a:options, 'statusoff', 1)
 
   let cmd = GetVimCommandClean()
-
   " Add -v to have gvim run in the terminal (if possible)
   let cmd .= ' -v ' . a:arguments
-  let buf = term_start(cmd, {
+
+  let opts = {
 	\ 'curwin': 1,
 	\ 'term_rows': rows,
 	\ 'term_cols': cols,
-	\ })
+	\ }
+  " Accept other options whose name starts with 'term_'.
+  call extend(opts, filter(copy(a:options), 'v:key =~# "^term_"'))
+
+  let buf = term_start(cmd, opts)
   if &termwinsize == ''
     " in the GUI we may end up with a different size, try to set it.
     if term_getsize(buf) != [rows, cols]
