@@ -6776,7 +6776,7 @@ buf_check_timestamp(
 	{
 	    // When 'autoread' is set we'll check the file again to see if it
 	    // re-appears.
-	    buf->b_mtime = buf->b_p_ar;
+	    buf->b_mtime = (buf->b_p_ar >= 0 ? buf->b_p_ar : p_ar);
 	    buf->b_orig_size = 0;
 	    buf->b_orig_mode = 0;
 	}
