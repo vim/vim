@@ -117,6 +117,25 @@ func! Test_search_stat()
     call assert_false(1)
   endtry
 
+  " with count
+  call cursor(1, 1)
+  let @/ = 'fo*\(bar\?\)\?'
+  let g:a = execute(':unsilent :norm! 2n')
+  let stat = '\[3/50\]'
+  let pat = escape(@/, '()*?'). '\s\+'
+  call assert_match(pat .. stat, g:a)
+  let g:a = execute(':unsilent :norm! 2n')
+  let stat = '\[5/50\]'
+  call assert_match(pat .. stat, g:a)
+
+  " with offset
+  call cursor(1, 1)
+  call feedkeys("/fo*\\(bar\\?\\)\\?/+1\<cr>", 'tx')
+  let g:a = execute(':unsilent :norm! n')
+  let stat = '\[5/50\]'
+  let pat = escape(@/ .. '/+1', '()*?'). '\s\+'
+  call assert_match(pat .. stat, g:a)
+
   " normal, n comes from a mapping
   "     Need to move over more than 64 lines to trigger char_avail(.
   nnoremap n nzv
