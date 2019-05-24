@@ -129,7 +129,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	*buf = tv_get_buf(&di->di_tv, FALSE);
+	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)
 	    return FAIL;
     }
@@ -560,13 +560,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
 
     dict = argvars[0].vval.v_dict;
-    di = dict_find(dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
-    {
-	buf = tv_get_buf(&di->di_tv, FALSE);
-	if (buf == NULL)
-	    return;
-    }
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+    if (buf->b_ml.ml_mfp == NULL)
+	return;
 
     di = dict_find(dict, (char_u*)"all", -1);
     if (di != NULL)
@@ -628,7 +625,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 
 			cur_prop = buf->b_ml.ml_line_ptr + len
-							+ idx * sizeof(textprop_T);
+						    + idx * sizeof(textprop_T);
 		    }
 
 		    taillen = buf->b_ml.ml_line_len - len
