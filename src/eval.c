@@ -491,7 +491,7 @@ var_redir_start(char_u *name, int append)
     if (redir_varname == NULL)
 	return FAIL;
 
-    redir_lval = (lval_T *)alloc_clear((unsigned)sizeof(lval_T));
+    redir_lval = (lval_T *)alloc_clear(sizeof(lval_T));
     if (redir_lval == NULL)
     {
 	var_redir_stop();
@@ -7288,7 +7288,7 @@ handle_subscript(
     typval_T *
 alloc_tv(void)
 {
-    return (typval_T *)alloc_clear((unsigned)sizeof(typval_T));
+    return (typval_T *)alloc_clear(sizeof(typval_T));
 }
 
 /*

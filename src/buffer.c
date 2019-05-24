@@ -1958,7 +1958,7 @@ buflist_new(
     }
     if (buf != curbuf || curbuf == NULL)
     {
-	buf = (buf_T *)alloc_clear((unsigned)sizeof(buf_T));
+	buf = (buf_T *)alloc_clear(sizeof(buf_T));
 	if (buf == NULL)
 	{
 	    vim_free(ffname);
@@ -1985,7 +1985,7 @@ buflist_new(
     }
 
     clear_wininfo(buf);
-    buf->b_wininfo = (wininfo_T *)alloc_clear((unsigned)sizeof(wininfo_T));
+    buf->b_wininfo = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
 
     if ((ffname != NULL && (buf->b_ffname == NULL || buf->b_sfname == NULL))
 	    || buf->b_wininfo == NULL)
@@ -2771,7 +2771,7 @@ buflist_setfpos(
     if (wip == NULL)
     {
 	/* allocate a new entry */
-	wip = (wininfo_T *)alloc_clear((unsigned)sizeof(wininfo_T));
+	wip = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
 	if (wip == NULL)
 	    return;
 	wip->wi_win = win;
@@ -4911,7 +4911,7 @@ do_arg_all(
     setpcmark();
 
     opened_len = ARGCOUNT;
-    opened = alloc_clear((unsigned)opened_len);
+    opened = alloc_clear(opened_len);
     if (opened == NULL)
 	return;
 

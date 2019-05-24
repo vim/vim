@@ -300,7 +300,7 @@ nfa_regcomp_start(
     /* Size for postfix representation of expr. */
     postfix_size = sizeof(int) * nstate_max;
 
-    post_start = (int *)lalloc(postfix_size, TRUE);
+    post_start = (int *)alloc(postfix_size);
     if (post_start == NULL)
 	return FAIL;
     post_ptr = post_start;
@@ -516,7 +516,7 @@ realloc_post_list(void)
     // For weird patterns the number of states can be very high. Increasing by
     // 50% seems a reasonable compromise between memory use and speed.
     new_max = nstate_max * 3 / 2;
-    new_start = (int *)lalloc(new_max * sizeof(int), TRUE);
+    new_start = (int *)alloc(new_max * sizeof(int));
     if (new_start == NULL)
 	return FAIL;
     mch_memmove(new_start, post_start, nstate_max * sizeof(int));
@@ -3214,7 +3214,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
     if (nfa_calc_size == FALSE)
     {
 	// Allocate space for the stack. Max states on the stack: "nstate'.
-	stack = (Frag_T *)lalloc((nstate + 1) * sizeof(Frag_T), TRUE);
+	stack = (Frag_T *)alloc((nstate + 1) * sizeof(Frag_T));
 	if (stack == NULL)
 	    return NULL;
 	stackp = stack;
@@ -5184,7 +5184,7 @@ recursive_regmatch(
 	if (*listids == NULL || *listids_len < prog->nstate)
 	{
 	    vim_free(*listids);
-	    *listids = (int *)lalloc(sizeof(int) * prog->nstate, TRUE);
+	    *listids = (int *)alloc(sizeof(int) * prog->nstate);
 	    if (*listids == NULL)
 	    {
 		emsg(_("E878: (NFA) Could not allocate memory for branch traversal!"));
@@ -5567,9 +5567,9 @@ nfa_regmatch(
     /* Allocate memory for the lists of nodes. */
     size = (prog->nstate + 1) * sizeof(nfa_thread_T);
 
-    list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[0].t = (nfa_thread_T *)alloc(size);
     list[0].len = prog->nstate + 1;
-    list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[1].t = (nfa_thread_T *)alloc(size);
     list[1].len = prog->nstate + 1;
     if (list[0].t == NULL || list[1].t == NULL)
 	goto theend;
@@ -7276,7 +7276,7 @@ nfa_regcomp(char_u *expr, int re_flags)
 
     /* allocate the regprog with space for the compiled regexp */
     prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * (nstate - 1);
-    prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
+    prog = (nfa_regprog_T *)alloc(prog_size);
     if (prog == NULL)
 	goto fail;
     state_ptr = prog->state;

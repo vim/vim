@@ -1448,7 +1448,7 @@ mch_expandpath(
 #ifdef __amigaos4__
     Anchor = AllocDosObject(DOS_ANCHORPATH, AnchorTags);
 #else
-    Anchor = (struct AnchorPath *)alloc_clear((unsigned)ANCHOR_SIZE);
+    Anchor = (struct AnchorPath *)alloc_clear(ANCHOR_SIZE);
 #endif
     if (Anchor == NULL)
 	return 0;

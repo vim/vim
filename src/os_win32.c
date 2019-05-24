@@ -3394,7 +3394,7 @@ mch_get_acl(char_u *fname)
     struct my_acl   *p = NULL;
     DWORD   err;
 
-    p = (struct my_acl *)alloc_clear((unsigned)sizeof(struct my_acl));
+    p = (struct my_acl *)alloc_clear(sizeof(struct my_acl));
     if (p != NULL)
     {
 	WCHAR	*wn;
@@ -4533,7 +4533,7 @@ mch_call_shell_terminal(
 	cmdlen = STRLEN(p_sh) + 1;
     else
 	cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
-    newcmd = lalloc(cmdlen, TRUE);
+    newcmd = alloc(cmdlen);
     if (newcmd == NULL)
 	return 255;
     if (cmd == NULL)
@@ -4772,7 +4772,7 @@ mch_call_shell(
 		{
 		    /* make "cmd.exe /c arguments" */
 		    cmdlen = STRLEN(cmd_shell) + STRLEN(subcmd) + 5;
-		    newcmd = lalloc(cmdlen, TRUE);
+		    newcmd = alloc(cmdlen);
 		    if (newcmd != NULL)
 			vim_snprintf((char *)newcmd, cmdlen, "%s /c %s",
 						       cmd_shell, subcmd);
@@ -4827,7 +4827,7 @@ mch_call_shell(
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
 
-	    newcmd = lalloc(cmdlen, TRUE);
+	    newcmd = alloc(cmdlen);
 	    if (newcmd != NULL)
 	    {
 #if defined(FEAT_GUI_MSWIN)

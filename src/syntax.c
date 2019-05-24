@@ -1215,7 +1215,7 @@ syn_stack_alloc(void)
 		len = syn_block->b_sst_len - syn_block->b_sst_freecount + 2;
 	}
 
-	sstp = (synstate_T *)alloc_clear((unsigned)(len * sizeof(synstate_T)));
+	sstp = (synstate_T *)alloc_clear(len * sizeof(synstate_T));
 	if (sstp == NULL)	/* out of memory! */
 	    return;
 
@@ -5216,7 +5216,7 @@ syn_cmd_region(
 	    }
 	    ppp->pp_next = pat_ptrs[item];
 	    pat_ptrs[item] = ppp;
-	    ppp->pp_synp = (synpat_T *)alloc_clear((unsigned)sizeof(synpat_T));
+	    ppp->pp_synp = (synpat_T *)alloc_clear(sizeof(synpat_T));
 	    if (ppp->pp_synp == NULL)
 	    {
 		rest = NULL;

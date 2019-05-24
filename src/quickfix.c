@@ -540,7 +540,7 @@ parse_efm_option(char_u *efm)
     while (efm[0] != NUL)
     {
 	// Allocate a new eformat structure and put it at the end of the list
-	fmt_ptr = (efm_T *)alloc_clear((unsigned)sizeof(efm_T));
+	fmt_ptr = (efm_T *)alloc_clear(sizeof(efm_T));
 	if (fmt_ptr == NULL)
 	    goto parse_efm_error;
 	if (fmt_first == NULL)	    // first one
@@ -2141,7 +2141,7 @@ qf_alloc_stack(qfltype_T qfltype)
 {
     qf_info_T *qi;
 
-    qi = (qf_info_T *)alloc_clear((unsigned)sizeof(qf_info_T));
+    qi = (qf_info_T *)alloc_clear(sizeof(qf_info_T));
     if (qi != NULL)
     {
 	qi->qf_refcount++;

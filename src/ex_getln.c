@@ -4166,7 +4166,7 @@ ExpandOne(
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
 	    len += (long_u)STRLEN(xp->xp_files[i]) + 1;
-	ss = lalloc(len, TRUE);
+	ss = alloc(len);
 	if (ss != NULL)
 	{
 	    *ss = NUL;
@@ -5914,8 +5914,8 @@ init_history(void)
 	{
 	    if (newlen)
 	    {
-		temp = (histentry_T *)lalloc(
-				(long_u)(newlen * sizeof(histentry_T)), TRUE);
+		temp = (histentry_T *)alloc(
+				       (long_u)(newlen * sizeof(histentry_T)));
 		if (temp == NULL)   /* out of memory! */
 		{
 		    if (type == 0)  /* first one: just keep the old length */
@@ -6688,7 +6688,7 @@ read_viminfo_history(vir_T *virp, int writing)
 	    {
 		/* Need to re-allocate to append the separator byte. */
 		len = STRLEN(val);
-		p = lalloc(len + 2, TRUE);
+		p = alloc(len + 2);
 		if (p != NULL)
 		{
 		    if (type == HIST_SEARCH)
@@ -6774,7 +6774,7 @@ handle_viminfo_history(
 		{
 		    /* Need to re-allocate to append the separator byte. */
 		    len = vp[3].bv_len;
-		    p = lalloc(len + 2, TRUE);
+		    p = alloc(len + 2);
 		}
 		else
 		    len = 0; /* for picky compilers */

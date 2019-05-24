@@ -3925,7 +3925,7 @@ static VTermParserCallbacks parser_fallbacks = {
     static void *
 vterm_malloc(size_t size, void *data UNUSED)
 {
-    return alloc_clear((unsigned) size);
+    return alloc_clear(size);
 }
 
     static void

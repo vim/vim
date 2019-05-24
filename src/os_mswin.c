@@ -890,7 +890,7 @@ mch_libcall(
 	else if (retval_str != NULL
 		&& (len = check_str_len(retval_str)) > 0)
 	{
-	    *string_result = lalloc((long_u)len, TRUE);
+	    *string_result = alloc(len);
 	    if (*string_result != NULL)
 		mch_memmove(*string_result, retval_str, len);
 	}

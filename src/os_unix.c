@@ -4459,9 +4459,9 @@ mch_call_shell_system(
 	else
 	    x = system((char *)cmd);
 # else
-	newcmd = lalloc(STRLEN(p_sh)
+	newcmd = alloc(STRLEN(p_sh)
 		+ (extra_shell_arg == NULL ? 0 : STRLEN(extra_shell_arg))
-		+ STRLEN(p_shcf) + STRLEN(cmd) + 4, TRUE);
+		+ STRLEN(p_shcf) + STRLEN(cmd) + 4);
 	if (newcmd == NULL)
 	    x = 0;
 	else

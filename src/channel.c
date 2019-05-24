@@ -294,7 +294,7 @@ static int next_ch_id = 0;
 add_channel(void)
 {
     ch_part_T	part;
-    channel_T	*channel = (channel_T *)alloc_clear((int)sizeof(channel_T));
+    channel_T	*channel = (channel_T *)alloc_clear(sizeof(channel_T));
 
     if (channel == NULL)
 	return NULL;
@@ -1728,7 +1728,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     // Concatenate everything into one buffer.
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
-    res = lalloc(len + 1, TRUE);
+    res = alloc(len + 1);
     if (res == NULL)
 	return NULL;
     p = res;

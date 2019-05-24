@@ -6803,12 +6803,12 @@ gui_mch_dialog(
 	dfltbutton = -1;
 
     /* Allocate array to hold the width of each button */
-    buttonWidths = (int *)lalloc(numButtons * sizeof(int), TRUE);
+    buttonWidths = (int *)alloc(numButtons * sizeof(int));
     if (buttonWidths == NULL)
 	return -1;
 
     /* Allocate array to hold the X position of each button */
-    buttonPositions = (int *)lalloc(numButtons * sizeof(int), TRUE);
+    buttonPositions = (int *)alloc(numButtons * sizeof(int));
     if (buttonPositions == NULL)
 	return -1;
 

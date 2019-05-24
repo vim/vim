@@ -7820,8 +7820,7 @@ spell_edit_score(
 
     /* We use "cnt" as an array: CNT(badword_idx, goodword_idx). */
 #define CNT(a, b)   cnt[(a) + (b) * (badlen + 1)]
-    cnt = (int *)lalloc((long_u)(sizeof(int) * (badlen + 1) * (goodlen + 1)),
-									TRUE);
+    cnt = (int *)alloc(sizeof(int) * (badlen + 1) * (goodlen + 1));
     if (cnt == NULL)
 	return 0;	/* out of memory */
 

@@ -5137,8 +5137,8 @@ find_pattern_in_path(
 	    goto fpip_end;
 	def_regmatch.rm_ic = FALSE;	/* don't ignore case in define pat. */
     }
-    files = (SearchedFile *)lalloc_clear((long_u)
-			       (max_path_depth * sizeof(SearchedFile)), TRUE);
+    files = (SearchedFile *)lalloc_clear(
+				  max_path_depth * sizeof(SearchedFile), TRUE);
     if (files == NULL)
 	goto fpip_end;
     old_files = max_path_depth;
@@ -5298,8 +5298,8 @@ find_pattern_in_path(
 		/* Push the new file onto the file stack */
 		if (depth + 1 == old_files)
 		{
-		    bigger = (SearchedFile *)lalloc((long_u)(
-			    max_path_depth * 2 * sizeof(SearchedFile)), TRUE);
+		    bigger = (SearchedFile *)alloc(
+				    max_path_depth * 2 * sizeof(SearchedFile));
 		    if (bigger != NULL)
 		    {
 			for (i = 0; i <= depth; i++)

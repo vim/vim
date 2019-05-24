@@ -156,7 +156,7 @@ get_buffcont(
     for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
 	count += (long_u)STRLEN(bp->b_str);
 
-    if ((count || dozero) && (p = lalloc(count + 1, TRUE)) != NULL)
+    if ((count || dozero) && (p = alloc(count + 1)) != NULL)
     {
 	p2 = p;
 	for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
@@ -258,8 +258,7 @@ add_buff(
 	    len = MINIMAL_SIZE;
 	else
 	    len = slen;
-	p = (buffblock_T *)lalloc((long_u)(sizeof(buffblock_T) + len),
-									TRUE);
+	p = (buffblock_T *)alloc(sizeof(buffblock_T) + len);
 	if (p == NULL)
 	    return; /* no space, just forget it */
 	buf->bh_space = (int)(len - slen);

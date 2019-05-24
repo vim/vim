@@ -397,7 +397,7 @@ ex_sort(exarg_T *eap)
     sortbuf1 = NULL;
     sortbuf2 = NULL;
     regmatch.regprog = NULL;
-    nrs = (sorti_T *)lalloc((long_u)(count * sizeof(sorti_T)), TRUE);
+    nrs = (sorti_T *)alloc(count * sizeof(sorti_T));
     if (nrs == NULL)
 	goto sortend;
 
@@ -793,8 +793,7 @@ ex_retab(exarg_T *eap)
 			/* len is actual number of white characters used */
 			len = num_spaces + num_tabs;
 			old_len = (long)STRLEN(ptr);
-			new_line = lalloc(old_len - col + start_col + len + 1,
-									TRUE);
+			new_line = alloc(old_len - col + start_col + len + 1);
 			if (new_line == NULL)
 			    break;
 			if (start_col > 0)
@@ -1745,7 +1744,7 @@ make_filter_cmd(
 	len += (long_u)STRLEN(itmp) + 9;		/* " { < " + " } " */
     if (otmp != NULL)
 	len += (long_u)STRLEN(otmp) + (long_u)STRLEN(p_srr) + 2; /* "  " */
-    buf = lalloc(len, TRUE);
+    buf = alloc(len);
     if (buf == NULL)
 	return NULL;
 
@@ -2536,7 +2535,7 @@ viminfo_readstring(
     if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
     {
 	len = atol((char *)virp->vir_line + off + 1);
-	retval = lalloc(len, TRUE);
+	retval = alloc(len);
 	if (retval == NULL)
 	{
 	    /* Line too long?  File messed up?  Skip next line. */

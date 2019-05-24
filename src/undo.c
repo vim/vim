@@ -124,7 +124,7 @@ static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
 
-#define U_ALLOC_LINE(size) lalloc((long_u)(size), FALSE)
+#define U_ALLOC_LINE(size) lalloc(size, FALSE)
 
 /* used in undo_end() to report number of added and deleted lines */
 static long	u_newcount, u_oldcount;
@@ -2013,8 +2013,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
     }
 
 #ifdef U_DEBUG
-    uhp_table_used = (int *)alloc_clear(
-				     (unsigned)(sizeof(int) * num_head + 1));
+    uhp_table_used = (int *)alloc_clear(sizeof(int) * num_head + 1);
 # define SET_FLAG(j) ++uhp_table_used[j]
 #else
 # define SET_FLAG(j)

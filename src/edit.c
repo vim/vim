@@ -3859,7 +3859,7 @@ replace_push(
     if (replace_stack_len <= replace_stack_nr)
     {
 	replace_stack_len += 50;
-	p = lalloc(sizeof(char_u) * replace_stack_len, TRUE);
+	p = alloc(sizeof(char_u) * replace_stack_len);
 	if (p == NULL)	    /* out of memory */
 	{
 	    replace_stack_len -= 50;

@@ -1160,7 +1160,7 @@ stuff_yank(int regname, char_u *p)
     if (y_append && y_current->y_array != NULL)
     {
 	pp = &(y_current->y_array[y_current->y_size - 1]);
-	lp = lalloc((long_u)(STRLEN(*pp) + STRLEN(p) + 1), TRUE);
+	lp = alloc(STRLEN(*pp) + STRLEN(p) + 1);
 	if (lp == NULL)
 	{
 	    vim_free(p);
@@ -3057,8 +3057,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
     y_current->y_size = yanklines;
     y_current->y_type = yanktype;   /* set the yank register type */
     y_current->y_width = 0;
-    y_current->y_array = (char_u **)lalloc_clear((long_u)(sizeof(char_u *) *
-							    yanklines), TRUE);
+    y_current->y_array = (char_u **)lalloc_clear(sizeof(char_u *) * yanklines,
+									 TRUE);
     if (y_current->y_array == NULL)
     {
 	y_current = curr;
@@ -3171,8 +3171,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
     if (curr != y_current)	/* append the new block to the old block */
     {
-	new_ptr = (char_u **)lalloc((long_u)(sizeof(char_u *) *
-				   (curr->y_size + y_current->y_size)), TRUE);
+	new_ptr = (char_u **)alloc(sizeof(char_u *) *
+					   (curr->y_size + y_current->y_size));
 	if (new_ptr == NULL)
 	    goto fail;
 	for (j = 0; j < curr->y_size; ++j)
@@ -3190,8 +3190,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	 * the new block, unless being Vi compatible. */
 	if (curr->y_type == MCHAR && vim_strchr(p_cpo, CPO_REGAPPEND) == NULL)
 	{
-	    pnew = lalloc((long_u)(STRLEN(curr->y_array[curr->y_size - 1])
-			      + STRLEN(y_current->y_array[0]) + 1), TRUE);
+	    pnew = alloc(STRLEN(curr->y_array[curr->y_size - 1])
+					  + STRLEN(y_current->y_array[0]) + 1);
 	    if (pnew == NULL)
 	    {
 		y_idx = y_current->y_size - 1;
@@ -4453,13 +4453,13 @@ do_join(
     /* Allocate an array to store the number of spaces inserted before each
      * line.  We will use it to pre-compute the length of the new line and the
      * proper placement of each original line in the new one. */
-    spaces = lalloc_clear((long_u)count, TRUE);
+    spaces = lalloc_clear(count, TRUE);
     if (spaces == NULL)
 	return FAIL;
 #if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
     {
-	comments = (int *)lalloc_clear((long_u)count * sizeof(int), TRUE);
+	comments = (int *)lalloc_clear(count * sizeof(int), TRUE);
 	if (comments == NULL)
 	{
 	    vim_free(spaces);
@@ -4571,8 +4571,8 @@ do_join(
 	// Allocate an array to copy the text properties of joined lines into.
 	// And another array to store the number of properties in each line.
 	prop_lines = (textprop_T **)alloc_clear(
-				      (int)(count - 1) * sizeof(textprop_T *));
-	prop_lengths = (int *)alloc_clear((int)(count - 1) * sizeof(int));
+					   (count - 1) * sizeof(textprop_T *));
+	prop_lengths = (int *)alloc_clear((count - 1) * sizeof(int));
 	if (prop_lengths == NULL)
 	    VIM_CLEAR(prop_lines);
     }
@@ -6600,7 +6600,7 @@ clip_convert_selection(char_u **str, long_u *len, VimClipboard *cbd)
     if (y_ptr->y_type == MCHAR && *len >= eolsize)
 	*len -= eolsize;
 
-    p = *str = lalloc(*len + 1, TRUE);	/* add one to avoid zero */
+    p = *str = alloc(*len + 1);	// add one to avoid zero
     if (p == NULL)
 	return -1;
     lnum = 0;
@@ -6818,7 +6818,7 @@ get_reg_contents(int regname, int flags)
 	    ++len;
     }
 
-    retval = lalloc(len + 1, TRUE);
+    retval = alloc(len + 1);
 
     /*
      * Copy the lines of the yank register into the string.

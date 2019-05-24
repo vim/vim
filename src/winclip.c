@@ -244,7 +244,7 @@ crnl_to_nl(const char_u *str, int *size)
     char_u	*retp;
 
     /* Avoid allocating zero bytes, it generates an error message. */
-    ret = lalloc((long_u)(str_len == 0 ? 1 : str_len), TRUE);
+    ret = alloc(str_len == 0 ? 1 : str_len);
     if (ret != NULL)
     {
 	retp = ret;

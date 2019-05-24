@@ -202,8 +202,8 @@ insert_sign(
 {
     signlist_T	*newsign;
 
-    newsign = (signlist_T *)lalloc_id((long_u)sizeof(signlist_T), FALSE,
-							aid_insert_sign);
+    newsign = (signlist_T *)lalloc_id(sizeof(signlist_T), FALSE,
+							      aid_insert_sign);
     if (newsign != NULL)
     {
 	newsign->id = id;
@@ -1057,7 +1057,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 	    emsg(_("E934: Cannot jump to a buffer that does not have a name"));
 	    return -1;
 	}
-	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
+	cmd = alloc(STRLEN(buf->b_fname) + 25);
 	if (cmd == NULL)
 	    return -1;
 	sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);

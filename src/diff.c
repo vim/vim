@@ -710,7 +710,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
     // xdiff requires one big block of memory with all the text.
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	len += (long)STRLEN(ml_get_buf(buf, lnum, FALSE)) + 1;
-    ptr = lalloc(len, TRUE);
+    ptr = alloc(len);
     if (ptr == NULL)
     {
 	// Allocating memory failed.  This can happen, because we try to read

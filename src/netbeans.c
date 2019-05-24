@@ -863,7 +863,7 @@ nb_unquote(char_u *p, char_u **endp)
     int done = 0;
 
     /* result is never longer than input */
-    result = (char *)alloc_clear((unsigned)STRLEN(p) + 1);
+    result = (char *)alloc_clear(STRLEN(p) + 1);
     if (result == NULL)
 	return NULL;
 
@@ -3210,7 +3210,8 @@ addsigntype(
 	    if (globalsignmaplen == 0) /* first allocation */
 	    {
 		globalsignmaplen = 20;
-		globalsignmap = (char **)alloc_clear(globalsignmaplen*sizeof(char *));
+		globalsignmap = (char **)alloc_clear(
+					    globalsignmaplen * sizeof(char *));
 	    }
 	    else    /* grow it */
 	    {

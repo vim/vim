@@ -8782,26 +8782,25 @@ retry:
     if (aucmd_win != NULL)
 	win_free_lsize(aucmd_win);
 
-    new_ScreenLines = (schar_T *)lalloc((long_u)(
-			      (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
+    new_ScreenLines = (schar_T *)lalloc(
+			      (Rows + 1) * Columns * sizeof(schar_T), FALSE);
     vim_memset(new_ScreenLinesC, 0, sizeof(u8char_T *) * MAX_MCO);
     if (enc_utf8)
     {
-	new_ScreenLinesUC = (u8char_T *)lalloc((long_u)(
-			     (Rows + 1) * Columns * sizeof(u8char_T)), FALSE);
+	new_ScreenLinesUC = (u8char_T *)lalloc(
+			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
 	for (i = 0; i < p_mco; ++i)
-	    new_ScreenLinesC[i] = (u8char_T *)lalloc_clear((long_u)(
-			     (Rows + 1) * Columns * sizeof(u8char_T)), FALSE);
+	    new_ScreenLinesC[i] = (u8char_T *)lalloc_clear(
+			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
     }
     if (enc_dbcs == DBCS_JPNU)
-	new_ScreenLines2 = (schar_T *)lalloc((long_u)(
-			     (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
-    new_ScreenAttrs = (sattr_T *)lalloc((long_u)(
-			      (Rows + 1) * Columns * sizeof(sattr_T)), FALSE);
-    new_LineOffset = (unsigned *)lalloc((long_u)(
-					 Rows * sizeof(unsigned)), FALSE);
-    new_LineWraps = (char_u *)lalloc((long_u)(Rows * sizeof(char_u)), FALSE);
-    new_TabPageIdxs = (short *)lalloc((long_u)(Columns * sizeof(short)), FALSE);
+	new_ScreenLines2 = (schar_T *)lalloc(
+			     (Rows + 1) * Columns * sizeof(schar_T), FALSE);
+    new_ScreenAttrs = (sattr_T *)lalloc(
+			      (Rows + 1) * Columns * sizeof(sattr_T), FALSE);
+    new_LineOffset = (unsigned *)lalloc(Rows * sizeof(unsigned), FALSE);
+    new_LineWraps = (char_u *)lalloc(Rows * sizeof(char_u), FALSE);
+    new_TabPageIdxs = (short *)lalloc(Columns * sizeof(short), FALSE);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
@@ -10741,7 +10740,7 @@ redraw_win_toolbar(win_T *wp)
     for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
 	++item_count;
     wp->w_winbar_items = (winbar_item_T *)alloc_clear(
-			   (unsigned)sizeof(winbar_item_T) * (item_count + 1));
+				     sizeof(winbar_item_T) * (item_count + 1));
 
     /* TODO: use fewer spaces if there is not enough room */
     for (menu = wp->w_winbar->children;
