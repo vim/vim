@@ -768,6 +768,14 @@ func Test_textprop_empty_buffer()
   close
 endfunc
 
+" This test currently triggers global memory overflows which
+" is detected by asan (valgrind can't detect such bugs).
+func Test_textprop_invalid_memory_access()
+  call prop_type_add("xxx", {})
+  call prop_add(1, 1, {"type": "xxx"})
+  next X
+endfunc
+
 func Test_textprop_remove_from_buf()
   new
   let buf = bufnr('')
