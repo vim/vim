@@ -1271,11 +1271,13 @@ main_loop(
 	    {
 		char_u *p;
 
-		/* msg_attr_keep() will set keep_msg to NULL, must free the
-		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
-		 * to check for duplicates. */
+		// msg_attr_keep() will set keep_msg to NULL, must free the
+		// string here. Don't reset keep_msg, msg_attr_keep() uses it
+		// to check for duplicates.  Never put this message in history.
 		p = keep_msg;
+		msg_hist_off = TRUE;
 		msg_attr((char *)p, keep_msg_attr);
+		msg_hist_off = FALSE;
 		vim_free(p);
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
