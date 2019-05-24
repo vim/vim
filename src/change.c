@@ -172,16 +172,20 @@ check_recorded_changes(
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
 	listitem_T *li;
-	linenr_T    nr;
+	linenr_T    prev_lnum;
+	linenr_T    prev_lnume;
 
 	for (li = buf->b_recorded_changes->lv_first; li != NULL;
 							      li = li->li_next)
 	{
-	    nr = (linenr_T)dict_get_number(
+	    prev_lnum = (linenr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
-	    if (nr >= lnum || nr > lnume)
+	    prev_lnume = (linenr_T)dict_get_number(
+				       li->li_tv.vval.v_dict, (char_u *)"end");
+	    if (prev_lnum >= lnum || prev_lnum > lnume
+		    || (prev_lnume >= lnum && xtra != 0))
 	    {
-		if (li->li_next == NULL && lnum == nr
+		if (li->li_next == NULL && lnum == prev_lnum
 			&& col + 1 == (colnr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"col"))
 		{
@@ -195,8 +199,8 @@ check_recorded_changes(
 							  (char_u *)"end", -1);
 			if (di != NULL)
 			{
-			    nr = tv_get_number(&di->di_tv);
-			    if (lnume > nr)
+			    prev_lnum = tv_get_number(&di->di_tv);
+			    if (lnume > prev_lnum)
 				di->di_tv.vval.v_number = lnume;
 			}
 			di = dict_find(li->li_tv.vval.v_dict,
