@@ -4856,27 +4856,25 @@ mch_call_shell(
 		    (gui.in_use || gui.starting) &&
 # endif
 		    !s_dont_use_vimrun && p_stmp)
-		    /* Use vimrun to execute the command.  It opens a console
-		     * window, which can be closed without killing Vim. */
+		    // Use vimrun to execute the command.  It opens a console
+		    // window, which can be closed without killing Vim.
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
 			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
-		else
+		else if (
 # ifdef VIMDLL
-		if (gui.in_use || gui.starting)
+			(gui.in_use || gui.starting) &&
 # endif
+			STRCMP(p_shcf, "/c") == 0)
+		    // workaround for the case that "vimrun" does not exist
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
 					   p_sh, p_shcf, p_sh, p_shcf, cmd);
-# ifdef VIMDLL
 		else
-# endif
 #endif
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
-#endif
 		x = mch_system((char *)newcmd, options);
 		vim_free(newcmd);
 	    }
