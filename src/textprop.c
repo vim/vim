@@ -1203,7 +1203,7 @@ join_prop_lines(
     size_t	oldproplen;
     char_u	*props;
     int		i;
-    int		len;
+    size_t	len;
     char_u	*line;
     size_t	l;
 
@@ -1218,8 +1218,8 @@ join_prop_lines(
     // get existing properties of the joined line
     oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
 
-    len = (int)STRLEN(newp) + 1;
-    line = alloc(len + (oldproplen + proplen) * (int)sizeof(textprop_T));
+    len = STRLEN(newp) + 1;
+    line = alloc((int)(len + (oldproplen + proplen) * sizeof(textprop_T)));
     if (line == NULL)
 	return;
     mch_memmove(line, newp, len);
@@ -1236,7 +1236,7 @@ join_prop_lines(
 	    vim_free(prop_lines[i]);
 	}
 
-    ml_replace_len(lnum, line, len, TRUE, FALSE);
+    ml_replace_len(lnum, line, (colnr_T)len, TRUE, FALSE);
     vim_free(newp);
     vim_free(prop_lines);
     vim_free(prop_lengths);

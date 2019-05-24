@@ -4990,7 +4990,7 @@ search_stat(
     if (cur > 0)
     {
 	char	t[SEARCH_STAT_BUF_LEN] = "";
-	int	len;
+	size_t	len;
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
