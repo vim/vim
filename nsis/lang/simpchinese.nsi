@@ -25,7 +25,7 @@ LangString ^UninstallCaption ${LANG_SIMPCHINESE} \
 #    "安装路径 (必须以 vim 结尾)"
 
 LangString str_show_readme          ${LANG_SIMPCHINESE} \
-    "显示 README 文件"
+    "安装完成后显示 README 文件"
 
 # Install types:
 LangString str_type_typical         ${LANG_SIMPCHINESE} \
@@ -45,22 +45,22 @@ LangString str_type_full            ${LANG_SIMPCHINESE} \
 LangString str_section_old_ver      ${LANG_SIMPCHINESE} \
     "卸载旧版本"
 LangString str_desc_old_ver         ${LANG_SIMPCHINESE} \
-    "卸载旧版本的 Vim。"
+    "卸载系统上已存在的 Vim 版本"
 
 LangString str_section_exe          ${LANG_SIMPCHINESE} \
     "安装 Vim 图形界面"
 LangString str_desc_exe             ${LANG_SIMPCHINESE} \
-    "安装 Vim 图形界面及脚本。"
+    "安装 Vim 图形界面及运行时文件。此项为必选。"
 
 LangString str_section_console      ${LANG_SIMPCHINESE} \
-    "安装 Vim 命令行程序"
+    "安装 Vim 控制台版本"
 LangString str_desc_console         ${LANG_SIMPCHINESE} \
-    "安装 Vim 命令行程序 (vim.exe)。"
+    "安装 Vim 的控制台版本（vim.exe）。"
 
 LangString str_section_batch        ${LANG_SIMPCHINESE} \
     "安装批处理文件"
 LangString str_desc_batch           ${LANG_SIMPCHINESE} \
-    "为 Vim 的各种变体创建批处理程序，以便在命令行下运行 Vim。"
+    "为 Vim 的各种变体创建批处理文件，以便在命令行下运行 Vim。"
 
 LangString str_group_icons          ${LANG_SIMPCHINESE} \
     "创建图标"
@@ -158,7 +158,7 @@ LangString str_desc_rm_plugin_vim   ${LANG_SIMPCHINESE} \
 LangString str_unsection_rootdir    ${LANG_SIMPCHINESE} \
     "移除 Vim 主目录"
 LangString str_desc_rm_rootdir      ${LANG_SIMPCHINESE} \
-    "移除 Vim 的主目录，这将包含您的配置文件！"
+    "移除 Vim 的主目录，该目录包含您的配置文件！"
 
 
 ##############################################################################
