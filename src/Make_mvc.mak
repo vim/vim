@@ -847,7 +847,7 @@ XDIFF_DEPS = \
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 SUBSYSTEM_TOOLS = $(SUBSYSTEM_TOOLS),$(SUBSYSTEM_VER)
-! if "$(VIMDLL)" != "yes"
+! if "$(VIMDLL)" == "yes"
 SUBSYSTEM_CON = $(SUBSYSTEM_CON),$(SUBSYSTEM_VER)
 ! endif
 # Pass SUBSYSTEM_VER to GvimExt and other tools
