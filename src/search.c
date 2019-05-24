@@ -1382,7 +1382,7 @@ do_search(
 	{
 	    char_u	*trunc;
 	    char_u	off_buf[40];
-	    int		off_len = 0;
+	    size_t	off_len = 0;
 
 	    // Compute msg_row early.
 	    msg_start();
