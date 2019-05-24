@@ -985,7 +985,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	}
     }
 
-    newp = alloc_check((unsigned)(linelen + newlen - oldlen));
+    newp = alloc(linelen + newlen - oldlen);
     if (newp == NULL)
 	return;
 
@@ -1060,7 +1060,7 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
 
-    newp = alloc_check((unsigned)(oldlen + newlen + 1));
+    newp = alloc(oldlen + newlen + 1);
     if (newp == NULL)
 	return;
     if (col > 0)
@@ -1213,7 +1213,7 @@ del_bytes(
 	newp = oldp;			    // use same allocated memory
     else
     {					    // need to allocate a new line
-	newp = alloc((unsigned)(newlen + 1));
+	newp = alloc(newlen + 1);
 	if (newp == NULL)
 	    return FAIL;
 	mch_memmove(newp, oldp, (size_t)col);

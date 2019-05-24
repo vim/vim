@@ -2180,7 +2180,7 @@ vim_getenv(char_u *name, int *mustfree)
 		pend1 = remove_tail(p, pend, (char_u *)"MacOS");
 		if (pend1 != pend)
 		{
-		    pnew = alloc((unsigned)(pend1 - p) + 15);
+		    pnew = alloc(pend1 - p + 15);
 		    if (pnew != NULL)
 		    {
 			STRNCPY(pnew, p, (pend1 - p));
@@ -2341,7 +2341,7 @@ vim_setenv(char_u *name, char_u *val)
      * Putenv does not copy the string, it has to remain
      * valid.  The allocated memory will never be freed.
      */
-    envbuf = alloc((unsigned)(STRLEN(name) + STRLEN(val) + 2));
+    envbuf = alloc(STRLEN(name) + STRLEN(val) + 2);
     if (envbuf != NULL)
     {
 	sprintf((char *)envbuf, "%s=%s", name, val);
@@ -3019,7 +3019,7 @@ concat_fnames(char_u *fname1, char_u *fname2, int sep)
 {
     char_u  *dest;
 
-    dest = alloc((unsigned)(STRLEN(fname1) + STRLEN(fname2) + 3));
+    dest = alloc(STRLEN(fname1) + STRLEN(fname2) + 3);
     if (dest != NULL)
     {
 	STRCPY(dest, fname1);
@@ -3040,7 +3040,7 @@ concat_str(char_u *str1, char_u *str2)
     char_u  *dest;
     size_t  l = STRLEN(str1);
 
-    dest = alloc((unsigned)(l + STRLEN(str2) + 1L));
+    dest = alloc(l + STRLEN(str2) + 1L);
     if (dest != NULL)
     {
 	STRCPY(dest, str1);
@@ -3076,7 +3076,7 @@ FullName_save(
     if (fname == NULL)
 	return NULL;
 
-    buf = alloc((unsigned)MAXPATHL);
+    buf = alloc(MAXPATHL);
     if (buf != NULL)
     {
 	if (vim_FullName(fname, buf, MAXPATHL, force) != FAIL)
@@ -4231,7 +4231,7 @@ addfile(
     if (ga_grow(gap, 1) == FAIL)
 	return;
 
-    p = alloc((unsigned)(STRLEN(f) + 1 + isdir));
+    p = alloc(STRLEN(f) + 1 + isdir);
     if (p == NULL)
 	return;
 

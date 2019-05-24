@@ -595,10 +595,10 @@ ex_sort(exarg_T *eap)
     }
 
     /* Allocate a buffer that can hold the longest line. */
-    sortbuf1 = alloc((unsigned)maxlen + 1);
+    sortbuf1 = alloc(maxlen + 1);
     if (sortbuf1 == NULL)
 	goto sortend;
-    sortbuf2 = alloc((unsigned)maxlen + 1);
+    sortbuf2 = alloc(maxlen + 1);
     if (sortbuf2 == NULL)
 	goto sortend;
 
@@ -1146,7 +1146,7 @@ do_bang(
 	    }
 	    len += (int)STRLEN(prevcmd);
 	}
-	if ((t = alloc((unsigned)len)) == NULL)
+	if ((t = alloc(len)) == NULL)
 	{
 	    vim_free(newcmd);
 	    return;
@@ -1209,7 +1209,7 @@ do_bang(
      */
     if (*p_shq != NUL)
     {
-	newcmd = alloc((unsigned)(STRLEN(prevcmd) + 2 * STRLEN(p_shq) + 1));
+	newcmd = alloc(STRLEN(prevcmd) + 2 * STRLEN(p_shq) + 1);
 	if (newcmd == NULL)
 	    return;
 	STRCPY(newcmd, p_shq);
@@ -3908,7 +3908,7 @@ do_ecmd(
 	    len = (int)STRLEN(command) + 3;
 	else
 	    len = 30;
-	p = alloc((unsigned)len);
+	p = alloc(len);
 	if (p != NULL)
 	{
 	    if (command != NULL)
@@ -5634,7 +5634,7 @@ do_sub(exarg_T *eap)
 		     * too many calls to alloc()/free()).
 		     */
 		    new_start_len = needed_len + 50;
-		    if ((new_start = alloc_check(new_start_len)) == NULL)
+		    if ((new_start = alloc(new_start_len)) == NULL)
 			goto outofmem;
 		    *new_start = NUL;
 		    new_end = new_start;
@@ -5651,7 +5651,7 @@ do_sub(exarg_T *eap)
 		    if (needed_len > (int)new_start_len)
 		    {
 			new_start_len = needed_len + 50;
-			if ((p1 = alloc_check(new_start_len)) == NULL)
+			if ((p1 = alloc(new_start_len)) == NULL)
 			{
 			    vim_free(new_start);
 			    goto outofmem;
@@ -7320,7 +7320,7 @@ helptags_one(
 			    got_int = TRUE;
 			    break;
 			}
-			s = alloc((unsigned)(p2 - p1 + STRLEN(fname) + 2));
+			s = alloc(p2 - p1 + STRLEN(fname) + 2);
 			if (s == NULL)
 			{
 			    got_int = TRUE;

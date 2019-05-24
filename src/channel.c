@@ -2024,7 +2024,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	}
 	else
 	{
-	    item = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+	    item = (jsonq_T *)alloc(sizeof(jsonq_T));
 	    if (item == NULL)
 		clear_tv(&listtv);
 	    else
@@ -2223,7 +2223,7 @@ channel_push_json(channel_T *channel, ch_part_T part, typval_T *rettv)
 	/* append after the last item that was pushed back */
 	item = item->jq_next;
 
-    newitem = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+    newitem = (jsonq_T *)alloc(sizeof(jsonq_T));
     if (newitem == NULL)
 	clear_tv(rettv);
     else

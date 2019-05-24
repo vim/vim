@@ -3731,7 +3731,7 @@ do_map(
     /*
      * Get here when adding a new entry to the maphash[] list or abbrlist.
      */
-    mp = (mapblock_T *)alloc((unsigned)sizeof(mapblock_T));
+    mp = (mapblock_T *)alloc(sizeof(mapblock_T));
     if (mp == NULL)
     {
 	retval = 4;	    /* no mem */
@@ -4375,7 +4375,7 @@ ExpandMappings(
 
 	if (round == 1)
 	{
-	    *file = (char_u **)alloc((unsigned)(count * sizeof(char_u *)));
+	    *file = (char_u **)alloc(count * sizeof(char_u *));
 	    if (*file == NULL)
 		return FAIL;
 	}
@@ -4695,7 +4695,7 @@ vim_strsave_escape_csi(
     /* Need a buffer to hold up to three times as much.  Four in case of an
      * illegal utf-8 byte:
      * 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER */
-    res = alloc((unsigned)(STRLEN(p) * 4) + 1);
+    res = alloc(STRLEN(p) * 4 + 1);
     if (res != NULL)
     {
 	d = res;

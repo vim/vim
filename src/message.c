@@ -437,7 +437,7 @@ get_emsg_source(void)
     if (sourcing_name != NULL && other_sourcing_name())
     {
 	p = (char_u *)_("Error detected while processing %s:");
-	Buf = alloc((unsigned)(STRLEN(sourcing_name) + STRLEN(p)));
+	Buf = alloc(STRLEN(sourcing_name) + STRLEN(p));
 	if (Buf != NULL)
 	    sprintf((char *)Buf, (char *)p, sourcing_name);
 	return Buf;
@@ -462,7 +462,7 @@ get_emsg_lnum(void)
 	    && sourcing_lnum != 0)
     {
 	p = (char_u *)_("line %4ld:");
-	Buf = alloc((unsigned)(STRLEN(p) + 20));
+	Buf = alloc(STRLEN(p) + 20);
 	if (Buf != NULL)
 	    sprintf((char *)Buf, (char *)p, (long)sourcing_lnum);
 	return Buf;

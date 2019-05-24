@@ -2162,7 +2162,7 @@ gui_screenstr(
 
     if (enc_utf8)
     {
-	buf = alloc((unsigned)(len * MB_MAXBYTES + 1));
+	buf = alloc(len * MB_MAXBYTES + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2185,7 +2185,7 @@ gui_screenstr(
     }
     else if (enc_dbcs == DBCS_JPNU)
     {
-	buf = alloc((unsigned)(len * 2 + 1));
+	buf = alloc(len * 2 + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 

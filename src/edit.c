@@ -1943,7 +1943,7 @@ change_indent(
 	{
 	    curwin->w_cursor.col = (colnr_T)new_cursor_col;
 	    i = (int)curwin->w_virtcol - vcol;
-	    ptr = alloc((unsigned)(i + 1));
+	    ptr = alloc(i + 1);
 	    if (ptr != NULL)
 	    {
 		new_cursor_col += i;

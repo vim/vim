@@ -28,7 +28,7 @@ cin_is_cinword(char_u *line)
     int		len;
 
     cinw_len = (int)STRLEN(curbuf->b_p_cinw) + 1;
-    cinw_buf = alloc((unsigned)cinw_len);
+    cinw_buf = alloc(cinw_len);
     if (cinw_buf != NULL)
     {
 	line = skipwhite(line);

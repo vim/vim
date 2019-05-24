@@ -537,7 +537,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 {
     diff_T	*dnew;
 
-    dnew = (diff_T *)alloc((unsigned)sizeof(diff_T));
+    dnew = (diff_T *)alloc(sizeof(diff_T));
     if (dnew != NULL)
     {
 	dnew->df_next = dp;
@@ -1123,7 +1123,7 @@ diff_file(diffio_T *dio)
     {
 	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
 				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
-	cmd = alloc((unsigned)len);
+	cmd = alloc(len);
 	if (cmd == NULL)
 	    return FAIL;
 
@@ -1218,7 +1218,7 @@ ex_diffpatch(exarg_T *eap)
     if (esc_name == NULL)
 	goto theend;
     buflen = STRLEN(tmp_orig) + STRLEN(esc_name) + STRLEN(tmp_new) + 16;
-    buf = alloc((unsigned)buflen);
+    buf = alloc(buflen);
     if (buf == NULL)
 	goto theend;
 

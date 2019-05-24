@@ -559,7 +559,7 @@ translate_mnemonic_tag(char_u *name, int use_mnemonic)
 	if (*psrc == '_')
 	    ++n_underscores;
 
-    buf = alloc((unsigned)(psrc - name + n_underscores + 1));
+    buf = alloc(psrc - name + n_underscores + 1);
     if (buf != NULL)
     {
 	pdest = buf;

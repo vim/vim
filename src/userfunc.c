@@ -557,7 +557,7 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 	}
 	else
 	{
-	    fname = alloc((unsigned)(i + STRLEN(name + llen) + 1));
+	    fname = alloc(i + STRLEN(name + llen) + 1);
 	    if (fname == NULL)
 		*error = ERROR_OTHER;
 	    else
@@ -978,7 +978,7 @@ call_user_func(
     /* need space for function name + ("function " + 3) or "[number]" */
     len = (save_sourcing_name == NULL ? 0 : STRLEN(save_sourcing_name))
 						   + STRLEN(fp->uf_name) + 20;
-    sourcing_name = alloc((unsigned)len);
+    sourcing_name = alloc(len);
     if (sourcing_name != NULL)
     {
 	if (save_sourcing_name != NULL
@@ -1932,7 +1932,7 @@ trans_function_name(
 	}
     }
 
-    name = alloc((unsigned)(len + lead + 1));
+    name = alloc(len + lead + 1);
     if (name != NULL)
     {
 	if (lead > 0)
@@ -2787,7 +2787,7 @@ func_dump_profile(FILE *fd)
     if (todo == 0)
 	return;     /* nothing to dump */
 
-    sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T *) * todo));
+    sorttab = (ufunc_T **)alloc(sizeof(ufunc_T *) * todo);
 
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
     {

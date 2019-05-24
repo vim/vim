@@ -4757,7 +4757,7 @@ syn_incl_toplevel(int id, int *flagsp)
     if (curwin->w_s->b_syn_topgrp >= SYNID_CLUSTER)
     {
 	/* We have to alloc this, because syn_combine_list() will free it. */
-	short	    *grp_list = (short *)alloc((unsigned)(2 * sizeof(short)));
+	short	    *grp_list = (short *)alloc(2 * sizeof(short));
 	int	    tlg_id = curwin->w_s->b_syn_topgrp - SYNID_CLUSTER;
 
 	if (grp_list != NULL)
@@ -4872,7 +4872,7 @@ syn_cmd_keyword(exarg_T *eap, int syncing UNUSED)
 	    syn_id = syn_check_group(arg, (int)(group_name_end - arg));
 	if (syn_id != 0)
 	    /* allocate a buffer, for removing backslashes in the keyword */
-	    keyword_copy = alloc((unsigned)STRLEN(rest) + 1);
+	    keyword_copy = alloc(STRLEN(rest) + 1);
 	if (keyword_copy != NULL)
 	{
 	    syn_opt_arg.flags = 0;
@@ -5208,7 +5208,7 @@ syn_cmd_region(
 	     * syn_patterns for this item, at the start (because the list is
 	     * used from end to start).
 	     */
-	    ppp = (struct pat_ptr *)alloc((unsigned)sizeof(struct pat_ptr));
+	    ppp = (struct pat_ptr *)alloc(sizeof(struct pat_ptr));
 	    if (ppp == NULL)
 	    {
 		rest = NULL;
@@ -5465,7 +5465,7 @@ syn_combine_list(short **clstr1, short **clstr2, int list_op)
 		clstr = NULL;
 		break;
 	    }
-	    clstr = (short *)alloc((unsigned)((count + 1) * sizeof(short)));
+	    clstr = (short *)alloc((count + 1) * sizeof(short));
 	    if (clstr == NULL)
 		break;
 	    clstr[count] = 0;
@@ -6124,7 +6124,7 @@ get_id_list(
 	    break;
 	if (round == 1)
 	{
-	    retval = (short *)alloc((unsigned)((count + 1) * sizeof(short)));
+	    retval = (short *)alloc((count + 1) * sizeof(short));
 	    if (retval == NULL)
 		break;
 	    retval[count] = 0;	    /* zero means end of the list */
@@ -6163,7 +6163,7 @@ copy_id_list(short *list)
     for (count = 0; list[count]; ++count)
 	;
     len = (count + 1) * sizeof(short);
-    retval = (short *)alloc((unsigned)len);
+    retval = (short *)alloc(len);
     if (retval != NULL)
 	mch_memmove(retval, list, (size_t)len);
 
@@ -7167,7 +7167,7 @@ load_colors(char_u *name)
 	return OK;
 
     recursive = TRUE;
-    buf = alloc((unsigned)(STRLEN(name) + 12));
+    buf = alloc(STRLEN(name) + 12);
     if (buf != NULL)
     {
 	apply_autocmds(EVENT_COLORSCHEMEPRE, name,

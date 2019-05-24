@@ -441,7 +441,7 @@ serverSendToVim(
      * Length must be computed exactly!
      */
     length = STRLEN(name) + STRLEN(p_enc) + STRLEN(cmd) + 14;
-    property = (char_u *)alloc((unsigned)length + 30);
+    property = (char_u *)alloc(length + 30);
 
     sprintf((char *)property, "%c%c%c-n %s%c-E %s%c-s %s",
 		      0, asExpr ? 'c' : 'k', 0, name, 0, p_enc, 0, cmd);
@@ -750,7 +750,7 @@ serverSendReply(char_u *name, char_u *str)
 	return -1;
 
     length = STRLEN(p_enc) + STRLEN(str) + 14;
-    if ((property = (char_u *)alloc((unsigned)length + 30)) != NULL)
+    if ((property = (char_u *)alloc(length + 30)) != NULL)
     {
 	sprintf((char *)property, "%cn%c-E %s%c-n %s%c-w %x",
 			    0, 0, p_enc, 0, str, 0, (unsigned int)commWindow);

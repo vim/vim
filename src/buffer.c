@@ -2577,7 +2577,7 @@ ExpandBufnames(
     /* Make a copy of "pat" and change "^" to "\(^\|[\/]\)". */
     if (*pat == '^')
     {
-	patc = alloc((unsigned)STRLEN(pat) + 11);
+	patc = alloc(STRLEN(pat) + 11);
 	if (patc == NULL)
 	    return FAIL;
 	STRCPY(patc, "\\(^\\|[\\/]\\)");
@@ -2634,7 +2634,7 @@ ExpandBufnames(
 		break;
 	    if (round == 1)
 	    {
-		*file = (char_u **)alloc((unsigned)(count * sizeof(char_u *)));
+		*file = (char_u **)alloc(count * sizeof(char_u *));
 		if (*file == NULL)
 		{
 		    vim_regfree(regmatch.regprog);

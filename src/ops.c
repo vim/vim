@@ -456,7 +456,7 @@ shift_block(oparg_T *oap, int amount)
 	/* if we're splitting a TAB, allow for it */
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 	len = (int)STRLEN(bd.textstart) + 1;
-	newp = alloc_check((unsigned)(bd.textcol + i + j + len));
+	newp = alloc(bd.textcol + i + j + len);
 	if (newp == NULL)
 	    return;
 	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + len));
@@ -550,7 +550,7 @@ shift_block(oparg_T *oap, int amount)
 		       + fill
 		       + (unsigned)STRLEN(non_white) + 1;
 
-	newp = alloc_check(new_line_len);
+	newp = alloc(new_line_len);
 	if (newp == NULL)
 	    return;
 	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
@@ -644,7 +644,7 @@ block_insert(
 	    count -= off;
 	}
 
-	newp = alloc_check((unsigned)(STRLEN(oldp)) + s_len + count + 1);
+	newp = alloc(STRLEN(oldp) + s_len + count + 1);
 	if (newp == NULL)
 	    continue;
 
@@ -1003,7 +1003,7 @@ get_register(
 #endif
 
     get_yank_register(name, 0);
-    reg = (yankreg_T *)alloc((unsigned)sizeof(yankreg_T));
+    reg = (yankreg_T *)alloc(sizeof(yankreg_T));
     if (reg != NULL)
     {
 	*reg = *y_current;
@@ -1013,8 +1013,7 @@ get_register(
 	    if (reg->y_size == 0)
 		reg->y_array = NULL;
 	    else
-		reg->y_array = (char_u **)alloc((unsigned)(sizeof(char_u *)
-							      * reg->y_size));
+		reg->y_array = (char_u **)alloc(sizeof(char_u *) * reg->y_size);
 	    if (reg->y_array != NULL)
 	    {
 		for (i = 0; i < reg->y_size; ++i)
@@ -1177,7 +1176,7 @@ stuff_yank(int regname, char_u *p)
     {
 	free_yank_all();
 	if ((y_current->y_array =
-			(char_u **)alloc((unsigned)sizeof(char_u *))) == NULL)
+			(char_u **)alloc(sizeof(char_u *))) == NULL)
 	{
 	    vim_free(p);
 	    return FAIL;
@@ -1921,7 +1920,7 @@ op_delete(oparg_T *oap)
 	    // Thus the number of characters may increase!
 	    n = bd.textlen - bd.startspaces - bd.endspaces;
 	    oldp = ml_get(lnum);
-	    newp = alloc_check((unsigned)STRLEN(oldp) + 1 - n);
+	    newp = alloc(STRLEN(oldp) + 1 - n);
 	    if (newp == NULL)
 		continue;
 	    /* copy up to deleted part */
@@ -2227,7 +2226,7 @@ op_replace(oparg_T *oap, int c)
 
 	    oldp = ml_get_curline();
 	    oldlen = STRLEN(oldp);
-	    newp = alloc_check((unsigned)oldlen + 1 + n);
+	    newp = alloc(oldlen + 1 + n);
 	    if (newp == NULL)
 		continue;
 	    vim_memset(newp, NUL, (size_t)(oldlen + 1 + n));
@@ -2260,8 +2259,7 @@ op_replace(oparg_T *oap, int c)
 	    else
 	    {
 		/* Replacing with \r or \n means splitting the line. */
-		after_p = alloc_check(
-				   (unsigned)(oldlen + 1 + n - STRLEN(newp)));
+		after_p = alloc(oldlen + 1 + n - STRLEN(newp));
 		if (after_p != NULL)
 		    STRMOVE(after_p, oldp);
 	    }
@@ -2869,7 +2867,7 @@ op_change(oparg_T *oap)
 	{
 	    /* Subsequent calls to ml_get() flush the firstline data - take a
 	     * copy of the inserted text.  */
-	    if ((ins_text = alloc_check((unsigned)(ins_len + 1))) != NULL)
+	    if ((ins_text = alloc(ins_len + 1)) != NULL)
 	    {
 		vim_strncpy(ins_text, firstline + bd.textcol, (size_t)ins_len);
 		for (linenr = oap->start.lnum + 1; linenr <= oap->end.lnum;
@@ -2890,8 +2888,7 @@ op_change(oparg_T *oap)
 			else
 			    vpos.coladd = 0;
 			oldp = ml_get(linenr);
-			newp = alloc_check((unsigned)(STRLEN(oldp)
-						 + vpos.coladd + ins_len + 1));
+			newp = alloc(STRLEN(oldp) + vpos.coladd + ins_len + 1);
 			if (newp == NULL)
 			    continue;
 			/* copy up to block start */
@@ -3494,8 +3491,7 @@ do_put(
 		}
 		if (y_array != NULL)
 		    break;
-		y_array = (char_u **)alloc((unsigned)
-						 (y_size * sizeof(char_u *)));
+		y_array = (char_u **)alloc((y_size * sizeof(char_u *)));
 		if (y_array == NULL)
 		    goto end;
 	    }
@@ -3741,7 +3737,7 @@ do_put(
 
 	    /* insert the new text */
 	    totlen = count * (yanklen + spaces) + bd.startspaces + bd.endspaces;
-	    newp = alloc_check((unsigned)totlen + oldlen + 1);
+	    newp = alloc(totlen + oldlen + 1);
 	    if (newp == NULL)
 		break;
 	    /* copy part up to cursor to new line */
@@ -3868,7 +3864,7 @@ do_put(
 			lnum++;
 			continue;
 		    }
-		    newp = alloc_check((unsigned)(STRLEN(oldp) + totlen + 1));
+		    newp = alloc(STRLEN(oldp) + totlen + 1);
 		    if (newp == NULL)
 			goto end;	/* alloc() gave an error message */
 		    mch_memmove(newp, oldp, (size_t)col);
@@ -3920,7 +3916,7 @@ do_put(
 		    lnum = new_cursor.lnum;
 		    ptr = ml_get(lnum) + col;
 		    totlen = (int)STRLEN(y_array[y_size - 1]);
-		    newp = alloc_check((unsigned)(STRLEN(ptr) + totlen + 1));
+		    newp = alloc(STRLEN(ptr) + totlen + 1);
 		    if (newp == NULL)
 			goto error;
 		    STRCPY(newp, y_array[y_size - 1]);
@@ -3930,7 +3926,7 @@ do_put(
 		    vim_free(newp);
 
 		    oldp = ml_get(lnum);
-		    newp = alloc_check((unsigned)(col + yanklen + 1));
+		    newp = alloc(col + yanklen + 1);
 		    if (newp == NULL)
 			goto error;
 					    /* copy first part of line */
@@ -4563,7 +4559,7 @@ do_join(
     col = sumsize - currsize - spaces[count - 1];
 
     /* allocate the space for the new line */
-    newp = alloc_check((unsigned)(sumsize + 1));
+    newp = alloc(sumsize + 1);
     cend = newp + sumsize;
     *cend = 0;
 
@@ -5880,7 +5876,7 @@ do_addsub(
 	 * When there are many leading zeros it could be very long.
 	 * Allocate a bit too much.
 	 */
-	buf1 = alloc((unsigned)length + NUMBUFLEN);
+	buf1 = alloc(length + NUMBUFLEN);
 	if (buf1 == NULL)
 	    goto theend;
 	ptr = buf1;
@@ -6055,7 +6051,7 @@ read_viminfo_register(vir_T *virp, int force)
 	 */
 	if (set_prev)
 	    y_previous = y_current;
-	array = (char_u **)alloc((unsigned)(limit * sizeof(char_u *)));
+	array = (char_u **)alloc(limit * sizeof(char_u *));
 	str = skipwhite(skiptowhite(str));
 	if (STRNCMP(str, "CHAR", 4) == 0)
 	    new_type = MCHAR;
@@ -6076,7 +6072,7 @@ read_viminfo_register(vir_T *virp, int force)
 	    if (size == limit)
 	    {
 		char_u **new_array = (char_u **)
-			      alloc((unsigned)(limit * 2 * sizeof(char_u *)));
+					   alloc(limit * 2 * sizeof(char_u *));
 
 		if (new_array == NULL)
 		{
@@ -6116,8 +6112,7 @@ read_viminfo_register(vir_T *virp, int force)
 	else
 	{
 	    /* Move the lines from array[] to y_array[]. */
-	    y_current->y_array =
-			(char_u **)alloc((unsigned)(size * sizeof(char_u *)));
+	    y_current->y_array = (char_u **)alloc(size * sizeof(char_u *));
 	    for (i = 0; i < size; i++)
 	    {
 		if (y_current->y_array == NULL)
@@ -6214,7 +6209,7 @@ handle_viminfo_register(garray_T *values, int force)
 	y_ptr->y_array = NULL;
 	return;
     }
-    y_ptr->y_array = (char_u **)alloc((unsigned)(linecount * sizeof(char_u *)));
+    y_ptr->y_array = (char_u **)alloc(linecount * sizeof(char_u *));
     if (y_ptr->y_array == NULL)
     {
 	y_ptr->y_size = 0; // ensure object state is consistent
@@ -7145,7 +7140,7 @@ str_to_reg(
 	    }
 	    else
 		extra = 0;
-	    s = alloc((unsigned)(i + extra + 1));
+	    s = alloc(i + extra + 1);
 	    if (s == NULL)
 		break;
 	    if (extra)

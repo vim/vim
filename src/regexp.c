@@ -7145,7 +7145,7 @@ regtilde(char_u *source, int magic)
 	    {
 		/* length = len(newsub) - 1 + len(prev_sub) + 1 */
 		prevlen = (int)STRLEN(reg_prev_sub);
-		tmpsub = alloc((unsigned)(STRLEN(newsub) + prevlen));
+		tmpsub = alloc(STRLEN(newsub) + prevlen);
 		if (tmpsub != NULL)
 		{
 		    /* copy prefix */

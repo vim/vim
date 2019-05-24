@@ -1193,7 +1193,7 @@ do_autocmd_event(
 		    return FAIL;
 		}
 
-		ap = (AutoPat *)alloc((unsigned)sizeof(AutoPat));
+		ap = (AutoPat *)alloc(sizeof(AutoPat));
 		if (ap == NULL)
 		    return FAIL;
 		ap->pat = vim_strnsave(pat, patlen);
@@ -1242,7 +1242,7 @@ do_autocmd_event(
 	    prev_ac = &(ap->cmds);
 	    while ((ac = *prev_ac) != NULL)
 		prev_ac = &ac->next;
-	    ac = (AutoCmd *)alloc((unsigned)sizeof(AutoCmd));
+	    ac = (AutoCmd *)alloc(sizeof(AutoCmd));
 	    if (ac == NULL)
 		return FAIL;
 	    ac->cmd = vim_strsave(cmd);
@@ -2303,8 +2303,8 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		sourcing_name = alloc((unsigned)(STRLEN(s)
-					    + STRLEN(name) + ap->patlen + 1));
+		sourcing_name = alloc(STRLEN(s)
+					      + STRLEN(name) + ap->patlen + 1);
 		if (sourcing_name != NULL)
 		{
 		    sprintf((char *)sourcing_name, s,

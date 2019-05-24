@@ -2083,7 +2083,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = (wordcount_T *)alloc((unsigned)(sizeof(wordcount_T) + STRLEN(p)));
+	wc = (wordcount_T *)alloc(sizeof(wordcount_T) + STRLEN(p));
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -3432,8 +3432,7 @@ spell_suggest(int count)
 	}
 
 	/* Replace the word. */
-	p = alloc((unsigned)STRLEN(line) - stp->st_orglen
-						       + stp->st_wordlen + 1);
+	p = alloc(STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
 	    c = (int)(sug.su_badptr - line);
@@ -3552,7 +3551,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
 
-    frompat = alloc((unsigned)STRLEN(repl_from) + 7);
+    frompat = alloc(STRLEN(repl_from) + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -3573,7 +3572,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
 					       repl_to, STRLEN(repl_to)) != 0)
 	{
-	    p = alloc((unsigned)STRLEN(line) + addlen + 1);
+	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
@@ -6224,8 +6223,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T)
-							 + STRLEN(goodword)));
+	sft = (sftword_T *)alloc(sizeof(sftword_T) + STRLEN(goodword));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;

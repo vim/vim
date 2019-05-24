@@ -1467,7 +1467,7 @@ mch_expandpath(
     {
 #endif
 	/* hack to replace '*' by '#?' */
-	starbuf = alloc((unsigned)(2 * STRLEN(pat) + 1));
+	starbuf = alloc(2 * STRLEN(pat) + 1);
 	if (starbuf == NULL)
 	    goto Return;
 	for (sp = pat, dp = starbuf; *sp; ++sp)

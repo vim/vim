@@ -4948,7 +4948,7 @@ win_line(
 			if (n_extra > 0)
 			    len += n_extra - tab_len;
 			c = lcs_tab1;
-			p = alloc((unsigned)(len + 1));
+			p = alloc(len + 1);
 			vim_memset(p, ' ', len);
 			p[len] = NUL;
 			vim_free(p_extra_free);
@@ -5107,7 +5107,7 @@ win_line(
 			char_u *p;
 
 			c = *p_extra;
-			p = alloc((unsigned)n_extra + 1);
+			p = alloc(n_extra + 1);
 			vim_memset(p, ' ', n_extra);
 			STRNCPY(p, p_extra + 1, STRLEN(p_extra) - 1);
 			p[n_extra] = NUL;
@@ -6680,9 +6680,9 @@ win_redr_status_matches(
 	return;
 
     if (has_mbyte)
-	buf = alloc((unsigned)Columns * MB_MAXBYTES + 1);
+	buf = alloc(Columns * MB_MAXBYTES + 1);
     else
-	buf = alloc((unsigned)Columns + 1);
+	buf = alloc(Columns + 1);
     if (buf == NULL)
 	return;
 

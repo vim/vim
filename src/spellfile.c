@@ -1264,7 +1264,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
     c = todo * 2 + 7;
     if (enc_utf8)
 	c += todo * 2;
-    pat = alloc((unsigned)c);
+    pat = alloc(c);
     if (pat == NULL)
 	return SP_OTHERERROR;
 
@@ -6615,7 +6615,7 @@ set_map_str(slang_T *lp, char_u *map)
 		hash_T	    hash;
 		hashitem_T  *hi;
 
-		b = alloc((unsigned)(cl + headcl + 2));
+		b = alloc(cl + headcl + 2);
 		if (b == NULL)
 		    return;
 		mb_char2bytes(c, b);

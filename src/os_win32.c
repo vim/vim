@@ -2075,8 +2075,7 @@ executable_exists(char *name, char_u **path, int use_path)
 	return FALSE;
 
     wcurpath = _wgetenv(L"PATH");
-    wnewpath = (WCHAR*)alloc((unsigned)(wcslen(wcurpath) + 3)
-	    * sizeof(WCHAR));
+    wnewpath = (WCHAR *)alloc((wcslen(wcurpath) + 3) * sizeof(WCHAR));
     if (wnewpath == NULL)
 	return FALSE;
     wcscpy(wnewpath, L".;");
@@ -7205,7 +7204,7 @@ mch_setenv(char *var, char *value, int x)
     char_u	*envbuf;
     WCHAR	*p;
 
-    envbuf = alloc((unsigned)(STRLEN(var) + STRLEN(value) + 2));
+    envbuf = alloc(STRLEN(var) + STRLEN(value) + 2);
     if (envbuf == NULL)
 	return -1;
 

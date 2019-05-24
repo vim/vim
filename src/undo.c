@@ -367,6 +367,8 @@ u_save_line(undoline_T *ul, linenr_T lnum)
     }
     else
     {
+	// This uses the length in the memline, thus text properties are
+	// included.
 	ul->ul_len = curbuf->b_ml.ml_line_len;
 	ul->ul_line = vim_memsave(line, ul->ul_len);
     }
@@ -1121,7 +1123,7 @@ undo_read(bufinfo_T *bi, char_u *buffer, size_t size)
     static char_u *
 read_string_decrypt(bufinfo_T *bi, int len)
 {
-    char_u  *ptr = alloc((unsigned)len + 1);
+    char_u  *ptr = alloc(len + 1);
 
     if (ptr != NULL)
     {
@@ -2689,7 +2691,8 @@ u_undoredo(int undo)
 		    char_u *p = ml_get(top + 1 + i);
 
 		    if (curbuf->b_ml.ml_line_len != uep->ue_array[i].ul_len
-			    || memcmp(uep->ue_array[i].ul_line, p, curbuf->b_ml.ml_line_len) != 0)
+			    || memcmp(uep->ue_array[i].ul_line, p,
+						curbuf->b_ml.ml_line_len) != 0)
 			break;
 		}
 		if (i == newsize && newlnum == MAXLNUM && uep->ue_next == NULL)
@@ -2750,9 +2753,11 @@ u_undoredo(int undo)
 		// If the file is empty, there is an empty line 1 that we
 		// should get rid of, by replacing it with the new line.
 		if (empty_buffer && lnum == 0)
-		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line, uep->ue_array[i].ul_len, TRUE, TRUE);
+		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line,
+					  uep->ue_array[i].ul_len, TRUE, TRUE);
 		else
-		    ml_append(lnum, uep->ue_array[i].ul_line, (colnr_T)uep->ue_array[i].ul_len, FALSE);
+		    ml_append(lnum, uep->ue_array[i].ul_line,
+				      (colnr_T)uep->ue_array[i].ul_len, FALSE);
 		vim_free(uep->ue_array[i].ul_line);
 	    }
 	    vim_free((char_u *)uep->ue_array);

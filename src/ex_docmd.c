@@ -5094,7 +5094,7 @@ repl_cmdline(
     i = (int)(src - *cmdlinep) + (int)STRLEN(src + srclen) + len + 3;
     if (eap->nextcmd != NULL)
 	i += (int)STRLEN(eap->nextcmd);/* add space for next command */
-    if ((new_cmdline = alloc((unsigned)i)) == NULL)
+    if ((new_cmdline = alloc(i)) == NULL)
 	return NULL;			/* out of memory! */
 
     /*
@@ -6547,7 +6547,7 @@ alist_unlink(alist_T *al)
     void
 alist_new(void)
 {
-    curwin->w_alist = (alist_T *)alloc((unsigned)sizeof(alist_T));
+    curwin->w_alist = (alist_T *)alloc(sizeof(alist_T));
     if (curwin->w_alist == NULL)
     {
 	curwin->w_alist = &global_alist;
@@ -6581,7 +6581,7 @@ alist_expand(int *fnum_list, int fnum_len)
      * expansion.  Also, the vimrc file isn't read yet, thus the user
      * can't set the options. */
     p_su = empty_option;
-    old_arg_files = (char_u **)alloc((unsigned)(sizeof(char_u *) * GARGCOUNT));
+    old_arg_files = (char_u **)alloc(sizeof(char_u *) * GARGCOUNT);
     if (old_arg_files != NULL)
     {
 	for (i = 0; i < GARGCOUNT; ++i)
@@ -8839,7 +8839,7 @@ ex_normal(exarg_T *eap)
 	}
 	if (len > 0)
 	{
-	    arg = alloc((unsigned)(STRLEN(eap->arg) + len + 1));
+	    arg = alloc(STRLEN(eap->arg) + len + 1);
 	    if (arg != NULL)
 	    {
 		len = 0;
@@ -9628,7 +9628,7 @@ arg_all(void)
 	}
 
 	/* allocate memory */
-	retval = alloc((unsigned)len + 1);
+	retval = alloc(len + 1);
 	if (retval == NULL)
 	    break;
     }
@@ -10622,7 +10622,7 @@ get_view_file(int c)
     for (p = sname; *p; ++p)
 	if (*p == '=' || vim_ispathsep(*p))
 	    ++len;
-    retval = alloc((unsigned)(STRLEN(sname) + len + STRLEN(p_vdir) + 9));
+    retval = alloc(STRLEN(sname) + len + STRLEN(p_vdir) + 9);
     if (retval != NULL)
     {
 	STRCPY(retval, p_vdir);

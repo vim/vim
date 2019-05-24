@@ -355,10 +355,10 @@ transstr(char_u *s)
 		    len += 4;	/* illegal byte sequence */
 	    }
 	}
-	res = alloc((unsigned)(len + 1));
+	res = alloc(len + 1);
     }
     else
-	res = alloc((unsigned)(vim_strsize(s) + 1));
+	res = alloc(vim_strsize(s) + 1);
     if (res != NULL)
     {
 	*res = NUL;

@@ -319,7 +319,7 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = (ff_search_ctx_T*)alloc((unsigned)sizeof(ff_search_ctx_T));
+	search_ctx = (ff_search_ctx_T*)alloc(sizeof(ff_search_ctx_T));
 	if (search_ctx == NULL)
 	    goto error_return;
 	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
@@ -430,8 +430,7 @@ vim_findfile_init(
 	    walker++;
 
 	dircount = 1;
-	search_ctx->ffsc_stopdirs_v =
-				 (char_u **)alloc((unsigned)sizeof(char_u *));
+	search_ctx->ffsc_stopdirs_v = (char_u **)alloc(sizeof(char_u *));
 
 	if (search_ctx->ffsc_stopdirs_v != NULL)
 	{
@@ -926,8 +925,7 @@ vim_findfile(void *search_ctx_arg)
 		 */
 		if (path_with_url(dirptrs[0]))
 		{
-		    stackp->ffs_filearray = (char_u **)
-					      alloc((unsigned)sizeof(char *));
+		    stackp->ffs_filearray = (char_u **)alloc(sizeof(char *));
 		    if (stackp->ffs_filearray != NULL
 			    && (stackp->ffs_filearray[0]
 				= vim_strsave(dirptrs[0])) != NULL)
@@ -1285,7 +1283,7 @@ ff_get_visited_list(
     /*
      * if we reach this we didn't find a list and we have to allocate new list
      */
-    retptr = (ff_visited_list_hdr_T*)alloc((unsigned)sizeof(*retptr));
+    retptr = (ff_visited_list_hdr_T*)alloc(sizeof(*retptr));
     if (retptr == NULL)
 	return NULL;
 
@@ -1413,8 +1411,7 @@ ff_check_visited(
     /*
      * New file/dir.  Add it to the list of visited files/dirs.
      */
-    vp = (ff_visited_T *)alloc((unsigned)(sizeof(ff_visited_T)
-						 + STRLEN(ff_expand_buffer)));
+    vp = (ff_visited_T *)alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
 
     if (vp != NULL)
     {
@@ -1462,7 +1459,7 @@ ff_create_stack_element(
 {
     ff_stack_T	*new;
 
-    new = (ff_stack_T *)alloc((unsigned)sizeof(ff_stack_T));
+    new = (ff_stack_T *)alloc(sizeof(ff_stack_T));
     if (new == NULL)
 	return NULL;
 
@@ -2579,7 +2576,7 @@ expand_in_path(
     char_u	*paths = NULL;
     int		glob_flags = 0;
 
-    if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 

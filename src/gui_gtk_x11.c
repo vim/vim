@@ -429,7 +429,7 @@ gui_mch_prepare(int *argc, char **argv)
      * into gui_argv.  Freed later in gui_mch_init().
      */
     gui_argc = 0;
-    gui_argv = (char **)alloc((unsigned)((*argc + 1) * sizeof(char *)));
+    gui_argv = (char **)alloc((*argc + 1) * sizeof(char *));
 
     g_return_if_fail(gui_argv != NULL);
 
@@ -1544,7 +1544,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 
     if (info == (guint)TARGET_VIM)
     {
-	tmpbuf = alloc((unsigned)length + 1);
+	tmpbuf = alloc(length + 1);
 	if (tmpbuf != NULL)
 	{
 	    tmpbuf[0] = motion_type;
@@ -1603,7 +1603,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	int l = STRLEN(p_enc);
 
 	/* contents: motion_type 'encoding' NUL text */
-	tmpbuf = alloc((unsigned)length + l + 2);
+	tmpbuf = alloc(length + l + 2);
 	if (tmpbuf != NULL)
 	{
 	    tmpbuf[0] = motion_type;
@@ -2512,8 +2512,7 @@ setup_save_yourself(void)
 	    if (i == count)
 	    {
 		/* allocate an Atoms array which is one item longer */
-		new_atoms = (Atom *)alloc((unsigned)((count + 1)
-							     * sizeof(Atom)));
+		new_atoms = (Atom *)alloc((count + 1) * sizeof(Atom));
 		if (new_atoms != NULL)
 		{
 		    memcpy(new_atoms, existing_atoms, count * sizeof(Atom));

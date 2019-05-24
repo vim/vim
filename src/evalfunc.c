@@ -4272,10 +4272,10 @@ f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
 	}
 	count = (long)(foldend - foldstart + 1);
 	txt = NGETTEXT("+-%s%3ld line: ", "+-%s%3ld lines: ", count);
-	r = alloc((unsigned)(STRLEN(txt)
-		    + STRLEN(dashes)	    /* for %s */
-		    + 20		    /* for %3ld */
-		    + STRLEN(s)));	    /* concatenated */
+	r = alloc(STRLEN(txt)
+		    + STRLEN(dashes)	    // for %s
+		    + 20		    // for %3ld
+		    + STRLEN(s));	    // concatenated
 	if (r != NULL)
 	{
 	    sprintf((char *)r, txt, dashes, count);
@@ -10386,7 +10386,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		if (q > p && !mch_isFullName(buf))
 		{
 		    /* symlink is relative to directory of argument */
-		    cpy = alloc((unsigned)(STRLEN(p) + STRLEN(buf) + 1));
+		    cpy = alloc(STRLEN(p) + STRLEN(buf) + 1);
 		    if (cpy != NULL)
 		    {
 			STRCPY(cpy, p);
@@ -11067,8 +11067,8 @@ do_searchpair(
 
     /* Make two search patterns: start/end (pat2, for in nested pairs) and
      * start/middle/end (pat3, for the top pair). */
-    pat2 = alloc((unsigned)(STRLEN(spat) + STRLEN(epat) + 17));
-    pat3 = alloc((unsigned)(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25));
+    pat2 = alloc(STRLEN(spat) + STRLEN(epat) + 17);
+    pat3 = alloc(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25);
     if (pat2 == NULL || pat3 == NULL)
 	goto theend;
     sprintf((char *)pat2, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
@@ -11328,7 +11328,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    buf_T *save_curbuf = curbuf;
 
-	    bufvarname = alloc((unsigned)STRLEN(varname) + 3);
+	    bufvarname = alloc(STRLEN(varname) + 3);
 	    if (bufvarname != NULL)
 	    {
 		curbuf = buf;
@@ -11850,7 +11850,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
 	save_curtab = curtab;
 	goto_tabpage_tp(tp, FALSE, FALSE);
 
-	tabvarname = alloc((unsigned)STRLEN(varname) + 3);
+	tabvarname = alloc(STRLEN(varname) + 3);
 	if (tabvarname != NULL)
 	{
 	    STRCPY(tabvarname, "t:");
@@ -13921,7 +13921,7 @@ get_cmd_output_as_rettv(
 		++i;
 	    end = res + i;
 
-	    s = alloc((unsigned)(end - start + 1));
+	    s = alloc(end - start + 1);
 	    if (s == NULL)
 		goto errret;
 

@@ -2366,7 +2366,7 @@ ex_compiler(exarg_T *eap)
     }
     else
     {
-	buf = alloc((unsigned)(STRLEN(eap->arg) + 14));
+	buf = alloc(STRLEN(eap->arg) + 14);
 	if (buf != NULL)
 	{
 	    if (eap->forceit)

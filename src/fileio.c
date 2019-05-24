@@ -6203,7 +6203,7 @@ buf_modname(
      */
     if (fname == NULL || *fname == NUL)
     {
-	retval = alloc((unsigned)(MAXPATHL + extlen + 3));
+	retval = alloc(MAXPATHL + extlen + 3);
 	if (retval == NULL)
 	    return NULL;
 	if (mch_dirname(retval, MAXPATHL) == FAIL ||
@@ -6222,7 +6222,7 @@ buf_modname(
     else
     {
 	fnamelen = (int)STRLEN(fname);
-	retval = alloc((unsigned)(fnamelen + extlen + 3));
+	retval = alloc(fnamelen + extlen + 3);
 	if (retval == NULL)
 	    return NULL;
 	STRCPY(retval, fname);
@@ -6894,8 +6894,8 @@ buf_check_timestamp(
 	{
 	    if (!helpmesg)
 		mesg2 = "";
-	    tbuf = (char *)alloc((unsigned)(STRLEN(path) + STRLEN(mesg)
-							+ STRLEN(mesg2) + 2));
+	    tbuf = (char *)alloc(STRLEN(path) + STRLEN(mesg)
+							  + STRLEN(mesg2) + 2);
 	    sprintf(tbuf, mesg, path);
 #ifdef FEAT_EVAL
 	    /* Set warningmsg here, before the unimportant and output-specific
@@ -7391,7 +7391,7 @@ vim_settempdir(char_u *tempdir)
 {
     char_u	*buf;
 
-    buf = alloc((unsigned)MAXPATHL + 2);
+    buf = alloc(MAXPATHL + 2);
     if (buf != NULL)
     {
 	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)

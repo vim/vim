@@ -6165,7 +6165,7 @@ replace_termcodes(
      * Allocate space for the translation.  Worst case a single character is
      * replaced by 6 bytes (shifted special key), plus a NUL at the end.
      */
-    result = alloc((unsigned)STRLEN(from) * 6 + 1);
+    result = alloc(STRLEN(from) * 6 + 1);
     if (result == NULL)		/* out of memory */
     {
 	*bufp = NULL;
@@ -6420,7 +6420,7 @@ show_termcodes(void)
 
     if (tc_len == 0)	    /* no terminal codes (must be GUI) */
 	return;
-    items = (int *)alloc((unsigned)(sizeof(int) * tc_len));
+    items = (int *)alloc(sizeof(int) * tc_len);
     if (items == NULL)
 	return;
 

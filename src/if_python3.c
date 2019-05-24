@@ -1629,7 +1629,7 @@ LineToString(const char *str)
     Py_ssize_t len = strlen(str);
     char *tmp,*p;
 
-    tmp = (char *)alloc((unsigned)(len+1));
+    tmp = (char *)alloc(len + 1);
     p = tmp;
     if (p == NULL)
     {

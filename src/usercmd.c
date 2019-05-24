@@ -1637,7 +1637,7 @@ do_ucmd(exarg_T *eap)
 	}
 
 	totlen += STRLEN(p);	    // Add on the trailing characters
-	buf = alloc((unsigned)(totlen + 1));
+	buf = alloc(totlen + 1);
 	if (buf == NULL)
 	{
 	    vim_free(split_buf);

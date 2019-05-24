@@ -1189,7 +1189,7 @@ ml_recover(int checkext)
      * Allocate a buffer structure for the swap file that is used for recovery.
      * Only the memline and crypt information in it are really used.
      */
-    buf = (buf_T *)alloc((unsigned)sizeof(buf_T));
+    buf = (buf_T *)alloc(sizeof(buf_T));
     if (buf == NULL)
 	goto theend;
 
@@ -1787,7 +1787,7 @@ recover_names(
      * Do the loop for every directory in 'directory'.
      * First allocate some memory to put the directory name in.
      */
-    dir_name = alloc((unsigned)STRLEN(p_dir) + 1);
+    dir_name = alloc(STRLEN(p_dir) + 1);
     dirp = p_dir;
     while (dir_name != NULL && *dirp)
     {
@@ -1913,7 +1913,7 @@ recover_names(
 	    {
 		if (mch_stat((char *)swapname, &st) != -1)	    /* It exists! */
 		{
-		    files = (char_u **)alloc((unsigned)sizeof(char_u *));
+		    files = (char_u **)alloc(sizeof(char_u *));
 		    if (files != NULL)
 		    {
 			files[0] = swapname;
@@ -2015,7 +2015,7 @@ make_percent_swname(char_u *dir, char_u *name)
     f = fix_fname(name != NULL ? name : (char_u *)"");
     if (f != NULL)
     {
-	s = alloc((unsigned)(STRLEN(f) + 1));
+	s = alloc(STRLEN(f) + 1);
 	if (s != NULL)
 	{
 	    STRCPY(s, f);
@@ -2674,7 +2674,7 @@ add_text_props_for_append(
 	    if (new_prop_count == 0)
 		return;  // nothing to do
 	    new_len = *len + new_prop_count * sizeof(textprop_T);
-	    new_line = alloc((unsigned)new_len);
+	    new_line = alloc(new_len);
 	    if (new_line == NULL)
 		return;
 	    mch_memmove(new_line, *line, *len);
@@ -4201,7 +4201,7 @@ ml_add_stack(buf_T *buf)
     {
 	CHECK(top > 0, _("Stack size increases")); /* more than 5 levels??? */
 
-	newstack = (infoptr_T *)alloc((unsigned)sizeof(infoptr_T) *
+	newstack = (infoptr_T *)alloc(sizeof(infoptr_T) *
 					(buf->b_ml.ml_stack_size + STACK_INCR));
 	if (newstack == NULL)
 	    return -1;
@@ -4596,7 +4596,7 @@ findswapname(
      * Isolate a directory name from *dirp and put it in dir_name.
      * First allocate some memory to put the directory name in.
      */
-    dir_name = alloc((unsigned)STRLEN(*dirp) + 1);
+    dir_name = alloc(STRLEN(*dirp) + 1);
     if (dir_name == NULL)
 	*dirp = NULL;
     else
@@ -4920,9 +4920,9 @@ findswapname(
 		    {
 			char_u	*name;
 
-			name = alloc((unsigned)(STRLEN(fname)
+			name = alloc(STRLEN(fname)
 				+ STRLEN(_("Swap file \""))
-				+ STRLEN(_("\" already exists!")) + 5));
+				+ STRLEN(_("\" already exists!")) + 5);
 			if (name != NULL)
 			{
 			    STRCPY(name, _("Swap file \""));
@@ -5371,8 +5371,8 @@ ml_updatechunk(
 	return;
     if (buf->b_ml.ml_chunksize == NULL)
     {
-	buf->b_ml.ml_chunksize = (chunksize_T *)
-				  alloc((unsigned)sizeof(chunksize_T) * 100);
+	buf->b_ml.ml_chunksize =
+			       (chunksize_T *)alloc(sizeof(chunksize_T) * 100);
 	if (buf->b_ml.ml_chunksize == NULL)
 	{
 	    buf->b_ml.ml_usedchunks = -1;

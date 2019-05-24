@@ -2300,7 +2300,7 @@ command_line_scan(mparm_T *parmp)
 			}
 			else
 			    a = argv[0];
-			p = alloc((unsigned)(STRLEN(a) + 4));
+			p = alloc(STRLEN(a) + 4);
 			if (p == NULL)
 			    mch_exit(2);
 			sprintf((char *)p, "so %s", a);
@@ -2526,7 +2526,7 @@ scripterror:
      * one. */
     if (parmp->n_commands > 0)
     {
-	p = alloc((unsigned)STRLEN(parmp->commands[0]) + 3);
+	p = alloc(STRLEN(parmp->commands[0]) + 3);
 	if (p != NULL)
 	{
 	    sprintf((char *)p, ":%s\r", parmp->commands[0]);
@@ -4263,7 +4263,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
-		msg = alloc((unsigned)len);
+		msg = alloc(len);
 		if (msg != NULL)
 		    vim_snprintf((char *)msg, len, "%s: \"%s\"", err, cmd);
 		*result = msg;

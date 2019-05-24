@@ -473,7 +473,7 @@ ins_compl_add_infercase(
 					   ? actual_len : actual_compl_length;
 
 	// Allocate wide character array for the completion and fill it.
-	wca = (int *)alloc((unsigned)(actual_len * sizeof(int)));
+	wca = (int *)alloc(actual_len * sizeof(int));
 	if (wca != NULL)
 	{
 	    p = str;
@@ -1230,7 +1230,7 @@ ins_compl_dictionaries(
 	if (pat_esc == NULL)
 	    goto theend;
 	len = STRLEN(pat_esc) + 10;
-	ptr = alloc((unsigned)len);
+	ptr = alloc(len);
 	if (ptr == NULL)
 	{
 	    vim_free(pat_esc);
