@@ -1047,6 +1047,9 @@ INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 GUI_INCL = gui.h
+ifeq ($(DIRECTX),yes)
+GUI_INCL += gui_dwrite.h
+endif
 CUI_INCL = iscygpty.h
 
 $(OUTDIR)/if_python.o:	if_python.c if_py_both.h $(INCL)
@@ -1083,7 +1086,7 @@ endif
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
-$(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp $(INCL) gui_dwrite.h
+$(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $@
 
 $(OUTDIR)/gui.o:	gui.c $(INCL) $(GUI_INCL)
