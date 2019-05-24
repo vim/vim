@@ -7172,20 +7172,164 @@ write_lnum_adjust(linenr_T offset)
 
 #if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
 /*
+ * Core part of "readdir()" function.
+ * Retrieve the list of files/directories of "path" into "gap".
+ * Return OK for success, FAIL for failure.
+ */
+    int
+readdir_core(
+    garray_T	*gap,
+    char_u	*path,
+    void	*context,
+    int		(*checkitem)(void *context, char_u *name))
+{
+    int			failed = FALSE;
+#ifdef MSWIN
+    char_u		*buf, *p;
+    int			ok;
+    HANDLE		hFind = INVALID_HANDLE_VALUE;
+    WIN32_FIND_DATAW    wfb;
+    WCHAR		*wn = NULL;	// UTF-16 name, NULL when not used.
+#endif
+
+    ga_init2(gap, (int)sizeof(char *), 20);
+
+#ifdef MSWIN
+    buf = alloc((int)MAXPATHL);
+    if (buf == NULL)
+	return FAIL;
+    STRNCPY(buf, path, MAXPATHL-5);
+    p = buf + strlen(buf);
+    MB_PTR_BACK(buf, p);
+    if (*p == '\\' || *p == '/')
+	*p = NUL;
+    STRCAT(buf, "\\*");
+
+    wn = enc_to_utf16(buf, NULL);
+    if (wn != NULL)
+	hFind = FindFirstFileW(wn, &wfb);
+    ok = (hFind != INVALID_HANDLE_VALUE);
+    if (!ok)
+    {
+	failed = TRUE;
+	smsg(_(e_notopen), path);
+    }
+    else
+    {
+	while (ok)
+	{
+	    int	ignore;
+
+	    p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+	    if (p == NULL)
+		break;  // out of memory
+
+	    ignore = p[0] == '.' && (p[1] == NUL
+					      || (p[1] == '.' && p[2] == NUL));
+	    if (!ignore && checkitem != NULL)
+	    {
+		int r = checkitem(context, p);
+
+		if (r < 0)
+		{
+		    vim_free(p);
+		    break;
+		}
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
+	    {
+		if (ga_grow(gap, 1) == OK)
+		    ((char_u**)gap->ga_data)[gap->ga_len++] = vim_strsave(p);
+		else
+		{
+		    failed = TRUE;
+		    vim_free(p);
+		    break;
+		}
+	    }
+
+	    vim_free(p);
+	    ok = FindNextFileW(hFind, &wfb);
+	}
+	FindClose(hFind);
+    }
+
+    vim_free(buf);
+    vim_free(wn);
+#else
+    DIR		*dirp;
+    struct dirent *dp;
+    char_u	*p;
+
+    dirp = opendir((char *)path);
+    if (dirp == NULL)
+    {
+	failed = TRUE;
+	smsg(_(e_notopen), path);
+    }
+    else
+    {
+	for (;;)
+	{
+	    int	ignore;
+
+	    dp = readdir(dirp);
+	    if (dp == NULL)
+		break;
+	    p = (char_u *)dp->d_name;
+
+	    ignore = p[0] == '.' &&
+		    (p[1] == NUL ||
+		     (p[1] == '.' && p[2] == NUL));
+	    if (!ignore && checkitem != NULL)
+	    {
+		int r = checkitem(context, p);
+
+		if (r < 0)
+		    break;
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
+	    {
+		if (ga_grow(gap, 1) == OK)
+		    ((char_u**)gap->ga_data)[gap->ga_len++] = vim_strsave(p);
+		else
+		{
+		    failed = TRUE;
+		    break;
+		}
+	    }
+	}
+
+	closedir(dirp);
+    }
+#endif
+
+    if (!failed && gap->ga_len > 0)
+	sort_strings((char_u **)gap->ga_data, gap->ga_len);
+
+    return failed ? FAIL : OK;
+}
+
+/*
  * Delete "name" and everything in it, recursively.
- * return 0 for succes, -1 if some file was not deleted.
+ * return 0 for success, -1 if some file was not deleted.
  */
     int
 delete_recursive(char_u *name)
 {
     int result = 0;
-    char_u	**files;
-    int		file_count;
     int		i;
     char_u	*exp;
+    garray_T	ga;
 
-    /* A symbolic link to a directory itself is deleted, not the directory it
-     * points to. */
+    // A symbolic link to a directory itself is deleted, not the directory it
+    // points to.
     if (
 # if defined(UNIX) || defined(MSWIN)
 	 mch_isrealdir(name)
@@ -7194,22 +7338,24 @@ delete_recursive(char_u *name)
 # endif
 	    )
     {
-	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
-	exp = vim_strsave(NameBuff);
+	exp = vim_strsave(name);
 	if (exp == NULL)
 	    return -1;
-	if (gen_expand_wildcards(1, &exp, &file_count, &files,
-	      EW_DIR|EW_FILE|EW_SILENT|EW_ALLLINKS|EW_DODOT|EW_EMPTYOK) == OK)
+	if (readdir_core(&ga, exp, NULL, NULL) == OK)
 	{
-	    for (i = 0; i < file_count; ++i)
-		if (delete_recursive(files[i]) != 0)
+	    for (i = 0; i < ga.ga_len; ++i)
+	    {
+		vim_snprintf((char *)NameBuff, MAXPATHL, "%s/%s", exp,
+					    ((char_u **)ga.ga_data)[i]);
+		if (delete_recursive(NameBuff) != 0)
 		    result = -1;
-	    FreeWild(file_count, files);
+	    }
+	    ga_clear_strings(&ga);
 	}
 	else
 	    result = -1;
+	(void)mch_rmdir(exp);
 	vim_free(exp);
-	(void)mch_rmdir(name);
     }
     else
 	result = mch_remove(name) == 0 ? 0 : -1;
