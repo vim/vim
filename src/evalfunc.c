@@ -9349,16 +9349,20 @@ f_range(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Evaluate "expr" for readdir().
+ * Evaluate "expr" (= "context") for readdir().
  */
     static int
-readdir_checkitem(typval_T *expr, char_u *name)
+readdir_checkitem(void *context, char_u *name)
 {
+    typval_T	*expr = (typval_T *)context;
     typval_T	save_val;
     typval_T	rettv;
     typval_T	argv[2];
     int		retval = 0;
     int		error = FALSE;
+
+    if (expr->v_type == VAR_UNKNOWN)
+	return 1;
 
     prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, name, -1);
@@ -9386,136 +9390,21 @@ theend:
 f_readdir(typval_T *argvars, typval_T *rettv)
 {
     typval_T	*expr;
-    int		failed = FALSE;
+    int		ret;
     char_u	*path;
+    char_u	*p;
     garray_T	ga;
     int		i;
-#ifdef MSWIN
-    char_u		*buf, *p;
-    int			ok;
-    HANDLE		hFind = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATAW    wfb;
-    WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
-#endif
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
-    ga_init2(&ga, (int)sizeof(char *), 20);
 
-#ifdef MSWIN
-    buf = alloc((int)MAXPATHL);
-    if (buf == NULL)
-	return;
-    STRNCPY(buf, path, MAXPATHL-5);
-    p = vim_strpbrk(path, (char_u *)"\\/");
-    if (p != NULL)
-	*p = NUL;
-    STRCAT(buf, "\\*");
+    ret = readdir_core(&ga, path, (void *)expr, readdir_checkitem);
 
-    wn = enc_to_utf16(buf, NULL);
-    if (wn != NULL)
-	hFind = FindFirstFileW(wn, &wfb);
-    ok = (hFind != INVALID_HANDLE_VALUE);
-    if (!ok)
-	smsg(_(e_notopen), path);
-    else
+    if (ret && rettv->vval.v_list != NULL && ga.ga_len > 0)
     {
-	while (ok)
-	{
-	    int	ignore;
-
-	    p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
-	    if (p == NULL)
-		break;  // out of memory
-
-	    ignore = p[0] == '.' && (p[1] == NUL
-					      || (p[1] == '.' && p[2] == NUL));
-	    if (!ignore && expr->v_type != VAR_UNKNOWN)
-	    {
-		int r = readdir_checkitem(expr, p);
-
-		if (r < 0)
-		{
-		    vim_free(p);
-		    break;
-		}
-		if (r == 0)
-		    ignore = TRUE;
-	    }
-
-	    if (!ignore)
-	    {
-		if (ga_grow(&ga, 1) == OK)
-		    ((char_u**)ga.ga_data)[ga.ga_len++] = vim_strsave(p);
-		else
-		{
-		    failed = TRUE;
-		    vim_free(p);
-		    break;
-		}
-	    }
-
-	    vim_free(p);
-	    ok = FindNextFileW(hFind, &wfb);
-	}
-	FindClose(hFind);
-    }
-
-    vim_free(buf);
-    vim_free(wn);
-#else
-    DIR		*dirp;
-    struct dirent *dp;
-    char_u	*p;
-
-    dirp = opendir((char *)path);
-    if (dirp == NULL)
-	smsg(_(e_notopen), path);
-    else
-    {
-	for (;;)
-	{
-	    int	ignore;
-
-	    dp = readdir(dirp);
-	    if (dp == NULL)
-		break;
-	    p = (char_u *)dp->d_name;
-
-	    ignore = p[0] == '.' &&
-		    (p[1] == NUL ||
-		     (p[1] == '.' && p[2] == NUL));
-	    if (!ignore && expr->v_type != VAR_UNKNOWN)
-	    {
-		int r = readdir_checkitem(expr, p);
-
-		if (r < 0)
-		    break;
-		if (r == 0)
-		    ignore = TRUE;
-	    }
-
-	    if (!ignore)
-	    {
-		if (ga_grow(&ga, 1) == OK)
-		    ((char_u**)ga.ga_data)[ga.ga_len++] = vim_strsave(p);
-		else
-		{
-		    failed = TRUE;
-		    break;
-		}
-	    }
-	}
-
-	closedir(dirp);
-    }
-#endif
-
-    if (!failed && rettv->vval.v_list != NULL && ga.ga_len > 0)
-    {
-	sort_strings((char_u **)ga.ga_data, ga.ga_len);
 	for (i = 0; i < ga.ga_len; i++)
 	{
 	    p = ((char_u **)ga.ga_data)[i];
