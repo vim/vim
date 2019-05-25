@@ -456,7 +456,7 @@ close_buffer(
     win_T	*win,		/* if not NULL, set b_last_cursor */
     buf_T	*buf,
     int		action,
-    int		abort_if_last UNUSED)
+    int		abort_if_last)
 {
     int		is_curbuf;
     int		nwindows;
@@ -5678,7 +5678,17 @@ bt_help(buf_T *buf)
     int
 bt_prompt(buf_T *buf)
 {
-    return buf != NULL && buf->b_p_bt[0] == 'p';
+    return buf != NULL && buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'r';
+}
+
+/*
+ * Return TRUE if "buf" is a buffer for a popup window.
+ */
+    int
+bt_popup(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt != NULL
+	&& buf->b_p_bt[0] == 'p' && buf->b_p_bt[1] == 'o';
 }
 
 /*

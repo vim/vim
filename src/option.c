@@ -196,6 +196,7 @@
 # define PV_BRI		OPT_WIN(WV_BRI)
 # define PV_BRIOPT	OPT_WIN(WV_BRIOPT)
 #endif
+# define PV_WCR		OPT_WIN(WV_WCR)
 #ifdef FEAT_DIFF
 # define PV_DIFF	OPT_WIN(WV_DIFF)
 #endif
@@ -3033,6 +3034,10 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"wincolor", "wcr",	    P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_WCR,
+			    {(char_u *)"", (char_u *)NULL}
+			    SCTX_INIT},
     {"window",	    "wi",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_window, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
@@ -3211,7 +3216,7 @@ static char *(p_bsdir_values[]) = {"current", "last", "buffer", NULL};
 static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
 static char *(p_debug_values[]) = {"msg", "throw", "beep", NULL};
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
-static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", "acwrite", "prompt", NULL};
+static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", "acwrite", "prompt", "popup", NULL};
 static char *(p_bufhidden_values[]) = {"hide", "unload", "delete", "wipe", NULL};
 static char *(p_bs_values[]) = {"indent", "eol", "start", NULL};
 #ifdef FEAT_FOLDING
@@ -10940,6 +10945,7 @@ get_varp(struct vimoption *p)
 	case PV_BRI:	return (char_u *)&(curwin->w_p_bri);
 	case PV_BRIOPT: return (char_u *)&(curwin->w_p_briopt);
 #endif
+	case PV_WCR:	return (char_u *)&(curwin->w_p_wcr);
 	case PV_SCBIND: return (char_u *)&(curwin->w_p_scb);
 	case PV_CRBIND: return (char_u *)&(curwin->w_p_crb);
 #ifdef FEAT_CONCEAL
@@ -11124,6 +11130,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_bri = from->wo_bri;
     to->wo_briopt = vim_strsave(from->wo_briopt);
 #endif
+    to->wo_wcr = vim_strsave(from->wo_wcr);
     to->wo_scb = from->wo_scb;
     to->wo_scb_save = from->wo_scb_save;
     to->wo_crb = from->wo_crb;
@@ -11221,6 +11228,7 @@ check_winopt(winopt_T *wop UNUSED)
 #ifdef FEAT_LINEBREAK
     check_string_option(&wop->wo_briopt);
 #endif
+    check_string_option(&wop->wo_wcr);
 }
 
 /*
@@ -11245,6 +11253,7 @@ clear_winopt(winopt_T *wop UNUSED)
 #ifdef FEAT_LINEBREAK
     clear_string_option(&wop->wo_briopt);
 #endif
+    clear_string_option(&wop->wo_wcr);
 #ifdef FEAT_RIGHTLEFT
     clear_string_option(&wop->wo_rlc);
 #endif

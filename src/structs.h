@@ -163,17 +163,19 @@ typedef struct
 {
 #ifdef FEAT_ARABIC
     int		wo_arab;
-# define w_p_arab w_onebuf_opt.wo_arab	/* 'arabic' */
+# define w_p_arab w_onebuf_opt.wo_arab	// 'arabic'
 #endif
 #ifdef FEAT_LINEBREAK
     int		wo_bri;
-# define w_p_bri w_onebuf_opt.wo_bri	/* 'breakindent' */
+# define w_p_bri w_onebuf_opt.wo_bri	// 'breakindent'
     char_u	*wo_briopt;
-# define w_p_briopt w_onebuf_opt.wo_briopt /* 'breakindentopt' */
+# define w_p_briopt w_onebuf_opt.wo_briopt // 'breakindentopt'
 #endif
+    char_u	*wo_wcr;
+# define w_p_wcr w_onebuf_opt.wo_wcr	// 'wincolor'
 #ifdef FEAT_DIFF
     int		wo_diff;
-# define w_p_diff w_onebuf_opt.wo_diff	/* 'diff' */
+# define w_p_diff w_onebuf_opt.wo_diff	// 'diff'
 #endif
 #ifdef FEAT_FOLDING
     long	wo_fdc;
@@ -2592,19 +2594,22 @@ struct diffblock_S
 typedef struct tabpage_S tabpage_T;
 struct tabpage_S
 {
-    tabpage_T	    *tp_next;	    /* next tabpage or NULL */
-    frame_T	    *tp_topframe;   /* topframe for the windows */
-    win_T	    *tp_curwin;	    /* current window in this Tab page */
-    win_T	    *tp_prevwin;    /* previous window in this Tab page */
-    win_T	    *tp_firstwin;   /* first window in this Tab page */
-    win_T	    *tp_lastwin;    /* last window in this Tab page */
-    long	    tp_old_Rows;    /* Rows when Tab page was left */
-    long	    tp_old_Columns; /* Columns when Tab page was left */
-    long	    tp_ch_used;	    /* value of 'cmdheight' when frame size
-				       was set */
+    tabpage_T	    *tp_next;	    // next tabpage or NULL
+    frame_T	    *tp_topframe;   // topframe for the windows
+    win_T	    *tp_curwin;	    // current window in this Tab page
+    win_T	    *tp_prevwin;    // previous window in this Tab page
+    win_T	    *tp_firstwin;   // first window in this Tab page
+    win_T	    *tp_lastwin;    // last window in this Tab page
+#ifdef FEAT_TEXT_PROP
+    win_T	    *tp_first_popupwin; // first popup window in this Tab page
+#endif
+    long	    tp_old_Rows;    // Rows when Tab page was left
+    long	    tp_old_Columns; // Columns when Tab page was left
+    long	    tp_ch_used;	    // value of 'cmdheight' when frame size
+				    // was set
 #ifdef FEAT_GUI
     int		    tp_prev_which_scrollbars[3];
-				    /* previous value of which_scrollbars */
+				    // previous value of which_scrollbars
 #endif
 
     char_u	    *tp_localdir;	// absolute path of local directory or
@@ -2615,18 +2620,18 @@ struct tabpage_S
     int		    tp_diff_invalid;	// list of diffs is outdated
     int		    tp_diff_update;	// update diffs before redrawing
 #endif
-    frame_T	    *(tp_snapshot[SNAP_COUNT]);  /* window layout snapshots */
+    frame_T	    *(tp_snapshot[SNAP_COUNT]);  // window layout snapshots
 #ifdef FEAT_EVAL
-    dictitem_T	    tp_winvar;	    /* variable for "t:" Dictionary */
-    dict_T	    *tp_vars;	    /* internal variables, local to tab page */
+    dictitem_T	    tp_winvar;	    // variable for "t:" Dictionary
+    dict_T	    *tp_vars;	    // internal variables, local to tab page
 #endif
 
 #ifdef FEAT_PYTHON
-    void	    *tp_python_ref;	/* The Python value for this tab page */
+    void	    *tp_python_ref;	// The Python value for this tab page
 #endif
 
 #ifdef FEAT_PYTHON3
-    void	    *tp_python3_ref;	/* The Python value for this tab page */
+    void	    *tp_python3_ref;	// The Python value for this tab page
 #endif
 };
 
@@ -2775,15 +2780,15 @@ struct window_S
 {
     int		w_id;		    /* unique window ID */
 
-    buf_T	*w_buffer;	    /* buffer we are a window into (used
-				       often, keep it the first item!) */
+    buf_T	*w_buffer;	    /* buffer we are a window into */
+
+    win_T	*w_prev;	    /* link to previous window */
+    win_T	*w_next;	    /* link to next window */
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
     synblock_T	*w_s;		    /* for :ownsyntax */
 #endif
 
-    win_T	*w_prev;	    /* link to previous window */
-    win_T	*w_next;	    /* link to next window */
     int		w_closing;	    /* window is being closed, don't let
 				       autocommands close it too. */
 
@@ -2847,6 +2852,11 @@ struct window_S
     int		w_width;	    /* Width of window, excluding separation. */
     int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
     pos_save_T	w_save_cursor;	    /* backup of cursor pos and topline */
+#ifdef FEAT_TEXT_PROP
+    int		w_zindex;
+    int		w_maxheight;	    // "maxheight" for popup window
+    int		w_maxwidth;	    // "maxwidth" for popup window
+#endif
 
 
     /*

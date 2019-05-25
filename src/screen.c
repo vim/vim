@@ -121,6 +121,9 @@ static int redrawing_for_callback = 0;
  */
 static schar_T	*current_ScreenLine;
 
+#ifdef FEAT_TEXT_PROP
+static void update_popups(void);
+#endif
 static void win_update(win_T *wp);
 static void win_redr_status(win_T *wp, int ignore_pum);
 static void win_draw_end(win_T *wp, int c1, int c2, int draw_margin, int row, int endrow, hlf_T hl);
@@ -177,6 +180,10 @@ static int screen_char_attr = 0;
 #else
 # define HAS_RIGHTLEFT(x) FALSE
 #endif
+
+// flags for screen_line()
+#define SLF_RIGHTLEFT	1
+#define SLF_POPUP	2
 
 /*
  * Redraw the current window later, with update_screen(type).
@@ -406,7 +413,7 @@ redraw_asap(int type)
 		    mch_memmove(ScreenLines2 + off,
 				screenline2 + r * cols,
 				(size_t)cols * sizeof(schar_T));
-		screen_line(cmdline_row + r, 0, cols, cols, FALSE);
+		screen_line(cmdline_row + r, 0, cols, cols, 0);
 	    }
 	    ret = 4;
 	}
@@ -604,6 +611,11 @@ update_screen(int type_arg)
 	    curwin->w_lines_valid = 0;	/* don't use w_lines[].wl_size now */
 	return FAIL;
     }
+#ifdef FEAT_TEXT_PROP
+    // TODO: avoid redrawing everything when there is a popup window.
+    if (first_popupwin != NULL || first_tab_popupwin != NULL)
+	type = NOT_VALID;
+#endif
 
     updating_screen = TRUE;
 #ifdef FEAT_SYN_HL
@@ -811,6 +823,11 @@ update_screen(int type_arg)
 	maybe_intro_message();
     did_intro = TRUE;
 
+#ifdef FEAT_TEXT_PROP
+    // Display popup windows on top of the others.
+    update_popups();
+#endif
+
 #ifdef FEAT_GUI
     /* Redraw the cursor and update the scrollbars when all screen updating is
      * done. */
@@ -975,6 +992,50 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 }
 #endif
 
+#ifdef FEAT_TEXT_PROP
+    static void
+update_popups(void)
+{
+    win_T   *wp;
+    win_T   *lowest_wp;
+    int	    lowest_zindex;
+
+    // Reset all the VALID_POPUP flags.
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	wp->w_valid &= ~VALID_POPUP;
+    for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+	wp->w_valid &= ~VALID_POPUP;
+
+    // TODO: don't redraw every popup every time.
+    for (;;)
+    {
+	// Find the window with the lowest zindex that hasn't been updated yet,
+	// so that the window with a higher zindex is drawn later, thus goes on
+	// top.
+	lowest_zindex = INT_MAX;
+	lowest_wp = NULL;
+	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	    if ((wp->w_valid & VALID_POPUP) == 0
+					       && wp->w_zindex < lowest_zindex)
+	    {
+		lowest_zindex = wp->w_zindex;
+		lowest_wp = wp;
+	    }
+	for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+	    if ((wp->w_valid & VALID_POPUP) == 0
+					       && wp->w_zindex < lowest_zindex)
+	    {
+		lowest_zindex = wp->w_zindex;
+		lowest_wp = wp;
+	    }
+
+	if (lowest_wp == NULL)
+	    break;
+	win_update(lowest_wp);
+	lowest_wp->w_valid |= VALID_POPUP;
+    }
+}
+#endif
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
@@ -2862,7 +2923,7 @@ fold_line(
 #endif
 
     screen_line(row + W_WINROW(wp), wp->w_wincol, (int)wp->w_width,
-						     (int)wp->w_width, FALSE);
+						     (int)wp->w_width, 0);
 
     /*
      * Update w_cline_height and w_cline_folded if the cursor line was
@@ -3046,7 +3107,8 @@ win_line(
     int		attr_pri = FALSE;	/* char_attr has priority */
     int		area_highlighting = FALSE; /* Visual or incsearch highlighting
 					      in this line */
-    int		attr = 0;		/* attributes for area highlighting */
+    int		vi_attr = 0;		/* attributes for Visual and incsearch
+					   highlighting */
     int		area_attr = 0;		/* attributes desired by highlighting */
     int		search_attr = 0;	/* attributes desired by 'hlsearch' */
 #ifdef FEAT_SYN_HL
@@ -3127,8 +3189,8 @@ win_line(
 #endif
 #ifdef FEAT_TERMINAL
     int		get_term_attr = FALSE;
-    int		term_attr = 0;		/* background for terminal window */
 #endif
+    int		win_attr = 0;		// background for whole window
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -3164,6 +3226,7 @@ win_line(
     int		feedback_col = 0;
     int		feedback_old_attr = -1;
 #endif
+    int		screen_line_flags = 0;
 
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
@@ -3244,7 +3307,7 @@ win_line(
 	{
 	    extra_check = TRUE;
 	    get_term_attr = TRUE;
-	    term_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	    win_attr = term_get_attr(wp->w_buffer, lnum, -1);
 	}
 #endif
 
@@ -3362,13 +3425,13 @@ win_line(
 	    if (fromcol >= 0)
 	    {
 		area_highlighting = TRUE;
-		attr = HL_ATTR(HLF_V);
+		vi_attr = HL_ATTR(HLF_V);
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
 		if ((clip_star.available && !clip_star.owned
-							 && clip_isautosel_star())
+						      && clip_isautosel_star())
 			|| (clip_plus.available && !clip_plus.owned
-							&& clip_isautosel_plus()))
-		    attr = HL_ATTR(HLF_VNC);
+						     && clip_isautosel_plus()))
+		    vi_attr = HL_ATTR(HLF_VNC);
 #endif
 	    }
 	}
@@ -3398,7 +3461,7 @@ win_line(
 	    if (fromcol == tocol)
 		tocol = fromcol + 1;
 	    area_highlighting = TRUE;
-	    attr = HL_ATTR(HLF_I);
+	    vi_attr = HL_ATTR(HLF_I);
 	}
     }
 
@@ -3496,6 +3559,30 @@ win_line(
 	    trailcol += (colnr_T) (ptr - line);
 	}
     }
+
+    if (*wp->w_p_wcr != NUL)
+    {
+	int attr = syn_name2attr(wp->w_p_wcr);
+
+	// 'wincolor' highlighting for the whole window
+	if (attr != 0)
+	{
+	    win_attr = attr;
+	    area_highlighting = TRUE;
+	}
+    }
+#ifdef FEAT_TEXT_PROP
+    if (bt_popup(wp->w_buffer))
+    {
+	screen_line_flags |= SLF_POPUP;
+
+	if (win_attr == 0)
+	{
+	    win_attr = HL_ATTR(HLF_PNI);
+	    area_highlighting = TRUE;
+	}
+    }
+#endif
 
     /*
      * 'nowrap' or 'wrap' and a single line that doesn't fit: Advance to the
@@ -3630,10 +3717,12 @@ win_line(
     /*
      * Handle highlighting the last used search pattern and matches.
      * Do this for both search_hl and the match list.
+     * Not in a popup window.
      */
     cur = wp->w_match_head;
     shl_flag = FALSE;
-    while ((cur != NULL || shl_flag == FALSE) && !number_only)
+    while ((cur != NULL || shl_flag == FALSE) && !number_only
+					   && !(screen_line_flags & SLF_POPUP))
     {
 	if (shl_flag == FALSE)
 	{
@@ -3729,6 +3818,7 @@ win_line(
 
     off = (unsigned)(current_ScreenLine - ScreenLines);
     col = 0;
+
 #ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
     {
@@ -3737,6 +3827,7 @@ win_line(
 	 * rightmost column of the window. */
 	col = wp->w_width - 1;
 	off += col;
+	screen_line_flags |= SLF_RIGHTLEFT;
     }
 #endif
 
@@ -4048,7 +4139,7 @@ win_line(
 		    char_attr = saved_char_attr;
 		}
 		else
-		    char_attr = 0;
+		    char_attr = win_attr;
 	    }
 	}
 
@@ -4064,7 +4155,7 @@ win_line(
 		|| (number_only && draw_state > WL_NR))
 	{
 	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
-						    HAS_RIGHTLEFT(wp->w_p_rl));
+							    screen_line_flags);
 	    /* Pretend we have finished updating the window.  Except when
 	     * 'cursorcolumn' is set. */
 #ifdef FEAT_SYN_HL
@@ -4089,7 +4180,7 @@ win_line(
 		    || ((int)vcol_prev == fromcol_prev
 			&& vcol_prev < vcol	/* not at margin */
 			&& vcol < tocol))
-		area_attr = attr;		/* start highlighting */
+		area_attr = vi_attr;		/* start highlighting */
 	    else if (area_attr != 0
 		    && (vcol == tocol
 			|| (noinvcur && (colnr_T)vcol == wp->w_virtcol)))
@@ -4344,6 +4435,8 @@ win_line(
 		    char_attr = 0;
 	    }
 	}
+	if (char_attr == 0)
+	    char_attr = win_attr;
 
 	/*
 	 * Get the next character to put on the screen.
@@ -4672,9 +4765,15 @@ win_line(
 		    {
 			wp->w_s->b_syn_error = TRUE;
 			has_syntax = FALSE;
+			syntax_attr = 0;
 		    }
 		    else
 			did_emsg = save_did_emsg;
+
+		    // combine syntax attribute with 'wincolor'
+		    if (win_attr != 0)
+			syntax_attr = hl_combine_attr(win_attr, syntax_attr);
+
 #ifdef SYN_TIME_LIMIT
 		    if (wp->w_s->b_syn_slow)
 			has_syntax = FALSE;
@@ -5149,7 +5248,7 @@ win_line(
 			    diff_hlf != (hlf_T)0 ||
 # endif
 # ifdef FEAT_TERMINAL
-			    term_attr != 0 ||
+			    win_attr != 0 ||
 # endif
 			    line_attr != 0
 			) && (
@@ -5178,7 +5277,7 @@ win_line(
 		    if (diff_hlf == HLF_TXD)
 		    {
 			diff_hlf = HLF_CHD;
-			if (attr == 0 || char_attr != attr)
+			if (vi_attr == 0 || char_attr != vi_attr)
 			{
 			    char_attr = HL_ATTR(diff_hlf);
 			    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
@@ -5188,9 +5287,9 @@ win_line(
 		    }
 # endif
 # ifdef FEAT_TERMINAL
-		    if (term_attr != 0)
+		    if (win_attr != 0)
 		    {
-			char_attr = term_attr;
+			char_attr = win_attr;
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
 			    char_attr = hl_combine_attr(char_attr,
 							    HL_ATTR(HLF_CUL));
@@ -5550,7 +5649,8 @@ win_line(
 		      && (int)wp->w_virtcol <
 					wp->w_width * (row - startrow + 1) + v
 		      && lnum != wp->w_cursor.lnum)
-		    || draw_color_col)
+		    || draw_color_col
+		    || win_attr != 0)
 # ifdef FEAT_RIGHTLEFT
 		    && !wp->w_p_rl
 # endif
@@ -5582,9 +5682,9 @@ win_line(
 		    else if (draw_color_col && VCOL_HLC == *color_cols)
 			ScreenAttrs[off++] = HL_ATTR(HLF_MC);
 		    else
-			ScreenAttrs[off++] = 0;
+			ScreenAttrs[off++] = win_attr;
 
-		    if (VCOL_HLC >= rightmost_vcol)
+		    if (VCOL_HLC >= rightmost_vcol && win_attr == 0)
 			break;
 
 		    ++vcol;
@@ -5593,7 +5693,7 @@ win_line(
 #endif
 
 	    screen_line(screen_row, wp->w_wincol, col,
-				  (int)wp->w_width, HAS_RIGHTLEFT(wp->w_p_rl));
+					  (int)wp->w_width, screen_line_flags);
 	    row++;
 
 	    /*
@@ -5893,11 +5993,11 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    screen_line(screen_row, wp->w_wincol, col - boguscols,
-				  (int)wp->w_width, HAS_RIGHTLEFT(wp->w_p_rl));
+					  (int)wp->w_width, screen_line_flags);
 	    boguscols = 0;
 #else
 	    screen_line(screen_row, wp->w_wincol, col,
-				  (int)wp->w_width, HAS_RIGHTLEFT(wp->w_p_rl));
+					  (int)wp->w_width, screen_line_flags);
 #endif
 	    ++row;
 	    ++screen_row;
@@ -6107,7 +6207,9 @@ screen_get_current_line_off()
  * "endcol" gives the columns where valid characters are.
  * "clear_width" is the width of the window.  It's > 0 if the rest of the line
  * needs to be cleared, negative otherwise.
- * "rlflag" is TRUE in a rightleft window:
+ * "flags" can have bits:
+ * SLF_POPUP	    popup window
+ * SLF_RIGHTLEFT    rightleft window:
  *    When TRUE and "clear_width" > 0, clear columns 0 to "endcol"
  *    When FALSE and "clear_width" > 0, clear columns "endcol" to "clear_width"
  */
@@ -6117,7 +6219,7 @@ screen_line(
     int	    coloff,
     int	    endcol,
     int	    clear_width,
-    int	    rlflag UNUSED)
+    int	    flags UNUSED)
 {
     unsigned	    off_from;
     unsigned	    off_to;
@@ -6153,7 +6255,7 @@ screen_line(
     max_off_to = LineOffset[row] + screen_Columns;
 
 #ifdef FEAT_RIGHTLEFT
-    if (rlflag)
+    if (flags & SLF_RIGHTLEFT)
     {
 	/* Clear rest first, because it's left of the text. */
 	if (clear_width > 0)
@@ -6377,7 +6479,7 @@ screen_line(
 
     if (clear_width > 0
 #ifdef FEAT_RIGHTLEFT
-		    && !rlflag
+		    && !(flags & SLF_RIGHTLEFT)
 #endif
 				   )
     {
@@ -6444,10 +6546,15 @@ screen_line(
 	}
     }
 
-    if (clear_width > 0)
+    if (clear_width > 0
+#ifdef FEAT_TEXT_PROP
+	    && !(flags & SLF_POPUP)  // no separator for popup window
+#endif
+	    )
     {
-	/* For a window that's left of another, draw the separator char. */
-	if (col + coloff < Columns)
+	// For a window that has a right neighbor, draw the separator char
+	// right of the window contents.
+	if (coloff + col < Columns)
 	{
 	    int c;
 
@@ -10784,7 +10891,7 @@ redraw_win_toolbar(win_T *wp)
     wp->w_winbar_items[item_idx].wb_menu = NULL; /* end marker */
 
     screen_line(wp->w_winrow, wp->w_wincol, (int)wp->w_width,
-						     (int)wp->w_width, FALSE);
+							  (int)wp->w_width, 0);
 }
 #endif
 

@@ -5585,6 +5585,19 @@ garbage_collect(int testing)
     if (aucmd_win != NULL)
 	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
 								  NULL, NULL);
+#ifdef FEAT_TEXT_PROP
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
+								  NULL, NULL);
+    for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
+								  NULL, NULL);
+    FOR_ALL_TABPAGES(tp)
+	if (tp != curtab)
+	    for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+		abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
+								  NULL, NULL);
+#endif
 
     /* tabpage-local variables */
     FOR_ALL_TABPAGES(tp)
@@ -8801,7 +8814,20 @@ find_win_by_nr(
 	    break;
     }
     if (nr >= LOWEST_WIN_ID)
+    {
+#ifdef FEAT_TEXT_PROP
+	// popup windows are in a separate list
+	for (wp = (tp == NULL || tp == curtab)
+		? first_tab_popupwin : tp->tp_first_popupwin;
+						   wp != NULL; wp = wp->w_next)
+	    if (wp->w_id == nr)
+		return wp;
+	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_id == nr)
+		return wp;
+#endif
 	return NULL;
+    }
     return wp;
 }
 

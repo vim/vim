@@ -743,6 +743,8 @@ OBJ = \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
+	$(OUTDIR)\popupwin.obj \
+	$(OUTDIR)\popupwin.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
@@ -1575,6 +1577,8 @@ $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 
 $(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
 
+$(OUTDIR)/popupwin.obj:	$(OUTDIR) popupwin.c  $(INCL)
+
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
 $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
@@ -1745,6 +1749,7 @@ proto.h: \
 	proto/winclip.pro \
 	proto/os_win32.pro \
 	proto/popupmnu.pro \
+	proto/popupwin.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \

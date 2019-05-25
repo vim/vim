@@ -1362,6 +1362,21 @@ win_init_some(win_T *newp, win_T *oldp)
     win_copy_options(oldp, newp);
 }
 
+    static int
+win_valid_popup(win_T *win)
+{
+#ifdef FEAT_TEXT_PROP
+    win_T	*wp;
+
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	if (wp == win)
+	    return TRUE;
+    for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+	if (wp == win)
+	    return TRUE;
+#endif
+    return FALSE;
+}
 
 /*
  * Check if "win" is a pointer to an existing window in the current tab page.
@@ -1376,7 +1391,7 @@ win_valid(win_T *win)
     FOR_ALL_WINDOWS(wp)
 	if (wp == win)
 	    return TRUE;
-    return FALSE;
+    return win_valid_popup(win);
 }
 
 /*
@@ -1398,7 +1413,7 @@ win_valid_any_tab(win_T *win)
 		return TRUE;
 	}
     }
-    return FALSE;
+    return win_valid_popup(win);
 }
 
 /*
@@ -2293,6 +2308,44 @@ close_last_window_tabpage(
 }
 
 /*
+ * Close the buffer of "win" and unload it if "free_buf" is TRUE.
+ * "abort_if_last" is passed to close_buffer(): abort closing if all other
+ * windows are closed.
+ */
+    static void
+win_close_buffer(win_T *win, int free_buf, int abort_if_last)
+{
+#ifdef FEAT_SYN_HL
+    // Free independent synblock before the buffer is freed.
+    if (win->w_buffer != NULL)
+	reset_synblock(win);
+#endif
+
+#ifdef FEAT_QUICKFIX
+    // When the quickfix/location list window is closed, unlist the buffer.
+    if (win->w_buffer != NULL && bt_quickfix(win->w_buffer))
+	win->w_buffer->b_p_bl = FALSE;
+#endif
+
+    // Close the link to the buffer.
+    if (win->w_buffer != NULL)
+    {
+	bufref_T    bufref;
+
+	set_bufref(&bufref, curbuf);
+	win->w_closing = TRUE;
+	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0,
+								abort_if_last);
+	if (win_valid_any_tab(win))
+	    win->w_closing = FALSE;
+	// Make sure curbuf is valid. It can become invalid if 'bufhidden' is
+	// "wipe".
+	if (!bufref_valid(&bufref))
+	    curbuf = firstbuf;
+    }
+}
+
+/*
  * Close window "win".  Only works for the current tab page.
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
@@ -2319,9 +2372,9 @@ win_close(win_T *win, int free_buf)
     if (win->w_closing || (win->w_buffer != NULL
 					       && win->w_buffer->b_locked > 0))
 	return FAIL; /* window is already being closed */
-    if (win == aucmd_win)
+    if (win_unlisted(win))
     {
-	emsg(_("E813: Cannot close autocmd window"));
+	emsg(_("E813: Cannot close autocmd or popup window"));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
@@ -2390,35 +2443,7 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
-#ifdef FEAT_SYN_HL
-    // Free independent synblock before the buffer is freed.
-    if (win->w_buffer != NULL)
-	reset_synblock(win);
-#endif
-
-#ifdef FEAT_QUICKFIX
-    // When the quickfix/location list window is closed, unlist the buffer.
-    if (win->w_buffer != NULL && bt_quickfix(win->w_buffer))
-	win->w_buffer->b_p_bl = FALSE;
-#endif
-
-    /*
-     * Close the link to the buffer.
-     */
-    if (win->w_buffer != NULL)
-    {
-	bufref_T    bufref;
-
-	set_bufref(&bufref, curbuf);
-	win->w_closing = TRUE;
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0, TRUE);
-	if (win_valid_any_tab(win))
-	    win->w_closing = FALSE;
-	/* Make sure curbuf is valid. It can become invalid if 'bufhidden' is
-	 * "wipe". */
-	if (!bufref_valid(&bufref))
-	    curbuf = firstbuf;
-    }
+    win_close_buffer(win, free_buf, TRUE);
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL
 	    && (last_window() || curtab != prev_curtab
@@ -2627,6 +2652,9 @@ win_free_all(void)
 	(void)win_free_mem(aucmd_win, &dummy, NULL);
 	aucmd_win = NULL;
     }
+# ifdef FEAT_TEXT_PROP
+    close_all_popups();
+# endif
 
     while (firstwin != NULL)
 	(void)win_free_mem(firstwin, &dummy, NULL);
@@ -3458,7 +3486,7 @@ win_init_empty(win_T *wp)
     wp->w_topfill = 0;
 #endif
     wp->w_botline = 2;
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
     wp->w_s = &wp->w_buffer->b_s;
 #endif
 }
@@ -3484,19 +3512,41 @@ win_alloc_first(void)
 }
 
 /*
- * Init "aucmd_win".  This can only be done after the first
- * window is fully initialized, thus it can't be in win_alloc_first().
+ * Allocate and init a window that is not a regular window.
+ * This can only be done after the first window is fully initialized, thus it
+ * can't be in win_alloc_first().
+ */
+    win_T *
+win_alloc_popup_win(void)
+{
+    win_T *wp;
+
+    wp = win_alloc(NULL, TRUE);
+    if (wp != NULL)
+    {
+	// We need to initialize options with something, using the current
+	// window makes most sense.
+	win_init_some(wp, curwin);
+
+	RESET_BINDING(wp);
+	new_frame(wp);
+    }
+    return wp;
+}
+
+/*
+ * Initialize window "wp" to display buffer "buf".
  */
     void
-win_alloc_aucmd_win(void)
+win_init_popup_win(win_T *wp, buf_T *buf)
 {
-    aucmd_win = win_alloc(NULL, TRUE);
-    if (aucmd_win != NULL)
-    {
-	win_init_some(aucmd_win, curwin);
-	RESET_BINDING(aucmd_win);
-	new_frame(aucmd_win);
-    }
+    wp->w_buffer = buf;
+    ++buf->b_nwindows;
+    win_init_empty(wp); // set cursor and topline to safe values
+
+    // Make sure w_localdir and globaldir are NULL to avoid a chdir() in
+    // win_enter_ext().
+    VIM_CLEAR(wp->w_localdir);
 }
 
 /*
@@ -3619,6 +3669,10 @@ free_tabpage(tabpage_T *tp)
 # ifdef FEAT_DIFF
     diff_clear(tp);
 # endif
+# ifdef FEAT_TEXT_PROP
+    while (tp->tp_first_popupwin != NULL)
+	popup_close(tp->tp_first_popupwin->w_id);
+#endif
     for (idx = 0; idx < SNAP_COUNT; ++idx)
 	clear_snapshot(tp, idx);
 #ifdef FEAT_EVAL
@@ -4782,7 +4836,7 @@ win_free(
     vim_free(wp->w_p_cc_cols);
 #endif
 
-    if (wp != aucmd_win)
+    if (win_valid_any_tab(wp))
 	win_remove(wp, tp);
     if (autocmd_busy)
     {
@@ -4793,6 +4847,28 @@ win_free(
 	vim_free(wp);
 
     unblock_autocmds();
+}
+
+/*
+ * Return TRUE if "wp" is not in the list of windows: the autocmd window or a
+ * popup window.
+ */
+    int
+win_unlisted(win_T *wp)
+{
+    return wp == aucmd_win || bt_popup(wp->w_buffer);
+}
+
+/*
+ * Free a popup window.  This does not take the window out of the window list
+ * and assumes there is only one toplevel frame, no split.
+ */
+    void
+win_free_popup(win_T *win)
+{
+    win_close_buffer(win, TRUE, FALSE);
+    vim_free(win->w_frame);
+    win_free(win, NULL);
 }
 
 /*
@@ -6182,7 +6258,7 @@ min_rows(void)
 /*
  * Return TRUE if there is only one window (in the current tab page), not
  * counting a help or preview window, unless it is the current window.
- * Does not count "aucmd_win".
+ * Does not count unlisted windows.
  */
     int
 only_one_window(void)
@@ -6974,6 +7050,16 @@ win_id2wp(int id)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_id == id)
 	    return wp;
+#ifdef FEAT_TEXT_PROP
+    // popup windows are in a separate list
+     FOR_ALL_TABPAGES(tp)
+	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	     if (wp->w_id == id)
+		 return wp;
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	if (wp->w_id == id)
+	    return wp;
+#endif
 
     return NULL;
 }

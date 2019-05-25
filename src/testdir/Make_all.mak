@@ -196,6 +196,7 @@ NEW_TESTS = \
 	test_perl \
 	test_plus_arg_edit \
 	test_popup \
+	test_popupwin \
 	test_preview \
 	test_profile \
 	test_prompt_buffer \
@@ -250,8 +251,8 @@ NEW_TESTS = \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
-	test_termencoding \
 	test_termcodes \
+	test_termencoding \
 	test_terminal \
 	test_terminal_fail \
 	test_textformat \
@@ -377,6 +378,7 @@ NEW_TESTS_RES = \
 	test_paste.res \
 	test_perl.res \
 	test_plus_arg_edit.res \
+	test_popupwin.res \
 	test_preview.res \
 	test_profile.res \
 	test_prompt_buffer.res \
@@ -409,8 +411,8 @@ NEW_TESTS_RES = \
 	test_system.res \
 	test_tab.res \
 	test_tcl.res \
-	test_termencoding.res \
 	test_termcodes.res \
+	test_termencoding.res \
 	test_terminal.res \
 	test_terminal_fail.res \
 	test_textformat.res \

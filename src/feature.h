@@ -477,7 +477,7 @@
 #endif
 
 /*
- * +textprop		Text properties
+ * +textprop		Text properties and popup windows
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
 # define FEAT_TEXT_PROP

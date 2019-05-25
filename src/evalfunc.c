@@ -807,6 +807,10 @@ static struct fst
 #ifdef FEAT_PERL
     {"perleval",	1, 1, f_perleval},
 #endif
+#ifdef FEAT_TEXT_PROP
+    {"popup_close",	1, 1, f_popup_close},
+    {"popup_create",	2, 2, f_popup_create},
+#endif
 #ifdef FEAT_FLOAT
     {"pow",		2, 2, f_pow},
 #endif

@@ -1361,6 +1361,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  prompt	buffer where only the last line can be edited, meant
 			to be used by a plugin, see |prompt-buffer|
 			{only when compiled with the |+channel| feature}
+	  popup		buffer used in a popup window, see |popup|.
+			{only when compiled with the |+textprop| feature}
 
 	This option is used together with 'bufhidden' and 'swapfile' to
 	specify special kinds of buffers.   See |special-buffers|.
@@ -8686,6 +8688,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	key is never used for the menu.
 	This option is not used for <F10>; on Win32 and with GTK <F10> will
 	select the menu, unless it has been mapped.
+
+						*'wincolor'* *'wcr'*
+'wincolor' 'wcr' string (default empty)
+			local to window
+	Highlight group name to use for this window instead of the Normal
+	color |hl-Normal|.
 
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
