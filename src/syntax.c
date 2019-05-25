@@ -8964,7 +8964,6 @@ clear_hl_tables(void)
     ga_clear(&cterm_attr_table);
 }
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Combine special attributes (e.g., for spelling) with other attributes
  * (e.g., for syntax highlighting).
@@ -9111,7 +9110,6 @@ hl_combine_attr(int char_attr, int prim_attr)
     }
     return get_attr_entry(&term_attr_table, &new_en);
 }
-#endif
 
 #ifdef FEAT_GUI
 
