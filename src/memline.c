@@ -2573,13 +2573,17 @@ ml_get_buf(
 	}
 errorret:
 	STRCPY(IObuff, "???");
+	buf->b_ml.ml_line_len = 4;
 	return IObuff;
     }
-    if (lnum <= 0)			/* pretend line 0 is line 1 */
+    if (lnum <= 0)			// pretend line 0 is line 1
 	lnum = 1;
 
-    if (buf->b_ml.ml_mfp == NULL)	/* there are no lines */
+    if (buf->b_ml.ml_mfp == NULL)	// there are no lines
+    {
+	buf->b_ml.ml_line_len = 1;
 	return (char_u *)"";
+    }
 
     /*
      * See if it is the same line as requested last time.

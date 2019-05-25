@@ -766,6 +766,15 @@ func Test_textprop_empty_buffer()
   new
   call prop_add(1, 1, {'type': 'comment'})
   close
+  call prop_type_delete('comment')
+endfunc
+
+" Adding a text property to an empty buffer and then editing another
+func Test_textprop_empty_buffer_next()
+  call prop_type_add("xxx", {})
+  call prop_add(1, 1, {"type": "xxx"})
+  next X
+  call prop_type_delete('xxx')
 endfunc
 
 func Test_textprop_remove_from_buf()
