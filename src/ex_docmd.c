@@ -397,6 +397,9 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
 # define ex_xrestore		ex_ni
 #endif
+#if !defined(FEAT_TEXT_PROP)
+# define ex_popupclear		ex_ni
+#endif
 
 /*
  * Declare cmdnames[].

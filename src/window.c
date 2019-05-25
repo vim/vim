@@ -1363,7 +1363,7 @@ win_init_some(win_T *newp, win_T *oldp)
 }
 
     static int
-win_valid_popup(win_T *win)
+win_valid_popup(win_T *win UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
     win_T	*wp;
