@@ -573,6 +573,30 @@ func Test_cursorline_with_visualmode()
   call delete('Xtest_cursorline_with_visualmode')
 endfunc
 
+func Test_wincolor()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call writefile([
+	\ 'set cursorline cursorcolumn rnu',
+	\ 'call setline(1, ["","1111111111","22222222222","3 here 3",""])',
+	\ 'set wincolor=Pmenu',
+	\ '/here',
+	\ ], 'Xtest_wincolor')
+  let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
+  call term_wait(buf)
+  call term_sendkeys(buf, "2G5lvj")
+  call term_wait(buf)
+
+  call VerifyScreenDump(buf, 'Test_wincolor_01', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xtest_wincolor')
+endfunc
+
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()

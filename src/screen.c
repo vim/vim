@@ -2418,6 +2418,14 @@ win_draw_end(
     hlf_T	hl)
 {
     int		n = 0;
+    int		attr = HL_ATTR(hl);
+    int		wcr_attr = 0;
+
+    if (*wp->w_p_wcr != NUL)
+    {
+	wcr_attr = syn_name2attr(wp->w_p_wcr);
+	attr = hl_combine_attr(wcr_attr, attr);
+    }
 
     if (draw_margin)
     {
@@ -2427,19 +2435,19 @@ win_draw_end(
 	if (fdc > 0)
 	    // draw the fold column
 	    n = screen_fill_end(wp, ' ', ' ', n, fdc,
-					     row, endrow, HL_ATTR(HLF_FC));
+		      row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_FC)));
 #endif
 #ifdef FEAT_SIGNS
 	if (signcolumn_on(wp))
 	    // draw the sign column
 	    n = screen_fill_end(wp, ' ', ' ', n, 2,
-					     row, endrow, HL_ATTR(HLF_SC));
+		      row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC)));
 #endif
 	if ((wp->w_p_nu || wp->w_p_rnu)
 				  && vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
 	    // draw the number column
 	    n = screen_fill_end(wp, ' ', ' ', n, number_width(wp) + 1,
-					     row, endrow, HL_ATTR(HLF_N));
+		       row, endrow, hl_combine_attr(wcr_attr, HL_ATTR(HLF_N)));
     }
 
 #ifdef FEAT_RIGHTLEFT
@@ -2447,17 +2455,17 @@ win_draw_end(
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		wp->w_wincol, W_ENDCOL(wp) - 1 - n,
-		c2, c2, HL_ATTR(hl));
+		c2, c2, attr);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		W_ENDCOL(wp) - 1 - n, W_ENDCOL(wp) - n,
-		c1, c2, HL_ATTR(hl));
+		c1, c2, attr);
     }
     else
 #endif
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + endrow,
 		wp->w_wincol + n, (int)W_ENDCOL(wp),
-		c1, c2, HL_ATTR(hl));
+		c1, c2, attr);
     }
 
     set_empty_rows(wp, row);
@@ -3100,14 +3108,15 @@ win_line(
     pos_T	pos;
     long	v;
 
-    int		char_attr = 0;		/* attributes for next character */
-    int		attr_pri = FALSE;	/* char_attr has priority */
-    int		area_highlighting = FALSE; /* Visual or incsearch highlighting
-					      in this line */
-    int		vi_attr = 0;		/* attributes for Visual and incsearch
-					   highlighting */
-    int		area_attr = 0;		/* attributes desired by highlighting */
-    int		search_attr = 0;	/* attributes desired by 'hlsearch' */
+    int		char_attr = 0;		// attributes for next character
+    int		attr_pri = FALSE;	// char_attr has priority
+    int		area_highlighting = FALSE; // Visual or incsearch highlighting
+					   // in this line
+    int		vi_attr = 0;		// attributes for Visual and incsearch
+					// highlighting
+    int		wcr_attr = 0;		// attributes from 'wincolor'
+    int		area_attr = 0;		// attributes desired by highlighting
+    int		search_attr = 0;	// attributes desired by 'hlsearch'
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	/* saved attr for 'cursorcolumn' */
     int		syntax_attr = 0;	/* attributes desired by syntax */
@@ -3559,12 +3568,12 @@ win_line(
 
     if (*wp->w_p_wcr != NUL)
     {
-	int attr = syn_name2attr(wp->w_p_wcr);
+	wcr_attr = syn_name2attr(wp->w_p_wcr);
 
 	// 'wincolor' highlighting for the whole window
-	if (attr != 0)
+	if (wcr_attr != 0)
 	{
-	    win_attr = attr;
+	    win_attr = wcr_attr;
 	    area_highlighting = TRUE;
 	}
     }
@@ -3850,7 +3859,7 @@ win_line(
 		    n_extra = 1;
 		    c_extra = cmdwin_type;
 		    c_final = NUL;
-		    char_attr = HL_ATTR(HLF_AT);
+		    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_AT));
 		}
 	    }
 #endif
@@ -3876,7 +3885,7 @@ win_line(
 			p_extra = p_extra_free;
 			c_extra = NUL;
 			c_final = NUL;
-			char_attr = HL_ATTR(HLF_FC);
+			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_FC));
 		    }
 		}
 	    }
@@ -3898,7 +3907,7 @@ win_line(
 		    /* Draw two cells with the sign value or blank. */
 		    c_extra = ' ';
 		    c_final = NUL;
-		    char_attr = HL_ATTR(HLF_SC);
+		    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC));
 		    n_extra = 2;
 
 		    if (row == startrow
@@ -4012,7 +4021,7 @@ win_line(
 			c_final = NUL;
 		    }
 		    n_extra = number_width(wp) + 1;
-		    char_attr = HL_ATTR(HLF_N);
+		    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_N));
 #ifdef FEAT_SYN_HL
 		    /* When 'cursorline' is set highlight the line number of
 		     * the current line differently.
@@ -4020,7 +4029,7 @@ win_line(
 		     * when CursorLineNr isn't set? */
 		    if ((wp->w_p_cul || wp->w_p_rnu)
 						 && lnum == wp->w_cursor.lnum)
-			char_attr = HL_ATTR(HLF_CLN);
+			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
 		}
 	    }
