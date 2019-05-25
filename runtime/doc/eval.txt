@@ -1190,8 +1190,9 @@ There must not be white space before or after the dot.
 
 Examples: >
 	:let dict = {"one": 1, 2: "two"}
-	:echo dict.one
-	:echo dict .2
+	:echo dict.one  ” you'll got '1'
+	:echo dict.2    " you'll got "two"
+	:echo dict .2   " error, by the space before the dot
 
 Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
