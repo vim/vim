@@ -155,14 +155,14 @@ func Test_recording_esc_sequence()
     let save_F2 = &t_F2
   catch
   endtry
-  let t_F2 = "\<Esc>OQ"
+  let &t_F2 = "\<Esc>OQ"
   call feedkeys("qqiTest\<Esc>", "xt")
   call feedkeys("OQuirk\<Esc>q", "xt")
   call feedkeys("Go\<Esc>@q", "xt")
   call assert_equal(['Quirk', 'Test', 'Quirk', 'Test'], getline(1, 4))
   bwipe!
   if exists('save_F2')
-    let t_F2 = save_F2
+    let &t_F2 = save_F2
   else
     set t_F2=
   endif
