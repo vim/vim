@@ -7117,7 +7117,7 @@ fix_arg_enc(void)
 	return;
 
     /* Remember the buffer numbers for the arguments. */
-    fnum_list = (int *)alloc((int)sizeof(int) * GARGCOUNT);
+    fnum_list = (int *)alloc(sizeof(int) * GARGCOUNT);
     if (fnum_list == NULL)
 	return;		/* out of memory */
     for (i = 0; i < GARGCOUNT; ++i)

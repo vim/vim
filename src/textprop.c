@@ -1220,7 +1220,7 @@ join_prop_lines(
     oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
 
     len = STRLEN(newp) + 1;
-    line = alloc((int)(len + (oldproplen + proplen) * sizeof(textprop_T)));
+    line = alloc(len + (oldproplen + proplen) * sizeof(textprop_T));
     if (line == NULL)
 	return;
     mch_memmove(line, newp, len);

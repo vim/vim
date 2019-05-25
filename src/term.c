@@ -4188,7 +4188,7 @@ add_termcode(char_u *name, char_u *string, int flags)
     {
 	tc_max_len += 20;
 	new_tc = (struct termcode *)alloc(
-			    (unsigned)(tc_max_len * sizeof(struct termcode)));
+			    tc_max_len * sizeof(struct termcode));
 	if (new_tc == NULL)
 	{
 	    tc_max_len -= 20;
@@ -7072,7 +7072,7 @@ gui_get_color_cmn(char_u *name)
 	    if (!counting)
 	    {
 		colornames_table = (struct rgbcolor_table_S *)alloc(
-			   (unsigned)(sizeof(struct rgbcolor_table_S) * size));
+				    sizeof(struct rgbcolor_table_S) * size);
 		if (colornames_table == NULL)
 		{
 		    fclose(fd);

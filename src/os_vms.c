@@ -245,7 +245,7 @@ mch_getenv(char_u *lognam)
     else if ((sbuf = getenv((char *)lognam)))
     {
 	lengte = strlen(sbuf) + 1;
-	cp = (char_u *)alloc((size_t)lengte);
+	cp = (char_u *)alloc(lengte);
 	if (cp)
 	    strcpy((char *)cp, sbuf);
 	return cp;

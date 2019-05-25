@@ -7190,7 +7190,7 @@ readdir_core(
     ga_init2(gap, (int)sizeof(char *), 20);
 
 #ifdef MSWIN
-    buf = alloc((int)MAXPATHL);
+    buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return FAIL;
     STRNCPY(buf, path, MAXPATHL-5);

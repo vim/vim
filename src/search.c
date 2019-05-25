@@ -1429,7 +1429,7 @@ do_search(
 		// Reserve enough space for the search pattern + offset.
 		len = STRLEN(p) + off_len + 3;
 
-	    msgbuf = alloc((int)len);
+	    msgbuf = alloc(len);
 	    if (msgbuf != NULL)
 	    {
 		vim_memset(msgbuf, ' ', len);

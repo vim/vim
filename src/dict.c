@@ -54,7 +54,7 @@ dict_alloc(void)
 dict_alloc_id(alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+    if (alloc_fail_id == id && alloc_does_fail(sizeof(list_T)))
 	return NULL;
 #endif
     return (dict_alloc());

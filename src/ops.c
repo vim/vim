@@ -3355,7 +3355,7 @@ copy_yank_reg(yankreg_T *reg)
     free_yank_all();
     *y_current = *curr;
     y_current->y_array = (char_u **)lalloc_clear(
-			(long_u)(sizeof(char_u *) * y_current->y_size), TRUE);
+				    sizeof(char_u *) * y_current->y_size, TRUE);
     if (y_current->y_array == NULL)
 	y_current->y_size = 0;
     else

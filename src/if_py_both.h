@@ -2953,7 +2953,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    char_u *np;
 	    size_t len = STRLEN(p) + 1;
 
-	    if ((np = alloc((int)len + 2)) == NULL)
+	    if ((np = alloc(len + 2)) == NULL)
 	    {
 		vim_free(p);
 		return NULL;
@@ -3139,7 +3139,7 @@ set_partial(FunctionObject *self, partial_T *pt, int exported)
 	if (exported)
 	{
 	    pt->pt_argv = (typval_T *)alloc_clear(
-		    sizeof(typval_T) * self->argc);
+						sizeof(typval_T) * self->argc);
 	    for (i = 0; i < pt->pt_argc; ++i)
 		copy_tv(&self->argv[i], &pt->pt_argv[i]);
 	}
@@ -4262,7 +4262,7 @@ StringToLine(PyObject *obj)
     /* Create a copy of the string, with internal nulls replaced by
      * newline characters, as is the vim convention.
      */
-    save = (char *)alloc((unsigned)(len+1));
+    save = (char *)alloc(len+1);
     if (save == NULL)
     {
 	PyErr_NoMemory();

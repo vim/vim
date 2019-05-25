@@ -1290,7 +1290,7 @@ vim_strnsave(char_u *string, int len)
 {
     char_u	*p;
 
-    p = alloc((size_t)(len + 1));
+    p = alloc(len + 1);
     if (p != NULL)
     {
 	STRNCPY(p, string, len);

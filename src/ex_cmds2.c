@@ -2800,7 +2800,7 @@ add_pack_dir_to_rtp(char_u *fname)
 
     oldlen = STRLEN(p_rtp);
     addlen = STRLEN(fname) + 1; // add one for comma
-    new_rtp = alloc((int)(oldlen + addlen + afterlen + 1)); // add one for NUL
+    new_rtp = alloc(oldlen + addlen + afterlen + 1); // add one for NUL
     if (new_rtp == NULL)
 	goto theend;
 

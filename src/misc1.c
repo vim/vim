@@ -3446,7 +3446,7 @@ dos_expandpath(
 
     // Make room for file name.  When doing encoding conversion the actual
     // length may be quite a bit longer, thus use the maximum possible length.
-    buf = alloc((int)MAXPATHL);
+    buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return 0;
 
@@ -3690,7 +3690,7 @@ unix_expandpath(
     }
 
     /* make room for file name */
-    buf = alloc((int)STRLEN(path) + BASENAMELEN + 5);
+    buf = alloc(STRLEN(path) + BASENAMELEN + 5);
     if (buf == NULL)
 	return 0;
 

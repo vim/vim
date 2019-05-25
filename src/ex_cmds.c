@@ -2746,7 +2746,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 		 */
 		++p;
 		len = getdigits(&p);
-		buf = alloc((int)(len + 1));
+		buf = alloc(len + 1);
 		if (buf == NULL)
 		    return TRUE;
 		p = buf;

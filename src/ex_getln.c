@@ -5914,8 +5914,7 @@ init_history(void)
 	{
 	    if (newlen)
 	    {
-		temp = (histentry_T *)alloc(
-				       (long_u)(newlen * sizeof(histentry_T)));
+		temp = (histentry_T *)alloc(newlen * sizeof(histentry_T));
 		if (temp == NULL)   /* out of memory! */
 		{
 		    if (type == 0)  /* first one: just keep the old length */
@@ -6655,7 +6654,7 @@ prepare_viminfo_history(int asklen, int writing)
 	    viminfo_history[type] = NULL;
 	else
 	    viminfo_history[type] = (histentry_T *)lalloc(
-				  (long_u)(len * sizeof(histentry_T)), FALSE);
+					    len * sizeof(histentry_T), FALSE);
 	if (viminfo_history[type] == NULL)
 	    len = 0;
 	viminfo_hislen[type] = len;

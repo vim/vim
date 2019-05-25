@@ -4799,7 +4799,7 @@ addstate_here(
 		emsg(_(e_maxmempat));
 		return NULL;
 	    }
-	    newl = (nfa_thread_T *)alloc((int)newsize);
+	    newl = (nfa_thread_T *)alloc(newsize);
 	    if (newl == NULL)
 		return NULL;
 	    l->len = newlen;

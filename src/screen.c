@@ -328,30 +328,27 @@ redraw_asap(int type)
 
     /* Allocate space to save the text displayed in the command line area. */
     rows = screen_Rows - cmdline_row;
-    screenline = (schar_T *)lalloc(
-			   (long_u)(rows * cols * sizeof(schar_T)), FALSE);
-    screenattr = (sattr_T *)lalloc(
-			   (long_u)(rows * cols * sizeof(sattr_T)), FALSE);
+    screenline = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
+    screenattr = (sattr_T *)lalloc(rows * cols * sizeof(sattr_T), FALSE);
     if (screenline == NULL || screenattr == NULL)
 	ret = 2;
     if (enc_utf8)
     {
 	screenlineUC = (u8char_T *)lalloc(
-			  (long_u)(rows * cols * sizeof(u8char_T)), FALSE);
+				       rows * cols * sizeof(u8char_T), FALSE);
 	if (screenlineUC == NULL)
 	    ret = 2;
 	for (i = 0; i < p_mco; ++i)
 	{
 	    screenlineC[i] = (u8char_T *)lalloc(
-			  (long_u)(rows * cols * sizeof(u8char_T)), FALSE);
+				       rows * cols * sizeof(u8char_T), FALSE);
 	    if (screenlineC[i] == NULL)
 		ret = 2;
 	}
     }
     if (enc_dbcs == DBCS_JPNU)
     {
-	screenline2 = (schar_T *)lalloc(
-			   (long_u)(rows * cols * sizeof(schar_T)), FALSE);
+	screenline2 = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
 	if (screenline2 == NULL)
 	    ret = 2;
     }

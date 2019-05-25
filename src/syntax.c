@@ -4494,7 +4494,7 @@ add_keyword(
 						 name_folded, MAXKEYWLEN + 1);
     else
 	name_ic = name;
-    kp = (keyentry_T *)alloc((int)(sizeof(keyentry_T) + STRLEN(name_ic)));
+    kp = (keyentry_T *)alloc(sizeof(keyentry_T) + STRLEN(name_ic));
     if (kp == NULL)
 	return;
     STRCPY(kp->keyword, name_ic);
@@ -6001,7 +6001,7 @@ get_id_list(
 	{
 	    for (end = p; *end && !VIM_ISWHITE(*end) && *end != ','; ++end)
 		;
-	    name = alloc((int)(end - p + 3));	    /* leave room for "^$" */
+	    name = alloc(end - p + 3);	    /* leave room for "^$" */
 	    if (name == NULL)
 	    {
 		failed = TRUE;

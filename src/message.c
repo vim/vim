@@ -875,7 +875,7 @@ add_msg_hist(
 	(void)delete_first_msg();
 
     /* allocate an entry and add the message at the end of the history */
-    p = (struct msg_hist *)alloc((int)sizeof(struct msg_hist));
+    p = (struct msg_hist *)alloc(sizeof(struct msg_hist));
     if (p != NULL)
     {
 	if (len < 0)
@@ -2360,7 +2360,7 @@ store_sb_text(
 
     if (s > *sb_str)
     {
-	mp = (msgchunk_T *)alloc((int)(sizeof(msgchunk_T) + (s - *sb_str)));
+	mp = (msgchunk_T *)alloc(sizeof(msgchunk_T) + (s - *sb_str));
 	if (mp != NULL)
 	{
 	    mp->sb_eol = finish;

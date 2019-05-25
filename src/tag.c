@@ -1430,7 +1430,7 @@ find_tagfunc_tags(
 	if (name_only)
 	    mfp = vim_strsave(res_name);
 	else
-	    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+	    mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
 
 	if (mfp == NULL)
 	    continue;
@@ -2536,7 +2536,7 @@ parse_line:
 		     */
 		    *tagp.tagname_end = NUL;
 		    len = (int)(tagp.tagname_end - tagp.tagname);
-		    mfp = (char_u *)alloc((int)sizeof(char_u)
+		    mfp = (char_u *)alloc(sizeof(char_u)
 						    + len + 10 + ML_EXTRA + 1);
 		    if (mfp != NULL)
 		    {
@@ -2585,7 +2585,7 @@ parse_line:
 		    else
 		    {
 			len = (int)(tagp.tagname_end - tagp.tagname);
-			mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+			mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
 			if (mfp != NULL)
 			    vim_strncpy(mfp, tagp.tagname, len);
 
@@ -2620,7 +2620,7 @@ parse_line:
 		    else
 			++len;
 #endif
-		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+		    mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
 		    if (mfp != NULL)
 		    {
 			p = mfp;
@@ -3346,7 +3346,7 @@ jumpto_tag(
     /* Make a copy of the line, it can become invalid when an autocommand calls
      * back here recursively. */
     len = matching_line_len(lbuf_arg) + 1;
-    lbuf = alloc((int)len);
+    lbuf = alloc(len);
     if (lbuf != NULL)
 	mch_memmove(lbuf, lbuf_arg, len);
 

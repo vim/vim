@@ -1354,7 +1354,7 @@ channel_set_req_callback(
 	int	    id)
 {
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
-    cbq_T *item = (cbq_T *)alloc((int)sizeof(cbq_T));
+    cbq_T *item = (cbq_T *)alloc(sizeof(cbq_T));
 
     if (item != NULL)
     {
@@ -3921,7 +3921,7 @@ channel_send(
 		}
 		else
 		{
-		    writeq_T *last = (writeq_T *)alloc((int)sizeof(writeq_T));
+		    writeq_T *last = (writeq_T *)alloc(sizeof(writeq_T));
 
 		    if (last != NULL)
 		    {

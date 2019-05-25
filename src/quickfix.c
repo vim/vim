@@ -1815,7 +1815,7 @@ qf_store_title(qf_list_T *qfl, char_u *title)
 
     if (title != NULL)
     {
-	char_u *p = alloc((int)STRLEN(title) + 2);
+	char_u *p = alloc(STRLEN(title) + 2);
 
 	qfl->qf_title = p;
 	if (p != NULL)

@@ -588,9 +588,9 @@ vim_findfile_init(
 	    if (search_ctx->ffsc_wc_path != NULL)
 	    {
 		wc_path = vim_strsave(search_ctx->ffsc_wc_path);
-		temp = alloc((int)(STRLEN(search_ctx->ffsc_wc_path)
+		temp = alloc(STRLEN(search_ctx->ffsc_wc_path)
 				 + STRLEN(search_ctx->ffsc_fix_path + len)
-				 + 1));
+				 + 1);
 		if (temp == NULL || wc_path == NULL)
 		{
 		    vim_free(buf);
@@ -722,7 +722,7 @@ vim_findfile(void *search_ctx_arg)
      * filepath is used as buffer for various actions and as the storage to
      * return a found filename.
      */
-    if ((file_path = alloc((int)MAXPATHL)) == NULL)
+    if ((file_path = alloc(MAXPATHL)) == NULL)
 	return NULL;
 
 #ifdef FEAT_PATH_EXTRA
@@ -1866,7 +1866,7 @@ find_file_in_path_option(
 		    break;
 		}
 
-		if ((buf = alloc((int)(MAXPATHL))) == NULL)
+		if ((buf = alloc(MAXPATHL)) == NULL)
 		    break;
 
 		// copy next path
@@ -2274,7 +2274,7 @@ expand_path_option(char_u *curdir, garray_T *gap)
     char_u	*p;
     int		len;
 
-    if ((buf = alloc((int)MAXPATHL)) == NULL)
+    if ((buf = alloc(MAXPATHL)) == NULL)
 	return;
 
     while (*path_option != NUL)
@@ -2424,7 +2424,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     if (regmatch.regprog == NULL)
 	return;
 
-    if ((curdir = alloc((int)(MAXPATHL))) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
     expand_path_option(curdir, &path_ga);
@@ -2532,7 +2532,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
 	    continue;
 	}
 
-	rel_path = alloc((int)(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2));
+	rel_path = alloc(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2);
 	if (rel_path == NULL)
 	    goto theend;
 	STRCPY(rel_path, ".");

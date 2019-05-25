@@ -4412,7 +4412,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	     * would also work, but some plugins depend on the name being
 	     * printable text. */
 	    sprintf(sid_buf, "<SNR>%ld_", (long)current_sctx.sc_sid);
-	    name = alloc((int)(STRLEN(sid_buf) + STRLEN(s + off) + 1));
+	    name = alloc(STRLEN(sid_buf) + STRLEN(s + off) + 1);
 	    if (name != NULL)
 	    {
 		STRCPY(name, sid_buf);
@@ -12671,7 +12671,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	}
 
 	/* Make an array with each entry pointing to an item in the List. */
-	ptrs = (sortItem_T *)alloc((int)(len * sizeof(sortItem_T)));
+	ptrs = (sortItem_T *)alloc(len * sizeof(sortItem_T));
 	if (ptrs == NULL)
 	    goto theend;
 
