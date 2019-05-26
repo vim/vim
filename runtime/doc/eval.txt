@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 May 09
+*eval.txt*	For Vim version 8.1.  Last change: 2019 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1190,8 +1190,9 @@ There must not be white space before or after the dot.
 
 Examples: >
 	:let dict = {"one": 1, 2: "two"}
-	:echo dict.one
-	:echo dict .2
+	:echo dict.one		" shows "1"
+	:echo dict.2		" shows "two"
+	:echo dict .2		" error because of space before the dot
 
 Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
@@ -3507,7 +3508,7 @@ chdir({dir})						*chdir()*
 
 		Example: >
 			let save_dir = chdir(newdir)
-			if save_dir
+			if save_dir != ""
 			   " ... do some work
 			   call chdir(save_dir)
 			endif
@@ -5126,7 +5127,7 @@ getloclist({nr} [, {what}])				*getloclist()*
 		In addition to the items supported by |getqflist()| in {what},
 		the following item is supported by |getloclist()|:
 
-			filewinid 	id of the window used to display files
+			filewinid	id of the window used to display files
 					from the location list. This field is
 					applicable only when called from a
 					location list window. See
@@ -6349,7 +6350,7 @@ listener_add({callback} [, {buf}])			*listener_add()*
 				was affected; this is a byte index, first
 				character has a value of one.
 		When lines are inserted the values are:
-		    lnum	line below which the new line is added
+		    lnum	line above which the new line is added
 		    end		equal to "lnum"
 		    added	number of lines inserted
 		    col		1
@@ -7336,6 +7337,8 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		   all		when TRUE remove all matching text properties,
 				not just the first one
 		A property matches when either "id" or "type" matches.
+		If buffer "bufnr" does not exist you get an error message.
+		If buffer 'bufnr" is not loaded then nothing happens.
 
 		Returns the number of properties that were removed.
 
@@ -10074,6 +10077,7 @@ timer_start({time}, {callback} [, {options}])
 <		This will invoke MyHandler() three times at 500 msec
 		intervals.
 
+		Not available in the |sandbox|.
 		{only available when compiled with the |+timers| feature}
 
 timer_stop({timer})					*timer_stop()*
@@ -11019,7 +11023,7 @@ It is allowed to define another function inside a function body.
 You can provide default values for positional named arguments.  This makes
 them optional for function calls.  When a positional argument is not
 specified at a call, the default expression is used to initialize it.
-This only works for functions declared with |function|, not for lambda
+This only works for functions declared with `:function`, not for lambda
 expressions |expr-lambda|.
 
 Example: >
@@ -11031,7 +11035,7 @@ Example: >
 
 The argument default expressions are evaluated at the time of the function
 call, not definition.  Thus it is possible to use an expression which is
-invalid the moment the function is defined.  The expressions are are also only
+invalid the moment the function is defined.  The expressions are also only
 evaluated when arguments are not specified during a call.
 
 You can pass |v:none| to use the default expression.  Note that this means you
@@ -11098,7 +11102,7 @@ This function can then be called with: >
 						*:cal* *:call* *E107* *E117*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
-		are as specified with |:function|.  Up to 20 arguments can be
+		are as specified with `:function`.  Up to 20 arguments can be
 		used.  The returned value is discarded.
 		Without a range and for functions that accept a range, the
 		function is called once.  When a range is given the cursor is
@@ -11152,9 +11156,9 @@ Using an autocommand ~
 This is introduced in the user manual, section |41.14|.
 
 The autocommand is useful if you have a plugin that is a long Vim script file.
-You can define the autocommand and quickly quit the script with |:finish|.
+You can define the autocommand and quickly quit the script with `:finish`.
 That makes Vim startup faster.  The autocommand should then load the same file
-again, setting a variable to skip the |:finish| command.
+again, setting a variable to skip the `:finish` command.
 
 Use the FuncUndefined autocommand event with a pattern that matches the
 function(s) to be defined.  Example: >
@@ -13001,7 +13005,7 @@ instead of failing in mysterious ways. >
 		has('vimscript-1')
 
  :scriptversion 2
-< 	String concatenation with "." is not supported, use ".." instead.
+<	String concatenation with "." is not supported, use ".." instead.
 	This avoids the ambiguity using "." for Dict member access and
 	floating point numbers.  Now ".5" means the number 0.5.
 >

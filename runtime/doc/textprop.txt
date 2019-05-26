@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 May 06
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12,7 +12,6 @@ What is not working yet:
 - Adjusting column/length when inserting text
 - Text properties spanning more than one line
 - prop_find()
-- callbacks when text properties are outdated
 
 
 1. Introduction			|text-prop-intro|
@@ -130,6 +129,12 @@ unless the whole line is deleted.
 
 When using replace mode, the text properties stay on the same character
 positions, even though the characters themselves change.
+
+To update text properties after the text was changed, install a callback with
+`listener_add()`.  E.g, if your plugin does spell checking, you can have the
+callback update spelling mistakes in the changed text.  Vim will move the
+properties below the changed text, so that they still highlight the same text,
+thus you don't need to update these.
 
 
 Text property columns are not updated: ~

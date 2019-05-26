@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 May 21
+*popup.txt*  For Vim version 8.1.  Last change: 2019 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,7 +25,7 @@ windows and is under control of a plugin.  You cannot edit the text in the
 popup window like with regular windows.
 
 A popup window can be used for such things as:
-- briefly show a message without changing the command line
+- briefly show a message without overwriting the command line
 - prompt the user with a dialog
 - display contextual information while typing
 - give extra information for auto-completion
@@ -42,11 +42,14 @@ The default color used is "Pmenu".  If you prefer something else use the
 
 A popup window has a window-ID like other windows, but behaves differently.
 The size can be up to the whole Vim window and it overlaps other windows.
-It contains a buffer, and that buffer is always associated with the popup
-window.  The window cannot be used in Normal, Visual or Insert mode, it does
-not get keyboard focus.  You can use functions like `setbufline()` to change
-the text in the buffer.  There are more differences from how this window and
-buffer behave compared to regular windows and buffers, see |popup-buffer|.
+Popup windows can also overlap each other.
+
+The popup window contains a buffer, and that buffer is always associated with
+the popup window.  The window cannot be used in Normal, Visual or Insert mode,
+it does not get keyboard focus.  You can use functions like `setbufline()` to
+change the text in the buffer.  There are more differences from how this
+window and buffer behave compared to regular windows and buffers, see
+|popup-buffer|.
 
 If this is not what you are looking for, check out other popup functionality:
 - popup menu, see |popup-menu|
@@ -55,9 +58,9 @@ If this is not what you are looking for, check out other popup functionality:
 
 WINDOW POSITION AND SIZE			*popup-position*
 
-The height of the window is normally equal to the number of lines in the
-buffer.  It can be limited with the "maxheight" property.  You can use empty
-lines to increase the height.
+The height of the window is normally equal to the number of, possibly
+wrapping, lines in the buffer.  It can be limited with the "maxheight"
+property.  You can use empty lines to increase the height.
 
 The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
@@ -81,11 +84,13 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- handle screen resize in screenalloc().
-- Support tab-local popup windows, use tp_first_popupwin and
-  first_tab_popupwin.  Swap like with firstwin/curwin.
+- Implement list of lines with text properties
+- Implement popup_hide() and popup_show()
+- Implement filter.
+- Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
-- implement all the unimplemented features.
+- Properly figure out the size and position.
+- Implement all the unimplemented options and features.
 
 
 ==============================================================================
@@ -93,9 +98,7 @@ IMPLEMENTATION:
 
 THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
 
-Proposal and discussion on issue #4063: https://github.com/vim/vim/issues/4063
-
-[functions to be moved to eval.txt later, keep list of functions here]
+[functions to be moved to eval.txt later, keep overview of functions here]
 
 popup_create({text}, {options})				*popup_create()*
 		Open a popup window showing {text}, which is either:
@@ -256,6 +259,9 @@ manipulation is restricted:
 - 'buflisted' is off
 - 'undolevels' is -1: no undo at all
 TODO: more
+
+It is possible to change these options, but anything might break then, so
+better leave them alone.
 
 The window does have a cursor position, but the cursor is not displayed.
 

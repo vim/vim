@@ -708,7 +708,7 @@ K			Run a program to lookup the keyword under the
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful
 			after the X server restarts, e.g. when running Vim for
 			long time inside screen/tmux and connecting from
-			different machines).
+			different machines.
 			[display] should be in the format of the $DISPLAY 
 			environment variable (e.g. "localhost:10.0")
 			If [display] is	omitted, then it reinitializes the

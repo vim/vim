@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*windows.txt*   For Vim version 8.1.  Last change: 2019 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1191,7 +1191,6 @@ list of buffers. |unlisted-buffer|
 		This is so that if you have invoked help, it doesn't get in
 		the way when you're browsing code/text buffers.  The next three
 		commands also work like this.
-
 
 							*:sbn* *:sbnext*
 :[N]sbn[ext] [+cmd] [N]

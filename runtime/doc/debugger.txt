@@ -1,4 +1,4 @@
-*debugger.txt*  For Vim version 8.1.  Last change: 2019 May 05
+*debugger.txt*  For Vim version 8.1.  Last change: 2019 May 12
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -87,7 +87,8 @@ This feature allows a debugger, or other external tool, to display dynamic
 information based on where the mouse is pointing.  The purpose of this feature
 was to allow Sun's Visual WorkShop debugger to display expression evaluations.
 However, the feature was implemented in as general a manner as possible and
-could be used for displaying other information as well.
+could be used for displaying other information as well.  The functionality is
+limited though, for advanced popups see |popup-window|.
 
 The Balloon Evaluation has some settable parameters too.  For Motif the font
 list and colors can be set via X resources (XmNballoonEvalFontList,

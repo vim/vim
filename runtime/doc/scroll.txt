@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*scroll.txt*    For Vim version 8.1.  Last change: 2019 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -82,9 +82,6 @@ CTRL-U			Scroll window Upwards in the buffer.  The number of
 			may be a difference).  When the cursor is on the first
 			line of the buffer nothing happens and a beep is
 			produced.  See also 'startofline' option.
-			{difference from vi: Vim scrolls 'scroll' screen
-			lines, instead of file lines; makes a difference when
-			lines wrap}
 
 <S-Up>		or					*<S-Up>* *<kPageUp>*
 <PageUp>	or					*<PageUp>* *CTRL-B*

@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.1.  Last change: 2019 May 07
+*message.txt*   For Vim version 8.1.  Last change: 2019 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -247,6 +247,9 @@ format of the file.  The file will not be marked unmodified.  If you care
 about the loss of information, set the 'fileencoding' option to another value
 that can handle the characters in the buffer and write again.  If you don't
 care, you can abandon the buffer or reset the 'modified' option.
+If there is a backup file, when 'writebackup' or 'backup' is set, it will not
+be deleted, so you can move it back into place if you want to discard the
+changes.
 
 							*E302*  >
   Could not rename swap file

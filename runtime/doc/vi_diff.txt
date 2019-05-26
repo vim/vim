@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 07
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -199,7 +199,7 @@ Syntax highlighting.					|:syntax|
 
 Text properties						|textprop.txt|
 	Vim supports highlighting text by a plugin.  Property types can be
-	specificed with |prop_type_add()| and properties can be placed with
+	specified with |prop_type_add()| and properties can be placed with
 	|prop_add()|.
 
 Spell checking.						|spell|
@@ -866,7 +866,7 @@ The following Ex commands are supported by Vi: ~
 		`:set all&`, `:set option+=value`, `:set option^=value`
 		`:set option-=value` `:set option<`
 `:shell`	escape to a shell
-`:source`	read Vim or Ex commands from a file
+`:source`	read Vi or Ex commands from a file
 `:stop`		suspend the editor or escape to a shell
 `:substitute`	find and replace text; Vi: no '&', 'i', 's', 'r' or 'I' flag,
 		confirm prompt only supports 'y' and 'n', no highlighting
@@ -901,6 +901,9 @@ Common for these commands is that Vi doesn't support the ++opt argument on
 
 The following Normal mode commands are supported by Vi: ~
 
+note: See the beginning of |normal-index| for the meaning of WORD, N, Nmove
+and etc in the description text.
+
 |CTRL-B|	scroll N screens Backwards
 |CTRL-C|	interrupt current (search) command
 |CTRL-D|	scroll Down N lines (default: half a screen); Vim scrolls
@@ -920,7 +923,9 @@ The following Normal mode commands are supported by Vi: ~
 |CTRL-P|	same as "k"
 |CTRL-R|	in some Vi versions: same as CTRL-L
 |CTRL-T|	jump to N older Tag in tag list
-|CTRL-U|	N lines Upwards (default: half a screen)
+|CTRL-U|	N lines Upwards (default: half a screen) {Vi used file lines
+		while Vim scrolls 'scroll' screen lines; makes a difference
+		when lines wrap}
 |CTRL-Y|	scroll N lines downwards
 |CTRL-Z|	suspend program (or start new shell)
 |CTRL-]|	:ta to ident under cursor {Vi: identifier after the cursor}
@@ -1055,7 +1060,7 @@ CTRL-T		insert one shiftwidth of indent in current line {Vi: only when
 		in indent}
 CTRL-V {char}	insert next non-digit literally {Vi: no decimal byte entry}
 CTRL-W		delete word before the cursor
-CTRL-Z		when 'insertmode' set: suspend Vim
+CTRL-Z		when 'insertmode' set: suspend Vi
 <Esc>		end insert mode (unless 'insertmode' set)
 CTRL-[		same as <Esc>
 0 CTRL-D	delete all indent in the current line

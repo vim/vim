@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 May 05
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 May 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -495,7 +495,8 @@ Currently supported commands:
 		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
-		it must be a Dict.  Similarly to |++opt|, These entries are recognized:
+		it must be a Dict.  Similarly to |++opt|, These entries are
+		recognized:
 		  "ff"		file format: "dos", "mac" or "unix"
 		  "fileformat"	idem
 		  "enc"		overrides 'fileencoding'

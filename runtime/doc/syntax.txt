@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2019 Mar 29
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4827,8 +4827,9 @@ cterm={attr-list}					*highlight-cterm*
 	The "cterm" argument is likely to be different from "term", when
 	colors are used.  For example, in a normal terminal comments could
 	be underlined, in a color terminal they can be made Blue.
-	Note: Many terminals (e.g., DOS console) can't mix these attributes
-	with coloring.	Use only one of "cterm=" OR "ctermfg=" OR "ctermbg=".
+	Note: Some terminals (e.g., DOS console) can't mix these attributes
+	with coloring.	To be portable, use only one of "cterm=" OR "ctermfg="
+	OR "ctermbg=".
 
 ctermfg={color-nr}				*highlight-ctermfg* *E421*
 ctermbg={color-nr}				*highlight-ctermbg*

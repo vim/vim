@@ -61,11 +61,11 @@ explanations are in chapter 27 |usr_27.txt|.
 n			Repeat the latest "/" or "?" [count] times.
 			If the cursor doesn't move the search is repeated with
 			count + 1.
-			|last-pattern| {Vi: no count}
+			|last-pattern|
 
 							*N*
 N			Repeat the latest "/" or "?" [count] times in
-			opposite direction. |last-pattern| {Vi: no count}
+			opposite direction. |last-pattern|
 
 							*star* *E348* *E349*
 *			Search forward for the [count]'th occurrence of the
