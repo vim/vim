@@ -167,16 +167,16 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     if (nr > 0)
     {
 	char_u	    buf[50], *ptr = buf;
-	typval_T    rettv;
+	typval_T    rettv_close;
 
 	sprintf((char *)buf, "{_->popup_close(%d)}", wp->w_id);
-	if (get_lambda_tv(&ptr, &rettv, TRUE) == OK)
+	if (get_lambda_tv(&ptr, &rettv_close, TRUE) == OK)
 	{
 	    wp->w_popup_timer = create_timer(nr, 0);
 	    wp->w_popup_timer->tr_callback =
-		vim_strsave(partial_name(rettv.vval.v_partial));
+		vim_strsave(partial_name(rettv_close.vval.v_partial));
 	    func_ref(wp->w_popup_timer->tr_callback);
-	    wp->w_popup_timer->tr_partial = rettv.vval.v_partial;
+	    wp->w_popup_timer->tr_partial = rettv_close.vval.v_partial;
 	}
     }
 
