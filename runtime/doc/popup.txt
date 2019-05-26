@@ -142,7 +142,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'tab': -1,
 				\ 'zindex': 200,
 				\ 'highlight': 'WarningMsg',
-				\ 'border: [],
+				\ 'border': [],
 				\ })
 <		Use {options} to change the properties.
 
