@@ -24,3 +24,28 @@ func Test_simple_popup()
   call StopVimInTerminal(buf)
   call delete('XtestPopup')
 endfunc
+
+func Test_popup_time()
+  topleft vnew
+
+  call setline(1, 'hello')
+  redraw
+
+  let s:wid = popup_create('world', {
+  \ 'line': 1,
+  \ 'col': 1,
+  \ 'time': 500,
+  \})
+
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('world', line)
+
+  sleep 500m
+  redraw
+
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello', line)
+
+  bw!
+endfunc

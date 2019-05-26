@@ -163,6 +163,23 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
 
     wp->w_vsep_width = 0;
 
+    nr = dict_get_number(d, (char_u *)"time");
+    if (nr > 0)
+    {
+	char_u	    buf[50], *ptr = buf;
+	typval_T    rettv;
+
+	sprintf((char *)buf, "{_->popup_close(%d)}", wp->w_id);
+	if (get_lambda_tv(&ptr, &rettv, TRUE) == OK)
+	{
+	    wp->w_popup_timer = create_timer(nr, 0);
+	    wp->w_popup_timer->tr_callback =
+		vim_strsave(partial_name(rettv.vval.v_partial));
+	    func_ref(wp->w_popup_timer->tr_callback);
+	    wp->w_popup_timer->tr_partial = rettv.vval.v_partial;
+	}
+    }
+
     redraw_all_later(NOT_VALID);
 }
 
@@ -208,6 +225,8 @@ popup_close(int nr)
     }
     if (wp != NULL)
     {
+	if (wp->w_popup_timer != NULL)
+	    stop_timer(wp->w_popup_timer);
 	win_free_popup(wp);
 	redraw_all_later(NOT_VALID);
     }

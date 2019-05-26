@@ -2771,6 +2771,24 @@ typedef struct {
 } winbar_item_T;
 #endif
 
+typedef struct timer_S timer_T;
+struct timer_S
+{
+    long	tr_id;
+#ifdef FEAT_TIMERS
+    timer_T	*tr_next;
+    timer_T	*tr_prev;
+    proftime_T	tr_due;		    /* when the callback is to be invoked */
+    char	tr_firing;	    /* when TRUE callback is being called */
+    char	tr_paused;	    /* when TRUE callback is not invoked */
+    int		tr_repeat;	    /* number of times to repeat, -1 forever */
+    long	tr_interval;	    /* msec */
+    char_u	*tr_callback;	    /* allocated */
+    partial_T	*tr_partial;
+    int		tr_emsg_count;
+#endif
+};
+
 /*
  * Structure which contains all information that belongs to a window
  *
@@ -2856,6 +2874,7 @@ struct window_S
     int		w_zindex;
     int		w_maxheight;	    // "maxheight" for popup window
     int		w_maxwidth;	    // "maxwidth" for popup window
+    timer_T	*w_popup_timer;	    // timer for closing popup window
 #endif
 
 
@@ -3433,24 +3452,6 @@ struct js_reader
     int		js_cookie_arg;	/* can be used by js_fill */
 };
 typedef struct js_reader js_read_T;
-
-typedef struct timer_S timer_T;
-struct timer_S
-{
-    long	tr_id;
-#ifdef FEAT_TIMERS
-    timer_T	*tr_next;
-    timer_T	*tr_prev;
-    proftime_T	tr_due;		    /* when the callback is to be invoked */
-    char	tr_firing;	    /* when TRUE callback is being called */
-    char	tr_paused;	    /* when TRUE callback is not invoked */
-    int		tr_repeat;	    /* number of times to repeat, -1 forever */
-    long	tr_interval;	    /* msec */
-    char_u	*tr_callback;	    /* allocated */
-    partial_T	*tr_partial;
-    int		tr_emsg_count;
-#endif
-};
 
 /* Maximum number of commands from + or -c arguments. */
 #define MAX_ARG_CMDS 10
