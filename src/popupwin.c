@@ -194,35 +194,29 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     popup_close(nr);
 }
 
+/*
+ * Close a popup window by Window-id.
+ */
     void
-popup_close(int nr)
+popup_close(int id)
 {
     win_T	*wp;
+    tabpage_T	*tp;
     win_T	*prev = NULL;
 
+    // go through global popups
     for (wp = first_popupwin; wp != NULL; prev = wp, wp = wp->w_next)
-	if (wp->w_id == nr)
+	if (wp->w_id == id)
 	{
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
-	    break;
+	    win_free_popup(wp);
+	    redraw_all_later(NOT_VALID);
+	    return;
 	}
 
-    if (wp == NULL)
-    {
-	prev = NULL;
-	for (wp = first_tab_popupwin; wp != NULL; prev = wp, wp = wp->w_next)
-	    if (wp->w_id == nr)
-	    {
-		if (prev == NULL)
-		    first_tab_popupwin = wp->w_next;
-		else
-		    prev->w_next = wp->w_next;
-		break;
-	    }
-    }
     if (wp != NULL)
     {
 	if (wp->w_popup_timer != NULL)
@@ -230,6 +224,36 @@ popup_close(int nr)
 	win_free_popup(wp);
 	redraw_all_later(NOT_VALID);
     }
+    // go through tab-local popups
+    FOR_ALL_TABPAGES(tp)
+	popup_close_tabpage(tp, id);
+}
+
+/*
+ * Close a popup window with Window-id "id" in tabpage "tp".
+ */
+    void
+popup_close_tabpage(tabpage_T *tp, int id)
+{
+    win_T	*wp;
+    win_T	**root;
+    win_T	*prev = NULL;
+
+    if (tp == curtab)
+	root = &first_tab_popupwin;
+    else
+	root = &tp->tp_first_popupwin;
+    for (wp = *root; wp != NULL; prev = wp, wp = wp->w_next)
+	if (wp->w_id == id)
+	{
+	    if (prev == NULL)
+		*root = wp->w_next;
+	    else
+		prev->w_next = wp->w_next;
+	    win_free_popup(wp);
+	    redraw_all_later(NOT_VALID);
+	    return;
+	}
 }
 
     void
