@@ -30,6 +30,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     wp->w_wincol = dict_get_number(dict, (char_u *)"col");
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
 
+#if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
     nr = dict_get_number(dict, (char_u *)"time");
     if (nr > 0)
@@ -49,6 +50,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	    wp->w_popup_timer->tr_partial = tv.vval.v_partial;
 	}
     }
+#endif
 
 }
 

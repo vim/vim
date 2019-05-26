@@ -4859,6 +4859,7 @@ win_unlisted(win_T *wp)
     return wp == aucmd_win || bt_popup(wp->w_buffer);
 }
 
+#if defined(FEAT_TEXT_PROP) || defined(PROTO)
 /*
  * Free a popup window.  This does not take the window out of the window list
  * and assumes there is only one toplevel frame, no split.
@@ -4867,11 +4868,14 @@ win_unlisted(win_T *wp)
 win_free_popup(win_T *win)
 {
     win_close_buffer(win, TRUE, FALSE);
+# if defined(FEAT_TIMERS)
     if (win->w_popup_timer != NULL)
 	stop_timer(win->w_popup_timer);
+# endif
     vim_free(win->w_frame);
     win_free(win, NULL);
 }
+#endif
 
 /*
  * Append window "wp" in the window list after window "after".

@@ -2874,7 +2874,9 @@ struct window_S
     int		w_zindex;
     int		w_maxheight;	    // "maxheight" for popup window
     int		w_maxwidth;	    // "maxwidth" for popup window
+# if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
+# endif
 #endif
 
 

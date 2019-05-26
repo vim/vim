@@ -39,6 +39,9 @@ func Test_simple_popup()
 endfunc
 
 func Test_popup_time()
+  if !has('timers')
+    return
+  endif
   topleft vnew
   call setline(1, 'hello')
 
@@ -52,6 +55,7 @@ func Test_popup_time()
   call assert_equal('world', line)
 
   sleep 700m
+  redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('hello', line)
 
