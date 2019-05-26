@@ -3670,8 +3670,17 @@ free_tabpage(tabpage_T *tp)
     diff_clear(tp);
 # endif
 # ifdef FEAT_TEXT_PROP
-    while (tp->tp_first_popupwin != NULL)
-	popup_close(tp->tp_first_popupwin->w_id);
+    {
+	win_T *wp;
+
+	for (;;)
+	{
+	    wp = tp == curtab ? first_tab_popupwin : tp->tp_first_popupwin;
+	    if (wp == NULL)
+		break;
+	    popup_close_tabpage(tp, wp->w_id);
+	}
+    }
 #endif
     for (idx = 0; idx < SNAP_COUNT; ++idx)
 	clear_snapshot(tp, idx);
@@ -3964,6 +3973,10 @@ leave_tabpage(
     tp->tp_prevwin = prevwin;
     tp->tp_firstwin = firstwin;
     tp->tp_lastwin = lastwin;
+#ifdef FEAT_TEXT_PROP
+    tp->tp_first_popupwin = first_tab_popupwin;
+    first_tab_popupwin = NULL;
+#endif
     tp->tp_old_Rows = Rows;
     tp->tp_old_Columns = Columns;
     firstwin = NULL;
@@ -3991,6 +4004,9 @@ enter_tabpage(
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
+#ifdef FEAT_TEXT_PROP
+    first_tab_popupwin = tp->tp_first_popupwin;
+#endif
 
     /* We would like doing the TabEnter event first, but we don't have a
      * valid current window yet, which may break some commands.
@@ -6497,9 +6513,15 @@ switch_win(
 	{
 	    curtab->tp_firstwin = firstwin;
 	    curtab->tp_lastwin = lastwin;
+#ifdef FEAT_TEXT_PROP
+	    curtab->tp_first_popupwin = first_tab_popupwin ;
+#endif
 	    curtab = tp;
 	    firstwin = curtab->tp_firstwin;
 	    lastwin = curtab->tp_lastwin;
+#ifdef FEAT_TEXT_PROP
+	    first_tab_popupwin = curtab->tp_first_popupwin;
+#endif
 	}
 	else
 	    goto_tabpage_tp(tp, FALSE, FALSE);
@@ -6528,9 +6550,15 @@ restore_win(
 	{
 	    curtab->tp_firstwin = firstwin;
 	    curtab->tp_lastwin = lastwin;
+#ifdef FEAT_TEXT_PROP
+	    curtab->tp_first_popupwin = first_tab_popupwin ;
+#endif
 	    curtab = save_curtab;
 	    firstwin = curtab->tp_firstwin;
 	    lastwin = curtab->tp_lastwin;
+#ifdef FEAT_TEXT_PROP
+	    first_tab_popupwin = curtab->tp_first_popupwin;
+#endif
 	}
 	else
 	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
