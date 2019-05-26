@@ -16,24 +16,31 @@ func! Test_search_stat()
   let messages_before = execute('messages')
   let @/ = 'fo*\(bar\?\)\?'
   let g:a = execute(':unsilent :norm! n')
-  let stat = '\[2/50\]'
+  let stat = {'current': 2, 'count': 50, 'wrap': 0}
+  let stat_re = '\[2/50\]'
+  call assert_equal(stat, v:searchstat)
   let pat = escape(@/, '()*?'). '\s\+'
-  call assert_match(pat .. stat, g:a)
+  call assert_match(pat .. stat_re, g:a)
   " didn't get added to message history
   call assert_equal(messages_before, execute('messages'))
 
   " Match at last line
   call cursor(line('$')-2, 1)
   let g:a = execute(':unsilent :norm! n')
-  let stat = '\[50/50\]'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 50, 'count': 50, 'wrap': 0}
+  let stat_re = '\[50/50\]'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
 
   " No search stat
   set shortmess+=S
   call cursor(1, 1)
-  let stat = '\[2/50\]'
+  " previous v:searchstat
+  let stat = {'current': 50, 'count': 50, 'wrap': 0}
+  let stat_re = '\[2/50\]'
   let g:a = execute(':unsilent :norm! n')
-  call assert_notmatch(pat .. stat, g:a)
+  call assert_equal(stat, v:searchstat)
+  call assert_notmatch(pat .. stat_re, g:a)
   set shortmess-=S
 
   " Many matches
@@ -41,22 +48,30 @@ func! Test_search_stat()
   let @/ = '.'
   let pat = escape(@/, '()*?'). '\s\+'
   let g:a = execute(':unsilent :norm! n')
-  let stat = '\[>99/>99\]'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 100, 'count': 100, 'wrap': 0}
+  let stat_re = '\[>99/>99\]'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
   call cursor(line('$'), 1)
   let g:a = execute(':unsilent :norm! n')
-  let stat = '\[1/>99\] W'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 1, 'count': 100, 'wrap': 1}
+  let stat_re = '\[1/>99\] W'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
 
   " Many matches
   call cursor(1, 1)
   let g:a = execute(':unsilent :norm! n')
-  let stat = '\[2/>99\]'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 2, 'count': 100, 'wrap': 0}
+  let stat_re = '\[2/>99\]'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
   call cursor(1, 1)
   let g:a = execute(':unsilent :norm! N')
-  let stat = '\[>99/>99\] W'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 100, 'count': 100, 'wrap': 1}
+  let stat_re = '\[>99/>99\] W'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
 
   " right-left
   if exists("+rightleft")
@@ -65,8 +80,10 @@ func! Test_search_stat()
     let @/ = 'foobar'
     let pat = 'raboof/\s\+'
     let g:a = execute(':unsilent :norm! n')
-    let stat = '\[20/2\]'
-    call assert_match(pat .. stat, g:a)
+    let stat = {'current': 2, 'count': 20, 'wrap': 0}
+    let stat_re = '\[20/2\]'
+    call assert_equal(stat, v:searchstat)
+    call assert_match(pat .. stat_re, g:a)
     set norl
   endif
 
@@ -76,8 +93,10 @@ func! Test_search_stat()
     call cursor('$',1)
     let pat = 'raboof?\s\+'
     let g:a = execute(':unsilent :norm! N')
-    let stat = '\[20/20\]'
-    call assert_match(pat .. stat, g:a)
+    let stat = {'current': 20, 'count': 20, 'wrap': 0}
+    let stat_re = '\[20/20\]'
+    call assert_equal(stat, v:searchstat)
+    call assert_match(pat .. stat_re, g:a)
     set norl
   endif
 
@@ -87,8 +106,10 @@ func! Test_search_stat()
     call cursor('$',1)
     let pat = 'raboof/\s\+'
     let g:a = execute(':unsilent :norm! n')
-    let stat = '\[20/1\]'
-    call assert_match(pat .. stat, g:a)
+    let stat = {'current': 1, 'count': 20, 'wrap': 1}
+    let stat_re = '\[20/1\] W'
+    call assert_equal(stat, v:searchstat)
+    call assert_match(pat .. stat_re, g:a)
     call assert_match('search hit BOTTOM, continuing at TOP', g:a)
     set norl
   endif
@@ -98,8 +119,10 @@ func! Test_search_stat()
   let @/ = 'foobar'
   let pat = '?foobar\s\+'
   let g:a = execute(':unsilent :norm! N')
-  let stat = '\[20/20\]'
-  call assert_match(pat .. stat, g:a)
+  let stat = {'current': 20, 'count': 20, 'wrap': 1}
+  let stat_re = '\[20/20\] W'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:a)
   call assert_match('search hit TOP, continuing at BOTTOM', g:a)
   call assert_match('\[20/20\] W', Screenline(&lines))
 
@@ -110,7 +133,8 @@ func! Test_search_stat()
   try
     let g:a = execute(':unsilent :norm! n')
   catch /^Vim\%((\a\+)\)\=:E486/
-    let stat = ''
+    let stat = {}
+    let stat_re = ''
     " error message is not redir'ed to g:a, it is empty
     call assert_true(empty(g:a))
   catch
@@ -148,8 +172,10 @@ func! Test_search_stat()
   let g:a = execute(':unsilent :norm n')
   " g:a will contain several lines
   let g:b = split(g:a, "\n")[-1]
-  let stat = '\[1/2\]'
-  call assert_match(pat .. stat, g:b)
+  let stat = {'current': 1, 'count': 2, 'wrap': 0}
+  let stat_re = '\[1/2\]'
+  call assert_equal(stat, v:searchstat)
+  call assert_match(pat .. stat_re, g:b)
   unmap n
 
   " normal, but silent
@@ -157,8 +183,11 @@ func! Test_search_stat()
   let @/ = 'find this'
   let pat = '/find this\s\+'
   let g:a = execute(':norm! n')
-  let stat = '\[1/2\]'
-  call assert_notmatch(pat .. stat, g:a)
+  let stat = {'current': 1, 'count': 2, 'wrap': 0}
+  let stat_re = '\[1/2\]'
+  " v:searchstat is updated also in silent
+  call assert_equal(stat, v:searchstat)
+  call assert_notmatch(pat .. stat_re, g:a)
 
   " close the window
   set shortmess+=S

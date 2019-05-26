@@ -2020,6 +2020,21 @@ v:searchforward			*v:searchforward* *searchforward-variable*
 		function. |function-search-undo|.
 		Read-write.
 
+v:searchstat			*v:searchstat* *searchstat-variable*
+		The last status of search count when |'shortmess'| does not
+		contain "S" flag.
+		Note that this variable will not be updated when |'shortmess'|
+		contains "S" flag.
+		 key		type	meaning	~
+		  wrap		Number	non-zero if search was wrapped around
+		  current	Number	the number of current element in
+					search result
+		  count		Number	the total count number in search
+					result
+
+		See "S" flag of |'shortmess'| for more details.
+		Read-only.
+
 					*v:shell_error* *shell_error-variable*
 v:shell_error	Result of the last shell command.  When non-zero, the last
 		shell command had an error.  When zero, there was no problem.

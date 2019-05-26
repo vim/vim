@@ -4940,6 +4940,7 @@ search_stat(
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
     static buf_T    *lbuf = NULL;
+    dict_T *v_searchstat = dict_alloc_lock(VAR_FIXED);
 #ifdef FEAT_RELTIME
     proftime_T  start;
 #endif
@@ -5025,12 +5026,18 @@ search_stat(
 		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", cur, cnt);
 	}
 
+	dict_add_number(v_searchstat, "current", (varnumber_T)(cur == OUT_OF_TIME ? -1 : cur));
+	dict_add_number(v_searchstat, "count", (varnumber_T)(cnt == OUT_OF_TIME ? -1 : cnt));
+
 	len = STRLEN(t);
 	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
 	{
 	    STRCPY(t + len, " W");
 	    len += 2;
 	}
+
+	dict_add_number(v_searchstat, "wrap", (varnumber_T)show_top_bot_msg);
+	set_vim_var_dict(VV_SEARCHSTAT, v_searchstat);
 
 	mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
 	if (dirc == '?' && cur == 100)

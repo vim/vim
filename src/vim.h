@@ -1949,7 +1949,8 @@ typedef int sock_T;
 #define VV_TERMSTYLERESP 85
 #define VV_TERMBLINKRESP 86
 #define VV_EVENT	87
-#define VV_LEN		88	/* number of v: vars */
+#define VV_SEARCHSTAT	88
+#define VV_LEN		89	/* number of v: vars */
 
 /* used for v_number in VAR_SPECIAL */
 #define VVAL_FALSE	0L
