@@ -47,6 +47,11 @@ Unicode true
 
 !include gvim_version.nsh	# for version number
 
+# Definition of Patch for Vim
+!ifndef PATCHLEVEL
+  !define PATCHLEVEL 0
+!endif
+
 # ----------- No configurable settings below this line -----------
 
 !include "Library.nsh"		# For DLL install
@@ -181,8 +186,8 @@ VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Vim Developers"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "Vi Improved - A Text Editor"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VER_MAJOR}.${VER_MINOR}.0.0"
-VIProductVersion "${VER_MAJOR}.${VER_MINOR}.0.0"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
+VIProductVersion "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
 
 # Global variables
 Var vim_dialog
