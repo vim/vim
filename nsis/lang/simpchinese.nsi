@@ -228,10 +228,10 @@ LangString str_msg_uninstalling  ${LANG_SIMPCHINESE} \
     "正在卸载旧版本..."
 
 LangString str_msg_registering   ${LANG_SIMPCHINESE} \
-    "正在注册文件..."
+    "正在注册..."
 
 LangString str_msg_unregistering ${LANG_SIMPCHINESE} \
-    "正在移除注册文件..."
+    "正在取消注册..."
 
 
 ##############################################################################
