@@ -279,7 +279,6 @@ optionally text properties.  It is in one of three forms:
 - a string
 - a list of strings
 - a list of dictionaries, where each dictionary has these entries:
-	{not implemented yet}
 	text		String with the text to display.
 	props		A list of text properties.  Optional.
 			Each entry is a dictionary, like the third argument of
@@ -369,12 +368,16 @@ outside of the Vim window will not be displayed, thus truncated.
 
 POPUP TEXT PROPERTIES					*popup-props*
 
-{not implemented yet}
-These are similar to the third argument of |prop_add()|, but not exactly the
-same, since they only apply to one line.
+These are similar to the third argument of |prop_add()| except:
+- "lnum" is always the current line in the list
+- "bufnr" is always the buffer of the popup
+- "col" is in the Dict instead of a separate argument
+- "transparent" is extra
+So we get:
 	col		starting column, counted in bytes, use one for the
 			first column.
 	length		length of text in bytes; can be zero
+	end_lnum	line number for the end of the text
 	end_col		column just after the text; not used when "length" is
 			present; when {col} and "end_col" are equal, this is a
 			zero-width text property
@@ -385,6 +388,7 @@ same, since they only apply to one line.
 	transparent	do not show these characters, show the text under it;
 			if there is an border character to the right or below
 			it will be made transparent as well
+			{not implemented yet}
 
 
 POPUP FILTER						*popup-filter*

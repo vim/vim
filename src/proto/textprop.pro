@@ -1,5 +1,6 @@
 /* textprop.c */
 void f_prop_add(typval_T *argvars, typval_T *rettv);
+void prop_add_common(linenr_T start_lnum, colnr_T start_col, dict_T *dict, buf_T *default_buf, typval_T *dict_arg);
 int get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change);
 proptype_T *text_prop_type_by_id(buf_T *buf, int id);
 void f_prop_clear(typval_T *argvars, typval_T *rettv);

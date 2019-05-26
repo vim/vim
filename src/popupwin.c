@@ -60,6 +60,91 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 }
 
 /*
+ * Add lines to the popup from a list of strings.
+ */
+    static void
+add_popup_strings(buf_T *buf, list_T *l)
+{
+    listitem_T  *li;
+    linenr_T    lnum = 0;
+    char_u	*p;
+
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+	if (li->li_tv.v_type == VAR_STRING)
+	{
+	    p = li->li_tv.vval.v_string;
+	    ml_append_buf(buf, lnum++,
+			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
+	}
+}
+
+/*
+ * Add lines to the popup from a list of dictionaries.
+ */
+    static void
+add_popup_dicts(buf_T *buf, list_T *l)
+{
+    listitem_T  *li;
+    listitem_T  *pli;
+    linenr_T    lnum = 0;
+    char_u	*p;
+    dict_T	*dict;
+
+    // first add the text lines
+    for (li = l->lv_first; li != NULL; li = li->li_next)
+    {
+	if (li->li_tv.v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    return;
+	}
+	dict = li->li_tv.vval.v_dict;
+	p = dict == NULL ? NULL
+			      : dict_get_string(dict, (char_u *)"text", FALSE);
+	ml_append_buf(buf, lnum++,
+			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
+    }
+
+    // add the text properties
+    lnum = 1;
+    for (li = l->lv_first; li != NULL; li = li->li_next, ++lnum)
+    {
+	dictitem_T	*di;
+	list_T		*plist;
+
+	dict = li->li_tv.vval.v_dict;
+	di = dict_find(dict, (char_u *)"props", -1);
+	if (di != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_LIST)
+	    {
+		emsg(_(e_listreq));
+		return;
+	    }
+	    plist = di->di_tv.vval.v_list;
+	    if (plist != NULL)
+	    {
+		for (pli = plist->lv_first; pli != NULL; pli = pli->li_next)
+		{
+		    if (pli->li_tv.v_type != VAR_DICT)
+		    {
+			emsg(_(e_dictreq));
+			return;
+		    }
+		    dict = pli->li_tv.vval.v_dict;
+		    if (dict != NULL)
+		    {
+			int col = dict_get_number(dict, (char_u *)"col");
+
+			prop_add_common( lnum, col, dict, buf, NULL);
+		    }
+		}
+	    }
+	}
+    }
+}
+
+/*
  * popup_create({text}, {options})
  */
     void
@@ -128,27 +213,21 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
 
     // Add text to the buffer.
     if (argvars[0].v_type == VAR_STRING)
+    {
 	// just a string
 	ml_append_buf(buf, 0, argvars[0].vval.v_string, (colnr_T)0, TRUE);
-    else if (argvars[0].vval.v_list->lv_first->li_tv.v_type == VAR_STRING)
-    {
-	listitem_T  *li;
-	linenr_T    lnum = 0;
-	char_u	    *p;
-
-	// list of strings
-	for (li = argvars[0].vval.v_list->lv_first; li != NULL;
-							      li = li->li_next)
-	    if (li->li_tv.v_type == VAR_STRING)
-	    {
-		p = li->li_tv.vval.v_string;
-		ml_append_buf(buf, lnum++,
-			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
-	    }
     }
     else
-	// TODO: handle a list of dictionaries
-	emsg("Not implemented yet");
+    {
+	list_T *l = argvars[0].vval.v_list;
+
+	if (l->lv_first->li_tv.v_type == VAR_STRING)
+	    // list of strings
+	    add_popup_strings(buf, l);
+	else
+	    // list of dictionaries
+	    add_popup_dicts(buf, l);
+    }
 
     // Delete the line of the empty buffer.
     curbuf = buf;

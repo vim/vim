@@ -4405,7 +4405,10 @@ win_line(
 		char_attr = hl_combine_attr(line_attr, search_attr);
 # ifdef FEAT_TEXT_PROP
 	    else if (text_prop_type != NULL)
-		char_attr = hl_combine_attr(line_attr, text_prop_attr);
+	    {
+		char_attr = hl_combine_attr(
+			line_attr != 0 ? line_attr : win_attr, text_prop_attr);
+	    }
 # endif
 	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)
 				|| vcol < fromcol || vcol_prev < fromcol_prev
@@ -4429,7 +4432,8 @@ win_line(
 			char_attr = hl_combine_attr(
 						  syntax_attr, text_prop_attr);
 		    else
-			char_attr = text_prop_attr;
+			char_attr = hl_combine_attr(
+						  win_attr, text_prop_attr);
 		}
 		else
 #endif

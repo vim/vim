@@ -14,6 +14,8 @@ func Test_simple_popup()
 	\ "call setline(1, range(1, 100))",
 	\ "hi PopupColor1 ctermbg=lightblue",
 	\ "hi PopupColor2 ctermbg=lightcyan",
+	\ "hi Comment ctermfg=red",
+	\ "call prop_type_add('comment', {'highlight': 'Comment'})",
 	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11, 'highlight': 'PopupColor1'})",
 	\ "let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25})",
 	\ "call setwinvar(winid2, '&wincolor', 'PopupColor2')",
@@ -23,7 +25,12 @@ func Test_simple_popup()
 
   " Add a tabpage
   call term_sendkeys(buf, ":tabnew\<CR>")
-  call term_sendkeys(buf, ":call popup_create('other tab', {'line': 4, 'col': 9})\<CR>")
+  call term_sendkeys(buf, ":call popup_create(["
+	\ .. "{'text': 'other tab'},"
+	\ .. "{'text': 'a comment line', 'props': [{"
+	\ .. "'col': 3, 'length': 7, 'type': 'comment'"
+	\ .. "}]},"
+	\ .. "], {'line': 4, 'col': 9})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_02', {})
 
   " switch back to first tabpage
