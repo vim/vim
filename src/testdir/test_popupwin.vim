@@ -54,7 +54,7 @@ func Test_popup_time()
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
 
-  sleep 500m
+  sleep 700m
   redraw
 
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
