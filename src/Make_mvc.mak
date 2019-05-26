@@ -744,7 +744,6 @@ OBJ = \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
 	$(OUTDIR)\popupwin.obj \
-	$(OUTDIR)\popupwin.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
