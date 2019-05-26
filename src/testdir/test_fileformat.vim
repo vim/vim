@@ -256,10 +256,11 @@ func Test_fileformats()
   bwipe XXUxDsMc
 
   e! XXUnix
-  set nobinary ff&
   w! Xtest
   call assert_equal("unix\nunix\n", s:file2str('Xtest'))
   bwipe! XXUnix
+
+  set nobinary ff& ffs&
 
   " cleanup
   only
