@@ -37,3 +37,37 @@ func Test_simple_popup()
   call StopVimInTerminal(buf)
   call delete('XtestPopup')
 endfunc
+
+func Test_popup_time()
+  topleft vnew
+  call setline(1, 'hello')
+
+  call popup_create('world', {
+	\ 'line': 1,
+	\ 'col': 1,
+	\ 'time': 500,
+	\})
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('world', line)
+
+  sleep 700m
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello', line)
+
+  call popup_create('on the command line', {
+	\ 'line': &lines,
+	\ 'col': 10,
+	\ 'time': 500,
+	\})
+  redraw
+  let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
+  call assert_match('.*on the command line.*', line)
+
+  sleep 700m
+  redraw
+  let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
+  call assert_notmatch('.*on the command line.*', line)
+
+  bwipe!
+endfunc

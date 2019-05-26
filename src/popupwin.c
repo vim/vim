@@ -22,11 +22,34 @@
     static void
 apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 {
+    int	    nr;
+
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
     wp->w_winrow = dict_get_number(dict, (char_u *)"line");
     wp->w_wincol = dict_get_number(dict, (char_u *)"col");
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+
+    // Add timer to close the popup after some time.
+    nr = dict_get_number(dict, (char_u *)"time");
+    if (nr > 0)
+    {
+	char_u	    cbbuf[50];
+	char_u	    *ptr = cbbuf;
+	typval_T    tv;
+
+	vim_snprintf((char *)cbbuf, sizeof(cbbuf),
+					   "{_ -> popup_close(%d)}", wp->w_id);
+	if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
+	{
+	    wp->w_popup_timer = create_timer(nr, 0);
+	    wp->w_popup_timer->tr_callback =
+				  vim_strsave(partial_name(tv.vval.v_partial));
+	    func_ref(wp->w_popup_timer->tr_callback);
+	    wp->w_popup_timer->tr_partial = tv.vval.v_partial;
+	}
+    }
+
 }
 
 /*
@@ -177,6 +200,15 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     popup_close(nr);
 }
 
+    static void
+popup_undisplay(win_T *wp)
+{
+    if (wp->w_winrow + wp->w_height >= cmdline_row)
+	clear_cmdline = TRUE;
+    win_free_popup(wp);
+    redraw_all_later(NOT_VALID);
+}
+
 /*
  * Close a popup window by Window-id.
  */
@@ -195,8 +227,7 @@ popup_close(int id)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
-	    win_free_popup(wp);
-	    redraw_all_later(NOT_VALID);
+	    popup_undisplay(wp);
 	    return;
 	}
 
@@ -222,8 +253,7 @@ popup_close_tabpage(tabpage_T *tp, int id)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
-	    win_free_popup(wp);
-	    redraw_all_later(NOT_VALID);
+	    popup_undisplay(wp);
 	    return;
 	}
 }

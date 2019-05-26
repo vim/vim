@@ -3670,12 +3670,8 @@ free_tabpage(tabpage_T *tp)
     diff_clear(tp);
 # endif
 # ifdef FEAT_TEXT_PROP
-    {
-	win_T *wp;
-
-	while (tp->tp_first_popupwin != NULL)
-	    popup_close_tabpage(tp, tp->tp_first_popupwin->w_id);
-    }
+    while (tp->tp_first_popupwin != NULL)
+	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id);
 #endif
     for (idx = 0; idx < SNAP_COUNT; ++idx)
 	clear_snapshot(tp, idx);
@@ -4871,6 +4867,8 @@ win_unlisted(win_T *wp)
 win_free_popup(win_T *win)
 {
     win_close_buffer(win, TRUE, FALSE);
+    if (win->w_popup_timer != NULL)
+	stop_timer(win->w_popup_timer);
     vim_free(win->w_frame);
     win_free(win, NULL);
 }

@@ -142,7 +142,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'tab': -1,
 				\ 'zindex': 200,
 				\ 'highlight': 'WarningMsg',
-				\ 'border: [],
+				\ 'border': [],
 				\ })
 <		Use {options} to change the properties.
 
@@ -339,7 +339,6 @@ The second argument of |popup_create()| is a dictionary with options:
 	zindex		priority for the popup, default 50
 	time		time in milliseconds after which the popup will close;
 			when omitted |popup_close()| must be used.
-			{not implemented yet}
 	moved		"cell": close the popup if the cursor moved at least
 			one screen cell; "word" allows for moving within
 			|<cword>|, "WORD" allows for moving within |<cWORD>|,
