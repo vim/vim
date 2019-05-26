@@ -612,7 +612,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VALID_BOTLINE	0x20	// w_botine and w_empty_rows are valid
 #define VALID_BOTLINE_AP 0x40	// w_botine is approximated
 #define VALID_TOPLINE	0x80	// w_topline is valid (for cursor position)
-#define VALID_POPUP	0x100	// popup has been redrawn
+
+// Values for w_popup_flags.
+#define PFL_HIDDEN	1	// popup is not displayed
+#define PFL_REDRAWN	2	// popup was just redrawn
 
 /*
  * Terminal highlighting attribute bits.

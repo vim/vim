@@ -85,7 +85,6 @@ Probably 2. is the best choice.
 IMPLEMENTATION:
 - Code is in popupwin.c
 - Implement list of lines with text properties
-- Implement popup_hide() and popup_show()
 - Implement filter.
 - Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
@@ -179,15 +178,16 @@ popup_menu({text}, {options})				 *popup_menu()*
 		"callback" to a function that handles the selected item.
 
 
-popup_show({id})						*popup_show()*
-	  	{not implemented yet}
-		If {id} is a hidden popup, show it now.
-
 popup_hide({id})						*popup_hide()*
-	  	{not implemented yet}
 		If {id} is a displayed popup, hide it now. If the popup has a
 		filter it will not be invoked for so long as the popup is
 		hidden.
+		If window {id} does not exist nothing happens.  If window {id}
+		exists but is not a popup window an error is given. *E993*
+
+popup_show({id})						*popup_show()*
+		If {id} is a hidden popup, show it now.
+		For {id} see `popup_hide()`.
 
 popup_move({id}, {options})					*popup_move()*
 	  	{not implemented yet}
@@ -195,6 +195,7 @@ popup_move({id}, {options})					*popup_move()*
 		{options} may contain the items from |popup_create()| that
 		specify the popup position: "line", "col", "pos", "maxheight",
 		"minheight", "maxwidth" and "minwidth".
+		For {id} see `popup_hide()`.
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*

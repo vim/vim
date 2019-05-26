@@ -195,18 +195,85 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Find the popup window with window-ID "id".
+ * If the popup window does not exist NULL is returned.
+ * If the window is not a popup window, and error message is given.
+ */
+    static win_T *
+find_popup_win(int id)
+{
+    win_T *wp = win_id2wp(id);
+
+    if (wp != NULL && !bt_popup(wp->w_buffer))
+    {
+	semsg(_("E993: window %d is not a popup window"), id);
+	return NULL;
+    }
+    return wp;
+}
+
+/*
+ * Return TRUE if there any popups that are not hidden.
+ */
+    int
+popup_any_visible(void)
+{
+    win_T *wp;
+
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	if ((wp->w_popup_flags & PFL_HIDDEN) == 0)
+	    return TRUE;
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	if ((wp->w_popup_flags & PFL_HIDDEN) == 0)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * popup_close({id})
  */
     void
 f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int		nr = (int)tv_get_number(argvars);
+    int		id = (int)tv_get_number(argvars);
 
-    popup_close(nr);
+    popup_close(id);
+}
+
+/*
+ * popup_hide({id})
+ */
+    void
+f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (wp != NULL && (wp->w_popup_flags & PFL_HIDDEN) == 0)
+    {
+	wp->w_popup_flags |= PFL_HIDDEN;
+	redraw_all_later(NOT_VALID);
+    }
+}
+
+/*
+ * popup_show({id})
+ */
+    void
+f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (wp != NULL && (wp->w_popup_flags & PFL_HIDDEN) != 0)
+    {
+	wp->w_popup_flags &= ~PFL_HIDDEN;
+	redraw_all_later(NOT_VALID);
+    }
 }
 
     static void
-popup_undisplay(win_T *wp)
+popup_free(win_T *wp)
 {
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
@@ -232,7 +299,7 @@ popup_close(int id)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
-	    popup_undisplay(wp);
+	    popup_free(wp);
 	    return;
 	}
 
@@ -258,7 +325,7 @@ popup_close_tabpage(tabpage_T *tp, int id)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
-	    popup_undisplay(wp);
+	    popup_free(wp);
 	    return;
 	}
 }

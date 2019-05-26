@@ -76,3 +76,41 @@ func Test_popup_time()
 
   bwipe!
 endfunc
+
+func Test_popup_hide()
+  topleft vnew
+  call setline(1, 'hello')
+
+  let winid = popup_create('world', {
+	\ 'line': 1,
+	\ 'col': 1,
+	\})
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('world', line)
+
+  call popup_hide(winid)
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello', line)
+
+  call popup_show(winid)
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('world', line)
+
+
+  call popup_close(winid)
+  redraw
+  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello', line)
+
+  " error is given for existing non-popup window
+  call assert_fails('call popup_hide(win_getid())', 'E993:')
+
+  " no error non-existing window
+  call popup_hide(1234234)
+  call popup_show(41234234)
+
+  bwipe!
+endfunc

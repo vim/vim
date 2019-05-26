@@ -2871,6 +2871,7 @@ struct window_S
     int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
     pos_save_T	w_save_cursor;	    /* backup of cursor pos and topline */
 #ifdef FEAT_TEXT_PROP
+    int		w_popup_flags;	    // PFL_ values
     int		w_zindex;
     int		w_maxheight;	    // "maxheight" for popup window
     int		w_maxwidth;	    // "maxwidth" for popup window
