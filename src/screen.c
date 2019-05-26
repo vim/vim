@@ -610,7 +610,7 @@ update_screen(int type_arg)
     }
 #ifdef FEAT_TEXT_PROP
     // TODO: avoid redrawing everything when there is a popup window.
-    if (first_popupwin != NULL || first_tab_popupwin != NULL)
+    if (first_popupwin != NULL || curtab->tp_first_popupwin != NULL)
 	type = NOT_VALID;
 #endif
 
@@ -1000,7 +1000,7 @@ update_popups(void)
     // Reset all the VALID_POPUP flags.
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	wp->w_valid &= ~VALID_POPUP;
-    for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	wp->w_valid &= ~VALID_POPUP;
 
     // TODO: don't redraw every popup every time.
@@ -1018,7 +1018,7 @@ update_popups(void)
 		lowest_zindex = wp->w_zindex;
 		lowest_wp = wp;
 	    }
-	for (wp = first_tab_popupwin; wp != NULL; wp = wp->w_next)
+	for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	    if ((wp->w_valid & VALID_POPUP) == 0
 					       && wp->w_zindex < lowest_zindex)
 	    {

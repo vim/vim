@@ -582,7 +582,6 @@ EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
 EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
 
 #ifdef FEAT_TEXT_PROP
-EXTERN win_T    *first_tab_popupwin;	// first popup window local to tab page
 EXTERN win_T    *first_popupwin;	// first global popup window
 #endif
 

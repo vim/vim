@@ -85,8 +85,8 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     if (nr == 0)
     {
 	// popup on current tab
-	wp->w_next = first_tab_popupwin;
-	first_tab_popupwin = wp;
+	wp->w_next = curtab->tp_first_popupwin;
+	curtab->tp_first_popupwin = wp;
     }
     else if (nr < 0)
     {
@@ -212,13 +212,9 @@ popup_close(int id)
 popup_close_tabpage(tabpage_T *tp, int id)
 {
     win_T	*wp;
-    win_T	**root;
+    win_T	**root = &tp->tp_first_popupwin;
     win_T	*prev = NULL;
 
-    if (tp == curtab)
-	root = &first_tab_popupwin;
-    else
-	root = &tp->tp_first_popupwin;
     for (wp = *root; wp != NULL; prev = wp, wp = wp->w_next)
 	if (wp->w_id == id)
 	{
@@ -237,8 +233,8 @@ close_all_popups(void)
 {
     while (first_popupwin != NULL)
 	popup_close(first_popupwin->w_id);
-    while (first_tab_popupwin != NULL)
-	popup_close(first_tab_popupwin->w_id);
+    while (curtab->tp_first_popupwin != NULL)
+	popup_close(curtab->tp_first_popupwin->w_id);
 }
 
     void
