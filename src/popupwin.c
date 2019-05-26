@@ -23,6 +23,7 @@
 apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 {
     int	    nr;
+    char_u  *str;
 
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
@@ -52,6 +53,10 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     }
 #endif
 
+    str = dict_get_string(dict, (char_u *)"highlight", TRUE);
+    if (str != NULL)
+	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+						   str, OPT_FREE|OPT_LOCAL, 0);
 }
 
 /*
@@ -94,12 +99,10 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     ml_open(buf);
-    curbuf = buf;
-    set_string_option_direct((char_u *)"buftype", -1,
+    set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
 				     (char_u *)"popup", OPT_FREE|OPT_LOCAL, 0);
-    set_string_option_direct((char_u *)"bufhidden", -1,
+    set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,
 				     (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
-    curbuf = curwin->w_buffer;
     buf->b_p_ul = -1;	    // no undo
     buf->b_p_swf = FALSE;   // no swap file
     buf->b_p_bl = FALSE;    // unlisted buffer

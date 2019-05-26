@@ -1447,18 +1447,14 @@ diff_win_options(
 	wp->w_p_wrap_save = wp->w_p_wrap;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
-    curwin = wp;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	if (wp->w_p_diff_saved)
 	    free_string_option(wp->w_p_fdm_save);
 	wp->w_p_fdm_save = vim_strsave(wp->w_p_fdm);
     }
-    set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
+    set_string_option_direct_in_win(wp, (char_u *)"fdm", -1, (char_u *)"diff",
 						       OPT_LOCAL|OPT_FREE, 0);
-    curwin = old_curwin;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	wp->w_p_fdc_save = wp->w_p_fdc;

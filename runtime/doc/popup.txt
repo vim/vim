@@ -322,8 +322,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	wrap		TRUE to make the lines wrap (default TRUE)
 			{not implemented yet}
 	highlight	highlight group name to use for the text, stored in
-			'wincolor'
-			{not implemented yet}
+			the 'wincolor' option
 	border		list with numbers, defining the border thickness
 			above/right/below/left of the popup; an empty list
 			uses a border of 1 all around

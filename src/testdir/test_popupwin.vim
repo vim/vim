@@ -12,10 +12,11 @@ func Test_simple_popup()
   endif
   call writefile([
 	\ "call setline(1, range(1, 100))",
-	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11})",
-	\ "hi PopupColor ctermbg=lightblue",
-	\ "call setwinvar(winid, '&wincolor', 'PopupColor')",
+	\ "hi PopupColor1 ctermbg=lightblue",
+	\ "hi PopupColor2 ctermbg=lightcyan",
+	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11, 'highlight': 'PopupColor1'})",
 	\ "let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25})",
+	\ "call setwinvar(winid2, '&wincolor', 'PopupColor2')",
 	\], 'XtestPopup')
   let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_popupwin_01', {})

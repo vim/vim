@@ -5954,6 +5954,54 @@ set_string_option_direct(
 }
 
 /*
+ * Like set_string_option_direct(), but for a window-local option in "wp".
+ * Blocks autocommands to avoid the old curwin becoming invalid.
+ */
+    void
+set_string_option_direct_in_win(
+	win_T		*wp,
+	char_u		*name,
+	int		opt_idx,
+	char_u		*val,
+	int		opt_flags,
+	int		set_sid)
+{
+    win_T	*save_curwin = curwin;
+
+    block_autocmds();
+    curwin = wp;
+    curbuf = curwin->w_buffer;
+    set_string_option_direct(name, opt_idx, val, opt_flags, set_sid);
+    curwin = save_curwin;
+    curbuf = curwin->w_buffer;
+    unblock_autocmds();
+}
+
+/*
+ * Like set_string_option_direct(), but for a buffer-local option in "buf".
+ * Blocks autocommands to avoid the old curbuf becoming invalid.
+ */
+    void
+set_string_option_direct_in_buf(
+	buf_T		*buf,
+	char_u		*name,
+	int		opt_idx,
+	char_u		*val,
+	int		opt_flags,
+	int		set_sid)
+{
+    buf_T	*save_curbuf = curbuf;
+
+    block_autocmds();
+    curbuf = buf;
+    curwin->w_buffer = curbuf;
+    set_string_option_direct(name, opt_idx, val, opt_flags, set_sid);
+    curbuf = save_curbuf;
+    curwin->w_buffer = curbuf;
+    unblock_autocmds();
+}
+
+/*
  * Set global value for string option when it's a local option.
  */
     static void
