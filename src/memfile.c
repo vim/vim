@@ -994,7 +994,8 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
     unsigned	page_count; /* number of pages written */
     unsigned	size;	    /* number of bytes written */
 
-    if (mfp->mf_fd < 0)	    /* there is no file, can't write */
+    if (mfp->mf_fd < 0 && !mfp->mf_reopen)
+	// there is no file and there was no file, can't write
 	return FAIL;
 
     if (hp->bh_bnum < 0)	/* must assign file block number */
@@ -1011,6 +1012,8 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
      */
     for (;;)
     {
+	int attempt;
+
 	nr = hp->bh_bnum;
 	if (nr > mfp->mf_infile_count)		/* beyond end of file */
 	{
@@ -1021,29 +1024,49 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 	    hp2 = hp;
 
 	offset = (off_T)page_size * nr;
-	if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
-	{
-	    PERROR(_("E296: Seek error in swap file write"));
-	    return FAIL;
-	}
 	if (hp2 == NULL)	    /* freed block, fill with dummy data */
 	    page_count = 1;
 	else
 	    page_count = hp2->bh_page_count;
 	size = page_size * page_count;
-	if (mf_write_block(mfp, hp2 == NULL ? hp : hp2, offset, size) == FAIL)
+
+	for (attempt = 1; attempt <= 2; ++attempt)
 	{
-	    /*
-	     * Avoid repeating the error message, this mostly happens when the
-	     * disk is full. We give the message again only after a successful
-	     * write or when hitting a key. We keep on trying, in case some
-	     * space becomes available.
-	     */
-	    if (!did_swapwrite_msg)
-		emsg(_("E297: Write error in swap file"));
-	    did_swapwrite_msg = TRUE;
-	    return FAIL;
+	    if (mfp->mf_fd >= 0)
+	    {
+		if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
+		{
+		    PERROR(_("E296: Seek error in swap file write"));
+		    return FAIL;
+		}
+		if (mf_write_block(mfp,
+				   hp2 == NULL ? hp : hp2, offset, size) == OK)
+		    break;
+	    }
+
+	    if (attempt == 1)
+	    {
+		// If the swap file is on a network drive, and the network
+		// gets disconnected and then re-connected, we can maybe fix it
+		// by closing and then re-opening the file.
+		if (mfp->mf_fd >= 0)
+		    close(mfp->mf_fd);
+		mfp->mf_fd = mch_open_rw((char *)mfp->mf_fname, mfp->mf_flags);
+		mfp->mf_reopen = (mfp->mf_fd < 0);
+	    }
+	    if (attempt == 2 || mfp->mf_fd < 0)
+	    {
+		// Avoid repeating the error message, this mostly happens when
+		// the disk is full. We give the message again only after a
+		// successful write or when hitting a key. We keep on trying,
+		// in case some space becomes available.
+		if (!did_swapwrite_msg)
+		    emsg(_("E297: Write error in swap file"));
+		did_swapwrite_msg = TRUE;
+		return FAIL;
+	    }
 	}
+
 	did_swapwrite_msg = FALSE;
 	if (hp2 != NULL)		    /* written a non-dummy block */
 	    hp2->bh_flags &= ~BH_DIRTY;
@@ -1271,6 +1294,7 @@ mf_do_open(
 	 * the file) */
 	flags |= O_NOINHERIT;
 #endif
+	mfp->mf_flags = flags;
 	mfp->mf_fd = mch_open_rw((char *)mfp->mf_fname, flags);
     }
 

@@ -288,24 +288,24 @@ func Test_q_arg()
 
   " Test with default argument '-q'.
   call assert_equal('errors.err', &errorfile)
-  call writefile(["../memfile.c:1482:5: error: expected ';' before '}' token"], 'errors.err')
+  call writefile(["../memfile.c:208:5: error: expected ';' before '}' token"], 'errors.err')
   if RunVim([], after, '-q')
     let lines = readfile('Xtestout')
     call assert_equal(['errors.err',
-	\              '[0, 1482, 5, 0]',
-	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
+	\              '[0, 208, 5, 0]',
+	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
   call delete('errors.err')
 
   " Test with explicit argument '-q Xerrors' (with space).
-  call writefile(["../memfile.c:1482:5: error: expected ';' before '}' token"], 'Xerrors')
+  call writefile(["../memfile.c:208:5: error: expected ';' before '}' token"], 'Xerrors')
   if RunVim([], after, '-q Xerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 1482, 5, 0]',
-	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
+	\              '[0, 208, 5, 0]',
+	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
@@ -314,8 +314,8 @@ func Test_q_arg()
   if RunVim([], after, '-qXerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 1482, 5, 0]',
-	\              source_file . "|1482 col 5| error: expected ';' before '}' token"],
+	\              '[0, 208, 5, 0]',
+	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
 
