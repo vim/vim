@@ -455,7 +455,8 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE);
 		    if (len == 0)
 		    {
-			ga_clear(&ga);
+			if (res != NULL)
+			    ga_clear(&ga);
 			return FAIL;
 		    }
 		    p += len + 2;
@@ -471,7 +472,8 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 			     STR2NR_HEX + STR2NR_FORCE, &nr2, NULL, 4, TRUE);
 			if (len == 0)
 			{
-			    ga_clear(&ga);
+			    if (res != NULL)
+				ga_clear(&ga);
 			    return FAIL;
 			}
 			if (0xdc00 <= nr2 && nr2 <= 0xdfff)
@@ -484,6 +486,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    if (res != NULL)
 		    {
 			char_u	buf[NUMBUFLEN];
+
 			buf[utf_char2bytes((int)nr, buf)] = NUL;
 			ga_concat(&ga, buf);
 		    }
