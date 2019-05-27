@@ -121,3 +121,32 @@ func Test_popup_hide()
 
   bwipe!
 endfunc
+
+func Test_popup_move()
+  topleft vnew
+  call setline(1, 'hello')
+
+  let winid = popup_create('world', {
+	\ 'line': 1,
+	\ 'col': 1,
+	\})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('world ', line)
+
+  call popup_move(winid, {'line': 2, 'col': 2})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello ', line)
+  let line = join(map(range(1, 6), 'screenstring(2, v:val)'), '')
+  call assert_equal('~world', line)
+
+  call popup_move(winid, {'line': 1})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('hworld', line)
+
+  call popup_close(winid)
+
+  bwipe!
+endfunc

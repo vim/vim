@@ -145,6 +145,24 @@ add_popup_dicts(buf_T *buf, list_T *l)
 }
 
 /*
+ * Find the popup window with window-ID "id".
+ * If the popup window does not exist NULL is returned.
+ * If the window is not a popup window, and error message is given.
+ */
+    static win_T *
+find_popup_win(int id)
+{
+    win_T *wp = win_id2wp(id);
+
+    if (wp != NULL && !bt_popup(wp->w_buffer))
+    {
+	semsg(_("E993: window %d is not a popup window"), id);
+	return NULL;
+    }
+    return wp;
+}
+
+/*
  * popup_create({text}, {options})
  */
     void
@@ -271,24 +289,6 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     wp->w_vsep_width = 0;
 
     redraw_all_later(NOT_VALID);
-}
-
-/*
- * Find the popup window with window-ID "id".
- * If the popup window does not exist NULL is returned.
- * If the window is not a popup window, and error message is given.
- */
-    static win_T *
-find_popup_win(int id)
-{
-    win_T *wp = win_id2wp(id);
-
-    if (wp != NULL && !bt_popup(wp->w_buffer))
-    {
-	semsg(_("E993: window %d is not a popup window"), id);
-	return NULL;
-    }
-    return wp;
 }
 
 /*
@@ -422,6 +422,46 @@ close_all_popups(void)
 ex_popupclear(exarg_T *eap UNUSED)
 {
     close_all_popups();
+}
+
+/*
+ * popup_move({id}, {options})
+ */
+    void
+f_popup_move(typval_T *argvars, typval_T *rettv)
+{
+    dict_T	*d;
+    int		nr;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    rettv->v_type = VAR_UNKNOWN;
+
+    // Check arguments look OK.
+    if (wp == NULL)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    d = argvars[1].vval.v_dict;
+
+    rettv->vval.v_number = wp->w_id;
+
+    //if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
+    //	wp->w_maxwidth = nr;
+    //if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
+    //	wp->w_maxheight = nr;
+    if ((nr = dict_get_number(d, (char_u *)"line")) > 0)
+	wp->w_winrow = nr - 1;
+    if ((nr = dict_get_number(d, (char_u *)"col")) > 0)
+	wp->w_wincol = nr - 1;
+
+    redraw_all_later(NOT_VALID);
 }
 
 #endif // FEAT_TEXT_PROP
