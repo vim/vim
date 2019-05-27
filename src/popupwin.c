@@ -450,8 +450,6 @@ f_popup_move(typval_T *argvars, typval_T *rettv)
     }
     d = argvars[1].vval.v_dict;
 
-    rettv->vval.v_number = wp->w_id;
-
     //if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
     //	wp->w_maxwidth = nr;
     //if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
