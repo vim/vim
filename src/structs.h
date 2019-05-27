@@ -2873,8 +2873,12 @@ struct window_S
 #ifdef FEAT_TEXT_PROP
     int		w_popup_flags;	    // PFL_ values
     int		w_zindex;
+    int		w_minheight;	    // "minheight" for popup window
+    int		w_minwidth;	    // "minwidth" for popup window
     int		w_maxheight;	    // "maxheight" for popup window
     int		w_maxwidth;	    // "maxwidth" for popup window
+    int		w_wantline;	    // "line" for popup window
+    int		w_wantcol;	    // "col" for popup window
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif

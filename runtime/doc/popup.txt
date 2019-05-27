@@ -84,7 +84,7 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- Implement list of lines with text properties
+- implement popup_getposition({id}), use in tests
 - Implement filter.
 - Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
@@ -190,7 +190,6 @@ popup_show({id})						*popup_show()*
 		For {id} see `popup_hide()`.
 
 popup_move({id}, {options})					*popup_move()*
-	  	{not implemented yet}
 		Move popup {id} to the position speficied with {options}.
 		{options} may contain the items from |popup_create()| that
 		specify the popup position: "line", "col", "pos", "maxheight",
@@ -310,10 +309,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			{not implemented yet}
 	maxheight	maximum height
 	minheight	minimum height
-			{not implemented yet}
 	maxwidth	maximum width
 	minwidth	minimum width
-			{not implemented yet}
 	hidden		when TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}

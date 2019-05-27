@@ -1034,6 +1034,24 @@ update_popups(void)
 }
 #endif
 
+/*
+ * Get 'wincolor' attribute for window "wp".  If not set and "wp" is a popup
+ * window then get the "Pmenu" highlight attribute.
+ */
+    static int
+get_wcr_attr(win_T *wp)
+{
+    int wcr_attr = 0;
+
+    if (*wp->w_p_wcr != NUL)
+	wcr_attr = syn_name2attr(wp->w_p_wcr);
+#ifdef FEAT_TEXT_PROP
+    if (bt_popup(wp->w_buffer) && wcr_attr == 0)
+	wcr_attr = HL_ATTR(HLF_PNI);
+#endif
+    return wcr_attr;
+}
+
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Update a single window, its status line and maybe the command line msg.
@@ -2419,13 +2437,9 @@ win_draw_end(
 {
     int		n = 0;
     int		attr = HL_ATTR(hl);
-    int		wcr_attr = 0;
+    int		wcr_attr = get_wcr_attr(wp);
 
-    if (*wp->w_p_wcr != NUL)
-    {
-	wcr_attr = syn_name2attr(wp->w_p_wcr);
-	attr = hl_combine_attr(wcr_attr, attr);
-    }
+    attr = hl_combine_attr(wcr_attr, attr);
 
     if (draw_margin)
     {
@@ -3115,6 +3129,8 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		wcr_attr = 0;		// attributes from 'wincolor'
+    int		win_attr = 0;		// background for whole window, except
+					// margins and "~" lines.
     int		area_attr = 0;		// attributes desired by highlighting
     int		search_attr = 0;	// attributes desired by 'hlsearch'
 #ifdef FEAT_SYN_HL
@@ -3196,7 +3212,6 @@ win_line(
 #ifdef FEAT_TERMINAL
     int		get_term_attr = FALSE;
 #endif
-    int		win_attr = 0;		// background for whole window
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -3566,28 +3581,15 @@ win_line(
 	}
     }
 
-    if (*wp->w_p_wcr != NUL)
+    wcr_attr = get_wcr_attr(wp);
+    if (wcr_attr != 0)
     {
-	wcr_attr = syn_name2attr(wp->w_p_wcr);
-
-	// 'wincolor' highlighting for the whole window
-	if (wcr_attr != 0)
-	{
-	    win_attr = wcr_attr;
-	    area_highlighting = TRUE;
-	}
+	win_attr = wcr_attr;
+	area_highlighting = TRUE;
     }
 #ifdef FEAT_TEXT_PROP
     if (bt_popup(wp->w_buffer))
-    {
 	screen_line_flags |= SLF_POPUP;
-
-	if (win_attr == 0)
-	{
-	    win_attr = HL_ATTR(HLF_PNI);
-	    area_highlighting = TRUE;
-	}
-    }
 #endif
 
     /*

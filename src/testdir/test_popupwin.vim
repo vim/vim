@@ -16,8 +16,8 @@ func Test_simple_popup()
 	\ "hi PopupColor2 ctermbg=lightcyan",
 	\ "hi Comment ctermfg=red",
 	\ "call prop_type_add('comment', {'highlight': 'Comment'})",
-	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11, 'highlight': 'PopupColor1'})",
-	\ "let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25})",
+	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11, 'minwidth': 20, 'highlight': 'PopupColor1'})",
+	\ "let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25, 'minwidth': 20})",
 	\ "call setwinvar(winid2, '&wincolor', 'PopupColor2')",
 	\], 'XtestPopup')
   let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
@@ -25,12 +25,12 @@ func Test_simple_popup()
 
   " Add a tabpage
   call term_sendkeys(buf, ":tabnew\<CR>")
-  call term_sendkeys(buf, ":call popup_create(["
+  call term_sendkeys(buf, ":let popupwin = popup_create(["
 	\ .. "{'text': 'other tab'},"
 	\ .. "{'text': 'a comment line', 'props': [{"
-	\ .. "'col': 3, 'length': 7, 'type': 'comment'"
+	\ .. "'col': 3, 'length': 7, 'minwidth': 20, 'type': 'comment'"
 	\ .. "}]},"
-	\ .. "], {'line': 4, 'col': 9})\<CR>")
+	\ .. "], {'line': 4, 'col': 9, 'minwidth': 20})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_02', {})
 
   " switch back to first tabpage
@@ -40,6 +40,11 @@ func Test_simple_popup()
   " close that tabpage
   call term_sendkeys(buf, ":quit!\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_04', {})
+
+  " resize popup
+  call term_sendkeys(buf, ":call popup_move(popupwin, {'minwidth': 15, 'maxwidth': 25, 'minheight': 3, 'maxheight': 5})\<CR>")
+  call term_sendkeys(buf, ":redraw\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_05', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -56,6 +61,7 @@ func Test_popup_time()
   call popup_create('world', {
 	\ 'line': 1,
 	\ 'col': 1,
+	\ 'minwidth': 20,
 	\ 'time': 500,
 	\})
   redraw
@@ -70,6 +76,7 @@ func Test_popup_time()
   call popup_create('on the command line', {
 	\ 'line': &lines,
 	\ 'col': 10,
+	\ 'minwidth': 20,
 	\ 'time': 500,
 	\})
   redraw
@@ -91,6 +98,7 @@ func Test_popup_hide()
   let winid = popup_create('world', {
 	\ 'line': 1,
 	\ 'col': 1,
+	\ 'minwidth': 20,
 	\})
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
@@ -118,6 +126,36 @@ func Test_popup_hide()
   " no error non-existing window
   call popup_hide(1234234)
   call popup_show(41234234)
+
+  bwipe!
+endfunc
+
+func Test_popup_move()
+  topleft vnew
+  call setline(1, 'hello')
+
+  let winid = popup_create('world', {
+	\ 'line': 1,
+	\ 'col': 1,
+	\ 'minwidth': 20,
+	\})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('world ', line)
+
+  call popup_move(winid, {'line': 2, 'col': 2})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('hello ', line)
+  let line = join(map(range(1, 6), 'screenstring(2, v:val)'), '')
+  call assert_equal('~world', line)
+
+  call popup_move(winid, {'line': 1})
+  redraw
+  let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
+  call assert_equal('hworld', line)
+
+  call popup_close(winid)
 
   bwipe!
 endfunc

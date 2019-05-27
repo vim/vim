@@ -25,10 +25,14 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     int	    nr;
     char_u  *str;
 
+    wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
+    wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
-    wp->w_winrow = dict_get_number(dict, (char_u *)"line");
-    wp->w_wincol = dict_get_number(dict, (char_u *)"col");
+
+    wp->w_wantline = dict_get_number(dict, (char_u *)"line");
+    wp->w_wantcol = dict_get_number(dict, (char_u *)"col");
+
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
 
 #if defined(FEAT_TIMERS)
@@ -145,6 +149,49 @@ add_popup_dicts(buf_T *buf, list_T *l)
 }
 
 /*
+ * Adjust the position and size of the popup to fit on the screen.
+ */
+    static void
+popup_adjust_position(win_T *wp)
+{
+    // TODO: Compute the size and position properly.
+    if (wp->w_wantline > 0)
+	wp->w_winrow = wp->w_wantline - 1;
+    else
+	// TODO: better default
+	wp->w_winrow = Rows > 5 ? Rows / 2 - 2 : 0;
+    if (wp->w_winrow >= Rows)
+	wp->w_winrow = Rows - 1;
+
+    if (wp->w_wantcol > 0)
+	wp->w_wincol = wp->w_wantcol - 1;
+    else
+	// TODO: better default
+	wp->w_wincol = Columns > 20 ? Columns / 2 - 10 : 0;
+    if (wp->w_wincol >= Columns - 3)
+	wp->w_wincol = Columns - 3;
+
+    // TODO: set width based on longest text line and the 'wrap' option
+    wp->w_width = vim_strsize(ml_get_buf(wp->w_buffer, 1, FALSE));
+    if (wp->w_minwidth > 0 && wp->w_width < wp->w_minwidth)
+	wp->w_width = wp->w_minwidth;
+    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
+	wp->w_width = wp->w_maxwidth;
+    if (wp->w_width > Columns - wp->w_wincol)
+	wp->w_width = Columns - wp->w_wincol;
+
+    if (wp->w_height <= 1)
+	// TODO: adjust height for wrapped lines
+	wp->w_height = wp->w_buffer->b_ml.ml_line_count;
+    if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
+	wp->w_height = wp->w_minheight;
+    if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
+	wp->w_height = wp->w_maxheight;
+    if (wp->w_height > Rows - wp->w_winrow)
+	wp->w_height = Rows - wp->w_winrow;
+}
+
+/*
  * popup_create({text}, {options})
  */
     void
@@ -241,32 +288,7 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     if (wp->w_zindex == 0)
 	wp->w_zindex = 50;
 
-    // TODO: Compute the size and position properly.
-
-    // Default position is in middle of the screen, assuming a small popup
-    if (wp->w_winrow == 0)
-	wp->w_winrow = Rows > 5 ? Rows / 2 - 2 : 0;
-    else
-	--wp->w_winrow;  // option value is one-based
-    if (wp->w_wincol == 0)
-	wp->w_wincol = Columns > 20 ? Columns / 2 - 10 : 0;
-    else
-	--wp->w_wincol;  // option value is one-based
-
-
-    // TODO: set width based on longest text line and the 'wrap' option
-    wp->w_width = wp->w_maxwidth == 0 ? 20 : wp->w_maxwidth;
-    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
-	wp->w_width = wp->w_maxwidth;
-    if (wp->w_width > Columns - wp->w_wincol)
-	wp->w_width = Columns - wp->w_wincol;
-
-    // TODO: adjust height for wrapped lines
-    wp->w_height = buf->b_ml.ml_line_count;
-    if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
-	wp->w_height = wp->w_maxheight;
-    if (wp->w_height > Rows - wp->w_winrow)
-	wp->w_height = Rows - wp->w_winrow;
+    popup_adjust_position(wp);
 
     wp->w_vsep_width = 0;
 
@@ -422,6 +444,47 @@ close_all_popups(void)
 ex_popupclear(exarg_T *eap UNUSED)
 {
     close_all_popups();
+}
+
+/*
+ * popup_move({id}, {options})
+ */
+    void
+f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    dict_T	*d;
+    int		nr;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (wp == NULL)
+	return;  // invalid {id}
+
+    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    d = argvars[1].vval.v_dict;
+
+    if ((nr = dict_get_number(d, (char_u *)"minwidth")) > 0)
+	wp->w_minwidth = nr;
+    if ((nr = dict_get_number(d, (char_u *)"minheight")) > 0)
+	wp->w_minheight = nr;
+    if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
+	wp->w_maxwidth = nr;
+    if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
+	wp->w_maxheight = nr;
+    if ((nr = dict_get_number(d, (char_u *)"line")) > 0)
+	wp->w_wantline = nr;
+    if ((nr = dict_get_number(d, (char_u *)"col")) > 0)
+	wp->w_wantcol = nr;
+    // TODO: "pos"
+
+    if (wp->w_winrow + wp->w_height >= cmdline_row)
+	clear_cmdline = TRUE;
+    popup_adjust_position(wp);
+    redraw_all_later(NOT_VALID);
 }
 
 #endif // FEAT_TEXT_PROP
