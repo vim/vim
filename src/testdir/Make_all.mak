@@ -42,7 +42,6 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test30.out \
 	test59.out \
 	test72.out \
 
