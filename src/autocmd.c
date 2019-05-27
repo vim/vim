@@ -1193,7 +1193,7 @@ do_autocmd_event(
 		    return FAIL;
 		}
 
-		ap = (AutoPat *)alloc((unsigned)sizeof(AutoPat));
+		ap = (AutoPat *)alloc(sizeof(AutoPat));
 		if (ap == NULL)
 		    return FAIL;
 		ap->pat = vim_strnsave(pat, patlen);
@@ -1242,7 +1242,7 @@ do_autocmd_event(
 	    prev_ac = &(ap->cmds);
 	    while ((ac = *prev_ac) != NULL)
 		prev_ac = &ac->next;
-	    ac = (AutoCmd *)alloc((unsigned)sizeof(AutoCmd));
+	    ac = (AutoCmd *)alloc(sizeof(AutoCmd));
 	    if (ac == NULL)
 		return FAIL;
 	    ac->cmd = vim_strsave(cmd);
@@ -1349,7 +1349,7 @@ ex_doautoall(exarg_T *eap)
      */
     FOR_ALL_BUFFERS(buf)
     {
-	if (buf->b_ml.ml_mfp != NULL)
+	if (buf->b_ml.ml_mfp != NULL && !bt_popup(buf))
 	{
 	    // find a window for this buffer and save some values
 	    aucmd_prepbuf(&aco, buf);
@@ -1423,7 +1423,7 @@ aucmd_prepbuf(
     // back to using the current window.
     if (win == NULL && aucmd_win == NULL)
     {
-	win_alloc_aucmd_win();
+	aucmd_win = win_alloc_popup_win();
 	if (aucmd_win == NULL)
 	    win = curwin;
     }
@@ -1451,19 +1451,11 @@ aucmd_prepbuf(
 	// unexpected results.
 	aco->use_aucmd_win = TRUE;
 	aucmd_win_used = TRUE;
-	aucmd_win->w_buffer = buf;
-#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
-	aucmd_win->w_s = &buf->b_s;
-#endif
-	++buf->b_nwindows;
-	win_init_empty(aucmd_win); // set cursor and topline to safe values
 
-	// Make sure w_localdir and globaldir are NULL to avoid a chdir() in
-	// win_enter_ext().
-	VIM_CLEAR(aucmd_win->w_localdir);
+	win_init_popup_win(aucmd_win, buf);
+
 	aco->globaldir = globaldir;
 	globaldir = NULL;
-
 
 	// Split the current window, put the aucmd_win in the upper half.
 	// We don't want the BufEnter or WinEnter autocommands.
@@ -1620,6 +1612,8 @@ apply_autocmds(
     int		force,	    // when TRUE, ignore autocmd_busy
     buf_T	*buf)	    // buffer for <abuf>
 {
+    if (bt_popup(buf))
+	return FALSE;
     return apply_autocmds_group(event, fname, fname_io, force,
 						      AUGROUP_ALL, buf, NULL);
 }
@@ -2303,8 +2297,8 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		sourcing_name = alloc((unsigned)(STRLEN(s)
-					    + STRLEN(name) + ap->patlen + 1));
+		sourcing_name = alloc(STRLEN(s)
+					      + STRLEN(name) + ap->patlen + 1);
 		if (sourcing_name != NULL)
 		{
 		    sprintf((char *)sourcing_name, s,

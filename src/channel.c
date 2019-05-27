@@ -294,7 +294,7 @@ static int next_ch_id = 0;
 add_channel(void)
 {
     ch_part_T	part;
-    channel_T	*channel = (channel_T *)alloc_clear((int)sizeof(channel_T));
+    channel_T	*channel = (channel_T *)alloc_clear(sizeof(channel_T));
 
     if (channel == NULL)
 	return NULL;
@@ -1354,7 +1354,7 @@ channel_set_req_callback(
 	int	    id)
 {
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
-    cbq_T *item = (cbq_T *)alloc((int)sizeof(cbq_T));
+    cbq_T *item = (cbq_T *)alloc(sizeof(cbq_T));
 
     if (item != NULL)
     {
@@ -1728,7 +1728,7 @@ channel_get_all(channel_T *channel, ch_part_T part, int *outlen)
     // Concatenate everything into one buffer.
     for (node = head->rq_next; node != NULL; node = node->rq_next)
 	len += node->rq_buflen;
-    res = lalloc(len + 1, TRUE);
+    res = alloc(len + 1);
     if (res == NULL)
 	return NULL;
     p = res;
@@ -2024,7 +2024,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	}
 	else
 	{
-	    item = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+	    item = (jsonq_T *)alloc(sizeof(jsonq_T));
 	    if (item == NULL)
 		clear_tv(&listtv);
 	    else
@@ -2223,7 +2223,7 @@ channel_push_json(channel_T *channel, ch_part_T part, typval_T *rettv)
 	/* append after the last item that was pushed back */
 	item = item->jq_next;
 
-    newitem = (jsonq_T *)alloc((unsigned)sizeof(jsonq_T));
+    newitem = (jsonq_T *)alloc(sizeof(jsonq_T));
     if (newitem == NULL)
 	clear_tv(rettv);
     else
@@ -3921,7 +3921,7 @@ channel_send(
 		}
 		else
 		{
-		    writeq_T *last = (writeq_T *)alloc((int)sizeof(writeq_T));
+		    writeq_T *last = (writeq_T *)alloc(sizeof(writeq_T));
 
 		    if (last != NULL)
 		    {

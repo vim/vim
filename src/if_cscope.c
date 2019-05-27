@@ -466,7 +466,7 @@ cs_add(exarg_T *eap UNUSED)
 cs_stat_emsg(char *fname)
 {
     char *stat_emsg = _("E563: stat(%s) error: %d");
-    char *buf = (char *)alloc((unsigned)strlen(stat_emsg) + MAXPATHL + 10);
+    char *buf = (char *)alloc(strlen(stat_emsg) + MAXPATHL + 10);
 
     if (buf != NULL)
     {
@@ -543,7 +543,7 @@ staterr:
     /* if filename is a directory, append the cscope database name to it */
     if (S_ISDIR(statbuf.st_mode))
     {
-	fname2 = (char *)alloc((unsigned)(strlen(CSCOPE_DBFILE) + strlen(fname) + 2));
+	fname2 = (char *)alloc(strlen(CSCOPE_DBFILE) + strlen(fname) + 2);
 	if (fname2 == NULL)
 	    goto add_err;
 
@@ -769,7 +769,7 @@ cs_create_cmd(char *csoption, char *pattern)
 	while VIM_ISWHITE(*pat)
 	    ++pat;
 
-    if ((cmd = (char *)alloc((unsigned)(strlen(pat) + 2))) == NULL)
+    if ((cmd = (char *)alloc(strlen(pat) + 2)) == NULL)
 	return NULL;
 
     (void)sprintf(cmd, "%d%s", search, pat);
@@ -1121,7 +1121,7 @@ cs_find_common(
 	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
 	{
 	    char *nf = _("E469: invalid cscopequickfix flag %c for %c");
-	    char *buf = (char *)alloc((unsigned)strlen(nf));
+	    char *buf = (char *)alloc(strlen(nf));
 
 	    /* strlen will be enough because we use chars */
 	    if (buf != NULL)
@@ -1192,7 +1192,7 @@ cs_find_common(
 	    return FALSE;
 	}
 
-	buf = (char *)alloc((unsigned)(strlen(opt) + strlen(pat) + strlen(nf)));
+	buf = (char *)alloc(strlen(opt) + strlen(pat) + strlen(nf));
 	if (buf == NULL)
 	    (void)emsg(nf);
 	else
@@ -1401,10 +1401,10 @@ cs_insert_filelist(
 #if defined(UNIX)
 	    && csinfo[j].st_dev == sb->st_dev && csinfo[j].st_ino == sb->st_ino
 #else
-	    /* compare pathnames first */
+	    // compare pathnames first
 	    && ((fullpathcmp((char_u *)csinfo[j].fname,
-			(char_u *)fname, FALSE) & FPC_SAME)
-		/* test index file attributes too */
+			(char_u *)fname, FALSE, TRUE) & FPC_SAME)
+		// test index file attributes too
 		|| (csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
 		    && csinfo[j].nIndexLow == bhfi.nFileIndexLow))
@@ -1450,14 +1450,14 @@ cs_insert_filelist(
 	    clear_csinfo(j);
     }
 
-    if ((csinfo[i].fname = (char *)alloc((unsigned)strlen(fname)+1)) == NULL)
+    if ((csinfo[i].fname = (char *)alloc(strlen(fname)+1)) == NULL)
 	return -1;
 
     (void)strcpy(csinfo[i].fname, (const char *)fname);
 
     if (ppath != NULL)
     {
-	if ((csinfo[i].ppath = (char *)alloc((unsigned)strlen(ppath) + 1)) == NULL)
+	if ((csinfo[i].ppath = (char *)alloc(strlen(ppath) + 1)) == NULL)
 	{
 	    VIM_CLEAR(csinfo[i].fname);
 	    return -1;
@@ -1468,7 +1468,7 @@ cs_insert_filelist(
 
     if (flags != NULL)
     {
-	if ((csinfo[i].flags = (char *)alloc((unsigned)strlen(flags) + 1)) == NULL)
+	if ((csinfo[i].flags = (char *)alloc(strlen(flags) + 1)) == NULL)
 	{
 	    VIM_CLEAR(csinfo[i].fname);
 	    VIM_CLEAR(csinfo[i].ppath);
@@ -1820,7 +1820,7 @@ cs_file_results(FILE *f, int *nummatches_a)
 			   &slno, &search)) == NULL)
 	       continue;
 
-	   context = (char *)alloc((unsigned)strlen(cntx)+5);
+	   context = (char *)alloc(strlen(cntx)+5);
 	   if (context == NULL)
 	       continue;
 
@@ -1975,7 +1975,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 
     assert(num_matches > 0);
 
-    if ((tbuf = (char *)alloc((unsigned)strlen(matches[0]) + 1)) == NULL)
+    if ((tbuf = (char *)alloc(strlen(matches[0]) + 1)) == NULL)
 	return;
 
     strcpy(tbuf, matches[0]);
@@ -2010,7 +2010,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	 * by parsing matches[i] on the fly and placing stuff into buf
 	 * directly, but that's too much of a hassle
 	 */
-	if ((tbuf = (char *)alloc((unsigned)strlen(matches[idx]) + 1)) == NULL)
+	if ((tbuf = (char *)alloc(strlen(matches[idx]) + 1)) == NULL)
 	    continue;
 	(void)strcpy(tbuf, matches[idx]);
 

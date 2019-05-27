@@ -69,6 +69,8 @@ func Test_proptype_buf()
   call assert_equal(1, len(prop_type_list({'bufnr': bufnr})))
   call prop_type_delete('two', {'bufnr': bufnr})
   call assert_equal(0, len(prop_type_list({'bufnr': bufnr})))
+
+  call assert_fails("call prop_type_add('one', {'bufnr': 98764})", "E158:")
 endfunc
 
 func AddPropTypes()
@@ -124,6 +126,8 @@ func Test_prop_add()
   let expected = [{'col': 5, 'length': 0, 'type': 'two', 'id': 0, 'start': 1, 'end': 1}]
   call assert_equal(expected, prop_list(1))
 
+  call assert_fails("call prop_add(1, 5, {'type': 'two', 'bufnr': 234343})", 'E158:')
+
   call DeletePropTypes()
   bwipe!
 endfunc
@@ -136,14 +140,17 @@ func Test_prop_remove()
   call assert_equal(props, prop_list(1))
 
   " remove by id
-  call prop_remove({'id': 12}, 1)
+  call assert_equal(1, prop_remove({'id': 12}, 1))
   unlet props[2]
   call assert_equal(props, prop_list(1))
 
   " remove by type
-  call prop_remove({'type': 'one'}, 1)
+  call assert_equal(1, prop_remove({'type': 'one'}, 1))
   unlet props[1]
   call assert_equal(props, prop_list(1))
+
+  " remove from unknown buffer
+  call assert_fails("call prop_remove({'type': 'one', 'bufnr': 123456}, 1)", 'E158:')
 
   call DeletePropTypes()
   bwipe!
@@ -608,6 +615,38 @@ func Test_prop_undo()
   let expected[0].length = 2
   call assert_equal(expected, prop_list(1))
 
+  " substitute a word, then undo
+  call setline(1, 'the number 123 is highlighted.')
+  call prop_add(1, 12, {'length': 3, 'type': 'comment'})
+  let expected = [{'col': 12, 'length': 3, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+  set ul&
+  1s/number/foo
+  let expected[0].col = 9
+  call assert_equal(expected, prop_list(1))
+  undo
+  let expected[0].col = 12
+  call assert_equal(expected, prop_list(1))
+  call prop_clear(1)
+
+  " substitute with backslash
+  call setline(1, 'the number 123 is highlighted.')
+  call prop_add(1, 12, {'length': 3, 'type': 'comment'})
+  let expected = [{'col': 12, 'length': 3, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+  1s/the/\The
+  call assert_equal(expected, prop_list(1))
+  1s/^/\\
+  let expected[0].col += 1
+  call assert_equal(expected, prop_list(1))
+  1s/^/\~
+  let expected[0].col += 1
+  call assert_equal(expected, prop_list(1))
+  1s/123/12\\3
+  let expected[0].length += 1
+  call assert_equal(expected, prop_list(1))
+  call prop_clear(1)
+
   bwipe!
   call prop_type_delete('comment')
 endfunc
@@ -719,4 +758,34 @@ func Test_textprop_screenshot_visual()
 
   " Same, but delete four columns
   call RunTestVisualBlock(4, '02')
+endfunc
+
+" Adding a text property to a new buffer should not fail
+func Test_textprop_empty_buffer()
+  call prop_type_add('comment', {'highlight': 'Search'})
+  new
+  call prop_add(1, 1, {'type': 'comment'})
+  close
+  call prop_type_delete('comment')
+endfunc
+
+" Adding a text property to an empty buffer and then editing another
+func Test_textprop_empty_buffer_next()
+  call prop_type_add("xxx", {})
+  call prop_add(1, 1, {"type": "xxx"})
+  next X
+  call prop_type_delete('xxx')
+endfunc
+
+func Test_textprop_remove_from_buf()
+  new
+  let buf = bufnr('')
+  call prop_type_add('one', {'bufnr': buf})
+  call prop_add(1, 1, {'type': 'one', 'id': 234})
+  file x
+  edit y
+  call prop_remove({'id': 234, 'bufnr': buf}, 1)
+  call prop_type_delete('one', {'bufnr': buf})
+  bwipe! x
+  close
 endfunc

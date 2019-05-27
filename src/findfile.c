@@ -319,7 +319,7 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = (ff_search_ctx_T*)alloc((unsigned)sizeof(ff_search_ctx_T));
+	search_ctx = (ff_search_ctx_T*)alloc(sizeof(ff_search_ctx_T));
 	if (search_ctx == NULL)
 	    goto error_return;
 	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
@@ -430,8 +430,7 @@ vim_findfile_init(
 	    walker++;
 
 	dircount = 1;
-	search_ctx->ffsc_stopdirs_v =
-				 (char_u **)alloc((unsigned)sizeof(char_u *));
+	search_ctx->ffsc_stopdirs_v = (char_u **)alloc(sizeof(char_u *));
 
 	if (search_ctx->ffsc_stopdirs_v != NULL)
 	{
@@ -589,9 +588,9 @@ vim_findfile_init(
 	    if (search_ctx->ffsc_wc_path != NULL)
 	    {
 		wc_path = vim_strsave(search_ctx->ffsc_wc_path);
-		temp = alloc((int)(STRLEN(search_ctx->ffsc_wc_path)
+		temp = alloc(STRLEN(search_ctx->ffsc_wc_path)
 				 + STRLEN(search_ctx->ffsc_fix_path + len)
-				 + 1));
+				 + 1);
 		if (temp == NULL || wc_path == NULL)
 		{
 		    vim_free(buf);
@@ -723,7 +722,7 @@ vim_findfile(void *search_ctx_arg)
      * filepath is used as buffer for various actions and as the storage to
      * return a found filename.
      */
-    if ((file_path = alloc((int)MAXPATHL)) == NULL)
+    if ((file_path = alloc(MAXPATHL)) == NULL)
 	return NULL;
 
 #ifdef FEAT_PATH_EXTRA
@@ -926,8 +925,7 @@ vim_findfile(void *search_ctx_arg)
 		 */
 		if (path_with_url(dirptrs[0]))
 		{
-		    stackp->ffs_filearray = (char_u **)
-					      alloc((unsigned)sizeof(char *));
+		    stackp->ffs_filearray = (char_u **)alloc(sizeof(char *));
 		    if (stackp->ffs_filearray != NULL
 			    && (stackp->ffs_filearray[0]
 				= vim_strsave(dirptrs[0])) != NULL)
@@ -1285,7 +1283,7 @@ ff_get_visited_list(
     /*
      * if we reach this we didn't find a list and we have to allocate new list
      */
-    retptr = (ff_visited_list_hdr_T*)alloc((unsigned)sizeof(*retptr));
+    retptr = (ff_visited_list_hdr_T*)alloc(sizeof(*retptr));
     if (retptr == NULL)
 	return NULL;
 
@@ -1413,8 +1411,7 @@ ff_check_visited(
     /*
      * New file/dir.  Add it to the list of visited files/dirs.
      */
-    vp = (ff_visited_T *)alloc((unsigned)(sizeof(ff_visited_T)
-						 + STRLEN(ff_expand_buffer)));
+    vp = (ff_visited_T *)alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
 
     if (vp != NULL)
     {
@@ -1462,7 +1459,7 @@ ff_create_stack_element(
 {
     ff_stack_T	*new;
 
-    new = (ff_stack_T *)alloc((unsigned)sizeof(ff_stack_T));
+    new = (ff_stack_T *)alloc(sizeof(ff_stack_T));
     if (new == NULL)
 	return NULL;
 
@@ -1869,7 +1866,7 @@ find_file_in_path_option(
 		    break;
 		}
 
-		if ((buf = alloc((int)(MAXPATHL))) == NULL)
+		if ((buf = alloc(MAXPATHL)) == NULL)
 		    break;
 
 		// copy next path
@@ -2277,7 +2274,7 @@ expand_path_option(char_u *curdir, garray_T *gap)
     char_u	*p;
     int		len;
 
-    if ((buf = alloc((int)MAXPATHL)) == NULL)
+    if ((buf = alloc(MAXPATHL)) == NULL)
 	return;
 
     while (*path_option != NUL)
@@ -2427,7 +2424,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     if (regmatch.regprog == NULL)
 	return;
 
-    if ((curdir = alloc((int)(MAXPATHL))) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
     expand_path_option(curdir, &path_ga);
@@ -2535,7 +2532,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
 	    continue;
 	}
 
-	rel_path = alloc((int)(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2));
+	rel_path = alloc(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2);
 	if (rel_path == NULL)
 	    goto theend;
 	STRCPY(rel_path, ".");
@@ -2579,7 +2576,7 @@ expand_in_path(
     char_u	*paths = NULL;
     int		glob_flags = 0;
 
-    if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 

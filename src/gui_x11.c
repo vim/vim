@@ -1167,7 +1167,7 @@ gui_mch_prepare(int *argc, char **argv)
      * Move all the entries in argv which are relevant to X into gui_argv.
      */
     gui_argc = 0;
-    gui_argv = (char **)lalloc((long_u)(*argc * sizeof(char *)), FALSE);
+    gui_argv = (char **)lalloc(*argc * sizeof(char *), FALSE);
     if (gui_argv == NULL)
 	return;
     gui_argv[gui_argc++] = argv[0];

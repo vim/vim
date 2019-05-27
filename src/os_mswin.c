@@ -890,7 +890,7 @@ mch_libcall(
 	else if (retval_str != NULL
 		&& (len = check_str_len(retval_str)) > 0)
 	{
-	    *string_result = lalloc((long_u)len, TRUE);
+	    *string_result = alloc(len);
 	    if (*string_result != NULL)
 		mch_memmove(*string_result, retval_str, len);
 	}
@@ -1466,8 +1466,8 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	char_u	*port_name = utf16_to_enc(wport_name, NULL);
 
 	if (printer_name != NULL && port_name != NULL)
-	    prt_name = alloc((unsigned)(STRLEN(printer_name)
-					+ STRLEN(port_name) + STRLEN(text)));
+	    prt_name = alloc(STRLEN(printer_name)
+					   + STRLEN(port_name) + STRLEN(text));
 	if (prt_name != NULL)
 	    wsprintf((char *)prt_name, (const char *)text,
 		    printer_name, port_name);
@@ -2111,7 +2111,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		char	*err = _(e_invexprmsg);
 		size_t	len = STRLEN(str) + STRLEN(err) + 5;
 
-		res = alloc((unsigned)len);
+		res = alloc(len);
 		if (res != NULL)
 		    vim_snprintf((char *)res, len, "%s: \"%s\"", err, str);
 		reply.dwData = COPYDATA_ERROR_RESULT;
@@ -2340,7 +2340,7 @@ serverSetName(char_u *name)
     char_u	*p;
 
     /* Leave enough space for a 9-digit suffix to ensure uniqueness! */
-    ok_name = alloc((unsigned)STRLEN(name) + 10);
+    ok_name = alloc(STRLEN(name) + 10);
 
     STRCPY(ok_name, name);
     p = ok_name + STRLEN(name);

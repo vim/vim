@@ -130,7 +130,7 @@ mf_open(char_u *fname, int flags)
     struct STATFS	stf;
 #endif
 
-    if ((mfp = (memfile_T *)alloc((unsigned)sizeof(memfile_T))) == NULL)
+    if ((mfp = (memfile_T *)alloc(sizeof(memfile_T))) == NULL)
 	return NULL;
 
     if (fname == NULL)	    /* no file for this memfile, use memory only */
@@ -893,7 +893,7 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 {
     bhdr_T	*hp;
 
-    if ((hp = (bhdr_T *)alloc((unsigned)sizeof(bhdr_T))) != NULL)
+    if ((hp = (bhdr_T *)alloc(sizeof(bhdr_T))) != NULL)
     {
 	if ((hp->bh_data = (char_u *)alloc(mfp->mf_page_size * page_count))
 								      == NULL)
@@ -1108,7 +1108,7 @@ mf_trans_add(memfile_T *mfp, bhdr_T *hp)
     if (hp->bh_bnum >= 0)		    /* it's already positive */
 	return OK;
 
-    if ((np = (NR_TRANS *)alloc((unsigned)sizeof(NR_TRANS))) == NULL)
+    if ((np = (NR_TRANS *)alloc(sizeof(NR_TRANS))) == NULL)
 	return FAIL;
 
 /*

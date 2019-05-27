@@ -93,23 +93,24 @@ func Test_appendbufline()
 endfunc
 
 func Test_appendbufline_no_E315()
-  let after = [
-    \ 'set stl=%f ls=2',
-    \ 'new',
-    \ 'let buf = bufnr("%")',
-    \ 'quit',
-    \ 'vsp',
-    \ 'exec "buffer" buf',
-    \ 'wincmd w',
-    \ 'call appendbufline(buf, 0, "abc")',
-    \ 'redraw',
-    \ 'while getbufline(buf, 1)[0] =~ "^\\s*$"',
-    \ '  sleep 10m',
-    \ 'endwhile',
-    \ 'au VimLeavePre * call writefile([v:errmsg], "Xerror")',
-    \ 'au VimLeavePre * call writefile(["done"], "Xdone")',
-    \ 'qall!',
-    \ ]
+  let after =<< trim [CODE]
+    set stl=%f ls=2
+    new
+    let buf = bufnr("%")
+    quit
+    vsp
+    exec "buffer" buf
+    wincmd w
+    call appendbufline(buf, 0, "abc")
+    redraw
+    while getbufline(buf, 1)[0] =~ "^\\s*$"
+      sleep 10m
+    endwhile
+    au VimLeavePre * call writefile([v:errmsg], "Xerror")
+    au VimLeavePre * call writefile(["done"], "Xdone")
+    qall!
+  [CODE]
+
   if !RunVim([], after, '--clean')
     return
   endif

@@ -238,14 +238,14 @@ mch_getenv(char_u *lognam)
     if (sys$trnlnm(&attrib, &d_file_dev, &d_lognam, NULL,&itmlst) == SS$_NORMAL)
     {
 	buffer[lengte] = '\0';
-	if (cp = (char_u *)alloc((unsigned)(lengte+1)))
+	if (cp = (char_u *)alloc(lengte + 1))
 	    strcpy((char *)cp, buffer);
 	return(cp);
     }
     else if ((sbuf = getenv((char *)lognam)))
     {
 	lengte = strlen(sbuf) + 1;
-	cp = (char_u *)alloc((size_t)lengte);
+	cp = (char_u *)alloc(lengte);
 	if (cp)
 	    strcpy((char *)cp, sbuf);
 	return cp;

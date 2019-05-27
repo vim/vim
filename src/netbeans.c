@@ -790,7 +790,7 @@ nb_reply_text(int cmdno, char_u *result)
 
     nbdebug(("REP %d: %s\n", cmdno, (char *)result));
 
-    reply = alloc((unsigned)STRLEN(result) + 32);
+    reply = alloc(STRLEN(result) + 32);
     sprintf((char *)reply, "%d %s\n", cmdno, (char *)result);
     nb_send((char *)reply, "nb_reply_text");
 
@@ -819,7 +819,7 @@ nb_reply_nr(int cmdno, long result)
     static char_u *
 nb_quote(char_u *txt)
 {
-    char_u *buf = alloc((unsigned)(2 * STRLEN(txt) + 1));
+    char_u *buf = alloc(2 * STRLEN(txt) + 1);
     char_u *p = txt;
     char_u *q = buf;
 
@@ -863,7 +863,7 @@ nb_unquote(char_u *p, char_u **endp)
     int done = 0;
 
     /* result is never longer than input */
-    result = (char *)alloc_clear((unsigned)STRLEN(p) + 1);
+    result = (char *)alloc_clear(STRLEN(p) + 1);
     if (result == NULL)
 	return NULL;
 
@@ -951,7 +951,7 @@ nb_joinlines(linenr_T first, linenr_T other)
 
     len_first = (int)STRLEN(ml_get(first));
     len_other = (int)STRLEN(ml_get(other));
-    p = alloc((unsigned)(len_first + len_other + 1));
+    p = alloc(len_first + len_other + 1);
     if (p != NULL)
     {
       mch_memmove(p, ml_get(first), len_first);
@@ -1084,8 +1084,7 @@ nb_do_cmd(
 	    {
 		len = get_buf_size(buf->bufp);
 		nlines = buf->bufp->b_ml.ml_line_count;
-		text = alloc((unsigned)((len > 0)
-						 ? ((len + nlines) * 2) : 4));
+		text = alloc((len > 0) ? ((len + nlines) * 2) : 4);
 		if (text == NULL)
 		{
 		    nbdebug(("    nb_do_cmd: getText has null text field\n"));
@@ -1395,8 +1394,7 @@ nb_do_cmd(
 			char_u *newline;
 
 			/* Insert halfway a line. */
-			newline = alloc_check(
-				       (unsigned)(STRLEN(oldline) + len + 1));
+			newline = alloc(STRLEN(oldline) + len + 1);
 			if (newline != NULL)
 			{
 			    mch_memmove(newline, oldline, (size_t)pos->col);
@@ -3212,7 +3210,8 @@ addsigntype(
 	    if (globalsignmaplen == 0) /* first allocation */
 	    {
 		globalsignmaplen = 20;
-		globalsignmap = (char **)alloc_clear(globalsignmaplen*sizeof(char *));
+		globalsignmap = (char **)alloc_clear(
+					    globalsignmaplen * sizeof(char *));
 	    }
 	    else    /* grow it */
 	    {

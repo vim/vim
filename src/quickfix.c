@@ -540,7 +540,7 @@ parse_efm_option(char_u *efm)
     while (efm[0] != NUL)
     {
 	// Allocate a new eformat structure and put it at the end of the list
-	fmt_ptr = (efm_T *)alloc_clear((unsigned)sizeof(efm_T));
+	fmt_ptr = (efm_T *)alloc_clear(sizeof(efm_T));
 	if (fmt_ptr == NULL)
 	    goto parse_efm_error;
 	if (fmt_first == NULL)	    // first one
@@ -1346,7 +1346,7 @@ qf_parse_multiline_pfx(
 	if (*fields->errmsg && !qfl->qf_multiignore)
 	{
 	    len = (int)STRLEN(qfprev->qf_text);
-	    if ((ptr = alloc((unsigned)(len + STRLEN(fields->errmsg) + 2)))
+	    if ((ptr = alloc(len + STRLEN(fields->errmsg) + 2))
 		    == NULL)
 		return QF_FAIL;
 	    STRCPY(ptr, qfprev->qf_text);
@@ -1815,7 +1815,7 @@ qf_store_title(qf_list_T *qfl, char_u *title)
 
     if (title != NULL)
     {
-	char_u *p = alloc((int)STRLEN(title) + 2);
+	char_u *p = alloc(STRLEN(title) + 2);
 
 	qfl->qf_title = p;
 	if (p != NULL)
@@ -1890,7 +1890,7 @@ locstack_queue_delreq(qf_info_T *qi)
 {
     qf_delq_T	*q;
 
-    q = (qf_delq_T *)alloc((unsigned)sizeof(qf_delq_T));
+    q = (qf_delq_T *)alloc(sizeof(qf_delq_T));
     if (q != NULL)
     {
 	q->qi = qi;
@@ -2063,7 +2063,7 @@ qf_add_entry(
     qfline_T	*qfp;
     qfline_T	**lastp;	// pointer to qf_last or NULL
 
-    if ((qfp = (qfline_T *)alloc((unsigned)sizeof(qfline_T))) == NULL)
+    if ((qfp = (qfline_T *)alloc(sizeof(qfline_T))) == NULL)
 	return QF_FAIL;
     if (bufnum != 0)
     {
@@ -2141,7 +2141,7 @@ qf_alloc_stack(qfltype_T qfltype)
 {
     qf_info_T *qi;
 
-    qi = (qf_info_T *)alloc_clear((unsigned)sizeof(qf_info_T));
+    qi = (qf_info_T *)alloc_clear(sizeof(qf_info_T));
     if (qi != NULL)
     {
 	qi->qf_refcount++;
@@ -2429,7 +2429,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
     struct dir_stack_T  *ds_ptr;
 
     // allocate new stack element and hook it in
-    ds_new = (struct dir_stack_T *)alloc((unsigned)sizeof(struct dir_stack_T));
+    ds_new = (struct dir_stack_T *)alloc(sizeof(struct dir_stack_T));
     if (ds_new == NULL)
 	return NULL;
 
@@ -4707,7 +4707,7 @@ get_mef_name(void)
 	else
 	    off += 19;
 
-	name = alloc((unsigned)STRLEN(p_mef) + 30);
+	name = alloc(STRLEN(p_mef) + 30);
 	if (name == NULL)
 	    break;
 	STRCPY(name, p_mef);

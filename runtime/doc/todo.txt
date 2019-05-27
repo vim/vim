@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 May 09
+*todo.txt*      For Vim version 8.1.  Last change: 2019 May 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,20 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Ongoing work on text properties, see src/textprop.c
+
+Popup windows are being implemented, see |popup-window|.
+
+Patch to beautify the output of a test run. (Christian Brabandt, #4391)
+can be improved.
+
+Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
+20)
+Also put :argadd commands at the start for all buffers, so that their order
+remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
+
+Patch for Chinese translations for nsis. (#4407)  Comments handled?
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -104,15 +118,14 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Support for popup widows:
-- Use text properties to define highlighting.
-- Proposal on issue #4063
+Patch to use forward slash for completion even when 'shellslash' is set.
+Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
 
-Notifications for text changes, could be used for LSP.
-- New event, similar to TextChanged, but guaranteed to provide sequential
-  information of all text changes.
-  Possibly build on undo info (but undo itself is also a change).
-  How to deal with ":%s/this/that" ?
+Completion mixes results from the current buffer with tags and other files.
+Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
+terminal.c and then CTRL-N twice.
+Should do current file first and not split it up when more results are found.
+(Also #1890)
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
@@ -131,14 +144,11 @@ Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
 
+Add typescript syntax, but as one file:
+- https://github.com/HerringtonDarkholme/yats.vim 
+
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
-
-Completion mixes results from the current buffer with tags and other files.
-Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
-terminal.c and then CTRL-N twice.
-Should do current file first and not split it up when more results are found.
-(Also #1890)
 
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
@@ -152,8 +162,17 @@ Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
+Patch for ambiguous width characters in libvterm on MS-Windows 10.
+(Nobuhiro Takasaki, #4411)
+
+Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
+
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
+
+Patch to add getreginfo() and setreg() with an option to set the unnamed
+register "", So that registers can be saved and fully restored.
+(Andy Massimino, 2018 Aug 24, #3370)
 
 Add a way to create an empty, hidden buffer.  Like doing ":new|hide".
 ":let buf = bufcreate('name')
@@ -243,6 +262,11 @@ punctuation is repeated. (Smylers, 2018 Nov 17, #3621)
 
 ml_get error: (Israel Chauca Fuentes, 2018 Oct 17, #3550).
 
+Patch to add more info to OptionSet.  Should mention what triggered the change
+":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
+#4118.  Proposed implementation: 2019 Mar 27.
+Updated 2019 May 25.
+
 Using single wide base character with double wide composing character gives
 drawing errors.  Fill up the base character?  (Dominique, #4328)
 
@@ -269,35 +293,9 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 
 Add buffer argument to undotree(). (#4001)
 
-Patch to fix that Normal is not defined when not compiled with GUI.
-(Christian Brabandt, 2019 May 7, on issue #4072)
-
-Patch to add optional arguments with default values.
-(Andy Massimino, #3952)  Needs to be reviewed.
-
-Patch to add more info to OptionSet.  Should mention what triggered the change
-":set", ":setlocal", ":setglobal", "modeline"; and the old global value.
-#4118.  Proposed implementation: 2019 Mar 27.
-Updated 2019 Apr 9: ASAN fails.
-
-Problem with Visual yank when 'linebreak' and 'showbreak' are set.
-Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
-Nov 17)  Asked about this, Dec 22. Christian will have a look.
-
-Patch for larger icons in installer. (#978)  Still not good.
-
-Patch to add commands to jump to quickfix entry above/below the cursor.
-(Yegappan Lakshmanan, #4316)  Also do :cbefore and :cafter.
-
-Patch to fix that using "5gj" starting inside a closed fold does not work on
-screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
-
-Patch to implement 'diffref' option. (#3535)
-  Easier to use a 'diffmaster' option, is the extra complexity needed?
-  Not ready to include.
-
-Memory leaks in test_channel? (or is it because of fork())
+Using uninitialized value in test_gn
 Using uninitialized value in test_crypt.
+memory leak in test_paste
 Memory leak in test_terminal:
 ==23530==    by 0x2640D7: alloc (misc2.c:874)
 ==23530==    by 0x2646D6: vim_strsave (misc2.c:1315)
@@ -308,26 +306,22 @@ Memory leak in test_terminal:
 ==23530==    by 0x35C923: term_start (terminal.c:421)
 ==23530==    by 0x2AFF30: mch_call_shell_terminal (os_unix.c:4377)
 ==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
+TODO: be able to run all parts of test_alot with valgrind separately
 Memory leak in test_alot with pyeval() (allocating partial)
+Memory leak in test_alot with expand()
+Memory leaks in test_channel? (or is it because of fork())
 
 gethostbyname() is old, use getaddrinfo() if available. (#3227)
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
 
-Patch to specify color for cterm=underline and cterm=undercurl, like "guisp".
-Does #2405 do this?
-
-Patch to add an interrupt() function: sets got_int.  Useful in an autocommand
-such as BufWritePre that checks the file name or contents.
-
-More patches to check:
-- #4098  improve Travis config
-
 Should make 'listchars' global-local.  Local to window or to buffer?
 Probably window.
 Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.
+And "extends" and "precedes" are also useful without 'list' set.  Also in
+'fillchars' or another option?
 
 Sourceforge Vim pages still have content, redirect from empty page.
 Check for PHP errors. (Wayne Davison, 2018 Oct 26)
@@ -335,6 +329,22 @@ Check for PHP errors. (Wayne Davison, 2018 Oct 26)
 Patch to support ":tag <tagkind> <tagname>". (emmrk, 2018 May 7, #2871)
 Use something like ":tag {kind}/{tagname}".
 Not ready to include.
+
+Problem with Visual yank when 'linebreak' and 'showbreak' are set.
+Patch with tests, but it's not clear how it is supposed to work. (tommm, 2018
+Nov 17)  Asked about this, Dec 22. Christian will have a look.
+
+Patch for larger icons in installer. (#978)  Still not good.
+
+Patch to fix that using "5gj" starting inside a closed fold does not work on
+screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
+
+Patch to implement 'diffref' option. (#3535)
+  Easier to use a 'diffmaster' option, is the extra complexity needed?
+  Not ready to include.
+
+Patch to specify color for cterm=underline and cterm=undercurl, like "guisp".
+Patch #2405 does something like this, but in the wrong way.
 
 :pedit resets the 'buflisted' option unexpectedly. (Wang Shidong, 2018 Oct 12,
 #3536)
@@ -354,9 +364,6 @@ Update for xim-input-style help (Tony Mechelynck, 2019 Jan 10).
 Feedback from someone who uses this?
 
 ml_get error. (Dominique Pelle, 2018 Sep 14, #3434)
-
-Patch to use forward slash for completion even when 'shellslash' is set.
-Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
 
 Only output t_Cs when t_Ce is also set.  do not use Cs and Ce termcap entries.  (Daniel Hahler, 2018 Sep 25)
 Add t_cS and t_cR for cursor color select and reset.  Use Cs and Cr terminfo
@@ -382,10 +389,6 @@ includes the first screen line. (2018 Aug 23, #3368)
 
 Refactored HTML indent file. (Michael Lee, #1821)
 Ask to write a test first.
-
-Patch to add getregpoint() and setreg() with an option to set "".
-(Andy Massimino, 2018 Aug 24, #3370)
-Better name?
 
 MS-Windows: .lnk file not resolved properly when 'encoding' is set.
 (lkintact, 2018 Sep 22, #3473)

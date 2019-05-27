@@ -3120,9 +3120,9 @@ logfont2name(LOGFONTW lf)
     charset_name = charset_id2name((int)lf.lfCharSet);
     quality_name = quality_id2name((int)lf.lfQuality);
 
-    res = (char *)alloc((unsigned)(strlen(font_name) + 30
+    res = (char *)alloc(strlen(font_name) + 30
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)
-		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2)));
+		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2));
     if (res != NULL)
     {
 	p = res;
@@ -6803,12 +6803,12 @@ gui_mch_dialog(
 	dfltbutton = -1;
 
     /* Allocate array to hold the width of each button */
-    buttonWidths = (int *)lalloc(numButtons * sizeof(int), TRUE);
+    buttonWidths = (int *)alloc(numButtons * sizeof(int));
     if (buttonWidths == NULL)
 	return -1;
 
     /* Allocate array to hold the X position of each button */
-    buttonPositions = (int *)lalloc(numButtons * sizeof(int), TRUE);
+    buttonPositions = (int *)alloc(numButtons * sizeof(int));
     if (buttonPositions == NULL)
 	return -1;
 
@@ -7718,7 +7718,7 @@ gui_mch_tearoff(
 	}
 
 	/* Allocate menu label and fill it in */
-	text = label = alloc((unsigned)len + 1);
+	text = label = alloc(len + 1);
 	if (label == NULL)
 	    break;
 

@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.1.  Last change: 2019 Jan 17
+*help.txt*	For Vim version 8.1.  Last change: 2019 May 12
 
 			VIM - main help file
 									 k

@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2019 May 05
+*channel.txt*      For Vim version 8.1.  Last change: 2019 May 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -155,7 +155,10 @@ Use |ch_status()| to see if the channel could be opened.
 	func MyCloseHandler(channel)
 <		Vim will invoke callbacks that handle data before invoking
 		close_cb, thus when this function is called no more data will
-		be passed to the callbacks.
+		be passed to the callbacks.  However, if a callback causes Vim
+		to check for messages, the close_cb may be invoked while still
+		in the callback.  The plugin must handle this somehow, it can
+		be useful to know that no more data is coming.
 							*channel-drop*
 "drop"		Specifies when to drop messages:
 		    "auto"	When there is no callback to handle a message.

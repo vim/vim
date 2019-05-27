@@ -491,7 +491,7 @@ var_redir_start(char_u *name, int append)
     if (redir_varname == NULL)
 	return FAIL;
 
-    redir_lval = (lval_T *)alloc_clear((unsigned)sizeof(lval_T));
+    redir_lval = (lval_T *)alloc_clear(sizeof(lval_T));
     if (redir_lval == NULL)
     {
 	var_redir_stop();
@@ -1225,6 +1225,102 @@ eval_foldexpr(char_u *arg, int *cp)
 #endif
 
 /*
+ * Get a list of lines from a HERE document. The here document is a list of
+ * lines surrounded by a marker.
+ *	cmd << {marker}
+ *	  {line1}
+ *	  {line2}
+ *	  ....
+ *	{marker}
+ *
+ * The {marker} is a string. If the optional 'trim' word is supplied before the
+ * marker, then the leading indentation before the lines (matching the
+ * indentation in the 'cmd' line) is stripped.
+ * Returns a List with {lines} or NULL.
+ */
+    static list_T *
+heredoc_get(exarg_T *eap, char_u *cmd)
+{
+    char_u	*theline;
+    char_u	*marker;
+    list_T	*l;
+    char_u	*p;
+    int		indent_len = 0;
+
+    if (eap->getline == NULL)
+    {
+	emsg(_("E991: cannot use =<< here"));
+	return NULL;
+    }
+
+    // Check for the optional 'trim' word before the marker
+    cmd = skipwhite(cmd);
+    if (STRNCMP(cmd, "trim", 4) == 0 && (cmd[4] == NUL || VIM_ISWHITE(cmd[4])))
+    {
+	cmd = skipwhite(cmd + 4);
+
+	// Trim the indentation from all the lines in the here document
+	// The amount of indentation trimmed is the same as the indentation of
+	// the :let command line.
+	p = *eap->cmdlinep;
+	while (VIM_ISWHITE(*p))
+	{
+	    p++;
+	    indent_len++;
+	}
+    }
+
+    // The marker is the next word.  Default marker is "."
+    if (*cmd != NUL && *cmd != '"')
+    {
+	marker = skipwhite(cmd);
+	p = skiptowhite(marker);
+	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
+	{
+	    emsg(_(e_trailing));
+	    return NULL;
+	}
+	*p = NUL;
+    }
+    else
+	marker = (char_u *)".";
+
+    l = list_alloc();
+    if (l == NULL)
+	return NULL;
+
+    for (;;)
+    {
+	int	i = 0;
+
+	theline = eap->getline(NUL, eap->cookie, 0);
+	if (theline != NULL && indent_len > 0)
+	{
+	    // trim the indent matching the first line
+	    if (STRNCMP(theline, *eap->cmdlinep, indent_len) == 0)
+		i = indent_len;
+	}
+
+	if (theline == NULL)
+	{
+	    semsg(_("E990: Missing end marker '%s'"), marker);
+	    break;
+	}
+	if (STRCMP(marker, theline + i) == 0)
+	{
+	    vim_free(theline);
+	    break;
+	}
+
+	if (list_append_string(l, theline + i, -1) == FAIL)
+	    break;
+	vim_free(theline);
+    }
+
+    return l;
+}
+
+/*
  * ":let"			list all variable values
  * ":let var1 var2"		list variable values
  * ":let var = expr"		assignment command.
@@ -1285,6 +1381,22 @@ ex_let(exarg_T *eap)
 	    list_vim_vars(&first);
 	}
 	eap->nextcmd = check_nextcmd(arg);
+    }
+    else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
+    {
+	list_T	*l;
+
+	// HERE document
+	l = heredoc_get(eap, expr + 3);
+	if (l != NULL)
+	{
+	    rettv_list_set(&rettv, l);
+	    op[0] = '=';
+	    op[1] = NUL;
+	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
+									  op);
+	    clear_tv(&rettv);
+	}
     }
     else
     {
@@ -4341,7 +4453,13 @@ eval7(
 		else
 		{
 		    // decimal, hex or octal number
-		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0);
+		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0, TRUE);
+		    if (len == 0)
+		    {
+			semsg(_(e_invexpr2), *arg);
+			ret = FAIL;
+			break;
+		    }
 		    *arg += len;
 		    if (evaluate)
 		    {
@@ -5033,7 +5151,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
      * Copy the string into allocated memory, handling backslashed
      * characters.
      */
-    name = alloc((unsigned)(p - *arg + extra));
+    name = alloc(p - *arg + extra);
     if (name == NULL)
 	return FAIL;
     rettv->v_type = VAR_STRING;
@@ -5167,7 +5285,7 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Copy the string into allocated memory, handling '' to ' reduction.
      */
-    str = alloc((unsigned)((p - *arg) - reduce));
+    str = alloc((p - *arg) - reduce);
     if (str == NULL)
 	return FAIL;
     rettv->v_type = VAR_STRING;
@@ -5467,6 +5585,15 @@ garbage_collect(int testing)
     if (aucmd_win != NULL)
 	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
 								  NULL, NULL);
+#ifdef FEAT_TEXT_PROP
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
+								  NULL, NULL);
+    FOR_ALL_TABPAGES(tp)
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+		abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
+								  NULL, NULL);
+#endif
 
     /* tabpage-local variables */
     FOR_ALL_TABPAGES(tp)
@@ -6664,8 +6791,8 @@ make_expanded_name(
     temp_result = eval_to_string(expr_start + 1, &nextcmd, FALSE);
     if (temp_result != NULL && nextcmd == NULL)
     {
-	retval = alloc((unsigned)(STRLEN(temp_result) + (expr_start - in_start)
-						   + (in_end - expr_end) + 1));
+	retval = alloc(STRLEN(temp_result) + (expr_start - in_start)
+						   + (in_end - expr_end) + 1);
 	if (retval != NULL)
 	{
 	    STRCPY(retval, in_start);
@@ -7170,7 +7297,7 @@ handle_subscript(
     typval_T *
 alloc_tv(void)
 {
-    return (typval_T *)alloc_clear((unsigned)sizeof(typval_T));
+    return (typval_T *)alloc_clear(sizeof(typval_T));
 }
 
 /*
@@ -7348,7 +7475,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-						    STR2NR_ALL, &n, NULL, 0);
+					    STR2NR_ALL, &n, NULL, 0, FALSE);
 	    return n;
 	case VAR_LIST:
 	    emsg(_("E745: Using a List as a Number"));
@@ -8012,8 +8139,7 @@ set_var(
 	if (!valid_varname(varname))
 	    return;
 
-	v = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
-							  + STRLEN(varname)));
+	v = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(varname));
 	if (v == NULL)
 	    return;
 	STRCPY(v->di_key, varname);
@@ -8684,7 +8810,19 @@ find_win_by_nr(
 	    break;
     }
     if (nr >= LOWEST_WIN_ID)
+    {
+#ifdef FEAT_TEXT_PROP
+	// check tab-local popup windows
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_id == nr)
+		return wp;
+	// check global popup windows
+	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_id == nr)
+		return wp;
+#endif
 	return NULL;
+    }
     return wp;
 }
 
@@ -8875,7 +9013,7 @@ setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
 	    }
 	    else
 	    {
-		winvarname = alloc((unsigned)STRLEN(varname) + 3);
+		winvarname = alloc(STRLEN(varname) + 3);
 		if (winvarname != NULL)
 		{
 		    STRCPY(winvarname, "w:");
@@ -8938,7 +9076,7 @@ autoload_name(char_u *name)
     char_u	*scriptname;
 
     /* Get the script file name: replace '#' with '/', append ".vim". */
-    scriptname = alloc((unsigned)(STRLEN(name) + 14));
+    scriptname = alloc(STRLEN(name) + 14);
     if (scriptname == NULL)
 	return FALSE;
     STRCPY(scriptname, "autoload/");

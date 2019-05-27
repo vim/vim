@@ -1448,7 +1448,7 @@ mch_expandpath(
 #ifdef __amigaos4__
     Anchor = AllocDosObject(DOS_ANCHORPATH, AnchorTags);
 #else
-    Anchor = (struct AnchorPath *)alloc_clear((unsigned)ANCHOR_SIZE);
+    Anchor = (struct AnchorPath *)alloc_clear(ANCHOR_SIZE);
 #endif
     if (Anchor == NULL)
 	return 0;
@@ -1467,7 +1467,7 @@ mch_expandpath(
     {
 #endif
 	/* hack to replace '*' by '#?' */
-	starbuf = alloc((unsigned)(2 * STRLEN(pat) + 1));
+	starbuf = alloc(2 * STRLEN(pat) + 1);
 	if (starbuf == NULL)
 	    goto Return;
 	for (sp = pat, dp = starbuf; *sp; ++sp)

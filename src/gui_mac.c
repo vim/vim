@@ -4476,7 +4476,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     /* In CARBON we don't need a Handle, a pointer is good */
     textOfClip = NewHandle(scrapSize);
 
-    /* tempclip = lalloc(scrapSize+1, TRUE); */
+    /* tempclip = alloc(scrapSize+1); */
     HLock(textOfClip);
     error = GetScrapFlavorData(scrap,
 	    flavor ? VIMSCRAPFLAVOR : SCRAPTEXTFLAVOR,
@@ -4488,7 +4488,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     else
 	type = MAUTO;
 
-    tempclip = lalloc(scrapSize + 1, TRUE);
+    tempclip = alloc(scrapSize + 1);
     mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
     tempclip[scrapSize] = 0;
 

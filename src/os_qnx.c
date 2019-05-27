@@ -120,7 +120,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     type = clip_convert_selection(&str, &len, cbd);
     if (type >= 0)
     {
-	text_clip = lalloc(len + 1, TRUE); /* Normal text */
+	text_clip = alloc(len + 1); // Normal text
 
 	if (text_clip && vim_clip)
 	{

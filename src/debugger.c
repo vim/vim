@@ -873,7 +873,7 @@ debuggy_find(
     // Replace K_SNR in function name with "<SNR>".
     if (!file && fname[0] == K_SPECIAL)
     {
-	name = alloc((unsigned)STRLEN(fname) + 3);
+	name = alloc(STRLEN(fname) + 3);
 	if (name == NULL)
 	    name = fname;
 	else

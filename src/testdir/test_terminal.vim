@@ -1012,18 +1012,19 @@ endfunc
 " Run Vim, start a terminal in that Vim without the kill argument,
 " check that :qall does not exit, :qall! does.
 func Test_terminal_qall_exit()
-  let after = [
-	\ 'term',
-	\ 'let buf = bufnr("%")',
-	\ 'while term_getline(buf, 1) =~ "^\\s*$"',
-	\ '  sleep 10m',
-	\ 'endwhile',
-	\ 'set nomore',
-	\ 'au VimLeavePre * call writefile(["too early"], "Xdone")',
-	\ 'qall',
-	\ 'au! VimLeavePre * exe buf . "bwipe!" | call writefile(["done"], "Xdone")',
-	\ 'cquit',
-	\ ]
+  let after =<< trim [CODE]
+    term
+    let buf = bufnr("%")
+    while term_getline(buf, 1) =~ "^\\s*$"
+      sleep 10m
+    endwhile
+    set nomore
+    au VimLeavePre * call writefile(["too early"], "Xdone")
+    qall
+    au! VimLeavePre * exe buf . "bwipe!" | call writefile(["done"], "Xdone")
+    cquit
+  [CODE]
+
   if !RunVim([], after, '')
     return
   endif

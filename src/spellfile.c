@@ -892,8 +892,7 @@ read_prefcond_section(FILE *fd, slang_T *lp)
     if (cnt <= 0)
 	return SP_FORMERROR;
 
-    lp->sl_prefprog = (regprog_T **)alloc_clear(
-					 (unsigned)sizeof(regprog_T *) * cnt);
+    lp->sl_prefprog = (regprog_T **)alloc_clear(sizeof(regprog_T *) * cnt);
     if (lp->sl_prefprog == NULL)
 	return SP_OTHERERROR;
     lp->sl_prefixcnt = cnt;
@@ -1264,7 +1263,7 @@ read_compound(FILE *fd, slang_T *slang, int len)
     c = todo * 2 + 7;
     if (enc_utf8)
 	c += todo * 2;
-    pat = alloc((unsigned)c);
+    pat = alloc(c);
     if (pat == NULL)
 	return SP_OTHERERROR;
 
@@ -1580,13 +1579,13 @@ spell_read_tree(
     if (len > 0)
     {
 	/* Allocate the byte array. */
-	bp = lalloc((long_u)len, TRUE);
+	bp = alloc(len);
 	if (bp == NULL)
 	    return SP_OTHERERROR;
 	*bytsp = bp;
 
 	/* Allocate the index array. */
-	ip = (idx_T *)lalloc_clear((long_u)(len * sizeof(int)), TRUE);
+	ip = (idx_T *)lalloc_clear(len * sizeof(int), TRUE);
 	if (ip == NULL)
 	    return SP_OTHERERROR;
 	*idxsp = ip;
@@ -1734,7 +1733,7 @@ spell_reload_one(
 
     for (slang = first_lang; slang != NULL; slang = slang->sl_next)
     {
-	if (fullpathcmp(fname, slang->sl_fname, FALSE) == FPC_SAME)
+	if (fullpathcmp(fname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	{
 	    slang_clear(slang);
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
@@ -4272,8 +4271,7 @@ getroom(
 	    bl = NULL;
 	else
 	    /* Allocate a block of memory. It is not freed until much later. */
-	    bl = (sblock_T *)alloc_clear(
-				   (unsigned)(sizeof(sblock_T) + SBLOCKSIZE));
+	    bl = (sblock_T *)alloc_clear(sizeof(sblock_T) + SBLOCKSIZE);
 	if (bl == NULL)
 	{
 	    if (!spin->si_did_emsg)
@@ -5440,7 +5438,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
      * It might have been done already by spell_reload_one().
      */
     for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	if (fullpathcmp(wfname, slang->sl_fname, FALSE) == FPC_SAME)
+	if (fullpathcmp(wfname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	    break;
     if (slang == NULL)
     {
@@ -6615,7 +6613,7 @@ set_map_str(slang_T *lp, char_u *map)
 		hash_T	    hash;
 		hashitem_T  *hi;
 
-		b = alloc((unsigned)(cl + headcl + 2));
+		b = alloc(cl + headcl + 2);
 		if (b == NULL)
 		    return;
 		mb_char2bytes(c, b);

@@ -92,7 +92,7 @@ list_alloc(void)
 list_alloc_id(alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+    if (alloc_fail_id == id && alloc_does_fail(sizeof(list_T)))
 	return NULL;
 #endif
     return (list_alloc());
@@ -122,7 +122,7 @@ rettv_list_alloc(typval_T *rettv)
 rettv_list_alloc_id(typval_T *rettv, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+    if (alloc_fail_id == id && alloc_does_fail(sizeof(list_T)))
 	return FAIL;
 #endif
     return rettv_list_alloc(rettv);

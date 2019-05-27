@@ -187,6 +187,17 @@ func Test_listener_args()
 	\ {'lnum': 4, 'end': 5, 'col': 1, 'added': -1},
 	\ {'lnum': 6, 'end': 6, 'col': 1, 'added': 1}], s:list)
 
+  " split a line then insert one, should get two disconnected change lists
+  call setline(1, 'split here')
+  call listener_flush()
+  let s:list = []
+  exe "normal 1ggwi\<CR>\<Esc>"
+  1
+  normal o
+  call assert_equal([{'lnum': 1, 'end': 2, 'col': 7, 'added': 1}], s:list)
+  call listener_flush()
+  call assert_equal([{'lnum': 2, 'end': 2, 'col': 1, 'added': 1}], s:list)
+
   call listener_remove(id)
   bwipe!
 endfunc

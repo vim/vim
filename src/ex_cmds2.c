@@ -1715,7 +1715,7 @@ editing_arg_idx(win_T *win)
 		    && (win->w_buffer->b_ffname == NULL
 			 || !(fullpathcmp(
 				 alist_name(&WARGLIST(win)[win->w_arg_idx]),
-				win->w_buffer->b_ffname, TRUE) & FPC_SAME))));
+			  win->w_buffer->b_ffname, TRUE, TRUE) & FPC_SAME))));
 }
 
 /*
@@ -1737,7 +1737,7 @@ check_arg_idx(win_T *win)
 		&& (win->w_buffer->b_fnum == GARGLIST[GARGCOUNT - 1].ae_fnum
 		    || (win->w_buffer->b_ffname != NULL
 			&& (fullpathcmp(alist_name(&GARGLIST[GARGCOUNT - 1]),
-				win->w_buffer->b_ffname, TRUE) & FPC_SAME))))
+			  win->w_buffer->b_ffname, TRUE, TRUE) & FPC_SAME))))
 	    arg_had_last = TRUE;
     }
     else
@@ -2366,7 +2366,7 @@ ex_compiler(exarg_T *eap)
     }
     else
     {
-	buf = alloc((unsigned)(STRLEN(eap->arg) + 14));
+	buf = alloc(STRLEN(eap->arg) + 14);
 	if (buf != NULL)
 	{
 	    if (eap->forceit)
@@ -2800,7 +2800,7 @@ add_pack_dir_to_rtp(char_u *fname)
 
     oldlen = STRLEN(p_rtp);
     addlen = STRLEN(fname) + 1; // add one for comma
-    new_rtp = alloc((int)(oldlen + addlen + afterlen + 1)); // add one for NUL
+    new_rtp = alloc(oldlen + addlen + afterlen + 1); // add one for NUL
     if (new_rtp == NULL)
 	goto theend;
 
@@ -3016,7 +3016,9 @@ ex_packadd(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
-    vim_setenv((char_u *)"OPTWIN_CMD", (char_u *)(cmdmod.tab ? "tab" : ""));
+    vim_setenv((char_u *)"OPTWIN_CMD",
+	    (char_u *)(cmdmod.tab ? "tab"
+		: (cmdmod.split & WSP_VERT) ? "vert" : ""));
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif

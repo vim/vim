@@ -499,7 +499,7 @@ SFgetHomeDirs(void)
 					 (unsigned)(Alloc * sizeof(SFLogin)));
 	}
 	len = strlen(pw->pw_name);
-	entries[i].real = XtMalloc((unsigned) (len + 3));
+	entries[i].real = XtMalloc((unsigned)(len + 3));
 	(void) strcat(strcpy(entries[i].real, "~"), pw->pw_name);
 	entries[i].shown = entries[i].real;
 	entries[i].statDone = 1;
@@ -1307,7 +1307,7 @@ SFstatAndCheck(SFDir *dir, SFEntry *entry)
 			int len;
 
 			len = strlen(shown);
-			entry->shown = XtMalloc((unsigned) (len + 2));
+			entry->shown = XtMalloc((unsigned)(len + 2));
 			(void) strcpy(entry->shown, shown);
 			SFwriteStatChar(entry->shown, len, &statBuf);
 			entry->shown[len + 1] = 0;
@@ -2032,7 +2032,7 @@ SFgetDir(
 	result[i].statDone = 0;
 	str = dp->d_name;
 	len = strlen(str);
-	result[i].real = XtMalloc((unsigned) (len + 2));
+	result[i].real = XtMalloc((unsigned)(len + 2));
 	(void) strcat(strcpy(result[i].real, str), " ");
 	if (len > maxChars)
 	    maxChars = len;

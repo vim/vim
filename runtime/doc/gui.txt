@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.1.  Last change: 2019 May 05
+*gui.txt*       For Vim version 8.1.  Last change: 2019 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1046,7 +1046,7 @@ GUIFONT							*gui-font*
 'guifont' is the option that tells Vim what font to use.  In its simplest form
 the value is just one font name.  It can also be a list of font names
 separated with commas.  The first valid font is used.  When no valid font can
-be found you will get an error message. 
+be found you will get an error message.
 
 On systems where 'guifontset' is supported (X11) and 'guifontset' is not
 empty, then 'guifont' is not used.  See |xfontset|.
@@ -1112,10 +1112,9 @@ For the Win32 GUI					*E244* *E245*
 	cXX - character set XX.  Valid charsets are: ANSI, ARABIC, BALTIC,
 	      CHINESEBIG5, DEFAULT, EASTEUROPE, GB2312, GREEK, HANGEUL,
 	      HEBREW, JOHAB, MAC, OEM, RUSSIAN, SHIFTJIS, SYMBOL, THAI,
-	      TURKISH, VIETNAMESE ANSI and BALTIC.  Normally you would use
-	      "cDEFAULT".
+	      TURKISH and VIETNAMESE.  Normally you would use "cDEFAULT".
 	qXX - quality XX.  Valid quality names are: PROOF, DRAFT, ANTIALIASED,
-	      NONANTIALIASED, CLEARTYPE, DEFAULT.  Normally you would use
+	      NONANTIALIASED, CLEARTYPE and DEFAULT.  Normally you would use
 	      "qDEFAULT".
 	      Some quality values are not supported in legacy OSs.
 - A '_' can be used in the place of a space, so you don't need to use
@@ -1139,30 +1138,28 @@ substitution.
 GUIFONTWIDE						*gui-fontwide*
 
 When not empty, 'guifontwide' specifies a comma-separated list of fonts to be
-used for double-width characters.  The first font that can be loaded is
-used.
+used for double-width characters.  The first font that can be loaded is used.
 
 Note: The size of these fonts must be exactly twice as wide as the one
-specified with 'guifont' and the same height.  If there is a mismatch then
-the text will not be drawn correctly.
+specified with 'guifont' and the same height.  If there is a mismatch then the
+text will not be drawn correctly.
 
 All GUI versions but GTK+:
 
-'guifontwide' is only used when 'encoding' is set to "utf-8" and
-'guifontset' is empty or invalid.
-When 'guifont' is set and a valid font is found in it and
-'guifontwide' is empty Vim will attempt to find a matching
-double-width font and set 'guifontwide' to it.
+'guifontwide' is only used when 'encoding' is set to "utf-8" and 'guifontset'
+is empty or invalid.
+When 'guifont' is set and a valid font is found in it and 'guifontwide' is
+empty Vim will attempt to find a matching double-width font and set
+'guifontwide' to it.
 
 GTK+ GUI only:  		    	*guifontwide_gtk*
 
-If set and valid, 'guifontwide' is always used for double width
-characters, even if 'encoding' is not set to "utf-8".
+If set and valid, 'guifontwide' is always used for double width characters,
+even if 'encoding' is not set to "utf-8".
 Vim does not attempt to find an appropriate value for 'guifontwide'
-automatically.  If 'guifontwide' is empty Pango/Xft will choose the
-font for characters not available in 'guifont'.  Thus you do not need
-to set 'guifontwide' at all unless you want to override the choice
-made by Pango/Xft.
+automatically.  If 'guifontwide' is empty Pango/Xft will choose the font for
+characters not available in 'guifont'.  Thus you do not need to set
+'guifontwide' at all unless you want to override the choice made by Pango/Xft.
 
 Windows +multibyte only:		*guifontwide_win_mbyte*
 
@@ -1181,7 +1178,8 @@ This section describes other features which are related to the GUI.
   get "<Modifiers-Key>".
 
 - In the GUI, the modifiers SHIFT, CTRL, and ALT (or META) may be used within
-  mappings of special keys and mouse events.  E.g.: :map <M-LeftDrag> <LeftDrag>
+  mappings of special keys and mouse events.
+  E.g.: :map <M-LeftDrag> <LeftDrag>
 
 - In the GUI, several normal keys may have modifiers in mappings etc, these
   are <Space>, <Tab>, <NL>, <CR>, <Esc>.
@@ -1218,8 +1216,8 @@ http://www.lexikan.com/mincho.htm
 For the X11 GUI the external commands are executed inside the gvim window.
 See |gui-pty|.
 
-WARNING: Executing an external command from the X11 GUI will not always
-work.  "normal" commands like "ls", "grep" and "make" mostly work fine.
+WARNING: Executing an external command from the X11 GUI will not always work.
+"normal" commands like "ls", "grep" and "make" mostly work fine.
 Commands that require an intelligent terminal like "less" and "ispell" won't
 work.  Some may even hang and need to be killed from another terminal.  So be
 careful!

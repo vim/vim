@@ -172,16 +172,20 @@ check_recorded_changes(
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
 	listitem_T *li;
-	linenr_T    nr;
+	linenr_T    prev_lnum;
+	linenr_T    prev_lnume;
 
 	for (li = buf->b_recorded_changes->lv_first; li != NULL;
 							      li = li->li_next)
 	{
-	    nr = (linenr_T)dict_get_number(
+	    prev_lnum = (linenr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
-	    if (nr >= lnum || nr > lnume)
+	    prev_lnume = (linenr_T)dict_get_number(
+				       li->li_tv.vval.v_dict, (char_u *)"end");
+	    if (prev_lnum >= lnum || prev_lnum > lnume
+		    || (prev_lnume >= lnum && xtra != 0))
 	    {
-		if (li->li_next == NULL && lnum == nr
+		if (li->li_next == NULL && lnum == prev_lnum
 			&& col + 1 == (colnr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"col"))
 		{
@@ -195,8 +199,8 @@ check_recorded_changes(
 							  (char_u *)"end", -1);
 			if (di != NULL)
 			{
-			    nr = tv_get_number(&di->di_tv);
-			    if (lnume > nr)
+			    prev_lnum = tv_get_number(&di->di_tv);
+			    if (lnume > prev_lnum)
 				di->di_tv.vval.v_number = lnume;
 			}
 			di = dict_find(li->li_tv.vval.v_dict,
@@ -282,7 +286,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-    lnr = (listener_T *)alloc_clear((sizeof(listener_T)));
+    lnr = (listener_T *)alloc_clear(sizeof(listener_T));
     if (lnr == NULL)
     {
 	free_callback(callback, partial);
@@ -684,7 +688,7 @@ inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && added != 0)
-	adjust_prop_columns(lnum, col, added);
+	adjust_prop_columns(lnum, col, added, 0);
 #endif
 
     changed_bytes(lnum, col);
@@ -985,7 +989,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	}
     }
 
-    newp = alloc_check((unsigned)(linelen + newlen - oldlen));
+    newp = alloc(linelen + newlen - oldlen);
     if (newp == NULL)
 	return;
 
@@ -1060,7 +1064,7 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
 
-    newp = alloc_check((unsigned)(oldlen + newlen + 1));
+    newp = alloc(oldlen + newlen + 1);
     if (newp == NULL)
 	return;
     if (col > 0)
@@ -1213,7 +1217,7 @@ del_bytes(
 	newp = oldp;			    // use same allocated memory
     else
     {					    // need to allocate a new line
-	newp = alloc((unsigned)(newlen + 1));
+	newp = alloc(newlen + 1);
 	if (newp == NULL)
 	    return FAIL;
 	mch_memmove(newp, oldp, (size_t)col);

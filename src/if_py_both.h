@@ -1222,6 +1222,14 @@ FinderFindSpec(PyObject *self, PyObject *args)
 
     return spec;
 }
+
+    static PyObject *
+FinderFindModule(PyObject* self UNUSED, PyObject* args UNUSED)
+{
+    // Apparently returning None works.
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 #else
     static PyObject *
 call_load_module(char *name, int len, PyObject *find_module_result)
@@ -1400,9 +1408,8 @@ static struct PyMethodDef VimMethods[] = {
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
-#else
-    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
 #endif
+    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
     { NULL,	    NULL,			0,				NULL}
@@ -2946,7 +2953,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    char_u *np;
 	    size_t len = STRLEN(p) + 1;
 
-	    if ((np = alloc((int)len + 2)) == NULL)
+	    if ((np = alloc(len + 2)) == NULL)
 	    {
 		vim_free(p);
 		return NULL;
@@ -3132,7 +3139,7 @@ set_partial(FunctionObject *self, partial_T *pt, int exported)
 	if (exported)
 	{
 	    pt->pt_argv = (typval_T *)alloc_clear(
-		    sizeof(typval_T) * self->argc);
+						sizeof(typval_T) * self->argc);
 	    for (i = 0; i < pt->pt_argc; ++i)
 		copy_tv(&self->argv[i], &pt->pt_argv[i]);
 	}
@@ -4255,7 +4262,7 @@ StringToLine(PyObject *obj)
     /* Create a copy of the string, with internal nulls replaced by
      * newline characters, as is the vim convention.
      */
-    save = (char *)alloc((unsigned)(len+1));
+    save = (char *)alloc(len+1);
     if (save == NULL)
     {
 	PyErr_NoMemory();

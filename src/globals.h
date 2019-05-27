@@ -550,9 +550,10 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
 #endif
 
 /*
- * All windows are linked in a list. firstwin points to the first entry,
- * lastwin to the last entry (can be the same as firstwin) and curwin to the
- * currently active window.
+ * All regular windows are linked in a list. "firstwin" points to the first
+ * entry, "lastwin" to the last entry (can be the same as firstwin) and
+ * "curwin" to the currently active window.
+ * When switching tabs these swapped with the pointers in "tabpage_T".
  */
 EXTERN win_T	*firstwin;		/* first window */
 EXTERN win_T	*lastwin;		/* last window */
@@ -579,6 +580,10 @@ EXTERN win_T	*curwin;	/* currently active window */
 
 EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
 EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
+
+#ifdef FEAT_TEXT_PROP
+EXTERN win_T    *first_popupwin;	// first global popup window
+#endif
 
 /*
  * The window layout is kept in a tree of frames.  topframe points to the top

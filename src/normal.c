@@ -143,6 +143,7 @@ static void	nv_at(cmdarg_T *cap);
 static void	nv_halfpage(cmdarg_T *cap);
 static void	nv_join(cmdarg_T *cap);
 static void	nv_put(cmdarg_T *cap);
+static void	nv_put_opt(cmdarg_T *cap, int fix_indent);
 static void	nv_open(cmdarg_T *cap);
 #ifdef FEAT_NETBEANS_INTG
 static void	nv_nbcmd(cmdarg_T *cap);
@@ -6583,57 +6584,7 @@ nv_brackets(cmdarg_T *cap)
      */
     else if (cap->nchar == 'p' || cap->nchar == 'P')
     {
-	if (!checkclearop(cap->oap))
-	{
-	    int	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
-							 ? FORWARD : BACKWARD;
-	    int	    regname = cap->oap->regname;
-	    int	    was_visual = VIsual_active;
-	    int	    line_count = curbuf->b_ml.ml_line_count;
-	    pos_T   start, end;
-
-	    if (VIsual_active)
-	    {
-		start = LTOREQ_POS(VIsual, curwin->w_cursor)
-						  ? VIsual : curwin->w_cursor;
-		end =  EQUAL_POS(start,VIsual) ? curwin->w_cursor : VIsual;
-		curwin->w_cursor = (dir == BACKWARD ? start : end);
-	    }
-# ifdef FEAT_CLIPBOARD
-	    adjust_clip_reg(&regname);
-# endif
-	    prep_redo_cmd(cap);
-
-	    do_put(regname, dir, cap->count1, PUT_FIXINDENT);
-	    if (was_visual)
-	    {
-		VIsual = start;
-		curwin->w_cursor = end;
-		if (dir == BACKWARD)
-		{
-		    /* adjust lines */
-		    VIsual.lnum += curbuf->b_ml.ml_line_count - line_count;
-		    curwin->w_cursor.lnum +=
-				      curbuf->b_ml.ml_line_count - line_count;
-		}
-
-		VIsual_active = TRUE;
-		if (VIsual_mode == 'V')
-		{
-		    /* delete visually selected lines */
-		    cap->cmdchar = 'd';
-		    cap->nchar = NUL;
-		    cap->oap->regname = regname;
-		    nv_operator(cap);
-		    do_pending_operator(cap, 0, FALSE);
-		}
-		if (VIsual_active)
-		{
-		    end_visual_mode();
-		    redraw_later(SOME_VALID);
-		}
-	    }
-	}
+	nv_put_opt(cap, TRUE);
     }
 
     /*
@@ -9290,6 +9241,16 @@ nv_join(cmdarg_T *cap)
     static void
 nv_put(cmdarg_T *cap)
 {
+    nv_put_opt(cap, FALSE);
+}
+
+/*
+ * "P", "gP", "p" and "gp" commands.
+ * "fix_indent" is TRUE for "[p", "[P", "]p" and "]P".
+ */
+    static void
+nv_put_opt(cmdarg_T *cap, int fix_indent)
+{
     int		regname = 0;
     void	*reg1 = NULL, *reg2 = NULL;
     int		empty = FALSE;
@@ -9318,8 +9279,15 @@ nv_put(cmdarg_T *cap)
 #endif
     else
     {
-	dir = (cap->cmdchar == 'P'
-		|| (cap->cmdchar == 'g' && cap->nchar == 'P'))
+	if (fix_indent)
+	{
+	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
+							 ? FORWARD : BACKWARD;
+	    flags |= PUT_FIXINDENT;
+	}
+	else
+	    dir = (cap->cmdchar == 'P'
+				 || (cap->cmdchar == 'g' && cap->nchar == 'P'))
 							 ? BACKWARD : FORWARD;
 	prep_redo_cmd(cap);
 	if (cap->cmdchar == 'g')

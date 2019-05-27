@@ -1084,9 +1084,11 @@ add_b0_fenc(
 
 /*
  * Try to recover curbuf from the .swp file.
+ * If "checkext" is TRUE, check the extension and detect whether it is
+ * a swap file.
  */
     void
-ml_recover(void)
+ml_recover(int checkext)
 {
     buf_T	*buf = NULL;
     memfile_T	*mfp = NULL;
@@ -1136,7 +1138,7 @@ ml_recover(void)
     if (fname == NULL)		    /* When there is no file name */
 	fname = (char_u *)"";
     len = (int)STRLEN(fname);
-    if (len >= 4 &&
+    if (checkext && len >= 4 &&
 #if defined(VMS)
 	    STRNICMP(fname + len - 4, "_s", 2)
 #else
@@ -1187,7 +1189,7 @@ ml_recover(void)
      * Allocate a buffer structure for the swap file that is used for recovery.
      * Only the memline and crypt information in it are really used.
      */
-    buf = (buf_T *)alloc((unsigned)sizeof(buf_T));
+    buf = (buf_T *)alloc(sizeof(buf_T));
     if (buf == NULL)
 	goto theend;
 
@@ -1785,7 +1787,7 @@ recover_names(
      * Do the loop for every directory in 'directory'.
      * First allocate some memory to put the directory name in.
      */
-    dir_name = alloc((unsigned)STRLEN(p_dir) + 1);
+    dir_name = alloc(STRLEN(p_dir) + 1);
     dirp = p_dir;
     while (dir_name != NULL && *dirp)
     {
@@ -1887,7 +1889,7 @@ recover_names(
 	if (num_names == 0)
 	    num_files = 0;
 	else if (expand_wildcards(num_names, names, &num_files, &files,
-					EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
+			    EW_NOTENV|EW_KEEPALL|EW_FILE|EW_SILENT) == FAIL)
 	    num_files = 0;
 
 	/*
@@ -1911,7 +1913,7 @@ recover_names(
 	    {
 		if (mch_stat((char *)swapname, &st) != -1)	    /* It exists! */
 		{
-		    files = (char_u **)alloc((unsigned)sizeof(char_u *));
+		    files = (char_u **)alloc(sizeof(char_u *));
 		    if (files != NULL)
 		    {
 			files[0] = swapname;
@@ -1930,11 +1932,13 @@ recover_names(
 			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL)
 	{
 	    for (i = 0; i < num_files; ++i)
-		if (fullpathcmp(p, files[i], TRUE) & FPC_SAME)
+		// Do not expand wildcards, on windows would try to expand
+		// "%tmp%" in "%tmp%file".
+		if (fullpathcmp(p, files[i], TRUE, FALSE) & FPC_SAME)
 		{
-		    /* Remove the name from files[i].  Move further entries
-		     * down.  When the array becomes empty free it here, since
-		     * FreeWild() won't be called below. */
+		    // Remove the name from files[i].  Move further entries
+		    // down.  When the array becomes empty free it here, since
+		    // FreeWild() won't be called below.
 		    vim_free(files[i]);
 		    if (--num_files == 0)
 			vim_free(files);
@@ -2011,7 +2015,7 @@ make_percent_swname(char_u *dir, char_u *name)
     f = fix_fname(name != NULL ? name : (char_u *)"");
     if (f != NULL)
     {
-	s = alloc((unsigned)(STRLEN(f) + 1));
+	s = alloc(STRLEN(f) + 1);
 	if (s != NULL)
 	{
 	    STRCPY(s, f);
@@ -2569,13 +2573,17 @@ ml_get_buf(
 	}
 errorret:
 	STRCPY(IObuff, "???");
+	buf->b_ml.ml_line_len = 4;
 	return IObuff;
     }
-    if (lnum <= 0)			/* pretend line 0 is line 1 */
+    if (lnum <= 0)			// pretend line 0 is line 1
 	lnum = 1;
 
-    if (buf->b_ml.ml_mfp == NULL)	/* there are no lines */
+    if (buf->b_ml.ml_mfp == NULL)	// there are no lines
+    {
+	buf->b_ml.ml_line_len = 1;
 	return (char_u *)"";
+    }
 
     /*
      * See if it is the same line as requested last time.
@@ -2670,7 +2678,7 @@ add_text_props_for_append(
 	    if (new_prop_count == 0)
 		return;  // nothing to do
 	    new_len = *len + new_prop_count * sizeof(textprop_T);
-	    new_line = alloc((unsigned)new_len);
+	    new_line = alloc(new_len);
 	    if (new_line == NULL)
 		return;
 	    mch_memmove(new_line, *line, *len);
@@ -4197,7 +4205,7 @@ ml_add_stack(buf_T *buf)
     {
 	CHECK(top > 0, _("Stack size increases")); /* more than 5 levels??? */
 
-	newstack = (infoptr_T *)alloc((unsigned)sizeof(infoptr_T) *
+	newstack = (infoptr_T *)alloc(sizeof(infoptr_T) *
 					(buf->b_ml.ml_stack_size + STACK_INCR));
 	if (newstack == NULL)
 	    return -1;
@@ -4592,7 +4600,7 @@ findswapname(
      * Isolate a directory name from *dirp and put it in dir_name.
      * First allocate some memory to put the directory name in.
      */
-    dir_name = alloc((unsigned)STRLEN(*dirp) + 1);
+    dir_name = alloc(STRLEN(*dirp) + 1);
     if (dir_name == NULL)
 	*dirp = NULL;
     else
@@ -4916,9 +4924,9 @@ findswapname(
 		    {
 			char_u	*name;
 
-			name = alloc((unsigned)(STRLEN(fname)
+			name = alloc(STRLEN(fname)
 				+ STRLEN(_("Swap file \""))
-				+ STRLEN(_("\" already exists!")) + 5));
+				+ STRLEN(_("\" already exists!")) + 5);
 			if (name != NULL)
 			{
 			    STRCPY(name, _("Swap file \""));
@@ -5367,8 +5375,8 @@ ml_updatechunk(
 	return;
     if (buf->b_ml.ml_chunksize == NULL)
     {
-	buf->b_ml.ml_chunksize = (chunksize_T *)
-				  alloc((unsigned)sizeof(chunksize_T) * 100);
+	buf->b_ml.ml_chunksize =
+			       (chunksize_T *)alloc(sizeof(chunksize_T) * 100);
 	if (buf->b_ml.ml_chunksize == NULL)
 	{
 	    buf->b_ml.ml_usedchunks = -1;

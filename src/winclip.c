@@ -169,7 +169,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 {
     *outlen = WideCharToMultiByte(cp, flags, in, inlen, NULL, 0, def, useddef);
     /* Add one one byte to avoid a zero-length alloc(). */
-    *out = (LPSTR)alloc((unsigned)*outlen + 1);
+    *out = (LPSTR)alloc(*outlen + 1);
     if (*out != NULL)
     {
 	WideCharToMultiByte(cp, flags, in, inlen, *out, *outlen, def, useddef);
@@ -244,7 +244,7 @@ crnl_to_nl(const char_u *str, int *size)
     char_u	*retp;
 
     /* Avoid allocating zero bytes, it generates an error message. */
-    ret = lalloc((long_u)(str_len == 0 ? 1 : str_len), TRUE);
+    ret = alloc(str_len == 0 ? 1 : str_len);
     if (ret != NULL)
     {
 	retp = ret;
@@ -512,8 +512,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.txtlen = WideCharToMultiByte(GetACP(), 0, out, len,
 							       NULL, 0, 0, 0);
 	    vim_free(str);
-	    str = (char_u *)alloc((unsigned)(metadata.txtlen == 0 ? 1
-							  : metadata.txtlen));
+	    str = (char_u *)alloc(metadata.txtlen == 0 ? 1 : metadata.txtlen);
 	    if (str == NULL)
 	    {
 		vim_free(out);
@@ -655,7 +654,7 @@ enc_to_utf16(char_u *str, int *lenp)
 	convert_setup(&conv, NULL, NULL);
 
 	length = utf8_to_utf16(str, *lenp, NULL, NULL);
-	ret = (WCHAR *)alloc((unsigned)((length + 1) * sizeof(WCHAR)));
+	ret = (WCHAR *)alloc((length + 1) * sizeof(WCHAR));
 	if (ret != NULL)
 	{
 	    utf8_to_utf16(str, *lenp, (short_u *)ret, NULL);

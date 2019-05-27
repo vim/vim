@@ -1943,7 +1943,7 @@ change_indent(
 	{
 	    curwin->w_cursor.col = (colnr_T)new_cursor_col;
 	    i = (int)curwin->w_virtcol - vcol;
-	    ptr = alloc((unsigned)(i + 1));
+	    ptr = alloc(i + 1);
 	    if (ptr != NULL)
 	    {
 		new_cursor_col += i;
@@ -3859,7 +3859,7 @@ replace_push(
     if (replace_stack_len <= replace_stack_nr)
     {
 	replace_stack_len += 50;
-	p = lalloc(sizeof(char_u) * replace_stack_len, TRUE);
+	p = alloc(sizeof(char_u) * replace_stack_len);
 	if (p == NULL)	    /* out of memory */
 	{
 	    replace_stack_len -= 50;
@@ -4104,7 +4104,7 @@ replace_do_bs(int limit_col)
 
 	    --text_prop_frozen;
 	    adjust_prop_columns(curwin->w_cursor.lnum, curwin->w_cursor.col,
-						  (int)(len_now - len_before));
+					   (int)(len_now - len_before), 0);
 	}
 #endif
     }

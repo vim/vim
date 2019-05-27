@@ -254,7 +254,7 @@ crypt_create(
     char_u	*seed,
     int		seed_len)
 {
-    cryptstate_T *state = (cryptstate_T *)alloc((int)sizeof(cryptstate_T));
+    cryptstate_T *state = (cryptstate_T *)alloc(sizeof(cryptstate_T));
 
     if (state == NULL)
 	return state;
@@ -407,7 +407,7 @@ crypt_encode_alloc(
 	/* Not buffering, just return EOF. */
 	return (long)len;
 
-    *newptr = alloc((long)len);
+    *newptr = alloc(len);
     if (*newptr == NULL)
 	return -1;
     method->encode_fn(state, from, len, *newptr);

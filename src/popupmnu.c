@@ -1071,7 +1071,7 @@ split_message(char_u *mesg, pumitem_T **array)
      * position. */
     if (height > max_height)
 	height = max_height;
-    *array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * height);
+    *array = (pumitem_T *)alloc_clear(sizeof(pumitem_T) * height);
     if (*array == NULL)
 	goto failed;
 
@@ -1165,7 +1165,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 
 	balloon_arraysize = list->lv_len;
 	balloon_array = (pumitem_T *)alloc_clear(
-				   (unsigned)sizeof(pumitem_T) * list->lv_len);
+					     sizeof(pumitem_T) * list->lv_len);
 	if (balloon_array == NULL)
 	    return;
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
@@ -1271,7 +1271,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	return;
     }
 
-    array = (pumitem_T *)alloc_clear((unsigned)sizeof(pumitem_T) * pum_size);
+    array = (pumitem_T *)alloc_clear(sizeof(pumitem_T) * pum_size);
     if (array == NULL)
 	return;
 

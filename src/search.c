@@ -26,7 +26,7 @@ static void show_pat_in_path(char_u *, int,
 #ifdef FEAT_VIMINFO
 static void wvsp_one(FILE *fp, int idx, char *s, int sc);
 #endif
-static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u  *msgbuf);
+static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u *msgbuf, int recompute);
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1219,6 +1219,7 @@ do_search(
     char_u	    *ps;
     char_u	    *msgbuf = NULL;
     size_t	    len;
+    int		    has_offset = FALSE;
 #define SEARCH_STAT_BUF_LEN 12
 
     /*
@@ -1381,9 +1382,28 @@ do_search(
 					    && !cmd_silent && msg_silent == 0)
 	{
 	    char_u	*trunc;
+	    char_u	off_buf[40];
+	    size_t	off_len = 0;
 
 	    // Compute msg_row early.
 	    msg_start();
+
+	    // Get the offset, so we know how long it is.
+	    if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
+	    {
+		p = off_buf;
+		*p++ = dirc;
+		if (spats[0].off.end)
+		    *p++ = 'e';
+		else if (!spats[0].off.line)
+		    *p++ = 's';
+		if (spats[0].off.off > 0 || spats[0].off.line)
+		    *p++ = '+';
+		*p = NUL;
+		if (spats[0].off.off != 0 || spats[0].off.line)
+		    sprintf((char *)p, "%ld", spats[0].off.off);
+		off_len = STRLEN(off_buf);
+	    }
 
 	    if (*searchstr == NUL)
 		p = spats[0].pat;
@@ -1393,21 +1413,23 @@ do_search(
 	    if (!shortmess(SHM_SEARCHCOUNT))
 	    {
 		// Reserve enough space for the search pattern + offset +
-		// search stat.
+		// search stat.  Use all the space available, so that the
+		// search state is right aligned.  If there is not enough space
+		// msg_strtrunc() will shorten in the middle.
 		if (msg_scrolled != 0)
 		    // Use all the columns.
 		    len = (int)(Rows - msg_row) * Columns - 1;
 		else
 		    // Use up to 'showcmd' column.
 		    len = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
-		if (len < STRLEN(p) + 40 + SEARCH_STAT_BUF_LEN + 1)
-		    len = STRLEN(p) + 40 + SEARCH_STAT_BUF_LEN + 1;
+		if (len < STRLEN(p) + off_len + SEARCH_STAT_BUF_LEN + 3)
+		    len = STRLEN(p) + off_len + SEARCH_STAT_BUF_LEN + 3;
 	    }
 	    else
 		// Reserve enough space for the search pattern + offset.
-		len = STRLEN(p) + 40;
+		len = STRLEN(p) + off_len + 3;
 
-	    msgbuf = alloc((int)len);
+	    msgbuf = alloc(len);
 	    if (msgbuf != NULL)
 	    {
 		vim_memset(msgbuf, ' ', len);
@@ -1422,25 +1444,10 @@ do_search(
 		}
 		else
 		    mch_memmove(msgbuf + 1, p, STRLEN(p));
-		if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
-		{
-		    p = msgbuf + STRLEN(p) + 1;
-		    *p++ = dirc;
-		    if (spats[0].off.end)
-			*p++ = 'e';
-		    else if (!spats[0].off.line)
-			*p++ = 's';
-		    if (spats[0].off.off > 0 || spats[0].off.line)
-			*p++ = '+';
-		    if (spats[0].off.off != 0 || spats[0].off.line)
-		    {
-			int l = 0;
-			l = sprintf((char *)p, "%ld", spats[0].off.off);
-			p[l] = ' '; // remove NUL from sprintf
-		    }
-		}
+		if (off_len > 0)
+		    mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
 
-		trunc = msg_strtrunc(msgbuf, FALSE);
+		trunc = msg_strtrunc(msgbuf, TRUE);
 		if (trunc != NULL)
 		{
 		    vim_free(msgbuf);
@@ -1544,6 +1551,8 @@ do_search(
 	 */
 	if (!(options & SEARCH_NOOF) || (pat != NULL && *pat == ';'))
 	{
+	    pos_T org_pos = pos;
+
 	    if (spats[0].off.line)	/* Add the offset to the line number. */
 	    {
 		c = pos.lnum + spats[0].off.off;
@@ -1575,6 +1584,8 @@ do_search(
 			    break;
 		}
 	    }
+	    if (!EQUAL_POS(pos, org_pos))
+		has_offset = TRUE;
 	}
 
 	// Show [1/15] if 'S' is not in 'shortmess'.
@@ -1584,7 +1595,8 @@ do_search(
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
-	    search_stat(dirc, &pos, show_top_bot_msg, msgbuf);
+	    search_stat(dirc, &pos, show_top_bot_msg, msgbuf,
+						   (count != 1 || has_offset));
 
 	/*
 	 * The search command can be followed by a ';' to do another search.
@@ -4909,13 +4921,15 @@ linewhite(linenr_T lnum)
 
 /*
  * Add the search count "[3/19]" to "msgbuf".
+ * When "recompute" is TRUE always recompute the numbers.
  */
     static void
 search_stat(
     int	    dirc,
     pos_T   *pos,
     int	    show_top_bot_msg,
-    char_u  *msgbuf)
+    char_u  *msgbuf,
+    int	    recompute)
 {
     int		    save_ws = p_ws;
     int		    wraparound = FALSE;
@@ -4941,7 +4955,7 @@ search_stat(
 	&& MB_STRNICMP(lastpat, spats[last_idx].pat, STRLEN(lastpat)) == 0
 	&& STRLEN(lastpat) == STRLEN(spats[last_idx].pat)
 	&& EQUAL_POS(lastpos, curwin->w_cursor)
-	&& lbuf == curbuf) || wraparound || cur < 0 || cur > 99)
+	&& lbuf == curbuf) || wraparound || cur < 0 || cur > 99 || recompute)
     {
 	cur = 0;
 	cnt = 0;
@@ -4984,7 +4998,7 @@ search_stat(
     if (cur > 0)
     {
 	char	t[SEARCH_STAT_BUF_LEN] = "";
-	int	len;
+	size_t	len;
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
@@ -5028,8 +5042,10 @@ search_stat(
 	lbuf    = curbuf;
 	lastpos = p;
 
-	// keep the message even after redraw
+	// keep the message even after redraw, but don't put in history
+	msg_hist_off = TRUE;
 	give_warning(msgbuf, FALSE);
+	msg_hist_off = FALSE;
     }
     p_ws = save_ws;
 }
@@ -5129,8 +5145,8 @@ find_pattern_in_path(
 	    goto fpip_end;
 	def_regmatch.rm_ic = FALSE;	/* don't ignore case in define pat. */
     }
-    files = (SearchedFile *)lalloc_clear((long_u)
-			       (max_path_depth * sizeof(SearchedFile)), TRUE);
+    files = (SearchedFile *)lalloc_clear(
+				  max_path_depth * sizeof(SearchedFile), TRUE);
     if (files == NULL)
 	goto fpip_end;
     old_files = max_path_depth;
@@ -5170,7 +5186,8 @@ find_pattern_in_path(
 			i = old_files;
 		    if (i == max_path_depth)
 			break;
-		    if (fullpathcmp(new_fname, files[i].name, TRUE) & FPC_SAME)
+		    if (fullpathcmp(new_fname, files[i].name, TRUE, TRUE)
+								    & FPC_SAME)
 		    {
 			if (type != CHECK_PATH &&
 				action == ACTION_SHOW_ALL && files[i].matched)
@@ -5289,8 +5306,8 @@ find_pattern_in_path(
 		/* Push the new file onto the file stack */
 		if (depth + 1 == old_files)
 		{
-		    bigger = (SearchedFile *)lalloc((long_u)(
-			    max_path_depth * 2 * sizeof(SearchedFile)), TRUE);
+		    bigger = (SearchedFile *)alloc(
+				    max_path_depth * 2 * sizeof(SearchedFile));
 		    if (bigger != NULL)
 		    {
 			for (i = 0; i <= depth; i++)

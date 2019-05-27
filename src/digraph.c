@@ -2317,7 +2317,7 @@ keymap_init(void)
 	/* Source the keymap file.  It will contain a ":loadkeymap" command
 	 * which will call ex_loadkeymap() below. */
 	buflen = STRLEN(curbuf->b_p_keymap) + STRLEN(p_enc) + 14;
-	buf = alloc((unsigned)buflen);
+	buf = alloc(buflen);
 	if (buf == NULL)
 	    return e_outofmem;
 

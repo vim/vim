@@ -2850,7 +2850,7 @@ msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\t不加载 plugin 脚本"
 
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-P[N]\t\t打开 N 个标签页 (默认值: 每个文件一个)"
+msgstr "-p[N]\t\t打开 N 个标签页 (默认值: 每个文件一个)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\t打开 N 个窗口 (默认值: 每个文件一个)"

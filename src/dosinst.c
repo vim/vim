@@ -306,7 +306,7 @@ findoldfile(char **destination)
 	    || strchr(cp, '/') != NULL)
 	return;
 
-    tmpname = alloc((int)strlen(cp) + 1);
+    tmpname = alloc(strlen(cp) + 1);
     strcpy(tmpname, cp);
     tmpname[strlen(tmpname) - 1] = 'x';	/* .exe -> .exx */
 
@@ -962,7 +962,7 @@ alloc_text(int idx, char *fmt, char *arg)
     if (choices[idx].text != NULL)
 	free(choices[idx].text);
 
-    choices[idx].text = alloc((int)(strlen(fmt) + strlen(arg)) - 1);
+    choices[idx].text = alloc(strlen(fmt) + strlen(arg) - 1);
     sprintf(choices[idx].text, fmt, arg);
 }
 
@@ -1040,7 +1040,7 @@ change_bat_choice(int idx)
 		s = p + strlen(p);
 	    if (names != NULL)
 	    {
-		names[count] = alloc((int)(s - p) + 1);
+		names[count] = alloc(s - p + 1);
 		strncpy(names[count], p, s - p);
 		names[count][s - p] = NUL;
 	    }
@@ -1051,7 +1051,7 @@ change_bat_choice(int idx)
 	}
 	if (names != NULL)
 	    break;
-	names = alloc((int)(count + 1) * sizeof(char *));
+	names = alloc((count + 1) * sizeof(char *));
     }
     names[0] = alloc(50);
     sprintf(names[0], "Select directory to create %s in:", name);

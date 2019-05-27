@@ -85,8 +85,7 @@ sign_group_ref(char_u *groupname)
     if (HASHITEM_EMPTY(hi))
     {
 	// new group
-	group = (signgroup_T *)alloc(
-		(unsigned)(sizeof(signgroup_T) + STRLEN(groupname)));
+	group = (signgroup_T *)alloc(sizeof(signgroup_T) + STRLEN(groupname));
 	if (group == NULL)
 	    return NULL;
 	STRCPY(group->sg_name, groupname);
@@ -202,8 +201,8 @@ insert_sign(
 {
     signlist_T	*newsign;
 
-    newsign = (signlist_T *)lalloc_id((long_u)sizeof(signlist_T), FALSE,
-							aid_insert_sign);
+    newsign = (signlist_T *)lalloc_id(sizeof(signlist_T), FALSE,
+							      aid_insert_sign);
     if (newsign != NULL)
     {
 	newsign->id = id;
@@ -737,8 +736,7 @@ alloc_new_sign(char_u *name)
     int	start = next_sign_typenr;
 
     // Allocate a new sign.
-    sp = (sign_T *)alloc_clear_id((unsigned)sizeof(sign_T),
-	    aid_sign_define_by_name);
+    sp = (sign_T *)alloc_clear_id(sizeof(sign_T), aid_sign_define_by_name);
     if (sp == NULL)
 	return NULL;
 
@@ -1057,7 +1055,7 @@ sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 	    emsg(_("E934: Cannot jump to a buffer that does not have a name"));
 	    return -1;
 	}
-	cmd = alloc((unsigned)STRLEN(buf->b_fname) + 25);
+	cmd = alloc(STRLEN(buf->b_fname) + 25);
 	if (cmd == NULL)
 	    return -1;
 	sprintf((char *)cmd, "e +%ld %s", (long)lnum, buf->b_fname);

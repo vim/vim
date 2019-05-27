@@ -603,22 +603,22 @@ gui_init(void)
 #endif
 
 		if (       fullpathcmp((char_u *)USR_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef SYS_GVIMRC_FILE
 			&& fullpathcmp((char_u *)SYS_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE2
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE2,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE3
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE3,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE4
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE4,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 			)
 		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC);
@@ -2162,7 +2162,7 @@ gui_screenstr(
 
     if (enc_utf8)
     {
-	buf = alloc((unsigned)(len * MB_MAXBYTES + 1));
+	buf = alloc(len * MB_MAXBYTES + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2185,7 +2185,7 @@ gui_screenstr(
     }
     else if (enc_dbcs == DBCS_JPNU)
     {
-	buf = alloc((unsigned)(len * 2 + 1));
+	buf = alloc(len * 2 + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 

@@ -1319,7 +1319,7 @@ bt_regcomp(char_u *expr, int re_flags)
 	return NULL;
 
     /* Allocate space. */
-    r = (bt_regprog_T *)lalloc(sizeof(bt_regprog_T) + regsize, TRUE);
+    r = (bt_regprog_T *)alloc(sizeof(bt_regprog_T) + regsize);
     if (r == NULL)
 	return NULL;
     r->re_in_use = FALSE;
@@ -3932,7 +3932,7 @@ make_extmatch(void)
 {
     reg_extmatch_T	*em;
 
-    em = (reg_extmatch_T *)alloc_clear((unsigned)sizeof(reg_extmatch_T));
+    em = (reg_extmatch_T *)alloc_clear(sizeof(reg_extmatch_T));
     if (em != NULL)
 	em->refcnt = 1;
     return em;
@@ -7145,7 +7145,7 @@ regtilde(char_u *source, int magic)
 	    {
 		/* length = len(newsub) - 1 + len(prev_sub) + 1 */
 		prevlen = (int)STRLEN(reg_prev_sub);
-		tmpsub = alloc((unsigned)(STRLEN(newsub) + prevlen));
+		tmpsub = alloc(STRLEN(newsub) + prevlen);
 		if (tmpsub != NULL)
 		{
 		    /* copy prefix */
@@ -7830,7 +7830,7 @@ reg_submatch(int no)
 
 	    if (retval == NULL)
 	    {
-		retval = lalloc((long_u)len, TRUE);
+		retval = alloc(len);
 		if (retval == NULL)
 		    return NULL;
 	    }

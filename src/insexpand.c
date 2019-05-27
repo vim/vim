@@ -473,7 +473,7 @@ ins_compl_add_infercase(
 					   ? actual_len : actual_compl_length;
 
 	// Allocate wide character array for the completion and fill it.
-	wca = (int *)alloc((unsigned)(actual_len * sizeof(int)));
+	wca = (int *)alloc(actual_len * sizeof(int));
 	if (wca != NULL)
 	{
 	    p = str;
@@ -611,7 +611,7 @@ ins_compl_add(
 
     // Allocate a new match structure.
     // Copy the values to the new match structure.
-    match = (compl_T *)alloc_clear((unsigned)sizeof(compl_T));
+    match = (compl_T *)alloc_clear(sizeof(compl_T));
     if (match == NULL)
 	return FAIL;
     match->cp_number = -1;
@@ -1071,8 +1071,7 @@ ins_compl_show_pum(void)
 	if (compl_match_arraysize == 0)
 	    return;
 	compl_match_array = (pumitem_T *)alloc_clear(
-				    (unsigned)(sizeof(pumitem_T)
-						    * compl_match_arraysize));
+				    sizeof(pumitem_T) * compl_match_arraysize);
 	if (compl_match_array != NULL)
 	{
 	    // If the current match is the original text don't find the first
@@ -1230,7 +1229,7 @@ ins_compl_dictionaries(
 	if (pat_esc == NULL)
 	    goto theend;
 	len = STRLEN(pat_esc) + 10;
-	ptr = alloc((unsigned)len);
+	ptr = alloc(len);
 	if (ptr == NULL)
 	{
 	    vim_free(pat_esc);

@@ -631,6 +631,7 @@ EXTERN long	p_mis;		/* 'menuitems' */
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		/* 'mkspellmem' */
 #endif
+EXTERN long	p_mle;		/* 'modelineexpr' */
 EXTERN long	p_mls;		/* 'modelines' */
 EXTERN char_u	*p_mouse;	/* 'mouse' */
 #ifdef FEAT_GUI
@@ -1115,6 +1116,7 @@ enum
     , WV_BRI
     , WV_BRIOPT
 #endif
+    , WV_WCR
 #ifdef FEAT_DIFF
     , WV_DIFF
 #endif
