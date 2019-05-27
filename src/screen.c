@@ -999,9 +999,9 @@ update_popups(void)
 
     // Reset all the VALID_POPUP flags.
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~PFL_REDRAWN;
+	wp->w_popup_flags &= ~POPF_REDRAWN;
     for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~PFL_REDRAWN;
+	wp->w_popup_flags &= ~POPF_REDRAWN;
 
     // TODO: don't redraw every popup every time.
     for (;;)
@@ -1012,14 +1012,14 @@ update_popups(void)
 	lowest_zindex = INT_MAX;
 	lowest_wp = NULL;
 	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (PFL_REDRAWN|PFL_HIDDEN)) == 0
+	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
 					       && wp->w_zindex < lowest_zindex)
 	    {
 		lowest_zindex = wp->w_zindex;
 		lowest_wp = wp;
 	    }
 	for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (PFL_REDRAWN|PFL_HIDDEN)) == 0
+	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
 					       && wp->w_zindex < lowest_zindex)
 	    {
 		lowest_zindex = wp->w_zindex;
@@ -1029,7 +1029,7 @@ update_popups(void)
 	if (lowest_wp == NULL)
 	    break;
 	win_update(lowest_wp);
-	lowest_wp->w_popup_flags |= PFL_REDRAWN;
+	lowest_wp->w_popup_flags |= POPF_REDRAWN;
     }
 }
 #endif

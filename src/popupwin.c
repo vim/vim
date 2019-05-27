@@ -300,10 +300,10 @@ popup_any_visible(void)
     win_T *wp;
 
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & PFL_HIDDEN) == 0)
+	if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 	    return TRUE;
     for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & PFL_HIDDEN) == 0)
+	if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 	    return TRUE;
     return FALSE;
 }
@@ -328,9 +328,9 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
 
-    if (wp != NULL && (wp->w_popup_flags & PFL_HIDDEN) == 0)
+    if (wp != NULL && (wp->w_popup_flags & POPF_HIDDEN) == 0)
     {
-	wp->w_popup_flags |= PFL_HIDDEN;
+	wp->w_popup_flags |= POPF_HIDDEN;
 	redraw_all_later(NOT_VALID);
     }
 }
@@ -344,9 +344,9 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
 
-    if (wp != NULL && (wp->w_popup_flags & PFL_HIDDEN) != 0)
+    if (wp != NULL && (wp->w_popup_flags & POPF_HIDDEN) != 0)
     {
-	wp->w_popup_flags &= ~PFL_HIDDEN;
+	wp->w_popup_flags &= ~POPF_HIDDEN;
 	redraw_all_later(NOT_VALID);
     }
 }
