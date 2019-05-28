@@ -1,137 +1,112 @@
 language: c
-dist: trusty
 
-os:
-  - osx
-  - linux
+anchors:
+  envs:
+    - &tiny-nogui
+      BUILD=yes TEST=test COVERAGE=no FEATURES=tiny "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - &tiny
+      BUILD=yes TEST=test COVERAGE=no FEATURES=tiny CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - &small
+      BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - &normal
+      BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+    - &linux-huge
+      BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+    - &osx-huge # macOS build
+      BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+    - &unittests
+      BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+    - &asan # ASAN build
+      SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
+      ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
 
-compiler:
-  - clang
-  - gcc
+  linux: &linux
+    os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+          # Need msgfmt 0.19.8 to be able to generate .desktop files
+          - sourceline: 'ppa:ricotz/toolchain'
+        packages:
+          - autoconf
+          - clang
+          - lcov
+          - gettext
+          - libcanberra-dev
+          - libperl-dev
+          - python-dev
+          - python3-dev
+          - liblua5.2-dev
+          - lua5.2
+          - ruby-dev
+          - tcl-dev
+          - cscope
+          - libgtk2.0-dev
+          - desktop-file-utils
+    before_install:
+      - rvm reset
+      # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
+      # ("pyenv global system" doesn't seem to work.)
+      - |
+        if [[ "$(which python3)" =~ ^/opt/python/ ]]; then
+          export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
+        fi
+      - |
+        if [[ "${COVERAGE}" = "yes" ]]; then
+          pip install --user cpp-coveralls
+        fi
+      # needed for https support for coveralls
+      # building cffi only works with gcc, not with clang
+      - |
+        if [[ "${COVERAGE}" = "yes" ]]; then
+          CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
+        fi
+      # Use llvm-cov instead of gcov when compiler is clang.
+      - |
+        if [[ "${CC}" = "clang" ]]; then
+          ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
+        fi
+    before_script:
+      # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
+      - export DISPLAY=:99.0
+      - sh -e /etc/init.d/xvfb start && sleep 3
+      - sudo modprobe snd-dummy
+      - sudo usermod -a -G audio $USER
 
-env:
-  - &tiny-nogui
-    BUILD=yes TEST=test COVERAGE=no FEATURES=tiny "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - &tiny
-    BUILD=yes TEST=test COVERAGE=no FEATURES=tiny CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - &asan # ASAN build
-    BUILD=yes TEST=test SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-    FEATURES=huge SRCDIR=./src CHECK_AUTOCONF=no ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
-    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-  - &linux-huge
-    BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
-  - &unittests
-    BUILD=no TEST=unittests COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
-  - &normal
-    BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
-  - &small
-    BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-  - &osx-huge # Mac OSX build
-    BUILD=yes TEST=test COVERAGE=no FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-    "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
+  osx: &osx
+    os: osx
+    addons:
+      homebrew:
+        packages:
+          - lua
+        update: true
+    cache:
+      directories:
+        - /usr/local/Homebrew/Library/Homebrew/vendor/
+        - /usr/local/Homebrew/Library/Taps/
+    before_install:
+      - rvm reset
+      # Lua is not installed on Travis OSX
+      - export LUA_PREFIX=/usr/local
+
+  coverage: &coverage
+    - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
+    - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
+
+  asan_symbolize: &asan_symbolize
+    - |
+      while read log; do
+        asan_symbolize < "${log}"
+      done < <(find . -type f -name 'asan.*' -size +0)
 
 sudo: false
-
-# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
-# exclude some builds on mac os x and linux
-# on mac os x "tiny" is always without GUI
-# linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
-matrix:
-  exclude:
-    - os: osx
-      env: *tiny
-    - os: osx
-      env: *normal
-    - os: osx
-      env: *unittests
-    - os: osx
-      env: *small
-    - os: osx
-      env: *linux-huge
-    - os: osx
-      env: *asan
-    - os: linux
-      compiler: clang
-      env: *asan
-    - os: linux
-      compiler: clang
-      env: *unittests
-    - os: linux
-      compiler: clang
-      env: *small
-    - os: linux
-      env: *osx-huge
 
 branches:
   except:
     - /^v[0-9]/
-
-addons:
-  apt:
-    sources:
-      # Need msgfmt 0.19.8 to be able to generate .desktop files
-      - sourceline: 'ppa:ricotz/toolchain'
-    packages:
-      - autoconf
-      - clang
-      - lcov
-      - gettext
-      - libcanberra-dev
-      - libperl-dev
-      - python-dev
-      - python3-dev
-      - liblua5.2-dev
-      - lua5.2
-      - ruby-dev
-      - tcl-dev
-      - cscope
-      - libgtk2.0-dev
-      - desktop-file-utils
-  homebrew:
-    packages:
-      - lua
-    update: true
-
-before_install:
-  - rvm reset
-  # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
-  # ("pyenv global system" doesn't seem to work.)
-  - |
-    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "$(which python3)" =~ ^/opt/python/ ]]; then
-      export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
-    fi
-  - |
-    if [[ "${COVERAGE}" = "yes" ]]; then
-      pip install --user cpp-coveralls
-    fi
-  # needed for https support for coveralls
-  # building cffi only works with gcc, not with clang
-  - |
-    if [[ "${COVERAGE}" = "yes" ]]; then
-      CC=gcc pip install --user pyopenssl ndg-httpsclient pyasn1
-    fi
-  # Lua is not installed on Travis OSX
-  - |
-    if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
-      export LUA_PREFIX=/usr/local
-    fi
-  # Use llvm-cov instead of gcov when compiler is clang.
-  - |
-    if [[ "${TRAVIS_OS_NAME}" = "linux" ]] && [[ "${CC}" = "clang" ]]; then
-      ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
-    fi
-
-before_script:
-  # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
-  # Install dummy device for sound.
-  - |
-    if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
-      export DISPLAY=:99.0
-      sh -e /etc/init.d/xvfb start && sleep 3
-      sudo modprobe snd-dummy
-      sudo usermod -a -G audio $USER
-    fi
 
 script:
   - NPROC=$(getconf _NPROCESSORS_ONLN)
@@ -166,22 +141,78 @@ script:
     fi
   - make ${SHADOWOPT} ${TEST}
   - echo -en "travis_fold:end:test\\r\\033[0K"
-  - |
-    if [[ -n "${ASAN_OPTIONS}" ]]; then
-      while read log; do
-        asan_symbolize < "${log}"
-        false # exit 1 if there are ASAN logs
-      done < <(find . -type f -name 'asan.*' -size +0)
-    fi
 
-after_success:
-  - |
-    if [[ "${COVERAGE}" = "yes" ]]; then
-      ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
-    fi
-  - |
-    if [[ "${COVERAGE}" = "yes" ]]; then
-      (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
-    fi
+# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
+# exclude some builds on mac os x and linux
+# on mac os x "tiny" is always without GUI
+# linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
+matrix:
+  include:
+    - <<: *osx
+      name: tiny-nogui/clang
+      compiler: clang
+      env: *tiny-nogui
+    - <<: *osx
+      name: tiny-nogui/gcc
+      compiler: gcc
+      env: *tiny-nogui
+    - <<: *osx
+      name: huge/clang
+      compiler: clang
+      env: *osx-huge
+    - <<: *osx
+      name: huge/gcc
+      compiler: gcc
+      env: *osx-huge
+    - <<: *linux
+      name: tiny-nogui/clang
+      compiler: clang
+      env: *tiny-nogui
+    - <<: *linux
+      name: tiny-nogui/gcc
+      compiler: gcc
+      env: *tiny-nogui
+    - <<: *linux
+      name: tiny/clang
+      compiler: clang
+      env: *tiny
+    - <<: *linux
+      name: tiny/gcc
+      compiler: gcc
+      env: *tiny
+    - <<: *linux
+      name: small/gcc
+      compiler: gcc
+      env: *small
+    - <<: *linux
+      name: normal/clang
+      compiler: clang
+      env: *normal
+    - <<: *linux
+      name: normal/gcc
+      compiler: gcc
+      env: *normal
+    - <<: *linux
+      name: huge+coverage/clang
+      compiler: clang
+      env: *linux-huge
+      after_success: *coverage
+    - <<: *linux
+      name: huge+coverage/gcc
+      compiler: gcc
+      env: *linux-huge
+      after_success: *coverage
+    - <<: *linux
+      name: unittests+coverage/gcc
+      compiler: gcc
+      env: *unittests
+      after_success: *coverage
+    - <<: *linux # ASAN
+      name: huge+asan/gcc
+      compiler: gcc
+      env:
+        - *linux-huge
+        - *asan
+      after_failure: *asan_symbolize
 
 # vim:set sts=2 sw=2 tw=0 et:
