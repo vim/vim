@@ -976,7 +976,7 @@ gui_ph_pg_add_buffer(char *name)
 {
     char **new_titles = NULL;
 
-    new_titles = (char **) alloc((num_panels + 1) * sizeof(char **));
+    new_titles = ALLOC_MULT(char *, (num_panels + 1));
     if (new_titles != NULL)
     {
 	if (num_panels > 0)
@@ -1001,7 +1001,7 @@ gui_ph_pg_remove_buffer(char *name)
     /* If there is only 1 panel, we just use the temporary place holder */
     if (num_panels > 1)
     {
-	new_titles = (char **) alloc((num_panels - 1) * sizeof(char **));
+	new_titles = ALLOC_MULT(char *, num_panels - 1);
 	if (new_titles != NULL)
 	{
 	    char **s = new_titles;
@@ -1108,7 +1108,7 @@ gui_mch_init(void)
     PhDim_t	window_size = {100, 100}; /* Arbitrary values */
     PhPoint_t	pos = {0, 0};
 
-    gui.event_buffer = (PhEvent_t *) alloc(EVENT_BUFFER_SIZE);
+    gui.event_buffer = alloc(EVENT_BUFFER_SIZE);
     if (gui.event_buffer == NULL)
 	return FAIL;
 
@@ -1519,7 +1519,7 @@ gui_mch_dialog(
 	title = "Vim";
 
     buttons_copy = alloc(len + 1);
-    button_array = (char_u **) alloc(button_count * sizeof(char_u *));
+    button_array = ALLOC_MULT(char_u *, button_count);
     if (buttons_copy != NULL && button_array != NULL)
     {
 	STRCPY(buttons_copy, buttons);

@@ -294,7 +294,7 @@ static int next_ch_id = 0;
 add_channel(void)
 {
     ch_part_T	part;
-    channel_T	*channel = (channel_T *)alloc_clear(sizeof(channel_T));
+    channel_T	*channel = ALLOC_CLEAR_ONE(channel_T);
 
     if (channel == NULL)
 	return NULL;
@@ -1354,7 +1354,7 @@ channel_set_req_callback(
 	int	    id)
 {
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
-    cbq_T *item = (cbq_T *)alloc(sizeof(cbq_T));
+    cbq_T *item = ALLOC_ONE(cbq_T);
 
     if (item != NULL)
     {
@@ -1875,7 +1875,7 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
     char_u  *p;
     int	    i;
 
-    node = (readq_T *)alloc(sizeof(readq_T));
+    node = ALLOC_ONE(readq_T);
     if (node == NULL)
 	return FAIL;	    /* out of memory */
     /* A NUL is added at the end, because netbeans code expects that.
@@ -2024,7 +2024,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	}
 	else
 	{
-	    item = (jsonq_T *)alloc(sizeof(jsonq_T));
+	    item = ALLOC_ONE(jsonq_T);
 	    if (item == NULL)
 		clear_tv(&listtv);
 	    else
@@ -2223,7 +2223,7 @@ channel_push_json(channel_T *channel, ch_part_T part, typval_T *rettv)
 	/* append after the last item that was pushed back */
 	item = item->jq_next;
 
-    newitem = (jsonq_T *)alloc(sizeof(jsonq_T));
+    newitem = ALLOC_ONE(jsonq_T);
     if (newitem == NULL)
 	clear_tv(rettv);
     else
@@ -3921,7 +3921,7 @@ channel_send(
 		}
 		else
 		{
-		    writeq_T *last = (writeq_T *)alloc(sizeof(writeq_T));
+		    writeq_T *last = ALLOC_ONE(writeq_T);
 
 		    if (last != NULL)
 		    {
@@ -5593,7 +5593,7 @@ job_alloc(void)
 {
     job_T *job;
 
-    job = (job_T *)alloc_clear(sizeof(job_T));
+    job = ALLOC_CLEAR_ONE(job_T);
     if (job != NULL)
     {
 	job->jv_refcount = 1;
@@ -5822,7 +5822,7 @@ job_start(
 	/* Make a copy of argv_arg for job->jv_argv. */
 	for (i = 0; argv_arg[i] != NULL; i++)
 	    argc++;
-	argv = (char **)alloc(sizeof(char *) * (argc + 1));
+	argv = ALLOC_MULT(char *, argc + 1);
 	if (argv == NULL)
 	    goto theend;
 	for (i = 0; i < argc; i++)

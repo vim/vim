@@ -1319,7 +1319,7 @@ bt_regcomp(char_u *expr, int re_flags)
 	return NULL;
 
     /* Allocate space. */
-    r = (bt_regprog_T *)alloc(sizeof(bt_regprog_T) + regsize);
+    r = alloc(sizeof(bt_regprog_T) + regsize);
     if (r == NULL)
 	return NULL;
     r->re_in_use = FALSE;
@@ -3932,7 +3932,7 @@ make_extmatch(void)
 {
     reg_extmatch_T	*em;
 
-    em = (reg_extmatch_T *)alloc_clear(sizeof(reg_extmatch_T));
+    em = ALLOC_CLEAR_ONE(reg_extmatch_T);
     if (em != NULL)
 	em->refcnt = 1;
     return em;

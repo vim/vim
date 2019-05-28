@@ -321,7 +321,7 @@ postpone_keycommand(char_u *keystr)
 {
     keyQ_T *node;
 
-    node = (keyQ_T *)alloc(sizeof(keyQ_T));
+    node = ALLOC_ONE(keyQ_T);
     if (node == NULL)
 	return;  /* out of memory, drop the key */
 
@@ -667,7 +667,7 @@ nb_get_buf(int bufno)
     if (!buf_list)
     {
 	/* initialize */
-	buf_list = (nbbuf_T *)alloc_clear(100 * sizeof(nbbuf_T));
+	buf_list = alloc_clear(100 * sizeof(nbbuf_T));
 	buf_list_size = 100;
     }
     if (bufno >= buf_list_used) /* new */
@@ -678,8 +678,7 @@ nb_get_buf(int bufno)
 
 	    incr = bufno - buf_list_size + 90;
 	    buf_list_size += incr;
-	    buf_list = (nbbuf_T *)vim_realloc(
-				   buf_list, buf_list_size * sizeof(nbbuf_T));
+	    buf_list = vim_realloc(buf_list, buf_list_size * sizeof(nbbuf_T));
 	    if (buf_list == NULL)
 	    {
 		vim_free(t_buf_list);
@@ -863,7 +862,7 @@ nb_unquote(char_u *p, char_u **endp)
     int done = 0;
 
     /* result is never longer than input */
-    result = (char *)alloc_clear(STRLEN(p) + 1);
+    result = alloc_clear(STRLEN(p) + 1);
     if (result == NULL)
 	return NULL;
 
@@ -2470,7 +2469,7 @@ netbeans_beval_cb(
 	 * length. */
 	if (text != NULL && text[0] != NUL && STRLEN(text) < MAXPATHL)
 	{
-	    buf = (char *)alloc(MAXPATHL * 2 + 25);
+	    buf = alloc(MAXPATHL * 2 + 25);
 	    if (buf != NULL)
 	    {
 		p = nb_quote(text);
@@ -3210,8 +3209,7 @@ addsigntype(
 	    if (globalsignmaplen == 0) /* first allocation */
 	    {
 		globalsignmaplen = 20;
-		globalsignmap = (char **)alloc_clear(
-					    globalsignmaplen * sizeof(char *));
+		globalsignmap = ALLOC_CLEAR_MULT(char *, globalsignmaplen);
 	    }
 	    else    /* grow it */
 	    {
@@ -3221,7 +3219,7 @@ addsigntype(
 
 		globalsignmaplen *= 2;
 		incr = globalsignmaplen - oldlen;
-		globalsignmap = (char **)vim_realloc(globalsignmap,
+		globalsignmap = vim_realloc(globalsignmap,
 					   globalsignmaplen * sizeof(char *));
 		if (globalsignmap == NULL)
 		{
@@ -3248,7 +3246,7 @@ addsigntype(
 	if (buf->signmaplen == 0) /* first allocation */
 	{
 	    buf->signmaplen = 5;
-	    buf->signmap = (int *)alloc_clear(buf->signmaplen * sizeof(int));
+	    buf->signmap = ALLOC_CLEAR_MULT(int, buf->signmaplen);
 	}
 	else    /* grow it */
 	{
@@ -3258,7 +3256,7 @@ addsigntype(
 
 	    buf->signmaplen *= 2;
 	    incr = buf->signmaplen - oldlen;
-	    buf->signmap = (int *)vim_realloc(buf->signmap,
+	    buf->signmap = vim_realloc(buf->signmap,
 					       buf->signmaplen * sizeof(int));
 	    if (buf->signmap == NULL)
 	    {

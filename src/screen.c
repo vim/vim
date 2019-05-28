@@ -328,27 +328,25 @@ redraw_asap(int type)
 
     /* Allocate space to save the text displayed in the command line area. */
     rows = screen_Rows - cmdline_row;
-    screenline = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
-    screenattr = (sattr_T *)lalloc(rows * cols * sizeof(sattr_T), FALSE);
+    screenline = LALLOC_MULT(schar_T, rows * cols);
+    screenattr = LALLOC_MULT(sattr_T, rows * cols);
     if (screenline == NULL || screenattr == NULL)
 	ret = 2;
     if (enc_utf8)
     {
-	screenlineUC = (u8char_T *)lalloc(
-				       rows * cols * sizeof(u8char_T), FALSE);
+	screenlineUC = LALLOC_MULT(u8char_T, rows * cols);
 	if (screenlineUC == NULL)
 	    ret = 2;
 	for (i = 0; i < p_mco; ++i)
 	{
-	    screenlineC[i] = (u8char_T *)lalloc(
-				       rows * cols * sizeof(u8char_T), FALSE);
+	    screenlineC[i] = LALLOC_MULT(u8char_T, rows * cols);
 	    if (screenlineC[i] == NULL)
 		ret = 2;
 	}
     }
     if (enc_dbcs == DBCS_JPNU)
     {
-	screenline2 = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
+	screenline2 = LALLOC_MULT(schar_T, rows * cols);
 	if (screenline2 == NULL)
 	    ret = 2;
     }
@@ -3810,14 +3808,13 @@ win_line(
 	{
 	    // Make a copy of the properties, so that they are properly
 	    // aligned.
-	    text_props = (textprop_T *)alloc(
-					 text_prop_count * sizeof(textprop_T));
+	    text_props = ALLOC_MULT(textprop_T, text_prop_count);
 	    if (text_props != NULL)
 		mch_memmove(text_props, prop_start,
 					 text_prop_count * sizeof(textprop_T));
 
 	    // Allocate an array for the indexes.
-	    text_prop_idxs = (int *)alloc(text_prop_count * sizeof(int));
+	    text_prop_idxs = ALLOC_MULT(int, text_prop_count);
 	    area_highlighting = TRUE;
 	    extra_check = TRUE;
 	}
@@ -8901,25 +8898,21 @@ retry:
     if (aucmd_win != NULL)
 	win_free_lsize(aucmd_win);
 
-    new_ScreenLines = (schar_T *)lalloc(
-			      (Rows + 1) * Columns * sizeof(schar_T), FALSE);
+    new_ScreenLines = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     vim_memset(new_ScreenLinesC, 0, sizeof(u8char_T *) * MAX_MCO);
     if (enc_utf8)
     {
-	new_ScreenLinesUC = (u8char_T *)lalloc(
-			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
+	new_ScreenLinesUC = LALLOC_MULT(u8char_T, (Rows + 1) * Columns);
 	for (i = 0; i < p_mco; ++i)
-	    new_ScreenLinesC[i] = (u8char_T *)lalloc_clear(
-			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
+	    new_ScreenLinesC[i] = LALLOC_CLEAR_MULT(u8char_T,
+							 (Rows + 1) * Columns);
     }
     if (enc_dbcs == DBCS_JPNU)
-	new_ScreenLines2 = (schar_T *)lalloc(
-			     (Rows + 1) * Columns * sizeof(schar_T), FALSE);
-    new_ScreenAttrs = (sattr_T *)lalloc(
-			      (Rows + 1) * Columns * sizeof(sattr_T), FALSE);
-    new_LineOffset = (unsigned *)lalloc(Rows * sizeof(unsigned), FALSE);
-    new_LineWraps = (char_u *)lalloc(Rows * sizeof(char_u), FALSE);
-    new_TabPageIdxs = (short *)lalloc(Columns * sizeof(short), FALSE);
+	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
+    new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
+    new_LineOffset = LALLOC_MULT(unsigned, Rows);
+    new_LineWraps = LALLOC_MULT(char_u, Rows);
+    new_TabPageIdxs = LALLOC_MULT(short, Columns);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
@@ -10858,8 +10851,7 @@ redraw_win_toolbar(win_T *wp)
     vim_free(wp->w_winbar_items);
     for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
 	++item_count;
-    wp->w_winbar_items = (winbar_item_T *)alloc_clear(
-				     sizeof(winbar_item_T) * (item_count + 1));
+    wp->w_winbar_items = ALLOC_CLEAR_MULT(winbar_item_T, item_count + 1);
 
     /* TODO: use fewer spaces if there is not enough room */
     for (menu = wp->w_winbar->children;

@@ -130,7 +130,7 @@ mf_open(char_u *fname, int flags)
     struct STATFS	stf;
 #endif
 
-    if ((mfp = (memfile_T *)alloc(sizeof(memfile_T))) == NULL)
+    if ((mfp = ALLOC_ONE(memfile_T)) == NULL)
 	return NULL;
 
     if (fname == NULL)	    /* no file for this memfile, use memory only */
@@ -362,7 +362,7 @@ mf_new(memfile_T *mfp, int negative, int page_count)
 	}
 	else if (hp == NULL)	    /* need to allocate memory for this block */
 	{
-	    if ((p = (char_u *)alloc(mfp->mf_page_size * page_count)) == NULL)
+	    if ((p = alloc(mfp->mf_page_size * page_count)) == NULL)
 		return NULL;
 	    hp = mf_rem_free(mfp);
 	    hp->bh_data = p;
@@ -893,10 +893,9 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 {
     bhdr_T	*hp;
 
-    if ((hp = (bhdr_T *)alloc(sizeof(bhdr_T))) != NULL)
+    if ((hp = ALLOC_ONE(bhdr_T)) != NULL)
     {
-	if ((hp->bh_data = (char_u *)alloc(mfp->mf_page_size * page_count))
-								      == NULL)
+	if ((hp->bh_data = alloc(mfp->mf_page_size * page_count)) == NULL)
 	{
 	    vim_free(hp);	    /* not enough memory */
 	    return NULL;
@@ -1131,7 +1130,7 @@ mf_trans_add(memfile_T *mfp, bhdr_T *hp)
     if (hp->bh_bnum >= 0)		    /* it's already positive */
 	return OK;
 
-    if ((np = (NR_TRANS *)alloc(sizeof(NR_TRANS))) == NULL)
+    if ((np = ALLOC_ONE(NR_TRANS)) == NULL)
 	return FAIL;
 
 /*
@@ -1460,7 +1459,7 @@ mf_hash_grow(mf_hashtab_T *mht)
     size_t	    size;
 
     size = (mht->mht_mask + 1) * MHT_GROWTH_FACTOR * sizeof(void *);
-    buckets = (mf_hashitem_T **)lalloc_clear(size, FALSE);
+    buckets = lalloc_clear(size, FALSE);
     if (buckets == NULL)
 	return FAIL;
 

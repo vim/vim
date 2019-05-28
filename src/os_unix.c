@@ -3210,7 +3210,7 @@ mch_early_init(void)
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    signal_stack = (char *)alloc(SIGSTKSZ);
+    signal_stack = alloc(SIGSTKSZ);
     init_signal_stack();
 #endif
 }
@@ -6843,7 +6843,7 @@ mch_expand_wildcards(
 	goto notfound;
     }
     *num_file = i;
-    *file = (char_u **)alloc(sizeof(char_u *) * i);
+    *file = ALLOC_MULT(char_u *, i);
     if (*file == NULL)
     {
 	/* out of memory */
@@ -6938,7 +6938,7 @@ save_patterns(
     int		i;
     char_u	*s;
 
-    *file = (char_u **)alloc(num_pat * sizeof(char_u *));
+    *file = ALLOC_MULT(char_u *, num_pat);
     if (*file == NULL)
 	return FAIL;
     for (i = 0; i < num_pat; i++)

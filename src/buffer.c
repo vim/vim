@@ -1958,7 +1958,7 @@ buflist_new(
     }
     if (buf != curbuf || curbuf == NULL)
     {
-	buf = (buf_T *)alloc_clear(sizeof(buf_T));
+	buf = ALLOC_CLEAR_ONE(buf_T);
 	if (buf == NULL)
 	{
 	    vim_free(ffname);
@@ -1985,7 +1985,7 @@ buflist_new(
     }
 
     clear_wininfo(buf);
-    buf->b_wininfo = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
+    buf->b_wininfo = ALLOC_CLEAR_ONE(wininfo_T);
 
     if ((ffname != NULL && (buf->b_ffname == NULL || buf->b_sfname == NULL))
 	    || buf->b_wininfo == NULL)
@@ -2634,7 +2634,7 @@ ExpandBufnames(
 		break;
 	    if (round == 1)
 	    {
-		*file = (char_u **)alloc(count * sizeof(char_u *));
+		*file = ALLOC_MULT(char_u *, count);
 		if (*file == NULL)
 		{
 		    vim_regfree(regmatch.regprog);
@@ -2771,7 +2771,7 @@ buflist_setfpos(
     if (wip == NULL)
     {
 	/* allocate a new entry */
-	wip = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
+	wip = ALLOC_CLEAR_ONE(wininfo_T);
 	if (wip == NULL)
 	    return;
 	wip->wi_win = win;
@@ -3430,7 +3430,7 @@ fileinfo(
     char	*buffer;
     size_t	len;
 
-    buffer = (char *)alloc(IOSIZE);
+    buffer = alloc(IOSIZE);
     if (buffer == NULL)
 	return;
 

@@ -293,7 +293,7 @@ free_timer(timer_T *timer)
     timer_T *
 create_timer(long msec, int repeat)
 {
-    timer_T	*timer = (timer_T *)alloc_clear(sizeof(timer_T));
+    timer_T	*timer = ALLOC_CLEAR_ONE(timer_T);
     long	prev_id = last_timer_id;
 
     if (timer == NULL)
@@ -444,7 +444,7 @@ check_due_timer(void)
 	    bevalexpr_due_set = FALSE;
 	    if (balloonEval == NULL)
 	    {
-		balloonEval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
+		balloonEval = ALLOC_CLEAR_ONE(BalloonEval);
 		balloonEvalForTerm = TRUE;
 	    }
 	    if (balloonEval != NULL)
@@ -1312,7 +1312,7 @@ check_changed_any(
     if (bufcount == 0)
 	return FALSE;
 
-    bufnrs = (int *)alloc(sizeof(int) * bufcount);
+    bufnrs = ALLOC_MULT(int, bufcount);
     if (bufnrs == NULL)
 	return FALSE;
 
@@ -1783,7 +1783,7 @@ ex_args(exarg_T *eap)
 	 */
 	if (ARGCOUNT > 0)
 	{
-	    char_u **items = (char_u **)alloc(sizeof(char_u *) * ARGCOUNT);
+	    char_u **items = ALLOC_MULT(char_u *, ARGCOUNT);
 
 	    if (items != NULL)
 	    {
@@ -2994,7 +2994,7 @@ ex_packadd(exarg_T *eap)
 	    continue;
 
 	len = (int)STRLEN(plugpat) + (int)STRLEN(eap->arg) + 5;
-	pat = (char *)alloc(len);
+	pat = alloc(len);
 	if (pat == NULL)
 	    return;
 	vim_snprintf(pat, len, plugpat, round == 1 ? "start" : "opt", eap->arg);

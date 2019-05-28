@@ -2075,7 +2075,7 @@ executable_exists(char *name, char_u **path, int use_path)
 	return FALSE;
 
     wcurpath = _wgetenv(L"PATH");
-    wnewpath = (WCHAR *)alloc((wcslen(wcurpath) + 3) * sizeof(WCHAR));
+    wnewpath = ALLOC_MULT(WCHAR, wcslen(wcurpath) + 3);
     if (wnewpath == NULL)
 	return FALSE;
     wcscpy(wnewpath, L".;");
@@ -2338,7 +2338,7 @@ SaveConsoleBuffer(
 	cb->BufferSize.Y = cb->Info.dwSize.Y;
 	NumCells = cb->BufferSize.X * cb->BufferSize.Y;
 	vim_free(cb->Buffer);
-	cb->Buffer = (PCHAR_INFO)alloc(NumCells * sizeof(CHAR_INFO));
+	cb->Buffer = ALLOC_MULT(CHAR_INFO, NumCells);
 	if (cb->Buffer == NULL)
 	    return FALSE;
     }
@@ -2362,7 +2362,7 @@ SaveConsoleBuffer(
     {
 	cb->NumRegions = numregions;
 	vim_free(cb->Regions);
-	cb->Regions = (PSMALL_RECT)alloc(cb->NumRegions * sizeof(SMALL_RECT));
+	cb->Regions = ALLOC_MULT(SMALL_RECT, cb->NumRegions);
 	if (cb->Regions == NULL)
 	{
 	    VIM_CLEAR(cb->Buffer);
@@ -3394,7 +3394,7 @@ mch_get_acl(char_u *fname)
     struct my_acl   *p = NULL;
     DWORD   err;
 
-    p = (struct my_acl *)alloc_clear(sizeof(struct my_acl));
+    p = ALLOC_CLEAR_ONE(struct my_acl);
     if (p != NULL)
     {
 	WCHAR	*wn;
@@ -5952,7 +5952,7 @@ visual_bell(void)
     WORD    attrFlash = ~g_attrCurrent & 0xff;
 
     DWORD   dwDummy;
-    LPWORD  oldattrs = (LPWORD)alloc(Rows * Columns * sizeof(WORD));
+    LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
 
     if (oldattrs == NULL)
 	return;
@@ -6003,7 +6003,7 @@ write_chars(
     if (unicodebuf == NULL || length > unibuflen)
     {
 	vim_free(unicodebuf);
-	unicodebuf = (WCHAR *)lalloc(length * sizeof(WCHAR), FALSE);
+	unicodebuf = LALLOC_MULT(WCHAR, length);
 	unibuflen = length;
     }
     MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
@@ -7117,7 +7117,7 @@ fix_arg_enc(void)
 	return;
 
     /* Remember the buffer numbers for the arguments. */
-    fnum_list = (int *)alloc(sizeof(int) * GARGCOUNT);
+    fnum_list = ALLOC_MULT(int, GARGCOUNT);
     if (fnum_list == NULL)
 	return;		/* out of memory */
     for (i = 0; i < GARGCOUNT; ++i)

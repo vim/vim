@@ -7966,7 +7966,7 @@ skip:
 	wp->w_p_cc_cols = NULL;
     else
     {
-	wp->w_p_cc_cols = (int *)alloc(sizeof(int) * (count + 1));
+	wp->w_p_cc_cols = ALLOC_MULT(int, count + 1);
 	if (wp->w_p_cc_cols != NULL)
 	{
 	    /* sort the columns for faster usage on screen redraw inside
@@ -10106,8 +10106,7 @@ showoptions(
 #define INC 20
 #define GAP 3
 
-    items = (struct vimoption **)alloc(sizeof(struct vimoption *)
-								* PARAM_COUNT);
+    items = ALLOC_MULT(struct vimoption *, PARAM_COUNT);
     if (items == NULL)
 	return;
 
@@ -11998,7 +11997,7 @@ ExpandSettings(
 		*num_file = num_term;
 	    else
 		return OK;
-	    *file = (char_u **)alloc(*num_file * sizeof(char_u *));
+	    *file = ALLOC_MULT(char_u *, *num_file);
 	    if (*file == NULL)
 	    {
 		*file = (char_u **)"";
@@ -12016,7 +12015,7 @@ ExpandOldSetting(int *num_file, char_u ***file)
     char_u  *buf;
 
     *num_file = 0;
-    *file = (char_u **)alloc(sizeof(char_u *));
+    *file = ALLOC_ONE(char_u *);
     if (*file == NULL)
 	return FAIL;
 
@@ -12879,7 +12878,7 @@ tabstop_set(char_u *var, int **array)
 	return FALSE;
     }
 
-    *array = (int *)alloc((valcount + 1) * sizeof(int));
+    *array = ALLOC_MULT(int, valcount + 1);
     if (*array == NULL)
 	return FALSE;
     (*array)[0] = valcount;
@@ -13102,7 +13101,7 @@ tabstop_copy(int *oldts)
 
     if (oldts == NULL)
 	return NULL;
-    newts = (int *)alloc((oldts[0] + 1) * sizeof(int));
+    newts = ALLOC_MULT(int, oldts[0] + 1);
     if (newts != NULL)
 	for (t = 0; t <= oldts[0]; ++t)
 	    newts[t] = oldts[t];

@@ -6550,7 +6550,7 @@ alist_unlink(alist_T *al)
     void
 alist_new(void)
 {
-    curwin->w_alist = (alist_T *)alloc(sizeof(alist_T));
+    curwin->w_alist = ALLOC_ONE(alist_T);
     if (curwin->w_alist == NULL)
     {
 	curwin->w_alist = &global_alist;
@@ -6584,7 +6584,7 @@ alist_expand(int *fnum_list, int fnum_len)
      * expansion.  Also, the vimrc file isn't read yet, thus the user
      * can't set the options. */
     p_su = empty_option;
-    old_arg_files = (char_u **)alloc(sizeof(char_u *) * GARGCOUNT);
+    old_arg_files = ALLOC_MULT(char_u *, GARGCOUNT);
     if (old_arg_files != NULL)
     {
 	for (i = 0; i < GARGCOUNT; ++i)

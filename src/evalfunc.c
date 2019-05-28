@@ -4465,7 +4465,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	}
 	if (dict_idx > 0 || arg_idx > 0 || arg_pt != NULL || is_funcref)
 	{
-	    partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	    partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
 
 	    /* result is a VAR_PARTIAL */
 	    if (pt == NULL)
@@ -4484,8 +4484,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    if (list != NULL)
 			lv_len = list->lv_len;
 		    pt->pt_argc = arg_len + lv_len;
-		    pt->pt_argv = (typval_T *)alloc(
-					      sizeof(typval_T) * pt->pt_argc);
+		    pt->pt_argv = ALLOC_MULT(typval_T, pt->pt_argc);
 		    if (pt->pt_argv == NULL)
 		    {
 			vim_free(pt);
@@ -9615,8 +9614,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 		    long growmin  = (long)((p - start) * 2 + prevlen);
 		    prevsize = grow50pc > growmin ? grow50pc : growmin;
 		}
-		newprev = prev == NULL ? alloc(prevsize)
-						: vim_realloc(prev, prevsize);
+		newprev = vim_realloc(prev, prevsize);
 		if (newprev == NULL)
 		{
 		    do_outofmem_msg((long_u)prevsize);
@@ -11788,7 +11786,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
 	/* First half: use for pointers to result lines; second half: use for
 	 * pointers to allocated copies. */
-	lstval = (char_u **)alloc(sizeof(char_u *) * ((len + 1) * 2));
+	lstval = ALLOC_MULT(char_u *, (len + 1) * 2);
 	if (lstval == NULL)
 	    return;
 	curval = lstval;
@@ -12674,7 +12672,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	}
 
 	/* Make an array with each entry pointing to an item in the List. */
-	ptrs = (sortItem_T *)alloc(len * sizeof(sortItem_T));
+	ptrs = ALLOC_MULT(sortItem_T, len);
 	if (ptrs == NULL)
 	    goto theend;
 

@@ -821,7 +821,7 @@ alloc_does_fail(size_t size)
  * The normal way to allocate memory.  This handles an out-of-memory situation
  * as well as possible, still returns NULL when we're completely out.
  */
-    char_u *
+    void *
 alloc(size_t size)
 {
     return lalloc(size, TRUE);
@@ -830,7 +830,7 @@ alloc(size_t size)
 /*
  * alloc() with an ID for alloc_fail().
  */
-    char_u *
+    void *
 alloc_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -843,10 +843,10 @@ alloc_id(size_t size, alloc_id_T id UNUSED)
 /*
  * Allocate memory and set all bytes to zero.
  */
-    char_u *
+    void *
 alloc_clear(size_t size)
 {
-    char_u *p;
+    void *p;
 
     p = lalloc(size, TRUE);
     if (p != NULL)
@@ -857,7 +857,7 @@ alloc_clear(size_t size)
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
-    char_u *
+    void *
 alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -870,12 +870,12 @@ alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 /*
  * Allocate memory like lalloc() and set all bytes to zero.
  */
-    char_u *
+    void *
 lalloc_clear(size_t size, int message)
 {
-    char_u *p;
+    void *p;
 
-    p = (lalloc(size, message));
+    p = lalloc(size, message);
     if (p != NULL)
 	(void)vim_memset(p, 0, size);
     return p;
@@ -885,10 +885,10 @@ lalloc_clear(size_t size, int message)
  * Low level memory allocation function.
  * This is used often, KEEP IT FAST!
  */
-    char_u *
+    void *
 lalloc(size_t size, int message)
 {
-    char_u	*p;		    /* pointer to new storage space */
+    void	*p;		    /* pointer to new storage space */
     static int	releasing = FALSE;  /* don't do mf_release_all() recursive */
     int		try_again;
 #if defined(HAVE_AVAIL_MEM)
@@ -921,7 +921,7 @@ lalloc(size_t size, int message)
 	 *    allocating KEEP_ROOM amount of memory.
 	 * 3. Strict check for available memory: call mch_avail_mem()
 	 */
-	if ((p = (char_u *)malloc(size)) != NULL)
+	if ((p = malloc(size)) != NULL)
 	{
 #ifndef HAVE_AVAIL_MEM
 	    /* 1. No check for available memory: Just return. */
@@ -937,7 +937,7 @@ lalloc(size_t size, int message)
 	    /* 3. check for available memory: call mch_avail_mem() */
 	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
 	    {
-		free((char *)p);	/* System is low... no go! */
+		free(p);	/* System is low... no go! */
 		p = NULL;
 	    }
 	    else
@@ -965,7 +965,7 @@ lalloc(size_t size, int message)
 
 theend:
 #ifdef MEM_PROFILE
-    mem_post_alloc((void **)&p, size);
+    mem_post_alloc(&p, size);
 #endif
     return p;
 }
@@ -974,7 +974,7 @@ theend:
  * lalloc() with an ID for alloc_fail().
  */
 #if defined(FEAT_SIGNS) || defined(PROTO)
-    char_u *
+    void *
 lalloc_id(size_t size, int message, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -2058,8 +2058,7 @@ ga_grow(garray_T *gap, int n)
 	if (n < gap->ga_growsize)
 	    n = gap->ga_growsize;
 	new_len = gap->ga_itemsize * (gap->ga_len + n);
-	pp = (gap->ga_data == NULL)
-	      ? alloc(new_len) : vim_realloc(gap->ga_data, new_len);
+	pp = vim_realloc(gap->ga_data, new_len);
 	if (pp == NULL)
 	    return FAIL;
 	old_len = gap->ga_itemsize * gap->ga_maxlen;
@@ -4055,7 +4054,7 @@ putenv(const char *string)
 	    if (moreenv() < 0)
 		return -1;
 	}
-	p = (char *)alloc(strlen(string) + 1);
+	p = alloc(strlen(string) + 1);
 	if (p == NULL)		/* not enough core */
 	    return -1;
 	environ[i + 1] = 0;	/* new end of env. */
@@ -4103,13 +4102,13 @@ newenv(void)
 	;
 
     esize = i + EXTRASIZE + 1;
-    env = (char **)alloc(esize * sizeof (elem));
+    env = ALLOC_MULT(char *, esize);
     if (env == NULL)
 	return -1;
 
     for (i = 0; environ[i]; i++)
     {
-	elem = (char *)alloc(strlen(environ[i]) + 1);
+	elem = alloc(strlen(environ[i]) + 1);
 	if (elem == NULL)
 	    return -1;
 	env[i] = elem;
@@ -4129,7 +4128,7 @@ moreenv(void)
     char    **env;
 
     esize = envsize + EXTRASIZE;
-    env = (char **)vim_realloc((char *)environ, esize * sizeof (*env));
+    env = vim_realloc((char *)environ, esize * sizeof (*env));
     if (env == 0)
 	return -1;
     environ = env;
@@ -4575,7 +4574,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 		}
 	    }
 
-	    *argv = (char **)alloc((*argc + 4) * sizeof(char *));
+	    *argv = ALLOC_MULT(char *, *argc + 4);
 	    if (*argv == NULL)	    /* out of memory */
 		return FAIL;
 	}
@@ -4622,7 +4621,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     char_u	*s;
 
     /* Pass argv[] to mch_call_shell(). */
-    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    *argv = ALLOC_MULT(char *, l->lv_len + 1);
     if (*argv == NULL)
 	return FAIL;
     *argc = 0;
@@ -4667,7 +4666,7 @@ write_session_file(char_u *filename)
     escaped_filename = vim_strsave_escaped(filename, escape_chars);
     if (escaped_filename == NULL)
 	return FALSE;
-    mksession_cmdline = (char *)alloc(10 + (int)STRLEN(escaped_filename) + 1);
+    mksession_cmdline = alloc(10 + (int)STRLEN(escaped_filename) + 1);
     if (mksession_cmdline == NULL)
     {
 	vim_free(escaped_filename);

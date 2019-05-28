@@ -1189,7 +1189,7 @@ ml_recover(int checkext)
      * Allocate a buffer structure for the swap file that is used for recovery.
      * Only the memline and crypt information in it are really used.
      */
-    buf = (buf_T *)alloc(sizeof(buf_T));
+    buf = ALLOC_ONE(buf_T);
     if (buf == NULL)
 	goto theend;
 
@@ -1911,9 +1911,9 @@ recover_names(
 			      );
 	    if (swapname != NULL)
 	    {
-		if (mch_stat((char *)swapname, &st) != -1)	    /* It exists! */
+		if (mch_stat((char *)swapname, &st) != -1)    // It exists!
 		{
-		    files = (char_u **)alloc(sizeof(char_u *));
+		    files = ALLOC_ONE(char_u *);
 		    if (files != NULL)
 		    {
 			files[0] = swapname;
@@ -4205,8 +4205,7 @@ ml_add_stack(buf_T *buf)
     {
 	CHECK(top > 0, _("Stack size increases")); /* more than 5 levels??? */
 
-	newstack = (infoptr_T *)alloc(sizeof(infoptr_T) *
-					(buf->b_ml.ml_stack_size + STACK_INCR));
+	newstack = ALLOC_MULT(infoptr_T, buf->b_ml.ml_stack_size + STACK_INCR);
 	if (newstack == NULL)
 	    return -1;
 	if (top > 0)
@@ -5235,7 +5234,7 @@ ml_encrypt_data(
     if (state == NULL)
 	return data;
 
-    new_data = (char_u *)alloc(size);
+    new_data = alloc(size);
     if (new_data == NULL)
 	return NULL;
     head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
@@ -5375,8 +5374,7 @@ ml_updatechunk(
 	return;
     if (buf->b_ml.ml_chunksize == NULL)
     {
-	buf->b_ml.ml_chunksize =
-			       (chunksize_T *)alloc(sizeof(chunksize_T) * 100);
+	buf->b_ml.ml_chunksize = ALLOC_MULT(chunksize_T, 100);
 	if (buf->b_ml.ml_chunksize == NULL)
 	{
 	    buf->b_ml.ml_usedchunks = -1;

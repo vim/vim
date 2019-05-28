@@ -286,7 +286,7 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-    lnr = (listener_T *)alloc_clear(sizeof(listener_T));
+    lnr = ALLOC_CLEAR_ONE(listener_T);
     if (lnr == NULL)
     {
 	free_callback(callback, partial);

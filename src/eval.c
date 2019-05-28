@@ -491,7 +491,7 @@ var_redir_start(char_u *name, int append)
     if (redir_varname == NULL)
 	return FAIL;
 
-    redir_lval = (lval_T *)alloc_clear(sizeof(lval_T));
+    redir_lval = ALLOC_CLEAR_ONE(lval_T);
     if (redir_lval == NULL)
     {
 	var_redir_stop();
@@ -1063,7 +1063,7 @@ eval_expr(char_u *arg, char_u **nextcmd)
 {
     typval_T	*tv;
 
-    tv = (typval_T *)alloc(sizeof(typval_T));
+    tv = ALLOC_ONE(typval_T);
     if (tv != NULL && eval0(arg, tv, nextcmd, TRUE) == FAIL)
 	VIM_CLEAR(tv);
 
@@ -2769,7 +2769,7 @@ eval_for_line(
 
     *errp = TRUE;	/* default: there is an error */
 
-    fi = (forinfo_T *)alloc_clear(sizeof(forinfo_T));
+    fi = ALLOC_CLEAR_ONE(forinfo_T);
     if (fi == NULL)
 	return NULL;
 
@@ -7297,7 +7297,7 @@ handle_subscript(
     typval_T *
 alloc_tv(void)
 {
-    return (typval_T *)alloc_clear(sizeof(typval_T));
+    return ALLOC_CLEAR_ONE(typval_T);
 }
 
 /*
@@ -7883,7 +7883,7 @@ new_script_vars(scid_T id)
 	while (ga_scripts.ga_len < id)
 	{
 	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) =
-		(scriptvar_T *)alloc_clear(sizeof(scriptvar_T));
+		ALLOC_CLEAR_ONE(scriptvar_T);
 	    init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
 	    ++ga_scripts.ga_len;
 	}
@@ -8139,7 +8139,7 @@ set_var(
 	if (!valid_varname(varname))
 	    return;
 
-	v = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(varname));
+	v = alloc(sizeof(dictitem_T) + STRLEN(varname));
 	if (v == NULL)
 	    return;
 	STRCPY(v->di_key, varname);

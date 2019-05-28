@@ -473,7 +473,7 @@ ins_compl_add_infercase(
 					   ? actual_len : actual_compl_length;
 
 	// Allocate wide character array for the completion and fill it.
-	wca = (int *)alloc(actual_len * sizeof(int));
+	wca = ALLOC_MULT(int, actual_len);
 	if (wca != NULL)
 	{
 	    p = str;
@@ -611,7 +611,7 @@ ins_compl_add(
 
     // Allocate a new match structure.
     // Copy the values to the new match structure.
-    match = (compl_T *)alloc_clear(sizeof(compl_T));
+    match = ALLOC_CLEAR_ONE(compl_T);
     if (match == NULL)
 	return FAIL;
     match->cp_number = -1;
@@ -1070,8 +1070,7 @@ ins_compl_show_pum(void)
 	} while (compl != NULL && compl != compl_first_match);
 	if (compl_match_arraysize == 0)
 	    return;
-	compl_match_array = (pumitem_T *)alloc_clear(
-				    sizeof(pumitem_T) * compl_match_arraysize);
+	compl_match_array = ALLOC_CLEAR_MULT(pumitem_T, compl_match_arraysize);
 	if (compl_match_array != NULL)
 	{
 	    // If the current match is the original text don't find the first

@@ -186,7 +186,7 @@ parse_list_options(
     int		len;
 
     /* Save the old values, so that they can be restored in case of an error. */
-    old_opts = (option_table_T *)alloc(sizeof(option_table_T) * table_size);
+    old_opts = ALLOC_MULT(option_table_T, table_size);
     if (old_opts == NULL)
 	return NULL;
 
@@ -2236,7 +2236,7 @@ prt_build_cid_fontname(int font, char_u *name, int name_len)
 {
     char    *fontname;
 
-    fontname = (char *)alloc(name_len + 1);
+    fontname = alloc(name_len + 1);
     if (fontname == NULL)
 	return FALSE;
     vim_strncpy((char_u *)fontname, name, name_len);

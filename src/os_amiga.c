@@ -580,7 +580,7 @@ get_fib(char_u *fname)
 #ifdef __amigaos4__
     fib = AllocDosObject(DOS_FIB,0);
 #else
-    fib = (struct FileInfoBlock *)alloc(sizeof(struct FileInfoBlock));
+    fib = ALLOC_ONE(struct FileInfoBlock);
 #endif
     if (fib != NULL)
     {
@@ -1448,7 +1448,7 @@ mch_expandpath(
 #ifdef __amigaos4__
     Anchor = AllocDosObject(DOS_ANCHORPATH, AnchorTags);
 #else
-    Anchor = (struct AnchorPath *)alloc_clear(ANCHOR_SIZE);
+    Anchor = alloc_clear(ANCHOR_SIZE);
 #endif
     if (Anchor == NULL)
 	return 0;

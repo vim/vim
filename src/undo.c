@@ -468,7 +468,7 @@ u_savecommon(
 	     * Make a new header entry.  Do this first so that we don't mess
 	     * up the undo info when out of memory.
 	     */
-	    uhp = (u_header_T *)U_ALLOC_LINE(sizeof(u_header_T));
+	    uhp = U_ALLOC_LINE(sizeof(u_header_T));
 	    if (uhp == NULL)
 		goto nomem;
 #ifdef U_DEBUG
@@ -659,7 +659,7 @@ u_savecommon(
     /*
      * add lines in front of entry list
      */
-    uep = (u_entry_T *)U_ALLOC_LINE(sizeof(u_entry_T));
+    uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
     vim_memset(uep, 0, sizeof(u_entry_T));
@@ -685,8 +685,7 @@ u_savecommon(
 
     if (size > 0)
     {
-	if ((uep->ue_array = (undoline_T *)U_ALLOC_LINE(
-					   sizeof(undoline_T) * size)) == NULL)
+	if ((uep->ue_array = U_ALLOC_LINE(sizeof(undoline_T) * size)) == NULL)
 	{
 	    u_freeentry(uep, 0L);
 	    goto nomem;
@@ -1286,7 +1285,7 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
     int		c;
     int		error;
 
-    uhp = (u_header_T *)U_ALLOC_LINE(sizeof(u_header_T));
+    uhp = U_ALLOC_LINE(sizeof(u_header_T));
     if (uhp == NULL)
 	return NULL;
     vim_memset(uhp, 0, sizeof(u_header_T));
@@ -1397,7 +1396,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     char_u	*line;
     int		line_len;
 
-    uep = (u_entry_T *)U_ALLOC_LINE(sizeof(u_entry_T));
+    uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	return NULL;
     vim_memset(uep, 0, sizeof(u_entry_T));
@@ -1411,7 +1410,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     if (uep->ue_size > 0)
     {
 	if (uep->ue_size < LONG_MAX / (int)sizeof(char_u *))
-	    array = (undoline_T *)U_ALLOC_LINE(sizeof(undoline_T) * uep->ue_size);
+	    array = U_ALLOC_LINE(sizeof(undoline_T) * uep->ue_size);
 	if (array == NULL)
 	{
 	    *error = TRUE;
@@ -1981,8 +1980,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
     if (num_head > 0)
     {
 	if (num_head < LONG_MAX / (long)sizeof(u_header_T *))
-	    uhp_table = (u_header_T **)U_ALLOC_LINE(
-					     num_head * sizeof(u_header_T *));
+	    uhp_table = U_ALLOC_LINE(num_head * sizeof(u_header_T *));
 	if (uhp_table == NULL)
 	    goto error;
     }
@@ -2013,7 +2011,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
     }
 
 #ifdef U_DEBUG
-    uhp_table_used = (int *)alloc_clear(sizeof(int) * num_head + 1);
+    uhp_table_used = alloc_clear(sizeof(int) * num_head + 1);
 # define SET_FLAG(j) ++uhp_table_used[j]
 #else
 # define SET_FLAG(j)
@@ -2712,8 +2710,7 @@ u_undoredo(int undo)
 	/* delete the lines between top and bot and save them in newarray */
 	if (oldsize > 0)
 	{
-	    if ((newarray = (undoline_T *)U_ALLOC_LINE(
-					sizeof(undoline_T) * oldsize)) == NULL)
+	    if ((newarray = U_ALLOC_LINE(sizeof(undoline_T) * oldsize)) == NULL)
 	    {
 		do_outofmem_msg((long_u)(sizeof(undoline_T) * oldsize));
 		/*

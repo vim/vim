@@ -6897,7 +6897,7 @@ string_convert_ext(
 		    return retval;
 		}
 	    }
-	    tmp = (short_u *)alloc(sizeof(short_u) * tmp_len);
+	    tmp = ALLOC_MULT(short_u, tmp_len);
 	    if (tmp == NULL)
 		break;
 	    if (vcp->vc_cpfrom == 0)

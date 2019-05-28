@@ -1003,7 +1003,7 @@ get_register(
 #endif
 
     get_yank_register(name, 0);
-    reg = (yankreg_T *)alloc(sizeof(yankreg_T));
+    reg = ALLOC_ONE(yankreg_T);
     if (reg != NULL)
     {
 	*reg = *y_current;
@@ -1013,7 +1013,7 @@ get_register(
 	    if (reg->y_size == 0)
 		reg->y_array = NULL;
 	    else
-		reg->y_array = (char_u **)alloc(sizeof(char_u *) * reg->y_size);
+		reg->y_array = ALLOC_MULT(char_u *, reg->y_size);
 	    if (reg->y_array != NULL)
 	    {
 		for (i = 0; i < reg->y_size; ++i)
@@ -1175,8 +1175,7 @@ stuff_yank(int regname, char_u *p)
     else
     {
 	free_yank_all();
-	if ((y_current->y_array =
-			(char_u **)alloc(sizeof(char_u *))) == NULL)
+	if ((y_current->y_array = ALLOC_ONE(char_u *)) == NULL)
 	{
 	    vim_free(p);
 	    return FAIL;
@@ -3057,8 +3056,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
     y_current->y_size = yanklines;
     y_current->y_type = yanktype;   /* set the yank register type */
     y_current->y_width = 0;
-    y_current->y_array = (char_u **)lalloc_clear(sizeof(char_u *) * yanklines,
-									 TRUE);
+    y_current->y_array = lalloc_clear(sizeof(char_u *) * yanklines, TRUE);
     if (y_current->y_array == NULL)
     {
 	y_current = curr;
@@ -3171,8 +3169,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
     if (curr != y_current)	/* append the new block to the old block */
     {
-	new_ptr = (char_u **)alloc(sizeof(char_u *) *
-					   (curr->y_size + y_current->y_size));
+	new_ptr = ALLOC_MULT(char_u *, curr->y_size + y_current->y_size);
 	if (new_ptr == NULL)
 	    goto fail;
 	for (j = 0; j < curr->y_size; ++j)
@@ -3354,7 +3351,7 @@ copy_yank_reg(yankreg_T *reg)
     y_current = reg;
     free_yank_all();
     *y_current = *curr;
-    y_current->y_array = (char_u **)lalloc_clear(
+    y_current->y_array = lalloc_clear(
 				    sizeof(char_u *) * y_current->y_size, TRUE);
     if (y_current->y_array == NULL)
 	y_current->y_size = 0;
@@ -3491,7 +3488,7 @@ do_put(
 		}
 		if (y_array != NULL)
 		    break;
-		y_array = (char_u **)alloc((y_size * sizeof(char_u *)));
+		y_array = ALLOC_MULT(char_u *, y_size);
 		if (y_array == NULL)
 		    goto end;
 	    }
@@ -4459,7 +4456,7 @@ do_join(
 #if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
     {
-	comments = (int *)lalloc_clear(count * sizeof(int), TRUE);
+	comments = lalloc_clear(count * sizeof(int), TRUE);
 	if (comments == NULL)
 	{
 	    vim_free(spaces);
@@ -4570,9 +4567,8 @@ do_join(
     {
 	// Allocate an array to copy the text properties of joined lines into.
 	// And another array to store the number of properties in each line.
-	prop_lines = (textprop_T **)alloc_clear(
-					   (count - 1) * sizeof(textprop_T *));
-	prop_lengths = (int *)alloc_clear((count - 1) * sizeof(int));
+	prop_lines = ALLOC_CLEAR_MULT(textprop_T *, count - 1);
+	prop_lengths = ALLOC_CLEAR_MULT(int, count - 1);
 	if (prop_lengths == NULL)
 	    VIM_CLEAR(prop_lines);
     }
@@ -5975,8 +5971,7 @@ static yankreg_T *y_read_regs = NULL;
     void
 prepare_viminfo_registers(void)
 {
-     y_read_regs = (yankreg_T *)alloc_clear(NUM_REGISTERS
-						    * (int)sizeof(yankreg_T));
+     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
 }
 
     void
@@ -6051,7 +6046,7 @@ read_viminfo_register(vir_T *virp, int force)
 	 */
 	if (set_prev)
 	    y_previous = y_current;
-	array = (char_u **)alloc(limit * sizeof(char_u *));
+	array = ALLOC_MULT(char_u *, limit);
 	str = skipwhite(skiptowhite(str));
 	if (STRNCMP(str, "CHAR", 4) == 0)
 	    new_type = MCHAR;
@@ -6112,7 +6107,7 @@ read_viminfo_register(vir_T *virp, int force)
 	else
 	{
 	    /* Move the lines from array[] to y_array[]. */
-	    y_current->y_array = (char_u **)alloc(size * sizeof(char_u *));
+	    y_current->y_array = ALLOC_MULT(char_u *, size);
 	    for (i = 0; i < size; i++)
 	    {
 		if (y_current->y_array == NULL)
@@ -6209,7 +6204,7 @@ handle_viminfo_register(garray_T *values, int force)
 	y_ptr->y_array = NULL;
 	return;
     }
-    y_ptr->y_array = (char_u **)alloc(linecount * sizeof(char_u *));
+    y_ptr->y_array = ALLOC_MULT(char_u *, linecount);
     if (y_ptr->y_array == NULL)
     {
 	y_ptr->y_size = 0; // ensure object state is consistent
@@ -7100,8 +7095,7 @@ str_to_reg(
      * Allocate an array to hold the pointers to the new register lines.
      * If the register was not empty, move the existing lines to the new array.
      */
-    pp = (char_u **)lalloc_clear((y_ptr->y_size + newlines)
-						    * sizeof(char_u *), TRUE);
+    pp = lalloc_clear((y_ptr->y_size + newlines) * sizeof(char_u *), TRUE);
     if (pp == NULL)	/* out of memory */
 	return;
     for (lnum = 0; lnum < y_ptr->y_size; ++lnum)

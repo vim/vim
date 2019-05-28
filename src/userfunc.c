@@ -292,10 +292,10 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
-	fp = (ufunc_T *)alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
 	if (fp == NULL)
 	    goto errret;
-	pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	pt = ALLOC_CLEAR_ONE(partial_T);
 	if (pt == NULL)
 	    goto errret;
 
@@ -305,7 +305,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	/* Add "return " before the expression. */
 	len = 7 + e - s + 1;
-	p = (char_u *)alloc(len);
+	p = alloc(len);
 	if (p == NULL)
 	    goto errret;
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
@@ -802,7 +802,7 @@ call_user_func(
 
     line_breakcheck();		/* check for CTRL-C hit */
 
-    fc = (funccall_T *)alloc_clear(sizeof(funccall_T));
+    fc = ALLOC_CLEAR_ONE(funccall_T);
     if (fc == NULL)
 	return;
     fc->caller = current_funccal;
@@ -2580,7 +2580,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 
-	fp = (ufunc_T *)alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
 	if (fp == NULL)
 	    goto erret;
 
@@ -2751,13 +2751,11 @@ func_do_profile(ufunc_T *fp)
 	profile_zero(&fp->uf_tm_self);
 	profile_zero(&fp->uf_tm_total);
 	if (fp->uf_tml_count == NULL)
-	    fp->uf_tml_count = (int *)alloc_clear(sizeof(int) * len);
+	    fp->uf_tml_count = ALLOC_CLEAR_MULT(int, len);
 	if (fp->uf_tml_total == NULL)
-	    fp->uf_tml_total = (proftime_T *)alloc_clear(
-						     sizeof(proftime_T) * len);
+	    fp->uf_tml_total = ALLOC_CLEAR_MULT(proftime_T, len);
 	if (fp->uf_tml_self == NULL)
-	    fp->uf_tml_self = (proftime_T *)alloc_clear(
-						     sizeof(proftime_T) * len);
+	    fp->uf_tml_self = ALLOC_CLEAR_MULT(proftime_T, len);
 	fp->uf_tml_idx = -1;
 	if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
 						    || fp->uf_tml_self == NULL)
@@ -2786,7 +2784,7 @@ func_dump_profile(FILE *fd)
     if (todo == 0)
 	return;     /* nothing to dump */
 
-    sorttab = (ufunc_T **)alloc(sizeof(ufunc_T *) * todo);
+    sorttab = ALLOC_MULT(ufunc_T *, todo);
 
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
     {
@@ -3670,7 +3668,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 
     if (fp != NULL && (fp->uf_flags & FC_DICT))
     {
-	partial_T	*pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
 
 	if (pt != NULL)
 	{
@@ -3704,8 +3702,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 		}
 		if (ret_pt->pt_argc > 0)
 		{
-		    pt->pt_argv = (typval_T *)alloc(
-				      sizeof(typval_T) * ret_pt->pt_argc);
+		    pt->pt_argv = ALLOC_MULT(typval_T, ret_pt->pt_argc);
 		    if (pt->pt_argv == NULL)
 			/* out of memory: drop the arguments */
 			pt->pt_argc = 0;

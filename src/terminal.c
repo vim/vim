@@ -413,7 +413,7 @@ term_start(
 	return NULL;
     }
 
-    term = (term_T *)alloc_clear(sizeof(term_T));
+    term = ALLOC_CLEAR_ONE(term_T);
     if (term == NULL)
 	return NULL;
     term->tl_dirty_row_end = MAX_ROW;
@@ -1630,7 +1630,7 @@ update_snapshot(term_T *term)
 	    if (len == 0)
 		p = NULL;
 	    else
-		p = (cellattr_T *)alloc(sizeof(cellattr_T) * len);
+		p = ALLOC_MULT(cellattr_T, len);
 	    if ((p != NULL || len == 0)
 				     && ga_grow(&term->tl_scrollback, 1) == OK)
 	    {
@@ -2884,7 +2884,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
 	ga_init2(&ga, 1, 100);
 	if (len > 0)
-	    p = (cellattr_T *)alloc(sizeof(cellattr_T) * len);
+	    p = ALLOC_MULT(cellattr_T, len);
 	if (p != NULL)
 	{
 	    for (col = 0; col < len; col += cells[col].width)
@@ -4935,7 +4935,7 @@ term_swap_diff()
     else
     {
 	size_t		size = sizeof(sb_line_T) * term->tl_scrollback.ga_len;
-	sb_line_T	*temp = (sb_line_T *)alloc(size);
+	sb_line_T	*temp = alloc(size);
 
 	/* need to copy cell properties into temp memory */
 	if (temp != NULL)
@@ -5800,7 +5800,7 @@ conpty_term_and_job_init(
     {
 	/* Request by CreateProcessW */
 	breq = wcslen(cmd_wchar) + 1 + 1;	/* Addition of NUL by API */
-	cmd_wchar_copy = (PWSTR)alloc(breq * sizeof(WCHAR));
+	cmd_wchar_copy = ALLOC_MULT(WCHAR, breq);
 	wcsncpy(cmd_wchar_copy, cmd_wchar, breq - 1);
     }
 
@@ -5829,8 +5829,7 @@ conpty_term_and_job_init(
 
     /* Set up pipe inheritance safely: Vista or later. */
     pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
-    term->tl_siex.lpAttributeList =
-	    (PPROC_THREAD_ATTRIBUTE_LIST)alloc(breq);
+    term->tl_siex.lpAttributeList = alloc(breq);
     if (!term->tl_siex.lpAttributeList)
 	goto failed;
     if (!pInitializeProcThreadAttributeList(term->tl_siex.lpAttributeList, 1,

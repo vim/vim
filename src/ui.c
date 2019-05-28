@@ -1897,7 +1897,7 @@ get_input_buf(void)
     garray_T	*gap;
 
     /* We use a growarray to store the data pointer and the length. */
-    gap = (garray_T *)alloc(sizeof(garray_T));
+    gap = ALLOC_ONE(garray_T);
     if (gap != NULL)
     {
 	/* Add one to avoid a zero size. */

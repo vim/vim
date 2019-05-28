@@ -536,7 +536,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	return fnames;
 
     /* Allocate the pointer list */
-    fnames = (char_u **) alloc(*numFiles * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, *numFiles);
 
     /* Empty out the list */
     for (fileCount = 0; fileCount < *numFiles; fileCount++)
@@ -2105,7 +2105,7 @@ gui_mac_unicode_key_event(
 		typeUnicodeText, NULL, 0, &actualSize, NULL))
 	return eventNotHandledErr;
 
-    text = (UniChar *)alloc(actualSize);
+    text = alloc(actualSize);
     if (!text)
 	return eventNotHandledErr;
 
@@ -2975,7 +2975,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 	count = countItem;
     }
 
-    fnames = (char_u **)alloc(count * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, count);
     if (fnames == NULL)
 	return dragNotAcceptedErr;
 

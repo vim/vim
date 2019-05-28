@@ -258,7 +258,7 @@ add_buff(
 	    len = MINIMAL_SIZE;
 	else
 	    len = slen;
-	p = (buffblock_T *)alloc(sizeof(buffblock_T) + len);
+	p = alloc(sizeof(buffblock_T) + len);
 	if (p == NULL)
 	    return; /* no space, just forget it */
 	buf->bh_space = (int)(len - slen);
@@ -3730,7 +3730,7 @@ do_map(
     /*
      * Get here when adding a new entry to the maphash[] list or abbrlist.
      */
-    mp = (mapblock_T *)alloc(sizeof(mapblock_T));
+    mp = ALLOC_ONE(mapblock_T);
     if (mp == NULL)
     {
 	retval = 4;	    /* no mem */
@@ -4374,7 +4374,7 @@ ExpandMappings(
 
 	if (round == 1)
 	{
-	    *file = (char_u **)alloc(count * sizeof(char_u *));
+	    *file = ALLOC_MULT(char_u *, count);
 	    if (*file == NULL)
 		return FAIL;
 	}

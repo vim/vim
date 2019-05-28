@@ -3138,8 +3138,7 @@ set_partial(FunctionObject *self, partial_T *pt, int exported)
 	pt->pt_argc = self->argc;
 	if (exported)
 	{
-	    pt->pt_argv = (typval_T *)alloc_clear(
-						sizeof(typval_T) * self->argc);
+	    pt->pt_argv = ALLOC_CLEAR_MULT(typval_T, self->argc);
 	    for (i = 0; i < pt->pt_argc; ++i)
 		copy_tv(&self->argv[i], &pt->pt_argv[i]);
 	}
@@ -4262,7 +4261,7 @@ StringToLine(PyObject *obj)
     /* Create a copy of the string, with internal nulls replaced by
      * newline characters, as is the vim convention.
      */
-    save = (char *)alloc(len+1);
+    save = alloc(len+1);
     if (save == NULL)
     {
 	PyErr_NoMemory();
@@ -6243,7 +6242,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	FunctionObject *func = (FunctionObject *) obj;
 	if (func->self != NULL || func->argv != NULL)
 	{
-	    partial_T *pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	    partial_T *pt = ALLOC_CLEAR_ONE(partial_T);
+
 	    set_partial(func, pt, TRUE);
 	    tv->vval.v_partial = pt;
 	    tv->v_type = VAR_PARTIAL;

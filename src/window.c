@@ -1065,7 +1065,7 @@ win_split_ins(
     if (curfrp->fr_parent == NULL || curfrp->fr_parent->fr_layout != layout)
     {
 	/* Need to create a new frame in the tree to make a branch. */
-	frp = (frame_T *)alloc_clear(sizeof(frame_T));
+	frp = ALLOC_CLEAR_ONE(frame_T);
 	*frp = *curfrp;
 	curfrp->fr_layout = layout;
 	frp->fr_parent = curfrp;
@@ -3599,7 +3599,7 @@ win_alloc_firstwin(win_T *oldwin)
     static void
 new_frame(win_T *wp)
 {
-    frame_T *frp = (frame_T *)alloc_clear(sizeof(frame_T));
+    frame_T *frp = ALLOC_CLEAR_ONE(frame_T);
 
     wp->w_frame = frp;
     if (frp != NULL)
@@ -3634,7 +3634,7 @@ alloc_tabpage(void)
 # endif
 
 
-    tp = (tabpage_T *)alloc_clear(sizeof(tabpage_T));
+    tp = ALLOC_CLEAR_ONE(tabpage_T);
     if (tp == NULL)
 	return NULL;
 
@@ -4651,7 +4651,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
     /*
      * allocate window structure and linesizes arrays
      */
-    new_wp = (win_T *)alloc_clear(sizeof(win_T));
+    new_wp = ALLOC_CLEAR_ONE(win_T);
     if (new_wp == NULL)
 	return NULL;
 
@@ -4980,7 +4980,7 @@ frame_remove(frame_T *frp)
 win_alloc_lines(win_T *wp)
 {
     wp->w_lines_valid = 0;
-    wp->w_lines = (wline_T *)alloc_clear(Rows * sizeof(wline_T));
+    wp->w_lines = ALLOC_CLEAR_MULT(wline_T, Rows );
     if (wp->w_lines == NULL)
 	return FAIL;
     return OK;
@@ -6362,7 +6362,7 @@ make_snapshot(int idx)
     static void
 make_snapshot_rec(frame_T *fr, frame_T **frp)
 {
-    *frp = (frame_T *)alloc_clear(sizeof(frame_T));
+    *frp = ALLOC_CLEAR_ONE(frame_T);
     if (*frp == NULL)
 	return;
     (*frp)->fr_layout = fr->fr_layout;
@@ -6671,7 +6671,7 @@ match_add(
     }
 
     /* Build new match. */
-    m = (matchitem_T *)alloc_clear(sizeof(matchitem_T));
+    m = ALLOC_CLEAR_ONE(matchitem_T);
     m->id = id;
     m->priority = prio;
     m->pattern = pat == NULL ? NULL : vim_strsave(pat);
@@ -7057,7 +7057,7 @@ win_id2wp(int id)
 	if (wp->w_id == id)
 	    return wp;
 #ifdef FEAT_TEXT_PROP
-    // popup windows are in a separate list
+    // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
 	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	     if (wp->w_id == id)

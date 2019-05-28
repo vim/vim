@@ -1193,7 +1193,7 @@ do_autocmd_event(
 		    return FAIL;
 		}
 
-		ap = (AutoPat *)alloc(sizeof(AutoPat));
+		ap = ALLOC_ONE(AutoPat);
 		if (ap == NULL)
 		    return FAIL;
 		ap->pat = vim_strnsave(pat, patlen);
@@ -1242,7 +1242,7 @@ do_autocmd_event(
 	    prev_ac = &(ap->cmds);
 	    while ((ac = *prev_ac) != NULL)
 		prev_ac = &ac->next;
-	    ac = (AutoCmd *)alloc(sizeof(AutoCmd));
+	    ac = ALLOC_ONE(AutoCmd);
 	    if (ac == NULL)
 		return FAIL;
 	    ac->cmd = vim_strsave(cmd);

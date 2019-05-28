@@ -537,7 +537,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 {
     diff_T	*dnew;
 
-    dnew = (diff_T *)alloc(sizeof(diff_T));
+    dnew = ALLOC_ONE(diff_T);
     if (dnew != NULL)
     {
 	dnew->df_next = dp;

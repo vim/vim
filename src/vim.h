@@ -1546,6 +1546,16 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define R_OK 4		/* for systems that don't have R_OK in unistd.h */
 #endif
 
+// Allocate memory for one type and cast the returned pointer to have the
+// compiler check the types.
+#define ALLOC_ONE(type)  (type *)alloc(sizeof(type))
+#define ALLOC_MULT(type, count)  (type *)alloc(sizeof(type) * (count))
+#define ALLOC_CLEAR_ONE(type)  (type *)alloc_clear(sizeof(type))
+#define ALLOC_CLEAR_MULT(type, count)  (type *)alloc_clear(sizeof(type) * (count))
+#define LALLOC_CLEAR_ONE(type)  (type *)lalloc_clear(sizeof(type), FALSE)
+#define LALLOC_CLEAR_MULT(type, count)  (type *)lalloc_clear(sizeof(type) * (count), FALSE)
+#define LALLOC_MULT(type, count)  (type *)lalloc(sizeof(type) * (count), FALSE)
+
 /*
  * defines to avoid typecasts from (char_u *) to (char *) and back
  * (vim_strchr() and vim_strrchr() are now in alloc.c)

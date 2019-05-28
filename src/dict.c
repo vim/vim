@@ -28,7 +28,7 @@ dict_alloc(void)
 {
     dict_T *d;
 
-    d = (dict_T *)alloc(sizeof(dict_T));
+    d = ALLOC_ONE(dict_T);
     if (d != NULL)
     {
 	/* Add the dict to the list of dicts for garbage collection. */
@@ -210,7 +210,7 @@ dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(key));
+    di = alloc(sizeof(dictitem_T) + STRLEN(key));
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -228,7 +228,7 @@ dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
+    di = alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);

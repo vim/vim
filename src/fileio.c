@@ -6533,7 +6533,7 @@ vim_rename(char_u *from, char_u *to)
 	return -1;
     }
 
-    buffer = (char *)alloc(BUFSIZE);
+    buffer = alloc(BUFSIZE);
     if (buffer == NULL)
     {
 	close(fd_out);
@@ -6890,8 +6890,7 @@ buf_check_timestamp(
 	{
 	    if (!helpmesg)
 		mesg2 = "";
-	    tbuf = (char *)alloc(STRLEN(path) + STRLEN(mesg)
-							  + STRLEN(mesg2) + 2);
+	    tbuf = alloc(STRLEN(path) + STRLEN(mesg) + STRLEN(mesg2) + 2);
 	    sprintf(tbuf, mesg, path);
 #ifdef FEAT_EVAL
 	    /* Set warningmsg here, before the unimportant and output-specific
