@@ -184,7 +184,7 @@ endif
 
 syn keyword  ocamlType     array bool char exn float format format4
 syn keyword  ocamlType     int int32 int64 lazy_t list nativeint option
-syn keyword  ocamlType     string unit
+syn keyword  ocamlType     bytes string unit
 
 syn match    ocamlConstructor  "(\s*)"
 syn match    ocamlConstructor  "\[\s*\]"
