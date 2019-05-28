@@ -171,7 +171,7 @@ endif
 
 syn keyword  ocamlType     array bool char exn float format format4
 syn keyword  ocamlType     int int32 int64 lazy_t list nativeint option
-syn keyword  ocamlType     string unit
+syn keyword  ocamlType     string bytes unit
 
 syn keyword  ocamlOperator asr lnot lor lsl lsr lxor mod not
 
