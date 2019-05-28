@@ -6056,7 +6056,7 @@ gui_mch_draw_string(
 
 	/* Don't give an out-of-memory message here, it would call us
 	 * recursively. */
-	padding = LALLOC_MULT(sizeof(int), pad_size);
+	padding = LALLOC_MULT(int, pad_size);
 	if (padding != NULL)
 	    for (i = 0; i < pad_size; i++)
 		padding[i] = gui.char_width;
