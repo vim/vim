@@ -1787,12 +1787,6 @@ resolve_reparse_point(char_u *fname)
     if (p == NULL)
 	goto fail;
 
-    if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
-    {
-	vim_free(p);
-	goto fail;
-    }
-
     h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
 	    FILE_FLAG_BACKUP_SEMANTICS, NULL);
     vim_free(p);
