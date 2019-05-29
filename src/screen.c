@@ -506,8 +506,12 @@ redrawWinline(
     redraw_win_later(wp, VALID);
 }
 
+/*
+ * To be called when "updating_screen" was set before and now the postponed
+ * side effects may take place.
+ */
     void
-reset_updating_screen(int may_resize_shell UNUSED)
+after_updating_screen(int may_resize_shell UNUSED)
 {
     updating_screen = FALSE;
 #ifdef FEAT_GUI
@@ -803,7 +807,7 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
-    reset_updating_screen(TRUE);
+    after_updating_screen(TRUE);
 
     /* Clear or redraw the command line.  Done last, because scrolling may
      * mess up the command line. */
@@ -886,7 +890,7 @@ update_finish(void)
     end_search_hl();
 # endif
 
-    reset_updating_screen(TRUE);
+    after_updating_screen(TRUE);
 
 # ifdef FEAT_GUI
     /* Redraw the cursor and update the scrollbars when all screen updating is

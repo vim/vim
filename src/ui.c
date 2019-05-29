@@ -691,7 +691,7 @@ ui_breakcheck_force(int force)
     if (save_updating_screen)
 	updating_screen = TRUE;
     else
-	reset_updating_screen(FALSE);
+	after_updating_screen(FALSE);
 
     recursive = FALSE;
 }
