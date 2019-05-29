@@ -176,3 +176,39 @@ func Test_popup_getposition()
 
   call popup_close(winid)
 endfunc
+
+func Test_popup_width_longest()
+  let tests = [
+	\ [['hello', 'this', 'window', 'displays', 'all of its text'], 15],
+	\ [['hello', 'this', 'window', 'all of its text', 'displays'], 15],
+	\ [['hello', 'this', 'all of its text', 'window', 'displays'], 15],
+	\ [['hello', 'all of its text', 'this', 'window', 'displays'], 15],
+	\ [['all of its text', 'hello', 'this', 'window', 'displays'], 15],
+	\ ]
+
+  for test in tests
+    let winid = popup_create(test[0], {'line': 2, 'col': 3})
+    redraw
+    let position = popup_getposition(winid)
+    call assert_equal(test[1], position.width)
+    call popup_close(winid)
+  endfor
+endfunc
+
+func Test_popup_wraps()
+  let tests = [
+	\ ['nowrap', 6, 1],
+	\ ['a line that wraps once', 12, 2],
+	\ ['a line that wraps two times', 12, 3],
+	\ ]
+  for test in tests
+    let winid = popup_create(test[0],
+	  \ {'line': 2, 'col': 3, 'maxwidth': 12})
+    redraw
+    let position = popup_getposition(winid)
+    call assert_equal(test[1], position.width)
+    call assert_equal(test[2], position.height)
+
+    call popup_close(winid)
+  endfor
+endfunc

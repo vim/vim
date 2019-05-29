@@ -154,6 +154,10 @@ add_popup_dicts(buf_T *buf, list_T *l)
     static void
 popup_adjust_position(win_T *wp)
 {
+    linenr_T	lnum;
+    int		wrapped = 0;
+    int		maxwidth;
+
     // TODO: Compute the size and position properly.
     if (wp->w_wantline > 0)
 	wp->w_winrow = wp->w_wantline - 1;
@@ -171,18 +175,34 @@ popup_adjust_position(win_T *wp)
     if (wp->w_wincol >= Columns - 3)
 	wp->w_wincol = Columns - 3;
 
-    // TODO: set width based on longest text line and the 'wrap' option
-    wp->w_width = vim_strsize(ml_get_buf(wp->w_buffer, 1, FALSE));
+    maxwidth = Columns - wp->w_wincol;
+    if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
+	maxwidth = wp->w_maxwidth;
+
+    // Compute width based on longest text line and the 'wrap' option.
+    // TODO: more accurate wrapping
+    wp->w_width = 0;
+    for (lnum = 1; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
+    {
+	int len = vim_strsize(ml_get_buf(wp->w_buffer, lnum, FALSE));
+
+	while (wp->w_p_wrap && len > maxwidth)
+	{
+	    ++wrapped;
+	    len -= maxwidth;
+	    wp->w_width = maxwidth;
+	}
+	if (wp->w_width < len)
+	    wp->w_width = len;
+    }
+
     if (wp->w_minwidth > 0 && wp->w_width < wp->w_minwidth)
 	wp->w_width = wp->w_minwidth;
-    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
-	wp->w_width = wp->w_maxwidth;
-    if (wp->w_width > Columns - wp->w_wincol)
-	wp->w_width = Columns - wp->w_wincol;
+    if (wp->w_width > maxwidth)
+	wp->w_width = maxwidth;
 
     if (wp->w_height <= 1)
-	// TODO: adjust height for wrapped lines
-	wp->w_height = wp->w_buffer->b_ml.ml_line_count;
+	wp->w_height = wp->w_buffer->b_ml.ml_line_count + wrapped;
     if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
 	wp->w_height = wp->w_minheight;
     if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
