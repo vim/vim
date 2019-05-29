@@ -84,7 +84,6 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- implement popup_getposition({id}), use in tests
 - Implement filter.
 - Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
@@ -225,7 +224,6 @@ popup_getoptions({id})					*popup_getoptions()*
 		Return the {options} for popup {id}.
 
 popup_getposition({id})					*popup_getposition()*
-	  	{not implemented yet}
 		Return the position and size of popup {id}.  Returns a Dict
 		with these entries:
 			col	screen column of the popup, one-based
