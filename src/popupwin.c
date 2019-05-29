@@ -487,4 +487,25 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     redraw_all_later(NOT_VALID);
 }
 
+/*
+ * popup_getposition({id})
+ */
+    void
+f_popup_getposition(typval_T *argvars, typval_T *rettv)
+{
+    dict_T	*dict;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (rettv_dict_alloc(rettv) == OK)
+    {
+	if (wp == NULL)
+	    return;  // invalid {id}
+	dict = rettv->vval.v_dict;
+	dict_add_number(dict, "line", wp->w_winrow + 1);
+	dict_add_number(dict, "col", wp->w_wincol + 1);
+	dict_add_number(dict, "width", wp->w_width);
+	dict_add_number(dict, "height", wp->w_height);
+    }
+}
 #endif // FEAT_TEXT_PROP

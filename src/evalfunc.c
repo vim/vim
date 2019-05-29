@@ -810,6 +810,7 @@ static struct fst
 #ifdef FEAT_TEXT_PROP
     {"popup_close",	1, 1, f_popup_close},
     {"popup_create",	2, 2, f_popup_create},
+    {"popup_getposition", 1, 1, f_popup_getposition},
     {"popup_hide",	1, 1, f_popup_hide},
     {"popup_move",	2, 2, f_popup_move},
     {"popup_show",	1, 1, f_popup_show},

@@ -159,3 +159,20 @@ func Test_popup_move()
 
   bwipe!
 endfunc
+
+func Test_popup_getposition()
+  let winid = popup_create('hello', {
+    \ 'line': 2,
+    \ 'col': 3,
+    \ 'minwidth': 10,
+    \ 'minheight': 11,
+    \})
+  redraw
+  let res = popup_getposition(winid)
+  call assert_equal(2, res.line)
+  call assert_equal(3, res.col)
+  call assert_equal(10, res.width)
+  call assert_equal(11, res.height)
+
+  call popup_close(winid)
+endfunc
