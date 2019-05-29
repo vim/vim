@@ -1030,6 +1030,12 @@ update_popups(void)
 
 	if (lowest_wp == NULL)
 	    break;
+
+	// Recompute the position if the text changed.
+	if (lowest_wp->w_popup_last_changedtick
+					   != CHANGEDTICK(lowest_wp->w_buffer))
+	    popup_adjust_position(lowest_wp);
+
 	win_update(lowest_wp);
 	lowest_wp->w_popup_flags |= POPF_REDRAWN;
     }
@@ -2119,6 +2125,9 @@ win_update(win_T *wp)
 		    && wp->w_lines[idx].wl_lnum == lnum
 		    && lnum > wp->w_topline
 		    && !(dy_flags & (DY_LASTLINE | DY_TRUNCATE))
+#ifdef FEAT_TEXT_PROP
+		    && !bt_popup(wp->w_buffer)
+#endif
 		    && srow + wp->w_lines[idx].wl_size > wp->w_height
 #ifdef FEAT_DIFF
 		    && diff_check_fill(wp, lnum) == 0
@@ -2274,6 +2283,13 @@ win_update(win_T *wp)
 	    wp->w_filler_rows = wp->w_height - srow;
 	}
 #endif
+#ifdef FEAT_TEXT_PROP
+	else if (bt_popup(wp->w_buffer))
+	{
+	    // popup line that doesn't fit is left as-is
+	    wp->w_botline = lnum;
+	}
+#endif
 	else if (dy_flags & DY_TRUNCATE)	/* 'display' has "truncate" */
 	{
 	    int scr_row = W_WINROW(wp) + wp->w_height - 1;
@@ -2334,7 +2350,11 @@ win_update(win_T *wp)
 
 	// Make sure the rest of the screen is blank
 	// put '~'s on rows that aren't part of the file.
-	win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
+	win_draw_end(wp,
+#ifdef FEAT_TEXT_PROP
+		bt_popup(wp->w_buffer) ? ' ' :
+#endif
+				  '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT

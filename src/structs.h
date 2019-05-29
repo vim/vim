@@ -2881,6 +2881,8 @@ struct window_S
     int		w_maxwidth;	    // "maxwidth" for popup window
     int		w_wantline;	    // "line" for popup window
     int		w_wantcol;	    // "col" for popup window
+    varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
+					  // computed
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif

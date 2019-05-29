@@ -41,10 +41,15 @@ func Test_simple_popup()
   call term_sendkeys(buf, ":quit!\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_04', {})
 
-  " resize popup
+  " resize popup, show empty line at bottom
   call term_sendkeys(buf, ":call popup_move(popupwin, {'minwidth': 15, 'maxwidth': 25, 'minheight': 3, 'maxheight': 5})\<CR>")
   call term_sendkeys(buf, ":redraw\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_05', {})
+
+  " show not fitting line at bottom
+  call term_sendkeys(buf, ":call setbufline(winbufnr(popupwin), 3, 'this line will not fit here')\<CR>")
+  call term_sendkeys(buf, ":redraw\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_06', {})
 
   " clean up
   call StopVimInTerminal(buf)

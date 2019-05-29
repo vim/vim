@@ -151,7 +151,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 /*
  * Adjust the position and size of the popup to fit on the screen.
  */
-    static void
+    void
 popup_adjust_position(win_T *wp)
 {
     linenr_T	lnum;
@@ -209,6 +209,8 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = wp->w_maxheight;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
+
+    wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 }
 
 /*
