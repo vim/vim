@@ -2009,6 +2009,7 @@ ex_function(exarg_T *eap)
     hashitem_T	*hi;
     int		do_concat = TRUE;
     int		sourcing_lnum_off;
+    int		sourcing_lnum_top = sourcing_lnum;
 
     /*
      * ":function" without argument: list functions.
@@ -2670,7 +2671,7 @@ ex_function(exarg_T *eap)
     fp->uf_flags = flags;
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
-    fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len - 1;
+    fp->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     goto ret_free;
 
 erret:
