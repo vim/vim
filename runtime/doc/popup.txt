@@ -70,6 +70,7 @@ By default the 'wrap' option is set, so that no text disappears.  However, if
 there is not enough space, some text may be invisible.
 
 
+
 TODO:
 
 Example how to use syntax highlighting of a code snippet.
@@ -242,14 +243,6 @@ popup_getposition({id})					*popup_getposition()*
 		positioning mechanism applied.
 		If popup window {id} is not found an empty Dict is returned.
 
-win_execute({id}, {command})
-	  	{not implemented yet}
-		Like `execute()` but in the context of window {id}.
-		The window will temporarily be made the current window,
-		without triggering autocommands.
-		Example: >
-			call win_execute(winid, 'syntax enable')
-<
 
 							*:popupclear* *:popupc*
 :popupc[lear]	Emergency solution to a misbehaving plugin: close all popup
@@ -273,6 +266,10 @@ It is possible to change these options, but anything might break then, so
 better leave them alone.
 
 The window does have a cursor position, but the cursor is not displayed.
+
+To execute a command in the context of the popup window and buffer use
+`win_execute()`.  Example: >
+	call win_execute(winid, 'syntax enable')
 
 Options can be set on the window with `setwinvar()`, e.g.: >
 	call setwinvar(winid, '&wrap', 0)

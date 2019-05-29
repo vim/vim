@@ -2739,6 +2739,8 @@ values({dict})			List	values in {dict}
 virtcol({expr})			Number	screen column of cursor or mark
 visualmode([expr])		String	last visual mode used
 wildmenumode()			Number	whether 'wildmenu' mode is active
+win_execute({id}, {command} [, {silent}])
+				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
 win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
 win_gotoid({expr})		Number	go to window with ID {expr}
@@ -4012,7 +4014,10 @@ execute({command} [, {silent}])					*execute()*
 		To get a list of lines use |split()| on the result: >
 			split(execute('args'), "\n")
 
-<		When used recursively the output of the recursive call is not
+<		To execute a command in another window than the current one
+		use `win_execute()`.
+
+		When used recursively the output of the recursive call is not
 		included in the output of the higher level call.
 
 exepath({expr})						*exepath()*
@@ -10310,6 +10315,12 @@ wildmenumode()					*wildmenumode()*
 <
 		(Note, this needs the 'wildcharm' option set appropriately).
 
+win_execute({id}, {command} [, {silent}])		*win_execute()*
+		Like `execute()` but in the context of window {id}.
+		The window will temporarily be made the current window,
+		without triggering autocommands.
+		Example: >
+			call win_execute(winid, 'syntax enable')
 
 win_findbuf({bufnr})					*win_findbuf()*
 		Returns a list with |window-ID|s for windows that contain

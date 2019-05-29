@@ -492,6 +492,7 @@ static void f_values(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
+static void f_win_execute(typval_T *argvars, typval_T *rettv);
 static void f_win_findbuf(typval_T *argvars, typval_T *rettv);
 static void f_win_getid(typval_T *argvars, typval_T *rettv);
 static void f_win_gotoid(typval_T *argvars, typval_T *rettv);
@@ -1045,6 +1046,7 @@ static struct fst
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
     {"wildmenumode",	0, 0, f_wildmenumode},
+    {"win_execute",	2, 3, f_win_execute},
     {"win_findbuf",	1, 1, f_win_findbuf},
     {"win_getid",	0, 2, f_win_getid},
     {"win_gotoid",	1, 1, f_win_gotoid},
@@ -3519,7 +3521,7 @@ get_list_line(
  * "execute()" function
  */
     static void
-f_execute(typval_T *argvars, typval_T *rettv)
+execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 {
     char_u	*cmd = NULL;
     list_T	*list = NULL;
@@ -3535,9 +3537,9 @@ f_execute(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
 
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[arg_off].v_type == VAR_LIST)
     {
-	list = argvars[0].vval.v_list;
+	list = argvars[arg_off].vval.v_list;
 	if (list == NULL || list->lv_first == NULL)
 	    /* empty list, no commands, empty output */
 	    return;
@@ -3545,15 +3547,15 @@ f_execute(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	cmd = tv_get_string_chk(&argvars[0]);
+	cmd = tv_get_string_chk(&argvars[arg_off]);
 	if (cmd == NULL)
 	    return;
     }
 
-    if (argvars[1].v_type != VAR_UNKNOWN)
+    if (argvars[arg_off + 1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char_u  *s = tv_get_string_buf_chk(&argvars[1], buf);
+	char_u  *s = tv_get_string_buf_chk(&argvars[arg_off + 1], buf);
 
 	if (s == NULL)
 	    return;
@@ -3618,6 +3620,15 @@ f_execute(typval_T *argvars, typval_T *rettv)
 	// When working silently: Put it back where it was, since nothing
 	// should have been written.
 	msg_col = save_msg_col;
+}
+
+/*
+ * "execute()" function
+ */
+    static void
+f_execute(typval_T *argvars, typval_T *rettv)
+{
+    execute_common(argvars, rettv, 0);
 }
 
 /*
@@ -6092,6 +6103,30 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 	    if (wparg != NULL)
 		/* found information about a specific window */
 		return;
+	}
+    }
+}
+
+/*
+ * "win_execute()" function
+ */
+    static void
+f_win_execute(typval_T *argvars, typval_T *rettv)
+{
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = win_id2wp(id);
+    win_T	*save_curwin = curwin;
+
+    if (wp != NULL)
+    {
+	curwin = wp;
+	curbuf = curwin->w_buffer;
+	check_cursor();
+	execute_common(argvars, rettv, 1);
+	if (win_valid(save_curwin))
+	{
+	    curwin = save_curwin;
+	    curbuf = curwin->w_buffer;
 	}
     }
 }

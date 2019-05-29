@@ -238,6 +238,7 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     buf->b_p_ul = -1;	    // no undo
     buf->b_p_swf = FALSE;   // no swap file
     buf->b_p_bl = FALSE;    // unlisted buffer
+    buf->b_locked = TRUE;
 
     win_init_popup_win(wp, buf);
 
@@ -376,6 +377,7 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 popup_free(win_T *wp)
 {
+    wp->w_buffer->b_locked = FALSE;
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
