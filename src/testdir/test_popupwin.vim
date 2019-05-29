@@ -176,3 +176,21 @@ func Test_popup_getposition()
 
   call popup_close(winid)
 endfunc
+
+func Test_popup_width()
+  let tests = [
+    \ [ [ 'hello', 'this', 'window', 'displays', 'all of its text' ], 15 ],
+    \ [ [ 'hello', 'this', 'window', 'all of its text', 'displays' ], 15 ],
+    \ [ [ 'hello', 'this', 'all of its text', 'window', 'displays' ], 15 ],
+    \ [ [ 'hello', 'all of its text', 'this', 'window', 'displays' ], 15 ],
+    \ [ [ 'all of its text', 'hello', 'this', 'window', 'displays' ], 15 ],
+  \ ]
+
+  for test in tests
+    let winid = popup_create( test[ 0 ], { 'line': 2, 'col': 3 } )
+    redraw
+    let position = popup_getposition(winid)
+    call assert_equal(test[ 1 ], position.width)
+    call popup_close( winid )
+  endfor
+endfunc

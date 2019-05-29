@@ -154,6 +154,9 @@ add_popup_dicts(buf_T *buf, list_T *l)
     static void
 popup_adjust_position(win_T *wp)
 {
+    int i = 0;
+    int len = 0;
+
     // TODO: Compute the size and position properly.
     if (wp->w_wantline > 0)
 	wp->w_winrow = wp->w_wantline - 1;
@@ -171,8 +174,15 @@ popup_adjust_position(win_T *wp)
     if (wp->w_wincol >= Columns - 3)
 	wp->w_wincol = Columns - 3;
 
-    // TODO: set width based on longest text line and the 'wrap' option
-    wp->w_width = vim_strsize(ml_get_buf(wp->w_buffer, 1, FALSE));
+    // set width based on longest text line
+    // TODO: and the 'wrap' option
+    wp->w_width = 0;
+    for ( i = 1; i <= wp->w_buffer->b_ml.ml_line_count; ++i ) {
+	len = vim_strsize( ml_get_buf( wp->w_buffer, i, FALSE ) );
+	if ( len > wp->w_width )
+	    wp->w_width = len;
+    }
+
     if (wp->w_minwidth > 0 && wp->w_width < wp->w_minwidth)
 	wp->w_width = wp->w_minwidth;
     if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
