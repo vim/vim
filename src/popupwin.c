@@ -509,8 +509,6 @@ f_popup_getposition(typval_T *argvars, typval_T *rettv UNUSED)
     dict_add_number(dict, "width", wp->w_width);
     dict_add_number(dict, "height", wp->w_height);
 
-    ++dict->dv_refcount;
-    rettv->v_type = VAR_DICT;
-    rettv->vval.v_dict = dict;
+    rettv_dict_set(rettv, dict);
 }
 #endif // FEAT_TEXT_PROP
