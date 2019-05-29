@@ -228,7 +228,6 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 
 popup_getoptions({id})					*popup_getoptions()*
-	  	{not implemented yet}
 		Return the {options} for popup {id}.
 
 popup_getposition({id})					*popup_getposition()*

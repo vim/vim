@@ -217,3 +217,26 @@ func Test_popup_wraps()
     call popup_close(winid)
   endfor
 endfunc
+
+func Test_popup_getoptions()
+  let winid = popup_create('hello', {
+    \ 'line': 2,
+    \ 'col': 3,
+    \ 'minwidth': 10,
+    \ 'minheight': 11,
+    \ 'maxwidth': 20,
+    \ 'maxheight': 21,
+    \ 'zindex': 100,
+    \})
+  redraw
+  let res = popup_getoptions(winid)
+  call assert_equal(2, res.line)
+  call assert_equal(3, res.col)
+  call assert_equal(10, res.minwidth)
+  call assert_equal(11, res.minheight)
+  call assert_equal(20, res.maxwidth)
+  call assert_equal(21, res.maxheight)
+  call assert_equal(100, res.zindex)
+
+  call popup_close(winid)
+endfunc

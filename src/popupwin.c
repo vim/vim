@@ -532,4 +532,37 @@ f_popup_getposition(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "height", wp->w_height);
     }
 }
+
+/*
+ * f_popup_getoptions({id})
+ */
+    void
+f_popup_getoptions(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    dict_T	*dict;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (wp == NULL)
+	return;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return;
+
+    dict_add_number(dict, "line", wp->w_wantline);
+    dict_add_number(dict, "col", wp->w_wantcol);
+    dict_add_number(dict, "minwidth", wp->w_minwidth);
+    dict_add_number(dict, "minheight", wp->w_minheight);
+    dict_add_number(dict, "maxheight", wp->w_maxheight);
+    dict_add_number(dict, "maxwidth", wp->w_maxwidth);
+    dict_add_number(dict, "zindex", wp->w_zindex);
+    if (wp->w_popup_timer != NULL) {
+	dict_add_number(dict, "time", (long)wp->w_popup_timer->tr_interval);
+    }
+
+    ++dict->dv_refcount;
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = dict;
+}
 #endif // FEAT_TEXT_PROP

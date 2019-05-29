@@ -10,5 +10,6 @@ void popup_close_tabpage(tabpage_T *tp, int id);
 void close_all_popups(void);
 void ex_popupclear(exarg_T *eap);
 void f_popup_move(typval_T *argvars, typval_T *rettv);
+void f_popup_getoptions(typval_T *argvars, typval_T *rettv);
 void f_popup_getposition(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
