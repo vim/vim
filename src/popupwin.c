@@ -15,12 +15,25 @@
 
 #ifdef FEAT_TEXT_PROP
 
+typedef struct {
+    char	*pp_name;
+    poppos_T	pp_val;
+} poppos_entry_T;
+
+static poppos_entry_T poppos_entries[] = {
+    {"botleft", POPPOS_BOTLEFT},
+    {"topleft", POPPOS_TOPLEFT},
+    {"botright", POPPOS_BOTRIGHT},
+    {"topright", POPPOS_TOPRIGHT},
+    {"center", POPPOS_CENTER}
+};
+
 /*
  * Get option value for"key", which is "line" or "col".
  * Handles "cursor+N" and "cursor-N".
  */
     static int
-popup_options_pos(dict_T *dict, char_u *key)
+popup_options_one(dict_T *dict, char_u *key)
 {
     dictitem_T	*di;
     char_u	*val;
@@ -58,6 +71,36 @@ popup_options_pos(dict_T *dict, char_u *key)
     return n;
 }
 
+    static void
+get_pos_options(win_T *wp, dict_T *dict)
+{
+    char_u	*str;
+    int		nr;
+
+    nr = popup_options_one(dict, (char_u *)"line");
+    if (nr > 0)
+	wp->w_wantline = nr;
+    nr = popup_options_one(dict, (char_u *)"col");
+    if (nr > 0)
+	wp->w_wantcol = nr;
+
+    str = dict_get_string(dict, (char_u *)"pos", FALSE);
+    if (str != NULL)
+    {
+	for (nr = 0;
+		nr < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
+									  ++nr)
+	    if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
+	    {
+		wp->w_popup_pos = poppos_entries[nr].pp_val;
+		nr = -1;
+		break;
+	    }
+	if (nr != -1)
+	    semsg(_(e_invarg2), str);
+    }
+}
+
 /*
  * Go through the options in "dict" and apply them to buffer "buf" displayed in
  * popup window "wp".
@@ -66,7 +109,9 @@ popup_options_pos(dict_T *dict, char_u *key)
     static void
 apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 {
+#if defined(FEAT_TIMERS)
     int	    nr;
+#endif
     char_u  *str;
 
     wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
@@ -76,17 +121,18 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 
     if (atcursor)
     {
+	wp->w_popup_pos = POPPOS_BOTLEFT;
 	setcursor_mayforce(TRUE);
 	wp->w_wantline = screen_screenrow();
+	if (wp->w_wantline == 0)  // cursor in first line
+	{
+	    wp->w_wantline = 2;
+	    wp->w_popup_pos = POPPOS_TOPLEFT;
+	}
 	wp->w_wantcol = screen_screencol() + 1;
     }
 
-    nr = popup_options_pos(dict, (char_u *)"line");
-    if (nr > 0)
-	wp->w_wantline = nr;
-    nr = popup_options_pos(dict, (char_u *)"col");
-    if (nr > 0)
-	wp->w_wantcol = nr;
+    get_pos_options(wp, dict);
 
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
 
@@ -212,24 +258,42 @@ popup_adjust_position(win_T *wp)
     linenr_T	lnum;
     int		wrapped = 0;
     int		maxwidth;
+    int		center_vert = FALSE;
+    int		center_hor = FALSE;
 
-    // TODO: Compute the size and position properly.
-    if (wp->w_wantline > 0)
-	wp->w_winrow = wp->w_wantline - 1;
+    wp->w_winrow = 0;
+    wp->w_wincol = 0;
+    if (wp->w_popup_pos == POPPOS_CENTER)
+    {
+	// center after computing the size
+	center_vert = TRUE;
+	center_hor = TRUE;
+    }
     else
-	// TODO: better default
-	wp->w_winrow = Rows > 5 ? Rows / 2 - 2 : 0;
-    if (wp->w_winrow >= Rows)
-	wp->w_winrow = Rows - 1;
+    {
+	if (wp->w_wantline == 0)
+	    center_vert = TRUE;
+	else if (wp->w_popup_pos == POPPOS_TOPLEFT
+		|| wp->w_popup_pos == POPPOS_TOPRIGHT)
+	{
+	    wp->w_winrow = wp->w_wantline - 1;
+	    if (wp->w_winrow >= Rows)
+		wp->w_winrow = Rows - 1;
+	}
 
-    if (wp->w_wantcol > 0)
-	wp->w_wincol = wp->w_wantcol - 1;
-    else
-	// TODO: better default
-	wp->w_wincol = Columns > 20 ? Columns / 2 - 10 : 0;
-    if (wp->w_wincol >= Columns - 3)
-	wp->w_wincol = Columns - 3;
+	if (wp->w_wantcol == 0)
+	    center_hor = TRUE;
+	else if (wp->w_popup_pos == POPPOS_TOPLEFT
+		|| wp->w_popup_pos == POPPOS_BOTLEFT)
+	{
+	    wp->w_wincol = wp->w_wantcol - 1;
+	    if (wp->w_wincol >= Columns - 3)
+		wp->w_wincol = Columns - 3;
+	}
+    }
 
+    // When centering or right aligned, use maximum width.
+    // When left aligned use the space available.
     maxwidth = Columns - wp->w_wincol;
     if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
 	maxwidth = wp->w_maxwidth;
@@ -255,6 +319,16 @@ popup_adjust_position(win_T *wp)
 	wp->w_width = wp->w_minwidth;
     if (wp->w_width > maxwidth)
 	wp->w_width = maxwidth;
+    if (center_hor)
+	wp->w_wincol = (Columns - wp->w_width) / 2;
+    else if (wp->w_popup_pos == POPPOS_BOTRIGHT
+	    || wp->w_popup_pos == POPPOS_TOPRIGHT)
+    {
+	// Right aligned: move to the right if needed.
+	// No truncation, because that would change the height.
+	if (wp->w_width < wp->w_wantcol)
+	    wp->w_wincol = wp->w_wantcol - wp->w_width;
+    }
 
     if (wp->w_height <= 1)
 	wp->w_height = wp->w_buffer->b_ml.ml_line_count + wrapped;
@@ -264,6 +338,19 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = wp->w_maxheight;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
+
+    if (center_vert)
+	wp->w_winrow = (Rows - wp->w_height) / 2;
+    else if (wp->w_popup_pos == POPPOS_BOTRIGHT
+	    || wp->w_popup_pos == POPPOS_BOTLEFT)
+    {
+	if (wp->w_height <= wp->w_wantline)
+	    // bottom aligned: may move down
+	    wp->w_winrow = wp->w_wantline - wp->w_height;
+	else
+	    // not enough space, make top aligned
+	    wp->w_winrow = wp->w_wantline + 1;
+    }
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 }
@@ -304,7 +391,7 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     if (wp == NULL)
 	return;
     rettv->vval.v_number = wp->w_id;
-    wp->w_p_wrap = TRUE;  // 'wrap' is default on
+    wp->w_popup_pos = POPPOS_TOPLEFT;
 
     buf = buflist_new(NULL, NULL, (linenr_T)0, BLN_NEW|BLN_LISTED|BLN_DUMMY);
     if (buf == NULL)
@@ -322,6 +409,8 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     buf->b_p_swf = FALSE;   // no swap file
     buf->b_p_bl = FALSE;    // unlisted buffer
     buf->b_locked = TRUE;
+    wp->w_p_wrap = TRUE;  // 'wrap' is default on
+
     // Avoid that 'buftype' is reset when this buffer is entered.
     buf->b_p_initialized = TRUE;
 
@@ -578,11 +667,7 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	wp->w_maxwidth = nr;
     if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
 	wp->w_maxheight = nr;
-    if ((nr = dict_get_number(d, (char_u *)"line")) > 0)
-	wp->w_wantline = nr;
-    if ((nr = dict_get_number(d, (char_u *)"col")) > 0)
-	wp->w_wantcol = nr;
-    // TODO: "pos"
+    get_pos_options(wp, d);
 
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
@@ -591,10 +676,10 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
- * popup_getposition({id})
+ * popup_getpos({id})
  */
     void
-f_popup_getposition(typval_T *argvars, typval_T *rettv)
+f_popup_getpos(typval_T *argvars, typval_T *rettv)
 {
     dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
@@ -623,6 +708,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
+    int		i;
 
     if (rettv_dict_alloc(rettv) == OK)
     {
@@ -637,6 +723,16 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "maxheight", wp->w_maxheight);
 	dict_add_number(dict, "maxwidth", wp->w_maxwidth);
 	dict_add_number(dict, "zindex", wp->w_zindex);
+
+	for (i = 0; i < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
+									   ++i)
+	    if (wp->w_popup_pos == poppos_entries[i].pp_val)
+	    {
+		dict_add_string(dict, "pos",
+					  (char_u *)poppos_entries[i].pp_name);
+		break;
+	    }
+
 # if defined(FEAT_TIMERS)
 	dict_add_number(dict, "time", wp->w_popup_timer != NULL
 				 ?  (long)wp->w_popup_timer->tr_interval : 0L);

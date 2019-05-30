@@ -1982,6 +1982,15 @@ typedef struct {
 //  # define CRYPT_NOT_INPLACE 1
 #endif
 
+#ifdef FEAT_TEXT_PROP
+typedef enum {
+    POPPOS_BOTLEFT,
+    POPPOS_TOPLEFT,
+    POPPOS_BOTRIGHT,
+    POPPOS_TOPRIGHT,
+    POPPOS_CENTER
+} poppos_T;
+#endif
 
 /*
  * These are items normally related to a buffer.  But when using ":ownsyntax"
@@ -2873,7 +2882,8 @@ struct window_S
     int		w_vsep_width;	    /* Number of separator columns (0 or 1). */
     pos_save_T	w_save_cursor;	    /* backup of cursor pos and topline */
 #ifdef FEAT_TEXT_PROP
-    int		w_popup_flags;	    // PFL_ values
+    int		w_popup_flags;	    // POPF_ values
+    poppos_T	w_popup_pos;
     int		w_zindex;
     int		w_minheight;	    // "minheight" for popup window
     int		w_minwidth;	    // "minwidth" for popup window
