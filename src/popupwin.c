@@ -253,6 +253,10 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     if (buf == NULL)
 	return;
     ml_open(buf);
+
+    win_init_popup_win(wp, buf);
+
+    set_local_options_default(wp);
     set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
 				     (char_u *)"popup", OPT_FREE|OPT_LOCAL, 0);
     set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,
@@ -261,8 +265,6 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     buf->b_p_swf = FALSE;   // no swap file
     buf->b_p_bl = FALSE;    // unlisted buffer
     buf->b_locked = TRUE;
-
-    win_init_popup_win(wp, buf);
 
     nr = (int)dict_get_number(d, (char_u *)"tab");
     if (nr == 0)

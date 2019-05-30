@@ -264,3 +264,26 @@ func Test_popup_getoptions()
   call popup_close(winid)
   call assert_equal({}, popup_getoptions(winid))
 endfunc
+
+func Test_popup_option_values()
+  new
+  " window-local
+  setlocal number
+  setlocal nowrap
+  " buffer-local
+  setlocal omnifunc=Something
+  " global/buffer-local
+  setlocal path=/there
+  " global/window-local
+  setlocal scrolloff=9
+
+  let winid = popup_create('hello', {})
+  call assert_equal(0, getwinvar(winid, '&number'))
+  call assert_equal(1, getwinvar(winid, '&wrap'))
+  call assert_equal('', getwinvar(winid, '&omnifunc'))
+  call assert_equal(&g:path, getwinvar(winid, '&path'))
+  call assert_equal(&g:scrolloff, getwinvar(winid, '&scrolloff'))
+
+  call popup_close(winid)
+  bwipe
+endfunc
