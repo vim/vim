@@ -160,7 +160,6 @@ popup_notification({text}, {options})			 *popup_notification()*
 
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
-	  	{not implemented yet}
 		Show the {text} above the cursor, and close it when the cursor
 		moves.  This works like: >
 			call popup_create({text}, {
@@ -306,12 +305,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			"cursor", "cursor+1" or "cursor-1" to use the line of
 			the cursor and add or subtract a number of lines;
 			default is "cursor-1".
-			{only number is implemented}
 	col		screen column where to position the popup; can use
 			"cursor" to use the column of the cursor, "cursor+99"
 			and "cursor-99" to add or subtract a number of
 			columns; default is "cursor"
-			{only number is implemented}
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
