@@ -5,6 +5,7 @@ void ex_popupclear(exarg_T *eap);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);
 void f_popup_close(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
+void f_popup_getoptions(typval_T *argvars, typval_T *rettv);
 void f_popup_getposition(typval_T *argvars, typval_T *rettv);
 void f_popup_hide(typval_T *argvars, typval_T *rettv);
 void f_popup_move(typval_T *argvars, typval_T *rettv);

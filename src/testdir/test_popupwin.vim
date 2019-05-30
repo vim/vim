@@ -108,16 +108,19 @@ func Test_popup_hide()
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+  call assert_equal(1, popup_getposition(winid).visible)
 
   call popup_hide(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('hello', line)
+  call assert_equal(0, popup_getposition(winid).visible)
 
   call popup_show(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+  call assert_equal(1, popup_getposition(winid).visible)
 
 
   call popup_close(winid)
@@ -178,6 +181,7 @@ func Test_popup_getposition()
   call assert_equal(3, res.col)
   call assert_equal(10, res.width)
   call assert_equal(11, res.height)
+  call assert_equal(1, res.visible)
 
   call popup_close(winid)
 endfunc
@@ -215,7 +219,73 @@ func Test_popup_wraps()
     call assert_equal(test[2], position.height)
 
     call popup_close(winid)
+    call assert_equal({}, popup_getposition(winid))
   endfor
+endfunc
+
+func Test_popup_getoptions()
+  let winid = popup_create('hello', {
+    \ 'line': 2,
+    \ 'col': 3,
+    \ 'minwidth': 10,
+    \ 'minheight': 11,
+    \ 'maxwidth': 20,
+    \ 'maxheight': 21,
+    \ 'zindex': 100,
+    \ 'time': 5000,
+    \})
+  redraw
+  let res = popup_getoptions(winid)
+  call assert_equal(2, res.line)
+  call assert_equal(3, res.col)
+  call assert_equal(10, res.minwidth)
+  call assert_equal(11, res.minheight)
+  call assert_equal(20, res.maxwidth)
+  call assert_equal(21, res.maxheight)
+  call assert_equal(100, res.zindex)
+  if has('timers')
+    call assert_equal(5000, res.time)
+  endif
+  call popup_close(winid)
+
+  let winid = popup_create('hello', {})
+  redraw
+  let res = popup_getoptions(winid)
+  call assert_equal(0, res.line)
+  call assert_equal(0, res.col)
+  call assert_equal(0, res.minwidth)
+  call assert_equal(0, res.minheight)
+  call assert_equal(0, res.maxwidth)
+  call assert_equal(0, res.maxheight)
+  call assert_equal(50, res.zindex)
+  if has('timers')
+    call assert_equal(0, res.time)
+  endif
+  call popup_close(winid)
+  call assert_equal({}, popup_getoptions(winid))
+endfunc
+
+func Test_popup_option_values()
+  new
+  " window-local
+  setlocal number
+  setlocal nowrap
+  " buffer-local
+  setlocal omnifunc=Something
+  " global/buffer-local
+  setlocal path=/there
+  " global/window-local
+  setlocal scrolloff=9
+
+  let winid = popup_create('hello', {})
+  call assert_equal(0, getwinvar(winid, '&number'))
+  call assert_equal(1, getwinvar(winid, '&wrap'))
+  call assert_equal('', getwinvar(winid, '&omnifunc'))
+  call assert_equal(&g:path, getwinvar(winid, '&path'))
+  call assert_equal(&g:scrolloff, getwinvar(winid, '&scrolloff'))
+
+  call popup_close(winid)
+  bwipe
 endfunc
 
 func Test_popup_atcursor()
@@ -225,14 +295,44 @@ func Test_popup_atcursor()
   \  'xxxxxxxxxxxxxxxxx',
   \  'xxxxxxxxxxxxxxxxx',
   \])
-  call cursor(1, 2)
 
+  call cursor(2, 2)
+  redraw
   let winid = popup_atcursor('vim', {})
   redraw
   let line = join(map(range(1, 17), 'screenstring(2, v:val)'), '')
-  call assert_equal('xxxxxxxxxxxxxxxxx', line)
-  "call popup_close(winid)
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
 
-  "bwipe!
+  call cursor(3, 4)
+  redraw
+  let winid = popup_atcursor('vim', {})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(3, v:val)'), '')
+  call assert_equal('xxxvimxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  call cursor(1, 1)
+  redraw
+  let winid = popup_create('vim', {
+  \ 'line': 'cursor+2',
+  \ 'col': 'cursor+1',
+  \})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(3, v:val)'), '')
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  call cursor(3, 3)
+  redraw
+  let winid = popup_create('vim', {
+  \ 'line': 'cursor-2',
+  \ 'col': 'cursor-1',
+  \})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(1, v:val)'), '')
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  bwipe!
 endfunc
-
