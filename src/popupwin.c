@@ -109,10 +109,9 @@ get_pos_options(win_T *wp, dict_T *dict)
     static void
 apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 {
-#if defined(FEAT_TIMERS)
-    int	    nr;
-#endif
-    char_u  *str;
+    int		nr;
+    char_u	*str;
+    dictitem_T	*di;
 
     wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
     wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
@@ -158,10 +157,17 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
     }
 #endif
 
+    // Option values resulting in setting an option.
     str = dict_get_string(dict, (char_u *)"highlight", TRUE);
     if (str != NULL)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
+    di = dict_find(dict, (char_u *)"wrap", -1);
+    if (di != NULL)
+    {
+	nr = dict_get_number(dict, (char_u *)"wrap");
+	wp->w_p_wrap = nr != 0;
+    }
 }
 
 /*

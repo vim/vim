@@ -84,20 +84,59 @@ func Test_popup_with_syntax_setbufvar()
   if !CanRunVimInTerminal()
     return
   endif
-  call writefile([
-	\ "call setline(1, range(1, 100))",
-	\ "hi PopupColor ctermbg=lightgrey",
-	\ "let winid = popup_create([",
-	\ "\\ '#include <stdio.h>',",
-	\ "\\ 'int main(void)',",
-	\ "\\ '{',",
-	\ "\\ '    printf(567);',",
-	\ "\\ '}',",
-	\ "\\], {'line': 3, 'col': 21, 'highlight': 'PopupColor'})",
-	\ "call setbufvar(winbufnr(winid), '&syntax', 'cpp')",
-	\], 'XtestPopup')
+  let lines =<< trim END
+	call setline(1, range(1, 100))
+	hi PopupColor ctermbg=lightgrey
+	let winid = popup_create([
+	    \ '#include <stdio.h>',
+	    \ 'int main(void)',
+	    \ '{',
+	    \ '    printf(567);',
+	    \ '}',
+	    \], {'line': 3, 'col': 21, 'highlight': 'PopupColor'})
+	call setbufvar(winbufnr(winid), '&syntax', 'cpp')
+  END
+  call writefile(lines, 'XtestPopup')
   let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_popupwin_11', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopup')
+endfunc
+
+func Test_popup_with_wrap()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let lines =<< trim END
+	 call setline(1, range(1, 100))
+	 let winid = popup_create(
+	   \ 'a long line that wont fit',
+	   \ {'line': 3, 'col': 20, 'maxwidth': 10, 'wrap': 1})
+  END
+  call writefile(lines, 'XtestPopup')
+  let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_wrap', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopup')
+endfunc
+
+func Test_popup_without_wrap()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let lines =<< trim END
+	 call setline(1, range(1, 100))
+	 let winid = popup_create(
+	   \ 'a long line that wont fit',
+	   \ {'line': 3, 'col': 20, 'maxwidth': 10, 'wrap': 0})
+  END
+  call writefile(lines, 'XtestPopup')
+  let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_nowrap', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -156,19 +195,19 @@ func Test_popup_hide()
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
-  call assert_equal(1, popup_getposition(winid).visible)
+  call assert_equal(1, popup_getpos(winid).visible)
 
   call popup_hide(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('hello', line)
-  call assert_equal(0, popup_getposition(winid).visible)
+  call assert_equal(0, popup_getpos(winid).visible)
 
   call popup_show(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
-  call assert_equal(1, popup_getposition(winid).visible)
+  call assert_equal(1, popup_getpos(winid).visible)
 
 
   call popup_close(winid)
@@ -216,7 +255,7 @@ func Test_popup_move()
   bwipe!
 endfunc
 
-func Test_popup_getposition()
+func Test_popup_getpos()
   let winid = popup_create('hello', {
     \ 'line': 2,
     \ 'col': 3,
@@ -224,7 +263,7 @@ func Test_popup_getposition()
     \ 'minheight': 11,
     \})
   redraw
-  let res = popup_getposition(winid)
+  let res = popup_getpos(winid)
   call assert_equal(2, res.line)
   call assert_equal(3, res.col)
   call assert_equal(10, res.width)
@@ -246,7 +285,7 @@ func Test_popup_width_longest()
   for test in tests
     let winid = popup_create(test[0], {'line': 2, 'col': 3})
     redraw
-    let position = popup_getposition(winid)
+    let position = popup_getpos(winid)
     call assert_equal(test[1], position.width)
     call popup_close(winid)
   endfor
@@ -262,12 +301,12 @@ func Test_popup_wraps()
     let winid = popup_create(test[0],
 	  \ {'line': 2, 'col': 3, 'maxwidth': 12})
     redraw
-    let position = popup_getposition(winid)
+    let position = popup_getpos(winid)
     call assert_equal(test[1], position.width)
     call assert_equal(test[2], position.height)
 
     call popup_close(winid)
-    call assert_equal({}, popup_getposition(winid))
+    call assert_equal({}, popup_getpos(winid))
   endfor
 endfunc
 
@@ -380,6 +419,24 @@ func Test_popup_atcursor()
   redraw
   let line = join(map(range(1, 17), 'screenstring(1, v:val)'), '')
   call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  " just enough room above
+  call cursor(3, 3)
+  redraw
+  let winid = popup_atcursor(['vim', 'is great'], {})
+  redraw
+  let pos = popup_getpos(winid)
+  call assert_equal(1, pos.line)
+  call popup_close(winid)
+
+  " not enough room above, popup goes below the cursor
+  call cursor(3, 3)
+  redraw
+  let winid = popup_atcursor(['vim', 'is', 'great'], {})
+  redraw
+  let pos = popup_getpos(winid)
+  call assert_equal(4, pos.line)
   call popup_close(winid)
 
   bwipe!
