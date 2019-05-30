@@ -6116,19 +6116,18 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 {
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = win_id2wp(id);
-    win_T	*save_curwin = curwin;
+    win_T	*save_curwin;
+    tabpage_T	*save_curtab;
 
     if (wp != NULL)
     {
-	curwin = wp;
-	curbuf = curwin->w_buffer;
-	check_cursor();
-	execute_common(argvars, rettv, 1);
-	if (win_valid(save_curwin))
+	if (switch_win_noblock(&save_curwin, &save_curtab, wp, curtab, TRUE)
+									 == OK)
 	{
-	    curwin = save_curwin;
-	    curbuf = curwin->w_buffer;
+	    check_cursor();
+	    execute_common(argvars, rettv, 1);
 	}
+	restore_win_noblock(save_curwin, save_curtab, TRUE);
     }
 }
 

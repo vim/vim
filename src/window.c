@@ -6495,6 +6495,20 @@ switch_win(
     int		no_display)
 {
     block_autocmds();
+    return switch_win_noblock(save_curwin, save_curtab, win, tp, no_display);
+}
+
+/*
+ * As switch_win() but without blocking autocommands.
+ */
+    int
+switch_win_noblock(
+    win_T	**save_curwin,
+    tabpage_T	**save_curtab,
+    win_T	*win,
+    tabpage_T	*tp,
+    int		no_display)
+{
     *save_curwin = curwin;
     if (tp != NULL)
     {
@@ -6524,9 +6538,22 @@ switch_win(
  */
     void
 restore_win(
-    win_T	*save_curwin UNUSED,
-    tabpage_T	*save_curtab UNUSED,
-    int		no_display UNUSED)
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    int		no_display)
+{
+    restore_win_noblock(save_curwin, save_curtab, no_display);
+    unblock_autocmds();
+}
+
+/*
+ * As restore_win() but without unblocking autocommands.
+ */
+    void
+restore_win_noblock(
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    int		no_display)
 {
     if (save_curtab != NULL && valid_tabpage(save_curtab))
     {
@@ -6546,7 +6573,6 @@ restore_win(
 	curwin = save_curwin;
 	curbuf = curwin->w_buffer;
     }
-    unblock_autocmds();
 }
 
 /*
