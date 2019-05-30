@@ -3064,7 +3064,7 @@ term_channel_closed(channel_T *ch)
     for (term = first_term; term != NULL; term = next_term)
     {
 	next_term = term->tl_next;
-	if (term->tl_job == ch->ch_job)
+	if (term->tl_job == ch->ch_job && !term->tl_channel_closed)
 	{
 	    term->tl_channel_closed = TRUE;
 	    did_one = TRUE;
