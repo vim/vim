@@ -530,6 +530,38 @@ f_popup_getposition(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "col", wp->w_wincol + 1);
 	dict_add_number(dict, "width", wp->w_width);
 	dict_add_number(dict, "height", wp->w_height);
+	dict_add_number(dict, "visible",
+				       (wp->w_popup_flags & POPF_HIDDEN) == 0);
+    }
+}
+
+/*
+ * f_popup_getoptions({id})
+ */
+    void
+f_popup_getoptions(typval_T *argvars, typval_T *rettv)
+{
+    dict_T	*dict;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (rettv_dict_alloc(rettv) == OK)
+    {
+	if (wp == NULL)
+	    return;
+
+	dict = rettv->vval.v_dict;
+	dict_add_number(dict, "line", wp->w_wantline);
+	dict_add_number(dict, "col", wp->w_wantcol);
+	dict_add_number(dict, "minwidth", wp->w_minwidth);
+	dict_add_number(dict, "minheight", wp->w_minheight);
+	dict_add_number(dict, "maxheight", wp->w_maxheight);
+	dict_add_number(dict, "maxwidth", wp->w_maxwidth);
+	dict_add_number(dict, "zindex", wp->w_zindex);
+# if defined(FEAT_TIMERS)
+	dict_add_number(dict, "time", wp->w_popup_timer != NULL
+				 ?  (long)wp->w_popup_timer->tr_interval : 0L);
+# endif
     }
 }
 #endif // FEAT_TEXT_PROP

@@ -108,16 +108,19 @@ func Test_popup_hide()
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+  call assert_equal(1, popup_getposition(winid).visible)
 
   call popup_hide(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('hello', line)
+  call assert_equal(0, popup_getposition(winid).visible)
 
   call popup_show(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+  call assert_equal(1, popup_getposition(winid).visible)
 
 
   call popup_close(winid)
@@ -178,6 +181,7 @@ func Test_popup_getposition()
   call assert_equal(3, res.col)
   call assert_equal(10, res.width)
   call assert_equal(11, res.height)
+  call assert_equal(1, res.visible)
 
   call popup_close(winid)
 endfunc
@@ -215,5 +219,48 @@ func Test_popup_wraps()
     call assert_equal(test[2], position.height)
 
     call popup_close(winid)
+    call assert_equal({}, popup_getposition(winid))
   endfor
+endfunc
+
+func Test_popup_getoptions()
+  let winid = popup_create('hello', {
+    \ 'line': 2,
+    \ 'col': 3,
+    \ 'minwidth': 10,
+    \ 'minheight': 11,
+    \ 'maxwidth': 20,
+    \ 'maxheight': 21,
+    \ 'zindex': 100,
+    \ 'time': 5000,
+    \})
+  redraw
+  let res = popup_getoptions(winid)
+  call assert_equal(2, res.line)
+  call assert_equal(3, res.col)
+  call assert_equal(10, res.minwidth)
+  call assert_equal(11, res.minheight)
+  call assert_equal(20, res.maxwidth)
+  call assert_equal(21, res.maxheight)
+  call assert_equal(100, res.zindex)
+  if has('timers')
+    call assert_equal(5000, res.time)
+  endif
+  call popup_close(winid)
+
+  let winid = popup_create('hello', {})
+  redraw
+  let res = popup_getoptions(winid)
+  call assert_equal(0, res.line)
+  call assert_equal(0, res.col)
+  call assert_equal(0, res.minwidth)
+  call assert_equal(0, res.minheight)
+  call assert_equal(0, res.maxwidth)
+  call assert_equal(0, res.maxheight)
+  call assert_equal(50, res.zindex)
+  if has('timers')
+    call assert_equal(0, res.time)
+  endif
+  call popup_close(winid)
+  call assert_equal({}, popup_getoptions(winid))
 endfunc

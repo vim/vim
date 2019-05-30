@@ -86,15 +86,18 @@ Probably 2. is the best choice.
 IMPLEMENTATION:
 - Code is in popupwin.c
 - when creating the window set options to Vim default? (verify with 'number')
-- Do not show tilde below last line.
 - Implement filter.
   Check that popup_close() works in the filter.
+- Implement the "pos" option.
 - Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
+    Store popup info in a mask, use the mask in screen_line()
     Fix redrawing problem with completion.
     Fix redrawing problem when scrolling non-current window
     Fix redrawing the statusline on top of a popup
-- Properly figure out the size and position.
+- Figure out the size and position better.
+    if wrapping splits a double-wide character
+    if wrapping has an indent
 - Can the buffer be re-used, to avoid using up lots of buffer numbers?
 - Implement all the unimplemented options and features.
 
@@ -228,16 +231,23 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 
 popup_getoptions({id})					*popup_getoptions()*
-	  	{not implemented yet}
-		Return the {options} for popup {id}.
+		Return the {options} for popup {id} in a Dict.
+		A zero value means the option was not set.
+
+		The "highlight" entry is omitted, use the 'wincolor' option
+		for that: >
+			let hl = getwinvar(winid, '&wincolor')
+
+<		If popup window {id} is not found an empty Dict is returned.
 
 popup_getposition({id})					*popup_getposition()*
 		Return the position and size of popup {id}.  Returns a Dict
 		with these entries:
-			col	screen column of the popup, one-based
-			line	screen line of the popup, one-based
-			width	width of the popup in screen cells
-			height	height of the popup in screen cells
+		    col		screen column of the popup, one-based
+		    line	screen line of the popup, one-based
+		    width	width of the popup in screen cells
+		    height	height of the popup in screen cells
+		    visible 	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
 		from the values in `popup_getoptions()` for the sizing and
 		positioning mechanism applied.
@@ -304,9 +314,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			{only number is implemented}
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
-			used for.  Default is "botleft".  Alternatively
-			"center" can be used to position the popup in the
-			center of the Vim window.
+			used for.  When not set "topleft" is used.
+			Alternatively "center" can be used to position the
+			popup in the center of the Vim window.
 			{not implemented yet}
 	flip		when TRUE (the default) and the position is relative
 			to the cursor, flip to below or above the cursor to
