@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 May 25
+*eval.txt*	For Vim version 8.1.  Last change: 2019 May 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2087,12 +2087,12 @@ v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		termcap entry.  It is set when Vim receives an escape sequence
-		that starts with ESC [ or CSI and ends in a 'c', with only
-		digits, ';' and '.' in between.
+		that starts with ESC [ or CSI, then '>' or '?' and ends in a
+		'c', with only digits and ';' in between.
 		When this option is set, the TermResponse autocommand event is
 		fired, so that you can react to the response from the
 		terminal.
-		The response from a new xterm is: "<Esc>[ Pp ; Pv ; Pc c".  Pp
+		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
 		always 95 or bigger).  Pc is always zero.
@@ -8400,6 +8400,8 @@ setreg({regname}, {value} [, {options}])
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Set tab-local variable {varname} to {val} in tab page {tabnr}.
 		|t:var|
+		Note that autocommands are blocked, side effects may not be
+		triggered, e.g. when setting 'filetype'.
 		Note that the variable name without "t:" must be used.
 		Tabs are numbered starting with one.
 		This function is not available in the |sandbox|.
@@ -8411,6 +8413,8 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		use |setwinvar()|.
 		{winnr} can be the window number or the |window-ID|.
 		When {winnr} is zero the current window is used.
+		Note that autocommands are blocked, side effects may not be
+		triggered, e.g. when setting 'filetype' or 'syntax'.
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
 		For a local buffer option the global value is unchanged.
@@ -10318,9 +10322,13 @@ wildmenumode()					*wildmenumode()*
 win_execute({id}, {command} [, {silent}])		*win_execute()*
 		Like `execute()` but in the context of window {id}.
 		The window will temporarily be made the current window,
-		without triggering autocommands.
+		without triggering autocommands.  When executing {command}
+		autocommands will be triggered, this may have unexpected side
+		effects.  Use |:noautocmd| if needed.
 		Example: >
-			call win_execute(winid, 'syntax enable')
+			call win_execute(winid, 'set syntax=python')
+<		Doing the same with `setwinvar()` would not trigger
+		autocommands and not actually show syntax highlighting.
 
 win_findbuf({bufnr})					*win_findbuf()*
 		Returns a list with |window-ID|s for windows that contain

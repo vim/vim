@@ -56,6 +56,54 @@ func Test_simple_popup()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_with_syntax_win_execute()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+	\ "call setline(1, range(1, 100))",
+	\ "hi PopupColor ctermbg=lightblue",
+	\ "let winid = popup_create([",
+	\ "\\ '#include <stdio.h>',",
+	\ "\\ 'int main(void)',",
+	\ "\\ '{',",
+	\ "\\ '    printf(123);',",
+	\ "\\ '}',",
+	\ "\\], {'line': 3, 'col': 25, 'highlight': 'PopupColor'})",
+	\ "call win_execute(winid, 'set syntax=cpp')",
+	\], 'XtestPopup')
+  let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_10', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopup')
+endfunc
+
+func Test_popup_with_syntax_setbufvar()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+	\ "call setline(1, range(1, 100))",
+	\ "hi PopupColor ctermbg=lightgrey",
+	\ "let winid = popup_create([",
+	\ "\\ '#include <stdio.h>',",
+	\ "\\ 'int main(void)',",
+	\ "\\ '{',",
+	\ "\\ '    printf(567);',",
+	\ "\\ '}',",
+	\ "\\], {'line': 3, 'col': 21, 'highlight': 'PopupColor'})",
+	\ "call setbufvar(winbufnr(winid), '&syntax', 'cpp')",
+	\], 'XtestPopup')
+  let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_11', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopup')
+endfunc
+
 func Test_popup_time()
   if !has('timers')
     return
