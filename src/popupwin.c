@@ -265,6 +265,8 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     buf->b_p_swf = FALSE;   // no swap file
     buf->b_p_bl = FALSE;    // unlisted buffer
     buf->b_locked = TRUE;
+    // Avoid that 'buftype' is reset when this buffer is entered.
+    buf->b_p_initialized = TRUE;
 
     nr = (int)dict_get_number(d, (char_u *)"tab");
     if (nr == 0)
