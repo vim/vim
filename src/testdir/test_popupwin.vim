@@ -335,3 +335,52 @@ func Test_popup_option_values()
   call popup_close(winid)
   bwipe
 endfunc
+
+func Test_popup_atcursor()
+  topleft vnew
+  call setline(1, [
+  \  'xxxxxxxxxxxxxxxxx',
+  \  'xxxxxxxxxxxxxxxxx',
+  \  'xxxxxxxxxxxxxxxxx',
+  \])
+
+  call cursor(2, 2)
+  redraw
+  let winid = popup_atcursor('vim', {})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(1, v:val)'), '')
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  call cursor(3, 4)
+  redraw
+  let winid = popup_atcursor('vim', {})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(2, v:val)'), '')
+  call assert_equal('xxxvimxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  call cursor(1, 1)
+  redraw
+  let winid = popup_create('vim', {
+  \ 'line': 'cursor+2',
+  \ 'col': 'cursor+1',
+  \})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(3, v:val)'), '')
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  call cursor(3, 3)
+  redraw
+  let winid = popup_create('vim', {
+  \ 'line': 'cursor-2',
+  \ 'col': 'cursor-1',
+  \})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(1, v:val)'), '')
+  call assert_equal('xvimxxxxxxxxxxxxx', line)
+  call popup_close(winid)
+
+  bwipe!
+endfunc

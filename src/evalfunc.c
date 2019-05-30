@@ -809,6 +809,7 @@ static struct fst
     {"perleval",	1, 1, f_perleval},
 #endif
 #ifdef FEAT_TEXT_PROP
+    {"popup_atcursor",	2, 2, f_popup_atcursor},
     {"popup_close",	1, 1, f_popup_close},
     {"popup_create",	2, 2, f_popup_create},
     {"popup_getoptions", 1, 1, f_popup_getoptions},

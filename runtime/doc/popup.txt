@@ -85,11 +85,11 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- when creating the window set options to Vim default? (verify with 'number')
+- Implement the "pos" option.
 - Implement filter.
   Check that popup_close() works in the filter.
-- Implement the "pos" option.
 - Handle screen resize in screenalloc().
+- show [Popup] instead of [Scratch] in ":ls!"
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
     Fix redrawing problem with completion.
@@ -97,7 +97,7 @@ IMPLEMENTATION:
     Fix redrawing the statusline on top of a popup
 - Figure out the size and position better.
     if wrapping splits a double-wide character
-    if wrapping has an indent
+    if wrapping inserts indent
 - Can the buffer be re-used, to avoid using up lots of buffer numbers?
 - Implement all the unimplemented options and features.
 
@@ -160,10 +160,10 @@ popup_notification({text}, {options})			 *popup_notification()*
 
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
-	  	{not implemented yet}
 		Show the {text} above the cursor, and close it when the cursor
 		moves.  This works like: >
 			call popup_create({text}, {
+				\ 'pos': 'botleft',
 				\ 'line': 'cursor-1',
 				\ 'col': 'cursor',
 				\ 'moved': 'WORD',
@@ -270,10 +270,11 @@ manipulation is restricted:
 - 'bufhidden' is "hide"
 - 'buflisted' is off
 - 'undolevels' is -1: no undo at all
-TODO: more
+- all other buffer-local and window_local options are set to their Vim default
+  value.
 
-It is possible to change these options, but anything might break then, so
-better leave them alone.
+It is possible to change the specifically mentioned options, but anything
+might break then, so better leave them alone.
 
 The window does have a cursor position, but the cursor is not displayed.
 
@@ -306,12 +307,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			"cursor", "cursor+1" or "cursor-1" to use the line of
 			the cursor and add or subtract a number of lines;
 			default is "cursor-1".
-			{only number is implemented}
 	col		screen column where to position the popup; can use
 			"cursor" to use the column of the cursor, "cursor+99"
 			and "cursor-99" to add or subtract a number of
 			columns; default is "cursor"
-			{only number is implemented}
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
@@ -342,9 +341,17 @@ The second argument of |popup_create()| is a dictionary with options:
 			{not implemented yet}
 	highlight	highlight group name to use for the text, stored in
 			the 'wincolor' option
+	padding		list with numbers, defining the padding
+			above/right/below/left of the popup (similar to CSS);
+			an empty list uses a padding of 1 all around; the
+			padding goes around the text, inside any border;
+			padding uses the 'wincolor' highlight; Example: [1, 2,
+			1, 3] has 1 line of padding above, 2 columns on the
+			right, 1 line below and 3 columns on the left
+			{not implemented yet}
 	border		list with numbers, defining the border thickness
-			above/right/below/left of the popup; an empty list
-			uses a border of 1 all around
+			above/right/below/left of the popup (similar to CSS);
+			an empty list uses a border of 1 all around
 			{not implemented yet}
 	borderhighlight	highlight group name to use for the border
 			{not implemented yet}
