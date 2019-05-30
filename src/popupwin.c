@@ -15,12 +15,53 @@
 
 #ifdef FEAT_TEXT_PROP
 
+    static int
+popup_options_pos(dict_T *dict, char_u *key)
+{
+    dictitem_T	*di;
+    char_u	*s, *endp;
+    int		n = 0;
+
+    di = dict_find(dict, key, -1);
+    if (di == NULL)
+	return 0;
+
+    s = tv_get_string(&di->di_tv);
+    if (STRNCMP(s, "cursor", 6) != 0)
+	return dict_get_number(dict, key);
+
+    s += 6;
+    if (*s != '\0')
+    {
+	n = strtol((char *)s, (char **)&endp, 10);
+	if (endp != NULL && *endp != '\0')
+	{
+	    semsg(_(e_invexpr2), key);
+	    return 0;
+	}
+    }
+
+    if (STRCMP(key, "line") == 0)
+	n = screen_screenrow() + 1 + n;
+    else if (STRCMP(key, "col") == 0)
+	n = screen_screencol() + 1 + n;
+    else
+    {
+	semsg(_(e_invexpr2), key);
+	return 0;
+    }
+
+    if (n < 1)
+	n = 1;
+    return n;
+}
+
 /*
  * Go through the options in "dict" and apply them to buffer "buf" displayed in
  * popup window "wp".
  */
     static void
-apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
+apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 {
     int	    nr;
     char_u  *str;
@@ -30,8 +71,16 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
 
-    wp->w_wantline = dict_get_number(dict, (char_u *)"line");
-    wp->w_wantcol = dict_get_number(dict, (char_u *)"col");
+    if (atcursor)
+    {
+	wp->w_wantline = screen_screenrow();
+	wp->w_wantcol = screen_screencol() + 1;
+    }
+    else
+    {
+	wp->w_wantline = popup_options_pos(dict, (char_u *)"line");
+	wp->w_wantcol = popup_options_pos(dict, (char_u *)"col");
+    }
 
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
 
@@ -213,11 +262,8 @@ popup_adjust_position(win_T *wp)
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 }
 
-/*
- * popup_create({text}, {options})
- */
-    void
-f_popup_create(typval_T *argvars, typval_T *rettv)
+    static void
+popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
 {
     win_T   *wp;
     buf_T   *buf;
@@ -305,7 +351,7 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     curbuf = curwin->w_buffer;
 
     // Deal with options.
-    apply_options(wp, buf, argvars[1].vval.v_dict);
+    apply_options(wp, buf, argvars[1].vval.v_dict, atcursor);
 
     // set default values
     if (wp->w_zindex == 0)
@@ -316,6 +362,24 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     wp->w_vsep_width = 0;
 
     redraw_all_later(NOT_VALID);
+}
+
+/*
+ * popup_create({text}, {options})
+ */
+    void
+f_popup_create(typval_T *argvars, typval_T *rettv)
+{
+    popup_create(argvars, rettv, FALSE);
+}
+
+/*
+ * popup_atcursor({text}, {options})
+ */
+    void
+f_popup_atcursor(typval_T *argvars, typval_T *rettv)
+{
+    popup_create(argvars, rettv, TRUE);
 }
 
 /*

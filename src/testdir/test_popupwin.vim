@@ -217,3 +217,22 @@ func Test_popup_wraps()
     call popup_close(winid)
   endfor
 endfunc
+
+func Test_popup_atcursor()
+  topleft vnew
+  call setline(1, [
+  \  'xxxxxxxxxxxxxxxxx',
+  \  'xxxxxxxxxxxxxxxxx',
+  \  'xxxxxxxxxxxxxxxxx',
+  \])
+  call cursor(1, 2)
+
+  let winid = popup_atcursor('vim', {})
+  redraw
+  let line = join(map(range(1, 17), 'screenstring(2, v:val)'), '')
+  call assert_equal('xxxxxxxxxxxxxxxxx', line)
+  "call popup_close(winid)
+
+  "bwipe!
+endfunc
+

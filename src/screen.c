@@ -470,7 +470,9 @@ redraw_after_callback(int call_update_screen)
     else if (State & (NORMAL | INSERT | TERMINAL))
     {
 	// keep the command line if possible
-	update_screen(VALID_NO_UPDATE);
+	if (call_update_screen)
+	    //update_screen(VALID_NO_UPDATE);
+	    update_screen(0);
 	setcursor();
     }
     cursor_on();
