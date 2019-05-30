@@ -196,12 +196,16 @@ func Test_popup_hide()
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
   call assert_equal(1, popup_getpos(winid).visible)
+  " buffer is still listed and active
+  call assert_match(winbufnr(winid) .. 'u a.*\[Popup\]', execute('ls u'))
 
   call popup_hide(winid)
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('hello', line)
   call assert_equal(0, popup_getpos(winid).visible)
+  " buffer is still listed but hidden
+  call assert_match(winbufnr(winid) .. 'u h.*\[Popup\]', execute('ls u'))
 
   call popup_show(winid)
   redraw

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 May 18
+*windows.txt*   For Vim version 8.1.  Last change: 2019 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1029,6 +1029,13 @@ list of buffers. |unlisted-buffer|
 		Each buffer has a unique number.  That number will not change,
 		thus you can always go to a specific buffer with ":buffer N"
 		or "N CTRL-^", where N is the buffer number.
+
+		For the file name these special values are used:
+			[Prompt]	|prompt-buffer|
+			[Popup]		buffer of a |popup-window|
+			[Scratch]	'buftype' is "nofile"
+			[No Name]	no file name specified
+		For a |terminal-window| buffer the status is used.
 
 		Indicators (chars in the same column are mutually exclusive):
 		u	an unlisted buffer (only displayed when [!] is used)

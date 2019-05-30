@@ -5782,6 +5782,10 @@ buf_spname(buf_T *buf)
 	if (bt_prompt(buf))
 	    return (char_u *)_("[Prompt]");
 #endif
+#ifdef FEAT_TEXT_PROP
+	if (bt_popup(buf))
+	    return (char_u *)_("[Popup]");
+#endif
 	return (char_u *)_("[Scratch]");
     }
 

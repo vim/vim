@@ -550,6 +550,7 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp != NULL && (wp->w_popup_flags & POPF_HIDDEN) == 0)
     {
 	wp->w_popup_flags |= POPF_HIDDEN;
+	--wp->w_buffer->b_nwindows;
 	redraw_all_later(NOT_VALID);
     }
 }
@@ -566,6 +567,7 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp != NULL && (wp->w_popup_flags & POPF_HIDDEN) != 0)
     {
 	wp->w_popup_flags &= ~POPF_HIDDEN;
+	++wp->w_buffer->b_nwindows;
 	redraw_all_later(NOT_VALID);
     }
 }

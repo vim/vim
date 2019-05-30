@@ -85,11 +85,11 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- Implement the "pos" option.
 - Implement filter.
   Check that popup_close() works in the filter.
+- Implement padding
+- Implement border
 - Handle screen resize in screenalloc().
-- show [Popup] instead of [Scratch] in ":ls!"
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
     Fix redrawing problem with completion.
@@ -287,6 +287,8 @@ Options can be set on the window with `setwinvar()`, e.g.: >
 	call setwinvar(winid, '&wrap', 0)
 And options can be set on the buffer with `setbufvar()`, e.g.: >
 	call setbufvar(winbufnr(winid), '&filetype', 'java')
+Note that this does not trigger autocommands.  Use `win_execute()` if you do
+need them.
 
 
 POPUP_CREATE() ARGUMENTS				*popup_create-usage*
@@ -320,7 +322,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
-			{not implemented yet}
 	flip		when TRUE (the default) and the position is relative
 			to the cursor, flip to below or above the cursor to
 			avoid overlap with the |popupmenu-completion| or
@@ -342,7 +343,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			popup, on top of any border
 			{not implemented yet}
 	wrap		TRUE to make the lines wrap (default TRUE)
-			{not implemented yet}
 	highlight	highlight group name to use for the text, stored in
 			the 'wincolor' option
 	padding		list with numbers, defining the padding
