@@ -6573,6 +6573,12 @@ restore_win_noblock(
 	curwin = save_curwin;
 	curbuf = curwin->w_buffer;
     }
+#ifdef FEAT_TEXT_PROP
+    else if (bt_popup(curwin->w_buffer))
+	// original window was closed and now we're in a popup window: Go
+	// to the first valid window.
+	win_goto(firstwin);
+#endif
 }
 
 /*

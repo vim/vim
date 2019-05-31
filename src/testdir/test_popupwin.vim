@@ -105,6 +105,14 @@ func Test_popup_with_syntax_setbufvar()
   call delete('XtestPopup')
 endfunc
 
+func Test_win_execute_closing_curwin()
+  split
+  let winid = popup_create('some text', {})
+  call win_execute(winid, winnr() .. "close")
+  call assert_equal(1, winnr())
+  popupclear
+endfunc
+
 func Test_popup_with_wrap()
   if !CanRunVimInTerminal()
     return
