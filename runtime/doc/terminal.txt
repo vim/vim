@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 May 20
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 May 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -907,7 +907,7 @@ When 'background' is "dark":
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
 
-Shorcuts						*termdebug_shortcuts*
+Shortcuts						*termdebug_shortcuts*
 
 You can define your own shortcuts (mappings) to control gdb, that can work in
 any window, using the TermDebugSendCommand() function.  Example: >

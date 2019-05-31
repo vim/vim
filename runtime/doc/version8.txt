@@ -25914,7 +25914,7 @@ Files:	    runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/evalfunc.c,
 
 Patch 8.1.0021
 Problem:    Clang warns for undefined behavior.
-Solution:   Move #ifdef outside of sprintf() call.(suggestion by Michael
+Solution:   Move #ifdef outside of sprintf() call. (suggestion by Michael
             Jarvis, closes #2946)
 Files:	    src/term.c
 
@@ -25930,7 +25930,7 @@ Solution:   Use mch_memmove() instead of STRNCPY().
 Files:	    src/memline.c
 
 Patch 8.1.0024
-Problem:    % command not testded on #ifdef and comment.
+Problem:    % command not tested on #ifdef and comment.
 Solution:   Add tests. (Dominique Pelle, closes #2956)
 Files:	    src/testdir/test_goto.vim
 
@@ -25946,7 +25946,7 @@ Files:	    src/testdir/test_terminal.vim
 
 Patch 8.1.0027
 Problem:    Difficult to make a plugin that feeds a line to a job.
-Solution:   Add the nitial code for the "prompt" buftype.
+Solution:   Add the initial code for the "prompt" buftype.
 Files:	    runtime/doc/channel.txt, runtime/doc/eval.txt,
             runtime/doc/options.txt, runtime/doc/tags, runtime/doc/todo.txt,
             src/Makefile, src/buffer.c, src/channel.c, src/diff.c, src/edit.c,
@@ -25966,7 +25966,7 @@ Solution:   Skip test with redirection on MS-Windows.
 Files:	    src/testdir/test_terminal.vim
 
 Patch 8.1.0030
-Problem:    Stoping Vim running in a terminal may not work.
+Problem:    Stopping Vim running in a terminal may not work.
 Solution:   Instead of sending <Esc> send CTRL-O.
 Files:	    src/testdir/screendump.vim, src/testdir/test_prompt_buffer.vim
 
@@ -26046,8 +26046,8 @@ Solution:   Return FAIL from get_bad_opt() only when there is no valid
 Files:	    src/ex_docmd.c, src/testdir/test_plus_arg_edit.vim
 
 Patch 8.1.0044
-Problem:    If a test function exists Vim this may go unnoticed.
-Solution:   Check for a test funtion quitting Vim.  Fix tests that did exit
+Problem:    If a test function exits Vim this may go unnoticed.
+Solution:   Check for a test function quitting Vim.  Fix tests that did exit
             Vim.
 Files:	    src/testdir/runtest.vim, src/testdir/test_assert.vim
 
@@ -26330,7 +26330,7 @@ Solution:   Only use debugbreak() on MS-Windows.
 Files:	    runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
 
 Patch 8.1.0094
-Problem:    Help text "usage:" is not capatalized.
+Problem:    Help text "usage:" is not capitalized.
 Solution:   Make it "Usage:". (closes #3044)
 Files:	    src/main.c
 
@@ -26929,7 +26929,8 @@ Files:	    src/testdir/test_spell.vim
 
 Patch 8.1.0201
 Problem:    Newer Python uses "importlib" instead of "imp".
-Solution:   Use "importlib" for newer Python versions. (closes #3163)
+Solution:   Use "importlib" for newer Python versions. (Ozaki Kiichi,
+            closes #3163)
 Files:	    src/if_py_both.h, src/testdir/test87.in
 
 Patch 8.1.0202
@@ -27156,7 +27157,8 @@ Solution:   Add a test that shows the behavior. (Christian Brabandt,
 Files:	    src/testdir/test_tabpage.vim
 
 Patch 8.1.0242
-Problem:    Insert mode completion may use an invalid buffer pointer.
+Problem:    Insert mode completion may use an invalid buffer pointer. (Akib
+            Nizam)
 Solution:   Check for ins_buf to be valid. (closes #3290)
 Files:	    src/edit.c
 
@@ -27692,7 +27694,7 @@ Solution:   Allow :file without argument when curbuf_lock is set. (Jason
 Files:	    src/ex_docmd.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.0338
-Problem:    MS-Windows: VTP doesn't work properly with Powershell.
+Problem:    MS-Windows: VTP doesn't work properly with PowerShell.
 Solution:   Adjust the color index. (Nobuhiro Takasaki, closes #3347)
 Files:	    src/os_win32.c
 
@@ -27715,7 +27717,8 @@ Files:	    src/ex_cmds2.c, src/testdir/test_arglist.vim,
             src/testdir/test_command_count.vim
 
 Patch 8.1.0342
-Problem:    Crash when a callback deletes a window that is being used.
+Problem:    Crash when a callback deletes a window that is being used. (Ozaki
+            Kiichi)
 Solution:   Do not unload a buffer that is being displayed while redrawing the
             screen. Also avoid invoking callbacks while redrawing.
             (closes #2107)
@@ -27795,7 +27798,7 @@ Files:	    src/testdir/test_packadd.vim
 
 Patch 8.1.0355
 Problem:    Incorrect adjusting the popup menu for the preview window.
-Solution:   Compute position and height properl. (Ronan Pigott)  Also show at
+Solution:   Compute position and height properly. (Ronan Pigott)  Also show at
             least ten items. (closes #3414)
 Files:	    src/popupmnu.c
 
@@ -28388,7 +28391,7 @@ Files:	    src/os_win32.c, runtime/doc/mlang.txt
 
 Patch 8.1.0453
 Problem:    MS-Windows: executable() is not reliable.
-Solution:   Use $PATHEXT properly. (Yasuhiro Matsumoto, closes #3412)
+Solution:   Use $PATHEXT properly. (Yasuhiro Matsumoto, closes #3512)
 Files:	    src/os_win32.c, src/testdir/test_functions.vim
 
 Patch 8.1.0454
@@ -28448,7 +28451,8 @@ Files:	    src/memline.c
 Patch 8.1.0464
 Problem:    MS-Windows: job_info() has cmd without backslashes. (Daniel
             Hahler)
-Solution:   Use rem_backslash(). (closes #3517, closes #3404)
+Solution:   Use rem_backslash(). (closes #3517, closes #3404)  Add a test.
+            (Yasuhiro Matsumoto)
 Files:	    src/misc2.c, src/testdir/test_channel.vim
 
 Patch 8.1.0465 (after 8.1.0452)
@@ -28535,7 +28539,7 @@ Files:	    src/Make_cyg_ming.mak
 Patch 8.1.0479
 Problem:    Failure when setting 'varsofttabstop' to end in a comma. (Ralf
             Schandl)
-Solution:   Reject value with trailing command.  Add test for invalid values
+Solution:   Reject value with trailing comma.  Add test for invalid values
             (closes #3544)
 Files:	    src/testdir/test_vartabs.vim, src/option.c
 
@@ -28596,7 +28600,7 @@ Solution:   Return from qf_jump_edit_buffer() early. (Yegappan Lakshmanan)
 Files:	    src/quickfix.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.0490
-Problem:    MS-Windows: doesn't handle missing glibwinpthread-1.dll.
+Problem:    MS-Windows: doesn't handle missing libwinpthread-1.dll.
 Solution:   Adjust Cygwin/MinGW build file. (Ken Takata, closes #2827)
 Files:	    src/Make_cyg_ming.mak
 
@@ -28972,7 +28976,7 @@ Files:	    src/popupmnu.c, src/testdir/test_popup.vim,
 
 Patch 8.1.0555
 Problem:    Crash when last search pat is set but not last substitute pat.
-Solution:   Do not mix up last search pattern and last subtitute pattern.
+Solution:   Do not mix up last search pattern and last substitute pattern.
             (closes #3647)
 Files:	    src/search.c, src/testdir/test_search.vim
 
@@ -28983,7 +28987,7 @@ Solution:   Use a separate saved last_idx for saving search patterns for
 Files:	    src/search.c
 
 Patch 8.1.0557
-Problem:    Termdebug: gdb may use X.Y for breakpoint number.
+Problem:    Termdebug: gdb may use X.Y for breakpoint number. (Ryou Ezoe)
 Solution:   Handle X.Y breakpoint numbers. (Yasuhiro Matsumoto, close #3641)
 Files:	    runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
 
@@ -29001,13 +29005,13 @@ Files:	    src/testdir/test_arglist.vim, src/testdir/test_filetype.vim,
             src/testdir/test_syntax.vim
 
 Patch 8.1.0560
-Problem:    Cannot use address type "other" with with user command.
+Problem:    Cannot use address type "other" with user command.
 Solution:   Add "other" to the list. (Daniel Hahler, closes #3655)  Also
             reject "%" for commands with "other".  Add some more tests.
 Files:	    src/ex_docmd.c, src/testdir/test_usercommands.vim
 
 Patch 8.1.0561
-Problem:    MSCV error format has changed.
+Problem:    MSVC error format has changed.
 Solution:   Make the space between the line number and colon optional.
 Files:	    src/option.h
 
@@ -29069,7 +29073,7 @@ Files:	    src/evalfunc.c, src/testdir/test_execute_func.vim
 Patch 8.1.0572
 Problem:    Stopping a job does not work properly on OpenBSD.
 Solution:   Do not use getpgid() to check the process group of the job
-            processs ID, always pass the negative process ID to kill().
+            process ID, always pass the negative process ID to kill().
             (George Koehler, closes #3656)
 Files:	    src/os_unix.c
 
@@ -29105,7 +29109,7 @@ Files:	    src/gui_gtk_x11.c, src/gui_mac.c, src/gui_motif.c, src/gui.c
 
 Patch 8.1.0578
 Problem:    Cannot disable arabic, rightleft and farsi in configure.
-Solution:   Add configur flags. (Diego Fernando Carrión, closes #1867)
+Solution:   Add configure flags. (Diego Fernando Carrión, closes #1867)
 Files:	    src/configure.ac, src/auto/configure, src/config.h.in,
             src/feature.h, src/Makefile
 
@@ -29275,7 +29279,7 @@ Files:	    src/os_mswin.c, src/proto/buffer.pro, src/proto/ex_cmds.pro,
             src/proto/userfunc.pro
 
 Patch 8.1.0608
-Problem:    Coverals is not updating.
+Problem:    Coveralls is not updating.
 Solution:   Adjust path in Travis config.
 Files:	    .travis.yml
 
@@ -29363,7 +29367,7 @@ Files:	    src/eval.c, src/proto/eval.pro, src/evalfunc.c,
             src/testdir/test_messages.vim, src/message.c
 
 Patch 8.1.0620
-Problem:    Overuling CONF_ARGS from the environment no longer works. (Tony
+Problem:    Overruling CONF_ARGS from the environment no longer works. (Tony
             Mechelynck)
 Solution:   Do not define any CONF_ARGS by default.
 Files:	    src/Makefile
@@ -29385,8 +29389,8 @@ Solution:   Define FOR_ALL_FRAMES. (Yegappan Lakshmanan)
 Files:	    src/ex_docmd.c, src/globals.h, src/screen.c, src/window.c
 
 Patch 8.1.0624 (after 8.2.0620)
-Problem:    Overuling CONF_ARGS from the environment still does not work. (Tony
-            Mechelynck)
+Problem:    Overruling CONF_ARGS from the environment still does not work.
+            (Tony Mechelynck)
 Solution:   Add back CONF_ARGS next to the new numbered ones.
 Files:	    src/Makefile
 
@@ -29480,7 +29484,7 @@ Files:	    src/testdir/test_textprop.vim
 
 Patch 8.1.0640
 Problem:    Get E14 while typing command :tab with 'incsearch' set.
-Solution:   Do not give an error when looking for the command. (Yasuhiro
+Solution:   Do not give an error when looking for the command. (Hirohito
             Higashi)
 Files:	    src/testdir/test_search.vim, src/ex_docmd.c
 
@@ -29617,7 +29621,7 @@ Files:	    src/screen.c
 Patch 8.1.0664
 Problem:    Configure "fail-if-missing" does not apply to the enable-gui
             argument. (Rhialto)
-Solution:   Make configure fail if a GUI was specifified and "fail-if-missing"
+Solution:   Make configure fail if a GUI was specified and "fail-if-missing"
             is enabled and the GUI test fails.
 Files:	    src/configure.ac, src/auto/configure
 
@@ -29935,7 +29939,7 @@ Files:	    nsis/icons.zip, nsis/icons/disabled.bmp, nsis/icons/enabled.bmp,
             nsis/README.txt, Filelist, Makefile
 
 Patch 8.1.0714
-Problem:    Unessesary #if lines in GTK code.
+Problem:    Unnecessary #if lines in GTK code.
 Solution:   Remove the #if. (Ken Takata, closes #3785)
 Files:	    src/gui_beval.c, src/if_mzsch.c
 
@@ -29970,7 +29974,7 @@ Files:	    src/evalfunc.c, src/version.c, src/normal.c, src/ops.c,
             src/feature.h, runtime/doc/various.txt
 
 Patch 8.1.0720
-Problem:    Cannot easily change the current quickfx list index.
+Problem:    Cannot easily change the current quickfix list index.
 Solution:   Add the "idx" argument to setqflist(). (Yegappan Lakshmanan,
             closes #3701)
 Files:	    runtime/doc/eval.txt, runtime/doc/quickfix.txt, src/quickfix.c,
@@ -30777,7 +30781,7 @@ Files:	    src/ui.c
 
 Patch 8.1.0836
 Problem:    User completion test can fail on MS-Windows.
-Solution:   Allow for other names befor "Administrator".
+Solution:   Allow for other names before "Administrator".
 Files:	    src/testdir/test_cmdline.vim
 
 Patch 8.1.0837
@@ -30804,7 +30808,7 @@ Files:	    src/ui.c, src/testdir/test_timers.vim, src/gui_gtk_x11.c,
 
 Patch 8.1.0841
 Problem:    Travis config to get Lua on MacOS is too complicated.
-Solution:   Use an addons entry. (Ozaki Kiichi, closes 3876)
+Solution:   Use an addons entry. (Ozaki Kiichi, closes #3876)
 Files:	    .travis.yml
 
 Patch 8.1.0842
@@ -30912,7 +30916,7 @@ Solution:   Make them the same, update docs. (close #3882)
 Files:	    src/option.c, runtime/doc/options.txt, runtime/doc/indent.txt
 
 Patch 8.1.0859
-Problem:    "%v" in 'errorformat' does handle multi-byte characters.
+Problem:    "%v" in 'errorformat' does not handle multi-byte characters.
 Solution:   Handle multi-byte characters. (Yegappan Lakshmanan, closes #3700)
 Files:	    src/quickfix.c, src/testdir/test_quickfix.vim
 
@@ -31034,7 +31038,7 @@ Files:	    src/testdir/test_functions.vim
 
 Patch 8.1.0879
 Problem:    MS-Windows: temp name encoding can be wrong.
-Solution:   Convert from active code page to 'encoding'. (Ken Takata,
+Solution:   Convert from active code page to 'encoding'. (Yasuhiro Matsumoto,
             closes #3520, closes #1698)
 Files:	    src/fileio.c
 
@@ -31064,7 +31068,7 @@ Files:	    src/fileio.c
 
 Patch 8.1.0883
 Problem:    Missing some changes for Ex commands.
-Solution:   Add mising changes in header file.
+Solution:   Add missing changes in header file.
 Files:	    src/ex_cmds.h
 
 Patch 8.1.0884
@@ -31111,7 +31115,7 @@ Solution:   Correct using use_file_for_out in condition. (Ozaki Kiichi, closes
 Files:	    src/os_unix.c, src/testdir/test_channel.vim
 
 Patch 8.1.0891
-Problem:    Substitute command inssuficiently tested.
+Problem:    Substitute command insufficiently tested.
 Solution:   Add more test coverage. (Dominique Pelle)
 Files:	    src/testdir/test_substitute.vim
 
@@ -31165,7 +31169,7 @@ Solution:   Remove check_restricted().
 Files:	    src/eval.c
 
 Patch 8.1.0900
-Problem:    ConPTY many crash with 32-bit build.
+Problem:    ConPTY may crash with 32-bit build.
 Solution:   Fix function declarations. (Ken Takata, closes #3943)
 Files:	    src/terminal.c
 
@@ -31219,7 +31223,7 @@ Files:	    runtime/doc/options.txt, src/os_win32.c, src/proto/os_win32.pro,
 
 Patch 8.1.0910
 Problem:    Crash with tricky search pattern. (Kuang-che Wu)
-Solution:   Check for runnning out of memory. (closes #3950)
+Solution:   Check for running out of memory. (closes #3950)
 Files:	    src/regexp_nfa.c, src/testdir/test_regexp_latin.vim
 
 Patch 8.1.0911
@@ -31419,7 +31423,7 @@ Files:	    src/ex_docmd.c, src/normal.c, src/os_win32.c,
             src/proto/os_win32.pro
 
 Patch 8.1.0941
-Problem:    Macros for MS-Windows are inconsistent, using "32", "3264 and
+Problem:    Macros for MS-Windows are inconsistent, using "32", "3264" and
             others.
 Solution:   Use MSWIN for all MS-Windows builds.  Use FEAT_GUI_MSWIN for the
             GUI build. (Hirohito Higashi, closes #3932)
@@ -31481,7 +31485,7 @@ Solution:   Do not enable filetype detection.
 Files:	    runtime/defaults.vim
 
 Patch 8.1.0949
-Problem:    MS-windows defines GUI macros different than other systems.
+Problem:    MS-Windows defines GUI macros different than other systems.
 Solution:   Swap FEAT_GUI and FEAT_GUI_MSWIN. (Hirohito Higashi, closes #3996)
 Files:	    src/Make_bc5.mak, src/Make_cyg_ming.mak, src/Make_ivc.mak,
             src/Make_mvc.mak, src/if_ole.cpp, src/vim.h, src/vim.rc
@@ -31592,7 +31596,8 @@ Files:	    src/regexp_nfa.c, src/testdir/test_search.vim
 
 Patch 8.1.0969
 Problem:    Message written during startup is truncated.
-Solution:   Restore message after truncating. (closes 3969)
+Solution:   Restore message after truncating. (closes #3969)  Add a test.
+            (Yasuhiro Matsumoto)
 Files:	    src/message.c, src/testdir/test_startup.vim
 
 Patch 8.1.0970
@@ -31634,7 +31639,7 @@ Files:	    src/screen.c, src/textprop.c
 
 Patch 8.1.0976
 Problem:    Dosinstall still has buffer overflow problems.
-Solution:   Adjust  buffer sizes. (Yasuhiro Matsumoto, closes #4002)
+Solution:   Adjust buffer sizes. (Yasuhiro Matsumoto, closes #4002)
 Files:	    src/dosinst.c, src/dosinst.h, src/uninstal.c
 
 Patch 8.1.0977
@@ -31685,7 +31690,7 @@ Solution:   Check for long becoming negative int. (closes #4042)
 Files:	    src/regexp.c, src/testdir/test_search.vim
 
 Patch 8.1.0986
-Problem:    rename() is not propertly tested.
+Problem:    rename() is not properly tested.
 Solution:   Add tests. (Dominique Pelle, closes #4061)
 Files:	    src/testdir/Make_all.mak, src/testdir/test_alot.vim,
             src/testdir/test_rename.vim
@@ -31742,7 +31747,7 @@ Files:	    src/window.c, src/evalfunc.c, runtime/doc/eval.txt,
 Patch 8.1.0995
 Problem:    A getchar() call while executing a register resets the
             reg_executing() result.
-Solution:   Save and restore reg_executing. (closes #406
+Solution:   Save and restore reg_executing. (closes #4066)
 Files:	    src/evalfunc.c, src/testdir/test_functions.vim
 
 Patch 8.1.0996 (after 8.1.0994)
@@ -31847,7 +31852,7 @@ Files:	    src/os_win32.c
 
 Patch 8.1.1014
 Problem:    MS-Windows: /analyze only defined for non-debug version.
-Solution:   Move adding of /analyze up. (Taro Muraoka, closes #4114)
+Solution:   Move adding of /analyze up. (Ken Takata, closes #4114)
 Files:	    src/Make_mvc.mak
 
 Patch 8.1.1015
@@ -31859,9 +31864,9 @@ Files:	    runtime/doc/eval.txt, runtime/doc/quickfix.txt, src/quickfix.c,
             src/testdir/test_quickfix.vim, src/window.c
 
 Patch 8.1.1016
-Problem:    MS-Windows: No color in shell when using "!" in 'guioptions.
+Problem:    MS-Windows: No color in shell when using "!" in 'guioptions'.
 Solution:   Don't stop termcap when using a terminal window for the shell.
-            (vim-jp, closes #4117)
+            (Nobuhiro Takasaki, vim-jp, closes #4117)
 Files:	    src/ex_cmds.c
 
 Patch 8.1.1017
@@ -32049,7 +32054,7 @@ Files:	    src/undo.c, src/proto/undo.pro, src/normal.c,
             src/testdir/test_normal.vim
 
 Patch 8.1.1050
-Problem:    Blank srceen when DirectWrite failed.
+Problem:    Blank screen when DirectWrite failed.
 Solution:   Call redraw_later_clear() after recreating the Direct2D render
             target. (Ken Takata, closes #4172)
 Files:	    src/gui_dwrite.cpp
@@ -32411,7 +32416,7 @@ Files:	    src/Make_cyg.mak, src/Make_cyg_ming.mak, src/Make_mvc.mak,
 
 Patch 8.1.1105
 Problem:    Long escape sequences may be split up.
-Solution:   Assume esccape sequences can be up to 80 bytes long. (Nobuhiro
+Solution:   Assume escape sequences can be up to 80 bytes long. (Nobuhiro
             Takasaki, closes #4196)
 Files:	    src/term.c
 
@@ -32471,7 +32476,8 @@ Files:	    src/autocmd.c
 
 Patch 8.1.1116
 Problem:    Cannot enforce a Vim script style.
-Solution:   Add the :scriptversion command. (closes #3857)
+Solution:   Add the :scriptversion command. (idea by Yasuhiro Matsumoto,
+            closes #3857)
 Files:	    runtime/doc/repeat.txt, runtime/doc/eval.txt, src/eval.c,
             src/ex_cmds.h, src/evalfunc.c, src/ex_cmds2.c,
             src/proto/ex_cmds2.pro, src/structs.h, src/buffer.c, src/main.c,
@@ -32576,7 +32582,7 @@ Files:	    src/globals.h
 
 Patch 8.1.1134
 Problem:    Buffer for quickfix window is reused for another file.
-Solution:   Don't reuse the quickfx buffer. (Yegappan Lakshmanan)
+Solution:   Don't reuse the quickfix buffer. (Yegappan Lakshmanan)
 Files:	    src/buffer.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.1135 (after 8.1.1134)
@@ -32598,7 +32604,8 @@ Files:	    src/testdir/test_termcodes.vim
 
 Patch 8.1.1138
 Problem:    Plugins don't get notified when the popup menu changes.
-Solution:   Add the CompleteChanged event. (Andy Massimino. closes #4176)
+Solution:   Add the CompleteChanged event. (Qiming Zhao, Andy Massimino,
+            closes #4176)
 Files:	    runtime/doc/autocmd.txt, src/autocmd.c, src/dict.c,
             src/insexpand.c, src/popupmnu.c, src/proto/autocmd.pro,
             src/proto/dict.pro, src/proto/popupmnu.pro,
@@ -32681,7 +32688,7 @@ Files:	    src/Makefile
 
 Patch 8.1.1152
 Problem:    Compiler warning with VS2019.
-Solution:   Specify different offset for "AMD64". (closes #4235)
+Solution:   Specify different offset for "AMD64". (Ken Takata, closes #4235)
 Files:	    src/GvimExt/Makefile
 
 Patch 8.1.1153
@@ -32691,7 +32698,7 @@ Files:	    src/po/Makefile
 
 Patch 8.1.1154
 Problem:    Getting a newer msgfmt on Travis is too complicated.
-Solution:   Use a "sourcline" entry. (Ozaki Kiichi, closes #4236)
+Solution:   Use a "sourceline" entry. (Ozaki Kiichi, closes #4236)
 Files:	    .travis.yml
 
 Patch 8.1.1155
@@ -32898,7 +32905,7 @@ Files:	    src/edit.c, src/testdir/test_bufline.vim,
 
 Patch 8.1.1190
 Problem:    has('vimscript-3') does not work.
-Solution:   Add "vimscript-3" to the list of features.
+Solution:   Add "vimscript-3" to the list of features. (partly by Ken Takata)
 Files:	    src/evalfunc.c, src/testdir/test_eval_stuff.vim
 
 Patch 8.1.1191
@@ -32947,7 +32954,7 @@ Files:	    src/main.c, src/testdir/test_startup.vim,
 
 Patch 8.1.1198
 Problem:    Bracketed paste may remain active after Vim exists, because the
-            terminal emulater restores the setting.
+            terminal emulator restores the setting.
 Solution:   Set/reset bracketed paste mode before setting the terminal mode.
             (closes #3579)
 Files:	    src/term.c
@@ -33331,8 +33338,8 @@ Solution:   Adjust comment.  Don't use different directory for DIRECTX.  Do
 Files:	    src/Make_mvc.mak
 
 Patch 8.1.1258
-Problem:    The "N files to edit" message can not be surpressed.
-Solution:   Surpress the message with --not-a-term. (closes #4320)
+Problem:    The "N files to edit" message can not be suppressed.
+Solution:   Suppress the message with --not-a-term. (closes #4320)
 Files:	    src/main.c
 
 Patch 8.1.1259
@@ -33741,7 +33748,7 @@ Files:	    src/configure.ac, src/auto/configure, src/config.h.in,
 
 Patch 8.1.1314
 Problem:    MSVC makefile is not nicely indented.
-Solution:   Addjust spaces in preprocessor directives. (Ken Takata)
+Solution:   Adjust spaces in preprocessor directives. (Ken Takata)
 Files:	    src/Make_mvc.mak
 
 Patch 8.1.1315
@@ -33757,7 +33764,8 @@ Files:	    src/undo.c
 
 Patch 8.1.1317
 Problem:    Output from Travis can be improved.
-Solution:   Add section headers.  Handle errors better. (closes #4098)
+Solution:   Add section headers.  Handle errors better. (Ozaki Kiichi,
+            closes #4098)
 Files:	    .travis.yml, configure
 
 Patch 8.1.1318
@@ -33790,7 +33798,7 @@ Files:	    runtime/doc/eval.txt, runtime/doc/usr_41.txt,
 
 Patch 8.1.1322
 Problem:    Cygwin makefile is not nicely indented.
-Solution:   Addjust spaces in preprocessor directives. (Ken Takata)
+Solution:   Adjust spaces in preprocessor directives. (Ken Takata)
 Files:	    src/Make_cyg_ming.mak
 
 Patch 8.1.1323
@@ -34028,7 +34036,7 @@ Files:	    src/ex_cmds.c, src/testdir/test_textprop.vim, src/vim.h,
 
 Patch 8.1.1360 (after Patch 8.1.1345)
 Problem:    Buffer left 'nomodifiable' after :substitute. (Ingo Karkat)
-Solution:   Save the value of 'modifiable' earlier' (Christian Brabandt,
+Solution:   Save the value of 'modifiable' earlier. (Christian Brabandt,
             closes #4403)
 Files:	    src/ex_cmds.c, src/testdir/test_substitute.vim
 
@@ -34098,7 +34106,7 @@ Patch 8.1.1371
 Problem:    Cannot recover from a swap file.
 Solution:   Do not expand environment variables in the swap file name.
             Do not check the extension when we already know a file is a swap
-            file.  (Ken Takata, closes 4415, closes #4369)
+            file.  (Ken Takata, closes #4415, closes #4369)
 Files:	    src/buffer.c, src/ex_cmds.c, src/ex_cmds2.c, src/ex_docmd.c,
             src/gui.c, src/if_cscope.c, src/main.c, src/memline.c,
             src/misc1.c, src/proto/memline.pro, src/proto/misc1.pro,
@@ -34109,7 +34117,7 @@ Patch 8.1.1372
 Problem:    When evaluating 'statusline' the current window is unknown.
             (Daniel Hahler)
 Solution:   Set "g:actual_curwin" for %{} items.  Set "g:statusline_winid"
-            when evaluationg %!. (closes #4406, closes #3299)
+            when evaluating %!. (closes #4406, closes #3299)
 Files:	    src/buffer.c, runtime/doc/options.txt,
             src/testdir/test_statusline.vim
 
@@ -34154,13 +34162,13 @@ Files:	    src/fileio.c, src/testdir/test_filechanged.vim
 
 Patch 8.1.1380
 Problem:    MS-Windows building VIMDLL with MSVC: SUBSYSTEM is not set.
-Solution:   Invert condition. (closes #4422)
+Solution:   Invert condition. (Ken Takata, closes #4422)
 Files:	    src/Make_mvc.mak
 
 Patch 8.1.1381
 Problem:    MS-Windows: missing build dependency.
 Solution:   Make gui_dwrite.cpp depend on gui_dwrite.h. (Ken Takata,
-            closes #4423
+            closes #4423)
 Files:	    src/Make_cyg_ming.mak, src/Make_mvc.mak
 
 Patch 8.1.1382
@@ -34202,7 +34210,7 @@ Solution:   Use STRLEN() instead of strlen().
 Files:	    src/fileio.c
 
 Patch 8.1.1386
-Problem:    Unessesary type casts for lalloc().
+Problem:    Unnecessary type casts for lalloc().
 Solution:   Remove type casts.  Change lalloc(size, TRUE) to alloc(size).
 Files:	    src/buffer.c, src/change.c, src/channel.c, src/diff.c, src/edit.c,
             src/eval.c, src/ex_cmds.c, src/ex_getln.c, src/fileio.c,

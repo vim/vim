@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 May 26
+*popup.txt*  For Vim version 8.1.  Last change: 2019 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,9 +13,7 @@ THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 3. Examples			|popup-examples|
 
 
-{not available if the |+eval| feature was disabled at compile time}
-{not able to use text properties if the |+textprop| feature was disabled at
-compile time}
+{not available if the |+textprop| feature was disabled at compile time}
 
 ==============================================================================
 1. Introduction						*popup-intro*
@@ -60,14 +58,21 @@ WINDOW POSITION AND SIZE			*popup-position*
 
 The height of the window is normally equal to the number of, possibly
 wrapping, lines in the buffer.  It can be limited with the "maxheight"
-property.  You can use empty lines to increase the height.
+property.  You can use empty lines to increase the height or the "minheight"
+property.
 
 The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
-increase the width.
+increase the width or the "minwidth" property.
 
 By default the 'wrap' option is set, so that no text disappears.  However, if
 there is not enough space, some text may be invisible.
+
+Vim tries to show the popup in the location you specify.  In some cases, e.g.
+when the popup would go outside of the Vim window, it will show it somewhere
+else.  E.g. if you use `popup_atcursor()` the popup normally shows just above
+the current cursor position, but if the cursor is close to the top of the Vim
+window it will be placed below the cursor position.
 
 
 
@@ -92,9 +97,13 @@ IMPLEMENTATION:
 - Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
+    Keep mask until next update_screen(), find differences and redraw affected
+    windows/lines
     Fix redrawing problem with completion.
     Fix redrawing problem when scrolling non-current window
     Fix redrawing the statusline on top of a popup
+- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.  Or whitelist
+  commands that are allowed?
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -114,7 +123,7 @@ popup_create({text}, {options})				*popup_create()*
 		- a string
 		- a list of strings
 		- a list of text lines with text properties
-		  	{not implemented yet}
+
 		{options} is a dictionary with many possible entries.
 		See |popup_create-usage| for details.
 
@@ -410,7 +419,7 @@ So we get:
 	type		name of the text property type, as added with
 			|prop_type_add()|
 	transparent	do not show these characters, show the text under it;
-			if there is an border character to the right or below
+			if there is a border character to the right or below
 			it will be made transparent as well
 			{not implemented yet}
 

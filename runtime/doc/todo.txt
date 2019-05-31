@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 May 26
+*todo.txt*      For Vim version 8.1.  Last change: 2019 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,6 +42,8 @@ Ongoing work on text properties, see src/textprop.c
 
 Popup windows are being implemented, see |popup-window|.
 
+Listener causes extra } to be inserted. (Paul Jolly, #4455)
+
 Patch to beautify the output of a test run. (Christian Brabandt, #4391)
 can be improved.
 
@@ -51,6 +53,12 @@ Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
 Patch for Chinese translations for nsis. (#4407)  Comments handled?
+
+Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
+'shortmess', filled on demand and cached until search changes.
+
+listener callback is invoked while another is still busy? (Paul Jolly)
+Should not happen because of text lock.
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -130,6 +138,12 @@ Should do current file first and not split it up when more results are found.
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
+#4314, solves the Rasenmäher problem.
+
+Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
+fit. (Kevin Lawler, #4457)
+
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
@@ -176,6 +190,10 @@ register "", So that registers can be saved and fully restored.
 
 Add a way to create an empty, hidden buffer.  Like doing ":new|hide".
 ":let buf = bufcreate('name')
+
+Session file contains absolute paths when "curdir" is removed form
+'sessionoptions', making it impossible to have a session with a relative path.
+(#4450)
 
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something

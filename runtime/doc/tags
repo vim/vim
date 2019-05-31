@@ -4742,6 +4742,7 @@ E99	diff.txt	/*E99*
 E990	eval.txt	/*E990*
 E991	eval.txt	/*E991*
 E992	options.txt	/*E992*
+E993	popup.txt	/*E993*
 E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -8207,7 +8208,7 @@ popup_dialog()	popup.txt	/*popup_dialog()*
 popup_filter_menu()	popup.txt	/*popup_filter_menu()*
 popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
-popup_getposition()	popup.txt	/*popup_getposition()*
+popup_getpos()	popup.txt	/*popup_getpos()*
 popup_hide()	popup.txt	/*popup_hide()*
 popup_menu()	popup.txt	/*popup_menu()*
 popup_move()	popup.txt	/*popup_move()*
@@ -9853,6 +9854,7 @@ win32-vimrun	gui_w32.txt	/*win32-vimrun*
 win32-win3.1	os_win32.txt	/*win32-win3.1*
 win32-win95	os_win32.txt	/*win32-win95*
 win32s	os_win32.txt	/*win32s*
+win_execute()	eval.txt	/*win_execute()*
 win_findbuf()	eval.txt	/*win_findbuf()*
 win_getid()	eval.txt	/*win_getid()*
 win_gotoid()	eval.txt	/*win_gotoid()*
