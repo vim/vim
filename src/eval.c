@@ -196,7 +196,6 @@ static struct vimvar
     {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
     {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
     {VV_NAME("event",		VAR_DICT), VV_RO},
-    {VV_NAME("searchstat",	 VAR_DICT), VV_RO},
 };
 
 /* shorthand */
@@ -361,7 +360,6 @@ eval_init(void)
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
     set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
-    set_vim_var_dict(VV_SEARCHSTAT, dict_alloc_lock(VAR_FIXED));
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
