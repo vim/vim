@@ -5452,6 +5452,8 @@ ex_doautocmd(exarg_T *eap)
     static void
 ex_bunload(exarg_T *eap)
 {
+    if (NOT_IN_POPUP_WINDOW)
+	return;
     eap->errmsg = do_bufdel(
 	    eap->cmdidx == CMD_bdelete ? DOBUF_DEL
 		: eap->cmdidx == CMD_bwipeout ? DOBUF_WIPE
@@ -5466,6 +5468,8 @@ ex_bunload(exarg_T *eap)
     static void
 ex_buffer(exarg_T *eap)
 {
+    if (NOT_IN_POPUP_WINDOW)
+	return;
     if (*eap->arg)
 	eap->errmsg = e_trailing;
     else
@@ -6768,6 +6772,9 @@ ex_splitview(exarg_T *eap)
 		       || eap->cmdidx == CMD_tabfind
 		       || eap->cmdidx == CMD_tabnew;
 
+    if (NOT_IN_POPUP_WINDOW)
+	return;
+
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
@@ -6895,6 +6902,8 @@ ex_tabnext(exarg_T *eap)
 {
     int tab_number;
 
+    if (NOT_IN_POPUP_WINDOW)
+	return;
     switch (eap->cmdidx)
     {
 	case CMD_tabfirst:
@@ -7146,6 +7155,8 @@ do_exedit(
     int		need_hide;
     int		exmode_was = exmode_active;
 
+    if (NOT_IN_POPUP_WINDOW)
+	return;
     /*
      * ":vi" command ends Ex mode.
      */

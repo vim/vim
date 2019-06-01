@@ -87,7 +87,8 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    Prenum1 = Prenum == 0 ? 1 : Prenum;
+    if (NOT_IN_POPUP_WINDOW)
+	return;
 
 #ifdef FEAT_CMDWIN
 # define CHECK_CMDWIN \
@@ -101,6 +102,8 @@ do_window(
 #else
 # define CHECK_CMDWIN do { /**/ } while (0)
 #endif
+
+    Prenum1 = Prenum == 0 ? 1 : Prenum;
 
     switch (nchar)
     {
@@ -732,6 +735,9 @@ cmd_with_count(
     int
 win_split(int size, int flags)
 {
+    if (NOT_IN_POPUP_WINDOW)
+	return FAIL;
+
     /* When the ":tab" modifier was used open a new tab page instead. */
     if (may_open_tabpage() == OK)
 	return OK;
@@ -1509,7 +1515,9 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (ONE_WINDOW)	    /* just one window */
+    if (NOT_IN_POPUP_WINDOW)
+	return;
+    if (ONE_WINDOW)	    // just one window
     {
 	beep_flush();
 	return;
@@ -2362,6 +2370,9 @@ win_close(win_T *win, int free_buf)
     int		help_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
+
+    if (NOT_IN_POPUP_WINDOW)
+	return FAIL;
 
     if (last_window())
     {
@@ -4221,6 +4232,8 @@ win_goto(win_T *wp)
     win_T	*owp = curwin;
 #endif
 
+    if (NOT_IN_POPUP_WINDOW)
+	return;
     if (text_locked())
     {
 	beep_flush();

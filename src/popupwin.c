@@ -747,4 +747,16 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 # endif
     }
 }
+
+    int
+not_in_popup_window()
+{
+    if (bt_popup(curwin->w_buffer))
+    {
+	emsg(_("E994: Not allowed in a popup window"));
+	return TRUE;
+    }
+    return FALSE;
+}
+
 #endif // FEAT_TEXT_PROP
