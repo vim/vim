@@ -201,6 +201,15 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	wp->w_p_wrap = nr != 0;
     }
 
+    di = dict_find(dict, (char_u *)"callback", -1);
+    if (di != NULL)
+    {
+	callback_T	callback = get_callback(&di->di_tv);
+
+	if (callback.cb_name != NULL)
+	    set_callback(&wp->w_close_cb, &callback);
+    }
+
     di = dict_find(dict, (char_u *)"filter", -1);
     if (di != NULL)
     {
@@ -632,14 +641,53 @@ popup_any_visible(void)
 }
 
 /*
+ * Invoke the close callback for window "wp" with value "result".
+ * Careful: The callback may make "wp" invalid!
+ */
+    static void
+invoke_popup_callback(win_T *wp, typval_T *result)
+{
+    typval_T	rettv;
+    int		dummy;
+    typval_T	argv[3];
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = (varnumber_T)wp->w_id;
+
+    if (result != NULL && result->v_type != VAR_UNKNOWN)
+	copy_tv(result, &argv[1]);
+    else
+    {
+	argv[1].v_type = VAR_NUMBER;
+	argv[1].vval.v_number = 0;
+    }
+
+    argv[2].v_type = VAR_UNKNOWN;
+
+    call_callback(&wp->w_close_cb, -1,
+			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    if (result != NULL)
+	clear_tv(&argv[1]);
+    clear_tv(&rettv);
+}
+
+/*
  * popup_close({id})
  */
     void
 f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
 
-    popup_close(id);
+    if (wp != NULL)
+    {
+	if (wp->w_close_cb.cb_name != NULL)
+	    // Careful: This may make "wp" invalid.
+	    invoke_popup_callback(wp, &argvars[1]);
+
+	popup_close(id);
+    }
 }
 
 /*
@@ -688,6 +736,7 @@ popup_free(win_T *wp)
 
 /*
  * Close a popup window by Window-id.
+ * Does not invoke the callback.
  */
     void
 popup_close(int id)

@@ -2894,6 +2894,7 @@ struct window_S
     int		w_border_char[8];   // popup border characters
     varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
 					  // computed
+    callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window

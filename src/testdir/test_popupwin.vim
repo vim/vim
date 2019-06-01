@@ -586,3 +586,13 @@ func Test_popup_filter()
   delfunc MyPopupFilter
   popupclear
 endfunc
+
+func Test_popup_close_callback()
+  func PopupDone(id, result)
+    let g:result = a:result
+  endfunc
+  let winid = popup_create('something', {'callback': 'PopupDone'})
+  redraw
+  call popup_close(winid, 'done')
+  call assert_equal('done', g:result)
+endfunc

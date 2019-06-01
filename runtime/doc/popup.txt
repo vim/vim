@@ -90,6 +90,7 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
+- Fix positioning with border and padding.
 - Why does 'nrformats' leak from the popup window buffer???
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
@@ -133,9 +134,14 @@ popup_create({text}, {options})				*popup_create()*
 <		In case of failure zero is returned.
 
 
-popup_close({id})					*popup_close()*
+popup_close({id} [, {result}])				*popup_close()*
 		Close popup {id}.  The window and the associated buffer will
 		be deleted.
+
+		If the popup has a callback it will be called just before the
+		popup window is deleted.  If the optional {result} is present
+		it will be passed as the second argument of the callback.
+		Otherwise zero is passed to the callback.
 
 
 popup_dialog({text}, {options})				*popup_dialog()*
@@ -145,6 +151,7 @@ popup_dialog({text}, {options})				*popup_dialog()*
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'border': [],
+				\ 'padding': [],
 				\})
 <		Use {options} to change the properties.
 
@@ -166,6 +173,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
+	  	{not implemented yet: close when cursor moves}
 		Show the {text} above the cursor, and close it when the cursor
 		moves.  This works like: >
 			call popup_create({text}, {
@@ -394,7 +402,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			|popup-filter|
 	callback	a callback to be used when the popup closes, e.g. when
 			using |popup_filter_menu()|, see |popup-callback|.
-			{not implemented yet}
 
 Depending on the "zindex" the popup goes under or above other popups.  The
 completion menu (|popup-menu|) has zindex 100.  For messages that occur for a
@@ -477,11 +484,12 @@ Vim recognizes the Esc key.  If you do use Esc, it is reecommended to set the
 
 POPUP CALLBACK						*popup-callback*
 
-{not implemented yet}
 A callback that is invoked when the popup closes.  Used by
-|popup_filter_menu()|.  Invoked with two arguments: the ID of the popup and
-the result, which would usually be an index in the popup lines, or whatever
-the filter wants to pass.
+|popup_filter_menu()|.
+
+The callback is invoked with two arguments: the ID of the popup window and the
+result, which could be an index in the popup lines, or whatever was passed as
+the second argument of `popup_close()`.
 
 ==============================================================================
 3. Examples						*popup-examples*
