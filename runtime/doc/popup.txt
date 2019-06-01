@@ -368,15 +368,19 @@ The second argument of |popup_create()| is a dictionary with options:
 	border		list with numbers, defining the border thickness
 			above/right/below/left of the popup (similar to CSS);
 			only values of zero and non-zero are recognized;
-			an empty list uses a border of 1 all around
-	borderhighlight	highlight group name to use for the border
-			{not implemented yet}
+			an empty list uses a border all around
+	borderhighlight	list of highlight group names to use for the border;
+			when one entry it is used for all borders, otherwise
+			the highlight for the top/right/bottom/left border
 	borderchars	list with characters, defining the character to use
 			for the top/right/bottom/left border; optionally
 			followed by the character to use for the
-			topright/botright/botleft/topleft corner; an empty
-			list can be used to show a double line all around
-			{not implemented yet}
+			topleft/topright/botright/botleft corner; when the
+			list has one character it is used for all; when
+			the list has two characters the first is used for the
+			border lines, the second for the corners; by default
+			a double line is used all around when 'encoding' is
+			"utf-8", otherwise ASCII characters are used.
 	zindex		priority for the popup, default 50
 	time		time in milliseconds after which the popup will close;
 			when omitted |popup_close()| must be used.

@@ -144,6 +144,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
     int		nr;
     char_u	*str;
     dictitem_T	*di;
+    int		i;
 
     wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
     wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
@@ -211,6 +212,66 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 
     get_padding_border(dict, wp->w_popup_padding, "padding", 999);
     get_padding_border(dict, wp->w_popup_border, "border", 1);
+
+    for (i = 0; i < 4; ++i)
+	VIM_CLEAR(wp->w_border_highlight[i]);
+    di = dict_find(dict, (char_u *)"borderhighlight", -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type != VAR_LIST)
+	    emsg(_(e_listreq));
+	else
+	{
+	    list_T	*list = di->di_tv.vval.v_list;
+	    listitem_T	*li;
+
+	    if (list != NULL)
+		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
+							 ++i, li = li->li_next)
+		{
+		    str = tv_get_string(&li->li_tv);
+		    if (*str != NUL)
+			wp->w_border_highlight[i] = vim_strsave(str);
+		}
+	    if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
+		for (i = 1; i < 4; ++i)
+			wp->w_border_highlight[i] =
+					vim_strsave(wp->w_border_highlight[0]);
+	}
+    }
+
+    for (i = 0; i < 8; ++i)
+	wp->w_border_char[i] = 0;
+    di = dict_find(dict, (char_u *)"borderchars", -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type != VAR_LIST)
+	    emsg(_(e_listreq));
+	else
+	{
+	    list_T	*list = di->di_tv.vval.v_list;
+	    listitem_T	*li;
+
+	    if (list != NULL)
+		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
+							 ++i, li = li->li_next)
+		{
+		    str = tv_get_string(&li->li_tv);
+		    if (*str != NUL)
+			wp->w_border_char[i] = mb_ptr2char(str);
+		}
+	    if (list->lv_len == 1)
+		for (i = 1; i < 8; ++i)
+		    wp->w_border_char[i] = wp->w_border_char[0];
+	    if (list->lv_len == 2)
+	    {
+		for (i = 4; i < 8; ++i)
+		    wp->w_border_char[i] = wp->w_border_char[1];
+		for (i = 1; i < 4; ++i)
+		    wp->w_border_char[i] = wp->w_border_char[0];
+	    }
+	}
+    }
 }
 
 /*

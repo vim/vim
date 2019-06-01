@@ -77,6 +77,26 @@ func Test_popup_with_border_and_padding()
     call delete('XtestPopupBorder')
   endfor
 
+  call writefile([
+	\ "call setline(1, range(1, 100))",
+	\ "hi BlueColor ctermbg=lightblue",
+	\ "hi TopColor ctermbg=253",
+	\ "hi RightColor ctermbg=245",
+	\ "hi BottomColor ctermbg=240",
+	\ "hi LeftColor ctermbg=248",
+	\ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor']})",
+	\ "call popup_create(['hello border', 'and more'], {'line': 2, 'col': 23, 'border': [], 'borderhighlight': ['TopColor', 'RightColor', 'BottomColor', 'LeftColor']})",
+	\ "call popup_create(['hello border', 'lines only'], {'line': 2, 'col': 43, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x']})",
+	\ "call popup_create(['hello border', 'with corners'], {'line': 2, 'col': 60, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x', '#']})",
+	\ "call popup_create(['hello border', 'with numbers'], {'line': 6, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['0', '1', '2', '3', '4', '5', '6', '7']})",
+	\ "call popup_create(['hello border', 'just blanks'], {'line': 7, 'col': 23, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': [' ']})",
+	\], 'XtestPopupBorder')
+  let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 12})
+  call VerifyScreenDump(buf, 'Test_popupwin_22', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupBorder')
+
   let with_border_or_padding = {
 	\ 'line': 2,
 	\ 'core_line': 3,
