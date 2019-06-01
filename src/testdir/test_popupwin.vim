@@ -4,7 +4,7 @@ if !has('textprop')
   finish
 endif
 
-"source screendump.vim
+source screendump.vim
 
 func Test_simple_popup()
   if !CanRunVimInTerminal()
