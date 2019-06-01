@@ -615,7 +615,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 
 // Values for w_popup_flags.
 #define POPF_HIDDEN	1	// popup is not displayed
-#define POPF_REDRAWN	2	// popup was just redrawn
+#define POPF_HANDLED	2	// popup was just redrawn or filtered
 
 /*
  * Terminal highlighting attribute bits.

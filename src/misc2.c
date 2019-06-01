@@ -2731,16 +2731,30 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode, /* prefer key code, e.g. K_DEL instead of DEL */
-    int		in_string) /* TRUE when inside a double quoted string */
+    int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
+    int		in_string)  // TRUE when inside a double quoted string
 {
     int		modifiers = 0;
     int		key;
-    int		dlen = 0;
 
     key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
     if (key == 0)
 	return 0;
+
+    return special_to_buf(key, modifiers, keycode, dst);
+}
+
+/*
+ * Put the character sequence for "key" with "modifiers" into "dst" and return
+ * the resulting length.
+ * When "keycode" is TRUE prefer key code, e.g. K_DEL instead of DEL.
+ * The sequence is not NUL terminated.
+ * This is how characters in a string are encoded.
+ */
+    int
+special_to_buf(int key, int modifiers, int keycode, char_u *dst)
+{
+    int		dlen = 0;
 
     /* Put the appropriate modifier in a string */
     if (modifiers != 0)

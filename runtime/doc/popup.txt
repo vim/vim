@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 May 31
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,11 +90,11 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- Implement filter.
-  Check that popup_close() works in the filter.
+- Invoke filter with character before mapping?
+- Handle screen resize in screenalloc(). (Ben Jackson, #4467)
+- Why does 'nrformats' leak from the popup window buffer???
 - Implement padding
 - Implement border
-- Handle screen resize in screenalloc().
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
     Keep mask until next update_screen(), find differences and redraw affected
@@ -102,8 +102,8 @@ IMPLEMENTATION:
     Fix redrawing problem with completion.
     Fix redrawing problem when scrolling non-current window
     Fix redrawing the statusline on top of a popup
-- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.  Or whitelist
-  commands that are allowed?
+- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
+  Use NOT_IN_POPUP_WINDOW.
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -385,7 +385,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			{not implemented yet}
 	filter		a callback that can filter typed characters, see 
 			|popup-filter|
-			{not implemented yet}
 	callback	a callback to be used when the popup closes, e.g. when
 			using |popup_filter_menu()|, see |popup-callback|.
 			{not implemented yet}
@@ -426,7 +425,6 @@ So we get:
 
 POPUP FILTER						*popup-filter*
 
-{not implemented yet}
 A callback that gets any typed keys while a popup is displayed.  The filter is
 not invoked when the popup is hidden.
 
@@ -437,10 +435,23 @@ filter is also called.  The filter of the popup window with the highest zindex
 is called first.
 
 The filter function is called with two arguments: the ID of the popup and the
-key.
+key, e.g.: >
+	func MyFilter(winid, key)
+	  if a:key == "\<F2>"
+	    " do something
+	    return 1
+	  endif
+	  if a:key == 'x'
+	    call popup_close(a:winid)
+	    return 1
+	  endif
+	  return 0
+  	endfunc
+
+Currently the key is what results after any mapping.  This may change...
 
 Some common key actions:
-	Esc		close the popup
+	x		close the popup (see note below)
 	cursor keys	select another entry
 	Tab		accept current suggestion
 
@@ -450,6 +461,11 @@ popup is col 1, row 1 (not counting the border).
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.
+
+Note that "x" is the normal way to close a popup.  You may want to use Esc,
+but since many keys start with an Esc character, there may be a delay before
+Vim recognizes the Esc key.  If you do use Esc, it is reecommended to set the
+'ttimeoutlen' option to 100 and set 'timeout' and/or 'ttimeout'.
 
 
 POPUP CALLBACK						*popup-callback*

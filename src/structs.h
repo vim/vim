@@ -2890,6 +2890,7 @@ struct window_S
     int		w_wantcol;	    // "col" for popup window
     varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
 					  // computed
+    callback_T	w_filter_cb;	    // popup filter callback
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif

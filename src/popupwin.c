@@ -149,24 +149,32 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
 	{
 	    wp->w_popup_timer = create_timer(nr, 0);
-	    wp->w_popup_timer->tr_callback.cb_name =
-				  vim_strsave(partial_name(tv.vval.v_partial));
-	    func_ref(wp->w_popup_timer->tr_callback.cb_name);
-	    wp->w_popup_timer->tr_callback.cb_partial = tv.vval.v_partial;
+	    wp->w_popup_timer->tr_callback = get_callback(&tv);
+	    clear_tv(&tv);
 	}
     }
 #endif
 
     // Option values resulting in setting an option.
-    str = dict_get_string(dict, (char_u *)"highlight", TRUE);
+    str = dict_get_string(dict, (char_u *)"highlight", FALSE);
     if (str != NULL)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
+
     di = dict_find(dict, (char_u *)"wrap", -1);
     if (di != NULL)
     {
 	nr = dict_get_number(dict, (char_u *)"wrap");
 	wp->w_p_wrap = nr != 0;
+    }
+
+    di = dict_find(dict, (char_u *)"filter", -1);
+    if (di != NULL)
+    {
+	callback_T	callback = get_callback(&di->di_tv);
+
+	if (callback.cb_name != NULL)
+	    set_callback(&wp->w_filter_cb, &callback);
     }
 }
 
@@ -757,6 +765,111 @@ not_in_popup_window()
 	return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Reset all the POPF_HANDLED flags in global popup windows and popup windows
+ * in the current tab.
+ */
+    void
+popup_reset_handled()
+{
+    win_T *wp;
+
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	wp->w_popup_flags &= ~POPF_HANDLED;
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	wp->w_popup_flags &= ~POPF_HANDLED;
+}
+
+/*
+ * Find the next visible popup where POPF_HANDLED is not set.
+ * Must have called popup_reset_handled() first.
+ * When "lowest" is TRUE find the popup with the lowest zindex, otherwise the
+ * popup with the highest zindex.
+ */
+    win_T *
+find_next_popup(int lowest)
+{
+    win_T   *wp;
+    win_T   *found_wp;
+    int	    found_zindex;
+
+    found_zindex = lowest ? INT_MAX : 0;
+    found_wp = NULL;
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	if ((wp->w_popup_flags & (POPF_HANDLED|POPF_HIDDEN)) == 0
+		&& (lowest ? wp->w_zindex < found_zindex
+			   : wp->w_zindex > found_zindex))
+	{
+	    found_zindex = wp->w_zindex;
+	    found_wp = wp;
+	}
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	if ((wp->w_popup_flags & (POPF_HANDLED|POPF_HIDDEN)) == 0
+		&& (lowest ? wp->w_zindex < found_zindex
+			   : wp->w_zindex > found_zindex))
+	{
+	    found_zindex = wp->w_zindex;
+	    found_wp = wp;
+	}
+
+    if (found_wp != NULL)
+	found_wp->w_popup_flags |= POPF_HANDLED;
+    return found_wp;
+}
+
+/*
+ * Invoke the filter callback for window "wp" with typed character "c".
+ * Uses the global "mod_mask" for modifiers.
+ * Returns the return value of the filter.
+ * Careful: The filter may make "wp" invalid!
+ */
+    static int
+invoke_popup_filter(win_T *wp, int c)
+{
+    int		res;
+    typval_T	rettv;
+    int		dummy;
+    typval_T	argv[3];
+    char_u	buf[NUMBUFLEN];
+
+    argv[0].v_type = VAR_NUMBER;
+    argv[0].vval.v_number = (varnumber_T)wp->w_id;
+
+    // Convert the number to a string, so that the function can use:
+    //	    if a:c == "\<F2>"
+    buf[special_to_buf(c, mod_mask, TRUE, buf)] = NUL;
+    argv[1].v_type = VAR_STRING;
+    argv[1].vval.v_string = vim_strsave(buf);
+
+    argv[2].v_type = VAR_UNKNOWN;
+
+    call_callback(&wp->w_filter_cb, -1,
+			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    res = tv_get_number(&rettv);
+    vim_free(argv[1].vval.v_string);
+    clear_tv(&rettv);
+    return res;
+}
+
+/*
+ * Called when "c" was typed: invoke popup filter callbacks.
+ * Returns TRUE when the character was consumed,
+ */
+    int
+popup_do_filter(int c)
+{
+    int		res = FALSE;
+    win_T   *wp;
+
+    popup_reset_handled();
+
+    while (!res && (wp = find_next_popup(FALSE)) != NULL)
+	if (wp->w_filter_cb.cb_name != NULL)
+	    res = invoke_popup_filter(wp, c);
+
+    return res;
 }
 
 #endif // FEAT_TEXT_PROP

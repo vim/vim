@@ -996,48 +996,19 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 update_popups(void)
 {
     win_T   *wp;
-    win_T   *lowest_wp;
-    int	    lowest_zindex;
 
-    // Reset all the VALID_POPUP flags.
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_REDRAWN;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_REDRAWN;
-
+    // Find the window with the lowest zindex that hasn't been updated yet,
+    // so that the window with a higher zindex is drawn later, thus goes on
+    // top.
     // TODO: don't redraw every popup every time.
-    for (;;)
+    popup_reset_handled();
+    while ((wp = find_next_popup(TRUE)) != NULL)
     {
-	// Find the window with the lowest zindex that hasn't been updated yet,
-	// so that the window with a higher zindex is drawn later, thus goes on
-	// top.
-	lowest_zindex = INT_MAX;
-	lowest_wp = NULL;
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
-					       && wp->w_zindex < lowest_zindex)
-	    {
-		lowest_zindex = wp->w_zindex;
-		lowest_wp = wp;
-	    }
-	for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
-					       && wp->w_zindex < lowest_zindex)
-	    {
-		lowest_zindex = wp->w_zindex;
-		lowest_wp = wp;
-	    }
-
-	if (lowest_wp == NULL)
-	    break;
-
 	// Recompute the position if the text changed.
-	if (lowest_wp->w_popup_last_changedtick
-					   != CHANGEDTICK(lowest_wp->w_buffer))
-	    popup_adjust_position(lowest_wp);
+	if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
+	    popup_adjust_position(wp);
 
-	win_update(lowest_wp);
-	lowest_wp->w_popup_flags |= POPF_REDRAWN;
+	win_update(wp);
     }
 }
 #endif

@@ -473,3 +473,46 @@ func Test_popup_atcursor()
 
   bwipe!
 endfunc
+
+func Test_popup_filter()
+  new
+  call setline(1, 'some text')
+
+  func MyPopupFilter(winid, c)
+    if a:c == 'e'
+      let g:eaten = 'e'
+      return 1
+    endif
+    if a:c == '0'
+      let g:ignored = '0'
+      return 0
+    endif
+    if a:c == 'x'
+      call popup_close(a:winid)
+      return 1
+    endif
+    return 0
+  endfunc
+
+  let winid = popup_create('something', {'filter': 'MyPopupFilter'})
+  redraw
+
+  " e is consumed by the filter
+  call feedkeys('e', 'xt')
+  call assert_equal('e', g:eaten)
+
+  " 0 is ignored by the filter
+  normal $
+  call assert_equal(9, getcurpos()[2])
+  call feedkeys('0', 'xt')
+  call assert_equal('0', g:ignored)
+  call assert_equal(1, getcurpos()[2])
+
+  " x closes the popup
+  call feedkeys('x', 'xt')
+  call assert_equal('e', g:eaten)
+  call assert_equal(-1, winbufnr(winid))
+
+  delfunc MyPopupFilter
+  popupclear
+endfunc

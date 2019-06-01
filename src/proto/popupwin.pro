@@ -14,4 +14,7 @@ void f_popup_move(typval_T *argvars, typval_T *rettv);
 void f_popup_getpos(typval_T *argvars, typval_T *rettv);
 void f_popup_getoptions(typval_T *argvars, typval_T *rettv);
 int not_in_popup_window(void);
+void popup_reset_handled(void);
+win_T *find_next_popup(int lowest);
+int popup_do_filter(int c);
 /* vim: set ft=c : */
