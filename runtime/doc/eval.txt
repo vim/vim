@@ -2564,6 +2564,7 @@ screenrow()			Number	current cursor row
 screenstring({row}, {col})	String	characters at screen position
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				Number	search for {pattern}
+searchcount([{dict}])		Dictionary	the search stats
 searchdecl({name} [, {global} [, {thisblock}]])
 				Number	search for variable declaration
 searchpair({start}, {middle}, {end} [, {flags} [, {skip} [...]]])
@@ -7909,6 +7910,31 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		without the 'e' flag if the cursor is on the "f" of "if".
 		The 'n' flag tells the function not to move the cursor.
 
+
+searchcount({dict})					*getregtype()*
+		The result is almost the same structure as {dict}.
+		Some keys can be specified by only arguments.
+		This function changes {dict} in-place and returns it.
+		If the keys of {dict} are omitted, default values were used.
+
+		 key		type	arg only	meaning ~
+		  dir		String	no	(default: "/" if |v:searchforward| is
+					no	non-zero, otherwise "?")
+		  lastpos	List	no	`[lnum, col, off]` . see |getpos()|
+					no	(default: the last position if
+					no	|'shortmess'| does not contain "S",
+					no	otherwise `[0, 0, 0]`)
+		  pattern	String	no	(default: |@/|)
+		  bufnr		Number	no	(default: current buffer)
+		  changedtick	Number	no	(default: |b:changedtick|)
+		  current	Number	no
+		  count		Number	no
+		  wrap		Number	no
+		  maxcount	Number	yes	Max number of count (default: 99)
+		  recompute	Number	yes	if specified and zero, the
+						last computed values when
+						|'shortmess'| has not "S" flag
+						(default: non-zero)
 
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
