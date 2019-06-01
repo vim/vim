@@ -4,7 +4,7 @@ if !has('textprop')
   finish
 endif
 
-source screendump.vim
+"source screendump.vim
 
 func Test_simple_popup()
   if !CanRunVimInTerminal()
@@ -516,3 +516,35 @@ func Test_popup_filter()
   delfunc MyPopupFilter
   popupclear
 endfunc
+
+func Test_popup_never_behind()
+  " +-----------------------------+
+  " |             |               |
+  " |             |               |
+  " |             |               |
+  " |            line1            |
+  " |------------line2------------|
+  " |            line3            |
+  " |            line4            |
+  " |                             |
+  " |                             |
+  " +-----------------------------+
+  only 
+  split
+  vsplit
+  let info_window1 = getwininfo()[0]
+  let line = info_window1['height']
+  let col = info_window1['width']
+  call popup_create(['line1', 'line2', 'line3', 'line4'], {
+            \   'line' : line,
+            \   'col' : col,
+            \ })
+  let s = ''
+  for i in range(0, 4)
+      let s .= nr2char(screenchar(line + 1, col + i))
+  endfor
+  call assert_equal('line2', s)
+  popupclear
+endfunc
+
+call Test_popup_never_behind()
