@@ -60,20 +60,22 @@ func Test_popup_with_border_and_padding()
   if !CanRunVimInTerminal()
     return
   endif
-  call writefile([
-	\ "call setline(1, range(1, 100))",
-	\ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
-	\ "call popup_create('hello padding', {'line': 2, 'col': 23, 'padding': []})",
-	\ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
-	\ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
-	\ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
-	\], 'XtestPopupBorder')
-  let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
-  call VerifyScreenDump(buf, 'Test_popupwin_20', {})
 
-  " clean up
-  call StopVimInTerminal(buf)
-  call delete('XtestPopupBorder')
+  for iter in range(0, 1)
+    call writefile([iter == 1 ? '' : 'set enc=latin1',
+	  \ "call setline(1, range(1, 100))",
+	  \ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
+	  \ "call popup_create('hello padding', {'line': 2, 'col': 23, 'padding': []})",
+	  \ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
+	  \ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
+	  \ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
+	  \], 'XtestPopupBorder')
+    let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
+    call VerifyScreenDump(buf, 'Test_popupwin_2' .. iter, {})
+
+    call StopVimInTerminal(buf)
+    call delete('XtestPopupBorder')
+  endfor
 
   let with_border_or_padding = {
 	\ 'line': 2,

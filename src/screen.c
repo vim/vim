@@ -1031,6 +1031,12 @@ update_popups(void)
     int	    total_height;
     int	    popup_attr;
     int	    row;
+    int	    tl_corner_char = '+';
+    char    *tr_corner_str = "+";
+    int	    bl_corner_char = '+';
+    char    *br_corner_str = "+";
+    int	    hor_line_char = '-';
+    char    *ver_line_str = "|";
 
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
@@ -1062,16 +1068,27 @@ update_popups(void)
 		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
 	popup_attr = get_wcr_attr(wp);
 
+	if (enc_utf8)
+	{
+	    tl_corner_char = 0x2554;
+	    tr_corner_str = "\xe2\x95\x97";
+	    bl_corner_char = 0x255a;
+	    br_corner_str = "\xe2\x95\x9d";
+	    hor_line_char = 0x2550;
+	    ver_line_str = "\xe2\x95\x91";
+	}
+
 	if (wp->w_popup_border[0] > 0)
 	{
 	    // top border
 	    screen_fill(wp->w_winrow, wp->w_winrow + 1,
 		    wp->w_wincol,
 		    wp->w_wincol + total_width,
-		    wp->w_popup_border[3] != 0 ? '+' : '-',
-		    '-', popup_attr);
+		    wp->w_popup_border[3] != 0
+					     ? tl_corner_char : hor_line_char,
+		    hor_line_char, popup_attr);
 	    if (wp->w_popup_border[1] > 0)
-		screen_puts((char_u *)"+", wp->w_winrow,
+		screen_puts((char_u *)tr_corner_str, wp->w_winrow,
 			wp->w_wincol + total_width - 1, popup_attr);
 	}
 
@@ -1091,14 +1108,14 @@ update_popups(void)
 	{
 	    // left border
 	    if (wp->w_popup_border[3] > 0)
-		screen_puts((char_u *)"|", row, wp->w_wincol, popup_attr);
+		screen_puts((char_u *)ver_line_str, row, wp->w_wincol, popup_attr);
 	    // left padding
 	    if (wp->w_popup_padding[3] > 0)
 		screen_puts(get_spaces(wp->w_popup_padding[3]), row,
 			wp->w_wincol + wp->w_popup_border[3], popup_attr);
 	    // right border
 	    if (wp->w_popup_border[1] > 0)
-		screen_puts((char_u *)"|", row,
+		screen_puts((char_u *)ver_line_str, row,
 			wp->w_wincol + total_width - 1, popup_attr);
 	    // right padding
 	    if (wp->w_popup_padding[1] > 0)
@@ -1125,10 +1142,10 @@ update_popups(void)
 	    screen_fill(row , row + 1,
 		    wp->w_wincol,
 		    wp->w_wincol + total_width,
-		    wp->w_popup_border[3] != 0 ? '+' : '-',
-		    '-', popup_attr);
+		    wp->w_popup_border[3] != 0 ? bl_corner_char : hor_line_char,
+		    hor_line_char, popup_attr);
 	    if (wp->w_popup_border[1] > 0)
-		screen_puts((char_u *)"+", row,
+		screen_puts((char_u *)br_corner_str, row,
 			wp->w_wincol + total_width - 1, popup_attr);
 	}
     }
