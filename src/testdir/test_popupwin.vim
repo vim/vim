@@ -539,6 +539,7 @@ func Test_popup_never_behind()
             \   'line' : line,
             \   'col' : col,
             \ })
+  redraw
   let s = ''
   for i in range(0, 4)
       let s .= nr2char(screenchar(line + 1, col + i))
