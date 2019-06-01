@@ -991,28 +991,6 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 }
 #endif
 
-#ifdef FEAT_TEXT_PROP
-    static void
-update_popups(void)
-{
-    win_T   *wp;
-
-    // Find the window with the lowest zindex that hasn't been updated yet,
-    // so that the window with a higher zindex is drawn later, thus goes on
-    // top.
-    // TODO: don't redraw every popup every time.
-    popup_reset_handled();
-    while ((wp = find_next_popup(TRUE)) != NULL)
-    {
-	// Recompute the position if the text changed.
-	if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
-	    popup_adjust_position(wp);
-
-	win_update(wp);
-    }
-}
-#endif
-
 /*
  * Get 'wincolor' attribute for window "wp".  If not set and "wp" is a popup
  * window then get the "Pmenu" highlight attribute.
@@ -1030,6 +1008,132 @@ get_wcr_attr(win_T *wp)
 #endif
     return wcr_attr;
 }
+
+#ifdef FEAT_TEXT_PROP
+/*
+ * Return a string of "len" spaces in IObuff.
+ */
+    static char_u *
+get_spaces(int len)
+{
+    vim_memset(IObuff, ' ', (size_t)len);
+    IObuff[len] = NUL;
+    return IObuff;
+}
+
+    static void
+update_popups(void)
+{
+    win_T   *wp;
+    int	    top_off;
+    int	    left_off;
+    int	    total_width;
+    int	    total_height;
+    int	    popup_attr;
+    int	    row;
+
+    // Find the window with the lowest zindex that hasn't been updated yet,
+    // so that the window with a higher zindex is drawn later, thus goes on
+    // top.
+    // TODO: don't redraw every popup every time.
+    popup_reset_handled();
+    while ((wp = find_next_popup(TRUE)) != NULL)
+    {
+	// Recompute the position if the text changed.
+	if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
+	    popup_adjust_position(wp);
+
+	// adjust w_winrow and w_wincol for border and padding, since
+	// win_update() doesn't handle them.
+	top_off = wp->w_popup_padding[0] + wp->w_popup_border[0];
+	left_off = wp->w_popup_padding[3] + wp->w_popup_border[3];
+	wp->w_winrow += top_off;
+	wp->w_wincol += left_off;
+
+	// Draw the popup text.
+	win_update(wp);
+
+	wp->w_winrow -= top_off;
+	wp->w_wincol -= left_off;
+
+	total_width = wp->w_popup_border[3] + wp->w_popup_padding[3]
+		+ wp->w_width + wp->w_popup_padding[1] + wp->w_popup_border[1];
+	total_height = wp->w_popup_border[0] + wp->w_popup_padding[0]
+		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
+	popup_attr = get_wcr_attr(wp);
+
+	if (wp->w_popup_border[0] > 0)
+	{
+	    // top border
+	    screen_fill(wp->w_winrow, wp->w_winrow + 1,
+		    wp->w_wincol,
+		    wp->w_wincol + total_width,
+		    wp->w_popup_border[3] != 0 ? '+' : '-',
+		    '-', popup_attr);
+	    if (wp->w_popup_border[1] > 0)
+		screen_puts((char_u *)"+", wp->w_winrow,
+			wp->w_wincol + total_width - 1, popup_attr);
+	}
+
+	if (wp->w_popup_padding[0] > 0)
+	{
+	    // top padding
+	    row = wp->w_winrow + wp->w_popup_border[0];
+	    screen_fill(row, row + wp->w_popup_padding[0],
+		    wp->w_wincol + wp->w_popup_border[3],
+		    wp->w_wincol + total_width - wp->w_popup_border[1],
+							 ' ', ' ', popup_attr);
+	}
+
+	for (row = wp->w_winrow + wp->w_popup_border[0];
+		row < wp->w_winrow + total_height - wp->w_popup_border[2];
+		    ++row)
+	{
+	    // left border
+	    if (wp->w_popup_border[3] > 0)
+		screen_puts((char_u *)"|", row, wp->w_wincol, popup_attr);
+	    // left padding
+	    if (wp->w_popup_padding[3] > 0)
+		screen_puts(get_spaces(wp->w_popup_padding[3]), row,
+			wp->w_wincol + wp->w_popup_border[3], popup_attr);
+	    // right border
+	    if (wp->w_popup_border[1] > 0)
+		screen_puts((char_u *)"|", row,
+			wp->w_wincol + total_width - 1, popup_attr);
+	    // right padding
+	    if (wp->w_popup_padding[1] > 0)
+		screen_puts(get_spaces(wp->w_popup_padding[1]), row,
+			wp->w_wincol + wp->w_popup_border[3]
+			   + wp->w_popup_padding[3] + wp->w_width, popup_attr);
+	}
+
+	if (wp->w_popup_padding[2] > 0)
+	{
+	    // bottom padding
+	    row = wp->w_winrow + wp->w_popup_border[0]
+				       + wp->w_popup_padding[0] + wp->w_height;
+	    screen_fill(row, row + wp->w_popup_padding[2],
+		    wp->w_wincol + wp->w_popup_border[3],
+		    wp->w_wincol + total_width - wp->w_popup_border[1],
+							 ' ', ' ', popup_attr);
+	}
+
+	if (wp->w_popup_border[2] > 0)
+	{
+	    // bottom border
+	    row = wp->w_winrow + total_height - 1;
+	    screen_fill(row , row + 1,
+		    wp->w_wincol,
+		    wp->w_wincol + total_width,
+		    wp->w_popup_border[3] != 0 ? '+' : '-',
+		    '-', popup_attr);
+	    if (wp->w_popup_border[1] > 0)
+		screen_puts((char_u *)"+", row,
+			wp->w_wincol + total_width - 1, popup_attr);
+	}
+    }
+}
+#endif
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*

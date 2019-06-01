@@ -90,11 +90,7 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- Invoke filter with character before mapping?
-- Handle screen resize in screenalloc(). (Ben Jackson, #4467)
 - Why does 'nrformats' leak from the popup window buffer???
-- Implement padding
-- Implement border
 - Make redrawing more efficient and avoid flicker.
     Store popup info in a mask, use the mask in screen_line()
     Keep mask until next update_screen(), find differences and redraw affected
@@ -103,7 +99,8 @@ IMPLEMENTATION:
     Fix redrawing problem when scrolling non-current window
     Fix redrawing the statusline on top of a popup
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
-  Use NOT_IN_POPUP_WINDOW.
+  Use NOT_IN_POPUP_WINDOW for more commands.
+- Invoke filter with character before mapping?
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -255,12 +252,19 @@ popup_getpos({id})					*popup_getpos()*
 		with these entries:
 		    col		screen column of the popup, one-based
 		    line	screen line of the popup, one-based
-		    width	width of the popup in screen cells
-		    height	height of the popup in screen cells
+		    width	width of the whole popup in screen cells
+		    height	height of the whole popup in screen cells
+		    core_col	screen column of the text box
+		    core_line	screen line of the text box
+		    core_width	width of the text box in screen cells
+		    core_height	height of the text box in screen cells
 		    visible 	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
 		from the values in `popup_getoptions()` for the sizing and
 		positioning mechanism applied.
+
+		The "core_" values exclude the padding and border.
+
 		If popup window {id} is not found an empty Dict is returned.
 
 
@@ -361,11 +365,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			padding uses the 'wincolor' highlight; Example: [1, 2,
 			1, 3] has 1 line of padding above, 2 columns on the
 			right, 1 line below and 3 columns on the left
-			{not implemented yet}
 	border		list with numbers, defining the border thickness
 			above/right/below/left of the popup (similar to CSS);
+			only values of zero and non-zero are recognized;
 			an empty list uses a border of 1 all around
-			{not implemented yet}
 	borderhighlight	highlight group name to use for the border
 			{not implemented yet}
 	borderchars	list with characters, defining the character to use

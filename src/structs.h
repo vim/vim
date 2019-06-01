@@ -2888,6 +2888,8 @@ struct window_S
     int		w_maxwidth;	    // "maxwidth" for popup window
     int		w_wantline;	    // "line" for popup window
     int		w_wantcol;	    // "col" for popup window
+    int		w_popup_padding[4]; // popup padding top/right/bot/left
+    int		w_popup_border[4];  // popup border top/right/bot/left
     varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
 					  // computed
     callback_T	w_filter_cb;	    // popup filter callback

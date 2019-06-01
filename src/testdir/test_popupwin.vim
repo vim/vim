@@ -56,6 +56,54 @@ func Test_simple_popup()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_with_border_and_padding()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  call writefile([
+	\ "call setline(1, range(1, 100))",
+	\ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
+	\ "call popup_create('hello padding', {'line': 2, 'col': 23, 'padding': []})",
+	\ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
+	\ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
+	\ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
+	\], 'XtestPopupBorder')
+  let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
+  call VerifyScreenDump(buf, 'Test_popupwin_20', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupBorder')
+
+  let with_border_or_padding = {
+	\ 'line': 2,
+	\ 'core_line': 3,
+	\ 'col': 3,
+	\ 'core_col': 4,
+	\ 'width': 14,
+	\ 'core_width': 12,
+	\ 'height': 3,
+	\ 'core_height': 1,
+	\ 'visible': 1}
+  let winid = popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
+  call assert_equal(with_border_or_padding, popup_getpos(winid))
+
+  let winid = popup_create('hello paddng', {'line': 2, 'col': 3, 'padding': []})
+  call assert_equal(with_border_or_padding, popup_getpos(winid))
+
+  let winid = popup_create('hello both', {'line': 3, 'col': 8, 'border': [], 'padding': []})
+  call assert_equal({
+	\ 'line': 3,
+	\ 'core_line': 5,
+	\ 'col': 8,
+	\ 'core_col': 10,
+	\ 'width': 14,
+	\ 'core_width': 10,
+	\ 'height': 5,
+	\ 'core_height': 1,
+	\ 'visible': 1}, popup_getpos(winid))
+endfunc
+
 func Test_popup_with_syntax_win_execute()
   if !CanRunVimInTerminal()
     return

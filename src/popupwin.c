@@ -101,6 +101,38 @@ get_pos_options(win_T *wp, dict_T *dict)
     }
 }
 
+    static void
+get_padding_border(dict_T *dict, int *array, char *name, int max_val)
+{
+    dictitem_T	*di;
+
+    vim_memset(array, 0, sizeof(int) * 4);
+    di = dict_find(dict, (char_u *)name, -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type != VAR_LIST)
+	    emsg(_(e_listreq));
+	else
+	{
+	    list_T	*list = di->di_tv.vval.v_list;
+	    listitem_T	*li;
+	    int		i;
+	    int		nr;
+
+	    for (i = 0; i < 4; ++i)
+		array[i] = 1;
+	    if (list != NULL)
+		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
+							 ++i, li = li->li_next)
+		{
+		    nr = (int)tv_get_number(&li->li_tv);
+		    if (nr >= 0)
+			array[i] = nr > max_val ? max_val : nr;
+		}
+	}
+    }
+}
+
 /*
  * Go through the options in "dict" and apply them to buffer "buf" displayed in
  * popup window "wp".
@@ -176,6 +208,9 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	if (callback.cb_name != NULL)
 	    set_callback(&wp->w_filter_cb, &callback);
     }
+
+    get_padding_border(dict, wp->w_popup_padding, "padding", 999);
+    get_padding_border(dict, wp->w_popup_border, "border", 1);
 }
 
 /*
@@ -700,16 +735,28 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
+    int		top_extra;
+    int		left_extra;
 
     if (rettv_dict_alloc(rettv) == OK)
     {
 	if (wp == NULL)
 	    return;  // invalid {id}
+	top_extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
+	left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
+
 	dict = rettv->vval.v_dict;
+
 	dict_add_number(dict, "line", wp->w_winrow + 1);
 	dict_add_number(dict, "col", wp->w_wincol + 1);
-	dict_add_number(dict, "width", wp->w_width);
-	dict_add_number(dict, "height", wp->w_height);
+	dict_add_number(dict, "width", wp->w_width + left_extra + wp->w_popup_border[1] + wp->w_popup_padding[1]);
+	dict_add_number(dict, "height", wp->w_height + top_extra + wp->w_popup_border[2] + wp->w_popup_padding[2]);
+
+	dict_add_number(dict, "core_line", wp->w_winrow + 1 + top_extra);
+	dict_add_number(dict, "core_col", wp->w_wincol + 1 + left_extra);
+	dict_add_number(dict, "core_width", wp->w_width);
+	dict_add_number(dict, "core_height", wp->w_height);
+
 	dict_add_number(dict, "visible",
 				       (wp->w_popup_flags & POPF_HIDDEN) == 0);
     }
