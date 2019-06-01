@@ -65,8 +65,10 @@ The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
 increase the width or the "minwidth" property.
 
-By default the 'wrap' option is set, so that no text disappears.  However, if
-there is not enough space, some text may be invisible.
+By default the 'wrap' option is set, so that no text disappears.  Otherwise,
+if there is not enough space then the window is shifted left in order to
+display more text. This can be disabled with the "fixed" property. Also
+disabled when right-aligned.
 
 Vim tries to show the popup in the location you specify.  In some cases, e.g.
 when the popup would go outside of the Vim window, it will show it somewhere
@@ -331,18 +333,27 @@ The second argument of |popup_create()| is a dictionary with options:
 			number or "cursor", "cursor+1" or "cursor-1" to use
 			the line of the cursor and add or subtract a number of
 			lines; if omitted the popup is vertically centered,
-			otherwise "pos" is used.
+			otherwise "pos" is used. The first line is 1.
 	col		screen column where to position the popup; can use a
 			number or "cursor" to use the column of the cursor,
 			"cursor+99" and "cursor-99" to add or subtract a
 			number of columns; if omitted the popup is
-			horizontally centered, otherwise "pos" is used
+			horizontally centered, otherwise "pos" is used.
+			The first column is 1.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
+	fixed		When FALSE (the default), and:
+			 - "pos" is "botleft" or "topleft", and
+			 - "wrap" is off, and
+			 - the popup would be truncated by the right-edge of
+			   the screen, then
+			the popup is moved to the left so as to fit the
+			contents on the screen, like |popupmenu-completion|.
+			Set to TRUE to disable this.
 	flip		when TRUE (the default) and the position is relative
 			to the cursor, flip to below or above the cursor to
 			avoid overlap with the |popupmenu-completion| or

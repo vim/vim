@@ -2881,6 +2881,7 @@ struct window_S
 #ifdef FEAT_TEXT_PROP
     int		w_popup_flags;	    // POPF_ values
     poppos_T	w_popup_pos;
+    int 	w_popup_fixed;	    // Don't shift popup to fit on screen
     int		w_zindex;
     int		w_minheight;	    // "minheight" for popup window
     int		w_minwidth;	    // "minwidth" for popup window
