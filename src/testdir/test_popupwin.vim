@@ -547,4 +547,3 @@ func Test_popup_never_behind()
   popupclear
 endfunc
 
-call Test_popup_never_behind()
