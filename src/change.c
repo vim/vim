@@ -270,36 +270,34 @@ may_record_change(
     void
 f_listener_add(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*callback;
-    partial_T	*partial;
+    callback_T	callback;
     listener_T	*lnr;
     buf_T	*buf = curbuf;
 
-    callback = get_callback(&argvars[0], &partial);
-    if (callback == NULL)
+    callback = get_callback(&argvars[0]);
+    if (callback.cb_name == NULL)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	buf = get_buf_arg(&argvars[1]);
 	if (buf == NULL)
+	{
+	    free_callback(&callback);
 	    return;
+	}
     }
 
     lnr = ALLOC_CLEAR_ONE(listener_T);
     if (lnr == NULL)
     {
-	free_callback(callback, partial);
+	free_callback(&callback);
 	return;
     }
     lnr->lr_next = buf->b_listener;
     buf->b_listener = lnr;
 
-    if (partial == NULL)
-	lnr->lr_callback = vim_strsave(callback);
-    else
-	lnr->lr_callback = callback;  // pointer into the partial
-    lnr->lr_partial = partial;
+    set_callback(&lnr->lr_callback, &callback);
 
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;
@@ -344,7 +342,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 		    prev->lr_next = lnr->lr_next;
 		else
 		    buf->b_listener = lnr->lr_next;
-		free_callback(lnr->lr_callback, lnr->lr_partial);
+		free_callback(&lnr->lr_callback);
 		vim_free(lnr);
 	    }
 	    prev = lnr;
@@ -418,8 +416,8 @@ invoke_listeners(buf_T *buf)
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
-	call_func(lnr->lr_callback, -1, &rettv,
-		   5, argv, NULL, 0L, 0L, &dummy, TRUE, lnr->lr_partial, NULL);
+	call_callback(&lnr->lr_callback, -1, &rettv,
+				    5, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
 	clear_tv(&rettv);
     }
 

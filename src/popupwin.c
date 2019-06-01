@@ -149,10 +149,10 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
 	{
 	    wp->w_popup_timer = create_timer(nr, 0);
-	    wp->w_popup_timer->tr_callback =
+	    wp->w_popup_timer->tr_callback.cb_name =
 				  vim_strsave(partial_name(tv.vval.v_partial));
-	    func_ref(wp->w_popup_timer->tr_callback);
-	    wp->w_popup_timer->tr_partial = tv.vval.v_partial;
+	    func_ref(wp->w_popup_timer->tr_callback.cb_name);
+	    wp->w_popup_timer->tr_callback.cb_partial = tv.vval.v_partial;
 	}
     }
 #endif

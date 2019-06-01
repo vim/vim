@@ -348,7 +348,7 @@ channel_still_useful(channel_T *channel)
 	return FALSE;
 
     /* If there is a close callback it may still need to be invoked. */
-    if (channel->ch_close_cb != NULL)
+    if (channel->ch_close_cb.cb_name != NULL)
 	return TRUE;
 
     /* If reading from or a buffer it's still useful. */
@@ -366,12 +366,12 @@ channel_still_useful(channel_T *channel)
     has_err_msg = channel->ch_part[PART_ERR].ch_fd != INVALID_FD
 		  || channel->ch_part[PART_ERR].ch_head.rq_next != NULL
 		  || channel->ch_part[PART_ERR].ch_json_head.jq_next != NULL;
-    return (channel->ch_callback != NULL && (has_sock_msg
+    return (channel->ch_callback.cb_name != NULL && (has_sock_msg
 		|| has_out_msg || has_err_msg))
-	    || ((channel->ch_part[PART_OUT].ch_callback != NULL
+	    || ((channel->ch_part[PART_OUT].ch_callback.cb_name != NULL
 		       || channel->ch_part[PART_OUT].ch_bufref.br_buf != NULL)
 		    && has_out_msg)
-	    || ((channel->ch_part[PART_ERR].ch_callback != NULL
+	    || ((channel->ch_part[PART_ERR].ch_callback.cb_name != NULL
 		       || channel->ch_part[PART_ERR].ch_bufref.br_buf != NULL)
 		    && has_err_msg);
 }
@@ -1178,29 +1178,36 @@ find_buffer(char_u *name, int err, int msg)
     return buf;
 }
 
+/*
+ * Copy callback from "src" to "dest", incrementing the refcounts.
+ */
     static void
-set_callback(
-	char_u **cbp,
-	partial_T **pp,
-	char_u *callback,
-	partial_T *partial)
+copy_callback(callback_T *dest, callback_T *src)
 {
-    free_callback(*cbp, *pp);
-    if (callback != NULL && *callback != NUL)
+    dest->cb_partial = src->cb_partial;
+    if (dest->cb_partial != NULL)
     {
-	if (partial != NULL)
-	    *cbp = partial_name(partial);
-	else
-	{
-	    *cbp = vim_strsave(callback);
-	    func_ref(*cbp);
-	}
+	dest->cb_name = src->cb_name;
+	dest->cb_free_name = FALSE;
+	++dest->cb_partial->pt_refcount;
     }
     else
-	*cbp = NULL;
-    *pp = partial;
-    if (partial != NULL)
-	++partial->pt_refcount;
+    {
+	dest->cb_name = vim_strsave(src->cb_name);
+	dest->cb_free_name = TRUE;
+	func_ref(src->cb_name);
+    }
+}
+
+    static void
+free_set_callback(callback_T *cbp, callback_T *callback)
+{
+    free_callback(cbp);
+
+    if (callback->cb_name != NULL && *callback->cb_name != NUL)
+	copy_callback(cbp, callback);
+    else
+	cbp->cb_name = NULL;
 }
 
 /*
@@ -1233,19 +1240,15 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 	channel->ch_part[PART_IN].ch_block_write = 1;
 
     if (opt->jo_set & JO_CALLBACK)
-	set_callback(&channel->ch_callback, &channel->ch_partial,
-					   opt->jo_callback, opt->jo_partial);
+	free_set_callback(&channel->ch_callback, &opt->jo_callback);
     if (opt->jo_set & JO_OUT_CALLBACK)
-	set_callback(&channel->ch_part[PART_OUT].ch_callback,
-		&channel->ch_part[PART_OUT].ch_partial,
-		opt->jo_out_cb, opt->jo_out_partial);
+	free_set_callback(&channel->ch_part[PART_OUT].ch_callback,
+							      &opt->jo_out_cb);
     if (opt->jo_set & JO_ERR_CALLBACK)
-	set_callback(&channel->ch_part[PART_ERR].ch_callback,
-		&channel->ch_part[PART_ERR].ch_partial,
-		opt->jo_err_cb, opt->jo_err_partial);
+	free_set_callback(&channel->ch_part[PART_ERR].ch_callback,
+							      &opt->jo_err_cb);
     if (opt->jo_set & JO_CLOSE_CALLBACK)
-	set_callback(&channel->ch_close_cb, &channel->ch_close_partial,
-		opt->jo_close_cb, opt->jo_close_partial);
+	free_set_callback(&channel->ch_close_cb, &opt->jo_close_cb);
     channel->ch_drop_never = opt->jo_drop_never;
 
     if ((opt->jo_set & JO_OUT_IO) && opt->jo_io[PART_OUT] == JIO_BUFFER)
@@ -1349,8 +1352,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 channel_set_req_callback(
 	channel_T   *channel,
 	ch_part_T   part,
-	char_u	    *callback,
-	partial_T   *partial,
+	callback_T  *callback,
 	int	    id)
 {
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
@@ -1358,17 +1360,7 @@ channel_set_req_callback(
 
     if (item != NULL)
     {
-	item->cq_partial = partial;
-	if (partial != NULL)
-	{
-	    ++partial->pt_refcount;
-	    item->cq_callback = callback;
-	}
-	else
-	{
-	    item->cq_callback = vim_strsave(callback);
-	    func_ref(item->cq_callback);
-	}
+	copy_callback(&item->cq_callback, callback);
 	item->cq_seq_nr = id;
 	item->cq_prev = head->cq_prev;
 	head->cq_prev = item;
@@ -1638,8 +1630,7 @@ channel_write_new_lines(buf_T *buf)
  * This does not redraw but sets channel_need_redraw;
  */
     static void
-invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
-							       typval_T *argv)
+invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
 {
     typval_T	rettv;
     int		dummy;
@@ -1650,8 +1641,8 @@ invoke_callback(channel_T *channel, char_u *callback, partial_T *partial,
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
 
-    call_func(callback, -1, &rettv, 2, argv, NULL,
-					  0L, 0L, &dummy, TRUE, partial, NULL);
+    call_callback(callback, -1, &rettv, 2, argv, NULL,
+						   0L, 0L, &dummy, TRUE, NULL);
     clear_tv(&rettv);
     channel_need_redraw = TRUE;
 }
@@ -2414,12 +2405,12 @@ invoke_one_time_callback(
 	typval_T    *argv)
 {
     ch_log(channel, "Invoking one-time callback %s",
-						   (char *)item->cq_callback);
+					    (char *)item->cq_callback.cb_name);
     /* Remove the item from the list first, if the callback
      * invokes ch_close() the list will be cleared. */
     remove_cb_node(cbhead, item);
-    invoke_callback(channel, item->cq_callback, item->cq_partial, argv);
-    free_callback(item->cq_callback, item->cq_partial);
+    invoke_callback(channel, &item->cq_callback, argv);
+    free_callback(&item->cq_callback);
     vim_free(item);
 }
 
@@ -2553,8 +2544,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     ch_mode_T	ch_mode = ch_part->ch_mode;
     cbq_T	*cbhead = &ch_part->ch_cb_head;
     cbq_T	*cbitem;
-    char_u	*callback = NULL;
-    partial_T	*partial = NULL;
+    callback_T	*callback = NULL;
     buf_T	*buffer = NULL;
     char_u	*p;
 
@@ -2567,20 +2557,11 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	if (cbitem->cq_seq_nr == 0)
 	    break;
     if (cbitem != NULL)
-    {
-	callback = cbitem->cq_callback;
-	partial = cbitem->cq_partial;
-    }
-    else if (ch_part->ch_callback != NULL)
-    {
-	callback = ch_part->ch_callback;
-	partial = ch_part->ch_partial;
-    }
-    else
-    {
-	callback = channel->ch_callback;
-	partial = channel->ch_partial;
-    }
+	callback = &cbitem->cq_callback;
+    else if (ch_part->ch_callback.cb_name != NULL)
+	callback = &ch_part->ch_callback;
+    else if (channel->ch_callback.cb_name != NULL)
+	callback = &channel->ch_callback;
 
     buffer = ch_part->ch_bufref.br_buf;
     if (buffer != NULL && (!bufref_valid(&ch_part->ch_bufref)
@@ -2642,7 +2623,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	{
 	    /* If there is a close callback it may use ch_read() to get the
 	     * messages. */
-	    if (channel->ch_close_cb == NULL && !channel->ch_drop_never)
+	    if (channel->ch_close_cb.cb_name == NULL && !channel->ch_drop_never)
 		drop_messages(channel, part);
 	    return FALSE;
 	}
@@ -2761,8 +2742,8 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    {
 		/* invoke the channel callback */
 		ch_log(channel, "Invoking channel callback %s",
-							    (char *)callback);
-		invoke_callback(channel, callback, partial, argv);
+						    (char *)callback->cb_name);
+		invoke_callback(channel, callback, argv);
 	    }
 	}
     }
@@ -2956,18 +2937,18 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	ch_part_T	part;
 
 	/* Invoke callbacks and flush buffers before the close callback. */
-	if (channel->ch_close_cb != NULL)
+	if (channel->ch_close_cb.cb_name != NULL)
 	    ch_log(channel,
 		     "Invoking callbacks and flushing buffers before closing");
 	for (part = PART_SOCK; part < PART_IN; ++part)
 	{
-	    if (channel->ch_close_cb != NULL
+	    if (channel->ch_close_cb.cb_name != NULL
 			    || channel->ch_part[part].ch_bufref.br_buf != NULL)
 	    {
 		/* Increment the refcount to avoid the channel being freed
 		 * halfway. */
 		++channel->ch_refcount;
-		if (channel->ch_close_cb == NULL)
+		if (channel->ch_close_cb.cb_name == NULL)
 		    ch_log(channel, "flushing %s buffers before closing",
 							     part_names[part]);
 		while (may_invoke_callback(channel, part))
@@ -2976,7 +2957,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	    }
 	}
 
-	if (channel->ch_close_cb != NULL)
+	if (channel->ch_close_cb.cb_name != NULL)
 	{
 	      typval_T	argv[1];
 	      typval_T	rettv;
@@ -2986,19 +2967,16 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	       * halfway. */
 	      ++channel->ch_refcount;
 	      ch_log(channel, "Invoking close callback %s",
-						(char *)channel->ch_close_cb);
+					 (char *)channel->ch_close_cb.cb_name);
 	      argv[0].v_type = VAR_CHANNEL;
 	      argv[0].vval.v_channel = channel;
-	      call_func(channel->ch_close_cb, -1,
-			   &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE,
-			   channel->ch_close_partial, NULL);
+	      call_callback(&channel->ch_close_cb, -1,
+			   &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
 	      clear_tv(&rettv);
 	      channel_need_redraw = TRUE;
 
 	      /* the callback is only called once */
-	      free_callback(channel->ch_close_cb, channel->ch_close_partial);
-	      channel->ch_close_cb = NULL;
-	      channel->ch_close_partial = NULL;
+	      free_callback(&channel->ch_close_cb);
 
 	      if (channel_need_redraw)
 	      {
@@ -3061,7 +3039,7 @@ channel_clear_one(channel_T *channel, ch_part_T part)
 	cbq_T *node = cb_head->cq_next;
 
 	remove_cb_node(cb_head, node);
-	free_callback(node->cq_callback, node->cq_partial);
+	free_callback(&node->cq_callback);
 	vim_free(node);
     }
 
@@ -3071,9 +3049,7 @@ channel_clear_one(channel_T *channel, ch_part_T part)
 	remove_json_node(json_head, json_head->jq_next);
     }
 
-    free_callback(ch_part->ch_callback, ch_part->ch_partial);
-    ch_part->ch_callback = NULL;
-    ch_part->ch_partial = NULL;
+    free_callback(&ch_part->ch_callback);
 
     while (ch_part->ch_writeque.wq_next != NULL)
 	remove_from_writeque(&ch_part->ch_writeque,
@@ -3092,12 +3068,8 @@ channel_clear(channel_T *channel)
     channel_clear_one(channel, PART_OUT);
     channel_clear_one(channel, PART_ERR);
     channel_clear_one(channel, PART_IN);
-    free_callback(channel->ch_callback, channel->ch_partial);
-    channel->ch_callback = NULL;
-    channel->ch_partial = NULL;
-    free_callback(channel->ch_close_cb, channel->ch_close_partial);
-    channel->ch_close_cb = NULL;
-    channel->ch_close_partial = NULL;
+    free_callback(&channel->ch_callback);
+    free_callback(&channel->ch_close_cb);
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -3991,19 +3963,18 @@ send_common(
     /* Set the callback. An empty callback means no callback and not reading
      * the response. With "ch_evalexpr()" and "ch_evalraw()" a callback is not
      * allowed. */
-    if (opt->jo_callback != NULL && *opt->jo_callback != NUL)
+    if (opt->jo_callback.cb_name != NULL && *opt->jo_callback.cb_name != NUL)
     {
 	if (eval)
 	{
 	    semsg(_("E917: Cannot use a callback with %s()"), fun);
 	    return NULL;
 	}
-	channel_set_req_callback(channel, *part_read,
-				       opt->jo_callback, opt->jo_partial, id);
+	channel_set_req_callback(channel, *part_read, &opt->jo_callback, id);
     }
 
     if (channel_send(channel, part_send, text, len, fun) == OK
-						  && opt->jo_callback == NULL)
+					   && opt->jo_callback.cb_name == NULL)
 	return channel;
     return NULL;
 }
@@ -4559,26 +4530,26 @@ clear_job_options(jobopt_T *opt)
     void
 free_job_options(jobopt_T *opt)
 {
-    if (opt->jo_partial != NULL)
-	partial_unref(opt->jo_partial);
-    else if (opt->jo_callback != NULL)
-	func_unref(opt->jo_callback);
-    if (opt->jo_out_partial != NULL)
-	partial_unref(opt->jo_out_partial);
-    else if (opt->jo_out_cb != NULL)
-	func_unref(opt->jo_out_cb);
-    if (opt->jo_err_partial != NULL)
-	partial_unref(opt->jo_err_partial);
-    else if (opt->jo_err_cb != NULL)
-	func_unref(opt->jo_err_cb);
-    if (opt->jo_close_partial != NULL)
-	partial_unref(opt->jo_close_partial);
-    else if (opt->jo_close_cb != NULL)
-	func_unref(opt->jo_close_cb);
-    if (opt->jo_exit_partial != NULL)
-	partial_unref(opt->jo_exit_partial);
-    else if (opt->jo_exit_cb != NULL)
-	func_unref(opt->jo_exit_cb);
+    if (opt->jo_callback.cb_partial != NULL)
+	partial_unref(opt->jo_callback.cb_partial);
+    else if (opt->jo_callback.cb_name != NULL)
+	func_unref(opt->jo_callback.cb_name);
+    if (opt->jo_out_cb.cb_partial != NULL)
+	partial_unref(opt->jo_out_cb.cb_partial);
+    else if (opt->jo_out_cb.cb_name != NULL)
+	func_unref(opt->jo_out_cb.cb_name);
+    if (opt->jo_err_cb.cb_partial != NULL)
+	partial_unref(opt->jo_err_cb.cb_partial);
+    else if (opt->jo_err_cb.cb_name != NULL)
+	func_unref(opt->jo_err_cb.cb_name);
+    if (opt->jo_close_cb.cb_partial != NULL)
+	partial_unref(opt->jo_close_cb.cb_partial);
+    else if (opt->jo_close_cb.cb_name != NULL)
+	func_unref(opt->jo_close_cb.cb_name);
+    if (opt->jo_exit_cb.cb_partial != NULL)
+	partial_unref(opt->jo_exit_cb.cb_partial);
+    else if (opt->jo_exit_cb.cb_name != NULL)
+	func_unref(opt->jo_exit_cb.cb_name);
     if (opt->jo_env != NULL)
 	dict_unref(opt->jo_env);
 }
@@ -4771,8 +4742,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_CALLBACK))
 		    break;
 		opt->jo_set |= JO_CALLBACK;
-		opt->jo_callback = get_callback(item, &opt->jo_partial);
-		if (opt->jo_callback == NULL)
+		opt->jo_callback = get_callback(item);
+		if (opt->jo_callback.cb_name == NULL)
 		{
 		    semsg(_(e_invargval), "callback");
 		    return FAIL;
@@ -4783,8 +4754,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_OUT_CALLBACK))
 		    break;
 		opt->jo_set |= JO_OUT_CALLBACK;
-		opt->jo_out_cb = get_callback(item, &opt->jo_out_partial);
-		if (opt->jo_out_cb == NULL)
+		opt->jo_out_cb = get_callback(item);
+		if (opt->jo_out_cb.cb_name == NULL)
 		{
 		    semsg(_(e_invargval), "out_cb");
 		    return FAIL;
@@ -4795,8 +4766,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_ERR_CALLBACK))
 		    break;
 		opt->jo_set |= JO_ERR_CALLBACK;
-		opt->jo_err_cb = get_callback(item, &opt->jo_err_partial);
-		if (opt->jo_err_cb == NULL)
+		opt->jo_err_cb = get_callback(item);
+		if (opt->jo_err_cb.cb_name == NULL)
 		{
 		    semsg(_(e_invargval), "err_cb");
 		    return FAIL;
@@ -4807,8 +4778,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_CLOSE_CALLBACK))
 		    break;
 		opt->jo_set |= JO_CLOSE_CALLBACK;
-		opt->jo_close_cb = get_callback(item, &opt->jo_close_partial);
-		if (opt->jo_close_cb == NULL)
+		opt->jo_close_cb = get_callback(item);
+		if (opt->jo_close_cb.cb_name == NULL)
 		{
 		    semsg(_(e_invargval), "close_cb");
 		    return FAIL;
@@ -4833,8 +4804,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported & JO_EXIT_CB))
 		    break;
 		opt->jo_set |= JO_EXIT_CB;
-		opt->jo_exit_cb = get_callback(item, &opt->jo_exit_partial);
-		if (opt->jo_exit_cb == NULL)
+		opt->jo_exit_cb = get_callback(item);
+		if (opt->jo_exit_cb.cb_name == NULL)
 		{
 		    semsg(_(e_invargval), "exit_cb");
 		    return FAIL;
@@ -5201,7 +5172,7 @@ job_free_contents(job_T *job)
 #ifdef MSWIN
     vim_free(job->jv_tty_type);
 #endif
-    free_callback(job->jv_exit_cb, job->jv_exit_partial);
+    free_callback(&job->jv_exit_cb);
     if (job->jv_argv != NULL)
     {
 	for (i = 0; job->jv_argv[i] != NULL; i++)
@@ -5289,7 +5260,7 @@ job_free_all(void)
 job_need_end_check(job_T *job)
 {
     return job->jv_status == JOB_STARTED
-		   && (job->jv_stoponexit != NULL || job->jv_exit_cb != NULL);
+	    && (job->jv_stoponexit != NULL || job->jv_exit_cb.cb_name != NULL);
 }
 
 /*
@@ -5465,22 +5436,22 @@ job_cleanup(job_T *job)
     if (job->jv_channel != NULL)
 	ch_close_part(job->jv_channel, PART_IN);
 
-    if (job->jv_exit_cb != NULL)
+    if (job->jv_exit_cb.cb_name != NULL)
     {
 	typval_T	argv[3];
 	typval_T	rettv;
 	int		dummy;
 
 	/* Invoke the exit callback. Make sure the refcount is > 0. */
-	ch_log(job->jv_channel, "Invoking exit callback %s", job->jv_exit_cb);
+	ch_log(job->jv_channel, "Invoking exit callback %s",
+						      job->jv_exit_cb.cb_name);
 	++job->jv_refcount;
 	argv[0].v_type = VAR_JOB;
 	argv[0].vval.v_job = job;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = job->jv_exitval;
-	call_func(job->jv_exit_cb, -1,
-	    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
-	    job->jv_exit_partial, NULL);
+	call_callback(&job->jv_exit_cb, -1,
+			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
 	clear_tv(&rettv);
 	--job->jv_refcount;
 	channel_need_redraw = TRUE;
@@ -5622,26 +5593,14 @@ job_set_options(job_T *job, jobopt_T *opt)
     }
     if (opt->jo_set & JO_EXIT_CB)
     {
-	free_callback(job->jv_exit_cb, job->jv_exit_partial);
-	if (opt->jo_exit_cb == NULL || *opt->jo_exit_cb == NUL)
+	free_callback(&job->jv_exit_cb);
+	if (opt->jo_exit_cb.cb_name == NULL || *opt->jo_exit_cb.cb_name == NUL)
 	{
-	    job->jv_exit_cb = NULL;
-	    job->jv_exit_partial = NULL;
+	    job->jv_exit_cb.cb_name = NULL;
+	    job->jv_exit_cb.cb_partial = NULL;
 	}
 	else
-	{
-	    job->jv_exit_partial = opt->jo_exit_partial;
-	    if (job->jv_exit_partial != NULL)
-	    {
-		job->jv_exit_cb = opt->jo_exit_cb;
-		++job->jv_exit_partial->pt_refcount;
-	    }
-	    else
-	    {
-		job->jv_exit_cb = vim_strsave(opt->jo_exit_cb);
-		func_ref(job->jv_exit_cb);
-	    }
-	}
+	    copy_callback(&job->jv_exit_cb, &opt->jo_exit_cb);
     }
 }
 
@@ -5959,7 +5918,7 @@ job_info(job_T *job, dict_T *dict)
     dict_add_string(dict, "tty_out", job->jv_tty_out);
 
     dict_add_number(dict, "exitval", job->jv_exitval);
-    dict_add_string(dict, "exit_cb", job->jv_exit_cb);
+    dict_add_string(dict, "exit_cb", job->jv_exit_cb.cb_name);
     dict_add_string(dict, "stoponexit", job->jv_stoponexit);
 #ifdef UNIX
     dict_add_string(dict, "termsig", job->jv_termsig);
@@ -6059,7 +6018,8 @@ invoke_prompt_callback(void)
     curwin->w_cursor.lnum = lnum + 1;
     curwin->w_cursor.col = 0;
 
-    if (curbuf->b_prompt_callback == NULL || *curbuf->b_prompt_callback == NUL)
+    if (curbuf->b_prompt_callback.cb_name == NULL
+	    || *curbuf->b_prompt_callback.cb_name == NUL)
 	return;
     text = ml_get(lnum);
     prompt = prompt_text();
@@ -6069,9 +6029,8 @@ invoke_prompt_callback(void)
     argv[0].vval.v_string = vim_strsave(text);
     argv[1].v_type = VAR_UNKNOWN;
 
-    call_func(curbuf->b_prompt_callback, -1,
-	      &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE,
-	      curbuf->b_prompt_partial, NULL);
+    call_callback(&curbuf->b_prompt_callback, -1,
+	      &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
     clear_tv(&argv[0]);
     clear_tv(&rettv);
 }
@@ -6086,15 +6045,14 @@ invoke_prompt_interrupt(void)
     int		dummy;
     typval_T	argv[1];
 
-    if (curbuf->b_prompt_interrupt == NULL
-					|| *curbuf->b_prompt_interrupt == NUL)
+    if (curbuf->b_prompt_interrupt.cb_name == NULL
+	    || *curbuf->b_prompt_interrupt.cb_name == NUL)
 	return FALSE;
     argv[0].v_type = VAR_UNKNOWN;
 
     got_int = FALSE; // don't skip executing commands
-    call_func(curbuf->b_prompt_interrupt, -1,
-	      &rettv, 0, argv, NULL, 0L, 0L, &dummy, TRUE,
-	      curbuf->b_prompt_int_partial, NULL);
+    call_callback(&curbuf->b_prompt_interrupt, -1,
+	      &rettv, 0, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
     clear_tv(&rettv);
     return TRUE;
 }

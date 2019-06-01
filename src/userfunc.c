@@ -1447,6 +1447,30 @@ func_call(
 }
 
 /*
+ * Invoke call_func() with a callback.
+ */
+    int
+call_callback(
+    callback_T	*callback,
+    int		len,		// length of "name" or -1 to use strlen()
+    typval_T	*rettv,		// return value goes here
+    int		argcount,	// number of "argvars"
+    typval_T	*argvars,	// vars for arguments, must have "argcount"
+				// PLUS ONE elements!
+    int		(* argv_func)(int, typval_T *, int),
+				// function to fill in argvars
+    linenr_T	firstline,	// first line of range
+    linenr_T	lastline,	// last line of range
+    int		*doesrange,	// return: function handled range
+    int		evaluate,
+    dict_T	*selfdict)	// Dictionary for "self"
+{
+    return call_func(callback->cb_name, len, rettv, argcount, argvars,
+	    argv_func, firstline, lastline, doesrange, evaluate,
+	    callback->cb_partial, selfdict);
+}
+
+/*
  * Call a function with its resolved parameters
  *
  * "argv_func", when not NULL, can be used to fill in arguments only when the

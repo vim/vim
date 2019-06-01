@@ -9200,8 +9200,7 @@ f_printf(typval_T *argvars, typval_T *rettv)
 f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf;
-    char_u	*callback;
-    partial_T	*partial;
+    callback_T	callback;
 
     if (check_secure())
 	return;
@@ -9209,17 +9208,12 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
     if (buf == NULL)
 	return;
 
-    callback = get_callback(&argvars[1], &partial);
-    if (callback == NULL)
+    callback = get_callback(&argvars[1]);
+    if (callback.cb_name == NULL)
 	return;
 
-    free_callback(buf->b_prompt_callback, buf->b_prompt_partial);
-    if (partial == NULL)
-	buf->b_prompt_callback = vim_strsave(callback);
-    else
-	/* pointer into the partial */
-	buf->b_prompt_callback = callback;
-    buf->b_prompt_partial = partial;
+    free_callback(&buf->b_prompt_callback);
+    set_callback(&buf->b_prompt_callback, &callback);
 }
 
 /*
@@ -9229,8 +9223,7 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf;
-    char_u	*callback;
-    partial_T	*partial;
+    callback_T	callback;
 
     if (check_secure())
 	return;
@@ -9238,17 +9231,12 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
     if (buf == NULL)
 	return;
 
-    callback = get_callback(&argvars[1], &partial);
-    if (callback == NULL)
+    callback = get_callback(&argvars[1]);
+    if (callback.cb_name == NULL)
 	return;
 
-    free_callback(buf->b_prompt_interrupt, buf->b_prompt_int_partial);
-    if (partial == NULL)
-	buf->b_prompt_interrupt = vim_strsave(callback);
-    else
-	/* pointer into the partial */
-	buf->b_prompt_interrupt = callback;
-    buf->b_prompt_int_partial = partial;
+    free_callback(&buf->b_prompt_interrupt);
+    set_callback(&buf->b_prompt_interrupt, &callback);
 }
 
 /*
@@ -14631,42 +14619,104 @@ f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
 /*
  * Get a callback from "arg".  It can be a Funcref or a function name.
  * When "arg" is zero return an empty string.
- * Return NULL for an invalid argument.
+ * "cb_name" is not allocated.
+ * "cb_name" is set to NULL for an invalid argument.
  */
-    char_u *
-get_callback(typval_T *arg, partial_T **pp)
+    callback_T
+get_callback(typval_T *arg)
 {
+    callback_T res;
+
+    res.cb_free_name = FALSE;
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
     {
-	*pp = arg->vval.v_partial;
-	++(*pp)->pt_refcount;
-	return partial_name(*pp);
+	res.cb_partial = arg->vval.v_partial;
+	++res.cb_partial->pt_refcount;
+	res.cb_name = partial_name(res.cb_partial);
     }
-    *pp = NULL;
-    if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+    else
     {
-	func_ref(arg->vval.v_string);
-	return arg->vval.v_string;
+	res.cb_partial = NULL;
+	if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+	{
+	    // Note that we don't make a copy of the string.
+	    res.cb_name = arg->vval.v_string;
+	    func_ref(res.cb_name);
+	}
+	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
+	{
+	    res.cb_name = (char_u *)"";
+	}
+	else
+	{
+	    emsg(_("E921: Invalid callback argument"));
+	    res.cb_name = NULL;
+	}
     }
-    if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
-	return (char_u *)"";
-    emsg(_("E921: Invalid callback argument"));
-    return NULL;
+    return res;
 }
 
 /*
- * Unref/free "callback" and "partial" returned by get_callback().
+ * Copy a callback into a typval_T.
  */
     void
-free_callback(char_u *callback, partial_T *partial)
+put_callback(callback_T *cb, typval_T *tv)
 {
-    if (partial != NULL)
-	partial_unref(partial);
-    else if (callback != NULL)
+    if (cb->cb_partial != NULL)
     {
-	func_unref(callback);
-	vim_free(callback);
+	tv->v_type = VAR_PARTIAL;
+	tv->vval.v_partial = cb->cb_partial;
+	++tv->vval.v_partial->pt_refcount;
     }
+    else
+    {
+	tv->v_type = VAR_FUNC;
+	tv->vval.v_string = vim_strsave(cb->cb_name);
+	func_ref(cb->cb_name);
+    }
+}
+
+/*
+ * Make a copy of "src" into "dest", allocating the function name if needed,
+ * without incrementing the refcount.
+ */
+    void
+set_callback(callback_T *dest, callback_T *src)
+{
+    if (src->cb_partial == NULL)
+    {
+	// just a function name, make a copy
+	dest->cb_name = vim_strsave(src->cb_name);
+	dest->cb_free_name = TRUE;
+    }
+    else
+    {
+	// cb_name is a pointer into cb_partial
+	dest->cb_name = src->cb_name;
+	dest->cb_free_name = FALSE;
+    }
+    dest->cb_partial = src->cb_partial;
+}
+
+/*
+ * Unref/free "callback" returned by get_callback() or set_callback().
+ */
+    void
+free_callback(callback_T *callback)
+{
+    if (callback->cb_partial != NULL)
+    {
+	partial_unref(callback->cb_partial);
+	callback->cb_partial = NULL;
+    }
+    else if (callback->cb_name != NULL)
+	func_unref(callback->cb_name);
+    if (callback->cb_free_name)
+    {
+	vim_free(callback->cb_name);
+	callback->cb_free_name = FALSE;
+    }
+    callback->cb_name = NULL;
 }
 
 #ifdef FEAT_TIMERS
@@ -14723,9 +14773,8 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     long	msec = (long)tv_get_number(&argvars[0]);
     timer_T	*timer;
     int		repeat = 0;
-    char_u	*callback;
+    callback_T	callback;
     dict_T	*dict;
-    partial_T	*partial;
 
     rettv->vval.v_number = -1;
     if (check_secure())
@@ -14742,21 +14791,16 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	    repeat = dict_get_number(dict, (char_u *)"repeat");
     }
 
-    callback = get_callback(&argvars[1], &partial);
-    if (callback == NULL)
+    callback = get_callback(&argvars[1]);
+    if (callback.cb_name == NULL)
 	return;
 
     timer = create_timer(msec, repeat);
     if (timer == NULL)
-	free_callback(callback, partial);
+	free_callback(&callback);
     else
     {
-	if (partial == NULL)
-	    timer->tr_callback = vim_strsave(callback);
-	else
-	    /* pointer into the partial */
-	    timer->tr_callback = callback;
-	timer->tr_partial = partial;
+	set_callback(&timer->tr_callback, &callback);
 	rettv->vval.v_number = (varnumber_T)timer->tr_id;
     }
 }

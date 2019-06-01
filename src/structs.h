@@ -1237,6 +1237,17 @@ typedef struct dictvar_S dict_T;
 typedef struct partial_S partial_T;
 typedef struct blobvar_S blob_T;
 
+// Struct that holds both a normal function name and a partial_T, as used for a
+// callback argument.
+// When used temporarily "cb_name" is not allocated.  The refcounts to either
+// the function or the partial are incremented and need to be decremented
+// later with free_callback().
+typedef struct {
+    char_u	*cb_name;
+    partial_T	*cb_partial;
+    int		cb_free_name;	    // cb_name was allocated
+} callback_T;
+
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
 typedef struct writeq_S writeq_T;
@@ -1566,8 +1577,7 @@ struct jobvar_S
     char_u	*jv_tty_type;	// allocated
 #endif
     int		jv_exitval;
-    char_u	*jv_exit_cb;	/* allocated */
-    partial_T	*jv_exit_partial;
+    callback_T	jv_exit_cb;
 
     buf_T	*jv_in_buf;	/* buffer from "in-name" */
 
@@ -1606,8 +1616,7 @@ struct jsonq_S
 
 struct cbq_S
 {
-    char_u	*cq_callback;
-    partial_T	*cq_partial;
+    callback_T	cq_callback;
     int		cq_seq_nr;
     cbq_T	*cq_next;
     cbq_T	*cq_prev;
@@ -1689,8 +1698,7 @@ typedef struct {
     writeq_T	ch_writeque;	/* header for write queue */
 
     cbq_T	ch_cb_head;	/* dummy node for per-request callbacks */
-    char_u	*ch_callback;	/* call when a msg is not handled */
-    partial_T	*ch_partial;
+    callback_T	ch_callback;	/* call when a msg is not handled */
 
     bufref_T	ch_bufref;	/* buffer to read from or write to */
     int		ch_nomodifiable; /* TRUE when buffer can be 'nomodifiable' */
@@ -1731,10 +1739,8 @@ struct channel_S {
 #ifdef MSWIN
     int		ch_named_pipe;	/* using named pipe instead of pty */
 #endif
-    char_u	*ch_callback;	/* call when any msg is not handled */
-    partial_T	*ch_partial;
-    char_u	*ch_close_cb;	/* call when channel is closed */
-    partial_T	*ch_close_partial;
+    callback_T	ch_callback;	/* call when any msg is not handled */
+    callback_T	ch_close_cb;	/* call when channel is closed */
     int		ch_drop_never;
     int		ch_keep_open;	/* do not close on read error */
     int		ch_nonblock;
@@ -1833,16 +1839,11 @@ typedef struct
     linenr_T	jo_in_top;
     linenr_T	jo_in_bot;
 
-    char_u	*jo_callback;	/* not allocated! */
-    partial_T	*jo_partial;	/* not referenced! */
-    char_u	*jo_out_cb;	/* not allocated! */
-    partial_T	*jo_out_partial; /* not referenced! */
-    char_u	*jo_err_cb;	/* not allocated! */
-    partial_T	*jo_err_partial; /* not referenced! */
-    char_u	*jo_close_cb;	/* not allocated! */
-    partial_T	*jo_close_partial; /* not referenced! */
-    char_u	*jo_exit_cb;	/* not allocated! */
-    partial_T	*jo_exit_partial; /* not referenced! */
+    callback_T	jo_callback;
+    callback_T	jo_out_cb;
+    callback_T	jo_err_cb;
+    callback_T	jo_close_cb;
+    callback_T	jo_exit_cb;
     int		jo_drop_never;
     int		jo_waittime;
     int		jo_timeout;
@@ -1886,8 +1887,7 @@ struct listener_S
 {
     listener_T	*lr_next;
     int		lr_id;
-    char_u	*lr_callback;
-    partial_T	*lr_partial;
+    callback_T	lr_callback;
 };
 #endif
 
@@ -1950,13 +1950,12 @@ struct timer_S
 #ifdef FEAT_TIMERS
     timer_T	*tr_next;
     timer_T	*tr_prev;
-    proftime_T	tr_due;		    /* when the callback is to be invoked */
-    char	tr_firing;	    /* when TRUE callback is being called */
-    char	tr_paused;	    /* when TRUE callback is not invoked */
-    int		tr_repeat;	    /* number of times to repeat, -1 forever */
-    long	tr_interval;	    /* msec */
-    char_u	*tr_callback;	    /* allocated */
-    partial_T	*tr_partial;
+    proftime_T	tr_due;		    // when the callback is to be invoked
+    char	tr_firing;	    // when TRUE callback is being called
+    char	tr_paused;	    // when TRUE callback is not invoked
+    int		tr_repeat;	    // number of times to repeat, -1 forever
+    long	tr_interval;	    // msec
+    callback_T	tr_callback;
     int		tr_emsg_count;
 #endif
 };
@@ -2509,13 +2508,11 @@ struct file_buffer
     int		b_shortname;	/* this file has an 8.3 file name */
 
 #ifdef FEAT_JOB_CHANNEL
-    char_u	*b_prompt_text;	     // set by prompt_setprompt()
-    char_u	*b_prompt_callback;  // set by prompt_setcallback()
-    partial_T	*b_prompt_partial;   // set by prompt_setcallback()
-    char_u	*b_prompt_interrupt;   // set by prompt_setinterrupt()
-    partial_T	*b_prompt_int_partial; // set by prompt_setinterrupt()
-    int		b_prompt_insert;     // value for restart_edit when entering
-				     // a prompt buffer window.
+    char_u	*b_prompt_text;		// set by prompt_setprompt()
+    callback_T	b_prompt_callback;	// set by prompt_setcallback()
+    callback_T	b_prompt_interrupt;	// set by prompt_setinterrupt()
+    int		b_prompt_insert;	// value for restart_edit when entering
+					// a prompt buffer window.
 #endif
 #ifdef FEAT_MZSCHEME
     void	*b_mzscheme_ref; /* The MzScheme reference to this buffer */

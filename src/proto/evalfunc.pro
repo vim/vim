@@ -11,6 +11,8 @@ void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 float_T vim_round(float_T f);
 long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, typval_T *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit);
 void f_string(typval_T *argvars, typval_T *rettv);
-char_u *get_callback(typval_T *arg, partial_T **pp);
-void free_callback(char_u *callback, partial_T *partial);
+callback_T get_callback(typval_T *arg);
+void put_callback(callback_T *cb, typval_T *tv);
+void set_callback(callback_T *dest, callback_T *src);
+void free_callback(callback_T *callback);
 /* vim: set ft=c : */
