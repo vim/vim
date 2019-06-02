@@ -382,6 +382,12 @@ popup_adjust_position(win_T *wp)
     int		center_vert = FALSE;
     int		center_hor = FALSE;
     int		allow_adjust_left = !wp->w_popup_fixed;
+    int		top_extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
+    int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1];
+    int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2];
+    int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
+    int		extra_height = top_extra + bot_extra;
+    int		extra_width = left_extra + right_extra;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -474,8 +480,8 @@ popup_adjust_position(win_T *wp)
     {
 	// Right aligned: move to the right if needed.
 	// No truncation, because that would change the height.
-	if (wp->w_width < wp->w_wantcol)
-	    wp->w_wincol = wp->w_wantcol - wp->w_width;
+	if (wp->w_width + extra_width < wp->w_wantcol)
+	    wp->w_wincol = wp->w_wantcol - (wp->w_width + extra_width);
     }
 
     if (wp->w_height <= 1)
@@ -492,9 +498,9 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
 	    || wp->w_popup_pos == POPPOS_BOTLEFT)
     {
-	if (wp->w_height <= wp->w_wantline)
+	if ((wp->w_height + extra_height) <= wp->w_wantline)
 	    // bottom aligned: may move down
-	    wp->w_winrow = wp->w_wantline - wp->w_height;
+	    wp->w_winrow = wp->w_wantline - (wp->w_height + extra_height);
 	else
 	    // not enough space, make top aligned
 	    wp->w_winrow = wp->w_wantline + 1;

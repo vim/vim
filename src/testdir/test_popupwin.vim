@@ -175,6 +175,55 @@ func Test_popup_with_syntax_setbufvar()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_all_corners()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  let lines =<< trim END
+	call setline(1, repeat([repeat('-', 60)], 15))
+	set so=0
+	normal 2G3|r#
+	let winid1 = popup_create(['first', 'second'], {
+	      \ 'line': 'cursor+1',
+	      \ 'col': 'cursor',
+	      \ 'pos': 'topleft',
+	      \ 'border': [],
+	      \ 'padding': [],
+	      \ })
+	normal 25|r@
+	let winid1 = popup_create(['First', 'SeconD'], {
+	      \ 'line': 'cursor+1',
+	      \ 'col': 'cursor',
+	      \ 'pos': 'topright',
+	      \ 'border': [],
+	      \ 'padding': [],
+	      \ })
+	normal 9G29|r%
+	let winid1 = popup_create(['fiRSt', 'seCOnd'], {
+	      \ 'line': 'cursor-1',
+	      \ 'col': 'cursor',
+	      \ 'pos': 'botleft',
+	      \ 'border': [],
+	      \ 'padding': [],
+	      \ })
+	normal 51|r&
+	let winid1 = popup_create(['FIrsT', 'SEcoND'], {
+	      \ 'line': 'cursor-1',
+	      \ 'col': 'cursor',
+	      \ 'pos': 'botright',
+	      \ 'border': [],
+	      \ 'padding': [],
+	      \ })
+  END
+  call writefile(lines, 'XtestPopupCorners')
+  let buf = RunVimInTerminal('-S XtestPopupCorners', {'rows': 12})
+  call VerifyScreenDump(buf, 'Test_popupwin_corners', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupCorners')
+endfunc
+
 func Test_win_execute_closing_curwin()
   split
   let winid = popup_create('some text', {})
