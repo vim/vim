@@ -84,6 +84,8 @@ get_pos_options(win_T *wp, dict_T *dict)
     if (nr > 0)
 	wp->w_wantcol = nr;
 
+    wp->w_popup_fixed = dict_get_number(dict, (char_u *)"fixed") != 0;
+
     str = dict_get_string(dict, (char_u *)"pos", FALSE);
     if (str != NULL)
     {
@@ -379,6 +381,7 @@ popup_adjust_position(win_T *wp)
     int		maxwidth;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
+    int		allow_adjust_left = !wp->w_popup_fixed;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -412,10 +415,14 @@ popup_adjust_position(win_T *wp)
     }
 
     // When centering or right aligned, use maximum width.
-    // When left aligned use the space available.
+    // When left aligned use the space available, but shift to the left when we
+    // hit the right of the screen.
     maxwidth = Columns - wp->w_wincol;
     if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
+    {
+	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
+    }
 
     // Compute width based on longest text line and the 'wrap' option.
     // TODO: more accurate wrapping
@@ -424,10 +431,32 @@ popup_adjust_position(win_T *wp)
     {
 	int len = vim_strsize(ml_get_buf(wp->w_buffer, lnum, FALSE));
 
-	while (wp->w_p_wrap && len > maxwidth)
+	if (wp->w_p_wrap)
 	{
-	    ++wrapped;
-	    len -= maxwidth;
+	    while (len > maxwidth)
+	    {
+		++wrapped;
+		len -= maxwidth;
+		wp->w_width = maxwidth;
+	    }
+	}
+	else if (len > maxwidth
+		&& allow_adjust_left
+		&& (wp->w_popup_pos == POPPOS_TOPLEFT
+		    || wp->w_popup_pos == POPPOS_BOTLEFT))
+	{
+	    // adjust leftwise to fit text on screen
+	    int shift_by = ( len - maxwidth );
+
+	    if ( shift_by > wp->w_wincol )
+	    {
+		int truncate_shift = shift_by - wp->w_wincol;
+		len -= truncate_shift;
+		shift_by -= truncate_shift;
+	    }
+
+	    wp->w_wincol -= shift_by;
+	    maxwidth += shift_by;
 	    wp->w_width = maxwidth;
 	}
 	if (wp->w_width < len)
@@ -895,6 +924,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "maxheight", wp->w_maxheight);
 	dict_add_number(dict, "maxwidth", wp->w_maxwidth);
 	dict_add_number(dict, "zindex", wp->w_zindex);
+	dict_add_number(dict, "fixed", wp->w_popup_fixed);
 
 	for (i = 0; i < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
 									   ++i)

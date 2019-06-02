@@ -65,8 +65,10 @@ The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
 increase the width or the "minwidth" property.
 
-By default the 'wrap' option is set, so that no text disappears.  However, if
-there is not enough space, some text may be invisible.
+By default the 'wrap' option is set, so that no text disappears.  Otherwise,
+if there is not enough space then the window is shifted left in order to
+display more text. This can be disabled with the "fixed" property. Also
+disabled when right-aligned.
 
 Vim tries to show the popup in the location you specify.  In some cases, e.g.
 when the popup would go outside of the Vim window, it will show it somewhere
@@ -77,8 +79,6 @@ window it will be placed below the cursor position.
 
 
 TODO:
-
-Example how to use syntax highlighting of a code snippet.
 
 Scrolling: When the screen scrolls up for output of an Ex command, what
 happens with popups?
@@ -93,12 +93,12 @@ IMPLEMENTATION:
 - Fix positioning with border and padding.
 - Why does 'nrformats' leak from the popup window buffer???
 - Make redrawing more efficient and avoid flicker.
-    Store popup info in a mask, use the mask in screen_line()
-    Keep mask until next update_screen(), find differences and redraw affected
-    windows/lines
+    First draw popups, creating a mask, use the mask in screen_line() when
+    drawing other windows and stuff.  Mask contains zindex of popups.
+    Keep mask until next update_screen(), use when drawing status lines.
+    Remove update_popup() calls after draw_tabline()/updating statusline
     Fix redrawing problem with completion.
     Fix redrawing problem when scrolling non-current window
-    Fix redrawing the statusline on top of a popup
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use NOT_IN_POPUP_WINDOW for more commands.
 - Invoke filter with character before mapping?
@@ -327,81 +327,100 @@ optionally text properties.  It is in one of three forms:
 			|popup-props|.
 
 The second argument of |popup_create()| is a dictionary with options:
-	line		screen line where to position the popup; can use a
+	line		Screen line where to position the popup.  Can use a
 			number or "cursor", "cursor+1" or "cursor-1" to use
 			the line of the cursor and add or subtract a number of
-			lines; if omitted the popup is vertically centered,
-			otherwise "pos" is used.
-	col		screen column where to position the popup; can use a
+			lines.  If omitted the popup is vertically centered.
+			The first line is 1.
+	col		Screen column where to position the popup.  Can use a
 			number or "cursor" to use the column of the cursor,
-			"cursor+99" and "cursor-99" to add or subtract a
-			number of columns; if omitted the popup is
-			horizontally centered, otherwise "pos" is used
+			"cursor+9" or "cursor-9" to add or subtract a number
+			of columns.  If omitted the popup is horizontally
+			centered.  The first column is 1.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
-	flip		when TRUE (the default) and the position is relative
+	fixed		When FALSE (the default), and:
+			 - "pos" is "botleft" or "topleft", and
+			 - "wrap" is off, and
+			 - the popup would be truncated at the right edge of
+			   the screen, then
+			the popup is moved to the left so as to fit the
+			contents on the screen.  Set to TRUE to disable this.
+	flip		When TRUE (the default) and the position is relative
 			to the cursor, flip to below or above the cursor to
 			avoid overlap with the |popupmenu-completion| or
-			another popup with a higher "zindex"
+			another popup with a higher "zindex".
 			{not implemented yet}
-	maxheight	maximum height
-	minheight	minimum height
-	maxwidth	maximum width
-	minwidth	minimum width
-	hidden		when TRUE the popup exists but is not displayed; use
+	maxheight	Maximum height of the contents, excluding border and
+			padding.
+	minheight	Minimum height of the contents, excluding border and
+			padding.
+	maxwidth	Maximum width of the contents, excluding border and
+			padding.
+	minwidth	Minimum width of the contents, excluding border and
+			padding.
+	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
-	tab		when -1: display the popup on all tabs; when 0 (the
-			default): display the popup on the current tab;
-			otherwise the number of the tab page the popup is
-			displayed on; when invalid the current tab is used
+	tab		When -1: display the popup on all tabs.
+			When 0 (the default): display the popup on the current
+			tab.
+			Otherwise the number of the tab page the popup is
+			displayed on; when invalid the current tab is used.
 			{only -1 and 0 are implemented}
-	title		text to be displayed above the first item in the
-			popup, on top of any border
+	title		Text to be displayed above the first item in the
+			popup, on top of any border.  If there is no top
+			border on line of padding is added to put the title on.
 			{not implemented yet}
-	wrap		TRUE to make the lines wrap (default TRUE)
-	highlight	highlight group name to use for the text, stored in
-			the 'wincolor' option
-	padding		list with numbers, defining the padding
-			above/right/below/left of the popup (similar to CSS);
-			an empty list uses a padding of 1 all around; the
-			padding goes around the text, inside any border;
-			padding uses the 'wincolor' highlight; Example: [1, 2,
-			1, 3] has 1 line of padding above, 2 columns on the
-			right, 1 line below and 3 columns on the left
-	border		list with numbers, defining the border thickness
-			above/right/below/left of the popup (similar to CSS);
-			only values of zero and non-zero are recognized;
-			an empty list uses a border all around
-	borderhighlight	list of highlight group names to use for the border;
-			when one entry it is used for all borders, otherwise
-			the highlight for the top/right/bottom/left border
-	borderchars	list with characters, defining the character to use
-			for the top/right/bottom/left border; optionally
+	wrap		TRUE to make the lines wrap (default TRUE).
+	highlight	Highlight group name to use for the text, stored in
+			the 'wincolor' option.
+	padding		List with numbers, defining the padding
+			above/right/below/left of the popup (similar to CSS).
+			An empty list uses a padding of 1 all around.  The
+			padding goes around the text, inside any border.
+			Padding uses the 'wincolor' highlight.
+			Example: [1, 2, 1, 3] has 1 line of padding above, 2
+			columns on the right, 1 line below and 3 columns on
+			the left.
+	border		List with numbers, defining the border thickness
+			above/right/below/left of the popup (similar to CSS).
+			Only values of zero and non-zero are recognized.
+			An empty list uses a border all around.
+	borderhighlight	List of highlight group names to use for the border.
+			When one entry it is used for all borders, otherwise
+			the highlight for the top/right/bottom/left border.
+			Example: ['TopColor', 'RightColor', 'BottomColor,
+			'LeftColor']
+	borderchars	List with characters, defining the character to use
+			for the top/right/bottom/left border.  Optionally
 			followed by the character to use for the
-			topleft/topright/botright/botleft corner; when the
-			list has one character it is used for all; when
-			the list has two characters the first is used for the
-			border lines, the second for the corners; by default
-			a double line is used all around when 'encoding' is
-			"utf-8", otherwise ASCII characters are used.
-	zindex		priority for the popup, default 50
-	time		time in milliseconds after which the popup will close;
-			when omitted |popup_close()| must be used.
+			topleft/topright/botright/botleft corner.
+			Example: ['-', '|', '-', '|', '┌', '┐', '┘', '└']
+			When the list has one character it is used for all.
+			When the list has two characters the first is used for
+			the border lines, the second for the corners.
+			By default a double line is used all around when
+			'encoding' is "utf-8", otherwise ASCII characters are
+			used.
+	zindex		Priority for the popup, default 50.
+	time		Time in milliseconds after which the popup will close.
+			When omitted |popup_close()| must be used.
 	moved		"cell": close the popup if the cursor moved at least
-			one screen cell; "word" allows for moving within
-			|<cword>|, "WORD" allows for moving within |<cWORD>|,
+			one screen cell.
+			"word" allows for moving the cursor within |<cword>|
+			"WORD" allows for moving the cursor within |<cWORD>|
 			a list with two numbers specifies the start and end
-			column
+			column outside of which the popup will close
 			{not implemented yet}
-	filter		a callback that can filter typed characters, see 
-			|popup-filter|
-	callback	a callback to be used when the popup closes, e.g. when
-			using |popup_filter_menu()|, see |popup-callback|.
+	filter		A callback that can filter typed characters, see 
+			|popup-filter|.
+	callback	A callback that is called when the popup closes, e.g.
+			when using |popup_filter_menu()|, see |popup-callback|.
 
 Depending on the "zindex" the popup goes under or above other popups.  The
 completion menu (|popup-menu|) has zindex 100.  For messages that occur for a

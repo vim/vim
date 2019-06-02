@@ -2308,7 +2308,7 @@ struct file_buffer
     int		b_p_fixeol;	/* 'fixendofline' */
     int		b_p_et;		/* 'expandtab' */
     int		b_p_et_nobin;	/* b_p_et saved for binary mode */
-    int	        b_p_et_nopaste; /* b_p_et saved for paste mode */
+    int		b_p_et_nopaste; /* b_p_et saved for paste mode */
     char_u	*b_p_fenc;	/* 'fileencoding' */
     char_u	*b_p_ff;	/* 'fileformat' */
     char_u	*b_p_ft;	/* 'filetype' */
@@ -2881,6 +2881,7 @@ struct window_S
 #ifdef FEAT_TEXT_PROP
     int		w_popup_flags;	    // POPF_ values
     poppos_T	w_popup_pos;
+    int		w_popup_fixed;	    // do not shift popup to fit on screen
     int		w_zindex;
     int		w_minheight;	    // "minheight" for popup window
     int		w_minwidth;	    // "minwidth" for popup window
@@ -3038,8 +3039,8 @@ struct window_S
     int		w_p_brishift;	    /* additional shift for breakindent */
     int		w_p_brisbr;	    /* sbr in 'briopt' */
 #endif
-    long        w_p_siso;           /* 'sidescrolloff' local value */
-    long        w_p_so;             /* 'scrolloff' local value */
+    long	w_p_siso;	    /* 'sidescrolloff' local value */
+    long	w_p_so;		    /* 'scrolloff' local value */
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
@@ -3471,7 +3472,7 @@ struct js_reader
     int		js_used;	/* bytes used from js_buf */
     int		(*js_fill)(struct js_reader *);
 				/* function to fill the buffer or NULL;
-                                 * return TRUE when the buffer was filled */
+				 * return TRUE when the buffer was filled */
     void	*js_cookie;	/* can be used by js_fill */
     int		js_cookie_arg;	/* can be used by js_fill */
 };

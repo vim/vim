@@ -422,6 +422,7 @@ func Test_popup_getoptions()
     \ 'maxheight': 21,
     \ 'zindex': 100,
     \ 'time': 5000,
+    \ 'fixed': 1
     \})
   redraw
   let res = popup_getoptions(winid)
@@ -432,6 +433,7 @@ func Test_popup_getoptions()
   call assert_equal(20, res.maxwidth)
   call assert_equal(21, res.maxheight)
   call assert_equal(100, res.zindex)
+  call assert_equal(1, res.fixed)
   if has('timers')
     call assert_equal(5000, res.time)
   endif
@@ -447,6 +449,7 @@ func Test_popup_getoptions()
   call assert_equal(0, res.maxwidth)
   call assert_equal(0, res.maxheight)
   call assert_equal(50, res.zindex)
+  call assert_equal(0, res.fixed)
   if has('timers')
     call assert_equal(0, res.time)
   endif
@@ -647,3 +650,183 @@ func Test_popup_never_behind()
   call StopVimInTerminal(buf)
   call delete('XtestPopupBehind')
 endfunc
+
+func s:VerifyPosition( p, msg, line, col, width, height )
+  call assert_equal( a:line,   popup_getpos( a:p ).line,   a:msg . ' (l)' )
+  call assert_equal( a:col,    popup_getpos( a:p ).col,    a:msg . ' (c)' )
+  call assert_equal( a:width,  popup_getpos( a:p ).width,  a:msg . ' (w)' )
+  call assert_equal( a:height, popup_getpos( a:p ).height, a:msg . ' (h)' )
+endfunc
+
+func Test_popup_position_adjust()
+  " Anything placed past 2 cells from of the right of the screen is moved to the
+  " left.
+  "
+  " When wrapping is disabled, we also shift to the left to display on the
+  " screen, unless fixed is set.
+
+  " Entries for cases which don't vary based on wrapping.
+  " Format is per tests described below
+  let both_wrap_tests = [
+        \       [ 'a', 5, &columns,        5, &columns - 2, 1, 1 ],
+        \       [ 'b', 5, &columns + 1,    5, &columns - 2, 1, 1 ],
+        \       [ 'c', 5, &columns - 1,    5, &columns - 2, 1, 1 ],
+        \       [ 'd', 5, &columns - 2,    5, &columns - 2, 1, 1 ],
+        \       [ 'e', 5, &columns - 3,    5, &columns - 3, 1, 1 ],
+        \
+        \       [ 'aa', 5, &columns,        5, &columns - 2, 2, 1 ],
+        \       [ 'bb', 5, &columns + 1,    5, &columns - 2, 2, 1 ],
+        \       [ 'cc', 5, &columns - 1,    5, &columns - 2, 2, 1 ],
+        \       [ 'dd', 5, &columns - 2,    5, &columns - 2, 2, 1 ],
+        \       [ 'ee', 5, &columns - 3,    5, &columns - 3, 2, 1 ],
+        \
+        \       [ 'aaa', 5, &columns,        5, &columns - 2, 3, 1 ],
+        \       [ 'bbb', 5, &columns + 1,    5, &columns - 2, 3, 1 ],
+        \       [ 'ccc', 5, &columns - 1,    5, &columns - 2, 3, 1 ],
+        \       [ 'ddd', 5, &columns - 2,    5, &columns - 2, 3, 1 ],
+        \       [ 'eee', 5, &columns - 3,    5, &columns - 3, 3, 1 ],
+        \ ]
+
+  " these test groups are dicts with:
+  "  - comment: something to identify the group of tests by
+  "  - options: dict of options to merge with the row/col in tests
+  "  - tests: list of cases. Each one is a list with elements:
+  "     - text
+  "     - row
+  "     - col
+  "     - expected row
+  "     - expected col
+  "     - expected width
+  "     - expected height
+  let tests = [
+        \ {
+        \   'comment': 'left-aligned with wrapping',
+        \   'options': {
+        \     'wrap': 1,
+        \     'pos': 'botleft',
+        \   },
+        \   'tests': both_wrap_tests + [
+        \       [ 'aaaa', 5, &columns,        4, &columns - 2, 3, 2 ],
+        \       [ 'bbbb', 5, &columns + 1,    4, &columns - 2, 3, 2 ],
+        \       [ 'cccc', 5, &columns - 1,    4, &columns - 2, 3, 2 ],
+        \       [ 'dddd', 5, &columns - 2,    4, &columns - 2, 3, 2 ],
+        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
+        \   ],
+        \ },
+        \ {
+        \   'comment': 'left aligned without wrapping',
+        \   'options': {
+        \     'wrap': 0,
+        \     'pos': 'botleft',
+        \   },
+        \   'tests': both_wrap_tests + [
+        \       [ 'aaaa', 5, &columns,        5, &columns - 3, 4, 1 ],
+        \       [ 'bbbb', 5, &columns + 1,    5, &columns - 3, 4, 1 ],
+        \       [ 'cccc', 5, &columns - 1,    5, &columns - 3, 4, 1 ],
+        \       [ 'dddd', 5, &columns - 2,    5, &columns - 3, 4, 1 ],
+        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
+        \   ],
+        \ },
+        \ {
+        \   'comment': 'left aligned with fixed position',
+        \   'options': {
+        \     'wrap': 0,
+        \     'fixed': 1,
+        \     'pos': 'botleft',
+        \   },
+        \   'tests': both_wrap_tests + [
+        \       [ 'aaaa', 5, &columns,        5, &columns - 2, 3, 1 ],
+        \       [ 'bbbb', 5, &columns + 1,    5, &columns - 2, 3, 1 ],
+        \       [ 'cccc', 5, &columns - 1,    5, &columns - 2, 3, 1 ],
+        \       [ 'dddd', 5, &columns - 2,    5, &columns - 2, 3, 1 ],
+        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
+        \   ],
+        \ },
+      \ ]
+
+  for test_group in tests
+    for test in test_group.tests
+      let [ text, line, col, e_line, e_col, e_width, e_height ] = test
+      let options = {
+            \ 'line': line,
+            \ 'col': col,
+            \ }
+      call extend( options, test_group.options )
+
+      let p = popup_create( text, options )
+
+      let msg = string( extend( options, { 'text': text } ) )
+      call s:VerifyPosition( p, msg, e_line, e_col, e_width, e_height )
+      call popup_close( p )
+    endfor
+  endfor
+
+  popupclear
+  %bwipe!
+endfunc
+
+function Test_adjust_left_past_screen_width()
+  " width of screen
+  let X = join(map(range(&columns), {->'X'}), '')
+
+  let p = popup_create( X, { 'line': 1, 'col': 1, 'wrap': 0 } )
+  call s:VerifyPosition( p, 'full width topleft', 1, 1, &columns, 1 )
+
+  redraw
+  let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
+  call assert_equal(X, line)
+
+  call popup_close( p )
+  redraw
+
+  " Same if placed on the right hand side
+  let p = popup_create( X, { 'line': 1, 'col': &columns, 'wrap': 0 } )
+  call s:VerifyPosition( p, 'full width topright', 1, 1, &columns, 1 )
+
+  redraw
+  let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
+  call assert_equal(X, line)
+
+  call popup_close( p )
+  redraw
+
+  " Extend so > window width
+  let X .= 'x'
+
+  let p = popup_create( X, { 'line': 1, 'col': 1, 'wrap': 0 } )
+  call s:VerifyPosition( p, 'full width +  1 topleft', 1, 1, &columns, 1 )
+
+  redraw
+  let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
+  call assert_equal(X[ : -2 ], line)
+
+  call popup_close( p )
+  redraw
+
+  " Shifted then truncated (the x is not visible)
+  let p = popup_create( X, { 'line': 1, 'col': &columns - 3, 'wrap': 0 } )
+  call s:VerifyPosition( p, 'full width + 1 topright', 1, 1, &columns, 1 )
+
+  redraw
+  let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
+  call assert_equal(X[ : -2 ], line)
+
+  call popup_close( p )
+  redraw
+
+  " Not shifted, just truncated
+  let p = popup_create( X,
+        \ { 'line': 1, 'col': 2, 'wrap': 0, 'fixed': 1 } )
+  call s:VerifyPosition( p, 'full width + 1 fixed', 1, 2, &columns - 1, 1)
+
+  redraw
+  let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
+  let e_line = ' ' . X[ 1 : -2 ]
+  call assert_equal(e_line, line)
+
+  call popup_close( p )
+  redraw
+
+  popupclear
+  %bwipe!
+endfunction
