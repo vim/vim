@@ -25,6 +25,7 @@ long dict_len(dict_T *d);
 dictitem_T *dict_find(dict_T *d, char_u *key, int len);
 char_u *dict_get_string(dict_T *d, char_u *key, int save);
 varnumber_T dict_get_number(dict_T *d, char_u *key);
+varnumber_T dict_get_number_check(dict_T *d, char_u *key);
 char_u *dict2string(typval_T *tv, int copyID, int restore_copyID);
 int dict_get_tv(char_u **arg, typval_T *rettv, int evaluate);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action);

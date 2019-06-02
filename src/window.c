@@ -1368,6 +1368,9 @@ win_init_some(win_T *newp, win_T *oldp)
     win_copy_options(oldp, newp);
 }
 
+/*
+ * Return TRUE if "win" is a global popup or a popup in the current tab page.
+ */
     static int
 win_valid_popup(win_T *win UNUSED)
 {
@@ -1418,6 +1421,11 @@ win_valid_any_tab(win_T *win)
 	    if (wp == win)
 		return TRUE;
 	}
+#ifdef FEAT_TEXT_PROP
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp == win)
+		return TRUE;
+#endif
     }
     return win_valid_popup(win);
 }

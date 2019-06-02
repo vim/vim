@@ -29,7 +29,7 @@ static poppos_entry_T poppos_entries[] = {
 };
 
 /*
- * Get option value for"key", which is "line" or "col".
+ * Get option value for "key", which is "line" or "col".
  * Handles "cursor+N" and "cursor-N".
  */
     static int
@@ -47,13 +47,15 @@ popup_options_one(dict_T *dict, char_u *key)
 
     val = tv_get_string(&di->di_tv);
     if (STRNCMP(val, "cursor", 6) != 0)
-	return dict_get_number(dict, key);
+	return dict_get_number_check(dict, key);
 
     setcursor_mayforce(TRUE);
     s = val + 6;
     if (*s != NUL)
     {
-	n = strtol((char *)s, (char **)&endp, 10);
+	endp = s;
+	if (*skipwhite(s) == '+' || *skipwhite(s) == '-')
+	    n = strtol((char *)s, (char **)&endp, 10);
 	if (endp != NULL && *skipwhite(endp) != NUL)
 	{
 	    semsg(_(e_invexpr2), val);
@@ -902,7 +904,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "core_height", wp->w_height);
 
 	dict_add_number(dict, "visible",
-				       (wp->w_popup_flags & POPF_HIDDEN) == 0);
+		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
     }
 }
 

@@ -224,6 +224,92 @@ func Test_popup_all_corners()
   call delete('XtestPopupCorners')
 endfunc
 
+func Test_popup_in_tab()
+  " default popup is local to tab, not visible when in other tab
+  let winid = popup_create("text", {})
+  call assert_equal(1, popup_getpos(winid).visible)
+  tabnew
+  call assert_equal(0, popup_getpos(winid).visible)
+  quit
+  call assert_equal(1, popup_getpos(winid).visible)
+  popupclear
+
+  " global popup is visible in any tab
+  let winid = popup_create("text", {'tab': -1})
+  call assert_equal(1, popup_getpos(winid).visible)
+  tabnew
+  call assert_equal(1, popup_getpos(winid).visible)
+  quit
+  call assert_equal(1, popup_getpos(winid).visible)
+  popupclear
+endfunc
+
+func Test_popup_valid_arguments()
+  " Zero value is like the property wasn't there
+  let winid = popup_create("text", {"col": 0})
+  let pos = popup_getpos(winid)
+  call assert_inrange(&columns / 2 - 1, &columns / 2 + 1, pos.col)
+  popupclear
+
+  " using cursor column has minimum value of 1
+  let winid = popup_create("text", {"col": 'cursor-100'})
+  let pos = popup_getpos(winid)
+  call assert_equal(1, pos.col)
+  popupclear
+
+  " center
+  let winid = popup_create("text", {"pos": 'center'})
+  let pos = popup_getpos(winid)
+  let around = (&columns - pos.width) / 2
+  call assert_inrange(around - 1, around + 1, pos.col)
+  let around = (&lines - pos.height) / 2
+  call assert_inrange(around - 1, around + 1, pos.line)
+  popupclear
+endfunc
+
+func Test_popup_invalid_arguments()
+  call assert_fails('call popup_create(666, {})', 'E714:')
+  popupclear
+  call assert_fails('call popup_create("text", "none")', 'E715:')
+  popupclear
+
+  call assert_fails('call popup_create("text", {"col": "xxx"})', 'E475:')
+  popupclear
+  call assert_fails('call popup_create("text", {"col": "cursor8"})', 'E15:')
+  popupclear
+  call assert_fails('call popup_create("text", {"col": "cursor+x"})', 'E15:')
+  popupclear
+  call assert_fails('call popup_create("text", {"col": "cursor+8x"})', 'E15:')
+  popupclear
+
+  call assert_fails('call popup_create("text", {"line": "xxx"})', 'E475:')
+  popupclear
+  call assert_fails('call popup_create("text", {"line": "cursor8"})', 'E15:')
+  popupclear
+  call assert_fails('call popup_create("text", {"line": "cursor+x"})', 'E15:')
+  popupclear
+  call assert_fails('call popup_create("text", {"line": "cursor+8x"})', 'E15:')
+  popupclear
+
+  call assert_fails('call popup_create("text", {"pos": "there"})', 'E475:')
+  popupclear
+  call assert_fails('call popup_create("text", {"padding": "none"})', 'E714:')
+  popupclear
+  call assert_fails('call popup_create("text", {"border": "none"})', 'E714:')
+  popupclear
+  call assert_fails('call popup_create("text", {"borderhighlight": "none"})', 'E714:')
+  popupclear
+  call assert_fails('call popup_create("text", {"borderchars": "none"})', 'E714:')
+  popupclear
+
+  call assert_fails('call popup_create([{"text": "text"}, 666], {})', 'E715:')
+  popupclear
+  call assert_fails('call popup_create([{"text": "text", "props": "none"}], {})', 'E714:')
+  popupclear
+  call assert_fails('call popup_create([{"text": "text", "props": ["none"]}], {})', 'E715:')
+  popupclear
+endfunc
+
 func Test_win_execute_closing_curwin()
   split
   let winid = popup_create('some text', {})
@@ -591,6 +677,15 @@ func Test_popup_atcursor()
   redraw
   let pos = popup_getpos(winid)
   call assert_equal(4, pos.line)
+  call popup_close(winid)
+
+  " cursor in first line, popup in line 2
+  call cursor(1, 1)
+  redraw
+  let winid = popup_atcursor(['vim', 'is', 'great'], {})
+  redraw
+  let pos = popup_getpos(winid)
+  call assert_equal(2, pos.line)
   call popup_close(winid)
 
   bwipe!
