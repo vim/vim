@@ -285,6 +285,49 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	    }
 	}
     }
+
+    di = dict_find(dict, (char_u *)"moved", -1);
+    if (di != NULL)
+    {
+	wp->w_popup_curwin = curwin;
+	wp->w_popup_lnum = curwin->w_cursor.lnum;
+	wp->w_popup_mincol = curwin->w_cursor.col;
+	wp->w_popup_maxcol = curwin->w_cursor.col;
+	if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
+	{
+	    char_u  *s = di->di_tv.vval.v_string;
+	    int	    flags = 0;
+
+	    if (STRCMP(s, "word") == 0)
+		flags = FIND_IDENT | FIND_STRING;
+	    else if (STRCMP(s, "WORD") == 0)
+		flags = FIND_STRING;
+	    else if (STRCMP(s, "any") != 0)
+		semsg(_(e_invarg2), s);
+	    if (flags != 0)
+	    {
+		char_u	*ptr;
+		int	len = find_ident_under_cursor(&ptr, flags);
+
+		if (len > 0)
+		{
+		    wp->w_popup_mincol = (int)(ptr - ml_get_curline());
+		    wp->w_popup_maxcol = wp->w_popup_mincol + len - 1;
+		}
+	    }
+	}
+	else if (di->di_tv.v_type == VAR_LIST
+		&& di->di_tv.vval.v_list != NULL
+		&& di->di_tv.vval.v_list->lv_len == 2)
+	{
+	    list_T *l = di->di_tv.vval.v_list;
+
+	    wp->w_popup_mincol = tv_get_number(&l->lv_first->li_tv);
+	    wp->w_popup_maxcol = tv_get_number(&l->lv_first->li_next->li_tv);
+	}
+	else
+	    semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+    }
 }
 
 /*
@@ -708,6 +751,21 @@ invoke_popup_callback(win_T *wp, typval_T *result)
 }
 
 /*
+ * Close popup "wp" and invoke any close callback for it.
+ */
+    static void
+popup_close_and_callback(win_T *wp, typval_T *arg)
+{
+    int id = wp->w_id;
+
+    if (wp->w_close_cb.cb_name != NULL)
+	// Careful: This may make "wp" invalid.
+	invoke_popup_callback(wp, arg);
+
+    popup_close(id);
+}
+
+/*
  * popup_close({id})
  */
     void
@@ -717,13 +775,7 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     win_T	*wp = find_popup_win(id);
 
     if (wp != NULL)
-    {
-	if (wp->w_close_cb.cb_name != NULL)
-	    // Careful: This may make "wp" invalid.
-	    invoke_popup_callback(wp, &argvars[1]);
-
-	popup_close(id);
-    }
+	popup_close_and_callback(wp, &argvars[1]);
 }
 
 /*
@@ -1064,6 +1116,30 @@ popup_do_filter(int c)
 	    res = invoke_popup_filter(wp, c);
 
     return res;
+}
+
+/*
+ * Called when the cursor moved: check if any popup needs to be closed if the
+ * cursor moved far enough.
+ */
+    void
+popup_check_cursor_pos()
+{
+    win_T *wp;
+    typval_T tv;
+
+    popup_reset_handled();
+    while ((wp = find_next_popup(TRUE)) != NULL)
+	if (wp->w_popup_curwin != NULL
+		&& (curwin != wp->w_popup_curwin
+		    || curwin->w_cursor.lnum != wp->w_popup_lnum
+		    || curwin->w_cursor.col < wp->w_popup_mincol
+		    || curwin->w_cursor.col > wp->w_popup_maxcol))
+	{
+	    tv.v_type = VAR_NUMBER;
+	    tv.vval.v_number = -1;
+	    popup_close_and_callback(wp, &tv);
+	}
 }
 
 #endif // FEAT_TEXT_PROP

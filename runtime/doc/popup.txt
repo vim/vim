@@ -90,7 +90,6 @@ Probably 2. is the best choice.
 
 IMPLEMENTATION:
 - Code is in popupwin.c
-- Fix positioning with border and padding.
 - Why does 'nrformats' leak from the popup window buffer???
 - Make redrawing more efficient and avoid flicker.
     First draw popups, creating a mask, use the mask in screen_line() when
@@ -410,13 +409,14 @@ The second argument of |popup_create()| is a dictionary with options:
 	zindex		Priority for the popup, default 50.
 	time		Time in milliseconds after which the popup will close.
 			When omitted |popup_close()| must be used.
-	moved		"cell": close the popup if the cursor moved at least
-			one screen cell.
-			"word" allows for moving the cursor within |<cword>|
-			"WORD" allows for moving the cursor within |<cWORD>|
-			a list with two numbers specifies the start and end
-			column outside of which the popup will close
-			{not implemented yet}
+	moved		Specifies to close the popup if the cursor moved:
+			- "any": if the cursor moved at all
+			- "word": if the cursor moved outside |<cword>|
+			- "WORD": if the cursor moved outside |<cWORD>|
+			- [{start}, {end}]: if the cursor moved before column
+			  {start} or after {end}
+			The popup also closes if the cursor moves to another
+			line or to another window.
 	filter		A callback that can filter typed characters, see 
 			|popup-filter|.
 	callback	A callback that is called when the popup closes, e.g.
@@ -509,6 +509,9 @@ A callback that is invoked when the popup closes.  Used by
 The callback is invoked with two arguments: the ID of the popup window and the
 result, which could be an index in the popup lines, or whatever was passed as
 the second argument of `popup_close()`.
+
+If the popup is closed because the cursor moved, the number -1 is passed to
+the callback.
 
 ==============================================================================
 3. Examples						*popup-examples*

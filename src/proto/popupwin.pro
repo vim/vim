@@ -17,4 +17,5 @@ int not_in_popup_window(void);
 void popup_reset_handled(void);
 win_T *find_next_popup(int lowest);
 int popup_do_filter(int c);
+void popup_check_cursor_pos(void);
 /* vim: set ft=c : */

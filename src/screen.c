@@ -1050,6 +1050,7 @@ update_popups(void)
     // so that the window with a higher zindex is drawn later, thus goes on
     // top.
     // TODO: don't redraw every popup every time.
+    popup_visible = FALSE;
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
@@ -1066,6 +1067,7 @@ update_popups(void)
 
 	// Draw the popup text.
 	win_update(wp);
+	popup_visible = TRUE;
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_off;

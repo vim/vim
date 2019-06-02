@@ -909,7 +909,7 @@ func Test_popup_position_adjust()
   %bwipe!
 endfunc
 
-function Test_adjust_left_past_screen_width()
+func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
 
@@ -973,4 +973,65 @@ function Test_adjust_left_past_screen_width()
 
   popupclear
   %bwipe!
-endfunction
+endfunc
+
+func Test_popup_moved()
+  new
+  call test_override('char_avail', 1)
+  call setline(1, ['one word to move around', 'a WORD.and->some thing'])
+
+  exe "normal gg0/word\<CR>"
+  let winid = popup_atcursor('text', {'moved': 'any'})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  " trigger the check for last_cursormoved by going into insert mode
+  call feedkeys("li\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  popupclear
+
+  exe "normal gg0/word\<CR>"
+  let winid = popup_atcursor('text', {'moved': 'word'})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("hi\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  popupclear
+
+  exe "normal gg0/word\<CR>"
+  let winid = popup_atcursor('text', {'moved': 'word'})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("li\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("ei\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("eli\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  popupclear
+
+  exe "normal gg0/WORD\<CR>"
+  let winid = popup_atcursor('text', {'moved': 'WORD'})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("eli\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("wi\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("Eli\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  popupclear
+
+  exe "normal gg0/word\<CR>"
+  let winid = popup_atcursor('text', {'moved': [5, 10]})
+  redraw
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("eli\<Esc>", 'xt')
+  call feedkeys("ei\<Esc>", 'xt')
+  call assert_equal(1, popup_getpos(winid).visible)
+  call feedkeys("eli\<Esc>", 'xt')
+  call assert_equal({}, popup_getpos(winid))
+  popupclear
+
+  bwipe!
+  call test_override('ALL', 0)
+endfunc

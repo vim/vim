@@ -2897,6 +2897,12 @@ struct window_S
 					  // computed
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
+
+    win_T	*w_popup_curwin;    // close popup if curwin differs
+    linenr_T	w_popup_lnum;	    // close popup if cursor not on this line
+    colnr_T	w_popup_mincol;	    // close popup if cursor before this col
+    colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
+
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
