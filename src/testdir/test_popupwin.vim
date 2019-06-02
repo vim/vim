@@ -610,3 +610,40 @@ func Test_popup_empty()
   call assert_equal(2, pos.width)
   call assert_equal(3, pos.height)
 endfunc
+
+func Test_popup_never_behind()
+  if !CanRunVimInTerminal()
+    return
+  endif
+  " +-----------------------------+
+  " |             |               |
+  " |             |               |
+  " |             |               |
+  " |            line1            |
+  " |------------line2------------|
+  " |            line3            |
+  " |            line4            |
+  " |                             |
+  " |                             |
+  " +-----------------------------+
+  let lines =<< trim END
+    only 
+    split
+    vsplit
+    let info_window1 = getwininfo()[0]
+    let line = info_window1['height']
+    let col = info_window1['width']
+    call popup_create(['line1', 'line2', 'line3', 'line4'], {
+	      \   'line' : line,
+	      \   'col' : col,
+	      \ })
+  END
+  call writefile(lines, 'XtestPopupBehind')
+  let buf = RunVimInTerminal('-S XtestPopupBehind', {'rows': 10})
+  call term_sendkeys(buf, "\<C-W>w")
+  call VerifyScreenDump(buf, 'Test_popupwin_behind', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupBehind')
+endfunc
