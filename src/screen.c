@@ -613,7 +613,12 @@ update_screen(int type_arg)
 #ifdef FEAT_TEXT_PROP
     // TODO: avoid redrawing everything when there is a popup window.
     if (popup_any_visible())
-	type = NOT_VALID;
+    {
+	if (type < NOT_VALID)
+	    type = NOT_VALID;
+	FOR_ALL_WINDOWS(wp)
+	    wp->w_redr_type = NOT_VALID;
+    }
 #endif
 
     updating_screen = TRUE;
