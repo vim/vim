@@ -596,3 +596,17 @@ func Test_popup_close_callback()
   call popup_close(winid, 'done')
   call assert_equal('done', g:result)
 endfunc
+
+func Test_popup_empty()
+  let winid = popup_create('', {'padding': [2,2,2,2]})
+  redraw
+  let pos = popup_getpos(winid)
+  call assert_equal(4, pos.width)
+  call assert_equal(5, pos.height)
+
+  let winid = popup_create([], {'border': []})
+  redraw
+  let pos = popup_getpos(winid)
+  call assert_equal(2, pos.width)
+  call assert_equal(3, pos.height)
+endfunc

@@ -488,12 +488,8 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     int	    nr;
 
     // Check arguments look OK.
-    if (!(argvars[0].v_type == VAR_STRING
-		&& argvars[0].vval.v_string != NULL
-		&& STRLEN(argvars[0].vval.v_string) > 0)
-	&& !(argvars[0].v_type == VAR_LIST
-	    && argvars[0].vval.v_list != NULL
-	    && argvars[0].vval.v_list->lv_len > 0))
+    if (!(argvars[0].v_type == VAR_STRING && argvars[0].vval.v_string != NULL)
+	&& !(argvars[0].v_type == VAR_LIST && argvars[0].vval.v_list != NULL))
     {
 	emsg(_(e_listreq));
 	return;
@@ -560,12 +556,15 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     {
 	list_T *l = argvars[0].vval.v_list;
 
-	if (l->lv_first->li_tv.v_type == VAR_STRING)
-	    // list of strings
-	    add_popup_strings(buf, l);
-	else
-	    // list of dictionaries
-	    add_popup_dicts(buf, l);
+	if (l->lv_len > 0)
+	{
+	    if (l->lv_first->li_tv.v_type == VAR_STRING)
+		// list of strings
+		add_popup_strings(buf, l);
+	    else
+		// list of dictionaries
+		add_popup_dicts(buf, l);
+	}
     }
 
     // Delete the line of the empty buffer.
