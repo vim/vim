@@ -3461,13 +3461,14 @@ find_ident_at_pos(
     if (ptr[col] == NUL || (i == 0
 		&& (has_mbyte ? this_class != 2 : !vim_iswordc(ptr[col]))))
     {
-	/*
-	 * didn't find an identifier or string
-	 */
-	if (find_type & FIND_STRING)
-	    emsg(_("E348: No string under cursor"));
-	else
-	    emsg(_(e_noident));
+	// didn't find an identifier or string
+	if ((find_type & FIND_NOERROR) == 0)
+	{
+	    if (find_type & FIND_STRING)
+		emsg(_("E348: No string under cursor"));
+	    else
+		emsg(_(e_noident));
+	}
 	return 0;
     }
     ptr += col;

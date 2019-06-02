@@ -138,12 +138,39 @@ get_padding_border(dict_T *dict, int *array, char *name, int max_val)
 }
 
 /*
- * Go through the options in "dict" and apply them to buffer "buf" displayed in
- * popup window "wp".
- * When called from f_popup_atcursor() "atcursor" is TRUE.
+ * Used when popup options contain "moved": set default moved values.
  */
     static void
-apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
+set_moved_values(win_T *wp)
+{
+    wp->w_popup_curwin = curwin;
+    wp->w_popup_lnum = curwin->w_cursor.lnum;
+    wp->w_popup_mincol = curwin->w_cursor.col;
+    wp->w_popup_maxcol = curwin->w_cursor.col;
+}
+
+/*
+ * Used when popup options contain "moved" with "word" or "WORD".
+ */
+    static void
+set_moved_columns(win_T *wp, int flags)
+{
+    char_u	*ptr;
+    int		len = find_ident_under_cursor(&ptr, flags | FIND_NOERROR);
+
+    if (len > 0)
+    {
+	wp->w_popup_mincol = (int)(ptr - ml_get_curline());
+	wp->w_popup_maxcol = wp->w_popup_mincol + len - 1;
+    }
+}
+
+/*
+ * Go through the options in "dict" and apply them to buffer "buf" displayed in
+ * popup window "wp".
+ */
+    static void
+apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 {
     int		nr;
     char_u	*str;
@@ -154,19 +181,6 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
     wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
-
-    if (atcursor)
-    {
-	wp->w_popup_pos = POPPOS_BOTLEFT;
-	setcursor_mayforce(TRUE);
-	wp->w_wantline = screen_screenrow();
-	if (wp->w_wantline == 0)  // cursor in first line
-	{
-	    wp->w_wantline = 2;
-	    wp->w_popup_pos = POPPOS_TOPLEFT;
-	}
-	wp->w_wantcol = screen_screencol() + 1;
-    }
 
     get_pos_options(wp, dict);
 
@@ -289,10 +303,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
     di = dict_find(dict, (char_u *)"moved", -1);
     if (di != NULL)
     {
-	wp->w_popup_curwin = curwin;
-	wp->w_popup_lnum = curwin->w_cursor.lnum;
-	wp->w_popup_mincol = curwin->w_cursor.col;
-	wp->w_popup_maxcol = curwin->w_cursor.col;
+	set_moved_values(wp);
 	if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
 	{
 	    char_u  *s = di->di_tv.vval.v_string;
@@ -305,16 +316,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict, int atcursor)
 	    else if (STRCMP(s, "any") != 0)
 		semsg(_(e_invarg2), s);
 	    if (flags != 0)
-	    {
-		char_u	*ptr;
-		int	len = find_ident_under_cursor(&ptr, flags);
-
-		if (len > 0)
-		{
-		    wp->w_popup_mincol = (int)(ptr - ml_get_curline());
-		    wp->w_popup_maxcol = wp->w_popup_mincol + len - 1;
-		}
-	    }
+		set_moved_columns(wp, flags);
 	}
 	else if (di->di_tv.v_type == VAR_LIST
 		&& di->di_tv.vval.v_list != NULL
@@ -554,13 +556,19 @@ popup_adjust_position(win_T *wp)
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 }
 
+typedef enum
+{
+    TYPE_NORMAL,
+    TYPE_ATCURSOR
+} create_type_T;
+
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
  * When called from f_popup_atcursor() "atcursor" is TRUE.
  */
     static void
-popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
+popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 {
     win_T   *wp;
     buf_T   *buf;
@@ -652,8 +660,23 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     ml_delete(buf->b_ml.ml_line_count, FALSE);
     curbuf = curwin->w_buffer;
 
+    if (type == TYPE_ATCURSOR)
+    {
+	wp->w_popup_pos = POPPOS_BOTLEFT;
+	setcursor_mayforce(TRUE);
+	wp->w_wantline = screen_screenrow();
+	if (wp->w_wantline == 0)  // cursor in first line
+	{
+	    wp->w_wantline = 2;
+	    wp->w_popup_pos = POPPOS_TOPLEFT;
+	}
+	wp->w_wantcol = screen_screencol() + 1;
+	set_moved_values(wp);
+	set_moved_columns(wp, FIND_STRING);
+    }
+
     // Deal with options.
-    apply_options(wp, buf, argvars[1].vval.v_dict, atcursor);
+    apply_options(wp, buf, argvars[1].vval.v_dict);
 
     // set default values
     if (wp->w_zindex == 0)
@@ -672,7 +695,7 @@ popup_create(typval_T *argvars, typval_T *rettv, int atcursor)
     void
 f_popup_create(typval_T *argvars, typval_T *rettv)
 {
-    popup_create(argvars, rettv, FALSE);
+    popup_create(argvars, rettv, TYPE_NORMAL);
 }
 
 /*
@@ -681,7 +704,7 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
     void
 f_popup_atcursor(typval_T *argvars, typval_T *rettv)
 {
-    popup_create(argvars, rettv, TRUE);
+    popup_create(argvars, rettv, TYPE_ATCURSOR);
 }
 
 /*

@@ -879,10 +879,11 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SEARCH_PEEK  0x800  /* peek for typed char, cancel search */
 #define SEARCH_COL  0x1000  /* start at specified column instead of zero */
 
-/* Values for find_ident_under_cursor() */
-#define FIND_IDENT	1	/* find identifier (word) */
-#define FIND_STRING	2	/* find any string (WORD) */
-#define FIND_EVAL	4	/* include "->", "[]" and "." */
+// Values for find_ident_under_cursor()
+#define FIND_IDENT	1	// find identifier (word)
+#define FIND_STRING	2	// find any string (WORD)
+#define FIND_EVAL	4	// include "->", "[]" and "."
+#define FIND_NOERROR	8	// no error when no word found
 
 /* Values for file_name_in_line() */
 #define FNAME_MESS	1	/* give error message */

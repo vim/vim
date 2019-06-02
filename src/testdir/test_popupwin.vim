@@ -1009,8 +1009,9 @@ func Test_popup_moved()
   call assert_equal({}, popup_getpos(winid))
   popupclear
 
+  " WORD is the default
   exe "normal gg0/WORD\<CR>"
-  let winid = popup_atcursor('text', {'moved': 'WORD'})
+  let winid = popup_atcursor('text', {})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("eli\<Esc>", 'xt')
