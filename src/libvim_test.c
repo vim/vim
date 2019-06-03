@@ -16,7 +16,11 @@ int main(int argc, char** argv) {
 
     vimInput("G");
 
-    assert(vimWindowGetCursorLine() == 22);
+    assert(vimWindowGetCursorLine() > 1);
+
+    vimExecute("help tutor");
+    line = vimBufferGetLine(curbuf, 1);
+    printf("LINE: %s\n", line);
 
     printf("Completed\n");
 }

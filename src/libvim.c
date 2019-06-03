@@ -22,6 +22,9 @@ void vimInit(int argc, char** argv) {
     mch_early_init();
     common_init(&params);
     init_normal_cmds();
+
+    win_setwidth(80);
+    win_setheight(40);
 }
 
 buf_T *vimBufferOpen(char_u *ffname_arg, linenr_T lnum, int flags) {
@@ -43,4 +46,8 @@ void vimInput(char_u *input) {
     char_u *keys_esc = vim_strsave_escape_csi(input);
     ins_typebuf(keys_esc, REMAP_YES, 0, FALSE, FALSE);
     exec_normal(TRUE, FALSE, FALSE);
+}
+
+void vimExecute(char_u *cmd) {
+    do_cmdline_cmd(cmd);
 }
