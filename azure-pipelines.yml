@@ -1,19 +1,30 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Cross-platform build pipeline + NPM publish
 
-trigger:
-- master
+name: $(Build.SourceVersion)
+jobs:
+# - job: Linux
+#   pool:
+#     vmImage: 'Ubuntu 16.04'
+#   steps:
+#   - script: sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libegl1-mesa-dev mesa-utils mesa-utils-extra ragel
+#   - template: .ci/esy-build-steps.yml
+#   - template: .ci/prebuilt-library/publish-platform-prebuilt.yml
+#     parameters:
+#       platform: "platform-linux"
 
-pool:
-  vmImage: 'ubuntu-latest'
+# - job: MacOS
+#   pool:
+#     vmImage: 'macOS 10.13'
+#   steps:
+#   - script: brew update
+#   - script: brew install libpng
+#   - template: .ci/esy-build-steps.yml
+#   - template: .ci/prebuilt-library/publish-platform-prebuilt.yml
+#     parameters:
+#       platform: "platform-darwin"
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- job: Windows
+  pool:
+    vmImage: 'vs2017-win2016'
+  steps:
+  - template: .ci/esy-build-steps.yml
