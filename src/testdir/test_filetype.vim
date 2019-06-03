@@ -514,6 +514,9 @@ let s:filename_case_checks = {
 func CheckItems(checks)
   for [ft, names] in items(a:checks)
     for i in range(0, len(names) - 1)
+      if !filereadable(names[i])
+        continue
+      endif
       new
       try
         exe 'edit ' . names[i]
