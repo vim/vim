@@ -1119,11 +1119,30 @@ endfunc
 
 " just testing basic functionality.
 func Test_terminal_dumpload()
+  let curbuf = winbufnr('')
   call assert_equal(1, winnr('$'))
-  call term_dumpload('dumps/Test_popup_command_01.dump')
+  let buf = term_dumpload('dumps/Test_popup_command_01.dump')
   call assert_equal(2, winnr('$'))
   call assert_equal(20, line('$'))
   call Check_dump01(0)
+
+  " Load another dump in the same window
+  let buf2 = term_dumpload('dumps/Test_diff_01.dump', {'bufnr': buf})
+  call assert_equal(buf, buf2)
+  call assert_notequal('one two three four five', trim(getline(1)))
+
+  " Load the first dump again in the same window
+  let buf2 = term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': buf})
+  call assert_equal(buf, buf2)
+  call Check_dump01(0)
+
+  call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': curbuf})", 'E475:')
+  call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': 9999})", 'E86:')
+  new
+  let closedbuf = winbufnr('')
+  quit
+  call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': closedbuf})", 'E475:')
+
   quit
 endfunc
 

@@ -1807,6 +1807,7 @@ struct channel_S {
 #define JO2_TERM_KILL	    0x4000	/* "term_kill" */
 #define JO2_ANSI_COLORS	    0x8000	/* "ansi_colors" */
 #define JO2_TTY_TYPE	    0x10000	/* "tty_type" */
+#define JO2_BUFNR	    0x20000	/* "bufnr" */
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -1864,6 +1865,7 @@ typedef struct
     int		jo_term_cols;
     int		jo_vertical;
     int		jo_curwin;
+    buf_T	*jo_bufnr_buf;
     int		jo_hidden;
     int		jo_term_norestore;
     char_u	*jo_term_name;

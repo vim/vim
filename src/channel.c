@@ -4901,6 +4901,32 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set2 |= JO2_CURWIN;
 		opt->jo_curwin = tv_get_number(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "bufnr") == 0)
+	    {
+		int nr;
+
+		if (!(supported2 & JO2_CURWIN))
+		    break;
+		opt->jo_set2 |= JO2_BUFNR;
+		nr = tv_get_number(item);
+		if (nr <= 0)
+		{
+		    semsg(_(e_invargNval), hi->hi_key, tv_get_string(item));
+		    return FAIL;
+		}
+		opt->jo_bufnr_buf = buflist_findnr(nr);
+		if (opt->jo_bufnr_buf == NULL)
+		{
+		    semsg(_(e_nobufnr), (long)nr);
+		    return FAIL;
+		}
+		if (opt->jo_bufnr_buf->b_nwindows == 0
+			|| opt->jo_bufnr_buf->b_term == NULL)
+		{
+		    semsg(_(e_invarg2), "bufnr");
+		    return FAIL;
+		}
+	    }
 	    else if (STRCMP(hi->hi_key, "hidden") == 0)
 	    {
 		if (!(supported2 & JO2_HIDDEN))

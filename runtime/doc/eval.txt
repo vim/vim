@@ -9558,6 +9558,11 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
 				     cannot be |abandon|ed
+		   "bufnr"	     do not create a new buffer, use the
+				     existing buffer "bufnr".  This buffer
+				     must have been previously created with
+				     term_dumpdiff() or term_dumpload() and
+				     visible in a window.
 		   "norestore"	     do not add the terminal window to a
 				     session file
 
