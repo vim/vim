@@ -7,8 +7,6 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-test build failure
-
 #include "vim.h"
 
 static void cmd_with_count(char *cmd, char_u *bufp, size_t bufsize, long Prenum);
