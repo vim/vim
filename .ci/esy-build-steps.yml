@@ -1,0 +1,13 @@
+# Cross-platform set of build steps for building esy projects
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '8.9'
+  - script: npm install -g esy@0.5.7
+  - script: esy install
+    workingDirectory: src
+    displayName: 'esy install'
+  - script: esy build
+    workingDirectory: src
+    displayName: 'esy build'
