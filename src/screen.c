@@ -1041,7 +1041,7 @@ update_popups(void)
     int	    total_height;
     int	    popup_attr;
     int	    border_attr[4];
-    int	    border_char[8] = {'-', '|', '-', '|', '+', '+', '+', '+', };
+    int	    border_char[8];
     char_u  buf[MB_MAXBYTES];
     int	    row;
     int	    i;
@@ -1080,7 +1080,7 @@ update_popups(void)
 
 	// We can only use these line drawing characters when 'encoding' is
 	// "utf-8" and 'ambiwidth' is "single".
-	if (enc_utf8 && p_ambw == 's')
+	if (enc_utf8 && *p_ambw == 's')
 	{
 	    border_char[0] = border_char[2] = 0x2550;
 	    border_char[1] = border_char[3] = 0x2551;
@@ -1088,6 +1088,13 @@ update_popups(void)
 	    border_char[5] = 0x2557;
 	    border_char[6] = 0x255d;
 	    border_char[7] = 0x255a;
+	}
+	else
+	{
+	    border_char[0] = border_char[2] = '-';
+	    border_char[1] = border_char[3] = '|';
+	    for (i = 4; i < 8; ++i)
+		border_char[i] = '+';
 	}
 	for (i = 0; i < 8; ++i)
 	    if (wp->w_border_char[i] != 0)
