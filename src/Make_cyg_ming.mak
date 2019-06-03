@@ -1006,8 +1006,11 @@ $(TARGET): $(OUTDIR) $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 endif
 
-libvim_test.exe: $(OUTDIR) $(OBJ) libvim_test.c
-	$(CC) -I. -Iproto -L. -Lproto libvim_test.c $(EXELFLAGS) -o $@ $(CORE_OBJ) -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
+libvim.a: $(OUTDIR) $(OBJ)
+	$(AR) rcs libvim.a $(OBJ)
+
+libvim_test.exe: $(OUTDIR) $(OBJ) libvim_test.c libvim.a
+	$(CC) -I. -Iproto -L. -Lproto libvim_test.c $(EXELFLAGS) -o $@ libvim.a -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
 
 upx: exes
 	upx gvim.exe
