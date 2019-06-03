@@ -2604,7 +2604,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"swapfile",    "swf",  P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_swf, PV_SWF,
-			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"swapsync",    "sws",  P_STRING|P_VI_DEF,
 			    (char_u *)&p_sws, PV_NONE,
 			    {(char_u *)"fsync", (char_u *)0L} SCTX_INIT},

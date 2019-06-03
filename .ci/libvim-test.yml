@@ -1,0 +1,6 @@
+# Cross-platform set of build steps for building esy projects
+
+steps:
+  - script: esy b ./libvim_test
+    workingDirectory: src
+    displayName: 'esy b ./libvim_test'

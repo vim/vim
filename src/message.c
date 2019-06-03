@@ -2004,10 +2004,13 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
      * different, e.g. for Win32 console) or we just don't know where the
      * cursor is.
      */
+    /* libvim - TODO: Does this need to be sent to the client? */
+    /*
     if (msg_use_printf())
 	msg_puts_printf((char_u *)str, maxlen);
     else
 	msg_puts_display((char_u *)str, maxlen, attr, FALSE);
+	 */ 
 }
 
 /*

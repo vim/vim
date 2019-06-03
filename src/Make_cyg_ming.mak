@@ -30,7 +30,7 @@
 #>>>>> choose options:
 # FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
 # Set to TINY to make minimal version (few features).
-FEATURES=HUGE
+FEATURES=NORMAL
 
 # set to yes for a debug build
 DEBUG=no
@@ -42,7 +42,7 @@ DEBUG=no
 OPTIMIZE=MAXSPEED
 
 # set to yes to make gvim, no for vim
-GUI=yes
+GUI=no
 
 # set to yes to enable the DLL support (EXPERIMENTAL).
 # Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
@@ -722,6 +722,7 @@ OBJ = \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
+	$(OUTDIR)/libvim.o \
 	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
@@ -760,6 +761,8 @@ OBJ = \
 	$(OUTDIR)/version.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
+
+CORE_OBJ = $(OBJ)
 
 ifeq ($(VIMDLL),yes)
 OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimrcd.o
@@ -1002,6 +1005,9 @@ else
 $(TARGET): $(OUTDIR) $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 endif
+
+libvim_test.exe: $(OUTDIR) $(OBJ) libvim_test.c
+	$(CC) -I. -Iproto -L. -Lproto libvim_test.c $(EXELFLAGS) -o $@ $(CORE_OBJ) -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
 
 upx: exes
 	upx gvim.exe

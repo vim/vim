@@ -94,6 +94,7 @@ extern int _stricoll(char *a, char *b);
 # include "insexpand.pro"
 # endif
 # include "json.pro"
+# include "libvim.pro"
 # include "list.pro"
 # include "blob.pro"
 # include "main.pro"

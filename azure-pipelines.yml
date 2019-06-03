@@ -28,3 +28,4 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - template: .ci/esy-build-steps.yml
+  - template: .ci/libvim-test.yml

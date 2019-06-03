@@ -249,10 +249,10 @@ open_buffer(
 	if (retval == OK)
 	    retval = read_buffer(TRUE, eap, flags);
     }
-
     /* if first time loading this buffer, init b_chartab[] */
     if (curbuf->b_flags & BF_NEVERLOADED)
     {
+
 	(void)buf_init_chartab(curbuf, FALSE);
 #ifdef FEAT_CINDENT
 	parse_cino(curbuf);
@@ -1739,6 +1739,7 @@ enter_buffer(buf_T *buf)
 	    did_filetype = FALSE;
 
 	open_buffer(FALSE, NULL, 0);
+
     }
     else
     {
@@ -1759,9 +1760,10 @@ enter_buffer(buf_T *buf)
     /* If autocommands did not change the cursor position, restore cursor lnum
      * and possibly cursor col. */
     if (curwin->w_cursor.lnum == 1 && inindent(0))
-	buflist_getfpos();
+	    buflist_getfpos();
 
     check_arg_idx(curwin);		/* check for valid arg_idx */
+
 #ifdef FEAT_TITLE
     maketitle();
 #endif
@@ -1776,7 +1778,6 @@ enter_buffer(buf_T *buf)
 
     /* Change directories when the 'acd' option is set. */
     DO_AUTOCHDIR;
-
 #ifdef FEAT_KEYMAP
     if (curbuf->b_kmap_state & KEYMAP_INIT)
 	(void)keymap_init();
