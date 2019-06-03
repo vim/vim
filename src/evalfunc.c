@@ -6518,9 +6518,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"cscope",
 #endif
 	"cursorbind",
-#ifdef CURSOR_SHAPE
-	"cursorshape",
-#endif
 #ifdef DEBUG
 	"debug",
 #endif

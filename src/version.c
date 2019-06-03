@@ -194,11 +194,6 @@ static char *(features[]) =
 	"-cscope",
 #endif
 	"+cursorbind",
-#ifdef CURSOR_SHAPE
-	"+cursorshape",
-#else
-	"-cursorshape",
-#endif
 #if defined(FEAT_CON_DIALOG) && defined(FEAT_GUI_DIALOG)
 	"+dialog_con_gui",
 #else
@@ -385,11 +380,6 @@ static char *(features[]) =
 #endif
 #ifdef FEAT_MOUSE
 	"+mouse",
-#  ifdef FEAT_MOUSESHAPE
-	"+mouseshape",
-#  else
-	"-mouseshape",
-#  endif
 # else
 	"-mouse",
 #endif

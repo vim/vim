@@ -1340,20 +1340,9 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"guicursor",    "gcr", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef CURSOR_SHAPE
-			    (char_u *)&p_guicursor, PV_NONE,
-			    {
-# ifdef FEAT_GUI
-				(char_u *)"n-v-c:block-Cursor/lCursor,ve:ver35-Cursor,o:hor50-Cursor,i-ci:ver25-Cursor/lCursor,r-cr:hor20-Cursor/lCursor,sm:block-Cursor-blinkwait175-blinkoff150-blinkon175",
-# else	/* Win32 console */
-				(char_u *)"n-v-c:block,o:hor50,i-ci:hor15,r-cr:hor30,sm:block",
-# endif
-				    (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
+		    (char_u *)NULL, PV_NONE,    
+		    {(char_u *)NULL, (char_u *)0L}
+		    SCTX_INIT},
     {"guifont",	    "gfn",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_GUI
 			    (char_u *)&p_guifont, PV_NONE,
@@ -3995,12 +3984,6 @@ set_init_2(void)
     }
 #endif
 
-#ifdef CURSOR_SHAPE
-    parse_shape_opt(SHAPE_CURSOR); /* set cursor shapes from 'guicursor' */
-#endif
-#ifdef FEAT_MOUSESHAPE
-    parse_shape_opt(SHAPE_MOUSE);  /* set mouse shapes from 'mouseshape' */
-#endif
 #ifdef FEAT_PRINTER
     (void)parse_printoptions();	    /* parse 'printoptions' default value */
 #endif
@@ -7044,21 +7027,6 @@ did_set_string_option(
 	else if (gui_get_wide_font() == FAIL)
 	    errmsg = N_("E534: Invalid wide font");
 	redraw_gui_only = TRUE;
-    }
-#endif
-
-#ifdef CURSOR_SHAPE
-    /* 'guicursor' */
-    else if (varp == &p_guicursor)
-	errmsg = parse_shape_opt(SHAPE_CURSOR);
-#endif
-
-#ifdef FEAT_MOUSESHAPE
-    /* 'mouseshape' */
-    else if (varp == &p_mouseshape)
-    {
-	errmsg = parse_shape_opt(SHAPE_MOUSE);
-	update_mouseshape(-1);
     }
 #endif
 

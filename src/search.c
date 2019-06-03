@@ -2656,9 +2656,6 @@ showmatch(
     colnr_T	vcol;
     long	save_so;
     long	save_siso;
-#ifdef CURSOR_SHAPE
-    int		save_state;
-#endif
     colnr_T	save_dollar_vcol;
     char_u	*p;
     long        *so = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
@@ -2707,11 +2704,6 @@ showmatch(
 	    update_screen(VALID);	/* show the new char first */
 
 	    save_dollar_vcol = dollar_vcol;
-#ifdef CURSOR_SHAPE
-	    save_state = State;
-	    State = SHOWMATCH;
-	    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 	    curwin->w_cursor = mpos;	/* move to matching char */
 	    *so = 0;			/* don't use 'scrolloff' here */
 	    *siso = 0;			/* don't use 'sidescrolloff' here */
@@ -2736,10 +2728,6 @@ showmatch(
 	    curwin->w_cursor = save_cursor;	/* restore cursor position */
 	    *so = save_so;
 	    *siso = save_siso;
-#ifdef CURSOR_SHAPE
-	    State = save_state;
-	    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 	}
     }
 }

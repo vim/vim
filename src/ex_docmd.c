@@ -8800,9 +8800,6 @@ restore_current_state(save_state_T *sst)
     /* Restore the state (needed when called from a function executed for
      * 'indentexpr'). Update the mouse and cursor, they may have changed. */
     State = sst->save_State;
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 }
 
 /*
@@ -8920,9 +8917,6 @@ ex_normal(exarg_T *eap)
     --ex_normal_busy;
 #ifdef FEAT_MOUSE
     setmouse();
-#endif
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
 #endif
 
     vim_free(arg);

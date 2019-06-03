@@ -3817,10 +3817,6 @@ setmouse(void)
     int	    checkfor;
 # endif
 
-# ifdef FEAT_MOUSESHAPE
-    update_mouseshape(-1);
-# endif
-
 # ifdef FEAT_MOUSE_TTY /* Should be outside proc, but may break MOUSESHAPE */
 #  ifdef FEAT_GUI
     /* In the GUI the mouse is always enabled. */
@@ -3944,118 +3940,6 @@ cursor_off(void)
 	cursor_is_off = TRUE;
     }
 }
-
-#if defined(CURSOR_SHAPE) || defined(PROTO)
-/*
- * Set cursor shape to match Insert or Replace mode.
- */
-    void
-term_cursor_mode(int forced)
-{
-    static int showing_mode = -1;
-    char_u *p;
-
-    /* Only do something when redrawing the screen and we can restore the
-     * mode. */
-    if (!full_screen || *T_CEI == NUL)
-    {
-# ifdef FEAT_TERMRESPONSE
-	if (forced && initial_cursor_shape > 0)
-	    /* Restore to initial values. */
-	    term_cursor_shape(initial_cursor_shape, initial_cursor_blink);
-# endif
-	return;
-    }
-
-    if ((State & REPLACE) == REPLACE)
-    {
-	if (forced || showing_mode != REPLACE)
-	{
-	    if (*T_CSR != NUL)
-		p = T_CSR;	/* Replace mode cursor */
-	    else
-		p = T_CSI;	/* fall back to Insert mode cursor */
-	    if (*p != NUL)
-	    {
-		out_str(p);
-		showing_mode = REPLACE;
-	    }
-	}
-    }
-    else if (State & INSERT)
-    {
-	if ((forced || showing_mode != INSERT) && *T_CSI != NUL)
-	{
-	    out_str(T_CSI);	    /* Insert mode cursor */
-	    showing_mode = INSERT;
-	}
-    }
-    else if (forced || showing_mode != NORMAL)
-    {
-	out_str(T_CEI);		    /* non-Insert mode cursor */
-	showing_mode = NORMAL;
-    }
-}
-
-# if defined(FEAT_TERMINAL) || defined(PROTO)
-    void
-term_cursor_color(char_u *color)
-{
-    if (*T_CSC != NUL)
-    {
-	out_str(T_CSC);			/* set cursor color start */
-	out_str_nf(color);
-	out_str(T_CEC);			/* set cursor color end */
-	out_flush();
-    }
-}
-# endif
-
-    int
-blink_state_is_inverted()
-{
-#ifdef FEAT_TERMRESPONSE
-    return rbm_status.tr_progress == STATUS_GOT && rcs_status.tr_progress == STATUS_GOT
-		&& initial_cursor_blink != initial_cursor_shape_blink;
-#else
-    return FALSE;
-#endif
-}
-
-/*
- * "shape": 1 = block, 2 = underline, 3 = vertical bar
- */
-    void
-term_cursor_shape(int shape, int blink)
-{
-    if (*T_CSH != NUL)
-    {
-	OUT_STR(tgoto((char *)T_CSH, 0, shape * 2 - blink));
-	out_flush();
-    }
-    else
-    {
-	int do_blink = blink;
-
-	/* t_SH is empty: try setting just the blink state.
-	 * The blink flags are XORed together, if the initial blinking from
-	 * style and shape differs, we need to invert the flag here. */
-	if (blink_state_is_inverted())
-	    do_blink = !blink;
-
-	if (do_blink && *T_VS != NUL)
-	{
-	    out_str(T_VS);
-	    out_flush();
-	}
-	else if (!do_blink && *T_CVS != NUL)
-	{
-	    out_str(T_CVS);
-	    out_flush();
-	}
-    }
-}
-#endif
 
 /*
  * Set scrolling region for window 'wp'.

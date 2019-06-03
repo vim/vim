@@ -540,19 +540,7 @@ normal_cmd(
      * will terminate it. Finish_op tells us to finish the operation before
      * returning this time (unless the operation was cancelled).
      */
-#ifdef CURSOR_SHAPE
-    c = finish_op;
-#endif
     finish_op = (oap->op_type != OP_NOP);
-#ifdef CURSOR_SHAPE
-    if (finish_op != c)
-    {
-	ui_cursor_shape();		/* may show different cursor shape */
-# ifdef FEAT_MOUSESHAPE
-	update_mouseshape(-1);
-# endif
-    }
-#endif
 
     /* When not finishing an operator and no register name typed, reset the
      * count. */
@@ -897,13 +885,6 @@ getcount:
 	 */
 	if (cp != NULL)
 	{
-#ifdef CURSOR_SHAPE
-	    if (repl)
-	    {
-		State = REPLACE;	/* pretend Replace mode */
-		ui_cursor_shape();	/* show different cursor shape */
-	    }
-#endif
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_LMAP)
 	    {
 		/* Allow mappings defined with ":lmap". */
@@ -939,9 +920,6 @@ getcount:
 		im_set_active(FALSE);
 	    }
 	    p_smd = save_smd;
-#endif
-#ifdef CURSOR_SHAPE
-	    State = NORMAL_BUSY;
 #endif
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(*cp);
@@ -1209,21 +1187,7 @@ normal_end:
     msg_nowait = FALSE;
 
     /* Reset finish_op, in case it was set */
-#ifdef CURSOR_SHAPE
-    c = finish_op;
-#endif
     finish_op = FALSE;
-#ifdef CURSOR_SHAPE
-    /* Redraw the cursor with another shape, if we were in Operator-pending
-     * mode or did a replace command. */
-    if (c || ca.cmdchar == 'r')
-    {
-	ui_cursor_shape();		/* may show different cursor shape */
-# ifdef FEAT_MOUSESHAPE
-	update_mouseshape(-1);
-# endif
-    }
-#endif
 
 #ifdef FEAT_CMDL_INFO
     if (oap->op_type == OP_NOP && oap->regname == 0
@@ -2332,21 +2296,6 @@ do_mouse(
 	return FALSE;
     }
 
-#ifdef FEAT_MOUSESHAPE
-    /* May have stopped dragging the status or separator line.  The pointer is
-     * most likely still on the status or separator line. */
-    if (!is_drag && drag_status_line)
-    {
-	drag_status_line = FALSE;
-	update_mouseshape(SHAPE_IDX_STATUS);
-    }
-    if (!is_drag && drag_sep_line)
-    {
-	drag_sep_line = FALSE;
-	update_mouseshape(SHAPE_IDX_VSEP);
-    }
-#endif
-
     /*
      * Ignore drag and release events if we didn't get a click.
      */
@@ -2977,23 +2926,11 @@ do_mouse(
     /* Handle double clicks, unless on status line */
     else if (in_status_line)
     {
-#ifdef FEAT_MOUSESHAPE
-	if ((is_drag || is_click) && !drag_status_line)
-	{
-	    drag_status_line = TRUE;
-	    update_mouseshape(-1);
-	}
-#endif
+	    /* noop */
     }
     else if (in_sep_line)
     {
-#ifdef FEAT_MOUSESHAPE
-	if ((is_drag || is_click) && !drag_sep_line)
-	{
-	    drag_sep_line = TRUE;
-	    update_mouseshape(-1);
-	}
-#endif
+	    /* noop */
     }
     else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
 	     && mouse_has(MOUSE_VISUAL))

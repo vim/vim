@@ -1221,11 +1221,6 @@ EXTERN int bevalServers INIT(= 0);
 # endif
 #endif
 
-#ifdef CURSOR_SHAPE
-/* the table is in misc2.c, because of initializations */
-extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
-#endif
-
 #ifdef FEAT_PRINTER
 /*
  * Printer stuff shared between hardcopy.c and machine-specific printing code.

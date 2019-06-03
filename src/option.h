@@ -523,12 +523,6 @@ EXTERN int	p_guipty;	/* 'guipty' */
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN long	p_ghr;		/* 'guiheadroom' */
 #endif
-#ifdef CURSOR_SHAPE
-EXTERN char_u	*p_guicursor;	/* 'guicursor' */
-#endif
-#ifdef FEAT_MOUSESHAPE
-EXTERN char_u	*p_mouseshape;	/* 'mouseshape' */
-#endif
 #if defined(FEAT_GUI)
 EXTERN char_u	*p_go;		/* 'guioptions' */
 #endif

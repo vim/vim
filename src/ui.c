@@ -2187,36 +2187,6 @@ read_error_exit(void)
     preserve_exit();
 }
 
-#if defined(CURSOR_SHAPE) || defined(PROTO)
-/*
- * May update the shape of the cursor.
- */
-    void
-ui_cursor_shape_forced(int forced)
-{
-# ifdef FEAT_GUI
-    if (gui.in_use)
-	gui_update_cursor_later();
-    else
-# endif
-	term_cursor_mode(forced);
-
-# ifdef MCH_CURSOR_SHAPE
-    mch_update_cursor();
-# endif
-
-# ifdef FEAT_CONCEAL
-    conceal_check_cursor_line();
-# endif
-}
-
-    void
-ui_cursor_shape(void)
-{
-    ui_cursor_shape_forced(FALSE);
-}
-#endif
-
 /*
  * Check bounds for column number
  */

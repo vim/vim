@@ -1134,32 +1134,6 @@
 # define FEAT_TERMRESPONSE
 #endif
 
-/*
- * cursor shape		Adjust the shape of the cursor to the mode.
- * mouse shape		Adjust the shape of the mouse pointer to the mode.
- */
-#ifdef FEAT_NORMAL
-// Win32 console can change cursor shape
-# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
-#  define MCH_CURSOR_SHAPE
-# endif
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
-	|| defined(FEAT_GUI_PHOTON)
-#  define FEAT_MOUSESHAPE
-# endif
-#endif
-
-/* GUI and some consoles can change the shape of the cursor.  The code is also
- * needed for the 'mouseshape' and 'concealcursor' options. */
-#if defined(FEAT_GUI) \
-	    || defined(MCH_CURSOR_SHAPE) \
-	    || defined(FEAT_MOUSESHAPE) \
-	    || defined(FEAT_CONCEAL) \
-	    || (defined(UNIX) && defined(FEAT_NORMAL))
-# define CURSOR_SHAPE
-#endif
-
 #if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)	\
 	|| defined(FEAT_GUI_MAC))
@@ -1220,9 +1194,6 @@
  */
 #if defined(FEAT_TERMINAL) && !defined(FEAT_JOB_CHANNEL)
 # undef FEAT_TERMINAL
-#endif
-#if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
-# define CURSOR_SHAPE
 #endif
 
 /*

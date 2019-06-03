@@ -423,9 +423,6 @@ edit(
     if (!p_im && did_restart_edit == 0)
 	change_warning(i == 0 ? 0 : i + 1);
 
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 #ifdef FEAT_DIGRAPHS
     do_digraph(-1);		/* clear digraphs */
 #endif
@@ -868,9 +865,6 @@ doESCkey:
 	    if (!p_im)
 		goto normalchar;	/* insert CTRL-Z as normal char */
 	    do_cmdline_cmd((char_u *)"stop");
-#ifdef CURSOR_SHAPE
-	    ui_cursor_shape();		/* may need to update cursor shape */
-#endif
 	    continue;
 
 	case Ctrl_O:	/* execute one command */
@@ -4555,9 +4549,6 @@ ins_esc(
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
     if (!p_ek)
 	/* Re-enable bracketed paste mode. */
 	out_str(T_BE);
@@ -4675,9 +4666,6 @@ ins_insert(int replaceState)
 	State = replaceState | (State & LANGMAP);
     AppendCharToRedobuff(K_INS);
     showmode();
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 }
 
 /*

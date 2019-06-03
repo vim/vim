@@ -970,9 +970,6 @@ getcmdline_int(
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
 
     /* When inside an autocommand for writing "exiting" may be set and
      * terminal mode set to cooked.  Need to set raw mode here then. */
@@ -1674,9 +1671,6 @@ getcmdline_int(
 	case K_INS:
 	case K_KINS:
 		ccline.overstrike = !ccline.overstrike;
-#ifdef CURSOR_SHAPE
-		ui_cursor_shape();	/* may show different cursor shape */
-#endif
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
@@ -1723,9 +1717,6 @@ getcmdline_int(
 		    else
 			set_imsearch_global();
 		}
-#ifdef CURSOR_SHAPE
-		ui_cursor_shape();	/* may show different cursor shape */
-#endif
 #if defined(FEAT_KEYMAP)
 		/* Show/unshow value of 'keymap' in status lines later. */
 		status_redraw_curbuf();
@@ -2439,9 +2430,6 @@ returncmd:
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
-#ifdef CURSOR_SHAPE
-    ui_cursor_shape();		/* may show different cursor shape */
-#endif
     sb_text_end_cmdline();
 
 theend:
@@ -2956,27 +2944,6 @@ redraw:
 
     return (char_u *)line_ga.ga_data;
 }
-
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
-/*
- * Return TRUE if ccline.overstrike is on.
- */
-    int
-cmdline_overstrike(void)
-{
-    return ccline.overstrike;
-}
-
-/*
- * Return TRUE if the cursor is at the end of the cmdline.
- */
-    int
-cmdline_at_end(void)
-{
-    return (ccline.cmdpos >= ccline.cmdlen);
-}
-#endif
 
 #if (defined(FEAT_XIM) && (defined(FEAT_GUI_GTK))) || defined(PROTO)
 /*
@@ -3746,9 +3713,6 @@ cursorcmd(void)
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
     if (p_imst == IM_ON_THE_SPOT)
 	redrawcmd_preedit();
-#endif
-#ifdef MCH_CURSOR_SHAPE
-    mch_update_cursor();
 #endif
 }
 

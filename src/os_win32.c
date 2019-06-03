@@ -1450,47 +1450,6 @@ decode_mouse_event(
 #endif /* FEAT_MOUSE */
 
 
-#ifdef MCH_CURSOR_SHAPE
-/*
- * Set the shape of the cursor.
- * 'thickness' can be from 1 (thin) to 99 (block)
- */
-    static void
-mch_set_cursor_shape(int thickness)
-{
-    CONSOLE_CURSOR_INFO ConsoleCursorInfo;
-    ConsoleCursorInfo.dwSize = thickness;
-    ConsoleCursorInfo.bVisible = s_cursor_visible;
-
-    SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
-    if (s_cursor_visible)
-	SetConsoleCursorPosition(g_hConOut, g_coord);
-}
-
-    void
-mch_update_cursor(void)
-{
-    int		idx;
-    int		thickness;
-
-# ifdef VIMDLL
-    if (gui.in_use)
-	return;
-# endif
-
-    /*
-     * How the cursor is drawn depends on the current mode.
-     */
-    idx = get_shape_idx(FALSE);
-
-    if (shape_table[idx].shape == SHAPE_BLOCK)
-	thickness = 99;	/* 100 doesn't work on W95 */
-    else
-	thickness = shape_table[idx].percentage;
-    mch_set_cursor_shape(thickness);
-}
-#endif
-
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 /*
  * Handle FOCUS_EVENT.
@@ -5976,9 +5935,6 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
-#ifdef MCH_CURSOR_SHAPE
-    mch_update_cursor();
-#endif
 }
 
 
