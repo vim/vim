@@ -8,6 +8,7 @@ source shared.vim
 source screendump.vim
 
 let s:python = PythonProg()
+let $PROMPT_COMMAND=''
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
 " number.
