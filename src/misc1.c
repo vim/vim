@@ -1152,9 +1152,6 @@ ask_yesno(char_u *str, int direct)
     if (exiting)		/* put terminal in raw mode for this question */
 	settmode(TMODE_RAW);
     ++no_wait_return;
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
     State = CONFIRM;		/* mouse behaves like with :confirm */
 #ifdef FEAT_MOUSE
     setmouse();			/* disables mouse for xterm */
@@ -1365,9 +1362,6 @@ get_number(
     if (msg_silent != 0)
 	return 0;
 
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
     ++no_mapping;
     ++allow_keys;		/* no mapping here, but recognize keys */
     for (;;)

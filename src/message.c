@@ -1064,9 +1064,6 @@ wait_return(int redraw)
 #ifdef FEAT_MOUSE
 	setmouse();
 #endif
-#ifdef USE_ON_FLY_SCROLL
-	dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
 	cmdline_row = msg_row;
 
 	/* Avoid the sequence that the user types ":" at the hit-return prompt

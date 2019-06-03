@@ -5830,7 +5830,6 @@ check_termcode(
 	    slen += num_bytes;
 	}
 # endif
-# ifndef USE_ON_FLY_SCROLL
 	else if (key_name[0] == (int)KS_VER_SCROLLBAR)
 	{
 	    long_u	val;
@@ -5879,7 +5878,6 @@ check_termcode(
 	    if (i == 0)		/* not enough characters to make one */
 		return -1;
 	}
-# endif /* !USE_ON_FLY_SCROLL */
 #endif /* FEAT_GUI */
 
 	/*

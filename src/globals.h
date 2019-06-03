@@ -959,9 +959,6 @@ EXTERN int	no_abbr INIT(= TRUE);	/* TRUE when no abbreviations loaded */
 EXTERN char_u	*exe_name;		/* the name of the executable */
 #endif
 
-#ifdef USE_ON_FLY_SCROLL
-EXTERN int	dont_scroll INIT(= FALSE);/* don't use scrollbars when TRUE */
-#endif
 EXTERN int	mapped_ctrl_c INIT(= FALSE); /* modes where CTRL-C is mapped */
 EXTERN int	ctrl_c_interrupts INIT(= TRUE);	/* CTRL-C sets got_int */
 

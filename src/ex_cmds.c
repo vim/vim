@@ -5471,9 +5471,6 @@ do_sub(exarg_T *eap)
 			    windgoto(msg_row, msg_col);
 			    RedrawingDisabled = temp;
 
-#ifdef USE_ON_FLY_SCROLL
-			    dont_scroll = FALSE; /* allow scrolling here */
-#endif
 			    ++no_mapping;	/* don't map this key */
 			    ++allow_keys;	/* allow special keys */
 			    typed = plain_vgetc();

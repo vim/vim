@@ -588,10 +588,6 @@ edit(
 	old_topfill = curwin->w_topfill;
 #endif
 
-#ifdef USE_ON_FLY_SCROLL
-	dont_scroll = FALSE;		/* allow scrolling here */
-#endif
-
 	/*
 	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
 	 */
@@ -2147,9 +2143,6 @@ get_literal(void)
     if (gui.in_use)
 	++allow_keys;
 #endif
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
     ++no_mapping;		/* don't map the next key hits */
     cc = 0;
     i = 0;
@@ -2448,10 +2441,6 @@ insertchar(
      * Do the check for InsertCharPre before the call to vpeekc() because the
      * InsertCharPre autocommand could change the input buffer.
      */
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = FALSE;		/* allow scrolling here */
-#endif
-
     if (       !ISSPECIAL(c)
 	    && (!has_mbyte || (*mb_char2len)(c) == 1)
 	    && !has_insertcharpre()
@@ -4216,10 +4205,6 @@ ins_reg(void)
 	add_to_showcmd_c(Ctrl_R);
 #endif
     }
-
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
 
     /*
      * Don't map the register name. This also prevents the mode message to be
@@ -6126,10 +6111,6 @@ ins_digraph(void)
 	add_to_showcmd_c(Ctrl_K);
 #endif
     }
-
-#ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
-#endif
 
     /* don't map the digraph chars. This also prevents the
      * mode message to be deleted when ESC is hit */

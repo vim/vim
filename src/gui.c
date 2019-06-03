@@ -3933,16 +3933,8 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 {
     win_T	*wp;
     int		sb_num;
-#ifdef USE_ON_FLY_SCROLL
-    colnr_T	old_leftcol = curwin->w_leftcol;
-    linenr_T	old_topline = curwin->w_topline;
-# ifdef FEAT_DIFF
-    int		old_topfill = curwin->w_topfill;
-# endif
-#else
     char_u	bytes[sizeof(long_u)];
     int		byte_count;
-#endif
 
     if (sb == NULL)
 	return;
@@ -3995,13 +3987,6 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 
     sb->value = value;
 
-#ifdef USE_ON_FLY_SCROLL
-    /* When not allowed to do the scrolling right now, return.
-     * This also checked input_available(), but that causes the first click in
-     * a scrollbar to be ignored when Vim doesn't have focus. */
-    if (dont_scroll)
-	return;
-#endif
 #ifdef FEAT_INS_EXPAND
     /* Disallow scrolling the current window when the completion popup menu is
      * visible. */
@@ -4026,104 +4011,23 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 	if (wp == NULL)
 	    return;
 
-#ifdef USE_ON_FLY_SCROLL
-	current_scrollbar = sb_num;
-	scrollbar_value = value;
-	if (State & NORMAL)
-	{
-	    gui_do_scroll();
-	    setcursor();
-	}
-	else if (State & INSERT)
-	{
-	    ins_scroll();
-	    setcursor();
-	}
-	else if (State & CMDLINE)
-	{
-	    if (msg_scrolled == 0)
-	    {
-		gui_do_scroll();
-		redrawcmdline();
-	    }
-	}
-# ifdef FEAT_FOLDING
-	/* Value may have been changed for closed fold. */
-	sb->value = sb->wp->w_topline - 1;
-# endif
-
-	/* When dragging one scrollbar and there is another one at the other
-	 * side move the thumb of that one too. */
-	if (gui.which_scrollbars[SBAR_RIGHT] && gui.which_scrollbars[SBAR_LEFT])
-	    gui_mch_set_scrollbar_thumb(
-		    &sb->wp->w_scrollbars[
-			    sb == &sb->wp->w_scrollbars[SBAR_RIGHT]
-						    ? SBAR_LEFT : SBAR_RIGHT],
-		    sb->value, sb->size, sb->max);
-
-#else
 	bytes[0] = CSI;
 	bytes[1] = KS_VER_SCROLLBAR;
 	bytes[2] = KE_FILLER;
 	bytes[3] = (char_u)sb_num;
 	byte_count = 4;
-#endif
     }
     else
     {
-#ifdef USE_ON_FLY_SCROLL
-	scrollbar_value = value;
-
-	if (State & NORMAL)
-	    gui_do_horiz_scroll(scrollbar_value, FALSE);
-	else if (State & INSERT)
-	    ins_horscroll();
-	else if (State & CMDLINE)
-	{
-	    if (msg_scrolled == 0)
-	    {
-		gui_do_horiz_scroll(scrollbar_value, FALSE);
-		redrawcmdline();
-	    }
-	}
-	if (old_leftcol != curwin->w_leftcol)
-	{
-	    updateWindow(curwin);   /* update window, status and cmdline */
-	    setcursor();
-	}
-#else
 	bytes[0] = CSI;
 	bytes[1] = KS_HOR_SCROLLBAR;
 	bytes[2] = KE_FILLER;
 	byte_count = 3;
-#endif
     }
 
-#ifdef USE_ON_FLY_SCROLL
-    /*
-     * synchronize other windows, as necessary according to 'scrollbind'
-     */
-    if (curwin->w_p_scb
-	    && ((sb->wp == NULL && curwin->w_leftcol != old_leftcol)
-		|| (sb->wp == curwin && (curwin->w_topline != old_topline
-# ifdef FEAT_DIFF
-					   || curwin->w_topfill != old_topfill
-# endif
-			))))
-    {
-	do_check_scrollbind(TRUE);
-	/* need to update the window right here */
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_redr_type > 0)
-		updateWindow(wp);
-	setcursor();
-    }
-    out_flush_cursor(FALSE, TRUE);
-#else
     add_to_input_buf(bytes, byte_count);
     add_long_to_buf((long_u)value, bytes);
     add_to_input_buf_csi(bytes, sizeof(long_u));
-#endif
 }
 
 /*
