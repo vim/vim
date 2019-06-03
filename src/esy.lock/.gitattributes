@@ -1,0 +1,3 @@
+
+# Set eol to LF so files aren't converted to CRLF-eol on Windows.
+* text eol=lf
