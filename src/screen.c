@@ -7707,7 +7707,11 @@ screen_puts_len(
     int		force_redraw_next = FALSE;
     int		need_redraw;
 
-    if (ScreenLines == NULL || row >= screen_Rows)	/* safety check */
+    // Safety check. The check for negative row and column is to fix issue
+    // #4102. TODO: find out why row/col could be negative.
+    if (ScreenLines == NULL
+	    || row >= screen_Rows || row < 0
+	    || col >= screen_Columns || col < 0)
 	return;
     off = LineOffset[row] + col;
 
