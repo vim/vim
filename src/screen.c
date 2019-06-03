@@ -1078,7 +1078,9 @@ update_popups(void)
 		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
 	popup_attr = get_wcr_attr(wp);
 
-	if (enc_utf8)
+	// We can only use these line drawing characters when 'encoding' is
+	// "utf-8" and 'ambiwidth' is "single".
+	if (enc_utf8 && p_ambw == 's')
 	{
 	    border_char[0] = border_char[2] = 0x2550;
 	    border_char[1] = border_char[3] = 0x2551;
