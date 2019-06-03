@@ -1,4 +1,9 @@
 /* normal.c */
+
+void *state_normal_cmd_initialize();
+void state_normal_cmd_cleanup(void *ctx);
+executionStatus_T state_normal_cmd_execute(void *ctx, int key);
+
 void init_normal_cmds(void);
 void normal_cmd(oparg_T *oap, int toplevel);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);

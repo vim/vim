@@ -30,6 +30,33 @@ typedef struct
     colnr_T	coladd; // extra virtual column
 } pos_T;
 
+/*
+ * State machine definitions
+ */
+
+/* Status of a job.  Order matters! */
+typedef enum
+{
+    HANDLED,
+    COMPLETED,
+    UNHANDLED,
+    COMPLETED_UNHANDLED,
+} executionStatus_T;
+
+typedef executionStatus_T (*state_execute)(void *context, int key);
+typedef void (*state_cleanup)(void *context);
+
+typedef const char* sname;
+
+/* State machine information */
+typedef struct
+{
+   void* context;
+   sname name;
+   state_execute execute_fn;
+   state_cleanup cleanup_fn;
+   struct sm_T* prev;
+} sm_T;
 
 /*
  * Same, but without coladd.

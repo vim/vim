@@ -43,9 +43,7 @@ linenr_T vimWindowGetCursorLine(void) {
 };
 
 void vimInput(char_u *input) {
-    char_u *keys_esc = vim_strsave_escape_csi(input);
-    ins_typebuf(keys_esc, REMAP_YES, 0, FALSE, FALSE);
-    exec_normal(TRUE, FALSE, FALSE);
+    sm_execute_normal(input);
 }
 
 void vimExecute(char_u *cmd) {

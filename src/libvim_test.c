@@ -1,26 +1,40 @@
+#include "windows.h"
 #include <assert.h>
 #include <stdio.h>
-#include "windows.h"
 #include <vim.h>
 
-int main(int argc, char** argv) {
-    vimInit(argc, argv);
+int main(int argc, char **argv) {
+  vimInit(argc, argv);
 
-    buf_T *buf = vimBufferOpen("libvim_test.c", 1, 0);
+  win_setwidth(5);
+  win_setheight(100);
 
-    char* line = vimBufferGetLine(buf, 1);
-    int comp = strcmp(line, "#include <assert.h>");
-    assert(comp == 0);
+  buf_T *buf = vimBufferOpen("libvim_test.c", 1, 0);
 
-    assert(vimWindowGetCursorLine() == 1);
+  char *line = vimBufferGetLine(buf, 1);
+  printf("LINE: %s\n", line);
+  int comp = strcmp(line, "#include \"windows.h\"");
+  assert(comp == 0);
 
-    vimInput("G");
+  assert(vimWindowGetCursorLine() == 1);
 
-    assert(vimWindowGetCursorLine() > 1);
+  vimInput("G");
 
-    vimExecute("help tutor");
-    line = vimBufferGetLine(curbuf, 1);
-    printf("LINE: %s\n", line);
+  assert(vimWindowGetCursorLine() > 21);
 
-    printf("Completed\n");
+  /* vimExecute("help tutor"); */
+  /* assert(vimWindowGetCursorLine() == 32); */
+
+  vimInput("g");
+  vimInput("g");
+
+  vimInput("v");
+  vimInput("l");
+  vimInput("l");
+  vimInput("x");
+  printf("CURSOR LINE: %d\n", vimWindowGetCursorLine());
+
+  line = vimBufferGetLine(buf, 1);
+  printf("LINE: %s\n", line);
+  printf("Completed\n");
 }

@@ -45,6 +45,12 @@ EXTERN unsigned	*LineOffset INIT(= NULL);
 EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
 
 /*
+ * Globals for managing the state machine
+ */
+
+EXTERN sm_T *state_current  INIT(= NULL);
+
+/*
  * When using Unicode characters (in UTF-8 encoding) the character in
  * ScreenLinesUC[] contains the Unicode for the character at this position, or
  * NUL when the character in ScreenLines[] is to be used (ASCII char).
