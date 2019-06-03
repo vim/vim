@@ -14594,10 +14594,8 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     gui_drag_scrollbar(sb, value, dragging);
-# ifndef USE_ON_FLY_SCROLL
     // need to loop through normal_cmd() to handle the scroll events
     exec_normal(FALSE, TRUE, FALSE);
-# endif
 }
 #endif
 
