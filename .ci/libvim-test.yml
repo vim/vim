@@ -1,6 +1,9 @@
 # Cross-platform set of build steps for building esy projects
 
 steps:
-  - script: esy x libvim_test
+  - script: esy @test install
     workingDirectory: src
-    displayName: 'esy x libvim_test'
+    displayName: 'esy @test install'
+  - script: esy @test x ${{ parameters.testRunner }}
+    workingDirectory: src
+    displayName: 'esy @test x ${{ parameters.testRunner }}'

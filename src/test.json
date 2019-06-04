@@ -3,12 +3,9 @@
   "version": "8.10869.0",
   "description": "Standalone vim library",
   "license": "MIT",
-  "scripts": {
-      "test": "esy x run-tests.sh"
-  },
   "esy": {
     "build": [
-        ["bash", "-c", "#{os == 'windows' ? 'build/build-windows.sh' : 'build/build-posix.sh'}"]
+        ["bash", "-c", "#{os == 'windows' ? 'build/build-windows-tests.sh' : 'build/build-posix-tests.sh'}"]
     ],
     "buildsInSource":true
   },

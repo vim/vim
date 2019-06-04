@@ -8,6 +8,8 @@ jobs:
   steps:
   - template: .ci/esy-build-steps.yml
   - template: .ci/libvim-test.yml
+    parameters:
+        testRunner: run-tests.sh
 
 - job: MacOS
   pool:
@@ -15,6 +17,8 @@ jobs:
   steps:
   - template: .ci/esy-build-steps.yml
   - template: .ci/libvim-test.yml
+    parameters:
+        testRunner: run-tests.sh
 
 - job: Windows
   pool:
@@ -22,3 +26,5 @@ jobs:
   steps:
   - template: .ci/esy-build-steps.yml
   - template: .ci/libvim-test.yml
+    parameters:
+        testRunner: run-tests.bat

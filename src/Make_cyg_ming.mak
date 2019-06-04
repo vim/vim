@@ -985,12 +985,23 @@ endif
 libvim.a: $(OUTDIR) $(OBJ)
 	$(AR) rcs libvim.a $(OBJ)
 
-libvim_test.exe: $(OUTDIR) $(OBJ) libvim_test.c libvim.a
-	$(CC) -I. -Iproto -L. -Lproto libvim_test.c $(EXELFLAGS) -o $@ libvim.a -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
-
-installlibvim: libvim.a libvim_test.exe
+installlibvim: libvim.a
 	$(INSTALL_PROG) libvim.a $(DEST_LIB)
-	$(INSTALL_PROG) libvim_test.exe $(DEST_BIN)
+
+TEST_SRC = $(wildcard apitest/*.c)
+TEST_COLLATERAL = $(wildcard apitest/*.txt)
+TEST_EXE = $(TEST_SRC:.c=.test.exe)
+
+copy-apitest-collateral: $(TEST_COLLATERAL)
+	$(INSTALL_PROG) $< $(DEST_BIN)
+
+$(TEST_EXE): $(TEST_SRC) libvim.a
+	$(CC) -I. -Iproto -L. -Lproto $< $(EXELFLAGS) -o $@ libvim.a -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
+	echo "Copying $@ to $(DEST_BIN)"
+	$(INSTALL_PROG) $@ $(DEST_BIN)
+
+installapitest:  copy-apitest-collateral $(TEST_EXE)
+	$(INSTALL_PROG) build/run-tests.bat $(DEST_BIN)
 
 upx: exes
 	upx gvim.exe

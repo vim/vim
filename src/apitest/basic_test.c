@@ -8,12 +8,12 @@ int main(int argc, char **argv) {
   win_setwidth(5);
   win_setheight(100);
 
-  buf_T *buf = vimBufferOpen("libvim_test.c", 1, 0);
+  buf_T *buf = vimBufferOpen("testfile.txt", 1, 0);
   assert(vimGetMode() & NORMAL == NORMAL);
 
   char *line = vimBufferGetLine(buf, 1);
   printf("LINE: %s\n", line);
-  int comp = strcmp(line, "#include <assert.h>");
+  int comp = strcmp(line, "This is the first line of a test file");
   assert(comp == 0);
 
   printf("cursor line: %d\n", vimWindowGetCursorLine());
@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   vimInput("G");
 
-  assert(vimWindowGetCursorLine() > 21);
+  assert(vimWindowGetCursorLine() > 1);
 
   /* vimExecute("help tutor"); */
   /* assert(vimWindowGetCursorLine() == 32); */
@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
   vimInput("l");
   vimInput("l");
   vimInput("x");
+  
   printf("CURSOR LINE: %d\n", vimWindowGetCursorLine());
   assert(vimGetMode() & NORMAL == NORMAL);
 

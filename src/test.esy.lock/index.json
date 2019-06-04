@@ -1,0 +1,15 @@
+{
+  "checksum": "0cc961f41dbf4ff5ab5654751a4ba36e",
+  "root": "libvim@link-dev:./test.json",
+  "node": {
+    "libvim@link-dev:./test.json": {
+      "id": "libvim@link-dev:./test.json",
+      "name": "libvim",
+      "version": "link-dev:./test.json",
+      "source": { "type": "link-dev", "path": ".", "manifest": "test.json" },
+      "overrides": [],
+      "dependencies": [],
+      "devDependencies": []
+    }
+  }
+}
