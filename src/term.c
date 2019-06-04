@@ -4962,6 +4962,7 @@ check_termcode(
 	    /* Check for fore/background color response from the terminal:
 	     *
 	     *       {lead}{code};rgb:{rrrr}/{gggg}/{bbbb}{tail}
+	     * or    {lead}{code};rgb:{rr}/{gg}/{bb}{tail}
 	     *
 	     * {code} is 10 for foreground, 11 for background
 	     * {lead} can be <Esc>] or OSC
@@ -4985,14 +4986,19 @@ check_termcode(
 			: (tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')))
 		    {
 			int is_bg = argp[1] == '1';
+			int is_4digit = i - j >= 21 && tp[j + 11] == '/'
+							  && tp[j + 16] == '/';
 
-			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
-			    && tp[j + 11] == '/' && tp[j + 16] == '/')
+			if (i - j >= 14 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
+			    && (is_4digit
+				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
 			{
 # ifdef FEAT_TERMINAL
-			    int rval = hexhex2nr(tp + j + 7);
-			    int gval = hexhex2nr(tp + j + 12);
-			    int bval = hexhex2nr(tp + j + 17);
+			    int rval, gval, bval;
+
+			    rval = hexhex2nr(tp + j + 7);
+			    gval = hexhex2nr(tp + j + (is_4digit ? 12 : 10));
+			    bval = hexhex2nr(tp + j + (is_4digit ? 17 : 13));
 # endif
 			    if (is_bg)
 			    {
