@@ -995,7 +995,7 @@ TEST_EXE = $(TEST_SRC:.c=.test.exe)
 copy-apitest-collateral: $(TEST_COLLATERAL)
 	$(INSTALL_PROG) $< $(DEST_BIN)
 
-$(TEST_EXE): $(TEST_SRC) libvim.a
+apitest/%.test.exe: apitest/%.c libvim.a
 	$(CC) -I. -Iproto -L. -Lproto $< $(EXELFLAGS) -o $@ libvim.a -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
 	echo "Copying $@ to $(DEST_BIN)"
 	$(INSTALL_PROG) $@ $(DEST_BIN)
