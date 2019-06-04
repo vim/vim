@@ -982,6 +982,10 @@ ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
+DEST_BIN = $(DESTDIR)/bin
+DEST_LIB = $(DESTDIR)/lib
+INSTALL_PROG = cp
+
 all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
@@ -1012,6 +1016,10 @@ libvim.a: $(OUTDIR) $(OBJ)
 
 libvim_test.exe: $(OUTDIR) $(OBJ) libvim_test.c libvim.a
 	$(CC) -I. -Iproto -L. -Lproto libvim_test.c $(EXELFLAGS) -o $@ libvim.a -lstdc++ -lole32 -lws2_32 -lnetapi32 -lversion -lcomctl32 -luuid -lgdi32
+
+installlibvim: libvim.a libvim_test.exe
+	$(INSTALL_PROG) libvim.a $(DEST_LIB)
+	$(INSTALL_PROG) libvim_test.exe $(DEST_BIN)
 
 upx: exes
 	upx gvim.exe

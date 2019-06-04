@@ -1510,7 +1510,8 @@ ALL_LIBS = \
 	   $(LEAK_LIBS)
 
 # abbreviations
-DEST_BIN = $(DESTDIR)$(BINDIR)
+DEST_LIB = $(DESTDIR)/lib
+DEST_BIN = $(DESTDIR)/bin
 DEST_VIM = $(DESTDIR)$(VIMLOC)
 DEST_RT = $(DESTDIR)$(VIMRTLOC)
 DEST_HELP = $(DESTDIR)$(HELPSUBLOC)
@@ -1604,6 +1605,7 @@ BASIC_SRC = \
 	insexpand.c \
 	json.c \
 	list.c \
+	libvim.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1630,6 +1632,7 @@ BASIC_SRC = \
 	sign.c \
 	spell.c \
 	spellfile.c \
+	state_machine.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -1721,6 +1724,7 @@ OBJ_COMMON = \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
+	objects/libvim.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -1745,6 +1749,7 @@ OBJ_COMMON = \
 	objects/sign.o \
 	objects/spell.o \
 	objects/spellfile.o \
+	objects/state_machine.o \
 	objects/syntax.o \
 	objects/tag.o \
 	objects/term.o \
@@ -1858,6 +1863,7 @@ PRO_AUTO = \
 	indent.pro \
 	insexpand.pro \
 	json.pro \
+	libvim.pro \
 	list.pro \
 	main.pro \
 	mark.pro \
@@ -2010,6 +2016,16 @@ $(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
+
+libvim.a: $(OBJ) libvim.c
+	$(CCC) version.c -o objects/version.o
+	$(AR) rcs libvim.a $(OBJ)
+
+libvim_test: libvim.a libvim_test.c
+	$(CC) $(ALL_CFLAGS) libvim_test.c -o $@ libvim.a $(ALL_LIBS)
+
+apitest: libvim_test
+	./libvim_test || exit 1
 
 xxd/xxd$(EXEEXT): xxd/xxd.c
 	cd xxd; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
@@ -2248,6 +2264,10 @@ install_gui_extra: installgtutorbin
 
 installvim: installvimbin installtutorbin \
 		installruntime installlinks installmanlinks
+
+installlibvim: libvim.a libvim_test $(DEST_BIN) $(DEST_LIB)
+	$(INSTALL_PROG) libvim.a $(DEST_LIB)
+	$(INSTALL_PROG) libvim_test $(DEST_BIN)
 
 #
 # Avoid overwriting an existing executable, somebody might be running it and
@@ -2607,6 +2627,9 @@ installglinks: $(DEST_BIN)/$(GVIMTARGET) \
 
 installvimdiff: $(DEST_BIN)/$(VIMDIFFTARGET)
 installgvimdiff: $(DEST_BIN)/$(GVIMDIFFTARGET)
+
+$(DEST_BIN)/lib:
+	mkdir $(DEST_BIN)/lib
 
 $(DEST_BIN)/$(EXTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EXTARGET)
@@ -3135,6 +3158,9 @@ objects/json_test.o: json_test.c
 objects/kword_test.o: kword_test.c
 	$(CCC) -o $@ kword_test.c
 
+objects/libvim.o: libvim.c
+	$(CCC) -o $@ libvim.c
+
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
 
@@ -3239,6 +3265,9 @@ objects/spell.o: spell.c
 
 objects/spellfile.o: spellfile.c
 	$(CCC) -o $@ spellfile.c
+
+objects/state_machine.o: state_machine.c
+	$(CCC) -o $@ state_machine.c
 
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c

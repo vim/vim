@@ -2,26 +2,19 @@
 
 name: $(Build.SourceVersion)
 jobs:
-# - job: Linux
-#   pool:
-#     vmImage: 'Ubuntu 16.04'
-#   steps:
-#   - script: sudo apt-get install -y libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libegl1-mesa-dev mesa-utils mesa-utils-extra ragel
-#   - template: .ci/esy-build-steps.yml
-#   - template: .ci/prebuilt-library/publish-platform-prebuilt.yml
-#     parameters:
-#       platform: "platform-linux"
+- job: Linux
+  pool:
+    vmImage: 'Ubuntu 16.04'
+  steps:
+  - template: .ci/esy-build-steps.yml
+  - template: .ci/libvim-test.yml
 
-# - job: MacOS
-#   pool:
-#     vmImage: 'macOS 10.13'
-#   steps:
-#   - script: brew update
-#   - script: brew install libpng
-#   - template: .ci/esy-build-steps.yml
-#   - template: .ci/prebuilt-library/publish-platform-prebuilt.yml
-#     parameters:
-#       platform: "platform-darwin"
+- job: MacOS
+  pool:
+    vmImage: 'macOS 10.13'
+  steps:
+  - template: .ci/esy-build-steps.yml
+  - template: .ci/libvim-test.yml
 
 - job: Windows
   pool:

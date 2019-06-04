@@ -2058,54 +2058,6 @@ terminal_is_active()
     return in_terminal_loop != NULL;
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
-    cursorentry_T *
-term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
-{
-    term_T		 *term = in_terminal_loop;
-    static cursorentry_T entry;
-    int			 id;
-    guicolor_T		term_fg, term_bg;
-
-    vim_memset(&entry, 0, sizeof(entry));
-    entry.shape = entry.mshape =
-	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_UNDERLINE ? SHAPE_HOR :
-	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_BAR_LEFT ? SHAPE_VER :
-	SHAPE_BLOCK;
-    entry.percentage = 20;
-    if (term->tl_cursor_blink)
-    {
-	entry.blinkwait = 700;
-	entry.blinkon = 400;
-	entry.blinkoff = 250;
-    }
-
-    /* The "Terminal" highlight group overrules the defaults. */
-    id = syn_name2id((char_u *)"Terminal");
-    if (id != 0)
-    {
-	syn_id2colors(id, &term_fg, &term_bg);
-	*fg = term_bg;
-    }
-    else
-	*fg = gui.back_pixel;
-
-    if (term->tl_cursor_color == NULL)
-    {
-	if (id != 0)
-	    *bg = term_fg;
-	else
-	    *bg = gui.norm_pixel;
-    }
-    else
-	*bg = color_name2handle(term->tl_cursor_color);
-    entry.name = "n";
-    entry.used_for = SHAPE_CURSOR;
-
-    return &entry;
-}
-#endif
-
     static void
 may_output_cursor_props(void)
 {
@@ -2116,12 +2068,6 @@ may_output_cursor_props(void)
 	cursor_color_copy(&last_set_cursor_color, desired_cursor_color);
 	last_set_cursor_shape = desired_cursor_shape;
 	last_set_cursor_blink = desired_cursor_blink;
-	term_cursor_color(cursor_color_get(desired_cursor_color));
-	if (desired_cursor_shape == -1 || desired_cursor_blink == -1)
-	    /* this will restore the initial cursor style, if possible */
-	    ui_cursor_shape_forced(TRUE);
-	else
-	    term_cursor_shape(desired_cursor_shape, desired_cursor_blink);
     }
 }
 
@@ -2142,7 +2088,6 @@ may_set_cursor_props(term_T *term)
 	cursor_color_copy(&desired_cursor_color, term->tl_cursor_color);
 	desired_cursor_shape = term->tl_cursor_shape;
 	desired_cursor_blink = term->tl_cursor_blink;
-	may_output_cursor_props();
     }
 }
 
@@ -5052,7 +4997,7 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
     if (d != NULL)
     {
 	dict_add_number(d, "visible", term->tl_cursor_visible);
-	dict_add_number(d, "blink", blink_state_is_inverted()
+	dict_add_number(d, "blink", FALSE
 			    ? !term->tl_cursor_blink : term->tl_cursor_blink);
 	dict_add_number(d, "shape", term->tl_cursor_shape);
 	dict_add_string(d, "color", cursor_color_get(term->tl_cursor_color));
