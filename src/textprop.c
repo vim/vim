@@ -1240,9 +1240,12 @@ join_prop_lines(
     if (line == NULL)
 	return;
     mch_memmove(line, newp, len);
-    l = oldproplen * sizeof(textprop_T);
-    mch_memmove(line + len, props, l);
-    len += l;
+    if (oldproplen > 0)
+    {
+	l = oldproplen * sizeof(textprop_T);
+	mch_memmove(line + len, props, l);
+	len += l;
+    }
 
     for (i = 0; i < count - 1; ++i)
 	if (prop_lines[i] != NULL)
