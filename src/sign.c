@@ -330,6 +330,7 @@ buf_addsign(
 	{
 	    // Update an existing sign
 	    sign->typenr = typenr;
+	    sign->priority = prio;
 	    return;
 	}
 	else if (lnum < sign->lnum)
