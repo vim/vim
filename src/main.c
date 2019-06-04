@@ -100,7 +100,7 @@ __declspec(dllexport)
 # ifdef MSWIN
 VimMain
 # else
-main
+main2
 # endif
 (int argc, char **argv)
 {

@@ -1604,6 +1604,7 @@ BASIC_SRC = \
 	insexpand.c \
 	json.c \
 	list.c \
+	libvim.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -1630,6 +1631,7 @@ BASIC_SRC = \
 	sign.c \
 	spell.c \
 	spellfile.c \
+	state_machine.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -1721,6 +1723,7 @@ OBJ_COMMON = \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
+	objects/libvim.o \
 	objects/list.o \
 	objects/mark.o \
 	objects/memline.o \
@@ -1745,6 +1748,7 @@ OBJ_COMMON = \
 	objects/sign.o \
 	objects/spell.o \
 	objects/spellfile.o \
+	objects/state_machine.o \
 	objects/syntax.o \
 	objects/tag.o \
 	objects/term.o \
@@ -1858,6 +1862,7 @@ PRO_AUTO = \
 	indent.pro \
 	insexpand.pro \
 	json.pro \
+	libvim.pro \
 	list.pro \
 	main.pro \
 	mark.pro \
@@ -2010,6 +2015,12 @@ $(VIMTARGET): auto/config.mk objects $(OBJ) version.c version.h
 		-o $(VIMTARGET) $(OBJ) $(ALL_LIBS)" \
 		MAKE="$(MAKE)" LINK_AS_NEEDED=$(LINK_AS_NEEDED) \
 		sh $(srcdir)/link.sh
+
+libvim.a: $(OBJ) libvim.c
+	$(AR) rcs libvim.a $(OBJ)
+
+libvim_test: libvim.a libvim_test.c
+	$(CC) $(ALL_CFLAGS) libvim_test.c -o $@ libvim.a $(ALL_LIBS)
 
 xxd/xxd$(EXEEXT): xxd/xxd.c
 	cd xxd; CC="$(CC)" CFLAGS="$(CPPFLAGS) $(CFLAGS)" LDFLAGS="$(LDFLAGS)" \
@@ -3135,6 +3146,9 @@ objects/json_test.o: json_test.c
 objects/kword_test.o: kword_test.c
 	$(CCC) -o $@ kword_test.c
 
+objects/libvim.o: libvim.c
+	$(CCC) -o $@ libvim.c
+
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
 
@@ -3239,6 +3253,9 @@ objects/spell.o: spell.c
 
 objects/spellfile.o: spellfile.c
 	$(CCC) -o $@ spellfile.c
+
+objects/state_machine.o: state_machine.c
+	$(CCC) -o $@ state_machine.c
 
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c

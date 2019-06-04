@@ -1,7 +1,6 @@
-#include "windows.h"
 #include <assert.h>
 #include <stdio.h>
-#include <vim.h>
+#include "vim.h"
 
 int main(int argc, char **argv) {
   vimInit(argc, argv);
@@ -13,8 +12,10 @@ int main(int argc, char **argv) {
 
   char *line = vimBufferGetLine(buf, 1);
   printf("LINE: %s\n", line);
-  int comp = strcmp(line, "#include \"windows.h\"");
+  int comp = strcmp(line, "#include <assert.h>");
   assert(comp == 0);
+
+  printf("cursor line: %d\n", vimWindowGetCursorLine());
 
   assert(vimWindowGetCursorLine() == 1);
 

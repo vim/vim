@@ -5,10 +5,10 @@
   "license": "MIT",
   "esy": {
     "build": [
-        ["make", "-f", "Make_cyg_ming.mak", "libvim_test.exe", "CC=x86_64-w64-mingw32-gcc", "WINDRES=x86_64-w64-mingw32-windres", "CXX=x86_64-w64-mingw32-g++"],
-        ["make", "-f", "Make_cyg_ming.mak", "libvim.a", "CC=x86_64-w64-mingw32-gcc", "WINDRES=x86_64-w64-mingw32-windres", "CXX=x86_64-w64-mingw32-g++"]
+        ["./configure"],
+        ["make", "vim"]
     ],
-    "buildsInSource":"_build"
+    "buildsInSource":true
   },
   "dependencies": { }
 }

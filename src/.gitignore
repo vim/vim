@@ -1,3 +1,4 @@
 _esy/
 node_modules/
 libvim.a
+libvim_test/

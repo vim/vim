@@ -1133,11 +1133,6 @@ gui_update_cursor(
 	 * How the cursor is drawn depends on the current mode.
 	 * When in a terminal window use the shape/color specified there.
 	 */
-#ifdef FEAT_TERMINAL
-	if (terminal_is_active())
-	    shape = term_get_cursor_shape(&shape_fg, &shape_bg);
-	else
-#endif
 	    shape = &shape_table[get_shape_idx(FALSE)];
 	if (State & LANGMAP)
 	    id = shape->id_lm;

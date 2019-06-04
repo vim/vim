@@ -12,20 +12,16 @@ jobs:
 #     parameters:
 #       platform: "platform-linux"
 
-# - job: MacOS
-#   pool:
-#     vmImage: 'macOS 10.13'
-#   steps:
-#   - script: brew update
-#   - script: brew install libpng
-#   - template: .ci/esy-build-steps.yml
-#   - template: .ci/prebuilt-library/publish-platform-prebuilt.yml
-#     parameters:
-#       platform: "platform-darwin"
-
-- job: Windows
+- job: MacOS
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'macOS 10.13'
   steps:
   - template: .ci/esy-build-steps.yml
   - template: .ci/libvim-test.yml
+
+# - job: Windows
+#   pool:
+#     vmImage: 'vs2017-win2016'
+#   steps:
+#   - template: .ci/esy-build-steps.yml
+#   - template: .ci/libvim-test.yml
