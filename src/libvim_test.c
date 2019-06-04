@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
   win_setheight(100);
 
   buf_T *buf = vimBufferOpen("libvim_test.c", 1, 0);
+  assert(vimGetMode() & NORMAL == NORMAL);
 
   char *line = vimBufferGetLine(buf, 1);
   printf("LINE: %s\n", line);
@@ -29,10 +30,12 @@ int main(int argc, char **argv) {
   vimInput("g");
 
   vimInput("v");
+  assert(vimGetMode() & VISUAL == VISUAL);
   vimInput("l");
   vimInput("l");
   vimInput("x");
   printf("CURSOR LINE: %d\n", vimWindowGetCursorLine());
+  assert(vimGetMode() & NORMAL == NORMAL);
 
   line = vimBufferGetLine(buf, 1);
   printf("LINE: %s\n", line);

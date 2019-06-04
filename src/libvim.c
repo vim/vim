@@ -49,3 +49,7 @@ void vimInput(char_u *input) {
 void vimExecute(char_u *cmd) {
     do_cmdline_cmd(cmd);
 }
+
+int vimGetMode(void) {
+    return State;
+}

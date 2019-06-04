@@ -12,4 +12,6 @@ void vimExecute(char_u *cmd);
 
 linenr_T vimWindowGetCursorLine(void);
 
+int vimGetMode(void);
+
 /* vim: set ft=c : */
