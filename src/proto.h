@@ -233,15 +233,8 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 
 /* Ugly solution for "BalloonEval" not being defined while it's used in some
  * .pro files. */
-# ifdef FEAT_BEVAL
-#  include "beval.pro"
-# else
 #  define BalloonEval int
-# endif
 
-# ifdef FEAT_NETBEANS_INTG
-#  include "netbeans.pro"
-# endif
 # ifdef FEAT_JOB_CHANNEL
 #  include "channel.pro"
 

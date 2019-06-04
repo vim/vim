@@ -128,9 +128,6 @@ typedef struct {
  * This is here because gui.h needs the pos_T and win_T, and win_T needs gui.h
  * for scrollbar_T.
  */
-#ifdef FEAT_GUI
-# include "gui.h"
-#else
 # ifdef FEAT_XCLIPBOARD
 #  include <X11/Intrinsic.h>
 # endif
@@ -138,7 +135,6 @@ typedef struct {
 # define INVALCOLOR ((guicolor_T)0x1ffffff)
     /* only used for cterm.bg_rgb and cterm.fg_rgb: use cterm color */
 # define CTERMCOLOR ((guicolor_T)0x1fffffe)
-#endif
 #define COLOR_INVALID(x) ((x) == INVALCOLOR || (x) == CTERMCOLOR)
 
 /*

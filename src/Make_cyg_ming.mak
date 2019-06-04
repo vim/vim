@@ -89,9 +89,6 @@ endif
 # Set to yes to enable Cscope support.
 CSCOPE=yes
 
-# Set to yes to enable Netbeans support (requires CHANNEL).
-NETBEANS=$(GUI)
-
 # Set to yes to enable inter process communication.
 ifeq (HUGE, $(FEATURES))
 CHANNEL=yes
@@ -606,19 +603,6 @@ ifeq ($(CSCOPE),yes)
 DEFINES += -DFEAT_CSCOPE
 endif
 
-ifeq ($(NETBEANS),yes)
-# Only allow NETBEANS for a GUI build.
- ifeq (yes, $(GUI))
-DEFINES += -DFEAT_NETBEANS_INTG
-
-  ifeq ($(NBDEBUG), yes)
-DEFINES += -DNBDEBUG
-NBDEBUG_INCL = nbdebug.h
-NBDEBUG_SRC = nbdebug.c
-  endif
- endif
-endif
-
 ifeq ($(CHANNEL),yes)
 DEFINES += -DFEAT_JOB_CHANNEL
 endif
@@ -693,7 +677,6 @@ CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
 	$(OUTDIR)/autocmd.o \
-	$(OUTDIR)/beval.o \
 	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
@@ -770,7 +753,7 @@ OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimrcd.o
 EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimrcc.o
 EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimrcg.o
 else
-OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
+# OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
 endif
 
 ifdef PERL
@@ -804,18 +787,6 @@ OBJ += $(OUTDIR)/if_tcl.o
 endif
 ifeq ($(CSCOPE),yes)
 OBJ += $(OUTDIR)/if_cscope.o
-endif
-
-ifeq ($(NETBEANS),yes)
- ifneq ($(CHANNEL),yes)
-# Cannot use Netbeans without CHANNEL
-NETBEANS=no
- else ifneq (yes, $(GUI))
-# Cannot use Netbeans without GUI.
-NETBEANS=no
- else
-OBJ += $(OUTDIR)/netbeans.o
- endif
 endif
 
 ifeq ($(CHANNEL),yes)
@@ -1064,7 +1035,7 @@ endif
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
-	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
+	spell.h structs.h term.h $(NBDEBUG_INCL)
 GUI_INCL = gui.h
 ifeq ($(DIRECTX),yes)
 GUI_INCL += gui_dwrite.h
@@ -1151,9 +1122,6 @@ $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
 
 $(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
 	$(CC) -c $(CFLAGS) main.c -o $@
-
-$(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
-	$(CC) -c $(CFLAGS) netbeans.c -o $@
 
 $(OUTDIR)/os_w32exec.o:	os_w32exe.c $(INCL)
 	$(CC) -c $(CFLAGS) -UFEAT_GUI_MSWIN os_w32exe.c -o $@

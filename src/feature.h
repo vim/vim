@@ -1177,9 +1177,8 @@
 /*
  * The Netbeans feature requires +eval.
  */
-#if !defined(FEAT_EVAL) && defined(FEAT_NETBEANS_INTG)
+	/* TODO: Remove completely */
 # undef FEAT_NETBEANS_INTG
-#endif
 
 /*
  * The +channel feature requires +eval.

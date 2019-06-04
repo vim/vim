@@ -62,13 +62,6 @@ static void f_asin(typval_T *argvars, typval_T *rettv);
 static void f_atan(typval_T *argvars, typval_T *rettv);
 static void f_atan2(typval_T *argvars, typval_T *rettv);
 #endif
-#ifdef FEAT_BEVAL
-static void f_balloon_gettext(typval_T *argvars, typval_T *rettv);
-static void f_balloon_show(typval_T *argvars, typval_T *rettv);
-# if defined(FEAT_BEVAL_TERM)
-static void f_balloon_split(typval_T *argvars, typval_T *rettv);
-# endif
-#endif
 static void f_browse(typval_T *argvars, typval_T *rettv);
 static void f_browsedir(typval_T *argvars, typval_T *rettv);
 static void f_bufexists(typval_T *argvars, typval_T *rettv);
@@ -556,13 +549,6 @@ static struct fst
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, f_atan},
     {"atan2",		2, 2, f_atan2},
-#endif
-#ifdef FEAT_BEVAL
-    {"balloon_gettext",	0, 0, f_balloon_gettext},
-    {"balloon_show",	1, 1, f_balloon_show},
-# if defined(FEAT_BEVAL_TERM)
-    {"balloon_split",	1, 1, f_balloon_split},
-# endif
 #endif
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
@@ -1782,77 +1768,6 @@ f_atan2(typval_T *argvars, typval_T *rettv)
     else
 	rettv->vval.v_float = 0.0;
 }
-#endif
-
-/*
- * "balloon_show()" function
- */
-#ifdef FEAT_BEVAL
-    static void
-f_balloon_gettext(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    if (balloonEval != NULL)
-    {
-	if (balloonEval->msg == NULL)
-	    rettv->vval.v_string = NULL;
-	else
-	    rettv->vval.v_string = vim_strsave(balloonEval->msg);
-    }
-}
-
-    static void
-f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    if (balloonEval != NULL)
-    {
-	if (argvars[0].v_type == VAR_LIST
-# ifdef FEAT_GUI
-		&& !gui.in_use
-# endif
-	   )
-	{
-	    list_T *l = argvars[0].vval.v_list;
-
-	    // empty list removes the balloon
-	    post_balloon(balloonEval, NULL,
-				       l == NULL || l->lv_len == 0 ? NULL : l);
-	}
-	else
-	{
-	    char_u *mesg = tv_get_string_chk(&argvars[0]);
-
-	    if (mesg != NULL)
-		// empty string removes the balloon
-		post_balloon(balloonEval, *mesg == NUL ? NULL : mesg, NULL);
-	}
-    }
-}
-
-# if defined(FEAT_BEVAL_TERM)
-    static void
-f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	char_u *msg = tv_get_string_chk(&argvars[0]);
-
-	if (msg != NULL)
-	{
-	    pumitem_T	*array;
-	    int		size = split_message(msg, &array);
-	    int		i;
-
-	    /* Skip the first and last item, they are always empty. */
-	    for (i = 1; i < size - 1; ++i)
-		list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
-	    while (size > 0)
-		vim_free(array[--size].pum_text);
-	    vim_free(array);
-	}
-    }
-}
-# endif
 #endif
 
 /*
@@ -6462,15 +6377,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_AUTOSERVERNAME
 	"autoservername",
 #endif
-#ifdef FEAT_BEVAL_GUI
-	"balloon_eval",
-# ifndef FEAT_GUI_MSWIN /* other GUIs always have multiline balloons */
-	"balloon_multiline",
-# endif
-#endif
-#ifdef FEAT_BEVAL_TERM
-	"balloon_eval_term",
-#endif
 #if defined(SOME_BUILTIN_TCAPS) || defined(ALL_BUILTIN_TCAPS)
 	"builtin_terms",
 # ifdef ALL_BUILTIN_TCAPS
@@ -6932,10 +6838,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 	    n = stdout_isatty;
 	else if (STRICMP(name, "multi_byte_encoding") == 0)
 	    n = has_mbyte;
-#if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
-	else if (STRICMP(name, "balloon_multiline") == 0)
-	    n = multiline_balloon_available();
-#endif
 #ifdef DYNAMIC_TCL
 	else if (STRICMP(name, "tcl") == 0)
 	    n = tcl_enabled(FALSE);

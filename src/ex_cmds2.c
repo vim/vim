@@ -434,29 +434,6 @@ check_due_timer(void)
     if (did_one)
 	redraw_after_callback(need_update_screen);
 
-#ifdef FEAT_BEVAL_TERM
-    if (bevalexpr_due_set)
-    {
-	this_due = proftime_time_left(&bevalexpr_due, &now);
-	if (this_due <= 1)
-	{
-	    bevalexpr_due_set = FALSE;
-	    if (balloonEval == NULL)
-	    {
-		balloonEval = ALLOC_CLEAR_ONE(BalloonEval);
-		balloonEvalForTerm = TRUE;
-	    }
-	    if (balloonEval != NULL)
-	    {
-		general_beval_cb(balloonEval, 0);
-		setcursor();
-		out_flush();
-	    }
-	}
-	else if (next_due == -1 || next_due > this_due)
-	    next_due = this_due;
-    }
-#endif
 #ifdef FEAT_TERMINAL
     /* Some terminal windows may need their buffer updated. */
     next_due = term_check_timers(next_due, &now);
