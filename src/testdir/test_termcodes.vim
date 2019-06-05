@@ -624,3 +624,63 @@ func Test_xterm_mouse_click_in_fold_columns()
   let &mouse = save_mouse
   bwipe!
 endfunc
+
+" This only checks if the sequence is recognized.
+" TODO: check that the values were parsed properly
+func Test_term_rgb_response()
+  set t_RF=x
+  set t_RB=y
+
+  " response to t_RF, 4 digits
+  let red = 0x12
+  let green = 0x34
+  let blue = 0x56
+  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RF, 2 digits
+  let red = 0x78
+  let green = 0x9a
+  let blue = 0xbc
+  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RB, 4 digits
+  let red = 0x21
+  let green = 0x43
+  let blue = 0x65
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+
+  " response to t_RB, 2 digits
+  let red = 0x87
+  let green = 0xa9
+  let blue = 0xcb
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  
+  set t_RF= t_RB=
+endfunc
+
+" This only checks if the sequence is recognized.
+" This must be last, because it has side effects to xterm properties.
+" TODO: check that the values were parsed properly
+func Test_xx_term_style_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  " send the termresponse to trigger requesting the XT codes
+  let seq = "\<Esc>[>41;337;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+
+  let seq = "\<Esc>P1$r2 q\<Esc>\\"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termstyleresp)
+
+  set t_RV=
+endfunc
