@@ -4989,7 +4989,7 @@ check_termcode(
 			int is_4digit = i - j >= 21 && tp[j + 11] == '/'
 							  && tp[j + 16] == '/';
 
-			if (i - j >= 14 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
+			if (i - j >= 15 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && (is_4digit
 				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
 			{
