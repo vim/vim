@@ -276,6 +276,7 @@ func Test_resolve_win32()
   " test for symbolic link to a file
   new Xfile
   wq
+  call assert_equal('Xfile', resolve('Xfile'))
   silent !mklink Xlink Xfile
   if !v:shell_error
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
@@ -333,11 +334,14 @@ func Test_resolve_win32()
 
   " test for reparse point
   call mkdir('Xdir')
+  call assert_equal('Xdir', resolve('Xdir'))
   silent !mklink /D Xdirlink Xdir
   if !v:shell_error
     w Xdir/text.txt
+    call assert_equal('Xdir/text.txt', resolve('Xdir/text.txt'))
     call assert_equal(s:normalize_fname(getcwd() . '\Xdir\text.txt'), s:normalize_fname(resolve('Xdirlink\text.txt')))
     call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve('Xdirlink')))
+    call delete('Xdirlink')
   else
     echomsg 'skipped test for reparse point'
   endif
