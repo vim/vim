@@ -4993,17 +4993,20 @@ check_termcode(
 			    && (is_4digit
 				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
 			{
+			    char_u *tp_r = tp + j + 7;
+			    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
+			    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
 # ifdef FEAT_TERMINAL
 			    int rval, gval, bval;
 
-			    rval = hexhex2nr(tp + j + 7);
-			    gval = hexhex2nr(tp + j + (is_4digit ? 12 : 10));
-			    bval = hexhex2nr(tp + j + (is_4digit ? 17 : 13));
+			    rval = hexhex2nr(tp_r);
+			    gval = hexhex2nr(tp_b);
+			    bval = hexhex2nr(tp_g);
 # endif
 			    if (is_bg)
 			    {
-				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
-						+ tp[j+17]) ? "light" : "dark";
+				char *newval = (3 * '6' < *tp_r + *tp_g +
+						*tp_b) ? "light" : "dark";
 
 				LOG_TR(("Received RBG response: %s", tp));
 				rbg_status.tr_progress = STATUS_GOT;
