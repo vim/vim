@@ -5320,7 +5320,7 @@ qf_find_closest_entry(
  * the list. If linewise is TRUE, then treat multiple entries on a single line
  * as one.
  */
-    static qfline_T *
+    static void
 qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
 {
     while (n-- > 0 && !got_int)
@@ -5348,8 +5348,6 @@ qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
 	entry = entry->qf_next;
 	++*errornr;
     }
-
-    return entry;
 }
 
 /*
@@ -5357,7 +5355,7 @@ qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
  * the list. If linewise is TRUE, then treat multiple entries on a single line
  * as one.
  */
-    static qfline_T *
+    static void
 qf_get_nth_above_entry(qfline_T *entry, int n, int linewise, int *errornr)
 {
     while (n-- > 0 && !got_int)
@@ -5373,8 +5371,6 @@ qf_get_nth_above_entry(qfline_T *entry, int n, int linewise, int *errornr)
 	if (linewise)
 	    entry = qf_find_first_entry_on_line(entry, errornr);
     }
-
-    return entry;
 }
 
 /*
@@ -5403,11 +5399,9 @@ qf_find_nth_adj_entry(
     {
 	// Go to the n'th entry in the current buffer
 	if (dir == FORWARD)
-	    adj_entry = qf_get_nth_below_entry(adj_entry, n, linewise,
-		    &errornr);
+	    qf_get_nth_below_entry(adj_entry, n, linewise, &errornr);
 	else
-	    adj_entry = qf_get_nth_above_entry(adj_entry, n, linewise,
-		    &errornr);
+	    qf_get_nth_above_entry(adj_entry, n, linewise, &errornr);
     }
 
     return errornr;
