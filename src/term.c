@@ -4994,17 +4994,20 @@ check_termcode(
 			    && (is_4digit
 				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
 			{
+			    char_u *tp_r = tp + j + 7;
+			    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
+			    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
 # ifdef FEAT_TERMINAL
 			    int rval, gval, bval;
 
-			    rval = hexhex2nr(tp + j + 7);
-			    gval = hexhex2nr(tp + j + (is_4digit ? 12 : 10));
-			    bval = hexhex2nr(tp + j + (is_4digit ? 17 : 13));
+			    rval = hexhex2nr(tp_r);
+			    gval = hexhex2nr(tp_b);
+			    bval = hexhex2nr(tp_g);
 # endif
 			    if (is_bg)
 			    {
-				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
-						+ tp[j+17]) ? "light" : "dark";
+				char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
+						     *tp_b) ? "light" : "dark";
 
 				LOG_TR(("Received RBG response: %s", tp));
 				rbg_status.tr_progress = STATUS_GOT;
@@ -5014,11 +5017,11 @@ check_termcode(
 				bg_b = bval;
 # endif
 				if (!option_was_set((char_u *)"bg")
-						  && STRCMP(p_bg, newval) != 0)
+					      && STRCMP(p_bg, new_bg_val) != 0)
 				{
 				    /* value differs, apply it */
 				    set_option_value((char_u *)"bg", 0L,
-							  (char_u *)newval, 0);
+						      (char_u *)new_bg_val, 0);
 				    reset_option_was_set((char_u *)"bg");
 				    redraw_asap(CLEAR);
 				}

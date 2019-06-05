@@ -647,21 +647,49 @@ func Test_term_rgb_response()
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termrfgresp)
 
-  " response to t_RB, 4 digits
-  let red = 0x21
-  let green = 0x43
+  " response to t_RB, 4 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x29
+  let green = 0x4a
+  let blue = 0x6b
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 4 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x81
+  let green = 0x63
   let blue = 0x65
   let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
 
-  " response to t_RB, 2 digits
-  let red = 0x87
-  let green = 0xa9
-  let blue = 0xcb
+  " response to t_RB, 2 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x47
+  let green = 0x59
+  let blue = 0x5b
   let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+  
+  " response to t_RB, 2 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x83
+  let green = 0xa4
+  let blue = 0xc2
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
   
   set t_RF= t_RB=
 endfunc
