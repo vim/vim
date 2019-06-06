@@ -694,12 +694,22 @@ func Test_scrollbars()
   call setline(11, repeat('x', 150))
   redraw
   call assert_equal(1, wincol())
+  set number
+  redraw
+  call assert_equal(5, wincol())
+  set nonumber
+  redraw
   call assert_equal(1, col('.'))
 
   " scroll to character 11, cursor is moved
   call test_scrollbar('hor', 10, 0)
   redraw
   call assert_equal(1, wincol())
+  set number
+  redraw
+  call assert_equal(5, wincol())
+  set nonumber
+  redraw
   call assert_equal(11, col('.'))
 
   set guioptions&
