@@ -807,3 +807,20 @@ func Test_gui_dash_y()
   call delete('Xscriptgui')
   call delete('Xtestgui')
 endfunc
+
+" Test for using `guioptions+=!`, should not trigger TerminalOpen autocmd
+func Test_gui_shell()
+  new
+  set number
+  !true
+  call assert_equal(1, &number)
+  autocmd TerminalOpen * :set nonumber
+  !true
+  call assert_equal(1, &number)
+  set guioptions+=!
+  !true
+  call assert_equal(1, &number)
+  autocmd! TerminalOpen
+  set nonumber
+  bw!
+endfunc

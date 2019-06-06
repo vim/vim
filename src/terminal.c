@@ -673,7 +673,8 @@ term_start(
 	return NULL;
     }
 
-    apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, newbuf);
+    if (!(flags & TERM_START_NOAUTOCMD))
+	apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, newbuf);
     return newbuf;
 }
 

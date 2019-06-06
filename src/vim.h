@@ -928,13 +928,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define REMAP_SKIP	-3	/* no remapping for first char */
 
 /* Values for mch_call_shell() second argument */
-#define SHELL_FILTER	1	/* filtering text */
-#define SHELL_EXPAND	2	/* expanding wildcards */
-#define SHELL_COOKED	4	/* set term to cooked mode */
-#define SHELL_DOOUT	8	/* redirecting output */
-#define SHELL_SILENT	16	/* don't print error returned by command */
-#define SHELL_READ	32	/* read lines and insert into buffer */
-#define SHELL_WRITE	64	/* write lines from buffer */
+#define SHELL_FILTER	1	// filtering text
+#define SHELL_EXPAND	2	// expanding wildcards
+#define SHELL_COOKED	4	// set term to cooked mode
+#define SHELL_DOOUT	8	// redirecting output
+#define SHELL_SILENT	16	// don't print error returned by command
+#define SHELL_READ	32	// read lines and insert into buffer
+#define SHELL_WRITE	64	// write lines from buffer
+#define SHELL_NOTERMAUTOCMD	128	// do not trigger TerminalOpen autocommand
 
 /* Values returned by mch_nodetype() */
 #define NODE_NORMAL	0	/* file or directory, check with mch_isdir()*/
@@ -2581,6 +2582,7 @@ long elapsed(DWORD start_tick);
 #define TERM_START_NOJOB	1
 #define TERM_START_FORCEIT	2
 #define TERM_START_SYSTEM	4
+#define TERM_START_NOAUTOCMD    8  // do not trigger TerminalOpen autocmd
 
 // Used for icon/title save and restore.
 #define SAVE_RESTORE_TITLE	1

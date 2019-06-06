@@ -4352,7 +4352,7 @@ build_argv(
     static int
 mch_call_shell_terminal(
     char_u	*cmd,
-    int		options UNUSED)	/* SHELL_*, see vim.h */
+    int		options)	/* SHELL_*, see vim.h */
 {
     jobopt_T	opt;
     char	**argv = NULL;
@@ -4369,7 +4369,8 @@ mch_call_shell_terminal(
 
     init_job_options(&opt);
     ch_log(NULL, "starting terminal for system command '%s'", cmd);
-    buf = term_start(NULL, argv, &opt, TERM_START_SYSTEM);
+    buf = term_start(NULL, argv, &opt, TERM_START_SYSTEM |
+	    (options & SHELL_NOTERMAUTOCMD ? TERM_START_NOAUTOCMD : 0));
     if (buf == NULL)
 	goto theend;
 
@@ -5363,7 +5364,7 @@ mch_call_shell(
 {
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
     if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL)
-	return mch_call_shell_terminal(cmd, options);
+	return mch_call_shell_terminal(cmd, options | SHELL_NOTERMAUTOCMD);
 #endif
 #ifdef USE_SYSTEM
     return mch_call_shell_system(cmd, options);

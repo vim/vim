@@ -4517,7 +4517,7 @@ mch_system(char *cmd, int options)
     static int
 mch_call_shell_terminal(
     char_u	*cmd,
-    int		options UNUSED)	/* SHELL_*, see vim.h */
+    int		options)	/* SHELL_*, see vim.h */
 {
     jobopt_T	opt;
     char_u	*newcmd = NULL;
@@ -4552,7 +4552,8 @@ mch_call_shell_terminal(
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = newcmd;
     argvar[1].v_type = VAR_UNKNOWN;
-    buf = term_start(argvar, NULL, &opt, TERM_START_SYSTEM);
+    buf = term_start(argvar, NULL, &opt, TERM_START_SYSTEM |
+	    (options & SHELL_NOTERMAUTOCMD ? TERM_START_NOAUTOCMD : 0));
     if (buf == NULL)
     {
 	vim_free(newcmd);
@@ -4649,7 +4650,7 @@ mch_call_shell(
 	 && (options & (SHELL_FILTER|SHELL_DOOUT|SHELL_WRITE|SHELL_READ)) == 0)
     {
 	/* Use a terminal window to run the command in. */
-	x = mch_call_shell_terminal(cmd, options);
+	x = mch_call_shell_terminal(cmd, options | SHELL_NOTERMAUTOCMD);
 # ifdef FEAT_TITLE
 	resettitle();
 # endif
