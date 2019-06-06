@@ -2117,7 +2117,8 @@ types.vim: $(TAGS_FILES)
 # TESTING
 #
 # Execute the test scripts and the unittests.
-test check: scripttests unittests test_libvterm
+# Do the scripttests first, so that the summary shows last.
+test check: unittests test_libvterm scripttests
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure

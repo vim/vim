@@ -1,11 +1,15 @@
 " Tests for 'balloonevalterm'.
 
-" Tests that only work in the terminal.
-if has('balloon_eval_term') && !has('gui_running')
+if !has('balloon_eval_term')
+  throw 'Skipped: balloon_eval_term feature missing'
+endif
+
+" A few tests only work in the terminal.
+if !has('gui_running')
 
 source screendump.vim
 if !CanRunVimInTerminal()
-  finish
+  throw 'Skipped: cannot run Vim in a terminal window'
 endif
 
 let s:common_script =<< [CODE]
