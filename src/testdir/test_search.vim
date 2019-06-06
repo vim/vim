@@ -799,7 +799,7 @@ endfunc
 
 func Test_incsearch_scrolling()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -832,7 +832,7 @@ func Test_incsearch_search_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -887,7 +887,7 @@ func Test_incsearch_substitute_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -983,7 +983,7 @@ endfunc
 
 func Test_incsearch_with_change()
   if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
   endif
 
   call writefile([
@@ -1011,7 +1011,7 @@ func Test_incsearch_sort_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1037,7 +1037,7 @@ func Test_incsearch_vimgrep_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',

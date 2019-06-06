@@ -555,7 +555,7 @@ endfunc
 
 func Test_tabpage_cmdheight()
   if !CanRunVimInTerminal()
-    throw 'Skipped: only works with terminal'
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
         \ 'set laststatus=2',

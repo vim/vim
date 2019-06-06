@@ -659,7 +659,7 @@ endfunc
 
 func Test_start_with_tabs()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   let buf = RunVimInTerminal('-p a b c', {})

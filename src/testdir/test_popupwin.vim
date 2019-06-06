@@ -1,14 +1,14 @@
 " Tests for popup windows
 
 if !has('textprop')
-  finish
+  throw 'Skipped: textprop feature missing'
 endif
 
 source screendump.vim
 
 func Test_simple_popup()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ "call setline(1, range(1, 100))",
@@ -58,7 +58,7 @@ endfunc
 
 func Test_popup_with_border_and_padding()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   for iter in range(0, 1)
@@ -128,7 +128,7 @@ endfunc
 
 func Test_popup_with_syntax_win_execute()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ "call setline(1, range(1, 100))",
@@ -152,7 +152,7 @@ endfunc
 
 func Test_popup_with_syntax_setbufvar()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   let lines =<< trim END
 	call setline(1, range(1, 100))
@@ -177,7 +177,7 @@ endfunc
 
 func Test_popup_all_corners()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   let lines =<< trim END
 	call setline(1, repeat([repeat('-', 60)], 15))
@@ -340,7 +340,7 @@ endfunc
 
 func Test_popup_with_wrap()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   let lines =<< trim END
 	 call setline(1, range(1, 100))
@@ -359,7 +359,7 @@ endfunc
 
 func Test_popup_without_wrap()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   let lines =<< trim END
 	 call setline(1, range(1, 100))
@@ -760,7 +760,7 @@ endfunc
 
 func Test_popup_never_behind()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   " +-----------------------------+
   " |             |               |

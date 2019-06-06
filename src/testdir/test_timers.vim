@@ -281,7 +281,7 @@ endfunc
 
 func Test_restore_count()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot run Vim in a terminal window'
   endif
   " Check that v:count is saved and restored, not changed by a timer.
   call writefile([

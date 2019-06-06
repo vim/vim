@@ -655,7 +655,7 @@ endfunc
 func Test_textprop_screenshot_various()
   " The Vim running in the terminal needs to use utf-8.
   if !CanRunVimInTerminal() || g:orig_encoding != 'utf-8'
-    return
+    throw 'Skipped: cannot make screendumps or not using utf-8'
   endif
   call writefile([
 	\ "call setline(1, ["
@@ -750,7 +750,7 @@ endfunc
 " screenshot test with Visual block mode operations
 func Test_textprop_screenshot_visual()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   " Delete two columns while text props are three chars wide.

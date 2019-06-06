@@ -735,7 +735,7 @@ endfunc
 
 func Test_popup_and_previewwindow_dump()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
     \ 'set previewheight=9',
@@ -797,7 +797,7 @@ endfunc
 
 func Test_popup_position()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ '123456789_123456789_123456789_a',
@@ -839,7 +839,7 @@ endfunc
 
 func Test_popup_command()
   if !CanRunVimInTerminal() || !has('menu')
-    return
+    throw 'Skipped: cannot make screendumps and/or menu feature missing'
   endif
 
   call writefile([

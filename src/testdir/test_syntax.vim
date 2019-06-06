@@ -536,7 +536,7 @@ endfunc
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ '/* comment line at the top */',

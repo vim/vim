@@ -9,7 +9,7 @@ if !has('gui_running')
 
 source screendump.vim
 if !CanRunVimInTerminal()
-  throw 'Skipped: cannot run Vim in a terminal window'
+  throw 'Skipped: cannot make screendumps'
 endif
 
 let s:common_script =<< [CODE]

@@ -1,7 +1,7 @@
 " Test for channel functions.
 
 if !has('channel')
-  finish
+  throw 'Skipped: channel feature missing'
 endif
 
 source shared.vim
@@ -9,7 +9,7 @@ source shared.vim
 let s:python = PythonProg()
 if s:python == ''
   " Can't run this test without Python.
-  finish
+  throw 'Skipped: Python command missing'
 endif
 
 " Uncomment the next line to see what happens. Output is in

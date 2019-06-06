@@ -533,7 +533,7 @@ endfunc
 
 func Test_cursorline_after_yank()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([
@@ -555,7 +555,7 @@ endfunc
 
 func Test_cursorline_with_visualmode()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([
@@ -575,7 +575,7 @@ endfunc
 
 func Test_wincolor()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([
