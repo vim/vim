@@ -1478,7 +1478,7 @@ do_search(
 			if (r - msgbuf >= pat_len)
 			    vim_memset(r, ' ', pat_len);
 			else
-			    vim_memset(r + pat_len - (r - msgbuf), ' ', r - msgbuf);
+			    vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
 		    }
 		}
 #endif
