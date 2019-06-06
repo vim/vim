@@ -186,6 +186,7 @@ check_recorded_changes(
 		    || (prev_lnume >= lnum && xtra != 0))
 	    {
 		if (li->li_next == NULL && lnum == prev_lnum
+			&& xtra == 0
 			&& col + 1 == (colnr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"col"))
 		{

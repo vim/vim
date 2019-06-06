@@ -28,9 +28,10 @@ func Test_listening()
   set undolevels&  " start new undo block
   call append(2, 'two two')
   undo
+  call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1}], s:list)
   redraw
-  " the two changes get merged
-  call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': 0}], s:list)
+  " the two changes are not merged
+  call assert_equal([{'lnum': 3, 'end': 4, 'col': 1, 'added': -1}], s:list)
   1
 
   " Two listeners, both get called.  Also check column.
@@ -65,15 +66,16 @@ func Test_listening()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
 	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
 
-  " an insert just above a previous change that was the last one gets merged
+  " an insert just above a previous change that was the last one does not get
+  " merged
   call setline(1, ['one one', 'two'])
   call listener_flush()
   let s:list = []
   call setline(2, 'something')
   call append(1, 'two two')
-  call assert_equal([], s:list)
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
   call listener_flush()
-  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 1}], s:list)
+  call assert_equal([{'lnum': 2, 'end': 2, 'col': 1, 'added': 1}], s:list)
 
   " an insert above a previous change causes a flush
   call setline(1, ['one one', 'two'])
@@ -86,13 +88,13 @@ func Test_listening()
   call assert_equal([{'lnum': 1, 'end': 1, 'col': 1, 'added': 1}], s:list)
   call assert_equal('two two', s:text)
 
-  " a delete at a previous change that was the last one gets merged
+  " a delete at a previous change that was the last one does not get merged
   call setline(1, ['one one', 'two'])
   call listener_flush()
   let s:list = []
   call setline(2, 'something')
   2del
-  call assert_equal([], s:list)
+  call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': 0}], s:list)
   call listener_flush()
   call assert_equal([{'lnum': 2, 'end': 3, 'col': 1, 'added': -1}], s:list)
 
