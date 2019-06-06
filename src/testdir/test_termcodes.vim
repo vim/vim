@@ -717,4 +717,24 @@ func Test_get_termcode()
   set t_k1=
   set t_k1&
   call assert_equal(k1, &t_k1)
+
+  " use external termcap first
+  set nottybuiltin
+  set t_k1=
+  set t_k1&
+  " when using external termcap may get something else, but it must not be
+  " empty, since we would fallback to the builtin one.
+  call assert_notequal('', &t_k1)
+
+  if &term =~ 'xterm'
+    " use internal termcap first
+    let term_save = &term
+    let &term = 'builtin_' .. &term
+    set t_k1=
+    set t_k1&
+    call assert_equal(k1, &t_k1)
+    let &term = term_save
+  endif
+
+  set ttybuiltin
 endfunc
