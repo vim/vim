@@ -86,6 +86,7 @@ addons:
       - tcl-dev
       - cscope
       - libgtk2.0-dev
+      - desktop-file-utils
   homebrew:
     packages:
       - lua
