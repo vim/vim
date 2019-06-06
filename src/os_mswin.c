@@ -1753,6 +1753,39 @@ typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
 	DWORD	nFileSystemNameSize);
 static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
 
+# define is_path_sep(c)	    ((c) == L'\\' || (c) == L'/')
+
+    static int
+is_reparse_point_included(LPCWSTR fname)
+{
+    LPCWSTR	p = fname, q;
+    WCHAR	buf[MAX_PATH];
+    DWORD	attr;
+
+    if (isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
+	p += 3;
+    else if (is_path_sep(p[0]) && is_path_sep(p[1]))
+	p += 2;
+
+    while (*p != L'\0')
+    {
+	q = wcspbrk(p, L"\\/");
+	if (q == NULL)
+	    p = q = fname + wcslen(fname);
+	else
+	    p = q + 1;
+	if (q - fname >= MAX_PATH)
+	    return FALSE;
+	wcsncpy(buf, fname, q - fname);
+	buf[q - fname] = L'\0';
+	attr = GetFileAttributesW(buf);
+	if (attr != INVALID_FILE_ATTRIBUTES
+		&& (attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
     static char_u *
 resolve_reparse_point(char_u *fname)
 {
@@ -1786,6 +1819,12 @@ resolve_reparse_point(char_u *fname)
     p = enc_to_utf16(fname, NULL);
     if (p == NULL)
 	goto fail;
+
+    if (!is_reparse_point_included(p))
+    {
+	vim_free(p);
+	goto fail;
+    }
 
     h = CreateFileW(p, 0, 0, NULL, OPEN_EXISTING,
 	    FILE_FLAG_BACKUP_SEMANTICS, NULL);
