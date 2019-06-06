@@ -4648,12 +4648,24 @@ mch_call_shell(
 	vim_strchr(p_go, GO_TERMINAL) != NULL
 	 && (options & (SHELL_FILTER|SHELL_DOOUT|SHELL_WRITE|SHELL_READ)) == 0)
     {
-	/* Use a terminal window to run the command in. */
-	x = mch_call_shell_terminal(cmd, options);
+	char_u	*cmdbase = cmd;
+
+	/* Skip a leading ", ( and "(. */
+	if (*cmdbase == '"' )
+	    ++cmdbase;
+	if (*cmdbase == '(')
+	    ++cmdbase;
+
+	/* Check the command is not start with "start " */
+	if ((STRNICMP(cmdbase, "start", 5) != 0) || !VIM_ISWHITE(cmdbase[5]))
+	{
+	    /* Use a terminal window to run the command in. */
+	    x = mch_call_shell_terminal(cmd, options);
 # ifdef FEAT_TITLE
-	resettitle();
+	    resettitle();
 # endif
-	return x;
+	    return x;
+	}
     }
 #endif
 
