@@ -49,6 +49,11 @@ gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
 benchmark: $(SCRIPTS_BENCH)
 
 report:
+	# without the +eval feature test_result.log is a copy of test.log
+	@/bin/sh -c "if test -f test.log; \
+		then cp test.log test_result.log; \
+		else echo No failures reported > test_result.log; \
+		fi"
 	$(RUN_VIMTEST) $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
 	@echo
 	@echo 'Test results:'
