@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -13063,8 +13063,16 @@ missing: >
 	:  echo "You will _never_ see this message"
 	:endif
 
-To execute a command only when the |+eval| feature is disabled requires a trick,
-as this example shows: >
+To execute a command only when the |+eval| feature is disabled can be done in
+two ways.  The simplest is to exit the script (or Vim) prematurely: >
+	if 1
+	   echo "commands executed with +eval"
+	   finish
+	endif
+	args  " command executed without +eval
+
+If you do not want to abort loading the script you can use a trick, as this
+example shows: >
 
 	silent! while 0
 	  set history=111

@@ -44,9 +44,6 @@ Popup windows are being implemented, see |popup-window|.
 
 Listener causes extra } to be inserted. (Paul Jolly, #4455)
 
-Patch to beautify the output of a test run. (Christian Brabandt, #4391)
-can be improved.
-
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
@@ -54,13 +51,8 @@ remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
 Patch for Chinese translations for nsis. (#4407)  Comments handled?
 
-Add test that does ":set t_k1&" to cover add_termcap_entry().
-
 Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
 'shortmess', filled on demand and cached until search changes.
-
-Problem with resolve() improvement. (Ken Takata, #4492)
-Yasuhiro will check it.
 
 listener callback is invoked while another is still busy? (Paul Jolly)
 Should not happen because of text lock.
@@ -174,9 +166,6 @@ Errors found with random data:
 Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
-
-Add typescript syntax, but as one file:
-- https://github.com/HerringtonDarkholme/yats.vim 
 
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
