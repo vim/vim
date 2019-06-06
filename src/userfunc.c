@@ -4030,11 +4030,18 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     int
 set_ref_in_call_stack(int copyID)
 {
-    int		abort = FALSE;
-    funccall_T	*fc;
+    int			abort = FALSE;
+    funccall_T		*fc;
+    funccal_entry_T	*entry;
 
     for (fc = current_funccal; fc != NULL; fc = fc->caller)
 	abort = abort || set_ref_in_funccal(fc, copyID);
+
+    // Also go through the funccal_stack.
+    for (entry = funccal_stack; entry != NULL; entry = entry->next)
+	for (fc = entry->top_funccal; fc != NULL; fc = fc->caller)
+	    abort = abort || set_ref_in_funccal(fc, copyID);
+
     return abort;
 }
 
