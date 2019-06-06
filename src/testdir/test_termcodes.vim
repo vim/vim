@@ -626,7 +626,6 @@ func Test_xterm_mouse_click_in_fold_columns()
 endfunc
 
 " This only checks if the sequence is recognized.
-" TODO: check that the values were parsed properly
 func Test_term_rgb_response()
   set t_RF=x
   set t_RB=y
@@ -711,4 +710,11 @@ func Test_xx_term_style_response()
   call assert_equal(seq, v:termstyleresp)
 
   set t_RV=
+endfunc
+
+func Test_get_termcode()
+  let k1 = &t_k1
+  set t_k1=
+  set t_k1&
+  call assert_equal(k1, &t_k1)
 endfunc
