@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 May 30
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10334,6 +10334,8 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 			call win_execute(winid, 'set syntax=python')
 <		Doing the same with `setwinvar()` would not trigger
 		autocommands and not actually show syntax highlighting.
+							*E994*
+		Not all commands are allowed in popup windows.
 
 win_findbuf({bufnr})					*win_findbuf()*
 		Returns a list with |window-ID|s for windows that contain
@@ -11578,7 +11580,7 @@ text...
 			opposite of |:lockvar|.
 
 
-:if {expr1}			*:if* *:endif* *:en* *E171* *E579* *E580*
+:if {expr1}			*:if* *:end* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching ":else"
 			or ":endif" if {expr1} evaluates to non-zero.
 

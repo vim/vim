@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.1.  Last change: 2019 May 05
+*starting.txt*  For Vim version 8.1.  Last change: 2019 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1252,7 +1252,7 @@ vimrc file.
 			options to [file] (default ".exrc" in the current
 			directory).
 
-							*:mkv* *:mkvimrc*
+						*:mkv* *:mkvi* *:mkvimrc*
 :mkv[imrc][!] [file]	Like ":mkexrc", but the default is ".vimrc" in the
 			current directory.  The ":version" command is also
 			written to the file.

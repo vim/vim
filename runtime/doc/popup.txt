@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 01
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -172,7 +172,6 @@ popup_notification({text}, {options})			 *popup_notification()*
 
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
-	  	{not implemented yet: close when cursor moves}
 		Show the {text} above the cursor, and close it when the cursor
 		moves.  This works like: >
 			call popup_create({text}, {

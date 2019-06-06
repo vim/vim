@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 May 09
+*various.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -288,7 +288,7 @@ g8			Print the hex values of the bytes used in the
 							*:!!*
 :!!			Repeat last ":!{cmd}".
 
-							*:ve* *:version*
+							*:ve* *:ver* *:version*
 :ve[rsion]		Print the version number of the editor.  If the
 			compiler used understands "__DATE__" the compilation
 			date is mentioned.  Otherwise a fixed release-date is

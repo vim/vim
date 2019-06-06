@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.1.  Last change: 2019 May 07
+*editing.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -593,7 +593,7 @@ You can use the argument list with the following commands, and with the
 expression functions |argc()| and |argv()|.  These all work on the argument
 list of the current window.
 
-							*:ar* *:args*
+							*:ar*  *:arg* *:args*
 :ar[gs]			Print the argument list, with the current file in
 			square brackets.
 

@@ -2049,6 +2049,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :abclear	map.txt	/*:abclear*
 :abo	windows.txt	/*:abo*
 :aboveleft	windows.txt	/*:aboveleft*
+:addd	quickfix.txt	/*:addd*
 :al	windows.txt	/*:al*
 :all	windows.txt	/*:all*
 :am	gui.txt	/*:am*
@@ -2057,6 +2058,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :anoremenu	gui.txt	/*:anoremenu*
 :append	insert.txt	/*:append*
 :ar	editing.txt	/*:ar*
+:arg	editing.txt	/*:arg*
 :arga	editing.txt	/*:arga*
 :argadd	editing.txt	/*:argadd*
 :argd	editing.txt	/*:argd*
@@ -2109,6 +2111,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :bp	windows.txt	/*:bp*
 :bprevious	windows.txt	/*:bprevious*
 :br	windows.txt	/*:br*
+:bre	windows.txt	/*:bre*
 :brea	eval.txt	/*:brea*
 :break	eval.txt	/*:break*
 :breaka	repeat.txt	/*:breaka*
@@ -2138,12 +2141,14 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cNf	quickfix.txt	/*:cNf*
 :cNfile	quickfix.txt	/*:cNfile*
 :ca	map.txt	/*:ca*
+:cab	map.txt	/*:cab*
 :cabbrev	map.txt	/*:cabbrev*
 :cabc	map.txt	/*:cabc*
 :cabclear	map.txt	/*:cabclear*
 :cabo	quickfix.txt	/*:cabo*
 :cabove	quickfix.txt	/*:cabove*
 :cad	quickfix.txt	/*:cad*
+:cadd	quickfix.txt	/*:cadd*
 :caddbuffer	quickfix.txt	/*:caddbuffer*
 :cadde	quickfix.txt	/*:cadde*
 :caddexpr	quickfix.txt	/*:caddexpr*
@@ -2190,6 +2195,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :chd	editing.txt	/*:chd*
 :chdir	editing.txt	/*:chdir*
 :che	tagsrch.txt	/*:che*
+:chec	tagsrch.txt	/*:chec*
+:check	tagsrch.txt	/*:check*
 :checkpath	tagsrch.txt	/*:checkpath*
 :checkt	editing.txt	/*:checkt*
 :checktime	editing.txt	/*:checktime*
@@ -2211,12 +2218,14 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cme	gui.txt	/*:cme*
 :cmenu	gui.txt	/*:cmenu*
 :cn	quickfix.txt	/*:cn*
+:cne	quickfix.txt	/*:cne*
 :cnew	quickfix.txt	/*:cnew*
 :cnewer	quickfix.txt	/*:cnewer*
 :cnext	quickfix.txt	/*:cnext*
 :cnf	quickfix.txt	/*:cnf*
 :cnfile	quickfix.txt	/*:cnfile*
 :cno	map.txt	/*:cno*
+:cnor	map.txt	/*:cnor*
 :cnorea	map.txt	/*:cnorea*
 :cnoreabbrev	map.txt	/*:cnoreabbrev*
 :cnoremap	map.txt	/*:cnoremap*
@@ -2267,6 +2276,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :cscope	if_cscop.txt	/*:cscope*
 :cstag	if_cscop.txt	/*:cstag*
 :cu	map.txt	/*:cu*
+:cun	map.txt	/*:cun*
 :cuna	map.txt	/*:cuna*
 :cunabbrev	map.txt	/*:cunabbrev*
 :cunmap	map.txt	/*:cunmap*
@@ -2291,6 +2301,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :delmarks	motion.txt	/*:delmarks*
 :di	change.txt	/*:di*
 :dif	diff.txt	/*:dif*
+:diff	diff.txt	/*:diff*
 :diffg	diff.txt	/*:diffg*
 :diffget	diff.txt	/*:diffget*
 :diffo	diff.txt	/*:diffo*
@@ -2314,6 +2325,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :dlist	tagsrch.txt	/*:dlist*
 :do	autocmd.txt	/*:do*
 :doau	autocmd.txt	/*:doau*
+:doaut	autocmd.txt	/*:doaut*
 :doautoa	autocmd.txt	/*:doautoa*
 :doautoall	autocmd.txt	/*:doautoall*
 :doautocmd	autocmd.txt	/*:doautocmd*
@@ -2348,6 +2360,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :em	gui.txt	/*:em*
 :emenu	gui.txt	/*:emenu*
 :en	eval.txt	/*:en*
+:end	eval.txt	/*:end*
 :endf	eval.txt	/*:endf*
 :endfo	eval.txt	/*:endfo*
 :endfor	eval.txt	/*:endfor*
@@ -2400,6 +2413,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :foldc	fold.txt	/*:foldc*
 :foldclose	fold.txt	/*:foldclose*
 :foldd	fold.txt	/*:foldd*
+:folddo	fold.txt	/*:folddo*
 :folddoc	fold.txt	/*:folddoc*
 :folddoclosed	fold.txt	/*:folddoclosed*
 :folddoopen	fold.txt	/*:folddoopen*
@@ -2471,6 +2485,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :in	insert.txt	/*:in*
 :index	index.txt	/*:index*
 :ino	map.txt	/*:ino*
+:inor	map.txt	/*:inor*
 :inorea	map.txt	/*:inorea*
 :inoreabbrev	map.txt	/*:inoreabbrev*
 :inoremap	map.txt	/*:inoremap*
@@ -2494,6 +2509,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :jumps	motion.txt	/*:jumps*
 :k	motion.txt	/*:k*
 :kee	motion.txt	/*:kee*
+:keep	motion.txt	/*:keep*
 :keepa	editing.txt	/*:keepa*
 :keepalt	editing.txt	/*:keepalt*
 :keepj	motion.txt	/*:keepj*
@@ -2565,10 +2581,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lexpr	quickfix.txt	/*:lexpr*
 :lf	quickfix.txt	/*:lf*
 :lfdo	quickfix.txt	/*:lfdo*
+:lfi	quickfix.txt	/*:lfi*
 :lfile	quickfix.txt	/*:lfile*
 :lfir	quickfix.txt	/*:lfir*
 :lfirst	quickfix.txt	/*:lfirst*
 :lg	quickfix.txt	/*:lg*
+:lge	quickfix.txt	/*:lge*
 :lgetb	quickfix.txt	/*:lgetb*
 :lgetbuffer	quickfix.txt	/*:lgetbuffer*
 :lgete	quickfix.txt	/*:lgete*
@@ -2589,6 +2607,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lli	quickfix.txt	/*:lli*
 :llist	quickfix.txt	/*:llist*
 :lm	map.txt	/*:lm*
+:lma	map.txt	/*:lma*
 :lmak	quickfix.txt	/*:lmak*
 :lmake	quickfix.txt	/*:lmake*
 :lmap	map.txt	/*:lmap*
@@ -2608,6 +2627,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :loadkeymap	mbyte.txt	/*:loadkeymap*
 :loadview	starting.txt	/*:loadview*
 :loc	motion.txt	/*:loc*
+:lock	motion.txt	/*:lock*
 :lockmarks	motion.txt	/*:lockmarks*
 :lockv	eval.txt	/*:lockv*
 :lockvar	eval.txt	/*:lockvar*
@@ -2697,6 +2717,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :mksp	spell.txt	/*:mksp*
 :mkspell	spell.txt	/*:mkspell*
 :mkv	starting.txt	/*:mkv*
+:mkvi	starting.txt	/*:mkvi*
 :mkvie	starting.txt	/*:mkvie*
 :mkview	starting.txt	/*:mkview*
 :mkvimrc	starting.txt	/*:mkvimrc*
@@ -2993,6 +3014,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :setl	options.txt	/*:setl*
 :setlocal	options.txt	/*:setlocal*
 :sf	windows.txt	/*:sf*
+:sfi	windows.txt	/*:sfi*
 :sfind	windows.txt	/*:sfind*
 :sfir	windows.txt	/*:sfir*
 :sfirst	windows.txt	/*:sfirst*
@@ -3046,6 +3068,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :sno	change.txt	/*:sno*
 :snomagic	change.txt	/*:snomagic*
 :snor	map.txt	/*:snor*
+:snore	map.txt	/*:snore*
 :snoremap	map.txt	/*:snoremap*
 :snoreme	gui.txt	/*:snoreme*
 :snoremenu	gui.txt	/*:snoremenu*
@@ -3148,7 +3171,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :syn-matchgroup	syntax.txt	/*:syn-matchgroup*
 :syn-multi-line	syntax.txt	/*:syn-multi-line*
 :syn-nextgroup	syntax.txt	/*:syn-nextgroup*
-:syn-off	usr_06.txt	/*:syn-off*
+:syn-off	syntax.txt	/*:syn-off*
 :syn-on	syntax.txt	/*:syn-on*
 :syn-oneline	syntax.txt	/*:syn-oneline*
 :syn-pattern	syntax.txt	/*:syn-pattern*
@@ -3177,6 +3200,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :syncbind	scroll.txt	/*:syncbind*
 :syntax	syntax.txt	/*:syntax*
 :syntax-enable	syntax.txt	/*:syntax-enable*
+:syntax-off	syntax.txt	/*:syntax-off*
 :syntax-on	syntax.txt	/*:syntax-on*
 :syntax-reset	syntax.txt	/*:syntax-reset*
 :syntime	syntax.txt	/*:syntime*
@@ -3293,6 +3317,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :update	editing.txt	/*:update*
 :v	repeat.txt	/*:v*
 :ve	various.txt	/*:ve*
+:ver	various.txt	/*:ver*
 :verb	various.txt	/*:verb*
 :verbose	various.txt	/*:verbose*
 :verbose-cmd	various.txt	/*:verbose-cmd*
@@ -4743,6 +4768,7 @@ E990	eval.txt	/*E990*
 E991	eval.txt	/*E991*
 E992	options.txt	/*E992*
 E993	popup.txt	/*E993*
+E994	eval.txt	/*E994*
 E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*

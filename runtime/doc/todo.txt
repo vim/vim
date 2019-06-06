@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 May 31
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,11 +54,19 @@ remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
 Patch for Chinese translations for nsis. (#4407)  Comments handled?
 
+Add test that does ":set t_k1&" to cover add_termcap_entry().
+
 Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
 'shortmess', filled on demand and cached until search changes.
 
+Problem with resolve() improvement. (Ken Takata, #4492)
+Yasuhiro will check it.
+
 listener callback is invoked while another is still busy? (Paul Jolly)
 Should not happen because of text lock.
+
+When 'rightleft' is set search pattern is not displayed. (#4488)
+Caused by 8.1.1375 ?
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -126,6 +134,8 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Add a way to play simple sounds?  libcanberra appears to be widely spread.
+
 Patch to use forward slash for completion even when 'shellslash' is set.
 Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
 
@@ -138,8 +148,15 @@ Should do current file first and not split it up when more results are found.
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+":bnext" in a help buffer is supposed to go to the next help buffer, but it
+goes to any buffer, and then :bnext skips help buffers, since they are
+unlisted. (#4478)
+
 Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
 #4314, solves the Rasenmäher problem.
+
+Problem showing a line if the number column width changes when using "o".
+(Mateusz Morusiewicz, #4245)
 
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)

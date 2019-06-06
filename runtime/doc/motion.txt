@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.1.  Last change: 2019 May 07
+*motion.txt*    For Vim version 8.1.  Last change: 2019 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -944,7 +944,7 @@ These commands are not marks themselves, but jump to a mark:
 [`			[count] times to lowercase mark before the cursor.
 
 
-:loc[kmarks] {command}					*:loc* *:lockmarks*
+:loc[kmarks] {command}				*:loc* *:lock* *:lockmarks*
 			Execute {command} without adjusting marks.  This is
 			useful when changing text in a way that the line count
 			will be the same when the change has completed.
@@ -970,7 +970,7 @@ These commands are not marks themselves, but jump to a mark:
 			- folds
 			- diffs
 
-:kee[pmarks] {command}					*:kee* *:keepmarks*
+:kee[pmarks] {command}				*:kee* *:keep* *:keepmarks*
 			Currently only has effect for the filter command
 			|:range!|:
 			- When the number of lines after filtering is equal to

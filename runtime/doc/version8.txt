@@ -24465,7 +24465,7 @@ Solution:   Use zero instead of -1.
 Files:      src/syntax.c
 
 Patch 8.0.1622
-Problem:    Possible NULL pointer dereferencey. (Coverity)
+Problem:    Possible NULL pointer dereference. (Coverity)
 Solution:   Reverse the check for a NULL pointer.
 Files:      src/quickfix.c
 
@@ -25977,7 +25977,7 @@ Files:	    src/testdir/test_terminal.vim
 
 Patch 8.1.0032
 Problem:    BS in prompt buffer starts new line.
-Solution:   Do not allows BS over the prompt.  Make term_sendkeys() handle
+Solution:   Do not allow BS over the prompt.  Make term_sendkeys() handle
             special keys. Add a test.
 Files:	    src/option.c, src/terminal.c, src/testdir/test_prompt_buffer.vim
 
@@ -26321,7 +26321,7 @@ Files:	    src/evalfunc.c, runtime/doc/eval.txt, src/undo.c,
 Patch 8.1.0092 (after 8.1.0091)
 Problem:    Prompt buffer test fails.
 Solution:   Set 'nomodified' before closing the window. (Ozaki Kiichi,
-            closes #3051
+            closes #3051)
 Files:	    src/testdir/test_prompt_buffer.vim
 
 Patch 8.1.0093
@@ -31089,7 +31089,7 @@ Solution:   Check for NULL pointer before adding. Remove useless "if".
 Files:	    src/dosinst.c, src/search.c
 
 Patch 8.1.0887
-Problem:    The 'l' flag in :subsitute is sticky.
+Problem:    The 'l' flag in :substitute is sticky.
 Solution:   Reset the flag. (Dominique Pelle, closes #3925)
 Files:	    src/ex_cmds.c, src/testdir/test_substitute.vim
 
@@ -31619,7 +31619,7 @@ Files:	    src/window.c, src/testdir/test_terminal.vim,
             runtime/doc/terminal.txt
 
 Patch 8.1.0973
-Problem:    Pattern with syntax error gives threee error messages. (Kuang-che
+Problem:    Pattern with syntax error gives three error messages. (Kuang-che
             Wu)
 Solution:   Remove outdated internal error.  Don't fall back to other engine
             after an error.(closes #4035)
@@ -34043,7 +34043,7 @@ Files:	    src/ex_cmds.c, src/testdir/test_substitute.vim
 Patch 8.1.1361
 Problem:    Python setuptools don't work with Python 3.
 Solution:   Add dummy implementation for find_module. (Joel Frederico,
-            closes #4402, closes #3984
+            closes #4402, closes #3984)
 Files:	    src/if_py_both.h
 
 Patch 8.1.1362
