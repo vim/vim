@@ -1462,6 +1462,7 @@ do_search(
 		if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 		{
 		    char_u *r;
+		    size_t pat_len;
 
 		    r = reverse_text(msgbuf);
 		    if (r != NULL)
@@ -1471,9 +1472,13 @@ do_search(
 			// move reversed text to beginning of buffer
 			while (*r != NUL && *r == ' ')
 			    r++;
-			mch_memmove(msgbuf, r, msgbuf + STRLEN(msgbuf) - r);
+			pat_len = msgbuf + STRLEN(msgbuf) - r;
+			mch_memmove(msgbuf, r, pat_len);
 			// overwrite old text
-			vim_memset(r, ' ', msgbuf + STRLEN(msgbuf) - r);
+			if ((size_t)(r - msgbuf) >= pat_len)
+			    vim_memset(r, ' ', pat_len);
+			else
+			    vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
 		    }
 		}
 #endif
