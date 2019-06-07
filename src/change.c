@@ -857,8 +857,8 @@ unchanged(buf_T *buf, int ff)
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
 #endif
+	++CHANGEDTICK(buf);
     }
-    ++CHANGEDTICK(buf);
 #ifdef FEAT_NETBEANS_INTG
     netbeans_unmodified(buf);
 #endif
