@@ -12,8 +12,8 @@ This plugin is only available if 'compatible' is not set.
 You can avoid loading this plugin by setting the "loaded_matchparen" variable: >
 	:let loaded_matchparen = 1
 
-The plugin installs CursorMoved, CursorMovedI and WinEnter autocommands to
-redefine the match highlighting.
+The plugin uses timers to redefine the match highlighting, falling back to
+using autocommands (|g:matchparen_events|).
 
 					*:NoMatchParen* *:DoMatchParen*
 To disable the plugin after it was loaded use this command: >
@@ -56,5 +56,15 @@ used, see |matchit-install|.  This plugin also helps to skip matches in
 comments.  This is unrelated to the matchparen highlighting, they use a
 different mechanism.
 
+When using timers, *g:matchparen_show_delay* configures the delay to show the
+match (in milliseconds, defaults to `200`), and *g:matchparen_hide_delay* the
+delay to hide the match (in milliseconds, defaults to `500`).
+
+When timers are not used:
+ - |g:matchparen_events| configures the initiating events for when timers are
+   not used, and defaults to
+   `'WinEnter,CursorMoved,CursorMovedI,TextChanged,TextChangedI'`.
+ - |g:matchparen_events_clear| configures the events to be used for clearing
+   without timers, and defaults to `'WinLeave,CursorHold,CursorHoldI'`.
 ==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:
