@@ -74,10 +74,10 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 $(NEW_TESTS):
 	rm -f $@.res test.log messages
 	$(MAKE) -f Makefile $@.res
-	@if test -f test.log; then \
-		cat test.log; \
-	fi
 	cat messages
+	@if test -f test.log; then \
+		exit 1; \
+	fi
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
