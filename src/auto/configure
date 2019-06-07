@@ -14549,9 +14549,14 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo_n "checking if msgfmt supports --desktop... " >&6; }
       MSGFMT_DESKTOP=
       if "$MSGFMT" --help | grep -e '--desktop' >/dev/null; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+	if "$MSGFMT" --version | grep '0.19.[3-7]$' >/dev/null; then
+	  	  	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: broken" >&5
+$as_echo "broken" >&6; }
+	else
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	  MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	fi
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }

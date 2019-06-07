@@ -4302,8 +4302,14 @@ if test "$enable_nls" = "yes"; then
       AC_MSG_CHECKING([if msgfmt supports --desktop])
       MSGFMT_DESKTOP=
       if "$MSGFMT" --help | grep -e '--desktop' >/dev/null; then
-	AC_MSG_RESULT([yes])
-	MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	if "$MSGFMT" --version | grep '0.19.[[3-7]]$' >/dev/null; then
+	  dnl GNU gettext 0.19.7's --desktop is broken.  We assume back to
+	  dnl 0.19.3 is also broken.
+	  AC_MSG_RESULT([broken])
+	else
+	  AC_MSG_RESULT([yes])
+	  MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	fi
       else
 	AC_MSG_RESULT([no])
       fi
