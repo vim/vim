@@ -18,6 +18,27 @@ func Test_changedtick_increments()
   bwipe!
 endfunc
 
+func Test_changedtick_not_incremented_with_BufWritePost_always()
+  new
+  exe 'w '.tempname()
+
+  let expected = b:changedtick
+  w
+  call assert_equal(expected, b:changedtick)
+
+  let expected = b:changedtick + 1
+  setlocal modified
+  w
+  call assert_equal(expected, b:changedtick)
+
+  let expected = b:changedtick + 3
+  normal! ochanged
+  w
+  call assert_equal(expected, b:changedtick)
+
+  bwipe
+endfunc
+
 func Test_changedtick_dict_entry()
   let d = b:
   call assert_equal(b:changedtick, d['changedtick'])
