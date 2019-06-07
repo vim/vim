@@ -178,3 +178,12 @@ func Test_scriptversion()
   call assert_fails('source Xversionscript', 'E999:')
   call delete('Xversionscript')
 endfunc
+
+" Test fix for issue #4507
+func Test_skip_after_throw()
+  try
+    throw 'something'
+    let x = wincol() || &ts
+  catch /something/
+  endtry
+endfunc
