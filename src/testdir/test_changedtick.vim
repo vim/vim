@@ -2,8 +2,8 @@
 
 func Test_changedtick_increments()
   new
-  " New buffer has an empty line, tick starts at 2.
-  let expected = 2
+  " New buffer has an empty line, tick starts at 0.
+  let expected = 0
   call assert_equal(expected, b:changedtick)
   call assert_equal(expected, b:['changedtick'])
   call setline(1, 'hello')
