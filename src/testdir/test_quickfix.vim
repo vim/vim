@@ -2688,6 +2688,7 @@ func Xchangedtick_tests(cchar)
   call s:setup_commands(a:cchar)
 
   new | only
+  call assert_equal(0, getbufvar('%', 'changedtick'))
 
   Xexpr "" | Xexpr "" | Xexpr ""
 
@@ -2698,7 +2699,7 @@ func Xchangedtick_tests(cchar)
   Xaddexpr "F2:20:Line20"
   call g:Xsetlist([{"filename":"F3", "lnum":30, "text":"Line30"}], 'a')
   call g:Xsetlist([], 'f')
-  call assert_equal(8, getbufvar('%', 'changedtick'))
+  call assert_equal(6, getbufvar('%', 'changedtick'))
   Xclose
 endfunc
 
