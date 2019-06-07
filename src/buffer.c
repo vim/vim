@@ -1410,6 +1410,8 @@ do_buffer(
 	if (bp == NULL && buf == curbuf)
 	    return empty_curbuf(TRUE, forceit, action);
 
+	++CHANGEDTICK(buf);
+
 	/*
 	 * If the deleted buffer is the current one, close the current window
 	 * (unless it's the only window).  Repeat this so long as we end up in
