@@ -431,6 +431,12 @@ pum_redraw(void)
 						    / (pum_size - pum_height);
     }
 
+#ifdef FEAT_TEXT_PROP
+    // The popup menu is drawn over popup menus with zindex under
+    // POPUPMENU_ZINDEX.
+    screen_zindex = POPUPMENU_ZINDEX;
+#endif
+
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
@@ -611,6 +617,10 @@ pum_redraw(void)
 
 	++row;
     }
+
+#ifdef FEAT_TEXT_PROP
+    screen_zindex = 0;
+#endif
 }
 
 /*

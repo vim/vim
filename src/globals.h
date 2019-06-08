@@ -70,6 +70,21 @@ EXTERN schar_T	*ScreenLines2 INIT(= NULL);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
+#ifdef FEAT_TEXT_PROP
+// Array with size Rows x Columns containing zindex of popups.
+EXTERN short	*popup_mask INIT(= NULL);
+
+// Flag set to TRUE when popup_mask needs to be updated.
+EXTERN int	popup_mask_refresh INIT(= TRUE);
+
+// Tab that was used to fill popup_mask.
+EXTERN tabpage_T *popup_mask_tab INIT(= NULL);
+
+// Zindex in for screen_char(): if lower than the value in "popup_mask"
+// drawing the character is skipped.
+EXTERN int	screen_zindex INIT(= 0);
+#endif
+
 EXTERN int	screen_Rows INIT(= 0);	    /* actual size of ScreenLines[] */
 EXTERN int	screen_Columns INIT(= 0);   /* actual size of ScreenLines[] */
 

@@ -185,8 +185,12 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     get_pos_options(wp, dict);
 
     wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+    if (wp->w_zindex < 1)
+	wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
+    if (wp->w_zindex > 32000)
+	wp->w_zindex = 32000;
 
-#if defined(FEAT_TIMERS)
+# if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
     nr = dict_get_number(dict, (char_u *)"time");
     if (nr > 0)
@@ -204,7 +208,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	    clear_tv(&tv);
 	}
     }
-#endif
+# endif
 
     // Option values resulting in setting an option.
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
@@ -330,6 +334,8 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	else
 	    semsg(_(e_invarg2), tv_get_string(&di->di_tv));
     }
+
+    popup_mask_refresh = TRUE;
 }
 
 /*
@@ -435,6 +441,10 @@ popup_adjust_position(win_T *wp)
     int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
     int		extra_height = top_extra + bot_extra;
     int		extra_width = left_extra + right_extra;
+    int		org_winrow = wp->w_winrow;
+    int		org_wincol = wp->w_wincol;
+    int		org_width = wp->w_width;
+    int		org_height = wp->w_height;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -554,6 +564,16 @@ popup_adjust_position(win_T *wp)
     }
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
+
+    // Need to update popup_mask if the position or size changed.
+    if (org_winrow != wp->w_winrow
+	    || org_wincol != wp->w_wincol
+	    || org_width != wp->w_width
+	    || org_height != wp->w_height)
+    {
+	redraw_all_later(NOT_VALID);
+	popup_mask_refresh = TRUE;
+    }
 }
 
 typedef enum
@@ -565,7 +585,7 @@ typedef enum
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
- * When called from f_popup_atcursor() "atcursor" is TRUE.
+ * When called from f_popup_atcursor() "type" is TYPE_ATCURSOR.
  */
     static void
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
@@ -675,18 +695,18 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	set_moved_columns(wp, FIND_STRING);
     }
 
+    // set default values
+    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
+
     // Deal with options.
     apply_options(wp, buf, argvars[1].vval.v_dict);
-
-    // set default values
-    if (wp->w_zindex == 0)
-	wp->w_zindex = 50;
 
     popup_adjust_position(wp);
 
     wp->w_vsep_width = 0;
 
     redraw_all_later(NOT_VALID);
+    popup_mask_refresh = TRUE;
 }
 
 /*
@@ -815,6 +835,7 @@ f_popup_hide(typval_T *argvars, typval_T *rettv UNUSED)
 	wp->w_popup_flags |= POPF_HIDDEN;
 	--wp->w_buffer->b_nwindows;
 	redraw_all_later(NOT_VALID);
+	popup_mask_refresh = TRUE;
     }
 }
 
@@ -832,6 +853,7 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
 	wp->w_popup_flags &= ~POPF_HIDDEN;
 	++wp->w_buffer->b_nwindows;
 	redraw_all_later(NOT_VALID);
+	popup_mask_refresh = TRUE;
     }
 }
 
@@ -843,6 +865,7 @@ popup_free(win_T *wp)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
     redraw_all_later(NOT_VALID);
+    popup_mask_refresh = TRUE;
 }
 
 /*
@@ -944,7 +967,6 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
     popup_adjust_position(wp);
-    redraw_all_later(NOT_VALID);
 }
 
 /*
@@ -984,7 +1006,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * f_popup_getoptions({id})
+ * popup_getoptions({id})
  */
     void
 f_popup_getoptions(typval_T *argvars, typval_T *rettv)
