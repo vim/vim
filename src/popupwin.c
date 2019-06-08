@@ -541,8 +541,7 @@ popup_adjust_position(win_T *wp)
 	    wp->w_wincol = wp->w_wantcol - (wp->w_width + extra_width);
     }
 
-    if (wp->w_height <= 1)
-	wp->w_height = wp->w_buffer->b_ml.ml_line_count + wrapped;
+    wp->w_height = wp->w_buffer->b_ml.ml_line_count + wrapped;
     if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
 	wp->w_height = wp->w_minheight;
     if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
@@ -566,11 +565,13 @@ popup_adjust_position(win_T *wp)
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 
     // Need to update popup_mask if the position or size changed.
+    // And redraw windows that were behind the popup.
     if (org_winrow != wp->w_winrow
 	    || org_wincol != wp->w_wincol
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
+	// TODO: redraw only windows that were below the popup.
 	redraw_all_later(NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
