@@ -9345,7 +9345,7 @@ give_up:
     TabPageIdxs = new_TabPageIdxs;
 #ifdef FEAT_TEXT_PROP
     popup_mask = new_popup_mask;
-    vim_memset(popup_mask, 0, screen_Rows * screen_Columns * sizeof(short));
+    vim_memset(popup_mask, 0, Rows * Columns * sizeof(short));
     popup_mask_refresh = TRUE;
 #endif
 
