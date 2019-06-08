@@ -3253,7 +3253,11 @@ call_shell(char_u *cmd, int opt)
 
 	if (cmd == NULL || *p_sxq == NUL
 #if defined(FEAT_GUI_MSWIN) && defined(FEAT_TERMINAL)
-		|| vim_strchr(p_go, GO_TERMINAL) != NULL
+		|| (
+# ifdef VIMDLL
+		    gui.in_use &&
+# endif
+		    vim_strchr(p_go, GO_TERMINAL) != NULL)
 #endif
 		)
 	    retval = mch_call_shell(cmd, opt);
