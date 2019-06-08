@@ -4640,20 +4640,30 @@ mch_call_shell(
     }
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
-    /* TODO: make the terminal window work with input or output redirected. */
+    // TODO: make the terminal window work with input or output redirected.
     if (
 # ifdef VIMDLL
-	gui.in_use &&
+	    gui.in_use &&
 # endif
-	vim_strchr(p_go, GO_TERMINAL) != NULL
+	    vim_strchr(p_go, GO_TERMINAL) != NULL
 	 && (options & (SHELL_FILTER|SHELL_DOOUT|SHELL_WRITE|SHELL_READ)) == 0)
     {
-	/* Use a terminal window to run the command in. */
-	x = mch_call_shell_terminal(cmd, options);
+	char_u	*cmdbase = cmd;
+
+	// Skip a leading quote and (.
+	while (*cmdbase == '"' || *cmdbase == '(')
+	    ++cmdbase;
+
+	// Check the command does not begin with "start "
+	if (STRNICMP(cmdbase, "start", 5) != 0 || !VIM_ISWHITE(cmdbase[5]))
+	{
+	    // Use a terminal window to run the command in.
+	    x = mch_call_shell_terminal(cmd, options);
 # ifdef FEAT_TITLE
-	resettitle();
+	    resettitle();
 # endif
-	return x;
+	    return x;
+	}
     }
 #endif
 

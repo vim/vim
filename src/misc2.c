@@ -3251,7 +3251,11 @@ call_shell(char_u *cmd, int opt)
 	/* The external command may update a tags file, clear cached tags. */
 	tag_freematch();
 
-	if (cmd == NULL || *p_sxq == NUL)
+	if (cmd == NULL || *p_sxq == NUL
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_TERMINAL)
+		|| vim_strchr(p_go, GO_TERMINAL) != NULL
+#endif
+		)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
