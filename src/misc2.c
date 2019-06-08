@@ -3252,7 +3252,7 @@ call_shell(char_u *cmd, int opt)
 	tag_freematch();
 
 	if (cmd == NULL || *p_sxq == NUL
-#if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
+#if defined(MSWIN) && defined(FEAT_GUI) && defined(FEAT_TERMINAL)
 		|| vim_strchr(p_go, GO_TERMINAL) != NULL
 #endif
 		)
