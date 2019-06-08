@@ -1435,7 +1435,7 @@ ml_recover(int checkext)
 	set_option_value((char_u *)"fenc", 0L, b0_fenc, OPT_LOCAL);
 	vim_free(b0_fenc);
     }
-    unchanged(curbuf, TRUE);
+    unchanged(curbuf, TRUE, TRUE);
 
     bnum = 1;		/* start with block 1 */
     page_count = 1;	/* which is 1 page */

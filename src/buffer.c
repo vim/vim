@@ -60,7 +60,9 @@ static char *e_auabort = N_("E855: Autocommands caused command to abort");
 /* Number of times free_buffer() was called. */
 static int	buf_free_count = 0;
 
-/* Read data from buffer for retrying. */
+/*
+ * Read data from buffer for retrying.
+ */
     static int
 read_buffer(
     int		read_stdin,	    /* read file from stdin, otherwise fifo */
@@ -104,7 +106,7 @@ read_buffer(
 	if (!readonlymode && !BUFEMPTY())
 	    changed();
 	else if (retval == OK)
-	    unchanged(curbuf, FALSE);
+	    unchanged(curbuf, FALSE, TRUE);
 
 	if (retval == OK)
 	{
@@ -275,7 +277,7 @@ open_buffer(
        )
 	changed();
     else if (retval == OK && !read_stdin && !read_fifo)
-	unchanged(curbuf, FALSE);
+	unchanged(curbuf, FALSE, TRUE);
     save_file_ff(curbuf);		/* keep this fileformat */
 
     /* Set last_changedtick to avoid triggering a TextChanged autocommand right
@@ -700,7 +702,7 @@ aucmd_abort:
 buf_clear_file(buf_T *buf)
 {
     buf->b_ml.ml_line_count = 1;
-    unchanged(buf, TRUE);
+    unchanged(buf, TRUE, TRUE);
     buf->b_shortname = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;

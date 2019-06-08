@@ -2805,7 +2805,7 @@ u_undoredo(int undo)
 	/* per netbeans undo rules, keep it as modified */
 	if (!isNetbeansModified(curbuf))
 #endif
-	unchanged(curbuf, FALSE);
+	unchanged(curbuf, FALSE, TRUE);
 
     /*
      * restore marks from before undo/redo

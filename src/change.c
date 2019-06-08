@@ -842,9 +842,11 @@ changed_lines(
 /*
  * Called when the changed flag must be reset for buffer "buf".
  * When "ff" is TRUE also reset 'fileformat'.
+ * When "always_inc_changedtick" is TRUE b:changedtick is incremented also when
+ * the changed flag was off.
  */
     void
-unchanged(buf_T *buf, int ff)
+unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 {
     if (buf->b_changed || (ff && file_ff_differs(buf, FALSE)))
     {
@@ -857,8 +859,10 @@ unchanged(buf_T *buf, int ff)
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
 #endif
+	++CHANGEDTICK(buf);
     }
-    ++CHANGEDTICK(buf);
+    else if (always_inc_changedtick)
+	++CHANGEDTICK(buf);
 #ifdef FEAT_NETBEANS_INTG
     netbeans_unmodified(buf);
 #endif

@@ -1197,7 +1197,7 @@ dialog_changed(
     }
     else if (ret == VIM_NO)
     {
-	unchanged(buf, TRUE);
+	unchanged(buf, TRUE, FALSE);
     }
     else if (ret == VIM_ALL)
     {
@@ -1240,7 +1240,7 @@ dialog_changed(
 	 * mark all buffers as unchanged
 	 */
 	FOR_ALL_BUFFERS(buf2)
-	    unchanged(buf2, TRUE);
+	    unchanged(buf2, TRUE, FALSE);
     }
 }
 #endif
