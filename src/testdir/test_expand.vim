@@ -73,8 +73,6 @@ func Test_expandcmd()
   call assert_equal('make abc.java', expandcmd('make abc.%:e'))
   call assert_equal('make Xabc.java', expandcmd('make %:s?file?abc?'))
   edit a1a2a3.rb
-  call assert_equal('make b1b2b3.rb', expandcmd('make %:gs?a?b?'))
-  call assert_equal('make a1a2a3', expandcmd('make %<'))
-  call assert_equal('make Xfile.o', expandcmd('make #<.o'))
+  call assert_equal('make b1b2b3.rb a1a2a3 Xfile.o', expandcmd('make %:gs?a?b? %< #<.o'))
   close
 endfunc
