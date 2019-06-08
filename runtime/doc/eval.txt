@@ -13022,22 +13022,25 @@ Sometimes old syntax of functionality gets in the way of making Vim better.
 When support is taken away this will break older Vim scripts.  To make this
 explicit the |:scriptversion| command can be used.  When a Vim script is not
 compatible with older versions of Vim this will give an explicit error,
-instead of failing in mysterious ways. >
+instead of failing in mysterious ways.
 
-				*scriptversion-1*
+					*scriptversion-1*
+>
  :scriptversion 1
 <	This is the original Vim script, same as not using a |:scriptversion|
 	command.  Can be used to go back to old syntax for a range of lines.
 	Test for support with: >
 		has('vimscript-1')
-
-				*scriptversion-2*
+<
+					*scriptversion-2*
+>
  :scriptversion 2
 <	String concatenation with "." is not supported, use ".." instead.
 	This avoids the ambiguity using "." for Dict member access and
 	floating point numbers.  Now ".5" means the number 0.5.
+
+					*scriptversion-3*
 >
-				*scriptversion-3*
  :scriptversion 3
 <	All |vim-variable|s must be prefixed by "v:".  E.g. "version" doesn't
 	work as |v:version| anymore, it can be used as a normal variable.
