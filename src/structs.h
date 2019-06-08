@@ -1991,6 +1991,9 @@ typedef enum {
     POPPOS_TOPRIGHT,
     POPPOS_CENTER
 } poppos_T;
+
+# define POPUPWIN_DEFAULT_ZINDEX    50
+# define POPUPMENU_ZINDEX	    100
 #endif
 
 /*
