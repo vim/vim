@@ -6797,35 +6797,40 @@ screen_line(
     if (clear_width > 0
 #ifdef FEAT_TEXT_PROP
 	    && !(flags & SLF_POPUP)  // no separator for popup window
-	    && popup_mask[row * screen_Columns + col + coloff] <= screen_zindex
 #endif
 	    )
     {
 	// For a window that has a right neighbor, draw the separator char
-	// right of the window contents.
+	// right of the window contents.  But not on top of a popup window.
 	if (coloff + col < Columns)
 	{
-	    int c;
-
-	    c = fillchar_vsep(&hl);
-	    if (ScreenLines[off_to] != (schar_T)c
-		    || (enc_utf8 && (int)ScreenLinesUC[off_to]
-						       != (c >= 0x80 ? c : 0))
-		    || ScreenAttrs[off_to] != hl)
+#ifdef FEAT_TEXT_PROP
+	    if (popup_mask[row * screen_Columns + col + coloff]
+							     <= screen_zindex)
+#endif
 	    {
-		ScreenLines[off_to] = c;
-		ScreenAttrs[off_to] = hl;
-		if (enc_utf8)
+		int c;
+
+		c = fillchar_vsep(&hl);
+		if (ScreenLines[off_to] != (schar_T)c
+			|| (enc_utf8 && (int)ScreenLinesUC[off_to]
+							!= (c >= 0x80 ? c : 0))
+			|| ScreenAttrs[off_to] != hl)
 		{
-		    if (c >= 0x80)
+		    ScreenLines[off_to] = c;
+		    ScreenAttrs[off_to] = hl;
+		    if (enc_utf8)
 		    {
-			ScreenLinesUC[off_to] = c;
-			ScreenLinesC[0][off_to] = 0;
+			if (c >= 0x80)
+			{
+			    ScreenLinesUC[off_to] = c;
+			    ScreenLinesC[0][off_to] = 0;
+			}
+			else
+			    ScreenLinesUC[off_to] = 0;
 		    }
-		    else
-			ScreenLinesUC[off_to] = 0;
+		    screen_char(off_to, row, col + coloff);
 		}
-		screen_char(off_to, row, col + coloff);
 	    }
 	}
 	else
