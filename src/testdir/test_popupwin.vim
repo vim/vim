@@ -51,6 +51,19 @@ func Test_simple_popup()
   call term_sendkeys(buf, ":redraw\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_06', {})
 
+  " move popup over ruler
+  call term_sendkeys(buf, ":set cmdheight=2\<CR>")
+  call term_sendkeys(buf, ":call popup_move(popupwin, {'line': 7, 'col': 55})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_07', {})
+
+  " clear all popups after moving the cursor a bit, so that ruler is updated
+  call term_sendkeys(buf, "axxx\<Esc>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "0")
+  call term_wait(buf)
+  call term_sendkeys(buf, ":popupclear\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_08', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopup')

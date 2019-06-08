@@ -7897,7 +7897,11 @@ screen_puts_len(
 		|| ScreenAttrs[off] != attr
 		|| exmode_active;
 
-	if (need_redraw || force_redraw_this)
+	if ((need_redraw || force_redraw_this)
+#ifdef FEAT_TEXT_PROP
+		&& popup_mask[row * screen_Columns + col] <= screen_zindex
+#endif
+	   )
 	{
 #if defined(FEAT_GUI) || defined(UNIX)
 	    /* The bold trick makes a single row of pixels appear in the next
