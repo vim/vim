@@ -2622,6 +2622,12 @@ sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
 sort({list} [, {func} [, {dict}]])
 				List	sort {list}, using {func} to compare
+sound_playevent({name} [, {callback}])
+				Number	play an event sound
+sound_playfile({name} [, {callback}])
+				Number	play a sound file
+sound_stop({id})		none	stop playing sound {id}
+sound_stopall()			none	stop playing all sounds
 soundfold({word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
 spellsuggest({word} [, {max} [, {capital}]])
@@ -8837,6 +8843,49 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 			   return a:i1 - a:i2
 			endfunc
 <
+							*sound_playevent()*
+sound_playevent({name} [, {callback}])
+		Play a sound identified by {name}.  Which event names are
+		supported depends on the system.  Often the XDG sound names
+		are used.  On Ubuntu they may be found in
+		/usr/share/sounds/freedesktop/stereo.  Example: >
+			call sound_playevent('bell')
+
+<		When {callback} is specified it is invoked when the sound is
+		finished.  The first argument is the sound ID, the second
+		argument is the status:
+			0	sound was played to the end
+			1	sound was interruped
+			2	error occured after sound started
+		Example: >
+		   func Callback(id, status)
+		     echomsg "sound " .. a:id .. " finished with " .. a:status
+		   endfunc
+		   call sound_playevent('bell', 'Callback')
+
+<		Returns the sound ID, which can be passed to `sound_stop()`.
+		Returns zero if the sound could not be played.
+		{only available when compiled with the +sound feature}
+
+							*sound_playfile()*
+sound_playfile({name} [, {callback}])
+		Like `sound_playevent()` but play sound file {name}.  {name}
+		must be a full path.  On Ubuntu you may find files to play
+		with this command: >
+		    :!find /usr/share/sounds -type f | grep -v index.theme
+
+<		{only available when compiled with the +sound feature}
+
+
+sound_stop({id})					*sound_stop()*
+		Stop playing sound {id}.  {id} must be previously returned by
+		`sound_playevent()` or `sound_playfile()`.
+		{only available when compiled with the +sound feature}
+
+sound_stopall()						*sound_stopall()*
+		Stop playing all sounds.
+		{only available when compiled with the +sound feature}
+
 							*soundfold()*
 soundfold({word})
 		Return the sound-folded equivalent of {word}.  Uses the first
@@ -10756,6 +10805,7 @@ scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
 smartindent		Compiled with 'smartindent' support.
+sound			Compiled with sound support, e.g. `sound_playevent()`
 spell			Compiled with spell checking support |spell|.
 startuptime		Compiled with |--startuptime| support.
 statusline		Compiled with support for 'statusline', 'rulerformat'

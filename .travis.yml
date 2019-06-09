@@ -77,6 +77,7 @@ addons:
       - clang
       - lcov
       - gettext
+      - libcanberra-dev
       - libperl-dev
       - python-dev
       - python3-dev

@@ -88,6 +88,7 @@ SRC_ALL =	\
 		src/search.c \
 		src/sha256.c \
 		src/sign.c \
+		src/sound.c \
 		src/spell.c \
 		src/spell.h \
 		src/spellfile.c \
@@ -150,6 +151,7 @@ SRC_ALL =	\
 		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
+		src/testdir/silent.wav \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
@@ -209,6 +211,7 @@ SRC_ALL =	\
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \
+		src/proto/sound.pro \
 		src/proto/spell.pro \
 		src/proto/spellfile.pro \
 		src/proto/syntax.pro \

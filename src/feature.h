@@ -660,6 +660,13 @@
 # define FEAT_TERM_POPUP_MENU
 #endif
 
+/*
+ * sound - currently only with libcanberra
+ */
+#if !defined(FEAT_SOUND) && defined(FEAT_BIG) && defined(HAVE_CANBERRA)
+# define FEAT_SOUND
+#endif
+
 /* There are two ways to use XPM. */
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)
