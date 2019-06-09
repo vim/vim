@@ -4426,7 +4426,7 @@ win_line(
 		area_attr = 0;			/* stop highlighting */
 
 #ifdef FEAT_SEARCH_EXTRA
-	    if (!n_extra)
+	    if (!n_extra && !(screen_line_flags & SLF_POPUP))
 	    {
 		/*
 		 * Check for start/end of search pattern match.
@@ -4435,6 +4435,7 @@ win_line(
 		 * Watch out for matching an empty string!
 		 * Do this for 'search_hl' and the match list (ordered by
 		 * priority).
+		 * Not in a popup window.
 		 */
 		v = (long)(ptr - line);
 		cur = wp->w_match_head;
