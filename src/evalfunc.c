@@ -149,6 +149,7 @@ static void f_exists(typval_T *argvars, typval_T *rettv);
 static void f_exp(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_expand(typval_T *argvars, typval_T *rettv);
+static void f_expandcmd(typval_T *argvars, typval_T *rettv);
 static void f_extend(typval_T *argvars, typval_T *rettv);
 static void f_feedkeys(typval_T *argvars, typval_T *rettv);
 static void f_filereadable(typval_T *argvars, typval_T *rettv);
@@ -646,6 +647,7 @@ static struct fst
     {"exp",		1, 1, f_exp},
 #endif
     {"expand",		1, 3, f_expand},
+    {"expandcmd",	1, 1, f_expandcmd},
     {"extend",		2, 3, f_extend},
     {"feedkeys",	1, 2, f_feedkeys},
     {"file_readable",	1, 1, f_filereadable},	/* obsolete */
@@ -3788,6 +3790,35 @@ f_expand(typval_T *argvars, typval_T *rettv)
 	else
 	    rettv->vval.v_string = NULL;
     }
+}
+
+/*
+ * "expandcmd()" function
+ * Expand all the special characters in a command string.
+ */
+    static void
+f_expandcmd(typval_T *argvars, typval_T *rettv)
+{
+    exarg_T	eap;
+    char_u	*cmdstr;
+    char	*errormsg = NULL;
+
+    rettv->v_type = VAR_STRING;
+    cmdstr = vim_strsave(tv_get_string(&argvars[0]));
+
+    memset(&eap, 0, sizeof(eap));
+    eap.cmd = cmdstr;
+    eap.arg = cmdstr;
+    eap.argt |= NOSPC;
+    eap.usefilter = FALSE;
+    eap.nextcmd = NULL;
+    eap.cmdidx = CMD_USER;
+
+    expand_filename(&eap, &cmdstr, &errormsg);
+    if (errormsg != NULL && *errormsg != NUL)
+	emsg(errormsg);
+
+    rettv->vval.v_string = cmdstr;
 }
 
 /*
