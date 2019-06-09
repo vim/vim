@@ -3957,12 +3957,11 @@ win_line(
     /*
      * Handle highlighting the last used search pattern and matches.
      * Do this for both search_hl and the match list.
-     * Not in a popup window.
+     * Do not use search_hl in a popup window.
      */
     cur = wp->w_match_head;
-    shl_flag = FALSE;
-    while ((cur != NULL || shl_flag == FALSE) && !number_only
-					   && !(screen_line_flags & SLF_POPUP))
+    shl_flag = (screen_line_flags & SLF_POPUP);
+    while ((cur != NULL || shl_flag == FALSE) && !number_only)
     {
 	if (shl_flag == FALSE)
 	{
@@ -4438,7 +4437,7 @@ win_line(
 		 */
 		v = (long)(ptr - line);
 		cur = wp->w_match_head;
-		shl_flag = FALSE;
+		shl_flag = (screen_line_flags & SLF_POPUP);
 		while (cur != NULL || shl_flag == FALSE)
 		{
 		    if (shl_flag == FALSE

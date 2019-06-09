@@ -188,6 +188,32 @@ func Test_popup_with_syntax_setbufvar()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_with_matches()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, ['111 222 333', '444 555 666'])
+	let winid = popup_create([
+	    \ '111 222 333',
+	    \ '444 555 666',
+	    \], {'line': 3, 'col': 10, 'border': []})
+	set hlsearch
+	/666
+	call matchadd('ErrorMsg', '111')
+	call matchadd('ErrorMsg', '444')
+	call win_execute(winid, "call matchadd('ErrorMsg', '111')")
+	call win_execute(winid, "call matchadd('ErrorMsg', '555')")
+  END
+  call writefile(lines, 'XtestPopupMatches')
+  let buf = RunVimInTerminal('-S XtestPopupMatches', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_matches', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMatches')
+endfunc
+
 func Test_popup_all_corners()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
