@@ -85,9 +85,9 @@ RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE); export VIMRUNTIME; $(VALGRIND) $(VIMPROG) 
 
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig
-	-rm opt_test.vim test.log test_result.log messages
-	-rm $(RM_ON_RUN) $(RM_ON_START)
-	-rm valgrind.*
+	-rm -f opt_test.vim test.log test_result.log messages
+	-rm -f $(RM_ON_RUN) $(RM_ON_START)
+	-rm -f valgrind.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
