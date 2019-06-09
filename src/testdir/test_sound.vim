@@ -27,7 +27,9 @@ func Test_play_silent()
 
   " play without callback
   let id1 = sound_playfile(fname)
-  call assert_true(id1 > 0)
+  if id1 == 0
+    throw 'Skipped: playing a sound is not working'
+  endif
 
   " play until the end
   let id2 = sound_playfile(fname, 'PlayCallback')
