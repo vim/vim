@@ -4651,7 +4651,9 @@ mch_call_shell(
 	char_u	*cmdbase = cmd;
 
 	// Skip a leading quote and (.
-	while (*cmdbase == '"' || *cmdbase == '(')
+	if (*cmdbase == '"' )
+	    ++cmdbase;
+	if (*cmdbase == '(')
 	    ++cmdbase;
 
 	// Check the command does not begin with "start "
