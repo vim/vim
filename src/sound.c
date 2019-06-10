@@ -156,12 +156,18 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
     sound_play_common(argvars, rettv, FALSE);
 }
 
+/*
+ * implementation of sound_playfile({path} [, {callback}])
+ */
     void
 f_sound_playfile(typval_T *argvars, typval_T *rettv)
 {
     sound_play_common(argvars, rettv, TRUE);
 }
 
+/*
+ * implementation of sound_stop({id})
+ */
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
@@ -169,8 +175,11 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 	ca_context_cancel(context, tv_get_number(&argvars[0]));
 }
 
+/*
+ * implementation of sound_clear()
+ */
     void
-f_sound_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     if (context != NULL)
     {

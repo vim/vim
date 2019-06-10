@@ -812,6 +812,7 @@ static struct fst
 #endif
 #ifdef FEAT_TEXT_PROP
     {"popup_atcursor",	2, 2, f_popup_atcursor},
+    {"popup_clear",	0, 0, f_popup_clear},
     {"popup_close",	1, 2, f_popup_close},
     {"popup_create",	2, 2, f_popup_create},
     {"popup_getoptions", 1, 1, f_popup_getoptions},
@@ -928,10 +929,10 @@ static struct fst
 #endif
     {"sort",		1, 3, f_sort},
 #ifdef FEAT_SOUND
+    {"sound_clear",	0, 0, f_sound_clear},
     {"sound_playevent",	1, 2, f_sound_playevent},
     {"sound_playfile",	1, 2, f_sound_playfile},
     {"sound_stop",	1, 1, f_sound_stop},
-    {"sound_stopall",	0, 0, f_sound_stopall},
 #endif
     {"soundfold",	1, 1, f_soundfold},
     {"spellbadword",	0, 1, f_spellbadword},
