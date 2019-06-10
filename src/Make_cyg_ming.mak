@@ -106,6 +106,13 @@ else
 TERMINAL=no
 endif
 
+# Set to yes to enable sound support.
+ifeq (HUGE, $(FEATURES))
+SOUND=yes
+else
+SOUND=no
+endif
+
 ifndef CTAGS
 # this assumes ctags is Exuberant ctags
 CTAGS = ctags -I INIT+ --fields=+S
@@ -633,6 +640,10 @@ TERM_DEPS = \
 	libvterm/src/vterm_internal.h
 endif
 
+ifeq ($(SOUND),yes)
+DEFINES += -DFEAT_SOUND
+endif
+
 # DirectWrite (DirectX)
 ifeq ($(DIRECTX),yes)
 # Only allow DirectWrite for a GUI build.
@@ -847,6 +858,10 @@ OBJ += $(OUTDIR)/terminal.o \
 	$(OUTDIR)/state.o \
 	$(OUTDIR)/unicode.o \
 	$(OUTDIR)/vterm.o
+endif
+
+ifeq ($(SOUND),yes)
+OBJ += $(OUTDIR)/sound.o
 endif
 
 # Include xdiff

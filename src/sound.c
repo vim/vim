@@ -13,8 +13,9 @@
 
 #include "vim.h"
 
-#if (defined(FEAT_SOUND) && defined(HAVE_CANBERRA)) || defined(PROTO)
+#if defined(FEAT_SOUND) || defined(PROTO)
 
+#if defined(HAVE_CANBERRA)
 #include <canberra.h>
 
 static long	    sound_id = 0;
@@ -190,4 +191,30 @@ sound_free(void)
 }
 #endif
 
-#endif  // FEAT_SOUND && HAVE_CANBERRA
+#elif defined(MSWIN) // HAVE_CANBERRA
+
+    void
+f_sound_playevent(typval_T *argvars, typval_T *rettv)
+{
+    mciCommand = "open " & DBLQUOTE & fName & DBLQUOTE & " alias sound1"
+    ret = mciSendString(mciCommand, mciRetString, Len(mciRetString), 0)
+}
+
+    void
+f_sound_playfile(typval_T *argvars, typval_T *rettv)
+{
+}
+
+    void
+f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
+{
+}
+
+    void
+f_sound_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+}
+
+#endif // MSWIN
+
+#endif  // FEAT_SOUND
