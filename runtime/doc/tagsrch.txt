@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
+*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -85,18 +85,21 @@ changed, to avoid confusion when using ":tnext".  It is changed when using
 ":tag {name}".
 
 The ignore-case matches are not found for a ":tag" command when:
-- the 'ignorecase' option is off and 'tagcase' is "followic"
+- 'tagcase' is "followic" and the 'ignorecase' option is off
+- 'tagcase' is "followscs" and the 'ignorecase' option is off and the
+  'smartcase' option is off or the pattern contains an upper case character.
 - 'tagcase' is "match"
 - 'tagcase' is "smart" and the pattern contains an upper case character.
-- 'tagcase' is "followscs" and 'smartcase' option is on and the pattern
-  contains an upper case character.
 
 The ignore-case matches are found when:
 - a pattern is used (starting with a "/")
 - for ":tselect"
-- when 'tagcase' is "followic" and 'ignorecase' is off
-- when 'tagcase' is "match"
-- when 'tagcase' is "followscs" and the 'smartcase' option is off
+- when 'tagcase' is "followic" and 'ignorecase' is on
+- when 'tagcase' is "followscs" and 'ignorecase' is on or the 'smartcase'
+  option is on and the pattern does not contain an upper case character
+- when 'tagcase' is "ignore"
+- when 'tagcase' is "smart" and the patter does not contain an upper case
+  character
 
 Note that using ignore-case tag searching disables binary searching in the
 tags file, which causes a slowdown.  This can be avoided by fold-case sorting
@@ -503,7 +506,7 @@ Some programs that generate tags files:
 ctags			As found on most Unix systems.  Only supports C.  Only
 			does the basic work.
 							*Exuberant_ctags*
-exuberant ctags		This a very good one.  It works for C, C++, Java,
+exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			Fortran, Eiffel and others.  It can generate tags for
 			many items.  See http://ctags.sourceforge.net.
 etags			Connected to Emacs.  Supports many languages.
@@ -824,7 +827,7 @@ CTRL-W d		Open a new window, with the cursor on the first
 			(default: whole file).
 			See |:search-args| for [/] and [!].
 
-					*:che*  *:chec* *:check* *:checkpath*
+					*:che* *:chec* *:check* *:checkpath*
 :che[ckpath]		List all the included files that could not be found.
 
 :che[ckpath]!		List all the included files.
@@ -895,7 +898,7 @@ The following fields are optional:
 If the function returns |v:null| instead of a List, a standard tag lookup will
 be performed instead.
 
-It is not allowed to change the tagstack from inside 'tagfunc'.  *E986* 
+It is not allowed to change the tagstack from inside 'tagfunc'.  *E986*
 
 The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the

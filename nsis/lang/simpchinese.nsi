@@ -45,37 +45,37 @@ LangString str_type_full            ${LANG_SIMPCHINESE} \
 LangString str_section_old_ver      ${LANG_SIMPCHINESE} \
     "卸载旧版本"
 LangString str_desc_old_ver         ${LANG_SIMPCHINESE} \
-    "卸载系统上旧版本的 Vim。"
+    "卸载系统上已存在的 Vim 版本"
 
 LangString str_section_exe          ${LANG_SIMPCHINESE} \
     "安装 Vim 图形界面"
 LangString str_desc_exe             ${LANG_SIMPCHINESE} \
-    "安装 Vim 图形界面及脚本。此为必选安装。"
+    "安装 Vim 图形界面及运行时文件。此项为必选。"
 
 LangString str_section_console      ${LANG_SIMPCHINESE} \
-    "安装 Vim 命令行程序"
+    "安装 Vim 控制台版本"
 LangString str_desc_console         ${LANG_SIMPCHINESE} \
-    "安装 Vim 命令行程序 (vim.exe)。该程序在命令行窗口中运行。"
+    "安装 Vim 的控制台版本（vim.exe）。"
 
 LangString str_section_batch        ${LANG_SIMPCHINESE} \
     "安装批处理文件"
 LangString str_desc_batch           ${LANG_SIMPCHINESE} \
-    "为 Vim 的各种变体创建批处理程序，以便在命令行下运行 Vim。"
+    "为 Vim 的各种变体创建批处理文件，以便在命令行下运行 Vim。"
 
 LangString str_group_icons          ${LANG_SIMPCHINESE} \
-    "创建 Vim 图标"
+    "创建图标"
 LangString str_desc_icons           ${LANG_SIMPCHINESE} \
     "为 Vim 创建若干图标，以方便使用 Vim。"
 
 LangString str_section_desktop      ${LANG_SIMPCHINESE} \
-    "在桌面上"
+    "桌面图标"
 LangString str_desc_desktop         ${LANG_SIMPCHINESE} \
-    "在桌面上为 Vim 创建若干图标，以方便启动 Vim。"
+    "创建 Vim 的桌面快捷方式图标。"
 
 LangString str_section_start_menu   ${LANG_SIMPCHINESE} \
-    "在启动菜单的程序菜单下"
+    "「开始」菜单程序组"
 LangString str_desc_start_menu      ${LANG_SIMPCHINESE} \
-    "在启动菜单的程序菜单下添加 Vim 组。适用于 Windows 95 及以上版本。"
+    "在开始菜单中添加 Vim 程序组（适用于 Windows 95 及以上版本）"
 
 #LangString str_section_quick_launch ${LANG_SIMPCHINESE} \
 #    "在快速启动启动栏中"
@@ -83,9 +83,9 @@ LangString str_desc_start_menu      ${LANG_SIMPCHINESE} \
 #    "在快速启动栏中添加 Vim 图标。"
 
 LangString str_section_edit_with    ${LANG_SIMPCHINESE} \
-    "安装快捷菜单"
+    "添加到快捷菜单"
 LangString str_desc_edit_with       ${LANG_SIMPCHINESE} \
-    "将 Vim 添加到“打开方式”快捷菜单中。"
+    "将“用 Vim 编辑”添加到快捷菜单中。"
 
 #LangString str_section_edit_with32  ${LANG_SIMPCHINESE} \
 #    "32 位版本"
@@ -98,10 +98,10 @@ LangString str_desc_edit_with       ${LANG_SIMPCHINESE} \
 #    "将 Vim 添加到 64 位程序的“打开方式”快捷菜单中。"
 
 LangString str_section_vim_rc       ${LANG_SIMPCHINESE} \
-    "创建缺省配置文件"
+    "创建默认配置文件"
 LangString str_desc_vim_rc          ${LANG_SIMPCHINESE} \
-    "在安装目录下生成缺省的 Vim 配置文件(_vimrc)。\
-     如果该文件已经存在，则略过此项。"
+    "在安装目录下生成默认的 Vim 配置文件(_vimrc)。\
+     如果该文件已经存在，则跳过该项。"
 
 LangString str_group_plugin         ${LANG_SIMPCHINESE} \
     "创建插件目录"
@@ -121,9 +121,9 @@ LangString str_desc_plugin_vim      ${LANG_SIMPCHINESE} \
      该目录下的扩展插件。"
 
 LangString str_section_vis_vim      ${LANG_SIMPCHINESE} \
-    "安装 VisVim 插件"
+    "VisVim 插件"
 LangString str_desc_vis_vim         ${LANG_SIMPCHINESE} \
-    "安装用于与微软 Microsoft Visual Studio 进行集成的 VisVim 插件。"
+    "安装与 Visual Studio 集成的 VisVim 插件。"
 
 LangString str_section_nls          ${LANG_SIMPCHINESE} \
     "安装多语言支持"
@@ -153,12 +153,12 @@ LangString str_desc_rm_plugin_home  ${LANG_SIMPCHINESE} \
 LangString str_unsection_plugin_vim ${LANG_SIMPCHINESE} \
     "公共插件目录"
 LangString str_desc_rm_plugin_vim   ${LANG_SIMPCHINESE} \
-    "Remove the plugin directories from Vim install directory."
+    "从 Vim 安装目录下移除插件目录。"
 
 LangString str_unsection_rootdir    ${LANG_SIMPCHINESE} \
-    "Remove the Vim root directory"
+    "移除 Vim 主目录"
 LangString str_desc_rm_rootdir      ${LANG_SIMPCHINESE} \
-    "Remove the Vim root directory. It contains your Vim configuration files!"
+    "移除 Vim 的主目录，该目录包含您的配置文件！"
 
 
 ##############################################################################
@@ -225,13 +225,13 @@ LangString str_msg_rm_exe_fail   ${LANG_SIMPCHINESE} \
 #     该目录下仍有其他文件。"
 
 LangString str_msg_uninstalling  ${LANG_SIMPCHINESE} \
-    "Uninstalling the old version..."
+    "正在卸载旧版本..."
 
 LangString str_msg_registering   ${LANG_SIMPCHINESE} \
-    "Registering..."
+    "正在注册..."
 
 LangString str_msg_unregistering ${LANG_SIMPCHINESE} \
-    "Unregistering..."
+    "正在取消注册..."
 
 
 ##############################################################################
@@ -239,12 +239,12 @@ LangString str_msg_unregistering ${LANG_SIMPCHINESE} \
 ##############################################################################
 
 LangString str_vimrc_page_title    ${LANG_SIMPCHINESE} \
-    "Choose _vimrc settings"
+    "设置 _vimrc"
 LangString str_vimrc_page_subtitle ${LANG_SIMPCHINESE} \
-    "Choose the settings for enhancement, keyboard and mouse."
+    "选择键盘、鼠标和增强选项。"
 
 LangString str_msg_compat_title    ${LANG_SIMPCHINESE} \
-    " Vi / Vim behavior "
+    "Vi / Vim 行为"
 LangString str_msg_compat_desc     ${LANG_SIMPCHINESE} \
     "&Compatibility and enhancements"
 LangString str_msg_compat_vi       ${LANG_SIMPCHINESE} \
@@ -257,7 +257,7 @@ LangString str_msg_compat_all      ${LANG_SIMPCHINESE} \
     "Vim with all enhancements (load vimrc_example.vim) (Default)"
 
 LangString str_msg_keymap_title   ${LANG_SIMPCHINESE} \
-    " Mappings "
+    "键盘映射"
 LangString str_msg_keymap_desc    ${LANG_SIMPCHINESE} \
     "&Remap a few keys for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
 LangString str_msg_keymap_default ${LANG_SIMPCHINESE} \
@@ -266,7 +266,7 @@ LangString str_msg_keymap_windows ${LANG_SIMPCHINESE} \
     "Remap a few keys"
 
 LangString str_msg_mouse_title   ${LANG_SIMPCHINESE} \
-    " Mouse "
+    "鼠标"
 LangString str_msg_mouse_desc    ${LANG_SIMPCHINESE} \
     "&Behavior of right and left buttons"
 LangString str_msg_mouse_default ${LANG_SIMPCHINESE} \
