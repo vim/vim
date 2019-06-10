@@ -15,16 +15,16 @@
 
 #if defined(FEAT_SOUND) || defined(PROTO)
 
-#if defined(HAVE_CANBERRA)
-#include <canberra.h>
-
 static long	    sound_id = 0;
-static ca_context   *context = NULL;
 
 typedef struct soundcb_S soundcb_T;
 
 struct soundcb_S {
     callback_T	snd_callback;
+#ifdef MSWIN
+    MCIDEVICEID	device_id;
+    long    	sound_id;
+#endif
     soundcb_T	*snd_next;
 };
 
@@ -75,6 +75,11 @@ delete_sound_callback(soundcb_T *soundcb)
 	    break;
 	}
 }
+
+#if defined(HAVE_CANBERRA)
+#include <canberra.h>
+
+static ca_context   *context = NULL;
 
     static void
 sound_callback(
@@ -200,29 +205,150 @@ sound_free(void)
 }
 #endif
 
-#elif defined(MSWIN) // HAVE_CANBERRA
+#elif defined(MSWIN) // MSWIN
+
+static HWND g_hWndSound = NULL;
+
+    LRESULT CALLBACK
+sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    soundcb_T	*p;
+
+    switch(message)
+    {
+	case MM_MCINOTIFY:
+	    for (p = first_callback; p != NULL; p = p->snd_next)
+		if (p->device_id == (MCIDEVICEID) lParam)
+		{
+		    typval_T	argv[3];
+		    typval_T	rettv;
+		    int		dummy;
+
+		    argv[0].v_type = VAR_NUMBER;
+		    argv[0].vval.v_number = p->sound_id;
+		    argv[1].v_type = VAR_NUMBER;
+		    argv[1].vval.v_number = wParam == MCI_NOTIFY_SUCCESSFUL ? 0
+					  : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
+		    argv[2].v_type = VAR_UNKNOWN;
+
+		    call_callback(&p->snd_callback, -1,
+					    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+		    clear_tv(&rettv);
+
+		    delete_sound_callback(p);
+		    redraw_after_callback(TRUE);
+
+		}
+	    break;
+    }
+
+    return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+    static HWND
+sound_window()
+{
+    if (g_hWndSound == NULL)
+    {
+	LPCTSTR clazz = "VimSound";
+	WNDCLASS wndclass = { 0, sound_wndproc, 0, 0, g_hinst, NULL, 0, 0, NULL, clazz };
+	RegisterClass(&wndclass);
+	g_hWndSound = CreateWindow(clazz, NULL, 0, 0, 0, 0, 0,
+		HWND_MESSAGE, NULL, g_hinst, NULL);
+    }
+
+    return g_hWndSound;
+}
 
     void
 f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
-    mciCommand = "open " & DBLQUOTE & fName & DBLQUOTE & " alias sound1"
-    ret = mciSendString(mciCommand, mciRetString, Len(mciRetString), 0)
+    smsg("sound_playevent() not implemented");
 }
 
     void
 f_sound_playfile(typval_T *argvars, typval_T *rettv)
 {
+    int		newid = sound_id + 1;
+    int		len;
+    char_u	*p, *esc;
+    soundcb_T	*soundcb;
+
+    rettv->v_type = VAR_NUMBER;
+
+    esc = vim_strsave_shellescape(
+		   tv_get_string(&argvars[0]), FALSE, FALSE);
+
+    len = STRLEN(esc) + 5 + 18 + 1;
+    p = alloc(len);
+    vim_snprintf((char *)p, len, "open %s alias sound%06d", esc, newid);
+    free(esc);
+    if (mciSendString((char*) p, NULL, 0, (HWND) sound_window()) != 0)
+    {
+	free(p);
+	rettv->vval.v_number = 0;
+	return;
+    }
+    free(p);
+
+    len = 23 + 1;
+    p = alloc(len);
+    vim_snprintf((char *)p, len, "play sound%06d notify", newid);
+    if (mciSendString((char*) p, NULL, 0, (HWND) sound_window()) != 0)
+    {
+	free(p);
+	rettv->vval.v_number = 0;
+	return;
+    }
+    free(p);
+
+    sound_id = newid;
+    rettv->vval.v_number = sound_id;
+
+    soundcb = get_sound_callback(&argvars[1]);
+    if (soundcb != NULL)
+    {
+	char buf[13];
+	vim_snprintf(buf, 12, "sound%06d", newid);
+	soundcb->sound_id = newid;
+	soundcb->device_id = mciGetDeviceID(buf);
+    }
 }
 
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
+    int	    id = tv_get_number(&argvars[0]);
+    int	    len;
+    char_u  *p;
+
+    len = 15 + 1;
+    p = alloc(len);
+    vim_snprintf((char *)p, len, "stop sound%06d", id);
+    if (mciSendString((char*) p, NULL, 0, 0) != 0)
+    {
+	free(p);
+	return;
+    }
+    free(p);
 }
 
     void
-f_sound_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
+    mciSendString("close all", NULL, 0, 0);
 }
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+sound_free(void)
+{
+    CloseWindow(g_hWndSound);
+
+    while (first_callback != NULL)
+	delete_sound_callback(first_callback);
+}
+#endif
 
 #endif // MSWIN
 

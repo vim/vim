@@ -972,6 +972,10 @@ CFLAGS += -I$(ICONV)
 DEFINES+=-DDYNAMIC_ICONV
 endif
 
+ifeq (yes, $(SOUND))
+LIB += -lwinmm
+endif
+
 ifeq (yes, $(USE_STDCPLUS))
 LINK = $(CXX)
  ifeq (yes, $(STATIC_STDCPLUS))
