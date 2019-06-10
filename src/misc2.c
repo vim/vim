@@ -1247,6 +1247,9 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
+# if defined(FEAT_SOUND)
+    sound_free();
+# endif
 # if defined(USE_XSMP)
     xsmp_close();
 # endif
