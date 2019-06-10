@@ -3242,15 +3242,19 @@ retnomove:
 	    || curwin->w_cursor.col != old_cursor.col)
 	count |= CURSOR_MOVED;		/* Cursor has moved */
 
-#ifdef FEAT_FOLDING
+# ifdef FEAT_FOLDING
     if (mouse_char == '+')
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;
-#endif
+# endif
 
     return count;
 }
+#endif
+
+// Functions also used for popup windows.
+#if defined(FEAT_MOUSE) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 
 /*
  * Compute the position in the buffer line from the posn on the screen in
@@ -3347,7 +3351,7 @@ mouse_comp_pos(
  * Returns NULL when something is wrong.
  */
     win_T *
-mouse_find_win(int *rowp, int *colp UNUSED)
+mouse_find_win(int *rowp, int *colp)
 {
     frame_T	*fp;
     win_T	*wp;
