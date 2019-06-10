@@ -75,6 +75,7 @@ anchors:
       - sh -e /etc/init.d/xvfb start && sleep 3
       - sudo modprobe snd-dummy
       - sudo usermod -a -G audio $USER
+      - do_test() { sg audio "sg $(id -gn) '$*'"; }
 
   osx: &osx
     os: osx
@@ -91,6 +92,8 @@ anchors:
       - rvm reset
       # Lua is not installed on Travis OSX
       - export LUA_PREFIX=/usr/local
+    before_script:
+      - do_test() { "$@"; }
 
   coverage: &coverage
     - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
@@ -139,7 +142,7 @@ script:
       "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
       cat if_ver.txt
     fi
-  - make ${SHADOWOPT} ${TEST}
+  - do_test make ${SHADOWOPT} ${TEST}
   - echo -en "travis_fold:end:test\\r\\033[0K"
 
 # instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
