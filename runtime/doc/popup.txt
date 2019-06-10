@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 02
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -89,15 +89,18 @@ Probably 2. is the best choice.
 
 
 IMPLEMENTATION:
-- Code is in popupwin.c
+- buffers remain after popup was deleted.
+- do not redraw whole window when popup was changed, mark affected lines for
+  redraw.
 - Why does 'nrformats' leak from the popup window buffer???
-- Make redrawing more efficient and avoid flicker.
-    First draw popups, creating a mask, use the mask in screen_line() when
-    drawing other windows and stuff.  Mask contains zindex of popups.
-    Keep mask until next update_screen(), use when drawing status lines.
-    Remove update_popup() calls after draw_tabline()/updating statusline
-    Fix redrawing problem with completion.
-    Fix redrawing problem when scrolling non-current window
+- Add 'balloonpopup': instead of showing text, let the callback open a balloon
+  and return the window ID.   The popup will then be closed when the mouse
+  moves, except when it moves inside the popup.
+- For the "moved" property also include mouse movement?
+- Make redrawing more efficient and avoid flicker:
+    - put popup menu also put in popup_mask?
+    - Use changes in popup_mask to decide what windows and range of lines to
+      redraw?
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use NOT_IN_POPUP_WINDOW for more commands.
 - Invoke filter with character before mapping?
@@ -114,6 +117,33 @@ IMPLEMENTATION:
 THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
 
 [functions to be moved to eval.txt later, keep overview of functions here]
+
+popup_atcursor({text}, {options})			 *popup_atcursor()*
+		Show the {text} above the cursor, and close it when the cursor
+		moves.  This works like: >
+			call popup_create({text}, {
+				\ 'pos': 'botleft',
+				\ 'line': 'cursor-1',
+				\ 'col': 'cursor',
+				\ 'moved': 'WORD',
+				\ })
+<		Use {options} to change the properties.
+
+
+							*popup_clear()*
+popup_clear()	Emergency solution to a misbehaving plugin: close all popup
+		windows.
+
+
+popup_close({id} [, {result}])				*popup_close()*
+		Close popup {id}.  The window and the associated buffer will
+		be deleted.
+
+		If the popup has a callback it will be called just before the
+		popup window is deleted.  If the optional {result} is present
+		it will be passed as the second argument of the callback.
+		Otherwise zero is passed to the callback.
+
 
 popup_create({text}, {options})				*popup_create()*
 		Open a popup window showing {text}, which is either:
@@ -133,16 +163,6 @@ popup_create({text}, {options})				*popup_create()*
 <		In case of failure zero is returned.
 
 
-popup_close({id} [, {result}])				*popup_close()*
-		Close popup {id}.  The window and the associated buffer will
-		be deleted.
-
-		If the popup has a callback it will be called just before the
-		popup window is deleted.  If the optional {result} is present
-		it will be passed as the second argument of the callback.
-		Otherwise zero is passed to the callback.
-
-
 popup_dialog({text}, {options})				*popup_dialog()*
 	  	{not implemented yet}
 		Just like |popup_create()| but with these default options: >
@@ -153,70 +173,6 @@ popup_dialog({text}, {options})				*popup_dialog()*
 				\ 'padding': [],
 				\})
 <		Use {options} to change the properties.
-
-
-popup_notification({text}, {options})			 *popup_notification()*
-	  	{not implemented yet}
-		Show the {text} for 3 seconds at the top of the Vim window.
-		This works like: >
-			call popup_create({text}, {
-				\ 'line': 1,
-				\ 'col': 10,
-				\ 'time': 3000,
-				\ 'tab': -1,
-				\ 'zindex': 200,
-				\ 'highlight': 'WarningMsg',
-				\ 'border': [],
-				\ })
-<		Use {options} to change the properties.
-
-
-popup_atcursor({text}, {options})			 *popup_atcursor()*
-		Show the {text} above the cursor, and close it when the cursor
-		moves.  This works like: >
-			call popup_create({text}, {
-				\ 'pos': 'botleft',
-				\ 'line': 'cursor-1',
-				\ 'col': 'cursor',
-				\ 'moved': 'WORD',
-				\ })
-<		Use {options} to change the properties.
-
-
-popup_menu({text}, {options})				 *popup_menu()*
-	  	{not implemented yet}
-		Show the {text} near the cursor, handle selecting one of the
-		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {text} should have multiple lines to make this
-		useful.  This works like: >
-			call popup_create({text}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'wrap': 0,
-				\ 'border': [],
-				\ 'filter': 'popup_filter_menu',
-				\ })
-<		Use {options} to change the properties.  Should at least set
-		"callback" to a function that handles the selected item.
-
-
-popup_hide({id})						*popup_hide()*
-		If {id} is a displayed popup, hide it now. If the popup has a
-		filter it will not be invoked for so long as the popup is
-		hidden.
-		If window {id} does not exist nothing happens.  If window {id}
-		exists but is not a popup window an error is given. *E993*
-
-popup_show({id})						*popup_show()*
-		If {id} is a hidden popup, show it now.
-		For {id} see `popup_hide()`.
-
-popup_move({id}, {options})					*popup_move()*
-		Move popup {id} to the position speficied with {options}.
-		{options} may contain the items from |popup_create()| that
-		specify the popup position: "line", "col", "pos", "maxheight",
-		"minheight", "maxwidth" and "minwidth".
-		For {id} see `popup_hide()`.
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
@@ -237,11 +193,6 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		pressing 'n'.
 
 
-popup_setoptions({id}, {options})			*popup_setoptions()*
-	  	{not implemented yet}
-		Override options in popup {id} with entries in {options}.
-
-
 popup_getoptions({id})					*popup_getoptions()*
 		Return the {options} for popup {id} in a Dict.
 		A zero value means the option was not set.  For "zindex" the
@@ -252,6 +203,7 @@ popup_getoptions({id})					*popup_getoptions()*
 			let hl = getwinvar(winid, '&wincolor')
 
 <		If popup window {id} is not found an empty Dict is returned.
+
 
 popup_getpos({id})					*popup_getpos()*
 		Return the position and size of popup {id}.  Returns a Dict
@@ -274,9 +226,64 @@ popup_getpos({id})					*popup_getpos()*
 		If popup window {id} is not found an empty Dict is returned.
 
 
-							*:popupclear* *:popupc*
-:popupc[lear]	Emergency solution to a misbehaving plugin: close all popup
-		windows.
+popup_hide({id})						*popup_hide()*
+		If {id} is a displayed popup, hide it now. If the popup has a
+		filter it will not be invoked for so long as the popup is
+		hidden.
+		If window {id} does not exist nothing happens.  If window {id}
+		exists but is not a popup window an error is given. *E993*
+
+
+popup_menu({text}, {options})				 *popup_menu()*
+	  	{not implemented yet}
+		Show the {text} near the cursor, handle selecting one of the
+		items with cursorkeys, and close it an item is selected with
+		Space or Enter. {text} should have multiple lines to make this
+		useful.  This works like: >
+			call popup_create({text}, {
+				\ 'pos': 'center',
+				\ 'zindex': 200,
+				\ 'wrap': 0,
+				\ 'border': [],
+				\ 'filter': 'popup_filter_menu',
+				\ })
+<		Use {options} to change the properties.  Should at least set
+		"callback" to a function that handles the selected item.
+
+
+popup_move({id}, {options})					*popup_move()*
+		Move popup {id} to the position speficied with {options}.
+		{options} may contain the items from |popup_create()| that
+		specify the popup position: "line", "col", "pos", "maxheight",
+		"minheight", "maxwidth" and "minwidth".
+		For {id} see `popup_hide()`.
+
+
+popup_notification({text}, {options})			 *popup_notification()*
+	  	{not implemented yet}
+		Show the {text} for 3 seconds at the top of the Vim window.
+		This works like: >
+			call popup_create({text}, {
+				\ 'line': 1,
+				\ 'col': 10,
+				\ 'time': 3000,
+				\ 'tab': -1,
+				\ 'zindex': 200,
+				\ 'highlight': 'WarningMsg',
+				\ 'border': [],
+				\ })
+<		Use {options} to change the properties.
+
+
+popup_show({id})						*popup_show()*
+		If {id} is a hidden popup, show it now.
+		For {id} see `popup_hide()`.
+
+
+popup_setoptions({id}, {options})			*popup_setoptions()*
+	  	{not implemented yet}
+		Override options in popup {id} with entries in {options}.
+
 
 
 POPUP BUFFER AND WINDOW					*popup-buffer*
@@ -405,7 +412,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			By default a double line is used all around when
 			'encoding' is "utf-8", otherwise ASCII characters are
 			used.
-	zindex		Priority for the popup, default 50.
+	zindex		Priority for the popup, default 50.  Mininum value is
+			1, maximum value is 32000.
 	time		Time in milliseconds after which the popup will close.
 			When omitted |popup_close()| must be used.
 	moved		Specifies to close the popup if the cursor moved:
@@ -496,7 +504,7 @@ Vim provides standard filters |popup_filter_menu()| and
 
 Note that "x" is the normal way to close a popup.  You may want to use Esc,
 but since many keys start with an Esc character, there may be a delay before
-Vim recognizes the Esc key.  If you do use Esc, it is reecommended to set the
+Vim recognizes the Esc key.  If you do use Esc, it is recommended to set the
 'ttimeoutlen' option to 100 and set 'timeout' and/or 'ttimeout'.
 
 

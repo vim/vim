@@ -61,7 +61,7 @@ func Test_simple_popup()
   call term_wait(buf)
   call term_sendkeys(buf, "0")
   call term_wait(buf)
-  call term_sendkeys(buf, ":popupclear\<CR>")
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_08', {})
 
   " clean up
@@ -188,6 +188,32 @@ func Test_popup_with_syntax_setbufvar()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_with_matches()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, ['111 222 333', '444 555 666'])
+	let winid = popup_create([
+	    \ '111 222 333',
+	    \ '444 555 666',
+	    \], {'line': 3, 'col': 10, 'border': []})
+	set hlsearch
+	/666
+	call matchadd('ErrorMsg', '111')
+	call matchadd('ErrorMsg', '444')
+	call win_execute(winid, "call matchadd('ErrorMsg', '111')")
+	call win_execute(winid, "call matchadd('ErrorMsg', '555')")
+  END
+  call writefile(lines, 'XtestPopupMatches')
+  let buf = RunVimInTerminal('-S XtestPopupMatches', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_matches', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMatches')
+endfunc
+
 func Test_popup_all_corners()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
@@ -245,7 +271,7 @@ func Test_popup_in_tab()
   call assert_equal(0, popup_getpos(winid).visible)
   quit
   call assert_equal(1, popup_getpos(winid).visible)
-  popupclear
+  call popup_clear()
 
   " global popup is visible in any tab
   let winid = popup_create("text", {'tab': -1})
@@ -254,7 +280,7 @@ func Test_popup_in_tab()
   call assert_equal(1, popup_getpos(winid).visible)
   quit
   call assert_equal(1, popup_getpos(winid).visible)
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_popup_valid_arguments()
@@ -262,13 +288,13 @@ func Test_popup_valid_arguments()
   let winid = popup_create("text", {"col": 0})
   let pos = popup_getpos(winid)
   call assert_inrange(&columns / 2 - 1, &columns / 2 + 1, pos.col)
-  popupclear
+  call popup_clear()
 
   " using cursor column has minimum value of 1
   let winid = popup_create("text", {"col": 'cursor-100'})
   let pos = popup_getpos(winid)
   call assert_equal(1, pos.col)
-  popupclear
+  call popup_clear()
 
   " center
   let winid = popup_create("text", {"pos": 'center'})
@@ -277,57 +303,57 @@ func Test_popup_valid_arguments()
   call assert_inrange(around - 1, around + 1, pos.col)
   let around = (&lines - pos.height) / 2
   call assert_inrange(around - 1, around + 1, pos.line)
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_popup_invalid_arguments()
   call assert_fails('call popup_create(666, {})', 'E714:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", "none")', 'E715:')
-  popupclear
+  call popup_clear()
 
   call assert_fails('call popup_create("text", {"col": "xxx"})', 'E475:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"col": "cursor8"})', 'E15:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"col": "cursor+x"})', 'E15:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"col": "cursor+8x"})', 'E15:')
-  popupclear
+  call popup_clear()
 
   call assert_fails('call popup_create("text", {"line": "xxx"})', 'E475:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"line": "cursor8"})', 'E15:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"line": "cursor+x"})', 'E15:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"line": "cursor+8x"})', 'E15:')
-  popupclear
+  call popup_clear()
 
   call assert_fails('call popup_create("text", {"pos": "there"})', 'E475:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"padding": "none"})', 'E714:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"border": "none"})', 'E714:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"borderhighlight": "none"})', 'E714:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create("text", {"borderchars": "none"})', 'E714:')
-  popupclear
+  call popup_clear()
 
   call assert_fails('call popup_create([{"text": "text"}, 666], {})', 'E715:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create([{"text": "text", "props": "none"}], {})', 'E714:')
-  popupclear
+  call popup_clear()
   call assert_fails('call popup_create([{"text": "text", "props": ["none"]}], {})', 'E715:')
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_win_execute_closing_curwin()
   split
   let winid = popup_create('some text', {})
   call assert_fails('call win_execute(winid, winnr() .. "close")', 'E994')
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_win_execute_not_allowed()
@@ -348,7 +374,7 @@ func Test_win_execute_not_allowed()
   call assert_fails('call win_execute(winid, "wincmd w")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd t")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd b")', 'E994:')
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_popup_with_wrap()
@@ -744,7 +770,7 @@ func Test_popup_filter()
   call assert_equal(-1, winbufnr(winid))
 
   delfunc MyPopupFilter
-  popupclear
+  call popup_clear()
 endfunc
 
 func Test_popup_close_callback()
@@ -918,7 +944,7 @@ func Test_popup_position_adjust()
     endfor
   endfor
 
-  popupclear
+  call popup_clear()
   %bwipe!
 endfunc
 
@@ -984,7 +1010,7 @@ func Test_adjust_left_past_screen_width()
   call popup_close( p )
   redraw
 
-  popupclear
+  call popup_clear()
   %bwipe!
 endfunc
 
@@ -1000,7 +1026,7 @@ func Test_popup_moved()
   " trigger the check for last_cursormoved by going into insert mode
   call feedkeys("li\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
-  popupclear
+  call popup_clear()
 
   exe "normal gg0/word\<CR>"
   let winid = popup_atcursor('text', {'moved': 'word'})
@@ -1008,7 +1034,7 @@ func Test_popup_moved()
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("hi\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
-  popupclear
+  call popup_clear()
 
   exe "normal gg0/word\<CR>"
   let winid = popup_atcursor('text', {'moved': 'word'})
@@ -1020,7 +1046,7 @@ func Test_popup_moved()
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("eli\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
-  popupclear
+  call popup_clear()
 
   " WORD is the default
   exe "normal gg0/WORD\<CR>"
@@ -1033,7 +1059,7 @@ func Test_popup_moved()
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("Eli\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
-  popupclear
+  call popup_clear()
 
   exe "normal gg0/word\<CR>"
   let winid = popup_atcursor('text', {'moved': [5, 10]})
@@ -1044,7 +1070,7 @@ func Test_popup_moved()
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("eli\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
-  popupclear
+  call popup_clear()
 
   bwipe!
   call test_override('ALL', 0)

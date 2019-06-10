@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 May 29
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jun 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -609,6 +609,7 @@ String manipulation:					*string-functions*
 	strcharpart()		get part of a string using char index
 	strgetchar()		get character from a string using char index
 	expand()		expand special keywords
+	expandcmd()		expand a command like done for `:edit`
 	iconv()			convert text from one encoding to another
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters

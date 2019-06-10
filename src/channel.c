@@ -2154,10 +2154,66 @@ remove_json_node(jsonq_T *head, jsonq_T *node)
 }
 
 /*
+ * Add "id" to the list of JSON message IDs we are waiting on.
+ */
+    static void
+channel_add_block_id(chanpart_T *chanpart, int id)
+{
+    garray_T *gap = &chanpart->ch_block_ids;
+
+    if (gap->ga_growsize == 0)
+	ga_init2(gap, (int)sizeof(int), 10);
+    if (ga_grow(gap, 1) == OK)
+    {
+	((int *)gap->ga_data)[gap->ga_len] = id;
+	++gap->ga_len;
+    }
+}
+
+/*
+ * Remove "id" from the list of JSON message IDs we are waiting on.
+ */
+    static void
+channel_remove_block_id(chanpart_T *chanpart, int id)
+{
+    garray_T	*gap = &chanpart->ch_block_ids;
+    int		i;
+
+    for (i = 0; i < gap->ga_len; ++i)
+	if (((int *)gap->ga_data)[i] == id)
+	{
+	    --gap->ga_len;
+	    if (i < gap->ga_len)
+	    {
+		int *p = ((int *)gap->ga_data) + i;
+
+		mch_memmove(p, p + 1, (gap->ga_len - i) * sizeof(int));
+	    }
+	    return;
+	}
+    siemsg("INTERNAL: channel_remove_block_id: cannot find id %d", id);
+}
+
+/*
+ * Return TRUE if "id" is in the list of JSON message IDs we are waiting on.
+ */
+    static int
+channel_has_block_id(chanpart_T *chanpart, int id)
+{
+    garray_T	*gap = &chanpart->ch_block_ids;
+    int		i;
+
+    for (i = 0; i < gap->ga_len; ++i)
+	if (((int *)gap->ga_data)[i] == id)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Get a message from the JSON queue for channel "channel".
  * When "id" is positive it must match the first number in the list.
- * When "id" is zero or negative jut get the first message.  But not the one
- * with id ch_block_id.
+ * When "id" is zero or negative jut get the first message.  But not one
+ * in the ch_block_ids list.
  * When "without_callback" is TRUE also get messages that were pushed back.
  * Return OK when found and return the value in "rettv".
  * Return FAIL otherwise.
@@ -2182,7 +2238,8 @@ channel_get_json(
 	    && ((id > 0 && tv->v_type == VAR_NUMBER && tv->vval.v_number == id)
 	      || (id <= 0 && (tv->v_type != VAR_NUMBER
 		 || tv->vval.v_number == 0
-		 || tv->vval.v_number != channel->ch_part[part].ch_block_id))))
+		 || !channel_has_block_id(
+				&channel->ch_part[part], tv->vval.v_number)))))
 	{
 	    *rettv = item->jq_value;
 	    if (tv->v_type == VAR_NUMBER)
@@ -3050,6 +3107,7 @@ channel_clear_one(channel_T *channel, ch_part_T part)
     }
 
     free_callback(&ch_part->ch_callback);
+    ga_clear(&ch_part->ch_block_ids);
 
     while (ch_part->ch_writeque.wq_next != NULL)
 	remove_from_writeque(&ch_part->ch_writeque,
@@ -3480,6 +3538,8 @@ channel_read_block(
  * result in "rettv".
  * When "id" is -1 accept any message;
  * Blocks until the message is received or the timeout is reached.
+ * In corner cases this can be called recursively, that is why ch_block_ids is
+ * a list.
  */
     static int
 channel_read_json_block(
@@ -3494,17 +3554,19 @@ channel_read_json_block(
     int		timeout;
     chanpart_T	*chanpart = &channel->ch_part[part];
 
-    ch_log(channel, "Reading JSON");
-    if (id != -1)
-	chanpart->ch_block_id = id;
+    ch_log(channel, "Blocking read JSON for id %d", id);
+    if (id >= 0)
+	channel_add_block_id(chanpart, id);
     for (;;)
     {
 	more = channel_parse_json(channel, part);
 
-	/* search for message "id" */
+	// search for message "id"
 	if (channel_get_json(channel, part, id, TRUE, rettv) == OK)
 	{
-	    chanpart->ch_block_id = 0;
+	    if (id >= 0)
+		channel_remove_block_id(chanpart, id);
+	    ch_log(channel, "Received JSON for id %d", id);
 	    return OK;
 	}
 
@@ -3551,7 +3613,7 @@ channel_read_json_block(
 		if (timeout == timeout_arg)
 		{
 		    if (fd != INVALID_FD)
-			ch_log(channel, "Timed out");
+			ch_log(channel, "Timed out on id %d", id);
 		    break;
 		}
 	    }
@@ -3559,7 +3621,8 @@ channel_read_json_block(
 		channel_read(channel, part, "channel_read_json_block");
 	}
     }
-    chanpart->ch_block_id = 0;
+    if (id >= 0)
+	channel_remove_block_id(chanpart, id);
     return FAIL;
 }
 

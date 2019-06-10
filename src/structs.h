@@ -1680,8 +1680,8 @@ typedef struct {
 
     readq_T	ch_head;	/* header for circular raw read queue */
     jsonq_T	ch_json_head;	/* header for circular json read queue */
-    int		ch_block_id;	/* ID that channel_read_json_block() is
-				   waiting for */
+    garray_T	ch_block_ids;	/* list of IDs that channel_read_json_block()
+				   is waiting for */
     /* When ch_wait_len is non-zero use ch_deadline to wait for incomplete
      * message to be complete. The value is the length of the incomplete
      * message when the deadline was set.  If it gets longer (something was

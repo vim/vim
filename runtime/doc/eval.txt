@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 06
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2326,6 +2326,7 @@ extend({expr1}, {expr2} [, {expr3}])
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
+expandcmd({expr})		String	expand {expr} like with `:edit`
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable({file})		Number	|TRUE| if {file} is a readable file
 filewritable({file})		Number	|TRUE| if {file} is a writable file
@@ -2622,12 +2623,12 @@ sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
 sort({list} [, {func} [, {dict}]])
 				List	sort {list}, using {func} to compare
+sound_clear()			none	stop playing all sounds
 sound_playevent({name} [, {callback}])
 				Number	play an event sound
-sound_playfile({name} [, {callback}])
-				Number	play a sound file
+sound_playfile({path} [, {callback}])
+				Number	play sound file {path}
 sound_stop({id})		none	stop playing sound {id}
-sound_stopall()			none	stop playing all sounds
 soundfold({word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
 spellsuggest({word} [, {max} [, {capital}]])
@@ -4218,6 +4219,14 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 		See |glob()| for finding existing files.  See |system()| for
 		getting the raw output of an external command.
 
+expandcmd({expr})					*expandcmd()*
+		Expand special items in {expr} like what is done for an Ex
+		command such as `:edit`.  This expands special keywords, like
+		with |expand()|, and environment variables, anywhere in
+		{expr}.  Returns the expanded string.
+		Example: >
+			:echo expandcmd('make %<.o')
+<
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr1} and {expr2} must be both |Lists| or both
 		|Dictionaries|.
@@ -7351,7 +7360,7 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 				not just the first one
 		A property matches when either "id" or "type" matches.
 		If buffer "bufnr" does not exist you get an error message.
-		If buffer 'bufnr" is not loaded then nothing happens.
+		If buffer "bufnr" is not loaded then nothing happens.
 
 		Returns the number of properties that were removed.
 
@@ -8843,6 +8852,10 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 			   return a:i1 - a:i2
 			endfunc
 <
+sound_clear()						*sound_clear()*
+		Stop playing all sounds.
+		{only available when compiled with the +sound feature}
+
 							*sound_playevent()*
 sound_playevent({name} [, {callback}])
 		Play a sound identified by {name}.  Which event names are
@@ -8868,22 +8881,17 @@ sound_playevent({name} [, {callback}])
 		{only available when compiled with the +sound feature}
 
 							*sound_playfile()*
-sound_playfile({name} [, {callback}])
-		Like `sound_playevent()` but play sound file {name}.  {name}
+sound_playfile({path} [, {callback}])
+		Like `sound_playevent()` but play sound file {path}.  {path}
 		must be a full path.  On Ubuntu you may find files to play
 		with this command: >
 		    :!find /usr/share/sounds -type f | grep -v index.theme
-
 <		{only available when compiled with the +sound feature}
 
 
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
-		{only available when compiled with the +sound feature}
-
-sound_stopall()						*sound_stopall()*
-		Stop playing all sounds.
 		{only available when compiled with the +sound feature}
 
 							*soundfold()*
@@ -13074,19 +13082,22 @@ Sometimes old syntax of functionality gets in the way of making Vim better.
 When support is taken away this will break older Vim scripts.  To make this
 explicit the |:scriptversion| command can be used.  When a Vim script is not
 compatible with older versions of Vim this will give an explicit error,
-instead of failing in mysterious ways. >
+instead of failing in mysterious ways.
 
+							*scriptversion-1*  >
  :scriptversion 1
 <	This is the original Vim script, same as not using a |:scriptversion|
 	command.  Can be used to go back to old syntax for a range of lines.
 	Test for support with: >
 		has('vimscript-1')
 
+<							*scriptversion-2*  >
  :scriptversion 2
 <	String concatenation with "." is not supported, use ".." instead.
 	This avoids the ambiguity using "." for Dict member access and
 	floating point numbers.  Now ".5" means the number 0.5.
->
+
+							*scriptversion-3*  >
  :scriptversion 3
 <	All |vim-variable|s must be prefixed by "v:".  E.g. "version" doesn't
 	work as |v:version| anymore, it can be used as a normal variable.

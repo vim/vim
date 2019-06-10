@@ -711,6 +711,15 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 }
 
 /*
+ * popup_clear()
+ */
+    void
+f_popup_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    close_all_popups();
+}
+
+/*
  * popup_create({text}, {options})
  */
     void
@@ -926,12 +935,6 @@ close_all_popups(void)
 	popup_close(first_popupwin->w_id);
     while (curtab->tp_first_popupwin != NULL)
 	popup_close(curtab->tp_first_popupwin->w_id);
-}
-
-    void
-ex_popupclear(exarg_T *eap UNUSED)
-{
-    close_all_popups();
 }
 
 /*
