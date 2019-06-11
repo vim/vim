@@ -1029,9 +1029,16 @@ may_update_popup_mask(int type)
     win_T	*wp;
     short	*mask;
     int		line, col;
+    int		redraw_all = FALSE;
 
-    if (popup_mask_tab != curtab)
+    // Need to recompute when switching tabs.
+    // Also recompute when the type is CLEAR or NOT_VALID, something basic
+    // (such as the screen size) must have changed.
+    if (popup_mask_tab != curtab || type >= NOT_VALID)
+    {
 	popup_mask_refresh = TRUE;
+	redraw_all = TRUE;
+    }
     if (!popup_mask_refresh)
     {
 	// Check if any buffer has changed.
@@ -1070,7 +1077,8 @@ may_update_popup_mask(int type)
 	popup_visible = TRUE;
 
 	// Recompute the position if the text changed.
-	if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
+	if (redraw_all
+		|| wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	    popup_adjust_position(wp);
 
 	// the width and height are for the inside, add the padding and

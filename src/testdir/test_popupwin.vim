@@ -41,6 +41,12 @@ func Test_simple_popup()
   call term_sendkeys(buf, ":quit!\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_04', {})
 
+  " set 'columns' to a small value, size must be recomputed
+  call term_sendkeys(buf, ":let cols = &columns\<CR>")
+  call term_sendkeys(buf, ":set columns=12\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_04a', {})
+  call term_sendkeys(buf, ":let &columns = cols\<CR>")
+
   " resize popup, show empty line at bottom
   call term_sendkeys(buf, ":call popup_move(popupwin, {'minwidth': 15, 'maxwidth': 25, 'minheight': 3, 'maxheight': 5})\<CR>")
   call term_sendkeys(buf, ":redraw\<CR>")
