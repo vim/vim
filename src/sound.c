@@ -223,6 +223,10 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		    typval_T	argv[3];
 		    typval_T	rettv;
 		    int		dummy;
+		    char	buf[16];
+
+		    vim_snprintf(buf, sizeof(buf), "close sound%06d", p->sound_id);
+		    mciSendString(buf, NULL, 0, 0);
 
 		    argv[0].v_type = VAR_NUMBER;
 		    argv[0].vval.v_number = p->sound_id;
@@ -272,35 +276,44 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     int		newid = sound_id + 1;
     int		len;
     char_u	*p, *esc;
+    WCHAR	*wp;
     soundcb_T	*soundcb;
+    char	buf[32];
+    MCIERROR	err;
 
     rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = 0;
 
     esc = vim_strsave_shellescape(
 		   tv_get_string(&argvars[0]), FALSE, FALSE);
 
     len = STRLEN(esc) + 5 + 18 + 1;
     p = alloc(len);
+    if (p == NULL)
+    {
+	free(esc);
+	return;
+    }
     vim_snprintf((char *)p, len, "open %s alias sound%06d", esc, newid);
     free(esc);
-    if (mciSendString((char*) p, NULL, 0, (HWND) sound_window()) != 0)
-    {
-	free(p);
-	rettv->vval.v_number = 0;
-	return;
-    }
-    free(p);
 
-    len = 23 + 1;
-    p = alloc(len);
-    vim_snprintf((char *)p, len, "play sound%06d notify", newid);
-    if (mciSendString((char*) p, NULL, 0, (HWND) sound_window()) != 0)
+    wp = enc_to_utf16((char_u *)p, NULL);
+    free(p);
+    if (wp == NULL)
+	return;
+
+    err = mciSendStringW(wp, NULL, 0, (HWND) sound_window());
+    free(wp);
+    if (err != 0)
+	return;
+
+    vim_snprintf(buf, sizeof(buf), "play sound%06d notify", newid);
+    if (mciSendString(buf, NULL, 0, (HWND) sound_window()) != 0)
     {
-	free(p);
-	rettv->vval.v_number = 0;
+	vim_snprintf(buf, sizeof(buf), "close sound%06d", newid);
+	mciSendString(buf, NULL, 0, 0);
 	return;
     }
-    free(p);
 
     sound_id = newid;
     rettv->vval.v_number = sound_id;
@@ -308,8 +321,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     soundcb = get_sound_callback(&argvars[1]);
     if (soundcb != NULL)
     {
-	char buf[13];
-	vim_snprintf(buf, 12, "sound%06d", newid);
+	vim_snprintf(buf, sizeof(buf), "sound%06d", newid);
 	soundcb->sound_id = newid;
 	soundcb->device_id = mciGetDeviceID(buf);
     }
@@ -319,18 +331,10 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    id = tv_get_number(&argvars[0]);
-    int	    len;
-    char_u  *p;
+    char    buf[16];
 
-    len = 15 + 1;
-    p = alloc(len);
-    vim_snprintf((char *)p, len, "stop sound%06d", id);
-    if (mciSendString((char*) p, NULL, 0, 0) != 0)
-    {
-	free(p);
-	return;
-    }
-    free(p);
+    vim_snprintf(buf, sizeof(buf), "stop sound%06d", id);
+    mciSendString(buf, NULL, 0, 0);
 }
 
     void
