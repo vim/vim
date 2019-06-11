@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 06
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,23 +42,22 @@ Ongoing work on text properties, see src/textprop.c
 
 Popup windows are being implemented, see |popup-window|.
 
-Listener causes extra } to be inserted. (Paul Jolly, #4455)
+Include tests:
+    test_assert.vim
+    test_paste.vim
+    shared.vim
 
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
-Patch for Chinese translations for nsis. (#4407)  Comments handled?
-
 Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
 'shortmess', filled on demand and cached until search changes.
 
-listener callback is invoked while another is still busy? (Paul Jolly)
-Should not happen because of text lock.
+Listener causes extra } to be inserted. (Paul Jolly, #4455)
 
-When 'rightleft' is set search pattern is not displayed. (#4488)
-Caused by 8.1.1375 ?
+Improvement to Travis config: Ozaki Kiichi, #4521
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -173,7 +172,13 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
+Add "number" to 'signcolumn': Put signs in the number column if it exists.
+Otherwise behave like "yes". (Adam Stankiewicz, #4515)
+
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
+
+Patch to use timers in matchparen. (Daniel Hahler, #1338)
+Ready to include now?
 
 The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
@@ -190,9 +195,16 @@ Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
 
+Should we include some part of pull request #4505, not increment changedtick
+in some cases?  E.g. for ":write" when the changed flag was already off, the
+buffer didn't change at all.
+
 Patch to add getreginfo() and setreg() with an option to set the unnamed
 register "", So that registers can be saved and fully restored.
 (Andy Massimino, 2018 Aug 24, #3370)
+
+Line numbers in profile are off when function was defined with ":execute".
+(Daniel Hahler, #4511)
 
 Add a way to create an empty, hidden buffer.  Like doing ":new|hide".
 ":let buf = bufcreate('name')

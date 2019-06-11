@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 09
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,7 +6,7 @@
 
 Displaying text in floating window.			*popup* *popup-window*
 
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
 1. Introduction			|popup-intro|
 2. Functions			|popup-functions|
@@ -76,31 +76,21 @@ else.  E.g. if you use `popup_atcursor()` the popup normally shows just above
 the current cursor position, but if the cursor is close to the top of the Vim
 window it will be placed below the cursor position.
 
+When the screen scrolls up for output of an Ex command, popups move too, so
+that they will not cover the output.
 
 
-TODO:
-
-Scrolling: When the screen scrolls up for output of an Ex command, what
-happens with popups?
-1. Stay where they are.  Problem: listed text may go behind and can't be read.
-2. Scroll with the page.  What if they get updated?  Either postpone, or take
-   the scroll offset into account.
-Probably 2. is the best choice.
 
 
 IMPLEMENTATION:
-- buffers remain after popup was deleted.
-- do not redraw whole window when popup was changed, mark affected lines for
-  redraw.
+- buffers remain after a popup was deleted.
 - Why does 'nrformats' leak from the popup window buffer???
-- Add 'balloonpopup': instead of showing text, let the callback open a balloon
-  and return the window ID.   The popup will then be closed when the mouse
-  moves, except when it moves inside the popup.
+- Add 'balloonpopup': instead of showing text, let the callback open a popup
+  window and return the window ID.   The popup will then be closed when the
+  mouse moves, except when it moves inside the popup.
 - For the "moved" property also include mouse movement?
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
-    - Use changes in popup_mask to decide what windows and range of lines to
-      redraw?
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use NOT_IN_POPUP_WINDOW for more commands.
 - Invoke filter with character before mapping?
@@ -114,7 +104,7 @@ IMPLEMENTATION:
 ==============================================================================
 2. Functions						*popup-functions*
 
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
 [functions to be moved to eval.txt later, keep overview of functions here]
 
@@ -164,7 +154,7 @@ popup_create({text}, {options})				*popup_create()*
 
 
 popup_dialog({text}, {options})				*popup_dialog()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Just like |popup_create()| but with these default options: >
 			call popup_create({text}, {
 				\ 'pos': 'center',
@@ -176,7 +166,7 @@ popup_dialog({text}, {options})				*popup_dialog()*
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Filter that can be used for a popup. It handles the cursor
 		keys to move the selected index in the popup. Space and Enter
 		can be used to select an item.  Invokes the "callback" of the
@@ -185,7 +175,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Filter that can be used for a popup. It handles only the keys
 		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
 		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
@@ -216,7 +206,7 @@ popup_getpos({id})					*popup_getpos()*
 		    core_line	screen line of the text box
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
-		    visible 	one if the popup is displayed, zero if hidden
+		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
 		from the values in `popup_getoptions()` for the sizing and
 		positioning mechanism applied.
@@ -235,7 +225,7 @@ popup_hide({id})						*popup_hide()*
 
 
 popup_menu({text}, {options})				 *popup_menu()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Show the {text} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
 		Space or Enter. {text} should have multiple lines to make this
@@ -260,7 +250,7 @@ popup_move({id}, {options})					*popup_move()*
 
 
 popup_notification({text}, {options})			 *popup_notification()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Show the {text} for 3 seconds at the top of the Vim window.
 		This works like: >
 			call popup_create({text}, {
@@ -281,7 +271,7 @@ popup_show({id})						*popup_show()*
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
-	  	{not implemented yet}
+		{not implemented yet}
 		Override options in popup {id} with entries in {options}.
 
 
@@ -292,7 +282,7 @@ A new buffer is created to hold the text and text properties of the popup
 window.  The buffer is always associated with the popup window and
 manipulation is restricted:
 - the buffer has no name
-- 'buftype' is "popup" 
+- 'buftype' is "popup"
 - 'swapfile' is off
 - 'bufhidden' is "hide"
 - 'buflisted' is off
@@ -424,7 +414,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			  {start} or after {end}
 			The popup also closes if the cursor moves to another
 			line or to another window.
-	filter		A callback that can filter typed characters, see 
+	filter		A callback that can filter typed characters, see
 			|popup-filter|.
 	callback	A callback that is called when the popup closes, e.g.
 			when using |popup_filter_menu()|, see |popup-callback|.
@@ -486,7 +476,7 @@ key, e.g.: >
 	    return 1
 	  endif
 	  return 0
-  	endfunc
+	endfunc
 
 Currently the key is what results after any mapping.  This may change...
 

@@ -571,8 +571,7 @@ popup_adjust_position(win_T *wp)
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
-	// TODO: redraw only windows that were below the popup.
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(VALID);
 	popup_mask_refresh = TRUE;
     }
 }

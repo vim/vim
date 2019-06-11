@@ -73,6 +73,7 @@ EXTERN short	*TabPageIdxs INIT(= NULL);
 #ifdef FEAT_TEXT_PROP
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
+EXTERN short	*popup_mask_next INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
 EXTERN int	popup_mask_refresh INIT(= TRUE);

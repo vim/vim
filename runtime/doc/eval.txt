@@ -8868,7 +8868,7 @@ sound_playevent({name} [, {callback}])
 		finished.  The first argument is the sound ID, the second
 		argument is the status:
 			0	sound was played to the end
-			1	sound was interruped
+			1	sound was interrupted
 			2	error occured after sound started
 		Example: >
 		   func Callback(id, status)
@@ -8878,7 +8878,7 @@ sound_playevent({name} [, {callback}])
 
 <		Returns the sound ID, which can be passed to `sound_stop()`.
 		Returns zero if the sound could not be played.
-		{only available when compiled with the +sound feature}
+		{only available when compiled with the |+sound| feature}
 
 							*sound_playfile()*
 sound_playfile({path} [, {callback}])
@@ -8886,13 +8886,13 @@ sound_playfile({path} [, {callback}])
 		must be a full path.  On Ubuntu you may find files to play
 		with this command: >
 		    :!find /usr/share/sounds -type f | grep -v index.theme
-<		{only available when compiled with the +sound feature}
+<		{only available when compiled with the |+sound| feature}
 
 
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
-		{only available when compiled with the +sound feature}
+		{only available when compiled with the |+sound| feature}
 
 							*soundfold()*
 soundfold({word})

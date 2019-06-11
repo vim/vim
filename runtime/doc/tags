@@ -1351,6 +1351,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +scrollbind	various.txt	/*+scrollbind*
 +signs	various.txt	/*+signs*
 +smartindent	various.txt	/*+smartindent*
++sound	various.txt	/*+sound*
++spell	various.txt	/*+spell*
 +startuptime	various.txt	/*+startuptime*
 +statusline	various.txt	/*+statusline*
 +sun_workshop	various.txt	/*+sun_workshop*

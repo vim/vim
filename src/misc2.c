@@ -1247,6 +1247,9 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
+# if defined(FEAT_SOUND)
+    sound_free();
+# endif
 # if defined(USE_XSMP)
     xsmp_close();
 # endif
@@ -3251,15 +3254,7 @@ call_shell(char_u *cmd, int opt)
 	/* The external command may update a tags file, clear cached tags. */
 	tag_freematch();
 
-	if (cmd == NULL || *p_sxq == NUL
-#if defined(FEAT_GUI_MSWIN) && defined(FEAT_TERMINAL)
-		|| (
-# ifdef VIMDLL
-		    gui.in_use &&
-# endif
-		    vim_strchr(p_go, GO_TERMINAL) != NULL)
-#endif
-		)
+	if (cmd == NULL || *p_sxq == NUL)
 	    retval = mch_call_shell(cmd, opt);
 	else
 	{
