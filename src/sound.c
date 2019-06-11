@@ -214,7 +214,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     soundcb_T	*p;
 
-    switch(message)
+    switch (message)
     {
 	case MM_MCINOTIFY:
 	    for (p = first_callback; p != NULL; p = p->snd_next)
