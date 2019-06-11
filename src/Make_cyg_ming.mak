@@ -107,7 +107,7 @@ TERMINAL=no
 endif
 
 # Set to yes to enable sound support.
-ifeq (HUGE, $(FEATURES))
+ifneq ($(findstring $(FEATURES),BIG HUGE),)
 SOUND=yes
 else
 SOUND=no
