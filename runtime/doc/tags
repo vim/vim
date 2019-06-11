@@ -2816,8 +2816,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :pop	tagsrch.txt	/*:pop*
 :popu	gui.txt	/*:popu*
 :popup	gui.txt	/*:popup*
-:popupc	popup.txt	/*:popupc*
-:popupclear	popup.txt	/*:popupclear*
 :pp	windows.txt	/*:pp*
 :ppop	windows.txt	/*:ppop*
 :pr	various.txt	/*:pr*
@@ -6138,6 +6136,7 @@ exp()	eval.txt	/*exp()*
 expand()	eval.txt	/*expand()*
 expand-env	options.txt	/*expand-env*
 expand-environment-var	options.txt	/*expand-environment-var*
+expandcmd()	eval.txt	/*expandcmd()*
 expr	eval.txt	/*expr*
 expr-!	eval.txt	/*expr-!*
 expr-!=	eval.txt	/*expr-!=*
@@ -8227,6 +8226,7 @@ popup-props	popup.txt	/*popup-props*
 popup-window	popup.txt	/*popup-window*
 popup.txt	popup.txt	/*popup.txt*
 popup_atcursor()	popup.txt	/*popup_atcursor()*
+popup_clear()	popup.txt	/*popup_clear()*
 popup_close()	popup.txt	/*popup_close()*
 popup_create()	popup.txt	/*popup_create()*
 popup_create-usage	popup.txt	/*popup_create-usage*
@@ -8581,6 +8581,9 @@ script-variable	eval.txt	/*script-variable*
 scriptnames-dictionary	eval.txt	/*scriptnames-dictionary*
 scriptout-changed	version4.txt	/*scriptout-changed*
 scriptversion	eval.txt	/*scriptversion*
+scriptversion-1	eval.txt	/*scriptversion-1*
+scriptversion-2	eval.txt	/*scriptversion-2*
+scriptversion-3	eval.txt	/*scriptversion-3*
 scroll-binding	scroll.txt	/*scroll-binding*
 scroll-cursor	scroll.txt	/*scroll-cursor*
 scroll-down	scroll.txt	/*scroll-down*
@@ -8690,6 +8693,10 @@ slow-terminal	term.txt	/*slow-terminal*
 socket-interface	channel.txt	/*socket-interface*
 sort()	eval.txt	/*sort()*
 sorting	change.txt	/*sorting*
+sound_clear()	eval.txt	/*sound_clear()*
+sound_playevent()	eval.txt	/*sound_playevent()*
+sound_playfile()	eval.txt	/*sound_playfile()*
+sound_stop()	eval.txt	/*sound_stop()*
 soundfold()	eval.txt	/*soundfold()*
 space	intro.txt	/*space*
 spec-customizing	pi_spec.txt	/*spec-customizing*

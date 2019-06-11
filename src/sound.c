@@ -209,7 +209,7 @@ sound_free(void)
 
 static HWND g_hWndSound = NULL;
 
-    LRESULT CALLBACK
+    static LRESULT CALLBACK
 sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     soundcb_T	*p;
