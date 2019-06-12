@@ -4926,7 +4926,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col);
+    wp = mouse_find_win(&row, &col, FALSE);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
@@ -5382,7 +5382,7 @@ gui_wingoto_xy(int x, int y)
 
     if (row >= 0 && col >= 0)
     {
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FAIL_POPUP);
 	if (wp != NULL && wp != curwin)
 	    win_goto(wp);
     }

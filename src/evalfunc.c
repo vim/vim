@@ -5154,12 +5154,18 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	    {
 		/* Find the window at the mouse coordinates and compute the
 		 * text position. */
-		win = mouse_find_win(&row, &col);
+		win = mouse_find_win(&row, &col, FIND_POPUP);
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum);
-		for (wp = firstwin; wp != win; wp = wp->w_next)
-		    ++winnr;
+# ifdef FEAT_TEXT_PROP
+		if (bt_popup(win->w_buffer))
+		    winnr = 0;
+		else
+# endif
+		    for (wp = firstwin; wp != win && wp != NULL;
+							       wp = wp->w_next)
+			++winnr;
 		set_vim_var_nr(VV_MOUSE_WIN, winnr);
 		set_vim_var_nr(VV_MOUSE_WINID, win->w_id);
 		set_vim_var_nr(VV_MOUSE_LNUM, lnum);

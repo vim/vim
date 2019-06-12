@@ -1455,12 +1455,19 @@ clip_invert_rectangle(
     int		width,
     int		invert)
 {
+#ifdef FEAT_TEXT_PROP
+    // this goes on top of all popup windows
+    screen_zindex = 32000;
+#endif
 #ifdef FEAT_GUI
     if (gui.in_use)
 	gui_mch_invert_rectangle(row, col, height, width);
     else
 #endif
 	screen_draw_rectangle(row, col, height, width, invert);
+#ifdef FEAT_TEXT_PROP
+    screen_zindex = 0;
+#endif
 }
 
 /*
@@ -2833,6 +2840,9 @@ jump_to_mouse(
 #ifdef FEAT_MENU
     static int  in_winbar = FALSE;
 #endif
+#ifdef FEAT_TEXT_PROP
+    static int  in_popup_win = FALSE;
+#endif
     static int	prev_row = -1;
     static int	prev_col = -1;
     static win_T *dragwin = NULL;	/* window being dragged */
@@ -2879,7 +2889,7 @@ retnomove:
 	     * as a second click in the WinBar. */
 	    if ((mod_mask & MOD_MASK_MULTI_CLICK) && !(flags & MOUSE_RELEASED))
 	    {
-		wp = mouse_find_win(&row, &col);
+		wp = mouse_find_win(&row, &col, FAIL_POPUP);
 		if (wp == NULL)
 		    return IN_UNKNOWN;
 		winbar_click(wp, col);
@@ -2893,8 +2903,13 @@ retnomove:
 	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
-	/* Continue a modeless selection in another window. */
+	// Continue a modeless selection in another window.
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
+	    return IN_OTHER_WIN;
+#endif
+#ifdef FEAT_TEXT_PROP
+	// Continue a modeless selection in a popup window.
+	if (in_popup_win)
 	    return IN_OTHER_WIN;
 #endif
 	return IN_BUFFER;
@@ -2925,11 +2940,26 @@ retnomove:
 	    return IN_UNKNOWN;
 
 	/* find the window where the row is in */
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
 	dragwin = NULL;
 
+#ifdef FEAT_TEXT_PROP
+	// Click in a popup window may start modeless selection, but not much
+	// else.
+	if (bt_popup(wp->w_buffer))
+	{
+	    on_sep_line = 0;
+	    in_popup_win = TRUE;
+# ifdef FEAT_CLIPBOARD
+	    return IN_OTHER_WIN;
+# else
+	    return IN_UNKNOWN;
+# endif
+	}
+	    in_popup_win = FALSE;
+#endif
 #ifdef FEAT_MENU
 	if (row == -1)
 	{
@@ -3094,6 +3124,11 @@ retnomove:
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	/* Continue a modeless selection in another window. */
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
+	    return IN_OTHER_WIN;
+#endif
+#ifdef FEAT_TEXT_PROP
+	// Continue a modeless selection in a popup window.
+	if (in_popup_win)
 	    return IN_OTHER_WIN;
 #endif
 
@@ -3348,13 +3383,40 @@ mouse_comp_pos(
 /*
  * Find the window at screen position "*rowp" and "*colp".  The positions are
  * updated to become relative to the top-left of the window.
+ * When "popup" is FAIL_POPUP and the position is in a popup window then NULL
+ * is returned.  When "popup" is IGNORE_POPUP then do not even check popup
+ * windows.
  * Returns NULL when something is wrong.
  */
     win_T *
-mouse_find_win(int *rowp, int *colp)
+mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 {
     frame_T	*fp;
     win_T	*wp;
+
+#ifdef FEAT_TEXT_PROP
+    win_T	*pwp = NULL;
+
+    if (popup != IGNORE_POPUP)
+    {
+	popup_reset_handled();
+	while ((wp = find_next_popup(TRUE)) != NULL)
+	{
+	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
+		    && *colp >= wp->w_wincol
+					 && *colp < wp->w_wincol + popup_width(wp))
+		pwp = wp;
+	}
+	if (pwp != NULL)
+	{
+	    if (popup == FAIL_POPUP)
+		return NULL;
+	    *rowp -= pwp->w_winrow;
+	    *colp -= pwp->w_wincol;
+	    return pwp;
+	}
+    }
+#endif
 
     fp = topframe;
     *rowp -= firstwin->w_winrow;
@@ -3412,7 +3474,7 @@ get_fpos_of_mouse(pos_T *mpos)
 	return IN_UNKNOWN;
 
     /* find the window where the row is in */
-    wp = mouse_find_win(&row, &col);
+    wp = mouse_find_win(&row, &col, FAIL_POPUP);
     if (wp == NULL)
 	return IN_UNKNOWN;
     /*

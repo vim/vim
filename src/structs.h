@@ -3626,3 +3626,10 @@ typedef enum {
     CDSCOPE_TABPAGE,	// :tcd
     CDSCOPE_WINDOW	// :lcd
 } cdscope_T;
+
+// argument for mouse_find_win()
+typedef enum {
+    IGNORE_POPUP,	// only check non-popup windows
+    FIND_POPUP,		// also find popup windows
+    FAIL_POPUP		// return NULL if mouse on popup window
+} mouse_find_T;

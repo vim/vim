@@ -1072,8 +1072,6 @@ may_update_popup_mask(int type)
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
-	int	    height_extra, width_extra;
-
 	popup_visible = TRUE;
 
 	// Recompute the position if the text changed.
@@ -1081,18 +1079,11 @@ may_update_popup_mask(int type)
 		|| wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	    popup_adjust_position(wp);
 
-	// the width and height are for the inside, add the padding and
-	// border
-	height_extra = wp->w_popup_padding[0] + wp->w_popup_border[0]
-			      + wp->w_popup_padding[2] + wp->w_popup_border[2];
-	width_extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
-			      + wp->w_popup_padding[1] + wp->w_popup_border[1];
-
 	for (line = wp->w_winrow;
-		line < wp->w_winrow + wp->w_height + height_extra
+		line < wp->w_winrow + popup_height(wp)
 						 && line < screen_Rows; ++line)
 	    for (col = wp->w_wincol;
-		 col < wp->w_wincol + wp->w_width + width_extra
+		 col < wp->w_wincol + popup_width(wp)
 						&& col < screen_Columns; ++col)
 		mask[line * screen_Columns + col] = wp->w_zindex;
     }
@@ -1123,7 +1114,7 @@ may_update_popup_mask(int type)
 			int		col_cp = col;
 
 			// find the window where the row is in
-			wp = mouse_find_win(&line_cp, &col_cp);
+			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{
 			    if (line_cp >= wp->w_height)

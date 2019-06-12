@@ -424,6 +424,28 @@ add_popup_dicts(buf_T *buf, list_T *l)
 }
 
 /*
+ * Return the height of popup window "wp", including border and padding.
+ */
+    int
+popup_height(win_T *wp)
+{
+    return wp->w_height
+	+ wp->w_popup_padding[0] + wp->w_popup_border[0]
+	+ wp->w_popup_padding[2] + wp->w_popup_border[2];
+}
+
+/*
+ * Return the width of popup window "wp", including border and padding.
+ */
+    int
+popup_width(win_T *wp)
+{
+    return wp->w_width
+	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
+	+ wp->w_popup_padding[1] + wp->w_popup_border[1];
+}
+
+/*
  * Adjust the position and size of the popup to fit on the screen.
  */
     void
