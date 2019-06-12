@@ -87,7 +87,6 @@ that it is in.
 
 IMPLEMENTATION:
 - Why does 'nrformats' leak from the popup window buffer???
-- Option to set first line to display (useful for a preview window)
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use NOT_IN_POPUP_WINDOW for more commands.
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
@@ -396,6 +395,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			padding.
 	minwidth	Minimum width of the contents, excluding border and
 			padding.
+	firstline	First buffer line to display.  When larger than one it
+			looks like the text scrolled up.  When out of range
+			the last buffer line will at the top of the window.
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}

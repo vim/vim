@@ -226,6 +226,10 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
+    wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
+    if (wp->w_firstline < 1)
+	wp->w_firstline = 1;
+
     di = dict_find(dict, (char_u *)"wrap", -1);
     if (di != NULL)
     {
@@ -519,10 +523,15 @@ popup_adjust_position(win_T *wp)
 	maxwidth = wp->w_maxwidth;
     }
 
+    // start at the desired first line
+    wp->w_topline = wp->w_firstline;
+    if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
+	wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
+
     // Compute width based on longest text line and the 'wrap' option.
     // TODO: more accurate wrapping
     wp->w_width = 0;
-    for (lnum = 1; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
+    for (lnum = wp->w_topline; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
     {
 	int len = vim_strsize(ml_get_buf(wp->w_buffer, lnum, FALSE));
 
@@ -556,6 +565,10 @@ popup_adjust_position(win_T *wp)
 	}
 	if (wp->w_width < len)
 	    wp->w_width = len;
+	// do not use the width of lines we're not going to show
+	if (wp->w_maxheight > 0 && wp->w_buffer->b_ml.ml_line_count
+			       - wp->w_topline + 1 + wrapped > wp->w_maxheight)
+	    break;
     }
 
     if (wp->w_minwidth > 0 && wp->w_width < wp->w_minwidth)
@@ -573,7 +586,8 @@ popup_adjust_position(win_T *wp)
 	    wp->w_wincol = wp->w_wantcol - (wp->w_width + extra_width);
     }
 
-    wp->w_height = wp->w_buffer->b_ml.ml_line_count + wrapped;
+    wp->w_height = wp->w_buffer->b_ml.ml_line_count - wp->w_topline
+								 + 1 + wrapped;
     if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
 	wp->w_height = wp->w_minheight;
     if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
@@ -1133,6 +1147,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "minheight", wp->w_minheight);
 	dict_add_number(dict, "maxheight", wp->w_maxheight);
 	dict_add_number(dict, "maxwidth", wp->w_maxwidth);
+	dict_add_number(dict, "firstline", wp->w_firstline);
 	dict_add_number(dict, "zindex", wp->w_zindex);
 	dict_add_number(dict, "fixed", wp->w_popup_fixed);
 

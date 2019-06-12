@@ -269,6 +269,26 @@ func Test_popup_all_corners()
   call delete('XtestPopupCorners')
 endfunc
 
+func Test_popup_firstline()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	call popup_create(['1111', '222222', '33333', '44', '5', '666666', '77777', '888', '9999999999999999'], {
+	      \ 'maxheight': 4,
+	      \ 'firstline': 3,
+	      \ })
+  END
+  call writefile(lines, 'XtestPopupFirstline')
+  let buf = RunVimInTerminal('-S XtestPopupFirstline', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_firstline', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupFirstline')
+endfunc
+
 func Test_popup_in_tab()
   " default popup is local to tab, not visible when in other tab
   let winid = popup_create("text", {})
