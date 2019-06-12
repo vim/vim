@@ -267,7 +267,18 @@ sound_window()
     void
 f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
-    smsg("sound_playevent() not implemented");
+    WCHAR	    *wp;
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = 0;
+
+    wp = enc_to_utf16(tv_get_string(&argvars[0]), NULL);
+    if (wp == NULL)
+	return;
+
+    PlaySoundW(wp, 0, SND_ASYNC | SND_ALIAS);
+
+    rettv->vval.v_number = ++sound_id;
 }
 
     void
@@ -342,6 +353,7 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
+    PlaySound(NULL, 0, 0);
     mciSendString("close all", NULL, 0, 0);
 }
 
