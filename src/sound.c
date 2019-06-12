@@ -223,7 +223,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		    typval_T	argv[3];
 		    typval_T	rettv;
 		    int		dummy;
-		    char	buf[16];
+		    char	buf[32];
 
 		    vim_snprintf(buf, sizeof(buf), "close sound%06d", p->sound_id);
 		    mciSendString(buf, NULL, 0, 0);
@@ -254,7 +254,7 @@ sound_window()
 {
     if (g_hWndSound == NULL)
     {
-	LPCTSTR clazz = "VimSound";
+	LPCSTR clazz = "VimSound";
 	WNDCLASS wndclass = { 0, sound_wndproc, 0, 0, g_hinst, NULL, 0, 0, NULL, clazz };
 	RegisterClass(&wndclass);
 	g_hWndSound = CreateWindow(clazz, NULL, 0, 0, 0, 0, 0,
@@ -302,18 +302,15 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	return;
 
-    err = mciSendStringW(wp, NULL, 0, (HWND) sound_window());
+    err = mciSendStringW(wp, NULL, 0, sound_window());
     free(wp);
     if (err != 0)
 	return;
 
     vim_snprintf(buf, sizeof(buf), "play sound%06d notify", newid);
-    if (mciSendString(buf, NULL, 0, (HWND) sound_window()) != 0)
-    {
-	vim_snprintf(buf, sizeof(buf), "close sound%06d", newid);
-	mciSendString(buf, NULL, 0, 0);
-	return;
-    }
+    err = mciSendString(buf, NULL, 0, sound_window());
+    if (err != 0)
+	goto failure;
 
     sound_id = newid;
     rettv->vval.v_number = sound_id;
@@ -325,13 +322,18 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 	soundcb->sound_id = newid;
 	soundcb->device_id = mciGetDeviceID(buf);
     }
+    return;
+
+failure:
+    vim_snprintf(buf, sizeof(buf), "close sound%06d", newid);
+    mciSendString(buf, NULL, 0, 0);
 }
 
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    id = tv_get_number(&argvars[0]);
-    char    buf[16];
+    char    buf[32];
 
     vim_snprintf(buf, sizeof(buf), "stop sound%06d", id);
     mciSendString(buf, NULL, 0, 0);
