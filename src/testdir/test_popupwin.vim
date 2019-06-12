@@ -272,12 +272,17 @@ endfunc
 func Test_popup_in_tab()
   " default popup is local to tab, not visible when in other tab
   let winid = popup_create("text", {})
+  let bufnr = winbufnr(winid)
   call assert_equal(1, popup_getpos(winid).visible)
   tabnew
   call assert_equal(0, popup_getpos(winid).visible)
   quit
   call assert_equal(1, popup_getpos(winid).visible)
+
+  call assert_equal(1, bufexists(bufnr))
   call popup_clear()
+  " buffer is gone now
+  call assert_equal(0, bufexists(bufnr))
 
   " global popup is visible in any tab
   let winid = popup_create("text", {'tab': -1})

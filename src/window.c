@@ -2324,12 +2324,13 @@ close_last_window_tabpage(
 }
 
 /*
- * Close the buffer of "win" and unload it if "free_buf" is TRUE.
+ * Close the buffer of "win" and unload it if "action" is DOBUF_UNLOAD.
+ * "action" can also be zero (do nothing) or DOBUF_WIPE.
  * "abort_if_last" is passed to close_buffer(): abort closing if all other
  * windows are closed.
  */
     static void
-win_close_buffer(win_T *win, int free_buf, int abort_if_last)
+win_close_buffer(win_T *win, int action, int abort_if_last)
 {
 #ifdef FEAT_SYN_HL
     // Free independent synblock before the buffer is freed.
@@ -2350,8 +2351,7 @@ win_close_buffer(win_T *win, int free_buf, int abort_if_last)
 
 	set_bufref(&bufref, curbuf);
 	win->w_closing = TRUE;
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0,
-								abort_if_last);
+	close_buffer(win, win->w_buffer, action, abort_if_last);
 	if (win_valid_any_tab(win))
 	    win->w_closing = FALSE;
 	// Make sure curbuf is valid. It can become invalid if 'bufhidden' is
@@ -2462,7 +2462,7 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
-    win_close_buffer(win, free_buf, TRUE);
+    win_close_buffer(win, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL
 	    && (last_window() || curtab != prev_curtab
@@ -4894,7 +4894,7 @@ win_unlisted(win_T *wp)
     void
 win_free_popup(win_T *win)
 {
-    win_close_buffer(win, TRUE, FALSE);
+    win_close_buffer(win, DOBUF_WIPE, FALSE);
 # if defined(FEAT_TIMERS)
     if (win->w_popup_timer != NULL)
 	stop_timer(win->w_popup_timer);
