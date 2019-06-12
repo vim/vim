@@ -8894,6 +8894,9 @@ sound_stop({id})					*sound_stop()*
 		`sound_playevent()` or `sound_playfile()`.
 		{only available when compiled with the |+sound| feature}
 
+		On Windows, this does not work for event sound started by
+		`sound_playevent()`. To stop event sound, use `sound_clear()`.
+
 							*soundfold()*
 soundfold({word})
 		Return the sound-folded equivalent of {word}.  Uses the first
