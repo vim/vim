@@ -616,7 +616,7 @@ static struct vimoption options[] =
 			    (char_u *)"~",
 #endif
 					    (char_u *)0L} SCTX_INIT},
-    {"backupskip",  "bsk",  P_STRING|P_VI_DEF|P_ONECOMMA,
+    {"backupskip",  "bsk",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_WILDIGN
 			    (char_u *)&p_bsk, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
@@ -4807,7 +4807,8 @@ do_set(
 			     * hex numbers. */
 			    vim_str2nr(arg, NULL, &i, STR2NR_ALL,
 						     &value, NULL, 0, TRUE);
-			    if (i == 0 || (arg[i] != NUL && !VIM_ISWHITE(arg[i])))
+			    if (i == 0 || (arg[i] != NUL
+						      && !VIM_ISWHITE(arg[i])))
 			    {
 				errmsg = N_("E521: Number required after =");
 				goto skip;
