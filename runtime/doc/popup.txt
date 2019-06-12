@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 10
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -36,7 +36,7 @@ The default color used is "Pmenu".  If you prefer something else use the
 	hi MyPopupColor ctermbg=lightblue guibg=lightblue
 	call setwinvar(winid, '&wincolor', 'MyPopupColor')
 
-'hlsearch' and match highlighting are not displayed in a popup window.
+'hlsearch' highlighting is not displayed in a popup window.
 
 A popup window has a window-ID like other windows, but behaves differently.
 The size can be up to the whole Vim window and it overlaps other windows.
@@ -63,7 +63,7 @@ property.
 
 The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
-increase the width or the "minwidth" property.
+increase the width or use the "minwidth" property.
 
 By default the 'wrap' option is set, so that no text disappears.  Otherwise,
 if there is not enough space then the window is shifted left in order to
@@ -79,24 +79,32 @@ window it will be placed below the cursor position.
 When the screen scrolls up for output of an Ex command, popups move too, so
 that they will not cover the output.
 
+The current cursor position is displayed even when it is under a popup window.
+That way you can still see where it is, even though you cannot see the text
+that it is in.
 
 
 
 IMPLEMENTATION:
-- buffers remain after a popup was deleted.
 - Why does 'nrformats' leak from the popup window buffer???
+- Option to set first line to display (useful for a preview window)
+- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
+  Use NOT_IN_POPUP_WINDOW for more commands.
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
   window and return the window ID.   The popup will then be closed when the
   mouse moves, except when it moves inside the popup.
 - For the "moved" property also include mouse movement?
+- When selecting text in the popup with modeless selection, do not select
+  outside of the popup and don't select the border or padding.
+- Allow the user to drag the popup window when the "dragging" property is set.
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
-- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
-  Use NOT_IN_POPUP_WINDOW for more commands.
 - Invoke filter with character before mapping?
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
+- When drawing on top half a double-wide character, display ">" or "<" in the
+  incomplete cell.
 - Can the buffer be re-used, to avoid using up lots of buffer numbers?
 - Implement all the unimplemented options and features.
 
@@ -106,7 +114,34 @@ IMPLEMENTATION:
 
 THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
-[functions to be moved to eval.txt later, keep overview of functions here]
+Creating a popup window:
+	|popup_create()|	centered in the screen
+	|popup_atcursor()|	just above the cursor position, closes when
+				the cursor moves away
+	|popup_notifiation()|	show a notification for three seconds
+	|popup_dialog()|	centered with padding and border
+	|popup_menu()|		prompt for selecting an item from a list
+
+Manipulating a popup window:
+	|popup_hide()|		hide a popup temporarily
+	|popup_show()|		show a previously hidden popup
+	|popup_move()|		change the position and size of a popup
+	|popup_setoptions()|	override options of a popup
+
+Closing popup windows:
+	|popup_close()|		close one popup
+	|popup_clear()|		close all popups
+
+Filter functions:
+	|popup_filter_menu()|	select from a list of items
+	|popup_filter_yesno()|	blocks until 'y' or 'n' is pressed
+
+Other:
+	|popup_getoptions()|	get current options for a popup
+	|popup_getpos()|	get actual position and size of a popup
+
+
+[functions to be moved to eval.txt later]
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
 		Show the {text} above the cursor, and close it when the cursor
@@ -162,7 +197,8 @@ popup_dialog({text}, {options})				*popup_dialog()*
 				\ 'border': [],
 				\ 'padding': [],
 				\})
-<		Use {options} to change the properties.
+<		Use {options} to change the properties. E.g. add a 'filter'
+		option with value 'popup_filter_yesno'.
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
@@ -180,7 +216,7 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
 		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
 		as the second argument.  Pressing Esc and CTRL-C works like
-		pressing 'n'.
+		pressing 'n'.  Other keys are ignored.
 
 
 popup_getoptions({id})					*popup_getoptions()*
@@ -250,7 +286,6 @@ popup_move({id}, {options})					*popup_move()*
 
 
 popup_notification({text}, {options})			 *popup_notification()*
-		{not implemented yet}
 		Show the {text} for 3 seconds at the top of the Vim window.
 		This works like: >
 			call popup_create({text}, {
@@ -261,8 +296,11 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'zindex': 200,
 				\ 'highlight': 'WarningMsg',
 				\ 'border': [],
+				\ 'padding': [0,1,0,1],
 				\ })
-<		Use {options} to change the properties.
+<		The position will be adjusted to avoid overlap with other
+		notifications.
+		Use {options} to change the properties.
 
 
 popup_show({id})						*popup_show()*

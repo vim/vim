@@ -428,7 +428,7 @@ endfunc
 
 func Test_popup_time()
   if !has('timers')
-    return
+    throw 'Skipped, timer feature not supported'
   endif
   topleft vnew
   call setline(1, 'hello')
@@ -1085,4 +1085,30 @@ func Test_popup_moved()
 
   bwipe!
   call test_override('ALL', 0)
+endfunc
+
+func Test_notifications()
+  if !has('timers')
+    throw 'Skipped, timer feature not supported'
+  endif
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  call writefile([
+	\ "call setline(1, range(1, 20))",
+	\ "hi Notification ctermbg=lightblue",
+	\ "call popup_notification('first notification', {})",
+	\], 'XtestNotifications')
+  let buf = RunVimInTerminal('-S XtestNotifications', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_notify_01', {})
+
+  " second one goes below the first one
+  call term_sendkeys(buf, ":call popup_notification('another important notification', {'highlight': 'Notification'})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_notify_02', {})
+
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestNotifications')
 endfunc

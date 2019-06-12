@@ -110,7 +110,6 @@ get_padding_border(dict_T *dict, int *array, char *name, int max_val)
 {
     dictitem_T	*di;
 
-    vim_memset(array, 0, sizeof(int) * 4);
     di = dict_find(dict, (char_u *)name, -1);
     if (di != NULL)
     {
@@ -165,6 +164,26 @@ set_moved_columns(win_T *wp, int flags)
     }
 }
 
+
+#if defined(FEAT_TIMERS)
+    static void
+popup_add_timeout(win_T *wp, int time)
+{
+    char_u	    cbbuf[50];
+    char_u	    *ptr = cbbuf;
+    typval_T	    tv;
+
+    vim_snprintf((char *)cbbuf, sizeof(cbbuf),
+				       "{_ -> popup_close(%d)}", wp->w_id);
+    if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
+    {
+	wp->w_popup_timer = create_timer(time, 0);
+	wp->w_popup_timer->tr_callback = get_callback(&tv);
+	clear_tv(&tv);
+    }
+}
+#endif
+
 /*
  * Go through the options in "dict" and apply them to buffer "buf" displayed in
  * popup window "wp".
@@ -184,31 +203,22 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 
     get_pos_options(wp, dict);
 
-    wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
-    if (wp->w_zindex < 1)
-	wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
-    if (wp->w_zindex > 32000)
-	wp->w_zindex = 32000;
+    di = dict_find(dict, (char_u *)"zindex", -1);
+    if (di != NULL)
+    {
+	wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+	if (wp->w_zindex < 1)
+	    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
+	if (wp->w_zindex > 32000)
+	    wp->w_zindex = 32000;
+    }
 
-# if defined(FEAT_TIMERS)
+#if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
     nr = dict_get_number(dict, (char_u *)"time");
     if (nr > 0)
-    {
-	char_u	    cbbuf[50];
-	char_u	    *ptr = cbbuf;
-	typval_T    tv;
-
-	vim_snprintf((char *)cbbuf, sizeof(cbbuf),
-					   "{_ -> popup_close(%d)}", wp->w_id);
-	if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
-	{
-	    wp->w_popup_timer = create_timer(nr, 0);
-	    wp->w_popup_timer->tr_callback = get_callback(&tv);
-	    clear_tv(&tv);
-	}
-    }
-# endif
+	popup_add_timeout(wp, nr);
+#endif
 
     // Option values resulting in setting an option.
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
@@ -601,7 +611,8 @@ popup_adjust_position(win_T *wp)
 typedef enum
 {
     TYPE_NORMAL,
-    TYPE_ATCURSOR
+    TYPE_ATCURSOR,
+    TYPE_NOTIFICATION
 } create_type_T;
 
 /*
@@ -659,7 +670,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     // Avoid that 'buftype' is reset when this buffer is entered.
     buf->b_p_initialized = TRUE;
 
-    nr = (int)dict_get_number(d, (char_u *)"tab");
+    if (dict_find(d, (char_u *)"tab", -1) != NULL)
+	nr = (int)dict_get_number(d, (char_u *)"tab");
+    else if (type == TYPE_NOTIFICATION)
+	nr = -1;  // notifications are global by default
+    else
+	nr = 0;
+
     if (nr == 0)
     {
 	// popup on current tab
@@ -668,9 +685,18 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     }
     else if (nr < 0)
     {
-	// global popup
-	wp->w_next = first_popupwin;
-	first_popupwin = wp;
+	win_T *prev = first_popupwin;
+
+	// Global popup: add at the end, so that it gets displayed on top of
+	// older ones with the same zindex. Matters for notifications.
+	if (first_popupwin == NULL)
+	    first_popupwin = wp;
+	else
+	{
+	    while (prev->w_next != NULL)
+		prev = prev->w_next;
+	    prev->w_next = wp;
+	}
     }
     else
 	// TODO: find tab page "nr"
@@ -720,8 +746,51 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     // set default values
     wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
 
+    if (type == TYPE_NOTIFICATION)
+    {
+	win_T  *twp, *nextwin;
+	int	height = buf->b_ml.ml_line_count + 3;
+	int	i;
+
+	// Try to not overlap with another global popup.  Guess we need 3
+	// more screen lines than buffer lines.
+	wp->w_wantline = 1;
+	for (twp = first_popupwin; twp != NULL; twp = nextwin)
+	{
+	    nextwin = twp->w_next;
+	    if (twp != wp
+		    && twp->w_zindex == POPUPWIN_NOTIFICATION_ZINDEX
+		    && twp->w_winrow <= wp->w_wantline - 1 + height
+		    && twp->w_winrow + popup_height(twp) > wp->w_wantline - 1)
+	    {
+		// move to below this popup and restart the loop to check for
+		// overlap with other popups
+		wp->w_wantline = twp->w_winrow + popup_height(twp) + 1;
+		nextwin = first_popupwin;
+	    }
+	}
+	if (wp->w_wantline + height > Rows)
+	{
+	    // can't avoid overlap, put on top in the hope that message goes
+	    // away soon.
+	    wp->w_wantline = 1;
+	}
+
+	wp->w_wantcol = 10;
+	wp->w_zindex = POPUPWIN_NOTIFICATION_ZINDEX;
+	for (i = 0; i < 4; ++i)
+	    wp->w_popup_border[i] = 1;
+	wp->w_popup_padding[1] = 1;
+	wp->w_popup_padding[3] = 1;
+	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+				(char_u *)"WarningMsg", OPT_FREE|OPT_LOCAL, 0);
+    }
+
     // Deal with options.
     apply_options(wp, buf, argvars[1].vval.v_dict);
+
+    if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
+	popup_add_timeout(wp, 3000);
 
     popup_adjust_position(wp);
 
@@ -756,6 +825,15 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
 f_popup_atcursor(typval_T *argvars, typval_T *rettv)
 {
     popup_create(argvars, rettv, TYPE_ATCURSOR);
+}
+
+/*
+ * popup_notification({text}, {options})
+ */
+    void
+f_popup_notification(typval_T *argvars, typval_T *rettv)
+{
+    popup_create(argvars, rettv, TYPE_NOTIFICATION);
 }
 
 /*
@@ -1017,8 +1095,10 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 
 	dict_add_number(dict, "line", wp->w_winrow + 1);
 	dict_add_number(dict, "col", wp->w_wincol + 1);
-	dict_add_number(dict, "width", wp->w_width + left_extra + wp->w_popup_border[1] + wp->w_popup_padding[1]);
-	dict_add_number(dict, "height", wp->w_height + top_extra + wp->w_popup_border[2] + wp->w_popup_padding[2]);
+	dict_add_number(dict, "width", wp->w_width + left_extra
+			     + wp->w_popup_border[1] + wp->w_popup_padding[1]);
+	dict_add_number(dict, "height", wp->w_height + top_extra
+			     + wp->w_popup_border[2] + wp->w_popup_padding[2]);
 
 	dict_add_number(dict, "core_line", wp->w_winrow + 1 + top_extra);
 	dict_add_number(dict, "core_col", wp->w_wincol + 1 + left_extra);

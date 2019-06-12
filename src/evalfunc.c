@@ -819,6 +819,7 @@ static struct fst
     {"popup_getpos",	1, 1, f_popup_getpos},
     {"popup_hide",	1, 1, f_popup_hide},
     {"popup_move",	2, 2, f_popup_move},
+    {"popup_notification", 2, 2, f_popup_notification},
     {"popup_show",	1, 1, f_popup_show},
 #endif
 #ifdef FEAT_FLOAT
