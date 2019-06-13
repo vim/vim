@@ -8863,8 +8863,11 @@ sound_playevent({name} [, {callback}])
 		are used.  On Ubuntu they may be found in
 		/usr/share/sounds/freedesktop/stereo.  Example: >
 			call sound_playevent('bell')
+<		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
+		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
+		SystemStart, SystemWelcome, etc.
 
-<		When {callback} is specified it is invoked when the sound is
+		When {callback} is specified it is invoked when the sound is
 		finished.  The first argument is the sound ID, the second
 		argument is the status:
 			0	sound was played to the end
@@ -8876,7 +8879,9 @@ sound_playevent({name} [, {callback}])
 		   endfunc
 		   call sound_playevent('bell', 'Callback')
 
-<		Returns the sound ID, which can be passed to `sound_stop()`.
+<		MS-Windows: {callback} doesn't work for this function.
+
+		Returns the sound ID, which can be passed to `sound_stop()`.
 		Returns zero if the sound could not be played.
 		{only available when compiled with the |+sound| feature}
 
@@ -8894,7 +8899,7 @@ sound_stop({id})					*sound_stop()*
 		`sound_playevent()` or `sound_playfile()`.
 		{only available when compiled with the |+sound| feature}
 
-		On Windows, this does not work for event sound started by
+		On MS-Windows, this does not work for event sound started by
 		`sound_playevent()`. To stop event sound, use `sound_clear()`.
 
 							*soundfold()*

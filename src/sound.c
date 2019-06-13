@@ -225,18 +225,20 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		    int		dummy;
 		    char	buf[32];
 
-		    vim_snprintf(buf, sizeof(buf), "close sound%06d", p->sound_id);
+		    vim_snprintf(buf, sizeof(buf), "close sound%06ld",
+								p->sound_id);
 		    mciSendString(buf, NULL, 0, 0);
 
 		    argv[0].v_type = VAR_NUMBER;
 		    argv[0].vval.v_number = p->sound_id;
 		    argv[1].v_type = VAR_NUMBER;
-		    argv[1].vval.v_number = wParam == MCI_NOTIFY_SUCCESSFUL ? 0
-					  : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
+		    argv[1].vval.v_number =
+					wParam == MCI_NOTIFY_SUCCESSFUL ? 0
+				      : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
 		    argv[2].v_type = VAR_UNKNOWN;
 
 		    call_callback(&p->snd_callback, -1,
-					    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
 		    clear_tv(&rettv);
 
 		    delete_sound_callback(p);
@@ -255,7 +257,8 @@ sound_window()
     if (g_hWndSound == NULL)
     {
 	LPCSTR clazz = "VimSound";
-	WNDCLASS wndclass = { 0, sound_wndproc, 0, 0, g_hinst, NULL, 0, 0, NULL, clazz };
+	WNDCLASS wndclass = {
+	    0, sound_wndproc, 0, 0, g_hinst, NULL, 0, 0, NULL, clazz };
 	RegisterClass(&wndclass);
 	g_hWndSound = CreateWindow(clazz, NULL, 0, 0, 0, 0, 0,
 		HWND_MESSAGE, NULL, g_hinst, NULL);
@@ -276,7 +279,7 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	return;
 
-    PlaySoundW(wp, 0, SND_ASYNC | SND_ALIAS);
+    PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS);
     free(wp);
 
     rettv->vval.v_number = ++sound_id;
@@ -285,8 +288,8 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
     void
 f_sound_playfile(typval_T *argvars, typval_T *rettv)
 {
-    int		newid = sound_id + 1;
-    int		len;
+    long	newid = sound_id + 1;
+    size_t	len;
     char_u	*p, *esc;
     WCHAR	*wp;
     soundcb_T	*soundcb;
@@ -296,8 +299,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = 0;
 
-    esc = vim_strsave_shellescape(
-		   tv_get_string(&argvars[0]), FALSE, FALSE);
+    esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
 
     len = STRLEN(esc) + 5 + 18 + 1;
     p = alloc(len);
@@ -306,7 +308,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 	free(esc);
 	return;
     }
-    vim_snprintf((char *)p, len, "open %s alias sound%06d", esc, newid);
+    vim_snprintf((char *)p, len, "open %s alias sound%06ld", esc, newid);
     free(esc);
 
     wp = enc_to_utf16((char_u *)p, NULL);
@@ -319,7 +321,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     if (err != 0)
 	return;
 
-    vim_snprintf(buf, sizeof(buf), "play sound%06d notify", newid);
+    vim_snprintf(buf, sizeof(buf), "play sound%06ld notify", newid);
     err = mciSendString(buf, NULL, 0, sound_window());
     if (err != 0)
 	goto failure;
@@ -330,32 +332,32 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     soundcb = get_sound_callback(&argvars[1]);
     if (soundcb != NULL)
     {
-	vim_snprintf(buf, sizeof(buf), "sound%06d", newid);
+	vim_snprintf(buf, sizeof(buf), "sound%06ld", newid);
 	soundcb->sound_id = newid;
 	soundcb->device_id = mciGetDeviceID(buf);
     }
     return;
 
 failure:
-    vim_snprintf(buf, sizeof(buf), "close sound%06d", newid);
-    mciSendString(buf, NULL, 0, 0);
+    vim_snprintf(buf, sizeof(buf), "close sound%06ld", newid);
+    mciSendString(buf, NULL, 0, NULL);
 }
 
     void
 f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    int	    id = tv_get_number(&argvars[0]);
+    long    id = tv_get_number(&argvars[0]);
     char    buf[32];
 
-    vim_snprintf(buf, sizeof(buf), "stop sound%06d", id);
-    mciSendString(buf, NULL, 0, 0);
+    vim_snprintf(buf, sizeof(buf), "stop sound%06ld", id);
+    mciSendString(buf, NULL, 0, NULL);
 }
 
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    PlaySound(NULL, 0, 0);
-    mciSendString("close all", NULL, 0, 0);
+    PlaySound(NULL, NULL, 0);
+    mciSendString("close all", NULL, 0, NULL);
 }
 
 #if defined(EXITFREE) || defined(PROTO)
