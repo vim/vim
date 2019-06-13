@@ -32,8 +32,8 @@
 #   So please change [行"] to [行 "]
 #
 # Q. How to use UTF8 mode on Win32?
-# A. A simple configuration: 
-#   set encoding=utf-8; let $LANG='zh_TW.UTF-8'; 
+# A. A simple configuration:
+#   set encoding=utf-8; let $LANG='zh_TW.UTF-8';
 #   (set langmenu=none or ..)
 #   set termencoding=utf-8
 #   set fileencodings=ucs-bom,utf-8,japan,taiwan,prc
@@ -41,17 +41,19 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim(Traditional Chinese)\n"
+"Project-Id-Version: Vim - Chinese (traditional)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-13 19:36+0800\n"
-"PO-Revision-Date: Mon Feb 19 22:49:21 CST 2001\n"
-"Last-Translator: Hung-Te Lin <piaip@csie.ntu.edu.tw>\n"
+"PO-Revision-Date: 2019-06-13 19:39+0800\n"
+"Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Hung-Te Lin <piaip@csie.ntu.edu.tw>, Cecil Sheng "
 "<b7506022@csie.ntu.edu.tw>\n"
-"Language: \n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: autocmd.c:274
 msgid "--Deleted--"
@@ -60,7 +62,7 @@ msgstr "--已刪除--"
 #: autocmd.c:472
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr ""
+msgstr "正在自動移除「自動指令」：%s <緩衝區=%d>"
 
 #. the group doesn't exist
 #: autocmd.c:516
@@ -200,21 +202,18 @@ msgstr "E517: 沒有清除任何緩衝區"
 msgid "%d buffer unloaded"
 msgid_plural "%d buffers unloaded"
 msgstr[0] "已釋放 %d 個緩衝區"
-msgstr[1] "已釋放 %d 個緩衝區"
 
 #: buffer.c:1193
 #, fuzzy, c-format
 msgid "%d buffer deleted"
 msgid_plural "%d buffers deleted"
 msgstr[0] "已刪除 %d 個緩衝區"
-msgstr[1] "已刪除 %d 個緩衝區"
 
 #: buffer.c:1196
 #, fuzzy, c-format
 msgid "%d buffer wiped out"
 msgid_plural "%d buffers wiped out"
 msgstr[0] "已刪除 %d 個緩衝區"
-msgstr[1] "已刪除 %d 個緩衝區"
 
 #: buffer.c:1221
 msgid "E90: Cannot unload last buffer"
@@ -317,7 +316,6 @@ msgstr "[唯讀]"
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
 msgstr[0] "行數 %ld --%d%%--"
-msgstr[1] "行數 %ld --%d%%--"
 
 #: buffer.c:3500
 #, c-format
@@ -1153,7 +1151,6 @@ msgstr "E519: 不支援該選項"
 msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld 行: "
-msgstr[1] "+-%s%3ld 行: "
 
 #: evalfunc.c:4454
 #, fuzzy, c-format
@@ -1507,7 +1504,6 @@ msgstr "E134: 無法把行移到它自已內"
 msgid "%ld line moved"
 msgid_plural "%ld lines moved"
 msgstr[0] "已搬移 %ld 行 "
-msgstr[1] "已搬移 %ld 行 "
 
 #: ex_cmds.c:1486
 #, c-format
@@ -1699,28 +1695,24 @@ msgstr "(已中斷) "
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
 msgstr[0] "，範圍： %ld 行 "
-msgstr[1] "，範圍： %ld 行 "
 
 #: ex_cmds.c:5989
 #, fuzzy, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
 msgstr[0] "取代 %ld 組 "
-msgstr[1] "取代 %ld 組 "
 
 #: ex_cmds.c:5992
 #, fuzzy, c-format
 msgid "%ld match on %ld lines"
 msgid_plural "%ld matches on %ld lines"
 msgstr[0] "，範圍： %ld 行 "
-msgstr[1] "，範圍： %ld 行 "
 
 #: ex_cmds.c:5994
 #, fuzzy, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
 msgstr[0] "取代 %ld 組 "
-msgstr[1] "取代 %ld 組 "
 
 #. will increment global_busy to break out of the loop
 #: ex_cmds.c:6061
@@ -1874,14 +1866,12 @@ msgstr "E319: 抱歉, 本命令在此版本中沒有實作"
 msgid "%d more file to edit.  Quit anyway?"
 msgid_plural "%d more files to edit.  Quit anyway?"
 msgstr[0] "還有 %d 個檔案未編輯. 確定要離開？"
-msgstr[1] "還有 %d 個檔案未編輯. 確定要離開？"
 
 #: ex_docmd.c:5623
 #, fuzzy, c-format
 msgid "E173: %d more file to edit"
 msgid_plural "E173: %d more files to edit"
 msgstr[0] "E173: 還有 %ld 個檔案未編輯"
-msgstr[1] "E173: 還有 %ld 個檔案未編輯"
 
 #: ex_docmd.c:5669
 #, fuzzy
@@ -2550,14 +2540,12 @@ msgstr "[unix 格式]"
 msgid "%ld line, "
 msgid_plural "%ld lines, "
 msgstr[0] "%ld 行, "
-msgstr[1] "%ld 行, "
 
 #: fileio.c:5251
 #, fuzzy, c-format
 msgid "%lld character"
 msgid_plural "%lld characters"
 msgstr[0] "%ld個字元"
-msgstr[1] "%ld個字元"
 
 #: fileio.c:5262 netbeans.c:3420
 msgid "[noeol]"
@@ -2726,7 +2714,6 @@ msgstr "E351: 無法在目前的 'foldmethod' 下刪除 fold"
 msgid "+--%3ld line folded "
 msgid_plural "+--%3ld lines folded "
 msgstr[0] "+--已 fold %3ld 行 "
-msgstr[1] "+--已 fold %3ld 行 "
 
 #: getchar.c:240
 msgid "E222: Add to read buffer"
@@ -5305,14 +5292,12 @@ msgstr ""
 msgid "%ld more line"
 msgid_plural "%ld more lines"
 msgstr[0] "多了 %ld 行 "
-msgstr[1] "多了 %ld 行 "
 
 #: misc1.c:1495
 #, fuzzy, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
 msgstr[0] "少於一行 "
-msgstr[1] "少於一行 "
 
 #: misc1.c:1497
 msgid " (Interrupted)"
@@ -5453,14 +5438,12 @@ msgstr "要離開 Vim 請輸入 :quit<Enter> "
 msgid "%ld line %sed %d time"
 msgid_plural "%ld line %sed %d times"
 msgstr[0] "%ld 行 %s 過 %d 次"
-msgstr[1] "%ld 行 %s 過 %d 次"
 
 #: ops.c:298
 #, fuzzy, c-format
 msgid "%ld lines %sed %d time"
 msgid_plural "%ld lines %sed %d times"
 msgstr[0] "%ld 行 %s 過 %d 次"
-msgstr[1] "%ld 行 %s 過 %d 次"
 
 #: ops.c:721
 #, c-format
@@ -5472,7 +5455,6 @@ msgstr "縮排 %ld 行... "
 msgid "%ld line indented "
 msgid_plural "%ld lines indented "
 msgstr[0] "已縮排 %ld 行 "
-msgstr[1] "已縮排 %ld 行 "
 
 #: ops.c:1217
 #, fuzzy
@@ -5489,7 +5471,6 @@ msgstr "無法剪下; 直接刪除"
 msgid "%ld line changed"
 msgid_plural "%ld lines changed"
 msgstr[0] "已改變 %ld 行 "
-msgstr[1] "已改變 %ld 行 "
 
 #: ops.c:2964
 #, c-format
@@ -5506,14 +5487,12 @@ msgstr ""
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
 msgstr[0] "已複製 %ld 行 "
-msgstr[1] "已複製 %ld 行 "
 
 #: ops.c:3241
 #, fuzzy, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
 msgstr[0] "已複製 %ld 行 "
-msgstr[1] "已複製 %ld 行 "
 
 #: ops.c:3558
 #, c-format
@@ -7888,7 +7867,6 @@ msgstr ""
 msgid "%ld second ago"
 msgid_plural "%ld seconds ago"
 msgstr[0] ""
-msgstr[1] ""
 
 #: undo.c:3154
 #, fuzzy
