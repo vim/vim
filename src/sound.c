@@ -277,6 +277,7 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
 	return;
 
     PlaySoundW(wp, 0, SND_ASYNC | SND_ALIAS);
+    free(wp);
 
     rettv->vval.v_number = ++sound_id;
 }
