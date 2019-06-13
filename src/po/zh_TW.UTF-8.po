@@ -45,7 +45,7 @@ msgstr ""
 "Project-Id-Version: Vim - Chinese (traditional)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-13 19:36+0800\n"
-"PO-Revision-Date: 2019-06-13 19:49+0800\n"
+"PO-Revision-Date: 2019-06-13 20:00+0800\n"
 "Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -100,12 +100,12 @@ msgid ""
 "--- Autocommands ---"
 msgstr ""
 "\n"
-"---自動指令---"
+"--- 自動指令 ---"
 
 #: autocmd.c:1191
-#, fuzzy, c-format
+#, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "緩衝區號碼錯誤"
+msgstr "E680：<緩衝區=%d>：緩衝區號碼錯誤"
 
 #: autocmd.c:1295
 msgid "E217: Can't execute autocommands for ALL events"
@@ -122,7 +122,7 @@ msgstr "E218：自動指令層數過深"
 #: autocmd.c:2295
 #, c-format
 msgid "%s Autocommands for \"%s\""
-msgstr "%s自動指令：「%s」"
+msgstr "用於「%2$s」的 %1$s 自動指令"
 
 #: autocmd.c:2305
 #, c-format
@@ -132,87 +132,85 @@ msgstr "執行 %s"
 #: autocmd.c:2371
 #, c-format
 msgid "autocommand %s"
-msgstr "自動指令%s"
+msgstr "自動指令 %s"
 
 #: blowfish.c:422
 msgid "E831: bf_key_init() called with empty password"
-msgstr ""
+msgstr "E831：bf_key_init() 使用空密碼呼叫"
 
 #: blowfish.c:525
 msgid "E820: sizeof(uint32_t) != 4"
-msgstr ""
+msgstr "E820：sizeof(uint32_t) != 4"
 
 #: blowfish.c:546
 msgid "E817: Blowfish big/little endian use wrong"
-msgstr ""
+msgstr "E817：Blowfish 大小位元組順序使用錯誤"
 
 #: blowfish.c:676
-#, fuzzy
 msgid "E818: sha256 test failed"
-msgstr "E512：關閉失敗"
+msgstr "E818：SHA256 測試失敗"
 
 #: blowfish.c:681
-#, fuzzy
 msgid "E819: Blowfish test failed"
-msgstr "E512：關閉失敗"
+msgstr "E819：Blowfish 測試失敗"
 
 #: buffer.c:55
 msgid "[Location List]"
-msgstr ""
+msgstr "[位置列表]"
 
 #: buffer.c:56
 msgid "[Quickfix List]"
-msgstr ""
+msgstr "[快速修正列表]"
 
 #: buffer.c:58
 msgid "E855: Autocommands caused command to abort"
-msgstr ""
+msgstr "E855：自動指令導致指令中止"
 
 #: buffer.c:167
 msgid "E82: Cannot allocate any buffer, exiting..."
-msgstr "E82：無法配置任何緩衝區，離開程式..."
+msgstr "E82：無法配置任何緩衝區，離開…"
 
 #: buffer.c:170
 msgid "E83: Cannot allocate buffer, using other one..."
-msgstr "E83：無法配置緩衝區，使用另一個緩衝區...."
+msgstr "E83：無法配置緩衝區，使用另一個…"
 
 #: buffer.c:401
 msgid "E931: Buffer cannot be registered"
-msgstr ""
+msgstr "E931：無法註冊緩衝區"
 
 #: buffer.c:435
 msgid "E937: Attempt to delete a buffer that is in use"
-msgstr ""
+msgstr "E937：嘗試刪除仍在使用的緩衝區"
 
 #: buffer.c:1180
 msgid "E515: No buffers were unloaded"
-msgstr "E515：沒有釋放任何緩衝區"
+msgstr "E515：未釋放任何緩衝區"
 
 #: buffer.c:1182
 msgid "E516: No buffers were deleted"
-msgstr "E516：沒有刪除任何緩衝區"
+msgstr "E516：未刪除任何緩衝區"
 
 #: buffer.c:1184
 msgid "E517: No buffers were wiped out"
-msgstr "E517：沒有清除任何緩衝區"
+msgstr "E517：未清除任何緩衝區"
 
 #: buffer.c:1190
-#, fuzzy, c-format
+#, c-format
 msgid "%d buffer unloaded"
 msgid_plural "%d buffers unloaded"
 msgstr[0] "已釋放 %d 個緩衝區"
 
 #: buffer.c:1193
-#, fuzzy, c-format
+#, c-format
 msgid "%d buffer deleted"
 msgid_plural "%d buffers deleted"
 msgstr[0] "已刪除 %d 個緩衝區"
 
 #: buffer.c:1196
-#, fuzzy, c-format
+#, c-format
 msgid "%d buffer wiped out"
 msgid_plural "%d buffers wiped out"
-msgstr[0] "已刪除 %d 個緩衝區"
+msgstr[0] "已清除 %d 個緩衝區"
 
 #: buffer.c:1221
 msgid "E90: Cannot unload last buffer"
@@ -220,7 +218,7 @@ msgstr "E90：無法釋放最後一個緩衝區"
 
 #: buffer.c:1295
 msgid "E84: No modified buffer found"
-msgstr "E84：沒有修改過的緩衝區"
+msgstr "E84：未找到修改過的緩衝區"
 
 #. back where we started, didn't find anything.
 #: buffer.c:1334
@@ -236,36 +234,34 @@ msgid "E88: Cannot go before first buffer"
 msgstr "E88：無法切換到更前面的緩衝區"
 
 #: buffer.c:1395
-#, fuzzy, c-format
+#, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
-msgstr "E89：已更改過緩衝區 %ld 但尚未存檔 (可用 ! 強制執行)"
+msgstr "E89：上次更改緩衝區 %d 後尚未存檔 (可用 ! 強制執行)"
 
 #: buffer.c:1819
 msgid "E948: Job still running (add ! to end the job)"
-msgstr ""
+msgstr "E948：作業仍在執行中（可用 ! 結束作業）"
 
 #: buffer.c:1822
 msgid "E37: No write since last change (add ! to override)"
-msgstr "E37：已更改過檔案但尚未存檔 (可用 ! 強制執行)"
+msgstr "E37：上次更改後尚未存檔（可用 ! 強制執行）"
 
 #: buffer.c:1830
-#, fuzzy
 msgid "E948: Job still running"
-msgstr " (執行中)"
+msgstr "E948：作業仍在執行中"
 
 #: buffer.c:1833
-#, fuzzy
 msgid "E37: No write since last change"
-msgstr "[更新後尚未儲存]\n"
+msgstr "E37：上次更改後尚未存檔"
 
 #: buffer.c:2047
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14：警告：檔名過多"
 
 #: buffer.c:2268 quickfix.c:6777
-#, fuzzy, c-format
+#, c-format
 msgid "E92: Buffer %d not found"
-msgstr "E92：找不到第 %ld 個緩衝區"
+msgstr "E92：未找到緩衝區 %d"
 
 #: buffer.c:2549
 #, c-format
@@ -275,7 +271,7 @@ msgstr "E93：找到一個以上的 %s"
 #: buffer.c:2551
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr "E94：找不到 %s"
+msgstr "E94：找不到符合的 %s 緩衝區"
 
 #: buffer.c:3061
 #, c-format
@@ -311,10 +307,10 @@ msgid "[readonly]"
 msgstr "[唯讀]"
 
 #: buffer.c:3493
-#, fuzzy, c-format
+#, c-format
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
-msgstr[0] "行數 %ld --%d%%--"
+msgstr[0] "行 %ld --%d%%--"
 
 #: buffer.c:3500
 #, c-format
@@ -322,17 +318,15 @@ msgid "line %ld of %ld --%d%%-- col "
 msgstr "行 %ld/%ld --%d%%-- 欄 "
 
 #: buffer.c:3623 buffer.c:5795 memline.c:2172
-#, fuzzy
 msgid "[No Name]"
 msgstr "[未命名]"
 
 #. must be a help buffer
 #: buffer.c:3676
 msgid "help"
-msgstr "[輔助說明]"
+msgstr "輔助說明"
 
 #: buffer.c:4371 screen.c:7334
-#, fuzzy
 msgid "[Help]"
 msgstr "[輔助說明]"
 
@@ -358,44 +352,44 @@ msgid ""
 "# Buffer list:\n"
 msgstr ""
 "\n"
-"# 緩衝區列表:\n"
+"# 緩衝區列表：\n"
 
 #: buffer.c:5727
 msgid "E382: Cannot write, 'buftype' option is set"
-msgstr "E382：無法寫入，'buftype' 選項已設定"
+msgstr "E382：無法寫入，已設定「buftype」選項"
 
 #: buffer.c:5785
 msgid "[Prompt]"
-msgstr ""
+msgstr "[提示]"
 
 #: buffer.c:5789
 msgid "[Popup]"
-msgstr ""
+msgstr "[彈出框]"
 
 #: buffer.c:5791
+#, fuzzy
 msgid "[Scratch]"
-msgstr ""
+msgstr "[Scratch]"
 
 #: change.c:29
 msgid "W10: Warning: Changing a readonly file"
-msgstr "W10：注意：你正在修改一個唯讀檔"
+msgstr "W10：警告：正在修改一個唯讀檔"
 
 #: channel.c:671
-#, fuzzy
 msgid "E902: Cannot connect to port"
-msgstr "無法連接到 Netbeans"
+msgstr "E902：無法連線到連線埠"
 
 #: channel.c:718
 msgid "E901: gethostbyname() in channel_open()"
-msgstr ""
+msgstr "E901：在 channel_open() 裡面 gethostbyname()"
 
 #: channel.c:752
 msgid "E898: socket() in channel_open()"
-msgstr ""
+msgstr "E898：在 channel_open() 裡面 socket()"
 
 #: channel.c:2333
 msgid "E903: received command with non-string argument"
-msgstr ""
+msgstr "E903：接收到包含非字串參數的指令"
 
 #: channel.c:2387
 msgid "E904: last argument for expr/call must be a number"
