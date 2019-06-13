@@ -45,7 +45,7 @@ msgstr ""
 "Project-Id-Version: Vim - Chinese (traditional)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-13 19:36+0800\n"
-"PO-Revision-Date: 2019-06-13 19:46+0800\n"
+"PO-Revision-Date: 2019-06-13 19:49+0800\n"
 "Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -71,18 +71,17 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367：無此群組：「%s」"
 
 #: autocmd.c:518
-#, fuzzy
 msgid "E936: Cannot delete the current group"
-msgstr "E351：無法在目前的 'foldmethod' 下刪除 fold"
+msgstr "E936：無法刪除目前群組"
 
 #: autocmd.c:531
 msgid "W19: Deleting augroup that is still in use"
-msgstr ""
+msgstr "W19：正在刪除仍在使用的 augroup"
 
 #: autocmd.c:688
 #, c-format
 msgid "E215: Illegal character after *: %s"
-msgstr "E215：* 後面有不正確的字元：%s"
+msgstr "E215：* 之後有不正確的字元：%s"
 
 #: autocmd.c:700
 #, c-format
@@ -101,7 +100,7 @@ msgid ""
 "--- Autocommands ---"
 msgstr ""
 "\n"
-"--- Autocommands ---"
+"---自動指令---"
 
 #: autocmd.c:1191
 #, fuzzy, c-format
@@ -110,20 +109,20 @@ msgstr "緩衝區號碼錯誤"
 
 #: autocmd.c:1295
 msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E217：無法對所有事件執行 autocommand"
+msgstr "E217：無法對所有事件執行自動指令"
 
 #: autocmd.c:1318
 msgid "No matching autocommands"
-msgstr "找不到對應的 autocommand"
+msgstr "找不到對應的自動指令"
 
 #: autocmd.c:1887
 msgid "E218: autocommand nesting too deep"
-msgstr "E218：autocommand 層數過深"
+msgstr "E218：自動指令層數過深"
 
 #: autocmd.c:2295
 #, c-format
 msgid "%s Autocommands for \"%s\""
-msgstr "%s Autocommands：「%s」"
+msgstr "%s自動指令：「%s」"
 
 #: autocmd.c:2305
 #, c-format
@@ -133,7 +132,7 @@ msgstr "執行 %s"
 #: autocmd.c:2371
 #, c-format
 msgid "autocommand %s"
-msgstr "autocommand %s"
+msgstr "自動指令%s"
 
 #: blowfish.c:422
 msgid "E831: bf_key_init() called with empty password"
@@ -1325,7 +1324,7 @@ msgstr "E162：已更改過緩衝區「%s」但尚未存檔 (可用 ! 強制執�
 
 #: ex_cmds2.c:1453
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr "注意：已切換到其它緩衝區 (請檢查 Autocommands 有無錯誤)"
+msgstr "注意：已切換到其它緩衝區 (請檢查自動指令有無錯誤)"
 
 #: ex_cmds2.c:1872
 msgid "E163: There is only one file to edit"
@@ -1666,7 +1665,7 @@ msgstr "編輯檔案"
 #: ex_cmds.c:4461
 #, c-format
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
-msgstr "E143：Autocommands 意外地刪除新緩衝區 %s"
+msgstr "E143：自動指令意外地刪除新緩衝區 %s"
 
 #: ex_cmds.c:4680
 msgid "E144: non-numeric argument to :z"
@@ -2363,7 +2362,7 @@ msgstr "無法讀取 'charconvert' 的輸出"
 #: fileio.c:3317
 #, fuzzy
 msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "找不到對應的 autocommand"
+msgstr "找不到對應的自動指令"
 
 #: fileio.c:3352
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
@@ -2583,7 +2582,7 @@ msgstr "E210：讀取檔案「%s」錯誤"
 
 #: fileio.c:6830
 msgid "E246: FileChangedShell autocommand deleted buffer"
-msgstr "E246：FileChangedShell autocommand 刪除緩衝區"
+msgstr "E246：FileChangedShell自動指令刪除緩衝區"
 
 #: fileio.c:6844
 #, fuzzy, c-format
@@ -6673,7 +6672,7 @@ msgstr ""
 #: spell.c:2388
 #, fuzzy
 msgid "E797: SpellFileMissing autocommand deleted buffer"
-msgstr "E246：FileChangedShell autocommand 刪除緩衝區"
+msgstr "E246：FileChangedShell自動指令刪除緩衝區"
 
 #. This is probably an error.  Give a warning and
 #. * accept the words anyway.
