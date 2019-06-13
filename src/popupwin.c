@@ -164,6 +164,68 @@ set_moved_columns(win_T *wp, int flags)
     }
 }
 
+/*
+ * Return TRUE if "row"/"col" is on the border of the popup.
+ * The values are relative to the top-left corner.
+ */
+    int
+popup_on_border(win_T *wp, int row, int col)
+{
+    return (row == 0 && wp->w_popup_border[0] > 0)
+	    || (row == popup_height(wp) - 1 && wp->w_popup_border[2] > 0)
+	    || (col == 0 && wp->w_popup_border[3] > 0)
+	    || (col == popup_width(wp) - 1 && wp->w_popup_border[1] > 0);
+}
+
+// Values set when dragging a popup window starts.
+static int drag_start_row;
+static int drag_start_col;
+static int drag_start_wantline;
+static int drag_start_wantcol;
+
+/*
+ * Mouse down on border of popup window: start dragging it.
+ * Uses mouse_col and mouse_row.
+ */
+    void
+popup_start_drag(win_T *wp)
+{
+    drag_start_row = mouse_row;
+    drag_start_col = mouse_col;
+    // TODO: handle using different corner
+    if (wp->w_wantline == 0)
+	drag_start_wantline = wp->w_winrow + 1;
+    else
+	drag_start_wantline = wp->w_wantline;
+    if (wp->w_wantcol == 0)
+	drag_start_wantcol = wp->w_wincol + 1;
+    else
+	drag_start_wantcol = wp->w_wantcol;
+}
+
+/*
+ * Mouse moved while dragging a popup window: adjust the window popup position.
+ */
+    void
+popup_drag(win_T *wp)
+{
+    // The popup may be closed before dragging stops.
+    if (!win_valid_popup(wp))
+	return;
+
+    wp->w_wantline = drag_start_wantline + (mouse_row - drag_start_row);
+    if (wp->w_wantline < 1)
+	wp->w_wantline = 1;
+    if (wp->w_wantline > Rows)
+	wp->w_wantline = Rows;
+    wp->w_wantcol = drag_start_wantcol + (mouse_col - drag_start_col);
+    if (wp->w_wantcol < 1)
+	wp->w_wantcol = 1;
+    if (wp->w_wantcol > Columns)
+	wp->w_wantcol = Columns;
+
+    popup_adjust_position(wp);
+}
 
 #if defined(FEAT_TIMERS)
     static void
@@ -236,6 +298,8 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	nr = dict_get_number(dict, (char_u *)"wrap");
 	wp->w_p_wrap = nr != 0;
     }
+
+    wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
 
     di = dict_find(dict, (char_u *)"callback", -1);
     if (di != NULL)
@@ -798,6 +862,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_padding[3] = 1;
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 				(char_u *)"WarningMsg", OPT_FREE|OPT_LOCAL, 0);
+	wp->w_popup_drag = 1;
     }
 
     // Deal with options.

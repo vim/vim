@@ -1002,7 +1002,7 @@ static void clip_update_modeless_selection(VimClipboard *, int, int,
 
 /*
  * Start, continue or end a modeless selection.  Used when editing the
- * command-line and in the cmdline window.
+ * command-line, in the cmdline window and when the mouse is in a popup window.
  */
     void
 clip_modeless(int button, int is_click, int is_drag)
@@ -2841,7 +2841,8 @@ jump_to_mouse(
     static int  in_winbar = FALSE;
 #endif
 #ifdef FEAT_TEXT_PROP
-    static int  in_popup_win = FALSE;
+    static int   in_popup_win = FALSE;
+    static win_T *popup_dragwin = NULL;
 #endif
     static int	prev_row = -1;
     static int	prev_col = -1;
@@ -2869,6 +2870,9 @@ jump_to_mouse(
 	    flags &= ~(MOUSE_FOCUS | MOUSE_DID_MOVE);
 	dragwin = NULL;
 	did_drag = FALSE;
+#ifdef FEAT_TEXT_PROP
+	popup_dragwin = NULL;
+#endif
     }
 
     if ((flags & MOUSE_DID_MOVE)
@@ -2910,7 +2914,15 @@ retnomove:
 #ifdef FEAT_TEXT_PROP
 	// Continue a modeless selection in a popup window.
 	if (in_popup_win)
+	{
+	    if (popup_dragwin != NULL)
+	    {
+		// dragging a popup window
+		popup_drag(popup_dragwin);
+		return IN_UNKNOWN;
+	    }
 	    return IN_OTHER_WIN;
+	}
 #endif
 	return IN_BUFFER;
     }
@@ -2936,29 +2948,36 @@ retnomove:
 
     if (!(flags & MOUSE_FOCUS))
     {
-	if (row < 0 || col < 0)			/* check if it makes sense */
+	if (row < 0 || col < 0)			// check if it makes sense
 	    return IN_UNKNOWN;
 
-	/* find the window where the row is in */
+	// find the window where the row is in
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
 	dragwin = NULL;
 
 #ifdef FEAT_TEXT_PROP
-	// Click in a popup window may start modeless selection, but not much
-	// else.
+	// Click in a popup window may start dragging or modeless selection,
+	// but not much else.
 	if (bt_popup(wp->w_buffer))
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;
+	    if (wp->w_popup_drag && popup_on_border(wp, row, col))
+	    {
+		popup_dragwin = wp;
+		popup_start_drag(wp);
+		return IN_UNKNOWN;
+	    }
 # ifdef FEAT_CLIPBOARD
 	    return IN_OTHER_WIN;
 # else
 	    return IN_UNKNOWN;
 # endif
 	}
-	    in_popup_win = FALSE;
+	in_popup_win = FALSE;
+	popup_dragwin = NULL;
 #endif
 #ifdef FEAT_MENU
 	if (row == -1)
@@ -3127,9 +3146,17 @@ retnomove:
 	    return IN_OTHER_WIN;
 #endif
 #ifdef FEAT_TEXT_PROP
-	// Continue a modeless selection in a popup window.
 	if (in_popup_win)
+	{
+	    if (popup_dragwin != NULL)
+	    {
+		// dragging a popup window
+		popup_drag(popup_dragwin);
+		return IN_UNKNOWN;
+	    }
+	    // continue a modeless selection in a popup window
 	    return IN_OTHER_WIN;
+	}
 #endif
 
 	row -= W_WINROW(curwin);

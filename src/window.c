@@ -1371,7 +1371,7 @@ win_init_some(win_T *newp, win_T *oldp)
 /*
  * Return TRUE if "win" is a global popup or a popup in the current tab page.
  */
-    static int
+    int
 win_valid_popup(win_T *win UNUSED)
 {
 #ifdef FEAT_TEXT_PROP

@@ -95,7 +95,7 @@ IMPLEMENTATION:
 - For the "moved" property also include mouse movement?
 - When selecting text in the popup with modeless selection, do not select
   outside of the popup and don't select the border or padding.
-- Allow the user to drag the popup window when the "dragging" property is set.
+- Add test for dragging the popup window.
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
 - Invoke filter with character before mapping?
@@ -277,7 +277,7 @@ popup_menu({text}, {options})				 *popup_menu()*
 
 
 popup_move({id}, {options})					*popup_move()*
-		Move popup {id} to the position speficied with {options}.
+		Move popup {id} to the position specified with {options}.
 		{options} may contain the items from |popup_create()| that
 		specify the popup position: "line", "col", "pos", "maxheight",
 		"minheight", "maxwidth" and "minwidth".
@@ -293,6 +293,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'time': 3000,
 				\ 'tab': -1,
 				\ 'zindex': 200,
+				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
 				\ 'border': [],
 				\ 'padding': [0,1,0,1],
@@ -409,9 +410,13 @@ The second argument of |popup_create()| is a dictionary with options:
 			{only -1 and 0 are implemented}
 	title		Text to be displayed above the first item in the
 			popup, on top of any border.  If there is no top
-			border on line of padding is added to put the title on.
+			border one line of padding is added to put the title
+			on.
 			{not implemented yet}
 	wrap		TRUE to make the lines wrap (default TRUE).
+	drag		TRUE to allow the popup to be dragged with the mouse
+			by grabbing at at the border.  Has no effect if the
+			popup does not have a border.
 	highlight	Highlight group name to use for the text, stored in
 			the 'wincolor' option.
 	padding		List with numbers, defining the padding
@@ -442,7 +447,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			By default a double line is used all around when
 			'encoding' is "utf-8", otherwise ASCII characters are
 			used.
-	zindex		Priority for the popup, default 50.  Mininum value is
+	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
 	time		Time in milliseconds after which the popup will close.
 			When omitted |popup_close()| must be used.

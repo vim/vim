@@ -3,6 +3,7 @@ void do_window(int nchar, long Prenum, int xchar);
 void get_wincmd_addr_type(char_u *arg, exarg_T *eap);
 int win_split(int size, int flags);
 int win_split_ins(int size, int flags, win_T *new_wp, int dir);
+int win_valid_popup(win_T *win);
 int win_valid(win_T *win);
 int win_valid_any_tab(win_T *win);
 int win_count(void);

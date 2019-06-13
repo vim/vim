@@ -2909,6 +2909,7 @@ struct window_S
     linenr_T	w_popup_lnum;	    // close popup if cursor not on this line
     colnr_T	w_popup_mincol;	    // close popup if cursor before this col
     colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
+    int		w_popup_drag;	    // allow moving the popup with the mouse
 
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window

@@ -1,4 +1,7 @@
 /* popupwin.c */
+int popup_on_border(win_T *wp, int row, int col);
+void popup_start_drag(win_T *wp);
+void popup_drag(win_T *wp);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 void popup_adjust_position(win_T *wp);
