@@ -444,7 +444,8 @@ gui_init_check(void)
     gui.menu_width = 0;
 # endif
 #endif
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) \
+	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
     gui.toolbar_height = 0;
 #endif
 #if defined(FEAT_FOOTER) && defined(FEAT_GUI_MOTIF)
@@ -831,8 +832,12 @@ gui_exit(int rc)
     gui_mch_exit(rc);
 }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_X11) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_MAC) \
+	|| defined(PROTO)
 # define NEED_GUI_UPDATE_SCREEN 1
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
@@ -1389,7 +1394,8 @@ gui_position_components(int total_width UNUSED)
 	text_area_y += gui.tabline_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) \
+	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
 # ifdef FEAT_GUI_ATHENA
@@ -4273,12 +4279,16 @@ gui_update_scrollbars(
 	    /* Calculate height and position in pixels */
 	    h = (sb->height + sb->status_height) * gui.char_height;
 	    y = sb->top * gui.char_height + gui.border_offset;
-#if defined(FEAT_MENU) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_PHOTON)
+#if defined(FEAT_MENU) \
+	&& !(defined(FEAT_GUI_GTK) \
+	     || defined(FEAT_GUI_MOTIF) \
+	     || defined(FEAT_GUI_PHOTON))
 	    if (gui.menu_is_active)
 		y += gui.menu_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) \
+	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA))
 	    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 # ifdef FEAT_GUI_ATHENA
 		y += gui.toolbar_height;

@@ -312,7 +312,8 @@
 /*
  * +cscope		Unix only: Cscope support.
  */
-#if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
+#if !defined(FEAT_CSCOPE) && defined(FEAT_BIG) && defined(UNIX) \
+	&& !defined(MACOS_X)
 # define FEAT_CSCOPE
 #endif
 
@@ -709,7 +710,12 @@
  */
 #if defined(FEAT_NORMAL)
 # define FEAT_BROWSE_CMD
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+# if defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MOTIF) \
+	|| defined(FEAT_GUI_ATHENA) \
+	|| defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_MAC)
 #  define FEAT_BROWSE
 # endif
 #endif
@@ -749,9 +755,12 @@
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
-	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
-	 || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
+	(defined(FEAT_GUI_MOTIF) \
+	 || defined(FEAT_GUI_ATHENA) \
+	 || defined(FEAT_GUI_GTK) \
+	 || defined(FEAT_GUI_MSWIN) \
+	 || defined(FEAT_GUI_PHOTON) \
+	 || defined(FEAT_GUI_MAC))
 # define FEAT_GUI_TEXTDIALOG
 # ifndef ALWAYS_USE_GUI
 #  define FEAT_CON_DIALOG
@@ -974,7 +983,8 @@
  * +X11			Unix only.  Include code for xterm title saving and X
  *			clipboard.  Only works if HAVE_X11 is also defined.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if (defined(FEAT_NORMAL) \
+	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
 # define WANT_X11
 #endif
 
@@ -1167,9 +1177,12 @@
 # define CURSOR_SHAPE
 #endif
 
-#if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
-	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)	\
-	|| defined(FEAT_GUI_MAC))
+#if defined(FEAT_MZSCHEME) \
+	&& (defined(FEAT_GUI_MSWIN) \
+	    || defined(FEAT_GUI_GTK) \
+	    || defined(FEAT_GUI_MOTIF) \
+	    || defined(FEAT_GUI_ATHENA) \
+	    || defined(FEAT_GUI_MAC))
 # define MZSCHEME_GUI_THREADS
 #endif
 
@@ -1263,7 +1276,8 @@
 # endif
 #endif
 
-#if defined(FEAT_BEVAL_GUI) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_BEVAL_GUI) \
+	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
 # define FEAT_BEVAL_TIP		/* balloon eval used for toolbar tooltip */
 #endif
 
