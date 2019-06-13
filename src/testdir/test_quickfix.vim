@@ -1,7 +1,7 @@
 " Test for the quickfix feature.
 
 if !has('quickfix')
-  finish
+  throw 'Skipped, quickfix feature missing'
 endif
 
 set encoding=utf-8

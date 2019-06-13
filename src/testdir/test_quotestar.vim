@@ -2,7 +2,7 @@
 
 source shared.vim
 if !WorkingClipboard()
-  finish
+  throw 'Skipped, no working clipboard'
 endif
 
 source shared.vim

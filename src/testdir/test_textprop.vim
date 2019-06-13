@@ -2,7 +2,7 @@
 " buffer.
 
 if !has('textprop')
-  finish
+  throw 'Skipped, textprop feature missing'
 endif
 
 source screendump.vim

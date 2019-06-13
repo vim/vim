@@ -1,7 +1,7 @@
 " Test for textobjects
 
 if !has('textobjects')
-  finish
+  throw 'Skipped, textobjects feature missing'
 endif
 
 func CpoM(line, useM, expected)

@@ -1,7 +1,7 @@
 " Tests for the terminal window.
 
 if !has('terminal')
-  finish
+  throw 'Skipped, terminal feature missing'
 endif
 
 source shared.vim

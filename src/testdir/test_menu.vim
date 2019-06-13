@@ -1,7 +1,7 @@
 " Test that the system menu can be loaded.
 
 if !has('menu')
-  finish
+  throw 'Skipped, menu feature missing'
 endif
 
 func Test_load_menu()

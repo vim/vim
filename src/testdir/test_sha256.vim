@@ -1,7 +1,10 @@
 " Tests for the sha256() function.
 
-if !has('cryptv') || !exists('*sha256')
-  finish
+if !has('cryptv')
+  throw 'Skipped, cryptv feature missing'
+endif
+if !exists('*sha256')
+  throw 'Skipped, sha256 function missing'
 endif
 
 function Test_sha256()

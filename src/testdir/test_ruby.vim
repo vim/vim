@@ -1,7 +1,7 @@
 " Tests for ruby interface
 
 if !has('ruby')
-  finish
+  throw 'Skipped, ruby feature missing'
 end
 
 func Test_ruby_change_buffer()

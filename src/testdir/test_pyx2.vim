@@ -2,7 +2,7 @@
 
 set pyx=2
 if !has('python')
-  finish
+  throw 'Skipped, python feature missing'
 endif
 
 let s:py2pattern = '^2\.[0-7]\.\d\+'

@@ -1,7 +1,7 @@
 " Tests for digraphs
 
 if !has("digraphs")
-  finish
+  throw 'Skipped, digraphs feature missing'
 endif
 
 func Put_Dig(chars)

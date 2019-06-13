@@ -1,7 +1,10 @@
 " Test for cscope commands.
 
-if !has('cscope') || !executable('cscope') || !has('quickfix')
-  finish
+if !has('cscope') || !has('quickfix')
+  throw 'Skipped, cscope or quickfix feature missing'
+endif
+if !executable('cscope')
+  throw 'Skipped, cscope program missing'
 endif
 
 func CscopeSetupOrClean(setup)

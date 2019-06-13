@@ -4,7 +4,7 @@ set encoding=utf-8
 scriptencoding utf-8
 
 if !has('mksession')
-  finish
+  throw 'Skipped, mksession feature missing'
 endif
 
 func Test_mksession_utf8()

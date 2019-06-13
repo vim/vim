@@ -1,7 +1,7 @@
 " Test spell checking
 
 if !has('spell')
-  finish
+  throw 'Skipped, spell feature missing'
 endif
 
 func TearDown()

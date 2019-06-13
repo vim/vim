@@ -1,7 +1,7 @@
 " Test signal handling.
 
 if !has('unix')
-  finish
+  throw 'Skipped, not on Unix'
 endif
 
 source shared.vim

@@ -1,7 +1,10 @@
 " Tests for reltime()
 
-if !has('reltime') || !has('float')
-  finish
+if !has('reltime')
+  throw 'Skipped, reltime feature missing'
+endif
+if !has('float')
+  throw 'Skipped, float feature missing'
 endif
 
 func Test_reltime()

@@ -2,7 +2,7 @@
 " TODO: move tests from test87.in here.
 
 if !has('python')
-  finish
+  throw 'Skipped, python feature missing'
 endif
 
 func Test_pydo()

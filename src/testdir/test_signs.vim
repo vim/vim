@@ -1,7 +1,7 @@
 " Test for signs
 
 if !has('signs')
-  finish
+  throw 'Skipped, signs feature missing'
 endif
 
 func Test_sign()

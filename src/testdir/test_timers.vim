@@ -1,7 +1,7 @@
 " Test for timers
 
 if !has('timers')
-  finish
+  throw 'Skipped, timers feature missing'
 endif
 
 source shared.vim

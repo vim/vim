@@ -1,8 +1,11 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-if has('gui_running') || !has('unix')
-  finish
+if has('gui_running')
+  throw 'Skipped, does not work in the GUI'
+endif
+if !has('unix')
+  throw 'Skipped, not on Unix'
 endif
 
 source shared.vim

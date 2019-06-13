@@ -1,9 +1,15 @@
 " Tests for memory usage.
 
-if !has('terminal') || has('gui_running') || $ASAN_OPTIONS !=# ''
+if !has('terminal')
+  throw 'Skipped, terminal feature missing'
+endif
+if has('gui_running')
+  throw 'Skipped, does not work in GUI'
+endif
+if $ASAN_OPTIONS !=# ''
   " Skip tests on Travis CI ASAN build because it's difficult to estimate
   " memory usage.
-  finish
+  throw 'Skipped, does not work with ASAN'
 endif
 
 source shared.vim
@@ -14,7 +20,7 @@ endfunc
 
 if has('win32')
   if !executable('wmic')
-    finish
+    throw 'Skipped, wmic program missing'
   endif
   func s:memory_usage(pid) abort
     let cmd = printf('wmic process where processid=%d get WorkingSetSize', a:pid)
@@ -22,13 +28,13 @@ if has('win32')
   endfunc
 elseif has('unix')
   if !executable('ps')
-    finish
+    throw 'Skipped, ps program missing'
   endif
   func s:memory_usage(pid) abort
     return s:pick_nr(system('ps -o rss= -p ' . a:pid))
   endfunc
 else
-  finish
+  throw 'Skipped, not win32 or unix'
 endif
 
 " Wait for memory usage to level off.

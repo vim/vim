@@ -3,7 +3,7 @@
 
 source shared.vim
 if !CanRunGui()
-  finish
+  throw 'Skipped, cannot run GUI'
 endif
 
 source setup_gui.vim

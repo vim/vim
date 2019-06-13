@@ -1,7 +1,7 @@
 " Tests for encryption.
 
 if !has('cryptv')
-  finish
+  throw 'Skipped, encryption feature missing'
 endif
 
 func Common_head_only(text)

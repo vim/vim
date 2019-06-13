@@ -2,7 +2,7 @@
 " TODO: move tests from test88.in here.
 
 if !has('python3')
-  finish
+  throw 'Skipped, python3 feature missing'
 endif
 
 func Test_py3do()

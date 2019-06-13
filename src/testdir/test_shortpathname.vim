@@ -2,7 +2,7 @@
 " Only for use on Win32 systems!
 
 if !has('win32')
-  finish
+  throw 'Skipped, not on MS-Windows'
 endif
 
 func TestIt(file, bits, expected)
