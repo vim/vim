@@ -45,7 +45,7 @@ msgstr ""
 "Project-Id-Version: Vim - Chinese (traditional)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-13 19:36+0800\n"
-"PO-Revision-Date: 2019-06-13 19:42+0800\n"
+"PO-Revision-Date: 2019-06-13 19:46+0800\n"
 "Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Lokalize 19.04.2\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: autocmd.c:274
 msgid "--Deleted--"
@@ -68,7 +68,7 @@ msgstr "正在自動移除「自動指令」：%s <緩衝區=%d>"
 #: autocmd.c:516
 #, c-format
 msgid "E367: No such group: \"%s\""
-msgstr "E367：無此群組：\"%s\""
+msgstr "E367：無此群組：「%s」"
 
 #: autocmd.c:518
 #, fuzzy
@@ -123,7 +123,7 @@ msgstr "E218：autocommand 層數過深"
 #: autocmd.c:2295
 #, c-format
 msgid "%s Autocommands for \"%s\""
-msgstr "%s Autocommands：\"%s\""
+msgstr "%s Autocommands：「%s」"
 
 #: autocmd.c:2305
 #, c-format
@@ -424,7 +424,7 @@ msgstr "E314：保留失敗"
 #: channel.c:4033
 #, fuzzy, c-format
 msgid "E917: Cannot use a callback with %s()"
-msgstr "E197：不能設定語言成 \"%s\""
+msgstr "E197：不能設定語言成「%s」"
 
 #: channel.c:4073
 msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
@@ -619,12 +619,12 @@ msgstr "E101：有兩個以上的緩衝區在 diff 模式，無法決定要用�
 #: diff.c:2612
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
-msgstr "E102：找不到緩衝區：\"%s\""
+msgstr "E102：找不到緩衝區：「%s」"
 
 #: diff.c:2620
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
-msgstr "E103：緩衝區 \"%s\" 不是在 diff 模式"
+msgstr "E103：緩衝區「%s」不是在 diff 模式"
 
 #: diff.c:2664
 msgid "E787: Buffer changed unexpectedly"
@@ -795,7 +795,7 @@ msgstr "E69：%s%%[ 後缺少 ]"
 #: eval.c:1368
 #, fuzzy
 msgid "E985: .= is not supported with script version 2"
-msgstr "E619：不支援 PostScript 資源檔 \"%s\""
+msgstr "E619：不支援 PostScript 資源檔「%s」"
 
 #: eval.c:1481
 msgid "E687: Less targets than List items"
@@ -846,14 +846,14 @@ msgstr "E69：%s%%[ 後缺少 ]"
 #: eval.c:3226
 #, c-format
 msgid "E108: No such variable: \"%s\""
-msgstr "E108：無此變數：\"%s\""
+msgstr "E108：無此變數：「%s」"
 
 #. For historic reasons this error is not given for a list or dict.
 #. * E.g., the b: dict could be locked/unlocked.
 #: eval.c:3263
 #, fuzzy, c-format
 msgid "E940: Cannot lock or unlock variable %s"
-msgstr "E46：無法設定唯讀變數 \"%s\""
+msgstr "E46：無法設定唯讀變數「%s」"
 
 #: eval.c:3312
 msgid "E743: variable nested too deep for (un)lock"
@@ -884,7 +884,7 @@ msgstr "E90：無法釋放最後一個緩衝區"
 #: eval.c:4721
 #, fuzzy
 msgid "E909: Cannot index a special variable"
-msgstr "E46：無法設定唯讀變數 \"%s\""
+msgstr "E46：無法設定唯讀變數「%s」"
 
 #: eval.c:5058
 #, c-format
@@ -1005,7 +1005,7 @@ msgstr ""
 #: eval.c:8194
 #, fuzzy, c-format
 msgid "E795: Cannot delete variable %s"
-msgstr "E46：無法設定唯讀變數 \"%s\""
+msgstr "E46：無法設定唯讀變數「%s」"
 
 #: eval.c:8215
 #, fuzzy, c-format
@@ -1293,7 +1293,7 @@ msgstr "E354：暫存器名稱錯誤：'%s'"
 #: evalfunc.c:13968
 #, fuzzy
 msgid "E677: Error writing temp file"
-msgstr "E208：寫入檔案 \"%s\" 錯誤"
+msgstr "E208：寫入檔案「%s」錯誤"
 
 #: evalfunc.c:14700
 #, fuzzy
@@ -1321,7 +1321,7 @@ msgstr "E94：找不到 %s"
 #: ex_cmds2.c:1384
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162：已更改過緩衝區 \"%s\" 但尚未存檔 (可用 ! 強制執行)"
+msgstr "E162：已更改過緩衝區「%s」但尚未存檔 (可用 ! 強制執行)"
 
 #: ex_cmds2.c:1453
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
@@ -1347,17 +1347,17 @@ msgstr "E666：編譯器不支援：%s"
 #: ex_cmds2.c:2501
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
-msgstr "搜尋中：\"%s\" -- \"%s\""
+msgstr "搜尋中：「%s」--「%s」"
 
 #: ex_cmds2.c:2549
 #, c-format
 msgid "Searching for \"%s\""
-msgstr "搜尋中：\"%s\""
+msgstr "搜尋中：「%s」"
 
 #: ex_cmds2.c:2581
 #, fuzzy, c-format
 msgid "not found in '%s': \"%s\""
-msgstr "在 'runtimepath' 裡找不到 \"%s\""
+msgstr "在 'runtimepath' 裡找不到「%s」"
 
 #: ex_cmds2.c:3137
 #, c-format
@@ -1376,22 +1376,22 @@ msgstr "執行 Vim script"
 #: ex_cmds2.c:3396
 #, c-format
 msgid "Cannot source a directory: \"%s\""
-msgstr "無法執行目錄： \"%s\""
+msgstr "無法執行目錄：「%s」"
 
 #: ex_cmds2.c:3455
 #, c-format
 msgid "could not source \"%s\""
-msgstr "無法執行 \"%s\""
+msgstr "無法執行「%s」"
 
 #: ex_cmds2.c:3457
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "第 %ld 行：無法執行 \"%s\""
+msgstr "第 %ld 行：無法執行「%s」"
 
 #: ex_cmds2.c:3473
 #, c-format
 msgid "sourcing \"%s\""
-msgstr "執行 \"%s\" 中"
+msgstr "執行「%s」中"
 
 #: ex_cmds2.c:3475
 #, c-format
@@ -1457,12 +1457,12 @@ msgstr "E168：在執行 script 檔案外不可使用 :finish"
 #: ex_cmds2.c:4492
 #, c-format
 msgid "Current %slanguage: \"%s\""
-msgstr "目前的 %s語言：\"%s\""
+msgstr "目前的 %s語言：「%s」"
 
 #: ex_cmds2.c:4509
 #, c-format
 msgid "E197: Cannot set language to \"%s\""
-msgstr "E197：不能設定語言成 \"%s\""
+msgstr "E197：不能設定語言成「%s」"
 
 #: ex_cmds.c:94
 #, fuzzy, c-format
@@ -1530,7 +1530,7 @@ msgstr "E136：viminfo：過多錯誤, 忽略檔案其餘部分"
 #: ex_cmds.c:1910
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s"
-msgstr "讀取 viminfo 檔案 \"%s\"%s%s%s"
+msgstr "讀取 viminfo 檔案「%s」%s%s%s"
 
 #: ex_cmds.c:1912
 msgid " info"
@@ -1570,7 +1570,7 @@ msgstr "E138：無法寫入 viminfo 檔案 %s !"
 #: ex_cmds.c:2189
 #, c-format
 msgid "Writing viminfo file \"%s\""
-msgstr "寫入 viminfo 檔案 \"%s\" 中"
+msgstr "寫入 viminfo 檔案「%s」中"
 
 #: ex_cmds.c:2210
 #, fuzzy, c-format
@@ -1761,7 +1761,7 @@ msgstr "E149：抱歉, 沒有 %s 的說明"
 #: ex_cmds.c:6436
 #, c-format
 msgid "Sorry, help file \"%s\" not found"
-msgstr "抱歉, 找不到說明檔 \"%s\""
+msgstr "抱歉, 找不到說明檔「%s」"
 
 #: ex_cmds.c:7202 ex_cmds.c:7437
 #, fuzzy, c-format
@@ -1771,7 +1771,7 @@ msgstr "E480：找不到：%s"
 #: ex_cmds.c:7216
 #, c-format
 msgid "E152: Cannot open %s for writing"
-msgstr "E152：無法以寫入模式開啟 \"%s\""
+msgstr "E152：無法以寫入模式開啟「%s」"
 
 #: ex_cmds.c:7253
 #, c-format
@@ -1786,7 +1786,7 @@ msgstr "E670：同一語言 (%s) 中有混合不同字元編碼的說明檔"
 #: ex_cmds.c:7367
 #, fuzzy, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s/%s"
-msgstr "E154：標籤(tag) \"%s\" 在檔案 %s 裡重複出現多次"
+msgstr "E154：標籤(tag)「%s」在檔案 %s 裡重複出現多次"
 
 #: ex_cmds.c:7550
 #, c-format
@@ -1972,17 +1972,17 @@ msgstr "儲存設定"
 #: ex_docmd.c:8682
 #, fuzzy, c-format
 msgid "E739: Cannot create directory: %s"
-msgstr "無法執行目錄： \"%s\""
+msgstr "無法執行目錄：「%s」"
 
 #: ex_docmd.c:8711
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
-msgstr "E189：\"%s\" 已存在 (請用 ! 強制執行)"
+msgstr "E189：「%s」已存在 (請用 ! 強制執行)"
 
 #: ex_docmd.c:8716
 #, c-format
 msgid "E190: Cannot open \"%s\" for writing"
-msgstr "E190：無法以寫入模式開啟 \"%s\""
+msgstr "E190：無法以寫入模式開啟「%s」"
 
 #. set mark
 #: ex_docmd.c:8739
@@ -2569,17 +2569,17 @@ msgstr "確定要寫入嗎"
 #: fileio.c:6550
 #, c-format
 msgid "E208: Error writing to \"%s\""
-msgstr "E208：寫入檔案 \"%s\" 錯誤"
+msgstr "E208：寫入檔案「%s」錯誤"
 
 #: fileio.c:6557
 #, c-format
 msgid "E209: Error closing \"%s\""
-msgstr "E209：關閉檔案 \"%s\" 錯誤"
+msgstr "E209：關閉檔案「%s」錯誤"
 
 #: fileio.c:6560
 #, c-format
 msgid "E210: Error reading \"%s\""
-msgstr "E210：讀取檔案 \"%s\" 錯誤"
+msgstr "E210：讀取檔案「%s」錯誤"
 
 #: fileio.c:6830
 msgid "E246: FileChangedShell autocommand deleted buffer"
@@ -2588,14 +2588,14 @@ msgstr "E246：FileChangedShell autocommand 刪除緩衝區"
 #: fileio.c:6844
 #, fuzzy, c-format
 msgid "E211: File \"%s\" no longer available"
-msgstr "E211：警告：檔案 \"%s\" 已經不存在"
+msgstr "E211：警告：檔案「%s」已經不存在"
 
 #: fileio.c:6853
 #, c-format
 msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
 "well"
-msgstr "W12：警告：檔案 \"%s\" 自上次讀入後已變動, 而且編輯中的緩衝區也更動了"
+msgstr "W12：警告：檔案「%s」自上次讀入後已變動, 而且編輯中的緩衝區也更動了"
 
 #: fileio.c:6854
 #, fuzzy
@@ -2605,7 +2605,7 @@ msgstr "進一步說明請見 \":help W11\"。"
 #: fileio.c:6858
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
-msgstr "W11：警告：檔案 \"%s\" 自上次讀入後已變動"
+msgstr "W11：警告：檔案「%s」自上次讀入後已變動"
 
 #: fileio.c:6859
 msgid "See \":help W11\" for more info."
@@ -2614,7 +2614,7 @@ msgstr "進一步說明請見 \":help W11\"。"
 #: fileio.c:6863
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
-msgstr "W16：警告：檔案 \"%s\" 的權限與上次讀入時不一樣 (有變動過)"
+msgstr "W16：警告：檔案「%s」的權限與上次讀入時不一樣 (有變動過)"
 
 #: fileio.c:6864
 #, fuzzy
@@ -2625,7 +2625,7 @@ msgstr "進一步說明請見 \":help W11\"。"
 #: fileio.c:6879
 #, c-format
 msgid "W13: Warning: File \"%s\" has been created after editing started"
-msgstr "W13：警告：檔案 \"%s\" 在開始編輯後又被建立了"
+msgstr "W13：警告：檔案「%s」在開始編輯後又被建立了"
 
 #: fileio.c:6908
 msgid "Warning"
@@ -2642,12 +2642,12 @@ msgstr ""
 #: fileio.c:7053
 #, c-format
 msgid "E462: Could not prepare for reloading \"%s\""
-msgstr "E462：無法準備重新載入 \"%s\""
+msgstr "E462：無法準備重新載入「%s」"
 
 #: fileio.c:7070
 #, c-format
 msgid "E321: Could not reload \"%s\""
-msgstr "E321：無法重新載入 \"%s\""
+msgstr "E321：無法重新載入「%s」"
 
 #: fileio.c:7914
 msgid "E219: Missing {."
@@ -2671,22 +2671,22 @@ msgstr "E343：不正確的路徑：'**[number]' 必需要在路徑結尾或要�
 #: findfile.c:1896
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344：cdpath 中沒有目錄 \"%s\""
+msgstr "E344：cdpath 中沒有目錄「%s」"
 
 #: findfile.c:1899
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345：在路徑中找不到檔案 \"%s\""
+msgstr "E345：在路徑中找不到檔案「%s」"
 
 #: findfile.c:1905
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346：在路徑中找不到更多的檔案 \"%s\""
+msgstr "E346：在路徑中找不到更多的檔案「%s」"
 
 #: findfile.c:1908
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
-msgstr "E347：在路徑中找不到更多的檔案 \"%s\""
+msgstr "E347：在路徑中找不到更多的檔案「%s」"
 
 #: findfile.c:1991
 msgid "E446: No file name under cursor"
@@ -2695,7 +2695,7 @@ msgstr "E446：游標處沒有檔名"
 #: findfile.c:2135
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447：在路徑中找不到檔案 \"%s\""
+msgstr "E447：在路徑中找不到檔案「%s」"
 
 #: fold.c:68
 msgid "E490: No fold found"
@@ -2813,7 +2813,7 @@ msgstr "E229：無法啟動圖型界面"
 #: gui.c:542
 #, c-format
 msgid "E230: Cannot read from \"%s\""
-msgstr "E230：無法讀取檔案 \"%s\""
+msgstr "E230：無法讀取檔案「%s」"
 
 #: gui.c:676
 msgid "E665: Cannot start GUI, no valid font found"
@@ -3037,7 +3037,7 @@ msgstr ""
 #: gui_w32.c:4813
 #, c-format
 msgid "E671: Cannot find window title \"%s\""
-msgstr "E671：找不到標題為 \"%s\" 的視窗"
+msgstr "E671：找不到標題為「%s」的視窗"
 
 #: gui_w32.c:4830
 #, c-format
@@ -3198,27 +3198,27 @@ msgstr "E455：無法寫入 PostScript 輸出檔"
 #: hardcopy.c:1846
 #, c-format
 msgid "E624: Can't open file \"%s\""
-msgstr "E624：無法開啟檔案 \"%s\""
+msgstr "E624：無法開啟檔案「%s」"
 
 #: hardcopy.c:1856 hardcopy.c:2700
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457：無法讀取 PostScript 資源檔 \"%s\""
+msgstr "E457：無法讀取 PostScript 資源檔「%s」"
 
 #: hardcopy.c:1873
 #, c-format
 msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618：檔案 \"%s\" 不是 PostScript 資源檔 "
+msgstr "E618：檔案「%s」不是 PostScript 資源檔 "
 
 #: hardcopy.c:1890 hardcopy.c:1908 hardcopy.c:1950
 #, c-format
 msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619：不支援 PostScript 資源檔 \"%s\""
+msgstr "E619：不支援 PostScript 資源檔「%s」"
 
 #: hardcopy.c:1964
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621：\"%s\" 資源檔版本錯誤"
+msgstr "E621：「%s」資源檔版本錯誤"
 
 #: hardcopy.c:2427
 msgid "E673: Incompatible multi-byte encoding and character set."
@@ -3239,7 +3239,7 @@ msgstr "E324：無法開啟 PostScript 輸出檔"
 #: hardcopy.c:2686
 #, c-format
 msgid "E456: Can't open file \"%s\""
-msgstr "E456：無法開啟檔案 \"%s\""
+msgstr "E456：無法開啟檔案「%s」"
 
 #: hardcopy.c:2818
 msgid "E456: Can't find PostScript resource file \"prolog.ps\""
@@ -3258,7 +3258,7 @@ msgstr "E456：無法讀取 PostScript 資源檔 \"%s.ps\""
 #: hardcopy.c:2900
 #, fuzzy, c-format
 msgid "E620: Unable to convert to print encoding \"%s\""
-msgstr "E620:無法轉換至 \"%s\" 字元編碼"
+msgstr "E620:無法轉換至「%s」字元編碼"
 
 #: hardcopy.c:3146
 msgid "Sending to printer..."
@@ -3977,7 +3977,7 @@ msgstr "vimrc 前命令列"
 #: main.c:3034
 #, c-format
 msgid "E282: Cannot read from \"%s\""
-msgstr "E282：無法讀取檔案 \"%s\""
+msgstr "E282：無法讀取檔案「%s」"
 
 #: main.c:3271
 msgid ""
@@ -4449,7 +4449,7 @@ msgstr "沒有設定標記 (mark)"
 #: mark.c:763
 #, c-format
 msgid "E283: No marks matching \"%s\""
-msgstr "E283：找不到符合 \"%s\" 的標記(mark)"
+msgstr "E283：找不到符合「%s」的標記(mark)"
 
 #. Highlight title
 #: mark.c:781
@@ -4588,7 +4588,7 @@ msgstr "E302：無法改變暫存檔的名稱"
 #: memline.c:812
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
-msgstr "E303：無法開啟暫存檔 \"%s\", 不可能修復了"
+msgstr "E303：無法開啟暫存檔「%s」, 不可能修復了"
 
 #: memline.c:947
 #, fuzzy
@@ -4663,12 +4663,12 @@ msgstr ""
 #: memline.c:1346
 #, c-format
 msgid "Using swap file \"%s\""
-msgstr "使用暫存檔 \"%s\""
+msgstr "使用暫存檔「%s」"
 
 #: memline.c:1352
 #, c-format
 msgid "Original file \"%s\""
-msgstr "原始檔 \"%s\""
+msgstr "原始檔「%s」"
 
 #: memline.c:1364
 msgid "E308: Warning: Original file may have been changed"
@@ -5342,7 +5342,7 @@ msgstr "E342：記憶體不足! (嘗試配置 %lu 位元組)"
 #: misc2.c:3228
 #, c-format
 msgid "Calling shell to execute: \"%s\""
-msgstr "呼叫 shell 執行：\"%s\""
+msgstr "呼叫 shell 執行：「%s」"
 
 #: misc2.c:3528
 msgid "E545: Missing colon"
@@ -5367,7 +5367,7 @@ msgstr "E549：不正確的百分比"
 #: netbeans.c:260
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668：NetBeans 連線資訊檔案：\"%s\" 存取模式不正確"
+msgstr "E668：NetBeans 連線資訊檔案：「%s」存取模式不正確"
 
 #: netbeans.c:1539
 #, fuzzy, c-format
@@ -5897,17 +5897,17 @@ msgstr "列印中：'%s'"
 #: os_mswin.c:3073
 #, c-format
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
-msgstr "E244：字元集 \"%s\" 無法對應字型\"%s\""
+msgstr "E244：字元集「%s」無法對應字型「%s」"
 
 #: os_mswin.c:3093
 #, fuzzy, c-format
 msgid "E244: Illegal quality name \"%s\" in font name \"%s\""
-msgstr "E244：字元集 \"%s\" 無法對應字型\"%s\""
+msgstr "E244：字元集「%s」無法對應字型「%s」"
 
 #: os_mswin.c:3101
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
-msgstr "E245：不正確的字元 '%c' 出現在字型名稱 \"%s\" 內"
+msgstr "E245：不正確的字元 '%c' 出現在字型名稱「%s」內"
 
 #: os_unix.c:1527
 #, c-format
@@ -6730,7 +6730,7 @@ msgstr ""
 #: spellfile.c:320
 #, fuzzy
 msgid "E761: Format error in affix file FOL, LOW or UPP"
-msgstr "E431：Tag 檔 \"%s\" 格式錯誤"
+msgstr "E431：Tag 檔「%s」格式錯誤"
 
 #: spellfile.c:321
 msgid "E762: Character in FOL, LOW or UPP is out of range"
@@ -6743,7 +6743,7 @@ msgstr ""
 #: spellfile.c:372
 #, fuzzy, c-format
 msgid "Reading spell file \"%s\""
-msgstr "使用暫存檔 \"%s\""
+msgstr "使用暫存檔「%s」"
 
 #: spellfile.c:404
 #, fuzzy
@@ -6792,7 +6792,7 @@ msgstr "E47：讀取錯誤檔案失敗"
 #: spellfile.c:2209
 #, fuzzy, c-format
 msgid "Reading affix file %s..."
-msgstr "搜尋 tag 檔案 \"%s\""
+msgstr "搜尋 tag 檔案「%s」"
 
 #: spellfile.c:2256 spellfile.c:3539 spellfile.c:4107
 #, c-format
@@ -6861,7 +6861,7 @@ msgstr ""
 #: spellfile.c:2596
 #, fuzzy, c-format
 msgid "Duplicate affix in %s line %d: %s"
-msgstr "E154：標籤(tag) \"%s\" 在檔案 %s 裡重複出現多次"
+msgstr "E154：標籤(tag)「%s」在檔案 %s 裡重複出現多次"
 
 #: spellfile.c:2618
 #, c-format
@@ -7062,7 +7062,7 @@ msgstr ""
 #: spellfile.c:5777
 #, fuzzy, c-format
 msgid "Writing suggestion file %s..."
-msgstr "寫入 viminfo 檔案 \"%s\" 中"
+msgstr "寫入 viminfo 檔案「%s」中"
 
 #: spellfile.c:5838 spellfile.c:6067
 #, c-format
@@ -7090,7 +7090,7 @@ msgstr ""
 #: spellfile.c:6060
 #, fuzzy, c-format
 msgid "Writing spell file %s..."
-msgstr "寫入 viminfo 檔案 \"%s\" 中"
+msgstr "寫入 viminfo 檔案「%s」中"
 
 #: spellfile.c:6065
 msgid "Done!"
@@ -7173,7 +7173,7 @@ msgstr ""
 #: syntax.c:3762
 #, c-format
 msgid "E391: No such syntax cluster: %s"
-msgstr "E391：無此 syntax cluster：\"%s\""
+msgstr "E391：無此 syntax cluster：「%s」"
 
 #: syntax.c:3915
 msgid "syncing on C-style comments"
@@ -7218,7 +7218,7 @@ msgstr ""
 #: syntax.c:3967
 #, c-format
 msgid "E392: No such syntax cluster: %s"
-msgstr "E392：無此 syntax cluster：\"%s\""
+msgstr "E392：無此 syntax cluster：「%s」"
 
 #: syntax.c:3994
 msgid "minimal "
@@ -7286,7 +7286,7 @@ msgstr "E399：syntax region %s 的引數太少"
 #: syntax.c:5569
 #, fuzzy
 msgid "E848: Too many syntax clusters"
-msgstr "E391：無此 syntax cluster：\"%s\""
+msgstr "E391：無此 syntax cluster：「%s」"
 
 #: syntax.c:5671
 msgid "E400: No cluster specified"
@@ -7465,7 +7465,7 @@ msgstr "E428：己經在最後一個符合的 tag 了"
 #: tag.c:708
 #, c-format
 msgid "File \"%s\" does not exist"
-msgstr "檔案 \"%s\" 不存在"
+msgstr "檔案「%s」不存在"
 
 #. Give an indication of the number of matching tags
 #: tag.c:720
@@ -7484,7 +7484,7 @@ msgstr "  以不同大小寫來使用 tag!"
 #: tag.c:780
 #, c-format
 msgid "E429: File \"%s\" does not exist"
-msgstr "E429：檔案 \"%s\" 不存在"
+msgstr "E429：檔案「%s」不存在"
 
 #: tag.c:844
 msgid "  # pri kind tag"
@@ -7506,7 +7506,7 @@ msgstr ""
 #: tag.c:1881
 #, c-format
 msgid "Searching tags file %s"
-msgstr "搜尋 tag 檔案 \"%s\""
+msgstr "搜尋 tag 檔案「%s」"
 
 #: tag.c:2103
 #, c-format
@@ -7520,7 +7520,7 @@ msgstr ""
 #: tag.c:2699
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
-msgstr "E431：Tag 檔 \"%s\" 格式錯誤"
+msgstr "E431：Tag 檔「%s」格式錯誤"
 
 #: tag.c:2703
 #, c-format
@@ -7573,7 +7573,7 @@ msgstr "E559：termcap 中沒有終端機資料項"
 #: term.c:2408
 #, c-format
 msgid "E436: No \"%s\" entry in termcap"
-msgstr "E436：termcap 沒有 \"%s\" entry"
+msgstr "E436：termcap 沒有「%s」entry"
 
 #: term.c:3134
 msgid "E437: terminal capability \"cm\" required"
@@ -7645,7 +7645,7 @@ msgstr ""
 #: textprop.c:51
 #, fuzzy, c-format
 msgid "E971: Property type %s does not exist"
-msgstr "E429：檔案 \"%s\" 不存在"
+msgstr "E429：檔案「%s」不存在"
 
 #: textprop.c:52
 #, fuzzy, c-format
@@ -7735,7 +7735,7 @@ msgstr ""
 #: undo.c:1642
 #, fuzzy, c-format
 msgid "Writing undo file: %s"
-msgstr "寫入 viminfo 檔案 \"%s\" 中"
+msgstr "寫入 viminfo 檔案「%s」中"
 
 #: undo.c:1742
 #, fuzzy, c-format
@@ -7750,7 +7750,7 @@ msgstr ""
 #: undo.c:1846
 #, fuzzy, c-format
 msgid "Reading undo file: %s"
-msgstr "讀取 viminfo 檔案 \"%s\"%s%s%s"
+msgstr "讀取 viminfo 檔案「%s」%s%s%s"
 
 #: undo.c:1854
 #, fuzzy, c-format
@@ -7989,7 +7989,7 @@ msgstr "E125：參數不正確：%s"
 #: userfunc.c:139
 #, fuzzy, c-format
 msgid "E853: Duplicate argument name: %s"
-msgstr "E154：標籤(tag) \"%s\" 在檔案 %s 裡重複出現多次"
+msgstr "E154：標籤(tag)「%s」在檔案 %s 裡重複出現多次"
 
 #: userfunc.c:182
 msgid "E989: Non-default argument follows default argument"
@@ -8027,7 +8027,7 @@ msgstr "%s 傳回值 #%ld "
 #: userfunc.c:1129
 #, fuzzy, c-format
 msgid "%s returning %s"
-msgstr "%s 傳回值 \"%s\""
+msgstr "%s 傳回值「%s」"
 
 #: userfunc.c:1428
 #, fuzzy
@@ -8696,7 +8696,7 @@ msgstr "E235：不正確的字型名稱：%s"
 #: globals.h:1427
 #, c-format
 msgid "E236: Font \"%s\" is not fixed-width"
-msgstr "E236：\"%s\" 不是固定寬度字型"
+msgstr "E236：「%s」不是固定寬度字型"
 
 #: globals.h:1429
 msgid "E473: Internal error"
@@ -8755,12 +8755,12 @@ msgstr "E476：不正確的命令"
 #: globals.h:1444
 #, c-format
 msgid "E17: \"%s\" is a directory"
-msgstr "E17：\"%s\" 是目錄"
+msgstr "E17：「%s」是目錄"
 
 #: globals.h:1447
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
-msgstr "E364：呼叫函式庫 \"%s\"() 失敗"
+msgstr "E364：呼叫函式庫「%s」() 失敗"
 
 #: globals.h:1450
 msgid "E667: Fsync failed"
@@ -8869,7 +8869,7 @@ msgstr "E36：沒有足夠的空間"
 #: globals.h:1496
 #, c-format
 msgid "E247: no registered server named \"%s\""
-msgstr "E247：沒有註冊為 \"%s\" 的伺服器"
+msgstr "E247：沒有註冊為「%s」的伺服器"
 
 #: globals.h:1498
 #, c-format
@@ -8951,12 +8951,12 @@ msgstr "E45：有設定 'readonly' 選項(唯讀) (可用 ! 強制執行)"
 #: globals.h:1530
 #, fuzzy, c-format
 msgid "E46: Cannot change read-only variable \"%s\""
-msgstr "E46：無法設定唯讀變數 \"%s\""
+msgstr "E46：無法設定唯讀變數「%s」"
 
 #: globals.h:1531
 #, fuzzy, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E46：無法設定唯讀變數 \"%s\""
+msgstr "E46：無法設定唯讀變數「%s」"
 
 #: globals.h:1532
 #, fuzzy
@@ -9136,7 +9136,7 @@ msgstr "E139：您在另一個緩衝區也載入了這個檔案"
 #: globals.h:1591
 #, fuzzy, c-format
 msgid "E764: Option '%s' is not set"
-msgstr "E236：\"%s\" 不是固定寬度字型"
+msgstr "E236：「%s」不是固定寬度字型"
 
 #: globals.h:1594
 #, fuzzy
@@ -9344,12 +9344,12 @@ msgstr ""
 #: if_py_both.h:2934
 #, fuzzy, c-format
 msgid "unnamed function %s does not exist"
-msgstr "檔案 \"%s\" 不存在"
+msgstr "檔案「%s」不存在"
 
 #: if_py_both.h:2947
 #, fuzzy, c-format
 msgid "function %s does not exist"
-msgstr "檔案 \"%s\" 不存在"
+msgstr "檔案「%s」不存在"
 
 #: if_py_both.h:3214
 #, fuzzy, c-format
