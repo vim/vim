@@ -1,7 +1,7 @@
 " Tests for Perl interface
 
 if !has('perl')
-  throw 'Skipped, perl feature missing'
+  throw 'Skipped: perl feature missing'
 end
 
 " FIXME: RunTest don't see any error when Perl abort...

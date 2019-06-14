@@ -1,7 +1,7 @@
 " Tests for Lua.
 
 if !has('lua')
-  throw 'Skipped, lua feature missing'
+  throw 'Skipped: lua feature missing'
 endif
 
 func TearDown()

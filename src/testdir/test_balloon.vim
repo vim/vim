@@ -2,7 +2,7 @@
 " A few tests only work in the terminal.
 
 if has('gui_running')
-  finish
+  throw 'Skipped: only work in the terminal'
 endif
 
 if !has('balloon_eval_term')

@@ -1,7 +1,7 @@
 " Test for variable tabstops
 
 if !has("vartabs")
-  throw 'Skipped, vartabs feature missing'
+  throw 'Skipped: vartabs feature missing'
 endif
 
 source view_util.vim

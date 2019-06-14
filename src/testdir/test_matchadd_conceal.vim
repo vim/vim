@@ -1,7 +1,7 @@
 " Test for matchadd() and conceal feature
 
 if !has('conceal')
-  throw 'Skipped, conceal feature missing'
+  throw 'Skipped: conceal feature missing'
 endif
 
 if !has('gui_running') && has('unix')

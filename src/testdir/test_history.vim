@@ -1,7 +1,7 @@
 " Tests for the history functions
 
 if !has('cmdline_hist')
-  throw 'Skipped, cmdline_hist feature missing'
+  throw 'Skipped: cmdline_hist feature missing'
 endif
 
 set history=7

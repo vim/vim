@@ -1,7 +1,7 @@
 " tests for 'langmap'
 
 if !has('langmap')
-  throw 'Skipped, langmap feature missing'
+  throw 'Skipped: langmap feature missing'
 endif
 
 func Test_langmap()

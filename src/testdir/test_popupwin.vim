@@ -448,7 +448,7 @@ endfunc
 
 func Test_popup_time()
   if !has('timers')
-    throw 'Skipped, timer feature not supported'
+    throw 'Skipped: timer feature not supported'
   endif
   topleft vnew
   call setline(1, 'hello')
@@ -1109,7 +1109,7 @@ endfunc
 
 func Test_notifications()
   if !has('timers')
-    throw 'Skipped, timer feature not supported'
+    throw 'Skipped: timer feature not supported'
   endif
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'

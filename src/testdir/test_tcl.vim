@@ -1,7 +1,7 @@
 " Tests for the Tcl interface.
 
 if !has('tcl')
-  throw 'Skipped, tcl feature missing'
+  throw 'Skipped: tcl feature missing'
 end
 
 " Helper function as there is no builtin tcleval() function similar

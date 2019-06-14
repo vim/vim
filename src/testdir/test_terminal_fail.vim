@@ -3,7 +3,7 @@
 " freed.  Since the process exists right away it's not a real leak.
 
 if !has('terminal')
-  throw 'Skipped, terminal feature missing'
+  throw 'Skipped: terminal feature missing'
 endif
 
 source shared.vim

@@ -2,7 +2,7 @@
 if empty($XXD) && executable('..\xxd\xxd.exe')
   let s:xxd_cmd = '..\xxd\xxd.exe'
 elseif empty($XXD) || !executable($XXD)
-  throw 'Skipped, xxd program missing'
+  throw 'Skipped: xxd program missing'
 else
   let s:xxd_cmd = $XXD
 endif

@@ -1,7 +1,7 @@
 " Tests for 'ballooneval' in the GUI.
 
 if !has('gui_running')
-  finish
+  throw 'Skipped: only work in the GUI'
 endif
 
 if !has('balloon_eval')

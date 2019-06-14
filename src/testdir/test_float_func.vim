@@ -1,7 +1,7 @@
 " test float functions
 
 if !has('float')
-  throw 'Skipped, float feature missing'
+  throw 'Skipped: float feature missing'
 end
 
 func Test_abs()

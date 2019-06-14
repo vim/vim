@@ -1,7 +1,7 @@
 " Test Vim profiler
 
 if !has('profile')
-  throw 'Skipped, profile feature missing'
+  throw 'Skipped: profile feature missing'
 endif
 
 func Test_profile_func()

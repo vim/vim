@@ -4,13 +4,13 @@ set encoding=utf-8
 scriptencoding utf-8
 
 if !exists("+linebreak")
-  throw 'Skipped, linebreak option missing'
+  throw 'Skipped: linebreak option missing'
 endif
 if !has("conceal")
-  throw 'Skipped, conceal feature missing'
+  throw 'Skipped: conceal feature missing'
 endif
 if !has("signs")
-  throw 'Skipped, signs feature missing'
+  throw 'Skipped: signs feature missing'
 endif
 
 source view_util.vim

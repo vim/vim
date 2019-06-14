@@ -1,7 +1,7 @@
 " Test for matchadd() and conceal feature using utf-8.
 
 if !has('conceal')
-  throw 'Skipped, conceal feature missing'
+  throw 'Skipped: conceal feature missing'
 endif
 
 if !has('gui_running') && has('unix')

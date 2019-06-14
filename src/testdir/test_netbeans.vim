@@ -1,14 +1,14 @@
 " Test the netbeans interface.
 
 if !has('netbeans_intg')
-  throw 'Skipped, netbeans_intg feature missing'
+  throw 'Skipped: netbeans_intg feature missing'
 endif
 
 source shared.vim
 
 let s:python = PythonProg()
 if s:python == ''
-  throw 'Skipped, python program missing'
+  throw 'Skipped: python program missing'
 endif
 
 " Run "testfunc" after sarting the server and stop the server afterwards.
