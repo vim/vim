@@ -337,7 +337,7 @@ eval_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
-	if (STRLEN(p->vv_name) > 16)
+	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
 	{
 	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
 	    getout(1);
