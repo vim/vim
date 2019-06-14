@@ -323,6 +323,9 @@ func Test_popup_select()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
+  if !has('clipboard')
+    throw 'Skipped: clipboard feature missing'
+  endif
   " create a popup with some text to be selected
   let lines =<< trim END
     call setline(1, range(1, 20))
