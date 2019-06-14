@@ -3913,7 +3913,7 @@ build_stl_str_hl(
 
 	tv.v_type = VAR_NUMBER;
 	tv.vval.v_number = wp->w_id;
-	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
+	set_var((char_u *)"g:statusline_winid", &tv, TRUE, FALSE);
 
 	usefmt = eval_to_string_safe(fmt + 2, NULL, use_sandbox);
 	if (usefmt == NULL)

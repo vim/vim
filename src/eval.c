@@ -28,7 +28,7 @@ static char *e_missbrac = N_("E111: Missing ']'");
 static char *e_dictrange = N_("E719: Cannot use [:] with a Dictionary");
 static char *e_letwrong = N_("E734: Wrong variable type for %s=");
 static char *e_illvar = N_("E461: Illegal variable name: %s");
-static char *e_cannot_mod = N_("E???: Cannot modify existing variable");
+static char *e_cannot_mod = N_("E995: Cannot modify existing variable");
 #ifdef FEAT_FLOAT
 static char *e_float_as_string = N_("E806: using Float as a String");
 #endif
@@ -1416,7 +1416,7 @@ ex_let_const(exarg_T *eap, int lock)
 	    op[0] = '=';
 	    op[1] = NUL;
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
-									  op);
+								lock, op);
 	    clear_tv(&rettv);
 	}
     }
