@@ -934,23 +934,6 @@ find_popup_win(int id)
 }
 
 /*
- * Return TRUE if there any popups that are not hidden.
- */
-    int
-popup_any_visible(void)
-{
-    win_T *wp;
-
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
-	    return TRUE;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
-	    return TRUE;
-    return FALSE;
-}
-
-/*
  * Invoke the close callback for window "wp" with value "result".
  * Careful: The callback may make "wp" invalid!
  */
