@@ -3751,27 +3751,44 @@ dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when
 dnl appropriate, so that off_t is 64 bits when needed.
 AC_SYS_LARGEFILE
 
+AC_MSG_CHECKING(--enable-canberra argument)
+AC_ARG_ENABLE(canberra,
+	[  --disable-canberra      Do not use libcanberra.],
+	, [enable_canberra="maybe"])
 
-if test "x$PKG_CONFIG" != "xno"; then
-  canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
-  canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+if test "$enable_canberra" = "maybe"; then
+  if test "$features" = "big" -o "$features" = "huge"; then
+    AC_MSG_RESULT(Defaulting to yes)
+    enable_canberra="yes"
+  else
+    AC_MSG_RESULT(Defaulting to no)
+    enable_canberra="no"
+  fi
+else
+  AC_MSG_RESULT($enable_canberra)
 fi
-if test "x$canberra_lib" = "x"; then
-  canberra_lib=-lcanberra
-  canberra_cflags=-D_REENTRANT
+if test "$enable_canberra" = "yes"; then
+  if test "x$PKG_CONFIG" != "xno"; then
+    canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+  fi
+  if test "x$canberra_lib" = "x"; then
+    canberra_lib=-lcanberra
+    canberra_cflags=-D_REENTRANT
+  fi
+  AC_MSG_CHECKING(for libcanberra)
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $canberra_cflags"
+  LIBS="$LIBS $canberra_lib"
+  AC_TRY_LINK([
+  # include <canberra.h>
+      ], [
+     ca_context *hello;
+     ca_context_create(&hello);],
+       AC_MSG_RESULT(yes); AC_DEFINE(HAVE_CANBERRA),
+       AC_MSG_RESULT(no); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
 fi
-AC_MSG_CHECKING(for libcanberra)
-ac_save_CFLAGS="$CFLAGS"
-ac_save_LIBS="$LIBS"
-CFLAGS="$CFLAGS $canberra_cflags"
-LIBS="$LIBS $canberra_lib"
-AC_TRY_LINK([
-# include <canberra.h>
-    ], [
-   ca_context *hello;
-   ca_context_create(&hello);],
-     AC_MSG_RESULT(yes); AC_DEFINE(HAVE_CANBERRA),
-     AC_MSG_RESULT(no); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
 
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible

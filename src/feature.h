@@ -663,7 +663,7 @@
 /*
  * sound - currently only with libcanberra
  */
-#if !defined(FEAT_SOUND) && defined(FEAT_BIG) && defined(HAVE_CANBERRA)
+#if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND
 #endif
 

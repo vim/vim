@@ -528,6 +528,11 @@ CClink = $(CC)
 # though you have /dev/sysmouse and includes.
 #CONF_OPT_SYSMOUSE = --disable-sysmouse
 
+# libcanberra - For sound support.  Default is on for big features.
+# Uncomment one of the two to chose otherwise.
+# CONF_OPT_CANBERRA = --enable-canberra
+# CONF_OPT_CANBERRA = --disable-canberra
+
 # FEATURES - For creating Vim with more or less features
 # Uncomment one of these lines when you want to include few to many features.
 # The default is "huge" for most systems.
@@ -1952,7 +1957,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
 		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
-		$(CONF_OPT_SYSMOUSE); \
+		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA); \
 	fi
 
 # Use "make reconfig" to rerun configure without cached values.
