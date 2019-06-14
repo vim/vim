@@ -748,8 +748,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     // Avoid that 'buftype' is reset when this buffer is entered.
     buf->b_p_initialized = TRUE;
 
-    if (dict_find(d, (char_u *)"tab", -1) != NULL)
-	nr = (int)dict_get_number(d, (char_u *)"tab");
+    if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
+	nr = (int)dict_get_number(d, (char_u *)"tabpage");
     else if (type == TYPE_NOTIFICATION)
 	nr = -1;  // notifications are global by default
     else
@@ -757,7 +757,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (nr == 0)
     {
-	// popup on current tab
+	// popup on current tab page
 	wp->w_next = curtab->tp_first_popupwin;
 	curtab->tp_first_popupwin = wp;
     }
@@ -1245,7 +1245,7 @@ not_in_popup_window()
 
 /*
  * Reset all the POPF_HANDLED flags in global popup windows and popup windows
- * in the current tab.
+ * in the current tab page.
  */
     void
 popup_reset_handled()

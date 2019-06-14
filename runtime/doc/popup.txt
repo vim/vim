@@ -291,7 +291,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'line': 1,
 				\ 'col': 10,
 				\ 'time': 3000,
-				\ 'tab': -1,
+				\ 'tabpage': -1,
 				\ 'zindex': 200,
 				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
@@ -402,9 +402,9 @@ The second argument of |popup_create()| is a dictionary with options:
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
-	tab		When -1: display the popup on all tabs.
+	tabpage		When -1: display the popup on all tab pages.
 			When 0 (the default): display the popup on the current
-			tab.
+			tab page.
 			Otherwise the number of the tab page the popup is
 			displayed on; when invalid the current tab is used.
 			{only -1 and 0 are implemented}
