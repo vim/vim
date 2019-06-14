@@ -724,7 +724,7 @@ ui_breakcheck_force(int force)
     void
 clip_init(int can_use)
 {
-    VimClipboard *cb;
+    Clipboard_T *cb;
 
     cb = &clip_star;
     for (;;)
@@ -751,7 +751,7 @@ clip_init(int can_use)
  * this is called whenever VIsual mode is ended.
  */
     void
-clip_update_selection(VimClipboard *clip)
+clip_update_selection(Clipboard_T *clip)
 {
     pos_T	    start, end;
 
@@ -786,7 +786,7 @@ clip_update_selection(VimClipboard *clip)
 }
 
     void
-clip_own_selection(VimClipboard *cbd)
+clip_own_selection(Clipboard_T *cbd)
 {
     /*
      * Also want to check somehow that we are reading from the keyboard rather
@@ -822,7 +822,7 @@ clip_own_selection(VimClipboard *cbd)
 }
 
     void
-clip_lose_selection(VimClipboard *cbd)
+clip_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_X11
     int	    was_owned = cbd->owned;
@@ -860,7 +860,7 @@ clip_lose_selection(VimClipboard *cbd)
 }
 
     static void
-clip_copy_selection(VimClipboard *clip)
+clip_copy_selection(Clipboard_T *clip)
 {
     if (VIsual_active && (State & NORMAL) && clip->available)
     {
@@ -990,10 +990,9 @@ clip_isautosel_plus(void)
 
 static void clip_invert_area(int, int, int, int, int how);
 static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
-static void clip_get_word_boundaries(VimClipboard *, int, int);
+static void clip_get_word_boundaries(Clipboard_T *, int, int);
 static int  clip_get_line_end(int);
-static void clip_update_modeless_selection(VimClipboard *, int, int,
-						    int, int);
+static void clip_update_modeless_selection(Clipboard_T *, int, int, int, int);
 
 /* flags for clip_invert_area() */
 #define CLIP_CLEAR	1
@@ -1058,7 +1057,7 @@ clip_compare_pos(
     void
 clip_start_selection(int col, int row, int repeated_click)
 {
-    VimClipboard	*cb = &clip_star;
+    Clipboard_T	*cb = &clip_star;
 
     if (cb->state == SELECT_DONE)
 	clip_clear_selection(cb);
@@ -1130,9 +1129,9 @@ clip_process_selection(
     int		row,
     int_u	repeated_click)
 {
-    VimClipboard	*cb = &clip_star;
-    int			diff;
-    int			slen = 1;	/* cursor shape width */
+    Clipboard_T	*cb = &clip_star;
+    int		diff;
+    int		slen = 1;	// cursor shape width
 
     if (button == MOUSE_RELEASE)
     {
@@ -1326,7 +1325,7 @@ clip_may_redraw_selection(int row, int col, int len)
  * Called from outside to clear selected region from the display
  */
     void
-clip_clear_selection(VimClipboard *cbd)
+clip_clear_selection(Clipboard_T *cbd)
 {
 
     if (cbd->state == SELECT_CLEARED)
@@ -1651,7 +1650,7 @@ clip_copy_modeless_selection(int both UNUSED)
 #define CHAR_CLASS(c)	(c <= ' ' ? ' ' : vim_iswordc(c))
 
     static void
-clip_get_word_boundaries(VimClipboard *cb, int row, int col)
+clip_get_word_boundaries(Clipboard_T *cb, int row, int col)
 {
     int		start_class;
     int		temp_col;
@@ -1712,7 +1711,7 @@ clip_get_line_end(int row)
  */
     static void
 clip_update_modeless_selection(
-    VimClipboard    *cb,
+    Clipboard_T    *cb,
     int		    row1,
     int		    col1,
     int		    row2,
@@ -1738,7 +1737,7 @@ clip_update_modeless_selection(
 }
 
     int
-clip_gen_own_selection(VimClipboard *cbd)
+clip_gen_own_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1753,7 +1752,7 @@ clip_gen_own_selection(VimClipboard *cbd)
 }
 
     void
-clip_gen_lose_selection(VimClipboard *cbd)
+clip_gen_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1768,7 +1767,7 @@ clip_gen_lose_selection(VimClipboard *cbd)
 }
 
     void
-clip_gen_set_selection(VimClipboard *cbd)
+clip_gen_set_selection(Clipboard_T *cbd)
 {
     if (!clip_did_set_selection)
     {
@@ -1794,7 +1793,7 @@ clip_gen_set_selection(VimClipboard *cbd)
 }
 
     void
-clip_gen_request_selection(VimClipboard *cbd)
+clip_gen_request_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1810,7 +1809,7 @@ clip_gen_request_selection(VimClipboard *cbd)
 
 #if (defined(FEAT_X11) && defined(USE_SYSTEM)) || defined(PROTO)
     int
-clip_gen_owner_exists(VimClipboard *cbd UNUSED)
+clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI_GTK
@@ -2372,7 +2371,7 @@ clip_x11_request_selection_cb(
     long_u	len;
     char_u	*p;
     char	**text_list = NULL;
-    VimClipboard	*cbd;
+    Clipboard_T	*cbd;
     char_u	*tmpbuf = NULL;
 
     if (*sel_atom == clip_plus.sel_atom)
@@ -2463,7 +2462,7 @@ clip_x11_request_selection_cb(
 clip_x11_request_selection(
     Widget	myShell,
     Display	*dpy,
-    VimClipboard	*cbd)
+    Clipboard_T	*cbd)
 {
     XEvent	event;
     Atom	type;
@@ -2566,7 +2565,7 @@ clip_x11_convert_selection_cb(
     static long_u   save_length = 0;
     char_u	    *string;
     int		    motion_type;
-    VimClipboard    *cbd;
+    Clipboard_T    *cbd;
     int		    i;
 
     if (*sel_atom == clip_plus.sel_atom)
@@ -2692,7 +2691,7 @@ clip_x11_lose_ownership_cb(Widget w UNUSED, Atom *sel_atom)
 }
 
     void
-clip_x11_lose_selection(Widget myShell, VimClipboard *cbd)
+clip_x11_lose_selection(Widget myShell, Clipboard_T *cbd)
 {
     XtDisownSelection(myShell, cbd->sel_atom,
 				XtLastTimestampProcessed(XtDisplay(myShell)));
@@ -2705,7 +2704,7 @@ clip_x11_notify_cb(Widget w UNUSED, Atom *sel_atom UNUSED, Atom *target UNUSED)
 }
 
     int
-clip_x11_own_selection(Widget myShell, VimClipboard *cbd)
+clip_x11_own_selection(Widget myShell, Clipboard_T *cbd)
 {
     /* When using the GUI we have proper timestamps, use the one of the last
      * event.  When in the console we don't get events (the terminal gets
@@ -2737,14 +2736,14 @@ clip_x11_own_selection(Widget myShell, VimClipboard *cbd)
  * will fill in the selection only when requested by another app.
  */
     void
-clip_x11_set_selection(VimClipboard *cbd UNUSED)
+clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
 	|| defined(PROTO)
     int
-clip_x11_owner_exists(VimClipboard *cbd)
+clip_x11_owner_exists(Clipboard_T *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
 }
@@ -2757,7 +2756,7 @@ clip_x11_owner_exists(VimClipboard *cbd)
  * Get the contents of the X CUT_BUFFER0 and put it in "cbd".
  */
     void
-yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
+yank_cut_buffer0(Display *dpy, Clipboard_T *cbd)
 {
     int		nbytes = 0;
     char_u	*buffer = (char_u *)XFetchBuffer(dpy, &nbytes, 0);

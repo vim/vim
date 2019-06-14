@@ -6460,7 +6460,7 @@ x11_export_final_selection(void)
 #endif
 
     void
-clip_free_selection(VimClipboard *cbd)
+clip_free_selection(Clipboard_T *cbd)
 {
     yankreg_T *y_ptr = y_current;
 
@@ -6477,7 +6477,7 @@ clip_free_selection(VimClipboard *cbd)
  * Get the selected text and put it in register '*' or '+'.
  */
     void
-clip_get_selection(VimClipboard *cbd)
+clip_get_selection(Clipboard_T *cbd)
 {
     yankreg_T	*old_y_previous, *old_y_current;
     pos_T	old_cursor;
@@ -6542,7 +6542,7 @@ clip_yank_selection(
     int		type,
     char_u	*str,
     long	len,
-    VimClipboard *cbd)
+    Clipboard_T *cbd)
 {
     yankreg_T *y_ptr;
 
@@ -6562,7 +6562,7 @@ clip_yank_selection(
  * Returns the motion type, or -1 for failure.
  */
     int
-clip_convert_selection(char_u **str, long_u *len, VimClipboard *cbd)
+clip_convert_selection(char_u **str, long_u *len, Clipboard_T *cbd)
 {
     char_u	*p;
     int		lnum;

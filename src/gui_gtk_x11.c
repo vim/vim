@@ -1394,7 +1394,7 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 		      guint		time_ UNUSED,
 		      gpointer		user_data UNUSED)
 {
-    VimClipboard    *cbd;
+    Clipboard_T	    *cbd;
     char_u	    *text;
     char_u	    *tmpbuf = NULL;
     guchar	    *tmpbuf_utf8 = NULL;
@@ -1511,7 +1511,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     int		    length;
     int		    motion_type;
     GdkAtom	    type;
-    VimClipboard    *cbd;
+    Clipboard_T    *cbd;
 
     if (gtk_selection_data_get_selection(selection_data)
 	    == clip_plus.gtk_sel_atom)
@@ -6602,7 +6602,7 @@ gui_mch_insert_lines(int row, int num_lines)
  * X Selection stuff, for cutting and pasting text to other windows.
  */
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     GdkAtom	target;
     unsigned	i;
@@ -6639,7 +6639,7 @@ clip_mch_request_selection(VimClipboard *cbd)
  * Disown the selection.
  */
     void
-clip_mch_lose_selection(VimClipboard *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
 {
     if (!in_selection_clear_event)
     {
@@ -6652,7 +6652,7 @@ clip_mch_lose_selection(VimClipboard *cbd UNUSED)
  * Own the selection and return OK if it worked.
  */
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     int success;
 
@@ -6667,13 +6667,13 @@ clip_mch_own_selection(VimClipboard *cbd)
  * will fill in the selection only when requested by another app.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd UNUSED)
+clip_mch_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
 #if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
     int
-clip_gtk_owner_exists(VimClipboard *cbd)
+clip_gtk_owner_exists(Clipboard_T *cbd)
 {
     return gdk_selection_owner_get(cbd->gtk_sel_atom) != NULL;
 }
