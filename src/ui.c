@@ -988,13 +988,13 @@ clip_isautosel_plus(void)
  * Stuff for general mouse selection, without using Visual mode.
  */
 
-static void clip_invert_area(int, int, int, int, int how);
-static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
+static void clip_invert_area(Clipboard_T *, int, int, int, int, int how);
+static void clip_invert_rectangle(Clipboard_T *, int row, int col, int height, int width, int invert);
 static void clip_get_word_boundaries(Clipboard_T *, int, int);
-static int  clip_get_line_end(int);
+static int  clip_get_line_end(Clipboard_T *, int);
 static void clip_update_modeless_selection(Clipboard_T *, int, int, int, int);
 
-/* flags for clip_invert_area() */
+// "how" flags for clip_invert_area()
 #define CLIP_CLEAR	1
 #define CLIP_SET	2
 #define CLIP_TOGGLE	3
@@ -1071,6 +1071,33 @@ clip_start_selection(int col, int row, int repeated_click)
     cb->end	    = cb->start;
     cb->origin_row  = (short_u)cb->start.lnum;
     cb->state	    = SELECT_IN_PROGRESS;
+#ifdef FEAT_TEXT_PROP
+    {
+	win_T	    *wp;
+	int	    row_cp = row;
+	int	    col_cp = col;
+
+	wp = mouse_find_win(&row_cp, &col_cp, FIND_POPUP);
+	if (wp != NULL && bt_popup(wp->w_buffer))
+	{
+	    // Click in a popup window restricts selection to that window,
+	    // excluding the border.
+	    cb->min_col = wp->w_wincol + wp->w_popup_border[3];
+	    cb->max_col = wp->w_wincol + popup_width(wp) - 1
+						       - wp->w_popup_border[1];
+	    cb->min_row = wp->w_winrow + wp->w_popup_border[0];
+	    cb->max_row = wp->w_winrow + popup_height(wp) - 1
+						       - wp->w_popup_border[2];
+	}
+	else
+	{
+	    cb->min_col = 0;
+	    cb->max_col = screen_Columns;
+	    cb->min_row = 0;
+	    cb->max_row = screen_Rows;
+	}
+    }
+#endif
 
     if (repeated_click)
     {
@@ -1090,7 +1117,7 @@ clip_start_selection(int col, int row, int repeated_click)
     {
 	case SELECT_MODE_CHAR:
 	    cb->origin_start_col = cb->start.col;
-	    cb->word_end_col = clip_get_line_end((int)cb->start.lnum);
+	    cb->word_end_col = clip_get_line_end(cb, (int)cb->start.lnum);
 	    break;
 
 	case SELECT_MODE_WORD:
@@ -1098,14 +1125,14 @@ clip_start_selection(int col, int row, int repeated_click)
 	    cb->origin_start_col = cb->word_start_col;
 	    cb->origin_end_col	 = cb->word_end_col;
 
-	    clip_invert_area((int)cb->start.lnum, cb->word_start_col,
+	    clip_invert_area(cb, (int)cb->start.lnum, cb->word_start_col,
 			    (int)cb->end.lnum, cb->word_end_col, CLIP_SET);
 	    cb->start.col = cb->word_start_col;
 	    cb->end.col   = cb->word_end_col;
 	    break;
 
 	case SELECT_MODE_LINE:
-	    clip_invert_area((int)cb->start.lnum, 0, (int)cb->start.lnum,
+	    clip_invert_area(cb, (int)cb->start.lnum, 0, (int)cb->start.lnum,
 			    (int)Columns, CLIP_SET);
 	    cb->start.col = 0;
 	    cb->end.col   = Columns;
@@ -1223,7 +1250,7 @@ clip_process_selection(
 	case SELECT_MODE_CHAR:
 	    /* If we're on a different line, find where the line ends */
 	    if (row != cb->prev.lnum)
-		cb->word_end_col = clip_get_line_end(row);
+		cb->word_end_col = clip_get_line_end(cb, row);
 
 	    /* See if we are before or after the origin of the selection */
 	    if (clip_compare_pos(row, col, cb->origin_row,
@@ -1316,7 +1343,7 @@ clip_may_redraw_selection(int row, int col, int len)
 	if (row == clip_star.end.lnum && end > (int)clip_star.end.col)
 	    end = clip_star.end.col;
 	if (end > start)
-	    clip_invert_area(row, start, row, end, 0);
+	    clip_invert_area(&clip_star, row, start, row, end, 0);
     }
 }
 # endif
@@ -1331,8 +1358,8 @@ clip_clear_selection(Clipboard_T *cbd)
     if (cbd->state == SELECT_CLEARED)
 	return;
 
-    clip_invert_area((int)cbd->start.lnum, cbd->start.col, (int)cbd->end.lnum,
-						     cbd->end.col, CLIP_CLEAR);
+    clip_invert_area(cbd, (int)cbd->start.lnum, cbd->start.col,
+				 (int)cbd->end.lnum, cbd->end.col, CLIP_CLEAR);
     cbd->state = SELECT_CLEARED;
 }
 
@@ -1388,13 +1415,21 @@ clip_scroll_selection(
  */
     static void
 clip_invert_area(
-    int		row1,
-    int		col1,
-    int		row2,
-    int		col2,
-    int		how)
+	Clipboard_T	*cbd,
+	int		row1,
+	int		col1,
+	int		row2,
+	int		col2,
+	int		how)
 {
     int		invert = FALSE;
+    int		max_col;
+
+#ifdef FEAT_TEXT_PROP
+    max_col = cbd->max_col;
+#else
+    max_col = Columns - 1;
+#endif
 
     if (how == CLIP_SET)
 	invert = TRUE;
@@ -1417,28 +1452,29 @@ clip_invert_area(
     /* If all on the same line, do it the easy way */
     if (row1 == row2)
     {
-	clip_invert_rectangle(row1, col1, 1, col2 - col1, invert);
+	clip_invert_rectangle(cbd, row1, col1, 1, col2 - col1, invert);
     }
     else
     {
 	/* Handle a piece of the first line */
 	if (col1 > 0)
 	{
-	    clip_invert_rectangle(row1, col1, 1, (int)Columns - col1, invert);
+	    clip_invert_rectangle(cbd, row1, col1, 1,
+						  (int)Columns - col1, invert);
 	    row1++;
 	}
 
 	/* Handle a piece of the last line */
-	if (col2 < Columns - 1)
+	if (col2 < max_col)
 	{
-	    clip_invert_rectangle(row2, 0, 1, col2, invert);
+	    clip_invert_rectangle(cbd, row2, 0, 1, col2, invert);
 	    row2--;
 	}
 
 	/* Handle the rectangle thats left */
 	if (row2 >= row1)
-	    clip_invert_rectangle(row1, 0, row2 - row1 + 1, (int)Columns,
-								      invert);
+	    clip_invert_rectangle(cbd, row1, 0, row2 - row1 + 1,
+							 (int)Columns, invert);
     }
 }
 
@@ -1448,15 +1484,36 @@ clip_invert_area(
  */
     static void
 clip_invert_rectangle(
-    int		row,
-    int		col,
-    int		height,
-    int		width,
-    int		invert)
+	Clipboard_T	*cbd,
+	int		row_arg,
+	int		col_arg,
+	int		height_arg,
+	int		width_arg,
+	int		invert)
 {
+    int		row = row_arg;
+    int		col = col_arg;
+    int		height = height_arg;
+    int		width = width_arg;
+
 #ifdef FEAT_TEXT_PROP
     // this goes on top of all popup windows
     screen_zindex = 32000;
+
+    if (col < cbd->min_col)
+    {
+	width -= cbd->min_col - col;
+	col = cbd->min_col;
+    }
+    if (width > cbd->max_col - col + 1)
+	width = cbd->max_col - col + 1;
+    if (row < cbd->min_row)
+    {
+	height -= cbd->min_row - row;
+	row = cbd->min_row;
+    }
+    if (height > cbd->max_row - row + 1)
+	height = cbd->max_row - row + 1;
 #endif
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -1507,6 +1564,16 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
+#ifdef FEAT_TEXT_PROP
+    if (col1 < clip_star.min_col)
+	col1 = clip_star.min_col;
+    if (col2 > clip_star.max_col + 1)
+	col2 = clip_star.max_col + 1;
+    if (row1 < clip_star.min_row)
+	row1 = clip_star.min_row;
+    if (row2 > clip_star.max_row)
+	row2 = clip_star.max_row;
+#endif
     /* correct starting point for being on right halve of double-wide char */
     p = ScreenLines + LineOffset[row1];
     if (enc_dbcs != 0)
@@ -1530,17 +1597,31 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row1)
 	    start_col = col1;
 	else
+#ifdef FEAT_TEXT_PROP
+	    start_col = clip_star.min_col;
+#else
 	    start_col = 0;
+#endif
 
 	if (row == row2)
 	    end_col = col2;
 	else
+#ifdef FEAT_TEXT_PROP
+	    end_col = clip_star.max_col + 1;
+#else
 	    end_col = Columns;
+#endif
 
-	line_end_col = clip_get_line_end(row);
+	line_end_col = clip_get_line_end(&clip_star, row);
 
 	/* See if we need to nuke some trailing whitespace */
-	if (end_col >= Columns && (row < row2 || end_col > line_end_col))
+	if (end_col >=
+#ifdef FEAT_TEXT_PROP
+		clip_star.max_col + 1
+#else
+		Columns
+#endif
+		    && (row < row2 || end_col > line_end_col))
 	{
 	    /* Get rid of trailing whitespace */
 	    end_col = line_end_col;
@@ -1556,6 +1637,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row > row1 && !LineWraps[row - 1])
 	    *bufp++ = NL;
 
+	// Safetey check for in case resizing went wrong
 	if (row < screen_Rows && end_col <= screen_Columns)
 	{
 	    if (enc_dbcs != 0)
@@ -1690,16 +1772,22 @@ clip_get_word_boundaries(Clipboard_T *cb, int row, int col)
 
 /*
  * Find the column position for the last non-whitespace character on the given
- * line.
+ * line at or before start_col.
  */
     static int
-clip_get_line_end(int row)
+clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 {
     int	    i;
 
     if (row >= screen_Rows || ScreenLines == NULL)
 	return 0;
-    for (i = screen_Columns; i > 0; i--)
+    for (i =
+#ifdef FEAT_TEXT_PROP
+	    cbd->max_col + 1;
+#else
+	    screen_Columns;
+#endif
+			    i > 0; i--)
 	if (ScreenLines[LineOffset[row] + i - 1] != ' ')
 	    break;
     return i;
@@ -1720,7 +1808,7 @@ clip_update_modeless_selection(
     /* See if we changed at the beginning of the selection */
     if (row1 != cb->start.lnum || col1 != (int)cb->start.col)
     {
-	clip_invert_area(row1, col1, (int)cb->start.lnum, cb->start.col,
+	clip_invert_area(cb, row1, col1, (int)cb->start.lnum, cb->start.col,
 								 CLIP_TOGGLE);
 	cb->start.lnum = row1;
 	cb->start.col  = col1;
@@ -1729,7 +1817,7 @@ clip_update_modeless_selection(
     /* See if we changed at the end of the selection */
     if (row2 != cb->end.lnum || col2 != (int)cb->end.col)
     {
-	clip_invert_area((int)cb->end.lnum, cb->end.col, row2, col2,
+	clip_invert_area(cb, (int)cb->end.lnum, cb->end.col, row2, col2,
 								 CLIP_TOGGLE);
 	cb->end.lnum = row2;
 	cb->end.col  = col2;

@@ -2008,34 +2008,41 @@ typedef int sock_T;
 /* Info about selected text */
 typedef struct
 {
-    int		available;	/* Is clipboard available? */
-    int		owned;		/* Flag: do we own the selection? */
-    pos_T	start;		/* Start of selected area */
-    pos_T	end;		/* End of selected area */
-    int		vmode;		/* Visual mode character */
+    int		available;	// Is clipboard available?
+    int		owned;		// Flag: do we own the selection?
+    pos_T	start;		// Start of selected area
+    pos_T	end;		// End of selected area
+    int		vmode;		// Visual mode character
 
-    /* Fields for selection that doesn't use Visual mode */
+    // Fields for selection that doesn't use Visual mode
     short_u	origin_row;
     short_u	origin_start_col;
     short_u	origin_end_col;
     short_u	word_start_col;
     short_u	word_end_col;
+#ifdef FEAT_TEXT_PROP
+    // limits for selection inside a popup window
+    short_u	min_col;
+    short_u	max_col;
+    short_u	min_row;
+    short_u	max_row;
+#endif
 
-    pos_T	prev;		/* Previous position */
-    short_u	state;		/* Current selection state */
-    short_u	mode;		/* Select by char, word, or line. */
+    pos_T	prev;		// Previous position
+    short_u	state;		// Current selection state
+    short_u	mode;		// Select by char, word, or line.
 
 # if defined(FEAT_GUI_X11) || defined(FEAT_XCLIPBOARD)
-    Atom	sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
+    Atom	sel_atom;	// PRIMARY/CLIPBOARD selection ID
 # endif
 
 # ifdef FEAT_GUI_GTK
-    GdkAtom     gtk_sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
+    GdkAtom     gtk_sel_atom;	// PRIMARY/CLIPBOARD selection ID
 # endif
 
 # if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
-    int_u	format;		/* Vim's own special clipboard format */
-    int_u	format_raw;	/* Vim's raw text clipboard format */
+    int_u	format;		// Vim's own special clipboard format
+    int_u	format_raw;	// Vim's raw text clipboard format
 # endif
 } Clipboard_T;
 #else
