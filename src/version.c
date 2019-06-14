@@ -778,6 +778,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1526,
+/**/
     1525,
 /**/
     1524,
@@ -3847,13 +3849,8 @@ static char *(extra_patches[]) =
     int
 highest_patch(void)
 {
-    int		i;
-    int		h = 0;
-
-    for (i = 0; included_patches[i] != 0; ++i)
-	if (included_patches[i] > h)
-	    h = included_patches[i];
-    return h;
+    // this relies on the highest patch number to be the first entry
+    return included_patches[0];
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

@@ -193,9 +193,10 @@ static struct vimvar
     {VV_NAME("termrfgresp",	 VAR_STRING), VV_RO},
     {VV_NAME("termrbgresp",	 VAR_STRING), VV_RO},
     {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
-    {VV_NAME("termstyleresp",	VAR_STRING), VV_RO},
-    {VV_NAME("termblinkresp",	VAR_STRING), VV_RO},
-    {VV_NAME("event",		VAR_DICT), VV_RO},
+    {VV_NAME("termstyleresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("event",		 VAR_DICT), VV_RO},
+    {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
 };
 
 /* shorthand */
@@ -354,6 +355,7 @@ eval_init(void)
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
     vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
+    vimvars[VV_VERSIONLONG].vv_nr = VIM_VERSION_100 * 10000 + highest_patch();
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
