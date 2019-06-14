@@ -289,6 +289,36 @@ func Test_popup_firstline()
   call delete('XtestPopupFirstline')
 endfunc
 
+func Test_popup_drag()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  " create a popup that covers the command line
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	let winid = popup_create(['1111', '222222', '33333'], {
+	      \ 'drag': 1,
+	      \ 'border': [],
+	      \ 'line': &lines - 4,
+	      \ })
+	func Dragit()
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
+	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2)<CR>
+  END
+  call writefile(lines, 'XtestPopupDrag')
+  let buf = RunVimInTerminal('-S XtestPopupDrag', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_01', {})
+
+  call term_sendkeys(buf, ":call Dragit()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupDrag')
+endfunc
+
 func Test_popup_in_tab()
   " default popup is local to tab, not visible when in other tab
   let winid = popup_create("text", {})
