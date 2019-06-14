@@ -2006,7 +2006,7 @@ typedef int sock_T;
 # endif
 
 /* Info about selected text */
-typedef struct VimClipboard
+typedef struct
 {
     int		available;	/* Is clipboard available? */
     int		owned;		/* Flag: do we own the selection? */
@@ -2037,9 +2037,9 @@ typedef struct VimClipboard
     int_u	format;		/* Vim's own special clipboard format */
     int_u	format_raw;	/* Vim's raw text clipboard format */
 # endif
-} VimClipboard;
+} Clipboard_T;
 #else
-typedef int VimClipboard;	/* This is required for the prototypes. */
+typedef int Clipboard_T;	// This is required for the prototypes.
 #endif
 
 /* Use 64-bit stat structure if available. */
