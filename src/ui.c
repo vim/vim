@@ -2929,7 +2929,6 @@ jump_to_mouse(
 #endif
 #ifdef FEAT_TEXT_PROP
     static int   in_popup_win = FALSE;
-    static win_T *popup_dragwin = NULL;
 #endif
     static int	prev_row = -1;
     static int	prev_col = -1;
