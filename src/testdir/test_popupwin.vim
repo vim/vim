@@ -87,6 +87,8 @@ func Test_popup_with_border_and_padding()
 	  \ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
 	  \ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
 	  \ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
+	  \ "call popup_create('wrapped longer text', {'line': 8, 'col': 55, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
+	  \ "call popup_create('right aligned text', {'line': 11, 'col': 56, 'wrap': 0, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
 	  \], 'XtestPopupBorder')
     let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
     call VerifyScreenDump(buf, 'Test_popupwin_2' .. iter, {})
@@ -868,6 +870,36 @@ func Test_popup_filter()
 
   delfunc MyPopupFilter
   call popup_clear()
+endfunc
+
+func ShowDialog(key, result)
+  let s:cb_res = 999
+  let winid = popup_dialog('do you want to quit (Yes/no)?', {
+	  \ 'filter': 'popup_filter_yesno',
+	  \ 'callback': 'QuitCallback',
+	  \ })
+  redraw
+  call feedkeys(a:key, "xt")
+  call assert_equal(winid, s:cb_winid)
+  call assert_equal(a:result, s:cb_res)
+endfunc
+
+func Test_popup_dialog()
+  func QuitCallback(id, res)
+    let s:cb_winid = a:id
+    let s:cb_res = a:res
+  endfunc
+
+  let winid = ShowDialog("y", 1)
+  let winid = ShowDialog("Y", 1)
+  let winid = ShowDialog("n", 0)
+  let winid = ShowDialog("N", 0)
+  let winid = ShowDialog("x", 0)
+  let winid = ShowDialog("X", 0)
+  let winid = ShowDialog("\<Esc>", 0)
+  let winid = ShowDialog("\<C-C>", -1)
+
+  delfunc QuitCallback
 endfunc
 
 func Test_popup_close_callback()

@@ -815,6 +815,8 @@ static struct fst
     {"popup_clear",	0, 0, f_popup_clear},
     {"popup_close",	1, 2, f_popup_close},
     {"popup_create",	2, 2, f_popup_create},
+    {"popup_dialog",	2, 2, f_popup_dialog},
+    {"popup_filter_yesno", 2, 2, f_popup_filter_yesno},
     {"popup_getoptions", 1, 1, f_popup_getoptions},
     {"popup_getpos",	1, 1, f_popup_getpos},
     {"popup_hide",	1, 1, f_popup_hide},
@@ -1943,7 +1945,7 @@ find_buffer(typval_T *avar)
 		if (buf->b_fname != NULL
 			&& (path_with_url(buf->b_fname)
 #ifdef FEAT_QUICKFIX
-			    || bt_nofile(buf)
+			    || bt_nofilename(buf)
 #endif
 			   )
 			&& STRCMP(buf->b_fname, avar->vval.v_string) == 0)

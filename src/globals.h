@@ -599,7 +599,8 @@ EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
 EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
 
 #ifdef FEAT_TEXT_PROP
-EXTERN win_T    *first_popupwin;	// first global popup window
+EXTERN win_T    *first_popupwin;		// first global popup window
+EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 #endif
 
 /*

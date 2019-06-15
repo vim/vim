@@ -8,6 +8,8 @@ void popup_adjust_position(win_T *wp);
 void f_popup_clear(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);
+void f_popup_filter_yesno(typval_T *argvars, typval_T *rettv);
+void f_popup_dialog(typval_T *argvars, typval_T *rettv);
 void f_popup_notification(typval_T *argvars, typval_T *rettv);
 void f_popup_close(typval_T *argvars, typval_T *rettv);
 void f_popup_hide(typval_T *argvars, typval_T *rettv);
