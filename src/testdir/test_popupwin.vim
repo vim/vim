@@ -870,6 +870,36 @@ func Test_popup_filter()
   call popup_clear()
 endfunc
 
+func ShowDialog(key, result)
+  let s:cb_res = 999
+  let winid = popup_dialog('do you want to quit (Yes/no)?', {
+	  \ 'filter': 'popup_filter_yesno',
+	  \ 'callback': 'QuitCallback',
+	  \ })
+  redraw
+  call feedkeys(a:key, "xt")
+  call assert_equal(winid, s:cb_winid)
+  call assert_equal(a:result, s:cb_res)
+endfunc
+
+func Test_popup_dialog()
+  func QuitCallback(id, res)
+    let s:cb_winid = a:id
+    let s:cb_res = a:res
+  endfunc
+
+  let winid = ShowDialog("y", 1)
+  let winid = ShowDialog("Y", 1)
+  let winid = ShowDialog("n", 0)
+  let winid = ShowDialog("N", 0)
+  let winid = ShowDialog("x", 0)
+  let winid = ShowDialog("X", 0)
+  let winid = ShowDialog("\<Esc>", 0)
+  let winid = ShowDialog("\<C-C>", -1)
+
+  delfunc QuitCallback
+endfunc
+
 func Test_popup_close_callback()
   func PopupDone(id, result)
     let g:result = a:result

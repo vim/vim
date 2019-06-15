@@ -103,10 +103,10 @@ TODO:
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
 - Can the buffer be re-used, to avoid using up lots of buffer numbers?
+- Use a popup window for the "info" item of completion instead of using a
+  preview window.
 - Implement:
-	popup_dialog({text}, {options})
 	popup_filter_menu({id}, {key})
-	popup_filter_yesno({id}, {key})
 	popup_menu({text}, {options})
 	popup_setoptions({id}, {options})
 	flip option
@@ -196,16 +196,23 @@ popup_create({text}, {options})				*popup_create()*
 
 
 popup_dialog({text}, {options})				*popup_dialog()*
-		{not implemented yet}
 		Just like |popup_create()| but with these default options: >
 			call popup_create({text}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
+				\ 'drag': 1,
 				\ 'border': [],
 				\ 'padding': [],
 				\})
 <		Use {options} to change the properties. E.g. add a 'filter'
-		option with value 'popup_filter_yesno'.
+		option with value 'popup_filter_yesno'.  Example: >
+			call popup_create('do you want to quit (Yes/no)?', {
+				\ 'filter': 'popup_filter_yesno',
+				\ 'callback': 'QuitCallback',
+				\ })
+
+<		By default the dialog can be dragged, so that text below it
+		can be read if needed.
 
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
@@ -218,12 +225,12 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
-		{not implemented yet}
 		Filter that can be used for a popup. It handles only the keys
 		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
 		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
-		as the second argument.  Pressing Esc and CTRL-C works like
-		pressing 'n'.  Other keys are ignored.
+		as the second argument.  Pressing Esc and 'x' works like
+		pressing 'n'.  CTRL-C invokes the callback with -1.  Other
+		keys are ignored.
 
 
 popup_getoptions({id})					*popup_getoptions()*
@@ -301,7 +308,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'minwidth': 20,
 				\ 'time': 3000,
 				\ 'tabpage': -1,
-				\ 'zindex': 200,
+				\ 'zindex': 300,
 				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
 				\ 'border': [],
@@ -521,7 +528,7 @@ filter is also called.  The filter of the popup window with the highest zindex
 is called first.
 
 The filter function is called with two arguments: the ID of the popup and the
-key, e.g.: >
+key as a string, e.g.: >
 	func MyFilter(winid, key)
 	  if a:key == "\<F2>"
 	    " do something
@@ -556,15 +563,14 @@ Vim recognizes the Esc key.  If you do use Esc, it is recommended to set the
 
 POPUP CALLBACK						*popup-callback*
 
-A callback that is invoked when the popup closes.  Used by
-|popup_filter_menu()|.
+A callback that is invoked when the popup closes.
 
 The callback is invoked with two arguments: the ID of the popup window and the
 result, which could be an index in the popup lines, or whatever was passed as
 the second argument of `popup_close()`.
 
-If the popup is closed because the cursor moved, the number -1 is passed to
-the callback.
+If the popup is force-closed, e.g. because the cursor moved or CTRL-C was
+pressed, the number -1 is passed to the callback.
 
 ==============================================================================
 3. Examples						*popup-examples*

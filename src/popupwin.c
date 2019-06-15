@@ -201,6 +201,10 @@ popup_start_drag(win_T *wp)
 	drag_start_wantcol = wp->w_wincol + 1;
     else
 	drag_start_wantcol = wp->w_wantcol;
+
+    // Stop centering the popup
+    if (wp->w_popup_pos == POPPOS_CENTER)
+	wp->w_popup_pos = POPPOS_TOPLEFT;
 }
 
 /*
@@ -301,7 +305,9 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	wp->w_p_wrap = nr != 0;
     }
 
-    wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
+    di = dict_find(dict, (char_u *)"drag", -1);
+    if (di != NULL)
+	wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
 
     di = dict_find(dict, (char_u *)"callback", -1);
     if (di != NULL)
@@ -692,13 +698,13 @@ typedef enum
 {
     TYPE_NORMAL,
     TYPE_ATCURSOR,
-    TYPE_NOTIFICATION
+    TYPE_NOTIFICATION,
+    TYPE_DIALOG
 } create_type_T;
 
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
- * When called from f_popup_atcursor() "type" is TYPE_ATCURSOR.
  */
     static void
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
@@ -871,6 +877,20 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		OPT_FREE|OPT_LOCAL, 0);
     }
 
+    if (type == TYPE_DIALOG)
+    {
+	int i;
+
+	wp->w_popup_pos = POPPOS_CENTER;
+	wp->w_zindex = POPUPWIN_DIALOG_ZINDEX;
+	wp->w_popup_drag = 1;
+	for (i = 0; i < 4; ++i)
+	{
+	    wp->w_popup_border[i] = 1;
+	    wp->w_popup_padding[i] = 1;
+	}
+    }
+
     // Deal with options.
     apply_options(wp, buf, argvars[1].vval.v_dict);
 
@@ -910,33 +930,6 @@ f_popup_create(typval_T *argvars, typval_T *rettv)
 f_popup_atcursor(typval_T *argvars, typval_T *rettv)
 {
     popup_create(argvars, rettv, TYPE_ATCURSOR);
-}
-
-/*
- * popup_notification({text}, {options})
- */
-    void
-f_popup_notification(typval_T *argvars, typval_T *rettv)
-{
-    popup_create(argvars, rettv, TYPE_NOTIFICATION);
-}
-
-/*
- * Find the popup window with window-ID "id".
- * If the popup window does not exist NULL is returned.
- * If the window is not a popup window, and error message is given.
- */
-    static win_T *
-find_popup_win(int id)
-{
-    win_T *wp = win_id2wp(id);
-
-    if (wp != NULL && !bt_popup(wp->w_buffer))
-    {
-	semsg(_("E993: window %d is not a popup window"), id);
-	return NULL;
-    }
-    return wp;
 }
 
 /*
@@ -983,6 +976,90 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 	invoke_popup_callback(wp, arg);
 
     popup_close(id);
+}
+
+/*
+ * popup_filter_yesno({text}, {options})
+ */
+    void
+f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
+{
+    int		id = tv_get_number(&argvars[0]);
+    win_T	*wp = win_id2wp(id);
+    char_u	*key = tv_get_string(&argvars[1]);
+    typval_T	res;
+
+    // If the popup has been closed don't consume the key.
+    if (wp == NULL)
+	return;
+
+    // consume all keys until done
+    rettv->vval.v_number = 1;
+
+    if (STRCMP(key, "y") == 0 || STRCMP(key, "Y") == 0)
+	res.vval.v_number = 1;
+    else if (STRCMP(key, "n") == 0 || STRCMP(key, "N") == 0
+	    || STRCMP(key, "x") == 0 || STRCMP(key, "X") == 0
+	    || STRCMP(key, "\x1b") == 0)
+	res.vval.v_number = 0;
+    else
+    {
+	int	c = *key;
+	int	row = mouse_row;
+	int	col = mouse_col;
+
+	if (c == K_SPECIAL && key[1] != NUL)
+	    c = TO_SPECIAL(key[1], key[2]);
+	if (wp->w_popup_drag
+		&& is_mouse_key(c)
+		&& (wp == popup_dragwin
+			      || wp == mouse_find_win(&row, &col, FIND_POPUP)))
+	    // allow for dragging the popup
+	    rettv->vval.v_number = 0;
+
+	// ignore this key
+	return;
+    }
+
+    // Invoke callback
+    res.v_type = VAR_NUMBER;
+    popup_close_and_callback(wp, &res);
+}
+
+/*
+ * popup_dialog({text}, {options})
+ */
+    void
+f_popup_dialog(typval_T *argvars, typval_T *rettv)
+{
+    popup_create(argvars, rettv, TYPE_DIALOG);
+}
+
+/*
+ * popup_notification({text}, {options})
+ */
+    void
+f_popup_notification(typval_T *argvars, typval_T *rettv)
+{
+    popup_create(argvars, rettv, TYPE_NOTIFICATION);
+}
+
+/*
+ * Find the popup window with window-ID "id".
+ * If the popup window does not exist NULL is returned.
+ * If the window is not a popup window, and error message is given.
+ */
+    static win_T *
+find_popup_win(int id)
+{
+    win_T *wp = win_id2wp(id);
+
+    if (wp != NULL && !bt_popup(wp->w_buffer))
+    {
+	semsg(_("E993: window %d is not a popup window"), id);
+	return NULL;
+    }
+    return wp;
 }
 
 /*
@@ -1299,6 +1376,15 @@ invoke_popup_filter(win_T *wp, int c)
     typval_T	argv[3];
     char_u	buf[NUMBUFLEN];
 
+    // Emergency exit: CTRL-C closes the popup.
+    if (c == Ctrl_C)
+    {
+	rettv.v_type = VAR_NUMBER;
+	rettv.vval.v_number = -1;
+	popup_close_and_callback(wp, &rettv);
+	return 1;
+    }
+
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = (varnumber_T)wp->w_id;
 
@@ -1310,6 +1396,7 @@ invoke_popup_filter(win_T *wp, int c)
 
     argv[2].v_type = VAR_UNKNOWN;
 
+    // NOTE: The callback might close the popup, thus make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1,
 			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
     res = tv_get_number(&rettv);
@@ -1326,7 +1413,7 @@ invoke_popup_filter(win_T *wp, int c)
 popup_do_filter(int c)
 {
     int		res = FALSE;
-    win_T   *wp;
+    win_T	*wp;
 
     popup_reset_handled();
 
