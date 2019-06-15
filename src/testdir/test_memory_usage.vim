@@ -6,7 +6,8 @@ endif
 if has('gui_running')
   throw 'Skipped, does not work in GUI'
 endif
-if $ASAN_OPTIONS !=# ''
+
+if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
   " Skip tests on Travis CI ASAN build because it's difficult to estimate
   " memory usage.
   throw 'Skipped, does not work with ASAN'
