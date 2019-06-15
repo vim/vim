@@ -328,6 +328,7 @@ func Test_popup_select()
   endif
   " create a popup with some text to be selected
   let lines =<< trim END
+    set clipboard=autoselect
     call setline(1, range(1, 20))
     let winid = popup_create(['the word', 'some more', 'several words here'], {
 	  \ 'drag': 1,
