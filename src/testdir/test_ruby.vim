@@ -1,8 +1,7 @@
 " Tests for ruby interface
 
-if !has('ruby')
-  throw 'Skipped, ruby feature missing'
-end
+source check.vim
+CheckFeature ruby
 
 func Test_ruby_change_buffer()
   call setline(line('$'), ['1 line 1'])

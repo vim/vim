@@ -1,9 +1,8 @@
 " Test for python 2 commands.
 " TODO: move tests from test87.in here.
 
-if !has('python')
-  throw 'Skipped, python feature missing'
-endif
+source check.vim
+CheckFeature python
 
 func Test_pydo()
   " Check deleting lines does not trigger ml_get error.

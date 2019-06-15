@@ -1,8 +1,7 @@
 " Test for syntax and syntax iskeyword option
 
-if !has("syntax")
-  throw 'Skipped, syntax feature missing'
-endif
+source check.vim
+CheckFeature syntax
 
 source view_util.vim
 source screendump.vim

@@ -2,10 +2,10 @@
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
 if has('win32')
-  throw 'Skipped, does not work on MS-Windows'
+  throw 'Skipped: does not work on MS-Windows'
 endif
 if has('gui_running')
-  throw 'Skipped, does not work in the GUI'
+  throw 'Skipped: does not work in the GUI'
 endif
 set term=xterm
 

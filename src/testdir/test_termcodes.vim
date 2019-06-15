@@ -2,10 +2,10 @@
 
 " This only works for Unix in a terminal
 if has('gui_running')
-  throw 'Skipped, does not work in the GUI'
+  throw 'Skipped: does not work in the GUI'
 endif
 if !has('unix')
-  throw 'Skipped, not on Unix'
+  throw 'Skipped: not on Unix'
 endif
 
 source shared.vim

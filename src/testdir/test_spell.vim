@@ -1,8 +1,7 @@
 " Test spell checking
 
-if !has('spell')
-  throw 'Skipped, spell feature missing'
-endif
+source check.vim
+CheckFeature spell
 
 func TearDown()
   set nospell

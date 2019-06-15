@@ -1,8 +1,7 @@
 " Tests for digraphs
 
-if !has("digraphs")
-  throw 'Skipped, digraphs feature missing'
-endif
+source check.vim
+CheckFeature digraphs
 
 func Put_Dig(chars)
   exe "norm! o\<c-k>".a:chars

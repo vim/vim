@@ -3,12 +3,9 @@
 set encoding=latin1
 scriptencoding latin1
 
-if !exists("+linebreak")
-  throw 'Skipped, linebreak option missing'
-endif
-if !has("conceal")
-  throw 'Skipped, conceal feature missing'
-endif
+source check.vim
+CheckOption linebreak
+CheckFeature conceal
 
 source view_util.vim
 

@@ -1,7 +1,7 @@
 " Test for $HOME on Windows.
 
 if !has('win32')
-  throw 'Skipped, not on MS-Windows'
+  throw 'Skipped: not on MS-Windows'
 endif
 
 let s:env = {}

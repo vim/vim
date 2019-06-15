@@ -1,8 +1,7 @@
 " Tests for encryption.
 
-if !has('cryptv')
-  throw 'Skipped, encryption feature missing'
-endif
+source check.vim
+CheckFeature cryptv
 
 func Common_head_only(text)
   " This was crashing Vim

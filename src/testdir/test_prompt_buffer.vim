@@ -1,8 +1,7 @@
 " Tests for setting 'buftype' to "prompt"
 
-if !has('channel')
-  throw 'Skipped, channel feature missing'
-endif
+source check.vim
+CheckFeature channel
 
 source shared.vim
 source screendump.vim

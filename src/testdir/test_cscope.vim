@@ -1,10 +1,11 @@
 " Test for cscope commands.
 
-if !has('cscope') || !has('quickfix')
-  throw 'Skipped, cscope or quickfix feature missing'
-endif
+source check.vim
+CheckFeature cscope
+CheckFeature quickfix
+
 if !executable('cscope')
-  throw 'Skipped, cscope program missing'
+  throw 'Skipped: cscope program missing'
 endif
 
 func CscopeSetupOrClean(setup)

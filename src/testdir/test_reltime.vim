@@ -1,11 +1,8 @@
 " Tests for reltime()
 
-if !has('reltime')
-  throw 'Skipped, reltime feature missing'
-endif
-if !has('float')
-  throw 'Skipped, float feature missing'
-endif
+source check.vim
+CheckFeature reltime
+CheckFeature float
 
 func Test_reltime()
   let now = reltime()

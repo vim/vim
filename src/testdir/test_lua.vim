@@ -1,8 +1,7 @@
 " Tests for Lua.
 
-if !has('lua')
-  throw 'Skipped, lua feature missing'
-endif
+source check.vim
+CheckFeature lua
 
 func TearDown()
   " Run garbage collection after each test to exercise luaV_setref().

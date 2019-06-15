@@ -1,8 +1,7 @@
 " Test for the quickfix feature.
 
-if !has('quickfix')
-  throw 'Skipped, quickfix feature missing'
-endif
+source check.vim
+CheckFeature quickfix
 
 set encoding=utf-8
 

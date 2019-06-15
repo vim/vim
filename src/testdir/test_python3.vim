@@ -1,9 +1,8 @@
 " Test for python 3 commands.
 " TODO: move tests from test88.in here.
 
-if !has('python3')
-  throw 'Skipped, python3 feature missing'
-endif
+source check.vim
+CheckFeature python3
 
 func Test_py3do()
   " Check deleting lines does not trigger an ml_get error.

@@ -1,8 +1,7 @@
 " Tests for Perl interface
 
-if !has('perl')
-  throw 'Skipped, perl feature missing'
-end
+source check.vim
+CheckFeature perl
 
 " FIXME: RunTest don't see any error when Perl abort...
 perl $SIG{__WARN__} = sub { die "Unexpected warnings from perl: @_" };

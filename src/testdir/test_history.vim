@@ -1,8 +1,7 @@
 " Tests for the history functions
 
-if !has('cmdline_hist')
-  throw 'Skipped, cmdline_hist feature missing'
-endif
+source check.vim
+CheckFeature cmdline_hist
 
 set history=7
 

@@ -1,8 +1,7 @@
 " Test for signs
 
-if !has('signs')
-  throw 'Skipped, signs feature missing'
-endif
+source check.vim
+CheckFeature signs
 
 func Test_sign()
   new

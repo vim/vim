@@ -1,8 +1,7 @@
 " Test for timers
 
-if !has('timers')
-  throw 'Skipped, timers feature missing'
-endif
+source check.vim
+CheckFeature timers
 
 source shared.vim
 source screendump.vim

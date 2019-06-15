@@ -1,8 +1,7 @@
 " Test WinBar
 
-if !has('menu')
-  throw 'Skipped, menu feature missing'
-endif
+source check.vim
+CheckFeature menu
 
 source shared.vim
 

@@ -1,8 +1,7 @@
 " Test for matchadd() and conceal feature using utf-8.
 
-if !has('conceal')
-  throw 'Skipped, conceal feature missing'
-endif
+source check.vim
+CheckFeature conceal
 
 if !has('gui_running') && has('unix')
   set term=ansi

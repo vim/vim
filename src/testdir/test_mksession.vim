@@ -3,9 +3,8 @@
 set encoding=latin1
 scriptencoding latin1
 
-if !has('mksession')
-  throw 'Skipped, mksession feature missing'
-endif
+source check.vim
+CheckFeature mksession
 
 source shared.vim
 

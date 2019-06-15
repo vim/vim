@@ -1,8 +1,7 @@
 " Tests for the terminal window.
 
-if !has('terminal')
-  throw 'Skipped, terminal feature missing'
-endif
+source check.vim
+CheckFeature terminal
 
 source shared.vim
 source screendump.vim

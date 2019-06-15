@@ -4,7 +4,7 @@ source shared.vim
 
 let s:python = PythonProg()
 if s:python == ''
-  throw 'Skipped, python program missing'
+  throw 'Skipped: python program missing'
 endif
 
 let s:script = 'test_makeencoding.py'

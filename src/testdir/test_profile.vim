@@ -1,8 +1,7 @@
 " Test Vim profiler
 
-if !has('profile')
-  throw 'Skipped, profile feature missing'
-endif
+source check.vim
+CheckFeature profile
 
 func Test_profile_func()
   let lines =<< trim [CODE]
