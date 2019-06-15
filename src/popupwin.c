@@ -588,7 +588,7 @@ popup_adjust_position(win_T *wp)
     // When centering or right aligned, use maximum width.
     // When left aligned use the space available, but shift to the left when we
     // hit the right of the screen.
-    maxwidth = Columns - wp->w_wincol;
+    maxwidth = Columns - wp->w_wincol - left_extra;
     if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
     {
 	allow_adjust_left = FALSE;
@@ -622,11 +622,12 @@ popup_adjust_position(win_T *wp)
 		    || wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    // adjust leftwise to fit text on screen
-	    int shift_by = ( len - maxwidth );
+	    int shift_by = len - maxwidth;
 
-	    if ( shift_by > wp->w_wincol )
+	    if (shift_by > wp->w_wincol)
 	    {
 		int truncate_shift = shift_by - wp->w_wincol;
+
 		len -= truncate_shift;
 		shift_by -= truncate_shift;
 	    }

@@ -87,6 +87,8 @@ func Test_popup_with_border_and_padding()
 	  \ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
 	  \ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
 	  \ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
+	  \ "call popup_create('wrapped longer text', {'line': 8, 'col': 55, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
+	  \ "call popup_create('right aligned text', {'line': 11, 'col': 56, 'wrap': 0, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
 	  \], 'XtestPopupBorder')
     let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
     call VerifyScreenDump(buf, 'Test_popupwin_2' .. iter, {})
