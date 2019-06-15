@@ -1100,6 +1100,7 @@ func Test_OptionSet()
 
   " Cleanup
   au! OptionSet
+  " set tags&
   for opt in ['nu', 'ai', 'acd', 'ar', 'bs', 'backup', 'cul', 'cp', 'backupext', 'tags', 'spelllang', 'statusline', 'foldignore', 'cmdheight', 'undolevels', 'wrapmargin', 'foldcolumn', 'wrapscan', 'autoread', 'cindent', 'cursorcolumn']
     exe printf(":set %s&vim", opt)
   endfor
