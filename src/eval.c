@@ -172,6 +172,9 @@ static struct vimvar
     {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
     {VV_NAME("option_new",	 VAR_STRING), VV_RO},
     {VV_NAME("option_old",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
     {VV_NAME("option_type",	 VAR_STRING), VV_RO},
     {VV_NAME("errors",		 VAR_LIST), 0},
     {VV_NAME("false",		 VAR_SPECIAL), VV_RO},
@@ -337,7 +340,7 @@ eval_init(void)
     for (i = 0; i < VV_LEN; ++i)
     {
 	p = &vimvars[i];
-	if (STRLEN(p->vv_name) > 16)
+	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
 	{
 	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
 	    getout(1);
@@ -9500,14 +9503,18 @@ last_set_msg(sctx_T script_ctx)
 }
 
 /*
- * Reset v:option_new, v:option_old and v:option_type.
+ * reset v:option_new, v:option_old, v:option_oldlocal, v:option_oldglobal,
+ * v:option_type, and v:option_command.
  */
     void
 reset_v_option_vars(void)
 {
     set_vim_var_string(VV_OPTION_NEW,  NULL, -1);
     set_vim_var_string(VV_OPTION_OLD,  NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDLOCAL, NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDGLOBAL, NULL, -1);
     set_vim_var_string(VV_OPTION_TYPE, NULL, -1);
+    set_vim_var_string(VV_OPTION_COMMAND, NULL, -1);
 }
 
 /*

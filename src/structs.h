@@ -1369,12 +1369,16 @@ struct dictitem_S
 };
 typedef struct dictitem_S dictitem_T;
 
-/* A dictitem with a 16 character key (plus NUL). */
+/*
+ * A dictitem with a 16 character key (plus NUL).  This is an efficient way to
+ * have a fixed-size dictitem.
+ */
+#define DICTITEM16_KEY_LEN 16
 struct dictitem16_S
 {
     typval_T	di_tv;		/* type and value of the variable */
     char_u	di_flags;	/* flags (only used for variable) */
-    char_u	di_key[17];	/* key */
+    char_u	di_key[DICTITEM16_KEY_LEN + 1];	/* key */
 };
 typedef struct dictitem16_S dictitem16_T;
 

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -873,15 +873,33 @@ MenuPopup			Just before showing the popup menu (under the
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
-				The |v:option_old| variable indicates the
-				old option value, |v:option_new| variable
-				indicates the newly set value, the
-				|v:option_type| variable indicates whether
-				it's global or local scoped and |<amatch>|
-				indicates what option has been set.
+				|<amatch>| indicates what option has been set.
 
-				Is not triggered on startup and for the 'key'
-				option for obvious reasons.
+				|v:option_type| indicates whether it's global
+				or local scoped
+				|v:option_command| indicates what type of
+				set/let command was used (follow the tag to
+				see the table).
+				|v:option_new| indicates the newly set value.
+				|v:option_oldlocal| hass the old local value.
+				|v:option_oldglobal| hass the old global
+				value
+				|v:option_old| indicates the old option value.
+
+				|v:option_oldlocal| is only set when |:set|
+				or |:setlocal| or a |modeline| was used to set
+				the option. Similarly |v:option_oldglobal| is
+				only set when |:set| or |:setglobal| was used.
+
+				Note that when setting a |global-local| string
+				option with |:set|, then |v:option_old| is the
+				old global value. However, for all other kinds
+				of options (local string options, global-local
+				number options, ...) it is the old local
+				value.
+
+				OptionSet is not triggered on startup and for
+				the 'key' option for obvious reasons.
 
 				Usage example: Check for the existence of the
 				directory in the 'backupdir' and 'undodir'

@@ -336,7 +336,10 @@ New Vim variables: ~
 |v:null|		an empty String, used for JSON
 |v:option_new|    	new value of the option, used by |OptionSet|
 |v:option_old|    	old value of the option, used by |OptionSet|
+|v:option_oldlocal|	old local value of the option, used by |OptionSet|
+|v:option_oldglobal|	old global value of the option, used by |OptionSet|
 |v:option_type|   	scope of the set command, used by |OptionSet|
+|v:option_command|	command used to set the option, used by |OptionSet|
 |v:progpath|		the command with which Vim was invoked
 |v:t_bool|		value of Boolean type
 |v:t_channel|		value of Channel type
