@@ -11573,7 +11573,6 @@ text...
 				#	Number
 				*	Funcref
 
-
 :unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
@@ -11600,6 +11599,35 @@ text...
 			If the system does not support deleting an environment
 			variable, it is made emtpy.
 
+					*:const*
+:const {var-name} = {expr1}
+:const [{name1}, {name2}, ...] = {expr1}
+:const [{name1}, {name2}, ...] .= {expr1}
+:const [{name}, ..., ; {lastname}] = {expr1}
+:const {var-name} =<< [trim] {marker}
+text...
+text...
+{marker}
+			Similar to |:let|, but |:const| locks the variable
+			after setting the result.
+			This is the same as locking variable with |:lockvar|
+			just after |:let|: >
+				:const x = 1
+<			is equivalent to: >
+				:let x = 1
+				:lockvar 1 x
+<			This is useful if you intend not to modify the
+			defined variable. And |:const| is more efficient than
+			using |:let| and |:lockvar| since it does both storing
+			the result to variable and locking the variable at the
+			same command.
+							*E995*
+			|:const| does not allow to redefine existing variable.
+			It raises an error when given variable name is already
+			existing: >
+				:let x = 1
+				:const x = 2  " Error!
+<
 :lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
 			Lock the internal variable {name}.  Locking means that
 			it can no longer be changed (until it is unlocked).
