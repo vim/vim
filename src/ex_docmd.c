@@ -9909,7 +9909,7 @@ makeopens(
 		    && wp->w_buffer->b_ffname != NULL
 		    && !bt_help(wp->w_buffer)
 #ifdef FEAT_QUICKFIX
-		    && !bt_nofile(wp->w_buffer)
+		    && !bt_nofilename(wp->w_buffer)
 #endif
 		    )
 	    {
@@ -10236,7 +10236,7 @@ ses_do_win(win_T *wp)
     if (wp->w_buffer->b_fname == NULL
 #ifdef FEAT_QUICKFIX
 	    /* When 'buftype' is "nofile" can't restore the window contents. */
-	    || bt_nofile(wp->w_buffer)
+	    || bt_nofilename(wp->w_buffer)
 #endif
        )
 	return (ssop_flags & SSOP_BLANK);
@@ -10323,7 +10323,7 @@ put_view(
 	 */
 	if (wp->w_buffer->b_ffname != NULL
 # ifdef FEAT_QUICKFIX
-		&& !bt_nofile(wp->w_buffer)
+		&& !bt_nofilename(wp->w_buffer)
 # endif
 		)
 	{

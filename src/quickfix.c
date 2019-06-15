@@ -4135,7 +4135,7 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     // Set the options for the quickfix buffer/window (if not already done)
     // Do this even if the quickfix buffer was already present, as an autocmd
     // might have previously deleted (:bdelete) the quickfix buffer.
-    if (curbuf->b_p_bt[0] != 'q')
+    if (bt_quickfix(curbuf))
 	qf_set_cwindow_options();
 
     // Only set the height when still in the same tab page and there is no

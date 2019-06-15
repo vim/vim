@@ -3160,7 +3160,7 @@ buf_write(
 	    && whole
 	    && buf == curbuf
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
@@ -3237,7 +3237,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3270,7 +3270,7 @@ buf_write(
 	    else
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3284,7 +3284,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -6083,7 +6083,7 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
 
     if (buf->b_fname != NULL
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !path_with_url(buf->b_fname)
 	    && (force
