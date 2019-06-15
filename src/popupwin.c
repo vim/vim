@@ -674,6 +674,12 @@ popup_adjust_position(win_T *wp)
 	    wp->w_winrow = wp->w_wantline + 1;
     }
 
+    // If popup window is outside, adjust wincol.
+    if (Columns < wp->w_wincol + wp->w_width + extra_width)
+    {
+	wp->w_wincol -= wp->w_wincol + wp->w_width + extra_width - Columns;
+    }
+
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 
     // Need to update popup_mask if the position or size changed.
