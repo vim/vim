@@ -296,6 +296,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_endtry		ex_ni
 # define ex_endfunction		ex_ni
 # define ex_let			ex_ni
+# define ex_const		ex_ni
 # define ex_unlet		ex_ni
 # define ex_lockvar		ex_ni
 # define ex_unlockvar		ex_ni
@@ -4852,6 +4853,7 @@ replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep)
 
 /*
  * Expand file name in Ex command argument.
+ * When an error is detected, "errormsgp" is set to a non-NULL pointer.
  * Return FAIL for failure, OK otherwise.
  */
     int
