@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 12
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -93,8 +93,6 @@ TODO:
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
   window and return the window ID.   The popup will then be closed when the
   mouse moves, except when it moves inside the popup.
-- For notifications use the PopupNotification highlight group, fall back to
-  WarningMsg if it isn't defined.
 - For the "moved" property also include mouse movement?
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
@@ -300,6 +298,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 			call popup_create({text}, {
 				\ 'line': 1,
 				\ 'col': 10,
+				\ 'minwidth': 20,
 				\ 'time': 3000,
 				\ 'tabpage': -1,
 				\ 'zindex': 200,
@@ -308,6 +307,8 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'border': [],
 				\ 'padding': [0,1,0,1],
 				\ })
+<		The PopupNotification highlight group is used instead of
+		WarningMsg if it is defined.
 <		The position will be adjusted to avoid overlap with other
 		notifications.
 		Use {options} to change the properties.

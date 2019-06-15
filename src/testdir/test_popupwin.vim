@@ -1191,7 +1191,8 @@ func Test_notifications()
   call VerifyScreenDump(buf, 'Test_popupwin_notify_01', {})
 
   " second one goes below the first one
-  call term_sendkeys(buf, ":call popup_notification('another important notification', {'highlight': 'Notification'})\<CR>")
+  call term_sendkeys(buf, ":hi link PopupNotification Notification\<CR>")
+  call term_sendkeys(buf, ":call popup_notification('another important notification', {})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_notify_02', {})
 
 

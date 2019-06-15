@@ -258,7 +258,9 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     dictitem_T	*di;
     int		i;
 
-    wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
+    di = dict_find(dict, (char_u *)"minwidth", -1);
+    if (di != NULL)
+	wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
     wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
     wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
     wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
@@ -856,13 +858,17 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
 	wp->w_wantcol = 10;
 	wp->w_zindex = POPUPWIN_NOTIFICATION_ZINDEX;
+	wp->w_minwidth = 20;
+	wp->w_popup_drag = 1;
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
 	wp->w_popup_padding[1] = 1;
 	wp->w_popup_padding[3] = 1;
+
+	nr = syn_name2id((char_u *)"PopupNotification");
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-				(char_u *)"WarningMsg", OPT_FREE|OPT_LOCAL, 0);
-	wp->w_popup_drag = 1;
+		(char_u *)(nr == 0 ? "WarningMsg" : "PopupNotification"),
+		OPT_FREE|OPT_LOCAL, 0);
     }
 
     // Deal with options.
