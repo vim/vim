@@ -703,6 +703,45 @@ typedef enum
     TYPE_DIALOG
 } create_type_T;
 
+
+    static void
+popup_set_buffer_text(buf_T *buf, typval_T text)
+{
+    // Clear the buffer, then replace the lines.
+    // TODO: This is not efficient, but it's not expected that popups have large
+    // numbers of lines.
+    curbuf = buf;
+    for( int lnum = buf->b_ml.ml_line_count; lnum > 0; --lnum )
+	ml_delete( lnum, FALSE );
+    curbuf = curwin->w_buffer;
+
+    // Add text to the buffer.
+    if (text.v_type == VAR_STRING)
+    {
+	// just a string
+	ml_append_buf(buf, 0, text.vval.v_string, (colnr_T)0, TRUE);
+    }
+    else
+    {
+	list_T *l = text.vval.v_list;
+
+	if (l->lv_len > 0)
+	{
+	    if (l->lv_first->li_tv.v_type == VAR_STRING)
+		// list of strings
+		add_popup_strings(buf, l);
+	    else
+		// list of dictionaries
+		add_popup_dicts(buf, l);
+	}
+    }
+
+    // Delete the empty line created for the empty buffer
+    curbuf = buf;
+    ml_delete(buf->b_ml.ml_line_count, FALSE);
+    curbuf = curwin->w_buffer;
+}
+
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
@@ -789,31 +828,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	// TODO: find tab page "nr"
 	emsg("Not implemented yet");
 
-    // Add text to the buffer.
-    if (argvars[0].v_type == VAR_STRING)
-    {
-	// just a string
-	ml_append_buf(buf, 0, argvars[0].vval.v_string, (colnr_T)0, TRUE);
-    }
-    else
-    {
-	list_T *l = argvars[0].vval.v_list;
-
-	if (l->lv_len > 0)
-	{
-	    if (l->lv_first->li_tv.v_type == VAR_STRING)
-		// list of strings
-		add_popup_strings(buf, l);
-	    else
-		// list of dictionaries
-		add_popup_dicts(buf, l);
-	}
-    }
-
-    // Delete the line of the empty buffer.
-    curbuf = buf;
-    ml_delete(buf->b_ml.ml_line_count, FALSE);
-    curbuf = curwin->w_buffer;
+    popup_set_buffer_text(buf, argvars[0]);
 
     if (type == TYPE_ATCURSOR)
     {
@@ -1110,6 +1125,19 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
 	redraw_all_later(NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
+}
+
+/*
+ * popup_settext({id},{text})
+ */
+    void
+f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    int		id = (int)tv_get_number(&argvars[0]);
+    win_T	*wp = find_popup_win(id);
+    buf_T	*buf = wp->w_buffer;
+
+    popup_set_buffer_text(buf, argvars[1]);
 }
 
     static void

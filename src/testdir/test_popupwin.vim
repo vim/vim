@@ -1231,3 +1231,55 @@ func Test_notifications()
   call StopVimInTerminal(buf)
   call delete('XtestNotifications')
 endfunc
+
+function Test_popup_settext()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+    let opts = { 'wrap': 0 }
+    let p = popup_create( 'test', opts )
+    call popup_settext( p, 'this is a text' )
+    call popup_move( p, opts )
+    redraw
+  END
+
+  call writefile( lines, 'XtestPopupSetText' )
+  let buf = RunVimInTerminal('-S XtestPopupSetText', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popup_settext_01', {})
+
+  " Setting to empty string clears it
+  call term_sendkeys(buf, ":call popup_settext(p, '')\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_02', {})
+
+  " Setting a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a','b','c'])\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_03', {})
+
+  " Shrinking a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a'])\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_04', {})
+
+  " Growing a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a','b','c'])\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_03', {})
+
+  " Empty list clears
+  call term_sendkeys(buf, ":call popup_settext(p, [])\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_05', {})
+
+  " Dicts
+  call term_sendkeys(buf, ":call popup_settext(p, [ { 'text': 'aaaa' }, { 'text': 'bbbb' }, { 'text': 'cccc' }, ])\<CR>")
+  call term_sendkeys(buf, ":call popup_move(p, opts)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_06', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupSetText')
+endfunction
