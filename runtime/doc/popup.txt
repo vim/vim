@@ -40,11 +40,12 @@ The default color used is "Pmenu".  If you prefer something else use the
 
 A popup window has a window-ID like other windows, but behaves differently.
 The size can be up to the whole Vim window and it overlaps other windows.
-Popup windows can also overlap each other.
+Popup windows can also overlap each other.  The "zindex" property specifies
+what goes on top of what.
 
 The popup window contains a buffer, and that buffer is always associated with
-the popup window.  The window cannot be used in Normal, Visual or Insert mode,
-it does not get keyboard focus.  You can use functions like `setbufline()` to
+the popup window.  The window cannot be in Normal, Visual or Insert mode, it
+does not get keyboard focus.  You can use functions like `setbufline()` to
 change the text in the buffer.  There are more differences from how this
 window and buffer behave compared to regular windows and buffers, see
 |popup-buffer|.
@@ -85,17 +86,16 @@ that it is in.
 
 
 
-IMPLEMENTATION:
+TODO:
 - Why does 'nrformats' leak from the popup window buffer???
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use NOT_IN_POPUP_WINDOW for more commands.
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
   window and return the window ID.   The popup will then be closed when the
   mouse moves, except when it moves inside the popup.
+- For notifications use the PopupNotification highlight group, fall back to
+  WarningMsg if it isn't defined.
 - For the "moved" property also include mouse movement?
-- When selecting text in the popup with modeless selection, do not select
-  outside of the popup and don't select the border or padding.
-- Add test for dragging the popup window.
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
 - Invoke filter with character before mapping?
@@ -105,7 +105,17 @@ IMPLEMENTATION:
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
 - Can the buffer be re-used, to avoid using up lots of buffer numbers?
-- Implement all the unimplemented options and features.
+- Implement:
+	popup_dialog({text}, {options})
+	popup_filter_menu({id}, {key})
+	popup_filter_yesno({id}, {key})
+	popup_menu({text}, {options})
+	popup_setoptions({id}, {options})
+	flip option
+	hidden option
+	tabpage option with number
+	title option
+	transparent text property
 
 
 ==============================================================================
@@ -140,7 +150,7 @@ Other:
 	|popup_getpos()|	get actual position and size of a popup
 
 
-[functions to be moved to eval.txt later]
+[functions help to be moved to eval.txt later]
 
 popup_atcursor({text}, {options})			 *popup_atcursor()*
 		Show the {text} above the cursor, and close it when the cursor
@@ -291,7 +301,7 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'line': 1,
 				\ 'col': 10,
 				\ 'time': 3000,
-				\ 'tab': -1,
+				\ 'tabpage': -1,
 				\ 'zindex': 200,
 				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
@@ -402,11 +412,11 @@ The second argument of |popup_create()| is a dictionary with options:
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
-	tab		When -1: display the popup on all tabs.
+	tabpage		When -1: display the popup on all tabs.
 			When 0 (the default): display the popup on the current
-			tab.
+			tab page.
 			Otherwise the number of the tab page the popup is
-			displayed on; when invalid the current tab is used.
+			displayed on; when invalid the current tab page is used.
 			{only -1 and 0 are implemented}
 	title		Text to be displayed above the first item in the
 			popup, on top of any border.  If there is no top

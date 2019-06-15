@@ -372,7 +372,7 @@ func Test_popup_in_tab()
   call assert_equal(0, bufexists(bufnr))
 
   " global popup is visible in any tab
-  let winid = popup_create("text", {'tab': -1})
+  let winid = popup_create("text", {'tabpage': -1})
   call assert_equal(1, popup_getpos(winid).visible)
   tabnew
   call assert_equal(1, popup_getpos(winid).visible)
