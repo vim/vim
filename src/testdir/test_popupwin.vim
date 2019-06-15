@@ -1199,3 +1199,45 @@ func Test_notifications()
   call StopVimInTerminal(buf)
   call delete('XtestNotifications')
 endfunc
+
+func Test_stickingout()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  " Test Pattern(1)
+  call writefile([
+	\ "call popup_create('sticking out', { 'col' : &columns - 1, 'padding' : [1,1,1,1] })",
+	\], 'XtestNotifications')
+  let buf = RunVimInTerminal('-S XtestNotifications', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_stickingout_1', {})
+  call StopVimInTerminal(buf)
+
+  " Test Pattern(2)
+  call writefile([
+	\ "call popup_create('sticking out', { 'col' : &columns - 1, 'padding' : [1,2,1,1] })",
+	\], 'XtestNotifications')
+  let buf = RunVimInTerminal('-S XtestNotifications', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_stickingout_2', {})
+  call StopVimInTerminal(buf)
+
+  " Test Pattern(3)
+  call writefile([
+	\ "call popup_create('sticking out', { 'col' : &columns - 1, 'padding' : [] })",
+	\], 'XtestNotifications')
+  let buf = RunVimInTerminal('-S XtestNotifications', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_stickingout_3', {})
+  call StopVimInTerminal(buf)
+
+  " Test Pattern(4)
+  call writefile([
+	\ "call popup_create('sticking out', { 'col' : &columns - 1, 'padding' : [0,0,0,0] })",
+	\], 'XtestNotifications')
+  let buf = RunVimInTerminal('-S XtestNotifications', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_stickingout_4', {})
+  call StopVimInTerminal(buf)
+
+  " clean up
+  call delete('XtestNotifications')
+endfunc
+
