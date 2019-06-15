@@ -28,6 +28,7 @@ void *call_func_retstr(char_u *func, int argc, typval_T *argv);
 void *call_func_retlist(char_u *func, int argc, typval_T *argv);
 int eval_foldexpr(char_u *arg, int *cp);
 void ex_let(exarg_T *eap);
+void ex_const(exarg_T *eap);
 void list_hashtable_vars(hashtab_T *ht, char *prefix, int empty, int *first);
 char_u *get_lval(char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int flags, int fne_flags);
 void clear_lval(lval_T *lp);
