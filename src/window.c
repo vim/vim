@@ -87,7 +87,7 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    if (NOT_IN_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW)
 	return;
 
 #ifdef FEAT_CMDWIN
@@ -735,7 +735,7 @@ cmd_with_count(
     int
 win_split(int size, int flags)
 {
-    if (NOT_IN_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW)
 	return FAIL;
 
     /* When the ":tab" modifier was used open a new tab page instead. */
@@ -1523,7 +1523,7 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (NOT_IN_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW)
 	return;
     if (ONE_WINDOW)	    // just one window
     {
@@ -2379,7 +2379,7 @@ win_close(win_T *win, int free_buf)
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
 
-    if (NOT_IN_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW)
 	return FAIL;
 
     if (last_window())
@@ -4240,7 +4240,7 @@ win_goto(win_T *wp)
     win_T	*owp = curwin;
 #endif
 
-    if (NOT_IN_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW)
 	return;
     if (text_locked())
     {

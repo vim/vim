@@ -340,8 +340,9 @@
 /* Wether a command index indicates a user command. */
 #define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
 
+// Give an error in curwin is a popup window and evaluate to TRUE.
 #ifdef FEAT_TEXT_PROP
-# define NOT_IN_POPUP_WINDOW not_in_popup_window()
+# define ERROR_IF_POPUP_WINDOW error_if_popup_window()
 #else
-# define NOT_IN_POPUP_WINDOW 0
+# define ERROR_IF_POPUP_WINDOW 0
 #endif

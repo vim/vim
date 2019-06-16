@@ -1336,7 +1336,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 }
 
     int
-not_in_popup_window()
+error_if_popup_window()
 {
     if (bt_popup(curwin->w_buffer))
     {
