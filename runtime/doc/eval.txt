@@ -11622,7 +11622,6 @@ text...
 						*:cons* *:const* *E996*
 :cons[t] {var-name} = {expr1}
 :cons[t] [{name1}, {name2}, ...] = {expr1}
-:cons[t] [{name1}, {name2}, ...] .= {expr1}
 :cons[t] [{name}, ..., ; {lastname}] = {expr1}
 :cons[t] {var-name} =<< [trim] {marker}
 text...
@@ -11641,7 +11640,10 @@ text...
 			|:const| does not allow to for changing a variable. >
 				:let x = 1
 				:const x = 2  " Error!
-<
+<			Note that environment variable, option values nor
+			register values are not permitted to be modified.
+							*E996*
+
 :lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
 			Lock the internal variable {name}.  Locking means that
 			it can no longer be changed (until it is unlocked).
