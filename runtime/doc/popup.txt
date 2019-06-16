@@ -112,7 +112,6 @@ TODO:
 	popup_setoptions({id}, {options})
 	hidden option
 	tabpage option with number
-	title option
 	flip option
 	transparent text property
 
@@ -452,8 +451,8 @@ The second argument of |popup_create()| is a dictionary with options:
 	title		Text to be displayed above the first item in the
 			popup, on top of any border.  If there is no top
 			border one line of padding is added to put the title
-			on.
-			{not implemented yet}
+			on.  You might want to add one or more spaces at the
+			start and end as padding.
 	wrap		TRUE to make the lines wrap (default TRUE).
 	drag		TRUE to allow the popup to be dragged with the mouse
 			by grabbing at at the border.  Has no effect if the

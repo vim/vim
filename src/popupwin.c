@@ -294,6 +294,13 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
+    str = dict_get_string(dict, (char_u *)"title", FALSE);
+    if (str != NULL)
+    {
+	vim_free(wp->w_popup_title);
+	wp->w_popup_title = vim_strsave(str);
+    }
+
     wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
     if (wp->w_firstline < 1)
 	wp->w_firstline = 1;
@@ -532,6 +539,19 @@ popup_width(win_T *wp)
 }
 
 /*
+ * Get the padding plus border at the top, adjusted to 1 if there is a title.
+ */
+    static int
+popup_top_extra(win_T *wp)
+{
+    int	extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
+
+    if (extra == 0 && wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
+	return 1;
+    return extra;
+}
+
+/*
  * Adjust the position and size of the popup to fit on the screen.
  */
     void
@@ -543,7 +563,7 @@ popup_adjust_position(win_T *wp)
     int		center_vert = FALSE;
     int		center_hor = FALSE;
     int		allow_adjust_left = !wp->w_popup_fixed;
-    int		top_extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
+    int		top_extra = popup_top_extra(wp);
     int		right_extra = wp->w_popup_border[1] + wp->w_popup_padding[1];
     int		bot_extra = wp->w_popup_border[2] + wp->w_popup_padding[2];
     int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
@@ -553,6 +573,7 @@ popup_adjust_position(win_T *wp)
     int		org_wincol = wp->w_wincol;
     int		org_width = wp->w_width;
     int		org_height = wp->w_height;
+    int		minwidth;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -646,8 +667,17 @@ popup_adjust_position(win_T *wp)
 	    break;
     }
 
-    if (wp->w_minwidth > 0 && wp->w_width < wp->w_minwidth)
-	wp->w_width = wp->w_minwidth;
+    minwidth = wp->w_minwidth;
+    if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
+    {
+	int title_len = vim_strsize(wp->w_popup_title) + 2 - extra_width;
+
+	if (minwidth < title_len)
+	    minwidth = title_len;
+    }
+
+    if (minwidth > 0 && wp->w_width < minwidth)
+	wp->w_width = minwidth;
     if (wp->w_width > maxwidth)
 	wp->w_width = maxwidth;
     if (center_hor)
@@ -1384,7 +1414,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     {
 	if (wp == NULL)
 	    return;  // invalid {id}
-	top_extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
+	top_extra = popup_top_extra(wp);
 	left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
 
 	dict = rettv->vval.v_dict;
@@ -1750,6 +1780,7 @@ update_popups(void (*win_update)(win_T *wp))
     int	    left_off;
     int	    total_width;
     int	    total_height;
+    int	    top_padding;
     int	    popup_attr;
     int	    border_attr[4];
     int	    border_char[8];
@@ -1770,7 +1801,7 @@ update_popups(void (*win_update)(win_T *wp))
 
 	// adjust w_winrow and w_wincol for border and padding, since
 	// win_update() doesn't handle them.
-	top_off = wp->w_popup_padding[0] + wp->w_popup_border[0];
+	top_off = popup_top_extra(wp);
 	left_off = wp->w_popup_padding[3] + wp->w_popup_border[3];
 	wp->w_winrow += top_off;
 	wp->w_wincol += left_off;
@@ -1783,7 +1814,7 @@ update_popups(void (*win_update)(win_T *wp))
 
 	total_width = wp->w_popup_border[3] + wp->w_popup_padding[3]
 		+ wp->w_width + wp->w_popup_padding[1] + wp->w_popup_border[1];
-	total_height = wp->w_popup_border[0] + wp->w_popup_padding[0]
+	total_height = popup_top_extra(wp)
 		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
 	popup_attr = get_wcr_attr(wp);
 
@@ -1816,6 +1847,7 @@ update_popups(void (*win_update)(win_T *wp))
 		border_attr[i] = syn_name2attr(wp->w_border_highlight[i]);
 	}
 
+	top_padding = wp->w_popup_padding[0];
 	if (wp->w_popup_border[0] > 0)
 	{
 	    // top border
@@ -1832,16 +1864,23 @@ update_popups(void (*win_update)(win_T *wp))
 			       wp->w_wincol + total_width - 1, border_attr[1]);
 	    }
 	}
+	else if (wp->w_popup_padding[0] == 0 && popup_top_extra(wp) > 0)
+	    top_padding = 1;
 
-	if (wp->w_popup_padding[0] > 0)
+	if (top_padding > 0)
 	{
 	    // top padding
 	    row = wp->w_winrow + wp->w_popup_border[0];
-	    screen_fill(row, row + wp->w_popup_padding[0],
+	    screen_fill(row, row + top_padding,
 		    wp->w_wincol + wp->w_popup_border[3],
 		    wp->w_wincol + total_width - wp->w_popup_border[1],
 							 ' ', ' ', popup_attr);
 	}
+
+	// Title goes on top of border or padding.
+	if (wp->w_popup_title != NULL)
+	    screen_puts(wp->w_popup_title, wp->w_winrow, wp->w_wincol + 1,
+		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 
 	for (row = wp->w_winrow + wp->w_popup_border[0];
 		row < wp->w_winrow + total_height - wp->w_popup_border[2];

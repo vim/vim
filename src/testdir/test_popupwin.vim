@@ -940,7 +940,7 @@ func Test_popup_menu_screenshot()
   let lines =<< trim END
 	call setline(1, range(1, 20))
 	hi PopupSelected ctermbg=lightblue
-	call popup_menu(['one', 'two', 'another'], {'callback': 'MenuDone'})
+	call popup_menu(['one', 'two', 'another'], {'callback': 'MenuDone', 'title': ' make a choice from the list '})
 	func MenuDone(id, res)
 	  echomsg "selected " .. a:res
 	endfunc
@@ -958,6 +958,26 @@ func Test_popup_menu_screenshot()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupMenu')
+endfunc
+
+func Test_popup_title()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  " Create a popup without title or border, a line of padding will be added to
+  " put the title on.
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	call popup_create(['one', 'two', 'another'], {'title': 'Title String'})
+  END
+  call writefile(lines, 'XtestPopupTitle')
+  let buf = RunVimInTerminal('-S XtestPopupTitle', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_title', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupTitle')
 endfunc
 
 func Test_popup_close_callback()
