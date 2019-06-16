@@ -902,6 +902,64 @@ func Test_popup_dialog()
   delfunc QuitCallback
 endfunc
 
+func ShowMenu(key, result)
+  let s:cb_res = 999
+  let winid = popup_menu(['one', 'two', 'something else'], {
+	  \ 'callback': 'QuitCallback',
+	  \ })
+  redraw
+  call feedkeys(a:key, "xt")
+  call assert_equal(winid, s:cb_winid)
+  call assert_equal(a:result, s:cb_res)
+endfunc
+
+func Test_popup_menu()
+  func QuitCallback(id, res)
+    let s:cb_winid = a:id
+    let s:cb_res = a:res
+  endfunc
+
+  let winid = ShowMenu(" ", 1)
+  let winid = ShowMenu("j \<CR>", 2)
+  let winid = ShowMenu("JjK \<CR>", 2)
+  let winid = ShowMenu("jjjjjj ", 3)
+  let winid = ShowMenu("kkk ", 1)
+  let winid = ShowMenu("x", -1)
+  let winid = ShowMenu("X", -1)
+  let winid = ShowMenu("\<Esc>", -1)
+  let winid = ShowMenu("\<C-C>", -1)
+
+  delfunc QuitCallback
+endfunc
+
+func Test_popup_menu_screenshot()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	hi PopupSelected ctermbg=lightblue
+	call popup_menu(['one', 'two', 'another'], {'callback': 'MenuDone'})
+	func MenuDone(id, res)
+	  echomsg "selected " .. a:res
+	endfunc
+  END
+  call writefile(lines, 'XtestPopupMenu')
+  let buf = RunVimInTerminal('-S XtestPopupMenu', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_01', {})
+
+  call term_sendkeys(buf, "jj")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_02', {})
+
+  call term_sendkeys(buf, " ")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenu')
+endfunc
+
 func Test_popup_close_callback()
   func PopupDone(id, result)
     let g:result = a:result

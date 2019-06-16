@@ -4183,7 +4183,7 @@ win_line(
 		 */
 		v = (long)(ptr - line);
 		cur = wp->w_match_head;
-		shl_flag = (screen_line_flags & SLF_POPUP);
+		shl_flag = FALSE;
 		while (cur != NULL || shl_flag == FALSE)
 		{
 		    if (shl_flag == FALSE
@@ -4193,6 +4193,8 @@ win_line(
 		    {
 			shl = &search_hl;
 			shl_flag = TRUE;
+			if (screen_line_flags & SLF_POPUP)
+			    continue;  // do not use search_hl
 		    }
 		    else
 			shl = &cur->hl;
@@ -4272,9 +4274,9 @@ win_line(
 
 		/* Use attributes from match with highest priority among
 		 * 'search_hl' and the match list. */
-		search_attr = search_hl.attr_cur;
 		cur = wp->w_match_head;
 		shl_flag = FALSE;
+		search_attr = 0;
 		while (cur != NULL || shl_flag == FALSE)
 		{
 		    if (shl_flag == FALSE
@@ -4284,6 +4286,8 @@ win_line(
 		    {
 			shl = &search_hl;
 			shl_flag = TRUE;
+			if (screen_line_flags & SLF_POPUP)
+			    continue;  // do not use search_hl
 		    }
 		    else
 			shl = &cur->hl;
@@ -5564,7 +5568,6 @@ win_line(
 		{
 		    /* Use attributes from match with highest priority among
 		     * 'search_hl' and the match list. */
-		    char_attr = search_hl.attr;
 		    cur = wp->w_match_head;
 		    shl_flag = FALSE;
 		    while (cur != NULL || shl_flag == FALSE)
@@ -5576,6 +5579,8 @@ win_line(
 			{
 			    shl = &search_hl;
 			    shl_flag = TRUE;
+			    if (screen_line_flags & SLF_POPUP)
+				continue;  // do not use search_hl
 			}
 			else
 			    shl = &cur->hl;

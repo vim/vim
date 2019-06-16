@@ -651,7 +651,11 @@ popup_adjust_position(win_T *wp)
     if (wp->w_width > maxwidth)
 	wp->w_width = maxwidth;
     if (center_hor)
-	wp->w_wincol = (Columns - wp->w_width) / 2;
+    {
+	wp->w_wincol = (Columns - wp->w_width - extra_width) / 2;
+	if (wp->w_wincol < 0)
+	    wp->w_wincol = 0;
+    }
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
 	    || wp->w_popup_pos == POPPOS_TOPRIGHT)
     {
@@ -671,7 +675,11 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = Rows - wp->w_winrow;
 
     if (center_vert)
-	wp->w_winrow = (Rows - wp->w_height) / 2;
+    {
+	wp->w_winrow = (Rows - wp->w_height - extra_height) / 2;
+	if (wp->w_winrow < 0)
+	    wp->w_winrow = 0;
+    }
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
 	    || wp->w_popup_pos == POPPOS_BOTLEFT)
     {
@@ -702,7 +710,8 @@ typedef enum
     TYPE_NORMAL,
     TYPE_ATCURSOR,
     TYPE_NOTIFICATION,
-    TYPE_DIALOG
+    TYPE_DIALOG,
+    TYPE_MENU
 } create_type_T;
 
 /*
@@ -751,7 +760,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
  */
-    static void
+    static win_T *
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 {
     win_T   *wp;
@@ -764,25 +773,25 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	&& !(argvars[0].v_type == VAR_LIST && argvars[0].vval.v_list != NULL))
     {
 	emsg(_(e_listreq));
-	return;
+	return NULL;
     }
     if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
     {
 	emsg(_(e_dictreq));
-	return;
+	return NULL;
     }
     d = argvars[1].vval.v_dict;
 
     // Create the window and buffer.
     wp = win_alloc_popup_win();
     if (wp == NULL)
-	return;
+	return NULL;
     rettv->vval.v_number = wp->w_id;
     wp->w_popup_pos = POPPOS_TOPLEFT;
 
     buf = buflist_new(NULL, NULL, (linenr_T)0, BLN_NEW|BLN_LISTED|BLN_DUMMY);
     if (buf == NULL)
-	return;
+	return NULL;
     ml_open(buf);
 
     win_init_popup_win(wp, buf);
@@ -898,7 +907,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		OPT_FREE|OPT_LOCAL, 0);
     }
 
-    if (type == TYPE_DIALOG)
+    if (type == TYPE_DIALOG || type == TYPE_MENU)
     {
 	int i;
 
@@ -910,6 +919,20 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    wp->w_popup_border[i] = 1;
 	    wp->w_popup_padding[i] = 1;
 	}
+    }
+
+    if (type == TYPE_MENU)
+    {
+	typval_T	tv;
+	callback_T	callback;
+
+	tv.v_type = VAR_STRING;
+	tv.vval.v_string = (char_u *)"popup_filter_menu";
+	callback = get_callback(&tv);
+	if (callback.cb_name != NULL)
+	    set_callback(&wp->w_filter_cb, &callback);
+
+	wp->w_p_wrap = 0;
     }
 
     // Deal with options.
@@ -924,6 +947,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     redraw_all_later(NOT_VALID);
     popup_mask_refresh = TRUE;
+
+    return wp;
 }
 
 /*
@@ -1000,6 +1025,93 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 }
 
 /*
+ * In a filter: check if the typed key is a mouse event that is used for
+ * dragging the popup.
+ */
+    static void
+filter_handle_drag(win_T *wp, int c, typval_T *rettv)
+{
+    int	row = mouse_row;
+    int	col = mouse_col;
+
+    if (wp->w_popup_drag
+	    && is_mouse_key(c)
+	    && (wp == popup_dragwin
+			  || wp == mouse_find_win(&row, &col, FIND_POPUP)))
+	// do not consume the key, allow for dragging the popup
+	rettv->vval.v_number = 0;
+}
+
+    static void
+popup_highlight_curline(win_T *wp)
+{
+    int	    id;
+    char    buf[100];
+
+    match_delete(wp, 1, FALSE);
+
+    id = syn_name2id((char_u *)"PopupSelected");
+    vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
+    match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
+					     (char_u *)buf, 10, 1, NULL, NULL);
+}
+
+/*
+ * popup_filter_menu({text}, {options})
+ */
+    void
+f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
+{
+    int		id = tv_get_number(&argvars[0]);
+    win_T	*wp = win_id2wp(id);
+    char_u	*key = tv_get_string(&argvars[1]);
+    typval_T	res;
+    int		c;
+    linenr_T	old_lnum;
+
+    // If the popup has been closed do not consume the key.
+    if (wp == NULL)
+	return;
+
+    c = *key;
+    if (c == K_SPECIAL && key[1] != NUL)
+	c = TO_SPECIAL(key[1], key[2]);
+
+    // consume all keys until done
+    rettv->vval.v_number = 1;
+    res.v_type = VAR_NUMBER;
+
+    old_lnum = wp->w_cursor.lnum;
+    if ((c == 'k' || c == 'K' || c == K_UP) && wp->w_cursor.lnum > 1)
+	--wp->w_cursor.lnum;
+    if ((c == 'j' || c == 'J' || c == K_DOWN)
+		       && wp->w_cursor.lnum < wp->w_buffer->b_ml.ml_line_count)
+	++wp->w_cursor.lnum;
+    if (old_lnum != wp->w_cursor.lnum)
+    {
+	popup_highlight_curline(wp);
+	return;
+    }
+
+    if (c == 'x' || c == 'X' || c == ESC || c == Ctrl_C)
+    {
+	// Cancelled, invoke callback with -1
+	res.vval.v_number = -1;
+	popup_close_and_callback(wp, &res);
+	return;
+    }
+    if (c == ' ' || c == K_KENTER || c == CAR || c == NL)
+    {
+	// Invoke callback with current index.
+	res.vval.v_number = wp->w_cursor.lnum;
+	popup_close_and_callback(wp, &res);
+	return;
+    }
+
+    filter_handle_drag(wp, c, rettv);
+}
+
+/*
  * popup_filter_yesno({text}, {options})
  */
     void
@@ -1009,36 +1121,26 @@ f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
     win_T	*wp = win_id2wp(id);
     char_u	*key = tv_get_string(&argvars[1]);
     typval_T	res;
+    int		c;
 
     // If the popup has been closed don't consume the key.
     if (wp == NULL)
 	return;
 
+    c = *key;
+    if (c == K_SPECIAL && key[1] != NUL)
+	c = TO_SPECIAL(key[1], key[2]);
+
     // consume all keys until done
     rettv->vval.v_number = 1;
 
-    if (STRCMP(key, "y") == 0 || STRCMP(key, "Y") == 0)
+    if (c == 'y' || c == 'Y')
 	res.vval.v_number = 1;
-    else if (STRCMP(key, "n") == 0 || STRCMP(key, "N") == 0
-	    || STRCMP(key, "x") == 0 || STRCMP(key, "X") == 0
-	    || STRCMP(key, "\x1b") == 0)
+    else if (c == 'n' || c == 'N' || c == 'x' || c == 'X' || c == ESC)
 	res.vval.v_number = 0;
     else
     {
-	int	c = *key;
-	int	row = mouse_row;
-	int	col = mouse_col;
-
-	if (c == K_SPECIAL && key[1] != NUL)
-	    c = TO_SPECIAL(key[1], key[2]);
-	if (wp->w_popup_drag
-		&& is_mouse_key(c)
-		&& (wp == popup_dragwin
-			      || wp == mouse_find_win(&row, &col, FIND_POPUP)))
-	    // allow for dragging the popup
-	    rettv->vval.v_number = 0;
-
-	// ignore this key
+	filter_handle_drag(wp, c, rettv);
 	return;
     }
 
@@ -1054,6 +1156,18 @@ f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
 f_popup_dialog(typval_T *argvars, typval_T *rettv)
 {
     popup_create(argvars, rettv, TYPE_DIALOG);
+}
+
+/*
+ * popup_menu({text}, {options})
+ */
+    void
+f_popup_menu(typval_T *argvars, typval_T *rettv)
+{
+    win_T *wp = popup_create(argvars, rettv, TYPE_MENU);
+
+    if (wp != NULL)
+	popup_highlight_curline(wp);
 }
 
 /*
