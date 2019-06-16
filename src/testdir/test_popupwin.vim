@@ -1310,7 +1310,7 @@ func Test_notifications()
   call delete('XtestNotifications')
 endfunc
 
-function Test_popup_settext()
+func Test_popup_settext()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
@@ -1352,4 +1352,38 @@ function Test_popup_settext()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupSetText')
-endfunction
+endfunc
+
+func Test_popup_hidden()
+  new
+
+  let winid = popup_atcursor('text', {'hidden': 1})
+  redraw
+  call assert_equal(0, popup_getpos(winid).visible)
+  call popup_close(winid)
+
+  let winid = popup_create('text', {'hidden': 1})
+  redraw
+  call assert_equal(0, popup_getpos(winid).visible)
+  call popup_close(winid)
+
+  func QuitCallback(id, res)
+    let s:cb_winid = a:id
+    let s:cb_res = a:res
+  endfunc
+  let winid = popup_dialog('make a choice', {'hidden': 1,
+	  \ 'filter': 'popup_filter_yesno',
+	  \ 'callback': 'QuitCallback',
+	  \ })
+  redraw
+  call assert_equal(0, popup_getpos(winid).visible)
+  exe "normal anot used by filter\<Esc>"
+  call assert_equal('not used by filter', getline(1))
+
+  call popup_show(winid)
+  call feedkeys('y', "xt")
+  call assert_equal(1, s:cb_res)
+
+  bwipe!
+  delfunc QuitCallback
+endfunc

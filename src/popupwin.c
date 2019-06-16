@@ -428,6 +428,13 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	    semsg(_(e_invarg2), tv_get_string(&di->di_tv));
     }
 
+    nr = dict_get_number(dict, (char_u *)"hidden");
+    if (nr > 0)
+    {
+	wp->w_popup_flags |= POPF_HIDDEN;
+	--wp->w_buffer->b_nwindows;
+    }
+
     popup_mask_refresh = TRUE;
 }
 
