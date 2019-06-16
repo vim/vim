@@ -367,7 +367,7 @@ syn match	vimSetMod	contained	"&vim\=\|[!&?<]\|all&"
 
 " Let {{{2
 " ===
-syn keyword	vimLet	let	unl[et]	skipwhite nextgroup=vimVar,vimFuncVar
+syn keyword	vimLet	let	unl[et]	cons[t]	skipwhite nextgroup=vimVar,vimFuncVar
 
 " Abbreviations {{{2
 " =============
