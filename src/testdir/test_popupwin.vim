@@ -916,13 +916,13 @@ func Test_popup_empty()
   let winid = popup_create('', {'padding': [2,2,2,2]})
   redraw
   let pos = popup_getpos(winid)
-  call assert_equal(4, pos.width)
+  call assert_equal(5, pos.width)
   call assert_equal(5, pos.height)
 
   let winid = popup_create([], {'border': []})
   redraw
   let pos = popup_getpos(winid)
-  call assert_equal(2, pos.width)
+  call assert_equal(3, pos.width)
   call assert_equal(3, pos.height)
 endfunc
 
@@ -1231,3 +1231,47 @@ func Test_notifications()
   call StopVimInTerminal(buf)
   call delete('XtestNotifications')
 endfunc
+
+function Test_popup_settext()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+    let opts = {'wrap': 0}
+    let p = popup_create('test', opts)
+    call popup_settext(p, 'this is a text')
+  END
+
+  call writefile( lines, 'XtestPopupSetText' )
+  let buf = RunVimInTerminal('-S XtestPopupSetText', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popup_settext_01', {})
+
+  " Setting to empty string clears it
+  call term_sendkeys(buf, ":call popup_settext(p, '')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_02', {})
+
+  " Setting a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a','b','c'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_03', {})
+
+  " Shrinking with a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_04', {})
+
+  " Growing with a list
+  call term_sendkeys(buf, ":call popup_settext(p, ['a','b','c'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_03', {})
+
+  " Empty list clears
+  call term_sendkeys(buf, ":call popup_settext(p, [])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_05', {})
+
+  " Dicts
+  call term_sendkeys(buf, ":call popup_settext(p, [{'text': 'aaaa'}, {'text': 'bbbb'}, {'text': 'cccc'}])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_06', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupSetText')
+endfunction
