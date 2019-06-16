@@ -231,7 +231,7 @@ insert_sign(
 	    if (buf->b_signlist == NULL)
 	    {
 		redraw_buf_later(buf, NOT_VALID);
-		changed_cline_bef_curs();
+		changed_line_abv_curs();
 	    }
 
 	    // first sign in signlist
@@ -531,7 +531,7 @@ buf_delsign(
     if (buf->b_signlist == NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
+	changed_line_abv_curs();
     }
 
     return lnum;
@@ -651,7 +651,7 @@ buf_delete_signs(buf_T *buf, char_u *group)
     if (buf->b_signlist != NULL && curwin != NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
+	changed_line_abv_curs();
     }
 
     lastp = &buf->b_signlist;
