@@ -129,9 +129,29 @@ func Test_popup_with_border_and_padding()
 	\ 'visible': 1}
   let winid = popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
   call assert_equal(with_border_or_padding, popup_getpos(winid))
+  let options = popup_getoptions(winid)
+  call assert_equal([], options.border)
+  call assert_false(has_key(options, "padding"))
 
-  let winid = popup_create('hello paddng', {'line': 2, 'col': 3, 'padding': []})
+  let winid = popup_create('hello padding', {'line': 2, 'col': 3, 'padding': []})
+  let with_border_or_padding.width = 15
+  let with_border_or_padding.core_width = 13
   call assert_equal(with_border_or_padding, popup_getpos(winid))
+  let options = popup_getoptions(winid)
+  call assert_false(has_key(options, "border"))
+  call assert_equal([], options.padding)
+
+  call popup_setoptions(winid, {
+	\ 'padding': [1, 2, 3, 4],
+	\ 'border': [4, 0, 7, 8],
+	\ 'borderhighlight': ['Top', 'Right', 'Bottom', 'Left'],
+	\ 'borderchars': ['1', '^', '2', '>', '3', 'v', '4', '<'],
+	\ })
+  let options = popup_getoptions(winid)
+  call assert_equal([1, 0, 1, 1], options.border)
+  call assert_equal([1, 2, 3, 4], options.padding)
+  call assert_equal(['Top', 'Right', 'Bottom', 'Left'], options.borderhighlight)
+  call assert_equal(['1', '^', '2', '>', '3', 'v', '4', '<'], options.borderchars)
 
   let winid = popup_create('hello both', {'line': 3, 'col': 8, 'border': [], 'padding': []})
   call assert_equal({
@@ -144,6 +164,8 @@ func Test_popup_with_border_and_padding()
 	\ 'height': 5,
 	\ 'core_height': 1,
 	\ 'visible': 1}, popup_getpos(winid))
+
+  call popup_clear()
 endfunc
 
 func Test_popup_with_syntax_win_execute()
@@ -288,6 +310,16 @@ func Test_popup_firstline()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupFirstline')
+
+  let winid = popup_create(['1111', '222222', '33333', '44444'], {
+	\ 'maxheight': 2,
+	\ 'firstline': 3,
+	\ })
+  call assert_equal(3, popup_getoptions(winid).firstline)
+  call popup_setoptions(winid, {'firstline': 1})
+  call assert_equal(1, popup_getoptions(winid).firstline)
+
+  call popup_close(winid)
 endfunc
 
 func Test_popup_drag()
@@ -978,6 +1010,13 @@ func Test_popup_title()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupTitle')
+
+  let winid = popup_create('something', {'title': 'Some Title'})
+  call assert_equal('Some Title', popup_getoptions(winid).title)
+  call popup_setoptions(winid, {'title': 'Another Title'})
+  call assert_equal('Another Title', popup_getoptions(winid).title)
+
+  call popup_clear()
 endfunc
 
 func Test_popup_close_callback()
@@ -1230,6 +1269,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'any'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
+  call assert_equal([4, 4], popup_getoptions(winid).moved)
   " trigger the check for last_cursormoved by going into insert mode
   call feedkeys("li\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
@@ -1239,6 +1279,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'word'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
+  call assert_equal([4, 7], popup_getoptions(winid).moved)
   call feedkeys("hi\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
   call popup_clear()
@@ -1247,6 +1288,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'word'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
+  call assert_equal([4, 7], popup_getoptions(winid).moved)
   call feedkeys("li\<Esc>", 'xt')
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("ei\<Esc>", 'xt')
@@ -1260,6 +1302,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
+  call assert_equal([2, 15], popup_getoptions(winid).moved)
   call feedkeys("eli\<Esc>", 'xt')
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("wi\<Esc>", 'xt')
@@ -1377,6 +1420,8 @@ func Test_popup_hidden()
 	  \ })
   redraw
   call assert_equal(0, popup_getpos(winid).visible)
+  call assert_equal(function('popup_filter_yesno'), popup_getoptions(winid).filter)
+  call assert_equal(function('QuitCallback'), popup_getoptions(winid).callback)
   exe "normal anot used by filter\<Esc>"
   call assert_equal('not used by filter', getline(1))
 
@@ -1386,4 +1431,21 @@ func Test_popup_hidden()
 
   bwipe!
   delfunc QuitCallback
+endfunc
+
+" Test options not checked elsewhere
+func Test_set_get_options()
+  let winid = popup_create('some text', {'highlight': 'Beautiful'})
+  let options = popup_getoptions(winid)
+  call assert_equal(1, options.wrap)
+  call assert_equal(0, options.drag)
+  call assert_equal('Beautiful', options.highlight)
+
+  call popup_setoptions(winid, {'wrap': 0, 'drag': 1, 'highlight': 'Another'})
+  let options = popup_getoptions(winid)
+  call assert_equal(0, options.wrap)
+  call assert_equal(1, options.drag)
+  call assert_equal('Another', options.highlight)
+
+  call popup_close(winid)
 endfunc

@@ -824,6 +824,7 @@ static struct fst
     {"popup_menu",	2, 2, f_popup_menu},
     {"popup_move",	2, 2, f_popup_move},
     {"popup_notification", 2, 2, f_popup_notification},
+    {"popup_setoptions", 2, 2, f_popup_setoptions},
     {"popup_settext",	2, 2, f_popup_settext},
     {"popup_show",	1, 1, f_popup_show},
 #endif

@@ -106,7 +106,7 @@ get_pos_options(win_T *wp, dict_T *dict)
 }
 
     static void
-get_padding_border(dict_T *dict, int *array, char *name, int max_val)
+set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 {
     dictitem_T	*di;
 
@@ -251,48 +251,41 @@ popup_add_timeout(win_T *wp, int time)
 #endif
 
 /*
- * Go through the options in "dict" and apply them to buffer "buf" displayed in
- * popup window "wp".
+ * Shared between popup_create() and f_popup_move().
  */
     static void
-apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
+apply_move_options(win_T *wp, dict_T *d)
 {
+    int nr;
+
+    if ((nr = dict_get_number(d, (char_u *)"minwidth")) > 0)
+	wp->w_minwidth = nr;
+    if ((nr = dict_get_number(d, (char_u *)"minheight")) > 0)
+	wp->w_minheight = nr;
+    if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
+	wp->w_maxwidth = nr;
+    if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
+	wp->w_maxheight = nr;
+    get_pos_options(wp, d);
+}
+
+/*
+ * Shared between popup_create() and f_popup_setoptions().
+ */
+    static void
+apply_general_options(win_T *wp, dict_T *dict)
+{
+    dictitem_T	*di;
     int		nr;
     char_u	*str;
-    dictitem_T	*di;
-    int		i;
 
-    di = dict_find(dict, (char_u *)"minwidth", -1);
+    // TODO: flip
+
+    di = dict_find(dict, (char_u *)"firstline", -1);
     if (di != NULL)
-	wp->w_minwidth = dict_get_number(dict, (char_u *)"minwidth");
-    wp->w_minheight = dict_get_number(dict, (char_u *)"minheight");
-    wp->w_maxwidth = dict_get_number(dict, (char_u *)"maxwidth");
-    wp->w_maxheight = dict_get_number(dict, (char_u *)"maxheight");
-
-    get_pos_options(wp, dict);
-
-    di = dict_find(dict, (char_u *)"zindex", -1);
-    if (di != NULL)
-    {
-	wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
-	if (wp->w_zindex < 1)
-	    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
-	if (wp->w_zindex > 32000)
-	    wp->w_zindex = 32000;
-    }
-
-#if defined(FEAT_TIMERS)
-    // Add timer to close the popup after some time.
-    nr = dict_get_number(dict, (char_u *)"time");
-    if (nr > 0)
-	popup_add_timeout(wp, nr);
-#endif
-
-    // Option values resulting in setting an option.
-    str = dict_get_string(dict, (char_u *)"highlight", FALSE);
-    if (str != NULL)
-	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-						   str, OPT_FREE|OPT_LOCAL, 0);
+	wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
+    if (wp->w_firstline < 1)
+	wp->w_firstline = 1;
 
     str = dict_get_string(dict, (char_u *)"title", FALSE);
     if (str != NULL)
@@ -300,10 +293,6 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	vim_free(wp->w_popup_title);
 	wp->w_popup_title = vim_strsave(str);
     }
-
-    wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
-    if (wp->w_firstline < 1)
-	wp->w_firstline = 1;
 
     di = dict_find(dict, (char_u *)"wrap", -1);
     if (di != NULL)
@@ -316,29 +305,14 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
     if (di != NULL)
 	wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
 
-    di = dict_find(dict, (char_u *)"callback", -1);
-    if (di != NULL)
-    {
-	callback_T	callback = get_callback(&di->di_tv);
+    str = dict_get_string(dict, (char_u *)"highlight", FALSE);
+    if (str != NULL)
+	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+						   str, OPT_FREE|OPT_LOCAL, 0);
 
-	if (callback.cb_name != NULL)
-	    set_callback(&wp->w_close_cb, &callback);
-    }
+    set_padding_border(dict, wp->w_popup_padding, "padding", 999);
+    set_padding_border(dict, wp->w_popup_border, "border", 1);
 
-    di = dict_find(dict, (char_u *)"filter", -1);
-    if (di != NULL)
-    {
-	callback_T	callback = get_callback(&di->di_tv);
-
-	if (callback.cb_name != NULL)
-	    set_callback(&wp->w_filter_cb, &callback);
-    }
-
-    get_padding_border(dict, wp->w_popup_padding, "padding", 999);
-    get_padding_border(dict, wp->w_popup_border, "border", 1);
-
-    for (i = 0; i < 4; ++i)
-	VIM_CLEAR(wp->w_border_highlight[i]);
     di = dict_find(dict, (char_u *)"borderhighlight", -1);
     if (di != NULL)
     {
@@ -348,6 +322,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
 	    listitem_T	*li;
+	    int		i;
 
 	    if (list != NULL)
 		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
@@ -364,8 +339,6 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	}
     }
 
-    for (i = 0; i < 8; ++i)
-	wp->w_border_char[i] = 0;
     di = dict_find(dict, (char_u *)"borderchars", -1);
     if (di != NULL)
     {
@@ -375,6 +348,7 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	{
 	    list_T	*list = di->di_tv.vval.v_list;
 	    listitem_T	*li;
+	    int		i;
 
 	    if (list != NULL)
 		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
@@ -396,6 +370,23 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	    }
 	}
     }
+
+    di = dict_find(dict, (char_u *)"zindex", -1);
+    if (di != NULL)
+    {
+	wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+	if (wp->w_zindex < 1)
+	    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
+	if (wp->w_zindex > 32000)
+	    wp->w_zindex = 32000;
+    }
+
+#if defined(FEAT_TIMERS)
+    // Add timer to close the popup after some time.
+    nr = dict_get_number(dict, (char_u *)"time");
+    if (nr > 0)
+	popup_add_timeout(wp, nr);
+#endif
 
     di = dict_find(dict, (char_u *)"moved", -1);
     if (di != NULL)
@@ -427,6 +418,42 @@ apply_options(win_T *wp, buf_T *buf UNUSED, dict_T *dict)
 	else
 	    semsg(_(e_invarg2), tv_get_string(&di->di_tv));
     }
+
+    di = dict_find(dict, (char_u *)"filter", -1);
+    if (di != NULL)
+    {
+	callback_T	callback = get_callback(&di->di_tv);
+
+	if (callback.cb_name != NULL)
+	{
+	    free_callback(&wp->w_filter_cb);
+	    set_callback(&wp->w_filter_cb, &callback);
+	}
+    }
+
+    di = dict_find(dict, (char_u *)"callback", -1);
+    if (di != NULL)
+    {
+	callback_T	callback = get_callback(&di->di_tv);
+
+	if (callback.cb_name != NULL)
+	{
+	    free_callback(&wp->w_close_cb);
+	    set_callback(&wp->w_close_cb, &callback);
+	}
+    }
+}
+
+/*
+ * Go through the options in "dict" and apply them to popup window "wp".
+ */
+    static void
+apply_options(win_T *wp, dict_T *dict)
+{
+    int		nr;
+
+    apply_move_options(wp, dict);
+    apply_general_options(wp, dict);
 
     nr = dict_get_number(dict, (char_u *)"hidden");
     if (nr > 0)
@@ -804,6 +831,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     buf_T   *buf;
     dict_T  *d;
     int	    nr;
+    int	    i;
 
     // Check arguments look OK.
     if (!(argvars[0].v_type == VAR_STRING && argvars[0].vval.v_string != NULL)
@@ -903,7 +931,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	win_T  *twp, *nextwin;
 	int	height = buf->b_ml.ml_line_count + 3;
-	int	i;
 
 	// Try to not overlap with another global popup.  Guess we need 3
 	// more screen lines than buffer lines.
@@ -946,8 +973,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (type == TYPE_DIALOG || type == TYPE_MENU)
     {
-	int i;
-
 	wp->w_popup_pos = POPPOS_CENTER;
 	wp->w_zindex = POPUPWIN_DIALOG_ZINDEX;
 	wp->w_popup_drag = 1;
@@ -972,8 +997,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_p_wrap = 0;
     }
 
+    for (i = 0; i < 4; ++i)
+	VIM_CLEAR(wp->w_border_highlight[i]);
+    for (i = 0; i < 8; ++i)
+	wp->w_border_char[i] = 0;
+
     // Deal with options.
-    apply_options(wp, buf, argvars[1].vval.v_dict);
+    apply_options(wp, argvars[1].vval.v_dict);
 
     if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
 	popup_add_timeout(wp, 3000);
@@ -1375,8 +1405,7 @@ close_all_popups(void)
     void
 f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    dict_T	*d;
-    int		nr;
+    dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
 
@@ -1388,20 +1417,38 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_dictreq));
 	return;
     }
-    d = argvars[1].vval.v_dict;
+    dict = argvars[1].vval.v_dict;
 
-    if ((nr = dict_get_number(d, (char_u *)"minwidth")) > 0)
-	wp->w_minwidth = nr;
-    if ((nr = dict_get_number(d, (char_u *)"minheight")) > 0)
-	wp->w_minheight = nr;
-    if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
-	wp->w_maxwidth = nr;
-    if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
-	wp->w_maxheight = nr;
-    get_pos_options(wp, d);
+    apply_move_options(wp, dict);
 
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
+    popup_adjust_position(wp);
+}
+
+/*
+ * popup_setoptions({id}, {options})
+ */
+    void
+f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    dict_T	*dict;
+    int		id = (int)tv_get_number(argvars);
+    win_T	*wp = find_popup_win(id);
+
+    if (wp == NULL)
+	return;  // invalid {id}
+
+    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    dict = argvars[1].vval.v_dict;
+
+    apply_move_options(wp, dict);
+    apply_general_options(wp, dict);
+
     popup_adjust_position(wp);
 }
 
@@ -1444,6 +1491,98 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * For popup_getoptions(): add a "border" or "padding" entry to "dict".
+ */
+    static void
+get_padding_border(dict_T *dict, int *array, char *name)
+{
+    list_T  *list;
+    int	    i;
+
+    if (array[0] == 0 && array[1] == 0 && array[2] == 0 && array[3] == 0)
+	return;
+
+    list = list_alloc();
+    if (list != NULL)
+    {
+	dict_add_list(dict, name, list);
+	if (array[0] != 1 || array[1] != 1 || array[2] != 1 || array[3] != 1)
+	    for (i = 0; i < 4; ++i)
+		list_append_number(list, array[i]);
+    }
+}
+
+/*
+ * For popup_getoptions(): add a "borderhighlight" entry to "dict".
+ */
+    static void
+get_borderhighlight(dict_T *dict, win_T *wp)
+{
+    list_T  *list;
+    int	    i;
+
+    for (i = 0; i < 4; ++i)
+	if (wp->w_border_highlight[i] != NULL)
+	    break;
+    if (i == 4)
+	return;
+
+    list = list_alloc();
+    if (list != NULL)
+    {
+	dict_add_list(dict, "borderhighlight", list);
+	for (i = 0; i < 4; ++i)
+	    list_append_string(list, wp->w_border_highlight[i], -1);
+    }
+}
+
+/*
+ * For popup_getoptions(): add a "borderchars" entry to "dict".
+ */
+    static void
+get_borderchars(dict_T *dict, win_T *wp)
+{
+    list_T  *list;
+    int	    i;
+    char_u  buf[NUMBUFLEN];
+    int	    len;
+
+    for (i = 0; i < 8; ++i)
+	if (wp->w_border_char[i] != 0)
+	    break;
+    if (i == 8)
+	return;
+
+    list = list_alloc();
+    if (list != NULL)
+    {
+	dict_add_list(dict, "borderchars", list);
+	for (i = 0; i < 8; ++i)
+	{
+	    len = mb_char2bytes(wp->w_border_char[i], buf);
+	    list_append_string(list, buf, len);
+	}
+    }
+}
+
+/*
+ * For popup_getoptions(): add a "moved" entry to "dict".
+ */
+    static void
+get_moved_list(dict_T *dict, win_T *wp)
+{
+    list_T  *list;
+
+    list = list_alloc();
+    if (list != NULL)
+    {
+	dict_add_list(dict, "moved", list);
+	list_append_number(list, wp->w_popup_mincol);
+	list_append_number(list, wp->w_popup_maxcol);
+    }
+}
+
+/*
  * popup_getoptions({id})
  */
     void
@@ -1469,6 +1608,21 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "firstline", wp->w_firstline);
 	dict_add_number(dict, "zindex", wp->w_zindex);
 	dict_add_number(dict, "fixed", wp->w_popup_fixed);
+	dict_add_string(dict, "title", wp->w_popup_title);
+	dict_add_number(dict, "wrap", wp->w_p_wrap);
+	dict_add_number(dict, "drag", wp->w_popup_drag);
+	dict_add_string(dict, "highlight", wp->w_p_wcr);
+
+	get_padding_border(dict, wp->w_popup_padding, "padding");
+	get_padding_border(dict, wp->w_popup_border, "border");
+	get_borderhighlight(dict, wp);
+	get_borderchars(dict, wp);
+	get_moved_list(dict, wp);
+
+	if (wp->w_filter_cb.cb_name != NULL)
+	    dict_add_callback(dict, "filter", &wp->w_filter_cb);
+	if (wp->w_close_cb.cb_name != NULL)
+	    dict_add_callback(dict, "callback", &wp->w_close_cb);
 
 	for (i = 0; i < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
 									   ++i)

@@ -448,6 +448,27 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 }
 
 /*
+ * Add a callback to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_callback(dict_T *d, char *key, callback_T *cb)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    put_callback(cb, &item->di_tv);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Initializes "iter" for iterating over dictionary items with
  * dict_iterate_next().
  * If "var" is not a Dict or an empty Dict then there will be nothing to

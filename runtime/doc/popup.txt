@@ -109,8 +109,6 @@ TODO:
 - When the lines do not fit show a scrollbar (like in the popup menu).
   Use the mouse wheel for scrolling.
 - Implement:
-	popup_setoptions({id}, {options})
-	hidden option
 	tabpage option with number
 	flip option
 	transparent text property
@@ -247,11 +245,15 @@ popup_getoptions({id})					*popup_getoptions()*
 		A zero value means the option was not set.  For "zindex" the
 		default value is returned, not zero.
 
-		The "highlight" entry is omitted, use the 'wincolor' option
-		for that: >
-			let hl = getwinvar(winid, '&wincolor')
+		The "moved" entry is a list with minimum and maximum column,
+		[0, 0] when not set.
 
-<		If popup window {id} is not found an empty Dict is returned.
+		"border" and "padding" are not included when all values are
+		zero.  When all values are one then an empty list is included.
+
+		"borderhighlight" is not included when all values are empty.
+
+		If popup window {id} is not found an empty Dict is returned.
 
 
 popup_getpos({id})					*popup_getpos()*
@@ -307,9 +309,17 @@ popup_menu({text}, {options})				 *popup_menu()*
 popup_move({id}, {options})					*popup_move()*
 		Move popup {id} to the position specified with {options}.
 		{options} may contain the items from |popup_create()| that
-		specify the popup position: "line", "col", "pos", "maxheight",
-		"minheight", "maxwidth" and "minwidth".
+		specify the popup position:
+			line
+			col
+			pos
+			maxheight
+			minheight
+			maxwidth
+			minwidth
+			fixed
 		For {id} see `popup_hide()`.
+		For other options see |popup_setoptions()|.
 
 
 popup_notification({text}, {options})			 *popup_notification()*
@@ -341,8 +351,26 @@ popup_show({id})						*popup_show()*
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
-		{not implemented yet}
 		Override options in popup {id} with entries in {options}.
+		These options can be set:
+			flip
+			firstline
+			title
+			wrap
+			drag
+			highlight
+			padding
+			border
+			borderhighlight
+			borderchars
+			zindex
+			time
+			moved
+			filter
+			callback
+		The options from |popup_move()| can also be used.
+		For "hidden" use |popup_hide()| and |popup_show()|.
+		"tabpage" cannot be changed.
 
 popup_settext({id}, {text})				*popup_settext()*
 		Set the text of the buffer in poup win {id}. {text} is the
