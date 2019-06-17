@@ -1665,6 +1665,17 @@ func Test_refcount()
     delfunc DictFunc
 endfunc
 
+func! Test_funccall_garbage_collect()
+    func Func(x, ...)
+        call add(a:x, a:000)
+    endfunc
+    call Func([], [])
+    " Must not crash cause by invalid freeing
+    call test_garbagecollect_now()
+    call assert_true(v:true)
+    delfunc Func
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
