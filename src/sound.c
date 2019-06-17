@@ -76,7 +76,7 @@ delete_sound_callback(soundcb_T *soundcb)
 	}
 }
 
-#if defined(HAVE_CANBERRA)
+#if defined(HAVE_CANBERRA) || defined(PROTO)
 #include <canberra.h>
 
 static ca_context   *context = NULL;
@@ -360,7 +360,7 @@ f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     mciSendString("close all", NULL, 0, NULL);
 }
 
-#if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE)
     void
 sound_free(void)
 {
