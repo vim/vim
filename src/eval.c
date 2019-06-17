@@ -5896,9 +5896,7 @@ set_ref_in_item(
 	    /* Didn't see this dict yet. */
 	    dd->dv_copyID = copyID;
 	    if (ht_stack == NULL)
-	    {
 		abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
-	    }
 	    else
 	    {
 		ht_stack_T *newitem = (ht_stack_T*)malloc(sizeof(ht_stack_T));
@@ -5922,9 +5920,7 @@ set_ref_in_item(
 	    /* Didn't see this list yet. */
 	    ll->lv_copyID = copyID;
 	    if (list_stack == NULL)
-	    {
 		abort = set_ref_in_list(ll, copyID, ht_stack);
-	    }
 	    else
 	    {
 		list_stack_T *newitem = (list_stack_T*)malloc(
