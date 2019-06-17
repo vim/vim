@@ -1449,6 +1449,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     apply_move_options(wp, dict);
     apply_general_options(wp, dict);
 
+    popup_mask_refresh = TRUE;
     popup_adjust_position(wp);
 }
 
