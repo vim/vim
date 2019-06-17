@@ -10,6 +10,10 @@ func PlayCallback(id, result)
 endfunc
 
 func Test_play_event()
+  if has('win32')
+    throw 'Skipped: Playing event with callback is not supported on Windows'
+  endif
+
   let id = sound_playevent('bell', 'PlayCallback')
   if id == 0
     throw 'Skipped: bell event not available'
