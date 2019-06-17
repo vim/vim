@@ -3037,6 +3037,91 @@ text_prop_compare(const void *s1, const void *s2)
 }
 #endif
 
+#ifdef FEAT_SIGNS
+/*
+ * Get information needed to display the sign in line 'lnum' in window 'wp'.
+ * If 'nrcol' is TRUE, the sign is going to be displayed in the number column.
+ * Otherwise the sign is going to be displayed in the sign column.
+ */
+    static void
+get_sign_display_info(
+	int		nrcol,
+	win_T		*wp,
+	linenr_T	lnum,
+	int		wcr_attr,
+	int		row,
+	int		startrow,
+	int		filler_lines,
+	int		filler_todo,
+	int		*c_extrap,
+	int		*c_finalp,
+	char_u		*extra,
+	char_u		**pp_extra,
+	int		*n_extrap,
+	int		*char_attrp)
+{
+    int	text_sign;
+# ifdef FEAT_SIGN_ICONS
+    int	icon_sign;
+# endif
+
+    /* Draw two cells with the sign value or blank. */
+    *c_extrap = ' ';
+    *c_finalp = NUL;
+    if (nrcol)
+	*n_extrap = number_width(wp) + 1;
+    else
+    {
+	*char_attrp = hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC));
+	*n_extrap = 2;
+    }
+
+    if (row == startrow
+#ifdef FEAT_DIFF
+	    + filler_lines && filler_todo <= 0
+#endif
+       )
+    {
+	text_sign = buf_getsigntype(wp->w_buffer, lnum, SIGN_TEXT);
+# ifdef FEAT_SIGN_ICONS
+	icon_sign = buf_getsigntype(wp->w_buffer, lnum, SIGN_ICON);
+	if (gui.in_use && icon_sign != 0)
+	{
+	    /* Use the image in this position. */
+	    *c_extrap = SIGN_BYTE;
+	    *c_finalp = NUL;
+#  ifdef FEAT_NETBEANS_INTG
+	    if (buf_signcount(wp->w_buffer, lnum) > 1)
+	    {
+		*c_extrap = MULTISIGN_BYTE;
+		*c_finalp = NUL;
+	    }
+#  endif
+	    *char_attrp = icon_sign;
+	}
+	else
+# endif
+	    if (text_sign != 0)
+	    {
+		*pp_extra = sign_get_text(text_sign);
+		if (*pp_extra != NULL)
+		{
+		    if (nrcol)
+		    {
+			sprintf((char *)extra, "%-*s ", number_width(wp),
+								*pp_extra);
+			*pp_extra = extra;
+		    }
+		    *c_extrap = NUL;
+		    *c_finalp = NUL;
+		    *n_extrap = (int)STRLEN(*pp_extra);
+		}
+		*char_attrp = sign_get_attr(text_sign, FALSE);
+	    }
+    }
+}
+#endif
+
 /*
  * Display line "lnum" of window 'wp' on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -3876,58 +3961,9 @@ win_line(
 		/* Show the sign column when there are any signs in this
 		 * buffer or when using Netbeans. */
 		if (signcolumn_on(wp))
-		{
-		    int	text_sign;
-# ifdef FEAT_SIGN_ICONS
-		    int	icon_sign;
-# endif
-
-		    /* Draw two cells with the sign value or blank. */
-		    c_extra = ' ';
-		    c_final = NUL;
-		    char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_SC));
-		    n_extra = 2;
-
-		    if (row == startrow
-#ifdef FEAT_DIFF
-			    + filler_lines && filler_todo <= 0
-#endif
-			    )
-		    {
-			text_sign = buf_getsigntype(wp->w_buffer, lnum,
-								   SIGN_TEXT);
-# ifdef FEAT_SIGN_ICONS
-			icon_sign = buf_getsigntype(wp->w_buffer, lnum,
-								   SIGN_ICON);
-			if (gui.in_use && icon_sign != 0)
-			{
-			    /* Use the image in this position. */
-			    c_extra = SIGN_BYTE;
-			    c_final = NUL;
-#  ifdef FEAT_NETBEANS_INTG
-			    if (buf_signcount(wp->w_buffer, lnum) > 1)
-			    {
-				c_extra = MULTISIGN_BYTE;
-				c_final = NUL;
-			    }
-#  endif
-			    char_attr = icon_sign;
-			}
-			else
-# endif
-			    if (text_sign != 0)
-			{
-			    p_extra = sign_get_text(text_sign);
-			    if (p_extra != NULL)
-			    {
-				c_extra = NUL;
-				c_final = NUL;
-				n_extra = (int)STRLEN(p_extra);
-			    }
-			    char_attr = sign_get_attr(text_sign, FALSE);
-			}
-		    }
-		}
+		    get_sign_display_info(FALSE, wp, lnum, wcr_attr, row,
+			    startrow, filler_lines, filler_todo, &c_extra,
+			    &c_final, extra, &p_extra, &n_extra, &char_attr);
 	    }
 #endif
 
@@ -3943,6 +3979,20 @@ win_line(
 #endif
 			    || vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
 		{
+#ifdef FEAT_SIGNS
+		    // If 'signcolumn' is set to 'number' and a sign is present
+		    // in 'lnum', then display the sign instead of the line
+		    // number.
+		    if ((*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
+			    && buf_findsign_id(wp->w_buffer, lnum,
+							(char_u *)"*") != 0)
+			get_sign_display_info(TRUE, wp, lnum, wcr_attr, row,
+				startrow, filler_lines, filler_todo, &c_extra,
+				&c_final, extra, &p_extra, &n_extra,
+				&char_attr);
+		    else
+#endif
+		    {
 		    /* Draw the line number (empty space after wrapping). */
 		    if (row == startrow
 #ifdef FEAT_DIFF
@@ -4009,6 +4059,7 @@ win_line(
 						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
+		    }
 		}
 	    }
 
