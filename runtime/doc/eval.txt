@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 10
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2183,7 +2183,7 @@ v:val		Value of the current item of a |List| or |Dictionary|.  Only
 
 					*v:version* *version-variable*
 v:version	Version number of Vim: Major version number times 100 plus
-		minor version number.  Version 5.0 is 500.  Version 5.1 (5.01)
+		minor version number.  Version 5.0 is 500.  Version 5.1
 		is 501.  Read-only.  "version" also works, for backwards
 		compatibility, unless |scriptversion| is 3 or higher.
 		Use |has()| to check if a certain patch was included, e.g.: >
@@ -2193,10 +2193,10 @@ v:version	Version number of Vim: Major version number times 100 plus
 		completely different.
 
 					*v:versionlong* *versionlong-variable*
-v:versionlong	Like v:version, but also including the patchlevel.  Version
-		8.1 with patch 1234 has value 8011234.  This can be used like
-		this: >
-			if v:versionlong >= 8011234
+v:versionlong	Like v:version, but also including the patchlevel in the last
+		four digits.  Version 8.1 with patch 123 has value 8010123.
+		This can be used like this: >
+			if v:versionlong >= 8010123
 <		However, if there are gaps in the list of patches included
 		this will not work well.  This can happen if a recent patch
 		was included into an older version, e.g. for a security fix.
@@ -8123,10 +8123,9 @@ setbufline({expr}, {lnum}, {text})			*setbufline()*
 
 		{lnum} is used like with |setline()|.
 		This works like |setline()| for the specified buffer.
-		On success 0 is returned, on failure 1 is returned.
 
-		If {expr} is not a valid buffer or {lnum} is not valid, an
-		error message is given.
+		When {expr} is not a valid buffer or {lnum} is not valid then
+		1 is returned.  On success 0 is returned.
 
 setbufvar({expr}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {expr} to
@@ -8884,7 +8883,7 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 <
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
-		{only available when compiled with the +sound feature}
+		{only available when compiled with the |+sound| feature}
 
 							*sound_playevent()*
 sound_playevent({name} [, {callback}])
@@ -8893,8 +8892,11 @@ sound_playevent({name} [, {callback}])
 		are used.  On Ubuntu they may be found in
 		/usr/share/sounds/freedesktop/stereo.  Example: >
 			call sound_playevent('bell')
+<		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
+		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
+		SystemStart, SystemWelcome, etc.
 
-<		When {callback} is specified it is invoked when the sound is
+		When {callback} is specified it is invoked when the sound is
 		finished.  The first argument is the sound ID, the second
 		argument is the status:
 			0	sound was played to the end
@@ -8906,7 +8908,9 @@ sound_playevent({name} [, {callback}])
 		   endfunc
 		   call sound_playevent('bell', 'Callback')
 
-<		Returns the sound ID, which can be passed to `sound_stop()`.
+<		MS-Windows: {callback} doesn't work for this function.
+
+		Returns the sound ID, which can be passed to `sound_stop()`.
 		Returns zero if the sound could not be played.
 		{only available when compiled with the |+sound| feature}
 
@@ -8922,6 +8926,10 @@ sound_playfile({path} [, {callback}])
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
+
+		On MS-Windows, this does not work for event sound started by
+		`sound_playevent()`. To stop event sounds, use `sound_clear()`.
+
 		{only available when compiled with the |+sound| feature}
 
 							*soundfold()*
@@ -11592,7 +11600,6 @@ text...
 				#	Number
 				*	Funcref
 
-
 :unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
@@ -11637,7 +11644,7 @@ text...
 <			This is useful if you want to make sure the variable
 			is not modified.
 							*E995*
-			|:const| does not allow to for changing a variable. >
+			|:const| does not allow to for changing a variable: >
 				:let x = 1
 				:const x = 2  " Error!
 <							*E996*
