@@ -935,12 +935,9 @@ call_user_func(
 	    v->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
 
-	if (isdefault)
-	    v->di_tv = def_rettv;
-	else
-	    // Note: the values are copied directly to avoid alloc/free.
-	    // "argvars" must have VAR_FIXED for v_lock.
-	    v->di_tv = argvars[i];
+	// Note: the values are copied directly to avoid alloc/free.
+	// "argvars" must have VAR_FIXED for v_lock.
+	v->di_tv = isdefault ? def_rettv : argvars[i];
 	v->di_tv.v_lock = VAR_FIXED;
 
 	if (addlocal)
@@ -1539,7 +1536,6 @@ call_func(
 	    argcount = partial->pt_argc + argcount_in;
 	}
     }
-
 
     /*
      * Execute the function if executing and no errors were detected.
@@ -3998,13 +3994,13 @@ set_ref_in_previous_funccal(int copyID)
     int		abort = FALSE;
     funccall_T	*fc;
 
-    for (fc = previous_funccal; fc != NULL; fc = fc->caller)
+    for (fc = previous_funccal; !abort && fc != NULL; fc = fc->caller)
     {
 	fc->fc_copyID = copyID + 1;
-	abort = abort || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1,
-									NULL);
-	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1,
-									NULL);
+	abort = abort
+	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
+	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
+	    || set_ref_in_list(&fc->l_varlist, copyID + 1, NULL);
     }
     return abort;
 }
@@ -4017,9 +4013,11 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
     if (fc->fc_copyID != copyID)
     {
 	fc->fc_copyID = copyID;
-	abort = abort || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL);
-	abort = abort || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL);
-	abort = abort || set_ref_in_func(NULL, fc->func, copyID);
+	abort = abort
+	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
+	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
+	    || set_ref_in_list(&fc->l_varlist, copyID, NULL)
+	    || set_ref_in_func(NULL, fc->func, copyID);
     }
     return abort;
 }
