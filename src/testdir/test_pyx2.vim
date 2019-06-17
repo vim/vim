@@ -1,9 +1,8 @@
 " Test for pyx* commands and functions with Python 2.
 
 set pyx=2
-if !has('python')
-  finish
-endif
+source check.vim
+CheckFeature python
 
 let s:py2pattern = '^2\.[0-7]\.\d\+'
 let s:py3pattern = '^3\.\d\+\.\d\+'

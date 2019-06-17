@@ -1430,7 +1430,7 @@ find_tagfunc_tags(
 	if (name_only)
 	    mfp = vim_strsave(res_name);
 	else
-	    mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
+	    mfp = alloc(sizeof(char_u) + len + 1);
 
 	if (mfp == NULL)
 	    continue;
@@ -2536,8 +2536,7 @@ parse_line:
 		     */
 		    *tagp.tagname_end = NUL;
 		    len = (int)(tagp.tagname_end - tagp.tagname);
-		    mfp = (char_u *)alloc(sizeof(char_u)
-						    + len + 10 + ML_EXTRA + 1);
+		    mfp = alloc(sizeof(char_u) + len + 10 + ML_EXTRA + 1);
 		    if (mfp != NULL)
 		    {
 			int heuristic;
@@ -2574,7 +2573,7 @@ parse_line:
 			if (tagp.command + 2 < temp_end)
 			{
 			    len = (int)(temp_end - tagp.command - 2);
-			    mfp = (char_u *)alloc(len + 2);
+			    mfp = alloc(len + 2);
 			    if (mfp != NULL)
 				vim_strncpy(mfp, tagp.command + 2, len);
 			}
@@ -2585,7 +2584,7 @@ parse_line:
 		    else
 		    {
 			len = (int)(tagp.tagname_end - tagp.tagname);
-			mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
+			mfp = alloc(sizeof(char_u) + len + 1);
 			if (mfp != NULL)
 			    vim_strncpy(mfp, tagp.tagname, len);
 
@@ -2620,7 +2619,7 @@ parse_line:
 		    else
 			++len;
 #endif
-		    mfp = (char_u *)alloc(sizeof(char_u) + len + 1);
+		    mfp = alloc(sizeof(char_u) + len + 1);
 		    if (mfp != NULL)
 		    {
 			p = mfp;
@@ -2789,7 +2788,7 @@ findtag_end:
 	match_count = 0;
 
     if (match_count > 0)
-	matches = (char_u **)alloc(match_count * sizeof(char_u *));
+	matches = ALLOC_MULT(char_u *, match_count);
     else
 	matches = NULL;
     match_count = 0;

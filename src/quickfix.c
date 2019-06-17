@@ -540,7 +540,7 @@ parse_efm_option(char_u *efm)
     while (efm[0] != NUL)
     {
 	// Allocate a new eformat structure and put it at the end of the list
-	fmt_ptr = (efm_T *)alloc_clear(sizeof(efm_T));
+	fmt_ptr = ALLOC_CLEAR_ONE(efm_T);
 	if (fmt_ptr == NULL)
 	    goto parse_efm_error;
 	if (fmt_first == NULL)	    // first one
@@ -1890,7 +1890,7 @@ locstack_queue_delreq(qf_info_T *qi)
 {
     qf_delq_T	*q;
 
-    q = (qf_delq_T *)alloc(sizeof(qf_delq_T));
+    q = ALLOC_ONE(qf_delq_T);
     if (q != NULL)
     {
 	q->qi = qi;
@@ -2063,7 +2063,7 @@ qf_add_entry(
     qfline_T	*qfp;
     qfline_T	**lastp;	// pointer to qf_last or NULL
 
-    if ((qfp = (qfline_T *)alloc(sizeof(qfline_T))) == NULL)
+    if ((qfp = ALLOC_ONE(qfline_T)) == NULL)
 	return QF_FAIL;
     if (bufnum != 0)
     {
@@ -2141,7 +2141,7 @@ qf_alloc_stack(qfltype_T qfltype)
 {
     qf_info_T *qi;
 
-    qi = (qf_info_T *)alloc_clear(sizeof(qf_info_T));
+    qi = ALLOC_CLEAR_ONE(qf_info_T);
     if (qi != NULL)
     {
 	qi->qf_refcount++;
@@ -2429,7 +2429,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
     struct dir_stack_T  *ds_ptr;
 
     // allocate new stack element and hook it in
-    ds_new = (struct dir_stack_T *)alloc(sizeof(struct dir_stack_T));
+    ds_new = ALLOC_ONE(struct dir_stack_T);
     if (ds_new == NULL)
 	return NULL;
 
@@ -4135,7 +4135,7 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     // Set the options for the quickfix buffer/window (if not already done)
     // Do this even if the quickfix buffer was already present, as an autocmd
     // might have previously deleted (:bdelete) the quickfix buffer.
-    if (curbuf->b_p_bt[0] != 'q')
+    if (!bt_quickfix(curbuf))
 	qf_set_cwindow_options();
 
     // Only set the height when still in the same tab page and there is no
@@ -5320,7 +5320,7 @@ qf_find_closest_entry(
  * the list. If linewise is TRUE, then treat multiple entries on a single line
  * as one.
  */
-    static qfline_T *
+    static void
 qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
 {
     while (n-- > 0 && !got_int)
@@ -5348,8 +5348,6 @@ qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
 	entry = entry->qf_next;
 	++*errornr;
     }
-
-    return entry;
 }
 
 /*
@@ -5357,7 +5355,7 @@ qf_get_nth_below_entry(qfline_T *entry, int n, int linewise, int *errornr)
  * the list. If linewise is TRUE, then treat multiple entries on a single line
  * as one.
  */
-    static qfline_T *
+    static void
 qf_get_nth_above_entry(qfline_T *entry, int n, int linewise, int *errornr)
 {
     while (n-- > 0 && !got_int)
@@ -5373,8 +5371,6 @@ qf_get_nth_above_entry(qfline_T *entry, int n, int linewise, int *errornr)
 	if (linewise)
 	    entry = qf_find_first_entry_on_line(entry, errornr);
     }
-
-    return entry;
 }
 
 /*
@@ -5403,11 +5399,9 @@ qf_find_nth_adj_entry(
     {
 	// Go to the n'th entry in the current buffer
 	if (dir == FORWARD)
-	    adj_entry = qf_get_nth_below_entry(adj_entry, n, linewise,
-		    &errornr);
+	    qf_get_nth_below_entry(adj_entry, n, linewise, &errornr);
 	else
-	    adj_entry = qf_get_nth_above_entry(adj_entry, n, linewise,
-		    &errornr);
+	    qf_get_nth_above_entry(adj_entry, n, linewise, &errornr);
     }
 
     return errornr;

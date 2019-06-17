@@ -431,6 +431,12 @@ pum_redraw(void)
 						    / (pum_size - pum_height);
     }
 
+#ifdef FEAT_TEXT_PROP
+    // The popup menu is drawn over popup menus with zindex under
+    // POPUPMENU_ZINDEX.
+    screen_zindex = POPUPMENU_ZINDEX;
+#endif
+
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
@@ -611,6 +617,10 @@ pum_redraw(void)
 
 	++row;
     }
+
+#ifdef FEAT_TEXT_PROP
+    screen_zindex = 0;
+#endif
 }
 
 /*
@@ -717,7 +727,7 @@ pum_set_selected(int n, int repeat)
 		if (!resized
 			&& curbuf->b_nwindows == 1
 			&& curbuf->b_fname == NULL
-			&& curbuf->b_p_bt[0] == 'n' && curbuf->b_p_bt[2] == 'f'
+			&& bt_nofile(curbuf)
 			&& curbuf->b_p_bh[0] == 'w')
 		{
 		    /* Already a "wipeout" buffer, make it empty. */
@@ -1071,7 +1081,7 @@ split_message(char_u *mesg, pumitem_T **array)
      * position. */
     if (height > max_height)
 	height = max_height;
-    *array = (pumitem_T *)alloc_clear(sizeof(pumitem_T) * height);
+    *array = ALLOC_CLEAR_MULT(pumitem_T, height);
     if (*array == NULL)
 	goto failed;
 
@@ -1164,8 +1174,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	int	    idx;
 
 	balloon_arraysize = list->lv_len;
-	balloon_array = (pumitem_T *)alloc_clear(
-					     sizeof(pumitem_T) * list->lv_len);
+	balloon_array = ALLOC_CLEAR_MULT(pumitem_T, list->lv_len);
 	if (balloon_array == NULL)
 	    return;
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
@@ -1271,7 +1280,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	return;
     }
 
-    array = (pumitem_T *)alloc_clear(sizeof(pumitem_T) * pum_size);
+    array = ALLOC_CLEAR_MULT(pumitem_T, pum_size);
     if (array == NULL)
 	return;
 
@@ -1303,7 +1312,10 @@ pum_show_popupmenu(vimmenu_T *menu)
 	out_flush();
 
 	c = vgetc();
-	if (c == ESC || c == Ctrl_C)
+
+	// Bail out when typing Esc, CTRL-C or some callback closed the popup
+	// menu.
+	if (c == ESC || c == Ctrl_C || pum_array == NULL)
 	    break;
 	else if (c == CAR || c == NL)
 	{

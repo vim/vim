@@ -1,11 +1,16 @@
 " Tests for 'balloonevalterm'.
+" A few tests only work in the terminal.
 
-" Tests that only work in the terminal.
-if has('balloon_eval_term') && !has('gui_running')
+if has('gui_running')
+  throw 'Skipped: only work in the terminal'
+endif
+
+source check.vim
+CheckFeature balloon_eval_term
 
 source screendump.vim
 if !CanRunVimInTerminal()
-  finish
+  throw 'Skipped: cannot make screendumps'
 endif
 
 let s:common_script =<< [CODE]
@@ -52,24 +57,3 @@ func Test_balloon_eval_term_visual()
   call StopVimInTerminal(buf)
   call delete('XTest_beval_visual')
 endfunc
-
-endif
-
-" Tests that only work in the GUI
-if has('gui_running')
-
-func Test_balloon_show_gui()
-  let msg = 'this this this this'
-  call balloon_show(msg)
-  call assert_equal(msg, balloon_gettext())
-  sleep 10m
-  call balloon_show('')
-
-  let msg = 'that that'
-  call balloon_show(msg)
-  call assert_equal(msg, balloon_gettext())
-  sleep 10m
-  call balloon_show('')
-endfunc
-
-endif

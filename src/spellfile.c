@@ -892,7 +892,7 @@ read_prefcond_section(FILE *fd, slang_T *lp)
     if (cnt <= 0)
 	return SP_FORMERROR;
 
-    lp->sl_prefprog = (regprog_T **)alloc_clear(sizeof(regprog_T *) * cnt);
+    lp->sl_prefprog = ALLOC_CLEAR_MULT(regprog_T *, cnt);
     if (lp->sl_prefprog == NULL)
 	return SP_OTHERERROR;
     lp->sl_prefixcnt = cnt;
@@ -1539,7 +1539,7 @@ mb_str2wide(char_u *s)
     char_u	*p;
     int		i = 0;
 
-    res = (int *)alloc(sizeof(int) * (mb_charlen(s) + 1));
+    res = ALLOC_MULT(int, mb_charlen(s) + 1);
     if (res != NULL)
     {
 	for (p = s; *p != NUL; )
@@ -1585,7 +1585,7 @@ spell_read_tree(
 	*bytsp = bp;
 
 	/* Allocate the index array. */
-	ip = (idx_T *)lalloc_clear(len * sizeof(int), TRUE);
+	ip = lalloc_clear(len * sizeof(int), TRUE);
 	if (ip == NULL)
 	    return SP_OTHERERROR;
 	*idxsp = ip;
@@ -4271,7 +4271,7 @@ getroom(
 	    bl = NULL;
 	else
 	    /* Allocate a block of memory. It is not freed until much later. */
-	    bl = (sblock_T *)alloc_clear(sizeof(sblock_T) + SBLOCKSIZE);
+	    bl = alloc_clear(sizeof(sblock_T) + SBLOCKSIZE);
 	if (bl == NULL)
 	{
 	    if (!spin->si_did_emsg)

@@ -1,8 +1,11 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-if has('gui_running') || !has('unix')
-  finish
+if has('gui_running')
+  throw 'Skipped: does not work in the GUI'
+endif
+if !has('unix')
+  throw 'Skipped: not on Unix'
 endif
 
 source shared.vim
@@ -623,4 +626,118 @@ func Test_xterm_mouse_click_in_fold_columns()
   let &term = save_term
   let &mouse = save_mouse
   bwipe!
+endfunc
+
+" This only checks if the sequence is recognized.
+func Test_term_rgb_response()
+  set t_RF=x
+  set t_RB=y
+
+  " response to t_RF, 4 digits
+  let red = 0x12
+  let green = 0x34
+  let blue = 0x56
+  let seq = printf("\<Esc>]10;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RF, 2 digits
+  let red = 0x78
+  let green = 0x9a
+  let blue = 0xbc
+  let seq = printf("\<Esc>]10;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrfgresp)
+
+  " response to t_RB, 4 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x29
+  let green = 0x4a
+  let blue = 0x6b
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+
+  " response to t_RB, 4 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x81
+  let green = 0x63
+  let blue = 0x65
+  let seq = printf("\<Esc>]11;rgb:%02x00/%02x00/%02x00\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+
+  " response to t_RB, 2 digits, dark
+  set background=light
+  call test_option_not_set('background')
+  let red = 0x47
+  let green = 0x59
+  let blue = 0x5b
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('dark', &background)
+  
+  " response to t_RB, 2 digits, light
+  set background=dark
+  call test_option_not_set('background')
+  let red = 0x83
+  let green = 0xa4
+  let blue = 0xc2
+  let seq = printf("\<Esc>]11;rgb:%02x/%02x/%02x\x07", red, green, blue)
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termrbgresp)
+  call assert_equal('light', &background)
+  
+  set t_RF= t_RB=
+endfunc
+
+" This only checks if the sequence is recognized.
+" This must be last, because it has side effects to xterm properties.
+" TODO: check that the values were parsed properly
+func Test_xx_term_style_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  " send the termresponse to trigger requesting the XT codes
+  let seq = "\<Esc>[>41;337;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+
+  let seq = "\<Esc>P1$r2 q\<Esc>\\"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termstyleresp)
+
+  set t_RV=
+endfunc
+
+func Test_get_termcode()
+  let k1 = &t_k1
+  set t_k1=
+  set t_k1&
+  call assert_equal(k1, &t_k1)
+
+  " use external termcap first
+  set nottybuiltin
+  set t_k1=
+  set t_k1&
+  " when using external termcap may get something else, but it must not be
+  " empty, since we would fallback to the builtin one.
+  call assert_notequal('', &t_k1)
+
+  if &term =~ 'xterm'
+    " use internal termcap first
+    let term_save = &term
+    let &term = 'builtin_' .. &term
+    set t_k1=
+    set t_k1&
+    call assert_equal(k1, &t_k1)
+    let &term = term_save
+  endif
+
+  set ttybuiltin
 endfunc

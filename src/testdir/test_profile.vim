@@ -1,7 +1,7 @@
 " Test Vim profiler
-if !has('profile')
-  finish
-endif
+
+source check.vim
+CheckFeature profile
 
 func Test_profile_func()
   let lines =<< trim [CODE]

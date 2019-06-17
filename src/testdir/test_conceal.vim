@@ -2,12 +2,12 @@
 " Also see test88.in (should be converted to a test function here).
 
 if !has('conceal')
-  finish
+  throw 'Skipped: conceal feature missing'
 endif
 
 source screendump.vim
 if !CanRunVimInTerminal()
-  finish
+  throw 'Skipped: cannot make screendumps'
 endif
 
 func Test_conceal_two_windows()

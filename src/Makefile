@@ -528,6 +528,11 @@ CClink = $(CC)
 # though you have /dev/sysmouse and includes.
 #CONF_OPT_SYSMOUSE = --disable-sysmouse
 
+# libcanberra - For sound support.  Default is on for big features.
+# Uncomment one of the two to chose otherwise.
+# CONF_OPT_CANBERRA = --enable-canberra
+# CONF_OPT_CANBERRA = --disable-canberra
+
 # FEATURES - For creating Vim with more or less features
 # Uncomment one of these lines when you want to include few to many features.
 # The default is "huge" for most systems.
@@ -1628,6 +1633,7 @@ BASIC_SRC = \
 	search.c \
 	sha256.c \
 	sign.c \
+	sound.c \
 	spell.c \
 	spellfile.c \
 	syntax.c \
@@ -1743,6 +1749,7 @@ OBJ_COMMON = \
 	objects/search.o \
 	objects/sha256.o \
 	objects/sign.o \
+	objects/sound.o \
 	objects/spell.o \
 	objects/spellfile.o \
 	objects/syntax.o \
@@ -1883,6 +1890,7 @@ PRO_AUTO = \
 	search.pro \
 	sha256.pro \
 	sign.pro \
+	sound.pro \
 	spell.pro \
 	spellfile.pro \
 	syntax.pro \
@@ -1949,7 +1957,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
 		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
-		$(CONF_OPT_SYSMOUSE); \
+		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA); \
 	fi
 
 # Use "make reconfig" to rerun configure without cached values.
@@ -2117,7 +2125,8 @@ types.vim: $(TAGS_FILES)
 # TESTING
 #
 # Execute the test scripts and the unittests.
-test check: scripttests unittests test_libvterm
+# Do the scripttests first, so that the summary shows last.
+test check: unittests test_libvterm scripttests
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
@@ -2181,8 +2190,7 @@ test_libvterm:
 # These do not depend on the executable, compile it when needed.
 test1 \
 	test_eval \
-	test3 \
-	test30 test39 \
+	test39 \
 	test42 test44 test48 test49 \
 	test52 test59 \
 	test64 test69 \
@@ -3235,6 +3243,9 @@ objects/sha256.o: sha256.c
 objects/sign.o: sign.c
 	$(CCC) -o $@ sign.c
 
+objects/sound.o: sound.c
+	$(CCC) -o $@ sound.c
+
 objects/spell.o: spell.c
 	$(CCC) -o $@ spell.c
 
@@ -3647,6 +3658,10 @@ objects/sha256.o: sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/sign.o: sign.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/sound.o: spell.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

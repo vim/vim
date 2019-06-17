@@ -4926,7 +4926,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col);
+    wp = mouse_find_win(&row, &col, FALSE);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
@@ -5117,6 +5117,9 @@ gui_update_screen(void)
 
     /* Trigger CursorMoved if the cursor moved. */
     if (!finish_op && (has_cursormoved()
+# ifdef FEAT_TEXT_PROP
+		|| popup_visible
+# endif
 # ifdef FEAT_CONCEAL
 		|| curwin->w_p_cole > 0
 # endif
@@ -5124,6 +5127,10 @@ gui_update_screen(void)
     {
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+#ifdef FEAT_TEXT_PROP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
@@ -5375,7 +5382,7 @@ gui_wingoto_xy(int x, int y)
 
     if (row >= 0 && col >= 0)
     {
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FAIL_POPUP);
 	if (wp != NULL && wp != curwin)
 	    win_goto(wp);
     }

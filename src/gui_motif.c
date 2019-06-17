@@ -2538,7 +2538,7 @@ gui_mch_dialog(
     for (p = buts; *p; ++p)
 	if (*p == DLG_BUTTON_SEP)
 	    ++butcount;
-    buttons = (Widget *)alloc(butcount * sizeof(Widget));
+    buttons = ALLOC_MULT(Widget, butcount);
     if (buttons == NULL)
     {
 	vim_free(buts);

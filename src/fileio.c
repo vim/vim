@@ -3160,7 +3160,7 @@ buf_write(
 	    && whole
 	    && buf == curbuf
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
@@ -3237,7 +3237,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3270,7 +3270,7 @@ buf_write(
 	    else
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3284,7 +3284,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -4908,8 +4908,8 @@ restore_backup:
 	    && !write_info.bw_conv_error
 	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
     {
-	unchanged(buf, TRUE);
-	/* b:changedtick is always incremented in unchanged() but that
+	unchanged(buf, TRUE, FALSE);
+	/* b:changedtick is may be incremented in unchanged() but that
 	 * should not trigger a TextChanged event. */
 	if (buf->b_last_changedtick + 1 == CHANGEDTICK(buf))
 	    buf->b_last_changedtick = CHANGEDTICK(buf);
@@ -6083,7 +6083,7 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
 
     if (buf->b_fname != NULL
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !path_with_url(buf->b_fname)
 	    && (force
@@ -6533,7 +6533,7 @@ vim_rename(char_u *from, char_u *to)
 	return -1;
     }
 
-    buffer = (char *)alloc(BUFSIZE);
+    buffer = alloc(BUFSIZE);
     if (buffer == NULL)
     {
 	close(fd_out);
@@ -6890,8 +6890,7 @@ buf_check_timestamp(
 	{
 	    if (!helpmesg)
 		mesg2 = "";
-	    tbuf = (char *)alloc(STRLEN(path) + STRLEN(mesg)
-							  + STRLEN(mesg2) + 2);
+	    tbuf = alloc(STRLEN(path) + STRLEN(mesg) + STRLEN(mesg2) + 2);
 	    sprintf(tbuf, mesg, path);
 #ifdef FEAT_EVAL
 	    /* Set warningmsg here, before the unimportant and output-specific
@@ -7082,7 +7081,7 @@ buf_reload(buf_T *buf, int orig_mode)
 	    else if (buf == curbuf)  /* "buf" still valid */
 	    {
 		/* Mark the buffer as unmodified and free undo info. */
-		unchanged(buf, TRUE);
+		unchanged(buf, TRUE, TRUE);
 		if ((flags & READ_KEEP_UNDO) == 0)
 		{
 		    u_blockfree(buf);

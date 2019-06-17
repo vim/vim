@@ -28,7 +28,7 @@ dict_alloc(void)
 {
     dict_T *d;
 
-    d = (dict_T *)alloc(sizeof(dict_T));
+    d = ALLOC_ONE(dict_T);
     if (d != NULL)
     {
 	/* Add the dict to the list of dicts for garbage collection. */
@@ -210,7 +210,7 @@ dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(key));
+    di = alloc(sizeof(dictitem_T) + STRLEN(key));
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -228,7 +228,7 @@ dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
+    di = alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
@@ -448,6 +448,27 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 }
 
 /*
+ * Add a callback to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_callback(dict_T *d, char *key, callback_T *cb)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    put_callback(cb, &item->di_tv);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Initializes "iter" for iterating over dictionary items with
  * dict_iterate_next().
  * If "var" is not a Dict or an empty Dict then there will be nothing to
@@ -601,6 +622,27 @@ dict_get_number(dict_T *d, char_u *key)
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return 0;
+    return tv_get_number(&di->di_tv);
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns 0 if the entry doesn't exist.
+ * Give an error if the entry is not a number.
+ */
+    varnumber_T
+dict_get_number_check(dict_T *d, char_u *key)
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return 0;
+    if (di->di_tv.v_type != VAR_NUMBER)
+    {
+	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	return 0;
+    }
     return tv_get_number(&di->di_tv);
 }
 

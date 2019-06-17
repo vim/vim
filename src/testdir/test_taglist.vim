@@ -30,6 +30,7 @@ func Test_taglist()
   call assert_equal('call cursor(3, 4)', cmd[0]['cmd'])
 
   call delete('Xtags')
+  set tags&
   bwipe
 endfunc
 
@@ -50,6 +51,7 @@ func Test_taglist_native_etags()
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
   call delete('Xtags')
+  set tags&
 endfunc
 
 func Test_taglist_ctags_etags()
@@ -69,6 +71,7 @@ func Test_taglist_ctags_etags()
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
   call delete('Xtags')
+  set tags&
 endfunc
 
 func Test_tags_too_long()
@@ -110,4 +113,5 @@ func Test_tagsfile_without_trailing_newline()
   call assert_equal('Foo', tl[0].name)
 
   call delete('Xtags')
+  set tags&
 endfunc

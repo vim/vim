@@ -13,7 +13,6 @@ SCRIPTS_FIRST = \
 
 # Tests that run on all systems.
 SCRIPTS_ALL = \
-	test3.out \
 	test39.out \
 	test42.out \
 	test44.out \
@@ -42,7 +41,6 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test30.out \
 	test59.out \
 	test72.out \
 
@@ -67,6 +65,7 @@ NEW_TESTS = \
 	test_backspace_opt \
 	test_backup \
 	test_balloon \
+	test_balloon_gui \
 	test_behave \
 	test_blob \
 	test_blockedit \
@@ -89,6 +88,7 @@ NEW_TESTS = \
 	test_comparators \
 	test_compiler \
 	test_conceal \
+	test_const \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
@@ -230,6 +230,7 @@ NEW_TESTS = \
 	test_signs \
 	test_smartindent \
 	test_sort \
+	test_sound \
 	test_source \
 	test_source_utf8 \
 	test_spell \
@@ -297,6 +298,7 @@ NEW_TESTS_RES = \
 	test_autoload.res \
 	test_backspace_opt.res \
 	test_balloon.res \
+	test_balloon_gui.res \
 	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
@@ -313,6 +315,7 @@ NEW_TESTS_RES = \
 	test_command_count.res \
 	test_comparators.res \
 	test_conceal.res \
+	test_const.res \
 	test_crypt.res \
 	test_cscope.res \
 	test_curswant.res \
@@ -401,6 +404,7 @@ NEW_TESTS_RES = \
 	test_signals.res \
 	test_signs.res \
 	test_smartindent.res \
+	test_sound.res \
 	test_source.res \
 	test_spell.res \
 	test_startup.res \

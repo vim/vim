@@ -536,7 +536,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	return fnames;
 
     /* Allocate the pointer list */
-    fnames = (char_u **) alloc(*numFiles * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, *numFiles);
 
     /* Empty out the list */
     for (fileCount = 0; fileCount < *numFiles; fileCount++)
@@ -2105,7 +2105,7 @@ gui_mac_unicode_key_event(
 		typeUnicodeText, NULL, 0, &actualSize, NULL))
 	return eventNotHandledErr;
 
-    text = (UniChar *)alloc(actualSize);
+    text = alloc(actualSize);
     if (!text)
 	return eventNotHandledErr;
 
@@ -2975,7 +2975,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 	count = countItem;
     }
 
-    fnames = (char_u **)alloc(count * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, count);
     if (fnames == NULL)
 	return dragNotAcceptedErr;
 
@@ -4434,7 +4434,7 @@ gui_mch_insert_lines(int row, int num_lines)
      */
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
 
     Handle	textOfClip;
@@ -4524,7 +4524,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     /*
      * TODO: Really nothing to do?
@@ -4532,7 +4532,7 @@ clip_mch_lose_selection(VimClipboard *cbd)
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return OK;
 }
@@ -4541,7 +4541,7 @@ clip_mch_own_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     Handle	textOfClip;
     long	scrapSize;

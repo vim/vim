@@ -748,7 +748,7 @@ endfunc
 
 func Test_diff_screen()
   if !CanRunVimInTerminal() || !has('menu')
-    return
+    throw 'Skipped: cannot make screendumps and/or menu feature missing'
   endif
   " clean up already existing swap files, just in case
   call delete('.Xfile1.swp')
@@ -880,7 +880,7 @@ endfunc
 
 func Test_diff_with_cursorline()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot run Vim in a terminal window'
   endif
 
   call writefile([
@@ -907,7 +907,7 @@ endfunc
 
 func Test_diff_of_diff()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot run Vim in a terminal window'
   endif
 
   call writefile([

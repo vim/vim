@@ -5294,7 +5294,7 @@ ExpandGeneric(
 	    if (count == 0)
 		return OK;
 	    *num_file = count;
-	    *file = (char_u **)alloc(count * sizeof(char_u *));
+	    *file = ALLOC_MULT(char_u *, count);
 	    if (*file == NULL)
 	    {
 		*file = (char_u **)"";
@@ -5914,7 +5914,7 @@ init_history(void)
 	{
 	    if (newlen)
 	    {
-		temp = (histentry_T *)alloc(newlen * sizeof(histentry_T));
+		temp = ALLOC_MULT(histentry_T, newlen);
 		if (temp == NULL)   /* out of memory! */
 		{
 		    if (type == 0)  /* first one: just keep the old length */
@@ -6653,8 +6653,7 @@ prepare_viminfo_history(int asklen, int writing)
 	if (len <= 0)
 	    viminfo_history[type] = NULL;
 	else
-	    viminfo_history[type] = (histentry_T *)lalloc(
-					    len * sizeof(histentry_T), FALSE);
+	    viminfo_history[type] = LALLOC_MULT(histentry_T, len);
 	if (viminfo_history[type] == NULL)
 	    len = 0;
 	viminfo_hislen[type] = len;
@@ -6873,8 +6872,8 @@ merge_history(int type)
 
     /* Make one long list with all entries. */
     max_len = hislen + viminfo_hisidx[type];
-    tot_hist = (histentry_T **)alloc(max_len * (int)sizeof(histentry_T *));
-    new_hist = (histentry_T *)alloc(hislen * (int)sizeof(histentry_T));
+    tot_hist = ALLOC_MULT(histentry_T *, max_len);
+    new_hist = ALLOC_MULT(histentry_T, hislen );
     if (tot_hist == NULL || new_hist == NULL)
     {
 	vim_free(tot_hist);

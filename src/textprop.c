@@ -695,7 +695,7 @@ prop_type_set(typval_T *argvars, int add)
 	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = (proptype_T *)alloc_clear(sizeof(proptype_T) + STRLEN(name));
+	prop = alloc_clear(sizeof(proptype_T) + STRLEN(name));
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);
@@ -703,7 +703,7 @@ prop_type_set(typval_T *argvars, int add)
 	htp = buf == NULL ? &global_proptypes : &buf->b_proptypes;
 	if (*htp == NULL)
 	{
-	    *htp = (hashtab_T *)alloc(sizeof(hashtab_T));
+	    *htp = ALLOC_ONE(hashtab_T);
 	    if (*htp == NULL)
 	    {
 		vim_free(prop);
@@ -1177,7 +1177,7 @@ adjust_props_for_join(
     proplen = get_text_props(curbuf, lnum, &props, FALSE);
     if (proplen > 0)
     {
-	*prop_line = (textprop_T *)alloc(proplen * (int)sizeof(textprop_T));
+	*prop_line = ALLOC_MULT(textprop_T, proplen);
 	if (*prop_line != NULL)
 	{
 	    for (ri = 0; ri < proplen; ++ri)
@@ -1240,9 +1240,12 @@ join_prop_lines(
     if (line == NULL)
 	return;
     mch_memmove(line, newp, len);
-    l = oldproplen * sizeof(textprop_T);
-    mch_memmove(line + len, props, l);
-    len += l;
+    if (oldproplen > 0)
+    {
+	l = oldproplen * sizeof(textprop_T);
+	mch_memmove(line + len, props, l);
+	len += l;
+    }
 
     for (i = 0; i < count - 1; ++i)
 	if (prop_lines[i] != NULL)

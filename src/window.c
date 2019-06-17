@@ -87,7 +87,8 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    Prenum1 = Prenum == 0 ? 1 : Prenum;
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
 
 #ifdef FEAT_CMDWIN
 # define CHECK_CMDWIN \
@@ -101,6 +102,8 @@ do_window(
 #else
 # define CHECK_CMDWIN do { /**/ } while (0)
 #endif
+
+    Prenum1 = Prenum == 0 ? 1 : Prenum;
 
     switch (nchar)
     {
@@ -732,6 +735,9 @@ cmd_with_count(
     int
 win_split(int size, int flags)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return FAIL;
+
     /* When the ":tab" modifier was used open a new tab page instead. */
     if (may_open_tabpage() == OK)
 	return OK;
@@ -1065,7 +1071,7 @@ win_split_ins(
     if (curfrp->fr_parent == NULL || curfrp->fr_parent->fr_layout != layout)
     {
 	/* Need to create a new frame in the tree to make a branch. */
-	frp = (frame_T *)alloc_clear(sizeof(frame_T));
+	frp = ALLOC_CLEAR_ONE(frame_T);
 	*frp = *curfrp;
 	curfrp->fr_layout = layout;
 	frp->fr_parent = curfrp;
@@ -1362,7 +1368,10 @@ win_init_some(win_T *newp, win_T *oldp)
     win_copy_options(oldp, newp);
 }
 
-    static int
+/*
+ * Return TRUE if "win" is a global popup or a popup in the current tab page.
+ */
+    int
 win_valid_popup(win_T *win UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -1412,6 +1421,11 @@ win_valid_any_tab(win_T *win)
 	    if (wp == win)
 		return TRUE;
 	}
+#ifdef FEAT_TEXT_PROP
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp == win)
+		return TRUE;
+#endif
     }
     return win_valid_popup(win);
 }
@@ -1509,7 +1523,9 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (ONE_WINDOW)	    /* just one window */
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+    if (ONE_WINDOW)	    // just one window
     {
 	beep_flush();
 	return;
@@ -2308,12 +2324,13 @@ close_last_window_tabpage(
 }
 
 /*
- * Close the buffer of "win" and unload it if "free_buf" is TRUE.
+ * Close the buffer of "win" and unload it if "action" is DOBUF_UNLOAD.
+ * "action" can also be zero (do nothing) or DOBUF_WIPE.
  * "abort_if_last" is passed to close_buffer(): abort closing if all other
  * windows are closed.
  */
     static void
-win_close_buffer(win_T *win, int free_buf, int abort_if_last)
+win_close_buffer(win_T *win, int action, int abort_if_last)
 {
 #ifdef FEAT_SYN_HL
     // Free independent synblock before the buffer is freed.
@@ -2334,8 +2351,7 @@ win_close_buffer(win_T *win, int free_buf, int abort_if_last)
 
 	set_bufref(&bufref, curbuf);
 	win->w_closing = TRUE;
-	close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0,
-								abort_if_last);
+	close_buffer(win, win->w_buffer, action, abort_if_last);
 	if (win_valid_any_tab(win))
 	    win->w_closing = FALSE;
 	// Make sure curbuf is valid. It can become invalid if 'bufhidden' is
@@ -2362,6 +2378,9 @@ win_close(win_T *win, int free_buf)
     int		help_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
+
+    if (ERROR_IF_POPUP_WINDOW)
+	return FAIL;
 
     if (last_window())
     {
@@ -2443,7 +2462,7 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
-    win_close_buffer(win, free_buf, TRUE);
+    win_close_buffer(win, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL
 	    && (last_window() || curtab != prev_curtab
@@ -3599,7 +3618,7 @@ win_alloc_firstwin(win_T *oldwin)
     static void
 new_frame(win_T *wp)
 {
-    frame_T *frp = (frame_T *)alloc_clear(sizeof(frame_T));
+    frame_T *frp = ALLOC_CLEAR_ONE(frame_T);
 
     wp->w_frame = frp;
     if (frp != NULL)
@@ -3634,7 +3653,7 @@ alloc_tabpage(void)
 # endif
 
 
-    tp = (tabpage_T *)alloc_clear(sizeof(tabpage_T));
+    tp = ALLOC_CLEAR_ONE(tabpage_T);
     if (tp == NULL)
 	return NULL;
 
@@ -4221,6 +4240,8 @@ win_goto(win_T *wp)
     win_T	*owp = curwin;
 #endif
 
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
     if (text_locked())
     {
 	beep_flush();
@@ -4651,7 +4672,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
     /*
      * allocate window structure and linesizes arrays
      */
-    new_wp = (win_T *)alloc_clear(sizeof(win_T));
+    new_wp = ALLOC_CLEAR_ONE(win_T);
     if (new_wp == NULL)
 	return NULL;
 
@@ -4831,6 +4852,13 @@ win_free(
 #ifdef FEAT_MENU
     remove_winbar(wp);
 #endif
+#ifdef FEAT_TEXT_PROP
+    free_callback(&wp->w_close_cb);
+    free_callback(&wp->w_filter_cb);
+    for (i = 0; i < 4; ++i)
+	VIM_CLEAR(wp->w_border_highlight[i]);
+    vim_free(wp->w_popup_title);
+#endif
 
 #ifdef FEAT_SYN_HL
     vim_free(wp->w_p_cc_cols);
@@ -4867,7 +4895,7 @@ win_unlisted(win_T *wp)
     void
 win_free_popup(win_T *win)
 {
-    win_close_buffer(win, TRUE, FALSE);
+    win_close_buffer(win, DOBUF_WIPE, FALSE);
 # if defined(FEAT_TIMERS)
     if (win->w_popup_timer != NULL)
 	stop_timer(win->w_popup_timer);
@@ -4980,7 +5008,7 @@ frame_remove(frame_T *frp)
 win_alloc_lines(win_T *wp)
 {
     wp->w_lines_valid = 0;
-    wp->w_lines = (wline_T *)alloc_clear(Rows * sizeof(wline_T));
+    wp->w_lines = ALLOC_CLEAR_MULT(wline_T, Rows );
     if (wp->w_lines == NULL)
 	return FAIL;
     return OK;
@@ -6362,7 +6390,7 @@ make_snapshot(int idx)
     static void
 make_snapshot_rec(frame_T *fr, frame_T **frp)
 {
-    *frp = (frame_T *)alloc_clear(sizeof(frame_T));
+    *frp = ALLOC_CLEAR_ONE(frame_T);
     if (*frp == NULL)
 	return;
     (*frp)->fr_layout = fr->fr_layout;
@@ -6495,6 +6523,20 @@ switch_win(
     int		no_display)
 {
     block_autocmds();
+    return switch_win_noblock(save_curwin, save_curtab, win, tp, no_display);
+}
+
+/*
+ * As switch_win() but without blocking autocommands.
+ */
+    int
+switch_win_noblock(
+    win_T	**save_curwin,
+    tabpage_T	**save_curtab,
+    win_T	*win,
+    tabpage_T	*tp,
+    int		no_display)
+{
     *save_curwin = curwin;
     if (tp != NULL)
     {
@@ -6524,9 +6566,22 @@ switch_win(
  */
     void
 restore_win(
-    win_T	*save_curwin UNUSED,
-    tabpage_T	*save_curtab UNUSED,
-    int		no_display UNUSED)
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    int		no_display)
+{
+    restore_win_noblock(save_curwin, save_curtab, no_display);
+    unblock_autocmds();
+}
+
+/*
+ * As restore_win() but without unblocking autocommands.
+ */
+    void
+restore_win_noblock(
+    win_T	*save_curwin,
+    tabpage_T	*save_curtab,
+    int		no_display)
 {
     if (save_curtab != NULL && valid_tabpage(save_curtab))
     {
@@ -6546,7 +6601,12 @@ restore_win(
 	curwin = save_curwin;
 	curbuf = curwin->w_buffer;
     }
-    unblock_autocmds();
+#ifdef FEAT_TEXT_PROP
+    else if (bt_popup(curwin->w_buffer))
+	// original window was closed and now we're in a popup window: Go
+	// to the first valid window.
+	win_goto(firstwin);
+#endif
 }
 
 /*
@@ -6671,7 +6731,7 @@ match_add(
     }
 
     /* Build new match. */
-    m = (matchitem_T *)alloc_clear(sizeof(matchitem_T));
+    m = ALLOC_CLEAR_ONE(matchitem_T);
     m->id = id;
     m->priority = prio;
     m->pattern = pat == NULL ? NULL : vim_strsave(pat);
@@ -7057,7 +7117,7 @@ win_id2wp(int id)
 	if (wp->w_id == id)
 	    return wp;
 #ifdef FEAT_TEXT_PROP
-    // popup windows are in a separate list
+    // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
 	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	     if (wp->w_id == id)

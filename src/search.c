@@ -1462,6 +1462,7 @@ do_search(
 		if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 		{
 		    char_u *r;
+		    size_t pat_len;
 
 		    r = reverse_text(msgbuf);
 		    if (r != NULL)
@@ -1471,9 +1472,13 @@ do_search(
 			// move reversed text to beginning of buffer
 			while (*r != NUL && *r == ' ')
 			    r++;
-			mch_memmove(msgbuf, r, msgbuf + STRLEN(msgbuf) - r);
+			pat_len = msgbuf + STRLEN(msgbuf) - r;
+			mch_memmove(msgbuf, r, pat_len);
 			// overwrite old text
-			vim_memset(r, ' ', msgbuf + STRLEN(msgbuf) - r);
+			if ((size_t)(r - msgbuf) >= pat_len)
+			    vim_memset(r, ' ', pat_len);
+			else
+			    vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
 		    }
 		}
 #endif
@@ -5145,8 +5150,7 @@ find_pattern_in_path(
 	    goto fpip_end;
 	def_regmatch.rm_ic = FALSE;	/* don't ignore case in define pat. */
     }
-    files = (SearchedFile *)lalloc_clear(
-				  max_path_depth * sizeof(SearchedFile), TRUE);
+    files = lalloc_clear(max_path_depth * sizeof(SearchedFile), TRUE);
     if (files == NULL)
 	goto fpip_end;
     old_files = max_path_depth;
@@ -5306,8 +5310,7 @@ find_pattern_in_path(
 		/* Push the new file onto the file stack */
 		if (depth + 1 == old_files)
 		{
-		    bigger = (SearchedFile *)alloc(
-				    max_path_depth * 2 * sizeof(SearchedFile));
+		    bigger = ALLOC_MULT(SearchedFile, max_path_depth * 2);
 		    if (bigger != NULL)
 		    {
 			for (i = 0; i <= depth; i++)

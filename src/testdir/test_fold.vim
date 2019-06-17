@@ -708,7 +708,7 @@ endfunc
 
 func Test_folds_with_rnu()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([

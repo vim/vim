@@ -1478,11 +1478,9 @@ static int vi_jumplist_len = 0;
     void
 prepare_viminfo_marks(void)
 {
-    vi_namedfm = (xfmark_T *)alloc_clear((NMARKS + EXTRA_MARKS)
-						     * (int)sizeof(xfmark_T));
+    vi_namedfm = ALLOC_CLEAR_MULT(xfmark_T, NMARKS + EXTRA_MARKS);
 #ifdef FEAT_JUMPLIST
-    vi_jumplist = (xfmark_T *)alloc_clear(JUMPLISTSIZE
-						     * (int)sizeof(xfmark_T));
+    vi_jumplist = ALLOC_CLEAR_MULT(xfmark_T, JUMPLISTSIZE);
     vi_jumplist_len = 0;
 #endif
 }

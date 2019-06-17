@@ -51,7 +51,7 @@ sfdcnewvim(void)
 {
     Sfdisc_t	*disc;
 
-    disc = (Sfdisc_t *)alloc(sizeof(Sfdisc_t));
+    disc = ALLOC_ONE(Sfdisc_t);
     if (disc == NULL)
 	return NULL;
 

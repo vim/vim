@@ -877,7 +877,7 @@ Python3_Init(void)
 	    size_t len = mbstowcs(NULL, (char *)p_py3home, 0) + 1;
 
 	    /* The string must not change later, make a copy in static memory. */
-	    py_home_buf = (wchar_t *)alloc(len * sizeof(wchar_t));
+	    py_home_buf = ALLOC_MULT(wchar_t, len);
 	    if (py_home_buf != NULL && mbstowcs(
 			    py_home_buf, (char *)p_py3home, len) != (size_t)-1)
 		Py_SetPythonHome(py_home_buf);
@@ -1629,7 +1629,7 @@ LineToString(const char *str)
     Py_ssize_t len = strlen(str);
     char *tmp,*p;
 
-    tmp = (char *)alloc(len + 1);
+    tmp = alloc(len + 1);
     p = tmp;
     if (p == NULL)
     {

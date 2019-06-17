@@ -1215,7 +1215,7 @@ syn_stack_alloc(void)
 		len = syn_block->b_sst_len - syn_block->b_sst_freecount + 2;
 	}
 
-	sstp = (synstate_T *)alloc_clear(len * sizeof(synstate_T));
+	sstp = ALLOC_CLEAR_MULT(synstate_T, len);
 	if (sstp == NULL)	/* out of memory! */
 	    return;
 
@@ -4494,7 +4494,7 @@ add_keyword(
 						 name_folded, MAXKEYWLEN + 1);
     else
 	name_ic = name;
-    kp = (keyentry_T *)alloc(sizeof(keyentry_T) + STRLEN(name_ic));
+    kp = alloc(sizeof(keyentry_T) + STRLEN(name_ic));
     if (kp == NULL)
 	return;
     STRCPY(kp->keyword, name_ic);
@@ -4757,15 +4757,15 @@ syn_incl_toplevel(int id, int *flagsp)
     if (curwin->w_s->b_syn_topgrp >= SYNID_CLUSTER)
     {
 	/* We have to alloc this, because syn_combine_list() will free it. */
-	short	    *grp_list = (short *)alloc(2 * sizeof(short));
+	short	    *grp_list = ALLOC_MULT(short, 2);
 	int	    tlg_id = curwin->w_s->b_syn_topgrp - SYNID_CLUSTER;
 
 	if (grp_list != NULL)
 	{
 	    grp_list[0] = id;
 	    grp_list[1] = 0;
-	    syn_combine_list(&SYN_CLSTR(curwin->w_s)[tlg_id].scl_list, &grp_list,
-			 CLUSTER_ADD);
+	    syn_combine_list(&SYN_CLSTR(curwin->w_s)[tlg_id].scl_list,
+						       &grp_list, CLUSTER_ADD);
 	}
     }
 }
@@ -5208,7 +5208,7 @@ syn_cmd_region(
 	     * syn_patterns for this item, at the start (because the list is
 	     * used from end to start).
 	     */
-	    ppp = (struct pat_ptr *)alloc(sizeof(struct pat_ptr));
+	    ppp = ALLOC_ONE(struct pat_ptr);
 	    if (ppp == NULL)
 	    {
 		rest = NULL;
@@ -5216,7 +5216,7 @@ syn_cmd_region(
 	    }
 	    ppp->pp_next = pat_ptrs[item];
 	    pat_ptrs[item] = ppp;
-	    ppp->pp_synp = (synpat_T *)alloc_clear(sizeof(synpat_T));
+	    ppp->pp_synp = ALLOC_CLEAR_ONE(synpat_T);
 	    if (ppp->pp_synp == NULL)
 	    {
 		rest = NULL;
@@ -5465,7 +5465,7 @@ syn_combine_list(short **clstr1, short **clstr2, int list_op)
 		clstr = NULL;
 		break;
 	    }
-	    clstr = (short *)alloc((count + 1) * sizeof(short));
+	    clstr = ALLOC_MULT(short, count + 1);
 	    if (clstr == NULL)
 		break;
 	    clstr[count] = 0;
@@ -6124,7 +6124,7 @@ get_id_list(
 	    break;
 	if (round == 1)
 	{
-	    retval = (short *)alloc((count + 1) * sizeof(short));
+	    retval = ALLOC_MULT(short, count + 1);
 	    if (retval == NULL)
 		break;
 	    retval[count] = 0;	    /* zero means end of the list */
@@ -6163,7 +6163,7 @@ copy_id_list(short *list)
     for (count = 0; list[count]; ++count)
 	;
     len = (count + 1) * sizeof(short);
-    retval = (short *)alloc(len);
+    retval = alloc(len);
     if (retval != NULL)
 	mch_memmove(retval, list, (size_t)len);
 
@@ -6355,7 +6355,7 @@ ex_ownsyntax(exarg_T *eap)
 
     if (curwin->w_s == &curwin->w_buffer->b_s)
     {
-	curwin->w_s = (synblock_T *)alloc(sizeof(synblock_T));
+	curwin->w_s = ALLOC_ONE(synblock_T);
 	memset(curwin->w_s, 0, sizeof(synblock_T));
 	hash_init(&curwin->w_s->b_keywtab);
 	hash_init(&curwin->w_s->b_keywtab_ic);

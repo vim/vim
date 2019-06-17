@@ -1,8 +1,7 @@
 " Test for syntax and syntax iskeyword option
 
-if !has("syntax")
-  finish
-endif
+source check.vim
+CheckFeature syntax
 
 source view_util.vim
 source screendump.vim
@@ -536,7 +535,7 @@ endfunc
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ '/* comment line at the top */',

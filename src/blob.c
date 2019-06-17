@@ -22,7 +22,7 @@
     blob_T *
 blob_alloc(void)
 {
-    blob_T *blob = (blob_T *)alloc_clear(sizeof(blob_T));
+    blob_T *blob = ALLOC_CLEAR_ONE(blob_T);
 
     if (blob != NULL)
 	ga_init2(&blob->bv_ga, 1, 100);

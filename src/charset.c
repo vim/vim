@@ -1105,15 +1105,16 @@ win_lbr_chartabsize(
 	    {
 		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
-		    /* calculate effective window width */
+		    // calculate effective window width
 		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
 		    int prev_width = col
 				 ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
-		    if (width == 0)
-			width = (colnr_T)wp->w_width;
+
+		    if (width <= 0)
+			width = (colnr_T)1;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
 		    if ((size - prev_width) % width)
-			/* wrapped, add another length of 'sbr' */
+			// wrapped, add another length of 'sbr'
 			added += vim_strsize(p_sbr);
 		}
 		else

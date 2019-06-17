@@ -51,7 +51,7 @@ hash_create(void)
 {
     hashtab_T *ht;
 
-    ht = (hashtab_T *)alloc(sizeof(hashtab_T));
+    ht = ALLOC_ONE(hashtab_T);
     if (ht != NULL)
 	hash_init(ht);
     return ht;
@@ -400,7 +400,7 @@ hash_may_resize(
     else
     {
 	/* Allocate an array. */
-	newarray = (hashitem_T *)alloc(sizeof(hashitem_T) * newsize);
+	newarray = ALLOC_MULT(hashitem_T, newsize);
 	if (newarray == NULL)
 	{
 	    /* Out of memory.  When there are NULL items still return OK.

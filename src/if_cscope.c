@@ -466,7 +466,7 @@ cs_add(exarg_T *eap UNUSED)
 cs_stat_emsg(char *fname)
 {
     char *stat_emsg = _("E563: stat(%s) error: %d");
-    char *buf = (char *)alloc(strlen(stat_emsg) + MAXPATHL + 10);
+    char *buf = alloc(strlen(stat_emsg) + MAXPATHL + 10);
 
     if (buf != NULL)
     {
@@ -503,7 +503,7 @@ cs_add_common(
 #endif
 
     /* get the filename (arg1), expand it, and try to stat it */
-    if ((fname = (char *)alloc(MAXPATHL + 1)) == NULL)
+    if ((fname = alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
     expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
@@ -531,7 +531,7 @@ staterr:
     {
 	stat_T	    statbuf2;
 
-	if ((ppath = (char *)alloc(MAXPATHL + 1)) == NULL)
+	if ((ppath = alloc(MAXPATHL + 1)) == NULL)
 	    goto add_err;
 
 	expand_env((char_u *)arg2, (char_u *)ppath, MAXPATHL);
@@ -543,7 +543,7 @@ staterr:
     /* if filename is a directory, append the cscope database name to it */
     if (S_ISDIR(statbuf.st_mode))
     {
-	fname2 = (char *)alloc(strlen(CSCOPE_DBFILE) + strlen(fname) + 2);
+	fname2 = alloc(strlen(CSCOPE_DBFILE) + strlen(fname) + 2);
 	if (fname2 == NULL)
 	    goto add_err;
 
@@ -665,7 +665,7 @@ cs_cnt_matches(int idx)
     char *buf;
     int nlines = 0;
 
-    buf = (char *)alloc(CSREAD_BUFSIZE);
+    buf = alloc(CSREAD_BUFSIZE);
     if (buf == NULL)
 	return 0;
     for (;;)
@@ -769,7 +769,7 @@ cs_create_cmd(char *csoption, char *pattern)
 	while VIM_ISWHITE(*pat)
 	    ++pat;
 
-    if ((cmd = (char *)alloc(strlen(pat) + 2)) == NULL)
+    if ((cmd = alloc(strlen(pat) + 2)) == NULL)
 	return NULL;
 
     (void)sprintf(cmd, "%d%s", search, pat);
@@ -869,7 +869,7 @@ err_closing:
 	}
 #endif
 	/* expand the cscope exec for env var's */
-	if ((prog = (char *)alloc(MAXPATHL + 1)) == NULL)
+	if ((prog = alloc(MAXPATHL + 1)) == NULL)
 	{
 #ifdef UNIX
 	    return CSCOPE_FAILURE;
@@ -885,7 +885,7 @@ err_closing:
 	if (csinfo[i].ppath)
 	{
 	    /* expand the prepend path for env var's */
-	    if ((ppath = (char *)alloc(MAXPATHL + 1)) == NULL)
+	    if ((ppath = alloc(MAXPATHL + 1)) == NULL)
 	    {
 		vim_free(prog);
 #ifdef UNIX
@@ -903,7 +903,7 @@ err_closing:
 	if (csinfo[i].flags)
 	    len += (int)strlen(csinfo[i].flags);
 
-	if ((cmd = (char *)alloc(len)) == NULL)
+	if ((cmd = alloc(len)) == NULL)
 	{
 	    vim_free(prog);
 	    vim_free(ppath);
@@ -1121,7 +1121,7 @@ cs_find_common(
 	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
 	{
 	    char *nf = _("E469: invalid cscopequickfix flag %c for %c");
-	    char *buf = (char *)alloc(strlen(nf));
+	    char *buf = alloc(strlen(nf));
 
 	    /* strlen will be enough because we use chars */
 	    if (buf != NULL)
@@ -1150,7 +1150,7 @@ cs_find_common(
     if (cmd == NULL)
 	return FALSE;
 
-    nummatches = (int *)alloc(sizeof(int)*csinfo_size);
+    nummatches = ALLOC_MULT(int, csinfo_size);
     if (nummatches == NULL)
     {
 	vim_free(cmd);
@@ -1192,7 +1192,7 @@ cs_find_common(
 	    return FALSE;
 	}
 
-	buf = (char *)alloc(strlen(opt) + strlen(pat) + strlen(nf));
+	buf = alloc(strlen(opt) + strlen(pat) + strlen(nf));
 	if (buf == NULL)
 	    (void)emsg(nf);
 	else
@@ -1429,7 +1429,7 @@ cs_insert_filelist(
 	     * be enough for most users.  If more is needed, csinfo will be
 	     * reallocated. */
 	    csinfo_size = 1;
-	    csinfo = (csinfo_T *)alloc_clear(sizeof(csinfo_T));
+	    csinfo = ALLOC_CLEAR_ONE(csinfo_T);
 	}
 	else
 	{
@@ -1450,14 +1450,14 @@ cs_insert_filelist(
 	    clear_csinfo(j);
     }
 
-    if ((csinfo[i].fname = (char *)alloc(strlen(fname)+1)) == NULL)
+    if ((csinfo[i].fname = alloc(strlen(fname)+1)) == NULL)
 	return -1;
 
     (void)strcpy(csinfo[i].fname, (const char *)fname);
 
     if (ppath != NULL)
     {
-	if ((csinfo[i].ppath = (char *)alloc(strlen(ppath) + 1)) == NULL)
+	if ((csinfo[i].ppath = alloc(strlen(ppath) + 1)) == NULL)
 	{
 	    VIM_CLEAR(csinfo[i].fname);
 	    return -1;
@@ -1468,7 +1468,7 @@ cs_insert_filelist(
 
     if (flags != NULL)
     {
-	if ((csinfo[i].flags = (char *)alloc(strlen(flags) + 1)) == NULL)
+	if ((csinfo[i].flags = alloc(strlen(flags) + 1)) == NULL)
 	{
 	    VIM_CLEAR(csinfo[i].fname);
 	    VIM_CLEAR(csinfo[i].ppath);
@@ -1635,7 +1635,7 @@ cs_make_vim_style_matches(
     if (search != NULL)
     {
 	amt = (int)(strlen(fname) + strlen(slno) + strlen(tagstr) + strlen(search)+6);
-	if ((buf = (char *)alloc(amt)) == NULL)
+	if ((buf = alloc(amt)) == NULL)
 	    return NULL;
 
 	(void)sprintf(buf, "%s\t%s\t%s;\"\t%s", tagstr, fname, slno, search);
@@ -1643,7 +1643,7 @@ cs_make_vim_style_matches(
     else
     {
 	amt = (int)(strlen(fname) + strlen(slno) + strlen(tagstr) + 5);
-	if ((buf = (char *)alloc(amt)) == NULL)
+	if ((buf = alloc(amt)) == NULL)
 	    return NULL;
 
 	(void)sprintf(buf, "%s\t%s\t%s;\"", tagstr, fname, slno);
@@ -1805,7 +1805,7 @@ cs_file_results(FILE *f, int *nummatches_a)
     char *cntx;
     char *context;
 
-    buf = (char *)alloc(CSREAD_BUFSIZE);
+    buf = alloc(CSREAD_BUFSIZE);
     if (buf == NULL)
 	return;
 
@@ -1820,7 +1820,7 @@ cs_file_results(FILE *f, int *nummatches_a)
 			   &slno, &search)) == NULL)
 	       continue;
 
-	   context = (char *)alloc(strlen(cntx)+5);
+	   context = alloc(strlen(cntx)+5);
 	   if (context == NULL)
 	       continue;
 
@@ -1870,13 +1870,13 @@ cs_fill_results(
 
     assert(totmatches > 0);
 
-    buf = (char *)alloc(CSREAD_BUFSIZE);
+    buf = alloc(CSREAD_BUFSIZE);
     if (buf == NULL)
 	return;
 
-    if ((matches = (char **)alloc(sizeof(char *) * totmatches)) == NULL)
+    if ((matches = ALLOC_MULT(char *, totmatches)) == NULL)
 	goto parse_out;
-    if ((cntxts = (char **)alloc(sizeof(char *) * totmatches)) == NULL)
+    if ((cntxts = ALLOC_MULT(char *, totmatches)) == NULL)
 	goto parse_out;
 
     for (i = 0; i < csinfo_size; i++)
@@ -1975,7 +1975,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 
     assert(num_matches > 0);
 
-    if ((tbuf = (char *)alloc(strlen(matches[0]) + 1)) == NULL)
+    if ((tbuf = alloc(strlen(matches[0]) + 1)) == NULL)
 	return;
 
     strcpy(tbuf, matches[0]);
@@ -1987,7 +1987,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
     }
 
     newsize = (int)(strlen(cstag_msg) + strlen(ptag));
-    buf = (char *)alloc(newsize);
+    buf = alloc(newsize);
     if (buf != NULL)
     {
 	bufsize = newsize;
@@ -2010,7 +2010,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	 * by parsing matches[i] on the fly and placing stuff into buf
 	 * directly, but that's too much of a hassle
 	 */
-	if ((tbuf = (char *)alloc(strlen(matches[idx]) + 1)) == NULL)
+	if ((tbuf = alloc(strlen(matches[idx]) + 1)) == NULL)
 	    continue;
 	(void)strcpy(tbuf, matches[idx]);
 
@@ -2030,7 +2030,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	if (bufsize < newsize)
 	{
 	    t_buf = buf;
-	    buf = (char *)vim_realloc(buf, newsize);
+	    buf = vim_realloc(buf, newsize);
 	    if (buf == NULL)
 	    {
 		bufsize = 0;
@@ -2058,7 +2058,7 @@ cs_print_tags_priv(char **matches, char **cntxts, int num_matches)
 	if (bufsize < newsize)
 	{
 	    t_buf = buf;
-	    buf = (char *)vim_realloc(buf, newsize);
+	    buf = vim_realloc(buf, newsize);
 	    if (buf == NULL)
 	    {
 		bufsize = 0;
@@ -2129,7 +2129,7 @@ cs_read_prompt(int i)
 	    if (bufpos < maxlen - 1 && vim_isprintc(ch))
 	    {
 		if (buf == NULL) /* lazy buffer allocation */
-		    buf = (char *)alloc(maxlen);
+		    buf = alloc(maxlen);
 		if (buf != NULL)
 		{
 		    /* append character to the message */
@@ -2339,9 +2339,9 @@ cs_reset(exarg_T *eap UNUSED)
 	return CSCOPE_SUCCESS;
 
     /* malloc our db and ppath list */
-    dblist = (char **)alloc(csinfo_size * sizeof(char *));
-    pplist = (char **)alloc(csinfo_size * sizeof(char *));
-    fllist = (char **)alloc(csinfo_size * sizeof(char *));
+    dblist = ALLOC_MULT(char *, csinfo_size);
+    pplist = ALLOC_MULT(char *, csinfo_size);
+    fllist = ALLOC_MULT(char *, csinfo_size);
     if (dblist == NULL || pplist == NULL || fllist == NULL)
     {
 	vim_free(dblist);
@@ -2438,7 +2438,7 @@ cs_resolve_file(int i, char *name)
 #endif
        )
     {
-	if ((fullname = (char *)alloc(len)) != NULL)
+	if ((fullname = alloc(len)) != NULL)
 	    (void)sprintf(fullname, "%s/%s", csinfo[i].ppath, name);
     }
     else if (csdir != NULL && csinfo[i].fname != NULL && *csdir != NUL)

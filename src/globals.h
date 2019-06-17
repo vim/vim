@@ -70,6 +70,22 @@ EXTERN schar_T	*ScreenLines2 INIT(= NULL);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
+#ifdef FEAT_TEXT_PROP
+// Array with size Rows x Columns containing zindex of popups.
+EXTERN short	*popup_mask INIT(= NULL);
+EXTERN short	*popup_mask_next INIT(= NULL);
+
+// Flag set to TRUE when popup_mask needs to be updated.
+EXTERN int	popup_mask_refresh INIT(= TRUE);
+
+// Tab that was used to fill popup_mask.
+EXTERN tabpage_T *popup_mask_tab INIT(= NULL);
+
+// Zindex in for screen_char(): if lower than the value in "popup_mask"
+// drawing the character is skipped.
+EXTERN int	screen_zindex INIT(= 0);
+#endif
+
 EXTERN int	screen_Rows INIT(= 0);	    /* actual size of ScreenLines[] */
 EXTERN int	screen_Columns INIT(= 0);   /* actual size of ScreenLines[] */
 
@@ -529,11 +545,11 @@ EXTERN int	gui_win_y INIT(= -1);
 #endif
 
 #ifdef FEAT_CLIPBOARD
-EXTERN VimClipboard clip_star;	/* PRIMARY selection in X11 */
+EXTERN Clipboard_T clip_star;	// PRIMARY selection in X11
 # ifdef FEAT_X11
-EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
+EXTERN Clipboard_T clip_plus;	// CLIPBOARD selection in X11
 # else
-#  define clip_plus clip_star	/* there is only one clipboard */
+#  define clip_plus clip_star	// there is only one clipboard
 #  define ONE_CLIPBOARD
 # endif
 
@@ -558,23 +574,24 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
 EXTERN win_T	*firstwin;		/* first window */
 EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
-# define ONE_WINDOW (firstwin == lastwin)
-# define W_NEXT(wp) ((wp)->w_next)
-# define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
-# define FOR_ALL_FRAMES(frp, first_frame) \
+#define ONE_WINDOW (firstwin == lastwin)
+#define W_NEXT(wp) ((wp)->w_next)
+#define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
+#define FOR_ALL_FRAMES(frp, first_frame) \
     for (frp = first_frame; frp != NULL; frp = frp->fr_next)
-# define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-# define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
+#define FOR_ALL_TABPAGES(tp) for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+#define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
     for ((wp) = ((tp) == NULL || (tp) == curtab) \
 	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
 /*
  * When using this macro "break" only breaks out of the inner loop. Use "goto"
  * to break out of the tabpage loop.
  */
-# define FOR_ALL_TAB_WINDOWS(tp, wp) \
+#define FOR_ALL_TAB_WINDOWS(tp, wp) \
     for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
 	for ((wp) = ((tp) == curtab) \
 		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
+
 
 EXTERN win_T	*curwin;	/* currently active window */
 
@@ -582,7 +599,8 @@ EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
 EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
 
 #ifdef FEAT_TEXT_PROP
-EXTERN win_T    *first_popupwin;	// first global popup window
+EXTERN win_T    *first_popupwin;		// first global popup window
+EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 #endif
 
 /*
@@ -1663,4 +1681,5 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
+EXTERN int popup_visible INIT(= FALSE);
 #endif

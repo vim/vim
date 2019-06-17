@@ -254,7 +254,7 @@ crypt_create(
     char_u	*seed,
     int		seed_len)
 {
-    cryptstate_T *state = (cryptstate_T *)alloc(sizeof(cryptstate_T));
+    cryptstate_T *state = ALLOC_ONE(cryptstate_T);
 
     if (state == NULL)
 	return state;

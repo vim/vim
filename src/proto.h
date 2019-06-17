@@ -183,6 +183,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # ifdef FEAT_SIGNS
 #  include "sign.pro"
 # endif
+# include "sound.pro"
 # include "spell.pro"
 # include "spellfile.pro"
 # include "syntax.pro"
@@ -319,9 +320,9 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #endif
 #if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
-void clip_mch_lose_selection(VimClipboard *cbd);
-int clip_mch_own_selection(VimClipboard *cbd);
-void clip_mch_request_selection(VimClipboard *cbd);
-void clip_mch_set_selection(VimClipboard *cbd);
+void clip_mch_lose_selection(Clipboard_T *cbd);
+int clip_mch_own_selection(Clipboard_T *cbd);
+void clip_mch_request_selection(Clipboard_T *cbd);
+void clip_mch_set_selection(Clipboard_T *cbd);
 #endif
 #endif /* !PROTO && !NOPROTO */

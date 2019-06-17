@@ -144,7 +144,7 @@ func VerifyScreenDump(buf, filename, options, ...)
     if i == 100
       " Leave the failed dump around for inspection.
       if filereadable(reference)
-	let msg = 'See dump file difference: call term_dumpdiff("' . testfile . '", "' . reference . '")'
+	let msg = 'See dump file difference: call term_dumpdiff("testdir/' .. testfile .. '", "testdir/' .. reference .. '")'
 	if a:0 == 1
 	  let msg = a:1 . ': ' . msg
 	endif
@@ -152,7 +152,7 @@ func VerifyScreenDump(buf, filename, options, ...)
 	  let msg = msg . '; line count is ' . len(testdump) . ' instead of ' . len(refdump)
 	endif
       else
-	let msg = 'See new dump file: call term_dumpload("' . testfile . '")'
+	let msg = 'See new dump file: call term_dumpload("testdir/' .. testfile .. '")'
       endif
       for i in range(len(refdump))
 	if i >= len(testdump)

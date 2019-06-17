@@ -799,7 +799,7 @@ endfunc
 
 func Test_incsearch_scrolling()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -832,7 +832,7 @@ func Test_incsearch_search_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -887,7 +887,7 @@ func Test_incsearch_substitute_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -983,7 +983,7 @@ endfunc
 
 func Test_incsearch_with_change()
   if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
   endif
 
   call writefile([
@@ -1011,7 +1011,7 @@ func Test_incsearch_sort_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1037,7 +1037,7 @@ func Test_incsearch_vimgrep_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1288,4 +1288,26 @@ func Test_search_match_at_curpos()
   call assert_equal([3, 5], [line('.'), col('.')])
 
   close!
+endfunc
+
+func Test_search_display_pattern()
+  new
+  call setline(1, ['foo', 'bar', 'foobar'])
+
+  call cursor(1, 1)
+  let @/ = 'foo'
+  let pat = escape(@/, '()*?'. '\s\+')
+  let g:a = execute(':unsilent :norm! n')
+  call assert_match(pat, g:a)
+
+  " right-left
+  if exists("+rightleft")
+    set rl
+    call cursor(1, 1)
+    let @/ = 'foo'
+    let pat = 'oof/\s\+'
+    let g:a = execute(':unsilent :norm! n')
+    call assert_match(pat, g:a)
+    set norl
+  endif
 endfunc

@@ -171,10 +171,22 @@ func Test_vvar_scriptversion2()
   echo version
   call assert_fails('let version = 1', 'E46:')
   call assert_equal(v:version, version)
+
+  call assert_equal(v:version, v:versionlong / 10000)
+  call assert_true(v:versionlong > 8011525)
 endfunc
 
 func Test_scriptversion()
   call writefile(['scriptversion 9'], 'Xversionscript')
   call assert_fails('source Xversionscript', 'E999:')
   call delete('Xversionscript')
+endfunc
+
+" Test fix for issue #4507
+func Test_skip_after_throw()
+  try
+    throw 'something'
+    let x = wincol() || &ts
+  catch /something/
+  endtry
 endfunc

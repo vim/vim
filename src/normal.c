@@ -3461,13 +3461,14 @@ find_ident_at_pos(
     if (ptr[col] == NUL || (i == 0
 		&& (has_mbyte ? this_class != 2 : !vim_iswordc(ptr[col]))))
     {
-	/*
-	 * didn't find an identifier or string
-	 */
-	if (find_type & FIND_STRING)
-	    emsg(_("E348: No string under cursor"));
-	else
-	    emsg(_(e_noident));
+	// didn't find an identifier or string
+	if ((find_type & FIND_NOERROR) == 0)
+	{
+	    if (find_type & FIND_STRING)
+		emsg(_("E348: No string under cursor"));
+	    else
+		emsg(_(e_noident));
+	}
 	return 0;
     }
     ptr += col;
@@ -4520,7 +4521,7 @@ nv_mousescroll(cmdarg_T *cap)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FAIL_POPUP);
 	if (wp == NULL)
 	    return;
 	curwin = wp;
@@ -5655,7 +5656,7 @@ nv_ident(cmdarg_T *cap)
 	    vim_free(buf);
 	    return;
 	}
-	newbuf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
+	newbuf = vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
 	if (newbuf == NULL)
 	{
 	    vim_free(buf);

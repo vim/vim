@@ -67,7 +67,7 @@ test_mf_hash(void)
 	assert(mf_hash_find(&ht, key) == NULL);
 
 	/* allocate and add new item */
-	item = (mf_hashitem_T *)lalloc_clear(sizeof(mf_hashtab_T), FALSE);
+	item = LALLOC_CLEAR_ONE(mf_hashitem_T);
 	assert(item != NULL);
 	item->mhi_key = key;
 	mf_hash_add_item(&ht, item);

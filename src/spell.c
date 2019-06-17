@@ -1899,7 +1899,7 @@ slang_alloc(char_u *lang)
 {
     slang_T *lp;
 
-    lp = (slang_T *)alloc_clear(sizeof(slang_T));
+    lp = ALLOC_CLEAR_ONE(slang_T);
     if (lp != NULL)
     {
 	if (lang != NULL)
@@ -2083,7 +2083,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = (wordcount_T *)alloc(sizeof(wordcount_T) + STRLEN(p));
+	wc = alloc(sizeof(wordcount_T) + STRLEN(p));
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -2883,7 +2883,7 @@ open_spellbuf(void)
 {
     buf_T	*buf;
 
-    buf = (buf_T *)alloc_clear(sizeof(buf_T));
+    buf = ALLOC_CLEAR_ONE(buf_T);
     if (buf != NULL)
     {
 	buf->b_spell = TRUE;
@@ -6223,7 +6223,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc(sizeof(sftword_T) + STRLEN(goodword));
+	sft = alloc(sizeof(sftword_T) + STRLEN(goodword));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
@@ -7820,7 +7820,7 @@ spell_edit_score(
 
     /* We use "cnt" as an array: CNT(badword_idx, goodword_idx). */
 #define CNT(a, b)   cnt[(a) + (b) * (badlen + 1)]
-    cnt = (int *)alloc(sizeof(int) * (badlen + 1) * (goodlen + 1));
+    cnt = ALLOC_MULT(int, (badlen + 1) * (goodlen + 1));
     if (cnt == NULL)
 	return 0;	/* out of memory */
 

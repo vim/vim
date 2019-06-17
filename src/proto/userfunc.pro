@@ -8,6 +8,7 @@ void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);
 void free_all_functions(void);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
+int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars, int (*argv_func)(int, typval_T *, int), linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, int (*argv_func)(int, typval_T *, int), linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, partial_T *partial, dict_T *selfdict_in);
 char_u *trans_function_name(char_u **pp, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 void ex_function(exarg_T *eap);

@@ -319,7 +319,7 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = (ff_search_ctx_T*)alloc(sizeof(ff_search_ctx_T));
+	search_ctx = ALLOC_ONE(ff_search_ctx_T);
 	if (search_ctx == NULL)
 	    goto error_return;
 	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
@@ -350,7 +350,7 @@ vim_findfile_init(
 
     if (ff_expand_buffer == NULL)
     {
-	ff_expand_buffer = (char_u*)alloc(MAXPATHL);
+	ff_expand_buffer = alloc(MAXPATHL);
 	if (ff_expand_buffer == NULL)
 	    goto error_return;
     }
@@ -430,7 +430,7 @@ vim_findfile_init(
 	    walker++;
 
 	dircount = 1;
-	search_ctx->ffsc_stopdirs_v = (char_u **)alloc(sizeof(char_u *));
+	search_ctx->ffsc_stopdirs_v = ALLOC_ONE(char_u *);
 
 	if (search_ctx->ffsc_stopdirs_v != NULL)
 	{
@@ -925,7 +925,7 @@ vim_findfile(void *search_ctx_arg)
 		 */
 		if (path_with_url(dirptrs[0]))
 		{
-		    stackp->ffs_filearray = (char_u **)alloc(sizeof(char *));
+		    stackp->ffs_filearray = ALLOC_ONE(char_u *);
 		    if (stackp->ffs_filearray != NULL
 			    && (stackp->ffs_filearray[0]
 				= vim_strsave(dirptrs[0])) != NULL)
@@ -1283,7 +1283,7 @@ ff_get_visited_list(
     /*
      * if we reach this we didn't find a list and we have to allocate new list
      */
-    retptr = (ff_visited_list_hdr_T*)alloc(sizeof(*retptr));
+    retptr = ALLOC_ONE(ff_visited_list_hdr_T);
     if (retptr == NULL)
 	return NULL;
 
@@ -1411,7 +1411,7 @@ ff_check_visited(
     /*
      * New file/dir.  Add it to the list of visited files/dirs.
      */
-    vp = (ff_visited_T *)alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
+    vp = alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
 
     if (vp != NULL)
     {
@@ -1459,7 +1459,7 @@ ff_create_stack_element(
 {
     ff_stack_T	*new;
 
-    new = (ff_stack_T *)alloc(sizeof(ff_stack_T));
+    new = ALLOC_ONE(ff_stack_T);
     if (new == NULL)
 	return NULL;
 
@@ -2429,7 +2429,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     mch_dirname(curdir, MAXPATHL);
     expand_path_option(curdir, &path_ga);
 
-    in_curdir = (char_u **)alloc_clear(gap->ga_len * sizeof(char_u *));
+    in_curdir = ALLOC_CLEAR_MULT(char_u *, gap->ga_len);
     if (in_curdir == NULL)
 	goto theend;
 

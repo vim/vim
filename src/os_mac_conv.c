@@ -550,7 +550,7 @@ mac_utf8_to_utf16(
     }
 
     convertRange = CFRangeMake(0, CFStringGetLength(utf8_str));
-    result = (UniChar *)alloc(convertRange.length * sizeof(UniChar));
+    result = ALLOC_MULT(UniChar, convertRange.length);
 
     CFStringGetCharacters(utf8_str, convertRange, result);
 

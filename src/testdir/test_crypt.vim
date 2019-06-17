@@ -1,8 +1,7 @@
 " Tests for encryption.
 
-if !has('cryptv')
-  finish
-endif
+source check.vim
+CheckFeature cryptv
 
 func Common_head_only(text)
   " This was crashing Vim

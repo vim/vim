@@ -413,7 +413,7 @@ term_start(
 	return NULL;
     }
 
-    term = (term_T *)alloc_clear(sizeof(term_T));
+    term = ALLOC_CLEAR_ONE(term_T);
     if (term == NULL)
 	return NULL;
     term->tl_dirty_row_end = MAX_ROW;
@@ -1630,7 +1630,7 @@ update_snapshot(term_T *term)
 	    if (len == 0)
 		p = NULL;
 	    else
-		p = (cellattr_T *)alloc(sizeof(cellattr_T) * len);
+		p = ALLOC_MULT(cellattr_T, len);
 	    if ((p != NULL || len == 0)
 				     && ga_grow(&term->tl_scrollback, 1) == OK)
 	    {
@@ -2884,7 +2884,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
 	ga_init2(&ga, 1, 100);
 	if (len > 0)
-	    p = (cellattr_T *)alloc(sizeof(cellattr_T) * len);
+	    p = ALLOC_MULT(cellattr_T, len);
 	if (p != NULL)
 	{
 	    for (col = 0; col < len; col += cells[col].width)
@@ -4616,7 +4616,7 @@ get_separator(int text_width, char_u *fname)
 term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 {
     jobopt_T	opt;
-    buf_T	*buf;
+    buf_T	*buf = NULL;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
     char_u	*fname1;
@@ -4671,7 +4671,27 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	}
     }
 
-    buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
+    if (opt.jo_bufnr_buf != NULL)
+    {
+	win_T *wp = buf_jump_open_win(opt.jo_bufnr_buf);
+
+	// With "bufnr" argument: enter the window with this buffer and make it
+	// empty.
+	if (wp == NULL)
+	    semsg(_(e_invarg2), "bufnr");
+	else
+	{
+	    buf = curbuf;
+	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
+		ml_delete((linenr_T)1, FALSE);
+	    ga_clear(&curbuf->b_term->tl_scrollback);
+	    redraw_later(NOT_VALID);
+	}
+    }
+    else
+	// Create a new terminal window.
+	buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
+
     if (buf != NULL && buf->b_term != NULL)
     {
 	int		i;
@@ -4935,7 +4955,7 @@ term_swap_diff()
     else
     {
 	size_t		size = sizeof(sb_line_T) * term->tl_scrollback.ga_len;
-	sb_line_T	*temp = (sb_line_T *)alloc(size);
+	sb_line_T	*temp = alloc(size);
 
 	/* need to copy cell properties into temp memory */
 	if (temp != NULL)
@@ -5800,7 +5820,7 @@ conpty_term_and_job_init(
     {
 	/* Request by CreateProcessW */
 	breq = wcslen(cmd_wchar) + 1 + 1;	/* Addition of NUL by API */
-	cmd_wchar_copy = (PWSTR)alloc(breq * sizeof(WCHAR));
+	cmd_wchar_copy = ALLOC_MULT(WCHAR, breq);
 	wcsncpy(cmd_wchar_copy, cmd_wchar, breq - 1);
     }
 
@@ -5829,8 +5849,7 @@ conpty_term_and_job_init(
 
     /* Set up pipe inheritance safely: Vista or later. */
     pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
-    term->tl_siex.lpAttributeList =
-	    (PPROC_THREAD_ATTRIBUTE_LIST)alloc(breq);
+    term->tl_siex.lpAttributeList = alloc(breq);
     if (!term->tl_siex.lpAttributeList)
 	goto failed;
     if (!pInitializeProcThreadAttributeList(term->tl_siex.lpAttributeList, 1,

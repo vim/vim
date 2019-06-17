@@ -1,8 +1,7 @@
 " Tests for setting 'buftype' to "prompt"
 
-if !has('channel')
-  finish
-endif
+source check.vim
+CheckFeature channel
 
 source shared.vim
 source screendump.vim

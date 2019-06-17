@@ -397,7 +397,7 @@ ex_sort(exarg_T *eap)
     sortbuf1 = NULL;
     sortbuf2 = NULL;
     regmatch.regprog = NULL;
-    nrs = (sorti_T *)alloc(count * sizeof(sorti_T));
+    nrs = ALLOC_MULT(sorti_T, count);
     if (nrs == NULL)
 	goto sortend;
 
@@ -3399,7 +3399,7 @@ check_overwrite(
 		|| (buf->b_flags & BF_READERR))
 	    && !p_wa
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && vim_fexists(ffname))
     {

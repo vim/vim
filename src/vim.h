@@ -615,7 +615,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 
 // Values for w_popup_flags.
 #define POPF_HIDDEN	1	// popup is not displayed
-#define POPF_REDRAWN	2	// popup was just redrawn
+#define POPF_HANDLED	2	// popup was just redrawn or filtered
 
 /*
  * Terminal highlighting attribute bits.
@@ -879,10 +879,11 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SEARCH_PEEK  0x800  /* peek for typed char, cancel search */
 #define SEARCH_COL  0x1000  /* start at specified column instead of zero */
 
-/* Values for find_ident_under_cursor() */
-#define FIND_IDENT	1	/* find identifier (word) */
-#define FIND_STRING	2	/* find any string (WORD) */
-#define FIND_EVAL	4	/* include "->", "[]" and "." */
+// Values for find_ident_under_cursor()
+#define FIND_IDENT	1	// find identifier (word)
+#define FIND_STRING	2	// find any string (WORD)
+#define FIND_EVAL	4	// include "->", "[]" and "."
+#define FIND_NOERROR	8	// no error when no word found
 
 /* Values for file_name_in_line() */
 #define FNAME_MESS	1	/* give error message */
@@ -1546,6 +1547,16 @@ typedef UINT32_TYPEDEF UINT32_T;
 # define R_OK 4		/* for systems that don't have R_OK in unistd.h */
 #endif
 
+// Allocate memory for one type and cast the returned pointer to have the
+// compiler check the types.
+#define ALLOC_ONE(type)  (type *)alloc(sizeof(type))
+#define ALLOC_MULT(type, count)  (type *)alloc(sizeof(type) * (count))
+#define ALLOC_CLEAR_ONE(type)  (type *)alloc_clear(sizeof(type))
+#define ALLOC_CLEAR_MULT(type, count)  (type *)alloc_clear(sizeof(type) * (count))
+#define LALLOC_CLEAR_ONE(type)  (type *)lalloc_clear(sizeof(type), FALSE)
+#define LALLOC_CLEAR_MULT(type, count)  (type *)lalloc_clear(sizeof(type) * (count), FALSE)
+#define LALLOC_MULT(type, count)  (type *)lalloc(sizeof(type) * (count), FALSE)
+
 /*
  * defines to avoid typecasts from (char_u *) to (char *) and back
  * (vim_strchr() and vim_strrchr() are now in alloc.c)
@@ -1924,40 +1935,44 @@ typedef int sock_T;
 #define VV_COMPLETED_ITEM 60
 #define VV_OPTION_NEW   61
 #define VV_OPTION_OLD   62
-#define VV_OPTION_TYPE  63
-#define VV_ERRORS	64
-#define VV_FALSE	65
-#define VV_TRUE		66
-#define VV_NULL		67
-#define VV_NONE		68
-#define VV_VIM_DID_ENTER 69
-#define VV_TESTING	70
-#define VV_TYPE_NUMBER	71
-#define VV_TYPE_STRING	72
-#define VV_TYPE_FUNC	73
-#define VV_TYPE_LIST	74
-#define VV_TYPE_DICT	75
-#define VV_TYPE_FLOAT	76
-#define VV_TYPE_BOOL	77
-#define VV_TYPE_NONE	78
-#define VV_TYPE_JOB	79
-#define VV_TYPE_CHANNEL	80
-#define VV_TYPE_BLOB	81
-#define VV_TERMRFGRESP	82
-#define VV_TERMRBGRESP	83
-#define VV_TERMU7RESP	84
-#define VV_TERMSTYLERESP 85
-#define VV_TERMBLINKRESP 86
-#define VV_EVENT	87
-#define VV_LEN		88	/* number of v: vars */
+#define VV_OPTION_OLDLOCAL 63
+#define VV_OPTION_OLDGLOBAL 64
+#define VV_OPTION_COMMAND 65
+#define VV_OPTION_TYPE  66
+#define VV_ERRORS	67
+#define VV_FALSE	68
+#define VV_TRUE		69
+#define VV_NULL		70
+#define VV_NONE		71
+#define VV_VIM_DID_ENTER 72
+#define VV_TESTING	73
+#define VV_TYPE_NUMBER	74
+#define VV_TYPE_STRING	75
+#define VV_TYPE_FUNC	76
+#define VV_TYPE_LIST	77
+#define VV_TYPE_DICT	78
+#define VV_TYPE_FLOAT	79
+#define VV_TYPE_BOOL	80
+#define VV_TYPE_NONE	81
+#define VV_TYPE_JOB	82
+#define VV_TYPE_CHANNEL	83
+#define VV_TYPE_BLOB	84
+#define VV_TERMRFGRESP	85
+#define VV_TERMRBGRESP	86
+#define VV_TERMU7RESP	87
+#define VV_TERMSTYLERESP 88
+#define VV_TERMBLINKRESP 89
+#define VV_EVENT	90
+#define VV_VERSIONLONG	91
+#define VV_LEN		92	// number of v: vars
 
-/* used for v_number in VAR_SPECIAL */
+// used for v_number in VAR_SPECIAL
 #define VVAL_FALSE	0L
 #define VVAL_TRUE	1L
 #define VVAL_NONE	2L
 #define VVAL_NULL	3L
 
-/* Type values for type(). */
+// Type values for type().
 #define VAR_TYPE_NUMBER	    0
 #define VAR_TYPE_STRING	    1
 #define VAR_TYPE_FUNC	    2
@@ -1994,40 +2009,47 @@ typedef int sock_T;
 # endif
 
 /* Info about selected text */
-typedef struct VimClipboard
+typedef struct
 {
-    int		available;	/* Is clipboard available? */
-    int		owned;		/* Flag: do we own the selection? */
-    pos_T	start;		/* Start of selected area */
-    pos_T	end;		/* End of selected area */
-    int		vmode;		/* Visual mode character */
+    int		available;	// Is clipboard available?
+    int		owned;		// Flag: do we own the selection?
+    pos_T	start;		// Start of selected area
+    pos_T	end;		// End of selected area
+    int		vmode;		// Visual mode character
 
-    /* Fields for selection that doesn't use Visual mode */
+    // Fields for selection that doesn't use Visual mode
     short_u	origin_row;
     short_u	origin_start_col;
     short_u	origin_end_col;
     short_u	word_start_col;
     short_u	word_end_col;
+#ifdef FEAT_TEXT_PROP
+    // limits for selection inside a popup window
+    short_u	min_col;
+    short_u	max_col;
+    short_u	min_row;
+    short_u	max_row;
+#endif
 
-    pos_T	prev;		/* Previous position */
-    short_u	state;		/* Current selection state */
-    short_u	mode;		/* Select by char, word, or line. */
+    pos_T	prev;		// Previous position
+    short_u	state;		// Current selection state
+    short_u	mode;		// Select by char, word, or line.
 
 # if defined(FEAT_GUI_X11) || defined(FEAT_XCLIPBOARD)
-    Atom	sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
+    Atom	sel_atom;	// PRIMARY/CLIPBOARD selection ID
 # endif
 
 # ifdef FEAT_GUI_GTK
-    GdkAtom     gtk_sel_atom;	/* PRIMARY/CLIPBOARD selection ID */
+    GdkAtom     gtk_sel_atom;	// PRIMARY/CLIPBOARD selection ID
 # endif
 
 # if defined(MSWIN) || defined(FEAT_CYGWIN_WIN32_CLIPBOARD)
-    int_u	format;		/* Vim's own special clipboard format */
-    int_u	format_raw;	/* Vim's raw text clipboard format */
+    int_u	format;		// Vim's own special clipboard format
+    int_u	format_raw;	// Vim's raw text clipboard format
 # endif
-} VimClipboard;
+} Clipboard_T;
 #else
-typedef int VimClipboard;	/* This is required for the prototypes. */
+typedef int Clipboard_T;	// This is required for the prototypes.
 #endif
 
 /* Use 64-bit stat structure if available. */

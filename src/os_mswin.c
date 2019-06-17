@@ -1753,6 +1753,39 @@ typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
 	DWORD	nFileSystemNameSize);
 static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
 
+# define is_path_sep(c)	    ((c) == L'\\' || (c) == L'/')
+
+    static int
+is_reparse_point_included(LPCWSTR fname)
+{
+    LPCWSTR	p = fname, q;
+    WCHAR	buf[MAX_PATH];
+    DWORD	attr;
+
+    if (isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
+	p += 3;
+    else if (is_path_sep(p[0]) && is_path_sep(p[1]))
+	p += 2;
+
+    while (*p != L'\0')
+    {
+	q = wcspbrk(p, L"\\/");
+	if (q == NULL)
+	    p = q = fname + wcslen(fname);
+	else
+	    p = q + 1;
+	if (q - fname >= MAX_PATH)
+	    return FALSE;
+	wcsncpy(buf, fname, q - fname);
+	buf[q - fname] = L'\0';
+	attr = GetFileAttributesW(buf);
+	if (attr != INVALID_FILE_ATTRIBUTES
+		&& (attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
     static char_u *
 resolve_reparse_point(char_u *fname)
 {
@@ -1787,7 +1820,7 @@ resolve_reparse_point(char_u *fname)
     if (p == NULL)
 	goto fail;
 
-    if ((GetFileAttributesW(p) & FILE_ATTRIBUTE_REPARSE_POINT) == 0)
+    if (!is_reparse_point_included(p))
     {
 	vim_free(p);
 	goto fail;
@@ -1801,7 +1834,7 @@ resolve_reparse_point(char_u *fname)
 	goto fail;
 
     size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
-    nameinfo = (FILE_NAME_INFO_*)alloc(size + sizeof(WCHAR));
+    nameinfo = alloc(size + sizeof(WCHAR));
     if (nameinfo == NULL)
 	goto fail;
 
@@ -1835,7 +1868,7 @@ resolve_reparse_point(char_u *fname)
 	    GetLastError() != ERROR_MORE_DATA)
 	goto fail;
 
-    volnames = (WCHAR*)alloc(size * sizeof(WCHAR));
+    volnames = ALLOC_MULT(WCHAR, size);
     if (!GetVolumePathNamesForVolumeNameW(buff, volnames, size,
 		&size))
 	goto fail;
@@ -3078,7 +3111,7 @@ theend:
     if (ret == OK && printer_dc == NULL)
     {
 	vim_free(lastlf);
-	lastlf = (LOGFONTW *)alloc(sizeof(LOGFONTW));
+	lastlf = ALLOC_ONE(LOGFONTW);
 	if (lastlf != NULL)
 	    mch_memmove(lastlf, lf, sizeof(LOGFONTW));
     }

@@ -60,7 +60,9 @@ static char *e_auabort = N_("E855: Autocommands caused command to abort");
 /* Number of times free_buffer() was called. */
 static int	buf_free_count = 0;
 
-/* Read data from buffer for retrying. */
+/*
+ * Read data from buffer for retrying.
+ */
     static int
 read_buffer(
     int		read_stdin,	    /* read file from stdin, otherwise fifo */
@@ -104,7 +106,7 @@ read_buffer(
 	if (!readonlymode && !BUFEMPTY())
 	    changed();
 	else if (retval == OK)
-	    unchanged(curbuf, FALSE);
+	    unchanged(curbuf, FALSE, TRUE);
 
 	if (retval == OK)
 	{
@@ -275,7 +277,7 @@ open_buffer(
        )
 	changed();
     else if (retval == OK && !read_stdin && !read_fifo)
-	unchanged(curbuf, FALSE);
+	unchanged(curbuf, FALSE, TRUE);
     save_file_ff(curbuf);		/* keep this fileformat */
 
     /* Set last_changedtick to avoid triggering a TextChanged autocommand right
@@ -700,7 +702,7 @@ aucmd_abort:
 buf_clear_file(buf_T *buf)
 {
     buf->b_ml.ml_line_count = 1;
-    unchanged(buf, TRUE);
+    unchanged(buf, TRUE, TRUE);
     buf->b_shortname = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
@@ -862,7 +864,7 @@ free_buffer(buf_T *buf)
 #endif
 #ifdef FEAT_JOB_CHANNEL
     vim_free(buf->b_prompt_text);
-    free_callback(buf->b_prompt_callback, buf->b_prompt_partial);
+    free_callback(&buf->b_prompt_callback);
 #endif
 
     buf_hashtab_remove(buf);
@@ -1958,7 +1960,7 @@ buflist_new(
     }
     if (buf != curbuf || curbuf == NULL)
     {
-	buf = (buf_T *)alloc_clear(sizeof(buf_T));
+	buf = ALLOC_CLEAR_ONE(buf_T);
 	if (buf == NULL)
 	{
 	    vim_free(ffname);
@@ -1985,7 +1987,7 @@ buflist_new(
     }
 
     clear_wininfo(buf);
-    buf->b_wininfo = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
+    buf->b_wininfo = ALLOC_CLEAR_ONE(wininfo_T);
 
     if ((ffname != NULL && (buf->b_ffname == NULL || buf->b_sfname == NULL))
 	    || buf->b_wininfo == NULL)
@@ -2634,7 +2636,7 @@ ExpandBufnames(
 		break;
 	    if (round == 1)
 	    {
-		*file = (char_u **)alloc(count * sizeof(char_u *));
+		*file = ALLOC_MULT(char_u *, count);
 		if (*file == NULL)
 		{
 		    vim_regfree(regmatch.regprog);
@@ -2771,7 +2773,7 @@ buflist_setfpos(
     if (wip == NULL)
     {
 	/* allocate a new entry */
-	wip = (wininfo_T *)alloc_clear(sizeof(wininfo_T));
+	wip = ALLOC_CLEAR_ONE(wininfo_T);
 	if (wip == NULL)
 	    return;
 	wip->wi_win = win;
@@ -3430,7 +3432,7 @@ fileinfo(
     char	*buffer;
     size_t	len;
 
-    buffer = (char *)alloc(IOSIZE);
+    buffer = alloc(IOSIZE);
     if (buffer == NULL)
 	return;
 
@@ -5696,12 +5698,21 @@ bt_popup(buf_T *buf)
  * buffer.  This means the buffer name is not a file name.
  */
     int
-bt_nofile(buf_T *buf)
+bt_nofilename(buf_T *buf)
 {
     return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
 	    || buf->b_p_bt[0] == 'a'
 	    || buf->b_p_bt[0] == 't'
 	    || buf->b_p_bt[0] == 'p');
+}
+
+/*
+ * Return TRUE if "buf" has 'buftype' set to "nofile".
+ */
+    int
+bt_nofile(buf_T *buf)
+{
+    return buf != NULL && buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f';
 }
 
 /*
@@ -5770,7 +5781,7 @@ buf_spname(buf_T *buf)
 
     /* There is no _file_ when 'buftype' is "nofile", b_sfname
      * contains the name as specified by the user. */
-    if (bt_nofile(buf))
+    if (bt_nofilename(buf))
     {
 #ifdef FEAT_TERMINAL
 	if (buf->b_term != NULL)
@@ -5781,6 +5792,10 @@ buf_spname(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
 	if (bt_prompt(buf))
 	    return (char_u *)_("[Prompt]");
+#endif
+#ifdef FEAT_TEXT_PROP
+	if (bt_popup(buf))
+	    return (char_u *)_("[Popup]");
 #endif
 	return (char_u *)_("[Scratch]");
     }

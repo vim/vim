@@ -238,14 +238,14 @@ mch_getenv(char_u *lognam)
     if (sys$trnlnm(&attrib, &d_file_dev, &d_lognam, NULL,&itmlst) == SS$_NORMAL)
     {
 	buffer[lengte] = '\0';
-	if (cp = (char_u *)alloc(lengte + 1))
+	if (cp = alloc(lengte + 1))
 	    strcpy((char *)cp, buffer);
 	return(cp);
     }
     else if ((sbuf = getenv((char *)lognam)))
     {
 	lengte = strlen(sbuf) + 1;
-	cp = (char_u *)alloc(lengte);
+	cp = alloc(lengte);
 	if (cp)
 	    strcpy((char *)cp, sbuf);
 	return cp;
@@ -382,7 +382,7 @@ vms_wproc(char *name, int val)
     if (vms_match_num == 0) {
 	/* first time through, setup some things */
 	if (NULL == vms_fmatch) {
-	    vms_fmatch = (char_u **)alloc(EXPL_ALLOC_INC * sizeof(char *));
+	    vms_fmatch = ALLOC_MULT(char *, EXPL_ALLOC_INC);
 	    if (!vms_fmatch)
 		return 0;
 	    vms_match_alloced = EXPL_ALLOC_INC;
@@ -406,7 +406,7 @@ vms_wproc(char *name, int val)
     if (--vms_match_free == 0) {
 	/* add more space to store matches */
 	vms_match_alloced += EXPL_ALLOC_INC;
-	vms_fmatch = (char_u **)vim_realloc(vms_fmatch,
+	vms_fmatch = vim_realloc(vms_fmatch,
 		sizeof(char **) * vms_match_alloced);
 	if (!vms_fmatch)
 	    return 0;
@@ -443,7 +443,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
     *num_file = 0;			/* default: no files found	*/
     files_alloced = EXPL_ALLOC_INC;
     files_free = EXPL_ALLOC_INC;
-    *file = (char_u **) alloc(sizeof(char_u **) * files_alloced);
+    *file = ALLOC_MULT(char_u **, files_alloced);
     if (*file == NULL)
     {
 	*num_file = 0;
@@ -490,8 +490,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    if (--files_free < 1)
 	    {
 		files_alloced += EXPL_ALLOC_INC;
-		*file = (char_u **)vim_realloc(*file,
-		    sizeof(char_u **) * files_alloced);
+		*file = vim_realloc(*file, sizeof(char_u **) * files_alloced);
 		if (*file == NULL)
 		{
 		    *file = (char_u **)"";
@@ -649,15 +648,12 @@ vms_fixfilename(void *instring)
     if (len > buflen)
     {
 	buflen = len + 128;
-	if (buf)
-	    buf = (char *)vim_realloc(buf, buflen);
-	else
-	    buf = (char *)alloc(buflen * sizeof(char));
+	buf = vim_realloc(buf, buflen * sizeof(char));
     }
 
 #ifdef DEBUG
      char		 *tmpbuf = NULL;
-     tmpbuf = (char *)alloc(buflen * sizeof(char));
+     tmpbuf = ALLOC_MULT(char, buflen);
      strcpy(tmpbuf, instring);
 #endif
 

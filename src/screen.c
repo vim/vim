@@ -121,9 +121,6 @@ static int redrawing_for_callback = 0;
  */
 static schar_T	*current_ScreenLine;
 
-#ifdef FEAT_TEXT_PROP
-static void update_popups(void);
-#endif
 static void win_update(win_T *wp);
 static void win_redr_status(win_T *wp, int ignore_pum);
 static void win_draw_end(win_T *wp, int c1, int c2, int draw_margin, int row, int endrow, hlf_T hl);
@@ -328,27 +325,25 @@ redraw_asap(int type)
 
     /* Allocate space to save the text displayed in the command line area. */
     rows = screen_Rows - cmdline_row;
-    screenline = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
-    screenattr = (sattr_T *)lalloc(rows * cols * sizeof(sattr_T), FALSE);
+    screenline = LALLOC_MULT(schar_T, rows * cols);
+    screenattr = LALLOC_MULT(sattr_T, rows * cols);
     if (screenline == NULL || screenattr == NULL)
 	ret = 2;
     if (enc_utf8)
     {
-	screenlineUC = (u8char_T *)lalloc(
-				       rows * cols * sizeof(u8char_T), FALSE);
+	screenlineUC = LALLOC_MULT(u8char_T, rows * cols);
 	if (screenlineUC == NULL)
 	    ret = 2;
 	for (i = 0; i < p_mco; ++i)
 	{
-	    screenlineC[i] = (u8char_T *)lalloc(
-				       rows * cols * sizeof(u8char_T), FALSE);
+	    screenlineC[i] = LALLOC_MULT(u8char_T, rows * cols);
 	    if (screenlineC[i] == NULL)
 		ret = 2;
 	}
     }
     if (enc_dbcs == DBCS_JPNU)
     {
-	screenline2 = (schar_T *)lalloc(rows * cols * sizeof(schar_T), FALSE);
+	screenline2 = LALLOC_MULT(schar_T, rows * cols);
 	if (screenline2 == NULL)
 	    ret = 2;
     }
@@ -508,8 +503,12 @@ redrawWinline(
     redraw_win_later(wp, VALID);
 }
 
+/*
+ * To be called when "updating_screen" was set before and now the postponed
+ * side effects may take place.
+ */
     void
-reset_updating_screen(int may_resize_shell UNUSED)
+after_updating_screen(int may_resize_shell UNUSED)
 {
     updating_screen = FALSE;
 #ifdef FEAT_GUI
@@ -608,10 +607,11 @@ update_screen(int type_arg)
 	    curwin->w_lines_valid = 0;	/* don't use w_lines[].wl_size now */
 	return FAIL;
     }
+
 #ifdef FEAT_TEXT_PROP
-    // TODO: avoid redrawing everything when there is a popup window.
-    if (popup_any_visible())
-	type = NOT_VALID;
+    // Update popup_mask if needed.  This may set w_redraw_top and w_redraw_bot
+    // in some windows.
+    may_update_popup_mask(type);
 #endif
 
     updating_screen = TRUE;
@@ -638,7 +638,7 @@ update_screen(int type_arg)
 		type = CLEAR;
 	    FOR_ALL_WINDOWS(wp)
 	    {
-		if (W_WINROW(wp) < msg_scrolled)
+		if (wp->w_winrow < msg_scrolled)
 		{
 		    if (W_WINROW(wp) + wp->w_height > msg_scrolled
 			    && wp->w_redr_type < REDRAW_TOP
@@ -805,7 +805,7 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
-    reset_updating_screen(TRUE);
+    after_updating_screen(TRUE);
 
     /* Clear or redraw the command line.  Done last, because scrolling may
      * mess up the command line. */
@@ -821,8 +821,8 @@ update_screen(int type_arg)
     did_intro = TRUE;
 
 #ifdef FEAT_TEXT_PROP
-    // Display popup windows on top of the others.
-    update_popups();
+    // Display popup windows on top of the windows.
+    update_popups(win_update);
 #endif
 
 #ifdef FEAT_GUI
@@ -873,6 +873,10 @@ update_prepare(void)
 #ifdef FEAT_SEARCH_EXTRA
     start_search_hl();
 #endif
+#ifdef FEAT_TEXT_PROP
+    // Update popup_mask if needed.
+    may_update_popup_mask(0);
+#endif
 }
 
 /*
@@ -888,7 +892,7 @@ update_finish(void)
     end_search_hl();
 # endif
 
-    reset_updating_screen(TRUE);
+    after_updating_screen(TRUE);
 
 # ifdef FEAT_GUI
     /* Redraw the cursor and update the scrollbars when all screen updating is
@@ -989,50 +993,23 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
 }
 #endif
 
-#ifdef FEAT_TEXT_PROP
-    static void
-update_popups(void)
+/*
+ * Get 'wincolor' attribute for window "wp".  If not set and "wp" is a popup
+ * window then get the "Pmenu" highlight attribute.
+ */
+    int
+get_wcr_attr(win_T *wp)
 {
-    win_T   *wp;
-    win_T   *lowest_wp;
-    int	    lowest_zindex;
+    int wcr_attr = 0;
 
-    // Reset all the VALID_POPUP flags.
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_REDRAWN;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_REDRAWN;
-
-    // TODO: don't redraw every popup every time.
-    for (;;)
-    {
-	// Find the window with the lowest zindex that hasn't been updated yet,
-	// so that the window with a higher zindex is drawn later, thus goes on
-	// top.
-	lowest_zindex = INT_MAX;
-	lowest_wp = NULL;
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
-					       && wp->w_zindex < lowest_zindex)
-	    {
-		lowest_zindex = wp->w_zindex;
-		lowest_wp = wp;
-	    }
-	for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	    if ((wp->w_popup_flags & (POPF_REDRAWN|POPF_HIDDEN)) == 0
-					       && wp->w_zindex < lowest_zindex)
-	    {
-		lowest_zindex = wp->w_zindex;
-		lowest_wp = wp;
-	    }
-
-	if (lowest_wp == NULL)
-	    break;
-	win_update(lowest_wp);
-	lowest_wp->w_popup_flags |= POPF_REDRAWN;
-    }
-}
+    if (*wp->w_p_wcr != NUL)
+	wcr_attr = syn_name2attr(wp->w_p_wcr);
+#ifdef FEAT_TEXT_PROP
+    if (bt_popup(wp->w_buffer) && wcr_attr == 0)
+	wcr_attr = HL_ATTR(HLF_PNI);
 #endif
+    return wcr_attr;
+}
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
@@ -1071,6 +1048,11 @@ updateWindow(win_T *wp)
 # endif
 	    )
 	win_redr_status(wp, FALSE);
+
+#ifdef FEAT_TEXT_PROP
+    // Display popup windows on top of everything.
+    update_popups(win_update);
+#endif
 
     update_finish();
 }
@@ -2099,6 +2081,9 @@ win_update(win_T *wp)
 		    && wp->w_lines[idx].wl_lnum == lnum
 		    && lnum > wp->w_topline
 		    && !(dy_flags & (DY_LASTLINE | DY_TRUNCATE))
+#ifdef FEAT_TEXT_PROP
+		    && !bt_popup(wp->w_buffer)
+#endif
 		    && srow + wp->w_lines[idx].wl_size > wp->w_height
 #ifdef FEAT_DIFF
 		    && diff_check_fill(wp, lnum) == 0
@@ -2254,6 +2239,13 @@ win_update(win_T *wp)
 	    wp->w_filler_rows = wp->w_height - srow;
 	}
 #endif
+#ifdef FEAT_TEXT_PROP
+	else if (bt_popup(wp->w_buffer))
+	{
+	    // popup line that doesn't fit is left as-is
+	    wp->w_botline = lnum;
+	}
+#endif
 	else if (dy_flags & DY_TRUNCATE)	/* 'display' has "truncate" */
 	{
 	    int scr_row = W_WINROW(wp) + wp->w_height - 1;
@@ -2314,7 +2306,11 @@ win_update(win_T *wp)
 
 	// Make sure the rest of the screen is blank
 	// put '~'s on rows that aren't part of the file.
-	win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
+	win_draw_end(wp,
+#ifdef FEAT_TEXT_PROP
+		bt_popup(wp->w_buffer) ? ' ' :
+#endif
+				  '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
@@ -2419,13 +2415,9 @@ win_draw_end(
 {
     int		n = 0;
     int		attr = HL_ATTR(hl);
-    int		wcr_attr = 0;
+    int		wcr_attr = get_wcr_attr(wp);
 
-    if (*wp->w_p_wcr != NUL)
-    {
-	wcr_attr = syn_name2attr(wp->w_p_wcr);
-	attr = hl_combine_attr(wcr_attr, attr);
-    }
+    attr = hl_combine_attr(wcr_attr, attr);
 
     if (draw_margin)
     {
@@ -3115,6 +3107,8 @@ win_line(
     int		vi_attr = 0;		// attributes for Visual and incsearch
 					// highlighting
     int		wcr_attr = 0;		// attributes from 'wincolor'
+    int		win_attr = 0;		// background for whole window, except
+					// margins and "~" lines.
     int		area_attr = 0;		// attributes desired by highlighting
     int		search_attr = 0;	// attributes desired by 'hlsearch'
 #ifdef FEAT_SYN_HL
@@ -3196,7 +3190,6 @@ win_line(
 #ifdef FEAT_TERMINAL
     int		get_term_attr = FALSE;
 #endif
-    int		win_attr = 0;		// background for whole window
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -3566,28 +3559,15 @@ win_line(
 	}
     }
 
-    if (*wp->w_p_wcr != NUL)
+    wcr_attr = get_wcr_attr(wp);
+    if (wcr_attr != 0)
     {
-	wcr_attr = syn_name2attr(wp->w_p_wcr);
-
-	// 'wincolor' highlighting for the whole window
-	if (wcr_attr != 0)
-	{
-	    win_attr = wcr_attr;
-	    area_highlighting = TRUE;
-	}
+	win_attr = wcr_attr;
+	area_highlighting = TRUE;
     }
 #ifdef FEAT_TEXT_PROP
     if (bt_popup(wp->w_buffer))
-    {
 	screen_line_flags |= SLF_POPUP;
-
-	if (win_attr == 0)
-	{
-	    win_attr = HL_ATTR(HLF_PNI);
-	    area_highlighting = TRUE;
-	}
-    }
 #endif
 
     /*
@@ -3723,12 +3703,11 @@ win_line(
     /*
      * Handle highlighting the last used search pattern and matches.
      * Do this for both search_hl and the match list.
-     * Not in a popup window.
+     * Do not use search_hl in a popup window.
      */
     cur = wp->w_match_head;
-    shl_flag = FALSE;
-    while ((cur != NULL || shl_flag == FALSE) && !number_only
-					   && !(screen_line_flags & SLF_POPUP))
+    shl_flag = (screen_line_flags & SLF_POPUP);
+    while ((cur != NULL || shl_flag == FALSE) && !number_only)
     {
 	if (shl_flag == FALSE)
 	{
@@ -3808,14 +3787,13 @@ win_line(
 	{
 	    // Make a copy of the properties, so that they are properly
 	    // aligned.
-	    text_props = (textprop_T *)alloc(
-					 text_prop_count * sizeof(textprop_T));
+	    text_props = ALLOC_MULT(textprop_T, text_prop_count);
 	    if (text_props != NULL)
 		mch_memmove(text_props, prop_start,
 					 text_prop_count * sizeof(textprop_T));
 
 	    // Allocate an array for the indexes.
-	    text_prop_idxs = (int *)alloc(text_prop_count * sizeof(int));
+	    text_prop_idxs = ALLOC_MULT(int, text_prop_count);
 	    area_highlighting = TRUE;
 	    extra_check = TRUE;
 	}
@@ -4215,6 +4193,8 @@ win_line(
 		    {
 			shl = &search_hl;
 			shl_flag = TRUE;
+			if (screen_line_flags & SLF_POPUP)
+			    continue;  // do not use search_hl
 		    }
 		    else
 			shl = &cur->hl;
@@ -4294,9 +4274,9 @@ win_line(
 
 		/* Use attributes from match with highest priority among
 		 * 'search_hl' and the match list. */
-		search_attr = search_hl.attr_cur;
 		cur = wp->w_match_head;
 		shl_flag = FALSE;
+		search_attr = 0;
 		while (cur != NULL || shl_flag == FALSE)
 		{
 		    if (shl_flag == FALSE
@@ -4306,6 +4286,8 @@ win_line(
 		    {
 			shl = &search_hl;
 			shl_flag = TRUE;
+			if (screen_line_flags & SLF_POPUP)
+			    continue;  // do not use search_hl
 		    }
 		    else
 			shl = &cur->hl;
@@ -5586,7 +5568,6 @@ win_line(
 		{
 		    /* Use attributes from match with highest priority among
 		     * 'search_hl' and the match list. */
-		    char_attr = search_hl.attr;
 		    cur = wp->w_match_head;
 		    shl_flag = FALSE;
 		    while (cur != NULL || shl_flag == FALSE)
@@ -5598,6 +5579,8 @@ win_line(
 			{
 			    shl = &search_hl;
 			    shl_flag = TRUE;
+			    if (screen_line_flags & SLF_POPUP)
+				continue;  // do not use search_hl
 			}
 			else
 			    shl = &cur->hl;
@@ -6315,6 +6298,11 @@ screen_line(
 		redraw_this = TRUE;
 	}
 #endif
+#ifdef FEAT_TEXT_PROP
+	// Skip if under a(nother) popup.
+	if (popup_mask[row * screen_Columns + col + coloff] > screen_zindex)
+	    redraw_this = FALSE;
+#endif
 
 	if (redraw_this)
 	{
@@ -6563,30 +6551,36 @@ screen_line(
 	    )
     {
 	// For a window that has a right neighbor, draw the separator char
-	// right of the window contents.
+	// right of the window contents.  But not on top of a popup window.
 	if (coloff + col < Columns)
 	{
-	    int c;
-
-	    c = fillchar_vsep(&hl);
-	    if (ScreenLines[off_to] != (schar_T)c
-		    || (enc_utf8 && (int)ScreenLinesUC[off_to]
-						       != (c >= 0x80 ? c : 0))
-		    || ScreenAttrs[off_to] != hl)
+#ifdef FEAT_TEXT_PROP
+	    if (popup_mask[row * screen_Columns + col + coloff]
+							     <= screen_zindex)
+#endif
 	    {
-		ScreenLines[off_to] = c;
-		ScreenAttrs[off_to] = hl;
-		if (enc_utf8)
+		int c;
+
+		c = fillchar_vsep(&hl);
+		if (ScreenLines[off_to] != (schar_T)c
+			|| (enc_utf8 && (int)ScreenLinesUC[off_to]
+							!= (c >= 0x80 ? c : 0))
+			|| ScreenAttrs[off_to] != hl)
 		{
-		    if (c >= 0x80)
+		    ScreenLines[off_to] = c;
+		    ScreenAttrs[off_to] = hl;
+		    if (enc_utf8)
 		    {
-			ScreenLinesUC[off_to] = c;
-			ScreenLinesC[0][off_to] = 0;
+			if (c >= 0x80)
+			{
+			    ScreenLinesUC[off_to] = c;
+			    ScreenLinesC[0][off_to] = 0;
+			}
+			else
+			    ScreenLinesUC[off_to] = 0;
 		    }
-		    else
-			ScreenLinesUC[off_to] = 0;
+		    screen_char(off_to, row, col + coloff);
 		}
-		screen_char(off_to, row, col + coloff);
 	    }
 	}
 	else
@@ -7549,7 +7543,11 @@ screen_puts_len(
     int		force_redraw_next = FALSE;
     int		need_redraw;
 
-    if (ScreenLines == NULL || row >= screen_Rows)	/* safety check */
+    // Safety check. The check for negative row and column is to fix issue
+    // #4102. TODO: find out why row/col could be negative.
+    if (ScreenLines == NULL
+	    || row >= screen_Rows || row < 0
+	    || col >= screen_Columns || col < 0)
 	return;
     off = LineOffset[row] + col;
 
@@ -7649,7 +7647,11 @@ screen_puts_len(
 		|| ScreenAttrs[off] != attr
 		|| exmode_active;
 
-	if (need_redraw || force_redraw_this)
+	if ((need_redraw || force_redraw_this)
+#ifdef FEAT_TEXT_PROP
+		&& popup_mask[row * screen_Columns + col] <= screen_zindex
+#endif
+	   )
 	{
 #if defined(FEAT_GUI) || defined(UNIX)
 	    /* The bold trick makes a single row of pixels appear in the next
@@ -8406,9 +8408,21 @@ screen_char(unsigned off, int row, int col)
 	return;
 
 #ifdef FEAT_INS_EXPAND
-    if (pum_under_menu(row, col))
+    // Skip if under the popup menu.
+    // Popup windows with zindex higher than POPUPMENU_ZINDEX go on top.
+    if (pum_under_menu(row, col)
+# ifdef FEAT_TEXT_PROP
+	    && screen_zindex <= POPUPMENU_ZINDEX
+# endif
+	    )
 	return;
 #endif
+#ifdef FEAT_TEXT_PROP
+    // Skip if under a(nother) popup.
+    if (popup_mask[row * screen_Columns + col] > screen_zindex)
+	return;
+#endif
+
     /* Outputting a character in the last cell on the screen may scroll the
      * screen up.  Only do it when the "xn" termcap property is set, otherwise
      * mark the character invalid (update it when scrolled up). */
@@ -8698,7 +8712,7 @@ screen_fill(
 	c = c1;
 	for (col = start_col; col < end_col; ++col)
 	{
-	    if (ScreenLines[off] != c
+	    if ((ScreenLines[off] != c
 		    || (enc_utf8 && (int)ScreenLinesUC[off]
 						       != (c >= 0x80 ? c : 0))
 		    || ScreenAttrs[off] != attr
@@ -8706,6 +8720,11 @@ screen_fill(
 		    || force_next
 #endif
 		    )
+#ifdef FEAT_TEXT_PROP
+		    // Skip if under a(nother) popup.
+		    && popup_mask[row * screen_Columns + col] <= screen_zindex
+#endif
+	       )
 	    {
 #if defined(FEAT_GUI) || defined(UNIX)
 		/* The bold trick may make a single row of pixels appear in
@@ -8842,6 +8861,10 @@ screenalloc(int doclear)
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
     short	    *new_TabPageIdxs;
+#ifdef FEAT_TEXT_PROP
+    short	    *new_popup_mask;
+    short	    *new_popup_mask_next;
+#endif
     tabpage_T	    *tp;
     static int	    entered = FALSE;		/* avoid recursiveness */
     static int	    done_outofmem_msg = FALSE;	/* did outofmem message */
@@ -8898,26 +8921,35 @@ retry:
 	win_free_lsize(wp);
     if (aucmd_win != NULL)
 	win_free_lsize(aucmd_win);
+#ifdef FEAT_TEXT_PROP
+    // global popup windows
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	win_free_lsize(wp);
+    // tab-local popup windows
+    FOR_ALL_TABPAGES(tp)
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    win_free_lsize(wp);
+#endif
 
-    new_ScreenLines = (schar_T *)lalloc(
-			      (Rows + 1) * Columns * sizeof(schar_T), FALSE);
+    new_ScreenLines = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     vim_memset(new_ScreenLinesC, 0, sizeof(u8char_T *) * MAX_MCO);
     if (enc_utf8)
     {
-	new_ScreenLinesUC = (u8char_T *)lalloc(
-			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
+	new_ScreenLinesUC = LALLOC_MULT(u8char_T, (Rows + 1) * Columns);
 	for (i = 0; i < p_mco; ++i)
-	    new_ScreenLinesC[i] = (u8char_T *)lalloc_clear(
-			     (Rows + 1) * Columns * sizeof(u8char_T), FALSE);
+	    new_ScreenLinesC[i] = LALLOC_CLEAR_MULT(u8char_T,
+							 (Rows + 1) * Columns);
     }
     if (enc_dbcs == DBCS_JPNU)
-	new_ScreenLines2 = (schar_T *)lalloc(
-			     (Rows + 1) * Columns * sizeof(schar_T), FALSE);
-    new_ScreenAttrs = (sattr_T *)lalloc(
-			      (Rows + 1) * Columns * sizeof(sattr_T), FALSE);
-    new_LineOffset = (unsigned *)lalloc(Rows * sizeof(unsigned), FALSE);
-    new_LineWraps = (char_u *)lalloc(Rows * sizeof(char_u), FALSE);
-    new_TabPageIdxs = (short *)lalloc(Columns * sizeof(short), FALSE);
+	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
+    new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
+    new_LineOffset = LALLOC_MULT(unsigned, Rows);
+    new_LineWraps = LALLOC_MULT(char_u, Rows);
+    new_TabPageIdxs = LALLOC_MULT(short, Columns);
+#ifdef FEAT_TEXT_PROP
+    new_popup_mask = LALLOC_MULT(short, Rows * Columns);
+    new_popup_mask_next = LALLOC_MULT(short, Rows * Columns);
+#endif
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
@@ -8930,6 +8962,24 @@ retry:
     if (aucmd_win != NULL && aucmd_win->w_lines == NULL
 					&& win_alloc_lines(aucmd_win) == FAIL)
 	outofmem = TRUE;
+#ifdef FEAT_TEXT_PROP
+    // global popup windows
+    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	if (win_alloc_lines(wp) == FAIL)
+	{
+	    outofmem = TRUE;
+	    goto give_up;
+	}
+    // tab-local popup windows
+    FOR_ALL_TABPAGES(tp)
+	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (win_alloc_lines(wp) == FAIL)
+	    {
+		outofmem = TRUE;
+		goto give_up;
+	    }
+#endif
+
 give_up:
 
     for (i = 0; i < p_mco; ++i)
@@ -8942,6 +8992,10 @@ give_up:
 	    || new_LineOffset == NULL
 	    || new_LineWraps == NULL
 	    || new_TabPageIdxs == NULL
+#ifdef FEAT_TEXT_PROP
+	    || new_popup_mask == NULL
+	    || new_popup_mask_next == NULL
+#endif
 	    || outofmem)
     {
 	if (ScreenLines != NULL || !done_outofmem_msg)
@@ -8962,6 +9016,10 @@ give_up:
 	VIM_CLEAR(new_LineOffset);
 	VIM_CLEAR(new_LineWraps);
 	VIM_CLEAR(new_TabPageIdxs);
+#ifdef FEAT_TEXT_PROP
+	VIM_CLEAR(new_popup_mask);
+	VIM_CLEAR(new_popup_mask_next);
+#endif
     }
     else
     {
@@ -9048,6 +9106,12 @@ give_up:
     LineOffset = new_LineOffset;
     LineWraps = new_LineWraps;
     TabPageIdxs = new_TabPageIdxs;
+#ifdef FEAT_TEXT_PROP
+    popup_mask = new_popup_mask;
+    popup_mask_next = new_popup_mask_next;
+    vim_memset(popup_mask, 0, Rows * Columns * sizeof(short));
+    popup_mask_refresh = TRUE;
+#endif
 
     /* It's important that screen_Rows and screen_Columns reflect the actual
      * size of ScreenLines[].  Set them before calling anything. */
@@ -9102,15 +9166,19 @@ free_screenlines(void)
 {
     int		i;
 
-    vim_free(ScreenLinesUC);
+    VIM_CLEAR(ScreenLinesUC);
     for (i = 0; i < Screen_mco; ++i)
-	vim_free(ScreenLinesC[i]);
-    vim_free(ScreenLines2);
-    vim_free(ScreenLines);
-    vim_free(ScreenAttrs);
-    vim_free(LineOffset);
-    vim_free(LineWraps);
-    vim_free(TabPageIdxs);
+	VIM_CLEAR(ScreenLinesC[i]);
+    VIM_CLEAR(ScreenLines2);
+    VIM_CLEAR(ScreenLines);
+    VIM_CLEAR(ScreenAttrs);
+    VIM_CLEAR(LineOffset);
+    VIM_CLEAR(LineWraps);
+    VIM_CLEAR(TabPageIdxs);
+#ifdef FEAT_TEXT_PROP
+    VIM_CLEAR(popup_mask);
+    VIM_CLEAR(popup_mask_next);
+#endif
 }
 
     void
@@ -9235,6 +9303,7 @@ linecopy(int to, int from, win_T *wp)
 /*
  * Return TRUE if clearing with term string "p" would work.
  * It can't work when the string is empty or it won't set the right background.
+ * Don't clear to end-of-line when there are popups, it may cause flicker.
  */
     int
 can_clear(char_u *p)
@@ -9249,7 +9318,11 @@ can_clear(char_u *p)
 #else
 		|| cterm_normal_bg_color == 0
 #endif
-		|| *T_UT != NUL));
+		|| *T_UT != NUL)
+#ifdef FEAT_TEXT_PROP
+	    && !(p == T_CE && popup_visible)
+#endif
+	    );
 }
 
 /*
@@ -9697,22 +9770,26 @@ win_do_lines(
     if (!redrawing() || line_count <= 0)
 	return FAIL;
 
-    /* When inserting lines would result in loss of command output, just redraw
-     * the lines. */
+    // When inserting lines would result in loss of command output, just redraw
+    // the lines.
     if (no_win_do_lines_ins && !del)
 	return FAIL;
 
-    /* only a few lines left: redraw is faster */
+    // only a few lines left: redraw is faster
     if (mayclear && Rows - line_count < 5 && wp->w_width == Columns)
     {
 	if (!no_win_do_lines_ins)
-	    screenclear();	    /* will set wp->w_lines_valid to 0 */
+	    screenclear();	    // will set wp->w_lines_valid to 0
 	return FAIL;
     }
 
-    /*
-     * Delete all remaining lines
-     */
+#ifdef FEAT_TEXT_PROP
+    // this doesn't work when there are popups visible
+    if (popup_visible)
+	return FAIL;
+#endif
+
+    // Delete all remaining lines
     if (row + line_count >= wp->w_height)
     {
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
@@ -9830,11 +9907,16 @@ screen_ins_lines(
      * - the line count is less than one
      * - the line count is more than 'ttyscroll'
      * - redrawing for a callback and there is a modeless selection
+     * - there is a popup window
      */
-     if (!screen_valid(TRUE) || line_count <= 0 || line_count > p_ttyscroll
+     if (!screen_valid(TRUE)
+	     || line_count <= 0 || line_count > p_ttyscroll
 #ifdef FEAT_CLIPBOARD
 	     || (clip_star.state != SELECT_CLEARED
 						 && redrawing_for_callback > 0)
+#endif
+#ifdef FEAT_TEXT_PROP
+	     || popup_visible
 #endif
 	     )
 	return FAIL;
@@ -10856,8 +10938,7 @@ redraw_win_toolbar(win_T *wp)
     vim_free(wp->w_winbar_items);
     for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
 	++item_count;
-    wp->w_winbar_items = (winbar_item_T *)alloc_clear(
-				     sizeof(winbar_item_T) * (item_count + 1));
+    wp->w_winbar_items = ALLOC_CLEAR_MULT(winbar_item_T, item_count + 1);
 
     /* TODO: use fewer spaces if there is not enough room */
     for (menu = wp->w_winbar->children;

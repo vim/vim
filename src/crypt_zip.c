@@ -90,7 +90,7 @@ crypt_zip_init(
     char_u	*p;
     zip_state_T	*zs;
 
-    zs = (zip_state_T *)alloc(sizeof(zip_state_T));
+    zs = ALLOC_ONE(zip_state_T);
     if (zs == NULL)
 	return FAIL;
     state->method_state = zs;

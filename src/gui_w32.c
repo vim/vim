@@ -3120,7 +3120,7 @@ logfont2name(LOGFONTW lf)
     charset_name = charset_id2name((int)lf.lfCharSet);
     quality_name = quality_id2name((int)lf.lfQuality);
 
-    res = (char *)alloc(strlen(font_name) + 30
+    res = alloc(strlen(font_name) + 30
 		    + (charset_name == NULL ? 0 : strlen(charset_name) + 2)
 		    + (quality_name == NULL ? 0 : strlen(quality_name) + 2));
     if (res != NULL)
@@ -3639,7 +3639,7 @@ _OnDropFiles(
 
     reset_VIsual();
 
-    fnames = (char_u **)alloc(cFiles * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, cFiles);
 
     if (fnames != NULL)
 	for (i = 0; i < cFiles; ++i)
@@ -4916,7 +4916,7 @@ gui_mch_do_spawn(char_u *arg)
 	if (wsession == NULL)
 	    goto error;
 	len = (int)wcslen(wsession) * 2 + 27 + 1;
-	cmd = (LPWSTR)alloc(len * (int)sizeof(WCHAR));
+	cmd = ALLOC_MULT(WCHAR, len);
 	if (cmd == NULL)
 	{
 	    vim_free(wsession);
@@ -4942,7 +4942,7 @@ gui_mch_do_spawn(char_u *arg)
 
     // Set up the new command line.
     len = (int)wcslen(name) + (int)wcslen(cmd) + (int)wcslen(warg) + 4;
-    newcmd = (LPWSTR)alloc(len * (int)sizeof(WCHAR));
+    newcmd = ALLOC_MULT(WCHAR, len);
     if (newcmd == NULL)
 	goto error;
     _snwprintf(newcmd, len, L"\"%s\"%s %s", name, cmd, warg);
@@ -5293,11 +5293,9 @@ gui_mch_init(void)
 
     /* Initialise the struct */
     s_findrep_struct.lStructSize = sizeof(s_findrep_struct);
-    s_findrep_struct.lpstrFindWhat =
-			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
+    s_findrep_struct.lpstrFindWhat = ALLOC_MULT(WCHAR, MSWIN_FR_BUFSIZE);
     s_findrep_struct.lpstrFindWhat[0] = NUL;
-    s_findrep_struct.lpstrReplaceWith =
-			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
+    s_findrep_struct.lpstrReplaceWith = ALLOC_MULT(WCHAR, MSWIN_FR_BUFSIZE);
     s_findrep_struct.lpstrReplaceWith[0] = NUL;
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
@@ -5613,7 +5611,7 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
     if (ret > 0)
     {
 	/* Allocate the requested buffer plus space for the NUL character. */
-	wbuf = (LPWSTR)alloc(ret + sizeof(WCHAR));
+	wbuf = alloc(ret + sizeof(WCHAR));
 	if (wbuf != NULL)
 	{
 	    pImmGetCompositionStringW(hIMC, GCS, wbuf, ret);
@@ -6058,7 +6056,7 @@ gui_mch_draw_string(
 
 	/* Don't give an out-of-memory message here, it would call us
 	 * recursively. */
-	padding = (int *)lalloc(pad_size * sizeof(int), FALSE);
+	padding = LALLOC_MULT(int, pad_size);
 	if (padding != NULL)
 	    for (i = 0; i < pad_size; i++)
 		padding[i] = gui.char_width;
@@ -6095,10 +6093,10 @@ gui_mch_draw_string(
 	    && (unicodebuf == NULL || len > unibuflen))
     {
 	vim_free(unicodebuf);
-	unicodebuf = (WCHAR *)lalloc(len * sizeof(WCHAR), FALSE);
+	unicodebuf = LALLOC_MULT(WCHAR, len);
 
 	vim_free(unicodepdy);
-	unicodepdy = (int *)lalloc(len * sizeof(int), FALSE);
+	unicodepdy = LALLOC_MULT(int, len);
 
 	unibuflen = len;
     }
@@ -6654,7 +6652,7 @@ dialog_callback(
 	/* If the edit box exists, copy the string. */
 	if (s_textfield != NULL)
 	{
-	    WCHAR  *wp = (WCHAR *)alloc(IOSIZE * sizeof(WCHAR));
+	    WCHAR  *wp = ALLOC_MULT(WCHAR, IOSIZE);
 	    char_u *p;
 
 	    GetDlgItemTextW(hwnd, DLG_NONBUTTON_CONTROL + 2, wp, IOSIZE);
@@ -6803,12 +6801,12 @@ gui_mch_dialog(
 	dfltbutton = -1;
 
     /* Allocate array to hold the width of each button */
-    buttonWidths = (int *)alloc(numButtons * sizeof(int));
+    buttonWidths = ALLOC_MULT(int, numButtons);
     if (buttonWidths == NULL)
 	return -1;
 
     /* Allocate array to hold the X position of each button */
-    buttonPositions = (int *)alloc(numButtons * sizeof(int));
+    buttonPositions = ALLOC_MULT(int, numButtons);
     if (buttonPositions == NULL)
 	return -1;
 
@@ -8232,8 +8230,7 @@ gui_mch_register_sign(char_u *signfile)
     }
 
     psign = NULL;
-    if (sign.hImage && (psign = (signicon_t *)alloc(sizeof(signicon_t)))
-								      != NULL)
+    if (sign.hImage && (psign = ALLOC_ONE(signicon_t)) != NULL)
 	*psign = sign;
 
     if (!psign)
@@ -8361,7 +8358,7 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
     else
 	ToolInfoSize = sizeof(TOOLINFOW);
 
-    pti = (TOOLINFOW *)alloc(ToolInfoSize);
+    pti = alloc(ToolInfoSize);
     if (pti == NULL)
 	return;
 
@@ -8532,7 +8529,7 @@ gui_mch_create_beval_area(
 	return NULL;
     }
 
-    beval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
+    beval = ALLOC_CLEAR_ONE(BalloonEval);
     if (beval != NULL)
     {
 	beval->target = s_textArea;

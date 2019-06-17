@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 May 26
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,16 +6,14 @@
 
 Displaying text in floating window.			*popup* *popup-window*
 
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
 1. Introduction			|popup-intro|
 2. Functions			|popup-functions|
 3. Examples			|popup-examples|
 
 
-{not available if the |+eval| feature was disabled at compile time}
-{not able to use text properties if the |+textprop| feature was disabled at
-compile time}
+{not available if the |+textprop| feature was disabled at compile time}
 
 ==============================================================================
 1. Introduction						*popup-intro*
@@ -38,15 +36,16 @@ The default color used is "Pmenu".  If you prefer something else use the
 	hi MyPopupColor ctermbg=lightblue guibg=lightblue
 	call setwinvar(winid, '&wincolor', 'MyPopupColor')
 
-'hlsearch' and match highlighting are not displayed in a popup window.
+'hlsearch' highlighting is not displayed in a popup window.
 
 A popup window has a window-ID like other windows, but behaves differently.
 The size can be up to the whole Vim window and it overlaps other windows.
-Popup windows can also overlap each other.
+Popup windows can also overlap each other.  The "zindex" property specifies
+what goes on top of what.
 
 The popup window contains a buffer, and that buffer is always associated with
-the popup window.  The window cannot be used in Normal, Visual or Insert mode,
-it does not get keyboard focus.  You can use functions like `setbufline()` to
+the popup window.  The window cannot be in Normal, Visual or Insert mode, it
+does not get keyboard focus.  You can use functions like `setbufline()` to
 change the text in the buffer.  There are more differences from how this
 window and buffer behave compared to regular windows and buffers, see
 |popup-buffer|.
@@ -60,51 +59,129 @@ WINDOW POSITION AND SIZE			*popup-position*
 
 The height of the window is normally equal to the number of, possibly
 wrapping, lines in the buffer.  It can be limited with the "maxheight"
-property.  You can use empty lines to increase the height.
+property.  You can use empty lines to increase the height or the "minheight"
+property.
 
 The width of the window is normally equal to the longest line in the buffer.
 It can be limited with the "maxwidth" property.  You can use spaces to
-increase the width.
+increase the width or use the "minwidth" property.
 
-By default the 'wrap' option is set, so that no text disappears.  However, if
-there is not enough space, some text may be invisible.
+By default the 'wrap' option is set, so that no text disappears.  Otherwise,
+if there is not enough space then the window is shifted left in order to
+display more text. This can be disabled with the "fixed" property. Also
+disabled when right-aligned.
+
+Vim tries to show the popup in the location you specify.  In some cases, e.g.
+when the popup would go outside of the Vim window, it will show it somewhere
+else.  E.g. if you use `popup_atcursor()` the popup normally shows just above
+the current cursor position, but if the cursor is close to the top of the Vim
+window it will be placed below the cursor position.
+
+When the screen scrolls up for output of an Ex command, popups move too, so
+that they will not cover the output.
+
+The current cursor position is displayed even when it is under a popup window.
+That way you can still see where it is, even though you cannot see the text
+that it is in.
+
 
 
 TODO:
-
-Example how to use syntax highlighting of a code snippet.
-
-Scrolling: When the screen scrolls up for output of an Ex command, what
-happens with popups?
-1. Stay where they are.  Problem: listed text may go behind and can't be read.
-2. Scroll with the page.  What if they get updated?  Either postpone, or take
-   the scroll offset into account.
-Probably 2. is the best choice.
-
-
-IMPLEMENTATION:
-- Code is in popupwin.c
-- Implement list of lines with text properties
-- Implement filter.
-- Handle screen resize in screenalloc().
-- Make redrawing more efficient and avoid flicker.
-- Properly figure out the size and position.
-- Implement all the unimplemented options and features.
+- Why does 'nrformats' leak from the popup window buffer???
+- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
+  Use ERROR_IF_POPUP_WINDOW for more commands.
+- Add 'balloonpopup': instead of showing text, let the callback open a popup
+  window and return the window ID.   The popup will then be closed when the
+  mouse moves, except when it moves inside the popup.
+- For the "moved" property also include mouse movement?
+- Make redrawing more efficient and avoid flicker:
+    - put popup menu also put in popup_mask?
+- Invoke filter with character before mapping?
+- Figure out the size and position better.
+    if wrapping splits a double-wide character
+    if wrapping inserts indent
+- When drawing on top half a double-wide character, display ">" or "<" in the
+  incomplete cell.
+- Can the buffer be re-used, to avoid using up lots of buffer numbers?
+- Use a popup window for the "info" item of completion instead of using a
+  preview window.  Ideas in issue #4544.
+  How to add highlighting?
+- When the lines do not fit show a scrollbar (like in the popup menu).
+  Use the mouse wheel for scrolling.
+- Implement:
+	tabpage option with number
+	flip option
+	transparent text property
 
 
 ==============================================================================
 2. Functions						*popup-functions*
 
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE  
+THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 
-[functions to be moved to eval.txt later, keep overview of functions here]
+Creating a popup window:
+	|popup_create()|	centered in the screen
+	|popup_atcursor()|	just above the cursor position, closes when
+				the cursor moves away
+	|popup_notifiation()|	show a notification for three seconds
+	|popup_dialog()|	centered with padding and border
+	|popup_menu()|		prompt for selecting an item from a list
+
+Manipulating a popup window:
+	|popup_hide()|		hide a popup temporarily
+	|popup_show()|		show a previously hidden popup
+	|popup_move()|		change the position and size of a popup
+	|popup_setoptions()|	override options of a popup
+	|popup_settext()|	replace the popup buffer contents
+
+Closing popup windows:
+	|popup_close()|		close one popup
+	|popup_clear()|		close all popups
+
+Filter functions:
+	|popup_filter_menu()|	select from a list of items
+	|popup_filter_yesno()|	blocks until 'y' or 'n' is pressed
+
+Other:
+	|popup_getoptions()|	get current options for a popup
+	|popup_getpos()|	get actual position and size of a popup
+
+
+[functions help to be moved to eval.txt later]
+
+popup_atcursor({text}, {options})			 *popup_atcursor()*
+		Show the {text} above the cursor, and close it when the cursor
+		moves.  This works like: >
+			call popup_create({text}, {
+				\ 'pos': 'botleft',
+				\ 'line': 'cursor-1',
+				\ 'col': 'cursor',
+				\ 'moved': 'WORD',
+				\ })
+<		Use {options} to change the properties.
+
+
+							*popup_clear()*
+popup_clear()	Emergency solution to a misbehaving plugin: close all popup
+		windows.
+
+
+popup_close({id} [, {result}])				*popup_close()*
+		Close popup {id}.  The window and the associated buffer will
+		be deleted.
+
+		If the popup has a callback it will be called just before the
+		popup window is deleted.  If the optional {result} is present
+		it will be passed as the second argument of the callback.
+		Otherwise zero is passed to the callback.
+
 
 popup_create({text}, {options})				*popup_create()*
 		Open a popup window showing {text}, which is either:
 		- a string
 		- a list of strings
 		- a list of text lines with text properties
-		  	{not implemented yet}
+
 		{options} is a dictionary with many possible entries.
 		See |popup_create-usage| for details.
 
@@ -117,65 +194,87 @@ popup_create({text}, {options})				*popup_create()*
 <		In case of failure zero is returned.
 
 
-popup_close({id})					*popup_close()*
-		Close popup {id}.  The window and the associated buffer will
-		be deleted.
-
-
 popup_dialog({text}, {options})				*popup_dialog()*
-	  	{not implemented yet}
 		Just like |popup_create()| but with these default options: >
 			call popup_create({text}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
+				\ 'drag': 1,
 				\ 'border': [],
+				\ 'padding': [],
 				\})
-<		Use {options} to change the properties.
-
-
-popup_notification({text}, {options})			 *popup_notification()*
-	  	{not implemented yet}
-		Show the {text} for 3 seconds at the top of the Vim window.
-		This works like: >
-			call popup_create({text}, {
-				\ 'line': 1,
-				\ 'col': 10,
-				\ 'time': 3000,
-				\ 'tab': -1,
-				\ 'zindex': 200,
-				\ 'highlight': 'WarningMsg',
-				\ 'border': [],
+<		Use {options} to change the properties. E.g. add a 'filter'
+		option with value 'popup_filter_yesno'.  Example: >
+			call popup_create('do you want to quit (Yes/no)?', {
+				\ 'filter': 'popup_filter_yesno',
+				\ 'callback': 'QuitCallback',
 				\ })
-<		Use {options} to change the properties.
+
+<		By default the dialog can be dragged, so that text below it
+		can be read if needed.
 
 
-popup_atcursor({text}, {options})			 *popup_atcursor()*
-	  	{not implemented yet}
-		Show the {text} above the cursor, and close it when the cursor
-		moves.  This works like: >
-			call popup_create({text}, {
-				\ 'line': 'cursor-1',
-				\ 'col': 'cursor',
-				\ 'moved': 'WORD',
-				\ })
-<		Use {options} to change the properties.
+popup_filter_menu({id}, {key})				*popup_filter_menu()*
+		Filter that can be used for a popup. These keys can be used:
+		    j <Down>	select item below
+		    k <Up>		select item above
+		    <Space> <Enter>	accept current selection
+		    x Esc CTRL-C	cancel the menu
+		Other keys are ignored.
+
+		A match is set on that line to highlight it, see
+		|popup_menu()|.
+
+		When the current selection is accepted the "callback" of the
+		popup menu is invoked with the index of the selected line as
+		the second argument.  The first entry has index one.
+		Cancelling the menu invokes the callback with -1.
 
 
-popup_menu({text}, {options})				 *popup_menu()*
-	  	{not implemented yet}
-		Show the {text} near the cursor, handle selecting one of the
-		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {text} should have multiple lines to make this
-		useful.  This works like: >
-			call popup_create({text}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'wrap': 0,
-				\ 'border': [],
-				\ 'filter': 'popup_filter_menu',
-				\ })
-<		Use {options} to change the properties.  Should at least set
-		"callback" to a function that handles the selected item.
+popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
+		Filter that can be used for a popup. It handles only the keys
+		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
+		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
+		as the second argument.  Pressing Esc and 'x' works like
+		pressing 'n'.  CTRL-C invokes the callback with -1.  Other
+		keys are ignored.
+
+
+popup_getoptions({id})					*popup_getoptions()*
+		Return the {options} for popup {id} in a Dict.
+		A zero value means the option was not set.  For "zindex" the
+		default value is returned, not zero.
+
+		The "moved" entry is a list with minimum and maximum column,
+		[0, 0] when not set.
+
+		"border" and "padding" are not included when all values are
+		zero.  When all values are one then an empty list is included.
+
+		"borderhighlight" is not included when all values are empty.
+
+		If popup window {id} is not found an empty Dict is returned.
+
+
+popup_getpos({id})					*popup_getpos()*
+		Return the position and size of popup {id}.  Returns a Dict
+		with these entries:
+		    col		screen column of the popup, one-based
+		    line	screen line of the popup, one-based
+		    width	width of the whole popup in screen cells
+		    height	height of the whole popup in screen cells
+		    core_col	screen column of the text box
+		    core_line	screen line of the text box
+		    core_width	width of the text box in screen cells
+		    core_height	height of the text box in screen cells
+		    visible	one if the popup is displayed, zero if hidden
+		Note that these are the actual screen positions.  They differ
+		from the values in `popup_getoptions()` for the sizing and
+		positioning mechanism applied.
+
+		The "core_" values exclude the padding and border.
+
+		If popup window {id} is not found an empty Dict is returned.
 
 
 popup_hide({id})						*popup_hide()*
@@ -185,67 +284,99 @@ popup_hide({id})						*popup_hide()*
 		If window {id} does not exist nothing happens.  If window {id}
 		exists but is not a popup window an error is given. *E993*
 
+
+popup_menu({text}, {options})				 *popup_menu()*
+		Show the {text} near the cursor, handle selecting one of the
+		items with cursorkeys, and close it an item is selected with
+		Space or Enter. {text} should have multiple lines to make this
+		useful.  This works like: >
+			call popup_create({text}, {
+				\ 'pos': 'center',
+				\ 'zindex': 200,
+				\ 'drag': 1,
+				\ 'wrap': 0,
+				\ 'border': [],
+				\ 'padding': [],
+				\ 'filter': 'popup_filter_menu',
+				\ })
+<		The current line is highlighted with a match using
+		PopupSelected, or |PmenuSel| if that is not defined.
+
+		Use {options} to change the properties.  Should at least set
+		"callback" to a function that handles the selected item.
+
+
+popup_move({id}, {options})					*popup_move()*
+		Move popup {id} to the position specified with {options}.
+		{options} may contain the items from |popup_create()| that
+		specify the popup position:
+			line
+			col
+			pos
+			maxheight
+			minheight
+			maxwidth
+			minwidth
+			fixed
+		For {id} see `popup_hide()`.
+		For other options see |popup_setoptions()|.
+
+
+popup_notification({text}, {options})			 *popup_notification()*
+		Show the {text} for 3 seconds at the top of the Vim window.
+		This works like: >
+			call popup_create({text}, {
+				\ 'line': 1,
+				\ 'col': 10,
+				\ 'minwidth': 20,
+				\ 'time': 3000,
+				\ 'tabpage': -1,
+				\ 'zindex': 300,
+				\ 'drag': 1,
+				\ 'highlight': 'WarningMsg',
+				\ 'border': [],
+				\ 'padding': [0,1,0,1],
+				\ })
+<		The PopupNotification highlight group is used instead of
+		WarningMsg if it is defined.
+
+		The position will be adjusted to avoid overlap with other
+		notifications.
+		Use {options} to change the properties.
+
+
 popup_show({id})						*popup_show()*
 		If {id} is a hidden popup, show it now.
 		For {id} see `popup_hide()`.
 
-popup_move({id}, {options})					*popup_move()*
-	  	{not implemented yet}
-		Move popup {id} to the position speficied with {options}.
-		{options} may contain the items from |popup_create()| that
-		specify the popup position: "line", "col", "pos", "maxheight",
-		"minheight", "maxwidth" and "minwidth".
-		For {id} see `popup_hide()`.
-
-
-popup_filter_menu({id}, {key})				*popup_filter_menu()*
-	  	{not implemented yet}
-		Filter that can be used for a popup. It handles the cursor
-		keys to move the selected index in the popup. Space and Enter
-		can be used to select an item.  Invokes the "callback" of the
-		popup menu with the index of the selected line as the second
-		argument.
-
-
-popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
-	  	{not implemented yet}
-		Filter that can be used for a popup. It handles only the keys
-		'y', 'Y' and 'n' or 'N'.  Invokes the "callback" of the
-		popup menu with the 1 for 'y' or 'Y' and zero for 'n' or 'N'
-		as the second argument.  Pressing Esc and CTRL-C works like
-		pressing 'n'.
-
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
-	  	{not implemented yet}
 		Override options in popup {id} with entries in {options}.
+		These options can be set:
+			flip
+			firstline
+			title
+			wrap
+			drag
+			highlight
+			padding
+			border
+			borderhighlight
+			borderchars
+			zindex
+			time
+			moved
+			filter
+			callback
+		The options from |popup_move()| can also be used.
+		For "hidden" use |popup_hide()| and |popup_show()|.
+		"tabpage" cannot be changed.
 
-
-popup_getoptions({id})					*popup_getoptions()*
-	  	{not implemented yet}
-		Return the {options} for popup {id}.
-
-popup_getposition({id})					*popup_getposition()*
-	  	{not implemented yet}
-		Return the position and size of popup {id}.  Returns a Dict
-		with these entries:
-			col	screen column of the popup, one-based
-			line	screen line of the popup, one-based
-			width	width of the popup in screen cells
-			height	height of the popup in screen cells
-
-win_execute({id}, {command})
-	  	{not implemented yet}
-		Like `execute()` but in the context of window {id}.
-		The window will temporarily be made the current window,
-		without triggering autocommands.
-		Example: >
-			call win_execute(winid, 'syntax enable')
-<
-
-							*:popupclear* *:popupc*
-:popupc[lear]	Emergency solution to a misbehaving plugin: close all popup
-		windows.
+popup_settext({id}, {text})				*popup_settext()*
+		Set the text of the buffer in poup win {id}. {text} is the
+		same as supplied to |popup_create()|.
+		Does not change the window size or position, other than caused
+		by the different text.
 
 
 POPUP BUFFER AND WINDOW					*popup-buffer*
@@ -254,28 +385,36 @@ A new buffer is created to hold the text and text properties of the popup
 window.  The buffer is always associated with the popup window and
 manipulation is restricted:
 - the buffer has no name
-- 'buftype' is "popup" 
+- 'buftype' is "popup"
 - 'swapfile' is off
 - 'bufhidden' is "hide"
 - 'buflisted' is off
 - 'undolevels' is -1: no undo at all
-TODO: more
+- all other buffer-local and window_local options are set to their Vim default
+  value.
 
-It is possible to change these options, but anything might break then, so
-better leave them alone.
+It is possible to change the specifically mentioned options, but anything
+might break then, so better leave them alone.
 
 The window does have a cursor position, but the cursor is not displayed.
+
+To execute a command in the context of the popup window and buffer use
+`win_execute()`.  Example: >
+	call win_execute(winid, 'syntax enable')
 
 Options can be set on the window with `setwinvar()`, e.g.: >
 	call setwinvar(winid, '&wrap', 0)
 And options can be set on the buffer with `setbufvar()`, e.g.: >
 	call setbufvar(winbufnr(winid), '&filetype', 'java')
+Note that this does not trigger autocommands.  Use `win_execute()` if you do
+need them.
 
 
 POPUP_CREATE() ARGUMENTS				*popup_create-usage*
 
-The first argument of |popup_create()| specifies the text to be displayed, and
-optionally text properties.  It is in one of three forms:
+The first argument of |popup_create()| (and the second argument to
+|popup_setttext()|) specifies the text to be displayed, and optionally text
+properties.  It is in one of three forms:
 - a string
 - a list of strings
 - a list of dictionaries, where each dictionary has these entries:
@@ -287,75 +426,113 @@ optionally text properties.  It is in one of three forms:
 			|popup-props|.
 
 The second argument of |popup_create()| is a dictionary with options:
-	line		screen line where to position the popup; can use
-			"cursor", "cursor+1" or "cursor-1" to use the line of
-			the cursor and add or subtract a number of lines;
-			default is "cursor-1".
-			{only number is implemented}
-	col		screen column where to position the popup; can use
-			"cursor" to use the column of the cursor, "cursor+99"
-			and "cursor-99" to add or subtract a number of
-			columns; default is "cursor"
-			{only number is implemented}
+	line		Screen line where to position the popup.  Can use a
+			number or "cursor", "cursor+1" or "cursor-1" to use
+			the line of the cursor and add or subtract a number of
+			lines.  If omitted the popup is vertically centered.
+			The first line is 1.
+	col		Screen column where to position the popup.  Can use a
+			number or "cursor" to use the column of the cursor,
+			"cursor+9" or "cursor-9" to add or subtract a number
+			of columns.  If omitted the popup is horizontally
+			centered.  The first column is 1.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
-			used for.  Default is "botleft".  Alternatively
-			"center" can be used to position the popup in the
-			center of the Vim window.
-			{not implemented yet}
-	flip		when TRUE (the default) and the position is relative
+			used for.  When not set "topleft" is used.
+			Alternatively "center" can be used to position the
+			popup in the center of the Vim window, in which case
+			"line" and "col" are ignored.
+	fixed		When FALSE (the default), and:
+			 - "pos" is "botleft" or "topleft", and
+			 - "wrap" is off, and
+			 - the popup would be truncated at the right edge of
+			   the screen, then
+			the popup is moved to the left so as to fit the
+			contents on the screen.  Set to TRUE to disable this.
+	flip		When TRUE (the default) and the position is relative
 			to the cursor, flip to below or above the cursor to
 			avoid overlap with the |popupmenu-completion| or
-			another popup with a higher "zindex"
+			another popup with a higher "zindex".  When there is
+			no space above/below the cursor then show the popup to
+			the side of the popup or popup menu.
 			{not implemented yet}
-	maxheight	maximum height
-	minheight	minimum height
-			{not implemented yet}
-	maxwidth	maximum width
-	minwidth	minimum width
-			{not implemented yet}
-	hidden		when TRUE the popup exists but is not displayed; use
+	maxheight	Maximum height of the contents, excluding border and
+			padding.
+	minheight	Minimum height of the contents, excluding border and
+			padding.
+	maxwidth	Maximum width of the contents, excluding border and
+			padding.
+	minwidth	Minimum width of the contents, excluding border and
+			padding.
+	firstline	First buffer line to display.  When larger than one it
+			looks like the text scrolled up.  When out of range
+			the last buffer line will at the top of the window.
+	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
-	tab		when -1: display the popup on all tabs; when 0 (the
-			default): display the popup on the current tab;
-			otherwise the number of the tab page the popup is
-			displayed on; when invalid the current tab is used
+	tabpage		When -1: display the popup on all tabs.
+			When 0 (the default): display the popup on the current
+			tab page.
+			Otherwise the number of the tab page the popup is
+			displayed on; when invalid the current tab page is used.
 			{only -1 and 0 are implemented}
-	title		text to be displayed above the first item in the
-			popup, on top of any border
-			{not implemented yet}
-	wrap		TRUE to make the lines wrap (default TRUE)
-			{not implemented yet}
-	highlight	highlight group name to use for the text, stored in
-			the 'wincolor' option
-	border		list with numbers, defining the border thickness
-			above/right/below/left of the popup; an empty list
-			uses a border of 1 all around
-			{not implemented yet}
-	borderhighlight	highlight group name to use for the border
-			{not implemented yet}
-	borderchars	list with characters, defining the character to use
-			for the top/right/bottom/left border; optionally
+	title		Text to be displayed above the first item in the
+			popup, on top of any border.  If there is no top
+			border one line of padding is added to put the title
+			on.  You might want to add one or more spaces at the
+			start and end as padding.
+	wrap		TRUE to make the lines wrap (default TRUE).
+	drag		TRUE to allow the popup to be dragged with the mouse
+			by grabbing at at the border.  Has no effect if the
+			popup does not have a border. As soon as dragging
+			starts and "pos" is "center" it is changed to
+			"topleft".
+	highlight	Highlight group name to use for the text, stored in
+			the 'wincolor' option.
+	padding		List with numbers, defining the padding
+			above/right/below/left of the popup (similar to CSS).
+			An empty list uses a padding of 1 all around.  The
+			padding goes around the text, inside any border.
+			Padding uses the 'wincolor' highlight.
+			Example: [1, 2, 1, 3] has 1 line of padding above, 2
+			columns on the right, 1 line below and 3 columns on
+			the left.
+	border		List with numbers, defining the border thickness
+			above/right/below/left of the popup (similar to CSS).
+			Only values of zero and non-zero are recognized.
+			An empty list uses a border all around.
+	borderhighlight	List of highlight group names to use for the border.
+			When one entry it is used for all borders, otherwise
+			the highlight for the top/right/bottom/left border.
+			Example: ['TopColor', 'RightColor', 'BottomColor,
+			'LeftColor']
+	borderchars	List with characters, defining the character to use
+			for the top/right/bottom/left border.  Optionally
 			followed by the character to use for the
-			topright/botright/botleft/topleft corner; an empty
-			list can be used to show a double line all around
-			{not implemented yet}
-	zindex		priority for the popup, default 50
-	time		time in milliseconds after which the popup will close;
-			when omitted |popup_close()| must be used.
-	moved		"cell": close the popup if the cursor moved at least
-			one screen cell; "word" allows for moving within
-			|<cword>|, "WORD" allows for moving within |<cWORD>|,
-			a list with two numbers specifies the start and end
-			column
-			{not implemented yet}
-	filter		a callback that can filter typed characters, see 
-			|popup-filter|
-			{not implemented yet}
-	callback	a callback to be used when the popup closes, e.g. when
-			using |popup_filter_menu()|, see |popup-callback|.
-			{not implemented yet}
+			topleft/topright/botright/botleft corner.
+			Example: ['-', '|', '-', '|', '┌', '┐', '┘', '└']
+			When the list has one character it is used for all.
+			When the list has two characters the first is used for
+			the border lines, the second for the corners.
+			By default a double line is used all around when
+			'encoding' is "utf-8", otherwise ASCII characters are
+			used.
+	zindex		Priority for the popup, default 50.  Minimum value is
+			1, maximum value is 32000.
+	time		Time in milliseconds after which the popup will close.
+			When omitted |popup_close()| must be used.
+	moved		Specifies to close the popup if the cursor moved:
+			- "any": if the cursor moved at all
+			- "word": if the cursor moved outside |<cword>|
+			- "WORD": if the cursor moved outside |<cWORD>|
+			- [{start}, {end}]: if the cursor moved before column
+			  {start} or after {end}
+			The popup also closes if the cursor moves to another
+			line or to another window.
+	filter		A callback that can filter typed characters, see
+			|popup-filter|.
+	callback	A callback that is called when the popup closes, e.g.
+			when using |popup_filter_menu()|, see |popup-callback|.
 
 Depending on the "zindex" the popup goes under or above other popups.  The
 completion menu (|popup-menu|) has zindex 100.  For messages that occur for a
@@ -386,14 +563,13 @@ So we get:
 	type		name of the text property type, as added with
 			|prop_type_add()|
 	transparent	do not show these characters, show the text under it;
-			if there is an border character to the right or below
+			if there is a border character to the right or below
 			it will be made transparent as well
 			{not implemented yet}
 
 
 POPUP FILTER						*popup-filter*
 
-{not implemented yet}
 A callback that gets any typed keys while a popup is displayed.  The filter is
 not invoked when the popup is hidden.
 
@@ -404,10 +580,23 @@ filter is also called.  The filter of the popup window with the highest zindex
 is called first.
 
 The filter function is called with two arguments: the ID of the popup and the
-key.
+key as a string, e.g.: >
+	func MyFilter(winid, key)
+	  if a:key == "\<F2>"
+	    " do something
+	    return 1
+	  endif
+	  if a:key == 'x'
+	    call popup_close(a:winid)
+	    return 1
+	  endif
+	  return 0
+	endfunc
+
+Currently the key is what results after any mapping.  This may change...
 
 Some common key actions:
-	Esc		close the popup
+	x		close the popup (see note below)
 	cursor keys	select another entry
 	Tab		accept current suggestion
 
@@ -418,14 +607,22 @@ popup is col 1, row 1 (not counting the border).
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.
 
+Note that "x" is the normal way to close a popup.  You may want to use Esc,
+but since many keys start with an Esc character, there may be a delay before
+Vim recognizes the Esc key.  If you do use Esc, it is recommended to set the
+'ttimeoutlen' option to 100 and set 'timeout' and/or 'ttimeout'.
+
 
 POPUP CALLBACK						*popup-callback*
 
-{not implemented yet}
-A callback that is invoked when the popup closes.  Used by
-|popup_filter_menu()|.  Invoked with two arguments: the ID of the popup and
-the result, which would usually be an index in the popup lines, or whatever
-the filter wants to pass.
+A callback that is invoked when the popup closes.
+
+The callback is invoked with two arguments: the ID of the popup window and the
+result, which could be an index in the popup lines, or whatever was passed as
+the second argument of `popup_close()`.
+
+If the popup is force-closed, e.g. because the cursor moved or CTRL-C was
+pressed, the number -1 is passed to the callback.
 
 ==============================================================================
 3. Examples						*popup-examples*

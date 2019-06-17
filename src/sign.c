@@ -85,7 +85,7 @@ sign_group_ref(char_u *groupname)
     if (HASHITEM_EMPTY(hi))
     {
 	// new group
-	group = (signgroup_T *)alloc(sizeof(signgroup_T) + STRLEN(groupname));
+	group = alloc(sizeof(signgroup_T) + STRLEN(groupname));
 	if (group == NULL)
 	    return NULL;
 	STRCPY(group->sg_name, groupname);
@@ -201,8 +201,7 @@ insert_sign(
 {
     signlist_T	*newsign;
 
-    newsign = (signlist_T *)lalloc_id(sizeof(signlist_T), FALSE,
-							      aid_insert_sign);
+    newsign = lalloc_id(sizeof(signlist_T), FALSE, aid_insert_sign);
     if (newsign != NULL)
     {
 	newsign->id = id;
@@ -232,7 +231,7 @@ insert_sign(
 	    if (buf->b_signlist == NULL)
 	    {
 		redraw_buf_later(buf, NOT_VALID);
-		changed_cline_bef_curs();
+		changed_line_abv_curs();
 	    }
 
 	    // first sign in signlist
@@ -309,6 +308,78 @@ sign_get_info(signlist_T *sign)
 }
 
 /*
+ * Sort the signs placed on the same line as "sign" by priority.  Invoked after
+ * changing the priority of an already placed sign.  Assumes the signs in the
+ * buffer are sorted by line number and priority.
+ */
+    static void
+sign_sort_by_prio_on_line(buf_T *buf, signlist_T *sign)
+{
+    signlist_T *p = NULL;
+
+    // If there is only one sign in the buffer or only one sign on the line or
+    // the sign is already sorted by priority, then return.
+    if ((sign->prev == NULL
+		|| sign->prev->lnum != sign->lnum
+		|| sign->prev->priority > sign->priority)
+	    && (sign->next == NULL
+		|| sign->next->lnum != sign->lnum
+		|| sign->next->priority < sign->priority))
+	return;
+
+    // One or more signs on the same line as 'sign'
+    // Find a sign after which 'sign' should be inserted
+
+    // First search backward for a sign with higher priority on the same line
+    p = sign;
+    while (p->prev != NULL && p->prev->lnum == sign->lnum
+					&& p->prev->priority <= sign->priority)
+	p = p->prev;
+
+    if (p == sign)
+    {
+	// Sign not found. Search forward for a sign with priority just before
+	// 'sign'.
+	p = sign->next;
+	while (p->next != NULL && p->next->lnum == sign->lnum
+					 && p->next->priority > sign->priority)
+	    p = p->next;
+    }
+
+    // Remove 'sign' from the list
+    if (buf->b_signlist == sign)
+	buf->b_signlist = sign->next;
+    if (sign->prev != NULL)
+	sign->prev->next = sign->next;
+    if (sign->next != NULL)
+	sign->next->prev = sign->prev;
+    sign->prev = NULL;
+    sign->next = NULL;
+
+    // Re-insert 'sign' at the right place
+    if (p->priority <= sign->priority)
+    {
+	// 'sign' has a higher priority and should be inserted before 'p'
+	sign->prev = p->prev;
+	sign->next = p;
+	p->prev = sign;
+	if (sign->prev != NULL)
+	    sign->prev->next = sign;
+	if (buf->b_signlist == p)
+	    buf->b_signlist = sign;
+    }
+    else
+    {
+	// 'sign' has a lower priority and should be inserted after 'p'
+	sign->prev = p;
+	sign->next = p->next;
+	p->next = sign;
+	if (sign->next != NULL)
+	    sign->next->prev = sign;
+    }
+}
+
+/*
  * Add the sign into the signlist. Find the right spot to do it though.
  */
     static void
@@ -331,6 +402,8 @@ buf_addsign(
 	{
 	    // Update an existing sign
 	    sign->typenr = typenr;
+	    sign->priority = prio;
+	    sign_sort_by_prio_on_line(buf, sign);
 	    return;
 	}
 	else if (lnum < sign->lnum)
@@ -458,7 +531,7 @@ buf_delsign(
     if (buf->b_signlist == NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
+	changed_line_abv_curs();
     }
 
     return lnum;
@@ -578,7 +651,7 @@ buf_delete_signs(buf_T *buf, char_u *group)
     if (buf->b_signlist != NULL && curwin != NULL)
     {
 	redraw_buf_later(buf, NOT_VALID);
-	changed_cline_bef_curs();
+	changed_line_abv_curs();
     }
 
     lastp = &buf->b_signlist;
@@ -736,7 +809,7 @@ alloc_new_sign(char_u *name)
     int	start = next_sign_typenr;
 
     // Allocate a new sign.
-    sp = (sign_T *)alloc_clear_id(sizeof(sign_T), aid_sign_define_by_name);
+    sp = alloc_clear_id(sizeof(sign_T), aid_sign_define_by_name);
     if (sp == NULL)
 	return NULL;
 
