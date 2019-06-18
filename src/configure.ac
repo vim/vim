@@ -3742,7 +3742,7 @@ AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
+	strnicmp strpbrk strtol tgetent towlower towupper iswupper tzset \
 	usleep utime utimes mblen ftruncate unsetenv posix_openpt)
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_FSEEKO

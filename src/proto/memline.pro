@@ -13,6 +13,7 @@ void ml_recover(int checkext);
 int recover_names(char_u *fname, int list, int nr, char_u **fname_out);
 char_u *make_percent_swname(char_u *dir, char_u *name);
 void get_b0_dict(char_u *fname, dict_T *d);
+struct tm *vim_localtime(const time_t *timep, struct tm *result);
 char *get_ctime(time_t thetime, int add_newline);
 void ml_sync_all(int check_file, int check_char);
 void ml_preserve(buf_T *buf, int message);
