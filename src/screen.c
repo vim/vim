@@ -3253,8 +3253,10 @@ win_line(
     int		mb_c = 0;		/* decoded multi-byte character */
     int		mb_utf8 = FALSE;	/* screen char is UTF-8 char */
     int		u8cc[MAX_MCO];		/* composing UTF-8 chars */
+#if defined(FEAT_DIFF) || defined(FEAT_SIGNS)
     int		filler_lines = 0;	/* nr of filler lines to be drawn */
     int		filler_todo = 0;	/* nr of filler lines still to do + 1 */
+#endif
 #ifdef FEAT_DIFF
     hlf_T	diff_hlf = (hlf_T)0;	/* type of diff highlighting */
     int		change_start = MAXCOL;	/* first col of changed area */
