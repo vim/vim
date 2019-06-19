@@ -5678,6 +5678,8 @@ garbage_collect(int testing)
     /* v: vars */
     abort = abort || set_ref_in_ht(&vimvarht, copyID, NULL);
 
+    abort = abort || set_ref_in_buffer(copyID);
+
 #ifdef FEAT_LUA
     abort = abort || set_ref_in_lua(copyID);
 #endif
@@ -5708,6 +5710,10 @@ garbage_collect(int testing)
 
 #ifdef FEAT_TERMINAL
     abort = abort || set_ref_in_term(copyID);
+#endif
+
+#ifdef FEAT_TEXT_PROP
+    abort = abort || set_ref_in_popup(copyID);
 #endif
 
     if (!abort)
