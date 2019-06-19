@@ -4391,6 +4391,9 @@ win_line(
 		int pi;
 		int bcol = (int)(ptr - line);
 
+		if (n_extra > 0)
+		    --bcol;  // still working on the previous char, e.g. Tab
+
 		// Check if any active property ends.
 		for (pi = 0; pi < text_props_active; ++pi)
 		{
