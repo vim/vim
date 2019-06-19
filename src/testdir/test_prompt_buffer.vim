@@ -102,3 +102,24 @@ func Test_prompt_editing()
   call StopVimInTerminal(buf)
   call delete(scriptName)
 endfunc
+
+func Test_prompt_garbage_collect()
+  func MyPromptCallback(x, text)
+    " NOP
+  endfunc
+  func MyPromptInterrupt(x)
+    " NOP
+  endfunc
+
+  new
+  set buftype=prompt
+  call prompt_setcallback(bufnr(''), function('MyPromptCallback', [{}]))
+  call prompt_setinterrupt(bufnr(''), function('MyPromptInterrupt', [{}]))
+  call test_garbagecollect_now()
+  " Must not crash
+  call feedkeys("\<CR>\<C-C>", 'xt')
+  call assert_true(v:true)
+
+  delfunc MyPromptCallback
+  bwipe!
+endfunc
