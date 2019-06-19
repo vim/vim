@@ -566,7 +566,7 @@ set_ref_in_timer(int copyID)
     timer_T	*timer;
     typval_T	tv;
 
-    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+    for (timer = first_timer; !abort && timer != NULL; timer = timer->tr_next)
     {
 	if (timer->tr_callback.cb_partial != NULL)
 	{
