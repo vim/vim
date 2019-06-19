@@ -3088,15 +3088,31 @@ get_sign_display_info(
 	if (gui.in_use && icon_sign != 0)
 	{
 	    // Use the image in this position.
-	    *c_extrap = SIGN_BYTE;
-	    *c_finalp = NUL;
+	    if (nrcol)
+	    {
+		*c_extrap = NUL;
+		sprintf((char *)extra, "%-*c ", number_width(wp), SIGN_BYTE);
+		*pp_extra = extra;
+		*n_extrap = (int)STRLEN(*pp_extra);
+	    }
+	    else
+		*c_extrap = SIGN_BYTE;
 #  ifdef FEAT_NETBEANS_INTG
 	    if (buf_signcount(wp->w_buffer, lnum) > 1)
 	    {
-		*c_extrap = MULTISIGN_BYTE;
-		*c_finalp = NUL;
+		if (nrcol)
+		{
+		    *c_extrap = NUL;
+		    sprintf((char *)extra, "%-*c ", number_width(wp),
+							MULTISIGN_BYTE);
+		    *pp_extra = extra;
+		    *n_extrap = (int)STRLEN(*pp_extra);
+		}
+		else
+		    *c_extrap = MULTISIGN_BYTE;
 	    }
 #  endif
+	    *c_finalp = NUL;
 	    *char_attrp = icon_sign;
 	}
 	else
@@ -3108,7 +3124,7 @@ get_sign_display_info(
 		{
 		    if (nrcol)
 		    {
-			sprintf((char *)extra, "%-*s ", number_width(wp),
+			sprintf((char *)extra, "%*s ", number_width(wp),
 								*pp_extra);
 			*pp_extra = extra;
 		    }
