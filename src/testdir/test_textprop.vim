@@ -760,6 +760,10 @@ func Test_textprop_screenshot_visual()
 endfunc
 
 func Test_textprop_after_tab()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
   let lines =<< trim END
        call setline(1, [
              \ "\txxx",
