@@ -1702,7 +1702,7 @@ E0_LINKARGS2 = $(LINKARGS2:\=\\)
 E_LINKARGS2 = $(E0_LINKARGS2:"=\")
 # ") stop the string
 
-$(PATHDEF_SRC): auto
+$(PATHDEF_SRC): Make_mvc.mak
 	@echo creating $(PATHDEF_SRC)
 	@echo /* pathdef.c */ > $(PATHDEF_SRC)
 	@echo #include "vim.h" >> $(PATHDEF_SRC)
@@ -1712,9 +1712,6 @@ $(PATHDEF_SRC): auto
 	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(E_LINKARGS2)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
-
-auto:
-	if not exist auto/nul mkdir auto
 
 # End Custom Build
 proto.h: \
