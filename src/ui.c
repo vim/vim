@@ -1484,7 +1484,7 @@ clip_invert_area(
  */
     static void
 clip_invert_rectangle(
-	Clipboard_T	*cbd,
+	Clipboard_T	*cbd UNUSED,
 	int		row_arg,
 	int		col_arg,
 	int		height_arg,
