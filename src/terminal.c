@@ -4051,7 +4051,7 @@ set_ref_in_term(int copyID)
     term_T	*term;
     typval_T	tv;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    for (term = first_term; !abort && term != NULL; term = term->tl_next)
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;

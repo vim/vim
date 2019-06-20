@@ -225,3 +225,20 @@ func Test_listening_other_buf()
   exe "buf " .. bufnr
   bwipe!
 endfunc
+
+func Test_listener_garbage_collect()
+  func MyListener(x, bufnr, start, end, added, changes)
+    " NOP
+  endfunc
+
+  new
+  let id = listener_add(function('MyListener', [{}]), bufnr(''))
+  call test_garbagecollect_now()
+  " must not crach caused by invalid memory access
+  normal ia
+  call assert_true(v:true)
+
+  call listener_remove(id)
+  delfunc MyListener
+  bwipe!
+endfunc

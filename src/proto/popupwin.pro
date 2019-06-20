@@ -31,4 +31,5 @@ int popup_do_filter(int c);
 void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
 void update_popups(void (*win_update)(win_T *wp));
+int set_ref_in_popups(int copyID);
 /* vim: set ft=c : */

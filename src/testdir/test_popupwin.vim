@@ -1467,3 +1467,19 @@ func Test_set_get_options()
 
   call popup_close(winid)
 endfunc
+
+func Test_popupwin_garbage_collect()
+  func MyPopupFilter(x, winid, c)
+    " NOP
+  endfunc
+
+  let winid = popup_create('something', {'filter': function('MyPopupFilter', [{}])})
+  call test_garbagecollect_now()
+  redraw
+  " Must not crach caused by invalid memory access
+  call feedkeys('j', 'xt')
+  call assert_true(v:true)
+
+  call popup_close(winid)
+  delfunc MyPopupFilter
+endfunc

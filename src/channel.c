@@ -4479,7 +4479,8 @@ set_ref_in_channel(int copyID)
     channel_T	*channel;
     typval_T	tv;
 
-    for (channel = first_channel; channel != NULL; channel = channel->ch_next)
+    for (channel = first_channel; !abort && channel != NULL;
+						   channel = channel->ch_next)
 	if (channel_still_useful(channel))
 	{
 	    tv.v_type = VAR_CHANNEL;
@@ -5568,7 +5569,7 @@ set_ref_in_job(int copyID)
     job_T	*job;
     typval_T	tv;
 
-    for (job = first_job; job != NULL; job = job->jv_next)
+    for (job = first_job; !abort && job != NULL; job = job->jv_next)
 	if (job_still_useful(job))
 	{
 	    tv.v_type = VAR_JOB;
