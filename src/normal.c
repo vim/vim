@@ -6237,7 +6237,7 @@ nv_search(cmdarg_T *cap)
 
     /* When using 'incsearch' the cursor may be moved to set a different search
      * start position. */
-    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0);
+    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0, FALSE);
 
     if (cap->searchbuf == NULL)
     {

@@ -3611,7 +3611,7 @@ do_source(
     cookie.conv.vc_type = CONV_NONE;		/* no conversion */
 
     /* Read the first line so we can check for a UTF-8 BOM. */
-    firstline = getsourceline(0, (void *)&cookie, 0);
+    firstline = getsourceline(0, (void *)&cookie, 0, FALSE);
     if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
 			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
     {
@@ -3794,7 +3794,7 @@ free_scriptnames(void)
  * Return NULL for end-of-file or some error.
  */
     char_u *
-getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
+getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int dont_concat)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
@@ -3833,7 +3833,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 
     /* Only concatenate lines starting with a \ when 'cpoptions' doesn't
      * contain the 'C' flag. */
-    if (line != NULL && (vim_strchr(p_cpo, CPO_CONCAT) == NULL))
+    if (line != NULL && !dont_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	/* compensate for the one line read-ahead */
 	--sourcing_lnum;
@@ -4212,7 +4212,7 @@ do_finish(exarg_T *eap, int reanimate)
  */
     int
 source_finished(
-    char_u	*(*fgetline)(int, void *, int),
+    char_u	*(*fgetline)(int, void *, int, int),
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)

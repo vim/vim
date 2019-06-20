@@ -4540,7 +4540,7 @@ ex_append(exarg_T *eap)
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
-		    NUL, eap->cookie, indent);
+		    NUL, eap->cookie, indent, FALSE);
 	    State = save_State;
 	}
 	lines_left = Rows - 1;
@@ -5388,7 +5388,7 @@ do_sub(exarg_T *eap)
 			    for ( ; i <= (long)ec; ++i)
 				msg_putchar('^');
 
-			    resp = getexmodeline('?', NULL, 0);
+			    resp = getexmodeline('?', NULL, 0, FALSE);
 			    if (resp != NULL)
 			    {
 				typed = *resp;

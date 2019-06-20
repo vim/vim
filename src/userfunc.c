@@ -2007,6 +2007,7 @@ ex_function(exarg_T *eap)
     hashtab_T	*ht;
     int		todo;
     hashitem_T	*hi;
+    int		dont_concat = FALSE;
     int		sourcing_lnum_off;
 
     /*
@@ -2303,9 +2304,9 @@ ex_function(exarg_T *eap)
 	{
 	    vim_free(line_to_free);
 	    if (eap->getline == NULL)
-		theline = getcmdline(':', 0L, indent);
+		theline = getcmdline(':', 0L, indent, dont_concat);
 	    else
-		theline = eap->getline(':', eap->cookie, indent);
+		theline = eap->getline(':', eap->cookie, indent, dont_concat);
 	    line_to_free = theline;
 	}
 	if (KeyTyped)
@@ -2334,6 +2335,7 @@ ex_function(exarg_T *eap)
 		{
 		    VIM_CLEAR(skip_until);
 		    VIM_CLEAR(trimmed);
+		    dont_concat = FALSE;
 		}
 	    }
 	}
@@ -2458,6 +2460,7 @@ ex_function(exarg_T *eap)
 		    skip_until = vim_strsave((char_u *)".");
 		else
 		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		dont_concat = TRUE;
 	    }
 	}
 
@@ -3511,7 +3514,8 @@ get_return_cmd(void *rettv)
 get_func_line(
     int	    c UNUSED,
     void    *cookie,
-    int	    indent UNUSED)
+    int	    indent UNUSED,
+    int	    dont_concat UNUSED)
 {
     funccall_T	*fcp = (funccall_T *)cookie;
     ufunc_T	*fp = fcp->func;
