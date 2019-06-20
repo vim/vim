@@ -237,6 +237,14 @@ END
   END
   call assert_equal(['something', 'endfunc'], var1)
 
+  " not concatenate lines
+  let var1 =<< END
+some
+  \thing
+  \ else
+END
+  call assert_equal(['some', '  \thing', '  \ else'], var1)
+
   " ignore "python << xx"
   let var1 =<<END
 something
