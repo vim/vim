@@ -88,12 +88,17 @@ that it is in.
 
 TODO:
 - Why does 'nrformats' leak from the popup window buffer???
+- When the lines do not fit show a scrollbar (like in the popup menu).
+  Use the mouse wheel for scrolling.
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use ERROR_IF_POPUP_WINDOW for more commands.
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
   window and return the window ID.   The popup will then be closed when the
   mouse moves, except when it moves inside the popup.
 - For the "moved" property also include mouse movement?
+- Can the buffer be re-used, to avoid using up lots of buffer numbers?
+- Have an option to attach the popup to a text position, like text properties
+  do. (#4560)
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
 - Invoke filter with character before mapping?
@@ -102,17 +107,12 @@ TODO:
     if wrapping inserts indent
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
-- Can the buffer be re-used, to avoid using up lots of buffer numbers?
 - Use a popup window for the "info" item of completion instead of using a
   preview window.  Ideas in issue #4544.
   How to add highlighting?
-- When the lines do not fit show a scrollbar (like in the popup menu).
-  Use the mouse wheel for scrolling.
 - Implement:
-	tabpage option with number
 	flip option
-	transparent text property
-
+	transparent area, to minimize covering text.  Define rectangles?
 
 ==============================================================================
 2. Functions						*popup-functions*
@@ -123,7 +123,7 @@ Creating a popup window:
 	|popup_create()|	centered in the screen
 	|popup_atcursor()|	just above the cursor position, closes when
 				the cursor moves away
-	|popup_notifiation()|	show a notification for three seconds
+	|popup_notification()|	show a notification for three seconds
 	|popup_dialog()|	centered with padding and border
 	|popup_menu()|		prompt for selecting an item from a list
 
@@ -163,7 +163,7 @@ popup_atcursor({text}, {options})			 *popup_atcursor()*
 
 							*popup_clear()*
 popup_clear()	Emergency solution to a misbehaving plugin: close all popup
-		windows.
+		windows for the current tab and global popups.
 
 
 popup_close({id} [, {result}])				*popup_close()*
@@ -216,7 +216,7 @@ popup_dialog({text}, {options})				*popup_dialog()*
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		Filter that can be used for a popup. These keys can be used:
-		    j <Down>	select item below
+		    j <Down>		select item below
 		    k <Up>		select item above
 		    <Space> <Enter>	accept current selection
 		    x Esc CTRL-C	cancel the menu
@@ -230,6 +230,9 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		the second argument.  The first entry has index one.
 		Cancelling the menu invokes the callback with -1.
 
+		To add shortcut keys, see the example here:
+		|popup_menu-shortcut-example|
+
 
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		Filter that can be used for a popup. It handles only the keys
@@ -238,6 +241,7 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		as the second argument.  Pressing Esc and 'x' works like
 		pressing 'n'.  CTRL-C invokes the callback with -1.  Other
 		keys are ignored.
+		See the example here: |popup_dialog-example|
 
 
 popup_getoptions({id})					*popup_getoptions()*
@@ -252,6 +256,10 @@ popup_getoptions({id})					*popup_getoptions()*
 		zero.  When all values are one then an empty list is included.
 
 		"borderhighlight" is not included when all values are empty.
+
+		"tabpage" will be -1 for a global popup, zero for a popup on
+		the current tabpage and a positive number for a popup on
+		another tabpage.
 
 		If popup window {id} is not found an empty Dict is returned.
 
@@ -390,7 +398,7 @@ manipulation is restricted:
 - 'bufhidden' is "hide"
 - 'buflisted' is off
 - 'undolevels' is -1: no undo at all
-- all other buffer-local and window_local options are set to their Vim default
+- all other buffer-local and window-local options are set to their Vim default
   value.
 
 It is possible to change the specifically mentioned options, but anything
@@ -474,8 +482,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			When 0 (the default): display the popup on the current
 			tab page.
 			Otherwise the number of the tab page the popup is
-			displayed on; when invalid the current tab page is used.
-			{only -1 and 0 are implemented}
+			displayed on; when invalid the popup is not created
+			and an error is given. *E996*
 	title		Text to be displayed above the first item in the
 			popup, on top of any border.  If there is no top
 			border one line of padding is added to put the title
@@ -515,8 +523,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			When the list has two characters the first is used for
 			the border lines, the second for the corners.
 			By default a double line is used all around when
-			'encoding' is "utf-8", otherwise ASCII characters are
-			used.
+			'encoding' is "utf-8" and 'ambiwidth' is "single,
+			otherwise ASCII characters are used.
 	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
 	time		Time in milliseconds after which the popup will close.
@@ -628,7 +636,7 @@ pressed, the number -1 is passed to the callback.
 3. Examples						*popup-examples*
 
 TODO
-
+					*popup_dialog-example*
 Prompt the user to press y/Y or n/N: >
 
 	func MyDialogHandler(id, result)
@@ -637,10 +645,37 @@ Prompt the user to press y/Y or n/N: >
 	   endif
 	endfunc
 
-	call popup_create(['Continue? y/n'], {
+	call popup_dialog('Continue? y/n', {
 		\ 'filter': 'popup_filter_yesno',
 		\ 'callback': 'MyDialogHandler',
 		\ })
+<
+					*popup_menu-shortcut-example*
+Extend popup_filter_menu() with shortcut keys: >
+
+	call popup_menu('Save', 'Cancel', 'Discard'], {
+		\ 'filter': 'MyMenuFilter',
+		\ 'callback': 'MyMenuHandler',
+		\ })
+
+	func MyMenuFilter(id, key)
+	  " Handle shortcuts
+	  if a:key == 'S'
+	     call popup_close(a:id, 1)
+	     return 1
+	  endif
+	  if a:key == 'C'
+	     call popup_close(a:id, 2)
+	     return 1
+	  endif
+	  if a:key == 'D'
+	     call popup_close(a:id, 3)
+	     return 1
+	  endif
+
+	  " No shortcut, pass to generic filter
+	  return popup_filter_menu(a:id, a:key)
+	endfunc
 <
 
  vim:tw=78:ts=8:noet:ft=help:norl:

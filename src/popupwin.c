@@ -827,11 +827,13 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     static win_T *
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 {
-    win_T   *wp;
-    buf_T   *buf;
-    dict_T  *d;
-    int	    nr;
-    int	    i;
+    win_T	*wp;
+    tabpage_T	*tp = NULL;
+    int		tabnr;
+    buf_T	*buf;
+    dict_T	*d;
+    int		nr;
+    int		i;
 
     // Check arguments look OK.
     if (!(argvars[0].v_type == VAR_STRING && argvars[0].vval.v_string != NULL)
@@ -846,6 +848,22 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	return NULL;
     }
     d = argvars[1].vval.v_dict;
+
+    if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
+	tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
+    else if (type == TYPE_NOTIFICATION)
+	tabnr = -1;  // notifications are global by default
+    else
+	tabnr = 0;
+    if (tabnr > 0)
+    {
+	tp = find_tabpage(tabnr);
+	if (tp == NULL)
+	{
+	    semsg(_("E996: Tabpage not found: %d"), tabnr);
+	    return NULL;
+	}
+    }
 
     // Create the window and buffer.
     wp = win_alloc_popup_win();
@@ -875,20 +893,19 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     // Avoid that 'buftype' is reset when this buffer is entered.
     buf->b_p_initialized = TRUE;
 
-    if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
-	nr = (int)dict_get_number(d, (char_u *)"tabpage");
-    else if (type == TYPE_NOTIFICATION)
-	nr = -1;  // notifications are global by default
-    else
-	nr = 0;
-
-    if (nr == 0)
+    if (tp != NULL)
+    {
+	// popup on specified tab page
+	wp->w_next = tp->tp_first_popupwin;
+	tp->tp_first_popupwin = wp;
+    }
+    else if (tabnr == 0)
     {
 	// popup on current tab page
 	wp->w_next = curtab->tp_first_popupwin;
 	curtab->tp_first_popupwin = wp;
     }
-    else if (nr < 0)
+    else // (tabnr < 0)
     {
 	win_T *prev = first_popupwin;
 
@@ -903,9 +920,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    prev->w_next = wp;
 	}
     }
-    else
-	// TODO: find tab page "nr"
-	emsg("Not implemented yet");
 
     popup_set_buffer_text(buf, argvars[0]);
 
@@ -1592,6 +1606,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
+    tabpage_T	*tp;
     int		i;
 
     if (rettv_dict_alloc(rettv) == OK)
@@ -1613,6 +1628,25 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
+
+	// find the tabpage that holds this popup
+	i = 1;
+	FOR_ALL_TABPAGES(tp)
+	{
+	    win_T *p;
+
+	     for (p = tp->tp_first_popupwin; p != NULL; p = wp->w_next)
+		 if (p->w_id == id)
+		     break;
+	     if (p != NULL)
+		 break;
+	     ++i;
+	}
+	if (tp == NULL)
+	    i = -1;  // must be global
+	else if (tp == curtab)
+	    i = 0;
+	dict_add_number(dict, "tabpage", i);
 
 	get_padding_border(dict, wp->w_popup_padding, "padding");
 	get_padding_border(dict, wp->w_popup_border, "border");
