@@ -106,7 +106,6 @@ static void u_getbot(void);
 static void u_doit(int count);
 static void u_undoredo(int undo);
 static void u_undo_end(int did_undo, int absolute);
-static void u_add_time(char_u *buf, size_t buflen, time_t tt);
 static void u_freeheader(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
@@ -3127,7 +3126,7 @@ ex_undolist(exarg_T *eap UNUSED)
 /*
  * Put the timestamp of an undo header in "buf[buflen]" in a nice format.
  */
-    static void
+    void
 u_add_time(char_u *buf, size_t buflen, time_t tt)
 {
 #ifdef HAVE_STRFTIME

@@ -14,6 +14,7 @@ void u_redo(int count);
 void undo_time(long step, int sec, int file, int absolute);
 void u_sync(int force);
 void ex_undolist(exarg_T *eap);
+void u_add_time(char_u *buf, size_t buflen, time_t tt);
 void ex_undojoin(exarg_T *eap);
 void u_unchanged(buf_T *buf);
 void u_find_first_changed(void);

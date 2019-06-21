@@ -1405,6 +1405,9 @@ getcmdline_int(
 	 */
 	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
 	{
+	    int options = WILD_NO_BEEP;
+	    if (wim_flags[wim_index] & WIM_BUFLASTUSED)
+		options |= WILD_BUFLASTUSED;
 	    if (xpc.xp_numfiles > 0)   /* typed p_wc at least twice */
 	    {
 		/* if 'wildmode' contains "list" may still need to list */
@@ -1417,10 +1420,10 @@ getcmdline_int(
 		    did_wild_list = TRUE;
 		}
 		if (wim_flags[wim_index] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 		else if (wim_flags[wim_index] & WIM_FULL)
-		    res = nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_NEXT, options,
 							       firstc != '@');
 		else
 		    res = OK;	    /* don't insert 'wildchar' now */
@@ -1432,10 +1435,10 @@ getcmdline_int(
 		/* if 'wildmode' first contains "longest", get longest
 		 * common part */
 		if (wim_flags[0] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 		else
-		    res = nextwild(&xpc, WILD_EXPAND_KEEP, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_EXPAND_KEEP, options,
 							       firstc != '@');
 
 		/* if interrupted while completing, behave like it failed */
@@ -1486,10 +1489,10 @@ getcmdline_int(
 			redrawcmd();
 			did_wild_list = TRUE;
 			if (wim_flags[wim_index] & WIM_LONGEST)
-			    nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+			    nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 			else if (wim_flags[wim_index] & WIM_FULL)
-			    nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+			    nextwild(&xpc, WILD_NEXT, options,
 							       firstc != '@');
 		    }
 		    else
