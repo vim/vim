@@ -1665,7 +1665,7 @@ func Test_refcount()
     delfunc DictFunc
 endfunc
 
-func! Test_funccall_garbage_collect()
+func Test_funccall_garbage_collect()
     func Func(x, ...)
         call add(a:x, a:000)
     endfunc
