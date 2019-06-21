@@ -924,7 +924,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	semsg(_("E697: Missing end of List ']': %s"), *arg);
 failret:
-	if (evaluate)
+	if (evaluate && l == first_list)
 	    list_free(l);
 	return FAIL;
     }
