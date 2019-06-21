@@ -43,6 +43,7 @@ dict_alloc(void)
 	d->dv_scope = 0;
 	d->dv_refcount = 0;
 	d->dv_copyID = 0;
+	d->dv_copydict = NULL;
     }
     return d;
 }
