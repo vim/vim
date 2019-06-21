@@ -1048,9 +1048,9 @@ notags:
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
+	-$(DEL) $(OUTDIR)$(DIRSLASH)pathdef.c
 	-rmdir $(OUTDIR)
 	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstal.exe
-	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
 	-$(DEL) auto$(DIRSLASH)if_perl.c
@@ -1071,6 +1071,8 @@ ifeq ($(DIRECTX),yes)
 GUI_INCL += gui_dwrite.h
 endif
 CUI_INCL = iscygpty.h
+
+PATHDEF_SRC = $(OUTDIR)/pathdef.c
 
 $(OUTDIR)/if_python.o:	if_python.c if_py_both.h $(INCL)
 	$(CC) -c $(CFLAGS) $(PYTHONINC) $(PYTHON_HOME_DEF) $< -o $@
@@ -1171,6 +1173,9 @@ $(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
 	$(CC) -c $(CFLAGS) terminal.c -o $@
 
+$(OUTDIR)/pathdef.o:	$(PATHDEF_SRC) $(INCL)
+	$(CC) -c $(CFLAGS) $(PATHDEF_SRC) -o $@
+
 
 CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
@@ -1185,27 +1190,27 @@ $(OUTDIR)/%.o : xdiff/%.c $(XDIFF_DEPS)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 
-pathdef.c: $(INCL)
+$(PATHDEF_SRC): Make_cyg_ming.mak Make_cyg.mak Make_ming.mak
 ifneq (sh.exe, $(SHELL))
-	@echo creating pathdef.c
-	@echo '/* pathdef.c */' > pathdef.c
-	@echo '#include "vim.h"' >> pathdef.c
-	@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' >> pathdef.c
-	@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' >> pathdef.c
-	@echo 'char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)";' >> pathdef.c
-	@echo 'char_u *all_lflags = (char_u *)"$(LINK) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
-	@echo 'char_u *compiled_user = (char_u *)"$(USERNAME)";' >> pathdef.c
-	@echo 'char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";' >> pathdef.c
+	@echo creating $(PATHDEF_SRC)
+	@echo '/* pathdef.c */' > $(PATHDEF_SRC)
+	@echo '#include "vim.h"' >> $(PATHDEF_SRC)
+	@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' >> $(PATHDEF_SRC)
+	@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' >> $(PATHDEF_SRC)
+	@echo 'char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)";' >> $(PATHDEF_SRC)
+	@echo 'char_u *all_lflags = (char_u *)"$(LINK) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> $(PATHDEF_SRC)
+	@echo 'char_u *compiled_user = (char_u *)"$(USERNAME)";' >> $(PATHDEF_SRC)
+	@echo 'char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";' >> $(PATHDEF_SRC)
 else
-	@echo creating pathdef.c
-	@echo /* pathdef.c */ > pathdef.c
-	@echo #include "vim.h" >> pathdef.c
-	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)"; >> pathdef.c
-	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)"; >> pathdef.c
-	@echo char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)"; >> pathdef.c
-	@echo char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)"; >> pathdef.c
-	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> pathdef.c
-	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> pathdef.c
+	@echo creating $(PATHDEF_SRC)
+	@echo /* pathdef.c */ > $(PATHDEF_SRC)
+	@echo #include "vim.h" >> $(PATHDEF_SRC)
+	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)"; >> $(PATHDEF_SRC)
+	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)"; >> $(PATHDEF_SRC)
+	@echo char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)"; >> $(PATHDEF_SRC)
+	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
+	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 endif
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:
