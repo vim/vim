@@ -2741,6 +2741,7 @@ test_alloc_fail({id}, {countdown}, {repeat})
 test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
+test_garbagecollect_soon()	none	free memory soon for testing
 test_getvalue({string})		any	get value of an internal variable
 test_ignore_error({expr})	none	ignore a specific error
 test_null_blob()		Blob	null value for testing
@@ -10009,6 +10010,10 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		internally, and |v:testing| must have been set before calling
 		any function.
 
+test_garbagecollect_soon()			 *test_garbagecollect_soon()*
+		Set the flag to call the garbagecollector as if in the main
+		loop.  Only to be used in tests.
+
 test_getvalue({name})					*test_getvalue()*
 		Get the value of an internal variable.  These values for
 		{name} are supported:
@@ -10072,6 +10077,8 @@ test_override({name}, {val})				*test_override()*
 			     fallback to the old engine
 		no_query_mouse  do not query the mouse position for "dec"
 				terminals
+		no_wait_return	set the "no_wait_return" flag.  Not restored
+				with "ALL".
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like

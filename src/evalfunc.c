@@ -448,6 +448,7 @@ static void f_test_option_not_set(typval_T *argvars, typval_T *rettv);
 static void f_test_override(typval_T *argvars, typval_T *rettv);
 static void f_test_refcount(typval_T *argvars, typval_T *rettv);
 static void f_test_garbagecollect_now(typval_T *argvars, typval_T *rettv);
+static void f_test_garbagecollect_soon(typval_T *argvars, typval_T *rettv);
 static void f_test_ignore_error(typval_T *argvars, typval_T *rettv);
 static void f_test_null_blob(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_JOB_CHANNEL
@@ -1019,6 +1020,7 @@ static struct fst
     {"test_autochdir",	0, 0, f_test_autochdir},
     {"test_feedinput",	1, 1, f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
+    {"test_garbagecollect_soon",	0, 0, f_test_garbagecollect_soon},
     {"test_getvalue",	1, 1, f_test_getvalue},
     {"test_ignore_error",	1, 1, f_test_ignore_error},
     {"test_null_blob",	0, 0, f_test_null_blob},
@@ -14460,6 +14462,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    nfa_fail_for_testing = val;
 	else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
 	    no_query_mouse_for_testing = val;
+	else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
+	    no_wait_return = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
@@ -14548,6 +14552,15 @@ f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     /* This is dangerous, any Lists and Dicts used internally may be freed
      * while still in use. */
     garbage_collect(TRUE);
+}
+
+/*
+ * "test_garbagecollect_soon()" function
+ */
+    static void
+f_test_garbagecollect_soon(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    may_garbage_collect = TRUE;
 }
 
 /*

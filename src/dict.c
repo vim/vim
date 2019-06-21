@@ -28,7 +28,7 @@ dict_alloc(void)
 {
     dict_T *d;
 
-    d = ALLOC_ONE(dict_T);
+    d = ALLOC_CLEAR_ONE(dict_T);
     if (d != NULL)
     {
 	/* Add the dict to the list of dicts for garbage collection. */
@@ -811,7 +811,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
-	if (evaluate)
+	if (d != NULL)
 	    dict_free(d);
 	return FAIL;
     }
