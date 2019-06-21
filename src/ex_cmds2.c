@@ -367,9 +367,10 @@ check_due_timer(void)
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
 	    int save_called_emsg = called_emsg;
-	    int	save_must_redraw = must_redraw;
-	    int	save_trylevel = trylevel;
+	    int save_must_redraw = must_redraw;
+	    int save_trylevel = trylevel;
 	    int save_did_throw = did_throw;
+	    int save_may_garbage_collect = may_garbage_collect;
 	    int save_ex_pressedreturn = get_pressedreturn();
 	    except_T *save_current_exception = current_exception;
 	    vimvars_save_T vvsave;
@@ -384,14 +385,17 @@ check_due_timer(void)
 	    must_redraw = 0;
 	    trylevel = 0;
 	    did_throw = FALSE;
+	    may_garbage_collect = FALSE;
 	    current_exception = NULL;
 	    save_vimvars(&vvsave);
+
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
 
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
+
 	    timer_busy = save_timer_busy;
 	    vgetc_busy = save_vgetc_busy;
 	    if (did_uncaught_emsg)
@@ -400,6 +404,7 @@ check_due_timer(void)
 	    called_emsg = save_called_emsg;
 	    trylevel = save_trylevel;
 	    did_throw = save_did_throw;
+	    may_garbage_collect = save_may_garbage_collect;
 	    current_exception = save_current_exception;
 	    restore_vimvars(&vvsave);
 	    if (must_redraw != 0)
