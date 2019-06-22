@@ -2297,11 +2297,7 @@ set_ref_in_one_popup(win_T *wp, int copyID)
 	tv.vval.v_partial = wp->w_filter_cb.cb_partial;
 	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
     }
-    if (wp->w_popup_mask != NULL && wp->w_popup_mask->lv_copyID != copyID)
-    {
-	wp->w_popup_mask->lv_copyID = copyID;
-	abort = abort || set_ref_in_list(wp->w_popup_mask, copyID, NULL);
-    }
+    abort = abort || set_ref_in_list(wp->w_popup_mask, copyID);
     return abort;
 }
 

@@ -4000,7 +4000,7 @@ set_ref_in_previous_funccal(int copyID)
 	abort = abort
 	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1, NULL)
 	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1, NULL)
-	    || set_ref_in_list(&fc->l_varlist, copyID + 1, NULL);
+	    || set_ref_in_list_items(&fc->l_varlist, copyID + 1, NULL);
     }
     return abort;
 }
@@ -4016,7 +4016,7 @@ set_ref_in_funccal(funccall_T *fc, int copyID)
 	abort = abort
 	    || set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID, NULL)
 	    || set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID, NULL)
-	    || set_ref_in_list(&fc->l_varlist, copyID, NULL)
+	    || set_ref_in_list_items(&fc->l_varlist, copyID, NULL)
 	    || set_ref_in_func(NULL, fc->func, copyID);
     }
     return abort;
