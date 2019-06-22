@@ -1019,8 +1019,10 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     // Deal with options.
     apply_options(wp, argvars[1].vval.v_dict);
 
+#if defined(FEAT_TIMERS)
     if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
 	popup_add_timeout(wp, 3000);
+#endif
 
     popup_adjust_position(wp);
 
