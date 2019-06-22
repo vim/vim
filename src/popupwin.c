@@ -381,6 +381,38 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_zindex = 32000;
     }
 
+    di = dict_find(dict, (char_u *)"mask", -1);
+    if (di != NULL)
+    {
+	int ok = TRUE;
+
+	if (di->di_tv.v_type != VAR_LIST)
+	    ok = FALSE;
+	else if (di->di_tv.vval.v_list != NULL)
+	{
+	    listitem_T *li;
+
+	    for (li = di->di_tv.vval.v_list->lv_first; li != NULL;
+							      li = li->li_next)
+	    {
+		if (li->li_tv.v_type != VAR_LIST
+			|| li->li_tv.vval.v_list == NULL
+			|| li->li_tv.vval.v_list->lv_len != 4)
+		{
+		    ok = FALSE;
+		    break;
+		}
+	    }
+	}
+	if (ok)
+	{
+	    wp->w_popup_mask = di->di_tv.vval.v_list;
+	    ++wp->w_popup_mask->lv_refcount;
+	}
+	else
+	    semsg(_(e_invargval), "mask");
+    }
+
 #if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
     nr = dict_get_number(dict, (char_u *)"time");
@@ -1826,6 +1858,101 @@ popup_check_cursor_pos()
 }
 
 /*
+ * Return TRUE if "col" / "line" matches with an entry in w_popup_mask.
+ * "col" and "line" are screen coordinates.
+ */
+    static int
+popup_masked(win_T *wp, int screencol, int screenline)
+{
+    int		col = screencol - wp->w_wincol + 1;
+    int		line = screenline - wp->w_winrow + 1;
+    listitem_T	*lio, *li;
+    int		width, height;
+
+    if (wp->w_popup_mask == NULL)
+	return FALSE;
+    width = popup_width(wp);
+    height = popup_height(wp);
+
+    for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+    {
+	int cols, cole;
+	int lines, linee;
+
+	li = lio->li_tv.vval.v_list->lv_first;
+	cols = tv_get_number(&li->li_tv);
+	if (cols < 0)
+	    cols = width + cols + 1;
+	if (col < cols)
+	    continue;
+	li = li->li_next;
+	cole = tv_get_number(&li->li_tv);
+	if (cole < 0)
+	    cole = width + cole + 1;
+	if (col > cole)
+	    continue;
+	li = li->li_next;
+	lines = tv_get_number(&li->li_tv);
+	if (lines < 0)
+	    lines = height + lines + 1;
+	if (line < lines)
+	    continue;
+	li = li->li_next;
+	linee = tv_get_number(&li->li_tv);
+	if (linee < 0)
+	    linee = height + linee + 1;
+	if (line > linee)
+	    continue;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Set flags in popup_transparent[] for window "wp" to "val".
+ */
+    static void
+update_popup_transparent(win_T *wp, int val)
+{
+    if (wp->w_popup_mask != NULL)
+    {
+	int		width = popup_width(wp);
+	int		height = popup_height(wp);
+	listitem_T	*lio, *li;
+	int		cols, cole;
+	int		lines, linee;
+	int		col, line;
+
+	for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+	{
+	    li = lio->li_tv.vval.v_list->lv_first;
+	    cols = tv_get_number(&li->li_tv);
+	    if (cols < 0)
+		cols = width + cols + 1;
+	    li = li->li_next;
+	    cole = tv_get_number(&li->li_tv);
+	    if (cole < 0)
+		cole = width + cole + 1;
+	    li = li->li_next;
+	    lines = tv_get_number(&li->li_tv);
+	    if (lines < 0)
+		lines = height + lines + 1;
+	    li = li->li_next;
+	    linee = tv_get_number(&li->li_tv);
+	    if (linee < 0)
+		linee = height + linee + 1;
+
+	    --cols;
+	    --lines;
+	    for (line = lines; line < linee && line < screen_Rows; ++line)
+		for (col = cols; col < cole && col < screen_Columns; ++col)
+		    popup_transparent[(line + wp->w_winrow) * screen_Columns
+						   + col + wp->w_wincol] = val;
+	}
+    }
+}
+
+/*
  * Update "popup_mask" if needed.
  * Also recomputes the popup size and positions.
  * Also updates "popup_visible".
@@ -1880,6 +2007,9 @@ may_update_popup_mask(int type)
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
+	int height = popup_height(wp);
+	int width = popup_width(wp);
+
 	popup_visible = TRUE;
 
 	// Recompute the position if the text changed.
@@ -1888,12 +2018,11 @@ may_update_popup_mask(int type)
 	    popup_adjust_position(wp);
 
 	for (line = wp->w_winrow;
-		line < wp->w_winrow + popup_height(wp)
-						 && line < screen_Rows; ++line)
+		line < wp->w_winrow + height && line < screen_Rows; ++line)
 	    for (col = wp->w_wincol;
-		 col < wp->w_wincol + popup_width(wp)
-						&& col < screen_Columns; ++col)
-		mask[line * screen_Columns + col] = wp->w_zindex;
+		 col < wp->w_wincol + width && col < screen_Columns; ++col)
+		if (!popup_masked(wp, col, line))
+		    mask[line * screen_Columns + col] = wp->w_zindex;
     }
 
     // Only check which lines are to be updated if not already
@@ -1994,6 +2123,9 @@ update_popups(void (*win_update)(win_T *wp))
 	// top of the text but doesn't draw when another popup with higher
 	// zindex is on top of the character.
 	screen_zindex = wp->w_zindex;
+
+	// Set flags in popup_transparent[] for masked cells.
+	update_popup_transparent(wp, 1);
 
 	// adjust w_winrow and w_wincol for border and padding, since
 	// win_update() doesn't handle them.
@@ -2135,6 +2267,8 @@ update_popups(void (*win_update)(win_T *wp))
 	    }
 	}
 
+	update_popup_transparent(wp, 0);
+
 	// Back to the normal zindex.
 	screen_zindex = 0;
     }
@@ -2160,6 +2294,11 @@ set_ref_in_one_popup(win_T *wp, int copyID)
 	tv.v_type = VAR_PARTIAL;
 	tv.vval.v_partial = wp->w_filter_cb.cb_partial;
 	abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+    }
+    if (wp->w_popup_mask != NULL && wp->w_popup_mask->lv_copyID != copyID)
+    {
+	wp->w_popup_mask->lv_copyID = copyID;
+	abort = abort || set_ref_in_list(wp->w_popup_mask, copyID, NULL);
     }
     return abort;
 }

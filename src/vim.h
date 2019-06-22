@@ -2602,4 +2602,6 @@ long elapsed(DWORD start_tick);
 #define APC_SAVE_FOR_UNDO	1   // call u_savesub() before making changes
 #define APC_SUBSTITUTE		2   // text is replaced, not inserted
 
+#define CLIP_ZINDEX 32000
+
 #endif /* VIM__H */

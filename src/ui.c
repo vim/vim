@@ -1498,7 +1498,7 @@ clip_invert_rectangle(
 
 #ifdef FEAT_TEXT_PROP
     // this goes on top of all popup windows
-    screen_zindex = 32000;
+    screen_zindex = CLIP_ZINDEX;
 
     if (col < cbd->min_col)
     {

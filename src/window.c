@@ -4858,6 +4858,7 @@ win_free(
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
     vim_free(wp->w_popup_title);
+    list_unref(wp->w_popup_mask);
 #endif
 
 #ifdef FEAT_SYN_HL

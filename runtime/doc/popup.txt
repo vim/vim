@@ -112,7 +112,6 @@ TODO:
   How to add highlighting?
 - Implement:
 	flip option
-	transparent area, to minimize covering text.  Define rectangles?
 
 ==============================================================================
 2. Functions						*popup-functions*
@@ -372,6 +371,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			borderhighlight
 			borderchars
 			zindex
+			mask
 			time
 			moved
 			filter
@@ -527,6 +527,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			otherwise ASCII characters are used.
 	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
+	mask		A list of lists with coordinates, defining parts of
+			the popup that are transparent.  See |popup-mask|.
 	time		Time in milliseconds after which the popup will close.
 			When omitted |popup_close()| must be used.
 	moved		Specifies to close the popup if the cursor moved:
@@ -557,7 +559,6 @@ These are similar to the third argument of |prop_add()| except:
 - "lnum" is always the current line in the list
 - "bufnr" is always the buffer of the popup
 - "col" is in the Dict instead of a separate argument
-- "transparent" is extra
 So we get:
 	col		starting column, counted in bytes, use one for the
 			first column.
@@ -570,10 +571,6 @@ So we get:
 			used
 	type		name of the text property type, as added with
 			|prop_type_add()|
-	transparent	do not show these characters, show the text under it;
-			if there is a border character to the right or below
-			it will be made transparent as well
-			{not implemented yet}
 
 
 POPUP FILTER						*popup-filter*
@@ -631,6 +628,26 @@ the second argument of `popup_close()`.
 
 If the popup is force-closed, e.g. because the cursor moved or CTRL-C was
 pressed, the number -1 is passed to the callback.
+
+
+POPUP MASK						*popup-mask*
+
+To minimize the text that the popup covers, parts of it can be made
+transparent.  This is defined by a "mask" which is a list of lists, where each
+list has four numbers:
+    col		start column, positive for counting from the left, 1 for
+		leftmost, negative for counting from the right, -1 for
+		rightmost
+    endcol	last column, like "col"
+    line	start line, positive for conting from the top, 1 for top,
+		negative for counting from the bottom, -1 for bottom
+    endline	end line, like "line"
+
+For example, to make the last 10 columns of the last line transparent:
+	[[-10, -1, -1, -1]]
+
+To make the four corners transparent:
+	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
 
 ==============================================================================
 3. Examples						*popup-examples*

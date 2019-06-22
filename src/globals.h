@@ -74,6 +74,8 @@ EXTERN short	*TabPageIdxs INIT(= NULL);
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
+// Array with flags for tansparent cells of current popup.
+EXTERN char	*popup_transparent INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
 EXTERN int	popup_mask_refresh INIT(= TRUE);
@@ -1681,5 +1683,7 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 
 #ifdef FEAT_TEXT_PROP
 EXTERN int text_prop_frozen INIT(= 0);
+
+// Set to TRUE if there is any visible popup.
 EXTERN int popup_visible INIT(= FALSE);
 #endif
