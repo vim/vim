@@ -811,7 +811,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
-	if (d != NULL)
+	if (evaluate)
 	    dict_free(d);
 	return FAIL;
     }
