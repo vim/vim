@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 15
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -308,7 +308,7 @@ popup_menu({text}, {options})				 *popup_menu()*
 				\ 'filter': 'popup_filter_menu',
 				\ })
 <		The current line is highlighted with a match using
-		PopupSelected, or |PmenuSel| if that is not defined.
+		"PopupSelected", or "PmenuSel" if that is not defined.
 
 		Use {options} to change the properties.  Should at least set
 		"callback" to a function that handles the selected item.
@@ -421,7 +421,7 @@ need them.
 POPUP_CREATE() ARGUMENTS				*popup_create-usage*
 
 The first argument of |popup_create()| (and the second argument to
-|popup_setttext()|) specifies the text to be displayed, and optionally text
+|popup_settext()|) specifies the text to be displayed, and optionally text
 properties.  It is in one of three forms:
 - a string
 - a list of strings
@@ -478,7 +478,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
-	tabpage		When -1: display the popup on all tabs.
+	tabpage		When -1: display the popup on all tab pages.
 			When 0 (the default): display the popup on the current
 			tab page.
 			Otherwise the number of the tab page the popup is
@@ -523,7 +523,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			When the list has two characters the first is used for
 			the border lines, the second for the corners.
 			By default a double line is used all around when
-			'encoding' is "utf-8" and 'ambiwidth' is "single,
+			'encoding' is "utf-8" and 'ambiwidth' is "single",
 			otherwise ASCII characters are used.
 	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
@@ -653,7 +653,7 @@ Prompt the user to press y/Y or n/N: >
 					*popup_menu-shortcut-example*
 Extend popup_filter_menu() with shortcut keys: >
 
-	call popup_menu('Save', 'Cancel', 'Discard'], {
+	call popup_menu(['Save', 'Cancel', 'Discard'], {
 		\ 'filter': 'MyMenuFilter',
 		\ 'callback': 'MyMenuHandler',
 		\ })

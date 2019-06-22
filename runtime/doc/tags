@@ -2261,6 +2261,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :con	eval.txt	/*:con*
 :conf	editing.txt	/*:conf*
 :confirm	editing.txt	/*:confirm*
+:cons	eval.txt	/*:cons*
+:const	eval.txt	/*:const*
 :continue	eval.txt	/*:continue*
 :cope	quickfix.txt	/*:cope*
 :copen	quickfix.txt	/*:copen*
@@ -4769,6 +4771,9 @@ E991	eval.txt	/*E991*
 E992	options.txt	/*E992*
 E993	popup.txt	/*E993*
 E994	eval.txt	/*E994*
+E995	eval.txt	/*E995*
+E996	eval.txt	/*E996*
+E996	popup.txt	/*E996*
 E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -8233,15 +8238,18 @@ popup_close()	popup.txt	/*popup_close()*
 popup_create()	popup.txt	/*popup_create()*
 popup_create-usage	popup.txt	/*popup_create-usage*
 popup_dialog()	popup.txt	/*popup_dialog()*
+popup_dialog-example	popup.txt	/*popup_dialog-example*
 popup_filter_menu()	popup.txt	/*popup_filter_menu()*
 popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
 popup_getpos()	popup.txt	/*popup_getpos()*
 popup_hide()	popup.txt	/*popup_hide()*
 popup_menu()	popup.txt	/*popup_menu()*
+popup_menu-shortcut-example	popup.txt	/*popup_menu-shortcut-example*
 popup_move()	popup.txt	/*popup_move()*
 popup_notification()	popup.txt	/*popup_notification()*
 popup_setoptions()	popup.txt	/*popup_setoptions()*
+popup_settext()	popup.txt	/*popup_settext()*
 popup_show()	popup.txt	/*popup_show()*
 popupmenu-completion	insert.txt	/*popupmenu-completion*
 popupmenu-keys	insert.txt	/*popupmenu-keys*
@@ -9333,6 +9341,7 @@ test_alloc_fail()	eval.txt	/*test_alloc_fail()*
 test_autochdir()	eval.txt	/*test_autochdir()*
 test_feedinput()	eval.txt	/*test_feedinput()*
 test_garbagecollect_now()	eval.txt	/*test_garbagecollect_now()*
+test_garbagecollect_soon()	eval.txt	/*test_garbagecollect_soon()*
 test_getvalue()	eval.txt	/*test_getvalue()*
 test_ignore_error()	eval.txt	/*test_ignore_error()*
 test_null_blob()	eval.txt	/*test_null_blob()*
@@ -9545,8 +9554,11 @@ v:none	eval.txt	/*v:none*
 v:null	eval.txt	/*v:null*
 v:oldfiles	eval.txt	/*v:oldfiles*
 v:operator	eval.txt	/*v:operator*
+v:option_command	eval.txt	/*v:option_command*
 v:option_new	eval.txt	/*v:option_new*
 v:option_old	eval.txt	/*v:option_old*
+v:option_oldglobal	eval.txt	/*v:option_oldglobal*
+v:option_oldlocal	eval.txt	/*v:option_oldlocal*
 v:option_type	eval.txt	/*v:option_type*
 v:prevcount	eval.txt	/*v:prevcount*
 v:profiling	eval.txt	/*v:profiling*
@@ -9586,6 +9598,7 @@ v:true	eval.txt	/*v:true*
 v:val	eval.txt	/*v:val*
 v:var	eval.txt	/*v:var*
 v:version	eval.txt	/*v:version*
+v:versionlong	eval.txt	/*v:versionlong*
 v:vim_did_enter	eval.txt	/*v:vim_did_enter*
 v:warningmsg	eval.txt	/*v:warningmsg*
 v:windowid	eval.txt	/*v:windowid*
@@ -9744,6 +9757,7 @@ version7.txt	version7.txt	/*version7.txt*
 version8.0	version8.txt	/*version8.0*
 version8.1	version8.txt	/*version8.1*
 version8.txt	version8.txt	/*version8.txt*
+versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
 vi-differences	vi_diff.txt	/*vi-differences*
 vi-features	vi_diff.txt	/*vi-features*

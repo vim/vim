@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 May 25
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6804,7 +6804,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   "no"	    	never
 	   "yes"    	always
 	   "number"	display signs in the 'number' column. If the number
-			column is not present, then behaves like 'auto'.
+			column is not present, then behaves like "auto".
 
 
 			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*

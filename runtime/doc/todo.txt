@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 10
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,11 +42,6 @@ Ongoing work on text properties, see src/textprop.c
 
 Popup windows are being implemented, see |popup-window|.
 
-Include tests:
-    test_assert.vim
-    test_paste.vim
-    shared.vim
-
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
@@ -57,7 +52,8 @@ Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
 
 Listener causes extra } to be inserted. (Paul Jolly, #4455)
 
-Improvement to Travis config: Ozaki Kiichi, #4521
+Refactor: Move common things out of evalfunc.c, it's too big.
+E.g. vim_localtime().
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -93,6 +89,8 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
+- When typing "exit" in a terminal window with a shell and it's the only
+  window, should exit Vim instead of editing another buffer. (#4539)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
@@ -125,10 +123,12 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Add a way to play simple sounds?  libcanberra appears to be widely spread.
+Sound: support on Mac?  Or does libcanberra work there?
 
 Patch to use forward slash for completion even when 'shellslash' is set.
 Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
+
+Patch to add win_splitmove() function. (Andy Massimino, #4561)
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
@@ -159,6 +159,8 @@ Does not build with MinGW out of the box:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
+Columns and Rows are long, they should be int.
+
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
 
@@ -172,9 +174,6 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
-Add "number" to 'signcolumn': Put signs in the number column if it exists.
-Otherwise behave like "yes". (Adam Stankiewicz, #4515)
-
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
 Patch to use timers in matchparen. (Daniel Hahler, #1338)
@@ -187,6 +186,8 @@ Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
+":registers" should indicate char/block/linewise.  (Ayberk Aydin, #4546)
+
 Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
 
@@ -194,6 +195,9 @@ Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
+
+Some composing characters actually add a cell width to the character they are
+on top off, making the whole thing two characters wide. (#4526)
 
 Should we include some part of pull request #4505, not increment changedtick
 in some cases?  E.g. for ":write" when the changed flag was already off, the
@@ -255,6 +259,8 @@ More warnings from static analysis:
 https://lgtm.com/projects/g/vim/vim/alerts/?mode=list
 
 Still a E315 error when using terminal. (Masato Nishihata, #3959)
+
+Not existing directory in CDPATH leads to two shell calls. (#4525)
 
 Use dict_iterate_start() / dict_iterate_next() instead of relying on the
 internals of the dict structure.
@@ -430,6 +436,9 @@ MS-Windows: .lnk file not resolved properly when 'encoding' is set.
 (lkintact, 2018 Sep 22, #3473)
 
 Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+
+Request to add sign_setlist() to make it faster to add a lot of signs, e.g.
+when adding a sign for every quickfix entry. (#4557)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?

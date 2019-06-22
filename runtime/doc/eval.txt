@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8902,7 +8902,7 @@ sound_playevent({name} [, {callback}])
 		argument is the status:
 			0	sound was played to the end
 			1	sound was interrupted
-			2	error occured after sound started
+			2	error occurred after sound started
 		Example: >
 		   func Callback(id, status)
 		     echomsg "sound " .. a:id .. " finished with " .. a:status

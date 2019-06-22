@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 May 07
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Jun 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -65,7 +65,7 @@ contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
 	Vim home page:	  https://www.vim.org/
-	Vim FAQ:	  https://vimhelp.appspot.com/vim_faq.txt.html
+	Vim FAQ:	  https://vimhelp.org/vim_faq.txt.html
 	Downloading:	  https://www.vim.org/download.php
 
 
