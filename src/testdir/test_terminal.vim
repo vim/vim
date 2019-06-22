@@ -52,7 +52,7 @@ func Test_terminal_basic()
   call assert_notmatch('%[^\n]*running]', execute('ls F'))
   call assert_notmatch('%[^\n]*running]', execute('ls ?'))
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   call assert_equal('n', mode())
   call assert_match('%aF[^\n]*finished]', execute('ls'))
@@ -70,7 +70,7 @@ endfunc
 
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal({})
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
 
   setlocal modifiable
@@ -134,7 +134,7 @@ func Test_terminal_hide_buffer()
   call assert_true(buflisted(buf))
 
   exe 'split ' . buf . 'buf'
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   exe buf . 'bwipe'
 
   unlet g:job
@@ -310,7 +310,7 @@ func Test_terminal_scrollback()
   let lines = line('$')
   call assert_inrange(91, 100, lines)
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
   set termwinscroll&
@@ -487,7 +487,7 @@ func Test_terminal_finish_open_close()
   call assert_equal(2, winnr('$'))
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call WaitForAssert({-> assert_equal(1, winnr('$'))}, waittime)
 
   " shell terminal that does not close automatically
@@ -496,7 +496,7 @@ func Test_terminal_finish_open_close()
   call assert_equal(2, winnr('$'))
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call assert_equal(2, winnr('$'))
   quit
   call assert_equal(1, winnr('$'))
@@ -602,7 +602,7 @@ func s:test_environment(name, value)
     call term_sendkeys(buf, "echo $" . a:name . "\r")
   endif
   call term_wait(buf)
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call WaitForAssert({-> assert_equal(a:value, getline(2))})
 
   exe buf . 'bwipe'
@@ -619,7 +619,7 @@ func Test_terminal_env()
     call term_sendkeys(buf, "echo $TESTENV\r")
   endif
   call term_wait(buf)
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call WaitForAssert({-> assert_equal('correct', getline(2))})
 
   exe buf . 'bwipe'
@@ -661,7 +661,7 @@ func Test_terminal_noblock()
   call assert_match('done', line)
 
   let g:job = term_getjob(buf)
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   unlet g:job
   bwipe
@@ -816,7 +816,7 @@ func TerminalTmap(remap)
   endif
 
   call term_sendkeys(buf, "\r")
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
 
   tunmap 123
@@ -834,7 +834,7 @@ endfunc
 func Test_terminal_wall()
   let buf = Run_shell_in_terminal({})
   wall
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
   unlet g:job
@@ -843,7 +843,7 @@ endfunc
 func Test_terminal_wqall()
   let buf = Run_shell_in_terminal({})
   call assert_fails('wqall', 'E948')
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
   unlet g:job
@@ -969,7 +969,7 @@ func Test_terminal_response_to_control_sequence()
   " End "cat" gently.
   call term_sendkeys(buf, "\<CR>\<C-D>")
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   exe buf . 'bwipe'
   unlet g:job
 endfunc
@@ -1448,7 +1448,7 @@ func Test_terminal_ansicolors_default()
 
   let buf = Run_shell_in_terminal({})
   call assert_equal(colors, term_getansicolors(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
 
   exe buf . 'bwipe'
@@ -1469,7 +1469,7 @@ func Test_terminal_ansicolors_global()
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({})
   call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
 
   exe buf . 'bwipe'
@@ -1499,7 +1499,7 @@ func Test_terminal_ansicolors_func()
   let colors[4] = 'Invalid'
   call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 endfunc
@@ -1599,7 +1599,7 @@ func Test_terminal_termwinsize_option_zero()
   let buf = Run_shell_in_terminal({})
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 
@@ -1607,7 +1607,7 @@ func Test_terminal_termwinsize_option_zero()
   let buf = Run_shell_in_terminal({})
   let win = bufwinid(buf)
   call assert_equal([7, winwidth(win)], term_getsize(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 
@@ -1615,7 +1615,7 @@ func Test_terminal_termwinsize_option_zero()
   let buf = Run_shell_in_terminal({})
   let win = bufwinid(buf)
   call assert_equal([winheight(win), 33], term_getsize(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 
@@ -1645,7 +1645,7 @@ func Test_terminal_termwinsize_minimum()
   call assert_equal(7, winheight(win))
   call assert_equal(30, winwidth(win))
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 
@@ -1653,7 +1653,7 @@ func Test_terminal_termwinsize_minimum()
   let buf = Run_shell_in_terminal({})
   let win = bufwinid(buf)
   call assert_equal([winheight(win), winwidth(win)], term_getsize(buf))
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
   exe buf . 'bwipe'
 
@@ -1791,7 +1791,7 @@ func Test_zz1_terminal_in_gui()
 
   call assert_equal(1, winnr('$'))
   let buf = Run_shell_in_terminal({'term_finish': 'close'})
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
   call term_wait(buf)
 
   " closing window wipes out the terminal buffer a with finished job
@@ -1972,7 +1972,7 @@ func Test_term_getcursor()
   call WaitForAssert({-> assert_equal([0, 3],
   \ [term_getcursor(buf)[2].blink, term_getcursor(buf)[2].shape])})
 
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
 endfunc
 
 func Test_term_gettitle()

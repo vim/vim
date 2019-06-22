@@ -1,6 +1,7 @@
 " Test :suspend
 
 source shared.vim
+source term_util.vim
 
 func CheckSuspended(buf, fileExists)
   call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
@@ -53,7 +54,7 @@ func Test_suspend()
   " Quit gracefully to dump coverage information.
   call term_sendkeys(buf, ":qall!\<CR>")
   call term_wait(buf)
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
 
   exe buf . 'bwipe!'
   call delete('Xfoo')

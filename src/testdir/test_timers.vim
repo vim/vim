@@ -4,7 +4,7 @@ source check.vim
 CheckFeature timers
 
 source shared.vim
-source screendump.vim
+source term_util.vim
 
 func MyHandler(timer)
   let g:val += 1
