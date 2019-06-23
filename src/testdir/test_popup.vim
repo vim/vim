@@ -737,12 +737,13 @@ func Test_popup_and_previewwindow_dump()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
-  call writefile([
-    \ 'set previewheight=9',
-    \ 'silent! pedit',
-    \ 'call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))',
-    \ 'exec "norm! G\<C-E>\<C-E>"',
-	\ ], 'Xscript')
+  let lines =<< trim END
+    set previewheight=9
+    silent! pedit
+    call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))
+    exec "norm! G\<C-E>\<C-E>"
+  END
+  call writefile(lines, 'Xscript')
   let buf = RunVimInTerminal('-S Xscript', {})
 
   " Test that popup and previewwindow do not overlap.
@@ -799,11 +800,12 @@ func Test_popup_position()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
-  call writefile([
-	\ '123456789_123456789_123456789_a',
-	\ '123456789_123456789_123456789_b',
-	\ '            123',
-	\ ], 'Xtest')
+  let lines =<< trim END
+    123456789_123456789_123456789_a
+    123456789_123456789_123456789_b
+                123
+  END
+  call writefile(lines, 'Xtest')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
@@ -842,11 +844,12 @@ func Test_popup_command()
     throw 'Skipped: cannot make screendumps and/or menu feature missing'
   endif
 
-  call writefile([
-	\ 'one two three four five',
-	\ 'and one two Xthree four five',
-	\ 'one more two three four five',
-	\ ], 'Xtest')
+  let lines =<< trim END
+	one two three four five
+	and one two Xthree four five
+	one more two three four five
+  END
+  call writefile(lines, 'Xtest')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":source $VIMRUNTIME/menu.vim\<CR>")
   call term_sendkeys(buf, "/X\<CR>:popup PopUp\<CR>")

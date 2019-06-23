@@ -9,16 +9,17 @@ func Test_simple_popup()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
-  call writefile([
-	\ "call setline(1, range(1, 100))",
-	\ "hi PopupColor1 ctermbg=lightblue",
-	\ "hi PopupColor2 ctermbg=lightcyan",
-	\ "hi Comment ctermfg=red",
-	\ "call prop_type_add('comment', {'highlight': 'Comment'})",
-	\ "let winid = popup_create('hello there', {'line': 3, 'col': 11, 'minwidth': 20, 'highlight': 'PopupColor1'})",
-	\ "let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25, 'minwidth': 20})",
-	\ "call setwinvar(winid2, '&wincolor', 'PopupColor2')",
-	\], 'XtestPopup')
+  let lines =<< trim END
+	call setline(1, range(1, 100))
+	hi PopupColor1 ctermbg=lightblue
+	hi PopupColor2 ctermbg=lightcyan
+	hi Comment ctermfg=red
+	call prop_type_add('comment', {'highlight': 'Comment'})
+	let winid = popup_create('hello there', {'line': 3, 'col': 11, 'minwidth': 20, 'highlight': 'PopupColor1'})
+	let winid2 = popup_create(['another one', 'another two', 'another three'], {'line': 3, 'col': 25, 'minwidth': 20})
+	call setwinvar(winid2, '&wincolor', 'PopupColor2')
+  END
+  call writefile(lines, 'XtestPopup')
   let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_popupwin_01', {})
 
@@ -80,16 +81,18 @@ func Test_popup_with_border_and_padding()
   endif
 
   for iter in range(0, 1)
-    call writefile([iter == 1 ? '' : 'set enc=latin1',
-	  \ "call setline(1, range(1, 100))",
-	  \ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
-	  \ "call popup_create('hello padding', {'line': 2, 'col': 23, 'padding': []})",
-	  \ "call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})",
-	  \ "call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})",
-	  \ "call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})",
-	  \ "call popup_create('wrapped longer text', {'line': 8, 'col': 55, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
-	  \ "call popup_create('right aligned text', {'line': 11, 'col': 56, 'wrap': 0, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})",
-	  \], 'XtestPopupBorder')
+    let lines =<< trim END
+	  call setline(1, range(1, 100))
+	  call popup_create('hello border', {'line': 2, 'col': 3, 'border': []})
+	  call popup_create('hello padding', {'line': 2, 'col': 23, 'padding': []})
+	  call popup_create('hello both', {'line': 2, 'col': 43, 'border': [], 'padding': []})
+	  call popup_create('border TL', {'line': 6, 'col': 3, 'border': [1, 0, 0, 4]})
+	  call popup_create('paddings', {'line': 6, 'col': 23, 'padding': [1, 3, 2, 4]})
+	  call popup_create('wrapped longer text', {'line': 8, 'col': 55, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})
+	  call popup_create('right aligned text', {'line': 11, 'col': 56, 'wrap': 0, 'padding': [0, 3, 0, 3], 'border': [0, 1, 0, 1]})
+    END
+    call insert(lines, iter == 1 ? '' : 'set enc=latin1')
+    call writefile(lines, 'XtestPopupBorder')
     let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 15})
     call VerifyScreenDump(buf, 'Test_popupwin_2' .. iter, {})
 
@@ -97,20 +100,21 @@ func Test_popup_with_border_and_padding()
     call delete('XtestPopupBorder')
   endfor
 
-  call writefile([
-	\ "call setline(1, range(1, 100))",
-	\ "hi BlueColor ctermbg=lightblue",
-	\ "hi TopColor ctermbg=253",
-	\ "hi RightColor ctermbg=245",
-	\ "hi BottomColor ctermbg=240",
-	\ "hi LeftColor ctermbg=248",
-	\ "call popup_create('hello border', {'line': 2, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor']})",
-	\ "call popup_create(['hello border', 'and more'], {'line': 2, 'col': 23, 'border': [], 'borderhighlight': ['TopColor', 'RightColor', 'BottomColor', 'LeftColor']})",
-	\ "call popup_create(['hello border', 'lines only'], {'line': 2, 'col': 43, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x']})",
-	\ "call popup_create(['hello border', 'with corners'], {'line': 2, 'col': 60, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x', '#']})",
-	\ "let winid = popup_create(['hello border', 'with numbers'], {'line': 6, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['0', '1', '2', '3', '4', '5', '6', '7']})",
-	\ "call popup_create(['hello border', 'just blanks'], {'line': 7, 'col': 23, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': [' ']})",
-	\], 'XtestPopupBorder')
+  let lines =<< trim END
+	call setline(1, range(1, 100))
+	hi BlueColor ctermbg=lightblue
+	hi TopColor ctermbg=253
+	hi RightColor ctermbg=245
+	hi BottomColor ctermbg=240
+	hi LeftColor ctermbg=248
+	call popup_create('hello border', {'line': 2, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor']})
+	call popup_create(['hello border', 'and more'], {'line': 2, 'col': 23, 'border': [], 'borderhighlight': ['TopColor', 'RightColor', 'BottomColor', 'LeftColor']})
+	call popup_create(['hello border', 'lines only'], {'line': 2, 'col': 43, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x']})
+	call popup_create(['hello border', 'with corners'], {'line': 2, 'col': 60, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x', '#']})
+	let winid = popup_create(['hello border', 'with numbers'], {'line': 6, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['0', '1', '2', '3', '4', '5', '6', '7']})
+	call popup_create(['hello border', 'just blanks'], {'line': 7, 'col': 23, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': [' ']})
+  END
+  call writefile(lines, 'XtestPopupBorder')
   let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 12})
   call VerifyScreenDump(buf, 'Test_popupwin_22', {})
 
@@ -176,18 +180,19 @@ func Test_popup_with_syntax_win_execute()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
   endif
-  call writefile([
-	\ "call setline(1, range(1, 100))",
-	\ "hi PopupColor ctermbg=lightblue",
-	\ "let winid = popup_create([",
-	\ "\\ '#include <stdio.h>',",
-	\ "\\ 'int main(void)',",
-	\ "\\ '{',",
-	\ "\\ '    printf(123);',",
-	\ "\\ '}',",
-	\ "\\], {'line': 3, 'col': 25, 'highlight': 'PopupColor'})",
-	\ "call win_execute(winid, 'set syntax=cpp')",
-	\], 'XtestPopup')
+  let lines =<< trim END
+	call setline(1, range(1, 100))
+	hi PopupColor ctermbg=lightblue
+	let winid = popup_create([
+	    \ '#include <stdio.h>',
+	    \ 'int main(void)',
+	    \ '{',
+	    \ '    printf(123);',
+	    \ '}',
+	    \], {'line': 3, 'col': 25, 'highlight': 'PopupColor'})
+	call win_execute(winid, 'set syntax=cpp')
+  END
+  call writefile(lines, 'XtestPopup')
   let buf = RunVimInTerminal('-S XtestPopup', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_popupwin_10', {})
 
@@ -354,6 +359,43 @@ func Test_popup_drag()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupDrag')
+endfunc
+
+func Test_popup_with_mask()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, repeat([join(range(1, 40), '')], 10))
+	hi PopupColor ctermbg=lightgrey
+	let winid = popup_create([
+	    \ 'some text',
+	    \ 'another line',
+	    \], {
+	    \ 'line': 2,
+	    \ 'col': 10,
+	    \ 'zindex': 90,
+	    \ 'padding': [],
+	    \ 'highlight': 'PopupColor',
+	    \ 'mask': [[1,1,1,1], [-5,-1,4,4], [7,9,2,3], [2,4,3,3]]})
+	call popup_create([
+	    \ 'xxxxxxxxx',
+	    \ 'yyyyyyyyy',
+	    \], {
+	    \ 'line': 3,
+	    \ 'col': 18,
+	    \ 'zindex': 20})
+  END
+  call writefile(lines, 'XtestPopupMask')
+  let buf = RunVimInTerminal('-S XtestPopupMask', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_mask_1', {})
+
+  call term_sendkeys(buf, ":call popup_move(winid, {'col': 11, 'line': 3})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_mask_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMask')
 endfunc
 
 func Test_popup_select()

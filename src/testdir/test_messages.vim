@@ -102,13 +102,14 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func StatusLine() abort',
-        \ '  return ""',
-        \ 'endfunc',
-        \ 'set statusline=%!StatusLine()',
-        \ 'set laststatus=2',
-        \ ], testfile)
+  let lines =<< trim END
+        func StatusLine() abort
+          return ""
+        endfunc
+        set statusline=%!StatusLine()
+        set laststatus=2
+  END
+  call writefile(lines, testfile)
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -133,10 +134,11 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'set laststatus=2',
-        \ 'inoremap <Esc> <Esc>00',
-        \ ], testfile)
+  let lines =<< trim END
+        set laststatus=2
+        inoremap <Esc> <Esc>00
+  END
+  call writefile(lines, testfile)
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})

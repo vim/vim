@@ -1254,7 +1254,9 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     char_u	*marker;
     list_T	*l;
     char_u	*p;
-    int		indent_len = 0;
+    int		marker_indent_len = 0;
+    int		text_indent_len = 0;
+    char_u	*text_indent = NULL;
 
     if (eap->getline == NULL)
     {
@@ -1268,15 +1270,17 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     {
 	cmd = skipwhite(cmd + 4);
 
-	// Trim the indentation from all the lines in the here document
+	// Trim the indentation from all the lines in the here document.
 	// The amount of indentation trimmed is the same as the indentation of
-	// the :let command line.
+	// the first line after the :let command line.  To find the end marker
+	// the indent of the :let command line is trimmed.
 	p = *eap->cmdlinep;
 	while (VIM_ISWHITE(*p))
 	{
 	    p++;
-	    indent_len++;
+	    marker_indent_len++;
 	}
+	text_indent_len = -1;
     }
 
     // The marker is the next word.  Default marker is "."
@@ -1300,31 +1304,50 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 
     for (;;)
     {
-	int	i = 0;
+	int	mi = 0;
+	int	ti = 0;
 
 	theline = eap->getline(NUL, eap->cookie, 0);
-	if (theline != NULL && indent_len > 0)
-	{
-	    // trim the indent matching the first line
-	    if (STRNCMP(theline, *eap->cmdlinep, indent_len) == 0)
-		i = indent_len;
-	}
-
 	if (theline == NULL)
 	{
 	    semsg(_("E990: Missing end marker '%s'"), marker);
 	    break;
 	}
-	if (STRCMP(marker, theline + i) == 0)
+
+	// with "trim": skip the indent matching the :let line to find the
+	// marker
+	if (marker_indent_len > 0
+		&& STRNCMP(theline, *eap->cmdlinep, marker_indent_len) == 0)
+	    mi = marker_indent_len;
+	if (STRCMP(marker, theline + mi) == 0)
 	{
 	    vim_free(theline);
 	    break;
 	}
 
-	if (list_append_string(l, theline + i, -1) == FAIL)
+	if (text_indent_len == -1 && *theline != NUL)
+	{
+	    // set the text indent from the first line.
+	    p = theline;
+	    text_indent_len = 0;
+	    while (VIM_ISWHITE(*p))
+	    {
+		p++;
+		text_indent_len++;
+	    }
+	    text_indent = vim_strnsave(theline, text_indent_len);
+	}
+	// with "trim": skip the indent matching the first line
+	if (text_indent != NULL)
+	    for (ti = 0; ti < text_indent_len; ++ti)
+		if (theline[ti] != text_indent[ti])
+		    break;
+
+	if (list_append_string(l, theline + ti, -1) == FAIL)
 	    break;
 	vim_free(theline);
     }
+    vim_free(text_indent);
 
     return l;
 }

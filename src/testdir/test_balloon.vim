@@ -13,7 +13,7 @@ if !CanRunVimInTerminal()
   throw 'Skipped: cannot make screendumps'
 endif
 
-let s:common_script =<< [CODE]
+let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])
   set balloonevalterm balloonexpr=MyBalloonExpr() balloondelay=100
   func MyBalloonExpr()

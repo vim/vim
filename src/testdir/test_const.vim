@@ -18,7 +18,7 @@ func Test_define_var_with_lock()
     const n = v:null
     const bl = 0zC0FFEE
     const here =<< trim EOS
-    hello
+      hello
     EOS
 
     call assert_true(exists('i'))
@@ -84,7 +84,7 @@ func Test_define_l_var_with_lock()
     const l:n = v:null
     const l:bl = 0zC0FFEE
     const l:here =<< trim EOS
-    hello
+      hello
     EOS
 
     call assert_fails('let l:i = 1', 'E741:')

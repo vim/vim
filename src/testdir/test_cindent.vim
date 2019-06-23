@@ -18,23 +18,23 @@ func Test_cino_extern_c()
   " Test for cino-E
 
   let without_ind =<< trim [CODE]
-  #ifdef __cplusplus
-  extern "C" {
-  #endif
-  int func_a(void);
-  #ifdef __cplusplus
-  }
-  #endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+    int func_a(void);
+    #ifdef __cplusplus
+    }
+    #endif
   [CODE]
 
   let with_ind =<< trim [CODE]
-  #ifdef __cplusplus
-  extern "C" {
-  #endif
-  	int func_a(void);
-  #ifdef __cplusplus
-  }
-  #endif
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+    	int func_a(void);
+    #ifdef __cplusplus
+    }
+    #endif
   [CODE]
   new
   setlocal cindent cinoptions=E0
@@ -89,30 +89,30 @@ func Test_cindent_expr()
   endfunc
   setl expandtab sw=8 indentkeys+=; indentexpr=MyIndentFunction()
   let testinput =<< trim [CODE]
-  var_a = something()
-  b = something()
+    var_a = something()
+    b = something()
   [CODE]
   call setline(1, testinput)
   call cursor(1, 1)
   call feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
-  let expected =<< trim [CODE]
-          var_a = something();
-  b = something();
-  [CODE]
+  let expected =<< [CODE]
+        var_a = something();
+b = something();
+[CODE]
   call assert_equal(expected, getline(1, '$'))
 
   %d
-  let testinput =<< trim [CODE]
-                  var_a = something()
-                  b = something()
-  [CODE]
+  let testinput =<< [CODE]
+                var_a = something()
+                b = something()
+[CODE]
   call setline(1, testinput)
   call cursor(1, 1)
   call feedkeys("^\<c-v>j$A;\<esc>", 'tnix')
-  let expected =<< trim [CODE]
-          var_a = something();
-                  b = something()
-  [CODE]
+  let expected =<< [CODE]
+        var_a = something();
+                b = something()
+[CODE]
   call assert_equal(expected, getline(1, '$'))
   bw!
 endfunc
@@ -2069,14 +2069,14 @@ func Test_cindent_2()
   let &wm = &columns - 20
 
   let code =<< trim [CODE]
-  {
-
-  /* this is
-   * a real serious important big
-   * comment
-   */
-  	/* insert " about life, the universe, and the rest" after "serious" */
-  }
+    {
+  
+    /* this is
+     * a real serious important big
+     * comment
+     */
+    	/* insert " about life, the universe, and the rest" after "serious" */
+    }
   [CODE]
 
   call append(0, code)
@@ -3243,32 +3243,32 @@ func Test_cindent_30()
   setl cindent ts=4 sw=4
   setl cino=+20
 
-  let code =<< trim [CODE]
-  	void
-  foo()
-  {
-  	if (a)
-  	{
-  	} else
-  		asdf;
-  }
-  [CODE]
+  let code =<< [CODE]
+	void
+foo()
+{
+	if (a)
+	{
+	} else
+		asdf;
+}
+[CODE]
 
   call append(0, code)
   normal gg
   normal ]]=][
 
-  let expected =<< trim [CODE]
-  	void
-  foo()
-  {
-  	if (a)
-  	{
-  	} else
-  		asdf;
-  }
+  let expected =<< [CODE]
+	void
+foo()
+{
+	if (a)
+	{
+	} else
+		asdf;
+}
 
-  [CODE]
+[CODE]
 
   call assert_equal(expected, getline(1, '$'))
   enew! | close
@@ -3461,7 +3461,7 @@ func Test_cindent_34()
   normal =][
 
   let expected =<< trim [CODE]
-
+  
   	void
   func(int a
   #if defined(FOO)
