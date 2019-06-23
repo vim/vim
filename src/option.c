@@ -1985,7 +1985,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_nf, PV_NF,
 			    {(char_u *)"bin,octal,hex", (char_u *)0L}
 			    SCTX_INIT},
-    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
+    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)VAR_WIN, PV_NU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"numberwidth", "nuw",  P_NUM|P_RWIN|P_VIM,
@@ -2252,7 +2252,7 @@ static struct vimoption options[] =
     {"regexpengine", "re",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_re, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
+    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"remap",	    NULL,   P_BOOL|P_VI_DEF,
@@ -2497,7 +2497,7 @@ static struct vimoption options[] =
     {"sidescrolloff", "siso", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 			    (char_u *)&p_siso, PV_SISO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
+    {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RCLR,
 #ifdef FEAT_SIGNS
 			    (char_u *)VAR_WIN, PV_SCL,
 			    {(char_u *)"auto", (char_u *)0L}
