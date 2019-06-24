@@ -483,7 +483,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			tab page.
 			Otherwise the number of the tab page the popup is
 			displayed on; when invalid the popup is not created
-			and an error is given. *E996*
+			and an error is given. *E997*
 	title		Text to be displayed above the first item in the
 			popup, on top of any border.  If there is no top
 			border one line of padding is added to put the title

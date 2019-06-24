@@ -892,7 +892,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	tp = find_tabpage(tabnr);
 	if (tp == NULL)
 	{
-	    semsg(_("E996: Tabpage not found: %d"), tabnr);
+	    semsg(_("E997: Tabpage not found: %d"), tabnr);
 	    return NULL;
 	}
     }
