@@ -3818,13 +3818,9 @@ do_ecmd(
     else
     {
 #ifdef FEAT_BROWSE
-	if (cmdmod.browse)
+	if (cmdmod.browse && !exiting)
 	{
-	    if (
-# ifdef FEAT_GUI
-		!gui.in_use &&
-# endif
-		    au_has_group((char_u *)"FileExplorer"))
+	    if (!gui.in_use && au_has_group((char_u *)"FileExplorer"))
 	    {
 		/* No browsing supported but we do have the file explorer:
 		 * Edit the directory. */
