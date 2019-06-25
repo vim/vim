@@ -134,6 +134,7 @@ func Test_popup_with_border_and_padding()
 	\ 'core_width': 12,
 	\ 'height': 3,
 	\ 'core_height': 1,
+	\ 'scrollbar': 0,
 	\ 'visible': 1}
   let winid = popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
   call assert_equal(with_border_or_padding, popup_getpos(winid))
@@ -170,6 +171,7 @@ func Test_popup_with_border_and_padding()
 	\ 'width': 14,
 	\ 'core_width': 10,
 	\ 'height': 5,
+	\ 'scrollbar': 0,
 	\ 'core_height': 1,
 	\ 'visible': 1}, popup_getpos(winid))
 
