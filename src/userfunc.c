@@ -2008,8 +2008,8 @@ ex_function(exarg_T *eap)
     int		todo;
     hashitem_T	*hi;
     int		do_concat = TRUE;
-    int		sourcing_lnum_off;
-    int		sourcing_lnum_top = sourcing_lnum;
+    linenr_T	sourcing_lnum_off;
+    linenr_T	sourcing_lnum_top;
 
     /*
      * ":function" without argument: list functions.
@@ -2276,6 +2276,9 @@ ex_function(exarg_T *eap)
 	cmdline_row = msg_row;
     }
 
+    // Save the starting line number.
+    sourcing_lnum_top = sourcing_lnum;
+
     indent = 2;
     nesting = 0;
     for (;;)
@@ -2286,7 +2289,6 @@ ex_function(exarg_T *eap)
 	    saved_wait_return = FALSE;
 	}
 	need_wait_return = FALSE;
-	sourcing_lnum_off = sourcing_lnum;
 
 	if (line_arg != NULL)
 	{
@@ -2319,8 +2321,9 @@ ex_function(exarg_T *eap)
 	}
 
 	/* Detect line continuation: sourcing_lnum increased more than one. */
-	if (sourcing_lnum > sourcing_lnum_off + 1)
-	    sourcing_lnum_off = sourcing_lnum - sourcing_lnum_off - 1;
+	sourcing_lnum_off = get_sourced_lnum(eap->getline, eap->cookie);
+	if (sourcing_lnum < sourcing_lnum_off)
+	    sourcing_lnum_off -= sourcing_lnum;
 	else
 	    sourcing_lnum_off = 0;
 
