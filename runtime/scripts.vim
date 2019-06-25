@@ -371,6 +371,10 @@ else
   elseif s:line1 =~? '-\*-.*erlang.*-\*-'
     set ft=erlang
 
+  " libcxx and libstdc++ standard library headers like <iostream>
+  elseif s:line1 =~? '-\*-.*C++.*-\*-'
+    set ft=cpp
+
   " CVS diff
   else
     let s:lnum = 1
