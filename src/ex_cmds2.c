@@ -367,8 +367,8 @@ check_due_timer(void)
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
 	    int save_called_emsg = called_emsg;
-	    int	save_must_redraw = must_redraw;
-	    int	save_trylevel = trylevel;
+	    int save_must_redraw = must_redraw;
+	    int save_trylevel = trylevel;
 	    int save_did_throw = did_throw;
 	    int save_ex_pressedreturn = get_pressedreturn();
 	    int save_may_garbage_collect = may_garbage_collect;
