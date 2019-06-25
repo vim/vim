@@ -9554,6 +9554,10 @@ set_hl_attr(
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 # ifdef FEAT_TERMGUICOLORS
 #  ifdef MSWIN
+#   ifdef VIMDLL
+	// Only when not using the GUI.
+	if (!gui.in_use && !gui.starting)
+#   endif
 	{
 	    int id;
 	    guicolor_T fg, bg;
