@@ -788,7 +788,7 @@ get_expr_register(void)
 {
     char_u	*new_line;
 
-    new_line = getcmdline('=', 0L, 0);
+    new_line = getcmdline('=', 0L, 0, TRUE);
     if (new_line == NULL)
 	return NUL;
     if (*new_line == NUL)	/* use previous line */

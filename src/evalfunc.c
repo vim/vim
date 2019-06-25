@@ -3234,7 +3234,8 @@ execute_redir_str(char_u *value, int value_len)
 get_list_line(
     int	    c UNUSED,
     void    *cookie,
-    int	    indent UNUSED)
+    int	    indent UNUSED,
+    int	    do_concat UNUSED)
 {
     listitem_T **p = (listitem_T **)cookie;
     listitem_T *item = *p;

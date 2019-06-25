@@ -1307,7 +1307,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 	int	mi = 0;
 	int	ti = 0;
 
-	theline = eap->getline(NUL, eap->cookie, 0);
+	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
 	    semsg(_("E990: Missing end marker '%s'"), marker);

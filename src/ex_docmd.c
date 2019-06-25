@@ -20,9 +20,9 @@ static int	ex_pressedreturn = FALSE;
 #endif
 
 #ifdef FEAT_EVAL
-static char_u	*do_one_cmd(char_u **, int, struct condstack *, char_u *(*fgetline)(int, void *, int), void *cookie);
+static char_u	*do_one_cmd(char_u **, int, struct condstack *, char_u *(*fgetline)(int, void *, int, int), void *cookie);
 #else
-static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int), void *cookie);
+static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int, int), void *cookie);
 static int	if_level = 0;		/* depth in :if */
 #endif
 static void	free_cmdmod(void);
@@ -431,11 +431,11 @@ struct loop_cookie
     int		current_line;		/* last read line from growarray */
     int		repeating;		/* TRUE when looping a second time */
     /* When "repeating" is FALSE use "getline" and "cookie" to get lines */
-    char_u	*(*getline)(int, void *, int);
+    char_u	*(*getline)(int, void *, int, int);
     void	*cookie;
 };
 
-static char_u	*get_loop_line(int c, void *cookie, int indent);
+static char_u	*get_loop_line(int c, void *cookie, int indent, int do_concat);
 static int	store_loop_line(garray_T *gap, char_u *line);
 static void	free_cmdlines(garray_T *gap);
 
@@ -619,7 +619,7 @@ do_cmdline_cmd(char_u *cmd)
     int
 do_cmdline(
     char_u	*cmdline,
-    char_u	*(*fgetline)(int, void *, int),
+    char_u	*(*fgetline)(int, void *, int, int),
     void	*cookie,		/* argument for fgetline() */
     int		flags)
 {
@@ -644,7 +644,7 @@ do_cmdline(
     struct msglist	*private_msg_list;
 
     /* "fgetline" and "cookie" passed to do_one_cmd() */
-    char_u	*(*cmd_getline)(int, void *, int);
+    char_u	*(*cmd_getline)(int, void *, int, int);
     void	*cmd_cookie;
     struct loop_cookie cmd_loop_cookie;
     void	*real_cookie;
@@ -894,7 +894,7 @@ do_cmdline(
 #else
 		    0
 #endif
-			    )) == NULL)
+		    , TRUE)) == NULL)
 	    {
 		/* Don't call wait_return for aborted command line.  The NULL
 		 * returned for the end of a sourced file or executed function
@@ -1424,7 +1424,7 @@ do_cmdline(
  * Obtain a line when inside a ":while" or ":for" loop.
  */
     static char_u *
-get_loop_line(int c, void *cookie, int indent)
+get_loop_line(int c, void *cookie, int indent, int do_concat)
 {
     struct loop_cookie	*cp = (struct loop_cookie *)cookie;
     wcmd_T		*wp;
@@ -1437,9 +1437,9 @@ get_loop_line(int c, void *cookie, int indent)
 
 	/* First time inside the ":while"/":for": get line normally. */
 	if (cp->getline == NULL)
-	    line = getcmdline(c, 0L, indent);
+	    line = getcmdline(c, 0L, indent, do_concat);
 	else
-	    line = cp->getline(c, cp->cookie, indent);
+	    line = cp->getline(c, cp->cookie, indent, do_concat);
 	if (line != NULL && store_loop_line(cp->lines_gap, line) == OK)
 	    ++cp->current_line;
 
@@ -1487,12 +1487,12 @@ free_cmdlines(garray_T *gap)
  */
     int
 getline_equal(
-    char_u	*(*fgetline)(int, void *, int),
+    char_u	*(*fgetline)(int, void *, int, int),
     void	*cookie UNUSED,		/* argument for fgetline() */
-    char_u	*(*func)(int, void *, int))
+    char_u	*(*func)(int, void *, int, int))
 {
 #ifdef FEAT_EVAL
-    char_u		*(*gp)(int, void *, int);
+    char_u		*(*gp)(int, void *, int, int);
     struct loop_cookie *cp;
 
     /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
@@ -1517,11 +1517,11 @@ getline_equal(
  */
     void *
 getline_cookie(
-    char_u	*(*fgetline)(int, void *, int) UNUSED,
+    char_u	*(*fgetline)(int, void *, int, int) UNUSED,
     void	*cookie)		/* argument for fgetline() */
 {
 #ifdef FEAT_EVAL
-    char_u		*(*gp)(int, void *, int);
+    char_u		*(*gp)(int, void *, int, int);
     struct loop_cookie *cp;
 
     /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
@@ -1654,7 +1654,7 @@ do_one_cmd(
 #ifdef FEAT_EVAL
     struct condstack	*cstack,
 #endif
-    char_u		*(*fgetline)(int, void *, int),
+    char_u		*(*fgetline)(int, void *, int, int),
     void		*cookie)		/* argument for fgetline() */
 {
     char_u		*p;

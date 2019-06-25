@@ -371,6 +371,7 @@ check_due_timer(void)
 	    int	save_trylevel = trylevel;
 	    int save_did_throw = did_throw;
 	    int save_ex_pressedreturn = get_pressedreturn();
+	    int save_may_garbage_collect = may_garbage_collect;
 	    except_T *save_current_exception = current_exception;
 	    vimvars_save_T vvsave;
 
@@ -385,7 +386,9 @@ check_due_timer(void)
 	    trylevel = 0;
 	    did_throw = FALSE;
 	    current_exception = NULL;
+	    may_garbage_collect = FALSE;
 	    save_vimvars(&vvsave);
+
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
@@ -407,6 +410,7 @@ check_due_timer(void)
 	    must_redraw = must_redraw > save_must_redraw
 					      ? must_redraw : save_must_redraw;
 	    set_pressedreturn(save_ex_pressedreturn);
+	    may_garbage_collect = save_may_garbage_collect;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
@@ -3611,7 +3615,7 @@ do_source(
     cookie.conv.vc_type = CONV_NONE;		/* no conversion */
 
     /* Read the first line so we can check for a UTF-8 BOM. */
-    firstline = getsourceline(0, (void *)&cookie, 0);
+    firstline = getsourceline(0, (void *)&cookie, 0, TRUE);
     if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
 			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
     {
@@ -3794,7 +3798,7 @@ free_scriptnames(void)
  * Return NULL for end-of-file or some error.
  */
     char_u *
-getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
+getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
@@ -3833,7 +3837,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 
     /* Only concatenate lines starting with a \ when 'cpoptions' doesn't
      * contain the 'C' flag. */
-    if (line != NULL && (vim_strchr(p_cpo, CPO_CONCAT) == NULL))
+    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	/* compensate for the one line read-ahead */
 	--sourcing_lnum;
@@ -4212,7 +4216,7 @@ do_finish(exarg_T *eap, int reanimate)
  */
     int
 source_finished(
-    char_u	*(*fgetline)(int, void *, int),
+    char_u	*(*fgetline)(int, void *, int, int),
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)

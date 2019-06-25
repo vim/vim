@@ -30,7 +30,7 @@ void ex_call(exarg_T *eap);
 int do_return(exarg_T *eap, int reanimate, int is_cmd, void *rettv);
 void discard_pending_return(void *rettv);
 char_u *get_return_cmd(void *rettv);
-char_u *get_func_line(int c, void *cookie, int indent);
+char_u *get_func_line(int c, void *cookie, int indent, int do_concat);
 void func_line_start(void *cookie);
 void func_line_exec(void *cookie);
 void func_line_end(void *cookie);
