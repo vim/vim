@@ -87,9 +87,10 @@ that it is in.
 
 
 TODO:
-- Why does 'nrformats' leak from the popup window buffer???
 - When the lines do not fit show a scrollbar (like in the popup menu).
-  Use the mouse wheel for scrolling.
+- Use the mouse wheel for scrolling.
+- Have a way to scroll to the botton. (#4577)
+- Why does 'nrformats' leak from the popup window buffer???
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use ERROR_IF_POPUP_WINDOW for more commands.
 - Add 'balloonpopup': instead of showing text, let the callback open a popup
@@ -347,6 +348,9 @@ popup_notification({text}, {options})			 *popup_notification()*
 <		The PopupNotification highlight group is used instead of
 		WarningMsg if it is defined.
 
+		This popup should only be used with the |+timers| feature,
+		otherwise it will not disappear.
+
 		The position will be adjusted to avoid overlap with other
 		notifications.
 		Use {options} to change the properties.
@@ -370,6 +374,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			border
 			borderhighlight
 			borderchars
+			scrollbar
 			zindex
 			mask
 			time
@@ -475,6 +480,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	firstline	First buffer line to display.  When larger than one it
 			looks like the text scrolled up.  When out of range
 			the last buffer line will at the top of the window.
+			Also see "scrollbar".
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
 			{not implemented yet}
@@ -525,6 +531,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			By default a double line is used all around when
 			'encoding' is "utf-8" and 'ambiwidth' is "single",
 			otherwise ASCII characters are used.
+	scrollbar	non-zero: show a scrollbar when the text doesn't fit.
+			zero: do not show a scrollbar.  Default is non-zero.
 	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
 	mask		A list of lists with coordinates, defining parts of

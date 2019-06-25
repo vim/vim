@@ -287,6 +287,10 @@ apply_general_options(win_T *wp, dict_T *dict)
     if (wp->w_firstline < 1)
 	wp->w_firstline = 1;
 
+    di = dict_find(dict, (char_u *)"scrollbar", -1);
+    if (di != NULL)
+	wp->w_want_scrollbar = dict_get_number(dict, (char_u *)"scrollbar");
+
     str = dict_get_string(dict, (char_u *)"title", FALSE);
     if (str != NULL)
     {
@@ -733,6 +737,9 @@ popup_adjust_position(win_T *wp)
 	    break;
     }
 
+    wp->w_has_scrollbar = wp->w_want_scrollbar
+	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
+
     minwidth = wp->w_minwidth;
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
     {
@@ -1047,6 +1054,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	VIM_CLEAR(wp->w_border_highlight[i]);
     for (i = 0; i < 8; ++i)
 	wp->w_border_char[i] = 0;
+    wp->w_want_scrollbar = 1;
 
     // Deal with options.
     apply_options(wp, argvars[1].vval.v_dict);
@@ -1483,6 +1491,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     dict_T	*dict;
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
+    linenr_T	old_firstline;
 
     if (wp == NULL)
 	return;  // invalid {id}
@@ -1493,10 +1502,13 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     dict = argvars[1].vval.v_dict;
+    old_firstline = wp->w_firstline;
 
     apply_move_options(wp, dict);
     apply_general_options(wp, dict);
 
+    if (old_firstline != wp->w_firstline)
+	redraw_win_later(wp, NOT_VALID);
     popup_mask_refresh = TRUE;
     popup_adjust_position(wp);
 }
@@ -1534,6 +1546,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "core_width", wp->w_width);
 	dict_add_number(dict, "core_height", wp->w_height);
 
+	dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
 	dict_add_number(dict, "visible",
 		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
     }
@@ -1656,6 +1669,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "maxheight", wp->w_maxheight);
 	dict_add_number(dict, "maxwidth", wp->w_maxwidth);
 	dict_add_number(dict, "firstline", wp->w_firstline);
+	dict_add_number(dict, "scrollbar", wp->w_want_scrollbar);
 	dict_add_number(dict, "zindex", wp->w_zindex);
 	dict_add_number(dict, "fixed", wp->w_popup_fixed);
 	dict_add_string(dict, "title", wp->w_popup_title);
@@ -2114,6 +2128,10 @@ update_popups(void (*win_update)(win_T *wp))
     char_u  buf[MB_MAXBYTES];
     int	    row;
     int	    i;
+    int	    sb_thumb_top;
+    int	    sb_thumb_height;
+    int	    attr_scroll = highlight_attr[HLF_PSB];
+    int	    attr_thumb = highlight_attr[HLF_PST];
 
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
@@ -2143,7 +2161,8 @@ update_popups(void (*win_update)(win_T *wp))
 	wp->w_wincol -= left_off;
 
 	total_width = wp->w_popup_border[3] + wp->w_popup_padding[3]
-		+ wp->w_width + wp->w_popup_padding[1] + wp->w_popup_border[1];
+		+ wp->w_width + wp->w_popup_padding[1] + wp->w_popup_border[1]
+		+ wp->w_has_scrollbar;
 	total_height = popup_top_extra(wp)
 		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
 	popup_attr = get_wcr_attr(wp);
@@ -2203,7 +2222,8 @@ update_popups(void (*win_update)(win_T *wp))
 	    row = wp->w_winrow + wp->w_popup_border[0];
 	    screen_fill(row, row + top_padding,
 		    wp->w_wincol + wp->w_popup_border[3],
-		    wp->w_wincol + total_width - wp->w_popup_border[1],
+		    wp->w_wincol + total_width - wp->w_popup_border[1]
+							- wp->w_has_scrollbar,
 							 ' ', ' ', popup_attr);
 	}
 
@@ -2212,10 +2232,24 @@ update_popups(void (*win_update)(win_T *wp))
 	    screen_puts(wp->w_popup_title, wp->w_winrow, wp->w_wincol + 1,
 		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 
-	for (row = wp->w_winrow + wp->w_popup_border[0];
-		row < wp->w_winrow + total_height - wp->w_popup_border[2];
-		    ++row)
+	// Compute scrollbar thumb position and size.
+	if (wp->w_has_scrollbar)
 	{
+	    linenr_T linecount = wp->w_buffer->b_ml.ml_line_count;
+
+	    sb_thumb_height = wp->w_height * wp->w_height / linecount;
+	    if (sb_thumb_height == 0)
+		sb_thumb_height = 1;
+	    sb_thumb_top = ((wp->w_topline * (wp->w_height - sb_thumb_height)
+			    + (linecount - wp->w_height) / 2))
+			      / (linecount - (wp->w_height - sb_thumb_height));
+	}
+
+	for (i = wp->w_popup_border[0];
+				 i < total_height - wp->w_popup_border[2]; ++i)
+	{
+	    row = wp->w_winrow + i;
+
 	    // left border
 	    if (wp->w_popup_border[3] > 0)
 	    {
@@ -2226,6 +2260,21 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (wp->w_popup_padding[3] > 0)
 		screen_puts(get_spaces(wp->w_popup_padding[3]), row,
 			wp->w_wincol + wp->w_popup_border[3], popup_attr);
+	    // scrollbar
+	    if (wp->w_has_scrollbar)
+	    {
+		int line = i - top_off;
+		int scroll_col = wp->w_wincol + total_width - 1
+						       - wp->w_popup_border[1];
+
+		if (line >= 0 && line < wp->w_height)
+		    screen_putchar(' ', row, scroll_col,
+			    line >= sb_thumb_top
+				       && line < sb_thumb_top + sb_thumb_height
+						  ? attr_thumb : attr_scroll);
+		else
+		    screen_putchar(' ', row, scroll_col, popup_attr);
+	    }
 	    // right border
 	    if (wp->w_popup_border[1] > 0)
 	    {
