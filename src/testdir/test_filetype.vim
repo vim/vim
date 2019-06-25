@@ -586,6 +586,8 @@ let s:script_checks = {
       \ 'cfengine': [['#!/path/cfengine']],
       \ 'erlang': [['#!/path/escript']],
       \ 'haskell': [['#!/path/haskell']],
+      \ 'cpp': [['// Standard iostream objects -*- C++ -*-'],
+      \         ['// -*- C++ -*-']],
       \ }
 
 func Test_script_detection()
