@@ -3186,7 +3186,7 @@ do_write(exarg_T *eap)
 
     ffname = eap->arg;
 #ifdef FEAT_BROWSE
-    if (cmdmod.browse)
+    if (cmdmod.browse && !exiting)
     {
 	browse_file = do_browse(BROWSE_SAVE, (char_u *)_("Save As"), ffname,
 						    NULL, NULL, NULL, curbuf);
