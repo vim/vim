@@ -2154,8 +2154,9 @@ update_popups(void (*win_update)(win_T *wp))
 	wp->w_winrow += top_off;
 	wp->w_wincol += left_off;
 
-	// Draw the popup text.
-	win_update(wp);
+	// Draw the popup text, unless it's off screen.
+	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
+	    win_update(wp);
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_off;
