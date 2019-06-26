@@ -269,6 +269,26 @@ apply_move_options(win_T *wp, dict_T *d)
     get_pos_options(wp, d);
 }
 
+    static void
+check_highlight(dict_T *dict, char *name, char_u **pval)
+{
+    dictitem_T  *di;
+    char_u	*str;
+
+    di = dict_find(dict, (char_u *)name, -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type != VAR_STRING)
+	    semsg(_(e_invargval), name);
+	else
+	{
+	    str = tv_get_string(&di->di_tv);
+	    if (*str != NUL)
+		*pval = vim_strsave(str);
+	}
+    }
+}
+
 /*
  * Shared between popup_create() and f_popup_setoptions().
  */
@@ -374,6 +394,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    }
 	}
     }
+
+    check_highlight(dict, "scrollbarhighlight", &wp->w_scrollbar_highlight);
+    check_highlight(dict, "thumbhighlight", &wp->w_thumb_highlight);
 
     di = dict_find(dict, (char_u *)"zindex", -1);
     if (di != NULL)
@@ -1677,6 +1700,11 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
+	if (wp->w_scrollbar_highlight != NULL)
+	    dict_add_string(dict, "scrollbarhighlight",
+						    wp->w_scrollbar_highlight);
+	if (wp->w_thumb_highlight != NULL)
+	    dict_add_string(dict, "thumbhighlight", wp->w_thumb_highlight);
 
 	// find the tabpage that holds this popup
 	i = 1;
@@ -2131,8 +2159,8 @@ update_popups(void (*win_update)(win_T *wp))
     int	    i;
     int	    sb_thumb_top = 0;
     int	    sb_thumb_height = 0;
-    int	    attr_scroll = highlight_attr[HLF_PSB];
-    int	    attr_thumb = highlight_attr[HLF_PST];
+    int	    attr_scroll = 0;
+    int	    attr_thumb = 0;
 
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
@@ -2246,6 +2274,14 @@ update_popups(void (*win_update)(win_T *wp))
 	    sb_thumb_top = (wp->w_topline - 1 + (linecount / wp->w_height) / 2)
 				* (wp->w_height - sb_thumb_height)
 						  / (linecount - wp->w_height);
+	    if (wp->w_scrollbar_highlight != NULL)
+		attr_scroll = syn_name2attr(wp->w_scrollbar_highlight);
+	    else
+		attr_scroll = highlight_attr[HLF_PSB];
+	    if (wp->w_thumb_highlight != NULL)
+		attr_thumb = syn_name2attr(wp->w_thumb_highlight);
+	    else
+		attr_thumb = highlight_attr[HLF_PST];
 	}
 
 	for (i = wp->w_popup_border[0];

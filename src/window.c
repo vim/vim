@@ -4857,6 +4857,8 @@ win_free(
     free_callback(&wp->w_filter_cb);
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
+    vim_free(wp->w_scrollbar_highlight);
+    vim_free(wp->w_thumb_highlight);
     vim_free(wp->w_popup_title);
     list_unref(wp->w_popup_mask);
 #endif
