@@ -85,11 +85,11 @@ That way you can still see where it is, even though you cannot see the text
 that it is in.
 
 
-
 TODO:
-- When the lines do not fit show a scrollbar (like in the popup menu).
-- Use the mouse wheel for scrolling.
-- Have a way to scroll to the botton. (#4577)
+- click near top of scrollbar scrolls down, clear near bottom scrolls up.
+- Allow for setting scrollbar color: scrollbarhighlight,
+  scrollbarthumbhighlight ?
+- Have a way to scroll to the bottom? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use ERROR_IF_POPUP_WINDOW for more commands.
@@ -275,6 +275,8 @@ popup_getpos({id})					*popup_getpos()*
 		    core_line	screen line of the text box
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
+		    firstline	line of the buffer at top (1 unless scrolled)
+		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
 		from the values in `popup_getoptions()` for the sizing and
@@ -483,7 +485,6 @@ The second argument of |popup_create()| is a dictionary with options:
 			Also see "scrollbar".
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
-			{not implemented yet}
 	tabpage		When -1: display the popup on all tab pages.
 			When 0 (the default): display the popup on the current
 			tab page.

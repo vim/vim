@@ -4521,9 +4521,13 @@ nv_mousescroll(cmdarg_T *cap)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col, FAIL_POPUP);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
+#ifdef FEAT_TEXT_PROP
+	if (bt_popup(wp->w_buffer) && !wp->w_has_scrollbar)
+	    return;
+#endif
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
@@ -4543,10 +4547,35 @@ nv_mousescroll(cmdarg_T *cap)
 	}
 	else
 	{
-	    cap->count1 = 3;
-	    cap->count0 = 3;
+	    // Don't scroll more than half the window height.
+	    if (curwin->w_height < 6)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+		cap->count1 = 3;
+	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
+#ifdef FEAT_TEXT_PROP
+	if (bt_popup(wp->w_buffer))
+	{
+	    int	    height = wp->w_height;
+
+	    curwin->w_firstline = curwin->w_topline;
+	    popup_adjust_position(curwin);
+
+	    // we don't want the popup to get smaller, decrement the first line
+	    // until it doesn't
+	    while (curwin->w_firstline > 1 && curwin->w_height < height)
+	    {
+		--curwin->w_firstline;
+		popup_adjust_position(curwin);
+	    }
+	}
+#endif
     }
 # ifdef FEAT_GUI
     else

@@ -1547,6 +1547,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "core_height", wp->w_height);
 
 	dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
+	dict_add_number(dict, "firstline", wp->w_topline);
 	dict_add_number(dict, "visible",
 		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
     }
@@ -2238,12 +2239,13 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    linenr_T linecount = wp->w_buffer->b_ml.ml_line_count;
 
-	    sb_thumb_height = wp->w_height * wp->w_height / linecount;
+	    sb_thumb_height = (wp->w_height * wp->w_height + linecount / 2)
+								   / linecount;
 	    if (sb_thumb_height == 0)
 		sb_thumb_height = 1;
-	    sb_thumb_top = ((wp->w_topline * (wp->w_height - sb_thumb_height)
-			    + (linecount - wp->w_height) / 2))
-			      / (linecount - (wp->w_height - sb_thumb_height));
+	    sb_thumb_top = (wp->w_topline - 1 + (linecount / wp->w_height) / 2)
+				* (wp->w_height - sb_thumb_height)
+						  / (linecount - wp->w_height);
 	}
 
 	for (i = wp->w_popup_border[0];

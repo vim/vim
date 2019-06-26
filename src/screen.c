@@ -875,7 +875,7 @@ update_prepare(void)
 #endif
 #ifdef FEAT_TEXT_PROP
     // Update popup_mask if needed.
-    may_update_popup_mask(0);
+    may_update_popup_mask(must_redraw);
 #endif
 }
 
@@ -1555,7 +1555,11 @@ win_update(win_T *wp)
 	if (mid_start == 0)
 	{
 	    mid_end = wp->w_height;
-	    if (ONE_WINDOW)
+	    if (ONE_WINDOW
+#ifdef FEAT_TEXT_PROP
+		    && !bt_popup(wp->w_buffer)
+#endif
+		    )
 	    {
 		/* Clear the screen when it was not done by win_del_lines() or
 		 * win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
