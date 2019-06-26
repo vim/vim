@@ -134,6 +134,7 @@ func Test_popup_with_border_and_padding()
 	\ 'core_width': 12,
 	\ 'height': 3,
 	\ 'core_height': 1,
+	\ 'firstline': 1,
 	\ 'scrollbar': 0,
 	\ 'visible': 1}
   let winid = popup_create('hello border', {'line': 2, 'col': 3, 'border': []})",
@@ -173,6 +174,7 @@ func Test_popup_with_border_and_padding()
 	\ 'height': 5,
 	\ 'scrollbar': 0,
 	\ 'core_height': 1,
+	\ 'firstline': 1,
 	\ 'visible': 1}, popup_getpos(winid))
 
   call popup_clear()
@@ -1426,6 +1428,13 @@ func Test_popup_scrollbar()
 	  \ 'minwidth': 8,
 	  \ 'maxheight': 4,
 	  \ })
+    func ScrollUp()
+      call feedkeys("\<F3>\<ScrollWheelUp>", "xt")
+    endfunc
+    func ScrollDown()
+      call feedkeys("\<F3>\<ScrollWheelDown>", "xt")
+    endfunc
+    map <silent> <F3> :call test_setmouse(5, 36)<CR>
   END
   call writefile(lines, 'XtestPopupScroll')
   let buf = RunVimInTerminal('-S XtestPopupScroll', {'rows': 10})
@@ -1439,6 +1448,16 @@ func Test_popup_scrollbar()
 
   call term_sendkeys(buf, ":call popup_setoptions(winid, {'firstline': 9})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_4', {})
+
+  call term_sendkeys(buf, ":call ScrollUp()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_5', {})
+
+  call term_sendkeys(buf, ":call ScrollDown()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_6', {})
+
+  call term_sendkeys(buf, ":call ScrollDown()\<CR>")
+  call term_sendkeys(buf, ":call ScrollDown()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_7', {})
 
   " clean up
   call StopVimInTerminal(buf)
