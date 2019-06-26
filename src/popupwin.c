@@ -2129,8 +2129,8 @@ update_popups(void (*win_update)(win_T *wp))
     char_u  buf[MB_MAXBYTES];
     int	    row;
     int	    i;
-    int	    sb_thumb_top;
-    int	    sb_thumb_height;
+    int	    sb_thumb_top = 0;
+    int	    sb_thumb_height = 0;
     int	    attr_scroll = highlight_attr[HLF_PSB];
     int	    attr_thumb = highlight_attr[HLF_PST];
 

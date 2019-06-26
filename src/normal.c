@@ -4560,9 +4560,9 @@ nv_mousescroll(cmdarg_T *cap)
 	    nv_scroll_line(cap);
 	}
 #ifdef FEAT_TEXT_PROP
-	if (bt_popup(wp->w_buffer))
+	if (bt_popup(curwin->w_buffer))
 	{
-	    int	    height = wp->w_height;
+	    int	    height = curwin->w_height;
 
 	    curwin->w_firstline = curwin->w_topline;
 	    popup_adjust_position(curwin);
