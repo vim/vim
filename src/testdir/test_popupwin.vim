@@ -1423,6 +1423,8 @@ func Test_popup_scrollbar()
 
   let lines =<< trim END
     call setline(1, range(1, 20))
+    hi ScrollThumb ctermbg=blue
+    hi ScrollBar ctermbg=red
     let winid = popup_create(['one', 'two', 'three', 'four', 'five',
 	  \ 'six', 'seven', 'eight', 'nine'], {
 	  \ 'minwidth': 8,
@@ -1449,6 +1451,7 @@ func Test_popup_scrollbar()
   call term_sendkeys(buf, ":call popup_setoptions(winid, {'firstline': 9})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_4', {})
 
+  call term_sendkeys(buf, ":call popup_setoptions(winid, {'scrollbarhighlight': 'ScrollBar', 'thumbhighlight': 'ScrollThumb'})\<CR>")
   call term_sendkeys(buf, ":call ScrollUp()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_5', {})
 
