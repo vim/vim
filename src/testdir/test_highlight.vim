@@ -604,7 +604,12 @@ func Test_1_highlight_Normalgroup_exists()
   " MS-Windows GUI sets the font
   if !has('win32') || !has('gui_running')
     let hlNormal = HighlightArgs('Normal')
-    call assert_match('hi Normal\s*clear', hlNormal)
+    if has('gui_running') && (has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3'))
+      " 'expected' is DEFAULT_FONT of gui_gtk_x11.c
+      call assert_match('hi Normal\s*font=Monospace 10', hlNormal)
+    else
+      call assert_match('hi Normal\s*clear', hlNormal)
+    endif
   endif
 endfunc
 
