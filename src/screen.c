@@ -3171,7 +3171,7 @@ win_line(
     int		row;			/* row in the window, excl w_winrow */
     int		screen_row;		/* row on the screen, incl w_winrow */
 
-    char_u	extra[18];		/* "%ld" and 'fdc' must fit in here */
+    char_u	extra[20];		/* "%ld" and 'fdc' must fit in here */
     int		n_extra = 0;		/* number of extra chars */
     char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
     char_u	*p_extra_free = NULL;   /* p_extra needs to be freed */
@@ -4440,7 +4440,7 @@ win_line(
 			proptype_T  *pt = text_prop_type_by_id(
 					wp->w_buffer, text_props[tpi].tp_type);
 
-			if (pt != NULL)
+			if (pt != NULL && pt->pt_hl_id > 0)
 			{
 			    int pt_attr = syn_id2attr(pt->pt_hl_id);
 

@@ -792,6 +792,17 @@ func Test_textprop_empty_buffer()
   call prop_type_delete('comment')
 endfunc
 
+" Adding a text property with invalid highlight should be ignored.
+func Test_textprop_invalid_highlight()
+  call assert_fails("call prop_type_add('dni', {'highlight': 'DoesNotExist'})", 'E970:')
+  new
+  call setline(1, ['asdf','asdf'])
+  call prop_add(1, 1, {'length': 4, 'type': 'dni'})
+  redraw
+  bwipe!
+  call prop_type_delete('dni')
+endfunc
+
 " Adding a text property to an empty buffer and then editing another
 func Test_textprop_empty_buffer_next()
   call prop_type_add("xxx", {})
