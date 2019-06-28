@@ -78,6 +78,7 @@ get_pos_options(win_T *wp, dict_T *dict)
 {
     char_u	*str;
     int		nr;
+    dictitem_T	*di;
 
     nr = popup_options_one(dict, (char_u *)"line");
     if (nr > 0)
@@ -86,7 +87,9 @@ get_pos_options(win_T *wp, dict_T *dict)
     if (nr > 0)
 	wp->w_wantcol = nr;
 
-    wp->w_popup_fixed = dict_get_number(dict, (char_u *)"fixed") != 0;
+    di = dict_find(dict, (char_u *)"fixed", -1);
+    if (di != NULL)
+	wp->w_popup_fixed = dict_get_number(dict, (char_u *)"fixed") != 0;
 
     str = dict_get_string(dict, (char_u *)"pos", FALSE);
     if (str != NULL)
@@ -666,10 +669,12 @@ popup_adjust_position(win_T *wp)
     int		org_wincol = wp->w_wincol;
     int		org_width = wp->w_width;
     int		org_height = wp->w_height;
+    int		org_leftcol = wp->w_leftcol;
     int		minwidth;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
+    wp->w_leftcol = 0;
     if (wp->w_popup_pos == POPPOS_CENTER)
     {
 	// center after computing the size
@@ -785,10 +790,21 @@ popup_adjust_position(win_T *wp)
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
 	    || wp->w_popup_pos == POPPOS_TOPRIGHT)
     {
+	int leftoff = wp->w_wantcol - (wp->w_width + extra_width);
+
 	// Right aligned: move to the right if needed.
 	// No truncation, because that would change the height.
-	if (wp->w_width + extra_width < wp->w_wantcol)
-	    wp->w_wincol = wp->w_wantcol - (wp->w_width + extra_width);
+	if (leftoff >= 0)
+	    wp->w_wincol = leftoff;
+	else if (wp->w_popup_fixed)
+	{
+	    // "col" specifies the right edge, but popup doesn't fit, skip some
+	    // columns when displaying the window.
+	    wp->w_leftcol = -leftoff;
+	    wp->w_width += leftoff;
+	    if (wp->w_width < 0)
+		wp->w_width = 0;
+	}
     }
 
     wp->w_height = wp->w_buffer->b_ml.ml_line_count - wp->w_topline
@@ -823,6 +839,7 @@ popup_adjust_position(win_T *wp)
     // And redraw windows that were behind the popup.
     if (org_winrow != wp->w_winrow
 	    || org_wincol != wp->w_wincol
+	    || org_leftcol != wp->w_leftcol
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
@@ -1078,6 +1095,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     for (i = 0; i < 8; ++i)
 	wp->w_border_char[i] = 0;
     wp->w_want_scrollbar = 1;
+    wp->w_popup_fixed = 0;
 
     // Deal with options.
     apply_options(wp, argvars[1].vval.v_dict);
@@ -1909,7 +1927,7 @@ popup_check_cursor_pos()
     static int
 popup_masked(win_T *wp, int screencol, int screenline)
 {
-    int		col = screencol - wp->w_wincol + 1;
+    int		col = screencol - wp->w_wincol + 1 + wp->w_leftcol;
     int		line = screenline - wp->w_winrow + 1;
     listitem_T	*lio, *li;
     int		width, height;
@@ -1988,7 +2006,13 @@ update_popup_transparent(win_T *wp, int val)
 		linee = height + linee + 1;
 
 	    --cols;
+	    cols -= wp->w_leftcol;
+	    if (cols < 0)
+		cols = 0;
+	    cole -= wp->w_leftcol;
 	    --lines;
+	    if (lines < 0)
+		lines = 0;
 	    for (line = lines; line < linee && line < screen_Rows; ++line)
 		for (col = cols; col < cole && col < screen_Columns; ++col)
 		    popup_transparent[(line + wp->w_winrow) * screen_Columns
