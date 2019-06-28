@@ -1459,6 +1459,8 @@ func Test_popup_scrollbar()
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_6', {})
 
   call term_sendkeys(buf, ":call ScrollDown()\<CR>")
+  " wait a bit, otherwise it fails sometimes (double click recognized?)
+  sleep 100m
   call term_sendkeys(buf, ":call ScrollDown()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_7', {})
 
