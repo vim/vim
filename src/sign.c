@@ -1011,7 +1011,7 @@ sign_list_by_name(char_u *name)
 /*
  * Place a sign at the specified file location or update a sign.
  */
-    int
+    static int
 sign_place(
 	int		*sign_id,
 	char_u		*sign_group,
@@ -1058,7 +1058,7 @@ sign_place(
 /*
  * Unplace the specified sign
  */
-    int
+    static int
 sign_unplace(int sign_id, char_u *sign_group, buf_T *buf, linenr_T atlnum)
 {
     if (buf->b_signlist == NULL)	// No signs in the buffer
@@ -1101,7 +1101,7 @@ sign_unplace_at_cursor(char_u *groupname)
 /*
  * Jump to a sign.
  */
-    linenr_T
+    static linenr_T
 sign_jump(int sign_id, char_u *sign_group, buf_T *buf)
 {
     linenr_T	lnum;
@@ -1574,7 +1574,7 @@ sign_getinfo(sign_T *sp, dict_T *retdict)
  * If 'name' is NULL, return a list of all the defined signs.
  * Otherwise, return information about the specified sign.
  */
-    void
+    static void
 sign_getlist(char_u *name, list_T *retlist)
 {
     sign_T	*sp = first_sign;
@@ -1662,7 +1662,7 @@ sign_get_placed_in_buf(
  * sign placed at the line number. If 'lnum' is zero, return all the signs
  * placed in 'buf'. If 'buf' is NULL, return signs placed in all the buffers.
  */
-    void
+    static void
 sign_get_placed(
 	buf_T		*buf,
 	linenr_T	lnum,
@@ -2062,5 +2062,356 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
     }
 }
 # endif
+
+/*
+ * "sign_define()" function
+ */
+    void
+f_sign_define(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*name;
+    dict_T	*dict;
+    char_u	*icon = NULL;
+    char_u	*linehl = NULL;
+    char_u	*text = NULL;
+    char_u	*texthl = NULL;
+
+    rettv->vval.v_number = -1;
+
+    name = tv_get_string_chk(&argvars[0]);
+    if (name == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[1].v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    return;
+	}
+
+	// sign attributes
+	dict = argvars[1].vval.v_dict;
+	if (dict_find(dict, (char_u *)"icon", -1) != NULL)
+	    icon = dict_get_string(dict, (char_u *)"icon", TRUE);
+	if (dict_find(dict, (char_u *)"linehl", -1) != NULL)
+	    linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
+	if (dict_find(dict, (char_u *)"text", -1) != NULL)
+	    text = dict_get_string(dict, (char_u *)"text", TRUE);
+	if (dict_find(dict, (char_u *)"texthl", -1) != NULL)
+	    texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
+    }
+
+    if (sign_define_by_name(name, icon, linehl, text, texthl) == OK)
+	rettv->vval.v_number = 0;
+
+    vim_free(icon);
+    vim_free(linehl);
+    vim_free(text);
+    vim_free(texthl);
+}
+
+/*
+ * "sign_getdefined()" function
+ */
+    void
+f_sign_getdefined(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*name = NULL;
+
+    if (rettv_list_alloc_id(rettv, aid_sign_getdefined) != OK)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	name = tv_get_string(&argvars[0]);
+
+    sign_getlist(name, rettv->vval.v_list);
+}
+
+/*
+ * "sign_getplaced()" function
+ */
+    void
+f_sign_getplaced(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = NULL;
+    dict_T	*dict;
+    dictitem_T	*di;
+    linenr_T	lnum = 0;
+    int		sign_id = 0;
+    char_u	*group = NULL;
+    int		notanum = FALSE;
+
+    if (rettv_list_alloc_id(rettv, aid_sign_getplaced) != OK)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	// get signs placed in the specified buffer
+	buf = get_buf_arg(&argvars[0]);
+	if (buf == NULL)
+	    return;
+
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    if (argvars[1].v_type != VAR_DICT ||
+				((dict = argvars[1].vval.v_dict) == NULL))
+	    {
+		emsg(_(e_dictreq));
+		return;
+	    }
+	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
+	    {
+		// get signs placed at this line
+		(void)tv_get_number_chk(&di->di_tv, &notanum);
+		if (notanum)
+		    return;
+		lnum = tv_get_lnum(&di->di_tv);
+	    }
+	    if ((di = dict_find(dict, (char_u *)"id", -1)) != NULL)
+	    {
+		// get sign placed with this identifier
+		sign_id = (int)tv_get_number_chk(&di->di_tv, &notanum);
+		if (notanum)
+		    return;
+	    }
+	    if ((di = dict_find(dict, (char_u *)"group", -1)) != NULL)
+	    {
+		group = tv_get_string_chk(&di->di_tv);
+		if (group == NULL)
+		    return;
+		if (*group == '\0')	// empty string means global group
+		    group = NULL;
+	    }
+	}
+    }
+
+    sign_get_placed(buf, lnum, sign_id, group, rettv->vval.v_list);
+}
+
+/*
+ * "sign_jump()" function
+ */
+    void
+f_sign_jump(typval_T *argvars, typval_T *rettv)
+{
+    int		sign_id;
+    char_u	*sign_group = NULL;
+    buf_T	*buf;
+    int		notanum = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    // Sign identifier
+    sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
+    if (notanum)
+	return;
+    if (sign_id <= 0)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    // Sign group
+    sign_group = tv_get_string_chk(&argvars[1]);
+    if (sign_group == NULL)
+	return;
+    if (sign_group[0] == '\0')
+	sign_group = NULL;			// global sign group
+    else
+    {
+	sign_group = vim_strsave(sign_group);
+	if (sign_group == NULL)
+	    return;
+    }
+
+    // Buffer to place the sign
+    buf = get_buf_arg(&argvars[2]);
+    if (buf == NULL)
+	goto cleanup;
+
+    rettv->vval.v_number = sign_jump(sign_id, sign_group, buf);
+
+cleanup:
+    vim_free(sign_group);
+}
+
+/*
+ * "sign_place()" function
+ */
+    void
+f_sign_place(typval_T *argvars, typval_T *rettv)
+{
+    int		sign_id;
+    char_u	*group = NULL;
+    char_u	*sign_name;
+    buf_T	*buf;
+    dict_T	*dict;
+    dictitem_T	*di;
+    linenr_T	lnum = 0;
+    int		prio = SIGN_DEF_PRIO;
+    int		notanum = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    // Sign identifier
+    sign_id = (int)tv_get_number_chk(&argvars[0], &notanum);
+    if (notanum)
+	return;
+    if (sign_id < 0)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    // Sign group
+    group = tv_get_string_chk(&argvars[1]);
+    if (group == NULL)
+	return;
+    if (group[0] == '\0')
+	group = NULL;			// global sign group
+    else
+    {
+	group = vim_strsave(group);
+	if (group == NULL)
+	    return;
+    }
+
+    // Sign name
+    sign_name = tv_get_string_chk(&argvars[2]);
+    if (sign_name == NULL)
+	goto cleanup;
+
+    // Buffer to place the sign
+    buf = get_buf_arg(&argvars[3]);
+    if (buf == NULL)
+	goto cleanup;
+
+    if (argvars[4].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[4].v_type != VAR_DICT ||
+				((dict = argvars[4].vval.v_dict) == NULL))
+	{
+	    emsg(_(e_dictreq));
+	    goto cleanup;
+	}
+
+	// Line number where the sign is to be placed
+	if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
+	{
+	    (void)tv_get_number_chk(&di->di_tv, &notanum);
+	    if (notanum)
+		goto cleanup;
+	    lnum = tv_get_lnum(&di->di_tv);
+	}
+	if ((di = dict_find(dict, (char_u *)"priority", -1)) != NULL)
+	{
+	    // Sign priority
+	    prio = (int)tv_get_number_chk(&di->di_tv, &notanum);
+	    if (notanum)
+		goto cleanup;
+	}
+    }
+
+    if (sign_place(&sign_id, group, sign_name, buf, lnum, prio) == OK)
+	rettv->vval.v_number = sign_id;
+
+cleanup:
+    vim_free(group);
+}
+
+/*
+ * "sign_undefine()" function
+ */
+    void
+f_sign_undefine(typval_T *argvars, typval_T *rettv)
+{
+    char_u *name;
+
+    rettv->vval.v_number = -1;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	// Free all the signs
+	free_signs();
+	rettv->vval.v_number = 0;
+    }
+    else
+    {
+	// Free only the specified sign
+	name = tv_get_string_chk(&argvars[0]);
+	if (name == NULL)
+	    return;
+
+	if (sign_undefine_by_name(name) == OK)
+	    rettv->vval.v_number = 0;
+    }
+}
+
+/*
+ * "sign_unplace()" function
+ */
+    void
+f_sign_unplace(typval_T *argvars, typval_T *rettv)
+{
+    dict_T	*dict;
+    dictitem_T	*di;
+    int		sign_id = 0;
+    buf_T	*buf = NULL;
+    char_u	*group = NULL;
+
+    rettv->vval.v_number = -1;
+
+    if (argvars[0].v_type != VAR_STRING)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    group = tv_get_string(&argvars[0]);
+    if (group[0] == '\0')
+	group = NULL;			// global sign group
+    else
+    {
+	group = vim_strsave(group);
+	if (group == NULL)
+	    return;
+    }
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[1].v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictreq));
+	    goto cleanup;
+	}
+	dict = argvars[1].vval.v_dict;
+
+	if ((di = dict_find(dict, (char_u *)"buffer", -1)) != NULL)
+	{
+	    buf = get_buf_arg(&di->di_tv);
+	    if (buf == NULL)
+		goto cleanup;
+	}
+	if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	    sign_id = dict_get_number(dict, (char_u *)"id");
+    }
+
+    if (buf == NULL)
+    {
+	// Delete the sign in all the buffers
+	FOR_ALL_BUFFERS(buf)
+	    if (sign_unplace(sign_id, group, buf, 0) == OK)
+		rettv->vval.v_number = 0;
+    }
+    else
+    {
+	if (sign_unplace(sign_id, group, buf, 0) == OK)
+	    rettv->vval.v_number = 0;
+    }
+
+cleanup:
+    vim_free(group);
+}
 
 #endif /* FEAT_SIGNS */
