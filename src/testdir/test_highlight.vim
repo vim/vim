@@ -607,3 +607,11 @@ func Test_1_highlight_Normalgroup_exists()
     call assert_match('hi Normal\s*clear', hlNormal)
   endif
 endfunc
+
+function Test_no_space_before_xxx()
+  let l:org_columns = &columns
+  set columns=17
+  let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
+  call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
+  let &columns = l:org_columns
+endfunction
