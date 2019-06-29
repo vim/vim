@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 22
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -86,9 +86,12 @@ that it is in.
 
 
 TODO:
-- click near top of scrollbar scrolls down, clear near bottom scrolls up.
-- Allow for setting scrollbar color: scrollbarhighlight,
-  scrollbarthumbhighlight ?
+- Currently 'buftype' is set to "popup", but all the specifics are on the
+  window.  Can we use a "normal" buffer and put the type on the window? (#4595)
+  What if it's modified and the window closes?
+- Add test for when popup with mask is off the left and off the right of the
+  screen.
+- check padding/border when popup is off the left and right of the screen.
 - Have a way to scroll to the bottom? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
@@ -256,6 +259,8 @@ popup_getoptions({id})					*popup_getoptions()*
 		zero.  When all values are one then an empty list is included.
 
 		"borderhighlight" is not included when all values are empty.
+		"scrollbarhighlight" and "thumbhighlight" are onlu included
+		when set.
 
 		"tabpage" will be -1 for a global popup, zero for a popup on
 		the current tabpage and a positive number for a popup on
@@ -377,6 +382,8 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			borderhighlight
 			borderchars
 			scrollbar
+			scrollbarhighlight
+			thumbhighlight
 			zindex
 			mask
 			time
@@ -534,6 +541,13 @@ The second argument of |popup_create()| is a dictionary with options:
 			otherwise ASCII characters are used.
 	scrollbar	non-zero: show a scrollbar when the text doesn't fit.
 			zero: do not show a scrollbar.  Default is non-zero.
+			Also see |popup-scrollbar|.
+	scrollbarhighlight  Highlight group name for the scrollbar. The
+			background color is what matters.  When not given then
+			PmenuSbar is used.
+	thumbhighlight  Highlight group name for the scrollbar thumb. The
+			background color is what matters.  When not given then
+			PmenuThumb is used.
 	zindex		Priority for the popup, default 50.  Minimum value is
 			1, maximum value is 32000.
 	mask		A list of lists with coordinates, defining parts of
@@ -637,6 +651,17 @@ the second argument of `popup_close()`.
 
 If the popup is force-closed, e.g. because the cursor moved or CTRL-C was
 pressed, the number -1 is passed to the callback.
+
+
+POPUP SCROLLBAR						*popup-scrollbar*
+
+If the text does not fit in the popup a scrollbar is displayed on the right of
+the window.  This can be disabled by setting the "scrollbar" option to zero.
+When the scrollbar is displayed mouse scroll events, while the mouse pointer
+is on the popup, will cause the text to scroll up or down as you would expect.
+A click in the upper halve of the scrollbar will scroll the text one line
+down.  A click in the lower halve wil scroll the text one line up.  However,
+this is limited so that the popup does not get smaller.
 
 
 POPUP MASK						*popup-mask*

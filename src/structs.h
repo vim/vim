@@ -2903,7 +2903,7 @@ struct window_S
     int		w_wantcol;	    // "col" for popup window
     int		w_firstline;	    // "firstline" for popup window
     int		w_want_scrollbar;   // when zero don't use a scrollbar
-    int		w_has_scrollbar;    // scrollbar displayed
+    int		w_has_scrollbar;    // 1 if scrollbar displayed, 0 otherwise
     char_u	*w_scrollbar_highlight; // "scrollbarhighlight"
     char_u	*w_thumb_highlight; // "thumbhighlight"
     int		w_popup_padding[4]; // popup padding top/right/bot/left

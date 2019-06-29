@@ -2998,7 +2998,7 @@ retnomove:
 	    return IN_OTHER_WIN;
 #endif
 #ifdef FEAT_TEXT_PROP
-	// Continue a modeless selection in a popup window.
+	// Continue a modeless selection in a popup window or dragging it.
 	if (in_popup_win)
 	{
 	    if (popup_dragwin != NULL)
@@ -3056,6 +3056,9 @@ retnomove:
 		popup_start_drag(wp);
 		return IN_UNKNOWN;
 	    }
+	    if (which_button == MOUSE_LEFT)
+		// If the click is in the scrollbar, may scroll up/down.
+		popup_handle_scrollbar_click(wp, row, col);
 # ifdef FEAT_CLIPBOARD
 	    return IN_OTHER_WIN;
 # else
@@ -3517,7 +3520,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 	{
 	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
 		    && *colp >= wp->w_wincol
-					 && *colp < wp->w_wincol + popup_width(wp))
+				    && *colp < wp->w_wincol + popup_width(wp))
 		pwp = wp;
 	}
 	if (pwp != NULL)

@@ -4561,20 +4561,7 @@ nv_mousescroll(cmdarg_T *cap)
 	}
 #ifdef FEAT_TEXT_PROP
 	if (bt_popup(curwin->w_buffer))
-	{
-	    int	    height = curwin->w_height;
-
-	    curwin->w_firstline = curwin->w_topline;
-	    popup_adjust_position(curwin);
-
-	    // we don't want the popup to get smaller, decrement the first line
-	    // until it doesn't
-	    while (curwin->w_firstline > 1 && curwin->w_height < height)
-	    {
-		--curwin->w_firstline;
-		popup_adjust_position(curwin);
-	    }
-	}
+	    popup_set_firstline(curwin);
 #endif
     }
 # ifdef FEAT_GUI

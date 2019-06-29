@@ -1436,7 +1436,15 @@ func Test_popup_scrollbar()
     func ScrollDown()
       call feedkeys("\<F3>\<ScrollWheelDown>", "xt")
     endfunc
+    func ClickTop()
+      call feedkeys("\<F4>\<LeftMouse>", "xt")
+    endfunc
+    func ClickBot()
+      call feedkeys("\<F5>\<LeftMouse>", "xt")
+    endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
+    map <silent> <F4> :call test_setmouse(4, 42)<CR>
+    map <silent> <F5> :call test_setmouse(7, 42)<CR>
   END
   call writefile(lines, 'XtestPopupScroll')
   let buf = RunVimInTerminal('-S XtestPopupScroll', {'rows': 10})
@@ -1463,6 +1471,14 @@ func Test_popup_scrollbar()
   sleep 100m
   call term_sendkeys(buf, ":call ScrollDown()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_7', {})
+
+  call term_sendkeys(buf, ":call ClickTop()\<CR>")
+  sleep 100m
+  call term_sendkeys(buf, ":call ClickTop()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_8', {})
+
+  call term_sendkeys(buf, ":call ClickBot()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_9', {})
 
   " clean up
   call StopVimInTerminal(buf)

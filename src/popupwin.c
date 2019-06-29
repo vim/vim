@@ -234,6 +234,58 @@ popup_drag(win_T *wp)
     popup_adjust_position(wp);
 }
 
+/*
+ * Set w_firstline to match the current "wp->w_topline".
+ */
+    void
+popup_set_firstline(win_T *wp)
+{
+    int	    height = wp->w_height;
+
+    wp->w_firstline = wp->w_topline;
+    popup_adjust_position(wp);
+
+    // we don't want the popup to get smaller, decrement the first line
+    // until it doesn't
+    while (wp->w_firstline > 1 && wp->w_height < height)
+    {
+	--wp->w_firstline;
+	popup_adjust_position(wp);
+    }
+}
+
+/*
+ * Handle a click in a popup window, if it is in the scrollbar.
+ */
+    void
+popup_handle_scrollbar_click(win_T *wp, int row, int col)
+{
+    int	    height = popup_height(wp);
+    int	    old_topline = wp->w_topline;
+
+    if (wp->w_has_scrollbar == 0)
+	return;
+    if (row >= wp->w_popup_border[0]
+	    && row < height - wp->w_popup_border[2]
+	    && col == popup_width(wp) - 1)
+    {
+	if (row >= height / 2)
+	{
+	    // Click in lower half, scroll down.
+	    if (wp->w_topline < wp->w_buffer->b_ml.ml_line_count)
+		++wp->w_topline;
+	}
+	else if (wp->w_topline > 1)
+	    // click on upper half, scroll up.
+	    --wp->w_topline;
+	if (wp->w_topline != old_topline)
+	{
+	    popup_set_firstline(wp);
+	    redraw_win_later(wp, NOT_VALID);
+	}
+    }
+}
+
 #if defined(FEAT_TIMERS)
     static void
 popup_add_timeout(win_T *wp, int time)
@@ -631,7 +683,8 @@ popup_width(win_T *wp)
 {
     return wp->w_width
 	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
-	+ wp->w_popup_padding[1] + wp->w_popup_border[1];
+	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
+	+ wp->w_has_scrollbar;
 }
 
 /*
