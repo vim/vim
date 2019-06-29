@@ -2920,6 +2920,7 @@ struct window_S
     colnr_T	w_popup_mincol;	    // close popup if cursor before this col
     colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
     int		w_popup_drag;	    // allow moving the popup with the mouse
+    int		w_popup_close;	    // allow closing the popup with the mouse
     list_T	*w_popup_mask;	    // list of lists for "mask"
 
 # if defined(FEAT_TIMERS)

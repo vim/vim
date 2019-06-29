@@ -180,6 +180,16 @@ popup_on_border(win_T *wp, int row, int col)
 	    || (col == popup_width(wp) - 1 && wp->w_popup_border[1] > 0);
 }
 
+/*
+ * Return TRUE if "row"/"col" is on the "X" button of the popup.
+ * The values are relative to the top-left corner.
+ */
+    int
+popup_on_X_button(win_T *wp, int row, int col)
+{
+    return (row == 0 && col == popup_width(wp) - 1);
+}
+
 // Values set when dragging a popup window starts.
 static int drag_start_row;
 static int drag_start_col;
@@ -383,6 +393,10 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"drag", -1);
     if (di != NULL)
 	wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
+
+    di = dict_find(dict, (char_u *)"close", -1);
+    if (di != NULL)
+	wp->w_popup_close = dict_get_number(dict, (char_u *)"close");
 
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
     if (str != NULL)
@@ -1229,7 +1243,7 @@ invoke_popup_callback(win_T *wp, typval_T *result)
 /*
  * Close popup "wp" and invoke any close callback for it.
  */
-    static void
+    void
 popup_close_and_callback(win_T *wp, typval_T *arg)
 {
     int id = wp->w_id;
@@ -1770,6 +1784,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
+	dict_add_number(dict, "close", wp->w_popup_close);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
 	if (wp->w_scrollbar_highlight != NULL)
 	    dict_add_string(dict, "scrollbarhighlight",
@@ -2315,7 +2330,10 @@ update_popups(void (*win_update)(win_T *wp))
 		    border_char[0], border_attr[0]);
 	    if (wp->w_popup_border[1] > 0)
 	    {
-		buf[mb_char2bytes(border_char[5], buf)] = NUL;
+		if (wp->w_popup_close)
+		    buf[mb_char2bytes('X', buf)] = NUL;
+		else
+		    buf[mb_char2bytes(border_char[5], buf)] = NUL;
 		screen_puts(buf, wp->w_winrow,
 			       wp->w_wincol + total_width - 1, border_attr[1]);
 	    }

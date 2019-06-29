@@ -365,6 +365,35 @@ func Test_popup_drag()
   call delete('XtestPopupDrag')
 endfunc
 
+func Test_popup_close()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	let winid = popup_create('foobar', {
+	      \ 'close': 1,
+	      \ 'border': [],
+	      \ 'line': 1,
+	      \ 'col': 1,
+	      \ })
+	func Closeit()
+	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F3> :call test_setmouse(1, len('foobar') + 2)<CR>
+  END
+  call writefile(lines, 'XtestPopupClose')
+  let buf = RunVimInTerminal('-S XtestPopupClose', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_close_01', {})
+
+  call term_sendkeys(buf, ":call Closeit()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupClose')
+endfunction
+
 func Test_popup_with_mask()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
