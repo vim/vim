@@ -98,9 +98,6 @@ or by clicking anywhere inside the popup.  This must be enabled with the
 
 
 TODO:
-- Currently 'buftype' is set to "popup", but all the specifics are on the
-  window.  Can we use a "normal" buffer and put the type on the window? (#4595)
-  What if it's modified and the window closes?
 - Add test for when popup with mask is off the left and off the right of the
   screen.
 - check padding/border when popup is off the left and right of the screen.
@@ -164,10 +161,10 @@ Other:
 
 [functions help to be moved to eval.txt later]
 
-popup_atcursor({text}, {options})			 *popup_atcursor()*
-		Show the {text} above the cursor, and close it when the cursor
+popup_atcursor({what}, {options})			 *popup_atcursor()*
+		Show the {what} above the cursor, and close it when the cursor
 		moves.  This works like: >
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'botleft',
 				\ 'line': 'cursor-1',
 				\ 'col': 'cursor',
@@ -191,11 +188,15 @@ popup_close({id} [, {result}])				*popup_close()*
 		Otherwise zero is passed to the callback.
 
 
-popup_create({text}, {options})				*popup_create()*
-		Open a popup window showing {text}, which is either:
+popup_create({what}, {options})				*popup_create()*
+		Open a popup window showing {what}, which is either:
+		- a buffer number
 		- a string
 		- a list of strings
 		- a list of text lines with text properties
+		When {what} is not a buffer number, a buffer is created with
+		'buftype' set to "popup".  That buffer will be wiped out once
+		the popup closes.
 
 		{options} is a dictionary with many possible entries.
 		See |popup_create-usage| for details.
@@ -209,9 +210,9 @@ popup_create({text}, {options})				*popup_create()*
 <		In case of failure zero is returned.
 
 
-popup_dialog({text}, {options})				*popup_dialog()*
+popup_dialog({what}, {options})				*popup_dialog()*
 		Just like |popup_create()| but with these default options: >
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'drag': 1,
@@ -312,12 +313,12 @@ popup_hide({id})						*popup_hide()*
 		exists but is not a popup window an error is given. *E993*
 
 
-popup_menu({text}, {options})				 *popup_menu()*
-		Show the {text} near the cursor, handle selecting one of the
+popup_menu({what}, {options})				 *popup_menu()*
+		Show the {what} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {text} should have multiple lines to make this
+		Space or Enter. {what} should have multiple lines to make this
 		useful.  This works like: >
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'drag': 1,
@@ -349,10 +350,10 @@ popup_move({id}, {options})					*popup_move()*
 		For other options see |popup_setoptions()|.
 
 
-popup_notification({text}, {options})			 *popup_notification()*
-		Show the {text} for 3 seconds at the top of the Vim window.
+popup_notification({what}, {options})			 *popup_notification()*
+		Show the {what} for 3 seconds at the top of the Vim window.
 		This works like: >
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'line': 1,
 				\ 'col': 10,
 				\ 'minwidth': 20,
@@ -410,7 +411,8 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 popup_settext({id}, {text})				*popup_settext()*
 		Set the text of the buffer in poup win {id}. {text} is the
-		same as supplied to |popup_create()|.
+		same as supplied to |popup_create()|, except that a buffer
+		number is not allowed.
 		Does not change the window size or position, other than caused
 		by the different text.
 
@@ -450,7 +452,8 @@ POPUP_CREATE() ARGUMENTS				*popup_create-usage*
 
 The first argument of |popup_create()| (and the second argument to
 |popup_settext()|) specifies the text to be displayed, and optionally text
-properties.  It is in one of three forms:
+properties.  It is in one of four forms:
+- a buffer number
 - a string
 - a list of strings
 - a list of dictionaries, where each dictionary has these entries:

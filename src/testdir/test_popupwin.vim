@@ -559,7 +559,7 @@ func Test_popup_valid_arguments()
 endfunc
 
 func Test_popup_invalid_arguments()
-  call assert_fails('call popup_create(666, {})', 'E714:')
+  call assert_fails('call popup_create(666, {})', 'E86:')
   call popup_clear()
   call assert_fails('call popup_create("text", "none")', 'E715:')
   call popup_clear()
@@ -1653,4 +1653,19 @@ func Test_popupwin_garbage_collect()
 
   call popup_close(winid)
   delfunc MyPopupFilter
+endfunc
+
+func Test_popupwin_with_buffer()
+  call writefile(['some text', 'in a buffer'], 'XsomeFile')
+  let buf = bufadd('XsomeFile')
+  call assert_equal(0, bufloaded(buf))
+  let winid = popup_create(buf, {})
+  call assert_notequal(0, winid)
+  let pos = popup_getpos(winid)
+  call assert_equal(2, pos.height)
+  call assert_equal(1, bufloaded(buf))
+  call popup_close(winid)
+  call assert_equal({}, popup_getpos(winid))
+  call assert_equal(1, bufloaded(buf))
+  exe 'bwipe! ' .. buf
 endfunc

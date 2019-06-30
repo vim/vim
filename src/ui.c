@@ -1078,7 +1078,7 @@ clip_start_selection(int col, int row, int repeated_click)
 	int	    col_cp = col;
 
 	wp = mouse_find_win(&row_cp, &col_cp, FIND_POPUP);
-	if (wp != NULL && bt_popup(wp->w_buffer))
+	if (wp != NULL && WIN_IS_POPUP(wp))
 	{
 	    // Click in a popup window restricts selection to that window,
 	    // excluding the border.
@@ -3052,7 +3052,7 @@ retnomove:
 #ifdef FEAT_TEXT_PROP
 	// Click in a popup window may start dragging or modeless selection,
 	// but not much else.
-	if (bt_popup(wp->w_buffer))
+	if (WIN_IS_POPUP(wp))
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;

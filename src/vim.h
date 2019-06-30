@@ -614,8 +614,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VALID_TOPLINE	0x80	// w_topline is valid (for cursor position)
 
 // Values for w_popup_flags.
-#define POPF_HIDDEN	1	// popup is not displayed
-#define POPF_HANDLED	2	// popup was just redrawn or filtered
+#define POPF_IS_POPUP	1	// this is a popup window
+#define POPF_HIDDEN	2	// popup is not displayed
+#define POPF_HANDLED	4	// popup was just redrawn or filtered
+#ifdef FEAT_TEXT_PROP
+# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
+#else
+# define WIN_IS_POPUP(wp) 0
+#endif
 
 /*
  * Terminal highlighting attribute bits.

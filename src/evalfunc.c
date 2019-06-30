@@ -1963,15 +1963,8 @@ f_bufload(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T	*buf = get_buf_arg(&argvars[0]);
 
-    if (buf != NULL && buf->b_ml.ml_mfp == NULL)
-    {
-	aco_save_T	aco;
-
-	aucmd_prepbuf(&aco, buf);
-	swap_exists_action = SEA_NONE;
-	open_buffer(FALSE, NULL, 0);
-	aucmd_restbuf(&aco);
-    }
+    if (buf != NULL)
+	buffer_ensure_loaded(buf);
 }
 
 /*
@@ -4905,7 +4898,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum);
 # ifdef FEAT_TEXT_PROP
-		if (bt_popup(win->w_buffer))
+		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
 # endif

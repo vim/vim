@@ -997,14 +997,26 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     win_T	*wp;
     tabpage_T	*tp = NULL;
     int		tabnr;
-    buf_T	*buf;
+    int		new_buffer;
+    buf_T	*buf = NULL;
     dict_T	*d;
     int		nr;
     int		i;
 
     // Check arguments look OK.
-    if (!(argvars[0].v_type == VAR_STRING && argvars[0].vval.v_string != NULL)
-	&& !(argvars[0].v_type == VAR_LIST && argvars[0].vval.v_list != NULL))
+    if (argvars[0].v_type == VAR_NUMBER)
+    {
+	buf = buflist_findnr( argvars[0].vval.v_number);
+	if (buf == NULL)
+	{
+	    semsg(_(e_nobufnr), argvars[0].vval.v_number);
+	    return NULL;
+	}
+    }
+    else if (!(argvars[0].v_type == VAR_STRING
+		    && argvars[0].vval.v_string != NULL)
+		&& !(argvars[0].v_type == VAR_LIST
+		    && argvars[0].vval.v_list != NULL))
     {
 	emsg(_(e_listreq));
 	return NULL;
@@ -1038,27 +1050,42 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	return NULL;
     rettv->vval.v_number = wp->w_id;
     wp->w_popup_pos = POPPOS_TOPLEFT;
+    wp->w_popup_flags = POPF_IS_POPUP;
 
-    buf = buflist_new(NULL, NULL, (linenr_T)0, BLN_NEW|BLN_LISTED|BLN_DUMMY);
-    if (buf == NULL)
-	return NULL;
-    ml_open(buf);
+    if (buf != NULL)
+    {
+	// use existing buffer
+	new_buffer = FALSE;
+	wp->w_buffer = buf;
+	++buf->b_nwindows;
+	buffer_ensure_loaded(buf);
+    }
+    else
+    {
+	// create a new buffer associated with the popup
+	new_buffer = TRUE;
+	buf = buflist_new(NULL, NULL, (linenr_T)0,
+						 BLN_NEW|BLN_LISTED|BLN_DUMMY);
+	if (buf == NULL)
+	    return NULL;
+	ml_open(buf);
 
-    win_init_popup_win(wp, buf);
+	win_init_popup_win(wp, buf);
 
-    set_local_options_default(wp);
-    set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
+	set_local_options_default(wp);
+	set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
 				     (char_u *)"popup", OPT_FREE|OPT_LOCAL, 0);
-    set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,
-				     (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
-    buf->b_p_ul = -1;	    // no undo
-    buf->b_p_swf = FALSE;   // no swap file
-    buf->b_p_bl = FALSE;    // unlisted buffer
-    buf->b_locked = TRUE;
-    wp->w_p_wrap = TRUE;  // 'wrap' is default on
+	set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,
+				      (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
+	buf->b_p_ul = -1;	// no undo
+	buf->b_p_swf = FALSE;   // no swap file
+	buf->b_p_bl = FALSE;    // unlisted buffer
+	buf->b_locked = TRUE;
+	wp->w_p_wrap = TRUE;	// 'wrap' is default on
 
-    // Avoid that 'buftype' is reset when this buffer is entered.
-    buf->b_p_initialized = TRUE;
+	// Avoid that 'buftype' is reset when this buffer is entered.
+	buf->b_p_initialized = TRUE;
+    }
 
     if (tp != NULL)
     {
@@ -1088,7 +1115,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	}
     }
 
-    popup_set_buffer_text(buf, argvars[0]);
+    if (new_buffer)
+	popup_set_buffer_text(buf, argvars[0]);
 
     if (type == TYPE_ATCURSOR)
     {
@@ -1456,7 +1484,7 @@ find_popup_win(int id)
 {
     win_T *wp = win_id2wp(id);
 
-    if (wp != NULL && !bt_popup(wp->w_buffer))
+    if (wp != NULL && !WIN_IS_POPUP(wp))
     {
 	semsg(_("E993: window %d is not a popup window"), id);
 	return NULL;
@@ -1524,8 +1552,13 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (wp != NULL)
     {
-	popup_set_buffer_text(wp->w_buffer, argvars[1]);
-	popup_adjust_position(wp);
+	if (argvars[1].v_type != VAR_STRING && argvars[1].v_type != VAR_LIST)
+	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	else
+	{
+	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
+	    popup_adjust_position(wp);
+	}
     }
 }
 
@@ -1880,7 +1913,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     int
 error_if_popup_window()
 {
-    if (bt_popup(curwin->w_buffer))
+    if (WIN_IS_POPUP(curwin))
     {
 	emsg(_("E994: Not allowed in a popup window"));
 	return TRUE;

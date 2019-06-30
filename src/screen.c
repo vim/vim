@@ -1005,7 +1005,7 @@ get_wcr_attr(win_T *wp)
     if (*wp->w_p_wcr != NUL)
 	wcr_attr = syn_name2attr(wp->w_p_wcr);
 #ifdef FEAT_TEXT_PROP
-    if (bt_popup(wp->w_buffer) && wcr_attr == 0)
+    if (WIN_IS_POPUP(wp) && wcr_attr == 0)
 	wcr_attr = HL_ATTR(HLF_PNI);
 #endif
     return wcr_attr;
@@ -1555,11 +1555,7 @@ win_update(win_T *wp)
 	if (mid_start == 0)
 	{
 	    mid_end = wp->w_height;
-	    if (ONE_WINDOW
-#ifdef FEAT_TEXT_PROP
-		    && !bt_popup(wp->w_buffer)
-#endif
-		    )
+	    if (ONE_WINDOW && !WIN_IS_POPUP(wp))
 	    {
 		/* Clear the screen when it was not done by win_del_lines() or
 		 * win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
@@ -2085,9 +2081,7 @@ win_update(win_T *wp)
 		    && wp->w_lines[idx].wl_lnum == lnum
 		    && lnum > wp->w_topline
 		    && !(dy_flags & (DY_LASTLINE | DY_TRUNCATE))
-#ifdef FEAT_TEXT_PROP
-		    && !bt_popup(wp->w_buffer)
-#endif
+		    && !WIN_IS_POPUP(wp)
 		    && srow + wp->w_lines[idx].wl_size > wp->w_height
 #ifdef FEAT_DIFF
 		    && diff_check_fill(wp, lnum) == 0
@@ -2244,7 +2238,7 @@ win_update(win_T *wp)
 	}
 #endif
 #ifdef FEAT_TEXT_PROP
-	else if (bt_popup(wp->w_buffer))
+	else if (WIN_IS_POPUP(wp))
 	{
 	    // popup line that doesn't fit is left as-is
 	    wp->w_botline = lnum;
@@ -2310,11 +2304,8 @@ win_update(win_T *wp)
 
 	// Make sure the rest of the screen is blank
 	// put '~'s on rows that aren't part of the file.
-	win_draw_end(wp,
-#ifdef FEAT_TEXT_PROP
-		bt_popup(wp->w_buffer) ? ' ' :
-#endif
-				  '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
+	win_draw_end(wp, WIN_IS_POPUP(wp) ? ' ' : '~',
+				       ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
@@ -3673,7 +3664,7 @@ win_line(
 	area_highlighting = TRUE;
     }
 #ifdef FEAT_TEXT_PROP
-    if (bt_popup(wp->w_buffer))
+    if (WIN_IS_POPUP(wp))
 	screen_line_flags |= SLF_POPUP;
 #endif
 
