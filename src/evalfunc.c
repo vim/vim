@@ -1929,7 +1929,9 @@ find_buffer(typval_T *avar)
     static void
 f_bufadd(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = buflist_add(tv_get_string(&argvars[0]), 0);
+    char_u *name = tv_get_string(&argvars[0]);
+
+    rettv->vval.v_number = buflist_add(*name == NUL ? NULL : name, 0);
 }
 
 /*
