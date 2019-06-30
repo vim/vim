@@ -28,6 +28,17 @@ static poppos_entry_T poppos_entries[] = {
     {"center", POPPOS_CENTER}
 };
 
+typedef struct {
+    char	*pc_name;
+    poppos_T	pc_val;
+} popclose_entry_T;
+
+static popclose_entry_T popclose_entries[] = {
+    {"none", POPCLOSE_NONE},
+    {"button", POPCLOSE_BUTTON},
+    {"click", POPCLOSE_CLICK}
+};
+
 /*
  * Get option value for "key", which is "line" or "col".
  * Handles "cursor+N" and "cursor-N".
@@ -396,7 +407,24 @@ apply_general_options(win_T *wp, dict_T *dict)
 
     di = dict_find(dict, (char_u *)"close", -1);
     if (di != NULL)
-	wp->w_popup_close = dict_get_number(dict, (char_u *)"close");
+    {
+	if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
+	{
+	    char_u  *s = di->di_tv.vval.v_string;
+	    int	    flags = 0;
+
+	    if (STRCMP(s, "none") == 0)
+		wp->w_popup_close = POPCLOSE_NONE;
+	    else if (STRCMP(s, "button") == 0)
+		wp->w_popup_close = POPCLOSE_BUTTON;
+	    else if (STRCMP(s, "click") == 0)
+		wp->w_popup_close = POPCLOSE_CLICK;
+	    else
+		semsg(_(e_invarg2), s);
+	}
+	else
+	    semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+    }
 
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
     if (str != NULL)
@@ -709,7 +737,8 @@ popup_top_extra(win_T *wp)
 {
     int	extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
 
-    if (extra == 0 && wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
+    if (extra == 0 && ((wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
+		       || wp->w_popup_close == POPCLOSE_BUTTON))
 	return 1;
     return extra;
 }
@@ -1163,6 +1192,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_border_char[i] = 0;
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
+    wp->w_popup_close = POPCLOSE_NONE;
 
     // Deal with options.
     apply_options(wp, argvars[1].vval.v_dict);
@@ -1784,7 +1814,6 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
-	dict_add_number(dict, "close", wp->w_popup_close);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
 	if (wp->w_scrollbar_highlight != NULL)
 	    dict_add_string(dict, "scrollbarhighlight",
@@ -1828,6 +1857,16 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	    {
 		dict_add_string(dict, "pos",
 					  (char_u *)poppos_entries[i].pp_name);
+		break;
+	    }
+
+	for (i = 0;
+	     i < (int)(sizeof(popclose_entries) / sizeof(popclose_entry_T));
+	     ++i)
+	    if (wp->w_popup_close == popclose_entries[i].pc_val)
+	    {
+		dict_add_string(dict, "close",
+				(char_u *)popclose_entries[i].pc_name);
 		break;
 	    }
 
@@ -2330,10 +2369,7 @@ update_popups(void (*win_update)(win_T *wp))
 		    border_char[0], border_attr[0]);
 	    if (wp->w_popup_border[1] > 0)
 	    {
-		if (wp->w_popup_close)
-		    buf[mb_char2bytes('X', buf)] = NUL;
-		else
-		    buf[mb_char2bytes(border_char[5], buf)] = NUL;
+		buf[mb_char2bytes(border_char[5], buf)] = NUL;
 		screen_puts(buf, wp->w_winrow,
 			       wp->w_wincol + total_width - 1, border_attr[1]);
 	    }
@@ -2450,6 +2486,14 @@ update_popups(void (*win_update)(win_T *wp))
 		screen_puts(buf, row,
 			       wp->w_wincol + total_width - 1, border_attr[2]);
 	    }
+	}
+
+	if (wp->w_popup_close == POPCLOSE_BUTTON)
+	{
+	    buf[mb_char2bytes('X', buf)] = NUL;
+	    screen_puts(buf, wp->w_winrow, wp->w_wincol + total_width - 1,
+		        wp->w_popup_border[0] > 0 ? border_attr[0] :
+						    popup_attr);
 	}
 
 	update_popup_transparent(wp, 0);

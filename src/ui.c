@@ -3050,7 +3050,8 @@ retnomove:
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;
-	    if (wp->w_popup_close && popup_on_X_button(wp, row, col))
+	    if (wp->w_popup_close == POPCLOSE_BUTTON &&
+		popup_on_X_button(wp, row, col))
 	    {
 		typval_T res;
 		res.v_type = VAR_NUMBER;
@@ -3062,6 +3063,13 @@ retnomove:
 	    {
 		popup_dragwin = wp;
 		popup_start_drag(wp);
+		return IN_UNKNOWN;
+	    }
+	    else if (wp->w_popup_close == POPCLOSE_CLICK) {
+		typval_T res;
+		res.v_type = VAR_NUMBER;
+		res.vval.v_number = -1;
+		popup_close_and_callback(wp, NULL);
 		return IN_UNKNOWN;
 	    }
 	    if (which_button == MOUSE_LEFT)
