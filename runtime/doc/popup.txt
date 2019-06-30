@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 29
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -68,12 +68,12 @@ increase the width or use the "minwidth" property.
 
 By default the 'wrap' option is set, so that no text disappears.  Otherwise,
 if there is not enough space then the window is shifted left in order to
-display more text. This can be disabled with the "fixed" property. Also
-disabled when right-aligned.
+display more text.  When right-aligned the window is shifted right to display
+more text.  The shifting can be disabled with the "fixed" property.
 
 Vim tries to show the popup in the location you specify.  In some cases, e.g.
 when the popup would go outside of the Vim window, it will show it somewhere
-else.  E.g. if you use `popup_atcursor()` the popup normally shows just above
+nearby.  E.g. if you use `popup_atcursor()` the popup normally shows just above
 the current cursor position, but if the cursor is close to the top of the Vim
 window it will be placed below the cursor position.
 
@@ -83,6 +83,18 @@ that they will not cover the output.
 The current cursor position is displayed even when it is under a popup window.
 That way you can still see where it is, even though you cannot see the text
 that it is in.
+
+
+CLOSING THE POPUP WINDOW			*popup-close*
+
+Normally the plugin that created the popup window is also in charge of closing
+it.  If somehow a popup hangs around, you can close all of them with: >
+	call popup_clear()
+Some popups, such as notifications, close after a specified time.  This can be
+set with the "time" property on `popup_create()`.
+Otherwise, a popup can be closed by clicking on the X in the top-right corner
+or by clicking anywhere inside the popup.  This must be enabled with the
+"close" property.  It is set by default for notifications.
 
 
 TODO:
@@ -350,13 +362,14 @@ popup_notification({text}, {options})			 *popup_notification()*
 				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
 				\ 'border': [],
+				\ 'close': 'click',
 				\ 'padding': [0,1,0,1],
 				\ })
 <		The PopupNotification highlight group is used instead of
 		WarningMsg if it is defined.
 
-		This popup should only be used with the |+timers| feature,
-		otherwise it will not disappear.
+		Without the |+timers| feature the poup will not disappear
+		automatically, the user has to click in it.
 
 		The position will be adjusted to avoid overlap with other
 		notifications.
@@ -371,25 +384,26 @@ popup_show({id})						*popup_show()*
 popup_setoptions({id}, {options})			*popup_setoptions()*
 		Override options in popup {id} with entries in {options}.
 		These options can be set:
-			flip
-			firstline
-			title
-			wrap
-			drag
-			highlight
-			padding
 			border
-			borderhighlight
 			borderchars
+			borderhighlight
+			callback
+			close
+			drag
+			filter
+			firstline
+			flip
+			highlight
+			mask
+			moved
+			padding
 			scrollbar
 			scrollbarhighlight
 			thumbhighlight
-			zindex
-			mask
 			time
-			moved
-			filter
-			callback
+			title
+			wrap
+			zindex
 		The options from |popup_move()| can also be used.
 		For "hidden" use |popup_hide()| and |popup_show()|.
 		"tabpage" cannot be changed.
@@ -509,6 +523,14 @@ The second argument of |popup_create()| is a dictionary with options:
 			popup does not have a border. As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
+	close		When "button" an X is displayed in the top-right, on
+			top of any border, padding or text.  When clicked on
+			the X the popup will close.  Any callback is invoked
+			with the value -2.
+			When "click" any mouse click in the popup will close
+			it.
+			When "none" (the default) mouse clicks do not close
+			the popup window.
 	highlight	Highlight group name to use for the text, stored in
 			the 'wincolor' option.
 	padding		List with numbers, defining the padding

@@ -180,6 +180,17 @@ popup_on_border(win_T *wp, int row, int col)
 	    || (col == popup_width(wp) - 1 && wp->w_popup_border[1] > 0);
 }
 
+/*
+ * Return TRUE if "row"/"col" is on the "X" button of the popup.
+ * The values are relative to the top-left corner.
+ * Caller should check w_popup_close is POPCLOSE_BUTTON.
+ */
+    int
+popup_on_X_button(win_T *wp, int row, int col)
+{
+    return row == 0 && col == popup_width(wp) - 1;
+}
+
 // Values set when dragging a popup window starts.
 static int drag_start_row;
 static int drag_start_col;
@@ -383,6 +394,30 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"drag", -1);
     if (di != NULL)
 	wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
+
+    di = dict_find(dict, (char_u *)"close", -1);
+    if (di != NULL)
+    {
+	int ok = TRUE;
+
+	if (di->di_tv.v_type == VAR_STRING && di->di_tv.vval.v_string != NULL)
+	{
+	    char_u  *s = di->di_tv.vval.v_string;
+
+	    if (STRCMP(s, "none") == 0)
+		wp->w_popup_close = POPCLOSE_NONE;
+	    else if (STRCMP(s, "button") == 0)
+		wp->w_popup_close = POPCLOSE_BUTTON;
+	    else if (STRCMP(s, "click") == 0)
+		wp->w_popup_close = POPCLOSE_CLICK;
+	    else
+		ok = FALSE;
+	}
+	else
+	    ok = FALSE;
+	if (!ok)
+	    semsg(_(e_invargNval), "close", tv_get_string(&di->di_tv));
+    }
 
     str = dict_get_string(dict, (char_u *)"highlight", FALSE);
     if (str != NULL)
@@ -1072,6 +1107,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     // set default values
     wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
+    wp->w_popup_close = POPCLOSE_NONE;
 
     if (type == TYPE_NOTIFICATION)
     {
@@ -1106,6 +1142,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_zindex = POPUPWIN_NOTIFICATION_ZINDEX;
 	wp->w_minwidth = 20;
 	wp->w_popup_drag = 1;
+	wp->w_popup_close = POPCLOSE_CLICK;
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
 	wp->w_popup_padding[1] = 1;
@@ -1239,6 +1276,19 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 	invoke_popup_callback(wp, arg);
 
     popup_close(id);
+}
+
+/*
+ * Close popup "wp" because of a mouse click.
+ */
+    void
+popup_close_for_mouse_click(win_T *wp)
+{
+    typval_T res;
+
+    res.v_type = VAR_NUMBER;
+    res.vval.v_number = -2;
+    popup_close_and_callback(wp, &res);
 }
 
 /*
@@ -1815,6 +1865,10 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 					  (char_u *)poppos_entries[i].pp_name);
 		break;
 	    }
+
+	dict_add_string(dict, "close", (char_u *)(
+		    wp->w_popup_close == POPCLOSE_BUTTON ? "button"
+		    : wp->w_popup_close == POPCLOSE_CLICK ? "click" : "none"));
 
 # if defined(FEAT_TIMERS)
 	dict_add_number(dict, "time", wp->w_popup_timer != NULL
@@ -2432,6 +2486,14 @@ update_popups(void (*win_update)(win_T *wp))
 		screen_puts(buf, row,
 			       wp->w_wincol + total_width - 1, border_attr[2]);
 	    }
+	}
+
+	if (wp->w_popup_close == POPCLOSE_BUTTON)
+	{
+	    // close button goes on top of anything at the top-right corner
+	    buf[mb_char2bytes('X', buf)] = NUL;
+	    screen_puts(buf, wp->w_winrow, wp->w_wincol + total_width - 1,
+		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 	}
 
 	update_popup_transparent(wp, 0);

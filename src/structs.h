@@ -1996,6 +1996,12 @@ typedef enum {
     POPPOS_CENTER
 } poppos_T;
 
+typedef enum {
+    POPCLOSE_NONE,
+    POPCLOSE_BUTTON,
+    POPCLOSE_CLICK
+} popclose_T;
+
 # define POPUPWIN_DEFAULT_ZINDEX	 50
 # define POPUPMENU_ZINDEX		100
 # define POPUPWIN_DIALOG_ZINDEX		200
@@ -2920,6 +2926,7 @@ struct window_S
     colnr_T	w_popup_mincol;	    // close popup if cursor before this col
     colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
     int		w_popup_drag;	    // allow moving the popup with the mouse
+    popclose_T	w_popup_close;	    // allow closing the popup with the mouse
     list_T	*w_popup_mask;	    // list of lists for "mask"
 
 # if defined(FEAT_TIMERS)

@@ -365,6 +365,63 @@ func Test_popup_drag()
   call delete('XtestPopupDrag')
 endfunc
 
+func Test_popup_close_with_mouse()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	" With border, can click on X
+	let winid = popup_create('foobar', {
+	      \ 'close': 'button',
+	      \ 'border': [],
+	      \ 'line': 1,
+	      \ 'col': 1,
+	      \ })
+	func CloseMsg(id, result)
+	  echomsg 'Popup closed with ' .. a:result
+	endfunc
+	let winid = popup_create('notification', {
+	      \ 'close': 'click',
+	      \ 'line': 3,
+	      \ 'col': 15,
+	      \ 'callback': 'CloseMsg',
+	      \ })
+	let winid = popup_create('no border here', {
+	      \ 'close': 'button',
+	      \ 'line': 5,
+	      \ 'col': 3,
+	      \ })
+	let winid = popup_create('only padding', {
+	      \ 'close': 'button',
+	      \ 'padding': [],
+	      \ 'line': 5,
+	      \ 'col': 23,
+	      \ })
+	func CloseWithX()
+	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F3> :call test_setmouse(1, len('foobar') + 2)<CR>
+	func CloseWithClick()
+	  call feedkeys("\<F4>\<LeftMouse>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F4> :call test_setmouse(3, 17)<CR>
+  END
+  call writefile(lines, 'XtestPopupClose')
+  let buf = RunVimInTerminal('-S XtestPopupClose', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_close_01', {})
+
+  call term_sendkeys(buf, ":call CloseWithX()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_02', {})
+
+  call term_sendkeys(buf, ":call CloseWithClick()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupClose')
+endfunction
+
 func Test_popup_with_mask()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
