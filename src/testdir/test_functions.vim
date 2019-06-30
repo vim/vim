@@ -1515,3 +1515,31 @@ endfunc
 func Test_eventhandler()
   call assert_equal(0, eventhandler())
 endfunc
+
+func Test_bufadd_bufload()
+  call assert_equal(0, bufexists('someName'))
+  let buf = bufadd('someName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('someName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal([''], getbufline(buf, 1, '$'))
+
+  let curbuf = bufnr('')
+  call writefile(['some', 'text'], 'otherName')
+  let buf = bufadd('otherName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('otherName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal(['some', 'text'], getbufline(buf, 1, '$'))
+  call assert_equal(curbuf, bufnr(''))
+
+  bwipe someName
+  bwipe otherName
+  call assert_equal(0, bufexists('someName'))
+endfunc
