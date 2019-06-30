@@ -9493,10 +9493,10 @@ set_num_option(
 	    errmsg = e_positive;
 	    curwin->w_p_nuw = 1;
 	}
-	if (curwin->w_p_nuw > NUMBUFLEN-1)
+	if (curwin->w_p_nuw > 20)
 	{
 	    errmsg = e_invarg;
-	    curwin->w_p_nuw = NUMBUFLEN-1;
+	    curwin->w_p_nuw = 20;
 	}
 	curwin->w_nrwidth_line_count = 0; /* trigger a redraw */
     }

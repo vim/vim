@@ -3167,7 +3167,7 @@ win_line(
     int		row;			/* row in the window, excl w_winrow */
     int		screen_row;		/* row on the screen, incl w_winrow */
 
-    char_u	extra[NUMBUFLEN];	/* "%ld" and 'fdc' must fit in here */
+    char_u	extra[21];		/* "%ld" and 'fdc' must fit in here */
     int		n_extra = 0;		/* number of extra chars */
     char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
     char_u	*p_extra_free = NULL;   /* p_extra needs to be freed */

@@ -5385,9 +5385,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	rows in the window, depending on whether 'number' or 'relativenumber'
 	is set. Thus with the Vim default of 4 there is room for a line number
 	up to 999. When the buffer has 1000 lines five columns will be used.
-	The minimum value is 1, the maximum value is NUMBUFLEN-1 where
-	NUMBUFLEN is an internal constant that sets the size of strings that
-	display numbers (NUMBUFLEN is usually 65).
+	The minimum value is 1, the maximum value is 20.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
