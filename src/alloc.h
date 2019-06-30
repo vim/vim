@@ -25,8 +25,6 @@ typedef enum {
 	aid_sign_getplaced,
 	aid_sign_define_by_name,
 	aid_sign_getlist,
-	aid_sign_getplaced_dict,
-	aid_sign_getplaced_list,
 	aid_insert_sign,
 	aid_sign_getinfo,
 	aid_last

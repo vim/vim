@@ -380,7 +380,7 @@ endfunc
 " Test for Vim script functions for managing signs
 func Test_sign_funcs()
   " Remove all the signs
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
   " Tests for sign_define()
@@ -423,83 +423,87 @@ func Test_sign_funcs()
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
 
-  call assert_equal(10, sign_place(10, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 20}))
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}], sign_getplaced('Xsign'))
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}],
+  call assert_equal([10], sign_place([{'id' : 10, 'group' : '',
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'lnum' : 20}]))
+  let bnr = bufnr('')
+  call assert_equal([{'id' : 10, 'group' : '', 'buffer' : bnr, 'lnum' : 20,
+	      \ 'name' : 'sign1', 'priority' : 10}], sign_getplaced('Xsign'))
+  call assert_equal([{'id' : 10, 'group' : '', 'buffer' : bnr, 'lnum' : 20,
+	      \ 'name' : 'sign1', 'priority' : 10}],
 	      \ sign_getplaced('%', {'lnum' : 20}))
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}],
+  call assert_equal([{'id' : 10, 'group' : '', 'buffer' : bnr, 'lnum' : 20,
+	      \ 'name' : 'sign1', 'priority' : 10}],
 	      \ sign_getplaced('', {'id' : 10}))
 
   " Tests for invalid arguments to sign_place()
-  call assert_fails('call sign_place([], "", "mySign", 1)', 'E745:')
-  call assert_fails('call sign_place(5, "", "mySign", -1)', 'E158:')
-  call assert_fails('call sign_place(-1, "", "sign1", "Xsign", [])',
-	      \ 'E474:')
-  call assert_fails('call sign_place(-1, "", "sign1", "Xsign",
-	      \ {"lnum" : 30})', 'E474:')
-  call assert_fails('call sign_place(10, "", "xsign1x", "Xsign",
-	      \ {"lnum" : 30})', 'E155:')
-  call assert_fails('call sign_place(10, "", "", "Xsign",
-	      \ {"lnum" : 30})', 'E155:')
-  call assert_fails('call sign_place(10, "", [], "Xsign",
-	      \ {"lnum" : 30})', 'E730:')
-  call assert_fails('call sign_place(5, "", "sign1", "abcxyz.xxx",
-	      \ {"lnum" : 10})', 'E158:')
-  call assert_fails('call sign_place(5, "", "sign1", "@", {"lnum" : 10})',
-	      \ 'E158:')
-  call assert_fails('call sign_place(5, "", "sign1", [], {"lnum" : 10})',
-	      \ 'E158:')
-  call assert_fails('call sign_place(21, "", "sign1", "Xsign",
-	      \ {"lnum" : -1})', 'E885:')
-  call assert_fails('call sign_place(22, "", "sign1", "Xsign",
-	      \ {"lnum" : 0})', 'E885:')
-  call assert_fails('call sign_place(22, "", "sign1", "Xsign",
-	      \ {"lnum" : []})', 'E745:')
-  call assert_equal(-1, sign_place(1, "*", "sign1", "Xsign", {"lnum" : 10}))
+  let attr = {"id" : [], "name" : "mySign", "buffer" : 1}
+  call assert_fails('call sign_place([attr])', 'E745:')
+  let attr = {"id" : 5, "name" : "mySign", "buffer" : -1}
+  call assert_fails('call sign_place([attr])', 'E158:')
+  let attr = {"id" : -1, "name" : "sign1", "buffer" : "Xsign"}
+  call assert_fails('call sign_place([attr])', 'E474:')
+  let attr = {"id" : -1, "name" : "sign1", "buffer" : "Xsign", "lnum" : 30}
+  call assert_fails('call sign_place([attr])', 'E474:')
+  let attr = {"id" : 5, "name" : "mySign", "buffer" : "Xsign", "lnum" : []}
+  call assert_fails('call sign_place([attr])', 'E745:')
+  let attr = {"id" : 10, "name" : "xsign1x", "buffer" : "Xsign", "lnum" : 30}
+  call assert_fails('call sign_place([attr])', 'E155:')
+  let attr = {"id" : 10, "name" : "", "buffer" : "Xsign", "lnum" : 30}
+  call assert_fails('call sign_place([attr])', 'E155:')
+  let attr = {"id" : 10, "name" : [], "buffer" : "Xsign", "lnum" : 30}
+  call assert_fails('call sign_place([attr])', 'E730:')
+  let attr = {"id" : 5, "name" : "sign1", "buffer" : "abxy.xx", "lnum" : 10}
+  call assert_fails('call sign_place([attr])', 'E158:')
+  let attr = {"id" : 5, "name" : "sign1", "buffer" : "@", "lnum" : 10}
+  call assert_fails('call sign_place([attr])', 'E158:')
+  let attr = {"id" : 5, "name" : "sign1", "buffer" : [], "lnum" : 10}
+  call assert_fails('call sign_place([attr])', 'E158:')
+  let attr = {"id" : 21, "name" : "sign1", "buffer" : "Xsign", "lnum" : -1}
+  call assert_fails('call sign_place([attr])', 'E885:')
+  let attr = {"id" : 22, "name" : "sign1", "buffer" : "Xsign", "lnum" : 0}
+  call assert_fails('call sign_place([attr])', 'E885:')
+  let attr = {"id" : 22, "name" : "sign1", "buffer" : "Xsign", "lnum" : []}
+  call assert_fails('call sign_place([attr])', 'E745:')
+  let attr = {"id" : 1, "group" : "*", "name" : "sign1", "buffer" : "Xsign",
+	      \ "lnum" : 10}
+  call assert_equal([0], sign_place([attr]))
 
   " Tests for sign_getplaced()
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}],
-	      \ sign_getplaced(bufnr('Xsign')))
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
-	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
-	      \ 'priority' : 10}]}],
-	      \ sign_getplaced())
+  let bnr = bufnr('')
+  call assert_equal([{'id' : 10, 'group' : '', 'buffer' : bnr, 'lnum' : 20,
+	      \ 'name' : 'sign1', 'priority' : 10}], sign_getplaced(bnr))
+  call assert_equal([{'id' : 10, 'group' : '', 'buffer' : bnr, 'lnum' : 20,
+	      \ 'name' : 'sign1', 'priority' : 10}], sign_getplaced())
   call assert_fails("call sign_getplaced('dummy.sign')", 'E158:')
   call assert_fails('call sign_getplaced("&")', 'E158:')
   call assert_fails('call sign_getplaced(-1)', 'E158:')
   call assert_fails('call sign_getplaced("Xsign", [])', 'E715:')
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' : []}],
-	      \ sign_getplaced('Xsign', {'lnum' : 1000000}))
+  call assert_equal([], sign_getplaced('Xsign', {'lnum' : 1000000}))
   call assert_fails("call sign_getplaced('Xsign', {'lnum' : []})",
 	      \ 'E745:')
-  call assert_equal([{'bufnr' : bufnr(''), 'signs' : []}],
-	      \ sign_getplaced('Xsign', {'id' : 44}))
+  call assert_equal([], sign_getplaced('Xsign', {'id' : 44}))
   call assert_fails("call sign_getplaced('Xsign', {'id' : []})",
 	      \ 'E745:')
 
   " Tests for sign_unplace()
-  call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
-  call assert_equal(0, sign_unplace('',
-	      \ {'id' : 20, 'buffer' : 'Xsign'}))
-  call assert_equal(-1, sign_unplace('',
-	      \ {'id' : 30, 'buffer' : 'Xsign'}))
-  call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
-  call assert_fails("call sign_unplace('',
-	      \ {'id' : 20, 'buffer' : 'buffer.c'})", 'E158:')
-  call assert_fails("call sign_unplace('',
-	      \ {'id' : 20, 'buffer' : '&'})", 'E158:')
-  call assert_fails("call sign_unplace('g1',
-	      \ {'id' : 20, 'buffer' : 200})", 'E158:')
-  call assert_fails("call sign_unplace('g1', 'mySign')", 'E715:')
+  call sign_place([{'id' : 20, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 30}])
+  call assert_equal([0], sign_unplace([{'group' : '', 'id' : 20,
+	      \ 'buffer' : 'Xsign'}]))
+  call assert_equal([-1], sign_unplace([{'id' : 30, 'buffer' : 'Xsign'}]))
+  call sign_place([{'id' : 20, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 30}])
+  call assert_fails("call sign_unplace([{'id' : 20, 'buffer' : 'buffer.c'}])",
+	      \ 'E158:')
+  call assert_fails("call sign_unplace([{'id' : 20, 'buffer' : '&'}])", 'E158:')
+  call assert_fails("call sign_unplace([{'group' : 'g1', 'id' : 20,
+	      \ 'buffer' : 200}])", 'E158:')
+  call assert_fails("call sign_unplace([{'group' : 'g1', 'id' : 'mySign'}])",
+	      \ 'E474:')
+  call assert_fails("call sign_unplace({})", 'E474:')
+  " Unplace signs in the current buffer
+  call assert_equal([0, 0], sign_unplace([{'id' : 10}, {'id' : 20}]))
+  call assert_equal([], sign_getplaced('Xsign'))
 
   " Tests for sign_undefine()
   call assert_equal(0, sign_undefine("sign1"))
@@ -508,7 +512,7 @@ func Test_sign_funcs()
   call assert_fails('call sign_undefine([])', 'E730:')
 
   call delete("Xsign")
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
 endfunc
@@ -517,7 +521,7 @@ endfunc
 func Test_sign_group()
   enew | only
   " Remove all the signs
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
@@ -529,136 +533,143 @@ func Test_sign_group()
   let bnum = bufnr('%')
 
   " Error case
-  call assert_fails("call sign_place(5, [], 'sign1', 'Xsign',
-	      \ {'lnum' : 30})", 'E730:')
+  call assert_fails("call sign_place([{'id' : 5, 'group' : [],
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'lnum' : 30}])", 'E730:')
 
   " place three signs with the same identifier. One in the global group and
   " others in the named groups
-  call assert_equal(5, sign_place(5, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 10}))
-  call assert_equal(5, sign_place(5, 'g1', 'sign1', bnum, {'lnum' : 20}))
-  call assert_equal(5, sign_place(5, 'g2', 'sign1', bnum, {'lnum' : 30}))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : '',
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'lnum' : 10}]))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 20}]))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : 'g2',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 30}]))
 
   " Test for sign_getplaced() with group
   let s = sign_getplaced('Xsign')
-  call assert_equal(1, len(s[0].signs))
-  call assert_equal(s[0].signs[0].group, '')
+  call assert_equal(1, len(s))
+  call assert_equal(s[0].group, '')
   let s = sign_getplaced(bnum, {'group' : ''})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
-	      \ 'priority' : 10}], s[0].signs)
-  call assert_equal(1, len(s[0].signs))
+  call assert_equal([{'id' : 5, 'group' : '', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 10, 'priority' : 10}], s)
+  call assert_equal(1, len(s))
   let s = sign_getplaced(bnum, {'group' : 'g2'})
-  call assert_equal('g2', s[0].signs[0].group)
+  call assert_equal('g2', s[0].group)
   let s = sign_getplaced(bnum, {'group' : 'g3'})
-  call assert_equal([], s[0].signs)
+  call assert_equal([], s)
   let s = sign_getplaced(bnum, {'group' : '*'})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20,
-	      \  'priority' : 10},
-	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30,
-	      \  'priority' : 10}],
-	      \ s[0].signs)
+  call assert_equal([
+	      \ {'id' : 5, 'group' : '', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 10, 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g1', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 20, 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g2', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 30, 'priority' : 10}], s)
 
   " Test for sign_getplaced() with id
   let s = sign_getplaced(bnum, {'id' : 5})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+  call assert_equal([
+	      \ {'id' : 5, 'group' : '', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 10, 'priority' : 10}], s)
   let s = sign_getplaced(bnum, {'id' : 5, 'group' : 'g2'})
   call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+	      \ [{'id' : 5, 'name' : 'sign1', 'group' : 'g2', 'buffer' : bnum,
+	      \ 'lnum' : 30, 'priority' : 10}], s)
   let s = sign_getplaced(bnum, {'id' : 5, 'group' : '*'})
-  call assert_equal([{'id' : 5, 'group' : '', 'name' : 'sign1', 'lnum' : 10,
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'lnum' : 20,
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'lnum' : 30,
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+  call assert_equal([
+	      \ {'id' : 5, 'group' : '', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 10, 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g1', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 20, 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g2', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 30, 'priority' : 10}], s)
   let s = sign_getplaced(bnum, {'id' : 5, 'group' : 'g3'})
-  call assert_equal([], s[0].signs)
+  call assert_equal([], s)
 
   " Test for sign_getplaced() with lnum
   let s = sign_getplaced(bnum, {'lnum' : 20})
-  call assert_equal([], s[0].signs)
+  call assert_equal([], s)
   let s = sign_getplaced(bnum, {'lnum' : 20, 'group' : 'g1'})
-  call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+  call assert_equal([
+	      \ {'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'buffer' : bnum,
+	      \ 'lnum' : 20, 'priority' : 10}], s)
   let s = sign_getplaced(bnum, {'lnum' : 30, 'group' : '*'})
-  call assert_equal(
-	      \ [{'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+  call assert_equal([
+	      \ {'id' : 5, 'group' : 'g2', 'name' : 'sign1', 'buffer' : bnum,
+	      \ 'lnum' : 30, 'priority' : 10}], s)
   let s = sign_getplaced(bnum, {'lnum' : 40, 'group' : '*'})
-  call assert_equal([], s[0].signs)
+  call assert_equal([], s)
 
   " Error case
   call assert_fails("call sign_getplaced(bnum, {'group' : []})",
 	      \ 'E730:')
 
   " Clear the sign in global group
-  call sign_unplace('', {'id' : 5, 'buffer' : bnum})
+  call sign_unplace([{'id' : 5, 'buffer' : bnum}])
   let s = sign_getplaced(bnum, {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+	      \ {'id' : 5, 'group' : 'g1', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 20, 'priority' : 10},
+	      \ {'id' : 5, 'group' : 'g2', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 30, 'priority' : 10}], s)
 
   " Clear the sign in one of the groups
-  call sign_unplace('g1', {'buffer' : 'Xsign'})
+  call sign_unplace([{'group' : 'g1', 'buffer' : 'Xsign'}])
   let s = sign_getplaced(bnum, {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 30, 'group' : 'g2',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+	      \ {'id' : 5, 'group' : 'g2', 'buffer' : bnum, 'name' : 'sign1',
+	      \ 'lnum' : 30, 'priority' : 10}], s)
 
   " Clear all the signs from the buffer
-  call sign_unplace('*', {'buffer' : bnum})
-  call assert_equal([], sign_getplaced(bnum, {'group' : '*'})[0].signs)
+  call sign_unplace([{'group' : '*', 'buffer' : bnum}])
+  call assert_equal([], sign_getplaced(bnum, {'group' : '*'}))
 
   " Clear sign across groups using an identifier
-  call sign_place(25, '', 'sign1', bnum, {'lnum' : 10})
-  call sign_place(25, 'g1', 'sign1', bnum, {'lnum' : 11})
-  call sign_place(25, 'g2', 'sign1', bnum, {'lnum' : 12})
-  call assert_equal(0, sign_unplace('*', {'id' : 25}))
-  call assert_equal([], sign_getplaced(bnum, {'group' : '*'})[0].signs)
+  call sign_place([{'id' : 25, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 10},
+	      \ {'id' : 25, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 11},
+	      \ {'id' : 25, 'group' : 'g2', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 12}])
+  call assert_equal([0], sign_unplace([{'group' : '*', 'id' : 25}]))
+  call assert_equal([], sign_getplaced(bnum, {'group' : '*'}))
 
   " Error case
-  call assert_fails("call sign_unplace([])", 'E474:')
+  call assert_fails("call sign_unplace(20)", 'E474:')
 
   " Place a sign in the global group and try to delete it using a group
-  call assert_equal(5, sign_place(5, '', 'sign1', bnum, {'lnum' : 10}))
-  call assert_equal(-1, sign_unplace('g1', {'id' : 5}))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 10}]))
+  call assert_equal([-1], sign_unplace([{'group' : 'g1', 'id' : 5}]))
 
   " Place signs in multiple groups and delete all the signs in one of the
   " group
-  call assert_equal(5, sign_place(5, '', 'sign1', bnum, {'lnum' : 10}))
-  call assert_equal(6, sign_place(6, '', 'sign1', bnum, {'lnum' : 11}))
-  call assert_equal(5, sign_place(5, 'g1', 'sign1', bnum, {'lnum' : 10}))
-  call assert_equal(5, sign_place(5, 'g2', 'sign1', bnum, {'lnum' : 10}))
-  call assert_equal(6, sign_place(6, 'g1', 'sign1', bnum, {'lnum' : 11}))
-  call assert_equal(6, sign_place(6, 'g2', 'sign1', bnum, {'lnum' : 11}))
-  call assert_equal(0, sign_unplace('g1'))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 10}]))
+  call assert_equal([6], sign_place([{'id' : 6, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : bnum, 'lnum' : 11}]))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 10}]))
+  call assert_equal([5], sign_place([{'id' : 5, 'group' : 'g2',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 10}]))
+  call assert_equal([6], sign_place([{'id' : 6, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 11}]))
+  call assert_equal([6], sign_place([{'id' : 6, 'group' : 'g2',
+	      \ 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 11}]))
+  call assert_equal([0], sign_unplace([{'group' : 'g1'}]))
   let s = sign_getplaced(bnum, {'group' : 'g1'})
-  call assert_equal([], s[0].signs)
+  call assert_equal([], s)
   let s = sign_getplaced(bnum)
-  call assert_equal(2, len(s[0].signs))
+  call assert_equal(2, len(s))
   let s = sign_getplaced(bnum, {'group' : 'g2'})
-  call assert_equal('g2', s[0].signs[0].group)
-  call assert_equal(0, sign_unplace('', {'id' : 5}))
-  call assert_equal(0, sign_unplace('', {'id' : 6}))
+  call assert_equal('g2', s[0].group)
+  call assert_equal([0], sign_unplace([{'id' : 5}]))
+  call assert_equal([0], sign_unplace([{'id' : 6}]))
   let s = sign_getplaced(bnum, {'group' : 'g2'})
-  call assert_equal('g2', s[0].signs[0].group)
-  call assert_equal(0, sign_unplace('', {'buffer' : bnum}))
+  call assert_equal('g2', s[0].group)
+  call assert_equal([0], sign_unplace([{'buffer' : bnum}]))
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Test for :sign command and groups
   sign place 5 line=10 name=sign1 file=Xsign
@@ -688,7 +699,7 @@ func Test_sign_group()
   let a = execute('sign place group=xyz file=Xsign')
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n", a)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   let bnum = bufnr('Xsign')
   exe 'sign place 5 line=10 name=sign1 buffer=' . bnum
   exe 'sign place 5 group=g1 line=11 name=sign1 buffer=' . bnum
@@ -761,14 +772,14 @@ func Test_sign_group()
   call assert_fails("sign place 3 group= name=sign1 buffer=" . bnum, 'E474:')
 
   call delete("Xsign")
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
 endfunc
 
 " Place signs used for ":sign unplace" command test
 func Place_signs_for_test()
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   sign place 3 line=10 name=sign1 file=Xsign1
   sign place 3 group=g1 line=11 name=sign1 file=Xsign1
@@ -786,7 +797,7 @@ endfunc
 
 " Place multiple signs in a single line for test
 func Place_signs_at_line_for_test()
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   sign place 3 line=13 name=sign1 file=Xsign1
   sign place 3 group=g1 line=13 name=sign1 file=Xsign1
   sign place 3 group=g2 line=13 name=sign1 file=Xsign1
@@ -799,7 +810,7 @@ endfunc
 func Test_sign_unplace()
   enew | only
   " Remove all the signs
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
   " Create two files and define signs
@@ -814,30 +825,30 @@ func Test_sign_unplace()
   split Xsign2
   let bnum2 = bufnr('%')
 
-  let signs1 = [{'id' : 3, 'name' : 'sign1', 'lnum' : 10, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign1', 'lnum' : 11, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign1', 'lnum' : 12, 'group' : 'g2',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign1', 'lnum' : 15, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign1', 'lnum' : 16, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign1', 'lnum' : 17, 'group' : 'g2',
-	      \ 'priority' : 10},]
-  let signs2 = [{'id' : 5, 'name' : 'sign1', 'lnum' : 20, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 21, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 5, 'name' : 'sign1', 'lnum' : 22, 'group' : 'g2',
-	      \ 'priority' : 10},
-	      \ {'id' : 6, 'name' : 'sign1', 'lnum' : 25, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 6, 'name' : 'sign1', 'lnum' : 26, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 6, 'name' : 'sign1', 'lnum' : 27, 'group' : 'g2',
-	      \ 'priority' : 10},]
+  let signs1 = [{'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 10,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 12,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 15,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 16,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 17,
+	      \ 'group' : 'g2', 'priority' : 10},]
+  let signs2 = [{'id' : 5, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 20,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 5, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 21,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 5, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 22,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 6, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 25,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 6, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 26,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 6, 'name' : 'sign1', 'buffer' : bnum2, 'lnum' : 27,
+	      \ 'group' : 'g2', 'priority' : 10},]
 
   " Test for :sign unplace {id} file={fname}
   call Place_signs_for_test()
@@ -846,11 +857,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 3 || val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6 || val.group != ''}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace {id} group={group} file={fname}
   call Place_signs_for_test()
@@ -859,11 +870,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != 'g1'}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 5 || val.group != 'g2'}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace {id} group=* file={fname}
   call Place_signs_for_test()
@@ -872,11 +883,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 3}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace * file={fname}
   call Place_signs_for_test()
@@ -884,8 +895,8 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
-  call assert_equal(signs2, sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
+  call assert_equal(signs2, sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace * group={group} file={fname}
   call Place_signs_for_test()
@@ -894,17 +905,17 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != 'g1'}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.group != 'g2'}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace * group=* file={fname}
   call Place_signs_for_test()
   sign unplace * group=* file=Xsign2
-  call assert_equal(signs1, sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
-  call assert_equal([], sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+  call assert_equal(signs1, sign_getplaced('Xsign1', {'group' : '*'}))
+  call assert_equal([], sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace {id} buffer={nr}
   call Place_signs_for_test()
@@ -913,11 +924,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 3 || val.group != ''}),
-	      \ sign_getplaced(bnum1, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum1, {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6 || val.group != ''}),
-	      \ sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace {id} group={group} buffer={nr}
   call Place_signs_for_test()
@@ -926,11 +937,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != 'g1'}),
-	      \ sign_getplaced(bnum1, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum1, {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 5 || val.group != 'g2'}),
-	      \ sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace {id} group=* buffer={nr}
   call Place_signs_for_test()
@@ -939,11 +950,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 3}),
-	      \ sign_getplaced(bnum1, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum1, {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6}),
-	      \ sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace * buffer={nr}
   call Place_signs_for_test()
@@ -951,8 +962,8 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != ''}),
-	      \ sign_getplaced(bnum1, {'group' : '*'})[0].signs)
-  call assert_equal(signs2, sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum1, {'group' : '*'}))
+  call assert_equal(signs2, sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace * group={group} buffer={nr}
   call Place_signs_for_test()
@@ -961,17 +972,17 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != 'g1'}),
-	      \ sign_getplaced(bnum1, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum1, {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.group != 'g2'}),
-	      \ sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+	      \ sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace * group=* buffer={nr}
   call Place_signs_for_test()
   exe 'sign unplace * group=* buffer=' . bnum2
-  call assert_equal(signs1, sign_getplaced(bnum1, {'group' : '*'})[0].signs)
-  call assert_equal([], sign_getplaced(bnum2, {'group' : '*'})[0].signs)
+  call assert_equal(signs1, sign_getplaced(bnum1, {'group' : '*'}))
+  call assert_equal([], sign_getplaced(bnum2, {'group' : '*'}))
 
   " Test for :sign unplace {id}
   call Place_signs_for_test()
@@ -980,11 +991,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6 || val.group != ''}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace {id} group={group}
   call Place_signs_for_test()
@@ -993,11 +1004,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != 'g1'}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 6 || val.group != 'g2'}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace {id} group=*
   call Place_signs_for_test()
@@ -1006,11 +1017,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 3}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.id != 5}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace *
   call Place_signs_for_test()
@@ -1018,11 +1029,11 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.group != ''}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace * group={group}
   call Place_signs_for_test()
@@ -1030,41 +1041,41 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != 'g1'}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   call assert_equal(
 	      \ filter(copy(signs2),
 	      \     {idx, val -> val.group != 'g1'}),
-	      \ sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Test for :sign unplace * group=*
   call Place_signs_for_test()
   sign unplace * group=*
-  call assert_equal([], sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
-  call assert_equal([], sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+  call assert_equal([], sign_getplaced('Xsign1', {'group' : '*'}))
+  call assert_equal([], sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Negative test cases
   call Place_signs_for_test()
   sign unplace 3 group=xy file=Xsign1
   sign unplace * group=xy file=Xsign1
   silent! sign unplace * group=* file=FileNotPresent
-  call assert_equal(signs1, sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
-  call assert_equal(signs2, sign_getplaced('Xsign2', {'group' : '*'})[0].signs)
+  call assert_equal(signs1, sign_getplaced('Xsign1', {'group' : '*'}))
+  call assert_equal(signs2, sign_getplaced('Xsign2', {'group' : '*'}))
 
   " Tests for removing sign at the current cursor position
 
   " Test for ':sign unplace'
-  let signs1 = [{'id' : 4, 'name' : 'sign1', 'lnum' : 13, 'group' : 'g2',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign1', 'lnum' : 13, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign1', 'lnum' : 13, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign1', 'lnum' : 13, 'group' : 'g2',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign1', 'lnum' : 13, 'group' : 'g1',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign1', 'lnum' : 13, 'group' : '',
-	      \ 'priority' : 10},]
+  let signs1 = [{'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : 'g1', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign1', 'buffer' : bnum1, 'lnum' : 13,
+	      \ 'group' : '', 'priority' : 10},]
   exe bufwinnr('Xsign1') . 'wincmd w'
   call cursor(13, 1)
 
@@ -1074,13 +1085,13 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   " Should remove the second sign in the global group
   sign unplace
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.group != ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
 
   " Test for ':sign unplace group={group}'
   call Place_signs_at_line_for_test()
@@ -1089,12 +1100,12 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group != 'g1'}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   sign unplace group=g2
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4 || val.group == ''}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
 
   " Test for ':sign unplace group=*'
   call Place_signs_at_line_for_test()
@@ -1104,13 +1115,13 @@ func Test_sign_unplace()
   call assert_equal(
 	      \ filter(copy(signs1),
 	      \     {idx, val -> val.id != 4}),
-	      \ sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+	      \ sign_getplaced('Xsign1', {'group' : '*'}))
   sign unplace group=*
   sign unplace group=*
   sign unplace group=*
-  call assert_equal([], sign_getplaced('Xsign1', {'group' : '*'})[0].signs)
+  call assert_equal([], sign_getplaced('Xsign1', {'group' : '*'}))
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
   call delete("Xsign1")
@@ -1120,7 +1131,7 @@ endfunc
 " Tests for auto-generating the sign identifier
 func Test_sign_id_autogen()
   enew | only
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
@@ -1129,27 +1140,29 @@ func Test_sign_id_autogen()
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
 
-  call assert_equal(1, sign_place(0, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 10}))
-  call assert_equal(2, sign_place(2, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 12}))
-  call assert_equal(3, sign_place(0, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 14}))
-  call sign_unplace('', {'buffer' : 'Xsign', 'id' : 2})
-  call assert_equal(4, sign_place(0, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 12}))
+  call assert_equal([1], sign_place([{'id' : 0, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 10}]))
+  call assert_equal([2], sign_place([{'id' : 2, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 12}]))
+  call assert_equal([3], sign_place([{'name' : 'sign1', 'buffer' : 'Xsign',
+	      \ 'lnum' : 14}]))
+  call sign_unplace([{'buffer' : 'Xsign', 'id' : 2}])
+  call assert_equal([4], sign_place([{'id' : 0, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 12}]))
 
-  call assert_equal(1, sign_place(0, 'g1', 'sign1', 'Xsign',
-	      \ {'lnum' : 11}))
+  call assert_equal([1], sign_place([{'id' : 0, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'lnum' : 11}]))
   " Check for the next generated sign id in this group
-  call assert_equal(2, sign_place(0, 'g1', 'sign1', 'Xsign',
-	      \ {'lnum' : 12}))
-  call assert_equal(0, sign_unplace('g1', {'id' : 1}))
-  call assert_equal(10,
-	      \ sign_getplaced('Xsign', {'id' : 1})[0].signs[0].lnum)
+  call assert_equal([2], sign_place([{'id' : 0, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'lnum' : 12}]))
+  " Call sign_place() without 'id'
+  call assert_equal([3], sign_place([{'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 13}]))
+  call assert_equal([0], sign_unplace([{'group' : 'g1', 'id' : 1}]))
+  call assert_equal(10, sign_getplaced('Xsign', {'id' : 1})[0].lnum)
 
   call delete("Xsign")
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
 endfunc
@@ -1157,7 +1170,7 @@ endfunc
 " Test for sign priority
 func Test_sign_priority()
   enew | only
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search'}
@@ -1168,341 +1181,322 @@ func Test_sign_priority()
   " Place three signs with different priority in the same line
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
+  let bnr = bufnr('')
 
-  call sign_place(1, 'g1', 'sign1', 'Xsign',
-	      \ {'lnum' : 11, 'priority' : 50})
-  call sign_place(2, 'g2', 'sign2', 'Xsign',
-	      \ {'lnum' : 11, 'priority' : 100})
-  call sign_place(3, '', 'sign3', 'Xsign', {'lnum' : 11})
+  call sign_place([{'id' : 1, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 50}])
+  call sign_place([{'id' : 2, 'group' : 'g2', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 100}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 11, 'group' : 'g2',
-	      \ 'priority' : 100},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 11, 'group' : 'g1',
-	      \ 'priority' : 50},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 11, 'group' : '',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 11,
+	      \ 'group' : 'g2', 'priority' : 100},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Three signs on different lines with changing priorities
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 11, 'priority' : 50})
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 12, 'priority' : 60})
-  call sign_place(3, '', 'sign3', 'Xsign',
-	      \ {'lnum' : 13, 'priority' : 70})
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 12, 'priority' : 40})
-  call sign_place(3, '', 'sign3', 'Xsign',
-	      \ {'lnum' : 13, 'priority' : 30})
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 11, 'priority' : 50})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 50}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 12, 'priority' : 60}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 13, 'priority' : 70}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 12, 'priority' : 40}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 13, 'priority' : 30}])
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 50}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 11, 'group' : '',
-	      \ 'priority' : 50},
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 12, 'group' : '',
-	      \ 'priority' : 40},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 13, 'group' : '',
-	      \ 'priority' : 30}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 50},
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 12,
+	      \ 'group' : '', 'priority' : 40},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 13,
+	      \ 'group' : '', 'priority' : 30}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Two signs on the same line with changing priorities
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 20})
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 30})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 30}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
   " Change the priority of the last sign to highest
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 40})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 40}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 40},
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 40},
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30}], s)
   " Change the priority of the first sign to lowest
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 25})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 25}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 25}],
-	      \ s[0].signs)
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 45})
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 55})
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 25}], s)
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 45}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 55}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 55},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 45}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 55},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 45}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Three signs on the same line with changing priorities
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 40})
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 30})
-  call sign_place(3, '', 'sign3', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 20})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 40}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 30}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 40},
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 40},
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
 
   " Change the priority of the middle sign to the highest
-  call sign_place(2, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 50})
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 50}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 50},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 40},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 50},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 40},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
 
   " Change the priority of the middle sign to the lowest
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 15})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 15}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 50},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 15}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 15}], s)
 
   " Change the priority of the last sign to the highest
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 55})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 55}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 55},
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 50},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 55},
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
 
   " Change the priority of the first sign to the lowest
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 15})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 15}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 50},
-	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 15}],
-	      \ s[0].signs)
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 15}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Three signs on the same line with changing priorities along with other
   " signs
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 2, 'priority' : 10})
-  call sign_place(2, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 30})
-  call sign_place(3, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 20})
-  call sign_place(4, '', 'sign3', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 25})
-  call sign_place(5, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 6, 'priority' : 80})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 2, 'priority' : 10}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 30}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
+  call sign_place([{'id' : 4, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 25}])
+  call sign_place([{'id' : 5, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 6, 'priority' : 80}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 2, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 2, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 4, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 25},
-	      \ {'id' : 3, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 5, 'name' : 'sign2', 'lnum' : 6, 'group' : '',
-	      \ 'priority' : 80}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 2,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 2, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 4, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 25},
+	      \ {'id' : 3, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 5, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 6,
+	      \ 'group' : '', 'priority' : 80}], s)
 
   " Change the priority of the first sign to lowest
-  call sign_place(2, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 15})
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 15}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 2, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 4, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 25},
-	      \ {'id' : 3, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 2, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 15},
-	      \ {'id' : 5, 'name' : 'sign2', 'lnum' : 6, 'group' : '',
-	      \ 'priority' : 80}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 2,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 4, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 25},
+	      \ {'id' : 3, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 2, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 15},
+	      \ {'id' : 5, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 6,
+	      \ 'group' : '', 'priority' : 80}], s)
 
   " Change the priority of the last sign to highest
-  call sign_place(2, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 30})
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 30}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 2, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 2, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 4, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 25},
-	      \ {'id' : 3, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 5, 'name' : 'sign2', 'lnum' : 6, 'group' : '',
-	      \ 'priority' : 80}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 2,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 2, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 4, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 25},
+	      \ {'id' : 3, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 5, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 6,
+	      \ 'group' : '', 'priority' : 80}], s)
 
   " Change the priority of the middle sign to lowest
-  call sign_place(4, '', 'sign3', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 15})
+  call sign_place([{'id' : 4, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 15}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 2, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 2, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 3, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 20},
-	      \ {'id' : 4, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 15},
-	      \ {'id' : 5, 'name' : 'sign2', 'lnum' : 6, 'group' : '',
-	      \ 'priority' : 80}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 2,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 2, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 3, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+	      \ {'id' : 4, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 15},
+	      \ {'id' : 5, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 6,
+	      \ 'group' : '', 'priority' : 80}], s)
 
   " Change the priority of the middle sign to highest
-  call sign_place(3, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 4, 'priority' : 35})
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 35}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 2, 'group' : '',
-	      \ 'priority' : 10},
-	      \ {'id' : 3, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 35},
-	      \ {'id' : 2, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 30},
-	      \ {'id' : 4, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-	      \ 'priority' : 15},
-	      \ {'id' : 5, 'name' : 'sign2', 'lnum' : 6, 'group' : '',
-	      \ 'priority' : 80}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 2,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 3, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 35},
+	      \ {'id' : 2, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 30},
+	      \ {'id' : 4, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 15},
+	      \ {'id' : 5, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 6,
+	      \ 'group' : '', 'priority' : 80}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Multiple signs with the same priority on the same line
-  call sign_place(1, '', 'sign1', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
-  call sign_place(2, '', 'sign2', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
-  call sign_place(3, '', 'sign3', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
+  call sign_place([{'id' : 2, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-              \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20}],
-              \ s[0].signs)
+              \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
   " Place the last sign again with the same priority
-  call sign_place(1, '', 'sign1', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-              \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20}],
-              \ s[0].signs)
+              \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
   " Place the first sign again with the same priority
-  call sign_place(1, '', 'sign1', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-              \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20}],
-              \ s[0].signs)
+              \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
   " Place the middle sign again with the same priority
-  call sign_place(3, '', 'sign3', 'Xsign',
-              \ {'lnum' : 4, 'priority' : 20})
+  call sign_place([{'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 4, 'priority' : 20}])
   let s = sign_getplaced('Xsign', {'group' : '*'})
   call assert_equal([
-              \ {'id' : 3, 'name' : 'sign3', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 1, 'name' : 'sign1', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20},
-              \ {'id' : 2, 'name' : 'sign2', 'lnum' : 4, 'group' : '',
-              \ 'priority' : 20}],
-              \ s[0].signs)
+              \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20},
+              \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 4,
+	      \ 'group' : '', 'priority' : 20}], s)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
 
   " Place multiple signs with same id on a line with different priority
-  call sign_place(1, '', 'sign1', 'Xsign',
-	      \ {'lnum' : 5, 'priority' : 20})
-  call sign_place(1, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 5, 'priority' : 10})
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 5, 'priority' : 20}])
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 5, 'priority' : 10}])
   let s = sign_getplaced('Xsign', {'lnum' : 5})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign2', 'lnum' : 5, 'group' : '',
-	      \ 'priority' : 10}],
-	      \ s[0].signs)
-  call sign_place(1, '', 'sign2', 'Xsign',
-	      \ {'lnum' : 5, 'priority' : 5})
+	      \ {'id' : 1, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 5,
+	      \ 'group' : '', 'priority' : 10}], s)
+  call sign_place([{'id' : 1, 'group' : '', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 5, 'priority' : 5}])
   let s = sign_getplaced('Xsign', {'lnum' : 5})
   call assert_equal([
-	      \ {'id' : 1, 'name' : 'sign2', 'lnum' : 5, 'group' : '',
-	      \ 'priority' : 5}],
-	      \ s[0].signs)
+	      \ {'id' : 1, 'name' : 'sign2', 'buffer' : bnr, 'lnum' : 5,
+	      \ 'group' : '', 'priority' : 5}], s)
 
   " Error case
-  call assert_fails("call sign_place(1, 'g1', 'sign1', 'Xsign',
-	      \ [])", 'E715:')
-  call assert_fails("call sign_place(1, 'g1', 'sign1', 'Xsign',
-	      \ {'priority' : []})", 'E745:')
-  call sign_unplace('*')
+  call assert_fails("call sign_place([{'id' : 1, 'group' : 'g1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 10, 'priority' : 1.2}])", 'E805:')
+  call assert_fails("call sign_place([{'id' : 1, 'group' : 'g1',
+	      \ 'name' : 'sign1', 'buffer' : 'Xsign', 'priority' : []}])",
+	      \ 'E745:')
+  call sign_unplace([{'group' : '*'}])
 
   " Tests for the :sign place command with priority
   sign place 5 line=10 name=sign1 priority=30 file=Xsign
@@ -1519,7 +1513,7 @@ func Test_sign_priority()
   call assert_equal("\n--- Signs ---\nSigns for Xsign:\n" .
 	      \ "    line=10  id=5  group=g1  name=sign1  priority=20\n", a)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
   call delete("Xsign")
@@ -1543,25 +1537,23 @@ func Test_sign_memfailures()
   call test_alloc_fail(GetAllocId('sign_getlist'), 0, 0)
   call assert_fails('call sign_getdefined("sign1")', 'E342:')
 
-  call sign_place(3, 'g1', 'sign1', 'Xsign', {'lnum' : 10})
-  call test_alloc_fail(GetAllocId('sign_getplaced_dict'), 0, 0)
-  call assert_fails('call sign_getplaced("Xsign")', 'E342:')
-  call test_alloc_fail(GetAllocId('sign_getplaced_list'), 0, 0)
-  call assert_fails('call sign_getplaced("Xsign")', 'E342:')
+  call sign_place([{'id' : 3, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 10}])
 
   call test_alloc_fail(GetAllocId('insert_sign'), 0, 0)
-  call assert_fails('call sign_place(4, "g1", "sign1", "Xsign", {"lnum" : 11})',
-								\ 'E342:')
+  call assert_fails('call sign_place([{"id" : 4, "group" : "g1", "name" :
+	      \ "sign1", "buffer" : "Xsign", "lnum" : 11}])', 'E342:')
 
   call test_alloc_fail(GetAllocId('sign_getinfo'), 0, 0)
   call assert_fails('call getbufinfo()', 'E342:')
-  call sign_place(4, 'g1', 'sign1', 'Xsign', {'lnum' : 11})
+  call sign_place([{'id' : 4, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}])
   call test_alloc_fail(GetAllocId('sign_getinfo'), 0, 0)
   call assert_fails('let binfo=getbufinfo("Xsign")', 'E342:')
   call assert_equal([{'lnum': 11, 'id': 4, 'name': 'sign1',
 	      \ 'priority': 10, 'group': 'g1'}], binfo[0].signs)
 
-  call sign_unplace('*')
+  call sign_unplace([{'group' : '*'}])
   call sign_undefine()
   enew | only
   call delete("Xsign")
@@ -1575,27 +1567,27 @@ func Test_sign_lnum_adjust()
   call setline(1, ['A', 'B', 'C', 'D', 'E'])
   exe 'sign place 5 line=3 name=sign1 buffer=' . bufnr('')
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(3, l[0].signs[0].lnum)
+  call assert_equal(3, l[0].lnum)
 
   " Add some lines before the sign and check the sign line number
   call append(2, ['BA', 'BB', 'BC'])
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(6, l[0].signs[0].lnum)
+  call assert_equal(6, l[0].lnum)
 
   " Delete some lines before the sign and check the sign line number
   call deletebufline('%', 1, 2)
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(4, l[0].signs[0].lnum)
+  call assert_equal(4, l[0].lnum)
 
   " Insert some lines after the sign and check the sign line number
   call append(5, ['DA', 'DB'])
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(4, l[0].signs[0].lnum)
+  call assert_equal(4, l[0].lnum)
 
   " Delete some lines after the sign and check the sign line number
   call deletebufline('', 6, 7)
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(4, l[0].signs[0].lnum)
+  call assert_equal(4, l[0].lnum)
 
   " Break the undo. Otherwise the undo operation below will undo all the
   " changes made by this function.
@@ -1604,12 +1596,12 @@ func Test_sign_lnum_adjust()
   " Delete the line with the sign
   call deletebufline('', 4)
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(4, l[0].signs[0].lnum)
+  call assert_equal(4, l[0].lnum)
 
   " Undo the delete operation
   undo
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(5, l[0].signs[0].lnum)
+  call assert_equal(5, l[0].lnum)
 
   " Break the undo
   let &undolevels=&undolevels
@@ -1618,12 +1610,12 @@ func Test_sign_lnum_adjust()
   " Sign line number should not change (as it is placed outside of the buffer)
   call deletebufline('', 3, 6)
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(5, l[0].signs[0].lnum)
+  call assert_equal(5, l[0].lnum)
 
   " Undo the delete operation. Sign should be restored to the previous line
   undo
   let l = sign_getplaced(bufnr(''))
-  call assert_equal(5, l[0].signs[0].lnum)
+  call assert_equal(5, l[0].lnum)
 
   sign unplace * group=*
   sign undefine sign1
@@ -1640,23 +1632,24 @@ func Test_sign_change_type()
   call setline(1, ['A', 'B', 'C', 'D'])
   exe 'sign place 4 line=3 name=sign1 buffer=' . bufnr('')
   let l = sign_getplaced(bufnr(''))
-  call assert_equal('sign1', l[0].signs[0].name)
+  call assert_equal('sign1', l[0].name)
   exe 'sign place 4 name=sign2 buffer=' . bufnr('')
   let l = sign_getplaced(bufnr(''))
-  call assert_equal('sign2', l[0].signs[0].name)
-  call sign_place(4, '', 'sign1', '')
+  call assert_equal('sign2', l[0].name)
+  call sign_place([{'id' : 4, 'group' : '', 'name' : 'sign1', 'buffer' : ''}])
   let l = sign_getplaced(bufnr(''))
-  call assert_equal('sign1', l[0].signs[0].name)
+  call assert_equal('sign1', l[0].name)
 
   exe 'sign place 4 group=g1 line=4 name=sign1 buffer=' . bufnr('')
   let l = sign_getplaced(bufnr(''), {'group' : 'g1'})
-  call assert_equal('sign1', l[0].signs[0].name)
+  call assert_equal('sign1', l[0].name)
   exe 'sign place 4 group=g1 name=sign2 buffer=' . bufnr('')
   let l = sign_getplaced(bufnr(''), {'group' : 'g1'})
-  call assert_equal('sign2', l[0].signs[0].name)
-  call sign_place(4, 'g1', 'sign1', '')
+  call assert_equal('sign2', l[0].name)
+  call sign_place([{'id' : 4, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : ''}])
   let l = sign_getplaced(bufnr(''), {'group' : 'g1'})
-  call assert_equal('sign1', l[0].signs[0].name)
+  call assert_equal('sign1', l[0].name)
 
   sign unplace * group=*
   sign undefine sign1
@@ -1673,17 +1666,25 @@ func Test_sign_jump_func()
   edit foo
   set buftype=nofile
   call setline(1, ['A', 'B', 'C', 'D', 'E'])
-  call sign_place(5, '', 'sign1', '', {'lnum' : 2})
-  call sign_place(5, 'g1', 'sign1', '', {'lnum' : 3})
-  call sign_place(6, '', 'sign1', '', {'lnum' : 4})
-  call sign_place(6, 'g1', 'sign1', '', {'lnum' : 5})
+  call sign_place([{'id' : 5, 'group' : '', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 2}])
+  call sign_place([{'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 3}])
+  call sign_place([{'id' : 6, 'group' : '', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 4}])
+  call sign_place([{'id' : 6, 'group' : 'g1', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 5}])
   split bar
   set buftype=nofile
   call setline(1, ['P', 'Q', 'R', 'S', 'T'])
-  call sign_place(5, '', 'sign1', '', {'lnum' : 2})
-  call sign_place(5, 'g1', 'sign1', '', {'lnum' : 3})
-  call sign_place(6, '', 'sign1', '', {'lnum' : 4})
-  call sign_place(6, 'g1', 'sign1', '', {'lnum' : 5})
+  call sign_place([{'id' : 5, 'group' : '', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 2}])
+  call sign_place([{'id' : 5, 'group' : 'g1', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 3}])
+  call sign_place([{'id' : 6, 'group' : '', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 4}])
+  call sign_place([{'id' : 6, 'group' : 'g1', 'name' : 'sign1', 'buffer' : '',
+	      \ 'lnum' : 5}])
 
   let r = sign_jump(5, '', 'foo')
   call assert_equal(2, r)
@@ -1792,4 +1793,60 @@ func Test_sign_numcol()
   set signcolumn&
   set number&
   enew!  | close
+endfunc
+
+" Test for placing multiple signs using the sign_place() function
+func Test_sign_place_multi()
+  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search'}
+  call sign_define("sign1", attr)
+  call sign_define("sign2", attr)
+  call sign_define("sign3", attr)
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+  let bnum = bufnr('')
+
+  let l = sign_place([{'id' : 1, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 50},
+	      \ {'id' : 2, 'group' : 'g2', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 100},
+	      \ {'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}])
+  call assert_equal([1, 2, 3], l)
+  let s = sign_getplaced('Xsign', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 2, 'name' : 'sign2', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : 'g2', 'priority' : 100},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10}], s)
+
+  call sign_unplace([{'group' : '*'}])
+
+  let l = sign_place([{'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11},
+	      \ {'group' : 'g2', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11},
+	      \ {'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}])
+  call assert_equal([1, 1, 5], l)
+  let s = sign_getplaced('Xsign', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 5, 'name' : 'sign3', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 1, 'name' : 'sign2', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 1, 'name' : 'sign1', 'buffer' : bnum, 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 10}], s)
+
+  " Invalid arguments
+  call assert_fails('call sign_place({})', "E474:")
+  call assert_fails('call sign_place([{}, {}])', 'E474:')
+  call assert_fails('call sign_place([1, {}, [], "abc"])', 'E474:')
+  call assert_equal([], sign_place([]))
+
+  call sign_unplace([{'group' : '*'}])
+  call sign_undefine()
+  enew!
+  call delete("Xsign")
 endfunc

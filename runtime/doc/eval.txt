@@ -2645,11 +2645,9 @@ sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
 sign_jump({id}, {group}, {expr})
 				Number	jump to a sign
-sign_place({id}, {group}, {name}, {expr} [, {dict}])
-				Number	place a sign
+sign_place({list})		Number	place one or more signs
 sign_undefine([{name}])		Number	undefine a sign
-sign_unplace({group} [, {dict}])
-				Number	unplace a sign
+sign_unplace({list})		Number	unplace one or more signs
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -8649,13 +8647,8 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		See |sign-group|.
 
 		Each list item in the returned value is a dictionary with the
-		following entries:
-			bufnr	number of the buffer with the sign
-			signs	list of signs placed in {bufnr}. Each list
-				item is a dictionary with the below listed
-				entries
-
-		The dictionary for each sign contains the following entries:
+		following sign attributes:
+			buffer	buffer number where the sign is placed.
 			group	sign group. Set to '' for the global group.
 			id	identifier of the sign
 			lnum	line number where the sign is placed
@@ -8704,54 +8697,74 @@ sign_jump({id}, {group}, {expr})
 			" Jump to sign 10 in the current buffer
 			call sign_jump(10, '', '')
 <
-							*sign_place()*
-sign_place({id}, {group}, {name}, {expr} [, {dict}])
-		Place the sign defined as {name} at line {lnum} in file {expr}
-		and assign {id} and {group} to sign.  This is similar to the
-		|:sign-place| command.
-
-		If the sign identifier {id} is zero, then a new identifier is
-		allocated.  Otherwise the specified number is used. {group} is
-		the sign group name. To use the global sign group, use an
-		empty string.  {group} functions as a namespace for {id}, thus
-		two groups can use the same IDs. Refer to |sign-identifier|
-		and |sign-group| for more information.
-
-		{name} refers to a defined sign.
-		{expr} refers to a buffer name or number. For the accepted
-		values, see |bufname()|.
-
-		The optional {dict} argument supports the following entries:
+sign_place({list})					*sign_place()*
+		Place one or more signs.  This is similar to the |:sign-place|
+		command.  The {list} argument specifies the List of signs to
+		place. Each list item is a dict with the following optional
+		sign attributes:
+			buffer		buffer name or number. For the
+					accepted values, see |bufname()|. If
+					not specified, then the current buffer
+					is used.
+			group		sign group. {group} functions as a
+					namespace for {id}, thus two groups
+					can use the same IDs. If not specified
+					or set to an empty string, then the
+					global group is used.   See
+					|sign-group| for more information.
+			id		sign identifier. If not specified or
+					zero, then a new unique identifier is
+					allocated. Otherwise the specified
+					number is used. See |sign-identifier|
+					for more information.
 			lnum		line number in the buffer {expr} where
 					the sign is to be placed. For the
-					accepted values, see |line()|.
-			priority	priority of the sign. See
-					|sign-priority| for more information.
+					accepted values, see |line()|. If not
+					specified, then the current line
+					number is used.
+			name		name of the sign to place. See
+					|sign_define()| for more information.
+			priority	priority of the sign. When multiple
+					signs are placed on a line, the sign
+					with the highest priority is used. If
+					not specified, the default value of 10
+					is used. See |sign-priority| for more
+					information.
 
-		If the optional {dict} is not specified, then it modifies the
-		placed sign {id} in group {group} to use the defined sign
-		{name}.
+		If {id} refers to an existing sign, then the existing sign is
+		modified to use the specified {name} and/or {priority}.
 
-		Returns the sign identifier on success and -1 on failure.
+		Returns a List of sign identifiers. If failed to place a
+		sign, then the corresponding list item is set to 0.
 
 		Examples: >
 			" Place a sign named sign1 with id 5 at line 20 in
-			" buffer json.c
-			call sign_place(5, '', 'sign1', 'json.c',
-							\ {'lnum' : 20})
+			" buffer a.c
+			call sign_place([{'id' : 5, 'group' : '',
+					\ 'name' : 'sign1', 'buffer' : 'a.c',
+					\ 'lnum' : 20}])
+
+			" Place sign s1 in buffer a.c at line 20 and 30
+			" with auto-generated identifiers
+			let [n1, n2] = sign_place([{'name' : 's1',
+					\ 'buffer' : 'a.c', 'lnum' : 20},
+					\ {'name' : 's1', 'buffer' : 'a.c',
+					\ 'lnum' : 30}])
 
 			" Updates sign 5 in buffer json.c to use sign2
-			call sign_place(5, '', 'sign2', 'json.c')
+			call sign_place([{'id' : 5, 'name' : 'sign2',
+						\ 'buffer' : 'json.c'}])
 
 			" Place a sign named sign3 at line 30 in
 			" buffer json.c with a new identifier
-			let id = sign_place(0, '', 'sign3', 'json.c',
-							\ {'lnum' : 30})
+			let id = sign_place([{'name' : 'sign3',
+					\ 'buffer' : 'json.c', 'lnum' : 30}])
 
 			" Place a sign named sign4 with id 10 in group 'g3'
-			" at line 40 in buffer json.c with priority 90
-			call sign_place(10, 'g3', 'sign4', 'json.c',
-					\ {'lnum' : 40, 'priority' : 90})
+			" at line 40 in buffer a.c with priority 90
+			call sign_place([{'id' : 10, 'group' : 'g3',
+					\ 'name' : 'sign4', 'buffer' : 'a.c',
+					\ 'lnum' : 40, 'priority' : 90}])
 <
 sign_undefine([{name}])					*sign_undefine()*
 		Deletes a previously defined sign {name}. This is similar to
@@ -8767,47 +8780,56 @@ sign_undefine([{name}])					*sign_undefine()*
 			" Delete all the signs
 			call sign_undefine()
 <
-sign_unplace({group} [, {dict}])			*sign_unplace()*
-		Remove a previously placed sign in one or more buffers.  This
+sign_unplace({list})					*sign_unplace()*
+		Remove previously placed signs from one or more buffers.  This
 		is similar to the |:sign-unplace| command.
 
-		{group} is the sign group name. To use the global sign group,
-		use an empty string.  If {group} is set to '*', then all the
-		groups including the global group are used.
-		The signs in {group} are selected based on the entries in
-		{dict}.  The following optional entries in {dict} are
-		supported:
-			buffer	buffer name or number. See |bufname()|.
-			id	sign identifier
-		If {dict} is not supplied, then all the signs in {group} are
-		removed.
+		The {list} argument specifies the List of signs to remove.
+		Each list item is a dict with the following optional sign
+		attributes:
+			buffer	buffer name or number. For the accepted
+				values, see |bufname()|. If not supplied, then
+				the specified sign is removed from all the
+				buffers.
+			group	sign group name. If not supplied or set to an
+				empty string, then the global sign group is
+				used. If set to '*', then all the groups
+				including the global group are used.
+			id	sign identifier. If not supplied, then all
+				the signs in the specified group are removed.
 
 		Returns 0 on success and -1 on failure.
 
 		Examples: >
 			" Remove sign 10 from buffer a.vim
-			call sign_unplace('', {'buffer' : "a.vim", 'id' : 10})
+			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"}])
+
+			" Remove sign 10 from buffer a.vim and sign 20 from
+			" buffer b.vim
+			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
+					\ {'id' : 20, 'buffer' : 'b.vim'}])
 
 			" Remove sign 20 in group 'g1' from buffer 3
-			call sign_unplace('g1', {'buffer' : 3, 'id' : 20})
+			call sign_unplace([{'id' : 20, 'group' : 'g1',
+							\ 'buffer' : 3}])
 
 			" Remove all the signs in group 'g2' from buffer 10
-			call sign_unplace('g2', {'buffer' : 10})
+			call sign_unplace([{'group' : 'g2', 'buffer' : 10}])
 
 			" Remove sign 30 in group 'g3' from all the buffers
-			call sign_unplace('g3', {'id' : 30})
+			call sign_unplace([{'id' : 30, 'group' : 'g3'}])
 
 			" Remove all the signs placed in buffer 5
-			call sign_unplace('*', {'buffer' : 5})
+			call sign_unplace([{'group' : '*', 'buffer' : 5}])
 
 			" Remove the signs in group 'g4' from all the buffers
-			call sign_unplace('g4')
+			call sign_unplace([{'group' : 'g4'}])
 
 			" Remove sign 40 from all the buffers
-			call sign_unplace('*', {'id' : 40})
+			call sign_unplace([{'id' : 40, 'group' : '*'}])
 
 			" Remove all the placed signs from all the buffers
-			call sign_unplace('*')
+			call sign_unplace([{'group' : '*'}])
 <
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
