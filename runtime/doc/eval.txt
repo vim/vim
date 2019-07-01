@@ -2641,8 +2641,7 @@ shellescape({string} [, {special}])
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
 sign_define({list})		Number	define or update signs
 sign_getdefined([{name}])	List	get a list of defined signs
-sign_getplaced([{expr} [, {dict}]])
-				List	get a list of placed signs
+sign_getplaced([, {dict}])	List	get a list of placed signs
 sign_jump({id}, {group}, {expr})
 				Number	jump to a sign
 sign_place({list})		Number	place one or more signs
@@ -8628,24 +8627,25 @@ sign_getdefined([{name}])				*sign_getdefined()*
 			" Get the attribute of the sign named mySign
 			echo sign_getdefined("mySign")
 <
-sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
+sign_getplaced([{dict}])				*sign_getplaced()*
 		Return a list of signs placed in a buffer or all the buffers.
 		This is similar to the |:sign-place-list| command.
 
-		If the optional buffer name {expr} is specified, then only the
-		list of signs placed in that buffer is returned.  For the use
-		of {expr}, see |bufname()|. The optional {dict} can contain
-		the following entries:
-		   group	select only signs in this group
+		The optional {dict} argument specifies the selection criteria
+		for the signs. The following items are supported:
+		   buffer	select only signs from this buffer.  For the
+				accepted values, see |bufname()|.  If not
+				specified, then the current buffer is used.
+		   group	select only signs in this group. If {group} is
+				'*', then signs in all the groups including
+				the global group are returned. If {group} is
+				not supplied or is an empty string, then only
+				signs in the global group are returned.
 		   id		select sign with this identifier
 		   lnum		select signs placed in this line. For the use
 				of {lnum}, see |line()|.
-		If {group} is '*', then signs in all the groups including the
-		global group are returned. If {group} is not supplied or is an
-		empty string, then only signs in the global group are
-		returned.  If no arguments are supplied, then signs in the
-		global group placed in all the buffers are returned.
-		See |sign-group|.
+		If no arguments are supplied, then signs in the global group
+		placed in all the buffers are returned.  See |sign-group|.
 
 		Each list item in the returned value is a dictionary with the
 		following sign attributes:
@@ -8665,19 +8665,20 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 		Examples: >
 			" Get a List of signs placed in eval.c in the
 			" global group
-			echo sign_getplaced("eval.c")
+			echo sign_getplaced({'buffer' : "eval.c"})
 
 			" Get a List of signs in group 'g1' placed in eval.c
-			echo sign_getplaced("eval.c", {'group' : 'g1'})
+			echo sign_getplaced({'buffer' : "eval.c",
+						\ 'group' : 'g1'})
 
 			" Get a List of signs placed at line 10 in eval.c
-			echo sign_getplaced("eval.c", {'lnum' : 10})
+			echo sign_getplaced({'buffer' : "eval.c", 'lnum' : 10})
 
 			" Get sign with identifier 10 placed in a.py
-			echo sign_getplaced("a.py", {'id' : 10})
+			echo sign_getplaced({'buffer' : "a.py", 'id' : 10})
 
 			" Get sign with id 20 in group 'g1' placed in a.py
-			echo sign_getplaced("a.py", {'group' : 'g1',
+			echo sign_getplaced({'buffer' : "a.py", 'group' : 'g1',
 							\  'id' : 20})
 
 			" Get a List of all the placed signs

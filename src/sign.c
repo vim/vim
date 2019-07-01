@@ -2156,42 +2156,45 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	// get signs placed in the specified buffer
-	buf = get_buf_arg(&argvars[0]);
-	if (buf == NULL)
-	    return;
-
-	if (argvars[1].v_type != VAR_UNKNOWN)
+	if (argvars[0].v_type != VAR_DICT)
 	{
-	    if (argvars[1].v_type != VAR_DICT ||
-				((dict = argvars[1].vval.v_dict) == NULL))
-	    {
-		emsg(_(e_dictreq));
+	    emsg(_(e_dictreq));
+	    return;
+	}
+	dict = argvars[0].vval.v_dict;
+
+	// get signs placed in the specified buffer
+	buf = curbuf;
+	di = dict_find(dict, (char_u *)"buffer", -1);
+	if (di != NULL)
+	{
+	    buf = get_buf_arg(&di->di_tv);
+	    if (buf == NULL)
 		return;
-	    }
-	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
-	    {
-		// get signs placed at this line
-		(void)tv_get_number_chk(&di->di_tv, &notanum);
-		if (notanum)
-		    return;
-		lnum = tv_get_lnum(&di->di_tv);
-	    }
-	    if ((di = dict_find(dict, (char_u *)"id", -1)) != NULL)
-	    {
-		// get sign placed with this identifier
-		sign_id = (int)tv_get_number_chk(&di->di_tv, &notanum);
-		if (notanum)
-		    return;
-	    }
-	    if ((di = dict_find(dict, (char_u *)"group", -1)) != NULL)
-	    {
-		group = tv_get_string_chk(&di->di_tv);
-		if (group == NULL)
-		    return;
-		if (*group == '\0')	// empty string means global group
-		    group = NULL;
-	    }
+	}
+
+	if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
+	{
+	    // get signs placed at this line
+	    (void)tv_get_number_chk(&di->di_tv, &notanum);
+	    if (notanum)
+		return;
+	    lnum = tv_get_lnum(&di->di_tv);
+	}
+	if ((di = dict_find(dict, (char_u *)"id", -1)) != NULL)
+	{
+	    // get sign placed with this identifier
+	    sign_id = (int)tv_get_number_chk(&di->di_tv, &notanum);
+	    if (notanum)
+		return;
+	}
+	if ((di = dict_find(dict, (char_u *)"group", -1)) != NULL)
+	{
+	    group = tv_get_string_chk(&di->di_tv);
+	    if (group == NULL)
+		return;
+	    if (*group == '\0')	// empty string means global group
+		group = NULL;
 	}
     }
 
@@ -2358,7 +2361,7 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_listreq));
 	return;
     }
 
@@ -2474,7 +2477,7 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_LIST)
     {
-	emsg(_(e_invarg));
+	emsg(_(e_listreq));
 	return;
     }
 
