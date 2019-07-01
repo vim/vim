@@ -3149,32 +3149,32 @@ win_line(
     int		nochange UNUSED,	// not updating for changed text
     int		number_only)		// only update the number column
 {
-    int		col = 0;		/* visual column on screen */
-    unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
-    int		c = 0;			/* init for GCC */
-    long	vcol = 0;		/* virtual column (for tabs) */
+    int		col = 0;		// visual column on screen
+    unsigned	off;			// offset in ScreenLines/ScreenAttrs
+    int		c = 0;			// init for GCC
+    long	vcol = 0;		// virtual column (for tabs)
 #ifdef FEAT_LINEBREAK
-    long	vcol_sbr = -1;		/* virtual column after showbreak */
+    long	vcol_sbr = -1;		// virtual column after showbreak
 #endif
-    long	vcol_prev = -1;		/* "vcol" of previous character */
-    char_u	*line;			/* current line */
-    char_u	*ptr;			/* current position in "line" */
-    int		row;			/* row in the window, excl w_winrow */
-    int		screen_row;		/* row on the screen, incl w_winrow */
+    long	vcol_prev = -1;		// "vcol" of previous character
+    char_u	*line;			// current line
+    char_u	*ptr;			// current position in "line"
+    int		row;			// row in the window, excl w_winrow
+    int		screen_row;		// row on the screen, incl w_winrow
 
-    char_u	extra[20];		/* "%ld" and 'fdc' must fit in here */
-    int		n_extra = 0;		/* number of extra chars */
-    char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
-    char_u	*p_extra_free = NULL;   /* p_extra needs to be freed */
-    int		c_extra = NUL;		/* extra chars, all the same */
-    int		c_final = NUL;		/* final char, mandatory if set */
-    int		extra_attr = 0;		/* attributes when n_extra != 0 */
-    static char_u *at_end_str = (char_u *)""; /* used for p_extra when
-					   displaying lcs_eol at end-of-line */
-    int		lcs_eol_one = lcs_eol;	/* lcs_eol until it's been used */
-    int		lcs_prec_todo = lcs_prec;   /* lcs_prec until it's been used */
+    char_u	extra[21];		// "%ld " and 'fdc' must fit in here
+    int		n_extra = 0;		// number of extra chars
+    char_u	*p_extra = NULL;	// string of extra chars, plus NUL
+    char_u	*p_extra_free = NULL;   // p_extra needs to be freed
+    int		c_extra = NUL;		// extra chars, all the same
+    int		c_final = NUL;		// final char, mandatory if set
+    int		extra_attr = 0;		// attributes when n_extra != 0
+    static char_u *at_end_str = (char_u *)""; // used for p_extra when
+					   // displaying lcs_eol at end-of-line
+    int		lcs_eol_one = lcs_eol;	// lcs_eol until it's been used
+    int		lcs_prec_todo = lcs_prec;   // lcs_prec until it's been used
 
-    /* saved "extra" items for when draw_state becomes WL_LINE (again) */
+    // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra = 0;
     char_u	*saved_p_extra = NULL;
     int		saved_c_extra = 0;
