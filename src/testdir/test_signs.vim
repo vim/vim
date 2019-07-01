@@ -507,6 +507,17 @@ func Test_sign_funcs()
   " Unplace signs in the current buffer
   call assert_equal([0, 0], sign_unplace([{'id' : 10}, {'id' : 20}]))
   call assert_equal([], sign_getplaced('Xsign'))
+  " Unplace all signs in the global group
+  call sign_place([{'id' : 10, 'name' : 'sign1', 'lnum' : 20},
+              \ {'id' : 10, 'name' : 'sign1', 'group' : 'g1', 'lnum' : 21},
+              \ {'id' : 10, 'name' : 'sign1', 'group' : 'g2', 'lnum' : 22},
+              \ {'id' : 20, 'name' : 'sign1', 'lnum' : 23}])
+  call sign_unplace([{}])
+  let l = sign_getplaced(bnr, {'group' : '*'})
+  call assert_equal(2, len(l))
+  call assert_equal(['g1', 'g2'], [l[0].group, l[1].group])
+  call sign_unplace([{'group' : '*'}])
+  call assert_equal([], sign_getplaced(bnr, {'group' : '*'}))
 
   " Tests for sign_undefine()
   call assert_equal(0, sign_undefine("sign1"))
