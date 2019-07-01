@@ -1056,8 +1056,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	// use existing buffer
 	new_buffer = FALSE;
-	wp->w_buffer = buf;
-	++buf->b_nwindows;
+	win_init_popup_win(wp, buf);
 	buffer_ensure_loaded(buf);
     }
     else

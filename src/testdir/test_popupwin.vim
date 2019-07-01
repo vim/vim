@@ -1668,4 +1668,9 @@ func Test_popupwin_with_buffer()
   call assert_equal({}, popup_getpos(winid))
   call assert_equal(1, bufloaded(buf))
   exe 'bwipe! ' .. buf
+
+  edit test_popupwin.vim
+  let winid = popup_create(bufnr(''), {})
+  redraw
+  call popup_close(winid)
 endfunc
