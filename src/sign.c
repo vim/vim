@@ -2059,51 +2059,65 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 # endif
 
 /*
+ * Define a sign using the attributes in 'dict'. Returns 0 on success and -1 on
+ * failure.
+ */
+    static int
+sign_define_from_dict(dict_T *dict)
+{
+    char_u	*name = NULL;
+    char_u	*icon = NULL;
+    char_u	*linehl = NULL;
+    char_u	*text = NULL;
+    char_u	*texthl = NULL;
+    int		retval = -1;
+
+    name = dict_get_string(dict, (char_u *)"name", TRUE);
+    if (name == NULL || name[0] == NUL)
+	goto cleanup;
+    icon = dict_get_string(dict, (char_u *)"icon", TRUE);
+    linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
+    text = dict_get_string(dict, (char_u *)"text", TRUE);
+    texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
+
+    if (sign_define_by_name(name, icon, linehl, text, texthl) == OK)
+	retval = 0;
+
+cleanup:
+    vim_free(name);
+    vim_free(icon);
+    vim_free(linehl);
+    vim_free(text);
+    vim_free(texthl);
+
+    return retval;
+}
+
+/*
  * "sign_define()" function
  */
     void
 f_sign_define(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*name;
-    dict_T	*dict;
-    char_u	*icon = NULL;
-    char_u	*linehl = NULL;
-    char_u	*text = NULL;
-    char_u	*texthl = NULL;
+    listitem_T	*li;
+    int		retval;
 
-    rettv->vval.v_number = -1;
-
-    name = tv_get_string_chk(&argvars[0]);
-    if (name == NULL)
+    if (rettv_list_alloc(rettv) != OK)
 	return;
 
-    if (argvars[1].v_type != VAR_UNKNOWN)
+    if (argvars[0].v_type != VAR_LIST)
     {
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictreq));
-	    return;
-	}
-
-	// sign attributes
-	dict = argvars[1].vval.v_dict;
-	if (dict_find(dict, (char_u *)"icon", -1) != NULL)
-	    icon = dict_get_string(dict, (char_u *)"icon", TRUE);
-	if (dict_find(dict, (char_u *)"linehl", -1) != NULL)
-	    linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
-	if (dict_find(dict, (char_u *)"text", -1) != NULL)
-	    text = dict_get_string(dict, (char_u *)"text", TRUE);
-	if (dict_find(dict, (char_u *)"texthl", -1) != NULL)
-	    texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
+	emsg(_(e_invarg));
+	return;
     }
 
-    if (sign_define_by_name(name, icon, linehl, text, texthl) == OK)
-	rettv->vval.v_number = 0;
-
-    vim_free(icon);
-    vim_free(linehl);
-    vim_free(text);
-    vim_free(texthl);
+    for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
+    {
+	retval = -1;
+	if (li->li_tv.v_type == VAR_DICT)
+	    retval = sign_define_from_dict(li->li_tv.vval.v_dict);
+	list_append_number(rettv->vval.v_list, retval);
+    }
 }
 
 /*
@@ -2397,7 +2411,7 @@ sign_unplace_from_dict(dict_T *dict)
     int		sign_id = 0;
     buf_T	*buf = NULL;
     char_u	*group = NULL;
-    int		retval = 0;
+    int		retval = -1;
 
     // sign group
     group = dict_get_string(dict, (char_u *)"group", FALSE);
@@ -2432,12 +2446,13 @@ sign_unplace_from_dict(dict_T *dict)
     if (buf == NULL)
     {
 	// Delete the sign in all the buffers
+	retval = 0;
 	FOR_ALL_BUFFERS(buf)
 	    if (sign_unplace(sign_id, group, buf, 0) != OK)
 		retval = -1;
     }
-    else if (sign_unplace(sign_id, group, buf, 0) != OK)
-	retval = -1;
+    else if (sign_unplace(sign_id, group, buf, 0) == OK)
+	retval = 0;
 
 cleanup:
     vim_free(group);

@@ -2639,7 +2639,7 @@ shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
-sign_define({name} [, {dict}])	Number	define or update a sign
+sign_define({list})		Number	define or update signs
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
@@ -8573,16 +8573,15 @@ shiftwidth([{col}])						*shiftwidth()*
 		'vartabstop' feature. If the 'vartabstop' setting is enabled and
 		no {col} argument is given, column 1 will be assumed.
 
-sign_define({name} [, {dict}])				*sign_define()*
-		Define a new sign named {name} or modify the attributes of an
-		existing sign.  This is similar to the |:sign-define| command.
-
-		Prefix {name} with a unique text to avoid name collisions.
-		There is no {group} like with placing signs.
-
-		The {name} can be a String or a Number.  The optional {dict}
-		argument specifies the sign attributes.  The following values
-		are supported:
+sign_define({list})					*sign_define()*
+		Define or modify one or more signs.  This is similar to the
+		|:sign-define| command. The {list} argument specifies the List
+		of signs to define. Each list item is a dict with the
+		following optional sign attributes:
+		   name 	sign name. This can be a String or a Number.
+				Prefix {name} with a unique text to avoid name
+				collisions.  There is no {group} like with
+				placing signs.
 		   icon		full path to the bitmap file for the sign.
 		   linehl	highlight group used for the whole line the
 				sign is placed in.
@@ -8591,13 +8590,15 @@ sign_define({name} [, {dict}])				*sign_define()*
 		   texthl	highlight group used for the text item
 
 		If the sign named {name} already exists, then the attributes
-		of the sign are updated.
+		of the existing sign are updated.
 
-		Returns 0 on success and -1 on failure.
+		Returns a List where an entry is set to 0 if the corresponding
+		sign was successfully defined or -1 on failure.
 
 		Examples: >
-			call sign_define("mySign", {"text" : "=>", "texthl" :
-					\ "Error", "linehl" : "Search"})
+			call sign_define([{'name' : "mySign", "text" : "=>",
+					\ "texthl" : "Error",
+					\ "linehl" : "Search"})
 <
 sign_getdefined([{name}])				*sign_getdefined()*
 		Get a list of defined signs and their attributes.
@@ -8798,7 +8799,8 @@ sign_unplace({list})					*sign_unplace()*
 			id	sign identifier. If not supplied, then all
 				the signs in the specified group are removed.
 
-		Returns 0 on success and -1 on failure.
+		Returns a List where an entry is set to 0 if the corresponding
+		sign was successfully removed or -1 on failure.
 
 		Examples: >
 			" Remove sign 10 from buffer a.vim

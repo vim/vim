@@ -384,17 +384,18 @@ func Test_sign_funcs()
   call sign_undefine()
 
   " Tests for sign_define()
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call assert_equal(0, sign_define("sign1", attr))
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call assert_equal([0], sign_define([attr]))
   call assert_equal([{'name' : 'sign1', 'texthl' : 'Error',
 	      \ 'linehl' : 'Search', 'text' : '=>'}], sign_getdefined())
 
   " Define a new sign without attributes and then update it
-  call sign_define("sign2")
-  let attr = {'text' : '!!', 'linehl' : 'DiffAdd', 'texthl' : 'DiffChange',
-	      \ 'icon' : 'sign2.ico'}
+  call sign_define([{'name' : "sign2"}])
+  let attr = {'name' : 'sign2', 'text' : '!!', 'linehl' : 'DiffAdd',
+	      \ 'texthl' : 'DiffChange', 'icon' : 'sign2.ico'}
   try
-    call sign_define("sign2", attr)
+    call sign_define([attr])
   catch /E255:/
     " ignore error: E255: Couldn't read in sign data!
     " This error can happen when running in gui.
@@ -404,16 +405,18 @@ func Test_sign_funcs()
 	      \ sign_getdefined("sign2"))
 
   " Test for a sign name with digits
-  call assert_equal(0, sign_define(0002, {'linehl' : 'StatusLine'}))
+  call assert_equal([0], sign_define([{'name' : 0002,
+	      \ 'linehl' : 'StatusLine'}]))
   call assert_equal([{'name' : '2', 'linehl' : 'StatusLine'}],
 	      \ sign_getdefined(0002))
   call sign_undefine(0002)
 
   " Tests for invalid arguments to sign_define()
-  call assert_fails('call sign_define("sign4", {"text" : "===>"})', 'E239:')
-  call assert_fails('call sign_define("sign5", {"text" : ""})', 'E239:')
-  call assert_fails('call sign_define([])', 'E730:')
-  call assert_fails('call sign_define("sign6", [])', 'E715:')
+  call assert_fails('call sign_define([{"name" : "sign4", "text" : "===>"}])',
+	      \ 'E239:')
+  call assert_fails('call sign_define([{"name" : "sign5", "text" : ""}])',
+	      \  'E239:')
+  call assert_fails('call sign_define("sign1")', 'E474:')
 
   " Tests for sign_getdefined()
   call assert_equal([], sign_getdefined("none"))
@@ -526,8 +529,9 @@ func Test_sign_group()
 
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
 
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call assert_equal(0, sign_define("sign1", attr))
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call assert_equal([0], sign_define([attr]))
 
   edit Xsign
   let bnum = bufnr('%')
@@ -817,8 +821,9 @@ func Test_sign_unplace()
   call writefile(repeat(["Sun is shining"], 30), "Xsign1")
   call writefile(repeat(["It is beautiful"], 30), "Xsign2")
 
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call sign_define("sign1", attr)
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call sign_define([attr])
 
   edit Xsign1
   let bnum1 = bufnr('%')
@@ -1134,8 +1139,9 @@ func Test_sign_id_autogen()
   call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call assert_equal(0, sign_define("sign1", attr))
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call assert_equal([0], sign_define([attr]))
 
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
@@ -1173,10 +1179,13 @@ func Test_sign_priority()
   call sign_unplace([{'group' : '*'}])
   call sign_undefine()
 
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search'}
-  call sign_define("sign1", attr)
-  call sign_define("sign2", attr)
-  call sign_define("sign3", attr)
+  let signlist = [{'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'},
+	      \ {'name' : 'sign2', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'},
+	      \ {'name' : 'sign3', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'}]
+  call assert_equal([0, 0, 0], sign_define(signlist))
 
   " Place three signs with different priority in the same line
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
@@ -1529,11 +1538,13 @@ func Test_sign_memfailures()
   call test_alloc_fail(GetAllocId('sign_getplaced'), 0, 0)
   call assert_fails('call sign_getplaced("Xsign")', 'E342:')
   call test_alloc_fail(GetAllocId('sign_define_by_name'), 0, 0)
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call assert_fails('call sign_define("sign1", attr)', 'E342:')
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call assert_fails('call sign_define([attr])', 'E342:')
 
-  let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call sign_define("sign1", attr)
+  let attr = {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Error'}
+  call sign_define([attr])
   call test_alloc_fail(GetAllocId('sign_getlist'), 0, 0)
   call assert_fails('call sign_getdefined("sign1")', 'E342:')
 
@@ -1798,9 +1809,12 @@ endfunc
 " Test for placing multiple signs using the sign_place() function
 func Test_sign_place_multi()
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Search'}
-  call sign_define("sign1", attr)
-  call sign_define("sign2", attr)
-  call sign_define("sign3", attr)
+  let attr.name = 'sign1'
+  call sign_define([attr])
+  let attr.name = 'sign2'
+  call sign_define([attr])
+  let attr.name = 'sign3'
+  call sign_define([attr])
   call writefile(repeat(["Sun is shining"], 30), "Xsign")
   edit Xsign
   let bnum = bufnr('')
