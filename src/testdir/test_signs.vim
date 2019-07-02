@@ -1830,7 +1830,14 @@ func Test_sign_numcol()
   call sign_unplace('', {'id' : 20})
   redraw!
   call assert_equal("3 01234", s:ScreenLine(3, 1, 7))
+  " When the first sign is placed with 'signcolumn' set to number, verify that
+  " the number column width increases
+  sign place 30 line=1 name=sign1
+  redraw!
+  call assert_equal("=> 01234", s:ScreenLine(1, 1, 8))
+  call assert_equal(" 2 abcde", s:ScreenLine(2, 1, 8))
 
+  sign unplace * group=*
   sign undefine sign1
   set signcolumn&
   set number&
