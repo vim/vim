@@ -427,7 +427,7 @@ func Test_popup_with_mask()
     throw 'Skipped: cannot make screendumps'
   endif
   let lines =<< trim END
-	call setline(1, repeat([join(range(1, 40), '')], 10))
+	call setline(1, repeat([join(range(1, 42), '')], 10))
 	hi PopupColor ctermbg=lightgrey
 	let winid = popup_create([
 	    \ 'some text',
@@ -435,6 +435,8 @@ func Test_popup_with_mask()
 	    \], {
 	    \ 'line': 2,
 	    \ 'col': 10,
+	    \ 'wrap': 0,
+	    \ 'fixed': 1,
 	    \ 'zindex': 90,
 	    \ 'padding': [],
 	    \ 'highlight': 'PopupColor',
@@ -453,6 +455,12 @@ func Test_popup_with_mask()
 
   call term_sendkeys(buf, ":call popup_move(winid, {'col': 11, 'line': 3})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_mask_2', {})
+
+  call term_sendkeys(buf, ":call popup_move(winid, {'col': 65, 'line': 3})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_mask_3', {})
+
+  call term_sendkeys(buf, ":call popup_move(winid, {'pos': 'topright', 'col': 12, 'line': 3})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_mask_4', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1668,4 +1676,9 @@ func Test_popupwin_with_buffer()
   call assert_equal({}, popup_getpos(winid))
   call assert_equal(1, bufloaded(buf))
   exe 'bwipe! ' .. buf
+
+  edit test_popupwin.vim
+  let winid = popup_create(bufnr(''), {})
+  redraw
+  call popup_close(winid)
 endfunc

@@ -700,29 +700,6 @@ add_popup_dicts(buf_T *buf, list_T *l)
 }
 
 /*
- * Return the height of popup window "wp", including border and padding.
- */
-    int
-popup_height(win_T *wp)
-{
-    return wp->w_height
-	+ wp->w_popup_padding[0] + wp->w_popup_border[0]
-	+ wp->w_popup_padding[2] + wp->w_popup_border[2];
-}
-
-/*
- * Return the width of popup window "wp", including border and padding.
- */
-    int
-popup_width(win_T *wp)
-{
-    return wp->w_width
-	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
-	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
-	+ wp->w_has_scrollbar;
-}
-
-/*
  * Get the padding plus border at the top, adjusted to 1 if there is a title.
  */
     static int
@@ -736,6 +713,31 @@ popup_top_extra(win_T *wp)
 }
 
 /*
+ * Return the height of popup window "wp", including border and padding.
+ */
+    int
+popup_height(win_T *wp)
+{
+    return wp->w_height
+	+ popup_top_extra(wp)
+	+ wp->w_popup_padding[2] + wp->w_popup_border[2];
+}
+
+/*
+ * Return the width of popup window "wp", including border, padding and
+ * scrollbar.
+ */
+    int
+popup_width(win_T *wp)
+{
+    return wp->w_width + wp->w_leftcol
+	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
+	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
+	+ wp->w_has_scrollbar
+	+ wp->w_popup_rightoff;
+}
+
+/*
  * Adjust the position and size of the popup to fit on the screen.
  */
     void
@@ -744,6 +746,7 @@ popup_adjust_position(win_T *wp)
     linenr_T	lnum;
     int		wrapped = 0;
     int		maxwidth;
+    int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
     int		allow_adjust_left = !wp->w_popup_fixed;
@@ -758,11 +761,14 @@ popup_adjust_position(win_T *wp)
     int		org_width = wp->w_width;
     int		org_height = wp->w_height;
     int		org_leftcol = wp->w_leftcol;
+    int		org_leftoff = wp->w_popup_leftoff;
     int		minwidth;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
     wp->w_leftcol = 0;
+    wp->w_popup_leftoff = 0;
+    wp->w_popup_rightoff = 0;
     if (wp->w_popup_pos == POPPOS_CENTER)
     {
 	// center after computing the size
@@ -795,7 +801,8 @@ popup_adjust_position(win_T *wp)
     // When centering or right aligned, use maximum width.
     // When left aligned use the space available, but shift to the left when we
     // hit the right of the screen.
-    maxwidth = Columns - wp->w_wincol - left_extra;
+    maxspace = Columns - wp->w_wincol - left_extra;
+    maxwidth = maxspace;
     if (wp->w_maxwidth > 0 && maxwidth > wp->w_maxwidth)
     {
 	allow_adjust_left = FALSE;
@@ -868,7 +875,12 @@ popup_adjust_position(win_T *wp)
     if (minwidth > 0 && wp->w_width < minwidth)
 	wp->w_width = minwidth;
     if (wp->w_width > maxwidth)
+    {
+	if (wp->w_width > maxspace)
+	    // some columns cut off on the right
+	    wp->w_popup_rightoff = wp->w_width - maxspace;
 	wp->w_width = maxwidth;
+    }
     if (center_hor)
     {
 	wp->w_wincol = (Columns - wp->w_width - extra_width) / 2;
@@ -887,9 +899,12 @@ popup_adjust_position(win_T *wp)
 	else if (wp->w_popup_fixed)
 	{
 	    // "col" specifies the right edge, but popup doesn't fit, skip some
-	    // columns when displaying the window.
-	    wp->w_leftcol = -leftoff;
-	    wp->w_width += leftoff;
+	    // columns when displaying the window, minus left border and
+	    // padding.
+	    if (-leftoff > left_extra)
+		wp->w_leftcol = -leftoff - left_extra;
+	    wp->w_width -= wp->w_leftcol;
+	    wp->w_popup_leftoff = -leftoff;
 	    if (wp->w_width < 0)
 		wp->w_width = 0;
 	}
@@ -928,6 +943,7 @@ popup_adjust_position(win_T *wp)
     if (org_winrow != wp->w_winrow
 	    || org_wincol != wp->w_wincol
 	    || org_leftcol != wp->w_leftcol
+	    || org_leftoff != wp->w_popup_leftoff
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
@@ -1056,8 +1072,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	// use existing buffer
 	new_buffer = FALSE;
-	wp->w_buffer = buf;
-	++buf->b_nwindows;
+	win_init_popup_win(wp, buf);
 	buffer_ensure_loaded(buf);
     }
     else
@@ -2067,7 +2082,7 @@ popup_check_cursor_pos()
     static int
 popup_masked(win_T *wp, int screencol, int screenline)
 {
-    int		col = screencol - wp->w_wincol + 1 + wp->w_leftcol;
+    int		col = screencol - wp->w_wincol + 1 + wp->w_popup_leftoff;
     int		line = screenline - wp->w_winrow + 1;
     listitem_T	*lio, *li;
     int		width, height;
@@ -2146,10 +2161,10 @@ update_popup_transparent(win_T *wp, int val)
 		linee = height + linee + 1;
 
 	    --cols;
-	    cols -= wp->w_leftcol;
+	    cols -= wp->w_popup_leftoff;
 	    if (cols < 0)
 		cols = 0;
-	    cole -= wp->w_leftcol;
+	    cole -= wp->w_popup_leftoff;
 	    --lines;
 	    if (lines < 0)
 		lines = 0;
@@ -2216,8 +2231,8 @@ may_update_popup_mask(int type)
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
-	int height = popup_height(wp);
-	int width = popup_width(wp);
+	int height;
+	int width;
 
 	popup_visible = TRUE;
 
@@ -2226,6 +2241,8 @@ may_update_popup_mask(int type)
 		|| wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	    popup_adjust_position(wp);
 
+	height = popup_height(wp);
+	width = popup_width(wp) - wp->w_popup_leftoff;
 	for (line = wp->w_winrow;
 		line < wp->w_winrow + height && line < screen_Rows; ++line)
 	    for (col = wp->w_wincol;
@@ -2311,7 +2328,7 @@ update_popups(void (*win_update)(win_T *wp))
 {
     win_T   *wp;
     int	    top_off;
-    int	    left_off;
+    int	    left_extra;
     int	    total_width;
     int	    total_height;
     int	    top_padding;
@@ -2320,6 +2337,8 @@ update_popups(void (*win_update)(win_T *wp))
     int	    border_char[8];
     char_u  buf[MB_MAXBYTES];
     int	    row;
+    int	    padcol = 0;
+    int	    padwidth = 0;
     int	    i;
     int	    sb_thumb_top = 0;
     int	    sb_thumb_height = 0;
@@ -2343,22 +2362,22 @@ update_popups(void (*win_update)(win_T *wp))
 	// adjust w_winrow and w_wincol for border and padding, since
 	// win_update() doesn't handle them.
 	top_off = popup_top_extra(wp);
-	left_off = wp->w_popup_padding[3] + wp->w_popup_border[3];
+	left_extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
+							 - wp->w_popup_leftoff;
+	if (wp->w_wincol + left_extra < 0)
+	    left_extra = -wp->w_wincol;
 	wp->w_winrow += top_off;
-	wp->w_wincol += left_off;
+	wp->w_wincol += left_extra;
 
 	// Draw the popup text, unless it's off screen.
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
 	    win_update(wp);
 
 	wp->w_winrow -= top_off;
-	wp->w_wincol -= left_off;
+	wp->w_wincol -= left_extra;
 
-	total_width = wp->w_popup_border[3] + wp->w_popup_padding[3]
-		+ wp->w_width + wp->w_popup_padding[1] + wp->w_popup_border[1]
-		+ wp->w_has_scrollbar;
-	total_height = popup_top_extra(wp)
-		+ wp->w_height + wp->w_popup_padding[2] + wp->w_popup_border[2];
+	total_width = popup_width(wp);
+	total_height = popup_height(wp);
 	popup_attr = get_wcr_attr(wp);
 
 	// We can only use these line drawing characters when 'encoding' is
@@ -2410,14 +2429,22 @@ update_popups(void (*win_update)(win_T *wp))
 	else if (wp->w_popup_padding[0] == 0 && popup_top_extra(wp) > 0)
 	    top_padding = 1;
 
+	if (top_padding > 0 || wp->w_popup_padding[2] > 0)
+	{
+	    padcol = wp->w_wincol - wp->w_popup_leftoff + wp->w_popup_border[3];
+	    padwidth = wp->w_wincol + total_width - wp->w_popup_border[1]
+							 - wp->w_has_scrollbar;
+	    if (padcol < 0)
+	    {
+		padwidth += padcol;
+		padcol = 0;
+	    }
+	}
 	if (top_padding > 0)
 	{
 	    // top padding
 	    row = wp->w_winrow + wp->w_popup_border[0];
-	    screen_fill(row, row + top_padding,
-		    wp->w_wincol + wp->w_popup_border[3],
-		    wp->w_wincol + total_width - wp->w_popup_border[1]
-							- wp->w_has_scrollbar,
+	    screen_fill(row, row + top_padding, padcol, padwidth,
 							 ' ', ' ', popup_attr);
 	}
 
@@ -2451,18 +2478,35 @@ update_popups(void (*win_update)(win_T *wp))
 	for (i = wp->w_popup_border[0];
 				 i < total_height - wp->w_popup_border[2]; ++i)
 	{
+	    int	pad_left;
+	    int col = wp->w_wincol - wp->w_popup_leftoff;
+	    // left and right padding only needed next to the body
+	    int do_padding =
+		    i >= wp->w_popup_border[0] + wp->w_popup_padding[0]
+		    && i < total_height - wp->w_popup_border[2]
+						 - wp->w_popup_padding[2];
+
 	    row = wp->w_winrow + i;
 
 	    // left border
-	    if (wp->w_popup_border[3] > 0)
+	    if (wp->w_popup_border[3] > 0 && col >= 0)
 	    {
 		buf[mb_char2bytes(border_char[3], buf)] = NUL;
-		screen_puts(buf, row, wp->w_wincol, border_attr[3]);
+		screen_puts(buf, row, col, border_attr[3]);
 	    }
-	    // left padding
-	    if (wp->w_popup_padding[3] > 0)
-		screen_puts(get_spaces(wp->w_popup_padding[3]), row,
-			wp->w_wincol + wp->w_popup_border[3], popup_attr);
+	    if (do_padding && wp->w_popup_padding[3] > 0)
+	    {
+		// left padding
+		col += wp->w_popup_border[3];
+		pad_left = wp->w_popup_padding[3];
+		if (col < 0)
+		{
+		    pad_left += col;
+		    col = 0;
+		}
+		if (pad_left > 0)
+		    screen_puts(get_spaces(pad_left), row, col, popup_attr);
+	    }
 	    // scrollbar
 	    if (wp->w_has_scrollbar)
 	    {
@@ -2486,10 +2530,12 @@ update_popups(void (*win_update)(win_T *wp))
 			       wp->w_wincol + total_width - 1, border_attr[1]);
 	    }
 	    // right padding
-	    if (wp->w_popup_padding[1] > 0)
+	    if (do_padding && wp->w_popup_padding[1] > 0)
 		screen_puts(get_spaces(wp->w_popup_padding[1]), row,
-			wp->w_wincol + wp->w_popup_border[3]
-			   + wp->w_popup_padding[3] + wp->w_width, popup_attr);
+			wp->w_wincol - wp->w_popup_leftoff
+			+ wp->w_popup_border[3]
+			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol,
+			popup_attr);
 	}
 
 	if (wp->w_popup_padding[2] > 0)
@@ -2498,9 +2544,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    row = wp->w_winrow + wp->w_popup_border[0]
 				       + wp->w_popup_padding[0] + wp->w_height;
 	    screen_fill(row, row + wp->w_popup_padding[2],
-		    wp->w_wincol + wp->w_popup_border[3],
-		    wp->w_wincol + total_width - wp->w_popup_border[1],
-							 ' ', ' ', popup_attr);
+				       padcol, padwidth, ' ', ' ', popup_attr);
 	}
 
 	if (wp->w_popup_border[2] > 0)
